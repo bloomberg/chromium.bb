@@ -234,9 +234,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest, MissingDownloadDir) {
 
 // Tests passing a localized name.
 //
-// flaky: http://crbug.com/111308
+// times out at debug: http://crbug.com/111308
 IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest,
-                       FLAKY_InstallLocalized) {
+                       DISABLED_InstallLocalized) {
   ASSERT_TRUE(RunInstallTest("localized.html", "localized_extension.crx"));
 }
 
@@ -280,9 +280,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest,
 // Tests that we can request an app installed bubble (instead of the default
 // UI when an app is installed).
 //
-// flaky: http://crbug.com/111308
+// times out on debug: http://crbug.com/111308
 IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest,
-                       FLAKY_AppInstallBubble) {
+                       DISABLED_AppInstallBubble) {
   WebstoreInstallListener listener;
   WebstorePrivateApi::SetWebstoreInstallerDelegateForTesting(&listener);
   ASSERT_TRUE(RunInstallTest("app_install_bubble.html", "app.crx"));
@@ -299,9 +299,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest,
 
 // Tests using silentlyInstall to install extensions.
 //
-// flaky: http://crbug.com/111308
+// times out on debug: http://crbug.com/111308
 IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateBundleTest,
-                       FLAKY_SilentlyInstall) {
+                       DISABLED_SilentlyInstall) {
   WebstorePrivateApi::SetTrustTestIDsForTesting(true);
   ASSERT_TRUE(RunPageTest(GetTestServerURL("silently_install.html").spec()));
 }
