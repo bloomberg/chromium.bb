@@ -27,13 +27,11 @@
 #include "grit/theme_resources_standard.h"
 #include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/animation/animation_container.h"
-#include "ui/base/animation/throb_animation.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/path.h"
-#include "ui/gfx/skbitmap_operations.h"
 #include "ui/gfx/size.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/widget/default_theme_provider.h"
@@ -53,11 +51,6 @@ static const int kNewTabButtonVOffset = 5;
 static const int kSuspendAnimationsTimeMs = 200;
 static const int kTabHOffset = -16;
 static const int kTabStripAnimationVSlop = 40;
-// Inactive tabs in a native frame are slightly transparent.
-static const int kNativeFrameInactiveTabAlpha = 200;
-// If there are multiple tabs selected then make non-selected inactive tabs
-// even more transparent.
-static const int kNativeFrameInactiveTabAlphaMultiSelection = 150;
 
 // Inverse ratio of the width of a tab edge to the width of the tab. When
 // hovering over the left or right edge of a tab, the drop indicator will
@@ -97,260 +90,140 @@ class ResetDraggingStateDelegate
   DISALLOW_COPY_AND_ASSIGN(ResetDraggingStateDelegate);
 };
 
-}  // namespace
-
 ///////////////////////////////////////////////////////////////////////////////
 // NewTabButton
 //
-//  A subclass of button that hit-tests to the shape of the new tab button and
-//  does custom drawing.
+//  A subclass of button that hit-tests to the shape of the new tab button.
 
 class NewTabButton : public views::ImageButton {
  public:
-  NewTabButton(TabStrip* tab_strip, views::ButtonListener* listener);
-  virtual ~NewTabButton();
-
-  // Set the background offset used to match the background image to the frame
-  // image.
-  void set_background_offset(const gfx::Point& offset) {
-    background_offset_ = offset;
+  NewTabButton(TabStrip* tab_strip, views::ButtonListener* listener)
+      : views::ImageButton(listener),
+        tab_strip_(tab_strip) {
   }
+  virtual ~NewTabButton() {}
 
  protected:
   // Overridden from views::View:
-  virtual bool HasHitTestMask() const OVERRIDE;
-  virtual void GetHitTestMask(gfx::Path* path) const OVERRIDE;
+  virtual bool HasHitTestMask() const {
+    // When the button is sized to the top of the tab strip we want the user to
+    // be able to click on complete bounds, and so don't return a custom hit
+    // mask.
+    return !tab_strip_->SizeTabButtonToTopOfTabStrip();
+  }
+  virtual void GetHitTestMask(gfx::Path* path) const {
+    DCHECK(path);
+
+    SkScalar w = SkIntToScalar(width());
+
+    // These values are defined by the shape of the new tab bitmap. Should that
+    // bitmap ever change, these values will need to be updated. They're so
+    // custom it's not really worth defining constants for.
+    path->moveTo(0, 1);
+    path->lineTo(w - 7, 1);
+    path->lineTo(w - 4, 4);
+    path->lineTo(w, 16);
+    path->lineTo(w - 1, 17);
+    path->lineTo(7, 17);
+    path->lineTo(4, 13);
+    path->lineTo(0, 1);
+    path->close();
+  }
+
 #if defined(OS_WIN) && !defined(USE_AURA)
-  void OnMouseReleased(const views::MouseEvent& event) OVERRIDE;
+  void OnMouseReleased(const views::MouseEvent& event) OVERRIDE {
+    if (event.IsOnlyRightMouseButton()) {
+      gfx::Point point(event.x(), event.y());
+      views::View::ConvertPointToScreen(this, &point);
+      ui::ShowSystemMenu(GetWidget()->GetNativeView(), point.x(), point.y());
+      SetState(BS_NORMAL);
+      return;
+    }
+    views::ImageButton::OnMouseReleased(event);
+  }
 #endif
-  void OnPaint(gfx::Canvas* canvas) OVERRIDE;
 
  private:
-  SkBitmap GetBitmapForState(views::CustomButton::ButtonState state) const;
-  SkBitmap GetBitmap() const;
-
   // Tab strip that contains this button.
   TabStrip* tab_strip_;
-
-  // The offset used to paint the background image.
-  gfx::Point background_offset_;
 
   DISALLOW_COPY_AND_ASSIGN(NewTabButton);
 };
 
-NewTabButton::NewTabButton(TabStrip* tab_strip, views::ButtonListener* listener)
-    : views::ImageButton(listener),
-      tab_strip_(tab_strip) {
-}
+}  // namespace
 
-NewTabButton::~NewTabButton() {
-}
-
-bool NewTabButton::HasHitTestMask() const {
-  // When the button is sized to the top of the tab strip we want the user to
-  // be able to click on complete bounds, and so don't return a custom hit
-  // mask.
-  return !tab_strip_->SizeTabButtonToTopOfTabStrip();
-}
-
-void NewTabButton::GetHitTestMask(gfx::Path* path) const {
-  DCHECK(path);
-
-  SkScalar w = SkIntToScalar(width());
-
-  // These values are defined by the shape of the new tab bitmap. Should that
-  // bitmap ever change, these values will need to be updated. They're so
-  // custom it's not really worth defining constants for.
-  path->moveTo(0, 1);
-  path->lineTo(w - 7, 1);
-  path->lineTo(w - 4, 4);
-  path->lineTo(w, 16);
-  path->lineTo(w - 1, 17);
-  path->lineTo(7, 17);
-  path->lineTo(4, 13);
-  path->lineTo(0, 1);
-  path->close();
-}
-
-#if defined(OS_WIN) && !defined(USE_AURA)
-void NewTabButton::OnMouseReleased(const views::MouseEvent& event) {
-  if (event.IsOnlyRightMouseButton()) {
-    gfx::Point point(event.x(), event.y());
-    views::View::ConvertPointToScreen(this, &point);
-    ui::ShowSystemMenu(GetWidget()->GetNativeView(), point.x(), point.y());
-    SetState(BS_NORMAL);
-    return;
-  }
-  views::ImageButton::OnMouseReleased(event);
-}
-#endif
-
-void NewTabButton::OnPaint(gfx::Canvas* canvas) {
-  SkBitmap bitmap = GetBitmap();
-  canvas->DrawBitmapInt(bitmap, 0, height() - bitmap.height());
-}
-
-SkBitmap NewTabButton::GetBitmapForState(
-    views::CustomButton::ButtonState state) const {
-  bool use_native_frame =
-      GetWidget() && GetWidget()->GetTopLevelWidget()->ShouldUseNativeFrame();
-  int background_id = 0;
-  if (use_native_frame) {
-    background_id = IDR_THEME_TAB_BACKGROUND_V;
-  } else {
-    background_id = tab_strip_->controller()->IsIncognito() ?
-        IDR_THEME_TAB_BACKGROUND_INCOGNITO : IDR_THEME_TAB_BACKGROUND;
-  }
-
-  int overlay_id = 0;
-  int alpha = 0;
-  switch (state) {
-    case views::CustomButton::BS_NORMAL:
-      overlay_id = IDR_NEWTAB_BUTTON;
-      alpha = use_native_frame ? kNativeFrameInactiveTabAlpha : 255;
-      break;
-    case views::CustomButton::BS_HOT:
-      overlay_id = IDR_NEWTAB_BUTTON;
-      alpha = use_native_frame ? kNativeFrameInactiveTabAlpha : 255;
-      break;
-    case views::CustomButton::BS_PUSHED:
-      overlay_id = IDR_NEWTAB_BUTTON_P;
-      alpha = 145;
-      break;
-    default:
-      NOTREACHED();
-      break;
-  }
-
-  ui::ThemeProvider* tp = GetThemeProvider();
-  SkBitmap* background = tp->GetBitmapNamed(background_id);
-  SkBitmap* overlay = tp->GetBitmapNamed(overlay_id);
-  int height = overlay->height();
-  int width = overlay->width();
-
-  gfx::CanvasSkia canvas(gfx::Size(width, height), false);
-
-  // For custom images the background starts at the top of the tab strip.
-  // Otherwise the background starts at the top of the frame.
-  int offset_y = GetThemeProvider()->HasCustomImage(background_id) ?
-      0 : background_offset_.y();
-  canvas.TileImageInt(*background, GetMirroredX() + background_offset_.x(),
-                      kNewTabButtonVOffset + offset_y, 0, 0, width, height);
-
-  if (alpha != 255) {
-    SkPaint paint;
-    paint.setColor(SkColorSetARGB(alpha, 255, 255, 255));
-    paint.setXfermodeMode(SkXfermode::kDstIn_Mode);
-    paint.setStyle(SkPaint::kFill_Style);
-    canvas.DrawRect(gfx::Rect(0, 0, width, height), paint);
-  }
-
-  if (state == views::CustomButton::BS_HOT) {
-    canvas.FillRect(SkColorSetARGB(72, 255, 255, 255),
-                    gfx::Rect(gfx::Size(size())));
-  }
-
-  canvas.DrawBitmapInt(*overlay, 0, 0);
-  SkBitmap* mask = tp->GetBitmapNamed(IDR_NEWTAB_BUTTON_MASK);
-  return SkBitmapOperations::CreateMaskedBitmap(canvas.ExtractBitmap(), *mask);
-}
-
-SkBitmap NewTabButton::GetBitmap() const {
-  if (!hover_animation_->is_animating())
-    return GetBitmapForState(state());
-  return SkBitmapOperations::CreateBlendedBitmap(
-      GetBitmapForState(views::CustomButton::BS_NORMAL),
-      GetBitmapForState(views::CustomButton::BS_HOT),
-      hover_animation_->GetCurrentValue());
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// TabStrip::RemoveTabDelegate
-//
 // AnimationDelegate used when removing a tab. Does the necessary cleanup when
 // done.
 class TabStrip::RemoveTabDelegate
     : public views::BoundsAnimator::OwnedAnimationDelegate {
  public:
-  RemoveTabDelegate(TabStrip* tab_strip, BaseTab* tab);
+  RemoveTabDelegate(TabStrip* tab_strip, BaseTab* tab)
+      : tabstrip_(tab_strip),
+        tab_(tab) {
+  }
 
-  virtual void AnimationEnded(const ui::Animation* animation) OVERRIDE;
-  virtual void AnimationCanceled(const ui::Animation* animation) OVERRIDE;
+  virtual void AnimationEnded(const ui::Animation* animation) {
+    CompleteRemove();
+  }
+
+  virtual void AnimationCanceled(const ui::Animation* animation) {
+    // We can be canceled for two interesting reasons:
+    // . The tab we reference was dragged back into the tab strip. In this case
+    //   we don't want to remove the tab (closing is false).
+    // . The drag was completed before the animation completed
+    //   (DestroyDraggedSourceTab). In this case we need to remove the tab
+    //   (closing is true).
+    if (tab_->closing())
+      CompleteRemove();
+  }
 
  private:
-  void CompleteRemove();
+  void CompleteRemove() {
+    if (!tab_->closing()) {
+      // The tab was added back yet we weren't canceled. This shouldn't happen.
+      NOTREACHED();
+      return;
+    }
+    tabstrip_->RemoveAndDeleteTab(tab_);
+    HighlightCloseButton();
+  }
 
   // When the animation completes, we send the Container a message to simulate
   // a mouse moved event at the current mouse position. This tickles the Tab
   // the mouse is currently over to show the "hot" state of the close button.
-  void HighlightCloseButton();
+  void HighlightCloseButton() {
+    if (tabstrip_->IsDragSessionActive() ||
+        !tabstrip_->ShouldHighlightCloseButtonAfterRemove()) {
+      // This function is not required (and indeed may crash!) for removes
+      // spawned by non-mouse closes and drag-detaches.
+      return;
+    }
+
+#if defined(OS_WIN) && !defined(USE_AURA)
+    views::Widget* widget = tabstrip_->GetWidget();
+    // This can be null during shutdown. See http://crbug.com/42737.
+    if (!widget)
+      return;
+
+    widget->ResetLastMouseMoveFlag();
+
+    // Force the close button (that slides under the mouse) to highlight by
+    // saying the mouse just moved, but sending the same coordinates.
+    DWORD pos = GetMessagePos();
+    POINT cursor_point = {GET_X_LPARAM(pos), GET_Y_LPARAM(pos)};
+    MapWindowPoints(NULL, widget->GetNativeView(), &cursor_point, 1);
+    SendMessage(widget->GetNativeView(), WM_MOUSEMOVE, 0,
+                MAKELPARAM(cursor_point.x, cursor_point.y));
+#else
+    NOTIMPLEMENTED();
+#endif
+  }
 
   TabStrip* tabstrip_;
   BaseTab* tab_;
 
   DISALLOW_COPY_AND_ASSIGN(RemoveTabDelegate);
 };
-
-TabStrip::RemoveTabDelegate::RemoveTabDelegate(TabStrip* tab_strip,
-                                               BaseTab* tab)
-    : tabstrip_(tab_strip),
-      tab_(tab) {
-}
-
-void TabStrip::RemoveTabDelegate::AnimationEnded(
-    const ui::Animation* animation) {
-  CompleteRemove();
-}
-
-void TabStrip::RemoveTabDelegate::AnimationCanceled(
-    const ui::Animation* animation) {
-  // We can be canceled for two interesting reasons:
-  // . The tab we reference was dragged back into the tab strip. In this case
-  //   we don't want to remove the tab (closing is false).
-  // . The drag was completed before the animation completed
-  //   (DestroyDraggedSourceTab). In this case we need to remove the tab
-  //   (closing is true).
-  if (tab_->closing())
-    CompleteRemove();
-}
-
-void TabStrip::RemoveTabDelegate::CompleteRemove() {
-  if (!tab_->closing()) {
-    // The tab was added back yet we weren't canceled. This shouldn't happen.
-    NOTREACHED();
-    return;
-  }
-  tabstrip_->RemoveAndDeleteTab(tab_);
-  HighlightCloseButton();
-}
-
-void TabStrip::RemoveTabDelegate::HighlightCloseButton() {
-  if (tabstrip_->IsDragSessionActive() ||
-      !tabstrip_->ShouldHighlightCloseButtonAfterRemove()) {
-    // This function is not required (and indeed may crash!) for removes
-    // spawned by non-mouse closes and drag-detaches.
-    return;
-  }
-
-#if defined(OS_WIN) && !defined(USE_AURA)
-  views::Widget* widget = tabstrip_->GetWidget();
-  // This can be null during shutdown. See http://crbug.com/42737.
-  if (!widget)
-    return;
-
-  widget->ResetLastMouseMoveFlag();
-
-  // Force the close button (that slides under the mouse) to highlight by
-  // saying the mouse just moved, but sending the same coordinates.
-  DWORD pos = GetMessagePos();
-  POINT cursor_point = {GET_X_LPARAM(pos), GET_Y_LPARAM(pos)};
-  MapWindowPoints(NULL, widget->GetNativeView(), &cursor_point, 1);
-  SendMessage(widget->GetNativeView(), WM_MOUSEMOVE, 0,
-              MAKELPARAM(cursor_point.x, cursor_point.y));
-#else
-  NOTIMPLEMENTED();
-#endif
-}
 
 ///////////////////////////////////////////////////////////////////////////////
 // TabStrip, public:
@@ -776,7 +649,6 @@ bool TabStrip::IsPositionInWindowCaption(const gfx::Point& point) {
 void TabStrip::SetBackgroundOffset(const gfx::Point& offset) {
   for (int i = 0; i < tab_count(); ++i)
     GetTabAtTabDataIndex(i)->set_background_offset(offset);
-  newtab_button_->set_background_offset(offset);
 }
 
 views::View* TabStrip::GetNewTabButton() {
@@ -830,10 +702,8 @@ void TabStrip::PaintChildren(gfx::Canvas* canvas) {
     SkPaint paint;
     // If there are multiple tabs selected, fade non-selected tabs more to make
     // the selected tabs more noticable.
-    int alpha = multiple_tabs_selected ?
-        kNativeFrameInactiveTabAlphaMultiSelection :
-        kNativeFrameInactiveTabAlpha;
-    paint.setColor(SkColorSetARGB(alpha, 255, 255, 255));
+    paint.setColor(SkColorSetARGB(
+                       multiple_tabs_selected ? 150 : 200, 255, 255, 255));
     paint.setXfermodeMode(SkXfermode::kDstIn_Mode);
     paint.setStyle(SkPaint::kFill_Style);
     // The tabstrip area overlaps the toolbar area by 2 px.
@@ -936,6 +806,10 @@ views::View* TabStrip::GetEventHandlerForPoint(const gfx::Point& point) {
   return this;
 }
 
+void TabStrip::OnThemeChanged() {
+  LoadNewTabButtonImage();
+}
+
 int TabStrip::TabIndexOfTab(BaseTab* tab) const {
   for (int i = 0; i < tab_count(); ++i) {
     if (base_tab_at_tab_index(i) == tab)
@@ -1035,9 +909,37 @@ void TabStrip::Init() {
 
 void TabStrip::InitTabStripButtons() {
   newtab_button_ = new NewTabButton(this, this);
+  LoadNewTabButtonImage();
   newtab_button_->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_ACCNAME_NEWTAB));
   AddChildView(newtab_button_);
+}
+
+void TabStrip::LoadNewTabButtonImage() {
+  ui::ThemeProvider* tp = GetThemeProvider();
+
+  // If we don't have a theme provider yet, it means we do not have a
+  // root view, and are therefore in a test.
+  bool in_test = false;
+  if (tp == NULL) {
+    tp = new views::DefaultThemeProvider();
+    in_test = true;
+  }
+
+  SkBitmap* bitmap = tp->GetBitmapNamed(IDR_NEWTAB_BUTTON);
+  SkColor color = tp->GetColor(ThemeService::COLOR_BUTTON_BACKGROUND);
+  SkBitmap* background = tp->GetBitmapNamed(
+      IDR_THEME_WINDOW_CONTROL_BACKGROUND);
+
+  newtab_button_->SetImage(views::CustomButton::BS_NORMAL, bitmap);
+  newtab_button_->SetImage(views::CustomButton::BS_PUSHED,
+                           tp->GetBitmapNamed(IDR_NEWTAB_BUTTON_P));
+  newtab_button_->SetImage(views::CustomButton::BS_HOT,
+                           tp->GetBitmapNamed(IDR_NEWTAB_BUTTON_H));
+  newtab_button_->SetBackground(color, background,
+                                tp->GetBitmapNamed(IDR_NEWTAB_BUTTON_MASK));
+  if (in_test)
+    delete tp;
 }
 
 BaseTab* TabStrip::CreateTab() {

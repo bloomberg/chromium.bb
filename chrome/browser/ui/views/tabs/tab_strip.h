@@ -22,7 +22,6 @@
 #include "ui/views/mouse_watcher.h"
 
 class BaseTab;
-class NewTabButton;
 class Tab;
 class TabDragController;
 class TabStripController;
@@ -185,6 +184,7 @@ class TabStrip : public AbstractTabStripView,
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
   virtual views::View* GetEventHandlerForPoint(
       const gfx::Point& point) OVERRIDE;
+  virtual void OnThemeChanged() OVERRIDE;
 
  protected:
   // Horizontal gap between mini and non-mini-tabs.
@@ -270,6 +270,9 @@ class TabStrip : public AbstractTabStripView,
 
   // Creates the new tab button.
   void InitTabStripButtons();
+
+  // Set the images for the new tab button.
+  void LoadNewTabButtonImage();
 
   // Creates and returns a new tab. The caller owners the returned tab.
   BaseTab* CreateTab();
@@ -428,7 +431,7 @@ class TabStrip : public AbstractTabStripView,
   std::vector<TabData> tab_data_;
 
   // The "New Tab" button.
-  NewTabButton* newtab_button_;
+  views::ImageButton* newtab_button_;
 
   // Ideal bounds of the new tab button.
   gfx::Rect newtab_button_bounds_;
