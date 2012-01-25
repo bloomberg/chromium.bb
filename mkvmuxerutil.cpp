@@ -59,7 +59,17 @@ int32 GetUIntSize(uint64 value) {
   return 8;
 }
 
-uint64 EbmlElementSize(uint64 type, uint64 value, bool master) {
+uint64 EbmlMasterElementSize(uint64 type, uint64 value) {
+  // Size of EBML ID
+  int32 ebml_size = GetUIntSize(type);
+
+  // Datasize
+  ebml_size += GetCodedUIntSize(value);
+
+  return ebml_size;
+}
+
+uint64 EbmlElementSize(uint64 type, uint64 value) {
   // Size of EBML ID
   int32 ebml_size = GetUIntSize(type);
 
@@ -67,13 +77,12 @@ uint64 EbmlElementSize(uint64 type, uint64 value, bool master) {
   ebml_size += GetUIntSize(value);
 
   // Size of Datasize
-  if (!master)
-    ebml_size++;
+  ebml_size++;
 
   return ebml_size;
 }
 
-uint64 EbmlElementSize(uint64 type, float value, bool master) {
+uint64 EbmlElementSize(uint64 type, float value) {
   // Size of EBML ID
   uint64 ebml_size = GetUIntSize(type);
 
@@ -81,13 +90,12 @@ uint64 EbmlElementSize(uint64 type, float value, bool master) {
   ebml_size += sizeof(value);
 
   // Size of Datasize
-  if (!master)
-    ebml_size++;
+  ebml_size++;
 
   return ebml_size;
 }
 
-uint64 EbmlElementSize(uint64 type, const char* value, bool master) {
+uint64 EbmlElementSize(uint64 type, const char* value) {
   if (!value)
     return 0;
 
@@ -98,16 +106,12 @@ uint64 EbmlElementSize(uint64 type, const char* value, bool master) {
   ebml_size += strlen(value);
 
   // Size of Datasize
-  if (!master)
-    ebml_size++;
+  ebml_size++;
 
   return ebml_size;
 }
 
-uint64 EbmlElementSize(uint64 type,
-                       const uint8* value,
-                       uint64 size,
-                       bool master) {
+uint64 EbmlElementSize(uint64 type, const uint8* value, uint64 size) {
   if (!value)
     return 0;
 
@@ -118,8 +122,7 @@ uint64 EbmlElementSize(uint64 type,
   ebml_size += size;
 
   // Size of Datasize
-  if (!master)
-    ebml_size += GetCodedUIntSize(size);
+  ebml_size += GetCodedUIntSize(size);
 
   return ebml_size;
 }
@@ -347,7 +350,7 @@ uint64 WriteVoidElement(IMkvWriter* writer, uint64 size) {
 
   // Subtract one for the void ID and the coded size.
   uint64 void_entry_size = size - 1 - GetCodedUIntSize(size-1);
-  uint64 void_size = EbmlElementSize(kMkvVoid, void_entry_size, true) +
+  uint64 void_size = EbmlMasterElementSize(kMkvVoid, void_entry_size) +
                      void_entry_size;
 
   if (void_size != size)

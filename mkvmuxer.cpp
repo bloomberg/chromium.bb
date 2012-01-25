@@ -32,13 +32,13 @@ IMkvWriter::~IMkvWriter() {
 
 bool WriteEbmlHeader(IMkvWriter* writer) {
   // Level 0
-  uint64 size = EbmlElementSize(kMkvEBMLVersion, 1ULL, false);
-  size += EbmlElementSize(kMkvEBMLReadVersion, 1ULL, false);
-  size += EbmlElementSize(kMkvEBMLMaxIDLength, 4ULL, false);
-  size += EbmlElementSize(kMkvEBMLMaxSizeLength, 8ULL, false);
-  size += EbmlElementSize(kMkvDocType, "webm", false);
-  size += EbmlElementSize(kMkvDocTypeVersion, 2ULL, false);
-  size += EbmlElementSize(kMkvDocTypeReadVersion, 2ULL, false);
+  uint64 size = EbmlElementSize(kMkvEBMLVersion, 1ULL);
+  size += EbmlElementSize(kMkvEBMLReadVersion, 1ULL);
+  size += EbmlElementSize(kMkvEBMLMaxIDLength, 4ULL);
+  size += EbmlElementSize(kMkvEBMLMaxSizeLength, 8ULL);
+  size += EbmlElementSize(kMkvDocType, "webm");
+  size += EbmlElementSize(kMkvDocTypeVersion, 2ULL);
+  size += EbmlElementSize(kMkvDocTypeReadVersion, 2ULL);
 
   if (!WriteEbmlMasterElement(writer, kMkvEBML, size))
     return false;
@@ -108,14 +108,13 @@ bool CuePoint::Write(IMkvWriter* writer) const {
   if (!writer || track_ < 1 || cluster_pos_ < 1)
     return false;
 
-  uint64 size = EbmlElementSize(kMkvCueClusterPosition, cluster_pos_, false);
-  size += EbmlElementSize(kMkvCueTrack, track_, false);
+  uint64 size = EbmlElementSize(kMkvCueClusterPosition, cluster_pos_);
+  size += EbmlElementSize(kMkvCueTrack, track_);
   if (output_block_number_ && block_number_ > 1)
-    size += EbmlElementSize(kMkvCueBlockNumber, block_number_, false);
-  const uint64 track_pos_size = EbmlElementSize(kMkvCueTrackPositions,
-                                                size,
-                                                true) + size;
-  const uint64 payload_size = EbmlElementSize(kMkvCueTime, time_, false) +
+    size += EbmlElementSize(kMkvCueBlockNumber, block_number_);
+  const uint64 track_pos_size = EbmlMasterElementSize(kMkvCueTrackPositions,
+                                                      size) + size;
+  const uint64 payload_size = EbmlElementSize(kMkvCueTime, time_) +
                               track_pos_size;
 
   if (!WriteEbmlMasterElement(writer, kMkvCuePoint, payload_size))
@@ -149,14 +148,13 @@ bool CuePoint::Write(IMkvWriter* writer) const {
 }
 
 uint64 CuePoint::PayloadSize() const {
-  uint64 size = EbmlElementSize(kMkvCueClusterPosition, cluster_pos_, false);
-  size += EbmlElementSize(kMkvCueTrack, track_, false);
+  uint64 size = EbmlElementSize(kMkvCueClusterPosition, cluster_pos_);
+  size += EbmlElementSize(kMkvCueTrack, track_);
   if (output_block_number_ && block_number_ > 1)
-    size += EbmlElementSize(kMkvCueBlockNumber, block_number_, false);
-  const uint64 track_pos_size = EbmlElementSize(kMkvCueTrackPositions,
-                                                size,
-                                                true) + size;
-  const uint64 payload_size = EbmlElementSize(kMkvCueTime, time_, false) +
+    size += EbmlElementSize(kMkvCueBlockNumber, block_number_);
+  const uint64 track_pos_size = EbmlMasterElementSize(kMkvCueTrackPositions,
+                                                      size) + size;
+  const uint64 payload_size = EbmlElementSize(kMkvCueTime, time_) +
                               track_pos_size;
 
   return payload_size;
@@ -164,7 +162,7 @@ uint64 CuePoint::PayloadSize() const {
 
 uint64 CuePoint::Size() const {
   const uint64 payload_size = PayloadSize();
-  return EbmlElementSize(kMkvCuePoint, payload_size, true) + payload_size;
+  return EbmlMasterElementSize(kMkvCuePoint, payload_size) + payload_size;
 }
 
 ///////////////////////////////////////////////////////////////
@@ -303,9 +301,8 @@ bool ContentEncoding::SetEncryptionID(const uint8* id, uint64 length) {
 uint64 ContentEncoding::Size() const {
   const uint64 encryption_size = EncryptionSize();
   const uint64 encoding_size = EncodingSize(0, encryption_size);
-  const uint64 encodings_size = EbmlElementSize(kMkvContentEncoding,
-                                                encoding_size,
-                                                true) +
+  const uint64 encodings_size = EbmlMasterElementSize(kMkvContentEncoding,
+                                                      encoding_size) +
                                 encoding_size;
 
   return encodings_size;
@@ -314,9 +311,8 @@ uint64 ContentEncoding::Size() const {
 bool ContentEncoding::Write(IMkvWriter* writer) const {
   const uint64 encryption_size = EncryptionSize();
   const uint64 encoding_size = EncodingSize(0, encryption_size);
-  const uint64 size = EbmlElementSize(kMkvContentEncoding,
-                                      encoding_size,
-                                      true) +
+  const uint64 size = EbmlMasterElementSize(kMkvContentEncoding,
+                                            encoding_size) +
                       encoding_size;
 
   const int64 payload_position = writer->Position();
@@ -359,20 +355,13 @@ uint64 ContentEncoding::EncodingSize(uint64 compresion_size,
   uint64 encoding_size = 0;
 
   if (encryption_size > 0) {
-    encoding_size += EbmlElementSize(kMkvContentEncryption,
-                                     encryption_size,
-                                     true) +
+    encoding_size += EbmlMasterElementSize(kMkvContentEncryption,
+                                           encryption_size) +
                      encryption_size;
   }
-  encoding_size += EbmlElementSize(kMkvContentEncodingType,
-                                   encoding_type_,
-                                   false);
-  encoding_size += EbmlElementSize(kMkvContentEncodingScope,
-                                   encoding_scope_,
-                                   false);
-  encoding_size += EbmlElementSize(kMkvContentEncodingOrder,
-                                   encoding_order_,
-                                   false);
+  encoding_size += EbmlElementSize(kMkvContentEncodingType, encoding_type_);
+  encoding_size += EbmlElementSize(kMkvContentEncodingScope, encoding_scope_);
+  encoding_size += EbmlElementSize(kMkvContentEncodingOrder, encoding_order_);
 
   return encoding_size;
 }
@@ -380,9 +369,8 @@ uint64 ContentEncoding::EncodingSize(uint64 compresion_size,
 uint64 ContentEncoding::EncryptionSize() const {
   uint64 encryption_size = EbmlElementSize(kMkvContentEncKeyID,
                                            enc_key_id_,
-                                           enc_key_id_length_,
-                                           false);
-  encryption_size += EbmlElementSize(kMkvContentEncAlgo, enc_algo_, false);
+                                           enc_key_id_length_);
+  encryption_size += EbmlElementSize(kMkvContentEncAlgo, enc_algo_);
 
   return encryption_size;
 }
@@ -455,20 +443,19 @@ ContentEncoding* Track::GetContentEncodingByIndex(uint32 index) const {
 }
 
 uint64 Track::PayloadSize() const {
-  uint64 size = EbmlElementSize(kMkvTrackNumber, number_, false);
-  size += EbmlElementSize(kMkvTrackUID, uid_, false);
-  size += EbmlElementSize(kMkvTrackType, type_, false);
+  uint64 size = EbmlElementSize(kMkvTrackNumber, number_);
+  size += EbmlElementSize(kMkvTrackUID, uid_);
+  size += EbmlElementSize(kMkvTrackType, type_);
   if (codec_id_)
-    size += EbmlElementSize(kMkvCodecID, codec_id_, false);
+    size += EbmlElementSize(kMkvCodecID, codec_id_);
   if (codec_private_)
     size += EbmlElementSize(kMkvCodecPrivate,
                             codec_private_,
-                            codec_private_length_,
-                            false);
+                            codec_private_length_);
   if (language_)
-    size += EbmlElementSize(kMkvLanguage, language_, false);
+    size += EbmlElementSize(kMkvLanguage, language_);
   if (name_)
-    size += EbmlElementSize(kMkvName, name_, false);
+    size += EbmlElementSize(kMkvName, name_);
 
   if (content_encoding_entries_size_ > 0) {
     uint64 content_encodings_size = 0;
@@ -477,9 +464,8 @@ uint64 Track::PayloadSize() const {
       content_encodings_size += encoding->Size();
     }
 
-    size += EbmlElementSize(kMkvContentEncodings,
-                            content_encodings_size,
-                            true) +
+    size += EbmlMasterElementSize(kMkvContentEncodings,
+                                  content_encodings_size) +
             content_encodings_size;
   }
 
@@ -488,7 +474,7 @@ uint64 Track::PayloadSize() const {
 
 uint64 Track::Size() const {
   uint64 size = Track::PayloadSize();
-  size += EbmlElementSize(kMkvTrackEntry, size, true);
+  size += EbmlMasterElementSize(kMkvTrackEntry, size);
 
   return size;
 }
@@ -504,20 +490,19 @@ bool Track::Write(IMkvWriter* writer) const {
   if (!WriteEbmlMasterElement(writer, kMkvTrackEntry, payload_size))
     return false;
 
-  uint64 size = EbmlElementSize(kMkvTrackNumber, number_, false);
-  size += EbmlElementSize(kMkvTrackUID, uid_, false);
-  size += EbmlElementSize(kMkvTrackType, type_, false);
+  uint64 size = EbmlElementSize(kMkvTrackNumber, number_);
+  size += EbmlElementSize(kMkvTrackUID, uid_);
+  size += EbmlElementSize(kMkvTrackType, type_);
   if (codec_id_)
-    size += EbmlElementSize(kMkvCodecID, codec_id_, false);
+    size += EbmlElementSize(kMkvCodecID, codec_id_);
   if (codec_private_)
     size += EbmlElementSize(kMkvCodecPrivate,
                             codec_private_,
-                            codec_private_length_,
-                            false);
+                            codec_private_length_);
   if (language_)
-    size += EbmlElementSize(kMkvLanguage, language_, false);
+    size += EbmlElementSize(kMkvLanguage, language_);
   if (name_)
-    size += EbmlElementSize(kMkvName, name_, false);
+    size += EbmlElementSize(kMkvName, name_);
 
   const int64 payload_position = writer->Position();
   if (payload_position < 0)
@@ -698,7 +683,7 @@ uint64 VideoTrack::PayloadSize() const {
   const uint64 parent_size = Track::PayloadSize();
 
   uint64 size = VideoPayloadSize();
-  size += EbmlElementSize(kMkvVideo, size, true);
+  size += EbmlMasterElementSize(kMkvVideo, size);
 
   return parent_size + size;
 }
@@ -707,7 +692,7 @@ uint64 VideoTrack::Size() const {
   const uint64 parent_size = Track::Size();
 
   uint64 size = VideoPayloadSize();
-  size += EbmlElementSize(kMkvVideo, size, true);
+  size += EbmlMasterElementSize(kMkvVideo, size);
 
   return parent_size + size;
 }
@@ -753,18 +738,16 @@ bool VideoTrack::Write(IMkvWriter* writer) const {
 }
 
 uint64 VideoTrack::VideoPayloadSize() const {
-  uint64 size = EbmlElementSize(kMkvPixelWidth, width_, false);
-  size += EbmlElementSize(kMkvPixelHeight, height_, false);
+  uint64 size = EbmlElementSize(kMkvPixelWidth, width_);
+  size += EbmlElementSize(kMkvPixelHeight, height_);
   if (display_width_ > 0)
-    size += EbmlElementSize(kMkvDisplayWidth, display_width_, false);
+    size += EbmlElementSize(kMkvDisplayWidth, display_width_);
   if (display_height_ > 0)
-    size += EbmlElementSize(kMkvDisplayHeight, display_height_, false);
+    size += EbmlElementSize(kMkvDisplayHeight, display_height_);
   if (stereo_mode_ > kMono)
-    size += EbmlElementSize(kMkvStereoMode, stereo_mode_, false);
+    size += EbmlElementSize(kMkvStereoMode, stereo_mode_);
   if (frame_rate_ > 0.0)
-    size += EbmlElementSize(kMkvFrameRate,
-                            static_cast<float>(frame_rate_),
-                            false);
+    size += EbmlElementSize(kMkvFrameRate, static_cast<float>(frame_rate_));
 
   return size;
 }
@@ -786,12 +769,11 @@ uint64 AudioTrack::PayloadSize() const {
   const uint64 parent_size = Track::PayloadSize();
 
   uint64 size = EbmlElementSize(kMkvSamplingFrequency,
-                                static_cast<float>(sample_rate_),
-                                false);
-  size += EbmlElementSize(kMkvChannels, channels_, false);
+                                static_cast<float>(sample_rate_));
+  size += EbmlElementSize(kMkvChannels, channels_);
   if (bit_depth_ > 0)
-    size += EbmlElementSize(kMkvBitDepth, bit_depth_, false);
-  size += EbmlElementSize(kMkvAudio, size, true);
+    size += EbmlElementSize(kMkvBitDepth, bit_depth_);
+  size += EbmlMasterElementSize(kMkvAudio, size);
 
   return parent_size + size;
 }
@@ -800,12 +782,11 @@ uint64 AudioTrack::Size() const {
   const uint64 parent_size = Track::Size();
 
   uint64 size = EbmlElementSize(kMkvSamplingFrequency,
-                                static_cast<float>(sample_rate_),
-                                false);
-  size += EbmlElementSize(kMkvChannels, channels_, false);
+                                static_cast<float>(sample_rate_));
+  size += EbmlElementSize(kMkvChannels, channels_);
   if (bit_depth_ > 0)
-    size += EbmlElementSize(kMkvBitDepth, bit_depth_, false);
-  size += EbmlElementSize(kMkvAudio, size, true);
+    size += EbmlElementSize(kMkvBitDepth, bit_depth_);
+  size += EbmlMasterElementSize(kMkvAudio, size);
 
   return parent_size + size;
 }
@@ -816,11 +797,10 @@ bool AudioTrack::Write(IMkvWriter* writer) const {
 
   // Calculate AudioSettings size.
   uint64 size = EbmlElementSize(kMkvSamplingFrequency,
-                                static_cast<float>(sample_rate_),
-                                false);
-  size += EbmlElementSize(kMkvChannels, channels_, false);
+                                static_cast<float>(sample_rate_));
+  size += EbmlElementSize(kMkvChannels, channels_);
   if (bit_depth_ > 0)
-    size += EbmlElementSize(kMkvBitDepth, bit_depth_, false);
+    size += EbmlElementSize(kMkvBitDepth, bit_depth_);
 
   if (!WriteEbmlMasterElement(writer, kMkvAudio, size))
     return false;
@@ -1070,9 +1050,8 @@ bool Cluster::Finalize() {
 
 uint64 Cluster::Size() const {
   const uint64 element_size =
-      EbmlElementSize(kMkvCluster,
-                      0xFFFFFFFFFFFFFFFFULL,
-                      true) + payload_size_;
+      EbmlMasterElementSize(kMkvCluster,
+                            0xFFFFFFFFFFFFFFFFULL) + payload_size_;
   return element_size;
 }
 
@@ -1093,7 +1072,7 @@ bool Cluster::WriteClusterHeader() {
 
   if (!WriteEbmlElement(writer_, kMkvTimecode, timecode()))
     return false;
-  AddPayloadSize(EbmlElementSize(kMkvTimecode, timecode(), false));
+  AddPayloadSize(EbmlElementSize(kMkvTimecode, timecode()));
   header_written_ = true;
 
   return true;
@@ -1125,13 +1104,10 @@ bool SeekHead::Finalize(IMkvWriter* writer) const {
       if (seek_entry_id_[i] != 0) {
         entry_size[i] = EbmlElementSize(
             kMkvSeekID,
-            static_cast<uint64>(seek_entry_id_[i]),
-            false);
-        entry_size[i] += EbmlElementSize(kMkvSeekPosition,
-                                         seek_entry_pos_[i],
-                                         false);
+            static_cast<uint64>(seek_entry_id_[i]));
+        entry_size[i] += EbmlElementSize(kMkvSeekPosition, seek_entry_pos_[i]);
 
-        payload_size += EbmlElementSize(kMkvSeek, entry_size[i], true) +
+        payload_size += EbmlMasterElementSize(kMkvSeek, entry_size[i]) +
                         entry_size[i];
       }
     }
@@ -1163,9 +1139,9 @@ bool SeekHead::Finalize(IMkvWriter* writer) const {
     }
 
     const uint64 total_entry_size = kSeekEntryCount * MaxEntrySize();
-    const uint64 total_size = EbmlElementSize(kMkvSeekHead,
-                                              total_entry_size,
-                                              true) + total_entry_size;
+    const uint64 total_size =
+        EbmlMasterElementSize(kMkvSeekHead,
+                              total_entry_size) + total_entry_size;
     const int64 size_left = total_size - (writer->Position() - start_pos_);
 
     const uint64 bytes_written = WriteVoidElement(writer, size_left);
@@ -1181,7 +1157,7 @@ bool SeekHead::Finalize(IMkvWriter* writer) const {
 
 bool SeekHead::Write(IMkvWriter* writer) {
   const uint64 entry_size = kSeekEntryCount * MaxEntrySize();
-  const uint64 size = EbmlElementSize(kMkvSeekHead, entry_size, true);
+  const uint64 size = EbmlMasterElementSize(kMkvSeekHead, entry_size);
 
   start_pos_ = writer->Position();
 
@@ -1205,10 +1181,10 @@ bool SeekHead::AddSeekEntry(uint32 id, uint64 pos) {
 
 uint64 SeekHead::MaxEntrySize() const {
   const uint64 max_entry_payload_size =
-      EbmlElementSize(kMkvSeekID, 0xffffffffULL, false) +
-      EbmlElementSize(kMkvSeekPosition, 0xffffffffffffffffULL, false);
+      EbmlElementSize(kMkvSeekID, 0xffffffffULL) +
+      EbmlElementSize(kMkvSeekPosition, 0xffffffffffffffffULL);
   const uint64 max_entry_size =
-      EbmlElementSize(kMkvSeek, max_entry_payload_size, true) +
+      EbmlMasterElementSize(kMkvSeek, max_entry_payload_size) +
       max_entry_payload_size;
 
   return max_entry_size;
@@ -1307,13 +1283,11 @@ bool SegmentInfo::Write(IMkvWriter* writer) {
   if (!writer || !muxing_app_ || !writing_app_)
     return false;
 
-  uint64 size = EbmlElementSize(kMkvTimecodeScale, timecode_scale_, false);
+  uint64 size = EbmlElementSize(kMkvTimecodeScale, timecode_scale_);
   if (duration_ > 0.0)
-    size += EbmlElementSize(kMkvDuration,
-                            static_cast<float>(duration_),
-                            false);
-  size += EbmlElementSize(kMkvMuxingApp, muxing_app_, false);
-  size += EbmlElementSize(kMkvWritingApp, writing_app_, false);
+    size += EbmlElementSize(kMkvDuration, static_cast<float>(duration_));
+  size += EbmlElementSize(kMkvMuxingApp, muxing_app_);
+  size += EbmlElementSize(kMkvWritingApp, writing_app_);
 
   if (!WriteEbmlMasterElement(writer, kMkvInfo, size))
     return false;
