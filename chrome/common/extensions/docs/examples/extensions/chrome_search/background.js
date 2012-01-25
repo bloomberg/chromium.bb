@@ -118,8 +118,7 @@ function search(query, callback) {
   else
     query = '"' + query + '"';
 
-  var url = "http://www.google.com/codesearch/feeds/search?" +
-      "vert=chromium&as_q=" + query;
+  var url = "http://code.google.com/p/chromium/source/search?q=" + query;
 
   var req = new XMLHttpRequest();
   req.open("GET", url, true);
@@ -134,8 +133,8 @@ function search(query, callback) {
 }
 
 function getUrl(path, line) {
-  var url = "http://www.google.com/codesearch/p#OAMlx_jo-ck/" + path
-      "&exact_package=chromium";
+  var url = "http://code.google.com/codesearch#OAMlx_jo-ck/" + path
+      "&exact_package=chromium&type=cs";
   if (line)
     url += "&l=" + line;
   return url;

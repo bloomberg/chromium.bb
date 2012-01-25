@@ -652,7 +652,7 @@
         "background.js",
         "manifest.json"
       ],
-      "source_hash": "3a1f0cb08b6878453635909e6dff0a80c9511d55",
+      "source_hash": "50ac96ccb557556c8f94cd9d591a1d01b0ba5dfe",
       "zip_path": "examples\/extensions\/chrome_search.zip"
     },
     {

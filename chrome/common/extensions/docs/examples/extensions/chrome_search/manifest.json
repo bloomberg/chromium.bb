@@ -7,5 +7,7 @@
   "omnibox": { "keyword" : "src" },
   "permissions": [ "tabs", "http://www.google.com/" ],
   "version": "6",
-  "minimum_chrome_version": "9"
+  "minimum_chrome_version": "9",
+
+  "manifest_version": 2
 }
