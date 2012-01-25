@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -75,14 +75,6 @@ class ExtensionWarningSet {
  protected:
   // Virtual for testing.
   virtual void NotifyWarningsChanged();
-  virtual void ActivateBadge();
-  virtual void DeactivateBadge();
-
-  // Tracks the currently existing ExtensionGlobalErrorBadge that indicates in
-  // the UI that there are |extension_warnings_|. Weak pointer as the object is
-  // owned by the GlobalErrorService. NULL if there is no warning to be
-  // displayed on the wrench menu currently.
-  ExtensionGlobalErrorBadge* extension_global_error_badge_;
 
  private:
   typedef std::set<ExtensionWarning>::const_iterator const_iterator;

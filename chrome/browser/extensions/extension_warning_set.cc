@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -92,8 +92,7 @@ string16 ExtensionWarningSet::GetLocalizedWarning(
   return string16();
 }
 
-ExtensionWarningSet::ExtensionWarningSet(Profile* profile)
-    : extension_global_error_badge_(NULL), profile_(profile) {
+ExtensionWarningSet::ExtensionWarningSet(Profile* profile) : profile_(profile) {
 }
 
 ExtensionWarningSet::~ExtensionWarningSet() {
@@ -170,23 +169,6 @@ void ExtensionWarningSet::NotifyWarningsChanged() {
       content::NotificationService::NoDetails());
 }
 
-void ExtensionWarningSet::ActivateBadge() {
-  DCHECK(!extension_global_error_badge_);
-  DCHECK(profile_);
-  extension_global_error_badge_ = new ExtensionGlobalErrorBadge;
-  GlobalErrorServiceFactory::GetForProfile(profile_)->AddGlobalError(
-      extension_global_error_badge_);
-}
-
-void ExtensionWarningSet::DeactivateBadge() {
-  DCHECK(extension_global_error_badge_);
-  DCHECK(profile_);
-  GlobalErrorServiceFactory::GetForProfile(profile_)->RemoveGlobalError(
-      extension_global_error_badge_);
-  delete extension_global_error_badge_;
-  extension_global_error_badge_ = NULL;
-}
-
 void ExtensionWarningSet::UpdateWarningBadge() {
   // We need a badge if a warning exists that has not been suppressed.
   bool need_warning_badge = false;
@@ -197,9 +179,16 @@ void ExtensionWarningSet::UpdateWarningBadge() {
     }
   }
 
+  GlobalErrorService* service =
+      GlobalErrorServiceFactory::GetForProfile(profile_);
+  GlobalError* error = service->GetGlobalErrorByMenuItemCommandID(
+      ExtensionGlobalErrorBadge::GetMenuItemCommandID());
+
   // Activate or hide the warning badge in case the current state is incorrect.
-  if (extension_global_error_badge_ && !need_warning_badge)
-    DeactivateBadge();
-  else if (!extension_global_error_badge_ && need_warning_badge)
-    ActivateBadge();
+  if (error && !need_warning_badge) {
+    service->RemoveGlobalError(error);
+    delete error;
+  } else if (!error && need_warning_badge) {
+    service->AddGlobalError(new ExtensionGlobalErrorBadge);
+  }
 }

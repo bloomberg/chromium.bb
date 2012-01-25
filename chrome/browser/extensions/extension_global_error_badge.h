@@ -38,6 +38,7 @@ class ExtensionGlobalErrorBadge : public GlobalError {
   virtual void BubbleViewAcceptButtonPressed(Browser* browser) OVERRIDE;
   virtual void BubbleViewCancelButtonPressed(Browser* browser) OVERRIDE;
 
+  static int GetMenuItemCommandID();
  private:
   DISALLOW_COPY_AND_ASSIGN(ExtensionGlobalErrorBadge);
 };

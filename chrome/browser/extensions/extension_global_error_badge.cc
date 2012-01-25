@@ -25,7 +25,7 @@ bool ExtensionGlobalErrorBadge::HasMenuItem() {
 }
 
 int ExtensionGlobalErrorBadge::MenuItemCommandID() {
-  return IDC_EXTENSION_ERRORS;
+  return GetMenuItemCommandID();
 }
 
 string16 ExtensionGlobalErrorBadge::MenuItemLabel() {
@@ -74,4 +74,9 @@ void ExtensionGlobalErrorBadge::BubbleViewAcceptButtonPressed(
 void ExtensionGlobalErrorBadge::BubbleViewCancelButtonPressed(
     Browser* browser) {
   NOTREACHED();
+}
+
+// static
+int ExtensionGlobalErrorBadge::GetMenuItemCommandID() {
+  return IDC_EXTENSION_ERRORS;
 }

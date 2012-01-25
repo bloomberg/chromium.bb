@@ -4,6 +4,10 @@
 
 #include "chrome/browser/extensions/extension_warning_set.h"
 
+#include "chrome/browser/extensions/extension_global_error_badge.h"
+#include "chrome/browser/ui/global_error_service.h"
+#include "chrome/browser/ui/global_error_service_factory.h"
+#include "chrome/test/base/testing_profile.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -11,28 +15,20 @@ namespace {
 
 class MockExtensionWarningSet : public ExtensionWarningSet {
  public:
-  MockExtensionWarningSet() : ExtensionWarningSet(NULL) {
-    ON_CALL(*this, ActivateBadge()).WillByDefault(
-        testing::Invoke(this, &MockExtensionWarningSet::ActivateBadgeImpl));
-    ON_CALL(*this, DeactivateBadge()).WillByDefault(
-        testing::Invoke(this, &MockExtensionWarningSet::DeactivateBadgeImpl));
+  explicit MockExtensionWarningSet(Profile* profile)
+      : ExtensionWarningSet(profile) {
   }
   virtual ~MockExtensionWarningSet() {}
 
   MOCK_METHOD0(NotifyWarningsChanged, void());
-  MOCK_METHOD0(ActivateBadge, void());
-  MOCK_METHOD0(DeactivateBadge, void());
-
-  void ActivateBadgeImpl() {
-    // Just fill the value so that we see that something would be there
-    // in a non-mocked execution.
-    extension_global_error_badge_ =
-        reinterpret_cast<ExtensionGlobalErrorBadge*>(1);
-  }
-  void DeactivateBadgeImpl() {
-    extension_global_error_badge_ = NULL;
-  }
 };
+
+bool HasBadge(Profile* profile) {
+  GlobalErrorService* service =
+      GlobalErrorServiceFactory::GetForProfile(profile);
+  return service->GetGlobalErrorByMenuItemCommandID(
+      ExtensionGlobalErrorBadge::GetMenuItemCommandID()) != NULL;
+}
 
 const char* ext1_id = "extension1";
 const char* ext2_id = "extension2";
@@ -45,14 +41,15 @@ const ExtensionWarningSet::WarningType warning_2 =
 
 // Check that inserting a warning triggers notifications, whereas inserting
 // the same warning again is silent.
-TEST(ExtensionWarningSet, SetWarning) {
-  MockExtensionWarningSet warnings;
+TEST(ExtensionWarningSetTest, SetWarning) {
+  TestingProfile profile;
+  MockExtensionWarningSet warnings(&profile);
 
   // Insert warning for the first time.
   EXPECT_CALL(warnings, NotifyWarningsChanged());
-  EXPECT_CALL(warnings, ActivateBadge());
   warnings.SetWarning(warning_1, ext1_id);
   testing::Mock::VerifyAndClearExpectations(&warnings);
+  EXPECT_TRUE(HasBadge(&profile));
 
   // Second insertion of same warning does not trigger anything.
   warnings.SetWarning(warning_1, ext1_id);
@@ -61,15 +58,16 @@ TEST(ExtensionWarningSet, SetWarning) {
 
 // Check that ClearWarnings deletes exactly the specified warnings and
 // triggers notifications where appropriate.
-TEST(ExtensionWarningSet, ClearWarnings) {
-  MockExtensionWarningSet warnings;
+TEST(ExtensionWarningSetTest, ClearWarnings) {
+  TestingProfile profile;
+  MockExtensionWarningSet warnings(&profile);
 
   // Insert two unique warnings.
   EXPECT_CALL(warnings, NotifyWarningsChanged()).Times(2);
-  EXPECT_CALL(warnings, ActivateBadge()).Times(1);
   warnings.SetWarning(warning_1, ext1_id);
   warnings.SetWarning(warning_2, ext2_id);
   testing::Mock::VerifyAndClearExpectations(&warnings);
+  EXPECT_TRUE(HasBadge(&profile));
 
   // Remove one warning and check that the badge remains.
   EXPECT_CALL(warnings, NotifyWarningsChanged());
@@ -77,6 +75,7 @@ TEST(ExtensionWarningSet, ClearWarnings) {
   to_clear.insert(warning_2);
   warnings.ClearWarnings(to_clear);
   testing::Mock::VerifyAndClearExpectations(&warnings);
+  EXPECT_TRUE(HasBadge(&profile));
 
   // Check that the correct warnings appear in |warnings|.
   std::set<ExtensionWarningSet::WarningType> existing_warnings;
@@ -87,10 +86,10 @@ TEST(ExtensionWarningSet, ClearWarnings) {
 
   // Remove the other one warning and check that badge disappears.
   EXPECT_CALL(warnings, NotifyWarningsChanged());
-  EXPECT_CALL(warnings, DeactivateBadge());
   to_clear.insert(warning_1);
   warnings.ClearWarnings(to_clear);
   testing::Mock::VerifyAndClearExpectations(&warnings);
+  EXPECT_FALSE(HasBadge(&profile));
 
   // Check that not warnings remain.
   warnings.GetWarningsAffectingExtension(ext1_id, &existing_warnings);
@@ -101,19 +100,20 @@ TEST(ExtensionWarningSet, ClearWarnings) {
 
 // Check that no badge appears if it has been suppressed for a specific
 // warning.
-TEST(ExtensionWarningSet, SuppressBadgeForCurrentWarnings) {
-  MockExtensionWarningSet warnings;
+TEST(ExtensionWarningSetTest, SuppressBadgeForCurrentWarnings) {
+  TestingProfile profile;
+  MockExtensionWarningSet warnings(&profile);
 
   // Insert first warning.
   EXPECT_CALL(warnings, NotifyWarningsChanged());
-  EXPECT_CALL(warnings, ActivateBadge());
   warnings.SetWarning(warning_1, ext1_id);
   testing::Mock::VerifyAndClearExpectations(&warnings);
+  EXPECT_TRUE(HasBadge(&profile));
 
   // Suppress first warning.
-  EXPECT_CALL(warnings, DeactivateBadge());
   warnings.SuppressBadgeForCurrentWarnings();
   testing::Mock::VerifyAndClearExpectations(&warnings);
+  EXPECT_FALSE(HasBadge(&profile));
 
   // Simulate deinstallation of extension.
   std::set<ExtensionWarningSet::WarningType> to_clear;
@@ -126,10 +126,11 @@ TEST(ExtensionWarningSet, SuppressBadgeForCurrentWarnings) {
   EXPECT_CALL(warnings, NotifyWarningsChanged());
   warnings.SetWarning(warning_1, ext1_id);
   testing::Mock::VerifyAndClearExpectations(&warnings);
+  EXPECT_FALSE(HasBadge(&profile));
 
   // Set second warning and verify that it shows a badge.
   EXPECT_CALL(warnings, NotifyWarningsChanged());
-  EXPECT_CALL(warnings, ActivateBadge());
   warnings.SetWarning(warning_2, ext2_id);
   testing::Mock::VerifyAndClearExpectations(&warnings);
+  EXPECT_TRUE(HasBadge(&profile));
 }
