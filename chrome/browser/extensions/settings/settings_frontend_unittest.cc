@@ -289,8 +289,12 @@ static void UnlimitedLocalStorageTestCallback(SettingsStorage* local_storage) {
       SettingsStorage::DEFAULTS, "WontError", *megabyte).HasError());
 }
 
+#if defined(OS_WIN)
+// Failing on vista dbg. http://crbug.com/111100, http://crbug.com/108724
+#define UnlimitedStorageForLocalButNotSync DISABLED_UnlimitedStorageForLocalButNotSync
+#endif
 TEST_F(ExtensionSettingsFrontendTest,
-    UnlimitedStorageForLocalButNotSync) {
+       UnlimitedStorageForLocalButNotSync) {
   const std::string id = "ext";
   std::set<std::string> permissions;
   permissions.insert("unlimitedStorage");
