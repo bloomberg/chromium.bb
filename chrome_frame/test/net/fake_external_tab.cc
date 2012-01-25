@@ -209,6 +209,23 @@ void FilterDisabledTests() {
     "URLRequestTestHTTP.VaryHeader",
     "URLRequestTestHTTP.GetZippedTest",
 
+    // Tests that requests can be cancelled while blocking in
+    // OnBeforeSendHeaders state. But this state is not supported by CF.
+    "URLRequestTestHTTP.NetworkDelegateCancelWhileWaiting2",
+
+    // Tests that requests can be cancelled while blocking in
+    // OnHeadersRecevied state. At first glance, this state does not appear to
+    // be supported by CF.
+    "URLRequestTestHTTP.NetworkDelegateCancelWhileWaiting3",
+
+    // Tests that requests can be cancelled while blocking in OnAuthRequired
+    // state. At first glance, this state does not appear to be supported by CF.
+    // IE displays a credentials prompt during this test - I (erikwright)
+    // believe that, from Chrome's point of view this is not a state change. In
+    // any case, I also believe that we do not have support for handling the
+    // credentials dialog during tests.
+    "URLRequestTestHTTP.NetworkDelegateCancelWhileWaiting4",
+
     // I suspect we can only get this one to work (if at all) on IE8 and
     // later by using the new INTERNET_OPTION_SUPPRESS_BEHAVIOR flags
     // See http://msdn.microsoft.com/en-us/library/aa385328(VS.85).aspx
