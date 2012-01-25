@@ -156,6 +156,7 @@ TaskManager.prototype = {
     this.initialized_ = true;
     this.enableTaskManager();
 
+    this.elementsCache_ = {};
     this.dialogDom_ = dialogDom;
     this.document_ = dialogDom.ownerDocument;
 
@@ -385,35 +386,140 @@ TaskManager.prototype = {
                                       true);
 
     // Sets custom row render function.
-    this.table_.setRenderFunction(this.renderRow_.bind(this));
+    this.table_.setRenderFunction(this.getRow_.bind(this));
   },
 
-  renderRow_: function(dataItem, table) {
+  /**
+   * Returns a list item element of the list. This method trys to reuse the
+   * cached element, or creates a new element.
+   * @private
+   */
+  getRow_: function(data, table) {
+    // Trys to reuse the cached row;
+    var listItemElement = this.renderRowFromCache_(data, table);
+    if (listItemElement)
+      return listItemElement;
+
+    // Initializes the cache.
+    var pid = data['processId'][0];
+    this.elementsCache_[pid] = {
+      listItem:null,
+      cell:[],
+      icon:[],
+      columns:{}
+    };
+
+    // Create new row.
+    return this.renderRow_(data, table);
+  },
+
+  /**
+   * Returns a list item element with re-using the previous cached element, or
+   * returns null if failed.
+   * @private
+   */
+  renderRowFromCache_: function(data, table) {
+    var pid = data['processId'][0];
+
+    // Checks whether the cache exists or not.
+    var cache = this.elementsCache_[pid];
+    if (!cache)
+      return null;
+
+    var listItemElement = cache.listItem;
+    var cm = table.columnModel;
+    // Checks whether the number of columns has been changed or not.
+    if (cache.cachedColumnSize != cm.size)
+      return null;
+    // Checks whether the number of childlen tasks has been changed or not.
+    if (cache.cachedChildSize != data['uniqueId'].length)
+      return null;
+
+    // Updates informations of the task if necessary.
+    for (var i = 0; i < cm.size; i++) {
+      var columnId = cm.getId(i);
+      var columnData = data[columnId];
+      var oldColumnData = listItemElement.data[columnId];
+
+      // Sets new width of the cell.
+      var cellElement = cache.cell[i];
+      cellElement.style.width = cm.getWidth(i) + '%';
+
+      for (var j = 0; j < columnData.length; j++) {
+        // Sets the new text, if the text has been changed.
+        if (oldColumnData[j] != columnData[j]) {
+          var textElement = cache.columns[columnId][j];
+          textElement.textContent = columnData[j];
+        }
+      }
+    }
+
+    // Updates icon of the task if necessary.
+    for (var j = 0; j < columnData.length; j++) {
+      var oldIcon = listItemElement.data['icon'][j];
+      var newIcon = data['icon'][j];
+      if (oldIcon != newIcon) {
+        var iconElement = cache.icon[j];
+        iconElement.src = newIcon;
+      }
+    }
+    listItemElement.data = data;
+
+    // Removes 'selected' and 'lead' attributes.
+    listItemElement.removeAttribute('selected');
+    listItemElement.removeAttribute('lead');
+
+    return listItemElement;
+  },
+
+  /**
+   * Create a new list item element and returns it.
+   * @private
+   */
+  renderRow_: function(data, table) {
+    var pid = data['processId'][0];
     var cm = table.columnModel;
     var listItem = new cr.ui.ListItem({label: ''});
 
     listItem.className = 'table-row';
-    if (this.opt_.isBackgroundMode && dataItem.isBackgroundResource)
+    if (this.opt_.isBackgroundMode && data.isBackgroundResource)
       listItem.className += ' table-background-row';
 
     for (var i = 0; i < cm.size; i++) {
       var cell = document.createElement('div');
       cell.style.width = cm.getWidth(i) + '%';
       cell.className = 'table-row-cell';
+      cell.id = 'column-' + pid + '-' + cm.getId(i);
       cell.appendChild(
-          cm.getRenderFunction(i).call(null, dataItem, cm.getId(i), table));
+          cm.getRenderFunction(i).call(null, data, cm.getId(i), table));
 
       listItem.appendChild(cell);
+
+      // Stores the cell element to the dictionary.
+      this.elementsCache_[pid].cell[i] = cell;
     }
-    listItem.data = dataItem;
+    listItem.data = data;
+
+    // Stores the list item element, the number of columns and the number of
+    // childlen.
+    this.elementsCache_[pid].listItem = listItem;
+    this.elementsCache_[pid].cachedColumnSize = cm.size;
+    this.elementsCache_[pid].cachedChildSize = data['uniqueId'].length;
 
     return listItem;
   },
 
-
+  /**
+   * Create a new element of the cell.
+   * @private
+   */
   renderColumn_: function(entry, columnId, table) {
     var container = this.document_.createElement('div');
     container.className = 'detail-container-' + columnId;
+    var pid = entry['processId'][0];
+
+    var cache = [];
+    var cacheIcon = [];
 
     if (entry && entry[columnId]) {
       container.id = 'detail-container-' + columnId + '-pid' + entry.processId;
@@ -421,12 +527,15 @@ TaskManager.prototype = {
       for (var i = 0; i < entry[columnId].length; i++) {
         var label = document.createElement('div');
         if (columnId == 'title') {
+          // Creates a page title element with icon.
           var image = this.document_.createElement('img');
           image.className = 'detail-title-image';
           image.src = entry['icon'][i];
+          image.id = 'detail-title-icon-pid' + pid + '-' + i;
           label.appendChild(image);
           var text = this.document_.createElement('div');
           text.className = 'detail-title-text';
+          text.id = 'detail-title-text-pid' + pid + '-' + i;
           text.textContent = entry['title'][i];
           label.appendChild(text);
 
@@ -445,13 +554,21 @@ TaskManager.prototype = {
 
           label.data = entry;
           label.index_in_group = i;
+
+          cache[i] = text;
+          cacheIcon[i] = image;
         } else {
           label.textContent = entry[columnId][i];
+          cache[i] = label;
         }
-        label.id = 'detail-' + columnId + '-pid' + entry.processId + '-' + i;
-        label.className = 'detail-' + columnId + ' pid' + entry.processId;
+        label.id = 'detail-' + columnId + '-pid' + pid + '-' + i;
+        label.className = 'detail-' + columnId + ' pid' + pid;
         container.appendChild(label);
       }
+
+      this.elementsCache_[pid].columns[columnId] = cache;
+      if (columnId == 'title')
+        this.elementsCache_[pid].icon = cacheIcon;
     }
     return container;
   },
@@ -506,6 +623,17 @@ TaskManager.prototype = {
       } else if (type == 'remove') {
         dm.splice(start, length);
       }
+    }
+
+    var pids = [];
+    for (var i = 0; i < dm.length; i++) {
+      pids.push(dm.item(i)['processId'][0]);
+    }
+
+    // Sweeps unused caches, which elements no longer exist on the list.
+    for (var pid in this.elementsCache_) {
+      if (pids.indexOf(pid) == -1)
+        delete this.elementsCache_[pid];
     }
 
     sm.endChange();
