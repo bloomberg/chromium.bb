@@ -257,9 +257,10 @@
       "search_string": "A BROWSER ACTION WITH A POPUP THAT CHANGES THE PAGE COLOR.  BROWSER_ACTION TABS CHROME.TABS.EXECUTESCRIPT",
       "source_files": [
         "manifest.json",
-        "popup.html"
+        "popup.html",
+        "popup.js"
       ],
-      "source_hash": "b016d5b2a4f51f7d13c3030fe18073b2329be4be",
+      "source_hash": "af55178e9d4821c0330f6b4b8e043eb4501ade40",
       "zip_path": "examples\/api\/browserAction\/set_page_color.zip"
     },
     {
@@ -515,7 +516,7 @@
         "loldogs.js",
         "manifest.json"
       ],
-      "source_hash": "c7436b496d47e4b851f6445eb3038f4445ee1549",
+      "source_hash": "337123f95c4686670c97e6fd07177fee9df2b9b0",
       "zip_path": "examples\/extensions\/catblock.zip"
     },
     {
@@ -1513,9 +1514,10 @@
       "search_string": "MY BOOKMARKS A BROWSER ACTION WITH A POPUP DUMP OF ALL BOOKMARKS, INCLUDING SEARCH, ADD, EDIT AND DELETE. BOOKMARKS BROWSER_ACTION TABS CHROME.BOOKMARKS.CREATE CHROME.BOOKMARKS.GET CHROME.BOOKMARKS.GETTREE CHROME.BOOKMARKS.REMOVE CHROME.BOOKMARKS.UPDATE CHROME.TABS.CREATE",
       "source_files": [
         "manifest.json",
-        "popup.html"
+        "popup.html",
+        "popup.js"
       ],
-      "source_hash": "825556bebc0df5d0ff8980f1c6ff86fdf748e03f",
+      "source_hash": "36384c77578ceb55b1ce76f777451880fdf32b9d",
       "zip_path": "examples\/api\/bookmarks\/basic.zip"
     },
     {
@@ -1888,7 +1890,7 @@
         "background.js",
         "manifest.json"
       ],
-      "source_hash": "f8798dbb627b762b620d0e5dcffe049539fb9673",
+      "source_hash": "cf807f051cdf685d031b58cdb995ef7fabdda832",
       "zip_path": "examples\/api\/browserAction\/print.zip"
     },
     {
