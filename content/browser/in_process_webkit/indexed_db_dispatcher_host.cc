@@ -329,6 +329,9 @@ IndexedDBDispatcherHost::DatabaseDispatcherHost::DatabaseDispatcherHost(
 IndexedDBDispatcherHost::DatabaseDispatcherHost::~DatabaseDispatcherHost() {
   for (WebIDBObjectIDToURLMap::iterator iter = database_url_map_.begin();
        iter != database_url_map_.end(); iter++) {
+    WebIDBDatabase* database = map_.Lookup(iter->first);
+    if (database)
+      database->close();
     parent_->Context()->ConnectionClosed(iter->second);
   }
 }
