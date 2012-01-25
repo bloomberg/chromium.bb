@@ -95,10 +95,10 @@ struct unlock_dialog {
 	struct desktop *desktop;
 };
 
-static char *key_background_image;
-static char *key_background_type;
-static uint32_t key_panel_color;
-static uint32_t key_background_color;
+static char *key_background_image = DATADIR "/weston/pattern.png";
+static char *key_background_type = "tile";
+static uint32_t key_panel_color = 0xaa000000;
+static uint32_t key_background_color = 0xff002244;
 static char *key_launcher_icon;
 static char *key_launcher_path;
 static void launcher_section_done(void *data);
@@ -690,11 +690,23 @@ launcher_section_done(void *data)
 	key_launcher_path = NULL;
 }
 
+static void
+add_default_launcher(struct desktop *desktop)
+{
+	struct output *output;
+
+	wl_list_for_each(output, &desktop->outputs, link)
+		panel_add_launcher(output->panel,
+				   DATADIR "/weston/terminal.png",
+				   "/usr/bin/weston-terminal");
+}
+
 int main(int argc, char *argv[])
 {
 	struct desktop desktop = { 0 };
 	char *config_file;
 	struct output *output;
+	int ret;
 
 	desktop.unlock_task.run = unlock_dialog_finish;
 	wl_list_init(&desktop.outputs);
@@ -721,10 +733,12 @@ int main(int argc, char *argv[])
 	}
 
 	config_file = config_file_path("weston-desktop-shell.ini");
-	parse_config_file(config_file,
-			  config_sections, ARRAY_LENGTH(config_sections),
-			  &desktop);
+	ret = parse_config_file(config_file,
+				config_sections, ARRAY_LENGTH(config_sections),
+				&desktop);
 	free(config_file);
+	if (ret < 0)
+		add_default_launcher(&desktop);
 
 	signal(SIGCHLD, sigchild_handler);
 

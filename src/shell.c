@@ -110,10 +110,9 @@ struct weston_move_grab {
 	int32_t dx, dy;
 };
 
-static int
+static void
 shell_configuration(struct wl_shell *shell)
 {
-	int ret;
 	char *config_file;
 	char *path = NULL;
 	int duration = 60;
@@ -128,13 +127,11 @@ shell_configuration(struct wl_shell *shell)
 	};
 
 	config_file = config_file_path("weston-desktop-shell.ini");
-	ret = parse_config_file(config_file, cs, ARRAY_LENGTH(cs), shell);
+	parse_config_file(config_file, cs, ARRAY_LENGTH(cs), shell);
 	free(config_file);
 
 	shell->screensaver.path = path;
 	shell->screensaver.duration = duration;
-
-	return ret;
 }
 
 static void
@@ -1447,8 +1444,7 @@ shell_init(struct weston_compositor *ec)
 	wl_list_init(&shell->panels);
 	wl_list_init(&shell->screensaver.surfaces);
 
-	if (shell_configuration(shell) < 0)
-		return -1;
+	shell_configuration(shell);
 
 	if (wl_display_add_global(ec->wl_display, &wl_shell_interface,
 				  shell, bind_shell) == NULL)
