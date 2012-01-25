@@ -511,11 +511,11 @@
       ],
       "search_string": "CATBLOCK I CANT HAS CHEEZBURGER! BACKGROUND_PAGE WEBREQUEST WEBREQUESTBLOCKING CHROME.WEBREQUEST.ONBEFOREREQUEST",
       "source_files": [
-        "background.html",
+        "background.js",
         "loldogs.js",
         "manifest.json"
       ],
-      "source_hash": "2e353468c48056fcc88de052d8a319ec7321fed5",
+      "source_hash": "c7436b496d47e4b851f6445eb3038f4445ee1549",
       "zip_path": "examples\/extensions\/catblock.zip"
     },
     {

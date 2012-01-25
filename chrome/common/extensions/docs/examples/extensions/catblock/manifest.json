@@ -6,6 +6,8 @@
                   "http://icanhascheezburger.files.wordpress.com/*",
                   "http://chzmemebase.files.wordpress.com/*"],
   "background": {
-    "page": "background.html"
-  }
+    "scripts": ["loldogs.js", "background.js"]
+  },
+
+  "manifest_version": 2
 }

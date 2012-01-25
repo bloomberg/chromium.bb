@@ -1,3 +1,7 @@
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
 var loldogs = [
 "http://ihasahotdog.files.wordpress.com/2011/08/funny-dog-pictures-yoo-bin-warndid.jpg",
 "http://ihasahotdog.files.wordpress.com/2011/08/funny-dog-pictures-it-juzz-liek-ezploded-or-sumfin.jpg",
