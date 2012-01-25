@@ -42,6 +42,14 @@
         'INFOPLIST_FILE': 'app/app-Info.plist',
       },
       'conditions': [
+        ['order_text_section!=""', {
+          'target_conditions' : [
+            ['_toolset=="target"', {
+              'ldflags': [
+                '-Wl,-section-ordering-file=<(order_text_section)' ],
+            }],
+          ]
+        }],
         ['use_aura==1 and use_webkit_compositor==0', {
           'dependencies': [
             '../ui/gfx/compositor/compositor.gyp:test_compositor',
