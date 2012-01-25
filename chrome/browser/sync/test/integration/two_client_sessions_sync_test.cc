@@ -142,8 +142,14 @@ IN_PROC_BROWSER_TEST_F(TwoClientSessionsSyncTest, BothChanged) {
   ASSERT_TRUE(WindowsMatch(sessions0[0]->windows, *client1_windows.Get()));
 }
 
+// Flaky on OSX (number of conflicting nodes is off). http://crbug.com/85294.
+#if defined(OS_MACOSX)
+#define MAYBE_FirstChangesAndSetsPassphrase FLAKY_FirstChangesAndSetsPassphrase
+#else
+#define MAYBE_FirstChangesAndSetsPassphrase FirstChangesAndSetsPassphrase
+#endif
 IN_PROC_BROWSER_TEST_F(TwoClientSessionsSyncTest,
-                       FirstChangesAndSetsPassphrase) {
+                       MAYBE_FirstChangesAndSetsPassphrase) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   ASSERT_TRUE(CheckInitialState(0));
@@ -182,9 +188,16 @@ IN_PROC_BROWSER_TEST_F(TwoClientSessionsSyncTest,
   ASSERT_TRUE(WindowsMatch(sessions1[0]->windows, *client0_windows.Get()));
 }
 
-// Flaky (number of conflicting nodes is off). http://crbug.com/89604.
+// Flaky on OSX (number of conflicting nodes is off). http://crbug.com/85294.
+#if defined(OS_MACOSX)
+#define MAYBE_FirstChangesWhileSecondWaitingForPassphrase \
+        FLAKY_FirstChangesWhileSecondWaitingForPassphrase
+#else
+#define MAYBE_FirstChangesWhileSecondWaitingForPassphrase \
+        FirstChangesWhileSecondWaitingForPassphrase
+#endif
 IN_PROC_BROWSER_TEST_F(TwoClientSessionsSyncTest,
-                       FLAKY_FirstChangesWhileSecondWaitingForPassphrase) {
+                       MAYBE_FirstChangesWhileSecondWaitingForPassphrase) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   ASSERT_TRUE(CheckInitialState(0));
@@ -272,9 +285,16 @@ IN_PROC_BROWSER_TEST_F(TwoClientSessionsSyncTest,
   ASSERT_FALSE(GetSessionData(1, &sessions1));
 }
 
-// Flaky. http://crbug.com/85294
+// Flaky on OSX (number of conflicting nodes is off). http://crbug.com/85294.
+#if defined(OS_MACOSX)
+#define MAYBE_SecondChangesBeforeEncrAndPassphraseChange \
+        FLAKY_SecondChangesBeforeEncrAndPassphraseChange
+#else
+#define MAYBE_SecondChangesBeforeEncrAndPassphraseChange \
+        SecondChangesBeforeEncrAndPassphraseChange
+#endif
 IN_PROC_BROWSER_TEST_F(TwoClientSessionsSyncTest,
-                       FLAKY_SecondChangesBeforeEncrAndPassphraseChange) {
+                       MAYBE_SecondChangesBeforeEncrAndPassphraseChange) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   ASSERT_TRUE(CheckInitialState(0));
@@ -319,8 +339,16 @@ IN_PROC_BROWSER_TEST_F(TwoClientSessionsSyncTest,
   ASSERT_TRUE(WindowsMatch(sessions0[0]->windows, *client1_windows.Get()));
 }
 
+// Flaky on OSX (number of conflicting nodes is off). http://crbug.com/85294.
+#if defined(OS_MACOSX)
+#define MAYBE_BothChangeWithEncryptionAndPassphrase \
+        FLAKY_BothChangeWithEncryptionAndPassphrase
+#else
+#define MAYBE_BothChangeWithEncryptionAndPassphrase \
+        BothChangeWithEncryptionAndPassphrase
+#endif
 IN_PROC_BROWSER_TEST_F(TwoClientSessionsSyncTest,
-                       BothChangeWithEncryptionAndPassphrase) {
+                       MAYBE_BothChangeWithEncryptionAndPassphrase) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   ASSERT_TRUE(CheckInitialState(0));
