@@ -972,12 +972,6 @@ cr.define('cr.ui', function() {
 
       while (currentIndex < lastIndex)
         insert(this);
-
-
-      for (var i in newCachedItems) {
-        if (!newCachedItems[i].parentElement)
-          console.log("I'm hogehgoe! " + i);
-      }
     },
 
     /**
@@ -1089,10 +1083,7 @@ cr.define('cr.ui', function() {
           this.removeChild(this.pinnedItem_);
         this.pinnedItem_ = undefined;
       }
-      if (!this.pinnedItem_ && cachedItems[leadIndex] &&
-          cachedItems[leadIndex].parentNode == this) {
-        this.pinnedItem_ = cachedItems[leadIndex];
-      }
+      this.pinnedItem_ = this.pinnedItem_ || cachedItems[leadIndex];
 
       this.mergeItems(firstIndex, lastIndex, cachedItems, newCachedItems);
 
