@@ -29,6 +29,10 @@ function LayoutTestController() {
 
   this.DelayedNotifyDone2 = function () {
     var token = encodeURIComponent(document.body.innerText);
+    var limit = 4090;
+    if (token.length > limit)
+      token = encodeURIComponent("Too Big! encoded innerText size was " +
+          token.length + " > " + limit);
     document.cookie = "%COOKIE%=" + token;
   };
 
