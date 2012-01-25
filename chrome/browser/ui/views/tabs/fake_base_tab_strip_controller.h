@@ -39,6 +39,7 @@ class FakeBaseTabStripController : public TabStripController {
   virtual bool IsCompatibleWith(TabStrip* other) const OVERRIDE;
   virtual void CreateNewTab() OVERRIDE;
   virtual void ClickActiveTab(int index) OVERRIDE;
+  virtual bool IsIncognito() OVERRIDE;
 
  private:
   TabStripSelectionModel selection_model_;

@@ -315,6 +315,10 @@ void BrowserTabStripController::ClickActiveTab(int index) {
   model_->ActiveTabClicked(index);
 }
 
+bool BrowserTabStripController::IsIncognito() {
+  return browser_->profile()->IsOffTheRecord();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserTabStripController, TabStripModelObserver implementation:
 
