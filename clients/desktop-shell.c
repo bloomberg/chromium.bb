@@ -376,7 +376,7 @@ background_draw(struct widget *widget, void *data)
 	widget_get_allocation(widget, &allocation);
 	image = NULL;
 	if (key_background_image)
-		image = load_jpeg(key_background_image);
+		image = load_image(key_background_image);
 	if (image) {
 		pattern = cairo_pattern_create_for_surface(image);
 		sx = (double) cairo_image_surface_get_width(image) /

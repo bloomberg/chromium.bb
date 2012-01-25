@@ -88,7 +88,7 @@ paint_background(cairo_t *cr, const char *path, struct rectangle *allocation)
 
 	cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
 	if (path)
-		image = load_jpeg(path);
+		image = load_image(path);
 	if (image) {
 		pattern = cairo_pattern_create_for_surface(image);
 		sx = (double) cairo_image_surface_get_width(image) /

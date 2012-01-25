@@ -30,6 +30,7 @@
 #include "cairo-util.h"
 
 #include <jpeglib.h>
+#include <png.h>
 
 #define ARRAY_LENGTH(a) (sizeof (a) / sizeof (a)[0])
 
@@ -311,12 +312,11 @@ error_exit(j_common_ptr cinfo)
 	longjmp(cinfo->client_data, 1);
 }
 
-cairo_surface_t *
-load_jpeg(const char *filename)
+static cairo_surface_t *
+load_jpeg(FILE *fp)
 {
 	struct jpeg_decompress_struct cinfo;
 	struct jpeg_error_mgr jerr;
-	FILE *fp;
 	int stride, i, first;
 	JSAMPLE *data, *rows[4];
 	jmp_buf env;
@@ -329,11 +329,6 @@ load_jpeg(const char *filename)
 
 	jpeg_create_decompress(&cinfo);
 
-	fp = fopen(filename, "rb");
-	if (fp == NULL) {
-		fprintf(stderr, "can't open %s\n", filename);
-		return NULL;
-	}
 	jpeg_stdio_src(&cinfo, fp);
 
 	jpeg_read_header(&cinfo, TRUE);
@@ -361,8 +356,6 @@ load_jpeg(const char *filename)
 
 	jpeg_finish_decompress(&cinfo);
 
-	fclose(fp);
-
 	jpeg_destroy_decompress(&cinfo);
 
 	return cairo_image_surface_create_for_data (data,
@@ -370,4 +363,184 @@ load_jpeg(const char *filename)
 						    cinfo.output_width,
 						    cinfo.output_height,
 						    stride);
+}
+
+static inline int
+multiply_alpha(int alpha, int color)
+{
+    int temp = (alpha * color) + 0x80;
+
+    return ((temp + (temp >> 8)) >> 8);
+}
+
+static void
+premultiply_data(png_structp   png,
+		 png_row_infop row_info,
+		 png_bytep     data)
+{
+    unsigned int i;
+    png_bytep p;
+
+    for (i = 0, p = data; i < row_info->rowbytes; i += 4, p += 4) {
+	png_byte  alpha = p[3];
+	uint32_t w;
+
+	if (alpha == 0) {
+		w = 0;
+	} else {
+		png_byte red   = p[0];
+		png_byte green = p[1];
+		png_byte blue  = p[2];
+
+		if (alpha != 0xff) {
+			red   = multiply_alpha(alpha, red);
+			green = multiply_alpha(alpha, green);
+			blue  = multiply_alpha(alpha, blue);
+		}
+		w = (alpha << 24) | (red << 16) | (green << 8) | (blue << 0);
+	}
+
+	* (uint32_t *) p = w;
+    }
+}
+
+static void
+read_func(png_structp png, png_bytep data, png_size_t size)
+{
+	FILE *fp = png_get_io_ptr(png);
+
+	if (fread(data, 1, size, fp) < 0)
+		png_error(png, NULL);
+}
+
+static void
+png_error_callback(png_structp png, png_const_charp error_msg)
+{
+    longjmp (png_jmpbuf (png), 1);
+}
+
+static cairo_surface_t *
+load_png(FILE *fp)
+{
+	png_struct *png;
+	png_info *info;
+	png_byte *data = NULL;
+	png_byte **row_pointers = NULL;
+	png_uint_32 width, height;
+	int depth, color_type, interlace, stride;
+	unsigned int i;
+
+	png = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL,
+				     png_error_callback, NULL);
+	if (!png)
+		return NULL;
+
+	info = png_create_info_struct(png);
+	if (!info) {
+		png_destroy_read_struct(&png, &info, NULL);
+		return NULL;
+	}
+
+	if (setjmp(png_jmpbuf(png))) {
+		if (data)
+			free(data);
+		if (row_pointers)
+			free(row_pointers);
+		png_destroy_read_struct(&png, &info, NULL);
+		return NULL;
+	}
+
+	png_set_read_fn(png, fp, read_func);
+	png_read_info(png, info);
+	png_get_IHDR(png, info,
+		     &width, &height, &depth,
+		     &color_type, &interlace, NULL, NULL);
+
+	if (color_type == PNG_COLOR_TYPE_PALETTE)
+		png_set_palette_to_rgb(png);
+
+	if (color_type == PNG_COLOR_TYPE_GRAY)
+		png_set_expand_gray_1_2_4_to_8(png);
+
+	if (png_get_valid(png, info, PNG_INFO_tRNS))
+		png_set_tRNS_to_alpha(png);
+
+	if (depth == 16)
+		png_set_strip_16(png);
+
+	if (depth < 8)
+		png_set_packing(png);
+
+	if (color_type == PNG_COLOR_TYPE_GRAY ||
+	    color_type == PNG_COLOR_TYPE_GRAY_ALPHA)
+		png_set_gray_to_rgb(png);
+
+	if (interlace != PNG_INTERLACE_NONE)
+		png_set_interlace_handling(png);
+
+	png_set_filler(png, 0xff, PNG_FILLER_AFTER);
+	png_set_read_user_transform_fn(png, premultiply_data);
+	png_read_update_info(png, info);
+	png_get_IHDR(png, info,
+		     &width, &height, &depth,
+		     &color_type, &interlace, NULL, NULL);
+
+
+	stride = cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, width);
+	data = malloc(stride * height);
+	if (!data) {
+		png_destroy_read_struct(&png, &info, NULL);
+		return NULL;
+	}
+
+	row_pointers = malloc(height * sizeof row_pointers[0]);
+	if (row_pointers == NULL) {
+		free(data);
+		png_destroy_read_struct(&png, &info, NULL);
+		return NULL;
+	}
+
+	for (i = 0; i < height; i++)
+		row_pointers[i] = &data[i * stride];
+
+	png_read_image(png, row_pointers);
+	png_read_end(png, info);
+
+	free(row_pointers);
+	png_destroy_read_struct(&png, &info, NULL);
+
+	return cairo_image_surface_create_for_data (data,
+						    CAIRO_FORMAT_RGB24,
+						    width, height, stride);
+}
+
+cairo_surface_t *
+load_image(const char *filename)
+{
+	cairo_surface_t *surface;
+	static const unsigned char png_header[] = { 0x89, 'P', 'N', 'G' };
+	static const unsigned char jpeg_header[] = { 0xff, 0xd8, 0xff, 0xe0 };
+	unsigned char header[4];
+	FILE *fp;
+
+	fp = fopen(filename, "rb");
+	if (fp == NULL)
+		return NULL;
+
+	fread(header, sizeof header, 1, fp);
+	rewind(fp);
+	if (memcmp(header, png_header, sizeof header) == 0)
+		surface = load_png(fp);
+	else if (memcmp(header, jpeg_header, sizeof header) == 0)
+		surface = load_jpeg(fp);
+	else {
+		fprintf(stderr, "unrecognized file header for %s: "
+			"0x%02x 0x%02x 0x%02x 0x%02x\n",
+			filename, header[0], header[1], header[2], header[3]);
+		surface = NULL;
+	}
+
+	fclose(fp);
+
+	return surface;
 }

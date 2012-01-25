@@ -41,6 +41,6 @@ void
 rounded_rect(cairo_t *cr, int x0, int y0, int x1, int y1, int radius);
 
 cairo_surface_t *
-load_jpeg(const char *filename);
+load_image(const char *filename);
 
 #endif
