@@ -1,4 +1,4 @@
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -107,7 +107,7 @@ class desktopui_PyAutoPerfTests(chrome_test.ChromeTestBase):
         # Run the PyAuto performance tests.
         functional_cmd = cros_ui.xcommand_as(
             '%s/chrome_test/test_src/chrome/test/functional/'
-            'pyauto_functional.py --suite=%s -v %s' % (
+            'pyauto_functional.py --suite=%s %s' % (
                 deps_dir, options.suite, test_args))
         environment = os.environ.copy()
         if options.num_iterations:
