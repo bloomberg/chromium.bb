@@ -566,15 +566,8 @@
 {
   bug_95509
   ThreadSanitizer:Race
-  fun:base::SyncSocket::Close
-  fun:AudioDevice::AudioSocket::Close
-  fun:AudioDevice::ShutDownAudioThread
-  fun:AudioDevice::Stop
   ...
-  fun:AudioRendererImpl::OnStop
-  fun:media::AudioRendererBase::Stop
-  fun:media::CompositeFilter::CallFilter
-  fun:media::CompositeFilter::SerialCallback
+  fun:AudioDevice::ShutDownAudioThread
 }
 {
   bug_95509_b
