@@ -12,6 +12,7 @@
 
 #include "base/logging.h"
 #include "base/string_piece.h"
+#include "base/string_split.h"
 #include "base/utf_string_conversions.h"
 #include "grit/app_locale_settings.h"
 #include "third_party/skia/include/core/SkTypeface.h"
@@ -63,38 +64,34 @@ PangoFontMetrics* GetPangoFontMetrics(PangoFontDescription* desc) {
   }
 }
 
-// Find the best match font for |family_name| in the same way as Skia
-// to make sure CreateFont() successfully creates a default font.  In
-// Skia, it only checks the best match font.  If it failed to find
-// one, SkTypeface will be NULL for that font family.  It eventually
-// causes a segfault.  For example, family_name = "Sans" and system
-// may have various fonts.  The first font family in FcPattern will be
-// "DejaVu Sans" but a font family returned by FcFontMatch will be "VL
-// PGothic".  In this case, SkTypeface for "Sans" returns NULL even if
-// the system has a font for "Sans" font family.  See FontMatch() in
-// skia/ports/SkFontHost_fontconfig.cpp for more detail.
-std::string FindBestMatchFontFamilyName(const char* family_name) {
+// Returns the available font family that best (in FontConfig's eyes) matches
+// the supplied list of family names.
+std::string FindBestMatchFontFamilyName(
+    const std::vector<std::string>& family_names) {
   FcPattern* pattern = FcPatternCreate();
-  FcValue fcvalue;
-  fcvalue.type = FcTypeString;
-  char* family_name_copy = strdup(family_name);
-  fcvalue.u.s = reinterpret_cast<FcChar8*>(family_name_copy);
-  FcPatternAdd(pattern, FC_FAMILY, fcvalue, 0);
+  for (std::vector<std::string>::const_iterator it = family_names.begin();
+       it != family_names.end(); ++it) {
+    FcValue fcvalue;
+    fcvalue.type = FcTypeString;
+    fcvalue.u.s = reinterpret_cast<const FcChar8*>(it->c_str());
+    FcPatternAdd(pattern, FC_FAMILY, fcvalue, FcTrue /* append */);
+  }
+
   FcConfigSubstitute(0, pattern, FcMatchPattern);
   FcDefaultSubstitute(pattern);
   FcResult result;
   FcPattern* match = FcFontMatch(0, pattern, &result);
-  DCHECK(match) << "Could not find font: " << family_name;
-  FcChar8* match_family;
+  DCHECK(match) << "Could not find font";
+  FcChar8* match_family = NULL;
   FcPatternGetString(match, FC_FAMILY, 0, &match_family);
-
   std::string font_family(reinterpret_cast<char*>(match_family));
-  FcPatternDestroy(match);
   FcPatternDestroy(pattern);
-  free(family_name_copy);
+  FcPatternDestroy(match);
   return font_family;
 }
 
+// Returns a Pango font description (suitable for parsing by
+// pango_font_description_from_string()) for the default UI font.
 std::string GetDefaultFont() {
 #if defined(USE_WAYLAND) || !defined(TOOLKIT_USES_GTK)
 #if defined(OS_CHROMEOS)
@@ -149,14 +146,12 @@ PlatformFontPango::PlatformFontPango(const Font& other) {
 }
 
 PlatformFontPango::PlatformFontPango(NativeFont native_font) {
-  const char* family_name = pango_font_description_get_family(native_font);
-
-  // Find best match font for |family_name| to make sure we can get
-  // a SkTypeface for the default font.
-  // TODO(agl): remove this.
-  std::string font_family = FindBestMatchFontFamilyName(family_name);
-
+  std::vector<std::string> family_names;
+  base::SplitString(pango_font_description_get_family(native_font), ',',
+                    &family_names);
+  std::string font_family = FindBestMatchFontFamilyName(family_names);
   InitWithNameAndSize(font_family, gfx::GetPangoFontSizeInPixels(native_font));
+
   int style = 0;
   if (pango_font_description_get_weight(native_font) == PANGO_WEIGHT_BOLD) {
     // TODO(davemoore) What should we do about other weights? We currently
