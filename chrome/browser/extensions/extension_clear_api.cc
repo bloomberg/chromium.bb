@@ -34,6 +34,7 @@ const char kFormDataKey[] = "formData";
 const char kHistoryKey[] = "history";
 const char kIndexedDBKey[] = "indexedDB";
 const char kLocalStorageKey[] = "localStorage";
+const char kOriginBoundCertsKey[] = "originBoundCerts";
 const char kPasswordsKey[] = "passwords";
 const char kPluginDataKey[] = "pluginData";
 const char kWebSQLKey[] = "webSQL";
@@ -84,6 +85,9 @@ int ParseRemovalMask(base::DictionaryValue* value) {
   if (DataRemovalRequested(value,
                            extension_clear_api_constants::kLocalStorageKey))
     GetRemovalMask |= BrowsingDataRemover::REMOVE_LOCAL_STORAGE;
+  if (DataRemovalRequested(value,
+                           extension_clear_api_constants::kOriginBoundCertsKey))
+    GetRemovalMask |= BrowsingDataRemover::REMOVE_ORIGIN_BOUND_CERTS;
   if (DataRemovalRequested(value, extension_clear_api_constants::kPasswordsKey))
     GetRemovalMask |= BrowsingDataRemover::REMOVE_PASSWORDS;
   if (DataRemovalRequested(value,
@@ -207,6 +211,10 @@ int ClearIndexedDBFunction::GetRemovalMask() const {
 
 int ClearLocalStorageFunction::GetRemovalMask() const {
   return BrowsingDataRemover::REMOVE_LOCAL_STORAGE;
+}
+
+int ClearOriginBoundCertsFunction::GetRemovalMask() const {
+  return BrowsingDataRemover::REMOVE_ORIGIN_BOUND_CERTS;
 }
 
 int ClearPluginDataFunction::GetRemovalMask() const {

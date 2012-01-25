@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -30,6 +30,7 @@ void DefaultOriginBoundCertStore::FlushStore(
 bool DefaultOriginBoundCertStore::GetOriginBoundCert(
     const std::string& origin,
     SSLClientCertType* type,
+    base::Time* creation_time,
     base::Time* expiration_time,
     std::string* private_key_result,
     std::string* cert_result) {
@@ -43,6 +44,7 @@ bool DefaultOriginBoundCertStore::GetOriginBoundCert(
 
   OriginBoundCert* cert = it->second;
   *type = cert->type();
+  *creation_time = cert->creation_time();
   *expiration_time = cert->expiration_time();
   *private_key_result = cert->private_key();
   *cert_result = cert->cert();
@@ -53,6 +55,7 @@ bool DefaultOriginBoundCertStore::GetOriginBoundCert(
 void DefaultOriginBoundCertStore::SetOriginBoundCert(
     const std::string& origin,
     SSLClientCertType type,
+    base::Time creation_time,
     base::Time expiration_time,
     const std::string& private_key,
     const std::string& cert) {
@@ -62,7 +65,8 @@ void DefaultOriginBoundCertStore::SetOriginBoundCert(
   InternalDeleteOriginBoundCert(origin);
   InternalInsertOriginBoundCert(
       origin,
-      new OriginBoundCert(origin, type, expiration_time, private_key, cert));
+      new OriginBoundCert(
+          origin, type, creation_time, expiration_time, private_key, cert));
 }
 
 void DefaultOriginBoundCertStore::DeleteOriginBoundCert(
@@ -72,17 +76,28 @@ void DefaultOriginBoundCertStore::DeleteOriginBoundCert(
   InternalDeleteOriginBoundCert(origin);
 }
 
-void DefaultOriginBoundCertStore::DeleteAll() {
+void DefaultOriginBoundCertStore::DeleteAllCreatedBetween(
+    base::Time delete_begin,
+    base::Time delete_end) {
   base::AutoLock autolock(lock_);
   InitIfNecessary();
   for (OriginBoundCertMap::iterator it = origin_bound_certs_.begin();
-       it != origin_bound_certs_.end(); ++it) {
-    OriginBoundCert* cert = it->second;
-    if (store_)
-      store_->DeleteOriginBoundCert(*cert);
-    delete cert;
+       it != origin_bound_certs_.end();) {
+    OriginBoundCertMap::iterator cur = it;
+    ++it;
+    OriginBoundCert* cert = cur->second;
+    if ((delete_begin.is_null() || cert->creation_time() >= delete_begin) &&
+        (delete_end.is_null() || cert->creation_time() < delete_end)) {
+      if (store_)
+        store_->DeleteOriginBoundCert(*cert);
+      delete cert;
+      origin_bound_certs_.erase(cur);
+    }
   }
-  origin_bound_certs_.clear();
+}
+
+void DefaultOriginBoundCertStore::DeleteAll() {
+  DeleteAllCreatedBetween(base::Time(), base::Time());
 }
 
 void DefaultOriginBoundCertStore::GetAllOriginBoundCerts(

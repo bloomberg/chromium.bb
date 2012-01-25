@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -80,11 +80,13 @@ TEST(DefaultOriginBoundCertStoreTest, TestLoading) {
           "https://encrypted.google.com/",
           CLIENT_CERT_RSA_SIGN,
           base::Time(),
+          base::Time(),
           "a", "b"));
   persistent_store->AddOriginBoundCert(
       DefaultOriginBoundCertStore::OriginBoundCert(
           "https://www.verisign.com/",
           CLIENT_CERT_ECDSA_SIGN,
+          base::Time(),
           base::Time(),
           "c", "d"));
 
@@ -94,12 +96,14 @@ TEST(DefaultOriginBoundCertStoreTest, TestLoading) {
   store.SetOriginBoundCert(
       "https://www.verisign.com/",
       CLIENT_CERT_RSA_SIGN,
-          base::Time(),
+      base::Time(),
+      base::Time(),
       "e", "f");
   EXPECT_EQ(2, store.GetCertCount());
   store.SetOriginBoundCert(
       "https://www.twitter.com/",
       CLIENT_CERT_RSA_SIGN,
+      base::Time(),
       base::Time(),
       "g", "h");
   EXPECT_EQ(3, store.GetCertCount());
@@ -108,11 +112,13 @@ TEST(DefaultOriginBoundCertStoreTest, TestLoading) {
 TEST(DefaultOriginBoundCertStoreTest, TestSettingAndGetting) {
   DefaultOriginBoundCertStore store(NULL);
   SSLClientCertType type;
+  base::Time creation_time;
   base::Time expiration_time;
   std::string private_key, cert;
   EXPECT_EQ(0, store.GetCertCount());
   EXPECT_FALSE(store.GetOriginBoundCert("https://www.verisign.com/",
                                         &type,
+                                        &creation_time,
                                         &expiration_time,
                                         &private_key,
                                         &cert));
@@ -122,14 +128,17 @@ TEST(DefaultOriginBoundCertStoreTest, TestSettingAndGetting) {
       "https://www.verisign.com/",
       CLIENT_CERT_RSA_SIGN,
       base::Time::FromInternalValue(123),
+      base::Time::FromInternalValue(456),
       "i", "j");
   EXPECT_TRUE(store.GetOriginBoundCert("https://www.verisign.com/",
                                        &type,
+                                       &creation_time,
                                        &expiration_time,
                                        &private_key,
                                        &cert));
   EXPECT_EQ(CLIENT_CERT_RSA_SIGN, type);
-  EXPECT_EQ(123, expiration_time.ToInternalValue());
+  EXPECT_EQ(123, creation_time.ToInternalValue());
+  EXPECT_EQ(456, expiration_time.ToInternalValue());
   EXPECT_EQ("i", private_key);
   EXPECT_EQ("j", cert);
 }
@@ -139,6 +148,7 @@ TEST(DefaultOriginBoundCertStoreTest, TestDuplicateCerts) {
   DefaultOriginBoundCertStore store(persistent_store.get());
 
   SSLClientCertType type;
+  base::Time creation_time;
   base::Time expiration_time;
   std::string private_key, cert;
   EXPECT_EQ(0, store.GetCertCount());
@@ -146,21 +156,25 @@ TEST(DefaultOriginBoundCertStoreTest, TestDuplicateCerts) {
       "https://www.verisign.com/",
       CLIENT_CERT_RSA_SIGN,
       base::Time::FromInternalValue(123),
+      base::Time::FromInternalValue(1234),
       "a", "b");
   store.SetOriginBoundCert(
       "https://www.verisign.com/",
       CLIENT_CERT_ECDSA_SIGN,
       base::Time::FromInternalValue(456),
+      base::Time::FromInternalValue(4567),
       "c", "d");
 
   EXPECT_EQ(1, store.GetCertCount());
   EXPECT_TRUE(store.GetOriginBoundCert("https://www.verisign.com/",
                                        &type,
+                                       &creation_time,
                                        &expiration_time,
                                        &private_key,
                                        &cert));
   EXPECT_EQ(CLIENT_CERT_ECDSA_SIGN, type);
-  EXPECT_EQ(456, expiration_time.ToInternalValue());
+  EXPECT_EQ(456, creation_time.ToInternalValue());
+  EXPECT_EQ(4567, expiration_time.ToInternalValue());
   EXPECT_EQ("c", private_key);
   EXPECT_EQ("d", cert);
 }
@@ -174,15 +188,18 @@ TEST(DefaultOriginBoundCertStoreTest, TestDeleteAll) {
       "https://www.verisign.com/",
       CLIENT_CERT_RSA_SIGN,
       base::Time(),
+      base::Time(),
       "a", "b");
   store.SetOriginBoundCert(
       "https://www.google.com/",
       CLIENT_CERT_RSA_SIGN,
       base::Time(),
+      base::Time(),
       "c", "d");
   store.SetOriginBoundCert(
       "https://www.harvard.com/",
       CLIENT_CERT_RSA_SIGN,
+      base::Time(),
       base::Time(),
       "e", "f");
 
@@ -196,6 +213,7 @@ TEST(DefaultOriginBoundCertStoreTest, TestDelete) {
   DefaultOriginBoundCertStore store(persistent_store.get());
 
   SSLClientCertType type;
+  base::Time creation_time;
   base::Time expiration_time;
   std::string private_key, cert;
   EXPECT_EQ(0, store.GetCertCount());
@@ -203,10 +221,12 @@ TEST(DefaultOriginBoundCertStoreTest, TestDelete) {
       "https://www.verisign.com/",
       CLIENT_CERT_RSA_SIGN,
       base::Time(),
+      base::Time(),
       "a", "b");
   store.SetOriginBoundCert(
       "https://www.google.com/",
       CLIENT_CERT_ECDSA_SIGN,
+      base::Time(),
       base::Time(),
       "c", "d");
 
@@ -215,11 +235,13 @@ TEST(DefaultOriginBoundCertStoreTest, TestDelete) {
   EXPECT_EQ(1, store.GetCertCount());
   EXPECT_FALSE(store.GetOriginBoundCert("https://www.verisign.com/",
                                         &type,
+                                        &creation_time,
                                         &expiration_time,
                                         &private_key,
                                         &cert));
   EXPECT_TRUE(store.GetOriginBoundCert("https://www.google.com/",
                                        &type,
+                                       &creation_time,
                                        &expiration_time,
                                        &private_key,
                                        &cert));
@@ -227,6 +249,7 @@ TEST(DefaultOriginBoundCertStoreTest, TestDelete) {
   EXPECT_EQ(0, store.GetCertCount());
   EXPECT_FALSE(store.GetOriginBoundCert("https://www.google.com/",
                                         &type,
+                                        &creation_time,
                                         &expiration_time,
                                         &private_key,
                                         &cert));
@@ -241,20 +264,24 @@ TEST(DefaultOriginBoundCertStoreTest, TestGetAll) {
       "https://www.verisign.com/",
       CLIENT_CERT_RSA_SIGN,
       base::Time(),
+      base::Time(),
       "a", "b");
   store.SetOriginBoundCert(
       "https://www.google.com/",
       CLIENT_CERT_ECDSA_SIGN,
+      base::Time(),
       base::Time(),
       "c", "d");
   store.SetOriginBoundCert(
       "https://www.harvard.com/",
       CLIENT_CERT_RSA_SIGN,
       base::Time(),
+      base::Time(),
       "e", "f");
   store.SetOriginBoundCert(
       "https://www.mit.com/",
       CLIENT_CERT_RSA_SIGN,
+      base::Time(),
       base::Time(),
       "g", "h");
 

@@ -49,6 +49,8 @@
 #include "content/public/browser/user_metrics.h"
 #include "net/base/cookie_store.h"
 #include "net/base/net_errors.h"
+#include "net/base/origin_bound_cert_service.h"
+#include "net/base/origin_bound_cert_store.h"
 #include "net/base/transport_security_state.h"
 #include "net/disk_cache/disk_cache.h"
 #include "net/http/http_cache.h"
@@ -95,12 +97,13 @@ BrowsingDataRemover::BrowsingDataRemover(Profile* profile,
       cache_(NULL),
       main_context_getter_(profile->GetRequestContext()),
       media_context_getter_(profile->GetRequestContextForMedia()),
-      waiting_for_clear_history_(false),
-      waiting_for_clear_quota_managed_data_(false),
-      waiting_for_clear_networking_history_(false),
-      waiting_for_clear_cookies_(false),
       waiting_for_clear_cache_(false),
+      waiting_for_clear_cookies_(false),
+      waiting_for_clear_history_(false),
+      waiting_for_clear_networking_history_(false),
+      waiting_for_clear_origin_bound_certs_(false),
       waiting_for_clear_plugin_data_(false),
+      waiting_for_clear_quota_managed_data_(false),
       remove_mask_(0) {
   DCHECK(profile);
 }
@@ -117,12 +120,13 @@ BrowsingDataRemover::BrowsingDataRemover(Profile* profile,
       cache_(NULL),
       main_context_getter_(profile->GetRequestContext()),
       media_context_getter_(profile->GetRequestContextForMedia()),
-      waiting_for_clear_history_(false),
-      waiting_for_clear_quota_managed_data_(false),
-      waiting_for_clear_networking_history_(false),
-      waiting_for_clear_cookies_(false),
       waiting_for_clear_cache_(false),
+      waiting_for_clear_cookies_(false),
+      waiting_for_clear_history_(false),
+      waiting_for_clear_networking_history_(false),
+      waiting_for_clear_origin_bound_certs_(false),
       waiting_for_clear_plugin_data_(false),
+      waiting_for_clear_quota_managed_data_(false),
       remove_mask_(0) {
   DCHECK(profile);
 }
@@ -221,6 +225,20 @@ void BrowsingDataRemover::Remove(int remove_mask) {
       BrowserThread::PostTask(
           BrowserThread::IO, FROM_HERE,
           base::Bind(&BrowsingDataRemover::ClearCookiesOnIOThread,
+                     base::Unretained(this), base::Unretained(rq_context)));
+    }
+  }
+
+  if (remove_mask & REMOVE_ORIGIN_BOUND_CERTS) {
+    content::RecordAction(
+        UserMetricsAction("ClearBrowsingData_OriginBoundCerts"));
+    // Since we are running on the UI thread don't call GetURLRequestContext().
+    net::URLRequestContextGetter* rq_context = profile_->GetRequestContext();
+    if (rq_context) {
+      waiting_for_clear_origin_bound_certs_ = true;
+      BrowserThread::PostTask(
+          BrowserThread::IO, FROM_HERE,
+          base::Bind(&BrowsingDataRemover::ClearOriginBoundCertsOnIOThread,
                      base::Unretained(this), base::Unretained(rq_context)));
     }
   }
@@ -619,4 +637,23 @@ void BrowsingDataRemover::ClearCookiesOnIOThread(
       delete_begin_, delete_end_,
       base::Bind(&BrowsingDataRemover::OnClearedCookies,
                  base::Unretained(this)));
+}
+
+void BrowsingDataRemover::ClearOriginBoundCertsOnIOThread(
+    net::URLRequestContextGetter* rq_context) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  net::OriginBoundCertService* origin_bound_cert_service =
+      rq_context->GetURLRequestContext()->origin_bound_cert_service();
+  origin_bound_cert_service->GetCertStore()->DeleteAllCreatedBetween(
+      delete_begin_, delete_end_);
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&BrowsingDataRemover::OnClearedOriginBoundCerts,
+                 base::Unretained(this)));
+}
+
+void BrowsingDataRemover::OnClearedOriginBoundCerts() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  waiting_for_clear_origin_bound_certs_ = false;
+  NotifyAndDeleteIfDone();
 }

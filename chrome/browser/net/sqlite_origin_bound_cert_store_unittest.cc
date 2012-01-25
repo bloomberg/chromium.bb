@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -43,6 +43,20 @@ class SQLiteOriginBoundCertStoreTest : public testing::Test {
     return base::Time::FromInternalValue(GG_INT64_C(16121816625000000));
   }
 
+  static base::Time GetTestCertCreationTime() {
+    // UTCTime 13/12/2011 02:23:45 GMT
+    base::Time::Exploded exploded_time;
+    exploded_time.year = 2011;
+    exploded_time.month = 12;
+    exploded_time.day_of_week = 0;  // Unused.
+    exploded_time.day_of_month = 13;
+    exploded_time.hour = 2;
+    exploded_time.minute = 23;
+    exploded_time.second = 45;
+    exploded_time.millisecond = 0;
+    return base::Time::FromUTCExploded(exploded_time);
+  }
+
   virtual void SetUp() {
     db_thread_.Start();
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
@@ -56,6 +70,7 @@ class SQLiteOriginBoundCertStoreTest : public testing::Test {
         net::DefaultOriginBoundCertStore::OriginBoundCert(
             "https://encrypted.google.com:8443",
             net::CLIENT_CERT_RSA_SIGN,
+            base::Time(),
             base::Time(),
             "a", "b"));
   }
@@ -102,6 +117,7 @@ TEST_F(SQLiteOriginBoundCertStoreTest, TestPersistence) {
       net::DefaultOriginBoundCertStore::OriginBoundCert(
           "https://www.google.com/",
           net::CLIENT_CERT_ECDSA_SIGN,
+          base::Time(),
           base::Time(),
           "c", "d"));
 
@@ -233,7 +249,7 @@ TEST_F(SQLiteOriginBoundCertStoreTest, TestUpgradeV1) {
           "SELECT value FROM meta WHERE key = \"version\""));
       ASSERT_TRUE(smt);
       ASSERT_TRUE(smt.Step());
-      EXPECT_EQ(3, smt.ColumnInt(0));
+      EXPECT_EQ(4, smt.ColumnInt(0));
       EXPECT_FALSE(smt.Step());
     }
   }
@@ -322,7 +338,100 @@ TEST_F(SQLiteOriginBoundCertStoreTest, TestUpgradeV2) {
           "SELECT value FROM meta WHERE key = \"version\""));
       ASSERT_TRUE(smt);
       ASSERT_TRUE(smt.Step());
-      EXPECT_EQ(3, smt.ColumnInt(0));
+      EXPECT_EQ(4, smt.ColumnInt(0));
+      EXPECT_FALSE(smt.Step());
+    }
+  }
+}
+
+TEST_F(SQLiteOriginBoundCertStoreTest, TestUpgradeV3) {
+  // Reset the store.  We'll be using a different database for this test.
+  store_ = NULL;
+
+  FilePath v3_db_path(temp_dir_.path().AppendASCII("v3db"));
+
+  std::string key_data;
+  std::string cert_data;
+  ReadTestKeyAndCert(&key_data, &cert_data);
+
+  // Create a version 3 database.
+  {
+    sql::Connection db;
+    ASSERT_TRUE(db.Open(v3_db_path));
+    ASSERT_TRUE(db.Execute(
+        "CREATE TABLE meta(key LONGVARCHAR NOT NULL UNIQUE PRIMARY KEY,"
+            "value LONGVARCHAR);"
+        "INSERT INTO \"meta\" VALUES('version','3');"
+        "INSERT INTO \"meta\" VALUES('last_compatible_version','1');"
+        "CREATE TABLE origin_bound_certs ("
+            "origin TEXT NOT NULL UNIQUE PRIMARY KEY,"
+            "private_key BLOB NOT NULL,"
+            "cert BLOB NOT NULL,"
+            "cert_type INTEGER,"
+            "expiration_time INTEGER);"
+        ));
+
+    sql::Statement add_smt(db.GetUniqueStatement(
+        "INSERT INTO origin_bound_certs (origin, private_key, cert, cert_type, "
+        "expiration_time) VALUES (?,?,?,?,?)"));
+    add_smt.BindString(0, "https://www.google.com:443");
+    add_smt.BindBlob(1, key_data.data(), key_data.size());
+    add_smt.BindBlob(2, cert_data.data(), cert_data.size());
+    add_smt.BindInt64(3, 1);
+    add_smt.BindInt64(4, 1000);
+    ASSERT_TRUE(add_smt.Run());
+
+    ASSERT_TRUE(db.Execute(
+        "INSERT INTO \"origin_bound_certs\" VALUES("
+            "'https://foo.com',X'AA',X'BB',64,2000);"
+        ));
+  }
+
+  // Load and test the DB contents twice.  First time ensures that we can use
+  // the updated values immediately.  Second time ensures that the updated
+  // values are saved and read correctly on next load.
+  for (int i = 0; i < 2; ++i) {
+    SCOPED_TRACE(i);
+
+    ScopedVector<net::DefaultOriginBoundCertStore::OriginBoundCert> certs;
+    store_ = new SQLiteOriginBoundCertStore(v3_db_path);
+
+    // Load the database and ensure the certs can be read and are marked as RSA.
+    ASSERT_TRUE(store_->Load(&certs.get()));
+    ASSERT_EQ(2U, certs.size());
+
+    ASSERT_STREQ("https://www.google.com:443", certs[0]->origin().c_str());
+    ASSERT_EQ(net::CLIENT_CERT_RSA_SIGN, certs[0]->type());
+    ASSERT_EQ(1000, certs[0]->expiration_time().ToInternalValue());
+    ASSERT_EQ(GetTestCertCreationTime(),
+              certs[0]->creation_time());
+    ASSERT_EQ(key_data, certs[0]->private_key());
+    ASSERT_EQ(cert_data, certs[0]->cert());
+
+    ASSERT_STREQ("https://foo.com", certs[1]->origin().c_str());
+    ASSERT_EQ(net::CLIENT_CERT_ECDSA_SIGN, certs[1]->type());
+    ASSERT_EQ(2000, certs[1]->expiration_time().ToInternalValue());
+    // Undecodable cert, creation time will be uninitialized.
+    ASSERT_EQ(base::Time(), certs[1]->creation_time());
+    ASSERT_STREQ("\xaa", certs[1]->private_key().c_str());
+    ASSERT_STREQ("\xbb", certs[1]->cert().c_str());
+
+    store_ = NULL;
+    // Make sure we wait until the destructor has run.
+    scoped_refptr<base::ThreadTestHelper> helper(
+        new base::ThreadTestHelper(
+            BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB)));
+    ASSERT_TRUE(helper->Run());
+
+    // Verify the database version is updated.
+    {
+      sql::Connection db;
+      ASSERT_TRUE(db.Open(v3_db_path));
+      sql::Statement smt(db.GetUniqueStatement(
+          "SELECT value FROM meta WHERE key = \"version\""));
+      ASSERT_TRUE(smt);
+      ASSERT_TRUE(smt.Step());
+      EXPECT_EQ(4, smt.ColumnInt(0));
       EXPECT_FALSE(smt.Step());
     }
   }
@@ -346,6 +455,7 @@ TEST_F(SQLiteOriginBoundCertStoreTest, TestFlush) {
         net::DefaultOriginBoundCertStore::OriginBoundCert(
             origin,
             net::CLIENT_CERT_RSA_SIGN,
+            base::Time(),
             base::Time(),
             private_key,
             cert));

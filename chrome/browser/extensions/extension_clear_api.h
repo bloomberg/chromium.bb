@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -190,6 +190,18 @@ class ClearLocalStorageFunction : public BrowsingDataExtensionFunction {
   virtual int GetRemovalMask() const OVERRIDE;
 
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.clear.localStorage")
+};
+
+class ClearOriginBoundCertsFunction : public BrowsingDataExtensionFunction {
+ public:
+  ClearOriginBoundCertsFunction() {}
+  virtual ~ClearOriginBoundCertsFunction() {}
+
+ protected:
+  // BrowsingDataTypeExtensionFunction interface method.
+  virtual int GetRemovalMask() const OVERRIDE;
+
+  DECLARE_EXTENSION_FUNCTION_NAME("experimental.clear.originBoundCerts")
 };
 
 class ClearPluginDataFunction : public BrowsingDataExtensionFunction {

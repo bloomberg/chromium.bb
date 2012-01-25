@@ -5,6 +5,7 @@
 #include "chrome/browser/browsing_data_remover.h"
 
 #include <set>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -19,6 +20,9 @@
 #include "content/public/browser/notification_service.h"
 #include "content/test/test_browser_thread.h"
 #include "net/base/cookie_monster.h"
+#include "net/base/origin_bound_cert_service.h"
+#include "net/base/origin_bound_cert_store.h"
+#include "net/base/ssl_client_cert_type.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -137,6 +141,51 @@ class RemoveCookieTester : public BrowsingDataRemoverTester {
   net::CookieStore* monster_;
 
   DISALLOW_COPY_AND_ASSIGN(RemoveCookieTester);
+};
+
+class RemoveOriginBoundCertTester : public BrowsingDataRemoverTester {
+ public:
+  explicit RemoveOriginBoundCertTester(TestingProfile* profile) {
+    profile->CreateRequestContext();
+    ob_cert_service_ = profile->GetRequestContext()->GetURLRequestContext()->
+        origin_bound_cert_service();
+  }
+
+  int OriginBoundCertCount() {
+    return ob_cert_service_->cert_count();
+  }
+
+  // Add an origin bound cert for |origin| with specific creation and expiry
+  // times.  The cert and key data will be filled with dummy values.
+  void AddOriginBoundCertWithTimes(const std::string& origin,
+                                   base::Time creation_time,
+                                   base::Time expiration_time) {
+    GetCertStore()->SetOriginBoundCert(origin, net::CLIENT_CERT_RSA_SIGN,
+                                       creation_time, expiration_time,
+                                       "a", "b");
+  }
+
+  // Add an origin bound cert for |origin|, with the current time as the
+  // creation time.  The cert and key data will be filled with dummy values.
+  void AddOriginBoundCert(const std::string& origin) {
+    base::Time now = base::Time::Now();
+    AddOriginBoundCertWithTimes(origin,
+                                now,
+                                now + base::TimeDelta::FromDays(1));
+  }
+
+  net::OriginBoundCertStore* GetCertStore() {
+    return ob_cert_service_->GetCertStore();
+  }
+
+ private:
+  net::OriginBoundCertService* ob_cert_service_;
+
+  net::SSLClientCertType type_;
+  std::string key_;
+  std::string cert_;
+
+  DISALLOW_COPY_AND_ASSIGN(RemoveOriginBoundCertTester);
 };
 
 class RemoveHistoryTester : public BrowsingDataRemoverTester {
@@ -347,6 +396,41 @@ TEST_F(BrowsingDataRemoverTest, RemoveCookieForever) {
 
   EXPECT_EQ(BrowsingDataRemover::REMOVE_COOKIES, GetRemovalMask());
   EXPECT_FALSE(tester->ContainsCookie());
+}
+
+TEST_F(BrowsingDataRemoverTest, RemoveOriginBoundCertForever) {
+  scoped_ptr<RemoveOriginBoundCertTester> tester(
+      new RemoveOriginBoundCertTester(GetProfile()));
+
+  tester->AddOriginBoundCert(kTestkOrigin1);
+  EXPECT_EQ(1, tester->OriginBoundCertCount());
+
+  BlockUntilBrowsingDataRemoved(BrowsingDataRemover::EVERYTHING,
+      BrowsingDataRemover::REMOVE_ORIGIN_BOUND_CERTS, tester.get());
+
+  EXPECT_EQ(BrowsingDataRemover::REMOVE_ORIGIN_BOUND_CERTS, GetRemovalMask());
+  EXPECT_EQ(0, tester->OriginBoundCertCount());
+}
+
+TEST_F(BrowsingDataRemoverTest, RemoveOriginBoundCertLastHour) {
+  scoped_ptr<RemoveOriginBoundCertTester> tester(
+      new RemoveOriginBoundCertTester(GetProfile()));
+
+  base::Time now = base::Time::Now();
+  tester->AddOriginBoundCert(kTestkOrigin1);
+  tester->AddOriginBoundCertWithTimes(kTestkOrigin2,
+                                      now - base::TimeDelta::FromHours(2),
+                                      now);
+  EXPECT_EQ(2, tester->OriginBoundCertCount());
+
+  BlockUntilBrowsingDataRemoved(BrowsingDataRemover::LAST_HOUR,
+      BrowsingDataRemover::REMOVE_ORIGIN_BOUND_CERTS, tester.get());
+
+  EXPECT_EQ(BrowsingDataRemover::REMOVE_ORIGIN_BOUND_CERTS, GetRemovalMask());
+  EXPECT_EQ(1, tester->OriginBoundCertCount());
+  std::vector<net::OriginBoundCertStore::OriginBoundCert> certs;
+  tester->GetCertStore()->GetAllOriginBoundCerts(&certs);
+  EXPECT_EQ(kTestkOrigin2, certs[0].origin());
 }
 
 TEST_F(BrowsingDataRemoverTest, RemoveHistoryForever) {

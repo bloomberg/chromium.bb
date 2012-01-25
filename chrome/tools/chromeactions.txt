@@ -8,6 +8,7 @@
 0xc5ec36aaa32ceff4	AboutFlags_confirm-to-quit
 0x4e8fe1c674de45dd	AboutFlags_conflicting-modules-check
 0xe9d2339d6b9225c7	AboutFlags_disable-outdated-plugins
+0xf73b5212b48e2a75	AboutFlags_disable-print-preview
 0xdddbf34cee2c636c	AboutFlags_dns-server
 0x3add7fc42803849e	AboutFlags_downloads-new-ui
 0x4eae5ccc2900dffa	AboutFlags_enable-nacl
@@ -180,6 +181,7 @@
 0xea9b835bf0310f85	ClearBrowsingData_Downloads
 0xe3c9686626019346	ClearBrowsingData_History
 0x86678d0ede469c46	ClearBrowsingData_LSOData
+0x82601d6a3aca0eb1	ClearBrowsingData_OriginBoundCerts
 0x511e8366cdda3890	ClearBrowsingData_Passwords
 0x6d69a061f7adf595	ClearBrowsingData_ShowDlg
 0x9fd631c62234969a	ClearSelection
@@ -252,6 +254,7 @@
 0x4f07c158c8047ab9	Extensions.ExtensionUninstalled
 0x08566bf746b7f665	Extensions.IDChangedError
 0xa295e3ad39bbacc0	Extensions.WebStoreLaunch
+0xbea4c2c8eb82d058	Feedback
 0x4268aeb48d5c0d1e	FileBrowser.CreateNewFolder
 0x604a1468d08b7c7b	FileBrowser.PhotoEditor.Edit
 0xca74d47b273dd801	FileBrowser.PhotoEditor.View
@@ -870,6 +873,7 @@
 0x9372bb835cd720fb	MoveWordForward
 0x002e07cb5223cd33	MoveWordLeft
 0xd55f7c4e520b18a4	MoveWordRight
+0xfc8e40d96ab33f1b	NTPPromoClosed
 0x0cdd043c5d63d234	NTPPromoShown
 0xdcf1af37de1d8dd0	NativeUI_Applications
 0x3c6e0d9310ba3a20	NewIncognitoWindow
@@ -957,6 +961,8 @@
 0x84502179f3e2ae8c	Options_ManagerCerts
 0x540bea8eaba24835	Options_MetricsReportingCheckbox_Disable
 0x4aa2c70a745dbb49	Options_MetricsReportingCheckbox_Enable
+0x224b0bf60dccdeda	Options_MousePrimaryRight_Disable
+0xb23cd3cde814d929	Options_MousePrimaryRight_Enable
 0xc5fbe9d9b3a165dd	Options_PasswordManager_Disable
 0x59b4f208d9d9f648	Options_PasswordManager_Enable
 0x6149925370ef4f47	Options_PluginsCheckbox_Disable
@@ -994,6 +1000,8 @@
 0x6f37e83ce98b3082	Options_TapToClickCheckbox_Enable
 0x73defd4825af2700	Options_ThemesGallery
 0x60d52658d42b1593	Options_ThemesReset
+0x4a469294c73f23e4	Options_TouchpadTapToClick_Disable
+0x61a29472d343cf72	Options_TouchpadTapToClick_Enable
 0xa35806253d8d8b30	Options_Translate_Disable
 0x280bb55487be6eb4	Options_Translate_Enable
 0x6f40a6712a19568a	Options_UseSuggestCheckbox_Disable
@@ -1059,6 +1067,8 @@
 0x6cc1116fbd900ebf	PasswordManager_Enabled
 0x36bb6559696dc912	Paste
 0x5d0e6942f354a06c	PasteAndMatchStyle
+0xca471265efb33961	PluginContextMenu_RotateClockwise
+0xa260d9dde6e550c4	PluginContextMenu_RotateCounterclockwise
 0x6f2cd84fa374c281	Plugin_Blocked
 0xcecb82fcd8e64529	Plugin_ClickToPlay
 0xc52b281d793adc6b	Plugin_Hide_Click
@@ -1142,6 +1152,7 @@
 0xfd243b004d004e00	ShowSections_RecentSitesDisabled
 0x3b86156dcf560cdb	ShowSections_RecentSitesEnabled
 0x5118181c3ece5e84	ShowSessions
+0x1a4ebb180ba59b06	Shutdown
 0x26f93e6e68e28a69	Star
 0x2fbe99005588ef01	StartupTick
 0x11a755d598c0c417	Stop

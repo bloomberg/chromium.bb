@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -459,14 +459,17 @@ TEST(OriginBoundCertServiceTest, CancelRequest) {
 
 TEST(OriginBoundCertServiceTest, Expiration) {
   OriginBoundCertStore* store = new DefaultOriginBoundCertStore(NULL);
+  base::Time now = base::Time::Now();
   store->SetOriginBoundCert("https://good",
                             CLIENT_CERT_RSA_SIGN,
-                            base::Time::Now() + base::TimeDelta::FromDays(1),
+                            now,
+                            now + base::TimeDelta::FromDays(1),
                             "a",
                             "b");
   store->SetOriginBoundCert("https://expired",
                             CLIENT_CERT_RSA_SIGN,
-                            base::Time::Now() - base::TimeDelta::FromDays(1),
+                            now - base::TimeDelta::FromDays(2),
+                            now - base::TimeDelta::FromDays(1),
                             "c",
                             "d");
   OriginBoundCertService service(store);

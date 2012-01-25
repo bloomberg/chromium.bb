@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -118,7 +118,7 @@ class SQLiteOriginBoundCertStore::Backend
 };
 
 // Version number of the database.
-static const int kCurrentVersionNumber = 3;
+static const int kCurrentVersionNumber = 4;
 static const int kCompatibleVersionNumber = 1;
 
 namespace {
@@ -131,7 +131,8 @@ bool InitTable(sql::Connection* db) {
                      "private_key BLOB NOT NULL,"
                      "cert BLOB NOT NULL,"
                      "cert_type INTEGER,"
-                     "expiration_time INTEGER)"))
+                     "expiration_time INTEGER,"
+                     "creation_time INTEGER)"))
       return false;
   }
 
@@ -173,8 +174,8 @@ bool SQLiteOriginBoundCertStore::Backend::Load(
 
   // Slurp all the certs into the out-vector.
   sql::Statement smt(db_->GetUniqueStatement(
-      "SELECT origin, private_key, cert, cert_type, expiration_time "
-      "FROM origin_bound_certs"));
+      "SELECT origin, private_key, cert, cert_type, expiration_time, "
+      "creation_time FROM origin_bound_certs"));
   if (!smt) {
     NOTREACHED() << "select statement prep failed";
     db_.reset();
@@ -189,6 +190,7 @@ bool SQLiteOriginBoundCertStore::Backend::Load(
         new net::DefaultOriginBoundCertStore::OriginBoundCert(
             smt.ColumnString(0),  // origin
             static_cast<net::SSLClientCertType>(smt.ColumnInt(3)),
+            base::Time::FromInternalValue(smt.ColumnInt64(5)),
             base::Time::FromInternalValue(smt.ColumnInt64(4)),
             private_key_from_db,
             cert_from_db));
@@ -234,29 +236,36 @@ bool SQLiteOriginBoundCertStore::Backend::EnsureDatabaseVersion() {
     transaction.Commit();
   }
 
-  if (cur_version == 2) {
+  if (cur_version <= 3) {
     sql::Transaction transaction(db_.get());
     if (!transaction.Begin())
       return false;
+
+    if (cur_version == 2) {
+      if (!db_->Execute("ALTER TABLE origin_bound_certs ADD COLUMN "
+                        "expiration_time INTEGER")) {
+        LOG(WARNING) << "Unable to update origin bound cert database to "
+                     << "version 4.";
+        return false;
+      }
+    }
+
     if (!db_->Execute("ALTER TABLE origin_bound_certs ADD COLUMN "
-                      "expiration_time INTEGER")) {
+                      "creation_time INTEGER")) {
       LOG(WARNING) << "Unable to update origin bound cert database to "
-                   << "version 3.";
+                   << "version 4.";
       return false;
     }
 
     sql::Statement smt(db_->GetUniqueStatement(
         "SELECT origin, cert FROM origin_bound_certs"));
-    if (!smt) {
-      LOG(WARNING) << "Unable to update origin bound cert database to "
-                   << "version 3.";
-      return false;
-    }
     sql::Statement update_expires_smt(db_->GetUniqueStatement(
         "UPDATE origin_bound_certs SET expiration_time = ? WHERE origin = ?"));
-    if (!update_expires_smt) {
+    sql::Statement update_creation_smt(db_->GetUniqueStatement(
+        "UPDATE origin_bound_certs SET creation_time = ? WHERE origin = ?"));
+    if (!smt || !update_expires_smt || !update_creation_smt) {
       LOG(WARNING) << "Unable to update origin bound cert database to "
-                   << "version 3.";
+                   << "version 4.";
       return false;
     }
     while (smt.Step()) {
@@ -268,12 +277,24 @@ bool SQLiteOriginBoundCertStore::Backend::EnsureDatabaseVersion() {
           net::X509Certificate::CreateFromBytes(
               cert_from_db.data(), cert_from_db.size()));
       if (cert) {
-        update_expires_smt.Reset();
-        update_expires_smt.BindInt64(0, cert->valid_expiry().ToInternalValue());
-        update_expires_smt.BindString(1, origin);
-        if (!update_expires_smt.Run()) {
+        if (cur_version == 2) {
+          update_expires_smt.Reset();
+          update_expires_smt.BindInt64(0,
+                                       cert->valid_expiry().ToInternalValue());
+          update_expires_smt.BindString(1, origin);
+          if (!update_expires_smt.Run()) {
+            LOG(WARNING) << "Unable to update origin bound cert database to "
+                         << "version 4.";
+            return false;
+          }
+        }
+
+        update_creation_smt.Reset();
+        update_creation_smt.BindInt64(0, cert->valid_start().ToInternalValue());
+        update_creation_smt.BindString(1, origin);
+        if (!update_creation_smt.Run()) {
           LOG(WARNING) << "Unable to update origin bound cert database to "
-                       << "version 3.";
+                       << "version 4.";
           return false;
         }
       } else {
@@ -284,7 +305,7 @@ bool SQLiteOriginBoundCertStore::Backend::EnsureDatabaseVersion() {
       }
     }
 
-    ++cur_version;
+    cur_version = 4;
     meta_table_.SetVersionNumber(cur_version);
     meta_table_.SetCompatibleVersionNumber(
         std::min(cur_version, kCompatibleVersionNumber));

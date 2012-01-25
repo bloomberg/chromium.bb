@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -134,6 +134,7 @@ class OriginBoundCertServiceWorker {
     error_ = OriginBoundCertService::GenerateCert(origin_,
                                                   type_,
                                                   serial_number_,
+                                                  &creation_time_,
                                                   &expiration_time_,
                                                   &private_key_,
                                                   &cert_);
@@ -161,7 +162,8 @@ class OriginBoundCertServiceWorker {
       base::AutoLock locked(lock_);
       if (!canceled_) {
         origin_bound_cert_service_->HandleResult(
-            origin_, error_, type_, expiration_time_, private_key_, cert_);
+            origin_, error_, type_, creation_time_, expiration_time_,
+            private_key_, cert_);
       }
     }
     delete this;
@@ -209,6 +211,7 @@ class OriginBoundCertServiceWorker {
   bool canceled_;
 
   int error_;
+  base::Time creation_time_;
   base::Time expiration_time_;
   std::string private_key_;
   std::string cert_;
@@ -302,9 +305,10 @@ int OriginBoundCertService::GetOriginBoundCert(
     RequestHandle* out_req) {
   DCHECK(CalledOnValidThread());
 
+  *out_req = NULL;
+
   if (callback.is_null() || !private_key || !cert || origin.empty() ||
       requested_types.empty()) {
-    *out_req = NULL;
     return ERR_INVALID_ARGUMENT;
   }
 
@@ -317,7 +321,6 @@ int OriginBoundCertService::GetOriginBoundCert(
   }
   if (preferred_type == CLIENT_CERT_INVALID_TYPE) {
     // None of the requested types are supported.
-    *out_req = NULL;
     return ERR_CLIENT_AUTH_CERT_TYPE_UNSUPPORTED;
   }
 
@@ -326,9 +329,11 @@ int OriginBoundCertService::GetOriginBoundCert(
   // Check if an origin bound cert of an acceptable type already exists for this
   // origin, and that it has not expired.
   base::Time now = base::Time::Now();
+  base::Time creation_time;
   base::Time expiration_time;
   if (origin_bound_cert_store_->GetOriginBoundCert(origin,
                                                    type,
+                                                   &creation_time,
                                                    &expiration_time,
                                                    private_key,
                                                    cert)) {
@@ -341,7 +346,6 @@ int OriginBoundCertService::GetOriginBoundCert(
                << origin;
     } else {
       cert_store_hits_++;
-      *out_req = NULL;
       return OK;
     }
   }
@@ -360,7 +364,6 @@ int OriginBoundCertService::GetOriginBoundCert(
         == requested_types.end()) {
       DVLOG(1) << "Found inflight job of wrong type " << job->type()
                << " for " << origin;
-      *out_req = NULL;
       // If we get here, the server is asking for different types of certs in
       // short succession.  This probably means the server is broken or
       // misconfigured.  Since we only store one type of cert per origin, we
@@ -379,7 +382,6 @@ int OriginBoundCertService::GetOriginBoundCert(
     if (!worker->Start()) {
       delete job;
       delete worker;
-      *out_req = NULL;
       // TODO(rkn): Log to the NetLog.
       LOG(ERROR) << "OriginBoundCertServiceWorker couldn't be started.";
       return ERR_INSUFFICIENT_RESOURCES;  // Just a guess.
@@ -394,10 +396,15 @@ int OriginBoundCertService::GetOriginBoundCert(
   return ERR_IO_PENDING;
 }
 
+OriginBoundCertStore* OriginBoundCertService::GetCertStore() {
+  return origin_bound_cert_store_.get();
+}
+
 // static
 int OriginBoundCertService::GenerateCert(const std::string& origin,
                                          SSLClientCertType type,
                                          uint32 serial_number,
+                                         base::Time* creation_time,
                                          base::Time* expiration_time,
                                          std::string* private_key,
                                          std::string* cert) {
@@ -466,6 +473,7 @@ int OriginBoundCertService::GenerateCert(const std::string& origin,
 
   private_key->swap(key_out);
   cert->swap(der_cert);
+  *creation_time = now;
   *expiration_time = not_valid_after;
   return OK;
 }
@@ -482,13 +490,14 @@ void OriginBoundCertService::CancelRequest(RequestHandle req) {
 void OriginBoundCertService::HandleResult(const std::string& origin,
                                           int error,
                                           SSLClientCertType type,
+                                          base::Time creation_time,
                                           base::Time expiration_time,
                                           const std::string& private_key,
                                           const std::string& cert) {
   DCHECK(CalledOnValidThread());
 
   origin_bound_cert_store_->SetOriginBoundCert(
-      origin, type, expiration_time, private_key, cert);
+      origin, type, creation_time, expiration_time, private_key, cert);
 
   std::map<std::string, OriginBoundCertServiceJob*>::iterator j;
   j = inflight_.find(origin);
