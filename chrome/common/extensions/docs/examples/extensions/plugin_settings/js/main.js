@@ -1,12 +1,17 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
+/**
+ * @fileoverview Main entry point that creates a new plug-in list on document
+ * load.
+ */
 
 document.addEventListener('DOMContentLoaded', function() {
   chrome.contentSettings.plugins.getResourceIdentifiers(function(r) {
     if (chrome.extension.lastError) {
       $('error').textContent =
-          "Error: " + chrome.extension.lastError.message;
+          'Error: ' + chrome.extension.lastError.message;
       return;
     }
     var pluginList = $('plugin-list');
@@ -14,3 +19,4 @@ document.addEventListener('DOMContentLoaded', function() {
     pluginList.dataModel = new cr.ui.ArrayDataModel(r);
   });
 });
+

@@ -1845,17 +1845,21 @@
         "domui\/js\/cr\/ui\/list_selection_model.js",
         "domui\/js\/cr\/ui\/list_single_selection_model.js",
         "domui\/js\/util.js",
+        "js\/chrome_stubs.js",
         "js\/main.js",
         "js\/plugin_list.js",
+        "js\/plugin_list_test.html",
         "js\/plugin_settings.js",
+        "js\/plugin_settings_test.html",
         "js\/rule_list.js",
+        "js\/rule_list_test.html",
         "manifest.json",
         "options.html",
         "options\/css\/list.css",
         "options\/js\/deletable_item_list.js",
         "options\/js\/inline_editable_list.js"
       ],
-      "source_hash": "914933e586fe84d71ba8b01c88309288b9d4e515",
+      "source_hash": "5091cd6db218262813b6d98264cf580c6469ce23",
       "zip_path": "examples\/extensions\/plugin_settings.zip"
     },
     {

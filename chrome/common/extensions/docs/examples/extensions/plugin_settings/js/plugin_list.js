@@ -1,6 +1,11 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
+/**
+ * @fileoverview Defines a list of plug-ins that shows for each plug-in a list
+ * of content setting rules.
+ */
 
 cr.define('pluginSettings.ui', function() {
   const List = cr.ui.List;
@@ -8,32 +13,98 @@ cr.define('pluginSettings.ui', function() {
   const ListSingleSelectionModel = cr.ui.ListSingleSelectionModel;
 
   /**
+   * CSS classes used by this class.
+   * @enum {string}
+   */
+  const CSSClass = {
+
+    /**
+     * Hides an element.
+     */
+    HIDDEN: 'hidden',
+
+    /**
+     * A plug-in list.
+     */
+    PLUGIN_LIST: 'plugin-list',
+
+    /**
+     * Set on a plug-in list entry to show details about the plug-in.
+     */
+    PLUGIN_SHOW_DETAILS: 'plugin-show-details',
+
+    /**
+     * The plug-in name.
+     */
+    PLUGIN_NAME: 'plugin-name',
+
+    /**
+     * The number of rules set for a plug-in.
+     */
+    NUM_RULES: 'num-rules',
+
+    /**
+     * The element containing details about a plug-in.
+     */
+    PLUGIN_DETAILS: 'plugin-details',
+
+    /**
+     * The element containing the column headers for the list of rules.
+     */
+    COLUMN_HEADERS: 'column-headers',
+
+    /**
+     * The header for the pattern column.
+     */
+    PATTERN_COLUMN_HEADER: 'pattern-column-header',
+
+    /**
+     * The header for the setting column.
+     */
+    SETTING_COLUMN_HEADER: 'setting-column-header',
+  };
+
+  /**
    * Returns the item's height, like offsetHeight but such that it works better
    * when the page is zoomed. See the similar calculation in @{code cr.ui.List}.
    * This version also accounts for the animation done in this file.
-   * @param {Element} item The item to get the height of.
+   * @param {!Element} item The item to get the height of.
    * @return {number} The height of the item, calculated with zooming in mind.
    */
   function getItemHeight(item) {
     var height = item.style.height;
     // Use the fixed animation target height if set, in case the element is
     // currently being animated and we'd get an intermediate height below.
-    if (height && height.substr(-2) == 'px')
+    if (height && height.substr(-2) == 'px') {
       return parseInt(height.substr(0, height.length - 2));
+    }
     return item.getBoundingClientRect().height;
   }
 
   /**
    * Creates a new plug-in list item element.
-   * @param {PluginList} list The plug-in list containing this item.
-   * @param {Object} info Information about the plug-in.
+   * @param {!PluginList} list The plug-in list containing this item.
+   * @param {!Object} info Information about the plug-in.
    * @constructor
    * @extends {cr.ui.ListItem}
    */
   function PluginListItem(list, info) {
     var el = cr.doc.createElement('li');
+
+    /**
+     * The plug-in list containing this item.
+     * @type {!PluginList}
+     * @private
+     */
     el.list_ = list;
+
+    /**
+     * Information about the plug-in.
+     * @type {!Object}
+     * @private
+     */
     el.info_ = info;
+
     el.__proto__ = PluginListItem.prototype;
     el.decorate();
     return el;
@@ -43,22 +114,9 @@ cr.define('pluginSettings.ui', function() {
     __proto__: ListItem.prototype,
 
     /**
-     * The plug-in list containing this item.
-     * @type {PluginList}
-     * @private
-     */
-    list_: null,
-
-    /**
-     * Information about the plug-in.
-     * @type {Object}
-     * @private
-     */
-    info_: null,
-
-    /**
-     * The element containing details about the plug-in.
-     * @type {HTMLDivElemebt}
+     * The element containing details about the plug-in. This is only null in
+     * the prototype.
+     * @type {?HTMLDivElement}
      * @private
      */
     detailsElement_: null,
@@ -75,28 +133,29 @@ cr.define('pluginSettings.ui', function() {
 
       var titleEl = this.ownerDocument.createElement('div');
       var nameEl = this.ownerDocument.createElement('span');
-      nameEl.className = 'plugin-name';
+      nameEl.className = CSSClass.PLUGIN_NAME;
       nameEl.textContent = info.description;
       nameEl.title = info.description;
       titleEl.appendChild(nameEl);
       this.numRulesEl_ = this.ownerDocument.createElement('span');
-      this.numRulesEl_.className = 'num-rules';
+      this.numRulesEl_.className = CSSClass.NUM_RULES;
       titleEl.appendChild(this.numRulesEl_);
       contentElement.appendChild(titleEl);
 
       this.detailsElement_ = this.ownerDocument.createElement('div');
-      this.detailsElement_.className = 'plugin-details hidden';
+      this.detailsElement_.classList.add(CSSClass.PLUGIN_DETAILS);
+      this.detailsElement_.classList.add(CSSClass.HIDDEN);
 
       var columnHeadersEl = this.ownerDocument.createElement('div');
-      columnHeadersEl.className = 'column-headers';
+      columnHeadersEl.className = CSSClass.COLUMN_HEADERS;
       var patternColumnEl = this.ownerDocument.createElement('div');
       patternColumnEl.textContent =
-          chrome.i18n.getMessage("patternColumnHeader");
-      patternColumnEl.className = 'pattern-column-header';
+          chrome.i18n.getMessage('patternColumnHeader');
+      patternColumnEl.className = CSSClass.PATTERN_COLUMN_HEADER;
       var settingColumnEl = this.ownerDocument.createElement('div');
       settingColumnEl.textContent =
-          chrome.i18n.getMessage("settingColumnHeader");
-      settingColumnEl.className = 'setting-column-header';
+          chrome.i18n.getMessage('settingColumnHeader');
+      settingColumnEl.className = CSSClass.SETTING_COLUMN_HEADER;
       columnHeadersEl.appendChild(patternColumnEl);
       columnHeadersEl.appendChild(settingColumnEl);
       this.detailsElement_.appendChild(columnHeadersEl);
@@ -106,8 +165,9 @@ cr.define('pluginSettings.ui', function() {
 
       var settings = new pluginSettings.Settings(this.info_.id);
       this.updateRulesCount_(settings);
-      settings.addEventListener('change',
-                                this.updateRulesCount_.bind(this, settings));
+      settings.addEventListener(
+          'change',
+          this.updateRulesCount_.bind(this, settings));
 
       // Create the rule list asynchronously, to make sure that it is already
       // fully integrated in the DOM tree.
@@ -116,6 +176,8 @@ cr.define('pluginSettings.ui', function() {
 
     /**
      * Create the list of content setting rules applying to this plug-in.
+     * @param {!pluginSettings.Settings} The settings object storing the content
+     *     setting rules.
      * @private
      */
     loadRules_: function(settings) {
@@ -126,6 +188,13 @@ cr.define('pluginSettings.ui', function() {
       rulesEl.setPluginSettings(settings);
     },
 
+    /**
+     * Called when the list of rules changes to update the rule count shown when
+     * the list is not expanded.
+     * @param {!pluginSettings.Settings} The settings object storing the content
+     *     setting rules.
+     * @private
+     */
     updateRulesCount_: function(settings) {
       this.numRulesEl_.textContent = '(' + settings.getAll().length + ' rules)';
     },
@@ -135,28 +204,34 @@ cr.define('pluginSettings.ui', function() {
      * @type {boolean}
      */
     expanded_: false,
+    /**
+     * Whether this item is expanded or not.
+     * @type {boolean}
+     */
     get expanded() {
       return this.expanded_;
     },
     set expanded(expanded) {
-      if (this.expanded_ == expanded)
+      if (this.expanded_ == expanded) {
         return;
+      }
       this.expanded_ = expanded;
       if (expanded) {
         var oldExpanded = this.list_.expandItem;
         this.list_.expandItem = this;
-        this.detailsElement_.classList.remove('hidden');
-        if (oldExpanded)
+        this.detailsElement_.classList.remove(CSSClass.HIDDEN);
+        if (oldExpanded) {
           oldExpanded.expanded = false;
-        this.classList.add('plugin-show-details');
+        }
+        this.classList.add(CSSClass.PLUGIN_SHOW_DETAILS);
       } else {
         if (this.list_.expandItem == this) {
           this.list_.leadItemHeight = 0;
           this.list_.expandItem = null;
         }
         this.style.height = '';
-        this.detailsElement_.classList.add('hidden');
-        this.classList.remove('plugin-show-details');
+        this.detailsElement_.classList.add(CSSClass.HIDDEN);
+        this.classList.remove(CSSClass.PLUGIN_SHOW_DETAILS);
       }
     },
   };
@@ -176,7 +251,7 @@ cr.define('pluginSettings.ui', function() {
      */
     decorate: function() {
       List.prototype.decorate.call(this);
-      this.classList.add('plugin-list');
+      this.classList.add(CSSClass.PLUGIN_LIST);
       var sm = new ListSingleSelectionModel();
       sm.addEventListener('change', this.handleSelectionChange_.bind(this));
       this.selectionModel = sm;
@@ -185,7 +260,7 @@ cr.define('pluginSettings.ui', function() {
 
     /**
      * Creates a new plug-in list item.
-     * @param {Object} info Information about the plug-in.
+     * @param {!Object} info Information about the plug-in.
      */
     createItem: function(info) {
       return new PluginListItem(this, info);
@@ -193,6 +268,7 @@ cr.define('pluginSettings.ui', function() {
 
     /**
      * Called when the selection changes.
+     * @param {!cr.Event} ce The change event.
      * @private
      */
     handleSelectionChange_: function(ce) {
@@ -202,8 +278,9 @@ cr.define('pluginSettings.ui', function() {
           if (!change.selected) {
             // TODO(bsmith) explain window timeout (from cookies_list.js)
             window.setTimeout(function() {
-              if (!listItem.selected || !listItem.lead)
+              if (!listItem.selected || !listItem.lead) {
                 listItem.expanded = false;
+              }
             }, 0);
           } else if (listItem.lead) {
             listItem.expanded = true;
