@@ -196,6 +196,7 @@ class LKGMManagerTest(mox.MoxTestBase):
                              'RefreshManifestCheckout')
     self.mox.StubOutWithMock(lkgm_manager.LKGMManager,
                              'InitializeManifestVariables')
+    self.mox.StubOutWithMock(lkgm_manager.LKGMManager, 'CheckoutSourceCode')
     self.mox.StubOutWithMock(lkgm_manager.LKGMManager, 'PrepSpecChanges')
     self.mox.StubOutWithMock(lkgm_manager.LKGMManager, 'PushSpecChanges')
     self.mox.StubOutWithMock(lkgm_manager.LKGMManager, 'SetInFlight')
@@ -204,6 +205,7 @@ class LKGMManagerTest(mox.MoxTestBase):
     most_recent_candidate = lkgm_manager._LKGMCandidateInfo('1.2.3-rc12')
 
     # Do manifest refresh work.
+    lkgm_manager.LKGMManager.CheckoutSourceCode()
     lkgm_manager.LKGMManager.RefreshManifestCheckout()
     lkgm_manager.LKGMManager.GetCurrentVersionInfo().AndReturn(my_info)
     lkgm_manager.LKGMManager.InitializeManifestVariables(my_info)
@@ -226,6 +228,7 @@ class LKGMManagerTest(mox.MoxTestBase):
                              'RefreshManifestCheckout')
     self.mox.StubOutWithMock(lkgm_manager.LKGMManager,
                              'InitializeManifestVariables')
+    self.mox.StubOutWithMock(lkgm_manager.LKGMManager, 'CheckoutSourceCode')
     self.mox.StubOutWithMock(lkgm_manager.LKGMManager, 'PrepSpecChanges')
     self.mox.StubOutWithMock(lkgm_manager.LKGMManager, 'PushSpecChanges')
     self.mox.StubOutWithMock(lkgm_manager.LKGMManager, 'SetInFlight')
@@ -234,6 +237,7 @@ class LKGMManagerTest(mox.MoxTestBase):
     most_recent_candidate = lkgm_manager._LKGMCandidateInfo('1.2.4-rc12',
                                                             CHROME_BRANCH)
 
+    lkgm_manager.LKGMManager.CheckoutSourceCode()
     lkgm_manager.LKGMManager.RefreshManifestCheckout()
     lkgm_manager.LKGMManager.GetCurrentVersionInfo().AndReturn(my_info)
     lkgm_manager.LKGMManager.InitializeManifestVariables(my_info)
@@ -262,8 +266,10 @@ class LKGMManagerTest(mox.MoxTestBase):
                              'RefreshManifestCheckout')
     self.mox.StubOutWithMock(lkgm_manager.LKGMManager,
                              'InitializeManifestVariables')
+    self.mox.StubOutWithMock(lkgm_manager.LKGMManager, 'CheckoutSourceCode')
 
     my_info = lkgm_manager._LKGMCandidateInfo('1.2.4')
+    lkgm_manager.LKGMManager.CheckoutSourceCode()
     lkgm_manager.LKGMManager.RefreshManifestCheckout()
     lkgm_manager.LKGMManager.GetCurrentVersionInfo().AndReturn(my_info)
     lkgm_manager.LKGMManager.InitializeManifestVariables(my_info)

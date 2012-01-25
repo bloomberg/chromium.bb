@@ -273,6 +273,9 @@ class LKGMManager(manifest_version.BuildSpecsManager):
                      ', which runs cbuildbot_master')
         return None
 
+    # TODO(sosa):  We only really need the overlay for the version info but we
+    # do a full checkout here because we have no way of refining it currently.
+    self.CheckoutSourceCode()
     version_to_build = self._RunLambdaWithTimeout(_AttemptToGetLatestCandidate,
                                                   use_long_timeout=True)
     if version_to_build:
