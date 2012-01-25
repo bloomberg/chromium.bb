@@ -206,9 +206,7 @@ class ExtensionWebstoreGetWebGLStatusTest : public InProcessBrowserTest {
 };
 
 // Test cases where the user accepts the install confirmation dialog.
-//
-// flaky: http://crbug.com/111308
-IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest, FLAKY_InstallAccepted) {
+IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest, InstallAccepted) {
   ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   FilePath temp_path = temp_dir.path();
@@ -300,7 +298,10 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest,
 }
 
 // Tests using silentlyInstall to install extensions.
-IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateBundleTest, SilentlyInstall) {
+//
+// flaky: http://crbug.com/111308
+IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateBundleTest,
+                       FLAKY_SilentlyInstall) {
   WebstorePrivateApi::SetTrustTestIDsForTesting(true);
   ASSERT_TRUE(RunPageTest(GetTestServerURL("silently_install.html").spec()));
 }
