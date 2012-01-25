@@ -1703,6 +1703,15 @@ bool BrowserInit::ProcessCmdLineImpl(
       // Launch the profiles in the order they became active.
       for (Profiles::const_iterator it = last_opened_profiles.begin();
            it != last_opened_profiles.end(); ++it) {
+        // Don't launch additional profiles which would only open a new tab
+        // page. When restarting after an update, all profiles will reopen last
+        // open pages.
+        SessionStartupPref startup_pref =
+            GetSessionStartupPref(command_line, *it);
+        if (*it != last_used_profile &&
+            startup_pref.type != SessionStartupPref::LAST &&
+            startup_pref.type != SessionStartupPref::URLS)
+          continue;
         if (!browser_init->LaunchBrowser((*it == last_used_profile) ?
             command_line : command_line_without_urls, *it, cur_dir,
             is_process_startup, is_first_run, return_code))

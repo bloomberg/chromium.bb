@@ -60,6 +60,7 @@
 #include "chrome/browser/plugin_prefs.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/pref_value_store.h"
+#include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/prerender/prerender_field_trial.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_proxy_service.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_proxy_service_factory.h"
@@ -390,6 +391,12 @@ Profile* CreateProfile(const content::MainFunctionParams& parameters,
     g_browser_process->local_state()->SetString(prefs::kProfileLastUsed,
         parsed_command_line.GetSwitchValueASCII(
             switches::kProfileDirectory));
+    // Clear kProfilesLastActive since the user only wants to launch a specific
+    // profile.
+    ListPrefUpdate update(g_browser_process->local_state(),
+                          prefs::kProfilesLastActive);
+    ListValue* profile_list = update.Get();
+    profile_list->Clear();
   }
 #if defined(OS_CHROMEOS)
   // TODO(ivankr): http://crbug.com/83792
