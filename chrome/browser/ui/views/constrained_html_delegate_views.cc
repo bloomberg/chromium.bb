@@ -1,9 +1,10 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/ui/webui/constrained_html_ui.h"
 
+#include "base/property_bag.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
@@ -12,7 +13,7 @@
 #include "chrome/browser/ui/webui/html_dialog_tab_contents_delegate.h"
 #include "chrome/browser/ui/webui/html_dialog_ui.h"
 #include "content/public/browser/web_contents.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/size.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget_delegate.h"
 
@@ -26,6 +27,10 @@ class ConstrainedHtmlDelegateViews : public TabContentsContainer,
   ConstrainedHtmlDelegateViews(Profile* profile,
                                HtmlDialogUIDelegate* delegate);
   ~ConstrainedHtmlDelegateViews();
+
+  void set_window(ConstrainedWindow* window) {
+    window_ = window;
+  }
 
   // ConstrainedHtmlUIDelegate interface.
   virtual HtmlDialogUIDelegate* GetHtmlDialogUIDelegate() OVERRIDE;
@@ -71,6 +76,7 @@ class ConstrainedHtmlDelegateViews : public TabContentsContainer,
     return size;
   }
 
+  // views::WidgetDelegate interface.
   virtual void ViewHierarchyChanged(bool is_add,
                                     views::View* parent,
                                     views::View* child) OVERRIDE {
@@ -78,10 +84,6 @@ class ConstrainedHtmlDelegateViews : public TabContentsContainer,
     if (is_add && child == this) {
       ChangeWebContents(html_tab_contents_->web_contents());
     }
-  }
-
-  void set_window(ConstrainedWindow* window) {
-    window_ = window;
   }
 
  private:

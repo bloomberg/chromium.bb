@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,7 +13,7 @@
 #include "chrome/browser/ui/webui/html_dialog_ui.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/gtk/gtk_hig_constants.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/size.h"
 #include "ui/views/widget/native_widget_gtk.h"
 
 using content::WebContents;
@@ -28,6 +28,10 @@ class ConstrainedHtmlDelegateGtk : public views::NativeWidgetGtk,
   ConstrainedHtmlDelegateGtk(Profile* profile,
                              HtmlDialogUIDelegate* delegate);
   ~ConstrainedHtmlDelegateGtk();
+
+  void set_window(ConstrainedWindow* window) {
+    window_ = window;
+  }
 
   // ConstrainedHtmlUIDelegate interface.
   virtual HtmlDialogUIDelegate* GetHtmlDialogUIDelegate() OVERRIDE;
@@ -65,10 +69,6 @@ class ConstrainedHtmlDelegateGtk : public views::NativeWidgetGtk,
 
   // HtmlDialogTabContentsDelegate interface.
   void HandleKeyboardEvent(const NativeWebKeyboardEvent& event) OVERRIDE {}
-
-  void set_window(ConstrainedWindow* window) {
-    window_ = window;
-  }
 
  private:
   scoped_ptr<TabContentsWrapper> html_tab_contents_;

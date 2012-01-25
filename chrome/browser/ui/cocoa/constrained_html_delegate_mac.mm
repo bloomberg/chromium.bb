@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -31,6 +31,10 @@ class ConstrainedHtmlDelegateMac :
       ignore_result(tab_.release());
   }
 
+  void set_window(ConstrainedWindow* window) {
+    constrained_window_ = window;
+  }
+
   // ConstrainedWindowMacDelegateCustomSheet -----------------------------------
   virtual void DeleteDelegate() OVERRIDE {
     // From ConstrainedWindowMacDelegate: "you MUST close the sheet belonging to
@@ -53,10 +57,6 @@ class ConstrainedHtmlDelegateMac :
   // HtmlDialogTabContentsDelegate ---------------------------------------------
   virtual void HandleKeyboardEvent(
       const NativeWebKeyboardEvent& event) OVERRIDE {}
-
-  void set_window(ConstrainedWindow* window) {
-    constrained_window_ = window;
-  }
 
  private:
   // Holds the HTML to be displayed in the sheet.
