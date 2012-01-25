@@ -166,7 +166,7 @@ deps_os = {
         'src/third_party/cygwin':
             Var('git_url') + '/chromium/deps/cygwin.git@06a117a90c15174436bfa20ceebbfdf43b7eb820',
         'src/third_party/ffmpeg/binaries/chromium/win/ia32':
-            Var('git_url') + '/chromium/deps/ffmpeg/binaries/win.git@3bbd28913dc9c71bc65b133dfc2f8a19ea84ee46',
+            Var('git_url') + '/chromium/deps/ffmpeg/binaries/win.git@9add1b345d8ce46a4756ff0a5881a153fe650ee0',
         'src/third_party/lighttpd':
             Var('git_url') + '/chromium/deps/lighttpd.git@856e79c6109d4f0abe93c01d4c22419e33c9bee7',
         'src/third_party/mingw-w64/mingw/bin':
