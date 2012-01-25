@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -224,7 +224,8 @@ bool DXVAVideoDecodeAccelerator::CreateD3DDevManager() {
                             D3DDEVTYPE_HAL,
                             ::GetShellWindow(),
                             D3DCREATE_SOFTWARE_VERTEXPROCESSING |
-                            D3DCREATE_MULTITHREADED,
+                            D3DCREATE_MULTITHREADED |
+                            D3DCREATE_FPU_PRESERVE,
                             &present_params,
                             NULL,
                             &device_);
