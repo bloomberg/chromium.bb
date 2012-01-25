@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,8 +21,6 @@ class DictionaryValue;
 // listeners.  Will not send if the profile's pause level is nonzero
 // (using profile->PauseAccessibilityEvents).
 void SendAccessibilityNotification(int type, AccessibilityEventInfo* info);
-
-void SendAccessibilityVolumeNotification(double volume, bool is_muted);
 
 // Abstract parent class for accessibility event information passed to event
 // listeners.
@@ -288,34 +286,6 @@ class AccessibilityMenuInfo : public AccessibilityControlInfo {
   AccessibilityMenuInfo(Profile* profile, const std::string& menu_name);
 
   virtual const char* type() const OVERRIDE;
-};
-
-// Accessibility information about a volume; this class is used by
-// onVolumeUp, onVolumeDown, and onVolumeMute event listeners.
-class AccessibilityVolumeInfo : public AccessibilityEventInfo {
- public:
-  // |volume| must range between 0 to 100.
-  AccessibilityVolumeInfo(Profile* profile, double volume, bool is_muted);
-
-  virtual void SerializeToDict(base::DictionaryValue* dict) const OVERRIDE;
-
- private:
-  double volume_;
-  bool is_muted_;
-};
-
-// Screen unlock event information; this class is used by onScreenUnlocked.
-class ScreenUnlockedEventInfo : public AccessibilityEventInfo {
- public:
-  explicit ScreenUnlockedEventInfo(Profile* profile);
-  virtual void SerializeToDict(base::DictionaryValue* dict) const OVERRIDE;
-};
-
-// Wake up event information; this class is used by onWokeUp.
-class WokeUpEventInfo : public AccessibilityEventInfo {
- public:
-  explicit WokeUpEventInfo(Profile* profile);
-  virtual void SerializeToDict(base::DictionaryValue* dict) const OVERRIDE;
 };
 
 // Accessibility information about a menu item; this class is used by

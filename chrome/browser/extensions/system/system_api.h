@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -26,6 +26,10 @@ class GetUpdateStatusFunction : public SyncExtensionFunction {
   virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("systemPrivate.getUpdateStatus")
 };
+
+void DispatchVolumeChangedEvent(double volume, bool is_volume_muted);
+void DispatchScreenUnlockedEvent();
+void DispatchWokeUpEvent();
 
 }  // namespace extensions
 

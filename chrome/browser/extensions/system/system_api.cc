@@ -1,12 +1,15 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/extensions/system/system_api.h"
 
+#include "base/json/json_writer.h"
 #include "base/values.h"
+#include "chrome/browser/extensions/extension_event_router.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/pref_names.h"
 
 #if defined(OS_CHROMEOS)
@@ -27,13 +30,28 @@ const char* kIncognitoModeAvailabilityStrings[] = {
 };
 
 // Property keys.
+const char kDownloadProgressKey[] = "downloadProgress";
+const char kIsVolumeMutedKey[] = "isVolumeMuted";
 const char kStateKey[] = "state";
-const char kDownloadProgressKey[] = "download_progress";
+const char kVolumeKey[] = "volume";
 
 // System update states.
 const char kNotAvailableState[] = "NotAvailable";
 const char kUpdatingState[] = "Updating";
 const char kNeedRestartState[] = "NeedRestart";
+
+// Event names.
+const char kOnVolumeChanged[] = "systemPrivate.onVolumeChanged";
+const char kOnScreenUnlocked[] = "systemPrivate.onScreenUnlocked";
+const char kOnWokeUp[] = "systemPrivate.onWokeUp";
+
+// Dispatches an extension event with |args|
+void DispatchEvent(const std::string& event_name, const ListValue& args) {
+  std::string json_args;
+  base::JSONWriter::Write(&args, false, &json_args);
+  ProfileManager::GetDefaultProfile()->GetExtensionEventRouter()->
+      DispatchEventToRenderers(event_name, json_args, NULL, GURL());
+}
 
 }  // namespace
 
@@ -109,6 +127,25 @@ bool GetUpdateStatusFunction::RunImpl() {
   result_.reset(dict);
 
   return true;
+}
+
+void DispatchVolumeChangedEvent(double volume, bool is_volume_muted) {
+  ListValue args;
+  DictionaryValue* dict = new DictionaryValue();
+  dict->SetDouble(kVolumeKey, volume);
+  dict->SetBoolean(kIsVolumeMutedKey, is_volume_muted);
+  args.Append(dict);
+  DispatchEvent(kOnVolumeChanged, args);
+}
+
+void DispatchScreenUnlockedEvent() {
+  ListValue args;
+  DispatchEvent(kOnScreenUnlocked, args);
+}
+
+void DispatchWokeUpEvent() {
+  ListValue args;
+  DispatchEvent(kOnWokeUp, args);
 }
 
 }  // namespace extensions

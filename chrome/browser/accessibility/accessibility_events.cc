@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -23,13 +23,6 @@ void SendAccessibilityNotification(int type, AccessibilityEventInfo* info) {
         content::Source<Profile>(profile),
         content::Details<AccessibilityEventInfo>(info));
   }
-}
-
-void SendAccessibilityVolumeNotification(double volume, bool is_muted) {
-  Profile* profile = ProfileManager::GetDefaultProfile();
-  AccessibilityVolumeInfo info(profile, volume, is_muted);
-  SendAccessibilityNotification(
-      chrome::NOTIFICATION_ACCESSIBILITY_VOLUME_CHANGED, &info);
 }
 
 AccessibilityControlInfo::AccessibilityControlInfo(
@@ -214,36 +207,6 @@ void AccessibilityListBoxInfo::SerializeToDict(DictionaryValue *dict) const {
   dict->SetString(keys::kValueKey, value_);
   dict->SetInteger(keys::kItemIndexKey, item_index_);
   dict->SetInteger(keys::kItemCountKey, item_count_);
-}
-
-AccessibilityVolumeInfo::AccessibilityVolumeInfo(Profile* profile,
-                                                 double volume,
-                                                 bool is_muted)
-    : AccessibilityEventInfo(profile),
-      volume_(volume),
-      is_muted_(is_muted) {
-  DCHECK(profile);
-  DCHECK_GE(volume, 0.0);
-  DCHECK_LE(volume, 100.0);
-}
-
-void AccessibilityVolumeInfo::SerializeToDict(DictionaryValue *dict) const {
-  dict->SetDouble(keys::kVolumeKey, volume_);
-  dict->SetBoolean(keys::kIsVolumeMutedKey, is_muted_);
-}
-
-ScreenUnlockedEventInfo::ScreenUnlockedEventInfo(Profile* profile)
-    : AccessibilityEventInfo(profile) {
-}
-
-void ScreenUnlockedEventInfo::SerializeToDict(DictionaryValue *dict) const {
-}
-
-WokeUpEventInfo::WokeUpEventInfo(Profile* profile)
-    : AccessibilityEventInfo(profile) {
-}
-
-void WokeUpEventInfo::SerializeToDict(DictionaryValue *dict) const {
 }
 
 AccessibilityMenuInfo::AccessibilityMenuInfo(Profile* profile,

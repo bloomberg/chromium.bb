@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -63,15 +63,6 @@ ExtensionAccessibilityEventRouter::ExtensionAccessibilityEventRouter()
   registrar_.Add(this,
                  chrome::NOTIFICATION_ACCESSIBILITY_MENU_CLOSED,
                  content::NotificationService::AllSources());
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_ACCESSIBILITY_VOLUME_CHANGED,
-                 content::NotificationService::AllSources());
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_ACCESSIBILITY_SCREEN_UNLOCKED,
-                 content::NotificationService::AllSources());
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_ACCESSIBILITY_WOKE_UP,
-                 content::NotificationService::AllSources());
 }
 
 ExtensionAccessibilityEventRouter::~ExtensionAccessibilityEventRouter() {
@@ -109,18 +100,6 @@ void ExtensionAccessibilityEventRouter::Observe(
     case chrome::NOTIFICATION_ACCESSIBILITY_MENU_CLOSED:
       OnMenuClosed(
           content::Details<const AccessibilityMenuInfo>(details).ptr());
-      break;
-    case chrome::NOTIFICATION_ACCESSIBILITY_VOLUME_CHANGED:
-      OnVolumeChanged(
-          content::Details<const AccessibilityVolumeInfo>(details).ptr());
-      break;
-    case chrome::NOTIFICATION_ACCESSIBILITY_SCREEN_UNLOCKED:
-      OnScreenUnlocked(
-          content::Details<const ScreenUnlockedEventInfo>(details).ptr());
-      break;
-    case chrome::NOTIFICATION_ACCESSIBILITY_WOKE_UP:
-      OnWokeUp(
-          content::Details<const WokeUpEventInfo>(details).ptr());
       break;
     default:
       NOTREACHED();
@@ -177,23 +156,6 @@ void ExtensionAccessibilityEventRouter::OnMenuClosed(
     const AccessibilityMenuInfo* info) {
   std::string json_args = ControlInfoToJsonString(info);
   DispatchEvent(info->profile(), keys::kOnMenuClosed, json_args);
-}
-
-void ExtensionAccessibilityEventRouter::OnVolumeChanged(
-    const AccessibilityVolumeInfo* info) {
-  std::string json_args = ControlInfoToJsonString(info);
-  DispatchEvent(info->profile(), keys::kOnVolumeChanged, json_args);
-}
-
-void ExtensionAccessibilityEventRouter::OnScreenUnlocked(
-    const ScreenUnlockedEventInfo* info) {
-  std::string json_args = ControlInfoToJsonString(info);
-  DispatchEvent(info->profile(), keys::kOnScreenUnlocked, json_args);
-}
-
-void ExtensionAccessibilityEventRouter::OnWokeUp(const WokeUpEventInfo* info) {
-  std::string json_args = ControlInfoToJsonString(info);
-  DispatchEvent(info->profile(), keys::kOnWokeUp, json_args);
 }
 
 void ExtensionAccessibilityEventRouter::DispatchEvent(

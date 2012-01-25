@@ -1,17 +1,15 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/accessibility/system_event_observer.h"
+#include "chrome/browser/chromeos/system/system_event_observer.h"
 
 #include "base/logging.h"
-#include "chrome/browser/accessibility/accessibility_events.h"
 #include "chrome/browser/chromeos/dbus/dbus_thread_manager.h"
-#include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/common/chrome_notification_types.h"
+#include "chrome/browser/extensions/system/system_api.h"
 
 namespace chromeos {
-namespace accessibility {
+namespace system {
 
 namespace {
 
@@ -26,17 +24,11 @@ SystemEventObserver::~SystemEventObserver() {
 }
 
 void SystemEventObserver::SystemResumed() {
-  Profile* profile = ProfileManager::GetDefaultProfile();
-  WokeUpEventInfo info(profile);
-  SendAccessibilityNotification(
-      chrome::NOTIFICATION_ACCESSIBILITY_WOKE_UP, &info);
+  extensions::DispatchWokeUpEvent();
 }
 
 void SystemEventObserver::UnlockScreen() {
-  Profile* profile = ProfileManager::GetDefaultProfile();
-  ScreenUnlockedEventInfo info(profile);
-  SendAccessibilityNotification(
-      chrome::NOTIFICATION_ACCESSIBILITY_SCREEN_UNLOCKED, &info);
+  extensions::DispatchScreenUnlockedEvent();
 }
 
 // static
@@ -63,5 +55,5 @@ void SystemEventObserver::Shutdown() {
   VLOG(1) << "SystemEventObserver Shutdown completed";
 }
 
-}  // namespace accessibility
+}  // namespace system
 }  // namespace chromeos

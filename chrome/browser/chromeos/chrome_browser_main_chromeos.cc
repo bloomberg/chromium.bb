@@ -11,7 +11,6 @@
 #include "base/message_loop.h"
 #include "base/string_number_conversions.h"
 #include "chrome/browser/browser_process_impl.h"
-#include "chrome/browser/chromeos/accessibility/system_event_observer.h"
 #include "chrome/browser/chromeos/audio/audio_handler.h"
 #include "chrome/browser/chromeos/bluetooth/bluetooth_manager.h"
 #include "chrome/browser/chromeos/boot_times_loader.h"
@@ -37,6 +36,7 @@
 #include "chrome/browser/chromeos/status/status_area_view_chromeos.h"
 #include "chrome/browser/chromeos/system/runtime_environment.h"
 #include "chrome/browser/chromeos/system/statistics_provider.h"
+#include "chrome/browser/chromeos/system/system_event_observer.h"
 #include "chrome/browser/chromeos/system_key_event_listener.h"
 #include "chrome/browser/chromeos/upgrade_detector_chromeos.h"
 #include "chrome/browser/chromeos/web_socket_proxy_controller.h"
@@ -283,7 +283,7 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopStart() {
   chromeos::disks::DiskMountManager::Initialize();
 
   // Initialize the system event observer.
-  chromeos::accessibility::SystemEventObserver::Initialize();
+  chromeos::system::SystemEventObserver::Initialize();
 
   // Initialize the network change notifier for Chrome OS. The network
   // change notifier starts to monitor changes from the power manager and
@@ -502,7 +502,7 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   // Shut these down here instead of in the destructor in case we exited before
   // running BrowserMainLoop::RunMainMessageLoopParts() and never initialized
   // these.
-  chromeos::accessibility::SystemEventObserver::Shutdown();
+  chromeos::system::SystemEventObserver::Shutdown();
   chromeos::BluetoothManager::Shutdown();
 
   // The XInput2 event listener needs to be shut down earlier than when

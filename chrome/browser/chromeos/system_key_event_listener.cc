@@ -8,8 +8,8 @@
 #include <X11/keysymdef.h>
 #include <X11/XF86keysym.h>
 #include <X11/XKBlib.h>
+#undef Status
 
-#include "chrome/browser/accessibility/accessibility_events.h"
 #include "chrome/browser/chromeos/audio/audio_handler.h"
 #include "chrome/browser/chromeos/dbus/dbus_thread_manager.h"
 #include "chrome/browser/chromeos/dbus/power_manager_client.h"
@@ -18,6 +18,7 @@
 #include "chrome/browser/chromeos/input_method/xkeyboard.h"
 #include "chrome/browser/chromeos/ui/brightness_bubble.h"
 #include "chrome/browser/chromeos/ui/volume_bubble.h"
+#include "chrome/browser/extensions/system/system_api.h"
 #include "content/public/browser/user_metrics.h"
 #include "third_party/cros_system_api/window_manager/chromeos_wm_ipc_enums.h"
 #include "ui/base/x/x11_util.h"
@@ -220,10 +221,8 @@ void SystemKeyEventListener::OnVolumeMute() {
   // http://crosbug.com/3751
   audio_handler->SetMuted(true);
 
-  SendAccessibilityVolumeNotification(
-      audio_handler->GetVolumePercent(),
-      audio_handler->IsMuted());
-
+  extensions::DispatchVolumeChangedEvent(audio_handler->GetVolumePercent(),
+                                         audio_handler->IsMuted());
   ShowVolumeBubble();
 }
 
@@ -237,10 +236,8 @@ void SystemKeyEventListener::OnVolumeDown() {
   else
     audio_handler->AdjustVolumeByPercent(-kStepPercentage);
 
-  SendAccessibilityVolumeNotification(
-      audio_handler->GetVolumePercent(),
-      audio_handler->IsMuted());
-
+  extensions::DispatchVolumeChangedEvent(audio_handler->GetVolumePercent(),
+                                         audio_handler->IsMuted());
   ShowVolumeBubble();
 }
 
@@ -257,10 +254,8 @@ void SystemKeyEventListener::OnVolumeUp() {
     audio_handler->AdjustVolumeByPercent(kStepPercentage);
   }
 
-  SendAccessibilityVolumeNotification(
-      audio_handler->GetVolumePercent(),
-      audio_handler->IsMuted());
-
+  extensions::DispatchVolumeChangedEvent(audio_handler->GetVolumePercent(),
+                                         audio_handler->IsMuted());
   ShowVolumeBubble();
 }
 

@@ -13,10 +13,19 @@
             "enum": ["NotAvailable", "Updating", "NeedRestart"],
             "description": "State of system update.  NotAvailable when there is no available update or the update system is in error state, Updating when a system update is in progress, NeedRestart when a system update is finished and restart is needed."
           },
-          "download_progress": {
+          "downloadProgress": {
             "type": "number",
             "description": "Value between 0 and 1 describing the progress of system update download.  This value will be set to 0 when |state| is NotAvailable, 1 when NeedRestart."
           }
+        }
+      },
+      {
+        "id": "VolumeInfo",
+        "type": "object",
+        "description": "Information about the volume.",
+        "properties": {
+          "volume": {"type": "double", "description": "The value of the volume percent. This must be between 0.0 and 100.0."},
+          "isVolumeMuted": {"type": "boolean", "description": "True if the volume is muted."}
         }
       }
     ],
@@ -58,6 +67,32 @@
             ]
           }
         ]
+      }
+    ],
+    "events": [
+      {
+        "name": "onVolumeChanged",
+        "type": "function",
+        "description": "Fired when the volume is changed.",
+        "parameters": [
+          {
+            "$ref": "VolumeInfo",
+            "name": "volume",
+            "description": "Information about the current state of the system volume control, including whether it is muted."
+          }
+        ]
+      },
+      {
+        "name": "onScreenUnlocked",
+        "type": "function",
+        "description": "Fired when the screen is unlocked.",
+        "parameters": []
+      },
+      {
+        "name": "onWokeUp",
+        "type": "function",
+        "description": "Fired when the device wakes up from sleep.",
+        "parameters": []
       }
     ]
   }

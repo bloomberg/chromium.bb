@@ -113,15 +113,6 @@
         }
       },
       {
-        "id": "AccessibilityVolumeInfo",
-        "type": "object",
-        "description": "Information about the volume.",
-        "properties": {
-          "volume": {"type": "double", "description": "The value of the volume percent. This must be between 0.0 and 100.0."},
-          "isVolumeMuted": {"type": "boolean", "description": "True if the volume is muted."}
-        }
-      },
-      {
         "id": "AlertInfo",
         "type": "object",
         "description": "Information about an alert",
@@ -276,30 +267,6 @@
             "description": "Information about the menu that was closed."
           }
         ]
-      },
-      {
-        "name": "onVolumeChanged",
-        "type": "function",
-        "description": "Fired when the volume is changed.",
-        "parameters": [
-          {
-            "$ref": "AccessibilityVolumeInfo",
-            "name": "volume",
-            "description": "Information about the current state of the system volume control, including whether it is muted."
-          }
-        ]
-      },
-      {
-        "name": "onScreenUnlocked",
-        "type": "function",
-        "description": "Fired when the screen is unlocked.",
-        "parameters": []
-      },
-      {
-        "name": "onWokeUp",
-        "type": "function",
-        "description": "Fired when the device wakes up from sleep.",
-        "parameters": []
       }
     ]
   }
