@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,8 @@
 
 #include "base/basictypes.h"
 
+class Browser;
+
 namespace protector {
 
 // Interface for notifications about settings change error bubble closing.
@@ -16,10 +18,10 @@ class SettingsChangeGlobalErrorDelegate {
   virtual ~SettingsChangeGlobalErrorDelegate() {}
 
   // Called if user clicks "Apply change" button.
-  virtual void OnApplyChange() = 0;
+  virtual void OnApplyChange(Browser* browser) = 0;
 
   // Called if user clicks "Discard change" button.
-  virtual void OnDiscardChange() = 0;
+  virtual void OnDiscardChange(Browser* browser) = 0;
 
   // Called if user clicked outside the bubble and timeout for its reshow
   // has passed.

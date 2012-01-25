@@ -44,15 +44,15 @@ bool ProtectorService::IsShowingChange() const {
   return change_.get() != NULL;
 }
 
-void ProtectorService::ApplyChange() {
+void ProtectorService::ApplyChange(Browser* browser) {
   DCHECK(IsShowingChange());
-  change_->Apply();
+  change_->Apply(browser);
   DismissChange();
 }
 
-void ProtectorService::DiscardChange() {
+void ProtectorService::DiscardChange(Browser* browser) {
   DCHECK(IsShowingChange());
-  change_->Discard();
+  change_->Discard(browser);
   DismissChange();
 }
 
@@ -62,12 +62,9 @@ void ProtectorService::DismissChange() {
   DCHECK(!IsShowingChange());
 }
 
-void ProtectorService::OpenTab(const GURL& url) {
-  if (!error_.get() || !error_->browser()) {
-    LOG(WARNING) << "Don't have browser to show tab in.";
-    return;
-  }
-  error_->browser()->ShowSingletonTab(url);
+void ProtectorService::OpenTab(const GURL& url, Browser* browser) {
+  DCHECK(browser);
+  browser->ShowSingletonTab(url);
 }
 
 void ProtectorService::Shutdown() {
@@ -75,16 +72,16 @@ void ProtectorService::Shutdown() {
     DismissChange();
 }
 
-void ProtectorService::OnApplyChange() {
+void ProtectorService::OnApplyChange(Browser* browser) {
   DVLOG(1) << "Apply change";
   DCHECK(IsShowingChange());
-  change_->Apply();
+  change_->Apply(browser);
 }
 
-void ProtectorService::OnDiscardChange() {
+void ProtectorService::OnDiscardChange(Browser* browser) {
   DVLOG(1) << "Discard change";
   DCHECK(IsShowingChange());
-  change_->Discard();
+  change_->Discard(browser);
 }
 
 void ProtectorService::OnDecisionTimeout() {

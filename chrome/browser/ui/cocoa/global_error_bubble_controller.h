@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,18 +8,26 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include "base/memory/weak_ptr.h"
 #import "chrome/browser/ui/cocoa/base_bubble_controller.h"
 
+class Browser;
 class GlobalError;
 @class GTMUILocalizerAndLayoutTweaker;
 @class GTMWidthBasedTweaker;
+class Profile;
+
+namespace GlobalErrorBubbleControllerInternal {
+class Bridge;
+}
 
 // This is a bubble view shown from the wrench menu to display information
 // about a global error.
 @interface GlobalErrorBubbleController : BaseBubbleController {
  @private
-  // |error_| can be NULL after -close is called.
-  GlobalError* error_;
+  base::WeakPtr<GlobalError> error_;
+  scoped_ptr<GlobalErrorBubbleControllerInternal::Bridge> bridge_;
+  Browser* browser_;
 
   IBOutlet NSImageView* iconView_;
   IBOutlet NSTextField* title_;
@@ -32,6 +40,8 @@ class GlobalError;
 
 - (IBAction)onAccept:(id)sender;
 - (IBAction)onCancel:(id)sender;
+
+- (void)close;
 
 @end
 

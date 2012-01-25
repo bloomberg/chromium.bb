@@ -12,6 +12,7 @@
 #include "base/basictypes.h"
 #include "base/string16.h"
 
+class Browser;
 class Profile;
 class TemplateURL;
 
@@ -30,11 +31,13 @@ class BaseSettingChange {
   // base method.
   virtual bool Init(Profile* profile);
 
-  // Persists new setting if needed.
-  virtual void Apply();
+  // Persists new setting if needed. |browser| is the Browser instance from
+  // which the user action originates.
+  virtual void Apply(Browser* browser);
 
-  // Restores old setting if needed.
-  virtual void Discard();
+  // Restores old setting if needed. |browser| is the Browser instance from
+  // which the user action originates.
+  virtual void Discard(Browser* browser);
 
   // Indicates that user has ignored this change and timeout has passed.
   virtual void Timeout();

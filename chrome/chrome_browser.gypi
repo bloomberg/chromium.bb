@@ -2983,6 +2983,7 @@
         'browser/ui/fullscreen_exit_bubble_type.h',
         'browser/ui/global_error.cc',
         'browser/ui/global_error.h',
+        'browser/ui/global_error_bubble_view_base.h',
         'browser/ui/global_error_service.cc',
         'browser/ui/global_error_service.h',
         'browser/ui/global_error_service_factory.cc',

@@ -7,12 +7,14 @@
 #pragma once
 
 #include "base/basictypes.h"
+#include "base/memory/weak_ptr.h"
 #include "base/string16.h"
 
 class Browser;
+class GlobalErrorBubbleViewBase;
 
 // This object describes a single global error.
-class GlobalError {
+class GlobalError : public base::SupportsWeakPtr<GlobalError> {
  public:
   GlobalError();
   virtual ~GlobalError();
@@ -38,7 +40,9 @@ class GlobalError {
   // Returns true if the bubble view has been shown.
   virtual bool HasShownBubbleView();
   // Called to show the bubble view.
-  virtual void ShowBubbleView(Browser* browser);
+  void ShowBubbleView(Browser* browser);
+  // Returns the bubble view.
+  virtual GlobalErrorBubbleViewBase* GetBubbleView();
   // Returns the resource ID for bubble view icon.
   virtual int GetBubbleViewIconResourceID();
   // Returns the title for the bubble view.
@@ -50,19 +54,23 @@ class GlobalError {
   // Returns the cancel button label for the bubble view. To hide the cancel
   // button return an empty string.
   virtual string16 GetBubbleViewCancelButtonLabel() = 0;
-  // Called when the bubble view is closed unless the bubble is closed as the
-  // result of |this| being removed from GlobalErrorService.
-  virtual void BubbleViewDidClose() = 0;
-  // Called when the user clicks on the accept button.
-  virtual void BubbleViewAcceptButtonPressed() = 0;
-  // Called when teh user clicks the cancel button.
-  virtual void BubbleViewCancelButtonPressed() = 0;
+  // Called when the bubble view is closed. |browser| is the Browser that the
+  // bubble view was shown on.
+  void BubbleViewDidClose(Browser* browser);
+  // Notifies subclasses that the bubble view is closed. |browser| is the
+  // Browser that the bubble view was shown on.
+  virtual void OnBubbleViewDidClose(Browser* browser) = 0;
+  // Called when the user clicks on the accept button. |browser| is the
+  // Browser that the bubble view was shown on.
+  virtual void BubbleViewAcceptButtonPressed(Browser* browser) = 0;
+  // Called when the user clicks the cancel button. |browser| is the
+  // Browser that the bubble view was shown on.
+  virtual void BubbleViewCancelButtonPressed(Browser* browser) = 0;
 
 
  private:
-  static void ShowBubbleView(Browser* browser, GlobalError* error);
-
   bool has_shown_bubble_view_;
+  GlobalErrorBubbleViewBase* bubble_view_;
 
   DISALLOW_COPY_AND_ASSIGN(GlobalError);
 };

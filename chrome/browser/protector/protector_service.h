@@ -43,14 +43,16 @@ class ProtectorService : public ProfileKeyedService,
   virtual void DismissChange();
 
   // Persists the change that is currently active and removes global error.
-  virtual void ApplyChange();
+  // |browser| is the Browser instance from which the user action originates.
+  virtual void ApplyChange(Browser* browser);
 
   // Discards the change that is currently active and removes global error.
-  virtual void DiscardChange();
+  // |browser| is the Browser instance from which the user action originates.
+  virtual void DiscardChange(Browser* browser);
 
   // Opens a tab with specified URL in the browser window we've shown error
   // bubble for.
-  virtual void OpenTab(const GURL& url);
+  virtual void OpenTab(const GURL& url, Browser* browser);
 
   // Returns the Profile instance we've shown error bubble for.
   Profile* profile() { return profile_; }
@@ -62,8 +64,8 @@ class ProtectorService : public ProfileKeyedService,
   virtual void Shutdown() OVERRIDE;
 
   // SettingsChangeGlobalErrorDelegate implementation.
-  virtual void OnApplyChange() OVERRIDE;
-  virtual void OnDiscardChange() OVERRIDE;
+  virtual void OnApplyChange(Browser* browser) OVERRIDE;
+  virtual void OnDiscardChange(Browser* browser) OVERRIDE;
   virtual void OnDecisionTimeout() OVERRIDE;
   virtual void OnRemovedFromProfile() OVERRIDE;
 

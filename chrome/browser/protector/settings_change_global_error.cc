@@ -34,7 +34,6 @@ SettingsChangeGlobalError::SettingsChangeGlobalError(
     : change_(change),
       delegate_(delegate),
       profile_(NULL),
-      browser_(NULL),
       closed_by_button_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
   DCHECK(delegate_);
@@ -70,8 +69,7 @@ int SettingsChangeGlobalError::MenuItemIconResourceID() {
 void SettingsChangeGlobalError::ExecuteMenuItem(Browser* browser) {
   // Cancel previously posted tasks.
   weak_factory_.InvalidateWeakPtrs();
-  browser_ = browser;
-  ShowBubbleView(browser_);
+  ShowBubbleView(browser);
 }
 
 bool SettingsChangeGlobalError::HasBubbleView() {
@@ -103,14 +101,16 @@ string16 SettingsChangeGlobalError::GetBubbleViewCancelButtonLabel() {
   return change_->GetApplyButtonText();
 }
 
-void SettingsChangeGlobalError::BubbleViewAcceptButtonPressed() {
+void SettingsChangeGlobalError::BubbleViewAcceptButtonPressed(
+    Browser* browser) {
   closed_by_button_ = true;
-  delegate_->OnDiscardChange();
+  delegate_->OnDiscardChange(browser);
 }
 
-void SettingsChangeGlobalError::BubbleViewCancelButtonPressed() {
+void SettingsChangeGlobalError::BubbleViewCancelButtonPressed(
+    Browser* browser) {
   closed_by_button_ = true;
-  delegate_->OnApplyChange();
+  delegate_->OnApplyChange(browser);
 }
 
 void SettingsChangeGlobalError::RemoveFromProfile() {
@@ -120,8 +120,7 @@ void SettingsChangeGlobalError::RemoveFromProfile() {
   delegate_->OnRemovedFromProfile();
 }
 
-void SettingsChangeGlobalError::BubbleViewDidClose() {
-  browser_ = NULL;
+void SettingsChangeGlobalError::OnBubbleViewDidClose(Browser* browser) {
   if (!closed_by_button_) {
     BrowserThread::PostDelayedTask(
         BrowserThread::UI, FROM_HERE,
@@ -155,13 +154,13 @@ void SettingsChangeGlobalError::AddToProfile(Profile* profile) {
 void SettingsChangeGlobalError::Show() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(profile_);
-  browser_ = BrowserList::GetLastActiveWithProfile(profile_);
-  if (!browser_ && profile_->HasOffTheRecordProfile()) {
-    browser_ = BrowserList::GetLastActiveWithProfile(
+  Browser* browser = BrowserList::GetLastActiveWithProfile(profile_);
+  if (!browser && profile_->HasOffTheRecordProfile()) {
+    browser = BrowserList::GetLastActiveWithProfile(
         profile_->GetOffTheRecordProfile());
   }
-  if (browser_)
-    ShowBubbleView(browser_);
+  if (browser)
+    ShowBubbleView(browser);
 }
 
 void SettingsChangeGlobalError::OnInactiveTimeout() {

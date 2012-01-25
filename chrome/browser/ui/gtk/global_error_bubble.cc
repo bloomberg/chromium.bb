@@ -16,8 +16,6 @@
 #include "chrome/browser/ui/gtk/browser_window_gtk.h"
 #include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
-#include "chrome/common/chrome_notification_types.h"
-#include "content/public/browser/notification_service.h"
 #include "ui/base/gtk/gtk_hig_constants.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/gtk_util.h"
@@ -42,16 +40,20 @@ const int kMessageLabelWidth = 250;
 
 }  // namespace
 
-GlobalErrorBubble::GlobalErrorBubble(Profile* profile,
-                                     GlobalError* error,
+GlobalErrorBubble::GlobalErrorBubble(Browser* browser,
+                                     const base::WeakPtr<GlobalError>& error,
                                      GtkWidget* anchor)
-    : bubble_(NULL),
+    : browser_(browser),
+      bubble_(NULL),
       error_(error) {
+  DCHECK(browser_);
+  DCHECK(error_);
   GtkWidget* content = gtk_vbox_new(FALSE, kInterLineSpacing);
   gtk_container_set_border_width(GTK_CONTAINER(content), kContentBorder);
   g_signal_connect(content, "destroy", G_CALLBACK(OnDestroyThunk), this);
 
-  GtkThemeService* theme_service = GtkThemeService::GetFrom(profile);
+  GtkThemeService* theme_service =
+      GtkThemeService::GetFrom(browser_->profile());
 
   int resource_id = error_->GetBubbleViewIconResourceID();
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
@@ -104,9 +106,6 @@ GlobalErrorBubble::GlobalErrorBubble(Profile* profile,
                      G_CALLBACK(OnCancelButtonThunk), this);
   }
 
-  registrar_.Add(this, chrome::NOTIFICATION_GLOBAL_ERRORS_CHANGED,
-                 content::Source<Profile>(profile));
-
   BubbleGtk::ArrowLocationGtk arrow_location =
       base::i18n::IsRTL() ?
       BubbleGtk::ARROW_LOCATION_TOP_LEFT :
@@ -126,12 +125,8 @@ GlobalErrorBubble::~GlobalErrorBubble() {
 
 void GlobalErrorBubble::BubbleClosing(BubbleGtk* bubble,
                                       bool closed_by_escape) {
-  // We unsubscribe from removal notifications here and below because any of
-  // GlobalError callbacks may remove it from the profile. Here it is needed
-  // also because |this| will be deleted later asynchronously in OnDestroy.
-  registrar_.RemoveAll();
   if (error_)
-    error_->BubbleViewDidClose();
+    error_->BubbleViewDidClose(browser_);
 }
 
 void GlobalErrorBubble::OnDestroy(GtkWidget* sender) {
@@ -139,44 +134,29 @@ void GlobalErrorBubble::OnDestroy(GtkWidget* sender) {
 }
 
 void GlobalErrorBubble::OnAcceptButton(GtkWidget* sender) {
-  registrar_.RemoveAll();
-  error_->BubbleViewAcceptButtonPressed();
+  if (error_)
+    error_->BubbleViewAcceptButtonPressed(browser_);
   bubble_->Close();
 }
 
 void GlobalErrorBubble::OnCancelButton(GtkWidget* sender) {
-  registrar_.RemoveAll();
-  error_->BubbleViewCancelButtonPressed();
+  if (error_)
+    error_->BubbleViewCancelButtonPressed(browser_);
   bubble_->Close();
 }
 
-void GlobalErrorBubble::Observe(int type,
-                                const content::NotificationSource& source,
-                                const content::NotificationDetails& details) {
-  DCHECK(type == chrome::NOTIFICATION_GLOBAL_ERRORS_CHANGED);
-  DCHECK(error_);
-  if (content::Details<GlobalError>(details).ptr() == error_) {
-    Profile* profile = content::Source<Profile>(source).ptr();
-    const std::vector<GlobalError*>& errors =
-        GlobalErrorServiceFactory::GetForProfile(profile)->errors();
-    // This handles the case when a GlobalError instance is removed from profile
-    // not as a part of normal flow (i.e., after the bubble has been closed)
-    // but while the bubble is still showing. |error_| is no longer guaranteed
-    // to exist so we set it to |NULL| and dismiss the bubble.
-    if (std::find(errors.begin(), errors.end(), error_) == errors.end()) {
-      error_ = NULL;
-      registrar_.RemoveAll();
-      bubble_->Close();
-    }
-  }
+void GlobalErrorBubble::CloseBubbleView() {
+  bubble_->Close();
 }
 
-void GlobalError::ShowBubbleView(Browser* browser, GlobalError* error) {
+GlobalErrorBubbleViewBase* GlobalErrorBubbleViewBase::ShowBubbleView(
+    Browser* browser,
+    const base::WeakPtr<GlobalError>& error) {
   BrowserWindowGtk* browser_window =
       BrowserWindowGtk::GetBrowserWindowForNativeWindow(
           browser->window()->GetNativeHandle());
   GtkWidget* anchor = browser_window->GetToolbar()->GetAppMenuButton();
 
   // The bubble will be automatically deleted when it's closed.
-  new GlobalErrorBubble(browser->profile(), error, anchor);
+  return new GlobalErrorBubble(browser, error, anchor);
 }

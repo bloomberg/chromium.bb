@@ -9,6 +9,7 @@
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/sync/profile_sync_service_mock.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chrome/test/base/browser_with_test_window_test.h"
 #include "content/test/test_browser_thread.h"
 #include "testing/gmock/include/gmock/gmock-actions.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -24,6 +25,7 @@ namespace {
 // Utility function to test that SyncGlobalError behaves correct for the given
 // error condition.
 void VerifySyncGlobalErrorResult(NiceMock<ProfileSyncServiceMock>* service,
+                                 Browser* browser,
                                  SyncGlobalError* error,
                                  GoogleServiceAuthError::State error_state,
                                  bool is_signed_in,
@@ -56,19 +58,19 @@ void VerifySyncGlobalErrorResult(NiceMock<ProfileSyncServiceMock>* service,
   // Test message handler.
   if (is_error) {
     EXPECT_CALL(*service, ShowErrorUI());
-    error->ExecuteMenuItem(NULL);
+    error->ExecuteMenuItem(browser);
     EXPECT_CALL(*service, ShowErrorUI());
-    error->BubbleViewAcceptButtonPressed();
-    error->BubbleViewDidClose();
+    error->BubbleViewAcceptButtonPressed(browser);
+    error->BubbleViewDidClose(browser);
   }
 }
 
 } // namespace
 
+typedef BrowserWithTestWindowTest SyncGlobalErrorTest;
+
 // Test that SyncGlobalError shows an error if a passphrase is required.
-TEST(SyncGlobalErrorTest, PassphraseGlobalError) {
-  MessageLoopForUI message_loop;
-  content::TestBrowserThread ui_thread(BrowserThread::UI, &message_loop);
+TEST_F(SyncGlobalErrorTest, PassphraseGlobalError) {
   scoped_ptr<Profile> profile(
       ProfileSyncServiceMock::MakeSignedInTestingProfile());
   NiceMock<ProfileSyncServiceMock> service(profile.get());
@@ -79,15 +81,13 @@ TEST(SyncGlobalErrorTest, PassphraseGlobalError) {
   EXPECT_CALL(service, IsPassphraseRequiredForDecryption())
               .WillRepeatedly(Return(true));
   VerifySyncGlobalErrorResult(
-      &service, &error, GoogleServiceAuthError::NONE, true, true);
+      &service, browser(), &error, GoogleServiceAuthError::NONE, true, true);
 }
 
 // Test that SyncGlobalError shows an error for conditions that can be resolved
 // by the user and suppresses errors for conditions that  cannot be resolved by
 // the user.
-TEST(SyncGlobalErrorTest, AuthStateGlobalError) {
-  MessageLoopForUI message_loop;
-  content::TestBrowserThread ui_thread(BrowserThread::UI, &message_loop);
+TEST_F(SyncGlobalErrorTest, AuthStateGlobalError) {
   scoped_ptr<Profile> profile(
       ProfileSyncServiceMock::MakeSignedInTestingProfile());
   NiceMock<ProfileSyncServiceMock> service(profile.get());
@@ -115,9 +115,9 @@ TEST(SyncGlobalErrorTest, AuthStateGlobalError) {
   };
 
   for (size_t i = 0; i < sizeof(table)/sizeof(*table); ++i) {
-    VerifySyncGlobalErrorResult(
-        &service, &error, table[i].error_state, true, table[i].is_error);
-    VerifySyncGlobalErrorResult(
-        &service, &error, table[i].error_state, false, false);
+    VerifySyncGlobalErrorResult(&service, browser(), &error,
+                                table[i].error_state, true, table[i].is_error);
+    VerifySyncGlobalErrorResult(&service, browser(), &error,
+                                table[i].error_state, false, false);
   }
 }

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,7 +14,10 @@
 #import "chrome/browser/ui/cocoa/l10n_util.h"
 #import "chrome/browser/ui/cocoa/info_bubble_view.h"
 #import "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
-#import "chrome/browser/ui/global_error.h"
+#include "chrome/browser/ui/global_error.h"
+#include "chrome/browser/ui/global_error_bubble_view_base.h"
+#include "chrome/browser/ui/global_error_service.h"
+#include "chrome/browser/ui/global_error_service_factory.h"
 #include "grit/generated_resources.h"
 #import "third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -28,10 +31,28 @@ const CGFloat kWrenchBubblePointOffsetY = 6;
 
 } // namespace
 
+namespace GlobalErrorBubbleControllerInternal {
+
+// This is the bridge to the C++ GlobalErrorBubbleViewBase object.
+class Bridge : public GlobalErrorBubbleViewBase {
+ public:
+  Bridge(GlobalErrorBubbleController* controller) : controller_(controller) {
+  }
+
+ private:
+  virtual void CloseBubbleView() OVERRIDE {
+    [controller_ close];
+  }
+
+  GlobalErrorBubbleController* controller_;  // Weak, owns this.
+};
+
+}  // namespace GlobalErrorBubbleControllerInternal
+
 @implementation GlobalErrorBubbleController
 
-+ (void)showForBrowser:(Browser*)browser
-                 error:(GlobalError*)error {
++ (GlobalErrorBubbleViewBase*)showForBrowser:(Browser*)browser
+    error:(const base::WeakPtr<GlobalError>&)error {
   NSWindow* parentWindow = browser->window()->GetNativeHandle();
   BrowserWindowController* bwc = [BrowserWindowController
       browserWindowControllerForWindow:parentWindow];
@@ -45,7 +66,12 @@ const CGFloat kWrenchBubblePointOffsetY = 6;
              relativeToView:wrenchButton
                      offset:offset];
   bubble->error_ = error;
+  bubble->bridge_.reset(new GlobalErrorBubbleControllerInternal::Bridge(
+      bubble));
+  bubble->browser_ = browser;
   [bubble showWindow:nil];
+
+  return bubble->bridge_.get();
 }
 
 - (void)awakeFromNib {
@@ -96,8 +122,8 @@ const CGFloat kWrenchBubblePointOffsetY = 6;
 
 - (void)close {
   if (error_)
-    error_->BubbleViewDidClose();
-  error_ = NULL;
+    error_->BubbleViewDidClose(browser_);
+  bridge_.reset();
   BrowserWindowController* bwc = [BrowserWindowController
       browserWindowControllerForWindow:[self parentWindow]];
   [bwc releaseBarVisibilityForOwner:self withAnimation:YES delay:NO];
@@ -105,17 +131,21 @@ const CGFloat kWrenchBubblePointOffsetY = 6;
 }
 
 - (IBAction)onAccept:(id)sender {
-  error_->BubbleViewAcceptButtonPressed();
+  if (error_)
+    error_->BubbleViewAcceptButtonPressed(browser_);
   [self close];
 }
 
 - (IBAction)onCancel:(id)sender {
-  error_->BubbleViewCancelButtonPressed();
+  if (error_)
+    error_->BubbleViewCancelButtonPressed(browser_);
   [self close];
 }
 
 @end
 
-void GlobalError::ShowBubbleView(Browser* browser, GlobalError* error) {
-  [GlobalErrorBubbleController showForBrowser:browser error:error];
+GlobalErrorBubbleViewBase* GlobalErrorBubbleViewBase::ShowBubbleView(
+    Browser* browser,
+    const base::WeakPtr<GlobalError>& error) {
+  return [GlobalErrorBubbleController showForBrowser:browser error:error];
 }

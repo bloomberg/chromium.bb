@@ -121,7 +121,7 @@ class DefaultSearchProviderChangeTest : public InProcessBrowserTest {
 
   void ExpectSettingsOpened(const std::string& subpage) {
     GURL settings_url(chrome::kChromeUISettingsURL + subpage);
-    EXPECT_CALL(*mock_protector_service_, OpenTab(settings_url));
+    EXPECT_CALL(*mock_protector_service_, OpenTab(settings_url, browser()));
   }
 
   void ExpectHistogramCount(const std::string& name,
@@ -181,14 +181,14 @@ IN_PROC_BROWSER_TEST_F(DefaultSearchProviderChangeTest, BackupValid) {
             change->GetDiscardButtonText());
 
   // Discard does nothing - backup was already active.
-  change->Discard();
+  change->Discard(browser());
   EXPECT_EQ(FindTemplateURL(http_example_info),
             turl_service_->GetDefaultSearchProvider());
   ExpectHistogramCount(kProtectorHistogramSearchProviderDiscarded,
                        SEARCH_ENGINE_OTHER, 1);
 
   // Verify that Apply switches back to |current_url|.
-  change->Apply();
+  change->Apply(browser());
   EXPECT_EQ(FindTemplateURL(http_example_com),
             turl_service_->GetDefaultSearchProvider());
   ExpectHistogramCount(kProtectorHistogramSearchProviderApplied,
@@ -278,12 +278,12 @@ IN_PROC_BROWSER_TEST_F(DefaultSearchProviderChangeTest, BackupInvalid) {
 
   // Verify that search engine settings are opened by Discard.
   ExpectSettingsOpened(chrome::kSearchEnginesSubPage);
-  change->Discard();
+  change->Discard(browser());
   EXPECT_EQ(FindTemplateURL(prepopulated_url_->url()->url()),
             turl_service_->GetDefaultSearchProvider());
 
   // Verify that Apply switches back to |current_url|.
-  change->Apply();
+  change->Apply(browser());
   EXPECT_EQ(FindTemplateURL(http_example_com),
             turl_service_->GetDefaultSearchProvider());
 }
@@ -332,12 +332,12 @@ IN_PROC_BROWSER_TEST_F(DefaultSearchProviderChangeTest,
 
   // Verify that search engine settings are opened by Discard.
   ExpectSettingsOpened(chrome::kSearchEnginesSubPage);
-  change->Discard();
+  change->Discard(browser());
   EXPECT_EQ(FindTemplateURL(prepopulated_url_->url()->url()),
             turl_service_->GetDefaultSearchProvider());
 
   // Verify that Apply switches back to |current_url|.
-  change->Apply();
+  change->Apply(browser());
   EXPECT_EQ(FindTemplateURL(http_example_com),
             turl_service_->GetDefaultSearchProvider());
 }
@@ -373,13 +373,13 @@ IN_PROC_BROWSER_TEST_F(DefaultSearchProviderChangeTest,
             change->GetDiscardButtonText());
 
   // Discard does nothing - backup was already active.
-  change->Discard();
+  change->Discard(browser());
   EXPECT_EQ(FindTemplateURL(http_example_info),
             turl_service_->GetDefaultSearchProvider());
 
    // Verify that search engine settings are opened by Apply (no other changes).
   ExpectSettingsOpened(chrome::kSearchEnginesSubPage);
-  change->Apply();
+  change->Apply(browser());
   EXPECT_EQ(FindTemplateURL(http_example_info),
             turl_service_->GetDefaultSearchProvider());
 }
@@ -415,7 +415,7 @@ IN_PROC_BROWSER_TEST_F(DefaultSearchProviderChangeTest,
 
   // Verify that search engine settings are opened by Discard.
   ExpectSettingsOpened(chrome::kSearchEnginesSubPage);
-  change->Discard();
+  change->Discard(browser());
   EXPECT_EQ(FindTemplateURL(prepopulated_url_->url()->url()),
             turl_service_->GetDefaultSearchProvider());
 }
@@ -454,7 +454,7 @@ IN_PROC_BROWSER_TEST_F(DefaultSearchProviderChangeTest,
 
   // Verify that search engine settings are opened by Discard.
   ExpectSettingsOpened(chrome::kSearchEnginesSubPage);
-  change->Discard();
+  change->Discard(browser());
   EXPECT_EQ(current_url, turl_service_->GetDefaultSearchProvider());
 }
 
@@ -518,12 +518,12 @@ IN_PROC_BROWSER_TEST_F(DefaultSearchProviderChangeTest,
 
   // Verify that search engine settings are opened by Apply.
   ExpectSettingsOpened(chrome::kSearchEnginesSubPage);
-  change->Apply();
+  change->Apply(browser());
   EXPECT_EQ(FindTemplateURL(http_example_info),
             turl_service_->GetDefaultSearchProvider());
 
   // Discard does nothing - backup was already active.
-  change->Discard();
+  change->Discard(browser());
   EXPECT_EQ(FindTemplateURL(http_example_info),
             turl_service_->GetDefaultSearchProvider());
 }

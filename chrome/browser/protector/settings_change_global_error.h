@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -38,9 +38,6 @@ class SettingsChangeGlobalError : public GlobalError {
   // Removes global error from its profile.
   void RemoveFromProfile();
 
-  // Browser that the bubble has been last time shown for.
-  Browser* browser() const { return browser_; }
-
   // GlobalError implementation.
   virtual bool HasBadge() OVERRIDE;
   virtual int GetBadgeResourceID() OVERRIDE;
@@ -55,9 +52,9 @@ class SettingsChangeGlobalError : public GlobalError {
   virtual string16 GetBubbleViewMessage() OVERRIDE;
   virtual string16 GetBubbleViewAcceptButtonLabel() OVERRIDE;
   virtual string16 GetBubbleViewCancelButtonLabel() OVERRIDE;
-  virtual void BubbleViewDidClose() OVERRIDE;
-  virtual void BubbleViewAcceptButtonPressed() OVERRIDE;
-  virtual void BubbleViewCancelButtonPressed() OVERRIDE;
+  virtual void OnBubbleViewDidClose(Browser* browser) OVERRIDE;
+  virtual void BubbleViewAcceptButtonPressed(Browser* browser) OVERRIDE;
+  virtual void BubbleViewCancelButtonPressed(Browser* browser) OVERRIDE;
 
  private:
   // Helper called on the UI thread to add this global error to the default
@@ -79,9 +76,6 @@ class SettingsChangeGlobalError : public GlobalError {
 
   // Profile that we have been added to.
   Profile* profile_;
-
-  // Browser that we have been shown for.
-  Browser* browser_;
 
   // True if user has dismissed the bubble by clicking on one of the buttons.
   bool closed_by_button_;

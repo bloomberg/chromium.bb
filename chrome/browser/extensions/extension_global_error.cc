@@ -15,8 +15,7 @@
 
 ExtensionGlobalError::ExtensionGlobalError(
       base::WeakPtr<ExtensionService> extension_service)
-    : current_browser_(NULL),
-      should_delete_self_on_close_(true),
+    : should_delete_self_on_close_(true),
       extension_service_(extension_service),
       external_extension_ids_(new ExtensionIdSet),
       blacklisted_extension_ids_(new ExtensionIdSet),
@@ -79,11 +78,6 @@ bool ExtensionGlobalError::HasBubbleView() {
   return true;
 }
 
-void ExtensionGlobalError::ShowBubbleView(Browser* browser) {
-  current_browser_ = browser;
-  GlobalError::ShowBubbleView(browser);
-}
-
 string16 ExtensionGlobalError::GetBubbleViewTitle() {
   return l10n_util::GetStringUTF16(IDS_EXTENSION_ALERT_TITLE);
 }
@@ -133,23 +127,23 @@ string16 ExtensionGlobalError::GetBubbleViewCancelButtonLabel() {
   return l10n_util::GetStringUTF16(IDS_EXTENSION_ALERT_ITEM_DETAILS);
 }
 
-void ExtensionGlobalError::BubbleViewDidClose() {
+void ExtensionGlobalError::OnBubbleViewDidClose(Browser* browser) {
   if (!closed_callback_.is_null()) {
-    closed_callback_.Run(*this, current_browser_);
+    closed_callback_.Run(*this, browser);
   }
   if (should_delete_self_on_close_) {
     delete this;
   }
 }
 
-void ExtensionGlobalError::BubbleViewAcceptButtonPressed() {
+void ExtensionGlobalError::BubbleViewAcceptButtonPressed(Browser* browser) {
   if (!accept_callback_.is_null()) {
-    accept_callback_.Run(*this, current_browser_);
+    accept_callback_.Run(*this, browser);
   }
 }
 
-void ExtensionGlobalError::BubbleViewCancelButtonPressed() {
+void ExtensionGlobalError::BubbleViewCancelButtonPressed(Browser* browser) {
   if (!cancel_callback_.is_null()) {
-    cancel_callback_.Run(*this, current_browser_);
+    cancel_callback_.Run(*this, browser);
   }
 }

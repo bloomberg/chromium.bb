@@ -26,13 +26,13 @@ class MockProtectorService : public ProtectorService {
   MOCK_CONST_METHOD0(IsShowingChange, bool());
 
   MOCK_METHOD0(DismissChange, void());
-  MOCK_METHOD0(ApplyChange, void());
-  MOCK_METHOD0(DiscardChange, void());
+  MOCK_METHOD1(ApplyChange, void(Browser*));
+  MOCK_METHOD1(DiscardChange, void(Browser*));
 
-  MOCK_METHOD1(OpenTab, void(const GURL&));
+  MOCK_METHOD2(OpenTab, void(const GURL&, Browser*));
 
-  MOCK_METHOD0(OnApplyChange, void());
-  MOCK_METHOD0(OnDiscardChange, void());
+  MOCK_METHOD1(OnApplyChange, void(Browser*));
+  MOCK_METHOD1(OnDiscardChange, void(Browser*));
   MOCK_METHOD0(OnDecisionTimeout, void());
   MOCK_METHOD0(OnRemovedFromProfile, void());
 

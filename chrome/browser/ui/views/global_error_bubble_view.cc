@@ -11,8 +11,6 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/toolbar_view.h"
 #include "chrome/browser/ui/views/window.h"
-#include "chrome/common/chrome_notification_types.h"
-#include "content/public/browser/notification_service.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
 #include "ui/views/controls/button/text_button.h"
@@ -40,14 +38,35 @@ const int kLayoutBottomPadding = 2;
 
 }  // namespace
 
+// GlobalErrorBubbleViewBase ---------------------------------------------------
+
+// static
+GlobalErrorBubbleViewBase* GlobalErrorBubbleViewBase::ShowBubbleView(
+    Browser* browser,
+    const base::WeakPtr<GlobalError>& error) {
+  BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
+  views::View* wrench_button = browser_view->toolbar()->app_menu();
+  GlobalErrorBubbleView* bubble_view =
+      new GlobalErrorBubbleView(wrench_button,
+                                views::BubbleBorder::TOP_RIGHT,
+                                browser,
+                                error);
+  browser::CreateViewsBubble(bubble_view);
+  bubble_view->StartFade(true);
+  return bubble_view;
+}
+
+// GlobalErrorBubbleView -------------------------------------------------------
+
 GlobalErrorBubbleView::GlobalErrorBubbleView(
     views::View* anchor_view,
     views::BubbleBorder::ArrowLocation location,
     Browser* browser,
-    GlobalError* error)
+    const base::WeakPtr<GlobalError>& error)
     : BubbleDelegateView(anchor_view, location),
       browser_(browser),
       error_(error) {
+  DCHECK(error_);
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   int resource_id = error_->GetBubbleViewIconResourceID();
   scoped_ptr<views::ImageView> image_view(new views::ImageView());
@@ -122,9 +141,6 @@ GlobalErrorBubbleView::GlobalErrorBubbleView(
 
   // Adjust the message label size in case buttons are too long.
   message_label->SizeToFit(layout->GetPreferredSize(this).width());
-
-  registrar_.Add(this, chrome::NOTIFICATION_GLOBAL_ERRORS_CHANGED,
-                 content::Source<Profile>(browser->profile()));
 }
 
 GlobalErrorBubbleView::~GlobalErrorBubbleView() {
@@ -138,54 +154,22 @@ gfx::Rect GlobalErrorBubbleView::GetAnchorRect() {
 
 void GlobalErrorBubbleView::ButtonPressed(views::Button* sender,
                                           const views::Event& event) {
-  // We unsubscribe from removal notifications here and below because any of
-  // GlobalError callbacks may remove it from the profile.
-  registrar_.RemoveAll();
-  if (sender->tag() == TAG_ACCEPT_BUTTON)
-    error_->BubbleViewAcceptButtonPressed();
-  else if (sender->tag() == TAG_CANCEL_BUTTON)
-    error_->BubbleViewCancelButtonPressed();
-  else
-    NOTREACHED();
+  if (error_) {
+    if (sender->tag() == TAG_ACCEPT_BUTTON)
+      error_->BubbleViewAcceptButtonPressed(browser_);
+    else if (sender->tag() == TAG_CANCEL_BUTTON)
+      error_->BubbleViewCancelButtonPressed(browser_);
+    else
+      NOTREACHED();
+  }
   GetWidget()->Close();
 }
 
 void GlobalErrorBubbleView::WindowClosing() {
-  registrar_.RemoveAll();
   if (error_)
-    error_->BubbleViewDidClose();
+    error_->BubbleViewDidClose(browser_);
 }
 
-void GlobalErrorBubbleView::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  DCHECK(type == chrome::NOTIFICATION_GLOBAL_ERRORS_CHANGED);
-  DCHECK(error_);
-  if (content::Details<GlobalError>(details).ptr() == error_) {
-    Profile* profile = content::Source<Profile>(source).ptr();
-    const std::vector<GlobalError*>& errors =
-        GlobalErrorServiceFactory::GetForProfile(profile)->errors();
-    // This handles the case when a GlobalError instance is removed from profile
-    // not as a part of normal flow (i.e., after the bubble has been closed)
-    // but while the bubble is still showing. |error_| is no longer guaranteed
-    // to exist so we set it to |NULL| and dismiss the bubble.
-    if (std::find(errors.begin(), errors.end(), error_) == errors.end()) {
-      error_ = NULL;
-      registrar_.RemoveAll();
-      GetWidget()->Close();
-    }
-  }
-}
-
-void GlobalError::ShowBubbleView(Browser* browser, GlobalError* error) {
-  BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
-  views::View* wrench_button = browser_view->toolbar()->app_menu();
-  GlobalErrorBubbleView* bubble_view =
-      new GlobalErrorBubbleView(wrench_button,
-                                views::BubbleBorder::TOP_RIGHT,
-                                browser,
-                                error);
-  browser::CreateViewsBubble(bubble_view);
-  bubble_view->StartFade(true);
+void GlobalErrorBubbleView::CloseBubbleView() {
+  GetWidget()->Close();
 }

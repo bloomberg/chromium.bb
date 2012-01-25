@@ -3055,8 +3055,6 @@
             '../content/renderer/external_popup_menu_browsertest.cc',
           ],
           'sources!': [
-            # TODO(ivankr): enable this once http://crbug.com/109728 is fixed.
-            'browser/protector/protector_service_browsertest.cc',
             # TODO(hbono): This test depends on hunspell and we cannot run it on
             # Mac, which does not use hunspell by default.
             'browser/spellchecker/spellcheck_host_browsertest.cc',

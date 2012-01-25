@@ -21,10 +21,10 @@ bool BaseSettingChange::Init(Profile* profile) {
   return true;
 }
 
-void BaseSettingChange::Apply() {
+void BaseSettingChange::Apply(Browser* browser) {
 }
 
-void BaseSettingChange::Discard() {
+void BaseSettingChange::Discard(Browser* browser) {
 }
 
 void BaseSettingChange::Timeout() {

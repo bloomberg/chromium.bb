@@ -6,8 +6,8 @@
 #define CHROME_BROWSER_UI_VIEWS_GLOBAL_ERROR_BUBBLE_VIEW_H_
 #pragma once
 
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
+#include "base/memory/weak_ptr.h"
+#include "chrome/browser/ui/global_error_bubble_view_base.h"
 #include "ui/views/bubble/bubble_delegate.h"
 #include "ui/views/controls/button/button.h"
 
@@ -16,12 +16,12 @@ class GlobalError;
 
 class GlobalErrorBubbleView : public views::ButtonListener,
                               public views::BubbleDelegateView,
-                              public content::NotificationObserver {
+                              public GlobalErrorBubbleViewBase {
  public:
   GlobalErrorBubbleView(views::View* anchor_view,
                         views::BubbleBorder::ArrowLocation location,
                         Browser* browser,
-                        GlobalError* error);
+                        const base::WeakPtr<GlobalError>& error);
   virtual ~GlobalErrorBubbleView();
 
   // views::BubbleDelegateView implementation.
@@ -34,18 +34,12 @@ class GlobalErrorBubbleView : public views::ButtonListener,
   // views::WidgetDelegate implementation.
   virtual void WindowClosing() OVERRIDE;
 
-  // content::NotificationObserver overrides:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+  // GlobalErrorBubbleViewBase implementation.
+  virtual void CloseBubbleView() OVERRIDE;
 
  private:
   Browser* browser_;
-  // Weak reference to the GlobalError instance the bubble is shown for. Is
-  // reset to |NULL| if instance is removed from GlobalErrorService while
-  // the bubble is still showing.
-  GlobalError* error_;
-  content::NotificationRegistrar registrar_;
+  base::WeakPtr<GlobalError> error_;
 
   DISALLOW_COPY_AND_ASSIGN(GlobalErrorBubbleView);
 };

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -34,9 +34,9 @@ class ExtensionGlobalErrorBadge : public GlobalError {
   virtual string16 GetBubbleViewMessage() OVERRIDE;
   virtual string16 GetBubbleViewAcceptButtonLabel() OVERRIDE;
   virtual string16 GetBubbleViewCancelButtonLabel() OVERRIDE;
-  virtual void BubbleViewDidClose() OVERRIDE;
-  virtual void BubbleViewAcceptButtonPressed() OVERRIDE;
-  virtual void BubbleViewCancelButtonPressed() OVERRIDE;
+  virtual void OnBubbleViewDidClose(Browser* browser) OVERRIDE;
+  virtual void BubbleViewAcceptButtonPressed(Browser* browser) OVERRIDE;
+  virtual void BubbleViewCancelButtonPressed(Browser* browser) OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ExtensionGlobalErrorBadge);

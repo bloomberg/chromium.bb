@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -81,17 +81,15 @@ class ExtensionGlobalError : public GlobalError {
   virtual string16 MenuItemLabel() OVERRIDE;
   virtual void ExecuteMenuItem(Browser* browser) OVERRIDE;
   virtual bool HasBubbleView() OVERRIDE;
-  virtual void ShowBubbleView(Browser* browser) OVERRIDE;
   virtual string16 GetBubbleViewTitle() OVERRIDE;
   virtual string16 GetBubbleViewMessage() OVERRIDE;
   virtual string16 GetBubbleViewAcceptButtonLabel() OVERRIDE;
   virtual string16 GetBubbleViewCancelButtonLabel() OVERRIDE;
-  virtual void BubbleViewDidClose() OVERRIDE;
-  virtual void BubbleViewAcceptButtonPressed() OVERRIDE;
-  virtual void BubbleViewCancelButtonPressed() OVERRIDE;
+  virtual void OnBubbleViewDidClose(Browser* browser) OVERRIDE;
+  virtual void BubbleViewAcceptButtonPressed(Browser* browser) OVERRIDE;
+  virtual void BubbleViewCancelButtonPressed(Browser* browser) OVERRIDE;
 
  private:
-  Browser* current_browser_;  // The browser passed to ShowBubbleView().
   bool should_delete_self_on_close_;
   base::WeakPtr<ExtensionService> extension_service_;
   scoped_ptr<ExtensionIdSet> external_extension_ids_;

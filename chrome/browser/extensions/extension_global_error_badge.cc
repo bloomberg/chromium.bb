@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -63,13 +63,15 @@ string16 ExtensionGlobalErrorBadge::GetBubbleViewCancelButtonLabel() {
   return string16();
 }
 
-void ExtensionGlobalErrorBadge::BubbleViewDidClose() {
+void ExtensionGlobalErrorBadge::OnBubbleViewDidClose(Browser* browser) {
 }
 
-void ExtensionGlobalErrorBadge::BubbleViewAcceptButtonPressed() {
+void ExtensionGlobalErrorBadge::BubbleViewAcceptButtonPressed(
+    Browser* browser) {
   NOTREACHED();
 }
 
-void ExtensionGlobalErrorBadge::BubbleViewCancelButtonPressed() {
+void ExtensionGlobalErrorBadge::BubbleViewCancelButtonPressed(
+    Browser* browser) {
   NOTREACHED();
 }

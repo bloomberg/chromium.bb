@@ -89,8 +89,8 @@ class DefaultSearchProviderChange : public BaseSettingChange,
 
   // BaseSettingChange overrides:
   virtual bool Init(Profile* profile) OVERRIDE;
-  virtual void Apply() OVERRIDE;
-  virtual void Discard() OVERRIDE;
+  virtual void Apply(Browser* browser) OVERRIDE;
+  virtual void Discard(Browser* browser) OVERRIDE;
   virtual void Timeout() OVERRIDE;
   virtual int GetBadgeIconID() const OVERRIDE;
   virtual int GetMenuItemIconID() const OVERRIDE;
@@ -121,7 +121,7 @@ class DefaultSearchProviderChange : public BaseSettingChange,
       scoped_ptr<TemplateURL>* search_provider);
 
   // Opens the Search engine settings page in a new tab.
-  void OpenSearchEngineSettings();
+  void OpenSearchEngineSettings(Browser* browser);
 
   // Returns the TemplateURLService instance for the Profile this change is
   // related to.
@@ -232,7 +232,7 @@ bool DefaultSearchProviderChange::Init(Profile* profile) {
   return true;
 }
 
-void DefaultSearchProviderChange::Apply() {
+void DefaultSearchProviderChange::Apply(Browser* browser) {
   UMA_HISTOGRAM_ENUMERATION(
       kProtectorHistogramSearchProviderApplied,
       new_histogram_id_,
@@ -243,11 +243,11 @@ void DefaultSearchProviderChange::Apply() {
     GetTemplateURLService()->SetDefaultSearchProvider(new_search_provider_);
   } else {
     // Open settings page in case the new setting is invalid.
-    OpenSearchEngineSettings();
+    OpenSearchEngineSettings(browser);
   }
 }
 
-void DefaultSearchProviderChange::Discard() {
+void DefaultSearchProviderChange::Discard(Browser* browser) {
   UMA_HISTOGRAM_ENUMERATION(
       kProtectorHistogramSearchProviderDiscarded,
       new_histogram_id_,
@@ -256,7 +256,7 @@ void DefaultSearchProviderChange::Discard() {
   GetTemplateURLService()->RemoveObserver(this);
   if (is_fallback_) {
     // Open settings page in case the old setting is invalid.
-    OpenSearchEngineSettings();
+    OpenSearchEngineSettings(browser);
   }
   // Nothing to do otherwise since we have already set the search engine
   // to |old_id_| in |Init|.
@@ -385,10 +385,10 @@ const TemplateURL* DefaultSearchProviderChange::SetDefaultSearchProvider(
   return new_default_provider;
 }
 
-void DefaultSearchProviderChange::OpenSearchEngineSettings() {
+void DefaultSearchProviderChange::OpenSearchEngineSettings(Browser* browser) {
   ProtectorServiceFactory::GetForProfile(profile())->OpenTab(
       GURL(std::string(chrome::kChromeUISettingsURL) +
-           chrome::kSearchEnginesSubPage));
+           chrome::kSearchEnginesSubPage), browser);
 }
 
 TemplateURLService* DefaultSearchProviderChange::GetTemplateURLService() {

@@ -9,6 +9,7 @@
 #include "base/stl_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/global_error.h"
+#include "chrome/browser/ui/global_error_bubble_view_base.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_service.h"
 
@@ -26,6 +27,9 @@ void GlobalErrorService::AddGlobalError(GlobalError* error) {
 
 void GlobalErrorService::RemoveGlobalError(GlobalError* error) {
   errors_.erase(std::find(errors_.begin(), errors_.end(), error));
+  GlobalErrorBubbleViewBase* bubble = error->GetBubbleView();
+  if (bubble)
+    bubble->CloseBubbleView();
   NotifyErrorsChanged(error);
 }
 

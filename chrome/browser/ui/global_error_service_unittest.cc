@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -41,7 +41,6 @@ class BaseError : public GlobalError {
   virtual void ExecuteMenuItem(Browser* browser) OVERRIDE { ADD_FAILURE(); }
 
   virtual bool HasBubbleView() OVERRIDE { return false; }
-  virtual void ShowBubbleView(Browser* browser) OVERRIDE { ADD_FAILURE(); }
   virtual int GetBubbleViewIconResourceID() OVERRIDE {
     ADD_FAILURE();
     return 0;
@@ -62,9 +61,15 @@ class BaseError : public GlobalError {
     ADD_FAILURE();
     return string16();
   }
-  virtual void BubbleViewDidClose() OVERRIDE { ADD_FAILURE(); }
-  virtual void BubbleViewAcceptButtonPressed() OVERRIDE { ADD_FAILURE(); }
-  virtual void BubbleViewCancelButtonPressed() OVERRIDE { ADD_FAILURE(); }
+  virtual void OnBubbleViewDidClose(Browser* browser) OVERRIDE {
+    ADD_FAILURE();
+  }
+  virtual void BubbleViewAcceptButtonPressed(Browser* browser) OVERRIDE {
+    ADD_FAILURE();
+  }
+  virtual void BubbleViewCancelButtonPressed(Browser* browser) OVERRIDE {
+    ADD_FAILURE();
+  }
 
  private:
   // This tracks the number BaseError objects that are currently instantiated.

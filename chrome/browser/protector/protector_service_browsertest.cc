@@ -11,12 +11,13 @@
 #include "chrome/browser/protector/settings_change_global_error.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/global_error.h"
+#include "chrome/browser/ui/global_error_bubble_view_base.h"
 #include "chrome/browser/ui/global_error_service.h"
 #include "chrome/browser/ui/global_error_service_factory.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 
-using ::testing::Invoke;
+using ::testing::InvokeWithoutArgs;
 using ::testing::NiceMock;
 using ::testing::Return;
 
@@ -78,8 +79,8 @@ IN_PROC_BROWSER_TEST_F(ProtectorServiceTest, ShowAndApply) {
   protector_service_->ShowChange(mock_change_);
   ui_test_utils::RunAllPendingInMessageLoop();
   ExpectGlobalErrorActive(true);
-  EXPECT_CALL(*mock_change_, Apply());
-  protector_service_->ApplyChange();
+  EXPECT_CALL(*mock_change_, Apply(browser()));
+  protector_service_->ApplyChange(browser());
   ui_test_utils::RunAllPendingInMessageLoop();
   ExpectGlobalErrorActive(false);
 }
@@ -91,11 +92,11 @@ IN_PROC_BROWSER_TEST_F(ProtectorServiceTest, ShowAndApplyManually) {
   protector_service_->ShowChange(mock_change_);
   ui_test_utils::RunAllPendingInMessageLoop();
   ExpectGlobalErrorActive(true);
-  EXPECT_CALL(*mock_change_, Apply());
+  EXPECT_CALL(*mock_change_, Apply(browser()));
   // Pressing Cancel applies the change.
   GlobalError* error = GetGlobalError();
-  error->BubbleViewCancelButtonPressed();
-  error->BubbleViewDidClose();
+  error->BubbleViewCancelButtonPressed(browser());
+  error->GetBubbleView()->CloseBubbleView();
   ui_test_utils::RunAllPendingInMessageLoop();
   ExpectGlobalErrorActive(false);
 }
@@ -107,8 +108,8 @@ IN_PROC_BROWSER_TEST_F(ProtectorServiceTest, ShowAndDiscard) {
   protector_service_->ShowChange(mock_change_);
   ui_test_utils::RunAllPendingInMessageLoop();
   ExpectGlobalErrorActive(true);
-  EXPECT_CALL(*mock_change_, Discard());
-  protector_service_->DiscardChange();
+  EXPECT_CALL(*mock_change_, Discard(browser()));
+  protector_service_->DiscardChange(browser());
   ui_test_utils::RunAllPendingInMessageLoop();
   ExpectGlobalErrorActive(false);
 }
@@ -120,11 +121,11 @@ IN_PROC_BROWSER_TEST_F(ProtectorServiceTest, ShowAndDiscardManually) {
   protector_service_->ShowChange(mock_change_);
   ui_test_utils::RunAllPendingInMessageLoop();
   ExpectGlobalErrorActive(true);
-  EXPECT_CALL(*mock_change_, Discard());
+  EXPECT_CALL(*mock_change_, Discard(browser()));
   // Pressing Apply discards the change.
   GlobalError* error = GetGlobalError();
-  error->BubbleViewAcceptButtonPressed();
-  error->BubbleViewDidClose();
+  error->BubbleViewAcceptButtonPressed(browser());
+  error->GetBubbleView()->CloseBubbleView();
   ui_test_utils::RunAllPendingInMessageLoop();
   ExpectGlobalErrorActive(false);
 }
@@ -135,11 +136,15 @@ IN_PROC_BROWSER_TEST_F(ProtectorServiceTest, BubbleClosedInsideApply) {
   protector_service_->ShowChange(mock_change_);
   ui_test_utils::RunAllPendingInMessageLoop();
   ExpectGlobalErrorActive(true);
+
   GlobalError* error = GetGlobalError();
-  EXPECT_CALL(*mock_change_, Apply()).
-      WillOnce(Invoke(error, &GlobalError::BubbleViewDidClose));
+  GlobalErrorBubbleViewBase* bubble_view = error->GetBubbleView();
+  EXPECT_TRUE(bubble_view);
+  EXPECT_CALL(*mock_change_, Apply(browser())).WillOnce(InvokeWithoutArgs(
+      bubble_view, &GlobalErrorBubbleViewBase::CloseBubbleView));
+
   // Pressing Cancel applies the change.
-  error->BubbleViewCancelButtonPressed();
+  error->BubbleViewCancelButtonPressed(browser());
   ui_test_utils::RunAllPendingInMessageLoop();
   ExpectGlobalErrorActive(false);
 }

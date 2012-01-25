@@ -3440,9 +3440,9 @@ void TestingAutomationProvider::PerformProtectorAction(
     return;
   }
   if (action == "apply_change")
-    protector_service->ApplyChange();
+    protector_service->ApplyChange(browser);
   else if (action == "discard_change")
-    protector_service->DiscardChange();
+    protector_service->DiscardChange(browser);
   else
     return reply.SendError("Invalid 'action' value");
   reply.SendSuccess(NULL);

@@ -8,9 +8,9 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/memory/weak_ptr.h"
+#include "chrome/browser/ui/global_error_bubble_view_base.h"
 #include "chrome/browser/ui/gtk/bubble/bubble_gtk.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 #include "ui/base/gtk/gtk_signal.h"
 
 typedef struct _GtkWidget GtkWidget;
@@ -19,9 +19,11 @@ class GlobalError;
 class Profile;
 
 class GlobalErrorBubble : public BubbleDelegateGtk,
-                          public content::NotificationObserver {
+                          public GlobalErrorBubbleViewBase {
  public:
-  GlobalErrorBubble(Profile* profile, GlobalError* error, GtkWidget* anchor);
+  GlobalErrorBubble(Browser* browser,
+                    const base::WeakPtr<GlobalError>& error,
+                    GtkWidget* anchor);
   virtual ~GlobalErrorBubble();
 
   // BubbleDelegateGtk implementation.
@@ -32,17 +34,11 @@ class GlobalErrorBubble : public BubbleDelegateGtk,
   CHROMEGTK_CALLBACK_0(GlobalErrorBubble, void, OnAcceptButton);
   CHROMEGTK_CALLBACK_0(GlobalErrorBubble, void, OnCancelButton);
 
-  // content::NotificationObserver overrides:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+  virtual void CloseBubbleView() OVERRIDE;
 
+  Browser* browser_;
   BubbleGtk* bubble_;
-  // Weak reference to the GlobalError instance the bubble is shown for. Is
-  // reset to |NULL| if instance is removed from GlobalErrorService while
-  // the bubble is still showing.
-  GlobalError* error_;
-  content::NotificationRegistrar registrar_;
+  base::WeakPtr<GlobalError> error_;
 
   DISALLOW_COPY_AND_ASSIGN(GlobalErrorBubble);
 };
