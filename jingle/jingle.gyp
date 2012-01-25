@@ -175,6 +175,16 @@
         'notifier/listener/xml_element_util_unittest.cc',
         'run_all_unittests.cc',
       ],
+      'conditions': [
+        ['OS=="android"', {
+          'sources!': [
+            # TODO(jrg):
+            # EXPECT_DEBUG_DEATH() uses features not enabled.
+            # Should we -std=c++0x or -std=gnu++0x?
+            'notifier/base/chrome_async_socket_unittest.cc',
+            'notifier/base/xmpp_connection_unittest.cc',
+          ],
+        }]],
       'include_dirs': [
         '..',
       ],
