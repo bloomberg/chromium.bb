@@ -368,6 +368,24 @@ void DevicePolicyCache::DecodeDevicePolicy(
                   POLICY_SCOPE_MACHINE,
                   Value::CreateStringValue(config));
   }
+
+  if (policy.has_device_reporting()) {
+    if (policy.device_reporting().has_report_version_info()) {
+      bool enabled = policy.device_reporting().report_version_info();
+      policies->Set(key::kReportDeviceVersionInfo,
+                    POLICY_LEVEL_MANDATORY,
+                    POLICY_SCOPE_MACHINE,
+                    Value::CreateBooleanValue(enabled));
+    }
+    if (policy.device_reporting().has_report_activity_times()) {
+      bool enabled = policy.device_reporting().report_activity_times();
+      policies->Set(key::kReportDeviceActivityTimes,
+                    POLICY_LEVEL_MANDATORY,
+                    POLICY_SCOPE_MACHINE,
+                    Value::CreateBooleanValue(enabled));
+    }
+  }
+
 }
 
 }  // namespace policy

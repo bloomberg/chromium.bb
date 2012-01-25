@@ -112,7 +112,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 118
+#   For your editing convenience: highest ID currently used: 120
 #
 # Placeholders:
 #   The following placeholder strings are automatically substituted:
@@ -2281,6 +2281,32 @@
       'desc': '''Specifies whether SSL record splitting should be disabled. Record splitting is a workaround for a weakness in SSL 3.0 and TLS 1.0 but can cause compatibility issues with some HTTPS servers and proxies.
 
       If the policy is not set, or is set to false, then record splitting will be used on SSL/TLS connections which use CBC ciphersuites.''',
+    },
+    {
+      'name': 'ReportDeviceVersionInfo',
+      'type': 'main',
+      'supported_on': ['chrome_os:0.18-'],
+      'device_only': True,
+      'features': {'dynamic_refresh': True},
+      'example_value': False,
+      'id': 119,
+      'caption': '''Report OS and firmware version.''',
+      'desc': '''Report OS and firmware version of enrolled devices.
+
+      If this setting is set to True, enrolled devices will report the OS and firmware version periodically. If this setting is not set or set to False, version info will not be reported.''',
+    },
+    {
+      'name': 'ReportDeviceActivityTimes',
+      'type': 'main',
+      'supported_on': ['chrome_os:18-'],
+      'device_only': True,
+      'features': {'dynamic_refresh': True},
+      'example_value': False,
+      'id': 120,
+      'caption': '''Report device activity times''',
+      'desc': '''Report device activity times.
+
+      If this setting is set to True, enrolled devices will report time periods when a user is active on the device. If this setting is not set or set to False, device activity times will not be recorded or reported.''',
     },
   ],
   'messages': {

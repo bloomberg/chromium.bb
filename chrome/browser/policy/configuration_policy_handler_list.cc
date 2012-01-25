@@ -296,6 +296,12 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kChromeOsReleaseChannel,
     prefs::kChromeOsReleaseChannel,
     Value::TYPE_STRING },
+  { key::kReportDeviceVersionInfo,
+    prefs::kReportDeviceVersionInfo,
+    Value::TYPE_BOOLEAN },
+  { key::kReportDeviceActivityTimes,
+    prefs::kReportDeviceActivityTimes,
+    Value::TYPE_BOOLEAN },
 #endif  // defined(OS_CHROMEOS)
 };
 

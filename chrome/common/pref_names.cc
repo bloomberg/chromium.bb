@@ -1598,6 +1598,14 @@ const char kCarrierDealPromoShown[] =
 // auto-enrollment check has been done once and completed. It can be reset to
 // false if the user opts out of auto enrollment.
 const char kShouldAutoEnroll[] = "ShouldAutoEnroll";
+
+// A boolean pref that indicates whether OS & firmware version info should be
+// reported along with device policy requests.
+const char kReportDeviceVersionInfo[] = "device_status.report_version_info";
+
+// A boolean pref that indicates whether device activity times should be
+// recorded and reported along with device policy requests.
+const char kReportDeviceActivityTimes[] = "device_status.report_activity_times";
 #endif
 
 // Whether there is a Flash version installed that supports clearing LSO data.
