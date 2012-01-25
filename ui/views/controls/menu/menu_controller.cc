@@ -146,7 +146,7 @@ static View* GetNextFocusableView(View* ancestor,
 
 class MenuController::MenuScrollTask {
  public:
-  MenuScrollTask() : submenu_(NULL) {
+  MenuScrollTask() : submenu_(NULL), is_scrolling_up_(false), start_y_(0) {
     pixels_per_second_ = MenuItemView::pref_menu_height() * 20;
   }
 
@@ -244,7 +244,10 @@ struct MenuController::SelectByCharDetails {
 
 // MenuController:State ------------------------------------------------------
 
-MenuController::State::State() : item(NULL), submenu_open(false) {}
+MenuController::State::State()
+    : item(NULL),
+      submenu_open(false),
+      anchor(views::MenuItemView::TOPLEFT) {}
 
 MenuController::State::~State() {}
 
