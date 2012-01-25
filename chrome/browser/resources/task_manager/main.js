@@ -178,26 +178,30 @@ TaskManager.prototype = {
 
     // Initializes compare functions for column sort.
     var dm = this.dataModel_;
-    // Columns to sort by value instead of itself.
-    var columns_sorted_by_value = [
+    // List of columns to sort by its numerical value as opposed to the
+    // formatted value, e.g., 20480 vs. 20KB.
+    var COLUMNS_SORTED_BY_VALUE = [
         'cpuUsage', 'physicalMemory', 'sharedMemory', 'privateMemory',
         'networkUsage', 'webCoreImageCacheSize', 'webCoreScriptsCacheSize',
         'webCoreCSSCacheSize', 'fps', 'sqliteMemoryUsed', 'goatsTeleported',
         'v8MemoryAllocatedSize'];
 
-    for (var i in columns_sorted_by_value) {
-      var column_id = columns_sorted_by_value[i];
-      var compare_func = function() {
-          var value_id = column_id + 'Value';
+    for (var i = 0; i < DEFAULT_COLUMNS.length; i++) {
+      var columnId = DEFAULT_COLUMNS[i][0];
+      var compareFunc = (function() {
+          var columnIdToSort = columnId;
+          if (COLUMNS_SORTED_BY_VALUE.indexOf(columnId) != -1)
+            columnIdToSort += 'Value';
+
           return function(a, b) {
-              var aValues = a[value_id];
-              var bValues = b[value_id];
+              var aValues = a[columnIdToSort];
+              var bValues = b[columnIdToSort];
               var aValue = aValues && aValues[0] || 0;
               var bvalue = bValues && bValues[0] || 0;
               return dm.defaultValuesCompareFunction(aValue, bvalue);
           };
-      }();
-      dm.setCompareFunction(column_id, compare_func);
+      })();
+      dm.setCompareFunction(columnId, compareFunc);
     }
 
     this.initTable_();
