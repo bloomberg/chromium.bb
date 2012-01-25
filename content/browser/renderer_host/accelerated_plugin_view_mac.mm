@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,19 +16,26 @@
 
 using content::BrowserThread;
 
+@interface AcceleratedPluginView(Private)
+
+// Initialize the OpenGL context.
+- (void)initOpenGLContext;
+
+@end  // AcceleratedPluginView(Private)
+
 @implementation AcceleratedPluginView
 
 - (void)drawView {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   TRACE_EVENT0("browser", "AcceleratedPluginViewMac::drawView");
 
-  if (renderWidgetHostView_) {
+  if (renderWidgetHostView_ && cglContext_) {
     // TODO(thakis): Pixel or view coordinates for size?
     renderWidgetHostView_->DrawAcceleratedSurfaceInstance(
         cglContext_, pluginHandle_, [super frame].size);
+    CGLFlushDrawable(cglContext_);
   }
 
-  CGLFlushDrawable(cglContext_);
   CGLSetCurrentContext(0);
 }
 
@@ -39,46 +46,6 @@ using content::BrowserThread;
     pluginHandle_ = pluginHandle;
 
     [self setAutoresizingMask:NSViewMaxXMargin|NSViewMinYMargin];
-
-    std::vector<NSOpenGLPixelFormatAttribute> attributes;
-    attributes.push_back(NSOpenGLPFADoubleBuffer);
-    if (gfx::GLContext::SupportsDualGpus())
-      attributes.push_back(NSOpenGLPFAAllowOfflineRenderers);
-    attributes.push_back(0);
-
-    // TODO(zmo): remove the diagnostic error messages once we figure out the
-    // cause of the failure and a fix.
-
-    glPixelFormat_.reset([[NSOpenGLPixelFormat alloc]
-        initWithAttributes:&attributes.front()]);
-    if (!glPixelFormat_)
-      LOG(ERROR) << "NSOpenGLPixelFormat initWithAttributes failed";
-
-    glContext_.reset([[NSOpenGLContext alloc] initWithFormat:glPixelFormat_
-                                                shareContext:nil]);
-    if (!glContext_)
-      LOG(ERROR) << "NSOpenGLContext initWithFormat failed";
-
-    // We "punch a hole" in the window, and have the WindowServer render the
-    // OpenGL surface underneath so we can draw over it.
-    GLint belowWindow = -1;
-    [glContext_ setValues:&belowWindow forParameter:NSOpenGLCPSurfaceOrder];
-
-    cglContext_ = (CGLContextObj)[glContext_ CGLContextObj];
-    if (!cglContext_)
-      LOG(ERROR) << "CGLContextObj failed";
-
-    cglPixelFormat_ = (CGLPixelFormatObj)[glPixelFormat_ CGLPixelFormatObj];
-    if (!cglPixelFormat_)
-      LOG(ERROR) << "CGLPixelFormatObj failed";
-
-    // Draw at beam vsync.
-    GLint swapInterval;
-    if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableGpuVsync))
-      swapInterval = 0;
-    else
-      swapInterval = 1;
-    [glContext_ setValues:&swapInterval forParameter:NSOpenGLCPSwapInterval];
 
     handlingGlobalFrameDidChange_ = NO;
     [[NSNotificationCenter defaultCenter]
@@ -166,15 +133,17 @@ using content::BrowserThread;
 
   handlingGlobalFrameDidChange_ = YES;
 
-  // This call to -update can call -globalFrameDidChange: again, see
-  // http://crbug.com/55754 comments 22 and 24.
-  [glContext_ update];
+  if (glContext_) {
+    // This call to -update can call -globalFrameDidChange: again, see
+    // http://crbug.com/55754 comments 22 and 24.
+    [glContext_ update];
 
-  // You would think that -update updates the viewport. You would be wrong.
-  CGLSetCurrentContext(cglContext_);
-  NSSize size = [self frame].size;
-  glViewport(0, 0, size.width, size.height);
-  CGLSetCurrentContext(0);
+    // You would think that -update updates the viewport. You would be wrong.
+    CGLSetCurrentContext(cglContext_);
+    NSSize size = [self frame].size;
+    glViewport(0, 0, size.width, size.height);
+    CGLSetCurrentContext(0);
+  }
 
   handlingGlobalFrameDidChange_ = NO;
 }
@@ -236,6 +205,11 @@ using content::BrowserThread;
   TRACE_EVENT0("browser", "AcceleratedPluginView::viewDidUnhide");
   [super viewDidUnhide];
 
+  // Delay context creation until view unhide, see http://crbug.com/109151
+  if (renderWidgetHostView_ && !glContext_) {
+    [self initOpenGLContext];
+  }
+
   if ([[self window] respondsToSelector:@selector(underlaySurfaceRemoved)]) {
     [static_cast<id>([self window]) underlaySurfaceAdded];
   }
@@ -260,5 +234,49 @@ using content::BrowserThread;
   if (![self superview])
     [self onRenderWidgetHostViewGone];
 }
-@end
+@end  // @implementation AcceleratedPluginView
 
+@implementation AcceleratedPluginView(Private)
+
+- (void)initOpenGLContext {
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  TRACE_EVENT0("browser", "AcceleratedPluginViewMac::initOpenGLContext");
+  std::vector<NSOpenGLPixelFormatAttribute> attributes;
+  attributes.push_back(NSOpenGLPFADoubleBuffer);
+  if (gfx::GLContext::SupportsDualGpus())
+    attributes.push_back(NSOpenGLPFAAllowOfflineRenderers);
+  attributes.push_back(0);
+
+  glPixelFormat_.reset([[NSOpenGLPixelFormat alloc]
+                         initWithAttributes:&attributes.front()]);
+  if (!glPixelFormat_)
+    LOG(ERROR) << "NSOpenGLPixelFormat initWithAttributes failed";
+
+  glContext_.reset([[NSOpenGLContext alloc] initWithFormat:glPixelFormat_
+                                              shareContext:nil]);
+  if (!glContext_)
+    LOG(ERROR) << "NSOpenGLContext initWithFormat failed";
+
+  // We "punch a hole" in the window, and have the WindowServer render the
+  // OpenGL surface underneath so we can draw over it.
+  GLint belowWindow = -1;
+  [glContext_ setValues:&belowWindow forParameter:NSOpenGLCPSurfaceOrder];
+
+  cglContext_ = (CGLContextObj)[glContext_ CGLContextObj];
+  if (!cglContext_)
+    LOG(ERROR) << "CGLContextObj failed";
+
+  cglPixelFormat_ = (CGLPixelFormatObj)[glPixelFormat_ CGLPixelFormatObj];
+  if (!cglPixelFormat_)
+    LOG(ERROR) << "CGLPixelFormatObj failed";
+
+  // Draw at beam vsync.
+  GLint swapInterval;
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableGpuVsync))
+    swapInterval = 0;
+  else
+    swapInterval = 1;
+  [glContext_ setValues:&swapInterval forParameter:NSOpenGLCPSwapInterval];
+}
+
+@end  // @implementation AcceleratedPluginView(Private)
