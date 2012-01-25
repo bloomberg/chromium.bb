@@ -7,6 +7,7 @@
 """
 
 import logging
+import os
 import time
 
 import perf
@@ -21,18 +22,21 @@ class ChromeEndureBaseTest(perf.BasePerfTest):
   All Chrome Endure test classes should inherit from this class.
   """
 
+  _DEFAULT_TEST_LENGTH_SEC = 60 * 60 * 12  # 12 hours.
+  _GET_PERF_STATS_INTERVAL = 60 * 10  # Measure perf stats every 10 minutes.
+  _ERROR_COUNT_THRESHOLD = 300  # Number of ChromeDriver errors to tolerate.
+
   def setUp(self):
     perf.BasePerfTest.setUp(self)
 
-    # Set up an object that takes v8 heap snapshots of the first opened tab
-    # (index 0).
-    self._snapshotter = perf_snapshot.PerformanceSnapshotter()
-    self._full_snapshot_results = []
-    self._snapshot_iteration = 0
-    self._heap_size_results = []
-    self._v8_node_count_results = []
+    self._test_length_sec = self._DEFAULT_TEST_LENGTH_SEC
+    if 'TEST_LENGTH_SEC' in os.environ:
+      self._test_length_sec = int(os.environ['TEST_LENGTH_SEC'])
+
+    self._snapshotter = perf_snapshot.PerformanceSnapshotter()  # Tab index 0.
     self._dom_node_count_results = []
     self._event_listener_count_results = []
+    self._test_start_time = 0
 
   def ExtraChromeFlags(self):
     """Ensures Chrome is launched with custom flags.
@@ -41,125 +45,39 @@ class ChromeEndureBaseTest(perf.BasePerfTest):
       A list of extra flags to pass to Chrome when it is launched.
     """
     # Ensure Chrome enables remote debugging on port 9222.  This is required to
-    # take v8 heap snapshots of tabs in Chrome.
+    # interact with Chrome's remote inspector.
     return (perf.BasePerfTest.ExtraChromeFlags(self) +
             ['--remote-debugging-port=9222'])
 
-  def _TakeHeapSnapshot(self, webapp_name):
-    """Takes a v8 heap snapshot and outputs/stores the results.
-
-    This function will fail the current test if no snapshot can be taken.  A
-    snapshot stored by this function is represented by a dictionary with the
-    following format:
-    {
-      'url': string,  # URL of the webpage that was snapshotted.
-      'timestamp': float,  # Time when snapshot taken (seconds since epoch).
-      'total_v8_node_count': integer,  # Total number of nodes in the v8 heap.
-      'total_heap_size': integer,  # Total heap size (number of bytes).
-      'total_dom_node_count': integer, # Total number of DOM nodes.
-      'event_listener_count': integer, # Total number of event listeners.
-    }
+  def _GetPerformanceStats(self, webapp_name):
+    """Gets performance statistics and outputs the results.
 
     Args:
-      webapp_name: A string name for the webapp being testing.  Should not
+      webapp_name: A string name for the webapp being tested.  Should not
                    include spaces.  For example, 'Gmail', 'Docs', or 'Plus'.
     """
-    # Take the snapshot and store the associated information.
-    logging.info('Taking v8 heap snapshot...')
-    start_time = time.time()
-    snapshot = self._snapshotter.HeapSnapshot()
-    elapsed_time = time.time() - start_time
-    if not snapshot:
-      logging.error('Failed to take a v8 heap snapshot.')
-      return
-    snapshot_info = snapshot[0]
+    logging.info('Gathering performance stats...')
+    elapsed_time = time.time() - self._test_start_time
+    elapsed_time = '%.2f' % elapsed_time
 
-    # Collect other count information to add to the snapshot data.
     memory_counts = self._snapshotter.GetMemoryObjectCounts()
-    snapshot_info['total_dom_node_count'] = memory_counts['DOMNodeCount']
-    snapshot_info['event_listener_count'] = memory_counts['EventListenerCount']
 
-    self._full_snapshot_results.append(snapshot_info)
-    logging.info('Snapshot taken (%.2f sec).' % elapsed_time)
-
-    base_timestamp = self._full_snapshot_results[0]['timestamp']
-
-    logging.info('Snapshot time: %.2f sec' % (
-                 snapshot_info['timestamp'] - base_timestamp))
-    heap_size = snapshot_info['total_heap_size'] / (1024.0 * 1024.0)
-    logging.info('  Total heap size: %.2f MB' % heap_size)
-    self._heap_size_results.append((self._snapshot_iteration, heap_size))
-
-    v8_node_count = snapshot_info['total_v8_node_count']
-    logging.info('  Total v8 node count: %d nodes' % v8_node_count)
-    self._v8_node_count_results.append((self._snapshot_iteration,
-                                        v8_node_count))
-
-    dom_node_count = snapshot_info['total_dom_node_count']
+    dom_node_count = memory_counts['DOMNodeCount']
     logging.info('  Total DOM node count: %d nodes' % dom_node_count)
-    self._dom_node_count_results.append((self._snapshot_iteration,
-                                         dom_node_count))
+    self._dom_node_count_results.append((elapsed_time, dom_node_count))
 
-    event_listener_count = snapshot_info['event_listener_count']
+    event_listener_count = memory_counts['EventListenerCount']
     logging.info('  Event listener count: %d listeners' % event_listener_count)
-    self._event_listener_count_results.append((self._snapshot_iteration,
+    self._event_listener_count_results.append((elapsed_time,
                                                event_listener_count))
-
-    self._snapshot_iteration += 1
 
     # Output the results seen so far, to be graphed.
     self._OutputPerfGraphValue(
-        'HeapSize', self._heap_size_results, 'MB',
-        graph_name='%s-Heap' % webapp_name, units_x='iteration')
-    self._OutputPerfGraphValue(
-        'TotalV8NodeCount', self._v8_node_count_results, 'nodes',
-        graph_name='%s-Nodes-V8' % webapp_name, units_x='iteration')
-    self._OutputPerfGraphValue(
         'TotalDOMNodeCount', self._dom_node_count_results, 'nodes',
-        graph_name='%s-Nodes-DOM' % webapp_name, units_x='iteration')
+        graph_name='%s-Nodes-DOM' % webapp_name, units_x='seconds')
     self._OutputPerfGraphValue(
         'EventListenerCount', self._event_listener_count_results, 'listeners',
-        graph_name='%s-EventListeners' % webapp_name, units_x='iteration')
-
-  def _OutputFinalHeapSnapshotResults(self, webapp_name):
-    """Outputs final snapshot results to be graphed at the end of a test.
-
-    Args:
-      webapp_name: A string name for the webapp being testing.  Should not
-                   include spaces.  For example, 'Gmail', 'Docs', or 'Plus'.
-    """
-    if not self._full_snapshot_results:
-      logging.warning('No v8 heap snapshots taken. No final results to output.')
-      return
-    max_heap_size = 0
-    max_v8_node_count = 0
-    max_dom_node_count = 0
-    max_event_listener_count = 0
-    for index, snapshot_info in enumerate(self._full_snapshot_results):
-      heap_size = snapshot_info['total_heap_size'] / (1024.0 * 1024.0)
-      if heap_size > max_heap_size:
-        max_heap_size = heap_size
-      v8_node_count = snapshot_info['total_v8_node_count']
-      if v8_node_count > max_v8_node_count:
-        max_v8_node_count = v8_node_count
-      dom_node_count = snapshot_info['total_dom_node_count']
-      if dom_node_count > max_dom_node_count:
-        max_dom_node_count = dom_node_count
-      event_listener_count = snapshot_info['event_listener_count']
-      if event_listener_count > max_event_listener_count:
-        max_event_listener_count = event_listener_count
-    self._OutputPerfGraphValue(
-        'MaxHeapSize', max_heap_size, 'MB',
-        graph_name='%s-Heap-Max' % webapp_name)
-    self._OutputPerfGraphValue(
-        'MaxV8NodeCount', max_v8_node_count, 'nodes',
-        graph_name='%s-Nodes-V8-Max' % webapp_name)
-    self._OutputPerfGraphValue(
-        'MaxDOMNodeCount', max_dom_node_count, 'nodes',
-        graph_name='%s-Nodes-DOM-Max' % webapp_name)
-    self._OutputPerfGraphValue(
-        'MaxEventListenerCount', max_event_listener_count, 'listeners',
-        graph_name='%s-EventListeners-Max' % webapp_name)
+        graph_name='%s-EventListeners' % webapp_name, units_x='seconds')
 
   def _GetElement(self, find_by, value):
     """Gets a WebDriver element object from the webpage DOM.
@@ -230,10 +148,10 @@ class ChromeEndureGmailTest(ChromeEndureBaseTest):
   """Long-running performance tests for Chrome using Gmail."""
 
   def testGmailComposeDiscard(self):
-    """Interact with Gmail while periodically taking v8 heap snapshots.
+    """Interact with Gmail while periodically gathering performance stats.
 
     This test continually composes/discards an e-mail using Gmail, and
-    periodically takes v8 heap snapshots that may reveal memory bloat.
+    periodically gathers performance stats that may reveal memory bloat.
     """
     # The following cannot yet be imported on ChromeOS.
     import selenium.common.exceptions
@@ -275,14 +193,26 @@ class ChromeEndureGmailTest(ChromeEndureBaseTest):
     wait.until(lambda _: self._GetElement(
                    driver.find_element_by_partial_link_text, 'Inbox'))
 
-    # Interact with Gmail for a while.  Here, we repeat the following sequence
-    # of interactions: click the "Compose" button, enter some text into the "To"
-    # field, enter some text into the "Subject" field, then click the "Discard"
-    # button to discard the message.
-    num_iterations = 501
-    for i in xrange(num_iterations):
-      logging.info('Chrome interaction iteration %d of %d.' % (
-                   i + 1, num_iterations))
+    # Interact with Gmail for the duration of the test.  Here, we repeat the
+    # following sequence of interactions: click the "Compose" button, enter some
+    # text into the "To" field, enter some text into the "Subject" field, then
+    # click the "Discard" button to discard the message.
+    self._test_start_time = time.time()
+    last_perf_stats_time = time.time()
+    self._GetPerformanceStats('Gmail')
+    iteration_num = 0
+    while time.time() - self._test_start_time < self._test_length_sec:
+      iteration_num += 1
+
+      if time.time() - last_perf_stats_time >= self._GET_PERF_STATS_INTERVAL:
+        last_perf_stats_time = time.time()
+        self._GetPerformanceStats('Gmail')
+
+      if iteration_num % 10 == 0:
+        remaining_time = self._test_length_sec - (
+                             time.time() - self._test_start_time)
+        logging.info('Chrome interaction #%d. Time remaining in test: %d sec.' %
+                     (iteration_num, remaining_time))
 
       compose_button = wait.until(lambda _: self._GetElement(
                                       driver.find_element_by_xpath,
@@ -307,22 +237,18 @@ class ChromeEndureGmailTest(ChromeEndureBaseTest):
       wait.until(lambda _: not self._GetElement(
                      driver.find_element_by_name, 'to'))
 
-      # Snapshot after the first iteration, then every 50 iterations after that.
-      if i % 50 == 0:
-        self._TakeHeapSnapshot('Gmail')
-
-    self._OutputFinalHeapSnapshotResults('Gmail')
+    self._GetPerformanceStats('Gmail')
 
 
 class ChromeEndureDocsTest(ChromeEndureBaseTest):
   """Long-running performance tests for Chrome using Google Docs."""
 
   def testDocsAlternatelyClickLists(self):
-    """Interact with Google Docs while periodically taking v8 heap snapshots.
+    """Interact with Google Docs while periodically gathering performance stats.
 
     This test alternately clicks the "Owned by me" and "Home" buttons using
-    Google Docs, and periodically takes v8 heap snapshots that may reveal memory
-    bloat.
+    Google Docs, and periodically gathers performance stats that may reveal
+    memory bloat.
     """
     # The following cannot yet be imported on ChromeOS.
     import selenium.common.exceptions
@@ -340,21 +266,31 @@ class ChromeEndureDocsTest(ChromeEndureBaseTest):
                     msg='Loaded tab title does not contain "Docs": "%s"' %
                         loaded_tab_title)
 
-    # Interact with Google Docs for a while.  Here, we repeat the following
-    # sequence of interactions: click the "Owned by me" button, then click the
-    # "Home" button.
-    error_count_threshold = 20
+    # Interact with Google Docs for the duration of the test.  Here, we repeat
+    # the following sequence of interactions: click the "Owned by me" button,
+    # then click the "Home" button.
     num_errors = 0
-    num_iterations = 2001
-    for i in xrange(num_iterations):
-      if num_errors >= error_count_threshold:
+    self._test_start_time = time.time()
+    last_perf_stats_time = time.time()
+    self._GetPerformanceStats('Docs')
+    iteration_num = 0
+    while time.time() - self._test_start_time < self._test_length_sec:
+      iteration_num += 1
+
+      if num_errors >= self._ERROR_COUNT_THRESHOLD:
         logging.error('Error count threshold (%d) reached. Terminating test '
-                      'early.' % error_count_threshold)
+                      'early.' % self._ERROR_COUNT_THRESHOLD)
         break
 
-      if i % 5 == 0:
-        logging.info('Chrome interaction iteration %d of %d.' % (
-                     i + 1, num_iterations))
+      if time.time() - last_perf_stats_time >= self._GET_PERF_STATS_INTERVAL:
+        last_perf_stats_time = time.time()
+        self._GetPerformanceStats('Docs')
+
+      if iteration_num % 10 == 0:
+        remaining_time = self._test_length_sec - (
+                             time.time() - self._test_start_time)
+        logging.info('Chrome interaction #%d. Time remaining in test: %d sec.' %
+                     (iteration_num, remaining_time))
 
       # Click the "Owned by me" button and wait for a resulting div to appear.
       if not self._ClickElementByXpath(
@@ -365,7 +301,7 @@ class ChromeEndureDocsTest(ChromeEndureBaseTest):
           '//div[@title="Owned by me filter.  Use backspace or delete to '
           'remove"]'):
         num_errors += 1
-      time.sleep(0.1)
+      time.sleep(1)
 
       # Click the "Home" button and wait for a resulting div to appear.
       if not self._ClickElementByXpath(driver, wait, '//div[text()="Home"]'):
@@ -374,25 +310,20 @@ class ChromeEndureDocsTest(ChromeEndureBaseTest):
           driver, wait,
           '//div[@title="Home filter.  Use backspace or delete to remove"]'):
         num_errors += 1
-      time.sleep(0.1)
+      time.sleep(1)
 
-      # Snapshot after the first iteration, then every 100 iterations after
-      # that.
-      if i % 100 == 0:
-        self._TakeHeapSnapshot('Docs')
-
-    self._OutputFinalHeapSnapshotResults('Docs')
+    self._GetPerformanceStats('Docs')
 
 
 class ChromeEndurePlusTest(ChromeEndureBaseTest):
   """Long-running performance tests for Chrome using Google Plus."""
 
   def testPlusAlternatelyClickStreams(self):
-    """Interact with Google Plus while periodically taking v8 heap snapshots.
+    """Interact with Google Plus while periodically gathering performance stats.
 
     This test alternately clicks the "Friends" and "Acquaintances" buttons using
-    Google Plus, and periodically takes v8 heap snapshots that may reveal memory
-    bloat.
+    Google Plus, and periodically gathers performance stats that may reveal
+    memory bloat.
     """
     # The following cannot yet be imported on ChromeOS.
     import selenium.common.exceptions
@@ -410,21 +341,31 @@ class ChromeEndurePlusTest(ChromeEndureBaseTest):
                     msg='Loaded tab title does not contain "Google+": "%s"' %
                         loaded_tab_title)
 
-    # Interact with Google Plus for a while.  Here, we repeat the following
-    # sequence of interactions: click the "Friends" button, then click the
-    # "Acquaintances" button.
-    error_count_threshold = 20
+    # Interact with Google Plus for the duration of the test.  Here, we repeat
+    # the following sequence of interactions: click the "Friends" button, then
+    # click the "Acquaintances" button.
     num_errors = 0
-    num_iterations = 1001
-    for i in xrange(num_iterations):
-      if num_errors >= error_count_threshold:
+    self._test_start_time = time.time()
+    last_perf_stats_time = time.time()
+    self._GetPerformanceStats('Plus')
+    iteration_num = 0
+    while time.time() - self._test_start_time < self._test_length_sec:
+      iteration_num += 1
+
+      if num_errors >= self._ERROR_COUNT_THRESHOLD:
         logging.error('Error count threshold (%d) reached. Terminating test '
-                      'early.' % error_count_threshold)
+                      'early.' % self._ERROR_COUNT_THRESHOLD)
         break
 
-      if i % 5 == 0:
-        logging.info('Chrome interaction iteration %d of %d.' % (
-                     i + 1, num_iterations))
+      if time.time() - last_perf_stats_time >= self._GET_PERF_STATS_INTERVAL:
+        last_perf_stats_time = time.time()
+        self._GetPerformanceStats('Plus')
+
+      if iteration_num % 10 == 0:
+        remaining_time = self._test_length_sec - (
+                             time.time() - self._test_start_time)
+        logging.info('Chrome interaction #%d. Time remaining in test: %d sec.' %
+                     (iteration_num, remaining_time))
 
       # Click the "Friends" button and wait for a resulting div to appear.
       if not self._ClickElementByXpath(
@@ -434,7 +375,7 @@ class ChromeEndurePlusTest(ChromeEndureBaseTest):
       if not self._WaitForElementByXpath(
           driver, wait, '//div[text()="Friends"]'):
         num_errors += 1
-      time.sleep(0.1)
+      time.sleep(1)
 
       # Click the "Acquaintances" button and wait for a resulting div to appear.
       if not self._ClickElementByXpath(
@@ -445,14 +386,9 @@ class ChromeEndurePlusTest(ChromeEndureBaseTest):
       if not self._WaitForElementByXpath(
           driver, wait, '//div[text()="Acquaintances"]'):
         num_errors += 1
-      time.sleep(0.1)
+      time.sleep(1)
 
-      # Snapshot after the first iteration, then every 100 iterations after
-      # that.
-      if i % 100 == 0:
-        self._TakeHeapSnapshot('Plus')
-
-    self._OutputFinalHeapSnapshotResults('Plus')
+    self._GetPerformanceStats('Plus')
 
 
 if __name__ == '__main__':
