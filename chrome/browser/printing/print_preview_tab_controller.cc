@@ -5,7 +5,6 @@
 #include "chrome/browser/printing/print_preview_tab_controller.h"
 
 #include <algorithm>
-#include <memory>
 #include <string>
 #include <vector>
 
@@ -16,7 +15,6 @@
 #include "chrome/browser/chrome_plugin_service_filter.h"
 #include "chrome/browser/printing/print_view_manager.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sessions/restore_tab_helper.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -364,12 +362,13 @@ TabContentsWrapper* PrintPreviewTabController::GetInitiatorTab(
 TabContentsWrapper* PrintPreviewTabController::CreatePrintPreviewTab(
     TabContentsWrapper* initiator_tab) {
   AutoReset<bool> auto_reset(&is_creating_print_preview_tab_, true);
-  Browser* current_browser = BrowserList::FindBrowserWithID(
-      initiator_tab->restore_tab_helper()->window_id().id());
+  WebContents* web_contents = initiator_tab->web_contents();
+  Browser* current_browser =
+      BrowserList::FindBrowserWithWebContents(web_contents);
   if (!current_browser) {
     if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kChromeFrame)) {
-      Profile* profile = Profile::FromBrowserContext(
-          initiator_tab->web_contents()->GetBrowserContext());
+      Profile* profile =
+          Profile::FromBrowserContext(web_contents->GetBrowserContext());
       current_browser = Browser::CreateForType(Browser::TYPE_POPUP, profile);
       if (!current_browser) {
         NOTREACHED() << "Failed to create popup browser window";
