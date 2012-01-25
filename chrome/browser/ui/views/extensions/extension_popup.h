@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -71,6 +71,9 @@ class ExtensionPopup : public views::BubbleDelegateView,
                  views::View* anchor_view,
                  views::BubbleBorder::ArrowLocation arrow_location,
                  bool inspect_with_devtools);
+
+  // Show the bubble, focus on its content, and register listeners.
+  void ShowBubble();
 
   // The contained host for the view.
   scoped_ptr<ExtensionHost> extension_host_;
