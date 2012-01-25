@@ -396,10 +396,12 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   const URLPatternSet& GetEffectiveHostPermissions() const;
 
   // Returns true if the extension can silently increase its permission level.
-  // Extensions that can silently increase permissions are installed through
-  // mechanisms that are implicitly trusted.
+  // Users must approve permissions for unpacked and packed extensions in the
+  // following situations:
+  //  - when installing or upgrading packed extensions
+  //  - when installing unpacked extensions that have NPAPI plugins
+  //  - when either type of extension requests optional permissions
   bool CanSilentlyIncreasePermissions() const;
-
 
   // Whether the extension has access to the given URL.
   bool HasHostPermission(const GURL& url) const;

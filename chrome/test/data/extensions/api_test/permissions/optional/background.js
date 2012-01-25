@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -155,6 +155,16 @@ chrome.test.getConfig(function(config) {
       }));
     },
 
+    // These permissions should be on the granted list because they're on the
+    // extension's default permission list.
+    function requestGrantedPermission() {
+      chrome.permissions.request(
+          {permissions: ['management'], origins: ['http://a.com/*']},
+          pass(function(granted) {
+        assertTrue(granted);
+      }));
+    },
+
     // You can't remove required permissions.
     function removeRequired() {
       chrome.permissions.remove(
@@ -304,7 +314,7 @@ chrome.test.getConfig(function(config) {
       });
 
       chrome.permissions.request(
-          {permissions: ['tabs']}, pass(function(granted) {
+          {permissions: ['tabs', 'management']}, pass(function(granted) {
         assertTrue(granted);
         chrome.permissions.remove(
             {permissions: ['tabs']}, pass(function() {

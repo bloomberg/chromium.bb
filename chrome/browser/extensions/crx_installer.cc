@@ -583,9 +583,8 @@ void CrxInstaller::ReportSuccessFromUIThread() {
 
   // We update the extension's granted permissions if the user already approved
   // the install (client_ is non NULL), or we are allowed to install this
-  // silently. We only track granted permissions for INTERNAL extensions.
-  if ((client_ || allow_silent_install_) &&
-      extension_->location() == Extension::INTERNAL) {
+  // silently.
+  if (client_ || allow_silent_install_) {
     PermissionsUpdater perms_updater(profile());
     perms_updater.GrantActivePermissions(extension_);
   }

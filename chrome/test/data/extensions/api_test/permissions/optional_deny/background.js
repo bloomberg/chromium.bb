@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -59,6 +59,15 @@ chrome.test.getConfig(function(config) {
             doReq('http://b.c.com/', pass(function(result) {
               assertFalse(result);
             }));
+      }));
+    },
+
+    function noPromptForActivePermissions() {
+      // We shouldn't prompt if the extension already has the permissions.
+      chrome.permissions.request(
+          {permissions: ["management"]},
+          pass(function(granted) {
+        assertTrue(granted);
       }));
     }
   ]);

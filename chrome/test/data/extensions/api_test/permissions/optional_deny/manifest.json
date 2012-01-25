@@ -6,6 +6,6 @@
    "background": {
      "scripts": ["background.js"]
    },
-   "permissions": ["http://a.com/*"],
+   "permissions": ["http://a.com/*", "management"],
    "optional_permissions": ["tabs", "management", "http://*.c.com/*"]
 }

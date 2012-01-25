@@ -2317,6 +2317,86 @@ TEST_F(ExtensionServiceTest, LoadExtensionsCanDowngrade) {
   EXPECT_EQ("1.0", loaded_[0]->VersionString());
 }
 
+#if !defined(OS_CHROMEOS)
+// LOAD extensions with plugins require approval.
+TEST_F(ExtensionServiceTest, LoadExtensionsWithPlugins) {
+  FilePath extension_with_plugin_path = data_dir_
+      .AppendASCII("good")
+      .AppendASCII("Extensions")
+      .AppendASCII(good1)
+      .AppendASCII("2");
+  FilePath extension_no_plugin_path = data_dir_
+      .AppendASCII("good")
+      .AppendASCII("Extensions")
+      .AppendASCII(good2)
+      .AppendASCII("1.0");
+
+  PluginService::GetInstance()->Init();
+  InitializeEmptyExtensionService();
+  InitializeExtensionProcessManager();
+  service_->set_show_extensions_prompts(true);
+
+  // Start by canceling any install prompts.
+  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      switches::kAppsGalleryInstallAutoConfirmForTests,
+      "cancel");
+
+  // The extension that has a plugin should not install.
+  extensions::UnpackedInstaller::Create(service_)->Load(
+      extension_with_plugin_path);
+  loop_.RunAllPending();
+  EXPECT_EQ(0u, GetErrors().size());
+  EXPECT_EQ(0u, loaded_.size());
+  EXPECT_EQ(0u, service_->extensions()->size());
+  EXPECT_EQ(0u, service_->disabled_extensions()->size());
+
+  // But the extension with no plugin should since there's no prompt.
+  extensions::UnpackedInstaller::Create(service_)->Load(
+      extension_no_plugin_path);
+  loop_.RunAllPending();
+  EXPECT_EQ(0u, GetErrors().size());
+  EXPECT_EQ(1u, loaded_.size());
+  EXPECT_EQ(1u, service_->extensions()->size());
+  EXPECT_EQ(0u, service_->disabled_extensions()->size());
+  EXPECT_TRUE(service_->extensions()->Contains(good2));
+
+  // The plugin extension should install if we accept the dialog.
+  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      switches::kAppsGalleryInstallAutoConfirmForTests,
+      "accept");
+
+  extensions::UnpackedInstaller::Create(service_)->Load(
+      extension_with_plugin_path);
+  loop_.RunAllPending();
+  EXPECT_EQ(0u, GetErrors().size());
+  EXPECT_EQ(2u, loaded_.size());
+  EXPECT_EQ(2u, service_->extensions()->size());
+  EXPECT_EQ(0u, service_->disabled_extensions()->size());
+  EXPECT_TRUE(service_->extensions()->Contains(good1));
+  EXPECT_TRUE(service_->extensions()->Contains(good2));
+
+  // Make sure the granted permissions have been setup.
+  scoped_refptr<ExtensionPermissionSet> permissions(
+      service_->extension_prefs()->GetGrantedPermissions(good1));
+  EXPECT_FALSE(permissions->IsEmpty());
+  EXPECT_TRUE(permissions->HasEffectiveFullAccess());
+  EXPECT_FALSE(permissions->apis().empty());
+  EXPECT_TRUE(permissions->HasAPIPermission(ExtensionAPIPermission::kPlugin));
+
+  // We should be able to reload the extension without getting another prompt.
+  loaded_.clear();
+  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      switches::kAppsGalleryInstallAutoConfirmForTests,
+      "cancel");
+
+  service_->ReloadExtension(good1);
+  loop_.RunAllPending();
+  EXPECT_EQ(1u, loaded_.size());
+  EXPECT_EQ(2u, service_->extensions()->size());
+  EXPECT_EQ(0u, service_->disabled_extensions()->size());
+}
+#endif
+
 namespace {
 
 bool IsExtension(const Extension& extension) {
