@@ -70,7 +70,6 @@
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/browser/plugin_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
-#include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/browser/resource_context.h"
 #include "content/browser/site_instance.h"
 #include "content/browser/ssl/ssl_cert_error_handler.h"

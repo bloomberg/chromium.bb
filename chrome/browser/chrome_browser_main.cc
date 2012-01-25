@@ -93,7 +93,6 @@
 #include "chrome/installer/util/google_update_settings.h"
 #include "content/browser/gpu/gpu_blacklist.h"
 #include "content/browser/gpu/gpu_data_manager.h"
-#include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/main_function_params.h"
