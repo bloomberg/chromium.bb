@@ -10,7 +10,8 @@ and standard deviation values can be reported), the default number of iterations
 run for each of these tests is specified by |_DEFAULT_NUM_ITERATIONS|.
 That value can optionally be tweaked by setting an environment variable
 'NUM_ITERATIONS' to a positive integer, representing the number of iterations
-to run.
+to run.  An additional, initial iteration will also be run to "warm up" the
+environment, and the result from that initial iteration will be ignored.
 
 Some tests rely on repeatedly appending tabs to Chrome.  Occasionally, these
 automation calls time out, thereby affecting the timing measurements (see issue
@@ -53,7 +54,7 @@ from youtube import YoutubeTestHelper
 class BasePerfTest(pyauto.PyUITest):
   """Base class for performance tests."""
 
-  _DEFAULT_NUM_ITERATIONS = 50
+  _DEFAULT_NUM_ITERATIONS = 10
   _DEFAULT_MAX_TIMEOUT_COUNT = 10
   _PERF_OUTPUT_MARKER_PRE = '_PERF_PRE_'
   _PERF_OUTPUT_MARKER_POST = '_PERF_POST_'
@@ -331,7 +332,7 @@ class BasePerfTest(pyauto.PyUITest):
     assert callable(open_tab_command)
 
     timings = []
-    for _ in range(self._num_iterations):
+    for _ in range(self._num_iterations + 1):
       orig_timeout_count = self._timeout_count
       elapsed_time = self._MeasureElapsedTime(open_tab_command,
                                               num_invocations=num_tabs)
@@ -345,7 +346,7 @@ class BasePerfTest(pyauto.PyUITest):
       for _ in range(num_tabs):
         self.GetBrowserWindow(0).GetTab(1).Close(True)
 
-    self._PrintSummaryResults(description, timings, 'milliseconds',
+    self._PrintSummaryResults(description, timings[1:], 'milliseconds',
                               description)
 
   def _LoginToGoogleAccount(self):
@@ -471,7 +472,7 @@ class BenchmarkPerfTest(BasePerfTest):
       return result_dict
 
     timings = {}
-    for _ in xrange(self._num_iterations):
+    for _ in xrange(self._num_iterations + 1):
       result_dict = _RunBenchmarkOnce(url)
       for key, val in result_dict.items():
         timings.setdefault(key, []).append(val)
@@ -479,10 +480,10 @@ class BenchmarkPerfTest(BasePerfTest):
     for key, val in timings.items():
       print
       if key == 'final_score':
-        self._PrintSummaryResults('V8Benchmark', val, 'score',
+        self._PrintSummaryResults('V8Benchmark', val[1:], 'score',
                                   'V8Benchmark-final')
       else:
-        self._PrintSummaryResults('V8Benchmark-%s' % key, val, 'score',
+        self._PrintSummaryResults('V8Benchmark-%s' % key, val[1:], 'score',
                                   'V8Benchmark-individual')
 
   def testSunSpider(self):
@@ -1030,14 +1031,14 @@ class FileUploadDownloadTest(BasePerfTest):
       self.WaitForAllDownloadsToComplete(timeout=2 * 60 * 1000)  # 2 minutes.
 
     timings = []
-    for _ in range(self._num_iterations):
+    for _ in range(self._num_iterations + 1):
       timings.append(
           self._MeasureElapsedTime(
               lambda: _DownloadFile(DOWNLOAD_100MB_URL), num_invocations=1))
       self.SetDownloadShelfVisible(False)
       _CleanupAdditionalFilesInDir(download_dir, orig_downloads)
 
-    self._PrintSummaryResults('Download100MBFile', timings, 'milliseconds')
+    self._PrintSummaryResults('Download100MBFile', timings[1:], 'milliseconds')
 
     # Tell the local server to delete the 100 MB file.
     self.NavigateToURL(DELETE_100MB_URL)
@@ -1070,10 +1071,10 @@ class FileUploadDownloadTest(BasePerfTest):
           msg='Upload failed to complete before the timeout was hit.')
 
     timings = []
-    for _ in range(self._num_iterations):
+    for _ in range(self._num_iterations + 1):
       timings.append(self._MeasureElapsedTime(_RunSingleUpload))
 
-    self._PrintSummaryResults('Upload50MBFile', timings, 'milliseconds')
+    self._PrintSummaryResults('Upload50MBFile', timings[1:], 'milliseconds')
 
 
 class ScrollTest(BasePerfTest):
@@ -1135,9 +1136,9 @@ class ScrollTest(BasePerfTest):
       return fps
 
     fps_vals = [_RunSingleInvocation(url, scroll_text)
-                for _ in range(self._num_iterations)]
+                for _ in range(self._num_iterations + 1)]
 
-    self._PrintSummaryResults(description, fps_vals, 'FPS')
+    self._PrintSummaryResults(description, fps_vals[1:], 'FPS')
 
   def testBlankPageScroll(self):
     """Runs the scroll test on a blank page."""
