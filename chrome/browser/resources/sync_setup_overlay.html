@@ -300,14 +300,18 @@
           </div>
           <div id="sync-existing-passphrase-container" hidden>
             <div id="enter-passphrase">
-              <div id="normal-body" i18n-content="enterPassphraseBody" hidden>
-              </div>
-              <div id="passphrase-rejected-body"
+              <span id="normal-body" i18n-content="enterPassphraseBody" hidden>
+              </span>
+              <span id="passphrase-rejected-body"
                   i18n-content="enterOtherPassphraseBody" hidden>
-              </div>
-              <div id="google-passphrase-needed-body"
+              </span>
+              <span id="google-passphrase-needed-body"
                   i18n-content="enterGooglePassphraseBody" hidden>
-              </div>
+              </span>
+              <a id="passphrase-learn-more" i18n-content="learnMore"
+                  i18n-values="href:syncErrorHelpURL" class="reset-hidden"
+                  target="_blank" hidden>
+              </a>
             </div>
             <div id="passphrase-input">
               <input id="passphrase" name="passphrase" type="password"

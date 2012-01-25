@@ -314,6 +314,9 @@ extern const char kCanNotAccessAccountURL[];
 // The URL for the "Learn more" page on sync encryption.
 extern const char kSyncEncryptionHelpURL[];
 
+// The URL for the "Learn more" link when there is a sync error.
+extern const char kSyncErrorsHelpURL[];
+
 // The URL to create a new Google account via sync.
 extern const char kSyncCreateNewAccountURL[];
 

@@ -355,6 +355,9 @@ const char kSyncEncryptionHelpURL[] =
     "http://www.google.com/support/chrome/bin/answer.py?answer=1181035";
 #endif
 
+const char kSyncErrorsHelpURL[] =
+  "http://www.google.com/support/chrome/bin/answer.py?answer=1181420";
+
 const char kSyncCreateNewAccountURL[] =
     "https://www.google.com/accounts/NewAccount?service=chromiumsync";
 

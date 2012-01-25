@@ -244,6 +244,10 @@ void SyncSetupHandler2::GetStaticLocalizedValues(
       "syncEverythingHelpURL",
       google_util::StringAppendGoogleLocaleParam(
           chrome::kSyncEverythingLearnMoreURL));
+  localized_strings->SetString(
+      "syncErrorHelpURL",
+      google_util::StringAppendGoogleLocaleParam(
+          chrome::kSyncErrorsHelpURL));
 
   // The experimental body string only appears if we are on the launch page
   // version of the Sync Promo.
