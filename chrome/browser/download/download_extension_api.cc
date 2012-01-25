@@ -10,14 +10,17 @@
 #include <set>
 #include <string>
 
+#include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/json/json_writer.h"
+#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/stl_util.h"
 #include "base/string16.h"
+#include "base/string_split.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/values.h"
@@ -34,11 +37,13 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/webui/web_ui_util.h"
 #include "content/browser/download/download_id.h"
+#include "content/browser/download/download_state_info.h"
 #include "content/browser/download/download_types.h"
 #include "content/browser/download/interrupt_reasons.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/public/browser/download_item.h"
+#include "content/public/browser/download_query.h"
 #include "content/public/browser/render_process_host.h"
 #include "net/http/http_util.h"
 #include "net/url_request/url_request.h"
@@ -46,13 +51,19 @@
 using content::BrowserThread;
 using content::DownloadItem;
 using content::DownloadManager;
+using content::DownloadQuery;
 
 namespace download_extension_errors {
 
 // Error messages
 const char kGenericError[] = "I'm afraid I can't do that.";
 const char kIconNotFoundError[] = "Icon not found.";
+const char kInvalidDangerTypeError[] = "Invalid danger type";
+const char kInvalidFilterError[] = "Invalid query filter";
 const char kInvalidOperationError[] = "Invalid operation.";
+const char kInvalidOrderByError[] = "Invalid orderBy field";
+const char kInvalidQueryLimit[] = "Invalid query limit";
+const char kInvalidStateError[] = "Invalid state";
 const char kInvalidURLError[] = "Invalid URL.";
 const char kNotImplementedError[] = "NotImplemented.";
 
@@ -76,47 +87,77 @@ const char kEndTimeKey[] = "endTime";
 const char kErrorKey[] = "error";
 const char kFileSizeKey[] = "fileSize";
 const char kFilenameKey[] = "filename";
+const char kFilenameRegexKey[] = "filenameRegex";
 const char kHeaderNameKey[] = "name";
 const char kHeaderValueKey[] = "value";
 const char kHeadersKey[] = "headers";
 const char kIdKey[] = "id";
+const char kLimitKey[] = "limit";
 const char kMethodKey[] = "method";
 const char kMimeKey[] = "mime";
+const char kOrderByKey[] = "orderBy";
 const char kPausedKey[] = "paused";
+const char kQueryKey[] = "query";
 const char kSaveAsKey[] = "saveAs";
 const char kSizeKey[] = "size";
 const char kStartTimeKey[] = "startTime";
+const char kStartedAfterKey[] = "startedAfter";
+const char kStartedBeforeKey[] = "startedBefore";
 const char kStateComplete[] = "complete";
 const char kStateInProgress[] = "in_progress";
 const char kStateInterrupted[] = "interrupted";
 const char kStateKey[] = "state";
 const char kTotalBytesKey[] = "totalBytes";
+const char kTotalBytesGreaterKey[] = "totalBytesGreater";
+const char kTotalBytesLessKey[] = "totalBytesLess";
 const char kUrlKey[] = "url";
+const char kUrlRegexKey[] = "urlRegex";
+
+const char* kDangerStrings[] = {
+  kDangerSafe,
+  kDangerFile,
+  kDangerUrl,
+  kDangerContent,
+  kDangerSafe,
+};
+
+const char* kStateStrings[] = {
+  kStateInProgress,
+  kStateComplete,
+  kStateInterrupted,
+  NULL,
+  kStateInterrupted,
+};
 
 const char* DangerString(content::DownloadDangerType danger) {
-  switch (danger) {
-    case content::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT:
-    case content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS: return kDangerSafe;
-    case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE: return kDangerFile;
-    case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_URL: return kDangerUrl;
-    case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_CONTENT: return kDangerContent;
-    default:
-      NOTREACHED();
-      return "";
+  DCHECK(danger >= 0);
+  DCHECK(danger < static_cast<content::DownloadDangerType>(
+      arraysize(kDangerStrings)));
+  return kDangerStrings[danger];
+}
+
+content::DownloadDangerType DangerEnumFromString(const std::string& danger) {
+  for (size_t i = 0; i < arraysize(kDangerStrings); ++i) {
+    if (danger == kDangerStrings[i])
+      return static_cast<content::DownloadDangerType>(i);
   }
+  return content::DOWNLOAD_DANGER_TYPE_MAX;
 }
 
 const char* StateString(DownloadItem::DownloadState state) {
-  switch (state) {
-    case DownloadItem::IN_PROGRESS: return kStateInProgress;
-    case DownloadItem::COMPLETE: return kStateComplete;
-    case DownloadItem::INTERRUPTED:  // fall through
-    case DownloadItem::CANCELLED: return kStateInterrupted;
-    case DownloadItem::REMOVING:  // fall through
-    default:
-      NOTREACHED();
-      return "";
+  DCHECK(state >= 0);
+  DCHECK(state < static_cast<DownloadItem::DownloadState>(
+      arraysize(kStateStrings)));
+  DCHECK(state != DownloadItem::REMOVING);
+  return kStateStrings[state];
+}
+
+DownloadItem::DownloadState StateEnumFromString(const std::string& state) {
+  for (size_t i = 0; i < arraysize(kStateStrings); ++i) {
+    if ((kStateStrings[i] != NULL) && (state == kStateStrings[i]))
+      return static_cast<DownloadItem::DownloadState>(i);
   }
+  return DownloadItem::MAX_DOWNLOAD_STATE;
 }
 
 bool ValidateFilename(const string16& filename) {
@@ -128,6 +169,132 @@ bool ValidateFilename(const string16& filename) {
     return false;
 
   return true;
+}
+
+scoped_ptr<base::DictionaryValue> DownloadItemToJSON(DownloadItem* item) {
+  base::DictionaryValue* json = new base::DictionaryValue();
+  json->SetInteger(kIdKey, item->GetId());
+  json->SetString(kUrlKey, item->GetOriginalUrl().spec());
+  json->SetString(kFilenameKey, item->GetFullPath().LossyDisplayName());
+  json->SetString(kDangerKey, DangerString(item->GetDangerType()));
+  if (item->GetDangerType() != content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS)
+    json->SetBoolean(kDangerAcceptedKey,
+        item->GetSafetyState() == DownloadItem::DANGEROUS_BUT_VALIDATED);
+  json->SetString(kStateKey, StateString(item->GetState()));
+  json->SetBoolean(kPausedKey, item->IsPaused());
+  json->SetString(kMimeKey, item->GetMimeType());
+  json->SetInteger(kStartTimeKey,
+      (item->GetStartTime() - base::Time::UnixEpoch()).InMilliseconds());
+  json->SetInteger(kBytesReceivedKey, item->GetReceivedBytes());
+  json->SetInteger(kTotalBytesKey, item->GetTotalBytes());
+  if (item->GetState() == DownloadItem::INTERRUPTED)
+    json->SetInteger(kErrorKey, static_cast<int>(item->GetLastReason()));
+  else if (item->GetState() == DownloadItem::CANCELLED)
+    json->SetInteger(kErrorKey, static_cast<int>(
+        DOWNLOAD_INTERRUPT_REASON_USER_CANCELED));
+  // TODO(benjhayden): Implement endTime and fileSize.
+  // json->SetInteger(kEndTimeKey, -1);
+  json->SetInteger(kFileSizeKey, item->GetTotalBytes());
+  return scoped_ptr<base::DictionaryValue>(json);
+}
+
+class DownloadFileIconExtractorImpl : public DownloadFileIconExtractor {
+ public:
+  DownloadFileIconExtractorImpl() {}
+
+  ~DownloadFileIconExtractorImpl() {}
+
+  virtual bool ExtractIconURLForPath(const FilePath& path,
+                                     IconLoader::IconSize icon_size,
+                                     IconURLCallback callback) OVERRIDE;
+ private:
+  void OnIconLoadComplete(IconManager::Handle handle, gfx::Image* icon);
+
+  CancelableRequestConsumer cancelable_consumer_;
+  IconURLCallback callback_;
+};
+
+bool DownloadFileIconExtractorImpl::ExtractIconURLForPath(
+    const FilePath& path,
+    IconLoader::IconSize icon_size,
+    IconURLCallback callback) {
+  callback_ = callback;
+  IconManager* im = g_browser_process->icon_manager();
+  // The contents of the file at |path| may have changed since a previous
+  // request, in which case the associated icon may also have changed.
+  // Therefore, for the moment we always call LoadIcon instead of attempting
+  // a LookupIcon.
+  im->LoadIcon(
+      path, icon_size, &cancelable_consumer_,
+      base::Bind(&DownloadFileIconExtractorImpl::OnIconLoadComplete,
+                 base::Unretained(this)));
+  return true;
+}
+
+void DownloadFileIconExtractorImpl::OnIconLoadComplete(
+    IconManager::Handle handle,
+    gfx::Image* icon) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  std::string url;
+  if (icon)
+    url = web_ui_util::GetImageDataUrl(*icon);
+  callback_.Run(url);
+}
+
+IconLoader::IconSize IconLoaderSizeFromPixelSize(int pixel_size) {
+  switch (pixel_size) {
+    case 16: return IconLoader::SMALL;
+    case 32: return IconLoader::NORMAL;
+    default:
+      NOTREACHED();
+      return IconLoader::NORMAL;
+  }
+}
+
+typedef base::hash_map<std::string, DownloadQuery::FilterType> FilterTypeMap;
+
+void InitFilterTypeMap(FilterTypeMap& filter_types) {
+  filter_types[kBytesReceivedKey] =
+    DownloadQuery::FILTER_BYTES_RECEIVED;
+  filter_types[kDangerAcceptedKey] =
+    DownloadQuery::FILTER_DANGER_ACCEPTED;
+  filter_types[kFilenameKey] = DownloadQuery::FILTER_FILENAME;
+  filter_types[kFilenameRegexKey] =
+    DownloadQuery::FILTER_FILENAME_REGEX;
+  filter_types[kMimeKey] = DownloadQuery::FILTER_MIME;
+  filter_types[kPausedKey] = DownloadQuery::FILTER_PAUSED;
+  filter_types[kQueryKey] = DownloadQuery::FILTER_QUERY;
+  filter_types[kStartedAfterKey] = DownloadQuery::FILTER_STARTED_AFTER;
+  filter_types[kStartedBeforeKey] =
+    DownloadQuery::FILTER_STARTED_BEFORE;
+  filter_types[kStartTimeKey] = DownloadQuery::FILTER_START_TIME;
+  filter_types[kTotalBytesKey] = DownloadQuery::FILTER_TOTAL_BYTES;
+  filter_types[kTotalBytesGreaterKey] =
+      DownloadQuery::FILTER_TOTAL_BYTES_GREATER;
+  filter_types[kTotalBytesLessKey] =
+    DownloadQuery::FILTER_TOTAL_BYTES_LESS;
+  filter_types[kUrlKey] = DownloadQuery::FILTER_URL;
+  filter_types[kUrlRegexKey] = DownloadQuery::FILTER_URL_REGEX;
+}
+
+typedef base::hash_map<std::string, DownloadQuery::SortType> SortTypeMap;
+
+void InitSortTypeMap(SortTypeMap& sorter_types) {
+  sorter_types[kBytesReceivedKey] = DownloadQuery::SORT_BYTES_RECEIVED;
+  sorter_types[kDangerKey] = DownloadQuery::SORT_DANGER;
+  sorter_types[kDangerAcceptedKey] =
+    DownloadQuery::SORT_DANGER_ACCEPTED;
+  sorter_types[kFilenameKey] = DownloadQuery::SORT_FILENAME;
+  sorter_types[kMimeKey] = DownloadQuery::SORT_MIME;
+  sorter_types[kPausedKey] = DownloadQuery::SORT_PAUSED;
+  sorter_types[kStartTimeKey] = DownloadQuery::SORT_START_TIME;
+  sorter_types[kStateKey] = DownloadQuery::SORT_STATE;
+  sorter_types[kTotalBytesKey] = DownloadQuery::SORT_TOTAL_BYTES;
+  sorter_types[kUrlKey] = DownloadQuery::SORT_URL;
+}
+
+bool IsNotTemporaryDownloadFilter(const DownloadItem& item) {
+  return !item.IsTemporary();
 }
 
 }  // namespace
@@ -323,21 +490,130 @@ void DownloadsDownloadFunction::RespondOnUIThread(int dl_id, net::Error error) {
 }
 
 DownloadsSearchFunction::DownloadsSearchFunction()
-  : SyncDownloadsFunction(DOWNLOADS_FUNCTION_SEARCH) {
+  : SyncDownloadsFunction(DOWNLOADS_FUNCTION_SEARCH),
+    query_(new DownloadQuery()),
+    get_id_(0),
+    has_get_id_(false) {
 }
 
 DownloadsSearchFunction::~DownloadsSearchFunction() {}
 
 bool DownloadsSearchFunction::ParseArgs() {
+  static base::LazyInstance<FilterTypeMap> filter_types =
+    LAZY_INSTANCE_INITIALIZER;
+  if (filter_types.Get().size() == 0)
+    InitFilterTypeMap(filter_types.Get());
+
   base::DictionaryValue* query_json = NULL;
   EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &query_json));
-  error_ = download_extension_errors::kNotImplementedError;
-  return false;
+  for (base::DictionaryValue::Iterator query_json_field(*query_json);
+       query_json_field.HasNext(); query_json_field.Advance()) {
+    FilterTypeMap::const_iterator filter_type =
+        filter_types.Get().find(query_json_field.key());
+
+    if (filter_type != filter_types.Get().end()) {
+      if (!query_->AddFilter(filter_type->second, query_json_field.value())) {
+        error_ = download_extension_errors::kInvalidFilterError;
+        return false;
+      }
+    } else if (query_json_field.key() == kIdKey) {
+      EXTENSION_FUNCTION_VALIDATE(query_json_field.value().GetAsInteger(
+          &get_id_));
+      has_get_id_ = true;
+    } else if (query_json_field.key() == kOrderByKey) {
+      if (!ParseOrderBy(query_json_field.value()))
+        return false;
+    } else if (query_json_field.key() == kDangerKey) {
+      std::string danger_str;
+      EXTENSION_FUNCTION_VALIDATE(query_json_field.value().GetAsString(
+          &danger_str));
+      content::DownloadDangerType danger_type =
+          DangerEnumFromString(danger_str);
+      if (danger_type == content::DOWNLOAD_DANGER_TYPE_MAX) {
+        error_ = download_extension_errors::kInvalidDangerTypeError;
+        return false;
+      }
+      query_->AddFilter(danger_type);
+    } else if (query_json_field.key() == kStateKey) {
+      std::string state_str;
+      EXTENSION_FUNCTION_VALIDATE(query_json_field.value().GetAsString(
+          &state_str));
+      DownloadItem::DownloadState state = StateEnumFromString(state_str);
+      if (state == DownloadItem::MAX_DOWNLOAD_STATE) {
+        error_ = download_extension_errors::kInvalidStateError;
+        return false;
+      }
+      query_->AddFilter(state);
+    } else if (query_json_field.key() == kLimitKey) {
+      int limit = 0;
+      EXTENSION_FUNCTION_VALIDATE(query_json_field.value().GetAsInteger(
+          &limit));
+      if (limit < 0) {
+        error_ = download_extension_errors::kInvalidQueryLimit;
+        return false;
+      }
+      query_->Limit(limit);
+    } else {
+      EXTENSION_FUNCTION_VALIDATE(false);
+    }
+  }
+  return true;
+}
+
+bool DownloadsSearchFunction::ParseOrderBy(const base::Value& order_by_value) {
+  static base::LazyInstance<SortTypeMap> sorter_types =
+    LAZY_INSTANCE_INITIALIZER;
+  if (sorter_types.Get().size() == 0)
+    InitSortTypeMap(sorter_types.Get());
+
+  std::string order_by_str;
+  EXTENSION_FUNCTION_VALIDATE(order_by_value.GetAsString(&order_by_str));
+  std::vector<std::string> order_by_strs;
+  base::SplitString(order_by_str, ' ', &order_by_strs);
+  for (std::vector<std::string>::const_iterator iter = order_by_strs.begin();
+      iter != order_by_strs.end(); ++iter) {
+    std::string term_str = *iter;
+    if (term_str.empty())
+      continue;
+    DownloadQuery::SortDirection direction = DownloadQuery::ASCENDING;
+    if (term_str[0] == '-') {
+      direction = DownloadQuery::DESCENDING;
+      term_str = term_str.substr(1);
+    }
+    SortTypeMap::const_iterator sorter_type =
+        sorter_types.Get().find(term_str);
+    if (sorter_type == sorter_types.Get().end()) {
+      error_ = download_extension_errors::kInvalidOrderByError;
+      return false;
+    }
+    query_->AddSorter(sorter_type->second, direction);
+  }
+  return true;
 }
 
 bool DownloadsSearchFunction::RunInternal() {
-  NOTIMPLEMENTED();
-  return false;
+  DownloadQuery::DownloadVector cpp_results;
+  DownloadManager* manager = DownloadServiceFactory::GetForProfile(profile())
+    ->GetDownloadManager();
+  if (has_get_id_) {
+    DownloadItem* item = manager->GetDownloadItem(get_id_);
+    if (item != NULL) {
+      DownloadQuery::DownloadVector all_items;
+      all_items.push_back(item);
+      query_->Search(all_items.begin(), all_items.end(), &cpp_results);
+    }
+  } else {
+    query_->AddFilter(base::Bind(&IsNotTemporaryDownloadFilter));
+    manager->SearchByQuery(*query_.get(), &cpp_results);
+  }
+  base::ListValue* json_results = new base::ListValue();
+  for (DownloadManager::DownloadVector::const_iterator it = cpp_results.begin();
+       it != cpp_results.end(); ++it) {
+    scoped_ptr<base::DictionaryValue> item(DownloadItemToJSON(*it));
+    json_results->Append(item.release());
+  }
+  result_.reset(json_results);
+  return true;
 }
 
 DownloadsPauseFunction::DownloadsPauseFunction()
@@ -522,63 +798,6 @@ bool DownloadsDragFunction::RunInternal() {
   return false;
 }
 
-namespace {
-
-class DownloadFileIconExtractorImpl : public DownloadFileIconExtractor {
- public:
-  DownloadFileIconExtractorImpl() {}
-
-  ~DownloadFileIconExtractorImpl() {}
-
-  virtual bool ExtractIconURLForPath(const FilePath& path,
-                                     IconLoader::IconSize icon_size,
-                                     IconURLCallback callback) OVERRIDE;
- private:
-  void OnIconLoadComplete(IconManager::Handle handle, gfx::Image* icon);
-
-  CancelableRequestConsumer cancelable_consumer_;
-  IconURLCallback callback_;
-};
-
-bool DownloadFileIconExtractorImpl::ExtractIconURLForPath(
-    const FilePath& path,
-    IconLoader::IconSize icon_size,
-    IconURLCallback callback) {
-  callback_ = callback;
-  IconManager* im = g_browser_process->icon_manager();
-  // The contents of the file at |path| may have changed since a previous
-  // request, in which case the associated icon may also have changed.
-  // Therefore, for the moment we always call LoadIcon instead of attempting
-  // a LookupIcon.
-  im->LoadIcon(
-      path, icon_size, &cancelable_consumer_,
-      base::Bind(&DownloadFileIconExtractorImpl::OnIconLoadComplete,
-                 base::Unretained(this)));
-  return true;
-}
-
-void DownloadFileIconExtractorImpl::OnIconLoadComplete(
-    IconManager::Handle handle,
-    gfx::Image* icon) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  std::string url;
-  if (icon)
-    url = web_ui_util::GetImageDataUrl(*icon);
-  callback_.Run(url);
-}
-
-IconLoader::IconSize IconLoaderSizeFromPixelSize(int pixel_size) {
-  switch (pixel_size) {
-    case 16: return IconLoader::SMALL;
-    case 32: return IconLoader::NORMAL;
-    default:
-      NOTREACHED();
-      return IconLoader::NORMAL;
-  }
-}
-
-} // namespace
-
 DownloadsGetFileIconFunction::DownloadsGetFileIconFunction()
   : AsyncDownloadsFunction(DOWNLOADS_FUNCTION_GET_FILE_ICON),
     icon_size_(kDefaultIconSize),
@@ -642,31 +861,6 @@ void DownloadsGetFileIconFunction::OnIconURLExtracted(const std::string& url) {
   SendResponse(error_.empty());
 }
 
-namespace {
-base::DictionaryValue* DownloadItemToJSON(DownloadItem* item) {
-  base::DictionaryValue* json = new base::DictionaryValue();
-  json->SetInteger(kIdKey, item->GetId());
-  json->SetString(kUrlKey, item->GetOriginalUrl().spec());
-  json->SetString(kFilenameKey, item->GetFullPath().LossyDisplayName());
-  json->SetString(kDangerKey, DangerString(item->GetDangerType()));
-  json->SetBoolean(kDangerAcceptedKey,
-      item->GetSafetyState() == DownloadItem::DANGEROUS_BUT_VALIDATED);
-  json->SetString(kStateKey, StateString(item->GetState()));
-  json->SetBoolean(kPausedKey, item->IsPaused());
-  json->SetString(kMimeKey, item->GetMimeType());
-  json->SetInteger(kStartTimeKey,
-      (item->GetStartTime() - base::Time::UnixEpoch()).InMilliseconds());
-  json->SetInteger(kBytesReceivedKey, item->GetReceivedBytes());
-  json->SetInteger(kTotalBytesKey, item->GetTotalBytes());
-  if (item->GetState() == DownloadItem::INTERRUPTED)
-    json->SetInteger(kErrorKey, static_cast<int>(item->GetLastReason()));
-  // TODO(benjhayden): Implement endTime and fileSize.
-  // json->SetInteger(kEndTimeKey, -1);
-  json->SetInteger(kFileSizeKey, item->GetTotalBytes());
-  return json;
-}
-}  // anonymous namespace
-
 ExtensionDownloadsEventRouter::ExtensionDownloadsEventRouter(Profile* profile)
   : profile_(profile),
     manager_(NULL) {
@@ -726,8 +920,9 @@ void ExtensionDownloadsEventRouter::ModelChanged() {
                       erased_insertor);
   for (DownloadIdSet::const_iterator iter = new_set.begin();
        iter != new_set.end(); ++iter) {
-    DispatchEvent(extension_event_names::kOnDownloadCreated,
-                  DownloadItemToJSON(current_map[*iter]));
+    scoped_ptr<base::DictionaryValue> item(
+        DownloadItemToJSON(current_map[*iter]));
+    DispatchEvent(extension_event_names::kOnDownloadCreated, item.release());
   }
   for (DownloadIdSet::const_iterator iter = erased_set.begin();
        iter != erased_set.end(); ++iter) {

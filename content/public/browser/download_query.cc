@@ -1,8 +1,8 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/download/download_query.h"
+#include "content/public/browser/download_query.h"
 
 #include <algorithm>
 #include <string>
@@ -25,6 +25,8 @@
 
 using content::DownloadDangerType;
 using content::DownloadItem;
+
+namespace content {
 
 namespace {
 
@@ -374,3 +376,5 @@ void DownloadQuery::FinishSearch(DownloadQuery::DownloadVector* results) const {
   if (results->size() > limit_)
     results->resize(limit_);
 }
+
+}  // namespace content

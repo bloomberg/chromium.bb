@@ -25,6 +25,10 @@
 class DownloadIdFactory;
 class DownloadStatusUpdater;
 
+namespace content {
+class DownloadQuery;
+}
+
 class CONTENT_EXPORT DownloadManagerImpl
     : public content::DownloadManager,
       public DownloadItemImpl::Delegate,
@@ -40,6 +44,8 @@ class CONTENT_EXPORT DownloadManagerImpl
                                      DownloadVector* result) OVERRIDE;
   virtual void GetAllDownloads(const FilePath& dir_path,
                                DownloadVector* result) OVERRIDE;
+  virtual void SearchByQuery(const content::DownloadQuery& query,
+                             DownloadVector* results) OVERRIDE;
   virtual void SearchDownloads(const string16& query,
                                DownloadVector* result) OVERRIDE;
   virtual bool Init(content::BrowserContext* browser_context) OVERRIDE;

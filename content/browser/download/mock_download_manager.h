@@ -12,6 +12,7 @@
 #include "content/browser/download/download_types.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"
+#include "content/public/browser/download_query.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -27,6 +28,8 @@ class MockDownloadManager : public content::DownloadManager {
                                            DownloadVector* result));
   MOCK_METHOD2(GetAllDownloads, void(const FilePath& dir_path,
                                      DownloadVector* result));
+  MOCK_METHOD2(SearchByQuery, void(const content::DownloadQuery& query,
+                                   DownloadVector* results));
   MOCK_METHOD2(SearchDownloads, void(const string16& query,
                                      DownloadVector* result));
   MOCK_METHOD1(Init, bool(content::BrowserContext* browser_context));

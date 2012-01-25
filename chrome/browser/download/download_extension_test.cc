@@ -54,6 +54,23 @@ class DownloadExtensionTest : public InProcessBrowserTest {
     return download_service->GetDownloadManager();
   }
 
+  void CreateSlowTestDownloads(
+      size_t count, DownloadManager::DownloadVector* items) {
+    for (size_t i = 0; i < count; ++i) {
+      scoped_ptr<DownloadTestObserver> observer(
+          CreateDownloadObserver(1, DownloadItem::IN_PROGRESS));
+      GURL slow_download_url(URLRequestSlowDownloadJob::kUnknownSizeUrl);
+      ui_test_utils::NavigateToURLWithDisposition(
+          browser(), slow_download_url, CURRENT_TAB,
+          ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+      observer->WaitForFinished();
+      // We don't expect a select file dialog.
+      CHECK(!observer->select_file_dialog_seen());
+    }
+    GetDownloadManager()->GetAllDownloads(FilePath(), items);
+    CHECK_EQ(count, items->size());
+  }
+
   DownloadItem* CreateSlowTestDownload() {
     scoped_ptr<DownloadTestObserver> observer(
         CreateDownloadObserver(1, DownloadItem::IN_PROGRESS));
@@ -115,16 +132,16 @@ class DownloadExtensionTest : public InProcessBrowserTest {
         function, args, browser(), extension_function_test_utils::NONE);
   }
 
+  base::Value* RunFunctionAndReturnResult(UIThreadExtensionFunction* function,
+                                          const std::string& args) {
+    return extension_function_test_utils::RunFunctionAndReturnResult(
+        function, args, browser(), extension_function_test_utils::NONE);
+  }
+
   std::string RunFunctionAndReturnError(UIThreadExtensionFunction* function,
                                         const std::string& args) {
     return extension_function_test_utils::RunFunctionAndReturnError(
         function, args, browser(), extension_function_test_utils::NONE);
-  }
-
-  base::Value* RunFunctionAndReturnResult(UIThreadExtensionFunction* function,
-                                          const std::string& args) {
-    return extension_function_test_utils::RunFunctionAndReturnResult(
-        function, args, browser());
   }
 
   bool RunFunctionAndReturnString(UIThreadExtensionFunction* function,
@@ -216,6 +233,43 @@ class MockIconExtractorImpl : public DownloadFileIconExtractor {
   IconLoader::IconSize expected_icon_size_;
   std::string          response_;
   IconURLCallback      callback_;
+};
+
+// Cancels the underlying DownloadItem when the ScopedCancellingItem goes out of
+// scope. Like a scoped_ptr, but for DownloadItems.
+class ScopedCancellingItem {
+ public:
+  explicit ScopedCancellingItem(DownloadItem* item) : item_(item) {}
+  ~ScopedCancellingItem() {
+    item_->Cancel(true);
+  }
+  DownloadItem* operator*() { return item_; }
+  DownloadItem* operator->() { return item_; }
+  DownloadItem* get() { return item_; }
+ private:
+  DownloadItem* item_;
+  DISALLOW_COPY_AND_ASSIGN(ScopedCancellingItem);
+};
+
+// Cancels all the underlying DownloadItems when the ScopedItemVectorCanceller
+// goes out of scope. Generalization of ScopedCancellingItem to many
+// DownloadItems.
+class ScopedItemVectorCanceller {
+ public:
+  explicit ScopedItemVectorCanceller(DownloadManager::DownloadVector* items)
+    : items_(items) {
+  }
+  ~ScopedItemVectorCanceller() {
+    for (DownloadManager::DownloadVector::const_iterator item = items_->begin();
+         item != items_->end(); ++item) {
+      if ((*item)->IsInProgress())
+        (*item)->Cancel(true);
+    }
+  }
+
+ private:
+  DownloadManager::DownloadVector* items_;
+  DISALLOW_COPY_AND_ASSIGN(ScopedItemVectorCanceller);
 };
 
 } // namespace
@@ -461,4 +515,214 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
   }
 
   // The temporary files should be cleaned up when the ScopedTempDir is removed.
+}
+
+IN_PROC_BROWSER_TEST_F(DownloadExtensionTest, DownloadsApi_SearchEmptyQuery) {
+  ScopedCancellingItem item(CreateSlowTestDownload());
+  ASSERT_TRUE(item.get());
+
+  scoped_ptr<base::Value> result(RunFunctionAndReturnResult(
+      new DownloadsSearchFunction(), "[{}]"));
+  ASSERT_TRUE(result.get());
+  base::ListValue* result_list = NULL;
+  ASSERT_TRUE(result->GetAsList(&result_list));
+  ASSERT_EQ(1UL, result_list->GetSize());
+}
+
+IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
+    DownloadsApi_SearchFilenameRegex) {
+  DownloadManager::DownloadVector items;
+  CreateSlowTestDownloads(2, &items);
+  ScopedItemVectorCanceller delete_items(&items);
+
+  items[0]->Rename(items[0]->GetFullPath().DirName().Append(
+      FILE_PATH_LITERAL("foobar")));
+
+  scoped_ptr<base::Value> result(RunFunctionAndReturnResult(
+      new DownloadsSearchFunction(), "[{\"filenameRegex\": \"foobar\"}]"));
+  ASSERT_TRUE(result.get());
+  base::ListValue* result_list = NULL;
+  ASSERT_TRUE(result->GetAsList(&result_list));
+  ASSERT_EQ(1UL, result_list->GetSize());
+  base::DictionaryValue* item_value = NULL;
+  ASSERT_TRUE(result_list->GetDictionary(0, &item_value));
+  int item_id = -1;
+  ASSERT_TRUE(item_value->GetInteger("id", &item_id));
+  ASSERT_EQ(0, item_id);
+}
+
+IN_PROC_BROWSER_TEST_F(DownloadExtensionTest, DownloadsApi_SearchId) {
+  DownloadManager::DownloadVector items;
+  CreateSlowTestDownloads(2, &items);
+  ScopedItemVectorCanceller delete_items(&items);
+
+  scoped_ptr<base::Value> result(RunFunctionAndReturnResult(
+      new DownloadsSearchFunction(), "[{\"id\": 0}]"));
+  ASSERT_TRUE(result.get());
+  base::ListValue* result_list = NULL;
+  ASSERT_TRUE(result->GetAsList(&result_list));
+  ASSERT_EQ(1UL, result_list->GetSize());
+  base::DictionaryValue* item_value = NULL;
+  ASSERT_TRUE(result_list->GetDictionary(0, &item_value));
+  int item_id = -1;
+  ASSERT_TRUE(item_value->GetInteger("id", &item_id));
+  ASSERT_EQ(0, item_id);
+}
+
+IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
+    DownloadsApi_SearchIdAndFilename) {
+  DownloadManager::DownloadVector items;
+  CreateSlowTestDownloads(2, &items);
+  ScopedItemVectorCanceller delete_items(&items);
+
+  scoped_ptr<base::Value> result(RunFunctionAndReturnResult(
+      new DownloadsSearchFunction(), "[{\"id\": 0,\"filename\": \"foobar\"}]"));
+  ASSERT_TRUE(result.get());
+  base::ListValue* result_list = NULL;
+  ASSERT_TRUE(result->GetAsList(&result_list));
+  ASSERT_EQ(0UL, result_list->GetSize());
+}
+
+IN_PROC_BROWSER_TEST_F(DownloadExtensionTest, DownloadsApi_SearchOrderBy) {
+  DownloadManager::DownloadVector items;
+  CreateSlowTestDownloads(2, &items);
+  ScopedItemVectorCanceller delete_items(&items);
+
+  items[0]->Rename(items[0]->GetFullPath().DirName().Append(
+      FILE_PATH_LITERAL("zzz")));
+
+  scoped_ptr<base::Value> result(RunFunctionAndReturnResult(
+      new DownloadsSearchFunction(), "[{\"orderBy\": \"filename\"}]"));
+  ASSERT_TRUE(result.get());
+  base::ListValue* result_list = NULL;
+  ASSERT_TRUE(result->GetAsList(&result_list));
+  ASSERT_EQ(2UL, result_list->GetSize());
+  base::DictionaryValue* item0_value = NULL;
+  base::DictionaryValue* item1_value = NULL;
+  ASSERT_TRUE(result_list->GetDictionary(0, &item0_value));
+  ASSERT_TRUE(result_list->GetDictionary(1, &item1_value));
+  std::string item0_name, item1_name;
+  ASSERT_TRUE(item0_value->GetString("filename", &item0_name));
+  ASSERT_TRUE(item1_value->GetString("filename", &item1_name));
+  ASSERT_GT(items[0]->GetFullPath().value(), items[1]->GetFullPath().value());
+  ASSERT_LT(item0_name, item1_name);
+}
+
+IN_PROC_BROWSER_TEST_F(DownloadExtensionTest, DownloadsApi_SearchOrderByEmpty) {
+  DownloadManager::DownloadVector items;
+  CreateSlowTestDownloads(2, &items);
+  ScopedItemVectorCanceller delete_items(&items);
+
+  items[0]->Rename(items[0]->GetFullPath().DirName().Append(
+      FILE_PATH_LITERAL("zzz")));
+
+  scoped_ptr<base::Value> result(RunFunctionAndReturnResult(
+      new DownloadsSearchFunction(), "[{\"orderBy\": \"\"}]"));
+  ASSERT_TRUE(result.get());
+  base::ListValue* result_list = NULL;
+  ASSERT_TRUE(result->GetAsList(&result_list));
+  ASSERT_EQ(2UL, result_list->GetSize());
+  base::DictionaryValue* item0_value = NULL;
+  base::DictionaryValue* item1_value = NULL;
+  ASSERT_TRUE(result_list->GetDictionary(0, &item0_value));
+  ASSERT_TRUE(result_list->GetDictionary(1, &item1_value));
+  std::string item0_name, item1_name;
+  ASSERT_TRUE(item0_value->GetString("filename", &item0_name));
+  ASSERT_TRUE(item1_value->GetString("filename", &item1_name));
+  ASSERT_GT(items[0]->GetFullPath().value(), items[1]->GetFullPath().value());
+  ASSERT_GT(item0_name, item1_name);
+}
+
+IN_PROC_BROWSER_TEST_F(DownloadExtensionTest, DownloadsApi_SearchDanger) {
+  DownloadManager::DownloadVector items;
+  CreateSlowTestDownloads(2, &items);
+  ScopedItemVectorCanceller delete_items(&items);
+
+  items[0]->MarkContentDangerous();
+
+  scoped_ptr<base::Value> result(RunFunctionAndReturnResult(
+      new DownloadsSearchFunction(), "[{\"danger\": \"content\"}]"));
+  ASSERT_TRUE(result.get());
+  base::ListValue* result_list = NULL;
+  ASSERT_TRUE(result->GetAsList(&result_list));
+  ASSERT_EQ(1UL, result_list->GetSize());
+}
+
+IN_PROC_BROWSER_TEST_F(DownloadExtensionTest, DownloadsApi_SearchState) {
+  DownloadManager::DownloadVector items;
+  CreateSlowTestDownloads(2, &items);
+  ScopedItemVectorCanceller delete_items(&items);
+
+  items[0]->Cancel(true);
+
+  scoped_ptr<base::Value> result(RunFunctionAndReturnResult(
+      new DownloadsSearchFunction(), "[{\"state\": \"in_progress\"}]"));
+  ASSERT_TRUE(result.get());
+  base::ListValue* result_list = NULL;
+  ASSERT_TRUE(result->GetAsList(&result_list));
+  ASSERT_EQ(1UL, result_list->GetSize());
+}
+
+IN_PROC_BROWSER_TEST_F(DownloadExtensionTest, DownloadsApi_SearchLimit) {
+  DownloadManager::DownloadVector items;
+  CreateSlowTestDownloads(2, &items);
+  ScopedItemVectorCanceller delete_items(&items);
+
+  scoped_ptr<base::Value> result(RunFunctionAndReturnResult(
+      new DownloadsSearchFunction(), "[{\"limit\": 1}]"));
+  ASSERT_TRUE(result.get());
+  base::ListValue* result_list = NULL;
+  ASSERT_TRUE(result->GetAsList(&result_list));
+  ASSERT_EQ(1UL, result_list->GetSize());
+}
+
+IN_PROC_BROWSER_TEST_F(DownloadExtensionTest, DownloadsApi_SearchInvalid) {
+  std::string error = RunFunctionAndReturnError(
+      new DownloadsSearchFunction(), "[{\"filenameRegex\": \"(\"}]");
+  EXPECT_STREQ(download_extension_errors::kInvalidFilterError,
+      error.c_str());
+  error = RunFunctionAndReturnError(
+      new DownloadsSearchFunction(), "[{\"danger\": \"goat\"}]");
+  EXPECT_STREQ(download_extension_errors::kInvalidDangerTypeError,
+      error.c_str());
+  error = RunFunctionAndReturnError(
+      new DownloadsSearchFunction(), "[{\"state\": \"goat\"}]");
+  EXPECT_STREQ(download_extension_errors::kInvalidStateError,
+      error.c_str());
+  error = RunFunctionAndReturnError(
+      new DownloadsSearchFunction(), "[{\"orderBy\": \"goat\"}]");
+  EXPECT_STREQ(download_extension_errors::kInvalidOrderByError,
+      error.c_str());
+  error = RunFunctionAndReturnError(
+      new DownloadsSearchFunction(), "[{\"limit\": -1}]");
+  EXPECT_STREQ(download_extension_errors::kInvalidQueryLimit,
+      error.c_str());
+}
+
+IN_PROC_BROWSER_TEST_F(DownloadExtensionTest, DownloadsApi_SearchPlural) {
+  DownloadManager::DownloadVector items;
+  CreateSlowTestDownloads(3, &items);
+  ScopedItemVectorCanceller delete_items(&items);
+
+  items[0]->Cancel(true);
+  items[1]->MarkContentDangerous();
+  items[2]->MarkContentDangerous();
+  items[1]->Rename(items[1]->GetFullPath().DirName().Append(
+      FILE_PATH_LITERAL("zzz")));
+
+  scoped_ptr<base::Value> result(RunFunctionAndReturnResult(
+      new DownloadsSearchFunction(), "[{"
+      "\"state\": \"in_progress\", "
+      "\"danger\": \"content\", "
+      "\"orderBy\": \"filename\", "
+      "\"limit\": 1}]"));
+  ASSERT_TRUE(result.get());
+  base::ListValue* result_list = NULL;
+  ASSERT_TRUE(result->GetAsList(&result_list));
+  ASSERT_EQ(1UL, result_list->GetSize());
+  base::DictionaryValue* item_value = NULL;
+  ASSERT_TRUE(result_list->GetDictionary(0, &item_value));
+  FilePath::StringType item_name;
+  ASSERT_TRUE(item_value->GetString("filename", &item_name));
+  ASSERT_EQ(items[2]->GetFullPath().value(), item_name);
 }

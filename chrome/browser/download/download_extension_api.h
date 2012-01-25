@@ -13,6 +13,7 @@
 #include "base/file_path.h"
 #include "base/memory/singleton.h"
 #include "base/string16.h"
+#include "base/values.h"
 #include "chrome/browser/extensions/extension_function.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"
@@ -22,6 +23,7 @@ class ResourceDispatcherHost;
 
 namespace content {
 class ResourceContext;
+class DownloadQuery;
 }
 
 // Functions in the chrome.experimental.downloads namespace facilitate
@@ -33,7 +35,12 @@ namespace download_extension_errors {
 // Errors that can be returned through chrome.extension.lastError.message.
 extern const char kGenericError[];
 extern const char kIconNotFoundError[];
+extern const char kInvalidDangerTypeError[];
+extern const char kInvalidFilterError[];
 extern const char kInvalidOperationError[];
+extern const char kInvalidOrderByError[];
+extern const char kInvalidQueryLimit[];
+extern const char kInvalidStateError[];
 extern const char kInvalidUrlError[];
 extern const char kNotImplementedError[];
 
@@ -151,6 +158,12 @@ class DownloadsSearchFunction : public SyncDownloadsFunction {
   virtual bool RunInternal() OVERRIDE;
 
  private:
+  bool ParseOrderBy(const base::Value& order_by_value);
+
+  scoped_ptr<content::DownloadQuery> query_;
+  int get_id_;
+  bool has_get_id_;
+
   DISALLOW_COPY_AND_ASSIGN(DownloadsSearchFunction);
 };
 

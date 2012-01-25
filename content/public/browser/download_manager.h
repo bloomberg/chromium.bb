@@ -55,6 +55,7 @@ struct DownloadSaveInfo;
 namespace content {
 class BrowserContext;
 class DownloadManagerDelegate;
+class DownloadQuery;
 class WebContents;
 
 // Browser's download manager: manages all downloads and destination view.
@@ -105,6 +106,11 @@ class CONTENT_EXPORT DownloadManager
   // to |*result|.
   virtual void GetAllDownloads(const FilePath& dir_path,
                                DownloadVector* result) = 0;
+
+  // Returns all downloads matching |query|, including temporary downloads
+  // if query does not filter them out.
+  virtual void SearchByQuery(const content::DownloadQuery& query,
+                             DownloadVector* results) = 0;
 
   // Returns all non-temporary downloads matching |query|. Empty query matches
   // everything.

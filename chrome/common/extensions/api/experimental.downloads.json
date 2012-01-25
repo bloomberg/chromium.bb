@@ -124,7 +124,8 @@
           },
           "dangerAccepted": {
             "type": "boolean",
-            "description": "true if the user has accepted the download's danger."
+            "description": "true if the user has accepted the download's danger.",
+            "optional": true
           },
           "mime": {
             "type": "string",
