@@ -20,6 +20,7 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/iat_patch_function.h"
+#include "base/win/windows_version.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/autocomplete/autocomplete_popup_model.h"
@@ -473,6 +474,16 @@ OmniboxViewWin::OmniboxViewWin(AutocompleteEditController* controller,
          l10n_util::GetExtendedStyles());
   SetReadOnly(popup_window_mode_);
   SetFont(font_.GetNativeFont());
+
+  if (base::win::GetVersion() >= base::win::VERSION_WIN8) {
+    // Locally define CLSID_TextInputPanel to avoid issues with multiply defined
+    // or undefined symbols if we include peninputpanel_i.c.
+    const GUID CLSID_TextInputPanel = {0xf9b189d7, 0x228b, 0x4f2b, 0x86, 0x50,\
+                0xb9, 0x7f, 0x59, 0xe0, 0x2c, 0x8c};
+    keyboard_.CreateInstance(CLSID_TextInputPanel, NULL, CLSCTX_INPROC);
+    if (keyboard_ != NULL)
+      keyboard_->put_AttachedEditWindow(m_hWnd);
+  }
 
   // NOTE: Do not use SetWordBreakProcEx() here, that is no longer supported as
   // of Rich Edit 2.0 onward.
@@ -1419,6 +1430,16 @@ LRESULT OmniboxViewWin::OnImeNotify(UINT message,
     default:
       break;
   }
+  return DefWindowProc(message, wparam, lparam);
+}
+
+LRESULT OmniboxViewWin::OnPointerDown(UINT message,
+                                      WPARAM wparam,
+                                      LPARAM lparam) {
+  SetFocus();
+  // ITextInputPanel is not supported on all platforms.  NULL is fine.
+  if (keyboard_ != NULL)
+    keyboard_->SetInPlaceVisibility(true);
   return DefWindowProc(message, wparam, lparam);
 }
 
