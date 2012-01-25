@@ -3758,7 +3758,6 @@
         'browser/ui/webui/chromeos/imageburner/imageburner_ui.h',
         'browser/ui/webui/chromeos/imageburner/imageburner_utils.cc',
         'browser/ui/webui/chromeos/imageburner/imageburner_utils.h',
-        'browser/ui/webui/chromeos/imageburner/webui_handler.h',
         'browser/ui/webui/chromeos/keyboard_overlay_ui.cc',
         'browser/ui/webui/chromeos/keyboard_overlay_ui.h',
         'browser/ui/webui/chromeos/login/base_screen_handler.cc',
