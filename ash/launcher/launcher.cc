@@ -96,7 +96,8 @@ Launcher::Launcher(aura::Window* window_container)
   model_.reset(new LauncherModel);
 
   widget_ = new views::Widget;
-  views::Widget::InitParams params(views::Widget::InitParams::TYPE_CONTROL);
+  views::Widget::InitParams params(
+      views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
   params.create_texture_for_layer = true;
   params.transparent = true;
   params.parent = Shell::GetInstance()->GetContainer(
