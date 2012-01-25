@@ -1992,14 +1992,15 @@
       ],
       "search_string": "SAMPLE - OAUTH CONTACTS USES OAUTH TO CONNECT TO GOOGLES CONTACTS SERVICE AND DISPLAY A LIST OF YOUR CONTACTS. BACKGROUND_PAGE BROWSER_ACTION TABS CHROME.BROWSERACTION.ONCLICKED CHROME.BROWSERACTION.SETICON CHROME.EXTENSION.GETBACKGROUNDPAGE CHROME.EXTENSION.GETURL CHROME.TABS.CREATE CHROME.TABS.GET CHROME.TABS.GETSELECTED CHROME.TABS.ONUPDATED CHROME.TABS.REMOVE",
       "source_files": [
-        "background.html",
+        "background.js",
         "chrome_ex_oauth.html",
         "chrome_ex_oauth.js",
         "chrome_ex_oauthsimple.js",
         "contacts.html",
+        "contacts.js",
         "manifest.json"
       ],
-      "source_hash": "af4eb19fda4ff762a672a3440ee86c7a25a7e415",
+      "source_hash": "760ff59a48b7f758e9a80a6485cc0eb0c092841a",
       "zip_path": "examples\/extensions\/oauth_contacts.zip"
     },
     {
@@ -2107,7 +2108,7 @@
         "options.js",
         "tabs.js"
       ],
-      "source_hash": "e80bd52801f710b5706027ade51519216e8031d5",
+      "source_hash": "9ef5dd34467a74abe48382348ec1ecde65466fd1",
       "zip_path": "examples\/extensions\/speak_selection.zip"
     },
     {
@@ -2256,7 +2257,7 @@
         "popup.html",
         "popup.js"
       ],
-      "source_hash": "a35cba913444d2e1fd1b97653ed0ce72e20b678a",
+      "source_hash": "d5b5b987c7ea37bd7ec1fe7048ff58b4aef2e99d",
       "zip_path": "examples\/extensions\/talking_alarm_clock.zip"
     },
     {
@@ -2377,7 +2378,7 @@
         "ttsdemo.html",
         "ttsdemo.js"
       ],
-      "source_hash": "c848fa77d649be391e365b3ce6f003a18bdbc7a7",
+      "source_hash": "a72820a4ac8dce453ae31ae39153f0ac19f75078",
       "zip_path": "examples\/extensions\/ttsdemo.zip"
     },
     {

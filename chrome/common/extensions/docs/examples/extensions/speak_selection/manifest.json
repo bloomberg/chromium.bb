@@ -1,10 +1,20 @@
 {
   "name": "Speak Selection",
-  "version": "1.0",
+  "version": "1.1",
   "description": "Speaks the current selection out loud.",
-  "permissions": [ "<all_urls>", "tts", "tabs" ],
+  "permissions": [
+    "<all_urls>",
+    "tts",
+    "tabs"
+  ],
 
-  "background": { "scripts": ["background.js"] },
+  "background": {
+    "scripts": [
+      "keycodes.js",
+      "tabs.js",
+      "background.js"
+    ]
+  },
 
   "browser_action": {
     "default_icon": "SpeakSel19.png",
@@ -33,5 +43,7 @@
     "48": "SpeakSel48.png",
     "128": "SpeakSel128.png",
     "256": "SpeakSel256.png"
-  }
+  },
+
+  "manifest_version": 2
 }

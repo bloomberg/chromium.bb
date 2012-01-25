@@ -5,7 +5,11 @@
             "128": "img/icon-128.png" },
   "description": "Uses OAuth to connect to Google's contacts service and display a list of your contacts.",
   "background": {
-    "page": "background.html"
+    "scripts": [
+      "chrome_ex_oauthsimple.js",
+      "chrome_ex_oauth.js",
+      "background.js"
+    ]
   },
   "browser_action": {
     "default_title": "",
@@ -17,5 +21,6 @@
     "https://www.google.com/accounts/OAuthGetRequestToken",
     "https://www.google.com/accounts/OAuthAuthorizeToken",
     "https://www.google.com/accounts/OAuthGetAccessToken"
-  ]
+  ],
+  "manifest_version": 2
 }

@@ -10,5 +10,6 @@
       "web_url": "http://maps.google.com/"
     }
   },
-  "permissions": ["geolocation"]
+  "permissions": ["geolocation"],
+  "manifest_version": 2
 }

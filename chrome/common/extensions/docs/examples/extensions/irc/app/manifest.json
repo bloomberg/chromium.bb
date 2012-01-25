@@ -6,5 +6,6 @@
       "url": "http://localhost:8080"
     },
     "origins": ["http://localhost:8080"]
-  }
+  },
+  "manifest_version": 2
 }

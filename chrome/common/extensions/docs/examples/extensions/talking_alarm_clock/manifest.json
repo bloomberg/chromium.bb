@@ -17,5 +17,7 @@
     "48": "clock-48.png",
     "128": "clock-128.png",
     "256": "clock-256.png"
-  }
+  },
+
+  "manifest_version": 2
 }
