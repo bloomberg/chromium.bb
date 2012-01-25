@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -49,6 +49,12 @@ const int kNotifyCycleTimeForTestingMs = 500;  // Half a second.
 std::string CmdLineInterval() {
   const CommandLine& cmd_line = *CommandLine::ForCurrentProcess();
   return cmd_line.GetSwitchValueASCII(switches::kCheckForUpdateIntervalSec);
+}
+
+bool IsTesting() {
+  const CommandLine& cmd_line = *CommandLine::ForCurrentProcess();
+  return cmd_line.HasSwitch(switches::kSimulateUpgrade) ||
+      cmd_line.HasSwitch(switches::kCheckForUpdateIntervalSec);
 }
 
 // How often to check for an upgrade.
@@ -155,6 +161,10 @@ UpgradeDetectorImpl::UpgradeDetectorImpl()
   CommandLine command_line(*CommandLine::ForCurrentProcess());
   if (command_line.HasSwitch(switches::kDisableBackgroundNetworking))
     return;
+  if (command_line.HasSwitch(switches::kSimulateUpgrade)) {
+    UpgradeDetected();
+    return;
+  }
   // Windows: only enable upgrade notifications for official builds.
   // Mac: only enable them if the updater (Keystone) is present.
   // Linux (and other POSIX): always enable regardless of branding.
@@ -200,8 +210,8 @@ void UpgradeDetectorImpl::UpgradeDetected() {
   // Start the repeating timer for notifying the user after a certain period.
   // The called function will eventually figure out that enough time has passed
   // and stop the timer.
-  int cycle_time = CmdLineInterval().empty() ? kNotifyCycleTimeMs :
-                                               kNotifyCycleTimeForTestingMs;
+  int cycle_time = IsTesting() ?
+      kNotifyCycleTimeForTestingMs : kNotifyCycleTimeMs;
   upgrade_notification_timer_.Start(FROM_HERE,
       base::TimeDelta::FromMilliseconds(cycle_time),
       this, &UpgradeDetectorImpl::NotifyOnUpgrade);
@@ -209,13 +219,11 @@ void UpgradeDetectorImpl::UpgradeDetected() {
 
 void UpgradeDetectorImpl::NotifyOnUpgrade() {
   base::TimeDelta delta = base::Time::Now() - upgrade_detected_time();
-  std::string interval = CmdLineInterval();
 
-  // A command line interval implies testing, which we'll make more convenient
-  // by switching to seconds of waiting instead of days between flipping
-  // severity. This works in conjunction with the similar interval.empty()
-  // check below.
-  int64 time_passed = interval.empty() ? delta.InHours() : delta.InSeconds();
+  // We'll make testing more convenient by switching to seconds of waiting
+  // instead of days between flipping severity.
+  bool is_testing = IsTesting();
+  int64 time_passed = is_testing ? delta.InSeconds() : delta.InHours();
 
   if (is_unstable_channel_) {
     // There's only one threat level for unstable channels like dev and
@@ -234,7 +242,7 @@ void UpgradeDetectorImpl::NotifyOnUpgrade() {
       return;  // Not ready to recommend upgrade.
     }
   } else {
-    const int kMultiplier = interval.empty() ? 24 : 1;
+    const int kMultiplier = is_testing ? 1 : 24;
     // 14 days when not testing, otherwise 14 seconds.
     const int kSevereThreshold = 14 * kMultiplier;
     const int kHighThreshold = 7 * kMultiplier;

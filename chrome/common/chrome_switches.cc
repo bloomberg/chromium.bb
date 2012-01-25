@@ -1073,6 +1073,9 @@ const char kShowFPSCounter[]                = "show-fps-counter";
 // specified.
 const char kSilentDumpOnDCHECK[]            = "silent-dump-on-dcheck";
 
+// Simulates an update being available.
+const char kSimulateUpgrade[]               = "simulate-upgrade";
+
 // Replaces the buffered data source for <audio> and <video> with a simplified
 // resource loader that downloads the entire resource into memory.
 
