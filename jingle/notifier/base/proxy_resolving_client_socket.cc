@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,6 +19,18 @@
 #include "net/url_request/url_request_context_getter.h"
 
 namespace notifier {
+
+namespace {
+
+void HandleProxyTunnelAuth(const net::HttpResponseInfo& response_info,
+                           net::HttpAuthController* auth_controller,
+                           net::CompletionCallback callback) {
+  // Since we have no way to respond, simply invoke the callback and the
+  // request will fail.
+  callback.Run(net::OK);
+}
+
+}  // namespace
 
 ProxyResolvingClientSocket::ProxyResolvingClientSocket(
     net::ClientSocketFactory* socket_factory,
@@ -172,7 +184,9 @@ void ProxyResolvingClientSocket::ProcessProxyResolveDone(int status) {
   // Now that we have resolved the proxy, we need to connect.
   status = net::InitSocketHandleForRawConnect(
       dest_host_port_pair_, network_session_.get(), proxy_info_, ssl_config_,
-      ssl_config_, bound_net_log_, transport_.get(), connect_callback_);
+      ssl_config_, bound_net_log_, transport_.get(),
+      base::Bind(&HandleProxyTunnelAuth), connect_callback_);
+
   if (status != net::ERR_IO_PENDING) {
     // Since this method is always called asynchronously. it is OK to call
     // ProcessConnectDone synchronously.
