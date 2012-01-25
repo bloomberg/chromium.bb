@@ -7,6 +7,14 @@ function TaskManager() { }
 
 cr.addSingletonGetter(TaskManager);
 
+/**
+ * Whether task manager shows 'Private Memory' instead of 'Phsical Memory'.
+ * On Linux and ChromeOS, this is true because calculating Phsical Memory is
+ * slow.
+ * @const
+ */
+var USE_PRIVATE_MEM = cr.isLinux || cr.isChromeOS;
+
 /*
  * Default columns (column_id, label_id, width, is_default)
  * @const
@@ -14,9 +22,9 @@ cr.addSingletonGetter(TaskManager);
 var DEFAULT_COLUMNS = [
     ['title', 'pageColumn', 300, true],
     ['profileName', 'profileNameColumn', 120, false],
-    ['physicalMemory', 'physicalMemColumn', 80, true],
+    ['physicalMemory', 'physicalMemColumn', 80, !USE_PRIVATE_MEM],
     ['sharedMemory', 'sharedMemColumn', 80, false],
-    ['privateMemory', 'privateMemColumn', 80, false],
+    ['privateMemory', 'privateMemColumn', 80, USE_PRIVATE_MEM],
     ['cpuUsage', 'cpuColumn', 80, true],
     ['networkUsage', 'netColumn', 85, true],
     ['processId', 'processIDColumn', 100, false],
