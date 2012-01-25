@@ -1,6 +1,7 @@
 [
   {
     "namespace": "extension",
+    "dependencies": [ "tabs" ],
     "types": [
       {
         "id": "MessageSender",

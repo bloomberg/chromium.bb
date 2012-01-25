@@ -1,6 +1,7 @@
 [
   {
     "namespace": "windows",
+    "dependencies": [ "tabs" ],
     "types": [
       {
         "id": "Window",

@@ -1,6 +1,7 @@
 [
   {
     "namespace": "experimental.infobars",
+    "dependencies": [ "windows" ],
     "types": [],
     "functions": [
       {

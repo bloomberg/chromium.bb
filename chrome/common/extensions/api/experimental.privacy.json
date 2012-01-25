@@ -1,6 +1,7 @@
 [
   {
     "namespace": "experimental.privacy",
+    "dependencies": [ "types" ],
     "properties": {
       "network": {
         "type": "object",

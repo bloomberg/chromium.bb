@@ -19,6 +19,26 @@
 
 namespace extensions {
 
+namespace {
+
+// Adds any APIs listed in "dependencies" found in |schema| but not in
+// |reference| to |out|.
+void GetMissingDependencies(
+    const DictionaryValue& schema,
+    const ExtensionAPI::SchemaMap& reference,
+    std::set<std::string>* out) {
+  ListValue* dependencies = NULL;
+  if (!schema.GetList("dependencies", &dependencies))
+    return;
+  for (size_t i = 0; i < dependencies->GetSize(); ++i) {
+    std::string api_name;
+    if (dependencies->GetString(i, &api_name) && !reference.count(api_name))
+      out->insert(api_name);
+  }
+}
+
+}  // namespace
+
 // static
 ExtensionAPI* ExtensionAPI::GetInstance() {
   return Singleton<ExtensionAPI>::get();
@@ -189,6 +209,21 @@ void ExtensionAPI::GetSchemasForExtension(
   // to return all schemas that might be needed.
   GetSchemasForPermissions(*extension.required_permission_set(), out);
   GetSchemasForPermissions(*extension.optional_permission_set(), out);
+  ResolveDependencies(out);
+}
+
+void ExtensionAPI::ResolveDependencies(SchemaMap* out) const {
+  std::set<std::string> missing_dependencies;
+  for (SchemaMap::const_iterator i = out->begin(); i != out->end(); ++i)
+    GetMissingDependencies(*i->second, *out, &missing_dependencies);
+
+  while (missing_dependencies.size()) {
+    std::string api_name = *missing_dependencies.begin();
+    missing_dependencies.erase(api_name);
+    linked_ptr<const DictionaryValue> schema = schemas_.find(api_name)->second;
+    (*out)[api_name] = schema;
+    GetMissingDependencies(*schema, *out, &missing_dependencies);
+  }
 }
 
 void ExtensionAPI::GetDefaultSchemas(SchemaMap* out) const {

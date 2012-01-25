@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -78,6 +78,10 @@ class ExtensionAPI {
   // Gets the schemas for the APIs that are allowed by a permission set.
   void GetSchemasForPermissions(
       const ExtensionPermissionSet& permissions, SchemaMap* out) const;
+
+  // Adds dependent schemas to |out| as determined by the "dependencies"
+  // property.
+  void ResolveDependencies(SchemaMap* out) const;
 
   static ExtensionAPI* instance_;
 

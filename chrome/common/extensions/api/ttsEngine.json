@@ -1,6 +1,7 @@
 [
   {
     "namespace": "ttsEngine",
+    "dependencies": [ "tts" ],
     "functions": [
       {
         "name": "sendTtsEvent",

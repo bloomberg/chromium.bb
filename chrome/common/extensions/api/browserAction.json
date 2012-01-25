@@ -1,6 +1,7 @@
 [
   {
     "namespace": "browserAction",
+    "dependencies": [ "tabs" ],
     "types": [],
     "functions": [
       {

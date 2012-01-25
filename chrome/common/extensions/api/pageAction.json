@@ -1,6 +1,7 @@
 [
   {
     "namespace": "pageAction",
+    "dependencies": [ "tabs" ],
     "types": [],
     "functions": [
       {

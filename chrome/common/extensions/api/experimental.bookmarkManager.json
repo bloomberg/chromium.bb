@@ -2,6 +2,7 @@
   {
     "namespace": "experimental.bookmarkManager",
     "nodoc": true,
+    "dependencies": [ "bookmarks" ],
     "types": [
       {
         "id": "BookmarkNodeDataElement",
