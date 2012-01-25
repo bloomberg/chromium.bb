@@ -420,6 +420,9 @@ class SessionRestoreImpl : public content::NotificationObserver {
         urls_to_open_(urls_to_open),
         restore_started_(base::TimeTicks::Now()),
         browser_shown_(false) {
+    if (profiles_getting_restored == NULL)
+      profiles_getting_restored = new std::set<const Profile*>();
+    profiles_getting_restored->insert(profile);
     // When asynchronous its possible for there to be no windows. To make sure
     // Chrome doesn't prematurely exit AddRef the process. We'll release in the
     // destructor when restore is done.
@@ -875,10 +878,6 @@ Browser* SessionRestore::RestoreSession(Profile* profile,
     NOTREACHED();
     return NULL;
   }
-  if (profiles_getting_restored == NULL)
-    profiles_getting_restored = new std::set<const Profile*>();
-  profiles_getting_restored->insert(profile);
-
   profile->set_restored_last_session(true);
   // SessionRestoreImpl takes care of deleting itself when done.
   SessionRestoreImpl* restorer = new SessionRestoreImpl(
