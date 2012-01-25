@@ -1,4 +1,4 @@
-/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -61,13 +61,18 @@ html[dir=rtl] .most-visited .close-button {
 }
 
 .most-visited .favicon {
-  background: no-repeat 5px 50%;
+  -webkit-margin-start: 5px;
+  background: no-repeat left 50%;
   bottom: 7px;
   box-sizing: border-box;
   display: block;
   height: 16px;
   position: absolute;
-  width: 100%;
+  width: 16px;
+}
+
+html[dir='rtl'] .most-visited .favicon {
+  background-position-x: right;
 }
 
 .most-visited .color-stripe {

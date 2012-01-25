@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -96,7 +96,6 @@ cr.define('ntp4', function() {
       var faviconDiv = this.querySelector('.favicon');
       var faviconUrl = 'chrome://favicon/size/16/' + data.url;
       faviconDiv.style.backgroundImage = url(faviconUrl);
-      faviconDiv.dir = data.direction;
       chrome.send('getFaviconDominantColor', [faviconUrl, this.id]);
 
       var title = this.querySelector('.title');
