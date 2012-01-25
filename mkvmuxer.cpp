@@ -473,9 +473,8 @@ uint64 Track::PayloadSize() const {
 }
 
 uint64 Track::Size() const {
-  uint64 size = Track::PayloadSize();
+  uint64 size = PayloadSize();
   size += EbmlMasterElementSize(kMkvTrackEntry, size);
-
   return size;
 }
 
@@ -688,15 +687,6 @@ uint64 VideoTrack::PayloadSize() const {
   return parent_size + size;
 }
 
-uint64 VideoTrack::Size() const {
-  const uint64 parent_size = Track::Size();
-
-  uint64 size = VideoPayloadSize();
-  size += EbmlMasterElementSize(kMkvVideo, size);
-
-  return parent_size + size;
-}
-
 bool VideoTrack::Write(IMkvWriter* writer) const {
   if (!Track::Write(writer))
     return false;
@@ -767,19 +757,6 @@ AudioTrack::~AudioTrack() {
 
 uint64 AudioTrack::PayloadSize() const {
   const uint64 parent_size = Track::PayloadSize();
-
-  uint64 size = EbmlElementSize(kMkvSamplingFrequency,
-                                static_cast<float>(sample_rate_));
-  size += EbmlElementSize(kMkvChannels, channels_);
-  if (bit_depth_ > 0)
-    size += EbmlElementSize(kMkvBitDepth, bit_depth_);
-  size += EbmlMasterElementSize(kMkvAudio, size);
-
-  return parent_size + size;
-}
-
-uint64 AudioTrack::Size() const {
-  const uint64 parent_size = Track::Size();
 
   uint64 size = EbmlElementSize(kMkvSamplingFrequency,
                                 static_cast<float>(sample_rate_));

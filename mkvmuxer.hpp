@@ -320,10 +320,6 @@ class VideoTrack : public Track {
   // video specific elements.
   virtual uint64 PayloadSize() const;
 
-  // Returns the size in bytes of the Track element plus the video specific
-  // elements.
-  virtual uint64 Size() const;
-
   // Output the VideoTrack element to the writer. Returns true on success.
   virtual bool Write(IMkvWriter* writer) const;
 
@@ -367,10 +363,6 @@ class AudioTrack : public Track {
   // Returns the size in bytes for the payload of the Track element plus the
   // audio specific elements.
   virtual uint64 PayloadSize() const;
-
-  // Returns the size in bytes of the Track element plus the audio specific
-  // elements.
-  virtual uint64 Size() const;
 
   // Output the AudioTrack element to the writer. Returns true on success.
   virtual bool Write(IMkvWriter* writer) const;
