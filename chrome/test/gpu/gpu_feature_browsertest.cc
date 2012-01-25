@@ -266,7 +266,15 @@ IN_PROC_BROWSER_TEST_F(WebGLMultisamplingTest, MultisamplingDisabled) {
   RunTest(url, "\"FALSE\"", true);
 }
 
-IN_PROC_BROWSER_TEST_F(GpuFeatureTest, Canvas2DAllowed) {
+class Canvas2DEnabledTest : public GpuFeatureTest {
+ public:
+  virtual void SetUpCommandLine(CommandLine* command_line) {
+    GpuFeatureTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitch(switches::kEnableAccelerated2dCanvas);
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(Canvas2DEnabledTest, Canvas2DAllowed) {
   GpuFeatureFlags flags = GpuDataManager::GetInstance()->GetGpuFeatureFlags();
   EXPECT_EQ(flags.flags(), 0u);
 
@@ -274,7 +282,7 @@ IN_PROC_BROWSER_TEST_F(GpuFeatureTest, Canvas2DAllowed) {
   RunTest(url, EXPECT_GPU_SWAP_BUFFERS);
 }
 
-IN_PROC_BROWSER_TEST_F(GpuFeatureTest, Canvas2DBlocked) {
+IN_PROC_BROWSER_TEST_F(Canvas2DEnabledTest, Canvas2DBlocked) {
   const std::string json_blacklist =
       "{\n"
       "  \"name\": \"gpu blacklist\",\n"
@@ -298,7 +306,7 @@ IN_PROC_BROWSER_TEST_F(GpuFeatureTest, Canvas2DBlocked) {
   RunTest(url, EXPECT_NO_GPU_PROCESS);
 }
 
-class Canvas2DTest : public GpuFeatureTest {
+class Canvas2DDisabledTest : public GpuFeatureTest {
  public:
   virtual void SetUpCommandLine(CommandLine* command_line) {
     GpuFeatureTest::SetUpCommandLine(command_line);
@@ -306,7 +314,7 @@ class Canvas2DTest : public GpuFeatureTest {
   }
 };
 
-IN_PROC_BROWSER_TEST_F(Canvas2DTest, Canvas2DDisabled) {
+IN_PROC_BROWSER_TEST_F(Canvas2DDisabledTest, Canvas2DDisabled) {
   const FilePath url(FILE_PATH_LITERAL("feature_canvas2d.html"));
   RunTest(url, EXPECT_NO_GPU_PROCESS);
 }
