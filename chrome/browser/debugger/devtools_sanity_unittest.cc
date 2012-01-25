@@ -430,13 +430,7 @@ class WorkerDevToolsSanityTest : public InProcessBrowserTest {
 
 
 // Tests scripts panel showing.
-#if defined(OS_WIN)
-// http://crbug.com/109266
-#define MAYBE_TestShowScriptsTab FLAKY_TestShowScriptsTab
-#else
-#define MAYBE_TestShowScriptsTab TestShowScriptsTab
-#endif
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, MAYBE_TestShowScriptsTab) {
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestShowScriptsTab) {
   RunTest("testShowScriptsTab", kDebuggerTestPage);
 }
 
