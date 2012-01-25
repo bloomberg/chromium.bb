@@ -214,7 +214,6 @@ struct weston_surface {
 	GLuint texture;
 	pixman_region32_t damage;
 	pixman_region32_t opaque;
-	int32_t width, height;
 	int32_t pitch;
 	struct wl_list link;
 	struct wl_list buffer_link;
@@ -230,6 +229,7 @@ struct weston_surface {
 	 */
 	struct {
 		int32_t x, y; /* surface translation on display */
+		int32_t width, height;
 
 		/* struct weston_transform */
 		struct wl_list transformation_list;

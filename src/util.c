@@ -135,10 +135,12 @@ weston_zoom_frame(struct weston_animation *animation,
 		(zoom->stop - zoom->start) * zoom->spring.current;
 	weston_matrix_init(&zoom->transform.matrix);
 	weston_matrix_translate(&zoom->transform.matrix,
-				-0.5f * es->width, -0.5f * es->height, 0);
+				-0.5f * es->geometry.width,
+				-0.5f * es->geometry.height, 0);
 	weston_matrix_scale(&zoom->transform.matrix, scale, scale, scale);
 	weston_matrix_translate(&zoom->transform.matrix,
-				0.5f * es->width, 0.5f * es->height, 0);
+				0.5f * es->geometry.width,
+				0.5f * es->geometry.height, 0);
 
 	es->alpha = zoom->spring.current * 255;
 	if (es->alpha > 255)

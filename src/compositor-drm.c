@@ -99,15 +99,16 @@ drm_output_prepare_scanout_surface(struct drm_output *output)
 	if (es->visual != WESTON_RGB_VISUAL ||
 	    es->geometry.x != output->base.x ||
 	    es->geometry.y != output->base.y ||
-	    es->width != output->base.current->width ||
-	    es->height != output->base.current->height ||
+	    es->geometry.width != output->base.current->width ||
+	    es->geometry.height != output->base.current->height ||
 	    es->transform.enabled ||
 	    es->image == EGL_NO_IMAGE_KHR)
 		return -1;
 
 	bo = gbm_bo_create_from_egl_image(c->gbm,
 					  c->base.display, es->image,
-					  es->width, es->height,
+					  es->geometry.width,
+					  es->geometry.height,
 					  GBM_BO_USE_SCANOUT);
 
 	handle = gbm_bo_get_handle(bo).s32;
@@ -234,7 +235,8 @@ drm_output_set_cursor(struct weston_output *output_base,
 	pixman_region32_init_rect(&cursor_region,
 				  eid->sprite->geometry.x,
 				  eid->sprite->geometry.y,
-				  eid->sprite->width, eid->sprite->height);
+				  eid->sprite->geometry.width,
+				  eid->sprite->geometry.height);
 
 	pixman_region32_intersect_rect(&cursor_region, &cursor_region,
 				       output->base.x, output->base.y,
@@ -247,7 +249,8 @@ drm_output_set_cursor(struct weston_output *output_base,
 	if (eid->sprite->image == EGL_NO_IMAGE_KHR)
 		goto out;
 
-	if (eid->sprite->width > 64 || eid->sprite->height > 64)
+	if (eid->sprite->geometry.width > 64 ||
+	    eid->sprite->geometry.height > 64)
 		goto out;
 
 	bo = gbm_bo_create_from_egl_image(c->gbm,
