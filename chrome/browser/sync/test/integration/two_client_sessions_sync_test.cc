@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -28,8 +28,8 @@ class TwoClientSessionsSyncTest : public SyncTest {
 };
 
 static const char* kValidPassphrase = "passphrase!";
-static const char* kURL1 = "chrome://sync";
-static const char* kURL2 = "chrome://version";
+static const char* kURL1 = "http://127.0.0.1/bubba1";
+static const char* kURL2 = "http://127.0.0.1/bubba2";
 
 // TODO(zea): Test each individual session command we care about separately.
 // (as well as multi-window). We're currently only checking basic single-window/
