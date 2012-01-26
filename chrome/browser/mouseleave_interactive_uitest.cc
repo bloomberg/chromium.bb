@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -26,8 +26,9 @@ class MouseLeaveTest : public UITest {
   DISALLOW_COPY_AND_ASSIGN(MouseLeaveTest);
 };
 
-#if defined(OS_MACOSX)
+#if defined(OS_MACOSX) || (defined(OS_CHROMEOS) && defined(USE_AURA))
 // Missing automation provider support: http://crbug.com/45892
+// Failing on Chrome OS Aura: http://crbug.com/111086
 #define MAYBE_TestOnMouseOut DISABLED_TestOnMouseOut
 #else
 #define MAYBE_TestOnMouseOut TestOnMouseOut
