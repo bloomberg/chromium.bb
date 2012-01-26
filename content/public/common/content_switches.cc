@@ -285,7 +285,7 @@ const char kEnableVideoFullscreen[]         = "enable-video-fullscreen";
 const char kEnableVideoTrack[]              = "enable-video-track";
 
 // Enable Web Intents.
-const char kEnableWebIntents[]              = "enable-web-intents";
+const char kDisableWebIntents[]             = "disable-web-intents";
 
 // Enables experimental features for the geolocation API.
 // Current features:

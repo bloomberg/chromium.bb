@@ -311,8 +311,7 @@ bool HostContentSettingsMap::IsSettingAllowedForType(
     ContentSetting setting, ContentSettingsType content_type) {
   // Intents content settings are hidden behind a switch for now.
   if (content_type == CONTENT_SETTINGS_TYPE_INTENTS &&
-      !CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableWebIntents))
+      CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableWebIntents))
     return false;
 
   // BLOCK semantics are not implemented for fullscreen.

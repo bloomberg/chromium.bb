@@ -286,8 +286,8 @@ void ContentSettingsHandler::GetLocalizedValues(
       CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableClickToPlay));
   localized_strings->SetBoolean("enable_web_intents",
-      CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableWebIntents));
+      !CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableWebIntents));
 }
 
 void ContentSettingsHandler::Initialize() {
@@ -440,10 +440,10 @@ void ContentSettingsHandler::UpdateAllOTRExceptionsViewsFromModel() {
 
 void ContentSettingsHandler::UpdateExceptionsViewFromModel(
     ContentSettingsType type) {
-  // Skip updating intents unless it's enabled from the command line.
+  // Update intents unless it's disabled from the command line.
   if (type == CONTENT_SETTINGS_TYPE_INTENTS &&
-      !CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableWebIntents))
+      CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableWebIntents))
     return;
 
   switch (type) {
