@@ -53,7 +53,7 @@ const CommandLinePrefStore::BooleanSwitchToPreferenceMapEntry
           true },
       { switches::kDisableSSLFalseStart, prefs::kDisableSSLRecordSplitting,
           true },
-      { switches::kEnableMemoryInfo, prefs::kEnableMemoryInfo, false },
+      { switches::kEnableMemoryInfo, prefs::kEnableMemoryInfo, true },
 #if defined(GOOGLE_CHROME_BUILD)
       { switches::kDisablePrintPreview, prefs::kPrintPreviewDisabled, true },
 #else
