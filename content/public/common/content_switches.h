@@ -95,7 +95,7 @@ CONTENT_EXPORT extern const char kEnableTcpFastOpen[];
 CONTENT_EXPORT extern const char kEnableTouchEvents[];
 extern const char kEnableVideoFullscreen[];
 CONTENT_EXPORT extern const char kEnableVideoTrack[];
-CONTENT_EXPORT extern const char kDisableWebIntents[];
+CONTENT_EXPORT extern const char kEnableWebIntents[];
 CONTENT_EXPORT extern const char kExperimentalLocationFeatures[];
 extern const char kExtraPluginDir[];
 extern const char kForceFieldTestNameAndValue[];

@@ -66,8 +66,8 @@ void IntentInjector::DidNavigateMainFrame(
 // like it might be racy, though.
 void IntentInjector::SendIntent() {
   if (source_intent_.get() == NULL ||
-      CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableWebIntents) ||
+      !CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableWebIntents) ||
       web_contents()->GetRenderViewHost() == NULL) {
     return;
   }
@@ -90,7 +90,7 @@ bool IntentInjector::OnMessageReceived(const IPC::Message& message) {
 
 void IntentInjector::OnReply(webkit_glue::WebIntentReplyType reply_type,
                              const string16& data) {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableWebIntents))
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableWebIntents))
     NOTREACHED();
 
   if (intents_dispatcher_) {

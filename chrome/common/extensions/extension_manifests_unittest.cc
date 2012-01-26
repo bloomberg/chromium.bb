@@ -775,6 +775,8 @@ TEST_F(ExtensionManifestTest, TtsEngine) {
 }
 
 TEST_F(ExtensionManifestTest, WebIntents) {
+  CommandLine::ForCurrentProcess()->AppendSwitch(switches::kEnableWebIntents);
+
   LoadAndExpectError("intent_invalid_1.json",
                      extension_manifest_errors::kInvalidIntents);
   LoadAndExpectError("intent_invalid_2.json",
@@ -820,6 +822,8 @@ TEST_F(ExtensionManifestTest, WebIntents) {
 }
 
 TEST_F(ExtensionManifestTest, WebIntentsWithMultipleMimeTypes) {
+  CommandLine::ForCurrentProcess()->AppendSwitch(switches::kEnableWebIntents);
+
   scoped_refptr<Extension> extension(
       LoadAndExpectSuccess("intent_valid_multitype.json"));
   ASSERT_TRUE(extension.get() != NULL);
