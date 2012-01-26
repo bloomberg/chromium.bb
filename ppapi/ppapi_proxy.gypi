@@ -99,6 +99,8 @@
         'proxy/ppb_image_data_proxy.h',
         'proxy/ppb_instance_proxy.cc',
         'proxy/ppb_instance_proxy.h',
+        'proxy/ppb_message_loop_proxy.cc',
+        'proxy/ppb_message_loop_proxy.h',
         'proxy/ppb_pdf_proxy.cc',
         'proxy/ppb_pdf_proxy.h',
         'proxy/ppb_tcp_socket_private_proxy.cc',
