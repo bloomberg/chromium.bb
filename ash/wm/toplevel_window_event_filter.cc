@@ -175,9 +175,6 @@ bool ToplevelWindowEventFilter::PreHandleMouseEvent(aura::Window* target,
   // Process EventFilters implementation first so that it processes
   // activation/focus first.
   switch (event->type()) {
-    case ui::ET_MOUSE_MOVED:
-      UpdateWindowComponentForEvent(target, event);
-      break;
     case ui::ET_MOUSE_PRESSED:
       // We also update the current window component here because for the
       // mouse-drag-release-press case, where the mouse is released and
