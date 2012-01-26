@@ -384,25 +384,36 @@ weston_surface_from_global(struct weston_surface *surface,
 
 WL_EXPORT void
 weston_surface_damage_rectangle(struct weston_surface *surface,
-			      int32_t x, int32_t y,
-			      int32_t width, int32_t height)
+				int32_t sx, int32_t sy,
+				int32_t width, int32_t height)
 {
-	struct weston_compositor *compositor = surface->compositor;
+	weston_surface_update_transform(surface);
 
-	pixman_region32_union_rect(&surface->damage,
-				   &surface->damage,
-				   surface->geometry.x + x,
-				   surface->geometry.y + y,
-				   width, height);
-	weston_compositor_schedule_repaint(compositor);
+	if (surface->transform.enabled) {
+		pixman_region32_t box;
+		surface_compute_bbox(surface, sx, sy, width, height, &box);
+		pixman_region32_union(&surface->damage, &surface->damage,
+				      &box);
+		pixman_region32_fini(&box);
+	} else {
+		int32_t x, y;
+		weston_surface_to_global(surface, sx, sy, &x, &y);
+		pixman_region32_union_rect(&surface->damage, &surface->damage,
+					   x, y, width, height);
+	}
+
+	weston_compositor_schedule_repaint(surface->compositor);
 }
 
 WL_EXPORT void
 weston_surface_damage(struct weston_surface *surface)
 {
-	weston_surface_damage_rectangle(surface, 0, 0,
-					surface->geometry.width,
-					surface->geometry.height);
+	weston_surface_update_transform(surface);
+
+	pixman_region32_union(&surface->damage, &surface->damage,
+			      &surface->transform.boundingbox);
+
+	weston_compositor_schedule_repaint(surface->compositor);
 }
 
 WL_EXPORT void
@@ -418,11 +429,10 @@ weston_surface_damage_below(struct weston_surface *surface)
 
 	below = container_of(surface->link.next, struct weston_surface, link);
 
-	pixman_region32_union_rect(&below->damage,
-				   &below->damage,
-				   surface->geometry.x, surface->geometry.y,
-				   surface->geometry.width,
-				   surface->geometry.height);
+	weston_surface_update_transform(surface);
+	pixman_region32_union(&below->damage, &below->damage,
+			      &surface->transform.boundingbox);
+
 	weston_compositor_schedule_repaint(surface->compositor);
 }
 
