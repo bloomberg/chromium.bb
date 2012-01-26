@@ -267,8 +267,6 @@
       'utility/graphics/paint_aggregator.h',
       'utility/graphics/paint_manager.cc',
       'utility/graphics/paint_manager.h',
-      'utility/threading/simple_thread.cc',
-      'utility/threading/simple_thread.h',
     ],
     #
     # Common Testing source for trusted and untrusted (NaCl) pugins.

@@ -17,7 +17,6 @@
 #include "ppapi/c/dev/ppb_gles_chromium_texture_mapping_dev.h"
 #include "ppapi/c/dev/ppb_ime_input_event_dev.h"
 #include "ppapi/c/dev/ppb_memory_dev.h"
-#include "ppapi/c/dev/ppb_message_loop_dev.h"
 #include "ppapi/c/dev/ppb_resource_array_dev.h"
 #include "ppapi/c/dev/ppb_testing_dev.h"
 #include "ppapi/c/dev/ppb_text_input_dev.h"
@@ -81,7 +80,6 @@
 #include "ppapi/proxy/ppb_graphics_3d_proxy.h"
 #include "ppapi/proxy/ppb_image_data_proxy.h"
 #include "ppapi/proxy/ppb_instance_proxy.h"
-#include "ppapi/proxy/ppb_message_loop_proxy.h"
 #include "ppapi/proxy/ppb_pdf_proxy.h"
 #include "ppapi/proxy/ppb_tcp_socket_private_proxy.h"
 #include "ppapi/proxy/ppb_testing_proxy.h"
@@ -171,8 +169,6 @@ InterfaceList::InterfaceList() {
   AddProxy(API_ID_PPP_CLASS, &PPP_Class_Proxy::Create);
   AddPPB(PPB_CORE_INTERFACE_1_0, API_ID_PPB_CORE,
          PPB_Core_Proxy::GetPPB_Core_Interface());
-  AddPPB(PPB_MESSAGELOOP_DEV_INTERFACE_0_1, API_ID_NONE,
-         PPB_MessageLoop_Proxy::GetInterface());
   AddPPB(PPB_OPENGLES2_INTERFACE_1_0, API_ID_NONE,
          PPB_OpenGLES2_Shared::GetInterface());
   AddPPB(PPB_VAR_INTERFACE_1_1, API_ID_NONE,

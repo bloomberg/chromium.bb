@@ -198,7 +198,6 @@
         'thunk/ppb_instance_thunk.cc',
         'thunk/ppb_layer_compositor_api.h',
         'thunk/ppb_layer_compositor_thunk.cc',
-        'thunk/ppb_message_loop_api.h',
         'thunk/ppb_messaging_thunk.cc',
         'thunk/ppb_mouse_lock_thunk.cc',
         'thunk/ppb_pdf_api.h',
