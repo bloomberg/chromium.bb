@@ -54,7 +54,7 @@ from youtube import YoutubeTestHelper
 class BasePerfTest(pyauto.PyUITest):
   """Base class for performance tests."""
 
-  _DEFAULT_NUM_ITERATIONS = 10
+  _DEFAULT_NUM_ITERATIONS = 10  # Keep synced with desktopui_PyAutoPerfTests.py.
   _DEFAULT_MAX_TIMEOUT_COUNT = 10
   _PERF_OUTPUT_MARKER_PRE = '_PERF_PRE_'
   _PERF_OUTPUT_MARKER_POST = '_PERF_POST_'
