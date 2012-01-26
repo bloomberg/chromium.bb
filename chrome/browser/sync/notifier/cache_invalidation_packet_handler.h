@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -17,8 +17,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "google/cacheinvalidation/v2/system-resources.h"
-#include "jingle/notifier/listener/push_notifications_listen_task.h"
-#include "jingle/notifier/listener/push_notifications_subscribe_task.h"
 
 namespace buzz {
 class XmppTaskParentInterface;
@@ -26,9 +24,7 @@ class XmppTaskParentInterface;
 
 namespace sync_notifier {
 
-class CacheInvalidationPacketHandler
-    : public notifier::PushNotificationsSubscribeTaskDelegate,
-      public notifier::PushNotificationsListenTaskDelegate {
+class CacheInvalidationPacketHandler {
  public:
   // Starts routing packets from |invalidation_client| using
   // |base_task|.  |base_task.get()| must still be non-NULL.
@@ -48,19 +44,11 @@ class CacheInvalidationPacketHandler
   virtual void SetMessageReceiver(
       invalidation::MessageCallback* incoming_receiver);
 
-  // Sends a message requesting a subscription to the notification channel.
-  virtual void SendSubscriptionRequest();
-
-  // PushNotificationsSubscribeTaskDelegate implementation.
-  virtual void OnSubscribed() OVERRIDE;
-  virtual void OnSubscriptionError() OVERRIDE;
-
-  // PushNotificationsListenTaskDelegate implementation.
-  virtual void OnNotificationReceived(
-      const notifier::Notification& notification) OVERRIDE;
-
  private:
   FRIEND_TEST_ALL_PREFIXES(CacheInvalidationPacketHandlerTest, Basic);
+
+  void HandleInboundPacket(const std::string& packet);
+  void HandleChannelContextChange(const std::string& context);
 
   base::NonThreadSafe non_thread_safe_;
   base::WeakPtrFactory<CacheInvalidationPacketHandler> weak_factory_;
@@ -73,10 +61,10 @@ class CacheInvalidationPacketHandler
 
   // Monotonically increasing sequence number.
   int seq_;
-  // Service context.
-  std::string service_context_;
-  // Scheduling hash.
-  int64 scheduling_hash_;
+  // Unique session token.
+  const std::string sid_;
+  // Channel context.
+  std::string channel_context_;
 
   DISALLOW_COPY_AND_ASSIGN(CacheInvalidationPacketHandler);
 };

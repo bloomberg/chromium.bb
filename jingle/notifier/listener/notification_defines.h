@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,24 +21,9 @@ struct Subscription {
 
 typedef std::vector<Subscription> SubscriptionList;
 
-// A structure representing a <recipient/> block within a push message.
-struct Recipient {
-  // The bare jid of the recipient.
-  std::string to;
-  // User-specific data for the recipient.
-  std::string user_specific_data;
-};
-
-typedef std::vector<Recipient> RecipientList;
-
 struct Notification {
-  Notification();
-  ~Notification();
-
   // The channel the notification is coming in on.
   std::string channel;
-  // Recipients for this notification (may be empty).
-  RecipientList recipients;
   // The notification data payload.
   std::string data;
 
