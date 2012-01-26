@@ -89,7 +89,7 @@ TEST_F(ExtensionUnpackerTest, MAYBE_InvalidDefaultLocale) {
 
 // Crashes intermittently on Windows, see http://crbug.com/109738
 #if defined(OS_WIN)
-#define MAYBE_InvalidMessagesFile DISABLE_InvalidMessagesFile
+#define MAYBE_InvalidMessagesFile DISABLED_InvalidMessagesFile
 #else
 #define MAYBE_InvalidMessagesFile InvalidMessagesFile
 #endif
