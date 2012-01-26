@@ -415,6 +415,16 @@ class FakeDevToolsClientHost : public DevToolsClientHost {
   virtual void TabReplaced(WebContents* new_tab) OVERRIDE {}
 };
 
+class RestorePrerenderMode {
+ public:
+  RestorePrerenderMode() : prev_mode_(PrerenderManager::GetMode()) {
+  }
+
+  ~RestorePrerenderMode() { PrerenderManager::SetMode(prev_mode_); }
+ private:
+  PrerenderManager::PrerenderManagerMode prev_mode_;
+};
+
 }  // namespace
 
 class PrerenderBrowserTest : public InProcessBrowserTest {
@@ -762,17 +772,21 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
     if (disposition == NEW_BACKGROUND_TAB)
       GetPrerenderContents()->set_should_be_shown(false);
 
-    // In the case of zero loads, need to wait for the page load to complete
-    // before running any Javascript.
     scoped_ptr<ui_test_utils::WindowedNotificationObserver> page_load_observer;
-    WebContents* web_contents =
-        GetPrerenderContents()->prerender_contents()->web_contents();
-    if (GetPrerenderContents()->number_of_loads() == 0) {
-      page_load_observer.reset(
-          new ui_test_utils::WindowedNotificationObserver(
-              content::NOTIFICATION_LOAD_STOP,
-              content::Source<NavigationController>(
-                  &web_contents->GetController())));
+    WebContents* web_contents = NULL;
+
+    if (GetPrerenderContents()->prerender_contents()) {
+      // In the case of zero loads, need to wait for the page load to complete
+      // before running any Javascript.
+      web_contents =
+          GetPrerenderContents()->prerender_contents()->web_contents();
+      if (GetPrerenderContents()->number_of_loads() == 0) {
+        page_load_observer.reset(
+            new ui_test_utils::WindowedNotificationObserver(
+                content::NOTIFICATION_LOAD_STOP,
+                content::Source<NavigationController>(
+                    &web_contents->GetController())));
+      }
     }
 
     // ui_test_utils::NavigateToURL waits until DidStopLoading is called on
@@ -790,7 +804,7 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
     // Make sure the PrerenderContents found earlier was used or removed.
     EXPECT_TRUE(GetPrerenderContents() == NULL);
 
-    if (call_javascript_) {
+    if (call_javascript_ && web_contents) {
       if (page_load_observer.get())
         page_load_observer->Wait();
 
@@ -1910,6 +1924,30 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, DISABLED_PrerenderSessionStorage) {
                    1);
   NavigateToDestURL();
   GoBackToPageBeforePrerender(browser());
+}
+
+// Checks that the control group works.  A JS alert cannot be detected in the
+// control group.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, ControlGroup) {
+  RestorePrerenderMode restore_prerender_mode;
+  PrerenderManager::SetMode(
+      PrerenderManager::PRERENDER_MODE_EXPERIMENT_CONTROL_GROUP);
+  PrerenderTestURL("files/prerender/prerender_alert_before_onload.html",
+                   FINAL_STATUS_WOULD_HAVE_BEEN_USED, 0);
+  NavigateToDestURL();
+}
+
+// Make sure that the MatchComplete dummy works in the normal case.  Once
+// a prerender is cancelled because of a script, a dummy must be created to
+// account for the MatchComplete case, and it must have a final status of
+// FINAL_STATUS_WOULD_HAVE_BEEN_USED.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, MatchCompleteDummy) {
+  std::deque<FinalStatus> expected_final_status_queue;
+  expected_final_status_queue.push_back(FINAL_STATUS_JAVASCRIPT_ALERT);
+  expected_final_status_queue.push_back(FINAL_STATUS_WOULD_HAVE_BEEN_USED);
+  PrerenderTestURL("files/prerender/prerender_alert_before_onload.html",
+                   expected_final_status_queue, 1);
+  NavigateToDestURL();
 }
 
 }  // namespace prerender
