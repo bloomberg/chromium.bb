@@ -693,14 +693,6 @@ TEST_PPAPI_OUT_OF_PROCESS(Flash_MessageLoop)
 TEST_PPAPI_OUT_OF_PROCESS(Flash_GetLocalTimeZoneOffset)
 TEST_PPAPI_OUT_OF_PROCESS(Flash_GetCommandLineArgs)
 
-// TODO(toyoshim): Enable disabled tests
-// http://crbug.com/111165 .
-#if defined(OS_WIN)
-#undef TEST_PPAPI_IN_PROCESS_WITH_WS
-#define TEST_PPAPI_IN_PROCESS_WITH_WS(test_name)
-#undef TEST_PPAPI_NACL_VIA_HTTP_WITH_WS
-#define TEST_PPAPI_NACL_VIA_HTTP_WITH_WS(test_name)
-#endif
 TEST_PPAPI_IN_PROCESS(WebSocket_IsWebSocket)
 TEST_PPAPI_IN_PROCESS(WebSocket_UninitializedPropertiesAccess)
 TEST_PPAPI_IN_PROCESS(WebSocket_InvalidConnect)
