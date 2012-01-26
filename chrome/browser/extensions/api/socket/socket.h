@@ -11,10 +11,9 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/extensions/api/socket/socket_event_notifier.h"
 #include "net/base/io_buffer.h"
-#include "net/udp/datagram_client_socket.h"
 
 namespace net {
-class IPEndPoint;
+class Socket;
 }
 
 namespace extensions {
@@ -23,14 +22,17 @@ namespace extensions {
 // we need to manage it in the context of an extension.
 class Socket {
  public:
-  Socket(net::DatagramClientSocket* datagram_client_socket,
-         SocketEventNotifier* event_notifier);
   virtual ~Socket();
 
-  // Returns true if successful.
-  virtual bool Connect(const net::IPEndPoint& ip_end_point);
-  virtual void Close();
+  // Returns net::OK if successful, or an error code otherwise.
+  virtual int Connect() = 0;
+  virtual void Disconnect() = 0;
 
+  // Returns a string representing what was able to be read without blocking.
+  // If it reads an empty string, or blocks... the behavior is
+  // indistinguishable! TODO(miket): this is awful. We should be returning a
+  // blob, and we should be giving the caller all needed information about
+  // what's happening with the read operation.
   virtual std::string Read();
 
   // Returns the number of bytes successfully written, or a negative error
@@ -40,15 +42,19 @@ class Socket {
   // error).
   virtual int Write(const std::string message);
 
- private:
-  scoped_ptr<net::DatagramClientSocket> datagram_client_socket_;
+  virtual void OnDataRead(int result);
+  virtual void OnWriteComplete(int result);
+
+ protected:
+  explicit Socket(SocketEventNotifier* event_notifier);
+  virtual net::Socket* socket() = 0;
+
   scoped_ptr<SocketEventNotifier> event_notifier_;
   bool is_connected_;
+
+ private:
   static const int kMaxRead = 1024;
   scoped_refptr<net::IOBufferWithSize> read_buffer_;
-
-  void OnDataRead(int result);
-  void OnWriteComplete(int result);
 };
 
 }  //  namespace extensions

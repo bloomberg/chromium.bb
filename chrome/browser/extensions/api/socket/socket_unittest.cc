@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/socket/socket.h"
+#include "chrome/browser/extensions/api/socket/udp_socket.h"
 
 #include "base/memory/scoped_ptr.h"
 #include "net/base/completion_callback.h"
@@ -17,9 +17,6 @@ using testing::Return;
 using testing::SaveArg;
 
 namespace extensions {
-
-class SocketTest : public testing::Test {
-};
 
 class MockSocket : public net::UDPClientSocket {
  public:
@@ -47,11 +44,12 @@ class MockSocketEventNotifier : public SocketEventNotifier {
   MOCK_METHOD1(OnWriteComplete, void(int result_code));
 };
 
-TEST_F(SocketTest, TestSocketRead) {
+TEST(SocketTest, TestSocketRead) {
   MockSocket* udp_client_socket = new MockSocket();
   SocketEventNotifier* notifier = new MockSocketEventNotifier();
 
-  scoped_ptr<Socket> socket(new Socket(udp_client_socket, notifier));
+  scoped_ptr<UDPSocket> socket(new UDPSocket(udp_client_socket, "1.2.3.4", 1,
+                                             notifier));
 
   EXPECT_CALL(*udp_client_socket, Read(_, _, _))
       .Times(1);
@@ -59,11 +57,12 @@ TEST_F(SocketTest, TestSocketRead) {
   std::string message = socket->Read();
 }
 
-TEST_F(SocketTest, TestSocketWrite) {
+TEST(SocketTest, TestSocketWrite) {
   MockSocket* udp_client_socket = new MockSocket();
   SocketEventNotifier* notifier = new MockSocketEventNotifier();
 
-  scoped_ptr<Socket> socket(new Socket(udp_client_socket, notifier));
+  scoped_ptr<UDPSocket> socket(new UDPSocket(udp_client_socket, "1.2.3.4", 1,
+                                             notifier));
 
   EXPECT_CALL(*udp_client_socket, Write(_, _, _))
       .Times(1);
@@ -71,11 +70,12 @@ TEST_F(SocketTest, TestSocketWrite) {
   socket->Write("foo");
 }
 
-TEST_F(SocketTest, TestSocketBlockedWrite) {
+TEST(SocketTest, TestSocketBlockedWrite) {
   MockSocket* udp_client_socket = new MockSocket();
   MockSocketEventNotifier* notifier = new MockSocketEventNotifier();
 
-  scoped_ptr<Socket> socket(new Socket(udp_client_socket, notifier));
+  scoped_ptr<UDPSocket> socket(new UDPSocket(udp_client_socket, "1.2.3.4", 1,
+                                             notifier));
 
   net::CompletionCallback callback;
   EXPECT_CALL(*udp_client_socket, Write(_, _, _))

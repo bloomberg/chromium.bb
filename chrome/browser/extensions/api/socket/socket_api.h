@@ -54,7 +54,16 @@ class SocketCreateFunction : public SocketApiFunction {
   virtual bool Respond() OVERRIDE;
 
  private:
+  enum SocketType {
+    kSocketTypeInvalid = -1,
+    kSocketTypeTCP,
+    kSocketTypeUDP
+  };
+
   int src_id_;
+  SocketType socket_type_;
+  std::string address_;
+  int port_;
 
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.socket.create")
 };
@@ -79,13 +88,11 @@ class SocketConnectFunction : public SocketApiFunction {
 
  private:
   int socket_id_;
-  std::string address_;
-  int port_;
 
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.socket.connect")
 };
 
-class SocketCloseFunction : public SocketApiFunction {
+class SocketDisconnectFunction : public SocketApiFunction {
  protected:
   virtual bool Prepare() OVERRIDE;
   virtual void Work() OVERRIDE;
@@ -94,7 +101,7 @@ class SocketCloseFunction : public SocketApiFunction {
  private:
   int socket_id_;
 
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.socket.close")
+  DECLARE_EXTENSION_FUNCTION_NAME("experimental.socket.disconnect")
 };
 
 class SocketReadFunction : public SocketApiFunction {

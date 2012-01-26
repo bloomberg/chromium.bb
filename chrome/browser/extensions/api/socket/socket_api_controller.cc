@@ -4,9 +4,13 @@
 
 #include "chrome/browser/extensions/api/socket/socket_api_controller.h"
 
-#include "chrome/browser/extensions/api/socket/socket.h"
+#include "chrome/browser/extensions/api/socket/tcp_socket.h"
+#include "chrome/browser/extensions/api/socket/udp_socket.h"
 #include "chrome/browser/extensions/api/socket/socket_event_notifier.h"
+#include "net/base/address_list.h"
+#include "net/base/net_errors.h"
 #include "net/base/rand_callback.h"
+#include "net/socket/tcp_client_socket.h"
 #include "net/udp/datagram_socket.h"
 #include "net/udp/udp_client_socket.h"
 
@@ -25,18 +29,53 @@ Socket* SocketController::GetSocket(int socket_id) {
   return NULL;
 }
 
-int SocketController::CreateUdp(SocketEventNotifier* event_notifier) {
-  linked_ptr<Socket> socket(new Socket(
-      new net::UDPClientSocket(net::DatagramSocket::DEFAULT_BIND,
-                               net::RandIntCallback(),
-                               NULL,
-                               net::NetLog::Source()), event_notifier));
-  CHECK(socket.get());
-  socket_map_[next_socket_id_] = socket;
+// TODO(miket): we should consider partitioning the ID space by extension ID
+// to make it harder for extensions to peek into each others' sockets.
+int SocketController::GenerateSocketId() {
+  while (next_socket_id_ > 0 && socket_map_.count(next_socket_id_) > 0)
+    ++next_socket_id_;
   return next_socket_id_++;
 }
 
-bool SocketController::DestroyUdp(int socket_id) {
+int SocketController::CreateTCPSocket(const std::string& address, int port,
+                                      SocketEventNotifier* event_notifier) {
+  net::IPAddressNumber ip_number;
+  bool result = net::ParseIPLiteralToNumber(address, &ip_number);
+  if (!result)
+    return 0;
+
+  net::AddressList address_list =
+      net::AddressList::CreateFromIPAddress(ip_number, port);
+  linked_ptr<Socket> socket(new TCPSocket(
+      new net::TCPClientSocket(address_list, NULL, net::NetLog::Source()),
+      event_notifier));
+  CHECK(socket.get());
+  int next_socket_id = GenerateSocketId();
+  if (next_socket_id > 0) {
+    socket_map_[next_socket_id] = socket;
+    return next_socket_id;
+  }
+  return 0;
+}
+
+int SocketController::CreateUDPSocket(const std::string& address, int port,
+                                      SocketEventNotifier* event_notifier) {
+  linked_ptr<Socket> socket(new UDPSocket(
+      new net::UDPClientSocket(net::DatagramSocket::DEFAULT_BIND,
+                               net::RandIntCallback(),
+                               NULL,
+                               net::NetLog::Source()),
+      address, port, event_notifier));
+  CHECK(socket.get());
+  int next_socket_id = GenerateSocketId();
+  if (next_socket_id > 0) {
+    socket_map_[next_socket_id] = socket;
+    return next_socket_id;
+  }
+  return 0;
+}
+
+bool SocketController::DestroySocket(int socket_id) {
   Socket* socket = GetSocket(socket_id);
   if (!socket)
     return false;
@@ -45,46 +84,27 @@ bool SocketController::DestroyUdp(int socket_id) {
   return true;
 }
 
-// TODO(miket): it *might* be nice to be able to resolve DNS. I am not putting
-// in interesting error reporting for this method because we clearly can't
-// leave experimental without DNS resolution.
-//
-// static
-bool SocketController::CreateIPEndPoint(const std::string& address, int port,
-                                        net::IPEndPoint* ip_end_point) {
-  net::IPAddressNumber ip_number;
-  bool result = net::ParseIPLiteralToNumber(address, &ip_number);
-  if (!result)
-    return false;
-  *ip_end_point = net::IPEndPoint(ip_number, port);
-  return true;
-}
-
-bool SocketController::ConnectUdp(int socket_id, const std::string& address,
-                                  int port) {
-  Socket* socket = GetSocket(socket_id);
-  if (!socket)
-    return false;
-  net::IPEndPoint ip_end_point;
-  if (!CreateIPEndPoint(address, port, &ip_end_point))
-    return false;
-  return socket->Connect(ip_end_point);
-}
-
-void SocketController::CloseUdp(int socket_id) {
+int SocketController::ConnectSocket(int socket_id) {
   Socket* socket = GetSocket(socket_id);
   if (socket)
-    socket->Close();
+    return socket->Connect();
+  return net::ERR_FILE_NOT_FOUND;
 }
 
-std::string SocketController::ReadUdp(int socket_id) {
+void SocketController::DisconnectSocket(int socket_id) {
+  Socket* socket = GetSocket(socket_id);
+  if (socket)
+    socket->Disconnect();
+}
+
+std::string SocketController::ReadSocket(int socket_id) {
   Socket* socket = GetSocket(socket_id);
   if (!socket)
     return "";
   return socket->Read();
 }
 
-int SocketController::WriteUdp(int socket_id, const std::string& message) {
+int SocketController::WriteSocket(int socket_id, const std::string& message) {
   Socket* socket = GetSocket(socket_id);
   if (!socket)
     return -1;

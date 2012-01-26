@@ -21,6 +21,7 @@ extern const char kOnSocketEvent[];
 namespace extensions {
 
 enum SocketEventType {
+  SOCKET_EVENT_CONNECT_COMPLETE,
   SOCKET_EVENT_DATA_READ,
   SOCKET_EVENT_WRITE_COMPLETE
 };
@@ -37,20 +38,23 @@ class SocketEventNotifier {
                       const GURL& src_url);
   virtual ~SocketEventNotifier();
 
+  virtual void OnConnectComplete(int result_code);
   virtual void OnDataRead(int result_code, const std::string& data);
   virtual void OnWriteComplete(int result_code);
 
   static std::string SocketEventTypeToString(SocketEventType event_type);
 
  private:
+  void DispatchEvent(DictionaryValue* event);
+  DictionaryValue* CreateSocketEvent(SocketEventType event_type);
+
+  void SendEventWithResultCode(SocketEventType event_type, int result_code);
+
   ExtensionEventRouter* router_;
   Profile* profile_;
   std::string src_extension_id_;
   int src_id_;
   GURL src_url_;
-
-  void DispatchEvent(DictionaryValue* event);
-  DictionaryValue* CreateSocketEvent(SocketEventType event_type);
 
   DISALLOW_COPY_AND_ASSIGN(SocketEventNotifier);
 };

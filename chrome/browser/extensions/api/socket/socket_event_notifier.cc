@@ -15,6 +15,7 @@ const char kOnSocketEvent[] = "experimental.socket.onEvent";
 namespace extensions {
 
 const char kEventTypeKey[] = "type";
+const char kEventTypeConnectComplete[] = "connectComplete";
 const char kEventTypeDataRead[] = "dataRead";
 const char kEventTypeWriteComplete[] = "writeComplete";
 
@@ -37,6 +38,10 @@ SocketEventNotifier::SocketEventNotifier(ExtensionEventRouter* router,
 
 SocketEventNotifier::~SocketEventNotifier() {}
 
+void SocketEventNotifier::OnConnectComplete(int result_code) {
+  SendEventWithResultCode(SOCKET_EVENT_CONNECT_COMPLETE, result_code);
+}
+
 void SocketEventNotifier::OnDataRead(int result_code,
                                      const std::string& data) {
   // Do we have a destination for this event? There will be one if a source id
@@ -53,10 +58,15 @@ void SocketEventNotifier::OnDataRead(int result_code,
 }
 
 void SocketEventNotifier::OnWriteComplete(int result_code) {
+  SendEventWithResultCode(SOCKET_EVENT_WRITE_COMPLETE, result_code);
+}
+
+void SocketEventNotifier::SendEventWithResultCode(SocketEventType event_type,
+                                                  int result_code) {
   if (src_id_ < 0)
     return;
 
-  DictionaryValue* event = CreateSocketEvent(SOCKET_EVENT_WRITE_COMPLETE);
+  DictionaryValue* event = CreateSocketEvent(event_type);
   event->SetInteger(kResultCodeKey, result_code);
   DispatchEvent(event);
 }
@@ -90,6 +100,8 @@ DictionaryValue* SocketEventNotifier::CreateSocketEvent(
 std::string SocketEventNotifier::SocketEventTypeToString(
     SocketEventType event_type) {
   switch (event_type) {
+    case SOCKET_EVENT_CONNECT_COMPLETE:
+      return kEventTypeConnectComplete;
     case SOCKET_EVENT_DATA_READ:
       return kEventTypeDataRead;
     case SOCKET_EVENT_WRITE_COMPLETE:

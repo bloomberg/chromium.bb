@@ -19,7 +19,8 @@ namespace extensions {
 const char kBytesWrittenKey[] = "bytesWritten";
 const char kMessageKey[] = "message";
 const char kSocketIdKey[] = "socketId";
-const char kUDPSocketType[] = "udp";
+const char kTCPOption[] = "tcp";
+const char kUDPOption[] = "udp";
 
 SocketController* SocketApiFunction::controller() {
   return profile()->GetExtensionService()->socket_controller();
@@ -51,16 +52,19 @@ void SocketApiFunction::RespondOnUIThread() {
 }
 
 SocketCreateFunction::SocketCreateFunction()
-    : src_id_(-1) {}
+    : src_id_(-1) {
+}
 
 bool SocketCreateFunction::Prepare() {
-  std::string socket_type;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &socket_type));
+  std::string socket_type_string;
+  EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &socket_type_string));
+  EXTENSION_FUNCTION_VALIDATE(args_->GetString(1, &address_));
+  EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(2, &port_));
 
   scoped_ptr<DictionaryValue> options(new DictionaryValue());
-  if (args_->GetSize() >= 2) {
+  if (args_->GetSize() > 3) {
     DictionaryValue* temp_options = NULL;
-    if (args_->GetDictionary(1, &temp_options))
+    if (args_->GetDictionary(3, &temp_options))
       options.reset(temp_options->DeepCopy());
   }
 
@@ -70,14 +74,12 @@ bool SocketCreateFunction::Prepare() {
     EXTENSION_FUNCTION_VALIDATE(options->GetInteger(kSrcIdKey, &src_id_));
   }
 
-  // TODO(miket): this constitutes a second form of truth as to the enum
-  // validity. But our unit-test framework skips the enum validation. So in
-  // order to get an invalid-enum test to pass, we need duplicative
-  // value-checking. Too bad. Fix this if/when the argument validation code is
-  // moved to C++ rather than its current JavaScript form.
-  if (socket_type != kUDPSocketType) {
+  if (socket_type_string == kTCPOption)
+    socket_type_ = kSocketTypeTCP;
+  else if (socket_type_string == kUDPOption)
+    socket_type_ = kSocketTypeUDP;
+  else
     return false;
-  }
   return true;
 }
 
@@ -85,7 +87,9 @@ void SocketCreateFunction::Work() {
   SocketEventNotifier* event_notifier(new SocketEventNotifier(
       profile()->GetExtensionEventRouter(), profile(), extension_id(),
       src_id_, source_url()));
-  int socket_id = controller()->CreateUdp(event_notifier);
+  int socket_id = socket_type_ == kSocketTypeTCP ?
+      controller()->CreateTCPSocket(address_, port_, event_notifier) :
+      controller()->CreateUDPSocket(address_, port_, event_notifier);
   DictionaryValue* result = new DictionaryValue();
 
   result->SetInteger(kSocketIdKey, socket_id);
@@ -102,7 +106,7 @@ bool SocketDestroyFunction::Prepare() {
 }
 
 void SocketDestroyFunction::Work() {
-  controller()->DestroyUdp(socket_id_);
+  controller()->DestroySocket(socket_id_);
 }
 
 bool SocketDestroyFunction::Respond() {
@@ -111,31 +115,29 @@ bool SocketDestroyFunction::Respond() {
 
 bool SocketConnectFunction::Prepare() {
   EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &socket_id_));
-  EXTENSION_FUNCTION_VALIDATE(args_->GetString(1, &address_));
-  EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(2, &port_));
   return true;
 }
 
 void SocketConnectFunction::Work() {
-  bool result = controller()->ConnectUdp(socket_id_, address_, port_);
-  result_.reset(Value::CreateBooleanValue(result));
+  int result = controller()->ConnectSocket(socket_id_);
+  result_.reset(Value::CreateIntegerValue(result));
 }
 
 bool SocketConnectFunction::Respond() {
   return true;
 }
 
-bool SocketCloseFunction::Prepare() {
+bool SocketDisconnectFunction::Prepare() {
   EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &socket_id_));
   return true;
 }
 
-void SocketCloseFunction::Work() {
-  controller()->CloseUdp(socket_id_);
+void SocketDisconnectFunction::Work() {
+  controller()->DisconnectSocket(socket_id_);
   result_.reset(Value::CreateNullValue());
 }
 
-bool SocketCloseFunction::Respond() {
+bool SocketDisconnectFunction::Respond() {
   return true;
 }
 
@@ -145,7 +147,7 @@ bool SocketReadFunction::Prepare() {
 }
 
 void SocketReadFunction::Work() {
-  std::string message = controller()->ReadUdp(socket_id_);
+  std::string message = controller()->ReadSocket(socket_id_);
 
   DictionaryValue* result = new DictionaryValue();
   result->SetString(kMessageKey, message);
@@ -163,7 +165,7 @@ bool SocketWriteFunction::Prepare() {
 }
 
 void SocketWriteFunction::Work() {
-  int bytes_written = controller()->WriteUdp(socket_id_, message_);
+  int bytes_written = controller()->WriteSocket(socket_id_, message_);
 
   DictionaryValue* result = new DictionaryValue();
   result->SetInteger(kBytesWrittenKey, bytes_written);

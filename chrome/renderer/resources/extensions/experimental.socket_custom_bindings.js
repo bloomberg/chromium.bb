@@ -16,34 +16,39 @@
 
       apiFunctions.setHandleRequest("experimental.socket.create", function() {
           var args = arguments;
-          if (args.length > 1 && args[1] && args[1].onEvent) {
+          if (args.length > 3 && args[3] && args[3].onEvent) {
             var id = GetNextSocketEventId();
-            args[1].srcId = id;
-            chromeHidden.socket.handlers[id] = args[1].onEvent;
+            args[3].srcId = id;
+            chromeHidden.socket.handlers[id] = args[3].onEvent;
           }
           sendRequest(this.name, args, this.definition.parameters);
           return id;
         });
 
-      // Setup events.
+      // Set up events.
       chromeHidden.socket = {};
       chromeHidden.socket.handlers = {};
       chrome.experimental.socket.onEvent.addListener(function(event) {
           var eventHandler = chromeHidden.socket.handlers[event.srcId];
           if (eventHandler) {
-            if (event.type == "writeComplete") {
-              eventHandler({
-               type: event.type,
-                      resultCode: event.resultCode,
-                      });
-            } else if (event.type == "dataRead") {
-              eventHandler({
-               type: event.type,
-                      resultCode: event.resultCode,
-                      data: event.data,
-                      });
-            } else {
-              console.error("Unexpected SocketEvent, type " + event.type);
+            switch (event.type) {
+              case "writeComplete":
+              case "connectComplete":
+                eventHandler({
+                 type: event.type,
+                        resultCode: event.resultCode,
+                        });
+              break;
+              case "dataRead":
+                eventHandler({
+                 type: event.type,
+                        resultCode: event.resultCode,
+                        data: event.data,
+                        });
+                break;
+              default:
+                console.error("Unexpected SocketEvent, type " + event.type);
+              break;
             }
             if (event.isFinalEvent) {
               delete chromeHidden.socket.handlers[event.srcId];

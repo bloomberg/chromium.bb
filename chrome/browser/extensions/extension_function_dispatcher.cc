@@ -490,7 +490,7 @@ void FactoryRegistry::ResetFunctions() {
   RegisterFunction<extensions::SocketCreateFunction>();
   RegisterFunction<extensions::SocketDestroyFunction>();
   RegisterFunction<extensions::SocketConnectFunction>();
-  RegisterFunction<extensions::SocketCloseFunction>();
+  RegisterFunction<extensions::SocketDisconnectFunction>();
   RegisterFunction<extensions::SocketReadFunction>();
   RegisterFunction<extensions::SocketWriteFunction>();
 

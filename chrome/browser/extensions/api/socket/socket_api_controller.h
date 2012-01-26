@@ -43,20 +43,19 @@ class SocketController {
   // rather than requiring that the app developer remember to call Destroy.
   //
   // Takes ownership of |event_notifier|.
-  int CreateUdp(SocketEventNotifier* event_notifier);
-  bool DestroyUdp(int socket_id);
+  int CreateTCPSocket(const std::string& address, int port,
+                      SocketEventNotifier* event_notifier);
+  int CreateUDPSocket(const std::string& address, int port,
+                      SocketEventNotifier* event_notifier);
 
-  // Connect, Close, Read, and Write map to the equivalent methods in
-  // UDPClientSocket.
-  bool ConnectUdp(int socket_id, const std::string& address, int port);
-  void CloseUdp(int socket_id);
-  std::string ReadUdp(int socket_id);
-  int WriteUdp(int socket_id, const std::string& message);
+  bool DestroySocket(int socket_id);
 
-  // Converts a string IP address and integer port into a format that
-  // UDPClientSocket can deal with. Public so test harness can use it.
-  static bool CreateIPEndPoint(const std::string& address, int port,
-                               net::IPEndPoint* ip_end_point);
+  // Connect, Disconnect, Read, and Write map to the equivalent methods in the
+  // underlying socket.
+  int ConnectSocket(int socket_id);
+  void DisconnectSocket(int socket_id);
+  std::string ReadSocket(int socket_id);
+  int WriteSocket(int socket_id, const std::string& message);
 
  private:
   int next_socket_id_;
@@ -65,6 +64,8 @@ class SocketController {
 
   // Convenience method for accessing SocketMap.
   Socket* GetSocket(int socket_id);
+
+  int GenerateSocketId();
 
   DISALLOW_COPY_AND_ASSIGN(SocketController);
 };

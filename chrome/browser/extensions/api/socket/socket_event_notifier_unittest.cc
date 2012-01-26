@@ -42,82 +42,132 @@ class MockTestingProfile : public TestingProfile {
   DISALLOW_COPY_AND_ASSIGN(MockTestingProfile);
 };
 
-TEST(SocketEventNotifierTest, TestBasicOperation) {
-  MockTestingProfile profile;
-  scoped_ptr<MockExtensionEventRouter> mock_event_router(
-      new MockExtensionEventRouter(&profile));
+class SocketEventNotifierTest : public testing::Test {
+ public:
+  SocketEventNotifierTest()
+      : mock_event_router_(
+          new MockExtensionEventRouter(&profile_)),
+        src_id_(42) {
+    EXPECT_TRUE(Extension::GenerateId("chrome fast", &extension_id_));
+    event_notifier_.reset(new SocketEventNotifier(mock_event_router_.get(),
+                                                  &profile_,
+                                                  extension_id_,
+                                                  src_id_, url_));
+  }
 
-  std::string extension_id;
-  EXPECT_TRUE(Extension::GenerateId("e^(iπ)+1=0", &extension_id));
-  int src_id = 42;
-  GURL url;
-  scoped_ptr<SocketEventNotifier> event_notifier(
-      new SocketEventNotifier(mock_event_router.get(), &profile,
-                              extension_id, src_id, url));
+  MockTestingProfile profile_;
+  scoped_ptr<MockExtensionEventRouter> mock_event_router_;
+  int src_id_;
+  GURL url_;
+  std::string extension_id_;
+  scoped_ptr<SocketEventNotifier> event_notifier_;
+};
 
+TEST_F(SocketEventNotifierTest, TestOnConnectCompleteEvent) {
   std::string event_args;
-  EXPECT_CALL(*mock_event_router.get(),
+  EXPECT_CALL(*mock_event_router_.get(),
               DispatchEventToExtension(
-                  extension_id,
+                  extension_id_,
                   events::kOnSocketEvent,
                   _,
-                  &profile,
-                  url))
-      .Times(2)
-      .WillRepeatedly(SaveArg<2>(&event_args));
+                  &profile_,
+                  url_))
+      .Times(1)
+      .WillOnce(SaveArg<2>(&event_args));
 
-  // OnWriteComplete
-  {
-    const int result_code = 888;
-    event_notifier->OnWriteComplete(result_code);
+  const int expected_result_code = 777;
+  event_notifier_->OnConnectComplete(expected_result_code);
 
-    scoped_ptr<Value> result(base::JSONReader::Read(event_args, true));
-    Value* value = result.get();
-    ASSERT_TRUE(result.get() != NULL);
-    ASSERT_EQ(Value::TYPE_LIST, value->GetType());
-    ListValue* list = static_cast<ListValue*>(value);
-    ASSERT_EQ(1u, list->GetSize());
+  scoped_ptr<Value> result(base::JSONReader::Read(event_args, true));
+  Value* value = result.get();
+  ASSERT_TRUE(result.get() != NULL);
+  ASSERT_EQ(Value::TYPE_LIST, value->GetType());
+  ListValue* list = static_cast<ListValue*>(value);
+  ASSERT_EQ(1u, list->GetSize());
 
-    DictionaryValue* info;
-    ASSERT_TRUE(list->GetDictionary(0, &info));
+  DictionaryValue* info;
+  ASSERT_TRUE(list->GetDictionary(0, &info));
 
-    int tmp_src_id = 0;
-    ASSERT_TRUE(info->GetInteger("srcId", &tmp_src_id));
-    ASSERT_EQ(src_id, tmp_src_id);
+  int tmp_src_id = 0;
+  ASSERT_TRUE(info->GetInteger("srcId", &tmp_src_id));
+  ASSERT_EQ(src_id_, tmp_src_id);
 
-    int tmp_result_code = 0;
-    ASSERT_TRUE(info->GetInteger("resultCode", &tmp_result_code));
-    ASSERT_EQ(result_code, tmp_result_code);
-  }
+  int actual_result_code = 0;
+  ASSERT_TRUE(info->GetInteger("resultCode", &actual_result_code));
+  ASSERT_EQ(expected_result_code, actual_result_code);
+}
 
-  // OnDataRead
-  {
-    const int result_code = 888;
-    const std::string result_data("hi");
-    event_notifier->OnDataRead(result_code, result_data);
+TEST_F(SocketEventNotifierTest, TestOnWriteCompleteEvent) {
+  std::string event_args;
+  EXPECT_CALL(*mock_event_router_.get(),
+              DispatchEventToExtension(
+                  extension_id_,
+                  events::kOnSocketEvent,
+                  _,
+                  &profile_,
+                  url_))
+      .Times(1)
+      .WillOnce(SaveArg<2>(&event_args));
 
-    scoped_ptr<Value> result(base::JSONReader::Read(event_args, true));
-    Value* value = result.get();
-    ASSERT_TRUE(result.get() != NULL);
-    ASSERT_EQ(Value::TYPE_LIST, value->GetType());
-    ListValue* list = static_cast<ListValue*>(value);
-    ASSERT_EQ(1u, list->GetSize());
+  const int expected_result_code = 888;
+  event_notifier_->OnWriteComplete(expected_result_code);
 
-    DictionaryValue* info;
-    ASSERT_TRUE(list->GetDictionary(0, &info));
+  scoped_ptr<Value> result(base::JSONReader::Read(event_args, true));
+  Value* value = result.get();
+  ASSERT_TRUE(result.get() != NULL);
+  ASSERT_EQ(Value::TYPE_LIST, value->GetType());
+  ListValue* list = static_cast<ListValue*>(value);
+  ASSERT_EQ(1u, list->GetSize());
 
-    int tmp_src_id = 0;
-    ASSERT_TRUE(info->GetInteger("srcId", &tmp_src_id));
-    ASSERT_EQ(src_id, tmp_src_id);
+  DictionaryValue* info;
+  ASSERT_TRUE(list->GetDictionary(0, &info));
 
-    int tmp_result_code = 0;
-    ASSERT_TRUE(info->GetInteger("resultCode", &tmp_result_code));
-    ASSERT_EQ(result_code, tmp_result_code);
+  int tmp_src_id = 0;
+  ASSERT_TRUE(info->GetInteger("srcId", &tmp_src_id));
+  ASSERT_EQ(src_id_, tmp_src_id);
 
-    std::string tmp_result_data;
-    ASSERT_TRUE(info->GetString("data", &tmp_result_data));
-    ASSERT_EQ(result_data, tmp_result_data);
-  }
+  int actual_result_code = 0;
+  ASSERT_TRUE(info->GetInteger("resultCode", &actual_result_code));
+  ASSERT_EQ(expected_result_code, actual_result_code);
+}
+
+TEST_F(SocketEventNotifierTest, TestOnDataReadEvent) {
+  std::string event_args;
+  EXPECT_CALL(*mock_event_router_.get(),
+              DispatchEventToExtension(
+                  extension_id_,
+                  events::kOnSocketEvent,
+                  _,
+                  &profile_,
+                  url_))
+      .Times(1)
+      .WillOnce(SaveArg<2>(&event_args));
+
+  const int expected_result_code = 888;
+  const std::string result_data("hi");
+  event_notifier_->OnDataRead(expected_result_code, result_data);
+
+  scoped_ptr<Value> result(base::JSONReader::Read(event_args, true));
+  Value* value = result.get();
+  ASSERT_TRUE(result.get() != NULL);
+  ASSERT_EQ(Value::TYPE_LIST, value->GetType());
+  ListValue* list = static_cast<ListValue*>(value);
+  ASSERT_EQ(1u, list->GetSize());
+
+  DictionaryValue* info;
+  ASSERT_TRUE(list->GetDictionary(0, &info));
+
+  int tmp_src_id = 0;
+  ASSERT_TRUE(info->GetInteger("srcId", &tmp_src_id));
+  ASSERT_EQ(src_id_, tmp_src_id);
+
+  int actual_result_code = 0;
+  ASSERT_TRUE(info->GetInteger("resultCode", &actual_result_code));
+  ASSERT_EQ(expected_result_code, actual_result_code);
+
+  std::string tmp_result_data;
+  ASSERT_TRUE(info->GetString("data", &tmp_result_data));
+  ASSERT_EQ(result_data, tmp_result_data);
 }
 
 }  // namespace extensions

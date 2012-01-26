@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,6 +20,8 @@ TEST_F(SocketApiControllerTest, TestSocketControllerLifetime) {
   // We want to make sure that killing the controller while a bunch of
   // sockets are alive doesn't crash.
   scoped_ptr<SocketController> controller(new SocketController());
+  const int kPort = 38888;
+  const std::string address("127.0.0.1");
 
   // Create some sockets but don't do anything with them.
   Profile* profile = NULL;
@@ -29,20 +31,26 @@ TEST_F(SocketApiControllerTest, TestSocketControllerLifetime) {
   for (int i = 0; i < 10; ++i) {
     SocketEventNotifier* notifier =
         new SocketEventNotifier(NULL, profile, extension_id, -1, url);
-    int socket_id = controller->CreateUdp(notifier);
+    int socket_id = controller->CreateUDPSocket(address, kPort, notifier);
+    ASSERT_TRUE(socket_id != 0);
+  }
+  for (int i = 0; i < 10; ++i) {
+    SocketEventNotifier* notifier =
+        new SocketEventNotifier(NULL, profile, extension_id, -1, url);
+    int socket_id = controller->CreateTCPSocket(address, kPort, notifier);
     ASSERT_TRUE(socket_id != 0);
   }
 
   // Create some more sockets and connect them. Note that because this is
   // UDP, we can happily "connect" a UDP socket without anyone listening.
-  const int kPort = 38888;
-  const std::string address("127.0.0.1");
+  // We skip TCP sockets here because we've already tested what we wanted
+  // to test.
   for (int i = 0; i < 10; ++i) {
     SocketEventNotifier* notifier =
         new SocketEventNotifier(NULL, profile, extension_id, -1, url);
-    int socket_id = controller->CreateUdp(notifier);
+    int socket_id = controller->CreateUDPSocket(address, kPort, notifier);
     ASSERT_TRUE(socket_id != 0);
-    ASSERT_TRUE(controller->ConnectUdp(socket_id, address, kPort));
+    ASSERT_EQ(0, controller->ConnectSocket(socket_id));
   }
 }
 
