@@ -717,6 +717,7 @@ _release.add_config('link-release',
 
 _release.add_config('autotest-experimental',
   board='x86-alex',
+  prebuilts=False,
   platform='netbook_ALEX',
   hw_tests=['bvt', 'regression', 'performance', 'platform', 'pyauto']
 )
