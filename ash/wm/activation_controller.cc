@@ -209,12 +209,17 @@ aura::Window* ActivationController::GetTopmostWindowToActivate(
   const aura::Window* container =
       default_container_for_test_ ? default_container_for_test_ :
           GetContainer(kShellWindowId_DefaultContainer);
-  for (aura::Window::Windows::const_reverse_iterator i =
-           container->children().rbegin();
-       i != container->children().rend();
-       ++i) {
-    if (*i != ignore && CanActivateWindow(*i))
-      return *i;
+  // When destructing an active window that is in a container destructed after
+  // the default container during shell shutdown, |container| would be NULL
+  // because default container is destructed at this point.
+  if (container) {
+    for (aura::Window::Windows::const_reverse_iterator i =
+             container->children().rbegin();
+         i != container->children().rend();
+         ++i) {
+      if (*i != ignore && CanActivateWindow(*i))
+        return *i;
+    }
   }
   return NULL;
 }
