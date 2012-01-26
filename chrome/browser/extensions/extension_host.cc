@@ -45,6 +45,7 @@
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "webkit/glue/context_menu.h"
 
 #if defined(TOOLKIT_VIEWS)
 #include "ui/views/widget/widget.h"
@@ -424,6 +425,17 @@ WebContents* ExtensionHost::OpenURLFromTab(WebContents* source,
     default:
       return NULL;
   }
+}
+
+bool ExtensionHost::HandleContextMenu(const ContextMenuParams& params) {
+  // Only allow context menus on non-linked editable items and selections.
+  // Context entries for the page and "Save * as..." are currently unsupported.
+  bool has_link = !params.unfiltered_link_url.is_empty();
+  bool has_selection = !params.selection_text.empty();
+  bool editable = params.is_editable;
+  bool media = params.media_type != WebKit::WebContextMenuData::MediaTypeNone;
+  // Returning true suppresses the context menu, having been "handled" here.
+  return has_link || media || !(editable || has_selection);
 }
 
 bool ExtensionHost::PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,

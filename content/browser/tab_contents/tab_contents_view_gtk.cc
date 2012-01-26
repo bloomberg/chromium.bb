@@ -378,6 +378,12 @@ void TabContentsViewGtk::ShowCreatedFullscreenWidget(int route_id) {
 }
 
 void TabContentsViewGtk::ShowContextMenu(const ContextMenuParams& params) {
+  // Allow delegates to handle the context menu operation first.
+  if (web_contents()->GetDelegate() &&
+      web_contents()->GetDelegate()->HandleContextMenu(params)) {
+    return;
+  }
+
   if (wrapper())
     wrapper()->ShowContextMenu(params);
   else

@@ -125,6 +125,7 @@ class ExtensionHost : public content::WebContentsDelegate,
   virtual content::WebContents* OpenURLFromTab(
       content::WebContents* source,
       const content::OpenURLParams& params) OVERRIDE;
+  virtual bool HandleContextMenu(const ContextMenuParams& params) OVERRIDE;
   virtual bool PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
                                       bool* is_keyboard_shortcut) OVERRIDE;
   virtual void HandleKeyboardEvent(const NativeWebKeyboardEvent& event)

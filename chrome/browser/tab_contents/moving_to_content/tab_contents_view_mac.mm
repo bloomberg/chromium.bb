@@ -359,6 +359,12 @@ void TabContentsViewMac::ShowContextMenu(const ContextMenuParams& params) {
       return;
   }
 
+  // Allow delegates to handle the context menu operation first.
+  if (tab_contents_->GetDelegate() &&
+      tab_contents_->GetDelegate()->HandleContextMenu(params)) {
+    return;
+  }
+
   context_menu_.reset(new RenderViewContextMenuMac(tab_contents(),
                                                    params,
                                                    GetContentNativeView()));
