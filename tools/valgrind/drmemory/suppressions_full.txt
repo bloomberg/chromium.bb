@@ -763,7 +763,7 @@ name=deliberate histogram leak
 LEAK
 name=deliberate LazyInstance leak
 ...
-*!*base::LeakyLazyInstanceTraits*::*
+*!*base::internal::LeakyLazyInstanceTraits*::*
 ...
 *!base::LazyInstance*::Pointer
 
