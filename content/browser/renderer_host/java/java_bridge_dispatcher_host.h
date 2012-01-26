@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,7 +8,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/string16.h"
-#include "content/browser/renderer_host/render_view_host_observer.h"
+#include "content/public/browser/render_view_host_observer.h"
 
 class NPChannelBase;
 class RenderViewHost;
@@ -22,7 +22,7 @@ struct NPVariant_Param;
 // for each RenderViewHost.
 class JavaBridgeDispatcherHost
     : public base::RefCountedThreadSafe<JavaBridgeDispatcherHost>,
-      public RenderViewHostObserver {
+      public content::RenderViewHostObserver {
  public:
   // We hold a weak pointer to the RenderViewhost. It must outlive this object.
   JavaBridgeDispatcherHost(RenderViewHost* render_view_host);
@@ -47,7 +47,7 @@ class JavaBridgeDispatcherHost
 
  private:
   friend class base::RefCountedThreadSafe<JavaBridgeDispatcherHost>;
-  ~JavaBridgeDispatcherHost();
+  virtual ~JavaBridgeDispatcherHost();
 
   // RenderViewHostObserver override:
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;

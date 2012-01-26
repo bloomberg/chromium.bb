@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,6 +14,7 @@
 #include "content/common/npobject_stub.h"
 #include "content/common/npobject_util.h"  // For CreateNPVariantParam()
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/render_process_host.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebBindings.h"
 
 using content::BrowserThread;
@@ -128,7 +129,7 @@ void JavaBridgeDispatcherHost::CreateObjectStub(NPObject* object,
   DCHECK_EQ(g_background_thread.Get().message_loop(), MessageLoop::current());
   if (!channel_) {
     channel_ = JavaBridgeChannelHost::GetJavaBridgeChannelHost(
-        render_view_host()->process()->id(),
+        render_view_host()->process()->GetID(),
         BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO));
   }
 
