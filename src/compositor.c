@@ -666,14 +666,15 @@ weston_surface_draw(struct weston_surface *es, struct weston_output *output)
 	GLint filter;
 	int n;
 
-	pixman_region32_init_rect(&repaint,
-				  es->geometry.x, es->geometry.y,
-				  es->geometry.width, es->geometry.height);
-	pixman_region32_intersect(&repaint, &repaint, &output->region);
+	weston_surface_update_transform(es);
+
+	pixman_region32_init(&repaint);
+	pixman_region32_intersect(&repaint, &es->transform.boundingbox,
+				  &output->region);
 	pixman_region32_intersect(&repaint, &repaint, &es->damage);
 
 	if (!pixman_region32_not_empty(&repaint))
-		return;
+		goto out;
 
 	switch (es->visual) {
 	case WESTON_ARGB_VISUAL:
@@ -708,7 +709,6 @@ weston_surface_draw(struct weston_surface *es, struct weston_output *output)
 		glUniform1f(es->shader->texwidth_uniform,
 			    (GLfloat)es->geometry.width / es->pitch);
 
-	weston_surface_update_transform(es);
 	if (es->transform.enabled)
 		filter = GL_LINEAR;
 	else
@@ -733,6 +733,8 @@ weston_surface_draw(struct weston_surface *es, struct weston_output *output)
 
 	ec->vertices.size = 0;
 	ec->indices.size = 0;
+
+out:
 	pixman_region32_fini(&repaint);
 }
 
