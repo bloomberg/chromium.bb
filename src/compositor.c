@@ -785,23 +785,6 @@ out:
 	pixman_region32_fini(&cursor_region);
 }
 
-static int
-setup_scanout_surface(struct weston_output *output, struct weston_surface *es)
-{
-	if (es->visual != WESTON_RGB_VISUAL ||
-	    output->prepare_scanout_surface(output, es) != 0)
-		return -1;
-
-	/* assert output->pending_scanout_buffer == NULL */
-	output->pending_scanout_buffer = es->buffer;
-	output->pending_scanout_buffer->busy_count++;
-
-	wl_list_insert(output->pending_scanout_buffer->resource.destroy_listener_list.prev,
-		       &output->pending_scanout_buffer_destroy_listener.link);
-
-	return 0;
-}
-
 static void
 weston_output_repaint(struct weston_output *output)
 {
@@ -852,12 +835,6 @@ weston_output_repaint(struct weston_output *output)
 		pixman_region32_subtract(&total_damage,
 					 &total_damage, &es->opaque);
 	}
-
-	es = container_of(ec->surface_list.next, struct weston_surface, link);
-
-	if (setup_scanout_surface(output, es) == 0)
-		/* We're drawing nothing, just let the damage accumulate */
-		return;
 
 	output->repaint(output);
 

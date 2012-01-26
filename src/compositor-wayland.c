@@ -199,13 +199,6 @@ wayland_output_repaint(struct weston_output *output_base)
 }
 
 static int
-wayland_output_prepare_scanout_surface(struct weston_output *output_base,
-				       struct weston_surface *es)
-{
-	return -1;
-}
-
-static int
 wayland_output_set_cursor(struct weston_output *output_base,
 			  struct weston_input_device *input)
 {
@@ -283,8 +276,6 @@ wayland_compositor_create_output(struct wayland_compositor *c,
 	glClearColor(0, 0, 0, 0.5);
 
 	output->base.repaint = wayland_output_repaint;
-	output->base.prepare_scanout_surface =
-		wayland_output_prepare_scanout_surface;
 	output->base.set_hardware_cursor = wayland_output_set_cursor;
 	output->base.destroy = wayland_output_destroy;
 

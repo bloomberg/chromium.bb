@@ -222,13 +222,6 @@ finish_frame_handler(void *data)
 }
 
 static int
-x11_output_prepare_scanout_surface(struct weston_output *output_base,
-				   struct weston_surface *es)
-{
-	return -1;
-}
-
-static int
 x11_output_set_cursor(struct weston_output *output_base,
 		      struct weston_input_device *input)
 {
@@ -453,8 +446,6 @@ x11_compositor_create_output(struct x11_compositor *c, int x, int y,
 		wl_event_loop_add_timer(loop, finish_frame_handler, output);
 
 	output->base.repaint = x11_output_repaint;
-	output->base.prepare_scanout_surface =
-		x11_output_prepare_scanout_surface;
 	output->base.set_hardware_cursor = x11_output_set_cursor;
 	output->base.destroy = x11_output_destroy;
 

@@ -88,8 +88,6 @@ struct weston_output {
 	struct wl_listener pending_scanout_buffer_destroy_listener;
 
 	void (*repaint)(struct weston_output *output);
-	int (*prepare_scanout_surface)(struct weston_output *output,
-				       struct weston_surface *es);
 	int (*set_hardware_cursor)(struct weston_output *output,
 				   struct weston_input_device *input);
 	void (*destroy)(struct weston_output *output);

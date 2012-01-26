@@ -78,6 +78,64 @@ struct drm_output {
 	uint32_t pending_fs_surf_fb_id;
 };
 
+static int
+drm_output_prepare_scanout_surface(struct drm_output *output)
+{
+	struct drm_compositor *c =
+		(struct drm_compositor *) output->base.compositor;
+	struct weston_surface *es;
+	EGLint handle, stride;
+	int ret;
+	uint32_t fb_id = 0;
+	struct gbm_bo *bo;
+
+	es = container_of(c->base.surface_list.next,
+			  struct weston_surface, link);
+
+	if (es->visual != WESTON_RGB_VISUAL ||
+	    es->x != output->base.x ||
+	    es->y != output->base.y ||
+	    es->width != output->base.current->width ||
+	    es->height != output->base.current->height ||
+	    es->image == EGL_NO_IMAGE_KHR)
+		return -1;
+
+	bo = gbm_bo_create_from_egl_image(c->gbm,
+					  c->base.display, es->image,
+					  es->width, es->height,
+					  GBM_BO_USE_SCANOUT);
+
+	handle = gbm_bo_get_handle(bo).s32;
+	stride = gbm_bo_get_pitch(bo);
+
+	gbm_bo_destroy(bo);
+
+	if (handle == 0)
+		return -1;
+
+	ret = drmModeAddFB(c->drm.fd,
+			   output->base.current->width,
+			   output->base.current->height,
+			   24, 32, stride, handle, &fb_id);
+
+	if (ret)
+		return -1;
+
+	output->pending_fs_surf_fb_id = fb_id;
+
+	/* assert output->pending_scanout_buffer == NULL */
+	output->base.pending_scanout_buffer = es->buffer;
+	output->base.pending_scanout_buffer->busy_count++;
+
+	wl_list_insert(output->base.pending_scanout_buffer->resource.destroy_listener_list.prev,
+		       &output->base.pending_scanout_buffer_destroy_listener.link);
+
+	pixman_region32_fini(&es->damage);
+	pixman_region32_init(&es->damage);
+
+	return 0;
+}
+
 static void
 drm_output_repaint(struct weston_output *output_base)
 {
@@ -94,6 +152,8 @@ drm_output_repaint(struct weston_output *output_base)
 
 	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
 		return;
+
+	drm_output_prepare_scanout_surface(output);
 
 	wl_list_for_each_reverse(surface, &compositor->base.surface_list, link)
 		weston_surface_draw(surface, &output->base);
@@ -139,51 +199,6 @@ page_flip_handler(int fd, unsigned int frame,
 
 	msecs = sec * 1000 + usec / 1000;
 	weston_output_finish_frame(&output->base, msecs);
-}
-
-static int
-drm_output_prepare_scanout_surface(struct weston_output *output_base,
-				   struct weston_surface *es)
-{
-	struct drm_output *output = (struct drm_output *) output_base;
-	struct drm_compositor *c =
-		(struct drm_compositor *) output->base.compositor;
-	EGLint handle, stride;
-	int ret;
-	uint32_t fb_id = 0;
-	struct gbm_bo *bo;
-
-	if (es->x != output->base.x ||
-	    es->y != output->base.y ||
-	    es->width != output->base.current->width ||
-	    es->height != output->base.current->height ||
-	    es->image == EGL_NO_IMAGE_KHR)
-		return -1;
-
-	bo = gbm_bo_create_from_egl_image(c->gbm,
-					  c->base.display, es->image,
-					  es->width, es->height,
-					  GBM_BO_USE_SCANOUT);
-
-	handle = gbm_bo_get_handle(bo).s32;
-	stride = gbm_bo_get_pitch(bo);
-
-	gbm_bo_destroy(bo);
-
-	if (handle == 0)
-		return -1;
-
-	ret = drmModeAddFB(c->drm.fd,
-			   output->base.current->width,
-			   output->base.current->height,
-			   24, 32, stride, handle, &fb_id);
-
-	if (ret)
-		return -1;
-
-	output->pending_fs_surf_fb_id = fb_id;
-
-	return 0;
 }
 
 static int
@@ -550,8 +565,6 @@ create_output_for_connector(struct drm_compositor *ec,
 
 	output->pending_fs_surf_fb_id = 0;
 	output->base.repaint = drm_output_repaint;
-	output->base.prepare_scanout_surface =
-		drm_output_prepare_scanout_surface;
 	output->base.set_hardware_cursor = drm_output_set_cursor;
 	output->base.destroy = drm_output_destroy;
 
