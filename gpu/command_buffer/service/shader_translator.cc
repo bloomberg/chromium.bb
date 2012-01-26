@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -44,22 +44,30 @@ void GetVariableInfo(ShHandle compiler, ShShaderInfo var_type,
   int num_vars = 0;
   ShGetInfo(compiler, var_type, &num_vars);
   for (int i = 0; i < num_vars; ++i) {
+    int len = 0;
     int size = 0;
     ShDataType type = SH_NONE;
 
     switch (var_type) {
       case SH_ACTIVE_ATTRIBUTES:
         ShGetActiveAttrib(
-            compiler, i, NULL, &size, &type, name.get(), mapped_name.get());
+            compiler, i, &len, &size, &type, name.get(), mapped_name.get());
         break;
       case SH_ACTIVE_UNIFORMS:
         ShGetActiveUniform(
-            compiler, i, NULL, &size, &type, name.get(), mapped_name.get());
+            compiler, i, &len, &size, &type, name.get(), mapped_name.get());
         break;
       default: NOTREACHED();
     }
 
-    ShaderTranslator::VariableInfo info(type, size, name.get());
+    // In theory we should CHECK(len <= name_len - 1) here, but ANGLE needs
+    // to handle long struct field name mapping before we can do this.
+    // Also, we should modify the ANGLE interface to also return a length
+    // for mapped_name.
+    std::string name_string(name.get(), std::min(len, name_len - 1));
+    mapped_name.get()[mapped_name_len - 1] = '\0';
+
+    ShaderTranslator::VariableInfo info(type, size, name_string);
     (*var_map)[mapped_name.get()] = info;
   }
 }
