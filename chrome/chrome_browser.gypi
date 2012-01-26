@@ -526,6 +526,7 @@
         'browser/chromeos/input_method/virtual_keyboard_selector.h',
         'browser/chromeos/input_method/xkeyboard.cc',
         'browser/chromeos/input_method/xkeyboard.h',
+        'browser/chromeos/input_method/xkeyboard_data.h',
         'browser/chromeos/language_preferences.cc',
         'browser/chromeos/language_preferences.h',
         'browser/chromeos/legacy_window_manager/initial_browser_window_observer.cc',
