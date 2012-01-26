@@ -16,6 +16,7 @@
 #include "base/memory/weak_ptr.h"
 #include "content/common/content_export.h"
 #include "content/public/renderer/render_view_observer.h"
+#include "content/renderer/mouse_lock_dispatcher.h"
 #include "content/renderer/pepper_parent_context_provider.h"
 #include "ppapi/proxy/broker_dispatcher.h"
 #include "ppapi/proxy/proxy_channel.h"
@@ -197,15 +198,8 @@ class PepperPluginDelegateImpl
       int selection_end);
   void OnImeConfirmComposition(const string16& text);
 
-  // Notification that the request to lock the mouse has completed.
-  void OnLockMouseACK(bool succeeded);
-  // Notification that the plugin instance has lost the mouse lock.
-  void OnMouseLockLost();
   // Notification that a mouse event has arrived at the render view.
-  // Returns true if no further handling is needed. For example, if the mouse is
-  // currently locked, this method directly dispatches the event to the owner of
-  // the mouse lock and returns true.
-  bool HandleMouseEvent(const WebKit::WebMouseEvent& event);
+  void WillHandleMouseEvent();
 
   // PluginDelegate implementation.
   virtual void PluginFocusChanged(webkit::ppapi::PluginInstance* instance,
@@ -383,8 +377,9 @@ class PepperPluginDelegateImpl
   virtual base::SharedMemory* CreateAnonymousSharedMemory(uint32_t size)
       OVERRIDE;
   virtual ::ppapi::Preferences GetPreferences() OVERRIDE;
-  virtual void LockMouse(webkit::ppapi::PluginInstance* instance) OVERRIDE;
+  virtual bool LockMouse(webkit::ppapi::PluginInstance* instance) OVERRIDE;
   virtual void UnlockMouse(webkit::ppapi::PluginInstance* instance) OVERRIDE;
+  virtual bool IsMouseLocked(webkit::ppapi::PluginInstance* instance) OVERRIDE;
   virtual void DidChangeCursor(webkit::ppapi::PluginInstance* instance,
                                const WebKit::WebCursorInfo& cursor) OVERRIDE;
   virtual void DidReceiveMouseEvent(
@@ -433,10 +428,6 @@ class PepperPluginDelegateImpl
   scoped_refptr<PpapiBrokerImpl> CreatePpapiBroker(
       webkit::ppapi::PluginModule* plugin_module);
 
-  bool MouseLockedOrPending() const {
-    return mouse_locked_ || pending_lock_request_ || pending_unlock_request_;
-  }
-
   // Implementation of PepperParentContextProvider.
   virtual RendererGLContext* GetParentContextForPlatformContext3D() OVERRIDE;
 
@@ -450,10 +441,17 @@ class PepperPluginDelegateImpl
   // cases and do the check during socket creation in the browser process.
   bool CanUseSocketAPIs();
 
+  MouseLockDispatcher::LockTarget* GetOrCreateLockTargetAdapter(
+      webkit::ppapi::PluginInstance* instance);
+  void UnSetAndDeleteLockTargetAdapter(webkit::ppapi::PluginInstance* instance);
+
   // Pointer to the RenderView that owns us.
   RenderViewImpl* render_view_;
 
   std::set<webkit::ppapi::PluginInstance*> active_instances_;
+  typedef std::map<webkit::ppapi::PluginInstance*,
+                   MouseLockDispatcher::LockTarget*> LockTargetMap;
+  LockTargetMap mouse_lock_instances_;
 
   // Used to send a single context menu "completion" upon menu close.
   bool has_saved_context_menu_action_;
@@ -480,21 +478,6 @@ class PepperPluginDelegateImpl
   // Current text input composition text. Empty if no composition is in
   // progress.
   string16 composition_text_;
-
-  // |mouse_lock_owner_| is not owned by this class. We can know about when it
-  // is destroyed via InstanceDeleted().
-  // |mouse_lock_owner_| being non-NULL doesn't indicate that currently the
-  // mouse has been locked. It is possible that a request to lock the mouse has
-  // been sent, but the response hasn't arrived yet.
-  webkit::ppapi::PluginInstance* mouse_lock_owner_;
-  bool mouse_locked_;
-  // If both |pending_lock_request_| and |pending_unlock_request_| are true,
-  // it means a lock request was sent before an unlock request and we haven't
-  // received responses for them.
-  // The logic in LockMouse() makes sure that a lock request won't be sent when
-  // there is a pending unlock request.
-  bool pending_lock_request_;
-  bool pending_unlock_request_;
 
   // The plugin instance that received the last mouse event. It is set to NULL
   // if the last mouse event went to elements other than Pepper plugins.

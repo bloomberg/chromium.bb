@@ -125,6 +125,8 @@
     'renderer/media/video_capture_message_filter.h',
     'renderer/mhtml_generator.cc',
     'renderer/mhtml_generator.h',
+    'renderer/mouse_lock_dispatcher.cc',
+    'renderer/mouse_lock_dispatcher.h',
     'renderer/notification_provider.cc',
     'renderer/notification_provider.h',
     'renderer/paint_aggregator.cc',
