@@ -502,7 +502,7 @@ class XcodeSettings(object):
 
       explicit_strip_flags = self._Settings().get('STRIPFLAGS', '')
       if explicit_strip_flags:
-        strip_flags += ' ' + explicit_strip_flags
+        strip_flags += ' ' + _NormalizeEnvVarReferences(explicit_strip_flags)
 
       result.append('echo STRIP\\(%s\\)' % self.spec['target_name'])
       result.append('strip %s %s' % (strip_flags, output_binary))

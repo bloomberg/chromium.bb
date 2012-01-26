@@ -672,10 +672,13 @@ class NinjaWriter:
 
       link_deps.extend(list(extra_link_deps))
 
+    extra_bindings = []
     if self.is_mac_bundle:
       output = self.ComputeMacBundleBinaryOutput()
     else:
       output = self.ComputeOutput(spec)
+      extra_bindings.append(('postbuilds',
+                             self.GetPostbuildCommand(spec, output, output)))
 
     if self.flavor == 'mac':
       ldflags = self.xcode_settings.GetLdflags(config_name,
@@ -693,7 +696,6 @@ class NinjaWriter:
       libraries = self.xcode_settings.AdjustLibraries(libraries)
     self.WriteVariableList('libs', libraries)
 
-    extra_bindings = []
     if command in ('solink', 'solink_module'):
       extra_bindings.append(('soname', os.path.split(output)[1]))
 
@@ -710,7 +712,9 @@ class NinjaWriter:
     elif spec['type'] == 'static_library':
       self.target.binary = self.ComputeOutput(spec)
       self.ninja.build(self.target.binary, 'alink', link_deps,
-                       order_only=compile_deps)
+                       order_only=compile_deps,
+                       variables=[('postbuilds', self.GetPostbuildCommand(
+                           spec, self.target.binary, self.target.binary))])
     else:
       self.target.binary = self.WriteLink(spec, config_name, config, link_deps)
     return self.target.binary
@@ -718,12 +722,17 @@ class NinjaWriter:
   def WriteMacBundle(self, spec, mac_bundle_depends):
     assert self.is_mac_bundle
     output = self.ComputeMacBundleOutput()
+    postbuild = self.GetPostbuildCommand(spec, output, self.target.binary)
+    variables = []
+    if postbuild:
+      variables.append(('postbuilds', postbuild))
     if spec['type'] in ('shared_library', 'loadable_module'):
-      variables = [('version', self.xcode_settings.GetFrameworkVersion())]
+      variables.append(('version', self.xcode_settings.GetFrameworkVersion()))
       self.ninja.build(output, 'package_framework', mac_bundle_depends,
                        variables=variables)
     else:
-      self.ninja.build(output, 'stamp', mac_bundle_depends)
+      self.ninja.build(output, 'stamp', mac_bundle_depends,
+                       variables=variables)
     self.target.bundle = output
     return output
 
@@ -735,6 +744,36 @@ class NinjaWriter:
         self.xcode_settings, abs_build_dir,
         os.path.join(abs_build_dir, self.build_to_base), self.config_name,
         additional_settings)
+
+  def GetXcodePostbuildEnv(self):
+    """Returns the variables Xcode would set for postbuild steps."""
+    postbuild_settings = {}
+    # CHROMIUM_STRIP_SAVE_FILE is a chromium-specific hack.
+    # TODO(thakis): It would be nice to have some general mechanism instead.
+    strip_save_file = self.xcode_settings.GetPerTargetSetting(
+        'CHROMIUM_STRIP_SAVE_FILE')
+    if strip_save_file:
+      postbuild_settings['CHROMIUM_STRIP_SAVE_FILE'] = self.GypPathToNinja(
+          strip_save_file)
+    return self.GetXcodeEnv(additional_settings=postbuild_settings)
+
+  def GetPostbuildCommand(self, spec, output, output_binary):
+    if not self.xcode_settings or spec['type'] == 'none' or not output:
+      return []
+    output = QuoteShellArgument(output)
+    target_postbuilds = self.xcode_settings.GetTargetPostbuilds(
+        self.config_name, output, QuoteShellArgument(output_binary))
+    postbuilds = gyp.xcode_emulation.GetSpecPostbuildCommands(
+        spec, self.GypPathToNinja)
+    postbuilds = target_postbuilds + postbuilds
+    if not postbuilds:
+      return []
+    env = self.ComputeExportEnvString(self.GetXcodePostbuildEnv())
+    commands = env + ' F=0; ' + \
+        ' '.join([ninja_syntax.escape(command) + ' || F=$$?;'
+                                 for command in postbuilds])
+    return ('$ && (' + env + commands + ' ((exit $$F) || rm -rf %s) ' % output +
+                                    '&& exit $$F)')
 
   def ComputeExportEnvString(self, env):
     """Given an environment, returns a string looking like
@@ -1015,24 +1054,24 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
     master_ninja.rule(
       'alink',
       description='LIBTOOL-STATIC $out',
-      command='rm -f $out && libtool -static -o $out $in')
+      command='rm -f $out && libtool -static -o $out $in$postbuilds')
     # TODO(thakis): The solink_module rule is likely wrong. Xcode seems to pass
     # -bundle -single_module here (for osmesa.so).
     master_ninja.rule(
       'solink',
       description='SOLINK $out',
       command=('$ld -shared $ldflags -o $out '
-               '$in $libs'))
+               '$in $libs$postbuilds'))
     master_ninja.rule(
       'solink_module',
       description='SOLINK(module) $out',
       command=('$ld -shared $ldflags -o $out '
-               '$in $libs'))
+               '$in $libs$postbuilds'))
     master_ninja.rule(
       'link',
       description='LINK $out',
       command=('$ld $ldflags -o $out '
-               '$in $libs'))
+               '$in $libs$postbuilds'))
     master_ninja.rule(
       'infoplist',
       description='INFOPLIST $out',
@@ -1045,11 +1084,12 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
     master_ninja.rule(
       'package_framework',
       description='PACKAGE FRAMEWORK $out',
-      command='$mac_tool package-framework $out $version; touch $out')
+      command='$mac_tool package-framework $out $version && touch $out'
+              '$postbuilds')
   master_ninja.rule(
     'stamp',
     description='STAMP $out',
-    command='touch $out')
+    command='touch $out$postbuilds')
   master_ninja.rule(
     'copy',
     description='COPY $in $out',

@@ -16,7 +16,7 @@ import sys
 
 if sys.platform == 'darwin':
   # TODO(thakis): Make this pass with the make generator, http://crbug.com/95529
-  test = TestGyp.TestGyp(formats=['xcode'])
+  test = TestGyp.TestGyp(formats=['ninja', 'xcode'])
 
   CHDIR = 'postbuild-copy-bundle'
   test.run_gyp('test.gyp', chdir=CHDIR)

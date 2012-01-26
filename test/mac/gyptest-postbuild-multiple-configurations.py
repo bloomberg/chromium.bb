@@ -13,7 +13,7 @@ import TestGyp
 import sys
 
 if sys.platform == 'darwin':
-  test = TestGyp.TestGyp(formats=['make', 'xcode'])
+  test = TestGyp.TestGyp(formats=['ninja', 'make', 'xcode'])
 
   CHDIR = 'postbuild-multiple-configurations'
   test.run_gyp('test.gyp', chdir=CHDIR)
