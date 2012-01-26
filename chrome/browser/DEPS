@@ -106,7 +106,6 @@ include_rules = [
   "+content/browser/renderer_host/resource_dispatcher_host.h",
   "+content/browser/renderer_host/resource_dispatcher_host_request_info.h",
   "+content/browser/renderer_host/resource_handler.h",
-  "+content/browser/renderer_host/resource_message_filter.h",
   "+content/browser/renderer_host/resource_queue.h",
   "+content/browser/renderer_host/resource_request_details.h",
   "+content/browser/renderer_host/test_render_view_host.h",

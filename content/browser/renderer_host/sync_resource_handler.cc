@@ -45,7 +45,7 @@ bool SyncResourceHandler::OnRequestRedirected(
   net::URLRequest* request = rdh_->GetURLRequest(
       GlobalRequestID(filter_->child_id(), request_id));
   if (rdh_->delegate())
-    rdh_->delegate()->OnRequestRedirected(request, response, filter_);
+    rdh_->delegate()->OnRequestRedirected(request, response);
 
   DevToolsNetLogObserver::PopulateResponseInfo(request, response);
   // TODO(darin): It would be much better if this could live in WebCore, but

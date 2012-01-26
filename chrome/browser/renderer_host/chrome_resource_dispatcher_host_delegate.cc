@@ -29,7 +29,6 @@
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/browser/renderer_host/resource_dispatcher_host_request_info.h"
-#include "content/browser/renderer_host/resource_message_filter.h"
 #include "content/browser/resource_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
@@ -306,7 +305,7 @@ bool ChromeResourceDispatcherHostDelegate::ShouldForceDownloadResource(
 void ChromeResourceDispatcherHostDelegate::OnResponseStarted(
     net::URLRequest* request,
     content::ResourceResponse* response,
-    ResourceMessageFilter* filter) {
+    IPC::Message::Sender* sender) {
   LoadTimingObserver::PopulateTimingInfo(request, response);
 
   ResourceDispatcherHostRequestInfo* info =
@@ -321,7 +320,7 @@ void ChromeResourceDispatcherHostDelegate::OnResponseStarted(
           context->ssl_config_service());
       if (state->GetDomainState(
               &domain_state, request->url().host(), has_sni)) {
-        filter->Send(new ChromeViewMsg_AddStrictSecurityHost(
+        sender->Send(new ChromeViewMsg_AddStrictSecurityHost(
             info->route_id(), request->url().host()));
       }
     }
@@ -336,7 +335,6 @@ void ChromeResourceDispatcherHostDelegate::OnResponseStarted(
 
 void ChromeResourceDispatcherHostDelegate::OnRequestRedirected(
     net::URLRequest* request,
-    content::ResourceResponse* response,
-    ResourceMessageFilter* filter) {
+    content::ResourceResponse* response) {
   LoadTimingObserver::PopulateTimingInfo(request, response);
 }

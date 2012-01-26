@@ -10,7 +10,6 @@
 #include "chrome/browser/prerender/prerender_tracker.h"
 #include "chrome/browser/renderer_host/chrome_url_request_user_data.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
-#include "content/browser/renderer_host/resource_message_filter.h"
 #include "content/public/browser/global_request_id.h"
 #include "content/public/common/resource_response.h"
 #include "net/base/io_buffer.h"

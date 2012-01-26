@@ -10,11 +10,11 @@
 
 #include "base/basictypes.h"
 #include "content/common/content_export.h"
+#include "ipc/ipc_message.h"
 #include "webkit/glue/resource_type.h"
 
 class GURL;
 class ResourceHandler;
-class ResourceMessageFilter;
 
 namespace content {
 struct Referrer;
@@ -114,13 +114,12 @@ class CONTENT_EXPORT ResourceDispatcherHostDelegate {
   virtual void OnResponseStarted(
       net::URLRequest* request,
       ResourceResponse* response,
-      ResourceMessageFilter* filter);
+      IPC::Message::Sender* sender);
 
   // Informs the delegate that a request has been redirected.
   virtual void OnRequestRedirected(
       net::URLRequest* request,
-      ResourceResponse* response,
-      ResourceMessageFilter* filter);
+      ResourceResponse* response);
 
  protected:
   ResourceDispatcherHostDelegate();

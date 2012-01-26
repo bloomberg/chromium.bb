@@ -75,11 +75,10 @@ class ChromeResourceDispatcherHostDelegate
   virtual void OnResponseStarted(
       net::URLRequest* request,
       content::ResourceResponse* response,
-      ResourceMessageFilter* filter) OVERRIDE;
+      IPC::Message::Sender* sender) OVERRIDE;
   virtual void OnRequestRedirected(
       net::URLRequest* request,
-      content::ResourceResponse* response,
-      ResourceMessageFilter* filter) OVERRIDE;
+      content::ResourceResponse* response) OVERRIDE;
 
  private:
   ResourceHandler* CreateSafeBrowsingResourceHandler(

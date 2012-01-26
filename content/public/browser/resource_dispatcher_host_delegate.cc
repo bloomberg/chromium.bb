@@ -78,13 +78,12 @@ bool ResourceDispatcherHostDelegate::ShouldForceDownloadResource(
 void ResourceDispatcherHostDelegate::OnResponseStarted(
     net::URLRequest* request,
     ResourceResponse* response,
-    ResourceMessageFilter* filter) {
+    IPC::Message::Sender* sender) {
 }
 
 void ResourceDispatcherHostDelegate::OnRequestRedirected(
     net::URLRequest* request,
-    ResourceResponse* response,
-    ResourceMessageFilter* filter) {
+    ResourceResponse* response) {
 }
 
 ResourceDispatcherHostDelegate::ResourceDispatcherHostDelegate() {
