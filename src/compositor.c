@@ -195,7 +195,6 @@ weston_surface_create(struct weston_compositor *compositor,
 	surface->visual = WESTON_NONE_VISUAL;
 	surface->shader = &compositor->texture_shader;
 	surface->image = EGL_NO_IMAGE_KHR;
-	surface->saved_texture = 0;
 	surface->x = x;
 	surface->y = y;
 	surface->width = width;
@@ -367,10 +366,7 @@ destroy_surface(struct wl_resource *resource)
 	wl_list_remove(&surface->link);
 	weston_compositor_repick(compositor);
 
-	if (surface->saved_texture == 0)
-		glDeleteTextures(1, &surface->texture);
-	else
-		glDeleteTextures(1, &surface->saved_texture);
+	glDeleteTextures(1, &surface->texture);
 
 	if (surface->buffer)
 		wl_list_remove(&surface->buffer_destroy_listener.link);
@@ -393,9 +389,6 @@ weston_buffer_attach(struct wl_buffer *buffer, struct wl_surface *surface)
 	struct weston_surface *es = (struct weston_surface *) surface;
 	struct weston_compositor *ec = es->compositor;
 	struct wl_list *surfaces_attached_to;
-
-	if (es->saved_texture != 0)
-		es->texture = es->saved_texture;
 
 	glBindTexture(GL_TEXTURE_2D, es->texture);
 

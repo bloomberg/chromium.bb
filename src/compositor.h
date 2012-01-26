@@ -226,7 +226,7 @@ enum weston_output_flags {
 struct weston_surface {
 	struct wl_surface surface;
 	struct weston_compositor *compositor;
-	GLuint texture, saved_texture;
+	GLuint texture;
 	pixman_region32_t damage;
 	pixman_region32_t opaque;
 	int32_t x, y, width, height;
