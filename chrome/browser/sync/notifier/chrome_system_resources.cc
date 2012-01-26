@@ -230,6 +230,7 @@ void ChromeNetwork::UpdatePacketHandler(
             base::Bind(&ChromeNetwork::HandleInboundMessage,
                        weak_factory_.GetWeakPtr())));
   }
+  packet_handler_->SendSubscriptionRequest();
 }
 
 void ChromeNetwork::HandleInboundMessage(const std::string& incoming_message) {

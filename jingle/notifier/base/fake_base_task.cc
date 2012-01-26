@@ -1,9 +1,11 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/compiler_specific.h"
 #include "jingle/notifier/base/fake_base_task.h"
 #include "jingle/notifier/base/weak_xmpp_client.h"
+#include "talk/xmpp/jid.h"
 #include "talk/xmpp/asyncsocket.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -26,10 +28,32 @@ class MockAsyncSocket : public buzz::AsyncSocket {
   MOCK_METHOD1(StartTls, bool(const std::string&));
 };
 
+}  // namespace notifier
+
+// Extends WeakXmppClient to make jid() return a full jid, as required by
+// PushNotificationsSubscribeTask.
+class FakeWeakXmppClient : public notifier::WeakXmppClient {
+ public:
+  explicit FakeWeakXmppClient(talk_base::TaskParent* parent)
+      : notifier::WeakXmppClient(parent),
+        jid_("test@example.com/testresource") {}
+
+  virtual ~FakeWeakXmppClient() {}
+
+  virtual const buzz::Jid& jid() const OVERRIDE {
+    return jid_;
+  }
+
+ private:
+  buzz::Jid jid_;
+};
+
+namespace notifier {
+
 FakeBaseTask::FakeBaseTask() {
   // Owned by |task_pump_|.
-  notifier::WeakXmppClient* weak_xmpp_client =
-      new notifier::WeakXmppClient(&task_pump_);
+  FakeWeakXmppClient* weak_xmpp_client =
+      new FakeWeakXmppClient(&task_pump_);
 
   weak_xmpp_client->Start();
   buzz::XmppClientSettings settings;
