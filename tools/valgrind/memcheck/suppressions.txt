@@ -129,8 +129,6 @@
    ...
    fun:FcConfigValues
    fun:FcConfigValues
-   fun:FcConfigSubstituteWithPat
-   fun:FcConfigSubstitute
 }
 {
    bug_18590a (Third Party)
