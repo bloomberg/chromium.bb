@@ -51,9 +51,6 @@ void UILayoutTest::InitializeForLayoutTest(const FilePath& test_parent_dir,
                                            int port) {
   FilePath src_dir;
   ASSERT_TRUE(PathService::Get(chrome::DIR_LAYOUT_TESTS, &src_dir));
-  // TODO(toyoshim): Remove following logging after a bug investigation.
-  // http://crbug.com/107836 .
-  LOG(INFO) << "Assume LayoutTests in " << src_dir.MaybeAsASCII();
   layout_test_dir_ = src_dir.Append(test_parent_dir);
   layout_test_dir_ = layout_test_dir_.Append(test_case_dir);
   ASSERT_TRUE(file_util::DirectoryExists(layout_test_dir_));
@@ -137,9 +134,6 @@ void UILayoutTest::AddResourceForLayoutTest(const FilePath& parent_dir,
                                             const FilePath& resource_name) {
   FilePath source;
   ASSERT_TRUE(PathService::Get(chrome::DIR_LAYOUT_TESTS, &source));
-  // TODO(toyoshim): Remove following logging after a bug investigation.
-  // http://crbug.com/107836 .
-  LOG(INFO) << "Assume LayoutTests in " << parent_dir.MaybeAsASCII();
   source = source.Append(parent_dir);
   source = source.Append(resource_name);
 
