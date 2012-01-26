@@ -1,4 +1,4 @@
-# Copyright (c) 2011 Google Inc. All rights reserved.
+# Copyright (c) 2012 Google Inc. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -2741,12 +2741,17 @@ def _GetMSBuildProjectReferences(project):
       guid = dependency.guid
       project_dir = os.path.split(project.path)[0]
       relative_path = gyp.common.RelativePath(dependency.path, project_dir)
-      group.append(
-          ['ProjectReference',
-           {'Include': relative_path},
-           ['Project', guid],
-           ['ReferenceOutputAssembly', 'false']
-          ])
+      project_ref = ['ProjectReference',
+          {'Include': relative_path},
+          ['Project', guid],
+          ['ReferenceOutputAssembly', 'false']
+          ]
+      for config in dependency.spec.get('configurations', {}).itervalues():
+        # If it's disabled in any config, turn it off in the reference.
+        if config.get('msvs_2010_disable_uldi_when_referenced', 0):
+          project_ref.append(['UseLibraryDependencyInputs', 'false'])
+          break
+      group.append(project_ref)
     references.append(group)
   return references
 
