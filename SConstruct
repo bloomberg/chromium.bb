@@ -2376,7 +2376,7 @@ def MakeBaseTrustedEnv():
       ],
     )
 
-  base_env.AddMethod(SDKInstallTrusted)
+  base_env.AddMethod(SDKInstallBin)
 
   # The ARM validator can be built for any target that doesn't use ELFCLASS64.
   if not base_env.Bit('target_x86_64'):
@@ -2517,7 +2517,7 @@ def GenerateOptimizationLevels(env):
   return (debug_env, opt_env)
 
 # ----------------------------------------------------------
-def SDKInstallTrusted(env, name, node, target=None):
+def SDKInstallBin(env, name, node, target=None):
   """Add the given node to the build_bin and install_bin targets.
 It will be installed under the given name with the build target appended.
 The optional target argument overrides the setting of what that target is."""
@@ -2526,7 +2526,9 @@ The optional target argument overrides the setting of what that target is."""
     dir = env.GetAbsDirArg('bindir', 'install_bin')
     if target is None:
       target = env['TARGET_FULLARCH'].replace('-', '_')
-    install_node = env.InstallAs(os.path.join(dir, name + '_' + target), node)
+    file_name, file_ext = os.path.splitext(name)
+    output_name = file_name + '_' + target + file_ext
+    install_node = env.InstallAs(os.path.join(dir, output_name), node)
     env.Alias('install_bin', install_node)
 
 
@@ -3389,6 +3391,8 @@ nacl_irt_env.AddMethod(AddObjectInternal, 'AddObjectToSdk')
 def IrtNaClSdkLibrary(env, lib_name, *args, **kwargs):
   env.ComponentLibrary(lib_name, *args, **kwargs)
 nacl_irt_env.AddMethod(IrtNaClSdkLibrary, 'NaClSdkLibrary')
+
+nacl_irt_env.AddMethod(SDKInstallBin)
 
 # Populate the internal include directory when AddHeaderToSdk
 # is used inside nacl_env.

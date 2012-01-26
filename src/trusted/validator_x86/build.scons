@@ -227,7 +227,7 @@ ncval = test_env.ComponentProgram(
               'utils',
               ])
 
-test_env.SDKInstallTrusted('ncval', ncval)
+test_env.SDKInstallBin('ncval', ncval)
 
 test_env.Requires(ncval, crt)
 
