@@ -172,6 +172,7 @@ struct weston_compositor {
 	uint32_t current_alpha;
 	struct weston_shader texture_shader;
 	struct weston_shader solid_shader;
+	struct weston_shader *current_shader;
 	struct wl_display *wl_display;
 
 	struct weston_shell *shell;
@@ -239,6 +240,8 @@ struct weston_surface {
 	struct wl_list link;
 	struct wl_list buffer_link;
 	struct weston_transform *transform;
+	struct weston_shader *shader;
+	GLfloat color[4];
 	uint32_t alpha;
 	uint32_t visual;
 	int overlapped;

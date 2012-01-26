@@ -223,6 +223,7 @@ weston_surface_create(struct weston_compositor *compositor,
 
 	surface->compositor = compositor;
 	surface->visual = WESTON_NONE_VISUAL;
+	surface->shader = &compositor->texture_shader;
 	surface->image = EGL_NO_IMAGE_KHR;
 	surface->saved_texture = 0;
 	surface->x = x;
@@ -584,9 +585,19 @@ weston_surface_draw(struct weston_surface *es, struct weston_output *output)
 		break;
 	}
 
+	if (ec->current_shader != es->shader) {
+		glUseProgram(es->shader->program);
+		glUniformMatrix4fv(es->shader->proj_uniform,
+				   1, GL_FALSE, output->matrix.d);
+		if (es->shader->tex_uniform != GL_NONE)
+			glUniform1i(es->shader->tex_uniform, 0);
+		if (es->shader->color_uniform != GL_NONE)
+			glUniform4fv(es->shader->color_uniform,1, es->color);
+		ec->current_shader = es->shader;
+	}
+
 	if (es->alpha != ec->current_alpha) {
-		glUniform1f(ec->texture_shader.alpha_uniform,
-			    es->alpha / 255.0);
+		glUniform1f(es->shader->alpha_uniform, es->alpha / 255.0);
 		ec->current_alpha = es->alpha;
 	}
 
@@ -689,7 +700,6 @@ fade_output(struct weston_output *output,
 {
 	struct weston_compositor *compositor = output->compositor;
 	struct weston_surface surface;
-	GLfloat color[4] = { 0.0, 0.0, 0.0, tint };
 
 	surface.compositor = compositor;
 	surface.x = output->x;
@@ -700,6 +710,11 @@ fade_output(struct weston_output *output,
 	surface.texture = GL_NONE;
 	surface.transform = NULL;
 	surface.alpha = compositor->current_alpha;
+	surface.shader = &compositor->solid_shader;
+	surface.color[0] = 0.0;
+	surface.color[1] = 0.0;
+	surface.color[2] = 0.0;
+	surface.color[3] = tint;
 	pixman_region32_init(&surface.damage);
 	pixman_region32_copy(&surface.damage, region);
 
@@ -708,10 +723,6 @@ fade_output(struct weston_output *output,
 	else
 		surface.visual = WESTON_RGB_VISUAL;
 
-	glUseProgram(compositor->solid_shader.program);
-	glUniformMatrix4fv(compositor->solid_shader.proj_uniform,
-			   1, GL_FALSE, output->matrix.d);
-	glUniform4fv(compositor->solid_shader.color_uniform, 1, color);
 	weston_surface_draw(&surface, output);
 
 	pixman_region32_fini(&surface.damage);
@@ -795,11 +806,6 @@ weston_output_repaint(struct weston_output *output)
 	output->prepare_render(output);
 
 	glViewport(0, 0, output->current->width, output->current->height);
-
-	glUseProgram(ec->texture_shader.program);
-	glUniformMatrix4fv(ec->texture_shader.proj_uniform,
-			   1, GL_FALSE, output->matrix.d);
-	glUniform1i(ec->texture_shader.tex_uniform, 0);
 
 	weston_output_set_cursor(output, ec->input_device,
 			       ec->fade.spring.current >= 0.001);
