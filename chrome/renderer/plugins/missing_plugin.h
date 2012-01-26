@@ -61,6 +61,8 @@ class MissingPlugin : public PluginPlaceholder,
   void SetMessage(const string16& message);
   void UpdateMessage();
 
+  void RemoveMissingPluginHost();
+
 #if defined(ENABLE_PLUGIN_INSTALLATION)
   // |routing_id()| is the routing ID of our associated RenderView, but we have
   // a separate routing ID for messages specific to this placeholder.
@@ -68,6 +70,7 @@ class MissingPlugin : public PluginPlaceholder,
 #endif
 
   bool finished_loading_;
+  bool has_host_;
   string16 message_;
 
   DISALLOW_COPY_AND_ASSIGN(MissingPlugin);

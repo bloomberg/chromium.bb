@@ -12,6 +12,7 @@
 
 class FilePath;
 class PluginInstallerObserver;
+class WeakPluginInstallerObserver;
 
 namespace net {
 class URLRequestContextGetter;
@@ -34,6 +35,9 @@ class PluginInstaller {
   void AddObserver(PluginInstallerObserver* observer);
   void RemoveObserver(PluginInstallerObserver* observer);
 
+  void AddWeakObserver(WeakPluginInstallerObserver* observer);
+  void RemoveWeakObserver(WeakPluginInstallerObserver* observer);
+
   State state() const { return state_; }
 
   // Unique identifier for the plug-in. Should be kept in sync with the
@@ -55,12 +59,17 @@ class PluginInstaller {
 
   void StartInstalling(net::URLRequestContextGetter* request_context);
 
+  // Called when the browser opened the download URL in a new tab, to notify
+  // observers.
+  void DidOpenDownloadURL();
+
  private:
   void DidFinishDownload(const FilePath& downloaded_file);
   void DownloadError(const std::string& msg);
 
   State state_;
   ObserverList<PluginInstallerObserver> observers_;
+  ObserverList<WeakPluginInstallerObserver> weak_observers_;
 
   std::string identifier_;
   GURL plugin_url_;

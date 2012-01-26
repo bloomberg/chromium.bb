@@ -9,24 +9,27 @@
 #include "base/callback.h"
 #include "chrome/browser/plugin_installer_observer.h"
 #include "chrome/browser/tab_contents/confirm_infobar_delegate.h"
+#include "chrome/browser/tab_contents/link_infobar_delegate.h"
 #include "googleurl/src/gurl.h"
 
 // The main purpose for this class is to popup/close the infobar when there is
 // a missing plugin.
 class PluginInstallerInfoBarDelegate : public ConfirmInfoBarDelegate,
-                                       public PluginInstallerObserver {
+                                       public WeakPluginInstallerObserver {
  public:
-  // Shows an infobar asking whether to install the plugin with the name
-  // |plugin_name|. When the user accepts, |callback| is called.
-  // If |installer| is not NULL, registers itself as its observer, to dismiss
-  // the infobar if it's accepted in another tab.
-  PluginInstallerInfoBarDelegate(PluginInstaller* installer,
-                                 InfoBarTabHelper* infobar_helper,
-                                 const string16& plugin_name,
-                                 const GURL& learn_more_url,
+  // Shows an infobar asking whether to install the plugin represented by
+  // |installer|. When the user accepts, |callback| is called.
+  // During installation of the plug-in, the infobar will change to reflect the
+  // installation state.
+  static InfoBarDelegate* Create(InfoBarTabHelper* infobar_helper,
+                                 PluginInstaller* installer,
                                  const base::Closure& callback);
 
  private:
+  PluginInstallerInfoBarDelegate(InfoBarTabHelper* infobar_helper,
+                                 PluginInstaller* installer,
+                                 const base::Closure& callback,
+                                 const string16& message);
   virtual ~PluginInstallerInfoBarDelegate();
 
   // ConfirmInfoBarDelegate:
@@ -40,10 +43,19 @@ class PluginInstallerInfoBarDelegate : public ConfirmInfoBarDelegate,
 
   // PluginInstallerObserver:
   virtual void DidStartDownload() OVERRIDE;
+  virtual void DidFinishDownload() OVERRIDE;
+  virtual void DownloadError(const std::string& message) OVERRIDE;
 
-  string16 plugin_name_;
-  GURL learn_more_url_;
+  // WeakPluginInstallerObserver:
+  virtual void OnlyWeakObserversLeft() OVERRIDE;
+
+  // Replaces this infobar with one showing |message|. The new infobar will
+  // not have any buttons (and not call the callback).
+  void ReplaceWithInfoBar(const string16& message);
+
   base::Closure callback_;
+
+  string16 message_;
 
   DISALLOW_COPY_AND_ASSIGN(PluginInstallerInfoBarDelegate);
 };

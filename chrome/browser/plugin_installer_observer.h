@@ -16,7 +16,7 @@ class PluginInstallerObserver {
   virtual ~PluginInstallerObserver();
 
  protected:
-  PluginInstaller* installer() { return installer_; }
+  PluginInstaller* installer() const { return installer_; }
 
  private:
   friend class PluginInstaller;
@@ -27,6 +27,20 @@ class PluginInstallerObserver {
 
   // Weak pointer; Owned by PluginFinder, which is a singleton.
   PluginInstaller* installer_;
+};
+
+// A WeakPluginInstallerObserver is like a weak pointer to the installer, in the
+// sense that if only weak observers are left, we don't need to show
+// installation UI anymore.
+class WeakPluginInstallerObserver : public PluginInstallerObserver {
+ public:
+  explicit WeakPluginInstallerObserver(PluginInstaller* installer);
+  virtual ~WeakPluginInstallerObserver();
+
+ private:
+  friend class PluginInstaller;
+
+  virtual void OnlyWeakObserversLeft();
 };
 
 #endif  // CHROME_BROWSER_PLUGIN_INSTALLER_OBSERVER_H_

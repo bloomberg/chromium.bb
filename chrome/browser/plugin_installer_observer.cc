@@ -8,13 +8,11 @@
 
 PluginInstallerObserver::PluginInstallerObserver(PluginInstaller* installer)
     : installer_(installer) {
-  if (installer)
-    installer->AddObserver(this);
+  installer->AddObserver(this);
 }
 
 PluginInstallerObserver::~PluginInstallerObserver() {
-  if (installer_)
-    installer_->RemoveObserver(this);
+  installer_->RemoveObserver(this);
 }
 
 void PluginInstallerObserver::DidStartDownload() {
@@ -24,4 +22,16 @@ void PluginInstallerObserver::DidFinishDownload() {
 }
 
 void PluginInstallerObserver::DownloadError(const std::string& message) {
+}
+
+WeakPluginInstallerObserver::WeakPluginInstallerObserver(
+    PluginInstaller* installer) : PluginInstallerObserver(installer) {
+  installer->AddWeakObserver(this);
+}
+
+WeakPluginInstallerObserver::~WeakPluginInstallerObserver() {
+  installer()->RemoveWeakObserver(this);
+}
+
+void WeakPluginInstallerObserver::OnlyWeakObserversLeft() {
 }

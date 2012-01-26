@@ -33,6 +33,19 @@ void PluginInstaller::AddObserver(PluginInstallerObserver* observer) {
 
 void PluginInstaller::RemoveObserver(PluginInstallerObserver* observer) {
   observers_.RemoveObserver(observer);
+  if (observers_.size() == weak_observers_.size()) {
+    FOR_EACH_OBSERVER(WeakPluginInstallerObserver, weak_observers_,
+                      OnlyWeakObserversLeft());
+  }
+}
+
+void PluginInstaller::AddWeakObserver(WeakPluginInstallerObserver* observer) {
+  weak_observers_.AddObserver(observer);
+}
+
+void PluginInstaller::RemoveWeakObserver(
+    WeakPluginInstallerObserver* observer) {
+  weak_observers_.RemoveObserver(observer);
 }
 
 void PluginInstaller::StartInstalling(
@@ -50,6 +63,12 @@ void PluginInstaller::StartInstalling(
       base::Bind(&PluginInstaller::DownloadError, base::Unretained(this)));
 }
 
+void PluginInstaller::DidOpenDownloadURL() {
+  DCHECK(state_ == kStateIdle);
+  DCHECK(url_for_display_);
+  FOR_EACH_OBSERVER(PluginInstallerObserver, observers_, DidFinishDownload());
+}
+
 void PluginInstaller::DidFinishDownload(const FilePath& downloaded_file) {
   DCHECK(state_ == kStateDownloading);
   state_ = kStateIdle;
@@ -59,5 +78,7 @@ void PluginInstaller::DidFinishDownload(const FilePath& downloaded_file) {
 }
 
 void PluginInstaller::DownloadError(const std::string& msg) {
+  DCHECK(state_ == kStateDownloading);
+  state_ = kStateIdle;
   FOR_EACH_OBSERVER(PluginInstallerObserver, observers_, DownloadError(msg));
 }

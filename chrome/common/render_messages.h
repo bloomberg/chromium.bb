@@ -433,6 +433,11 @@ IPC_MESSAGE_ROUTED2(ChromeViewHostMsg_FindMissingPlugin,
                     int /* placeholder_id */,
                     std::string /* mime_type */)
 
+// Notifies the browser that a missing plug-in placeholder has been removed, so
+// the corresponding MissingPluginHost can be deleted.
+IPC_MESSAGE_ROUTED1(ChromeViewHostMsg_RemoveMissingPluginHost,
+                    int /* placeholder_id */)
+
 // Notifies a missing plug-in placeholder that a plug-in with name |plugin_name|
 // has been found.
 IPC_MESSAGE_ROUTED1(ChromeViewMsg_FoundMissingPlugin,

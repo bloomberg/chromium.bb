@@ -10,7 +10,7 @@
 #include "content/public/browser/web_contents_observer.h"
 
 #if defined(ENABLE_PLUGIN_INSTALLATION)
-#include "base/memory/scoped_vector.h"
+#include <map>
 #endif
 
 class GURL;
@@ -30,9 +30,6 @@ class PluginObserver : public content::WebContentsObserver {
   // content::WebContentsObserver implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
-  // Shows the infobar that offers to install a missing plug-in.
-  void ShowPluginInstallationInfoBar(PluginInstaller* installer);
-
  private:
 #if defined(ENABLE_PLUGIN_INSTALLATION)
   class MissingPluginHost;
@@ -49,13 +46,15 @@ class PluginObserver : public content::WebContentsObserver {
   void InstallMissingPlugin(PluginInstaller* installer);
 #endif
   void OnOpenAboutPlugins();
+  void OnRemoveMissingPluginHost(int placeholder_id);
 
   base::WeakPtrFactory<PluginObserver> weak_ptr_factory_;
 
   TabContentsWrapper* tab_contents_;
 
 #if defined(ENABLE_PLUGIN_INSTALLATION)
-  ScopedVector<MissingPluginHost> missing_plugins_;
+  // Stores all MissingPluginHosts, keyed by their routing ID.ß
+  std::map<int, MissingPluginHost*> missing_plugins_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(PluginObserver);

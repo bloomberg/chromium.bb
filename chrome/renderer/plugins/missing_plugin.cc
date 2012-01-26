@@ -74,7 +74,8 @@ MissingPlugin::MissingPlugin(RenderView* render_view,
                              const WebPluginParams& params,
                              const std::string& html_data)
     : PluginPlaceholder(render_view, frame, params, html_data),
-      finished_loading_(false) {
+      finished_loading_(false),
+      has_host_(false) {
   RenderThread::Get()->AddObserver(this);
 #if defined(ENABLE_PLUGIN_INSTALLATION)
   placeholder_routing_id_ = RenderThread::Get()->GenerateRoutingID();
@@ -87,10 +88,22 @@ MissingPlugin::MissingPlugin(RenderView* render_view,
 }
 
 MissingPlugin::~MissingPlugin() {
-#if defined(ENABLE_PLUGIN_INSTALLATION)
-  RenderThread::Get()->RemoveRoute(placeholder_routing_id_);
-#endif
+  RemoveMissingPluginHost();
   RenderThread::Get()->RemoveObserver(this);
+}
+
+void MissingPlugin::RemoveMissingPluginHost() {
+#if defined(ENABLE_PLUGIN_INSTALLATION)
+  if (placeholder_routing_id_ == MSG_ROUTING_NONE)
+    return;
+  RenderThread::Get()->RemoveRoute(placeholder_routing_id_);
+  if (has_host_) {
+    RenderThread::Get()->Send(
+        new ChromeViewHostMsg_RemoveMissingPluginHost(routing_id(),
+                                                      placeholder_routing_id_));
+  }
+  placeholder_routing_id_ = MSG_ROUTING_NONE;
+#endif
 }
 
 void MissingPlugin::BindWebFrame(WebFrame* frame) {
@@ -106,6 +119,7 @@ void MissingPlugin::HideCallback(const CppArgumentList& args,
                                  CppVariant* result) {
   RenderThread::Get()->RecordUserMetrics("MissingPlugin_Hide_Click");
   HidePluginInternal();
+  RemoveMissingPluginHost();
 }
 
 void MissingPlugin::DidFinishLoadingCallback(const CppArgumentList& args,
@@ -174,6 +188,7 @@ void MissingPlugin::OnDidNotFindMissingPlugin() {
 #if defined(ENABLE_PLUGIN_INSTALLATION)
 void MissingPlugin::OnFoundMissingPlugin(const string16& plugin_name) {
   SetMessage(l10n_util::GetStringFUTF16(IDS_PLUGIN_FOUND, plugin_name));
+  has_host_ = true;
 }
 
 void MissingPlugin::OnStartedDownloadingPlugin() {

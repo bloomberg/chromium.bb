@@ -6,6 +6,7 @@
 
 #include "base/auto_reset.h"
 #include "base/bind.h"
+#include "base/stl_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
@@ -300,7 +301,7 @@ bool OutdatedPluginInfoBarDelegate::LinkClicked(
 
 #if defined(ENABLE_PLUGIN_INSTALLATION)
 class ConfirmInstallDialogDelegate : public TabModalConfirmDialogDelegate,
-                                     public PluginInstallerObserver {
+                                     public WeakPluginInstallerObserver {
  public:
   ConfirmInstallDialogDelegate(WebContents* web_contents,
                                PluginInstaller* installer);
@@ -314,6 +315,7 @@ class ConfirmInstallDialogDelegate : public TabModalConfirmDialogDelegate,
 
   // PluginInstallerObserver methods:
   virtual void DidStartDownload() OVERRIDE;
+  virtual void OnlyWeakObserversLeft() OVERRIDE;
 
  private:
   net::URLRequestContextGetter* request_context_;
@@ -323,7 +325,7 @@ ConfirmInstallDialogDelegate::ConfirmInstallDialogDelegate(
     WebContents* web_contents,
     PluginInstaller* installer)
     : TabModalConfirmDialogDelegate(web_contents),
-      PluginInstallerObserver(installer),
+      WeakPluginInstallerObserver(installer),
       request_context_(web_contents->GetBrowserContext()->GetRequestContext()) {
 }
 
@@ -352,6 +354,10 @@ void ConfirmInstallDialogDelegate::OnCanceled() {
 void ConfirmInstallDialogDelegate::DidStartDownload() {
   Cancel();
 }
+
+void ConfirmInstallDialogDelegate::OnlyWeakObserversLeft() {
+  Cancel();
+}
 #endif  // defined(ENABLE_PLUGIN_INSTALLATION)
 
 }  // namespace
@@ -371,7 +377,6 @@ class PluginObserver::MissingPluginHost : public PluginInstallerObserver {
       case PluginInstaller::kStateIdle: {
         observer->Send(new ChromeViewMsg_FoundMissingPlugin(routing_id_,
                                                             installer->name()));
-        observer->ShowPluginInstallationInfoBar(installer);
         break;
       }
       case PluginInstaller::kStateDownloading: {
@@ -409,6 +414,7 @@ PluginObserver::PluginObserver(TabContentsWrapper* tab_contents)
 }
 
 PluginObserver::~PluginObserver() {
+  STLDeleteValues(&missing_plugins_);
 }
 
 bool PluginObserver::OnMessageReceived(const IPC::Message& message) {
@@ -418,6 +424,8 @@ bool PluginObserver::OnMessageReceived(const IPC::Message& message) {
 #if defined(ENABLE_PLUGIN_INSTALLATION)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_FindMissingPlugin,
                         OnFindMissingPlugin)
+    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_RemoveMissingPluginHost,
+                        OnRemoveMissingPluginHost)
 #endif
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_OpenAboutPlugins,
                         OnOpenAboutPlugins)
@@ -455,19 +463,14 @@ void PluginObserver::OnFindMissingPlugin(int placeholder_id,
 void PluginObserver::FoundMissingPlugin(int placeholder_id,
                                         const std::string& mime_type,
                                         PluginInstaller* installer) {
-  missing_plugins_.push_back(
-      new MissingPluginHost(this, placeholder_id, installer));
-}
-
-void PluginObserver::ShowPluginInstallationInfoBar(PluginInstaller* installer) {
+  missing_plugins_[placeholder_id] =
+      new MissingPluginHost(this, placeholder_id, installer);
   InfoBarTabHelper* infobar_helper = tab_contents_->infobar_tab_helper();
-  infobar_helper->AddInfoBar(new PluginInstallerInfoBarDelegate(
-      installer,
-      infobar_helper,
-      installer->name(),
-      installer->help_url(),
+  InfoBarDelegate* delegate = PluginInstallerInfoBarDelegate::Create(
+      infobar_helper, installer,
       base::Bind(&PluginObserver::InstallMissingPlugin,
-                 weak_ptr_factory_.GetWeakPtr(), installer)));
+                 weak_ptr_factory_.GetWeakPtr(), installer));
+  infobar_helper->AddInfoBar(delegate);
 }
 
 void PluginObserver::DidNotFindMissingPlugin(int placeholder_id) {
@@ -481,11 +484,23 @@ void PluginObserver::InstallMissingPlugin(PluginInstaller* installer) {
         content::Referrer(web_contents()->GetURL(),
                           WebKit::WebReferrerPolicyDefault),
         NEW_FOREGROUND_TAB, content::PAGE_TRANSITION_TYPED, false));
+    installer->DidOpenDownloadURL();
   } else {
     browser::ShowTabModalConfirmDialog(
         new ConfirmInstallDialogDelegate(web_contents(), installer),
         tab_contents_);
   }
+}
+
+void PluginObserver::OnRemoveMissingPluginHost(int placeholder_id) {
+  std::map<int, MissingPluginHost*>::iterator it =
+      missing_plugins_.find(placeholder_id);
+  if (it == missing_plugins_.end()) {
+    NOTREACHED();
+    return;
+  }
+  delete it->second;
+  missing_plugins_.erase(it);
 }
 #endif  // defined(ENABLE_PLUGIN_INSTALLATION)
 
