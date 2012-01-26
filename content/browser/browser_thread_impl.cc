@@ -56,8 +56,7 @@ struct BrowserThreadGlobals {
   base::SequencedWorkerPool* blocking_pool;
 };
 
-base::LazyInstance<BrowserThreadGlobals,
-                   base::LeakyLazyInstanceTraits<BrowserThreadGlobals> >
+base::LazyInstance<BrowserThreadGlobals>::Leaky
     g_globals = LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace

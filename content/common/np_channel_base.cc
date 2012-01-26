@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,13 +17,11 @@
 #endif
 
 typedef base::hash_map<std::string, scoped_refptr<NPChannelBase> > ChannelMap;
-static base::LazyInstance<ChannelMap,
-                          base::LeakyLazyInstanceTraits<ChannelMap> >
+static base::LazyInstance<ChannelMap>::Leaky
      g_channels = LAZY_INSTANCE_INITIALIZER;
 
 typedef std::stack<scoped_refptr<NPChannelBase> > NPChannelRefStack;
-static base::LazyInstance<NPChannelRefStack,
-                          base::LeakyLazyInstanceTraits<NPChannelRefStack> >
+static base::LazyInstance<NPChannelRefStack>::Leaky
     g_lazy_channel_stack = LAZY_INSTANCE_INITIALIZER;
 
 static int next_pipe_id = 0;

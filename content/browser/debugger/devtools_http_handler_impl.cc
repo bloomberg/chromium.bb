@@ -116,23 +116,17 @@ class TabContentsIDHelper : public content::WebContentsObserver {
 
   int id_;
   typedef std::map<int, TabContents*> IdToTabContentsMap;
-  static base::LazyInstance<IdToTabContentsMap,
-                            base::LeakyLazyInstanceTraits<IdToTabContentsMap> >
+  static base::LazyInstance<IdToTabContentsMap>::Leaky
       id_to_tabcontents_;
   typedef std::map<TabContents*, int> TabContentsToIdMap;
-  static base::LazyInstance<TabContentsToIdMap,
-                            base::LeakyLazyInstanceTraits<TabContentsToIdMap> >
+  static base::LazyInstance<TabContentsToIdMap>::Leaky
       tabcontents_to_id_;
 };
 
-base::LazyInstance<
-    TabContentsIDHelper::IdToTabContentsMap,
-    base::LeakyLazyInstanceTraits<TabContentsIDHelper::IdToTabContentsMap> >
-        TabContentsIDHelper::id_to_tabcontents_ = LAZY_INSTANCE_INITIALIZER;
-base::LazyInstance<
-    TabContentsIDHelper::TabContentsToIdMap,
-    base::LeakyLazyInstanceTraits<TabContentsIDHelper::TabContentsToIdMap> >
-        TabContentsIDHelper::tabcontents_to_id_ = LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<TabContentsIDHelper::IdToTabContentsMap>::Leaky
+    TabContentsIDHelper::id_to_tabcontents_ = LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<TabContentsIDHelper::TabContentsToIdMap>::Leaky
+    TabContentsIDHelper::tabcontents_to_id_ = LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
 

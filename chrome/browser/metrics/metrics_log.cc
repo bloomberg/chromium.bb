@@ -66,8 +66,7 @@ PluginPrefs* GetPluginPrefs() {
 
 }  // namespace
 
-static base::LazyInstance<std::string,
-                          base::LeakyLazyInstanceTraits<std::string > >
+static base::LazyInstance<std::string>::Leaky
   g_version_extension = LAZY_INSTANCE_INITIALIZER;
 
 MetricsLog::MetricsLog(const std::string& client_id, int session_id)

@@ -36,7 +36,8 @@ const char kReturningJavaLangClassArray[] = "()[Ljava/lang/Class;";
 const char kReturningJavaLangString[] = "()Ljava/lang/String;";
 
 struct ModifierClassTraits :
-    public base::LeakyLazyInstanceTraits<ScopedJavaGlobalRef<jclass> > {
+      public base::internal::LeakyLazyInstanceTraits<ScopedJavaGlobalRef<
+                                                         jclass> > {
   static ScopedJavaGlobalRef<jclass>* New(void* instance) {
     JNIEnv* env = AttachCurrentThread();
     // Use placement new to initialize our instance in our preallocated space.

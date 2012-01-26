@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,8 +21,7 @@ namespace npapi {
 
 // A critical section that prevents two or more plug-ins from accessing a
 // WebPluginIMEWin instance through our patch function.
-base::LazyInstance<base::Lock,
-                   base::LeakyLazyInstanceTraits<base::Lock> >
+base::LazyInstance<base::Lock>::Leaky
     g_webplugin_ime_lock = LAZY_INSTANCE_INITIALIZER;
 
 WebPluginIMEWin* WebPluginIMEWin::instance_ = NULL;

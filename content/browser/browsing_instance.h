@@ -10,12 +10,12 @@
 #include "base/lazy_instance.h"
 #include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/browser_context.h"
 
 class GURL;
 class SiteInstanceImpl;
 
 namespace content {
-class BrowserContext;
 class SiteInstance;
 }
 
@@ -137,10 +137,8 @@ class CONTENT_EXPORT BrowsingInstance
   SiteInstanceMap site_instance_map_;
 
   // Global map of BrowserContext to SiteInstanceMap, for process-per-site.
-  static base::LazyInstance<
-      ContextSiteInstanceMap,
-      base::LeakyLazyInstanceTraits<ContextSiteInstanceMap> >
-          context_site_instance_map_;
+  static base::LazyInstance<ContextSiteInstanceMap>::Leaky
+      context_site_instance_map_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowsingInstance);
 };

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -57,17 +57,13 @@ class IPCWebSocketStreamHandleBridge
   WebKit::WebSocketStreamHandle* handle_;
   webkit_glue::WebSocketStreamHandleDelegate* delegate_;
 
-  static base::LazyInstance<
-      IDMap<IPCWebSocketStreamHandleBridge>,
-      base::LeakyLazyInstanceTraits<IDMap<IPCWebSocketStreamHandleBridge> > >
-          all_bridges;
+  static base::LazyInstance<IDMap<IPCWebSocketStreamHandleBridge> >::Leaky
+      all_bridges;
 };
 
 // static
-base::LazyInstance<
-    IDMap<IPCWebSocketStreamHandleBridge>,
-    base::LeakyLazyInstanceTraits<IDMap<IPCWebSocketStreamHandleBridge> > >
-        IPCWebSocketStreamHandleBridge::all_bridges = LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<IDMap<IPCWebSocketStreamHandleBridge> >::Leaky
+    IPCWebSocketStreamHandleBridge::all_bridges = LAZY_INSTANCE_INITIALIZER;
 
 /* static */
 IPCWebSocketStreamHandleBridge* IPCWebSocketStreamHandleBridge::FromSocketId(

@@ -37,8 +37,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "webkit/glue/gl_bindings_skia_cmd_buffer.h"
 
-static base::LazyInstance<base::Lock,
-                          base::LeakyLazyInstanceTraits<base::Lock> >
+static base::LazyInstance<base::Lock>::Leaky
     g_all_shared_contexts_lock = LAZY_INSTANCE_INITIALIZER;
 static base::LazyInstance<std::set<WebGraphicsContext3DCommandBufferImpl*> >
     g_all_shared_contexts = LAZY_INSTANCE_INITIALIZER;

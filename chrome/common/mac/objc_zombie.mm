@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -76,8 +76,7 @@ size_t g_fatZombieSize = 0;
 BOOL g_zombieAllObjects = NO;
 
 // Protects |g_zombieCount|, |g_zombieIndex|, and |g_zombies|.
-base::LazyInstance<base::Lock, base::LeakyLazyInstanceTraits<base::Lock> >
-    g_lock = LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<base::Lock>::Leaky g_lock = LAZY_INSTANCE_INITIALIZER;
 
 // How many zombies to keep before freeing, and the current head of
 // the circular buffer.

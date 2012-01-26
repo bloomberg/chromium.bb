@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -33,9 +33,8 @@ using WebKit::WebIDBTransaction;
 using WebKit::WebIDBTransactionCallbacks;
 using webkit_glue::WorkerTaskRunner;
 
-static base::LazyInstance<ThreadLocalPointer<IndexedDBDispatcher>,
-    base::LeakyLazyInstanceTraits<ThreadLocalPointer<IndexedDBDispatcher> > >
-        g_idb_dispatcher_tls = LAZY_INSTANCE_INITIALIZER;
+static base::LazyInstance<ThreadLocalPointer<IndexedDBDispatcher> >::Leaky
+    g_idb_dispatcher_tls = LAZY_INSTANCE_INITIALIZER;
 
 namespace {
 

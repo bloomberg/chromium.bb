@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -157,9 +157,7 @@ class LocalInputMonitorMac : public remoting::LocalInputMonitor {
   DISALLOW_COPY_AND_ASSIGN(LocalInputMonitorMac);
 };
 
-base::LazyInstance<base::Lock,
-                   base::LeakyLazyInstanceTraits<base::Lock> >
-    monitor_lock = LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<base::Lock>::Leaky monitor_lock = LAZY_INSTANCE_INITIALIZER;
 LocalInputMonitorImpl* local_input_monitor = NULL;
 
 }  // namespace

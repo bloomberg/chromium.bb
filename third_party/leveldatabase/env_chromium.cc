@@ -544,7 +544,7 @@ void ChromiumEnv::StartThread(void (*function)(void* arg), void* arg) {
   new Thread(function, arg); // Will self-delete.
 }
 
-::base::LazyInstance<ChromiumEnv, ::base::LeakyLazyInstanceTraits<ChromiumEnv> >
+::base::LazyInstance<ChromiumEnv>::Leaky
     default_env = LAZY_INSTANCE_INITIALIZER;
 
 }

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -59,9 +59,8 @@ int WorkerTaskRunner::CurrentWorkerId() {
 }
 
 WorkerTaskRunner* WorkerTaskRunner::Instance() {
-  static base::LazyInstance<WorkerTaskRunner,
-      base::LeakyLazyInstanceTraits<WorkerTaskRunner> >
-          worker_task_runner = LAZY_INSTANCE_INITIALIZER;
+  static base::LazyInstance<WorkerTaskRunner>::Leaky
+      worker_task_runner = LAZY_INSTANCE_INITIALIZER;
   return worker_task_runner.Pointer();
 }
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -436,9 +436,7 @@ class Conn {
   // Used to schedule a timeout for initial phase of connection.
   scoped_ptr<struct event> destconnect_timeout_event_;
 
-  static base::LazyInstance<EventKeyMap,
-                            base::LeakyLazyInstanceTraits<EventKeyMap> >
-      evkey_map_;
+  static base::LazyInstance<EventKeyMap>::Leaky evkey_map_;
   static EventKey last_evkey_;
 
   DISALLOW_COPY_AND_ASSIGN(Conn);
@@ -1895,8 +1893,7 @@ void Conn::OnDestchanError(struct bufferevent* bev,
 Conn::EventKey Conn::last_evkey_ = 0;
 
 // static
-base::LazyInstance<Conn::EventKeyMap,
-                   base::LeakyLazyInstanceTraits<Conn::EventKeyMap> >
+base::LazyInstance<Conn::EventKeyMap>::Leaky
     Conn::evkey_map_ = LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace

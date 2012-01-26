@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 // This class simulates a slow download.  This used in a UI test to test the
@@ -80,9 +80,7 @@ class URLRequestSlowDownloadJob : public net::URLRequestJob {
   // requests in |pending_requests_|.
   static void FinishPendingRequests();
   typedef std::set<URLRequestSlowDownloadJob*> SlowJobsSet;
-  static base::LazyInstance<SlowJobsSet,
-                            base::LeakyLazyInstanceTraits<SlowJobsSet> >
-      pending_requests_;
+  static base::LazyInstance<SlowJobsSet>::Leaky pending_requests_;
 
   void StartAsync();
 

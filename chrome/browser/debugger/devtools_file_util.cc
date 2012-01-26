@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,8 +17,7 @@ using content::BrowserThread;
 
 namespace {
 
-base::LazyInstance<FilePath,
-                   base::LeakyLazyInstanceTraits<FilePath> >
+base::LazyInstance<FilePath>::Leaky
     g_last_save_path = LAZY_INSTANCE_INITIALIZER;
 
 class SaveAsDialog : public SelectFileDialog::Listener,

@@ -245,10 +245,8 @@ size_t GetMaxRendererProcessCount() {
 }
 
 // the global list of all renderer processes
-base::LazyInstance<
-    IDMap<content::RenderProcessHost>,
-    base::LeakyLazyInstanceTraits<IDMap<content::RenderProcessHost> > >
-        g_all_hosts = LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<IDMap<content::RenderProcessHost> >::Leaky
+    g_all_hosts = LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
 

@@ -47,8 +47,7 @@ static logging::LogMessageHandlerFunction g_logging_old_handler = NULL;
 
 const char ChromotingInstance::kMimeType[] = "pepper-application/x-chromoting";
 
-static base::LazyInstance<base::Lock,
-                          base::LeakyLazyInstanceTraits<base::Lock> >
+static base::LazyInstance<base::Lock>::Leaky
     g_logging_lock = LAZY_INSTANCE_INITIALIZER;
 
 ChromotingInstance::ChromotingInstance(PP_Instance pp_instance)

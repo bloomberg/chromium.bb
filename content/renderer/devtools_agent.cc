@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -51,7 +51,7 @@ class WebKitClientMessageLoopImpl
 };
 
 typedef std::map<int, DevToolsAgent*> IdToAgentMap;
-base::LazyInstance<IdToAgentMap, base::LeakyLazyInstanceTraits<IdToAgentMap> >
+base::LazyInstance<IdToAgentMap>::Leaky
     g_agent_for_routing_id = LAZY_INSTANCE_INITIALIZER;
 
 } //  namespace

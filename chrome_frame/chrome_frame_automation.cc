@@ -500,8 +500,7 @@ bool ProxyFactory::ReleaseAutomationServer(void* server_id,
   return true;
 }
 
-static base::LazyInstance<ProxyFactory,
-                          base::LeakyLazyInstanceTraits<ProxyFactory> >
+static base::LazyInstance<ProxyFactory>::Leaky
     g_proxy_factory = LAZY_INSTANCE_INITIALIZER;
 
 ChromeFrameAutomationClient::ChromeFrameAutomationClient()

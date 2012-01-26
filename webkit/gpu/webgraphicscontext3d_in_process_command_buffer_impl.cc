@@ -207,8 +207,7 @@ const int32 kTransferBufferSize = 1024 * 1024;
 static base::LazyInstance<
     std::set<WebGraphicsContext3DInProcessCommandBufferImpl*> >
         g_all_shared_contexts = LAZY_INSTANCE_INITIALIZER;
-static base::LazyInstance<base::Lock,
-                          base::LeakyLazyInstanceTraits<base::Lock> >
+static base::LazyInstance<base::Lock>::Leaky
     g_all_shared_contexts_lock = LAZY_INSTANCE_INITIALIZER;
 
 // Singleton used to initialize and terminate the gles2 library.

@@ -50,8 +50,7 @@
 
 typedef std::vector<DevToolsWindow*> DevToolsWindowList;
 namespace {
-base::LazyInstance<DevToolsWindowList,
-                   base::LeakyLazyInstanceTraits<DevToolsWindowList> >
+base::LazyInstance<DevToolsWindowList>::Leaky
      g_instances = LAZY_INSTANCE_INITIALIZER;
 }  // namespace
 

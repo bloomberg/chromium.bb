@@ -707,8 +707,7 @@ void ThreadWatcherObserver::Observe(
 // WatchDogThread methods and members.
 
 // This lock protects g_watchdog_thread.
-static base::LazyInstance<base::Lock,
-                          base::LeakyLazyInstanceTraits<base::Lock> >
+static base::LazyInstance<base::Lock>::Leaky
     g_watchdog_lock = LAZY_INSTANCE_INITIALIZER;
 
 // The singleton of this class.
