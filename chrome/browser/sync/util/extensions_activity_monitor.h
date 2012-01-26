@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,10 +9,14 @@
 #include <map>
 
 #include "base/compiler_specific.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/synchronization/lock.h"
 #include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
+
+namespace content {
+class NotificationRegistrar;
+}
 
 namespace browser_sync {
 
@@ -45,7 +49,7 @@ class ExtensionsActivityMonitor : public content::NotificationObserver {
   typedef std::map<std::string, Record> Records;
 
   // Creates an ExtensionsActivityMonitor to monitor extensions activities on
-  // BrowserThread::UI.
+  // BrowserThread::UI (it is not necessary to construct it on that thread).
   ExtensionsActivityMonitor();
   virtual ~ExtensionsActivityMonitor();
 
@@ -62,11 +66,13 @@ class ExtensionsActivityMonitor : public content::NotificationObserver {
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
  private:
+  void RegisterNotificationsOnUIThread();
+
   Records records_;
   mutable base::Lock records_lock_;
 
   // Used only from UI loop.
-  content::NotificationRegistrar registrar_;
+  scoped_ptr<content::NotificationRegistrar> registrar_;
 };
 
 }  // namespace browser_sync

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -53,6 +53,8 @@ class CONTENT_EXPORT CertStore : public content::NotificationObserver {
   CertStore();
   virtual ~CertStore();
 
+  void RegisterForNotification();
+
   // Remove the specified cert from id_to_cert_ and cert_to_id_.
   // NOTE: the caller (RemoveCertsForRenderProcesHost) must hold cert_lock_.
   void RemoveCertInternal(int cert_id);
@@ -65,6 +67,7 @@ class CONTENT_EXPORT CertStore : public content::NotificationObserver {
   typedef std::map<net::X509Certificate*, int, net::X509Certificate::LessThan>
       ReverseCertMap;
 
+  // Is only used on the UI Thread.
   content::NotificationRegistrar registrar_;
 
   IDMap process_id_to_cert_id_;

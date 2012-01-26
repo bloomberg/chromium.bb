@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,19 +7,7 @@
 #include <algorithm>
 
 #include "base/logging.h"
-#include "base/threading/platform_thread.h"
 #include "content/browser/notification_service_impl.h"
-
-namespace {
-
-void CheckCalledOnValidThread(base::PlatformThreadId thread_id) {
-  base::PlatformThreadId current_thread_id = base::PlatformThread::CurrentId();
-  CHECK(current_thread_id == thread_id) << "called on invalid thread: "
-                                        << thread_id << " vs. "
-                                        << current_thread_id;
-}
-
-}  // namespace
 
 namespace content {
 
@@ -29,14 +17,12 @@ struct NotificationRegistrar::Record {
   NotificationObserver* observer;
   int type;
   NotificationSource source;
-  base::PlatformThreadId thread_id;
 };
 
 bool NotificationRegistrar::Record::operator==(const Record& other) const {
   return observer == other.observer &&
          type == other.type &&
          source == other.source;
-  // thread_id is for debugging purpose and thus not compared here.
 }
 
 NotificationRegistrar::NotificationRegistrar() {
@@ -46,18 +32,27 @@ NotificationRegistrar::NotificationRegistrar() {
   // This in turn means it will be destroyed after these objects, so they will
   // never try to access the NotificationService after it's been destroyed.
   NotificationServiceImpl::current();
+  // It is OK to create a NotificationRegistrar instance on one thread and then
+  // use it (exclusively) on another, so we detach from the initial thread.
+  DetachFromThread();
 }
 
 NotificationRegistrar::~NotificationRegistrar() {
+  // TODO(joth): It is incorrect to detatch here, but not doing so causes
+  // some tests to fail flakily. See http://crbug.com/109000 (sub-issue #2).
+  if (registered_.empty())
+    DetachFromThread();
+
   RemoveAll();
 }
 
 void NotificationRegistrar::Add(NotificationObserver* observer,
                                 int type,
                                 const NotificationSource& source) {
+  DCHECK(CalledOnValidThread());
   DCHECK(!IsRegistered(observer, type, source)) << "Duplicate registration.";
 
-  Record record = { observer, type, source, base::PlatformThread::CurrentId() };
+  Record record = { observer, type, source };
   registered_.push_back(record);
 
   NotificationServiceImpl::current()->AddObserver(observer, type, source);
@@ -66,16 +61,16 @@ void NotificationRegistrar::Add(NotificationObserver* observer,
 void NotificationRegistrar::Remove(NotificationObserver* observer,
                                    int type,
                                    const NotificationSource& source) {
-  if (!IsRegistered(observer, type, source)) {
-    NOTREACHED() << "Trying to remove unregistered observer of type " <<
-        type << " from list of size " << registered_.size() << ".";
-    return;
-  }
+  DCHECK(CalledOnValidThread());
 
   Record record = { observer, type, source };
   RecordVector::iterator found = std::find(
       registered_.begin(), registered_.end(), record);
-  CheckCalledOnValidThread(found->thread_id);
+  if (found == registered_.end()) {
+    NOTREACHED() << "Trying to remove unregistered observer of type " <<
+        type << " from list of size " << registered_.size() << ".";
+    return;
+  }
   registered_.erase(found);
 
   // This can be NULL if our owner outlives the NotificationService, e.g. if our
@@ -86,6 +81,7 @@ void NotificationRegistrar::Remove(NotificationObserver* observer,
 }
 
 void NotificationRegistrar::RemoveAll() {
+  CHECK(CalledOnValidThread());
   // Early-exit if no registrations, to avoid calling
   // NotificationService::current.  If we've constructed an object with a
   // NotificationRegistrar member, but haven't actually used the notification
@@ -95,13 +91,11 @@ void NotificationRegistrar::RemoveAll() {
   if (registered_.empty())
     return;
 
-
   // This can be NULL if our owner outlives the NotificationService, e.g. if our
   // owner is a Singleton.
   NotificationServiceImpl* service = NotificationServiceImpl::current();
   if (service) {
     for (size_t i = 0; i < registered_.size(); i++) {
-      CheckCalledOnValidThread(registered_[i].thread_id);
       service->RemoveObserver(registered_[i].observer,
                               registered_[i].type,
                               registered_[i].source);
@@ -111,12 +105,14 @@ void NotificationRegistrar::RemoveAll() {
 }
 
 bool NotificationRegistrar::IsEmpty() const {
+  DCHECK(CalledOnValidThread());
   return registered_.empty();
 }
 
 bool NotificationRegistrar::IsRegistered(NotificationObserver* observer,
                                          int type,
                                          const NotificationSource& source) {
+  DCHECK(CalledOnValidThread());
   Record record = { observer, type, source };
   return std::find(registered_.begin(), registered_.end(), record) !=
       registered_.end();

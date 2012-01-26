@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,9 +7,11 @@
 #include <algorithm>
 #include <functional>
 
+#include "base/bind.h"
 #include "base/stl_util.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 
@@ -30,6 +32,20 @@ CertStore* CertStore::GetInstance() {
 }
 
 CertStore::CertStore() : next_cert_id_(1) {
+  if (content::BrowserThread::CurrentlyOn(content::BrowserThread::UI)) {
+    RegisterForNotification();
+  } else {
+    content::BrowserThread::PostTask(
+        content::BrowserThread::UI, FROM_HERE,
+        base::Bind(&CertStore::RegisterForNotification,
+                   base::Unretained(this)));
+  }
+}
+
+CertStore::~CertStore() {
+}
+
+void CertStore::RegisterForNotification() {
   // We watch for RenderProcess termination, as this is how we clear
   // certificates for now.
   // TODO(jcampan): we should be listening to events such as resource cached/
@@ -40,9 +56,6 @@ CertStore::CertStore() : next_cert_id_(1) {
                  content::NotificationService::AllBrowserContextsAndSources());
   registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_CLOSED,
                  content::NotificationService::AllBrowserContextsAndSources());
-}
-
-CertStore::~CertStore() {
 }
 
 int CertStore::StoreCert(net::X509Certificate* cert, int process_id) {

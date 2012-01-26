@@ -540,8 +540,9 @@ void SafeBrowsingService::OnIOInitialize(
     return;
   enabled_ = true;
 
-  registrar_.Add(this, content::NOTIFICATION_PURGE_MEMORY,
-                 content::NotificationService::AllSources());
+  registrar_.reset(new content::NotificationRegistrar);
+  registrar_->Add(this, content::NOTIFICATION_PURGE_MEMORY,
+                  content::NotificationService::AllSources());
 
   MakeDatabaseAvailable();
 
@@ -592,7 +593,7 @@ void SafeBrowsingService::OnIOShutdown() {
 
   enabled_ = false;
 
-  registrar_.RemoveAll();
+  registrar_.reset();
 
   // This cancels all in-flight GetHash requests.
   delete protocol_manager_;

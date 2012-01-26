@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,36 +9,21 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
 
 using content::BrowserThread;
 
 namespace browser_sync {
 
-namespace {
-
-// A helper callback to register an ExtensionsActivityMonitor as an observer of
-// events on the UI thread (even though the monitor may live on another thread).
-// This liberates ExtensionsActivityMonitor from having to be ref counted.
-void RegistrationCallback(ExtensionsActivityMonitor* monitor,
-                          content::NotificationRegistrar* registrar) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  // It would be nice if we could specify a Source for each specific function
-  // we wanted to observe, but the actual function objects are allocated on
-  // the fly so there is no reliable object to point to (same problem if we
-  // wanted to use the string name).  Thus, we use all sources and filter in
-  // Observe.
-  registrar->Add(monitor,
-                 chrome::NOTIFICATION_EXTENSION_BOOKMARKS_API_INVOKED,
-                 content::NotificationService::AllSources());
-}
-
-}  // namespace
-
 ExtensionsActivityMonitor::ExtensionsActivityMonitor() {
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          base::Bind(&RegistrationCallback, this, &registrar_));
+  // In normal use the ExtensionsActivityMonitor is deleted by a message posted
+  // to the UI thread, so this task will run before |this| goes out of scope
+  // and ref-counting isn't needed; hence Unretained(this).
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&ExtensionsActivityMonitor::RegisterNotificationsOnUIThread,
+                 base::Unretained(this)));
 }
 
 ExtensionsActivityMonitor::~ExtensionsActivityMonitor() {
@@ -48,13 +33,13 @@ ExtensionsActivityMonitor::~ExtensionsActivityMonitor() {
   // place) and only this case we allow destruction on another loop, but this
   // isn't something a client of this class can control; it happens implicitly
   // by not having a running UI thread.
-  if (!registrar_.IsEmpty()) {
+  if (registrar_.get()) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
     // The registrar calls RemoveAll in its dtor (which would happen in a
-    // moment but explicitly call this so it is clear why we need to be on the
-    // ui_loop_.
-    registrar_.RemoveAll();
+    // moment anyway) but explicitly destroy it so it is clear why we need to
+    // be on the UI thread.
+    registrar_.reset();
   }
 }
 
@@ -90,6 +75,20 @@ void ExtensionsActivityMonitor::Observe(
     record.extension_id = extension->id();
     record.bookmark_write_count++;
   }
+}
+
+void ExtensionsActivityMonitor::RegisterNotificationsOnUIThread() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  // It would be nice if we could specify a Source for each specific function
+  // we wanted to observe, but the actual function objects are allocated on
+  // the fly so there is no reliable object to point to (same problem if we
+  // wanted to use the string name).  Thus, we use all sources and filter in
+  // Observe.
+  registrar_.reset(new content::NotificationRegistrar);
+  registrar_->Add(this,
+                  chrome::NOTIFICATION_EXTENSION_BOOKMARKS_API_INVOKED,
+                  content::NotificationService::AllSources());
 }
 
 }  // namespace browser_sync

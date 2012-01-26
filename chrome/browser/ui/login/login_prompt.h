@@ -12,7 +12,6 @@
 #include "base/synchronization/lock.h"
 #include "chrome/browser/password_manager/password_manager.h"
 #include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/resource_dispatcher_host_login_delegate.h"
 
 class ConstrainedWindow;
@@ -20,6 +19,7 @@ class GURL;
 
 namespace content {
 class RenderViewHostDelegate;
+class NotificationRegistrar;
 }  // namespace content
 
 namespace net {
@@ -160,7 +160,8 @@ class LoginHandler : public content::ResourceDispatcherHostLoginDelegate,
   LoginModel* login_model_;
 
   // Observes other login handlers so this login handler can respond.
-  content::NotificationRegistrar registrar_;
+  // This is only accessed on the UI thread.
+  scoped_ptr<content::NotificationRegistrar> registrar_;
 };
 
 // Details to provide the content::NotificationObserver.  Used by the automation

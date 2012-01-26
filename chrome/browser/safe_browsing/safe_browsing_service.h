@@ -554,7 +554,7 @@ class SafeBrowsingService
   ObserverList<Observer> observer_list_;
 
   // Used to track purge memory notifications. Lives on the IO thread.
-  content::NotificationRegistrar registrar_;
+  scoped_ptr<content::NotificationRegistrar> registrar_;
 
   // Tracks existing PrefServices, and the safe browsing preference on each.
   // This is used to determine if any profile is currently using the safe
