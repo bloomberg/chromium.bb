@@ -161,8 +161,9 @@ const char kDisabledByPolicy[] =
     "This extension has been disabled by your administrator.";
 const char kExpectString[] = "Expect string value.";
 const char kExperimentalFlagRequired[] =
-    "Loading extensions with 'experimental' permission requires"
-    " --enable-experimental-extension-apis command line flag.";
+    "Loading extensions with 'experimental' permission is turned off by"
+    "default. You can enable 'Experimental Extension APIs'"
+    "by visiting chrome://flags.";
 const char kFeatureNotAllowed[] =
     "Feature '*' is not allowed in this type of manifest.";
 const char kInvalidAllFrames[] =
