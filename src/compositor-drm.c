@@ -78,10 +78,14 @@ struct drm_output {
 	uint32_t pending_fs_surf_fb_id;
 };
 
-static int
-drm_output_prepare_render(struct weston_output *output_base)
+static void
+drm_output_repaint(struct weston_output *output_base)
 {
 	struct drm_output *output = (struct drm_output *) output_base;
+	struct drm_compositor *compositor =
+		(struct drm_compositor *) output->base.compositor;
+	struct weston_surface *surface;
+	uint32_t fb_id = 0;
 
 	glFramebufferRenderbuffer(GL_FRAMEBUFFER,
 				  GL_COLOR_ATTACHMENT0,
@@ -89,31 +93,10 @@ drm_output_prepare_render(struct weston_output *output_base)
 				  output->rbo[output->current]);
 
 	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-		return -1;
+		return;
 
-	return 0;
-}
-
-static void
-drm_output_repaint(struct weston_output *output)
-{
-	struct weston_compositor *compositor = output->compositor;
-	struct weston_surface *surface;
-
-	surface = container_of(compositor->surface_list.next,
-			       struct weston_surface, link);
-
-	wl_list_for_each_reverse(surface, &compositor->surface_list, link)
-		weston_surface_draw(surface, output);
-}
-
-static int
-drm_output_present(struct weston_output *output_base)
-{
-	struct drm_output *output = (struct drm_output *) output_base;
-	struct drm_compositor *c =
-		(struct drm_compositor *) output->base.compositor;
-	uint32_t fb_id = 0;
+	wl_list_for_each_reverse(surface, &compositor->base.surface_list, link)
+		weston_surface_draw(surface, &output->base);
 
 	glFlush();
 
@@ -125,14 +108,14 @@ drm_output_present(struct weston_output *output_base)
 		fb_id = output->fb_id[output->current ^ 1];
 	}
 
-	if (drmModePageFlip(c->drm.fd, output->crtc_id,
+	if (drmModePageFlip(compositor->drm.fd, output->crtc_id,
 			    fb_id,
 			    DRM_MODE_PAGE_FLIP_EVENT, output) < 0) {
 		fprintf(stderr, "queueing pageflip failed: %m\n");
-		return -1;
+		return;
 	}
 
-	return 0;
+	return;
 }
 
 static void
@@ -566,9 +549,7 @@ create_output_for_connector(struct drm_compositor *ec,
 	wl_list_insert(ec->base.output_list.prev, &output->base.link);
 
 	output->pending_fs_surf_fb_id = 0;
-	output->base.prepare_render = drm_output_prepare_render;
 	output->base.repaint = drm_output_repaint;
-	output->base.present = drm_output_present;
 	output->base.prepare_scanout_surface =
 		drm_output_prepare_scanout_surface;
 	output->base.set_hardware_cursor = drm_output_set_cursor;

@@ -85,10 +85,13 @@ union wfd_geometry {
 	WFDint array[4];
 };
 
-static int
-wfd_output_prepare_render(struct weston_output *output_base)
+static void
+wfd_output_repaint(struct weston_output *output_base)
 {
 	struct wfd_output *output = (struct wfd_output *) output_base;
+	struct weston_surface *surface;
+	struct wfd_compositor *compositor =
+		(struct wfd_compositor *) output->base.compositor;
 
 	glFramebufferRenderbuffer(GL_FRAMEBUFFER,
 				  GL_COLOR_ATTACHMENT0,
@@ -98,37 +101,19 @@ wfd_output_prepare_render(struct weston_output *output_base)
 	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
 		return -1;
 
-	return 0;
-}
-
-static void
-wfd_output_repaint(struct weston_output *output)
-{
-	struct weston_compositor *compositor;
-	struct weston_surface *surface;
-
 	wl_list_for_each_reverse(surface, &compositor->surface_list, link)
 		weston_surface_draw(surface, output);
-}
 
-static int
-wfd_output_present(struct weston_output *output_base)
-{
-	struct wfd_output *output = (struct wfd_output *) output_base;
-	struct wfd_compositor *c =
-		(struct wfd_compositor *) output->base.compositor;
-
-	if (wfd_output_prepare_render(&output->base))
-		return -1;
 	glFlush();
 
 	output->current ^= 1;
 
-	wfdBindSourceToPipeline(c->dev, output->pipeline,
+	wfdBindSourceToPipeline(compositor->dev, output->pipeline,
 				output->source[output->current ^ 1],
 				WFD_TRANSITION_AT_VSYNC, NULL);
 
-	wfdDeviceCommit(c->dev, WFD_COMMIT_PIPELINE, output->pipeline);
+	wfdDeviceCommit(compositor->dev,
+			WFD_COMMIT_PIPELINE, output->pipeline);
 
 	return 0;
 }
@@ -416,9 +401,7 @@ create_output_for_port(struct wfd_compositor *ec,
 
 	wfdDeviceCommit(ec->dev, WFD_COMMIT_ENTIRE_DEVICE, WFD_INVALID_HANDLE);
 
-	output->base.prepare_render = wfd_output_prepare_render;
 	output->base.repaint = wfd_output_repaint;
-	output->base.present = wfd_output_present;
 	output->base.prepare_scanout_surface =
 		wfd_output_prepare_scanout_surface;
 	output->base.set_hardware_cursor = wfd_output_set_cursor;

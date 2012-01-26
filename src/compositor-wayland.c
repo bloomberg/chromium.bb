@@ -161,31 +161,6 @@ wayland_compositor_init_egl(struct wayland_compositor *c)
 	return 0;
 }
 
-static int
-wayland_output_prepare_render(struct weston_output *output_base)
-{
-	struct wayland_output *output = (struct wayland_output *) output_base;
-	struct weston_compositor *ec = output->base.compositor;
-
-	if (!eglMakeCurrent(ec->display, output->egl_surface,
-			    output->egl_surface, ec->context)) {
-		fprintf(stderr, "failed to make current\n");
-		return -1;
-	}
-
-	return 0;
-}
-
-static void
-wayland_output_repaint(struct weston_output *output)
-{
-	struct weston_compositor *compositor = output->compositor;
-	struct weston_surface *surface;
-
-	wl_list_for_each_reverse(surface, &compositor->surface_list, link)
-		weston_surface_draw(surface, output);
-}
-
 static void
 frame_done(void *data, struct wl_callback *wl_callback, uint32_t time)
 {
@@ -198,22 +173,29 @@ static const struct wl_callback_listener frame_listener = {
 	frame_done
 };
 
-static int
-wayland_output_present(struct weston_output *output_base)
+static void
+wayland_output_repaint(struct weston_output *output_base)
 {
 	struct wayland_output *output = (struct wayland_output *) output_base;
-	struct wayland_compositor *c =
+	struct wayland_compositor *compositor =
 		(struct wayland_compositor *) output->base.compositor;
 	struct wl_callback *callback;
+	struct weston_surface *surface;
 
-	if (wayland_output_prepare_render(&output->base))
-		return -1;
+	if (!eglMakeCurrent(compositor->base.display, output->egl_surface,
+			    output->egl_surface, compositor->base.context)) {
+		fprintf(stderr, "failed to make current\n");
+		return;
+	}
 
-	eglSwapBuffers(c->base.display, output->egl_surface);
+	wl_list_for_each_reverse(surface, &compositor->base.surface_list, link)
+		weston_surface_draw(surface, &output->base);
+
+	eglSwapBuffers(compositor->base.display, output->egl_surface);
 	callback = wl_surface_frame(output->parent.surface);
 	wl_callback_add_listener(callback, &frame_listener, output);
 
-	return 0;
+	return;
 }
 
 static int
@@ -300,9 +282,7 @@ wayland_compositor_create_output(struct wayland_compositor *c,
 
 	glClearColor(0, 0, 0, 0.5);
 
-	output->base.prepare_render = wayland_output_prepare_render;
 	output->base.repaint = wayland_output_repaint;
-	output->base.present = wayland_output_present;
 	output->base.prepare_scanout_surface =
 		wayland_output_prepare_scanout_surface;
 	output->base.set_hardware_cursor = wayland_output_set_cursor;

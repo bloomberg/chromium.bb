@@ -185,29 +185,26 @@ x11_compositor_fini_egl(struct x11_compositor *compositor)
 	eglReleaseThread();
 }
 
-static int
-x11_output_prepare_render(struct weston_output *output_base)
-{
-	struct x11_output *output = (struct x11_output *) output_base;
-	struct weston_compositor *ec = output->base.compositor;
-
-	if (!eglMakeCurrent(ec->display, output->egl_surface,
-			    output->egl_surface, ec->context)) {
-		fprintf(stderr, "failed to make current\n");
-		return -1;
-	}
-
-	return 0;
-}
-
 static void
-x11_output_repaint(struct weston_output *output)
+x11_output_repaint(struct weston_output *output_base)
 {
-	struct weston_compositor *compositor = output->compositor;
+	struct x11_output *output = (struct x11_output *)output_base;
+	struct x11_compositor *compositor =
+		(struct x11_compositor *)output->base.compositor;
 	struct weston_surface *surface;
 
-	wl_list_for_each_reverse(surface, &compositor->surface_list, link)
-		weston_surface_draw(surface, output);
+	if (!eglMakeCurrent(compositor->base.display, output->egl_surface,
+			    output->egl_surface, compositor->base.context)) {
+		fprintf(stderr, "failed to make current\n");
+		return;
+	}
+
+	wl_list_for_each_reverse(surface, &compositor->base.surface_list, link)
+		weston_surface_draw(surface, &output->base);
+
+	eglSwapBuffers(compositor->base.display, output->egl_surface);
+
+	wl_event_source_timer_update(output->finish_frame_timer, 10);
 }
 
 static int
@@ -222,22 +219,6 @@ finish_frame_handler(void *data)
 	weston_output_finish_frame(&output->base, msec);
 
 	return 1;
-}
-
-static int
-x11_output_present(struct weston_output *output_base)
-{
-	struct x11_output *output = (struct x11_output *) output_base;
-	struct weston_compositor *ec = output->base.compositor;
-
-	if (x11_output_prepare_render(&output->base))
-		return -1;
-
-	eglSwapBuffers(ec->display, output->egl_surface);
-
-	wl_event_source_timer_update(output->finish_frame_timer, 10);
-
-	return 0;
 }
 
 static int
@@ -471,9 +452,7 @@ x11_compositor_create_output(struct x11_compositor *c, int x, int y,
 	output->finish_frame_timer =
 		wl_event_loop_add_timer(loop, finish_frame_handler, output);
 
-	output->base.prepare_render = x11_output_prepare_render;
 	output->base.repaint = x11_output_repaint;
-	output->base.present = x11_output_present;
 	output->base.prepare_scanout_surface =
 		x11_output_prepare_scanout_surface;
 	output->base.set_hardware_cursor = x11_output_set_cursor;

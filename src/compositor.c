@@ -810,8 +810,6 @@ weston_output_repaint(struct weston_output *output)
 	pixman_region32_t opaque, new_damage, total_damage,
 		overlap, surface_overlap;
 
-	output->prepare_render(output);
-
 	glViewport(0, 0, output->current->width, output->current->height);
 
 	weston_output_set_cursor(output, ec->input_device,
@@ -884,7 +882,6 @@ repaint(struct weston_output *output, int msecs)
 	weston_output_repaint(output);
 	output->repaint_needed = 0;
 	output->repaint_scheduled = 1;
-	output->present(output);
 
 	wl_list_for_each_safe(cb, cnext, &output->frame_callback_list, link) {
 		wl_resource_post_event(&cb->resource, WL_CALLBACK_DONE, msecs);
