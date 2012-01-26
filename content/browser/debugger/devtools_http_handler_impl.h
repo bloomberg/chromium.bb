@@ -18,6 +18,8 @@
 #include "net/server/http_server.h"
 #include "net/url_request/url_request.h"
 
+class TabContents;
+
 namespace net {
 class URLRequestContext;
 }

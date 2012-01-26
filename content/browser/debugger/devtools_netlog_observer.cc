@@ -240,18 +240,17 @@ void DevToolsNetLogObserver::OnAddSocketEntry(
 
 void DevToolsNetLogObserver::Attach() {
   DCHECK(!instance_);
-  net::NetLog* net_log = content::GetContentClient()->browser()->GetNetLog();
-  if (net_log)
-    instance_ = new DevToolsNetLogObserver(net_log);
+
+  instance_ = new DevToolsNetLogObserver(
+      content::GetContentClient()->browser()->GetNetLog());
 }
 
 void DevToolsNetLogObserver::Detach() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK(instance_);
 
-  if (instance_) {
-    delete instance_;
-    instance_ = NULL;
-  }
+  delete instance_;
+  instance_ = NULL;
 }
 
 DevToolsNetLogObserver* DevToolsNetLogObserver::GetInstance() {

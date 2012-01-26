@@ -22,8 +22,6 @@ class BrowserListTabContentsProvider
       GetInspectableTabs() OVERRIDE;
   virtual std::string GetDiscoveryPageHTML() OVERRIDE;
   virtual net::URLRequestContext* GetURLRequestContext() OVERRIDE;
-  virtual bool BundlesFrontendResources() OVERRIDE;
-  virtual std::string GetFrontendResourcesBaseURL() OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BrowserListTabContentsProvider);
