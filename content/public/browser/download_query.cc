@@ -98,24 +98,6 @@ static bool IsPaused(const DownloadItem& item) {
   return item.IsPaused();
 }
 
-// Wrap Callback to work around a bug in base::Bind/Callback where the inner
-// callback is nullified when the outer callback is Run.
-template<typename ValueType>
-class InnerCallback {
- public:
-  typedef base::Callback<ValueType(const DownloadItem&)> CallbackType;
-
-  explicit InnerCallback(const CallbackType& inner) : inner_(inner) {}
-  ~InnerCallback() {}
-
-  // Mimic Callback's interface to facilitate removing InnerCallback when the
-  // bug is fixed.
-  ValueType Run(const DownloadItem& item) const { return inner_.Run(item); }
-
- private:
-  CallbackType inner_;
-};
-
 enum ComparisonType {LT, EQ, GT};
 
 // Returns true if |item| matches the filter specified by |value|, |cmptype|,
@@ -126,7 +108,7 @@ template<typename ValueType>
 static bool FieldMatches(
     const ValueType& value,
     ComparisonType cmptype,
-    const InnerCallback<ValueType>& accessor,
+    const base::Callback<ValueType(const DownloadItem&)>& accessor,
     const DownloadItem& item) {
   switch (cmptype) {
     case LT: return accessor.Run(item) < value;
@@ -144,13 +126,13 @@ template <typename ValueType> DownloadQuery::FilterCallback BuildFilter(
   ValueType cpp_value;
   if (!GetAs(value, &cpp_value)) return DownloadQuery::FilterCallback();
   return base::Bind(&FieldMatches<ValueType>, cpp_value, cmptype,
-                    InnerCallback<ValueType>(base::Bind(accessor)));
+                    base::Bind(accessor));
 }
 
 // Returns true if |accessor.Run(item)| matches |pattern|.
 static bool FindRegex(
     icu::RegexPattern* pattern,
-    const InnerCallback<std::string>& accessor,
+    const base::Callback<std::string(const DownloadItem&)>& accessor,
     const DownloadItem& item) {
   icu::UnicodeString input(accessor.Run(item).c_str());
   UErrorCode status = U_ZERO_ERROR;
@@ -170,14 +152,14 @@ DownloadQuery::FilterCallback BuildRegexFilter(
       icu::UnicodeString::fromUTF8(regex_str), re_err, re_status));
   if (!U_SUCCESS(re_status)) return DownloadQuery::FilterCallback();
   return base::Bind(&FindRegex, base::Owned(pattern.release()),
-                    InnerCallback<std::string>(base::Bind(accessor)));
+                    base::Bind(accessor));
 }
 
 // Returns a ComparisonType to indicate whether a field in |left| is less than,
 // greater than or equal to the same field in |right|.
 template<typename ValueType>
 static ComparisonType Compare(
-    const InnerCallback<ValueType>& accessor,
+    const base::Callback<ValueType(const DownloadItem&)>& accessor,
     const DownloadItem& left, const DownloadItem& right) {
   ValueType left_value = accessor.Run(left);
   ValueType right_value = accessor.Run(right);
@@ -209,12 +191,12 @@ bool DownloadQuery::AddFilter(const DownloadQuery::FilterCallback& value) {
 
 void DownloadQuery::AddFilter(DownloadItem::DownloadState state) {
   AddFilter(base::Bind(&FieldMatches<DownloadItem::DownloadState>, state, EQ,
-      InnerCallback<DownloadItem::DownloadState>(base::Bind(&GetState))));
+      base::Bind(&GetState)));
 }
 
 void DownloadQuery::AddFilter(DownloadDangerType danger) {
   AddFilter(base::Bind(&FieldMatches<DownloadDangerType>, danger, EQ,
-      InnerCallback<content::DownloadDangerType>(base::Bind(&GetDangerType))));
+      base::Bind(&GetDangerType)));
 }
 
 bool DownloadQuery::AddFilter(DownloadQuery::FilterType type,
@@ -286,7 +268,7 @@ struct DownloadQuery::Sorter {
   static Sorter Build(DownloadQuery::SortDirection adirection,
                          ValueType (*accessor)(const DownloadItem&)) {
     return Sorter(adirection, base::Bind(&Compare<ValueType>,
-        InnerCallback<ValueType>(base::Bind(accessor))));
+        base::Bind(accessor)));
   }
 
   Sorter(DownloadQuery::SortDirection adirection,
