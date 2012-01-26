@@ -96,6 +96,7 @@ struct weston_input_device {
 	int32_t hotspot_x, hotspot_y;
 	struct wl_list link;
 	uint32_t modifier_state;
+	int hw_cursor;
 
 	uint32_t num_tp;
 	struct wl_surface *touch_focus;
@@ -339,6 +340,8 @@ weston_compositor_run_binding(struct weston_compositor *compositor,
 			      struct weston_input_device *device,
 			      uint32_t time,
 			      uint32_t key, uint32_t button, int32_t state);
+struct wl_list *
+weston_compositor_top(struct weston_compositor *compositor);
 
 struct weston_surface *
 weston_surface_create(struct weston_compositor *compositor,

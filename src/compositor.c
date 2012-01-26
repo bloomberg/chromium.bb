@@ -595,13 +595,30 @@ weston_surface_draw(struct weston_surface *es, struct weston_output *output)
 	pixman_region32_fini(&repaint);
 }
 
+WL_EXPORT struct wl_list *
+weston_compositor_top(struct weston_compositor *compositor)
+{
+	struct weston_input_device *input_device;
+	struct wl_list *list;
+
+	input_device = (struct weston_input_device *) compositor->input_device;
+
+	/* Insert below pointer */
+	list = &compositor->surface_list;
+	if (list->next == &input_device->sprite->link)
+		list = list->next;
+
+	return list;
+}
+
 static void
 weston_surface_raise(struct weston_surface *surface)
 {
 	struct weston_compositor *compositor = surface->compositor;
+	struct wl_list *list = weston_compositor_top(compositor);
 
 	wl_list_remove(&surface->link);
-	wl_list_insert(&compositor->surface_list, &surface->link);
+	wl_list_insert(list, &surface->link);
 	weston_compositor_repick(compositor);
 	weston_surface_damage(surface);
 }
@@ -707,13 +724,12 @@ solid_surface_release(struct weston_surface *surface)
 
 static void
 weston_output_set_cursor(struct weston_output *output,
-			 struct wl_input_device *dev, int force_sw)
+			 struct wl_input_device *dev)
 {
-	struct weston_compositor *ec = output->compositor;
 	struct weston_input_device *device =
 		(struct weston_input_device *) dev;
 	pixman_region32_t cursor_region;
-	int use_hardware_cursor = 1, prior_was_hardware;
+	int prior_was_hardware;
 
 	if (device->sprite == NULL)
 		return;
@@ -730,25 +746,20 @@ weston_output_set_cursor(struct weston_output *output,
 		goto out;
 	}
 
-	prior_was_hardware = wl_list_empty(&device->sprite->link);
-	if (force_sw || output->set_hardware_cursor(output, device) < 0) {
+	prior_was_hardware = device->hw_cursor;
+	if (device->sprite->overlapped ||
+	    output->set_hardware_cursor(output, device) < 0) {
 		if (prior_was_hardware) {
 			weston_surface_damage(device->sprite);
 			output->set_hardware_cursor(output, NULL);
 		}
-		use_hardware_cursor = 0;
-	} else if (!prior_was_hardware) {
-		weston_surface_damage_below(device->sprite);
-	}
-
-	/* Remove always to be on top. */
-	wl_list_remove(&device->sprite->link);
-	if (!use_hardware_cursor && ec->focus) {
-		wl_list_insert(&ec->surface_list, &device->sprite->link);
-		device->sprite->output = output;
+		device->hw_cursor = 0;
 	} else {
-		wl_list_init(&device->sprite->link);
-		device->sprite->output = NULL;
+		if (!prior_was_hardware)
+			weston_surface_damage_below(device->sprite);
+		pixman_region32_fini(&device->sprite->damage);
+		pixman_region32_init(&device->sprite->damage);
+		device->hw_cursor = 1;
 	}
 
 out:
@@ -765,21 +776,14 @@ weston_output_repaint(struct weston_output *output)
 
 	glViewport(0, 0, output->current->width, output->current->height);
 
-	weston_output_set_cursor(output, ec->input_device,
-			       ec->fade.spring.current >= 0.001);
+	if (ec->fade.spring.current >= 0.001)
+		solid_surface_init(&solid, output, ec->fade.spring.current);
 
 	pixman_region32_init(&new_damage);
 	pixman_region32_init(&opaque);
 	pixman_region32_init(&overlap);
 
-	if (ec->fade.spring.current >= 0.001)
-		solid_surface_init(&solid, output, ec->fade.spring.current);
-
 	wl_list_for_each(es, &ec->surface_list, link) {
-		pixman_region32_subtract(&es->damage, &es->damage, &opaque);
-		pixman_region32_union(&new_damage, &new_damage, &es->damage);
-		pixman_region32_union(&opaque, &opaque, &es->opaque);
-
 		pixman_region32_init(&surface_overlap);
 		pixman_region32_intersect_rect(&surface_overlap,
 					       &overlap, es->x, es->y,
@@ -788,6 +792,14 @@ weston_output_repaint(struct weston_output *output)
 		pixman_region32_fini(&surface_overlap);
 		pixman_region32_union_rect(&overlap, &overlap, es->x, es->y,
 					   es->width, es->height);
+	}
+
+	weston_output_set_cursor(output, ec->input_device);
+
+	wl_list_for_each(es, &ec->surface_list, link) {
+		pixman_region32_subtract(&es->damage, &es->damage, &opaque);
+		pixman_region32_union(&new_damage, &new_damage, &es->damage);
+		pixman_region32_union(&opaque, &opaque, &es->opaque);
 	}
 
 	pixman_region32_init(&total_damage);
@@ -1517,7 +1529,8 @@ input_device_attach(struct wl_client *client,
 			weston_surface_create(compositor,
 					    device->input_device.x,
 					    device->input_device.y, 32, 32);
-		wl_list_init(&device->sprite->link);
+		wl_list_insert(&compositor->surface_list,
+			       &device->sprite->link);
 	}
 
 	buffer = buffer_resource->data;

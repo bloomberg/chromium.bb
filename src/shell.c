@@ -952,6 +952,7 @@ activate(struct weston_shell *base, struct weston_surface *es,
 {
 	struct wl_shell *shell = container_of(base, struct wl_shell, shell);
 	struct weston_compositor *compositor = shell->compositor;
+	struct wl_list *list;
 
 	weston_surface_activate(es, device, time);
 
@@ -977,12 +978,13 @@ activate(struct weston_shell *base, struct weston_surface *es,
 		break;
 	default:
 		if (!shell->locked) {
+			list = weston_compositor_top(compositor);
+
 			/* bring panel back to top */
 			struct shell_surface *panel;
 			wl_list_for_each(panel, &shell->panels, link) {
 				wl_list_remove(&panel->surface->link);
-				wl_list_insert(&compositor->surface_list,
-					       &panel->surface->link);
+				wl_list_insert(list, &panel->surface->link);
 			}
 		}
 	}
@@ -1119,7 +1121,7 @@ map(struct weston_shell *base,
 		list = &shell->hidden_surface_list;
 		do_configure = 0;
 	} else {
-		list = &compositor->surface_list;
+		list = weston_compositor_top(compositor);
 		do_configure = 1;
 	}
 
