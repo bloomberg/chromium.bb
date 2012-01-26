@@ -44,10 +44,12 @@ FilePath GetManagedPolicyPath() {
 
 MacPreferencesPolicyProviderDelegate::MacPreferencesPolicyProviderDelegate(
     MacPreferences* preferences,
-    const PolicyDefinitionList* policy_list)
+    const PolicyDefinitionList* policy_list,
+    PolicyLevel level)
     : FileBasedPolicyProvider::ProviderDelegate(GetManagedPolicyPath()),
       policy_list_(policy_list),
-      preferences_(preferences) {}
+      preferences_(preferences),
+      level_(level) {}
 
 MacPreferencesPolicyProviderDelegate::~MacPreferencesPolicyProviderDelegate() {}
 
@@ -63,9 +65,12 @@ PolicyMap* MacPreferencesPolicyProviderDelegate::Load() {
         preferences_->CopyAppValue(name, kCFPreferencesCurrentApplication));
     if (!value.get())
       continue;
-    if (!preferences_->AppValueIsForced(name, kCFPreferencesCurrentApplication))
+    bool forced =
+        preferences_->AppValueIsForced(name, kCFPreferencesCurrentApplication);
+    PolicyLevel level = forced ? POLICY_LEVEL_MANDATORY :
+                                 POLICY_LEVEL_RECOMMENDED;
+    if (level != level_)
       continue;
-
     Value* policy_value = NULL;
     switch (current->value_type) {
       case Value::TYPE_STRING:
@@ -117,11 +122,9 @@ PolicyMap* MacPreferencesPolicyProviderDelegate::Load() {
       default:
         NOTREACHED();
     }
-    if (policy_value) {
-      // TODO(joaodasilva): determine the policy level and scope.
-      policy->Set(current->name, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-                  policy_value);
-    }
+    // TODO(joaodasilva): figure the policy scope.
+    if (policy_value)
+      policy->Set(current->name, level_, POLICY_SCOPE_USER, policy_value);
   }
 
   return policy;
@@ -138,17 +141,22 @@ base::Time MacPreferencesPolicyProviderDelegate::GetLastModification() {
 }
 
 ConfigurationPolicyProviderMac::ConfigurationPolicyProviderMac(
-    const PolicyDefinitionList* policy_list)
+    const PolicyDefinitionList* policy_list,
+    PolicyLevel level)
     : FileBasedPolicyProvider(
           policy_list,
           new MacPreferencesPolicyProviderDelegate(new MacPreferences,
-                                                   policy_list)) {}
+                                                   policy_list,
+                                                   level)) {}
 
 ConfigurationPolicyProviderMac::ConfigurationPolicyProviderMac(
     const PolicyDefinitionList* policy_list,
+    PolicyLevel level,
     MacPreferences* preferences)
     : FileBasedPolicyProvider(
           policy_list,
-          new MacPreferencesPolicyProviderDelegate(preferences, policy_list)) {}
+          new MacPreferencesPolicyProviderDelegate(preferences,
+                                                   policy_list,
+                                                   level)) {}
 
 }  // namespace policy

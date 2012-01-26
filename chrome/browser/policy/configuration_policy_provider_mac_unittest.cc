@@ -59,6 +59,7 @@ AsynchronousPolicyProvider* TestHarness::CreateProvider(
     const PolicyDefinitionList* policy_definition_list) {
   prefs_ = new MockPreferences();
   return new ConfigurationPolicyProviderMac(policy_definition_list,
+                                            POLICY_LEVEL_MANDATORY,
                                             prefs_);
 }
 
@@ -123,26 +124,37 @@ INSTANTIATE_TEST_CASE_P(
 class ConfigurationPolicyProviderMacTest : public AsynchronousPolicyTestBase {
  protected:
   ConfigurationPolicyProviderMacTest()
-      : prefs_(new MockPreferences()),
-        provider_(&test_policy_definitions::kList,
-                  prefs_) {}
+      : mandatory_prefs_(new MockPreferences()),
+        recommended_prefs_(new MockPreferences()),
+        mandatory_provider_(&test_policy_definitions::kList,
+                            POLICY_LEVEL_MANDATORY,
+                            mandatory_prefs_),
+        recommended_provider_(&test_policy_definitions::kList,
+                              POLICY_LEVEL_RECOMMENDED,
+                              recommended_prefs_) {}
   virtual ~ConfigurationPolicyProviderMacTest() {}
 
-  MockPreferences* prefs_;
-  ConfigurationPolicyProviderMac provider_;
+  MockPreferences* mandatory_prefs_;
+  MockPreferences* recommended_prefs_;
+  ConfigurationPolicyProviderMac mandatory_provider_;
+  ConfigurationPolicyProviderMac recommended_provider_;
 };
 
 TEST_F(ConfigurationPolicyProviderMacTest, Invalid) {
   ScopedCFTypeRef<CFStringRef> name(
       base::SysUTF8ToCFStringRef(test_policy_definitions::kKeyString));
   ScopedCFTypeRef<CFDataRef> invalid_data(CFDataCreate(NULL, NULL, 0));
-  prefs_->AddTestItem(name, invalid_data.get(), true);
+  mandatory_prefs_->AddTestItem(name, invalid_data.get(), true);
+  recommended_prefs_->AddTestItem(name, invalid_data.get(), false);
 
-  // Create the provider and have it read |prefs_|.
-  provider_.RefreshPolicies();
+  // Create the provider and have it read |mandatory_prefs_|.
+  mandatory_provider_.RefreshPolicies();
+  recommended_provider_.RefreshPolicies();
   loop_.RunAllPending();
   PolicyMap policy_map;
-  EXPECT_TRUE(provider_.Provide(&policy_map));
+  EXPECT_TRUE(mandatory_provider_.Provide(&policy_map));
+  EXPECT_TRUE(policy_map.empty());
+  EXPECT_TRUE(recommended_provider_.Provide(&policy_map));
   EXPECT_TRUE(policy_map.empty());
 }
 
@@ -152,14 +164,18 @@ TEST_F(ConfigurationPolicyProviderMacTest, TestNonForcedValue) {
   ScopedCFTypeRef<CFPropertyListRef> test_value(
       base::SysUTF8ToCFStringRef("string value"));
   ASSERT_TRUE(test_value.get());
-  prefs_->AddTestItem(name, test_value.get(), false);
+  mandatory_prefs_->AddTestItem(name, test_value.get(), false);
+  recommended_prefs_->AddTestItem(name, test_value.get(), false);
 
-  // Create the provider and have it read |prefs_|.
-  provider_.RefreshPolicies();
+  // Create the provider and have it read |mandatory_prefs_|.
+  mandatory_provider_.RefreshPolicies();
+  recommended_provider_.RefreshPolicies();
   loop_.RunAllPending();
   PolicyMap policy_map;
-  EXPECT_TRUE(provider_.Provide(&policy_map));
+  EXPECT_TRUE(mandatory_provider_.Provide(&policy_map));
   EXPECT_TRUE(policy_map.empty());
+  EXPECT_TRUE(recommended_provider_.Provide(&policy_map));
+  EXPECT_EQ(1U, policy_map.size());
 }
 
 }  // namespace policy
