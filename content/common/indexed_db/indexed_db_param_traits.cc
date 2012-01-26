@@ -62,9 +62,7 @@ void ParamTraits<IndexedDBKey>::Write(Message* m, const param_type& p) {
       WriteParam(m, p.number());
       return;
     case WebKit::WebIDBKey::InvalidType:
-    default:
-      // TODO(jsbell): Remove "default" label once WebKit bug 76487 has rolled.
-      // http://crbug.com/110956
+    case WebKit::WebIDBKey::NullType:
       return;
   }
   NOTREACHED();
@@ -111,10 +109,10 @@ bool ParamTraits<IndexedDBKey>::Read(const Message* m,
         return true;
       }
     case WebKit::WebIDBKey::InvalidType:
-    default:
-      // TODO(jsbell): Remove "default" label once WebKit bug 76487 has rolled.
-      // http://crbug.com/110956
       r->SetInvalid();
+      return true;
+    case WebKit::WebIDBKey::NullType:
+      r->SetNull();
       return true;
   }
   NOTREACHED();

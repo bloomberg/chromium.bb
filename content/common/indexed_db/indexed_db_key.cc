@@ -11,7 +11,7 @@
 using WebKit::WebIDBKey;
 
 IndexedDBKey::IndexedDBKey()
-    : type_(WebIDBKey::InvalidType),
+    : type_(WebIDBKey::NullType),
       date_(0),
       number_(0) {
 }
@@ -25,6 +25,10 @@ IndexedDBKey::~IndexedDBKey() {
 
 void IndexedDBKey::SetInvalid() {
   type_ = WebIDBKey::InvalidType;
+}
+
+void IndexedDBKey::SetNull() {
+  type_ = WebIDBKey::NullType;
 }
 
 void IndexedDBKey::SetArray(const std::vector<IndexedDBKey>& array) {
@@ -72,10 +76,9 @@ IndexedDBKey::operator WebIDBKey() const {
     case WebIDBKey::NumberType:
       return WebIDBKey::createNumber(number_);
     case WebIDBKey::InvalidType:
-    default:
-      // TODO(jsbell): Remove "default" label once WebKit bug 76487 has rolled.
-      // http://crbug.com/110956
       return WebIDBKey::createInvalid();
+    case WebIDBKey::NullType:
+      return WebIDBKey::createNull();
   }
   NOTREACHED();
   return WebIDBKey::createInvalid();

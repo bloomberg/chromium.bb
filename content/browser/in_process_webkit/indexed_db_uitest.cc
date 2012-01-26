@@ -36,7 +36,7 @@ class IndexedDBUILayoutTest : public UILayoutTest {
   FilePath test_dir_;
 };
 
-TEST_F(IndexedDBUILayoutTest, DISABLED_LayoutTests) {
+TEST_F(IndexedDBUILayoutTest, LayoutTests) {
   const int port = kNoHttpPort;
   InitializeForLayoutTest(test_dir_, FilePath(), port);
   AddJSTestResources();

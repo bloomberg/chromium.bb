@@ -37,28 +37,46 @@ class ScopedShutdownWebKit {
 };
 
 // Sanity test, check the function call directly outside the sandbox.
-// TODO(jsbell): Disabled to land WK76487; http://crbug.com/110956 has fix.
-TEST(IDBKeyPathWithoutSandbox, DISABLED_Value) {
+TEST(IDBKeyPathWithoutSandbox, Value) {
   content::WebKitPlatformSupportImpl webkit_platform_support;
   WebKit::initialize(&webkit_platform_support);
   ScopedShutdownWebKit shutdown_webkit;
 
-  char16 data[] = {0x0353,0x6f66,0x536f,0x7a03,0x6f6f,0x017b};
+  // {foo: "zoo"}
+  char16 data_foo_zoo[] = {0x0353,0x6f66,0x536f,0x7a03,0x6f6f,0x017b};
   std::vector<WebSerializedScriptValue> serialized_values;
   serialized_values.push_back(
-      WebSerializedScriptValue::fromString(string16(data, arraysize(data))));
+      WebSerializedScriptValue::fromString(string16(data_foo_zoo,
+                                                    arraysize(data_foo_zoo))));
+
+  // {foo: null}
+  char16 data_foo_null[] = {0x0353, 0x6f66, 0x306f, 0x017b};
+  serialized_values.push_back(content::SerializedScriptValue(
+      false, false, string16(data_foo_null, arraysize(data_foo_null))));
+
+  // {}
+  char16 data_object[] = {0x017b};
+  serialized_values.push_back(content::SerializedScriptValue(
+      false, false, string16(data_object, arraysize(data_object))));
+
+  // null
   serialized_values.push_back(
       WebSerializedScriptValue::fromString(string16()));
 
   std::vector<WebKit::WebIDBKey> values;
-  string16 key_path(UTF8ToUTF16("foo"));
-  bool error = webkit_glue::IDBKeysFromValuesAndKeyPath(
+  string16 key_path;
+  bool error;
+
+  key_path = UTF8ToUTF16("foo");
+  error = webkit_glue::IDBKeysFromValuesAndKeyPath(
       serialized_values, key_path, &values);
 
-  ASSERT_EQ(size_t(2), values.size());
+  ASSERT_EQ(size_t(4), values.size());
   ASSERT_EQ(WebKit::WebIDBKey::StringType, values[0].type());
   ASSERT_EQ(UTF8ToUTF16("zoo"), values[0].string());
   ASSERT_EQ(WebKit::WebIDBKey::InvalidType, values[1].type());
+  ASSERT_EQ(WebKit::WebIDBKey::NullType, values[2].type());
+  ASSERT_EQ(WebKit::WebIDBKey::NullType, values[3].type());
   ASSERT_FALSE(error);
 
   values.clear();
@@ -66,9 +84,11 @@ TEST(IDBKeyPathWithoutSandbox, DISABLED_Value) {
   error = webkit_glue::IDBKeysFromValuesAndKeyPath(
       serialized_values, key_path, &values);
 
-  ASSERT_EQ(size_t(2), values.size());
-  ASSERT_EQ(WebKit::WebIDBKey::InvalidType, values[0].type());
-  ASSERT_EQ(WebKit::WebIDBKey::InvalidType, values[1].type());
+  ASSERT_EQ(size_t(4), values.size());
+  ASSERT_EQ(WebKit::WebIDBKey::NullType, values[0].type());
+  ASSERT_EQ(WebKit::WebIDBKey::NullType, values[1].type());
+  ASSERT_EQ(WebKit::WebIDBKey::NullType, values[2].type());
+  ASSERT_EQ(WebKit::WebIDBKey::NullType, values[3].type());
   ASSERT_FALSE(error);
 
   values.clear();
@@ -77,9 +97,11 @@ TEST(IDBKeyPathWithoutSandbox, DISABLED_Value) {
       serialized_values, key_path, &values);
 
   ASSERT_TRUE(error);
-  ASSERT_EQ(size_t(2), values.size());
-  ASSERT_EQ(WebKit::WebIDBKey::InvalidType, values[0].type());
-  ASSERT_EQ(WebKit::WebIDBKey::InvalidType, values[1].type());
+  ASSERT_EQ(size_t(4), values.size());
+  ASSERT_EQ(WebKit::WebIDBKey::NullType, values[0].type());
+  ASSERT_EQ(WebKit::WebIDBKey::NullType, values[1].type());
+  ASSERT_EQ(WebKit::WebIDBKey::NullType, values[2].type());
+  ASSERT_EQ(WebKit::WebIDBKey::NullType, values[3].type());
 }
 
 class IDBKeyPathHelper : public UtilityProcessHost::Client {
@@ -270,26 +292,44 @@ class ScopedIDBKeyPathHelper {
   scoped_refptr<IDBKeyPathHelper> key_path_helper_;
 };
 
+// Cases:
 IN_PROC_BROWSER_TEST_F(InProcessBrowserTest, IDBKeyPathExtract) {
   ScopedIDBKeyPathHelper scoped_helper;
   const int kId = 7;
   std::vector<IndexedDBKey> expected_keys;
-  IndexedDBKey value;
-  value.SetString(UTF8ToUTF16("zoo"));
-  expected_keys.push_back(value);
-
-  IndexedDBKey invalid_value;
-  invalid_value.SetInvalid();
-  expected_keys.push_back(invalid_value);
-
-  scoped_helper.SetExpectedKeys(kId, expected_keys, false);
-
-  char16 data[] = {0x0353,0x6f66,0x536f,0x7a03,0x6f6f,0x017b};
   std::vector<content::SerializedScriptValue> serialized_values;
+
+  IndexedDBKey string_zoo_key;
+  string_zoo_key.SetString(UTF8ToUTF16("zoo"));
+  IndexedDBKey null_key;
+  null_key.SetNull();
+  IndexedDBKey invalid_key;
+  invalid_key.SetInvalid();
+
+  // keypath: "foo", value: {foo: "zoo"}, expected: "zoo"
+  char16 data_foo_zoo[] = {0x0353,0x6f66,0x536f,0x7a03,0x6f6f,0x017b};
   serialized_values.push_back(content::SerializedScriptValue(
-      false, false, string16(data, arraysize(data))));
+      false, false, string16(data_foo_zoo, arraysize(data_foo_zoo))));
+  expected_keys.push_back(string_zoo_key);
+
+  // keypath: "foo", value: {foo: null}, expected: invalid
+  char16 data_foo_null[] = {0x0353, 0x6f66, 0x306f, 0x017b};
+  serialized_values.push_back(content::SerializedScriptValue(
+      false, false, string16(data_foo_null, arraysize(data_foo_null))));
+  expected_keys.push_back(invalid_key);
+
+  // keypath: "foo", value: {}, expected: null
+  char16 data_object[] = {0x017b};
+  serialized_values.push_back(content::SerializedScriptValue(
+      false, false, string16(data_object, arraysize(data_object))));
+  expected_keys.push_back(null_key);
+
+  // keypath: "foo", value: null, expected: null
   serialized_values.push_back(
       content::SerializedScriptValue(true, false, string16()));
+  expected_keys.push_back(null_key);
+
+  scoped_helper.SetExpectedKeys(kId, expected_keys, false);
   scoped_helper.CheckValuesForKeyPath(
       kId, serialized_values, UTF8ToUTF16("foo"));
 }
@@ -298,19 +338,24 @@ IN_PROC_BROWSER_TEST_F(InProcessBrowserTest, IDBKeyPathPropertyNotAvailable) {
   ScopedIDBKeyPathHelper scoped_helper;
   const int kId = 7;
   std::vector<IndexedDBKey> expected_keys;
-  IndexedDBKey invalid_value;
-  invalid_value.SetInvalid();
-  expected_keys.push_back(invalid_value);
-  expected_keys.push_back(invalid_value);
+  IndexedDBKey null_value;
+  null_value.SetNull();
+  expected_keys.push_back(null_value);
+  expected_keys.push_back(null_value);
 
   scoped_helper.SetExpectedKeys(kId, expected_keys, false);
 
-  char16 data[] = {0x0353,0x6f66,0x536f,0x7a03,0x6f6f,0x017b};
   std::vector<content::SerializedScriptValue> serialized_values;
+  // {foo: "zoo", bar: null}
+  char16 data[] = {0x0353, 0x6f66, 0x536f, 0x7a03, 0x6f6f, 0x0353, 0x6162,
+                   0x3072, 0x027b};
   serialized_values.push_back(content::SerializedScriptValue(
       false, false, string16(data, arraysize(data))));
+
+  // null
   serialized_values.push_back(
       content::SerializedScriptValue(true, false, string16()));
+
   scoped_helper.CheckValuesForKeyPath(kId, serialized_values,
                                       UTF8ToUTF16("PropertyNotAvailable"));
 }
@@ -319,19 +364,25 @@ IN_PROC_BROWSER_TEST_F(InProcessBrowserTest, IDBKeyPathMultipleCalls) {
   ScopedIDBKeyPathHelper scoped_helper;
   const int kId = 7;
   std::vector<IndexedDBKey> expected_keys;
-  IndexedDBKey invalid_value;
-  invalid_value.SetInvalid();
-  expected_keys.push_back(invalid_value);
-  expected_keys.push_back(invalid_value);
 
+  IndexedDBKey null_value;
+  null_value.SetNull();
+  expected_keys.push_back(null_value);
+  expected_keys.push_back(null_value);
   scoped_helper.SetExpectedKeys(kId, expected_keys, true);
 
-  char16 data[] = {0x0353,0x6f66,0x536f,0x7a03,0x6f6f,0x017b};
   std::vector<content::SerializedScriptValue> serialized_values;
+
+  // {foo: "zoo", bar: null}
+  char16 data[] = {0x0353, 0x6f66, 0x536f, 0x7a03, 0x6f6f, 0x0353, 0x6162,
+                   0x3072, 0x027b};
   serialized_values.push_back(content::SerializedScriptValue(
       false, false, string16(data, arraysize(data))));
+
+  // null
   serialized_values.push_back(
       content::SerializedScriptValue(true, false, string16()));
+
   scoped_helper.CheckValuesForKeyPath(kId, serialized_values,
                                       UTF8ToUTF16("!+Invalid[KeyPath[[["));
 
@@ -340,7 +391,7 @@ IN_PROC_BROWSER_TEST_F(InProcessBrowserTest, IDBKeyPathMultipleCalls) {
   IndexedDBKey value;
   value.SetString(UTF8ToUTF16("zoo"));
   expected_keys.push_back(value);
-  expected_keys.push_back(invalid_value);
+  expected_keys.push_back(null_value);
   scoped_helper.SetExpectedKeys(kId + 1, expected_keys, false);
   scoped_helper.CheckValuesForKeyPath(kId + 1, serialized_values,
                                       UTF8ToUTF16("foo"));
