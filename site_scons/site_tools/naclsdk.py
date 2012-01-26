@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Copyright (c) 2012 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -254,6 +254,7 @@ def _SetEnvForPnacl(env, root):
   pnacl_nativeld = binprefix + 'nativeld' + binext
   pnacl_disass = binprefix + 'dis' + binext
   pnacl_strip = binprefix + 'strip' + binext
+  pnacl_nmf = binprefix + 'nmf' + binext
 
   # NOTE: XXX_flags start with space for easy concatenation
   # The flags generated here get baked into the commands (CC, CXX, LINK)
@@ -305,6 +306,7 @@ def _SetEnvForPnacl(env, root):
               DISASS=pnacl_disass,
               OBJDUMP=pnacl_disass,
               STRIP=pnacl_strip,
+              GENNMF=pnacl_nmf,
               )
 
 

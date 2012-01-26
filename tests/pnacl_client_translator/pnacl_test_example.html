@@ -1,7 +1,7 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
           "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <!--
-  Copyright (c) 2011 The Native Client Authors. All rights reserved.
+  Copyright (c) 2012 The Native Client Authors. All rights reserved.
   Use of this source code is governed by a BSD-style license that can be
   found in the LICENSE file.
 -->
@@ -41,19 +41,21 @@
 <body onload="pageDidLoad()">
 
   <h1>PNACL Test Example</h1>
+
   <embed type="application/x-nacl" id="test_nexe"
           name="nacl_module"
           src="pnacl_test_example.nmf"
-          width="0" height="0" />
+          width="20" height="20"
+         style="background-color:gray" />
 
-    <script type="text/javascript">
-      //<![CDATA[
-      var tester = new Tester();
-      setupTests(tester, $('test_nexe'));
-      tester.waitFor($('test_nexe'));
-      tester.run();
-      //]]>
-    </script>
+  <script type="text/javascript">
+    //<![CDATA[
+    var tester = new Tester();
+    setupTests(tester, $('test_nexe'));
+    tester.waitFor($('test_nexe'));
+    tester.run();
+    //]]>
+  </script>
 
   <p> This should tick when the UI thread is not blocked:</p>
   <div id="counter_area"> 0.0 </div>
