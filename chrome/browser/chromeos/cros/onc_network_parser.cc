@@ -83,7 +83,7 @@ OncValueSignature eap_signature[] = {
   { onc::eap::kInner, PROPERTY_INDEX_EAP_PHASE_2_AUTH, TYPE_STRING },
   { onc::eap::kOuter, PROPERTY_INDEX_EAP_METHOD, TYPE_STRING },
   { onc::eap::kPassword, PROPERTY_INDEX_EAP_PASSWORD, TYPE_STRING },
-  { onc::eap::kServerCARef, PROPERTY_INDEX_EAP_CA_CERT, TYPE_STRING },
+  { onc::eap::kServerCARef, PROPERTY_INDEX_EAP_CA_CERT_NSS, TYPE_STRING },
   { onc::eap::kUseSystemCAs, PROPERTY_INDEX_EAP_USE_SYSTEM_CAS, TYPE_BOOLEAN },
   { onc::eap::kSaveCredentials, PROPERTY_INDEX_SAVE_CREDENTIALS, TYPE_BOOLEAN },
   { NULL }
