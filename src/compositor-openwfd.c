@@ -101,6 +101,16 @@ wfd_output_prepare_render(struct weston_output *output_base)
 	return 0;
 }
 
+static void
+wfd_output_repaint(struct weston_output *output)
+{
+	struct weston_compositor *compositor;
+	struct weston_surface *surface;
+
+	wl_list_for_each_reverse(surface, &compositor->surface_list, link)
+		weston_surface_draw(surface, output);
+}
+
 static int
 wfd_output_present(struct weston_output *output_base)
 {
@@ -407,6 +417,7 @@ create_output_for_port(struct wfd_compositor *ec,
 	wfdDeviceCommit(ec->dev, WFD_COMMIT_ENTIRE_DEVICE, WFD_INVALID_HANDLE);
 
 	output->base.prepare_render = wfd_output_prepare_render;
+	output->base.repaint = wfd_output_repaint;
 	output->base.present = wfd_output_present;
 	output->base.prepare_scanout_surface =
 		wfd_output_prepare_scanout_surface;

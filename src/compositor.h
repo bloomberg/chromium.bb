@@ -88,6 +88,7 @@ struct weston_output {
 	struct wl_listener pending_scanout_buffer_destroy_listener;
 
 	int (*prepare_render)(struct weston_output *output);
+	void (*repaint)(struct weston_output *output);
 	int (*present)(struct weston_output *output);
 	int (*prepare_scanout_surface)(struct weston_output *output,
 				       struct weston_surface *es);
@@ -276,6 +277,8 @@ weston_spring_done(struct weston_spring *spring);
 void
 weston_surface_activate(struct weston_surface *surface,
 			struct weston_input_device *device, uint32_t time);
+void
+weston_surface_draw(struct weston_surface *es, struct weston_output *output);
 
 void
 notify_motion(struct wl_input_device *device,

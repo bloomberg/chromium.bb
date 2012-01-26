@@ -555,7 +555,7 @@ texture_transformed_surface(struct weston_surface *es)
 	return 1;
 }
 
-static void
+WL_EXPORT void
 weston_surface_draw(struct weston_surface *es, struct weston_output *output)
 {
 	struct weston_compositor *ec = es->compositor;
@@ -861,8 +861,7 @@ weston_output_repaint(struct weston_output *output)
 		/* We're drawing nothing, just let the damage accumulate */
 		return;
 
-	wl_list_for_each_reverse(es, &ec->surface_list, link)
-		weston_surface_draw(es, output);
+	output->repaint(output);
 
 	if (ec->fade.spring.current > 0.001)
 		solid_surface_release(&solid);

@@ -177,6 +177,16 @@ wayland_output_prepare_render(struct weston_output *output_base)
 }
 
 static void
+wayland_output_repaint(struct weston_output *output)
+{
+	struct weston_compositor *compositor = output->compositor;
+	struct weston_surface *surface;
+
+	wl_list_for_each_reverse(surface, &compositor->surface_list, link)
+		weston_surface_draw(surface, output);
+}
+
+static void
 frame_done(void *data, struct wl_callback *wl_callback, uint32_t time)
 {
 	struct weston_output *output = data;
@@ -291,6 +301,7 @@ wayland_compositor_create_output(struct wayland_compositor *c,
 	glClearColor(0, 0, 0, 0.5);
 
 	output->base.prepare_render = wayland_output_prepare_render;
+	output->base.repaint = wayland_output_repaint;
 	output->base.present = wayland_output_present;
 	output->base.prepare_scanout_surface =
 		wayland_output_prepare_scanout_surface;

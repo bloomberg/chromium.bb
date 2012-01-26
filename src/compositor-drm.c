@@ -94,6 +94,19 @@ drm_output_prepare_render(struct weston_output *output_base)
 	return 0;
 }
 
+static void
+drm_output_repaint(struct weston_output *output)
+{
+	struct weston_compositor *compositor = output->compositor;
+	struct weston_surface *surface;
+
+	surface = container_of(compositor->surface_list.next,
+			       struct weston_surface, link);
+
+	wl_list_for_each_reverse(surface, &compositor->surface_list, link)
+		weston_surface_draw(surface, output);
+}
+
 static int
 drm_output_present(struct weston_output *output_base)
 {
@@ -554,6 +567,7 @@ create_output_for_connector(struct drm_compositor *ec,
 
 	output->pending_fs_surf_fb_id = 0;
 	output->base.prepare_render = drm_output_prepare_render;
+	output->base.repaint = drm_output_repaint;
 	output->base.present = drm_output_present;
 	output->base.prepare_scanout_surface =
 		drm_output_prepare_scanout_surface;

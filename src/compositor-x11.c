@@ -200,6 +200,16 @@ x11_output_prepare_render(struct weston_output *output_base)
 	return 0;
 }
 
+static void
+x11_output_repaint(struct weston_output *output)
+{
+	struct weston_compositor *compositor = output->compositor;
+	struct weston_surface *surface;
+
+	wl_list_for_each_reverse(surface, &compositor->surface_list, link)
+		weston_surface_draw(surface, output);
+}
+
 static int
 finish_frame_handler(void *data)
 {
@@ -462,6 +472,7 @@ x11_compositor_create_output(struct x11_compositor *c, int x, int y,
 		wl_event_loop_add_timer(loop, finish_frame_handler, output);
 
 	output->base.prepare_render = x11_output_prepare_render;
+	output->base.repaint = x11_output_repaint;
 	output->base.present = x11_output_present;
 	output->base.prepare_scanout_surface =
 		x11_output_prepare_scanout_surface;
