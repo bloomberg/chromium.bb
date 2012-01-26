@@ -816,6 +816,12 @@ weston_output_repaint(struct weston_output *output)
 	pixman_region32_fini(&opaque);
 	pixman_region32_fini(&new_damage);
 
+	wl_list_for_each(es, &ec->surface_list, link) {
+		pixman_region32_copy(&es->damage, &total_damage);
+		pixman_region32_subtract(&total_damage,
+					 &total_damage, &es->opaque);
+	}
+
 	es = container_of(ec->surface_list.next, struct weston_surface, link);
 
 	if (setup_scanout_surface(output, es) == 0)
@@ -828,11 +834,6 @@ weston_output_repaint(struct weston_output *output)
 			glClear(GL_COLOR_BUFFER_BIT);
 		weston_surface_draw(es, output, &total_damage);
 	} else {
-		wl_list_for_each(es, &ec->surface_list, link) {
-			pixman_region32_copy(&es->damage, &total_damage);
-			pixman_region32_subtract(&total_damage, &total_damage, &es->opaque);
-		}
-
 		wl_list_for_each_reverse(es, &ec->surface_list, link) {
 			pixman_region32_init(&repaint);
 			pixman_region32_intersect(&repaint, &output->region,
