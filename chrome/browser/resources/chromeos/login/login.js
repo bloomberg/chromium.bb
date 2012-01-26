@@ -71,8 +71,16 @@ cr.define('cr.ui', function() {
   Oobe.setUpdateProgress = function(progress) {};
   Oobe.setUpdateMessage = function(message) {};
   Oobe.showUpdateCurtain = function(enable) {};
-  Oobe.setTpmPassword = function(password) {}
-  Oobe.reloadContent = function(data) {}
+  Oobe.setTpmPassword = function(password) {};
+  Oobe.reloadContent = function(data) {};
+
+  /**
+   * Updates version label visibilty.
+   * @param {boolean} show True if version label should be visible.
+   */
+  Oobe.showVersion = function(show) {
+    Oobe.getInstance().showVersion(show);
+  };
 
   /**
    * Update body class to switch between OOBE UI and Login UI.

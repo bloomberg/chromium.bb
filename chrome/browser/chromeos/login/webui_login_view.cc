@@ -51,6 +51,7 @@ const char kAccelNameAccessibility[] = "accessibility";
 const char kAccelNameCancel[] = "cancel";
 const char kAccelNameEnrollment[] = "enrollment";
 const char kAccelNameExit[] = "exit";
+const char kAccelNameVersion[] = "version";
 
 // Observes IPC messages from the FrameSniffer and notifies JS if error
 // appears.
@@ -134,6 +135,8 @@ WebUILoginView::WebUILoginView()
   // This should be kept in sync with the IDC_EXIT accelerator.
   accel_map_[ui::Accelerator(ui::VKEY_Q, true, true, false)] =
       kAccelNameExit;
+  accel_map_[ui::Accelerator(ui::VKEY_V, false, false, true)] =
+      kAccelNameVersion;
 
   for (AccelMap::iterator i(accel_map_.begin()); i != accel_map_.end(); ++i)
     AddAccelerator(i->first);

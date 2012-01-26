@@ -16,6 +16,7 @@ const ACCELERATOR_ACCESSIBILITY = 'accessibility';
 const ACCELERATOR_CANCEL = 'cancel';
 const ACCELERATOR_ENROLLMENT = 'enrollment';
 const ACCELERATOR_EXIT = 'exit';
+const ACCELERATOR_VERSION = 'version';
 
 cr.define('cr.ui.login', function() {
   /**
@@ -40,6 +41,12 @@ cr.define('cr.ui.login', function() {
     currentStep_: 0,
 
     /**
+     * Whether version label can be toggled by ACCELERATOR_VERSION.
+     * @type {boolean}
+     */
+    allowToggleVersion_: false,
+
+    /**
      * Gets current screen element.
      * @type {HTMLElement}
      */
@@ -53,6 +60,16 @@ cr.define('cr.ui.login', function() {
      */
     set headerHidden(hidden) {
       $('login-header-bar').hidden = hidden;
+    },
+
+    /**
+     * Shows/hides version labels.
+     * @param {boolean} show Whether labels should be visible by default. If
+     *     false, visibility can be toggled by ACCELERATOR_VERSION.
+     */
+    showVersion: function(show) {
+      $('version-labels').hidden = !show;
+      this.allowToggleVersion_ = !show;
     },
 
     /**
@@ -76,6 +93,9 @@ cr.define('cr.ui.login', function() {
         if (this.currentScreen.exit) {
           this.currentScreen.exit();
         }
+      } else if (name == ACCELERATOR_VERSION) {
+        if (this.allowToggleVersion_)
+          $('version-labels').hidden = !$('version-labels').hidden;
       }
     },
 

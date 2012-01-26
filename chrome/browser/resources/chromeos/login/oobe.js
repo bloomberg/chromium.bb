@@ -164,7 +164,7 @@ cr.define('cr.ui', function() {
     $('tpm-busy').hidden = true;
     $('tpm-password').textContent = password;
     $('tpm-password').hidden = false;
-  }
+  };
 
   /**
    * Reloads content of the page (localized strings, options of the select
@@ -182,7 +182,15 @@ cr.define('cr.ui', function() {
 
     // Update localized content of the screens.
     Oobe.updateLocalizedContent();
-  }
+  };
+
+  /**
+   * Updates version label visibilty.
+   * @param {boolean} show True if version label should be visible.
+   */
+  Oobe.showVersion = function(show) {
+    Oobe.getInstance().showVersion(show);
+  };
 
   /**
    * Updates localized content of the screens.
