@@ -1283,12 +1283,13 @@ void BookmarkBarGtk::OnDragReceived(GtkWidget* widget,
       Pickle pickle(reinterpret_cast<char*>(selection_data->data),
                     selection_data->length);
       BookmarkNodeData drag_data;
-      DCHECK(drag_data.ReadFromPickle(&pickle));
-      dnd_success = bookmark_utils::PerformBookmarkDrop(
-          browser_->profile(),
-          drag_data,
-          dest_node,
-          index) != ui::DragDropTypes::DRAG_NONE;
+      if (drag_data.ReadFromPickle(&pickle)) {
+        dnd_success = bookmark_utils::PerformBookmarkDrop(
+            browser_->profile(),
+            drag_data,
+            dest_node,
+            index) != ui::DragDropTypes::DRAG_NONE;
+      }
       break;
     }
 
