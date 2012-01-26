@@ -38,7 +38,8 @@ void VerifyAddressList(const std::vector<const char*>& ip_addresses,
   for (std::vector<const char*>::const_iterator i = ip_addresses.begin();
        i != ip_addresses.end(); ++i, ainfo = ainfo->ai_next) {
     ASSERT_NE(static_cast<addrinfo*>(NULL), ainfo);
-    EXPECT_EQ(sizeof(struct sockaddr_in), ainfo->ai_addrlen);
+    EXPECT_EQ(sizeof(struct sockaddr_in),
+              static_cast<size_t>(ainfo->ai_addrlen));
 
     const struct sockaddr* sa = ainfo->ai_addr;
     const struct sockaddr_in* sa_in = (const struct sockaddr_in*) sa;
