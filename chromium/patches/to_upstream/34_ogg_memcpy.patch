@@ -1,0 +1,12 @@
+diff -wurp -N orig/libavformat/oggdec.c ffmpeg/libavformat/oggdec.c
+--- orig/libavformat/oggdec.c   2011-07-12 20:49:56.784219402 -0700
++++ ffmpeg/libavformat/oggdec.c 2011-07-12 20:49:56.832983905 -0700
+@@ -109,6 +109,8 @@
+         avio_seek (bc, ost->pos, SEEK_SET);
+         ogg->curidx = ost->curidx;
+         ogg->nstreams = ost->nstreams;
++        ogg->streams = av_realloc (ogg->streams,
++                                   ogg->nstreams * sizeof (*ogg->streams));
+         memcpy(ogg->streams, ost->streams,
+                ost->nstreams * sizeof(*ogg->streams));
+     }

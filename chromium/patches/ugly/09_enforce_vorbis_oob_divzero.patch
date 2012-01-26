@@ -1,0 +1,36 @@
+diff -wurp -N orig/libavcodec/vorbisdec.c ffmpeg/libavcodec/vorbisdec.c
+--- orig/libavcodec/vorbisdec.c	2011-07-12 20:48:01.742931929 -0700
++++ ffmpeg/libavcodec/vorbisdec.c	2011-07-12 20:48:01.813025789 -0700
+@@ -991,6 +991,7 @@ static av_cold int vorbis_decode_init(AV
+     }
+ 
+     init_get_bits(gb, header_start[0], header_len[0]*8);
++    gb->buffer_enforcing=1;
+     hdr_type = get_bits(gb, 8);
+     if (hdr_type != 1) {
+         av_log(avccontext, AV_LOG_ERROR, "First header is not the id header.\n");
+@@ -1003,6 +1004,7 @@ static av_cold int vorbis_decode_init(AV
+     }
+ 
+     init_get_bits(gb, header_start[2], header_len[2]*8);
++    gb->buffer_enforcing=1;
+     hdr_type = get_bits(gb, 8);
+     if (hdr_type != 5) {
+         av_log(avccontext, AV_LOG_ERROR, "Third header is not the setup header.\n");
+@@ -1293,7 +1295,7 @@ static av_always_inline int vorbis_resid
+         uint16_t voffset, partition_count, j_times_ptns_to_read;
+ 
+         voffset = vr->begin;
+-        for (partition_count = 0; partition_count < ptns_to_read;) {  // SPEC        error
++        for(partition_count=0;partition_count<ptns_to_read && !(gb->buffer_exhausted && gb->index > gb->size_in_bits);) {  // SPEC        error
+             if (!pass) {
+                 unsigned inverse_class = ff_inverse[vr->classifications];
+                 for (j_times_ptns_to_read = 0, j = 0; j < ch_used; ++j) {
+@@ -1613,6 +1615,7 @@ static int vorbis_decode_frame(AVCodecCo
+     av_dlog(NULL, "packet length %d \n", buf_size);
+ 
+     init_get_bits(gb, buf, buf_size*8);
++    gb->buffer_enforcing=1;
+ 
+     len = vorbis_parse_audio_packet(vc);
+ 

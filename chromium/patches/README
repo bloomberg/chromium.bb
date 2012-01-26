@@ -1,0 +1,119 @@
+Current Status as of November 28, 2011
+
+from_upstream/
+36_theora_flush.patch
+  should permit threading of theora
+
+38_webm_cues_before_first_cluster.patch
+  acolwell: Fixes seeking for WebM files that have the CUES element before
+  the first CLUSTER instead of at the end of the file.
+
+51_vp3_coefficient_overflow.patch
+  scherkus: Check coefficient index in vp3_dequant()
+
+
+to_upstream/
+01_static_pthread_O2.patch
+  rbultje: Nothing done yet. I doubt this will go in upstream.
+  IHF: move to ugly?
+
+05_respect_flac_dirac_configure.patch
+  rbultje: Nothing done yet. I'll try to get this upstream later, but it's 
+  no functional change so lower on my priority list.
+
+11a_compile_with_disabled_features.patch  
+  Add CONFIG_* checks to make sure we don't use sipr/compression if 
+  unwanted (e.g. webm doesn't support them). 
+
+11b_mkv_buffer_overflow.patch
+  Remainder of the original patch.
+
+12_ogg_seek_to_zero.patch
+  rbultje: I've looked into this, but didn't get anywhere yet. I can 
+  reproduce the bug but the patch didn't really fix it. I'll try again.
+  IHF: The remainder of 25_ogg_index.patch has been merged into this.
+
+14_vp8_encode_options.patch
+  Nothing yet.
+
+15_webp_ffmpeg.patch
+  Nothing yet.
+
+34_ogg_memcpy.patch 
+  cevans: Fixes a buffer overrun. The sequence is: 
+  - ogg_save (2 streams)
+  - ogg_read (clears all streams and restarts -> 1 stream)
+  - ogg_restore (tries to copy 2 stream pointers into space for one)
+
+35_oggdec_duration.patch
+  scherkus: Reverts FFmpeg commit 5901cd6236d97b34fe59a47ba0fd6da8f647d1f1
+  which regressed duration calculation.
+
+37_VP8_armv6_optimizations.patch
+  ports arm vp8 assembly from libvpx to support tegra2 decoding
+
+39_VP8_fix_oob_read_writes.patch
+  Fixes a bunch of overreads and overwrites.
+
+40_MKV_fix_oob_write.patch
+  Fixes an out-of-bounds write if laces==1 in MKV demuxer.
+
+42_vp8_fix_segmentation_maps.patch
+  rbultje: Associate segmentation_map[] with reference frame rather than
+  decoding instance.
+
+43_mkv_seekahead_revalidate.patch
+  cevans: avoid caching a pointer that might move due to a realloc()
+
+44_vorbis_oob_read.patch
+  cevans: avoid the possibility of reading outside a static array of values
+
+45_mkv_fix_segmap_cache_overflow.patch
+  rbultje: fix overflow in segmentation map caching
+
+46_vp3_fix_double_free_invalid_read.patch
+  rbultje: fix corruption with corrupt input.
+
+47_vp3_fix_infloop_and_memleak.patch
+  rbultje: fix memleaks and a potential infinite loop after 46.
+
+48_vorbis_residue_buffer.patch
+  cevans: manage the writing to the residue buffer a little more tightly
+
+49_vorbis_buffer_defense.patch
+  cevans: a defensive patch; the Vorbis codec is always going off the end of
+  its output buffer. Now, this should never happen again.
+
+50_vp8_fix_frame_size_changes.patch
+  acolwell: fixes invalid reads on the segment maps when the frame dimensions 
+  change.
+
+52_vorbis_fix_floor1_vector_int_overflow.patch
+  rbultje: fix integer overflows in floor1[] vector and subsequent stack
+  overflows in inverse db table.
+
+ugly/
+07_get_bits_overrun.patch
+  Might get upstreamed as a compile-time macro (i.e., CHECK_FOR_OVERRUNS) but
+  will likely need to be rewritten.
+
+08_enforce_theora_oob.patch
+  Needs investigating.
+
+09_enforce_vorbis_oob_divzero.patch
+  Needs investigating.
+
+10_aac_oob_read.patch
+  Needs investigating.
+
+30_enforce_mp3_oob.patch
+  Needs investigating.
+
+31_remove_attribute_deprecated.patch
+  CrOS still complains about deprecated attributes. Should be resolved by 
+  changing Chromium code.
+  Rejected upstream.
+
+41_matroska_cluster_incremental.patch
+  Parse matroska clusters incrementally as opposed to all at once.
+  Not for upstreamining as it needs work to handle SSA.

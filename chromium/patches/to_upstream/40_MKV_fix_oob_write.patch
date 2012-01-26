@@ -1,0 +1,13 @@
+Index: orig/libavformat/matroskadec.c
+===================================================================
+--- orig/libavformat/matroskadec.c	(revision 105133)
++++ ffmpeg/libavformat/matroskadec.c	(working copy)
+@@ -1841,7 +1841,7 @@
+                         lace_size[n] = lace_size[n - 1] + snum;
+                         total += lace_size[n];
+                     }
+-                    lace_size[n] = size - total;
++                    lace_size[laces - 1] = size - total;
+                     break;
+                 }
+             }

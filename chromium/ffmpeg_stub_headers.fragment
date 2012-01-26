@@ -1,0 +1,12 @@
+// These are some extra includes needed in the generated stub file for defining
+// various FFmpeg types.
+
+extern "C" {
+
+#include <libavcodec/avcodec.h>
+#include <libavcodec/avfft.h>
+#include <libavformat/avformat.h>
+
+typedef int (*AVLockMgrOperation)(void**, enum AVLockOp);
+
+}

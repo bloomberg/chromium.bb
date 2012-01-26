@@ -1,0 +1,94 @@
+diff -wurp -N orig/libavcodec/avcodec.h ffmpeg/libavcodec/avcodec.h
+--- orig/libavcodec/avcodec.h	2011-07-12 20:48:43.353855365 -0700
++++ ffmpeg/libavcodec/avcodec.h	2011-07-12 20:48:43.412968592 -0700
+@@ -623,6 +623,7 @@ typedef struct RcOverride{
+ #define CODEC_FLAG2_PSY           0x00080000 ///< Use psycho visual optimizations.
+ #define CODEC_FLAG2_SSIM          0x00100000 ///< Compute SSIM during encoding, error[] values are undefined.
+ #define CODEC_FLAG2_INTRA_REFRESH 0x00200000 ///< Use periodic insertion of intra blocks instead of keyframes.
++#define CODEC_FLAG2_ALT_REF       0x00400000 ///< Allow encoder to insert alternate reference frames (VP8 only)
+ 
+ /* Unsupported options :
+  *              Syntax Arithmetic coding (SAC)
+@@ -2862,6 +2863,18 @@ typedef struct AVCodecContext {
+     int active_thread_type;
+ 
+     /**
++     * Number of token partitions.
++     * Indicates number of sub-streams in the bitstream. Used for parallelized
++     * decoding.
++     * Valid values are 1, 2, 4 & 8
++     * - encoding: Set by user.
++     * - decoding: unused
++     *
++     *  @attention VP8 specific
++     */
++    int token_partitions;
++
++    /**
+      * Set by the client if its custom get_buffer() callback can be called
+      * from another thread, which allows faster multithreaded decoding.
+      * draw_horiz_band() will be called from other threads regardless of this setting.
+diff -wurp -N orig/libavcodec/libvpxenc.c ffmpeg/libavcodec/libvpxenc.c
+--- orig/libavcodec/libvpxenc.c	2011-07-12 20:48:43.342949420 -0700
++++ ffmpeg/libavcodec/libvpxenc.c	2011-07-12 20:48:43.423129249 -0700
+@@ -256,6 +256,15 @@ static av_cold int vp8_init(AVCodecConte
+     }
+     dump_enc_cfg(avctx, &enccfg);
+ 
++    /* With altref set an additional frame at the same pts may be produced.
++       Increasing the time_base gives the library a window to place these frames
++       ensuring strictly increasing timestamps. */
++    if (avctx->flags2 & CODEC_FLAG2_ALT_REF) {
++        avctx->ticks_per_frame = 2;
++        avctx->time_base       = av_mul_q(avctx->time_base,
++                                          (AVRational){1, avctx->ticks_per_frame});
++    }
++
+     enccfg.g_w            = avctx->width;
+     enccfg.g_h            = avctx->height;
+     enccfg.g_timebase.num = avctx->time_base.num;
+@@ -338,6 +347,24 @@ static av_cold int vp8_init(AVCodecConte
+        quality. */
+    if (avctx->profile != FF_PROFILE_UNKNOWN)
+        enccfg.g_profile = avctx->profile;
++    switch (FFABS(avctx->level) / 100) {
++    case 1:
++        ctx->deadline = VPX_DL_BEST_QUALITY;
++        break;
++    case 2:
++    default:
++        ctx->deadline = VPX_DL_GOOD_QUALITY;
++        break;
++    case 3:
++        ctx->deadline = VPX_DL_REALTIME;
++        break;
++    }
++    av_log(avctx, AV_LOG_DEBUG, "Using deadline: %lu\n", ctx->deadline);
++
++    if (avctx->level != FF_LEVEL_UNKNOWN) {
++        enccfg.g_error_resilient = avctx->level < 0;
++        ctx->cpuused             = FFABS(avctx->level) % 100 - 16; //[-16,16]
++    }
+ 
+     enccfg.g_error_resilient = ctx->flags & VP8F_ERROR_RESILIENT;
+ 
+@@ -357,6 +384,7 @@ static av_cold int vp8_init(AVCodecConte
+     codecctl_int(avctx, VP8E_SET_STATIC_THRESHOLD,  avctx->mb_threshold);
+     codecctl_int(avctx, VP8E_SET_CQ_LEVEL,          (int)avctx->crf);
+     codecctl_int(avctx, VP8E_SET_ENABLEAUTOALTREF,  !!(ctx->flags & VP8F_AUTO_ALT_REF));
++    // not sure: codecctl_int(avctx, VP8E_SET_ENABLEAUTOALTREF,  !!(avctx->flags2 & CODEC_FLAG2_ALT_REF));
+     codecctl_int(avctx, VP8E_SET_ARNR_MAXFRAMES,    ctx->arnr_max_frames);
+     codecctl_int(avctx, VP8E_SET_ARNR_STRENGTH,     ctx->arnr_strength);
+     codecctl_int(avctx, VP8E_SET_ARNR_TYPE,         ctx->arnr_type);
+diff -wurp -N orig/libavcodec/options.c ffmpeg/libavcodec/options.c
+--- orig/libavcodec/options.c	2011-07-12 20:48:43.342949420 -0700
++++ ffmpeg/libavcodec/options.c	2011-07-12 20:48:43.423129249 -0700
+@@ -453,6 +453,8 @@ static const AVOption options[]={
+ {"thread_type", "select multithreading type", OFFSET(thread_type), FF_OPT_TYPE_INT, {.dbl = FF_THREAD_SLICE|FF_THREAD_FRAME }, 0, INT_MAX, V|E|D, "thread_type"},
+ {"slice", NULL, 0, FF_OPT_TYPE_CONST, {.dbl = FF_THREAD_SLICE }, INT_MIN, INT_MAX, V|E|D, "thread_type"},
+ {"frame", NULL, 0, FF_OPT_TYPE_CONST, {.dbl = FF_THREAD_FRAME }, INT_MIN, INT_MAX, V|E|D, "thread_type"},
++{"altref", "enable use of alternate reference frames (VP8/2-pass only)", 0, FF_OPT_TYPE_CONST, CODEC_FLAG2_ALT_REF, INT_MIN, INT_MAX, V|E, "flags2"},
++{"token_partitions", "Number of sub-streams in bitstream (1,2,4,8). Used for parallelized decoding.", OFFSET(token_partitions), FF_OPT_TYPE_INT, 1, 1, INT_MAX, V|E},
+ {"vbv_delay", "initial buffer fill time in periods of 27Mhz clock", 0, FF_OPT_TYPE_INT64, {.dbl = 0 }, 0, INT64_MAX},
+ {"audio_service_type", "audio service type", OFFSET(audio_service_type), FF_OPT_TYPE_INT, {.dbl = AV_AUDIO_SERVICE_TYPE_MAIN }, 0, AV_AUDIO_SERVICE_TYPE_NB-1, A|E, "audio_service_type"},
+ {"ma", "Main Audio Service", 0, FF_OPT_TYPE_CONST, {.dbl = AV_AUDIO_SERVICE_TYPE_MAIN },              INT_MIN, INT_MAX, A|E, "audio_service_type"},

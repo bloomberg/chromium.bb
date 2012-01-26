@@ -1,0 +1,50 @@
+diff -wurp -N orig/libavcodec/pthread.c patched-ffmpeg/libavcodec/pthread.c
+--- orig/libavcodec/pthread.c	2011-11-09 10:48:42.944816193 -0800
++++ patched-ffmpeg/libavcodec/pthread.c	2011-11-09 10:48:53.014862587 -0800
+@@ -485,6 +485,7 @@ static int submit_packet(PerThreadContex
+     }
+ 
+     fctx->prev_thread = p;
++    fctx->next_decoding++;
+ 
+     return 0;
+ }
+@@ -507,8 +508,6 @@ int ff_thread_decode_frame(AVCodecContex
+     err = submit_packet(p, avpkt);
+     if (err) return err;
+ 
+-    fctx->next_decoding++;
+-
+     /*
+      * If we're still receiving the initial packets, don't return a frame.
+      */
+diff -wurp -N orig/libavcodec/vp8.c patched-ffmpeg/libavcodec/vp8.c
+--- orig/libavcodec/vp8.c	2011-11-09 10:48:43.154817161 -0800
++++ patched-ffmpeg/libavcodec/vp8.c	2011-11-09 10:48:53.014862587 -0800
+@@ -50,8 +50,7 @@ static int vp8_alloc_frame(VP8Context *s
+     int ret;
+     if ((ret = ff_thread_get_buffer(s->avctx, f)) < 0)
+         return ret;
+-    if (s->num_maps_to_be_freed) {
+-        assert(!s->maps_are_invalid);
++    if (s->num_maps_to_be_freed && !s->maps_are_invalid) {
+         f->ref_index[0] = s->segmentation_maps[--s->num_maps_to_be_freed];
+     } else if (!(f->ref_index[0] = av_mallocz(s->mb_width * s->mb_height))) {
+         ff_thread_release_buffer(s->avctx, f);
+@@ -1565,13 +1564,15 @@ static int vp8_decode_frame(AVCodecConte
+     VP8Context *s = avctx->priv_data;
+     int ret, mb_x, mb_y, i, y, referenced;
+     enum AVDiscard skip_thresh;
+-    AVFrame *av_uninit(curframe), *prev_frame = s->framep[VP56_FRAME_CURRENT];
++    AVFrame *av_uninit(curframe), *prev_frame;
+ 
+     release_queued_segmaps(s, 0);
+ 
+     if ((ret = decode_frame_header(s, avpkt->data, avpkt->size)) < 0)
+         return ret;
+ 
++    prev_frame = s->framep[VP56_FRAME_CURRENT];
++
+     referenced = s->update_last || s->update_golden == VP56_FRAME_CURRENT
+                                 || s->update_altref == VP56_FRAME_CURRENT;
+ 
