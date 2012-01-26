@@ -8,6 +8,7 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/string_split.h"
+#include "chrome/browser/google/google_url_tracker.h"
 #include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -27,6 +28,7 @@
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/web_contents.h"
+#include "googleurl/src/gurl.h"
 #include "net/base/escape.h"
 #include "net/url_request/url_request.h"
 
@@ -34,14 +36,34 @@ using content::BrowserThread;
 using content::NavigationController;
 using content::WebContents;
 
+static std::string ExtractContinueUrl(const GURL& url) {
+  DCHECK(url.is_valid());
+  const std::string& spec = url.spec();
+  url_parse::Component query = url.parsed_for_possibly_invalid_spec().query;
+  url_parse::Component key;
+  url_parse::Component value;
+  while (url_parse::ExtractQueryKeyValue(spec.c_str(), &query, &key, &value)) {
+    if (key.is_nonempty() && spec.substr(key.begin, key.len) == "continue") {
+      if (value.is_nonempty())
+        return spec.substr(value.begin, value.len);
+      break;
+    }
+  }
+
+  // If no continue URL is found, redirect user to Google home page.
+  return GoogleURLTracker::GoogleURL().spec();
+}
+
 AutoLoginPrompter::AutoLoginPrompter(
     WebContents* web_contents,
     const std::string& username,
     const std::string& args,
+    const std::string& continue_url,
     bool use_normal_auto_login_infobar)
     : web_contents_(web_contents),
       username_(username),
       args_(args),
+      continue_url_(continue_url),
       use_normal_auto_login_infobar_(use_normal_auto_login_infobar){
   registrar_.Add(this, content::NOTIFICATION_LOAD_STOP,
                  content::Source<NavigationController>(
@@ -93,12 +115,13 @@ void AutoLoginPrompter::ShowInfoBarIfPossible(net::URLRequest* request,
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&AutoLoginPrompter::ShowInfoBarUIThread, account, args,
-                 child_id, route_id));
+                 request->url(), child_id, route_id));
 }
 
 // static
 void AutoLoginPrompter::ShowInfoBarUIThread(const std::string& account,
                                             const std::string& args,
+                                            const GURL& url,
                                             int child_id,
                                             int route_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -127,6 +150,7 @@ void AutoLoginPrompter::ShowInfoBarUIThread(const std::string& account,
   bool use_normal_auto_login_infobar =
       profile->GetTokenService()->AreCredentialsValid();
   const std::string& username = signin_manager->GetAuthenticatedUsername();
+  std::string continue_url;
 
   if (use_normal_auto_login_infobar) {
     if (!CommandLine::ForCurrentProcess()->
@@ -140,16 +164,17 @@ void AutoLoginPrompter::ShowInfoBarUIThread(const std::string& account,
 
     if (!profile->GetPrefs()->GetBoolean(prefs::kAutologinEnabled))
       return;
-  } else if (!profile->GetPrefs()->GetBoolean(
-        prefs::kReverseAutologinEnabled)) {
-      return;
+  } else if (profile->GetPrefs()->GetBoolean(prefs::kReverseAutologinEnabled)) {
+    continue_url = ExtractContinueUrl(url);
+  } else {
+    return;
   }
 
   // We can't add the infobar just yet, since we need to wait for the tab to
   // finish loading.  If we don't, the info bar appears and then disappears
   // immediately.  Create an AutoLoginPrompter instance to listen for the
   // relevant notifications; it will delete itself.
-  new AutoLoginPrompter(web_contents, username, args,
+  new AutoLoginPrompter(web_contents, username, args, continue_url,
                         use_normal_auto_login_infobar);
 }
 
@@ -172,7 +197,7 @@ void AutoLoginPrompter::Observe(int type,
       } else {
         delegate = new ReverseAutoLoginInfoBarDelegate(
             infobar_helper, &web_contents_->GetController(),
-            profile->GetPrefs(), args_);
+            profile->GetPrefs(), continue_url_);
       }
 
       infobar_helper->AddInfoBar(delegate);

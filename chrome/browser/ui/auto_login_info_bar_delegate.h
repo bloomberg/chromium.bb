@@ -52,7 +52,7 @@ class ReverseAutoLoginInfoBarDelegate : public ConfirmInfoBarDelegate {
       InfoBarTabHelper* owner,
       content::NavigationController* navigation_controller,
       PrefService* pref_service,
-      const std::string& args);
+      const std::string& continue_url);
   virtual ~ReverseAutoLoginInfoBarDelegate();
 
  private:
@@ -67,8 +67,8 @@ class ReverseAutoLoginInfoBarDelegate : public ConfirmInfoBarDelegate {
   content::NavigationController* navigation_controller_;
   TokenService* token_service_;
   PrefService* pref_service_;
-  std::string username_;
-  std::string args_;
+  const std::string username_;
+  const std::string continue_url_;
 
   DISALLOW_COPY_AND_ASSIGN(ReverseAutoLoginInfoBarDelegate);
 };

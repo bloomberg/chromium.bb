@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/auto_login_info_bar_delegate.h"
 
 #include "base/logging.h"
-#include "base/string_split.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -182,11 +181,12 @@ ReverseAutoLoginInfoBarDelegate::ReverseAutoLoginInfoBarDelegate(
     InfoBarTabHelper* owner,
     NavigationController* navigation_controller,
     PrefService* pref_service,
-    const std::string& args)
+    const std::string& continue_url)
     : ConfirmInfoBarDelegate(owner),
       navigation_controller_(navigation_controller),
       pref_service_(pref_service),
-      args_(args) {
+      continue_url_(continue_url) {
+  DCHECK(!continue_url.empty());
 }
 
 ReverseAutoLoginInfoBarDelegate::~ReverseAutoLoginInfoBarDelegate() {
@@ -215,35 +215,14 @@ string16 ReverseAutoLoginInfoBarDelegate::GetButtonLabel(
 }
 
 bool ReverseAutoLoginInfoBarDelegate::Accept() {
-  // The args are URL encoded, so we need to decode them before use.
-  std::string unescaped_args =
-      net::UnescapeURLComponent(args_, net::UnescapeRule::URL_SPECIAL_CHARS);
-
-  // Now extract the continue URL from the unescaped args.
-  std::vector<std::pair<std::string, std::string> > pairs;
-  if (!base::SplitStringIntoKeyValuePairs(unescaped_args, '=', '&', &pairs))
-    return true;
-
-  std::string continue_url;
-  for (size_t i = 0; i < pairs.size(); ++i) {
-    const std::pair<std::string, std::string>& kv = pairs[i];
-    if (kv.first == "continue") {
-      continue_url = net::UnescapeURLComponent(
-          kv.second, net::UnescapeRule::URL_SPECIAL_CHARS);
-      break;
-    }
-  }
-
-  if (continue_url.empty())
-    return true;
-
   // Redirect to the syncpromo so that user can connect their profile to a
   // Google account.  This will automatically stuff the profile's cookie jar
   // with credentials for the same account.  The syncpromo will eventually
   // redirect back to the continue URL, so the user ends up on the page they
   // would have landed on with the regular google login.
-  GURL sycn_promo_url = SyncPromoUI::GetSyncPromoURL(GURL(continue_url), false);
-  navigation_controller_->LoadURL(sycn_promo_url, content::Referrer(),
+  GURL sync_promo_url = SyncPromoUI::GetSyncPromoURL(GURL(continue_url_),
+                                                     false);
+  navigation_controller_->LoadURL(sync_promo_url, content::Referrer(),
                                   content::PAGE_TRANSITION_AUTO_BOOKMARK,
                                   std::string());
   return true;

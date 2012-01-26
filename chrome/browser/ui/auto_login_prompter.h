@@ -10,6 +10,8 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
+class GURL;
+
 namespace content {
 class WebContents;
 }
@@ -35,6 +37,7 @@ class AutoLoginPrompter : public content::NotificationObserver {
   AutoLoginPrompter(content::WebContents* web_contents,
                     const std::string& username,
                     const std::string& args,
+                    const std::string& continue_url,
                     bool use_normal_auto_login_infobar);
 
   virtual ~AutoLoginPrompter();
@@ -42,6 +45,7 @@ class AutoLoginPrompter : public content::NotificationObserver {
   // The portion of ShowInfoBarIfPossible() that needs to run on the UI thread.
   static void ShowInfoBarUIThread(const std::string& account,
                                   const std::string& args,
+                                  const GURL& original_url,
                                   int child_id,
                                   int route_id);
 
@@ -53,6 +57,7 @@ class AutoLoginPrompter : public content::NotificationObserver {
   content::WebContents* web_contents_;
   const std::string username_;
   const std::string args_;
+  const std::string continue_url_;
   content::NotificationRegistrar registrar_;
 
   // There are two code flows for auto-login.  When the profile is connected
