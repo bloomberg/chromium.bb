@@ -184,16 +184,10 @@ weston_surface_create(struct weston_compositor *compositor,
 	wl_list_init(&surface->link);
 	wl_list_init(&surface->buffer_link);
 
-	glGenTextures(1, &surface->texture);
-	glBindTexture(GL_TEXTURE_2D, surface->texture);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
 	surface->surface.resource.client = NULL;
 
 	surface->compositor = compositor;
 	surface->visual = WESTON_NONE_VISUAL;
-	surface->shader = &compositor->texture_shader;
 	surface->image = EGL_NO_IMAGE_KHR;
 	surface->x = x;
 	surface->y = y;
@@ -214,6 +208,22 @@ weston_surface_create(struct weston_compositor *compositor,
 	surface->transform = NULL;
 
 	return surface;
+}
+
+static void
+weston_surface_set_color(struct weston_surface *surface,
+		 GLfloat red, GLfloat green, GLfloat blue, GLfloat alpha)
+{
+	if (alpha == 1)
+		surface->visual = WESTON_RGB_VISUAL;
+	else
+		surface->visual = WESTON_ARGB_VISUAL;
+
+	surface->color[0] = red;
+	surface->color[1] = green;
+	surface->color[2] = blue;
+	surface->color[3] = alpha;
+	surface->shader = &surface->compositor->solid_shader;
 }
 
 WL_EXPORT void
@@ -390,7 +400,17 @@ weston_buffer_attach(struct wl_buffer *buffer, struct wl_surface *surface)
 	struct weston_compositor *ec = es->compositor;
 	struct wl_list *surfaces_attached_to;
 
-	glBindTexture(GL_TEXTURE_2D, es->texture);
+	if (!es->texture) {
+		glGenTextures(1, &es->texture);
+		glBindTexture(GL_TEXTURE_2D, es->texture);
+		glTexParameteri(GL_TEXTURE_2D,
+				GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D,
+				GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		es->shader = &ec->texture_shader;
+	} else {
+		glBindTexture(GL_TEXTURE_2D, es->texture);
+	}
 
 	if (wl_buffer_is_shm(buffer)) {
 		es->pitch = wl_shm_buffer_get_stride(buffer) / 4;
