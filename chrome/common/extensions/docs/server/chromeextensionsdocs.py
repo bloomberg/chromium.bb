@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -79,7 +79,11 @@ class MainPage(webapp.RequestHandler):
         # Files inside of samples should be rendered with content-type
         # text/plain so that their source is visible when linked to. The only
         # types we should serve as-is are images.
-        if (path.startswith("/examples") and
+        if ((path.startswith("/examples") or
+             path.startswith("/stable/examples") or
+             path.startswith("/beta/examples") or
+             path.startswith("/dev/examples") or
+             path.startswith("/trunk/examples")) and
             not (result.headers['content-type'].startswith('image/') or
                  result.headers['Content-Type'].startswith('image/'))):
           result.headers['content-type'] = 'text/plain'
