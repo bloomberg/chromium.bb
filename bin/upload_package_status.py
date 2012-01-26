@@ -9,8 +9,6 @@ import optparse
 import os
 import sys
 
-import gdata.spreadsheet.service
-
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
 import chromite.lib.gdata_lib as gdata_lib
 import chromite.lib.table as table
@@ -25,81 +23,67 @@ DEPS_WS_NAME = 'Dependencies'
 
 oper = operation.Operation('upload_package_status')
 
+
 class Uploader(object):
   """Uploads portage package status data from csv file to Google spreadsheet."""
 
-  __slots__ = ['_creds',      # gdata_lib.Creds object
-               '_gd_client',  # gdata.spreadsheet.service.SpreadsheetsService
-               '_ss_key',     # Google Doc spreadsheet key (string)
-               '_table',      # table.Table
-               '_ws_key',     # Worksheet key (string)
-               '_ws_name',    # Worksheet name (string)
-               ]
+  __slots__ = ('_creds',          # gdata_lib.Creds object
+               '_scomm',          # gdata_lib.SpreadsheetComm object
+               '_ss_row_cache',   # dict with key=pkg, val=SpreadsheetRow obj
+               '_csv_table',      # table.Table of csv rows
+               )
 
   ID_COL = utable.UpgradeTable.COL_PACKAGE
+  SS_ID_COL = gdata_lib.PrepColNameForSS(ID_COL)
   SOURCE = "Uploaded from CSV"
 
   def __init__(self, creds, table_obj):
     self._creds = creds
-    self._table = table_obj
-    self._gd_client = None
-    self._ss_key = None
-    self._ws_key = None
-    self._ws_name = None
-
-  def _GetWorksheetKey(self, ss_key, ws_name):
-    """Get the worksheet key with name |ws_name| in spreadsheet |ss_key|."""
-    feed = self._gd_client.GetWorksheetsFeed(ss_key)
-    # The worksheet key is the last component in the URL (after last '/')
-    for entry in feed.entry:
-      if ws_name == entry.title.text:
-        return entry.id.text.split('/')[-1]
-
-    oper.Die("Unable to find worksheet '%s' in spreadsheet '%s'" %
-             (ws_name, ss_key))
-
-  def LoginDocsWithEmailPassword(self):
-    """Set up and connect the Google Doc client using email/password."""
-    gd_client = gdata_lib.RetrySpreadsheetsService()
-
-    gd_client.source = self.SOURCE
-    gd_client.email = self._creds.user
-    gd_client.password = self._creds.password
-    gd_client.ProgrammaticLogin()
-    self._gd_client = gd_client
+    self._csv_table = table_obj
+    self._scomm = None
+    self._ss_row_cache = None
 
   def _GetSSRowForPackage(self, package):
-    """Find the spreadsheet row object corresponding to Package=|package|."""
-    query = gdata.spreadsheet.service.ListQuery()
-    query._SetSpreadsheetQuery('package = "%s"' % package)
-    feed = self._gd_client.GetListFeed(self._ss_key, self._ws_key, query=query)
-    if len(feed.entry) == 1:
-      return feed.entry[0]
+    """Return the SpreadsheetRow corresponding to Package=|package|."""
+    if package in self._ss_row_cache:
+      row = self._ss_row_cache[package]
 
-    if len(feed.entry) > 1:
-      raise LookupError("More than one row in spreadsheet with Package=%s" %
-                        package)
+      if isinstance(row, list):
+        raise LookupError("More than one row in spreadsheet with Package=%s" %
+                          package)
 
-    if len(feed.entry) == 0:
-      return None
+      return row
+
+    return None
 
   def Upload(self, ss_key, ws_name):
-    """Upload |_table| to the given Google Spreadsheet.
+    """Upload |_csv_table| to the given Google Spreadsheet.
 
     The spreadsheet is identified the spreadsheet key |ss_key|.
     The worksheet within that spreadsheet is identified by the
     worksheet name |ws_name|.
     """
-    self._ss_key = ss_key
-    self._ws_name = ws_name
-    self._ws_key = self._GetWorksheetKey(ss_key, ws_name)
+    if self._scomm:
+      self._scomm.SetCurrentWorksheet(ws_name)
+    else:
+      self._scomm = gdata_lib.SpreadsheetComm()
+      self._scomm.Connect(self._creds, ss_key, ws_name,
+                          source='Upload Package Status')
+
+    oper.Notice('Caching rows for worksheet %r.' % self._scomm.ws_name)
+    self._ss_row_cache = self._scomm.GetRowCacheByCol(self.SS_ID_COL)
+
+    oper.Notice("Uploading changes to worksheet '%s' of spreadsheet '%s' now." %
+                (self._scomm.ws_name, self._scomm.ss_key))
 
     oper.Info("Details by package: S=Same, C=Changed, A=Added, D=Deleted")
     rows_unchanged, rows_updated, rows_inserted = self._UploadChangedRows()
     rows_deleted, rows_with_owner_deleted = self._DeleteOldRows()
 
-    oper.Notice("Final row stats: %d changed, %d added, %d deleted, %d same." %
-                (rows_updated, rows_inserted, rows_deleted, rows_unchanged))
+    oper.Notice("Final row stats for worksheet '%s'"
+                ": %d changed, %d added, %d deleted, %d same." %
+                (self._scomm.ws_name, rows_updated, rows_inserted,
+                 rows_deleted, rows_unchanged))
     if rows_with_owner_deleted:
       oper.Warning("%d rows with owner entry deleted, see above warnings." %
                    rows_with_owner_deleted)
@@ -108,45 +92,44 @@ class Uploader(object):
 
   def _UploadChangedRows(self):
     """Upload all rows in table that need to be changed in spreadsheet."""
-    oper.Notice("Uploading to worksheet '%s' of spreadsheet '%s' now." %
-                (self._ws_name, self._ss_key))
-
     rows_unchanged, rows_updated, rows_inserted = (0, 0, 0)
 
     # Go over all rows in csv table.  Identify existing row by the 'Package'
     # column.  Either update existing row or create new one.
-    for csv_row in self._table:
-      csv_package = csv_row[self.ID_COL]
-      ss_row = self._GetSSRowForPackage(csv_package)
-
+    for csv_row in self._csv_table:
       # Seed new row values from csv_row values, with column translation.
       new_row = dict((gdata_lib.PrepColNameForSS(key),
                       csv_row[key]) for key in csv_row)
 
+      # Retrieve row values already in spreadsheet, along with row index.
+      csv_package = csv_row[self.ID_COL]
+      ss_row = self._GetSSRowForPackage(csv_package)
+
       if ss_row:
-        changed = []
+        changed = [] # Gather changes for log message.
 
-        # For columns that are in spreadsheet but not in csv, grab values
-        # from spreadsheet so they are not overwritten by UpdateRow.
-        for col in ss_row.custom:
-          ss_val = gdata_lib.ScrubValFromSS(ss_row.custom[col].text)
-          if col not in new_row:
-            new_row[col] = ss_val
-          elif (ss_val or new_row[col]) and ss_val != new_row[col]:
-            changed.append("%s='%s'->'%s'" % (col, ss_val, new_row[col]))
-          elif ss_row.custom[col].text != gdata_lib.PrepValForSS(ss_val):
-            changed.append("%s=str'%s'" % (col, new_row[col]))
+        # Check each key/value in new_row to see if it is different from what
+        # is already in spreadsheet (ss_row).  Keep only differences to get
+        # the row delta.
+        row_delta = {}
+        for col in new_row:
+          if col in ss_row:
+            ss_val = ss_row[col]
+            new_val = new_row[col]
+            if (ss_val or new_val) and ss_val != new_val:
+              changed.append("%s='%s'->'%s'" % (col, ss_val, new_val))
+              row_delta[col] = new_val
 
-        if changed:
-          self._gd_client.UpdateRow(ss_row, gdata_lib.PrepRowForSS(new_row))
+        if row_delta:
+          self._scomm.UpdateRowCellByCell(ss_row.ss_row_num,
+                                          gdata_lib.PrepRowForSS(row_delta))
           rows_updated += 1
           oper.Info("C %-30s: %s" % (csv_package, ', '.join(changed)))
         else:
           rows_unchanged += 1
           oper.Info("S %-30s:" % csv_package)
       else:
-        self._gd_client.InsertRow(gdata_lib.PrepRowForSS(new_row),
-                                  self._ss_key, self._ws_key)
+        self._scomm.InsertRow(gdata_lib.PrepRowForSS(new_row))
         rows_inserted += 1
         row_descr_list = []
         for col in sorted(new_row.keys()):
@@ -158,32 +141,31 @@ class Uploader(object):
 
   def _DeleteOldRows(self):
     """Delete all rows from spreadsheet that not found in table."""
-    oper.Notice("Checking for rows in spreadsheet that should be deleted now.")
+    oper.Notice("Checking for rows in worksheet that should be deleted now.")
 
     rows_deleted, rows_with_owner_deleted = (0, 0)
 
     # Also need to delete rows in spreadsheet that are not in csv table.
-    list_feed = self._gd_client.GetListFeed(self._ss_key, self._ws_key)
-    for ss_row in list_feed.entry:
-      ss_id_col = gdata_lib.PrepColNameForSS(self.ID_COL)
-      ss_package = gdata_lib.ScrubValFromSS(ss_row.custom[ss_id_col].text)
+    ss_rows = self._scomm.GetRows()
+    for ss_row in ss_rows:
+      ss_package = gdata_lib.ScrubValFromSS(ss_row[self.SS_ID_COL])
 
       # See whether this row is in csv table.
-      csv_rows = self._table.GetRowsByValue({ self.ID_COL: ss_package })
+      csv_rows = self._csv_table.GetRowsByValue({ self.ID_COL: ss_package })
       if not csv_rows:
         # Row needs to be deleted from spreadsheet.
         owner_val = None
         owner_notes_val = None
         row_descr_list = []
-        for col in sorted(ss_row.custom.keys()):
+        for col in sorted(ss_row.keys()):
           if col == 'owner':
-            owner_val = ss_row.custom[col].text
+            owner_val = ss_row[col]
           if col == 'ownernotes':
-            owner_notes_val = ss_row.custom[col].text
+            owner_notes_val = ss_row[col]
 
           # Don't include ID_COL value in description, it is in prefix already.
-          if col != gdata_lib.PrepColNameForSS(self.ID_COL):
-            val = ss_row.custom[col].text
+          if col != self.SS_ID_COL:
+            val = ss_row[col]
             row_descr_list.append("%s='%s'" % (col, val))
 
         oper.Info("D %-30s: %s" % (ss_package, ', '.join(row_descr_list)))
@@ -193,16 +175,18 @@ class Uploader(object):
                       "  %-30s: Owner=%s, Owner Notes=%s" %
                       (ss_package, owner_val, owner_notes_val))
 
-        self._gd_client.DeleteRow(ss_row)
+        self._scomm.DeleteRow(ss_row.ss_row_obj)
         rows_deleted += 1
 
     return (rows_deleted, rows_with_owner_deleted)
+
 
 def LoadTable(table_file):
   """Load csv |table_file| into a table.  Return table."""
   oper.Notice("Loading csv table from '%s'." % (table_file))
   csv_table = table.Table.LoadFromCSV(table_file)
   return csv_table
+
 
 def main():
   """Main function."""
@@ -266,7 +250,6 @@ def main():
 
   # Prepare the Google Doc client for uploading.
   uploader = Uploader(creds, csv_table)
-  uploader.LoginDocsWithEmailPassword()
 
   ss_key = options.ss_key
   ws_names = [PKGS_WS_NAME, DEPS_WS_NAME]
@@ -283,6 +266,7 @@ def main():
   # credentials out to that location.
   if options.email and options.password and options.cred_file:
     creds.StoreCreds(options.cred_file)
+
 
 if __name__ == '__main__':
   main()

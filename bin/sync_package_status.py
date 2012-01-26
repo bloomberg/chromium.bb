@@ -186,6 +186,7 @@ class TrackerComm(object):
                                 comment=comment)
     return issue_id
 
+# TODO(mtennant): Remove this class;  Use refactored version in gdata_lib.
 class SpreadsheetComm(object):
   """Class to manage communication with one Google Spreadsheet worksheet."""
 

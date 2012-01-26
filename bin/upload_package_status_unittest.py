@@ -11,7 +11,6 @@ import re
 import sys
 import unittest
 
-import gdata.spreadsheet.service as gdata_ss
 import mox
 
 import chromite.lib.cros_test_lib as test_lib
@@ -22,15 +21,18 @@ import upload_package_status as ups
 
 # pylint: disable=W0212,R0904,E1120,E1101
 
+
 def _WriteCredsFile(tmpfile_path, email, password):
   with open(tmpfile_path, 'w') as tmpfile:
     tmpfile.write(email + '\n')
     tmpfile.write(password + '\n')
 
+
 class SSEntry(object):
   """Class to simulate one spreadsheet entry."""
   def __init__(self, text):
     self.text = text
+
 
 class SSRow(object):
   """Class for simulating spreadsheet row."""
@@ -46,12 +48,14 @@ class SSRow(object):
       ss_val = gdata_lib.PrepValForSS(val)
       self.custom[ss_col] = SSEntry(ss_val)
 
+
 class SSFeed(object):
   """Class for simulating spreadsheet list feed."""
   def __init__(self, rows, cols=None):
     self.entry = []
     for row in rows:
       self.entry.append(SSRow(row, cols))
+
 
 class UploaderTest(test_lib.MoxTestCase):
   """Test the functionality of upload_package_status.Uploader class."""
@@ -64,6 +68,16 @@ class UploaderTest(test_lib.MoxTestCase):
   COL_STABLE_UP = 'Stable Upstream Version'
   COL_LATEST_UP = 'Latest Upstream Version'
   COL_TARGET = 'Chrome OS Root Target'
+
+  SS_COL_PKG = gdata_lib.PrepColNameForSS(COL_PKG)
+  SS_COL_SLOT = gdata_lib.PrepColNameForSS(COL_SLOT)
+  SS_COL_OVERLAY = gdata_lib.PrepColNameForSS(COL_OVERLAY)
+  SS_COL_STATUS = gdata_lib.PrepColNameForSS(COL_STATUS)
+  SS_COL_VER = gdata_lib.PrepColNameForSS(COL_VER)
+  SS_COL_STABLE_UP = gdata_lib.PrepColNameForSS(COL_STABLE_UP)
+  SS_COL_LATEST_UP = gdata_lib.PrepColNameForSS(COL_LATEST_UP)
+  SS_COL_TARGET = gdata_lib.PrepColNameForSS(COL_TARGET)
+
   COLS = [COL_PKG,
           COL_SLOT,
           COL_OVERLAY,
@@ -102,13 +116,17 @@ class UploaderTest(test_lib.MoxTestCase):
           COL_TARGET: 'chromeos-test',
           }
 
+  SS_ROW0 = dict([(gdata_lib.PrepColNameForSS(c), v) for c, v in ROW0.items()])
+  SS_ROW1 = dict([(gdata_lib.PrepColNameForSS(c), v) for c, v in ROW1.items()])
+  SS_ROW2 = dict([(gdata_lib.PrepColNameForSS(c), v) for c, v in ROW2.items()])
+
   EMAIL = 'knights@ni.com'
   PASSWORD = 'the'
 
   def setUp(self):
     mox.MoxTestBase.setUp(self)
 
-  def _MockUploader(self, table=None, gd_client=None):
+  def _MockUploader(self, table=None):
     """Set up a mocked Uploader object."""
     uploader = self.mox.CreateMock(ups.Uploader)
 
@@ -119,23 +137,37 @@ class UploaderTest(test_lib.MoxTestCase):
     for slot in ups.Uploader.__slots__:
       uploader.__setattr__(slot, None)
 
-    uploader._table = table
-    uploader._gd_client = gd_client
-    if gd_client:
-      uploader._docs_token = gd_client.token
+    uploader._csv_table = table
+    uploader._scomm = self.mox.CreateMock(gdata_lib.SpreadsheetComm)
+    uploader._creds = test_lib.EasyAttr(user=self.EMAIL, password=self.PASSWORD)
+    uploader._ss_row_cache = self._CreateRowCache(table)
 
     return uploader
 
-  def _MockGdClient(self, email=None, password=None):
-    """Set up mocked gd_client object."""
-    gd_client = self.mox.CreateMock(gdata_ss.SpreadsheetsService)
+  def _CreateRowCache(self, table):
+    """Recreate the expected row cache (by pkg) from |table|."""
+    if not table:
+      return None
 
-    gd_client.source = "Some Source"
-    gd_client.email = email
-    gd_client.password = password
-    gd_client.token = "Some Token"
+    row_cache = {}
+    for rowIx, row in enumerate(table):
+      pkg = row[self.COL_PKG]
 
-    return gd_client
+      # Translate column names now.
+      ss_row_dict = {}
+      for col in row:
+        ss_row_dict[gdata_lib.PrepColNameForSS(col)] = row[col]
+
+      ss_row = gdata_lib.SpreadsheetRow('OrigRow%d' % (rowIx + 2),
+                                        rowIx + 2, ss_row_dict)
+      entry = row_cache.get(pkg)
+      if not entry:
+        row_cache[pkg] = ss_row
+      elif type(entry) == list:
+        row_cache[pkg] = entry + [ss_row]
+      else:
+        row_cache[pkg] = [entry, ss_row]
+    return row_cache
 
   def _CreateDefaultTable(self):
     return self._CreateTableWithRows(self.COLS,
@@ -158,61 +190,68 @@ class UploaderTest(test_lib.MoxTestCase):
     tablelib.Table.LoadFromCSV(csv).AndReturn('loaded_table')
     self.mox.ReplayAll()
 
-    # Verify
+    # Verification steps.
     with self.OutputCapturer():
       loaded_table = ups.LoadTable(csv)
       self.assertEquals(loaded_table, 'loaded_table')
 
-  def testLoginDocsWithEmailPassword(self):
-    mocked_uploader = self._MockUploader()
-    creds = test_lib.EasyAttr(user=self.EMAIL, password=self.PASSWORD)
-    mocked_uploader._creds = creds
-
-    self.mox.StubOutWithMock(gdata_ss.SpreadsheetsService,
-                             'ProgrammaticLogin')
-
-    # Replay script
-    gdata_ss.SpreadsheetsService.ProgrammaticLogin()
-    self.mox.ReplayAll()
-
-    # Verify
-    ups.Uploader.LoginDocsWithEmailPassword(mocked_uploader)
-    self.assertEquals(mocked_uploader._gd_client.email, self.EMAIL)
-    self.assertEquals(mocked_uploader._gd_client.password, self.PASSWORD)
-
   def testGetSSRowForPackage(self):
-    mocked_gd_client = self._MockGdClient()
-    mocked_uploader = self._MockUploader(gd_client=mocked_gd_client)
-    mocked_uploader._ss_key = 'Some ss_key'
-    mocked_uploader._ws_key = 'Some ws_key'
-    package = 'Some Package'
+    mocked_uploader = self._MockUploader()
 
-    # The only thing that matters is that only one row is in feed (array size 1)
-    feed = SSFeed([{'Some Col': 'Some Val'}])
-
-    self.mox.StubOutWithMock(gdata_ss.SpreadsheetsService, 'GetListFeed')
-
-    def Verifier(query):
-      # Check instance type and contents of query object.
-      if not isinstance(query, gdata_ss.ListQuery):
-        return False
-      return query['sq'] == 'package = "%s"' % package
-    mocked_gd_client.GetListFeed('Some ss_key', 'Some ws_key',
-                                 query=mox.Func(Verifier)).AndReturn(feed)
+    # No replay script.
     self.mox.ReplayAll()
 
-    # Verify
-    ups.Uploader._GetSSRowForPackage(mocked_uploader, package)
+    # Verification steps.
+    result = ups.Uploader._GetSSRowForPackage(mocked_uploader,
+                                              self.ROW0[self.COL_PKG])
+    self.assertEquals(result, self.SS_ROW0)
+    self.assertEquals(2, result.ss_row_num)
+    result = ups.Uploader._GetSSRowForPackage(mocked_uploader,
+                                              self.ROW1[self.COL_PKG])
+    self.assertEquals(result, self.SS_ROW1)
+    self.assertEquals(3, result.ss_row_num)
+    result = ups.Uploader._GetSSRowForPackage(mocked_uploader,
+                                              self.ROW2[self.COL_PKG])
+    self.assertEquals(result, None)
+
     self.mox.VerifyAll()
 
-  def testUpload(self):
+  def testUploadFirstWorksheet(self):
     mocked_uploader = self._MockUploader()
+
+    # Clear ._scomm attribute to simulate uploading first worksheet.
+    mocked_scomm = mocked_uploader._scomm
+    mocked_uploader._scomm = None
+
+    self.mox.StubOutWithMock(gdata_lib.SpreadsheetComm, '__new__')
+
     ss_key = 'Some ss_key'
     ws_name = 'Some ws_name'
-    ws_key = 'Some ws_key'
 
     # Replay script
-    mocked_uploader._GetWorksheetKey(ss_key, ws_name).AndReturn(ws_key)
+    gdata_lib.SpreadsheetComm.__new__(gdata_lib.SpreadsheetComm
+                                      ).AndReturn(mocked_scomm)
+    mocked_scomm.Connect(mocked_uploader._creds, ss_key, ws_name,
+                         source='Upload Package Status')
+    mocked_scomm.GetRowCacheByCol(self.SS_COL_PKG).AndReturn('RowCache')
+    mocked_uploader._UploadChangedRows().AndReturn(tuple([0, 1, 2]))
+    mocked_uploader._DeleteOldRows().AndReturn(tuple([3, 4]))
+    self.mox.ReplayAll()
+
+    # Verify
+    with self.OutputCapturer():
+      ups.Uploader.Upload(mocked_uploader, ss_key, ws_name)
+      self.mox.VerifyAll()
+
+  def testUploadSecondWorksheet(self):
+    mocked_uploader = self._MockUploader()
+
+    ss_key = 'Some ss_key'
+    ws_name = 'Some ws_name'
+
+    # Replay script
+    mocked_uploader._scomm.SetCurrentWorksheet(ws_name)
+    mocked_uploader._scomm.GetRowCacheByCol(self.SS_COL_PKG).AndReturn('RCache')
     mocked_uploader._UploadChangedRows().AndReturn(tuple([0, 1, 2]))
     mocked_uploader._DeleteOldRows().AndReturn(tuple([3, 4]))
     self.mox.ReplayAll()
@@ -223,70 +262,90 @@ class UploaderTest(test_lib.MoxTestCase):
       self.mox.VerifyAll()
 
   def testUploadChangedRows(self):
-    mocked_gd_client = self._MockGdClient()
-    mocked_uploader = self._MockUploader(gd_client=mocked_gd_client)
-    mocked_uploader._ss_key = ss_key = 'Some ss_key'
-    mocked_uploader._ws_key = ws_key = 'Some ws_key'
+    table = self._CreateTableWithRows(self.COLS,
+                                      [self.ROW0, self.ROW1, self.ROW2])
+    mocked_uploader = self._MockUploader(table=table)
 
-    def RowVerifier(ss_row, golden_row):
-      for col in golden_row:
-        ss_col = gdata_lib.PrepColNameForSS(col)
-        golden_ss_val = gdata_lib.PrepValForSS(golden_row[col])
-        if golden_ss_val != ss_row[ss_col]:
+    def RowVerifier(row_delta, golden_col_set, golden_row):
+      if golden_col_set != set(row_delta.keys()):
+        return False
+
+      for col in row_delta:
+        val = row_delta[col]
+        if val != golden_row[col]:
           return False
-      return True
-    row1_verifier = lambda row : RowVerifier(row, self.ROW1)
 
-    # Pretend first row does not exist already in online spreadsheet.
+      return True
+
+    # First Row.
+    # Pretend first row does not exist already in online spreadsheet
+    # by returning (None, None) from _GetSSRowForPackage.
+    #
     row0_pkg = self.ROW0[self.COL_PKG]
     mocked_uploader._GetSSRowForPackage(row0_pkg).AndReturn(None)
-    mocked_gd_client.InsertRow(mox.IgnoreArg(), ss_key, ws_key)
-    # Check for output indicating an added line (starts with A).
+    mocked_uploader._scomm.InsertRow(mox.IgnoreArg())
 
-    # Pretend second row does already exist in online spreadsheet.
+    # Second Row.
+    # Pretend second row does already exist in online spreadsheet, and
+    # pretend that it has a different value that needs to be changed
+    # by an upload.
     row1_pkg = self.ROW1[self.COL_PKG]
-    orig_row = dict(self.ROW1)
-    orig_row[self.COL_VER] = '1.2.3' # Give it something to change.
-    ss_row = SSRow(orig_row)
-    mocked_uploader._GetSSRowForPackage(row1_pkg).AndReturn(ss_row)
-    # We expect ROW1 to be changed.
-    mocked_gd_client.UpdateRow(mox.IgnoreArg(), mox.Func(row1_verifier))
-    # Check for output indicating a changed line (starts with C).
+    row1_reverse_delta = { self.SS_COL_VER: '1.2.3' }
+    ss_row1 = dict(self.SS_ROW1)
+    for col in row1_reverse_delta:
+      ss_row1[col] = row1_reverse_delta[col]
+    ss_row1 = gdata_lib.SpreadsheetRow('OrigRow1', 3, ss_row1)
+    mocked_uploader._GetSSRowForPackage(row1_pkg).AndReturn(ss_row1)
+    # Prepare verfication for row.
+    g_col_set1 = set(row1_reverse_delta.keys())
+    g_row1 = gdata_lib.PrepRowForSS(self.SS_ROW1)
+    row1_verifier = lambda rdelta : RowVerifier(rdelta, g_col_set1, g_row1)
+    mocked_uploader._scomm.UpdateRowCellByCell(3, mox.Func(row1_verifier))
+
+    # Third Row.
+    # Pretend third row does already exist in online spreadsheet, and
+    # pretend that several values need to be changed by an upload.
+    row2_pkg = self.ROW2[self.COL_PKG]
+    row2_reverse_delta = { self.SS_COL_STATUS: 'needs upgrade',
+                           self.SS_COL_VER: '0.5',
+                           self.SS_COL_TARGET: 'chromeos-foo',
+                           }
+    ss_row2 = dict(self.SS_ROW2)
+    for col in row2_reverse_delta:
+      ss_row2[col] = row2_reverse_delta[col]
+    ss_row2 = gdata_lib.SpreadsheetRow('OrigRow2', 4, ss_row2)
+    mocked_uploader._GetSSRowForPackage(row2_pkg).AndReturn(ss_row2)
+    # Prepare verification for row.
+    g_col_set2 = set(row2_reverse_delta.keys())
+    g_row2 = gdata_lib.PrepRowForSS(self.SS_ROW2)
+    row2_verifier = lambda rdelta : RowVerifier(rdelta, g_col_set2, g_row2)
+    mocked_uploader._scomm.UpdateRowCellByCell(4, mox.Func(row2_verifier))
 
     self.mox.ReplayAll()
 
     # Verify
     with self.OutputCapturer():
       ups.Uploader._UploadChangedRows(mocked_uploader)
-      self.mox.VerifyAll()
+    self.mox.VerifyAll()
 
   def testDeleteOldRows(self):
-    mocked_gd_client = self._MockGdClient()
-    mocked_uploader = self._MockUploader(gd_client=mocked_gd_client)
-    mocked_uploader._ss_key = ss_key = 'Some ss_key'
-    mocked_uploader._ws_key = ws_key = 'Some ws_key'
+    mocked_uploader = self._MockUploader()
 
-    def SSRowVerifier(ss_row, golden_row):
-      for col in golden_row:
-        ss_col = gdata_lib.PrepColNameForSS(col)
-        golden_ss_val = gdata_lib.PrepValForSS(golden_row[col])
-        ss_val = ss_row.custom[ss_col].text
-        if golden_ss_val != ss_val:
-          return False
-      return True
-    row2_verifier = lambda ss_row : SSRowVerifier(ss_row, self.ROW2)
+    # Pretend spreadsheet has 2 rows, one in table and one not.
+    ss_row1 = gdata_lib.SpreadsheetRow('OrigRow1', 2, self.SS_ROW1)
+    ss_row2 = gdata_lib.SpreadsheetRow('OrigRow2', 3, self.SS_ROW2)
+    ss_rows = (ss_row1, ss_row2)
 
-    # Prepare spreadsheet feed with 2 rows, one in table and one not.
-    feed = SSFeed([self.ROW1, self.ROW2], cols=self.COLS)
-    mocked_gd_client.GetListFeed(ss_key, ws_key).AndReturn(feed)
+    mocked_uploader._scomm.GetRows().AndReturn(ss_rows)
     # We expect ROW2 in spreadsheet to be deleted.
-    mocked_gd_client.DeleteRow(mox.Func(row2_verifier))
+    mocked_uploader._scomm.DeleteRow('OrigRow2')
     self.mox.ReplayAll()
 
     # Verify
     with self.OutputCapturer():
       ups.Uploader._DeleteOldRows(mocked_uploader)
-      self.mox.VerifyAll()
+    self.mox.VerifyAll()
+
 
 class MainTest(test_lib.MoxTestCase):
   """Test argument handling at the main method level."""
@@ -336,15 +395,13 @@ class MainTest(test_lib.MoxTestCase):
 
     self.mox.StubOutWithMock(gdata_lib.Creds, '__new__')
     self.mox.StubOutWithMock(ups, 'LoadTable')
-    self.mox.StubOutWithMock(ups.Uploader, 'LoginDocsWithEmailPassword')
-    self.mox.StubOutWithMock(ups.Uploader, 'Upload')
     self.mox.StubOutWithMock(mps, 'FinalizeTable')
+    self.mox.StubOutWithMock(ups.Uploader, 'Upload')
 
     gdata_lib.Creds.__new__(gdata_lib.Creds, cred_file=None,
                             user=email, password=password).AndReturn('Creds')
     ups.LoadTable(csv).AndReturn('csv_table')
     mps.FinalizeTable('csv_table')
-    ups.Uploader.LoginDocsWithEmailPassword()
     ups.Uploader.Upload(mox.IgnoreArg(), ws_name='Packages')
     ups.Uploader.Upload(mox.IgnoreArg(), ws_name='Dependencies')
     self.mox.ReplayAll()
@@ -367,15 +424,13 @@ class MainTest(test_lib.MoxTestCase):
 
     self.mox.StubOutWithMock(gdata_lib.Creds, '__new__')
     self.mox.StubOutWithMock(ups, 'LoadTable')
-    self.mox.StubOutWithMock(ups.Uploader, 'LoginDocsWithEmailPassword')
-    self.mox.StubOutWithMock(ups.Uploader, 'Upload')
     self.mox.StubOutWithMock(mps, 'FinalizeTable')
+    self.mox.StubOutWithMock(ups.Uploader, 'Upload')
 
     gdata_lib.Creds.__new__(gdata_lib.Creds, cred_file=creds_file,
                             user=None, password=None).AndReturn('Creds')
     ups.LoadTable(csv).AndReturn('csv_table')
     mps.FinalizeTable('csv_table')
-    ups.Uploader.LoginDocsWithEmailPassword()
     ups.Uploader.Upload(mox.IgnoreArg(), ws_name=ups.PKGS_WS_NAME)
     ups.Uploader.Upload(mox.IgnoreArg(), ws_name=ups.DEPS_WS_NAME)
     self.mox.ReplayAll()
@@ -384,6 +439,7 @@ class MainTest(test_lib.MoxTestCase):
 
     ups.main()
     self.mox.VerifyAll()
+
 
 if __name__ == '__main__':
   unittest.main()

@@ -16,7 +16,8 @@ import mox
 import cros_test_lib as test_lib
 import gdata_lib
 
-# pylint: disable=W0201,E1101,R0904
+# pylint: disable=W0201,W0212,E1101,R0904
+
 
 class GdataLibTest(test_lib.TestCase):
 
@@ -89,6 +90,7 @@ class GdataLibTest(test_lib.TestCase):
     for val in tests:
       expected = tests[val]
       self.assertEquals(expected, gdata_lib.ScrubValFromSS(val))
+
 
 class CredsTest(test_lib.MoxTestCase):
 
@@ -167,6 +169,463 @@ class CredsTest(test_lib.MoxTestCase):
     self.mox.VerifyAll()
     self.assertEquals(self.USER, mocked_creds.user)
     self.assertEquals(self.PASSWORD, mocked_creds.password)
+
+
+class SpreadsheetRowTest(test_lib.TestCase):
+
+  SS_ROW_OBJ = 'SSRowObj'
+  SS_ROW_NUM = 5
+
+  def testEmpty(self):
+    row = gdata_lib.SpreadsheetRow(self.SS_ROW_OBJ, self.SS_ROW_NUM)
+
+    self.assertEquals(0, len(row))
+    self.assertEquals(self.SS_ROW_OBJ, row.ss_row_obj)
+    self.assertEquals(self.SS_ROW_NUM, row.ss_row_num)
+
+    self.assertRaises(TypeError, row, '__setitem__', 'abc', 'xyz')
+    self.assertEquals(0, len(row))
+    self.assertFalse('abc' in row)
+
+  def testInit(self):
+    starting_vals = {'abc': 'xyz', 'foo': 'bar'}
+    row = gdata_lib.SpreadsheetRow(self.SS_ROW_OBJ, self.SS_ROW_NUM,
+                                   starting_vals)
+
+    self.assertEquals(len(starting_vals), len(row))
+    self.assertEquals(starting_vals, row)
+    self.assertEquals(row['abc'], 'xyz')
+    self.assertTrue('abc' in row)
+    self.assertEquals(row['foo'], 'bar')
+    self.assertTrue('foo' in row)
+
+    self.assertEquals(self.SS_ROW_OBJ, row.ss_row_obj)
+    self.assertEquals(self.SS_ROW_NUM, row.ss_row_num)
+
+    self.assertRaises(TypeError, row, '__delitem__', 'abc')
+    self.assertEquals(len(starting_vals), len(row))
+    self.assertTrue('abc' in row)
+
+
+class SpreadsheetCommTest(test_lib.MoxTestCase):
+
+  SS_KEY = 'TheSSKey'
+  WS_NAME = 'TheWSName'
+  WS_KEY = 'TheWSKey'
+
+  USER = 'dude'
+  PASSWORD = 'shhh'
+
+  COLUMNS = ('greeting', 'name', 'title')
+  ROWS = (
+      { 'greeting': 'Hi', 'name': 'George', 'title': 'Mr.' },
+      { 'greeting': 'Howdy', 'name': 'Billy Bob', 'title': 'Mr.' },
+      { 'greeting': 'Yo', 'name': 'Adriane', 'title': 'Ms.' },
+      )
+
+  def setUp(self):
+    mox.MoxTestBase.setUp(self)
+
+  def MockScomm(self, connect=True):
+    """Return a mocked SpreadsheetComm"""
+    mocked_scomm = self.mox.CreateMock(gdata_lib.SpreadsheetComm)
+
+    mocked_scomm._columns = None
+    mocked_scomm._rows = None
+
+    if connect:
+      mocked_gdclient = self.mox.CreateMock(gdata_lib.RetrySpreadsheetsService)
+      mocked_scomm.gd_client = mocked_gdclient
+      mocked_scomm.ss_key = self.SS_KEY
+      mocked_scomm.ws_name = self.WS_NAME
+      mocked_scomm.ws_key = self.WS_KEY
+    else:
+      mocked_scomm.gd_client = None
+      mocked_scomm.ss_key = None
+      mocked_scomm.ws_name = None
+      mocked_scomm.ws_key = None
+
+    return mocked_scomm
+
+  def NewScomm(self, gd_client=None, connect=True):
+    """Return a non-mocked SpreadsheetComm."""
+    scomm = gdata_lib.SpreadsheetComm()
+    scomm.gd_client = gd_client
+
+    if connect:
+      scomm.ss_key = self.SS_KEY
+      scomm.ws_name = self.WS_NAME
+      scomm.ws_key = self.WS_KEY
+    else:
+      scomm.ss_key = None
+      scomm.ws_name = None
+      scomm.ws_key = None
+
+    return scomm
+
+  def GenerateCreds(self):
+    return test_lib.EasyAttr(user=self.USER, password=self.PASSWORD)
+
+  def testConnect(self):
+    mocked_scomm = self.MockScomm(connect=False)
+    creds = self.GenerateCreds()
+
+    # This is the replay script for the test.
+    mocked_scomm._LoginWithUserPassword(creds.user, creds.password,
+                                        'chromiumos')
+    mocked_scomm.SetCurrentWorksheet(self.WS_NAME, ss_key=self.SS_KEY)
+    self.mox.ReplayAll()
+
+    # This is the test verification.
+    gdata_lib.SpreadsheetComm.Connect(mocked_scomm, creds,
+                                       self.SS_KEY, self.WS_NAME)
+    self.mox.VerifyAll()
+
+  def testColumns(self):
+    """Test the .columns property.  Testing a property gets ugly."""
+    self.mox.StubOutWithMock(gdata.spreadsheet.service, 'CellQuery')
+    mocked_gdclient = self.mox.CreateMock(gdata_lib.RetrySpreadsheetsService)
+    scomm = self.NewScomm(gd_client=mocked_gdclient, connect=True)
+
+    query = {'max-row': '1'}
+
+    # Simulate a Cells feed from spreadsheet for the column row.
+    cols = [c[0].upper() + c[1:] for c in self.COLUMNS]
+    entry = [test_lib.EasyAttr(content=test_lib.EasyAttr(text=c)) for c in cols]
+    feed = test_lib.EasyAttr(entry=entry)
+
+    # This is the replay script for the test.
+    gdata.spreadsheet.service.CellQuery().AndReturn(query)
+    mocked_gdclient.GetCellsFeed(self.SS_KEY, self.WS_KEY, query=query
+                                 ).AndReturn(feed)
+    self.mox.ReplayAll()
+
+    # This is the test verification.
+    result = scomm.columns
+    self.mox.VerifyAll()
+
+    expected_result = self.COLUMNS
+    self.assertEquals(expected_result, result)
+
+  def testRows(self):
+    """Test the .rows property.  Testing a property gets ugly."""
+    mocked_gdclient = self.mox.CreateMock(gdata_lib.RetrySpreadsheetsService)
+    scomm = self.NewScomm(gd_client=mocked_gdclient, connect=True)
+
+    # Simulate a List feed from spreadsheet for all rows.
+    rows = [{'col_name': 'Joe', 'col_age': '12', 'col_zip': '12345'},
+            {'col_name': 'Bob', 'col_age': '15', 'col_zip': '54321'},
+            ]
+    entry = []
+    for row in rows:
+      custom = dict((k, test_lib.EasyAttr(text=v)) for (k, v) in row.items())
+      entry.append(test_lib.EasyAttr(custom=custom))
+    feed = test_lib.EasyAttr(entry=entry)
+
+    # This is the replay script for the test.
+    mocked_gdclient.GetListFeed(self.SS_KEY, self.WS_KEY).AndReturn(feed)
+    self.mox.ReplayAll()
+
+    # This is the test verification.
+    result = scomm.rows
+    self.mox.VerifyAll()
+    self.assertEquals(tuple(rows), result)
+
+    # Result tuple should have spreadsheet row num as attribute on each row.
+    self.assertEquals(2, result[0].ss_row_num)
+    self.assertEquals(3, result[1].ss_row_num)
+
+    # Result tuple should have spreadsheet row obj as attribute on each row.
+    self.assertEquals(entry[0], result[0].ss_row_obj)
+    self.assertEquals(entry[1], result[1].ss_row_obj)
+
+  def testSetCurrentWorksheetStart(self):
+    mocked_scomm = self.MockScomm(connect=True)
+
+    # Undo worksheet settings.
+    mocked_scomm.ss_key = None
+    mocked_scomm.ws_name = None
+    mocked_scomm.ws_key = None
+
+    # This is the replay script for the test.
+    mocked_scomm._ClearCache()
+    mocked_scomm._GetWorksheetKey(self.SS_KEY, self.WS_NAME
+                                  ).AndReturn(self.WS_KEY)
+    mocked_scomm._ClearCache()
+    self.mox.ReplayAll()
+
+    # This is the test verification.
+    gdata_lib.SpreadsheetComm.SetCurrentWorksheet(mocked_scomm, self.WS_NAME,
+                                                  ss_key=self.SS_KEY)
+    self.mox.VerifyAll()
+
+    self.assertEquals(self.SS_KEY, mocked_scomm.ss_key)
+    self.assertEquals(self.WS_KEY, mocked_scomm.ws_key)
+    self.assertEquals(self.WS_NAME, mocked_scomm.ws_name)
+
+  def testSetCurrentWorksheetRestart(self):
+    mocked_scomm = self.MockScomm(connect=True)
+
+    other_ws_name = 'OtherWSName'
+    other_ws_key = 'OtherWSKey'
+
+    # This is the replay script for the test.
+    mocked_scomm._GetWorksheetKey(self.SS_KEY, other_ws_name
+                                  ).AndReturn(other_ws_key)
+    mocked_scomm._ClearCache()
+    self.mox.ReplayAll()
+
+    # This is the test verification.
+    gdata_lib.SpreadsheetComm.SetCurrentWorksheet(mocked_scomm, other_ws_name)
+    self.mox.VerifyAll()
+
+    self.assertEquals(self.SS_KEY, mocked_scomm.ss_key)
+    self.assertEquals(other_ws_key, mocked_scomm.ws_key)
+    self.assertEquals(other_ws_name, mocked_scomm.ws_name)
+
+  def testClearCache(self):
+    rows = 'SomeRows'
+    cols = 'SomeColumns'
+
+    scomm = self.NewScomm()
+    scomm._rows = rows
+    scomm._columns = cols
+
+    scomm._ClearCache(keep_columns=True)
+    self.assertTrue(scomm._rows is None)
+    self.assertEquals(cols, scomm._columns)
+
+    scomm._rows = rows
+    scomm._columns = cols
+
+    scomm._ClearCache(keep_columns=False)
+    self.assertTrue(scomm._rows is None)
+    self.assertTrue(scomm._columns is None)
+
+    scomm._rows = rows
+    scomm._columns = cols
+
+    scomm._ClearCache()
+    self.assertTrue(scomm._rows is None)
+    self.assertTrue(scomm._columns is None)
+
+  def testLoginWithUserPassword(self):
+    mocked_scomm = self.MockScomm(connect=False)
+    mocked_gdclient = self.mox.CreateMock(gdata_lib.RetrySpreadsheetsService)
+
+    self.mox.StubOutWithMock(gdata_lib.RetrySpreadsheetsService, '__new__')
+
+    source = 'SomeSource'
+
+    # This is the replay script for the test.
+    gdata_lib.RetrySpreadsheetsService.__new__(
+        gdata_lib.RetrySpreadsheetsService).AndReturn(mocked_gdclient)
+    mocked_gdclient.ProgrammaticLogin()
+    self.mox.ReplayAll()
+
+    # This is the test verification.
+    gdata_lib.SpreadsheetComm._LoginWithUserPassword(mocked_scomm, self.USER,
+                                                     self.PASSWORD, source)
+    self.mox.VerifyAll()
+    self.assertEquals(self.USER, mocked_gdclient.email)
+    self.assertEquals(self.PASSWORD, mocked_gdclient.password)
+    self.assertEquals(source, mocked_gdclient.source)
+    self.assertEquals(mocked_gdclient, mocked_scomm.gd_client)
+
+  def testGetWorksheetKey(self):
+    mocked_scomm = self.MockScomm()
+
+    entrylist = [
+      test_lib.EasyAttr(title=test_lib.EasyAttr(text='Foo'), id='NotImportant'),
+      test_lib.EasyAttr(title=test_lib.EasyAttr(text=self.WS_NAME),
+               id=test_lib.EasyAttr(text='/some/path/%s' % self.WS_KEY)),
+      test_lib.EasyAttr(title=test_lib.EasyAttr(text='Bar'), id='NotImportant'),
+      ]
+    feed = test_lib.EasyAttr(entry=entrylist)
+
+    # This is the replay script for the test.
+    mocked_scomm.gd_client.GetWorksheetsFeed(self.SS_KEY).AndReturn(feed)
+    self.mox.ReplayAll()
+
+    # This is the test verification.
+    gdata_lib.SpreadsheetComm._GetWorksheetKey(mocked_scomm,
+                                               self.SS_KEY, self.WS_NAME)
+    self.mox.VerifyAll()
+
+  def testGetColumns(self):
+    mocked_scomm = self.MockScomm()
+    mocked_scomm.columns = 'SomeColumns'
+
+    # Replay script
+    self.mox.ReplayAll()
+
+    # This is the test verification.
+    result = gdata_lib.SpreadsheetComm.GetColumns(mocked_scomm)
+    self.mox.VerifyAll()
+    self.assertEquals('SomeColumns', result)
+
+  def testGetColumnIndex(self):
+    # Note that spreadsheet column indices start at 1.
+    mocked_scomm = self.MockScomm()
+    mocked_scomm.columns = ['these', 'are', 'column', 'names']
+
+    # This is the replay script for the test.
+    self.mox.ReplayAll()
+
+    # This is the test verification.
+    result = gdata_lib.SpreadsheetComm.GetColumnIndex(mocked_scomm, 'are')
+    self.mox.VerifyAll()
+    self.assertEquals(2, result)
+
+  def testGetRows(self):
+    mocked_scomm = self.MockScomm()
+    rows = []
+    for row_ix, row_dict in enumerate(self.ROWS):
+      rows.append(gdata_lib.SpreadsheetRow('SSRowObj%d' % (row_ix + 2),
+                                           (row_ix + 2), row_dict))
+    mocked_scomm.rows = tuple(rows)
+
+    # This is the replay script for the test.
+    self.mox.ReplayAll()
+
+    # This is the test verification.
+    result = gdata_lib.SpreadsheetComm.GetRows(mocked_scomm)
+    self.mox.VerifyAll()
+    self.assertEquals(self.ROWS, result)
+    for row_ix in xrange(len(self.ROWS)):
+      self.assertEquals(row_ix + 2, result[row_ix].ss_row_num)
+      self.assertEquals('SSRowObj%d' % (row_ix + 2), result[row_ix].ss_row_obj)
+
+  def testGetRowCacheByCol(self):
+    mocked_scomm = self.MockScomm()
+
+    # This is the replay script for the test.
+    mocked_scomm.GetRows().AndReturn(self.ROWS)
+    self.mox.ReplayAll()
+
+    # This is the test verification.
+    result = gdata_lib.SpreadsheetComm.GetRowCacheByCol(mocked_scomm, 'name')
+    self.mox.VerifyAll()
+
+    # Result is a dict of rows by the 'name' column.
+    for row in self.ROWS:
+      name = row['name']
+      self.assertEquals(row, result[name])
+
+  def testGetRowCacheByColDuplicates(self):
+    mocked_scomm = self.MockScomm()
+
+    # Create new row list with duplicates by name column.
+    rows = []
+    for row in self.ROWS:
+      new_row = dict(row)
+      new_row['greeting'] = row['greeting'] + ' there'
+      rows.append(new_row)
+
+    rows.extend(self.ROWS)
+
+    # This is the replay script for the test.
+    mocked_scomm.GetRows().AndReturn(tuple(rows))
+    self.mox.ReplayAll()
+
+    # This is the test verification.
+    result = gdata_lib.SpreadsheetComm.GetRowCacheByCol(mocked_scomm, 'name')
+    self.mox.VerifyAll()
+
+    # Result is a dict of rows by the 'name' column.  In this
+    # test each result should be a list of the rows with the same
+    # value in the 'name' column.
+    num_rows = len(rows)
+    for ix in xrange(num_rows / 2):
+      row1 = rows[ix]
+      row2 = rows[ix + (num_rows / 2)]
+
+      name = row1['name']
+      self.assertEquals(name, row2['name'])
+
+      expected_rows = [row1, row2]
+      self.assertEquals(expected_rows, result[name])
+
+  def testInsertRow(self):
+    mocked_scomm = self.MockScomm()
+
+    row = 'TheRow'
+
+    # Replay script
+    mocked_scomm.gd_client.InsertRow(row, mocked_scomm.ss_key,
+                                     mocked_scomm.ws_key)
+    mocked_scomm._ClearCache(keep_columns=True)
+    self.mox.ReplayAll()
+
+    # This is the test verification.
+    gdata_lib.SpreadsheetComm.InsertRow(mocked_scomm, row)
+    self.mox.VerifyAll()
+
+  def testUpdateRowCellByCell(self):
+    mocked_scomm = self.MockScomm()
+
+    rowIx = 5
+    row = {'a': 123, 'b': 234, 'c': 345}
+    colIndices = {'a': 1, 'b': None, 'c': 4}
+
+    # Replay script
+    for colName in row:
+      colIx = colIndices[colName]
+      mocked_scomm.GetColumnIndex(colName).AndReturn(colIx)
+      if colIx is not None:
+        mocked_scomm.ReplaceCellValue(rowIx, colIx, row[colName])
+    mocked_scomm._ClearCache(keep_columns=True)
+    self.mox.ReplayAll()
+
+    # This is the test verification.
+    gdata_lib.SpreadsheetComm.UpdateRowCellByCell(mocked_scomm, rowIx, row)
+    self.mox.VerifyAll()
+
+  def testDeleteRow(self):
+    mocked_scomm = self.MockScomm()
+
+    ss_row = 'TheRow'
+
+    # Replay script
+    mocked_scomm.gd_client.DeleteRow(ss_row)
+    mocked_scomm._ClearCache(keep_columns=True)
+    self.mox.ReplayAll()
+
+    # This is the test verification.
+    gdata_lib.SpreadsheetComm.DeleteRow(mocked_scomm, ss_row)
+    self.mox.VerifyAll()
+
+  def testReplaceCellValue(self):
+    mocked_scomm = self.MockScomm()
+
+    rowIx = 14
+    colIx = 4
+    val = 'TheValue'
+
+    # Replay script
+    mocked_scomm.gd_client.UpdateCell(rowIx, colIx, val,
+                                      mocked_scomm.ss_key, mocked_scomm.ws_key)
+    mocked_scomm._ClearCache(keep_columns=True)
+    self.mox.ReplayAll()
+
+    # Verify
+    gdata_lib.SpreadsheetComm.ReplaceCellValue(mocked_scomm, rowIx, colIx, val)
+    self.mox.VerifyAll()
+
+  def testClearCellValue(self):
+    mocked_scomm = self.MockScomm()
+
+    rowIx = 14
+    colIx = 4
+
+    # Replay script
+    mocked_scomm.ReplaceCellValue(rowIx, colIx, None)
+    self.mox.ReplayAll()
+
+    # Verify
+    gdata_lib.SpreadsheetComm.ClearCellValue(mocked_scomm, rowIx, colIx)
+    self.mox.VerifyAll()
+
 
 class RetrySpreadsheetsServiceTest(test_lib.MoxTestCase):
 
