@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -59,23 +59,31 @@ class GcryptInitializer {
 
  private:
   void Init() {
+    const char* kGnuTlsFiles[] = {
+      "libgnutls.so.28",
+      "libgnutls.so.26",
+      "libgnutls.so",
+    };
     gcry_control(GCRYCTL_SET_THREAD_CBS, &gcry_threads_pthread);
-    const char* kGnuTlsFile = "libgnutls.so";
-    void* gnutls_lib = dlopen(kGnuTlsFile, RTLD_NOW);
-    if (!gnutls_lib) {
-      LOG(ERROR) << "Cannot load " << kGnuTlsFile;
+    for (size_t i = 0; i < arraysize(kGnuTlsFiles); ++i) {
+      void* gnutls_lib = dlopen(kGnuTlsFiles[i], RTLD_NOW);
+      if (!gnutls_lib) {
+        VLOG(1) << "Cannot load " << kGnuTlsFiles[i];
+        continue;
+      }
+      const char* kGnuTlsInitFuncName = "gnutls_global_init";
+      int (*pgnutls_global_init)(void) = reinterpret_cast<int(*)()>(
+          dlsym(gnutls_lib, kGnuTlsInitFuncName));
+      if (!pgnutls_global_init) {
+        VLOG(1) << "Could not find " << kGnuTlsInitFuncName
+                << " in " << kGnuTlsFiles[i];
+        continue;
+      }
+      if ((*pgnutls_global_init)() != 0)
+        LOG(ERROR) << "gnutls_global_init() failed";
       return;
     }
-    const char* kGnuTlsInitFuncName = "gnutls_global_init";
-    int (*pgnutls_global_init)(void) = reinterpret_cast<int(*)()>(
-        dlsym(gnutls_lib, kGnuTlsInitFuncName));
-    if (!pgnutls_global_init) {
-      LOG(ERROR) << "Could not find " << kGnuTlsInitFuncName
-                 << " in " << kGnuTlsFile;
-      return;
-    }
-    if ((*pgnutls_global_init)() != 0)
-      LOG(ERROR) << "Gnutls initialization failed";
+    LOG(ERROR) << "Cannot find libgnutls";
   }
 };
 
