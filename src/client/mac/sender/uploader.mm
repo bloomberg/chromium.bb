@@ -546,7 +546,7 @@ NSDictionary *readConfigurationData(const char *configFile) {
   }
 
   if (logFileData_) {
-    [self uploadData:logFileData_ name:@"log" url:url];
+    [self uploadData:logFileData_ name:@"log"];
   }
 
   [upload release];

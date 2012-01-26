@@ -190,9 +190,9 @@ int __breakpad_fdnlist(int fd, nlist_type *list, const char **symbolNames,
   struct exec buf;
   if (read(fd, (char *)&buf, sizeof(buf)) != sizeof(buf) ||
       (N_BADMAG(buf) && *((uint32_t *)&buf) != magic &&
-       NXSwapBigLongToHost(*((long *)&buf)) != FAT_MAGIC) &&
-      /* The following is the big-endian ppc64 check */
-      (*((uint32_t*)&buf)) != FAT_MAGIC) {
+        NXSwapBigLongToHost(*((long *)&buf)) != FAT_MAGIC &&
+       /* The following is the big-endian ppc64 check */
+       (*((uint32_t*)&buf)) != FAT_MAGIC)) {
     return -1;
   }
 
