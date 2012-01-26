@@ -449,6 +449,8 @@
       '-extensions.ExtensionsTest.testTriggerPageActionWithPopup',
       # crbug.com/109160
       '-execute_javascript.ExecuteJavascriptTest.testExecuteJavascriptInExtension',
+      # crbug.com/111407
+      '-indexeddb.IndexedDBTest.testConnectionsClosedOnTabClose',
     ],
 
     'win': [
