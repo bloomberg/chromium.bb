@@ -632,7 +632,7 @@ void RecordShelfClose(int size, int in_progress, bool autoclose) {
 
 void RecordDownloadCount(ChromeDownloadCountTypes type) {
   UMA_HISTOGRAM_ENUMERATION(
-      "ChromeDownload.Counts", type, DOWNLOAD_COUNT_TYPES_LAST_ENTRY);
+      "Download.CountsChrome", type, DOWNLOAD_COUNT_TYPES_LAST_ENTRY);
 }
 
 }  // namespace download_util
