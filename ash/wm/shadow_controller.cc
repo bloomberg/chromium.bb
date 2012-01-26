@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -22,7 +22,11 @@ namespace internal {
 
 namespace {
 
-ShadowType GetShadowTypeFromWindowType(aura::Window* window) {
+ShadowType GetShadowTypeFromWindow(aura::Window* window) {
+  // No shadow for transparent window.
+  if (window->transparent())
+    return SHADOW_TYPE_NONE;
+
   switch (window->type()) {
     case aura::client::WINDOW_TYPE_NORMAL:
     case aura::client::WINDOW_TYPE_PANEL:
@@ -54,7 +58,7 @@ ShadowController::~ShadowController() {
 
 void ShadowController::OnWindowInitialized(aura::Window* window) {
   window->AddObserver(this);
-  SetShadowType(window, GetShadowTypeFromWindowType(window));
+  SetShadowType(window, GetShadowTypeFromWindow(window));
   HandlePossibleShadowVisibilityChange(window);
 }
 

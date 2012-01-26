@@ -113,7 +113,6 @@ views::Widget* CreateTooltip() {
   params.type = views::Widget::InitParams::TYPE_TOOLTIP;
   params.keep_on_top = true;
   params.accept_events = false;
-  params.transparent = true;
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   widget->Init(params);
   return widget;

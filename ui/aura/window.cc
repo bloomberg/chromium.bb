@@ -41,6 +41,7 @@ Window::Window(WindowDelegate* delegate)
       parent_(NULL),
       transient_parent_(NULL),
       id_(-1),
+      transparent_(false),
       user_data_(NULL),
       stops_event_propagation_(false),
       ignore_events_(false) {
@@ -100,6 +101,7 @@ void Window::Init(ui::Layer::LayerType layer_type) {
   layer_->SetVisible(false);
   layer_->set_delegate(this);
   UpdateLayerName(name_);
+  layer_->SetFillsBoundsOpaquely(!transparent_);
 
   RootWindow::GetInstance()->WindowInitialized(this);
 }
@@ -115,6 +117,12 @@ void Window::SetName(const std::string& name) {
 
   if (layer())
     UpdateLayerName(name_);
+}
+
+void Window::SetTransparent(bool transparent) {
+  // Cannot change transparent flag after the window is initialized.
+  DCHECK(!layer());
+  transparent_ = transparent;
 }
 
 ui::Layer* Window::AcquireLayer() {

@@ -70,6 +70,9 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
   const string16 title() const { return title_; }
   void set_title(const string16& title) { title_ = title; }
 
+  bool transparent() const { return transparent_; }
+  void SetTransparent(bool transparent);
+
   ui::Layer* layer() { return layer_.get(); }
   const ui::Layer* layer() const { return layer_.get(); }
 
@@ -340,6 +343,9 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
   std::string name_;
 
   string16 title_;
+
+  // Whether layer is initialized as non-opaque.
+  bool transparent_;
 
   scoped_ptr<EventFilter> event_filter_;
   scoped_ptr<LayoutManager> layout_manager_;

@@ -166,13 +166,13 @@ void NativeWidgetAura::InitNativeWidget(const Widget::InitParams& params) {
   window_->SetType(GetAuraWindowTypeForWidgetType(window_type));
   // TODO(jamescook): Should this use params.show_state instead?
   window_->SetIntProperty(aura::client::kShowStateKey, ui::SHOW_STATE_NORMAL);
+  window_->SetTransparent(params.transparent);
   window_->Init(params.create_texture_for_layer ?
                     ui::Layer::LAYER_HAS_TEXTURE :
                     ui::Layer::LAYER_HAS_NO_TEXTURE);
   if (window_type == Widget::InitParams::TYPE_CONTROL)
     window_->Show();
 
-  window_->layer()->SetFillsBoundsOpaquely(!params.transparent);
   delegate_->OnNativeWidgetCreated();
   window_->SetBounds(params.bounds);
   if (window_type == Widget::InitParams::TYPE_CONTROL) {
