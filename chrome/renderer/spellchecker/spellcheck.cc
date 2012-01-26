@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,6 +13,7 @@
 #include "chrome/common/spellcheck_messages.h"
 #include "content/public/renderer/render_thread.h"
 #include "third_party/hunspell/src/hunspell/hunspell.hxx"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebTextCheckingResult.h"
 
 using base::TimeTicks;
 using content::RenderThread;
@@ -142,6 +143,50 @@ bool SpellCheck::SpellCheckWord(
   }
 
   return true;
+}
+
+bool SpellCheck::SpellCheckParagraph(
+    const string16& text,
+    int tag,
+    std::vector<WebKit::WebTextCheckingResult>* results) {
+#if !defined(OS_MACOSX)
+  // Mac has its own spell checker, so this method will not be used.
+
+  DCHECK(results);
+
+  size_t length = text.length();
+  size_t offset = 0;
+
+  // Spellcheck::SpellCheckWord() automatically breaks text into words and
+  // checks the spellings of the extracted words. This function sets the
+  // position and length of the first misspelled word and returns false when
+  // the text includes misspelled words. Therefore, we just repeat calling the
+  // function until it returns true to check the whole text.
+  int misspelling_start = 0;
+  int misspelling_length = 0;
+  while (offset <= length) {
+    if (SpellCheckWord(&text[offset],
+                       length - offset,
+                       0,
+                       &misspelling_start,
+                       &misspelling_length,
+                       NULL)) {
+      return true;
+    }
+
+    if (results) {
+      results->push_back(WebKit::WebTextCheckingResult(
+          WebKit::WebTextCheckingTypeSpelling,
+          misspelling_start + offset,
+          misspelling_length));
+    }
+    offset += misspelling_start + misspelling_length;
+  }
+
+  return false;
+#else
+  return true;
+#endif
 }
 
 string16 SpellCheck::GetAutoCorrectionWord(const string16& word, int tag) {

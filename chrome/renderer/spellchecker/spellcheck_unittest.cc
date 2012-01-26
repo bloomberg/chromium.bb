@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,6 +14,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/spellcheck_common.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebTextCheckingResult.h"
 
 namespace {
 
@@ -51,6 +52,26 @@ class SpellCheckTest : public testing::Test {
   }
 
   SpellCheck* spell_check() { return spell_check_.get(); }
+
+#if !defined(OS_MACOSX)
+ protected:
+  void TestSpellCheckParagraph(
+      const string16& input,
+      const std::vector<WebKit::WebTextCheckingResult>& expected) {
+    std::vector<WebKit::WebTextCheckingResult> results;
+    spell_check()->SpellCheckParagraph(input,
+                                       0,
+                                       &results);
+
+    EXPECT_EQ(results.size(), expected.size());
+    size_t size = std::min(results.size(), expected.size());
+    for (size_t j = 0; j < size; ++j) {
+      EXPECT_EQ(results[j].type, WebKit::WebTextCheckingTypeSpelling);
+      EXPECT_EQ(results[j].location, expected[j].location);
+      EXPECT_EQ(results[j].length, expected[j].length);
+    }
+  }
+#endif
 
  private:
   scoped_ptr<SpellCheck> spell_check_;
@@ -705,3 +726,85 @@ TEST_F(SpellCheckTest, GetAutoCorrectionWord_EN_US) {
     EXPECT_EQ(expected_autocorrect_word, autocorrect_word);
   }
 }
+
+// Since SpellCheck::SpellCheckParagraph is not implemented on Mac,
+// we skip these SpellCheckParagraph tests on Mac.
+#if !defined(OS_MACOSX)
+
+// Make sure SpellCheckParagraph does not crash if the input is empty.
+TEST_F(SpellCheckTest, SpellCheckParagraphEmptyParagraph) {
+  std::vector<WebKit::WebTextCheckingResult> expected;
+  TestSpellCheckParagraph(UTF8ToUTF16(""), expected);
+}
+
+// A simple test case having no misspellings.
+TEST_F(SpellCheckTest, SpellCheckParagraphNoMisspellings) {
+  const string16 text = UTF8ToUTF16("apple");
+  std::vector<WebKit::WebTextCheckingResult> expected;
+  TestSpellCheckParagraph(text, expected);
+}
+
+// A simple test case having one misspelling.
+TEST_F(SpellCheckTest, SpellCheckParagraphSingleMisspellings) {
+  const string16 text = UTF8ToUTF16("zz");
+  std::vector<WebKit::WebTextCheckingResult> expected;
+  expected.push_back(WebKit::WebTextCheckingResult(
+      WebKit::WebTextCheckingTypeSpelling, 0, 2));
+
+  TestSpellCheckParagraph(text, expected);
+}
+
+// A simple test case having multiple misspellings.
+TEST_F(SpellCheckTest, SpellCheckParagraphMultipleMisspellings) {
+  const string16 text = UTF8ToUTF16("zz, zz");
+  std::vector<WebKit::WebTextCheckingResult> expected;
+  expected.push_back(WebKit::WebTextCheckingResult(
+      WebKit::WebTextCheckingTypeSpelling, 0, 2));
+  expected.push_back(WebKit::WebTextCheckingResult(
+      WebKit::WebTextCheckingTypeSpelling, 4, 2));
+
+  TestSpellCheckParagraph(text, expected);
+}
+
+// Make sure a relatively long (correct) sentence can be spellchecked.
+TEST_F(SpellCheckTest, SpellCheckParagraphLongSentence) {
+  std::vector<WebKit::WebTextCheckingResult> expected;
+  // The text is taken from US constitution preamble.
+  const string16 text = UTF8ToUTF16(
+      "We the people of the United States, in order to form a more perfect "
+      "union, establish justice, insure domestic tranquility, provide for "
+      "the common defense, promote the general welfare, and secure the "
+      "blessings of liberty to ourselves and our posterity, do ordain and "
+      "establish this Constitution for the United States of America.");
+
+  TestSpellCheckParagraph(text, expected);
+}
+
+// Make sure all misspellings can be found in a relatively long sentence.
+TEST_F(SpellCheckTest, SpellCheckParagraphLongSentenceMultipleMisspellings) {
+  std::vector<WebKit::WebTextCheckingResult> expected;
+
+  // All 'the' are converted to 'hte' in US consitition preamble.
+  const string16 text = UTF8ToUTF16(
+      "We hte people of hte United States, in order to form a more perfect "
+      "union, establish justice, insure domestic tranquility, provide for "
+      "hte common defense, promote hte general welfare, and secure hte "
+      "blessings of liberty to ourselves and our posterity, do ordain and "
+      "establish this Constitution for hte United States of America.");
+
+  expected.push_back(WebKit::WebTextCheckingResult(
+      WebKit::WebTextCheckingTypeSpelling, 3, 3));
+  expected.push_back(WebKit::WebTextCheckingResult(
+      WebKit::WebTextCheckingTypeSpelling, 17, 3));
+  expected.push_back(WebKit::WebTextCheckingResult(
+      WebKit::WebTextCheckingTypeSpelling, 135, 3));
+  expected.push_back(WebKit::WebTextCheckingResult(
+      WebKit::WebTextCheckingTypeSpelling, 163, 3));
+  expected.push_back(WebKit::WebTextCheckingResult(
+      WebKit::WebTextCheckingTypeSpelling, 195, 3));
+  expected.push_back(WebKit::WebTextCheckingResult(
+      WebKit::WebTextCheckingTypeSpelling, 298, 3));
+
+  TestSpellCheckParagraph(text, expected);
+}
+#endif

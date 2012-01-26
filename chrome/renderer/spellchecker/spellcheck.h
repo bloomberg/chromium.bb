@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -23,6 +23,10 @@ class Hunspell;
 
 namespace file_util {
 class MemoryMappedFile;
+}
+
+namespace WebKit {
+struct WebTextCheckingResult;
 }
 
 // TODO(morrita): Needs reorg with SpellCheckProvider.
@@ -52,6 +56,15 @@ class SpellCheck : public content::RenderProcessObserver {
                       int* misspelling_start,
                       int* misspelling_len,
                       std::vector<string16>* optional_suggestions);
+
+  // SpellCheck a paragrpah.
+  // Returns true if |text| is correctly spelled, false otherwise.
+  // If the spellchecker failed to initialize, always returns true.
+  // The |tag| parameter should either be a unique identifier for the document,
+  // or 0.
+  bool SpellCheckParagraph(const string16& text,
+                           int tag,
+                           std::vector<WebKit::WebTextCheckingResult>* results);
 
   // Find a possible correctly spelled word for a misspelled word. Computes an
   // empty string if input misspelled word is too long, there is ambiguity, or

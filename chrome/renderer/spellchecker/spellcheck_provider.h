@@ -59,16 +59,20 @@ class SpellCheckProvider : public content::RenderViewObserver,
       const WebKit::WebString& text,
       int& offset,
       int& length,
-      WebKit::WebVector<WebKit::WebString>* optional_suggestions);
+      WebKit::WebVector<WebKit::WebString>* optional_suggestions) OVERRIDE;
+  virtual void checkTextOfParagraph(
+      const WebKit::WebString& text,
+      WebKit::WebTextCheckingTypeMask mask,
+      WebKit::WebVector<WebKit::WebTextCheckingResult>* results) OVERRIDE;
   virtual void requestCheckingOfText(
       const WebKit::WebString& text,
-      WebKit::WebTextCheckingCompletion* completion);
+      WebKit::WebTextCheckingCompletion* completion) OVERRIDE;
   virtual WebKit::WebString autoCorrectWord(
-      const WebKit::WebString& misspelled_word);
-  virtual void showSpellingUI(bool show);
-  virtual bool isShowingSpellingUI();
+      const WebKit::WebString& misspelled_word) OVERRIDE;
+  virtual void showSpellingUI(bool show) OVERRIDE;
+  virtual bool isShowingSpellingUI() OVERRIDE;
   virtual void updateSpellingUIWithMisspelledWord(
-      const WebKit::WebString& word);
+      const WebKit::WebString& word) OVERRIDE;
 
   void OnAdvanceToNextMisspelling();
   void OnRespondTextCheck(

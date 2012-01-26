@@ -13,6 +13,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebTextCheckingCompletion.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebTextCheckingResult.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebTextCheckingType.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebVector.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 
@@ -119,6 +120,34 @@ void SpellCheckProvider::spellCheck(
       Send(new SpellCheckHostMsg_NotifyChecked(routing_id(), word, 0 < length));
     }
   }
+}
+
+void SpellCheckProvider::checkTextOfParagraph(
+    const WebKit::WebString& text,
+    WebKit::WebTextCheckingTypeMask mask,
+    WebKit::WebVector<WebKit::WebTextCheckingResult>* results) {
+#if !defined(OS_MACOSX)
+  // Since Mac has its own spell checker, this method will not be used on Mac.
+
+  if (!results)
+    return;
+
+  if (!(mask & WebKit::WebTextCheckingTypeSpelling))
+    return;
+
+  EnsureDocumentTag();
+
+  // Will be NULL during unit tets.
+  if (!chrome_content_renderer_client_)
+    return;
+
+  std::vector<WebKit::WebTextCheckingResult> tmp_results;
+  chrome_content_renderer_client_->spellcheck()->SpellCheckParagraph(
+      string16(text),
+      document_tag_,
+      &tmp_results);
+  *results = tmp_results;
+#endif
 }
 
 void SpellCheckProvider::requestCheckingOfText(
