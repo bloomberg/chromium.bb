@@ -14,6 +14,12 @@
 
 namespace ash {
 
+namespace {
+
+const char kOpenWindowSplitKey[] = "OpenWindowSplit";
+
+}  // namespace
+
 void ActivateWindow(aura::Window* window) {
   aura::client::GetActivationClient()->ActivateWindow(window);
 }
@@ -62,6 +68,14 @@ bool HasFullscreenWindow(const WindowSet& windows) {
     }
   }
   return false;
+}
+
+void SetOpenWindowSplit(aura::Window* window, bool value) {
+  window->SetIntProperty(kOpenWindowSplitKey, value ? 1 : 0);
+}
+
+bool GetOpenWindowSplit(aura::Window* window) {
+  return window->GetIntProperty(kOpenWindowSplitKey) == 1;
 }
 
 }  // namespace window_util

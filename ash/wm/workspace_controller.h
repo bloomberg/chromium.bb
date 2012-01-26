@@ -7,7 +7,6 @@
 #pragma once
 
 #include "ash/launcher/launcher_model_observer.h"
-#include "ash/wm/workspace/workspace_observer.h"
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/aura/root_window_observer.h"
@@ -35,7 +34,6 @@ class WorkspaceManager;
 class ASH_EXPORT WorkspaceController :
       public aura::RootWindowObserver,
       public aura::WindowObserver,
-      public ash::internal::WorkspaceObserver,
       public ash::LauncherModelObserver {
  public:
   explicit WorkspaceController(aura::Window* workspace_viewport);
@@ -57,13 +55,6 @@ class ASH_EXPORT WorkspaceController :
   virtual void OnWindowPropertyChanged(aura::Window* window,
                                        const char* key,
                                        void* old) OVERRIDE;
-
-  // WorkspaceObserver overrides:
-  virtual void WindowMoved(WorkspaceManager* manager,
-                           aura::Window* source,
-                           aura::Window* target) OVERRIDE;
-  virtual void ActiveWorkspaceChanged(WorkspaceManager* manager,
-                                      Workspace* old) OVERRIDE;
 
   // Invoked after an item has been added to the model.
   virtual void LauncherItemAdded(int index) OVERRIDE;

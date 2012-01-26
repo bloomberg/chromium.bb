@@ -38,6 +38,8 @@ WorkspaceEventFilter::WorkspaceEventFilter(aura::Window* owner)
 }
 
 WorkspaceEventFilter::~WorkspaceEventFilter() {
+  if (hovered_window_)
+    hovered_window_->RemoveObserver(this);
 }
 
 bool WorkspaceEventFilter::PreHandleMouseEvent(aura::Window* target,
@@ -95,6 +97,12 @@ bool WorkspaceEventFilter::PreHandleMouseEvent(aura::Window* target,
   return handled;
 }
 
+void WorkspaceEventFilter::OnWindowDestroyed(aura::Window* window) {
+  DCHECK_EQ(hovered_window_, window);
+  hovered_window_->RemoveObserver(this);
+  hovered_window_ = NULL;
+}
+
 bool WorkspaceEventFilter::UpdateDragState() {
   DCHECK_EQ(DRAG_NONE, drag_state_);
   switch (window_component()) {
@@ -122,9 +130,13 @@ void WorkspaceEventFilter::UpdateHoveredWindow(
     aura::Window* toplevel_window) {
   if (toplevel_window == hovered_window_)
     return;
+  if (hovered_window_)
+    hovered_window_->RemoveObserver(this);
   WindowHoverChanged(hovered_window_, false);
   hovered_window_ = toplevel_window;
   WindowHoverChanged(hovered_window_, true);
+  if (hovered_window_)
+    hovered_window_->AddObserver(this);
 }
 
 }  // namespace internal

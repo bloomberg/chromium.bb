@@ -8,7 +8,6 @@
 #include "ash/launcher/launcher_model.h"
 #include "ash/shell.h"
 #include "ash/wm/window_util.h"
-#include "ash/wm/workspace/workspace.h"
 #include "ash/wm/workspace/workspace_layout_manager.h"
 #include "ash/wm/workspace/workspace_manager.h"
 #include "ui/aura/client/activation_client.h"
@@ -23,13 +22,11 @@ WorkspaceController::WorkspaceController(aura::Window* viewport)
     : workspace_manager_(new WorkspaceManager(viewport)),
       launcher_model_(NULL),
       ignore_move_event_(false) {
-  workspace_manager_->AddObserver(this);
   aura::RootWindow::GetInstance()->AddRootWindowObserver(this);
   aura::RootWindow::GetInstance()->AddObserver(this);
 }
 
 WorkspaceController::~WorkspaceController() {
-  workspace_manager_->RemoveObserver(this);
   if (launcher_model_)
     launcher_model_->RemoveObserver(this);
   aura::RootWindow::GetInstance()->RemoveObserver(this);
@@ -59,32 +56,8 @@ void WorkspaceController::OnRootWindowResized(const gfx::Size& new_size) {
 void WorkspaceController::OnWindowPropertyChanged(aura::Window* window,
                                                   const char* key,
                                                   void* old) {
-  if (key == aura::client::kRootWindowActiveWindow) {
-    // FindBy handles NULL.
-    Workspace* workspace = workspace_manager_->FindBy(GetActiveWindow());
-    if (workspace)
-      workspace->Activate();
-  }
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// WorkspaceController, ash::internal::WorkspaceObserver overrides:
-
-void WorkspaceController::WindowMoved(WorkspaceManager* manager,
-                                      aura::Window* source,
-                                      aura::Window* target) {
-  if (ignore_move_event_ || !launcher_model_)
-    return;
-  // TODO: there is no longer a 1-1 mapping between the launcher and windows;
-  // decide how we want to handle it.
-  NOTIMPLEMENTED();
-}
-
-void WorkspaceController::ActiveWorkspaceChanged(WorkspaceManager* manager,
-                                                 Workspace* old) {
-  // TODO(oshima): Update Launcher and Status area state when the active
-  // workspace's fullscreen state changes.
-  //NOTIMPLEMENTED();
+  if (key == aura::client::kRootWindowActiveWindow)
+    workspace_manager_->SetActiveWorkspaceByWindow(GetActiveWindow());
 }
 
 ////////////////////////////////////////////////////////////////////////////////

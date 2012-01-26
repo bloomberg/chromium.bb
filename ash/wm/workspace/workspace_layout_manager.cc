@@ -5,7 +5,6 @@
 #include "ash/wm/workspace/workspace_layout_manager.h"
 
 #include "ash/wm/property_util.h"
-#include "ash/wm/show_state_controller.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/workspace/workspace.h"
 #include "ash/wm/workspace/workspace_manager.h"
@@ -27,8 +26,7 @@ namespace internal {
 
 WorkspaceLayoutManager::WorkspaceLayoutManager(
     WorkspaceManager* workspace_manager)
-    : workspace_manager_(workspace_manager),
-      show_state_controller_(new ShowStateController(workspace_manager)) {
+    : workspace_manager_(workspace_manager) {
 }
 
 WorkspaceLayoutManager::~WorkspaceLayoutManager() {}
@@ -48,43 +46,22 @@ void WorkspaceLayoutManager::CancelMoveOrResize(
 void WorkspaceLayoutManager::ProcessMove(
     aura::Window* drag,
     aura::MouseEvent* event) {
-  // TODO(oshima): Just zooming out may (and will) move/swap window without
-  // a users's intent. We probably should scroll viewport, but that may not
-  // be enough. See crbug.com/101826 for more discussion.
-  workspace_manager_->SetOverview(true);
-
-  gfx::Point point_in_owner = event->location();
-  aura::Window::ConvertPointToWindow(
-      drag,
-      workspace_manager_->contents_view(),
-      &point_in_owner);
-  // TODO(oshima): We should support simply moving to another
-  // workspace when the destination workspace has enough room to accomodate.
-  aura::Window* rotate_target =
-      workspace_manager_->FindRotateWindowForLocation(point_in_owner);
-  if (rotate_target)
-    workspace_manager_->RotateWindows(drag, rotate_target);
+  // TODO: needs implementation for TYPE_SPLIT. For TYPE_SPLIT I want to
+  // disallow eventfilter from moving and instead deal with it here.
 }
 
 void WorkspaceLayoutManager::EndMove(
     aura::Window* drag,
     aura::MouseEvent* evnet) {
-  // TODO(oshima): finish moving window between workspaces.
+  // TODO: see comment in ProcessMove.
   workspace_manager_->set_ignored_window(NULL);
-  Workspace* workspace = workspace_manager_->FindBy(drag);
-  workspace->Layout(NULL);
-  workspace->Activate();
-  workspace_manager_->SetOverview(false);
 }
 
 void WorkspaceLayoutManager::EndResize(
     aura::Window* drag,
     aura::MouseEvent* evnet) {
+  // TODO: see comment in ProcessMove.
   workspace_manager_->set_ignored_window(NULL);
-  Workspace* workspace = workspace_manager_->GetActiveWorkspace();
-  if (workspace)
-    workspace->Layout(NULL);
-  workspace_manager_->SetOverview(false);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -95,95 +72,41 @@ void WorkspaceLayoutManager::OnWindowResized() {
 }
 
 void WorkspaceLayoutManager::OnWindowAddedToLayout(aura::Window* child) {
-  if (child->type() != aura::client::WINDOW_TYPE_NORMAL ||
-      child->transient_parent()) {
+  if (!workspace_manager_->IsManagedWindow(child))
     return;
-  }
 
-  if (!child->GetProperty(aura::client::kShowStateKey))
-    child->SetIntProperty(aura::client::kShowStateKey, ui::SHOW_STATE_NORMAL);
-
-  child->AddObserver(show_state_controller_.get());
-
-  Workspace* workspace = workspace_manager_->GetActiveWorkspace();
-  if (workspace) {
-    aura::Window* active = ash::GetActiveWindow();
-    // Active window may not be in the default container layer.
-    if (!workspace->Contains(active))
-      active = NULL;
-    if (workspace->AddWindowAfter(child, active))
-      return;
-  }
-  // Create new workspace if new |child| doesn't fit to current workspace.
-  Workspace* new_workspace = workspace_manager_->CreateWorkspace();
-  new_workspace->AddWindowAfter(child, NULL);
-  new_workspace->Activate();
+  if (child->IsVisible())
+    workspace_manager_->AddWindow(child);
 }
 
 void WorkspaceLayoutManager::OnWillRemoveWindowFromLayout(
     aura::Window* child) {
-  child->RemoveObserver(show_state_controller_.get());
   ClearRestoreBounds(child);
-
-  Workspace* workspace = workspace_manager_->FindBy(child);
-  if (!workspace)
-    return;
-  workspace->RemoveWindow(child);
-  if (workspace->is_empty())
-    delete workspace;
+  workspace_manager_->RemoveWindow(child);
 }
 
 void WorkspaceLayoutManager::OnChildWindowVisibilityChanged(
     aura::Window* child,
     bool visible) {
-  NOTIMPLEMENTED();
+  if (!workspace_manager_->IsManagedWindow(child))
+    return;
+  if (visible)
+    workspace_manager_->AddWindow(child);
+  else
+    workspace_manager_->RemoveWindow(child);
 }
 
 void WorkspaceLayoutManager::SetChildBounds(
     aura::Window* child,
     const gfx::Rect& requested_bounds) {
-  gfx::Rect adjusted_bounds = requested_bounds;
-
-  // First, calculate the adjusted bounds.
-  if (child->type() != aura::client::WINDOW_TYPE_NORMAL ||
-      workspace_manager_->layout_in_progress() ||
-      child->transient_parent()) {
-    // Use the requested bounds as is.
-  } else if (child == workspace_manager_->ignored_window()) {
-    // If a drag window is requesting bounds, make sure its attached to
-    // the workarea's top and fits within the total drag area.
-    gfx::Rect drag_area =  workspace_manager_->GetDragAreaBounds();
-    adjusted_bounds.set_y(drag_area.y());
-    adjusted_bounds = adjusted_bounds.AdjustToFit(drag_area);
-  } else {
-    Workspace* workspace = workspace_manager_->FindBy(child);
-    gfx::Rect work_area = workspace->GetWorkAreaBounds();
-    adjusted_bounds.set_origin(
-        gfx::Point(child->GetTargetBounds().x(), work_area.y()));
-    adjusted_bounds = adjusted_bounds.AdjustToFit(work_area);
+  // Allow setting the bounds for any window we don't care about, isn't visible,
+  // or we're setting the bounds of. All other request are dropped on the floor.
+  if (child == workspace_manager_->ignored_window() ||
+      !workspace_manager_->IsManagedWindow(child) || !child->IsVisible() ||
+      (!window_util::IsWindowMaximized(child) &&
+       !window_util::IsWindowFullscreen(child))) {
+    SetChildBoundsDirect(child, requested_bounds);
   }
-
-  ui::WindowShowState show_state = static_cast<ui::WindowShowState>(
-      child->GetIntProperty(aura::client::kShowStateKey));
-
-  // Second, check if the window is either maximized or in fullscreen mode.
-  if (show_state == ui::SHOW_STATE_MAXIMIZED ||
-      show_state == ui::SHOW_STATE_FULLSCREEN) {
-    // If the request is not from workspace manager,
-    // remember the requested bounds.
-    if (!workspace_manager_->layout_in_progress())
-      SetRestoreBounds(child, adjusted_bounds);
-
-    Workspace* workspace = workspace_manager_->FindBy(child);
-    if (show_state == ui::SHOW_STATE_MAXIMIZED)
-      adjusted_bounds = workspace->GetWorkAreaBounds();
-    else
-      adjusted_bounds = workspace->bounds();
-    // Don't
-    if (child->GetTargetBounds() == adjusted_bounds)
-      return;
-  }
-  SetChildBoundsDirect(child, adjusted_bounds);
 }
 
 }  // namespace internal

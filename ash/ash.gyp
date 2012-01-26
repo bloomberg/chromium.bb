@@ -138,8 +138,6 @@
         'wm/shadow_types.h',
         'wm/shelf_layout_manager.cc',
         'wm/shelf_layout_manager.h',
-        'wm/show_state_controller.h',
-        'wm/show_state_controller.cc',
         'wm/stacking_controller.cc',
         'wm/stacking_controller.h',
         'wm/status_area_layout_manager.cc',
@@ -176,7 +174,6 @@
         'wm/workspace/workspace_layout_manager.h',
         'wm/workspace/workspace_manager.cc',
         'wm/workspace/workspace_manager.h',
-        'wm/workspace/workspace_observer.h',
       ],
     },
     {
@@ -238,7 +235,6 @@
         'wm/window_cycle_controller_unittest.cc',
         'wm/window_modality_controller_unittest.cc',
         'wm/workspace_controller_unittest.cc',
-        'wm/workspace/workspace_layout_manager_unittest.cc',
         'wm/workspace/workspace_manager_unittest.cc',
 
         '<(SHARED_INTERMEDIATE_DIR)/ui/gfx/gfx_resources.rc',

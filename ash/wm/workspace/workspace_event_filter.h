@@ -7,6 +7,7 @@
 #pragma once
 
 #include "ash/wm/toplevel_window_event_filter.h"
+#include "ui/aura/window_observer.h"
 
 namespace aura {
 class MouseEvent;
@@ -16,7 +17,8 @@ class Window;
 namespace ash {
 namespace internal {
 
-class WorkspaceEventFilter : public ToplevelWindowEventFilter {
+class WorkspaceEventFilter : public ToplevelWindowEventFilter,
+                             public aura::WindowObserver {
  public:
   explicit WorkspaceEventFilter(aura::Window* owner);
   virtual ~WorkspaceEventFilter();
@@ -24,6 +26,9 @@ class WorkspaceEventFilter : public ToplevelWindowEventFilter {
   // Overridden from ToplevelWindowEventFilter:
   virtual bool PreHandleMouseEvent(aura::Window* target,
                                    aura::MouseEvent* event) OVERRIDE;
+
+  // Overriden from WindowObserver:
+  virtual void OnWindowDestroyed(aura::Window* window) OVERRIDE;
 
  private:
   enum DragState {

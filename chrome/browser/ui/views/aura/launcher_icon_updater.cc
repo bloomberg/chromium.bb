@@ -112,6 +112,7 @@ void LauncherIconUpdater::ActivateByID(ash::LauncherID id) {
     NOTREACHED();
     return;
   }
+  updater->window_->Show();
   ash::ActivateWindow(updater->window_);
   if (tab) {
     updater->tab_model_->ActivateTabAt(

@@ -14,41 +14,13 @@
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/base/ui_base_types.h"
-#include "ui/gfx/compositor/layer.h"
-#include "ui/gfx/compositor/layer_animator.h"
-#include "ui/gfx/compositor/scoped_layer_animation_settings.h"
-
-namespace {
-// Horizontal margin between windows.
-const int kWindowHorizontalMargin = 10;
-
-// Maximum number of windows a workspace can have.
-size_t g_max_windows_per_workspace = 2;
-
-// Returns the bounds of the window that should be used to calculate
-// the layout. It uses the restore bounds if exits, or
-// the target bounds of the window. The target bounds is the
-// final destination of |window| if the window's layer is animating,
-// or the current bounds of the window of no animation is currently
-// in progress.
-gfx::Rect GetLayoutBounds(aura::Window* window) {
-  const gfx::Rect* restore_bounds = ash::GetRestoreBounds(window);
-  return restore_bounds ? *restore_bounds : window->GetTargetBounds();
-}
-
-// Returns the width of the window that should be used to calculate
-// the layout. See |GetLayoutBounds| for more details.
-int GetLayoutWidth(aura::Window* window) {
-  return GetLayoutBounds(window).width();
-}
-
-}  // namespace
 
 namespace ash {
 namespace internal {
 
 Workspace::Workspace(WorkspaceManager* manager)
-    : workspace_manager_(manager) {
+    : type_(TYPE_NORMAL),
+      workspace_manager_(manager) {
   workspace_manager_->AddWorkspace(this);
 }
 
@@ -56,15 +28,34 @@ Workspace::~Workspace() {
   workspace_manager_->RemoveWorkspace(this);
 }
 
-void Workspace::SetBounds(const gfx::Rect& bounds) {
-  bool bounds_changed = bounds_ != bounds;
-  bounds_ = bounds;
-  if (bounds_changed)
-    Layout(NULL);
+// static
+Workspace::Type Workspace::TypeForWindow(aura::Window* window) {
+  if (window_util::GetOpenWindowSplit(window))
+    return TYPE_SPLIT;
+  if (window_util::IsWindowMaximized(window) ||
+      window_util::IsWindowFullscreen(window)) {
+    return TYPE_MAXIMIZED;
+  }
+  return TYPE_NORMAL;
+}
+
+void Workspace::SetType(Type type) {
+  // Can only change the type when there are no windows, or the type of window
+  // matches the type changing to. We need only check the first window as CanAdd
+  // only allows new windows if the type matches.
+  DCHECK(windows_.empty() || TypeForWindow(windows_[0]) == type);
+  type_ = type;
+}
+
+void Workspace::WorkspaceSizeChanged() {
+  if (!windows_.empty()) {
+    // TODO: need to handle size changing.
+    NOTIMPLEMENTED();
+  }
 }
 
 gfx::Rect Workspace::GetWorkAreaBounds() const {
-  return workspace_manager_->GetWorkAreaBounds(bounds_);
+  return workspace_manager_->GetWorkAreaBounds();
 }
 
 bool Workspace::AddWindowAfter(aura::Window* window, aura::Window* after) {
@@ -72,15 +63,19 @@ bool Workspace::AddWindowAfter(aura::Window* window, aura::Window* after) {
     return false;
   DCHECK(!Contains(window));
 
-  if (!after) {  // insert at the end.
+  aura::Window::Windows::iterator i =
+      std::find(windows_.begin(), windows_.end(), after);
+  if (!after || i == windows_.end())
     windows_.push_back(window);
-  } else {
-    DCHECK(Contains(after));
-    aura::Window::Windows::iterator i =
-        std::find(windows_.begin(), windows_.end(), after);
+  else
     windows_.insert(++i, window);
+
+  if (type_ == TYPE_MAXIMIZED) {
+    workspace_manager_->SetWindowBounds(window, GetWorkAreaBounds());
+  } else if (type_ == TYPE_SPLIT) {
+    // TODO: this needs to adjust bounds appropriately.
+    workspace_manager_->SetWindowBounds(window, GetWorkAreaBounds());
   }
-  Layout(window);
 
   return true;
 }
@@ -88,136 +83,15 @@ bool Workspace::AddWindowAfter(aura::Window* window, aura::Window* after) {
 void Workspace::RemoveWindow(aura::Window* window) {
   DCHECK(Contains(window));
   windows_.erase(std::find(windows_.begin(), windows_.end(), window));
-  Layout(NULL);
+  // TODO: this needs to adjust things.
 }
 
 bool Workspace::Contains(aura::Window* window) const {
   return std::find(windows_.begin(), windows_.end(), window) != windows_.end();
 }
 
-aura::Window* Workspace::FindRotateWindowForLocation(
-    const gfx::Point& position) {
-  aura::Window* active = ash::GetActiveWindow();
-  if (GetTotalWindowsWidth() < bounds_.width()) {
-    // If all windows fit to the width of the workspace, it returns the
-    // window which contains |position|'s x coordinate.
-    for (aura::Window::Windows::const_iterator i = windows_.begin();
-         i != windows_.end();
-         ++i) {
-      if (active == *i)
-        continue;
-      gfx::Rect bounds = (*i)->GetTargetBounds();
-      if (bounds.x() < position.x() && position.x() < bounds.right())
-        return *i;
-    }
-  } else if (bounds_.x() < position.x() && position.x() < bounds_.right()) {
-    // If windows are overlapping, it divides the workspace into
-    // regions with the same width, and returns the Nth window that
-    // corresponds to the region that contains the |position|.
-    int width = bounds_.width() / windows_.size();
-    size_t index = (position.x() - bounds_.x()) / width;
-    DCHECK(index < windows_.size());
-    aura::Window* window = windows_[index];
-    if (window != active)
-      return window;
-  }
-  return NULL;
-}
-
-void Workspace::RotateWindows(aura::Window* source, aura::Window* target) {
-  DCHECK(Contains(source));
-  DCHECK(Contains(target));
-  aura::Window::Windows::iterator source_iter =
-      std::find(windows_.begin(), windows_.end(), source);
-  aura::Window::Windows::iterator target_iter =
-      std::find(windows_.begin(), windows_.end(), target);
-  DCHECK(source_iter != target_iter);
-  if (source_iter < target_iter)
-    std::rotate(source_iter, source_iter + 1, target_iter + 1);
-  else
-    std::rotate(target_iter, source_iter, source_iter + 1);
-  Layout(NULL);
-}
-
-aura::Window* Workspace::ShiftWindows(aura::Window* insert,
-                                      aura::Window* until,
-                                      aura::Window* target,
-                                      ShiftDirection direction) {
-  DCHECK(until);
-  DCHECK(!Contains(insert));
-
-  bool shift_reached_until = GetIndexOf(until) >= 0;
-  if (shift_reached_until) {
-    // Calling RemoveWindow here causes the animation set in Layout below
-    // to be ignored.  See crbug.com/102413.
-    windows_.erase(std::find(windows_.begin(), windows_.end(), until));
-  }
-  aura::Window* pushed = NULL;
-  if (direction == SHIFT_TO_RIGHT) {
-    aura::Window::Windows::iterator iter =
-        std::find(windows_.begin(), windows_.end(), target);
-    // Insert at |target| position, or at the begining.
-    if (iter == windows_.end())
-      iter = windows_.begin();
-    windows_.insert(iter, insert);
-    if (!shift_reached_until) {
-      pushed = windows_.back();
-      windows_.erase(--windows_.end());
-    }
-  } else {
-    aura::Window::Windows::iterator iter =
-        std::find(windows_.begin(), windows_.end(), target);
-    // Insert after |target|, or at the end.
-    if (iter != windows_.end())
-      ++iter;
-    windows_.insert(iter, insert);
-    if (!shift_reached_until) {
-      pushed = windows_.front();
-      windows_.erase(windows_.begin());
-    }
-  }
-  Layout(NULL);
-  return pushed;
-}
-
 void Workspace::Activate() {
   workspace_manager_->SetActiveWorkspace(this);
-}
-
-void Workspace::Layout(aura::Window* no_animation) {
-  aura::Window* ignore = workspace_manager_->ignored_window();
-  workspace_manager_->set_layout_in_progress(true);
-  gfx::Rect work_area = workspace_manager_->GetWorkAreaBounds(bounds_);
-  int total_width = GetTotalWindowsWidth();
-  if (total_width < work_area.width()) {
-    int dx = (work_area.width() - total_width) / 2;
-    for (aura::Window::Windows::iterator i = windows_.begin();
-         i != windows_.end();
-         ++i) {
-      if (*i != ignore) {
-        MoveWindowTo(*i,
-                     gfx::Point(work_area.x() + dx, work_area.y()),
-                     no_animation != *i);
-      }
-      dx += GetLayoutWidth(*i) + kWindowHorizontalMargin;
-    }
-  } else {
-    DCHECK_LT(windows_.size(), 3U);
-    // TODO(oshima): This is messy. Figure out general algorithm to
-    // layout more than 2 windows.
-    if (windows_[0] != ignore) {
-      MoveWindowTo(windows_[0],
-                   work_area.origin(),
-                   no_animation != windows_[0]);
-    }
-    if (windows_.size() == 2 && windows_[1] != ignore) {
-      MoveWindowTo(windows_[1],
-                   gfx::Point(work_area.right() - GetLayoutWidth(windows_[1]),
-                              work_area.y()),
-                   no_animation != windows_[1]);
-    }
-  }
-  workspace_manager_->set_layout_in_progress(false);
 }
 
 bool Workspace::ContainsFullscreenWindow() const {
@@ -240,47 +114,7 @@ int Workspace::GetIndexOf(aura::Window* window) const {
 }
 
 bool Workspace::CanAdd(aura::Window* window) const {
-  // TODO(oshima): This should be based on available space and the
-  // size of the |window|.
-  //NOTIMPLEMENTED();
-  return windows_.size() < g_max_windows_per_workspace;
-}
-
-void Workspace::MoveWindowTo(
-    aura::Window* window,
-    const gfx::Point& origin,
-    bool animate) {
-  gfx::Rect bounds = GetLayoutBounds(window);
-  gfx::Rect work_area = GetWorkAreaBounds();
-  // Make sure the window isn't bigger than the workspace size.
-  bounds.SetRect(origin.x(), origin.y(),
-                 std::min(work_area.width(), bounds.width()),
-                 std::min(work_area.height(), bounds.height()));
-  if (animate) {
-    ui::ScopedLayerAnimationSettings settings(window->layer()->GetAnimator());
-    window->SetBounds(bounds);
-  } else {
-    window->SetBounds(bounds);
-  }
-}
-
-int Workspace::GetTotalWindowsWidth() const {
-  int total_width = 0;
-  for (aura::Window::Windows::const_iterator i = windows_.begin();
-       i != windows_.end();
-       ++i) {
-    if (total_width)
-      total_width += kWindowHorizontalMargin;
-    total_width += GetLayoutWidth(*i);
-  }
-  return total_width;
-}
-
-// static
-size_t Workspace::SetMaxWindowsCount(size_t max) {
-  int old = g_max_windows_per_workspace;
-  g_max_windows_per_workspace = max;
-  return old;
+  return TypeForWindow(window) == type_;
 }
 
 }  // namespace internal

@@ -22,17 +22,24 @@ namespace internal {
 class WorkspaceManager;
 class WorkspaceTest;
 
-// A workspace is a partial area of the entire desktop (viewport) that
-// is visible to the user at a given time. The size of the workspace is
-// generally the same as the size of the monitor, and the desktop can
-// have multiple workspaces.
-// A workspace contains a limited number of windows and the workspace
-// manager may create a new workspace if there is not enough room for
-// a new window.
+// A workspace contains a number of windows. The number of windows a Workspace
+// may contain is dictated by the type. Typically only one workspace is visible
+// at a time. The exception to that is when overview mode is active.
 class ASH_EXPORT Workspace {
  public:
-  explicit Workspace(WorkspaceManager* manager);
-  virtual ~Workspace();
+  // Type of workspace. The type of workspace dictates the types of windows the
+  // workspace can contain.
+  enum Type {
+    // The workspace holds a single maximized or full screen window.
+    TYPE_MAXIMIZED,
+
+    // Workspace contains multiple windows that are split (also known as
+    // co-maximized).
+    TYPE_SPLIT,
+
+    // Workspace contains non-maximized windows that can be moved in anyway.
+    TYPE_NORMAL,
+  };
 
   // Specifies the direction to shift windows in |ShiftWindows()|.
   enum ShiftDirection {
@@ -40,15 +47,25 @@ class ASH_EXPORT Workspace {
     SHIFT_TO_LEFT
   };
 
-  //  Returns true if this workspace has no windows.
+  explicit Workspace(WorkspaceManager* manager);
+  virtual ~Workspace();
+
+  // Returns the type of workspace that can contain |window|.
+  static Type TypeForWindow(aura::Window* window);
+
+  // The type of this Workspace.
+  void SetType(Type type);
+  Type type() const { return type_; }
+
+  // Returns true if this workspace has no windows.
   bool is_empty() const { return windows_.empty(); }
+  size_t num_windows() const { return windows_.size(); }
+  const std::vector<aura::Window*>& windows() const { return windows_; }
 
-  // Sets/gets bounds of this workspace.
-  const gfx::Rect& bounds() { return bounds_; }
-  void SetBounds(const gfx::Rect& bounds);
+  // Invoked when the size of the workspace changes.
+  void WorkspaceSizeChanged();
 
-  // Returns the work area bounds of this workspace in viewport
-  // coordinates.
+  // Returns the work area bounds of this workspace in viewport coordinates.
   gfx::Rect GetWorkAreaBounds() const;
 
   // Adds the |window| at the position after the window |after|.  It
@@ -63,34 +80,8 @@ class ASH_EXPORT Workspace {
   // Return true if this workspace has |window|.
   bool Contains(aura::Window* window) const;
 
-  // Returns a window to rotate to based on |position|.
-  aura::Window* FindRotateWindowForLocation(const gfx::Point& position);
-
-  // Rotates the windows by removing |source| and inserting it to the
-  // position that |target| was in. It re-layouts windows except for |source|.
-  void RotateWindows(aura::Window* source, aura::Window* target);
-
-  // Shift the windows in the workspace by inserting |window| until it
-  // reaches |until|. If |direction| is |SHIFT_TO_RIGHT|, |insert| is
-  // inserted at the position of |target| or at the beginning if
-  // |target| is NULL. If |direction| is |SHIFT_TO_LEFT|, |insert| is
-  // inserted after the position of |target|, or at the end if
-  // |target| is NULL.  It returns the window that is overflowed by
-  // shifting, or NULL if shifting stopped at |until|.
-  aura::Window* ShiftWindows(aura::Window* insert,
-                             aura::Window* until,
-                             aura::Window* target,
-                             ShiftDirection direction);
-
   // Activates this workspace.
   void Activate();
-
-  // Layout windows. The workspace doesn't set bounds on
-  // |WorkspaceManager::ignored_window| if it's set. It still uses the window's
-  // bounds to calculate bounds for other windows. Moving animation is
-  // applied to all windows except for the window specified by |no_animation|
-  // and |ignore|.
-  void Layout(aura::Window* no_animation);
 
   // Returns true if the workspace contains a fullscreen window.
   bool ContainsFullscreenWindow() const;
@@ -108,23 +99,9 @@ class ASH_EXPORT Workspace {
   // Returns true if the given |window| can be added to this workspace.
   bool CanAdd(aura::Window* window) const;
 
-  // Moves |window| to the given point. It performs animation when
-  // |animate| is true.
-  void MoveWindowTo(aura::Window* window,
-                    const gfx::Point& origin,
-                    bool animate);
-
-  // Returns the sum of all window's width.
-  int GetTotalWindowsWidth() const;
-
-  // Test only: Changes how may windows workspace can have.
-  // Returns the current value so that it can be reverted back to
-  // original value.
-  static size_t SetMaxWindowsCount(size_t max);
+  Type type_;
 
   WorkspaceManager* workspace_manager_;
-
-  gfx::Rect bounds_;
 
   // Windows in the workspace in layout order.
   std::vector<aura::Window*> windows_;

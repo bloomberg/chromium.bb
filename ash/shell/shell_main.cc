@@ -157,7 +157,9 @@ class ShellDelegateImpl : public ash::ShellDelegate {
 
   virtual void LauncherItemClicked(
       const ash::LauncherItem& item) OVERRIDE {
-    ash::ActivateWindow(watcher_->GetWindowByID(item.id));
+    aura::Window* window = watcher_->GetWindowByID(item.id);
+    window->Show();
+    ash::ActivateWindow(window);
   }
 
   virtual int GetBrowserShortcutResourceId() OVERRIDE {

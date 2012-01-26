@@ -6,11 +6,10 @@
 #define ASH_WM_WORKSPACE_WORKSPACE_LAYOUT_MANAGER_H_
 #pragma once
 
+#include "ash/ash_export.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "base/memory/scoped_ptr.h"
 #include "ui/aura/layout_manager.h"
-#include "ash/ash_export.h"
 
 namespace aura {
 class MouseEvent;
@@ -24,10 +23,9 @@ class Rect;
 namespace ash {
 namespace internal {
 
-class ShowStateController;
 class WorkspaceManager;
 
-// LayoutManager for the default window container.
+// LayoutManager for top level windows when WorkspaceManager is enabled.
 class ASH_EXPORT WorkspaceLayoutManager : public aura::LayoutManager {
  public:
   explicit WorkspaceLayoutManager(WorkspaceManager* workspace_manager);
@@ -61,11 +59,10 @@ class ASH_EXPORT WorkspaceLayoutManager : public aura::LayoutManager {
                                               bool visibile) OVERRIDE;
   virtual void SetChildBounds(aura::Window* child,
                               const gfx::Rect& requested_bounds) OVERRIDE;
+
  private:
   // Owned by WorkspaceController.
   WorkspaceManager* workspace_manager_;
-
-  scoped_ptr<ShowStateController> show_state_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(WorkspaceLayoutManager);
 };

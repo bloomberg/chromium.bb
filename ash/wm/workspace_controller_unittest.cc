@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -66,54 +66,6 @@ class WorkspaceControllerTest : public aura::test::AuraTestBase {
 
   DISALLOW_COPY_AND_ASSIGN(WorkspaceControllerTest);
 };
-
-TEST_F(WorkspaceControllerTest, Overview) {
-  workspace_manager()->SetWorkspaceSize(gfx::Size(500, 300));
-
-  // Creating two workspaces, ws1 which contains window w1,
-  // and ws2 which contains window w2.
-  Workspace* ws1 = workspace_manager()->CreateWorkspace();
-  scoped_ptr<Window> w1(CreateTestWindow());
-  EXPECT_TRUE(ws1->AddWindowAfter(w1.get(), NULL));
-
-  Workspace* ws2 = workspace_manager()->CreateWorkspace();
-  scoped_ptr<Window> w2(CreateTestWindow());
-  EXPECT_TRUE(ws2->AddWindowAfter(w2.get(), NULL));
-
-  // Activating a window switches the active workspace.
-  ash::ActivateWindow(w2.get());
-  EXPECT_EQ(ws2, workspace_manager()->GetActiveWorkspace());
-
-  // The size of contents_view() is now ws1(500) + ws2(500) + margin(50).
-  EXPECT_EQ("0,0 1050x300", contents_view()->bounds().ToString());
-  EXPECT_FALSE(workspace_manager()->is_overview());
-  workspace_manager()->SetOverview(true);
-  EXPECT_TRUE(workspace_manager()->is_overview());
-
-  // Switching overview mode doesn't change the active workspace.
-  EXPECT_EQ(ws2, workspace_manager()->GetActiveWorkspace());
-
-  // Activating window w1 switches the active window and
-  // the mode back to normal mode.
-  ash::ActivateWindow(w1.get());
-  EXPECT_EQ(ws1, workspace_manager()->GetActiveWorkspace());
-  EXPECT_FALSE(workspace_manager()->is_overview());
-
-  // Deleting w1 without StackingClient resets the active workspace
-  ws1->RemoveWindow(w1.get());
-  delete ws1;
-  w1.reset();
-  EXPECT_EQ(ws2, workspace_manager()->GetActiveWorkspace());
-  EXPECT_EQ("0,0 500x300", contents_view()->bounds().ToString());
-  ws2->RemoveWindow(w2.get());
-  delete ws2;
-  // The size of contents_view() for no workspace case must be
-  // same as one contents_view() case.
-  EXPECT_EQ("0,0 500x300", contents_view()->bounds().ToString());
-
-  // Reset now before windows are destroyed.
-  controller_.reset();
-}
 
 }  // namespace internal
 }  // namespace ash
