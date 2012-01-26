@@ -927,7 +927,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest, SC_HoistBMs10LevelUp) {
 }
 
 // Test Scribe ID - 371968.
-// Flaky. http://crubug.com/107744.
+// Flaky. http://crbug.com/107744.
 IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
                        FLAKY_SC_SinkBMs10LevelDown) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
