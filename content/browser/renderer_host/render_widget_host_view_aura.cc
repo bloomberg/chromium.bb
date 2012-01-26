@@ -129,7 +129,8 @@ RenderWidgetHostViewAura::~RenderWidgetHostViewAura() {
   }
   aura::client::SetTooltipText(window_, NULL);
 #if defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
-  ui::Compositor* compositor = window_->layer()->GetCompositor();
+  // TODO: It would be better to not use aura::RootWindow here
+  ui::Compositor* compositor = aura::RootWindow::GetInstance()->compositor();
   if (compositor && compositor->HasObserver(this))
     compositor->RemoveObserver(this);
 #endif
@@ -366,7 +367,7 @@ void RenderWidgetHostViewAura::AcceleratedSurfaceBuffersSwapped(
   current_surface_ = params.surface_handle;
   UpdateExternalTexture();
 
-  if (!window_->layer()->GetCompositor()) {
+  if (!aura::RootWindow::GetInstance()->compositor()) {
     // We have no compositor, so we have no way to display the surface.
     // Must still send the ACK.
     RenderWidgetHost::AcknowledgeSwapBuffers(params.route_id, gpu_host_id);
@@ -379,7 +380,7 @@ void RenderWidgetHostViewAura::AcceleratedSurfaceBuffersSwapped(
     on_compositing_ended_callbacks_.push_back(
         base::Bind(&RenderWidgetHost::AcknowledgeSwapBuffers,
                    params.route_id, gpu_host_id));
-    ui::Compositor* compositor = window_->layer()->GetCompositor();
+    ui::Compositor* compositor = aura::RootWindow::GetInstance()->compositor();
     if (!compositor->HasObserver(this))
       compositor->AddObserver(this);
   }
@@ -395,7 +396,7 @@ void RenderWidgetHostViewAura::AcceleratedSurfacePostSubBuffer(
   current_surface_ = params.surface_handle;
   UpdateExternalTexture();
 
-  if (!window_->layer()->GetCompositor()) {
+  if (!aura::RootWindow::GetInstance()->compositor()) {
     // We have no compositor, so we have no way to display the surface
     // Must still send the ACK
     RenderWidgetHost::AcknowledgePostSubBuffer(params.route_id, gpu_host_id);
@@ -415,7 +416,7 @@ void RenderWidgetHostViewAura::AcceleratedSurfacePostSubBuffer(
     on_compositing_ended_callbacks_.push_back(
         base::Bind(&RenderWidgetHost::AcknowledgePostSubBuffer,
                    params.route_id, gpu_host_id));
-    ui::Compositor* compositor = window_->layer()->GetCompositor();
+    ui::Compositor* compositor = aura::RootWindow::GetInstance()->compositor();
     if (!compositor->HasObserver(this))
       compositor->AddObserver(this);
   }
