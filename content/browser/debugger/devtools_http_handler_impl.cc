@@ -17,7 +17,6 @@
 #include "base/threading/thread.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/devtools_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/devtools_agent_host_registry.h"
@@ -26,8 +25,11 @@
 #include "content/public/browser/devtools_manager.h"
 #include "content/public/browser/favicon_status.h"
 #include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/common/content_client.h"
 #include "googleurl/src/gurl.h"
+#include "grit/devtools_resources_map.h"
 #include "net/base/escape.h"
 #include "net/base/io_buffer.h"
 #include "net/server/http_server_request_info.h"
@@ -80,53 +82,52 @@ class DevToolsClientHostImpl : public DevToolsClientHost {
 
 static int next_id = 1;
 
-class TabContentsIDHelper : public content::WebContentsObserver {
+class WebContentsIDHelper : public content::WebContentsObserver {
  public:
-
-  static int GetID(TabContents* tab) {
-    TabContentsToIdMap::iterator it = tabcontents_to_id_.Get().find(tab);
-    if (it != tabcontents_to_id_.Get().end())
+  static int GetID(WebContents* contents) {
+    WebContentsToIdMap::iterator it = web_contents_to_id_.Get().find(contents);
+    if (it != web_contents_to_id_.Get().end())
       return it->second;
-    TabContentsIDHelper* wrapper = new TabContentsIDHelper(tab);
+    WebContentsIDHelper* wrapper = new WebContentsIDHelper(contents);
     return wrapper->id_;
   }
 
-  static TabContents* GetTabContents(int id) {
-    IdToTabContentsMap::iterator it = id_to_tabcontents_.Get().find(id);
-    if (it != id_to_tabcontents_.Get().end())
+  static WebContents* GetWebContents(int id) {
+    IdToWebContentsMap::iterator it = id_to_web_contents_.Get().find(id);
+    if (it != id_to_web_contents_.Get().end())
       return it->second;
     return NULL;
   }
 
  private:
-  explicit TabContentsIDHelper(TabContents* tab)
+  explicit WebContentsIDHelper(WebContents* tab)
       : content::WebContentsObserver(tab),
         id_(next_id++) {
-    id_to_tabcontents_.Get()[id_] = tab;
-    tabcontents_to_id_.Get()[tab] = id_;
+    id_to_web_contents_.Get()[id_] = tab;
+    web_contents_to_id_.Get()[tab] = id_;
   }
 
-  virtual ~TabContentsIDHelper() {}
+  virtual ~WebContentsIDHelper() {}
 
-  virtual void WebContentsDestroyed(WebContents* tab) OVERRIDE {
-    id_to_tabcontents_.Get().erase(id_);
-    tabcontents_to_id_.Get().erase(static_cast<TabContents*>(tab));
+  virtual void WebContentsDestroyed(WebContents* contents) OVERRIDE {
+    id_to_web_contents_.Get().erase(id_);
+    web_contents_to_id_.Get().erase(contents);
     delete this;
   }
 
   int id_;
-  typedef std::map<int, TabContents*> IdToTabContentsMap;
-  static base::LazyInstance<IdToTabContentsMap>::Leaky
-      id_to_tabcontents_;
-  typedef std::map<TabContents*, int> TabContentsToIdMap;
-  static base::LazyInstance<TabContentsToIdMap>::Leaky
-      tabcontents_to_id_;
+  typedef std::map<int, WebContents*> IdToWebContentsMap;
+  static base::LazyInstance<IdToWebContentsMap>::Leaky
+      id_to_web_contents_;
+  typedef std::map<WebContents*, int> WebContentsToIdMap;
+  static base::LazyInstance<WebContentsToIdMap>::Leaky
+      web_contents_to_id_;
 };
 
-base::LazyInstance<TabContentsIDHelper::IdToTabContentsMap>::Leaky
-    TabContentsIDHelper::id_to_tabcontents_ = LAZY_INSTANCE_INITIALIZER;
-base::LazyInstance<TabContentsIDHelper::TabContentsToIdMap>::Leaky
-    TabContentsIDHelper::tabcontents_to_id_ = LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<WebContentsIDHelper::IdToWebContentsMap>::Leaky
+    WebContentsIDHelper::id_to_web_contents_ = LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<WebContentsIDHelper::WebContentsToIdMap>::Leaky
+    WebContentsIDHelper::web_contents_to_id_ = LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
 
@@ -159,10 +160,33 @@ void DevToolsHttpHandlerImpl::Stop() {
       base::Bind(&DevToolsHttpHandlerImpl::TeardownAndRelease, this));
 }
 
+static std::string PathWithoutParams(const std::string& path) {
+  size_t query_position = path.find("?");
+  if (query_position != std::string::npos)
+    return path.substr(0, query_position);
+  return path;
+}
+
+static std::string GetMimeType(const std::string& filename) {
+  if (EndsWith(filename, ".html", false)) {
+    return "text/html";
+  } else if (EndsWith(filename, ".css", false)) {
+    return "text/css";
+  } else if (EndsWith(filename, ".js", false)) {
+    return "application/javascript";
+  } else if (EndsWith(filename, ".png", false)) {
+    return "image/png";
+  } else if (EndsWith(filename, ".gif", false)) {
+    return "image/gif";
+  }
+  NOTREACHED();
+  return "text/plain";
+}
+
 void DevToolsHttpHandlerImpl::OnHttpRequest(
     int connection_id,
     const net::HttpServerRequestInfo& info) {
-  if (info.path == "/json") {
+  if (info.path.find("/json") == 0) {
     // Pages discovery json request.
     BrowserThread::PostTask(
         BrowserThread::UI,
@@ -174,6 +198,12 @@ void DevToolsHttpHandlerImpl::OnHttpRequest(
     return;
   }
 
+  if (info.path == "" || info.path == "/") {
+    std::string response = delegate_->GetDiscoveryPageHTML();
+    server_->Send200(connection_id, response, "text/html; charset=UTF-8");
+    return;
+  }
+
   // Proxy static files from chrome-devtools://devtools/*.
   net::URLRequestContext* request_context = delegate_->GetURLRequestContext();
   if (!request_context) {
@@ -181,16 +211,29 @@ void DevToolsHttpHandlerImpl::OnHttpRequest(
     return;
   }
 
-  if (info.path == "" || info.path == "/") {
-    std::string response = delegate_->GetDiscoveryPageHTML();
-    server_->Send200(connection_id, response, "text/html; charset=UTF-8");
-    return;
-  }
-
   net::URLRequest* request;
 
   if (info.path.find("/devtools/") == 0) {
-    request = new net::URLRequest(GURL("chrome-devtools:/" + info.path), this);
+    // Serve front-end files from resource bundle.
+    std::string filename = PathWithoutParams(info.path.substr(10));
+
+    if (delegate_->BundlesFrontendResources()) {
+      for (size_t i = 0; i < kDevtoolsResourcesSize; ++i) {
+        if (filename == kDevtoolsResources[i].name) {
+          int resource_id = kDevtoolsResources[i].value;
+          base::StringPiece data =
+              content::GetContentClient()->GetDataResource(resource_id);
+          server_->Send200(connection_id,
+                           data.as_string(),
+                           GetMimeType(filename));
+          return;
+        }
+      }
+      server_->Send404(connection_id);
+      return;
+    }
+    std::string base_url = delegate_->GetFrontendResourcesBaseURL();
+    request = new net::URLRequest(GURL(base_url + filename), this);
   } else if (info.path.find("/thumb/") == 0) {
     request = new net::URLRequest(GURL("chrome:/" + info.path), this);
   } else {
@@ -293,8 +336,7 @@ static PageList GeneratePageList(
     DevToolsClientHost* client_host = DevToolsManager::GetInstance()->
         GetDevToolsClientHostFor(agent);
     PageInfo page_info;
-    page_info.id = TabContentsIDHelper::GetID(
-        static_cast<TabContents*>(web_contents));
+    page_info.id = WebContentsIDHelper::GetID(web_contents);
     page_info.attached = client_host != NULL;
     page_info.url = entry->GetURL().spec();
     page_info.title = UTF16ToUTF8(net::EscapeForHTML(entry->GetTitle()));
@@ -359,15 +401,15 @@ void DevToolsHttpHandlerImpl::OnWebSocketRequestUI(
     return;
   }
 
-  TabContents* tab_contents = TabContentsIDHelper::GetTabContents(id);
-  if (tab_contents == NULL) {
+  WebContents* web_contents = WebContentsIDHelper::GetWebContents(id);
+  if (web_contents == NULL) {
     Send500(connection_id, "No such page id: " + page_id);
     return;
   }
 
   DevToolsManager* manager = DevToolsManager::GetInstance();
   DevToolsAgentHost* agent = DevToolsAgentHostRegistry::GetDevToolsAgentHost(
-      tab_contents->GetRenderViewHost());
+      web_contents->GetRenderViewHost());
   if (manager->GetDevToolsClientHostFor(agent)) {
     Send500(connection_id, "Page with given id is being inspected: " + page_id);
     return;
@@ -467,14 +509,15 @@ void DevToolsHttpHandlerImpl::OnReadCompleted(net::URLRequest* request,
 DevToolsHttpHandlerImpl::DevToolsHttpHandlerImpl(
     const std::string& ip,
     int port,
-    const std::string& frontend_host,
+    const std::string& frontend_url,
     DevToolsHttpHandlerDelegate* delegate)
     : ip_(ip),
       port_(port),
-      overridden_frontend_url_(frontend_host),
+      overridden_frontend_url_(frontend_url),
       delegate_(delegate) {
   if (overridden_frontend_url_.empty())
       overridden_frontend_url_ = "/devtools/devtools.html";
+
   AddRef();
 }
 
@@ -538,7 +581,7 @@ void DevToolsHttpHandlerImpl::Send404(int connection_id) {
 }
 
 void DevToolsHttpHandlerImpl::Send500(int connection_id,
-                                          const std::string& message) {
+                                      const std::string& message) {
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::Bind(&net::HttpServer::Send500, server_.get(), connection_id,
