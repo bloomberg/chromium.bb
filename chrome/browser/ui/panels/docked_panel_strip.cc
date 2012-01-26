@@ -30,19 +30,19 @@ const double kPanelMaxWidthFactor = 0.35;
 
 // New panels that cannot fit in the panel strip are moved to overflow
 // after a brief delay.
-const int kMoveNewPanelToOverflowDelayMilliseconds = 1500;  // arbitrary
+const int kMoveNewPanelToOverflowDelayMs = 1500;  // arbitrary
 
 // Occasionally some system, like Windows, might not bring up or down the bottom
 // bar when the mouse enters or leaves the bottom screen area. This is the
 // maximum time we will wait for the bottom bar visibility change notification.
 // After the time expires, we bring up/down the titlebars as planned.
-const int kMaxMillisecondsWaitForBottomBarVisibilityChange = 1000;
+const int kMaxDelayWaitForBottomBarVisibilityChangeMs = 1000;
 
 // See usage below.
 #if defined(TOOLKIT_GTK)
-const int kMillisecondsBeforeCollapsingFromTitleOnlyState = 2000;
+const int kDelayBeforeCollapsingFromTitleOnlyStateMs = 2000;
 #else
-const int kMillisecondsBeforeCollapsingFromTitleOnlyState = 0;
+const int kDelayBeforeCollapsingFromTitleOnlyStateMs = 0;
 #endif
 }  // namespace
 
@@ -144,8 +144,8 @@ void DockedPanelStrip::AddPanel(Panel* panel) {
           base::Bind(&DockedPanelStrip::DelayedMovePanelToOverflow,
                      base::Unretained(this),
                      panel),
-                     PanelManager::AdjustTimeInterval(
-                         kMoveNewPanelToOverflowDelayMilliseconds));
+          base::TimeDelta::FromMilliseconds(PanelManager::AdjustTimeInterval(
+              kMoveNewPanelToOverflowDelayMs)));
     }
 #endif
     panel->Initialize(gfx::Rect(x, y, width, height));
@@ -497,7 +497,7 @@ void DockedPanelStrip::BringUpOrDownTitlebars(bool bring_up) {
     return;
   are_titlebars_up_ = bring_up;
 
-  int task_delay_milliseconds = 0;
+  int task_delay_ms = 0;
 
   // If the auto-hiding bottom bar exists, delay the action until the bottom
   // bar is fully visible or hidden. We do not want both bottom bar and panel
@@ -513,8 +513,7 @@ void DockedPanelStrip::BringUpOrDownTitlebars(bool bring_up) {
       // Thus, we schedule a delayed task to do the work if we do not receive
       // the bottom bar visibility change notification within a certain period
       // of time.
-      task_delay_milliseconds =
-          kMaxMillisecondsWaitForBottomBarVisibilityChange;
+      task_delay_ms = kMaxDelayWaitForBottomBarVisibilityChangeMs;
     }
   }
 
@@ -525,10 +524,11 @@ void DockedPanelStrip::BringUpOrDownTitlebars(bool bring_up) {
   // would allow the user to be able to click on it.
   //
   // Currently, no platforms use both delays.
-  DCHECK(task_delay_milliseconds == 0 ||
-         kMillisecondsBeforeCollapsingFromTitleOnlyState == 0);
-  if (!bring_up && task_delay_milliseconds == 0)
-    task_delay_milliseconds = kMillisecondsBeforeCollapsingFromTitleOnlyState;
+  DCHECK(task_delay_ms == 0 ||
+         kDelayBeforeCollapsingFromTitleOnlyStateMs == 0);
+  if (!bring_up && task_delay_ms == 0) {
+    task_delay_ms = kDelayBeforeCollapsingFromTitleOnlyStateMs;
+  }
 
   // OnAutoHidingDesktopBarVisibilityChanged will handle this.
   delayed_titlebar_action_ = bring_up ? BRING_UP : BRING_DOWN;
@@ -542,7 +542,8 @@ void DockedPanelStrip::BringUpOrDownTitlebars(bool bring_up) {
       FROM_HERE,
       base::Bind(&DockedPanelStrip::DelayedBringUpOrDownTitlebarsCheck,
                  titlebar_action_factory_.GetWeakPtr()),
-                 PanelManager::AdjustTimeInterval(task_delay_milliseconds));
+      base::TimeDelta::FromMilliseconds(
+          PanelManager::AdjustTimeInterval(task_delay_ms)));
 }
 
 void DockedPanelStrip::DelayedBringUpOrDownTitlebarsCheck() {
