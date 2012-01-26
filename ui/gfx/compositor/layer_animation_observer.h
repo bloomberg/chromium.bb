@@ -31,6 +31,13 @@ class COMPOSITOR_EXPORT LayerAnimationObserver  {
   virtual void OnLayerAnimationScheduled(
       const LayerAnimationSequence* sequence) = 0;
 
+  // If the animator is destroyed during an animation, the animations are
+  // aborted. The resulting NotifyAborted notifications will NOT be sent to
+  // this observer if this function returns false. NOTE: IF YOU OVERRIDE THIS
+  // FUNCTION TO RETURN TRUE, YOU MUST REMEMBER TO REMOVE YOURSELF AS AN
+  // OBSERVER WHEN YOU ARE DESTROYED.
+  virtual bool RequiresNotificationWhenAnimatorDestroyed() const;
+
  protected:
   virtual ~LayerAnimationObserver() {}
 };

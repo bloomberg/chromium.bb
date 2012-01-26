@@ -670,6 +670,7 @@ TEST(LayerAnimatorTest, AddObserverExplicit) {
   TestLayerAnimationDelegate delegate;
   animator->SetDelegate(&delegate);
   animator->AddObserver(&observer);
+  observer.set_requires_notification_when_animator_destroyed(true);
 
   EXPECT_TRUE(!observer.last_ended_sequence());
 

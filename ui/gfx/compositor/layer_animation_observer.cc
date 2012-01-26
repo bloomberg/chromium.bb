@@ -6,6 +6,18 @@
 
 namespace ui {
 
+////////////////////////////////////////////////////////////////////////////////
+// LayerAnimationObserver
+//
+
+bool LayerAnimationObserver::RequiresNotificationWhenAnimatorDestroyed() const {
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// ImplicitAnimationObserver
+//
+
 ImplicitAnimationObserver::ImplicitAnimationObserver()
     : active_(false),
       animation_count_(0) {

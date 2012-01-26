@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -29,6 +29,7 @@ class TestLayerAnimationObserver : public LayerAnimationObserver {
   virtual void OnLayerAnimationScheduled(
       const LayerAnimationSequence* sequence) OVERRIDE;
 
+  virtual bool RequiresNotificationWhenAnimatorDestroyed() const OVERRIDE;
 
   const LayerAnimationSequence* last_ended_sequence() const {
     return last_ended_sequence_;
@@ -42,10 +43,15 @@ class TestLayerAnimationObserver : public LayerAnimationObserver {
     return last_aborted_sequence_;
   }
 
+  void set_requires_notification_when_animator_destroyed(bool value) {
+    requires_notification_when_animator_destroyed_ = value;
+  }
+
  private:
   const LayerAnimationSequence* last_ended_sequence_;
   const LayerAnimationSequence* last_scheduled_sequence_;
   const LayerAnimationSequence* last_aborted_sequence_;
+  bool requires_notification_when_animator_destroyed_;
 
   // Copy and assign are allowed.
 };

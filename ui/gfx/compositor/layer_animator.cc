@@ -39,6 +39,8 @@ LayerAnimator::LayerAnimator(base::TimeDelta transition_duration)
 }
 
 LayerAnimator::~LayerAnimator() {
+  for (size_t i = 0; i < running_animations_.size(); ++i)
+    running_animations_[i].sequence->OnAnimatorDestroyed();
   ClearAnimations();
 }
 
