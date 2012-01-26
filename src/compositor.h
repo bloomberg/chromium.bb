@@ -182,6 +182,7 @@ struct weston_compositor {
 	struct {
 		struct weston_spring spring;
 		struct weston_animation animation;
+		struct weston_surface *surface;
 	} fade;
 
 	uint32_t state;

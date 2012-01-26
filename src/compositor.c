@@ -618,6 +618,9 @@ weston_compositor_top(struct weston_compositor *compositor)
 
 	/* Insert below pointer */
 	list = &compositor->surface_list;
+	if (compositor->fade.surface &&
+	    list->next == &compositor->fade.surface->link)
+		list = list->next;
 	if (list->next == &input_device->sprite->link)
 		list = list->next;
 
@@ -677,21 +680,28 @@ fade_frame(struct weston_animation *animation,
 	struct weston_compositor *compositor =
 		container_of(animation,
 			     struct weston_compositor, fade.animation);
+	struct weston_surface *surface;
 
+	surface = compositor->fade.surface;
 	weston_spring_update(&compositor->fade.spring, msecs);
+	weston_surface_set_color(surface, 0.0, 0.0, 0.0,
+				 compositor->fade.spring.current);
+	weston_surface_damage(surface);
+
 	if (weston_spring_done(&compositor->fade.spring)) {
 		compositor->fade.spring.current =
 			compositor->fade.spring.target;
 		wl_list_remove(&animation->link);
 		wl_list_init(&animation->link);
 
-		if (compositor->fade.spring.current > 0.999) {
+		if (compositor->fade.spring.current < 0.001) {
+			destroy_surface(&surface->surface.resource);
+			compositor->fade.surface = NULL;
+		} else if (compositor->fade.spring.current > 0.999) {
 			compositor->state = WESTON_COMPOSITOR_SLEEPING;
 			compositor->shell->lock(compositor->shell);
 		}
 	}
-
-	weston_output_damage(output);
 }
 
 static void
@@ -747,23 +757,13 @@ static void
 weston_output_repaint(struct weston_output *output, int msecs)
 {
 	struct weston_compositor *ec = output->compositor;
-	struct weston_surface *es, *solid = NULL;
+	struct weston_surface *es;
 	struct weston_animation *animation, *next;
 	struct weston_frame_callback *cb, *cnext;
 	pixman_region32_t opaque, new_damage, total_damage,
 		overlap, surface_overlap;
 
 	glViewport(0, 0, output->current->width, output->current->height);
-
-	if (ec->fade.spring.current >= 0.001) {
-		solid = weston_surface_create(ec,
-					      output->x, output->y,
-					      output->current->width,
-					      output->current->height);
-		weston_surface_set_color(solid, 0.0, 0.0, 0.0,
-					 ec->fade.spring.current);
-		wl_list_insert(&ec->surface_list, &solid->link);
-	}
 
 	pixman_region32_init(&new_damage);
 	pixman_region32_init(&opaque);
@@ -805,9 +805,6 @@ weston_output_repaint(struct weston_output *output, int msecs)
 	}
 
 	output->repaint(output);
-
-	if (solid)
-		destroy_surface(&solid->surface.resource);
 
 	pixman_region32_fini(&total_damage);
 
@@ -866,6 +863,7 @@ weston_compositor_schedule_repaint(struct weston_compositor *compositor)
 WL_EXPORT void
 weston_compositor_fade(struct weston_compositor *compositor, float tint)
 {
+	struct weston_surface *surface;
 	int done;
 
 	done = weston_spring_done(&compositor->fade.spring);
@@ -877,7 +875,14 @@ weston_compositor_fade(struct weston_compositor *compositor, float tint)
 		compositor->fade.spring.timestamp =
 			weston_compositor_get_time();
 
-	weston_compositor_damage_all(compositor);
+	if (compositor->fade.surface == NULL) {
+		surface = weston_surface_create(compositor, 0, 0, 8192, 8192);
+		weston_surface_set_color(surface, 0.0, 0.0, 0.0, 0.0);
+		wl_list_insert(&compositor->surface_list, &surface->link);
+		compositor->fade.surface = surface;
+	}
+
+	weston_surface_damage(compositor->fade.surface);
 	if (wl_list_empty(&compositor->fade.animation.link))
 		wl_list_insert(compositor->animation_list.prev,
 			       &compositor->fade.animation.link);
