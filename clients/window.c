@@ -974,6 +974,9 @@ window_destroy(struct window *window)
 			input->pointer_focus = NULL;
 		if (input->keyboard_focus == window)
 			input->keyboard_focus = NULL;
+		if (input->focus_widget &&
+		    input->focus_widget->window == window)
+			input->focus_widget = NULL;
 	}
 
 	if (window->frame)
