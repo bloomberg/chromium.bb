@@ -6,7 +6,10 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/location.h"
 #include "base/logging.h"
+#include "base/message_loop_proxy.h"
+#include "base/metrics/histogram.h"
 #include "base/string_number_conversions.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/policy/device_management_service.h"
@@ -128,12 +131,14 @@ void AutoEnrollmentClient::Start() {
   // Drop the previous job and reset state.
   request_job_.reset();
   should_auto_enroll_ = false;
+  time_start_ = base::Time();  // reset to null.
 
   if (device_management_service_.get()) {
     if (serial_number_hash_.empty()) {
       LOG(ERROR) << "Failed to get the hash of the serial number, "
                  << "will not attempt to auto-enroll.";
     } else {
+      time_start_ = base::Time::Now();
       SendRequest(power_initial_);
       // Don't invoke the callback now.
       return;
@@ -141,13 +146,26 @@ void AutoEnrollmentClient::Start() {
   }
 
   // Auto-enrollment can't even start, so we're done.
-  completion_callback_.Run();
+  OnProtocolDone();
+}
+
+void AutoEnrollmentClient::CancelAndDeleteSoon() {
+  if (time_start_.is_null()) {
+    // The client isn't running, just delete it.
+    delete this;
+  } else {
+    // Client still running, but our owner isn't interested in the result
+    // anymore. Wait until the protocol completes to measure the extra time
+    // needed.
+    time_extra_start_ = base::Time::Now();
+    completion_callback_.Reset();
+  }
 }
 
 void AutoEnrollmentClient::SendRequest(int power) {
   if (power < 0 || power > power_limit_ || serial_number_hash_.empty()) {
     NOTREACHED();
-    completion_callback_.Run();
+    OnProtocolDone();
     return;
   }
 
@@ -179,7 +197,7 @@ void AutoEnrollmentClient::OnRequestCompletion(
     const em::DeviceManagementResponse& response) {
   if (status != DM_STATUS_SUCCESS || !response.has_auto_enrollment_response()) {
     LOG(ERROR) << "Auto enrollment error: " << status;
-    completion_callback_.Run();
+    OnProtocolDone();
     return;
   }
 
@@ -222,7 +240,7 @@ void AutoEnrollmentClient::OnRequestCompletion(
   }
 
   // Auto-enrollment done.
-  completion_callback_.Run();
+  OnProtocolDone();
 }
 
 bool AutoEnrollmentClient::IsSerialInProtobuf(
@@ -232,6 +250,38 @@ bool AutoEnrollmentClient::IsSerialInProtobuf(
       return true;
   }
   return false;
+}
+
+void AutoEnrollmentClient::OnProtocolDone() {
+  static const char* kProtocolTime = "Enterprise.AutoEnrollmentProtocolTime";
+  static const char* kExtraTime = "Enterprise.AutoEnrollmentExtraTime";
+  // The mininum time can't be 0, must be at least 1.
+  static const base::TimeDelta kMin = base::TimeDelta::FromMilliseconds(1);
+  static const base::TimeDelta kMax = base::TimeDelta::FromMinutes(5);
+  // However, 0 can still be sampled.
+  static const base::TimeDelta kZero = base::TimeDelta::FromMilliseconds(0);
+  static const int kBuckets = 50;
+
+  base::Time now = base::Time::Now();
+  if (!time_start_.is_null()) {
+    base::TimeDelta delta = now - time_start_;
+    UMA_HISTOGRAM_CUSTOM_TIMES(kProtocolTime, delta, kMin, kMax, kBuckets);
+    time_start_ = base::Time();
+  }
+  base::TimeDelta delta = kZero;
+  if (!time_extra_start_.is_null()) {
+    // CancelAndDeleteSoon() was invoked before.
+    delta = now - time_extra_start_;
+    base::MessageLoopProxy::current()->DeleteSoon(FROM_HERE, this);
+    time_extra_start_ = base::Time();
+  }
+  // This samples |kZero| when there was no need for extra time, so that we can
+  // measure the ratio of users that succeeded without needing a delay to the
+  // total users going through OOBE.
+  UMA_HISTOGRAM_CUSTOM_TIMES(kExtraTime, delta, kMin, kMax, kBuckets);
+
+  if (!completion_callback_.is_null())
+    completion_callback_.Run();
 }
 
 }  // namespace policy

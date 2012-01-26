@@ -14,6 +14,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/string16.h"
+#include "base/time.h"
 #include "base/timer.h"
 #include "chrome/browser/chromeos/login/login_display.h"
 #include "chrome/browser/chromeos/login/login_performer.h"
@@ -234,6 +235,10 @@ class ExistingUserController : public LoginDisplay::Delegate,
 
   // Callback to invoke to resume login, after auto-enrollment has completed.
   base::Closure resume_login_callback_;
+
+  // Time when the signin screen was first displayed. Used to measure the time
+  // from showing the screen until a successful login is performed.
+  base::Time time_init_;
 
   FRIEND_TEST_ALL_PREFIXES(ExistingUserControllerTest, NewUserLogin);
 

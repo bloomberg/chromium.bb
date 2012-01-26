@@ -14,6 +14,7 @@
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/logging.h"
+#include "base/metrics/histogram.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
@@ -247,6 +248,10 @@ void WizardController::ShowNetworkScreen() {
 }
 
 void WizardController::ShowLoginScreen() {
+  if (!time_eula_accepted_.is_null()) {
+    base::TimeDelta delta = base::Time::Now() - time_eula_accepted_;
+    UMA_HISTOGRAM_MEDIUM_TIMES("OOBE.EULAToSignInTime", delta);
+  }
   VLOG(1) << "Showing login screen.";
   SetStatusAreaVisible(true);
   host_->StartSignInScreen();
@@ -394,6 +399,7 @@ void WizardController::OnUpdateCompleted() {
 }
 
 void WizardController::OnEulaAccepted() {
+  time_eula_accepted_ = base::Time::Now();
   MarkEulaAccepted();
   bool enabled =
       OptionsUtil::ResolveMetricsReportingEnabled(usage_statistics_reporting_);

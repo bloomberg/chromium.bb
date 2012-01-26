@@ -194,6 +194,13 @@ void BaseLoginDisplayHost::OnSessionStart() {
 #endif
 }
 
+void BaseLoginDisplayHost::OnCompleteLogin() {
+  // Cancelling the |auto_enrollment_client_| now allows it to determine whether
+  // its protocol finished before login was complete.
+  if (auto_enrollment_client_.get())
+    auto_enrollment_client_.release()->CancelAndDeleteSoon();
+}
+
 void BaseLoginDisplayHost::StartWizard(
     const std::string& first_screen_name,
     DictionaryValue* screen_parameters) {

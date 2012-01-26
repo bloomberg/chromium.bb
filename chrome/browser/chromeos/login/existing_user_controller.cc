@@ -11,6 +11,7 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
+#include "base/metrics/histogram.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
@@ -152,6 +153,7 @@ ExistingUserController::ExistingUserController(LoginDisplayHost* host)
 }
 
 void ExistingUserController::Init(const UserList& users) {
+  time_init_ = base::Time::Now();
   UpdateLoginDisplay(users, true);
 
   LoginUtils::Get()->PrewarmAuthentication();
@@ -289,6 +291,11 @@ void ExistingUserController::SetDisplayEmail(const std::string& email) {
 
 void ExistingUserController::CompleteLogin(const std::string& username,
                                            const std::string& password) {
+  if (!time_init_.is_null()) {
+    base::TimeDelta delta = base::Time::Now() - time_init_;
+    UMA_HISTOGRAM_MEDIUM_TIMES("Login.PromptToCompleteLoginTime", delta);
+  }
+  host_->OnCompleteLogin();
   // Auto-enrollment must have made a decision by now. It's too late to enroll
   // if the protocol isn't done at this point.
   if (do_auto_enrollment_) {

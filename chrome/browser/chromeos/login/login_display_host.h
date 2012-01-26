@@ -41,6 +41,9 @@ class LoginDisplayHost {
   // LoginDisplayHost instance may delete itself.
   virtual void OnSessionStart() = 0;
 
+  // Called when a login has completed successfully.
+  virtual void OnCompleteLogin() = 0;
+
   // Toggles OOBE progress bar visibility, the bar is hidden by default.
   virtual void SetOobeProgressBarVisible(bool visible) = 0;
 

@@ -12,6 +12,7 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/time.h"
 #include "chrome/browser/policy/cloud_policy_constants.h"
 #include "third_party/protobuf/src/google/protobuf/repeated_field.h"
 
@@ -53,6 +54,10 @@ class AutoEnrollmentClient {
   // call can invoke the |completion_callback_| if errors occur.
   void Start();
 
+  // Cancels any pending requests. |completion_callback_| will not be invoked.
+  // |this| will delete itself.
+  void CancelAndDeleteSoon();
+
   // Returns true if the protocol completed successfully and determined that
   // this device should do enterprise enrollment.
   bool should_auto_enroll() const { return should_auto_enroll_; }
@@ -75,6 +80,10 @@ class AutoEnrollmentClient {
   // Returns true if |serial_number_hash_| is contained in |hashes|.
   bool IsSerialInProtobuf(
       const google::protobuf::RepeatedPtrField<std::string>& hashes);
+
+  // Invoked when the protocol completes. This invokes the callback and records
+  // some UMA metrics.
+  void OnProtocolDone();
 
   // Callback to invoke when the protocol completes.
   base::Closure completion_callback_;
@@ -105,6 +114,14 @@ class AutoEnrollmentClient {
   // Used to communicate with the device management service.
   scoped_ptr<DeviceManagementService> device_management_service_;
   scoped_ptr<DeviceManagementRequestJob> request_job_;
+
+  // Times used to determine the duration of the protocol, and the extra time
+  // needed to complete after the signin was complete.
+  // If |time_start_| is not null, the protocol is still running.
+  // If |time_extra_start_| is not null, the protocol is still running but our
+  // owner has relinquished ownership.
+  base::Time time_start_;
+  base::Time time_extra_start_;
 
   DISALLOW_COPY_AND_ASSIGN(AutoEnrollmentClient);
 };
