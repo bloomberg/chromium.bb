@@ -162,7 +162,7 @@ TEST(PrefServiceTest, UpdateCommandLinePrefStore) {
   EXPECT_EQ(Value::TYPE_BOOLEAN, value->GetType());
   bool actual_bool_value = true;
   EXPECT_TRUE(value->GetAsBoolean(&actual_bool_value));
-  EXPECT_EQ(false, actual_bool_value);
+  EXPECT_FALSE(actual_bool_value);
 
   // Change the command line.
   CommandLine cmd_line(CommandLine::NO_PROGRAM);
@@ -177,7 +177,7 @@ TEST(PrefServiceTest, UpdateCommandLinePrefStore) {
   EXPECT_EQ(Value::TYPE_BOOLEAN, value->GetType());
   actual_bool_value = false;
   EXPECT_TRUE(value->GetAsBoolean(&actual_bool_value));
-  EXPECT_EQ(true, actual_bool_value);
+  EXPECT_TRUE(actual_bool_value);
 }
 
 class PrefServiceSetValueTest : public testing::Test {
