@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,7 +17,7 @@
 #include "net/base/host_resolver.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_log.h"
-#include "net/dns/dns_client.h"
+#include "net/dns/dns_transaction.h"
 
 namespace net {
 
@@ -28,7 +28,7 @@ class NET_EXPORT AsyncHostResolver
   AsyncHostResolver(size_t max_dns_requests,
                     size_t max_pending_requests,
                     HostCache* cache,
-                    DnsClient* client,
+                    scoped_ptr<DnsTransactionFactory> client,
                     NetLog* net_log);
   virtual ~AsyncHostResolver();
 
@@ -46,9 +46,9 @@ class NET_EXPORT AsyncHostResolver
   virtual AddressFamily GetDefaultAddressFamily() const OVERRIDE;
   virtual HostCache* GetHostCache() OVERRIDE;
 
-  void OnDnsRequestComplete(DnsClient::Request* request,
-                            int result,
-                            const DnsResponse* transaction);
+  void OnDnsTransactionComplete(DnsTransaction* transaction,
+                                int result,
+                                const DnsResponse* response);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(AsyncHostResolverTest, QueuedLookup);
@@ -64,7 +64,7 @@ class NET_EXPORT AsyncHostResolver
 
   typedef std::pair<std::string, uint16> Key;
   typedef std::list<Request*> RequestList;
-  typedef std::list<const DnsClient::Request*> DnsRequestList;
+  typedef std::list<const DnsTransaction*> DnsTransactionList;
   typedef std::map<Key, RequestList> KeyRequestListMap;
 
   // Create a new request for the incoming Resolve() call.
@@ -108,11 +108,11 @@ class NET_EXPORT AsyncHostResolver
   // there are pending requests.
   void ProcessPending();
 
-  // Maximum number of concurrent DNS requests.
-  size_t max_dns_requests_;
+  // Maximum number of concurrent DNS transactions.
+  size_t max_dns_transactions_;
 
-  // List of current DNS requests.
-  DnsRequestList dns_requests_;
+  // List of current DNS transactions.
+  DnsTransactionList dns_transactions_;
 
   // A map from Key to a list of requests waiting for the Key to resolve.
   KeyRequestListMap requestlist_map_;
@@ -126,7 +126,7 @@ class NET_EXPORT AsyncHostResolver
   // Cache of host resolution results.
   scoped_ptr<HostCache> cache_;
 
-  DnsClient* client_;
+  scoped_ptr<DnsTransactionFactory> client_;
 
   NetLog* net_log_;
 

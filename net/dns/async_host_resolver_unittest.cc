@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,10 +13,10 @@
 #include "net/base/net_log.h"
 #include "net/base/sys_addrinfo.h"
 #include "net/base/test_completion_callback.h"
-#include "net/dns/dns_client.h"
 #include "net/dns/dns_query.h"
 #include "net/dns/dns_response.h"
 #include "net/dns/dns_test_util.h"
+#include "net/dns/dns_transaction.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {
@@ -48,60 +48,86 @@ void VerifyAddressList(const std::vector<const char*>& ip_addresses,
   ASSERT_EQ(static_cast<addrinfo*>(NULL), ainfo);
 }
 
-class MockDnsClient : public DnsClient,
-                      public base::SupportsWeakPtr<MockDnsClient> {
+class MockTransactionFactory : public DnsTransactionFactory,
+  public base::SupportsWeakPtr<MockTransactionFactory> {
  public:
-  // Using WeakPtr to support cancellation.
-  // All MockRequests succeed unless canceled or MockDnsClient is destroyed.
-  class MockRequest : public DnsClient::Request,
-                      public base::SupportsWeakPtr<MockRequest> {
+  // Using WeakPtr to support cancellation. All MockTransactions succeed unless
+  // cancelled or MockTransactionFactory is destroyed.
+  class MockTransaction : public DnsTransaction,
+                          public base::SupportsWeakPtr<MockTransaction> {
    public:
-    MockRequest(const base::StringPiece& qname,
-                uint16 qtype,
-                const RequestCallback& callback,
-                const base::WeakPtr<MockDnsClient>& client)
-        : Request(qname, qtype, callback), started_(false), client_(client) {
-    }
-
-    virtual int Start() OVERRIDE {
+    MockTransaction(const std::string& hostname,
+                    uint16 qtype,
+                    const DnsTransactionFactory::CallbackType& callback,
+                    const base::WeakPtr<MockTransactionFactory>& factory)
+        : hostname_(hostname),
+          qtype_(qtype),
+          callback_(callback),
+          started_(false),
+          factory_(factory) {
       EXPECT_FALSE(started_);
       started_ = true;
       MessageLoop::current()->PostTask(
           FROM_HERE,
-          base::Bind(&MockRequest::Finish, AsWeakPtr()));
+          base::Bind(&MockTransaction::Finish, AsWeakPtr()));
+    }
+
+    virtual const std::string& GetHostname() const OVERRIDE {
+      return hostname_;
+    }
+
+    virtual uint16 GetType() const OVERRIDE {
+      return qtype_;
+    }
+
+    virtual int Start() OVERRIDE {
       return ERR_IO_PENDING;
     }
 
    private:
     void Finish() {
-      if (!client_) {
-        DoCallback(ERR_DNS_SERVER_FAILED, NULL);
+      if (!factory_) {
+        callback_.Run(this, ERR_DNS_SERVER_FAILED, NULL);
         return;
       }
-      DoCallback(OK, client_->responses[Key(qname(), qtype())]);
+      callback_.Run(this,
+                    OK,
+                    factory_->responses_[Key(GetHostname(), GetType())]);
     }
 
+    const std::string hostname_;
+    const uint16 qtype_;
+    DnsTransactionFactory::CallbackType callback_;
     bool started_;
-    base::WeakPtr<MockDnsClient> client_;
+    const base::WeakPtr<MockTransactionFactory> factory_;
   };
 
   typedef std::pair<std::string, uint16> Key;
 
-  MockDnsClient() : num_requests(0) {}
-  ~MockDnsClient() {
-    STLDeleteValues(&responses);
+  MockTransactionFactory() : num_requests_(0) {}
+  ~MockTransactionFactory() {
+    STLDeleteValues(&responses_);
   }
 
-  Request* CreateRequest(const base::StringPiece& qname,
-                         uint16 qtype,
-                         const RequestCallback& callback,
-                         const BoundNetLog&) {
-    ++num_requests;
-    return new MockRequest(qname, qtype, callback, AsWeakPtr());
+  scoped_ptr<DnsTransaction> CreateTransaction(
+      const std::string& qname,
+      uint16 qtype,
+      const DnsTransactionFactory::CallbackType& callback,
+      const BoundNetLog&) {
+    ++num_requests_;
+    return scoped_ptr<DnsTransaction>(
+        new MockTransaction(qname, qtype, callback, AsWeakPtr()));
   }
 
-  int num_requests;
-  std::map<Key, DnsResponse*> responses;
+  void AddResponse(const std::string& name, uint8 type, DnsResponse* response) {
+    responses_[MockTransactionFactory::Key(name, type)] = response;
+  }
+
+  int num_requests() const { return num_requests_; }
+
+ private:
+  int num_requests_;
+  std::map<Key, DnsResponse*> responses_;
 };
 
 }  // namespace
@@ -137,24 +163,24 @@ class AsyncHostResolverTest : public testing::Test {
     info2_.set_address_family(ADDRESS_FAMILY_IPV4);
     info3_.set_address_family(ADDRESS_FAMILY_IPV4);
 
-    client_.reset(new MockDnsClient());
+    client_ = new MockTransactionFactory();
 
-    AddResponse(std::string(kT0DnsName, arraysize(kT0DnsName)), kT0Qtype,
+    client_->AddResponse(kT0HostName, kT0Qtype,
         new DnsResponse(reinterpret_cast<const char*>(kT0ResponseDatagram),
                         arraysize(kT0ResponseDatagram),
                         arraysize(kT0QueryDatagram)));
 
-    AddResponse(std::string(kT1DnsName, arraysize(kT1DnsName)), kT1Qtype,
+    client_->AddResponse(kT1HostName, kT1Qtype,
         new DnsResponse(reinterpret_cast<const char*>(kT1ResponseDatagram),
                         arraysize(kT1ResponseDatagram),
                         arraysize(kT1QueryDatagram)));
 
-    AddResponse(std::string(kT2DnsName, arraysize(kT2DnsName)), kT2Qtype,
+    client_->AddResponse(kT2HostName, kT2Qtype,
         new DnsResponse(reinterpret_cast<const char*>(kT2ResponseDatagram),
                         arraysize(kT2ResponseDatagram),
                         arraysize(kT2QueryDatagram)));
 
-    AddResponse(std::string(kT3DnsName, arraysize(kT3DnsName)), kT3Qtype,
+    client_->AddResponse(kT3HostName, kT3Qtype,
         new DnsResponse(reinterpret_cast<const char*>(kT3ResponseDatagram),
                         arraysize(kT3ResponseDatagram),
                         arraysize(kT3QueryDatagram)));
@@ -162,11 +188,7 @@ class AsyncHostResolverTest : public testing::Test {
     resolver_.reset(
         new AsyncHostResolver(kMaxTransactions, kMaxPendingRequests,
               HostCache::CreateDefaultCache(),
-              client_.get(), NULL));
-  }
-
-  void AddResponse(const std::string& name, uint8 type, DnsResponse* response) {
-    client_->responses[MockDnsClient::Key(name, type)] = response;
+              scoped_ptr<DnsTransactionFactory>(client_), NULL));
   }
 
  protected:
@@ -175,7 +197,7 @@ class AsyncHostResolverTest : public testing::Test {
   std::vector<const char*> ip_addresses0_, ip_addresses1_,
     ip_addresses2_, ip_addresses3_;
   scoped_ptr<HostResolver> resolver_;
-  scoped_ptr<MockDnsClient> client_;
+  MockTransactionFactory* client_;  // Owned by the AsyncHostResolver.
   TestCompletionCallback callback0_, callback1_, callback2_, callback3_;
 };
 
@@ -225,18 +247,20 @@ TEST_F(AsyncHostResolverTest, CachedLookup) {
   VerifyAddressList(ip_addresses0_, kPortNum, addrlist1_);
 }
 
-TEST_F(AsyncHostResolverTest, InvalidHostNameLookup) {
+// TODO(szym): This tests DnsTransaction not AsyncHostResolver. Remove or move
+// to dns_transaction_unittest.cc
+TEST_F(AsyncHostResolverTest, DISABLED_InvalidHostNameLookup) {
   const std::string kHostName1(64, 'a');
   info0_.set_host_port_pair(HostPortPair(kHostName1, kPortNum));
   int rv = resolver_->Resolve(info0_, &addrlist0_, callback0_.callback(), NULL,
                               BoundNetLog());
-  EXPECT_EQ(ERR_NAME_NOT_RESOLVED, rv);
+  EXPECT_EQ(ERR_INVALID_ARGUMENT, rv);
 
   const std::string kHostName2(4097, 'b');
   info0_.set_host_port_pair(HostPortPair(kHostName2, kPortNum));
   rv = resolver_->Resolve(info0_, &addrlist0_, callback0_.callback(), NULL,
                           BoundNetLog());
-  EXPECT_EQ(ERR_NAME_NOT_RESOLVED, rv);
+  EXPECT_EQ(ERR_INVALID_ARGUMENT, rv);
 }
 
 TEST_F(AsyncHostResolverTest, Lookup) {
@@ -271,7 +295,7 @@ TEST_F(AsyncHostResolverTest, ConcurrentLookup) {
   EXPECT_EQ(OK, rv2);
   VerifyAddressList(ip_addresses2_, kPortNum, addrlist2_);
 
-  EXPECT_EQ(3, client_->num_requests);
+  EXPECT_EQ(3, client_->num_requests());
 }
 
 TEST_F(AsyncHostResolverTest, SameHostLookupsConsumeSingleTransaction) {
@@ -299,7 +323,7 @@ TEST_F(AsyncHostResolverTest, SameHostLookupsConsumeSingleTransaction) {
   VerifyAddressList(ip_addresses0_, kPortNum, addrlist2_);
 
   // Although we have three lookups, a single UDP socket was used.
-  EXPECT_EQ(1, client_->num_requests);
+  EXPECT_EQ(1, client_->num_requests());
 }
 
 TEST_F(AsyncHostResolverTest, CancelLookup) {
@@ -348,7 +372,7 @@ TEST_F(AsyncHostResolverTest, CancelSameHostLookup) {
   EXPECT_EQ(OK, rv1);
   VerifyAddressList(ip_addresses0_, kPortNum, addrlist1_);
 
-  EXPECT_EQ(1, client_->num_requests);
+  EXPECT_EQ(1, client_->num_requests());
 }
 
 // Test that a queued lookup completes.
