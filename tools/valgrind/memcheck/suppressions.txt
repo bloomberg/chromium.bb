@@ -5200,16 +5200,8 @@
    Memcheck:Leak
    fun:_Znw*
    ...
-   fun:_ZN21RenderProcessHostImpl4InitEb
-   fun:_ZN14RenderViewHost16CreateRenderViewERKSbItN4base20string16_char_traitsESaItEEi
-   fun:_ZN11TabContents32CreateRenderViewForRenderManagerEP14RenderViewHost
-   fun:_ZN21RenderViewHostManager14InitRenderViewEP14RenderViewHostRKN7content19NavigationEntryImplE
-   fun:_ZN21RenderViewHostManager8NavigateERKN7content19NavigationEntryImplE
-   fun:_ZN11TabContents15NavigateToEntryERKN7content19NavigationEntryImplENS0_24NavigationControllerImpl10ReloadTypeE
-   fun:_ZN11TabContents22NavigateToPendingEntryEN7content24NavigationControllerImpl10ReloadTypeE
-   fun:_ZN24NavigationControllerImpl22NavigateToPendingEntryEN7content24NavigationControllerImpl10ReloadTypeE
-   fun:_ZN24NavigationControllerImpl9LoadEntryEPN7content19NavigationEntryImplE
-   fun:_ZN24NavigationControllerImpl7LoadURLERK4GURLRKN7content8ReferrerENS3_14PageTransitionERKSs
+   fun:_ZN14RenderViewHost*
+   ...
    fun:_ZN11BalloonHost4InitEv
    fun:_ZN15BalloonViewHost4InitEP10_GtkWidget
    fun:_ZN19BalloonViewHostView20ViewHierarchyChangedEbPN5views4ViewES2_
