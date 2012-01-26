@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -135,7 +135,7 @@ cr.define('options', function() {
     // Intentionally don't show the URL in the location bar as we don't want
     // people trying to navigate here by hand.
     OptionsPage.showPageByName('alertOverlay', false);
-  }
+  };
 
   // Export
   return {

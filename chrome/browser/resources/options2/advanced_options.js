@@ -246,7 +246,7 @@ cr.define('options', function() {
     $('metricsReportingEnabled').disabled = disabled;
     if (disabled)
       $('metricsReportingEnabledText').className = 'disable-services-span';
-  }
+  };
 
   AdvancedOptions.SetMetricsReportingSettingVisibility = function(visible) {
     if (visible) {
@@ -254,7 +254,7 @@ cr.define('options', function() {
     } else {
       $('metricsReportingSetting').style.display = 'none';
     }
-  }
+  };
 
   /**
    * Returns whether the browser in guest mode. Some features are disabled or
@@ -422,7 +422,7 @@ cr.define('options', function() {
     }
     if (checked && ! this.isScanning_)
       findBluetoothDevices_(true);
-  }
+  };
 
   /**
    * Adds an element to the list of available bluetooth devices. If an element

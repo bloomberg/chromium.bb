@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -36,11 +36,11 @@ cr.define('options', function() {
       var self = this;
       $('autofill-edit-address-cancel-button').onclick = function(event) {
         self.dismissOverlay_();
-      }
+      };
       $('autofill-edit-address-apply-button').onclick = function(event) {
         self.saveAddress_();
         self.dismissOverlay_();
-      }
+      };
 
       self.guid = '';
       self.populateCountryList_();
@@ -158,11 +158,11 @@ cr.define('options', function() {
       $('addr-line-2').oninput = $('city').oninput = $('state').oninput =
       $('postal-code').oninput = function(event) {
         self.inputFieldChanged_();
-      }
+      };
 
       $('country').onchange = function(event) {
         self.countryChanged_();
-      }
+      };
     },
 
     /**
