@@ -399,12 +399,13 @@ void ProfileImpl::DoFinalInit() {
 
   FilePath app_path = GetPath().Append(chrome::kIsolatedAppStateDirname);
 
+  SessionStartupPref startup_pref =
+      BrowserInit::GetSessionStartupPref(*CommandLine::ForCurrentProcess(),
+                                         this);
   bool restore_old_session_cookies =
       session_restore_enabled_ &&
       (!DidLastSessionExitCleanly() ||
-       CommandLine::ForCurrentProcess()->HasSwitch(
-           switches::kRestoreLastSession) ||
-       BrowserInit::WasRestarted());
+       startup_pref.type == SessionStartupPref::LAST);
 
   // Make sure we initialize the ProfileIOData after everything else has been
   // initialized that we might be reading from the IO thread.
@@ -556,8 +557,12 @@ ProfileImpl::~ProfileImpl() {
       chrome::NOTIFICATION_PROFILE_DESTROYED,
       content::Source<Profile>(this),
       content::NotificationService::NoDetails());
-
-  if (appcache_service_ && clear_local_state_on_exit_) {
+  // Save the session state if we're going to restore the session during the
+  // next startup.
+  SessionStartupPref pref = SessionStartupPref::GetStartupPref(this);
+  if (pref.type == SessionStartupPref::LAST)
+    SaveSessionState();
+  else if (appcache_service_ && clear_local_state_on_exit_) {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         base::Bind(&appcache::AppCacheService::set_clear_local_state_on_exit,
