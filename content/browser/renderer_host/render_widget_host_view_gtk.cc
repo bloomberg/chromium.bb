@@ -1177,6 +1177,9 @@ void RenderWidgetHostViewGtk::UnhandledWheelEvent(
     const WebKit::WebMouseWheelEvent& event) {
 }
 
+void RenderWidgetHostViewGtk::ProcessTouchAck(bool processed) {
+}
+
 void RenderWidgetHostViewGtk::SetHasHorizontalScrollbar(
     bool has_horizontal_scrollbar) {
 }

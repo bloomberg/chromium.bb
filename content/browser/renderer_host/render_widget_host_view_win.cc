@@ -908,6 +908,9 @@ void RenderWidgetHostViewWin::UnhandledWheelEvent(
     const WebKit::WebMouseWheelEvent& event) {
 }
 
+void RenderWidgetHostViewWin::ProcessTouchAck(bool processed) {
+}
+
 void RenderWidgetHostViewWin::SetHasHorizontalScrollbar(
     bool has_horizontal_scrollbar) {
 }

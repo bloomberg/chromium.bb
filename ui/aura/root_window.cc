@@ -227,19 +227,17 @@ bool RootWindow::DispatchTouchEvent(TouchEvent* event) {
              status == ui::TOUCH_STATUS_CANCEL)
       touch_event_handler_ = NULL;
     handled = status != ui::TOUCH_STATUS_UNKNOWN;
+
+    if (status == ui::TOUCH_STATUS_QUEUED)
+      gesture_recognizer_->QueueTouchEventForGesture(target, *event);
   }
 
   // Get the list of GestureEvents from GestureRecognizer.
   scoped_ptr<GestureRecognizer::Gestures> gestures;
   gestures.reset(gesture_recognizer_->ProcessTouchEventForGesture(*event,
         status));
-  if (gestures.get()) {
-    for (unsigned int i = 0; i < gestures->size(); i++) {
-      GestureEvent* gesture = gestures->at(i).get();
-      if (DispatchGestureEvent(gesture) != ui::GESTURE_STATUS_UNKNOWN)
-        handled = true;
-    }
-  }
+  if (ProcessGestures(gestures.get()))
+    handled = true;
 
   return handled;
 }
@@ -298,6 +296,8 @@ void RootWindow::WindowDestroying(Window* window) {
     touch_event_handler_ = NULL;
   if (gesture_handler_ == window)
     gesture_handler_ = NULL;
+
+  gesture_recognizer_->FlushTouchQueue(window);
 }
 
 #if !defined(OS_MACOSX)
@@ -364,6 +364,16 @@ void RootWindow::ReleaseCapture(Window* window) {
   SetCapture(NULL);
 }
 
+void RootWindow::AdvanceQueuedTouchEvent(Window* window, bool processed) {
+  scoped_ptr<GestureRecognizer::Gestures> gestures;
+  gestures.reset(gesture_recognizer_->AdvanceTouchQueue(window, processed));
+  ProcessGestures(gestures.get());
+}
+
+void RootWindow::SetGestureRecognizerForTesting(GestureRecognizer* gr) {
+  gesture_recognizer_.reset(gr);
+}
+
 void RootWindow::SetTransform(const ui::Transform& transform) {
   Window::SetTransform(transform);
 
@@ -378,10 +388,6 @@ void RootWindow::ToggleFullScreen() {
   host_->ToggleFullScreen();
 }
 #endif
-
-void RootWindow::SetGestureRecognizerForTesting(GestureRecognizer* gr) {
-  gesture_recognizer_.reset(gr);
-}
 
 ////////////////////////////////////////////////////////////////////////////////
 // RootWindow, private:
@@ -547,6 +553,18 @@ ui::GestureStatus RootWindow::ProcessGestureEvent(Window* target,
   }
 
   return status;
+}
+
+bool RootWindow::ProcessGestures(GestureRecognizer::Gestures* gestures) {
+  if (!gestures)
+    return false;
+  bool handled = false;
+  for (unsigned int i = 0; i < gestures->size(); i++) {
+    GestureEvent* gesture = gestures->at(i).get();
+    if (DispatchGestureEvent(gesture) != ui::GESTURE_STATUS_UNKNOWN)
+      handled = true;
+  }
+  return handled;
 }
 
 void RootWindow::ScheduleDraw() {

@@ -17,6 +17,7 @@
 #include "ui/aura/client/tooltip_client.h"
 #include "ui/aura/client/window_types.h"
 #include "ui/aura/event.h"
+#include "ui/aura/gestures/gesture_recognizer.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/base/hit_test.h"
@@ -480,6 +481,12 @@ void RenderWidgetHostViewAura::UnhandledWheelEvent(
   // Not needed. Mac-only.
 }
 
+void RenderWidgetHostViewAura::ProcessTouchAck(bool processed) {
+  // The ACKs for the touch-events arrive in the same sequence as they were
+  // dispatched.
+  aura::RootWindow::GetInstance()->AdvanceQueuedTouchEvent(window_, processed);
+}
+
 void RenderWidgetHostViewAura::SetHasHorizontalScrollbar(
     bool has_horizontal_scrollbar) {
   // Not needed. Mac-only.
@@ -868,9 +875,10 @@ ui::TouchStatus RenderWidgetHostViewAura::OnTouchEvent(
   if (point) {
     host_->ForwardTouchEvent(touch_event_);
     UpdateWebTouchEventAfterDispatch(&touch_event_, point);
+    return ui::TOUCH_STATUS_QUEUED;
   }
 
-  return DecideTouchStatus(touch_event_, point);
+  return ui::TOUCH_STATUS_UNKNOWN;
 }
 
 ui::GestureStatus RenderWidgetHostViewAura::OnGestureEvent(

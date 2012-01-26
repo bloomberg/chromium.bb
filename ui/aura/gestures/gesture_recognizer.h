@@ -52,6 +52,19 @@ class AURA_EXPORT GestureRecognizer {
   virtual Gestures* ProcessTouchEventForGesture(const TouchEvent& event,
                                                 ui::TouchStatus status);
 
+  // Touch-events can be queued to be played back at a later time. The queues
+  // are identified by the target window.
+  virtual void QueueTouchEventForGesture(Window* window,
+                                         const TouchEvent& event);
+
+  // Process the touch-event in the queue for the window. Returns a list of
+  // zero or more GestureEvents identified after processing the queueud
+  // TouchEvent. Caller is responsible for freeing up Gestures.
+  virtual Gestures* AdvanceTouchQueue(Window* window, bool processed);
+
+  // Reset the touch events in the queue for the window.
+  virtual void FlushTouchQueue(Window* window);
+
   // Clears the GestureRecognizer to its initial state.
   virtual void Reset();
 

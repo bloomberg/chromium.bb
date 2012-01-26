@@ -91,8 +91,6 @@ RenderWidgetHost::RenderWidgetHost(content::RenderProcessHost* process,
       should_auto_resize_(false),
       mouse_move_pending_(false),
       mouse_wheel_pending_(false),
-      touch_move_pending_(false),
-      touch_event_is_queued_(false),
       needs_repainting_on_restore_(false),
       is_unresponsive_(false),
       in_flight_event_count_(0),
@@ -732,17 +730,7 @@ void RenderWidgetHost::ForwardTouchEvent(
   if (ignore_input_events_ || process_->IgnoreInputEvents())
     return;
 
-  if (touch_event.type == WebInputEvent::TouchMove &&
-      touch_move_pending_) {
-    touch_event_is_queued_ = true;
-    queued_touch_event_ = touch_event;
-    return;
-  }
-
-  if (touch_event.type == WebInputEvent::TouchMove)
-    touch_move_pending_ = true;
-  else
-    touch_move_pending_ = false;
+  // TODO(sad): Do touch-event coalescing when appropriate.
   ForwardInputEvent(touch_event, sizeof(WebKit::WebTouchEvent), false);
 }
 
@@ -758,8 +746,6 @@ void RenderWidgetHost::RendererExited(base::TerminationStatus status,
   next_mouse_move_.reset();
   mouse_wheel_pending_ = false;
   coalesced_mouse_wheel_events_.clear();
-  touch_move_pending_ = false;
-  touch_event_is_queued_ = false;
 
   // Must reset these to ensure that keyboard events work with a new renderer.
   key_queue_.clear();
@@ -1176,11 +1162,7 @@ void RenderWidgetHost::OnMsgInputEventAck(WebInputEvent::Type event_type,
   } else if (type == WebInputEvent::MouseWheel) {
     ProcessWheelAck(processed);
   } else if (type == WebInputEvent::TouchMove) {
-    touch_move_pending_ = false;
-    if (touch_event_is_queued_) {
-      touch_event_is_queued_ = false;
-      ForwardTouchEvent(queued_touch_event_);
-    }
+    ProcessTouchAck(processed);
   }
   // This is used only for testing.
   content::NotificationService::current()->Notify(
@@ -1202,6 +1184,11 @@ void RenderWidgetHost::ProcessWheelAck(bool processed) {
 
   if (!processed && !is_hidden_ && view_)
     view_->UnhandledWheelEvent(current_wheel_event_);
+}
+
+void RenderWidgetHost::ProcessTouchAck(bool processed) {
+  if (view_)
+    view_->ProcessTouchAck(processed);
 }
 
 void RenderWidgetHost::OnMsgFocus() {

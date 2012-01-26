@@ -13,6 +13,7 @@
 #include "ui/aura/aura_export.h"
 #include "ui/aura/cursor.h"
 #include "ui/aura/focus_manager.h"
+#include "ui/aura/gestures/gesture_recognizer.h"
 #include "ui/aura/window.h"
 #include "ui/base/events.h"
 #include "ui/gfx/compositor/compositor.h"
@@ -40,7 +41,6 @@ class StackingClient;
 class ScrollEvent;
 class TouchEvent;
 class GestureEvent;
-class GestureRecognizer;
 
 // RootWindow is responsible for hosting a set of windows.
 class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
@@ -151,6 +151,23 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   // If |window| has mouse capture, the current capture window is set to NULL.
   void ReleaseCapture(Window* window);
 
+  // Gesture Recognition -------------------------------------------------------
+
+  // When a touch event is dispatched to a Window, it can notify the RootWindow
+  // to queue the touch event for asynchronous gesture recognition. These are
+  // the entry points for the asynchronous processing of the queued touch
+  // events.
+  // Process the next touch event for gesture recognition. |processed| indicates
+  // whether the queued event was processed by the window or not.
+  void AdvanceQueuedTouchEvent(Window* window, bool processed);
+
+  GestureRecognizer* gesture_recognizer() const {
+    return gesture_recognizer_.get();
+  }
+
+  // Provided only for testing:
+  void SetGestureRecognizerForTesting(GestureRecognizer* gr);
+
   // Overridden from Window:
   virtual void SetTransform(const ui::Transform& transform) OVERRIDE;
 
@@ -158,9 +175,6 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   // Toggles the host's full screen state.
   void ToggleFullScreen();
 #endif
-
-  // Provided only for testing:
-  void SetGestureRecognizerForTesting(GestureRecognizer* gr);
 
   // Overridden from ui::CompositorDelegate:
   virtual void ScheduleDraw() OVERRIDE;
@@ -177,6 +191,7 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   bool ProcessKeyEvent(Window* target, KeyEvent* event);
   ui::TouchStatus ProcessTouchEvent(Window* target, TouchEvent* event);
   ui::GestureStatus ProcessGestureEvent(Window* target, GestureEvent* event);
+  bool ProcessGestures(GestureRecognizer::Gestures* gestures);
 
   // Overridden from Window:
   virtual bool CanFocus() const OVERRIDE;

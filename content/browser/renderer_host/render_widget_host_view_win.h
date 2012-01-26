@@ -193,6 +193,7 @@ class RenderWidgetHostViewWin
   virtual void SetBackground(const SkBitmap& background) OVERRIDE;
   virtual void UnhandledWheelEvent(
       const WebKit::WebMouseWheelEvent& event) OVERRIDE;
+  virtual void ProcessTouchAck(bool processed) OVERRIDE;
   virtual void SetHasHorizontalScrollbar(
       bool has_horizontal_scrollbar) OVERRIDE;
   virtual void SetScrollOffsetPinning(

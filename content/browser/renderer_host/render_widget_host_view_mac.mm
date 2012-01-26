@@ -1037,6 +1037,9 @@ void RenderWidgetHostViewMac::UnhandledWheelEvent(
   [cocoa_view_ gotUnhandledWheelEvent];
 }
 
+void RenderWidgetHostViewMac::ProcessTouchAck(bool processed) {
+}
+
 void RenderWidgetHostViewMac::SetHasHorizontalScrollbar(
     bool has_horizontal_scrollbar) {
   [cocoa_view_ setHasHorizontalScrollbar:has_horizontal_scrollbar];

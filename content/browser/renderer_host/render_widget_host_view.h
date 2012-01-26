@@ -310,6 +310,12 @@ class RenderWidgetHostView {
 
   virtual void UnhandledWheelEvent(const WebKit::WebMouseWheelEvent& event) = 0;
 
+  // Because the associated remote WebKit instance can asynchronously
+  // prevent-default on a dispatched touch event, the touch events are queued in
+  // the GestureRecognizer until invocation of ProcessTouchAck releases it to be
+  // processed (when |processed| is false) or ignored (when |processed| is true)
+  virtual void ProcessTouchAck(bool processed) = 0;
+
   virtual void SetHasHorizontalScrollbar(bool has_horizontal_scrollbar) = 0;
   virtual void SetScrollOffsetPinning(
       bool is_pinned_to_left, bool is_pinned_to_right) = 0;

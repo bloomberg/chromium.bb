@@ -95,6 +95,24 @@ GestureRecognizer::Gestures* GestureRecognizer::ProcessTouchEventForGesture(
   return gestures.release();
 }
 
+void GestureRecognizer::QueueTouchEventForGesture(Window* window,
+                                                  const TouchEvent& event) {
+  // TODO(sad):
+  NOTIMPLEMENTED();
+}
+
+GestureRecognizer::Gestures* GestureRecognizer::AdvanceTouchQueue(
+    Window* window, bool processed) {
+  // TODO(sad):
+  NOTIMPLEMENTED();
+  return NULL;
+}
+
+void GestureRecognizer::FlushTouchQueue(Window* window) {
+  // TODO(sad):
+  NOTIMPLEMENTED();
+}
+
 void GestureRecognizer::Reset() {
   first_touch_time_ = 0.0;
   state_ = GestureRecognizer::GS_NO_GESTURE;
