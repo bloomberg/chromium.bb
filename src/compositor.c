@@ -846,13 +846,12 @@ weston_output_set_cursor(struct weston_output *output,
 	if (device->sprite == NULL)
 		return;
 
-	pixman_region32_init_rect(&cursor_region,
-				  device->sprite->geometry.x,
-				  device->sprite->geometry.y,
-				  device->sprite->geometry.width,
-				  device->sprite->geometry.height);
+	weston_surface_update_transform(device->sprite);
 
-	pixman_region32_intersect(&cursor_region, &cursor_region, &output->region);
+	pixman_region32_init(&cursor_region);
+	pixman_region32_intersect(&cursor_region,
+				  &device->sprite->transform.boundingbox,
+				  &output->region);
 
 	if (!pixman_region32_not_empty(&cursor_region)) {
 		output->set_hardware_cursor(output, NULL);
