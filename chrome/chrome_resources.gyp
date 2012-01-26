@@ -124,18 +124,6 @@
       # generated headers.
       'target_name': 'chrome_strings',
       'type': 'none',
-      'conditions': [
-        ['OS=="win"', {
-          # HACK(nsylvain): We want to enforce a fake dependency on
-          # intaller_util_string.  install_util depends on both
-          # chrome_strings and installer_util_strings, but for some reasons
-          # Incredibuild does not enforce it (most likely a bug). By changing
-          # the type and making sure we depend on installer_util_strings, it
-          # will always get built before installer_util.
-          'type': 'dummy_executable',
-          'dependencies': ['chrome.gyp:installer_util_strings'],
-        }],
-      ],
       'actions': [
         # Localizable resources.
         {
