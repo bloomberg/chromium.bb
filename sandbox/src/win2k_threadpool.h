@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -22,20 +22,20 @@ namespace sandbox {
 // arises.
 //
 // This implementation simply thunks to the nice thread pool API of win2k.
-class Win2kThreadPool : public  ThreadProvider {
+class Win2kThreadPool : public ThreadProvider {
  public:
   Win2kThreadPool() {
     ::InitializeCriticalSection(&lock_);
   }
   virtual ~Win2kThreadPool();
 
-  virtual bool RegisterWait(const void* client, HANDLE waitable_object,
+  virtual bool RegisterWait(const void* cookie, HANDLE waitable_object,
                             CrossCallIPCCallback callback,
                             void* context);
 
   virtual bool UnRegisterWaits(void* cookie);
 
-  // Returns the total number of non-released wait objects associated with
+  // Returns the total number of wait objects associated with
   // the thread pool.
   size_t OutstandingWaits();
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,10 +8,10 @@
 
 namespace sandbox {
 
-bool Win2kThreadPool::RegisterWait(const void* client, HANDLE waitable_object,
+bool Win2kThreadPool::RegisterWait(const void* cookie, HANDLE waitable_object,
                                    CrossCallIPCCallback callback,
                                    void* context) {
-  if (0 == client) {
+  if (0 == cookie) {
     return false;
   }
   HANDLE pool_object = NULL;
@@ -20,7 +20,7 @@ bool Win2kThreadPool::RegisterWait(const void* client, HANDLE waitable_object,
                                      context, INFINITE, WT_EXECUTEDEFAULT)) {
     return false;
   }
-  PoolObject pool_obj = {client, pool_object};
+  PoolObject pool_obj = {cookie, pool_object};
   AutoLock lock(&lock_);
   pool_objects_.push_back(pool_obj);
   return true;
@@ -31,27 +31,23 @@ bool Win2kThreadPool::UnRegisterWaits(void* cookie) {
     return false;
   }
   AutoLock lock(&lock_);
-  PoolObjects::iterator it;
-  for (it = pool_objects_.begin(); it != pool_objects_.end(); ++it) {
+  bool success = true;
+  PoolObjects::iterator it = pool_objects_.begin();
+  while (it != pool_objects_.end()) {
     if (it->cookie == cookie) {
-      if (!::UnregisterWaitEx(it->wait, INVALID_HANDLE_VALUE))
-        return false;
-      it->cookie = 0;
+      HANDLE wait = it->wait;
+      it = pool_objects_.erase(it);
+      success &= (::UnregisterWaitEx(wait, INVALID_HANDLE_VALUE) != 0);
+    } else {
+      ++it;
     }
   }
-  return true;
+  return success;
 }
 
 size_t Win2kThreadPool::OutstandingWaits() {
-  size_t count =0;
   AutoLock lock(&lock_);
-  PoolObjects::iterator it;
-  for (it = pool_objects_.begin(); it != pool_objects_.end(); ++it) {
-    if (it->cookie != 0) {
-      ++count;
-    }
-  }
-  return count;
+  return pool_objects_.size();
 }
 
 Win2kThreadPool::~Win2kThreadPool() {
