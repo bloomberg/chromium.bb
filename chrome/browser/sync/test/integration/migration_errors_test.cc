@@ -344,18 +344,18 @@ class MigrationTwoClientTest : public MigrationTest {
 
 // Easiest possible test of migration errors: triggers a server
 // migration on one datatype, then modifies some other datatype.
-// Flaky. crbug.com/100382.
+// Crashy. crbug.com/100382.
 IN_PROC_BROWSER_TEST_F(MigrationTwoClientTest,
-                       FLAKY_MigratePrefsThenModifyBookmark) {
+                       DISABLED_MigratePrefsThenModifyBookmark) {
   RunTwoClientMigrationTest(MakeList(syncable::PREFERENCES),
                             MODIFY_BOOKMARK);
 }
 
 // Triggers a server migration on two datatypes, then makes a local
 // modification to one of them.
-// Flaky. crbug.com/100382.
+// Crashy. crbug.com/100382.
 IN_PROC_BROWSER_TEST_F(MigrationTwoClientTest,
-                       FLAKY_MigratePrefsAndBookmarksThenModifyBookmark) {
+                       DISABLED_MigratePrefsAndBookmarksThenModifyBookmark) {
   RunTwoClientMigrationTest(
       MakeList(syncable::PREFERENCES, syncable::BOOKMARKS),
       MODIFY_BOOKMARK);
@@ -435,8 +435,9 @@ IN_PROC_BROWSER_TEST_F(MigrationReconfigureTest, SetSyncTabs) {
   ASSERT_TRUE(GetClient(0)->IsTypePreferred(syncable::SESSIONS));
 }
 
-// Flaky. crbug.com/100382.
-IN_PROC_BROWSER_TEST_F(MigrationReconfigureTest, FLAKY_SetSyncTabsAndMigrate) {
+// Crashy. crbug.com/100382.
+IN_PROC_BROWSER_TEST_F(MigrationReconfigureTest,
+                       DISABLED_SetSyncTabsAndMigrate) {
   if (!ServerSupportsErrorTriggering()) {
     LOG(WARNING) << "Test skipped in this server environment.";
     return;
