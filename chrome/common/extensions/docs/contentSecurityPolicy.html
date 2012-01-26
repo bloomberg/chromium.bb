@@ -16,7 +16,7 @@
     <script type="text/javascript" src="js/api_page_generator.js"></script>
     <script type="text/javascript" src="js/bootstrap.js"></script>
     <script type="text/javascript" src="js/sidebar.js"></script>
-  <title>Tutorial: Google Analytics - Google Chrome Extensions - Google Code</title></head>
+  <title>Content Security Policy (CSP) - Google Chrome Extensions - Google Code</title></head>
   <body>  <div id="devModeWarning" class="displayModeWarning">
     You are viewing extension docs in chrome via the 'file:' scheme: are you expecting to see local changes when you refresh? You'll need run chrome with --allow-file-access-from-files.
   </div>
@@ -277,7 +277,7 @@
           <li><h2><a href="tutorials.html">Tutorials</a></h2>
             <ul>
               <li><a href="tut_debugging.html">Debugging</a></li>
-              <li class="leftNavSelected">Google Analytics</li>
+              <li><a href="tut_analytics.html">Google Analytics</a></li>
               <li><a href="tut_oauth.html">OAuth</a></li>
             </ul>
           </li>
@@ -311,49 +311,30 @@
 
     <div class="g-unit" id="gc-pagecontent">
       <div id="pageTitle">
-        <h1 class="page_title">Tutorial: Google Analytics</h1>
+        <h1 class="page_title">Content Security Policy (CSP)</h1>
       </div>
         <!-- TABLE OF CONTENTS -->
         <div id="toc">
           <h2>Contents</h2>
           <ol>
             <li>
-              <a href="#toc-requirements">Requirements</a>
+              <a href="#H2-0">Default Policy Restrictions</a>
+              <ol>
+                <li>
+                  <a href="#H3-1">Inline JavaScript will not be executed</a>
+                </li><li>
+                  <a href="#H3-2">Only local script and and object resources are loaded</a>
+                </li>
+              </ol>
+            </li><li>
+              <a href="#H2-3">Relaxing the default policy</a>
               <ol>
                 <li style="display: none; ">
                   <a>h3Name</a>
                 </li>
               </ol>
             </li><li>
-              <a href="#toc-installing">Installing the tracking code</a>
-              <ol>
-                <li style="display: none; ">
-                  <a>h3Name</a>
-                </li>
-              </ol>
-            </li><li>
-              <a href="#toc-tracking-pageviews">Tracking page views</a>
-              <ol>
-                <li style="display: none; ">
-                  <a>h3Name</a>
-                </li>
-              </ol>
-            </li><li>
-              <a href="#toc-debugging">Monitoring analytics requests</a>
-              <ol>
-                <li style="display: none; ">
-                  <a>h3Name</a>
-                </li>
-              </ol>
-            </li><li>
-              <a href="#toc-tracking-events">Tracking events</a>
-              <ol>
-                <li style="display: none; ">
-                  <a>h3Name</a>
-                </li>
-              </ol>
-            </li><li>
-              <a href="#toc-samplecode">Sample code</a>
+              <a href="#H2-4">Tightening the default policy</a>
               <ol>
                 <li style="display: none; ">
                   <a>h3Name</a>
@@ -379,209 +360,277 @@
         </p>
 
         <!-- STATIC CONTENT PLACEHOLDER -->
-        <div id="static"><div id="pageData-name" class="pageData">Tutorial: Google Analytics</div>
+        <div id="static"><div id="pageData-name" class="pageData">Content Security Policy (CSP)</div>
 <div id="pageData-showTOC" class="pageData">true</div>
 
-<p>This tutorial demonstrates using Google Analytics to track the usage of your
-extension.</p>
-
-<h2 id="toc-requirements">Requirements</h2>
 <p>
-  This tutorial expects that you have some familiarity writing extensions for
-  Google Chrome.  If you need information on how to write an extension, please
-  read the <a href="gettingstarted.html">Getting Started tutorial</a>.
+  In order to mitigate a large class of potental cross-site scripting issues,
+  Chrome's extension system has incorporated the general concept of
+  <a href="http://dvcs.w3.org/hg/content-security-policy/raw-file/tip/csp-specification.dev.html">
+    <strong>Content Security Policy (CSP)</strong>
+  </a>. This introduces some fairly strict policies that will make extensions
+  more secure by default, and provides you with the ability to create and
+  enforce rules governing the types of content that can be loaded and executed
+  by your extensions and applications.
 </p>
 
 <p>
-  You will also need a <a href="http://www.google.com/analytics">Google
-  Analytics account</a> set up to track your extension. Note that when setting
-  up the account, you can use any value in the Website's URL field, as your
-  extension will not have an URL of its own.
-</p>
-
-<p style="text-align: center">
-  <img src="images/tut_analytics/screenshot01.png" style="width:400px;height:82px;" alt="The analytics setup with info for a chrome extension filled out.">
-</p>
-
-<h2 id="toc-installing">Installing the tracking code</h2>
-
-<p>
-  The standard Google Analytics tracking code snippet fetches a file named
-  <code>ga.js</code> from an SSL protected URL if the current page
-  was loaded using the <code>https://</code> protocol.  <strong>Chrome
-  extensions and applications may <em>only</em> use the SSL-protected version of
-  <code>ga.js</code></strong>. Loading <code>ga.js</code> over insecure HTTP is
-  disallowed by Chrome's default <a href="contentSecurityPolicy.html">Content
-  Security Policy</a>. This, plus the fact that Chrome extensions are hosted
-  under the <code>chrome-extension://</code> schema, requires a slight
-  modification to the usual tracking snippet to pull <code>ga.js</code> directly
-  from <code>https://ssl.google-analytics.com/ga.js</code> instead of the
-  default location.
+  In general, CSP works as a black/whitelisting mechanism for resources loaded
+  or executed by your extensions. Defining a reasonable policy for your
+  extension enables you to carefully consider the resources that your extension
+  requires, and to ask the browser to ensure that those are the only resources
+  your extension has access to. These policies provide security over and above
+  the <a href="manifest.html#permissions">host permissions</a> your extension
+  requests; they're an additional layer of protection, not a replacement.
 </p>
 
 <p>
-  Below is a modified snippet for the
-  <a href="http://code.google.com/apis/analytics/docs/tracking/asyncTracking.html">asynchronous
-  tracking API</a> (the modified line is bolded):
-</p>
-
-<pre>(function() {
-  var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
-  <strong>ga.src = 'https://ssl.google-analytics.com/ga.js';</strong>
-  var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
-})();
-</pre>
-
-<p>
-  You'll also need to ensure that your extension has access to load the resource
-  by relaxing the default content security policy. The policy definition in your
-  <a href="manifest.html"><code>manifest.json</code></a> might look like:
+  On the web, such a policy is defined via an HTTP header or <code>meta</code>
+  element. Inside Chrome's extension system, neither is an appropriate
+  mechanism. Instead, an extension's policy is defined via the extension's
+  <a href="manifest.html"><code>manifest.json</code></a> file as follows:
 </p>
 
 <pre>{
   ...,
-  "content_security_policy": "script-src 'self' https://ssl.google-analytics.com; object-src 'self'",
+  "content_security_policy": "[POLICY STRING GOES HERE]"
   ...
 }</pre>
 
+<p class="note">
+  For full details regarding CSP's syntax, please take a look at
+  <a href="http://dvcs.w3.org/hg/content-security-policy/raw-file/tip/csp-specification.dev.html#syntax">
+    the Content Security Policy specification
+  </a>.
+</p>
+
+<a name="H2-0"></a><h2>Default Policy Restrictions</h2>
+
 <p>
-  Here is a popup page (<code>popup.html</code>) which loads the asynchronous
-  tracking code via an external JavaScript file (<code>popup.js</code>) and
-  tracks a single page view:
+  By default, Chrome defines a content security policy of:
+</p>
+
+<pre>script-src 'self'; object-src 'self'</pre>
+
+<p>
+  This policy limits extensions in two ways:
+</p>
+
+<a name="H3-1"></a><h3>Inline JavaScript will not be executed</h3>
+
+<p>
+  Inline JavaScript, as well as dangerous string-to-JavaScript methods like
+ <code>eval</code>, will not be executed. This restriction bans both inline
+ <code>&lt;script&gt;</code> blocks <strong>and</strong> inline event handlers
+ (e.g. <code>&lt;button onclick="..."&gt;</code>).
+</p>
+
+<p>
+  The first restriction wipes out a huge class of cross-site scripting attacks
+  by making it impossible for you to accidentally execute script provided by a
+  malicious third-party. It does, however, require you to write your code with a
+  clean separation between content and behavior (which you should of course do
+  anyway, right?). An example might make this clearer. You might try to write a
+  <a href="browserAction.html#popups">Browser Action's popup</a> as a single
+  <code>popup.html</code> containing:
+</p>
+
+<pre>&lt;!doctype html&gt;
+&lt;html&gt;
+  &lt;head&gt;
+    &lt;title&gt;My Awesome Popup!&lt;/title&gt;
+    &lt;script&gt;
+      function awesome() {
+        // do something awesome!
+      }
+
+      function totallyAwesome() {
+        // do something TOTALLY awesome!
+      }
+
+      function clickHandler(element) {
+        setTimeout(<strong>"awesome(); totallyAwesome()"</strong>, 1000);
+      }
+    &lt;/script&gt;
+  &lt;/head&gt;
+  &lt;body&gt;
+    &lt;button <strong>onclick="clickHandler(this)"</strong>&gt;
+      Click for awesomeness!
+    &lt;/button&gt;
+  &lt;/body&gt;
+&lt;/html&gt;</pre>
+
+<p>
+  Three things will need to change in order to make this work the way you expect
+  it to:
+</p>
+
+<ul>
+  <li>
+    The <code>clickHandler</code> definition needs to move into an external
+    JavaScript file (<code>popup.js</code> would be a good target).
+  </li>
+  <li>
+    The inline event handler definition must be rewritten in terms of
+    <code>addEventListener</code> and extracted into <code>popup.js</code>.
+  </li>
+  <li>
+    The <code>setTimeout</code> call will need to be rewritten to avoid
+    converting the string <code>"awesome(); totallyAwesome()"</code> into
+    JavaScript for execution.
+  </li>
+</ul>
+
+<p>
+  Those changes might look something like the following:
 </p>
 
 <pre>popup.js:
 =========
 
-var _gaq = _gaq || [];
-_gaq.push(['_setAccount', 'UA-XXXXXXXX-X']);
-_gaq.push(['_trackPageview']);
+function awesome() {
+  // Do something awesome!
+}
 
-(function() {
-  var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
-  ga.src = 'https://ssl.google-analytics.com/ga.js';
-  var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
-})();
+function totallyAwesome() {
+  // do something TOTALLY awesome!
+}
+
+<strong>
+function awesomeTask() {
+  awesome();
+  totallyAwesome();
+}
+</strong>
+
+function clickHandler(e) {
+  setTimeout(<strong>awesomeTask</strong>, 1000);
+}
+
+// Add event listeners once the DOM has fully loaded by listening for the
+// `DOMContentLoaded` event on the document, and adding your listeners to
+// specific elements when it triggers.
+document.addEventListener('DOMContentLoaded', function () {
+  document.querySelector('button').addEventListener('click', clickHandler);
+});
 
 popup.html:
 ===========
-&lt;!DOCTYPE html&gt;
+
+&lt;!doctype html&gt;
 &lt;html&gt;
- &lt;head&gt;
-   ...
-  &lt;script src="popup.js"&gt;&lt;/script&gt;
- &lt;/head&gt;
- &lt;body&gt;
-   ...
- &lt;/body&gt;
-&lt;/html&gt;
-</pre>
+  &lt;head&gt;
+    &lt;title&gt;My Awesome Popup!&lt;/title&gt;
+    &lt;script <strong>src="popup.js"</strong>&gt;&lt;/script&gt;
+    &lt;/script&gt;
+  &lt;/head&gt;
+  &lt;body&gt;
+    &lt;button&gt;Click for awesomeness!&lt;/button&gt;
+  &lt;/body&gt;
+&lt;/html&gt;</pre>
 
 <p>
-  Keep in mind that the string <code>UA-XXXXXXXX-X</code> should be replaced
-  with your own Google Analytics account number.
-</p>
+  
 
-<h2 id="toc-tracking-pageviews">Tracking page views</h2>
+</p><a name="H3-2"></a><h3>Only local script and and object resources are loaded</h3>
 
 <p>
-  The <code>_gaq.push(['_trackPageview']);</code> code will track a single
-  page view.  This code may be used on any page in your extension.  When
-  placed on a background page, it will register a view once per browser
-  session.  When placed on a popup, it will register a view once every time
-  the popup is opened.
+  Script and object resources can only be loaded from the extension's
+  package, not from the web at large. This ensures that your extension only
+  executes the code you've specifically approved, preventing an active network
+  attacker from maliciously redirecting your request for a resource.
 </p>
 
 <p>
-  By looking at the page view data for each page in your extension, you can
-  get an idea of how many times your users interact with your extension per
-  browser session:
+  Instead of writing code that depends on jQuery (or any other library) loading
+  from an external CDN, consider including the specific version of jQuery in
+  your extension package. That is, instead of:
 </p>
 
-<p style="text-align: center">
-  <img src="images/tut_analytics/screenshot02.png" style="width:300px;height:119px;" alt="Analytics view of the top content for a site.">
-</p>
-
-<h2 id="toc-debugging">Monitoring analytics requests</h2>
+<pre>&lt;!doctype html&gt;
+&lt;html&gt;
+  &lt;head&gt;
+    &lt;title&gt;My Awesome Popup!&lt;/title&gt;
+    &lt;script src="<strong>http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js</strong>"&gt;&lt;/script&gt;
+    &lt;/script&gt;
+  &lt;/head&gt;
+  &lt;body&gt;
+    &lt;button&gt;Click for awesomeness!&lt;/button&gt;
+  &lt;/body&gt;
+&lt;/html&gt;</pre>
 
 <p>
-  To ensure that tracking data from your extension is being sent to Google
-  Analytics, you can inspect the pages of your extension in the
-  Developer Tools window (see the
-  <a href="tut_debugging.html">debugging tutorial</a> for more information).
-  As the following figure shows, you should see requests for a file named
-  <strong>__utm.gif</strong> if everything is set up correctly.
-</p>
+  Download the file, include it in your package, and write:
+</p><p>
 
-<p style="text-align: center">
-  <img src="images/tut_analytics/screenshot04.png" style="width:683px;height:418px;" alt="Developer Tools window showing the __utm.gif request">
-</p>
+</p><pre>&lt;!doctype html&gt;
+&lt;html&gt;
+  &lt;head&gt;
+    &lt;title&gt;My Awesome Popup!&lt;/title&gt;
+    &lt;script src="<strong>jquery.min.js</strong>"&gt;&lt;/script&gt;
+    &lt;/script&gt;
+  &lt;/head&gt;
+  &lt;body&gt;
+    &lt;button&gt;Click for awesomeness!&lt;/button&gt;
+  &lt;/body&gt;
+&lt;/html&gt;</pre>
 
-<h2 id="toc-tracking-events">Tracking events</h2>
-
-<p>
-  By configuring event tracking, you can determine which parts of your
-  extension your users interact with the most.  For example, if you have
-  three buttons users may click:
-</p>
-
-<pre>  &lt;button id='button1'&gt;Button 1&lt;/button&gt;
-  &lt;button id='button2'&gt;Button 2&lt;/button&gt;
-  &lt;button id='button3'&gt;Button 3&lt;/button&gt;
-</pre>
+<a name="H2-3"></a><h2>Relaxing the default policy</h2>
 
 <p>
-  Write a function that sends click events to Google Analytics:
-</p>
-
-<pre>  function trackButton(e) {
-    _gaq.push(['_trackEvent', e.target.id, 'clicked']);
-  };
-</pre>
-
-<p>
-  And use it as an event handler for each button's click:
-</p>
-
-<pre>  var buttons = document.querySelectorAll('button');
-  for (var i = 0; i &lt; buttons.length; i++) {
-    buttons[i].addEventListener('click', trackButtonClick);
-  }
-</pre>
-
-<p>
-  The Google Analytics event tracking overview page will give you metrics
-  regarding how many times each individual button is clicked:
-</p>
-
-<p style="text-align: center">
-  <img src="images/tut_analytics/screenshot03.png" style="width:300px;height:482px;" alt="Analytics view of the event tracking data for a site.">
+  There is no mechanism for relaxing the restriction against executing inline
+  JavaScript. In particular, setting a script policy that includes
+  <code>unsafe-inline</code> will have no effect. This is intentional.
 </p>
 
 <p>
-  By using this approach, you can see which parts of your extension are
-  under-or-overutilized.  This information can help guide decisions about UI
-  redesigns or additional functionality to implement.
+  If, on the other hand, you have a need for some external JavaScript or object
+  resources, you can relax the policy to a limited extent by whitelisting
+  specific HTTPS origins from which scripts should be accepted. Whitelisting
+  insecure HTTP resources will have no effect. This is intentional, because
+  we want to ensure that executable resources loaded with an extension's
+  elevated permissions is exactly the resource you expect, and hasn't been
+  replaced by an active network attacker. As <a href="http://en.wikipedia.org/wiki/Man-in-the-middle_attack">man-in-the-middle
+  attacks</a> are both trivial and undetectable over HTTP, only HTTPS origins
+  will be accepted.
 </p>
 
 <p>
-  For more information about using the event tracking API, see the
-  Google Analytics
-  <a href="http://code.google.com/apis/analytics/docs/tracking/eventTrackerOverview.html">developer
-  documentation</a>.
+  A relaxed policy definition which allows script resources to be loaded from
+  <code>example.com</code> over HTTPS might look like:
 </p>
 
-<h2 id="toc-samplecode">Sample code</h2>
+<pre>{
+  ...,
+  "content_security_policy": "script-src 'self' https://example.com; object-src 'self'",
+  ...
+}</pre>
+
+<p class="note">
+  Note that both <code>script-src</code> and <code>object-src</code> are defined
+  by the policy. Chrome will not accept a policy that doesn't limit each of
+  these values to (at least) <code>'self'</code>.
+</p>
 
 <p>
-  A sample extension that uses these techniques is
-  available in the Chromium source tree:
+  Making use of Google Analytics is the canonical example for this sort of
+  policy definition. It's common enough that we've provided an Analytics
+  boilerplate of sorts in the <a href="samples.html#analytics">Event Tracking
+  with Google Analytics</a> sample extension, and a
+<a href="tut_analytics.html">brief tutorial</a> that goes into more detail.
 </p>
 
-<blockquote>
-  <a href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/tutorials/analytics/">.../examples/tutorials/analytics/</a>
-</blockquote>
-<p></p>
+<a name="H2-4"></a><h2>Tightening the default policy</h2>
+
+<p>
+  You may, of course, tighten this policy to whatever extent your extension
+  allows in order to increase security at the expense of convenience. To specify
+  that your extension can only load resources of <em>any</em> type (images, etc)
+  from its own package, for example, a policy of <code>default-src 'self'</code>
+  would be appropriate. The <a href="samples.html#mappy">Mappy</a> sample
+  extension is a good example of an extension that's been locked down above and
+  beyond the defaults.
+</p>
 </div>
 
         <!-- API PAGE -->

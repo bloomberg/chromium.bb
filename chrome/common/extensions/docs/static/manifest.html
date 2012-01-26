@@ -39,7 +39,7 @@ are <b>name</b> and <b>version</b>.
   "<a href="background_pages.html">background</a>": {...},
   "<a href="override.html">chrome_url_overrides</a>": {...},
   "<a href="content_scripts.html">content_scripts</a>": [...],
-  "<a href="#content_security_policy">content_security_policy</a>": "<em>policyString</em>",
+  "<a href="contentSecurityPolicy.html">content_security_policy</a>": "<em>policyString</em>",
   "<a href="fileBrowserHandler.html">file_browser_handlers</a>": [...],
   "<a href="#homepage_url">homepage_url</a>": "http://<em>path/to/homepage</em>",
   "<a href="#incognito">incognito</a>": "spanning" <em>or</em> "split",
@@ -110,47 +110,6 @@ and the <a href="https://chrome.google.com/webstore">Chrome Web Store</a>.
 You can specify locale-specific strings for this field;
 see <a href="i18n.html">Internationalization</a> for details.
 </p>
-
-<h3 id="content_security_policy">content_security_policy</h3>
-
-<p>
-A security policy to apply to resources in your extension. You can use this
-policy to help prevent cross-site scripting vulnerabilities in your extension.
-By default, the extension system enforces the following policy:
-</p>
-
-<pre>script-src 'self'; object-src 'self'</pre>
-
-<p>
-Extensions can tighten their policy using the
-<code>content_security_policy</code> manifest attribute. For example, to
-specify that your extension loads resources only from its own package, use the
-following policy:
-</p>
-
-<pre>"content_security_policy": "default-src 'self' " </pre>
-
-<p>
-If you need to load resources from websites,
-you can add them to the whitelist.
-For example, if your extension uses Google Analytics,
-you might use the following policy:
-</p>
-
-<pre>"content_security_policy": "default-src 'self' https://ssl.google-analytics.com"</pre>
-
-<p>
-The extension system will prevent you including insecure resources
-for <code>script-src</code> or <code>object-src</code>.  If you are using
-<code>eval</code> to parse JSON, please consider using <code>JSON.parse</code>
-instead.
-</p>
-
-<p>
-For details, see the
-<a href="http://dvcs.w3.org/hg/content-security-policy/raw-file/tip/csp-specification.dev.html">Content Security Policy specification</a>.
-</p>
-
 
 <h3 id="homepage_url">homepage_url</h3>
 

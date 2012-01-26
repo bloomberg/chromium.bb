@@ -868,7 +868,6 @@
       "crx_path": null,
       "description": "A sample extension which uses Google Analytics to track usage.",
       "features": [
-        "background_page",
         "browser_action"
       ],
       "icon": "analytics-extension-icon-128.png",
@@ -877,13 +876,13 @@
       "packaged_app": false,
       "path": "examples\/tutorials\/analytics\/",
       "protocols": [],
-      "search_string": "EVENT TRACKING WITH GOOGLE ANALYTICS A SAMPLE EXTENSION WHICH USES GOOGLE ANALYTICS TO TRACK USAGE. BACKGROUND_PAGE BROWSER_ACTION",
+      "search_string": "EVENT TRACKING WITH GOOGLE ANALYTICS A SAMPLE EXTENSION WHICH USES GOOGLE ANALYTICS TO TRACK USAGE. BROWSER_ACTION",
       "source_files": [
-        "analytics.js",
         "manifest.json",
-        "popup.html"
+        "popup.html",
+        "popup.js"
       ],
-      "source_hash": "48c84c58d7b3673be329cedb1b1351a6a23958ff",
+      "source_hash": "7465c76ddd9945e077724c3d5649d12c8fde8e8c",
       "zip_path": "examples\/tutorials\/analytics.zip"
     },
     {

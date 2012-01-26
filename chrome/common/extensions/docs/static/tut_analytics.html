@@ -13,7 +13,7 @@ extension.</p>
 
 <p>
   You will also need a <a href="http://www.google.com/analytics">Google
-  Analytics account</a> set up to track your extension.  Note that when setting
+  Analytics account</a> set up to track your extension. Note that when setting
   up the account, you can use any value in the Website's URL field, as your
   extension will not have an URL of its own.
 </p>
@@ -24,26 +24,20 @@ extension.</p>
        alt="The analytics setup with info for a chrome extension filled out." />
 </p>
 
-<p>
-  Also note that Google Analytics requires version <strong>4.0.302.2</strong>
-  of Google Chrome to work correctly.  Users with an earlier version of Google
-  Chrome will not show up on your Google Analytics reports.  View
-  <a href="faq.html#faq-dev-14">this FAQ entry</a> to learn how to check which
-  version of Google Chrome is deployed to which platform.
-</p>
-
 <h2 id="toc-installing">Installing the tracking code</h2>
 
 <p>
   The standard Google Analytics tracking code snippet fetches a file named
   <code>ga.js</code> from an SSL protected URL if the current page
-  was loaded using the <code>https://</code> protocol.  <strong>It is strongly
-  advised to use the SSL protected ga.js in an extension</strong>,
-  but Google Chrome extension
-  pages are hosted under <code>chrome-extension://</code> URLs, so the tracking
-  snippet must be modified slightly to pull <code>ga.js</code> directly from
-  <code>https://ssl.google-analytics.com/ga.js</code> instead of the default
-  location.
+  was loaded using the <code>https://</code> protocol.  <strong>Chrome
+  extensions and applications may <em>only</em> use the SSL-protected version of
+  <code>ga.js</code></strong>. Loading <code>ga.js</code> over insecure HTTP is
+  disallowed by Chrome's default <a href="contentSecurityPolicy.html">Content
+  Security Policy</a>. This, plus the fact that Chrome extensions are hosted
+  under the <code>chrome-extension://</code> schema, requires a slight
+  modification to the usual tracking snippet to pull <code>ga.js</code> directly
+  from <code>https://ssl.google-analytics.com/ga.js</code> instead of the
+  default location.
 </p>
 
 <p>
@@ -61,29 +55,45 @@ extension.</p>
 </pre>
 
 <p>
-  Here is a background page which loads the asynchronous tracking code and
+  You'll also need to ensure that your extension has access to load the resource
+  by relaxing the default content security policy. The policy definition in your
+  <a href="manifest.html"><code>manifest.json</code></a> might look like:
+</p>
+
+<pre>{
+  ...,
+  "content_security_policy": "script-src 'self' https://ssl.google-analytics.com; object-src 'self'",
+  ...
+}</pre>
+
+<p>
+  Here is a popup page (<code>popup.html</code>) which loads the asynchronous
+  tracking code via an external JavaScript file (<code>popup.js</code>) and
   tracks a single page view:
 </p>
 
-<pre>
+<pre>popup.js:
+=========
+
+var _gaq = _gaq || [];
+_gaq.push(['_setAccount', 'UA-XXXXXXXX-X']);
+_gaq.push(['_trackPageview']);
+
+(function() {
+  var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+  ga.src = 'https://ssl.google-analytics.com/ga.js';
+  var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+})();
+
+popup.html:
+===========
 &lt;!DOCTYPE html>
 &lt;html>
  &lt;head>
    ...
+  &lt;script src="popup.js">&lt;/script>
  &lt;/head>
  &lt;body>
-   &lt;script>
-     var _gaq = _gaq || [];
-     _gaq.push(['_setAccount', 'UA-XXXXXXXX-X']);
-     _gaq.push(['_trackPageview']);
-
-     (function() {
-       var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
-       ga.src = 'https://ssl.google-analytics.com/ga.js';
-       var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
-     })();
-   &lt;/script>
-
    ...
  &lt;/body>
 &lt;/html>
@@ -142,9 +152,9 @@ extension.</p>
 </p>
 
 <pre>
-  &lt;button>Button 1&lt;/button>
-  &lt;button>Button 2&lt;/button>
-  &lt;button>Button 3&lt;/button>
+  &lt;button id='button1'>Button 1&lt;/button>
+  &lt;button id='button2'>Button 2&lt;/button>
+  &lt;button id='button3'>Button 3&lt;/button>
 </pre>
 
 <p>
@@ -152,19 +162,20 @@ extension.</p>
 </p>
 
 <pre>
-  function trackButton(button_id) {
-    _gaq.push(['_trackEvent', 'button' + button_id, 'clicked']);
+  function trackButton(e) {
+    _gaq.push(['_trackEvent', e.target.id, 'clicked']);
   };
 </pre>
 
 <p>
-  And call it when each button is pressed:
+  And use it as an event handler for each button's click:
 </p>
 
 <pre>
-  &lt;button onclick="trackButton(1);">Button 1&lt;/button>
-  &lt;button onclick="trackButton(2);">Button 2&lt;/button>
-  &lt;button onclick="trackButton(3);">Button 3&lt;/button>
+  var buttons = document.querySelectorAll('button');
+  for (var i = 0; i < buttons.length; i++) {
+    buttons[i].addEventListener('click', trackButtonClick);
+  }
 </pre>
 
 <p>

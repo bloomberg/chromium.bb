@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <!--
- * Copyright (c) 2009 The Chromium Authors. All rights reserved.  Use of this
+ * Copyright (c) 2012 The Chromium Authors. All rights reserved.  Use of this
  * source code is governed by a BSD-style license that can be found in the
  * LICENSE file.
 -->
@@ -17,25 +17,16 @@
         text-align: center;
       }
     </style>
+    <script src="popup.js"></script>
   </head>
   <body>
-    <script src="analytics.js"></script>
-    <script>
-      /**
-       *  Tracks a single button click.  You can use the _trackEvent command
-       *  to track user interactions with different parts of your extension.
-       */
-      function trackButton(button_id) {
-        _gaq.push(['_trackEvent', 'button' + button_id, 'clicked']);
-      }
-    </script>
     <h1>Popup</h1>
     <p>Track the following actions:</p>
-    <button onclick="trackButton(1);">Button 1</button>
-    <button onclick="trackButton(2);">Button 2</button>
-    <button onclick="trackButton(3);">Button 3</button>
-    <button onclick="trackButton(4);">Button 4</button>
-    <button onclick="trackButton(5);">Button 5</button>
-    <button onclick="trackButton(6);">Button 6</button>
+    <button id='button1'>Button 1</button>
+    <button id='button2'>Button 2</button>
+    <button id='button3'>Button 3</button>
+    <button id='button4'>Button 4</button>
+    <button id='button5'>Button 5</button>
+    <button id='button6'>Button 6</button>
   </body>
 </html>
