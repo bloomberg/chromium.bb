@@ -15,6 +15,7 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/compositor/layer.h"
 #include "ui/gfx/image/image.h"
+#include "ui/views/accessible_pane_view.h"
 #include "ui/views/painter.h"
 #include "ui/views/widget/widget.h"
 
@@ -44,7 +45,8 @@ class ShelfPainter : public views::Painter {
 
 // The contents view of the Widget. This view contains LauncherView and
 // sizes it to the width of the widget minus the size of the status area.
-class Launcher::DelegateView : public views::WidgetDelegateView {
+class Launcher::DelegateView : public views::WidgetDelegate,
+                               public views::AccessiblePaneView {
  public:
   explicit DelegateView();
   virtual ~DelegateView();
@@ -55,6 +57,15 @@ class Launcher::DelegateView : public views::WidgetDelegateView {
   // views::View overrides
   virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual void Layout() OVERRIDE;
+
+  virtual views::Widget* GetWidget() OVERRIDE {
+    return View::GetWidget();
+  }
+
+  virtual const views::Widget* GetWidget() const OVERRIDE {
+    return View::GetWidget();
+  }
+
 
  private:
   int status_width_;

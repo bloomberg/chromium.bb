@@ -64,6 +64,7 @@ TabbedLauncherButton::TabbedLauncherButton(views::ButtonListener* listener,
   }
   SetImageAlignment(views::ImageButton::ALIGN_CENTER,
                     views::ImageButton::ALIGN_MIDDLE);
+  set_focusable(true);
 }
 
 TabbedLauncherButton::~TabbedLauncherButton() {
