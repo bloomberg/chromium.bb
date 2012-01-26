@@ -4,6 +4,7 @@
 
 #include "content/shell/shell_content_renderer_client.h"
 
+#include "content/shell/shell_render_view_observer.h"
 #include "v8/include/v8.h"
 
 namespace content {
@@ -15,6 +16,7 @@ void ShellContentRendererClient::RenderThreadStarted() {
 }
 
 void ShellContentRendererClient::RenderViewCreated(RenderView* render_view) {
+  new content::ShellRenderViewObserver(render_view);
 }
 
 void ShellContentRendererClient::SetNumberOfViews(int number_of_views) {

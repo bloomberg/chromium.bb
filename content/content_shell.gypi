@@ -66,6 +66,8 @@
         'shell/shell_download_manager_delegate.h',
         'shell/shell_main_delegate.cc',
         'shell/shell_main_delegate.h',
+        'shell/shell_render_view_observer.cc',
+        'shell/shell_render_view_observer.h',
         'shell/shell_resource_context.cc',
         'shell/shell_resource_context.h',
         'shell/shell_url_request_context_getter.cc',
