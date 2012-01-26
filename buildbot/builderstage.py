@@ -210,6 +210,10 @@ class BuilderStage(object):
     self._Begin()
     try:
       self._PerformStage()
+    except SystemExit as e:
+      if e.code != 0:
+        result, description = self._HandleStageException(e)
+      raise
     except Exception as e:
       # Tell the build bot this step failed for the waterfall
       result, description = self._HandleStageException(e)
