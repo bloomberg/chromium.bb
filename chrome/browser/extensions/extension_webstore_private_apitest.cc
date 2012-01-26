@@ -207,11 +207,6 @@ class ExtensionWebstoreGetWebGLStatusTest : public InProcessBrowserTest {
 
 // Test cases where the user accepts the install confirmation dialog.
 IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest, InstallAccepted) {
-  ScopedTempDir temp_dir;
-  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-  FilePath temp_path = temp_dir.path();
-  WebstoreInstaller::SetDownloadDirectoryForTests(&temp_path);
-
   ASSERT_TRUE(RunInstallTest("accepted.html", "extension.crx"));
 }
 
@@ -233,10 +228,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest, MissingDownloadDir) {
 }
 
 // Tests passing a localized name.
-//
-// times out at debug: http://crbug.com/111308
-IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest,
-                       DISABLED_InstallLocalized) {
+IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest, InstallLocalized) {
   ASSERT_TRUE(RunInstallTest("localized.html", "localized_extension.crx"));
 }
 
@@ -249,11 +241,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest, InstallCancelled) {
 
 IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest,
                        IncorrectManifest1) {
-  ScopedTempDir temp_dir;
-  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-  FilePath temp_path = temp_dir.path();
-  WebstoreInstaller::SetDownloadDirectoryForTests(&temp_path);
-
   WebstoreInstallListener listener;
   WebstorePrivateApi::SetWebstoreInstallerDelegateForTesting(&listener);
   ASSERT_TRUE(RunInstallTest("incorrect_manifest1.html", "extension.crx"));
@@ -264,11 +251,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest,
 
 IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest,
                        IncorrectManifest2) {
-  ScopedTempDir temp_dir;
-  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-  FilePath temp_path = temp_dir.path();
-  WebstoreInstaller::SetDownloadDirectoryForTests(&temp_path);
-
   WebstoreInstallListener listener;
   WebstorePrivateApi::SetWebstoreInstallerDelegateForTesting(&listener);
   ASSERT_TRUE(RunInstallTest("incorrect_manifest2.html", "extension.crx"));
@@ -279,10 +261,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest,
 
 // Tests that we can request an app installed bubble (instead of the default
 // UI when an app is installed).
-//
-// times out on debug: http://crbug.com/111308
-IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest,
-                       DISABLED_AppInstallBubble) {
+IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest, AppInstallBubble) {
   WebstoreInstallListener listener;
   WebstorePrivateApi::SetWebstoreInstallerDelegateForTesting(&listener);
   ASSERT_TRUE(RunInstallTest("app_install_bubble.html", "app.crx"));
@@ -298,10 +277,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest,
 }
 
 // Tests using silentlyInstall to install extensions.
-//
-// times out on debug: http://crbug.com/111308
-IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateBundleTest,
-                       DISABLED_SilentlyInstall) {
+IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateBundleTest, SilentlyInstall) {
   WebstorePrivateApi::SetTrustTestIDsForTesting(true);
   ASSERT_TRUE(RunPageTest(GetTestServerURL("silently_install.html").spec()));
 }

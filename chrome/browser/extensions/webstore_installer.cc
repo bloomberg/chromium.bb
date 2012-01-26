@@ -4,11 +4,14 @@
 
 #include "chrome/browser/extensions/webstore_installer.h"
 
+#include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
+#include "base/rand_util.h"
 #include "base/stringprintf.h"
 #include "base/string_util.h"
+#include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/download/download_prefs.h"
@@ -90,7 +93,14 @@ void GetDownloadFilePath(const FilePath& download_directory,
     }
   }
 
-  FilePath file = directory.AppendASCII(id + ".crx");
+  // This is to help avoid a race condition between when we generate this
+  // filename and when the download starts writing to it (think concurrently
+  // running sharded browser tests installing the same test file, for
+  // instance).
+  std::string random_number =
+      base::Uint64ToString(base::RandGenerator(kuint16max));
+
+  FilePath file = directory.AppendASCII(id + "_" + random_number + ".crx");
 
   int uniquifier = DownloadFile::GetUniquePathNumber(file);
   if (uniquifier > 0)
