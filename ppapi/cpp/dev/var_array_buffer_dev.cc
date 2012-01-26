@@ -1,8 +1,10 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "ppapi/cpp/dev/var_array_buffer_dev.h"
+
+#include <limits>
 
 #include "ppapi/c/dev/ppb_var_array_buffer_dev.h"
 #include "ppapi/cpp/logging.h"
@@ -18,50 +20,59 @@ template <> const char* interface_name<PPB_VarArrayBuffer_Dev>() {
 
 }  // namespace
 
-VarArrayBuffer_Dev::VarArrayBuffer_Dev(const Var& var)
-    : Var(var), buffer_(NULL) {
-  if (var.is_array_buffer()) {
-    buffer_ = Map();
+VarArrayBuffer_Dev::VarArrayBuffer_Dev(const Var& var) : Var(var) {
+  if (!var.is_array_buffer()) {
+    PP_NOTREACHED();
+    var_ = PP_MakeNull();
+  }
+}
+
+VarArrayBuffer_Dev::VarArrayBuffer_Dev(uint32_t size_in_bytes) {
+  if (has_interface<PPB_VarArrayBuffer_Dev>()) {
+    var_ = get_interface<PPB_VarArrayBuffer_Dev>()->Create(size_in_bytes);
+    needs_release_ = true;
   } else {
     PP_NOTREACHED();
     var_ = PP_MakeNull();
   }
 }
 
-VarArrayBuffer_Dev::VarArrayBuffer_Dev(uint32_t size_in_bytes)
-    : buffer_(NULL) {
-  if (has_interface<PPB_VarArrayBuffer_Dev>()) {
-    var_ = get_interface<PPB_VarArrayBuffer_Dev>()->Create(size_in_bytes);
-    needs_release_ = true;
-    buffer_ = Map();
+pp::VarArrayBuffer_Dev& VarArrayBuffer_Dev::operator=(
+    const VarArrayBuffer_Dev& other) {
+  Var::operator=(other);
+  return *this;
+}
+
+pp::Var& VarArrayBuffer_Dev::operator=(const Var& other) {
+  if (other.is_array_buffer()) {
+    return Var::operator=(other);
   } else {
     PP_NOTREACHED();
-    var_ = PP_MakeNull();
+    return *this;
   }
 }
 
 uint32_t VarArrayBuffer_Dev::ByteLength() const {
-  if (has_interface<PPB_VarArrayBuffer_Dev>()) {
-    return get_interface<PPB_VarArrayBuffer_Dev>()->ByteLength(var_);
-  }
-  PP_NOTREACHED();
-  return 0;
-}
-
-const void* VarArrayBuffer_Dev::Map() const {
-  return const_cast<VarArrayBuffer_Dev*>(this)->Map();
+  uint32_t byte_length = std::numeric_limits<uint32_t>::max();
+  if (is_array_buffer() && has_interface<PPB_VarArrayBuffer_Dev>())
+    get_interface<PPB_VarArrayBuffer_Dev>()->ByteLength(var_, &byte_length);
+  else
+    PP_NOTREACHED();
+  return byte_length;
 }
 
 void* VarArrayBuffer_Dev::Map() {
-  // TODO(dmichael): This is not thread-safe.
-  if (buffer_)
-    return buffer_;
-  if (has_interface<PPB_VarArrayBuffer_Dev>()) {
-    buffer_ = get_interface<PPB_VarArrayBuffer_Dev>()->Map(var_);
-    return buffer_;
-  }
+  if (is_array_buffer() && has_interface<PPB_VarArrayBuffer_Dev>())
+    return get_interface<PPB_VarArrayBuffer_Dev>()->Map(var_);
   PP_NOTREACHED();
-  return 0;
+  return NULL;
+}
+
+void VarArrayBuffer_Dev::Unmap() {
+  if (is_array_buffer() && has_interface<PPB_VarArrayBuffer_Dev>())
+    get_interface<PPB_VarArrayBuffer_Dev>()->Unmap(var_);
+  else
+    PP_NOTREACHED();
 }
 
 }  // namespace pp

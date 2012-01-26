@@ -131,7 +131,9 @@ uint32_t PpVarSize(const PP_Var& var) {
       break;
     }
     case PP_VARTYPE_ARRAY_BUFFER: {
-      uint32_t buffer_length = PPBVarArrayBufferInterface()->ByteLength(var);
+      uint32_t buffer_length = 0;
+      if (!PPBVarArrayBufferInterface()->ByteLength(var, &buffer_length))
+        return 0;
       buffer_length = RoundedStringBytes(buffer_length);
       if (AddWouldOverflow(buffer_length,
                            NACL_OFFSETOF(SerializedString, string_bytes))) {
@@ -226,8 +228,8 @@ bool SerializePpVar(const PP_Var* vars,
         break;
       }
       case PP_VARTYPE_ARRAY_BUFFER: {
-        uint32_t buffer_length =
-            PPBVarArrayBufferInterface()->ByteLength(vars[i]);
+        uint32_t buffer_length = 0;
+        PPBVarArrayBufferInterface()->ByteLength(vars[i], &buffer_length);
         SerializedString* ss = reinterpret_cast<SerializedString*>(p);
         ss->fixed.u.string_length = buffer_length;
         memcpy(reinterpret_cast<void*>(ss->string_bytes),

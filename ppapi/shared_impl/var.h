@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -140,6 +140,7 @@ class PPAPI_SHARED_EXPORT ArrayBufferVar : public Var {
   virtual ~ArrayBufferVar();
 
   virtual void* Map() = 0;
+  virtual void Unmap() = 0;
   virtual uint32 ByteLength() = 0;
 
   // Var override.

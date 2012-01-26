@@ -75,11 +75,12 @@ PP_Var CreateArrayBufferVar(uint32_t size_in_bytes) {
       size_in_bytes);
 }
 
-uint32_t ByteLength(PP_Var array) {
+PP_Bool ByteLength(PP_Var array, uint32_t* byte_length) {
   ArrayBufferVar* buffer = ArrayBufferVar::FromPPVar(array);
   if (!buffer)
-    return 0;
-  return buffer->ByteLength();
+    return PP_FALSE;
+  *byte_length = buffer->ByteLength();
+  return PP_TRUE;
 }
 
 void* Map(PP_Var array) {
@@ -89,10 +90,17 @@ void* Map(PP_Var array) {
   return buffer->Map();
 }
 
+void Unmap(PP_Var array) {
+  ArrayBufferVar* buffer = ArrayBufferVar::FromPPVar(array);
+  if (buffer)
+    buffer->Unmap();
+}
+
 const PPB_VarArrayBuffer_Dev var_arraybuffer_interface = {
   &CreateArrayBufferVar,
   &ByteLength,
-  &Map
+  &Map,
+  &Unmap
 };
 
 }  // namespace

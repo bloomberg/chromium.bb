@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -23,6 +23,10 @@ HostArrayBufferVar::~HostArrayBufferVar() {
 
 void* HostArrayBufferVar::Map() {
   return buffer_.data();
+}
+
+void HostArrayBufferVar::Unmap() {
+  // We do not used shared memory on the host side. Nothing to do.
 }
 
 uint32 HostArrayBufferVar::ByteLength() {

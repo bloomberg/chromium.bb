@@ -99,14 +99,18 @@ PP_Var CreateArrayBuffer(uint32_t size_in_bytes) {
   return var;
 }
 
-uint32_t ByteLength(PP_Var var) {
+PP_Bool ByteLength(PP_Var var, uint32_t* byte_length) {
   DebugPrintf("PPB_VarArrayBuffer::ByteLength: var=PPB_Var(%s)\n",
               PluginVar::DebugString(var).c_str());
   SharedArrayBufferProxyVar buffer_var = ArrayBufferProxyVar::CastFromProxyVar(
       ProxyVarCache::GetInstance().SharedProxyVarForVar(var));
-  uint32_t len = buffer_var->buffer_length();
-  DebugPrintf("PPB_VarArrayBuffer::ByteLength: length=%"NACL_PRIu32"\n", len);
-  return len;
+  if (buffer_var) {
+    *byte_length = buffer_var->buffer_length();
+    DebugPrintf("PPB_VarArrayBuffer::ByteLength: length=%"NACL_PRIu32"\n",
+                *byte_length);
+    return PP_TRUE;
+  }
+  return PP_FALSE;
 }
 
 void* Map(PP_Var var) {
@@ -117,6 +121,12 @@ void* Map(PP_Var var) {
   void* data = buffer_var->buffer();
   DebugPrintf("PPB_VarArrayBuffer::Map: buffer=%p\n", data);
   return data;
+}
+
+void Unmap(PP_Var var) {
+  DebugPrintf("PPB_VarArrayBuffer::Unap: var=PPB_Var(%s)\n",
+              PluginVar::DebugString(var).c_str());
+  // We don't use shared memory, so there's nothing to do.
 }
 
 }  // namespace
@@ -145,7 +155,8 @@ const PPB_VarArrayBuffer_Dev* PluginVar::GetArrayBufferInterface() {
   static const PPB_VarArrayBuffer_Dev interface = {
     CreateArrayBuffer,
     ByteLength,
-    Map
+    Map,
+    Unmap
   };
   return &interface;
 }
@@ -254,10 +265,11 @@ void PluginVar::Print(const PP_Var& var) {
     case PP_VARTYPE_OBJECT:
       DebugPrintf("PP_Var(object: %"NACL_PRIu64")", GetVarId(var));
       break;
+    case PP_VARTYPE_ARRAY_BUFFER:
+      DebugPrintf("PP_Var(object: %"NACL_PRIu64")", GetVarId(var));
+      break;
     case PP_VARTYPE_ARRAY:
     case PP_VARTYPE_DICTIONARY:
-    case PP_VARTYPE_ARRAY_BUFFER:
-      NACL_NOTREACHED();
       break;
   }
 }

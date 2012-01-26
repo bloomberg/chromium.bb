@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,6 +21,10 @@ void* PluginArrayBufferVar::Map() {
   if (buffer_.empty())
     return NULL;
   return &(buffer_[0]);
+}
+
+void PluginArrayBufferVar::Unmap() {
+  // We don't actually use shared memory yet, so do nothing.
 }
 
 uint32 PluginArrayBufferVar::ByteLength() {

@@ -263,6 +263,11 @@ std::string TestPostMessage::TestSendingArrayBuffer() {
     pp::VarArrayBuffer_Dev test_data(sizes[i]);
     if (sizes[i] > 0)
       ASSERT_NE(NULL, test_data.Map());
+    // Make sure we can Unmap/Map successfully (there's not really any way to
+    // detect if it's unmapped, so we just re-map before getting the pointer to
+    // the buffer).
+    test_data.Unmap();
+    test_data.Map();
     ASSERT_EQ(sizes[i], test_data.ByteLength());
     unsigned char* buff = static_cast<unsigned char*>(test_data.Map());
     const uint32_t kByteLength = test_data.ByteLength();

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,6 +20,7 @@ class HostArrayBufferVar : public ::ppapi::ArrayBufferVar {
 
   // ArrayBufferVar implementation.
   virtual void* Map() OVERRIDE;
+  virtual void Unmap() OVERRIDE;
   virtual uint32 ByteLength() OVERRIDE;
 
   WebKit::WebArrayBuffer& webkit_buffer() { return buffer_; }

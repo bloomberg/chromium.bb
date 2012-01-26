@@ -113,7 +113,9 @@ bool TestWebSocket::AreEqualWithString(const PP_Var& var, const char* string) {
 bool TestWebSocket::AreEqualWithBinary(const PP_Var& var,
                                        const uint8_t* data,
                                        uint32_t size) {
-  if (arraybuffer_interface_->ByteLength(var) != size)
+  uint32_t buffer_size = 0;
+  PP_Bool success = arraybuffer_interface_->ByteLength(var, &buffer_size);
+  if (!success || buffer_size != size)
     return false;
   if (memcmp(arraybuffer_interface_->Map(var), data, size))
     return false;
