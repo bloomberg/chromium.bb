@@ -76,8 +76,8 @@ class ExtensionSorting {
   void SetPageOrdinal(const std::string& extension_id,
                       const StringOrdinal& new_page_ordinal);
 
-  // Removes the page ordinal for an app.
-  void ClearPageOrdinal(const std::string& extension_id);
+  // Removes the ordinal values for an app.
+  void ClearOrdinals(const std::string& extension_id);
 
   // Convert the page StringOrdinal value to its integer equivalent. This takes
   // O(# of apps) worst-case.

@@ -79,23 +79,10 @@ std::vector<std::string> SyncExtensionHelper::GetInstalledExtensionNames(
   std::vector<std::string> names;
   ExtensionService* extension_service = profile->GetExtensionService();
 
-  const ExtensionSet* extensions = extension_service->extensions();
+  scoped_ptr<const ExtensionSet> extensions(
+      extension_service->GenerateInstalledExtensionsSet());
   for (ExtensionSet::const_iterator it = extensions->begin();
        it != extensions->end(); ++it) {
-    names.push_back((*it)->name());
-  }
-
-  const ExtensionSet* disabled_extensions =
-      extension_service->disabled_extensions();
-  for (ExtensionSet::const_iterator it = disabled_extensions->begin();
-       it != disabled_extensions->end(); ++it) {
-    names.push_back((*it)->name());
-  }
-
-  const ExtensionSet* terminated_extensions =
-      extension_service->terminated_extensions();
-  for (ExtensionSet::const_iterator it = terminated_extensions->begin();
-       it != terminated_extensions->end(); ++it) {
     names.push_back((*it)->name());
   }
 
@@ -183,27 +170,22 @@ SyncExtensionHelper::ExtensionStateMap
 
   ExtensionService* extension_service = profile->GetExtensionService();
 
-  const ExtensionSet* extensions = extension_service->extensions();
+  scoped_ptr<const ExtensionSet> extensions(
+      extension_service->GenerateInstalledExtensionsSet());
   for (ExtensionSet::const_iterator it = extensions->begin();
        it != extensions->end(); ++it) {
     const std::string& id = (*it)->id();
-    extension_state_map[id].enabled_state = ExtensionState::ENABLED;
+    extension_state_map[id].enabled_state =
+        extension_service->IsExtensionEnabled(id) ?
+        ExtensionState::ENABLED :
+        ExtensionState::DISABLED;
     extension_state_map[id].incognito_enabled =
         extension_service->IsIncognitoEnabled(id);
-    DVLOG(2) << "Extension " << (*it)->id() << " in profile "
-             << profile_debug_name << " is enabled";
-  }
 
-  const ExtensionSet* disabled_extensions =
-      extension_service->disabled_extensions();
-  for (ExtensionSet::const_iterator it = disabled_extensions->begin();
-       it != disabled_extensions->end(); ++it) {
-    const std::string& id = (*it)->id();
-    extension_state_map[id].enabled_state = ExtensionState::DISABLED;
-    extension_state_map[id].incognito_enabled =
-        extension_service->IsIncognitoEnabled(id);
     DVLOG(2) << "Extension " << (*it)->id() << " in profile "
-             << profile_debug_name << " is disabled";
+             << profile_debug_name << " is "
+             << (extension_service->IsExtensionEnabled(id) ?
+                 "enabled" : "disabled");
   }
 
   const PendingExtensionManager* pending_extension_manager =

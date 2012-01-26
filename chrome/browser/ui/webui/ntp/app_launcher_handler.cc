@@ -343,7 +343,7 @@ void AppLauncherHandler::Observe(int type,
 }
 
 void AppLauncherHandler::FillAppDictionary(DictionaryValue* dictionary) {
-  // CreateAppInfo and ClearPageOrdinal can change the extension prefs.
+  // CreateAppInfo and ClearOrdinals can change the extension prefs.
   AutoReset<bool> auto_reset(&ignore_changes_, true);
 
   ListValue* list = new ListValue();
@@ -362,7 +362,7 @@ void AppLauncherHandler::FillAppDictionary(DictionaryValue* dictionary) {
       ExtensionSorting* sortings =
           extension_service_->extension_prefs()->extension_sorting();
       if (sortings->GetPageOrdinal(extension->id()).IsValid())
-        sortings->ClearPageOrdinal(extension->id());
+        sortings->ClearOrdinals(extension->id());
     }
   }
 
@@ -839,9 +839,8 @@ void AppLauncherHandler::SetAppToBeHighlighted() {
 
 // static
 void AppLauncherHandler::RegisterUserPrefs(PrefService* pref_service) {
-  // TODO(csharp): We will want this to be a syncable preference instead.
   pref_service->RegisterListPref(prefs::kNTPAppPageNames,
-                                 PrefService::UNSYNCABLE_PREF);
+                                 PrefService::SYNCABLE_PREF);
 }
 
 void AppLauncherHandler::CleanupAfterUninstall() {

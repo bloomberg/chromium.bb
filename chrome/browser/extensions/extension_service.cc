@@ -1403,6 +1403,8 @@ SyncError ExtensionService::MergeDataAndStartSyncing(
   }
   bundle->sync_processor->ProcessSyncChanges(FROM_HERE, sync_change_list);
 
+  extension_prefs_->extension_sorting()->FixNTPOrdinalCollisions();
+
   return SyncError();
 }
 
@@ -1440,6 +1442,8 @@ SyncError ExtensionService::ProcessSyncChanges(
       bundle->synced_extensions.insert(extension_sync_data.id());
     ProcessExtensionSyncData(extension_sync_data, *bundle);
   }
+
+  extension_prefs()->extension_sorting()->FixNTPOrdinalCollisions();
 
   return SyncError();
 }
@@ -1522,6 +1526,12 @@ void ExtensionService::ProcessExtensionSyncData(
       extension->version()->CompareTo(extension_sync_data.version()) : 0;
   SetIsIncognitoEnabled(id, extension_sync_data.incognito_enabled());
   extension = NULL;  // No longer safe to use.
+
+  if (extension_sync_data.app_launch_ordinal().IsValid() &&
+      extension_sync_data.page_ordinal().IsValid()) {
+    SetAppLaunchOrdinal(id, extension_sync_data.app_launch_ordinal());
+    SetPageOrdinal(id, extension_sync_data.page_ordinal());
+  }
 
   if (extension_installed) {
     // If the extension is already installed, check if it's outdated.
@@ -1659,12 +1669,16 @@ StringOrdinal ExtensionService::GetAppLaunchOrdinal(
 
 void ExtensionService::SetAppLaunchOrdinal(
     const std::string& extension_id,
-    const StringOrdinal& app_launch_index) {
+    const StringOrdinal& app_launch_ordinal) {
+  // Only apps should set this value, so we check that it is either an app or
+  // that it is not yet installed (so we can't be sure it is an app). It is
+  // possible to be setting this value through syncing before the app is
+  // installed.
   const Extension* ext = GetExtensionById(extension_id, true);
-  DCHECK(ext->is_app());
+  DCHECK(!ext || ext->is_app());
 
   extension_prefs_->extension_sorting()->SetAppLaunchOrdinal(
-      extension_id, app_launch_index);
+      extension_id, app_launch_ordinal);
 
   const Extension* extension = GetInstalledExtension(extension_id);
   if (extension)
@@ -1678,8 +1692,12 @@ StringOrdinal ExtensionService::GetPageOrdinal(
 
 void ExtensionService::SetPageOrdinal(const std::string& extension_id,
                                       const StringOrdinal& page_ordinal) {
+  // Only apps should set this value, so we check that it is either an app or
+  // that it is not yet installed (so we can't be sure it is an app). It is
+  // possible to be setting this value through syncing before the app is
+  // installed.
   const Extension* ext = GetExtensionById(extension_id, true);
-  DCHECK(ext->is_app());
+  DCHECK(!ext || ext->is_app());
 
   extension_prefs_->extension_sorting()->SetPageOrdinal(
       extension_id, page_ordinal);

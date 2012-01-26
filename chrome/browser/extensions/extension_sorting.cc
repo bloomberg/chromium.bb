@@ -183,6 +183,11 @@ void ExtensionSorting::FixNTPOrdinalCollisions() {
       }
     }
   }
+
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_EXTENSION_LAUNCHER_REORDERED,
+      content::Source<ExtensionSorting>(this),
+      content::NotificationService::NoDetails());
 }
 
 void ExtensionSorting::OnExtensionMoved(
@@ -319,13 +324,15 @@ void ExtensionSorting::SetPageOrdinal(const std::string& extension_id,
       Value::CreateStringValue(new_page_ordinal.ToString()));
 }
 
-void ExtensionSorting::ClearPageOrdinal(const std::string& extension_id) {
+void ExtensionSorting::ClearOrdinals(const std::string& extension_id) {
   RemoveOrdinalMapping(extension_id,
                        GetPageOrdinal(extension_id),
                        GetAppLaunchOrdinal(extension_id));
 
   extension_scoped_prefs_->UpdateExtensionPref(
       extension_id, kPrefPageOrdinal, NULL);
+  extension_scoped_prefs_->UpdateExtensionPref(
+      extension_id, kPrefAppLaunchOrdinal, NULL);
 }
 
 int ExtensionSorting::PageStringOrdinalAsInteger(

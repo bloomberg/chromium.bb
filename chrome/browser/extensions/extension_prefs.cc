@@ -1121,6 +1121,8 @@ void ExtensionPrefs::OnExtensionInstalled(
 void ExtensionPrefs::OnExtensionUninstalled(const std::string& extension_id,
                                             const Extension::Location& location,
                                             bool external_uninstall) {
+  extension_sorting_->ClearOrdinals(extension_id);
+
   // For external extensions, we save a preference reminding ourself not to try
   // and install the extension anymore (except when |external_uninstall| is
   // true, which signifies that the registry key was deleted or the pref file

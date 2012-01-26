@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "base/string_number_conversions.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/sync/test/integration/sync_app_helper.h"
 #include "chrome/browser/sync/test/integration/sync_datatype_helper.h"
 #include "chrome/browser/sync/test/integration/sync_extension_helper.h"
 #include "chrome/common/extensions/extension.h"
@@ -24,8 +25,7 @@ std::string CreateFakeAppName(int index) {
 namespace apps_helper {
 
 bool HasSameAppsAsVerifier(int index) {
-  // TODO(akalin): We may want to filter out non-apps for some tests.
-  return SyncExtensionHelper::GetInstance()->ExtensionStatesMatch(
+  return SyncAppHelper::GetInstance()->AppStatesMatch(
       test()->GetProfile(index), test()->verifier());
 }
 
@@ -73,6 +73,42 @@ void IncognitoDisableApp(Profile* profile, int index) {
 void InstallAppsPendingForSync(Profile* profile) {
   SyncExtensionHelper::GetInstance()->InstallExtensionsPendingForSync(
       profile, Extension::TYPE_HOSTED_APP);
+}
+
+StringOrdinal GetPageOrdinalForApp(Profile* profile,
+                                   int app_index) {
+  return SyncAppHelper::GetInstance()->GetPageOrdinalForApp(
+      profile, CreateFakeAppName(app_index));
+}
+
+void SetPageOrdinalForApp(Profile* profile,
+                          int app_index,
+                          const StringOrdinal& page_ordinal) {
+  SyncAppHelper::GetInstance()->SetPageOrdinalForApp(
+      profile, CreateFakeAppName(app_index), page_ordinal);
+}
+
+StringOrdinal GetAppLaunchOrdinalForApp(Profile* profile,
+                                        int app_index) {
+  return SyncAppHelper::GetInstance()->GetAppLaunchOrdinalForApp(
+      profile, CreateFakeAppName(app_index));
+}
+
+void SetAppLaunchOrdinalForApp(Profile* profile,
+                               int app_index,
+                               const StringOrdinal& app_launch_ordinal) {
+  SyncAppHelper::GetInstance()->SetAppLaunchOrdinalForApp(
+      profile, CreateFakeAppName(app_index), app_launch_ordinal);
+}
+
+void CopyNTPOrdinals(Profile* source, Profile* destination, int index) {
+  SetPageOrdinalForApp(destination, index, GetPageOrdinalForApp(source, index));
+  SetAppLaunchOrdinalForApp(
+      destination, index, GetAppLaunchOrdinalForApp(source, index));
+}
+
+void FixNTPOrdinalCollisions(Profile* profile) {
+  SyncAppHelper::GetInstance()->FixNTPOrdinalCollisions(profile);
 }
 
 }  // namespace apps_helper

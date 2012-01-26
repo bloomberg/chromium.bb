@@ -3773,6 +3773,8 @@
         'browser/sync/test/integration/single_client_sessions_sync_test.cc',
         'browser/sync/test/integration/single_client_themes_sync_test.cc',
         'browser/sync/test/integration/single_client_typed_urls_sync_test.cc',
+        'browser/sync/test/integration/sync_app_helper.cc',
+        'browser/sync/test/integration/sync_app_helper.h',
         'browser/sync/test/integration/sync_datatype_helper.cc',
         'browser/sync/test/integration/sync_datatype_helper.h',
         'browser/sync/test/integration/sync_errors_test.cc',

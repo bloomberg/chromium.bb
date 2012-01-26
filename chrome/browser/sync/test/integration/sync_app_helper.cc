@@ -1,0 +1,163 @@
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "chrome/browser/sync/test/integration/sync_app_helper.h"
+
+#include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_sorting.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/sync/test/integration/extensions_helper.h"
+#include "chrome/browser/sync/test/integration/sync_datatype_helper.h"
+#include "chrome/browser/sync/test/integration/sync_extension_helper.h"
+#include "chrome/common/string_ordinal.h"
+
+namespace {
+
+struct AppState {
+  AppState();
+  ~AppState();
+  bool Equals(const AppState& other) const;
+
+  StringOrdinal app_launch_ordinal;
+  StringOrdinal page_ordinal;
+};
+
+typedef std::map<std::string, AppState> AppStateMap;
+
+AppState::AppState() {}
+
+AppState::~AppState() {}
+
+bool AppState::Equals(const AppState& other) const {
+  return app_launch_ordinal.Equal(other.app_launch_ordinal) &&
+      page_ordinal.Equal(other.page_ordinal);
+}
+
+// Load all the app specific values for |id| into |app_state|.
+void LoadApp(ExtensionService* extension_service,
+             const std::string& id,
+             AppState* app_state) {
+  app_state->app_launch_ordinal = extension_service->GetAppLaunchOrdinal(id);
+  app_state->page_ordinal = extension_service->GetPageOrdinal(id);
+}
+
+// Returns a map from |profile|'s installed extensions to their state.
+AppStateMap GetAppStates(Profile* profile) {
+  AppStateMap app_state_map;
+
+  ExtensionService* extension_service = profile->GetExtensionService();
+
+  scoped_ptr<const ExtensionSet> extensions(
+      extension_service->GenerateInstalledExtensionsSet());
+  for (ExtensionSet::const_iterator it = extensions->begin();
+       it != extensions->end(); ++it) {
+    if ((*it)->GetSyncType() == Extension::SYNC_TYPE_APP) {
+      const std::string& id = (*it)->id();
+      LoadApp(extension_service, id, &(app_state_map[id]));
+    }
+  }
+
+  const PendingExtensionManager* pending_extension_manager =
+      extension_service->pending_extension_manager();
+
+  std::set<std::string> pending_crx_ids;
+  pending_extension_manager->GetPendingIdsForUpdateCheck(&pending_crx_ids);
+
+  for (std::set<std::string>::const_iterator id = pending_crx_ids.begin();
+       id != pending_crx_ids.end(); ++id) {
+    LoadApp(extension_service, *id, &(app_state_map[*id]));
+  }
+
+  return app_state_map;
+}
+
+}  // namespace
+
+SyncAppHelper* SyncAppHelper::GetInstance() {
+  SyncAppHelper* instance = Singleton<SyncAppHelper>::get();
+  instance->SetupIfNecessary(sync_datatype_helper::test());
+  return instance;
+}
+
+void SyncAppHelper::SetupIfNecessary(SyncTest* test) {
+  if (setup_completed_)
+    return;
+
+  for (int i = 0; i < test->num_clients(); ++i) {
+    test->GetProfile(i)->InitExtensions(true);
+  }
+  test->verifier()->InitExtensions(true);
+
+  setup_completed_ = true;
+}
+
+bool SyncAppHelper::AppStatesMatch(Profile* profile1, Profile* profile2) {
+  if (!SyncExtensionHelper::GetInstance()->ExtensionStatesMatch(
+          profile1, profile2))
+    return false;
+
+  const AppStateMap& state_map1 = GetAppStates(profile1);
+  const AppStateMap& state_map2 = GetAppStates(profile2);
+  if (state_map1.size() != state_map2.size()) {
+    DVLOG(2) << "Number of Apps for profile " << profile1->GetDebugName()
+             << " does not match profile " << profile2->GetDebugName();
+    return false;
+  }
+
+  AppStateMap::const_iterator it1 = state_map1.begin();
+  AppStateMap::const_iterator it2 = state_map2.begin();
+  while (it1 != state_map1.end()) {
+    if (it1->first != it2->first) {
+      DVLOG(2) << "Apps for profile " << profile1->GetDebugName()
+               << " do not match profile " << profile2->GetDebugName();
+      return false;
+    } else if (!it1->second.Equals(it2->second)) {
+      DVLOG(2) << "App states for profile " << profile1->GetDebugName()
+               << " do not match profile " << profile2->GetDebugName();
+      return false;
+    }
+    ++it1;
+    ++it2;
+  }
+
+  return true;
+}
+
+StringOrdinal SyncAppHelper::GetPageOrdinalForApp(Profile* profile,
+                                                  const std::string& name) {
+  return profile->GetExtensionService()->GetPageOrdinal(
+      SyncExtensionHelper::NameToId(name));
+}
+
+void SyncAppHelper::SetPageOrdinalForApp(Profile* profile,
+                                         const std::string& name,
+                                         const StringOrdinal& page_ordinal) {
+  profile->GetExtensionService()->SetPageOrdinal(
+      SyncExtensionHelper::NameToId(name), page_ordinal);
+}
+
+StringOrdinal SyncAppHelper::GetAppLaunchOrdinalForApp(
+    Profile* profile,
+    const std::string& name) {
+  return profile->GetExtensionService()->GetAppLaunchOrdinal(
+      SyncExtensionHelper::NameToId(name));
+}
+
+void SyncAppHelper::SetAppLaunchOrdinalForApp(
+    Profile* profile,
+    const std::string& name,
+    const StringOrdinal& app_launch_ordinal) {
+  profile->GetExtensionService()->SetAppLaunchOrdinal(
+      SyncExtensionHelper::NameToId(name),
+      app_launch_ordinal);
+}
+
+void SyncAppHelper::FixNTPOrdinalCollisions(Profile* profile) {
+  profile->GetExtensionService()->extension_prefs()->
+      extension_sorting()->FixNTPOrdinalCollisions();
+}
+
+SyncAppHelper::SyncAppHelper() : setup_completed_(false) {}
+
+SyncAppHelper::~SyncAppHelper() {}
