@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -52,6 +52,8 @@ const wchar_t kChromeRegClientStateKey[] =
 const wchar_t kChromeRegClientStateMediumKey[] =
     L"Software\\Google\\Update\\ClientStateMedium\\"
     L"{8A69D345-D564-463c-AFF1-A69D9E530F96}";
+
+const wchar_t kGCAPITempKey[] = L"Software\\Google\\GCAPITemp";
 
 const wchar_t kChromeRegLaunchCmd[] = L"InstallerSuccessLaunchCmdLine";
 const wchar_t kChromeRegLastLaunchCmd[] = L"LastInstallerSuccessLaunchCmdLine";
@@ -238,14 +240,13 @@ bool VerifyAdminGroup() {
   return (check == TRUE);
 }
 
-bool VerifyHKLMAccess(const wchar_t* sub_key) {
-  HKEY root = HKEY_LOCAL_MACHINE;
+bool VerifyHKLMAccess() {
   wchar_t str[] = L"test";
   bool result = false;
   DWORD disposition = 0;
   HKEY key = NULL;
 
-  if (::RegCreateKeyEx(root, sub_key, 0, NULL,
+  if (::RegCreateKeyEx(HKEY_LOCAL_MACHINE, kGCAPITempKey, 0, NULL,
                        REG_OPTION_NON_VOLATILE, KEY_READ | KEY_WRITE, NULL,
                        &key, &disposition) == ERROR_SUCCESS) {
     if (::RegSetValueEx(key, str, 0, REG_SZ, (LPBYTE)str,
@@ -254,11 +255,11 @@ bool VerifyHKLMAccess(const wchar_t* sub_key) {
       RegDeleteValue(key, str);
     }
 
+    RegCloseKey(key);
+
     //  If we create the main key, delete the entire key.
     if (disposition == REG_CREATED_NEW_KEY)
-      RegDeleteKey(key, NULL);
-
-    RegCloseKey(key);
+      RegDeleteKey(HKEY_LOCAL_MACHINE, kGCAPITempKey);
   }
 
   return result;
@@ -331,7 +332,7 @@ BOOL __stdcall GoogleChromeCompatibilityCheck(BOOL set_flag, DWORD* reasons) {
   if (IsChromeInstalled(HKEY_CURRENT_USER))
     local_reasons |= GCCC_ERROR_USERLEVELALREADYPRESENT;
 
-  if (!VerifyHKLMAccess(kChromeRegClientsKey)) {
+  if (!VerifyHKLMAccess()) {
     local_reasons |= GCCC_ERROR_ACCESSDENIED;
   } else if ((windows_version == VERSION_VISTA_OR_HIGHER) &&
              !VerifyAdminGroup()) {
@@ -508,33 +509,25 @@ BOOL __stdcall LaunchGoogleChromeWithDimensions(int x,
 int __stdcall GoogleChromeDaysSinceLastRun() {
   int days_since_last_run = std::numeric_limits<int>::max();
 
-  struct {
-    HKEY hive;
-    const wchar_t* path;
-  } reg_data[] = {
-    { HKEY_LOCAL_MACHINE, kChromeRegClientStateMediumKey },
-    { HKEY_CURRENT_USER, kChromeRegClientStateKey }
-  };
+  if (IsChromeInstalled(HKEY_LOCAL_MACHINE) ||
+      IsChromeInstalled(HKEY_CURRENT_USER)) {
+    RegKey client_state(
+        HKEY_CURRENT_USER, kChromeRegClientStateKey, KEY_QUERY_VALUE);
+    if (client_state.Valid()) {
+      std::wstring last_run;
+      int64 last_run_value = 0;
+      if (client_state.ReadValue(google_update::kRegLastRunTimeField,
+                                 &last_run) == ERROR_SUCCESS &&
+          base::StringToInt64(last_run, &last_run_value)) {
+        Time last_run_time = Time::FromInternalValue(last_run_value);
+        TimeDelta difference = Time::NowFromSystemTime() - last_run_time;
 
-  for (int i = 0; i < arraysize(reg_data); ++i) {
-    if (IsChromeInstalled(reg_data[i].hive)) {
-      RegKey client_state(reg_data[i].hive, reg_data[i].path, KEY_QUERY_VALUE);
-      if (client_state.Valid()) {
-        std::wstring last_run;
-        int64 last_run_value = 0;
-        if (client_state.ReadValue(google_update::kRegLastRunTimeField,
-                                   &last_run) == ERROR_SUCCESS &&
-            base::StringToInt64(last_run, &last_run_value)) {
-          Time last_run_time = Time::FromInternalValue(last_run_value);
-          TimeDelta difference = Time::NowFromSystemTime() - last_run_time;
-
-          // We can end up with negative numbers here, given changes in system
-          // clock time or due to TimeDelta's int64 -> int truncation.
-          int new_days_since_last_run = difference.InDays();
-          if (new_days_since_last_run >= 0 &&
-              new_days_since_last_run < days_since_last_run) {
-            days_since_last_run = new_days_since_last_run;
-          }
+        // We can end up with negative numbers here, given changes in system
+        // clock time or due to TimeDelta's int64 -> int truncation.
+        int new_days_since_last_run = difference.InDays();
+        if (new_days_since_last_run >= 0 &&
+            new_days_since_last_run < days_since_last_run) {
+          days_since_last_run = new_days_since_last_run;
         }
       }
     }
