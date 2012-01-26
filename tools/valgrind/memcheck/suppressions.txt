@@ -5359,8 +5359,8 @@
    bug_109463
    Memcheck:Leak
    fun:malloc
-   fun:_ZN3WTF10fastMallocEm
-   fun:_ZN3WTF24ThreadSafeRefCountedBasenwEm
+   fun:_ZN3WTF10fastMallocE*
+   fun:_ZN3WTF24ThreadSafeRefCountedBasenwE*
    fun:_ZN7WebCore6IDBKey*
 }
 {
