@@ -138,7 +138,6 @@ include_rules = [
   "+content/browser/zygote_host_linux.h",
 
   "-content/common",
-  "+content/common/geoposition.h",  # TODO(jam): move to public
 
   # Other libraries.
   "+chrome/third_party/hunspell",

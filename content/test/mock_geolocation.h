@@ -10,7 +10,6 @@
 #include "base/memory/ref_counted.h"
 
 class GeolocationArbitratorDependencyFactory;
-struct Geoposition;
 
 namespace content {
 
@@ -26,8 +25,8 @@ class MockGeolocation {
   // Call this in the test's TearDown function.
   void TearDown();
 
-  Geoposition GetCurrentPosition() const;
-  void SetCurrentPosition(const Geoposition& position);
+  void GetCurrentPosition(double* latitude, double* longitude) const;
+  void SetCurrentPosition(double latitude, double longitude);
 
  private:
   scoped_refptr<GeolocationArbitratorDependencyFactory> dependency_factory_;

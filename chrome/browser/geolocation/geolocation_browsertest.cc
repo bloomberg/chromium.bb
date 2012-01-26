@@ -25,7 +25,6 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/browser/renderer_host/render_view_host.h"
-#include "content/common/geoposition.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_details.h"
@@ -281,26 +280,19 @@ class GeolocationBrowserTest : public InProcessBrowserTest {
     }
   }
 
-  Geoposition GeopositionFromLatLong(double latitude, double longitude) {
-    Geoposition geoposition;
-    geoposition.latitude = latitude;
-    geoposition.longitude = longitude;
-    geoposition.accuracy = 0;
-    geoposition.error_code = Geoposition::ERROR_CODE_NONE;
-    // Webkit compares the timestamp to wall clock time, so we need
-    // it to be contemporary.
-    geoposition.timestamp = base::Time::Now();
-    EXPECT_TRUE(geoposition.IsValidFix());
-    return geoposition;
-  }
-
-  void CheckGeoposition(const Geoposition& geoposition) {
+  void CheckGeoposition(double latitude, double longitude) {
     // Checks we have no error.
     CheckStringValueFromJavascript("0", "geoGetLastError()");
-    CheckStringValueFromJavascript(base::DoubleToString(geoposition.latitude),
+    CheckStringValueFromJavascript(base::DoubleToString(latitude),
                                    "geoGetLastPositionLatitude()");
-    CheckStringValueFromJavascript(base::DoubleToString(geoposition.longitude),
+    CheckStringValueFromJavascript(base::DoubleToString(longitude),
                                    "geoGetLastPositionLongitude()");
+  }
+
+  void CheckGeopositionEqualsMock() {
+    double latitude, longitude;
+    mock_geolocation_.GetCurrentPosition(&latitude, &longitude);
+    CheckGeoposition(latitude, longitude);
   }
 
   void SetInfobarResponse(const GURL& requesting_url, bool allowed) {
@@ -355,8 +347,8 @@ class GeolocationBrowserTest : public InProcessBrowserTest {
         expected, function, current_browser_->GetSelectedWebContents());
   }
 
-  void NotifyGeoposition(const Geoposition& geoposition) {
-    mock_geolocation_.SetCurrentPosition(geoposition);
+  void NotifyGeoposition(double latitude, double longitude) {
+    mock_geolocation_.SetCurrentPosition(latitude, longitude);
     LOG(WARNING) << "MockLocationProvider listeners updated";
   }
 
@@ -387,7 +379,7 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, Geoposition) {
   ASSERT_TRUE(Initialize(INITIALIZATION_NONE));
   AddGeolocationWatch(true);
   SetInfobarResponse(current_url_, true);
-  CheckGeoposition(mock_geolocation_.GetCurrentPosition());
+  CheckGeopositionEqualsMock();
 }
 
 // Crashy, http://crbug.com/70585.
@@ -416,7 +408,7 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, MAYBE_NoInfobarForSecondTab) {
   // Checks infobar will not be created a second tab.
   ASSERT_TRUE(Initialize(INITIALIZATION_NEWTAB));
   AddGeolocationWatch(false);
-  CheckGeoposition(mock_geolocation_.GetCurrentPosition());
+  CheckGeopositionEqualsMock();
 }
 
 // http://crbug.com/44589. Hangs on Mac, crashes on Windows
@@ -458,7 +450,7 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, MAYBE_NoInfobarForAllowedOrigin) 
                         CONTENT_SETTING_ALLOW);
   // Checks no infobar will be created and there's no error callback.
   AddGeolocationWatch(false);
-  CheckGeoposition(mock_geolocation_.GetCurrentPosition());
+  CheckGeopositionEqualsMock();
 }
 
 IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, NoInfobarForOffTheRecord) {
@@ -467,13 +459,13 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, NoInfobarForOffTheRecord) {
   AddGeolocationWatch(true);
   // Response will be persisted
   SetInfobarResponse(current_url_, true);
-  CheckGeoposition(mock_geolocation_.GetCurrentPosition());
+  CheckGeopositionEqualsMock();
   // Disables further prompts from this tab.
   CheckStringValueFromJavascript("0", "geoSetMaxNavigateCount(0)");
   // Go incognito, and checks no infobar will be created.
   ASSERT_TRUE(Initialize(INITIALIZATION_OFFTHERECORD));
   AddGeolocationWatch(false);
-  CheckGeoposition(mock_geolocation_.GetCurrentPosition());
+  CheckGeopositionEqualsMock();
 }
 
 // Test fails: http://crbug.com/90927
@@ -487,7 +479,7 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest,
   iframe_xpath_ = L"//iframe[@id='iframe_0']";
   AddGeolocationWatch(true);
   SetInfobarResponse(iframe_urls_[0], true);
-  CheckGeoposition(mock_geolocation_.GetCurrentPosition());
+  CheckGeopositionEqualsMock();
   // Disables further prompts from this iframe.
   CheckStringValueFromJavascript("0", "geoSetMaxNavigateCount(0)");
 
@@ -499,14 +491,15 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest,
   // Back to the first frame, enable navigation and refresh geoposition.
   iframe_xpath_ = L"//iframe[@id='iframe_0']";
   CheckStringValueFromJavascript("1", "geoSetMaxNavigateCount(1)");
-  Geoposition fresh_position = GeopositionFromLatLong(3.17, 4.23);
+  double fresh_position_latitude = 3.17;
+  double fresh_position_longitude = 4.23;
   ui_test_utils::WindowedNotificationObserver observer(
       content::NOTIFICATION_LOAD_STOP,
       content::Source<NavigationController>(
           &current_browser_->GetSelectedWebContents()->GetController()));
-  NotifyGeoposition(fresh_position);
+  NotifyGeoposition(fresh_position_latitude, fresh_position_longitude);
   observer.Wait();
-  CheckGeoposition(fresh_position);
+  CheckGeoposition(fresh_position_latitude, fresh_position_longitude);
 
   // Disable navigation for this frame.
   CheckStringValueFromJavascript("0", "geoSetMaxNavigateCount(0)");
@@ -516,7 +509,7 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest,
   // Infobar was displayed, allow access and check there's no error code.
   SetInfobarResponse(iframe_urls_[1], true);
   LOG(WARNING) << "Checking position...";
-  CheckGeoposition(fresh_position);
+  CheckGeoposition(fresh_position_latitude, fresh_position_longitude);
   LOG(WARNING) << "...done.";
 }
 
@@ -530,18 +523,19 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest,
   iframe_xpath_ = L"//iframe[@id='iframe_0']";
   AddGeolocationWatch(true);
   SetInfobarResponse(iframe_urls_[0], true);
-  CheckGeoposition(mock_geolocation_.GetCurrentPosition());
+  CheckGeopositionEqualsMock();
 
   // Refresh geoposition, but let's not yet create the watch on the second frame
   // so that it'll fetch from cache.
-  Geoposition cached_position = GeopositionFromLatLong(5.67, 8.09);
+  double cached_position_latitude = 5.67;
+  double cached_position_lognitude = 8.09;
   ui_test_utils::WindowedNotificationObserver observer(
       content::NOTIFICATION_LOAD_STOP,
       content::Source<NavigationController>(
           &current_browser_->GetSelectedWebContents()->GetController()));
-  NotifyGeoposition(cached_position);
+  NotifyGeoposition(cached_position_latitude, cached_position_lognitude);
   observer.Wait();
-  CheckGeoposition(cached_position);
+  CheckGeoposition(cached_position_latitude, cached_position_lognitude);
 
   // Disable navigation for this frame.
   CheckStringValueFromJavascript("0", "geoSetMaxNavigateCount(0)");
@@ -554,7 +548,7 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest,
   // callback from the cached position.
   CheckStringValueFromJavascript("1", "geoSetMaxNavigateCount(1)");
   SetInfobarResponse(iframe_urls_[1], true);
-  CheckGeoposition(cached_position);
+  CheckGeoposition(cached_position_latitude, cached_position_lognitude);
 }
 
 // See http://crbug.com/56033
@@ -568,7 +562,7 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest,
   iframe_xpath_ = L"//iframe[@id='iframe_0']";
   AddGeolocationWatch(true);
   SetInfobarResponse(iframe_urls_[0], true);
-  CheckGeoposition(mock_geolocation_.GetCurrentPosition());
+  CheckGeopositionEqualsMock();
   // Disables further prompts from this iframe.
   CheckStringValueFromJavascript("0", "geoSetMaxNavigateCount(0)");
 
@@ -612,24 +606,25 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, DISABLED_NoInfoBarBeforeStart) {
   iframe_xpath_ = L"//iframe[@id='iframe_0']";
   AddGeolocationWatch(true);
   SetInfobarResponse(iframe_urls_[0], true);
-  CheckGeoposition(mock_geolocation_.GetCurrentPosition());
+  CheckGeopositionEqualsMock();
   CheckStringValueFromJavascript("0", "geoSetMaxNavigateCount(0)");
 
   // Permission should be requested after adding a watch.
   iframe_xpath_ = L"//iframe[@id='iframe_1']";
   AddGeolocationWatch(true);
   SetInfobarResponse(iframe_urls_[1], true);
-  CheckGeoposition(mock_geolocation_.GetCurrentPosition());
+  CheckGeopositionEqualsMock();
 }
 
 IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, TwoWatchesInOneFrame) {
   html_for_tests_ = "files/geolocation/two_watches.html";
   ASSERT_TRUE(Initialize(INITIALIZATION_NONE));
   // First, set the JavaScript to navigate when it receives |final_position|.
-  const Geoposition final_position = GeopositionFromLatLong(3.17, 4.23);
+  double final_position_latitude = 3.17;
+  double final_position_longitude = 4.23;
   std::string script = base::StringPrintf(
       "window.domAutomationController.send(geoSetFinalPosition(%f, %f))",
-      final_position.latitude, final_position.longitude);
+      final_position_latitude, final_position_longitude);
   std::string js_result;
   EXPECT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractString(
       current_browser_->GetSelectedWebContents()->GetRenderViewHost(),
@@ -639,7 +634,7 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, TwoWatchesInOneFrame) {
   // Send a position which both geolocation watches will receive.
   AddGeolocationWatch(true);
   SetInfobarResponse(current_url_, true);
-  CheckGeoposition(mock_geolocation_.GetCurrentPosition());
+  CheckGeopositionEqualsMock();
 
   // The second watch will now have cancelled. Ensure an update still makes
   // its way through to the first watcher.
@@ -647,9 +642,9 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, TwoWatchesInOneFrame) {
       content::NOTIFICATION_LOAD_STOP,
       content::Source<NavigationController>(
           &current_browser_->GetSelectedWebContents()->GetController()));
-  NotifyGeoposition(final_position);
+  NotifyGeoposition(final_position_latitude, final_position_longitude);
   observer.Wait();
-  CheckGeoposition(final_position);
+  CheckGeoposition(final_position_latitude, final_position_longitude);
 }
 
 // Hangs flakily, http://crbug.com/70588.
