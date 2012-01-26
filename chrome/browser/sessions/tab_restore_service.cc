@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -201,9 +201,6 @@ TabRestoreService::TabRestoreService(Profile* profile,
 }
 
 TabRestoreService::~TabRestoreService() {
-  if (backend())
-    Save();
-
   FOR_EACH_OBSERVER(TabRestoreServiceObserver, observer_list_,
                     TabRestoreServiceDestroyed(this));
   STLDeleteElements(&entries_);
@@ -449,6 +446,11 @@ void TabRestoreService::LoadTabsFromLastSession() {
           base::Bind(&TabRestoreService::OnGotLastSessionCommands,
                      base::Unretained(this))),
       &load_consumer_);
+}
+
+void TabRestoreService::Shutdown() {
+  if (backend())
+    Save();
 }
 
 void TabRestoreService::Save() {

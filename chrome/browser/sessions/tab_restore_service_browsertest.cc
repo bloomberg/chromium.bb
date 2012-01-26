@@ -60,6 +60,7 @@ class TabRestoreServiceTest : public ChromeRenderViewHostTestHarness {
   }
 
   virtual void TearDown() {
+    service_->Shutdown();
     service_.reset();
     delete time_factory_;
     ChromeRenderViewHostTestHarness::TearDown();
@@ -83,6 +84,7 @@ class TabRestoreServiceTest : public ChromeRenderViewHostTestHarness {
   void RecreateService() {
     // Must set service to null first so that it is destroyed before the new
     // one is created.
+    service_->Shutdown();
     service_.reset();
     service_.reset(new TabRestoreService(profile(), time_factory_));
     service_->LoadTabsFromLastSession();
