@@ -171,36 +171,6 @@ surface_handle_buffer_destroy(struct wl_listener *listener,
 	es->buffer = NULL;
 }
 
-static void
-output_handle_scanout_buffer_destroy(struct wl_listener *listener,
-				     struct wl_resource *resource,
-				     uint32_t time)
-{
-	struct weston_output *output =
-		container_of(listener, struct weston_output,
-			     scanout_buffer_destroy_listener);
-
-	output->scanout_buffer = NULL;
-
-	if (!output->pending_scanout_buffer)
-		weston_compositor_schedule_repaint(output->compositor);
-}
-
-static void
-output_handle_pending_scanout_buffer_destroy(struct wl_listener *listener,
-					     struct wl_resource *resource,
-					     uint32_t time)
-{
-	struct weston_output *output =
-		container_of(listener, struct weston_output,
-			     pending_scanout_buffer_destroy_listener);
-
-	output->pending_scanout_buffer = NULL;
-
-	weston_compositor_schedule_repaint(output->compositor);
-}
-
-
 WL_EXPORT struct weston_surface *
 weston_surface_create(struct weston_compositor *compositor,
 		      int32_t x, int32_t y, int32_t width, int32_t height)
@@ -645,7 +615,7 @@ weston_compositor_damage_all(struct weston_compositor *compositor)
 		weston_output_damage(output);
 }
 
-static inline void
+WL_EXPORT void
 weston_buffer_post_release(struct wl_buffer *buffer)
 {
 	if (--buffer->busy_count > 0)
@@ -883,20 +853,6 @@ idle_repaint(void *data)
 WL_EXPORT void
 weston_output_finish_frame(struct weston_output *output, int msecs)
 {
-	if (output->scanout_buffer) {
-		weston_buffer_post_release(output->scanout_buffer);
-		wl_list_remove(&output->scanout_buffer_destroy_listener.link);
-		output->scanout_buffer = NULL;
-	}
-
-	if (output->pending_scanout_buffer) {
-		output->scanout_buffer = output->pending_scanout_buffer;
-		wl_list_remove(&output->pending_scanout_buffer_destroy_listener.link);
-		wl_list_insert(output->scanout_buffer->resource.destroy_listener_list.prev,
-			       &output->scanout_buffer_destroy_listener.link);
-		output->pending_scanout_buffer = NULL;
-	}
-
 	if (output->repaint_needed)
 		repaint(output, msecs);
 	else
@@ -1821,11 +1777,6 @@ weston_output_init(struct weston_output *output, struct weston_compositor *c,
 
 	output->flags = flags;
 	weston_output_move(output, x, y);
-
-	output->scanout_buffer_destroy_listener.func =
-		output_handle_scanout_buffer_destroy;
-	output->pending_scanout_buffer_destroy_listener.func =
-		output_handle_pending_scanout_buffer_destroy;
 
 	wl_list_init(&output->frame_callback_list);
 

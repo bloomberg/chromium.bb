@@ -76,6 +76,10 @@ struct drm_output {
 
 	uint32_t fs_surf_fb_id;
 	uint32_t pending_fs_surf_fb_id;
+	struct wl_buffer *scanout_buffer;
+	struct wl_listener scanout_buffer_destroy_listener;
+	struct wl_buffer *pending_scanout_buffer;
+	struct wl_listener pending_scanout_buffer_destroy_listener;
 };
 
 static int
@@ -124,11 +128,11 @@ drm_output_prepare_scanout_surface(struct drm_output *output)
 	output->pending_fs_surf_fb_id = fb_id;
 
 	/* assert output->pending_scanout_buffer == NULL */
-	output->base.pending_scanout_buffer = es->buffer;
-	output->base.pending_scanout_buffer->busy_count++;
+	output->pending_scanout_buffer = es->buffer;
+	output->pending_scanout_buffer->busy_count++;
 
-	wl_list_insert(output->base.pending_scanout_buffer->resource.destroy_listener_list.prev,
-		       &output->base.pending_scanout_buffer_destroy_listener.link);
+	wl_list_insert(output->pending_scanout_buffer->resource.destroy_listener_list.prev,
+		       &output->pending_scanout_buffer_destroy_listener.link);
 
 	pixman_region32_fini(&es->damage);
 	pixman_region32_init(&es->damage);
@@ -187,12 +191,20 @@ page_flip_handler(int fd, unsigned int frame,
 		(struct drm_compositor *) output->base.compositor;
 	uint32_t msecs;
 
-	if (output->fs_surf_fb_id) {
+	if (output->scanout_buffer) {
+		weston_buffer_post_release(output->scanout_buffer);
+		wl_list_remove(&output->scanout_buffer_destroy_listener.link);
+		output->scanout_buffer = NULL;
 		drmModeRmFB(c->drm.fd, output->fs_surf_fb_id);
 		output->fs_surf_fb_id = 0;
 	}
 
-	if (output->pending_fs_surf_fb_id) {
+	if (output->pending_scanout_buffer) {
+		output->scanout_buffer = output->pending_scanout_buffer;
+		wl_list_remove(&output->pending_scanout_buffer_destroy_listener.link);
+		wl_list_insert(output->scanout_buffer->resource.destroy_listener_list.prev,
+			       &output->scanout_buffer_destroy_listener.link);
+		output->pending_scanout_buffer = NULL;
 		output->fs_surf_fb_id = output->pending_fs_surf_fb_id;
 		output->pending_fs_surf_fb_id = 0;
 	}
@@ -439,6 +451,35 @@ drm_subpixel_to_wayland(int drm_value)
 	}
 }
 
+static void
+output_handle_scanout_buffer_destroy(struct wl_listener *listener,
+				     struct wl_resource *resource,
+				     uint32_t time)
+{
+	struct drm_output *output =
+		container_of(listener, struct drm_output,
+			     scanout_buffer_destroy_listener);
+
+	output->scanout_buffer = NULL;
+
+	if (!output->pending_scanout_buffer)
+		weston_compositor_schedule_repaint(output->base.compositor);
+}
+
+static void
+output_handle_pending_scanout_buffer_destroy(struct wl_listener *listener,
+					     struct wl_resource *resource,
+					     uint32_t time)
+{
+	struct drm_output *output =
+		container_of(listener, struct drm_output,
+			     pending_scanout_buffer_destroy_listener);
+
+	output->pending_scanout_buffer = NULL;
+
+	weston_compositor_schedule_repaint(output->base.compositor);
+}
+
 static int
 create_output_for_connector(struct drm_compositor *ec,
 			    drmModeRes *resources,
@@ -562,6 +603,11 @@ create_output_for_connector(struct drm_compositor *ec,
 			 connector->mmWidth, connector->mmHeight, 0);
 
 	wl_list_insert(ec->base.output_list.prev, &output->base.link);
+
+	output->scanout_buffer_destroy_listener.func =
+		output_handle_scanout_buffer_destroy;
+	output->pending_scanout_buffer_destroy_listener.func =
+		output_handle_pending_scanout_buffer_destroy;
 
 	output->pending_fs_surf_fb_id = 0;
 	output->base.repaint = drm_output_repaint;

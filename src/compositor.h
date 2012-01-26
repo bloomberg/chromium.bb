@@ -82,10 +82,6 @@ struct weston_output {
 	
 	struct weston_mode *current;
 	struct wl_list mode_list;
-	struct wl_buffer *scanout_buffer;
-	struct wl_listener scanout_buffer_destroy_listener;
-	struct wl_buffer *pending_scanout_buffer;
-	struct wl_listener pending_scanout_buffer_destroy_listener;
 
 	void (*repaint)(struct weston_output *output);
 	int (*set_hardware_cursor)(struct weston_output *output,
@@ -365,6 +361,9 @@ void
 weston_surface_damage_rectangle(struct weston_surface *surface,
 				int32_t x, int32_t y,
 				int32_t width, int32_t height);
+
+void
+weston_buffer_post_release(struct wl_buffer *buffer);
 
 uint32_t
 weston_compositor_get_time(void);
