@@ -25,7 +25,6 @@
 #include <string.h>
 #include <stdio.h>
 #include <math.h>
-#include <setjmp.h>
 #include <cairo.h>
 #include "cairo-util.h"
 
