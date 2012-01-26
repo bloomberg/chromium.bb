@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -25,6 +25,7 @@ ResourceRequestDetails::ResourceRequestDetails(const net::URLRequest* request,
   const ResourceDispatcherHostRequestInfo* info =
       ResourceDispatcherHost::InfoForRequest(request);
   resource_type_ = info->resource_type();
+  frame_id_ = info->frame_id();
 
   // If request is from the worker process on behalf of a renderer, use
   // the renderer process id, since it consumes the notification response

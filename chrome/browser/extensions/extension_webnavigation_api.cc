@@ -20,6 +20,7 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/renderer_host/render_view_host.h"
+#include "content/browser/renderer_host/resource_request_details.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
@@ -275,10 +276,20 @@ void FrameNavigationState::TrackFrame(int64 frame_id,
   frame_state.is_main_frame = is_main_frame;
   frame_state.is_navigating = true;
   frame_state.is_committed = false;
+  frame_state.is_server_redirected = false;
   if (is_main_frame) {
     main_frame_id_ = frame_id;
   }
   frame_ids_.insert(frame_id);
+}
+
+void FrameNavigationState::UpdateFrame(int64 frame_id, const GURL& url) {
+  FrameIdToStateMap::iterator frame_state = frame_state_map_.find(frame_id);
+  if (frame_state == frame_state_map_.end()) {
+    NOTREACHED();
+    return;
+  }
+  frame_state->second.url = url;
 }
 
 bool FrameNavigationState::IsValidFrame(int64 frame_id) const {
@@ -339,6 +350,18 @@ bool FrameNavigationState::GetNavigationCommitted(int64 frame_id) const {
       frame_state_map_.find(frame_id);
   return (frame_state != frame_state_map_.end() &&
           frame_state->second.is_committed);
+}
+
+void FrameNavigationState::SetIsServerRedirected(int64 frame_id) {
+  DCHECK(frame_state_map_.find(frame_id) != frame_state_map_.end());
+  frame_state_map_[frame_id].is_server_redirected = true;
+}
+
+bool FrameNavigationState::GetIsServerRedirected(int64 frame_id) const {
+  FrameIdToStateMap::const_iterator frame_state =
+      frame_state_map_.find(frame_id);
+  return (frame_state != frame_state_map_.end() &&
+          frame_state->second.is_server_redirected);
 }
 
 
@@ -490,6 +513,9 @@ ExtensionWebNavigationTabObserver::ExtensionWebNavigationTabObserver(
     WebContents* web_contents)
     : WebContentsObserver(web_contents) {
   g_tab_observer.Get().insert(TabObserverMap::value_type(web_contents, this));
+  registrar_.Add(this,
+                 content::NOTIFICATION_RESOURCE_RECEIVED_REDIRECT,
+                 content::Source<WebContents>(web_contents));
 }
 
 ExtensionWebNavigationTabObserver::~ExtensionWebNavigationTabObserver() {}
@@ -499,6 +525,29 @@ ExtensionWebNavigationTabObserver* ExtensionWebNavigationTabObserver::Get(
     WebContents* web_contents) {
   TabObserverMap::iterator i = g_tab_observer.Get().find(web_contents);
   return i == g_tab_observer.Get().end() ? NULL : i->second;
+}
+
+void ExtensionWebNavigationTabObserver::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
+  switch (type) {
+    case content::NOTIFICATION_RESOURCE_RECEIVED_REDIRECT: {
+        ResourceRedirectDetails* resource_redirect_details =
+            content::Details<ResourceRedirectDetails>(details).ptr();
+        ResourceType::Type resource_type =
+            resource_redirect_details->resource_type();
+        if (resource_type == ResourceType::MAIN_FRAME ||
+            resource_type == ResourceType::SUB_FRAME) {
+          navigation_state_.SetIsServerRedirected(
+              resource_redirect_details->frame_id());
+        }
+      }
+      break;
+
+    default:
+      NOTREACHED();
+  }
 }
 
 void ExtensionWebNavigationTabObserver::DidStartProvisionalLoadForFrame(
@@ -540,10 +589,7 @@ void ExtensionWebNavigationTabObserver::DidCommitProvisionalLoadForFrame(
       IsReferenceFragmentNavigation(frame_id, url);
 
   // Update the URL as it might have changed.
-  navigation_state_.TrackFrame(frame_id,
-                               url,
-                               is_main_frame,
-                               false);
+  navigation_state_.UpdateFrame(frame_id, url);
   navigation_state_.SetNavigationCommitted(frame_id);
 
   if (is_reference_fragment_navigation) {
@@ -556,6 +602,10 @@ void ExtensionWebNavigationTabObserver::DidCommitProvisionalLoadForFrame(
         transition_type);
     navigation_state_.SetNavigationCompleted(frame_id);
   } else {
+    if (navigation_state_.GetIsServerRedirected(frame_id)) {
+      transition_type = static_cast<content::PageTransition>(
+          transition_type | content::PAGE_TRANSITION_SERVER_REDIRECT);
+    }
     DispatchOnCommitted(
         keys::kOnCommitted,
         web_contents(),

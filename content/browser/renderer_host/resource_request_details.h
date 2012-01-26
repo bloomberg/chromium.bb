@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -41,6 +41,7 @@ class ResourceRequestDetails {
   net::CertStatus ssl_cert_status() const { return ssl_cert_status_; }
   ResourceType::Type resource_type() const { return resource_type_; }
   net::HostPortPair socket_address() const { return socket_address_; }
+  int64 frame_id() const { return frame_id_; }
 
  private:
   GURL url_;
@@ -55,6 +56,7 @@ class ResourceRequestDetails {
   net::CertStatus ssl_cert_status_;
   ResourceType::Type resource_type_;
   net::HostPortPair socket_address_;
+  int64 frame_id_;
 };
 
 // Details about a redirection of a resource request.

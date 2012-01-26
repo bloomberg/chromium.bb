@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -48,6 +48,9 @@ class FrameNavigationState {
                   bool is_main_frame,
                   bool is_error_page);
 
+  // Update the URL associated with a given frame.
+  void UpdateFrame(int64 frame_id, const GURL& url);
+
   // Returns true if |frame_id| is a known frame.
   bool IsValidFrame(int64 frame_id) const;
 
@@ -82,6 +85,12 @@ class FrameNavigationState {
   // True if the frame has committed its navigation.
   bool GetNavigationCommitted(int64 frame_id) const;
 
+  // Marks a frame as redirected by the server.
+  void SetIsServerRedirected(int64 frame_id);
+
+  // True if the frame was redirected by the server.
+  bool GetIsServerRedirected(int64 frame_id) const;
+
 #ifdef UNIT_TEST
   static void set_allow_extension_scheme(bool allow_extension_scheme) {
     allow_extension_scheme_ = allow_extension_scheme;
@@ -94,6 +103,7 @@ class FrameNavigationState {
     bool is_main_frame;  // True if this is a main frame.
     bool is_navigating;  // True if there is a navigation going on.
     bool is_committed;  // True if the navigation is already committed.
+    bool is_server_redirected;  // True if a server redirect happened.
     GURL url;  // URL of this frame.
   };
   typedef std::map<int64, FrameState> FrameIdToStateMap;
@@ -114,7 +124,8 @@ class FrameNavigationState {
 };
 
 // Tab contents observer that forwards navigation events to the event router.
-class ExtensionWebNavigationTabObserver : public content::WebContentsObserver {
+class ExtensionWebNavigationTabObserver : public content::NotificationObserver,
+                                          public content::WebContentsObserver {
  public:
   explicit ExtensionWebNavigationTabObserver(
       content::WebContents* web_contents);
@@ -127,6 +138,12 @@ class ExtensionWebNavigationTabObserver : public content::WebContentsObserver {
   const FrameNavigationState& frame_navigation_state() const {
     return navigation_state_;
   }
+
+  // content::NotificationObserver implementation.
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
+
 
   // content::WebContentsObserver implementation.
   virtual void DidStartProvisionalLoadForFrame(
@@ -165,6 +182,9 @@ class ExtensionWebNavigationTabObserver : public content::WebContentsObserver {
 
   // Tracks the state of the frames we are sending events for.
   FrameNavigationState navigation_state_;
+
+  // Used for tracking registrations to redirect notifications.
+  content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionWebNavigationTabObserver);
 };
