@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -180,13 +180,28 @@ void PanelBrowserView::OnWidgetActivationChanged(views::Widget* widget,
   GetFrameView()->OnFocusChanged(focused);
 
   if (focused_) {
-    // Expand the panel if needed.
+    // Expand the panel if needed. Do NOT expand a TITLE_ONLY panel
+    // otherwise it will be impossible to drag a title without
+    // expanding it.
     if (panel_->expansion_state() == Panel::MINIMIZED)
       panel_->SetExpansionState(Panel::EXPANDED);
 
-    // Clear the attention state if needed.
-    if (is_drawing_attention_)
-      StopDrawingAttention();
+    if (is_drawing_attention_) {
+      DrawAttention(false);
+
+      // Restore the panel from title-only mode here. Could not do this in the
+      // code above.
+      if (panel_->expansion_state() == Panel::TITLE_ONLY)
+        panel_->SetExpansionState(Panel::EXPANDED);
+
+      // This function is called per one of the following user interactions:
+      // 1) clicking on the title-bar
+      // 2) clicking on the client area
+      // 3) switching to the panel via keyboard
+      // For case 1, we do not want the expanded panel to be minimized since the
+      // user clicks on it to mean to clear the attention.
+      attention_cleared_time_ = base::TimeTicks::Now();
+    }
   }
 
   content::NotificationService::current()->Notify(
@@ -321,42 +336,15 @@ void PanelBrowserView::PanelPaste() {
   Paste();
 }
 
-void PanelBrowserView::DrawAttention() {
-  // Don't draw attention for active panel.
-  if (is_drawing_attention_ || focused_)
+void PanelBrowserView::DrawAttention(bool draw_attention) {
+  if (is_drawing_attention_ == draw_attention)
     return;
-  is_drawing_attention_ = true;
-
-  // Bring up the titlebar to get people's attention.
-  if (panel_->expansion_state() == Panel::MINIMIZED)
-    panel_->SetExpansionState(Panel::TITLE_ONLY);
-
+  is_drawing_attention_ = draw_attention;
   GetFrameView()->SchedulePaint();
 }
 
 bool PanelBrowserView::IsDrawingAttention() const {
   return is_drawing_attention_;
-}
-
-void PanelBrowserView::StopDrawingAttention() {
-  if (!is_drawing_attention_)
-    return;
-  is_drawing_attention_ = false;
-
-  // This function is called from OnWidgetActivationChanged to clear the
-  // attention, per one of the following user interactions:
-  // 1) clicking on the title-bar
-  // 2) clicking on the client area
-  // 3) switching to the panel via keyboard
-  // For case 1, we do not want the expanded panel to be minimized since the
-  // user clicks on it to mean to clear the attention.
-  attention_cleared_time_ = base::TimeTicks::Now();
-
-  // Restore the panel.
-  if (panel_->expansion_state() == Panel::TITLE_ONLY)
-    panel_->SetExpansionState(Panel::EXPANDED);
-
-  GetFrameView()->SchedulePaint();
 }
 
 bool PanelBrowserView::PreHandlePanelKeyboardEvent(

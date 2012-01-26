@@ -49,6 +49,9 @@ class DockedPanelStrip : public PanelMouseWatcherObserver {
   // Invoked when a panel's expansion state changes.
   void OnPanelExpansionStateChanged(Panel* panel);
 
+  // Invoked when a panel's attention state changes.
+  void OnPanelAttentionStateChanged(Panel* panel);
+
   // Invoked when the window size of the given panel is changed.
   void OnWindowSizeChanged(
       Panel* panel, const gfx::Size& preferred_window_size);

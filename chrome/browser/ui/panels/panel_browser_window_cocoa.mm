@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -200,21 +200,12 @@ void PanelBrowserWindowCocoa::PanelPaste() {
   // Nothing to do since we do not have panel-specific system menu on Mac.
 }
 
-// TODO(dimich) the code here looks very platform-independent. Move it to Panel.
-void PanelBrowserWindowCocoa::DrawAttention() {
-  // Don't draw attention for active panel.
-  if ([[controller_ window] isMainWindow])
-    return;
-
-  if (IsDrawingAttention())
-    return;
-
-  // Bring up the titlebar if minimized so the user can see it.
-  if (panel_->expansion_state() == Panel::MINIMIZED)
-    panel_->SetExpansionState(Panel::TITLE_ONLY);
-
+void PanelBrowserWindowCocoa::DrawAttention(bool draw_attention) {
   PanelTitlebarViewCocoa* titlebar = [controller_ titlebarView];
-  [titlebar drawAttention];
+  if (draw_attention)
+    [titlebar drawAttention];
+  else
+    [titlebar stopDrawingAttention];
 }
 
 bool PanelBrowserWindowCocoa::IsDrawingAttention() const {

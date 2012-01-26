@@ -394,6 +394,18 @@ void DockedPanelStrip::OnPanelExpansionStateChanged(Panel* panel) {
                 size.height()));
 }
 
+void DockedPanelStrip::OnPanelAttentionStateChanged(Panel* panel) {
+  if (panel->IsDrawingAttention()) {
+    // Bring up the titlebar to get user's attention.
+    if (panel->expansion_state() == Panel::MINIMIZED)
+      panel->SetExpansionState(Panel::TITLE_ONLY);
+  } else {
+    // Maybe bring down the titlebar now that panel is not drawing attention.
+    if (panel->expansion_state() == Panel::TITLE_ONLY && !are_titlebars_up_)
+      panel->SetExpansionState(Panel::MINIMIZED);
+  }
+}
+
 void DockedPanelStrip::IncrementMinimizedPanels() {
   minimized_panel_count_++;
   if (minimized_panel_count_ == 1)

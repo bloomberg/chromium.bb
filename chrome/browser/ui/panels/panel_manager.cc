@@ -186,6 +186,8 @@ void PanelManager::OnPanelExpansionStateChanged(Panel* panel) {
 void PanelManager::OnPanelAttentionStateChanged(Panel* panel) {
   if (panel->expansion_state() == Panel::IN_OVERFLOW)
     overflow_strip_->OnPanelAttentionStateChanged(panel);
+  else
+    docked_strip_->OnPanelAttentionStateChanged(panel);
 }
 
 void PanelManager::OnPreferredWindowSizeChanged(

@@ -202,10 +202,14 @@ bool Panel::IsActive() const {
 }
 
 void Panel::FlashFrame(bool flash) {
-  if (flash)
-    native_panel_->DrawAttention();
-  else
-    NOTIMPLEMENTED();  // TODO(jennb) - will be in next patch.
+  if (IsDrawingAttention() == flash)
+    return;
+
+  // Don't draw attention for an active panel.
+  if (flash && IsActive())
+    return;
+
+  native_panel_->DrawAttention(flash);
   manager()->OnPanelAttentionStateChanged(this);
 }
 
@@ -291,7 +295,13 @@ void Panel::Maximize() {
 }
 
 void Panel::Minimize() {
-  SetExpansionState(MINIMIZED);
+  if (expansion_state_ != EXPANDED)
+    return;
+
+  if (IsDrawingAttention())
+    SetExpansionState(TITLE_ONLY);
+  else
+    SetExpansionState(MINIMIZED);
 }
 
 void Panel::Restore() {

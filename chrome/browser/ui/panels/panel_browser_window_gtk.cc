@@ -343,15 +343,11 @@ void PanelBrowserWindowGtk::PanelPaste() {
   Paste();
 }
 
-void PanelBrowserWindowGtk::DrawAttention() {
-  // Don't draw attention for active panel.
-  if (is_drawing_attention_ || IsActive())
+void PanelBrowserWindowGtk::DrawAttention(bool draw_attention) {
+  if (is_drawing_attention_ == draw_attention)
     return;
 
-  is_drawing_attention_ = true;
-  // Bring up the titlebar to get people's attention.
-  if (panel_->expansion_state() == Panel::MINIMIZED)
-    panel_->SetExpansionState(Panel::TITLE_ONLY);
+  is_drawing_attention_ = draw_attention;
 
   GdkRectangle rect = GetTitlebarRectForDrawAttention();
   gdk_window_invalidate_rect(
@@ -640,8 +636,7 @@ void PanelBrowserWindowGtk::HandleFocusIn(GtkWidget* widget,
   if (!is_drawing_attention_)
     return;
 
-  is_drawing_attention_ = false;
-  UpdateTitleBar();
+  DrawAttention(false);
   DCHECK(panel_->expansion_state() == Panel::EXPANDED);
 
   disableMinimizeUntilTime_ = base::Time::Now() +

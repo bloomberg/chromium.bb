@@ -280,8 +280,10 @@ class PanelBrowserViewTest : public BasePanelBrowserTest {
     EXPECT_FALSE(panel_manager->ShouldBringUpTitlebars(
         0, 0));
     browser_view1->OnTitlebarMousePressed(panel1->GetBounds().origin());
+    EXPECT_EQ(Panel::TITLE_ONLY, panel1->expansion_state());
     browser_view1->OnTitlebarMouseDragged(
         panel1->GetBounds().origin().Subtract(gfx::Point(5, 5)));
+    EXPECT_EQ(Panel::TITLE_ONLY, panel1->expansion_state());
     EXPECT_TRUE(panel_manager->ShouldBringUpTitlebars(
         0, 0));
     browser_view1->OnTitlebarMouseReleased();
@@ -301,20 +303,20 @@ class PanelBrowserViewTest : public BasePanelBrowserTest {
 
     // Test that the attention should not be drawn if the expanded panel is in
     // focus.
-    browser_view->DrawAttention();
+    browser_view->DrawAttention(true);
     EXPECT_FALSE(browser_view->IsDrawingAttention());
     MessageLoopForUI::current()->RunAllPending();
     EXPECT_NE(attention_color, frame_view->title_label_->enabled_color());
 
     // Test that the attention is drawn when the expanded panel is not in focus.
     panel->Deactivate();
-    browser_view->DrawAttention();
+    browser_view->DrawAttention(true);
     EXPECT_TRUE(browser_view->IsDrawingAttention());
     MessageLoopForUI::current()->RunAllPending();
     EXPECT_EQ(attention_color, frame_view->title_label_->enabled_color());
 
     // Test that the attention is cleared.
-    browser_view->StopDrawingAttention();
+    browser_view->DrawAttention(false);
     EXPECT_FALSE(browser_view->IsDrawingAttention());
     MessageLoopForUI::current()->RunAllPending();
     EXPECT_NE(attention_color, frame_view->title_label_->enabled_color());
@@ -324,7 +326,7 @@ class PanelBrowserViewTest : public BasePanelBrowserTest {
     panel->Deactivate();
     panel->SetExpansionState(Panel::MINIMIZED);
     EXPECT_EQ(Panel::MINIMIZED, panel->expansion_state());
-    browser_view->DrawAttention();
+    browser_view->DrawAttention(true);
     EXPECT_TRUE(browser_view->IsDrawingAttention());
     EXPECT_EQ(Panel::TITLE_ONLY, panel->expansion_state());
     MessageLoopForUI::current()->RunAllPending();
@@ -341,7 +343,7 @@ class PanelBrowserViewTest : public BasePanelBrowserTest {
     EXPECT_EQ(Panel::TITLE_ONLY, panel->expansion_state());
 
     // Test that the attention is cleared.
-    browser_view->StopDrawingAttention();
+    browser_view->DrawAttention(false);
     EXPECT_FALSE(browser_view->IsDrawingAttention());
     EXPECT_EQ(Panel::EXPANDED, panel->expansion_state());
     MessageLoopForUI::current()->RunAllPending();

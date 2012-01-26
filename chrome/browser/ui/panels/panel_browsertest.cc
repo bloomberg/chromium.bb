@@ -1142,6 +1142,25 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, DrawAttentionBasic) {
   MessageLoop::current()->RunAllPending();
   EXPECT_TRUE(native_panel_testing->VerifyDrawingAttention());
 
+  // Stop drawing attention.
+  panel->FlashFrame(false);
+  EXPECT_FALSE(panel->IsDrawingAttention());
+  MessageLoop::current()->RunAllPending();
+  EXPECT_FALSE(native_panel_testing->VerifyDrawingAttention());
+
+  // Draw attention, then minimize. Titlebar should remain visible.
+  panel->FlashFrame(true);
+  EXPECT_TRUE(panel->IsDrawingAttention());
+
+  panel->Minimize();
+  EXPECT_TRUE(panel->IsDrawingAttention());
+  EXPECT_EQ(Panel::TITLE_ONLY, panel->expansion_state());
+
+  // Stop drawing attention. Titlebar should no longer be visible.
+  panel->FlashFrame(false);
+  EXPECT_FALSE(panel->IsDrawingAttention());
+  EXPECT_EQ(Panel::MINIMIZED, panel->expansion_state());
+
   panel->Close();
 }
 
@@ -1187,6 +1206,56 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, DrawAttentionWhileMinimized) {
   EXPECT_FALSE(native_panel_testing->VerifyDrawingAttention());
 
   panel->Close();
+}
+
+// Verify that minimized state of a panel is correct after draw attention
+// is stopped when there are other minimized panels.
+IN_PROC_BROWSER_TEST_F(PanelBrowserTest, StopDrawingAttentionWhileMinimized) {
+  // We'll simulate mouse movements for test.
+  PanelMouseWatcher* mouse_watcher = new TestPanelMouseWatcher();
+  PanelManager::GetInstance()->SetMouseWatcherForTesting(mouse_watcher);
+
+  Panel* panel1 = CreatePanel("panel1");
+  Panel* panel2 = CreatePanel("panel2");
+
+  panel1->Minimize();
+  EXPECT_EQ(Panel::MINIMIZED, panel1->expansion_state());
+  panel2->Minimize();
+  EXPECT_EQ(Panel::MINIMIZED, panel2->expansion_state());
+
+  // Verify panel returns to minimized state when no longer drawing attention.
+  panel1->FlashFrame(true);
+  EXPECT_TRUE(panel1->IsDrawingAttention());
+  EXPECT_EQ(Panel::TITLE_ONLY, panel1->expansion_state());
+
+  panel1->FlashFrame(false);
+  EXPECT_FALSE(panel1->IsDrawingAttention());
+  EXPECT_EQ(Panel::MINIMIZED, panel1->expansion_state());
+
+  // Hover over other minimized panel to bring up titlebars.
+  gfx::Point hover_point(panel2->GetBounds().origin());
+  MoveMouseAndWaitForExpansionStateChange(panel1, hover_point);
+  EXPECT_EQ(Panel::TITLE_ONLY, panel1->expansion_state());
+  EXPECT_EQ(Panel::TITLE_ONLY, panel2->expansion_state());
+
+  // Verify panel keeps titlebar visible when no longer drawing attention
+  // if titlebars are up.
+  panel1->FlashFrame(true);
+  EXPECT_TRUE(panel1->IsDrawingAttention());
+  EXPECT_EQ(Panel::TITLE_ONLY, panel1->expansion_state());
+
+  panel1->FlashFrame(false);
+  EXPECT_FALSE(panel1->IsDrawingAttention());
+  EXPECT_EQ(Panel::TITLE_ONLY, panel1->expansion_state());
+
+  // Move mouse away. All panels should return to minimized state.
+  hover_point.set_y(hover_point.y() - 200);
+  MoveMouseAndWaitForExpansionStateChange(panel1, hover_point);
+  EXPECT_EQ(Panel::MINIMIZED, panel1->expansion_state());
+  EXPECT_EQ(Panel::MINIMIZED, panel2->expansion_state());
+
+  panel1->Close();
+  panel2->Close();
 }
 
 IN_PROC_BROWSER_TEST_F(PanelBrowserTest, DrawAttentionWhenActive) {

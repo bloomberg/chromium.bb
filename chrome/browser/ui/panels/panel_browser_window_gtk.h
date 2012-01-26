@@ -79,7 +79,7 @@ class PanelBrowserWindowGtk : public BrowserWindowGtk,
   virtual void PanelCut() OVERRIDE;
   virtual void PanelCopy() OVERRIDE;
   virtual void PanelPaste() OVERRIDE;
-  virtual void DrawAttention() OVERRIDE;
+  virtual void DrawAttention(bool draw_attention) OVERRIDE;
   virtual bool IsDrawingAttention() const OVERRIDE;
   virtual bool PreHandlePanelKeyboardEvent(
       const NativeWebKeyboardEvent& event,
@@ -120,6 +120,7 @@ class PanelBrowserWindowGtk : public BrowserWindowGtk,
 
   void SetBoundsInternal(const gfx::Rect& bounds, bool animate);
 
+  void UpdateAttention(bool draw_attention);
   GdkRectangle GetTitlebarRectForDrawAttention() const;
 
   CHROMEGTK_CALLBACK_1(PanelBrowserWindowGtk, gboolean,
