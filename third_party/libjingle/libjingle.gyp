@@ -82,6 +82,11 @@
             'OSX',
           ],
         }],
+        ['OS=="android"', {
+          'defines': [
+            'ANDROID',
+          ],
+        }],
         ['os_posix == 1', {
           'defines': [
             'POSIX',
@@ -330,6 +335,12 @@
         'source/talk/xmpp/xmpptask.cc',
         'source/talk/xmpp/xmpptask.h',
       ],
+      'dependencies': [
+        '<(DEPTH)/third_party/jsoncpp/jsoncpp.gyp:jsoncpp',
+      ],
+      'export_dependent_settings': [
+        '<(DEPTH)/third_party/jsoncpp/jsoncpp.gyp:jsoncpp',
+      ],
       'conditions': [
         ['OS=="win"', {
           'sources': [
@@ -373,12 +384,17 @@
             'source/talk/base/macutils.h',
           ],
         }],
-      ],
-      'dependencies': [
-        '<(DEPTH)/third_party/jsoncpp/jsoncpp.gyp:jsoncpp',
-      ],
-      'export_dependent_settings': [
-        '<(DEPTH)/third_party/jsoncpp/jsoncpp.gyp:jsoncpp',
+        ['OS=="android"', {
+          'sources!': [
+            # These depend on jsoncpp which we don't load because we probably
+            # don't actually need this code at all.
+            'source/talk/base/json.cc',
+            'source/talk/base/json.h',
+          ],
+          'dependencies!': [
+            '<(DEPTH)/third_party/jsoncpp/jsoncpp.gyp:jsoncpp',
+          ],
+        }],
       ],
     },  # target libjingle
     # This has to be is a separate project due to a bug in MSVS:
@@ -533,14 +549,19 @@
         'source/talk/session/phone/webrtcvoiceengine.cc',
         'source/talk/session/phone/webrtcvoiceengine.h',
       ],
-      'dependencies': [
-        '<(DEPTH)/third_party/webrtc/modules/modules.gyp:video_capture_module',
-        '<(DEPTH)/third_party/webrtc/modules/modules.gyp:video_render_module',
-        '<(DEPTH)/third_party/webrtc/video_engine/video_engine.gyp:video_engine_core',
-        '<(DEPTH)/third_party/webrtc/voice_engine/voice_engine.gyp:voice_engine_core',
-        '<(DEPTH)/third_party/webrtc/system_wrappers/source/system_wrappers.gyp:system_wrappers',
-        'libjingle',
-        'libjingle_p2p',
+      'conditions': [
+        ['OS!="android"', {
+          'dependencies': [
+            # We won't build with WebRTC on Android.
+            '<(DEPTH)/third_party/webrtc/modules/modules.gyp:video_capture_module',
+            '<(DEPTH)/third_party/webrtc/modules/modules.gyp:video_render_module',
+            '<(DEPTH)/third_party/webrtc/video_engine/video_engine.gyp:video_engine_core',
+            '<(DEPTH)/third_party/webrtc/voice_engine/voice_engine.gyp:voice_engine_core',
+            '<(DEPTH)/third_party/webrtc/system_wrappers/source/system_wrappers.gyp:system_wrappers',
+            'libjingle',
+            'libjingle_p2p',
+          ],
+        }],
       ],
     },  # target libjingle_peerconnection
   ],
