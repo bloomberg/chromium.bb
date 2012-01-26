@@ -695,37 +695,44 @@ fade_frame(struct weston_animation *animation,
 }
 
 static void
-fade_output(struct weston_output *output,
-	    GLfloat tint, pixman_region32_t *region)
+solid_surface_init(struct weston_surface *surface,
+		   struct weston_output *output, GLfloat tint)
 {
 	struct weston_compositor *compositor = output->compositor;
-	struct weston_surface surface;
 
-	surface.compositor = compositor;
-	surface.x = output->x;
-	surface.y = output->y;
-	surface.pitch = output->current->width;
-	surface.width = output->current->width;
-	surface.height = output->current->height;
-	surface.texture = GL_NONE;
-	surface.transform = NULL;
-	surface.alpha = compositor->current_alpha;
-	surface.shader = &compositor->solid_shader;
-	surface.color[0] = 0.0;
-	surface.color[1] = 0.0;
-	surface.color[2] = 0.0;
-	surface.color[3] = tint;
-	pixman_region32_init(&surface.damage);
-	pixman_region32_copy(&surface.damage, region);
+	surface->compositor = compositor;
+	surface->x = output->x;
+	surface->y = output->y;
+	surface->pitch = output->current->width;
+	surface->width = output->current->width;
+	surface->height = output->current->height;
+	surface->texture = GL_NONE;
+	surface->transform = NULL;
+	surface->alpha = compositor->current_alpha;
+	surface->shader = &compositor->solid_shader;
+	surface->color[0] = 0.0;
+	surface->color[1] = 0.0;
+	surface->color[2] = 0.0;
+	surface->color[3] = tint;
+	pixman_region32_init(&surface->damage);
+	pixman_region32_copy(&surface->damage, &output->region);
+	pixman_region32_init(&surface->opaque);
 
-	if (tint <= 1.0)
-		surface.visual = WESTON_ARGB_VISUAL;
-	else
-		surface.visual = WESTON_RGB_VISUAL;
+	if (tint <= 1.0) {
+		surface->visual = WESTON_ARGB_VISUAL;
+	} else {
+		surface->visual = WESTON_RGB_VISUAL;
+		pixman_region32_copy(&surface->opaque, &output->region);
+	}
 
-	weston_surface_draw(&surface, output);
+	wl_list_insert(&compositor->surface_list, &surface->link);
+}
 
-	pixman_region32_fini(&surface.damage);
+static void
+solid_surface_release(struct weston_surface *surface)
+{
+	wl_list_remove(&surface->link);
+	pixman_region32_fini(&surface->damage);
 }
 
 static void
@@ -799,7 +806,7 @@ static void
 weston_output_repaint(struct weston_output *output)
 {
 	struct weston_compositor *ec = output->compositor;
-	struct weston_surface *es;
+	struct weston_surface *es, solid;
 	pixman_region32_t opaque, new_damage, total_damage,
 		overlap, surface_overlap;
 
@@ -815,8 +822,7 @@ weston_output_repaint(struct weston_output *output)
 	pixman_region32_init(&overlap);
 
 	if (ec->fade.spring.current >= 0.001)
-		pixman_region32_union(&overlap, &overlap, &output->region);
-
+		solid_surface_init(&solid, output, ec->fade.spring.current);
 
 	wl_list_for_each(es, &ec->surface_list, link) {
 		pixman_region32_subtract(&es->damage, &es->damage, &opaque);
@@ -859,7 +865,7 @@ weston_output_repaint(struct weston_output *output)
 		weston_surface_draw(es, output);
 
 	if (ec->fade.spring.current > 0.001)
-		fade_output(output, ec->fade.spring.current, &total_damage);
+		solid_surface_release(&solid);
 
 	pixman_region32_fini(&total_damage);
 }
