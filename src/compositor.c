@@ -833,15 +833,8 @@ weston_output_repaint(struct weston_output *output)
 		/* We're drawing nothing, just let the damage accumulate */
 		return;
 
-	if (es->fullscreen_output == output) {
-		if (es->width < output->current->width ||
-		    es->height < output->current->height)
-			glClear(GL_COLOR_BUFFER_BIT);
+	wl_list_for_each_reverse(es, &ec->surface_list, link)
 		weston_surface_draw(es, output);
-	} else {
-		wl_list_for_each_reverse(es, &ec->surface_list, link)
-			weston_surface_draw(es, output);
-	}
 
 	if (ec->fade.spring.current > 0.001)
 		fade_output(output, ec->fade.spring.current, &total_damage);
