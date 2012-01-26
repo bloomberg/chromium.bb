@@ -1037,14 +1037,14 @@ weston_surface_assign_output(struct weston_surface *es)
 	uint32_t max, area;
 	pixman_box32_t *e;
 
+	weston_surface_update_transform(es);
+
 	new_output = NULL;
 	max = 0;
+	pixman_region32_init(&region);
 	wl_list_for_each(output, &ec->output_list, link) {
-		pixman_region32_init_rect(&region,
-					  es->geometry.x, es->geometry.y,
-					  es->geometry.width,
-					  es->geometry.height);
-		pixman_region32_intersect(&region, &region, &output->region);
+		pixman_region32_intersect(&region, &es->transform.boundingbox,
+					  &output->region);
 
 		e = pixman_region32_extents(&region);
 		area = (e->x2 - e->x1) * (e->y2 - e->y1);
@@ -1054,6 +1054,7 @@ weston_surface_assign_output(struct weston_surface *es)
 			max = area;
 		}
 	}
+	pixman_region32_fini(&region);
 
 	es->output = new_output;
 	if (!wl_list_empty(&es->frame_callback_list)) {
