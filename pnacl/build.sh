@@ -2314,19 +2314,28 @@ llvm-sb-setup-jit() {
   esac
 
   local naclgcc_root="";
-  naclgcc_root="${NNACL_GLIBC_ROOT}"
+  case ${LLVM_SB_LIBMODE} in
+    newlib)   naclgcc_root="${NNACL_NEWLIB_ROOT}";;
+    glibc)    naclgcc_root="${NNACL_GLIBC_ROOT}";;
+  esac
+  local gcc_arch=""
+  case ${LLVM_SB_ARCH} in
+    x8632)  gcc_arch="i686";;
+    x8664)  gcc_arch="x86_64";;
+    default) Fatal "Can't build universal/arm translator with nacl-gcc";;
+  esac
 
   LLVM_SB_EXTRA_CONFIG_FLAGS="--enable-jit --disable-optimized \
-  --target=${LLVM_SB_ARCH}-nacl"
+  --target=${gcc_arch}-nacl"
 
   LLVM_SB_CONFIGURE_ENV=(
-    AR="${naclgcc_root}/bin/i686-nacl-ar" \
-    As="${naclgcc_root}/bin/i686-nacl-as" \
-    CC="${naclgcc_root}/bin/i686-nacl-gcc ${flags}" \
-    CXX="${naclgcc_root}/bin/i686-nacl-g++ ${flags}" \
-    LD="${naclgcc_root}/bin/i686-nacl-ld" \
-    NM="${naclgcc_root}/bin/i686-nacl-nm" \
-    RANLIB="${naclgcc_root}/bin/i686-nacl-ranlib" \
+    AR="${naclgcc_root}/bin/${gcc_arch}-nacl-ar" \
+    As="${naclgcc_root}/bin/${gcc_arch}-nacl-as" \
+    CC="${naclgcc_root}/bin/${gcc_arch}-nacl-gcc ${flags}" \
+    CXX="${naclgcc_root}/bin/${gcc_arch}-nacl-g++ ${flags}" \
+    LD="${naclgcc_root}/bin/${gcc_arch}-nacl-ld" \
+    NM="${naclgcc_root}/bin/${gcc_arch}-nacl-nm" \
+    RANLIB="${naclgcc_root}/bin/${gcc_arch}-nacl-ranlib" \
     LDFLAGS="") # TODO(pdox): Support -s
 }
 
@@ -2469,11 +2478,10 @@ install-naclgcc-tool() {
   local name=$3
 
   local bindir="${INSTALL_SB_TOOLS}/${arch}/${mode}/bin"
-  local tarch=x8632
-  mv "${bindir}/${name}" "${bindir}/${name}.${tarch}.nexe"
+  mv "${bindir}/${name}" "${bindir}/${name}.${arch}.nexe"
 
-  local bindir_tarch="${INSTALL_SB_TOOLS}/${tarch}/${mode}/bin"
-  local nexe="${bindir}/${name}.${tarch}.nexe"
+  local bindir_tarch="${INSTALL_SB_TOOLS}/${arch}/${mode}/bin"
+  local nexe="${bindir}/${name}.${arch}.nexe"
   mkdir -p "${bindir_tarch}"
   cp -f "${nexe}" "${bindir_tarch}/${name}"
 }
