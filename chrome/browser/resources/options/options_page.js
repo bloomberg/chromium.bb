@@ -990,6 +990,8 @@ cr.define('options', function() {
       // A subpage was shown or hidden.
       if (!this.isOverlay && this.nestingLevel > 0)
         OptionsPage.updateDisplayForShowOrHideSubpage_();
+      else if (this.isOverlay && !visible)
+        OptionsPage.updateScrollPosition_();
 
       cr.dispatchPropertyChange(this, 'visible', visible, !visible);
     },
