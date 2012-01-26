@@ -344,8 +344,8 @@ int main(int argc, char** argv) {
     simple_host.set_protocol_config(config.release());
   }
 
-  if (cmd_line->HasSwitch(kDisableNatTraversalSwitchName))
-    simple_host.network_settings()->allow_nat_traversal = false;
+  simple_host.network_settings()->allow_nat_traversal =
+      !cmd_line->HasSwitch(kDisableNatTraversalSwitchName);
 
   if (cmd_line->HasSwitch(kMinPortSwitchName)) {
     std::string min_port_str =
