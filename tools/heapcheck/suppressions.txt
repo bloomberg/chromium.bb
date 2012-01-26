@@ -1796,3 +1796,14 @@
    fun:crypto::ECSignatureCreator::Sign
    fun:ECSignatureCreatorTest_BasicTest_Test::TestBody
 }
+{
+   but_111452
+   Heapcheck:Leak
+   ...
+   fun:crypto::::NSSInitSingleton::NSSInitSingleton
+   fun:base::DefaultLazyInstanceTraits::New
+   fun:base::internal::LeakyLazyInstanceTraits::New
+   fun:base::LazyInstance::Pointer
+   fun:base::LazyInstance::Get
+   fun:crypto::EnsureNSSInit   
+}
