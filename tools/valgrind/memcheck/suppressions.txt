@@ -4980,6 +4980,24 @@
    fun:_ZNK4base8CallbackIFvvEE3RunEv
 }
 {
+   bug_105744b
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN9__gnu_cxx13new_allocatorIN4skia19ConvolutionFilter1D14FilterInstanceEE8allocateEjPKv
+   fun:_ZNSt12_Vector_baseIN4skia19ConvolutionFilter1D14FilterInstanceESaIS2_EE11_M_allocateEj
+   fun:_ZNSt6vectorIN4skia19ConvolutionFilter1D14FilterInstanceESaIS2_EE13_M_insert_auxEN9__gnu_cxx17__normal_iteratorIPS2_S4_EERKS2_
+   fun:_ZNSt6vectorIN4skia19ConvolutionFilter1D14FilterInstanceESaIS2_EE9push_backERKS2_
+   fun:_ZN4skia19ConvolutionFilter1D9AddFilterEiPKsi
+   fun:_ZN4skia12_GLOBAL__N_112ResizeFilter14ComputeFiltersEiiiffPNS_19ConvolutionFilter1DE
+   fun:_ZN4skia12_GLOBAL__N_112ResizeFilterC1ENS_15ImageOperations12ResizeMethodEiiiiRK7SkIRect
+   fun:_ZN4skia15ImageOperations11ResizeBasicERK8SkBitmapNS0_12ResizeMethodEiiRK7SkIRect
+   fun:_ZN4skia15ImageOperations6ResizeERK8SkBitmapNS0_12ResizeMethodEiiRK7SkIRect
+   fun:_ZN4skia15ImageOperations6ResizeERK8SkBitmapNS0_12ResizeMethodEii
+   fun:_ZN24ChromeRenderViewObserver21CaptureFrameThumbnailEPN6WebKit7WebViewEiiP8SkBitmapP14ThumbnailScore
+   fun:_ZN24ChromeRenderViewObserver16CaptureThumbnailEv
+   fun:_ZN24ChromeRenderViewObserver15CapturePageInfoEib
+}
+{
    bug_105907
    Memcheck:Uninitialized
    ...
