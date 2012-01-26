@@ -113,7 +113,6 @@
         'srtp/crypto/include/alloc.h',
         'srtp/crypto/include/auth.h',
         'srtp/crypto/include/cipher.h',
-        'srtp/crypto/include/config.h',
         'srtp/crypto/include/cryptoalg.h',
         'srtp/crypto/include/crypto.h',
         'srtp/crypto/include/crypto_kernel.h',
@@ -163,13 +162,6 @@
         'srtp/crypto/rng/prng.c',
         'srtp/crypto/rng/rand_source.c',
       ],
-      'conditions': [
-        ['OS=="linux"', {
-         'sources': [
-           'srtp/crypto/rng/rand_linux_kernel.c',
-         ],
-        }],
-      ]
     },
   ], # targets
 }
