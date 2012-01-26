@@ -414,7 +414,9 @@ PluginObserver::PluginObserver(TabContentsWrapper* tab_contents)
 }
 
 PluginObserver::~PluginObserver() {
+#if defined(ENABLE_PLUGIN_INSTALLATION)
   STLDeleteValues(&missing_plugins_);
+#endif
 }
 
 bool PluginObserver::OnMessageReceived(const IPC::Message& message) {
