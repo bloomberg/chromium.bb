@@ -10,6 +10,7 @@
 #include "base/utf_string_conversions.h"
 #include "ui/aura/event.h"
 #include "ui/aura/root_window.h"
+#include "ui/aura/test/event_generator.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
@@ -208,14 +209,10 @@ TEST_F(DragDropControllerTest, DragDropInSingleViewTest) {
   scoped_ptr<views::Widget> widget(CreateNewWidget());
   DragTestView* drag_view = new DragTestView;
   AddViewToWidgetAndResize(widget.get(), drag_view);
-  gfx::Point point = gfx::Rect(drag_view->bounds()).CenterPoint();
   ui::OSExchangeData data;
   data.SetString(UTF8ToUTF16("I am being dragged"));
-
-  aura::MouseEvent event1(ui::ET_MOUSE_PRESSED,
-                          point,
-                          ui::EF_LEFT_MOUSE_BUTTON);
-  aura::RootWindow::GetInstance()->DispatchMouseEvent(&event1);
+  aura::test::EventGenerator generator(widget->GetNativeView());
+  generator.PressLeftButton();
 
   int num_drags = 17;
   for (int i = 0; i < num_drags; ++i) {
@@ -225,15 +222,10 @@ TEST_F(DragDropControllerTest, DragDropInSingleViewTest) {
     // drag_data_ to a fake drag data object that we created.
     if (i > 0)
       UpdateDragData(&data);
-    point.Offset(0, 1);
-    aura::MouseEvent drag_event(ui::ET_MOUSE_DRAGGED,
-                                point,
-                                ui::EF_LEFT_MOUSE_BUTTON);
-    aura::RootWindow::GetInstance()->DispatchMouseEvent(&drag_event);
+    generator.MoveMouseBy(0, 1);
   }
 
-  aura::MouseEvent event2(ui::ET_MOUSE_RELEASED, point, 0);
-  aura::RootWindow::GetInstance()->DispatchMouseEvent(&event2);
+  generator.ReleaseLeftButton();
 
   EXPECT_TRUE(drag_drop_controller_->drag_start_received_);
   EXPECT_EQ(num_drags - 1 - drag_view->VerticalDragThreshold(),
@@ -254,17 +246,16 @@ TEST_F(DragDropControllerTest, DragDropInMultipleViewsSingleWidgetTest) {
   scoped_ptr<views::Widget> widget(CreateNewWidget());
   DragTestView* drag_view1 = new DragTestView;
   AddViewToWidgetAndResize(widget.get(), drag_view1);
-  gfx::Point point = drag_view1->bounds().CenterPoint();
   DragTestView* drag_view2 = new DragTestView;
   AddViewToWidgetAndResize(widget.get(), drag_view2);
 
   ui::OSExchangeData data;
   data.SetString(UTF8ToUTF16("I am being dragged"));
 
-  aura::MouseEvent event1(ui::ET_MOUSE_PRESSED,
-                          point,
-                          ui::EF_LEFT_MOUSE_BUTTON);
-  aura::RootWindow::GetInstance()->DispatchMouseEvent(&event1);
+  aura::test::EventGenerator generator;
+  generator.MoveMouseRelativeTo(widget->GetNativeView(),
+                                drag_view1->bounds().CenterPoint());
+  generator.PressLeftButton();
 
   int num_drags = drag_view1->width();
   for (int i = 0; i < num_drags; ++i) {
@@ -274,15 +265,10 @@ TEST_F(DragDropControllerTest, DragDropInMultipleViewsSingleWidgetTest) {
     // drag_data_ to a fake drag data object that we created.
     if (i > 0)
       UpdateDragData(&data);
-    point.Offset(1, 0);
-    aura::MouseEvent drag_event(ui::ET_MOUSE_DRAGGED,
-                                point,
-                                ui::EF_LEFT_MOUSE_BUTTON);
-    aura::RootWindow::GetInstance()->DispatchMouseEvent(&drag_event);
+    generator.MoveMouseBy(1, 0);
   }
 
-  aura::MouseEvent event2(ui::ET_MOUSE_RELEASED, point, 0);
-  aura::RootWindow::GetInstance()->DispatchMouseEvent(&event2);
+  generator.ReleaseLeftButton();
 
   EXPECT_TRUE(drag_drop_controller_->drag_start_received_);
   EXPECT_EQ(num_drags - 1 - drag_view1->HorizontalDragThreshold(),
@@ -312,7 +298,6 @@ TEST_F(DragDropControllerTest, DragDropInMultipleViewsMultipleWidgetsTest) {
   scoped_ptr<views::Widget> widget1(CreateNewWidget());
   DragTestView* drag_view1 = new DragTestView;
   AddViewToWidgetAndResize(widget1.get(), drag_view1);
-  gfx::Point point = drag_view1->bounds().CenterPoint();
   scoped_ptr<views::Widget> widget2(CreateNewWidget());
   DragTestView* drag_view2 = new DragTestView;
   AddViewToWidgetAndResize(widget2.get(), drag_view2);
@@ -324,10 +309,8 @@ TEST_F(DragDropControllerTest, DragDropInMultipleViewsMultipleWidgetsTest) {
   ui::OSExchangeData data;
   data.SetString(UTF8ToUTF16("I am being dragged"));
 
-  aura::MouseEvent event1(ui::ET_MOUSE_PRESSED,
-                          point,
-                          ui::EF_LEFT_MOUSE_BUTTON);
-  aura::RootWindow::GetInstance()->DispatchMouseEvent(&event1);
+  aura::test::EventGenerator generator(widget1->GetNativeView());
+  generator.PressLeftButton();
 
   int num_drags = drag_view1->width();
   for (int i = 0; i < num_drags; ++i) {
@@ -337,15 +320,10 @@ TEST_F(DragDropControllerTest, DragDropInMultipleViewsMultipleWidgetsTest) {
     // drag_data_ to a fake drag data object that we created.
     if (i > 0)
       UpdateDragData(&data);
-    point.Offset(1, 0);
-    aura::MouseEvent drag_event(ui::ET_MOUSE_DRAGGED,
-                                point,
-                                ui::EF_LEFT_MOUSE_BUTTON);
-    aura::RootWindow::GetInstance()->DispatchMouseEvent(&drag_event);
+    generator.MoveMouseBy(1, 0);
   }
 
-  aura::MouseEvent event2(ui::ET_MOUSE_RELEASED, point, 0);
-  aura::RootWindow::GetInstance()->DispatchMouseEvent(&event2);
+  generator.ReleaseLeftButton();
 
   EXPECT_TRUE(drag_drop_controller_->drag_start_received_);
   EXPECT_EQ(num_drags - 1 - drag_view1->HorizontalDragThreshold(),
@@ -379,10 +357,9 @@ TEST_F(DragDropControllerTest, ViewRemovedWhileInDragDropTest) {
   ui::OSExchangeData data;
   data.SetString(UTF8ToUTF16("I am being dragged"));
 
-  aura::MouseEvent event1(ui::ET_MOUSE_PRESSED,
-                          point,
-                          ui::EF_LEFT_MOUSE_BUTTON);
-  aura::RootWindow::GetInstance()->DispatchMouseEvent(&event1);
+  aura::test::EventGenerator generator;
+  generator.MoveMouseToCenterOf(widget->GetNativeView());
+  generator.PressLeftButton();
 
   int num_drags_1 = 17;
   for (int i = 0; i < num_drags_1; ++i) {
@@ -392,11 +369,7 @@ TEST_F(DragDropControllerTest, ViewRemovedWhileInDragDropTest) {
     // drag_data_ to a fake drag data object that we created.
     if (i > 0)
       UpdateDragData(&data);
-    point.Offset(0, 1);
-    aura::MouseEvent drag_event(ui::ET_MOUSE_DRAGGED,
-                                point,
-                                ui::EF_LEFT_MOUSE_BUTTON);
-    aura::RootWindow::GetInstance()->DispatchMouseEvent(&drag_event);
+    generator.MoveMouseBy(0, 1);
   }
 
   drag_view->parent()->RemoveChildView(drag_view);
@@ -404,15 +377,10 @@ TEST_F(DragDropControllerTest, ViewRemovedWhileInDragDropTest) {
   int num_drags_2 = 23;
   for (int i = 0; i < num_drags_2; ++i) {
     UpdateDragData(&data);
-    point.Offset(0, 1);
-    aura::MouseEvent drag_event(ui::ET_MOUSE_DRAGGED,
-                                point,
-                                ui::EF_LEFT_MOUSE_BUTTON);
-    aura::RootWindow::GetInstance()->DispatchMouseEvent(&drag_event);
+    generator.MoveMouseBy(0, 1);
   }
 
-  aura::MouseEvent event2(ui::ET_MOUSE_RELEASED, point, 0);
-  aura::RootWindow::GetInstance()->DispatchMouseEvent(&event2);
+  generator.ReleaseLeftButton();
 
   EXPECT_TRUE(drag_drop_controller_->drag_start_received_);
   EXPECT_EQ(num_drags_1 + num_drags_2 - 1 - drag_view->VerticalDragThreshold(),
@@ -445,17 +413,14 @@ TEST_F(DragDropControllerTest, DragCopiesDataToClipboardTest) {
   scoped_ptr<views::Widget> widget(CreateNewWidget());
   DragTestView* drag_view = new DragTestView;
   AddViewToWidgetAndResize(widget.get(), drag_view);
-  gfx::Point point = gfx::Rect(drag_view->bounds()).CenterPoint();
+
+  aura::test::EventGenerator generator(widget->GetNativeView());
   ui::OSExchangeData data;
   std::string data_str("I am being dragged");
   data.SetString(ASCIIToUTF16(data_str));
 
-  aura::MouseEvent event(ui::ET_MOUSE_PRESSED, point, ui::EF_LEFT_MOUSE_BUTTON);
-  aura::RootWindow::GetInstance()->DispatchMouseEvent(&event);
-  point.Offset(0, drag_view->VerticalDragThreshold() + 1);
-  aura::MouseEvent drag_event(ui::ET_MOUSE_DRAGGED, point,
-      ui::EF_LEFT_MOUSE_BUTTON);
-  aura::RootWindow::GetInstance()->DispatchMouseEvent(&drag_event);
+  generator.PressLeftButton();
+  generator.MoveMouseBy(0, drag_view->VerticalDragThreshold() + 1);
 
   EXPECT_TRUE(cb->IsFormatAvailable(ui::Clipboard::GetPlainTextFormatType(),
       ui::Clipboard::BUFFER_STANDARD));

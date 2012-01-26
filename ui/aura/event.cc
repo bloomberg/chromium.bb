@@ -95,29 +95,36 @@ LocatedEvent::LocatedEvent(const base::NativeEvent& native_event)
     : Event(native_event,
             ui::EventTypeFromNative(native_event),
             ui::EventFlagsFromNative(native_event)),
-      location_(ui::EventLocationFromNative(native_event)) {
+      location_(ui::EventLocationFromNative(native_event)),
+      root_location_(location_) {
 }
 
 LocatedEvent::LocatedEvent(const LocatedEvent& model,
                            Window* source,
                            Window* target)
     : Event(model),
-      location_(model.location_) {
+      location_(model.location_),
+      root_location_(model.root_location_) {
   if (target && target != source)
     Window::ConvertPointToWindow(source, target, &location_);
 }
 
 LocatedEvent::LocatedEvent(ui::EventType type,
                            const gfx::Point& location,
+                           const gfx::Point& root_location,
                            int flags)
     : Event(type, flags),
-      location_(location) {
+      location_(location),
+      root_location_(location) {
 }
 
-void LocatedEvent::UpdateForTransform(const ui::Transform& transform) {
+void LocatedEvent::UpdateForRootTransform(const ui::Transform& root_transform) {
+  // Transform has to be done at root level.
+  DCHECK_EQ(root_location_.x(), location_.x());
+  DCHECK_EQ(root_location_.y(), location_.y());
   gfx::Point3f p(location_);
-  transform.TransformPointReverse(p);
-  location_ = p.AsPoint();
+  root_transform.TransformPointReverse(p);
+  root_location_ = location_ = p.AsPoint();
 }
 
 MouseEvent::MouseEvent(const base::NativeEvent& native_event)
@@ -142,8 +149,9 @@ MouseEvent::MouseEvent(const MouseEvent& model,
 
 MouseEvent::MouseEvent(ui::EventType type,
                        const gfx::Point& location,
+                       const gfx::Point& root_location,
                        int flags)
-    : LocatedEvent(type, location, flags) {
+    : LocatedEvent(type, location, root_location, flags) {
 }
 
 // static
@@ -256,7 +264,7 @@ TouchEvent::TouchEvent(const TouchEvent& model,
 TouchEvent::TouchEvent(ui::EventType type,
                        const gfx::Point& location,
                        int touch_id)
-    : LocatedEvent(type, location, 0),
+    : LocatedEvent(type, location, location, 0),
       touch_id_(touch_id),
       radius_x_(1.0f),
       radius_y_(1.0f),
@@ -359,7 +367,7 @@ GestureEvent::GestureEvent(ui::EventType type,
                            base::Time time_stamp,
                            float delta_x,
                            float delta_y)
-    : LocatedEvent(type, gfx::Point(x, y), flags),
+    : LocatedEvent(type, gfx::Point(x, y), gfx::Point(x, y), flags),
       delta_x_(delta_x),
       delta_y_(delta_y) {
   // XXX: Why is aura::Event::time_stamp_ a TimeDelta instead of a Time?

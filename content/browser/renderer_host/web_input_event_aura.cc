@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -67,10 +67,9 @@ WebKit::WebMouseEvent MakeWebMouseEvent(aura::MouseEvent* event) {
   webkit_event.windowX = webkit_event.x = event->x();
   webkit_event.windowY = webkit_event.y = event->y();
 
-  const gfx::Point host_point =
-      ui::EventLocationFromNative(event->native_event());
-  webkit_event.globalX = host_point.x();
-  webkit_event.globalY = host_point.y();
+  const gfx::Point root_point = event->root_location();
+  webkit_event.globalX = root_point.x();
+  webkit_event.globalY = root_point.y();
 
   return webkit_event;
 }
@@ -90,10 +89,9 @@ WebKit::WebMouseWheelEvent MakeWebMouseWheelEvent(aura::MouseEvent* event) {
   webkit_event.windowX = webkit_event.x = event->x();
   webkit_event.windowY = webkit_event.y = event->y();
 
-  const gfx::Point host_point =
-      ui::EventLocationFromNative(event->native_event());
-  webkit_event.globalX = host_point.x();
-  webkit_event.globalY = host_point.y();
+  const gfx::Point root_point = event->root_location();
+  webkit_event.globalX = root_point.x();
+  webkit_event.globalY = root_point.y();
 
   return webkit_event;
 }
@@ -113,10 +111,9 @@ WebKit::WebMouseWheelEvent MakeWebMouseWheelEvent(aura::ScrollEvent* event) {
   webkit_event.windowX = webkit_event.x = event->x();
   webkit_event.windowY = webkit_event.y = event->y();
 
-  const gfx::Point host_point =
-      ui::EventLocationFromNative(event->native_event());
-  webkit_event.globalX = host_point.x();
-  webkit_event.globalY = host_point.y();
+  const gfx::Point root_point = event->root_location();
+  webkit_event.globalX = root_point.x();
+  webkit_event.globalY = root_point.y();
 
   return webkit_event;
 }

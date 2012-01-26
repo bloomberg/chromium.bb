@@ -492,7 +492,7 @@ TEST_F(WindowTest, ChangeCaptureWhileMouseDown) {
   window->ReleaseCapture();
   w2->SetCapture();
   delegate2.set_mouse_event_count(0);
-  generator.MoveMouseTo(gfx::Point(40, 40));
+  generator.MoveMouseTo(gfx::Point(40, 40), 2);
   EXPECT_EQ(0, delegate.mouse_event_count());
   EXPECT_EQ(2, delegate2.mouse_event_count());
 }
@@ -567,8 +567,6 @@ class MouseEnterExitWindowDelegate : public TestWindowDelegate {
 // Verifies that the WindowDelegate receives MouseExit and MouseEnter events for
 // mouse transitions from window to window.
 TEST_F(WindowTest, MouseEnterExit) {
-  RootWindow* root_window = RootWindow::GetInstance();
-
   MouseEnterExitWindowDelegate d1;
   scoped_ptr<Window> w1(
       CreateTestWindowWithDelegate(&d1, 1, gfx::Rect(10, 10, 50, 50), NULL));
@@ -576,21 +574,14 @@ TEST_F(WindowTest, MouseEnterExit) {
   scoped_ptr<Window> w2(
       CreateTestWindowWithDelegate(&d2, 2, gfx::Rect(70, 70, 50, 50), NULL));
 
-  gfx::Point move_point = w1->bounds().CenterPoint();
-  Window::ConvertPointToWindow(w1->parent(), root_window, &move_point);
-  MouseEvent mouseev1(ui::ET_MOUSE_MOVED, move_point, 0);
-  root_window->DispatchMouseEvent(&mouseev1);
-
+  test::EventGenerator generator;
+  generator.MoveMouseToCenterOf(w1.get());
   EXPECT_TRUE(d1.entered());
   EXPECT_FALSE(d1.exited());
   EXPECT_FALSE(d2.entered());
   EXPECT_FALSE(d2.exited());
 
-  move_point = w2->bounds().CenterPoint();
-  Window::ConvertPointToWindow(w2->parent(), root_window, &move_point);
-  MouseEvent mouseev2(ui::ET_MOUSE_MOVED, move_point, 0);
-  root_window->DispatchMouseEvent(&mouseev2);
-
+  generator.MoveMouseToCenterOf(w2.get());
   EXPECT_TRUE(d1.entered());
   EXPECT_TRUE(d1.exited());
   EXPECT_TRUE(d2.entered());

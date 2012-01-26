@@ -143,7 +143,7 @@ bool RootWindow::DispatchMouseEvent(MouseEvent* event) {
       ui::EF_MIDDLE_MOUSE_BUTTON |
       ui::EF_RIGHT_MOUSE_BUTTON;
 
-  event->UpdateForTransform(layer()->transform());
+  event->UpdateForRootTransform(layer()->transform());
 
   last_mouse_location_ = event->location();
 
@@ -188,7 +188,7 @@ bool RootWindow::DispatchKeyEvent(KeyEvent* event) {
 }
 
 bool RootWindow::DispatchScrollEvent(ScrollEvent* event) {
-  event->UpdateForTransform(layer()->transform());
+  event->UpdateForRootTransform(layer()->transform());
 
   last_mouse_location_ = event->location();
 
@@ -210,7 +210,7 @@ bool RootWindow::DispatchScrollEvent(ScrollEvent* event) {
 }
 
 bool RootWindow::DispatchTouchEvent(TouchEvent* event) {
-  event->UpdateForTransform(layer()->transform());
+  event->UpdateForRootTransform(layer()->transform());
   bool handled = false;
   Window* target =
       touch_event_handler_ ? touch_event_handler_ : capture_window_;
@@ -528,7 +528,8 @@ ui::GestureStatus RootWindow::ProcessGestureEvent(Window* target,
                                 };
         gesture_handler_ = target;
         for (ui::EventType* type = types; *type != ui::ET_UNKNOWN; ++type) {
-          MouseEvent synth(*type, event->location(), event->flags());
+          MouseEvent synth(
+              *type, event->location(), event->root_location(), event->flags());
           if (gesture_handler_->delegate()->OnMouseEvent(&synth))
             status = ui::GESTURE_STATUS_SYNTH_MOUSE;
           // The window that was receiving the gestures may have closed/hidden

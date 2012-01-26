@@ -93,12 +93,9 @@ TEST_F(RootWindowEventFilterTest, Focus) {
       SK_ColorGRAY, -13, gfx::Rect(5, 470, 50, 50), w1.get()));
 
   // Click on a sub-window (w121) to focus it.
-  gfx::Point click_point = w121->bounds().CenterPoint();
-  aura::Window::ConvertPointToWindow(w121->parent(), root_window, &click_point);
-  aura::MouseEvent mouse(ui::ET_MOUSE_PRESSED,
-                         click_point,
-                         ui::EF_LEFT_MOUSE_BUTTON);
-  root_window->DispatchMouseEvent(&mouse);
+  aura::test::EventGenerator generator(w121.get());
+  generator.ClickLeftButton();
+
   aura::internal::FocusManager* focus_manager = w121->GetFocusManager();
   EXPECT_EQ(w121.get(), focus_manager->GetFocusedWindow());
 
@@ -108,7 +105,7 @@ TEST_F(RootWindowEventFilterTest, Focus) {
   EXPECT_EQ(ui::VKEY_E, w121delegate->last_key_code());
 
   // Touch on a sub-window (w122) to focus it.
-  click_point = w122->bounds().CenterPoint();
+  gfx::Point click_point = w122->bounds().CenterPoint();
   aura::Window::ConvertPointToWindow(w122->parent(), root_window, &click_point);
   aura::TouchEvent touchev(ui::ET_TOUCH_PRESSED, click_point, 0);
   root_window->DispatchTouchEvent(&touchev);
@@ -305,11 +302,11 @@ TEST_F(RootWindowEventFilterTest, MouseEventCursors) {
   // Create two mouse movement events we can switch between.
   gfx::Point point1(kWindowLeft, kWindowTop);
   aura::Window::ConvertPointToWindow(window->parent(), root_window, &point1);
-  aura::MouseEvent move1(ui::ET_MOUSE_MOVED, point1, 0x0);
+  aura::MouseEvent move1(ui::ET_MOUSE_MOVED, point1, point1, 0x0);
 
   gfx::Point point2(kWindowLeft + 1, kWindowTop + 1);
   aura::Window::ConvertPointToWindow(window->parent(), root_window, &point2);
-  aura::MouseEvent move2(ui::ET_MOUSE_MOVED, point2, 0x0);
+  aura::MouseEvent move2(ui::ET_MOUSE_MOVED, point2, point2, 0x0);
 
   // Cursor starts as null.
   EXPECT_EQ(aura::kCursorNull, root_window->last_cursor());
@@ -376,10 +373,12 @@ TEST_F(RootWindowEventFilterTest, TransformActivate) {
   transform.TransformPoint(miss_point);
   aura::MouseEvent mouseev1(ui::ET_MOUSE_PRESSED,
                             miss_point,
+                            miss_point,
                             ui::EF_LEFT_MOUSE_BUTTON);
   root_window->DispatchMouseEvent(&mouseev1);
   EXPECT_FALSE(w1->GetFocusManager()->GetFocusedWindow());
   aura::MouseEvent mouseup(ui::ET_MOUSE_RELEASED,
+                           miss_point,
                            miss_point,
                            ui::EF_LEFT_MOUSE_BUTTON);
   root_window->DispatchMouseEvent(&mouseup);
@@ -387,6 +386,7 @@ TEST_F(RootWindowEventFilterTest, TransformActivate) {
   gfx::Point hit_point(5, 15);
   transform.TransformPoint(hit_point);
   aura::MouseEvent mouseev2(ui::ET_MOUSE_PRESSED,
+                            hit_point,
                             hit_point,
                             ui::EF_LEFT_MOUSE_BUTTON);
   root_window->DispatchMouseEvent(&mouseev2);
@@ -418,7 +418,8 @@ TEST_F(RootWindowEventFilterTest, AdditionalFilters) {
   // Dispatches mouse and keyboard events.
   aura::KeyEvent key_event(ui::ET_KEY_PRESSED, ui::VKEY_A, 0);
   root_window->DispatchKeyEvent(&key_event);
-  aura::MouseEvent mouse_pressed(ui::ET_MOUSE_PRESSED, gfx::Point(0, 0), 0x0);
+  aura::MouseEvent mouse_pressed(
+      ui::ET_MOUSE_PRESSED, gfx::Point(0, 0), gfx::Point(0, 0), 0x0);
   root_window->DispatchMouseEvent(&mouse_pressed);
 
   // Both filters should get the events.
@@ -436,7 +437,8 @@ TEST_F(RootWindowEventFilterTest, AdditionalFilters) {
 
   // Dispatches events.
   root_window->DispatchKeyEvent(&key_event);
-  aura::MouseEvent mouse_released(ui::ET_MOUSE_RELEASED, gfx::Point(0, 0), 0x0);
+  aura::MouseEvent mouse_released(
+      ui::ET_MOUSE_RELEASED, gfx::Point(0, 0), gfx::Point(0, 0), 0x0);
   root_window->DispatchMouseEvent(&mouse_released);
 
   // f1 should still get the events but f2 no longer gets them.

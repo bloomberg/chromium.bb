@@ -47,10 +47,19 @@ class EventGenerator {
   void DoubleClickLeftButton();
 
   // Generates events to move mouse to be the given |point|.
-  void MoveMouseTo(const gfx::Point& point);
-
+  void MoveMouseTo(const gfx::Point& point, int count);
+  void MoveMouseTo(const gfx::Point& point) {
+    MoveMouseTo(point, 1);
+  }
   void MoveMouseTo(int x, int y) {
     MoveMouseTo(gfx::Point(x, y));
+  }
+
+  // Generates events to move mouse to be the given |point| in |window|'s
+  // coordinates.
+  void MoveMouseRelativeTo(const Window* window, const gfx::Point& point);
+  void MoveMouseRelativeTo(const Window* window, int x, int y) {
+    MoveMouseRelativeTo(window, gfx::Point(x, y));
   }
 
   void MoveMouseBy(int x, int y) {

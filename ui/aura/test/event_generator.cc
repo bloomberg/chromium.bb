@@ -54,7 +54,8 @@ EventGenerator::~EventGenerator() {
 void EventGenerator::PressLeftButton() {
   if ((flags_ & ui::EF_LEFT_MOUSE_BUTTON) == 0) {
     flags_ |= ui::EF_LEFT_MOUSE_BUTTON;
-    MouseEvent mouseev(ui::ET_MOUSE_PRESSED, current_location_, flags_);
+    MouseEvent mouseev(
+        ui::ET_MOUSE_PRESSED, current_location_, current_location_, flags_);
     Dispatch(mouseev);
   }
 }
@@ -62,7 +63,8 @@ void EventGenerator::PressLeftButton() {
 void EventGenerator::ReleaseLeftButton() {
   if (flags_ & ui::EF_LEFT_MOUSE_BUTTON) {
     flags_ ^= ui::EF_LEFT_MOUSE_BUTTON;
-    MouseEvent mouseev(ui::ET_MOUSE_RELEASED, current_location_, 0);
+    MouseEvent mouseev(
+        ui::ET_MOUSE_RELEASED, current_location_, current_location_, 0);
     Dispatch(mouseev);
   }
 }
@@ -79,23 +81,27 @@ void EventGenerator::DoubleClickLeftButton() {
   ReleaseLeftButton();
 }
 
-void EventGenerator::MoveMouseTo(const gfx::Point& point) {
-  if (flags_ & ui::EF_LEFT_MOUSE_BUTTON ) {
-    MouseEvent middle(
-        ui::ET_MOUSE_DRAGGED, current_location_.Middle(point), flags_);
-    Dispatch(middle);
-
-    MouseEvent mouseev(ui::ET_MOUSE_DRAGGED, point, flags_);
-    Dispatch(mouseev);
-  } else {
-    MouseEvent middle(
-        ui::ET_MOUSE_MOVED, current_location_.Middle(point), flags_);
-    Dispatch(middle);
-
-    MouseEvent mouseev(ui::ET_MOUSE_MOVED, point, flags_);
+void EventGenerator::MoveMouseTo(const gfx::Point& point, int count) {
+  DCHECK_GT(count, 0);
+  const ui::EventType event_type = (flags_ & ui::EF_LEFT_MOUSE_BUTTON) ?
+      ui::ET_MOUSE_DRAGGED : ui::ET_MOUSE_MOVED;
+  const gfx::Point diff = point.Subtract(current_location_);
+  for (int i = 1; i <= count; i++) {
+    const gfx::Point move_point = current_location_.Add(
+        gfx::Point(diff.x() / count * i, diff.y() / count * i));
+    MouseEvent mouseev(event_type, move_point, move_point, flags_);
     Dispatch(mouseev);
   }
   current_location_ = point;
+}
+
+void EventGenerator::MoveMouseRelativeTo(const Window* window,
+                                         const gfx::Point& point) {
+  gfx::Point root_point(point);
+  aura::RootWindow* root_window = aura::RootWindow::GetInstance();
+  aura::Window::ConvertPointToWindow(window, root_window, &root_point);
+
+  MoveMouseTo(root_point);
 }
 
 void EventGenerator::DragMouseTo(const gfx::Point& point) {

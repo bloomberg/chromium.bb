@@ -7,6 +7,7 @@
 #include "base/utf_string_conversions.h"
 #include "ui/aura/client/tooltip_client.h"
 #include "ui/aura/root_window.h"
+#include "ui/aura/test/event_generator.h"
 #include "ui/aura/window.h"
 #include "ui/gfx/point.h"
 #include "ui/views/view.h"
@@ -69,11 +70,6 @@ ash::internal::TooltipController* GetController() {
       aura::client::GetTooltipClient());
 }
 
-void SimulateMouseMoveAtPoint(const gfx::Point& point) {
-  aura::MouseEvent event(ui::ET_MOUSE_MOVED, point, 0);
-  aura::RootWindow::GetInstance()->DispatchMouseEvent(&event);
-}
-
 }  // namespace
 
 class TooltipControllerTest : public AuraShellTestBase {
@@ -115,12 +111,12 @@ TEST_F(TooltipControllerTest, ViewTooltip) {
   view->set_tooltip_text(ASCIIToUTF16("Tooltip Text"));
   EXPECT_EQ(ASCIIToUTF16(""), GetTooltipText());
   EXPECT_EQ(NULL, GetTooltipWindow());
+  aura::test::EventGenerator generator;
+  generator.MoveMouseToCenterOf(widget->GetNativeView());
 
-  gfx::Point point = gfx::Rect(view->bounds()).CenterPoint();
-  SimulateMouseMoveAtPoint(point);
   aura::Window* window = widget->GetNativeView();
-  EXPECT_EQ(window,
-      aura::RootWindow::GetInstance()->GetEventHandlerForPoint(point));
+  EXPECT_EQ(window, aura::RootWindow::GetInstance()->GetEventHandlerForPoint(
+      generator.current_location()));
   EXPECT_TRUE(aura::client::GetTooltipText(window) != NULL);
   string16 expected_tooltip = ASCIIToUTF16("Tooltip Text");
   EXPECT_EQ(expected_tooltip, *aura::client::GetTooltipText(window));
@@ -131,8 +127,7 @@ TEST_F(TooltipControllerTest, ViewTooltip) {
   FireTooltipTimer();
 
   EXPECT_TRUE(IsTooltipVisible());
-  point.Offset(1, 0);
-  SimulateMouseMoveAtPoint(point);
+  generator.MoveMouseBy(1, 0);
 
   EXPECT_TRUE(IsTooltipVisible());
   EXPECT_TRUE(aura::client::GetTooltipText(window) != NULL);
@@ -153,18 +148,19 @@ TEST_F(TooltipControllerTest, TooltipsInMultipleViews) {
   AddViewToWidgetAndResize(widget, view2);
 
   aura::Window* window = widget->GetNativeView();
-  gfx::Point point = gfx::Rect(view1->bounds()).CenterPoint();
 
   // Fire tooltip timer so tooltip becomes visible.
-  SimulateMouseMoveAtPoint(point);
+  aura::test::EventGenerator generator;
+  generator.MoveMouseRelativeTo(window,
+                                view1->bounds().CenterPoint());
   FireTooltipTimer();
   EXPECT_TRUE(IsTooltipVisible());
   for (int i = 0; i < 50; i++) {
-    point.Offset(1, 0);
-    SimulateMouseMoveAtPoint(point);
+    generator.MoveMouseBy(1, 0);
     EXPECT_TRUE(IsTooltipVisible());
     EXPECT_EQ(window,
-        aura::RootWindow::GetInstance()->GetEventHandlerForPoint(point));
+        aura::RootWindow::GetInstance()->GetEventHandlerForPoint(
+            generator.current_location()));
     EXPECT_TRUE(aura::client::GetTooltipText(window) != NULL);
     string16 expected_tooltip = ASCIIToUTF16("Tooltip Text");
     EXPECT_EQ(expected_tooltip, *aura::client::GetTooltipText(window));
@@ -172,11 +168,11 @@ TEST_F(TooltipControllerTest, TooltipsInMultipleViews) {
     EXPECT_EQ(window, GetTooltipWindow());
   }
   for (int i = 0; i < 50; i++) {
-    point.Offset(1, 0);
-    SimulateMouseMoveAtPoint(point);
+    generator.MoveMouseBy(1, 0);
     EXPECT_FALSE(IsTooltipVisible());
     EXPECT_EQ(window,
-        aura::RootWindow::GetInstance()->GetEventHandlerForPoint(point));
+        aura::RootWindow::GetInstance()->GetEventHandlerForPoint(
+            generator.current_location()));
     EXPECT_TRUE(aura::client::GetTooltipText(window) != NULL);
     string16 expected_tooltip = ASCIIToUTF16("");
     EXPECT_EQ(expected_tooltip, *aura::client::GetTooltipText(window));
@@ -193,8 +189,9 @@ TEST_F(TooltipControllerTest, EnableOrDisableTooltips) {
   EXPECT_EQ(ASCIIToUTF16(""), GetTooltipText());
   EXPECT_EQ(NULL, GetTooltipWindow());
 
-  gfx::Point point = gfx::Rect(view->bounds()).CenterPoint();
-  SimulateMouseMoveAtPoint(point);
+  aura::test::EventGenerator generator;
+  generator.MoveMouseRelativeTo(widget->GetNativeView(),
+                                view->bounds().CenterPoint());
   string16 expected_tooltip = ASCIIToUTF16("Tooltip Text");
 
   // Fire tooltip timer so tooltip becomes visible.

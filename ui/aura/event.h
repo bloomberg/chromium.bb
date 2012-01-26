@@ -103,8 +103,10 @@ class AURA_EXPORT LocatedEvent : public Event {
   int x() const { return location_.x(); }
   int y() const { return location_.y(); }
   gfx::Point location() const { return location_; }
+  gfx::Point root_location() const { return root_location_; }
 
-  void UpdateForTransform(const ui::Transform& transform);
+  // Applies the |root_transform| to both |location_| and |root_location_|.
+  void UpdateForRootTransform(const ui::Transform& root_transform);
 
  protected:
   explicit LocatedEvent(const base::NativeEvent& native_event);
@@ -115,9 +117,14 @@ class AURA_EXPORT LocatedEvent : public Event {
   LocatedEvent(const LocatedEvent& model, Window* source, Window* target);
 
   // Used for synthetic events in testing.
-  LocatedEvent(ui::EventType type, const gfx::Point& location, int flags);
+  LocatedEvent(ui::EventType type,
+               const gfx::Point& location,
+               const gfx::Point& root_location,
+               int flags);
 
   gfx::Point location_;
+
+  gfx::Point root_location_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(LocatedEvent);
@@ -139,7 +146,10 @@ class AURA_EXPORT MouseEvent : public LocatedEvent {
              int flags);
 
   // Used for synthetic events in testing and by the gesture recognizer.
-  MouseEvent(ui::EventType type, const gfx::Point& location, int flags);
+  MouseEvent(ui::EventType type,
+             const gfx::Point& location,
+             const gfx::Point& root_location,
+             int flags);
 
   // Compares two mouse down events and returns true if the second one should
   // be considered a repeat of the first.
@@ -154,6 +164,8 @@ class AURA_EXPORT MouseEvent : public LocatedEvent {
   void SetClickCount(int click_count);
 
  private:
+  gfx::Point root_location_;
+
   static MouseEvent* last_click_event_;
   // Returns the repeat count based on the previous mouse click, if it is
   // recent enough and within a small enough distance.
@@ -172,7 +184,9 @@ class AURA_EXPORT TouchEvent : public LocatedEvent {
   TouchEvent(const TouchEvent& model, Window* source, Window* target);
 
   // Used for synthetic events in testing.
-  TouchEvent(ui::EventType type, const gfx::Point& location, int touch_id);
+  TouchEvent(ui::EventType type,
+             const gfx::Point& root_location,
+             int touch_id);
 
   int touch_id() const { return touch_id_; }
   float radius_x() const { return radius_x_; }
@@ -246,8 +260,9 @@ class AURA_EXPORT DropTargetEvent : public LocatedEvent {
  public:
   DropTargetEvent(const ui::OSExchangeData& data,
                   const gfx::Point& location,
+                  const gfx::Point& root_location,
                   int source_operations)
-      : LocatedEvent(ui::ET_DROP_TARGET_EVENT, location, 0),
+      : LocatedEvent(ui::ET_DROP_TARGET_EVENT, location, root_location, 0),
         data_(data),
         source_operations_(source_operations) {
   }
