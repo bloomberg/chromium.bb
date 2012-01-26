@@ -14,6 +14,7 @@
 #include "ui/aura/window_delegate.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/ui_base_types.h"
+#include "ui/gfx/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/screen.h"
 
 namespace ash {
@@ -133,12 +134,31 @@ void ToggleMaximizedState(aura::Window* window) {
                              ui::SHOW_STATE_NORMAL : ui::SHOW_STATE_MAXIMIZED);
 }
 
+// Returns a location >= |location| that is aligned to fall on increments of
+// |grid_size|.
+int AlignToGrid(int location, int grid_size) {
+  if (grid_size <= 1 || location % grid_size == 0)
+    return location;
+  return floor(static_cast<float>(location) / static_cast<float>(grid_size) +
+               .5f) * grid_size;
+}
+
+// Returns the closest location to |location| that is aligned to fall on
+// increments of |grid_size|.
+int AlignToGridRoundUp(int location, int grid_size) {
+  if (grid_size <= 1 || location % grid_size == 0)
+    return location;
+  return (location / grid_size + 1) * grid_size;
+}
+
 }  // namespace
 
 ToplevelWindowEventFilter::ToplevelWindowEventFilter(aura::Window* owner)
     : EventFilter(owner),
       in_move_loop_(false),
-      window_component_(HTNOWHERE) {
+      window_component_(HTNOWHERE),
+      did_move_or_resize_(false),
+      grid_size_(0) {
   aura::client::SetWindowMoveClient(owner, this);
 }
 
@@ -173,7 +193,7 @@ bool ToplevelWindowEventFilter::PreHandleMouseEvent(aura::Window* target,
     case ui::ET_MOUSE_DRAGGED:
       return HandleDrag(target, event);
     case ui::ET_MOUSE_RELEASED:
-      window_component_ = HTNOWHERE;
+      CompleteDrag(target);
       if (in_move_loop_) {
         MessageLoop::current()->Quit();
         in_move_loop_ = false;
@@ -213,7 +233,7 @@ ui::TouchStatus ToplevelWindowEventFilter::PreHandleTouchEvent(
     case ui::ET_TOUCH_RELEASED:
       pressed_touch_ids_.erase(event->touch_id());
       if (pressed_touch_ids_.empty()) {
-        window_component_ = HTNOWHERE;
+        CompleteDrag(target);
         return ui::TOUCH_STATUS_END;
       }
       break;
@@ -267,6 +287,24 @@ void ToplevelWindowEventFilter::MoveWindowToFront(aura::Window* target) {
   }
 }
 
+void ToplevelWindowEventFilter::CompleteDrag(aura::Window* window) {
+  bool did_move_or_resize = did_move_or_resize_;
+  did_move_or_resize_ = false;
+  window_component_ = HTNOWHERE;
+  if (!did_move_or_resize || grid_size_ <= 1)
+    return;
+  const gfx::Rect& bounds(window->bounds());
+  int x = AlignToGrid(bounds.x(), grid_size_);
+  int y = AlignToGrid(bounds.y(), grid_size_);
+  if (x != bounds.x() || y != bounds.y()) {
+    ui::ScopedLayerAnimationSettings scoped_setter(
+        window->layer()->GetAnimator());
+    // Use a small duration since the grid is small.
+    scoped_setter.SetTransitionDuration(base::TimeDelta::FromMilliseconds(100));
+    window->SetBounds(gfx::Rect(gfx::Point(x ,y), bounds.size()));
+  }
+}
+
 bool ToplevelWindowEventFilter::HandleDrag(aura::Window* target,
                                            aura::LocatedEvent* event) {
   // This function only be triggered to move window
@@ -315,6 +353,8 @@ bool ToplevelWindowEventFilter::HandleDrag(aura::Window* target,
     new_bounds.set_y(0);
     new_bounds.set_height(new_bounds.height() + delta);
   }
+  if (!did_move_or_resize_ && target->bounds() != new_bounds)
+    did_move_or_resize_ = true;
   target->SetBounds(new_bounds);
   return true;
 }
@@ -359,6 +399,8 @@ gfx::Size ToplevelWindowEventFilter::GetSizeForDrag(
   gfx::Size size = mouse_down_bounds_.size();
   if (bounds_change & kBoundsChange_Resizes) {
     gfx::Size min_size = target->delegate()->GetMinimumSize();
+    min_size.set_width(AlignToGridRoundUp(min_size.width(), grid_size_));
+    min_size.set_height(AlignToGridRoundUp(min_size.height(), grid_size_));
     int size_change_direction =
         GetSizeChangeDirectionForWindowComponent(window_component_);
     size.SetSize(
@@ -379,6 +421,11 @@ int ToplevelWindowEventFilter::GetWidthForDrag(aura::Window* target,
     // Along the right edge, positive delta_x increases the window size.
     int x_multiplier = IsRightEdge(window_component_) ? 1 : -1;
     width += x_multiplier * (*delta_x);
+    int adjusted_width = AlignToGrid(width, grid_size_);
+    if (adjusted_width != width) {
+      *delta_x += -x_multiplier * (width - adjusted_width);
+      width = adjusted_width;
+    }
 
     // Ensure we don't shrink past the minimum width and clamp delta_x
     // for the window origin computation.
@@ -407,6 +454,11 @@ int ToplevelWindowEventFilter::GetHeightForDrag(aura::Window* target,
     // Along the bottom edge, positive delta_y increases the window size.
     int y_multiplier = IsBottomEdge(window_component_) ? 1 : -1;
     height += y_multiplier * (*delta_y);
+    int adjusted_height = AlignToGrid(height, grid_size_);
+    if (height != adjusted_height) {
+      *delta_y += -y_multiplier * (height - adjusted_height);
+      height = adjusted_height;
+    }
 
     // Ensure we don't shrink past the minimum height and clamp delta_y
     // for the window origin computation.

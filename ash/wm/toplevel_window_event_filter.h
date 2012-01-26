@@ -31,6 +31,11 @@ class ASH_EXPORT ToplevelWindowEventFilter :
   explicit ToplevelWindowEventFilter(aura::Window* owner);
   virtual ~ToplevelWindowEventFilter();
 
+  // Sets the size of the grid. If non-zero all resizes and moves are forced to
+  // fall on a grid of the specified size. The default is 0, meaning the x,y and
+  // width,height are not restricted in anyway.
+  void set_grid_size(int size) { grid_size_ = size; }
+
   // Overridden from aura::EventFilter:
   virtual bool PreHandleKeyEvent(aura::Window* target,
                                  aura::KeyEvent* event) OVERRIDE;
@@ -56,6 +61,9 @@ class ASH_EXPORT ToplevelWindowEventFilter :
   // respective z-orders.
   // NOTE: this does NOT activate the window.
   void MoveWindowToFront(aura::Window* target);
+
+  // Invoked when the mouse is released to cleanup after a drag.
+  void CompleteDrag(aura::Window* window);
 
   // Called during a drag to resize/position the window.
   // The return value is returned by OnMouseEvent() above.
@@ -113,6 +121,12 @@ class ASH_EXPORT ToplevelWindowEventFilter :
 
   // Set of touch ids currently pressed.
   std::set<int> pressed_touch_ids_;
+
+  // Set to true if HandleDrag resized or moved the window.
+  bool did_move_or_resize_;
+
+  // See description above setter.
+  int grid_size_;
 
   DISALLOW_COPY_AND_ASSIGN(ToplevelWindowEventFilter);
 };

@@ -61,13 +61,18 @@ class TestWindowDelegate : public aura::test::TestWindowDelegate {
 
 class ToplevelWindowEventFilterTest : public aura::test::AuraTestBase {
  public:
-  ToplevelWindowEventFilterTest() {}
+  ToplevelWindowEventFilterTest() : filter_(NULL) {}
   virtual ~ToplevelWindowEventFilterTest() {}
 
   virtual void SetUp() OVERRIDE {
     aura::test::AuraTestBase::SetUp();
-    aura::RootWindow::GetInstance()->SetEventFilter(
-        new ToplevelWindowEventFilter(aura::RootWindow::GetInstance()));
+    filter_ = new ToplevelWindowEventFilter(aura::RootWindow::GetInstance());
+    aura::RootWindow::GetInstance()->SetEventFilter(filter_);
+  }
+
+  virtual void TearDown() OVERRIDE {
+    filter_ = NULL;
+    aura::test::AuraTestBase::TearDown();
   }
 
  protected:
@@ -91,6 +96,8 @@ class ToplevelWindowEventFilterTest : public aura::test::AuraTestBase {
     aura::test::EventGenerator generator(window);
     generator.PressMoveAndReleaseTouchBy(dx, dy);
   }
+
+  ToplevelWindowEventFilter* filter_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ToplevelWindowEventFilterTest);
@@ -366,8 +373,6 @@ TEST_F(ToplevelWindowEventFilterTest, BottomWorkArea) {
 // Verifies we don't let windows drag to a -y location.
 TEST_F(ToplevelWindowEventFilterTest, DontDragToNegativeY) {
   scoped_ptr<aura::Window> target(CreateWindow(HTTOP));
-  gfx::Rect work_area =
-      gfx::Screen::GetMonitorWorkAreaNearestWindow(target.get());
   aura::test::EventGenerator generator(target.get());
   generator.MoveMouseTo(0, 5);
   generator.DragMouseBy(0, -5);
@@ -383,6 +388,43 @@ TEST_F(ToplevelWindowEventFilterTest, DontGotWiderThanScreen) {
   DragFromCenterBy(target.get(), work_area.width() * 2, 0);
   // The y location and height should not have changed.
   EXPECT_EQ(work_area.width(), target->bounds().width());
+}
+
+// Verifies that when a grid size is set resizes snap to the grid.
+TEST_F(ToplevelWindowEventFilterTest, ResizeSnaps) {
+  filter_->set_grid_size(8);
+  scoped_ptr<aura::Window> target(CreateWindow(HTBOTTOMRIGHT));
+  DragFromCenterBy(target.get(), 11, 21);
+  EXPECT_EQ(112, target->bounds().width());
+  EXPECT_EQ(120, target->bounds().height());
+  // TODO(sky): enable when test animations complete immediately.
+  /*
+  target.reset(CreateWindow(HTTOPLEFT));
+  target->SetBounds(gfx::Rect(48, 96, 100, 100));
+  DragFromCenterBy(target.get(), -11, -21);
+  EXPECT_EQ(40, target->bounds().x());
+  EXPECT_EQ(80, target->bounds().y());
+  EXPECT_EQ(112, target->bounds().width());
+  EXPECT_EQ(120, target->bounds().height());
+  */
+}
+
+// Verifies that when a grid size is set dragging snaps to the grid.
+TEST_F(ToplevelWindowEventFilterTest, DragSnaps) {
+  filter_->set_grid_size(8);
+  scoped_ptr<aura::Window> target(CreateWindow(HTCAPTION));
+  aura::test::EventGenerator generator(target.get());
+  generator.PressLeftButton();
+  generator.MoveMouseTo(generator.current_location().Add(gfx::Point(11, 21)));
+  EXPECT_EQ(11, target->bounds().x());
+  EXPECT_EQ(21, target->bounds().y());
+  // TODO(sky): enable when test animations complete immediately.
+  /*
+  // We only snap moves to the grid on release.
+  generator.ReleaseLeftButton();
+  EXPECT_EQ(8, target->bounds().x());
+  EXPECT_EQ(24, target->bounds().y());
+  */
 }
 
 }  // namespace test
