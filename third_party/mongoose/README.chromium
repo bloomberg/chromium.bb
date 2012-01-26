@@ -15,7 +15,7 @@ bindings to multiple languages.  The server is only used to serve custom
 URLs from the JSON over HTTP webdriver protocol.
 
 Note:  There is no make file for this project, it's compiled directly in
-the chrome versoin of webdriver found under the directory:
+the chrome version of webdriver found under the directory:
   src/chrome/test/webdriver
 
 Local modifications (all detailed in chrome-mongoose-modifications.diff,
@@ -24,3 +24,4 @@ pending upstreaming by danielwh):
 * Fixed linger code to apply to sockets from bind, rather than shutdown
 * Don't ignore SIGCHLD, since the proxy launcher depends on it for determining
   chrome's exit code.
+* Removed a "set but never used" variable, to fix build for gcc 4.6.

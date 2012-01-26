@@ -3812,10 +3812,8 @@ static void close_connection(struct mg_connection *conn) {
 }
 
 static void discard_current_request_from_buffer(struct mg_connection *conn) {
-  char *buffered;
   int buffered_len, body_len;
 
-  buffered = conn->buf + conn->request_len;
   buffered_len = conn->data_len - conn->request_len;
   assert(buffered_len >= 0);
 
@@ -3867,7 +3865,7 @@ static void handle_proxy_request(struct mg_connection *conn) {
     }
     conn->peer->client.is_ssl = is_ssl;
   }
-  
+
   // Forward client's request to the target
   mg_printf(conn->peer, "%s %s HTTP/%s\r\n", ri->request_method, ri->uri + len,
             ri->http_version);

@@ -9,11 +9,11 @@ diff --git a/third_party/mongoose/mongoose.c b/third_party/mongoose/mongoose.c
  #define __STDC_FORMAT_MACROS // <inttypes.h> wants this for C++
 +#endif // __STDC_FORMAT_MACROS
  #endif
- 
+
  #if defined(__SYMBIAN32__)
 @@ -51,8 +53,12 @@
  #include <stdio.h>
- 
+
  #if defined(_WIN32) && !defined(__SYMBIAN32__) // Windows specific
 +  #ifdef _WIN32_WINNT
 +    #undef _WIN32_WINNT
@@ -21,7 +21,7 @@ diff --git a/third_party/mongoose/mongoose.c b/third_party/mongoose/mongoose.c
  #define _WIN32_WINNT 0x0400 // To make it link in VS2005
  #include <windows.h>
 +#include <winsock2.h>
- 
+
  #ifndef PATH_MAX
  #define PATH_MAX MAX_PATH
 @@ -63,7 +69,6 @@
@@ -30,11 +30,11 @@ diff --git a/third_party/mongoose/mongoose.c b/third_party/mongoose/mongoose.c
  #else // _WIN32_WCE
 -#include <winsock2.h>
  #define NO_CGI // WinCE has no pipes
- 
+
  typedef long off_t;
 @@ -849,7 +854,9 @@ static int pthread_cond_init(pthread_cond_t *cv, const void *unused) {
  }
- 
+
  static int pthread_cond_wait(pthread_cond_t *cv, pthread_mutex_t *mutex) {
 -  HANDLE handles[] = {cv->signal, cv->broadcast};
 +  HANDLE handles[2];
@@ -46,7 +46,7 @@ diff --git a/third_party/mongoose/mongoose.c b/third_party/mongoose/mongoose.c
 @@ -3424,6 +3431,10 @@ static int set_ports_option(struct mg_context *ctx) {
    struct vec vec;
    struct socket so, *listener;
- 
+
 +  struct linger linger;
 +  linger.l_onoff = 1;
 +  linger.l_linger = 1;
@@ -64,12 +64,12 @@ diff --git a/third_party/mongoose/mongoose.c b/third_party/mongoose/mongoose.c
                 listen(sock, 100) != 0) {
        closesocket(sock);
 @@ -3768,15 +3781,8 @@ static void reset_per_request_attributes(struct mg_connection *conn) {
- 
+
  static void close_socket_gracefully(SOCKET sock) {
    char buf[BUFSIZ];
 -  struct linger linger;
    int n;
- 
+
 -  // Set linger option to avoid socket hanging out after close. This prevent
 -  // ephemeral port exhaust problem under high QPS.
 -  linger.l_onoff = 1;
@@ -86,5 +86,25 @@ diff --git a/third_party/mongoose/mongoose.c b/third_party/mongoose/mongoose.c
 -  // Also ignoring SIGCHLD to let the OS to reap zombies properly.
 -  (void) signal(SIGCHLD, SIG_IGN);
  #endif // !_WIN32
- 
+
    (void) pthread_mutex_init(&ctx->mutex, NULL);
+@@ -3812,1 +3812,1 @@ static void close_connection(struct mg_connection *conn) {
+ }
+
+ static void discard_current_request_from_buffer(struct mg_connection *conn) {
+-  char *buffered;
+   int buffered_len, body_len;
+
+-  buffered = conn->buf + conn->request_len;
+   buffered_len = conn->data_len - conn->request_len;
+   assert(buffered_len >= 0);
+
+@@ -3867,7 +3865,7 @@ static void handle_proxy_request(struct mg_connection *conn) {
+     }
+     conn->peer->client.is_ssl = is_ssl;
+   }
+-
++
+   // Forward client's request to the target
+   mg_printf(conn->peer, "%s %s HTTP/%s\r\n", ri->request_method, ri->uri + len,
+             ri->http_version);
