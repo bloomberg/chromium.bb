@@ -319,6 +319,18 @@
     'clipboard': {
       'filepath': 'clipboard|dnd|drag|drop',
     },
+    'metrics': {
+      'filepath': 'base/metrics/.*'\
+                  '|chrome/browser/metrics/.*'\
+                  '|chrome/common/metrics/.*'\
+                  '|chrome_frame/metrics.*'\
+                  '|chrome/browser/chromeos/external_metrics.*'\
+                  '|chrome/browser/extensions/extension_metrics_module.*'\
+                  '|chrome/browser/ui/webui/metrics_handler.*'\
+                  '|content/browser/user_metrics.cc'\
+                  '|content/public/browser/user_metrics.h'\
+                  '|chrome/tools/extract_actions.py'
+    },
   },
 
   'WATCHLISTS': {
@@ -442,5 +454,8 @@
     'omnibox': ['suzhe@chromium.org'],
     'message_loop': ['sadrul@chromium.org'],
     'clipboard': ['dcheng@chromium.org'],
+    'metrics': ['jar@chromium.org',
+                'isherman@chromium.org',
+                'mad@chromium.org'],
   },
 }
