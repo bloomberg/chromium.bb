@@ -13,8 +13,7 @@ import TestGyp
 import sys
 
 if sys.platform == 'darwin':
-  # TODO(viettrungluu): Figure out why this doesn't pass with ninja.
-  test = TestGyp.TestGyp(formats=['make', 'xcode'])
+  test = TestGyp.TestGyp(formats=['ninja', 'make', 'xcode'])
 
   test.run_gyp('subdir/test.gyp', chdir='libraries')
 
