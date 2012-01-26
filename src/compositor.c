@@ -579,7 +579,7 @@ weston_surface_draw(struct weston_surface *es, struct weston_output *output)
 		ec->current_shader = es->shader;
 	}
 
-	if (es->alpha != ec->current_alpha) {
+	if (es->shader->alpha_uniform && es->alpha != ec->current_alpha) {
 		glUniform1f(es->shader->alpha_uniform, es->alpha / 255.0);
 		ec->current_alpha = es->alpha;
 	}
@@ -695,47 +695,6 @@ fade_frame(struct weston_animation *animation,
 }
 
 static void
-solid_surface_init(struct weston_surface *surface,
-		   struct weston_output *output, GLfloat tint)
-{
-	struct weston_compositor *compositor = output->compositor;
-
-	surface->compositor = compositor;
-	surface->x = output->x;
-	surface->y = output->y;
-	surface->pitch = output->current->width;
-	surface->width = output->current->width;
-	surface->height = output->current->height;
-	surface->texture = GL_NONE;
-	surface->transform = NULL;
-	surface->alpha = compositor->current_alpha;
-	surface->shader = &compositor->solid_shader;
-	surface->color[0] = 0.0;
-	surface->color[1] = 0.0;
-	surface->color[2] = 0.0;
-	surface->color[3] = tint;
-	pixman_region32_init(&surface->damage);
-	pixman_region32_copy(&surface->damage, &output->region);
-	pixman_region32_init(&surface->opaque);
-
-	if (tint <= 1.0) {
-		surface->visual = WESTON_ARGB_VISUAL;
-	} else {
-		surface->visual = WESTON_RGB_VISUAL;
-		pixman_region32_copy(&surface->opaque, &output->region);
-	}
-
-	wl_list_insert(&compositor->surface_list, &surface->link);
-}
-
-static void
-solid_surface_release(struct weston_surface *surface)
-{
-	wl_list_remove(&surface->link);
-	pixman_region32_fini(&surface->damage);
-}
-
-static void
 weston_output_set_cursor(struct weston_output *output,
 			 struct wl_input_device *dev)
 {
@@ -788,7 +747,7 @@ static void
 weston_output_repaint(struct weston_output *output, int msecs)
 {
 	struct weston_compositor *ec = output->compositor;
-	struct weston_surface *es, solid;
+	struct weston_surface *es, *solid = NULL;
 	struct weston_animation *animation, *next;
 	struct weston_frame_callback *cb, *cnext;
 	pixman_region32_t opaque, new_damage, total_damage,
@@ -796,8 +755,15 @@ weston_output_repaint(struct weston_output *output, int msecs)
 
 	glViewport(0, 0, output->current->width, output->current->height);
 
-	if (ec->fade.spring.current >= 0.001)
-		solid_surface_init(&solid, output, ec->fade.spring.current);
+	if (ec->fade.spring.current >= 0.001) {
+		solid = weston_surface_create(ec,
+					      output->x, output->y,
+					      output->current->width,
+					      output->current->height);
+		weston_surface_set_color(solid, 0.0, 0.0, 0.0,
+					 ec->fade.spring.current);
+		wl_list_insert(&ec->surface_list, &solid->link);
+	}
 
 	pixman_region32_init(&new_damage);
 	pixman_region32_init(&opaque);
@@ -840,8 +806,8 @@ weston_output_repaint(struct weston_output *output, int msecs)
 
 	output->repaint(output);
 
-	if (ec->fade.spring.current > 0.001)
-		solid_surface_release(&solid);
+	if (solid)
+		destroy_surface(&solid->surface.resource);
 
 	pixman_region32_fini(&total_damage);
 
