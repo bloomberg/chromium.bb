@@ -12,6 +12,7 @@ import shutil
 import tempfile
 
 from chromite.buildbot import cbuildbot_background as background
+from chromite.buildbot import cbuildbot_config
 from chromite.lib import cros_build_lib as cros_lib
 
 _DEFAULT_RETRIES = 3
@@ -361,7 +362,7 @@ def ArchiveTestResults(buildroot, test_results_dir, prefix):
     test_tarball = os.path.join(buildroot, '%stest_results.tgz' % prefix)
     if os.path.exists(test_tarball): os.remove(test_tarball)
     cros_lib.RunCommand(['tar', 'czf', test_tarball,
-                         '--directory=%s' % results_path,'.'],
+                         '--directory=%s' % results_path, '.'],
                         print_cmd=False)
     shutil.rmtree(results_path)
 
@@ -385,7 +386,7 @@ def RunHWTestSuite(archive_url, suite, platform, debug):
   """
   if not debug:
     cmd = [_AUTOTEST_RPC_CLIENT,
-           'master2',  # TODO(frankf): Pass master_host param to cbuildbot.
+           'master2', # TODO(frankf): Pass master_host param to cbuildbot.
            'RunJob',
            '--image_url=%s' % archive_url,
            '--suite_name=%s' % suite,
@@ -659,7 +660,7 @@ def UploadPrebuilts(buildroot, board, overlay_config, category,
     assert chrome_rev
     key = '%s_%s' % (chrome_rev, _CHROME_BINHOST)
     cmd.extend(['--key', key.upper()])
-  elif category == constants.PFQ_TYPE:
+  elif cbuildbot_config.IsPFQType(category):
     cmd.extend(['--key', _PREFLIGHT_BINHOST])
   else:
     assert category in (constants.BUILD_FROM_SOURCE_TYPE,

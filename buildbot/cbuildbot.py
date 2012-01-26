@@ -40,7 +40,8 @@ _DEFAULT_EXT_BUILDROOT = 'trybot'
 _DEFAULT_INT_BUILDROOT = 'trybot-internal'
 _PATH_TO_CBUILDBOT = 'chromite/buildbot/cbuildbot'
 _DISTRIBUTED_TYPES = [constants.COMMIT_QUEUE_TYPE, constants.PFQ_TYPE,
-                      constants.CANARY_TYPE, constants.CHROME_PFQ_TYPE ]
+                      constants.CANARY_TYPE, constants.CHROME_PFQ_TYPE,
+                      constants.PALADIN_TYPE]
 
 
 def _PrintValidConfigs(trybot_only=True):
@@ -437,14 +438,14 @@ class DistributedBuilder(SimpleBuilder):
 
     Returns: the instance of the sync stage that was run.
     """
-    # Determine sync class to use.
-    if self.build_config['build_type'] in (constants.PFQ_TYPE,
-                                           constants.CHROME_PFQ_TYPE):
-      sync_stage = self._GetStageInstance(stages.LKGMCandidateSyncStage)
-      self.completion_stage_class = stages.LKGMCandidateSyncCompletionStage
-    elif self.build_config['build_type'] == constants.COMMIT_QUEUE_TYPE:
+    # Determine sync class to use.  CQ overrides PFQ bits so should check it
+    # first.
+    if cbuildbot_config.IsCQType(self.build_config['build_type']):
       sync_stage = self._GetStageInstance(stages.CommitQueueSyncStage)
       self.completion_stage_class = stages.CommitQueueCompletionStage
+    elif cbuildbot_config.IsPFQType(self.build_config['build_type']):
+      sync_stage = self._GetStageInstance(stages.LKGMCandidateSyncStage)
+      self.completion_stage_class = stages.LKGMCandidateSyncCompletionStage
     else:
       sync_stage = self._GetStageInstance(stages.ManifestVersionedSyncStage)
       self.completion_stage_class = stages.ManifestVersionedSyncCompletionStage

@@ -63,6 +63,17 @@ def GetManifestVersionsRepoUrl(internal_build, read_only=False):
       return constants.GERRIT_SSH_URL + constants.MANIFEST_VERSIONS_SUFFIX
 
 
+def IsPFQType(b_type):
+  """Returns true whether this build type is of a PFQ."""
+  return b_type in (constants.PFQ_TYPE, constants.PALADIN_TYPE,
+                    constants.CHROME_PFQ_TYPE)
+
+
+def IsCQType(b_type):
+  """Returns true whether this build type is of a Commit Queue."""
+  return b_type in (constants.COMMIT_QUEUE_TYPE, constants.PALADIN_TYPE)
+
+
 # List of usable cbuildbot configs; see add_config method.
 config = {}
 
@@ -359,6 +370,15 @@ commit_queue = _config(
   manifest_version=True,
 )
 
+paladin = _config(
+  important=True,
+  build_type=constants.PALADIN_TYPE,
+  uprev=True,
+  overlays='public',
+  prebuilts=True,
+  manifest_version=True,
+)
+
 internal = _config(
   overlays='both',
   git_url=constants.MANIFEST_INT_URL,
@@ -394,6 +414,25 @@ pfq.add_config('amd64-corei7-bin',
   amd64,
   board='amd64-corei7',
   description='amd64-corei7 PFQ',
+)
+
+paladin.add_config('x86-generic-paladin',
+  board='x86-generic',
+  master=True,
+  paladin_builder_name='x86 generic paladin',
+  push_overlays='public',
+)
+
+paladin.add_config('arm-tegra2-paladin',
+  arm,
+  board='tegra2',
+  paladin_builder_name='tegra2 paladin',
+)
+
+paladin.add_config('amd64-corei7-paladin',
+  amd64,
+  board='amd64-corei7',
+  paladin_builder_name='amd64 corei7 paladin',
 )
 
 commit_queue.add_config('x86-generic-commit-queue',
@@ -553,7 +592,7 @@ _config.add_raw_config('x86-generic-asan',
 internal_pfq = internal.derive(pfq)
 
 x86_internal_pfq = internal_pfq.derive(
-  master = True,
+  master=True,
   push_overlays='both',
   overlays='both',
   description=None,

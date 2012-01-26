@@ -13,6 +13,7 @@ import re
 import time
 from xml.dom import minidom
 
+from chromite.buildbot import cbuildbot_config
 from chromite.buildbot import constants
 from chromite.buildbot import manifest_version
 from chromite.lib import cros_build_lib as cros_lib
@@ -150,12 +151,14 @@ class LKGMManager(manifest_version.BuildSpecsManager):
 
     self.compare_versions_fn = _LKGMCandidateInfo.VersionCompare
     self.build_type = build_type
+    # Chrome PFQ and PFQ's exist at the same time and version separately so they
+    # must have separate subdirs in the manifest-versions repository.
     if self.build_type == constants.CHROME_PFQ_TYPE:
       self.rel_working_dir = self.CHROME_PFQ_SUBDIR
-    elif self.build_type == constants.COMMIT_QUEUE_TYPE:
+    elif cbuildbot_config.IsCQType(self.build_type):
       self.rel_working_dir = self.COMMIT_QUEUE_SUBDIR
     else:
-      assert self.build_type, constants.PFQ_TYPE
+      assert cbuildbot_config.IsPFQType(self.build_type)
       self.rel_working_dir = self.LKGM_SUBDIR
 
   def _RunLambdaWithTimeout(self, function_to_run, use_long_timeout=False):
@@ -200,7 +203,7 @@ class LKGMManager(manifest_version.BuildSpecsManager):
       manifest_dom.writexml(manifest_file)
 
   def CreateNewCandidate(self, validation_pool=None, retries=3):
-    """Returns a path to the next manifest to build.
+    """Creates, syncs to, and returns the next candidate manifest.
 
       Args:
         validation_pool: Validation pool to apply to the manifest before
@@ -210,10 +213,14 @@ class LKGMManager(manifest_version.BuildSpecsManager):
         GenerateBuildSpecException in case of failure to generate a buildspec
     """
     self.CheckoutSourceCode()
+    self._GenerateBlameListSinceLKGM()
     new_manifest = self.CreateManifest()
     # For the Commit Queue, apply the validation pool as part of checkout.
     if validation_pool:
-      if not validation_pool.ApplyPoolIntoRepo(self.cros_source.directory):
+      # If we have nothing that could apply from the validation pool and
+      # we're not also a pfq type, we got nothing to do.
+      if (not validation_pool.ApplyPoolIntoRepo(self.cros_source.directory) and
+          not cbuildbot_config.IsPFQType(self.build_type)):
         return None
 
       self._AddPatchesToManifest(new_manifest, validation_pool.changes)
@@ -225,8 +232,10 @@ class LKGMManager(manifest_version.BuildSpecsManager):
         # Refresh manifest logic from manifest_versions repository.
         self.RefreshManifestCheckout()
         self.InitializeManifestVariables(version_info)
-        # For non-cq, we only care that the manifest is new.
-        if not validation_pool and self.HasCheckoutBeenBuilt():
+        # If we don't have any valid changes to test, make sure the checkout
+        # is at least different.
+        if ((not validation_pool or not validation_pool.changes) and
+            self.HasCheckoutBeenBuilt()):
           return None
 
         # Check whether the latest spec available in manifest-versions is
@@ -253,7 +262,7 @@ class LKGMManager(manifest_version.BuildSpecsManager):
       raise manifest_version.GenerateBuildSpecException(last_error)
 
   def GetLatestCandidate(self, retries=5):
-    """Gets the version number of the next build spec to build.
+    """Gets and syncs to the next candiate manifest.
       Args:
         retries: Number of retries for updating the status
       Returns:
@@ -289,7 +298,12 @@ class LKGMManager(manifest_version.BuildSpecsManager):
           self.SetInFlight(version_to_build)
           self.PushSpecChanges(commit_message)
           self.current_version = version_to_build
-          return self.GetLocalManifest(version_to_build)
+
+          # Actually perform the sync.
+          manifest = self.GetLocalManifest(version_to_build)
+          self.cros_source.Sync(manifest)
+          self._GenerateBlameListSinceLKGM()
+          return manifest
         except (cros_lib.RunCommandError,
                 manifest_version.GitCommandException) as e:
           err_msg = 'Failed to set LKGM Candidate inflight. error: %s' % e
@@ -369,16 +383,30 @@ class LKGMManager(manifest_version.BuildSpecsManager):
     else:
       raise PromoteCandidateException(last_error)
 
-  def GenerateBlameListSinceLKGM(self):
+  def _ShouldGenerateBlameListSinceLKGM(self):
+    """Returns True if we should generate the blamelist."""
+    # We want to generate the blamelist only for valid pfq types and if we are
+    # building on the master branch i.e. revving the build number.
+    return (self.incr_type == 'build' and
+            cbuildbot_config.IsPFQType(self.build_type) and
+            self.build_type != constants.CHROME_PFQ_TYPE)
+
+  def _GenerateBlameListSinceLKGM(self):
     """Prints out links to all CL's that have been committed since LKGM.
 
     Add buildbot trappings to print <a href='url'>text</a> in the waterfall for
     each CL committed since we last had a passing build.
     """
+    if not self._ShouldGenerateBlameListSinceLKGM():
+      logging.info('Not generating blamelist for lkgm as it is not appropriate '
+                   'for this build type.')
+      return
+
     handler = cros_lib.ManifestHandler.ParseManifest(
         self.GetAbsolutePathToLKGM())
     reviewed_on_re = re.compile('\s*Reviewed-on:\s*(\S+)')
     author_re = re.compile('\s*Author:.*<(\S+)@\S+>\s*')
+    committer_re = re.compile('\s*Commit:.*<(\S+)@\S+>\s*')
     for project in handler.projects.keys():
       rel_src_path = handler.projects[project].get('path')
 
@@ -386,25 +414,33 @@ class LKGMManager(manifest_version.BuildSpecsManager):
       if not rel_src_path:
         continue
 
-      src_path = self.cros_source.GetRelativePath(rel_src_path)
-
       # Additional case in case the repo has been removed from the manifest.
+      src_path = self.cros_source.GetRelativePath(rel_src_path)
       if not os.path.exists(src_path):
         cros_lib.Info('Detected repo removed from manifest %s' % project)
         continue
 
       revision = handler.projects[project]['revision']
-      result = cros_lib.RunCommand(['git', 'log', '%s..HEAD' % revision],
+      result = cros_lib.RunCommand(['git', 'log', '--pretty=full',
+                                    '%s..HEAD' % revision],
                                    print_cmd=False, redirect_stdout=True,
                                    cwd=src_path)
       current_author = None
+      current_committer = None
       for line in result.output.splitlines():
         author_match = author_re.match(line)
         if author_match:
           current_author = author_match.group(1)
 
+        committer_match = committer_re.match(line)
+        if committer_match:
+          current_committer = committer_match.group(1)
+
         review_match = reviewed_on_re.match(line)
         if review_match:
           review = review_match.group(1)
           _, _, change_number = review.rpartition('/')
-          PrintLink('%s:%s' % (current_author, change_number), review)
+          if current_committer == 'chrome-bot':
+            PrintLink('%s:%s' % (current_author, change_number), review)
+          else:
+            PrintLink('CHUMP %s:%s' % (current_author, change_number), review)
