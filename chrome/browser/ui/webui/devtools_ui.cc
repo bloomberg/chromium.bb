@@ -15,9 +15,9 @@
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/devtools_client_host.h"
+#include "content/public/browser/devtools_http_handler.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
-#include "grit/devtools_resources_map.h"
 #include "ui/base/resource/resource_bundle.h"
 
 using content::BrowserThread;
@@ -56,13 +56,9 @@ void DevToolsDataSource::StartDataRequest(const std::string& path,
                                           int request_id) {
   std::string filename = PathWithoutParams(path);
 
-  int resource_id = -1;
-  for (size_t i = 0; i < kDevtoolsResourcesSize; ++i) {
-    if (filename == kDevtoolsResources[i].name) {
-      resource_id = kDevtoolsResources[i].value;
-      break;
-    }
-  }
+
+  int resource_id =
+      content::DevToolsHttpHandler::GetFrontendResourceId(filename);
 
   DLOG_IF(WARNING, -1 == resource_id) << "Unable to find dev tool resource: "
       << filename << ". If you compiled with debug_devtools=1, try running"

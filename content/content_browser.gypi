@@ -4,6 +4,7 @@
 
 {
   'dependencies': [
+    'browser/debugger/devtools_resources.gyp:devtools_resources',
     '../base/base.gyp:base_static',
     '../crypto/crypto.gyp:crypto',
     '../net/net.gyp:http_server',
@@ -676,6 +677,9 @@
     'browser/zygote_host_linux.cc',
     'browser/zygote_host_linux.h',
     'browser/zygote_main_linux.cc',
+    '<(SHARED_INTERMEDIATE_DIR)/webkit/grit/devtools_resources.h',
+    '<(SHARED_INTERMEDIATE_DIR)/webkit/grit/devtools_resources_map.cc',
+    '<(SHARED_INTERMEDIATE_DIR)/webkit/grit/devtools_resources_map.h',
   ],
   'conditions': [
     ['OS!="win" and OS!="mac" and OS!="linux"', {

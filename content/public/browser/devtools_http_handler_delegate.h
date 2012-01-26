@@ -32,6 +32,13 @@ class DevToolsHttpHandlerDelegate {
   // Should return URL request context for issuing requests against devtools
   // webui or NULL if no context is available. Called on the IO thread.
   virtual net::URLRequestContext* GetURLRequestContext() = 0;
+
+  // Returns true if and only if frontend resources are bundled.
+  virtual bool BundlesFrontendResources() = 0;
+
+  // Returns URL that front-end files are available at, empty string if
+  // no internal server is available.
+  virtual std::string GetFrontendResourcesBaseURL() = 0;
 };
 
 }  // namespace content

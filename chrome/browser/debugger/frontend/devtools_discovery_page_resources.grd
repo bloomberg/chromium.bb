@@ -1,21 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <grit current_release="1" latest_public_release="0">
   <outputs>
-    <output filename="grit/devtools_frontend_resources.h"
+    <output filename="grit/devtools_discovery_page_resources.h"
             type="rc_header">
       <emit emit_type="prepend"/>
     </output>
-    <output filename="grit/devtools_frontend_resources_map.cc"
+    <output filename="grit/devtools_discovery_page_resources_map.cc"
             type="resource_file_map_source"/>
-    <output filename="grit/devtools_frontend_resources_map.h"
+    <output filename="grit/devtools_discovery_page_resources_map.h"
             type="resource_map_header"/>
-    <output filename="devtools_frontend_resources.pak"
+    <output filename="devtools_discovery_page_resources.pak"
             type="data_package"/>
   </outputs>
   <release seq="1">
     <includes>
-      <include file="devtools_frontend.html"
-               name="IDR_DEVTOOLS_FRONTEND_HTML"
+      <include file="devtools_discovery_page.html"
+               name="IDR_DEVTOOLS_DISCOVERY_PAGE_HTML"
                type="BINDATA"/></includes>
   </release>
 </grit>
