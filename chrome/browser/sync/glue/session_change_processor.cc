@@ -20,6 +20,7 @@
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/navigation_controller.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
@@ -32,6 +33,10 @@ using content::WebContents;
 namespace browser_sync {
 
 namespace {
+
+// The URL at which the set of synced tabs is displayed. We treat it differently
+// from all other URL's as accessing it triggers a sync refresh of Sessions.
+static const char kNTPOpenTabSyncURL[] = "chrome://newtab/#opentabs";
 
 // Extract the source SyncedTabDelegate from a NotificationSource originating
 // from a NavigationController, if it exists. Returns |NULL| otherwise.
@@ -184,6 +189,25 @@ void SessionChangeProcessor::Observe(
       LOG(ERROR) << "Received unexpected notification of type "
                   << type;
       break;
+  }
+
+  // Check if this tab should trigger a session sync refresh. By virtue of
+  // it being a modified tab, we know the tab is active (so we won't do
+  // refreshes just because the refresh page is open in a background tab).
+  if (!modified_tabs.empty()) {
+    SyncedTabDelegate* tab = modified_tabs.front();
+    const content::NavigationEntry* entry = tab->GetActiveEntry();
+    if (!tab->IsBeingDestroyed() &&
+        entry &&
+        entry->GetVirtualURL().is_valid() &&
+        entry->GetVirtualURL().spec() == kNTPOpenTabSyncURL) {
+      DVLOG(1) << "Triggering sync refresh for sessions datatype.";
+      const syncable::ModelType type = syncable::SESSIONS;
+      content::NotificationService::current()->Notify(
+          chrome::NOTIFICATION_SYNC_REFRESH,
+          content::Source<Profile>(profile_),
+          content::Details<const syncable::ModelType>(&type));
+    }
   }
 
   // Associate tabs first so the synced session tracker is aware of them.

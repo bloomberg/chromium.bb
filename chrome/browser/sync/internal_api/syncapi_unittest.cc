@@ -1253,6 +1253,7 @@ TEST_F(SyncManagerTest, OnIncomingNotification) {
   DictionaryValue expected_details;
   {
     ListValue* model_type_list = new ListValue();
+    expected_details.SetString("source", "REMOTE_NOTIFICATION");
     expected_details.Set("changedTypes", model_type_list);
     for (syncable::ModelTypeSet::Iterator it = model_types.First();
          it.Good(); it.Inc()) {
@@ -1264,7 +1265,7 @@ TEST_F(SyncManagerTest, OnIncomingNotification) {
 
   EXPECT_CALL(event_handler,
               HandleJsEvent("onIncomingNotification",
-                           HasDetailsAsDictionary(expected_details)));
+                            HasDetailsAsDictionary(expected_details)));
 
   sync_manager_.TriggerOnIncomingNotificationForTest(empty_model_types);
   sync_manager_.TriggerOnIncomingNotificationForTest(model_types);

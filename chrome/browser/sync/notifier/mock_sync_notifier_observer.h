@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,8 +18,9 @@ class MockSyncNotifierObserver : public SyncNotifierObserver {
   MockSyncNotifierObserver();
   virtual ~MockSyncNotifierObserver();
 
-  MOCK_METHOD1(OnIncomingNotification,
-               void(const syncable::ModelTypePayloadMap&));
+  MOCK_METHOD2(OnIncomingNotification,
+               void(const syncable::ModelTypePayloadMap&,
+                    IncomingNotificationSource));
   MOCK_METHOD1(OnNotificationStateChange, void(bool));
   MOCK_METHOD1(StoreState, void(const std::string&));
 };

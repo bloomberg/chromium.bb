@@ -153,6 +153,12 @@ class SessionModelAssociator
   // found for that session.
   bool DisassociateForeignSession(const std::string& foreign_session_tag);
 
+  // Attempts to asynchronously refresh the sessions sync data. If new data is
+  // received, the FOREIGN_SESSIONS_UPDATED notification is sent. No
+  // notification will be sent otherwise. This method is not guaranteed to
+  // trigger a sync cycle.
+  void AttemptSessionsDataRefresh() const;
+
   // Sets |*local_session| to point to the associator's representation of the
   // local machine. Used primarily for testing.
   bool GetLocalSession(const SyncedSession* * local_session);
@@ -211,8 +217,7 @@ class SessionModelAssociator
                            WriteForeignSessionToNode);
   FRIEND_TEST_ALL_PREFIXES(ProfileSyncServiceSessionTest, TabNodePoolEmpty);
   FRIEND_TEST_ALL_PREFIXES(ProfileSyncServiceSessionTest, TabNodePoolNonEmpty);
-  FRIEND_TEST_ALL_PREFIXES(ProfileSyncServiceSessionTest,
-                           ValidTabs);
+  FRIEND_TEST_ALL_PREFIXES(ProfileSyncServiceSessionTest, ValidTabs);
   FRIEND_TEST_ALL_PREFIXES(SessionModelAssociatorTest, PopulateSessionHeader);
   FRIEND_TEST_ALL_PREFIXES(SessionModelAssociatorTest, PopulateSessionWindow);
   FRIEND_TEST_ALL_PREFIXES(SessionModelAssociatorTest, PopulateSessionTab);
@@ -448,6 +453,9 @@ class SessionModelAssociator
   // is made.
   bool waiting_for_change_;
   base::WeakPtrFactory<SessionModelAssociator> test_weak_factory_;
+
+  // Profile being synced.
+  const Profile* const profile_;
 
   DISALLOW_COPY_AND_ASSIGN(SessionModelAssociator);
 };

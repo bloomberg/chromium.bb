@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -56,7 +56,8 @@ class NonBlockingInvalidationNotifier
 
   // SyncNotifierObserver implementation.
   virtual void OnIncomingNotification(
-      const syncable::ModelTypePayloadMap& type_payloads) OVERRIDE;
+      const syncable::ModelTypePayloadMap& type_payloads,
+      IncomingNotificationSource source) OVERRIDE;
   virtual void OnNotificationStateChange(bool notifications_enabled) OVERRIDE;
   virtual void StoreState(const std::string& state) OVERRIDE;
 

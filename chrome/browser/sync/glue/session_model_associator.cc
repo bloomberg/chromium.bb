@@ -65,9 +65,11 @@ SessionModelAssociator::SessionModelAssociator(ProfileSyncService* sync_service)
       stale_session_threshold_days_(kDefaultStaleSessionThresholdDays),
       setup_for_test_(false),
       waiting_for_change_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(test_weak_factory_(this)) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(test_weak_factory_(this)),
+      profile_(sync_service->profile()) {
   DCHECK(CalledOnValidThread());
   DCHECK(sync_service_);
+  DCHECK(profile_);
 }
 
 SessionModelAssociator::SessionModelAssociator(ProfileSyncService* sync_service,
@@ -78,8 +80,11 @@ SessionModelAssociator::SessionModelAssociator(ProfileSyncService* sync_service,
       stale_session_threshold_days_(kDefaultStaleSessionThresholdDays),
       setup_for_test_(setup_for_test),
       waiting_for_change_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(test_weak_factory_(this)) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(test_weak_factory_(this)),
+      profile_(sync_service->profile()) {
   DCHECK(CalledOnValidThread());
+  DCHECK(sync_service_);
+  DCHECK(profile_);
 }
 
 SessionModelAssociator::~SessionModelAssociator() {
@@ -951,6 +956,15 @@ void SessionModelAssociator::TabNodePool::FreeTabNode(int64 sync_id) {
   // Pool size should always match # of free tab nodes.
   DCHECK_LT(tab_pool_fp_, static_cast<int64>(tab_syncid_pool_.size()));
   tab_syncid_pool_[static_cast<size_t>(++tab_pool_fp_)] = sync_id;
+}
+
+void SessionModelAssociator::AttemptSessionsDataRefresh() const {
+  DVLOG(1) << "Triggering sync refresh for sessions datatype.";
+  const syncable::ModelType type = syncable::SESSIONS;
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_SYNC_REFRESH,
+      content::Source<Profile>(profile_),
+      content::Details<const syncable::ModelType>(&type));
 }
 
 bool SessionModelAssociator::GetLocalSession(

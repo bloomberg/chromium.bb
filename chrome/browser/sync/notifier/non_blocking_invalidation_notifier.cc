@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -37,7 +37,8 @@ class NonBlockingInvalidationNotifier::Core
 
   // SyncNotifierObserver implementation (all called on I/O thread).
   virtual void OnIncomingNotification(
-      const syncable::ModelTypePayloadMap& type_payloads);
+      const syncable::ModelTypePayloadMap& type_payloads,
+      IncomingNotificationSource source);
   virtual void OnNotificationStateChange(bool notifications_enabled);
   virtual void StoreState(const std::string& state);
 
@@ -119,11 +120,13 @@ void NonBlockingInvalidationNotifier::Core::UpdateEnabledTypes(
 }
 
 void NonBlockingInvalidationNotifier::Core::OnIncomingNotification(
-        const syncable::ModelTypePayloadMap& type_payloads) {
+        const syncable::ModelTypePayloadMap& type_payloads,
+        IncomingNotificationSource source) {
   DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
   delegate_observer_.Call(FROM_HERE,
                           &SyncNotifierObserver::OnIncomingNotification,
-                          type_payloads);
+                          type_payloads,
+                          source);
 }
 
 void NonBlockingInvalidationNotifier::Core::OnNotificationStateChange(
@@ -241,10 +244,11 @@ void NonBlockingInvalidationNotifier::SendNotification(
 }
 
 void NonBlockingInvalidationNotifier::OnIncomingNotification(
-        const syncable::ModelTypePayloadMap& type_payloads) {
+        const syncable::ModelTypePayloadMap& type_payloads,
+        IncomingNotificationSource source) {
   DCHECK(parent_message_loop_proxy_->BelongsToCurrentThread());
   FOR_EACH_OBSERVER(SyncNotifierObserver, observers_,
-                    OnIncomingNotification(type_payloads));
+                    OnIncomingNotification(type_payloads, source));
 }
 
 void NonBlockingInvalidationNotifier::OnNotificationStateChange(

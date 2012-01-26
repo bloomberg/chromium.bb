@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -76,7 +76,9 @@ TEST_F(NonBlockingInvalidationNotifierTest, Basic) {
 
   EXPECT_CALL(mock_observer_, OnNotificationStateChange(true));
   EXPECT_CALL(mock_observer_, StoreState("new_fake_state"));
-  EXPECT_CALL(mock_observer_, OnIncomingNotification(type_payloads));
+  EXPECT_CALL(mock_observer_,
+              OnIncomingNotification(type_payloads,
+                                     REMOTE_NOTIFICATION));
   EXPECT_CALL(mock_observer_, OnNotificationStateChange(false));
 
   invalidation_notifier_->SetState("fake_state");
@@ -85,7 +87,8 @@ TEST_F(NonBlockingInvalidationNotifierTest, Basic) {
 
   invalidation_notifier_->OnNotificationStateChange(true);
   invalidation_notifier_->StoreState("new_fake_state");
-  invalidation_notifier_->OnIncomingNotification(type_payloads);
+  invalidation_notifier_->OnIncomingNotification(type_payloads,
+                                                 REMOTE_NOTIFICATION);
   invalidation_notifier_->OnNotificationStateChange(false);
 
   ui_loop_.RunAllPending();

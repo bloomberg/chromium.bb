@@ -95,6 +95,8 @@ typedef GoogleServiceAuthError AuthError;
 
 namespace {
 
+// Delays for syncer nudges.
+static const int kSyncRefreshDelayMsec = 500;
 static const int kSyncSchedulerDelayMsec = 250;
 
 #if defined(OS_CHROMEOS)
@@ -277,7 +279,8 @@ class SyncManager::SyncInternal
       bool notifications_enabled) OVERRIDE;
 
   virtual void OnIncomingNotification(
-      const syncable::ModelTypePayloadMap& type_payloads) OVERRIDE;
+      const syncable::ModelTypePayloadMap& type_payloads,
+      sync_notifier::IncomingNotificationSource source) OVERRIDE;
 
   virtual void StoreState(const std::string& cookie) OVERRIDE;
 
@@ -1716,10 +1719,11 @@ SyncManager::Status SyncManager::SyncInternal::GetStatus() {
 
 void SyncManager::SyncInternal::RequestNudge(
     const tracked_objects::Location& location) {
-  if (scheduler())
+  if (scheduler()) {
      scheduler()->ScheduleNudge(
         TimeDelta::FromMilliseconds(0), browser_sync::NUDGE_SOURCE_LOCAL,
         ModelTypeSet(), location);
+  }
 }
 
 TimeDelta SyncManager::SyncInternal::GetNudgeDelayTimeDelta(
@@ -2070,8 +2074,17 @@ void SyncManager::SyncInternal::UpdateNotificationInfo(
 }
 
 void SyncManager::SyncInternal::OnIncomingNotification(
-    const syncable::ModelTypePayloadMap& type_payloads) {
-  if (!type_payloads.empty()) {
+    const syncable::ModelTypePayloadMap& type_payloads,
+    sync_notifier::IncomingNotificationSource source) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  if (source == sync_notifier::LOCAL_NOTIFICATION) {
+    if (scheduler()) {
+      scheduler()->ScheduleNudgeWithPayloads(
+          TimeDelta::FromMilliseconds(kSyncRefreshDelayMsec),
+          browser_sync::NUDGE_SOURCE_LOCAL_REFRESH,
+          type_payloads, FROM_HERE);
+    }
+  } else if (!type_payloads.empty()) {
     if (scheduler()) {
       scheduler()->ScheduleNudgeWithPayloads(
           TimeDelta::FromMilliseconds(kSyncSchedulerDelayMsec),
@@ -2095,6 +2108,8 @@ void SyncManager::SyncInternal::OnIncomingNotification(
           syncable::ModelTypeToString(it->first);
       changed_types->Append(Value::CreateStringValue(model_type_str));
     }
+    details.SetString("source", (source == sync_notifier::LOCAL_NOTIFICATION) ?
+        "LOCAL_NOTIFICATION" : "REMOTE_NOTIFICATION");
     js_event_handler_.Call(FROM_HERE,
                            &JsEventHandler::HandleJsEvent,
                            "onIncomingNotification",
@@ -2214,7 +2229,8 @@ void SyncManager::TriggerOnIncomingNotificationForTest(
       syncable::ModelTypePayloadMapFromEnumSet(model_types,
           std::string());
 
-  data_->OnIncomingNotification(model_types_with_payloads);
+  data_->OnIncomingNotification(model_types_with_payloads,
+                                sync_notifier::REMOTE_NOTIFICATION);
 }
 
 // Helper function that converts a PassphraseRequiredReason value to a string.

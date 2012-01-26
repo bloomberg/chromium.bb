@@ -158,7 +158,8 @@ class ProfileSyncServiceSessionTest
   ProfileSyncServiceSessionTest()
       : io_thread_(BrowserThread::IO),
         window_bounds_(0, 1, 2, 3),
-        notified_of_update_(false) {}
+        notified_of_update_(false),
+        notified_of_refresh_(false) {}
   ProfileSyncService* sync_service() { return sync_service_.get(); }
 
   TestIdFactory* ids() { return sync_service_->id_factory(); }
@@ -172,6 +173,8 @@ class ProfileSyncServiceSessionTest
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     registrar_.Add(this, chrome::NOTIFICATION_FOREIGN_SESSION_UPDATED,
         content::NotificationService::AllSources());
+    registrar_.Add(this, chrome::NOTIFICATION_SYNC_REFRESH,
+        content::NotificationService::AllSources());
   }
 
   void Observe(int type,
@@ -180,6 +183,9 @@ class ProfileSyncServiceSessionTest
     switch (type) {
       case chrome::NOTIFICATION_FOREIGN_SESSION_UPDATED:
         notified_of_update_ = true;
+        break;
+      case chrome::NOTIFICATION_SYNC_REFRESH:
+        notified_of_refresh_ = true;
         break;
       default:
         NOTREACHED();
@@ -253,6 +259,7 @@ class ProfileSyncServiceSessionTest
   scoped_ptr<TestProfileSyncService> sync_service_;
   const gfx::Rect window_bounds_;
   bool notified_of_update_;
+  bool notified_of_refresh_;
   content::NotificationRegistrar registrar_;
 };
 
@@ -897,6 +904,49 @@ TEST_F(ProfileSyncServiceSessionTest, StaleSessionRefresh) {
   std::vector<std::vector<SessionID::id_type> > session_reference;
   session_reference.push_back(tab_list1);
   VerifySyncedSession(tag, session_reference, *(foreign_sessions[0]));
+}
+
+// Test that tabs with nothing but "chrome://*" and "file://*" navigations are
+// not be synced.
+TEST_F(ProfileSyncServiceSessionTest, ValidTabs) {
+  CreateRootHelper create_root(this);
+  ASSERT_TRUE(StartSyncService(create_root.callback(), false));
+  ASSERT_TRUE(create_root.success());
+
+  AddTab(browser(), GURL("chrome://bla1/"));
+  NavigateAndCommitActiveTab(GURL("chrome://bla2"));
+  AddTab(browser(), GURL("file://bla3/"));
+  AddTab(browser(), GURL("bla://bla"));
+  // Note: chrome://newtab has special handling which crashes in unit tests.
+
+  // Get the tabs for this machine. Only the bla:// url should be synced.
+  SessionModelAssociator::TabLinksMap tab_map = model_associator_->tab_map_;
+  ASSERT_EQ(1U, tab_map.size());
+  SessionModelAssociator::TabLinksMap::iterator iter = tab_map.begin();
+  ASSERT_EQ(1, iter->second.tab()->GetEntryCount());
+  ASSERT_EQ(GURL("bla://bla"), iter->second.tab()->
+      GetEntryAtIndex(0)->GetVirtualURL());
+}
+
+// Verify that AttemptSessionsDataRefresh triggers the NOTIFICATION_SYNC_REFRESH
+// notification.
+// TODO(zea): Once we can have unit tests that are able to open to the NTP,
+// test that the NTP/#opentabs URL triggers a refresh as well (but only when
+// it is the active tab).
+TEST_F(ProfileSyncServiceSessionTest, SessionsRefresh) {
+  CreateRootHelper create_root(this);
+  ASSERT_TRUE(StartSyncService(create_root.callback(), false));
+  ASSERT_TRUE(create_root.success());
+
+  // Empty, so returns false.
+  std::vector<const SyncedSession*> foreign_sessions;
+  ASSERT_FALSE(model_associator_->GetAllForeignSessions(&foreign_sessions));
+  ASSERT_FALSE(notified_of_refresh_);
+  model_associator_->AttemptSessionsDataRefresh();
+  ASSERT_TRUE(notified_of_refresh_);
+
+  // Nothing should have changed since we don't have unapplied data.
+  ASSERT_FALSE(model_associator_->GetAllForeignSessions(&foreign_sessions));
 }
 
 }  // namespace browser_sync

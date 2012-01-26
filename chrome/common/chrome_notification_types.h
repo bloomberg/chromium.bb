@@ -698,6 +698,10 @@ enum NotificationType {
   // The sync service is finished the configuration process.
   NOTIFICATION_SYNC_CONFIGURE_DONE,
 
+  // A service is requesting a sync datatype refresh for the current profile.
+  // The details value is a const syncable::ModelType.
+  NOTIFICATION_SYNC_REFRESH,
+
   // The session service has been saved.  This notification type is only sent
   // if there were new SessionService commands to save, and not for no-op save
   // operations.

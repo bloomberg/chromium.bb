@@ -11,7 +11,13 @@
 #include "chrome/browser/sync/glue/session_model_associator.h"
 #include "chrome/browser/sync/glue/synced_tab_delegate.h"
 #include "chrome/browser/sync/protocol/session_specifics.pb.h"
+#include "chrome/browser/sync/profile_sync_service_mock.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/test/base/profile_mock.h"
+#include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/notification_service.h"
+#include "content/public/browser/notification_details.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/common/page_transition_types.h"
 #include "content/test/test_browser_thread.h"
@@ -24,7 +30,25 @@ using testing::Return;
 
 namespace browser_sync {
 
-typedef testing::Test SessionModelAssociatorTest;
+class SessionModelAssociatorTest : public testing::Test {
+ public:
+  SessionModelAssociatorTest()
+      : ui_thread_(BrowserThread::UI, &message_loop_),
+        sync_service_(&profile_) {}
+  virtual void SetUp() OVERRIDE {
+    model_associator_.reset(new SessionModelAssociator(&sync_service_, true));
+  }
+  virtual void TearDown() OVERRIDE {
+    model_associator_.reset();
+  }
+
+ protected:
+  MessageLoopForUI message_loop_;
+  content::TestBrowserThread ui_thread_;
+  NiceMock<ProfileMock> profile_;
+  NiceMock<ProfileSyncServiceMock> sync_service_;
+  scoped_ptr<SessionModelAssociator> model_associator_;
+};
 
 TEST_F(SessionModelAssociatorTest, SessionWindowHasNoTabsToSync) {
   SessionWindow win;
@@ -208,13 +232,43 @@ class SyncedTabDelegateMock : public SyncedTabDelegate {
   MOCK_CONST_METHOD0(GetActiveEntry, content::NavigationEntry*());
 };
 
+class SyncRefreshListener : public content::NotificationObserver {
+ public:
+  SyncRefreshListener() : notified_of_refresh_(false) {
+    registrar_.Add(this, chrome::NOTIFICATION_SYNC_REFRESH,
+        content::NotificationService::AllSources());
+  }
+
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) {
+    if (type == chrome::NOTIFICATION_SYNC_REFRESH) {
+      notified_of_refresh_ = true;
+    }
+  }
+
+  bool notified_of_refresh() const { return notified_of_refresh_; }
+
+ private:
+  bool notified_of_refresh_;
+  content::NotificationRegistrar registrar_;
+};
+
 }  // namespace.
 
-TEST_F(SessionModelAssociatorTest, ValidTabs) {
-  MessageLoopForUI message_loop;
-  content::TestBrowserThread ui_thread(BrowserThread::UI, &message_loop);
-  SessionModelAssociator model_associator(NULL, true);
+// Test that AttemptSessionsDataRefresh() triggers the NOTIFICATION_SYNC_REFRESH
+// notification.
+TEST_F(SessionModelAssociatorTest, TriggerSessionRefresh) {
+  SyncRefreshListener refresh_listener;
 
+  EXPECT_FALSE(refresh_listener.notified_of_refresh());
+  model_associator_->AttemptSessionsDataRefresh();
+  EXPECT_TRUE(refresh_listener.notified_of_refresh());
+}
+
+// Test that we exclude tabs with only chrome:// and file:// schemed navigations
+// from ShouldSyncTab(..).
+TEST_F(SessionModelAssociatorTest, ValidTabs) {
   NiceMock<SyncedTabDelegateMock> tab_mock;
 
   // A null entry shouldn't crash.
@@ -223,7 +277,7 @@ TEST_F(SessionModelAssociatorTest, ValidTabs) {
       Return((content::NavigationEntry *)NULL));
   EXPECT_CALL(tab_mock, GetEntryCount()).WillRepeatedly(Return(1));
   EXPECT_CALL(tab_mock, GetPendingEntryIndex()).WillRepeatedly(Return(-1));
-  EXPECT_FALSE(model_associator.ShouldSyncTab(tab_mock));
+  EXPECT_FALSE(model_associator_->ShouldSyncTab(tab_mock));
 
   // A chrome:// entry isn't valid.
   scoped_ptr<content::NavigationEntry> entry(
@@ -234,7 +288,7 @@ TEST_F(SessionModelAssociatorTest, ValidTabs) {
   EXPECT_CALL(tab_mock, GetEntryAtIndex(0)).WillRepeatedly(Return(entry.get()));
   EXPECT_CALL(tab_mock, GetEntryCount()).WillRepeatedly(Return(1));
   EXPECT_CALL(tab_mock, GetPendingEntryIndex()).WillRepeatedly(Return(-1));
-  EXPECT_FALSE(model_associator.ShouldSyncTab(tab_mock));
+  EXPECT_FALSE(model_associator_->ShouldSyncTab(tab_mock));
 
   // A file:// entry isn't valid, even in addition to another entry.
   scoped_ptr<content::NavigationEntry> entry2(
@@ -247,7 +301,7 @@ TEST_F(SessionModelAssociatorTest, ValidTabs) {
       Return(entry2.get()));
   EXPECT_CALL(tab_mock, GetEntryCount()).WillRepeatedly(Return(2));
   EXPECT_CALL(tab_mock, GetPendingEntryIndex()).WillRepeatedly(Return(-1));
-  EXPECT_FALSE(model_associator.ShouldSyncTab(tab_mock));
+  EXPECT_FALSE(model_associator_->ShouldSyncTab(tab_mock));
 
   // Add a valid scheme entry to tab, making the tab valid.
   scoped_ptr<content::NavigationEntry> entry3(
@@ -263,7 +317,7 @@ TEST_F(SessionModelAssociatorTest, ValidTabs) {
       Return(entry3.get()));
   EXPECT_CALL(tab_mock, GetEntryCount()).WillRepeatedly(Return(3));
   EXPECT_CALL(tab_mock, GetPendingEntryIndex()).WillRepeatedly(Return(-1));
-  EXPECT_TRUE(model_associator.ShouldSyncTab(tab_mock));
+  EXPECT_TRUE(model_associator_->ShouldSyncTab(tab_mock));
 }
 
 }  // namespace browser_sync

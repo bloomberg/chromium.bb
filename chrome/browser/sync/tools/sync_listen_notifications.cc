@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -39,10 +39,13 @@ class NotificationPrinter : public sync_notifier::SyncNotifierObserver {
   virtual ~NotificationPrinter() {}
 
   virtual void OnIncomingNotification(
-      const syncable::ModelTypePayloadMap& type_payloads) OVERRIDE {
+      const syncable::ModelTypePayloadMap& type_payloads,
+      sync_notifier::IncomingNotificationSource source) OVERRIDE {
     for (syncable::ModelTypePayloadMap::const_iterator it =
              type_payloads.begin(); it != type_payloads.end(); ++it) {
-      LOG(INFO) << "Notification: type = "
+      LOG(INFO) << (source == sync_notifier::REMOTE_NOTIFICATION ?
+                    "Remote" : "Local")
+                << " Notification: type = "
                 << syncable::ModelTypeToString(it->first)
                 << ", payload = " << it->second;
     }

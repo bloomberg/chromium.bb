@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -163,7 +163,8 @@ TEST_F(P2PNotifierTest, NotificationsBasic) {
 
   EXPECT_CALL(mock_observer_, OnNotificationStateChange(true));
   EXPECT_CALL(mock_observer_,
-              OnIncomingNotification(MakePayloadMap(enabled_types)));
+              OnIncomingNotification(MakePayloadMap(enabled_types),
+                                     REMOTE_NOTIFICATION));
 
   p2p_notifier_->SetUniqueId("sender");
   p2p_notifier_->UpdateCredentials("foo@bar.com", "fake_token");
@@ -189,7 +190,8 @@ TEST_F(P2PNotifierTest, SendNotificationData) {
 
   EXPECT_CALL(mock_observer_, OnNotificationStateChange(true));
   EXPECT_CALL(mock_observer_,
-              OnIncomingNotification(MakePayloadMap(enabled_types)));
+              OnIncomingNotification(MakePayloadMap(enabled_types),
+                                     REMOTE_NOTIFICATION));
 
   p2p_notifier_->SetUniqueId("sender");
   p2p_notifier_->UpdateCredentials("foo@bar.com", "fake_token");
@@ -201,7 +203,8 @@ TEST_F(P2PNotifierTest, SendNotificationData) {
 
   // Should be propagated.
   Mock::VerifyAndClearExpectations(&mock_observer_);
-  EXPECT_CALL(mock_observer_, OnIncomingNotification(changed_payload_map));
+  EXPECT_CALL(mock_observer_, OnIncomingNotification(changed_payload_map,
+                                                     REMOTE_NOTIFICATION));
   p2p_notifier_->SendNotificationDataForTest(
       P2PNotificationData("sender", NOTIFY_SELF, changed_types));
 
@@ -221,7 +224,8 @@ TEST_F(P2PNotifierTest, SendNotificationData) {
 
   // Should be propagated.
   Mock::VerifyAndClearExpectations(&mock_observer_);
-  EXPECT_CALL(mock_observer_, OnIncomingNotification(changed_payload_map));
+  EXPECT_CALL(mock_observer_, OnIncomingNotification(changed_payload_map,
+                                                     REMOTE_NOTIFICATION));
   p2p_notifier_->SendNotificationDataForTest(
       P2PNotificationData("sender2", NOTIFY_OTHERS, changed_types));
 
@@ -232,13 +236,15 @@ TEST_F(P2PNotifierTest, SendNotificationData) {
 
   // Should be propagated.
   Mock::VerifyAndClearExpectations(&mock_observer_);
-  EXPECT_CALL(mock_observer_, OnIncomingNotification(changed_payload_map));
+  EXPECT_CALL(mock_observer_, OnIncomingNotification(changed_payload_map,
+                                                     REMOTE_NOTIFICATION));
   p2p_notifier_->SendNotificationDataForTest(
       P2PNotificationData("sender", NOTIFY_ALL, changed_types));
 
   // Should be propagated.
   Mock::VerifyAndClearExpectations(&mock_observer_);
-  EXPECT_CALL(mock_observer_, OnIncomingNotification(changed_payload_map));
+  EXPECT_CALL(mock_observer_, OnIncomingNotification(changed_payload_map,
+                                                     REMOTE_NOTIFICATION));
   p2p_notifier_->SendNotificationDataForTest(
       P2PNotificationData("sender2", NOTIFY_ALL, changed_types));
 

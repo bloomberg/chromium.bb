@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -71,7 +71,7 @@ const char* GetPageTransitionQualifierString(
 const char* GetUpdatesSourceString(
     sync_pb::GetUpdatesCallerInfo::GetUpdatesSource updates_source) {
   ASSERT_ENUM_BOUNDS(sync_pb::GetUpdatesCallerInfo, GetUpdatesSource,
-                     UNKNOWN, RECONFIGURATION);
+                     UNKNOWN, DATATYPE_REFRESH);
   switch (updates_source) {
     ENUM_CASE(sync_pb::GetUpdatesCallerInfo, UNKNOWN);
     ENUM_CASE(sync_pb::GetUpdatesCallerInfo, FIRST_UPDATE);
@@ -84,6 +84,7 @@ const char* GetUpdatesSourceString(
     ENUM_CASE(sync_pb::GetUpdatesCallerInfo, MIGRATION);
     ENUM_CASE(sync_pb::GetUpdatesCallerInfo, NEW_CLIENT);
     ENUM_CASE(sync_pb::GetUpdatesCallerInfo, RECONFIGURATION);
+    ENUM_CASE(sync_pb::GetUpdatesCallerInfo, DATATYPE_REFRESH);
   }
   NOTREACHED();
   return "";

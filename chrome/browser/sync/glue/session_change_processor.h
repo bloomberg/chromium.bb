@@ -31,6 +31,7 @@ class SessionChangeProcessor : public ChangeProcessor,
   SessionChangeProcessor(
       UnrecoverableErrorHandler* error_handler,
       SessionModelAssociator* session_model_associator);
+  // For testing only.
   SessionChangeProcessor(
       UnrecoverableErrorHandler* error_handler,
       SessionModelAssociator* session_model_associator,
@@ -56,12 +57,14 @@ class SessionChangeProcessor : public ChangeProcessor,
 
  private:
   friend class ScopedStopObserving<SessionChangeProcessor>;
+
   void StartObserving();
   void StopObserving();
+
   SessionModelAssociator* session_model_associator_;
   content::NotificationRegistrar notification_registrar_;
 
-  // Owner of the SessionService.  Non-NULL iff |running()| is true.
+  // Profile being synced. Non-null if |running()| is true.
   Profile* profile_;
 
   // To bypass some checks/codepaths not applicable in tests.

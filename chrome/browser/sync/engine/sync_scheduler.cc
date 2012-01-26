@@ -133,6 +133,8 @@ GetUpdatesCallerInfo::GetUpdatesSource GetUpdatesFromNudgeSource(
       return GetUpdatesCallerInfo::LOCAL;
     case NUDGE_SOURCE_CONTINUATION:
       return GetUpdatesCallerInfo::SYNC_CYCLE_CONTINUATION;
+    case NUDGE_SOURCE_LOCAL_REFRESH:
+      return GetUpdatesCallerInfo::DATATYPE_REFRESH;
     case NUDGE_SOURCE_UNKNOWN:
       return GetUpdatesCallerInfo::UNKNOWN;
     default:
@@ -584,6 +586,8 @@ void SyncScheduler::ScheduleNudgeImpl(
     pending_nudge_.reset();
   }
 
+  // TODO(zea): Consider adding separate throttling/backoff for datatype
+  // refresh requests.
   ScheduleSyncSessionJob(job);
 }
 

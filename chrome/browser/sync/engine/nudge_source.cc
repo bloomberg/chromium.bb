@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,6 +16,7 @@ const char* GetNudgeSourceString(NudgeSource nudge_source) {
     ENUM_CASE(NUDGE_SOURCE_NOTIFICATION);
     ENUM_CASE(NUDGE_SOURCE_LOCAL);
     ENUM_CASE(NUDGE_SOURCE_CONTINUATION);
+    ENUM_CASE(NUDGE_SOURCE_LOCAL_REFRESH);
   };
   NOTREACHED();
   return "";

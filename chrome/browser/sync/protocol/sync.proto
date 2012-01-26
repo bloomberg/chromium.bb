@@ -304,6 +304,9 @@ message GetUpdatesCallerInfo {
                            // confused with FIRST_UPDATE.
     RECONFIGURATION = 10;  // The client is in configuration mode because the
                            // user opted to sync a different set of datatypes.
+    DATATYPE_REFRESH = 11;    // A datatype has requested a refresh. This is
+                              // typically used when datatype's have custom
+                              // sync UI, e.g. sessions.
   }
 
   required GetUpdatesSource source = 1;
