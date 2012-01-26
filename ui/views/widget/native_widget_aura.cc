@@ -448,9 +448,9 @@ void NativeWidgetAura::ShowWithWindowState(ui::WindowShowState state) {
     window_->SetIntProperty(aura::client::kShowStateKey, state);
   }
   window_->Show();
-  if (can_activate_ && (state != ui::SHOW_STATE_INACTIVE ||
-                        !GetWidget()->SetInitialFocus())) {
+  if (can_activate_ && state != ui::SHOW_STATE_INACTIVE) {
     Activate();
+    GetWidget()->SetInitialFocus();
   }
 }
 
