@@ -743,6 +743,13 @@ UNINITIALIZED READ
 name=http://code.google.com/p/drmemory/issues/detail?id=493
 USP10.dll!ScriptPositionSingleGlyph
 
+# Unhandled syscall false pos.  This generates thousands of reports on
+# net_unittests, so we use a very broad suppression.
+UNINITIALIZED READ
+name=http://code.google.com/p/drmemory/issues/detail?id=765
+...
+*!ssl3_*
+
 ###############################################################
 # Benign issues in Chromium
 
