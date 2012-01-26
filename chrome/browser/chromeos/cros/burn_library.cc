@@ -5,34 +5,28 @@
 #include "chrome/browser/chromeos/cros/burn_library.h"
 
 #include "base/bind.h"
+#include "base/location.h"
+#include "base/memory/ref_counted_memory.h"
 #include "base/observer_list.h"
+#include "base/threading/worker_pool.h"
 #include "chrome/browser/chromeos/dbus/dbus_thread_manager.h"
 #include "chrome/browser/chromeos/dbus/image_burner_client.h"
 #include "chrome/browser/chromeos/disks/disk_mount_manager.h"
 #include "chrome/common/zip.h"
-#include "content/public/browser/browser_thread.h"
-
-using content::BrowserThread;
 
 namespace chromeos {
 
 namespace {
 
-// Unzips |source_zip_file| and calls |callback| with the filename of
-// the unzipped image.
-void UnzipImage(
-    const FilePath& source_zip_file,
-    const std::string& image_name,
-    base::Callback<void(const std::string& source_image_file)> callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-
-  std::string source_image_file;
+// Unzips |source_zip_file| and sets the filename of the unzipped image to
+// |source_image_file|.
+void UnzipImage(const FilePath& source_zip_file,
+                const std::string& image_name,
+                scoped_refptr<base::RefCountedString> source_image_file) {
   if (zip::Unzip(source_zip_file, source_zip_file.DirName())) {
-    source_image_file =
+    source_image_file->data() =
         source_zip_file.DirName().Append(image_name).value();
   }
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE, base::Bind(callback, source_image_file));
 }
 
 class BurnLibraryImpl : public BurnLibrary {
@@ -49,7 +43,7 @@ class BurnLibraryImpl : public BurnLibrary {
                       const FilePath& target_device_path) OVERRIDE;
   virtual void CancelBurnImage() OVERRIDE;
 
-  void OnImageUnzipped(const std::string& source_image_file);
+  void OnImageUnzipped(scoped_refptr<base::RefCountedString> source_image_file);
 
  private:
   void Init();
@@ -138,19 +132,20 @@ void BurnLibraryImpl::DoBurn(const FilePath& source_path,
   cancelled_ = false;
   UpdateBurnStatus(ImageBurnStatus(), UNZIP_STARTED);
 
-  BrowserThread::PostTask(
-      BrowserThread::FILE,
+  const bool task_is_slow = true;
+  scoped_refptr<base::RefCountedString> result(new base::RefCountedString);
+  base::WorkerPool::PostTaskAndReply(
       FROM_HERE,
-      base::Bind(UnzipImage,
-                 source_path,
-                 image_name,
-                 base::Bind(&BurnLibraryImpl::OnImageUnzipped,
-                            weak_ptr_factory_.GetWeakPtr())));
+      base::Bind(UnzipImage, source_path, image_name, result),
+      base::Bind(&BurnLibraryImpl::OnImageUnzipped,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 result),
+      task_is_slow);
 }
 
-void BurnLibraryImpl::OnImageUnzipped(const std::string& source_image_file) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  source_image_file_ = source_image_file;
+void BurnLibraryImpl::OnImageUnzipped(
+    scoped_refptr<base::RefCountedString> source_image_file) {
+  source_image_file_ = source_image_file->data();
 
   bool success = !source_image_file_.empty();
   UpdateBurnStatus(ImageBurnStatus(), (success ? UNZIP_COMPLETE : UNZIP_FAIL));
@@ -208,8 +203,6 @@ void BurnLibraryImpl::BurnImage() {
 
 void BurnLibraryImpl::UpdateBurnStatus(const ImageBurnStatus& status,
                                        BurnEvent evt) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
   if (cancelled_)
     return;
 
