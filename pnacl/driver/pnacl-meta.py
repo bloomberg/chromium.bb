@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Copyright (c) 2012 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 #
@@ -11,16 +11,20 @@
 
 # Show the PNaCl metadata of a bitcode file
 
-from driver_tools import *
+import driver_tools
+import pathtools
 from driver_env import env
 from driver_log import Log, DriverExit
 
 EXTRA_ENV = {
+  # Raw (parsable) output
+  'RAW'      : '0',
   'INPUTS'   : '',
 }
 env.update(EXTRA_ENV)
 
 META_PATTERNS = [
+  ( '--raw',     "env.set('RAW', '1')"),
   ( '(.*)',      "env.append('INPUTS', pathtools.normalize($0))"),
 ]
 
@@ -29,25 +33,38 @@ def Usage():
   print "Show the PNaCl-specific metadata of a bitcode file"
 
 def main(argv):
-  ParseArgs(argv, META_PATTERNS)
+  driver_tools.ParseArgs(argv, META_PATTERNS)
 
   inputs = env.get('INPUTS')
 
   if not inputs:
     Usage()
-    DriverExit(0)
+    DriverExit(1)
 
   for f in inputs:
-    if not IsBitcode(f):
+    if not driver_tools.IsBitcode(f):
       Log.Fatal("%s: File is not bitcode", pathtools.touser(f))
-    metadata = GetBitcodeMetadata(f)
+    metadata = driver_tools.GetBitcodeMetadata(f)
+    if env.getbool('RAW'):
+      DumpRaw(metadata)
+    else:
+      DumpPretty(f, metadata)
+  return 0
+
+def DumpPretty(f, metadata):
     print pathtools.touser(f) + ":"
     for k, v in metadata.iteritems():
       if isinstance(v, list):
         v = "[ " + ', '.join(v) + " ]"
       print "  %-12s: %s" % (k, v)
 
-  return 0
+def DumpRaw(metadata):
+  for k, v in metadata.iteritems():
+    if not isinstance(v, list):
+      print "%s: %s" % (k, v)
+    else:
+      for u in v:
+        print "%s: %s" % (k, u)
 
 if __name__ == "__main__":
-  DriverMain(main)
+  driver_tools.DriverMain(main)

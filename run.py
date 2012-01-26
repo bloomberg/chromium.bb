@@ -8,11 +8,9 @@ import platform
 import subprocess
 import sys
 
-
 class Environment:
   pass
 env = Environment()
-
 
 def Usage():
   name = sys.argv[0]
@@ -20,8 +18,11 @@ def Usage():
   info = '''
 %s [run_py_options] [sel_ldr_options] <nexe> [nexe_parameters]
 
+Run a command-line nexe (or pexe). Automatically handles translation,
+building sel_ldr, and building the IRT.
+
 run.py options:
-  -L<LIBRARY_PATH>       Add a library path for runnable-ld.so
+  -L<LIBRARY_PATH>       Additional library path for runnable-ld.so
   --paranoid             Remove -S (signals) and -a (file access)
                          from the default sel_ldr options.
 
@@ -44,11 +45,6 @@ run.py options:
   -arch <arch> | -m32 | -m64 | -marm
                          Specify architecture for PNaCl translation
                          (arch is one of: x86-32, x86-64 or arm)
-
-  --pnacl-glibc-dynamic  Translate a .pexe as dynamic against glibc
-  --pnacl-glibc-static   Translate a .pexe as static against glibc
-                         (These will be removed as soon as pnacl-translate
-                          can auto-detect .pexe type)
 '''
   print info % name
   print '-' * 80
@@ -67,14 +63,10 @@ def SetupEnvironment():
                                 env.scons_os + '_x86')
 
   # Path to PNaCl toolchain
-  env.pnacl_root_newlib = os.path.join(env.nacl_root,
-                                       'toolchain',
-                                       'pnacl_%s_%s/newlib' % (GetBuildOS(),
-                                                               GetBuildArch()))
-  env.pnacl_root_glibc = os.path.join(env.nacl_root,
-                                     'toolchain',
-                                     'pnacl_%s_%s/glibc' % (GetBuildOS(),
-                                                            GetBuildArch()))
+  pnacl_label = 'pnacl_%s_%s' % (GetBuildOS(), GetBuildArch())
+  env.pnacl_base = os.path.join(env.nacl_root, 'toolchain', pnacl_label)
+  env.pnacl_root_newlib = os.path.join(env.pnacl_base, 'newlib')
+  env.pnacl_root_glibc = os.path.join(env.pnacl_base, 'glibc')
 
   # QEMU
   env.arm_root = os.path.join(env.nacl_root,
@@ -108,20 +100,6 @@ def SetupEnvironment():
   # Arch (x86-32, x86-64, arm)
   env.arch = None
 
-  # Translate a PNaCl file against glibc.
-  # Valid values: 'static' or 'dynamic' or ''
-  # This option will be removed as soon as pnacl-translate
-  # can auto-detect .pexe type.
-  env.pnacl_glibc = ''
-
-
-def SetupEnvFlags():
-  ''' Setup environment after config options have been read '''
-  if env.pnacl_glibc != '':
-    env.pnacl_root = env.pnacl_root_glibc
-  else:
-    env.pnacl_root = env.pnacl_root_newlib
-
 def PrintBanner(output):
   if not env.quiet:
     lines = output.split('\n')
@@ -137,28 +115,32 @@ def PrintCommand(s):
     print s
     print
 
-def SetupArch(arch, is_dynamic, allow_build = True):
+def GetMultiDir(arch):
+  if arch == 'x86-32':
+    return 'lib32'
+  elif arch == 'x86-64':
+    return 'lib'
+  else:
+    Fatal('nacl-gcc does not support %s' % arch)
+
+def SetupArch(arch, allow_build = True):
   '''Setup environment variables that require knowing the
      architecture. We can only do this after we've seen the
      nexe or once we've read -arch off the command-line.
   '''
-
   env.arch = arch
-
-  if is_dynamic:
-    if arch == 'x86-32':
-      libdir = 'lib32'
-    elif arch == 'x86-64':
-      libdir = 'lib'
-    else:
-      Fatal('Dynamic loading is not yet supported on %s' % arch)
-    env.runnable_ld = os.path.join(env.nnacl_root,
-                                      'x86_64-nacl', libdir, 'runnable-ld.so')
-    env.library_path.append(os.path.join(env.nnacl_root,
-                                         'x86_64-nacl', libdir))
-
   env.sel_ldr = FindOrBuildSelLdr(allow_build = allow_build)
   env.irt = FindOrBuildIRT(allow_build = allow_build)
+
+
+def SetupLibC(arch, is_pnacl, is_dynamic):
+  if is_dynamic:
+    if is_pnacl:
+      libdir = os.path.join(env.pnacl_base, 'lib-' + arch)
+    else:
+      libdir = os.path.join(env.nnacl_root, 'x86_64-nacl', GetMultiDir(arch))
+    env.runnable_ld = os.path.join(libdir, 'runnable-ld.so')
+    env.library_path.append(libdir)
 
 
 def main(argv):
@@ -166,21 +148,21 @@ def main(argv):
 
   sel_ldr_options, nexe, nexe_params = ArgSplit(argv[1:])
 
-  SetupEnvFlags()
   # Translate .pexe files
-  bypass_readelf = False
-  if nexe.endswith('.pexe'):
-    nexe = Translate(nexe)
-    if env.dry_run:
-      arch = env.arch
-      # TODO(pdox): Pull this information from the pnacl driver
-      # when it can be auto-detected.
-      is_dynamic = (env.pnacl_glibc == 'dynamic')
-      bypass_readelf = True
+  is_pnacl = nexe.endswith('.pexe')
+  if is_pnacl:
+    nexe, metadata = Translate(env.arch, nexe)
+    if metadata['OutputFormat'] != 'executable':
+      Fatal('Bitcode has non-executable type: %s', metadata['OutputFormat'])
 
-  # Read ELF Info
-  if not bypass_readelf:
-    (arch, is_dynamic, is_glibc_static) = ReadELFInfo(nexe)
+  # Read the ELF file info
+  if is_pnacl and env.dry_run:
+    # In a dry run, we don't actually run pnacl-translate, so there is
+    # no nexe for readelf. Fill in the information manually.
+    has_needed = len(metadata['NeedsLibrary']) > 0
+    arch, is_dynamic, is_glibc_static = env.arch, has_needed, False
+  else:
+    arch, is_dynamic, is_glibc_static = ReadELFInfo(nexe)
 
   # Add default sel_ldr options
   if not env.paranoid:
@@ -201,7 +183,10 @@ def main(argv):
                                arch.upper(), extra))
 
   # Setup architecture-specific environment variables
-  SetupArch(arch, is_dynamic)
+  SetupArch(arch)
+
+  # Setup LibC-specific environment variables
+  SetupLibC(arch, is_pnacl, is_dynamic)
 
   sel_ldr_args = []
 
@@ -321,21 +306,44 @@ def BuildSelLdr(mode):
   args = args.split()
   Run([env.scons] + args, cwd=env.nacl_root)
 
-
-def Translate(pexe):
-  arch = env.arch
+def Translate(arch, pexe):
   if arch is None:
     Fatal('Missing -arch for PNaCl translation.')
-  translator = os.path.join(env.pnacl_root, 'bin', 'pnacl-translate')
+  metadata = GetBitcodeMetadata(pexe)
   output_file = os.path.splitext(pexe)[0] + '.' + arch + '.nexe'
-  args = [ translator, '-arch', arch, pexe, '-o', output_file ]
-  if env.pnacl_glibc:
-    args.append('--pnacl-use-glibc')
-    if env.pnacl_glibc == 'static':
-      args.append('-static')
+  # TODO(pdox): It shouldn't be necessary to branch here.
+  # Both newlib and glibc's pnacl-translate should behave identically.
+  # BUG= http://code.google.com/p/nativeclient/issues/detail?id=2423
+  has_needed = len(metadata['NeedsLibrary']) > 0
+  if has_needed:
+    rootdir = env.pnacl_root_glibc
+  else:
+    rootdir = env.pnacl_root_newlib
 
+  pnacl_translate = os.path.join(rootdir, 'bin', 'pnacl-translate')
+  args = [ pnacl_translate, '-arch', arch, pexe, '-o', output_file ]
   Run(args)
-  return output_file
+  return output_file, metadata
+
+def GetBitcodeMetadata(pexe):
+  pnaclmeta = os.path.join(env.pnacl_root_newlib, 'bin', 'pnacl-meta')
+  args = [ pnaclmeta, '--raw', pexe ]
+  raw_metadata = Run(args, capture = True)
+  metadata = { 'OutputFormat': '',
+               'SOName'      : '',
+               'NeedsLibrary': [] }
+  for line in raw_metadata.split('\n'):
+    line = line.strip()
+    if not line:
+      continue
+    k, v = line.split(':')
+    k = k.strip()
+    v = v.strip()
+    if isinstance(metadata[k], list):
+      metadata[k].append(v)
+    else:
+      metadata[k] = v
+  return metadata
 
 def Stringify(args):
   ret = ''
@@ -417,10 +425,6 @@ def ArgSplit(argv):
       env.arch = 'x86-64'
     elif arg == '-marm':
       env.arch = 'arm'
-    elif arg == '--pnacl-glibc-dynamic':
-      env.pnacl_glibc = 'dynamic'
-    elif arg == '--pnacl-glibc-static':
-      env.pnacl_glibc = 'static'
     elif arg == '-arch':
       if i+1 < len(argv):
         env.arch = FixArch(argv[i+1])
@@ -479,13 +483,13 @@ def Fatal(msg, *args):
 def Usage2():
   # Try to find any sel_ldr that already exists
   for arch in ['x86-32','x86-64','arm']:
-    SetupArch(arch, False, allow_build = False)
+    SetupArch(arch, allow_build = False)
     if env.sel_ldr:
       break
 
   if not env.sel_ldr:
     # If nothing exists, build it.
-    SetupArch('x86-32', False)
+    SetupArch('x86-32')
 
   RunSelLdr(['-h'])
 
