@@ -46,28 +46,54 @@ public:
   scoped_ptr<ExtensionUnpacker> unpacker_;
 };
 
-TEST_F(ExtensionUnpackerTest, EmptyDefaultLocale) {
+// Crashes intermittently on Windows, see http://crbug.com/109238
+#if defined(OS_WIN)
+#define MAYBE_EmptyDefaultLocale DISABLED_EmptyDefaultLocale
+#else
+#define MAYBE_EmptyDefaultLocale EmptyDefaultLocale
+#endif
+TEST_F(ExtensionUnpackerTest, MAYBE_EmptyDefaultLocale) {
   SetupUnpacker("empty_default_locale.crx");
   EXPECT_FALSE(unpacker_->Run());
   EXPECT_EQ(ASCIIToUTF16(errors::kInvalidDefaultLocale),
             unpacker_->error_message());
 }
 
-TEST_F(ExtensionUnpackerTest, HasDefaultLocaleMissingLocalesFolder) {
+// Crashes intermittently on Vista, see http://crbug.com/109385
+#if defined(OS_WIN)
+#define MAYBE_HasDefaultLocaleMissingLocalesFolder \
+  DISABLED_HasDefaultLocaleMissingLocalesFolder
+#else
+#define MAYBE_HasDefaultLocaleMissingLocalesFolder \
+  HasDefaultLocaleMissingLocalesFolder
+#endif
+TEST_F(ExtensionUnpackerTest, MAYBE_HasDefaultLocaleMissingLocalesFolder) {
   SetupUnpacker("has_default_missing_locales.crx");
   EXPECT_FALSE(unpacker_->Run());
   EXPECT_EQ(ASCIIToUTF16(errors::kLocalesTreeMissing),
             unpacker_->error_message());
 }
 
-TEST_F(ExtensionUnpackerTest, InvalidDefaultLocale) {
+// Crashes intermittently on Windows, see http://crbug.com/109238
+#if defined(OS_WIN)
+#define MAYBE_InvalidDefaultLocale DISABLED_InvalidDefaultLocale
+#else
+#define MAYBE_InvalidDefaultLocale InvalidDefaultLocale
+#endif
+TEST_F(ExtensionUnpackerTest, MAYBE_InvalidDefaultLocale) {
   SetupUnpacker("invalid_default_locale.crx");
   EXPECT_FALSE(unpacker_->Run());
   EXPECT_EQ(ASCIIToUTF16(errors::kInvalidDefaultLocale),
             unpacker_->error_message());
 }
 
-TEST_F(ExtensionUnpackerTest, InvalidMessagesFile) {
+// Crashes intermittently on Windows, see http://crbug.com/109738
+#if defined(OS_WIN)
+#define MAYBE_InvalidMessagesFile DISABLE_InvalidMessagesFile
+#else
+#define MAYBE_InvalidMessagesFile InvalidMessagesFile
+#endif
+TEST_F(ExtensionUnpackerTest, MAYBE_InvalidMessagesFile) {
   SetupUnpacker("invalid_messages_file.crx");
   EXPECT_FALSE(unpacker_->Run());
   EXPECT_TRUE(MatchPattern(unpacker_->error_message(),
