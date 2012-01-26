@@ -1183,22 +1183,22 @@ def load_files(options, args):
   """Tries to determine the SCM."""
   change_scm = scm.determine_scm(options.root)
   files = []
-  if change_scm == 'svn':
-    change_class = SvnChange
-    status_fn = scm.SVN.CaptureStatus
-  elif change_scm == 'git':
-    change_class = GitChange
-    status_fn = scm.GIT.CaptureStatus
-  else:
-    logging.info('Doesn\'t seem under source control. Got %d files' % len(args))
-    if not args:
-      return None, None
-    change_class = Change
   if args:
     files = ParseFiles(args, options.recursive)
+  if change_scm == 'svn':
+    change_class = SvnChange
+    if not files:
+      files = scm.SVN.CaptureStatus([], options.root)
+  elif change_scm == 'git':
+    change_class = GitChange
+    # TODO(maruel): Get upstream.
+    if not files:
+      files = scm.GIT.CaptureStatus([], options.root, None)
   else:
-    # Grab modified files.
-    files = status_fn([options.root])
+    logging.info('Doesn\'t seem under source control. Got %d files' % len(args))
+    if not files:
+      return None, None
+    change_class = Change
   return change_class, files
 
 
