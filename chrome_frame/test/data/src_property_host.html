@@ -8,12 +8,15 @@
       }
 
       function OnChromeFrameLoaded(url) {
-        url = url.data;
-
-        var chromeFrame = GetChromeFrame();
-        var frame_url = chromeFrame.src;
-        
-        appendStatus("Loaded URL: " + url + " Frame url: " + frame_url);
+        try {
+          url = url.data;
+          var chromeFrame = GetChromeFrame();
+          var frame_url = chromeFrame.src;
+          appendStatus("Loaded URL: " + url + " Frame url: " + frame_url);
+        }
+        catch (err) {
+          onFailure("ChromeFrame_SrcTest", 2, "OnChromeFrameLoaded failed.");
+        }
       }
 
       function GetChromeFrame() {
@@ -32,7 +35,7 @@ insertControl(
     "ChromeFrameSpan",
     { "src": "src_property_frame1.html",
       "eventHandlers": {
-        "onload": "return OnChromeFrameLoaded();",
+        "onload": "return OnChromeFrameLoaded(arguments[0]);",
         "onloaderror": "return OnNavigationFailed(arguments[0]);"
       }
     });
