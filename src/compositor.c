@@ -833,7 +833,6 @@ weston_output_repaint(struct weston_output *output, int msecs)
 	pixman_region32_fini(&total_damage);
 
 	output->repaint_needed = 0;
-	output->repaint_scheduled = 1;
 
 	wl_list_for_each_safe(cb, cnext, &output->frame_callback_list, link) {
 		wl_resource_post_event(&cb->resource, WL_CALLBACK_DONE, msecs);
@@ -852,6 +851,8 @@ idle_repaint(void *data)
 	/* An idle repaint may have been cancelled by vt switching away. */
 	if (output->repaint_needed)
 		weston_output_repaint(output, weston_compositor_get_time());
+	else
+		output->repaint_scheduled = 0;
 }
 
 WL_EXPORT void
