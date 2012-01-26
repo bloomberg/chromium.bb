@@ -46,7 +46,6 @@ ProfileSyncServiceFactory::ProfileSyncServiceFactory()
   DependsOn(TemplateURLServiceFactory::GetInstance());
   DependsOn(PersonalDataManagerFactory::GetInstance());
   DependsOn(ThemeServiceFactory::GetInstance());
-  DependsOn(TabRestoreServiceFactory::GetInstance());
   DependsOn(GlobalErrorServiceFactory::GetInstance());
   DependsOn(SigninManagerFactory::GetInstance());
 
