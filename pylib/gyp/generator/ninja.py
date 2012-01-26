@@ -721,12 +721,14 @@ class NinjaWriter:
 
   def WriteMacBundle(self, spec, mac_bundle_depends):
     assert self.is_mac_bundle
+    package_framework = spec['type'] in ('shared_library', 'loadable_module')
     output = self.ComputeMacBundleOutput()
-    postbuild = self.GetPostbuildCommand(spec, output, self.target.binary)
+    postbuild = self.GetPostbuildCommand(spec, output, self.target.binary,
+                                         is_command_start=not package_framework)
     variables = []
     if postbuild:
       variables.append(('postbuilds', postbuild))
-    if spec['type'] in ('shared_library', 'loadable_module'):
+    if package_framework:
       variables.append(('version', self.xcode_settings.GetFrameworkVersion()))
       self.ninja.build(output, 'package_framework', mac_bundle_depends,
                        variables=variables)
@@ -757,9 +759,13 @@ class NinjaWriter:
           strip_save_file)
     return self.GetXcodeEnv(additional_settings=postbuild_settings)
 
-  def GetPostbuildCommand(self, spec, output, output_binary):
+  def GetPostbuildCommand(self, spec, output, output_binary,
+                          is_command_start=False):
+    """Returns a shell command that runs all the postbuilds, and removes
+    |output| if any of them fails. If |is_command_start| is False, then the
+    returned string will start with ' && '."""
     if not self.xcode_settings or spec['type'] == 'none' or not output:
-      return []
+      return ''
     output = QuoteShellArgument(output)
     target_postbuilds = self.xcode_settings.GetTargetPostbuilds(
         self.config_name, output, QuoteShellArgument(output_binary))
@@ -767,13 +773,17 @@ class NinjaWriter:
         spec, self.GypPathToNinja)
     postbuilds = target_postbuilds + postbuilds
     if not postbuilds:
-      return []
+      return ''
     env = self.ComputeExportEnvString(self.GetXcodePostbuildEnv())
     commands = env + ' F=0; ' + \
         ' '.join([ninja_syntax.escape(command) + ' || F=$$?;'
                                  for command in postbuilds])
-    return ('$ && (' + env + commands + ' ((exit $$F) || rm -rf %s) ' % output +
-                                    '&& exit $$F)')
+    command_string = env + commands + ' ((exit $$F) || rm -rf %s) ' % output + \
+                     '&& exit $$F)'
+    if is_command_start:
+      return '(' + command_string + ' && '
+    else:
+      return '$ && (' + command_string
 
   def ComputeExportEnvString(self, env):
     """Given an environment, returns a string looking like
@@ -1084,12 +1094,12 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
     master_ninja.rule(
       'package_framework',
       description='PACKAGE FRAMEWORK $out',
-      command='$mac_tool package-framework $out $version && touch $out'
-              '$postbuilds')
+      command='$mac_tool package-framework $out $version$postbuilds '
+              '&& touch $out')
   master_ninja.rule(
     'stamp',
     description='STAMP $out',
-    command='touch $out$postbuilds')
+    command='${postbuilds}touch $out')
   master_ninja.rule(
     'copy',
     description='COPY $in $out',
