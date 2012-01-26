@@ -1194,9 +1194,10 @@
       "search_string": "HELLO WORLD THE FIRST EXTENSION THAT I MADE. BROWSER_ACTION",
       "source_files": [
         "manifest.json",
-        "popup.html"
+        "popup.html",
+        "popup.js"
       ],
-      "source_hash": "f8c01d82bfac2dd8fd8eb57022e7a12e316ecf60",
+      "source_hash": "074b48f31f670cf36fdcc201b04ec2cfa87204e8",
       "zip_path": "examples\/tutorials\/getstarted.zip"
     },
     {

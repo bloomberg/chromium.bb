@@ -2,26 +2,28 @@
 <div id="pageData-showTOC" class="pageData">true</div>
 
 <p>
-This tutorial walks you through creating a simple extension.
-You'll add an icon to Google Chrome
-that, when clicked, displays an automatically generated page.
-The icon and page will look something like this:
+  This tutorial walks you through creating a simple extension. You'll add an
+  icon to Google Chrome that, when clicked, displays an automatically generated
+  page. The icon and page will look something like this:
 </p>
 
 <img src="images/hello-world-small.png"
-  width="300" height="221"
-  alt="a window with a grid of images related to HELLO WORLD" />
+     width="300"
+     height="221"
+     alt="a window with a grid of images related to 'Hello World'">
 
 <p>
-You can develop extensions using any release of Google Chrome,
-on Windows, Mac, or Linux.
+  You can develop extensions using any release of Google Chrome, on Windows,
+  Mac, or Linux. Extensions you develop on one platform should run without
+  change on every platform Chrome supports.
 </p>
 
 <h2 id="load">Create and load an extension</h2>
+
 <p>
-In this section, you'll write an extension
-that adds a <em>browser action</em>
-to the toolbar of Google Chrome.
+  The extension we'll walk through creating here is a
+  <a href="browserAction.html">Browser Action</a>, which adds a button to
+  Chrome's toolbar whose behavior you can control.
 </p>
 
 <ol>
@@ -29,12 +31,15 @@ to the toolbar of Google Chrome.
     Create a folder somewhere on your computer to contain your extension's code.
   </li>
   <li>
-    Inside your extension's folder,
-    create a text file called <strong><code>manifest.json</code></strong>,
-    and put this in it:
-<pre>{
+    <p>
+      Inside your extension's folder, create a text file called
+      <strong><code>manifest.json</code></strong>, and fill it with the
+      following code:
+    </p>
+    <pre>{
   "name": "My First Extension",
   "version": "1.0",
+  "manifest_version": 2,
   "description": "The first extension that I made.",
   "browser_action": {
     "default_icon": "icon.png"
@@ -45,19 +50,21 @@ to the toolbar of Google Chrome.
 }</pre>
   </li>
   <li>
-    Copy this icon to the same folder:<br>
-    <table cellpadding="0" cellspacing="0" style="border:0">
-      <tr>
-        <td style="text-align:center; border:0;"><a
-          href="examples/tutorials/getstarted/icon.png"
-            ><img src="examples/tutorials/getstarted/icon.png"
-              width="19" height="19" border="0"></a><br>
-          <a href="examples/tutorials/getstarted/icon.png"
-            >Download icon.png</a></td>
-      </tr>
-    </table>
+    <p>Copy this icon to the same folder:</p>
+    <div style="width: 150px; text-align: center;">
+      <a href='examples/tutorials/getstarted/icon.png'
+         download='icon'>
+        <img src='examplex/tutorials/getstarted/icon.png'
+             width='19'
+             height='19'
+             alt=''
+             style='display: block; margin: 0.25em auto;'>
+        Download icon.png
+      </a>
+    </div>
   </li>
-  <li id="load-ext"> Load the extension.
+  <li id="load-ext">
+    <p>Load the extension.</p>
     <ol type="a">
       <li style="margin-top:0" />
       Bring up the extensions management page
@@ -102,24 +109,32 @@ as the following screenshot shows.
 </p>
 
 <h2 id="code">Add code to the extension</h2>
-<p> In this step, you'll make your extension <em>do</em> something besides just look good. </p>
+<p>
+  In this step, you'll make your extension <em>do</em> something besides just
+  look good.
+</p>
+
 <ol>
   <li>
-    <p> Edit <code>manifest.json</code> to add the following line:</p>
-<pre>
-  ...
+    <p>Edit <code>manifest.json</code> to add the following line:</p>
+    <pre>...
   "browser_action": {
     "default_icon": "icon.png"<b>,
     "default_popup": "popup.html"</b>
   },
-  ...
-</pre>
-    <p> Inside your extension's folder,
-    create a text file called <strong><code>popup.html</code></strong>,
-    and add the following code to it:</p>
-    <blockquote> <a href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/tutorials/getstarted/popup.html?content-type=text/plain"
-    target="_blank">CSS
-    and JavaScript code for hello_world</a></blockquote>
+  ...</pre>
+
+    <p>
+      Inside your extension's folder, create two text files called
+      <strong><code>popup.html</code></strong> and
+      <strong><code>popup.js</code></strong>. Add the following code to
+      these files:
+    </p>
+    <blockquote>
+      <a href="examples/tutorials/getstarted/popup.html"
+    target="_blank">HTML code (popup.html)</a> and
+    <a href="examples/tutorials/getstarted/popup.js"
+    target="_blank">JavaScript code (popup.js)</a> for hello_world</a> </blockquote>
   </li>
   <li>
     Return to the extensions management page,
