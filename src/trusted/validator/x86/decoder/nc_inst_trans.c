@@ -108,6 +108,11 @@ static INLINE NaClExp* NaClAppendExp(NaClExpKind kind,
                                      NaClExpVector* vector) {
   NaClExp* node;
   assert(vector->number_expr_nodes < NACL_MAX_EXPS);
+  /* If this is not a register expression, we should have specified a size. */
+  CHECK(ExprRegister == kind || (0 != (flags & (NACL_EFLAG(ExprSize8) |
+                                                NACL_EFLAG(ExprSize16) |
+                                                NACL_EFLAG(ExprSize32) |
+                                                NACL_EFLAG(ExprSize64)))));
   node = &vector->node[vector->number_expr_nodes++];
   node->kind = kind;
   node->value = value;
@@ -181,8 +186,12 @@ static INLINE NaClExp* NaClAppendConst(uint64_t value, NaClExpFlags flags,
     return NaClAppendExp(ExprConstant, val1, flags, vector);
   } else {
     NaClExp* root = NaClAppendExp(ExprConstant64, 0, flags, vector);
-    NaClAppendExp(ExprConstant, val1, NACL_EFLAG(ExprUnsignedHex), vector);
-    NaClAppendExp(ExprConstant, val2, NACL_EFLAG(ExprUnsignedHex), vector);
+    NaClAppendExp(ExprConstant, val1,
+                  NACL_EFLAG(ExprUnsignedHex) | NACL_EFLAG(ExprSize32),
+                  vector);
+    NaClAppendExp(ExprConstant, val2,
+                  NACL_EFLAG(ExprUnsignedHex) | NACL_EFLAG(ExprSize32),
+                  vector);
     return root;
   }
 }
@@ -737,17 +746,21 @@ static int64_t NaClExtractSignedBinaryValue(NaClInstState* state,
  */
 static NaClExpFlags NaClGetExprSizeFlagForBytes(uint8_t num_bytes) {
   switch (num_bytes) {
+    /* HACK a zero size immediate is generated for some addr16 instructions.
+     * We don't allow these instructions, but we do test decompiling them.
+     * TODO(ncbray) eliminate the bug or the test case.
+     */
+    case 0:
     case 1:
       return NACL_EFLAG(ExprSize8);
-      break;
     case 2:
       return NACL_EFLAG(ExprSize16);
-      break;
     case 4:
       return NACL_EFLAG(ExprSize32);
     case 8:
       return NACL_EFLAG(ExprSize64);
     default:
+      CHECK(0);
       return 0;
   }
 }
@@ -833,7 +846,7 @@ static NaClExp* NaClAppendImmed(NaClInstState* state) {
       NaClGetExprSizeFlagForBytes(state->num_imm_bytes);
 
   /* Append the generated immediate value onto the vector. */
-  return NaClAppendConst(value, flags,  &state->nodes);
+  return NaClAppendConst(value, flags, &state->nodes);
 }
 
 /* Append the second immediate value of the given instruction state onto
@@ -856,7 +869,7 @@ static NaClExp* NaClAppendImmed2(NaClInstState* state) {
       NaClGetExprSizeFlagForBytes(state->num_imm2_bytes);
 
   /* Append the generated immediate value onto the vector. */
-  return NaClAppendConst(value, flags,  &state->nodes);
+  return NaClAppendConst(value, flags, &state->nodes);
 }
 
 /* Append an ExprMemOffset node for the given state, and return
@@ -927,7 +940,8 @@ static NaClExp* NaClAppendRelativeImmed(NaClInstState* state) {
    * as 64-bit values.
    */
   return NaClAppendConst(0xffffffff & jump_offset,
-                         NACL_EFLAG(ExprUnsignedHex) |
+                         NACL_EFLAG(ExprSignedHex) |
+                         NACL_EFLAG(ExprSize32) |
                          NACL_EFLAG(ExprJumpTarget),
                          &state->nodes);
 }
@@ -1603,7 +1617,9 @@ void NaClBuildExpVector(struct NaClInstState* state) {
     const NaClOp* op = NaClGetInstOperandInline(state->decoder_tables,
                                                 state->inst, i);
     DEBUG(NaClLog(LOG_INFO, "translating operand %d:\n", i));
-    n = NaClAppendExp(OperandReference, i, 0, &state->nodes);
+    n = NaClAppendExp(OperandReference, i,
+                      NACL_EFLAG(ExprSize8) | NACL_EFLAG(ExprUnsignedInt),
+                      &state->nodes);
     if (op->flags & NACL_OPFLAG(OpImplicit)) {
       n->flags |= NACL_EFLAG(ExprImplicit);
     }
