@@ -75,6 +75,10 @@
 #include "media/audio/audio_parameters.h"
 #include "media/base/audio_renderer_sink.h"
 
+namespace base {
+class WaitableEvent;
+}
+
 class CONTENT_EXPORT AudioDevice
     : NON_EXPORTED_BASE(public media::AudioRendererSink),
       public AudioMessageFilter::Delegate,
@@ -166,7 +170,7 @@ class CONTENT_EXPORT AudioDevice
   };
 
   // Magic required by ref_counted.h to avoid any code deleting the object
-  // accidently while there are references to it.
+  // accidentally while there are references to it.
   friend class base::RefCountedThreadSafe<AudioDevice>;
   virtual ~AudioDevice();
 
@@ -177,7 +181,7 @@ class CONTENT_EXPORT AudioDevice
   void InitializeOnIOThread(const AudioParameters& params);
   void PlayOnIOThread();
   void PauseOnIOThread(bool flush);
-  void ShutDownOnIOThread();
+  void ShutDownOnIOThread(base::WaitableEvent* signal);
   void SetVolumeOnIOThread(double volume);
 
   void Send(IPC::Message* message);

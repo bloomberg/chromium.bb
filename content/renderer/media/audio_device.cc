@@ -108,9 +108,15 @@ void AudioDevice::Stop() {
   DCHECK(MessageLoop::current() != ChildProcess::current()->io_message_loop());
 
   // Stop and shutdown the audio thread from the IO thread.
+  // This operation must be synchronous for now since the |callback_| pointer
+  // isn't ref counted and the object might go out of scope after Stop()
+  // returns (and FireRenderCallback might dereference a bogus pointer).
+  // TODO(tommi): Add an Uninitialize() method to AudioRendererSink?
+  base::WaitableEvent done(true, false);
   ChildProcess::current()->io_message_loop()->PostTask(
       FROM_HERE,
-      base::Bind(&AudioDevice::ShutDownOnIOThread, this));
+      base::Bind(&AudioDevice::ShutDownOnIOThread, this, &done));
+  done.Wait();
 }
 
 void AudioDevice::Play() {
@@ -175,20 +181,21 @@ void AudioDevice::PauseOnIOThread(bool flush) {
   }
 }
 
-void AudioDevice::ShutDownOnIOThread() {
+void AudioDevice::ShutDownOnIOThread(base::WaitableEvent* signal) {
   DCHECK_EQ(MessageLoop::current(), ChildProcess::current()->io_message_loop());
 
   // Make sure we don't call shutdown more than once.
-  if (!stream_id_)
-    return;
+  if (stream_id_) {
+    is_started_ = false;
 
-  is_started_ = false;
+    filter_->RemoveDelegate(stream_id_);
+    Send(new AudioHostMsg_CloseStream(stream_id_));
+    stream_id_ = 0;
 
-  filter_->RemoveDelegate(stream_id_);
-  Send(new AudioHostMsg_CloseStream(stream_id_));
-  stream_id_ = 0;
+    ShutDownAudioThread();
+  }
 
-  ShutDownAudioThread();
+  signal->Signal();
 }
 
 void AudioDevice::SetVolumeOnIOThread(double volume) {
