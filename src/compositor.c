@@ -789,7 +789,8 @@ weston_output_repaint(struct weston_output *output)
 {
 	struct weston_compositor *ec = output->compositor;
 	struct weston_surface *es;
-	pixman_region32_t opaque, new_damage, total_damage;
+	pixman_region32_t opaque, new_damage, total_damage,
+		overlap, surface_overlap;
 
 	output->prepare_render(output);
 
@@ -805,11 +806,25 @@ weston_output_repaint(struct weston_output *output)
 
 	pixman_region32_init(&new_damage);
 	pixman_region32_init(&opaque);
+	pixman_region32_init(&overlap);
+
+	if (ec->fade.spring.current >= 0.001)
+		pixman_region32_union(&overlap, &overlap, &output->region);
+
 
 	wl_list_for_each(es, &ec->surface_list, link) {
 		pixman_region32_subtract(&es->damage, &es->damage, &opaque);
 		pixman_region32_union(&new_damage, &new_damage, &es->damage);
 		pixman_region32_union(&opaque, &opaque, &es->opaque);
+
+		pixman_region32_init(&surface_overlap);
+		pixman_region32_intersect_rect(&surface_overlap,
+					       &overlap, es->x, es->y,
+					       es->width, es->height);
+		es->overlapped = pixman_region32_not_empty(&surface_overlap);
+		pixman_region32_fini(&surface_overlap);
+		pixman_region32_union_rect(&overlap, &overlap, es->x, es->y,
+					   es->width, es->height);
 	}
 
 	pixman_region32_init(&total_damage);
@@ -819,6 +834,7 @@ weston_output_repaint(struct weston_output *output)
 				  &new_damage, &output->region);
 
 	pixman_region32_fini(&opaque);
+	pixman_region32_fini(&overlap);
 	pixman_region32_fini(&new_damage);
 
 	wl_list_for_each(es, &ec->surface_list, link) {

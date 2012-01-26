@@ -241,6 +241,7 @@ struct weston_surface {
 	struct weston_transform *transform;
 	uint32_t alpha;
 	uint32_t visual;
+	int overlapped;
 
 	/*
 	 * Which output to vsync this surface to.
