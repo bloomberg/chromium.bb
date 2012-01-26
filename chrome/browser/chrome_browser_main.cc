@@ -1535,8 +1535,6 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
                             master_prefs_->homepage_defined,
                             master_prefs_->do_import_items,
                             master_prefs_->dont_import_items,
-                            master_prefs_->run_search_engine_experiment,
-                            master_prefs_->randomize_search_engine_experiment,
                             master_prefs_->make_chrome_default,
                             process_singleton_.get());
 #if defined(OS_POSIX)
@@ -1841,10 +1839,8 @@ void ChromeBrowserMainParts::PostMainMessageLoopRun() {
     chrome_extra_parts_[i]->PostMainMessageLoopRun();
 
 #if defined(OS_WIN)
-  // If it's the first run, log the search engine chosen.  We wait until
-  // shutdown because otherwise we can't be sure the user has finished
-  // selecting a search engine through the dialog reached from the first run
-  // bubble link.
+  // Log the search engine chosen on first run. Do this at shutdown, after any
+  // changes are made from the first run bubble link, etc.
   if (record_search_engine_) {
     TemplateURLService* url_service =
         TemplateURLServiceFactory::GetForProfile(profile_);
@@ -1856,32 +1852,9 @@ void ChromeBrowserMainParts::PostMainMessageLoopRun() {
         default_search_engine ? default_search_engine->search_engine_type() :
                                 SEARCH_ENGINE_OTHER;
     // Record the search engine chosen.
-    if (master_prefs_->run_search_engine_experiment) {
-      UMA_HISTOGRAM_ENUMERATION(
-          "Chrome.SearchSelectExperiment",
-          search_engine_type,
-          SEARCH_ENGINE_MAX);
-      // If the selection has been randomized, also record the winner by slot.
-      if (master_prefs_->randomize_search_engine_experiment) {
-        size_t engine_pos = url_service->GetSearchEngineDialogSlot();
-        if (engine_pos < 4) {
-          std::string experiment_type = "Chrome.SearchSelectExperimentSlot";
-          // Nicer in UMA if slots are 1-based.
-          experiment_type.push_back('1' + engine_pos);
-          UMA_HISTOGRAM_ENUMERATION(
-              experiment_type,
-              search_engine_type,
-              SEARCH_ENGINE_MAX);
-        } else {
-          NOTREACHED() << "Invalid search engine selection slot.";
-        }
-      }
-    } else {
-      UMA_HISTOGRAM_ENUMERATION(
-          "Chrome.SearchSelectExempt",
-          search_engine_type,
-          SEARCH_ENGINE_MAX);
-    }
+    UMA_HISTOGRAM_ENUMERATION("Chrome.SearchSelectExempt",
+                              search_engine_type,
+                              SEARCH_ENGINE_MAX);
   }
 #endif
 

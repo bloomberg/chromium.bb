@@ -71,10 +71,6 @@ extern const char kMsi[];
 extern const char kMultiInstall[];
 // Boolean. Show EULA dialog before install.
 extern const char kRequireEula[];
-// Boolean. Use experimental search engine selection dialog.
-extern const char kSearchEngineExperimentPref[];
-// Boolean. Randomize logos in experimental search engine selection dialog.
-extern const char kSearchEngineExperimentRandomizePref[];
 // Boolean. Install Chrome to system wise location. Cmd line override present.
 extern const char kSystemLevel[];
 // Boolean. Run installer in verbose mode. Cmd line override present.

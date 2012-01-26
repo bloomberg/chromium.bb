@@ -18,7 +18,6 @@
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/shell_integration.h"
-#import "chrome/browser/ui/cocoa/search_engine_dialog_controller.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/url_constants.h"
 #include "googleurl/src/gurl.h"
@@ -72,17 +71,6 @@ void FirstRunShowBridge::ShowDialog() {
   MessageLoop::current()->QuitNow();
 }
 
-// Show the search engine selection dialog.
-void ShowSearchEngineSelectionDialog(Profile* profile,
-                                     bool randomize_search_engine_experiment) {
-  scoped_nsobject<SearchEngineDialogController> dialog(
-      [[SearchEngineDialogController alloc] init]);
-  [dialog.get() setProfile:profile];
-  [dialog.get() setRandomize:randomize_search_engine_experiment];
-
-  [dialog.get() showWindow:nil];
-}
-
 // Show the first run UI.
 void ShowFirstRun(Profile* profile) {
 #if defined(GOOGLE_CHROME_BUILD)
@@ -127,7 +115,7 @@ void ShowFirstRun(Profile* profile) {
   first_run::CreateSentinel();
 
   // Set preference to show first run bubble and welcome page.
-  // Don't display the minimal bubble if there is no default search provider.
+  // Only display the bubble if there is a default search provider.
   TemplateURLService* search_engines_model =
       TemplateURLServiceFactory::GetForProfile(profile);
   if (search_engines_model &&
@@ -148,15 +136,7 @@ bool StatsCheckboxDefault() {
 
 namespace first_run {
 
-void ShowFirstRunDialog(Profile* profile,
-                        bool randomize_search_engine_experiment) {
-  // If the default search is not managed via policy, ask the user to
-  // choose a default.
-  TemplateURLService* model = TemplateURLServiceFactory::GetForProfile(profile);
-  if (first_run::ShouldShowSearchEngineSelector(model)) {
-    ShowSearchEngineSelectionDialog(profile,
-                                    randomize_search_engine_experiment);
-  }
+void ShowFirstRunDialog(Profile* profile) {
   ShowFirstRun(profile);
 }
 

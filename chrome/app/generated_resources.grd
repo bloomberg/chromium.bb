@@ -7840,18 +7840,6 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
         </message>
       </if>
 
-      <!-- Search engine dialog messages -->
-      <message name="IDS_FR_SEARCH_MAIN_LABEL" desc="Tells the user to choose a search engine">
-        Choose a search engine
-      </message>
-      <message name="IDS_FR_SEARCH_TEXT" desc="Explains the omnibox and asks the user to choose a search engine for this feature">
-        <ph name="PRODUCT_NAME">
-          $1<ex>Google Chrome</ex></ph> allows you to search the web using the omnibox. Please choose which search engine you would like it to use:
-      </message>
-      <message name="IDS_FR_SEARCH_CHOOSE" desc="Command on button to choose a search engine">
-        Choose
-      </message>
-
       <!-- First run bubble popup -->
       <message name="IDS_FR_BUBBLE_TITLE" desc="Bubble-like popup dialog title">
         You can search from here with <ph name="SEARCH_ENGINE">$1<ex>Google</ex></ph>

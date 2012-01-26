@@ -77,8 +77,6 @@ void AutoImportPlatformCommon(
     bool homepage_defined,
     int import_items,
     int dont_import_items,
-    bool search_engine_experiment,
-    bool randomize_search_engine_experiment,
     bool make_chrome_default);
 #endif  // !defined(USE_AURA)
 

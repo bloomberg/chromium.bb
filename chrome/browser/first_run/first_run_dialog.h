@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,10 +10,8 @@ class Profile;
 
 namespace first_run {
 
-// Shows the search engine choice dialog. Only called if IsOrganicFirstRun()
-// is true.
-void ShowFirstRunDialog(Profile* profile,
-                        bool randomize_search_engine_experiment);
+// Shows the first run dialog. Only called if IsOrganicFirstRun() is true.
+void ShowFirstRunDialog(Profile* profile);
 
 }  // namespace first_run
 

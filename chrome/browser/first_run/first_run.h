@@ -65,9 +65,6 @@ bool SetShowWelcomePagePref();
 // Returns false if the pref could not be set.
 bool SetPersonalDataManagerFirstRunPref();
 
-// Whether the search engine selection dialog should be shown on first run.
-bool ShouldShowSearchEngineSelector(const TemplateURLService* model);
-
 // -- Platform-specific functions --
 
 // Automatically import history and home page (and search engine, if
@@ -76,8 +73,6 @@ void AutoImport(Profile* profile,
                 bool homepage_defined,
                 int import_items,
                 int dont_import_items,
-                bool search_engine_experiment,
-                bool randomize_search_engine_experiment,
                 bool make_chrome_default,
                 ProcessSingleton* process_singleton);
 
@@ -112,8 +107,6 @@ class FirstRun {
     bool homepage_defined;
     int do_import_items;
     int dont_import_items;
-    bool run_search_engine_experiment;
-    bool randomize_search_engine_experiment;
     bool make_chrome_default;
     std::vector<GURL> new_tabs;
     std::vector<GURL> bookmarks;

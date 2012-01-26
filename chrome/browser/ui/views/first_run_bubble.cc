@@ -22,7 +22,11 @@ const int kTopInset = 1;
 const int kLeftInset = 2;
 const int kBottomInset = 7;
 const int kRightInset = 2;
-}
+}  // namespace
+
+namespace first_run {
+  void ShowFirstRunDialog(Profile* profile) {}
+}  // namespace first_run
 
 // static
 FirstRunBubble* FirstRunBubble::ShowBubble(Profile* profile,

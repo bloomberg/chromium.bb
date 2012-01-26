@@ -61,8 +61,7 @@ TEST_F(MasterPreferencesTest, ParseDistroParams) {
     "     \"require_eula\": true,\n"
     "     \"alternate_shortcut_text\": true,\n"
     "     \"chrome_shortcut_icon_index\": 1,\n"
-    "     \"ping_delay\": 40,\n"
-    "     \"search_engine_experiment\": true\n"
+    "     \"ping_delay\": 40\n"
     "  },\n"
     "  \"blah\": {\n"
     "     \"import_history\": false\n"
@@ -87,7 +86,6 @@ TEST_F(MasterPreferencesTest, ParseDistroParams) {
     installer::master_preferences::kVerboseLogging,
     installer::master_preferences::kRequireEula,
     installer::master_preferences::kAltShortcutText,
-    installer::master_preferences::kSearchEngineExperimentPref,
   };
 
   for (int i = 0; i < arraysize(expected_true); ++i) {

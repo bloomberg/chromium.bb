@@ -34,9 +34,6 @@ namespace master_preferences {
   const char kMsi[] = "msi";
   const char kMultiInstall[] = "multi_install";
   const char kRequireEula[] = "require_eula";
-  const char kSearchEngineExperimentPref[] = "search_engine_experiment";
-  const char kSearchEngineExperimentRandomizePref[] =
-      "search_engine_experiment_randomize";
   const char kSystemLevel[] = "system_level";
   const char kVerboseLogging[] = "verbose_logging";
   const char kExtensionsBlock[] = "extensions.settings";

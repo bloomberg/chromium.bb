@@ -14,10 +14,6 @@
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/process_singleton.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/search_engines/template_url.h"
-#include "chrome/browser/search_engines/template_url_service.h"
-#include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/ui/gtk/gtk_chrome_link_button.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
@@ -32,7 +28,6 @@
 #include "ui/base/gtk/gtk_hig_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/gfx/image/image.h"
 
 #if defined(USE_LINUX_BREAKPAD)
 #include "chrome/app/breakpad_linux.h"
@@ -44,28 +39,6 @@
 #endif
 
 namespace {
-
-const gchar* kSearchEngineKey = "template-url-search-engine";
-
-// Height of the label that displays the search engine's logo (in lieu of the
-// actual logo) in chromium.
-const int kLogoLabelHeight = 100;
-
-// Size of the small logo (for when we show 4 search engines).
-const int kLogoLabelWidthSmall = 132;
-const int kLogoLabelHeightSmall = 88;
-
-// The number of search engine options we normally show. It may be less than
-// this number if there are not enough search engines for the current locale,
-// or more if the user's imported default is not one of the top search engines
-// for the current locale.
-const size_t kNormalBallotSize = 3;
-
-// The width of the explanatory label. The 180 is the width of the large images.
-const int kExplanationWidth = kNormalBallotSize * 180;
-
-// Horizontal spacing between search engine choices.
-const int kSearchEngineSpacing = 6;
 
 // Set the (x, y) coordinates of the welcome message (which floats on top of
 // the omnibox image at the top of the first run dialog).
@@ -96,23 +69,14 @@ void SetWelcomePosition(GtkFloatingContainer* container,
 
 namespace first_run {
 
-void ShowFirstRunDialog(Profile* profile,
-                        bool randomize_search_engine_order) {
-  FirstRunDialog::Show(profile, randomize_search_engine_order);
+void ShowFirstRunDialog(Profile* profile) {
+  FirstRunDialog::Show();
 }
 
 }  // namespace first_run
 
 // static
-bool FirstRunDialog::Show(Profile* profile,
-                          bool randomize_search_engine_order) {
-  // Figure out which dialogs we will show.
-  // If the default search is managed via policy, we won't ask.
-  const TemplateURLService* search_engines_model =
-      TemplateURLServiceFactory::GetForProfile(profile);
-  bool show_search_engines_dialog =
-      first_run::ShouldShowSearchEngineSelector(search_engines_model);
-
+bool FirstRunDialog::Show() {
 #if defined(GOOGLE_CHROME_BUILD)
   // If the metrics reporting is managed, we won't ask.
   const PrefService::Preference* metrics_reporting_pref =
@@ -124,15 +88,12 @@ bool FirstRunDialog::Show(Profile* profile,
   bool show_reporting_dialog = false;
 #endif
 
-  if (!show_search_engines_dialog && !show_reporting_dialog)
+  if (!show_reporting_dialog)
     return true;  // Nothing to do
 
   int response = -1;
   // Object deletes itself.
-  new FirstRunDialog(profile,
-                     show_reporting_dialog,
-                     show_search_engines_dialog,
-                     &response);
+  new FirstRunDialog(show_reporting_dialog, &response);
 
   // TODO(port): it should be sufficient to just run the dialog:
   // int response = gtk_dialog_run(GTK_DIALOG(dialog));
@@ -144,101 +105,16 @@ bool FirstRunDialog::Show(Profile* profile,
   return (response == GTK_RESPONSE_ACCEPT);
 }
 
-FirstRunDialog::FirstRunDialog(Profile* profile,
-                               bool show_reporting_dialog,
-                               bool show_search_engines_dialog,
-                               int* response)
-    : search_engine_window_(NULL),
-      dialog_(NULL),
+FirstRunDialog::FirstRunDialog(bool show_reporting_dialog, int* response)
+    : dialog_(NULL),
       report_crashes_(NULL),
       make_default_(NULL),
-      profile_(profile),
-      chosen_search_engine_(NULL),
       show_reporting_dialog_(show_reporting_dialog),
       response_(response) {
-  if (!show_search_engines_dialog) {
-    ShowReportingDialog();
-    return;
-  }
-  search_engines_model_ = TemplateURLServiceFactory::GetForProfile(profile_);
-
-  ShowSearchEngineWindow();
-
-  search_engines_model_->AddObserver(this);
-  if (search_engines_model_->loaded())
-    OnTemplateURLServiceChanged();
-  else
-    search_engines_model_->Load();
+  ShowReportingDialog();
 }
 
 FirstRunDialog::~FirstRunDialog() {
-}
-
-void FirstRunDialog::ShowSearchEngineWindow() {
-  search_engine_window_ = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-  gtk_window_set_deletable(GTK_WINDOW(search_engine_window_), FALSE);
-  gtk_window_set_title(
-      GTK_WINDOW(search_engine_window_),
-      l10n_util::GetStringUTF8(IDS_FIRSTRUN_DLG_TITLE).c_str());
-  gtk_window_set_resizable(GTK_WINDOW(search_engine_window_), FALSE);
-  g_signal_connect(search_engine_window_, "destroy",
-                   G_CALLBACK(OnSearchEngineWindowDestroyThunk), this);
-  GtkWidget* content_area = gtk_vbox_new(FALSE, 0);
-  gtk_container_add(GTK_CONTAINER(search_engine_window_), content_area);
-
-  GdkPixbuf* pixbuf =
-      ui::ResourceBundle::GetSharedInstance().GetRTLEnabledPixbufNamed(
-          IDR_SEARCH_ENGINE_DIALOG_TOP);
-  GtkWidget* top_image = gtk_image_new_from_pixbuf(pixbuf);
-  // Right align the image.
-  gtk_misc_set_alignment(GTK_MISC(top_image), 1, 0);
-  gtk_widget_set_size_request(top_image, 0, -1);
-
-  GtkWidget* welcome_message = gtk_util::CreateBoldLabel(
-      l10n_util::GetStringUTF8(IDS_FR_SEARCH_MAIN_LABEL));
-  // Force the font size to make sure the label doesn't overlap the image.
-  // 13.4px == 10pt @ 96dpi
-  gtk_util::ForceFontSizePixels(welcome_message, 13.4);
-
-  GtkWidget* top_area = gtk_floating_container_new();
-  gtk_container_add(GTK_CONTAINER(top_area), top_image);
-  gtk_floating_container_add_floating(GTK_FLOATING_CONTAINER(top_area),
-                                      welcome_message);
-  g_signal_connect(top_area, "set-floating-position",
-                   G_CALLBACK(SetWelcomePosition), welcome_message);
-
-  gtk_box_pack_start(GTK_BOX(content_area), top_area,
-                     FALSE, FALSE, 0);
-
-  GtkWidget* bubble_area_background = gtk_event_box_new();
-  gtk_widget_modify_bg(bubble_area_background,
-                       GTK_STATE_NORMAL, &ui::kGdkWhite);
-
-  GtkWidget* bubble_area_box = gtk_vbox_new(FALSE, 0);
-  gtk_container_set_border_width(GTK_CONTAINER(bubble_area_box),
-                                 ui::kContentAreaSpacing);
-  gtk_container_add(GTK_CONTAINER(bubble_area_background),
-                    bubble_area_box);
-
-  GtkWidget* explanation = gtk_label_new(
-      l10n_util::GetStringFUTF8(IDS_FR_SEARCH_TEXT,
-          l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)).c_str());
-  gtk_util::SetLabelColor(explanation, &ui::kGdkBlack);
-  gtk_util::SetLabelWidth(explanation, kExplanationWidth);
-  gtk_box_pack_start(GTK_BOX(bubble_area_box), explanation, FALSE, FALSE, 0);
-
-  // We will fill this in after the TemplateURLService has loaded.
-  // GtkHButtonBox because we want all children to have the same size.
-  search_engine_hbox_ = gtk_hbutton_box_new();
-  gtk_box_set_spacing(GTK_BOX(search_engine_hbox_), kSearchEngineSpacing);
-  gtk_box_pack_start(GTK_BOX(bubble_area_box), search_engine_hbox_,
-                     FALSE, FALSE, 0);
-
-  gtk_box_pack_start(GTK_BOX(content_area), bubble_area_background,
-                     TRUE, TRUE, 0);
-
-  gtk_widget_show_all(content_area);
-  gtk_window_present(GTK_WINDOW(search_engine_window_));
 }
 
 void FirstRunDialog::ShowReportingDialog() {
@@ -297,105 +173,6 @@ void FirstRunDialog::ShowReportingDialog() {
   g_signal_connect(dialog_, "response",
                    G_CALLBACK(OnResponseDialogThunk), this);
   gtk_widget_show_all(dialog_);
-}
-
-void FirstRunDialog::OnTemplateURLServiceChanged() {
-  // We only watch the search engine model change once, on load.  Remove
-  // observer so we don't try to redraw if engines change under us.
-  search_engines_model_->RemoveObserver(this);
-
-  // Add search engines in |search_engines_model_| to buttons list.
-  std::vector<const TemplateURL*> ballot_engines =
-      search_engines_model_->GetTemplateURLs();
-  // Drop any not in the first 3.
-  if (ballot_engines.size() > kNormalBallotSize)
-    ballot_engines.resize(kNormalBallotSize);
-
-  const TemplateURL* default_search_engine =
-      search_engines_model_->GetDefaultSearchProvider();
-  if (std::find(ballot_engines.begin(),
-                ballot_engines.end(),
-                default_search_engine) ==
-      ballot_engines.end()) {
-    ballot_engines.push_back(default_search_engine);
-  }
-
-  std::string choose_text = l10n_util::GetStringUTF8(IDS_FR_SEARCH_CHOOSE);
-  for (std::vector<const TemplateURL*>::iterator search_engine_iter =
-           ballot_engines.begin();
-       search_engine_iter < ballot_engines.end();
-       ++search_engine_iter) {
-    // Create a container for the search engine widgets.
-    GtkWidget* vbox = gtk_vbox_new(FALSE, ui::kControlSpacing);
-
-    // We show text on Chromium and images on Google Chrome.
-    bool show_images = false;
-#if defined(GOOGLE_CHROME_BUILD)
-    show_images = true;
-#endif
-
-    // Create the image (maybe).
-    int logo_id = (*search_engine_iter)->logo_id();
-    if (show_images && logo_id > 0) {
-      GdkPixbuf* pixbuf =
-          ui::ResourceBundle::GetSharedInstance().GetNativeImageNamed(logo_id);
-      if (ballot_engines.size() > kNormalBallotSize) {
-        GdkPixbuf* old = pixbuf;
-        pixbuf = gdk_pixbuf_scale_simple(pixbuf,
-                                         kLogoLabelWidthSmall,
-                                         kLogoLabelHeightSmall,
-                                         GDK_INTERP_HYPER);
-        g_object_unref(old);
-      } else {
-        g_object_ref(pixbuf);
-      }
-
-      GtkWidget* image = gtk_image_new_from_pixbuf(pixbuf);
-      gtk_box_pack_start(GTK_BOX(vbox), image, FALSE, FALSE, 0);
-      g_object_unref(pixbuf);
-    } else {
-      GtkWidget* logo_label = gtk_label_new(NULL);
-      char* markup = g_markup_printf_escaped(
-          "<span weight='bold' size='x-large' color='black'>%s</span>",
-          UTF16ToUTF8((*search_engine_iter)->short_name()).c_str());
-      gtk_label_set_markup(GTK_LABEL(logo_label), markup);
-      g_free(markup);
-      gtk_widget_set_size_request(logo_label, -1,
-          ballot_engines.size() > kNormalBallotSize ? kLogoLabelHeightSmall :
-                                                      kLogoLabelHeight);
-      gtk_box_pack_start(GTK_BOX(vbox), logo_label, FALSE, FALSE, 0);
-    }
-
-    // Create the button.
-    GtkWidget* button = gtk_button_new_with_label(choose_text.c_str());
-    g_signal_connect(button, "clicked",
-                     G_CALLBACK(OnSearchEngineButtonClickedThunk), this);
-    g_object_set_data(G_OBJECT(button), kSearchEngineKey,
-                      const_cast<TemplateURL*>(*search_engine_iter));
-
-    GtkWidget* button_centerer = gtk_hbox_new(FALSE, 0);
-    gtk_box_pack_start(GTK_BOX(button_centerer), button, TRUE, FALSE, 0);
-    gtk_box_pack_start(GTK_BOX(vbox), button_centerer, FALSE, FALSE, 0);
-
-    gtk_container_add(GTK_CONTAINER(search_engine_hbox_), vbox);
-    gtk_widget_show_all(search_engine_hbox_);
-  }
-}
-
-void FirstRunDialog::OnSearchEngineButtonClicked(GtkWidget* sender) {
-  chosen_search_engine_ = static_cast<TemplateURL*>(
-      g_object_get_data(G_OBJECT(sender), kSearchEngineKey));
-  gtk_widget_destroy(search_engine_window_);
-}
-
-void FirstRunDialog::OnSearchEngineWindowDestroy(GtkWidget* sender) {
-  search_engine_window_ = NULL;
-  if (chosen_search_engine_) {
-    search_engines_model_->SetDefaultSearchProvider(chosen_search_engine_);
-    ShowReportingDialog();
-  } else {
-    FirstRunDone();
-  }
 }
 
 void FirstRunDialog::OnResponseDialog(GtkWidget* widget, int response) {

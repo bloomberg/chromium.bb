@@ -68,8 +68,6 @@ void AutoImport(
     bool homepage_defined,
     int import_items,
     int dont_import_items,
-    bool search_engine_experiment,
-    bool randomize_search_engine_experiment,
     bool make_chrome_default,
     ProcessSingleton* process_singleton) {
 #if !defined(USE_AURA)
@@ -88,8 +86,6 @@ void AutoImport(
                                      homepage_defined,
                                      import_items,
                                      dont_import_items,
-                                     search_engine_experiment,
-                                     randomize_search_engine_experiment,
                                      make_chrome_default);
 
   process_singleton->Unlock();

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -35,7 +35,7 @@ TEST_F(GoogleUpdateTest, LastRunTime) {
 
 #endif  // defined(OS_WIN)
 
-TEST_F(GoogleUpdateTest, ShouldShowSearchEngineDialog) {
+TEST_F(GoogleUpdateTest, IsOrganicFirstRunBrandCodes) {
   // Test some brand codes to ensure that future changes to this method won't
   // go unnoticed.
   EXPECT_FALSE(google_util::IsOrganicFirstRun("CHFO"));

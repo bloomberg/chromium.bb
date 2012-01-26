@@ -161,8 +161,6 @@ void AutoImportPlatformCommon(
     bool homepage_defined,
     int import_items,
     int dont_import_items,
-    bool search_engine_experiment,
-    bool randomize_search_engine_experiment,
     bool make_chrome_default) {
   FilePath local_state_path;
   PathService::Get(chrome::FILE_LOCAL_STATE, &local_state_path);
@@ -226,13 +224,13 @@ void AutoImportPlatformCommon(
 
   content::RecordAction(UserMetricsAction("FirstRunDef_Accept"));
 
-  // Launch the search engine dialog only for certain builds, and only if the
-  // user has not already set preferences.
+  // Launch the first run dialog only for certain builds, and only if the user
+  // has not already set preferences.
   if (IsOrganicFirstRun() && !local_state_file_exists) {
     // The home page string may be set in the preferences, but the user should
     // initially use Chrome with the NTP as home page in organic builds.
     profile->GetPrefs()->SetBoolean(prefs::kHomePageIsNewTabPage, true);
-    ShowFirstRunDialog(profile, randomize_search_engine_experiment);
+    ShowFirstRunDialog(profile);
   }
 
   if (make_chrome_default)
@@ -324,10 +322,6 @@ bool SetPersonalDataManagerFirstRunPref() {
   return true;
 }
 
-bool ShouldShowSearchEngineSelector(const TemplateURLService* model) {
-  return model && !model->is_default_search_managed();
-}
-
 }  // namespace first_run
 
 // FirstRun -------------------------------------------------------------------
@@ -337,8 +331,6 @@ FirstRun::MasterPrefs::MasterPrefs()
       homepage_defined(false),
       do_import_items(0),
       dont_import_items(0),
-      run_search_engine_experiment(false),
-      randomize_search_engine_experiment(false),
       make_chrome_default(false) {
 }
 
@@ -423,14 +415,6 @@ bool FirstRun::ProcessMasterPreferences(const FilePath& user_data_dir,
     } else {
       out_prefs->dont_import_items |= importer::SEARCH_ENGINES;
     }
-  }
-
-  // Check to see if search engine logos should be randomized.
-  if (prefs.GetBool(
-          installer::master_preferences::
-              kSearchEngineExperimentRandomizePref,
-          &value) && value) {
-    out_prefs->randomize_search_engine_experiment = true;
   }
 
   // If we're suppressing the first-run bubble, set that preference now.
