@@ -766,11 +766,18 @@ out:
 	pixman_region32_fini(&cursor_region);
 }
 
+struct weston_frame_callback {
+	struct wl_resource resource;
+	struct wl_list link;
+};
+
 static void
-weston_output_repaint(struct weston_output *output)
+weston_output_repaint(struct weston_output *output, int msecs)
 {
 	struct weston_compositor *ec = output->compositor;
 	struct weston_surface *es, solid;
+	struct weston_animation *animation, *next;
+	struct weston_frame_callback *cb, *cnext;
 	pixman_region32_t opaque, new_damage, total_damage,
 		overlap, surface_overlap;
 
@@ -824,21 +831,7 @@ weston_output_repaint(struct weston_output *output)
 		solid_surface_release(&solid);
 
 	pixman_region32_fini(&total_damage);
-}
 
-struct weston_frame_callback {
-	struct wl_resource resource;
-	struct wl_list link;
-};
-
-static void
-repaint(struct weston_output *output, int msecs)
-{
-	struct weston_compositor *compositor = output->compositor;
-	struct weston_animation *animation, *next;
-	struct weston_frame_callback *cb, *cnext;
-
-	weston_output_repaint(output);
 	output->repaint_needed = 0;
 	output->repaint_scheduled = 1;
 
@@ -847,8 +840,7 @@ repaint(struct weston_output *output, int msecs)
 		wl_resource_destroy(&cb->resource, 0);
 	}
 
-	wl_list_for_each_safe(animation, next,
-			      &compositor->animation_list, link)
+	wl_list_for_each_safe(animation, next, &ec->animation_list, link)
 		animation->frame(animation, output, msecs);
 }
 
@@ -859,14 +851,14 @@ idle_repaint(void *data)
 
 	/* An idle repaint may have been cancelled by vt switching away. */
 	if (output->repaint_needed)
-		repaint(output, weston_compositor_get_time());
+		weston_output_repaint(output, weston_compositor_get_time());
 }
 
 WL_EXPORT void
 weston_output_finish_frame(struct weston_output *output, int msecs)
 {
 	if (output->repaint_needed)
-		repaint(output, msecs);
+		weston_output_repaint(output, msecs);
 	else
 		output->repaint_scheduled = 0;
 }
