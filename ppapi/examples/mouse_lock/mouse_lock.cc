@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -75,9 +75,8 @@ class MyInstance : public pp::Instance, public pp::MouseLock {
             LockMouse(callback_factory_.NewRequiredCallback(
                 &MyInstance::DidLockMouse));
           }
-          return true;
         }
-        return false;
+        return true;
       }
       default:
         return false;

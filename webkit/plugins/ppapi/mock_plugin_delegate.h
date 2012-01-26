@@ -148,9 +148,8 @@ class MockPluginDelegate : public PluginDelegate {
   virtual std::string GetFlashCommandLineArgs();
   virtual base::SharedMemory* CreateAnonymousSharedMemory(uint32_t size);
   virtual ::ppapi::Preferences GetPreferences();
-  virtual bool LockMouse(PluginInstance* instance);
+  virtual void LockMouse(PluginInstance* instance);
   virtual void UnlockMouse(PluginInstance* instance);
-  virtual bool IsMouseLocked(PluginInstance* instance);
   virtual void DidChangeCursor(PluginInstance* instance,
                                const WebKit::WebCursorInfo& cursor);
   virtual void DidReceiveMouseEvent(PluginInstance* instance);

@@ -348,15 +348,11 @@ base::SharedMemory* MockPluginDelegate::CreateAnonymousSharedMemory(
   return ::ppapi::Preferences();
 }
 
-bool MockPluginDelegate::LockMouse(PluginInstance* instance) {
-  return false;
+void MockPluginDelegate::LockMouse(PluginInstance* instance) {
+  instance->OnLockMouseACK(PP_ERROR_FAILED);
 }
 
 void MockPluginDelegate::UnlockMouse(PluginInstance* instance) {
-}
-
-bool MockPluginDelegate::IsMouseLocked(PluginInstance* instance) {
-  return false;
 }
 
 void MockPluginDelegate::DidChangeCursor(PluginInstance* instance,

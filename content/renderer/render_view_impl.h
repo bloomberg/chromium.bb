@@ -67,7 +67,6 @@ class JavaBridgeDispatcher;
 class LoadProgressTracker;
 class MediaStreamDispatcher;
 class MediaStreamImpl;
-class MouseLockDispatcher;
 class NotificationProvider;
 class PepperDeviceTest;
 struct PP_NetAddress_Private;
@@ -214,10 +213,6 @@ class RenderViewImpl : public RenderWidget,
     return p2p_socket_dispatcher_;
   }
 
-  MouseLockDispatcher* mouse_lock_dispatcher() {
-    return mouse_lock_dispatcher_;
-  }
-
   WebKit::WebPeerConnectionHandler* CreatePeerConnectionHandler(
       WebKit::WebPeerConnectionHandlerClient* client);
 
@@ -322,9 +317,6 @@ class RenderViewImpl : public RenderWidget,
   virtual void runModal();
   virtual bool enterFullScreen();
   virtual void exitFullScreen();
-  virtual bool requestPointerLock();
-  virtual void requestPointerUnlock();
-  virtual bool isPointerLocked();
 
   // WebKit::WebViewClient implementation --------------------------------------
 
@@ -818,10 +810,12 @@ class RenderViewImpl : public RenderWidget,
       const std::vector<GURL>& links,
       const std::vector<FilePath>& local_paths,
       const FilePath& local_directory_name);
+  void OnLockMouseACK(bool succeeded);
   void OnMediaPlayerActionAt(const gfx::Point& location,
                              const WebKit::WebMediaPlayerAction& action);
   void OnPluginActionAt(const gfx::Point& location,
                         const WebKit::WebPluginAction& action);
+  void OnMouseLockLost();
   void OnMoveOrResizeStarted();
   CONTENT_EXPORT void OnNavigate(const ViewMsg_Navigate_Params& params);
   void OnPaste();
@@ -1174,9 +1168,6 @@ class RenderViewImpl : public RenderWidget,
   // Java Bridge dispatcher attached to this view; lazily initialized.
   scoped_ptr<JavaBridgeDispatcher> java_bridge_dispatcher_;
 
-  // Mouse Lock dispatcher attached to this view.
-  MouseLockDispatcher* mouse_lock_dispatcher_;
-
   // Misc ----------------------------------------------------------------------
 
   // The current and pending file chooser completion objects. If the queue is
@@ -1234,9 +1225,6 @@ class RenderViewImpl : public RenderWidget,
   // Used to inform didChangeSelection() when it is called in the context
   // of handling a ViewMsg_SelectRange IPC.
   bool handling_select_range_;
-
-  // Wraps the |webwidget_| as a MouseLockDispatcher::LockTarget interface.
-  scoped_ptr<MouseLockDispatcher::LockTarget> webwidget_mouse_lock_target_;
 
   // Plugins -------------------------------------------------------------------
 

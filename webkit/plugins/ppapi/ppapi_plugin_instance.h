@@ -52,7 +52,6 @@ class TransportDIB;
 
 namespace WebKit {
 class WebInputEvent;
-class WebMouseEvent;
 class WebPluginContainer;
 struct WebCompositionUnderline;
 struct WebCursorInfo;
@@ -306,12 +305,8 @@ class WEBKIT_PLUGINS_EXPORT PluginInstance :
   // or embedded in a page).
   bool IsFullPagePlugin() const;
 
-  // A mouse lock request was pending and this reports success or failure.
-  void OnLockMouseACK(bool succeeded);
-  // A mouse lock was in place, but has been lost.
+  void OnLockMouseACK(int32_t result);
   void OnMouseLockLost();
-  // A mouse lock is enabled and mouse events are being delievered.
-  void HandleMouseLockedInputEvent(const WebKit::WebMouseEvent& event);
 
   // Simulates an input event to the plugin by passing it down to WebKit,
   // which sends it back up to the plugin as if it came from the user.

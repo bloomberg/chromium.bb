@@ -490,11 +490,11 @@ class PluginDelegate {
   // Returns the current preferences.
   virtual ::ppapi::Preferences GetPreferences() = 0;
 
-  // Locks the mouse for |instance|. If false is returned, the lock is not
-  // possible. If true is returned then the lock is pending. Success or
-  // failure will be delivered asynchronously via
-  // PluginInstance::OnLockMouseACK().
-  virtual bool LockMouse(PluginInstance* instance) = 0;
+  // Locks the mouse for |instance|. It will call
+  // PluginInstance::OnLockMouseACK() to notify the instance when the operation
+  // is completed. The call to OnLockMouseACK() may be synchronous (i.e., it may
+  // be called when LockMouse() is still on the stack).
+  virtual void LockMouse(PluginInstance* instance) = 0;
 
   // Unlocks the mouse if |instance| currently owns the mouse lock. Whenever an
   // plugin instance has lost the mouse lock, it will be notified by
@@ -503,9 +503,6 @@ class PluginDelegate {
   // key to quit the mouse lock mode, which also results in an OnMouseLockLost()
   // call to the current mouse lock owner.
   virtual void UnlockMouse(PluginInstance* instance) = 0;
-
-  // Returns true iff |instance| currently owns the mouse lock.
-  virtual bool IsMouseLocked(PluginInstance* instance) = 0;
 
   // Notifies that |instance| has changed the cursor.
   // This will update the cursor appearance if it is currently over the plugin
