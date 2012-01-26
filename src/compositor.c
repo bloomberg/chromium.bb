@@ -555,8 +555,7 @@ texture_transformed_surface(struct weston_surface *es)
 }
 
 static void
-weston_surface_draw(struct weston_surface *es,
-		  struct weston_output *output, pixman_region32_t *clip)
+weston_surface_draw(struct weston_surface *es, struct weston_output *output)
 {
 	struct weston_compositor *ec = es->compositor;
 	GLfloat *v;
@@ -566,7 +565,9 @@ weston_surface_draw(struct weston_surface *es,
 
 	pixman_region32_init_rect(&repaint,
 				  es->x, es->y, es->width, es->height);
-	pixman_region32_intersect(&repaint, &repaint, clip);
+	pixman_region32_intersect(&repaint, &repaint, &output->region);
+	pixman_region32_intersect(&repaint, &repaint, &es->damage);
+
 	if (!pixman_region32_not_empty(&repaint))
 		return;
 
@@ -699,6 +700,8 @@ fade_output(struct weston_output *output,
 	surface.texture = GL_NONE;
 	surface.transform = NULL;
 	surface.alpha = compositor->current_alpha;
+	pixman_region32_init(&surface.damage);
+	pixman_region32_copy(&surface.damage, region);
 
 	if (tint <= 1.0)
 		surface.visual = WESTON_ARGB_VISUAL;
@@ -709,7 +712,9 @@ fade_output(struct weston_output *output,
 	glUniformMatrix4fv(compositor->solid_shader.proj_uniform,
 			   1, GL_FALSE, output->matrix.d);
 	glUniform4fv(compositor->solid_shader.color_uniform, 1, color);
-	weston_surface_draw(&surface, output, region);
+	weston_surface_draw(&surface, output);
+
+	pixman_region32_fini(&surface.damage);
 }
 
 static void
@@ -784,7 +789,7 @@ weston_output_repaint(struct weston_output *output)
 {
 	struct weston_compositor *ec = output->compositor;
 	struct weston_surface *es;
-	pixman_region32_t opaque, new_damage, total_damage, repaint;
+	pixman_region32_t opaque, new_damage, total_damage;
 
 	output->prepare_render(output);
 
@@ -832,17 +837,10 @@ weston_output_repaint(struct weston_output *output)
 		if (es->width < output->current->width ||
 		    es->height < output->current->height)
 			glClear(GL_COLOR_BUFFER_BIT);
-		weston_surface_draw(es, output, &total_damage);
+		weston_surface_draw(es, output);
 	} else {
-		wl_list_for_each_reverse(es, &ec->surface_list, link) {
-			pixman_region32_init(&repaint);
-			pixman_region32_intersect(&repaint, &output->region,
-						  &es->damage);
-			weston_surface_draw(es, output, &repaint);
-			pixman_region32_subtract(&es->damage,
-						 &es->damage, &output->region);
-			pixman_region32_fini(&repaint);
-		}
+		wl_list_for_each_reverse(es, &ec->surface_list, link)
+			weston_surface_draw(es, output);
 	}
 
 	if (ec->fade.spring.current > 0.001)
