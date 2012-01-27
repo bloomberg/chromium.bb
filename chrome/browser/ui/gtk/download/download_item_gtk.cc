@@ -47,6 +47,10 @@ const int kMenuButtonWidth = 16;
 // Padding on left and right of items in dangerous download prompt.
 const int kDangerousElementPadding = 3;
 
+// Minimum width of the dangerous download message at which we will start
+// wrapping.
+const int kDangerousTextWidth = 200;
+
 // Amount of space we allot to showing the filename. If the filename is too wide
 // it will be elided.
 const int kTextWidth = 140;
@@ -64,6 +68,9 @@ const int kNewItemAnimationDurationMs = 800;
 
 // How long the 'download complete/interrupted' animation should last for.
 const int kCompleteAnimationDurationMs = 2500;
+
+// Height of the body.
+const int kBodyHeight = download_util::kSmallProgressIconSize;
 
 // Width of the body area of the download item.
 // TODO(estade): get rid of the fudge factor. http://crbug.com/18692
@@ -598,17 +605,27 @@ void DownloadItemGtk::UpdateDangerWarning() {
     // Until we switch to vector graphics, force the font size.
     gtk_util::ForceFontSizePixels(dangerous_label_, kTextSize);
 
-    // Get the label width when displaying in one line, and reduce it to 60% to
-    // wrap the label into two lines.
     gtk_widget_set_size_request(dangerous_label_, -1, -1);
     gtk_label_set_line_wrap(GTK_LABEL(dangerous_label_), FALSE);
 
     GtkRequisition req;
     gtk_widget_size_request(dangerous_label_, &req);
 
-    gint label_width = req.width * 6 / 10;
-    gtk_label_set_line_wrap(GTK_LABEL(dangerous_label_), TRUE);
-    gtk_widget_set_size_request(dangerous_label_, label_width, -1);
+    gint label_width = req.width;
+    if (req.width > kDangerousTextWidth) {
+      // If the label width exceeds kDangerousTextWidth, we try line wrapping
+      // starting at 60% and increasing in 10% intervals of the full width until
+      // we have a label that fits within the height constraints of the shelf.
+      gtk_label_set_line_wrap(GTK_LABEL(dangerous_label_), TRUE);
+      int full_width = req.width;
+      int tenths = 6;
+      do {
+        label_width = full_width * tenths / 10;
+        gtk_widget_set_size_request(dangerous_label_, label_width, -1);
+        gtk_widget_size_request(dangerous_label_, &req);
+      } while (req.height > kBodyHeight && ++tenths <= 10);
+      DCHECK(req.height <= kBodyHeight);
+    }
 
     // The width will depend on the text. We must do this each time we possibly
     // change the label above.
