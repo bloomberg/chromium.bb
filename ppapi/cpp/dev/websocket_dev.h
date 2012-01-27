@@ -87,7 +87,8 @@ class WebSocket_Dev : public Resource {
   ///
   /// @param[out] message The received message is copied to provided
   /// <code>message</code>. The <code>message</code> must remain valid until
-  /// the ReceiveMessage operation completes.
+  /// the ReceiveMessage operation completes. It will be a <code>Var</code> of
+  /// string or ArrayBuffer types on receiving.
   /// @param[in] callback A <code>CompletionCallback</code> which is called
   /// when the receiving message is completed. It is ignored if ReceiveMessage
   /// completes synchronously and returns <code>PP_OK</code>.
@@ -105,7 +106,8 @@ class WebSocket_Dev : public Resource {
   ///
   /// @param[in] data A message to send. The message is copied to internal
   /// buffer. So caller can free <code>data</code> safely after returning
-  /// from the function.
+  /// from the function. It must be a <code>Var</code> of string or ArrayBuffer
+  /// types.
   ///
   /// @return An int32_t containing an error code from
   /// <code>pp_errors.h</code>.
@@ -176,33 +178,6 @@ class WebSocket_Dev : public Resource {
   /// @return Returns a <code>Var</code> of string type. If called before the
   /// connection is established, it contains the empty string.
   Var GetURL();
-
-  /// SetBinaryType() specifies the binary object type for receiving binary
-  /// frames representation. Receiving text frames are always mapped to
-  /// <PP_VARTYPE_STRING</code> var regardless of this attribute.
-  /// This function should be called before Connect() to ensure receiving all
-  /// incoming binary frames as the specified binary object type.
-  /// Default type is <code>PP_WEBSOCKETBINARYTYPE_BLOB_DEV</code>.
-  ///
-  /// Currently, Blob bindings is not supported in Pepper, so receiving binary
-  /// type is always ArrayBuffer. To ensure backward compatibility, you must
-  /// call this function with
-  /// <code>PP_WEBSOCKETBINARYTYPE_ARRAYBUFFER_DEV</code> to use binary frames.
-  ///
-  /// @param[in] binary_type Binary object type for receiving binary frames
-  /// representation.
-  ///
-  /// @return Returns <code>false</code> if the specified type is not
-  /// supported. Otherwise, returns <code>true</code>.
-  ///
-  bool SetBinaryType(PP_WebSocketBinaryType_Dev binary_type);
-
-  /// GetBinaryType() returns the currently specified binary object type for
-  /// receiving binary frames.
-  ///
-  /// @return Returns <code>PP_WebSocketBinaryType_Dev</code> represents the
-  /// current binary object type.
-  PP_WebSocketBinaryType_Dev GetBinaryType();
 };
 
 }  // namespace pp

@@ -1362,17 +1362,6 @@ class PpbWebSocketRpcServer {
       NaClSrpcClosure* done,
       PP_Resource ws,
       nacl_abi_size_t* url_bytes, char* url);
-  static void PPB_WebSocket_SetBinaryType(
-      NaClSrpcRpc* rpc,
-      NaClSrpcClosure* done,
-      PP_Resource ws,
-      int32_t binary_type,
-      int32_t* success);
-  static void PPB_WebSocket_GetBinaryType(
-      NaClSrpcRpc* rpc,
-      NaClSrpcClosure* done,
-      PP_Resource ws,
-      int32_t* binary_type);
 
  private:
   PpbWebSocketRpcServer();

@@ -33,8 +33,6 @@ class PPB_WebSocket_API {
   virtual PP_Var GetProtocol() = 0;
   virtual PP_WebSocketReadyState_Dev GetReadyState() = 0;
   virtual PP_Var GetURL() = 0;
-  virtual PP_Bool SetBinaryType(PP_WebSocketBinaryType_Dev) = 0;
-  virtual PP_WebSocketBinaryType_Dev GetBinaryType() = 0;
 };
 
 }  // namespace thunk

@@ -2760,35 +2760,6 @@ static void PPB_WebSocket_GetURLDispatcher(
   );
 }
 
-static void PPB_WebSocket_SetBinaryTypeDispatcher(
-    NaClSrpcRpc* rpc,
-    NaClSrpcArg** inputs,
-    NaClSrpcArg** outputs,
-    NaClSrpcClosure* done
-) {
-  PpbWebSocketRpcServer::PPB_WebSocket_SetBinaryType(
-      rpc,
-      done,
-      inputs[0]->u.ival,
-      inputs[1]->u.ival,
-      &(outputs[0]->u.ival)
-  );
-}
-
-static void PPB_WebSocket_GetBinaryTypeDispatcher(
-    NaClSrpcRpc* rpc,
-    NaClSrpcArg** inputs,
-    NaClSrpcArg** outputs,
-    NaClSrpcClosure* done
-) {
-  PpbWebSocketRpcServer::PPB_WebSocket_GetBinaryType(
-      rpc,
-      done,
-      inputs[0]->u.ival,
-      &(outputs[0]->u.ival)
-  );
-}
-
 static void PPB_Widget_IsWidgetDispatcher(
     NaClSrpcRpc* rpc,
     NaClSrpcArg** inputs,
@@ -3078,8 +3049,6 @@ NaClSrpcHandlerDesc PpbRpcs::srpc_methods[] = {
   { "PPB_WebSocket_GetProtocol:i:C", PPB_WebSocket_GetProtocolDispatcher },
   { "PPB_WebSocket_GetReadyState:i:i", PPB_WebSocket_GetReadyStateDispatcher },
   { "PPB_WebSocket_GetURL:i:C", PPB_WebSocket_GetURLDispatcher },
-  { "PPB_WebSocket_SetBinaryType:ii:i", PPB_WebSocket_SetBinaryTypeDispatcher },
-  { "PPB_WebSocket_GetBinaryType:i:i", PPB_WebSocket_GetBinaryTypeDispatcher },
   { "PPB_Widget_IsWidget:i:i", PPB_Widget_IsWidgetDispatcher },
   { "PPB_Widget_Paint:iCi:i", PPB_Widget_PaintDispatcher },
   { "PPB_Widget_HandleEvent:ii:i", PPB_Widget_HandleEventDispatcher },

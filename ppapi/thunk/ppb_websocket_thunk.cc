@@ -124,21 +124,6 @@ PP_Var GetURL(PP_Resource resource) {
   return enter.object()->GetURL();
 }
 
-PP_Bool SetBinaryType(PP_Resource resource,
-                      PP_WebSocketBinaryType_Dev binary_type) {
-  EnterResource<PPB_WebSocket_API> enter(resource, false);
-  if (enter.failed())
-    return PP_FALSE;
-  return enter.object()->SetBinaryType(binary_type);
-}
-
-PP_WebSocketBinaryType_Dev GetBinaryType(PP_Resource resource) {
-  EnterResource<PPB_WebSocket_API> enter(resource, false);
-  if (enter.failed())
-    return PP_WEBSOCKETBINARYTYPE_INVALID;
-  return enter.object()->GetBinaryType();
-}
-
 const PPB_WebSocket_Dev_0_1 g_ppb_websocket_0_1_thunk = {
   &Create,
   &IsWebSocket,
@@ -156,33 +141,10 @@ const PPB_WebSocket_Dev_0_1 g_ppb_websocket_0_1_thunk = {
   &GetURL
 };
 
-const PPB_WebSocket_Dev_0_9 g_ppb_websocket_0_9_thunk = {
-  &Create,
-  &IsWebSocket,
-  &Connect,
-  &Close,
-  &ReceiveMessage,
-  &SendMessage,
-  &GetBufferedAmount,
-  &GetCloseCode,
-  &GetCloseReason,
-  &GetCloseWasClean,
-  &GetExtensions,
-  &GetProtocol,
-  &GetReadyState,
-  &GetURL,
-  &SetBinaryType,
-  &GetBinaryType
-};
-
 }  // namespace
 
 const PPB_WebSocket_Dev_0_1* GetPPB_WebSocket_Dev_0_1_Thunk() {
   return &g_ppb_websocket_0_1_thunk;
-}
-
-const PPB_WebSocket_Dev_0_9* GetPPB_WebSocket_Dev_0_9_Thunk() {
-  return &g_ppb_websocket_0_9_thunk;
 }
 
 }  // namespace thunk

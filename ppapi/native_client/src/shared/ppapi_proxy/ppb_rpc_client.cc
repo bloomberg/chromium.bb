@@ -3438,42 +3438,6 @@ NaClSrpcError PpbWebSocketRpcClient::PPB_WebSocket_GetURL(
   return retval;
 }
 
-NaClSrpcError PpbWebSocketRpcClient::PPB_WebSocket_SetBinaryType(
-    NaClSrpcChannel* channel,
-    PP_Resource ws,
-    int32_t binary_type,
-    int32_t* success)  {
-  VCHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread(),
-         ("%s: PPAPI calls are not supported off the main thread\n",
-          __FUNCTION__));
-  NaClSrpcError retval;
-  retval = NaClSrpcInvokeBySignature(
-      channel,
-      "PPB_WebSocket_SetBinaryType:ii:i",
-      ws,
-      binary_type,
-      success
-  );
-  return retval;
-}
-
-NaClSrpcError PpbWebSocketRpcClient::PPB_WebSocket_GetBinaryType(
-    NaClSrpcChannel* channel,
-    PP_Resource ws,
-    int32_t* binary_type)  {
-  VCHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread(),
-         ("%s: PPAPI calls are not supported off the main thread\n",
-          __FUNCTION__));
-  NaClSrpcError retval;
-  retval = NaClSrpcInvokeBySignature(
-      channel,
-      "PPB_WebSocket_GetBinaryType:i:i",
-      ws,
-      binary_type
-  );
-  return retval;
-}
-
 NaClSrpcError PpbWidgetRpcClient::PPB_Widget_IsWidget(
     NaClSrpcChannel* channel,
     PP_Resource resource,

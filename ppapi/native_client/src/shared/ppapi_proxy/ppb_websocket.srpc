@@ -100,19 +100,6 @@
                       ],
             'outputs': [['url', 'char[]'],             # PP_Var
                        ]
-          },
-          {'name': 'PPB_WebSocket_SetBinaryType',
-           'inputs': [['ws', 'PP_Resource'],           # PP_Resource
-                      ['binary_type', 'int32_t'],      # PP_WebSocketBinaryType
-                     ],
-           'outputs': [['success', 'int32_t'],         # PP_Bool
-                      ]
-          },
-          {'name': 'PPB_WebSocket_GetBinaryType',
-           'inputs': [['ws', 'PP_Resource'],           # PP_Resource
-                     ],
-           'outputs': [['binary_type', 'int32_t'],     # PP_WebSocketBinaryType
-                      ]
           }
          ]
 }

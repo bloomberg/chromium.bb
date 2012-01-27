@@ -1182,15 +1182,6 @@ class PpbWebSocketRpcClient {
       NaClSrpcChannel* channel,
       PP_Resource ws,
       nacl_abi_size_t* url_bytes, char* url);
-  static NaClSrpcError PPB_WebSocket_SetBinaryType(
-      NaClSrpcChannel* channel,
-      PP_Resource ws,
-      int32_t binary_type,
-      int32_t* success);
-  static NaClSrpcError PPB_WebSocket_GetBinaryType(
-      NaClSrpcChannel* channel,
-      PP_Resource ws,
-      int32_t* binary_type);
 
  private:
   PpbWebSocketRpcClient();

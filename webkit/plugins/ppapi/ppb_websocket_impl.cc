@@ -80,7 +80,6 @@ namespace ppapi {
 PPB_WebSocket_Impl::PPB_WebSocket_Impl(PP_Instance instance)
     : Resource(instance),
       state_(PP_WEBSOCKETREADYSTATE_INVALID_DEV),
-      binary_type_(WebSocket::BinaryTypeBlob),
       error_was_received_(false),
       receive_callback_var_(NULL),
       wait_for_receive_(false),
@@ -196,7 +195,7 @@ int32_t PPB_WebSocket_Impl::Connect(PP_Var url,
     return PP_ERROR_NOTSUPPORTED;
 
   // Set receiving binary object type.
-  websocket_->setBinaryType(binary_type_);
+  websocket_->setBinaryType(WebSocket::BinaryTypeArrayBuffer);
 
   websocket_->connect(web_url, web_protocols);
   state_ = PP_WEBSOCKETREADYSTATE_CONNECTING_DEV;
@@ -411,38 +410,6 @@ PP_Var PPB_WebSocket_Impl::GetURL() {
   if (!url_)
     return empty_string_->GetPPVar();
   return url_->GetPPVar();
-}
-
-PP_Bool PPB_WebSocket_Impl::SetBinaryType(
-    PP_WebSocketBinaryType_Dev binary_type) {
-  switch (binary_type) {
-    case PP_WEBSOCKETBINARYTYPE_BLOB_DEV:
-      binary_type_ = WebSocket::BinaryTypeBlob;
-      break;
-    case PP_WEBSOCKETBINARYTYPE_ARRAYBUFFER_DEV:
-      binary_type_ = WebSocket::BinaryTypeArrayBuffer;
-      break;
-    default:
-      return PP_FALSE;
-  }
-  // WebKit API setBinaryType() is called when Connect() is called.
-  // If the websocket_ contains an object; it means Connect() is already
-  // called, call WebKit API here to reflect the setting as soon as possible.
-  if (websocket_.get())
-    websocket_->setBinaryType(binary_type_);
-  return PP_TRUE;
-}
-
-PP_WebSocketBinaryType_Dev PPB_WebSocket_Impl::GetBinaryType() {
-  switch (binary_type_) {
-    case WebSocket::BinaryTypeBlob:
-      return PP_WEBSOCKETBINARYTYPE_BLOB_DEV;
-    case WebSocket::BinaryTypeArrayBuffer:
-      return PP_WEBSOCKETBINARYTYPE_ARRAYBUFFER_DEV;
-    default:
-      NOTREACHED();
-      return PP_WEBSOCKETBINARYTYPE_INVALID;
-  }
 }
 
 void PPB_WebSocket_Impl::didConnect() {

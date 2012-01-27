@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From dev/ppb_websocket_dev.idl modified Wed Jan 18 20:17:45 2012. */
+/* From dev/ppb_websocket_dev.idl modified Fri Jan 27 10:09:34 2012. */
 
 #ifndef PPAPI_C_DEV_PPB_WEBSOCKET_DEV_H_
 #define PPAPI_C_DEV_PPB_WEBSOCKET_DEV_H_
@@ -17,8 +17,7 @@
 #include "ppapi/c/pp_var.h"
 
 #define PPB_WEBSOCKET_DEV_INTERFACE_0_1 "PPB_WebSocket(Dev);0.1"
-#define PPB_WEBSOCKET_DEV_INTERFACE_0_9 "PPB_WebSocket(Dev);0.9"
-#define PPB_WEBSOCKET_DEV_INTERFACE PPB_WEBSOCKET_DEV_INTERFACE_0_9
+#define PPB_WEBSOCKET_DEV_INTERFACE PPB_WEBSOCKET_DEV_INTERFACE_0_1
 
 /**
  * @file
@@ -59,27 +58,6 @@ typedef enum {
   PP_WEBSOCKETREADYSTATE_CLOSED_DEV = 3
 } PP_WebSocketReadyState_Dev;
 PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_WebSocketReadyState_Dev, 4);
-
-/**
- * This enumeration contains the types representing the WebSocket binary type
- * to receive frames. These types are based on the JavaScript WebSocket API
- * specification.
- */
-typedef enum {
-  /**
-   * Binary type is queried on an invalid resource.
-   */
-  PP_WEBSOCKETBINARYTYPE_INVALID = -1,
-  /**
-   * Binary type that represents Blob objects.
-   */
-  PP_WEBSOCKETBINARYTYPE_BLOB_DEV = 0,
-  /**
-   * Binary type that represents ArrayBuffer objects.
-   */
-  PP_WEBSOCKETBINARYTYPE_ARRAYBUFFER_DEV = 1
-} PP_WebSocketBinaryType_Dev;
-PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_WebSocketBinaryType_Dev, 4);
 /**
  * @}
  */
@@ -88,7 +66,7 @@ PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_WebSocketBinaryType_Dev, 4);
  * @addtogroup Interfaces
  * @{
  */
-struct PPB_WebSocket_Dev_0_9 {
+struct PPB_WebSocket_Dev_0_1 {
   /**
    * Create() creates a WebSocket instance.
    *
@@ -196,7 +174,9 @@ struct PPB_WebSocket_Dev_0_9 {
    *
    * @param[out] message The received message is copied to provided
    * <code>message</code>. The <code>message</code> must remain valid until
-   * the ReceiveMessage operation completes.
+   * the ReceiveMessage operation completes. Its <code>PP_VarType</code>
+   * will be <code>PP_VARTYPE_STRING</code> or
+   * <code>PP_VARTYPE_ARRAY_BYFFER</code> on receiving.
    *
    * @param[in] callback A <code>PP_CompletionCallback</code> which is called
    * when the receiving message is completed. It is ignored if ReceiveMessage
@@ -219,7 +199,8 @@ struct PPB_WebSocket_Dev_0_9 {
    *
    * @param[in] message A message to send. The message is copied to internal
    * buffer. So caller can free <code>message</code> safely after returning
-   * from the function.
+   * from the function. Its <code>PP_VarType</code> must be
+   * <code>PP_VARTYPE_STRING</code> or <code>PP_VARTYPE_ARRAY_BUFFER</code>.
    *
    * @return An int32_t containing an error code from <code>pp_errors.h</code>.
    * Returns <code>PP_ERROR_FAILED</code> if the ReadyState is
@@ -325,70 +306,9 @@ struct PPB_WebSocket_Dev_0_9 {
    * <code>PP_VARTYPE_UNDEFINED</code> if called on an invalid resource.
    */
   struct PP_Var (*GetURL)(PP_Resource web_socket);
-  /**
-   * SetBinaryType() specifies the binary object type for receiving binary
-   * frames representation. Receiving text frames are always mapped to
-   * <PP_VARTYPE_STRING</code> var regardless of this attribute.
-   * This function should be called before Connect() to ensure receiving all
-   * incoming binary frames as the specified binary object type.
-   * Default type is <code>PP_WEBSOCKETBINARYTYPE_BLOB_DEV</code>.
-   *
-   * Currently, Blob bindings is not supported in Pepper, so receiving binary
-   * type is always ArrayBuffer. To ensure backward compatibility, you must
-   * call this function with
-   * <code>PP_WEBSOCKETBINARYTYPE_ARRAYBUFFER_DEV</code> to use binary frames.
-   *
-   * @param[in] web_socket A <code>PP_Resource</code> corresponding to a
-   * WebSocket.
-   *
-   * @param[in] binary_type Binary object type for receiving binary frames
-   * representation.
-   *
-   * @return Returns <code>PP_FALSE</code> if the specified type is not
-   * supported. Otherwise, returns <code>PP_TRUE</code>.
-   */
-  PP_Bool (*SetBinaryType)(PP_Resource web_socket,
-                           PP_WebSocketBinaryType_Dev binary_type);
-  /**
-   * GetBinaryType() returns the currently specified binary object type for
-   * receiving binary frames.
-   *
-   * @param[in] web_socket A <code>PP_Resource</code> corresponding to a
-   * WebSocket.
-   *
-   * @return Returns <code>PP_WebSocketBinaryType_Dev</code> represents the
-   * current binary object type.
-   */
-  PP_WebSocketBinaryType_Dev (*GetBinaryType)(PP_Resource web_socket);
 };
 
-typedef struct PPB_WebSocket_Dev_0_9 PPB_WebSocket_Dev;
-
-struct PPB_WebSocket_Dev_0_1 {
-  PP_Resource (*Create)(PP_Instance instance);
-  PP_Bool (*IsWebSocket)(PP_Resource resource);
-  int32_t (*Connect)(PP_Resource web_socket,
-                     struct PP_Var url,
-                     const struct PP_Var protocols[],
-                     uint32_t protocol_count,
-                     struct PP_CompletionCallback callback);
-  int32_t (*Close)(PP_Resource web_socket,
-                   uint16_t code,
-                   struct PP_Var reason,
-                   struct PP_CompletionCallback callback);
-  int32_t (*ReceiveMessage)(PP_Resource web_socket,
-                            struct PP_Var* message,
-                            struct PP_CompletionCallback callback);
-  int32_t (*SendMessage)(PP_Resource web_socket, struct PP_Var message);
-  uint64_t (*GetBufferedAmount)(PP_Resource web_socket);
-  uint16_t (*GetCloseCode)(PP_Resource web_socket);
-  struct PP_Var (*GetCloseReason)(PP_Resource web_socket);
-  PP_Bool (*GetCloseWasClean)(PP_Resource web_socket);
-  struct PP_Var (*GetExtensions)(PP_Resource web_socket);
-  struct PP_Var (*GetProtocol)(PP_Resource web_socket);
-  PP_WebSocketReadyState_Dev (*GetReadyState)(PP_Resource web_socket);
-  struct PP_Var (*GetURL)(PP_Resource web_socket);
-};
+typedef struct PPB_WebSocket_Dev_0_1 PPB_WebSocket_Dev;
 /**
  * @}
  */

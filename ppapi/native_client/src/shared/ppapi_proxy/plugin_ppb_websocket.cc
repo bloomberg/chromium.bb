@@ -303,42 +303,6 @@ PP_Var GetURL(PP_Resource ws) {
   return PP_MakeUndefined();
 }
 
-PP_Bool SetBinaryType(PP_Resource ws,
-                      PP_WebSocketBinaryType_Dev binary_type) {
-  DebugPrintf("PPB_WebSocket::SetBinaryType: ws=%"NACL_PRId32"\n", ws);
-
-  int32_t success;
-  NaClSrpcError srpc_result =
-      PpbWebSocketRpcClient::PPB_WebSocket_SetBinaryType(
-          GetMainSrpcChannel(),
-          ws,
-          static_cast<int32_t>(binary_type),
-          &success);
-  DebugPrintf("PPB_WebSocket::SetBinaryType: %s\n",
-      NaClSrpcErrorString(srpc_result));
-
-  if (srpc_result == NACL_SRPC_RESULT_OK && success)
-    return PP_TRUE;
-  return PP_FALSE;
-}
-
-PP_WebSocketBinaryType_Dev GetBinaryType(PP_Resource ws) {
-  DebugPrintf("PPB_WebSocket::GetBinaryType: ws=%"NACL_PRId32"\n", ws);
-
-  int32_t binary_type;
-  NaClSrpcError srpc_result =
-      PpbWebSocketRpcClient::PPB_WebSocket_GetBinaryType(
-          GetMainSrpcChannel(),
-          ws,
-          &binary_type);
-  DebugPrintf("PPB_WebSocket::GetBinaryType: %s\n",
-      NaClSrpcErrorString(srpc_result));
-
-  if (srpc_result != NACL_SRPC_RESULT_OK)
-    return PP_WEBSOCKETBINARYTYPE_INVALID;
-  return static_cast<PP_WebSocketBinaryType_Dev>(binary_type);
-}
-
 }  // namespace
 
 const PPB_WebSocket_Dev* PluginWebSocket::GetInterface() {
@@ -356,9 +320,7 @@ const PPB_WebSocket_Dev* PluginWebSocket::GetInterface() {
     &GetExtensions,
     &GetProtocol,
     &GetReadyState,
-    &GetURL,
-    &SetBinaryType,
-    &GetBinaryType
+    &GetURL
   };
   return &websocket_interface;
 }
