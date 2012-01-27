@@ -12,7 +12,6 @@
 #include "media/audio/audio_util.h"
 
 static const int64 kMillisecondsBetweenProcessCalls = 5000;
-static const char kVersion[] = "WebRTC AudioDevice 1.0.0.Chrome";
 
 WebRtcAudioDeviceImpl::WebRtcAudioDeviceImpl()
     : ref_count_(0),
@@ -196,25 +195,6 @@ void WebRtcAudioDeviceImpl::OnDeviceStopped() {
   base::AutoLock auto_lock(lock_);
   if (recording_)
     recording_ = false;
-}
-
-int32_t WebRtcAudioDeviceImpl::Version(char* version,
-                                       uint32_t& remaining_buffer_in_bytes,
-                                       uint32_t& position) const {
-  DVLOG(1) << "Version()";
-  DCHECK(version);
-  if (version == NULL)
-    return -1;
-  size_t arr_size = arraysize(kVersion);
-  if (remaining_buffer_in_bytes < arr_size) {
-    DLOG(WARNING) << "version string requires " << arr_size << " bytes";
-    return -1;
-  }
-  base::strlcpy(&version[position], kVersion, arr_size - 1);
-  remaining_buffer_in_bytes -= arr_size;
-  position += arr_size;
-  DVLOG(1) << "version: " << version;
-  return 0;
 }
 
 int32_t WebRtcAudioDeviceImpl::ChangeUniqueId(const int32_t id) {

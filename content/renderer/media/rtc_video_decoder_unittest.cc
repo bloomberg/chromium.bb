@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -46,6 +46,14 @@ class NullVideoFrame : public cricket::VideoFrame {
   NullVideoFrame() {};
   virtual ~NullVideoFrame() {};
 
+  virtual bool Reset(uint32 fourcc, int w, int h, int dw, int dh,
+                     uint8 *sample, size_t sample_size,
+                     size_t pixel_width, size_t pixel_height,
+                     int64 elapsed_time, int64 time_stamp, int rotation)
+                     OVERRIDE {
+    return true;
+  }
+
   virtual size_t GetWidth() const OVERRIDE { return 0; }
   virtual size_t GetHeight() const OVERRIDE { return 0; }
   virtual const uint8 *GetYPlane() const OVERRIDE { return NULL; }
@@ -77,7 +85,7 @@ class NullVideoFrame : public cricket::VideoFrame {
 
   virtual size_t ConvertToRgbBuffer(uint32 to_fourcc, uint8 *buffer,
                                     size_t size,
-                                    size_t pitch_rgb) const OVERRIDE {
+                                    int stride_rgb) const OVERRIDE {
     return 0;
   }
 
@@ -98,6 +106,14 @@ class NullVideoFrame : public cricket::VideoFrame {
 
   virtual VideoFrame *Stretch(size_t w, size_t h, bool interpolate,
                               bool crop) const OVERRIDE {
+    return NULL;
+  }
+
+ protected:
+  virtual VideoFrame* CreateEmptyFrame(int w, int h,
+                                       size_t pixel_width, size_t pixel_height,
+                                       int64 elapsed_time,
+                                       int64 time_stamp) const OVERRIDE {
     return NULL;
   }
 };

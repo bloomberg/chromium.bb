@@ -127,9 +127,6 @@ class CONTENT_EXPORT WebRtcAudioDeviceImpl
   virtual void OnDeviceStopped() OVERRIDE;
 
   // webrtc::Module implementation.
-  virtual int32_t Version(char* version,
-                          uint32_t& remaining_buffer_in_bytes,
-                          uint32_t& position) const OVERRIDE;
   virtual int32_t ChangeUniqueId(const int32_t id) OVERRIDE;
   virtual int32_t TimeUntilNextProcess() OVERRIDE;
   virtual int32_t Process() OVERRIDE;

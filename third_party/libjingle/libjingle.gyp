@@ -364,7 +364,9 @@
           'sources': [
             'source/talk/base/sslstreamadapter.cc',
             'source/talk/base/sslstreamadapter.h',
-            'source/talk/base/unixfilesystem.cc',
+            # TODO(mallinath): Temporary fix for Android, remove when newer
+            # libjingle release is rolled.
+            'overrides/talk/base/unixfilesystem.cc',
             'source/talk/base/unixfilesystem.h',
           ],
         }],
@@ -416,6 +418,11 @@
         'source/talk/p2p/base/port.cc',
         'source/talk/p2p/base/port.h',
         'source/talk/p2p/base/portallocator.h',
+        'source/talk/p2p/base/portallocator.cc',
+        'source/talk/p2p/base/portallocatorsessionproxy.cc',
+        'source/talk/p2p/base/portallocatorsessionproxy.h',
+        'source/talk/p2p/base/portproxy.cc',
+        'source/talk/p2p/base/portproxy.h',
         'source/talk/p2p/base/pseudotcp.cc',
         'source/talk/p2p/base/pseudotcp.h',
         'source/talk/p2p/base/rawtransport.cc',
