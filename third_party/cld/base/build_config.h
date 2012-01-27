@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,6 +17,8 @@
 // A set of macros to use for platform detection.
 #if defined(__APPLE__)
 #define OS_MACOSX 1
+#elif defined(ANDROID)
+#define OS_ANDROID 1
 #elif defined(__linux__)
 #define OS_LINUX 1
 // Use TOOLKIT_GTK on linux if TOOLKIT_VIEWS isn't defined.
@@ -45,14 +47,18 @@
 #define TOOLKIT_USES_GTK 1
 #endif
 
-#if defined(OS_LINUX) || defined(OS_FREEBSD) || defined(OS_OPENBSD)
+#if defined(OS_LINUX) || defined(OS_FREEBSD) || defined(OS_OPENBSD) || \
+    defined(OS_ANDROID)
 #define USE_NSS 1  // Use NSS for crypto.
+#ifndef OS_ANDROID
 #define USE_X11 1  // Use X for graphics.
+#endif
 #endif
 
 // For access to standard POSIXish features, use OS_POSIX instead of a
 // more specific macro.
-#if defined(OS_MACOSX) || defined(OS_LINUX) || defined(OS_FREEBSD) || defined(OS_OPENBSD) || defined(OS_SOLARIS)
+#if defined(OS_MACOSX) || defined(OS_LINUX) || defined(OS_FREEBSD) || \
+    defined(OS_OPENBSD) || defined(OS_SOLARIS) || defined(OS_ANDROID)
 #define OS_POSIX 1
 // Use base::DataPack for name/value pairs.
 #define USE_BASE_DATA_PACK 1
