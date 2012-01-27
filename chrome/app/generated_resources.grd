@@ -5272,6 +5272,17 @@ Because search results are requested even while you're typing your query, your d
         You have DNS certificate provenance checking enabled. This may result in private information being sent to Google.
       </message>
 
+      <!-- Pepper Broker Info bar -->
+      <message name="IDS_PEPPER_BROKER_MESSAGE" desc="Message shown when a pepper plugin wants to launch its broker. This message is followed by a 'Learn more' link.">
+        The <ph name="PEPPER_PLUGIN_NAME">$1<ex>Shockwave Flash</ex></ph> plugin on <ph name="PEPPER_PLUGIN_DOMAIN">$2<ex>example.com</ex></ph> wants to access your computer."
+      </message>
+      <message name="IDS_PEPPER_BROKER_ALLOW_BUTTON" desc="Text for the allow button on the pepper broker launch prompt">
+        Allow
+      </message>
+      <message name="IDS_PEPPER_BROKER_DENY_BUTTON" desc="Text for the deny button on the pepper broker launch prompt">
+        Deny
+      </message>
+
       <!-- Blocked Displaying/Running Insecure Content info bar -->
       <message name="IDS_BLOCKED_DISPLAYING_INSECURE_CONTENT" desc="Message shown when a website has asked chrome to display mixed content.  The message is followed by a learn more link and an allow button.">
         This page has insecure content.
