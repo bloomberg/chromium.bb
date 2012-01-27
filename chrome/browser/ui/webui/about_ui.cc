@@ -1013,7 +1013,11 @@ std::string AboutVersionStrings(DictionaryValue* localized_strings,
 
   localized_strings->SetString("name",
       l10n_util::GetStringUTF16(IDS_PRODUCT_NAME));
+#if defined(USE_AURA)
+  localized_strings->SetString("version", version_info.Version() + " Aura");
+#else
   localized_strings->SetString("version", version_info.Version());
+#endif
   // Bug 79458: Need to evaluate the use of getting the version string on
   // this thread.
   base::ThreadRestrictions::ScopedAllowIO allow_io;
