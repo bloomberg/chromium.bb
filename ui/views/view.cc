@@ -159,16 +159,25 @@ Widget* View::GetWidget() {
 }
 
 void View::AddChildView(View* view) {
+  if (view->parent_ == this)
+    return;
   AddChildViewAt(view, child_count());
 }
 
 void View::AddChildViewAt(View* view, int index) {
   CHECK_NE(view, this) << "You cannot add a view as its own child";
+  DCHECK_GE(index, 0);
+  DCHECK_LE(index, child_count());
 
   // If |view| has a parent, remove it from its parent.
   View* parent = view->parent_;
-  if (parent)
+  if (parent) {
+    if (parent == this) {
+      ReorderChildView(view, index);
+      return;
+    }
     parent->RemoveChildView(view);
+  }
 
   // Sets the prev/next focus views.
   InitFocusSiblings(view, index);

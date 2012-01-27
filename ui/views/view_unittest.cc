@@ -2502,6 +2502,39 @@ TEST_F(ViewTest, GetViewByID) {
   EXPECT_NE(views.end(), i);
 }
 
+TEST_F(ViewTest, AddExistingChild) {
+  View v1, v2, v3;
+
+  v1.AddChildView(&v2);
+  v1.AddChildView(&v3);
+  EXPECT_EQ(0, v1.GetIndexOf(&v2));
+  EXPECT_EQ(1, v1.GetIndexOf(&v3));
+
+  // Check that there's no change in order when adding at same index.
+  v1.AddChildViewAt(&v2, 0);
+  EXPECT_EQ(0, v1.GetIndexOf(&v2));
+  EXPECT_EQ(1, v1.GetIndexOf(&v3));
+  v1.AddChildViewAt(&v3, 1);
+  EXPECT_EQ(0, v1.GetIndexOf(&v2));
+  EXPECT_EQ(1, v1.GetIndexOf(&v3));
+
+  // Add it at a different index and check for change in order.
+  v1.AddChildViewAt(&v2, 1);
+  EXPECT_EQ(1, v1.GetIndexOf(&v2));
+  EXPECT_EQ(0, v1.GetIndexOf(&v3));
+  v1.AddChildViewAt(&v2, 0);
+  EXPECT_EQ(0, v1.GetIndexOf(&v2));
+  EXPECT_EQ(1, v1.GetIndexOf(&v3));
+
+  // Check that calling |AddChildView()| does not change the order.
+  v1.AddChildView(&v2);
+  EXPECT_EQ(0, v1.GetIndexOf(&v2));
+  EXPECT_EQ(1, v1.GetIndexOf(&v3));
+  v1.AddChildView(&v3);
+  EXPECT_EQ(0, v1.GetIndexOf(&v2));
+  EXPECT_EQ(1, v1.GetIndexOf(&v3));
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Layers
 ////////////////////////////////////////////////////////////////////////////////
