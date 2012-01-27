@@ -261,12 +261,6 @@ class ManifestVersionedSyncStage(SyncStage):
 class LKGMCandidateSyncStage(ManifestVersionedSyncStage):
   """Stage that generates a unique manifest file candidate, and sync's to it."""
 
-  def __init__(self, bot_id, options, build_config):
-    super(LKGMCandidateSyncStage, self).__init__(bot_id, options, build_config)
-    # lkgm_manager deals with making sure we're synced to whatever manifest
-    # we get back in GetNextManifest so syncing again is redundant.
-    self.skip_sync = True
-
   def Initialize(self):
     """Override: Creates an LKGMManager rather than a ManifestManager."""
     dry_run = self._options.debug
@@ -294,6 +288,12 @@ class LKGMCandidateSyncStage(ManifestVersionedSyncStage):
     else:
       return self.manifest_manager.GetLatestCandidate()
 
+  def _PerformStage(self):
+    """Performs normal stage and prints blamelist at end."""
+    super(LKGMCandidateSyncStage, self)._PerformStage()
+    if self._tracking_branch == 'master':
+      self.manifest_manager.GenerateBlameListSinceLKGM()
+
 
 class CommitQueueSyncStage(LKGMCandidateSyncStage):
   """Commit Queue Sync stage that handles syncing and applying patches.
@@ -315,6 +315,9 @@ class CommitQueueSyncStage(LKGMCandidateSyncStage):
     # Figure out the builder's name from the buildbot waterfall.
     builder_name = build_config.get('paladin_builder_name')
     self.builder_name = builder_name if builder_name else bot_id
+    # We deal with syncing ourselves in this class and don't rely on manifest
+    # checkout.
+    self.skip_sync = True
 
   def SaveValidationPool(self):
     """Serializes the validation pool.
@@ -384,6 +387,7 @@ class CommitQueueSyncStage(LKGMCandidateSyncStage):
       manifest = self.manifest_manager.GetLatestCandidate()
       if manifest:
         self.SetPoolFromManifest(manifest)
+        self.repo.Sync(manifest)
         self.pool.ApplyPoolIntoRepo(self._build_root)
 
       return manifest
@@ -451,10 +455,9 @@ class LKGMCandidateSyncCompletionStage(ManifestVersionedSyncCompletionStage):
 
   def HandleSuccess(self):
     # We only promote for the pfq, not chrome pfq.
-    if (cbuildbot_config.IsPFQType(self._build_config['build_type']) and
+    if (self._build_config['build_type'] == constants.PFQ_TYPE and
         self._build_config['master'] and self._tracking_branch == 'master' and
-        ManifestVersionedSyncStage.manifest_manager != None and
-        self._build_config['build_type'] != constants.CHROME_PFQ_TYPE):
+        ManifestVersionedSyncStage.manifest_manager != None):
       ManifestVersionedSyncStage.manifest_manager.PromoteCandidate()
 
   def _PerformStage(self):
@@ -470,8 +473,7 @@ class CommitQueueCompletionStage(LKGMCandidateSyncCompletionStage):
   def HandleSuccess(self):
     if self._build_config['master']:
       CommitQueueSyncStage.pool.SubmitPool()
-      if cbuildbot_config.IsPFQType(self._build_config['build_type']):
-        super(CommitQueueCompletionStage, self).HandleSuccess()
+      # TODO(sosa): Generate a manifest after we submit -- new LKGM.
 
   def HandleError(self):
     CommitQueueSyncStage.pool.HandleValidationFailure()
@@ -1300,7 +1302,8 @@ class UploadPrebuiltsStage(bs.BuilderStage):
       board = 'amd64'
     elif prebuilt_type not in [constants.BUILD_FROM_SOURCE_TYPE,
                                constants.CANARY_TYPE]:
-      assert cbuildbot_config.IsPFQType(prebuilt_type)
+      assert prebuilt_type in (constants.PFQ_TYPE, constants.CHROME_PFQ_TYPE)
+
       overlays = self._build_config['overlays']
       if self._build_config['master']:
         extra_args.append('--sync-binhost-conf')
@@ -1319,8 +1322,7 @@ class UploadPrebuiltsStage(bs.BuilderStage):
                 extra_args.extend(['--slave-profile', slave_profile])
 
       # Pre-flight queues should upload host preflight prebuilts.
-      if (cbuildbot_config.IsPFQType(prebuilt_type) and overlays == 'public'
-          and prebuilt_type != constants.CHROME_PFQ_TYPE):
+      if prebuilt_type == constants.PFQ_TYPE and overlays == 'public':
         extra_args.append('--sync-host')
 
       # Deduplicate against previous binhosts.

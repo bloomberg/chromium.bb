@@ -191,7 +191,6 @@ class LKGMManagerTest(mox.MoxTestBase):
 
   def testGetLatestCandidate(self):
     """Makes sure we can get the latest created candidate manifest."""
-    self.mox.StubOutWithMock(repository.RepoRepository, 'Sync')
     self.mox.StubOutWithMock(lkgm_manager.LKGMManager, 'GetCurrentVersionInfo')
     self.mox.StubOutWithMock(lkgm_manager.LKGMManager,
                              'RefreshManifestCheckout')
@@ -215,8 +214,6 @@ class LKGMManagerTest(mox.MoxTestBase):
     lkgm_manager.LKGMManager.SetInFlight(most_recent_candidate.VersionString())
     lkgm_manager.LKGMManager.PushSpecChanges(
         mox.StrContains(most_recent_candidate.VersionString()))
-    repository.RepoRepository.Sync(
-        self._GetPathToManifest(most_recent_candidate))
 
     self.manager.latest_unprocessed = '1.2.3-rc12'
     self.mox.ReplayAll()
@@ -226,7 +223,6 @@ class LKGMManagerTest(mox.MoxTestBase):
 
   def testGetLatestCandidateOneRetry(self):
     """Makes sure we can get the latest candidate even on retry."""
-    self.mox.StubOutWithMock(repository.RepoRepository, 'Sync')
     self.mox.StubOutWithMock(lkgm_manager.LKGMManager, 'GetCurrentVersionInfo')
     self.mox.StubOutWithMock(lkgm_manager.LKGMManager,
                              'RefreshManifestCheckout')
@@ -256,8 +252,6 @@ class LKGMManagerTest(mox.MoxTestBase):
     lkgm_manager.LKGMManager.SetInFlight(most_recent_candidate.VersionString())
     lkgm_manager.LKGMManager.PushSpecChanges(
         mox.StrContains(most_recent_candidate.VersionString()))
-    repository.RepoRepository.Sync(
-        self._GetPathToManifest(most_recent_candidate))
 
     self.manager.latest_unprocessed = '1.2.4-rc12'
     self.mox.ReplayAll()
@@ -392,15 +386,8 @@ class LKGMManagerTest(mox.MoxTestBase):
     self.mox.VerifyAll()
 
   def testGenerateBlameListSinceLKGM(self):
-    """Tests that we can generate a blamelist from two commit messages.
-
-    This test tests the functionality of generating a blamelist for a git log.
-    Note in this test there are two commit messages, one commited by the
-    Commit Queue and another from Non-Commit Queue.  We test the correct
-    handling in both cases.
-    """
+    """Tests that we can generate a blamelist from one commit message."""
     fake_git_log = """Author: Sammy Sosa <fake@fake.com>
-    Commit: Chris Sosa <sosa@chromium.org>
 
     Date:   Mon Aug 8 14:52:06 2011 -0700
 
@@ -413,26 +400,7 @@ class LKGMManagerTest(mox.MoxTestBase):
     Reviewed-on: http://gerrit.chromium.org/gerrit/1234
     Reviewed-by: Fake person <fake@fake.org>
     Tested-by: Sammy Sosa <fake@fake.com>
-    Author: Sammy Sosa <fake@fake.com>
-    Commit: Gerrit <chrome-bot@chromium.org>
-
-    Date:   Mon Aug 8 14:52:06 2011 -0700
-
-    Add in a test for cbuildbot
-
-    TEST=So much testing
-    BUG=chromium-os:99999
-
-    Change-Id: Ib72a742fd2cee3c4a5223b8easwasdgsdgfasdf
-    Reviewed-on: http://gerrit.chromium.org/gerrit/1235
-    Reviewed-by: Fake person <fake@fake.org>
-    Tested-by: Sammy Sosa <fake@fake.com>
     """
-    self.manager.incr_type = 'build'
-    self.mox.StubOutWithMock(os.path, 'exists')
-    self.mox.StubOutWithMock(cros_lib, 'RunCommand')
-    self.mox.StubOutWithMock(lkgm_manager, 'PrintLink')
-
     fake_revision = '1234567890'
     fake_project_handler = self.mox.CreateMock(cros_lib.ManifestHandler)
     fake_project_handler.projects = { 'fake/repo': { 'name': 'fake/repo',
@@ -447,17 +415,8 @@ class LKGMManagerTest(mox.MoxTestBase):
 
     cros_lib.ManifestHandler.ParseManifest(
         self.tmpmandir + '/LKGM/lkgm.xml').AndReturn(fake_project_handler)
-    os.path.exists(mox.StrContains('fake/path')).AndReturn(True)
-    cros_lib.RunCommand(['git', 'log', '--pretty=full',
-                         '%s..HEAD' % fake_revision],
-                        print_cmd=False, redirect_stdout=True,
-                        cwd=self.tmpdir + '/fake/path').AndReturn(fake_result)
-    lkgm_manager.PrintLink('NO-CQ fake:1234',
-                           'http://gerrit.chromium.org/gerrit/1234')
-    lkgm_manager.PrintLink('fake:1235',
-                           'http://gerrit.chromium.org/gerrit/1235')
     self.mox.ReplayAll()
-    self.manager._GenerateBlameListSinceLKGM()
+    self.manager.GenerateBlameListSinceLKGM()
     self.mox.VerifyAll()
 
   def testAddPatchesToManifest(self):

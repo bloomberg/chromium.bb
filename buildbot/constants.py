@@ -68,20 +68,15 @@ VALID_CHROME_REVISIONS = [CHROME_REV_TOT, CHROME_REV_LATEST,
 
 # Build types supported.
 
-# TODO(sosa): Deprecate PFQ type.
 # Incremental builds that are built using binary packages when available.
 # These builds have less validation than other build types.  If manifest_version
 # is True, these builds serve as PFQ builders.  Use of this type without
 # manifest_version is deprecated.
 PFQ_TYPE = 'binary'
 
-# TODO(sosa): Deprecate CQ type.
 # Commit Queue type that is similar to PFQ_TYPE but uses Commit Queue sync
 # logic.
-COMMIT_QUEUE_TYPE = 'commit-queue'
-
-# Hybrid Commit and PFQ type.  Ultimate protection.
-PALADIN_TYPE = 'paladin'
+COMMIT_QUEUE_TYPE = 'paladin'
 
 # Chrome PFQ type.  Incremental build type that builds and validates new
 # versions of Chrome.  Only valid if set with CHROME_REV.  See
@@ -104,8 +99,7 @@ REFRESH_PACKAGES_TYPE = 'refresh_packages'
 
 VALID_BUILD_TYPES = [PFQ_TYPE, COMMIT_QUEUE_TYPE, CHROME_PFQ_TYPE,
                      BUILD_FROM_SOURCE_TYPE, CHROOT_BUILDER_TYPE,
-                     REFRESH_PACKAGES_TYPE, CANARY_TYPE,
-                     PALADIN_TYPE]
+                     REFRESH_PACKAGES_TYPE, CANARY_TYPE]
 
 # Defines VM Test types.
 SMOKE_SUITE_TEST_TYPE = 'smoke_suite'
