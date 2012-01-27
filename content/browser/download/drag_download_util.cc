@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -73,6 +73,9 @@ FileStream* CreateFileStreamForDrop(FilePath* file_path) {
  #endif
       new_file_path = file_path->InsertBeforeExtension(suffix);
     }
+
+    // http://crbug.com/110709
+    base::ThreadRestrictions::ScopedAllowIO allow_io;
 
     // Explicitly (and redundantly check) for file -- despite the fact that our
     // open won't overwrite -- just to avoid log spew.
