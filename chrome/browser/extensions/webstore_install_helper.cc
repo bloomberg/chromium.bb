@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -35,7 +35,6 @@ WebstoreInstallHelper::WebstoreInstallHelper(
       icon_base64_data_(icon_data),
       icon_url_(icon_url),
       context_getter_(context_getter),
-      utility_host_(NULL),
       icon_decode_complete_(false),
       manifest_parse_complete_(false),
       parse_error_(Delegate::UNKNOWN_ERROR) {}
@@ -67,7 +66,8 @@ void WebstoreInstallHelper::Start() {
 
 void WebstoreInstallHelper::StartWorkOnIOThread() {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  utility_host_ = new UtilityProcessHost(this, BrowserThread::IO);
+  utility_host_ =
+      (new UtilityProcessHost(this, BrowserThread::IO))->AsWeakPtr();
   utility_host_->set_use_linux_zygote(true);
   utility_host_->StartBatchMode();
 
@@ -172,8 +172,10 @@ void WebstoreInstallHelper::ReportResultsIfComplete() {
     return;
 
   // The utility_host_ will take care of deleting itself after this call.
-  utility_host_->EndBatchMode();
-  utility_host_ = NULL;
+  if (utility_host_) {
+    utility_host_->EndBatchMode();
+    utility_host_.reset();
+  }
 
   BrowserThread::PostTask(
       BrowserThread::UI,

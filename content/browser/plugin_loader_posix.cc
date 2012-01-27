@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,8 +17,7 @@ using content::BrowserThread;
 using content::ChildProcessHost;
 
 PluginLoaderPosix::PluginLoaderPosix()
-    : process_host_(NULL),
-      next_load_index_(0) {
+    : next_load_index_(0) {
 }
 
 void PluginLoaderPosix::LoadPlugins(
@@ -53,7 +52,9 @@ void PluginLoaderPosix::OnProcessCrashed(int exit_code) {
 }
 
 bool PluginLoaderPosix::Send(IPC::Message* message) {
-  return process_host_->Send(message);
+  if (process_host_)
+    return process_host_->Send(message);
+  return false;
 }
 
 PluginLoaderPosix::~PluginLoaderPosix() {
@@ -95,7 +96,8 @@ void PluginLoaderPosix::LoadPluginsInternal() {
   if (load_start_time_.is_null())
     load_start_time_ = base::TimeTicks::Now();
 
-  process_host_ = new UtilityProcessHost(this, BrowserThread::IO);
+  process_host_ =
+      (new UtilityProcessHost(this, BrowserThread::IO))->AsWeakPtr();
   process_host_->set_no_sandbox(true);
 #if defined(OS_MACOSX)
   process_host_->set_child_flags(ChildProcessHost::CHILD_ALLOW_HEAP_EXECUTION);

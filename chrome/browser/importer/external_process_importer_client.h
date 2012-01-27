@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -109,8 +109,9 @@ class ExternalProcessImporterClient : public UtilityProcessHost::Client {
   ExternalProcessImporterHost* process_importer_host_;
 
   // Handles sending messages to the external process.  Deletes itself when
-  // the external process dies (see ChildProcessHost::OnChildDied).
-  UtilityProcessHost* utility_process_host_;
+  // the external process dies (see
+  // BrowserChildProcessHost::OnChildDisconnected).
+  base::WeakPtr<UtilityProcessHost> utility_process_host_;
 
   // Data to be passed from the importer host to the external importer.
   const importer::SourceProfile& source_profile_;

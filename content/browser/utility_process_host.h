@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,6 +12,7 @@
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "base/process_util.h"
+#include "base/memory/weak_ptr.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_child_process_host_delegate.h"
 #include "content/public/browser/browser_thread.h"
@@ -26,9 +27,13 @@ class BrowserChildProcessHostImpl;
 // If you need multiple batches of work to be done in the sandboxed process,
 // use StartBatchMode(), then multiple calls to StartFooBar(p),
 // then finish with EndBatchMode().
+//
+// Note: If your class keeps a ptr to an object of this type, grab a weak ptr to
+// avoid a use after free.  See http://crbug.com/108871.
 class CONTENT_EXPORT UtilityProcessHost
     : public content::BrowserChildProcessHostDelegate,
-      public IPC::Message::Sender {
+      public IPC::Message::Sender,
+      public base::SupportsWeakPtr<UtilityProcessHost> {
  public:
   // An interface to be implemented by consumers of the utility process to
   // get results back.  All functions are called on the thread passed along

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -100,7 +100,7 @@ class KeyUtilityClientImpl
   content::SerializedScriptValue value_after_injection_;
 
   // Used in the IO thread.
-  UtilityProcessHost* utility_process_host_;
+  base::WeakPtr<UtilityProcessHost> utility_process_host_;
   scoped_refptr<Client> client_;
 
   DISALLOW_COPY_AND_ASSIGN(KeyUtilityClientImpl);
@@ -177,16 +177,17 @@ IndexedDBKeyUtilityClient::InjectIDBKeyIntoSerializedValue(
 void KeyUtilityClientImpl::Shutdown() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
-  utility_process_host_->EndBatchMode();
-  utility_process_host_ = NULL;
+  if (utility_process_host_) {
+    utility_process_host_->EndBatchMode();
+    utility_process_host_.reset();
+  }
   client_ = NULL;
   state_ = STATE_SHUTDOWN;
 }
 
 KeyUtilityClientImpl::KeyUtilityClientImpl()
     : waitable_event_(false, false),
-      state_(STATE_UNINITIALIZED),
-      utility_process_host_(NULL) {
+      state_(STATE_UNINITIALIZED) {
 }
 
 KeyUtilityClientImpl::~KeyUtilityClientImpl() {
@@ -274,8 +275,8 @@ void KeyUtilityClientImpl::StartUtilityProcessInternal() {
   DCHECK(state_ == STATE_UNINITIALIZED);
 
   client_ = new KeyUtilityClientImpl::Client(this);
-  utility_process_host_ = new UtilityProcessHost(
-      client_.get(), BrowserThread::IO);
+  utility_process_host_ = (new UtilityProcessHost(
+      client_.get(), BrowserThread::IO))->AsWeakPtr();
   utility_process_host_->set_use_linux_zygote(true);
   utility_process_host_->StartBatchMode();
   state_ = STATE_INITIALIZED;
@@ -290,8 +291,10 @@ void KeyUtilityClientImpl::EndUtilityProcessInternal() {
     return;
   }
 
-  utility_process_host_->EndBatchMode();
-  utility_process_host_ = NULL;
+  if (utility_process_host_) {
+    utility_process_host_->EndBatchMode();
+    utility_process_host_.reset();
+  }
   client_ = NULL;
   state_ = STATE_SHUTDOWN;
   waitable_event_.Signal();
@@ -310,8 +313,10 @@ void KeyUtilityClientImpl::CallStartIDBKeyFromValueAndKeyPathFromIOThread(
   }
 
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  utility_process_host_->Send(new UtilityMsg_IDBKeysFromValuesAndKeyPath(
-      0, values, key_path));
+  if (utility_process_host_) {
+    utility_process_host_->Send(new UtilityMsg_IDBKeysFromValuesAndKeyPath(
+        0, values, key_path));
+  }
 }
 
 void KeyUtilityClientImpl::CallStartInjectIDBKeyFromIOThread(
@@ -327,8 +332,9 @@ void KeyUtilityClientImpl::CallStartInjectIDBKeyFromIOThread(
   }
 
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  utility_process_host_->Send(new UtilityMsg_InjectIDBKey(
-      key, value, key_path));
+  if (utility_process_host_)
+    utility_process_host_->Send(new UtilityMsg_InjectIDBKey(
+        key, value, key_path));
 }
 
 void KeyUtilityClientImpl::SetKeys(const std::vector<IndexedDBKey>& keys) {
@@ -361,6 +367,7 @@ KeyUtilityClientImpl::Client::Client(KeyUtilityClientImpl* parent)
 void KeyUtilityClientImpl::Client::OnProcessCrashed(int exit_code) {
   if (parent_->state_ == STATE_CREATING_KEYS)
     parent_->FinishCreatingKeys();
+  parent_->Shutdown();
 }
 
 bool KeyUtilityClientImpl::Client::OnMessageReceived(

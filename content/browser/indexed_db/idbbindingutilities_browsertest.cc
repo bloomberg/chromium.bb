@@ -108,7 +108,6 @@ class IDBKeyPathHelper : public UtilityProcessHost::Client {
  public:
   IDBKeyPathHelper()
       : expected_id_(0),
-        utility_process_host_(NULL),
         value_for_key_path_failed_(false) {
   }
 
@@ -121,7 +120,7 @@ class IDBKeyPathHelper : public UtilityProcessHost::Client {
     }
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
     utility_process_host_ =
-        new UtilityProcessHost(this, BrowserThread::IO);
+        (new UtilityProcessHost(this, BrowserThread::IO))->AsWeakPtr();
     utility_process_host_->set_use_linux_zygote(true);
     utility_process_host_->StartBatchMode();
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
@@ -137,7 +136,7 @@ class IDBKeyPathHelper : public UtilityProcessHost::Client {
     }
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
     utility_process_host_->EndBatchMode();
-    utility_process_host_ = NULL;
+    utility_process_host_.reset();
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
                             MessageLoop::QuitClosure());
   }
@@ -239,7 +238,7 @@ class IDBKeyPathHelper : public UtilityProcessHost::Client {
  private:
   int expected_id_;
   std::vector<IndexedDBKey> expected_keys_;
-  UtilityProcessHost* utility_process_host_;
+  base::WeakPtr<UtilityProcessHost> utility_process_host_;
   bool value_for_key_path_failed_;
   content::SerializedScriptValue expected_value_;
 };
