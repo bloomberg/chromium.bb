@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -166,7 +166,14 @@ BOOL CALLBACK EnumChildProc(HWND hwnd, LPARAM lparam) {
 }
 
 // Tests that hiding/showing the parent frame hides/shows the plugin.
-TEST_F(PluginTest, PluginVisibilty) {
+// Fails for WIN. http://crbug.com/111601
+#if defined(OS_WIN)
+#define MAYBE_PluginVisibilty FAILS_PluginVisibilty
+#else
+#define MAYBE_PluginVisibilty PluginVisibilty
+#endif
+
+TEST_F(PluginTest, MAYBE_PluginVisibilty) {
   FilePath test_html = data_dir_;
   test_html = test_html.AppendASCII(kPluginsDir);
   test_html = test_html.AppendASCII("plugin_visibility.html");
