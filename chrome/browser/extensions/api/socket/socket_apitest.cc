@@ -94,6 +94,10 @@ IN_PROC_BROWSER_TEST_F(SocketApiTest, SocketCreateBad) {
       browser(), NONE);
 }
 
+#if defined(OS_WIN)
+// http://crbug.com/111572
+#define SocketUDPExtension DISABLED_SocketUDPExtension
+#endif
 IN_PROC_BROWSER_TEST_F(SocketApiTest, SocketUDPExtension) {
   scoped_ptr<net::TestServer> test_server(
       new net::TestServer(net::TestServer::TYPE_UDP_ECHO,
