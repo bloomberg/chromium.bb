@@ -95,7 +95,6 @@ void SystemModalContainerLayoutManager::OnWillRemoveWindowFromLayout(
 void SystemModalContainerLayoutManager::OnChildWindowVisibilityChanged(
     aura::Window* child,
     bool visible) {
-  AnimateOnChildWindowVisibilityChanged(child, visible);
 }
 
 void SystemModalContainerLayoutManager::SetChildBounds(

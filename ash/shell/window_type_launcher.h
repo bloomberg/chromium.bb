@@ -76,6 +76,7 @@ class WindowTypeLauncher : public views::WidgetDelegateView,
   views::NativeTextButton* window_modal_button_;
   views::NativeTextButton* transient_button_;
   views::NativeTextButton* examples_button_;
+  views::NativeTextButton* show_hide_window_button_;
 #if !defined(OS_MACOSX)
   scoped_ptr<views::MenuRunner> menu_runner_;
 #endif

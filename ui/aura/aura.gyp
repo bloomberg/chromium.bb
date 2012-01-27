@@ -40,6 +40,8 @@
         'client/stacking_client.h',
         'client/tooltip_client.cc',
         'client/tooltip_client.h',
+        'client/visibility_client.cc',
+        'client/visibility_client.h',
         'client/window_move_client.cc',
         'client/window_move_client.h',
         'client/window_types.h',

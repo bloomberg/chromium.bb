@@ -116,6 +116,18 @@ class NonModalTransient : public views::WidgetDelegateView {
     widget->Show();
   }
 
+  static void ToggleNonModalTransient(aura::Window* parent) {
+    if (!non_modal_transient_) {
+      non_modal_transient_ =
+          views::Widget::CreateWindowWithParent(new NonModalTransient, parent);
+      non_modal_transient_->GetNativeView()->SetName("NonModalTransient");
+    }
+    if (non_modal_transient_->IsVisible())
+      non_modal_transient_->Hide();
+    else
+      non_modal_transient_->Show();
+  }
+
   // Overridden from views::View:
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
     canvas->FillRect(color_, GetLocalBounds());
@@ -134,12 +146,21 @@ class NonModalTransient : public views::WidgetDelegateView {
   virtual string16 GetWindowTitle() const OVERRIDE {
     return ASCIIToUTF16("Non-Modal Transient");
   }
+  virtual void DeleteDelegate() OVERRIDE {
+    if (GetWidget() == non_modal_transient_)
+      non_modal_transient_ = NULL;
+  }
 
  private:
   SkColor color_;
 
+  static views::Widget* non_modal_transient_;
+
   DISALLOW_COPY_AND_ASSIGN(NonModalTransient);
 };
+
+// static
+views::Widget* NonModalTransient::non_modal_transient_ = NULL;
 
 }  // namespace
 
@@ -178,7 +199,10 @@ WindowTypeLauncher::WindowTypeLauncher()
               this, ASCIIToUTF16("Open Non-Modal Transient Window")))),
       ALLOW_THIS_IN_INITIALIZER_LIST(examples_button_(
           new views::NativeTextButton(
-              this, ASCIIToUTF16("Open Views Examples Window")))) {
+              this, ASCIIToUTF16("Open Views Examples Window")))),
+      ALLOW_THIS_IN_INITIALIZER_LIST(show_hide_window_button_(
+          new views::NativeTextButton(
+              this, ASCIIToUTF16("Show/Hide a Window")))) {
   AddChildView(create_button_);
   AddChildView(create_nonresizable_button_);
   AddChildView(bubble_button_);
@@ -188,6 +212,7 @@ WindowTypeLauncher::WindowTypeLauncher()
   AddChildView(window_modal_button_);
   AddChildView(transient_button_);
   AddChildView(examples_button_);
+  AddChildView(show_hide_window_button_);
 #if !defined(OS_MACOSX)
   set_context_menu_controller(this);
 #endif
@@ -247,6 +272,12 @@ void WindowTypeLauncher::Layout() {
   examples_button_->SetBounds(
       5, transient_button_->y() - examples_ps.height() - 5,
       examples_ps.width(), examples_ps.height());
+
+  gfx::Size show_hide_window_ps =
+      show_hide_window_button_->GetPreferredSize();
+  show_hide_window_button_->SetBounds(
+      5, examples_button_->y() - show_hide_window_ps.height() - 5,
+      show_hide_window_ps.width(), show_hide_window_ps.height());
 }
 
 bool WindowTypeLauncher::OnMousePressed(const views::MouseEvent& event) {
@@ -292,6 +323,8 @@ void WindowTypeLauncher::ButtonPressed(views::Button* sender,
                                  ui::MODAL_TYPE_WINDOW);
   } else if (sender == transient_button_) {
     NonModalTransient::OpenNonModalTransient(GetWidget()->GetNativeView());
+  } else if (sender == show_hide_window_button_) {
+    NonModalTransient::ToggleNonModalTransient(GetWidget()->GetNativeView());
   }
 #if !defined(OS_MACOSX)
   else if (sender == examples_button_) {

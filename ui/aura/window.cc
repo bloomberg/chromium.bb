@@ -10,6 +10,7 @@
 #include "base/stl_util.h"
 #include "base/string_util.h"
 #include "ui/aura/client/stacking_client.h"
+#include "ui/aura/client/visibility_client.h"
 #include "ui/aura/event.h"
 #include "ui/aura/event_filter.h"
 #include "ui/aura/layout_manager.h"
@@ -35,11 +36,19 @@ Window* GetParentForWindow(Window* window, Window* suggested_parent) {
 
 }  // namespace
 
+Window::TestApi::TestApi(Window* window) : window_(window) {}
+
+bool Window::TestApi::OwnsLayer() const {
+  return !!window_->layer_owner_.get();
+}
+
 Window::Window(WindowDelegate* delegate)
     : type_(client::WINDOW_TYPE_UNKNOWN),
       delegate_(delegate),
+      layer_(NULL),
       parent_(NULL),
       transient_parent_(NULL),
+      visible_(false),
       id_(-1),
       transparent_(false),
       user_data_(NULL),
@@ -48,9 +57,6 @@ Window::Window(WindowDelegate* delegate)
 }
 
 Window::~Window() {
-  if (layer_.get())
-    layer_->set_delegate(NULL);
-
   // Let the delegate know we're in the processing of destroying.
   if (delegate_)
     delegate_->OnWindowDestroying();
@@ -94,10 +100,16 @@ Window::~Window() {
   DCHECK(transient_children_.empty());
 
   FOR_EACH_OBSERVER(WindowObserver, observers_, OnWindowDestroyed(this));
+
+  // The layer will either be destroyed by layer_owner_'s dtor, or by whoever
+  // acquired it.
+  layer_->set_delegate(NULL);
+  layer_ = NULL;
 }
 
 void Window::Init(ui::Layer::LayerType layer_type) {
-  layer_.reset(new ui::Layer(layer_type));
+  layer_ = new ui::Layer(layer_type);
+  layer_owner_.reset(layer_);
   layer_->SetVisible(false);
   layer_->set_delegate(this);
   UpdateLayerName(name_);
@@ -126,7 +138,7 @@ void Window::SetTransparent(bool transparent) {
 }
 
 ui::Layer* Window::AcquireLayer() {
-  return layer_.release();
+  return layer_owner_.release();
 }
 
 void Window::Show() {
@@ -139,7 +151,11 @@ void Window::Hide() {
 }
 
 bool Window::IsVisible() const {
-  return layer_->IsDrawn();
+  // Layer visibility can be inconsistent with window visibility, for example
+  // when a Window is hidden, we want this function to return false immediately
+  // after, even though the client may decide to animate the hide effect (and
+  // so the layer will be visible for some time after Hide() is called).
+  return visible_ && layer_->IsDrawn();
 }
 
 gfx::Rect Window::GetScreenBounds() const {
@@ -235,7 +251,8 @@ void Window::StackChildAbove(Window* child, Window* other) {
   children_.erase(children_.begin() + child_i);
   children_.insert(children_.begin() + dest_i, child);
 
-  layer()->StackAbove(child->layer(), other->layer());
+  if (other->layer()->delegate())
+    layer()->StackAbove(child->layer(), other->layer());
 
   // Stack any transient children that share the same parent to be in front of
   // 'child'.
@@ -259,7 +276,7 @@ void Window::AddChild(Window* child) {
     child->parent()->RemoveChild(child);
   child->parent_ = this;
 
-  layer_->Add(child->layer_.get());
+  layer_->Add(child->layer_);
 
   children_.push_back(child);
   if (layout_manager_.get())
@@ -296,9 +313,11 @@ void Window::RemoveChild(Window* child) {
   child->parent_ = NULL;
   if (root_window)
     root_window->WindowDetachedFromRootWindow(child);
-  // The either this window or |child| may have released its layer.
-  if (layer_.get() && child->layer_.get())
-    layer_->Remove(child->layer_.get());
+  // We should only remove the child's layer if the child still owns that layer.
+  // Someone else may have acquired ownership of it via AcquireLayer() and may
+  // expect the hierarchy to go unchanged as the Window is destroyed.
+  if (child->layer_owner_.get())
+    layer_->Remove(child->layer_);
   children_.erase(i);
   child->OnParentChanged();
 }
@@ -518,17 +537,21 @@ void Window::SetBoundsInternal(const gfx::Rect& new_bounds) {
 }
 
 void Window::SetVisible(bool visible) {
-  // TODO(beng): Replace this with layer_->GetTargetVisibility().
-  //             See http://crbug.com/110487
   if (visible == layer_->visible())
     return;  // No change.
 
   bool was_visible = IsVisible();
-  if (visible != (layer_->visible() && layer_->GetTargetOpacity() != 0.0f))
-    layer_->SetVisible(visible);
+  if (visible != layer_->visible()) {
+    if (client::GetVisibilityClient())
+      client::GetVisibilityClient()->UpdateLayerVisibility(this, visible);
+    else
+      layer_->SetVisible(visible);
+  }
+  visible_ = visible;
   bool is_visible = IsVisible();
   if (was_visible != is_visible) {
-    SchedulePaint();
+    if (is_visible)
+      SchedulePaint();
     if (delegate_)
       delegate_->OnWindowVisibilityChanged(is_visible);
   }

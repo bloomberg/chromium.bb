@@ -272,7 +272,6 @@ void RootWindow::WindowInitialized(Window* window) {
 }
 
 void RootWindow::WindowDestroying(Window* window) {
-  // Update the focused window state if the window was focused.
   if (focused_window_ == window)
     SetFocusedWindow(focused_window_->parent());
 

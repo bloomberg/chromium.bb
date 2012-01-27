@@ -50,6 +50,20 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
  public:
   typedef std::vector<Window*> Windows;
 
+  class AURA_EXPORT TestApi {
+   public:
+    explicit TestApi(Window* window);
+
+    bool OwnsLayer() const;
+
+   private:
+    TestApi();
+
+    Window* window_;
+
+    DISALLOW_COPY_AND_ASSIGN(TestApi);
+  };
+
   explicit Window(WindowDelegate* delegate);
   virtual ~Window();
 
@@ -73,17 +87,15 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
   bool transparent() const { return transparent_; }
   void SetTransparent(bool transparent);
 
-  ui::Layer* layer() { return layer_.get(); }
-  const ui::Layer* layer() const { return layer_.get(); }
+  ui::Layer* layer() { return layer_; }
+  const ui::Layer* layer() const { return layer_; }
 
-  // Releases the Window's reference to its layer, and returns it.
+  // Releases the Window's owning reference to its layer, and returns it.
   // This is used when you need to animate the presentation of the Window just
   // prior to destroying it. The window can be destroyed soon after calling this
   // function, and the caller is then responsible for disposing of the layer
-  // once any animation completes.
-  // Note that Window methods generally don't expect a NULL layer, and so this
-  // function should only be called right before destroying the Window,
-  // otherwise you will crash.
+  // once any animation completes. Note that layer() will remain valid until the
+  // end of ~Window().
   ui::Layer* AcquireLayer();
 
   WindowDelegate* delegate() { return delegate_; }
@@ -326,7 +338,13 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
 
   WindowDelegate* delegate_;
 
-  scoped_ptr<ui::Layer> layer_;
+  // The Window will own its layer unless ownership is relinquished via a call
+  // to AcquireLayer(). After that moment |layer_| will still be valid but
+  // |layer_owner_| will be NULL. The reason for releasing ownership is that
+  // the client may wish to animate the window's layer beyond the lifetime of
+  // the window, e.g. fading it out when it is destroyed.
+  scoped_ptr<ui::Layer> layer_owner_;
+  ui::Layer* layer_;
 
   // The Window's parent.
   Window* parent_;
@@ -338,6 +356,11 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
   Windows transient_children_;
 
   Window* transient_parent_;
+
+  // The visibility state of the window as set by Show()/Hide(). This may differ
+  // from the visibility of the underlying layer, which may remain visible after
+  // the window is hidden (e.g. to animate its disappearance).
+  bool visible_;
 
   int id_;
   std::string name_;

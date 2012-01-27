@@ -21,7 +21,6 @@
 #include "ash/wm/compact_layout_manager.h"
 #include "ash/wm/compact_status_area_layout_manager.h"
 #include "ash/wm/dialog_frame_view.h"
-#include "ash/wm/menu_container_layout_manager.h"
 #include "ash/wm/power_button_controller.h"
 #include "ash/wm/root_window_event_filter.h"
 #include "ash/wm/root_window_layout_manager.h"
@@ -33,6 +32,7 @@
 #include "ash/wm/toplevel_layout_manager.h"
 #include "ash/wm/toplevel_window_event_filter.h"
 #include "ash/wm/video_detector.h"
+#include "ash/wm/visibility_controller.h"
 #include "ash/wm/window_cycle_controller.h"
 #include "ash/wm/window_modality_controller.h"
 #include "ash/wm/window_util.h"
@@ -81,6 +81,7 @@ void CreateSpecialContainers(aura::Window::Windows* containers) {
   default_container->SetEventFilter(
       new ToplevelWindowEventFilter(default_container));
   default_container->set_id(internal::kShellWindowId_DefaultContainer);
+  SetChildWindowVisibilityChangesAnimated(default_container);
   containers->push_back(default_container);
 
   aura::Window* always_on_top_container = new aura::Window(NULL);
@@ -88,6 +89,7 @@ void CreateSpecialContainers(aura::Window::Windows* containers) {
       new ToplevelWindowEventFilter(always_on_top_container));
   always_on_top_container->set_id(
       internal::kShellWindowId_AlwaysOnTopContainer);
+  SetChildWindowVisibilityChangesAnimated(always_on_top_container);
   containers->push_back(always_on_top_container);
 
   aura::Window* panel_container = new aura::Window(NULL);
@@ -104,6 +106,7 @@ void CreateSpecialContainers(aura::Window::Windows* containers) {
   modal_container->SetLayoutManager(
       new internal::SystemModalContainerLayoutManager(modal_container));
   modal_container->set_id(internal::kShellWindowId_SystemModalContainer);
+  SetChildWindowVisibilityChangesAnimated(modal_container);
   containers->push_back(modal_container);
 
   // TODO(beng): Figure out if we can make this use
@@ -120,6 +123,7 @@ void CreateSpecialContainers(aura::Window::Windows* containers) {
       new internal::SystemModalContainerLayoutManager(lock_modal_container));
   lock_modal_container->set_id(
       internal::kShellWindowId_LockSystemModalContainer);
+  SetChildWindowVisibilityChangesAnimated(lock_modal_container);
   containers->push_back(lock_modal_container);
 
   aura::Window* status_container = new aura::Window(NULL);
@@ -128,7 +132,7 @@ void CreateSpecialContainers(aura::Window::Windows* containers) {
 
   aura::Window* menu_container = new aura::Window(NULL);
   menu_container->set_id(internal::kShellWindowId_MenuAndTooltipContainer);
-  menu_container->SetLayoutManager(new internal::MenuContainerLayoutManager);
+  SetChildWindowVisibilityChangesAnimated(menu_container);
   containers->push_back(menu_container);
 
   aura::Window* setting_bubble_container = new aura::Window(NULL);
@@ -298,6 +302,9 @@ void Shell::Init() {
 
   window_modality_controller_.reset(new internal::WindowModalityController);
   AddRootWindowEventFilter(window_modality_controller_.get());
+
+  visibility_controller_.reset(new internal::VisibilityController);
+  aura::client::SetVisibilityClient(visibility_controller_.get());
 
   accelerator_filter_.reset(new internal::AcceleratorFilter);
   AddRootWindowEventFilter(accelerator_filter_.get());

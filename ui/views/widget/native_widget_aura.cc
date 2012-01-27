@@ -161,21 +161,19 @@ gfx::Font NativeWidgetAura::GetWindowTitleFont() {
 void NativeWidgetAura::InitNativeWidget(const Widget::InitParams& params) {
   ownership_ = params.ownership;
   window_->set_user_data(this);
-  Widget::InitParams::Type window_type =
-      params.child ? Widget::InitParams::TYPE_CONTROL : params.type;
-  window_->SetType(GetAuraWindowTypeForWidgetType(window_type));
+  window_->SetType(GetAuraWindowTypeForWidgetType(params.type));
   // TODO(jamescook): Should this use params.show_state instead?
   window_->SetIntProperty(aura::client::kShowStateKey, ui::SHOW_STATE_NORMAL);
   window_->SetTransparent(params.transparent);
   window_->Init(params.create_texture_for_layer ?
                     ui::Layer::LAYER_HAS_TEXTURE :
                     ui::Layer::LAYER_HAS_NO_TEXTURE);
-  if (window_type == Widget::InitParams::TYPE_CONTROL)
+  if (params.type == Widget::InitParams::TYPE_CONTROL)
     window_->Show();
 
   delegate_->OnNativeWidgetCreated();
   window_->SetBounds(params.bounds);
-  if (window_type == Widget::InitParams::TYPE_CONTROL) {
+  if (params.child) {
     window_->SetParent(params.GetParent());
   } else {
     // Set up the transient child before the window is added. This way the
@@ -195,9 +193,8 @@ void NativeWidgetAura::InitNativeWidget(const Widget::InitParams& params) {
   can_activate_ = params.can_activate;
   DCHECK(GetWidget()->GetRootView());
 #if !defined(OS_MACOSX)
-  if (params.type != Widget::InitParams::TYPE_TOOLTIP) {
+  if (params.type != Widget::InitParams::TYPE_TOOLTIP)
     tooltip_manager_.reset(new views::TooltipManagerAura(this));
-  }
 #endif  // !defined(OS_MACOSX)
 
   drop_helper_.reset(new DropHelper(GetWidget()->GetRootView()));
@@ -699,11 +696,7 @@ void NativeWidgetAura::OnCaptureLost() {
 }
 
 void NativeWidgetAura::OnPaint(gfx::Canvas* canvas) {
-  // Because we may animate closed it's entirely possible to be asked to paint
-  // while closing. We ignore paints during this time as most likely the data
-  // associated with views is in a weird state.
-  if (!close_widget_factory_.HasWeakPtrs())
-    delegate_->OnNativeWidgetPaint(canvas);
+  delegate_->OnNativeWidgetPaint(canvas);
 }
 
 void NativeWidgetAura::OnWindowDestroying() {

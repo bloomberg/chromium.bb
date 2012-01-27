@@ -51,6 +51,7 @@ class RootWindowLayoutManager;
 class ShadowController;
 class StackingController;
 class TooltipController;
+class VisibilityController;
 class WindowModalityController;
 class WorkspaceController;
 }
@@ -183,6 +184,7 @@ class ASH_EXPORT Shell {
   scoped_ptr<internal::WorkspaceController> workspace_controller_;
   scoped_ptr<internal::ShadowController> shadow_controller_;
   scoped_ptr<internal::TooltipController> tooltip_controller_;
+  scoped_ptr<internal::VisibilityController> visibility_controller_;
   scoped_ptr<PowerButtonController> power_button_controller_;
   scoped_ptr<VideoDetector> video_detector_;
   scoped_ptr<WindowCycleController> window_cycle_controller_;

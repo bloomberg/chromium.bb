@@ -9,6 +9,7 @@
 #include "base/stringprintf.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/client/stacking_client.h"
+#include "ui/aura/client/visibility_client.h"
 #include "ui/aura/event.h"
 #include "ui/aura/focus_manager.h"
 #include "ui/aura/root_window.h"
@@ -1123,35 +1124,99 @@ TEST_F(WindowObserverTest, PropertyChanged) {
   EXPECT_EQ("name= old=0 new=0", PropertyChangeInfoAndClear());
 }
 
-class LayerGrabber : public WindowObserver {
- public:
-  explicit LayerGrabber(Window* window) {
-    window->AddObserver(this);
+TEST_F(WindowTest, AcquireLayer) {
+  scoped_ptr<Window> window1(CreateTestWindowWithId(1, NULL));
+  scoped_ptr<Window> window2(CreateTestWindowWithId(2, NULL));
+  ui::Layer* parent = window1->parent()->layer();
+  EXPECT_EQ(2U, parent->children().size());
+
+  Window::TestApi window1_test_api(window1.get());
+  Window::TestApi window2_test_api(window2.get());
+
+  EXPECT_TRUE(window1_test_api.OwnsLayer());
+  EXPECT_TRUE(window2_test_api.OwnsLayer());
+
+  // After acquisition, window1 should not own its layer, but it should still
+  // be available to the window.
+  scoped_ptr<ui::Layer> window1_layer(window1->AcquireLayer());
+  EXPECT_FALSE(window1_test_api.OwnsLayer());
+  EXPECT_TRUE(window1_layer.get() == window1->layer());
+
+  // Upon destruction, window1's layer should still be valid, and in the layer
+  // hierarchy, but window2's should be gone, and no longer in the hierarchy.
+  window1.reset();
+  window2.reset();
+
+  // This should be set by the window's destructor.
+  EXPECT_TRUE(window1_layer->delegate() == NULL);
+  EXPECT_EQ(1U, parent->children().size());
+}
+
+TEST_F(WindowTest, DontRestackWindowsWhoseLayersHaveNoDelegate) {
+  scoped_ptr<Window> window1(CreateTestWindowWithId(1, NULL));
+  scoped_ptr<Window> window2(CreateTestWindowWithId(2, NULL));
+
+  // This brings window1 (and its layer) to the front.
+  RootWindow::GetInstance()->StackChildAbove(window1.get(), window2.get());
+  EXPECT_EQ(RootWindow::GetInstance()->children().front(), window2.get());
+  EXPECT_EQ(RootWindow::GetInstance()->children().back(), window1.get());
+  EXPECT_EQ(RootWindow::GetInstance()->layer()->children().front(),
+            window2->layer());
+  EXPECT_EQ(RootWindow::GetInstance()->layer()->children().back(),
+            window1->layer());
+
+  // This brings window2 (but NOT its layer) to the front.
+  window1->layer()->set_delegate(NULL);
+  RootWindow::GetInstance()->StackChildAbove(window2.get(), window1.get());
+  EXPECT_EQ(RootWindow::GetInstance()->children().front(), window1.get());
+  EXPECT_EQ(RootWindow::GetInstance()->children().back(), window2.get());
+  EXPECT_EQ(RootWindow::GetInstance()->layer()->children().front(),
+            window2->layer());
+  EXPECT_EQ(RootWindow::GetInstance()->layer()->children().back(),
+            window1->layer());
+}
+
+class TestVisibilityClient : public client::VisibilityClient {
+public:
+  TestVisibilityClient() : ignore_visibility_changes_(false) {
+    client::SetVisibilityClient(this);
   }
-  virtual ~LayerGrabber() {}
+  virtual ~TestVisibilityClient() {
+    client::SetVisibilityClient(NULL);
+  }
 
-  ui::Layer* layer() { return layer_.get(); }
+  void set_ignore_visibility_changes(bool ignore_visibility_changes) {
+    ignore_visibility_changes_ = ignore_visibility_changes;
+  }
 
-  // Overridden from WindowObserver:
-  virtual void OnWindowDestroying(Window* window) OVERRIDE {
-    window->RemoveObserver(this);
-    layer_.reset(window->AcquireLayer());
+  // Overridden from client::VisibilityClient:
+  virtual void UpdateLayerVisibility(aura::Window* window,
+                                     bool visible) OVERRIDE {
+    if (!ignore_visibility_changes_)
+      window->layer()->SetVisible(visible);
   }
 
  private:
-  scoped_ptr<ui::Layer> layer_;
-  DISALLOW_COPY_AND_ASSIGN(LayerGrabber);
+  bool ignore_visibility_changes_;
+  DISALLOW_COPY_AND_ASSIGN(TestVisibilityClient);
 };
 
-TEST_F(WindowTest, AcquireLayer) {
+TEST_F(WindowTest, VisibilityClientIsVisible) {
+  TestVisibilityClient client;
+
   scoped_ptr<Window> window(CreateTestWindowWithId(1, NULL));
+  EXPECT_TRUE(window->IsVisible());
+  EXPECT_TRUE(window->layer()->visible());
+
   window->Hide();
-  LayerGrabber grabber(window.get());
-  window.reset();
-  EXPECT_FALSE(grabber.layer() == NULL);
-  EXPECT_FALSE(grabber.layer()->visible());
-  // This should be set by the window's destructor.
-  EXPECT_TRUE(grabber.layer()->delegate() == NULL);
+  EXPECT_FALSE(window->IsVisible());
+  EXPECT_FALSE(window->layer()->visible());
+  window->Show();
+
+  client.set_ignore_visibility_changes(true);
+  window->Hide();
+  EXPECT_FALSE(window->IsVisible());
+  EXPECT_TRUE(window->layer()->visible());
 }
 
 }  // namespace test

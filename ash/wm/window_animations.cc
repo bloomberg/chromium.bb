@@ -102,6 +102,7 @@ class HidingWindowAnimationObserver : public ui::ImplicitAnimationObserver,
 void AnimateShowWindowCommon(aura::Window* window,
                              const ui::Transform& start_transform,
                              const ui::Transform& end_transform) {
+  window->layer()->set_delegate(window);
   window->layer()->SetOpacity(kWindowAnimation_HideOpacity);
   window->layer()->SetTransform(start_transform);
 
@@ -117,18 +118,14 @@ void AnimateShowWindowCommon(aura::Window* window,
 // its transform to |end_transform|.
 void AnimateHideWindowCommon(aura::Window* window,
                              const ui::Transform& end_transform) {
-  // The window's layer was just hidden, but we need it to draw until it's fully
-  // transparent, so we show it again. This is undone once the animation is
-  // complete.
-  window->layer()->SetVisible(true);
-  {
-    // Property sets within this scope will be implicitly animated.
-    ui::ScopedLayerAnimationSettings settings(window->layer()->GetAnimator());
-    settings.AddImplicitObserver(new HidingWindowAnimationObserver(window));
+  window->layer()->set_delegate(NULL);
 
-    window->layer()->SetOpacity(kWindowAnimation_HideOpacity);
-    window->layer()->SetTransform(end_transform);
-  }
+  // Property sets within this scope will be implicitly animated.
+  ui::ScopedLayerAnimationSettings settings(window->layer()->GetAnimator());
+  settings.AddImplicitObserver(new HidingWindowAnimationObserver(window));
+
+  window->layer()->SetOpacity(kWindowAnimation_HideOpacity);
+  window->layer()->SetTransform(end_transform);
 }
 
 // Show/Hide windows using a shrink animation.

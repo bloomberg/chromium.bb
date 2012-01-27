@@ -62,7 +62,6 @@ void ToplevelLayoutManager::OnWillRemoveWindowFromLayout(aura::Window* child) {
 void ToplevelLayoutManager::OnChildWindowVisibilityChanged(aura::Window* child,
                                                            bool visible) {
   BaseLayoutManager::OnChildWindowVisibilityChanged(child, visible);
-  AnimateOnChildWindowVisibilityChanged(child, visible);
   UpdateShelfVisibility();
 }
 
