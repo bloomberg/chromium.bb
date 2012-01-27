@@ -436,13 +436,16 @@ TEST_F(RenderViewHostManagerTest, NavigateWithEarlyReNavigation) {
       string16() /* title */, content::PAGE_TRANSITION_TYPED,
       false /* is_renderer_init */);
   RenderViewHost* host2 = manager.Navigate(entry2);
+  int host2_process_id = host2->process()->GetID();
 
   // A new RenderViewHost should be created.
   EXPECT_TRUE(manager.pending_render_view_host());
   ASSERT_EQ(host2, manager.pending_render_view_host());
+  EXPECT_NE(host2, host);
 
   // Check that the navigation is still suspended because the old RVH
   // is not swapped out, yet.
+  EXPECT_TRUE(host2->are_navigations_suspended());
   MockRenderProcessHost* test_process_host2 =
       static_cast<MockRenderProcessHost*>(host2->process());
   test_process_host2->sink().ClearMessages();
@@ -452,7 +455,7 @@ TEST_F(RenderViewHostManagerTest, NavigateWithEarlyReNavigation) {
 
   // Allow closing the current Render View (precondition for swapping out
   // the RVH): Simulate response from RenderView for ViewMsg_ShouldClose sent by
-  // FirePageBeforeUnload
+  // FirePageBeforeUnload.
   TestRenderViewHost* test_host = static_cast<TestRenderViewHost*>(host);
   MockRenderProcessHost* test_process_host =
       static_cast<MockRenderProcessHost*>(test_host->process());
@@ -460,10 +463,10 @@ TEST_F(RenderViewHostManagerTest, NavigateWithEarlyReNavigation) {
       ViewMsg_ShouldClose::ID));
   test_host->SendShouldCloseACK(true);
 
-  // CrossSiteResourceHandler::StartCrossSiteTransition can trigger a
+  // CrossSiteResourceHandler::StartCrossSiteTransition triggers a
   // call of RenderViewHostManager::OnCrossSiteResponse before
-  // RenderViewHostManager::DidNavigateMainFrame is called. In this case the
-  // RVH is swapped out.
+  // RenderViewHostManager::DidNavigateMainFrame is called.
+  // The RVH is not swapped out until the commit.
   manager.OnCrossSiteResponse(host2->process()->GetID(),
                               host2->GetPendingRequestId());
   EXPECT_TRUE(test_process_host->sink().GetUniqueMessageMatching(
@@ -471,7 +474,7 @@ TEST_F(RenderViewHostManagerTest, NavigateWithEarlyReNavigation) {
   test_host->OnSwapOutACK();
 
   EXPECT_EQ(host, manager.current_host());
-  EXPECT_TRUE(manager.current_host()->is_swapped_out());
+  EXPECT_FALSE(manager.current_host()->is_swapped_out());
   EXPECT_EQ(host2, manager.pending_render_view_host());
   // There should be still no navigation messages being sent.
   EXPECT_FALSE(test_process_host2->sink().GetUniqueMessageMatching(
@@ -483,28 +486,36 @@ TEST_F(RenderViewHostManagerTest, NavigateWithEarlyReNavigation) {
                              content::Referrer(), string16() /* title */,
                              content::PAGE_TRANSITION_TYPED,
                              false /* is_renderer_init */);
+  test_process_host->sink().ClearMessages();
   RenderViewHost* host3 = manager.Navigate(entry3);
 
-  // A new RenderViewHost should be created.
+  // A new RenderViewHost should be created. host2 is now deleted.
   EXPECT_TRUE(manager.pending_render_view_host());
   ASSERT_EQ(host3, manager.pending_render_view_host());
+  EXPECT_NE(host3, host);
+  EXPECT_NE(host3->process()->GetID(), host2_process_id);
 
+  // Navigations in the new RVH should be suspended, which is ok because the
+  // old RVH is not yet swapped out and can respond to a second beforeunload
+  // request.
+  EXPECT_TRUE(host3->are_navigations_suspended());
   EXPECT_EQ(host, manager.current_host());
-  EXPECT_TRUE(manager.current_host()->is_swapped_out());
+  EXPECT_FALSE(manager.current_host()->is_swapped_out());
 
-  // The navigation should not be suspended because the RVH |host| has been
-  // swapped out already. Therefore, the RVH should send a navigation event
-  // immediately.
-  MockRenderProcessHost* test_process_host3 =
-      static_cast<MockRenderProcessHost*>(host3->process());
-  test_process_host3->sink().ClearMessages();
+  // Simulate a response to the second beforeunload request.
+  EXPECT_TRUE(test_process_host->sink().GetUniqueMessageMatching(
+      ViewMsg_ShouldClose::ID));
+  test_host->SendShouldCloseACK(true);
 
-  // Usually TabContents::NavigateToEntry would call
-  // RenderViewHostManager::Navigate followed by RenderViewHost::Navigate.
-  // Here we need to call the latter ourselves.
-  host3->NavigateToURL(kUrl3);
-  EXPECT_TRUE(test_process_host3->sink().GetUniqueMessageMatching(
-      ViewMsg_Navigate::ID));
+  // CrossSiteResourceHandler::StartCrossSiteTransition triggers a
+  // call of RenderViewHostManager::OnCrossSiteResponse before
+  // RenderViewHostManager::DidNavigateMainFrame is called.
+  // The RVH is not swapped out until the commit.
+  manager.OnCrossSiteResponse(host3->process()->GetID(),
+                              host3->GetPendingRequestId());
+  EXPECT_TRUE(test_process_host->sink().GetUniqueMessageMatching(
+      ViewMsg_SwapOut::ID));
+  test_host->OnSwapOutACK();
 
   // Commit.
   manager.DidNavigateMainFrame(host3);

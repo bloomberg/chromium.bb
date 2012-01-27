@@ -333,12 +333,6 @@ void RenderViewHost::FirePageBeforeUnload(bool for_cross_site_transition) {
 
 void RenderViewHost::SwapOut(int new_render_process_host_id,
                              int new_request_id) {
-  // Start filtering IPC messages to avoid confusing the delegate.  This will
-  // prevent any dialogs from appearing during unload handlers, but we've
-  // already decided to silence them in crbug.com/68780.  We will set it back
-  // to false in SetNavigationsSuspended if we swap back in.
-  is_swapped_out_ = true;
-
   // This will be set back to false in OnSwapOutACK, just before we replace
   // this RVH with the pending RVH.
   is_waiting_for_unload_ack_ = true;
@@ -370,6 +364,14 @@ void RenderViewHost::OnSwapOutACK() {
 void RenderViewHost::WasSwappedOut() {
   // Don't bother reporting hung state anymore.
   StopHangMonitorTimeout();
+
+  // Now that we're no longer the active RVH in the tab, start filtering out
+  // most IPC messages.  Usually the renderer will have stopped sending
+  // messages as of OnSwapOutACK.  However, we may have timed out waiting
+  // for that message, and additional IPC messages may keep streaming in.
+  // We filter them out, as long as that won't cause problems (e.g., we
+  // still allow synchronous messages through).
+  is_swapped_out_ = true;
 
   // Inform the renderer that it can exit if no one else is using it.
   Send(new ViewMsg_WasSwappedOut(routing_id()));
