@@ -608,7 +608,7 @@ static void MaybeConsumePredefinedNop(NCDecoderInst* dinst) {
  */
 static void ConsumeNextInstruction(struct NCDecoderInst* inst) {
   DEBUG( printf("Decoding instruction at %"NACL_PRIxNaClPcAddress":\n",
-                NCPrintableInstructionAddress(inst)) );
+                inst->inst_addr) );
   InitDecoder(inst);
   ConsumePrefixBytes(inst);
   ConsumeOpcodeBytes(inst);
@@ -649,10 +649,8 @@ NaClErrorReporter kNCNullErrorReporter = {
 
 Bool NCDecoderStateDecode(NCDecoderState* this) {
   NCDecoderInst* dinst = &this->inst_buffer[this->cur_inst_index];
-  DEBUG( printf("DecodeSegment(%p[%"NACL_PRIxNaClPcAddress
-                "-%"NACL_PRIxNaClPcAddress"])\n",
-                (void*) this->memory.mpc, this->vbase,
-                NCPrintableVLimit(this)) );
+  DEBUG( printf("DecodeSegment(%p[%"NACL_PRIxNaClPcAddress"])\n",
+                (void*) this->memory.mpc, (NaClPcAddress) this->size) );
   NCDecoderStateNewSegment(this);
   dinst->inst_count = 1;
   while (dinst->inst_addr < this->size) {
@@ -714,11 +712,8 @@ Bool NCDecoderStatePairDecode(NCDecoderStatePair* tthis) {
    * needs to be checked. Hence, we will track the limit of the new
    * decoder state.
    */
-  DEBUG( printf("NCDecoderStatePairDecode(%"NACL_PRIxNaClPcAddress
-                ", %"NACL_PRIxNaClPcAddress
-                "-%"NACL_PRIxNaClPcAddress")\n",
-                tthis->old_dstate->vbase, tthis->new_dstate->vbase,
-                NCPrintableVLimit(tthis->new_dstate)));
+  DEBUG( printf("NCDecoderStatePairDecode(%"NACL_PRIxNaClPcAddress")\n",
+                (NaClPcAddress) tthis->new_dstate->size));
 
   /* Initialize decoder statements for decoding segment, by calling
    * the corresponding virtual in the decoder.

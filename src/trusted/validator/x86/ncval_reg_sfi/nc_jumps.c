@@ -72,14 +72,12 @@ static void NaClAddJumpToJumpSets(NaClValidatorState* vstate,
    */
   DEBUG(NaClLog(LOG_INFO, "Add jump to jump sets: %"
                 NACL_PRIxNaClPcAddress" -> %"NACL_PRIxNaClPcAddress"\n",
-                NaClInstStatePrintableAddress(inst),
-                vstate->vbase + to_address));
+                inst->inst_addr, to_address));
   if (to_address < vstate->codesize) {
     /* Remember address for checking later. */
     DEBUG(NaClLog(LOG_INFO, "Add jump to target: %"NACL_PRIxNaClPcAddress
                   " -> %"NACL_PRIxNaClPcAddress"\n",
-                  NaClInstStatePrintableAddress(inst),
-                  vstate->vbase + to_address));
+                  inst->inst_addr, to_address));
     NaClAddressSetAddInline(vstate->jump_sets.actual_targets,
                             to_address, vstate);
   } else if ((to_address & vstate->alignment_mask) == 0) {
@@ -458,15 +456,9 @@ static void NaClValidateCallAlignment(NaClValidatorState* vstate) {
   NaClPcAddress next_addr = vstate->cur_inst_state->inst_addr
       + NaClInstStateLength(vstate->cur_inst_state);
   if (next_addr & vstate->alignment_mask) {
-    NaClPcAddress printable_addr =
-        NaClInstStatePrintableAddress(vstate->cur_inst_state);
     NaClPcAddress printable_next_addr =
-        printable_addr + NaClInstStateLength(vstate->cur_inst_state);
-    DEBUG(NaClLog(LOG_INFO,
-                  "Call alignment: pc = %"NACL_PRIxNaClPcAddress", "
-                 "next_pc=%"NACL_PRIxNaClPcAddress", "
-                 "mask = %"NACL_PRIxNaClPcAddress"\n",
-                  printable_addr, printable_next_addr, vstate->alignment_mask));
+        NaClInstStatePrintableAddress(vstate->cur_inst_state) +
+        NaClInstStateLength(vstate->cur_inst_state);
     NaClValidatorInstMessage(
         LOG_ERROR, vstate, vstate->cur_inst_state,
         "Bad call alignment, return pc = %"NACL_PRIxNaClPcAddress"\n",
@@ -496,7 +488,7 @@ static void NaClRememberInstructionBoundary(NaClValidatorState* vstate,
   } else {
     DEBUG(NaClLog(LOG_INFO,
                   "Add possible jump address: %"NACL_PRIxNaClPcAddress"\n",
-                  NaClInstStatePrintableAddress(inst)));
+                  inst->inst_addr));
     NaClAddressSetAddInline(vstate->jump_sets.possible_targets, inst->inst_addr,
                             vstate);
   }
@@ -567,7 +559,7 @@ void NaClJumpValidatorSummarize(NaClValidatorState* vstate) {
           if (NaClAddressSetContains(jump_sets->actual_targets, addr, vstate)) {
             DEBUG(NaClLog(LOG_INFO,
                           "Checking jump address: %"NACL_PRIxNaClPcAddress"\n",
-                          vstate->vbase + addr));
+                          addr));
             if (!IsNaClReachableAddress(vstate, addr)) {
               NaClValidatorPcAddressMessage(LOG_ERROR, vstate, addr,
                                             "Bad jump target\n");
@@ -590,7 +582,7 @@ void NaClJumpValidatorSummarize(NaClValidatorState* vstate) {
     for (addr = 0; addr < vstate->codesize; addr += vstate->alignment) {
       DEBUG(NaClLog(LOG_INFO,
                     "Checking block address: %"NACL_PRIxNaClPcAddress"\n",
-                    vstate->vbase + addr));
+                    addr));
       if (!IsNaClReachableAddress(vstate, addr)) {
         NaClValidatorPcAddressMessage(LOG_ERROR, vstate, addr,
                                       "Bad basic block alignment.\n");
@@ -623,7 +615,7 @@ static INLINE void NaClMarkInstructionJumpIllegalInline(
     DEBUG(NaClLog(LOG_INFO,
                   "Mark instruction as jump illegal: %"NACL_PRIxNaClPcAddress
                  "\n",
-                 NaClInstStatePrintableAddress(inst)));
+                 inst->inst_addr));
     NaClAddressSetAddInline(vstate->jump_sets.removed_targets, inst->inst_addr,
                             vstate);
   }

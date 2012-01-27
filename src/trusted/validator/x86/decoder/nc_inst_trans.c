@@ -1584,8 +1584,7 @@ void NaClBuildExpVector(struct NaClInstState* state) {
   uint8_t num_ops;
   DEBUG(NaClLog(LOG_INFO,
                 "building expression vector for pc = %"NACL_PRIxNaClPcAddress
-                ":\n",
-                NaClInstStatePrintableAddress(state)));
+                ":\n", state->inst_addr));
   num_ops = NaClGetInstNumberOperandsInline(state->inst);
   for (i = 0; i < num_ops; i++) {
     NaClExp* n;

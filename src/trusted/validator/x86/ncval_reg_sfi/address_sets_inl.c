@@ -59,7 +59,7 @@ static INLINE void NaClAddressSetAddInline(NaClAddressSet set,
   if (NaClCheckAddressRange(address, state)) {
     DEBUG(NaClLog(LOG_INFO,
                   "Address set add: %"NACL_PRIxNaClPcAddress"\n",
-                  state->vbase + address));
+                  address));
     set[NaClPcAddressToOffset(address)] |= NaClPcAddressToMask(address);
   }
 }
