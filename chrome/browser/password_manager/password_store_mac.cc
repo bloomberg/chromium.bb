@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,6 +12,7 @@
 
 #include "base/callback.h"
 #include "base/logging.h"
+#include "base/mac/mac_logging.h"
 #include "base/mac/mac_util.h"
 #include "base/message_loop.h"
 #include "base/stl_util.h"
@@ -150,7 +151,7 @@ void KeychainSearch::FindMatchingItems(std::vector<SecKeychainItemRef>* items) {
       NULL, kSecInternetPasswordItemClass, &search_attributes_, &search_ref_);
 
   if (result != noErr) {
-    LOG(ERROR) << "Keychain lookup failed with error " << result;
+    OSSTATUS_LOG(ERROR, result) << "Keychain lookup failed";
     return;
   }
 
@@ -260,7 +261,7 @@ bool FillPasswordFormFromKeychainItem(const MacKeychain& keychain,
     // We don't log errSecAuthFailed because that just means that the user
     // chose not to allow us access to the item.
     if (result != errSecAuthFailed) {
-      LOG(ERROR) << "Keychain data load failed: " << result;
+      OSSTATUS_LOG(ERROR, result) << "Keychain data load failed";
     }
     return false;
   }

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,6 +9,7 @@
 
 #include "base/file_path.h"
 #include "base/logging.h"
+#include "base/mac/mac_logging.h"
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "googleurl/src/gurl.h"
@@ -159,8 +160,8 @@ void AddQuarantineMetadataToFile(const FilePath& file, const GURL& source,
                                          kLSItemQuarantineProperties,
                                          quarantine_properties);
   if (os_error != noErr) {
-    LOG(WARNING) << "Unable to set quarantine attributes on file "
-                 << file.value();
+    OSSTATUS_LOG(WARNING, os_error)
+        << "Unable to set quarantine attributes on file " << file.value();
   }
 }
 

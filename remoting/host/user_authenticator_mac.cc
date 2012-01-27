@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,7 +9,7 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/logging.h"
+#include "base/mac/mac_logging.h"
 
 namespace remoting {
 
@@ -70,7 +70,7 @@ bool UserAuthenticatorMac::Authenticate(const std::string& username,
       return false;
 
     default:
-      LOG(ERROR) << "AuthorizationCreate returned " << status;
+      OSSTATUS_LOG(ERROR, status) << "AuthorizationCreate";
       return false;
   }
 }

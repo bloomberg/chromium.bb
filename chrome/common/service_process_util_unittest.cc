@@ -330,7 +330,7 @@ void TrashFunc(const FilePath& src) {
   OSStatus status = FSMoveObjectToTrashSync(&path_ref,
                                             &new_path_ref,
                                             kFSFileOperationDefaultOptions);
-  EXPECT_EQ(status, noErr)  << "FSMoveObjectToTrashSync " << status;
+  EXPECT_EQ(status, noErr) << "FSMoveObjectToTrashSync " << status;
 }
 
 TEST_F(ServiceProcessStateFileManipulationTest, VerifyLaunchD) {

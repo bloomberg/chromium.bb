@@ -14,6 +14,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/mac/bundle_locations.h"
+#include "base/mac/mac_logging.h"
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/mac/scoped_nsexception_enabler.h"
@@ -853,7 +854,8 @@ NSString* const kVersionKey = @"KSVersion";
       NULL,  // pipe
       &exit_status);
   if (status != errAuthorizationSuccess) {
-    LOG(ERROR) << "AuthorizationExecuteWithPrivileges preflight: " << status;
+    OSSTATUS_LOG(ERROR, status)
+        << "AuthorizationExecuteWithPrivileges preflight";
     [self updateStatus:kAutoupdatePromoteFailed version:nil];
     return;
   }
@@ -940,7 +942,8 @@ NSString* const kVersionKey = @"KSVersion";
       NULL,  // pipe
       &exit_status);
   if (status != errAuthorizationSuccess) {
-    LOG(ERROR) << "AuthorizationExecuteWithPrivileges postflight: " << status;
+    OSSTATUS_LOG(ERROR, status)
+        << "AuthorizationExecuteWithPrivileges postflight";
   } else if (exit_status != 0) {
     LOG(ERROR) << "keystone_promote_postflight status " << exit_status;
   }

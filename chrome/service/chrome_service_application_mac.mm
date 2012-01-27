@@ -1,11 +1,11 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "chrome/service/chrome_service_application_mac.h"
 
-#include "base/logging.h"
 #include "base/mac/foundation_util.h"
+#include "base/mac/mac_logging.h"
 #import "chrome/common/cloud_print/cloud_print_class_mac.h"
 #include "chrome/common/chrome_switches.h"
 
@@ -36,20 +36,17 @@
   CFArrayRef passArgv =
       CFArrayCreate(NULL, (const void**) flags, 1, &kCFTypeArrayCallBacks);
   FSRef ref;
-  OSStatus status = noErr;
   CFURLRef* kDontWantURL = NULL;
   // Get Chrome's bundle ID.
   std::string bundleID =  base::mac::BaseBundleID();
   CFStringRef bundleIDCF =
       CFStringCreateWithCString(NULL, bundleID.c_str(), kCFStringEncodingUTF8);
   // Use Launch Services to locate Chrome using its bundleID.
-  status = LSFindApplicationForInfo(kLSUnknownCreator, bundleIDCF,
-                                    NULL, &ref, kDontWantURL);
+  OSStatus status = LSFindApplicationForInfo(kLSUnknownCreator, bundleIDCF,
+                                             NULL, &ref, kDontWantURL);
 
   if (status != noErr) {
-    LOG(ERROR) << "Failed to make path ref";
-    LOG(ERROR) << GetMacOSStatusErrorString(status);
-    LOG(ERROR) << GetMacOSStatusCommentString(status);
+    OSSTATUS_LOG(ERROR, status) << "Failed to make path ref";
     return;
   }
   // Actually create the Apple Event.
@@ -78,9 +75,7 @@
   // Send the Apple Event Using launch services, launching Chrome if necessary.
   status = LSOpenApplication(&params, NULL);
   if (status != noErr) {
-    LOG(ERROR) << "Unable to launch";
-    LOG(ERROR) << GetMacOSStatusErrorString(status);
-    LOG(ERROR) << GetMacOSStatusCommentString(status);
+    OSSTATUS_LOG(ERROR, status) << "Unable to launch";
   }
 }
 
@@ -98,4 +93,3 @@ void RegisterServiceApp() {
 }
 
 }  // namespace chrome_service_application_mac
-

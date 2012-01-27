@@ -1,10 +1,11 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "chrome/browser/ui/cocoa/location_bar/autocomplete_text_field_cell.h"
 
 #include "base/logging.h"
+#include "base/mac/mac_logging.h"
 #import "chrome/browser/ui/cocoa/image_utils.h"
 #import "chrome/browser/ui/cocoa/location_bar/autocomplete_text_field.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_decoration.h"
@@ -533,7 +534,7 @@ static NSString* UnusedLegalNameForNewDropFile(NSURL* saveLocation,
                        error:nil];
   // Add resource data.
   OSErr resStatus = WriteURLToNewWebLocFileResourceFork(outputURL, urlStr);
-  DCHECK(resStatus == noErr);
+  OSSTATUS_DCHECK(resStatus == noErr, resStatus);
 
   return [NSArray arrayWithObject:nameWithExtensionStr];
 }

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -32,9 +32,11 @@ void sendServiceProcessEvent(const AEEventClass sendClass) {
                                     &ref, kDontWantURL);
 
   if (status != noErr) {
-    std::cerr << "Failed to make path ref";
-    std::cerr << GetMacOSStatusErrorString(status);
-    std::cerr << GetMacOSStatusCommentString(status);
+    std::cerr << "Failed to make path ref: "
+              << GetMacOSStatusErrorString(status)
+              << " ("
+              << status
+              << ")";
     exit(-1);
   }
 
@@ -55,9 +57,11 @@ void sendServiceProcessEvent(const AEEventClass sendClass) {
   status = LSOpenApplication(&params, NULL);
 
   if (status != noErr) {
-    std::cerr << "Unable to launch Chrome to install";
-    std::cerr << GetMacOSStatusErrorString(status);
-    std::cerr << GetMacOSStatusCommentString(status);
+    std::cerr << "Unable to launch Chrome to install: "
+              << GetMacOSStatusErrorString(status)
+              << " ("
+              << status
+              << ")";
     exit(-1);
   }
 }

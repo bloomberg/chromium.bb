@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,7 @@
 
 #import <Security/Security.h>
 
+#include "base/mac/mac_logging.h"
 #include "chrome/browser/keychain_mac.h"
 #include "chrome/common/random.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -32,7 +33,7 @@ std::string AddRandomPasswordToKeychain(const MacKeychain& keychain,
                                                NULL);
 
   if (error != noErr) {
-    DLOG(ERROR) << "Keychain add failed with error " << error;
+    OSSTATUS_DLOG(ERROR, error) << "Keychain add failed";
     return std::string();
   }
 
@@ -67,9 +68,7 @@ std::string EncryptorPassword::GetEncryptorPassword() const {
   } else if (error == errSecItemNotFound) {
     return AddRandomPasswordToKeychain(keychain_, service_name, account_name);
   } else {
-    DLOG(ERROR) << "Keychain lookup failed with error " << error;
+    OSSTATUS_DLOG(ERROR, error) << "Keychain lookup failed";
     return std::string();
   }
 }
-
-

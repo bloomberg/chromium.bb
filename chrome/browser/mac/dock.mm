@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,6 +10,7 @@
 #include <signal.h>
 
 #include "base/logging.h"
+#include "base/mac/mac_logging.h"
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
@@ -86,7 +87,7 @@ pid_t PIDForProcessBundleID(const std::string& bundle_id) {
   while ((status = GetNextProcess(&psn)) == noErr) {
     pid_t process_pid;
     if ((status = GetProcessPID(&psn, &process_pid)) != noErr) {
-      LOG(ERROR) << "GetProcessPID: " << status;
+      OSSTATUS_LOG(ERROR, status) << "GetProcessPID";
       continue;
     }
 
@@ -98,13 +99,10 @@ pid_t PIDForProcessBundleID(const std::string& bundle_id) {
       continue;
     }
 
-    CFStringRef process_bundle_id_cf = static_cast<CFStringRef>(
+    CFStringRef process_bundle_id_cf = base::mac::CFCast<CFStringRef>(
         CFDictionaryGetValue(process_dictionary, kCFBundleIdentifierKey));
     if (!process_bundle_id_cf) {
       // Not all processes have a bundle ID.
-      continue;
-    } else if (CFGetTypeID(process_bundle_id_cf) != CFStringGetTypeID()) {
-      LOG(ERROR) << "process_bundle_id_cf not CFStringRef";
       continue;
     }
 
@@ -117,7 +115,7 @@ pid_t PIDForProcessBundleID(const std::string& bundle_id) {
   }
 
   // status will be procNotFound (-600) if the process wasn't found.
-  LOG(ERROR) << "GetNextProcess: " << status;
+  OSSTATUS_LOG(ERROR, status) << "GetNextProcess";
 
   return -1;
 }

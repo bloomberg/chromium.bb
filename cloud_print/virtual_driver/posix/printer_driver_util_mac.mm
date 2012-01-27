@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,6 +12,7 @@
 
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
+#include "base/mac/mac_logging.h"
 
 #include <cups/backend.h>
 
@@ -60,7 +61,8 @@ void LaunchPrintDialog(const std::string& outputPath,
                                     NULL, &ref, kDontWantURL);
 
   if (status != noErr) {
-    LOG(ERROR) << "Couldn't locate the process to send Apple Event";
+    OSSTATUS_LOG(ERROR, status)
+        << "Couldn't locate the process to send Apple Event";
     exit(CUPS_BACKEND_CANCEL);
   }
 
@@ -115,9 +117,7 @@ void LaunchPrintDialog(const std::string& outputPath,
   // Deliver the Apple Event using launch services.
   status = LSOpenApplication(&params, NULL);
   if (status != noErr) {
-    LOG(ERROR) << "Unable to launch";
-    LOG(ERROR) << GetMacOSStatusErrorString(status);
-    LOG(ERROR) << GetMacOSStatusCommentString(status);
+    OSSTATUS_LOG(ERROR, status) << "Unable to launch";
     exit(CUPS_BACKEND_CANCEL);
   }
 

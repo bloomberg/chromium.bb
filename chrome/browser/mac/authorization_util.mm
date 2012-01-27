@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,6 +13,7 @@
 #include "base/eintr_wrapper.h"
 #include "base/logging.h"
 #include "base/mac/bundle_locations.h"
+#include "base/mac/mac_logging.h"
 #import "base/mac/mac_util.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
@@ -28,7 +29,7 @@ AuthorizationRef AuthorizationCreateToRunAsRoot(CFStringRef prompt) {
                                         kAuthorizationFlagDefaults,
                                         &authorization);
   if (status != errAuthorizationSuccess) {
-    LOG(ERROR) << "AuthorizationCreate: " << status;
+    OSSTATUS_LOG(ERROR, status) << "AuthorizationCreate";
     return NULL;
   }
 
@@ -73,7 +74,7 @@ AuthorizationRef AuthorizationCreateToRunAsRoot(CFStringRef prompt) {
                                    NULL);
   if (status != errAuthorizationSuccess) {
     if (status != errAuthorizationCanceled) {
-      LOG(ERROR) << "AuthorizationCopyRights: " << status;
+      OSSTATUS_LOG(ERROR, status) << "AuthorizationCopyRights";
     }
     return NULL;
   }

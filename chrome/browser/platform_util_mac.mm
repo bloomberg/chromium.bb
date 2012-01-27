@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,6 +10,7 @@
 
 #include "base/file_path.h"
 #include "base/logging.h"
+#include "base/mac/mac_logging.h"
 #include "base/mac/scoped_aedesc.h"
 #include "base/sys_string_conversions.h"
 #include "googleurl/src/gurl.h"
@@ -40,17 +41,15 @@ void OpenItem(const FilePath& full_path) {
   if (!path_string)
     return;
 
-  OSErr status;
-
   // Create the target of this AppleEvent, the Finder.
   base::mac::ScopedAEDesc<AEAddressDesc> address;
   const OSType finderCreatorCode = 'MACS';
-  status = AECreateDesc(typeApplSignature,  // type
-                        &finderCreatorCode,  // data
-                        sizeof(finderCreatorCode),  // dataSize
-                        address.OutPointer());  // result
+  OSErr status = AECreateDesc(typeApplSignature,  // type
+                              &finderCreatorCode,  // data
+                              sizeof(finderCreatorCode),  // dataSize
+                              address.OutPointer());  // result
   if (status != noErr) {
-    LOG(WARNING) << "Could not create OpenItem() AE target";
+    OSSTATUS_LOG(WARNING, status) << "Could not create OpenItem() AE target";
     return;
   }
 
@@ -63,7 +62,7 @@ void OpenItem(const FilePath& full_path) {
                               kAnyTransactionID,  // transactionID
                               theEvent.OutPointer());  // result
   if (status != noErr) {
-    LOG(WARNING) << "Could not create OpenItem() AE event";
+    OSSTATUS_LOG(WARNING, status) << "Could not create OpenItem() AE event";
     return;
   }
 
@@ -74,7 +73,7 @@ void OpenItem(const FilePath& full_path) {
                         false,  // isRecord
                         fileList.OutPointer());  // resultList
   if (status != noErr) {
-    LOG(WARNING) << "Could not create OpenItem() AE file list";
+    OSSTATUS_LOG(WARNING, status) << "Could not create OpenItem() AE file list";
     return;
   }
 
@@ -89,7 +88,8 @@ void OpenItem(const FilePath& full_path) {
                       &pathRef,  // dataPtr
                       sizeof(pathRef));  // dataSize
     if (status != noErr) {
-      LOG(WARNING) << "Could not add file path to AE list in OpenItem()";
+      OSSTATUS_LOG(WARNING, status)
+          << "Could not add file path to AE list in OpenItem()";
       return;
     }
   } else {
@@ -102,7 +102,8 @@ void OpenItem(const FilePath& full_path) {
                           keyDirectObject,  // theAEKeyword
                           fileList);  // theAEDesc
   if (status != noErr) {
-    LOG(WARNING) << "Could not put the AE file list the path in OpenItem()";
+    OSSTATUS_LOG(WARNING, status)
+        << "Could not put the AE file list the path in OpenItem()";
     return;
   }
 
@@ -116,7 +117,8 @@ void OpenItem(const FilePath& full_path) {
                   NULL, // idleProc
                   NULL);  // filterProc
   if (status != noErr) {
-    LOG(WARNING) << "Could not send AE to Finder in OpenItem()";
+    OSSTATUS_LOG(WARNING, status)
+        << "Could not send AE to Finder in OpenItem()";
   }
 }
 

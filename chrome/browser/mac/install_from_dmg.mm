@@ -22,6 +22,7 @@
 #include "base/file_path.h"
 #include "base/logging.h"
 #include "base/mac/bundle_locations.h"
+#include "base/mac/mac_logging.h"
 #import "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
@@ -308,7 +309,8 @@ bool InstallFromDiskImage(AuthorizationRef authorization_arg,
         NULL,  // pipe
         &exit_status);
     if (status != errAuthorizationSuccess) {
-      LOG(ERROR) << "AuthorizationExecuteWithPrivileges install: " << status;
+      OSSTATUS_LOG(ERROR, status)
+          << "AuthorizationExecuteWithPrivileges install";
       return false;
     }
   } else {
@@ -659,7 +661,7 @@ void EjectAndTrashDiskImage(const std::string& dmg_bsd_device_name) {
                                                 &disk_image_path_in_trash_c,
                                                 kFSFileOperationDefaultOptions);
   if (status != noErr) {
-    LOG(ERROR) << "FSPathMoveObjectToTrashSync: " << status;
+    OSSTATUS_LOG(ERROR, status) << "FSPathMoveObjectToTrashSync";
     return;
   }
 
@@ -677,7 +679,7 @@ void EjectAndTrashDiskImage(const std::string& dmg_bsd_device_name) {
                           kFNDirectoryModifiedMessage,
                           kNilOptions);
   if (status != noErr) {
-    LOG(ERROR) << "FNNotifyByPath: " << status;
+    OSSTATUS_LOG(ERROR, status) << "FNNotifyByPath";
     return;
   }
 }

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,6 +20,7 @@
 #include "base/eintr_wrapper.h"
 #include "base/file_util.h"
 #include "base/logging.h"
+#include "base/mac/mac_logging.h"
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/path_service.h"
@@ -370,7 +371,7 @@ int RelauncherMain(const content::MainFunctionParams& main_parameters) {
 
   OSStatus status = LSOpenApplication(&ls_parameters, NULL);
   if (status != noErr) {
-    LOG(ERROR) << "LSOpenApplication: " << status;
+    OSSTATUS_LOG(ERROR, status) << "LSOpenApplication";
     return 1;
   }
 

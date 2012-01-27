@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,6 +7,7 @@
 #include "chrome/browser/ui/webui/options2/advanced_options_utils2.h"
 
 #include "base/logging.h"
+#include "base/mac/mac_logging.h"
 #include "base/mac/scoped_aedesc.h"
 
 using content::WebContents;
@@ -24,7 +25,8 @@ void AdvancedOptionsUtilities::ShowNetworkProxySettings(
                                  proxyPrefCommand,
                                  strlen(proxyPrefCommand),
                                  openParams.OutPointer());
-  LOG_IF(ERROR, status != noErr) << "Failed to create open params: " << status;
+  OSSTATUS_LOG_IF(ERROR, status != noErr, status)
+      << "Failed to create open params";
 
   LSLaunchURLSpec launchSpec = { 0 };
   launchSpec.itemURLs = (CFArrayRef)itemsToOpen;
