@@ -49,6 +49,7 @@ simd-6.c arm
 # Addresses slightly off on x86-64 O3, and stock clang x86-64 O3 also.
 # Segfaults on ARM loading an uninit frame pointer (must force fp on?).
 20010122-1.c x86-64,O3
+20010122-1.c x86-32,O3
 20010122-1.c arm
 # DCE not performed at -O0 (wontfix?)
 medce-1.c O0

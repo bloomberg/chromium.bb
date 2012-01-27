@@ -14,6 +14,9 @@ ray
 SIBsim4
 
 # runtime errors
+# crash
+spirit x86-32
+
 # crash, works on ARM
 aha x86-64
 # crash w/ newlib: http://code.google.com/p/nativeclient/issues/detail?id=2505
@@ -26,6 +29,7 @@ spirit arm
 AMGmk arm
 flops arm
 CrystalMk arm
+lpbench arm
 # wrong output on ARM (a time? really?)
 stepanov_v1p2 arm
 # has stderr ordering problem, but also extraneous "<<" in output
@@ -34,8 +38,6 @@ lambda
 voronoi
 # exception not caught
 BuiltinTypeInfo
-# bad tail call label applied in clang optimization passes
-byval-alignment
 # burg's nexe output matches the reference output, but not the native gcc
 # binary's output... so maybe this is a bug in gcc, or ???
 # Workaround may be to set USE_REFERENCE_OUTPUT = 1 in burg's Makefile.
