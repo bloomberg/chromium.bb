@@ -101,9 +101,11 @@ Window::~Window() {
 
   FOR_EACH_OBSERVER(WindowObserver, observers_, OnWindowDestroyed(this));
 
-  // The layer will either be destroyed by layer_owner_'s dtor, or by whoever
-  // acquired it.
-  layer_->set_delegate(NULL);
+  // If we have layer it will either be destroyed by layer_owner_'s dtor, or by
+  // whoever acquired it. We don't have a layer if Init() wasn't invoked, which
+  // can happen in tests.
+  if (layer_)
+    layer_->set_delegate(NULL);
   layer_ = NULL;
 }
 
