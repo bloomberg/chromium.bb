@@ -689,6 +689,13 @@ TEST_PPAPI_OUT_OF_PROCESS(Flash_MessageLoop)
 TEST_PPAPI_OUT_OF_PROCESS(Flash_GetLocalTimeZoneOffset)
 TEST_PPAPI_OUT_OF_PROCESS(Flash_GetCommandLineArgs)
 
+// Intermittently fails on OSX. http://crbug.com/111636
+#if defined(OS_MAXOSX)
+#define MAYBE_WebSocket_CcInterfaces FLAKY_WebSocket_CcInterfaces
+#else
+#define MAYBE_WebSocket_CcInterfaces WebSocket_CcInterfaces
+#endif
+
 TEST_PPAPI_IN_PROCESS(WebSocket_IsWebSocket)
 TEST_PPAPI_IN_PROCESS(WebSocket_UninitializedPropertiesAccess)
 TEST_PPAPI_IN_PROCESS(WebSocket_InvalidConnect)
@@ -701,7 +708,7 @@ TEST_PPAPI_IN_PROCESS_WITH_WS(WebSocket_GetProtocol)
 TEST_PPAPI_IN_PROCESS_WITH_WS(WebSocket_TextSendReceive)
 TEST_PPAPI_IN_PROCESS_WITH_WS(WebSocket_BinarySendReceive)
 TEST_PPAPI_IN_PROCESS_WITH_WS(WebSocket_BufferedAmount)
-TEST_PPAPI_IN_PROCESS_WITH_WS(WebSocket_CcInterfaces)
+TEST_PPAPI_IN_PROCESS_WITH_WS(MAYBE_WebSocket_CcInterfaces)
 TEST_PPAPI_NACL_VIA_HTTP(WebSocket_IsWebSocket)
 TEST_PPAPI_NACL_VIA_HTTP(WebSocket_UninitializedPropertiesAccess)
 TEST_PPAPI_NACL_VIA_HTTP(WebSocket_InvalidConnect)
@@ -714,7 +721,7 @@ TEST_PPAPI_NACL_VIA_HTTP_WITH_WS(WebSocket_GetProtocol)
 TEST_PPAPI_NACL_VIA_HTTP_WITH_WS(WebSocket_TextSendReceive)
 TEST_PPAPI_NACL_VIA_HTTP_WITH_WS(WebSocket_BinarySendReceive)
 TEST_PPAPI_NACL_VIA_HTTP_WITH_WS(WebSocket_BufferedAmount)
-TEST_PPAPI_NACL_VIA_HTTP_WITH_WS(WebSocket_CcInterfaces)
+TEST_PPAPI_NACL_VIA_HTTP_WITH_WS(MAYBE_WebSocket_CcInterfaces)
 
 TEST_PPAPI_IN_PROCESS(AudioConfig_ValidConfigs)
 TEST_PPAPI_IN_PROCESS(AudioConfig_InvalidConfigs)
