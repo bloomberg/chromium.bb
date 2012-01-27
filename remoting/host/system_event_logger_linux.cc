@@ -15,13 +15,22 @@ namespace {
 
 class SystemEventLoggerLinux : public SystemEventLogger {
  public:
-  SystemEventLoggerLinux(const std::string& application_name) {
-    openlog(application_name.c_str(), 0, LOG_USER);
+  SystemEventLoggerLinux(const std::string& application_name)
+      : application_name_(application_name) {
+    openlog(application_name_.c_str(), 0, LOG_USER);
+  }
+
+  ~SystemEventLoggerLinux() {
+    closelog();
   }
 
   virtual void Log(const std::string& message) OVERRIDE {
     syslog(LOG_USER | LOG_NOTICE, "%s", message.c_str());
   }
+
+ private:
+  // Store this string here, to avoid deleting memory passed to openlog().
+  std::string application_name_;
 
   DISALLOW_COPY_AND_ASSIGN(SystemEventLoggerLinux);
 };
