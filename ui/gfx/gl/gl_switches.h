@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -30,6 +30,7 @@ GL_EXPORT extern const char kEnableGPUClientLogging[];
 GL_EXPORT extern const char kGpuNoContextLost[];
 GL_EXPORT extern const char kUseGL[];
 GL_EXPORT extern const char kSwiftShaderPath[];
+GL_EXPORT extern const char kTestGLLib[];
 
 }  // namespace switches
 
