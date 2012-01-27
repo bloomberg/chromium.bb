@@ -1,7 +1,7 @@
 /*
- * Copyright 2008 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 /*
@@ -233,6 +233,15 @@ typedef nacl_abi___blkcnt_t nacl_abi_blkcnt_t;
 #define nacl_abi___time_t_defined
 typedef int64_t       nacl_abi___time_t;
 typedef nacl_abi___time_t nacl_abi_time_t;
+
+struct nacl_abi_timespec {
+  nacl_abi_time_t tv_sec;
+#ifdef __native_client__
+  long int        tv_nsec;
+#else
+  int32_t         tv_nsec;
+#endif
+};
 #endif
 
 #define NACL_PRIdNACL_TIME NACL_PRI_(d, 64)

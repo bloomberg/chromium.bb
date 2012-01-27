@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012 The Native Client Authors.  All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -34,15 +34,6 @@ typedef long int  nacl_abi_clock_t;  /* to be deprecated */
 struct nacl_abi_timeval {
   nacl_abi_time_t      nacl_abi_tv_sec;
   nacl_abi_suseconds_t nacl_abi_tv_usec;
-};
-
-struct nacl_abi_timespec {
-  nacl_abi_time_t    tv_sec;
-#ifdef __native_client__
-  long int           tv_nsec;
-#else
-  int32_t            tv_nsec;
-#endif
 };
 
 /* obsolete.  should not be used */

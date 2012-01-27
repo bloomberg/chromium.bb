@@ -1,7 +1,7 @@
 # -*- python -*-
-# Copyright 2011 The Native Client Authors.  All rights reserved.
-# Use of this source code is governed by a BSD-style license that can
-# be found in the LICENSE file.
+# Copyright (c) 2012 The Native Client Authors.  All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
 
 
 Import('env')
@@ -18,6 +18,8 @@ if env['PNACL_FRONTEND'] == 'clang':
 
 sources_for_standard_interfaces = [
     'clock.c',
+    'clock_getres.c',
+    'clock_gettime.c',
     'close.c',
     'dup.c',
     '_exit.c',

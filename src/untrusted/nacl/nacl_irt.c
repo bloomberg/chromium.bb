@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -19,6 +19,7 @@ struct nacl_irt_memory __libnacl_irt_memory;
 struct nacl_irt_dyncode __libnacl_irt_dyncode;
 struct nacl_irt_tls __libnacl_irt_tls;
 struct nacl_irt_blockhook __libnacl_irt_blockhook;
+struct nacl_irt_clock __libnacl_irt_clock;
 
 TYPE_nacl_irt_query __nacl_irt_query;
 
@@ -71,4 +72,5 @@ void __libnacl_irt_init(Elf32_auxv_t *auxv) {
   DO_QUERY(NACL_IRT_DYNCODE_v0_1, dyncode);
   DO_QUERY(NACL_IRT_TLS_v0_1, tls);
   DO_QUERY(NACL_IRT_BLOCKHOOK_v0_1, blockhook);
+  DO_QUERY(NACL_IRT_CLOCK_v0_1, clock);
 }

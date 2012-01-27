@@ -9,6 +9,8 @@
   'variables': {
     'sources_for_standard_interfaces': [
       'clock.c',
+      'clock_getres.c',
+      'clock_gettime.c',
       'close.c',
       'dup.c',
       '_exit.c',
