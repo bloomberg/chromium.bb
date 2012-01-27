@@ -22,9 +22,7 @@
 #include "ui/gfx/interpolated_transform.h"
 #include "ui/gfx/point3.h"
 
-#if defined(USE_WEBKIT_COMPOSITOR)
 #include "ui/gfx/compositor/compositor_cc.h"
-#endif
 
 namespace {
 
@@ -49,13 +47,10 @@ Layer::Layer()
       parent_(NULL),
       visible_(true),
       fills_bounds_opaquely_(true),
-      recompute_hole_(false),
       layer_updated_externally_(false),
       opacity_(1.0f),
       delegate_(NULL) {
-#if defined(USE_WEBKIT_COMPOSITOR)
   CreateWebLayer();
-#endif
 }
 
 Layer::Layer(LayerType type)
@@ -64,13 +59,10 @@ Layer::Layer(LayerType type)
       parent_(NULL),
       visible_(true),
       fills_bounds_opaquely_(true),
-      recompute_hole_(false),
       layer_updated_externally_(false),
       opacity_(1.0f),
       delegate_(NULL) {
-#if defined(USE_WEBKIT_COMPOSITOR)
   CreateWebLayer();
-#endif
 }
 
 Layer::~Layer() {
@@ -80,9 +72,7 @@ Layer::~Layer() {
     parent_->Remove(this);
   for (size_t i = 0; i < children_.size(); ++i)
     children_[i]->parent_ = NULL;
-#if defined(USE_WEBKIT_COMPOSITOR)
   web_layer_.removeFromParent();
-#endif
 }
 
 Compositor* Layer::GetCompositor() {
@@ -104,11 +94,7 @@ void Layer::Add(Layer* child) {
     child->parent_->Remove(child);
   child->parent_ = this;
   children_.push_back(child);
-#if defined(USE_WEBKIT_COMPOSITOR)
   web_layer_.addChild(child->web_layer_);
-#endif
-
-  SetNeedsToRecomputeHole();
 }
 
 void Layer::Remove(Layer* child) {
@@ -117,13 +103,7 @@ void Layer::Remove(Layer* child) {
   DCHECK(i != children_.end());
   children_.erase(i);
   child->parent_ = NULL;
-#if defined(USE_WEBKIT_COMPOSITOR)
   child->web_layer_.removeFromParent();
-#endif
-
-  SetNeedsToRecomputeHole();
-
-  child->DropTextures();
 }
 
 void Layer::StackAtTop(Layer* child) {
@@ -200,19 +180,9 @@ void Layer::SetVisible(bool visible) {
   if (visible_ == visible)
     return;
 
-  bool was_drawn = IsDrawn();
   visible_ = visible;
-#if defined(USE_WEBKIT_COMPOSITOR)
   // TODO(piman): Expose a visibility flag on WebLayer.
   web_layer_.setOpacity(visible_ ? opacity_ : 0.f);
-#endif
-  bool is_drawn = IsDrawn();
-  if (was_drawn == is_drawn)
-    return;
-
-  if (!is_drawn)
-    DropTextures();
-  SetNeedsToRecomputeHole();
 }
 
 bool Layer::IsDrawn() const {
@@ -223,8 +193,7 @@ bool Layer::IsDrawn() const {
 }
 
 bool Layer::ShouldDraw() const {
-  return type_ == LAYER_HAS_TEXTURE && GetCombinedOpacity() > 0.0f &&
-      !hole_rect_.Contains(gfx::Rect(gfx::Point(0, 0), bounds_.size()));
+  return type_ == LAYER_HAS_TEXTURE && GetCombinedOpacity() > 0.0f;
 }
 
 // static
@@ -249,17 +218,13 @@ void Layer::SetFillsBoundsOpaquely(bool fills_bounds_opaquely) {
 
   fills_bounds_opaquely_ = fills_bounds_opaquely;
 
-  SetNeedsToRecomputeHole();
-#if defined(USE_WEBKIT_COMPOSITOR)
   web_layer_.setOpaque(fills_bounds_opaquely);
   RecomputeDebugBorderColor();
-#endif
 }
 
 void Layer::SetExternalTexture(ui::Texture* texture) {
   layer_updated_externally_ = !!texture;
   texture_ = texture;
-#if defined(USE_WEBKIT_COMPOSITOR)
   if (web_layer_is_accelerated_ != layer_updated_externally_) {
     // Switch to a different type of layer.
     web_layer_.removeAllChildren();
@@ -293,25 +258,13 @@ void Layer::SetExternalTexture(ui::Texture* texture) {
     texture_layer.setFlipped(texture_cc->flipped());
   }
   RecomputeDrawsContentAndUVRect();
-#endif
 }
 
 void Layer::SetCanvas(const SkCanvas& canvas, const gfx::Point& origin) {
-#if defined(USE_WEBKIT_COMPOSITOR)
   NOTREACHED();
-#else
-  DCHECK_EQ(type_, LAYER_HAS_TEXTURE);
-
-  if (!texture_.get())
-    texture_ = GetCompositor()->CreateTexture();
-
-  texture_->SetCanvas(canvas, origin, bounds_.size());
-  invalid_rect_ = gfx::Rect();
-#endif
 }
 
 void Layer::SchedulePaint(const gfx::Rect& invalid_rect) {
-#if defined(USE_WEBKIT_COMPOSITOR)
   WebKit::WebFloatRect web_rect(
       invalid_rect.x(),
       invalid_rect.y(),
@@ -321,10 +274,6 @@ void Layer::SchedulePaint(const gfx::Rect& invalid_rect) {
     web_layer_.to<WebKit::WebContentLayer>().invalidateRect(web_rect);
   else
     web_layer_.to<WebKit::WebExternalTextureLayer>().invalidateRect(web_rect);
-#else
-  invalid_rect_ = invalid_rect_.Union(invalid_rect);
-  ScheduleDraw();
-#endif
 }
 
 void Layer::ScheduleDraw() {
@@ -333,87 +282,12 @@ void Layer::ScheduleDraw() {
     compositor->ScheduleDraw();
 }
 
-void Layer::Draw() {
-  TRACE_EVENT0("ui", "Layer::Draw");
-#if defined(USE_WEBKIT_COMPOSITOR)
-  NOTREACHED();
-#else
-  DCHECK(GetCompositor());
-
-  if (recompute_hole_ && !parent_)
-    RecomputeHole();
-
-  if (!ShouldDraw())
-    return;
-
-  UpdateLayerCanvas();
-
-  // Layer drew nothing, no texture was created.
-  if (!texture_.get())
-    return;
-
-  ui::TextureDrawParams texture_draw_params;
-  for (Layer* layer = this; layer; layer = layer->parent_) {
-    texture_draw_params.transform.ConcatTransform(layer->transform_);
-    texture_draw_params.transform.ConcatTranslate(
-        static_cast<float>(layer->bounds_.x()),
-        static_cast<float>(layer->bounds_.y()));
-  }
-
-  const float combined_opacity = GetCombinedOpacity();
-
-  // Only blend for transparent child layers (and when we're forcing
-  // transparency). The root layer will clobber the cleared bg.
-  const bool is_root = parent_ == NULL;
-  const bool forcing_transparency = combined_opacity < 1.0f;
-  const bool is_opaque = fills_bounds_opaquely_ || !has_valid_alpha_channel();
-  texture_draw_params.blend = !is_root && (forcing_transparency || !is_opaque);
-
-  texture_draw_params.compositor_size = GetCompositor()->size();
-  texture_draw_params.opacity = combined_opacity;
-  texture_draw_params.has_valid_alpha_channel = has_valid_alpha_channel();
-
-#if defined(OS_WIN)
-  // TODO(beng): figure out why the other branch of this code renders improperly
-  //             on Windows, and fix it, otherwise just remove all of this when
-  //             WK compositor is default.
-  texture_->Draw(texture_draw_params, gfx::Rect(gfx::Point(), bounds().size()));
-#else
-  std::vector<gfx::Rect> regions_to_draw;
-  PunchHole(gfx::Rect(gfx::Point(), bounds().size()), hole_rect_,
-            &regions_to_draw);
-
-  for (size_t i = 0; i < regions_to_draw.size(); ++i) {
-    if (!regions_to_draw[i].IsEmpty())
-      texture_->Draw(texture_draw_params, regions_to_draw[i]);
-  }
-#endif
-#endif
-}
-
-void Layer::DrawTree() {
-#if defined(USE_WEBKIT_COMPOSITOR)
-  NOTREACHED();
-#else
-  if (!visible_)
-    return;
-
-  Draw();
-  for (size_t i = 0; i < children_.size(); ++i)
-    children_.at(i)->DrawTree();
-#endif
-}
-
 void Layer::paintContents(WebKit::WebCanvas* web_canvas,
                           const WebKit::WebRect& clip) {
   TRACE_EVENT0("ui", "Layer::paintContents");
-#if defined(USE_WEBKIT_COMPOSITOR)
   gfx::CanvasSkia canvas(web_canvas);
   if (delegate_)
     delegate_->OnPaintLayer(&canvas);
-#else
-  NOTREACHED();
-#endif
 }
 
 float Layer::GetCombinedOpacity() const {
@@ -424,31 +298,6 @@ float Layer::GetCombinedOpacity() const {
     current = current->parent_;
   }
   return opacity;
-}
-
-void Layer::UpdateLayerCanvas() {
-  TRACE_EVENT0("ui", "Layer::UpdateLayerCanvas");
-#if defined(USE_WEBKIT_COMPOSITOR)
-  NOTREACHED();
-#else
-  // If we have no delegate, that means that whoever constructed the Layer is
-  // setting its canvas directly with SetCanvas().
-  if (!delegate_ || layer_updated_externally_)
-    return;
-  gfx::Rect local_bounds = gfx::Rect(gfx::Point(), bounds_.size());
-  gfx::Rect draw_rect = texture_.get() ? invalid_rect_.Intersect(local_bounds) :
-      local_bounds;
-  if (draw_rect.IsEmpty()) {
-    invalid_rect_ = gfx::Rect();
-    return;
-  }
-  scoped_ptr<gfx::Canvas> canvas(gfx::Canvas::CreateCanvas(draw_rect.size(),
-                                                           false));
-  canvas->Translate(gfx::Point().Subtract(draw_rect.origin()));
-  if (delegate_)
-    delegate_->OnPaintLayer(canvas.get());
-  SetCanvas(*canvas->GetSkCanvas(), draw_rect.origin());
-#endif
 }
 
 void Layer::StackRelativeTo(Layer* child, Layer* other, bool above) {
@@ -470,27 +319,8 @@ void Layer::StackRelativeTo(Layer* child, Layer* other, bool above) {
   children_.erase(children_.begin() + child_i);
   children_.insert(children_.begin() + dest_i, child);
 
-  SetNeedsToRecomputeHole();
-
-#if defined(USE_WEBKIT_COMPOSITOR)
   child->web_layer_.removeFromParent();
   web_layer_.insertChild(child->web_layer_, dest_i);
-#endif
-}
-
-void Layer::SetNeedsToRecomputeHole() {
-  Layer* root_layer = this;
-  while (root_layer->parent_)
-    root_layer = root_layer->parent_;
-
-  root_layer->recompute_hole_ = true;
-}
-
-void Layer::ClearHoleRects() {
-  hole_rect_ = gfx::Rect();
-
-  for (size_t i = 0; i < children_.size(); i++)
-    children_[i]->ClearHoleRects();
 }
 
 void Layer::GetLayerProperties(const ui::Transform& parent_transform,
@@ -515,110 +345,6 @@ void Layer::GetLayerProperties(const ui::Transform& parent_transform,
 
   for (size_t i = 0; i < children_.size(); i++)
     children_[i]->GetLayerProperties(current_transform, traversal);
-}
-
-void Layer::RecomputeHole() {
-  std::vector<LayerProperties> traversal;
-  ui::Transform transform;
-
-  ClearHoleRects();
-  GetLayerProperties(transform, &traversal);
-
-  for (size_t i = 0; i < traversal.size(); i++) {
-    Layer* layer = traversal[i].layer;
-    gfx::Rect bounds = gfx::Rect(layer->bounds().size());
-
-    // Iterate through layers which are after traversal[i] in draw order
-    // and find the largest candidate hole.
-    for (size_t j = i + 1; j < traversal.size(); j++) {
-      gfx::Rect candidate_hole = gfx::Rect(traversal[j].layer->bounds().size());
-
-      // Compute transform to go from bounds of layer |j| to local bounds of
-      // layer |i|.
-      ui::Transform candidate_hole_transform;
-      ui::Transform inverted;
-
-      candidate_hole_transform.ConcatTransform(
-          traversal[j].transform_relative_to_root);
-
-      if (!traversal[i].transform_relative_to_root.GetInverse(&inverted))
-        continue;
-
-      candidate_hole_transform.ConcatTransform(inverted);
-
-      // cannot punch a hole if the relative transform between the two layers
-      // is not multiple of 90.
-      float degrees;
-      gfx::Point p;
-      if (!InterpolatedTransform::FactorTRS(candidate_hole_transform, &p,
-          &degrees, NULL) || !IsApproximateMultilpleOf(degrees, 90.0f))
-        continue;
-
-      candidate_hole_transform.TransformRect(&candidate_hole);
-      candidate_hole = candidate_hole.Intersect(bounds);
-
-      if (candidate_hole.size().GetArea() >
-          layer->hole_rect().size().GetArea()) {
-        layer->set_hole_rect(candidate_hole);
-      }
-    }
-    // Free up texture memory if the hole fills bounds of layer.
-    if (!layer->ShouldDraw() && !layer_updated_externally())
-      layer->DropTexture();
-
-#if defined(USE_WEBKIT_COMPOSITOR)
-  RecomputeDrawsContentAndUVRect();
-#endif
-  }
-
-  recompute_hole_ = false;
-}
-
-// static
-void Layer::PunchHole(const gfx::Rect& rect,
-                      const gfx::Rect& region_to_punch_out,
-                      std::vector<gfx::Rect>* sides) {
-  gfx::Rect trimmed_rect = rect.Intersect(region_to_punch_out);
-
-  if (trimmed_rect.IsEmpty()) {
-    sides->push_back(rect);
-    return;
-  }
-
-  // Top (above the hole).
-  sides->push_back(gfx::Rect(rect.x(),
-                             rect.y(),
-                             rect.width(),
-                             trimmed_rect.y() - rect.y()));
-
-  // Left (of the hole).
-  sides->push_back(gfx::Rect(rect.x(),
-                             trimmed_rect.y(),
-                             trimmed_rect.x() - rect.x(),
-                             trimmed_rect.height()));
-
-  // Right (of the hole).
-  sides->push_back(gfx::Rect(trimmed_rect.right(),
-                             trimmed_rect.y(),
-                             rect.right() - trimmed_rect.right(),
-                             trimmed_rect.height()));
-
-  // Bottom (below the hole).
-  sides->push_back(gfx::Rect(rect.x(),
-                             trimmed_rect.bottom(),
-                             rect.width(),
-                             rect.bottom() - trimmed_rect.bottom()));
-}
-
-void Layer::DropTexture() {
-  if (!layer_updated_externally_)
-    texture_ = NULL;
-}
-
-void Layer::DropTextures() {
-  DropTexture();
-  for (size_t i = 0; i < children_.size(); ++i)
-    children_[i]->DropTextures();
 }
 
 bool Layer::ConvertPointForAncestor(const Layer* ancestor,
@@ -666,37 +392,23 @@ void Layer::SetBoundsImmediately(const gfx::Rect& bounds) {
       SchedulePaint(gfx::Rect(bounds.size()));
   }
 
-  SetNeedsToRecomputeHole();
-#if defined(USE_WEBKIT_COMPOSITOR)
   RecomputeTransform();
   RecomputeDrawsContentAndUVRect();
-#endif
 }
 
 void Layer::SetTransformImmediately(const ui::Transform& transform) {
   transform_ = transform;
 
-  SetNeedsToRecomputeHole();
-#if defined(USE_WEBKIT_COMPOSITOR)
   RecomputeTransform();
-#endif
 }
 
 void Layer::SetOpacityImmediately(float opacity) {
   bool schedule_draw = (opacity != opacity_ && IsDrawn());
-  bool was_opaque = GetCombinedOpacity() == 1.0f;
   opacity_ = opacity;
-  bool is_opaque = GetCombinedOpacity() == 1.0f;
 
-  // If our opacity has changed we need to recompute our hole, our parent's hole
-  // and the holes of all our descendants.
-  if (was_opaque != is_opaque)
-    SetNeedsToRecomputeHole();
-#if defined(USE_WEBKIT_COMPOSITOR)
   if (visible_)
     web_layer_.setOpacity(opacity);
   RecomputeDebugBorderColor();
-#endif
   if (schedule_draw)
     ScheduleDraw();
 }
@@ -729,7 +441,6 @@ float Layer::GetOpacityForAnimation() const {
   return opacity();
 }
 
-#if defined(USE_WEBKIT_COMPOSITOR)
 void Layer::CreateWebLayer() {
   web_layer_ = WebKit::WebContentLayer::create(this);
   web_layer_.setAnchorPoint(WebKit::WebFloatPoint(0.f, 0.f));
@@ -750,8 +461,7 @@ void Layer::RecomputeTransform() {
 
 void Layer::RecomputeDrawsContentAndUVRect() {
   DCHECK(!web_layer_.isNull());
-  bool should_draw = type_ == LAYER_HAS_TEXTURE &&
-      !hole_rect_.Contains(gfx::Rect(gfx::Point(0, 0), bounds_.size()));
+  bool should_draw = type_ == LAYER_HAS_TEXTURE;
   if (!web_layer_is_accelerated_) {
     web_layer_.to<WebKit::WebContentLayer>().setDrawsContent(should_draw);
     web_layer_.setBounds(bounds_.size());
@@ -784,6 +494,5 @@ void Layer::RecomputeDebugBorderColor() {
     color |= 0xFF;
   web_layer_.setDebugBorderColor(color);
 }
-#endif
 
 }  // namespace ui

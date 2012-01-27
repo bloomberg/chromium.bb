@@ -35,18 +35,15 @@
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/test/notification_observer_mock.h"
+#include "content/test/render_view_test.h"
 #include "content/test/test_browser_thread.h"
 #include "content/test/test_url_fetcher_factory.h"
 #include "grit/generated_resources.h"
 #include "ipc/ipc_test_sink.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebContextMenuData.h"
-#include "third_party/cld/languages/public/languages.h"
-
-#if defined(USE_WEBKIT_COMPOSITOR)
-#include "content/test/render_view_test.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebKit.h"
-#endif
+#include "third_party/cld/languages/public/languages.h"
 
 using content::BrowserThread;
 using content::NavigationController;
@@ -164,9 +161,7 @@ class TranslateManagerTest : public TabContentsWrapperTestHarness,
 
  protected:
   virtual void SetUp() {
-#if defined(USE_WEBKIT_COMPOSITOR)
     WebKit::initialize(&webkit_platform_support_);
-#endif
     // Access the TranslateManager singleton so it is created before we call
     // TabContentsWrapperTestHarness::SetUp() to match what's done in Chrome,
     // where the TranslateManager is created before the TabContents.  This
@@ -196,9 +191,7 @@ class TranslateManagerTest : public TabContentsWrapperTestHarness,
             contents_wrapper()->infobar_tab_helper()));
 
     TabContentsWrapperTestHarness::TearDown();
-#if defined(USE_WEBKIT_COMPOSITOR)
     WebKit::shutdown();
-#endif
   }
 
   void SimulateTranslateScriptURLFetch(bool success) {
@@ -256,10 +249,8 @@ class TranslateManagerTest : public TabContentsWrapperTestHarness,
   content::NotificationRegistrar notification_registrar_;
   TestURLFetcherFactory url_fetcher_factory_;
   content::TestBrowserThread ui_thread_;
-#if defined(USE_WEBKIT_COMPOSITOR)
   content::RenderViewTest::RendererWebKitPlatformSupportImplNoSandbox
       webkit_platform_support_;
-#endif
 
   // The infobars that have been removed.
   // WARNING: the pointers point to deleted objects, use only for comparison.

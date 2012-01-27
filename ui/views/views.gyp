@@ -495,6 +495,7 @@
         '../../third_party/icu/icu.gyp:icui18n',
         '../../third_party/icu/icu.gyp:icuuc',
         '../base/strings/ui_strings.gyp:ui_strings',
+        '../gfx/compositor/compositor.gyp:compositor',
         '../gfx/compositor/compositor.gyp:compositor_test_support',
         '../ui.gyp:gfx_resources',
         '../ui.gyp:ui',
@@ -596,15 +597,6 @@
             ['exclude', '../aura/test/test_desktop_delegate.cc'],
             ['exclude', '../aura/test/test_desktop_delegate.h'],
             ['exclude', 'widget/native_widget_aura_unittest.cc'],
-          ],
-        }],
-        ['use_webkit_compositor==1', {
-          'dependencies': [
-            '../gfx/compositor/compositor.gyp:compositor',
-          ],
-        }, { # use_webkit_compositor!=1
-          'dependencies': [
-            '../gfx/compositor/compositor.gyp:test_compositor',
           ],
         }],
       ],

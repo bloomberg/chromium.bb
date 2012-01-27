@@ -46,13 +46,6 @@ void PrintLayerHierarchyImp(const Layer* layer, int indent,
   buf << L"bounds: " << layer->bounds().x() << L',' << layer->bounds().y();
   buf << L' ' << layer->bounds().width() << L'x' << layer->bounds().height();
 
-  if (!layer->hole_rect().IsEmpty()) {
-    buf << L'\n' << UTF8ToWide(content_indent_str);
-    gfx::Rect hole_rect = layer->hole_rect();
-    buf << L"hole: " << hole_rect.x() << L',' << hole_rect.y();
-    buf << L' ' << hole_rect.width() << L'x' << hole_rect.height();
-  }
-
   if (layer->opacity() != 1.0f) {
     buf << L'\n' << UTF8ToWide(content_indent_str);
     buf << L"opacity: " << std::setprecision(2) << layer->opacity();

@@ -12,15 +12,10 @@
 #include "chrome/browser/ui/views/aura/screen_orientation_listener.h"
 #include "chrome/browser/ui/views/aura/screenshot_taker.h"
 #include "ui/aura/root_window.h"
+#include "ui/gfx/compositor/compositor_setup.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/system/runtime_environment.h"
-#endif
-
-#if defined(USE_WEBKIT_COMPOSITOR)
-#include "ui/gfx/compositor/compositor_setup.h"
-#else
-#include "ui/gfx/test/gfx_test_utils.h"
 #endif
 
 ChromeBrowserMainExtraPartsAura::ChromeBrowserMainExtraPartsAura()
@@ -29,11 +24,7 @@ ChromeBrowserMainExtraPartsAura::ChromeBrowserMainExtraPartsAura()
 
 void ChromeBrowserMainExtraPartsAura::PreProfileInit() {
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kTestCompositor)) {
-#if defined(USE_WEBKIT_COMPOSITOR)
     ui::SetupTestCompositor();
-#else
-    ui::gfx_test_utils::SetupTestCompositor();
-#endif
   }
 
 #if defined(OS_CHROMEOS)

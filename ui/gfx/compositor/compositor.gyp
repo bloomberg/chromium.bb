@@ -6,19 +6,6 @@
   'variables': {
     'chromium_code': 1,
   },
-  'target_defaults': {
-    'sources/': [
-      ['exclude', '_(gl|win)\\.(cc?)$'],
-    ],
-    'conditions': [
-      ['os_posix == 1 and OS != "mac"', {
-        'sources/': [['include', '_(gl)\\.(h|cc)$'],]
-      }],
-      ['OS == "win"', {
-        'sources/': [['include', '_(win)\\.(h|cc)$'],]
-      }],
-    ],
-  },
   'targets': [
     {
       'target_name': 'compositor',
@@ -27,8 +14,12 @@
         '<(DEPTH)/base/base.gyp:base',
         '<(DEPTH)/base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
         '<(DEPTH)/skia/skia.gyp:skia',
+        '<(DEPTH)/third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:webkit',
         '<(DEPTH)/ui/gfx/gl/gl.gyp:gl',
         '<(DEPTH)/ui/ui.gyp:ui',
+        '<(DEPTH)/webkit/support/webkit_support.gyp:fileapi',
+        '<(DEPTH)/webkit/support/webkit_support.gyp:glue',
+        '<(DEPTH)/webkit/support/webkit_support.gyp:webkit_gpu',
       ],
       'defines': [
         'COMPOSITOR_IMPLEMENTATION',
@@ -37,16 +28,12 @@
         'compositor.cc',
         'compositor.h',
         'compositor_export.h',
-        'compositor_gl.cc',
-        'compositor_gl.h',
         'compositor_cc.cc',
         'compositor_cc.h',
         'compositor_observer.h',
         'compositor_setup.h',
-        'compositor_stub.cc',
         'compositor_switches.cc',
         'compositor_switches.h',
-        'compositor_win.cc',
         'debug_utils.cc',
         'debug_utils.h',
         'layer.cc',
@@ -69,15 +56,7 @@
         'test_web_graphics_context_3d.h',
       ],
       'conditions': [
-        ['os_posix == 1', {
-          'sources!': [
-            'compositor_stub.cc',
-          ],
-        }],
         ['OS == "win" and views_compositor == 1', {
-          'sources!': [
-            'compositor_stub.cc',
-          ],
           # TODO(sky): before we make this real need to remove
           # IDR_BITMAP_BRUSH_IMAGE.
           'dependencies': [
@@ -85,40 +64,7 @@
             '<(DEPTH)/third_party/angle/src/build_angle.gyp:libEGL',
             '<(DEPTH)/third_party/angle/src/build_angle.gyp:libGLESv2',
           ],
-          'link_settings': {
-            'libraries': [
-              '-ld3d10.lib',
-              '-ld3dx10d.lib',
-              '-ldxerr.lib',
-              '-ldxguid.lib',
-            ]
-          },
         }],
-        ['OS == "win" and views_compositor == 0', {
-          'sources/': [
-            ['exclude', '^compositor_win.cc'],
-          ],
-        }],
-        ['use_webkit_compositor == 1', {
-            'sources/': [
-              ['exclude', '^compositor_(gl|mac|win|stub).(h|cc|mm)$'],
-            ],
-            'dependencies': [
-              '<(DEPTH)/third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:webkit',
-              '<(DEPTH)/webkit/support/webkit_support.gyp:fileapi',
-              '<(DEPTH)/webkit/support/webkit_support.gyp:glue',
-              '<(DEPTH)/webkit/support/webkit_support.gyp:webkit_gpu',
-            ],
-          }, {
-            'sources!': [
-              'compositor_cc.cc',
-              'compositor_cc.h',
-              'compositor_setup.h',
-              'test_web_graphics_context_3d.cc',
-              'test_web_graphics_context_3d.h',
-            ],
-          }
-        ],
       ],
     },
     {
@@ -126,18 +72,14 @@
       'type': 'static_library',
       'dependencies': [
         '<(DEPTH)/base/base.gyp:base',
+        '<(DEPTH)/webkit/support/webkit_support.gyp:webkit_support',
+        '<(DEPTH)/third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:webkit',
       ],
       'sources': [
         'test/compositor_test_support.cc',
         'test/compositor_test_support.h',
       ],
       'conditions': [
-        ['use_webkit_compositor == 1', {
-          'dependencies': [
-            '<(DEPTH)/webkit/support/webkit_support.gyp:webkit_support',
-            '<(DEPTH)/third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:webkit',
-          ],
-        }],
         ['os_posix == 1 and OS != "mac"', {
           'conditions': [
             ['linux_use_tcmalloc==1', {
@@ -155,13 +97,10 @@
       'dependencies': [
         '<(DEPTH)/base/base.gyp:base',
         '<(DEPTH)/base/base.gyp:test_support_base',
-        '<(DEPTH)/chrome/chrome_resources.gyp:packed_resources',
         '<(DEPTH)/skia/skia.gyp:skia',
         '<(DEPTH)/testing/gtest.gyp:gtest',
         '<(DEPTH)/ui/gfx/gl/gl.gyp:gl',
-        '<(DEPTH)/ui/ui.gyp:gfx_resources',
         '<(DEPTH)/ui/ui.gyp:ui',
-        '<(DEPTH)/ui/ui.gyp:ui_resources',
         'compositor',
         'compositor_test_support',
       ],
@@ -184,45 +123,13 @@
         'test/test_utils.cc',
         'test/test_utils.h',
         '<(SHARED_INTERMEDIATE_DIR)/ui/gfx/gfx_resources.rc',
-        '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_resources.rc',
+        '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_resources.rc'
       ],
       'conditions': [
         # osmesa GL implementation is used on linux.
         ['OS=="linux"', {
           'dependencies': [
             '<(DEPTH)/third_party/mesa/mesa.gyp:osmesa',
-          ],
-        }],
-        ['use_webkit_compositor==0', {
-          'dependencies': [
-            'test_compositor',
-          ],
-        }],
-      ],
-    },
-    {
-      'target_name': 'test_compositor',
-      'type': 'static_library',
-      'dependencies': [
-        '<(DEPTH)/base/base.gyp:base',
-      ],
-      'sources': [
-        '../test/gfx_test_utils.cc',
-        '../test/gfx_test_utils.h',
-      ],
-      'conditions': [
-        # We allow on platforms without a compositor (such as OS_WIN).
-        # They will use compositor_stub.cc.
-        ['toolkit_views == 1 or os_posix==1', {
-          'dependencies': [
-            '<(DEPTH)/skia/skia.gyp:skia',
-            'compositor',
-          ],
-          'sources': [
-            'test/test_compositor.cc',
-            'test/test_compositor.h',
-            'test/test_texture.cc',
-            'test/test_texture.h',
           ],
         }],
       ],

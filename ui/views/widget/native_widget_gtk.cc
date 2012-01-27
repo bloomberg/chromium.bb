@@ -649,15 +649,11 @@ void NativeWidgetGtk::InitNativeWidget(const Widget::InitParams& params) {
   }
 
   if (View::get_use_acceleration_when_possible()) {
-    if (ui::Compositor::compositor_factory()) {
-      compositor_ = (*ui::Compositor::compositor_factory())(this);
-    } else {
-      gint width, height;
-      gdk_drawable_get_size(window_contents_->window, &width, &height);
-      compositor_ = ui::Compositor::Create(this,
-          GDK_WINDOW_XID(window_contents_->window),
-          gfx::Size(width, height));
-    }
+    gint width, height;
+    gdk_drawable_get_size(window_contents_->window, &width, &height);
+    compositor_ = ui::Compositor::Create(this,
+        GDK_WINDOW_XID(window_contents_->window),
+        gfx::Size(width, height));
     if (compositor_.get()) {
       View* root_view = delegate_->AsWidget()->GetRootView();
       root_view->SetPaintToLayer(true);

@@ -400,7 +400,6 @@
     'browser/renderer_host/accelerated_plugin_view_mac.h',
     'browser/renderer_host/accelerated_plugin_view_mac.mm',
     'browser/renderer_host/accelerated_surface_container_linux_cc.cc',
-    'browser/renderer_host/accelerated_surface_container_linux_gl.cc',
     'browser/renderer_host/accelerated_surface_container_linux.h',
     'browser/renderer_host/accelerated_surface_container_mac.cc',
     'browser/renderer_host/accelerated_surface_container_mac.h',
@@ -822,20 +821,8 @@
       'include_dirs': [
         '../third_party/angle/include',
       ],
-      'conditions': [
-        ['use_webkit_compositor != 1', {
-          'sources/': [
-            ['exclude', '^browser/renderer_host/accelerated_surface_container_linux_cc.cc'],
-          ],
-        }, {
-          'sources/': [
-            ['exclude', '^browser/renderer_host/accelerated_surface_container_linux_gl.cc'],
-          ],
-        }],
-      ],
     }, {
       'sources/': [
-        ['exclude', '^browser/renderer_host/accelerated_surface_container_linux_gl.cc'],
         ['exclude', '^browser/renderer_host/accelerated_surface_container_linux_cc.cc'],
         ['exclude', '^browser/renderer_host/accelerated_surface_container_linux.h'],
         ['exclude', '^browser/renderer_host/image_transport_client.cc'],

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,12 +17,9 @@
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/test/base/testing_pref_service.h"
 #include "chrome/test/base/testing_profile.h"
+#include "content/test/render_view_test.h"
 #include "content/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-#if defined(USE_AURA) && defined(USE_WEBKIT_COMPOSITOR)
-#include "content/test/render_view_test.h"
-#endif
 
 class DesktopNotificationsTest;
 typedef LoggingNotificationDelegate<DesktopNotificationsTest>
@@ -117,7 +114,7 @@ class DesktopNotificationsTest : public testing::Test {
   // Real DesktopNotificationService
   scoped_ptr<DesktopNotificationService> service_;
 
-#if defined(USE_AURA) && defined(USE_WEBKIT_COMPOSITOR)
+#if defined(USE_AURA)
   content::RenderViewTest::RendererWebKitPlatformSupportImplNoSandbox
       webkit_platform_support_;
 #endif

@@ -190,6 +190,7 @@
         '../third_party/icu/icu.gyp:icuuc',
         '../ui/aura/aura.gyp:aura',
         '../ui/aura/aura.gyp:test_support_aura',
+        '../ui/gfx/compositor/compositor.gyp:compositor',
         '../ui/gfx/compositor/compositor.gyp:compositor_test_support',
         '../ui/ui.gyp:gfx_resources',
         '../ui/ui.gyp:ui',
@@ -242,15 +243,6 @@
         '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources_standard/ui_resources_standard.rc',
       ],
       'conditions': [
-        ['use_webkit_compositor==1', {
-          'dependencies': [
-            '../ui/gfx/compositor/compositor.gyp:compositor',
-          ],
-        }, { # use_webkit_compositor!=1
-          'dependencies': [
-            '../ui/gfx/compositor/compositor.gyp:test_compositor',
-          ],
-        }],
         ['use_ibus==1', {
           'dependencies': [
             '../build/linux/system.gyp:ibus',

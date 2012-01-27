@@ -43,9 +43,6 @@
 #include "ui/aura/root_window.h"
 #include "ui/aura/gestures/gesture_recognizer.h"
 #endif
-#if !defined(USE_WEBKIT_COMPOSITOR)
-#include "ui/gfx/compositor/test/test_texture.h"
-#endif
 
 using ::testing::_;
 
@@ -2593,10 +2590,6 @@ class ViewLayerTest : public ViewsTestBase {
     old_use_acceleration_ = View::get_use_acceleration_when_possible();
     View::set_use_acceleration_when_possible(true);
 
-#if !defined(USE_WEBKIT_COMPOSITOR)
-    ui::TestTexture::reset_live_count();
-#endif
-
     widget_ = new Widget;
     Widget::InitParams params(Widget::InitParams::TYPE_POPUP);
     params.bounds = gfx::Rect(50, 50, 200, 200);
@@ -2661,28 +2654,12 @@ TEST_F(ViewLayerTest, LayerToggling) {
   View* content_view = new View;
   widget()->SetContentsView(content_view);
 
-#if !defined(USE_WEBKIT_COMPOSITOR)
-  // TODO(piman): with the webkit compositor, we don't create Textures on
-  // Layers. We're not supposed to be calling Layer::DrawTree. This test needs
-  // refactoring to fully work in that case.
-  root_layer->DrawTree();
-  ui::TestTexture::reset_live_count();
-#endif
-
   // Create v1, give it a bounds and verify everything is set up correctly.
   View* v1 = new View;
   v1->SetPaintToLayer(true);
-#if !defined(USE_WEBKIT_COMPOSITOR)
-  root_layer->DrawTree();
-  EXPECT_EQ(0, ui::TestTexture::live_count());
-#endif
   EXPECT_TRUE(v1->layer() != NULL);
   v1->SetBounds(20, 30, 140, 150);
   content_view->AddChildView(v1);
-#if !defined(USE_WEBKIT_COMPOSITOR)
-  root_layer->DrawTree();
-  EXPECT_EQ(1, ui::TestTexture::live_count());
-#endif
   ASSERT_TRUE(v1->layer() != NULL);
   EXPECT_EQ(root_layer, v1->layer()->parent());
   EXPECT_EQ(gfx::Rect(20, 30, 140, 150), v1->layer()->bounds());
@@ -2693,10 +2670,6 @@ TEST_F(ViewLayerTest, LayerToggling) {
   EXPECT_TRUE(v2->layer() == NULL);
   v2->SetBounds(10, 20, 30, 40);
   v2->SetPaintToLayer(true);
-#if !defined(USE_WEBKIT_COMPOSITOR)
-  root_layer->DrawTree();
-  EXPECT_EQ(2, ui::TestTexture::live_count());
-#endif
   ASSERT_TRUE(v2->layer() != NULL);
   EXPECT_EQ(v1->layer(), v2->layer()->parent());
   EXPECT_EQ(gfx::Rect(10, 20, 30, 40), v2->layer()->bounds());
@@ -2704,10 +2677,6 @@ TEST_F(ViewLayerTest, LayerToggling) {
   // Turn off v1s layer. v2 should still have a layer but its parent should have
   // changed.
   v1->SetPaintToLayer(false);
-#if !defined(USE_WEBKIT_COMPOSITOR)
-  root_layer->DrawTree();
-  EXPECT_EQ(1, ui::TestTexture::live_count());
-#endif
   EXPECT_TRUE(v1->layer() == NULL);
   EXPECT_TRUE(v2->layer() != NULL);
   EXPECT_EQ(root_layer, v2->layer()->parent());
@@ -2721,10 +2690,6 @@ TEST_F(ViewLayerTest, LayerToggling) {
   ui::Transform transform;
   transform.SetScale(2.0f, 2.0f);
   v1->SetTransform(transform);
-#if !defined(USE_WEBKIT_COMPOSITOR)
-  root_layer->DrawTree();
-  EXPECT_EQ(2, ui::TestTexture::live_count());
-#endif
   EXPECT_TRUE(v1->layer() != NULL);
   EXPECT_TRUE(v2->layer() != NULL);
   EXPECT_EQ(root_layer, v1->layer()->parent());
@@ -2882,121 +2847,6 @@ TEST_F(ViewLayerTest, ToggleVisibilityWithLayer) {
   EXPECT_TRUE(v1->layer()->IsDrawn());
 }
 
-// We don't set the hole in the webkit compositor, so disable tests that rely on
-// it.
-#if defined(USE_WEBKIT_COMPOSITOR)
-#define NOT_APPLICABLE_TO_WEBKIT_COMPOSITOR(X) DISABLED_ ## X
-#else
-#define NOT_APPLICABLE_TO_WEBKIT_COMPOSITOR(X) X
-#endif
-
-// Test that a hole in a layer is correctly created regardless of whether
-// the opacity attribute is set before or after the layer is created.
-TEST_F(ViewLayerTest,
-       NOT_APPLICABLE_TO_WEBKIT_COMPOSITOR(ToggleOpacityWithLayer)) {
-  View* content_view = new View;
-  widget()->SetContentsView(content_view);
-
-  View* parent_view = new View;
-  content_view->AddChildView(parent_view);
-  parent_view->SetPaintToLayer(true);
-  parent_view->SetBounds(0, 0, 400, 400);
-
-  View* child_view = new View;
-  child_view->SetBounds(50, 50, 100, 100);
-  parent_view->AddChildView(child_view);
-
-  widget()->GetCompositor()->Draw(false);
-
-  ASSERT_TRUE(child_view->layer() == NULL);
-  child_view->SetPaintToLayer(true);
-  child_view->SetFillsBoundsOpaquely(true);
-  widget()->GetCompositor()->Draw(false);
-  ASSERT_TRUE(child_view->layer());
-  EXPECT_EQ(
-      gfx::Rect(50, 50, 100, 100), parent_view->layer()->hole_rect());
-
-  child_view->SetFillsBoundsOpaquely(false);
-  widget()->GetCompositor()->Draw(false);
-  EXPECT_TRUE(parent_view->layer()->hole_rect().IsEmpty());
-}
-
-// Test that a hole in a layer always corresponds to the bounds of opaque
-// layers.
-TEST_F(ViewLayerTest,
-       NOT_APPLICABLE_TO_WEBKIT_COMPOSITOR(MultipleOpaqueLayers)) {
-  View* content_view = new View;
-  widget()->SetContentsView(content_view);
-
-  View* parent_view = new View;
-  parent_view->SetPaintToLayer(true);
-  parent_view->SetBounds(0, 0, 400, 400);
-  content_view->AddChildView(parent_view);
-
-  View* child_view1 = new View;
-  child_view1->SetPaintToLayer(true);
-  child_view1->SetFillsBoundsOpaquely(true);
-  child_view1->SetBounds(50, 50, 100, 100);
-  parent_view->AddChildView(child_view1);
-
-  View* child_view2 = new View;
-  child_view2->SetPaintToLayer(true);
-  child_view2->SetFillsBoundsOpaquely(false);
-  child_view2->SetBounds(150, 150, 200, 200);
-  parent_view->AddChildView(child_view2);
-
-  widget()->GetCompositor()->Draw(false);
-
-  // Only child_view1 is opaque
-  EXPECT_EQ(
-      gfx::Rect(50, 50, 100, 100), parent_view->layer()->hole_rect());
-
-  // Both child views are opaque
-  child_view2->SetFillsBoundsOpaquely(true);
-  widget()->GetCompositor()->Draw(false);
-  EXPECT_TRUE(
-      gfx::Rect(50, 50, 100, 100) == parent_view->layer()->hole_rect() ||
-      gfx::Rect(150, 150, 200, 200) == parent_view->layer()->hole_rect());
-
-  // Only child_view2 is opaque
-  delete child_view1;
-  EXPECT_EQ(
-      gfx::Rect(150, 150, 200, 200), parent_view->layer()->hole_rect());
-}
-
-// Makes sure that opacity of layer persists after toggling visibilty.
-TEST_F(ViewLayerTest,
-       NOT_APPLICABLE_TO_WEBKIT_COMPOSITOR(ToggleVisibilityWithOpaqueLayer)) {
-  View* content_view = new View;
-  widget()->SetContentsView(content_view);
-
-  View* parent_view = new View;
-  parent_view->SetPaintToLayer(true);
-  parent_view->SetBounds(0, 0, 400, 400);
-  content_view->AddChildView(parent_view);
-
-  parent_view->SetPaintToLayer(true);
-  parent_view->SetBounds(0, 0, 400, 400);
-
-  View* child_view = new View;
-  child_view->SetBounds(50, 50, 100, 100);
-  child_view->SetPaintToLayer(true);
-  child_view->SetFillsBoundsOpaquely(true);
-  parent_view->AddChildView(child_view);
-  widget()->GetCompositor()->Draw(false);
-  EXPECT_EQ(
-       gfx::Rect(50, 50, 100, 100), parent_view->layer()->hole_rect());
-
-  child_view->SetVisible(false);
-  widget()->GetCompositor()->Draw(false);
-  EXPECT_TRUE(parent_view->layer()->hole_rect().IsEmpty());
-
-  child_view->SetVisible(true);
-  widget()->GetCompositor()->Draw(false);
-  EXPECT_EQ(
-      gfx::Rect(50, 50, 100, 100), parent_view->layer()->hole_rect());
-}
-
 // Tests that the layers in the subtree are orphaned after a View is removed
 // from the parent.
 TEST_F(ViewLayerTest, OrphanLayerAfterViewRemove) {
@@ -3042,33 +2892,27 @@ class PaintTrackingView : public View {
   DISALLOW_COPY_AND_ASSIGN(PaintTrackingView);
 };
 
-#if !defined(USE_WEBKIT_COMPOSITOR)
-// TODO(piman): this test relies on the way the non-webkit compositor works.
-// Layer::DrawTree should not be called with the webkit compositor. In the
-// WebKit case, it needs to go through the "real" compositor (not the test one)
-// to do the paints on the layer/views.
-
 // Makes sure child views with layers aren't painted when paint starts at an
 // ancestor.
 TEST_F(ViewLayerTest, DontPaintChildrenWithLayers) {
   PaintTrackingView* content_view = new PaintTrackingView;
   widget()->SetContentsView(content_view);
   content_view->SetPaintToLayer(true);
-  GetRootLayer()->DrawTree();
+  // TODO(piman): Compositor::Draw() won't work for the threaded compositor.
+  GetRootLayer()->GetCompositor()->Draw(false);
   GetRootLayer()->SchedulePaint(gfx::Rect(0, 0, 10, 10));
   content_view->set_painted(false);
   // content_view no longer has a dirty rect. Paint from the root and make sure
   // PaintTrackingView isn't painted.
-  GetRootLayer()->DrawTree();
+  GetRootLayer()->GetCompositor()->Draw(false);
   EXPECT_FALSE(content_view->painted());
 
   // Make content_view have a dirty rect, paint the layers and make sure
   // PaintTrackingView is painted.
   content_view->layer()->SchedulePaint(gfx::Rect(0, 0, 10, 10));
-  GetRootLayer()->DrawTree();
+  GetRootLayer()->GetCompositor()->Draw(false);
   EXPECT_TRUE(content_view->painted());
 }
-#endif
 
 // Tests that the visibility of child layers are updated correctly when a View's
 // visibility changes.

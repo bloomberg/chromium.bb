@@ -286,11 +286,6 @@
             ['exclude', 'test/base/ui_test_utils_win.cc'],
           ],
         }],
-        ['use_webkit_compositor==0', {
-          'dependencies': [
-            '../ui/gfx/compositor/compositor.gyp:test_compositor',
-          ],
-        }],
       ],
     },
     {

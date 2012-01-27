@@ -1,4 +1,4 @@
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -49,11 +49,6 @@
                 '-Wl,-section-ordering-file=<(order_text_section)' ],
             }],
           ]
-        }],
-        ['use_aura==1 and use_webkit_compositor==0', {
-          'dependencies': [
-            '../ui/gfx/compositor/compositor.gyp:test_compositor',
-          ],
         }],
         ['OS == "android"', {
           # Don't put the 'chrome' target in 'all' on android

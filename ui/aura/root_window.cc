@@ -26,12 +26,9 @@
 #include "ui/aura/window_delegate.h"
 #include "ui/base/hit_test.h"
 #include "ui/gfx/compositor/compositor.h"
+#include "ui/gfx/compositor/compositor_cc.h"
 #include "ui/gfx/compositor/layer.h"
 #include "ui/gfx/compositor/layer_animator.h"
-
-#ifdef USE_WEBKIT_COMPOSITOR
-#include "ui/gfx/compositor/compositor_cc.h"
-#endif
 
 using std::string;
 using std::vector;
@@ -406,15 +403,9 @@ RootWindow::RootWindow()
   gfx::Screen::SetInstance(screen_);
   last_mouse_location_ = host_->QueryMouseLocation();
 
-  if (ui::Compositor::compositor_factory()) {
-    compositor_ = (*ui::Compositor::compositor_factory())(this);
-  } else {
-#ifdef USE_WEBKIT_COMPOSITOR
-    ui::CompositorCC::Initialize(false);
-#endif
-    compositor_ = ui::Compositor::Create(this, host_->GetAcceleratedWidget(),
-                                         host_->GetSize());
-  }
+  ui::CompositorCC::Initialize(false);
+  compositor_ = ui::Compositor::Create(this, host_->GetAcceleratedWidget(),
+      host_->GetSize());
   DCHECK(compositor_.get());
 }
 
@@ -424,10 +415,7 @@ RootWindow::~RootWindow() {
   compositor_ = NULL;
   // An observer may have been added by an animation on the RootWindow.
   layer()->GetAnimator()->RemoveObserver(this);
-#ifdef USE_WEBKIT_COMPOSITOR
-  if (!ui::Compositor::compositor_factory())
-    ui::CompositorCC::Terminate();
-#endif
+  ui::CompositorCC::Terminate();
   if (instance_ == this)
     instance_ = NULL;
 }

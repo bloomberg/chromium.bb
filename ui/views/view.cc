@@ -1379,17 +1379,6 @@ std::string View::DoPrintViewGraph(bool first, View* view_with_children) {
                  this->bounds().height());
   result.append(bounds_buffer);
 
-  if (layer() && !layer()->hole_rect().IsEmpty()) {
-    base::snprintf(bounds_buffer,
-                   arraysize(bounds_buffer),
-                   "\\n hole bounds: (%d, %d), (%dx%d)",
-                   layer()->hole_rect().x(),
-                   layer()->hole_rect().y(),
-                   layer()->hole_rect().width(),
-                   layer()->hole_rect().height());
-    result.append(bounds_buffer);
-  }
-
   if (GetTransform().HasChange()) {
     gfx::Point translation;
     float rotation;
