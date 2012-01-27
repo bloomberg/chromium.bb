@@ -782,6 +782,8 @@ TransportDIB* RenderProcessHostImpl::MapTransportDIB(
   // On OSX, the browser allocates all DIBs and keeps a file descriptor around
   // for each.
   return widget_helper_->MapTransportDIB(dib_id);
+#elif defined(OS_ANDROID)
+  return TransportDIB::Map(dib_id);
 #elif defined(OS_POSIX)
   return TransportDIB::Map(dib_id.shmkey);
 #endif  // defined(OS_POSIX)

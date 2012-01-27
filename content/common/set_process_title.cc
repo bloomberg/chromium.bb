@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -26,7 +26,9 @@
 #include "content/common/set_process_title_linux.h"
 #endif  // defined(OS_LINUX)
 
-#if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_SOLARIS)
+// TODO(jrg): Find out if setproctitle or equivalent is available on Android.
+#if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_SOLARIS) && \
+  !defined(OS_ANDROID)
 
 void SetProcessTitleFromCommandLine(const char** main_argv) {
   // Build a single string which consists of all the arguments separated

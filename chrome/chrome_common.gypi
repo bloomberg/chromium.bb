@@ -412,7 +412,7 @@
         '<(DEPTH)/third_party/icu/icu.gyp:icuuc',
       ],
       'conditions': [
-        ['os_posix == 1 and OS != "mac"', {
+        ['os_posix == 1 and OS != "mac" and OS != "android"', {
             'dependencies': [
               '../build/linux/system.gyp:ssl',
             ],
