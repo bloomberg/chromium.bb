@@ -7,6 +7,7 @@
 #pragma once
 
 #include "base/string16.h"
+#include "ui/gfx/native_widget_types.h"
 
 class GURL;
 
@@ -50,6 +51,9 @@ class ScreenLockerDelegate {
 
   // Close message bubble to clear error messages.
   virtual void ClearErrors() = 0;
+
+  // Returns the native window displaying the lock screen.
+  virtual gfx::NativeWindow GetNativeWindow() const = 0;
 
  protected:
   // ScreenLocker that owns this delegate.

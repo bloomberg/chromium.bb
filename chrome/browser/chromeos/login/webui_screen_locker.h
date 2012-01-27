@@ -48,6 +48,7 @@ class WebUIScreenLocker : public WebUILoginView,
   virtual void ShowCaptchaAndErrorMessage(const GURL& captcha_url,
                                           const string16& message) OVERRIDE;
   virtual void ClearErrors() OVERRIDE;
+  virtual gfx::NativeWindow GetNativeWindow() const OVERRIDE;
 
   // LoginDisplay::Delegate: implementation
   virtual void CreateAccount() OVERRIDE;

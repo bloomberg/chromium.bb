@@ -117,6 +117,10 @@ void WebUIScreenLocker::ClearErrors() {
   GetWebUI()->CallJavascriptFunction("cr.ui.Oobe.clearErrors");
 }
 
+gfx::NativeWindow WebUIScreenLocker::GetNativeWindow() const {
+  return lock_window_->GetNativeWindow();
+}
+
 WebUIScreenLocker::~WebUIScreenLocker() {
   DCHECK(lock_window_);
   lock_window_->Close();

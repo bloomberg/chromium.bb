@@ -75,6 +75,9 @@ class ScreenLocker : public LoginStatusConsumer {
   // button is blocked.
   void ShowErrorMessage(const string16& message, bool sign_out_only);
 
+  // Returns the screen locker's delegate.
+  ScreenLockerDelegate* delegate() const { return delegate_.get(); }
+
   // Returns the user to authenticate.
   const User& user() const { return user_; }
 

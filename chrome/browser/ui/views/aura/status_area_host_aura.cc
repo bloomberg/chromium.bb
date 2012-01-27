@@ -167,6 +167,19 @@ void StatusAreaHostAura::ExecuteStatusAreaCommand(
     } else {
       NOTREACHED();
     }
+  } else if (chromeos::StatusAreaViewChromeos::IsScreenLockMode()) {
+    if (command_id == StatusAreaButton::Delegate::SHOW_NETWORK_OPTIONS &&
+        chromeos::ScreenLocker::default_screen_locker()) {
+      gfx::NativeWindow native_window =
+          chromeos::ScreenLocker::default_screen_locker()->delegate()->
+              GetNativeWindow();
+      proxy_settings_dialog_.reset(new chromeos::ProxySettingsDialog(
+                                   NULL,
+                                   native_window));
+      proxy_settings_dialog_->Show();
+    } else {
+      NOTREACHED();
+    }
   }
 #endif
 }
