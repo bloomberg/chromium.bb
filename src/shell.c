@@ -1,6 +1,6 @@
 /*
  * Copyright © 2010 Intel Corporation
- * Copyright © 2011 Collabora, Ltd.
+ * Copyright © 2011-2012 Collabora, Ltd.
  *
  * Permission to use, copy, modify, distribute, and sell this software and
  * its documentation for any purpose is hereby granted without fee, provided
