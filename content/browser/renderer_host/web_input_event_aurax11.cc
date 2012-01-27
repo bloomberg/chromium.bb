@@ -307,12 +307,10 @@ WebKit::WebGestureEvent MakeWebGestureEventFromAuraEvent(
       gesture_event.type = WebKit::WebInputEvent::GestureTap;
       break;
     case ui::ET_GESTURE_TAP_DOWN:
-      // TODO(sad): http://crbug.com/111402
-      // gesture_event.type = WebKit::WebInputEvent::GestureTapDown;
+      gesture_event.type = WebKit::WebInputEvent::GestureTapDown;
       break;
     case ui::ET_GESTURE_DOUBLE_TAP:
-      // TODO(sad): http://crbug.com/111402
-      // gesture_event.type = WebKit::WebInputEvent::GestureDoubleTap;
+      gesture_event.type = WebKit::WebInputEvent::GestureDoubleTap;
       break;
     case ui::ET_GESTURE_SCROLL_BEGIN:
       gesture_event.type = WebKit::WebInputEvent::GestureScrollBegin;
