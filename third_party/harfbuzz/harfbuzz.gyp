@@ -3,6 +3,11 @@
 # found in the LICENSE file.
 
 {
+  'variables': {
+    # Set to 1 to use Harfbuzz-NG instead of Harfbuzz.
+    # Under development: http://crbug.com/68551
+    'use_harfbuzz_ng%': 0
+  },
   'conditions': [
     ['use_harfbuzz_ng==0', {
       'includes': [
