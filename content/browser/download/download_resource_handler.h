@@ -101,7 +101,7 @@ class DownloadResourceHandler : public ResourceHandler {
   void CallStartedCB(content::DownloadId id, net::Error error);
 
   // Generates a DownloadId and calls DownloadFileManager.
-  void StartOnUIThread(DownloadCreateInfo* info,
+  void StartOnUIThread(scoped_ptr<DownloadCreateInfo> info,
                        DownloadRequestHandle handle);
   void set_download_id(content::DownloadId id);
 
