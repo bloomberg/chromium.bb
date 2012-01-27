@@ -8,9 +8,9 @@
 #include <linux/input.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string>
 #include <sys/stat.h>
 #include <sys/types.h>
-#include <string>
 #include <unistd.h>
 #include <vector>
 
@@ -18,10 +18,10 @@
 #include <base/string_number_conversions.h>
 #include <base/string_split.h>
 #include <gflags/gflags.h>
+#include <X11/extensions/XI2.h>
 #include <X11/extensions/XInput.h>
 #include <X11/extensions/XInput2.h>
 #include <X11/extensions/XIproto.h>
-#include <X11/extensions/XI2.h>
 #include <X11/Xatom.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
@@ -36,8 +36,10 @@ DEFINE_string(exclude_keycodes, "125,42,29,56,100,97,54",
 DEFINE_bool(foreground, false, "Don't daemon()ize; run in foreground.");
 DEFINE_string(keyboard_name, "AT Translated Set 2 keyboard",
               "Name of the keyboard to monitor");
-DEFINE_string(tp_prop_name_high, "", "Touchpad property to set (timeval high)");
-DEFINE_string(tp_prop_name_low, "", "Touchpad property to set (timeval low)");
+DEFINE_string(tp_prop_name_high, "Keyboard Touched Timeval High",
+              "Touchpad property to set (timeval high)");
+DEFINE_string(tp_prop_name_low, "Keyboard Touched Timeval Low",
+              "Touchpad property to set (timeval low)");
 
 namespace keyboard_touchpad_helper {
 
@@ -57,7 +59,7 @@ vector<unsigned short> ParseExclusions() {
   base::SplitString(FLAGS_exclude_keycodes, ',', &strings);
   for (vector<string>::iterator it = strings.begin(), e = strings.end();
        it != e; ++it)
-    ret.push_back(atoi((*it).c_str()));
+    ret.push_back(strtol((*it).c_str(), NULL, 10));
   return ret;
 }
 
@@ -136,10 +138,14 @@ string GetKeyboardPath(Display *display) {
     fprintf(stderr, "Mysterious X server error\n");
     return "";
   }
-  // actual_type == None if property doesn't exist for this device
-  if (actual_type != XA_STRING || actual_format != 8) {
-    fprintf(stderr,
-            "Property was not a string, bad format, or didn't exist?\n");
+  if (actual_type == None) {
+    const char kErr[] =
+        "Property didn't exist (not xf86-input-evdev, or -evdev too old?)?\n";
+    fprintf(stderr, "%s", kErr);
+    return "";
+  } else if (actual_type != XA_STRING || actual_format != 8) {
+    fprintf(stderr, "Property not string or bad format.\n");
+    XFree(data);
     return "";
   }
   string ret = string(reinterpret_cast<char*>(data));
@@ -153,19 +159,22 @@ bool IsCmtTouchpad(Display* display, int device_id) {
   if (prop == None)
     return false;
 
-  int num_props = 0;
-  Atom* props = XIListProperties(display, device_id, &num_props);
-  if (!num_props || !props)
+  Atom actual_type;
+  int actual_format;
+  unsigned long num_items, bytes_after;
+  unsigned char* data;
+
+  if (XIGetProperty(display, device_id, prop, 0, 1000, False, AnyPropertyType,
+                    &actual_type, &actual_format, &num_items, &bytes_after,
+                    &data) != Success) {
+    // XIGetProperty can generate BadAtom, BadValue, and BadWindow errors
+    fprintf(stderr, "Mysterious X server error\n");
     return false;
-  bool ret = false;
-  for (int i = 0; i < num_props; i++) {
-    if (prop == props[i]) {
-      ret = true;
-      break;
-    }
   }
-  XFree(props);
-  return ret;
+  if (actual_type == None)
+    return false;
+  XFree(data);
+  return (actual_type == XA_INTEGER);
 }
 
 int GetTouchpadXId(Display* display) {
@@ -262,7 +271,8 @@ class MainLoop {
       FD_SET(kb_fd_, &theset);
       int rc = select(max_fd_plus_1, &theset, NULL, NULL, NULL);
       if (errno == EBADF) {
-        ClearDevices();
+        close(kb_fd_);
+        kb_fd_ = -1;
         continue;
       }
       if (rc < 0)
@@ -281,30 +291,27 @@ class MainLoop {
           ev.xcookie.extension == xiopcode_ &&
           XGetEventData(display_, &ev.xcookie)) {
         if (ev.xcookie.evtype == XI_HierarchyChanged) {
-          ClearDevices();
+          // Rescan for touchpad
+          tp_id_ = -1;
         }
         XFreeEventData(display_, &ev.xcookie);
       }
     }
   }
   void ServiceKeyboardFd() {
-    if (!monitor_->HandleInput(kb_fd_, notifier_.get()))
-      ClearDevices();
-  }
-  void ClearDevices() {
-    if (kb_fd_) {
+    if (!monitor_->HandleInput(kb_fd_, notifier_.get())) {
       close(kb_fd_);
       kb_fd_ = -1;
     }
-    tp_id_ = -1;
   }
   void RefreshDevices() {
     if (kb_fd_ < 0)
       GetKeyboardFd();
-    if (tp_id_ < 0)
+    if (tp_id_ < 0) {
       tp_id_ = GetTouchpadXId(display_);
-    if (tp_id_ >= 0)
-      notifier_.reset(new XNotifier(display_, tp_id_));
+      if (tp_id_ >= 0)
+        notifier_.reset(new XNotifier(display_, tp_id_));
+    }
   }
   bool DevicesNeedRefresh() {
     return kb_fd_ < 0 || tp_id_ < 0;
@@ -357,6 +364,21 @@ int main(int argc, char** argv) {
   if (!dpy) {
     printf("XOpenDisplay failed\n");
     exit(1);
+  }
+
+  // Check for Xinput 2
+  int opcode, event, err;
+  if (!XQueryExtension(dpy, "XInputExtension", &opcode, &event, &err)) {
+    fprintf(stderr,
+            "Failed to get XInputExtension.\n");
+    return -1;
+  }
+
+  int major = 2, minor = 0;
+  if (XIQueryVersion(dpy, &major, &minor) == BadRequest) {
+    fprintf(stderr,
+            "Server does not have XInput2.\n");
+    return -1;
   }
 
   KeyboardMonitor monitor(ParseExclusions());
