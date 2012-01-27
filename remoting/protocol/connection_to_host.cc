@@ -43,10 +43,14 @@ ConnectionToHost::~ConnectionToHost() {
 }
 
 InputStub* ConnectionToHost::input_stub() {
+  if (event_dispatcher_.get() && !event_dispatcher_->is_connected())
+    return NULL;
   return event_dispatcher_.get();
 }
 
 HostStub* ConnectionToHost::host_stub() {
+  if (control_dispatcher_.get() && !control_dispatcher_->is_connected())
+    return NULL;
   return control_dispatcher_.get();
 }
 
