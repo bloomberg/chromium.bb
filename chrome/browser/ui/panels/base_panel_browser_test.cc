@@ -156,7 +156,7 @@ void MockAutoHidingDesktopBarImpl::NotifyThicknessChange() {
 
 bool ExistsPanel(Panel* panel) {
   std::vector<Panel*> panels = PanelManager::GetInstance()->panels();
-  return find(panels.begin(), panels.end(), panel) != panels.end();
+  return std::find(panels.begin(), panels.end(), panel) != panels.end();
 }
 
 }  // namespace
