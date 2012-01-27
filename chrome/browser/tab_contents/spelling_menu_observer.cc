@@ -15,6 +15,7 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/spellchecker/spellcheck_factory.h"
 #include "chrome/browser/spellchecker/spellcheck_host.h"
 #include "chrome/browser/spellchecker/spellcheck_host_metrics.h"
 #include "chrome/browser/spellchecker/spellcheck_platform_mac.h"
@@ -113,7 +114,8 @@ void SpellingMenuObserver::InitMenu(const ContextMenuParams& params) {
 
     // |spellcheck_host| can be null when the suggested word is
     // provided by Web SpellCheck API.
-    SpellCheckHost* spellcheck_host = profile->GetSpellCheckHost();
+    SpellCheckHost* spellcheck_host =
+        SpellCheckFactory::GetHostForProfile(profile);
     if (spellcheck_host && spellcheck_host->GetMetrics())
       spellcheck_host->GetMetrics()->RecordSuggestionStats(1);
   }
@@ -201,7 +203,8 @@ void SpellingMenuObserver::ExecuteCommand(int command_id) {
     // provided by Web SpellCheck API.
     Profile* profile = proxy_->GetProfile();
     if (profile) {
-      SpellCheckHost* spellcheck_host = profile->GetSpellCheckHost();
+      SpellCheckHost* spellcheck_host =
+          SpellCheckFactory::GetHostForProfile(profile);
       if (spellcheck_host && spellcheck_host->GetMetrics())
         spellcheck_host->GetMetrics()->RecordReplacedWordStats(1);
     }
@@ -218,11 +221,14 @@ void SpellingMenuObserver::ExecuteCommand(int command_id) {
 
   if (command_id == IDC_CONTENT_CONTEXT_SPELLING_SUGGESTION ||
       command_id == IDC_SPELLCHECK_ADD_TO_DICTIONARY) {
-    // GetSpellCheckHost() can return null when the suggested word is
+    // GetHostForProfile() can return null when the suggested word is
     // provided by Web SpellCheck API.
     Profile* profile = proxy_->GetProfile();
-    if (profile && profile->GetSpellCheckHost())
-      profile->GetSpellCheckHost()->AddWord(UTF16ToUTF8(misspelled_word_));
+    if (profile) {
+      SpellCheckHost* host = SpellCheckFactory::GetHostForProfile(profile);
+      if (host)
+        host->AddWord(UTF16ToUTF8(misspelled_word_));
+    }
 #if defined(OS_MACOSX)
     spellcheck_mac::AddWord(misspelled_word_);
 #endif

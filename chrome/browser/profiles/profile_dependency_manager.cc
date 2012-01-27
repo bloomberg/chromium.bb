@@ -27,6 +27,7 @@
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/speech/speech_input_extension_manager.h"
+#include "chrome/browser/spellchecker/spellcheck_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/tabs/pinned_tab_service_factory.h"
 #include "chrome/browser/themes/theme_service_factory.h"
@@ -180,6 +181,7 @@ void ProfileDependencyManager::AssertFactoriesBuilt() {
   SessionServiceFactory::GetInstance();
   SigninManagerFactory::GetInstance();
   SpeechInputExtensionManager::InitializeFactory();
+  SpellCheckFactory::GetInstance();
   TabRestoreServiceFactory::GetInstance();
   ThemeServiceFactory::GetInstance();
   TemplateURLServiceFactory::GetInstance();

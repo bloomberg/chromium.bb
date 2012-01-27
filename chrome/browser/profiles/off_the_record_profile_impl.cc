@@ -447,14 +447,6 @@ Time OffTheRecordProfileImpl::GetStartTime() const {
   return start_time_;
 }
 
-SpellCheckHost* OffTheRecordProfileImpl::GetSpellCheckHost() {
-  return profile_->GetSpellCheckHost();
-}
-
-void OffTheRecordProfileImpl::ReinitializeSpellCheckHost(bool force) {
-  profile_->ReinitializeSpellCheckHost(force);
-}
-
 WebKitContext* OffTheRecordProfileImpl::GetWebKitContext() {
   CreateQuotaManagerAndClients();
   return webkit_context_.get();

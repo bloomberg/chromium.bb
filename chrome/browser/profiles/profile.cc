@@ -53,7 +53,6 @@
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
-#include "grit/locale_settings.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "webkit/database/database_tracker.h"
 #include "webkit/quota/quota_manager.h"
@@ -120,19 +119,6 @@ void Profile::RegisterUserPrefs(PrefService* prefs) {
                              PrefService::SYNCABLE_PREF);
   prefs->RegisterBooleanPref(prefs::kSafeBrowsingReportingEnabled,
                              false,
-                             PrefService::UNSYNCABLE_PREF);
-  // TODO(estade): IDS_SPELLCHECK_DICTIONARY should be an ASCII string.
-  prefs->RegisterLocalizedStringPref(prefs::kSpellCheckDictionary,
-                                     IDS_SPELLCHECK_DICTIONARY,
-                                     PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterBooleanPref(prefs::kSpellCheckUseSpellingService,
-                             false,
-                             PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterBooleanPref(prefs::kEnableSpellCheck,
-                             true,
-                             PrefService::SYNCABLE_PREF);
-  prefs->RegisterBooleanPref(prefs::kEnableAutoSpellCorrect,
-                             true,
                              PrefService::UNSYNCABLE_PREF);
   prefs->RegisterBooleanPref(prefs::kSpeechInputFilterProfanities,
                              true,

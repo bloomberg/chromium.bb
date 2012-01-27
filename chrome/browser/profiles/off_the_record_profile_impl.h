@@ -92,8 +92,6 @@ class OffTheRecordProfileImpl : public Profile,
   virtual ProfileSyncService* GetProfileSyncService() OVERRIDE;
   virtual bool IsSameProfile(Profile* profile) OVERRIDE;
   virtual Time GetStartTime() const OVERRIDE;
-  virtual SpellCheckHost* GetSpellCheckHost() OVERRIDE;
-  virtual void ReinitializeSpellCheckHost(bool force) OVERRIDE;
   virtual WebKitContext* GetWebKitContext() OVERRIDE;
   virtual history::TopSites* GetTopSitesWithoutCreating() OVERRIDE;
   virtual history::TopSites* GetTopSites() OVERRIDE;

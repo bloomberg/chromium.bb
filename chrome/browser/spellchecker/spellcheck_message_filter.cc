@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,7 @@
 
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/spellchecker/spellcheck_factory.h"
 #include "chrome/browser/spellchecker/spellcheck_host.h"
 #include "chrome/browser/spellchecker/spellcheck_host_metrics.h"
 #include "chrome/common/spellcheck_messages.h"
@@ -50,15 +51,18 @@ void SpellCheckMessageFilter::OnSpellCheckerRequestDictionary() {
   // generally only be called once per session, as after the first call, all
   // future renderers will be passed the initialization information on startup
   // (or when the dictionary changes in some way).
-  if (profile->GetSpellCheckHost()) {
+  SpellCheckHost* spell_check_host =
+      SpellCheckFactory::GetHostForProfile(profile);
+
+  if (spell_check_host) {
     // The spellchecker initialization already started and finished; just send
     // it to the renderer.
-    profile->GetSpellCheckHost()->InitForRenderer(host);
+    spell_check_host->InitForRenderer(host);
   } else {
     // We may have gotten multiple requests from different renderers. We don't
     // want to initialize multiple times in this case, so we set |force| to
     // false.
-    profile->ReinitializeSpellCheckHost(false);
+    SpellCheckFactory::ReinitializeSpellCheckHost(profile, false);
   }
 }
 
@@ -70,7 +74,8 @@ void SpellCheckMessageFilter::OnNotifyChecked(const string16& word,
     return;  // Teardown.
   // Delegates to SpellCheckHost which tracks the stats of our spellchecker.
   Profile* profile = Profile::FromBrowserContext(host->GetBrowserContext());
-  SpellCheckHost* spellcheck_host = profile->GetSpellCheckHost();
+  SpellCheckHost* spellcheck_host =
+      SpellCheckFactory::GetHostForProfile(profile);
   if (spellcheck_host && spellcheck_host->GetMetrics())
     spellcheck_host->GetMetrics()->RecordCheckedWordStats(word, misspelled);
 }

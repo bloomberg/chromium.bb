@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,6 +16,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/spellchecker/spellcheck_factory.h"
 #include "chrome/browser/spellchecker/spellcheck_host_metrics.h"
 #include "chrome/browser/spellchecker/spellcheck_platform_mac.h"
 #include "chrome/browser/spellchecker/spellcheck_profile_provider.h"
@@ -135,7 +136,7 @@ void SpellCheckHostImpl::InitForRenderer(content::RenderProcessHost* process) {
   // Bug 103693: SpellCheckHostImpl and SpellCheckProfile should not
   // depend on Profile interface.
   Profile* profile = Profile::FromBrowserContext(process->GetBrowserContext());
-  if (profile->GetSpellCheckHost() != this)
+  if (SpellCheckFactory::GetHostForProfile(profile) != this)
     return;
 
   PrefService* prefs = profile->GetPrefs();

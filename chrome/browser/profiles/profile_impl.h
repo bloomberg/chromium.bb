@@ -28,7 +28,6 @@ class PrefService;
 class ProfileSyncService;
 class PromoResourceService;
 class SpeechInputPreferences;
-class SpellCheckProfile;
 class SSLConfigServiceManager;
 class VisitedLinkEventListener;
 
@@ -116,8 +115,6 @@ class ProfileImpl : public Profile,
   virtual ProtocolHandlerRegistry* GetProtocolHandlerRegistry() OVERRIDE;
   virtual bool IsSameProfile(Profile* profile) OVERRIDE;
   virtual base::Time GetStartTime() const OVERRIDE;
-  virtual SpellCheckHost* GetSpellCheckHost() OVERRIDE;
-  virtual void ReinitializeSpellCheckHost(bool force) OVERRIDE;
   virtual void MarkAsCleanShutdown() OVERRIDE;
   virtual void InitExtensions(bool extensions_enabled) OVERRIDE;
   virtual void InitPromoResources() OVERRIDE;
@@ -181,8 +178,6 @@ class ProfileImpl : public Profile,
   ExtensionPrefValueMap* GetExtensionPrefValueMap();
 
   void CreateQuotaManagerAndClients();
-
-  SpellCheckProfile* GetSpellCheckProfile();
 
   void UpdateProfileUserNameCache();
 
@@ -275,8 +270,6 @@ class ProfileImpl : public Profile,
 
   // See GetStartTime for details.
   base::Time start_time_;
-
-  scoped_ptr<SpellCheckProfile> spellcheck_profile_;
 
 #if defined(OS_WIN)
   bool checked_instant_promo_;

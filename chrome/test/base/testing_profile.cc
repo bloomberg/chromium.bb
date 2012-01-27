@@ -747,10 +747,6 @@ ProtocolHandlerRegistry* TestingProfile::GetProtocolHandlerRegistry() {
   return protocol_handler_registry_.get();
 }
 
-SpellCheckHost* TestingProfile::GetSpellCheckHost() {
-  return NULL;
-}
-
 WebKitContext* TestingProfile::GetWebKitContext() {
   if (webkit_context_ == NULL) {
     webkit_context_ = new WebKitContext(

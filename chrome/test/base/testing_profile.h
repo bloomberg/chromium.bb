@@ -248,8 +248,6 @@ class TestingProfile : public Profile {
   virtual bool IsSameProfile(Profile *p) OVERRIDE;
   virtual base::Time GetStartTime() const OVERRIDE;
   virtual ProtocolHandlerRegistry* GetProtocolHandlerRegistry() OVERRIDE;
-  virtual SpellCheckHost* GetSpellCheckHost() OVERRIDE;
-  virtual void ReinitializeSpellCheckHost(bool force) OVERRIDE { }
   virtual WebKitContext* GetWebKitContext() OVERRIDE;
   virtual WebKitContext* GetOffTheRecordWebKitContext();
   virtual void MarkAsCleanShutdown() OVERRIDE {}

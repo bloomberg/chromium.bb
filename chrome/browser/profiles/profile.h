@@ -40,7 +40,6 @@ class ProfileSyncService;
 class PromoCounter;
 class ProtocolHandlerRegistry;
 class SpeechInputPreferences;
-class SpellCheckHost;
 class TemplateURLFetcher;
 class TestingProfile;
 class TokenService;
@@ -413,14 +412,6 @@ class Profile : public content::BrowserContext {
   // this profile. For the single profile case, this corresponds to the time
   // the user started chrome.
   virtual base::Time GetStartTime() const = 0;
-
-  // May return NULL.
-  virtual SpellCheckHost* GetSpellCheckHost() = 0;
-
-  // If |force| is false, and the spellchecker is already initialized (or is in
-  // the process of initializing), then do nothing. Otherwise clobber the
-  // current spellchecker and replace it with a new one.
-  virtual void ReinitializeSpellCheckHost(bool force) = 0;
 
   // Marks the profile as cleanly shutdown.
   //

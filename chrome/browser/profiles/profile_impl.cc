@@ -73,7 +73,6 @@
 #include "chrome/browser/signin/token_service.h"
 #include "chrome/browser/speech/chrome_speech_input_manager.h"
 #include "chrome/browser/speech/chrome_speech_input_preferences.h"
-#include "chrome/browser/spellchecker/spellcheck_profile.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/transport_security_persister.h"
 #include "chrome/browser/ui/browser_init.h"
@@ -92,8 +91,6 @@
 #include "chrome/common/extensions/extension_permission_set.h"
 #include "chrome/common/json_pref_store.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/common/render_messages.h"
-#include "chrome/common/spellcheck_messages.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/appcache/chrome_appcache_service.h"
 #include "content/browser/chrome_blob_storage_context.h"
@@ -104,7 +101,6 @@
 #include "content/browser/ssl/ssl_host_state.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
-#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/user_metrics.h"
 #include "grit/locale_settings.h"
 #include "net/base/transport_security_state.h"
@@ -301,9 +297,6 @@ ProfileImpl::ProfileImpl(const FilePath& path,
 void ProfileImpl::DoFinalInit() {
   PrefService* prefs = GetPrefs();
   pref_change_registrar_.Init(prefs);
-  pref_change_registrar_.Add(prefs::kSpellCheckDictionary, this);
-  pref_change_registrar_.Add(prefs::kEnableSpellCheck, this);
-  pref_change_registrar_.Add(prefs::kEnableAutoSpellCorrect, this);
   pref_change_registrar_.Add(prefs::kSpeechInputFilterProfanities, this);
   pref_change_registrar_.Add(prefs::kClearSiteDataOnExit, this);
   pref_change_registrar_.Add(prefs::kGoogleServicesUsername, this);
@@ -370,12 +363,6 @@ void ProfileImpl::DoFinalInit() {
   }
 
   InstantController::RecordMetrics(this);
-
-  // Instantiates Metrics object for spellchecking for use.
-  if (g_browser_process->metrics_service() &&
-      g_browser_process->metrics_service()->recording_active())
-    GetSpellCheckProfile()->StartRecordingMetrics(
-        GetPrefs()->GetBoolean(prefs::kEnableSpellCheck));
 
   FilePath cookie_path = GetPath();
   cookie_path = cookie_path.Append(chrome::kCookieFilename);
@@ -1207,33 +1194,6 @@ history::TopSites* ProfileImpl::GetTopSitesWithoutCreating() {
   return top_sites_;
 }
 
-SpellCheckHost* ProfileImpl::GetSpellCheckHost() {
-  return GetSpellCheckProfile()->GetHost();
-}
-
-
-void ProfileImpl::ReinitializeSpellCheckHost(bool force) {
-  PrefService* pref = GetPrefs();
-  SpellCheckProfile::ReinitializeResult result =
-      GetSpellCheckProfile()->ReinitializeHost(
-          force,
-          pref->GetBoolean(prefs::kEnableSpellCheck),
-          pref->GetString(prefs::kSpellCheckDictionary),
-          GetRequestContext());
-  if (result == SpellCheckProfile::REINITIALIZE_REMOVED_HOST) {
-    // The spellchecker has been disabled.
-    for (content::RenderProcessHost::iterator i(
-            content::RenderProcessHost::AllHostsIterator());
-         !i.IsAtEnd(); i.Advance()) {
-      content::RenderProcessHost* process = i.GetCurrentValue();
-      process->Send(new SpellCheckMsg_Init(IPC::InvalidPlatformFileForTransit(),
-                                           std::vector<std::string>(),
-                                           std::string(),
-                                           false));
-    }
-  }
-}
-
 ExtensionPrefValueMap* ProfileImpl::GetExtensionPrefValueMap() {
   if (!extension_pref_value_map_.get())
     extension_pref_value_map_.reset(new ExtensionPrefValueMap);
@@ -1320,18 +1280,7 @@ void ProfileImpl::Observe(int type,
       std::string* pref_name_in = content::Details<std::string>(details).ptr();
       PrefService* prefs = content::Source<PrefService>(source).ptr();
       DCHECK(pref_name_in && prefs);
-      if (*pref_name_in == prefs::kSpellCheckDictionary ||
-          *pref_name_in == prefs::kEnableSpellCheck) {
-        ReinitializeSpellCheckHost(true);
-      } else if (*pref_name_in == prefs::kEnableAutoSpellCorrect) {
-        bool enabled = prefs->GetBoolean(prefs::kEnableAutoSpellCorrect);
-        for (content::RenderProcessHost::iterator i(
-                content::RenderProcessHost::AllHostsIterator());
-             !i.IsAtEnd(); i.Advance()) {
-          content::RenderProcessHost* process = i.GetCurrentValue();
-          process->Send(new SpellCheckMsg_EnableAutoSpellCorrect(enabled));
-        }
-      } else if (*pref_name_in == prefs::kSpeechInputFilterProfanities) {
+      if (*pref_name_in == prefs::kSpeechInputFilterProfanities) {
         GetSpeechInputPreferences()->set_filter_profanities(prefs->GetBoolean(
             prefs::kSpeechInputFilterProfanities));
       } else if (*pref_name_in == prefs::kClearSiteDataOnExit) {
@@ -1596,12 +1545,6 @@ void ProfileImpl::SaveSessionState() {
       base::Bind(&SaveSessionStateOnIOThread,
                  make_scoped_refptr(GetRequestContext()),
                  make_scoped_refptr(appcache_service_.get())));
-}
-
-SpellCheckProfile* ProfileImpl::GetSpellCheckProfile() {
-  if (!spellcheck_profile_.get())
-    spellcheck_profile_.reset(new SpellCheckProfile(path_));
-  return spellcheck_profile_.get();
 }
 
 void ProfileImpl::UpdateProfileUserNameCache() {

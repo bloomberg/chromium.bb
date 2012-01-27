@@ -2211,6 +2211,8 @@
         'browser/speech/speech_input_extension_manager.h',
         'browser/speech/speech_input_extension_notification.cc',
         'browser/speech/speech_input_extension_notification.h',
+        'browser/spellchecker/spellcheck_factory.cc',
+        'browser/spellchecker/spellcheck_factory.h',
         'browser/spellchecker/spellcheck_host.cc',
         'browser/spellchecker/spellcheck_host.h',
         'browser/spellchecker/spellcheck_host_impl.cc',
