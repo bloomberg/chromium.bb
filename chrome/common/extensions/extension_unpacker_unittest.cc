@@ -101,21 +101,41 @@ TEST_F(ExtensionUnpackerTest, MAYBE_InvalidMessagesFile) {
                 " Dictionary keys must be quoted.")));
 }
 
-TEST_F(ExtensionUnpackerTest, MissingDefaultData) {
+// Crashes intermittently on Vista, see http://crbug.com/109238
+#if defined(OS_WIN)
+#define MAYBE_MissingDefaultData DISABLED_MissingDefaultData
+#else
+#define MAYBE_MissingDefaultData MissingDefaultData
+#endif
+TEST_F(ExtensionUnpackerTest, MAYBE_MissingDefaultData) {
   SetupUnpacker("missing_default_data.crx");
   EXPECT_FALSE(unpacker_->Run());
   EXPECT_EQ(ASCIIToUTF16(errors::kLocalesNoDefaultMessages),
             unpacker_->error_message());
 }
 
-TEST_F(ExtensionUnpackerTest, MissingDefaultLocaleHasLocalesFolder) {
+// Crashes intermittently on Vista, see http://crbug.com/109238
+#if defined(OS_WIN)
+#define MAYBE_MissingDefaultLocaleHasLocalesFolder \
+  DISABLED_MissingDefaultLocaleHasLocalesFolder
+#else
+#define MAYBE_MissingDefaultLocaleHasLocalesFolder \
+  MissingDefaultLocaleHasLocalesFolder
+#endif
+TEST_F(ExtensionUnpackerTest, MAYBE_MissingDefaultLocaleHasLocalesFolder) {
   SetupUnpacker("missing_default_has_locales.crx");
   EXPECT_FALSE(unpacker_->Run());
   EXPECT_EQ(ASCIIToUTF16(errors::kLocalesNoDefaultLocaleSpecified),
             unpacker_->error_message());
 }
 
-TEST_F(ExtensionUnpackerTest, MissingMessagesFile) {
+// Crashes intermittently on Vista, see http://crbug.com/109238
+#if defined(OS_WIN)
+#define MAYBE_MissingMessagesFile DISABLED_MissingMessagesFile
+#else
+#define MAYBE_MissingMessagesFile MissingMessagesFile
+#endif
+TEST_F(ExtensionUnpackerTest, MAYBE_MissingMessagesFile) {
   SetupUnpacker("missing_messages_file.crx");
   EXPECT_FALSE(unpacker_->Run());
   EXPECT_TRUE(MatchPattern(unpacker_->error_message(),
@@ -123,21 +143,39 @@ TEST_F(ExtensionUnpackerTest, MissingMessagesFile) {
     ASCIIToUTF16("*_locales?en_US?messages.json")));
 }
 
-TEST_F(ExtensionUnpackerTest, NoLocaleData) {
+// Crashes intermittently on Vista, see http://crbug.com/109238
+#if defined(OS_WIN)
+#define MAYBE_NoLocaleData DISABLED_NoLocaleData
+#else
+#define MAYBE_NoLocaleData NoLocaleData
+#endif
+TEST_F(ExtensionUnpackerTest, MAYBE_NoLocaleData) {
   SetupUnpacker("no_locale_data.crx");
   EXPECT_FALSE(unpacker_->Run());
   EXPECT_EQ(ASCIIToUTF16(errors::kLocalesNoDefaultMessages),
             unpacker_->error_message());
 }
 
-TEST_F(ExtensionUnpackerTest, GoodL10n) {
+// Crashes intermittently on Vista, see http://crbug.com/109238
+#if defined(OS_WIN)
+#define MAYBE_GoodL10n DISABLED_GoodL10n
+#else
+#define MAYBE_GoodL10n GoodL10n
+#endif
+TEST_F(ExtensionUnpackerTest, MAYBE_GoodL10n) {
   SetupUnpacker("good_l10n.crx");
   EXPECT_TRUE(unpacker_->Run());
   EXPECT_TRUE(unpacker_->error_message().empty());
   ASSERT_EQ(2U, unpacker_->parsed_catalogs()->size());
 }
 
-TEST_F(ExtensionUnpackerTest, NoL10n) {
+// Crashes intermittently on Vista, see http://crbug.com/109238
+#if defined(OS_WIN)
+#define MAYBE_NoL10n DISABLED_NoL10n
+#else
+#define MAYBE_NoL10n NoL10n
+#endif
+TEST_F(ExtensionUnpackerTest, MAYBE_NoL10n) {
   SetupUnpacker("no_l10n.crx");
   EXPECT_TRUE(unpacker_->Run());
   EXPECT_TRUE(unpacker_->error_message().empty());
