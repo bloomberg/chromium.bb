@@ -59,7 +59,8 @@ class ScreenLockObserver : public chromeos::PowerManagerClient::Observer,
                            public content::NotificationObserver {
  public:
   ScreenLockObserver() {
-    registrar_.Add(this, chrome::NOTIFICATION_LOGIN_USER_CHANGED,
+    registrar_.Add(this,
+                   chrome::NOTIFICATION_SESSION_STARTED,
                    content::NotificationService::AllSources());
   }
 
@@ -67,9 +68,10 @@ class ScreenLockObserver : public chromeos::PowerManagerClient::Observer,
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE {
-    if (type == chrome::NOTIFICATION_LOGIN_USER_CHANGED) {
+    if (type == chrome::NOTIFICATION_SESSION_STARTED) {
       // Register Screen Lock after login screen to make sure
       // we don't show the screen lock on top of the login screen by accident.
+      // See issue crbug.com/110933.
       chromeos::PowerManagerClient* power_manager =
           chromeos::DBusThreadManager::Get()->GetPowerManagerClient();
       if (!power_manager->HasObserver(this))

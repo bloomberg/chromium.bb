@@ -23,7 +23,7 @@ PowerButtonObserver::PowerButtonObserver() {
 
   registrar_.Add(
       this,
-      chrome::NOTIFICATION_LOGIN_USER_CHANGED,
+      chrome::NOTIFICATION_SESSION_STARTED,
       content::NotificationService::AllSources());
   registrar_.Add(
       this,
@@ -48,8 +48,8 @@ void PowerButtonObserver::Observe(int type,
                                   const content::NotificationSource& source,
                                   const content::NotificationDetails& details) {
   switch (type) {
-    case chrome::NOTIFICATION_LOGIN_USER_CHANGED: {
-      const User* user = content::Details<const User>(details).ptr();
+    case chrome::NOTIFICATION_SESSION_STARTED: {
+      const User* user = &UserManager::Get()->logged_in_user();
       ash::Shell::GetInstance()->power_button_controller()->
           OnLoginStateChange(true /* logged_in */, user->is_guest());
       break;

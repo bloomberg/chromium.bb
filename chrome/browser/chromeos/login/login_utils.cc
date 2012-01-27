@@ -55,6 +55,7 @@
 #include "chrome/browser/signin/token_service.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/ui/browser_init.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/logging_chrome.h"
@@ -65,6 +66,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/notification_service.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/cookie_monster.h"
 #include "net/base/cookie_store.h"
@@ -1357,6 +1359,10 @@ void LoginUtils::DoBrowserLaunch(Profile* profile,
     login_host->SetStatusAreaVisible(true);
     login_host->SetStatusAreaEnabled(true);
     login_host = NULL;
+    content::NotificationService::current()->Notify(
+        chrome::NOTIFICATION_SESSION_STARTED,
+        content::NotificationService::AllSources(),
+        content::NotificationService::NoDetails());
   }
 }
 
