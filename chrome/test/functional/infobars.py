@@ -124,17 +124,17 @@ class InfobarTest(pyauto.PyUITest):
 
   def testMultipleDownloadsInfobar(self):
     """Verify the mutiple downloads infobar."""
-    zip_file = 'a_zip_file.zip'
+    zip_files = ['a_zip_file.zip']
+    zip_files.append(zip_files[0].replace('.', ' (1).'))
     html_file = 'download-a_zip_file.html'
     assert pyauto.PyUITest.IsEnUS()
     file_url = self.GetFileURLForDataPath('downloads', html_file)
     match_text = 'This site is attempting to download multiple files. ' \
                  'Do you want to allow this?'
     self.NavigateToURL('chrome://downloads')  # trigger download manager
-    test_utils.RemoveDownloadedTestFile(self, zip_file)
+    for zip_file in zip_files:
+      test_utils.RemoveDownloadedTestFile(self, zip_file)
     self.DownloadAndWaitForStart(file_url)
-    # trigger page reload, which triggers the download infobar
-    self.GetBrowserWindow(0).GetTab(0).Reload()
     self.assertTrue(self.WaitForInfobarCount(1))
     tab_info = self._GetTabInfo(0, 0)
     infobars = tab_info['infobars']
@@ -145,7 +145,8 @@ class InfobarTest(pyauto.PyUITest):
     self.assertEqual('Allow', infobars[0]['buttons'][0])
     self.assertEqual('Deny', infobars[0]['buttons'][1])
     self.WaitForAllDownloadsToComplete()
-    test_utils.RemoveDownloadedTestFile(self, zip_file)
+    for zip_file in zip_files:
+      test_utils.RemoveDownloadedTestFile(self, zip_file)
 
   def testPluginCrashForMultiTabs(self):
     """Verify plugin crash infobar shows up only on the tabs using plugin."""

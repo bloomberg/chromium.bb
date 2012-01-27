@@ -49,6 +49,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/page_transition_types.h"
 #include "content/public/common/url_constants.h"
 #include "grit/chromium_strings.h"
@@ -67,6 +68,7 @@ using content::NavigationEntry;
 using content::OpenURLParams;
 using content::Referrer;
 using content::WebContents;
+using content::WebContentsObserver;
 
 namespace {
 
@@ -1378,6 +1380,49 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, InterstitialCommandDisable) {
   EXPECT_TRUE(command_updater->IsCommandEnabled(IDC_SAVE_PAGE));
   EXPECT_TRUE(command_updater->IsCommandEnabled(IDC_ENCODING_MENU));
 
+}
+
+class MockWebContentsObserver : public WebContentsObserver {
+ public:
+  explicit MockWebContentsObserver(WebContents* web_contents)
+      : WebContentsObserver(web_contents),
+        got_user_gesture_(false) {
+  }
+
+  virtual void DidGetUserGesture() OVERRIDE {
+    got_user_gesture_ = true;
+  }
+
+  bool got_user_gesture() const {
+    return got_user_gesture_;
+  }
+
+  void set_got_user_gesture(bool got_it) {
+    got_user_gesture_ = got_it;
+  }
+
+ private:
+  bool got_user_gesture_;
+
+  DISALLOW_COPY_AND_ASSIGN(MockWebContentsObserver);
+};
+
+IN_PROC_BROWSER_TEST_F(BrowserTest, UserGesturesReported) {
+  // Regression test for http://crbug.com/110707.  Also tests that a user
+  // gesture is sent when a normal navigation (via e.g. the omnibox) is
+  // performed.
+  WebContents* web_contents = browser()->GetSelectedWebContents();
+  MockWebContentsObserver mock_observer(web_contents);
+
+  ASSERT_TRUE(test_server()->Start());
+  GURL url(test_server()->GetURL("empty.html"));
+
+  ui_test_utils::NavigateToURL(browser(), url);
+  EXPECT_TRUE(mock_observer.got_user_gesture());
+
+  mock_observer.set_got_user_gesture(false);
+  browser()->Reload(CURRENT_TAB);
+  EXPECT_TRUE(mock_observer.got_user_gesture());
 }
 
 // TODO(ben): this test was never enabled. It has bit-rotted since being added.
