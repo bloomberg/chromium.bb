@@ -639,42 +639,47 @@ def GetCodereviewSettingsInteractively():
 
 class ChangeDescription(object):
   """Contains a parsed form of the change description."""
-  def __init__(self, log_desc, reviewers):
+  def __init__(self, subject, log_desc, reviewers):
+    self.subject = subject
     self.log_desc = log_desc
     self.reviewers = reviewers
     self.description = self.log_desc
 
-  def Prompt(self):
-    content = """# Enter a description of the change.
+  def Update(self):
+    initial_text = """# Enter a description of the change.
 # This will displayed on the codereview site.
 # The first line will also be used as the subject of the review.
 """
-    content += self.description
+    initial_text += self.description
     if ('\nR=' not in self.description and
         '\nTBR=' not in self.description and
         self.reviewers):
-      content += '\nR=' + self.reviewers
+      initial_text += '\nR=' + self.reviewers
     if '\nBUG=' not in self.description:
-      content += '\nBUG='
+      initial_text += '\nBUG='
     if '\nTEST=' not in self.description:
-      content += '\nTEST='
-    content = content.rstrip('\n') + '\n'
-    content = gclient_utils.RunEditor(content, True)
+      initial_text += '\nTEST='
+    initial_text = initial_text.rstrip('\n') + '\n'
+    content = gclient_utils.RunEditor(initial_text, True)
     if not content:
       DieWithError('Running editor failed')
     content = re.compile(r'^#.*$', re.MULTILINE).sub('', content).strip()
     if not content:
       DieWithError('No CL description, aborting')
-    self.description = content.strip('\n') + '\n'
+    self._ParseDescription(content)
 
-  def ParseDescription(self):
-    """Updates the list of reviewers."""
+  def _ParseDescription(self, description):
+    """Updates the list of reviewers and subject from the description."""
+    if not description:
+      self.description = description
+      return
+
+    self.description = description.strip('\n') + '\n'
+    self.subject = description.split('\n', 1)[0]
     # Retrieves all reviewer lines
     regexp = re.compile(r'^\s*(TBR|R)=(.+)$', re.MULTILINE)
-    reviewers = ','.join(
+    self.reviewers = ','.join(
         i.group(2).strip() for i in regexp.finditer(self.description))
-    if reviewers:
-      self.reviewers = reviewers
 
   def IsEmpty(self):
     return not self.description
@@ -920,6 +925,9 @@ def CMDupload(parser, args):
   upload_args.extend(['--server', cl.GetRietveldServer()])
   if options.emulate_svn_auto_props:
     upload_args.append('--emulate_svn_auto_props')
+  if options.from_logs and not options.message:
+    print 'Must set message for subject line if using desc_from_logs'
+    return 1
 
   change_desc = None
 
@@ -930,17 +938,18 @@ def CMDupload(parser, args):
     print ("This branch is associated with issue %s. "
            "Adding patch to that issue." % cl.GetIssue())
   else:
-    message = options.message or CreateDescriptionFromLog(args)
-    change_desc = ChangeDescription(message, options.reviewers)
-    if not options.force:
-      change_desc.Prompt()
-    change_desc.ParseDescription()
+    log_desc = CreateDescriptionFromLog(args)
+    change_desc = ChangeDescription(options.message, log_desc,
+                                    options.reviewers)
+    if not options.from_logs:
+      change_desc.Update()
 
     if change_desc.IsEmpty():
       print "Description is empty; aborting."
       return 1
 
-    upload_args.extend(['--message', change_desc.description])
+    upload_args.extend(['--message', change_desc.subject])
+    upload_args.extend(['--description', change_desc.description])
     if change_desc.reviewers:
       upload_args.extend(['--reviewers', change_desc.reviewers])
     if options.send_mail:

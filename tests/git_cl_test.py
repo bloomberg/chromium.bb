@@ -201,10 +201,12 @@ class TestGitCl(TestCase):
   @staticmethod
   def _cmd_line(description, args):
     """Returns the upload command line passed to upload.RealMain()."""
+    msg = description.split('\n', 1)[0]
     return [
         'upload', '--assume_yes', '--server',
         'https://codereview.example.com',
-        '--message', description
+        '--message', msg,
+        '--description', description
     ] + args + [
         '--cc', 'joe@example.com',
         'master...'
