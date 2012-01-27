@@ -278,7 +278,6 @@ bool CanPasteBookmarkManagerFunction::RunImpl() {
   }
   bool can_paste = bookmark_utils::CanPasteFromClipboard(parent_node);
   result_.reset(Value::CreateBooleanValue(can_paste));
-  SendResponse(true);
   return true;
 }
 
@@ -368,7 +367,11 @@ bool BookmarkManagerGetStringsFunction::RunImpl() {
   ChromeURLDataManager::DataSource::SetFontAndTextDirection(localized_strings);
 
   result_.reset(localized_strings);
+
+  // This is needed because unlike the rest of these functions, this class
+  // inherits from AsyncFunction directly, rather than BookmarkFunction.
   SendResponse(true);
+
   return true;
 }
 
@@ -444,7 +447,6 @@ bool DropBookmarkManagerFunction::RunImpl() {
                                         drop_parent, drop_index);
 
     router->ClearBookmarkNodeData();
-    SendResponse(true);
     return true;
   } else {
     NOTREACHED();
