@@ -75,6 +75,12 @@ class TokenRevoker : public GaiaOAuthConsumer {
   DISALLOW_COPY_AND_ASSIGN(TokenRevoker);
 };
 
+void UMA(int sample) {
+  UMA_HISTOGRAM_ENUMERATION(policy::kMetricEnrollment,
+                            sample,
+                            policy::kMetricEnrollmentSize);
+}
+
 }  // namespace
 
 namespace chromeos {
@@ -142,9 +148,8 @@ void EnterpriseOAuthEnrollmentScreenHandler::Hide() {
 }
 
 void EnterpriseOAuthEnrollmentScreenHandler::ShowConfirmationScreen() {
-  UMA_HISTOGRAM_ENUMERATION(policy::kMetricEnrollment,
-                            policy::kMetricEnrollmentOK,
-                            policy::kMetricEnrollmentSize);
+  UMA(is_auto_enrollment_ ? policy::kMetricEnrollmentAutoOK :
+                            policy::kMetricEnrollmentOK);
   ShowStep(kEnrollmentStepSuccess);
   if (!is_auto_enrollment_ || enrollment_failed_once_)
     ResetAuth();
@@ -175,48 +180,36 @@ void EnterpriseOAuthEnrollmentScreenHandler::ShowAuthError(
       ShowNetworkEnrollmentError();
       return;
   }
-  UMA_HISTOGRAM_ENUMERATION(policy::kMetricEnrollment,
-                            policy::kMetricEnrollmentOtherFailed,
-                            policy::kMetricEnrollmentSize);
+  UMAFailure(policy::kMetricEnrollmentOtherFailed);
   NOTREACHED();
 }
 
 void EnterpriseOAuthEnrollmentScreenHandler::ShowAccountError() {
-  UMA_HISTOGRAM_ENUMERATION(policy::kMetricEnrollment,
-                            policy::kMetricEnrollmentNotSupported,
-                            policy::kMetricEnrollmentSize);
+  UMAFailure(policy::kMetricEnrollmentNotSupported);
   ShowError(IDS_ENTERPRISE_ENROLLMENT_ACCOUNT_ERROR, true);
   NotifyObservers(false);
 }
 
 void EnterpriseOAuthEnrollmentScreenHandler::ShowSerialNumberError() {
-  UMA_HISTOGRAM_ENUMERATION(policy::kMetricEnrollment,
-                            policy::kMetricEnrollmentInvalidSerialNumber,
-                            policy::kMetricEnrollmentSize);
+  UMAFailure(policy::kMetricEnrollmentInvalidSerialNumber);
   ShowError(IDS_ENTERPRISE_ENROLLMENT_SERIAL_NUMBER_ERROR, true);
   NotifyObservers(false);
 }
 
 void EnterpriseOAuthEnrollmentScreenHandler::ShowFatalAuthError() {
-  UMA_HISTOGRAM_ENUMERATION(policy::kMetricEnrollment,
-                            policy::kMetricEnrollmentLoginFailed,
-                            policy::kMetricEnrollmentSize);
+  UMAFailure(policy::kMetricEnrollmentLoginFailed);
   ShowError(IDS_ENTERPRISE_ENROLLMENT_FATAL_AUTH_ERROR, false);
   NotifyObservers(false);
 }
 
 void EnterpriseOAuthEnrollmentScreenHandler::ShowFatalEnrollmentError() {
-  UMA_HISTOGRAM_ENUMERATION(policy::kMetricEnrollment,
-                            policy::kMetricEnrollmentOtherFailed,
-                            policy::kMetricEnrollmentSize);
+  UMAFailure(policy::kMetricEnrollmentOtherFailed);
   ShowError(IDS_ENTERPRISE_ENROLLMENT_FATAL_ENROLLMENT_ERROR, false);
   NotifyObservers(false);
 }
 
 void EnterpriseOAuthEnrollmentScreenHandler::ShowNetworkEnrollmentError() {
-  UMA_HISTOGRAM_ENUMERATION(policy::kMetricEnrollment,
-                            policy::kMetricEnrollmentNetworkFailed,
-                            policy::kMetricEnrollmentSize);
+  UMAFailure(policy::kMetricEnrollmentNetworkFailed);
   ShowError(IDS_ENTERPRISE_ENROLLMENT_NETWORK_ENROLLMENT_ERROR, true);
   NotifyObservers(false);
 }
@@ -349,16 +342,14 @@ void EnterpriseOAuthEnrollmentScreenHandler::HandleClose(
 
   if (reason == "cancel") {
     DCHECK(!is_auto_enrollment_);
-    UMA_HISTOGRAM_ENUMERATION(policy::kMetricEnrollment,
-                              policy::kMetricEnrollmentCancelled,
-                              policy::kMetricEnrollmentSize);
+    UMA(policy::kMetricEnrollmentCancelled);
   } else if (reason == "autocancel") {
     // Store the user's decision so that the sign-in screen doesn't go
     // automatically to the enrollment screen again.
     PrefService* local_state = g_browser_process->local_state();
     local_state->SetBoolean(prefs::kShouldAutoEnroll, false);
     local_state->CommitPendingWrite();
-    // TODO(joaodasilva): record UMA for this.
+    UMA(policy::kMetricEnrollmentAutoCancelled);
   } else if (reason == "done") {
     // If the user account used for enrollment is not whitelisted, send the user
     // back to the login screen. In that case, clear the profile data too.
@@ -417,9 +408,12 @@ void EnterpriseOAuthEnrollmentScreenHandler::HandleRetry(
 
 void EnterpriseOAuthEnrollmentScreenHandler::EnrollAfterLogin() {
   DCHECK(!user_.empty());
-  UMA_HISTOGRAM_ENUMERATION(policy::kMetricEnrollment,
-                            policy::kMetricEnrollmentStarted,
-                            policy::kMetricEnrollmentSize);
+  if (is_auto_enrollment_) {
+    UMA(enrollment_failed_once_ ? policy::kMetricEnrollmentAutoRetried :
+                                  policy::kMetricEnrollmentAutoStarted);
+  } else {
+    UMA(policy::kMetricEnrollmentStarted);
+  }
   Profile* profile = Profile::FromWebUI(web_ui());
   oauth_fetcher_.reset(
       new GaiaOAuthFetcher(this,
@@ -520,6 +514,12 @@ void EnterpriseOAuthEnrollmentScreenHandler::DoClose(bool back_to_signin) {
     ShowWorking(IDS_ENTERPRISE_ENROLLMENT_RESUMING_LOGIN);
   }
   controller_->OnConfirmationClosed(back_to_signin);
+}
+
+void EnterpriseOAuthEnrollmentScreenHandler::UMAFailure(int sample) {
+  if (is_auto_enrollment_)
+    sample = policy::kMetricEnrollmentAutoFailed;
+  UMA(sample);
 }
 
 }  // namespace chromeos

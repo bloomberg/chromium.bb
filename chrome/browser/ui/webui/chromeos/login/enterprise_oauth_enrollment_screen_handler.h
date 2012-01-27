@@ -107,6 +107,10 @@ class EnterpriseOAuthEnrollmentScreenHandler
   // pending sign-in will be resumed.
   void DoClose(bool back_to_signin);
 
+  // Records |sample| as a UMA metric for auto-enrollment. This is a member
+  // function for convenience.
+  void UMAFailure(int sample);
+
   // Keeps the controller for this actor.
   Controller* controller_;
 

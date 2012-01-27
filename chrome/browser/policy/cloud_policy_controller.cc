@@ -23,6 +23,8 @@
 #include "chrome/browser/policy/policy_notifier.h"
 #include "chrome/common/guid.h"
 
+namespace policy {
+
 namespace {
 
 // The maximum ratio in percent of the policy refresh rate we use for adjusting
@@ -64,9 +66,46 @@ bool CanBeInManagedDomain(const std::string& username) {
   return true;
 }
 
-}  // namespace
+// Records the UMA metric corresponding to |status|, if it represents an error.
+// Also records that a fetch response was received.
+void SampleErrorStatus(DeviceManagementStatus status) {
+  UMA_HISTOGRAM_ENUMERATION(kMetricPolicy,
+                            kMetricPolicyFetchResponseReceived,
+                            kMetricPolicySize);
+  int sample = -1;
+  switch (status) {
+    case DM_STATUS_SUCCESS:
+      return;
+    case DM_STATUS_SERVICE_POLICY_NOT_FOUND:
+      sample = kMetricPolicyFetchNotFound;
+      break;
+    case DM_STATUS_SERVICE_DEVICE_NOT_FOUND:
+      sample = kMetricPolicyFetchInvalidToken;
+      break;
+    case DM_STATUS_RESPONSE_DECODING_ERROR:
+      sample = kMetricPolicyFetchBadResponse;
+      break;
+    case DM_STATUS_REQUEST_FAILED:
+    case DM_STATUS_REQUEST_INVALID:
+    case DM_STATUS_SERVICE_MANAGEMENT_TOKEN_INVALID:
+      sample = kMetricPolicyFetchRequestFailed;
+      break;
+    case DM_STATUS_SERVICE_MANAGEMENT_NOT_SUPPORTED:
+    case DM_STATUS_SERVICE_DEVICE_ID_CONFLICT:
+    case DM_STATUS_SERVICE_INVALID_SERIAL_NUMBER:
+    case DM_STATUS_TEMPORARY_UNAVAILABLE:
+    case DM_STATUS_SERVICE_ACTIVATION_PENDING:
+    case DM_STATUS_HTTP_STATUS_ERROR:
+      sample = kMetricPolicyFetchServerFailed;
+      break;
+  }
+  if (sample != -1)
+    UMA_HISTOGRAM_ENUMERATION(kMetricPolicy, sample, kMetricPolicySize);
+  else
+    NOTREACHED();
+}
 
-namespace policy {
+}  // namespace
 
 namespace em = enterprise_management;
 
@@ -130,6 +169,8 @@ void CloudPolicyController::OnPolicyFetchCompleted(
     // Handled below.
     status = DM_STATUS_RESPONSE_DECODING_ERROR;
   }
+
+  SampleErrorStatus(status);
 
   switch (status) {
     case DM_STATUS_SUCCESS: {
@@ -318,6 +359,8 @@ void CloudPolicyController::SendPolicyRequest() {
 
   request_job_->Start(base::Bind(&CloudPolicyController::OnPolicyFetchCompleted,
                                  base::Unretained(this)));
+  UMA_HISTOGRAM_ENUMERATION(kMetricPolicy, kMetricPolicyFetchRequested,
+                            kMetricPolicySize);
 }
 
 void CloudPolicyController::DoWork() {

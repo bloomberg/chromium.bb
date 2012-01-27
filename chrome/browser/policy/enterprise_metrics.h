@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,7 +14,7 @@ namespace policy {
 // These metrics are collected both for device and user tokens.
 enum MetricToken {
   // A cached token was successfully loaded from disk.
-  kMetricTokenLoadSucceeded = 0,
+  kMetricTokenLoadSucceeded,
   // Reading a cached token from disk failed.
   kMetricTokenLoadFailed,
 
@@ -52,7 +52,7 @@ enum MetricToken {
 // Events related to fetching, saving and loading user and device policies.
 enum MetricPolicy {
   // A cached policy was successfully loaded from disk.
-  kMetricPolicyLoadSucceeded = 0,
+  kMetricPolicyLoadSucceeded,
   // Reading a cached policy from disk failed.
   kMetricPolicyLoadFailed,
 
@@ -104,7 +104,7 @@ enum MetricPolicy {
 enum MetricEnrollment {
   // The enrollment screen was closed without completing the enrollment
   // process.
-  kMetricEnrollmentCancelled = 0,
+  kMetricEnrollmentCancelled,
   // The user submitted credentials and started the enrollment process.
   kMetricEnrollmentStarted,
   // Enrollment failed due to a network error.
@@ -125,6 +125,16 @@ enum MetricEnrollment {
   // Enrollment failed because the serial number we try to register is not
   // assigned to the domain used.
   kMetricEnrollmentInvalidSerialNumber,
+  // Auto-enrollment started automatically after the user signed in.
+  kMetricEnrollmentAutoStarted,
+  // Auto-enrollment failed.
+  kMetricEnrollmentAutoFailed,
+  // Auto-enrollment was retried after having failed before.
+  kMetricEnrollmentAutoRetried,
+  // Auto-enrollment was cancelled through the opt-out dialog.
+  kMetricEnrollmentAutoCancelled,
+  // Auto-enrollment succeeded.
+  kMetricEnrollmentAutoOK,
 
   kMetricEnrollmentSize  // Must be the last.
 };

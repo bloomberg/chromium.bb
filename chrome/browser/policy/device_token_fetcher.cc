@@ -18,6 +18,8 @@
 #include "chrome/browser/policy/policy_notifier.h"
 #include "chrome/browser/policy/proto/device_management_local.pb.h"
 
+namespace policy {
+
 namespace {
 
 // Retry after 5 minutes (with exponential backoff) after token fetch errors.
@@ -27,9 +29,49 @@ const int64 kTokenFetchErrorMaxDelayMilliseconds = 3 * 60 * 60 * 1000;
 // For unmanaged devices, check once per day whether they're still unmanaged.
 const int64 kUnmanagedDeviceRefreshRateMilliseconds = 24 * 60 * 60 * 1000;
 
-}  // namespace
+// Records the UMA metric corresponding to |status|, if it represents an error.
+// Also records that a fetch response was received.
+void SampleErrorStatus(DeviceManagementStatus status) {
+  UMA_HISTOGRAM_ENUMERATION(kMetricToken, kMetricTokenFetchResponseReceived,
+                            kMetricTokenSize);
+  int sample = -1;
+  switch (status) {
+    case DM_STATUS_SUCCESS:
+      return;
+    case DM_STATUS_REQUEST_FAILED:
+    case DM_STATUS_REQUEST_INVALID:
+    case DM_STATUS_SERVICE_MANAGEMENT_TOKEN_INVALID:
+      sample = kMetricTokenFetchRequestFailed;
+      break;
+    case DM_STATUS_SERVICE_MANAGEMENT_NOT_SUPPORTED:
+      sample = kMetricTokenFetchManagementNotSupported;
+      break;
+    case DM_STATUS_SERVICE_DEVICE_NOT_FOUND:
+      sample = kMetricTokenFetchDeviceNotFound;
+      break;
+    case DM_STATUS_SERVICE_DEVICE_ID_CONFLICT:
+      sample = kMetricTokenFetchDeviceIdConflict;
+      break;
+    case DM_STATUS_SERVICE_INVALID_SERIAL_NUMBER:
+      sample = kMetricTokenFetchInvalidSerialNumber;
+      break;
+    case DM_STATUS_RESPONSE_DECODING_ERROR:
+      sample = kMetricTokenFetchBadResponse;
+      break;
+    case DM_STATUS_TEMPORARY_UNAVAILABLE:
+    case DM_STATUS_SERVICE_ACTIVATION_PENDING:
+    case DM_STATUS_SERVICE_POLICY_NOT_FOUND:
+    case DM_STATUS_HTTP_STATUS_ERROR:
+      sample = kMetricTokenFetchServerFailed;
+      break;
+  }
+  if (sample != -1)
+    UMA_HISTOGRAM_ENUMERATION(kMetricToken, sample, kMetricTokenSize);
+  else
+    NOTREACHED();
+}
 
-namespace policy {
+}  // namespace
 
 namespace em = enterprise_management;
 
@@ -124,6 +166,8 @@ void DeviceTokenFetcher::FetchTokenInternal() {
     request->set_known_machine_id(true);
   request_job_->Start(base::Bind(&DeviceTokenFetcher::OnTokenFetchCompleted,
                                  base::Unretained(this)));
+  UMA_HISTOGRAM_ENUMERATION(kMetricToken, kMetricTokenFetchRequested,
+                            kMetricTokenSize);
 }
 
 void DeviceTokenFetcher::OnTokenFetchCompleted(
@@ -133,6 +177,8 @@ void DeviceTokenFetcher::OnTokenFetchCompleted(
     // Handled below.
     status = DM_STATUS_RESPONSE_DECODING_ERROR;
   }
+
+  SampleErrorStatus(status);
 
   switch (status) {
     case DM_STATUS_SUCCESS: {

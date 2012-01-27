@@ -119,9 +119,11 @@ void EnterpriseEnrollmentScreen::OnPolicyStateChanged(
         return;
     }
     // We have an error.
-    UMA_HISTOGRAM_ENUMERATION(policy::kMetricEnrollment,
-                              policy::kMetricEnrollmentPolicyFailed,
-                              policy::kMetricEnrollmentSize);
+    if (!is_auto_enrollment_) {
+      UMA_HISTOGRAM_ENUMERATION(policy::kMetricEnrollment,
+                                policy::kMetricEnrollmentPolicyFailed,
+                                policy::kMetricEnrollmentSize);
+    }
     LOG(WARNING) << "Policy subsystem error during enrollment: " << state
                  << " details: " << error_details;
   }
