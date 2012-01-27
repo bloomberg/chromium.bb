@@ -13,6 +13,7 @@ import cygtar
 import hashlib
 import http_download
 import os.path
+import re
 import shutil
 import sys
 import time
@@ -230,7 +231,7 @@ def HashFile(filename):
   return _HashFileHandle(fh)
 
 
-def HashUrl(url):
+def HashUrlByDownloading(url):
   """sha1 the data at an url.
 
   Arguments:
@@ -240,6 +241,26 @@ def HashUrl(url):
   """
   fh = urllib2.urlopen(url)
   return _HashFileHandle(fh)
+
+
+# Attempts to get the SHA1 hash of a file given a URL by looking for
+# an adjacent file with a ".sha1hash" suffix.  This saves having to
+# download a large tarball just to get its hash.  Otherwise, we fall
+# back to downloading the main file.
+def HashUrl(url):
+  hash_url = '%s.sha1hash' % url
+  try:
+    fh = urllib2.urlopen(hash_url)
+    data = fh.read(100)
+    fh.close()
+  except urllib2.HTTPError, exn:
+    if exn.code == 404:
+      return HashUrlByDownloading(url)
+    raise
+  else:
+    if not re.match('[0-9a-f]{40}\n?$', data):
+      raise AssertionError('Bad SHA1 hash file: %r' % data)
+    return data.strip()
 
 
 def SyncURL(url, filename=None, stamp_dir=None, min_time=None,
