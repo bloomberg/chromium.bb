@@ -951,10 +951,8 @@ gfx::Rect Browser::GetSavedWindowBounds() const {
 
 ui::WindowShowState Browser::GetSavedWindowShowState() const {
   // Only tabbed browsers use the command line or preference state.
-  if (!is_type_tabbed()) {
-    return (show_state_ == ui::SHOW_STATE_DEFAULT)
-        ? ui::SHOW_STATE_NORMAL : show_state_;
-  }
+  if (!is_type_tabbed())
+    return show_state_;
 
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kStartMaximized))
     return ui::SHOW_STATE_MAXIMIZED;
@@ -967,7 +965,7 @@ ui::WindowShowState Browser::GetSavedWindowShowState() const {
   bool maximized = false;
   window_pref->GetBoolean("maximized", &maximized);
 
-  return maximized ? ui::SHOW_STATE_MAXIMIZED : ui::SHOW_STATE_NORMAL;
+  return maximized ? ui::SHOW_STATE_MAXIMIZED : ui::SHOW_STATE_DEFAULT;
 }
 
 SkBitmap Browser::GetCurrentPageIcon() const {

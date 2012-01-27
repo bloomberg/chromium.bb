@@ -89,6 +89,16 @@ void CloseAllSecondaryWidgetsCallback(Widget* widget) {
     widget->Close();
 }
 
+const gfx::Rect* GetRestoreBounds(aura::Window* window) {
+  return reinterpret_cast<gfx::Rect*>(
+      window->GetProperty(aura::client::kRestoreBoundsKey));
+}
+
+void SetRestoreBounds(aura::Window* window, const gfx::Rect& bounds) {
+  delete GetRestoreBounds(window);
+  window->SetProperty(aura::client::kRestoreBoundsKey, new gfx::Rect(bounds));
+}
+
 }  // namespace
 
 // Used when SetInactiveRenderingDisabled() is invoked to track when active
@@ -162,8 +172,7 @@ void NativeWidgetAura::InitNativeWidget(const Widget::InitParams& params) {
   ownership_ = params.ownership;
   window_->set_user_data(this);
   window_->SetType(GetAuraWindowTypeForWidgetType(params.type));
-  // TODO(jamescook): Should this use params.show_state instead?
-  window_->SetIntProperty(aura::client::kShowStateKey, ui::SHOW_STATE_NORMAL);
+  window_->SetIntProperty(aura::client::kShowStateKey, params.show_state);
   window_->SetTransparent(params.transparent);
   window_->Init(params.create_texture_for_layer ?
                     ui::Layer::LAYER_HAS_TEXTURE :
@@ -172,7 +181,6 @@ void NativeWidgetAura::InitNativeWidget(const Widget::InitParams& params) {
     window_->Show();
 
   delegate_->OnNativeWidgetCreated();
-  window_->SetBounds(params.bounds);
   if (params.child) {
     window_->SetParent(params.GetParent());
   } else {
@@ -187,9 +195,14 @@ void NativeWidgetAura::InitNativeWidget(const Widget::InitParams& params) {
     SetAlwaysOnTop(params.keep_on_top);
     window_->SetParent(parent);
   }
+  // Wait to set the bounds until we have a parent. That way we can know our
+  // true state/bounds (the LayoutManager may enforce a particular
+  // state/bounds).
+  if (IsMaximized())
+    SetRestoreBounds(window_, params.bounds);
+  else
+    window_->SetBounds(params.bounds);
   window_->set_ignore_events(!params.accept_events);
-  // TODO(beng): do this some other way.
-  delegate_->OnNativeWidgetSizeChanged(params.bounds.size());
   can_activate_ = params.can_activate;
   DCHECK(GetWidget()->GetRootView());
 #if !defined(OS_MACOSX)
@@ -436,7 +449,7 @@ void NativeWidgetAura::Hide() {
 
 void NativeWidgetAura::ShowMaximizedWithBounds(
     const gfx::Rect& restored_bounds) {
-  window_->SetBounds(restored_bounds);
+  SetRestoreBounds(window_, restored_bounds);
   ShowWithWindowState(ui::SHOW_STATE_MAXIMIZED);
 }
 
