@@ -637,9 +637,6 @@ bool AutofillTable::GetAllAutofillEntries(std::vector<AutofillEntry>* entries) {
     }
   }
 
-  if (!s.Succeeded())
-    return false;
-
   // If there is at least one result returned, first_entry will be false.
   // For this case we need to do a final cleanup step.
   if (!first_entry) {
