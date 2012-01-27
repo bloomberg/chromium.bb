@@ -7,7 +7,7 @@
 import os
 
 SOURCE_ROOT = os.path.dirname(os.path.abspath(__file__))
-SOURCE_ROOT = os.path.normpath(os.path.join(SOURCE_ROOT, '..', '..'))
+SOURCE_ROOT = os.path.realpath(os.path.join(SOURCE_ROOT, '..', '..'))
 CROSUTILS_LIB_DIR = os.path.join(SOURCE_ROOT, 'src/scripts/lib')
 
 REPO_URL = 'http://git.chromium.org/git/external/repo'
