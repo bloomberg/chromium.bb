@@ -253,6 +253,10 @@ deps = {
     (Var("googlecode_url") % "libjingle") + "/trunk@" +
     Var("libjingle_revision"),
 
+  "src/third_party/libsrtp":
+    "/trunk/deps/third_party/libsrtp@119285",
+
+
   "src/third_party/speex":
     "/trunk/deps/third_party/speex@111570",
 
