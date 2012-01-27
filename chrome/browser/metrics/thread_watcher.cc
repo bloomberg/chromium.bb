@@ -375,7 +375,7 @@ void ThreadWatcher::GotNoResponse() {
 
   // Crash the browser if the watched thread is to be crashed on hang and if the
   // number of other threads responding is equal to live_threads_threshold_.
-  if (crash_on_hang_ && responding_thread_count == live_threads_threshold_) {
+  if (crash_on_hang_ && responding_thread_count <= live_threads_threshold_) {
     static bool crashed_once = false;
     if (!crashed_once) {
       crashed_once = true;
@@ -402,7 +402,7 @@ const int ThreadWatcherList::kUnresponsiveSeconds = 2;
 // static
 const int ThreadWatcherList::kUnresponsiveCount = 9;
 // static
-const int ThreadWatcherList::kLiveThreadsThreshold = 1;
+const int ThreadWatcherList::kLiveThreadsThreshold = 3;
 
 // static
 void ThreadWatcherList::StartWatchingAll(const CommandLine& command_line) {
