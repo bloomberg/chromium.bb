@@ -576,7 +576,6 @@ void AutofillProfile::AddPhoneIfUnique(const string16& phone,
   DCHECK(existing_phones);
   // Phones allow "fuzzy" matching, so "1-800-FLOWERS", "18003569377",
   // "(800)356-9377" and "356-9377" are considered the same.
-  std::vector<string16>::const_iterator phone_iter;
   if (std::find_if(existing_phones->begin(), existing_phones->end(),
                    FindByPhone(phone, CountryCode())) ==
       existing_phones->end()) {

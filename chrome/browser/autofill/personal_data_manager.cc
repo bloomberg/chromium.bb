@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -228,7 +228,6 @@ bool PersonalDataManager::ImportFormData(
   // Parse the form and construct a profile based on the information that is
   // possible to import.
   int importable_credit_card_fields = 0;
-  std::vector<const FormStructure*>::const_iterator iter;
 
   // Detect and discard forms with multiple fields of the same type.
   std::set<AutofillFieldType> types_seen;
