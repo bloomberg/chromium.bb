@@ -106,6 +106,7 @@ class CONTENT_EXPORT CaptureVideoDecoder
 
   media::VideoCaptureSessionId video_stream_id_;
   media::VideoCapture* capture_engine_;
+  base::Time last_frame_timestamp_;
   base::Time start_time_;
 
   DISALLOW_COPY_AND_ASSIGN(CaptureVideoDecoder);

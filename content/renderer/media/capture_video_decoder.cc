@@ -222,6 +222,11 @@ void CaptureVideoDecoder::OnBufferReadyOnDecoderThread(
   DCHECK(message_loop_proxy_->BelongsToCurrentThread());
 
   if (read_cb_.is_null() || kNormal != state_) {
+    // TODO(wjia): revisit TS adjustment when crbug.com/111672 is resolved.
+    if (got_first_frame_) {
+      start_time_ += buf->timestamp - last_frame_timestamp_;
+    }
+    last_frame_timestamp_ = buf->timestamp;
     capture->FeedBuffer(buf);
     return;
   }
@@ -251,6 +256,7 @@ void CaptureVideoDecoder::OnBufferReadyOnDecoderThread(
                                      buf->timestamp - start_time_,
                                      base::TimeDelta::FromMilliseconds(0));
 
+  last_frame_timestamp_ = buf->timestamp;
   uint8* buffer = buf->memory_pointer;
 
   // Assume YV12 format. Note that camera gives YUV and media pipeline video
