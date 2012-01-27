@@ -910,18 +910,15 @@ weston_output_repaint(struct weston_output *output, int msecs)
 	pixman_region32_init(&overlap);
 
 	wl_list_for_each(es, &ec->surface_list, link) {
+		weston_surface_update_transform(es);
+
 		pixman_region32_init(&surface_overlap);
-		pixman_region32_intersect_rect(&surface_overlap,
-					       &overlap,
-					       es->geometry.x, es->geometry.y,
-					       es->geometry.width,
-					       es->geometry.height);
+		pixman_region32_intersect(&surface_overlap, &overlap,
+					  &es->transform.boundingbox);
 		es->overlapped = pixman_region32_not_empty(&surface_overlap);
 		pixman_region32_fini(&surface_overlap);
-		pixman_region32_union_rect(&overlap, &overlap,
-					   es->geometry.x, es->geometry.y,
-					   es->geometry.width,
-					   es->geometry.height);
+		pixman_region32_union(&overlap, &overlap,
+				      &es->transform.boundingbox);
 	}
 
 	weston_output_set_cursor(output, ec->input_device);
