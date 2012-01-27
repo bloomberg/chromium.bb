@@ -9040,36 +9040,6 @@ COMPILE_ASSERT(offsetof(GetProgramInfoCHROMIUM::Result, num_attribs) == 4,
 COMPILE_ASSERT(offsetof(GetProgramInfoCHROMIUM::Result, num_uniforms) == 8,
                OffsetOf_GetProgramInfoCHROMIUM_Result_num_uniforms_not_8);
 
-struct Placeholder447CHROMIUM {
-  typedef Placeholder447CHROMIUM ValueType;
-  static const CommandId kCmdId = kPlaceholder447CHROMIUM;
-  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-
-  static uint32 ComputeSize() {
-    return static_cast<uint32>(sizeof(ValueType));  // NOLINT
-  }
-
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
-
-  void Init() {
-    SetHeader();
-  }
-
-  void* Set(void* cmd) {
-    static_cast<ValueType*>(cmd)->Init();
-    return NextCmdAddress<ValueType>(cmd);
-  }
-
-  gpu::CommandHeader header;
-};
-
-COMPILE_ASSERT(sizeof(Placeholder447CHROMIUM) == 4,
-               Sizeof_Placeholder447CHROMIUM_is_not_4);
-COMPILE_ASSERT(offsetof(Placeholder447CHROMIUM, header) == 0,
-               OffsetOf_Placeholder447CHROMIUM_header_not_0);
-
 struct CreateStreamTextureCHROMIUM {
   typedef CreateStreamTextureCHROMIUM ValueType;
   static const CommandId kCmdId = kCreateStreamTextureCHROMIUM;
@@ -9151,36 +9121,6 @@ COMPILE_ASSERT(offsetof(DestroyStreamTextureCHROMIUM, header) == 0,
                OffsetOf_DestroyStreamTextureCHROMIUM_header_not_0);
 COMPILE_ASSERT(offsetof(DestroyStreamTextureCHROMIUM, texture) == 4,
                OffsetOf_DestroyStreamTextureCHROMIUM_texture_not_4);
-
-struct Placeholder453CHROMIUM {
-  typedef Placeholder453CHROMIUM ValueType;
-  static const CommandId kCmdId = kPlaceholder453CHROMIUM;
-  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-
-  static uint32 ComputeSize() {
-    return static_cast<uint32>(sizeof(ValueType));  // NOLINT
-  }
-
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
-
-  void Init() {
-    SetHeader();
-  }
-
-  void* Set(void* cmd) {
-    static_cast<ValueType*>(cmd)->Init();
-    return NextCmdAddress<ValueType>(cmd);
-  }
-
-  gpu::CommandHeader header;
-};
-
-COMPILE_ASSERT(sizeof(Placeholder453CHROMIUM) == 4,
-               Sizeof_Placeholder453CHROMIUM_is_not_4);
-COMPILE_ASSERT(offsetof(Placeholder453CHROMIUM, header) == 0,
-               OffsetOf_Placeholder453CHROMIUM_header_not_0);
 
 struct GetTranslatedShaderSourceANGLE {
   typedef GetTranslatedShaderSourceANGLE ValueType;

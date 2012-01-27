@@ -2600,14 +2600,6 @@ error::Error GLES2DecoderImpl::HandleGetMaxValueInBufferCHROMIUM(
   return error::kNoError;
 }
 
-error::Error GLES2DecoderImpl::HandlePlaceholder447CHROMIUM(
-    uint32 immediate_data_size, const gles2::Placeholder447CHROMIUM& c) {
-  return error::kUnknownCommand;
-}
-error::Error GLES2DecoderImpl::HandlePlaceholder453CHROMIUM(
-    uint32 immediate_data_size, const gles2::Placeholder453CHROMIUM& c) {
-  return error::kUnknownCommand;
-}
 error::Error GLES2DecoderImpl::HandleTexImageIOSurface2DCHROMIUM(
     uint32 immediate_data_size, const gles2::TexImageIOSurface2DCHROMIUM& c) {
   GLenum target = static_cast<GLenum>(c.target);

@@ -1463,11 +1463,6 @@ _FUNCTION_INFO = {
     'chromium': True,
     'client_test': False,
   },
-  'Placeholder447CHROMIUM': {
-    'type': 'UnknownCommand',
-    'extension': True,
-    'chromium': True,
-  },
   'CreateStreamTextureCHROMIUM':  {
     'type': 'Custom',
     'cmd_args': 'GLuint client_id, void* result',
@@ -1486,11 +1481,6 @@ _FUNCTION_INFO = {
     'extension': True,
     'chromium': True,
    },
-  'Placeholder453CHROMIUM': {
-    'type': 'UnknownCommand',
-    'extension': True,
-    'chromium': True,
-  },
   'TexImageIOSurface2DCHROMIUM': {
     'decoder_func': 'DoTexImageIOSurface2DCHROMIUM',
     'unit_test': False,
@@ -4282,45 +4272,6 @@ TEST_F(%(test_name)s, %(name)sInvalidArgs) {
     """Overrriden from TypeHandler."""
     pass
 
-class UnknownCommandHandler(TypeHandler):
-  """Handler for commands that always fail with kUnknownCommand."""
-
-  def __init__(self):
-    TypeHandler.__init__(self)
-
-  def AddImmediateFunction(self, generator, func):
-    """Overrriden from TypeHandler."""
-    pass
-
-  def WriteServiceImplementation(self, func, file):
-    """Overrriden from TypeHandler."""
-    file.Write(
-        "error::Error GLES2DecoderImpl::Handle%s(\n" % func.name)
-    file.Write(
-        "    uint32 immediate_data_size, const gles2::%s& c) {\n" % func.name)
-    file.Write("  return error::kUnknownCommand;\n")
-    file.Write("}\n")
-
-  def WriteGLES2ImplementationHeader(self, func, file):
-    """Overrriden from TypeHandler."""
-    pass
-
-  def WriteCmdHelper(self, func, file):
-    """Overrriden from TypeHandler."""
-    pass
-
-  def WriteGLES2CLibImplementation(self, func, file):
-    """Overrriden from TypeHandler."""
-    pass
-
-  def WriteServiceUnitTest(self, func, file):
-    """Overrriden from TypeHandler."""
-    pass
-
-  def WriteGLES2ImplementationUnitTest(self, func, file):
-    """Overrriden from TypeHandler."""
-    pass
-
 
 class FunctionInfo(object):
   """Holds info about a function."""
@@ -5349,7 +5300,6 @@ class GLGenerator(object):
       'PUTXn': PUTXnHandler(),
       'STRn': STRnHandler(),
       'Todo': TodoHandler(),
-      'UnknownCommand': UnknownCommandHandler(),
     }
 
     for func_name in _FUNCTION_INFO:
@@ -5864,8 +5814,6 @@ const PPB_OpenGLES2* PPB_OpenGLES2_Shared::GetInterface() {
     for func in self.original_functions:
       if not func.IsCoreGLFunction():
         continue
-      if func.IsType("UnknownCommand"):
-        continue
       args = func.MakeTypedOriginalArgString("")
       if len(args) != 0:
         args = ", " + args
@@ -5889,8 +5837,7 @@ const PPB_OpenGLES2* PPB_OpenGLES2_Shared::GetInterface() {
     file.Write("  const static struct PPB_OpenGLES2 ppb_opengles = {\n")
     file.Write("    &")
     file.Write(",\n    &".join(
-      f.name for f in self.original_functions if (f.IsCoreGLFunction() and
-        not f.IsType("UnknownCommand"))))
+      f.name for f in self.original_functions if f.IsCoreGLFunction()))
     file.Write("\n")
     file.Write("  };\n")
     file.Write("  return &ppb_opengles;\n")

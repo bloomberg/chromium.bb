@@ -3510,17 +3510,6 @@ TEST_F(GLES2FormatTest, GetProgramInfoCHROMIUM) {
       next_cmd, sizeof(cmd));
 }
 
-TEST_F(GLES2FormatTest, Placeholder447CHROMIUM) {
-  Placeholder447CHROMIUM& cmd = *GetBufferAs<Placeholder447CHROMIUM>();
-  void* next_cmd = cmd.Set(
-      &cmd);
-  EXPECT_EQ(static_cast<uint32>(Placeholder447CHROMIUM::kCmdId),
-            cmd.header.command);
-  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
-  CheckBytesWrittenMatchesExpectedSize(
-      next_cmd, sizeof(cmd));
-}
-
 TEST_F(GLES2FormatTest, CreateStreamTextureCHROMIUM) {
   CreateStreamTextureCHROMIUM& cmd =
       *GetBufferAs<CreateStreamTextureCHROMIUM>();
@@ -3549,17 +3538,6 @@ TEST_F(GLES2FormatTest, DestroyStreamTextureCHROMIUM) {
             cmd.header.command);
   EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
   EXPECT_EQ(static_cast<GLuint>(11), cmd.texture);
-  CheckBytesWrittenMatchesExpectedSize(
-      next_cmd, sizeof(cmd));
-}
-
-TEST_F(GLES2FormatTest, Placeholder453CHROMIUM) {
-  Placeholder453CHROMIUM& cmd = *GetBufferAs<Placeholder453CHROMIUM>();
-  void* next_cmd = cmd.Set(
-      &cmd);
-  EXPECT_EQ(static_cast<uint32>(Placeholder453CHROMIUM::kCmdId),
-            cmd.header.command);
-  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
   CheckBytesWrittenMatchesExpectedSize(
       next_cmd, sizeof(cmd));
 }
