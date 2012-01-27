@@ -883,8 +883,14 @@ ui::TouchStatus RenderWidgetHostViewAura::OnTouchEvent(
 
 ui::GestureStatus RenderWidgetHostViewAura::OnGestureEvent(
     aura::GestureEvent* event) {
-  // TODO(sad):
-  return ui::GESTURE_STATUS_UNKNOWN;
+  WebKit::WebGestureEvent gesture = content::MakeWebGestureEvent(event);
+  host_->ForwardGestureEvent(gesture);
+
+  // If a gesture is not processed by the webpage, then WebKit processes it
+  // (e.g. generates synthetic mouse events). So CONSUMED should be returned
+  // from here to avoid any duplicate synthetic mouse-events being generated
+  // from aura.
+  return ui::GESTURE_STATUS_CONSUMED;
 }
 
 bool RenderWidgetHostViewAura::CanFocus() {

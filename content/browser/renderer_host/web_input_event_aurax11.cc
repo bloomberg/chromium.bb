@@ -298,6 +298,41 @@ WebKit::WebKeyboardEvent MakeWebKeyboardEventFromAuraEvent(
   return webkit_event;
 }
 
+WebKit::WebGestureEvent MakeWebGestureEventFromAuraEvent(
+    aura::GestureEvent* event) {
+  WebKit::WebGestureEvent gesture_event;
+
+  switch (event->type()) {
+    case ui::ET_GESTURE_TAP:
+      gesture_event.type = WebKit::WebInputEvent::GestureTap;
+      break;
+    case ui::ET_GESTURE_TAP_DOWN:
+      // TODO(sad): http://crbug.com/111402
+      // gesture_event.type = WebKit::WebInputEvent::GestureTapDown;
+      break;
+    case ui::ET_GESTURE_DOUBLE_TAP:
+      // TODO(sad): http://crbug.com/111402
+      // gesture_event.type = WebKit::WebInputEvent::GestureDoubleTap;
+      break;
+    case ui::ET_GESTURE_SCROLL_BEGIN:
+      gesture_event.type = WebKit::WebInputEvent::GestureScrollBegin;
+      break;
+    case ui::ET_GESTURE_SCROLL_UPDATE:
+      gesture_event.type = WebKit::WebInputEvent::GestureScrollUpdate;
+      break;
+    case ui::ET_GESTURE_SCROLL_END:
+      gesture_event.type = WebKit::WebInputEvent::GestureScrollEnd;
+      break;
+    default:
+      NOTREACHED() << "Unknown gesture type: " << event->type();
+  }
+
+  gesture_event.deltaX = event->delta_x();
+  gesture_event.deltaY = event->delta_y();
+
+  return gesture_event;
+}
+
 WebKit::WebTouchPoint* UpdateWebTouchEventFromAuraEvent(
     aura::TouchEvent* event, WebKit::WebTouchEvent* web_event) {
   WebKit::WebTouchPoint* point = NULL;

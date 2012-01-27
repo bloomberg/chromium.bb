@@ -623,7 +623,7 @@ void RenderWidgetHost::ForwardWheelEvent(
 
 void RenderWidgetHost::ForwardGestureEvent(
     const WebKit::WebGestureEvent& gesture_event) {
-  TRACE_EVENT0("renderer_host", "RenderWidgetHost::ForwardWheelEvent");
+  TRACE_EVENT0("renderer_host", "RenderWidgetHost::ForwardGestureEvent");
   if (ignore_input_events_ || process_->IgnoreInputEvents())
     return;
 
@@ -1161,7 +1161,7 @@ void RenderWidgetHost::OnMsgInputEventAck(WebInputEvent::Type event_type,
     ProcessKeyboardEventAck(type, processed);
   } else if (type == WebInputEvent::MouseWheel) {
     ProcessWheelAck(processed);
-  } else if (type == WebInputEvent::TouchMove) {
+  } else if (WebInputEvent::isTouchEventType(type)) {
     ProcessTouchAck(processed);
   }
   // This is used only for testing.

@@ -504,7 +504,7 @@ void RenderWidget::OnHandleInputEvent(const IPC::Message& message) {
 
   if ((input_event->type == WebInputEvent::MouseMove ||
        input_event->type == WebInputEvent::MouseWheel ||
-       input_event->type == WebInputEvent::TouchMove) &&
+       WebInputEvent::isTouchEventType(input_event->type)) &&
       paint_aggregator_.HasPendingUpdate()) {
     // We want to rate limit the input events in this case, so we'll wait for
     // painting to finish before ACKing this message.

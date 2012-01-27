@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,6 +9,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 
 namespace aura {
+class GestureEvent;
 class KeyEvent;
 class MouseEvent;
 class ScrollEvent;
@@ -21,6 +22,7 @@ WebKit::WebMouseEvent MakeWebMouseEvent(aura::MouseEvent* event);
 WebKit::WebMouseWheelEvent MakeWebMouseWheelEvent(aura::MouseEvent* event);
 WebKit::WebMouseWheelEvent MakeWebMouseWheelEvent(aura::ScrollEvent* event);
 WebKit::WebKeyboardEvent MakeWebKeyboardEvent(aura::KeyEvent* event);
+WebKit::WebGestureEvent MakeWebGestureEvent(aura::GestureEvent* event);
 
 // Updates the WebTouchEvent based on the TouchEvent. It returns the updated
 // WebTouchPoint contained in the WebTouchEvent, or NULL if no point was

@@ -16,6 +16,8 @@ WebKit::WebMouseWheelEvent MakeUntranslatedWebMouseWheelEventFromNativeEvent(
     base::NativeEvent native_event);
 WebKit::WebKeyboardEvent MakeWebKeyboardEventFromNativeEvent(
     base::NativeEvent native_event);
+WebKit::WebGestureEvent MakeWebGestureEventFromNativeEvent(
+    base::NativeEvent native_event);
 WebKit::WebTouchPoint* UpdateWebTouchEventFromNativeEvent(
     base::NativeEvent native_event, WebKit::WebTouchEvent* web_event);
 #else
@@ -26,6 +28,8 @@ WebKit::WebMouseWheelEvent MakeWebMouseWheelEventFromAuraEvent(
     aura::ScrollEvent* event);
 WebKit::WebKeyboardEvent MakeWebKeyboardEventFromAuraEvent(
     aura::KeyEvent* event);
+WebKit::WebGestureEvent MakeWebGestureEventFromAuraEvent(
+    aura::GestureEvent* event);
 WebKit::WebTouchPoint* UpdateWebTouchEventFromAuraEvent(
     aura::TouchEvent* event, WebKit::WebTouchEvent* web_event);
 #endif
@@ -131,6 +135,24 @@ WebKit::WebKeyboardEvent MakeWebKeyboardEvent(aura::KeyEvent* event) {
 #else
   return MakeWebKeyboardEventFromAuraEvent(event);
 #endif
+}
+
+WebKit::WebGestureEvent MakeWebGestureEvent(aura::GestureEvent* event) {
+  WebKit::WebGestureEvent gesture_event;
+#if defined(OS_WIN)
+  gesture_event = MakeWebGestureEventFromNativeEvent(event->native_event());
+#else
+  gesture_event = MakeWebGestureEventFromAuraEvent(event);
+#endif
+
+  gesture_event.x = event->x();
+  gesture_event.y = event->y();
+
+  const gfx::Point root_point = event->root_location();
+  gesture_event.globalX = root_point.x();
+  gesture_event.globalY = root_point.y();
+
+  return gesture_event;
 }
 
 WebKit::WebTouchPoint* UpdateWebTouchEvent(aura::TouchEvent* event,
