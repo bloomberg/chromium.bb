@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/frame/browser_frame.h"
 
 #include "base/command_line.h"
+#include "base/i18n/rtl.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/browser.h"
@@ -100,27 +101,31 @@ gfx::Rect BrowserFrame::GetBoundsForTabStrip(views::View* tabstrip) const {
   gfx::Rect tab_strip_bounds =
       browser_frame_view_->GetBoundsForTabStrip(tabstrip);
 #if defined(USE_AURA)
-  // Leave space for status area when maximized under aura compact window mode.
+  // Leave space for status area in Aura compact window mode.
   if (ash::Shell::GetInstance()->IsWindowModeCompact() &&
-      IsMaximized() &&
       ChromeShellDelegate::instance()) {
     StatusAreaView* status_area =
         ChromeShellDelegate::instance()->GetStatusArea();
     if (status_area) {
-      gfx::Rect status_rect = status_area->GetWidget()->GetWindowScreenBounds();
-
-      // Translate status_rect to frame view coordinates.
-      gfx::Point frame_origin = GetWindowScreenBounds().origin();
-      gfx::Point frame_view_origin = browser_frame_view_->bounds().origin();
-      status_rect.Offset(-(frame_origin.x() + frame_view_origin.x()),
-                         -(frame_origin.y() + frame_view_origin.y()));
-
-      if (status_rect.Intersects(tab_strip_bounds)) {
-        status_rect.set_y(tab_strip_bounds.y());
-        status_rect.set_height(tab_strip_bounds.height());
-
-        tab_strip_bounds = tab_strip_bounds.Subtract(status_rect);
+      int reserve_width = 0;
+      gfx::Rect screen_bounds = gfx::Screen::GetPrimaryMonitorBounds();
+      if (base::i18n::IsRTL()) {
+        // Get top-right corner of status area in screen coordinates.
+        gfx::Point status_origin(status_area->bounds().right(), 0);
+        views::View::ConvertPointToScreen(status_area, &status_origin);
+        // Reserve the width between the left edge of screen and the right edge
+        // of status area.
+        reserve_width = status_origin.x() - screen_bounds.x();
+      } else {
+        // Get top-left corner of status area in screen coordinates.
+        gfx::Point status_origin;
+        views::View::ConvertPointToScreen(status_area, &status_origin);
+        // Reserve the width between the right edge of screen and the left edge
+        // of status area.
+        reserve_width = screen_bounds.right() - status_origin.x();
       }
+      // Views handles the RTL adjustment of tab strip.
+      tab_strip_bounds.set_width(tab_strip_bounds.width() - reserve_width);
     }
   }
 #endif
