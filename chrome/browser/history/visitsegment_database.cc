@@ -335,9 +335,6 @@ bool VisitSegmentDatabase::DeleteSegmentForURL(URLID url_id) {
       "DELETE FROM segments WHERE url_id = ?"));
   delete_seg.BindInt64(0, url_id);
 
-  if (!delete_seg.Run())
-    return false;
-
   return delete_seg.Run();
 }
 
