@@ -18,8 +18,6 @@
       'HAVE_WEBRTC_VIDEO',
       'HAVE_WEBRTC_VOICE',
       'NO_SOUND_SYSTEM',
-      'HAVE_SRTP',
-      'SRTP_RELATIVE_PATH',
     ],
     'configurations': {
       'Debug': {
@@ -555,7 +553,6 @@
         ['OS!="android"', {
           'dependencies': [
             # We won't build with WebRTC on Android.
-            '<(DEPTH)/third_party/libsrtp/libsrtp.gyp:libsrtp',
             '<(DEPTH)/third_party/webrtc/modules/modules.gyp:video_capture_module',
             '<(DEPTH)/third_party/webrtc/modules/modules.gyp:video_render_module',
             '<(DEPTH)/third_party/webrtc/video_engine/video_engine.gyp:video_engine_core',
