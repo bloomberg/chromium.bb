@@ -228,218 +228,6 @@ GL_APICALL void         GL_APIENTRY glPostSubBufferCHROMIUM (GLint x, GLint y, G
 GL_APICALL void         GL_APIENTRY glTexImageIOSurface2DCHROMIUM (GLenumTextureBindTarget target, GLsizei width, GLsizei height, GLuint ioSurfaceId, GLuint plane);
 """
 
-# This is the list of all commmands that will be generated and their Id.
-# If a command is not listed in this table it is an error.
-# This lets us make sure that command ids do not change as the generator
-# generates new variations of commands.
-
-_CMD_ID_TABLE = {
-  'ActiveTexture':                                             256,
-  'AttachShader':                                              257,
-  'BindAttribLocation':                                        258,
-  'BindAttribLocationImmediate':                               259,
-  'BindBuffer':                                                260,
-  'BindFramebuffer':                                           261,
-  'BindRenderbuffer':                                          262,
-  'BindTexture':                                               263,
-  'BlendColor':                                                264,
-  'BlendEquation':                                             265,
-  'BlendEquationSeparate':                                     266,
-  'BlendFunc':                                                 267,
-  'BlendFuncSeparate':                                         268,
-  'BufferData':                                                269,
-  'BufferDataImmediate':                                       270,
-  'BufferSubData':                                             271,
-  'BufferSubDataImmediate':                                    272,
-  'CheckFramebufferStatus':                                    273,
-  'Clear':                                                     274,
-  'ClearColor':                                                275,
-  'ClearDepthf':                                               276,
-  'ClearStencil':                                              277,
-  'ColorMask':                                                 278,
-  'CompileShader':                                             279,
-  'CompressedTexImage2D':                                      280,
-  'CompressedTexImage2DImmediate':                             281,
-  'CompressedTexSubImage2D':                                   282,
-  'CompressedTexSubImage2DImmediate':                          283,
-  'CopyTexImage2D':                                            284,
-  'CopyTexSubImage2D':                                         285,
-  'CreateProgram':                                             286,
-  'CreateShader':                                              287,
-  'CullFace':                                                  288,
-  'DeleteBuffers':                                             289,
-  'DeleteBuffersImmediate':                                    290,
-  'DeleteFramebuffers':                                        291,
-  'DeleteFramebuffersImmediate':                               292,
-  'DeleteProgram':                                             293,
-  'DeleteRenderbuffers':                                       294,
-  'DeleteRenderbuffersImmediate':                              295,
-  'DeleteShader':                                              296,
-  'DeleteTextures':                                            297,
-  'DeleteTexturesImmediate':                                   298,
-  'DepthFunc':                                                 299,
-  'DepthMask':                                                 300,
-  'DepthRangef':                                               301,
-  'DetachShader':                                              302,
-  'Disable':                                                   303,
-  'DisableVertexAttribArray':                                  304,
-  'DrawArrays':                                                305,
-  'DrawElements':                                              306,
-  'Enable':                                                    307,
-  'EnableVertexAttribArray':                                   308,
-  'Finish':                                                    309,
-  'Flush':                                                     310,
-  'FramebufferRenderbuffer':                                   311,
-  'FramebufferTexture2D':                                      312,
-  'FrontFace':                                                 313,
-  'GenBuffers':                                                314,
-  'GenBuffersImmediate':                                       315,
-  'GenerateMipmap':                                            316,
-  'GenFramebuffers':                                           317,
-  'GenFramebuffersImmediate':                                  318,
-  'GenRenderbuffers':                                          319,
-  'GenRenderbuffersImmediate':                                 320,
-  'GenTextures':                                               321,
-  'GenTexturesImmediate':                                      322,
-  'GetActiveAttrib':                                           323,
-  'GetActiveUniform':                                          324,
-  'GetAttachedShaders':                                        325,
-  'GetAttribLocation':                                         326,
-  'GetAttribLocationImmediate':                                327,
-  'GetBooleanv':                                               328,
-  'GetBufferParameteriv':                                      329,
-  'GetError':                                                  330,
-  'GetFloatv':                                                 331,
-  'GetFramebufferAttachmentParameteriv':                       332,
-  'GetIntegerv':                                               333,
-  'GetProgramiv':                                              334,
-  'GetProgramInfoLog':                                         335,
-  'GetRenderbufferParameteriv':                                336,
-  'GetShaderiv':                                               337,
-  'GetShaderInfoLog':                                          338,
-  'GetShaderPrecisionFormat':                                  339,
-  'GetShaderSource':                                           340,
-  'GetString':                                                 341,
-  'GetTexParameterfv':                                         342,
-  'GetTexParameteriv':                                         343,
-  'GetUniformfv':                                              344,
-  'GetUniformiv':                                              345,
-  'GetUniformLocation':                                        346,
-  'GetUniformLocationImmediate':                               347,
-  'GetVertexAttribfv':                                         348,
-  'GetVertexAttribiv':                                         349,
-  'GetVertexAttribPointerv':                                   350,
-  'Hint':                                                      351,
-  'IsBuffer':                                                  352,
-  'IsEnabled':                                                 353,
-  'IsFramebuffer':                                             354,
-  'IsProgram':                                                 355,
-  'IsRenderbuffer':                                            356,
-  'IsShader':                                                  357,
-  'IsTexture':                                                 358,
-  'LineWidth':                                                 359,
-  'LinkProgram':                                               360,
-  'PixelStorei':                                               361,
-  'PolygonOffset':                                             362,
-  'ReadPixels':                                                363,
-  'RenderbufferStorage':                                       364,
-  'SampleCoverage':                                            365,
-  'Scissor':                                                   366,
-  'ShaderSource':                                              367,
-  'ShaderSourceImmediate':                                     368,
-  'StencilFunc':                                               369,
-  'StencilFuncSeparate':                                       370,
-  'StencilMask':                                               371,
-  'StencilMaskSeparate':                                       372,
-  'StencilOp':                                                 373,
-  'StencilOpSeparate':                                         374,
-  'TexImage2D':                                                375,
-  'TexImage2DImmediate':                                       376,
-  'TexParameterf':                                             377,
-  'TexParameterfv':                                            378,
-  'TexParameterfvImmediate':                                   379,
-  'TexParameteri':                                             380,
-  'TexParameteriv':                                            381,
-  'TexParameterivImmediate':                                   382,
-  'TexSubImage2D':                                             383,
-  'TexSubImage2DImmediate':                                    384,
-  'Uniform1f':                                                 385,
-  'Uniform1fv':                                                386,
-  'Uniform1fvImmediate':                                       387,
-  'Uniform1i':                                                 388,
-  'Uniform1iv':                                                389,
-  'Uniform1ivImmediate':                                       390,
-  'Uniform2f':                                                 391,
-  'Uniform2fv':                                                392,
-  'Uniform2fvImmediate':                                       393,
-  'Uniform2i':                                                 394,
-  'Uniform2iv':                                                395,
-  'Uniform2ivImmediate':                                       396,
-  'Uniform3f':                                                 397,
-  'Uniform3fv':                                                398,
-  'Uniform3fvImmediate':                                       399,
-  'Uniform3i':                                                 400,
-  'Uniform3iv':                                                401,
-  'Uniform3ivImmediate':                                       402,
-  'Uniform4f':                                                 403,
-  'Uniform4fv':                                                404,
-  'Uniform4fvImmediate':                                       405,
-  'Uniform4i':                                                 406,
-  'Uniform4iv':                                                407,
-  'Uniform4ivImmediate':                                       408,
-  'UniformMatrix2fv':                                          409,
-  'UniformMatrix2fvImmediate':                                 410,
-  'UniformMatrix3fv':                                          411,
-  'UniformMatrix3fvImmediate':                                 412,
-  'UniformMatrix4fv':                                          413,
-  'UniformMatrix4fvImmediate':                                 414,
-  'UseProgram':                                                415,
-  'ValidateProgram':                                           416,
-  'VertexAttrib1f':                                            417,
-  'VertexAttrib1fv':                                           418,
-  'VertexAttrib1fvImmediate':                                  419,
-  'VertexAttrib2f':                                            420,
-  'VertexAttrib2fv':                                           421,
-  'VertexAttrib2fvImmediate':                                  422,
-  'VertexAttrib3f':                                            423,
-  'VertexAttrib3fv':                                           424,
-  'VertexAttrib3fvImmediate':                                  425,
-  'VertexAttrib4f':                                            426,
-  'VertexAttrib4fv':                                           427,
-  'VertexAttrib4fvImmediate':                                  428,
-  'VertexAttribPointer':                                       429,
-  'Viewport':                                                  430,
-  'SwapBuffers':                                               431,
-  'BindAttribLocationBucket':                                  432,
-  'GetUniformLocationBucket':                                  433,
-  'GetAttribLocationBucket':                                   434,
-  'ShaderSourceBucket':                                        435,
-  'ShaderBinary':                                              436,
-  'ReleaseShaderCompiler':                                     437,
-  'GetMaxValueInBufferCHROMIUM':                               438,
-  'GenSharedIdsCHROMIUM':                                      439,
-  'DeleteSharedIdsCHROMIUM':                                   440,
-  'RegisterSharedIdsCHROMIUM':                                 441,
-  'EnableFeatureCHROMIUM':                                     442,
-  'CompressedTexImage2DBucket':                                443,
-  'CompressedTexSubImage2DBucket':                             444,
-  'RenderbufferStorageMultisampleEXT':                         445,
-  'BlitFramebufferEXT':                                        446,
-  'Placeholder447CHROMIUM':                                    447,
-  'ResizeCHROMIUM':                                            448,
-  'GetRequestableExtensionsCHROMIUM':                          449,
-  'RequestExtensionCHROMIUM':                                  450,
-  'CreateStreamTextureCHROMIUM':                               451,
-  'DestroyStreamTextureCHROMIUM':                              452,
-  'Placeholder453CHROMIUM':                                    453,
-  'GetMultipleIntegervCHROMIUM':                               454,
-  'GetProgramInfoCHROMIUM':                                    455,
-  'GetTranslatedShaderSourceANGLE':                            456,
-  'PostSubBufferCHROMIUM':                                     457,
-  'TexImageIOSurface2DCHROMIUM':                               458,
-  'TexStorage2DEXT':                                           459,
-}
-
 # This is a list of enum names and their valid values. It is used to map
 # GLenum arguments to a specific set of valid values.
 _ENUM_LISTS = {
@@ -2138,32 +1926,6 @@ COMPILE_ASSERT(offsetof(%(cmd_name)s::Result, %(field_name)s) == %(offset)d,
               'offset': offset,
             })
         offset += _SIZE_OF_UINT32
-    file.Write("\n")
-
-  def WriteDocs(self, func, file):
-    """Writes a structure for docs."""
-    func.WriteCommandDescription(file)
-    comment = func.GetInfo('cmd_comment')
-    if not comment == None:
-      file.Write(comment.replace('//', '//!'))
-    file.Write("struct %s {\n" % func.name)
-    file.Write("  static const CommandId kCmdId = %d;\n\n" %
-        _CMD_ID_TABLE[func.name])
-    result = func.GetInfo('result')
-    if not result == None:
-      if len(result) == 1:
-        file.Write("  typedef %s Result;\n\n" % result[0])
-      else:
-        file.Write("  struct Result {\n")
-        for line in result:
-          file.Write("    %s;\n" % line)
-        file.Write("  };\n\n")
-
-    file.Write("  CommandHeader header;\n")
-    args = func.GetCmdArgs()
-    for arg in args:
-      file.Write("  %s %s;  //!< %s\n" % (arg.cmd_type, arg.name, arg.type))
-    file.Write("};\n")
     file.Write("\n")
 
   def WriteHandlerImplementation(self, func, file):
@@ -5879,17 +5641,11 @@ class GLGenerator(object):
     """Writes the command buffer format"""
     file = CHeaderWriter(filename)
     file.Write("#define GLES2_COMMAND_LIST(OP) \\\n")
-    by_id = {}
+    id = 256
     for func in self.functions:
-      if True:
-      #gen_cmd = func.GetInfo('gen_cmd')
-      #if gen_cmd == True or gen_cmd == None:
-        if not func.name in _CMD_ID_TABLE:
-          self.Error("Command %s not in _CMD_ID_TABLE" % func.name)
-        by_id[_CMD_ID_TABLE[func.name]] = func
-    for id in sorted(by_id.keys()):
       file.Write("  %-60s /* %d */ \\\n" %
-                 ("OP(%s)" % by_id[id].name, id))
+                 ("OP(%s)" % func.name, id))
+      id += 1
     file.Write("\n")
 
     file.Write("enum CommandId {\n")
@@ -5939,29 +5695,6 @@ class GLGenerator(object):
       #if gen_cmd == True or gen_cmd == None:
         func.WriteFormatTest(file)
 
-    file.Close()
-
-  def WriteCommandIdTest(self, filename):
-    """Writes the command id test."""
-    file = CHeaderWriter(
-        filename,
-        "// This file contains unit tests for gles2 commmand ids\n")
-
-    file.Write("// *** These IDs MUST NOT CHANGE!!! ***\n")
-    file.Write("// Changing them will break all client programs.\n")
-    file.Write("TEST(GLES2CommandIdTest, CommandIdsMatch) {\n")
-    for func in self.functions:
-      if True:
-      #gen_cmd = func.GetInfo('gen_cmd')
-      #if gen_cmd == True or gen_cmd == None:
-        if not func.name in _CMD_ID_TABLE:
-          self.Error("Command %s not in _CMD_ID_TABLE" % func.name)
-        file.Write("  COMPILE_ASSERT(%s::kCmdId == %d,\n" %
-                   (func.name, _CMD_ID_TABLE[func.name]))
-        file.Write("                 GLES2_%s_kCmdId_mismatch);\n" % func.name)
-
-    file.Write("}\n")
-    file.Write("\n")
     file.Close()
 
   def WriteCmdHelperHeader(self, filename):
@@ -6340,12 +6073,6 @@ def main(argv):
       "-g", "--generate-implementation-templates", action="store_true",
       help="generates files that are generally hand edited..")
   parser.add_option(
-      "--generate-command-id-tests", action="store_true",
-      help="generate tests for commands ids. Commands MUST not change ID!")
-  parser.add_option(
-      "--generate-docs", action="store_true",
-      help="generate a docs friendly version of the command formats.")
-  parser.add_option(
       "--alternate-mode", type="choice",
       choices=("ppapi", "chrome_ppapi", "chrome_ppapi_proxy", "nacl_ppapi"),
       help="generate files for other projects. \"ppapi\" will generate ppapi "
@@ -6404,12 +6131,6 @@ def main(argv):
         "service/gles2_cmd_validation_implementation_autogen.h")
     gen.WriteCommonUtilsHeader("common/gles2_cmd_utils_autogen.h")
     gen.WriteCommonUtilsImpl("common/gles2_cmd_utils_implementation_autogen.h")
-
-    if options.generate_command_id_tests:
-      gen.WriteCommandIdTest("common/gles2_cmd_id_test_autogen.h")
-
-    if options.generate_docs:
-      gen.WriteDocs("docs/gles2_cmd_format_docs_autogen.h")
 
   if gen.errors > 0:
     print "%d errors" % gen.errors
