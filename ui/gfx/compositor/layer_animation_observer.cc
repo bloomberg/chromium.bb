@@ -4,19 +4,41 @@
 
 #include "ui/gfx/compositor/layer_animation_observer.h"
 
+#include "ui/gfx/compositor/layer_animation_sequence.h"
+
 namespace ui {
 
 ////////////////////////////////////////////////////////////////////////////////
 // LayerAnimationObserver
-//
 
 bool LayerAnimationObserver::RequiresNotificationWhenAnimatorDestroyed() const {
   return false;
 }
 
+LayerAnimationObserver::LayerAnimationObserver() {
+}
+
+LayerAnimationObserver::~LayerAnimationObserver() {
+  while (!attached_sequences_.empty()) {
+    LayerAnimationSequence* sequence = *attached_sequences_.begin();
+    sequence->RemoveObserver(this);
+  }
+}
+
+void LayerAnimationObserver::AttachedToSequence(
+    LayerAnimationSequence* sequence) {
+  DCHECK(attached_sequences_.find(sequence) == attached_sequences_.end());
+  attached_sequences_.insert(sequence);
+}
+
+void LayerAnimationObserver::DetachedFromSequence(
+    LayerAnimationSequence* sequence) {
+  if (attached_sequences_.find(sequence) != attached_sequences_.end())
+    attached_sequences_.erase(sequence);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // ImplicitAnimationObserver
-//
 
 ImplicitAnimationObserver::ImplicitAnimationObserver()
     : active_(false),

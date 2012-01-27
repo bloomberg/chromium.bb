@@ -26,6 +26,9 @@ LayerAnimationSequence::LayerAnimationSequence(LayerAnimationElement* element)
 }
 
 LayerAnimationSequence::~LayerAnimationSequence() {
+  FOR_EACH_OBSERVER(LayerAnimationObserver,
+                    observers_,
+                    DetachedFromSequence(this));
 }
 
 void LayerAnimationSequence::Progress(base::TimeDelta elapsed,
@@ -110,12 +113,15 @@ bool LayerAnimationSequence::HasCommonProperty(
 }
 
 void LayerAnimationSequence::AddObserver(LayerAnimationObserver* observer) {
-  if (!observers_.HasObserver(observer))
+  if (!observers_.HasObserver(observer)) {
     observers_.AddObserver(observer);
+    observer->AttachedToSequence(this);
+  }
 }
 
 void LayerAnimationSequence::RemoveObserver(LayerAnimationObserver* observer) {
   observers_.RemoveObserver(observer);
+  observer->DetachedFromSequence(this);
 }
 
 void LayerAnimationSequence::OnScheduled() {

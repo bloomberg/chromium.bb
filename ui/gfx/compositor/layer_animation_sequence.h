@@ -8,6 +8,7 @@
 
 #include <vector>
 
+#include "base/gtest_prod_util.h"
 #include "base/memory/linked_ptr.h"
 #include "base/observer_list.h"
 #include "base/time.h"
@@ -82,6 +83,9 @@ class COMPOSITOR_EXPORT LayerAnimationSequence {
 
  private:
   typedef std::vector<linked_ptr<LayerAnimationElement> > Elements;
+
+  FRIEND_TEST_ALL_PREFIXES(LayerAnimatorTest,
+                           ObserverReleasedBeforeAnimationSequenceEnds);
 
   // Notifies the observers that this sequence has been scheduled.
   void NotifyScheduled();

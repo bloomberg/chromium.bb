@@ -6,6 +6,8 @@
 #define UI_GFX_COMPOSITOR_LAYER_ANIMATION_OBSERVER_H_
 #pragma once
 
+#include <set>
+
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "ui/gfx/compositor/compositor_export.h"
@@ -39,7 +41,19 @@ class COMPOSITOR_EXPORT LayerAnimationObserver  {
   virtual bool RequiresNotificationWhenAnimatorDestroyed() const;
 
  protected:
-  virtual ~LayerAnimationObserver() {}
+  LayerAnimationObserver();
+  virtual ~LayerAnimationObserver();
+
+ private:
+  friend class LayerAnimationSequence;
+
+  // Called when |this| is added to |sequence|'s observer list.
+  void AttachedToSequence(LayerAnimationSequence* sequence);
+
+  // Called when |this| is removed to |sequence|'s observer list.
+  void DetachedFromSequence(LayerAnimationSequence* sequence);
+
+  std::set<LayerAnimationSequence*> attached_sequences_;
 };
 
 // An implicit animation observer is intended to be used in conjunction with a

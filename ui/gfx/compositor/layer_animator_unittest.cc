@@ -43,6 +43,8 @@ class TestImplicitAnimationObserver : public ImplicitAnimationObserver {
   DISALLOW_COPY_AND_ASSIGN(TestImplicitAnimationObserver);
 };
 
+} // namespace
+
 // Checks that setting a property on an implicit animator causes an animation to
 // happen.
 TEST(LayerAnimatorTest, ImplicitAnimation) {
@@ -828,6 +830,34 @@ TEST(LayerAnimatorTest, RemoveObserverShouldRemoveFromSequences) {
   EXPECT_TRUE(!removed_observer.last_ended_sequence());
 }
 
+TEST(LayerAnimatorTest, ObserverReleasedBeforeAnimationSequenceEnds) {
+  scoped_ptr<LayerAnimator> animator(LayerAnimator::CreateDefaultAnimator());
+  animator->set_disable_timer_for_test(true);
+
+  scoped_ptr<TestLayerAnimationObserver> observer(
+      new TestLayerAnimationObserver);
+  TestLayerAnimationDelegate delegate;
+  animator->SetDelegate(&delegate);
+  animator->AddObserver(observer.get());
+
+  delegate.SetOpacityFromAnimation(0.0f);
+
+  base::TimeDelta delta = base::TimeDelta::FromSeconds(1);
+  LayerAnimationSequence* sequence = new LayerAnimationSequence(
+      LayerAnimationElement::CreateOpacityElement(1.0f, delta));
+
+  animator->StartAnimation(sequence);
+
+  // |observer| should be attached to |sequence|.
+  EXPECT_EQ(static_cast<size_t>(1), sequence->observers_.size());
+
+  // Now, release |observer|
+  observer.reset();
+
+  // And |sequence| should no longer be attached to |observer|.
+  EXPECT_EQ(static_cast<size_t>(0), sequence->observers_.size());
+}
+
 // Check that setting a property during an animation with a default animator
 // cancels the original animation.
 TEST(LayerAnimatorTest, SettingPropertyDuringAnAnimation) {
@@ -854,7 +884,5 @@ TEST(LayerAnimatorTest, SettingPropertyDuringAnAnimation) {
   EXPECT_FALSE(animator->is_animating());
   EXPECT_EQ(0.5, animator->GetTargetOpacity());
 }
-
-} // namespace
 
 } // namespace ui
