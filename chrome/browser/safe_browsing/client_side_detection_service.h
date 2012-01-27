@@ -196,9 +196,9 @@ class ClientSideDetectionService : public content::URLFetcherDelegate,
   static const int kMaxReportsPerInterval;
   static const int kClientModelFetchIntervalMs;
   static const int kInitialClientModelFetchDelayMs;
-  static const base::TimeDelta kReportsInterval;
-  static const base::TimeDelta kNegativeCacheInterval;
-  static const base::TimeDelta kPositiveCacheInterval;
+  static const int kReportsIntervalDays;
+  static const int kNegativeCacheIntervalDays;
+  static const int kPositiveCacheIntervalMinutes;
 
   // Starts sending the request to the client-side detection frontends.
   // This method takes ownership of both pointers.

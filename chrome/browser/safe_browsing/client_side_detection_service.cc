@@ -44,12 +44,9 @@ const int ClientSideDetectionService::kMaxReportsPerInterval = 3;
 const int ClientSideDetectionService::kClientModelFetchIntervalMs = 3600 * 1000;
 const int ClientSideDetectionService::kInitialClientModelFetchDelayMs = 10000;
 
-const base::TimeDelta ClientSideDetectionService::kReportsInterval =
-    base::TimeDelta::FromDays(1);
-const base::TimeDelta ClientSideDetectionService::kNegativeCacheInterval =
-    base::TimeDelta::FromDays(1);
-const base::TimeDelta ClientSideDetectionService::kPositiveCacheInterval =
-    base::TimeDelta::FromMinutes(30);
+const int ClientSideDetectionService::kReportsIntervalDays = 1;
+const int ClientSideDetectionService::kNegativeCacheIntervalDays = 1;
+const int ClientSideDetectionService::kPositiveCacheIntervalMinutes = 30;
 
 const char ClientSideDetectionService::kClientReportPhishingUrl[] =
     "https://sb-ssl.google.com/safebrowsing/clientreport/phishing";
@@ -410,8 +407,10 @@ bool ClientSideDetectionService::GetValidCachedResult(const GURL& url,
   // We still need to check if the result is valid.
   const CacheState& cache_state = *it->second;
   if (cache_state.is_phishing ?
-      cache_state.timestamp > base::Time::Now() - kPositiveCacheInterval :
-      cache_state.timestamp > base::Time::Now() - kNegativeCacheInterval) {
+      cache_state.timestamp > base::Time::Now() -
+          base::TimeDelta::FromMinutes(kPositiveCacheIntervalMinutes) :
+      cache_state.timestamp > base::Time::Now() -
+          base::TimeDelta::FromDays(kNegativeCacheIntervalDays)) {
     *is_phishing = cache_state.is_phishing;
     return true;
   }
@@ -424,9 +423,11 @@ void ClientSideDetectionService::UpdateCache() {
   // could be used for this purpose even if we will not use the entry to
   // satisfy the request from the cache.
   base::TimeDelta positive_cache_interval =
-      std::max(kPositiveCacheInterval, kReportsInterval);
+      std::max(base::TimeDelta::FromMinutes(kPositiveCacheIntervalMinutes),
+               base::TimeDelta::FromDays(kReportsIntervalDays));
   base::TimeDelta negative_cache_interval =
-      std::max(kNegativeCacheInterval, kReportsInterval);
+      std::max(base::TimeDelta::FromDays(kNegativeCacheIntervalDays),
+               base::TimeDelta::FromDays(kReportsIntervalDays));
 
   // Remove elements from the cache that will no longer be used.
   for (PhishingCache::iterator it = cache_.begin(); it != cache_.end();) {
@@ -446,7 +447,8 @@ bool ClientSideDetectionService::OverReportLimit() {
 }
 
 int ClientSideDetectionService::GetNumReports() {
-  base::Time cutoff = base::Time::Now() - kReportsInterval;
+  base::Time cutoff =
+      base::Time::Now() - base::TimeDelta::FromDays(kReportsIntervalDays);
 
   // Erase items older than cutoff because we will never care about them again.
   while (!phishing_report_times_.empty() &&

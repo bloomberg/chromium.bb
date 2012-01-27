@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -122,24 +122,32 @@ class ClientSideDetectionServiceTest : public testing::Test {
   void TestCache() {
     ClientSideDetectionService::PhishingCache& cache = csd_service_->cache_;
     base::Time now = base::Time::Now();
-    base::Time time = now - ClientSideDetectionService::kNegativeCacheInterval +
+    base::Time time =
+        now - base::TimeDelta::FromDays(
+            ClientSideDetectionService::kNegativeCacheIntervalDays) +
         base::TimeDelta::FromMinutes(5);
     cache[GURL("http://first.url.com/")] =
         make_linked_ptr(new ClientSideDetectionService::CacheState(false,
                                                                    time));
 
-    time = now - ClientSideDetectionService::kNegativeCacheInterval -
+    time =
+        now - base::TimeDelta::FromDays(
+            ClientSideDetectionService::kNegativeCacheIntervalDays) -
         base::TimeDelta::FromHours(1);
     cache[GURL("http://second.url.com/")] =
         make_linked_ptr(new ClientSideDetectionService::CacheState(false,
                                                                    time));
 
-    time = now - ClientSideDetectionService::kPositiveCacheInterval -
+    time =
+        now - base::TimeDelta::FromMinutes(
+            ClientSideDetectionService::kPositiveCacheIntervalMinutes) -
         base::TimeDelta::FromMinutes(5);
     cache[GURL("http://third.url.com/")] =
         make_linked_ptr(new ClientSideDetectionService::CacheState(true, time));
 
-    time = now - ClientSideDetectionService::kPositiveCacheInterval +
+    time =
+        now - base::TimeDelta::FromMinutes(
+            ClientSideDetectionService::kPositiveCacheIntervalMinutes) +
         base::TimeDelta::FromMinutes(5);
     cache[GURL("http://fourth.url.com/")] =
         make_linked_ptr(new ClientSideDetectionService::CacheState(true, time));
