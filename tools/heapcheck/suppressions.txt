@@ -1796,3 +1796,37 @@
    fun:crypto::ECSignatureCreator::Sign
    fun:ECSignatureCreatorTest_BasicTest_Test::TestBody
 }
+{
+   bug_111588a
+   Heapcheck:Leak
+   ...
+   fun:ResourceDispatcherHost::CompleteRead
+   fun:ResourceDispatcherHost::OnReadCompleted
+   fun:net::URLRequest::NotifyReadCompleted
+   fun:net::URLRequestJob::NotifyReadComplete
+   fun:net::URLRequestTestJob::ProcessNextOperation
+   fun:net::URLRequestTestJob::ProcessOnePendingMessage
+   fun:ResourceDispatcherHostTest_*_Test::TestBody
+}
+{
+   bug_111588b
+   Heapcheck:Leak
+   fun:std::string::_Rep::_S_create
+   fun:std::string::_Rep::_M_clone
+   fun:std::string::reserve
+   fun:bool ::InitCanonical
+   fun:GURL
+   fun:IPC::ParamTraits::Read
+   fun:IPC::ReadParam
+   fun:IPC::ParamTraits::Read
+   fun:IPC::ReadParam
+   fun:IPC::ParamTraits::Read
+   fun:IPC::ReadParam
+   fun:IPC::MessageSchema::Read
+   fun:ResourceHostMsg_RequestResource::Read
+   fun:ResourceHostMsg_RequestResource::Dispatch
+   fun:ResourceDispatcherHost::OnMessageReceived
+   fun:ResourceDispatcherHostTest::MakeTestRequest
+   fun:ResourceDispatcherHostTest::MakeTestRequest
+   fun:ResourceDispatcherHostTest_*_Test::TestBody
+}
