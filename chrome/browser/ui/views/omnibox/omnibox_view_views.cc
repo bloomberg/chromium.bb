@@ -132,9 +132,15 @@ void ApplyURLStyle(views::Textfield* textfield,
   textfield->ApplyStyleRange(style);
 }
 
-// The following 2 const values are the same as in browser_defaults.
+// The following const value is the same as in browser_defaults.
 const int kAutocompleteEditFontPixelSize = 15;
-const int kAutocompleteEditFontPixelSizeInPopup = 10;
+// Font size 10px (as defined in browser_defaults) is too small for many
+// non-Latin/Greek/Cyrillic (non-LGC) scripts. For pop-up window, the total
+// rectangle is 21px tall and the height available for "ink" is 17px (please
+// refer to kAutocompleteVerticalMarginInPopup). With 12px font size, the
+// tallest glyphs in UI fonts we're building for ChromeOS (across all scripts)
+// still fit within 17px "ink" height.
+const int kAutocompleteEditFontPixelSizeInPopup = 12;
 
 // The following 2 values are based on kAutocompleteEditFontPixelSize and
 // kAutocompleteEditFontPixelSizeInPopup. They should be changed accordingly
