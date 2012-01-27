@@ -1587,9 +1587,9 @@ bool WebRequestEventHandled::RunImpl() {
 
   std::string request_id_str;
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(2, &request_id_str));
-  // TODO(mpcomplete): string-to-uint64?
-  int64 request_id;
-  EXTENSION_FUNCTION_VALIDATE(base::StringToInt64(request_id_str, &request_id));
+  uint64 request_id;
+  EXTENSION_FUNCTION_VALIDATE(base::StringToUint64(request_id_str,
+                                                   &request_id));
 
   scoped_ptr<ExtensionWebRequestEventRouter::EventResponse> response;
   if (HasOptionalArgument(3)) {
