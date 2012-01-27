@@ -23,25 +23,11 @@ exception_test = env.ComponentProgram('exception_test',
 node = env.CommandSelLdrTestNacl(
     'exception_test.out',
     exception_test,
-    stdout_golden=env.File('exception_test.stdout'),
+    declares_exit_status=True,
     sel_ldr_flags=['-e'])
 env.AddNodeToTestSuite(
     node, ['small_tests', 'exception_tests'],
     'run_exception_test', is_broken=is_broken)
-
-exception_same_stack_test = env.ComponentProgram(
-    'exception_same_stack_test',
-    'exception_same_stack_test.c',
-    EXTRA_LIBS=['${NONIRT_LIBS}'])
-
-node = env.CommandSelLdrTestNacl(
-    'exception_same_stack_test.out',
-    exception_same_stack_test,
-    stdout_golden=env.File('exception_test.stdout'),
-    sel_ldr_flags=['-e'])
-env.AddNodeToTestSuite(
-    node, ['small_tests', 'exception_tests'],
-    'run_exception_same_stack_test', is_broken=is_broken)
 
 exception_crash_test = env.ComponentProgram(
     'exception_crash_test', ['exception_crash_test.c'],
