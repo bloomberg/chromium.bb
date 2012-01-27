@@ -353,9 +353,9 @@ class Predictor {
   // Interval between periodic trimming of our whole referrer list.
   // We only do a major trimming about once an hour, and then only when the user
   // is actively browsing.
-  static const base::TimeDelta kDurationBetweenTrimmings;
+  static const int64 kDurationBetweenTrimmingsHours;
   // Interval between incremental trimmings (to avoid inducing Jank).
-  static const base::TimeDelta kDurationBetweenTrimmingIncrements;
+  static const int64 kDurationBetweenTrimmingIncrementsSeconds;
   // Number of referring URLs processed in an incremental trimming.
   static const size_t kUrlsTrimmedPerIncrement;
 

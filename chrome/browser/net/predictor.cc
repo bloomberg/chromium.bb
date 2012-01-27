@@ -57,9 +57,8 @@ const double Predictor::kDiscardableExpectedValue = 0.05;
 // system that uses a higher trim ratio when the list is large.
 // static
 const double Predictor::kReferrerTrimRatio = 0.97153;
-const TimeDelta Predictor::kDurationBetweenTrimmings = TimeDelta::FromHours(1);
-const TimeDelta Predictor::kDurationBetweenTrimmingIncrements =
-    TimeDelta::FromSeconds(15);
+const int64 Predictor::kDurationBetweenTrimmingsHours = 1;
+const int64 Predictor::kDurationBetweenTrimmingIncrementsSeconds = 15;
 const size_t Predictor::kUrlsTrimmedPerIncrement = 5u;
 const size_t Predictor::kMaxSpeculativeParallelResolves = 3;
 // To control our congestion avoidance system, which discards a queue when
@@ -132,7 +131,8 @@ Predictor::Predictor(bool preconnect_enabled)
       host_resolver_(NULL),
       preconnect_enabled_(preconnect_enabled),
       consecutive_omnibox_preconnect_count_(0),
-      next_trim_time_(base::TimeTicks::Now() + kDurationBetweenTrimmings) {
+      next_trim_time_(base::TimeTicks::Now() +
+                      TimeDelta::FromHours(kDurationBetweenTrimmingsHours)) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
@@ -1046,7 +1046,7 @@ void Predictor::TrimReferrers() {
   base::TimeTicks now = base::TimeTicks::Now();
   if (now < next_trim_time_)
     return;
-  next_trim_time_ = now + kDurationBetweenTrimmings;
+  next_trim_time_ = now + TimeDelta::FromHours(kDurationBetweenTrimmingsHours);
 
   LoadUrlsForTrimming();
   PostIncrementalTrimTask();
@@ -1063,11 +1063,14 @@ void Predictor::LoadUrlsForTrimming() {
 void Predictor::PostIncrementalTrimTask() {
   if (urls_being_trimmed_.empty())
     return;
+  const int64 kDurationBetweenTrimmingIncrementsMilliseconds =
+      TimeDelta::FromSeconds(kDurationBetweenTrimmingIncrementsSeconds)
+          .InMilliseconds();
   MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&Predictor::IncrementalTrimReferrers,
                  weak_factory_->GetWeakPtr(), false),
-      kDurationBetweenTrimmingIncrements.InMilliseconds());
+      kDurationBetweenTrimmingIncrementsMilliseconds);
 }
 
 void Predictor::IncrementalTrimReferrers(bool trim_all_now) {
