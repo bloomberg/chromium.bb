@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -32,12 +32,15 @@ const char kLongText[] =
     "mollit anim id est laborum.";
 const char kAmpersandText[] =
     "The quick && &brown fo&x jumps over the lazy dog.";
+const char kNewlineText[] =
+    "The quick \nbrown fox jumps\n\n over the lazy dog.";
 
 const char* kTextExamples[] = {
     "Short",
     "Medium",
     "Long",
     "Ampersands",
+    "Newlines",
 };
 
 const char* kElidingBehaviors[] = {
@@ -317,6 +320,9 @@ void TextExample::ItemChanged(Combobox* combo_box,
         break;
       case 3:
         text_view_->set_text(ASCIIToUTF16(kAmpersandText));
+        break;
+      case 4:
+        text_view_->set_text(ASCIIToUTF16(kNewlineText));
         break;
     }
   } else if (combo_box == eliding_cb_) {
