@@ -6,8 +6,8 @@
 
 #include <limits>
 
-#include "ppapi/c/dev/ppb_var_array_buffer_dev.h"
 #include "ppapi/c/ppb_var.h"
+#include "ppapi/c/ppb_var_array_buffer.h"
 #include "ppapi/c/pp_var.h"
 #include "ppapi/shared_impl/ppapi_globals.h"
 #include "ppapi/shared_impl/proxy_lock.h"
@@ -68,7 +68,7 @@ const PPB_Var_1_0 var_interface1_0 = {
 };
 
 
-// PPB_VarArrayBuffer_Dev methods ----------------------------------------------
+// PPB_VarArrayBuffer methods --------------------------------------------------
 
 PP_Var CreateArrayBufferVar(uint32_t size_in_bytes) {
   return PpapiGlobals::Get()->GetVarTracker()->MakeArrayBufferPPVar(
@@ -96,7 +96,7 @@ void Unmap(PP_Var array) {
     buffer->Unmap();
 }
 
-const PPB_VarArrayBuffer_Dev var_arraybuffer_interface = {
+const PPB_VarArrayBuffer_1_0 var_arraybuffer_interface = {
   &CreateArrayBufferVar,
   &ByteLength,
   &Map,
@@ -116,8 +116,8 @@ const PPB_Var_1_0* PPB_Var_Shared::GetVarInterface1_0() {
 }
 
 // static
-const PPB_VarArrayBuffer_Dev* PPB_Var_Shared::GetVarArrayBufferInterface() {
- return &var_arraybuffer_interface;
+const PPB_VarArrayBuffer_1_0* PPB_Var_Shared::GetVarArrayBufferInterface1_0() {
+  return &var_arraybuffer_interface;
 }
 
 }  // namespace ppapi

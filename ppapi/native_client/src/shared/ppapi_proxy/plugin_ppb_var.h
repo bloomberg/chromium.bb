@@ -9,9 +9,9 @@
 
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/include/portability.h"
-#include "ppapi/c/dev/ppb_var_array_buffer_dev.h"
 #include "ppapi/c/pp_var.h"
 #include "ppapi/c/ppb_var.h"
+#include "ppapi/c/ppb_var_array_buffer.h"
 
 namespace ppapi_proxy {
 
@@ -25,8 +25,8 @@ class PluginVar {
   // Returns the 1.0 interface to support backwards-compatibility.
   static const PPB_Var_1_0* GetInterface1_0();
 
-  // Returns an interface pointer for the PPB_VarArrayBuffer_Dev interface.
-  static const PPB_VarArrayBuffer_Dev* GetArrayBufferInterface();
+  // Returns an interface pointer for the PPB_VarArrayBuffer interface.
+  static const PPB_VarArrayBuffer* GetArrayBufferInterface();
 
   // String helpers.
   static PP_Var StringToPPVar(const std::string& str);

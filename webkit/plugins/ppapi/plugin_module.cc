@@ -34,7 +34,6 @@
 #include "ppapi/c/dev/ppb_text_input_dev.h"
 #include "ppapi/c/dev/ppb_transport_dev.h"
 #include "ppapi/c/dev/ppb_url_util_dev.h"
-#include "ppapi/c/dev/ppb_var_array_buffer_dev.h"
 #include "ppapi/c/dev/ppb_var_deprecated.h"
 #include "ppapi/c/dev/ppb_video_capture_dev.h"
 #include "ppapi/c/dev/ppb_video_decoder_dev.h"
@@ -62,6 +61,7 @@
 #include "ppapi/c/ppb_url_request_info.h"
 #include "ppapi/c/ppb_url_response_info.h"
 #include "ppapi/c/ppb_var.h"
+#include "ppapi/c/ppb_var_array_buffer.h"
 #include "ppapi/c/ppb_view.h"
 #include "ppapi/c/ppp.h"
 #include "ppapi/c/ppp_instance.h"
@@ -349,8 +349,8 @@ const void* GetInterface(const char* name) {
     return ::ppapi::PPB_Var_Shared::GetVarInterface1_0();
   if (strcmp(name, PPB_VAR_INTERFACE_1_1) == 0)
     return ::ppapi::PPB_Var_Shared::GetVarInterface1_1();
-  if (strcmp(name, PPB_VAR_ARRAY_BUFFER_DEV_INTERFACE) == 0)
-    return ::ppapi::PPB_Var_Shared::GetVarArrayBufferInterface();
+  if (strcmp(name, PPB_VAR_ARRAY_BUFFER_INTERFACE_1_0) == 0)
+    return ::ppapi::PPB_Var_Shared::GetVarArrayBufferInterface1_0();
 
 #ifdef ENABLE_FLAPPER_HACKS
   if (strcmp(name, PPB_FLASH_NETCONNECTOR_INTERFACE) == 0)

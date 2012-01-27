@@ -6,7 +6,6 @@
 #define NATIVE_CLIENT_SRC_SHARED_PPAPI_PROXY_PLUGIN_GLOBALS_H_
 
 #include "ppapi/c/dev/ppb_memory_dev.h"
-#include "ppapi/c/dev/ppb_var_array_buffer_dev.h"
 #include "ppapi/c/dev/ppb_websocket_dev.h"
 #include "ppapi/c/dev/ppp_find_dev.h"
 #include "ppapi/c/dev/ppp_printing_dev.h"
@@ -18,6 +17,7 @@
 #include "ppapi/c/ppb.h"
 #include "ppapi/c/ppb_core.h"
 #include "ppapi/c/ppb_var.h"
+#include "ppapi/c/ppb_var_array_buffer.h"
 #include "ppapi/c/ppp_input_event.h"
 #include "ppapi/c/ppp_instance.h"
 #include "ppapi/c/ppp_messaging.h"
@@ -55,7 +55,7 @@ const void* GetBrowserInterfaceSafe(const char* interface_name);
 const PPB_Core* PPBCoreInterface();  // shared
 const PPB_Memory_Dev* PPBMemoryInterface();  // shared
 const PPB_Var* PPBVarInterface();  // shared
-const PPB_VarArrayBuffer_Dev* PPBVarArrayBufferInterface();  // shared
+const PPB_VarArrayBuffer* PPBVarArrayBufferInterface();  // shared
 const PPB_WebSocket_Dev* PPBWebSocketInterface();
 
 // Support for getting PPP_ plugin interfaces.

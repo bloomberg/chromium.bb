@@ -7,10 +7,10 @@
 
 #include <string>
 
-#include "ppapi/c/dev/ppb_var_array_buffer_dev.h"
 #include "ppapi/c/dev/ppb_websocket_dev.h"
 #include "ppapi/c/ppb_core.h"
 #include "ppapi/c/ppb_var.h"
+#include "ppapi/c/ppb_var_array_buffer.h"
 #include "ppapi/tests/test_case.h"
 
 class TestWebSocket : public TestCase {
@@ -50,7 +50,7 @@ class TestWebSocket : public TestCase {
   // Used by the tests that access the C API directly.
   const PPB_WebSocket_Dev* websocket_interface_;
   const PPB_Var* var_interface_;
-  const PPB_VarArrayBuffer_Dev* arraybuffer_interface_;
+  const PPB_VarArrayBuffer* arraybuffer_interface_;
   const PPB_Core* core_interface_;
 };
 

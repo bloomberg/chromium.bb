@@ -3,23 +3,37 @@
  * found in the LICENSE file.
  */
 
+/* From ppb_var_array_buffer.idl modified Thu Jan 26 14:50:50 2012. */
+
+#ifndef PPAPI_C_PPB_VAR_ARRAY_BUFFER_H_
+#define PPAPI_C_PPB_VAR_ARRAY_BUFFER_H_
+
+#include "ppapi/c/pp_bool.h"
+#include "ppapi/c/pp_macros.h"
+#include "ppapi/c/pp_stdint.h"
+#include "ppapi/c/pp_var.h"
+
+#define PPB_VAR_ARRAY_BUFFER_INTERFACE_1_0 "PPB_VarArrayBuffer;1.0"
+#define PPB_VAR_ARRAY_BUFFER_INTERFACE PPB_VAR_ARRAY_BUFFER_INTERFACE_1_0
+
 /**
- * This file defines the <code>PPB_VarArrayBuffer_Dev</code> struct.
+ * @file
+ * This file defines the <code>PPB_VarArrayBuffer</code> struct.
  */
 
-label Chrome {
-  M18 = 0.2
-};
 
 /**
- * PPB_VarArrayBuffer_Dev API. This provides a way to interact with JavaScript
+ * @addtogroup Interfaces
+ * @{
+ */
+/**
+ * PPB_VarArrayBuffer API. This provides a way to interact with JavaScript
  * ArrayBuffers, which represent a contiguous sequence of bytes. To manage the
  * reference count for a VarArrayBuffer, please see PPB_Var. Note that
  * these Vars are not part of the embedding page's DOM, and can only be shared
  * with JavaScript via pp::Instance's PostMessage and HandleMessage functions.
  */
-[macro="PPB_VAR_ARRAY_BUFFER_DEV_INTERFACE"]
-interface PPB_VarArrayBuffer_Dev {
+struct PPB_VarArrayBuffer_1_0 {
   /**
    * Create a zero-initialized VarArrayBuffer.
    *
@@ -28,8 +42,7 @@ interface PPB_VarArrayBuffer_Dev {
    * @return A PP_Var which represents a VarArrayBuffer of the requested size
    *         with a reference count of 1.
    */
-  PP_Var Create([in] uint32_t size_in_bytes);
-
+  struct PP_Var (*Create)(uint32_t size_in_bytes);
   /**
    * Retrieves the length of the VarArrayBuffer in bytes. On success,
    * byte_length is set to the length of the given ArrayBuffer var. On failure,
@@ -45,8 +58,7 @@ interface PPB_VarArrayBuffer_Dev {
    *
    * @return PP_TRUE on success, PP_FALSE on failure.
    */
-  PP_Bool ByteLength([in] PP_Var array, [out] uint32_t byte_length);
-
+  PP_Bool (*ByteLength)(struct PP_Var array, uint32_t* byte_length);
   /**
    * Maps the ArrayBuffer in to the module's address space and returns a pointer
    * to the beginning of the buffer for the given ArrayBuffer PP_Var. Note that
@@ -69,8 +81,7 @@ interface PPB_VarArrayBuffer_Dev {
    * @return A pointer to the internal buffer for this ArrayBuffer. Returns NULL
    *         if the given PP_Var is not of type PP_VARTYPE_ARRAY_BUFFER.
    */
-  mem_t Map([in] PP_Var array);
-
+  void* (*Map)(struct PP_Var array);
   /**
    * Unmaps the given ArrayBuffer var from the module address space. Use this if
    * you want to save memory but might want to Map the buffer again later. The
@@ -79,6 +90,13 @@ interface PPB_VarArrayBuffer_Dev {
    *
    * @param[in] array The ArrayBuffer which should be released.
    */
-  void Unmap([in] PP_Var array);
+  void (*Unmap)(struct PP_Var array);
 };
+
+typedef struct PPB_VarArrayBuffer_1_0 PPB_VarArrayBuffer;
+/**
+ * @}
+ */
+
+#endif  /* PPAPI_C_PPB_VAR_ARRAY_BUFFER_H_ */
 

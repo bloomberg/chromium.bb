@@ -8,7 +8,7 @@
 #include "ppapi/c/pp_module.h"
 #include "ppapi/c/pp_stdint.h"
 #include "ppapi/c/ppb_var.h"
-#include "ppapi/c/dev/ppb_var_array_buffer_dev.h"
+#include "ppapi/c/ppb_var_array_buffer.h"
 #include "ppapi/shared_impl/ppapi_shared_export.h"
 
 struct PP_Var;
@@ -19,7 +19,7 @@ class PPAPI_SHARED_EXPORT PPB_Var_Shared {
  public:
   static const PPB_Var_1_1* GetVarInterface1_1();
   static const PPB_Var_1_0* GetVarInterface1_0();
-  static const PPB_VarArrayBuffer_Dev* GetVarArrayBufferInterface();
+  static const PPB_VarArrayBuffer_1_0* GetVarArrayBufferInterface1_0();
 };
 
 }  // namespace ppapi

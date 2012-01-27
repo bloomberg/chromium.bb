@@ -9,9 +9,9 @@
 
 #include "ppapi/c/dev/ppb_testing_dev.h"
 #include "ppapi/c/pp_var.h"
-#include "ppapi/cpp/dev/var_array_buffer_dev.h"
 #include "ppapi/cpp/instance.h"
 #include "ppapi/cpp/var.h"
+#include "ppapi/cpp/var_array_buffer.h"
 #include "ppapi/tests/pp_thread.h"
 #include "ppapi/tests/test_utils.h"
 #include "ppapi/tests/testing_instance.h"
@@ -260,7 +260,7 @@ std::string TestPostMessage::TestSendingArrayBuffer() {
     const std::string kSizeAsString(size_stream.str());
 
     // Create an appropriately sized array buffer with test_data[i] == i.
-    pp::VarArrayBuffer_Dev test_data(sizes[i]);
+    pp::VarArrayBuffer test_data(sizes[i]);
     if (sizes[i] > 0)
       ASSERT_NE(NULL, test_data.Map());
     // Make sure we can Unmap/Map successfully (there's not really any way to
@@ -313,7 +313,7 @@ std::string TestPostMessage::TestSendingArrayBuffer() {
     ASSERT_EQ(message_data_.size(), 0);
     ASSERT_EQ(WaitForMessages(), 1);
     ASSERT_TRUE(message_data_.back().is_array_buffer());
-    pp::VarArrayBuffer_Dev received(message_data_.back());
+    pp::VarArrayBuffer received(message_data_.back());
     message_data_.clear();
     ASSERT_EQ(test_data.ByteLength(), received.ByteLength());
     unsigned char* received_buff = static_cast<unsigned char*>(received.Map());

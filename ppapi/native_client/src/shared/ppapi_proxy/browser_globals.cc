@@ -318,10 +318,10 @@ const PPB_Var* PPBVarInterface() {
   return ppb;
 }
 
-const PPB_VarArrayBuffer_Dev* PPBVarArrayBufferInterface() {
-  static const PPB_VarArrayBuffer_Dev* ppb =
-      static_cast<const PPB_VarArrayBuffer_Dev*>(
-          GetBrowserInterfaceSafe(PPB_VAR_ARRAY_BUFFER_DEV_INTERFACE));
+const PPB_VarArrayBuffer* PPBVarArrayBufferInterface() {
+  static const PPB_VarArrayBuffer* ppb =
+      static_cast<const PPB_VarArrayBuffer*>(
+          GetBrowserInterfaceSafe(PPB_VAR_ARRAY_BUFFER_INTERFACE));
   return ppb;
 }
 

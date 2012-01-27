@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PPAPI_CPP_DEV_VAR_ARRAY_BUFFER_DEV_H_
-#define PPAPI_CPP_DEV_VAR_ARRAY_BUFFER_DEV_H_
+#ifndef PPAPI_CPP_VAR_ARRAY_BUFFER_H_
+#define PPAPI_CPP_VAR_ARRAY_BUFFER_H_
 
 #include "ppapi/cpp/var.h"
 
@@ -12,31 +12,37 @@
 
 namespace pp {
 
-/// VarArrayBuffer_Dev provides a way to interact with JavaScript ArrayBuffers,
+/// VarArrayBuffer provides a way to interact with JavaScript ArrayBuffers,
 /// which represent a contiguous sequence of bytes. Note that
-/// VarArrayBuffer_Devs are not part of the embedding page's DOM, and can only
+/// VarArrayBuffers are not part of the embedding page's DOM, and can only
 /// be shared with JavaScript via pp::Instance's PostMessage and HandleMessage
 /// functions.
-class VarArrayBuffer_Dev : public Var {
+class VarArrayBuffer : public Var {
  public:
-  /// Contruct a VarArrayBuffer_Dev given a var for which is_array_buffer() is
+  /// Contruct a VarArrayBuffer given a var for which is_array_buffer() is
   /// true. This will refer to the same ArrayBuffer as var, but allows you to
-  /// access methods specific to VarArrayBuffer_Dev.
+  /// access methods specific to VarArrayBuffer.
   ///
   /// @param[in] var An ArrayBuffer Var.
-  explicit VarArrayBuffer_Dev(const Var& var);
+  explicit VarArrayBuffer(const Var& var);
+
+  /// Construct a new VarArrayBuffer_Dev which is size_in_bytes bytes long and
+  /// initialized to zero.
+  ///
+  /// @param[in] size_in_bytes The size of the constructed ArrayBuffer in bytes.
+  explicit VarArrayBuffer(uint32_t size_in_bytes);
 
   /// Copy constructor.
-  VarArrayBuffer_Dev(const VarArrayBuffer_Dev& buffer) : Var(buffer) {}
+  VarArrayBuffer(const VarArrayBuffer& buffer) : Var(buffer) {}
 
-  virtual ~VarArrayBuffer_Dev() {}
+  virtual ~VarArrayBuffer() {}
 
   /// This function assigns one VarArrayBuffer to another VarArrayBuffer.
   ///
   /// @param[in] other The VarArrayBuffer to be assigned.
   ///
   /// @return The resulting VarArrayBuffer.
-  VarArrayBuffer_Dev& operator=(const VarArrayBuffer_Dev& other);
+  VarArrayBuffer& operator=(const VarArrayBuffer& other);
 
   /// This function assigns one VarArrayBuffer to another VarArrayBuffer. Var's
   /// assignment operator is overloaded here so that we can check for assigning
@@ -47,15 +53,9 @@ class VarArrayBuffer_Dev : public Var {
   /// @return The resulting VarArrayBuffer (as a Var&).
   virtual Var& operator=(const Var& other);
 
-  /// Construct a new VarArrayBuffer_Dev which is size_in_bytes bytes long and
-  /// initialized to zero.
+  /// Return the length of the VarArrayBuffer in bytes.
   ///
-  /// @param[in] size_in_bytes The size of the constructed ArrayBuffer in bytes.
-  VarArrayBuffer_Dev(uint32_t size_in_bytes);
-
-  /// Return the length of the VarArrayBuffer_Dev in bytes.
-  ///
-  /// @return The length of the VarArrayBuffer_Dev in bytes.
+  /// @return The length of the VarArrayBuffer in bytes.
   uint32_t ByteLength() const;
 
   /// Maps the ArrayBuffer in to the module's address space and returns a
@@ -82,4 +82,4 @@ class VarArrayBuffer_Dev : public Var {
 
 }  // namespace pp
 
-#endif  // PPAPI_CPP_DEV_VAR_ARRAY_BUFFER_DEV_H_
+#endif  // PPAPI_CPP_VAR_ARRAY_BUFFER_H_

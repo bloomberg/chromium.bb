@@ -8,13 +8,13 @@
 #include <vector>
 
 #include "ppapi/c/dev/ppb_testing_dev.h"
-#include "ppapi/c/dev/ppb_var_array_buffer_dev.h"
 #include "ppapi/c/dev/ppb_websocket_dev.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/pp_var.h"
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/ppb_core.h"
 #include "ppapi/c/ppb_var.h"
+#include "ppapi/c/ppb_var_array_buffer.h"
 #include "ppapi/cpp/dev/websocket_dev.h"
 #include "ppapi/cpp/instance.h"
 #include "ppapi/cpp/module.h"
@@ -53,9 +53,9 @@ bool TestWebSocket::Init() {
       pp::Module::Get()->GetBrowserInterface(PPB_WEBSOCKET_DEV_INTERFACE));
   var_interface_ = static_cast<const PPB_Var*>(
       pp::Module::Get()->GetBrowserInterface(PPB_VAR_INTERFACE));
-  arraybuffer_interface_ = static_cast<const PPB_VarArrayBuffer_Dev*>(
+  arraybuffer_interface_ = static_cast<const PPB_VarArrayBuffer*>(
       pp::Module::Get()->GetBrowserInterface(
-          PPB_VAR_ARRAY_BUFFER_DEV_INTERFACE));
+          PPB_VAR_ARRAY_BUFFER_INTERFACE));
   core_interface_ = static_cast<const PPB_Core*>(
       pp::Module::Get()->GetBrowserInterface(PPB_CORE_INTERFACE));
   if (!websocket_interface_ || !var_interface_ || !arraybuffer_interface_ ||

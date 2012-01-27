@@ -118,6 +118,8 @@ void* Map(PP_Var var) {
               PluginVar::DebugString(var).c_str());
   SharedArrayBufferProxyVar buffer_var = ArrayBufferProxyVar::CastFromProxyVar(
       ProxyVarCache::GetInstance().SharedProxyVarForVar(var));
+  if (!buffer_var)
+    return NULL;
   void* data = buffer_var->buffer();
   DebugPrintf("PPB_VarArrayBuffer::Map: buffer=%p\n", data);
   return data;
@@ -151,8 +153,8 @@ const PPB_Var_1_0* PluginVar::GetInterface1_0() {
   return &var_interface;
 }
 
-const PPB_VarArrayBuffer_Dev* PluginVar::GetArrayBufferInterface() {
-  static const PPB_VarArrayBuffer_Dev interface = {
+const PPB_VarArrayBuffer* PluginVar::GetArrayBufferInterface() {
+  static const PPB_VarArrayBuffer interface = {
     CreateArrayBuffer,
     ByteLength,
     Map,

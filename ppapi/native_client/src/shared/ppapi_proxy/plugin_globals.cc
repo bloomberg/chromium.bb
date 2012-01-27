@@ -85,9 +85,9 @@ const PPB_Var* PPBVarInterface() {
       GetBrowserInterfaceSafe(PPB_VAR_INTERFACE));
 }
 
-const PPB_VarArrayBuffer_Dev* PPBVarArrayBufferInterface() {
-  return static_cast<const PPB_VarArrayBuffer_Dev*>(
-      GetBrowserInterfaceSafe(PPB_VAR_ARRAY_BUFFER_DEV_INTERFACE));
+const PPB_VarArrayBuffer* PPBVarArrayBufferInterface() {
+  return static_cast<const PPB_VarArrayBuffer*>(
+      GetBrowserInterfaceSafe(PPB_VAR_ARRAY_BUFFER_INTERFACE));
 }
 
 const PPB_WebSocket_Dev* PPBWebSocketInterface() {
