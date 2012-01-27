@@ -36,6 +36,7 @@ class ChromeEndureBaseTest(perf.BasePerfTest):
     self._snapshotter = perf_snapshot.PerformanceSnapshotter()  # Tab index 0.
     self._dom_node_count_results = []
     self._event_listener_count_results = []
+    self._process_private_mem_results = []
     self._test_start_time = 0
 
   def ExtraChromeFlags(self):
@@ -49,16 +50,47 @@ class ChromeEndureBaseTest(perf.BasePerfTest):
     return (perf.BasePerfTest.ExtraChromeFlags(self) +
             ['--remote-debugging-port=9222'])
 
-  def _GetPerformanceStats(self, webapp_name):
+  def _GetProcessInfo(self, tab_title_substring):
+    """Gets process info associated with an open tab.
+
+    Args:
+      tab_title_substring: A unique substring contained within the title of
+                           the tab to use; needed for locating the tab info.
+
+    Returns:
+      A dictionary containing information about the specified tab process:
+      {
+        'private_mem': integer,  # Private memory associated with the tab
+                                 # process, in KB.
+      }
+    """
+    info = self.GetProcessInfo()
+    tab_proc_info = []
+    for browser_info in info['browsers']:
+      for proc_info in browser_info['processes']:
+        if (proc_info['child_process_type'] == 'Tab' and
+            [x for x in proc_info['titles'] if tab_title_substring in x]):
+          tab_proc_info.append(proc_info)
+    self.assertEqual(len(tab_proc_info), 1,
+                     msg='Expected to find 1 %s tab process, but found %d '
+                         'instead.' % (tab_title_substring, len(tab_proc_info)))
+    tab_proc_info = tab_proc_info[0]
+    return {
+      'private_mem': tab_proc_info['working_set_mem']['priv']
+    }
+
+  def _GetPerformanceStats(self, webapp_name, tab_title_substring):
     """Gets performance statistics and outputs the results.
 
     Args:
       webapp_name: A string name for the webapp being tested.  Should not
                    include spaces.  For example, 'Gmail', 'Docs', or 'Plus'.
+      tab_title_substring: A unique substring contained within the title of
+                           the tab to use, for identifying the appropriate tab.
     """
     logging.info('Gathering performance stats...')
     elapsed_time = time.time() - self._test_start_time
-    elapsed_time = '%.2f' % elapsed_time
+    elapsed_time = int(round(elapsed_time))
 
     memory_counts = self._snapshotter.GetMemoryObjectCounts()
 
@@ -71,6 +103,12 @@ class ChromeEndureBaseTest(perf.BasePerfTest):
     self._event_listener_count_results.append((elapsed_time,
                                                event_listener_count))
 
+    proc_info = self._GetProcessInfo(tab_title_substring)
+    logging.info('  Tab process private memory: %d KB' %
+                 proc_info['private_mem'])
+    self._process_private_mem_results.append((elapsed_time,
+                                              proc_info['private_mem']))
+
     # Output the results seen so far, to be graphed.
     self._OutputPerfGraphValue(
         'TotalDOMNodeCount', self._dom_node_count_results, 'nodes',
@@ -78,6 +116,9 @@ class ChromeEndureBaseTest(perf.BasePerfTest):
     self._OutputPerfGraphValue(
         'EventListenerCount', self._event_listener_count_results, 'listeners',
         graph_name='%s-EventListeners' % webapp_name, units_x='seconds')
+    self._OutputPerfGraphValue(
+        'ProcessPrivateMemory', self._process_private_mem_results, 'KB',
+        graph_name='%s-ProcessMemory-Private' % webapp_name, units_x='seconds')
 
   def _GetElement(self, find_by, value):
     """Gets a WebDriver element object from the webpage DOM.
@@ -147,6 +188,9 @@ class ChromeEndureBaseTest(perf.BasePerfTest):
 class ChromeEndureGmailTest(ChromeEndureBaseTest):
   """Long-running performance tests for Chrome using Gmail."""
 
+  _webapp_name = 'Gmail'
+  _tab_title_substring = 'Gmail'
+
   def testGmailComposeDiscard(self):
     """Interact with Gmail while periodically gathering performance stats.
 
@@ -161,7 +205,7 @@ class ChromeEndureGmailTest(ChromeEndureBaseTest):
     self._LoginToGoogleAccount()
     self.NavigateToURL('http://www.gmail.com')
     loaded_tab_title = self.GetActiveTabTitle()
-    self.assertTrue('Gmail' in loaded_tab_title,
+    self.assertTrue(self._tab_title_substring in loaded_tab_title,
                     msg='Loaded tab title does not contain "Gmail": "%s"' %
                         loaded_tab_title)
 
@@ -199,14 +243,14 @@ class ChromeEndureGmailTest(ChromeEndureBaseTest):
     # click the "Discard" button to discard the message.
     self._test_start_time = time.time()
     last_perf_stats_time = time.time()
-    self._GetPerformanceStats('Gmail')
+    self._GetPerformanceStats(self._webapp_name, self._tab_title_substring)
     iteration_num = 0
     while time.time() - self._test_start_time < self._test_length_sec:
       iteration_num += 1
 
       if time.time() - last_perf_stats_time >= self._GET_PERF_STATS_INTERVAL:
         last_perf_stats_time = time.time()
-        self._GetPerformanceStats('Gmail')
+        self._GetPerformanceStats(self._webapp_name, self._tab_title_substring)
 
       if iteration_num % 10 == 0:
         remaining_time = self._test_length_sec - (
@@ -237,11 +281,14 @@ class ChromeEndureGmailTest(ChromeEndureBaseTest):
       wait.until(lambda _: not self._GetElement(
                      driver.find_element_by_name, 'to'))
 
-    self._GetPerformanceStats('Gmail')
+    self._GetPerformanceStats(self._webapp_name, self._tab_title_substring)
 
 
 class ChromeEndureDocsTest(ChromeEndureBaseTest):
   """Long-running performance tests for Chrome using Google Docs."""
+
+  _webapp_name = 'Docs'
+  _tab_title_substring = 'Docs'
 
   def testDocsAlternatelyClickLists(self):
     """Interact with Google Docs while periodically gathering performance stats.
@@ -262,7 +309,7 @@ class ChromeEndureDocsTest(ChromeEndureBaseTest):
     self._LoginToGoogleAccount()
     self.NavigateToURL('http://docs.google.com')
     loaded_tab_title = self.GetActiveTabTitle()
-    self.assertTrue('Docs' in loaded_tab_title,
+    self.assertTrue(self._tab_title_substring in loaded_tab_title,
                     msg='Loaded tab title does not contain "Docs": "%s"' %
                         loaded_tab_title)
 
@@ -272,7 +319,7 @@ class ChromeEndureDocsTest(ChromeEndureBaseTest):
     num_errors = 0
     self._test_start_time = time.time()
     last_perf_stats_time = time.time()
-    self._GetPerformanceStats('Docs')
+    self._GetPerformanceStats(self._webapp_name, self._tab_title_substring)
     iteration_num = 0
     while time.time() - self._test_start_time < self._test_length_sec:
       iteration_num += 1
@@ -284,7 +331,7 @@ class ChromeEndureDocsTest(ChromeEndureBaseTest):
 
       if time.time() - last_perf_stats_time >= self._GET_PERF_STATS_INTERVAL:
         last_perf_stats_time = time.time()
-        self._GetPerformanceStats('Docs')
+        self._GetPerformanceStats(self._webapp_name, self._tab_title_substring)
 
       if iteration_num % 10 == 0:
         remaining_time = self._test_length_sec - (
@@ -312,11 +359,14 @@ class ChromeEndureDocsTest(ChromeEndureBaseTest):
         num_errors += 1
       time.sleep(1)
 
-    self._GetPerformanceStats('Docs')
+    self._GetPerformanceStats(self._webapp_name, self._tab_title_substring)
 
 
 class ChromeEndurePlusTest(ChromeEndureBaseTest):
   """Long-running performance tests for Chrome using Google Plus."""
+
+  _webapp_name = 'Plus'
+  _tab_title_substring = 'Google+'
 
   def testPlusAlternatelyClickStreams(self):
     """Interact with Google Plus while periodically gathering performance stats.
@@ -337,7 +387,7 @@ class ChromeEndurePlusTest(ChromeEndureBaseTest):
     self._LoginToGoogleAccount()
     self.NavigateToURL('http://plus.google.com')
     loaded_tab_title = self.GetActiveTabTitle()
-    self.assertTrue('Google+' in loaded_tab_title,
+    self.assertTrue(self._tab_title_substring in loaded_tab_title,
                     msg='Loaded tab title does not contain "Google+": "%s"' %
                         loaded_tab_title)
 
@@ -347,7 +397,7 @@ class ChromeEndurePlusTest(ChromeEndureBaseTest):
     num_errors = 0
     self._test_start_time = time.time()
     last_perf_stats_time = time.time()
-    self._GetPerformanceStats('Plus')
+    self._GetPerformanceStats(self._webapp_name, self._tab_title_substring)
     iteration_num = 0
     while time.time() - self._test_start_time < self._test_length_sec:
       iteration_num += 1
@@ -359,7 +409,7 @@ class ChromeEndurePlusTest(ChromeEndureBaseTest):
 
       if time.time() - last_perf_stats_time >= self._GET_PERF_STATS_INTERVAL:
         last_perf_stats_time = time.time()
-        self._GetPerformanceStats('Plus')
+        self._GetPerformanceStats(self._webapp_name, self._tab_title_substring)
 
       if iteration_num % 10 == 0:
         remaining_time = self._test_length_sec - (
@@ -388,7 +438,7 @@ class ChromeEndurePlusTest(ChromeEndureBaseTest):
         num_errors += 1
       time.sleep(1)
 
-    self._GetPerformanceStats('Plus')
+    self._GetPerformanceStats(self._webapp_name, self._tab_title_substring)
 
 
 if __name__ == '__main__':
