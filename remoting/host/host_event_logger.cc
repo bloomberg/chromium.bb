@@ -4,28 +4,9 @@
 
 #include "remoting/host/host_event_logger.h"
 
-#if defined(OS_LINUX)
-#include <syslog.h>
-// Following defines from syslog.h conflict with constants in
-// base/logging.h.
-#undef LOG_INFO
-#undef LOG_WARNING
-#endif  // defined(OS_LINUX)
-
 #include "net/base/ip_endpoint.h"
 #include "remoting/host/chromoting_host.h"
 #include "remoting/host/system_event_logger.h"
-
-namespace {
-
-void Log(const std::string& message) {
-  // TODO(lambroslambrou): Refactor this part into platform-specific classes.
-#if defined(OS_LINUX)
-  syslog(LOG_USER | LOG_NOTICE, "%s", message.c_str());
-#endif
-}
-
-}  // namespace
 
 namespace remoting {
 
@@ -33,9 +14,6 @@ HostEventLogger::HostEventLogger(ChromotingHost* host,
                                  const std::string& application_name)
     : host_(host),
       system_event_logger_(SystemEventLogger::Create(application_name)) {
-#if defined(OS_LINUX)
-  openlog("chromoting_host", 0, LOG_USER);
-#endif
   host_->AddStatusObserver(this);
 }
 
