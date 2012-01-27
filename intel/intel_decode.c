@@ -2984,7 +2984,7 @@ decode_3d_965(struct drm_intel_decode *ctx)
 
 		if (len < opcode_3d->min_len ||
 		    len > opcode_3d->max_len) {
-			fprintf(out, "Bad length %d in %s, expeted %d-%d\n",
+			fprintf(out, "Bad length %d in %s, expected %d-%d\n",
 				len, opcode_3d->name,
 				opcode_3d->min_len, opcode_3d->max_len);
 		}
