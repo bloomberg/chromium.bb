@@ -33,65 +33,6 @@ cr.define('cr.ui', function() {
            y < rect.top + el.clientTop + el.clientHeight;
   }
 
-  /**
-   * Creates an item (dataModel.item(0)) and measures its height.
-   * @param {!List} list The list to create the item for.
-   * @param {ListItem=} opt_item The list item to use to do the measuring. If
-   *     this is not provided an item will be created based on the first value
-   *     in the model.
-   * @return {{height: number, marginTop: number, marginBottom:number,
-   *     width: number, marginLeft: number, marginRight:number}}
-   *     The height and width of the item, taking
-   *     margins into account, and the top, bottom, left and right margins
-   *     themselves.
-   */
-  function measureItem(list, opt_item) {
-    var dataModel = list.dataModel;
-    if (!dataModel || !dataModel.length)
-      return 0;
-    var item = opt_item || list.createItem(dataModel.item(0));
-    if (!opt_item)
-      list.appendChild(item);
-
-    var rect = item.getBoundingClientRect();
-    var cs = getComputedStyle(item);
-    var mt = parseFloat(cs.marginTop);
-    var mb = parseFloat(cs.marginBottom);
-    var ml = parseFloat(cs.marginLeft);
-    var mr = parseFloat(cs.marginRight);
-    var h = rect.height;
-    var w = rect.width;
-    var mh = 0;
-    var mv = 0;
-
-    // Handle margin collapsing.
-    if (mt < 0 && mb < 0) {
-      mv = Math.min(mt, mb);
-    } else if (mt >= 0 && mb >= 0) {
-      mv = Math.max(mt, mb);
-    } else {
-      mv = mt + mb;
-    }
-    h += mv;
-
-    if (ml < 0 && mr < 0) {
-      mh = Math.min(ml, mr);
-    } else if (ml >= 0 && mr >= 0) {
-      mh = Math.max(ml, mr);
-    } else {
-      mh = ml + mr;
-    }
-    w += mh;
-
-    if (!opt_item)
-      list.removeChild(item);
-    return {
-        height: Math.max(0, h),
-        marginTop: mt, marginBottom: mb,
-        width: Math.max(0, w),
-        marginLeft: ml, marginRight: mr};
-  }
-
   function getComputedStyle(el) {
     return el.ownerDocument.defaultView.getComputedStyle(el);
   }
@@ -214,6 +155,13 @@ cr.define('cr.ui', function() {
     get dataModel() {
       return this.dataModel_;
     },
+
+
+    /**
+     * Cached item for measuring the default item size by measureItem().
+     * @type {ListItem}
+     */
+    cachedMeasuredItem_: null,
 
     /**
      * The selection model to use.
@@ -424,7 +372,7 @@ cr.define('cr.ui', function() {
      */
     getDefaultItemSize_: function() {
       if (!this.measured_ || !this.measured_.height) {
-        this.measured_ = measureItem(this);
+        this.measured_ = this.measureItem();
       }
       return this.measured_;
     },
@@ -438,11 +386,73 @@ cr.define('cr.ui', function() {
       if (this.cachedItemSizes_[item.listIndex])
         return this.cachedItemSizes_[item.listIndex];
 
-      var size = measureItem(this, item);
+      var size = this.measureItem(item);
       if (!isNaN(size.height) && !isNaN(size.weight))
         this.cachedItemSizes_[item.listIndex] = size;
 
       return size;
+    },
+
+    /**
+     * Creates an item (dataModel.item(0)) and measures its height. The item is
+     * cached instead of creating a new one every time..
+     * @param {ListItem=} opt_item The list item to use to do the measuring. If
+     *     this is not provided an item will be created based on the first value
+     *     in the model.
+     * @return {{height: number, marginTop: number, marginBottom:number,
+     *     width: number, marginLeft: number, marginRight:number}}
+     *     The height and width of the item, taking
+     *     margins into account, and the top, bottom, left and right margins
+     *     themselves.
+     */
+    measureItem: function(opt_item) {
+      var dataModel = this.dataModel;
+      if (!dataModel || !dataModel.length)
+        return 0;
+      var item = opt_item || this.cachedMeasuredItem_ ||
+          this.createItem(dataModel.item(0));
+      if (!opt_item) {
+        this.cachedMeasuredItem_ = item;
+        this.appendChild(item);
+      }
+
+      var rect = item.getBoundingClientRect();
+      var cs = getComputedStyle(item);
+      var mt = parseFloat(cs.marginTop);
+      var mb = parseFloat(cs.marginBottom);
+      var ml = parseFloat(cs.marginLeft);
+      var mr = parseFloat(cs.marginRight);
+      var h = rect.height;
+      var w = rect.width;
+      var mh = 0;
+      var mv = 0;
+
+      // Handle margin collapsing.
+      if (mt < 0 && mb < 0) {
+        mv = Math.min(mt, mb);
+      } else if (mt >= 0 && mb >= 0) {
+        mv = Math.max(mt, mb);
+      } else {
+        mv = mt + mb;
+      }
+      h += mv;
+
+      if (ml < 0 && mr < 0) {
+        mh = Math.min(ml, mr);
+      } else if (ml >= 0 && mr >= 0) {
+        mh = Math.max(ml, mr);
+      } else {
+        mh = ml + mr;
+      }
+      w += mh;
+
+      if (!opt_item)
+        this.removeChild(item);
+      return {
+          height: Math.max(0, h),
+          marginTop: mt, marginBottom: mb,
+          width: Math.max(0, w),
+          marginLeft: ml, marginRight: mr};
     },
 
     /**
@@ -646,6 +656,7 @@ cr.define('cr.ui', function() {
     handleDataModelChange_: function(e) {
       delete this.cachedItems_[e.index];
       delete this.cachedItemSizes_[e.index];
+      this.cachedMeasuredItem_ = null;
 
       if (e.index >= this.firstIndex_ &&
           (e.index < this.lastIndex_ || this.remainingSpace_)) {
@@ -1000,7 +1011,7 @@ cr.define('cr.ui', function() {
       // performance reducing.
       for (var y = 0; y < measuringIndexes.length; y++) {
         var index = measuringIndexes[y];
-        this.cachedItemSizes_[index] = measureItem(this, measuringItems[y]);
+        this.cachedItemSizes_[index] = this.measureItem(measuringItems[y]);
       }
 
       // Removes all the temprary elements.
@@ -1116,7 +1127,7 @@ cr.define('cr.ui', function() {
       // performance reducing.
       if (!this.fixedHeight_) {
         for (var y = firstIndex; y < lastIndex; y++)
-          this.cachedItemSizes_[y] = measureItem(this, newCachedItems[y]);
+          this.cachedItemSizes_[y] = this.measureItem(newCachedItems[y]);
       }
 
       // Measure again in case the item height has changed due to a page zoom.
@@ -1130,7 +1141,7 @@ cr.define('cr.ui', function() {
         var list = this;
         window.setTimeout(function() {
           if (listItem.parentNode == list) {
-            list.measured_ = measureItem(list, listItem);
+            list.measured_ = list.measureItem(listItem);
           }
         });
       }
