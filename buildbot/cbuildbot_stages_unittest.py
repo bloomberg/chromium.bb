@@ -596,7 +596,7 @@ class UprevStageTest(AbstractStageTest):
         self.build_root,
         self.TRACKING_BRANCH,
         self.options.chrome_rev,
-        self.build_config['board'],
+        [self.build_config['board']],
         chrome_root=None,
         chrome_version=None).AndReturn(chrome_atom)
 
@@ -612,7 +612,7 @@ class UprevStageTest(AbstractStageTest):
         self.build_root,
         self.TRACKING_BRANCH,
         self.options.chrome_rev,
-        self.build_config['board'],
+        [self.build_config['board']],
         chrome_root=None,
         chrome_version=None)
 
@@ -628,7 +628,7 @@ class UprevStageTest(AbstractStageTest):
 
     commands.UprevPackages(
         self.build_root,
-        self.build_config['board'],
+        [self.build_config['board']],
         [self.overlay])
 
     self.mox.ReplayAll()
@@ -653,13 +653,13 @@ class UprevStageTest(AbstractStageTest):
         self.build_root,
         self.TRACKING_BRANCH,
         self.options.chrome_rev,
-        self.build_config['board'],
+        [self.build_config['board']],
         chrome_root=None,
         chrome_version=None).AndReturn(None)
 
     commands.UprevPackages(
         self.build_root,
-        self.build_config['board'],
+        [self.build_config['board']],
         [self.overlay])
 
     self.mox.ReplayAll()
@@ -982,7 +982,6 @@ class PublishUprevChangesStageTest(AbstractStageTest):
     """Test values for PublishUprevChanges."""
     commands.UprevPush(
         self.build_root,
-        self.build_config['board'],
         [self.overlay],
         self.options.debug)
 

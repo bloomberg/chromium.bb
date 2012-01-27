@@ -62,7 +62,7 @@ class CleanUpStage(bs.BuilderStage):
   option_name = 'clean'
 
   def _CleanChroot(self):
-    commands.CleanupChromeKeywordsFile(self._build_config['board'],
+    commands.CleanupChromeKeywordsFile(self._boards,
                                        self._build_root)
     chroot_tmpdir = os.path.join(self._build_root, 'chroot', 'tmp')
     if os.path.exists(chroot_tmpdir):
@@ -483,10 +483,9 @@ class CommitQueueCompletionStage(LKGMCandidateSyncCompletionStage):
 class RefreshPackageStatusStage(bs.BuilderStage):
   """Stage for refreshing Portage package status in online spreadsheet."""
   def _PerformStage(self):
-    # If board is a string, convert to list.
-    boards = self._ListifyBoard(self._build_config['board'])
     commands.RefreshPackageStatus(buildroot=self._build_root,
-                                  boards=boards, debug=self._options.debug)
+                                  boards=self._boards,
+                                  debug=self._options.debug)
 
 
 class BuildBoardStage(bs.BuilderStage):
@@ -510,11 +509,8 @@ class BuildBoardStage(bs.BuilderStage):
     else:
       commands.RunChrootUpgradeHooks(self._build_root)
 
-    # If board is a string, convert to list.
-    board = self._ListifyBoard(self._build_config['board'])
-
     # Iterate through boards to setup.
-    for board_to_build in board:
+    for board_to_build in self._boards:
       # Only build the board if the directory does not exist.
       board_path = os.path.join(chroot_path, 'build', board_to_build)
       if os.path.isdir(board_path):
@@ -553,7 +549,7 @@ class UprevStage(bs.BuilderStage):
     if self._chrome_rev:
       chrome_atom_to_build = commands.MarkChromeAsStable(
           self._build_root, self._tracking_branch,
-          self._chrome_rev, self._build_config['board'],
+          self._chrome_rev, self._boards,
           chrome_root=self._options.chrome_root,
           chrome_version=self._options.chrome_version)
 
@@ -561,7 +557,7 @@ class UprevStage(bs.BuilderStage):
     if self._build_config['uprev']:
       overlays, _ = self._ExtractOverlays()
       commands.UprevPackages(self._build_root,
-                             self._build_config['board'],
+                             self._boards,
                              overlays)
     elif self._chrome_rev and not chrome_atom_to_build:
       # TODO(sosa): Do this in a better way.
@@ -1358,6 +1354,5 @@ class PublishUprevChangesStage(NonHaltingBuilderStage):
     _, push_overlays = self._ExtractOverlays()
     if push_overlays:
       commands.UprevPush(self._build_root,
-                         self._build_config['board'],
                          push_overlays,
                          self._options.debug)

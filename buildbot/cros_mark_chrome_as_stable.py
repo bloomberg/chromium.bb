@@ -471,7 +471,7 @@ def main():
   usage_options = '|'.join(constants.VALID_CHROME_REVISIONS)
   usage = '%s OPTIONS [%s]' % (__file__, usage_options)
   parser = optparse.OptionParser(usage)
-  parser.add_option('-b', '--board', default='x86-generic')
+  parser.add_option('-b', '--boards', default='x86-generic')
   parser.add_option('-c', '--chrome_url', default=BASE_CHROME_SVN_URL)
   parser.add_option('-f', '--force_revision', default=None)
   parser.add_option('-s', '--srcroot', default=os.path.join(os.environ['HOME'],
@@ -542,7 +542,8 @@ def main():
       commit_to_use, overlay_dir, sticky_ebuild)
   # Explicit print to communicate to caller.
   if chrome_version_atom:
-    cros_mark_as_stable.CleanStalePackages(options.board, [chrome_version_atom])
+    cros_mark_as_stable.CleanStalePackages(options.boards.split(':'),
+                                           [chrome_version_atom])
     print 'CHROME_VERSION_ATOM=%s' % chrome_version_atom
 
 

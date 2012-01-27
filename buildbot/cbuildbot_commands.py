@@ -481,7 +481,7 @@ def ArchiveFile(file_to_archive, archive_dir):
 def MarkChromeAsStable(buildroot,
                        tracking_branch,
                        chrome_rev,
-                       board,
+                       boards,
                        chrome_root=None,
                        chrome_version=None):
   """Returns the portage atom for the revved chrome ebuild - see man emerge."""
@@ -495,7 +495,7 @@ def MarkChromeAsStable(buildroot,
 
   command = ['../../chromite/buildbot/cros_mark_chrome_as_stable',
              '--tracking_branch=%s' % tracking_branch,
-             '--board=%s' % board, ]
+             '--boards=%s' % ':'.join(boards), ]
   if chrome_version:
     command.append('--force_revision=%s' % chrome_version)
     assert chrome_rev == constants.CHROME_REV_SPEC, (
@@ -513,44 +513,45 @@ def MarkChromeAsStable(buildroot,
     return None
   else:
     chrome_atom = portage_atom_string.splitlines()[-1].split('=')[1]
-    keywords_file = CHROME_KEYWORDS_FILE % {'board': board}
-    cros_lib.RunCommand(
-        ['sudo', 'mkdir', '-p', os.path.dirname(keywords_file)],
-        enter_chroot=True, cwd=cwd)
-    cros_lib.RunCommand(
-        ['sudo', 'tee', keywords_file], input='=%s\n' % chrome_atom,
-        enter_chroot=True, cwd=cwd)
+    for board in boards:
+      keywords_file = CHROME_KEYWORDS_FILE % {'board': board}
+      cros_lib.RunCommand(
+          ['sudo', 'mkdir', '-p', os.path.dirname(keywords_file)],
+          enter_chroot=True, cwd=cwd)
+      cros_lib.RunCommand(
+          ['sudo', 'tee', keywords_file], input='=%s\n' % chrome_atom,
+          enter_chroot=True, cwd=cwd)
     return chrome_atom
 
 
-def CleanupChromeKeywordsFile(board, buildroot):
+def CleanupChromeKeywordsFile(boards, buildroot):
   """Cleans chrome uprev artifact if it exists."""
-  keywords_path_in_chroot = CHROME_KEYWORDS_FILE % {'board': board}
-  keywords_file = '%s/chroot%s' % (buildroot, keywords_path_in_chroot)
-  if os.path.exists(keywords_file):
-    cros_lib.RunCommand(['sudo', 'rm', '-f', keywords_file])
+  for board in boards:
+    keywords_path_in_chroot = CHROME_KEYWORDS_FILE % {'board': board}
+    keywords_file = '%s/chroot%s' % (buildroot, keywords_path_in_chroot)
+    if os.path.exists(keywords_file):
+      cros_lib.RunCommand(['sudo', 'rm', '-f', keywords_file])
 
 
-def UprevPackages(buildroot, board, overlays):
+def UprevPackages(buildroot, boards, overlays):
   """Uprevs non-browser chromium os packages that have changed."""
   cwd = os.path.join(buildroot, 'src', 'scripts')
   chroot_overlays = [
       cros_lib.ReinterpretPathForChroot(path) for path in overlays ]
   cros_lib.RunCommand(
       ['../../chromite/buildbot/cros_mark_as_stable', '--all',
-       '--board=%s' % board,
+       '--boards=%s' % ':'.join(boards),
        '--overlays=%s' % ':'.join(chroot_overlays),
        '--drop_file=%s' % cros_lib.ReinterpretPathForChroot(
            _PACKAGE_FILE % {'buildroot': buildroot}),
        'commit'], cwd=cwd, enter_chroot=True)
 
 
-def UprevPush(buildroot, board, overlays, dryrun):
+def UprevPush(buildroot, overlays, dryrun):
   """Pushes uprev changes to the main line."""
   cwd = os.path.join(buildroot, 'src', 'scripts')
   cmd = ['../../chromite/buildbot/cros_mark_as_stable',
          '--srcroot=%s' % os.path.join(buildroot, 'src'),
-         '--board=%s' % board,
          '--overlays=%s' % ':'.join(overlays)
         ]
   if dryrun:

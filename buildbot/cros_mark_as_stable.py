@@ -40,24 +40,26 @@ def _Print(message):
     cros_build_lib.Info(message)
 
 
-def CleanStalePackages(board, package_atoms):
+def CleanStalePackages(boards, package_atoms):
   """Cleans up stale package info from a previous build.
   Args:
-    board: Board to clean the packages from.
+    boards: Boards to clean the packages from.
     package_atoms: The actual package atom to unmerge.
   """
   if package_atoms:
     cros_build_lib.Info('Cleaning up stale packages %s.' % package_atoms)
-    unmerge_board_cmd = ['emerge-%s' % board, '--unmerge']
-    unmerge_board_cmd.extend(package_atoms)
-    cros_build_lib.RunCommand(unmerge_board_cmd)
+    for board in boards:
+      unmerge_board_cmd = ['emerge-%s' % board, '--unmerge']
+      unmerge_board_cmd.extend(package_atoms)
+      cros_build_lib.RunCommand(unmerge_board_cmd)
 
     unmerge_host_cmd = ['sudo', 'emerge', '--unmerge']
     unmerge_host_cmd.extend(package_atoms)
     cros_build_lib.RunCommand(unmerge_host_cmd)
 
-  cros_build_lib.RunCommand(['eclean-%s' % board, '-d', 'packages'],
-                            redirect_stderr=True)
+  for board in boards:
+    cros_build_lib.RunCommand(['eclean-%s' % board, '-d', 'packages'],
+                              redirect_stderr=True)
   cros_build_lib.RunCommand(['sudo', 'eclean', '-d', 'packages'],
                             redirect_stderr=True)
 
@@ -79,7 +81,7 @@ def _CheckSaneArguments(package_list, command, options):
     _PrintUsageAndDie('%s is not a valid command' % command)
   if not options.packages and command == 'commit' and not options.all:
     _PrintUsageAndDie('Please specify at least one package')
-  if not options.board and command == 'commit':
+  if not options.boards and command == 'commit':
     _PrintUsageAndDie('Please specify a board')
   if not os.path.isdir(options.srcroot):
     _PrintUsageAndDie('srcroot is not a valid path')
@@ -194,8 +196,8 @@ def main():
   parser = optparse.OptionParser('cros_mark_as_stable OPTIONS packages')
   parser.add_option('--all', action='store_true',
                     help='Mark all packages as stable.')
-  parser.add_option('-b', '--board',
-                    help='Board for which the package belongs.')
+  parser.add_option('-b', '--boards',
+                    help='Colon-separated list of boards')
   parser.add_option('--drop_file',
                     help='File to list packages that were revved.')
   parser.add_option('--dryrun', action='store_true',
@@ -288,7 +290,7 @@ def main():
           raise
 
   if command == 'commit':
-    CleanStalePackages(options.board, new_package_atoms)
+    CleanStalePackages(options.boards.split(':'), new_package_atoms)
     if options.drop_file:
       fh = open(options.drop_file, 'w')
       fh.write(' '.join(revved_packages))

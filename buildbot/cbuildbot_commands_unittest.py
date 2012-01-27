@@ -190,7 +190,7 @@ class CBuildBotTest(mox.MoxTestBase):
     drop_file = commands._PACKAGE_FILE % {'buildroot': self._buildroot}
     cros_lib.RunCommand(
         ['../../chromite/buildbot/cros_mark_as_stable', '--all',
-         '--board=%s' % self._test_board,
+         '--boards=%s' % self._test_board,
          '--overlays=%s' % ':'.join(self._chroot_overlays),
          '--drop_file=%s' % cros_lib.ReinterpretPathForChroot(drop_file),
          'commit'],
@@ -199,8 +199,8 @@ class CBuildBotTest(mox.MoxTestBase):
 
     self.mox.ReplayAll()
     commands.UprevPackages(self._buildroot,
-                            self._test_board,
-                            self._overlays)
+                           [self._test_board],
+                           self._overlays)
     self.mox.VerifyAll()
 
   def testUploadPublicPrebuilts(self):

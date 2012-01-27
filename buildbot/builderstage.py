@@ -53,6 +53,7 @@ class BuilderStage(object):
 
   def _ExtractVariables(self):
     """Extracts common variables from build config and options into class."""
+    self._boards = self._ListifyBoard(self._build_config['board'])
     self._build_root = os.path.abspath(self._options.buildroot)
     if self._options.prebuilts and self._build_config['prebuilts']:
       self._prebuilt_type = self._build_config['build_type']
