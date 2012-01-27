@@ -1,12 +1,17 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 function MpegParser(parent) {
   MetadataParser.call(this, parent, 'mpeg', /\.(mp4|m4v|m4a|mpe?g4?)$/i);
+  this.mimeType = 'video/mpeg';
 }
 
 MpegParser.prototype = {__proto__: MetadataParser.prototype};
+
+MpegParser.prototype.acceptsMimeType = function(mimeType) {
+  return mimeType.match(/^video\/(mp4|mpeg)$/);
+};
 
 MpegParser.HEADER_SIZE = 8;
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,6 +7,7 @@ function MetadataParser(parent, type, urlFilter) {
   this.type = type;
   this.urlFilter = urlFilter;
   this.verbose = parent.verbose;
+  this.mimeType = 'unknown';
 }
 
 MetadataParser.prototype.error = function(var_args) {
@@ -23,11 +24,15 @@ MetadataParser.prototype.vlog = function(var_args) {
 };
 
 MetadataParser.prototype.createDefaultMetadata = function() {
-  return {type: this.type};
+  return {
+    type: this.type,
+    mimeType: this.mimeType
+  };
 };
 
-MetadataParser.prototype.acceptsMimeType = function(mimeType) { return false };
-
+MetadataParser.prototype.acceptsMimeType = function(mimeType) {
+  return mimeType == this.mimeType;
+};
 
 /* Base class for image metadata parsers */
 function ImageParser(parent, type, urlFilter) {
@@ -36,14 +41,3 @@ function ImageParser(parent, type, urlFilter) {
 }
 
 ImageParser.prototype = {__proto__: MetadataParser.prototype};
-
-ImageParser.prototype.createDefaultMetadata = function() {
-  var metadata = MetadataParser.prototype.createDefaultMetadata.call(this);
-  metadata.mimeType = this.mimeType;
-  return metadata;
-};
-
-ImageParser.prototype.acceptsMimeType = function(mimeType) {
-  return mimeType == this.mimeType;
-};
-

@@ -1,0 +1,208 @@
+/*
+ * Copyright (c) 2012 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
+.media-controls {
+  height: 30px;
+  border-radius: 5px;
+
+  padding-left: 5px;
+  padding-right: 5px;
+
+  opacity: 0.8;
+
+  background: #202020;
+
+  display: -webkit-box;
+  -webkit-box-orient: horizontal;
+  -webkit-box-align: center;
+  -webkit-box-pack: center;
+}
+
+.media-controls .media-button {
+  border-radius: 2px;
+  cursor: pointer;
+  width: 24px;
+  height: 24px;
+  background-repeat: no-repeat;
+}
+
+.media-controls .media-button:hover {
+  background-color: #808080;
+}
+
+/* Custom sliders for progress and volume. */
+
+/* Reusing the standard input[type='range'] element, hiding the slider bar. */
+.media-controls .thumb {
+  position: absolute;
+  -webkit-appearance: none !important;
+  width: 100%;
+  height: 100%;
+  background: transparent;
+}
+
+/* Custom thumb icon. */
+.media-controls .thumb::-webkit-slider-thumb {
+  position: relative;
+  -webkit-appearance: none;
+  z-index: 2;
+  width: 22px;
+  height: 30px;
+  background-image: url(../../images/gallery/slider_thumb.png);
+  background-position: 3px -2px;
+  background-repeat: no-repeat;
+}
+
+/* Custom slider bar. */
+.media-controls .bar {
+  position: absolute;
+  left: 13px;
+  right: 10px;
+  top: 11px;
+  bottom: 11px;
+  border-top: 1px solid white;
+  border-bottom: 1px solid white;
+  pointer-events: none;
+}
+
+/* The filled portion of the slider bar to the left of the thumb. */
+.media-controls .filled {
+  position: absolute;
+  width: 0; /* The element style.width is manipulated from the code. */
+  left: 0;
+  top: 0;
+  bottom: 0;
+  background-color: white;
+}
+
+/* Rounded caps to the left and right of the slider bar. */
+.media-controls .cap {
+  position: absolute;
+  width: 3px;
+  top: -1px;
+  bottom: -1px;
+}
+
+/* Left cap is always filled, should be the same color as .filled. */
+.media-controls .cap.left {
+  left: -3px;
+  width: 3px;
+  border-top-left-radius: 3px;
+  border-bottom-left-radius: 3px;
+  background: white;
+}
+
+/* Right cap is always not filled. */
+.media-controls .cap.right {
+  right: -3px;
+  border: 1px solid white;
+  border-left-style: none;
+  border-top-right-radius: 3px;
+  border-bottom-right-radius: 3px;
+  background: transparent;
+}
+
+/* Progress seek marker (precise time shown on mouse hover. */
+
+/* Thin vertical line across the slider bar */
+.media-controls .seek-mark {
+  position: absolute;
+  left: 0;
+  width: 0;
+  top: -1px;
+  bottom: -1px;
+  background-color: black;
+}
+
+.media-controls .seek-mark.visible {
+  width: 1px;
+}
+
+.media-controls .seek-mark.inverted {
+  background-color: white;
+}
+
+/* Text label giving the precise time corresponding to the hover position. */
+.media-controls .seek-label {
+  position: absolute;
+  left: 0;
+  bottom: 20px;
+
+  height: 0;
+  -webkit-transition: height 0.15s ease;
+
+  color: white;
+  background: black;
+  border-top-left-radius: 5px;
+  border-top-right-radius: 5px;
+  opacity: 0.8;
+
+  display: -webkit-box;
+  -webkit-box-orient: horizontal;
+  -webkit-box-align: center;
+  -webkit-box-pack: center;
+
+  overflow: hidden;
+}
+
+.media-controls .seek-mark.visible .seek-label{
+  height: 18px;
+}
+
+/* Media controls in order of appearance. */
+
+.media-controls .play {
+  background-image: url(../../images/mediaplayer_play.png);
+  background-position: 7px 5px;
+}
+
+.media-controls .play.playing {
+  background-image: url(../../images/mediaplayer_pause.png);
+  background-position: 7px 5px;
+}
+
+.media-controls .progress {
+  position: relative;
+  height: 100%;
+  display: -webkit-box;
+  -webkit-box-flex: 1;
+}
+
+.media-controls .current-time {
+  display: -webkit-box;
+  -webkit-box-orient: horizontal;
+  -webkit-box-align: center;
+  -webkit-box-pack: end;
+  color: white;
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
+.media-controls .sound {
+  background-image: url(../../images/mediaplayer_vol_high.png);
+  background-position: 2px 5px;
+}
+
+.media-controls .sound.muted {
+  background-image: url(../../images/mediaplayer_vol_mute.png);
+  background-position: 2px 5px;
+}
+
+.media-controls .volume {
+  position: relative;
+  height: 100%;
+  width: 80px;
+}
+
+.media-controls .fullscreen {
+  background-image: url(../../images/mediaplayer_full_screen.png);
+  background-position: 4px 4px;
+}
+
+.media-controls .fullscreen.on {
+  background-image: url(../../images/mediaplayer_full_screen_exit.png);
+  background-position: 4px 4px;
+}

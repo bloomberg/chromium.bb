@@ -111,6 +111,13 @@
         <include name="IDR_FILE_MANAGER_IMG_GALLERY_CURSOR_SWNE" file="file_manager/images/gallery/cursor_swne.png" type="BINDATA" />
         <include name="IDR_FILE_MANAGER_IMG_GALLERY_SLIDER_THUMB" file="file_manager/images/gallery/slider_thumb.png" type="BINDATA" />
 
+        <include name="IDR_FILE_MANAGER_IMG_MEDIA_PLAY" file="file_manager/images/mediaplayer_play.png" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_IMG_MEDIA_PAUSE" file="file_manager/images/mediaplayer_pause.png" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_IMG_MEDIA_VOLUME_HIGH" file="file_manager/images/mediaplayer_vol_high.png" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_IMG_MEDIA_VOLUME_MUTE" file="file_manager/images/mediaplayer_vol_mute.png" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_IMG_MEDIA_FULLSCREEN" file="file_manager/images/mediaplayer_full_screen.png" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_IMG_MEDIA_FULLSCREEN_EXIT" file="file_manager/images/mediaplayer_full_screen_exit.png" type="BINDATA" />
+
         <include name="IDR_FILE_MANAGER_ICON_LIST_VIEW_ON" file="file_manager/images/icon_list_view_on.png" type="BINDATA" />
         <include name="IDR_FILE_MANAGER_ICON_LIST_VIEW_OFF" file="file_manager/images/icon_list_view_off.png" type="BINDATA" />
         <include name="IDR_FILE_MANAGER_ICON_THUMB_VIEW_ON" file="file_manager/images/icon_thumb_view_on.png" type="BINDATA" />

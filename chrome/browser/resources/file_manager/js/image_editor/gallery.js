@@ -44,6 +44,8 @@ function Gallery(container, closeCallback, metadataProvider, shareActions,
 
 Gallery.prototype = { __proto__: RibbonClient.prototype };
 
+Gallery.getMediaType = function() { return null };
+
 Gallery.open = function(parentDirEntry, items, selectedItem,
    closeCallback, metadataProvider, shareActions, displayStringFunction) {
   var container = document.querySelector('.gallery');
@@ -96,6 +98,9 @@ Gallery.prototype.initDom_ = function(shareActions) {
   }).bind(this));
   this.container_.appendChild(this.imageContainer_);
 
+  this.videoElement_ = doc.createElement('video');
+  this.container_.appendChild(this.videoElement_);
+
   this.toolbar_ = doc.createElement('div');
   this.toolbar_.className = 'toolbar tool dimmable';
   this.container_.appendChild(this.toolbar_);
@@ -117,9 +122,20 @@ Gallery.prototype.initDom_ = function(shareActions) {
       this.onFilenameEditKeydown_.bind(this));
   filenameSpacer.appendChild(this.filenameEdit_);
 
+  this.buttonSpacer_ = doc.createElement('div');
+  this.buttonSpacer_.className = 'button-spacer';
+  this.toolbar_.appendChild(this.buttonSpacer_);
+
   this.ribbonSpacer_ = doc.createElement('div');
   this.ribbonSpacer_.className = 'ribbon-spacer';
   this.toolbar_.appendChild(this.ribbonSpacer_);
+
+  this.mediaToolbar_ = doc.createElement('div');
+  this.mediaToolbar_.className = 'media-controls';
+  this.toolbar_.appendChild(this.mediaToolbar_);
+
+  this.mediaControls_ =
+      new MediaControls(this.videoElement_, this.mediaToolbar_);
 
   this.arrowBox_ = this.document_.createElement('div');
   this.arrowBox_.className = 'arrow-box';
@@ -257,6 +273,10 @@ Gallery.prototype.saveItem_ = function(item, callback, canvas, modified) {
 
 Gallery.prototype.saveChanges_ = function(opt_callback) {
   this.imageChanges_ = 0;
+  if (this.isShowingVideo_()) {
+    if (opt_callback) opt_callback();
+    return;
+  }
   this.editor_.requestImage(
       this.saveItem_.bind(this, this.ribbon_.getSelectedItem(), opt_callback));
 };
@@ -365,6 +385,9 @@ Gallery.prototype.onClose_ = function() {
 };
 
 Gallery.prototype.prefetchImage = function(id, content, metadata) {
+  if (Gallery.isVideoContent(content, metadata))
+    return;
+
   this.editor_.prefetchImage(id, content, metadata);
 };
 
@@ -380,6 +403,14 @@ Gallery.prototype.openImage = function(id, content, metadata, slide, callback) {
     this.filenameEdit_.value = displayName;
     this.filenameText_.textContent = displayName;
   }
+
+  if (Gallery.isVideoContent(content, metadata)) {
+    ImageUtil.setAttribute(this.container_, 'video', true);
+    this.mediaControls_.load(content);
+    callback(ImageView.LOAD_TYPE_TOTAL);
+    return;
+  }
+  ImageUtil.setAttribute(this.container_, 'video', false);
 
   var self = this;
   function loadDone(loadType) {
@@ -408,7 +439,24 @@ Gallery.prototype.openImage = function(id, content, metadata, slide, callback) {
 };
 
 Gallery.prototype.closeImage = function(item) {
+  if (this.isShowingVideo_()) {
+    this.mediaControls_.pause();
+    return;
+  }
   this.editor_.closeSession(this.saveItem_.bind(this, item, null));
+};
+
+Gallery.prototype.isShowingVideo_ = function() {
+  return this.container_.hasAttribute('video');
+};
+
+Gallery.isVideoContent = function(content, metadata) {
+  // Gallery.getMediaType is useless when in the gallery_demo.html.
+  // Rely on metadata.type instead.
+  // TODO(kaznacheev): generalize getMediaType.
+  if (metadata.type == 'mpeg')
+    return true;
+  return Gallery.getMediaType(content) == 'video';
 };
 
 Gallery.prototype.isEditing_ = function() {
@@ -416,6 +464,9 @@ Gallery.prototype.isEditing_ = function() {
 };
 
 Gallery.prototype.onEdit_ = function() {
+  if (this.isShowingVideo_())
+    return;
+
   ImageUtil.setAttribute(this.container_, 'editing', !this.isEditing_());
 
   // The user has just clicked on the Edit button. Dismiss the Share menu.
@@ -652,6 +703,7 @@ Ribbon.prototype.select = function(index, opt_forceStep, opt_callback) {
          function(loadType) {
            if (!selectedItem.isSelected()) return;
            if (Math.abs(step) != 1) return;
+           if (loadType == ImageView.LOAD_TYPE_TOTAL) return;
            if ((loadType == ImageView.LOAD_TYPE_CACHED_FULL) ||
                (self.sequenceLength_ >= 3)) {
              // We can always afford to prefetch if the previous load was
@@ -1018,11 +1070,12 @@ Ribbon.Item.prototype.onSaveError = function(error) {
 Ribbon.MAX_THUMBNAIL_PIXEL_COUNT = 1 << 21; // 2 MPix
 Ribbon.MAX_THUMBNAIL_FILE_SIZE = 1 << 20; // 1 Mb
 
-Ribbon.Item.canUseImageForThumbnail = function(metadata) {
-  return (metadata.fileSize &&
-      metadata.fileSize <= Ribbon.MAX_THUMBNAIL_FILE_SIZE)  ||
+Ribbon.Item.canUseImageForThumbnail = function(url, metadata) {
+  return !Gallery.isVideoContent(url, metadata) &&
+      ((metadata.fileSize &&
+        metadata.fileSize <= Ribbon.MAX_THUMBNAIL_FILE_SIZE)  ||
       (metadata.width && metadata.height &&
-      (metadata.width * metadata.height <= Ribbon.MAX_THUMBNAIL_PIXEL_COUNT));
+      (metadata.width * metadata.height <= Ribbon.MAX_THUMBNAIL_PIXEL_COUNT)));
 };
 
 Ribbon.PLACEHOLDER_ICON_URL = '../../images/filetype_large_image.png';
@@ -1036,7 +1089,7 @@ Ribbon.Item.prototype.setMetadata = function(metadata) {
   if (metadata.thumbnailURL) {
     url = metadata.thumbnailURL;
     transform = metadata.thumbnailTransform;
-  } else if (Ribbon.Item.canUseImageForThumbnail(metadata)){
+  } else if (Ribbon.Item.canUseImageForThumbnail(this.url_, metadata)){
     url = this.url_;
     transform = metadata.imageTransform;
   } else {

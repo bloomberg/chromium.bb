@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -46,6 +46,9 @@ ImageView.prototype = {__proto__: ImageBuffer.Overlay.prototype};
 ImageView.prototype.getZIndex = function() { return -1 };
 
 ImageView.prototype.draw = function() {
+  if (!this.screenCanvas_)  // Could be called before the content is set.
+    return;
+
   var forceRepaint = false;
 
   var screenClipped = this.viewport_.getScreenClipped();

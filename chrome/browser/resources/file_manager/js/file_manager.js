@@ -112,6 +112,7 @@ FileManager.prototype = {
     'avi':  {type: 'video', name: 'VIDEO_FILE_TYPE', subtype: 'AVI'},
     'mov':  {type: 'video', name: 'VIDEO_FILE_TYPE', subtype: 'QuickTime'},
     'mp4':  {type: 'video', name: 'VIDEO_FILE_TYPE', subtype: 'MPEG'},
+    'm4v':  {type: 'video', name: 'VIDEO_FILE_TYPE', subtype: 'MPEG'},
     'mpg':  {type: 'video', name: 'VIDEO_FILE_TYPE', subtype: 'MPEG'},
     'mpeg': {type: 'video', name: 'VIDEO_FILE_TYPE', subtype: 'MPEG'},
     'mpg4': {type: 'video', name: 'VIDEO_FILE_TYPE', subtype: 'MPEG'},
@@ -844,6 +845,19 @@ FileManager.prototype = {
     return {};
   };
 
+  /**
+   * Get the media type for a given url.
+   *
+   * @param {string} url
+   * @return {string} The value of 'type' property from one of the elements in
+   *   FileManager.fileTypes or null.
+   */
+  FileManager.getMediaType_ = function(url) {
+    var extension = getFileExtension(url);
+    if (extension in fileTypes)
+      return fileTypes[extension].type;
+    return null;
+  };
 
   /**
    * Get the icon type of a file, caching the result.
@@ -2014,12 +2028,14 @@ FileManager.prototype = {
       var task_parts = task.taskId.split('|');
       if (task_parts[0] == this.getExtensionId_()) {
         task.internal = true;
+        task.allTasks = tasksList;
         if (task_parts[1] == 'play') {
           // TODO(serya): This hack needed until task.iconUrl is working
           //             (see GetFileTasksFileBrowserFunction::RunImpl).
           task.iconUrl =
               chrome.extension.getURL('images/icon_play_16x16.png');
           task.title = str('PLAY_MEDIA').replace("&", "");
+          this.playTask_ = task;
         } else if (task_parts[1] == 'enqueue') {
           task.iconUrl =
               chrome.extension.getURL('images/icon_add_to_queue_16x16.png');
@@ -2032,7 +2048,6 @@ FileManager.prototype = {
           task.iconUrl =
               chrome.extension.getURL('images/icon_preview_16x16.png');
           task.title = str('GALLERY');
-          task.allTasks = tasksList;
           this.galleryTask_ = task;
         }
       }
@@ -2193,9 +2208,7 @@ FileManager.prototype = {
    */
   FileManager.prototype.onFileTaskExecute_ = function(id, details) {
     var urls = details.urls;
-    if (id == 'play' || id == 'enqueue') {
-      chrome.fileBrowserPrivate.viewFiles(urls, id);
-    } else if (id == 'mount-archive') {
+    if (id == 'mount-archive') {
       for (var index = 0; index < urls.length; ++index) {
         // Url in MountCompleted event won't be escaped, so let's make sure
         // we don't use escaped one in mountRequests_.
@@ -2207,18 +2220,20 @@ FileManager.prototype = {
       this.confirm.show(str('FORMATTING_WARNING'), function() {
         chrome.fileBrowserPrivate.formatDevice(urls[0]);
       });
-    } else if (id == 'gallery') {
+    } else if (id == 'gallery' || id == 'play') {
       // Pass to gallery all possible tasks except the gallery itself.
       var noGallery = [];
       for (var index = 0; index < details.task.allTasks.length; index++) {
         var task = details.task.allTasks[index];
-        if (task.taskId != this.getExtensionId_() + '|gallery') {
+        if (task.taskId != this.getExtensionId_() + '|gallery' &&
+            task.taskId != this.getExtensionId_() + '|play' &&
+            task.taskId != this.getExtensionId_() + '|enqueue') {
           // Add callback, so gallery can execute the task.
           task.execute = this.dispatchFileTask_.bind(this, task);
           noGallery.push(task);
         }
       }
-      this.openGallery_(urls, noGallery);
+      this.openGallery_(urls, noGallery, id == 'gallery' ? 'image' : 'video');
     }
   };
 
@@ -2233,7 +2248,7 @@ FileManager.prototype = {
     return undefined;
   };
 
-  FileManager.prototype.openGallery_ = function(urls, shareActions) {
+  FileManager.prototype.openGallery_ = function(urls, shareActions, type) {
     var self = this;
 
     var galleryFrame = this.document_.createElement('iframe');
@@ -2249,8 +2264,9 @@ FileManager.prototype = {
       var dm = this.directoryModel_.fileList;
       for (var i = 0; i != dm.length; i++) {
         var entry = dm.item(i);
-        if (this.getFileType(entry).type == 'image') {
-          urls.push(entry.toURL());
+        var url = entry.toURL();
+        if (FileManager.getMediaType_(url) == type) {
+          urls.push(url);
         }
       }
     } else {
@@ -2261,6 +2277,12 @@ FileManager.prototype = {
     galleryFrame.onload = function() {
       self.document_.title = str('GALLERY');
       galleryFrame.contentWindow.ImageUtil.metrics = metrics;
+
+      // TODO(kaznacheev): Extract getMediaType along with other common utility
+      // functions into a separate file.
+      galleryFrame.contentWindow.Gallery.getMediaType =
+          FileManager.getMediaType_;
+
       galleryFrame.contentWindow.Gallery.open(
           self.directoryModel_.currentEntry,
           urls,
@@ -3448,20 +3470,31 @@ FileManager.prototype = {
       return;
     }
 
-    // In full screen mode, open all files for vieweing.
+    // In full page mode there is no OK button, but this code is called
+    // on double click. Open the selected files for viewing.
     if (this.dialogType_ == FileManager.DialogType.FULL_PAGE) {
-      if (this.galleryTask_) {
-        var urls = [];
-        for (i = 0; i < selectedIndexes.length; i++) {
-          var entry = dm.item(selectedIndexes[i]);
-          if (this.getFileType(entry).type != 'image')
-            break;
-          urls.push(entry.toURL());
+      var urls = [];
+      var imageCount = 0;
+      var videoCount = 0;
+      for (i = 0; i < selectedIndexes.length; i++) {
+        var entry = dm.item(selectedIndexes[i]);
+        var type = this.getFileType(entry).type;
+        if (type == 'image') {
+          imageCount++;
+        } else if (type == 'video') {
+          videoCount++;
+        } else {
+          break;
         }
-        if (urls.length == selectedIndexes.length) {  // Selection is all images
-          this.dispatchFileTask_(this.galleryTask_, urls);
-          return;
-        }
+        urls.push(entry.toURL());
+      }
+      if (imageCount == selectedIndexes.length) {  // Selection is all images
+        this.dispatchFileTask_(this.galleryTask_, urls);
+        return;
+      }
+      if (videoCount == selectedIndexes.length) {  // Selection is all videos
+        this.dispatchFileTask_(this.playTask_, urls);
+        return;
       }
       chrome.fileBrowserPrivate.viewFiles(files, "default", function(success) {
         if (success || files.length != 1)

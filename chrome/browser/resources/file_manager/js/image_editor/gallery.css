@@ -276,11 +276,18 @@ body {
   border-bottom: 1px solid white;
 }
 
+.gallery .button-spacer {
+  display: -webkit-box;
+  -webkit-box-flex: 1;
+}
+
 /* Thumbnails */
 
 .gallery .ribbon-spacer {
+  position: absolute;
+  left: 280px;
+  right: 280px;
   display: -webkit-box;
-  -webkit-box-flex: 1;
   -webkit-box-orient: horizontal;
   -webkit-box-pack: center;
 }
@@ -293,8 +300,6 @@ body {
   -webkit-box-orient: horizontal;
   -webkit-box-pack: start;
 
-  width: 280px;
-  max-width: 100%;
   -webkit-transition: opacity 180ms linear;
   z-index: 0;
 }
@@ -734,4 +739,34 @@ body {
 .gallery .share-menu > div > img {
   margin-right: 5px;
   display: block;
+}
+
+/* Video playback support */
+
+.gallery > video {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  display: none;
+}
+
+.gallery[video] > video {
+  display: block;
+}
+
+.gallery .toolbar .media-controls {
+  position: absolute;
+  left: 280px;
+  right: 280px;
+  top: 12px;
+  display: none;
+}
+
+.gallery[video] .toolbar .media-controls {
+  display: -webkit-box;
+}
+
+.gallery[video] > .toolbar .button.edit,
+.gallery[video] > .toolbar .ribbon {
+  display: none;
 }
