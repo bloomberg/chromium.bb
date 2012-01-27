@@ -99,6 +99,9 @@ views::Widget* StatusAreaHostAura::CreateStatusArea() {
   params.parent = status_window;
   params.transparent = true;
   status_area_widget_->Init(params);
+  // Turn off focus on creation, otherwise the status area will request focus
+  // every time it is shown.
+  status_area_widget_->set_focus_on_creation(false);
   status_area_widget_->SetContentsView(status_area_view_);
   status_area_widget_->Show();
   status_area_widget_->GetNativeView()->SetName("StatusAreaView");
