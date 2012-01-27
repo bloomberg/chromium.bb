@@ -135,7 +135,7 @@ void ProfilerMessageHandler::RegisterMessages() {
 }
 
 void ProfilerMessageHandler::OnGetData(const ListValue* list) {
-  ProfilerUI* profiler_ui = reinterpret_cast<ProfilerUI*>(web_ui());
+  ProfilerUI* profiler_ui = static_cast<ProfilerUI*>(web_ui()->GetController());
   profiler_ui->GetData();
 }
 
