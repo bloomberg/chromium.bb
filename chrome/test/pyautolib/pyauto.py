@@ -4682,15 +4682,14 @@ class Main(object):
 
     self._options, self._args = parser.parse_args()
     global _OPTIONS
-    _OPTIONS = self._options  # export options so other classes can access
+    _OPTIONS = self._options  # Export options so other classes can access.
 
-    # Setup logging - start with defaults
+    # Set up logging. All log messages will be prepended with a timestamp.
+    format = '%(asctime)s %(levelname)-8s %(message)s'
+
     level = logging.INFO
-    format = None
-
     if self._options.verbose:
       level=logging.DEBUG
-      format='%(asctime)s %(levelname)-8s %(message)s'
 
     logging.basicConfig(level=level, format=format,
                         filename=self._options.log_file)
