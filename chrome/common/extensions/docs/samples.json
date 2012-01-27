@@ -504,7 +504,7 @@
         "devtools.html",
         "manifest.json"
       ],
-      "source_hash": "45489ca85d7aa7c69af5854c3fcd86eb2192ca6c",
+      "source_hash": "e5e09cdd2ab1db8c1ef8d7dbfb7d4619ed52b42c",
       "zip_path": "examples\/api\/devtools\/audits\/broken-links.zip"
     },
     {

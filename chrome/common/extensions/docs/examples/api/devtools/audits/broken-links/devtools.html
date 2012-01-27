@@ -5,7 +5,7 @@
 var category = chrome.experimental.devtools.audits.addCategory("Broken links",
                                                                1);
 category.onAuditStarted.addListener(function callback(auditResults) {
-  chrome.extension.sendRequest({ tabId: webInspector.inspectedWindow.tabId },
+  chrome.extension.sendRequest({ tabId: chrome.devtools.inspectedWindow.tabId },
       function(results) {
     if (!results.badlinks.length) {
       auditResults.addResult("No broken links",
