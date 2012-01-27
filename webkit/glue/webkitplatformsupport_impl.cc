@@ -328,11 +328,6 @@ int WebKitPlatformSupportImpl::addTraceEvent(
                                          threshold, flags);
 }
 
-unsigned long long WebKitPlatformSupportImpl::manglePointerForTracing(
-    void* pointer) {
-  return TRACE_EVENT_API_GET_ID_FROM_POINTER(pointer);
-}
-
 namespace {
 
 WebData loadAudioSpatializationResource(WebKitPlatformSupportImpl* platform,

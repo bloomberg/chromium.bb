@@ -87,7 +87,6 @@ class WEBKIT_GLUE_EXPORT WebKitPlatformSupportImpl :
       int threshold_begin_id,
       long long threshold,
       unsigned char flags);
-  virtual unsigned long long manglePointerForTracing(void* pointer);
   virtual WebKit::WebData loadResource(const char* name);
   virtual bool loadAudioResource(
       WebKit::WebAudioBus* destination_bus, const char* audio_file_data,
