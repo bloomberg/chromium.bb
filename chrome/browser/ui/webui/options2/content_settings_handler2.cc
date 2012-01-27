@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -286,8 +286,8 @@ void ContentSettingsHandler::GetLocalizedValues(
       CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableClickToPlay));
   localized_strings->SetBoolean("enable_web_intents",
-      CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableWebIntents));
+      !CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableWebIntents));
 }
 
 void ContentSettingsHandler::Initialize() {
@@ -440,10 +440,9 @@ void ContentSettingsHandler::UpdateAllOTRExceptionsViewsFromModel() {
 
 void ContentSettingsHandler::UpdateExceptionsViewFromModel(
     ContentSettingsType type) {
-  // Skip updating intents unless it's enabled from the command line.
-  if (type == CONTENT_SETTINGS_TYPE_INTENTS &&
-      !CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableWebIntents))
+  // Don't update intents settings at this point.
+  // Turn on when enable_web_intents_tag is enabled.
+  if (type == CONTENT_SETTINGS_TYPE_INTENTS)
     return;
 
   switch (type) {

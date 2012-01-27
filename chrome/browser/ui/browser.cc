@@ -2719,7 +2719,7 @@ void Browser::RegisterIntentHandlerHelper(WebContents* tab,
                                           const string16& href,
                                           const string16& title,
                                           const string16& disposition) {
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableWebIntents))
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableWebIntents))
     return;
 
   TabContentsWrapper* tcw = TabContentsWrapper::GetCurrentWrapperForContents(
@@ -4065,7 +4065,7 @@ void Browser::RegisterIntentHandler(WebContents* tab,
 
 void Browser::WebIntentDispatch(
     WebContents* tab, content::WebIntentsDispatcher* intents_dispatcher) {
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableWebIntents))
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableWebIntents))
     return;
 
   TabContentsWrapper* tcw =

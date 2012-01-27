@@ -1132,7 +1132,7 @@ bool Extension::LoadWebIntentServices(const extensions::Manifest* manifest,
                                       string16* error) {
   DCHECK(error);
 
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableWebIntents))
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableWebIntents))
     return true;
 
   if (!manifest->HasKey(keys::kIntents))
