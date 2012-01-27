@@ -200,10 +200,10 @@ LDPatterns = [
 
   ( '(-translate-fast)',   "env.set('TRANSLATE_FLAGS', $0)"),
 
-  ( '-s',                  "env.append('STRIP_MODE', 'all')"),
-  ( '--strip-all',         "env.append('STRIP_MODE', 'all')"),
-  ( '-S',                  "env.append('STRIP_MODE', 'debug')"),
-  ( '--strip-debug',       "env.append('STRIP_MODE', 'debug')"),
+  ( '-s',                  "env.set('STRIP_MODE', 'all')"),
+  ( '--strip-all',         "env.set('STRIP_MODE', 'all')"),
+  ( '-S',                  "env.set('STRIP_MODE', 'debug')"),
+  ( '--strip-debug',       "env.set('STRIP_MODE', 'debug')"),
 
   # Inputs and options that need to be kept in order
   ( '(-l.*)',              "env.append('INPUTS', $0)"),
