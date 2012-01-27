@@ -11,7 +11,6 @@ static const char* const g_NaClExpKindName[NaClExpKindEnumSize + 1] = {
   "ExprRegister",
   "OperandReference",
   "ExprConstant",
-  "ExprConstant64",
   "ExprSegmentAddress",
   "ExprMemOffset",
   "NaClExpKindEnumSize"

@@ -276,7 +276,7 @@ NaClExpVector[6] = {
   { OperandReference[1] , 1, ExprSize8 | ExprUnsignedInt | ExprImplicit },
   { ExprRegister[0] , %ecx, ExprUsed | ExprSize32 },
   { OperandReference[1] , 2, ExprSize8 | ExprUnsignedInt },
-  { ExprConstant[0] , 0x2, ExprUsed | ExprSize32 | ExprSignedHex | ExprJumpTarget },
+  { ExprConstant[0] , 0x2, ExprUsed | ExprSize8 | ExprSignedHex | ExprJumpTarget },
 };
 00000000: 67 e3 00                                     jcxz 0x3
   e3                          386 OpcodeHasImmed OperandSize_b AddressSize_w ConditionalJump
@@ -290,7 +290,7 @@ NaClExpVector[6] = {
   { OperandReference[1] , 1, ExprSize8 | ExprUnsignedInt | ExprImplicit },
   { ExprRegister[0] , %cx, ExprUsed | ExprSize16 },
   { OperandReference[1] , 2, ExprSize8 | ExprUnsignedInt },
-  { ExprConstant[0] , 0x3, ExprUsed | ExprSize32 | ExprSignedHex | ExprJumpTarget },
+  { ExprConstant[0] , 0x3, ExprUsed | ExprSize8 | ExprSignedHex | ExprJumpTarget },
 };
 00000000: 0f 16 d1                                     movlhps %xmm2, %xmm1
   0f 16                       SSE ModRmModIs0x3 OpcodeUsesModRm

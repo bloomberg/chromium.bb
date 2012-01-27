@@ -67,7 +67,6 @@ g_NaClExpKindDesc[NaClExpKindEnumSize + 1]= {
   {ExprRegister, 0},
   {OperandReference, 1},
   {ExprConstant, 0},
-  {ExprConstant64, 2},
   {ExprSegmentAddress, 2},
   {ExprMemOffset, 4},
 };
@@ -102,60 +101,18 @@ static void NaClPrintLower(struct Gio* file, char* str) {
   }
 }
 
-/* Return the sign (extended) integer in the given expr node. */
-static int32_t NaClGetSignExtendedValue(NaClExp* node) {
-  if (node->flags & NACL_EFLAG(ExprSize8)) {
-    return (int8_t) node->value;
-  } else if (node->flags & NACL_EFLAG(ExprSize16)) {
-    return (int16_t) node->value;
-  } else {
-    return (int32_t) node->value;
-  }
-}
-
-/* Print out the given (constant) expression node to the given file. */
-static void NaClPrintDisassembledConst(struct Gio* file, NaClInstState* state,
-                                       NaClExp* node) {
+/* Print out the given constant expression node to the given file. */
+static void NaClPrintDisassembledConst(
+    struct Gio* file, NaClInstState* state, NaClExp* node) {
   assert(node->kind == ExprConstant);
   if (node->flags & NACL_EFLAG(ExprJumpTarget)) {
     NaClPcAddress target = NaClInstStatePrintableAddress(state)
-        + state->bytes.length + (NaClPcNumber) NaClGetSignExtendedValue(node);
-    gprintf(file, "0x%"NACL_PRIxNaClPcAddress, target);
-  } else if (node->flags & NACL_EFLAG(ExprUnsignedHex)) {
-    gprintf(file, "0x%"NACL_PRIx32, node->value);
-  } else if (node->flags & NACL_EFLAG(ExprSignedHex)) {
-    int32_t value = NaClGetSignExtendedValue(node);
-    if (value < 0) {
-      value = -value;
-      gprintf(file, "-0x%"NACL_PRIx32, value);
-    } else {
-      gprintf(file, "0x%"NACL_PRIx32, value);
-    }
-  } else if (node->flags & NACL_EFLAG(ExprUnsignedInt)) {
-    gprintf(file, "%"NACL_PRIu32, node->value);
-  } else {
-    /* Assume ExprSignedInt. */
-    gprintf(file, "%"NACL_PRId32, (int32_t) NaClGetSignExtendedValue(node));
-  }
-}
-
-/* Print out the given (64-bit constant) expression node to the given file. */
-static void NaClPrintDisassembledConst64(
-    struct Gio* file, NaClInstState* state, int index) {
-  NaClExp* node;
-  uint64_t value;
-  NaClExpVector* vector = NaClInstStateExpVector(state);
-  node = &vector->node[index];
-  assert(node->kind == ExprConstant64);
-  value = NaClGetExpConstant(vector, index);
-  if (node->flags & NACL_EFLAG(ExprJumpTarget)) {
-    NaClPcAddress target = NaClInstStatePrintableAddress(state)
-        + state->bytes.length + (NaClPcNumber) value;
+        + state->bytes.length + (NaClPcNumber) NaClGetExprSignedValue(node);
     gprintf(file, "0x%"NACL_PRIxNaClPcAddress, target);
   }else if (node->flags & NACL_EFLAG(ExprUnsignedHex)) {
-    gprintf(file, "0x%"NACL_PRIx64, value);
+    gprintf(file, "0x%"NACL_PRIx64, NaClGetExprUnsignedValue(node));
   } else if (node->flags & NACL_EFLAG(ExprSignedHex)) {
-    int64_t val = (int64_t) value;
+    int64_t val = NaClGetExprSignedValue(node);
     if (val < 0) {
       val = -val;
       gprintf(file, "-0x%"NACL_PRIx64, val);
@@ -163,9 +120,10 @@ static void NaClPrintDisassembledConst64(
       gprintf(file, "0x%"NACL_PRIx64, val);
     }
   } else if (node->flags & NACL_EFLAG(ExprUnsignedInt)) {
-    gprintf(file, "%"NACL_PRIu64, value);
+    gprintf(file, "%"NACL_PRIu64, NaClGetExprUnsignedValue(node));
   } else {
-    gprintf(file, "%"NACL_PRId64, (int64_t) value);
+    /* Assume ExprSignedInt. */
+    gprintf(file, "%"NACL_PRId64, NaClGetExprSignedValue(node));
   }
 }
 
@@ -232,11 +190,8 @@ void NaClExpVectorPrint(struct Gio* file, NaClInstState* state) {
       case ExprConstant:
         NaClPrintDisassembledConst(file, state, node);
         break;
-      case ExprConstant64:
-        NaClPrintDisassembledConst64(file, state, i);
-        break;
       default:
-        gprintf(file, "%"NACL_PRIu32, node->value);
+        gprintf(file, "%"NACL_PRIu64, NaClGetExprUnsignedValue(node));
         break;
     }
     gprintf(file, ", ");
@@ -259,8 +214,8 @@ static int NaClPrintDisassembledMemOffset(struct Gio* file,
   int disp_index = scale_index + NaClExpWidth(vector, scale_index);
   NaClOpKind r1 = NaClGetExpVectorRegister(vector, r1_index);
   NaClOpKind r2 = NaClGetExpVectorRegister(vector, r2_index);
-  int scale = (int) NaClGetExpConstant(vector, scale_index);
-  uint64_t disp = NaClGetExpConstant(vector, disp_index);
+  uint64_t scale = NaClGetExprUnsignedValue(&vector->node[scale_index]);
+  int64_t disp = NaClGetExprSignedValue(&vector->node[disp_index]);
   assert(ExprMemOffset == vector->node[index].kind);
   gprintf(file,"[");
   if (r1 != RegUnknown) {
@@ -271,7 +226,7 @@ static int NaClPrintDisassembledMemOffset(struct Gio* file,
       gprintf(file, "+");
     }
     NaClPrintDisassembledRegKind(file, r2);
-    gprintf(file, "*%d", scale);
+    gprintf(file, "*%d", (uint32_t) scale);
   }
   if (disp != 0) {
     if ((r1 != RegUnknown || r2 != RegUnknown) &&
@@ -324,9 +279,6 @@ static int NaClPrintDisassembledExp(struct Gio* file,
     case ExprConstant:
       NaClPrintDisassembledConst(file, state, node);
       return index + 1;
-    case ExprConstant64:
-      NaClPrintDisassembledConst64(file, state, index);
-      return index + 3;
     case ExprSegmentAddress:
       return NaClPrintDisassembledSegmentAddr(file, state, index);
     case ExprMemOffset:
@@ -446,7 +398,8 @@ static void NaClPrintDisassembled(struct Gio* file,
           node->kind == OperandReference) {
         const NaClOp* op =
             NaClGetInstOperandInline(state->decoder_tables,
-                                     inst, (uint8_t) node->value);
+                                     inst,
+                                     (uint8_t) NaClGetExprUnsignedValue(node));
         if (NaClHasBit(op->flags, (NACL_OPFLAG(OpSet) |
                                    NACL_OPFLAG(OpUse) |
                                    NACL_OPFLAG(OperandZeroExtends_v)))) {
@@ -613,29 +566,6 @@ int NaClGetNthExpKind(NaClExpVector* vector,
   return -1;
 }
 
-uint64_t NaClGetExpConstant(NaClExpVector* vector, int index) {
-  NaClExp* node = &vector->node[index];
-  switch (node->kind) {
-    case ExprConstant:
-      /* WARNING the validator implicitly depends on value being sign extended
-       * in this case.  Be careful.
-       */
-      return node->value;
-    case ExprConstant64:
-      return (uint64_t) (uint32_t) vector->node[index+1].value |
-          (((uint64_t) vector->node[index+2].value) << 32);
-    default:
-      assert(0);
-  }
-  /* NOT REACHED */
-  return 0;
-}
-
-void NaClSplitExpConstant(uint64_t val, uint32_t* val1, uint32_t* val2) {
-  *val1 = (uint32_t) (val & 0xFFFFFFFF);
-  *val2 = (uint32_t) (val >> 32);
-}
-
 Bool NaClIsExpNegativeConstant(NaClExpVector* vector, int index) {
   NaClExp* node = &vector->node[index];
   switch (node->kind) {
@@ -645,17 +575,7 @@ Bool NaClIsExpNegativeConstant(NaClExpVector* vector, int index) {
         return FALSE;
       } else {
         /* Assume signed value. */
-        return NaClGetSignExtendedValue(node) < 0;
-      }
-      break;
-    case ExprConstant64:
-      if (node->flags & NACL_EFLAG(ExprUnsignedHex) ||
-          node->flags & NACL_EFLAG(ExprUnsignedInt)) {
-        return FALSE;
-      } else {
-        /* Assume signed value. */
-        int64_t value = (int64_t) NaClGetExpConstant(vector, index);
-        return value < 0;
+        return NaClGetExprSignedValue(node) < 0;
       }
       break;
     default:

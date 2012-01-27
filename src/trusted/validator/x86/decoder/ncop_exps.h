@@ -43,13 +43,10 @@ void NaClPrintExpFlags(struct Gio* file, NaClExpFlags flags);
  * (preorder) tree.
  */
 typedef struct NaClExp {
+  /* A value associated with the kind. */
+  uint64_t value;
   /* The type of node. */
   NaClExpKind kind;
-  /* A value associated with the kind. */
-  /* WARNING the validator implicitly depends on "value" being signed. Don't
-   * monkey with value's signedness unless you know what you're doing.
-   */
-  int32_t value;
   /* The set of flags associated with the node. */
   NaClExpFlags flags;
 } NaClExp;
@@ -80,15 +77,6 @@ int NaClGetExpKidIndex(NaClExpVector* vector, int node, int kid);
  * Note: index must be > 0. Returns -1 if no parent defined.
  */
 int NaClGetExpParentIndex(NaClExpVector* vector, int node);
-
-/* Given the index of a constant, returns the corresponding constant. */
-uint64_t NaClGetExpConstant(NaClExpVector* vector, int index);
-
-/* Given a 64-bit constant, return the corresponding two 32-bit constants to
- * Use. Note: The lower 32 bits are put in val1, and the upper 32 bits are
- * put in val2.
- */
-void NaClSplitExpConstant(uint64_t val, uint32_t* val1, uint32_t* val2);
 
 /* Returns true if the index points to a constant that is negative. */
 Bool NaClIsExpNegativeConstant(NaClExpVector* vector, int index);

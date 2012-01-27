@@ -179,11 +179,13 @@ static Bool NaClIsLeaAddressRegPlusRbase(NaClValidatorState* state,
               index_reg_index + NaClExpWidth(vector, index_reg_index);
           DEBUG(NaClLog(LOG_INFO, "  scale_index = %d\n", scale_index));
           if (ExprConstant == vector->node[scale_index].kind) {
-            if ((uint64_t)1 == NaClGetExpConstant(vector, scale_index)) {
+            if ((uint64_t)1 ==
+                NaClGetExprUnsignedValue(&vector->node[scale_index])) {
               int disp_index = scale_index + NaClExpWidth(vector, scale_index);
               DEBUG(NaClLog(LOG_INFO, " disp_index = %d\n", disp_index));
               if (ExprConstant == vector->node[disp_index].kind) {
-                if ((uint64_t)0 == NaClGetExpConstant(vector, disp_index)) {
+                if ((uint64_t)0 ==
+                    NaClGetExprSignedValue(&vector->node[disp_index])) {
                   result = TRUE;
                 } else {
                   DEBUG(NaClLog(LOG_INFO, "  disp not zero!\n"));

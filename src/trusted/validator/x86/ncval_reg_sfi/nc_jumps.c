@@ -138,8 +138,8 @@ static NaClOpKind NaClMemOffsetMatchesBasePlusIndex(
   int disp_index = scale_index + NaClExpWidth(vector, scale_index);
   NaClOpKind r1 = NaClGetExpVectorRegister(vector, r1_index);
   NaClOpKind r2 = NaClGetExpVectorRegister(vector, r2_index);
-  uint64_t scale = NaClGetExpConstant(vector, scale_index);
-  uint64_t disp = NaClGetExpConstant(vector, disp_index);
+  uint64_t scale = NaClGetExprUnsignedValue(&vector->node[scale_index]);
+  uint64_t disp = NaClGetExprSignedValue(&vector->node[disp_index]);
   assert(ExprMemOffset == vector->node[memoffset_index].kind);
   return (r1 == base_register &&
           1 == scale &&
@@ -195,7 +195,11 @@ static NaClOpKind NaClGetAndMaskReg32(NaClValidatorState* vstate,
 
   assert(0xf0 == mask || 0xe0 == mask); /* alignment must be either 16 or 32. */
   node = &nodes->node[op_2];
-  if (ExprConstant != node->kind || mask != node->value) return RegUnknown;
+  /* Technically the operand is a signed value, but "mask" has not been sign
+   * extended, so treat the value as an unsigned byte.
+   */
+  if (ExprConstant != node->kind || mask != NaClGetExprUnsignedValue(node))
+    return RegUnknown;
   DEBUG(NaClLog(LOG_INFO, "is mask constant\n"));
 
   return reg32;
@@ -418,23 +422,21 @@ static void NaClAddExprJumpTarget(NaClValidatorState* vstate) {
   DEBUG(NaClLog(LOG_INFO, "jump checking: ");
         NaClInstStateInstPrint(NaClLogGetGio(), inst_state));
   for (i = 0; i < vector->number_expr_nodes; ++i) {
-    if (!NaClHasBit(vector->node[i].flags, NACL_EFLAG(ExprJumpTarget)))
+    NaClExp* node = &vector->node[i];
+    if (!NaClHasBit(node->flags, NACL_EFLAG(ExprJumpTarget)))
       continue;
-    switch (vector->node[i].kind) {
+    switch (node->kind) {
       case ExprRegister:
         if (64 == NACL_TARGET_SUBARCH) {
-          NaClAddRegisterJumpIndirect64(vstate,
-                                        &vector->node[i]);
+          NaClAddRegisterJumpIndirect64(vstate, node);
         } else {
-          NaClAddRegisterJumpIndirect32(vstate,
-                                        &vector->node[i]);
+          NaClAddRegisterJumpIndirect32(vstate, node);
         }
         break;
       case ExprConstant:
-      case ExprConstant64:
         /* Direct jump. */
         NaClAddJumpToJumpSets(vstate, inst_state,
-                              (NaClPcNumber) NaClGetExpConstant(vector, i));
+                              (NaClPcNumber) NaClGetExprSignedValue(node));
         break;
       default:
         NaClValidatorInstMessage(

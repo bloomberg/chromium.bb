@@ -103,7 +103,7 @@ static INLINE NaClOpKind NaClGetEsSegmentReg(NaClInstState* state) {
  * nodes. Returns the appended expression node.
  */
 static INLINE NaClExp* NaClAppendExp(NaClExpKind kind,
-                                     int32_t value,
+                                     uint64_t value,
                                      NaClExpFlags flags,
                                      NaClExpVector* vector) {
   NaClExp* node;
@@ -175,25 +175,11 @@ static NaClOpKind NaClGetMnemonicSegmentRegister(NaClInstState* state) {
  */
 static INLINE NaClExp* NaClAppendConst(uint64_t value, NaClExpFlags flags,
                                        NaClExpVector* vector) {
-  uint32_t val1;
-  uint32_t val2;
   DEBUG(
       NaClLog(LOG_INFO, "Append constant %"NACL_PRIx64" : ", value);
       NaClPrintExpFlags(NaClLogGetGio(), flags);
       gprintf(NaClLogGetGio(), "\n"));
-  NaClSplitExpConstant(value, &val1, &val2);
-  if (val2 == 0) {
-    return NaClAppendExp(ExprConstant, val1, flags, vector);
-  } else {
-    NaClExp* root = NaClAppendExp(ExprConstant64, 0, flags, vector);
-    NaClAppendExp(ExprConstant, val1,
-                  NACL_EFLAG(ExprUnsignedHex) | NACL_EFLAG(ExprSize32),
-                  vector);
-    NaClAppendExp(ExprConstant, val2,
-                  NACL_EFLAG(ExprUnsignedHex) | NACL_EFLAG(ExprSize32),
-                  vector);
-    return root;
-  }
+  return NaClAppendExp(ExprConstant, value, flags, vector);
 }
 
 /* Define a type corresponding to the arrays NaClRegTable8,
@@ -928,20 +914,9 @@ static NaClExp* NaClAppendMemoryOffsetImmed(NaClInstState* state) {
 static NaClExp* NaClAppendRelativeImmed(NaClInstState* state) {
   NaClPcNumber jump_offset = (NaClPcNumber) NaClExtractSignedImmediate(state);
   DEBUG(NaClLog(LOG_INFO, "append relative immediate\n"));
-  /* Awful hack: mask the jump offset so that a negative offset will be stored
-   * as a 32-bit value instead of a 64-bit value.  This is done because access
-   * to the expression vector has not been abstracted and some functions (for
-   * example NaClValidateInstReplacement) expect a particular internal encoding.
-   * Historically absolute targets were stored in the vector rather than offsets
-   * and the absolute targets were always positive 32-bit numbers.  Rather than
-   * trying to play wack-a-mole and running the risk of missing a breakage, it
-   * is safer to preserve the internal encoding.
-   * TODO(ncbray) simplify the vector's internal encoding and store everything
-   * as 64-bit values.
-   */
-  return NaClAppendConst(0xffffffff & jump_offset,
+  return NaClAppendConst(jump_offset,
                          NACL_EFLAG(ExprSignedHex) |
-                         NACL_EFLAG(ExprSize32) |
+                         NaClGetExprSizeFlagForBytes(state->num_imm_bytes) |
                          NACL_EFLAG(ExprJumpTarget),
                          &state->nodes);
 }

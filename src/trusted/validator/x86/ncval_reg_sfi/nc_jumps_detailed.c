@@ -24,6 +24,7 @@
 
 #include "native_client/src/shared/utils/debugging.h"
 
+#include "native_client/src/trusted/validator/x86/decoder/ncop_exps_inl.c"
 #include "native_client/src/trusted/validator/x86/decoder/nc_inst_iter_inl.c"
 
 /* Returns true if the given address is within the code segment.
@@ -72,36 +73,29 @@ static void NaClInstLayoutCheck(NaClValidatorState* vstate) {
     uint32_t i;
     NaClExpVector* vector = NaClInstStateExpVector(vstate->cur_inst_state);
     for (i = 0; i < vector->number_expr_nodes; ++i) {
-      if (NaClHasBit(vector->node[i].flags, NACL_EFLAG(ExprJumpTarget))) {
-        switch (vector->node[i].kind) {
-          case ExprConstant:
-          case ExprConstant64:
-            {
-              /* Explicit jump value. Check if legal! */
-              NaClPcAddress target = end
-                  + (NaClPcNumber) NaClGetExpConstant(vector, i);
-              /* Don't report targets that are out of range. They should have
-               * been reported in the first pass!
-               */
-              if (NaClCheckAddressRange(target, vstate)) {
-                if (NaClAddressSetContains(vstate->jump_sets.possible_targets,
-                                           target, vstate)) {
-                  if (NaClAddressSetContains(vstate->jump_sets.removed_targets,
-                                             target, vstate)) {
-                    NaClValidatorInstMessage(
-                        LOG_ERROR, vstate, vstate->cur_inst_state,
-                        "Jumps into middle of nacl pattern\n");
-                  }
-                } else {
-                  NaClValidatorInstMessage(
-                      LOG_ERROR, vstate, vstate->cur_inst_state,
-                      "Doesn't jump to instruction address\n");
-                }
-              }
+      NaClExp* node = &vector->node[i];
+      if (NaClHasBit(node->flags, NACL_EFLAG(ExprJumpTarget))
+          && node->kind == ExprConstant) {
+        /* Explicit jump value. Check if legal! */
+        NaClPcAddress target = end +
+            (NaClPcNumber) NaClGetExprSignedValue(node);
+        /* Don't report targets that are out of range. They should have
+         * been reported in the first pass!
+         */
+        if (NaClCheckAddressRange(target, vstate)) {
+          if (NaClAddressSetContains(vstate->jump_sets.possible_targets,
+                                     target, vstate)) {
+            if (NaClAddressSetContains(vstate->jump_sets.removed_targets,
+                                       target, vstate)) {
+              NaClValidatorInstMessage(
+                  LOG_ERROR, vstate, vstate->cur_inst_state,
+                  "Jumps into middle of nacl pattern\n");
             }
-            break;
-          default:
-            break;
+          } else {
+            NaClValidatorInstMessage(
+                LOG_ERROR, vstate, vstate->cur_inst_state,
+                "Doesn't jump to instruction address\n");
+          }
         }
       }
     }
