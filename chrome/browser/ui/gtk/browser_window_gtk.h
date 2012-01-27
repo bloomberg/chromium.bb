@@ -490,12 +490,11 @@ class BrowserWindowGtk : public BrowserWindow,
 
   DevToolsDockSide devtools_dock_side_;
 
-  // Box containing either contents_container_ or contents_split_ depending
-  // on whether docked devtools is visible.
-  GtkWidget* contents_split_vbox_;
-
   // Split pane containing the contents_container_ and the devtools_container_.
-  GtkWidget* contents_split_;
+  GtkWidget* contents_hsplit_;
+
+  // Split pane containing the contents_hsplit_ and the devtools_container_.
+  GtkWidget* contents_vsplit_;
 
   // The tab strip.  Always non-NULL.
   scoped_ptr<TabStripGtk> tabstrip_;

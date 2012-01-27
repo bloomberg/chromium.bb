@@ -330,8 +330,8 @@ BrowserWindowGtk::BrowserWindowGtk(Browser* browser)
        browser_(browser),
        state_(GDK_WINDOW_STATE_WITHDRAWN),
        devtools_dock_side_(DEVTOOLS_DOCK_SIDE_BOTTOM),
-       contents_split_vbox_(NULL),
-       contents_split_(NULL),
+       contents_hsplit_(NULL),
+       contents_vsplit_(NULL),
        frame_cursor_(NULL),
        is_active_(!ui::ActiveWindowWatcherX::WMSupportsActivation()),
        last_click_time_(0),
@@ -814,7 +814,7 @@ void BrowserWindowGtk::SetDevToolsDockSide(DevToolsDockSide side)
   if (devtools_dock_side_ == side)
     return;
 
-  if (contents_split_) {
+  if (devtools_container_->tab()) {
     HideDevToolsContainer();
     devtools_dock_side_ = side;
     ShowDevToolsContainer();
@@ -1407,23 +1407,10 @@ void BrowserWindowGtk::UpdateDevToolsForContents(WebContents* contents) {
 }
 
 void BrowserWindowGtk::ShowDevToolsContainer() {
-  gtk_container_remove(GTK_CONTAINER(contents_split_vbox_),
-                       contents_container_->widget());
   bool dock_to_right = devtools_dock_side_ == DEVTOOLS_DOCK_SIDE_RIGHT;
-  contents_split_ = dock_to_right ?
-      gtk_hpaned_new() : gtk_vpaned_new();
-  SetBackgroundColor();
-  gtk_paned_pack1(GTK_PANED(contents_split_), contents_container_->widget(),
-                  TRUE, TRUE);
-  gtk_paned_pack2(GTK_PANED(contents_split_), devtools_container_->widget(),
-                  FALSE, TRUE);
-  gtk_box_pack_start(GTK_BOX(contents_split_vbox_),
-                     contents_split_, TRUE, TRUE, 0);
-  gtk_widget_show(contents_split_);
 
-  // Restore split offset.
   GtkAllocation contents_rect;
-  gtk_widget_get_allocation(contents_split_vbox_, &contents_rect);
+  gtk_widget_get_allocation(contents_vsplit_, &contents_rect);
   int content_size =
       dock_to_right ? contents_rect.width : contents_rect.height;
 
@@ -1439,31 +1426,39 @@ void BrowserWindowGtk::ShowDevToolsContainer() {
   split_offset = std::min(content_size - kMinContentsSize, split_offset);
   if (split_offset < 0)
     split_offset = content_size * 1 / 3;
-  gtk_paned_set_position(GTK_PANED(contents_split_),
-                         content_size - split_offset);
+  if (dock_to_right) {
+    gtk_paned_pack2(GTK_PANED(contents_hsplit_), devtools_container_->widget(),
+                    FALSE, TRUE);
+    gtk_paned_set_position(GTK_PANED(contents_hsplit_),
+                           content_size - split_offset);
+  } else {
+    gtk_paned_pack2(GTK_PANED(contents_vsplit_), devtools_container_->widget(),
+                    FALSE, TRUE);
+    gtk_paned_set_position(GTK_PANED(contents_vsplit_),
+                           content_size - split_offset);
+  }
+  gtk_widget_show(devtools_container_->widget());
 }
 
 void BrowserWindowGtk::HideDevToolsContainer() {
   GtkAllocation contents_rect;
-  gtk_widget_get_allocation(contents_split_vbox_, &contents_rect);
+  gtk_widget_get_allocation(contents_vsplit_, &contents_rect);
   bool dock_to_right = devtools_dock_side_ == DEVTOOLS_DOCK_SIDE_RIGHT;
-  int content_size =
-      dock_to_right ? contents_rect.width : contents_rect.height;
+  gint split_offset;
+  if (dock_to_right) {
+    split_offset = contents_rect.width -
+        gtk_paned_get_position(GTK_PANED(contents_hsplit_));
+    gtk_container_remove(GTK_CONTAINER(contents_hsplit_),
+                         devtools_container_->widget());
+  } else {
+    split_offset = contents_rect.height -
+        gtk_paned_get_position(GTK_PANED(contents_vsplit_));
+    gtk_container_remove(GTK_CONTAINER(contents_vsplit_),
+                         devtools_container_->widget());
+  }
 
-  gint split_offset =
-      content_size - gtk_paned_get_position(GTK_PANED(contents_split_));
   browser_->profile()->GetPrefs()->
       SetInteger(prefs::kDevToolsSplitLocation, split_offset);
-
-  gtk_container_remove(GTK_CONTAINER(contents_split_),
-                       contents_container_->widget());
-  gtk_container_remove(GTK_CONTAINER(contents_split_),
-                       devtools_container_->widget());
-  gtk_container_remove(GTK_CONTAINER(contents_split_vbox_),
-                       contents_split_);
-  contents_split_ = NULL;
-  gtk_box_pack_start(GTK_BOX(contents_split_vbox_),
-                     contents_container_->widget(), TRUE, TRUE, 0);
 }
 
 void BrowserWindowGtk::DestroyBrowser() {
@@ -1833,11 +1828,15 @@ void BrowserWindowGtk::InitWidgets() {
   devtools_container_.reset(new TabContentsContainerGtk(NULL));
   ViewIDUtil::SetID(devtools_container_->widget(), VIEW_ID_DEV_TOOLS_DOCKED);
 
-  contents_split_vbox_ = gtk_vbox_new(FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(contents_split_vbox_),
-                     contents_container_->widget(), TRUE, TRUE, 0);
+  contents_hsplit_ = gtk_hpaned_new();
+  gtk_paned_pack1(GTK_PANED(contents_hsplit_), contents_container_->widget(),
+                  TRUE, TRUE);
+
+  contents_vsplit_ = gtk_vpaned_new();
+  gtk_paned_pack1(GTK_PANED(contents_vsplit_), contents_hsplit_, TRUE, TRUE);
+
   gtk_box_pack_end(GTK_BOX(render_area_vbox_),
-                   contents_split_vbox_, TRUE, TRUE, 0);
+                   contents_vsplit_, TRUE, TRUE, 0);
 
   gtk_widget_show_all(render_area_floating_container_);
   render_area_event_box_ = gtk_event_box_new();
@@ -1908,8 +1907,8 @@ void BrowserWindowGtk::SetBackgroundColor() {
                        &frame_color_gdk);
 
   // Set the color of the dev tools divider.
-  if (contents_split_)
-    gtk_widget_modify_bg(contents_split_, GTK_STATE_NORMAL, &frame_color_gdk);
+  gtk_widget_modify_bg(contents_vsplit_, GTK_STATE_NORMAL, &frame_color_gdk);
+  gtk_widget_modify_bg(contents_hsplit_, GTK_STATE_NORMAL, &frame_color_gdk);
 
   // When the cursor is over the divider, GTK+ normally lightens the background
   // color by 1.3 (see LIGHTNESS_MULT in gtkstyle.c).  Since we're setting the
@@ -1918,10 +1917,10 @@ void BrowserWindowGtk::SetBackgroundColor() {
   SkColor frame_prelight_color = color_utils::HSLShift(frame_color, hsl);
   GdkColor frame_prelight_color_gdk =
       gfx::SkColorToGdkColor(frame_prelight_color);
-  if (contents_split_) {
-    gtk_widget_modify_bg(contents_split_, GTK_STATE_PRELIGHT,
-        &frame_prelight_color_gdk);
-  }
+  gtk_widget_modify_bg(contents_hsplit_, GTK_STATE_PRELIGHT,
+      &frame_prelight_color_gdk);
+  gtk_widget_modify_bg(contents_vsplit_, GTK_STATE_PRELIGHT,
+      &frame_prelight_color_gdk);
 
   GdkColor border_color = theme_provider->GetBorderColor();
   gtk_widget_modify_bg(toolbar_border_, GTK_STATE_NORMAL, &border_color);
