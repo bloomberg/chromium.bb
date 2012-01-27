@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -50,4 +50,8 @@ size_t RendererWebAudioDeviceImpl::Render(const std::vector<float*>& audio_data,
     client_callback_->render(web_audio_data, number_of_frames);
   }
   return number_of_frames;
+}
+
+void RendererWebAudioDeviceImpl::OnError() {
+  // TODO(crogers): implement error handling.
 }

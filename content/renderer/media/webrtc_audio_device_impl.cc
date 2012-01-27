@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -116,6 +116,10 @@ size_t WebRtcAudioDeviceImpl::Render(
         number_of_frames);
   }
   return number_of_frames;
+}
+
+void WebRtcAudioDeviceImpl::OnError() {
+  // TODO(henrika): Implement error handling.
 }
 
 void WebRtcAudioDeviceImpl::Capture(

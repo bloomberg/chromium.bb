@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,6 +14,7 @@
 #include "content/renderer/render_thread_impl.h"
 #include "media/audio/audio_buffers_state.h"
 #include "media/audio/audio_util.h"
+#include "media/base/filter_host.h"
 
 // We define GetBufferSizeForSampleRate() instead of using
 // GetAudioHardwareBufferSize() in audio_util because we're using
@@ -246,4 +247,8 @@ size_t AudioRendererImpl::Render(const std::vector<float*>& audio_data,
     }
   }
   return filled_frames;
+}
+
+void AudioRendererImpl::OnError() {
+  host()->DisableAudioRenderer();
 }

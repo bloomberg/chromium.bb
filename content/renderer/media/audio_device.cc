@@ -211,6 +211,7 @@ void AudioDevice::OnRequestPacket(AudioBuffersState buffers_state) {
 void AudioDevice::OnStateChanged(AudioStreamState state) {
   if (state == kAudioStreamError) {
     DLOG(WARNING) << "AudioDevice::OnStateChanged(kError)";
+    callback_->OnError();
   }
 }
 
