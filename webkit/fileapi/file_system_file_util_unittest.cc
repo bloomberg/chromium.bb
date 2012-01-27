@@ -13,39 +13,9 @@
 #include "webkit/fileapi/file_system_test_helper.h"
 #include "webkit/fileapi/native_file_util.h"
 #include "webkit/fileapi/obfuscated_file_util.h"
+#include "webkit/fileapi/test_file_set.h"
 
-using namespace fileapi;
-
-namespace {
-
-struct CopyMoveTestCaseRecord {
-  bool is_directory;
-  const FilePath::CharType path[64];
-  int64 data_file_size;
-};
-
-const CopyMoveTestCaseRecord kCopyMoveTestCases[] = {
-  {true, FILE_PATH_LITERAL("dir a"), 0},
-  {true, FILE_PATH_LITERAL("dir a/dir a"), 0},
-  {true, FILE_PATH_LITERAL("dir a/dir d"), 0},
-  {true, FILE_PATH_LITERAL("dir a/dir d/dir e"), 0},
-  {true, FILE_PATH_LITERAL("dir a/dir d/dir e/dir f"), 0},
-  {true, FILE_PATH_LITERAL("dir a/dir d/dir e/dir g"), 0},
-  {true, FILE_PATH_LITERAL("dir a/dir d/dir e/dir h"), 0},
-  {true, FILE_PATH_LITERAL("dir b"), 0},
-  {true, FILE_PATH_LITERAL("dir b/dir a"), 0},
-  {true, FILE_PATH_LITERAL("dir c"), 0},
-  {false, FILE_PATH_LITERAL("file 0"), 38},
-  {false, FILE_PATH_LITERAL("file 2"), 60},
-  {false, FILE_PATH_LITERAL("file 3"), 0},
-  {false, FILE_PATH_LITERAL("dir a/file 0"), 39},
-  {false, FILE_PATH_LITERAL("dir a/dir d/dir e/dir g/file 0"), 40},
-  {false, FILE_PATH_LITERAL("dir a/dir d/dir e/dir g/file 1"), 41},
-  {false, FILE_PATH_LITERAL("dir a/dir d/dir e/dir g/file 2"), 42},
-  {false, FILE_PATH_LITERAL("dir a/dir d/dir e/dir g/file 3"), 50},
-};
-
-}  // namespace (anonymous)
+namespace fileapi {
 
 // This is not yet a full unit test for FileSystemFileUtil.  TODO(ericu): Adapt
 // the other subclasses' unit tests, as mentioned in the comments in
@@ -91,8 +61,9 @@ class FileSystemFileUtilTest : public testing::Test {
     // Set up all the source data.
     scoped_ptr<FileSystemOperationContext> context;
     FilePath test_root(FILE_PATH_LITERAL("root directory"));
-    for (size_t i = 0; i < arraysize(kCopyMoveTestCases); ++i) {
-      const CopyMoveTestCaseRecord& test_case = kCopyMoveTestCases[i];
+
+    for (size_t i = 0; i < test::kRegularTestCaseSize; ++i) {
+      const test::TestCaseRecord& test_case = test::kRegularTestCases[i];
       FilePath path = test_root.Append(test_case.path);
       if (test_case.is_directory) {
         context.reset(NewContext(&src_helper));
@@ -130,8 +101,8 @@ class FileSystemFileUtilTest : public testing::Test {
           file_util->Move(copy_context.get(), test_root, test_root));
 
     // Validate that the destination paths are correct.
-    for (size_t i = 0; i < arraysize(kCopyMoveTestCases); ++i) {
-      const CopyMoveTestCaseRecord& test_case = kCopyMoveTestCases[i];
+    for (size_t i = 0; i < test::kRegularTestCaseSize; ++i) {
+      const test::TestCaseRecord& test_case = test::kRegularTestCases[i];
       FilePath path = test_root.Append(test_case.path);
 
       base::PlatformFileInfo dest_file_info;
@@ -154,8 +125,8 @@ class FileSystemFileUtilTest : public testing::Test {
 
     // Validate that the source paths are still there [for a copy] or gone [for
     // a move].
-    for (size_t i = 0; i < arraysize(kCopyMoveTestCases); ++i) {
-      const CopyMoveTestCaseRecord& test_case = kCopyMoveTestCases[i];
+    for (size_t i = 0; i < test::kRegularTestCaseSize; ++i) {
+      const test::TestCaseRecord& test_case = test::kRegularTestCases[i];
       FilePath path = test_root.Append(test_case.path);
       base::PlatformFileInfo src_file_info;
       FilePath data_path;
@@ -206,3 +177,5 @@ TEST_F(FileSystemFileUtilTest, TestCrossFileSystemMoveSameOrigin) {
 
   TestCrossFileSystemCopyMoveHelper(origin, src_type, origin, dest_type, false);
 }
+
+}  // namespace fileapi

@@ -21,6 +21,7 @@
 #include "webkit/fileapi/file_system_usage_cache.h"
 #include "webkit/fileapi/mock_file_system_options.h"
 #include "webkit/fileapi/obfuscated_file_util.h"
+#include "webkit/fileapi/test_file_set.h"
 #include "webkit/quota/mock_special_storage_policy.h"
 #include "webkit/quota/quota_manager.h"
 #include "webkit/quota/quota_types.h"
@@ -79,33 +80,6 @@ const CopyMoveTestCaseRecord kCopyMoveTestCases[] = {
   {false, "dir0/file0", "dir1/file1", false},
   {true, "dir0/file0", "dir1/file1", true},
   {false, "dir0/file0", "dir1/file1", true},
-};
-
-struct MigrationTestCaseRecord {
-  bool is_directory;
-  const FilePath::CharType path[64];
-  int64 data_file_size;
-};
-
-const MigrationTestCaseRecord kMigrationTestCases[] = {
-  {true, FILE_PATH_LITERAL("dir a"), 0},
-  {true, FILE_PATH_LITERAL("dir a/dir a"), 0},
-  {true, FILE_PATH_LITERAL("dir a/dir d"), 0},
-  {true, FILE_PATH_LITERAL("dir a/dir d/dir e"), 0},
-  {true, FILE_PATH_LITERAL("dir a/dir d/dir e/dir f"), 0},
-  {true, FILE_PATH_LITERAL("dir a/dir d/dir e/dir g"), 0},
-  {true, FILE_PATH_LITERAL("dir a/dir d/dir e/dir h"), 0},
-  {true, FILE_PATH_LITERAL("dir b"), 0},
-  {true, FILE_PATH_LITERAL("dir b/dir a"), 0},
-  {true, FILE_PATH_LITERAL("dir c"), 0},
-  {false, FILE_PATH_LITERAL("file 0"), 38},
-  {false, FILE_PATH_LITERAL("file 2"), 60},
-  {false, FILE_PATH_LITERAL("file 3"), 0},
-  {false, FILE_PATH_LITERAL("dir a/file 0"), 39},
-  {false, FILE_PATH_LITERAL("dir a/dir d/dir e/dir g/file 0"), 40},
-  {false, FILE_PATH_LITERAL("dir a/dir d/dir e/dir g/file 1"), 41},
-  {false, FILE_PATH_LITERAL("dir a/dir d/dir e/dir g/file 2"), 42},
-  {false, FILE_PATH_LITERAL("dir a/dir d/dir e/dir g/file 3"), 50},
 };
 
 struct OriginEnumerationTestRecord {
@@ -1215,37 +1189,16 @@ TEST_F(ObfuscatedFileUtilTest, TestMigration) {
   FilePath root_path = source_dir.path().AppendASCII("chrome-pLmnMWXE7NzTFRsn");
   ASSERT_TRUE(file_util::CreateDirectory(root_path));
 
-  for (size_t i = 0; i < arraysize(kMigrationTestCases); ++i) {
-    SCOPED_TRACE(testing::Message() << "Creating kMigrationTestPath " << i);
-    const MigrationTestCaseRecord& test_case = kMigrationTestCases[i];
-    FilePath local_src_path = root_path.Append(test_case.path);
-    if (test_case.is_directory) {
-      ASSERT_TRUE(
-          file_util::CreateDirectory(local_src_path));
-    } else {
-      base::PlatformFileError error_code;
-      bool created = false;
-      int file_flags = base::PLATFORM_FILE_CREATE | base::PLATFORM_FILE_WRITE;
-      base::PlatformFile file_handle =
-          base::CreatePlatformFile(
-              local_src_path, file_flags, &created, &error_code);
-      EXPECT_TRUE(created);
-      ASSERT_NE(base::kInvalidPlatformFileValue, file_handle);
-      ASSERT_EQ(base::PLATFORM_FILE_OK, error_code);
-      ASSERT_TRUE(
-          base::TruncatePlatformFile(file_handle, test_case.data_file_size));
-      EXPECT_TRUE(base::ClosePlatformFile(file_handle));
-    }
-  }
+  test::SetUpRegularTestCases(root_path);
 
   EXPECT_TRUE(ofu()->MigrateFromOldSandbox(origin(), type(), root_path));
 
   FilePath new_root =
     test_directory().AppendASCII("File System").AppendASCII("000").Append(
         ofu()->GetDirectoryNameForType(type())).AppendASCII("Legacy");
-  for (size_t i = 0; i < arraysize(kMigrationTestCases); ++i) {
+  for (size_t i = 0; i < test::kRegularTestCaseSize; ++i) {
     SCOPED_TRACE(testing::Message() << "Validating kMigrationTestPath " << i);
-    const MigrationTestCaseRecord& test_case = kMigrationTestCases[i];
+    const test::TestCaseRecord& test_case = test::kRegularTestCases[i];
     FilePath local_data_path = new_root.Append(test_case.path);
 #if defined(OS_WIN)
     local_data_path = local_data_path.NormalizeWindowsPathSeparators();
@@ -1366,9 +1319,9 @@ TEST_F(ObfuscatedFileUtilTest, TestRevokeUsageCache) {
 
   int64 expected_quota = 0;
 
-  for (size_t i = 0; i < arraysize(kMigrationTestCases); ++i) {
+  for (size_t i = 0; i < test::kRegularTestCaseSize; ++i) {
     SCOPED_TRACE(testing::Message() << "Creating kMigrationTestPath " << i);
-    const MigrationTestCaseRecord& test_case = kMigrationTestCases[i];
+    const test::TestCaseRecord& test_case = test::kRegularTestCases[i];
     FilePath path(test_case.path);
     expected_quota += ObfuscatedFileUtil::ComputeFilePathCost(path);
     if (test_case.is_directory) {
