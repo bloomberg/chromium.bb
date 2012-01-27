@@ -38,7 +38,6 @@
 #include "chrome/browser/signin/token_service.h"
 #include "chrome/browser/speech/chrome_speech_input_preferences.h"
 #include "chrome/browser/sync/profile_sync_service_mock.h"
-#include "chrome/browser/ui/find_bar/find_bar_state.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -683,12 +682,6 @@ net::URLRequestContextGetter* TestingProfile::GetRequestContextForIsolatedApp(
 
 const content::ResourceContext& TestingProfile::GetResourceContext() {
   return *content::MockResourceContext::GetInstance();
-}
-
-FindBarState* TestingProfile::GetFindBarState() {
-  if (!find_bar_state_.get())
-    find_bar_state_.reset(new FindBarState());
-  return find_bar_state_.get();
 }
 
 HostContentSettingsMap* TestingProfile::GetHostContentSettingsMap() {

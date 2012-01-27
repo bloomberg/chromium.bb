@@ -78,7 +78,6 @@
 #include "chrome/browser/transport_security_persister.h"
 #include "chrome/browser/ui/browser_init.h"
 #include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/ui/find_bar/find_bar_state.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
 #include "chrome/browser/user_style_sheet_watcher.h"
@@ -957,13 +956,6 @@ UserStyleSheetWatcher* ProfileImpl::GetUserStyleSheetWatcher() {
     user_style_sheet_watcher_->Init();
   }
   return user_style_sheet_watcher_.get();
-}
-
-FindBarState* ProfileImpl::GetFindBarState() {
-  if (!find_bar_state_.get()) {
-    find_bar_state_.reset(new FindBarState());
-  }
-  return find_bar_state_.get();
 }
 
 GAIAInfoUpdateService* ProfileImpl::GetGAIAInfoUpdateService() {

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,7 @@
 
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/find_bar/find_bar_state.h"
+#include "chrome/browser/ui/find_bar/find_bar_state_factory.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_service.h"
@@ -42,7 +43,7 @@ void FindTabHelper::StartFinding(string16 search_string,
     Profile* profile =
         Profile::FromBrowserContext(web_contents()->GetBrowserContext());
     string16 last_search_prepopulate_text =
-        FindBarState::GetLastPrepopulateText(profile);
+        FindBarStateFactory::GetLastPrepopulateText(profile);
 
     // Try the last thing we searched for on this tab, then the last thing
     // searched for on any tab.
@@ -78,7 +79,7 @@ void FindTabHelper::StartFinding(string16 search_string,
   // Keep track of what the last search was across the tabs.
   Profile* profile =
       Profile::FromBrowserContext(web_contents()->GetBrowserContext());
-  FindBarState* find_bar_state = profile->GetFindBarState();
+  FindBarState* find_bar_state = FindBarStateFactory::GetForProfile(profile);
   find_bar_state->set_last_prepopulate_text(find_text_);
 
   WebFindOptions options;

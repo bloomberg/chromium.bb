@@ -110,7 +110,6 @@ class ProfileImpl : public Profile,
   virtual net::SSLConfigService* GetSSLConfigService() OVERRIDE;
   virtual HostContentSettingsMap* GetHostContentSettingsMap() OVERRIDE;
   virtual UserStyleSheetWatcher* GetUserStyleSheetWatcher() OVERRIDE;
-  virtual FindBarState* GetFindBarState() OVERRIDE;
   virtual bool HasProfileSyncService() OVERRIDE;
   virtual bool DidLastSessionExitCleanly() OVERRIDE;
   virtual BookmarkModel* GetBookmarkModel() OVERRIDE;
@@ -252,7 +251,6 @@ class ProfileImpl : public Profile,
       geolocation_permission_context_;
   scoped_refptr<SpeechInputPreferences> speech_input_preferences_;
   scoped_refptr<UserStyleSheetWatcher> user_style_sheet_watcher_;
-  scoped_ptr<FindBarState> find_bar_state_;
   scoped_ptr<GAIAInfoUpdateService> gaia_info_update_service_;
   scoped_refptr<HistoryService> history_service_;
   scoped_ptr<FaviconService> favicon_service_;

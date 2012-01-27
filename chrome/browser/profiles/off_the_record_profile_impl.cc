@@ -35,7 +35,6 @@
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/transport_security_persister.h"
-#include "chrome/browser/ui/find_bar/find_bar_state.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
 #include "chrome/common/chrome_constants.h"
@@ -413,12 +412,6 @@ SpeechInputPreferences* OffTheRecordProfileImpl::GetSpeechInputPreferences() {
 
 UserStyleSheetWatcher* OffTheRecordProfileImpl::GetUserStyleSheetWatcher() {
   return profile_->GetUserStyleSheetWatcher();
-}
-
-FindBarState* OffTheRecordProfileImpl::GetFindBarState() {
-  if (!find_bar_state_.get())
-    find_bar_state_.reset(new FindBarState());
-  return find_bar_state_.get();
 }
 
 bool OffTheRecordProfileImpl::HasProfileSyncService() {

@@ -34,7 +34,6 @@ class ExtensionPrefs;
 class ExtensionPrefValueMap;
 class ExtensionSpecialStoragePolicy;
 class FaviconService;
-class FindBarState;
 class HistoryService;
 class HostContentSettingsMap;
 class PrefService;
@@ -227,7 +226,6 @@ class TestingProfile : public Profile {
 
   virtual net::SSLConfigService* GetSSLConfigService() OVERRIDE;
   virtual UserStyleSheetWatcher* GetUserStyleSheetWatcher() OVERRIDE;
-  virtual FindBarState* GetFindBarState() OVERRIDE;
   virtual HostContentSettingsMap* GetHostContentSettingsMap() OVERRIDE;
   virtual content::GeolocationPermissionContext*
       GetGeolocationPermissionContext() OVERRIDE;
@@ -379,9 +377,6 @@ class TestingProfile : public Profile {
       geolocation_permission_context_;
 
   scoped_refptr<SpeechInputPreferences> speech_input_preferences_;
-
-  // Find bar state.  Created lazily by GetFindBarState().
-  scoped_ptr<FindBarState> find_bar_state_;
 
   FilePath last_selected_directory_;
   scoped_refptr<history::TopSites> top_sites_;  // For history and thumbnails.

@@ -84,7 +84,6 @@ class OffTheRecordProfileImpl : public Profile,
       GetGeolocationPermissionContext() OVERRIDE;
   virtual SpeechInputPreferences* GetSpeechInputPreferences() OVERRIDE;
   virtual UserStyleSheetWatcher* GetUserStyleSheetWatcher() OVERRIDE;
-  virtual FindBarState* GetFindBarState() OVERRIDE;
   virtual bool HasProfileSyncService() OVERRIDE;
   virtual bool DidLastSessionExitCleanly() OVERRIDE;
   virtual BookmarkModel* GetBookmarkModel() OVERRIDE;
@@ -165,9 +164,6 @@ class OffTheRecordProfileImpl : public Profile,
   // profile because then the main profile would learn some of the host names
   // the user visited while OTR.
   scoped_ptr<SSLHostState> ssl_host_state_;
-  // Use a separate FindBarState so search terms do not leak back to the main
-  // profile.
-  scoped_ptr<FindBarState> find_bar_state_;
 
   // Time we were started.
   Time start_time_;

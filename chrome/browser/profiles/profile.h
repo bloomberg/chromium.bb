@@ -31,7 +31,6 @@ class ExtensionProcessManager;
 class ExtensionService;
 class ExtensionSpecialStoragePolicy;
 class FaviconService;
-class FindBarState;
 class GAIAInfoUpdateService;
 class HistoryService;
 class HostContentSettingsMap;
@@ -382,10 +381,6 @@ class Profile : public content::BrowserContext {
 
   // Returns the user style sheet watcher.
   virtual UserStyleSheetWatcher* GetUserStyleSheetWatcher() = 0;
-
-  // Returns the find bar state for this profile.  The find bar state is lazily
-  // created the first time that this method is called.
-  virtual FindBarState* GetFindBarState() = 0;
 
   // Returns true if this profile has a profile sync service.
   // TODO(tim): Bug 93922 - remove this.

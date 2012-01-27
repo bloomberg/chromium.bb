@@ -13,6 +13,7 @@
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/ui/find_bar/find_bar_controller.h"
 #include "chrome/browser/ui/find_bar/find_bar_state.h"
+#include "chrome/browser/ui/find_bar/find_bar_state_factory.h"
 #include "chrome/browser/ui/find_bar/find_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/view_ids.h"
@@ -408,7 +409,8 @@ void FindBarView::ContentsChanged(views::Textfield* sender,
     // sent for a lot more things than just the user nulling out the search
     // terms. See http://crbug.com/45372.
     FindBarState* find_bar_state =
-        controller->tab_contents()->profile()->GetFindBarState();
+        FindBarStateFactory::GetForProfile(
+            controller->tab_contents()->profile());
     find_bar_state->set_last_prepopulate_text(string16());
   }
 }

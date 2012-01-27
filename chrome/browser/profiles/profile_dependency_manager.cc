@@ -30,6 +30,7 @@
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/tabs/pinned_tab_service_factory.h"
 #include "chrome/browser/themes/theme_service_factory.h"
+#include "chrome/browser/ui/find_bar/find_bar_state_factory.h"
 #include "chrome/browser/ui/global_error_service_factory.h"
 #include "chrome/browser/ui/webui/ntp/ntp_resource_cache_factory.h"
 
@@ -166,6 +167,7 @@ void ProfileDependencyManager::AssertFactoriesBuilt() {
   CookieSettings::Factory::GetInstance();
   DesktopNotificationServiceFactory::GetInstance();
   DownloadServiceFactory::GetInstance();
+  FindBarStateFactory::GetInstance();
   GlobalErrorServiceFactory::GetInstance();
   NetworkActionPredictorFactory::GetInstance();
   NTPResourceCacheFactory::GetInstance();
