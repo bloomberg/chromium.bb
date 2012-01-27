@@ -408,20 +408,19 @@ internal::ImageRep* Image::GetRepresentation(
 
   // Handle Skia-to-native conversions.
   if (default_rep->type() == Image::kImageRepSkia) {
+    internal::ImageRepSkia* skia_rep = default_rep->AsImageRepSkia();
     internal::ImageRep* native_rep = NULL;
 #if defined(USE_AURA)
     static_cast<void>(skia_rep);
     NOTIMPLEMENTED();
 #elif defined(TOOLKIT_USES_GTK)
     if (rep_type == Image::kImageRepGdk) {
-      GdkPixbuf* pixbuf = gfx::GdkPixbufFromSkBitmap(
-          default_rep->AsImageRepSkia()->bitmap());
+      GdkPixbuf* pixbuf = gfx::GdkPixbufFromSkBitmap(skia_rep->bitmap());
       native_rep = new internal::ImageRepGdk(pixbuf);
     }
 #elif defined(OS_MACOSX)
     if (rep_type == Image::kImageRepCocoa) {
-      NSImage* image = gfx::SkBitmapsToNSImage(
-          default_rep->AsImageRepSkia()->bitmaps());
+      NSImage* image = gfx::SkBitmapsToNSImage(skia_rep->bitmaps());
       base::mac::NSObjectRetain(image);
       native_rep = new internal::ImageRepCocoa(image);
     }
