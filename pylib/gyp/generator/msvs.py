@@ -963,7 +963,6 @@ def _GetMSVSConfigurationType(spec, build_file):
         'loadable_module': '2',  # .dll
         'static_library': '4',  # .lib
         'none': '10',  # Utility type
-        'dummy_executable': '1',  # .exe
         }[spec['type']]
   except KeyError:
     if spec.get('type'):
@@ -1120,7 +1119,6 @@ def _GetOutputFilePathAndTool(spec):
       # VisualStudio 2010, we will have to change the value of $(OutDir)
       # to contain the \lib suffix, rather than doing it as below.
       'static_library': ('VCLibrarianTool', 'Lib', '$(OutDir)\\lib\\', '.lib'),
-      'dummy_executable': ('VCLinkerTool', 'Link', '$(IntDir)\\', '.junk'),
   }
   output_file_props = output_file_map.get(spec['type'])
   if output_file_props and int(spec.get('msvs_auto_output_file', 1)):
@@ -1322,12 +1320,6 @@ def _AdjustSourcesAndConvertToFilterHierarchy(
   # Convert to folders and the right slashes.
   sources = [i.split('\\') for i in sources]
   sources = _ConvertSourcesToFilterHierarchy(sources, excluded=fully_excluded)
-  # Add in dummy file for type none.
-  if spec['type'] == 'dummy_executable':
-    # Pull in a dummy main so it can link successfully.
-    dummy_relpath = gyp.common.RelativePath(
-        options.depth + '\\tools\\gyp\\gyp_dummy.c', gyp_dir)
-    sources.append(dummy_relpath)
 
   return sources, excluded_sources, excluded_idl
 
