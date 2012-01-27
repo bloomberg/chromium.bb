@@ -86,18 +86,15 @@ void CompactLayoutManager::OnChildWindowVisibilityChanged(aura::Window* child,
   BaseLayoutManager::OnChildWindowVisibilityChanged(child, visible);
   UpdateStatusAreaVisibility();
   if (ShouldAnimateOnEntrance(child)) {
-    int total_width = LayoutWindows(visible ? NULL : child);
+    LayoutWindows(visible ? NULL : child);
     if (visible) {
-      AnimateSlideTo(child->bounds().x());
       current_window_ = child;
+      AnimateSlideTo(child->bounds().x());
     } else if (child == current_window_) {
-      current_window_ = NULL;
-      // If the rightmost window is going invisible, we need to animate
-      // the layer away from that location.
-      if (child->bounds().x() >= total_width) {
-        current_window_ = FindFirstWindow();
-        if (current_window_)
-          AnimateSlideTo(current_window_->bounds().x());
+      current_window_ = FindReplacementWindow(child);
+      if (current_window_) {
+        ActivateWindow(current_window_);
+        AnimateSlideTo(current_window_->bounds().x());
       }
     }
   }
@@ -132,10 +129,11 @@ void CompactLayoutManager::OnWindowPropertyChanged(aura::Window* window,
 }
 
 void CompactLayoutManager::OnWindowStackingChanged(aura::Window* window) {
-  if (current_window_ != window && ShouldAnimateOnEntrance(window)) {
+  if ((!current_window_ || current_window_ != window) &&
+      ShouldAnimateOnEntrance(window)) {
     LayoutWindows(current_window_);
-    AnimateSlideTo(window->bounds().x());
     current_window_ = window;
+    AnimateSlideTo(window->bounds().x());
   }
 }
 
@@ -180,7 +178,7 @@ void CompactLayoutManager::AnimateSlideTo(int offset_x) {
   GetDefaultContainerLayer()->SetTransform(transform);  // Will be animated!
 }
 
-int CompactLayoutManager::LayoutWindows(aura::Window* skip) {
+void CompactLayoutManager::LayoutWindows(aura::Window* skip) {
   ShellDelegate* shell_delegate = ash::Shell::GetInstance()->delegate();
   const WindowList& windows_list = shell_delegate->GetCycleWindowList(
       ShellDelegate::SOURCE_KEYBOARD,
@@ -197,7 +195,6 @@ int CompactLayoutManager::LayoutWindows(aura::Window* skip) {
       new_x += (*const_it)->bounds().width();
     }
   }
-  return new_x;
 }
 
 void CompactLayoutManager::HideWindows() {
@@ -205,7 +202,15 @@ void CompactLayoutManager::HideWindows() {
   const WindowList& windows_list = shell_delegate->GetCycleWindowList(
       ShellDelegate::SOURCE_KEYBOARD,
       ShellDelegate::ORDER_LINEAR);
-  if (current_window_ == NULL) return;
+  // If we do not know which one is the current window, or if the current
+  // window is not visible, do not attempt to hide the windows.
+  if (current_window_ == NULL)
+    return;
+  // Current window should be visible, if not it is an error and we shouldn't
+  // proceed.
+  if (!current_window_->IsVisible())
+    NOTREACHED() << "Current window is invisible";
+
   for (WindowListConstIter const_it = windows_list.begin();
        const_it != windows_list.end();
        ++const_it) {
@@ -214,14 +219,20 @@ void CompactLayoutManager::HideWindows() {
   }
 }
 
-aura::Window* CompactLayoutManager::FindFirstWindow() {
+aura::Window* CompactLayoutManager::FindReplacementWindow(
+    aura::Window* window) {
   ShellDelegate* shell_delegate = ash::Shell::GetInstance()->delegate();
   const WindowList& windows_list = shell_delegate->GetCycleWindowList(
       ShellDelegate::SOURCE_KEYBOARD,
       ShellDelegate::ORDER_LINEAR);
-  WindowListConstIter const_it = windows_list.begin();
-  if (const_it != windows_list.end())
-    return *const_it;
+  WindowListConstIter const_it = std::find(windows_list.begin(),
+                                           windows_list.end(),
+                                           window);
+  if (windows_list.size() > 1 && const_it != windows_list.end()) {
+    if (++const_it != windows_list.end())
+      return *const_it;
+    return *windows_list.begin();
+  }
   return NULL;
 }
 

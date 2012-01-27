@@ -66,14 +66,15 @@ class ASH_EXPORT CompactLayoutManager : public BaseLayoutManager,
 
   // Layout all browser windows currently in the window cycle list.
   // skip |skip_this_window| if we do not want the window to be laid out.
-  int LayoutWindows(aura::Window* skip_this_window);
+  void LayoutWindows(aura::Window* skip_this_window);
 
   // Hides all but the |current_window_| in the windows list. If we
   // cannot determine the |current_window_|, we do not hide any.
   void HideWindows();
 
-  // Returns the first window in the window cycle list.
-  aura::Window* FindFirstWindow();
+  // Returns the next window after |window| in the window cycle list.
+  // This could return NULL if we cannot find a next window.
+  aura::Window* FindReplacementWindow(aura::Window* window);
 
   // Status area with clock, network, battery, etc. icons. May be NULL if the
   // shelf is managing the status area.
