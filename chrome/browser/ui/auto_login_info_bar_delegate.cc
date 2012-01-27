@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/auto_login_info_bar_delegate.h"
 
 #include "base/logging.h"
+#include "base/metrics/histogram.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -32,6 +33,17 @@
 #include "ui/base/resource/resource_bundle.h"
 
 using content::NavigationController;
+
+namespace {
+
+// Enum values used for UMA histograms.
+enum {
+  HISTOGRAM_SHOWN,
+  HISTOGRAM_ACCEPTED,
+  HISTOGRAM_REJECTED,
+  HISTOGRAM_IGNORED,
+  HISTOGRAM_MAX
+};
 
 // AutoLoginRedirector --------------------------------------------------------
 
@@ -122,6 +134,8 @@ void AutoLoginRedirector::RedirectToMergeSession(const std::string& token) {
       std::string());
 }
 
+}  // namepsace
+
 
 // AutoLoginInfoBarDelegate ---------------------------------------------------
 
@@ -137,10 +151,15 @@ AutoLoginInfoBarDelegate::AutoLoginInfoBarDelegate(
       token_service_(token_service),
       pref_service_(pref_service),
       username_(username),
-      args_(args) {
+      args_(args),
+      button_pressed_(false) {
+  RecordHistogramAction(HISTOGRAM_SHOWN);
 }
 
 AutoLoginInfoBarDelegate::~AutoLoginInfoBarDelegate() {
+  if (!button_pressed_) {
+    RecordHistogramAction(HISTOGRAM_IGNORED);
+  }
 }
 
 gfx::Image* AutoLoginInfoBarDelegate::GetIcon() const {
@@ -166,12 +185,20 @@ string16 AutoLoginInfoBarDelegate::GetButtonLabel(
 bool AutoLoginInfoBarDelegate::Accept() {
   // AutoLoginRedirector deletes itself.
   new AutoLoginRedirector(token_service_, navigation_controller_, args_);
+  RecordHistogramAction(HISTOGRAM_ACCEPTED);
+  button_pressed_ = true;
   return true;
 }
 
 bool AutoLoginInfoBarDelegate::Cancel() {
   pref_service_->SetBoolean(prefs::kAutologinEnabled, false);
+  RecordHistogramAction(HISTOGRAM_REJECTED);
+  button_pressed_ = true;
   return true;
+}
+
+void AutoLoginInfoBarDelegate::RecordHistogramAction(int action) {
+  UMA_HISTOGRAM_ENUMERATION("AutoLogin.Regular", action, HISTOGRAM_MAX);
 }
 
 
@@ -185,11 +212,16 @@ ReverseAutoLoginInfoBarDelegate::ReverseAutoLoginInfoBarDelegate(
     : ConfirmInfoBarDelegate(owner),
       navigation_controller_(navigation_controller),
       pref_service_(pref_service),
-      continue_url_(continue_url) {
+      continue_url_(continue_url),
+      button_pressed_(false) {
   DCHECK(!continue_url.empty());
+  RecordHistogramAction(HISTOGRAM_SHOWN);
 }
 
 ReverseAutoLoginInfoBarDelegate::~ReverseAutoLoginInfoBarDelegate() {
+  if (!button_pressed_) {
+    RecordHistogramAction(HISTOGRAM_IGNORED);
+  }
 }
 
 gfx::Image* ReverseAutoLoginInfoBarDelegate::GetIcon() const {
@@ -220,15 +252,23 @@ bool ReverseAutoLoginInfoBarDelegate::Accept() {
   // with credentials for the same account.  The syncpromo will eventually
   // redirect back to the continue URL, so the user ends up on the page they
   // would have landed on with the regular google login.
-  GURL sync_promo_url = SyncPromoUI::GetSyncPromoURL(GURL(continue_url_),
-                                                     false);
+  GURL sync_promo_url = SyncPromoUI::GetSyncPromoURL(GURL(continue_url_), false,
+                                                     "ReverseAutoLogin");
   navigation_controller_->LoadURL(sync_promo_url, content::Referrer(),
                                   content::PAGE_TRANSITION_AUTO_BOOKMARK,
                                   std::string());
+  RecordHistogramAction(HISTOGRAM_ACCEPTED);
+  button_pressed_ = true;
   return true;
 }
 
 bool ReverseAutoLoginInfoBarDelegate::Cancel() {
   pref_service_->SetBoolean(prefs::kReverseAutologinEnabled, false);
+  RecordHistogramAction(HISTOGRAM_REJECTED);
+  button_pressed_ = true;
   return true;
+}
+
+void ReverseAutoLoginInfoBarDelegate::RecordHistogramAction(int action) {
+  UMA_HISTOGRAM_ENUMERATION("AutoLogin.Reverse", action, HISTOGRAM_MAX);
 }

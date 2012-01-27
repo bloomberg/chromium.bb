@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -34,10 +34,11 @@ using content::WebContents;
 namespace {
 
 const char kStringsJsFile[] = "strings.js";
-const char kSyncPromoJsFile[]  = "sync_promo.js";
+const char kSyncPromoJsFile[] = "sync_promo.js";
 
 const char kSyncPromoQueryKeyIsLaunchPage[] = "is_launch_page";
-const char kSyncPromoQueryKeyNextPage[]  = "next_page";
+const char kSyncPromoQueryKeyNextPage[] = "next_page";
+const char kSyncPromoQueryKeySource[] = "source";
 
 // The maximum number of times we want to show the sync promo at startup.
 const int kSyncPromoShowAtStartupMaximum = 10;
@@ -110,6 +111,7 @@ SyncPromoUI::SyncPromoUI(content::WebUI* web_ui) : WebUIController(web_ui) {
   web_ui->HideURL();
 
   SyncPromoHandler* handler = new SyncPromoHandler(
+      GetSourceForSyncPromoURL(web_ui->GetWebContents()->GetURL()),
       g_browser_process->profile_manager());
   web_ui->AddMessageHandler(handler);
 
@@ -233,11 +235,14 @@ void SyncPromoUI::SetUserSkippedSyncPromo(Profile* profile) {
 }
 
 // static
-GURL SyncPromoUI::GetSyncPromoURL(const GURL& next_page, bool show_title) {
+GURL SyncPromoUI::GetSyncPromoURL(const GURL& next_page,
+                                  bool show_title,
+                                  const std::string& source) {
   std::stringstream stream;
   stream << chrome::kChromeUISyncPromoURL << "?"
          << kSyncPromoQueryKeyIsLaunchPage << "="
-         << (show_title ? "true" : "false");
+         << (show_title ? "true" : "false") << "&"
+         << kSyncPromoQueryKeySource << "=" << source;
 
   if (!next_page.spec().empty()) {
     url_canon::RawCanonOutputT<char> output;
@@ -271,6 +276,13 @@ GURL SyncPromoUI::GetNextPageURLForSyncPromoURL(const GURL& url) {
     return GURL(url);
   }
   return GURL();
+}
+
+// static
+std::string SyncPromoUI::GetSourceForSyncPromoURL(const GURL& url) {
+  std::string value;
+  return GetValueForKeyInQuery(url, kSyncPromoQueryKeySource, &value) ?
+      value : std::string();
 }
 
 // static

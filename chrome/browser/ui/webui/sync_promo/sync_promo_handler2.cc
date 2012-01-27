@@ -68,9 +68,12 @@ static void RecordExperimentOutcomesOnSignIn() {
 
 namespace options2 {
 
-SyncPromoHandler2::SyncPromoHandler2(ProfileManager* profile_manager)
+SyncPromoHandler2::SyncPromoHandler2(const std::string& source,
+                                     ProfileManager* profile_manager)
     : SyncSetupHandler2(profile_manager),
       window_already_closed_(false) {
+  if (!source.empty())
+    histogram_name_ = "SyncPromo." + source + ".UserFlow";
 }
 
 SyncPromoHandler2::~SyncPromoHandler2() {
@@ -298,6 +301,16 @@ void SyncPromoHandler2::RecordUserFlowAction(int action) {
   // Send an enumeration to our single user flow histogram.
   UMA_HISTOGRAM_ENUMERATION("SyncPromo.UserFlow", action,
                             SYNC_PROMO_BUCKET_BOUNDARY);
+
+  // The following call does not use the standard UMA macro because the
+  // histogram name is only known at runtime.  The standard macros declare
+  // static variables that won't work if the name changes on differnt calls.
+  if (!histogram_name_.empty()) {
+    base::Histogram* histogram = base::LinearHistogram::FactoryGet(
+        histogram_name_, 1, SYNC_PROMO_BUCKET_BOUNDARY,
+        SYNC_PROMO_BUCKET_BOUNDARY + 1, base::Histogram::kNoFlags);
+    histogram->Add(action);
+  }
 }
 
 }  // namespace options2

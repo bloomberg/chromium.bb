@@ -35,11 +35,14 @@ class AutoLoginInfoBarDelegate : public ConfirmInfoBarDelegate {
   virtual bool Accept() OVERRIDE;
   virtual bool Cancel() OVERRIDE;
 
+  void RecordHistogramAction(int action);
+
   content::NavigationController* navigation_controller_;
   TokenService* token_service_;
   PrefService* pref_service_;
   std::string username_;
   std::string args_;
+  bool button_pressed_;
 
   DISALLOW_COPY_AND_ASSIGN(AutoLoginInfoBarDelegate);
 };
@@ -64,11 +67,14 @@ class ReverseAutoLoginInfoBarDelegate : public ConfirmInfoBarDelegate {
   virtual bool Accept() OVERRIDE;
   virtual bool Cancel() OVERRIDE;
 
+  void RecordHistogramAction(int action);
+
   content::NavigationController* navigation_controller_;
   TokenService* token_service_;
   PrefService* pref_service_;
   const std::string username_;
   const std::string continue_url_;
+  bool button_pressed_;
 
   DISALLOW_COPY_AND_ASSIGN(ReverseAutoLoginInfoBarDelegate);
 };

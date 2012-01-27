@@ -1410,7 +1410,8 @@ void BrowserInit::LaunchWithProfile::AddStartupURLs(
     SyncPromoUI::DidShowSyncPromoAtStartup(profile_);
     GURL old_url = (*startup_urls)[0];
     (*startup_urls)[0] =
-        SyncPromoUI::GetSyncPromoURL(GURL(chrome::kChromeUINewTabURL), true);
+        SyncPromoUI::GetSyncPromoURL(GURL(chrome::kChromeUINewTabURL), true,
+                                     std::string());
 
     // An empty URL means to go to the home page.
     if (old_url.is_empty() &&

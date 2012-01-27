@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -45,13 +45,21 @@ class SyncPromoUI : public content::WebUIController {
   // |next_page| is the URL to navigate to when the user completes or skips the
   // promo. If an empty URL is given then the promo will navigate to the NTP.
   // If |show_title| is true then the promo title is made visible.
-  static GURL GetSyncPromoURL(const GURL& next_page, bool show_title);
+  // |source| is a string that identifies from where the sync promo is being
+  // called, and is used to record sync promo UMA stats in the context of the
+  // source.
+  static GURL GetSyncPromoURL(const GURL& next_page,
+                              bool show_title,
+                              const std::string& source);
 
   // Gets the is launch page value from the query portion of the sync promo URL.
   static bool GetIsLaunchPageForSyncPromoURL(const GURL& url);
 
   // Gets the next page URL from the query portion of the sync promo URL.
   static GURL GetNextPageURLForSyncPromoURL(const GURL& url);
+
+  // Gets the source from the query portion of the sync promo URL.
+  static std::string GetSourceForSyncPromoURL(const GURL& url);
 
   // Returns true if the sync promo page was ever shown at startup.
   static bool UserHasSeenSyncPromoAtStartup(Profile* profile);
