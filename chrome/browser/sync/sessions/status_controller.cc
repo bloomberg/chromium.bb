@@ -225,9 +225,6 @@ void StatusController::set_commit_set(const OrderedCommitSet& commit_set) {
   shared_.commit_set = commit_set;
 }
 
-void StatusController::update_conflict_sets_built(bool built) {
-  shared_.control_params.conflict_sets_built |= built;
-}
 void StatusController::update_conflicts_resolved(bool resolved) {
   shared_.control_params.conflicts_resolved |= resolved;
 }

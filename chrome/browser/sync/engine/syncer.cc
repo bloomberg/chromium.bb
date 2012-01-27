@@ -240,10 +240,7 @@ void Syncer::SyncShare(sessions::SyncSession* session,
       case BUILD_AND_PROCESS_CONFLICT_SETS: {
         BuildAndProcessConflictSetsCommand build_process_conflict_sets;
         build_process_conflict_sets.Execute(session);
-        if (session->status_controller().conflict_sets_built())
-          next_step = SYNCER_END;
-        else
-          next_step = RESOLVE_CONFLICTS;
+        next_step = RESOLVE_CONFLICTS;
         break;
       }
       case RESOLVE_CONFLICTS: {

@@ -43,25 +43,9 @@ class BuildAndProcessConflictSetsCommand : public ModelChangingSyncerCommand {
       sessions::SyncSession* session) OVERRIDE;
 
  private:
-  bool BuildAndProcessConflictSets(sessions::SyncSession* session);
-
-  bool ProcessSingleDirectionConflictSets(
-      syncable::WriteTransaction* trans, ConflictResolver* resolver,
-      Cryptographer* cryptographer, sessions::StatusController* status,
-      const ModelSafeRoutingInfo& routes);
-  bool ApplyUpdatesTransactionally(
-      syncable::WriteTransaction* trans,
-      const std::vector<syncable::Id>* const update_set,
-      ConflictResolver* resolver,
-      Cryptographer* cryptographer,
-      const ModelSafeRoutingInfo& routes,
-      sessions::StatusController* status);
   void BuildConflictSets(syncable::BaseTransaction* trans,
                          sessions::ConflictProgress* conflict_progress);
 
-  void MergeSetsForNameClash(syncable::BaseTransaction* trans,
-                             syncable::Entry* entry,
-                             sessions::ConflictProgress* conflict_progress);
   void MergeSetsForIntroducedLoops(syncable::BaseTransaction* trans,
       syncable::Entry* entry,
       sessions::ConflictProgress* conflict_progress);

@@ -138,9 +138,6 @@ class StatusController {
   }
 
   // Control parameters for sync cycles.
-  bool conflict_sets_built() const {
-    return shared_.control_params.conflict_sets_built;
-  }
   bool conflicts_resolved() const {
     return shared_.control_params.conflicts_resolved;
   }
@@ -232,7 +229,6 @@ class StatusController {
   void set_last_process_commit_response_result(const SyncerError result);
 
   void set_commit_set(const OrderedCommitSet& commit_set);
-  void update_conflict_sets_built(bool built);
   void update_conflicts_resolved(bool resolved);
   void reset_conflicts_resolved();
   void set_items_committed();

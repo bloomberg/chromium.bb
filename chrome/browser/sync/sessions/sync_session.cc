@@ -189,7 +189,6 @@ bool SyncSession::HasMoreToSync() const {
   const StatusController* status = status_controller_.get();
   return ((status->commit_ids().size() < status->unsynced_handles().size()) &&
       status->syncer_status().num_successful_commits > 0) ||
-      status->conflict_sets_built() ||
       status->conflicts_resolved();
       // Or, we have conflicting updates, but we're making progress on
       // resolving them...

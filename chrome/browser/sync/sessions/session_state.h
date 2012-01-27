@@ -258,14 +258,9 @@ class UpdateProgress {
 };
 
 struct SyncCycleControlParameters {
-  SyncCycleControlParameters() : conflict_sets_built(false),
-                                 conflicts_resolved(false),
+  SyncCycleControlParameters() : conflicts_resolved(false),
                                  items_committed(false),
                                  debug_info_sent(false) {}
-  // Set to true by BuildAndProcessConflictSetsCommand if the RESOLVE_CONFLICTS
-  // step is needed.
-  bool conflict_sets_built;
-
   // Set to true by ResolveConflictsCommand if any forward progress was made.
   bool conflicts_resolved;
 
