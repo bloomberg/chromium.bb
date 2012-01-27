@@ -7,12 +7,55 @@
 #include "base/base64.h"
 #include "base/string_util.h"
 #include "crypto/rsa_private_key.h"
+#include "remoting/protocol/channel_authenticator.h"
 #include "remoting/protocol/v1_authenticator.h"
 #include "remoting/protocol/v2_authenticator.h"
+#include "third_party/libjingle/source/talk/xmllite/xmlelement.h"
 
 namespace remoting {
 namespace protocol {
 
+namespace {
+
+// Authenticator that accepts one message and rejects connection after that.
+class RejectingAuthenticator : public Authenticator {
+ public:
+  RejectingAuthenticator()
+      : state_(WAITING_MESSAGE) {
+  }
+  virtual ~RejectingAuthenticator() {
+  }
+
+  virtual State state() const OVERRIDE {
+    return state_;
+  }
+
+  virtual RejectionReason rejection_reason() const OVERRIDE {
+    DCHECK_EQ(state_, REJECTED);
+    return INVALID_CREDENTIALS;
+  }
+
+  virtual void ProcessMessage(const buzz::XmlElement* message) OVERRIDE {
+    DCHECK_EQ(state_, WAITING_MESSAGE);
+    state_ = REJECTED;
+  }
+
+  virtual scoped_ptr<buzz::XmlElement> GetNextMessage() OVERRIDE {
+    NOTREACHED();
+    return scoped_ptr<buzz::XmlElement>(NULL);
+  }
+
+  virtual scoped_ptr<ChannelAuthenticator>
+  CreateChannelAuthenticator() const OVERRIDE {
+    NOTREACHED();
+    return scoped_ptr<ChannelAuthenticator>(NULL);
+  }
+
+ protected:
+  State state_;
+};
+
+}  // namespace
 
 bool SharedSecretHash::Parse(const std::string& as_string) {
   size_t separator = as_string.find(':');
@@ -54,18 +97,14 @@ Me2MeHostAuthenticatorFactory::~Me2MeHostAuthenticatorFactory() {
 scoped_ptr<Authenticator> Me2MeHostAuthenticatorFactory::CreateAuthenticator(
     const std::string& remote_jid,
     const buzz::XmlElement* first_message) {
-  // Reject incoming connection if the client's jid is not an ASCII string.
-  if (!IsStringASCII(remote_jid)) {
-    LOG(ERROR) << "Rejecting incoming connection from " << remote_jid;
-    return scoped_ptr<Authenticator>(NULL);
-  }
-
-  // Check that the client has the same bare jid as the host, i.e.
-  // client's full JID starts with host's bare jid. Comparison is case
+  // Verify that the client's jid is an ASCII string, and then check
+  // that the client has the same bare jid as the host, i.e. client's
+  // full JID starts with host's bare jid. Comparison is case
   // insensitive.
-  if (!StartsWithASCII(remote_jid, local_jid_prefix_, false)) {
+  if (!IsStringASCII(remote_jid) ||
+      !StartsWithASCII(remote_jid, local_jid_prefix_, false)) {
     LOG(ERROR) << "Rejecting incoming connection from " << remote_jid;
-    return scoped_ptr<Authenticator>(NULL);
+    return scoped_ptr<Authenticator>(new RejectingAuthenticator());
   }
 
   if (V2Authenticator::IsEkeMessage(first_message)) {
