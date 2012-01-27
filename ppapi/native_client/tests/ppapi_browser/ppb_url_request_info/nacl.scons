@@ -36,7 +36,11 @@ node = env.PPAPIBrowserTester(
     files=env.ExtractPublishedFiles(nexe),
     browser_flags=['--enable-pepper-testing'])
 
+# This test is being deprecated and is no longer part of chrome_browser_tests
+# that are run automatically during nacl_intergration on the chrome bots.
+# It is still around for reference when fixing and porting TestAppendFileToBody.
+# see crbug.com/110242.
 env.AddNodeToTestSuite(node,
                        ['chrome_browser_tests'],
                        'run_ppapi_ppb_url_request_info_browser_test',
-                       is_broken=env.PPAPIBrowserTesterIsBroken())
+                       is_broken=True)
