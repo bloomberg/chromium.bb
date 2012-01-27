@@ -1504,7 +1504,10 @@ bool RenderWidget::CanComposeInline() {
 
 WebScreenInfo RenderWidget::screenInfo() {
   WebScreenInfo results;
-  Send(new ViewHostMsg_GetScreenInfo(routing_id_, host_window_, &results));
+  if (host_window_)
+    Send(new ViewHostMsg_GetScreenInfo(routing_id_, host_window_, &results));
+  else
+    DLOG(WARNING) << "Unable to retrieve screen information, no host window";
   return results;
 }
 
