@@ -64,6 +64,7 @@
 #include "content/renderer/media/media_stream_impl.h"
 #include "content/renderer/media/render_media_log.h"
 #include "content/renderer/mhtml_generator.h"
+#include "content/renderer/mouse_lock_dispatcher.h"
 #include "content/renderer/notification_provider.h"
 #include "content/renderer/p2p/socket_dispatcher.h"
 #include "content/renderer/plugin_channel_host.h"
@@ -335,6 +336,36 @@ struct RenderViewImpl::PendingFileChooser {
   WebFileChooserCompletion* completion;  // MAY BE NULL to skip callback.
 };
 
+namespace {
+
+class WebWidgetLockTarget : public MouseLockDispatcher::LockTarget {
+ public:
+  WebWidgetLockTarget (WebKit::WebWidget* webwidget)
+      : webwidget_(webwidget) {}
+
+  virtual void OnLockMouseACK(bool succeeded) OVERRIDE {
+    if (succeeded)
+      webwidget_->didAcquirePointerLock();
+    else
+      webwidget_->didNotAcquirePointerLock();
+  }
+
+  virtual void OnMouseLockLost() OVERRIDE {
+    webwidget_->didLosePointerLock();
+  }
+
+  virtual bool HandleMouseLockedInputEvent(
+      const WebKit::WebMouseEvent &event) OVERRIDE {
+    // The WebWidget handles mouse lock in WebKit's handleInputEvent().
+    return false;
+  }
+
+ private:
+  WebKit::WebWidget* webwidget_;
+};
+
+}  // namespace
+
 RenderViewImpl::RenderViewImpl(
     gfx::NativeViewId parent_hwnd,
     int32 opener_id,
@@ -374,6 +405,7 @@ RenderViewImpl::RenderViewImpl(
       p2p_socket_dispatcher_(NULL),
       devtools_agent_(NULL),
       renderer_accessibility_(NULL),
+      mouse_lock_dispatcher_(NULL),
       session_storage_namespace_id_(session_storage_namespace_id),
       handling_select_range_(false),
 #if defined(OS_WIN)
@@ -395,6 +427,7 @@ RenderViewImpl::RenderViewImpl(
 #endif
 
   webwidget_ = WebView::create(this);
+  webwidget_mouse_lock_target_.reset(new WebWidgetLockTarget(webwidget_));
 
   if (counter) {
     shared_popup_counter_ = counter;
@@ -445,9 +478,11 @@ RenderViewImpl::RenderViewImpl(
   new TextInputClientObserver(this);
 #endif  // defined(OS_MACOSX)
 
+  // The next group of objects all implement RenderViewObserver, so are deleted
+  // along with the RenderView automatically.
   devtools_agent_ = new DevToolsAgent(this);
-
   renderer_accessibility_ = new RendererAccessibility(this);
+  mouse_lock_dispatcher_ = new MouseLockDispatcher(this);
 
   new IdleUserDetector(this);
 
@@ -723,8 +758,6 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_SetHistoryLengthAndPrune,
                         OnSetHistoryLengthAndPrune)
     IPC_MESSAGE_HANDLER(ViewMsg_EnableViewSourceMode, OnEnableViewSourceMode)
-    IPC_MESSAGE_HANDLER(ViewMsg_LockMouse_ACK, OnLockMouseACK)
-    IPC_MESSAGE_HANDLER(ViewMsg_MouseLockLost, OnMouseLockLost)
     IPC_MESSAGE_HANDLER(JavaBridgeMsg_Init, OnJavaBridgeInit)
 
     // Have the super handle all other messages.
@@ -1926,6 +1959,19 @@ bool RenderViewImpl::enterFullScreen() {
 
 void RenderViewImpl::exitFullScreen() {
   Send(new ViewHostMsg_ToggleFullscreen(routing_id_, false));
+}
+
+bool RenderViewImpl::requestPointerLock() {
+  return mouse_lock_dispatcher_->LockMouse(webwidget_mouse_lock_target_.get());
+}
+
+void RenderViewImpl::requestPointerUnlock() {
+  mouse_lock_dispatcher_->UnlockMouse(webwidget_mouse_lock_target_.get());
+}
+
+bool RenderViewImpl::isPointerLocked() {
+  return mouse_lock_dispatcher_->IsMouseLockedTo(
+      webwidget_mouse_lock_target_.get());
 }
 
 // WebKit::WebFrameClient -----------------------------------------------------
@@ -4386,7 +4432,11 @@ void RenderViewImpl::DidHandleKeyEvent() {
 }
 
 bool RenderViewImpl::WillHandleMouseEvent(const WebKit::WebMouseEvent& event) {
-  return pepper_delegate_.HandleMouseEvent(event);
+  pepper_delegate_.WillHandleMouseEvent();
+
+  // If the mouse is locked, only the current owner of the mouse lock can
+  // process mouse events.
+  return mouse_lock_dispatcher_->WillHandleMouseEvent(event);
 }
 
 void RenderViewImpl::DidHandleMouseEvent(const WebKit::WebMouseEvent& event) {
@@ -4893,23 +4943,6 @@ void RenderViewImpl::OnEnableViewSourceMode() {
   if (!main_frame)
     return;
   main_frame->enableViewSourceMode(true);
-}
-
-void RenderViewImpl::OnLockMouseACK(bool succeeded) {
-  // Mouse Lock removes the system cursor and provides all mouse motion as
-  // .movementX/Y values on events all sent to a fixed target. This requires
-  // content to specifically request the mode to be entered.
-  // Mouse Capture is implicitly given for the duration of a drag event, and
-  // sends all mouse events to the initial target of the drag.
-  // If Lock is entered it supercedes any in progress Capture.
-  if (succeeded)
-    OnMouseCaptureLost();
-
-  pepper_delegate_.OnLockMouseACK(succeeded);
-}
-
-void RenderViewImpl::OnMouseLockLost() {
-  pepper_delegate_.OnMouseLockLost();
 }
 
 bool RenderViewImpl::WebWidgetHandlesCompositorScheduling() const {

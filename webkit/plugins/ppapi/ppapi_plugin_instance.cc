@@ -1675,18 +1675,25 @@ bool PluginInstance::IsFullPagePlugin() const {
   return frame->view()->mainFrame()->document().isPluginDocument();
 }
 
-void PluginInstance::OnLockMouseACK(int32_t result) {
+void PluginInstance::OnLockMouseACK(bool succeeded) {
   if (!lock_mouse_callback_.func) {
     NOTREACHED();
     return;
   }
-
-  PP_RunAndClearCompletionCallback(&lock_mouse_callback_, result);
+  PP_RunAndClearCompletionCallback(&lock_mouse_callback_,
+                                   succeeded ? PP_OK : PP_ERROR_FAILED);
 }
 
 void PluginInstance::OnMouseLockLost() {
   if (LoadMouseLockInterface())
     plugin_mouse_lock_interface_->MouseLockLost(pp_instance());
+}
+
+void PluginInstance::HandleMouseLockedInputEvent(
+    const WebKit::WebMouseEvent& event) {
+  // |cursor_info| is ignored since it is hidden when the mouse is locked.
+  WebKit::WebCursorInfo cursor_info;
+  HandleInputEvent(event, &cursor_info);
 }
 
 void PluginInstance::SimulateInputEvent(const InputEventData& input_event) {
@@ -1974,16 +1981,21 @@ int32_t PluginInstance::LockMouse(PP_Instance instance,
     // Don't support synchronous call.
     return PP_ERROR_BLOCKS_MAIN_THREAD;
   }
-  if (lock_mouse_callback_.func)
+  if (lock_mouse_callback_.func)  // A lock is pending.
     return PP_ERROR_INPROGRESS;
+
+  if (delegate()->IsMouseLocked(this))
+    return PP_OK;
+
   if (!CanAccessMainFrame())
     return PP_ERROR_NOACCESS;
 
-  lock_mouse_callback_ = callback;
-  // We will be notified on completion via OnLockMouseACK(), either
-  // synchronously or asynchronously.
-  delegate()->LockMouse(this);
-  return PP_OK_COMPLETIONPENDING;
+  if (delegate()->LockMouse(this)) {
+    lock_mouse_callback_ = callback;
+    return PP_OK_COMPLETIONPENDING;
+  } else {
+    return PP_ERROR_FAILED;
+  }
 }
 
 void PluginInstance::UnlockMouse(PP_Instance instance) {
