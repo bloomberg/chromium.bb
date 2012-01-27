@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,10 +6,10 @@
 
 #include <unistd.h>
 
+#include <alsa/asoundlib.h>
+
 #include <algorithm>
 #include <cmath>
-
-#include <alsa/asoundlib.h>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -18,6 +18,7 @@
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/system/runtime_environment.h"
 #include "chrome/browser/extensions/extension_tts_api_chromeos.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/pref_names.h"
@@ -183,6 +184,10 @@ void AudioMixerAlsa::Connect() {
   DCHECK(!alsa_mixer_);
 
   if (disconnected_event_.IsSignaled())
+    return;
+
+  // Do not attempt to connect if we're not on the device.
+  if (!system::runtime_environment::IsRunningOnChromeOS())
     return;
 
   if (!ConnectInternal()) {
