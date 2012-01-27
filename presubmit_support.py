@@ -198,7 +198,7 @@ class InputApi(object):
       # Scripts
       r".+\.js$", r".+\.py$", r".+\.sh$", r".+\.rb$", r".+\.pl$", r".+\.pm$",
       # Other
-      r".+\.java$", r".+\.mk$", r".+\.am$",
+      r".+\.java$", r".+\.mk$", r".+\.am$", r".+\.css$"
   )
 
   # Path regexp that should be excluded from being considered containing source

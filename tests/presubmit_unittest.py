@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -1067,7 +1067,7 @@ class InputApiUnittest(PresubmitTestsBase):
         self.fake_change, './PRESUBMIT.py', False, None, False)
     self.mox.ReplayAll()
 
-    self.assertEqual(len(input_api.DEFAULT_WHITE_LIST), 21)
+    self.assertEqual(len(input_api.DEFAULT_WHITE_LIST), 22)
     self.assertEqual(len(input_api.DEFAULT_BLACK_LIST), 11)
     for item in files:
       results = filter(input_api.FilterSourceFile, item[0])
