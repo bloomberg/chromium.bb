@@ -12,6 +12,7 @@
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/extensions/api/permissions.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_messages.h"
@@ -20,7 +21,7 @@
 #include "content/public/browser/render_process_host.h"
 
 using content::RenderProcessHost;
-using extensions::permissions_api::PackPermissionsToValue;
+using extensions::permissions_api_helpers::PackPermissionSet;
 
 namespace extensions {
 
@@ -96,7 +97,9 @@ void PermissionsUpdater::DispatchEvent(
     return;
 
   ListValue value;
-  value.Append(PackPermissionsToValue(changed_permissions));
+  scoped_ptr<api::permissions::Permissions> permissions =
+    PackPermissionSet(changed_permissions);
+  value.Append(permissions->ToValue());
   std::string json_value;
   base::JSONWriter::Write(&value, false, &json_value);
   profile_->GetExtensionEventRouter()->DispatchEventToExtension(

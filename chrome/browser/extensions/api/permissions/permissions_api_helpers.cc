@@ -5,13 +5,17 @@
 #include "chrome/browser/extensions/api/permissions/permissions_api_helpers.h"
 
 #include "base/values.h"
+#include "chrome/common/extensions/api/permissions.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_error_utils.h"
 #include "chrome/common/extensions/extension_permission_set.h"
 #include "chrome/common/extensions/url_pattern_set.h"
 
 namespace extensions {
-namespace permissions_api {
+
+using api::permissions::Permissions;
+
+namespace permissions_api_helpers {
 
 namespace {
 
@@ -20,93 +24,63 @@ const char kInvalidOrigin[] =
 const char kUnknownPermissionError[] =
     "'*' is not a recognized permission.";
 
-const char kApisKey[] = "permissions";
-const char kOriginsKey[] = "origins";
-
 }  // namespace
 
-DictionaryValue* PackPermissionsToValue(const ExtensionPermissionSet* set) {
-  DictionaryValue* value = new DictionaryValue();
+scoped_ptr<Permissions> PackPermissionSet(const ExtensionPermissionSet* set) {
+  Permissions* permissions(new Permissions());
 
-  // Generate the list of API permissions.
-  ListValue* apis = new ListValue();
+  permissions->permissions.reset(new std::vector<std::string>());
   ExtensionPermissionsInfo* info = ExtensionPermissionsInfo::GetInstance();
   for (ExtensionAPIPermissionSet::const_iterator i = set->apis().begin();
-       i != set->apis().end(); ++i)
-    apis->Append(Value::CreateStringValue(info->GetByID(*i)->name()));
+       i != set->apis().end(); ++i) {
+    permissions->permissions->push_back(info->GetByID(*i)->name());
+  }
 
-  // Generate the list of origin permissions.
+  permissions->origins.reset(new std::vector<std::string>());
   URLPatternSet hosts = set->explicit_hosts();
-  ListValue* origins = new ListValue();
   for (URLPatternSet::const_iterator i = hosts.begin(); i != hosts.end(); ++i)
-    origins->Append(Value::CreateStringValue(i->GetAsString()));
+    permissions->origins->push_back(i->GetAsString());
 
-  value->Set(kApisKey, apis);
-  value->Set(kOriginsKey, origins);
-  return value;
+  return scoped_ptr<Permissions>(permissions);
 }
 
-// Creates a new ExtensionPermissionSet from its |value| and passes ownership to
-// the caller through |ptr|. Sets |bad_message| to true if the message is badly
-// formed. Returns false if the method fails to unpack a permission set.
-bool UnpackPermissionsFromValue(DictionaryValue* value,
-                                scoped_refptr<ExtensionPermissionSet>* ptr,
-                                bool* bad_message,
-                                std::string* error) {
-  ExtensionPermissionsInfo* info = ExtensionPermissionsInfo::GetInstance();
+scoped_refptr<ExtensionPermissionSet> UnpackPermissionSet(
+    const Permissions& permissions, std::string* error) {
   ExtensionAPIPermissionSet apis;
-  if (value->HasKey(kApisKey)) {
-    ListValue* api_list = NULL;
-    if (!value->GetList(kApisKey, &api_list)) {
-      *bad_message = true;
-      return false;
-    }
-    for (size_t i = 0; i < api_list->GetSize(); ++i) {
-      std::string api_name;
-      if (!api_list->GetString(i, &api_name)) {
-        *bad_message = true;
-        return false;
-      }
-
-      ExtensionAPIPermission* permission = info->GetByName(api_name);
+  std::vector<std::string>* permissions_list = permissions.permissions.get();
+  if (permissions_list) {
+    ExtensionPermissionsInfo* info = ExtensionPermissionsInfo::GetInstance();
+    for (std::vector<std::string>::iterator it = permissions_list->begin();
+        it != permissions_list->end(); ++it) {
+      ExtensionAPIPermission* permission = info->GetByName(*it);
       if (!permission) {
         *error = ExtensionErrorUtils::FormatErrorMessage(
-            kUnknownPermissionError, api_name);
-        return false;
+            kUnknownPermissionError, *it);
+        return NULL;
       }
       apis.insert(permission->id());
     }
   }
 
   URLPatternSet origins;
-  if (value->HasKey(kOriginsKey)) {
-    ListValue* origin_list = NULL;
-    if (!value->GetList(kOriginsKey, &origin_list)) {
-      *bad_message = true;
-      return false;
-    }
-    for (size_t i = 0; i < origin_list->GetSize(); ++i) {
-      std::string pattern;
-      if (!origin_list->GetString(i, &pattern)) {
-        *bad_message = true;
-        return false;
-      }
-
+  if (permissions.origins.get()) {
+    for (std::vector<std::string>::iterator it = permissions.origins->begin();
+        it != permissions.origins->end(); ++it) {
       URLPattern origin(Extension::kValidHostPermissionSchemes);
-      URLPattern::ParseResult parse_result = origin.Parse(pattern);
+      URLPattern::ParseResult parse_result = origin.Parse(*it);
       if (URLPattern::PARSE_SUCCESS != parse_result) {
         *error = ExtensionErrorUtils::FormatErrorMessage(
             kInvalidOrigin,
-            pattern,
+            *it,
             URLPattern::GetParseResultString(parse_result));
-        return false;
+        return NULL;
       }
       origins.AddPattern(origin);
     }
   }
 
-  *ptr = new ExtensionPermissionSet(apis, origins, URLPatternSet());
-  return true;
+  return scoped_refptr<ExtensionPermissionSet>(
+      new ExtensionPermissionSet(apis, origins, URLPatternSet()));
 }
 
 }  // namespace permissions_api

@@ -19,6 +19,7 @@
         'chrome_resources.gyp:platform_locale_settings',
         'chrome_resources.gyp:theme_resources',
         'common',
+        'common/extensions/api/api.gyp:api',
         'common_net',
         'debugger',
         'in_memory_url_index_cache_proto',

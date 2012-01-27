@@ -1215,6 +1215,7 @@
         '../ui/ui.gyp:ui_resources_standard',
         '../ui/ui.gyp:ui_test_support',
         '../v8/tools/gyp/v8.gyp:v8',
+        'common/extensions/api/api.gyp:api',
         'chrome_resources.gyp:chrome_resources',
         'chrome_resources.gyp:chrome_strings',
       ],

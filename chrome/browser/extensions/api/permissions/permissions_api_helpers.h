@@ -7,30 +7,35 @@
 #pragma once
 
 #include <string>
-
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/ref_counted.h"
 
 namespace base {
 class DictionaryValue;
 }
+
 class ExtensionPermissionSet;
 
 namespace extensions {
 
-namespace permissions_api {
+namespace api {
+namespace permissions {
+struct Permissions;
+}
+}
 
-// Converts the permission |set| to a dictionary value.
-base::DictionaryValue* PackPermissionsToValue(
+namespace permissions_api_helpers {
+
+// Converts the permission |set| to a permissions object.
+scoped_ptr<api::permissions::Permissions> PackPermissionSet(
     const ExtensionPermissionSet* set);
 
-// Converts the |value| to a permission set.
-bool UnpackPermissionsFromValue(base::DictionaryValue* value,
-                                scoped_refptr<ExtensionPermissionSet>* ptr,
-                                bool* bad_message,
-                                std::string* error);
+// Creates a permission set from |permissions|. Returns NULL if the permissions
+// cannot be converted to a permission set, in which case |error| will be set.
+scoped_refptr<ExtensionPermissionSet> UnpackPermissionSet(
+    const api::permissions::Permissions& permissions, std::string* error);
 
-}  // namespace permissions_api
-
+}  // namespace permissions_api_helpers
 }  // namespace extensions
 
 #endif  // CHROME_BROWSER_EXTENSIONS_API_PERMISSIONS_PERMISSIONS_API_HELPERS_H_
