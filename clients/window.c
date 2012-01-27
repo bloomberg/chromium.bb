@@ -832,8 +832,6 @@ window_attach_surface(struct window *window)
 	case WINDOW_BUFFER_TYPE_EGL_IMAGE:
 #endif
 	case WINDOW_BUFFER_TYPE_SHM:
-		window_get_resize_dx_dy(window, &x, &y);
-
 		if (window->pending_surface != NULL)
 			return;
 
@@ -844,6 +842,7 @@ window_attach_surface(struct window *window)
 			display_get_buffer_for_surface(display,
 						       window->pending_surface);
 
+		window_get_resize_dx_dy(window, &x, &y);
 		wl_surface_attach(window->surface, buffer, x, y);
 		window->server_allocation = window->allocation;
 		cb = wl_display_sync(display->display);
