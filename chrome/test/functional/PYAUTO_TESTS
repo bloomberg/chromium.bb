@@ -115,6 +115,8 @@
       '-special_tabs.SpecialTabsTest.testSpecialURLTabs',
       # crbug.com/88593
       '-sync.SyncTest.testPersonalStuffSyncSection',
+      # crbug.com/111603
+      '-media.media_basic_playback',
       # crbug.com/100593
       '-nacl_sdk.NaClSDKTest.testVerifyNaClPlugin',
       # crbug.com/105560
