@@ -18,7 +18,7 @@
 #include "base/synchronization/lock.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread_local.h"
-#include "chrome/common/metrics/metrics_helpers.h"
+#include "chrome/common/metrics/metrics_service_base.h"
 
 // TODO(ananta)
 // Refactor more common code from chrome/browser/metrics/metrics_service.h into

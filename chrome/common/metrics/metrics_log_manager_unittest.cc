@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/metrics/metrics_helpers.h"
+#include "chrome/common/metrics/metrics_log_base.h"
 #include "chrome/common/metrics/metrics_log_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

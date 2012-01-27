@@ -13,7 +13,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "chrome/common/metrics/metrics_helpers.h"
+#include "chrome/common/metrics/metrics_log_base.h"
 
 struct AutocompleteLog;
 class PrefService;

@@ -14,7 +14,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram.h"
 #include "base/process.h"
-#include "chrome/common/metrics/metrics_helpers.h"
+#include "chrome/common/metrics/histogram_sender.h"
 #include "content/public/renderer/render_process_observer.h"
 
 class RendererHistogramSnapshots : public HistogramSender,

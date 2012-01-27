@@ -20,7 +20,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/process_util.h"
 #include "chrome/browser/io_thread.h"
-#include "chrome/common/metrics/metrics_helpers.h"
+#include "chrome/common/metrics/metrics_service_base.h"
 #include "content/public/common/process_type.h"
 #include "content/public/common/url_fetcher_delegate.h"
 #include "content/public/browser/notification_observer.h"

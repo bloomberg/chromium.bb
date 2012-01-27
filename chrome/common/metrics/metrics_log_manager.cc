@@ -12,7 +12,7 @@
 
 #include "base/metrics/histogram.h"
 #include "base/string_util.h"
-#include "chrome/common/metrics/metrics_helpers.h"
+#include "chrome/common/metrics/metrics_log_base.h"
 
 MetricsLogManager::MetricsLogManager() : max_ongoing_log_store_size_(0) {}
 
