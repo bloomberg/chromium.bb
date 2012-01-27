@@ -82,6 +82,8 @@ without changes to the corresponding grd file. -->
                file="shared/js/cr/promise.js" type="BINDATA" />
       <include name="IDR_SHARED_JS_CR_UI"
                file="shared/js/cr/ui.js" type="BINDATA" />
+      <include name="IDR_SHARED_JS_CR_UI_ALERT_OVERLAY"
+               file="shared/js/cr/ui/alert_overlay.js" type="BINDATA" />
       <include name="IDR_SHARED_JS_CR_UI_ARRAY_DATA_MODEL"
                file="shared/js/cr/ui/array_data_model.js" type="BINDATA" />
       <include name="IDR_SHARED_JS_CR_UI_AUTOCOMPLETE_LIST"

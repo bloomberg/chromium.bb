@@ -100,8 +100,7 @@ cr.define('extensions', function() {
      * @private
      */
     handlePackExtension_: function(e) {
-      $('overlay').hidden = false;
-
+      ExtensionSettings.showOverlay($('packExtensionOverlay'));
       chrome.send('coreOptionsUserMetricsAction', ['Options_PackExtension']);
     },
 
@@ -188,20 +187,40 @@ cr.define('extensions', function() {
   // Indicate that warning |message| has occured for pack of |crx_path| and
   // |pem_path| files.  Ask if user wants override the warning.  Send
   // |overrideFlags| to repeated 'pack' call to accomplish the override.
-  ExtensionSettings.askToOverrideWarning
-      = function(message, crx_path, pem_path, overrideFlags) {
-    OptionsPage.closeOverlay();
-    AlertOverlay.show(
-      localStrings.getString('packExtensionWarningTitle'),
-      message,
-      localStrings.getString('packExtensionProceedAnyway'),
-      localStrings.getString('cancel'),
-      function() {
-        chrome.send('pack', [crx_path, pem_path, overrideFlags]);
-      },
-      function() {
-        OptionsPage.closeOverlay();
-      });
+  ExtensionSettings.askToOverrideWarning =
+      function(message, crx_path, pem_path, overrideFlags) {
+    var closeAlert = function() {
+      ExtensionSettings.showOverlay(null);
+    };
+
+    alertOverlay.setValues(
+        localStrings.getString('packExtensionWarningTitle'),
+        message,
+        localStrings.getString('packExtensionProceedAnyway'),
+        localStrings.getString('cancel'),
+        function() {
+          chrome.send('pack', [crx_path, pem_path, overrideFlags]);
+          closeAlert();
+        },
+        closeAlert);
+    ExtensionSettings.showOverlay($('alertOverlay'));
+  }
+
+  /**
+   * Sets the given overlay to show. This hides whatever overlay is currently
+   * showing, if any.
+   * @param {HTMLElement} node The overlay page to show. If falsey, all overlays
+   *     are hidden.
+   */
+  ExtensionSettings.showOverlay = function(node) {
+    var currentlyShowingOverlay =
+        document.querySelector('#overlay .page.showing');
+    if (currentlyShowingOverlay)
+      currentlyShowingOverlay.classList.remove('showing');
+
+    if (node)
+      node.classList.add('showing');
+    overlay.hidden = !node;
   }
 
   // Export

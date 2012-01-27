@@ -18,18 +18,32 @@ cr.define('extensions', function() {
      * Initialize the page.
      */
     initializePage: function() {
-      $('packExtensionDismiss').onclick = function(event) {
-        $('overlay').hidden = true;
-      };
-      $('packExtensionCommit').onclick = function(event) {
-        var extensionPath = $('extensionRootDir').value;
-        var privateKeyPath = $('extensionPrivateKey').value;
-        chrome.send('pack', [extensionPath, privateKeyPath, 0]);
-      };
+      $('packExtensionDismiss').addEventListener('click',
+          this.handleDismiss_.bind(this));
+      $('packExtensionCommit').addEventListener('click',
+          this.handleCommit_.bind(this));
       $('browseExtensionDir').addEventListener('click',
           this.handleBrowseExtensionDir_.bind(this));
       $('browsePrivateKey').addEventListener('click',
           this.handleBrowsePrivateKey_.bind(this));
+    },
+
+    /**
+     * Handles a click on the dismiss button.
+     * @param {Event} e
+     */
+    handleDismiss_: function(e) {
+      ExtensionSettings.showOverlay(null);
+    },
+
+    /**
+     * Handles a click on the pack button.
+     * @param {Event} e
+     */
+    handleCommit_: function(e) {
+      var extensionPath = $('extensionRootDir').value;
+      var privateKeyPath = $('extensionPrivateKey').value;
+      chrome.send('pack', [extensionPath, privateKeyPath, 0]);
     },
 
     /**
@@ -78,8 +92,33 @@ cr.define('extensions', function() {
    * @param {String} message The message to show to the user.
    */
   PackExtensionOverlay.showSuccessMessage = function(message) {
-    alert(message);
-    $('overlay').hidden = true;
+    alertOverlay.setValues(
+        localStrings.getString('packExtensionOverlay'),
+        message,
+        localStrings.getString('ok'),
+        '',
+        function() {
+          ExtensionSettings.showOverlay($('packExtensionOverlay'));
+        },
+        null);
+    ExtensionSettings.showOverlay($('alertOverlay'));
+  };
+
+  /**
+   * Post an alert overlay showing |message|, and upon acknowledgement, close
+   * the alert overlay and return to showing the PackExtensionOverlay.
+   */
+  PackExtensionOverlay.showError = function(message) {
+    alertOverlay.setValues(
+        localStrings.getString('packExtensionErrorTitle'),
+        message,
+        localStrings.getString('ok'),
+        '',
+        function() {
+          ExtensionSettings.showOverlay($('packExtensionOverlay'));
+        },
+        null);
+    ExtensionSettings.showOverlay($('alertOverlay'));
   };
 
   // Export
@@ -87,3 +126,6 @@ cr.define('extensions', function() {
     PackExtensionOverlay: PackExtensionOverlay
   };
 });
+
+// Update the C++ call so this isn't necessary.
+var PackExtensionOverlay = extensions.PackExtensionOverlay;

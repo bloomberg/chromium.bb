@@ -134,6 +134,16 @@ html[dir="rtl"] .extension-list-item {
   display: inline-block;
 }
 
+/* Overlays */
+
+#overlay {
+  z-index: 5;
+}
+
+#overlay .page:not(.showing) {
+  display: none;
+}
+
 /* Trash */
 
 .trash {

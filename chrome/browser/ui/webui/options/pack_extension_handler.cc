@@ -34,6 +34,7 @@ void PackExtensionHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(IDS_EXTENSION_PACK_DIALOG_HEADING));
   localized_strings->SetString("packExtensionCommit",
       l10n_util::GetStringUTF16(IDS_EXTENSION_PACK_BUTTON));
+  localized_strings->SetString("ok", l10n_util::GetStringUTF16(IDS_OK));
   localized_strings->SetString("cancel", l10n_util::GetStringUTF16(IDS_CANCEL));
   localized_strings->SetString("packExtensionRootDir",
       l10n_util::GetStringUTF16(
