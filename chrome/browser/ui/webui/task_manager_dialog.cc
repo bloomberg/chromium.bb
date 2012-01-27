@@ -97,15 +97,15 @@ class TaskManagerDialogImpl : public HtmlDialogUIDelegate {
   virtual bool HandleContextMenu(const ContextMenuParams& params) OVERRIDE {
     return true;
   }
-  virtual void StoreDialogSize(const gfx::Rect dialog_bounds) OVERRIDE {
+  virtual void StoreDialogSize(const gfx::Size& dialog_size) OVERRIDE {
    // Store the dialog's bounds so that it can be restored with the same bounds
    // the next time it's opened.
    if (g_browser_process->local_state()) {
      DictionaryPrefUpdate update(g_browser_process->local_state(),
                                  prefs::kTaskManagerWindowPlacement);
      DictionaryValue* placement_pref = update.Get();
-     placement_pref->SetInteger("width", dialog_bounds.width());
-     placement_pref->SetInteger("height", dialog_bounds.height());
+     placement_pref->SetInteger("width", dialog_size.width());
+     placement_pref->SetInteger("height", dialog_size.height());
    }
  }
 

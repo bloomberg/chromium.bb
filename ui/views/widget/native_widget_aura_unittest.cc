@@ -23,9 +23,27 @@ NativeWidgetAura* Init(aura::Window* parent, Widget* widget) {
   return static_cast<NativeWidgetAura*>(widget->native_widget());
 }
 
-TEST(NativeWidgetAuraTest, CenterWindowLargeParent) {
-  MessageLoopForUI message_loop;
-  aura::RootWindow::GetInstance()->SetBounds(gfx::Rect(0, 0, 640, 480));
+class NativeWidgetAuraTest : public testing::Test {
+ public:
+  NativeWidgetAuraTest() {}
+  virtual ~NativeWidgetAuraTest() {}
+
+  // testing::Test overrides:
+  virtual void SetUp() OVERRIDE {
+    aura::RootWindow::GetInstance()->SetBounds(gfx::Rect(0, 0, 640, 480));
+  }
+  virtual void TearDown() OVERRIDE {
+    aura::RootWindow::DeleteInstance();
+    message_loop_.RunAllPending();
+  }
+
+ private:
+  MessageLoopForUI message_loop_;
+
+  DISALLOW_COPY_AND_ASSIGN(NativeWidgetAuraTest);
+};
+
+TEST_F(NativeWidgetAuraTest, CenterWindowLargeParent) {
   // Make a parent window larger than the host represented by rootwindow.
   scoped_ptr<aura::Window> parent(new aura::Window(NULL));
   parent->Init(ui::Layer::LAYER_HAS_NO_TEXTURE);
@@ -38,14 +56,10 @@ TEST(NativeWidgetAuraTest, CenterWindowLargeParent) {
                        (480 - 100) / 2,
                        100, 100),
             window->GetNativeWindow()->bounds());
-  aura::RootWindow::DeleteInstance();
   widget->CloseNow();
-  message_loop.RunAllPending();
 }
 
-TEST(NativeWidgetAuraTest, CenterWindowSmallParent) {
-  MessageLoopForUI message_loop;
-  aura::RootWindow::GetInstance()->SetBounds(gfx::Rect(0, 0, 640, 480));
+TEST_F(NativeWidgetAuraTest, CenterWindowSmallParent) {
   // Make a parent window smaller than the host represented by rootwindow.
   scoped_ptr<aura::Window> parent(new aura::Window(NULL));
   parent->Init(ui::Layer::LAYER_HAS_NO_TEXTURE);
@@ -58,9 +72,24 @@ TEST(NativeWidgetAuraTest, CenterWindowSmallParent) {
                        (320 - 100) / 2,
                        100, 100),
             window->GetNativeWindow()->bounds());
-  aura::RootWindow::DeleteInstance();
   widget->CloseNow();
-  message_loop.RunAllPending();
 }
+
+TEST_F(NativeWidgetAuraTest, GetClientAreaScreenBounds) {
+  // Create a widget.
+  Widget::InitParams params(Widget::InitParams::TYPE_WINDOW);
+  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  params.bounds.SetRect(10, 20, 300, 400);
+  Widget* widget = new Widget();
+  widget->Init(params);
+
+  // For Aura, client area bounds match window bounds.
+  gfx::Rect client_bounds = widget->GetClientAreaScreenBounds();
+  EXPECT_EQ(10, client_bounds.x());
+  EXPECT_EQ(20, client_bounds.y());
+  EXPECT_EQ(300, client_bounds.width());
+  EXPECT_EQ(400, client_bounds.height());
+}
+
 }  // namespace
 }  // namespace views

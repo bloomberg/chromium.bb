@@ -374,7 +374,8 @@ gfx::Rect NativeWidgetAura::GetWindowScreenBounds() const {
 }
 
 gfx::Rect NativeWidgetAura::GetClientAreaScreenBounds() const {
-  // In Aura, the entire window is the client area.
+  // View-to-screen coordinate system transformations depend on this returning
+  // the full window bounds, for example View::ConvertPointToScreen().
   return window_->GetScreenBounds();
 }
 

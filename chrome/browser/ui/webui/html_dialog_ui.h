@@ -14,7 +14,6 @@
 #include "content/public/browser/web_ui_controller.h"
 #include "googleurl/src/gurl.h"
 #include "ui/base/ui_base_types.h"
-#include "ui/gfx/rect.h"
 
 struct ContextMenuParams;
 
@@ -81,7 +80,7 @@ class HtmlDialogUIDelegate {
   virtual bool HandleContextMenu(const ContextMenuParams& params);
 
   // Stores the dialog bounds.
-  virtual void StoreDialogSize(const gfx::Rect dialog_bounds) {}
+  virtual void StoreDialogSize(const gfx::Size& dialog_size) {}
 
  protected:
   virtual ~HtmlDialogUIDelegate() {}

@@ -186,9 +186,8 @@ void HtmlDialogView::OnDialogClosed(const std::string& json_retval) {
     HtmlDialogUIDelegate* dialog_delegate = delegate_;
     delegate_ = NULL;  // We will not communicate further with the delegate.
 
-    // Store the dialog bounds.
-    const gfx::Rect dialog_bounds = GetWidget()->GetClientAreaScreenBounds();
-    dialog_delegate->StoreDialogSize(dialog_bounds);
+    // Store the dialog content area size.
+    dialog_delegate->StoreDialogSize(GetContentsBounds().size());
 
     dialog_delegate->OnDialogClosed(json_retval);
   }

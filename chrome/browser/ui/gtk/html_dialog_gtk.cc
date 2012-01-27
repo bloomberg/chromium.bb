@@ -127,7 +127,7 @@ void HtmlDialogGtk::OnDialogClosed(const std::string& json_retval) {
 
     // Store the dialog bounds.
     gfx::Rect dialog_bounds = gtk_util::GetDialogBounds(GTK_WIDGET(dialog_));
-    dialog_delegate->StoreDialogSize(dialog_bounds);
+    dialog_delegate->StoreDialogSize(dialog_bounds.size());
 
     dialog_delegate->OnDialogClosed(json_retval);
   }
