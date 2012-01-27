@@ -1153,47 +1153,6 @@
       "zip_path": "examples\/extensions\/gmail.zip"
     },
     {
-      "api_calls": [
-        "chrome.extension.getBackgroundPage",
-        "chrome.extension.getURL",
-        "chrome.tabs.create",
-        "chrome.tabs.get",
-        "chrome.tabs.getSelected",
-        "chrome.tabs.onUpdated",
-        "chrome.tabs.remove"
-      ],
-      "crx_path": null,
-      "description": "Find out when you have new waves and preview them fast.",
-      "features": [
-        "background_page",
-        "browser_action",
-        "options_page",
-        "tabs"
-      ],
-      "icon": "128.png",
-      "id": "1682e05ea9a1bde985123b04f6f8ac50a8a64033",
-      "name": "Google Wave Notifier",
-      "packaged_app": false,
-      "path": "examples\/extensions\/wave\/",
-      "protocols": [
-        "https:\/\/",
-        "http:\/\/"
-      ],
-      "search_string": "GOOGLE WAVE NOTIFIER FIND OUT WHEN YOU HAVE NEW WAVES AND PREVIEW THEM FAST. BACKGROUND_PAGE BROWSER_ACTION OPTIONS_PAGE TABS CHROME.EXTENSION.GETBACKGROUNDPAGE CHROME.EXTENSION.GETURL CHROME.TABS.CREATE CHROME.TABS.GET CHROME.TABS.GETSELECTED CHROME.TABS.ONUPDATED CHROME.TABS.REMOVE",
-      "source_files": [
-        "background.html",
-        "chrome_ex_oauth.html",
-        "chrome_ex_oauth.js",
-        "chrome_ex_oauthsimple.js",
-        "manifest.json",
-        "options.html",
-        "popup.html",
-        "prettyload.js"
-      ],
-      "source_hash": "6d5c15b50a53686f7303092c982a840163a912ac",
-      "zip_path": "examples\/extensions\/wave.zip"
-    },
-    {
       "api_calls": [],
       "crx_path": null,
       "description": "The first extension that I made.",
