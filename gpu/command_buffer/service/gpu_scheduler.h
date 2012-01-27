@@ -75,6 +75,10 @@ class GpuScheduler
   // by them and returns whether all fences were complete.
   bool PollUnscheduleFences();
 
+  // Artificially reschedule if the scheduler is still unscheduled after a
+  // timeout.
+  void RescheduleTimeOut();
+
   // The GpuScheduler holds a weak reference to the CommandBuffer. The
   // CommandBuffer owns the GpuScheduler and holds a strong reference to it
   // through the ProcessCommands callback.
@@ -95,6 +99,14 @@ class GpuScheduler
 
   // Greater than zero if this is waiting to be rescheduled before continuing.
   int unscheduled_count_;
+
+  // The number of times this scheduler has been artificially rescheduled on
+  // account of a timeout.
+  int rescheduled_count_;
+
+  // A factory for outstanding rescheduling tasks that is invalidated whenever
+  // the scheduler is rescheduled.
+  base::WeakPtrFactory<GpuScheduler> reschedule_task_factory_;
 
   // The GpuScheduler will unschedule itself in the event that further GL calls
   // are issued to it before all these fences have been crossed by the GPU.

@@ -18,6 +18,10 @@ using ::base::SharedMemory;
 
 namespace gpu {
 
+namespace {
+const int64 kRescheduleTimeOutDelay = 100;
+}
+
 GpuScheduler::GpuScheduler(
     CommandBuffer* command_buffer,
     AsyncAPIInterface* handler,
@@ -26,7 +30,9 @@ GpuScheduler::GpuScheduler(
       handler_(handler),
       decoder_(decoder),
       parser_(NULL),
-      unscheduled_count_(0) {
+      unscheduled_count_(0),
+      rescheduled_count_(0),
+      reschedule_task_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
 }
 
 GpuScheduler::~GpuScheduler() {
@@ -86,12 +92,40 @@ void GpuScheduler::SetScheduled(bool scheduled) {
                "new unscheduled_count_",
                unscheduled_count_ + (scheduled? -1 : 1));
   if (scheduled) {
-    --unscheduled_count_;
+    // If the scheduler was rescheduled after a timeout, ignore the subsequent
+    // calls to SetScheduled when they eventually arrive until they are all
+    // accounted for.
+    if (rescheduled_count_ > 0) {
+      --rescheduled_count_;
+      return;
+    } else {
+      --unscheduled_count_;
+    }
+
     DCHECK_GE(unscheduled_count_, 0);
 
-    if (unscheduled_count_ == 0 && !scheduled_callback_.is_null())
-      scheduled_callback_.Run();
+    if (unscheduled_count_ == 0) {
+      // When the scheduler transitions from the unscheduled to the scheduled
+      // state, cancel the task that would reschedule it after a timeout.
+      reschedule_task_factory_.InvalidateWeakPtrs();
+
+      if (!scheduled_callback_.is_null())
+        scheduled_callback_.Run();
+    }
   } else {
+    if (unscheduled_count_ == 0) {
+#if defined(OS_WIN)
+      // When the scheduler transitions from scheduled to unscheduled, post a
+      // delayed task that it will force it back into a scheduled state after a
+      // timeout.
+      MessageLoop::current()->PostDelayedTask(
+          FROM_HERE,
+          base::Bind(&GpuScheduler::RescheduleTimeOut,
+                     reschedule_task_factory_.GetWeakPtr()),
+          base::TimeDelta::FromMilliseconds(kRescheduleTimeOutDelay));
+#endif
+    }
+
     ++unscheduled_count_;
   }
 }
@@ -182,6 +216,17 @@ bool GpuScheduler::PollUnscheduleFences() {
   }
 
   return true;
+}
+
+void GpuScheduler::RescheduleTimeOut() {
+  int new_count = unscheduled_count_ + rescheduled_count_;
+
+  rescheduled_count_ = 0;
+
+  while (unscheduled_count_)
+    SetScheduled(true);
+
+  rescheduled_count_ = new_count;
 }
 
 GpuScheduler::UnscheduleFence::UnscheduleFence(
