@@ -12227,6 +12227,12 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_REJECT_PASSKEY">
         Reject
       </message>
+      <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_DISMISS_ERROR">
+        OK
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_ENTER_KEY">
+        enter
+      </message>
       <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_CONFIRM_PASSKEY_REQUEST" desc="Bluetooth pairing message typically shown when pairing with a device that has a display.">
         Please confirm this passkey is shown on "<ph name="DEVICE_NAME">%1<ex>Nexus S</ex></ph>":
       </message>
@@ -12234,7 +12240,19 @@ Some features may be unavailable.  Please check that the profile exists and you 
         Please enter the PIN for "<ph name="DEVICE_NAME">%1<ex>Nexus S</ex></ph>":
       </message>
       <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_REMOTE_PASSKEY_REQUEST" desc="Bluetooth pairing message typically displayed when pairing a wireless keyboard.">
-        Please enter this passkey and press Enter on "<ph name="DEVICE_NAME">%1<ex>Nexus S</ex></ph>":
+        Please enter this passkey on "<ph name="DEVICE_NAME">%1<ex>Nexus S</ex></ph>":
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_CONNECTION_FAILED_NO_DEVICE">
+        Unable to connect. Please check that "<ph name="DEVICE_NAME">%1<ex>Nexus S</ex></ph>" is powered and in range.
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_CONNECTION_FAILED_INCORRECT_PIN">
+        Unable to connect. Incorrect PIN for "<ph name="DEVICE_NAME">%1<ex>Nexus S</ex></ph>".
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_CONNECTION_FAILED_TIMEOUT">
+        Connection timeout while attempting to connect to "<ph name="DEVICE_NAME">%1<ex>Nexus S</ex></ph>".
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_CONNECTION_FAILED">
+        Unable to connect to "<ph name="DEVICE_NAME">%1<ex>Nexus S</ex></ph>".
       </message>
       <message name="IDS_OPTIONS_SETTINGS_ACCESSIBILITY_DESCRIPTION" desc="In the settings tab, the text next to the checkbox for spoken feedback.">
         Enable spoken feedback

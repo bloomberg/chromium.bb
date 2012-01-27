@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -27,6 +27,16 @@ class BluetoothOptionsHandler : public ::options2::OptionsPageUIHandler,
  public:
   BluetoothOptionsHandler();
   virtual ~BluetoothOptionsHandler();
+
+  // Potential errors during the process of pairing or connecting to a
+  // Bluetooth device.  Each enumerated value is associated with an i18n
+  // label for display in the Bluetooth UI.
+  enum ConnectionError {
+    DEVICE_NOT_FOUND,
+    INCORRECT_PIN,
+    CONNECTION_TIMEOUT,
+    CONNECTION_REJECTED
+  };
 
   // OptionsPageUIHandler implementation.
   virtual void GetLocalizedValues(
@@ -83,6 +93,11 @@ class BluetoothOptionsHandler : public ::options2::OptionsPageUIHandler,
   // to |ValidatePasskeyCallback| when the passkey entry is complete.
   // |device| is the Bluetooth device being paired.
   void RequestPasskey(chromeos::BluetoothDevice* device);
+
+  // Displays an error that occurred during the pairing or connection process.
+  // |device| is the Bluetooth device being paired or connected.
+  // |error| is the type of error that occurred.
+  void ReportError(chromeos::BluetoothDevice* device, ConnectionError error);
 
   // chromeos::BluetoothManager::Observer override.
   virtual void DefaultAdapterChanged(

@@ -94,6 +94,8 @@ void BluetoothOptionsHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_BLUETOOTH_FORGET));
   localized_strings->SetString("bluetoothCancel",
       l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_BLUETOOTH_CANCEL));
+  localized_strings->SetString("bluetoothEnterKey",
+      l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_BLUETOOTH_ENTER_KEY));
   localized_strings->SetString("bluetoothAcceptPasskey",
       l10n_util::GetStringUTF16(
       IDS_OPTIONS_SETTINGS_BLUETOOTH_ACCEPT_PASSKEY));
@@ -109,6 +111,21 @@ void BluetoothOptionsHandler::GetLocalizedValues(
   localized_strings->SetString("bluetoothRemotePasskey",
       l10n_util::GetStringUTF16(
       IDS_OPTIONS_SETTINGS_BLUETOOTH_REMOTE_PASSKEY_REQUEST));
+  localized_strings->SetString("bluetoothDismissError",
+      l10n_util::GetStringUTF16(
+      IDS_OPTIONS_SETTINGS_BLUETOOTH_DISMISS_ERROR));
+  localized_strings->SetString("bluetoothErrorNoDevice",
+      l10n_util::GetStringUTF16(
+      IDS_OPTIONS_SETTINGS_BLUETOOTH_CONNECTION_FAILED_NO_DEVICE));
+  localized_strings->SetString("bluetoothErrorIncorrectPin",
+      l10n_util::GetStringUTF16(
+      IDS_OPTIONS_SETTINGS_BLUETOOTH_CONNECTION_FAILED_INCORRECT_PIN));
+  localized_strings->SetString("bluetoothErrorTimeout",
+      l10n_util::GetStringUTF16(
+      IDS_OPTIONS_SETTINGS_BLUETOOTH_CONNECTION_FAILED_TIMEOUT));
+  localized_strings->SetString("bluetoothErrorConnectionFailed",
+      l10n_util::GetStringUTF16(
+      IDS_OPTIONS_SETTINGS_BLUETOOTH_CONNECTION_FAILED));
 }
 
 void BluetoothOptionsHandler::Initialize() {
@@ -259,6 +276,29 @@ void BluetoothOptionsHandler::RequestPasskey(
   SendDeviceNotification(device, &params);
 }
 
+void BluetoothOptionsHandler::ReportError(
+    chromeos::BluetoothDevice* device,
+    ConnectionError error) {
+  std::string errorCode;
+  switch (error) {
+  case DEVICE_NOT_FOUND:
+    errorCode = "bluetoothErrorNoDevice";
+    break;
+  case INCORRECT_PIN:
+    errorCode = "bluetoothErrorIncorrectPin";
+    break;
+  case CONNECTION_TIMEOUT:
+    errorCode = "bluetoothErrorTimeout";
+    break;
+  case CONNECTION_REJECTED:
+    errorCode = "bluetoothErrorConnectionFailed";
+    break;
+  }
+  DictionaryValue params;
+  params.SetString("pairing", errorCode);
+  SendDeviceNotification(device, &params);
+}
+
 void BluetoothOptionsHandler::DefaultAdapterChanged(
     chromeos::BluetoothAdapter* adapter) {
   std::string old_default_adapter_id = default_adapter_id_;
@@ -374,11 +414,16 @@ void BluetoothOptionsHandler::GenerateFakeDevice(
       chromeos::BluetoothDevice::Create(properties);
   DeviceFound("FakeAdapter", device);
   if (pairing.compare("bluetoothRemotePasskey") == 0) {
-    DisplayPasskey(device, 12345, 2);
+    DisplayPasskey(device, 730119, 2);
   } else if (pairing.compare("bluetoothConfirmPasskey") == 0) {
-    RequestConfirmation(device, 12345);
+    RequestConfirmation(device, 730119);
   } else if (pairing.compare("bluetoothEnterPasskey") == 0) {
     RequestPasskey(device);
+  } else if (pairing.length() > 0) {
+    // Sending an error notification.
+    DictionaryValue params;
+    params.SetString("pairing", pairing);
+    SendDeviceNotification(device, &params);
   }
   delete device;
 }

@@ -7,16 +7,33 @@ cr.define('options', function() {
 
   /**
    * Enumeration of possible states during pairing.  The value associated with
-   * each state maps to a loalized string in the global variable
+   * each state maps to a localized string in the global variable
    * 'templateData'.
    * @enum {string}
    */
-  const PAIRING = {
+  var PAIRING = {
     CONFIRM_PASSKEY: 'bluetoothConfirmPasskey',
     ENTER_PASSKEY: 'bluetoothEnterPasskey',
-    FAILED_CONNECT: 'bluetoothFailedPairingInstructions',
-    REMOTE_PASSKEY: 'bluetoothRemotePasskey'
+    REMOTE_PASSKEY: 'bluetoothRemotePasskey',
+    ERROR_NO_DEVICE: 'bluetoothErrorNoDevice',
+    ERROR_INCORRECT_PIN: 'bluetoothErrorIncorrectPin',
+    ERROR_CONNECTION_TIMEOUT: 'bluetoothErrorTimeout',
+    ERROR_CONNECTION_FAILED: 'bluetoothErrorConnectionFailed'
   };
+
+  /**
+   * List of IDs for conditionally visible elements in the dialog.
+   * @type {Array.<String>}
+   * @const
+   */
+  var ELEMENTS = ['bluetooth-pairing-passkey-display',
+                  'bluetooth-pairing-passkey-entry',
+                  'bluetooth-pair-device-connect-button',
+                  'bluetooth-pair-device-cancel-button',
+                  'bluetooth-pair-device-accept-button',
+                  'bluetooth-pair-device-reject-button',
+                  'bluetooth-pair-device-dismiss-button'];
+
 
   /**
    * Encapsulated handling of the Bluetooth device pairing page.
@@ -71,6 +88,9 @@ cr.define('options', function() {
       $('bluetooth-pair-device-reject-button').onclick = cancel;
       $('bluetooth-pair-device-connect-button').onclick = connect;
       $('bluetooth-pair-device-accept-button').onclick = connect;
+      $('bluetooth-pair-device-dismiss-button').onclick = function() {
+        OptionsPage.closeOverlay();
+      };
       $('bluetooth-passkey').oninput = function() {
         $('bluetooth-pair-device-connect-button').disabled =
             $('bluetooth-passkey').value.length == 0;
@@ -102,34 +122,49 @@ cr.define('options', function() {
       var message = templateData[device.pairing];
       message = message.replace('%1', this.device_.name);
       instructionsEl.textContent = message;
+
+      // Update visibility of dialog elements.
       if (this.device_.passkey) {
         this.updatePasskey_();
-        $('bluetooth-pairing-passkey-display').hidden = false;
-        $('bluetooth-pairing-passkey-entry').hidden = true;
-        $('bluetooth-pair-device-connect-button').hidden = true;
         if (this.device_.pairing == PAIRING.CONFIRM_PASSKEY) {
-          // Display 'Accept' and 'Reject' buttons when confirming a match
-          // between displayed passkeys.
-          $('bluetooth-pair-device-accept-button').hidden = false;
-          $('bluetooth-pair-device-reject-button').hidden = false;
-          $('bluetooth-pair-device-cancel-button').hidden = true;
+          // Confirming a match between displayed passkeys.
+          this.displayElements_(['bluetooth-pairing-passkey-display',
+                                 'bluetooth-pair-device-accept-button',
+                                 'bluetooth-pair-device-reject-button']);
         } else {
-          // Only display the 'Cancel' button for when remote entering a
-          // passkey.
-          $('bluetooth-pair-device-accept-button').hidden = true;
-          $('bluetooth-pair-device-reject-button').hidden = true;
-          $('bluetooth-pair-device-cancel-button').hidden = false;
+          // Remote entering a passkey.
+          this.displayElements_(['bluetooth-pairing-passkey-display',
+                                 'bluetooth-pair-device-cancel-button']);
         }
       } else if (this.device_.pairing == PAIRING.ENTER_PASSKEY) {
-        // Display 'Connect' and 'Cancel' buttons when prompted to enter a
-        // passkey.
-        $('bluetooth-pairing-passkey-display').hidden = true;
-        $('bluetooth-pairing-passkey-entry').hidden = false;
-        $('bluetooth-pair-device-connect-button').hidden = false;
-        $('bluetooth-pair-device-cancel-button').hidden = false;
+        // Prompting the user to enter a passkey.
+        this.displayElements_(['bluetooth-pairing-passkey-entry',
+                               'bluetooth-pair-device-connect-button',
+                               'bluetooth-pair-device-cancel-button']);
+      } else {
+        // Displaying an error message.
+        this.displayElements_(['bluetooth-pair-device-dismiss-button']);
       }
       $('bluetooth-pair-device-connect-button').disabled =
           $('bluetooth-passkey').value.length == 0;
+    },
+
+    /**
+     * Updates the visibility of elements in the dialog.
+     * @param {Array.<string>} list List of conditionally visible elements that
+     *     are to be made visible.
+     * @private
+     */
+    displayElements_: function(list) {
+      var enabled = {};
+      for (var i = 0; i < list.length; i++) {
+        var key = list[i];
+        enabled[key] = true;
+      }
+      for (var i = 0; i < ELEMENTS.length; i++) {
+        var key = ELEMENTS[i];
+        $(key).hidden = !enabled[key];
+      }
     },
 
     /**
@@ -150,17 +185,26 @@ cr.define('options', function() {
      */
     updatePasskey_: function() {
       var passkeyEl = $('bluetooth-pairing-passkey-display');
+      var keyClass = this.device_.pairing == PAIRING.REMOTE_PASSKEY ?
+          'bluetooth-keyboard-button' : 'bluetooth-passkey-char';
       this.clearElement_(passkeyEl);
       var key = String(this.device_.passkey);
       var progress = this.device_.entered | 0;
       for (var i = 0; i < key.length; i++) {
         var keyEl = document.createElement('span');
         keyEl.textContent = key.charAt(i);
-        keyEl.className = 'bluetooth-passkey-char';
+        keyEl.className = keyClass;
         if (i < progress)
           keyEl.classList.add('key-typed');
-        if (i == progress - 1)
-          keyEl.classList.add('last-key-typed');
+        passkeyEl.appendChild(keyEl);
+      }
+      if (this.device_.pairing == PAIRING.REMOTE_PASSKEY) {
+        // Add enter key.
+        var label = templateData['bluetoothEnterKey'];
+        var keyEl = document.createElement('span');
+        keyEl.textContent = label;
+        keyEl.className = keyClass;
+        keyEl.id = "bluetooth-enter-key";
         passkeyEl.appendChild(keyEl);
       }
       passkeyEl.hidden = false;
