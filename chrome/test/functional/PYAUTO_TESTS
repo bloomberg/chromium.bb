@@ -54,6 +54,7 @@
       'indexeddb',
       'infobars',
       'instant',
+      'media.media_basic_playback',
       'multiprofile',
       'navigation',
       'notifications',

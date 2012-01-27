@@ -1,0 +1,51 @@
+<!-- Used by media_basic_playback to verify basic playback. -->
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <title>Basic Media Playback Test</title>
+  </head>
+
+  <body>
+    <video autoplay preload controls></video>
+  </body>
+
+  <script type="text/javascript" src="utils.js"></script>
+  <script type="text/javascript">
+    var video = document.querySelector('video');
+
+    // Used to keep track of events.
+    var events = [];
+
+    function logEvent(evt) {
+      events.push(evt.type);
+    }
+
+    video.addEventListener('ended', function(event) {
+      firstEndedEvent = events.indexOf('ended') < 0;
+      logEvent(event);
+
+      // At the end of the first playback, seek near end and replay.
+      if (firstEndedEvent) {
+        video.currentTime = 0.8 * video.duration;
+        video.play();
+      } else {
+        // PyAuto has trouble with arrays, so convert to string.
+        events = events.join(',');
+
+        // Notify PyAuto that we've completed testing.  Send test of currentTime
+        // at the same time for efficiency.
+        window.domAutomationController.send(
+            video.currentTime == video.duration);
+      }
+    }, false);
+
+    video.addEventListener('playing', logEvent, false);
+    video.addEventListener('error', logEvent, false);
+    video.addEventListener('abort', logEvent, false);
+    video.addEventListener('seeked', logEvent, false);
+
+    // Retrieve video file name from URL query parameters.  See utils.js.
+    video.src = '../' + QueryString.media;
+    video.play();
+  </script>
+</html>
