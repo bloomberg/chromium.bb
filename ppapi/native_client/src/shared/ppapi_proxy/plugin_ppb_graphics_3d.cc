@@ -7,6 +7,7 @@
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_graphics_3d.h"
 
 #include "gpu/command_buffer/client/gles2_implementation.h"
+#include "gpu/command_buffer/client/transfer_buffer.h"
 #include "native_client/src/shared/ppapi_proxy/command_buffer_nacl.h"
 #include "native_client/src/shared/ppapi_proxy/object_serialize.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_callback.h"
@@ -25,8 +26,10 @@ namespace ppapi_proxy {
 
 namespace {
 
-const int32 kRingBufferSize = 4096 * 1024;
-const int32 kTransferBufferSize = 4096 * 1024;
+const size_t kRingBufferSize = 4 * 1024 * 1024;
+const size_t kStartTransferBufferSize = 4 * 1024 * 1024;
+const size_t kMinTransferBufferSize = 256 * 1024;
+const size_t kMaxTransferBufferSize = 16 * 1024 * 1024;
 
 int32_t GetNumAttribs(const int32_t* attrib_list) {
   int32_t num = 0;
@@ -181,6 +184,7 @@ PluginGraphics3D::~PluginGraphics3D() {
   DebugPrintf("PluginGraphics3D::~PluginGraphics3D()\n");
   // Explicitly tear down scopted pointers; ordering below matters.
   gles2_implementation_.reset();
+  transfer_buffer_.reset();
   gles2_helper_.reset();
   command_buffer_.reset();
   // Invalidate the cache.
@@ -213,19 +217,16 @@ bool PluginGraphics3D::InitFromBrowserResource(PP_Resource res) {
   if (command_buffer_->Initialize()) {
     gles2_helper_.reset(new gpu::gles2::GLES2CmdHelper(command_buffer_.get()));
     if (gles2_helper_->Initialize(kRingBufferSize)) {
-      // Request id -1 to signify 'don't care'
-      int32 transfer_buffer_id =
-          command_buffer_->CreateTransferBuffer(kTransferBufferSize, -1);
-      gpu::Buffer transfer_buffer =
-          command_buffer_->GetTransferBuffer(transfer_buffer_id);
-      if (transfer_buffer.ptr) {
-        gles2_implementation_.reset(new gpu::gles2::GLES2Implementation(
-            gles2_helper_.get(),
-            transfer_buffer.size,
-            transfer_buffer.ptr,
-            transfer_buffer_id,
-            false,
-            true));
+      transfer_buffer_.reset(new gpu::TransferBuffer(gles2_helper_.get()));
+      gles2_implementation_.reset(new gpu::gles2::GLES2Implementation(
+        gles2_helper_.get(),
+        transfer_buffer_.get(),
+        false,
+        true));
+      if (gles2_implementation_->Initialize(
+          kStartTransferBufferSize,
+          kMinTransferBufferSize,
+          kMaxTransferBufferSize)) {
         return true;
       }
     }

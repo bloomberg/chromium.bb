@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,6 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
 #include "gpu/command_buffer/client/gles2_lib.h"
+#include "gpu/command_buffer/client/transfer_buffer.h"
 #include "gpu/command_buffer/service/context_group.h"
 #include "gpu/demos/framework/demo.h"
 #include "gpu/demos/framework/demo_factory.h"
@@ -19,6 +20,7 @@ using gpu::CommandBufferService;
 using gpu::GpuScheduler;
 using gpu::gles2::GLES2CmdHelper;
 using gpu::gles2::GLES2Implementation;
+using gpu::TransferBuffer;
 
 namespace {
 const int32 kCommandBufferSize = 1024 * 1024;
@@ -103,19 +105,24 @@ bool Window::CreateRenderContext(gfx::PluginWindowHandle hwnd) {
   if (!gles2_cmd_helper_->Initialize(kCommandBufferSize))
     return false;
 
-  int32 transfer_buffer_id =
-      command_buffer_->CreateTransferBuffer(kTransferBufferSize, -1);
-  Buffer transfer_buffer =
-      command_buffer_->GetTransferBuffer(transfer_buffer_id);
-  if (transfer_buffer.ptr == NULL) return false;
+  transfer_buffer_.reset(new gpu::TransferBuffer(gles2_cmd_helper_.get()));
 
   ::gles2::Initialize();
-  ::gles2::SetGLContext(new GLES2Implementation(gles2_cmd_helper_.get(),
-                                                transfer_buffer.size,
-                                                transfer_buffer.ptr,
-                                                transfer_buffer_id,
-                                                false,
-                                                true));
+  GLES2Implementation* gles2_implementation = new GLES2Implementation(
+      gles2_cmd_helper_.get(),
+      transfer_buffer_.get(),
+      false,
+      true);
+
+  ::gles2::SetGLContext(gles2_implementation);
+
+  if (!gles2_implementation->Initialize(
+      kTransferBufferSize,
+      kTransferBufferSize,
+      kTransferBufferSize)) {
+    return false;
+  }
+
   return true;
 }
 

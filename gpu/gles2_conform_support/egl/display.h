@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,6 +19,7 @@
 namespace gpu {
 class CommandBufferService;
 class GpuScheduler;
+class TransferBuffer;
 
 namespace gles2 {
 class GLES2CmdHelper;
@@ -71,7 +72,7 @@ class Display {
   scoped_refptr<gfx::GLContext> gl_context_;
   scoped_refptr<gfx::GLSurface> gl_surface_;
   scoped_ptr<gpu::gles2::GLES2CmdHelper> gles2_cmd_helper_;
-  int32 transfer_buffer_id_;
+  scoped_ptr<gpu::TransferBuffer> transfer_buffer_;
 
   // TODO(alokp): Support more than one config, surface, and context.
   scoped_ptr<Config> config_;

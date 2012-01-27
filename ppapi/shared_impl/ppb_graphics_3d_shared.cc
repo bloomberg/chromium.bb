@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,24 +7,23 @@
 #include "base/logging.h"
 #include "gpu/command_buffer/client/gles2_cmd_helper.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
+#include "gpu/command_buffer/client/transfer_buffer.h"
 #include "ppapi/c/pp_errors.h"
 
 namespace ppapi {
 
 PPB_Graphics3D_Shared::PPB_Graphics3D_Shared(PP_Instance instance)
-    : Resource(instance),
-      transfer_buffer_id_(-1) {
+    : Resource(instance) {
 }
 
 PPB_Graphics3D_Shared::PPB_Graphics3D_Shared(const HostResource& host_resource)
-    : Resource(host_resource),
-      transfer_buffer_id_(-1) {
+    : Resource(host_resource) {
 }
 
 PPB_Graphics3D_Shared::~PPB_Graphics3D_Shared() {
   // Make sure that GLES2 implementation has already been destroyed.
-  DCHECK_EQ(transfer_buffer_id_, -1);
   DCHECK(!gles2_helper_.get());
+  DCHECK(!transfer_buffer_.get());
   DCHECK(!gles2_impl_.get());
 }
 
@@ -110,39 +109,30 @@ bool PPB_Graphics3D_Shared::CreateGLES2Impl(int32 command_buffer_size,
 
   // Create a transfer buffer used to copy resources between the renderer
   // process and the GPU process.
-  transfer_buffer_id_ =
-      command_buffer->CreateTransferBuffer(transfer_buffer_size, -1);
-  if (transfer_buffer_id_ < 0)
-    return false;
-
-  // Map the buffer into the renderer process's address space.
-  gpu::Buffer transfer_buffer =
-      command_buffer->GetTransferBuffer(transfer_buffer_id_);
-  if (!transfer_buffer.ptr)
-    return false;
+  const int32 kMinTransferBufferSize = 256 * 1024;
+  const int32 kMaxTransferBufferSize = 16 * 1024 * 1024;
+  transfer_buffer_.reset(new gpu::TransferBuffer(gles2_helper_.get()));
 
   // Create the object exposing the OpenGL API.
   gles2_impl_.reset(new gpu::gles2::GLES2Implementation(
       gles2_helper_.get(),
-      transfer_buffer.size,
-      transfer_buffer.ptr,
-      transfer_buffer_id_,
+      transfer_buffer_.get(),
       false,
       true));
+
+  if (!gles2_impl_->Initialize(
+      transfer_buffer_size,
+      kMinTransferBufferSize,
+      std::max(kMaxTransferBufferSize, transfer_buffer_size))) {
+    return false;
+  }
 
   return true;
 }
 
 void PPB_Graphics3D_Shared::DestroyGLES2Impl() {
   gles2_impl_.reset();
-
-  if (transfer_buffer_id_ != -1) {
-    gpu::CommandBuffer* command_buffer = GetCommandBuffer();
-    DCHECK(command_buffer);
-    command_buffer->DestroyTransferBuffer(transfer_buffer_id_);
-    transfer_buffer_id_ = -1;
-  }
-
+  transfer_buffer_.reset();
   gles2_helper_.reset();
 }
 
