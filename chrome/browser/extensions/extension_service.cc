@@ -2063,7 +2063,6 @@ void ExtensionService::AddExtension(const Extension* extension) {
   extensions_.Insert(scoped_extension);
   SyncExtensionChangeIfNeeded(*extension);
   NotifyExtensionLoaded(extension);
-  IdentifyAlertableExtensions();
 }
 
 void ExtensionService::InitializePermissions(const Extension* extension) {
