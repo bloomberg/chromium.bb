@@ -28,6 +28,9 @@ class HostEventLogger : public HostStatusObserver {
   virtual void OnClientAuthenticated(const std::string& jid) OVERRIDE;
   virtual void OnClientDisconnected(const std::string& jid) OVERRIDE;
   virtual void OnAccessDenied(const std::string& jid) OVERRIDE;
+  virtual void OnClientIpAddress(const std::string& jid,
+                                 const std::string& channel_name,
+                                 const net::IPEndPoint& end_point) OVERRIDE;
   virtual void OnShutdown() OVERRIDE;
 
  private:

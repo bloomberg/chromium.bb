@@ -228,8 +228,10 @@ void ChromotingHost::OnSessionSequenceNumber(ClientSession* session,
 void ChromotingHost::OnSessionIpAddress(ClientSession* session,
                                         const std::string& channel_name,
                                         const net::IPEndPoint& end_point) {
-  // TODO(lambroslambrou): Notify the HostStatusObservers via a new interface
-  // method.
+  DCHECK(context_->network_message_loop()->BelongsToCurrentThread());
+  FOR_EACH_OBSERVER(HostStatusObserver, status_observers_,
+                    OnClientIpAddress(session->client_jid(), channel_name,
+                                      end_point));
 }
 
 void ChromotingHost::OnSessionManagerReady() {

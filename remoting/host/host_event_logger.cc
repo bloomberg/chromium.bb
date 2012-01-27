@@ -12,6 +12,7 @@
 #undef LOG_WARNING
 #endif  // defined(OS_LINUX)
 
+#include "net/base/ip_endpoint.h"
 #include "remoting/host/chromoting_host.h"
 #include "remoting/host/system_event_logger.h"
 
@@ -43,17 +44,22 @@ HostEventLogger::~HostEventLogger() {
 }
 
 void HostEventLogger::OnClientAuthenticated(const std::string& jid) {
-  std::string username = jid.substr(0, jid.find('/'));
-  Log("Client connected: " + username);
+  Log("Client connected: " + jid);
 }
 
 void HostEventLogger::OnClientDisconnected(const std::string& jid) {
-  std::string username = jid.substr(0, jid.find('/'));
-  Log("Client disconnected: " + username);
+  Log("Client disconnected: " + jid);
 }
 
 void HostEventLogger::OnAccessDenied(const std::string& jid) {
   Log("Access denied for client: " + jid);
+}
+
+void HostEventLogger::OnClientIpAddress(const std::string& jid,
+                                        const std::string& channel_name,
+                                        const net::IPEndPoint& end_point) {
+  Log("Channel IP for client: " + jid + " ip='" + end_point.ToString() +
+      "' channel='" + channel_name + "'");
 }
 
 void HostEventLogger::OnShutdown() {

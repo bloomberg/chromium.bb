@@ -7,6 +7,10 @@
 
 #include <string>
 
+namespace net {
+class IPEndPoint;
+}  // namespace net
+
 namespace remoting {
 class SignalStrategy;
 
@@ -25,6 +29,12 @@ class HostStatusObserver {
   // callback; it is purely informational.
   virtual void OnClientAuthenticated(const std::string& jid) = 0;
   virtual void OnClientDisconnected(const std::string& jid) = 0;
+
+  // Called on notification of a route change event, when a channel is
+  // connected.
+  virtual void OnClientIpAddress(const std::string& jid,
+                                 const std::string& channel_name,
+                                 const net::IPEndPoint& end_point) { }
 
   // Called when the host shuts down.
   virtual void OnShutdown() = 0;
