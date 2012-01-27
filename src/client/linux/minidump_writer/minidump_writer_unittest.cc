@@ -121,7 +121,7 @@ TEST(MinidumpWriterTest, MappingInfo) {
                                  MAP_PRIVATE | MAP_ANON,
                                  -1,
                                  0));
-  const u_int64_t kMemoryAddress = reinterpret_cast<u_int64_t>(memory);
+  const uintptr_t kMemoryAddress = reinterpret_cast<uintptr_t>(memory);
   ASSERT_TRUE(memory);
 
   const pid_t child = fork();
@@ -224,7 +224,7 @@ TEST(MinidumpWriterTest, MappingInfoContained) {
                                  MAP_PRIVATE,
                                  fd,
                                  0));
-  const u_int64_t kMemoryAddress = reinterpret_cast<u_int64_t>(memory);
+  const uintptr_t kMemoryAddress = reinterpret_cast<uintptr_t>(memory);
   ASSERT_TRUE(memory);
   close(fd);
 

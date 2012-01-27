@@ -626,7 +626,7 @@ TEST(ExceptionHandlerTest, ModuleInfo) {
                                  MAP_PRIVATE | MAP_ANON,
                                  -1,
                                  0));
-  const u_int64_t kMemoryAddress = reinterpret_cast<u_int64_t>(memory);
+  const uintptr_t kMemoryAddress = reinterpret_cast<uintptr_t>(memory);
   ASSERT_TRUE(memory);
 
   string minidump_filename;

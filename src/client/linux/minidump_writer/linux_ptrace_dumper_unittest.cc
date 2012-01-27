@@ -144,7 +144,7 @@ TEST(LinuxPtraceDumperTest, MergedMappings) {
                                  0));
   ASSERT_TRUE(mapping);
 
-  const u_int64_t kMappingAddress = reinterpret_cast<u_int64_t>(mapping);
+  const uintptr_t kMappingAddress = reinterpret_cast<uintptr_t>(mapping);
 
   // Ensure that things get cleaned up.
   StackHelper helper(fd, mapping, kMappingSize);
