@@ -14,7 +14,7 @@ class ScreenshotTaker : public ash::ScreenshotDelegate {
  public:
   ScreenshotTaker();
 
-  virtual void  HandleTakeScreenshot() OVERRIDE;
+  virtual void HandleTakeScreenshot() OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ScreenshotTaker);

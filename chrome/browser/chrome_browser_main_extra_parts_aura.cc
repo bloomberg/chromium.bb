@@ -8,6 +8,7 @@
 #include "ash/shell.h"
 #include "base/command_line.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/browser/ui/views/aura/caps_lock_handler.h"
 #include "chrome/browser/ui/views/aura/chrome_shell_delegate.h"
 #include "chrome/browser/ui/views/aura/screen_orientation_listener.h"
 #include "chrome/browser/ui/views/aura/screenshot_taker.h"
@@ -15,6 +16,7 @@
 #include "ui/gfx/compositor/compositor_setup.h"
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/input_method/input_method_manager.h"
 #include "chrome/browser/chromeos/system/runtime_environment.h"
 #endif
 
@@ -36,6 +38,12 @@ void ChromeBrowserMainExtraPartsAura::PreProfileInit() {
   ash::Shell* shell = ash::Shell::CreateInstance(new ChromeShellDelegate);
   shell->accelerator_controller()->SetScreenshotDelegate(
       scoped_ptr<ash::ScreenshotDelegate>(new ScreenshotTaker).Pass());
+#if defined(OS_CHROMEOS)
+  chromeos::input_method::XKeyboard* xkeyboard =
+      chromeos::input_method::InputMethodManager::GetInstance()->GetXKeyboard();
+  shell->accelerator_controller()->SetCapsLockDelegate(
+      scoped_ptr<ash::CapsLockDelegate>(new CapsLockHandler(xkeyboard)).Pass());
+#endif
 
   // Make sure the singleton ScreenOrientationListener object is created.
   ScreenOrientationListener::GetInstance();

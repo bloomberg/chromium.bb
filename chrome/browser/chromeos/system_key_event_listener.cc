@@ -302,6 +302,7 @@ bool SystemKeyEventListener::ProcessedXEvent(XEvent* xevent) {
   }
 
   if (xevent->type == xkb_event_base_) {
+    // TODO(yusukes): Move this part to aura::RootWindowHost.
     XkbEvent* xkey_event = reinterpret_cast<XkbEvent*>(xevent);
     if (xkey_event->any.xkb_type == XkbStateNotify) {
       input_method::ModifierLockStatus new_caps_lock_state =
@@ -335,7 +336,9 @@ bool SystemKeyEventListener::ProcessedXEvent(XEvent* xevent) {
     if (keycode) {
       const unsigned int state = (xevent->xkey.state & kSupportedModifiers);
 
+#if !defined(USE_AURA)
       // Toggle Caps Lock if Shift and Search keys are pressed.
+      // When Aura is in use, the shortcut is handled in Ash.
       if (XKeycodeToKeysym(ui::GetXDisplay(), keycode, 0) == XK_Super_L) {
         const bool shift_is_held = (state & ShiftMask);
         const bool other_mods_are_held = (state & ~(ShiftMask | LockMask));
@@ -343,6 +346,7 @@ bool SystemKeyEventListener::ProcessedXEvent(XEvent* xevent) {
           input_method_manager->GetXKeyboard()->SetCapsLockEnabled(
               !caps_lock_is_on_);
       }
+#endif
 
       // Only doing non-Alt/Shift/Ctrl modified keys
       if (!(state & (Mod1Mask | ShiftMask | ControlMask))) {

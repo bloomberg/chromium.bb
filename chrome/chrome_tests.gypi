@@ -2713,6 +2713,7 @@
         'browser/ui/tab_modal_confirm_dialog_browsertest_mac.mm',
         'browser/ui/tab_modal_confirm_dialog_browsertest.cc',
         'browser/ui/tab_modal_confirm_dialog_browsertest.h',
+        'browser/ui/views/aura/caps_lock_handler_browsertest.cc',
         'browser/ui/views/aura/status_area_host_aura_browsertest.cc',
         'browser/ui/views/browser_actions_container_browsertest.cc',
         'browser/ui/views/dom_view_browsertest.cc',

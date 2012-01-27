@@ -3376,6 +3376,8 @@
         'browser/ui/views/aura/app_list/chrome_app_list_item.h',
         'browser/ui/views/aura/app_list/extension_app_item.cc',
         'browser/ui/views/aura/app_list/extension_app_item.h',
+        'browser/ui/views/aura/caps_lock_handler.cc',
+        'browser/ui/views/aura/caps_lock_handler.h',
         'browser/ui/views/aura/chrome_shell_delegate.cc',
         'browser/ui/views/aura/chrome_shell_delegate.h',
         'browser/ui/views/aura/launcher_app_icon_loader.cc',
