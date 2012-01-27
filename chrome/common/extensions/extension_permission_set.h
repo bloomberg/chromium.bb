@@ -111,7 +111,7 @@ class ExtensionAPIPermission {
     kGeolocation,
     kHistory,
     kIdle,
-    kIme,
+    kInput,
     kInputMethodPrivate,
     kManagement,
     kMediaPlayerPrivate,

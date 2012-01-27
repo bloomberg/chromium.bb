@@ -2106,8 +2106,7 @@ bool Extension::InitFromValue(extensions::Manifest* manifest, int flags,
     }
   }
 
-  if (api_permissions.count(ExtensionAPIPermission::kExperimental) &&
-      manifest->HasKey(keys::kInputComponents)) {
+  if (manifest->HasKey(keys::kInputComponents)) {
     ListValue* list_value = NULL;
     if (!manifest->GetList(keys::kInputComponents, &list_value)) {
       *error = ASCIIToUTF16(errors::kInvalidInputComponents);
@@ -2145,6 +2144,12 @@ bool Extension::InitFromValue(extensions::Manifest* manifest, int flags,
         if (type_str == "ime") {
           type = INPUT_COMPONENT_TYPE_IME;
         } else if (type_str == "virtual_keyboard") {
+          if (api_permissions.count(ExtensionAPIPermission::kExperimental)) {
+            // Virtual Keyboards require the experimental flag.
+            *error = ExtensionErrorUtils::FormatErrorMessageUTF16(
+                errors::kInvalidInputComponentType, base::IntToString(i));
+            return false;
+          }
           type = INPUT_COMPONENT_TYPE_VIRTUAL_KEYBOARD;
         } else {
           *error = ExtensionErrorUtils::FormatErrorMessageUTF16(

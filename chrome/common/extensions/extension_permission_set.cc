@@ -242,7 +242,7 @@ void ExtensionAPIPermission::RegisterAllPermissions(
       kIdle, "idle", 0, ExtensionPermissionMessage::kNone,
       kFlagNone, kTypeDefault);
   info->RegisterPermission(
-      kIme, "ime", 0, ExtensionPermissionMessage::kNone,
+      kInput, "input", 0, ExtensionPermissionMessage::kNone,
       kFlagImpliesFullURLAccess, kTypeDefault);
   info->RegisterPermission(
       kInputMethodPrivate, "inputMethodPrivate", 0,

@@ -1,8 +1,7 @@
 [
   {
-    "namespace": "experimental.input.ime",
+    "namespace": "input.ime",
     "platforms": ["chromeos"],
-    "nodoc": true,
     "types": [
       {
         "id": "KeyboardEvent",

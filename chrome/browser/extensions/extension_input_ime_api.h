@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -68,36 +68,31 @@ class ExtensionInputImeEventRouter {
 class SetCompositionFunction : public SyncExtensionFunction {
  public:
   virtual bool RunImpl() OVERRIDE;
-  DECLARE_EXTENSION_FUNCTION_NAME(
-      "experimental.input.ime.setComposition");
+  DECLARE_EXTENSION_FUNCTION_NAME("input.ime.setComposition");
 };
 
 class ClearCompositionFunction : public SyncExtensionFunction {
  public:
   virtual bool RunImpl() OVERRIDE;
-  DECLARE_EXTENSION_FUNCTION_NAME(
-      "experimental.input.ime.clearComposition");
+  DECLARE_EXTENSION_FUNCTION_NAME("input.ime.clearComposition");
 };
 
 class CommitTextFunction : public SyncExtensionFunction {
  public:
   virtual bool RunImpl() OVERRIDE;
-  DECLARE_EXTENSION_FUNCTION_NAME(
-      "experimental.input.ime.commitText");
+  DECLARE_EXTENSION_FUNCTION_NAME("input.ime.commitText");
 };
 
 class SetCandidateWindowPropertiesFunction : public SyncExtensionFunction {
  public:
   virtual bool RunImpl() OVERRIDE;
-  DECLARE_EXTENSION_FUNCTION_NAME(
-      "experimental.input.ime.setCandidateWindowProperties");
+  DECLARE_EXTENSION_FUNCTION_NAME("input.ime.setCandidateWindowProperties");
 };
 
 class SetCandidatesFunction : public SyncExtensionFunction {
  public:
   virtual bool RunImpl() OVERRIDE;
-  DECLARE_EXTENSION_FUNCTION_NAME(
-      "experimental.input.ime.setCandidates");
+  DECLARE_EXTENSION_FUNCTION_NAME("input.ime.setCandidates");
  private:
   bool ReadCandidates(
       ListValue* candidates,
@@ -107,28 +102,25 @@ class SetCandidatesFunction : public SyncExtensionFunction {
 class SetCursorPositionFunction : public SyncExtensionFunction {
  public:
   virtual bool RunImpl() OVERRIDE;
-  DECLARE_EXTENSION_FUNCTION_NAME(
-      "experimental.input.ime.setCursorPosition");
+  DECLARE_EXTENSION_FUNCTION_NAME("input.ime.setCursorPosition");
 };
 
 class SetMenuItemsFunction : public SyncExtensionFunction {
  public:
   virtual bool RunImpl() OVERRIDE;
-  DECLARE_EXTENSION_FUNCTION_NAME(
-      "experimental.input.ime.setMenuItems");
+  DECLARE_EXTENSION_FUNCTION_NAME("input.ime.setMenuItems");
 };
 
 class UpdateMenuItemsFunction : public SyncExtensionFunction {
  public:
   virtual bool RunImpl() OVERRIDE;
-  DECLARE_EXTENSION_FUNCTION_NAME(
-      "experimental.input.ime.updateMenuItems");
+  DECLARE_EXTENSION_FUNCTION_NAME("input.ime.updateMenuItems");
 };
 
 class InputEventHandled : public AsyncExtensionFunction {
  public:
   virtual bool RunImpl() OVERRIDE;
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.input.ime.eventHandled");
+  DECLARE_EXTENSION_FUNCTION_NAME("input.ime.eventHandled");
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_INPUT_IME_API_H_
