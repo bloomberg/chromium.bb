@@ -541,6 +541,13 @@ const Experiment kExperiments[] = {
     kOsWin | kOsLinux | kOsMac,
     SINGLE_VALUE_TYPE(switches::kEnableMediaStream)
   },
+  {
+    "disable-uber-page",
+    IDS_FLAGS_DISABLE_UBER_PAGE_NAME,
+    IDS_FLAGS_DISABLE_UBER_PAGE_DESCRIPTION,
+    kOsAll,
+    SINGLE_VALUE_TYPE(switches::kDisableUberPage)
+  },
 };
 
 const Experiment* experiments = kExperiments;

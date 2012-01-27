@@ -7907,6 +7907,13 @@ To hide access to this program, you need to uninstall it by using
 Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Programs</ex></ph>?
       </message>
 
+      <message name="IDS_FLAGS_DISABLE_UBER_PAGE_NAME" desc="Title for the flag to disable uber page URL redirection.">
+        Disable new settings and extensions web-ui
+      </message>
+      <message name="IDS_FLAGS_DISABLE_UBER_PAGE_DESCRIPTION" desc="Description for the flag to disable uber page URL redirection.">
+        The settings and extensions web-ui will be reverted to the prior implementation.
+      </message>
+
       <if expr="pp_ifdef('chromeos')">
         <message name="IDS_SETTINGS_TITLE" desc="Title for the settings tab.">
           Settings

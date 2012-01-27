@@ -5,16 +5,64 @@
 cr.define('uber', function() {
 
   /**
+   * Options for how web history should be handled.
+   **/
+  var HISTORY_STATE_OPTION = {
+    PUSH: 1,    // Push a new history state.
+    REPLACE: 2  // Replace the current history state.
+  };
+
+  /**
    * Handles page initialization.
    */
-  function onLoad() {
-    // Update the URL if need be.
-    if (window.location.pathname === '/') {
-      var pageId = getSelectedIframe().id;
-      window.history.replaceState({pageId: pageId}, '', '/' + pageId);
+  function onLoad(e) {
+    // If the pathname points to a sub-page, we may need to alter the location
+    // of one of the frames.
+    var params = resolvePageInfoFromPath(window.location.pathname);
+    if (params.path) {
+      var iframe = $(params.id).querySelector('iframe');
+      iframe.contentWindow.location.replace(iframe.src + params.path);
     }
 
+    // Select a page based on the page-URL.
+    showPage(params.id, HISTORY_STATE_OPTION.REPLACE);
+
     window.addEventListener('message', handleWindowMessage);
+  }
+
+  /**
+   * Find page information from the given path. If the path doesn't point to one
+   * of our pages, return default parameters.
+   * @param {string} path A path taken from the page URL.
+   * @return {Object} An object containining the following parameters:
+   *     id - The 'id' of the page.
+   *     path - A path into the page. Optional.
+   */
+  function resolvePageInfoFromPath(path) {
+    var params = {};
+    if (path.length > 1) {
+      // Split the path into id and the remaining path.
+      path = path.slice(1);
+      var index = path.indexOf('/');
+      if (index != -1) {
+        params.id = path.slice(0, index);
+        params.path = path.slice(index + 1);
+      } else {
+        params.id = path;
+      }
+      // If the target sub-page does not exist, discard the params we
+      // generated.
+      var container = $(params.id);
+      if (!container) {
+        params.id = undefined;
+        params.path = undefined;
+      }
+    }
+    // If we don't have a valid page, get a default.
+    if (!params.id)
+      params.id = getDefaultIframe().id;
+
+    return params;
   }
 
   /**
@@ -52,7 +100,16 @@ cr.define('uber', function() {
    */
   function onPopHistoryState(e) {
     if (e.state && e.state.pageId)
-      showPage(e.state.pageId);
+      showPage(e.state.pageId, HISTORY_STATE_OPTION.PUSH);
+  }
+
+  /**
+   * @return {Object} The default iframe container.
+   */
+  function getDefaultIframe() {
+    // TODO(csilv): This will select the first iframe as the default, but
+    // perhaps we want to use some other logic?
+    return document.querySelector('.iframe-container');
   }
 
   /**
@@ -85,7 +142,7 @@ cr.define('uber', function() {
     else if (e.data.method === 'setTitle')
       setTitle_(e.origin, e.data.params);
     else if (e.data.method === 'showPage')
-      showPage(e.data.params.pageId);
+      showPage(e.data.params.pageId, HISTORY_STATE_OPTION.PUSH);
     else if (e.data.method === 'navigationControlsLoaded')
       onNavigationControlsLoaded();
     else
@@ -130,18 +187,25 @@ cr.define('uber', function() {
   /**
    * Selects a subpage. This is called from uber-frame.
    * @param {String} pageId Should matche an id of one of the iframe containers.
+   * @param {integer} historyOption Indicates whether we should push or replace
+   *     browser history.
    */
-  function showPage(pageId) {
+  function showPage(pageId, historyOption) {
     var container = $(pageId);
     var lastSelected = document.querySelector('.iframe-container.selected');
     if (lastSelected === container)
       return;
 
-    lastSelected.classList.remove('selected');
+    if (lastSelected)
+      lastSelected.classList.remove('selected');
     container.classList.add('selected');
     document.title = container.title;
 
-    window.history.pushState({pageId: pageId}, '', '/' + pageId);
+    if (historyOption == HISTORY_STATE_OPTION.PUSH)
+      window.history.pushState({pageId: pageId}, '', '/' + pageId);
+    else if (historyOption == HISTORY_STATE_OPTION.REPLACE)
+      window.history.replaceState({pageId: pageId}, '', '/' + pageId);
+
     updateNavigationControls();
   }
 

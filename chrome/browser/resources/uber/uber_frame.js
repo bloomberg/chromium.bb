@@ -66,7 +66,8 @@ cr.define('uber_frame', function() {
     var lastSelectedNavItem = document.querySelector('li.selected');
     if (lastSelectedNavItem !== newSelection) {
       newSelection.classList.add('selected');
-      lastSelectedNavItem.classList.remove('selected');
+      if (lastSelectedNavItem)
+        lastSelectedNavItem.classList.remove('selected');
     }
   }
 

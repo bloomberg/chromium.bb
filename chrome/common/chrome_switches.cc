@@ -407,6 +407,9 @@ const char kDisableTLS1[]                   = "disable-tls1";
 // disable translate with the preference.
 const char kDisableTranslate[] = "disable-translate";
 
+// Disable uber page command and URL redirection.
+const char kDisableUberPage[]                = "disable-uber-page";
+
 // Disables the backend service for web resources.
 const char kDisableWebResources[]           = "disable-web-resources";
 

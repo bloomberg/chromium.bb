@@ -78,6 +78,7 @@ const char kChromeUISyncPromoURL[] = "chrome://syncpromo/";
 const char kChromeUITaskManagerURL[] = "chrome://tasks/";
 const char kChromeUITermsURL[] = "chrome://terms/";
 const char kChromeUIThumbnailURL[] = "chrome://thumb/";
+const char kChromeUIUberURL[] = "chrome://chrome/";
 const char kChromeUIUberFrameURL[] = "chrome://uber-frame/";
 const char kChromeUIVersionURL[] = "chrome://version/";
 const char kChromeUIWorkersURL[] = "chrome://workers/";

@@ -2230,7 +2230,15 @@ void Browser::ShowDownloadsTab() {
 
 void Browser::ShowExtensionsTab() {
   content::RecordAction(UserMetricsAction("ShowExtensions"));
-  ShowOptionsTab(chrome::kExtensionsSubPage);
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableUberPage)) {
+    ShowOptionsTab(chrome::kExtensionsSubPage);
+  } else {
+    browser::NavigateParams params(GetSingletonTabNavigateParams(
+        GURL(std::string(chrome::kChromeUIUberURL) +
+             chrome::kChromeUIExtensionsHost)));
+    params.path_behavior = browser::NavigateParams::IGNORE_AND_NAVIGATE;
+    ShowSingletonTabOverwritingNTP(params);
+  }
 }
 
 void Browser::ShowAboutConflictsTab() {
@@ -2254,11 +2262,18 @@ void Browser::ShowBrokenPageTab(WebContents* contents) {
 }
 
 void Browser::ShowOptionsTab(const std::string& sub_page) {
-  browser::NavigateParams params(GetSingletonTabNavigateParams(
-      GURL(chrome::kChromeUISettingsURL + sub_page)));
-  params.path_behavior = browser::NavigateParams::IGNORE_AND_NAVIGATE;
-
-  ShowSingletonTabOverwritingNTP(params);
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableUberPage)) {
+    browser::NavigateParams params(GetSingletonTabNavigateParams(
+        GURL(chrome::kChromeUISettingsURL + sub_page)));
+    params.path_behavior = browser::NavigateParams::IGNORE_AND_NAVIGATE;
+    ShowSingletonTabOverwritingNTP(params);
+  } else {
+    browser::NavigateParams params(GetSingletonTabNavigateParams(
+        GURL(std::string(chrome::kChromeUIUberURL) +
+             chrome::kChromeUISettingsHost + '/' + sub_page)));
+    params.path_behavior = browser::NavigateParams::IGNORE_AND_NAVIGATE;
+    ShowSingletonTabOverwritingNTP(params);
+  }
 }
 
 void Browser::OpenClearBrowsingDataDialog() {

@@ -208,6 +208,7 @@ void UITestBase::SetLaunchSwitches() {
     launch_arguments_.AppendSwitch(switches::kTestCompositor);
   }
 #endif
+  launch_arguments_.AppendSwitch(switches::kDisableUberPage);
 }
 
 void UITestBase::SetUpProfile() {

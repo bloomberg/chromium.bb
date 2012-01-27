@@ -69,6 +69,7 @@ extern const char kChromeUISyncPromoURL[];
 extern const char kChromeUITaskManagerURL[];
 extern const char kChromeUITermsURL[];
 extern const char kChromeUIThumbnailURL[];
+extern const char kChromeUIUberURL[];
 extern const char kChromeUIUberFrameURL[];
 extern const char kChromeUIVersionURL[];
 extern const char kChromeUIWorkersURL[];
