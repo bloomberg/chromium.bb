@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -501,7 +501,7 @@ std::vector<const BookmarkNode*> GetMostRecentlyModifiedFolders(
     for (int i = 0; i < root_node->child_count(); ++i) {
       const BookmarkNode* node = root_node->GetChild(i);
       if (node->IsVisible() &&
-          find(nodes.begin(), nodes.end(), node) == nodes.end()) {
+          std::find(nodes.begin(), nodes.end(), node) == nodes.end()) {
         nodes.push_back(node);
 
         if (nodes.size() == max_count)

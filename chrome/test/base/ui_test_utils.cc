@@ -273,7 +273,7 @@ void RunMessageLoop() {
 #elif defined(TOOLKIT_VIEWS)
     views::AcceleratorHandler handler;
     ui_loop->RunWithDispatcher(&handler);
-#elif defined(OS_POSIX) && !defined(OS_MACOSX)
+#elif defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
     ui_loop->RunWithDispatcher(NULL);
 #else
     ui_loop->Run();
