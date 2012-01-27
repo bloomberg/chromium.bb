@@ -4,10 +4,13 @@
 
 #include "remoting/client/plugin/pepper_input_handler.h"
 
+#include <iomanip>
+
 #include "base/logging.h"
 #include "ppapi/cpp/input_event.h"
 #include "ppapi/cpp/point.h"
 #include "remoting/proto/event.pb.h"
+#include "ui/base/keycodes/keyboard_codes.h"
 
 namespace remoting {
 
@@ -31,8 +34,18 @@ bool PepperInputHandler::HandleInputEvent(const pp::InputEvent& event) {
     case PP_INPUTEVENT_TYPE_KEYUP: {
       pp::KeyboardInputEvent pp_key_event(event);
       protocol::KeyEvent key_event;
+
       key_event.set_keycode(pp_key_event.GetKeyCode());
       key_event.set_pressed(event.GetType() == PP_INPUTEVENT_TYPE_KEYDOWN);
+
+      // Dump the modifiers associated with each ESC key release event
+      // to facilitate debugging of issues caused by mixed up modifiers.
+      if ((pp_key_event.GetKeyCode() == ui::VKEY_ESCAPE) &&
+          (event.GetType() == PP_INPUTEVENT_TYPE_KEYUP)) {
+        LOG(INFO) << "ESC released: modifiers=0x"
+                  << std::hex << pp_key_event.GetModifiers() << std::dec;
+      }
+
       input_stub_->InjectKeyEvent(key_event);
       return true;
     }

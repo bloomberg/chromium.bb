@@ -7,4 +7,5 @@ include_rules = [
   "+ppapi/utility",
   "+remoting/jingle_glue",
   "+third_party/protobuf/src",
+  "+ui/base/keycodes",
 ]
