@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -83,7 +83,7 @@ skia::PlatformCanvas* ImageData::GetPlatformCanvas() {
 
 #if defined(OS_WIN)
 const ImageHandle ImageData::NullHandle = NULL;
-#elif defined(OS_MACOSX)
+#elif defined(OS_MACOSX) || defined(OS_ANDROID)
 const ImageHandle ImageData::NullHandle = ImageHandle();
 #else
 const ImageHandle ImageData::NullHandle = 0;
@@ -92,7 +92,7 @@ const ImageHandle ImageData::NullHandle = 0;
 ImageHandle ImageData::HandleFromInt(int32_t i) {
 #if defined(OS_WIN)
     return reinterpret_cast<ImageHandle>(i);
-#elif defined(OS_MACOSX)
+#elif defined(OS_MACOSX) || defined(OS_ANDROID)
     return ImageHandle(i, false);
 #else
     return static_cast<ImageHandle>(i);
