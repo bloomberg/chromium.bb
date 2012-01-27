@@ -195,8 +195,17 @@ class CrashTriager(object):
     if m:
       trace = m.group(1)
       functions = self.FUNCTION_PATTERN.findall(trace)
-    if functions and not functions[0].endswith('!__libc_start_main'):
-      signature = functions[0]
+    last_function = None
+    for f in functions:
+      if not f.startswith('libc-'):
+        signature = f
+        if last_function:
+          signature += '[%s]' % last_function
+        break
+      last_function = f.partition('!')[2]
+    else:
+      if functions:
+        signature = functions[0]
     stack_len = len(functions)
     self.stack_traces[(program, signature)].append((date, stack_len, url))
 
