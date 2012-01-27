@@ -470,9 +470,15 @@ void RenderTextWin::DrawVisualText(Canvas* canvas) {
     renderer.SetFont(run->font);
     renderer.SetForegroundColor(run->foreground);
     renderer.DrawPosText(&pos[0], run->glyphs.get(), run->glyph_count);
-
-    if (run->underline || run->strike)
-      renderer.DrawDecorations(x, y, run->width, run->underline, run->strike);
+    // TODO(oshima|msw): Consider refactoring StyleRange into Style
+    // class and StyleRange containing Style, and use Style class in
+    // TextRun class.  This may conflict with msw's comment in
+    // TextRun, so please consult with msw when refactoring.
+    StyleRange style;
+    style.strike = run->strike;
+    style.diagonal_strike = run->diagonal_strike;
+    style.underline = run->underline;
+    renderer.DrawDecorations(x, y, run->width, style);
 
     x = glyph_x;
   }
@@ -571,6 +577,7 @@ void RenderTextWin::ItemizeLogicalText() {
     run->font = GetFont().DeriveFont(0, style->font_style);
     run->foreground = style->foreground;
     run->strike = style->strike;
+    run->diagonal_strike = style->diagonal_strike;
     run->underline = style->underline;
     run->script_analysis = script_item->a;
 

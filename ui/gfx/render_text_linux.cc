@@ -442,11 +442,7 @@ void RenderTextLinux::DrawVisualText(Canvas* canvas) {
         renderer.SetForegroundColor(styles[style].foreground);
         renderer.SetFontStyle(styles[style].font_style);
         renderer.DrawPosText(&pos[start], &glyphs[start], i - start);
-        if (styles[style].underline || styles[style].strike) {
-          renderer.DrawDecorations(start_x, y, glyph_x - start_x,
-                                   styles[style].underline,
-                                   styles[style].strike);
-        }
+        renderer.DrawDecorations(start_x, y, glyph_x - start_x, styles[style]);
 
         start = i;
         start_x = glyph_x;
@@ -462,12 +458,7 @@ void RenderTextLinux::DrawVisualText(Canvas* canvas) {
     renderer.SetForegroundColor(styles[style].foreground);
     renderer.SetFontStyle(styles[style].font_style);
     renderer.DrawPosText(&pos[start], &glyphs[start], glyph_count - start);
-    if (styles[style].underline || styles[style].strike) {
-       renderer.DrawDecorations(start_x, y, glyph_x - start_x,
-                                styles[style].underline,
-                                styles[style].strike);
-    }
-
+    renderer.DrawDecorations(start_x, y, glyph_x - start_x, styles[style]);
     x = glyph_x;
   }
 }

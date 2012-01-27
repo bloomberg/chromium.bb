@@ -239,13 +239,18 @@ void SkiaTextRenderer::DrawPosText(const SkPoint* pos,
 // Based on |SkCanvas::DrawTextDecorations()| and constants from:
 //   third_party/skia/src/core/SkTextFormatParams.h
 void SkiaTextRenderer::DrawDecorations(int x, int y, int width,
-                                       bool underline, bool strike) {
+                                       const StyleRange& style) {
+  if (!style.underline && !style.strike && !style.diagonal_strike)
+    return;
+
   // Fraction of the text size to lower a strike through below the baseline.
   const SkScalar kStrikeThroughOffset = (-SK_Scalar1 * 6 / 21);
   // Fraction of the text size to lower an underline below the baseline.
   const SkScalar kUnderlineOffset = (SK_Scalar1 / 9);
   // Fraction of the text size to use for a strike through or under-line.
   const SkScalar kLineThickness = (SK_Scalar1 / 18);
+  // Fraction of the text size to use for a top margin of a diagonal strike.
+  const SkScalar kDiagonalStrikeThroughMarginOffset = (SK_Scalar1 / 4);
 
   SkScalar text_size = paint_.getTextSize();
   SkScalar height = SkScalarMul(text_size, kLineThickness);
@@ -254,17 +259,29 @@ void SkiaTextRenderer::DrawDecorations(int x, int y, int width,
   r.fLeft = x;
   r.fRight = x + width;
 
-  if (underline) {
+  if (style.underline) {
     SkScalar offset = SkScalarMulAdd(text_size, kUnderlineOffset, y);
     r.fTop = offset;
     r.fBottom = offset + height;
     canvas_skia_->drawRect(r, paint_);
   }
-  if (strike) {
+  if (style.strike) {
     SkScalar offset = SkScalarMulAdd(text_size, kStrikeThroughOffset, y);
     r.fTop = offset;
     r.fBottom = offset + height;
     canvas_skia_->drawRect(r, paint_);
+  }
+  if (style.diagonal_strike) {
+    SkScalar offset =
+        SkScalarMul(text_size, kDiagonalStrikeThroughMarginOffset);
+    SkPaint paint(paint_);
+    paint.setAntiAlias(true);
+    paint.setStyle(SkPaint::kFill_Style);
+    paint.setStrokeWidth(height);
+    canvas_skia_->drawLine(
+        SkIntToScalar(x), SkIntToScalar(y) - text_size + offset,
+        SkIntToScalar(x + width), SkIntToScalar(y),
+        paint);
   }
 }
 
@@ -275,6 +292,7 @@ StyleRange::StyleRange()
     : foreground(SK_ColorBLACK),
       font_style(gfx::Font::NORMAL),
       strike(false),
+      diagonal_strike(false),
       underline(false) {
 }
 

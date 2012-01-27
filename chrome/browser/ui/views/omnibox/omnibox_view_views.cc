@@ -124,11 +124,11 @@ void ApplyURLStyle(views::Textfield* textfield,
                    size_t start,
                    size_t end,
                    SkColor color,
-                   bool strike) {
+                   bool diagonal_strike) {
   gfx::StyleRange style;
   style.foreground = color;
   style.range = ui::Range(start, end);
-  style.strike = strike;
+  style.diagonal_strike = diagonal_strike;
   textfield->ApplyStyleRange(style);
 }
 

@@ -30,6 +30,7 @@ struct TextRun {
   // A gfx::Font::FontStyle flag to specify bold and italic styles.
   int font_style;
   bool strike;
+  bool diagonal_strike;
   bool underline;
 
   int width;

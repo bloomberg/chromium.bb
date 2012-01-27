@@ -27,6 +27,7 @@ namespace gfx {
 
 class Canvas;
 class RenderTextTest;
+struct StyleRange;
 
 namespace internal {
 
@@ -46,7 +47,7 @@ class SkiaTextRenderer {
   void DrawPosText(const SkPoint* pos,
                    const uint16* glyphs,
                    size_t glyph_count);
-  void DrawDecorations(int x, int y, int width, bool underline, bool strike);
+  void DrawDecorations(int x, int y, int width, const StyleRange& style);
 
  private:
   SkCanvas* canvas_skia_;
@@ -65,6 +66,7 @@ struct UI_EXPORT StyleRange {
   // A gfx::Font::FontStyle flag to specify bold and italic styles.
   int font_style;
   bool strike;
+  bool diagonal_strike;
   bool underline;
   ui::Range range;
 };
