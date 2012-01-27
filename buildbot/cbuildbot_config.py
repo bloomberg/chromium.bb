@@ -377,6 +377,13 @@ paladin = _config(
   manifest_version=True,
 )
 
+incremental = _config(
+  build_type=constants.INCREMENTAL_TYPE,
+  uprev=True,
+  overlays='public',
+  prebuilts=False,
+)
+
 internal = _config(
   overlays='both',
   git_url=constants.MANIFEST_INT_URL,
@@ -414,8 +421,22 @@ pfq.add_config('amd64-corei7-bin',
   description='amd64-corei7 PFQ',
 )
 
+incremental.add_config('x86-generic-incremental',
+  boards=['x86-generic'],
+)
+
+incremental.add_config('arm-tegra2-incremental',
+  arm,
+  boards=['tegra2'],
+)
+
+incremental.add_config('amd64-corei7-incremental',
+  amd64,
+  boards=['amd64-corei7'],
+)
+
 paladin.add_config('x86-generic-paladin',
-  board='x86-generic',
+  boards=['x86-generic'],
   master=True,
   paladin_builder_name='x86 generic paladin',
   push_overlays='public',
@@ -423,13 +444,13 @@ paladin.add_config('x86-generic-paladin',
 
 paladin.add_config('arm-tegra2-paladin',
   arm,
-  board='tegra2',
+  boards=['tegra2'],
   paladin_builder_name='tegra2 paladin',
 )
 
 paladin.add_config('amd64-corei7-paladin',
   amd64,
-  board='amd64-corei7',
+  boards=['amd64-corei7'],
   paladin_builder_name='amd64 corei7 paladin',
 )
 
@@ -587,33 +608,31 @@ _config.add_raw_config('x86-generic-asan',
 # Internal Builds
 #
 
-internal_pfq = internal.derive(pfq)
+internal_pfq = internal.derive(pfq, overlays='private')
+internal_pfq_branch = internal_pfq.derive(overlays='both')
+internal_paladin = internal.derive(paladin, overlays='private')
+internal_incremental = internal.derive(incremental, overlays='both')
 
-x86_internal_pfq = internal_pfq.derive(
+internal_pfq.add_config('x86-mario-pre-flight-queue',
   master=True,
-  push_overlays='both',
-  overlays='both',
-  description=None,
-)
-
-x86_internal_pfq.add_config('x86-mario-pre-flight-queue',
+  push_overlays='private',
   boards=['x86-mario'],
   gs_path='gs://chromeos-x86-mario/pre-flight-master',
-  overlays='private',
-  push_overlays='private',
   description='internal x86 PFQ',
 )
 
-x86_internal_pfq.add_config('x86-alex-pre-flight-branch',
+internal_pfq_branch.add_config('x86-alex-pre-flight-branch',
+  master=True,
+  push_overlays='both',
   boards=['x86-alex'],
 )
 
-x86_internal_pfq.add_config('x86-mario-pre-flight-branch',
+internal_pfq_branch.add_config('x86-mario-pre-flight-branch',
   boards=['x86-mario'],
-  master=False,
 )
 
-internal_arm_pfq = internal_pfq.derive(arm, overlays='private')
+internal_arm_pfq = internal_pfq.derive(arm)
+internal_arm_paladin = internal_paladin.derive(arm)
 
 internal_arm_pfq.add_config('arm-tegra2_kaen-private-bin',
   boards=['tegra2_kaen'],
@@ -633,47 +652,84 @@ internal_arm_pfq.add_config('arm-ironhide-private-bin',
   important=False,
 )
 
-
-x86_internal_pfq = internal.derive(pfq,
-  overlays='private'
-)
-
-x86_internal_pfq.add_config('x86-zgb-private-bin',
+internal_pfq.add_config('x86-zgb-private-bin',
   boards=['x86-zgb'],
   description='ZGB PFQ',
   important=False,
 )
 
-x86_internal_pfq.add_config('x86-alex-private-bin',
+internal_pfq.add_config('x86-alex-private-bin',
   boards=['x86-alex'],
   description='Alex PFQ',
 )
 
 internal_pfq.add_config('stumpy-private-bin',
   boards=['stumpy'],
-  overlays='private',
   description='Stumpy PFQ',
 )
 
 internal_pfq.add_config('lumpy-private-bin',
   boards=['lumpy'],
-  overlays='private',
   description='Lumpy PFQ',
 )
 
 internal_pfq.add_config('lumpy64-private-bin',
   boards=['lumpy64'],
-  overlays='private',
   description='Lumpy64 PFQ',
   important=False,
 )
 
 internal_pfq.add_config('link-private-bin',
   boards=['link'],
-  overlays='private',
   description='link PFQ',
 )
 
+internal_paladin.add_config('mario-paladin',
+  master=True,
+  push_overlays='private',
+  boards=['x86-mario'],
+  gs_path='gs://chromeos-x86-mario/pre-flight-master',
+)
+
+internal_arm_paladin.add_config('kaen-paladin',
+  boards=['tegra2_kaen'],
+)
+
+internal_arm_paladin.add_config('kaen-aura-paladin',
+  boards=['tegra2_kaen'],
+  profile='aura',
+  important=False,
+)
+
+internal_paladin.add_config('zgb-paladin',
+  boards=['x86-zgb'],
+  important=False,
+)
+
+internal_paladin.add_config('alex-paladin',
+  boards=['x86-alex'],
+)
+
+internal_paladin.add_config('stumpy-paladin',
+  boards=['stumpy'],
+)
+
+internal_paladin.add_config('lumpy-paladin',
+  boards=['lumpy'],
+)
+
+internal_paladin.add_config('lumpy64-paladin',
+  boards=['lumpy64'],
+  important=False,
+)
+
+internal_paladin.add_config('link-paladin',
+  boards=['link'],
+)
+
+internal_incremental.add_config('mario-incremental',
+  boards=['x86-mario'],
+)
 
 official = _config(
   useflags=['chrome_internal', 'chrome_pdf'],
