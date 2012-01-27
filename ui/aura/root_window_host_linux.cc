@@ -122,7 +122,6 @@ int CursorShapeFromNative(gfx::NativeCursor native_cursor) {
     case aura::kCursorNorthEastSouthWestResize:
     case aura::kCursorNorthWestSouthEastResize:
       // There isn't really a useful cursor available for these.
-      NOTIMPLEMENTED();
       return XC_left_ptr;
     case aura::kCursorColumnResize:
       return XC_sb_h_double_arrow;
@@ -162,8 +161,7 @@ int CursorShapeFromNative(gfx::NativeCursor native_cursor) {
     case aura::kCursorGrab:
     case aura::kCursorGrabbing:
     case aura::kCursorCustom:
-      // TODO(jamescook): Need cursors for these.
-      NOTIMPLEMENTED();
+      // TODO(jamescook): Need cursors for these.  crbug.com/111650
       return XC_left_ptr;
   }
   NOTREACHED();
