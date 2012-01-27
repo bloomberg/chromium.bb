@@ -8,8 +8,10 @@
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
 #include "google/cacheinvalidation/v2/callback.h"
+#include "google/cacheinvalidation/v2/client_gateway.pb.h"
 #include "google/cacheinvalidation/v2/system-resources.h"
 #include "jingle/notifier/base/fake_base_task.h"
+#include "jingle/notifier/listener/notification_defines.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "talk/base/task.h"
@@ -32,6 +34,13 @@ class MockMessageCallback {
 class CacheInvalidationPacketHandlerTest : public testing::Test {
  public:
   virtual ~CacheInvalidationPacketHandlerTest() {}
+
+  notifier::Notification MakeNotification(const std::string& data) {
+    notifier::Notification notification;
+    notification.channel = "tango_raw";
+    notification.data = data;
+    return notification;
+  }
 };
 
 TEST_F(CacheInvalidationPacketHandlerTest, Basic) {
@@ -46,6 +55,10 @@ TEST_F(CacheInvalidationPacketHandlerTest, Basic) {
           &callback, &MockMessageCallback::StoreMessage);
 
   const char kInboundMessage[] = "non-bogus";
+  ipc::invalidation::ClientGatewayMessage envelope;
+  envelope.set_network_message(kInboundMessage);
+  std::string serialized;
+  envelope.SerializeToString(&serialized);
   {
     CacheInvalidationPacketHandler handler(fake_base_task.AsWeakPtr());
     handler.SetMessageReceiver(mock_message_callback);
@@ -54,11 +67,8 @@ TEST_F(CacheInvalidationPacketHandlerTest, Basic) {
     message_loop.RunAllPending();
 
     {
-      handler.HandleInboundPacket("bogus");
-      std::string inbound_message_encoded;
-      EXPECT_TRUE(
-          base::Base64Encode(kInboundMessage, &inbound_message_encoded));
-      handler.HandleInboundPacket(inbound_message_encoded);
+      handler.OnNotificationReceived(MakeNotification("bogus"));
+      handler.OnNotificationReceived(MakeNotification(serialized));
     }
 
     // Take care of any tasks posted by HandleOutboundPacket().
