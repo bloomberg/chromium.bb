@@ -1830,7 +1830,7 @@ bool ChromeBrowserMainParts::MainMessageLoopRun(int* result_code) {
 void ChromeBrowserMainParts::PostMainMessageLoopRun() {
   // Start watching for jank during shutdown. It gets disarmed when
   // |shutdown_watcher_| object is destructed.
-  shutdown_watcher_->Arm(base::TimeDelta::FromSeconds(90));
+  shutdown_watcher_->Arm(base::TimeDelta::FromSeconds(300));
 
   // Disarm the startup hang detector time bomb if it is still Arm'ed.
   startup_watcher_->Disarm();

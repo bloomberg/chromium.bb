@@ -906,10 +906,10 @@ void ShutdownWatcherHelper::Arm(const base::TimeDelta& duration) {
 
   chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
   if (channel == chrome::VersionInfo::CHANNEL_STABLE) {
-    actual_duration *= 50;
+    actual_duration *= 20;
   } else if (channel == chrome::VersionInfo::CHANNEL_BETA ||
              channel == chrome::VersionInfo::CHANNEL_DEV) {
-    actual_duration *= 25;
+    actual_duration *= 10;
   }
 
 #if defined(OS_WIN)
