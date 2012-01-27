@@ -96,6 +96,7 @@ struct shell_surface {
 
 	struct {
 		struct weston_transform transform;
+		struct weston_matrix rotation;
 	} rotation;
 
 	struct {
@@ -118,6 +119,7 @@ struct weston_move_grab {
 struct rotate_grab {
 	struct wl_grab grab;
 	struct shell_surface *surface;
+	struct weston_matrix rotation;
 	struct {
 		int32_t x;
 		int32_t y;
@@ -641,6 +643,7 @@ shell_get_shell_surface(struct wl_client *client,
 
 	/* empty when not in use */
 	wl_list_init(&shsurf->rotation.transform.link);
+	weston_matrix_init(&shsurf->rotation.rotation);
 
 	shsurf->type = SHELL_SURFACE_NONE;
 
@@ -991,20 +994,20 @@ rotate_grab_motion(struct wl_grab *grab,
 	surface->surface->geometry.dirty = 1;
 
 	if (r > 20.0f) {
-		struct weston_matrix roto;
 		struct weston_matrix *matrix =
 			&surface->rotation.transform.matrix;
 
-		weston_matrix_init(&roto);
-		roto.d[0] = dx / r;
-		roto.d[4] = -dy / r;
-		roto.d[1] = -roto.d[4];
-		roto.d[5] = roto.d[0];
+		weston_matrix_init(&rotate->rotation);
+		rotate->rotation.d[0] = dx / r;
+		rotate->rotation.d[4] = -dy / r;
+		rotate->rotation.d[1] = -rotate->rotation.d[4];
+		rotate->rotation.d[5] = rotate->rotation.d[0];
 
 		weston_matrix_init(matrix);
 		weston_matrix_translate(matrix, -rotate->center.x,
 					-rotate->center.y, 0.0f);
-		weston_matrix_multiply(matrix, &roto);
+		weston_matrix_multiply(matrix, &surface->rotation.rotation);
+		weston_matrix_multiply(matrix, &rotate->rotation);
 		weston_matrix_translate(matrix, rotate->center.x,
 					rotate->center.y, 0.0f);
 
@@ -1013,6 +1016,8 @@ rotate_grab_motion(struct wl_grab *grab,
 			&surface->rotation.transform.link);
 	} else {
 		wl_list_init(&surface->rotation.transform.link);
+		weston_matrix_init(&surface->rotation.rotation);
+		weston_matrix_init(&rotate->rotation);
 	}
 
 	weston_compositor_damage_all(surface->surface->compositor);
@@ -1025,8 +1030,11 @@ rotate_grab_button(struct wl_grab *grab,
 	struct rotate_grab *rotate =
 		container_of(grab, struct rotate_grab, grab);
 	struct wl_input_device *device = grab->input_device;
+	struct shell_surface *surface = rotate->surface;
 
 	if (device->button_count == 0 && state == 0) {
+		weston_matrix_multiply(&surface->rotation.rotation,
+				       &rotate->rotation);
 		wl_input_device_end_grab(device, time);
 		free(rotate);
 	}
@@ -1046,6 +1054,8 @@ rotate_binding(struct wl_input_device *device, uint32_t time,
 		(struct weston_surface *) device->pointer_focus;
 	struct shell_surface *surface;
 	struct rotate_grab *rotate;
+	GLfloat dx, dy;
+	GLfloat r;
 
 	if (base_surface == NULL)
 		return;
@@ -1077,6 +1087,24 @@ rotate_binding(struct wl_input_device *device, uint32_t time,
 				 &rotate->center.x, &rotate->center.y);
 
 	wl_input_device_start_grab(device, &rotate->grab, time);
+
+	dx = device->x - rotate->center.x;
+	dy = device->y - rotate->center.y;
+	r = sqrtf(dx * dx + dy * dy);
+	if (r > 20.0f) {
+		struct weston_matrix inverse;
+
+		weston_matrix_init(&inverse);
+		inverse.d[0] = dx / r;
+		inverse.d[4] = dy / r;
+		inverse.d[1] = -inverse.d[4];
+		inverse.d[5] = inverse.d[0];
+		weston_matrix_multiply(&surface->rotation.rotation, &inverse);
+	} else {
+		weston_matrix_init(&surface->rotation.rotation);
+		weston_matrix_init(&rotate->rotation);
+	}
+
 	wl_input_device_set_pointer_focus(device, NULL, time, 0, 0, 0, 0);
 }
 
