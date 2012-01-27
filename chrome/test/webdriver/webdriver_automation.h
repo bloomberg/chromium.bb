@@ -64,6 +64,9 @@ class Automation {
     // If false, Chrome will also be terminated if this process is killed or
     // shutdown.
     bool detach_process;
+
+    // True if the browser should ignore certificate related errors.
+    bool ignore_certificate_errors;
   };
 
   explicit Automation(const Logger& logger);

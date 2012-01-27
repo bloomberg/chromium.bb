@@ -185,7 +185,8 @@ namespace webdriver {
 
 Automation::BrowserOptions::BrowserOptions()
     : command(CommandLine::NO_PROGRAM),
-      detach_process(false) {}
+      detach_process(false),
+      ignore_certificate_errors(false) {}
 
 Automation::BrowserOptions::~BrowserOptions() {}
 
@@ -209,6 +210,8 @@ void Automation::Init(
   command.AppendSwitch(switches::kNoFirstRun);
   if (options.detach_process)
     command.AppendSwitch(switches::kAutomationReinitializeOnChannelError);
+  if (options.ignore_certificate_errors)
+    command.AppendSwitch(switches::kIgnoreCertificateErrors);
   if (options.user_data_dir.empty())
     command.AppendSwitchASCII(switches::kHomePage, chrome::kAboutBlankURL);
 
