@@ -7,6 +7,38 @@
       'targets': [
         {
           'target_name': 'chrome_dll',
+          'type': 'none',
+          'dependencies': [
+            'chrome_main_dll',
+          ],
+          'conditions': [
+            ['incremental_chrome_dll==1', {
+              # Linking to a different directory and then hardlinking back
+              # to OutDir is a workaround to avoid having the .ilk for
+              # chrome.exe and chrome.dll conflicting. See crbug.com/92528
+              # for more information. Done on the dll instead of the exe so
+              # that people launching from VS don't need to modify
+              # $(TargetPath) for the exe.
+              'actions': [
+                {
+                  'action_name': 'hardlink_to_output',
+                  'inputs': [
+                    '$(OutDir)\\initial\\chrome.dll',
+                  ],
+                  'outputs': [
+                    '$(OutDir)\\chrome.dll',
+                  ],
+                  'action': ['tools\\build\\win\\hardlink_failsafe.bat',
+                             '$(OutDir)\\initial\\chrome.dll',
+                             '$(OutDir)\\chrome.dll'],
+                  'msvs_cygwin_shell': 0,
+                }
+              ],
+            }],
+          ]
+        },
+        {
+          'target_name': 'chrome_main_dll',
           'type': 'shared_library',
           'variables': {
             'enable_wexit_time_destructors': 1,
@@ -132,17 +164,6 @@
                   'AdditionalManifestFiles': '$(ProjectDir)\\app\\chrome.dll.manifest',
                 },
               },
-              'conditions': [
-                ['incremental_chrome_dll==1', {
-                  # Linking to a different directory and then hardlinking back
-                  # to OutDir is a workaround to avoid having the .ilk for
-                  # chrome.exe and chrome.dll conflicting. See crbug.com/92528
-                  # for more information. Done on the dll instead of the exe so
-                  # that people launching from VS don't need to modify
-                  # $(TargetPath) for the exe.
-                  'msvs_postbuild': 'tools\\build\\win\\hardlink_failsafe.bat $(OutDir)\\initial\\chrome.dll $(OutDir)\\chrome.dll'
-                }]
-              ]
             }],  # OS=="win"
             ['OS=="mac"', {
               # The main browser executable's name is <(mac_product_name).
