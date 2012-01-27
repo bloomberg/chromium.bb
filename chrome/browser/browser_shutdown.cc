@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -64,7 +64,7 @@ bool g_trying_to_quit = false;
 // Whether the browser should quit without closing browsers.
 bool g_shutting_down_without_closing_browsers = false;
 
-Time shutdown_started_;
+Time* shutdown_started_ = NULL;
 ShutdownType shutdown_type_ = NOT_VALID;
 int shutdown_num_processes_;
 int shutdown_num_processes_slow_;
@@ -92,7 +92,8 @@ void OnShutdownStarting(ShutdownType type) {
   // since we can't safely count the number of plugin processes from this
   // thread, and we'd really like to avoid anything which might add further
   // delays to shutdown time.
-  shutdown_started_ = Time::Now();
+  DCHECK(!shutdown_started_);
+  shutdown_started_ = new Time(Time::Now());
 
   // Call FastShutdown on all of the RenderProcessHosts.  This will be
   // a no-op in some cases, so we still need to go through the normal
@@ -228,7 +229,7 @@ void ShutdownPostThreadsStop(bool restart_last_session) {
     // Measure total shutdown time as late in the process as possible
     // and then write it to a file to be read at startup.
     // We can't use prefs since all services are shutdown at this point.
-    TimeDelta shutdown_delta = Time::Now() - shutdown_started_;
+    TimeDelta shutdown_delta = Time::Now() - *shutdown_started_;
     std::string shutdown_ms =
         base::Int64ToString(shutdown_delta.InMilliseconds());
     int len = static_cast<int>(shutdown_ms.length()) + 1;
