@@ -58,11 +58,10 @@ bool IsNonClientLocation(Window* target, const gfx::Point& location) {
 typedef std::vector<EventFilter*> EventFilters;
 
 void GetEventFiltersToNotify(Window* target, EventFilters* filters) {
-  Window* window = target->parent();
-  while (window) {
-    if (window->event_filter())
-      filters->push_back(window->event_filter());
-    window = window->parent();
+  while (target) {
+    if (target->event_filter())
+      filters->push_back(target->event_filter());
+    target = target->parent();
   }
 }
 
@@ -180,11 +179,8 @@ bool RootWindow::DispatchMouseEvent(MouseEvent* event) {
 }
 
 bool RootWindow::DispatchKeyEvent(KeyEvent* event) {
-  if (focused_window_) {
-    KeyEvent translated_event(*event);
-    return ProcessKeyEvent(focused_window_, &translated_event);
-  }
-  return false;
+  KeyEvent translated_event(*event);
+  return ProcessKeyEvent(focused_window_, &translated_event);
 }
 
 bool RootWindow::DispatchScrollEvent(ScrollEvent* event) {
@@ -460,7 +456,7 @@ bool RootWindow::ProcessMouseEvent(Window* target, MouseEvent* event) {
     return false;
 
   EventFilters filters;
-  GetEventFiltersToNotify(target, &filters);
+  GetEventFiltersToNotify(target->parent(), &filters);
   for (EventFilters::const_reverse_iterator it = filters.rbegin();
        it != filters.rend(); ++it) {
     if ((*it)->PreHandleMouseEvent(target, event))
@@ -471,17 +467,27 @@ bool RootWindow::ProcessMouseEvent(Window* target, MouseEvent* event) {
 }
 
 bool RootWindow::ProcessKeyEvent(Window* target, KeyEvent* event) {
-  if (!target->IsVisible())
-    return false;
-
   EventFilters filters;
-  GetEventFiltersToNotify(target, &filters);
+
+  if (!target) {
+    // When no window is focused, send the key event to |this| so event filters
+    // for the window could check if the key is a global shortcut like Alt+Tab.
+    target = this;
+    GetEventFiltersToNotify(this, &filters);
+  } else {
+    if (!target->IsVisible())
+      return false;
+    GetEventFiltersToNotify(target->parent(), &filters);
+  }
+
   for (EventFilters::const_reverse_iterator it = filters.rbegin();
        it != filters.rend(); ++it) {
     if ((*it)->PreHandleKeyEvent(target, event))
       return true;
   }
 
+  if (!target->delegate())
+    return false;
   return target->delegate()->OnKeyEvent(event);
 }
 
@@ -491,7 +497,7 @@ ui::TouchStatus RootWindow::ProcessTouchEvent(Window* target,
     return ui::TOUCH_STATUS_UNKNOWN;
 
   EventFilters filters;
-  GetEventFiltersToNotify(target, &filters);
+  GetEventFiltersToNotify(target->parent(), &filters);
   for (EventFilters::const_reverse_iterator it = filters.rbegin();
        it != filters.rend(); ++it) {
     ui::TouchStatus status = (*it)->PreHandleTouchEvent(target, event);
@@ -508,7 +514,7 @@ ui::GestureStatus RootWindow::ProcessGestureEvent(Window* target,
     return ui::GESTURE_STATUS_UNKNOWN;
 
   EventFilters filters;
-  GetEventFiltersToNotify(target, &filters);
+  GetEventFiltersToNotify(target->parent(), &filters);
   ui::GestureStatus status = ui::GESTURE_STATUS_UNKNOWN;
   for (EventFilters::const_reverse_iterator it = filters.rbegin();
        it != filters.rend(); ++it) {

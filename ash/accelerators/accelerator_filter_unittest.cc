@@ -51,10 +51,24 @@ AcceleratorController* GetController() {
 
 typedef AuraShellTestBase AcceleratorFilterTest;
 
-// Tests if AcceleratorFilter ignores the flag for Caps Lock.
-TEST_F(AcceleratorFilterTest, TestCapsLockMask) {
-  // We need an active window. Otherwise, the root window will not forward a key
-  // event to event filters.
+// Tests if AcceleratorFilter works without a focused window.
+TEST_F(AcceleratorFilterTest, TestFilterWithoutFocus) {
+  DummyScreenshotDelegate* delegate = new DummyScreenshotDelegate;
+  GetController()->SetScreenshotDelegate(
+      scoped_ptr<ScreenshotDelegate>(delegate).Pass());
+  EXPECT_EQ(0, delegate->handle_take_screenshot_count());
+
+  aura::test::EventGenerator generator_;
+  // AcceleratorController calls ScreenshotDelegate::HandleTakeScreenshot() when
+  // VKEY_PRINT is pressed. See kAcceleratorData[] in accelerator_controller.cc.
+  generator_.PressKey(ui::VKEY_PRINT, 0);
+  EXPECT_EQ(1, delegate->handle_take_screenshot_count());
+  generator_.ReleaseKey(ui::VKEY_PRINT, 0);
+  EXPECT_EQ(1, delegate->handle_take_screenshot_count());
+}
+
+// Tests if AcceleratorFilter works with a focused window.
+TEST_F(AcceleratorFilterTest, TestFilterWithFocus) {
   aura::Window* default_container = Shell::GetInstance()->GetContainer(
       internal::kShellWindowId_DefaultContainer);
   aura::Window* window = aura::test::CreateTestWindowWithDelegate(
@@ -70,8 +84,29 @@ TEST_F(AcceleratorFilterTest, TestCapsLockMask) {
   EXPECT_EQ(0, delegate->handle_take_screenshot_count());
 
   aura::test::EventGenerator generator_;
-  // AcceleratorController calls ScreenshotDelegate::HandleTakeScreenshot() when
-  // VKEY_PRINT is pressed. See kAcceleratorData[] in accelerator_controller.cc.
+  generator_.PressKey(ui::VKEY_PRINT, 0);
+  EXPECT_EQ(1, delegate->handle_take_screenshot_count());
+  generator_.ReleaseKey(ui::VKEY_PRINT, 0);
+  EXPECT_EQ(1, delegate->handle_take_screenshot_count());
+}
+
+// Tests if AcceleratorFilter ignores the flag for Caps Lock.
+TEST_F(AcceleratorFilterTest, TestCapsLockMask) {
+  aura::Window* default_container = Shell::GetInstance()->GetContainer(
+      internal::kShellWindowId_DefaultContainer);
+  aura::Window* window = aura::test::CreateTestWindowWithDelegate(
+      new aura::test::TestWindowDelegate,
+      -1,
+      gfx::Rect(),
+      default_container);
+  ActivateWindow(window);
+
+  DummyScreenshotDelegate* delegate = new DummyScreenshotDelegate;
+  GetController()->SetScreenshotDelegate(
+      scoped_ptr<ScreenshotDelegate>(delegate).Pass());
+  EXPECT_EQ(0, delegate->handle_take_screenshot_count());
+
+  aura::test::EventGenerator generator_;
   generator_.PressKey(ui::VKEY_PRINT, 0);
   EXPECT_EQ(1, delegate->handle_take_screenshot_count());
   generator_.ReleaseKey(ui::VKEY_PRINT, 0);
