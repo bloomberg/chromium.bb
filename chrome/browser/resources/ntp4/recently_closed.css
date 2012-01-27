@@ -1,22 +1,41 @@
-/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
- * found in the LICENSE file.
- */
+ * found in the LICENSE file. */
 
 #recently-closed-menu-button {
+  -webkit-padding-end: 15px;
+  -webkit-padding-start: 9px;
   background: none;
   border: 0;
   color: #7F7F7F;
   cursor: pointer;
   display: block;
+  margin: 0;
   font-size: 9pt;
   font-weight: bold;
+  height: 100%;
   /* The padding increases the clickable area. */
-  padding-bottom: 8px;
-  padding-top: 8px;
+  padding-bottom: 0;
+  padding-top: 0;
   -webkit-appearance: none;
   -webkit-transition: opacity 200ms;
   -webkit-transition-delay: 100ms;
+}
+
+#recently-closed-menu-button:hover:not([menu-shown]) {
+  color: #666;
+}
+
+#recently-closed-menu-button:hover:not([menu-shown]) .disclosure-triangle {
+  background-color: #666;
+}
+
+#recently-closed-menu-button[menu-shown] {
+  color: #555;
+}
+
+#recently-closed-menu-button[menu-shown] .disclosure-triangle {
+  background-color: #555;
 }
 
 /* Reserve space for the menu button even when it's hidden. */
