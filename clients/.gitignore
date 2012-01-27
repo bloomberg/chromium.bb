@@ -1,3 +1,4 @@
+clickdot
 desktop-shell-client-protocol.h
 desktop-shell-protocol.c
 dnd
@@ -12,11 +13,12 @@ screenshooter-protocol.c
 screenshot
 simple-egl
 simple-shm
+simple-touch
 smoke
 tablet-shell-client-protocol.h
 tablet-shell-protocol.c
 terminal
 view
-wayland-desktop-shell
-wayland-tablet-shell
+weston-desktop-shell
+weston-tablet-shell
 wscreensaver

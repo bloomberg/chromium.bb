@@ -20,6 +20,8 @@ weston_SOURCES =			\
 	screenshooter-protocol.c		\
 	screenshooter-server-protocol.h		\
 	util.c					\
+	matrix.c				\
+	matrix.h				\
 	$(xserver_launcher_sources)
 
 if ENABLE_SETUID_INSTALL

@@ -148,6 +148,9 @@ AC_ARG_ENABLE(tablet-shell, [  --enable-tablet-shell],,
 AM_CONDITIONAL(ENABLE_TABLET_SHELL,
 	       test x$enable_tablet_shell == xyes)
 
+AC_ARG_ENABLE(tests, [  --enable-tests],,enable_tests=yes)
+AM_CONDITIONAL(BUILD_TESTS, test x$enable_tests == xyes)
+
 if test "x$GCC" = "xyes"; then
 	GCC_CFLAGS="-Wall -g -Wstrict-prototypes -Wmissing-prototypes -fvisibility=hidden"
 fi
@@ -160,7 +163,8 @@ AC_CONFIG_FILES([Makefile
 		 src/Makefile
 		 clients/Makefile
 		 data/Makefile
-		 protocol/Makefile])
+		 protocol/Makefile
+		 tests/Makefile])
 AC_OUTPUT
 
 if test "x$enable_setuid_install" == xyes; then

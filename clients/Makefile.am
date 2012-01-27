@@ -37,6 +37,7 @@ clients_programs =				\
 	smoke					\
 	resizor					\
 	eventdemo				\
+	clickdot				\
 	$(full_gl_client_programs)
 
 desktop_shell = weston-desktop-shell
@@ -82,6 +83,9 @@ resizor_LDADD = $(toolkit_libs)
 
 eventdemo_SOURCES = eventdemo.c
 eventdemo_LDADD = $(toolkit_libs)
+
+clickdot_SOURCES = clickdot.c
+clickdot_LDADD = $(toolkit_libs)
 
 weston_desktop_shell_SOURCES =			\
 	desktop-shell.c				\

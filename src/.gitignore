@@ -1,4 +1,4 @@
-wayland-compositor
+weston
 screenshooter-protocol.c
 screenshooter-server-protocol.h
 tablet-shell-protocol.c

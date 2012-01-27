@@ -1,6 +1,7 @@
 /*
  * Copyright © 2010-2011 Intel Corporation
  * Copyright © 2008-2011 Kristian Høgsberg
+ * Copyright © 2012 Collabora, Ltd.
  *
  * Permission to use, copy, modify, distribute, and sell this software and
  * its documentation for any purpose is hereby granted without fee, provided
@@ -189,10 +190,10 @@ weston_surface_create(struct weston_compositor *compositor,
 	surface->compositor = compositor;
 	surface->visual = WESTON_NONE_VISUAL;
 	surface->image = EGL_NO_IMAGE_KHR;
-	surface->x = x;
-	surface->y = y;
-	surface->width = width;
-	surface->height = height;
+	surface->geometry.x = x;
+	surface->geometry.y = y;
+	surface->geometry.width = width;
+	surface->geometry.height = height;
 	surface->alpha = 255;
 
 	surface->fullscreen_output = NULL;
@@ -205,7 +206,12 @@ weston_surface_create(struct weston_compositor *compositor,
 
 	surface->buffer_destroy_listener.func = surface_handle_buffer_destroy;
 
-	surface->transform = NULL;
+	wl_list_init(&surface->geometry.transformation_list);
+	wl_list_insert(&surface->geometry.transformation_list,
+		       &surface->transform.position.link);
+	weston_matrix_init(&surface->transform.position.matrix);
+	pixman_region32_init(&surface->transform.boundingbox);
+	surface->geometry.dirty = 1;
 
 	return surface;
 }
@@ -226,25 +232,189 @@ weston_surface_set_color(struct weston_surface *surface,
 	surface->shader = &surface->compositor->solid_shader;
 }
 
+static void
+surface_compute_bbox(struct weston_surface *surface, int32_t sx, int32_t sy,
+		     int32_t width, int32_t height,
+		     pixman_region32_t *bbox)
+{
+	int min_x = INT_MAX, min_y = INT_MAX, max_x = INT_MIN, max_y = INT_MIN;
+	int32_t s[4][2] = {
+		{ sx,         sy },
+		{ sx,         sy + height },
+		{ sx + width, sy },
+		{ sx + width, sy + height }
+	};
+	int i;
+
+	for (i = 0; i < 4; ++i) {
+		int32_t x, y;
+		weston_surface_to_global(surface, s[i][0], s[i][1], &x, &y);
+		if (x < min_x)
+			min_x = x;
+		if (x > max_x)
+			max_x = x;
+		if (y < min_y)
+			min_y = y;
+		if (y > max_y)
+			max_y = y;
+	}
+
+	/* weston_surface_to_global rounds with floor(), add the
+	 * minimum required safety margin.
+	 */
+	pixman_region32_init_rect(bbox, min_x, min_y,
+				  max_x - min_x + 1, max_y - min_y + 1);
+}
+
+WL_EXPORT void
+weston_surface_update_transform(struct weston_surface *surface)
+{
+	struct weston_matrix *matrix = &surface->transform.matrix;
+	struct weston_matrix *inverse = &surface->transform.inverse;
+	struct weston_transform *tform;
+
+	if (!surface->geometry.dirty)
+		return;
+
+	surface->geometry.dirty = 0;
+
+	pixman_region32_fini(&surface->transform.boundingbox);
+
+	/* transform.position is always in transformation_list */
+	if (surface->geometry.transformation_list.next ==
+	    &surface->transform.position.link &&
+	    surface->geometry.transformation_list.prev ==
+	    &surface->transform.position.link) {
+		surface->transform.enabled = 0;
+
+		pixman_region32_init_rect(&surface->transform.boundingbox,
+					  surface->geometry.x,
+					  surface->geometry.y,
+					  surface->geometry.width,
+					  surface->geometry.height);
+		return;
+	}
+
+	surface->transform.enabled = 1;
+
+	surface->transform.position.matrix.d[12] = surface->geometry.x;
+	surface->transform.position.matrix.d[13] = surface->geometry.y;
+
+	weston_matrix_init(matrix);
+	wl_list_for_each(tform, &surface->geometry.transformation_list, link)
+		weston_matrix_multiply(matrix, &tform->matrix);
+
+	if (weston_matrix_invert(inverse, matrix) < 0) {
+		/* Oops, bad total transformation, not invertible */
+		surface->transform.enabled = 0;
+		fprintf(stderr, "error: weston_surface %p"
+			" transformation not invertible.\n", surface);
+	}
+
+	surface_compute_bbox(surface, 0, 0, surface->geometry.width,
+			     surface->geometry.height,
+			     &surface->transform.boundingbox);
+}
+
+WL_EXPORT void
+weston_surface_to_global(struct weston_surface *surface,
+			 int32_t sx, int32_t sy, int32_t *x, int32_t *y)
+{
+	weston_surface_update_transform(surface);
+
+	if (surface->transform.enabled) {
+		struct weston_vector v = { { sx, sy, 0.0f, 1.0f } };
+
+		weston_matrix_transform(&surface->transform.matrix, &v);
+
+		if (fabsf(v.f[3]) < 1e-6) {
+			fprintf(stderr, "warning: numerical instability in "
+				"weston_surface_to_global(), divisor = %g\n",
+				v.f[3]);
+			*x = 0;
+			*y = 0;
+			return;
+		}
+
+		*x = floorf(v.f[0] / v.f[3]);
+		*y = floorf(v.f[1] / v.f[3]);
+	} else {
+		*x = sx + surface->geometry.x;
+		*y = sy + surface->geometry.y;
+	}
+}
+
+static void
+surface_from_global_float(struct weston_surface *surface,
+			  int32_t x, int32_t y, GLfloat *sx, GLfloat *sy)
+{
+	if (surface->transform.enabled) {
+		struct weston_vector v = { { x, y, 0.0f, 1.0f } };
+
+		weston_matrix_transform(&surface->transform.inverse, &v);
+
+		if (fabsf(v.f[3]) < 1e-6) {
+			fprintf(stderr, "warning: numerical instability in "
+				"weston_surface_from_global(), divisor = %g\n",
+				v.f[3]);
+			*sx = 0;
+			*sy = 0;
+			return;
+		}
+
+		*sx = v.f[0] / v.f[3];
+		*sy = v.f[1] / v.f[3];
+	} else {
+		*sx = x - surface->geometry.x;
+		*sy = y - surface->geometry.y;
+	}
+}
+
+WL_EXPORT void
+weston_surface_from_global(struct weston_surface *surface,
+			   int32_t x, int32_t y, int32_t *sx, int32_t *sy)
+{
+	GLfloat sxf, syf;
+
+	weston_surface_update_transform(surface);
+
+	surface_from_global_float(surface, x, y, &sxf, &syf);
+	*sx = floorf(sxf);
+	*sy = floorf(syf);
+}
+
 WL_EXPORT void
 weston_surface_damage_rectangle(struct weston_surface *surface,
-			      int32_t x, int32_t y,
-			      int32_t width, int32_t height)
+				int32_t sx, int32_t sy,
+				int32_t width, int32_t height)
 {
-	struct weston_compositor *compositor = surface->compositor;
+	weston_surface_update_transform(surface);
 
-	pixman_region32_union_rect(&surface->damage,
-				   &surface->damage,
-				   surface->x + x, surface->y + y,
-				   width, height);
-	weston_compositor_schedule_repaint(compositor);
+	if (surface->transform.enabled) {
+		pixman_region32_t box;
+		surface_compute_bbox(surface, sx, sy, width, height, &box);
+		pixman_region32_union(&surface->damage, &surface->damage,
+				      &box);
+		pixman_region32_fini(&box);
+	} else {
+		int32_t x, y;
+		weston_surface_to_global(surface, sx, sy, &x, &y);
+		pixman_region32_union_rect(&surface->damage, &surface->damage,
+					   x, y, width, height);
+	}
+
+	weston_compositor_schedule_repaint(surface->compositor);
 }
 
 WL_EXPORT void
 weston_surface_damage(struct weston_surface *surface)
 {
-	weston_surface_damage_rectangle(surface, 0, 0,
-				      surface->width, surface->height);
+	weston_surface_update_transform(surface);
+
+	pixman_region32_union(&surface->damage, &surface->damage,
+			      &surface->transform.boundingbox);
+
+	weston_compositor_schedule_repaint(surface->compositor);
 }
 
 WL_EXPORT void
@@ -260,10 +430,10 @@ weston_surface_damage_below(struct weston_surface *surface)
 
 	below = container_of(surface->link.next, struct weston_surface, link);
 
-	pixman_region32_union_rect(&below->damage,
-				   &below->damage,
-				   surface->x, surface->y,
-				   surface->width, surface->height);
+	weston_surface_update_transform(surface);
+	pixman_region32_union(&below->damage, &below->damage,
+			      &surface->transform.boundingbox);
+
 	weston_compositor_schedule_repaint(surface->compositor);
 }
 
@@ -288,10 +458,11 @@ weston_surface_configure(struct weston_surface *surface,
 {
 	weston_surface_damage_below(surface);
 
-	surface->x = x;
-	surface->y = y;
-	surface->width = width;
-	surface->height = height;
+	surface->geometry.x = x;
+	surface->geometry.y = y;
+	surface->geometry.width = width;
+	surface->geometry.height = height;
+	surface->geometry.dirty = 1;
 
 	weston_surface_assign_output(surface);
 	weston_surface_damage(surface);
@@ -299,18 +470,12 @@ weston_surface_configure(struct weston_surface *surface,
 	pixman_region32_fini(&surface->opaque);
 	if (surface->visual == WESTON_RGB_VISUAL)
 		pixman_region32_init_rect(&surface->opaque,
-					  surface->x, surface->y,
-					  surface->width, surface->height);
+					  surface->geometry.x,
+					  surface->geometry.y,
+					  surface->geometry.width,
+					  surface->geometry.height);
 	else
 		pixman_region32_init(&surface->opaque);
-}
-
-static void
-weston_surface_transform(struct weston_surface *surface,
-		       int32_t x, int32_t y, int32_t *sx, int32_t *sy)
-{
-	*sx = x - surface->x;
-	*sy = y - surface->y;
 }
 
 WL_EXPORT uint32_t
@@ -344,8 +509,8 @@ weston_device_repick(struct wl_input_device *device, uint32_t time)
 
 	focus = (struct weston_surface *) device->grab->focus;
 	if (focus)
-		weston_surface_transform(focus, device->x, device->y,
-					 &device->grab->x, &device->grab->y);
+		weston_surface_from_global(focus, device->x, device->y,
+					   &device->grab->x, &device->grab->y);
 }
 
 WL_EXPORT void
@@ -387,6 +552,7 @@ destroy_surface(struct wl_resource *resource)
 
 	wl_list_remove(&surface->buffer_link);
 
+	pixman_region32_fini(&surface->transform.boundingbox);
 	pixman_region32_fini(&surface->damage);
 	pixman_region32_fini(&surface->opaque);
 
@@ -442,7 +608,7 @@ weston_buffer_attach(struct wl_buffer *buffer, struct wl_surface *surface)
 		ec->image_target_texture_2d(GL_TEXTURE_2D, es->image);
 
 		es->visual = WESTON_ARGB_VISUAL;
-		es->pitch = es->width;
+		es->pitch = es->geometry.width;
 	}
 }
 
@@ -451,6 +617,7 @@ texture_region(struct weston_surface *es, pixman_region32_t *region)
 {
 	struct weston_compositor *ec = es->compositor;
 	GLfloat *v, inv_width, inv_height;
+	GLfloat sx, sy;
 	pixman_box32_t *rectangles;
 	unsigned int *p;
 	int i, n;
@@ -459,28 +626,36 @@ texture_region(struct weston_surface *es, pixman_region32_t *region)
 	v = wl_array_add(&ec->vertices, n * 16 * sizeof *v);
 	p = wl_array_add(&ec->indices, n * 6 * sizeof *p);
 	inv_width = 1.0 / es->pitch;
-	inv_height = 1.0 / es->height;
+	inv_height = 1.0 / es->geometry.height;
 
 	for (i = 0; i < n; i++, v += 16, p += 6) {
+		surface_from_global_float(es, rectangles[i].x1,
+					  rectangles[i].y1, &sx, &sy);
 		v[ 0] = rectangles[i].x1;
 		v[ 1] = rectangles[i].y1;
-		v[ 2] = (GLfloat) (rectangles[i].x1 - es->x) * inv_width;
-		v[ 3] = (GLfloat) (rectangles[i].y1 - es->y) * inv_height;
+		v[ 2] = sx * inv_width;
+		v[ 3] = sy * inv_height;
 
+		surface_from_global_float(es, rectangles[i].x1,
+					  rectangles[i].y2, &sx, &sy);
 		v[ 4] = rectangles[i].x1;
 		v[ 5] = rectangles[i].y2;
-		v[ 6] = v[ 2];
-		v[ 7] = (GLfloat) (rectangles[i].y2 - es->y) * inv_height;
+		v[ 6] = sx * inv_width;
+		v[ 7] = sy * inv_height;
 
+		surface_from_global_float(es, rectangles[i].x2,
+					  rectangles[i].y1, &sx, &sy);
 		v[ 8] = rectangles[i].x2;
 		v[ 9] = rectangles[i].y1;
-		v[10] = (GLfloat) (rectangles[i].x2 - es->x) * inv_width;
-		v[11] = v[ 3];
+		v[10] = sx * inv_width;
+		v[11] = sy * inv_height;
 
+		surface_from_global_float(es, rectangles[i].x2,
+					  rectangles[i].y2, &sx, &sy);
 		v[12] = rectangles[i].x2;
 		v[13] = rectangles[i].y2;
-		v[14] = v[10];
-		v[15] = v[ 7];
+		v[14] = sx * inv_width;
+		v[15] = sy * inv_height;
 
 		p[0] = i * 4 + 0;
 		p[1] = i * 4 + 1;
@@ -493,51 +668,6 @@ texture_region(struct weston_surface *es, pixman_region32_t *region)
 	return n;
 }
 
-static void
-transform_vertex(struct weston_surface *surface,
-		 GLfloat x, GLfloat y, GLfloat u, GLfloat v, GLfloat *r)
-{
-	struct weston_vector t;
-
-	t.f[0] = x;
-	t.f[1] = y;
-	t.f[2] = 0.0;
-	t.f[3] = 1.0;
-
-	weston_matrix_transform(&surface->transform->matrix, &t);
-
-	r[ 0] = t.f[0];
-	r[ 1] = t.f[1];
-	r[ 2] = u;
-	r[ 3] = v;
-}
-
-static int
-texture_transformed_surface(struct weston_surface *es)
-{
-	struct weston_compositor *ec = es->compositor;
-	GLfloat *v;
-	unsigned int *p;
-
-	v = wl_array_add(&ec->vertices, 16 * sizeof *v);
-	p = wl_array_add(&ec->indices, 6 * sizeof *p);
-
-	transform_vertex(es, es->x, es->y, 0.0, 0.0, &v[0]);
-	transform_vertex(es, es->x, es->y + es->height, 0.0, 1.0, &v[4]);
-	transform_vertex(es, es->x + es->width, es->y, 1.0, 0.0, &v[8]);
-	transform_vertex(es, es->x + es->width, es->y + es->height,
-			 1.0, 1.0, &v[12]);
-
-	p[0] = 0;
-	p[1] = 1;
-	p[2] = 2;
-	p[3] = 2;
-	p[4] = 1;
-	p[5] = 3;
-
-	return 1;
-}
-
 WL_EXPORT void
 weston_surface_draw(struct weston_surface *es, struct weston_output *output)
 {
@@ -547,13 +677,15 @@ weston_surface_draw(struct weston_surface *es, struct weston_output *output)
 	GLint filter;
 	int n;
 
-	pixman_region32_init_rect(&repaint,
-				  es->x, es->y, es->width, es->height);
-	pixman_region32_intersect(&repaint, &repaint, &output->region);
+	weston_surface_update_transform(es);
+
+	pixman_region32_init(&repaint);
+	pixman_region32_intersect(&repaint, &es->transform.boundingbox,
+				  &output->region);
 	pixman_region32_intersect(&repaint, &repaint, &es->damage);
 
 	if (!pixman_region32_not_empty(&repaint))
-		return;
+		goto out;
 
 	switch (es->visual) {
 	case WESTON_ARGB_VISUAL:
@@ -584,13 +716,16 @@ weston_surface_draw(struct weston_surface *es, struct weston_output *output)
 		ec->current_alpha = es->alpha;
 	}
 
-	if (es->transform == NULL) {
-		filter = GL_NEAREST;
-		n = texture_region(es, &repaint);
-	} else {
+	if (es->shader->texwidth_uniform != GL_NONE)
+		glUniform1f(es->shader->texwidth_uniform,
+			    (GLfloat)es->geometry.width / es->pitch);
+
+	if (es->transform.enabled)
 		filter = GL_LINEAR;
-		n = texture_transformed_surface(es);
-	}
+	else
+		filter = GL_NEAREST;
+
+	n = texture_region(es, &repaint);
 
 	glBindTexture(GL_TEXTURE_2D, es->texture);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, filter);
@@ -601,10 +736,16 @@ weston_surface_draw(struct weston_surface *es, struct weston_output *output)
 	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof *v, &v[2]);
 	glEnableVertexAttribArray(0);
 	glEnableVertexAttribArray(1);
+
 	glDrawElements(GL_TRIANGLES, n * 6, GL_UNSIGNED_INT, ec->indices.data);
+
+	glDisableVertexAttribArray(1);
+	glDisableVertexAttribArray(0);
 
 	ec->vertices.size = 0;
 	ec->indices.size = 0;
+
+out:
 	pixman_region32_fini(&repaint);
 }
 
@@ -716,12 +857,12 @@ weston_output_set_cursor(struct weston_output *output,
 	if (device->sprite == NULL)
 		return;
 
-	pixman_region32_init_rect(&cursor_region,
-				  device->sprite->x, device->sprite->y,
-				  device->sprite->width,
-				  device->sprite->height);
+	weston_surface_update_transform(device->sprite);
 
-	pixman_region32_intersect(&cursor_region, &cursor_region, &output->region);
+	pixman_region32_init(&cursor_region);
+	pixman_region32_intersect(&cursor_region,
+				  &device->sprite->transform.boundingbox,
+				  &output->region);
 
 	if (!pixman_region32_not_empty(&cursor_region)) {
 		output->set_hardware_cursor(output, NULL);
@@ -770,14 +911,15 @@ weston_output_repaint(struct weston_output *output, int msecs)
 	pixman_region32_init(&overlap);
 
 	wl_list_for_each(es, &ec->surface_list, link) {
+		weston_surface_update_transform(es);
+
 		pixman_region32_init(&surface_overlap);
-		pixman_region32_intersect_rect(&surface_overlap,
-					       &overlap, es->x, es->y,
-					       es->width, es->height);
+		pixman_region32_intersect(&surface_overlap, &overlap,
+					  &es->transform.boundingbox);
 		es->overlapped = pixman_region32_not_empty(&surface_overlap);
 		pixman_region32_fini(&surface_overlap);
-		pixman_region32_union_rect(&overlap, &overlap, es->x, es->y,
-					   es->width, es->height);
+		pixman_region32_union(&overlap, &overlap,
+				      &es->transform.boundingbox);
 	}
 
 	weston_output_set_cursor(output, ec->input_device);
@@ -903,12 +1045,14 @@ weston_surface_assign_output(struct weston_surface *es)
 	uint32_t max, area;
 	pixman_box32_t *e;
 
+	weston_surface_update_transform(es);
+
 	new_output = NULL;
 	max = 0;
+	pixman_region32_init(&region);
 	wl_list_for_each(output, &ec->output_list, link) {
-		pixman_region32_init_rect(&region,
-					  es->x, es->y, es->width, es->height);
-		pixman_region32_intersect(&region, &region, &output->region);
+		pixman_region32_intersect(&region, &es->transform.boundingbox,
+					  &output->region);
 
 		e = pixman_region32_extents(&region);
 		area = (e->x2 - e->x1) * (e->y2 - e->y1);
@@ -918,6 +1062,7 @@ weston_surface_assign_output(struct weston_surface *es)
 			max = area;
 		}
 	}
+	pixman_region32_fini(&region);
 
 	es->output = new_output;
 	if (!wl_list_empty(&es->frame_callback_list)) {
@@ -951,9 +1096,11 @@ surface_attach(struct wl_client *client,
 	if (es->visual == WESTON_NONE_VISUAL) {
 		shell->map(shell, es, buffer->width, buffer->height);
 	} else if (x != 0 || y != 0 ||
-		   es->width != buffer->width ||
-		   es->height != buffer->height) {
-		shell->configure(shell, es, es->x + x, es->y + y,
+		   es->geometry.width != buffer->width ||
+		   es->geometry.height != buffer->height) {
+		/* FIXME: the x,y delta should be in surface-local coords */
+		shell->configure(shell, es, es->geometry.x + x,
+				 es->geometry.y + y,
 				 buffer->width, buffer->height);
 	}
 
@@ -1052,9 +1199,9 @@ weston_compositor_pick_surface(struct weston_compositor *compositor,
 	wl_list_for_each(surface, &compositor->surface_list, link) {
 		if (surface->surface.resource.client == NULL)
 			continue;
-		weston_surface_transform(surface, x, y, sx, sy);
-		if (0 <= *sx && *sx < surface->width &&
-		    0 <= *sy && *sy < surface->height)
+		weston_surface_from_global(surface, x, y, sx, sy);
+		if (0 <= *sx && *sx < surface->geometry.width &&
+		    0 <= *sy && *sy < surface->geometry.height)
 			return surface;
 	}
 
@@ -1163,8 +1310,9 @@ notify_motion(struct wl_input_device *device, uint32_t time, int x, int y)
 	if (wd->sprite) {
 		weston_surface_damage_below(wd->sprite);
 
-		wd->sprite->x = device->x - wd->hotspot_x;
-		wd->sprite->y = device->y - wd->hotspot_y;
+		wd->sprite->geometry.x = device->x - wd->hotspot_x;
+		wd->sprite->geometry.y = device->y - wd->hotspot_y;
+		wd->sprite->geometry.dirty = 1;
 
 		weston_surface_damage(wd->sprite);
 	}
@@ -1440,7 +1588,7 @@ notify_touch(struct wl_input_device *device, uint32_t time, int touch_id,
 			touch_set_focus(wd, &es->surface, time);
 		} else if (wd->touch_focus) {
 			es = (struct weston_surface *) wd->touch_focus;
-			weston_surface_transform(es, x, y, &sx, &sy);
+			weston_surface_from_global(es, x, y, &sx, &sy);
 		}
 
 		if (wd->touch_focus_resource && wd->touch_focus)
@@ -1454,7 +1602,7 @@ notify_touch(struct wl_input_device *device, uint32_t time, int touch_id,
 		if (!es)
 			break;
 
-		weston_surface_transform(es, x, y, &sx, &sy);
+		weston_surface_from_global(es, x, y, &sx, &sy);
 		if (wd->touch_focus_resource)
 			wl_resource_post_event(wd->touch_focus_resource,
 					       touch_type, time,
@@ -1515,10 +1663,11 @@ input_device_attach(struct wl_client *client,
 
 	device->hotspot_x = x;
 	device->hotspot_y = y;
-	device->sprite->width = buffer->width;
-	device->sprite->height = buffer->height;
-	device->sprite->x = device->input_device.x - device->hotspot_x;
-	device->sprite->y = device->input_device.y - device->hotspot_y;
+	device->sprite->geometry.width = buffer->width;
+	device->sprite->geometry.height = buffer->height;
+	device->sprite->geometry.x = device->input_device.x - device->hotspot_x;
+	device->sprite->geometry.y = device->input_device.y - device->hotspot_y;
+	device->sprite->geometry.dirty = 1;
 
 	weston_surface_damage(device->sprite);
 }
@@ -1624,8 +1773,12 @@ static const char texture_fragment_shader[] =
 	"varying vec2 v_texcoord;\n"
 	"uniform sampler2D tex;\n"
 	"uniform float alpha;\n"
+	"uniform float texwidth;\n"
 	"void main()\n"
 	"{\n"
+	"   if (v_texcoord.x < 0.0 || v_texcoord.x > texwidth ||\n"
+	"       v_texcoord.y < 0.0 || v_texcoord.y > 1.0)\n"
+	"      discard;\n"
 	"   gl_FragColor = texture2D(tex, v_texcoord)\n;"
 	"   gl_FragColor = alpha * gl_FragColor;\n"
 	"}\n";
@@ -1687,6 +1840,8 @@ weston_shader_init(struct weston_shader *shader,
 	shader->proj_uniform = glGetUniformLocation(shader->program, "proj");
 	shader->tex_uniform = glGetUniformLocation(shader->program, "tex");
 	shader->alpha_uniform = glGetUniformLocation(shader->program, "alpha");
+	shader->texwidth_uniform = glGetUniformLocation(shader->program,
+							"texwidth");
 
 	return 0;
 }

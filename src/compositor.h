@@ -1,5 +1,6 @@
 /*
  * Copyright © 2008-2011 Kristian Høgsberg
+ * Copyright © 2012 Collabora, Ltd.
  *
  * Permission to use, copy, modify, distribute, and sell this software and
  * its documentation for any purpose is hereby granted without fee, provided
@@ -32,27 +33,11 @@
 #include <EGL/egl.h>
 #include <EGL/eglext.h>
 
-struct weston_matrix {
-	GLfloat d[16];
-};
-
-struct weston_vector {
-	GLfloat f[4];
-};
-
-void
-weston_matrix_init(struct weston_matrix *matrix);
-void
-weston_matrix_scale(struct weston_matrix *matrix, GLfloat x, GLfloat y, GLfloat z);
-void
-weston_matrix_translate(struct weston_matrix *matrix,
-			GLfloat x, GLfloat y, GLfloat z);
-void
-weston_matrix_transform(struct weston_matrix *matrix, struct weston_vector *v);
+#include "matrix.h"
 
 struct weston_transform {
 	struct weston_matrix matrix;
-	struct weston_matrix inverse;
+	struct wl_list link;
 };
 
 struct weston_surface;
@@ -118,6 +103,7 @@ struct weston_shader {
 	GLuint tex_uniform;
 	GLuint alpha_uniform;
 	GLuint color_uniform;
+	GLuint texwidth_uniform;
 };
 
 struct weston_animation {
@@ -162,7 +148,6 @@ struct weston_compositor {
 	EGLContext context;
 	EGLConfig config;
 	GLuint fbo;
-	GLuint proj_uniform, tex_uniform, alpha_uniform;
 	uint32_t current_alpha;
 	struct weston_shader texture_shader;
 	struct weston_shader solid_shader;
@@ -230,16 +215,44 @@ struct weston_surface {
 	GLuint texture;
 	pixman_region32_t damage;
 	pixman_region32_t opaque;
-	int32_t x, y, width, height;
 	int32_t pitch;
 	struct wl_list link;
 	struct wl_list buffer_link;
-	struct weston_transform *transform;
 	struct weston_shader *shader;
 	GLfloat color[4];
 	uint32_t alpha;
 	uint32_t visual;
 	int overlapped;
+
+	/* Surface geometry state, mutable.
+	 * If you change anything, set dirty = 1.
+	 * That includes the transformations referenced from the list.
+	 */
+	struct {
+		int32_t x, y; /* surface translation on display */
+		int32_t width, height;
+
+		/* struct weston_transform */
+		struct wl_list transformation_list;
+
+		int dirty;
+	} geometry;
+
+	/* State derived from geometry state, read-only.
+	 * This is updated by weston_surface_update_transform().
+	 */
+	struct {
+		pixman_region32_t boundingbox;
+
+		/* matrix and inverse are used only if enabled = 1.
+		 * If enabled = 0, use x, y, width, height directly.
+		 */
+		int enabled;
+		struct weston_matrix matrix;
+		struct weston_matrix inverse;
+
+		struct weston_transform position; /* matrix from x, y */
+	} transform;
 
 	/*
 	 * Which output to vsync this surface to.
@@ -256,6 +269,17 @@ struct weston_surface {
 	struct wl_buffer *buffer;
 	struct wl_listener buffer_destroy_listener;
 };
+
+void
+weston_surface_update_transform(struct weston_surface *surface);
+
+void
+weston_surface_to_global(struct weston_surface *surface,
+			 int32_t sx, int32_t sy, int32_t *x, int32_t *y);
+
+void
+weston_surface_from_global(struct weston_surface *surface,
+			   int32_t x, int32_t y, int32_t *sx, int32_t *sy);
 
 void
 weston_device_repick(struct wl_input_device *device, uint32_t time);
