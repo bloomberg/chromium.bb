@@ -10,7 +10,7 @@ AM_CPPFLAGS =					\
 weston_LDFLAGS = -export-dynamic
 weston_CFLAGS = $(GCC_CFLAGS)
 weston_LDADD = \
-	$(COMPOSITOR_LIBS) $(DLOPEN_LIBS) $(XSERVER_LAUNCHER_LIBS)
+	$(COMPOSITOR_LIBS) $(DLOPEN_LIBS) $(XSERVER_LAUNCHER_LIBS) -lm
 
 weston_SOURCES =			\
 	compositor.c				\
