@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -28,7 +28,7 @@ using WebKit::WebScriptSource;
 using WebKit::WebString;
 using WebKit::WebView;
 
-// The delay in millliseconds that we'll wait before checking to see if the
+// The delay in milliseconds that we'll wait before checking to see if the
 // translate library injected in the page is ready.
 static const int kTranslateInitCheckDelayMs = 150;
 
@@ -339,10 +339,12 @@ void TranslateHelper::CheckTranslateStatus() {
   }
 
   // The translation is still pending, check again later.
-  MessageLoop::current()->PostDelayedTask(FROM_HERE,
+  MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
       base::Bind(&TranslateHelper::CheckTranslateStatus,
                  weak_method_factory_.GetWeakPtr()),
-      DontDelayTasks() ? 0 : kTranslateStatusCheckDelayMs);
+      base::TimeDelta::FromMilliseconds(
+          DontDelayTasks() ? 0 : kTranslateStatusCheckDelayMs));
 }
 
 bool TranslateHelper::ExecuteScript(const std::string& script) {
@@ -401,10 +403,12 @@ void TranslateHelper::TranslatePageImpl(int count) {
       NotifyBrowserTranslationFailed(TranslateErrors::INITIALIZATION_ERROR);
       return;
     }
-    MessageLoop::current()->PostDelayedTask(FROM_HERE,
+    MessageLoop::current()->PostDelayedTask(
+        FROM_HERE,
         base::Bind(&TranslateHelper::TranslatePageImpl,
                    weak_method_factory_.GetWeakPtr(), count),
-        DontDelayTasks() ? 0 : count * kTranslateInitCheckDelayMs);
+        base::TimeDelta::FromMilliseconds(
+            DontDelayTasks() ? 0 : count * kTranslateInitCheckDelayMs));
     return;
   }
 
@@ -413,10 +417,12 @@ void TranslateHelper::TranslatePageImpl(int count) {
     return;
   }
   // Check the status of the translation.
-  MessageLoop::current()->PostDelayedTask(FROM_HERE,
+  MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
       base::Bind(&TranslateHelper::CheckTranslateStatus,
                  weak_method_factory_.GetWeakPtr()),
-      DontDelayTasks() ? 0 : kTranslateStatusCheckDelayMs);
+      base::TimeDelta::FromMilliseconds(
+          DontDelayTasks() ? 0 : kTranslateStatusCheckDelayMs));
 }
 
 void TranslateHelper::NotifyBrowserTranslationFailed(

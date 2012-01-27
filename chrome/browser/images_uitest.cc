@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,7 +17,7 @@ TEST_F(ImagesTest, AnimatedGIFs) {
   NavigateToURL(net::FilePathToFileURL(test_file));
 
   // Let the GIFs fully animate.
-  base::PlatformThread::Sleep(TestTimeouts::action_timeout_ms());
+  base::PlatformThread::Sleep(TestTimeouts::action_timeout());
 
   std::wstring page_title = L"animated gif test";
   EXPECT_EQ(page_title, GetActiveTabTitle());

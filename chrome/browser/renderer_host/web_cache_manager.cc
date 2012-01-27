@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -26,7 +26,7 @@ using base::Time;
 using base::TimeDelta;
 using WebKit::WebCache;
 
-static const unsigned int kReviseAllocationDelayMS = 200 /* milliseconds */;
+static const int kReviseAllocationDelayMS = 200;
 
 // The default size limit of the in-memory cache is 8 MB
 static const int kDefaultMemoryCacheSize = 8 * 1024 * 1024;
@@ -421,7 +421,7 @@ void WebCacheManager::ReviseAllocationStrategyLater() {
       base::Bind(
           &WebCacheManager::ReviseAllocationStrategy,
           weak_factory_.GetWeakPtr()),
-      kReviseAllocationDelayMS);
+      base::TimeDelta::FromMilliseconds(kReviseAllocationDelayMS));
 }
 
 void WebCacheManager::FindInactiveRenderers() {

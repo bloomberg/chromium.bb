@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -258,12 +258,13 @@ void BrowserChildProcessHostImpl::OnChildDisconnected() {
       // disconnecting the channel so that the exit code and termination status
       // become available. This is best effort -- if the process doesn't die
       // within the time limit, this object gets destroyed.
-      const int kExitCodeWaitMs = 250;
+      const base::TimeDelta kExitCodeWait =
+          base::TimeDelta::FromMilliseconds(250);
       MessageLoop::current()->PostDelayedTask(
           FROM_HERE,
           base::Bind(&BrowserChildProcessHostImpl::OnChildDisconnected,
                      task_factory_.GetWeakPtr()),
-          kExitCodeWaitMs);
+          kExitCodeWait);
 #endif
       return;
     }

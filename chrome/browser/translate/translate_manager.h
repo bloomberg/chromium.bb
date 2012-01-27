@@ -15,6 +15,7 @@
 #include "base/lazy_instance.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/time.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/common/translate_errors.h"
 #include "content/public/common/url_fetcher_delegate.h"
@@ -84,7 +85,8 @@ class TranslateManager : public content::NotificationObserver,
   // Used by unit-tests to override the default delay after which the translate
   // script is fetched again from the translation server.
   void set_translate_script_expiration_delay(int delay_ms) {
-    translate_script_expiration_delay_ = delay_ms;
+    translate_script_expiration_delay_ =
+        base::TimeDelta::FromMilliseconds(delay_ms);
   }
 
   // Convenience method to know if a tab is showing a translate infobar.
@@ -201,9 +203,9 @@ class TranslateManager : public content::NotificationObserver,
   // The JS injected in the page to do the translation.
   std::string translate_script_;
 
-  // Delay in milli-seconds after which the translate script is fetched again
+  // Delay after which the translate script is fetched again
   // from the translate server.
-  int translate_script_expiration_delay_;
+  base::TimeDelta translate_script_expiration_delay_;
 
   // Set when the translate JS is currently being retrieved. NULL otherwise.
   scoped_ptr<content::URLFetcher> translate_script_request_pending_;

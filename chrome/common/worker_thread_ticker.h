@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -58,11 +58,11 @@ class WorkerThreadTicker {
   }
 
   void set_tick_interval(int tick_interval) {
-    tick_interval_ = tick_interval;
+    tick_interval_ = base::TimeDelta::FromMilliseconds(tick_interval);
   }
 
   int tick_interval() const {
-    return tick_interval_;
+    return tick_interval_.InMilliseconds();
   }
 
  private:
@@ -80,7 +80,7 @@ class WorkerThreadTicker {
   bool is_running_;
 
   // The interval at which the callbacks are to be invoked
-  int tick_interval_;
+  base::TimeDelta tick_interval_;
 
   // A list that holds all registered callback interfaces
   TickHandlerListType tick_handler_list_;

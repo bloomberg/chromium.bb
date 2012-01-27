@@ -140,7 +140,7 @@ void GamepadProvider::ScheduleDoPoll() {
   MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&GamepadProvider::DoPoll, weak_factory_.GetWeakPtr()),
-      kDesiredSamplingIntervalMs);
+      base::TimeDelta::FromMilliseconds(kDesiredSamplingIntervalMs));
 }
 
 GamepadHardwareBuffer* GamepadProvider::SharedMemoryAsHardwareBuffer() {

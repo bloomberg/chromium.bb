@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,7 +11,7 @@
 namespace {
 
 // How long we wait before releasing the broker process.
-const int kBrokerReleaseTimeMs = 30 * 1000;  // 30 seconds.
+const int kBrokerReleaseTimeSeconds = 30;
 
 }  // namespace
 
@@ -34,5 +34,5 @@ BrokerProcessDispatcher::~BrokerProcessDispatcher() {
       FROM_HERE,
       base::Bind(&ChildProcess::ReleaseProcess,
                  base::Unretained(ChildProcess::current())),
-      kBrokerReleaseTimeMs);
+      base::TimeDelta::FromSeconds(kBrokerReleaseTimeSeconds));
 }
