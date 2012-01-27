@@ -92,10 +92,11 @@ class RepoRepository(object):
     self._stable_sync = stable_sync
     self._referenced_repo = referenced_repo
 
-  def Initialize(self, extra_args=()):
+  def Initialize(self, extra_args=(), force=False):
     """Initializes a repository."""
-    assert not os.path.exists(os.path.join(self.directory, '.repo')), \
-      'Repo already initialized.'
+    if not force:
+      assert not os.path.exists(os.path.join(self.directory, '.repo')), \
+        'Repo already initialized.'
     # Base command.
     init_cmd = self._INIT_CMD + ['--manifest-url', self.repo_url]
     if self._referenced_repo:
@@ -167,7 +168,7 @@ class RepoRepository(object):
     logging.debug('Moving to manifest defined by %s' % local_manifest)
     # If no manifest passed in, assume default.
     if local_manifest == self.DEFAULT_MANIFEST:
-      self.Initialize(['--manifest-name=default.xml'])
+      self.Initialize(['--manifest-name=default.xml'], force=True)
     else:
       # The 10x speed up magic.
       # TODO: get documentation as to *why* this is supposedly 10x faster.
