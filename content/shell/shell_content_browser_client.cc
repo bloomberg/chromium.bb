@@ -7,6 +7,7 @@
 #include "base/file_path.h"
 #include "content/shell/shell.h"
 #include "content/shell/shell_browser_main.h"
+#include "content/shell/shell_devtools_delegate.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "webkit/glue/webpreferences.h"
@@ -35,6 +36,11 @@ BrowserMainParts* ShellContentBrowserClient::CreateBrowserMainParts(
 
 WebContentsView* ShellContentBrowserClient::CreateWebContentsView(
     WebContents* web_contents) {
+  ShellDevToolsDelegate* devtools_delegate =
+      shell_browser_main_parts_->devtools_delegate();
+  if (devtools_delegate)
+    devtools_delegate->AddWebContents(web_contents);
+
 #if defined(OS_WIN)
   return new TabContentsViewWin(web_contents);
 #elif defined(OS_LINUX)

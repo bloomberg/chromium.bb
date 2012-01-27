@@ -21,6 +21,7 @@ class Clipboard;
 namespace content {
 
 class ShellBrowserContext;
+class ShellDevToolsDelegate;
 struct MainFunctionParams;
 
 class ShellBrowserMainParts : public BrowserMainParts {
@@ -40,11 +41,13 @@ class ShellBrowserMainParts : public BrowserMainParts {
   virtual void PostDestroyThreads() OVERRIDE {}
 
   ui::Clipboard* GetClipboard();
+  ShellDevToolsDelegate* devtools_delegate() { return devtools_delegate_; }
 
  private:
   scoped_ptr<ShellBrowserContext> browser_context_;
 
   scoped_ptr<ui::Clipboard> clipboard_;
+  ShellDevToolsDelegate* devtools_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellBrowserMainParts);
 };

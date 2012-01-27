@@ -273,7 +273,6 @@ extern const char kProxyServer[];
 extern const char kPurgeMemoryButton[];
 extern const char kReloadKilledTabs[];
 extern const char kRemoteDebuggingFrontend[];
-extern const char kRemoteDebuggingPort[];
 extern const char kRendererPrintPreview[];
 extern const char kRestoreLastSession[];
 extern const char kSbInfoURLPrefix[];

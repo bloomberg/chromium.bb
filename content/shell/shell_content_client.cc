@@ -5,6 +5,7 @@
 #include "content/shell/shell_content_client.h"
 
 #include "base/string_piece.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "webkit/glue/user_agent.h"
 
 namespace content {
@@ -44,7 +45,7 @@ string16 ShellContentClient::GetLocalizedString(int message_id) const {
 }
 
 base::StringPiece ShellContentClient::GetDataResource(int resource_id) const {
-  return base::StringPiece();
+  return ResourceBundle::GetSharedInstance().GetRawDataResource(resource_id);
 }
 
 #if defined(OS_WIN)

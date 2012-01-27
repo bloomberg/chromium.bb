@@ -4,4 +4,7 @@ include_rules = [
 
   # The content_shell is an embedder so it must work with resource bundles.
   "+ui/base/resource",
+
+  # Shell resources
+  "+grit/shell_resources.h",
 ]

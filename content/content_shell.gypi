@@ -19,6 +19,7 @@
         'content_plugin',
         'content_ppapi_plugin',
         'content_renderer',
+        'content_shell_resources',
         'content_utility',
         'content_worker',
         'content_resources.gyp:content_resources',
@@ -62,6 +63,8 @@
         'shell/shell_content_renderer_client.h',
         'shell/shell_content_utility_client.cc',
         'shell/shell_content_utility_client.h',
+        'shell/shell_devtools_delegate.cc',
+        'shell/shell_devtools_delegate.h',
         'shell/shell_download_manager_delegate.cc',
         'shell/shell_download_manager_delegate.h',
         'shell/shell_main_delegate.cc',
@@ -106,10 +109,39 @@
       ],
     },
     {
+      'target_name': 'content_shell_resources',
+      'type': 'none',
+      'variables': {
+        'grit_out_dir': '<(SHARED_INTERMEDIATE_DIR)/content',
+      },
+      'actions': [
+        {
+          'action_name': 'content_shell_resources',
+          'variables': {
+            'grit_grd_file': 'shell/shell_resources.grd',
+          },
+          'includes': [ '../build/grit_action.gypi' ],
+        },
+      ],
+      'includes': [ '../build/grit_target.gypi' ],
+      'copies': [
+        {
+          'destination': '<(PRODUCT_DIR)',
+          'files': [
+            '<(SHARED_INTERMEDIATE_DIR)/content/shell_resources.pak'
+          ],
+        },
+      ],
+    },
+    {
       # We build a minimal set of resources so WebKit in content_shell has
       # access to necessary resources.
       'target_name': 'content_shell_pak',
       'type': 'none',
+      'dependencies': [
+        'browser/debugger/devtools_resources.gyp:devtools_resources',
+        'content_shell_resources',
+      ],
       'variables': {
         'repack_path': '<(DEPTH)/tools/grit/grit/format/repack.py',
       },
@@ -119,9 +151,11 @@
           'variables': {
             'pak_inputs': [
               '<(SHARED_INTERMEDIATE_DIR)/content/content_resources.pak',
+              '<(SHARED_INTERMEDIATE_DIR)/content/shell_resources.pak',
               '<(SHARED_INTERMEDIATE_DIR)/net/net_resources.pak',
               '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_resources.pak',
               '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources_standard/ui_resources_standard.pak',
+              '<(SHARED_INTERMEDIATE_DIR)/webkit/devtools_resources.pak',
               '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_chromium_resources.pak',
               '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_resources.pak',
             ],

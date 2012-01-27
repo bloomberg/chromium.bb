@@ -17,6 +17,7 @@
 #include "base/threading/thread.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/devtools_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/devtools_agent_host_registry.h"
@@ -25,7 +26,6 @@
 #include "content/public/browser/devtools_manager.h"
 #include "content/public/browser/favicon_status.h"
 #include "content/public/browser/navigation_entry.h"
-#include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/content_client.h"
 #include "googleurl/src/gurl.h"
@@ -82,52 +82,52 @@ class DevToolsClientHostImpl : public DevToolsClientHost {
 
 static int next_id = 1;
 
-class WebContentsIDHelper : public content::WebContentsObserver {
+class TabContentsIDHelper : public content::WebContentsObserver {
  public:
-  static int GetID(WebContents* contents) {
-    WebContentsToIdMap::iterator it = web_contents_to_id_.Get().find(contents);
-    if (it != web_contents_to_id_.Get().end())
+  static int GetID(TabContents* contents) {
+    TabContentsToIdMap::iterator it = tab_contents_to_id_.Get().find(contents);
+    if (it != tab_contents_to_id_.Get().end())
       return it->second;
-    WebContentsIDHelper* wrapper = new WebContentsIDHelper(contents);
+    TabContentsIDHelper* wrapper = new TabContentsIDHelper(contents);
     return wrapper->id_;
   }
 
-  static WebContents* GetWebContents(int id) {
-    IdToWebContentsMap::iterator it = id_to_web_contents_.Get().find(id);
-    if (it != id_to_web_contents_.Get().end())
+  static TabContents* GetTabContents(int id) {
+    IdToTabContentsMap::iterator it = id_to_tab_contents_.Get().find(id);
+    if (it != id_to_tab_contents_.Get().end())
       return it->second;
     return NULL;
   }
 
  private:
-  explicit WebContentsIDHelper(WebContents* tab)
+  explicit TabContentsIDHelper(TabContents* tab)
       : content::WebContentsObserver(tab),
         id_(next_id++) {
-    id_to_web_contents_.Get()[id_] = tab;
-    web_contents_to_id_.Get()[tab] = id_;
+    id_to_tab_contents_.Get()[id_] = tab;
+    tab_contents_to_id_.Get()[tab] = id_;
   }
 
-  virtual ~WebContentsIDHelper() {}
+  virtual ~TabContentsIDHelper() {}
 
   virtual void WebContentsDestroyed(WebContents* contents) OVERRIDE {
-    id_to_web_contents_.Get().erase(id_);
-    web_contents_to_id_.Get().erase(contents);
+    id_to_tab_contents_.Get().erase(id_);
+    tab_contents_to_id_.Get().erase((static_cast<TabContents*>(contents)));
     delete this;
   }
 
   int id_;
-  typedef std::map<int, WebContents*> IdToWebContentsMap;
-  static base::LazyInstance<IdToWebContentsMap>::Leaky
-      id_to_web_contents_;
-  typedef std::map<WebContents*, int> WebContentsToIdMap;
-  static base::LazyInstance<WebContentsToIdMap>::Leaky
-      web_contents_to_id_;
+  typedef std::map<int, TabContents*> IdToTabContentsMap;
+  static base::LazyInstance<IdToTabContentsMap>::Leaky
+      id_to_tab_contents_;
+  typedef std::map<TabContents*, int> TabContentsToIdMap;
+  static base::LazyInstance<TabContentsToIdMap>::Leaky
+      tab_contents_to_id_;
 };
 
-base::LazyInstance<WebContentsIDHelper::IdToWebContentsMap>::Leaky
-    WebContentsIDHelper::id_to_web_contents_ = LAZY_INSTANCE_INITIALIZER;
-base::LazyInstance<WebContentsIDHelper::WebContentsToIdMap>::Leaky
-    WebContentsIDHelper::web_contents_to_id_ = LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<TabContentsIDHelper::IdToTabContentsMap>::Leaky
+    TabContentsIDHelper::id_to_tab_contents_ = LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<TabContentsIDHelper::TabContentsToIdMap>::Leaky
+    TabContentsIDHelper::tab_contents_to_id_ = LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
 
@@ -341,7 +341,8 @@ static PageList GeneratePageList(
     DevToolsClientHost* client_host = DevToolsManager::GetInstance()->
         GetDevToolsClientHostFor(agent);
     PageInfo page_info;
-    page_info.id = WebContentsIDHelper::GetID(web_contents);
+    page_info.id = TabContentsIDHelper::GetID(
+        static_cast<TabContents*>(web_contents));
     page_info.attached = client_host != NULL;
     page_info.url = entry->GetURL().spec();
     page_info.title = UTF16ToUTF8(net::EscapeForHTML(entry->GetTitle()));
@@ -406,7 +407,7 @@ void DevToolsHttpHandlerImpl::OnWebSocketRequestUI(
     return;
   }
 
-  WebContents* web_contents = WebContentsIDHelper::GetWebContents(id);
+  TabContents* web_contents = TabContentsIDHelper::GetTabContents(id);
   if (web_contents == NULL) {
     Send500(connection_id, "No such page id: " + page_id);
     return;

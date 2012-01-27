@@ -175,4 +175,7 @@
   "content/content_resources.grd": {
     "includes": [24500],
   },
+  "content/shell/shell_resources.grd": {
+    "includes": [25000],
+  },
 }
