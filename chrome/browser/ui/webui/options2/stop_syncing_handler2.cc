@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,6 +12,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/sync/profile_sync_service.h"
+#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/web_ui.h"
 #include "grit/chromium_strings.h"
@@ -47,8 +48,8 @@ void StopSyncingHandler::RegisterMessages() {
 }
 
 void StopSyncingHandler::StopSyncing(const ListValue* args){
-  ProfileSyncService* service =
-      Profile::FromWebUI(web_ui())->GetProfileSyncService();
+  ProfileSyncService* service(ProfileSyncServiceFactory::
+      GetInstance()->GetForProfile(Profile::FromWebUI(web_ui())));
   if (service != NULL && ProfileSyncService::IsSyncEnabled()) {
     service->DisableForUser();
     ProfileSyncService::SyncEvent(ProfileSyncService::STOP_FROM_OPTIONS);

@@ -22,6 +22,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service.h"
+#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
@@ -190,7 +191,8 @@ void PersonalDataManager::OnStateChanged() {
     return;
   }
 
-  ProfileSyncService* sync_service = profile_->GetProfileSyncService();
+  ProfileSyncService* sync_service =
+      ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile_);
   if (!sync_service)
     return;
 
@@ -889,7 +891,8 @@ void PersonalDataManager::EmptyMigrationTrash() {
     return;
   }
 
-  ProfileSyncService* sync_service = profile_->GetProfileSyncService();
+  ProfileSyncService* sync_service =
+      ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile_);
   if (!sync_service)
     return;
 

@@ -32,6 +32,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/sync/profile_sync_service.h"
+#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -266,7 +267,8 @@ void ScreenLocker::OnLoginSuccess(
 
   Profile* profile = ProfileManager::GetDefaultProfile();
   if (profile) {
-    ProfileSyncService* service = profile->GetProfileSyncService();
+    ProfileSyncService* service(
+        ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile));
     if (service && !service->HasSyncSetupCompleted()) {
       // If sync has failed somehow, try setting the sync passphrase here.
       service->SetPassphrase(password, false);

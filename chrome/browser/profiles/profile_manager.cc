@@ -24,6 +24,7 @@
 #include "chrome/browser/profiles/profile_metrics.h"
 #include "chrome/browser/sessions/session_service_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
+#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/webui/sync_promo/sync_promo_ui.h"
@@ -828,8 +829,11 @@ void ProfileManager::ScheduleProfileForDeletion(const FilePath& profile_dir) {
     BrowserList::CloseAllBrowsersWithProfile(profile);
 
     // Disable sync for doomed profile.
-    if (profile->HasProfileSyncService())
-      profile->GetProfileSyncService()->DisableForUser();
+    if (ProfileSyncServiceFactory::GetInstance()->HasProfileSyncService(
+        profile)) {
+      ProfileSyncServiceFactory::GetInstance()->GetForProfile(
+          profile)->DisableForUser();
+    }
   }
 
   QueueProfileDirectoryForDeletion(profile_dir);

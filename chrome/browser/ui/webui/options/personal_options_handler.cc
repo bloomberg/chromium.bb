@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -23,6 +23,7 @@
 #include "chrome/browser/profiles/profile_info_util.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/sync/profile_sync_service.h"
+#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/sync_setup_flow.h"
 #include "chrome/browser/sync/sync_ui_util.h"
 #include "chrome/browser/themes/theme_service.h"
@@ -65,8 +66,8 @@ PersonalOptionsHandler::PersonalOptionsHandler() {
 }
 
 PersonalOptionsHandler::~PersonalOptionsHandler() {
-  ProfileSyncService* sync_service =
-      Profile::FromWebUI(web_ui())->GetProfileSyncService();
+  ProfileSyncService* sync_service(ProfileSyncServiceFactory::
+      GetInstance()->GetForProfile(Profile::FromWebUI(web_ui())));
   if (sync_service)
     sync_service->RemoveObserver(this);
 }
@@ -251,8 +252,8 @@ void PersonalOptionsHandler::Observe(
 void PersonalOptionsHandler::OnStateChanged() {
   string16 status_label;
   string16 link_label;
-  ProfileSyncService* service =
-      Profile::FromWebUI(web_ui())->GetProfileSyncService();
+  ProfileSyncService* service(ProfileSyncServiceFactory::
+      GetInstance()->GetForProfile(Profile::FromWebUI(web_ui())));
   DCHECK(service);
   bool managed = service->IsManaged();
   bool sync_setup_completed = service->HasSyncSetupCompleted();
@@ -369,7 +370,8 @@ void PersonalOptionsHandler::Initialize() {
                  content::NotificationService::AllSources());
   ObserveThemeChanged();
 
-  ProfileSyncService* sync_service = profile->GetProfileSyncService();
+  ProfileSyncService* sync_service(ProfileSyncServiceFactory::
+      GetInstance()->GetForProfile(profile));
   if (sync_service) {
     sync_service->AddObserver(this);
     OnStateChanged();

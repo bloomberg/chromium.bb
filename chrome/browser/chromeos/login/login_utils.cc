@@ -54,6 +54,7 @@
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/signin/token_service.h"
 #include "chrome/browser/sync/profile_sync_service.h"
+#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/browser_init.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
@@ -912,7 +913,8 @@ void LoginUtilsImpl::StartSignedInServices(
     initialized = true;
     // Pass the updated passphrase to the sync service for use in decrypting
     // data encrypted with the user's GAIA password.
-    ProfileSyncService* sync_service = user_profile->GetProfileSyncService();
+    ProfileSyncService* sync_service =
+        ProfileSyncServiceFactory::GetInstance()->GetForProfile(user_profile);
     if (sync_service)
       sync_service->SetPassphrase(password_, false);
   }

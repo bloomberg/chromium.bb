@@ -35,6 +35,7 @@
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
+#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/sync_setup_flow.h"
 #include "chrome/browser/sync/sync_ui_util.h"
 #include "chrome/browser/themes/theme_service.h"
@@ -95,8 +96,8 @@ BrowserOptionsHandler::BrowserOptionsHandler()
 }
 
 BrowserOptionsHandler::~BrowserOptionsHandler() {
-  ProfileSyncService* sync_service =
-      Profile::FromWebUI(web_ui())->GetProfileSyncService();
+  ProfileSyncService* sync_service(ProfileSyncServiceFactory::
+      GetInstance()->GetForProfile(Profile::FromWebUI(web_ui())));
   if (sync_service)
     sync_service->RemoveObserver(this);
 
@@ -280,8 +281,8 @@ void BrowserOptionsHandler::RegisterMessages() {
 void BrowserOptionsHandler::OnStateChanged() {
   string16 status_label;
   string16 link_label;
-  ProfileSyncService* service =
-      Profile::FromWebUI(web_ui())->GetProfileSyncService();
+  ProfileSyncService* service(ProfileSyncServiceFactory::
+      GetInstance()->GetForProfile(Profile::FromWebUI(web_ui())));
   DCHECK(service);
   bool managed = service->IsManaged();
   bool sync_setup_completed = service->HasSyncSetupCompleted();
@@ -371,7 +372,8 @@ void BrowserOptionsHandler::OnStateChanged() {
 void BrowserOptionsHandler::Initialize() {
   Profile* profile = Profile::FromWebUI(web_ui());
 
-  ProfileSyncService* sync_service = profile->GetProfileSyncService();
+  ProfileSyncService* sync_service(ProfileSyncServiceFactory::
+      GetInstance()->GetForProfile(Profile::FromWebUI(web_ui())));
   if (sync_service) {
     sync_service->AddObserver(this);
     OnStateChanged();

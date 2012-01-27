@@ -13,8 +13,10 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/signin_manager.h"
+#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/signin/token_service.h"
 #include "chrome/browser/sync/profile_sync_service.h"
+#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/ui/auto_login_info_bar_delegate.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
@@ -135,10 +137,13 @@ void AutoLoginPrompter::ShowInfoBarUIThread(const std::string& account,
 
   // In an incognito window, there may not be a profile sync service and/or
   // signin manager.
-  if (!profile->HasProfileSyncService())
+  if (!ProfileSyncServiceFactory::GetInstance()->HasProfileSyncService(
+      profile)) {
     return;
+  }
 
-  SigninManager* signin_manager = profile->GetProfileSyncService()->signin();
+  SigninManager* signin_manager =
+      SigninManagerFactory::GetInstance()->GetForProfile(profile);
   if (!signin_manager)
     return;
 

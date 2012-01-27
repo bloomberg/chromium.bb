@@ -88,6 +88,7 @@
 #include "chrome/browser/sessions/tab_restore_service.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
+#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/sync_ui_util.h"
 #include "chrome/browser/tab_closeable_state_watcher.h"
 #include "chrome/browser/tab_contents/background_contents.h"
@@ -396,8 +397,10 @@ Browser::Browser(Type type, Profile* profile)
     TabRestoreServiceChanged(tab_restore_service_);
   }
 
-  if (profile_->GetProfileSyncService())
-    profile_->GetProfileSyncService()->AddObserver(this);
+  ProfileSyncService* service =
+      ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile_);
+  if (service)
+    service->AddObserver(this);
 
   CreateInstantIfNecessary();
 
@@ -412,8 +415,10 @@ Browser::Browser(Type type, Profile* profile)
 }
 
 Browser::~Browser() {
-  if (profile_->GetProfileSyncService())
-    profile_->GetProfileSyncService()->RemoveObserver(this);
+  ProfileSyncService* service =
+      ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile_);
+  if (service)
+    service->RemoveObserver(this);
 
   BrowserList::RemoveBrowser(this);
 
@@ -4382,7 +4387,8 @@ void Browser::Observe(int type,
 // Browser, ProfileSyncServiceObserver implementation:
 
 void Browser::OnStateChanged() {
-  DCHECK(profile_->GetProfileSyncService());
+  DCHECK(ProfileSyncServiceFactory::GetInstance()->HasProfileSyncService(
+      profile_));
   // For unit tests, we don't have a window.
   if (!window_)
     return;
@@ -5483,7 +5489,8 @@ void Browser::UpdateBookmarkBarState(BookmarkBarStateChangeReason reason) {
 
 void Browser::ShowSyncSetup() {
   ProfileSyncService* service =
-      profile()->GetOriginalProfile()->GetProfileSyncService();
+      ProfileSyncServiceFactory::GetInstance()->GetForProfile(
+          profile()->GetOriginalProfile());
   if (service->HasSyncSetupCompleted())
     ShowOptionsTab(chrome::kPersonalOptionsSubPage);
   else

@@ -18,6 +18,8 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/sync/profile_sync_service.h"
+#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/sync_global_error.h"
 #include "chrome/browser/sync/sync_ui_util.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
@@ -260,7 +262,8 @@ string16 WrenchMenuModel::GetLabelForCommandId(int command_id) const {
       return l10n_util::GetStringUTF16(IDS_UPDATE_NOW);
     case IDC_SHOW_SYNC_SETUP: {
       ProfileSyncService* service =
-          browser_->GetProfile()->GetOriginalProfile()->GetProfileSyncService();
+          ProfileSyncServiceFactory::GetInstance()->GetForProfile(
+              browser_->GetProfile()->GetOriginalProfile());
       SyncGlobalError* error = service->sync_global_error();
       if (error && error->HasCustomizedSyncMenuItem())
         return error->MenuItemLabel();
@@ -296,7 +299,8 @@ bool WrenchMenuModel::GetIconForCommandId(int command_id,
     }
     case IDC_SHOW_SYNC_SETUP: {
       ProfileSyncService* service =
-          browser_->GetProfile()->GetOriginalProfile()->GetProfileSyncService();
+          ProfileSyncServiceFactory::GetInstance()->GetForProfile(
+              browser_->GetProfile()->GetOriginalProfile());
       SyncGlobalError* error = service->sync_global_error();
       if (error && error->HasCustomizedSyncMenuItem()) {
         int icon_id = error->MenuItemIconResourceID();
@@ -323,7 +327,8 @@ void WrenchMenuModel::ExecuteCommand(int command_id) {
 
   if (command_id == IDC_SHOW_SYNC_SETUP) {
     ProfileSyncService* service =
-        browser_->GetProfile()->GetOriginalProfile()->GetProfileSyncService();
+        ProfileSyncServiceFactory::GetInstance()->GetForProfile(
+            browser_->GetProfile()->GetOriginalProfile());
     SyncGlobalError* error = service->sync_global_error();
     if (error && error->HasCustomizedSyncMenuItem()) {
       error->ExecuteMenuItem(browser_);
@@ -590,6 +595,6 @@ void WrenchMenuModel::UpdateZoomControls() {
 }
 
 string16 WrenchMenuModel::GetSyncMenuLabel() const {
-  return sync_ui_util::GetSyncMenuLabel(
-      browser_->profile()->GetOriginalProfile()->GetProfileSyncService());
+  return sync_ui_util::GetSyncMenuLabel(ProfileSyncServiceFactory::
+      GetInstance()->GetForProfile(browser_->profile()->GetOriginalProfile()));
 }

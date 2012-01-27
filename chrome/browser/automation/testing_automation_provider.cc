@@ -82,6 +82,8 @@
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/sessions/restore_tab_helper.h"
 #include "chrome/browser/sessions/session_service_factory.h"
+#include "chrome/browser/sync/profile_sync_service.h"
+#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/tab_contents/confirm_infobar_delegate.h"
 #include "chrome/browser/tab_contents/link_infobar_delegate.h"
 #include "chrome/browser/themes/theme_service.h"
@@ -5115,7 +5117,8 @@ void TestingAutomationProvider::AwaitFullSyncCompletion(
   // Ensure that the profile sync service and sync backend host are initialized
   // before waiting for sync cycle completion. In cases where the browser is
   // restarted with sync enabled, these operations may still be in flight.
-  if (!browser->profile()->GetProfileSyncService()) {
+  if (ProfileSyncServiceFactory::GetInstance()->GetForProfile(
+          browser->profile()) == NULL) {
     reply.SendError("ProfileSyncService initialization failed.");
     return;
   }
@@ -5156,7 +5159,8 @@ void TestingAutomationProvider::AwaitSyncRestart(
     reply.SendError("Not signed in to sync");
     return;
   }
-  if (!browser->profile()->GetProfileSyncService()) {
+  if (ProfileSyncServiceFactory::GetInstance()->GetForProfile(
+          browser->profile()) == NULL) {
     reply.SendError("ProfileSyncService initialization failed.");
     return;
   }

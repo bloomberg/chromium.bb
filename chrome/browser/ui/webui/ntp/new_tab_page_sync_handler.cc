@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,6 +15,8 @@
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/sync/profile_sync_service.h"
+#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/public/browser/web_ui.h"
@@ -56,7 +58,8 @@ NewTabPageSyncHandler::MessageType
 }
 
 void NewTabPageSyncHandler::RegisterMessages() {
-  sync_service_ = Profile::FromWebUI(web_ui())->GetProfileSyncService();
+  sync_service_ = ProfileSyncServiceFactory::GetInstance()->GetForProfile(
+      Profile::FromWebUI(web_ui()));
   DCHECK(sync_service_);  // This shouldn't get called by an incognito NTP.
   DCHECK(!sync_service_->IsManaged());  // And neither if sync is managed.
   sync_service_->AddObserver(this);

@@ -19,6 +19,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/token_service.h"
 #include "chrome/browser/sync/profile_sync_service.h"
+#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -59,10 +60,12 @@ ProfileSyncService* test_sync_service = NULL;
 
 // Returns either the test sync service, or the real one from |profile|.
 ProfileSyncService* GetSyncService(Profile* profile) {
+  // TODO(webstore): It seems |test_sync_service| is not used anywhere. It
+  // should be removed.
   if (test_sync_service)
     return test_sync_service;
   else
-    return profile->GetProfileSyncService();
+    return ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile);
 }
 
 bool IsWebStoreURL(Profile* profile, const GURL& url) {
@@ -554,4 +557,3 @@ bool GetWebGLStatusFunction::RunImpl() {
   }
   return true;
 }
-

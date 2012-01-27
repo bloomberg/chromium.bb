@@ -14,6 +14,7 @@
 #include "chrome/browser/signin/signin_manager_fake.h"
 #include "chrome/browser/sync/profile_sync_components_factory_mock.h"
 #include "chrome/browser/sync/profile_sync_service.h"
+#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/sync_setup_flow.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -90,17 +91,17 @@ class SigninManagerMock : public FakeSigninManager {
 // A PSS subtype to inject.
 class ProfileSyncServiceForWizardTest : public ProfileSyncService {
  public:
-  ProfileSyncServiceForWizardTest(Profile* profile,
-                                  ProfileSyncService::StartBehavior behavior)
-      : ProfileSyncService(NULL, profile, NULL, behavior),
-        user_cancelled_dialog_(false),
-        is_using_secondary_passphrase_(false),
-        encrypt_everything_(false) {
-    signin_ = &mock_signin_;
-    ResetTestStats();
+  virtual ~ProfileSyncServiceForWizardTest() {}
+
+  static ProfileKeyedService* BuildManual(Profile* profile) {
+    return new ProfileSyncServiceForWizardTest(profile,
+        ProfileSyncService::MANUAL_START);
   }
 
-  virtual ~ProfileSyncServiceForWizardTest() {}
+  static ProfileKeyedService* BuildAuto(Profile* profile) {
+    return new ProfileSyncServiceForWizardTest(profile,
+        ProfileSyncService::AUTO_START);
+  }
 
   virtual void OnUserChoseDatatypes(
       bool sync_everything, syncable::ModelTypeSet chosen_types) OVERRIDE {
@@ -178,23 +179,17 @@ class ProfileSyncServiceForWizardTest : public ProfileSyncService {
   std::string passphrase_;
 
  private:
+  ProfileSyncServiceForWizardTest(Profile* profile,
+                                  ProfileSyncService::StartBehavior behavior)
+      : ProfileSyncService(NULL, profile, NULL, behavior),
+        user_cancelled_dialog_(false),
+        is_using_secondary_passphrase_(false),
+        encrypt_everything_(false) {
+    signin_ = &mock_signin_;
+    ResetTestStats();
+  }
+
   DISALLOW_COPY_AND_ASSIGN(ProfileSyncServiceForWizardTest);
-};
-
-class TestingProfileWithSyncService : public TestingProfile {
- public:
-  explicit TestingProfileWithSyncService(
-      ProfileSyncService::StartBehavior behavior) {
-    sync_service_.reset(new ProfileSyncServiceForWizardTest(
-        this, behavior));
-  }
-
-  virtual ProfileSyncService* GetProfileSyncService() {
-    return sync_service_.get();
-  }
- private:
-  ProfileSyncComponentsFactoryMock factory_;
-  scoped_ptr<ProfileSyncService> sync_service_;
 };
 
 // TODO(jhawkins): Subclass Browser (specifically, ShowOptionsTab) and inject it
@@ -207,8 +202,10 @@ class SyncSetupWizardTest : public BrowserWithTestWindowTest {
         flow_(NULL) {}
   virtual ~SyncSetupWizardTest() {}
   virtual TestingProfile* BuildProfile() {
-    return new TestingProfileWithSyncService(
-        ProfileSyncService::MANUAL_START);
+    TestingProfile* profile = new TestingProfile();
+    ProfileSyncServiceFactory::GetInstance()->SetTestingFactory(profile,
+        ProfileSyncServiceForWizardTest::BuildManual);
+    return profile;
   }
   virtual void SetUp() {
     set_profile(BuildProfile());
@@ -222,7 +219,7 @@ class SyncSetupWizardTest : public BrowserWithTestWindowTest {
     browser()->SetWindowForTesting(window());
     BrowserList::SetLastActive(browser());
     service_ = static_cast<ProfileSyncServiceForWizardTest*>(
-        profile()->GetProfileSyncService());
+        ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile()));
     wizard_ = service_->GetWizard();
   }
 
@@ -614,10 +611,10 @@ TEST_F(SyncSetupWizardTest, NonFatalError) {
 class SyncSetupWizardCrosTest : public SyncSetupWizardTest {
  public:
   virtual TestingProfile* BuildProfile() {
-    TestingProfile* profile =
-        new TestingProfileWithSyncService(ProfileSyncService::AUTO_START);
-    profile->GetProfileSyncService()->signin()->SetAuthenticatedUsername(
-        kTestUser);
+    TestingProfile* profile = new TestingProfile();
+    ProfileSyncServiceFactory* f = ProfileSyncServiceFactory::GetInstance();
+    f->SetTestingFactory(profile, ProfileSyncServiceForWizardTest::BuildAuto);
+    f->GetForProfile(profile)->signin()->SetAuthenticatedUsername(kTestUser);
     return profile;
   }
 };

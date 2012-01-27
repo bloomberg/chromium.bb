@@ -20,6 +20,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service.h"
+#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
@@ -339,7 +340,7 @@ void NTPResourceCache::CreateNewTabHTML() {
 
   // Don't initiate the sync related message passing with the page if the sync
   // code is not present.
-  if (profile_->GetProfileSyncService())
+  if (ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile_))
     localized_strings.SetString("syncispresent", "true");
   else
     localized_strings.SetString("syncispresent", "false");

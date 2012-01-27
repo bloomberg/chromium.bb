@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,7 @@
 #include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service.h"
+#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/sync_setup_wizard.h"
 #include "chrome/browser/tab_contents/confirm_infobar_delegate.h"
 #include "chrome/browser/ui/browser.h"
@@ -115,7 +116,8 @@ void AppNotifyChannelUIImpl::OnInfoBarResult(bool accepted) {
   if (accepted) {
     StartObservingSync();
     ProfileSyncService* service =
-        browser_->profile()->GetOriginalProfile()->GetProfileSyncService();
+        ProfileSyncServiceFactory::GetInstance()->GetForProfile(
+            browser_->profile()->GetOriginalProfile());
     service->ShowLoginDialog();
   } else {
     delegate_->OnSyncSetupResult(false);
@@ -124,7 +126,8 @@ void AppNotifyChannelUIImpl::OnInfoBarResult(bool accepted) {
 
 void AppNotifyChannelUIImpl::OnStateChanged() {
   ProfileSyncService* sync_service =
-      browser_->profile()->GetProfileSyncService();
+      ProfileSyncServiceFactory::GetInstance()->GetForProfile(
+          browser_->profile()->GetOriginalProfile());
   bool wizard_visible = sync_service->WizardIsVisible();
   // ProfileSyncService raises OnStateChanged many times. Even multiple
   // times before the wizard actually becomes visible for the first time.
@@ -143,11 +146,13 @@ void AppNotifyChannelUIImpl::OnStateChanged() {
 void AppNotifyChannelUIImpl::StartObservingSync() {
   CHECK(!observing_sync_);
   observing_sync_ = true;
-  browser_->profile()->GetProfileSyncService()->AddObserver(this);
+  ProfileSyncServiceFactory::GetInstance()->GetForProfile(
+      browser_->profile()->GetOriginalProfile())->AddObserver(this);
 }
 
 void AppNotifyChannelUIImpl::StopObservingSync() {
   CHECK(observing_sync_);
   observing_sync_ = false;
-  browser_->profile()->GetProfileSyncService()->RemoveObserver(this);
+  ProfileSyncServiceFactory::GetInstance()->GetForProfile(
+      browser_->profile()->GetOriginalProfile())->RemoveObserver(this);
 }
