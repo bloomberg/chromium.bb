@@ -24,9 +24,10 @@
 #define CONFIGPARSER_H
 
 enum config_key_type {
-	CONFIG_KEY_INTEGER,	/* typeof data = int */
-	CONFIG_KEY_STRING,	/* typeof data = char* */
-	CONFIG_KEY_BOOLEAN	/* typeof data = int */
+	CONFIG_KEY_INTEGER,		/* typeof data = int */
+	CONFIG_KEY_UNSIGNED_INTEGER,	/* typeof data = unsigned int */
+	CONFIG_KEY_STRING,		/* typeof data = char* */
+	CONFIG_KEY_BOOLEAN		/* typeof data = int */
 };
 
 struct config_key {

@@ -32,6 +32,7 @@ handle_key(const struct config_key *key, const char *value)
 {
 	char *end, *s;
 	int i, len;
+	unsigned int ui;
 	
 	switch (key->type) {
 	case CONFIG_KEY_INTEGER:
@@ -41,6 +42,15 @@ handle_key(const struct config_key *key, const char *value)
 			return -1;
 		}
 		*(int *)key->data = i;
+		return 0;
+
+	case CONFIG_KEY_UNSIGNED_INTEGER:
+		ui = strtoul(value, &end, 0);
+		if (*end != '\n') {
+			fprintf(stderr, "invalid integer: %s\n", value);
+			return -1;
+		}
+		*(unsigned int *)key->data = ui;
 		return 0;
 
 	case CONFIG_KEY_STRING:

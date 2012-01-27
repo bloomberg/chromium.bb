@@ -107,8 +107,8 @@ static int key_locking = 1;
 static const struct config_key shell_config_keys[] = {
 	{ "background-image", CONFIG_KEY_STRING, &key_background_image },
 	{ "background-type", CONFIG_KEY_STRING, &key_background_type },
-	{ "panel-color", CONFIG_KEY_INTEGER, &key_panel_color },
-	{ "background-color", CONFIG_KEY_INTEGER, &key_background_color },
+	{ "panel-color", CONFIG_KEY_UNSIGNED_INTEGER, &key_panel_color },
+	{ "background-color", CONFIG_KEY_UNSIGNED_INTEGER, &key_background_color },
 	{ "locking", CONFIG_KEY_BOOLEAN, &key_locking },
 };
 
