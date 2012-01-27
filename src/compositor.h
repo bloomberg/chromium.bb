@@ -369,8 +369,7 @@ struct wl_list *
 weston_compositor_top(struct weston_compositor *compositor);
 
 struct weston_surface *
-weston_surface_create(struct weston_compositor *compositor,
-		      int32_t x, int32_t y, int32_t width, int32_t height);
+weston_surface_create(struct weston_compositor *compositor);
 
 void
 weston_surface_configure(struct weston_surface *surface,

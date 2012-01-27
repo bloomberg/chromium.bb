@@ -173,8 +173,7 @@ surface_handle_buffer_destroy(struct wl_listener *listener,
 }
 
 WL_EXPORT struct weston_surface *
-weston_surface_create(struct weston_compositor *compositor,
-		      int32_t x, int32_t y, int32_t width, int32_t height)
+weston_surface_create(struct weston_compositor *compositor)
 {
 	struct weston_surface *surface;
 
@@ -190,10 +189,6 @@ weston_surface_create(struct weston_compositor *compositor,
 	surface->compositor = compositor;
 	surface->visual = WESTON_NONE_VISUAL;
 	surface->image = EGL_NO_IMAGE_KHR;
-	surface->geometry.x = x;
-	surface->geometry.y = y;
-	surface->geometry.width = width;
-	surface->geometry.height = height;
 	surface->alpha = 255;
 
 	surface->fullscreen_output = NULL;
@@ -1018,7 +1013,8 @@ weston_compositor_fade(struct weston_compositor *compositor, float tint)
 			weston_compositor_get_time();
 
 	if (compositor->fade.surface == NULL) {
-		surface = weston_surface_create(compositor, 0, 0, 8192, 8192);
+		surface = weston_surface_create(compositor);
+		weston_surface_configure(surface, 0, 0, 8192, 8192);
 		weston_surface_set_color(surface, 0.0, 0.0, 0.0, 0.0);
 		wl_list_insert(&compositor->surface_list, &surface->link);
 		compositor->fade.surface = surface;
@@ -1169,7 +1165,7 @@ compositor_create_surface(struct wl_client *client,
 	struct weston_compositor *ec = resource->data;
 	struct weston_surface *surface;
 
-	surface = weston_surface_create(ec, 0, 0, 0, 0);
+	surface = weston_surface_create(ec);
 	if (surface == NULL) {
 		wl_resource_post_no_memory(resource);
 		return;
@@ -1650,26 +1646,20 @@ input_device_attach(struct wl_client *client,
 	}
 
 	if (!device->sprite) {
-		device->sprite =
-			weston_surface_create(compositor,
-					    device->input_device.x,
-					    device->input_device.y, 32, 32);
+		device->sprite = weston_surface_create(compositor);
 		wl_list_insert(&compositor->surface_list,
 			       &device->sprite->link);
 	}
 
 	buffer = buffer_resource->data;
-	weston_buffer_attach(buffer, &device->sprite->surface);
-
 	device->hotspot_x = x;
 	device->hotspot_y = y;
-	device->sprite->geometry.width = buffer->width;
-	device->sprite->geometry.height = buffer->height;
-	device->sprite->geometry.x = device->input_device.x - device->hotspot_x;
-	device->sprite->geometry.y = device->input_device.y - device->hotspot_y;
-	device->sprite->geometry.dirty = 1;
+	weston_surface_configure(device->sprite,
+				 device->input_device.x - device->hotspot_x,
+				 device->input_device.y - device->hotspot_y,
+				 buffer->width, buffer->height);
 
-	weston_surface_damage(device->sprite);
+	weston_buffer_attach(buffer, &device->sprite->surface);
 }
 
 const static struct wl_input_device_interface input_device_interface = {
