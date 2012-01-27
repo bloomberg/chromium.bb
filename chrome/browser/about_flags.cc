@@ -75,6 +75,16 @@ const Experiment::Choice kPrerenderFromOmniboxChoices[] = {
     switches::kPrerenderFromOmniboxSwitchValueDisabled }
 };
 
+const Experiment::Choice kOmniboxAggressiveHistoryURLChoices[] = {
+  { IDS_FLAGS_OMNIBOX_AGGRESSIVE_HISTORY_URL_SCORING_AUTOMATIC, "", "" },
+  { IDS_FLAGS_OMNIBOX_AGGRESSIVE_HISTORY_URL_SCORING_ENABLED,
+    switches::kOmniboxAggressiveHistoryURL,
+    switches::kOmniboxAggressiveHistoryURLEnabled },
+  { IDS_FLAGS_OMNIBOX_AGGRESSIVE_HISTORY_URL_SCORING_DISABLED,
+    switches::kOmniboxAggressiveHistoryURL,
+    switches::kOmniboxAggressiveHistoryURLDisabled }
+};
+
 #if defined(USE_AURA)
 const Experiment::Choice kAuraWindowModeChoices[] = {
   { IDS_FLAGS_AURA_WINDOW_MODE_AUTOMATIC, "", "" },
@@ -361,11 +371,11 @@ const Experiment kExperiments[] = {
     MULTI_VALUE_TYPE(kPrerenderFromOmniboxChoices)
   },
   {
-    "omnibox-aggressive-with-history-urls",
+    "omnibox-aggressive-with-history-url",
     IDS_FLAGS_OMNIBOX_AGGRESSIVE_HISTORY_URL_SCORING_NAME,
     IDS_FLAGS_OMNIBOX_AGGRESSIVE_HISTORY_URL_SCORING_DESCRIPTION,
     kOsAll,
-    SINGLE_VALUE_TYPE(switches::kEnableOmniboxAggressiveHistoryURL)
+    MULTI_VALUE_TYPE(kOmniboxAggressiveHistoryURLChoices)
   },
   {
     "enable-panels",

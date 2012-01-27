@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -314,8 +314,26 @@ HistoryURLProvider::HistoryURLProvider(ACProviderListener* listener,
     : HistoryProvider(listener, profile, "HistoryURL"),
       prefixes_(GetPrefixes()),
       params_(NULL),
-      enable_aggressive_scoring_(CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableOmniboxAggressiveHistoryURL)) {
+      enable_aggressive_scoring_(false) {
+  const std::string switch_value = CommandLine::ForCurrentProcess()->
+      GetSwitchValueASCII(switches::kOmniboxAggressiveHistoryURL);
+  if (switch_value == switches::kOmniboxAggressiveHistoryURLEnabled) {
+    enable_aggressive_scoring_ = true;
+  } else if (switch_value == switches::kOmniboxAggressiveHistoryURLDisabled) {
+    enable_aggressive_scoring_ = false;
+  } else {
+    // Either: switch_value == switches::kOmniboxAggressiveHistoryURLAuto
+    // or someone passed an invalid command line flag.  We'll default
+    // the latter case to automatic but report an error.
+    if (!switch_value.empty() &&
+        (switch_value != switches::kOmniboxAggressiveHistoryURLAuto)) {
+      LOG(ERROR) << "Invalid --omnibox-aggressive-with-history-url option "
+                 << "received on command line: " << switch_value;
+      LOG(ERROR) << "Making automatic.";
+    }
+    // For now automatic means disabled / not aggressive.
+    enable_aggressive_scoring_ = false;
+  }
 }
 
 void HistoryURLProvider::Start(const AutocompleteInput& input,

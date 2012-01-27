@@ -555,10 +555,6 @@ const char kEnableNaCl[]                    = "enable-nacl";
 // Enables debugging via RSP over a socket.
 const char kEnableNaClDebug[]               = "enable-nacl-debug";
 
-// Enables the HistoryURL provider to be more aggressive in omnibox ranking.
-const char kEnableOmniboxAggressiveHistoryURL[] =
-    "omnibox-aggressive-with-history-urls";
-
 // Enables panels (always on-top docked pop-up windows).
 const char kEnablePanels[]                 = "enable-panels";
 
@@ -887,6 +883,18 @@ const char kNotifyCloudPrintTokenExpired[]  = "notify-cp-token-expired";
 // Specifies the maximum number of threads to use for running the Proxy
 // Autoconfig (PAC) script.
 const char kNumPacThreads[]                 = "num-pac-threads";
+
+// Controls whether the omnibox's HistoryURL provider is aggressive.
+const char kOmniboxAggressiveHistoryURL[] =
+    "omnibox-aggressive-with-history-url";
+// The values the kOmniboxAggressiveHistoryURL switch may have, as in
+// "--omnibox-aggressive-with-history-url=auto".
+//   auto: Allow field trial selection.
+const char kOmniboxAggressiveHistoryURLAuto[] = "auto";
+//   enabled: always aggressive.
+const char kOmniboxAggressiveHistoryURLEnabled[] = "enabled";
+//   disabled: never aggressive ( == current behavior as of 1/2012).
+const char kOmniboxAggressiveHistoryURLDisabled[] = "disabled";
 
 // When the option to block third-party cookies is enabled, only block
 // third-party cookies from being set.
