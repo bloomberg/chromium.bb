@@ -170,7 +170,7 @@ panel_launcher_activate(struct panel_launcher *widget)
 		return;
 
 	if (execl(widget->path, widget->path, NULL) < 0) {
-		fprintf(stderr, "execl failed: %m\n");
+		fprintf(stderr, "execl '%s' failed: %m\n", widget->path);
 		exit(1);
 	}
 }
