@@ -10098,9 +10098,6 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_FILE_BROWSER_COMPUTING_SELECTION" desc="Computing selection...">
         Computing selection...
       </message>
-      <message name="IDS_FILE_BROWSER_NOTHING_SELECTED" desc="Nothing selected.">
-        No files selected
-      </message>
       <message name="IDS_FILE_BROWSER_ONE_FILE_SELECTED" desc="One file selected.">
         One file selected, $1
       </message>

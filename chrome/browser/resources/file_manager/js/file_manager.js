@@ -1777,16 +1777,19 @@ FileManager.prototype = {
       indexes: this.currentList_.selectionModel.selectedIndexes
     };
 
-    this.previewSummary_.textContent = str('COMPUTING_SELECTION');
-    removeChildren(this.taskButtons_);
-    removeChildren(this.previewThumbnails_);
-
     if (!selection.indexes.length) {
       this.updateCommonActionButtons_();
       this.updatePreviewPanelVisibility_();
       cr.dispatchSimpleEvent(this, 'selection-summarized');
       return;
     }
+
+    this.previewSummary_.textContent = str('COMPUTING_SELECTION');
+    // Removing childrens of task buttons and preview thumbnails after simple
+    // event dispatched (see above). This can ensure a smooth disappearing
+    // animation when nothing is selected.
+    removeChildren(this.taskButtons_);
+    removeChildren(this.previewThumbnails_);
 
     var fileCount = 0;
     var byteCount = 0;
@@ -2634,7 +2637,8 @@ FileManager.prototype = {
     var bytes = util.bytesToSi(selection.bytes);
     var text = '';
     if (selection.totalCount == 0) {
-      text = str('NOTHING_SELECTED');
+      // We dont want to change the string during preview panel animating away.
+      return;
     } else if (selection.fileCount == 1 && selection.directoryCount == 0) {
       text = selection.entries[0].name + ', ' + bytes;
     } else if (selection.fileCount == 0 && selection.directoryCount == 1) {

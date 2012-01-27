@@ -308,7 +308,6 @@ chrome.fileBrowserPrivate = {
       SELECT_SAVEAS_FILE_TITLE: 'Save file as',
 
       COMPUTING_SELECTION: 'Computing selection...',
-      NOTHING_SELECTED: 'No files selected',
       ONE_FILE_SELECTED: 'One file selected, $1',
       ONE_DIRECTORY_SELECTED: 'One directory selected',
       MANY_FILES_SELECTED: '$1 files selected, $2',

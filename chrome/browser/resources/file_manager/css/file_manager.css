@@ -540,7 +540,8 @@ input.rename {
 }
 
 .preview-panel[visibility=hiding] {
-  -webkit-transition: all 220ms ease;
+  /* Using all seems to cause preview panel and checkbox flicking issue. */
+  -webkit-transition: opacity 220ms ease;
   -webkit-transform: translate(0, 5px);
    opacity: 0;
 }
