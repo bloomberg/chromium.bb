@@ -103,7 +103,6 @@ function onEvent(socketEvent) {
 function onRead(readInfo) {
   if (readInfo.message == message) {
     succeeded = true;
-    sendQuit(socketId);
     chrome.test.succeed();
   } else {
     // The read blocked. Save what we've got so far, and wait for onEvent.
