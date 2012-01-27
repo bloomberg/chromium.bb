@@ -26,7 +26,6 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/compositor/compositor_setup.h"
-#include "ui/gfx/gl/gl_switches.h"
 #include "ui/gfx/size.h"
 
 namespace {
@@ -72,8 +71,6 @@ class GpuPixelBrowserTest : public InProcessBrowserTest {
 
   virtual void SetUpCommandLine(CommandLine* command_line) {
     InProcessBrowserTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitchASCII(switches::kTestGLLib,
-                                    "libllvmpipe.so");
 
     // This enables DOM automation for tab contents.
     EnableDOMAutomation();

@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,7 +13,6 @@
 #include "base/threading/thread_restrictions.h"
 #include "ui/gfx/gl/gl_bindings.h"
 #include "ui/gfx/gl/gl_implementation.h"
-#include "ui/gfx/gl/gl_switches.h"
 
 namespace gfx {
 namespace {
@@ -70,8 +69,6 @@ bool InitializeGLBindings(GLImplementation implementation) {
   // one-time initialization cost is small, between 2 and 5 ms.
   base::ThreadRestrictions::ScopedAllowIO allow_io;
 
-  const CommandLine* command_line = CommandLine::ForCurrentProcess();
-
   switch (implementation) {
 #if !defined(USE_WAYLAND)
     case kGLImplementationOSMesaGL: {
@@ -105,19 +102,11 @@ bool InitializeGLBindings(GLImplementation implementation) {
       break;
     }
     case kGLImplementationDesktopGL: {
-      base::NativeLibrary library = NULL;
-      if (command_line->HasSwitch(switches::kTestGLLib))
-        library = LoadLibrary(command_line->GetSwitchValueASCII(
-            switches::kTestGLLib).c_str());
-
-      if (!library) {
 #if defined(OS_OPENBSD)
-        library = LoadLibrary("libGL.so");
+      base::NativeLibrary library = LoadLibrary("libGL.so");
 #else
-        library = LoadLibrary("libGL.so.1");
+      base::NativeLibrary library = LoadLibrary("libGL.so.1");
 #endif
-      }
-
       if (!library)
         return false;
 
