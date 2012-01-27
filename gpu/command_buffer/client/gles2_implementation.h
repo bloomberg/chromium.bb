@@ -74,13 +74,12 @@
 namespace gpu {
 
 class MappedMemoryManager;
-class ScopedTransferBufferPtr;
-class TransferBufferInterface;
 
 namespace gles2 {
 
 class ClientSideBufferHelper;
 class ProgramInfoManager;
+class AlignedRingBuffer;
 
 // Base class for IdHandlers
 class IdHandlerInterface {
@@ -96,6 +95,84 @@ class IdHandlerInterface {
 
   // Marks an id as used for glBind functions. id = 0 does nothing.
   virtual bool MarkAsUsedForBind(GLuint id) = 0;
+};
+
+// Wraps RingBufferWrapper to provide aligned allocations.
+class AlignedRingBuffer : public RingBufferWrapper {
+ public:
+  AlignedRingBuffer(
+      unsigned int alignment,
+      int32 shm_id,
+      RingBuffer::Offset base_offset,
+      unsigned int size,
+      CommandBufferHelper* helper,
+      void* base)
+      : RingBufferWrapper(base_offset, size, helper, base),
+        alignment_(alignment),
+        shm_id_(shm_id) {
+  }
+  ~AlignedRingBuffer();
+
+  // Overrriden from RingBufferWrapper
+  void* Alloc(unsigned int size) {
+    return RingBufferWrapper::Alloc(RoundToAlignment(size));
+  }
+
+  template <typename T>T* AllocTyped(unsigned int count) {
+    return static_cast<T*>(Alloc(count * sizeof(T)));
+  }
+
+  int32 GetShmId() const {
+    return shm_id_;
+  }
+
+ private:
+  unsigned int RoundToAlignment(unsigned int size) {
+    return (size + alignment_ - 1) & ~(alignment_ - 1);
+  }
+
+  unsigned int alignment_;
+  int32 shm_id_;
+};
+
+// Manages the transfer buffer.
+class TransferBuffer {
+ public:
+  TransferBuffer(
+      CommandBufferHelper* helper,
+      int32 buffer_id,
+      void* buffer,
+      size_t buffer_size,
+      size_t result_size,
+      unsigned int alignment);
+  ~TransferBuffer();
+
+  AlignedRingBuffer* GetBuffer();
+  int GetShmId();
+  void* GetResultBuffer();
+  int GetResultOffset();
+
+  void Free();
+
+  // This is for unit testing only.
+  bool HaveBuffer() const {
+    return buffer_id_ != 0;
+  }
+
+ private:
+  void AllocateRingBuffer();
+
+  void Setup(int32 buffer_id, void* buffer);
+
+  CommandBufferHelper* helper_;
+  scoped_ptr<AlignedRingBuffer> ring_buffer_;
+  unsigned int buffer_size_;
+  unsigned int result_size_;
+  unsigned int alignment_;
+  int32 buffer_id_;
+  void* result_buffer_;
+  uint32 result_shm_offset_;
+  bool usable_;
 };
 
 // This class emulates GLES2 over command buffers. It can be used by a client
@@ -158,16 +235,13 @@ class GLES2Implementation {
 
   GLES2Implementation(
       GLES2CmdHelper* helper,
-      TransferBufferInterface* transfer_buffer,
+      size_t transfer_buffer_size,
+      void* transfer_buffer,
+      int32 transfer_buffer_id,
       bool share_resources,
       bool bind_generates_resource);
 
   ~GLES2Implementation();
-
-  bool Initialize(
-      unsigned int starting_transfer_buffer_size,
-      unsigned int min_transfer_buffer_size,
-      unsigned int max_transfer_buffer_size);
 
   // The GLES2CmdHelper being used by this GLES2Implementation. You can use
   // this to issue cmds at a lower level for certain kinds of optimization.
@@ -328,12 +402,16 @@ class GLES2Implementation {
   // Gets the value of the result.
   template <typename T>
   T GetResultAs() {
-    return static_cast<T>(GetResultBuffer());
+    return static_cast<T>(transfer_buffer_.GetResultBuffer());
   }
 
-  void* GetResultBuffer();
-  int32 GetResultShmId();
-  uint32 GetResultShmOffset();
+  int32 GetResultShmId() {
+    return transfer_buffer_.GetShmId();
+  }
+
+  uint32 GetResultShmOffset() {
+    return transfer_buffer_.GetResultOffset();
+  }
 
   // Lazily determines if GL_ANGLE_pack_reverse_row_order is available
   bool IsAnglePackReverseRowOrderAvailable();
@@ -394,9 +472,6 @@ class GLES2Implementation {
       GLenum target, GLsizeiptr size, const void* data, GLenum usage);
   void BufferSubDataHelper(
       GLenum target, GLintptr offset, GLsizeiptr size, const void* data);
-  void BufferSubDataHelperImpl(
-      GLenum target, GLintptr offset, GLsizeiptr size, const void* data,
-      ScopedTransferBufferPtr* buffer);
 
   // Helper for GetVertexAttrib
   bool GetVertexAttribHelper(GLuint index, GLenum pname, uint32* param);
@@ -410,7 +485,7 @@ class GLES2Implementation {
   void TexSubImage2DImpl(
       GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width,
       GLsizei height, GLenum format, GLenum type, const void* pixels,
-      GLboolean internal, ScopedTransferBufferPtr* buffer);
+      GLboolean internal);
 
   // Helpers for query functions.
   bool GetHelper(GLenum pname, GLint* params);
@@ -432,8 +507,8 @@ class GLES2Implementation {
 
   GLES2Util util_;
   GLES2CmdHelper* helper_;
-  TransferBufferInterface* transfer_buffer_;
   scoped_ptr<IdHandlerInterface> id_handlers_[id_namespaces::kNumIdNamespaces];
+  TransferBuffer transfer_buffer_;
   std::string last_error_;
 
   std::queue<int32> swap_buffers_tokens_;

@@ -23,7 +23,6 @@
 #include "gpu/command_buffer/client/gles2_cmd_helper.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
 #include "gpu/command_buffer/client/gles2_lib.h"
-#include "gpu/command_buffer/client/transfer_buffer.h"
 #include "gpu/command_buffer/common/constants.h"
 #endif  // ENABLE_GPU
 
@@ -32,9 +31,7 @@ namespace {
 const int32 kCommandBufferSize = 1024 * 1024;
 // TODO(kbr): make the transfer buffer size configurable via context
 // creation attributes.
-const size_t kStartTransferBufferSize = 1 * 1024 * 1024;
-const size_t kMinTransferBufferSize = 1 * 256 * 1024;
-const size_t kMaxTransferBufferSize = 16 * 1024 * 1024;
+const int32 kTransferBufferSize = 1024 * 1024;
 
 // Singleton used to initialize and terminate the gles2 library.
 class GLES2Initializer {
@@ -284,7 +281,7 @@ RendererGLContext::RendererGLContext(GpuChannelHost* channel)
       parent_texture_id_(0),
       command_buffer_(NULL),
       gles2_helper_(NULL),
-      transfer_buffer_(NULL),
+      transfer_buffer_id_(-1),
       gles2_implementation_(NULL),
       last_error_(SUCCESS),
       frame_number_(0) {
@@ -395,23 +392,30 @@ bool RendererGLContext::Initialize(bool onscreen,
     TRACE_EVENT0("gpu", "RendererGLContext::Initialize::CreateTransferBuffer");
     // Create a transfer buffer used to copy resources between the renderer
     // process and the GPU process.
-    transfer_buffer_ = new gpu::TransferBuffer(gles2_helper_);
+    transfer_buffer_id_ = command_buffer_->CreateTransferBuffer(
+        kTransferBufferSize, gpu::kCommandBufferSharedMemoryId);
+    if (transfer_buffer_id_ < 0) {
+      Destroy();
+      return false;
+    }
+  }
+
+  // Map the buffer into the renderer process's address space.
+  gpu::Buffer transfer_buffer =
+      command_buffer_->GetTransferBuffer(transfer_buffer_id_);
+  if (!transfer_buffer.ptr) {
+    Destroy();
+    return false;
   }
 
   // Create the object exposing the OpenGL API.
   gles2_implementation_ = new gpu::gles2::GLES2Implementation(
       gles2_helper_,
-      transfer_buffer_,
+      transfer_buffer.size,
+      transfer_buffer.ptr,
+      transfer_buffer_id_,
       share_resources,
       bind_generates_resources);
-
-  if (!gles2_implementation_->Initialize(
-      kStartTransferBufferSize,
-      kMinTransferBufferSize,
-      kMaxTransferBufferSize)) {
-    Destroy();
-    return false;
-  }
 
   return true;
 }
@@ -433,10 +437,10 @@ void RendererGLContext::Destroy() {
     gles2_implementation_ = NULL;
   }
 
-  if (transfer_buffer_) {
-    delete transfer_buffer_;
-    transfer_buffer_ = NULL;
-  }
+  // Do not destroy this transfer buffer here, because commands are still
+  // in flight on the GPU process that may access them. When the command buffer
+  // is destroyed, the associated shared memory will be cleaned up.
+  transfer_buffer_id_ = -1;
 
   delete gles2_helper_;
   gles2_helper_ = NULL;
