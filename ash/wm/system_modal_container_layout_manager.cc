@@ -6,6 +6,7 @@
 
 #include "ash/ash_switches.h"
 #include "ash/shell.h"
+#include "ash/shell_window_ids.h"
 #include "ash/wm/system_modal_container_event_filter.h"
 #include "ash/wm/window_animations.h"
 #include "ash/wm/window_util.h"
@@ -143,6 +144,11 @@ void SystemModalContainerLayoutManager::OnLayerAnimationScheduled(
 
 bool SystemModalContainerLayoutManager::CanWindowReceiveEvents(
     aura::Window* window) {
+  // This container can not handle events if the screen is locked and it is not
+  // above the lock screen layer (crbug.com/110920).
+  if (ash::Shell::GetInstance()->IsScreenLocked() &&
+      container_->id() < ash::internal::kShellWindowId_LockScreenContainer)
+    return true;
   return GetActivatableWindow(window) == modal_window();
 }
 

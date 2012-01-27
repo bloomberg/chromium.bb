@@ -12,6 +12,7 @@
 #include "ui/aura/root_window.h"
 #include "ui/aura/test/event_generator.h"
 #include "ui/aura/window.h"
+#include "ui/views/events/event.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 
@@ -60,6 +61,32 @@ class TestWindow : public views::WidgetDelegateView {
   bool modal_;
 
   DISALLOW_COPY_AND_ASSIGN(TestWindow);
+};
+
+class EventTestWindow : public TestWindow {
+ public:
+  explicit EventTestWindow(bool modal) : TestWindow(modal),
+                                         mouse_presses_(0) {}
+  virtual ~EventTestWindow() {}
+
+  aura::Window* OpenTestWindow(aura::Window* parent) {
+    views::Widget* widget =
+        views::Widget::CreateWindowWithParent(this, parent);
+    widget->Show();
+    return widget->GetNativeView();
+  }
+
+  // Overridden from views::View:
+  virtual bool OnMousePressed(const views::MouseEvent& event) OVERRIDE {
+    mouse_presses_++;
+    return false;
+  }
+
+  int mouse_presses() const { return mouse_presses_; }
+ private:
+  int mouse_presses_;
+
+  DISALLOW_COPY_AND_ASSIGN(EventTestWindow);
 };
 
 class TransientWindowObserver : public aura::WindowObserver {
@@ -171,6 +198,48 @@ TEST_F(SystemModalContainerLayoutManagerTest,
   aura::test::EventGenerator e2(unrelated.get());
   e2.ClickLeftButton();
   EXPECT_TRUE(IsActiveWindow(unrelated.get()));
+}
+
+TEST_F(SystemModalContainerLayoutManagerTest,
+       EventFocusContainers) {
+  // Create a normal window and attempt to receive a click event.
+  EventTestWindow* main_delegate = new EventTestWindow(false);
+  scoped_ptr<aura::Window> main(main_delegate->OpenTestWindow(NULL));
+  EXPECT_TRUE(IsActiveWindow(main.get()));
+  aura::test::EventGenerator e1(main.get());
+  e1.ClickLeftButton();
+  EXPECT_EQ(1, main_delegate->mouse_presses());
+
+  // Create a modal window for the main window and verify that the main window
+  // no longer receives mouse events.
+  EventTestWindow* transient_delegate = new EventTestWindow(true);
+  aura::Window* transient = transient_delegate->OpenTestWindow(main.get());
+  EXPECT_TRUE(IsActiveWindow(transient));
+  e1.ClickLeftButton();
+  EXPECT_EQ(1, transient_delegate->mouse_presses());
+
+  // Create a window in the lock screen container and ensure that it receives
+  // the mouse event instead of the modal window (crbug.com/110920).
+  EventTestWindow* lock_delegate = new EventTestWindow(false);
+  scoped_ptr<aura::Window> lock(lock_delegate->OpenTestWindow(
+      Shell::GetInstance()->GetContainer(
+          ash::internal::kShellWindowId_LockScreenContainer)));
+  EXPECT_TRUE(IsActiveWindow(lock.get()));
+  e1.ClickLeftButton();
+  EXPECT_EQ(1, lock_delegate->mouse_presses());
+
+  // Make sure that a modal container created by the lock screen can still
+  // receive mouse events.
+  EventTestWindow* lock_modal_delegate = new EventTestWindow(true);
+  aura::Window* lock_modal = lock_modal_delegate->OpenTestWindow(lock.get());
+  EXPECT_TRUE(IsActiveWindow(lock_modal));
+  e1.ClickLeftButton();
+  EXPECT_EQ(1, main_delegate->mouse_presses());
+
+  // Verify that none of the other containers received any more mouse presses.
+  EXPECT_EQ(1, transient_delegate->mouse_presses());
+  EXPECT_EQ(1, lock_delegate->mouse_presses());
+  EXPECT_EQ(1, lock_modal_delegate->mouse_presses());
 }
 
 }  // namespace test
