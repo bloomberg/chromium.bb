@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,6 +12,7 @@
 #include "ui/gfx/size.h"
 
 #if defined(TOOLKIT_USES_GTK)
+#include <gdk/gdk.h>
 #include <gdk-pixbuf/gdk-pixbuf.h>
 #include <glib-object.h>
 #include "ui/gfx/canvas_skia.h"
@@ -34,10 +35,14 @@ bool NSImageToSkBitmaps(NSImage* image, std::vector<const SkBitmap*>* bitmaps);
 
 #if defined(TOOLKIT_USES_GTK)
 const SkBitmap* GdkPixbufToSkBitmap(GdkPixbuf* pixbuf) {
+  CHECK(pixbuf);
   gfx::CanvasSkia canvas(gfx::Size(gdk_pixbuf_get_width(pixbuf),
                                    gdk_pixbuf_get_height(pixbuf)),
                          /*is_opaque=*/false);
-  canvas.DrawGdkPixbuf(pixbuf, 0, 0);
+  skia::ScopedPlatformPaint scoped_platform_paint(canvas.sk_canvas());
+  cairo_t* cr = scoped_platform_paint.GetPlatformSurface();
+  gdk_cairo_set_source_pixbuf(cr, pixbuf, 0, 0);
+  cairo_paint(cr);
   return new SkBitmap(canvas.ExtractBitmap());
 }
 #endif

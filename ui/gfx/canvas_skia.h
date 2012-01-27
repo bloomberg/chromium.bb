@@ -83,11 +83,6 @@ class UI_EXPORT CanvasSkia : public Canvas {
   // gfx::Canvas::TEXT_ALIGN_RIGHT.
   static int DefaultCanvasTextAlignment();
 
-#if defined(TOOLKIT_USES_GTK)
-  // Draw the pixbuf in its natural size at (x, y).
-  void DrawGdkPixbuf(GdkPixbuf* pixbuf, int x, int y);
-#endif
-
   // Draws text with a 1-pixel halo around it of the given color.
   // On Windows, it allows ClearType to be drawn to an otherwise transparenct
   //   bitmap for drag images. Drag images have only 1-bit of transparency, so

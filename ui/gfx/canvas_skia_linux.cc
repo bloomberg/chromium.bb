@@ -18,10 +18,6 @@
 #include "ui/gfx/rect.h"
 #include "ui/gfx/skia_util.h"
 
-#if defined(TOOLKIT_USES_GTK)
-#include <gdk/gdk.h>
-#endif
-
 using std::max;
 
 namespace {
@@ -262,19 +258,5 @@ void CanvasSkia::DrawStringInt(const string16& text,
   DrawStringContext context(this, text, font, bounds, bounds, flags);
   context.Draw(color);
 }
-
-#if defined(TOOLKIT_USES_GTK)
-void CanvasSkia::DrawGdkPixbuf(GdkPixbuf* pixbuf, int x, int y) {
-  if (!pixbuf) {
-    NOTREACHED();
-    return;
-  }
-
-  skia::ScopedPlatformPaint scoped_platform_paint(canvas_);
-  cairo_t* cr = scoped_platform_paint.GetPlatformSurface();
-  gdk_cairo_set_source_pixbuf(cr, pixbuf, x, y);
-  cairo_paint(cr);
-}
-#endif  // defined(TOOLKIT_USES_GTK)
 
 }  // namespace gfx
