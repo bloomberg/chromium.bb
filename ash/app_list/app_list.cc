@@ -115,13 +115,18 @@ void AppList::ResetWidget() {
 }
 
 void AppList::ScheduleAnimation() {
+  aura::Window* default_container = Shell::GetInstance()->GetContainer(
+      internal::kShellWindowId_DefaultContainer);
+  // |default_container| could be NULL during Shell shutdown.
+  if (!default_container)
+    return;
+
   ui::Layer* layer = GetLayer(widget_);
   ui::ScopedLayerAnimationSettings app_list_animation(layer->GetAnimator());
   layer->SetBounds(GetPreferredBounds(is_visible_));
   layer->SetOpacity(is_visible_ ? 1.0 : 0.0);
 
-  ui::Layer* default_container_layer = Shell::GetInstance()->GetContainer(
-      internal::kShellWindowId_DefaultContainer)->layer();
+  ui::Layer* default_container_layer = default_container->layer();
   ui::ScopedLayerAnimationSettings default_container_animation(
       default_container_layer->GetAnimator());
   default_container_layer->SetOpacity(is_visible_ ? 0.0 : 1.0);
