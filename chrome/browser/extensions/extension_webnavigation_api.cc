@@ -415,13 +415,13 @@ void ExtensionWebNavigationEventRouter::Observe(
     const content::NotificationDetails& details) {
   switch (type) {
     case chrome::NOTIFICATION_RETARGETING: {
-        Profile* profile = content::Source<Profile>(source).ptr();
-        if (profile->GetOriginalProfile() == profile_) {
-          Retargeting(
-              content::Details<const RetargetingDetails>(details).ptr());
-        }
+      Profile* profile = content::Source<Profile>(source).ptr();
+      if (profile->GetOriginalProfile() == profile_) {
+        Retargeting(
+            content::Details<const RetargetingDetails>(details).ptr());
       }
       break;
+    }
 
     case content::NOTIFICATION_TAB_ADDED:
       TabAdded(content::Details<WebContents>(details).ptr());
@@ -533,17 +533,19 @@ void ExtensionWebNavigationTabObserver::Observe(
     const content::NotificationDetails& details) {
   switch (type) {
     case content::NOTIFICATION_RESOURCE_RECEIVED_REDIRECT: {
-        ResourceRedirectDetails* resource_redirect_details =
-            content::Details<ResourceRedirectDetails>(details).ptr();
-        ResourceType::Type resource_type =
-            resource_redirect_details->resource_type();
-        if (resource_type == ResourceType::MAIN_FRAME ||
-            resource_type == ResourceType::SUB_FRAME) {
-          navigation_state_.SetIsServerRedirected(
-              resource_redirect_details->frame_id());
-        }
+      ResourceRedirectDetails* resource_redirect_details =
+          content::Details<ResourceRedirectDetails>(details).ptr();
+      ResourceType::Type resource_type =
+          resource_redirect_details->resource_type();
+      if (resource_type == ResourceType::MAIN_FRAME ||
+          resource_type == ResourceType::SUB_FRAME) {
+        int64 frame_id = resource_redirect_details->frame_id();
+        if (!navigation_state_.CanSendEvents(frame_id))
+          return;
+        navigation_state_.SetIsServerRedirected(frame_id);
       }
       break;
+    }
 
     default:
       NOTREACHED();
