@@ -879,10 +879,21 @@ def main(argv=None):
 
   if options.reference_repo is None:
     repo_path = os.path.join(constants.SOURCE_ROOT, '.repo')
-    # If we're ran from a repo checkout, reuse the repo's git pool to
+    # If we're being run from a repo checkout, reuse the repo's git pool to
     # cut down on sync time.
     if os.path.exists(repo_path):
       options.reference_repo = constants.SOURCE_ROOT
+  elif options.reference_repo:
+    if not os.path.exists(options.reference_repo):
+      parser.error('Reference path %s does not exist'
+                   % (options.reference_repo,))
+    elif not os.path.exists(os.path.join(options.reference_repo, '.repo')):
+      parser.error('Reference path %s does not look to be the base of a '
+                   'repo checkout; no .repo exists in the root.'
+                   % (options.reference_repo,))
+
+  if options.reference_repo:
+    options.reference_repo = os.path.abspath(options.reference_repo)
 
   if options.dump_config:
     # This works, but option ordering is bad...

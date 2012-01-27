@@ -369,6 +369,9 @@ class FullInterfaceTest(unittest.TestCase):
     self.mox.StubOutWithMock(cbuildbot.os.path, 'realpath')
 
     cbuildbot.os.path.realpath = fake_real_path
+    os.path.exists(constants.SOURCE_ROOT).InAnyOrder().AndReturn(True)
+    os.path.exists(os.path.join(
+        constants.SOURCE_ROOT, '.repo')).InAnyOrder().AndReturn(True)
     parser.error(mox.IgnoreArg()).InAnyOrder().AndRaise(TestExitedException())
     cros_lib.IsInsideChroot().InAnyOrder().AndReturn(False)
     cbuildbot.cgroup.CGroup.__init__().InAnyOrder().AndReturn(None)

@@ -36,7 +36,6 @@ def _atomic_writefile(path, data):
   try:
     os.rename(tmp, path)
   except EnvironmentError:
-
     _safe_unlink(tmp, True)
 
     raise
@@ -102,7 +101,7 @@ def _UpdateGitAlternates(proj_root, projects):
   for project in projects:
 
     alt_path = os.path.join(proj_root, project, 'objects', 'info',
-      'alternates')
+                            'alternates')
     tmp_path = '%s.tmp' % alt_path
 
     # Clean out any tmp files that may have existed prior.
@@ -234,9 +233,8 @@ if __name__ == '__main__':
   import sys
   chroot_reference_root = None
   if len(sys.argv) not in (3, 4):
-    sys.stderr.write('Wrong argument count; correct invocation is '
-                     'repository_root referenced_repository '
-                     '[path_from_within_the_chroot]\n')
+    sys.stderr.write('Usage: %s <repository_root> <referenced_repository> '
+                     '[path_from_within_the_chroot]\n' % (sys.argv[0],))
     sys.exit(1)
   if len(sys.argv) == 4:
     chroot_reference_root = sys.argv[3]
