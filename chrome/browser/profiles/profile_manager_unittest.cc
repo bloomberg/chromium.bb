@@ -72,6 +72,13 @@ class ProfileManager : public ::ProfileManagerWithoutInit {
 
     return new TestingProfile(path, this);
   }
+
+#if defined(OS_WIN)
+  virtual ProfileShortcutManagerWin* CreateShortcutManager() OVERRIDE {
+    // We should avoid creating shortcuts in these tests.
+    return NULL;
+  }
+#endif
 };
 
 }  // namespace testing
@@ -105,13 +112,6 @@ class ProfileManagerTest : public testing::Test {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     static_cast<TestingBrowserProcess*>(g_browser_process)->SetProfileManager(
         new testing::ProfileManager(temp_dir_.path()));
-#if defined(OS_WIN)
-    // Force the ProfileInfoCache to be created immediately, so we can
-    // remove the shortcut manager for testing.
-    ProfileManager* profile_manager = g_browser_process->profile_manager();
-    profile_manager->GetProfileInfoCache();
-    profile_manager->RemoveProfileShortcutManagerForTesting();
-#endif
 #if defined(OS_CHROMEOS)
   CommandLine *cl = CommandLine::ForCurrentProcess();
   cl->AppendSwitch(switches::kTestType);

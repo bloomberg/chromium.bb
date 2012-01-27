@@ -595,6 +595,12 @@ Profile* ProfileManager::CreateProfileAsyncHelper(const FilePath& path,
   return Profile::CreateProfileAsync(path, delegate);
 }
 
+#if defined(OS_WIN)
+ProfileShortcutManagerWin* ProfileManager::CreateShortcutManager() {
+  return new ProfileShortcutManagerWin();
+}
+#endif
+
 void ProfileManager::OnProfileCreated(Profile* profile, bool success) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -691,8 +697,9 @@ ProfileInfoCache& ProfileManager::GetProfileInfoCache() {
         g_browser_process->local_state(), user_data_dir_));
 #if defined(OS_WIN)
     BrowserDistribution* dist = BrowserDistribution::GetDistribution();
-    if (dist && dist->CanCreateDesktopShortcuts()) {
-      profile_shortcut_manager_.reset(new ProfileShortcutManagerWin());
+    ProfileShortcutManagerWin* shortcut_manager = CreateShortcutManager();
+    if (dist && dist->CanCreateDesktopShortcuts() && shortcut_manager) {
+      profile_shortcut_manager_.reset(shortcut_manager);
       profile_info_cache_->AddObserver(profile_shortcut_manager_.get());
     }
 #endif
@@ -727,7 +734,7 @@ void ProfileManager::AddProfileToCache(Profile* profile) {
 
 #if defined(OS_WIN)
 void ProfileManager::CreateDesktopShortcut(Profile* profile) {
-  // Some distributions can not create desktop shortcuts, in which case
+  // Some distributions and tests cannot create desktop shortcuts, in which case
   // profile_shortcut_manager_ will not be set.
   if (!profile_shortcut_manager_.get())
     return;
@@ -868,12 +875,6 @@ void ProfileManager::RegisterTestingProfile(Profile* profile,
     AddProfileToCache(profile);
   }
 }
-
-#if defined(OS_WIN)
-void ProfileManager::RemoveProfileShortcutManagerForTesting() {
-  profile_info_cache_->RemoveObserver(profile_shortcut_manager_.get());
-}
-#endif
 
 void ProfileManager::RunCallbacks(const std::vector<CreateCallback>& callbacks,
                                   Profile* profile,

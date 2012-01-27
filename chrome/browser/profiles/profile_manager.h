@@ -183,11 +183,6 @@ class ProfileManager : public base::NonThreadSafe,
   // for testing. If |addToCache|, add to ProfileInfoCache as well.
   void RegisterTestingProfile(Profile* profile, bool addToCache);
 
-#if defined(OS_WIN)
-  // Remove the shortcut manager for testing.
-  void RemoveProfileShortcutManagerForTesting();
-#endif
-
   const FilePath& user_data_dir() const { return user_data_dir_; }
 
  protected:
@@ -206,6 +201,12 @@ class ProfileManager : public base::NonThreadSafe,
   // a TestingProfile instead of the Profile's result.
   virtual Profile* CreateProfileAsyncHelper(const FilePath& path,
                                             Delegate* delegate);
+
+#if defined(OS_WIN)
+  // Creates a shortcut manager. Override this to return a different shortcut
+  // manager or NULL to avoid creating shortcuts.
+  virtual ProfileShortcutManagerWin* CreateShortcutManager();
+#endif
 
  private:
   friend class TestingProfileManager;
