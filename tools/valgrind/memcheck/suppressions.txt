@@ -5655,6 +5655,12 @@
    fun:_ZN3net17URLRequestTestJob24ProcessOnePendingMessageEv
    fun:_ZN56ResourceDispatcherHostTest_*_Test8TestBodyEv
 }
+{
+   bug_111669
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN8appcache17AppCacheDiskCache10ActiveCall17OnAsyncCompletionEi
+}
 
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations
