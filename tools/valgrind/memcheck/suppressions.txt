@@ -4692,8 +4692,7 @@
    fun:_ZN15DownloadService18GetDownloadManagerEv
    fun:_ZN11DownloadsUIC1EPN7content5WebUIE
    fun:_ZN12_GLOBAL__N_18NewWebUII11DownloadsUIEEPN7content15WebUIControllerEPNS2_5WebUIERK4GURL
-   fun:_ZNK18ChromeWebUIFactory17CreateWebUIForURLEPN7content5WebUIERK4GURL
-   fun:_ZNK22TestChromeWebUIFactory17CreateWebUIForURLEPN7content5WebUIERK4GURL
+   ...
    fun:_ZN11TabContents11CreateWebUIERK4GURL
    fun:_ZN11TabContents27CreateWebUIForRenderManagerERK4GURL
    fun:_ZN21RenderViewHostManager30UpdateRendererStateForNavigateERKN7content19NavigationEntryImplE
