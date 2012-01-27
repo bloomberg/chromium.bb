@@ -1453,22 +1453,9 @@ void RenderViewHost::OnScriptEvalResponse(int id, const ListValue& result) {
 void RenderViewHost::OnDidZoomURL(double zoom_level,
                                   bool remember,
                                   const GURL& url) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  HostZoomMap* host_zoom_map = process()->GetBrowserContext()->
-      GetHostZoomMap();
+  HostZoomMap* host_zoom_map = process()->GetBrowserContext()->GetHostZoomMap();
   if (remember) {
     host_zoom_map->SetZoomLevel(net::GetHostOrSpecFromURL(url), zoom_level);
-    // Notify renderers from this browser context.
-    for (content::RenderProcessHost::iterator i(
-            content::RenderProcessHost::AllHostsIterator());
-         !i.IsAtEnd(); i.Advance()) {
-      content::RenderProcessHost* render_process_host = i.GetCurrentValue();
-      if (render_process_host->GetBrowserContext()->GetHostZoomMap()->
-          GetOriginal() == host_zoom_map) {
-        render_process_host->Send(
-            new ViewMsg_SetZoomLevelForCurrentURL(url, zoom_level));
-      }
-    }
   } else {
     host_zoom_map->SetTemporaryZoomLevel(
         process()->GetID(), routing_id(), zoom_level);

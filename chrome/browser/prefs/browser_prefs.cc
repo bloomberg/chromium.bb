@@ -63,7 +63,6 @@
 #include "chrome/browser/upgrade_detector.h"
 #include "chrome/browser/web_resource/promo_resource_service.h"
 #include "chrome/common/pref_names.h"
-#include "content/browser/host_zoom_map.h"
 #include "content/browser/ssl/ssl_manager.h"
 #include "content/public/browser/render_process_host.h"
 

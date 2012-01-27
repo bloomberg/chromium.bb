@@ -146,7 +146,6 @@
 #include "chrome/common/web_apps.h"
 #include "content/browser/browser_url_handler.h"
 #include "content/browser/child_process_security_policy.h"
-#include "content/browser/host_zoom_map.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/interstitial_page.h"
 #include "content/public/browser/devtools_manager.h"

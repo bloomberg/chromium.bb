@@ -47,7 +47,6 @@
 #include "content/browser/appcache/chrome_appcache_service.h"
 #include "content/browser/chrome_blob_storage_context.h"
 #include "content/browser/file_system/browser_file_system_helper.h"
-#include "content/browser/host_zoom_map.h"
 #include "content/browser/in_process_webkit/webkit_context.h"
 #include "content/browser/ssl/ssl_host_state.h"
 #include "content/public/browser/browser_thread.h"

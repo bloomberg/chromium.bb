@@ -955,7 +955,7 @@ IPC_MESSAGE_ROUTED2(ViewMsg_SetZoomLevelForLoadingURL,
 // Set the zoom level for a particular url, so all render views
 // displaying this url can update their zoom levels to match.
 IPC_MESSAGE_CONTROL2(ViewMsg_SetZoomLevelForCurrentURL,
-                     GURL /* url */,
+                     std::string /* host */,
                      double /* zoom_level */)
 
 // Change encoding of page in the renderer.

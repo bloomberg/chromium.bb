@@ -392,11 +392,12 @@ HostContentSettingsMap* OffTheRecordProfileImpl::GetHostContentSettingsMap() {
 HostZoomMap* OffTheRecordProfileImpl::GetHostZoomMap() {
   // Create new host zoom map and copy zoom levels from parent.
   if (!host_zoom_map_) {
-    host_zoom_map_ = new HostZoomMap(profile_->GetHostZoomMap());
-     // Observe parent's HZM change for propagating change of parent's
-     // change to this HZM.
-     registrar_.Add(this, content::NOTIFICATION_ZOOM_LEVEL_CHANGED,
-                    content::Source<HostZoomMap>(profile_->GetHostZoomMap()));
+    host_zoom_map_ = new HostZoomMap();
+    host_zoom_map_->CopyFrom(profile_->GetHostZoomMap());
+    // Observe parent's HZM change for propagating change of parent's
+    // change to this HZM.
+    registrar_.Add(this, content::NOTIFICATION_ZOOM_LEVEL_CHANGED,
+                   content::Source<HostZoomMap>(profile_->GetHostZoomMap()));
   }
   return host_zoom_map_.get();
 }

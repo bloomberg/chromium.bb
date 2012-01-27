@@ -11,6 +11,8 @@
 #include "base/values.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host.h"
+#include "content/common/view_messages.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
@@ -19,31 +21,29 @@
 #include "net/base/net_util.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 
-using content::BrowserThread;
 using WebKit::WebView;
+using content::BrowserThread;
+using content::RenderProcessHost;
 
 HostZoomMap::HostZoomMap()
-    : default_zoom_level_(0.0),
-      original_(this) {
-  Init();
-}
-
-HostZoomMap::HostZoomMap(HostZoomMap* original)
-    : default_zoom_level_(0.0),
-      original_(original) {
-  DCHECK(original);
-  Init();
-  base::AutoLock auto_lock(original->lock_);
-  for (HostZoomLevels::const_iterator i(original->host_zoom_levels_.begin());
-       i != original->host_zoom_levels_.end(); ++i) {
-    host_zoom_levels_[i->first] = i->second;
-  }
-}
-
-void HostZoomMap::Init() {
+    : default_zoom_level_(0.0) {
   registrar_.Add(
       this, content::NOTIFICATION_RENDER_VIEW_HOST_WILL_CLOSE_RENDER_VIEW,
       content::NotificationService::AllSources());
+}
+
+void HostZoomMap::CopyFrom(HostZoomMap* copy) {
+  // This can only be called on the UI thread to avoid deadlocks, otherwise
+  //   UI: a.CopyFrom(b);
+  //   IO: b.CopyFrom(a);
+  // can deadlock.
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  base::AutoLock auto_lock(lock_);
+  base::AutoLock copy_auto_lock(copy->lock_);
+  for (HostZoomLevels::const_iterator i(copy->host_zoom_levels_.begin());
+       i != copy->host_zoom_levels_.end(); ++i) {
+    host_zoom_levels_[i->first] = i->second;
+  }
 }
 
 double HostZoomMap::GetZoomLevel(const std::string& host) const {
@@ -62,6 +62,16 @@ void HostZoomMap::SetZoomLevel(std::string host, double level) {
       host_zoom_levels_.erase(host);
     else
       host_zoom_levels_[host] = level;
+  }
+
+  // Notify renderers from this browser context.
+  for (RenderProcessHost::iterator i(RenderProcessHost::AllHostsIterator());
+       !i.IsAtEnd(); i.Advance()) {
+    RenderProcessHost* render_process_host = i.GetCurrentValue();
+    if (render_process_host->GetBrowserContext()->GetHostZoomMap() == this) {
+      render_process_host->Send(
+          new ViewMsg_SetZoomLevelForCurrentURL(host, level));
+    }
   }
 
   content::NotificationService::current()->Notify(

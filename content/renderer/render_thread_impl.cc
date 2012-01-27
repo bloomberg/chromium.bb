@@ -113,9 +113,8 @@ static base::LazyInstance<base::ThreadLocalPointer<RenderThreadImpl> >
 
 class RenderViewZoomer : public content::RenderViewVisitor {
  public:
-  RenderViewZoomer(const GURL& url, double zoom_level)
-      : zoom_level_(zoom_level) {
-    host_ = net::GetHostOrSpecFromURL(url);
+  RenderViewZoomer(const std::string& host, double zoom_level)
+      : host_(host), zoom_level_(zoom_level) {
   }
 
   virtual bool Visit(content::RenderView* render_view) {
@@ -685,9 +684,9 @@ void RenderThreadImpl::DoNotNotifyWebKitOfModalLoop() {
   notify_webkit_of_modal_loop_ = false;
 }
 
-void RenderThreadImpl::OnSetZoomLevelForCurrentURL(const GURL& url,
+void RenderThreadImpl::OnSetZoomLevelForCurrentURL(const std::string& host,
                                                    double zoom_level) {
-  RenderViewZoomer zoomer(url, zoom_level);
+  RenderViewZoomer zoomer(host, zoom_level);
   content::RenderView::ForEach(&zoomer);
 }
 
