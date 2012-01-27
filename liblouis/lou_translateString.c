@@ -39,7 +39,6 @@ Library
 static int translateString (void);
 static int compbrlStart = 0;
 static int compbrlEnd = 0;
-static int cursorPositionSet = 0;
 
 int EXPORT_CALL
 lou_translateString (const char *tableList, const widechar
@@ -105,8 +104,7 @@ lou_translate (const char *tableList, const widechar
 	  else
 	    {
 	      while (compbrlStart >= 0 && !checkAttr
-		     (currentInput[
-		     compbrlStart], CTC_Space, 0))
+		     (currentInput[compbrlStart], CTC_Space, 0))
 		compbrlStart--;
 	      compbrlStart++;
 	      compbrlEnd = cursorPosition;
@@ -322,7 +320,6 @@ for_updatePositions (const widechar * outChars, int inLength, int outLength)
 	  if (src >= compbrlStart)
 	    {
 	      cursorStatus = 2;
-	      cursorPositionSet = 0;
 	      return (doCompTrans (compbrlStart, compbrlEnd));
 	    }
 	}
@@ -338,12 +335,8 @@ for_updatePositions (const widechar * outChars, int inLength, int outLength)
 	  cursorStatus = 1;
 	}
     }
-  else if (cursorStatus == 2 && cursorPosition == src && 
-  !cursorPositionSet)
-    {
-      cursorPosition = dest;
-      cursorPositionSet = 1;
-    }
+  else if (cursorStatus == 2 && cursorPosition == src)
+    cursorPosition = dest;
   if (inputPositions != NULL || outputPositions != NULL)
     {
       if (outLength <= inLength)
@@ -586,6 +579,13 @@ validMatch ()
     }
   for (k = src; k < src + transCharslen; k++)
     {
+      if (currentInput[k] == ENDSEGMENT)
+      {
+      if (k == src && transCharslen == 1)
+      return 1;
+      else
+      return 0;
+      }
       currentInputChar = findCharOrDots (currentInput[k], 0);
       if (k == src)
 	prevAttr = currentInputChar->attributes;

@@ -29,12 +29,12 @@ Library
    the Free Software Foundation, 51 Franklin Street, Fifth Floor,
    Boston, MA 02110-1301, USA.
 
-   Maintained by John J. Boyer john.boyer@jjb-software.com
+   Maintained by John J. Boyer john.boyer@abilitiessoft.com
    */
 
 /*additional bits in typebuf*/
 #define capsemph 0x8000
-#define EMPHASIS 0x0f
+#define EMPHASIS 0x000f
 #define STARTWORD 0x4000
 #define FIRSTWORD 0x2000
 #define SYLLABLEMARKS 0x00c0
@@ -265,7 +265,8 @@ matchcurrentInput (void)
   int k;
   int kk = passSrc;
   for (k = passIC + 2; k < passIC + 2 + passInstructions[passIC + 1]; k++)
-    if (passInstructions[k] != currentInput[kk++])
+    if (currentInput[kk] == ENDSEGMENT || passInstructions[k] !=
+	currentInput[kk++])
       return 0;
   return 1;
 }
@@ -533,7 +534,8 @@ doPassSearch (void)
 	      kk = searchSrc;
 	      for (k = searchIC + 2;
 		   k < searchIC + 2 + passInstructions[searchIC + 1]; k++)
-		if (passInstructions[k] != currentInput[kk++])
+		if (currentInput[kk] == ENDSEGMENT || passInstructions[k] !=
+		    currentInput[kk++])
 		  {
 		    itsTrue = 0;
 		    break;
@@ -553,24 +555,34 @@ doPassSearch (void)
 		passInstructions[searchIC + 2];
 	      for (k = 0; k < passInstructions[searchIC + 3]; k++)
 		{
-		  itsTrue =
-		    (((findCharOrDots (currentInput[searchSrc++],
-				       passCharDots)->
-		       attributes & attributes)) ? 1 : 0);
+		  if (currentInput[searchSrc] == ENDSEGMENT)
+		    itsTrue = 0;
+		  else
+		    itsTrue =
+		      (((findCharOrDots (currentInput[searchSrc++],
+					 passCharDots)->
+			 attributes & attributes)) ? 1 : 0);
 		  if (!itsTrue)
 		    break;
 		}
 	      if (itsTrue)
-		for (k = passInstructions[searchIC + 3]; k <
-		     passInstructions[searchIC + 4]; k++)
-		  {
-		    if (!
-			(findCharOrDots (currentInput[searchSrc],
-					 passCharDots)->
-			 attributes & attributes))
-		      break;
-		    searchSrc++;
-		  }
+		{
+		  for (k = passInstructions[searchIC + 3]; k <
+		       passInstructions[searchIC + 4]; k++)
+		    {
+		      if (currentInput[searchSrc] == ENDSEGMENT)
+			{
+			  itsTrue = 0;
+			  break;
+			}
+		      if (!
+			  (findCharOrDots (currentInput[searchSrc],
+					   passCharDots)->
+			   attributes & attributes))
+			break;
+		      searchSrc++;
+		    }
+		}
 	      searchIC += 5;
 	      break;
 	    case pass_groupstart:
@@ -720,23 +732,35 @@ passDoTest (void)
 								    2];
 	  for (k = 0; k < passInstructions[passIC + 3]; k++)
 	    {
-	      itsTrue =
-		(((findCharOrDots (currentInput[passSrc++],
-				   passCharDots)->
-		   attributes & attributes)) ? 1 : 0);
+	      if (currentInput[passSrc] == ENDSEGMENT)
+		itsTrue = 0;
+	      else
+		itsTrue =
+		  (((findCharOrDots (currentInput[passSrc++],
+				     passCharDots)->
+		     attributes & attributes)) ? 1 : 0);
 	      if (!itsTrue)
 		break;
 	    }
 	  if (itsTrue)
-	    for (k = passInstructions[passIC + 3]; k <
-		 passInstructions[passIC + 4]; k++)
-	      {
-		if (!
-		    (findCharOrDots (currentInput[passSrc],
-				     passCharDots)->attributes & attributes))
-		  break;
-		passSrc++;
-	      }
+	    {
+	      for (k = passInstructions[passIC + 3]; k <
+		   passInstructions[passIC + 4]; k++)
+		{
+		  if (currentInput[passSrc] == ENDSEGMENT)
+		  {
+		  itsTrue = 0;
+		    break;
+		    }
+		  else
+		    if (!
+			(findCharOrDots (currentInput[passSrc],
+					 passCharDots)->
+			 attributes & attributes))
+		    break;
+		  passSrc++;
+		}
+	    }
 	  passIC += 5;
 	  break;
 	case pass_groupstart:

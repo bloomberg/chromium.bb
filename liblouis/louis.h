@@ -546,6 +546,8 @@ int other_charToDots (const char *trantab, const widechar
 *inbuf, 
       widechar *outbuf, int length, int mode);
 
+void debugHook ();
+
 #ifdef __cplusplus
 }
 #endif				/* __cplusplus */

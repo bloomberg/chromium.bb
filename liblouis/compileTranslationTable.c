@@ -1992,8 +1992,8 @@ passGetAttributes ()
 static int
 passGetEmphasis ()
 {
-  int more = 1;
   passLinepos++;
+  int more = 1;
   passEmphasis = 0;
   while (more)
     {
@@ -4948,3 +4948,14 @@ lou_compileString (const char *tableList, const char *inString)
     return 0;
   return compileString (inString);
 }
+
+/**
+ * This procedure provides a target for cals that serve as breakpoints 
+ * for gdb.
+ */
+void 
+debugHook ()
+{
+  char *hook = "debug hook";
+}
+ 

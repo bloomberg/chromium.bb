@@ -394,6 +394,7 @@ syllable horn =
 syllable horse = horseradish
 syllable house 125-1256-234-15 
 syllable hydro =
+always hwh =
 
 # the letter i
 word I 24
@@ -499,6 +500,7 @@ word neither 1345-15-24
 contraction nei
 midendword ness 56-234
 always news = newsstand
+syllable nomad = seminomadic
 always nodded 1345-135-256-1246 for back-translation
 begword nonen 1345-135-1345-26 nonentity
 begword noness = nonessential
