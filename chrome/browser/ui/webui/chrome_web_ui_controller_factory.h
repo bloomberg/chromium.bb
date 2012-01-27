@@ -9,13 +9,13 @@
 #include "base/basictypes.h"
 #include "base/memory/singleton.h"
 #include "content/public/browser/web_ui.h"
-#include "content/public/browser/web_ui_factory.h"
+#include "content/public/browser/web_ui_controller_factory.h"
 #include "chrome/browser/favicon/favicon_service.h"
 
 class Profile;
 class RefCountedMemory;
 
-class ChromeWebUIFactory : public content::WebUIFactory {
+class ChromeWebUIControllerFactory : public content::WebUIControllerFactory {
  public:
   virtual content::WebUI::TypeID GetWebUIType(
       content::BrowserContext* browser_context,
@@ -27,7 +27,7 @@ class ChromeWebUIFactory : public content::WebUIFactory {
   virtual bool HasWebUIScheme(const GURL& url) const OVERRIDE;
   virtual bool IsURLAcceptableForWebUI(content::BrowserContext* browser_context,
                                        const GURL& url) const OVERRIDE;
-  virtual content::WebUIController* CreateWebUIForURL(
+  virtual content::WebUIController* CreateWebUIControllerForURL(
       content::WebUI* web_ui,
       const GURL& url) const OVERRIDE;
 
@@ -37,21 +37,21 @@ class ChromeWebUIFactory : public content::WebUIFactory {
                         FaviconService::GetFaviconRequest* request,
                         const GURL& page_url) const;
 
-  static ChromeWebUIFactory* GetInstance();
+  static ChromeWebUIControllerFactory* GetInstance();
 
  protected:
-  ChromeWebUIFactory();
-  virtual ~ChromeWebUIFactory();
+  ChromeWebUIControllerFactory();
+  virtual ~ChromeWebUIControllerFactory();
 
  private:
 
-  friend struct DefaultSingletonTraits<ChromeWebUIFactory>;
+  friend struct DefaultSingletonTraits<ChromeWebUIControllerFactory>;
 
   // Gets the data for the favicon for a WebUI page. Returns NULL if the WebUI
   // does not have a favicon.
   RefCountedMemory* GetFaviconResourceBytes(const GURL& page_url) const;
 
-  DISALLOW_COPY_AND_ASSIGN(ChromeWebUIFactory);
+  DISALLOW_COPY_AND_ASSIGN(ChromeWebUIControllerFactory);
 };
 
 #endif  // CHROME_BROWSER_UI_WEBUI_CHROME_WEB_UI_FACTORY_H_

@@ -10,12 +10,13 @@
 #include <map>
 #include <string>
 
-#include "chrome/browser/ui/webui/chrome_web_ui_factory.h"
+#include "chrome/browser/ui/webui/chrome_web_ui_controller_factory.h"
 #include "content/public/browser/web_ui.h"
 
 // This class replaces the ChromeWebUIFactory when the switches::kTestType flag
-// is passed. It provides a registry to override CreateWebUIForURL() by host.
-class TestChromeWebUIFactory : public ChromeWebUIFactory {
+// is passed. It provides a registry to override CreateWebUIControllerForURL()
+// by host.
+class TestChromeWebUIControllerFactory : public ChromeWebUIControllerFactory {
  public:
   // Interface to create a new WebUI object.
   class WebUIProvider {
@@ -42,17 +43,17 @@ class TestChromeWebUIFactory : public ChromeWebUIFactory {
   virtual content::WebUI::TypeID GetWebUIType(
       content::BrowserContext* browser_context,
       const GURL& url) const OVERRIDE;
-  virtual content::WebUIController* CreateWebUIForURL(
+  virtual content::WebUIController* CreateWebUIControllerForURL(
       content::WebUI* web_ui, const GURL& url) const OVERRIDE;
 
   // Return the singleton instance.
-  static TestChromeWebUIFactory* GetInstance();
+  static TestChromeWebUIControllerFactory* GetInstance();
 
  private:
-  TestChromeWebUIFactory();
-  virtual ~TestChromeWebUIFactory();
+  TestChromeWebUIControllerFactory();
+  virtual ~TestChromeWebUIControllerFactory();
 
-  friend struct DefaultSingletonTraits<TestChromeWebUIFactory>;
+  friend struct DefaultSingletonTraits<TestChromeWebUIControllerFactory>;
 
   // Return the WebUIProvider for the |url|'s host if it exists, otherwise NULL.
   WebUIProvider* GetWebUIProvider(Profile* profile, const GURL& url) const;
@@ -60,7 +61,7 @@ class TestChromeWebUIFactory : public ChromeWebUIFactory {
   // Stores the mapping of host to WebUIProvider.
   FactoryOverridesMap factory_overrides_;
 
-  DISALLOW_COPY_AND_ASSIGN(TestChromeWebUIFactory);
+  DISALLOW_COPY_AND_ASSIGN(TestChromeWebUIControllerFactory);
 };
 
 #endif  // CHROME_BROWSER_UI_WEBUI_TEST_CHROME_WEB_UI_FACTORY_H_

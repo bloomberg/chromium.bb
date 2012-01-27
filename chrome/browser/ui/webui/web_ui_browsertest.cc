@@ -19,7 +19,7 @@
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/browser/ui/webui/chrome_web_ui.h"
-#include "chrome/browser/ui/webui/test_chrome_web_ui_factory.h"
+#include "chrome/browser/ui/webui/test_chrome_web_ui_controller_factory.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/url_constants.h"
@@ -270,7 +270,8 @@ class MockWebUIDataSource : public ChromeURLDataManager::DataSource {
 
 // WebUIProvider to allow attaching the DataSource for the dummy URL when
 // testing.
-class MockWebUIProvider : public TestChromeWebUIFactory::WebUIProvider {
+class MockWebUIProvider
+    : public TestChromeWebUIControllerFactory::WebUIProvider {
  public:
   MockWebUIProvider() {}
 
@@ -306,8 +307,8 @@ void WebUIBrowserTest::CleanUpOnMainThread() {
 
 void WebUIBrowserTest::SetUpInProcessBrowserTestFixture() {
   InProcessBrowserTest::SetUpInProcessBrowserTestFixture();
-  TestChromeWebUIFactory::AddFactoryOverride(GURL(kDummyURL).host(),
-                                             mock_provider_.Pointer());
+  TestChromeWebUIControllerFactory::AddFactoryOverride(
+      GURL(kDummyURL).host(), mock_provider_.Pointer());
 
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_data_directory_));
   test_data_directory_ = test_data_directory_.Append(kWebUITestFolder);
@@ -331,7 +332,8 @@ void WebUIBrowserTest::SetUpInProcessBrowserTestFixture() {
 
 void WebUIBrowserTest::TearDownInProcessBrowserTestFixture() {
   InProcessBrowserTest::TearDownInProcessBrowserTestFixture();
-  TestChromeWebUIFactory::RemoveFactoryOverride(GURL(kDummyURL).host());
+  TestChromeWebUIControllerFactory::RemoveFactoryOverride(
+      GURL(kDummyURL).host());
 }
 
 void WebUIBrowserTest::SetWebUIInstance(content::WebUI* web_ui) {

@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/ui/webui/chrome_web_ui.h"
-#include "chrome/browser/ui/webui/test_chrome_web_ui_factory.h"
+#include "chrome/browser/ui/webui/test_chrome_web_ui_controller_factory.h"
 #include "content/public/browser/web_ui_controller.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -25,33 +25,34 @@ ACTION(ReturnNewWebUI) {
   return new WebUIController(arg0);
 }
 
-// Mock the TestChromeWebUIFactory::WebUIProvider to prove that we are called as
-// expected.
-class MockWebUIProvider : public TestChromeWebUIFactory::WebUIProvider {
+// Mock the TestChromeWebUIControllerFactory::WebUIProvider to prove that we are
+// called as expected.
+class MockWebUIProvider
+    : public TestChromeWebUIControllerFactory::WebUIProvider {
  public:
   MOCK_METHOD2(NewWebUI, WebUIController*(content::WebUI* web_ui,
                                           const GURL& url));
 };
 
 // Dummy URL location for us to override.
-const char kChromeTestChromeWebUIFactory[] =
-    "chrome://ChromeTestChromeWebUIFactory/";
+const char kChromeTestChromeWebUIControllerFactory[] =
+    "chrome://ChromeTestChromeWebUIControllerFactory/";
 
 // Sets up and tears down the factory override for our url's host. It is
 // necessary to do this here, rather than in the test declaration, which is too
 // late to catch the possibility of an initial browse to about:blank mistakenly
 // going to this handler.
-class TestChromeWebUIFactoryTest : public InProcessBrowserTest {
+class TestChromeWebUIControllerFactoryTest : public InProcessBrowserTest {
  public:
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
     InProcessBrowserTest::SetUpInProcessBrowserTestFixture();
-    TestChromeWebUIFactory::AddFactoryOverride(
-        GURL(kChromeTestChromeWebUIFactory).host(), &mock_provider_);
+    TestChromeWebUIControllerFactory::AddFactoryOverride(
+        GURL(kChromeTestChromeWebUIControllerFactory).host(), &mock_provider_);
   }
 
   virtual void TearDownInProcessBrowserTestFixture() OVERRIDE {
-    TestChromeWebUIFactory::RemoveFactoryOverride(
-        GURL(kChromeTestChromeWebUIFactory).host());
+    TestChromeWebUIControllerFactory::RemoveFactoryOverride(
+        GURL(kChromeTestChromeWebUIControllerFactory).host());
   }
 
  protected:
@@ -61,9 +62,13 @@ class TestChromeWebUIFactoryTest : public InProcessBrowserTest {
 }  // namespace
 
 // Test that browsing to our test url causes us to be called once.
-IN_PROC_BROWSER_TEST_F(TestChromeWebUIFactoryTest, TestWebUIProvider) {
-  const GURL kChromeTestChromeWebUIFactoryURL(kChromeTestChromeWebUIFactory);
-  EXPECT_CALL(mock_provider_, NewWebUI(_, Eq(kChromeTestChromeWebUIFactoryURL)))
+IN_PROC_BROWSER_TEST_F(TestChromeWebUIControllerFactoryTest,
+                       TestWebUIProvider) {
+  const GURL kChromeTestChromeWebUIControllerFactoryURL(
+      kChromeTestChromeWebUIControllerFactory);
+  EXPECT_CALL(mock_provider_,
+              NewWebUI(_, Eq(kChromeTestChromeWebUIControllerFactoryURL)))
       .WillOnce(ReturnNewWebUI());
-  ui_test_utils::NavigateToURL(browser(), kChromeTestChromeWebUIFactoryURL);
+  ui_test_utils::NavigateToURL(browser(),
+                               kChromeTestChromeWebUIControllerFactoryURL);
 }

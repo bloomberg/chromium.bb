@@ -5,7 +5,6 @@
 #include "content/shell/shell_content_browser_client.h"
 
 #include "base/file_path.h"
-#include "content/browser/webui/empty_web_ui_factory.h"
 #include "content/shell/shell.h"
 #include "content/shell/shell_browser_main.h"
 #include "googleurl/src/gurl.h"
@@ -53,9 +52,8 @@ void ShellContentBrowserClient::RenderProcessHostCreated(
     RenderProcessHost* host) {
 }
 
-WebUIFactory* ShellContentBrowserClient::GetWebUIFactory() {
-  // Return an empty factory so callsites don't have to check for NULL.
-  return EmptyWebUIFactory::GetInstance();
+WebUIControllerFactory* ShellContentBrowserClient::GetWebUIControllerFactory() {
+  return NULL;
 }
 
 GURL ShellContentBrowserClient::GetEffectiveURL(

@@ -33,7 +33,7 @@ class ShellContentBrowserClient : public ContentBrowserClient {
       RenderViewHost* render_view_host) OVERRIDE;
   virtual void RenderProcessHostCreated(
       RenderProcessHost* host) OVERRIDE;
-  virtual WebUIFactory* GetWebUIFactory() OVERRIDE;
+  virtual WebUIControllerFactory* GetWebUIControllerFactory() OVERRIDE;
   virtual GURL GetEffectiveURL(content::BrowserContext* browser_context,
                                const GURL& url) OVERRIDE;
   virtual bool ShouldUseProcessPerSite(BrowserContext* browser_context,

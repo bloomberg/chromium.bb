@@ -89,7 +89,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_view_host_delegate.h"
 #include "content/public/browser/user_metrics.h"
-#include "content/public/browser/web_ui_factory.h"
+#include "content/public/browser/web_ui_controller_factory.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/process_type.h"
@@ -119,6 +119,7 @@ using content::BrowserThread;
 using content::ChildProcessHost;
 using content::ChildProcessHostImpl;
 using content::UserMetricsAction;
+using content::WebUIControllerFactory;
 
 // This class creates the IO thread for the renderer when running in
 // single-process mode.  It's not used in multi-process mode.
@@ -1092,11 +1093,14 @@ bool RenderProcessHostImpl::IsSuitableHost(
   if (host->GetBrowserContext() != browser_context)
     return false;
 
-  if (ChildProcessSecurityPolicy::GetInstance()->HasWebUIBindings(
+  WebUIControllerFactory* factory =
+      content::GetContentClient()->browser()->GetWebUIControllerFactory();
+  if (factory &&
+      ChildProcessSecurityPolicy::GetInstance()->HasWebUIBindings(
           host->GetID()) !=
-      content::GetContentClient()->browser()->GetWebUIFactory()->
-          UseWebUIBindingsForURL(browser_context, site_url))
+      factory->UseWebUIBindingsForURL(browser_context, site_url)) {
     return false;
+  }
 
   return content::GetContentClient()->browser()->IsSuitableHost(host, site_url);
 }

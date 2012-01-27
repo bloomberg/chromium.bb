@@ -65,7 +65,7 @@ namespace content {
 
 class BrowserContext;
 class ResourceContext;
-class WebUIFactory;
+class WebUIControllerFactory;
 
 // Embedder API (or SPI) for participating in browser logic, to be implemented
 // by the client of the content browser. See ChromeContentBrowserClient for the
@@ -96,8 +96,9 @@ class ContentBrowserClient {
   virtual void RenderProcessHostCreated(
       content::RenderProcessHost* host) = 0;
 
-  // Gets the WebUIFactory which will be responsible for generating WebUIs.
-  virtual WebUIFactory* GetWebUIFactory() = 0;
+  // Gets the WebUIControllerFactory which will be responsible for generating
+  // WebUIs. Can return NULL if the embedder doesn't need WebUI support.
+  virtual WebUIControllerFactory* GetWebUIControllerFactory() = 0;
 
   // Get the effective URL for the given actual URL, to allow an embedder to
   // group different url schemes in the same SiteInstance.

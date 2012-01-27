@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/webui/chrome_web_ui_factory.h"
+#include "chrome/browser/ui/webui/chrome_web_ui_controller_factory.h"
 
 #include "base/command_line.h"
 #include "chrome/browser/about_flags.h"
@@ -44,7 +44,7 @@
 #include "chrome/browser/ui/webui/quota_internals_ui.h"
 #include "chrome/browser/ui/webui/sessions_ui.h"
 #include "chrome/browser/ui/webui/sync_internals_ui.h"
-#include "chrome/browser/ui/webui/test_chrome_web_ui_factory.h"
+#include "chrome/browser/ui/webui/test_chrome_web_ui_controller_factory.h"
 #include "chrome/browser/ui/webui/tracing_ui.h"
 #include "chrome/browser/ui/webui/uber/uber_ui.h"
 #include "chrome/browser/ui/webui/workers_ui.h"
@@ -363,19 +363,19 @@ struct PossibleTestSingletonTraits : public DefaultSingletonTraits<Type> {
 
 }  // namespace
 
-WebUI::TypeID ChromeWebUIFactory::GetWebUIType(
+WebUI::TypeID ChromeWebUIControllerFactory::GetWebUIType(
       content::BrowserContext* browser_context, const GURL& url) const {
   Profile* profile = Profile::FromBrowserContext(browser_context);
   WebUIFactoryFunction function = GetWebUIFactoryFunction(NULL, profile, url);
   return function ? reinterpret_cast<WebUI::TypeID>(function) : WebUI::kNoWebUI;
 }
 
-bool ChromeWebUIFactory::UseWebUIForURL(
+bool ChromeWebUIControllerFactory::UseWebUIForURL(
     content::BrowserContext* browser_context, const GURL& url) const {
   return GetWebUIType(browser_context, url) != WebUI::kNoWebUI;
 }
 
-bool ChromeWebUIFactory::UseWebUIBindingsForURL(
+bool ChromeWebUIControllerFactory::UseWebUIBindingsForURL(
     content::BrowserContext* browser_context, const GURL& url) const {
   // Extensions are rendered via WebUI in tabs, but don't actually need WebUI
   // bindings (see the ExtensionWebUI constructor).
@@ -385,13 +385,13 @@ bool ChromeWebUIFactory::UseWebUIBindingsForURL(
       UseWebUIForURL(browser_context, url);
 }
 
-bool ChromeWebUIFactory::HasWebUIScheme(const GURL& url) const {
+bool ChromeWebUIControllerFactory::HasWebUIScheme(const GURL& url) const {
   return url.SchemeIs(chrome::kChromeDevToolsScheme) ||
          url.SchemeIs(chrome::kChromeInternalScheme) ||
          url.SchemeIs(chrome::kChromeUIScheme);
 }
 
-bool ChromeWebUIFactory::IsURLAcceptableForWebUI(
+bool ChromeWebUIControllerFactory::IsURLAcceptableForWebUI(
     content::BrowserContext* browser_context,
     const GURL& url) const {
   return UseWebUIForURL(browser_context, url) ||
@@ -407,7 +407,7 @@ bool ChromeWebUIFactory::IsURLAcceptableForWebUI(
       url == GURL(chrome::kChromeUIShorthangURL);
 }
 
-WebUIController* ChromeWebUIFactory::CreateWebUIForURL(
+WebUIController* ChromeWebUIControllerFactory::CreateWebUIControllerForURL(
     content::WebUI* web_ui,
     const GURL& url) const {
   Profile* profile = Profile::FromWebUI(web_ui);
@@ -419,7 +419,7 @@ WebUIController* ChromeWebUIFactory::CreateWebUIForURL(
   return (*function)(web_ui, url);
 }
 
-void ChromeWebUIFactory::GetFaviconForURL(
+void ChromeWebUIControllerFactory::GetFaviconForURL(
     Profile* profile,
     FaviconService::GetFaviconRequest* request,
     const GURL& page_url) const {
@@ -440,18 +440,18 @@ void ChromeWebUIFactory::GetFaviconForURL(
 }
 
 // static
-ChromeWebUIFactory* ChromeWebUIFactory::GetInstance() {
-  return Singleton< ChromeWebUIFactory, PossibleTestSingletonTraits<
-      ChromeWebUIFactory, TestChromeWebUIFactory> >::get();
+ChromeWebUIControllerFactory* ChromeWebUIControllerFactory::GetInstance() {
+  return Singleton< ChromeWebUIControllerFactory, PossibleTestSingletonTraits<
+      ChromeWebUIControllerFactory, TestChromeWebUIControllerFactory> >::get();
 }
 
-ChromeWebUIFactory::ChromeWebUIFactory() {
+ChromeWebUIControllerFactory::ChromeWebUIControllerFactory() {
 }
 
-ChromeWebUIFactory::~ChromeWebUIFactory() {
+ChromeWebUIControllerFactory::~ChromeWebUIControllerFactory() {
 }
 
-RefCountedMemory* ChromeWebUIFactory::GetFaviconResourceBytes(
+RefCountedMemory* ChromeWebUIControllerFactory::GetFaviconResourceBytes(
     const GURL& page_url) const {
   // The bookmark manager is a chrome extension, so we have to check for it
   // before we check for extension scheme.

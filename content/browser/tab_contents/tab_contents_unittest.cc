@@ -12,13 +12,13 @@
 #include "content/browser/tab_contents/interstitial_page.h"
 #include "content/browser/tab_contents/navigation_entry_impl.h"
 #include "content/browser/tab_contents/test_tab_contents.h"
-#include "content/browser/webui/empty_web_ui_factory.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/web_ui_controller.h"
+#include "content/public/browser/web_ui_controller_factory.h"
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/url_constants.h"
@@ -26,28 +26,41 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/glue/webkit_glue.h"
 
+using content::BrowserContext;
 using content::BrowserThread;
 using content::NavigationEntry;
 using content::NavigationEntryImpl;
 using content::SiteInstance;
 using content::WebContents;
+using content::WebUI;
 using content::WebUIController;
 using webkit::forms::PasswordForm;
 
 namespace {
 
-class TabContentsTestWebUIFactory : public content::EmptyWebUIFactory {
+class TabContentsTestWebUIControllerFactory
+    : public content::WebUIControllerFactory {
  public:
-  virtual WebUIController* CreateWebUIForURL(content::WebUI* web_ui,
-                                             const GURL& url) const OVERRIDE {
+  virtual WebUIController* CreateWebUIControllerForURL(
+      content::WebUI* web_ui, const GURL& url) const OVERRIDE {
    if (!HasWebUIScheme(url))
      return NULL;
 
    return new WebUIController(web_ui);
   }
 
-  virtual bool UseWebUIForURL(content::BrowserContext* browser_context,
+  virtual WebUI::TypeID GetWebUIType(BrowserContext* browser_context,
+      const GURL& url) const OVERRIDE {
+    return WebUI::kNoWebUI;
+  }
+
+  virtual bool UseWebUIForURL(BrowserContext* browser_context,
                               const GURL& url) const OVERRIDE {
+    return HasWebUIScheme(url);
+  }
+
+  virtual bool UseWebUIBindingsForURL(BrowserContext* browser_context,
+                                      const GURL& url) const OVERRIDE {
     return HasWebUIScheme(url);
   }
 
@@ -55,8 +68,8 @@ class TabContentsTestWebUIFactory : public content::EmptyWebUIFactory {
     return url.SchemeIs("tabcontentstest");
   }
 
-  virtual bool IsURLAcceptableForWebUI(content::BrowserContext* browser_context,
-      const GURL& url) const {
+  virtual bool IsURLAcceptableForWebUI(
+      BrowserContext* browser_context, const GURL& url) const {
     return HasWebUIScheme(url);
   }
 };
@@ -66,12 +79,13 @@ class TabContentsTestBrowserClient : public content::MockContentBrowserClient {
   TabContentsTestBrowserClient() {
   }
 
-  virtual content::WebUIFactory* GetWebUIFactory() OVERRIDE {
+  virtual content::WebUIControllerFactory*
+      GetWebUIControllerFactory() OVERRIDE {
     return &factory_;
   }
 
  private:
-  TabContentsTestWebUIFactory factory_;
+  TabContentsTestWebUIControllerFactory factory_;
 };
 
 class TestInterstitialPage : public InterstitialPage {

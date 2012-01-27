@@ -11,13 +11,13 @@
 #include "content/browser/tab_contents/navigation_entry_impl.h"
 #include "content/browser/tab_contents/render_view_host_manager.h"
 #include "content/browser/tab_contents/test_tab_contents.h"
-#include "content/browser/webui/empty_web_ui_factory.h"
 #include "content/common/test_url_constants.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/web_ui_controller.h"
+#include "content/public/browser/web_ui_controller_factory.h"
 #include "content/public/common/page_transition_types.h"
 #include "content/public/common/url_constants.h"
 #include "content/test/test_browser_context.h"
@@ -26,6 +26,7 @@
 #include "googleurl/src/url_util.h"
 #include "webkit/glue/webkit_glue.h"
 
+using content::BrowserContext;
 using content::BrowserThread;
 using content::BrowserThreadImpl;
 using content::NavigationController;
@@ -33,38 +34,44 @@ using content::NavigationEntry;
 using content::NavigationEntryImpl;
 using content::SiteInstance;
 using content::WebContents;
+using content::WebUI;
 using content::WebUIController;
 
 namespace {
 
 const char kChromeUISchemeButNotWebUIURL[] = "chrome://not-webui";
 
-class RenderViewHostManagerTestWebUIFactory
-    : public content::EmptyWebUIFactory {
+class RenderViewHostManagerTestWebUIControllerFactory
+    : public content::WebUIControllerFactory {
  public:
-  RenderViewHostManagerTestWebUIFactory()
+  RenderViewHostManagerTestWebUIControllerFactory()
     : should_create_webui_(false) {
   }
-  virtual ~RenderViewHostManagerTestWebUIFactory() {}
+  virtual ~RenderViewHostManagerTestWebUIControllerFactory() {}
 
   void set_should_create_webui(bool should_create_webui) {
     should_create_webui_ = should_create_webui;
   }
 
   // WebUIFactory implementation.
-  virtual WebUIController* CreateWebUIForURL(content::WebUI* web_ui,
-                                             const GURL& url) const OVERRIDE {
+  virtual WebUIController* CreateWebUIControllerForURL(
+      WebUI* web_ui, const GURL& url) const OVERRIDE {
     if (!(should_create_webui_ && HasWebUIScheme(url)))
       return NULL;
     return new WebUIController(web_ui);
   }
 
-  virtual bool UseWebUIForURL(content::BrowserContext* browser_context,
+   virtual WebUI::TypeID GetWebUIType(BrowserContext* browser_context,
+      const GURL& url) const OVERRIDE {
+    return WebUI::kNoWebUI;
+  }
+
+  virtual bool UseWebUIForURL(BrowserContext* browser_context,
                               const GURL& url) const OVERRIDE {
     return HasWebUIScheme(url);
   }
 
-  virtual bool UseWebUIBindingsForURL(content::BrowserContext* browser_context,
+  virtual bool UseWebUIBindingsForURL(BrowserContext* browser_context,
                                       const GURL& url) const OVERRIDE {
     return HasWebUIScheme(url);
   }
@@ -74,10 +81,15 @@ class RenderViewHostManagerTestWebUIFactory
         url.spec() != kChromeUISchemeButNotWebUIURL;
   }
 
+  virtual bool IsURLAcceptableForWebUI(BrowserContext* browser_context,
+      const GURL& url) const OVERRIDE {
+    return false;
+  }
+
  private:
   bool should_create_webui_;
 
-  DISALLOW_COPY_AND_ASSIGN(RenderViewHostManagerTestWebUIFactory);
+  DISALLOW_COPY_AND_ASSIGN(RenderViewHostManagerTestWebUIControllerFactory);
 };
 
 class RenderViewHostManagerTestBrowserClient
@@ -91,12 +103,13 @@ class RenderViewHostManagerTestBrowserClient
   }
 
   // content::MockContentBrowserClient implementation.
-  virtual content::WebUIFactory* GetWebUIFactory() OVERRIDE {
+  virtual content::WebUIControllerFactory*
+      GetWebUIControllerFactory() OVERRIDE {
     return &factory_;
   }
 
  private:
-  RenderViewHostManagerTestWebUIFactory factory_;
+  RenderViewHostManagerTestWebUIControllerFactory factory_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderViewHostManagerTestBrowserClient);
 };

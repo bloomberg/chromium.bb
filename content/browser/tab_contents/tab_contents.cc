@@ -46,7 +46,7 @@
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_view.h"
-#include "content/public/browser/web_ui_factory.h"
+#include "content/public/browser/web_ui_controller_factory.h"
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_restriction.h"
@@ -122,6 +122,7 @@ using content::WebContents;
 using content::WebContentsObserver;
 using content::WebUI;
 using content::WebUIController;
+using content::WebUIControllerFactory;
 
 namespace {
 
@@ -435,10 +436,13 @@ content::WebContentsView* TabContents::GetView() const {
 }
 
 content::WebUI* TabContents::CreateWebUI(const GURL& url) {
+  WebUIControllerFactory* factory =
+      content::GetContentClient()->browser()->GetWebUIControllerFactory();
+  if (!factory)
+    return NULL;
   WebUIImpl* web_ui = new WebUIImpl(this);
   WebUIController* controller =
-      content::GetContentClient()->browser()->GetWebUIFactory()->
-          CreateWebUIForURL(web_ui, url);
+      factory->CreateWebUIControllerForURL(web_ui, url);
   if (controller) {
     web_ui->SetController(controller);
     return web_ui;
@@ -828,9 +832,11 @@ bool TabContents::NavigateToEntry(
   // For security, we should never send non-Web-UI URLs to a Web UI renderer.
   // Double check that here.
   int enabled_bindings = dest_render_view_host->enabled_bindings();
-  bool is_allowed_in_web_ui_renderer = content::GetContentClient()->
-      browser()->GetWebUIFactory()->IsURLAcceptableForWebUI(GetBrowserContext(),
-                                                            entry.GetURL());
+  WebUIControllerFactory* factory =
+      content::GetContentClient()->browser()->GetWebUIControllerFactory();
+  bool is_allowed_in_web_ui_renderer =
+      factory &&
+      factory->IsURLAcceptableForWebUI(GetBrowserContext(), entry.GetURL());
 #if defined(OS_CHROMEOS)
   is_allowed_in_web_ui_renderer |= entry.GetURL().SchemeIs(chrome::kDataScheme);
 #endif
@@ -1098,8 +1104,11 @@ int TabContents::GetContentRestrictions() const {
 }
 
 WebUI::TypeID TabContents::GetWebUITypeForCurrentState() {
-  return content::GetContentClient()->browser()->GetWebUIFactory()->
-      GetWebUIType(GetBrowserContext(), GetURL());
+  WebUIControllerFactory* factory =
+      content::GetContentClient()->browser()->GetWebUIControllerFactory();
+  if (!factory)
+    return WebUI::kNoWebUI;
+  return factory->GetWebUIType(GetBrowserContext(), GetURL());
 }
 
 content::WebUI* TabContents::GetWebUIForCurrentState() {

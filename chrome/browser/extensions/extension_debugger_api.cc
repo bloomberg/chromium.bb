@@ -22,7 +22,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/confirm_infobar_delegate.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
-#include "chrome/browser/ui/webui/chrome_web_ui_factory.h"
+#include "chrome/browser/ui/webui/chrome_web_ui_controller_factory.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_error_utils.h"
@@ -377,7 +377,8 @@ bool DebuggerFunction::InitTabContents() {
   }
   contents_ = wrapper->web_contents();
 
-  if (ChromeWebUIFactory::GetInstance()->HasWebUIScheme(contents_->GetURL())) {
+  if (ChromeWebUIControllerFactory::GetInstance()->HasWebUIScheme(
+          contents_->GetURL())) {
     error_ = ExtensionErrorUtils::FormatErrorMessage(
         keys::kAttachToWebUIError,
         contents_->GetURL().scheme());

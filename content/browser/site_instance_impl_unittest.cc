@@ -15,7 +15,7 @@
 #include "content/browser/site_instance_impl.h"
 #include "content/browser/tab_contents/navigation_entry_impl.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/browser/webui/empty_web_ui_factory.h"
+#include "content/public/browser/web_ui_controller_factory.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/url_constants.h"
@@ -23,11 +23,14 @@
 #include "googleurl/src/url_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using content::BrowserContext;
 using content::BrowserThread;
 using content::BrowserThreadImpl;
 using content::NavigationEntry;
 using content::NavigationEntryImpl;
 using content::SiteInstance;
+using content::WebUI;
+using content::WebUIController;
 
 namespace {
 
@@ -35,18 +38,31 @@ const char kSameAsAnyInstanceURL[] = "about:internets";
 
 const char kPrivilegedScheme[] = "privileged";
 
-class SiteInstanceTestWebUIFactory : public content::EmptyWebUIFactory {
+class SiteInstanceTestWebUIControllerFactory
+    : public content::WebUIControllerFactory {
  public:
-  virtual bool UseWebUIForURL(content::BrowserContext* browser_context,
+  virtual WebUIController* CreateWebUIControllerForURL(
+      WebUI* web_ui, const GURL& url) const OVERRIDE {
+    return NULL;
+  }
+  virtual WebUI::TypeID GetWebUIType(BrowserContext* browser_context,
+      const GURL& url) const OVERRIDE {
+    return WebUI::kNoWebUI;
+  }
+  virtual bool UseWebUIForURL(BrowserContext* browser_context,
                               const GURL& url) const OVERRIDE {
     return HasWebUIScheme(url);
   }
-  virtual bool UseWebUIBindingsForURL(content::BrowserContext* browser_context,
+  virtual bool UseWebUIBindingsForURL(BrowserContext* browser_context,
                                       const GURL& url) const OVERRIDE {
     return HasWebUIScheme(url);
   }
   virtual bool HasWebUIScheme(const GURL& url) const OVERRIDE {
     return url.SchemeIs(chrome::kChromeUIScheme);
+  }
+  virtual bool IsURLAcceptableForWebUI(BrowserContext* browser_context,
+      const GURL& url) const OVERRIDE {
+    return false;
   }
 };
 
@@ -56,11 +72,12 @@ class SiteInstanceTestBrowserClient : public content::MockContentBrowserClient {
       : privileged_process_id_(-1) {
   }
 
-  virtual content::WebUIFactory* GetWebUIFactory() OVERRIDE {
+  virtual content::WebUIControllerFactory*
+      GetWebUIControllerFactory() OVERRIDE {
     return &factory_;
   }
 
-  virtual bool ShouldUseProcessPerSite(content::BrowserContext* browser_context,
+  virtual bool ShouldUseProcessPerSite(BrowserContext* browser_context,
                                        const GURL& effective_url) OVERRIDE {
     return false;
   }
@@ -81,7 +98,7 @@ class SiteInstanceTestBrowserClient : public content::MockContentBrowserClient {
   }
 
  private:
-  SiteInstanceTestWebUIFactory factory_;
+  SiteInstanceTestWebUIControllerFactory factory_;
   int privileged_process_id_;
 };
 
@@ -117,8 +134,7 @@ class SiteInstanceTest : public testing::Test {
 
 class TestBrowsingInstance : public BrowsingInstance {
  public:
-  TestBrowsingInstance(content::BrowserContext* browser_context,
-                       int* delete_counter)
+  TestBrowsingInstance(BrowserContext* browser_context, int* delete_counter)
       : BrowsingInstance(browser_context),
         use_process_per_site_(false),
         delete_counter_(delete_counter) {
@@ -156,7 +172,7 @@ class TestBrowsingInstance : public BrowsingInstance {
 class TestSiteInstance : public SiteInstanceImpl {
  public:
   static TestSiteInstance* CreateTestSiteInstance(
-      content::BrowserContext* browser_context,
+      BrowserContext* browser_context,
       int* site_delete_counter,
       int* browsing_delete_counter) {
     TestBrowsingInstance* browsing_instance =

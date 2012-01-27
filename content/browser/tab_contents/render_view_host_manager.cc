@@ -23,7 +23,7 @@
 #include "content/public/browser/render_view_host_delegate.h"
 #include "content/public/browser/web_contents_view.h"
 #include "content/public/browser/web_ui_controller.h"
-#include "content/public/browser/web_ui_factory.h"
+#include "content/public/browser/web_ui_controller_factory.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
 
@@ -31,6 +31,7 @@ using content::NavigationController;
 using content::NavigationEntry;
 using content::NavigationEntryImpl;
 using content::SiteInstance;
+using content::WebUIControllerFactory;
 
 RenderViewHostManager::RenderViewHostManager(
     content::RenderViewHostDelegate* render_view_delegate,
@@ -349,17 +350,19 @@ bool RenderViewHostManager::ShouldSwapProcessesForNavigation(
       render_view_host_->site_instance()->GetSite();
   content::BrowserContext* browser_context =
       delegate_->GetControllerForRenderManager().GetBrowserContext();
-  const content::WebUIFactory* web_ui_factory =
-      content::GetContentClient()->browser()->GetWebUIFactory();
-  if (web_ui_factory->UseWebUIForURL(browser_context, current_url)) {
-    // Force swap if it's not an acceptable URL for Web UI.
-    if (!web_ui_factory->IsURLAcceptableForWebUI(browser_context,
-                                                 new_entry->GetURL()))
-      return true;
-  } else {
-    // Force swap if it's a Web UI URL.
-    if (web_ui_factory->UseWebUIForURL(browser_context, new_entry->GetURL()))
-      return true;
+  const WebUIControllerFactory* web_ui_factory =
+      content::GetContentClient()->browser()->GetWebUIControllerFactory();
+  if (web_ui_factory) {
+    if (web_ui_factory->UseWebUIForURL(browser_context, current_url)) {
+      // Force swap if it's not an acceptable URL for Web UI.
+      if (!web_ui_factory->IsURLAcceptableForWebUI(browser_context,
+                                                   new_entry->GetURL()))
+        return true;
+    } else {
+      // Force swap if it's a Web UI URL.
+      if (web_ui_factory->UseWebUIForURL(browser_context, new_entry->GetURL()))
+        return true;
+    }
   }
 
   if (content::GetContentClient()->browser()->ShouldSwapProcessesForNavigation(

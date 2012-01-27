@@ -53,7 +53,7 @@
 #include "chrome/browser/tab_contents/tab_contents_ssl_helper.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
-#include "chrome/browser/ui/webui/chrome_web_ui_factory.h"
+#include "chrome/browser/ui/webui/chrome_web_ui_controller_factory.h"
 #include "chrome/browser/user_style_sheet_watcher.h"
 #include "chrome/common/child_process_logging.h"
 #include "chrome/common/chrome_constants.h"
@@ -140,7 +140,8 @@ namespace {
 
 // Handles rewriting Web UI URLs.
 bool HandleWebUI(GURL* url, content::BrowserContext* browser_context) {
-  if (!ChromeWebUIFactory::GetInstance()->UseWebUIForURL(browser_context, *url))
+  if (!ChromeWebUIControllerFactory::GetInstance()->UseWebUIForURL(
+          browser_context, *url))
     return false;
 
   // Special case the new tab page. In older versions of Chrome, the new tab
@@ -358,8 +359,9 @@ void ChromeContentBrowserClient::RenderProcessHostCreated(
   host->Send(new ChromeViewMsg_SetContentSettingRules(rules));
 }
 
-content::WebUIFactory* ChromeContentBrowserClient::GetWebUIFactory() {
-  return ChromeWebUIFactory::GetInstance();
+content::WebUIControllerFactory*
+    ChromeContentBrowserClient::GetWebUIControllerFactory() {
+  return ChromeWebUIControllerFactory::GetInstance();
 }
 
 GURL ChromeContentBrowserClient::GetEffectiveURL(

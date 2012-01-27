@@ -8,7 +8,6 @@
 
 #include "base/file_path.h"
 #include "base/logging.h"
-#include "content/browser/webui/empty_web_ui_factory.h"
 #include "content/test/test_web_contents_view.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -41,9 +40,8 @@ void MockContentBrowserClient::RenderProcessHostCreated(
     RenderProcessHost* host) {
 }
 
-WebUIFactory* MockContentBrowserClient::GetWebUIFactory() {
-  // Return an empty factory so callsites don't have to check for NULL.
-  return EmptyWebUIFactory::GetInstance();
+WebUIControllerFactory* MockContentBrowserClient::GetWebUIControllerFactory() {
+  return NULL;
 }
 
 GURL MockContentBrowserClient::GetEffectiveURL(

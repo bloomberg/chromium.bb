@@ -2724,7 +2724,7 @@
         'browser/ui/views/status_icons/status_tray_chromeos_browsertest.cc',
         'browser/ui/webui/chrome_url_data_manager_browsertest.cc',
         'browser/ui/webui/ntp/most_visited_browsertest.cc',
-        'browser/ui/webui/test_chrome_web_ui_factory_browsertest.cc',
+        'browser/ui/webui/test_chrome_web_ui_controller_factory_browsertest.cc',
         'browser/ui/webui/bidi_checker_web_ui_test.cc',
         'browser/ui/webui/bidi_checker_web_ui_test.h',
         'browser/ui/webui/html_dialog_controller_browsertest.cc',

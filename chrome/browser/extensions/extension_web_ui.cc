@@ -141,7 +141,7 @@ ExtensionWebUI::ExtensionWebUI(content::WebUI* web_ui, const GURL& url)
   bool should_hide_url = !extension->is_hosted_app();
 
   // The base class defaults to enabling WebUI bindings, but we don't need
-  // those (this is also reflected in ChromeWebUIFactory::
+  // those (this is also reflected in ChromeWebUIControllerFactory::
   // UseWebUIBindingsForURL).
   int bindings = 0;
 
