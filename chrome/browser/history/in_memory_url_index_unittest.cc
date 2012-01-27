@@ -232,6 +232,16 @@ TEST_F(InMemoryURLIndexTest, Retrieval) {
   EXPECT_EQ(5, matches[0].url_info.id());
   EXPECT_EQ("http://drudgereport.com/", matches[0].url_info.url().spec());
   EXPECT_EQ(ASCIIToUTF16("DRUDGE REPORT 2010"), matches[0].url_info.title());
+  EXPECT_TRUE(matches[0].can_inline);
+
+  // Make sure a trailing space prevents inline-ability but still results
+  // in the expected result.
+  matches = url_index_->HistoryItemsForTerms(ASCIIToUTF16("DrudgeReport "));
+  ASSERT_EQ(1U, matches.size());
+  EXPECT_EQ(5, matches[0].url_info.id());
+  EXPECT_EQ("http://drudgereport.com/", matches[0].url_info.url().spec());
+  EXPECT_EQ(ASCIIToUTF16("DRUDGE REPORT 2010"), matches[0].url_info.title());
+  EXPECT_FALSE(matches[0].can_inline);
 
   // Search which should result in multiple results.
   matches = url_index_->HistoryItemsForTerms(ASCIIToUTF16("drudge"));
@@ -250,6 +260,7 @@ TEST_F(InMemoryURLIndexTest, Retrieval) {
             matches[0].url_info.url().spec());  // Note: URL gets lowercased.
   EXPECT_EQ(ASCIIToUTF16("Practically Perfect Search Result"),
             matches[0].url_info.title());
+  EXPECT_FALSE(matches[0].can_inline);
 
   // Search which should result in very poor result.
   matches = url_index_->HistoryItemsForTerms(ASCIIToUTF16("z y x"));
@@ -261,10 +272,22 @@ TEST_F(InMemoryURLIndexTest, Retrieval) {
             matches[0].url_info.url().spec());  // Note: URL gets lowercased.
   EXPECT_EQ(ASCIIToUTF16("Practically Useless Search Result"),
             matches[0].url_info.title());
+  EXPECT_FALSE(matches[0].can_inline);
 
   // Search which will match at the end of an URL with encoded characters.
   matches = url_index_->HistoryItemsForTerms(ASCIIToUTF16("ice"));
   ASSERT_EQ(1U, matches.size());
+  EXPECT_FALSE(matches[0].can_inline);
+
+  // Verify that a single term can appear multiple times in the URL and as long
+  // as one starts the URL it is still inlined.
+  matches = url_index_->HistoryItemsForTerms(ASCIIToUTF16("fubar"));
+  ASSERT_EQ(1U, matches.size());
+  EXPECT_EQ(34, matches[0].url_info.id());
+  EXPECT_EQ("http://fubarfubarandfubar.com/", matches[0].url_info.url().spec());
+  EXPECT_EQ(ASCIIToUTF16("Situation Normal -- FUBARED"),
+            matches[0].url_info.title());
+  EXPECT_TRUE(matches[0].can_inline);
 }
 
 TEST_F(InMemoryURLIndexTest, URLPrefixMatching) {
@@ -363,7 +386,7 @@ TEST_F(InMemoryURLIndexTest, HugeResultSet) {
   ASSERT_EQ(AutocompleteProvider::kMaxMatches, matches.size());
   // There are 7 matches already in the database.
   URLIndexPrivateData& private_data(*(url_index_->private_data_.get()));
-  ASSERT_EQ(1007U, private_data.pre_filter_item_count_);
+  ASSERT_EQ(1008U, private_data.pre_filter_item_count_);
   ASSERT_EQ(500U, private_data.post_filter_item_count_);
   ASSERT_EQ(AutocompleteProvider::kMaxMatches,
             private_data.post_scoring_item_count_);
@@ -373,7 +396,7 @@ TEST_F(InMemoryURLIndexTest, TitleSearch) {
   url_index_.reset(new InMemoryURLIndex(FilePath()));
   url_index_->Init(this, "en,ja,hi,zh");
   // Signal if someone has changed the test DB.
-  EXPECT_EQ(27U, url_index_->private_data_->history_info_map_.size());
+  EXPECT_EQ(28U, url_index_->private_data_->history_info_map_.size());
 
   // Ensure title is being searched.
   ScoredHistoryMatches matches =

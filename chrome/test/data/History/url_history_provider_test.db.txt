@@ -57,3 +57,4 @@ INSERT INTO "urls" VALUES(30,'http://www.drudgery.com/Dogs%20and%20Mice','Life i
 INSERT INTO "urls" VALUES(31,'http://www.redrudgerydo.com/','Music of the Wild Landscape',0,0,6,0,0);
 INSERT INTO "urls" VALUES(32,'https://NearlyPerfectResult.com/','Practically Perfect Search Result',99,99,0,0,0);  // Qualifies
 INSERT INTO "urls" VALUES(33,'http://QuiteUselessSearchResultxyz.com/','Practically Useless Search Result',4,0,99,0,0);  // Qualifies
+INSERT INTO "urls" VALUES(34,'http://FubarFubarAndFubar.com/','Situation Normal -- FUBARED',99,99,0,0,0);  // Qualifies

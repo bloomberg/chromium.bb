@@ -530,12 +530,19 @@ ScoredHistoryMatch URLIndexPrivateData::ScoredMatchForURL(
   match.title_matches = SortAndDeoverlapMatches(match.title_matches);
 
   // We can inline autocomplete a result if:
-  //  1) the search term starts at the beginning of the candidate URL, OR
-  //  2) the candidate URL has one of the standard 'ftp' or 'http[s]'
-  //     prefixes.
-  match.can_inline = match.url_matches.size() &&
+  //  1) there is only one search term
+  //  2) AND EITHER:
+  //    2a) the first match starts at the beginning of the candidate URL, OR
+  //    2b) the candidate URL starts with one of the standard URL prefixes with
+  //        the URL match immediately following that prefix.
+  //  3) AND the search string does not end in whitespace (making it look to
+  //     the IMUI as though there is a single search term when actually there
+  //     is a second, empty term).
+  match.can_inline = !match.url_matches.empty() &&
+      terms.size() == 1 &&
       (match.url_matches[0].offset == 0 ||
-       IsInlineablePrefix(url.substr(0, match.url_matches[0].offset)));
+       IsInlineablePrefix(url.substr(0, match.url_matches[0].offset))) &&
+      !IsWhitespace(*(lower_string.rbegin()));
 
   // Get partial scores based on term matching. Note that the score for
   // each of the URL and title are adjusted by the fraction of the
