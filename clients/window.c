@@ -1866,9 +1866,11 @@ data_device_selection(void *data,
 	if (input->selection_offer)
 		data_offer_destroy(input->selection_offer);
 
-	input->selection_offer = wl_data_offer_get_user_data(offer);
-	p = wl_array_add(&input->selection_offer->types, sizeof *p);
-	*p = NULL;
+	if (offer) {
+		input->selection_offer = wl_data_offer_get_user_data(offer);
+		p = wl_array_add(&input->selection_offer->types, sizeof *p);
+		*p = NULL;
+	}
 }
 
 static const struct wl_data_device_listener data_device_listener = {
