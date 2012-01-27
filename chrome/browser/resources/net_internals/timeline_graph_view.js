@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -117,19 +117,21 @@ var TimelineGraphView = (function() {
                                   parseInt(style.paddingLeft);
       var verticalPadding = parseInt(style.paddingTop) +
                                 parseInt(style.paddingBottom);
-      var width = parseInt(this.graphDiv_.style.width) - horizontalPadding;
+      var canvasWidth =
+          parseInt(this.graphDiv_.style.width) - horizontalPadding;
       // For unknown reasons, there's an extra 3 pixels border between the
       // bottom of the canvas and the bottom margin of the enclosing div.
-      var height = parseInt(this.graphDiv_.style.height) - verticalPadding - 3;
+      var canvasHeight =
+          parseInt(this.graphDiv_.style.height) - verticalPadding - 3;
 
       // Protect against degenerates.
-      if (width < 10)
-        width = 10;
-      if (height < 10)
-        height = 10;
+      if (canvasWidth < 10)
+        canvasWidth = 10;
+      if (canvasHeight < 10)
+        canvasHeight = 10;
 
-      this.canvas_.width = width;
-      this.canvas_.height = height;
+      this.canvas_.width = canvasWidth;
+      this.canvas_.height = canvasHeight;
 
       // Use the same font style for the canvas as we use elsewhere.
       // Has to be updated every resize.
@@ -550,7 +552,7 @@ var TimelineGraphView = (function() {
         // We start with kilobytes, and work our way up.
         var unit = 1;
         // Update |maxValue| to be in the right units.
-        var maxValue = maxValue / 1024;
+        maxValue = maxValue / 1024;
         while (units[unit + 1] && maxValue >= 999) {
           maxValue /= 1024;
           ++unit;
