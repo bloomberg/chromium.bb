@@ -89,7 +89,6 @@ class PepperSessionManager : public SessionManager,
   scoped_ptr<AuthenticatorFactory> authenticator_factory_;
   scoped_ptr<IqSender> iq_sender_;
   SessionManager::Listener* listener_;
-  bool allow_nat_traversal_;
 
   bool ready_;
 

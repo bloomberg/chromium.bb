@@ -23,9 +23,7 @@ PepperSessionManager::PepperSessionManager(pp::Instance* pp_instance)
     : pp_instance_(pp_instance),
       signal_strategy_(NULL),
       listener_(NULL),
-      allow_nat_traversal_(false),
       ready_(false) {
-  transport_config_.nat_traversal = allow_nat_traversal_;
 }
 
 PepperSessionManager::~PepperSessionManager() {
@@ -39,7 +37,7 @@ void PepperSessionManager::Init(
   listener_ = listener;
   signal_strategy_ = signal_strategy;
   iq_sender_.reset(new IqSender(signal_strategy_));
-  allow_nat_traversal_ = network_settings.allow_nat_traversal;
+  transport_config_.nat_traversal = network_settings.allow_nat_traversal;
 
   // Limiting the port range is not supported yet.
   DCHECK(network_settings.max_port == 0 &&
@@ -108,7 +106,7 @@ void PepperSessionManager::OnSignalStrategyStateChange(
     SignalStrategy::State state) {
   // If NAT traversal is enabled then we need to request STUN/Relay info.
   if (state == SignalStrategy::CONNECTED) {
-    if (allow_nat_traversal_) {
+    if (transport_config_.nat_traversal) {
       jingle_info_request_.reset(new JingleInfoRequest(signal_strategy_));
       jingle_info_request_->Send(base::Bind(&PepperSessionManager::OnJingleInfo,
                                             base::Unretained(this)));
