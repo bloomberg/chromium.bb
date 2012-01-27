@@ -116,10 +116,22 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   void OnNativeScreenResized(const gfx::Size& size);
 
   // Invoked when |window| is initialized.
-  void WindowInitialized(Window* window);
+  void OnWindowInitialized(Window* window);
 
   // Invoked when |window| is being destroyed.
-  void WindowDestroying(Window* window);
+  void OnWindowDestroying(Window* window);
+
+  // Invokved when |window|'s bounds is changed. |contained_mouse| indicates if
+  // the bounds before change contained the |last_moust_location()|.
+  void OnWindowBoundsChanged(Window* window, bool contained_mouse);
+
+  // Invokved when |window|'s visibility is changed.
+  void OnWindowVisibilityChanged(Window* window, bool is_visible);
+
+  // Invokved when |window|'s tranfrom has changed. |contained_mouse|
+  // indicates if the bounds before change contained the
+  // |last_moust_location()|.
+  void OnWindowTransformed(Window* window, bool contained_mouse);
 
   // Returns the root window's dispatcher. The result should only be passed to
   // MessageLoopForUI::RunWithDispatcher() or
@@ -179,6 +191,12 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   // Overridden from ui::CompositorDelegate:
   virtual void ScheduleDraw() OVERRIDE;
 
+  // Overridden from Window:
+  virtual void OnWindowAttachedToRootWindow(
+      Window* window) OVERRIDE;
+  virtual void OnWindowDetachingFromRootWindow(
+      Window* window) OVERRIDE;
+
  private:
   RootWindow();
   virtual ~RootWindow();
@@ -198,7 +216,6 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   virtual bool CanReceiveEvents() const OVERRIDE;
   virtual internal::FocusManager* GetFocusManager() OVERRIDE;
   virtual RootWindow* GetRootWindow() OVERRIDE;
-  virtual void WindowDetachedFromRootWindow(Window* window) OVERRIDE;
 
   // Overridden from ui::LayerAnimationObserver:
   virtual void OnLayerAnimationEnded(
@@ -220,6 +237,14 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   // returns bounds for the window.
   gfx::Rect GetInitialHostWindowBounds() const;
 
+  // Posts a task to send synthesized mouse move event if there
+  // is no a pending task.
+  void PostMouseMoveEventAfterWindowChange();
+
+  // Creates and dispatches synthesized mouse move event using the
+  // current mouse location.
+  void SynthesizeMouseMoveEvent();
+
   scoped_refptr<ui::Compositor> compositor_;
 
   scoped_ptr<RootWindowHost> host_;
@@ -233,6 +258,9 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
 
   // Used to schedule painting.
   base::WeakPtrFactory<RootWindow> schedule_paint_factory_;
+
+  // Use to post mouse move event.
+  base::WeakPtrFactory<RootWindow> event_factory_;
 
   // Last location seen in a mouse event.
   gfx::Point last_mouse_location_;
@@ -259,6 +287,8 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
 
   // The gesture_recognizer_ for this.
   scoped_ptr<GestureRecognizer> gesture_recognizer_;
+
+  bool synthesize_mouse_move_;
 
   DISALLOW_COPY_AND_ASSIGN(RootWindow);
 };

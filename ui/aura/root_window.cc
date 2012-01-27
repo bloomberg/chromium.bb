@@ -93,6 +93,7 @@ void RootWindow::SetHostSize(const gfx::Size& size) {
   host_->SetSize(size);
   // Requery the location to constrain it within the new root window size.
   last_mouse_location_ = host_->QueryMouseLocation();
+  synthesize_mouse_move_ = false;
 }
 
 gfx::Size RootWindow::GetHostSize() const {
@@ -142,6 +143,7 @@ bool RootWindow::DispatchMouseEvent(MouseEvent* event) {
   event->UpdateForRootTransform(layer()->transform());
 
   last_mouse_location_ = event->location();
+  synthesize_mouse_move_ = false;
 
   Window* target =
       mouse_pressed_handler_ ? mouse_pressed_handler_ : capture_window_;
@@ -184,6 +186,7 @@ bool RootWindow::DispatchScrollEvent(ScrollEvent* event) {
   event->UpdateForRootTransform(layer()->transform());
 
   last_mouse_location_ = event->location();
+  synthesize_mouse_move_ = false;
 
   Window* target =
       mouse_pressed_handler_ ? mouse_pressed_handler_ : capture_window_;
@@ -266,12 +269,15 @@ void RootWindow::OnNativeScreenResized(const gfx::Size& size) {
     SetHostSize(size);
 }
 
-void RootWindow::WindowInitialized(Window* window) {
+void RootWindow::OnWindowInitialized(Window* window) {
   FOR_EACH_OBSERVER(RootWindowObserver, observers_,
                     OnWindowInitialized(window));
+  if (window->IsVisible() && window->ContainsPointInRoot(last_mouse_location_))
+    PostMouseMoveEventAfterWindowChange();
 }
 
-void RootWindow::WindowDestroying(Window* window) {
+void RootWindow::OnWindowDestroying(Window* window) {
+  // Update the focused window state if the window was focused.
   if (focused_window_ == window)
     SetFocusedWindow(focused_window_->parent());
 
@@ -290,6 +296,33 @@ void RootWindow::WindowDestroying(Window* window) {
     gesture_handler_ = NULL;
 
   gesture_recognizer_->FlushTouchQueue(window);
+
+  if (window->IsVisible() &&
+      window->ContainsPointInRoot(last_mouse_location_)) {
+    PostMouseMoveEventAfterWindowChange();
+  }
+}
+
+void RootWindow::OnWindowBoundsChanged(Window* window,
+                                       bool contained_mouse_point) {
+  if (contained_mouse_point ||
+      (window->IsVisible() &&
+       window->ContainsPointInRoot(last_mouse_location_))) {
+    PostMouseMoveEventAfterWindowChange();
+  }
+}
+
+void RootWindow::OnWindowVisibilityChanged(Window* window, bool is_visible) {
+  if (window->ContainsPointInRoot(last_mouse_location_))
+    PostMouseMoveEventAfterWindowChange();
+}
+
+void RootWindow::OnWindowTransformed(Window* window, bool contained_mouse) {
+  if (contained_mouse ||
+      (window->IsVisible() &&
+       window->ContainsPointInRoot(last_mouse_location_))) {
+    PostMouseMoveEventAfterWindowChange();
+  }
 }
 
 #if !defined(OS_MACOSX)
@@ -388,6 +421,7 @@ RootWindow::RootWindow()
     : Window(NULL),
       host_(aura::RootWindowHost::Create(GetInitialHostWindowBounds())),
       ALLOW_THIS_IN_INITIALIZER_LIST(schedule_paint_factory_(this)),
+      ALLOW_THIS_IN_INITIALIZER_LIST(event_factory_(this)),
       mouse_button_flags_(0),
       last_cursor_(kCursorNull),
       screen_(new ScreenAura),
@@ -397,7 +431,8 @@ RootWindow::RootWindow()
       focused_window_(NULL),
       touch_event_handler_(NULL),
       gesture_handler_(NULL),
-      gesture_recognizer_(new GestureRecognizer()) {
+      gesture_recognizer_(new GestureRecognizer()),
+      synthesize_mouse_move_(false) {
   SetName("RootWindow");
   gfx::Screen::SetInstance(screen_);
   last_mouse_location_ = host_->QueryMouseLocation();
@@ -584,7 +619,7 @@ RootWindow* RootWindow::GetRootWindow() {
   return this;
 }
 
-void RootWindow::WindowDetachedFromRootWindow(Window* detached) {
+void RootWindow::OnWindowDetachingFromRootWindow(Window* detached) {
   DCHECK(capture_window_ != this);
 
   // If the ancestor of the capture window is detached,
@@ -605,6 +640,17 @@ void RootWindow::WindowDetachedFromRootWindow(Window* detached) {
     mouse_moved_handler_ = NULL;
   if (detached->Contains(touch_event_handler_))
     touch_event_handler_ = NULL;
+
+  if (detached->IsVisible() &&
+      detached->ContainsPointInRoot(last_mouse_location_)) {
+    PostMouseMoveEventAfterWindowChange();
+  }
+}
+
+void RootWindow::OnWindowAttachedToRootWindow(Window* attached) {
+  if (attached->IsVisible() &&
+      attached->ContainsPointInRoot(last_mouse_location_))
+    PostMouseMoveEventAfterWindowChange();
 }
 
 void RootWindow::OnLayerAnimationEnded(
@@ -678,6 +724,32 @@ gfx::Rect RootWindow::GetInitialHostWindowBounds() const {
   }
 
   return bounds;
+}
+
+void RootWindow::PostMouseMoveEventAfterWindowChange() {
+  if (synthesize_mouse_move_)
+    return;
+  synthesize_mouse_move_ = true;
+  MessageLoop::current()->PostTask(
+      FROM_HERE,
+      base::Bind(&RootWindow::SynthesizeMouseMoveEvent,
+                 event_factory_.GetWeakPtr()));
+}
+
+void RootWindow::SynthesizeMouseMoveEvent() {
+  if (!synthesize_mouse_move_)
+    return;
+  synthesize_mouse_move_ = false;
+  gfx::Point orig_mouse_location = last_mouse_location_;
+  layer()->transform().TransformPoint(orig_mouse_location);
+
+  // TODO(derat|oshima): Don't use mouse_button_flags_ as it's
+  // is currently broken. See/ crbug.com/107931.
+  MouseEvent event(ui::ET_MOUSE_MOVED,
+                   orig_mouse_location,
+                   orig_mouse_location,
+                   0);
+  DispatchMouseEvent(&event);
 }
 
 }  // namespace aura

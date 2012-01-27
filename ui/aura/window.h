@@ -217,6 +217,11 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
 
   void set_ignore_events(bool ignore_events) { ignore_events_ = ignore_events; }
 
+  // Returns true if the |point_in_root| in root window's coordinate falls
+  // within this window's bounds. Returns false if the window is detached
+  // from root window.
+  bool ContainsPointInRoot(const gfx::Point& point_in_root);
+
   // Returns true if relative-to-this-Window's-origin |local_point| falls
   // within this Window's bounds.
   bool ContainsPoint(const gfx::Point& local_point);
@@ -291,9 +296,14 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
   // window.
   virtual RootWindow* GetRootWindow();
 
-  // Called when the |window| is detached from the root window by being removed
-  // from its parent.
-  virtual void WindowDetachedFromRootWindow(aura::Window* window);
+  // Called when the |window| is being detached from the root window
+  // by being removed from its parent. It is called before |parent_| is
+  // set to NULL.
+  virtual void OnWindowDetachingFromRootWindow(aura::Window* window);
+
+  // Called when the |window| is attached to the root window by being added
+  // to its parent.
+  virtual void OnWindowAttachedToRootWindow(aura::Window* window);
 
  private:
   friend class LayoutManager;

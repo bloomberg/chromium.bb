@@ -65,7 +65,7 @@ Window::~Window() {
   // Let the root know so that it can remove any references to us.
   RootWindow* root_window = GetRootWindow();
   if (root_window)
-    root_window->WindowDestroying(this);
+    root_window->OnWindowDestroying(this);
 
   // Then destroy the children.
   while (!children_.empty()) {
@@ -117,7 +117,7 @@ void Window::Init(ui::Layer::LayerType layer_type) {
   UpdateLayerName(name_);
   layer_->SetFillsBoundsOpaquely(!transparent_);
 
-  RootWindow::GetInstance()->WindowInitialized(this);
+  RootWindow::GetInstance()->OnWindowInitialized(this);
 }
 
 void Window::SetType(client::WindowType type) {
@@ -157,7 +157,7 @@ bool Window::IsVisible() const {
   // when a Window is hidden, we want this function to return false immediately
   // after, even though the client may decide to animate the hide effect (and
   // so the layer will be visible for some time after Hide() is called).
-  return visible_ && layer_->IsDrawn();
+  return visible_ && layer_ && layer_->IsDrawn();
 }
 
 gfx::Rect Window::GetScreenBounds() const {
@@ -169,7 +169,12 @@ gfx::Rect Window::GetScreenBounds() const {
 }
 
 void Window::SetTransform(const ui::Transform& transform) {
+  RootWindow* root_window = GetRootWindow();
+  bool contained_mouse = IsVisible() && root_window &&
+      ContainsPointInRoot(root_window->last_mouse_location());
   layer()->SetTransform(transform);
+  if (root_window)
+    root_window->OnWindowTransformed(this, contained_mouse);
 }
 
 void Window::SetLayoutManager(LayoutManager* layout_manager) {
@@ -285,6 +290,10 @@ void Window::AddChild(Window* child) {
     layout_manager_->OnWindowAddedToLayout(child);
   FOR_EACH_OBSERVER(WindowObserver, observers_, OnWindowAdded(child));
   child->OnParentChanged();
+
+  RootWindow* root_window = child->GetRootWindow();
+  if (root_window)
+    root_window->OnWindowAttachedToRootWindow(child);
 }
 
 void Window::AddTransientChild(Window* child) {
@@ -311,10 +320,10 @@ void Window::RemoveChild(Window* child) {
   if (layout_manager_.get())
     layout_manager_->OnWillRemoveWindowFromLayout(child);
   FOR_EACH_OBSERVER(WindowObserver, observers_, OnWillRemoveWindow(child));
-  aura::Window* root_window = child->GetRootWindow();
-  child->parent_ = NULL;
+  RootWindow* root_window = child->GetRootWindow();
   if (root_window)
-    root_window->WindowDetachedFromRootWindow(child);
+    root_window->OnWindowDetachingFromRootWindow(child);
+  child->parent_ = NULL;
   // We should only remove the child's layer if the child still owns that layer.
   // Someone else may have acquired ownership of it via AcquireLayer() and may
   // expect the hierarchy to go unchanged as the Window is destroyed.
@@ -371,6 +380,15 @@ void Window::AddObserver(WindowObserver* observer) {
 
 void Window::RemoveObserver(WindowObserver* observer) {
   observers_.RemoveObserver(observer);
+}
+
+bool Window::ContainsPointInRoot(const gfx::Point& point_in_root) {
+  Window* root_window = GetRootWindow();
+  if (!root_window)
+    return false;
+  gfx::Point local_point(point_in_root);
+  ConvertPointToWindow(root_window, this, &local_point);
+  return GetTargetBounds().Contains(local_point);
 }
 
 bool Window::ContainsPoint(const gfx::Point& local_point) {
@@ -503,7 +521,10 @@ RootWindow* Window::GetRootWindow() {
   return parent_ ? parent_->GetRootWindow() : NULL;
 }
 
-void Window::WindowDetachedFromRootWindow(aura::Window* window) {
+void Window::OnWindowDetachingFromRootWindow(aura::Window* window) {
+}
+
+void Window::OnWindowAttachedToRootWindow(aura::Window* window) {
 }
 
 void Window::SetBoundsInternal(const gfx::Rect& new_bounds) {
@@ -517,6 +538,11 @@ void Window::SetBoundsInternal(const gfx::Rect& new_bounds) {
     actual_new_bounds.set_height(
         std::max(min_size.height(), actual_new_bounds.height()));
   }
+  RootWindow* root_window = GetRootWindow();
+
+  bool contained_mouse =
+      IsVisible() &&
+      root_window && ContainsPointInRoot(root_window->last_mouse_location());
 
   const gfx::Rect old_bounds = layer_->GetTargetBounds();
 
@@ -536,6 +562,9 @@ void Window::SetBoundsInternal(const gfx::Rect& new_bounds) {
   FOR_EACH_OBSERVER(WindowObserver,
                     observers_,
                     OnWindowBoundsChanged(this, actual_new_bounds));
+
+  if (root_window)
+    root_window->OnWindowBoundsChanged(this, contained_mouse);
 }
 
 void Window::SetVisible(bool visible) {
@@ -562,6 +591,10 @@ void Window::SetVisible(bool visible) {
     parent_->layout_manager_->OnChildWindowVisibilityChanged(this, visible);
   FOR_EACH_OBSERVER(WindowObserver, observers_,
                     OnWindowVisibilityChanged(this, visible));
+
+  RootWindow* root_window = GetRootWindow();
+  if (root_window)
+    root_window->OnWindowVisibilityChanged(this, visible);
 }
 
 void Window::SchedulePaint() {

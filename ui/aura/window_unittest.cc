@@ -165,6 +165,51 @@ class GestureTrackPositionDelegate : public TestWindowDelegate {
   DISALLOW_COPY_AND_ASSIGN(GestureTrackPositionDelegate);
 };
 
+// Keeps track of mouse events.
+class MouseTrackingDelegate : public TestWindowDelegate {
+ public:
+  MouseTrackingDelegate()
+      : mouse_enter_count_(0),
+        mouse_move_count_(0),
+        mouse_leave_count_(0) {
+  }
+
+  virtual bool OnMouseEvent(MouseEvent* event) OVERRIDE {
+    switch (event->type()) {
+      case ui::ET_MOUSE_MOVED:
+        mouse_move_count_++;
+        break;
+      case ui::ET_MOUSE_ENTERED:
+        mouse_enter_count_++;
+        break;
+      case ui::ET_MOUSE_EXITED:
+        mouse_leave_count_++;
+        break;
+      default:
+        break;
+    }
+    return false;
+  }
+
+  std::string GetMouseCountsAndReset() {
+    std::string result = StringPrintf("%d %d %d",
+                                      mouse_enter_count_,
+                                      mouse_move_count_,
+                                      mouse_leave_count_);
+    mouse_enter_count_ = 0;
+    mouse_move_count_ = 0;
+    mouse_leave_count_ = 0;
+    return result;
+  }
+
+ private:
+  int mouse_enter_count_;
+  int mouse_move_count_;
+  int mouse_leave_count_;
+
+  DISALLOW_COPY_AND_ASSIGN(MouseTrackingDelegate);
+};
+
 }  // namespace
 
 TEST_F(WindowTest, GetChildById) {
@@ -1217,6 +1262,83 @@ TEST_F(WindowTest, VisibilityClientIsVisible) {
   window->Hide();
   EXPECT_FALSE(window->IsVisible());
   EXPECT_TRUE(window->layer()->visible());
+}
+
+// Tests mouse events on window change.
+TEST_F(WindowTest, MouseEventsOnWindowChange) {
+  RootWindow* root_window = RootWindow::GetInstance();
+  gfx::Size size = root_window->GetHostSize();
+
+  EventGenerator generator;
+  generator.MoveMouseTo(50, 50);
+
+  MouseTrackingDelegate d1;
+  scoped_ptr<Window> w1(CreateTestWindowWithDelegate(&d1, 1,
+      gfx::Rect(0, 0, 100, 100), root_window));
+  RunAllPendingInMessageLoop();
+  // The format of result is "Enter/Mouse/Leave".
+  EXPECT_EQ("1 1 0", d1.GetMouseCountsAndReset());
+
+  // Adding new window.
+  MouseTrackingDelegate d11;
+  scoped_ptr<Window> w11(CreateTestWindowWithDelegate(
+      &d11, 1, gfx::Rect(0, 0, 100, 100), w1.get()));
+  RunAllPendingInMessageLoop();
+  EXPECT_EQ("0 0 1", d1.GetMouseCountsAndReset());
+  EXPECT_EQ("1 1 0", d11.GetMouseCountsAndReset());
+
+  // Move bounds.
+  w11->SetBounds(gfx::Rect(0, 0, 10, 10));
+  RunAllPendingInMessageLoop();
+  EXPECT_EQ("1 1 0", d1.GetMouseCountsAndReset());
+  EXPECT_EQ("0 0 1", d11.GetMouseCountsAndReset());
+
+  w11->SetBounds(gfx::Rect(0, 0, 60, 60));
+  RunAllPendingInMessageLoop();
+  EXPECT_EQ("0 0 1", d1.GetMouseCountsAndReset());
+  EXPECT_EQ("1 1 0", d11.GetMouseCountsAndReset());
+
+  // Detach, then re-attach.
+  w1->RemoveChild(w11.get());
+  RunAllPendingInMessageLoop();
+  EXPECT_EQ("1 1 0", d1.GetMouseCountsAndReset());
+  // Window is detached, so no event is set.
+  EXPECT_EQ("0 0 0", d11.GetMouseCountsAndReset());
+
+  w1->AddChild(w11.get());
+  RunAllPendingInMessageLoop();
+  EXPECT_EQ("0 0 1", d1.GetMouseCountsAndReset());
+  // Window is detached, so no event is set.
+  EXPECT_EQ("1 1 0", d11.GetMouseCountsAndReset());
+
+  // Visibility Change
+  w11->Hide();
+  RunAllPendingInMessageLoop();
+  EXPECT_EQ("1 1 0", d1.GetMouseCountsAndReset());
+  EXPECT_EQ("0 0 0", d11.GetMouseCountsAndReset());
+
+  w11->Show();
+  RunAllPendingInMessageLoop();
+  EXPECT_EQ("0 0 1", d1.GetMouseCountsAndReset());
+  EXPECT_EQ("1 1 0", d11.GetMouseCountsAndReset());
+
+  // Transform: move d11 by 100 100.
+  ui::Transform transform;
+  transform.ConcatTranslate(100, 100);
+  w11->SetTransform(transform);
+  RunAllPendingInMessageLoop();
+  EXPECT_EQ("1 1 0", d1.GetMouseCountsAndReset());
+  EXPECT_EQ("0 0 1", d11.GetMouseCountsAndReset());
+
+  w11->SetTransform(ui::Transform());
+  RunAllPendingInMessageLoop();
+  EXPECT_EQ("0 0 1", d1.GetMouseCountsAndReset());
+  EXPECT_EQ("1 1 0", d11.GetMouseCountsAndReset());
+
+  // Closing a window.
+  w11.reset();
+  RunAllPendingInMessageLoop();
+  EXPECT_EQ("1 1 0", d1.GetMouseCountsAndReset());
 }
 
 }  // namespace test
