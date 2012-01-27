@@ -127,25 +127,25 @@ EXTRA_ENV = {
   #             and into pnacl-translate.
   # BUG= http://code.google.com/p/nativeclient/issues/detail?id=2423
   'LD_ARGS_newlib_static':
-    '-l:crt1.x -l:crti.bc -l:crtdummy.bc -l:crtbegin.bc ${ld_inputs} ' +
-    '${DEFAULTLIBS ? --start-group ${LIBSTDCPP} -lc -lnacl --end-group ' +
-    '-l:pnacl_abi.bc}',
-
-  # For glibc_static, libc.a needs symbols from libgcc.a and libgcc_eh.a.
-  'LD_ARGS_glibc_static':
-    '-l:crt1.bc -l:crti.bc -l:crtdummy.bc -l:crtbegin.bc ' +
-    '${ld_inputs} ${DEFAULTLIBS ? ${LIBSTDCPP} -lc ' +
-    '--start-group -lgcc_eh -lc -lgcc --end-group}',
+    '-l:crt1.x ' +
+    '-l:crti.bc -l:crtdummy.bc -l:crtbegin.bc ${ld_inputs} ' +
+    '--start-group ${STDLIBS} --end-group',
 
   'LD_ARGS_glibc_shared':
-    '-shared -l:crti.bc -l:crtdummy.bc -l:crtbeginS.bc ' +
-    '${ld_inputs} ${DEFAULTLIBS ? ${LIBSTDCPP} -lc -l:pnacl_abi.bc}',
+    '-l:crti.bc -l:crtdummy.bc -l:crtbeginS.bc ${ld_inputs} ${STDLIBS}',
 
   'LD_ARGS_glibc_dynamic':
-    '-l:crt1.bc -l:crti.bc -l:crtdummy.bc -l:crtbegin.bc ' +
-    '${ld_inputs} ${DEFAULTLIBS ? ${LIBSTDCPP} -lc -l:pnacl_abi.bc}',
+    '-l:crt1.bc ' +
+    '-l:crti.bc -l:crtdummy.bc -l:crtbegin.bc ${ld_inputs} ${STDLIBS}',
 
-  'LIBSTDCPP'   : '${LANGUAGE==CXX ? -lstdc++ -lm }',
+  'STDLIBS'   : '${DEFAULTLIBS ? '
+                '${LIBSTDCPP} ${LIBPTHREAD} ${LIBC} ${LIBNACL} ${PNACL_ABI}}',
+  'LIBSTDCPP' : '${LANGUAGE==CXX ? -lstdc++ -lm }',
+  'LIBC'      : '-lc',
+  'LIBNACL'   : '${LIBMODE_NEWLIB ? -lnacl}',
+  'LIBPTHREAD': '', # Enabled by -pthreads
+  'PNACL_ABI' : '-l:pnacl_abi.bc',
+
 
   'CC'              : '${CC_%FRONTEND%_%LANGUAGE%}',
   'CC_CLANG_C'      : '${CLANG}',
@@ -281,8 +281,8 @@ GCCPatterns = [
   ( '(-pedantic-errors)',     AddCCFlag),
   ( '(-g.*)',                 AddCCFlag),
 
-  ( '(-pthread)',             "env.append('CC_FLAGS', $0)\n"
-                              "env.append('INPUTS', '-lpthread')"),
+  ( '(-pthreads?)',           "env.append('CC_FLAGS', $0)\n"
+                              "env.set('LIBPTHREAD', '-lpthread')"),
 
   ( '-shared',                "env.set('SHARED', '1')"),
   ( '-static',                "env.set('STATIC', '1')"),
@@ -430,11 +430,13 @@ def main(argv):
   # There are multiple input files and no linking is being done.
   # There will be multiple outputs. Handle this case separately.
   if not needs_linking:
+    # Filter out flags
+    inputs = [f for f in inputs if not IsFlag(f)]
     if output != '' and len(inputs) > 1:
       Log.Fatal('Cannot have -o with -c, -S, or -E and multiple inputs')
 
     for f in inputs:
-      if f.startswith('-'):
+      if IsFlag(f):
         continue
       intype = FileType(f)
       if not IsSourceType(intype):
@@ -465,7 +467,7 @@ def main(argv):
 
   # Compile all source files (c/c++/ll) to .po
   for i in xrange(0, len(inputs)):
-    if inputs[i].startswith('-'):
+    if IsFlag(inputs[i]):
       continue
     intype = FileType(inputs[i])
     if IsSourceType(intype) or intype == 'll':
@@ -474,7 +476,7 @@ def main(argv):
   # Compile all .s/.S to .o
   if env.getbool('ALLOW_NATIVE'):
     for i in xrange(0, len(inputs)):
-      if inputs[i].startswith('-'):
+      if IsFlag(inputs[i]):
         continue
       intype = FileType(inputs[i])
       if intype in ('s','S'):
@@ -482,7 +484,7 @@ def main(argv):
 
   # We should only be left with .po and .o and libraries
   for f in inputs:
-    if f.startswith('-'):
+    if IsFlag(f):
       continue
     intype = FileType(f)
     if intype in ('o','s','S') or IsNativeArchive(f):
@@ -512,6 +514,9 @@ def main(argv):
 
   RunDriver('pnacl-ld', ld_flags + ld_args + ['-o', output])
   return 0
+
+def IsFlag(f):
+  return f.startswith('-')
 
 def CompileOne(infile, output_type, namegen, output = None):
   if output is None:
