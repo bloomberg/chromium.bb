@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/download/download_id.h"
+#include "content/public/browser/download_id.h"
 
 #include <algorithm>
 #include <map>
@@ -17,6 +17,7 @@
 
 using content::BrowserThread;
 using content::BrowserThreadImpl;
+using content::DownloadId;
 using content::DownloadManager;
 
 class DownloadIdTest : public testing::Test {

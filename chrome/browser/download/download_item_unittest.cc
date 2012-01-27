@@ -7,18 +7,18 @@
 #include "base/threading/thread.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/browser/download/download_create_info.h"
-#include "content/browser/download/download_id.h"
-#include "content/browser/download/download_id_factory.h"
 #include "content/browser/download/download_item_impl.h"
 #include "content/browser/download/download_request_handle.h"
 #include "content/browser/download/download_status_updater.h"
 #include "content/browser/download/interrupt_reasons.h"
 #include "content/browser/download/mock_download_item.h"
+#include "content/public/browser/download_id.h"
 #include "content/test/test_browser_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using content::BrowserThread;
+using content::DownloadId;
 using content::DownloadItem;
 using content::DownloadManager;
 
@@ -78,8 +78,7 @@ class DownloadItemTest : public testing::Test {
   };
 
   DownloadItemTest()
-      : id_factory_(new DownloadIdFactory(kValidDownloadItemIdDomain)),
-        ui_thread_(BrowserThread::UI, &loop_) {
+      : ui_thread_(BrowserThread::UI, &loop_) {
   }
 
   ~DownloadItemTest() {
@@ -104,7 +103,9 @@ class DownloadItemTest : public testing::Test {
     scoped_ptr<DownloadCreateInfo> info_;
 
     info_.reset(new DownloadCreateInfo());
-    info_->download_id = id_factory_->GetNextId();
+    static int next_id;
+    info_->download_id =
+        content::DownloadId(kValidDownloadItemIdDomain, ++next_id);
     info_->prompt_user_for_save_location = false;
     info_->url_chain.push_back(GURL());
     info_->state = state;
@@ -128,7 +129,6 @@ class DownloadItemTest : public testing::Test {
   DownloadStatusUpdater download_status_updater_;
 
  private:
-  scoped_refptr<DownloadIdFactory> id_factory_;
   MessageLoopForUI loop_;
   // UI thread.
   content::TestBrowserThread ui_thread_;

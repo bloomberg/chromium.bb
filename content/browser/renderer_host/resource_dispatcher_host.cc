@@ -27,7 +27,6 @@
 #include "content/browser/chrome_blob_storage_context.h"
 #include "content/browser/cross_site_request_manager.h"
 #include "content/browser/download/download_file_manager.h"
-#include "content/browser/download/download_id_factory.h"
 #include "content/browser/download/download_resource_handler.h"
 #include "content/browser/download/save_file_manager.h"
 #include "content/browser/download/save_file_resource_handler.h"
@@ -877,7 +876,7 @@ void ResourceDispatcherHost::OnDidLoadResourceFromMemoryCache(
 }
 
 // We are explicitly forcing the download of 'url'.
-void ResourceDispatcherHost::BeginDownload(
+net::Error ResourceDispatcherHost::BeginDownload(
     scoped_ptr<net::URLRequest> request,
     const DownloadSaveInfo& save_info,
     bool prompt_for_save_location,
@@ -885,14 +884,9 @@ void ResourceDispatcherHost::BeginDownload(
     int child_id,
     int route_id,
     const content::ResourceContext& context) {
-  // If DownloadResourceHandler is not begun, then started_cb must be called
-  // here in order to satisfy its semantics.
-  if (is_shutdown_) {
-    if (!started_cb.is_null())
-      started_cb.Run(DownloadId::Invalid(), net::ERR_INSUFFICIENT_RESOURCES);
-    // Time and RDH are resources that are running out.
-    return;
-  }
+  if (is_shutdown_)
+    return net::ERR_INSUFFICIENT_RESOURCES;
+
   const GURL& url = request->original_url();
   const net::URLRequestContext* request_context = context.request_context();
   request->set_referrer(MaybeStripReferrer(GURL(request->referrer())).spec());
@@ -905,14 +899,10 @@ void ResourceDispatcherHost::BeginDownload(
           CanRequestURL(child_id, url)) {
     VLOG(1) << "Denied unauthorized download request for "
             << url.possibly_invalid_spec();
-    if (!started_cb.is_null())
-      started_cb.Run(DownloadId::Invalid(), net::ERR_ACCESS_DENIED);
-    return;
+    return net::ERR_ACCESS_DENIED;
   }
 
   request_id_--;
-
-  DownloadId dl_id = context.download_id_factory()->GetNextId();
 
   scoped_refptr<ResourceHandler> handler(
       new DownloadResourceHandler(this,
@@ -920,7 +910,6 @@ void ResourceDispatcherHost::BeginDownload(
                                   route_id,
                                   request_id_,
                                   url,
-                                  dl_id,
                                   download_file_manager_.get(),
                                   request.get(),
                                   prompt_for_save_location,
@@ -936,9 +925,7 @@ void ResourceDispatcherHost::BeginDownload(
   if (!request_context->job_factory()->IsHandledURL(url)) {
     VLOG(1) << "Download request for unsupported protocol: "
             << url.possibly_invalid_spec();
-    if (!started_cb.is_null())
-      started_cb.Run(DownloadId::Invalid(), net::ERR_ACCESS_DENIED);
-    return;
+    return net::ERR_ACCESS_DENIED;
   }
 
   ResourceDispatcherHostRequestInfo* extra_info =
@@ -946,6 +933,8 @@ void ResourceDispatcherHost::BeginDownload(
   SetRequestInfo(request.get(), extra_info);  // Request takes ownership.
 
   BeginRequestInternal(request.release());
+
+  return net::OK;
 }
 
 // This function is only used for saving feature.

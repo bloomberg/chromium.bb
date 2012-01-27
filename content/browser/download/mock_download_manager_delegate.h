@@ -9,6 +9,7 @@
 #include "base/compiler_specific.h"
 #include "base/file_path.h"
 #include "content/browser/download/download_types.h"
+#include "content/public/browser/download_id.h"
 #include "content/public/browser/download_manager_delegate.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -25,6 +26,7 @@ class MockDownloadManagerDelegate : public content::DownloadManagerDelegate {
   // DownloadManagerDelegate functions:
   MOCK_METHOD1(SetDownloadManager, void(content::DownloadManager* dm));
   MOCK_METHOD0(Shutdown, void());
+  MOCK_METHOD0(GetNextId, content::DownloadId());
   MOCK_METHOD1(ShouldStartDownload, bool(int32 download_id));
   MOCK_METHOD3(ChooseDownloadPath, void(content::WebContents* web_contents,
                                         const FilePath& suggested_path,

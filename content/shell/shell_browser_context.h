@@ -12,7 +12,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "content/public/browser/browser_context.h"
 
-class DownloadIdFactory;
 class DownloadManager;
 class DownloadStatusUpdater;
 class HostZoomMap;
@@ -60,7 +59,6 @@ class ShellBrowserContext : public BrowserContext {
   scoped_ptr<SSLHostState> ssl_host_state_;
   scoped_ptr<DownloadStatusUpdater> download_status_updater_;
   scoped_refptr<ShellDownloadManagerDelegate> download_manager_delegate_;
-  scoped_refptr<DownloadIdFactory> download_id_factory_;
   scoped_refptr<DownloadManager> download_manager_;
   scoped_refptr<net::URLRequestContextGetter> url_request_getter_;
   scoped_refptr<HostZoomMap> host_zoom_map_;

@@ -7,7 +7,6 @@
 #include "base/logging.h"
 #include "chrome/browser/download/download_request_limiter.h"
 #include "chrome/browser/download/download_util.h"
-#include "content/browser/download/download_id.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/public/common/resource_response.h"
 #include "net/base/io_buffer.h"

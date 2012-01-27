@@ -21,7 +21,6 @@ ResourceContext::ResourceContext()
       quota_manager_(NULL),
       host_zoom_map_(NULL),
       media_observer_(NULL),
-      download_id_factory_(NULL),
       media_stream_manager_(NULL),
       audio_manager_(NULL) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -153,18 +152,6 @@ MediaObserver* ResourceContext::media_observer() const {
 void ResourceContext::set_media_observer(MediaObserver* media_observer) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   media_observer_ = media_observer;
-}
-
-DownloadIdFactory* ResourceContext::download_id_factory() const {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  EnsureInitialized();
-  return download_id_factory_;
-}
-
-void ResourceContext::set_download_id_factory(
-    DownloadIdFactory* download_id_factory) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  download_id_factory_ = download_id_factory;
 }
 
 media_stream::MediaStreamManager*

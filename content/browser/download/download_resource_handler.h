@@ -11,14 +11,16 @@
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/timer.h"
-#include "content/browser/download/download_id.h"
 #include "content/browser/download/download_types.h"
 #include "content/browser/renderer_host/resource_handler.h"
+#include "content/public/browser/download_id.h"
 #include "content/public/browser/global_request_id.h"
 #include "net/base/net_errors.h"
 
 class DownloadFileManager;
+class DownloadRequestHandle;
 class ResourceDispatcherHost;
+struct DownloadCreateInfo;
 
 namespace content {
 class DownloadBuffer;
@@ -31,18 +33,17 @@ class URLRequest;
 // Forwards data to the download thread.
 class DownloadResourceHandler : public ResourceHandler {
  public:
-  typedef base::Callback<void(DownloadId, net::Error)>
-    OnStartedCallback;
+  typedef base::Callback<void(content::DownloadId, net::Error)>
+      OnStartedCallback;
 
   static const size_t kLoadsToWrite = 100;  // number of data buffers queued
 
-  // started_cb will be called exactly once.
+  // started_cb will be called exactly once on the UI thread.
   DownloadResourceHandler(ResourceDispatcherHost* rdh,
                           int render_process_host_id,
                           int render_view_id,
                           int request_id,
                           const GURL& url,
-                          DownloadId dl_id,
                           DownloadFileManager* download_file_manager,
                           net::URLRequest* request,
                           bool save_as,
@@ -97,9 +98,14 @@ class DownloadResourceHandler : public ResourceHandler {
   virtual ~DownloadResourceHandler();
 
   void StartPauseTimer();
-  void CallStartedCB(net::Error error);
+  void CallStartedCB(content::DownloadId id, net::Error error);
 
-  DownloadId download_id_;
+  // Generates a DownloadId and calls DownloadFileManager.
+  void StartOnUIThread(DownloadCreateInfo* info,
+                       DownloadRequestHandle handle);
+  void set_download_id(content::DownloadId id);
+
+  content::DownloadId download_id_;
   content::GlobalRequestID global_id_;
   int render_view_id_;
   scoped_refptr<net::IOBuffer> read_buffer_;
@@ -108,6 +114,7 @@ class DownloadResourceHandler : public ResourceHandler {
   DownloadFileManager* download_file_manager_;
   net::URLRequest* request_;
   bool save_as_;  // Request was initiated via "Save As" by the user.
+  // This is used only on the UI thread.
   OnStartedCallback started_cb_;
   DownloadSaveInfo save_info_;
   scoped_refptr<content::DownloadBuffer> buffer_;

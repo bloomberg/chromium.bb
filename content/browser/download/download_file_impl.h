@@ -49,7 +49,7 @@ class CONTENT_EXPORT DownloadFileImpl : virtual public content::DownloadFile {
   virtual void CancelDownloadRequest() OVERRIDE;
   virtual int Id() const OVERRIDE;
   virtual content::DownloadManager* GetDownloadManager() OVERRIDE;
-  virtual const DownloadId& GlobalId() const OVERRIDE;
+  virtual const content::DownloadId& GlobalId() const OVERRIDE;
   virtual std::string DebugString() const OVERRIDE;
 
  private:
@@ -58,7 +58,7 @@ class CONTENT_EXPORT DownloadFileImpl : virtual public content::DownloadFile {
 
   // The unique identifier for this download, assigned at creation by
   // the DownloadFileManager for its internal record keeping.
-  DownloadId id_;
+  content::DownloadId id_;
 
   // The handle to the request information.  Used for operations outside the
   // download system, specifically canceling a download.

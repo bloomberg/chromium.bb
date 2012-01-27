@@ -14,6 +14,7 @@
 
 namespace content {
 
+class DownloadId;
 class DownloadItem;
 class WebContents;
 
@@ -27,6 +28,9 @@ class DownloadManagerDelegate {
 
   // Lets the delegate know that the download manager is shutting down.
   virtual void Shutdown() = 0;
+
+  // Returns a new DownloadId.
+  virtual DownloadId GetNextId() = 0;
 
   // Notifies the delegate that a download is starting. The delegate can return
   // false to delay the start of the download, in which case it should call

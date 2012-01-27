@@ -44,8 +44,6 @@ include_rules = [
   "+content/browser/download/download_create_info.h",
   "+content/browser/download/download_file_impl.h",
   "+content/browser/download/download_file_manager.h",
-  "+content/browser/download/download_id.h",
-  "+content/browser/download/download_id_factory.h",
   "+content/browser/download/download_item_impl.h",
   "+content/browser/download/download_persistent_store_info.h",
   "+content/browser/download/download_request_handle.h",

@@ -12,7 +12,6 @@
 #include "base/threading/thread.h"
 #include "content/browser/appcache/chrome_appcache_service.h"
 #include "content/browser/chrome_blob_storage_context.h"
-#include "content/browser/download/download_id_factory.h"
 #include "content/browser/download/download_manager_impl.h"
 #include "content/browser/download/download_status_updater.h"
 #include "content/browser/file_system/browser_file_system_helper.h"
@@ -94,8 +93,7 @@ class ShellSpeechInputPreferences : public SpeechInputPreferences {
 
 ShellBrowserContext::ShellBrowserContext(
     ShellBrowserMainParts* shell_main_parts)
-    : download_id_factory_(new DownloadIdFactory(this)),
-      shell_main_parts_(shell_main_parts) {
+    : shell_main_parts_(shell_main_parts) {
 }
 
 ShellBrowserContext::~ShellBrowserContext() {
@@ -144,7 +142,6 @@ DownloadManager* ShellBrowserContext::GetDownloadManager()  {
 
     download_manager_delegate_ = new ShellDownloadManagerDelegate();
     download_manager_ = new DownloadManagerImpl(download_manager_delegate_,
-                                                download_id_factory_,
                                                 download_status_updater_.get());
     download_manager_delegate_->SetDownloadManager(download_manager_.get());
     download_manager_->Init(this);
@@ -177,8 +174,7 @@ const ResourceContext& ShellBrowserContext::GetResourceContext()  {
   if (!resource_context_.get()) {
     resource_context_.reset(new ShellResourceContext(
         static_cast<ShellURLRequestContextGetter*>(GetRequestContext()),
-        GetBlobStorageContext(),
-        download_id_factory_));
+        GetBlobStorageContext()));
   }
   return *resource_context_.get();
 }

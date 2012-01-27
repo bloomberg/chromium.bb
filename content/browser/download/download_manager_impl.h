@@ -22,7 +22,6 @@
 #include "content/common/content_export.h"
 #include "content/public/browser/download_manager.h"
 
-class DownloadIdFactory;
 class DownloadStatusUpdater;
 
 namespace content {
@@ -35,7 +34,6 @@ class CONTENT_EXPORT DownloadManagerImpl
       public DownloadStatusUpdaterDelegate {
  public:
   DownloadManagerImpl(content::DownloadManagerDelegate* delegate,
-                      DownloadIdFactory* id_factory,
                       DownloadStatusUpdater* status_updater);
 
   // content::DownloadManager functions.
@@ -153,8 +151,8 @@ class CONTENT_EXPORT DownloadManagerImpl
   // Show the download in the browser.
   void ShowDownloadInBrowser(content::DownloadItem* download);
 
-  // Get next download id from factory.
-  DownloadId GetNextId();
+  // Get next download id.
+  content::DownloadId GetNextId();
 
   // Called on the FILE thread to check the existence of a downloaded file.
   void CheckForFileRemovalOnFileThread(int64 db_handle, const FilePath& path);
@@ -269,8 +267,6 @@ class CONTENT_EXPORT DownloadManagerImpl
 
   // Allows an embedder to control behavior. Guaranteed to outlive this object.
   content::DownloadManagerDelegate* delegate_;
-
-  DownloadIdFactory* id_factory_;
 
   // TODO(rdsmith): Remove when http://crbug.com/85408 is fixed.
   // For debugging only.

@@ -8,9 +8,9 @@
 #include <string>
 #include <vector>
 
-#include "content/browser/download/download_id.h"
 #include "content/browser/download/download_persistent_store_info.h"
 #include "content/browser/download/interrupt_reasons.h"
+#include "content/public/browser/download_id.h"
 #include "content/public/browser/download_item.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -73,7 +73,7 @@ class MockDownloadItem : public content::DownloadItem {
   MOCK_CONST_METHOD0(GetHashState, const std::string&());
   MOCK_CONST_METHOD0(GetHash, const std::string&());
   MOCK_CONST_METHOD0(GetId, int32());
-  MOCK_CONST_METHOD0(GetGlobalId, DownloadId());
+  MOCK_CONST_METHOD0(GetGlobalId, content::DownloadId());
   MOCK_CONST_METHOD0(GetStartTime, base::Time());
   MOCK_CONST_METHOD0(GetEndTime, base::Time());
   MOCK_METHOD1(SetDbHandle, void(int64));

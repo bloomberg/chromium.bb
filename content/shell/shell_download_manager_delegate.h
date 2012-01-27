@@ -25,6 +25,7 @@ class ShellDownloadManagerDelegate
   void SetDownloadManager(DownloadManager* manager);
 
   virtual void Shutdown() OVERRIDE;
+  virtual DownloadId GetNextId() OVERRIDE;
   virtual bool ShouldStartDownload(int32 download_id) OVERRIDE;
   virtual void ChooseDownloadPath(WebContents* web_contents,
                                   const FilePath& suggested_path,

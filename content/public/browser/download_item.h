@@ -26,7 +26,6 @@
 #include "content/browser/download/interrupt_reasons.h"
 #include "content/public/browser/download_danger_type.h"
 
-class DownloadId;
 class DownloadFileManager;
 class FilePath;
 class GURL;
@@ -41,6 +40,7 @@ class TimeDelta;
 namespace content {
 
 class BrowserContext;
+class DownloadId;
 class DownloadManager;
 class WebContents;
 

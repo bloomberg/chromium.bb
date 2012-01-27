@@ -25,7 +25,6 @@ class ChromeAppCacheService;
 class ChromeBlobStorageContext;
 class CookieSettings;
 class DesktopNotificationService;
-class DownloadIdFactory;
 class ExtensionInfoMap;
 class HostContentSettingsMap;
 class HostZoomMap;
@@ -290,7 +289,6 @@ class ProfileIOData {
   mutable scoped_refptr<fileapi::FileSystemContext> file_system_context_;
   mutable scoped_refptr<quota::QuotaManager> quota_manager_;
   mutable scoped_refptr<HostZoomMap> host_zoom_map_;
-  mutable scoped_refptr<DownloadIdFactory> download_id_factory_;
   mutable scoped_ptr<media_stream::MediaStreamManager> media_stream_manager_;
 
   // TODO(willchan): Remove from ResourceContext.

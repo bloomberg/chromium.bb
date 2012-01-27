@@ -36,7 +36,6 @@
 #include "chrome/browser/renderer_host/chrome_render_message_filter.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/webui/web_ui_util.h"
-#include "content/browser/download/download_id.h"
 #include "content/browser/download/download_state_info.h"
 #include "content/browser/download/download_types.h"
 #include "content/browser/download/interrupt_reasons.h"
@@ -49,6 +48,7 @@
 #include "net/url_request/url_request.h"
 
 using content::BrowserThread;
+using content::DownloadId;
 using content::DownloadItem;
 using content::DownloadManager;
 using content::DownloadQuery;
@@ -459,7 +459,7 @@ void DownloadsDownloadFunction::BeginDownloadOnIOThread() {
     request->AppendBytesToUpload(iodata_->post_body.data(),
                                  iodata_->post_body.size());
   }
-  iodata_->rdh->BeginDownload(
+  net::Error error = iodata_->rdh->BeginDownload(
       request.Pass(),
       save_info,
       iodata_->save_as,
@@ -468,21 +468,20 @@ void DownloadsDownloadFunction::BeginDownloadOnIOThread() {
       iodata_->render_view_host_routing_id,
       *(iodata_->resource_context));
   iodata_.reset();
+
+  if (error != net::OK) {
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::Bind(&DownloadsDownloadFunction::OnStarted, this,
+                   DownloadId::Invalid(), error));
+  }
 }
 
 void DownloadsDownloadFunction::OnStarted(DownloadId dl_id, net::Error error) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  VLOG(1) << __FUNCTION__ << " " << dl_id << " " << error;
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, base::Bind(
-      &DownloadsDownloadFunction::RespondOnUIThread, this,
-      dl_id.local(), error));
-}
-
-void DownloadsDownloadFunction::RespondOnUIThread(int dl_id, net::Error error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  VLOG(1) << __FUNCTION__;
-  if (dl_id >= 0) {
-    result_.reset(base::Value::CreateIntegerValue(dl_id));
+  VLOG(1) << __FUNCTION__ << " " << dl_id << " " << error;
+  if (dl_id.local() >= 0) {
+    result_.reset(base::Value::CreateIntegerValue(dl_id.local()));
   } else {
     error_ = net::ErrorToString(error);
   }

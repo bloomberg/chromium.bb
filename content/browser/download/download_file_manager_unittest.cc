@@ -11,13 +11,12 @@
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/download/download_buffer.h"
 #include "content/browser/download/download_create_info.h"
-#include "content/browser/download/download_id.h"
-#include "content/browser/download/download_id_factory.h"
 #include "content/browser/download/download_request_handle.h"
 #include "content/browser/download/download_status_updater.h"
 #include "content/browser/download/mock_download_file.h"
 #include "content/browser/download/mock_download_manager.h"
 #include "content/browser/download/mock_download_manager_delegate.h"
+#include "content/public/browser/download_id.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -25,6 +24,7 @@
 
 using content::BrowserThread;
 using content::BrowserThreadImpl;
+using content::DownloadId;
 
 using ::testing::_;
 using ::testing::AtLeast;
@@ -33,8 +33,6 @@ using ::testing::Return;
 using ::testing::StrEq;
 
 namespace {
-
-DownloadId::Domain kValidIdDomain = "valid DownloadId::Domain";
 
 class MockDownloadFileFactory :
     public DownloadFileManager::DownloadFileFactory {
@@ -114,7 +112,6 @@ class DownloadFileManagerTest : public testing::Test {
   // destructor being called and we get a leak.
   DownloadFileManagerTest()
     : download_buffer_(new content::DownloadBuffer()),
-      id_factory_(new DownloadIdFactory(kValidIdDomain)),
       ui_thread_(BrowserThread::UI, &loop_),
       file_thread_(BrowserThread::FILE, &loop_) {
   }
@@ -431,7 +428,6 @@ class DownloadFileManagerTest : public testing::Test {
 
  private:
   MessageLoop loop_;
-  scoped_refptr<DownloadIdFactory> id_factory_;
 
   // UI thread.
   BrowserThreadImpl ui_thread_;

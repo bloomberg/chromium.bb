@@ -10,7 +10,6 @@
 #include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "content/browser/download/download_id_factory.h"
 #include "content/public/browser/download_manager.h"
 
 using content::DownloadManager;
@@ -18,19 +17,9 @@ using content::DownloadManager;
 DownloadService::DownloadService(Profile* profile)
     : download_manager_created_(false),
       profile_(profile) {
-  if (profile_->IsOffTheRecord()) {
-    id_factory_ = DownloadServiceFactory::GetForProfile(
-        profile_->GetOriginalProfile())->GetDownloadIdFactory();
-  } else {
-    id_factory_ = new DownloadIdFactory(this);
-  }
 }
 
 DownloadService::~DownloadService() {}
-
-DownloadIdFactory* DownloadService::GetDownloadIdFactory() const {
-  return id_factory_.get();
-}
 
 void DownloadService::OnManagerCreated(
     const DownloadService::OnManagerCreatedCallback& cb) {
@@ -48,9 +37,7 @@ DownloadManager* DownloadService::GetDownloadManager() {
     if (!manager_delegate_.get())
       manager_delegate_ = new ChromeDownloadManagerDelegate(profile_);
     manager_ = DownloadManager::Create(
-        manager_delegate_.get(),
-        id_factory_.get(),
-        g_browser_process->download_status_updater());
+        manager_delegate_.get(), g_browser_process->download_status_updater());
     manager_->Init(profile_);
     manager_delegate_->SetDownloadManager(manager_);
     download_manager_created_ = true;

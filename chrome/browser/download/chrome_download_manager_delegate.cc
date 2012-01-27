@@ -43,6 +43,7 @@
 
 using content::BrowserThread;
 using content::DownloadFile;
+using content::DownloadId;
 using content::DownloadItem;
 using content::DownloadManager;
 using content::WebContents;
@@ -66,6 +67,7 @@ struct SafeBrowsingState : public DownloadItem::ExternalData {
 
 ChromeDownloadManagerDelegate::ChromeDownloadManagerDelegate(Profile* profile)
     : profile_(profile),
+      next_download_id_(0),
       download_prefs_(new DownloadPrefs(profile->GetPrefs())) {
 }
 
@@ -92,6 +94,14 @@ void ChromeDownloadManagerDelegate::SetDownloadManager(DownloadManager* dm) {
 void ChromeDownloadManagerDelegate::Shutdown() {
   download_history_.reset();
   download_prefs_.reset();
+}
+
+DownloadId ChromeDownloadManagerDelegate::GetNextId() {
+  if (!profile_->IsOffTheRecord())
+    return DownloadId(this, next_download_id_++);
+
+  return profile_->GetOriginalProfile()->GetDownloadManager()->delegate()->
+      GetNextId();
 }
 
 bool ChromeDownloadManagerDelegate::ShouldStartDownload(int32 download_id) {

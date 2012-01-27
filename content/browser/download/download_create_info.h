@@ -12,10 +12,10 @@
 #include "base/basictypes.h"
 #include "base/file_path.h"
 #include "base/time.h"
-#include "content/browser/download/download_id.h"
 #include "content/browser/download/download_types.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/download_file.h"
+#include "content/public/browser/download_id.h"
 #include "content/public/common/page_transition_types.h"
 #include "googleurl/src/gurl.h"
 
@@ -28,7 +28,6 @@ struct CONTENT_EXPORT DownloadCreateInfo {
                      int64 received_bytes,
                      int64 total_bytes,
                      int32 state,
-                     const DownloadId& download_id,
                      bool has_user_gesture,
                      content::PageTransition transition_type);
   DownloadCreateInfo();
@@ -63,7 +62,7 @@ struct CONTENT_EXPORT DownloadCreateInfo {
   int32 state;
 
   // The (per-session) ID of the download.
-  DownloadId download_id;
+  content::DownloadId download_id;
 
   // True if the download was initiated by user action.
   bool has_user_gesture;

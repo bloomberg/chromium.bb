@@ -8,8 +8,6 @@
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/download/download_create_info.h"
 #include "content/browser/download/download_file_impl.h"
-#include "content/browser/download/download_id.h"
-#include "content/browser/download/download_id_factory.h"
 #include "content/browser/download/download_request_handle.h"
 #include "content/browser/download/download_status_updater.h"
 #include "content/browser/download/mock_download_manager.h"
@@ -22,6 +20,7 @@
 using content::BrowserThread;
 using content::BrowserThreadImpl;
 using content::DownloadFile;
+using content::DownloadId;
 using content::DownloadManager;
 
 DownloadId::Domain kValidIdDomain = "valid DownloadId::Domain";
@@ -42,7 +41,6 @@ class DownloadFileTest : public testing::Test {
   // calling Release() on |download_manager_| won't ever result in its
   // destructor being called and we get a leak.
   DownloadFileTest() :
-      id_factory_(new DownloadIdFactory(kValidIdDomain)),
       ui_thread_(BrowserThread::UI, &loop_),
       file_thread_(BrowserThread::FILE, &loop_) {
   }
@@ -113,7 +111,6 @@ class DownloadFileTest : public testing::Test {
 
  private:
   MessageLoop loop_;
-  scoped_refptr<DownloadIdFactory> id_factory_;
   // UI thread.
   BrowserThreadImpl ui_thread_;
   // File thread to satisfy debug checks in DownloadFile.

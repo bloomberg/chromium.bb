@@ -41,7 +41,6 @@
 #include "chrome/common/url_constants.h"
 #include "content/browser/appcache/chrome_appcache_service.h"
 #include "content/browser/chrome_blob_storage_context.h"
-#include "content/browser/download/download_id_factory.h"
 #include "content/browser/host_zoom_map.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
@@ -187,9 +186,6 @@ Profile* GetProfileOnUI(ProfileManager* profile_manager, Profile* profile) {
 void ProfileIOData::InitializeOnUIThread(Profile* profile) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   PrefService* pref_service = profile->GetPrefs();
-
-  download_id_factory_ = DownloadServiceFactory::GetForProfile(profile)->
-    GetDownloadIdFactory();
 
   scoped_ptr<ProfileParams> params(new ProfileParams);
   params->path = profile->GetPath();
@@ -515,7 +511,6 @@ void ProfileIOData::LazyInitialize() const {
   resource_context_.SetUserData(NULL, const_cast<ProfileIOData*>(this));
   resource_context_.set_media_observer(
       io_thread_globals->media.media_internals.get());
-  resource_context_.set_download_id_factory(download_id_factory_);
   resource_context_.set_media_stream_manager(media_stream_manager_.get());
   resource_context_.set_audio_manager(profile_params_->audio_manager);
 

@@ -9,22 +9,24 @@
 #include "base/format_macros.h"
 #include "base/stringprintf.h"
 
-DownloadCreateInfo::DownloadCreateInfo(const FilePath& path,
-                                       const GURL& url,
-                                       const base::Time& start_time,
-                                       int64 received_bytes,
-                                       int64 total_bytes,
-                                       int32 state,
-                                       const DownloadId& download_id,
-                                       bool has_user_gesture,
-                                       content::PageTransition transition_type)
+using content::DownloadId;
+
+DownloadCreateInfo::DownloadCreateInfo(
+    const FilePath& path,
+    const GURL& url,
+    const base::Time& start_time,
+    int64 received_bytes,
+    int64 total_bytes,
+    int32 state,
+    bool has_user_gesture,
+    content::PageTransition transition_type)
     : path(path),
       url_chain(1, url),
       start_time(start_time),
       received_bytes(received_bytes),
       total_bytes(total_bytes),
       state(state),
-      download_id(download_id),
+      download_id(DownloadId::Invalid()),
       has_user_gesture(has_user_gesture),
       transition_type(transition_type),
       db_handle(0),

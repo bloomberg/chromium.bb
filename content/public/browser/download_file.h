@@ -10,8 +10,8 @@
 
 #include "base/basictypes.h"
 #include "base/file_path.h"
-#include "content/browser/download/download_id.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/download_id.h"
 #include "net/base/net_errors.h"
 
 namespace content {

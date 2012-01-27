@@ -81,10 +81,10 @@ class CONTENT_EXPORT ResourceDispatcherHost : public net::URLRequest::Delegate {
                          bool* message_was_ok);
 
   // Initiates a download by explicit request of the renderer, e.g. due to
-  // alt-clicking a link.  If |request| is malformed or not permitted or the RDH
-  // is shutting down, then |started_cb| will be called immediately. There is no
-  // situation in which |started_cb| will never be called.
-  void BeginDownload(
+  // alt-clicking a link.  If the download is started, |started_cb| will be
+  // called on the UI thread with the DownloadId; otherwise an error code will
+  // be returned.
+  net::Error BeginDownload(
       scoped_ptr<net::URLRequest> request,
       const DownloadSaveInfo& save_info,
       bool prompt_for_save_location,

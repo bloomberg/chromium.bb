@@ -14,9 +14,9 @@
 #include "base/observer_list.h"
 #include "base/time.h"
 #include "base/timer.h"
-#include "content/browser/download/download_id.h"
 #include "content/browser/download/download_request_handle.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/download_id.h"
 #include "content/public/browser/download_item.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/net_errors.h"
@@ -82,7 +82,7 @@ class CONTENT_EXPORT DownloadItemImpl : public content::DownloadItem {
 
   // Constructing from persistent store:
   DownloadItemImpl(Delegate* delegate,
-                   DownloadId download_id,
+                   content::DownloadId download_id,
                    const DownloadPersistentStoreInfo& info);
 
   // Constructing for a regular download.
@@ -97,7 +97,7 @@ class CONTENT_EXPORT DownloadItemImpl : public content::DownloadItem {
                    const FilePath& path,
                    const GURL& url,
                    bool is_otr,
-                   DownloadId download_id);
+                   content::DownloadId download_id);
 
   virtual ~DownloadItemImpl();
 
@@ -161,7 +161,7 @@ class CONTENT_EXPORT DownloadItemImpl : public content::DownloadItem {
   virtual int64 GetReceivedBytes() const OVERRIDE;
   virtual const std::string& GetHashState() const OVERRIDE;
   virtual int32 GetId() const OVERRIDE;
-  virtual DownloadId GetGlobalId() const OVERRIDE;
+  virtual content::DownloadId GetGlobalId() const OVERRIDE;
   virtual base::Time GetStartTime() const OVERRIDE;
   virtual base::Time GetEndTime() const OVERRIDE;
   virtual void SetDbHandle(int64 handle) OVERRIDE;
@@ -240,7 +240,7 @@ class CONTENT_EXPORT DownloadItemImpl : public content::DownloadItem {
   scoped_ptr<DownloadRequestHandleInterface> request_handle_;
 
   // Download ID assigned by DownloadResourceHandler.
-  DownloadId download_id_;
+  content::DownloadId download_id_;
 
   // Full path to the downloaded or downloading file.
   FilePath full_path_;

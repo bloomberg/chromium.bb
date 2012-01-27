@@ -19,7 +19,6 @@
 #include "build/build_config.h"
 #include "content/browser/download/download_create_info.h"
 #include "content/browser/download/download_file_manager.h"
-#include "content/browser/download/download_id_factory.h"
 #include "content/browser/download/download_item_impl.h"
 #include "content/browser/download/download_persistent_store_info.h"
 #include "content/browser/download/download_stats.h"
@@ -49,6 +48,7 @@
 #define CHECK_96627 CHECK
 
 using content::BrowserThread;
+using content::DownloadId;
 using content::DownloadItem;
 using content::WebContents;
 
@@ -116,16 +116,14 @@ namespace content {
 // static
 DownloadManager* DownloadManager::Create(
       content::DownloadManagerDelegate* delegate,
-      DownloadIdFactory* id_factory,
       DownloadStatusUpdater* status_updater) {
-  return new DownloadManagerImpl(delegate, id_factory, status_updater);
+  return new DownloadManagerImpl(delegate, status_updater);
 }
 
 }  // namespace content
 
 DownloadManagerImpl::DownloadManagerImpl(
     content::DownloadManagerDelegate* delegate,
-    DownloadIdFactory* id_factory,
     DownloadStatusUpdater* status_updater)
         : shutdown_needed_(false),
           browser_context_(NULL),
@@ -134,7 +132,6 @@ DownloadManagerImpl::DownloadManagerImpl(
                           ? status_updater->AsWeakPtr()
                           : base::WeakPtr<DownloadStatusUpdater>()),
           delegate_(delegate),
-          id_factory_(id_factory),
           largest_db_handle_in_history_(DownloadItem::kUninitializedHandle) {
   // NOTE(benjhayden): status_updater may be NULL when using
   // TestingBrowserProcess.
@@ -147,7 +144,7 @@ DownloadManagerImpl::~DownloadManagerImpl() {
 }
 
 DownloadId DownloadManagerImpl::GetNextId() {
-  return id_factory_->GetNextId();
+  return delegate_->GetNextId();
 }
 
 bool DownloadManagerImpl::ShouldOpenDownload(DownloadItem* item) {

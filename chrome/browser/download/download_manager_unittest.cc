@@ -28,7 +28,6 @@
 #include "content/browser/download/download_create_info.h"
 #include "content/browser/download/download_file_impl.h"
 #include "content/browser/download/download_file_manager.h"
-#include "content/browser/download/download_id_factory.h"
 #include "content/browser/download/download_request_handle.h"
 #include "content/browser/download/download_status_updater.h"
 #include "content/browser/download/interrupt_reasons.h"
@@ -66,6 +65,7 @@
 
 using content::BrowserThread;
 using content::DownloadFile;
+using content::DownloadId;
 using content::DownloadItem;
 using content::DownloadManager;
 using ::testing::ReturnRef;
@@ -176,11 +176,8 @@ class DownloadManagerTest : public testing::Test {
       : profile_(new TestingProfile()),
         download_manager_delegate_(new TestDownloadManagerDelegate(
             profile_.get())),
-        id_factory_(new DownloadIdFactory(kValidIdDomain)),
         download_manager_(DownloadManager::Create(
-            download_manager_delegate_,
-            id_factory_,
-            &download_status_updater_)),
+            download_manager_delegate_, &download_status_updater_)),
         ui_thread_(BrowserThread::UI, &message_loop_),
         file_thread_(BrowserThread::FILE, &message_loop_),
         download_buffer_(new content::DownloadBuffer) {
@@ -255,7 +252,6 @@ class DownloadManagerTest : public testing::Test {
   DownloadStatusUpdater download_status_updater_;
   scoped_ptr<TestingProfile> profile_;
   scoped_refptr<TestDownloadManagerDelegate> download_manager_delegate_;
-  scoped_refptr<DownloadIdFactory> id_factory_;
   scoped_refptr<DownloadManager> download_manager_;
   scoped_refptr<DownloadFileManager> file_manager_;
   MessageLoopForUI message_loop_;

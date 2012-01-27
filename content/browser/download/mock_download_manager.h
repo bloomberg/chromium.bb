@@ -6,10 +6,9 @@
 #define CONTENT_BROWSER_DOWNLOAD_MOCK_DOWNLOAD_MANAGER_H_
 #pragma once
 
-#include "content/browser/download/download_id.h"
-#include "content/browser/download/download_id_factory.h"
 #include "content/browser/download/download_request_handle.h"
 #include "content/browser/download/download_types.h"
+#include "content/public/browser/download_id.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/download_query.h"

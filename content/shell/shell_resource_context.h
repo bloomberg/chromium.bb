@@ -11,7 +11,6 @@
 #include "content/browser/resource_context.h"
 
 class ChromeBlobStorageContext;
-class DownloadIdFactory;
 
 namespace content {
 
@@ -21,8 +20,7 @@ class ShellResourceContext : public content::ResourceContext {
  public:
   ShellResourceContext(
       ShellURLRequestContextGetter* getter,
-      ChromeBlobStorageContext* blob_storage_context,
-      DownloadIdFactory* download_id_factory);
+      ChromeBlobStorageContext* blob_storage_context);
   virtual ~ShellResourceContext();
 
  private:
@@ -32,7 +30,6 @@ class ShellResourceContext : public content::ResourceContext {
 
   scoped_refptr<ShellURLRequestContextGetter> getter_;
   scoped_refptr<ChromeBlobStorageContext> blob_storage_context_;
-  scoped_refptr<DownloadIdFactory> download_id_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellResourceContext);
 };

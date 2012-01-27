@@ -36,14 +36,13 @@
 #include "base/gtest_prod_util.h"
 #include "base/message_loop_helpers.h"
 #include "base/time.h"
-#include "content/browser/download/download_id.h"
 #include "content/browser/download/interrupt_reasons.h"
+#include "content/public/browser/download_id.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/net_errors.h"
 
 class DownloadFileManager;
-class DownloadIdFactory;
 class DownloadManagerTest;
 class DownloadRequestHandle;
 class DownloadStatusUpdater;
@@ -66,7 +65,6 @@ class CONTENT_EXPORT DownloadManager
 
   static DownloadManager* Create(
       DownloadManagerDelegate* delegate,
-      DownloadIdFactory* id_factory,
       DownloadStatusUpdater* status_updater);
 
   // Shutdown the download manager. Must be called before destruction.

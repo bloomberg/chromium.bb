@@ -2,15 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_DOWNLOAD_DOWNLOAD_ID_H_
-#define CONTENT_BROWSER_DOWNLOAD_DOWNLOAD_ID_H_
+#ifndef CONTENT_PUBLIC_BROWSER_DOWNLOAD_ID_H_
+#define CONTENT_PUBLIC_BROWSER_DOWNLOAD_ID_H_
 #pragma once
 
 #include <iosfwd>
 #include <string>
 
 #include "base/hash_tables.h"
+#include "base/stringprintf.h"
 #include "content/common/content_export.h"
+
+namespace content {
 
 // DownloadId combines per-profile Download ids with an indication of which
 // profile in order to be globally unique. DownloadIds are not persistent across
@@ -59,7 +62,9 @@ class DownloadId {
            (static_cast<size_t>(local_id_) << (4 * sizeof(size_t)));
   }
 
-  std::string DebugString() const;
+  std::string DebugString() const {
+    return base::StringPrintf("%p:%d", domain_, local_id_);
+  }
 
  private:
   Domain domain_;
@@ -69,22 +74,28 @@ class DownloadId {
   // Allow copy and assign.
 };
 
+}  // namespace content
+
 // Allow logging DownloadIds. Looks like "0x01234567:42".
 CONTENT_EXPORT std::ostream& operator<<(std::ostream& out,
-                                        const DownloadId& global_id);
+                                        const content::DownloadId& global_id);
+inline std::ostream& operator<<(std::ostream& out,
+                                const content::DownloadId& global_id) {
+  return out << global_id.DebugString();
+}
 
 // Allow using DownloadIds as keys in hash_maps.
 namespace BASE_HASH_NAMESPACE {
 #if defined(COMPILER_GCC)
-template<> struct hash<DownloadId> {
-  std::size_t operator()(const DownloadId& id) const {
+template<> struct hash<content::DownloadId> {
+  std::size_t operator()(const content::DownloadId& id) const {
     return id.hash();
   }
 };
 #elif defined(COMPILER_MSVC)
-inline size_t hash_value(const DownloadId& id) {
+inline size_t hash_value(const content::DownloadId& id) {
   return id.hash();
 }
 #endif  // COMPILER
 }
-#endif  // CONTENT_BROWSER_DOWNLOAD_DOWNLOAD_ID_H_
+#endif  // CONTENT_PUBLIC_BROWSER_DOWNLOAD_ID_H_

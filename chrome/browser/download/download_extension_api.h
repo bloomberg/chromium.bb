@@ -15,6 +15,7 @@
 #include "base/string16.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_function.h"
+#include "content/public/browser/download_id.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"
 
@@ -139,8 +140,7 @@ class DownloadsDownloadFunction : public AsyncDownloadsFunction {
     int render_view_host_routing_id;
   };
   void BeginDownloadOnIOThread();
-  void OnStarted(DownloadId dl_id, net::Error error);
-  void RespondOnUIThread(int dl_id, net::Error error);
+  void OnStarted(content::DownloadId dl_id, net::Error error);
 
   scoped_ptr<IOData> iodata_;
 

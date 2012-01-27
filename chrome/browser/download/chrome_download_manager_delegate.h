@@ -54,6 +54,7 @@ class ChromeDownloadManagerDelegate
   static bool IsExtensionDownload(const content::DownloadItem* item);
 
   virtual void Shutdown() OVERRIDE;
+  virtual content::DownloadId GetNextId() OVERRIDE;
   virtual bool ShouldStartDownload(int32 download_id) OVERRIDE;
   virtual void ChooseDownloadPath(content::WebContents* web_contents,
                                   const FilePath& suggested_path,
@@ -151,6 +152,7 @@ class ChromeDownloadManagerDelegate
   void OnItemAddedToPersistentStore(int32 download_id, int64 db_handle);
 
   Profile* profile_;
+  int next_download_id_;
   scoped_ptr<DownloadPrefs> download_prefs_;
   scoped_ptr<DownloadHistory> download_history_;
 

@@ -29,6 +29,7 @@
 
 using content::BrowserThread;
 using content::DownloadFile;
+using content::DownloadId;
 
 namespace {
 

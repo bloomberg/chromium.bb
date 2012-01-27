@@ -49,9 +49,9 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/timer.h"
-#include "content/browser/download/download_id.h"
 #include "content/browser/download/interrupt_reasons.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/download_id.h"
 #include "net/base/net_errors.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -96,14 +96,15 @@ class CONTENT_EXPORT DownloadFileManager
 
   // Handlers for notifications sent from the IO thread and run on the
   // FILE thread.
-  void UpdateDownload(DownloadId global_id, content::DownloadBuffer* buffer);
+  void UpdateDownload(content::DownloadId global_id,
+                      content::DownloadBuffer* buffer);
 
   // |reason| is the reason for interruption, if one occurs.
   // |security_info| contains SSL information (cert_id, cert_status,
   // security_bits, ssl_connection_status), which can be used to
   // fine-tune the error message.  It is empty if the transaction
   // was not performed securely.
-  void OnResponseCompleted(DownloadId global_id,
+  void OnResponseCompleted(content::DownloadId global_id,
                            InterruptReason reason,
                            const std::string& security_info);
 
@@ -112,22 +113,23 @@ class CONTENT_EXPORT DownloadFileManager
   // download file, as far as the DownloadFileManager is concerned -- if
   // anything happens to the download file after they are called, it will
   // be ignored.
-  void CancelDownload(DownloadId id);
-  void CompleteDownload(DownloadId id);
+  void CancelDownload(content::DownloadId id);
+  void CompleteDownload(content::DownloadId id);
 
   // Called on FILE thread by DownloadManager at the beginning of its shutdown.
   void OnDownloadManagerShutdown(content::DownloadManager* manager);
 
   // The DownloadManager in the UI thread has provided an intermediate
   // .crdownload name for the download specified by |id|.
-  void RenameInProgressDownloadFile(DownloadId id, const FilePath& full_path);
+  void RenameInProgressDownloadFile(content::DownloadId id,
+                                    const FilePath& full_path);
 
   // The DownloadManager in the UI thread has provided a final name for the
   // download specified by |id|.
   // |overwrite_existing_file| prevents uniquification, and is used for SAFE
   // downloads, as the user may have decided to overwrite the file.
   // Sent from the UI thread and run on the FILE thread.
-  void RenameCompletingDownloadFile(DownloadId id,
+  void RenameCompletingDownloadFile(content::DownloadId id,
                                     const FilePath& full_path,
                                     bool overwrite_existing_file);
 
@@ -161,18 +163,20 @@ class CONTENT_EXPORT DownloadFileManager
                           bool hash_needed);
 
   // Called only on the download thread.
-  content::DownloadFile* GetDownloadFile(DownloadId global_id);
+  content::DownloadFile* GetDownloadFile(content::DownloadId global_id);
 
   // Called only from RenameInProgressDownloadFile and
   // RenameCompletingDownloadFile on the FILE thread.
   // |rename_error| indicates what error caused the cancel.
-  void CancelDownloadOnRename(DownloadId global_id, net::Error rename_error);
+  void CancelDownloadOnRename(content::DownloadId global_id,
+                              net::Error rename_error);
 
   // Erases the download file with the given the download |id| and removes
   // it from the maps.
-  void EraseDownload(DownloadId global_id);
+  void EraseDownload(content::DownloadId global_id);
 
-  typedef base::hash_map<DownloadId, content::DownloadFile*> DownloadFileMap;
+  typedef base::hash_map<content::DownloadId, content::DownloadFile*>
+      DownloadFileMap;
 
   // A map of all in progress downloads.  It owns the download files.
   DownloadFileMap downloads_;

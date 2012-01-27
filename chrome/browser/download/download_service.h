@@ -16,7 +16,6 @@
 
 class ChromeDownloadManagerDelegate;
 class Profile;
-class DownloadIdFactory;
 
 namespace content {
 class DownloadManager;
@@ -28,8 +27,6 @@ class DownloadService : public ProfileKeyedService {
  public:
   explicit DownloadService(Profile* profile);
   virtual ~DownloadService();
-
-  DownloadIdFactory* GetDownloadIdFactory() const;
 
   // Register a callback to be called whenever the DownloadManager is created.
   typedef base::Callback<void(content::DownloadManager*)>
@@ -60,8 +57,6 @@ class DownloadService : public ProfileKeyedService {
   virtual void Shutdown() OVERRIDE;
 
  private:
-  scoped_refptr<DownloadIdFactory> id_factory_;
-
   bool download_manager_created_;
   Profile* profile_;
 

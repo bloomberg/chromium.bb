@@ -19,7 +19,6 @@
 #include "base/utf_string_conversions.h"
 #include "content/browser/download/download_create_info.h"
 #include "content/browser/download/download_file_manager.h"
-#include "content/browser/download/download_id.h"
 #include "content/browser/download/download_persistent_store_info.h"
 #include "content/browser/download/download_request_handle.h"
 #include "content/browser/download/download_stats.h"
@@ -32,6 +31,7 @@
 
 using content::BrowserThread;
 using content::DownloadFile;
+using content::DownloadId;
 using content::DownloadItem;
 using content::DownloadManager;
 using content::WebContents;

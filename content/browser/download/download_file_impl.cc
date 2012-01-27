@@ -13,6 +13,7 @@
 #include "content/public/browser/download_manager.h"
 
 using content::BrowserThread;
+using content::DownloadId;
 
 namespace {
 
