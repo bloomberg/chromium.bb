@@ -1,16 +1,19 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-logutil = (function() {
+log_util = (function() {
   'use strict';
 
   /**
    * Creates a new log dump.  |events| is a list of all events, |polledData| is
    * an object containing the results of each poll, |tabData| is an object
-   * containing data for individual tabs, and |date| is the time the dump was
-   * created, as a formatted string.
-   * Returns the new log dump as an object.  |date| may be null.
+   * containing data for individual tabs, |date| is the time the dump was
+   * created, as a formatted string, and |securityStripping| is whether or not
+   * private information should be removed from the generated dump.
+   *
+   * Returns the new log dump as an object.  Resulting object may have a null
+   * |date| and/or |numericDate|.
    *
    * TODO(eroman): Use javadoc notation for these parameters.
    *
@@ -29,8 +32,8 @@ logutil = (function() {
    * tabs not present on the OS the log is from.
    */
   function createLogDump(userComments, constants, events, polledData, tabData,
-                         date) {
-    if (g_browser.sourceTracker.getSecurityStripping())
+                         numericDate, securityStripping) {
+    if (securityStripping)
       events = events.map(stripCookiesAndLoginInfo);
 
     var logDump = {
@@ -42,36 +45,47 @@ logutil = (function() {
     };
 
     // Not technically client info, but it's used at the same point in the code.
-    if (date && constants.clientInfo) {
-      constants.clientInfo.numericDate = date.getTime();
+    if (numericDate && constants.clientInfo) {
+      constants.clientInfo.numericDate = numericDate;
       // TODO(mmenke):  Remove this some time after Chrome 17 hits stable.
-      constants.clientInfo.date = date.toLocaleString();
+      constants.clientInfo.date = (new Date(numericDate)).toLocaleString();
     }
 
     return logDump;
   }
 
   /**
+   * Returns a new log dump created using the polled data and date from the
+   * |oldLogDump|.  The other parts of the log dump come from current
+   * net-internals state.
+   */
+  function createUpdatedLogDump(userComments, oldLogDump, securityStripping) {
+    var numericDate = null;
+    if (oldLogDump.clientInfo && oldLogDump.clientInfo.numericDate)
+      numericDate = oldLogDump.clientInfo.numericDate;
+    var logDump = createLogDump(userComments,
+                                Constants,
+                                g_browser.sourceTracker.getAllCapturedEvents(),
+                                oldLogDump.polledData,
+                                getTabData_(),
+                                numericDate,
+                                securityStripping);
+    return JSON.stringify(logDump, null, ' ');
+  }
+
+  /**
    * Creates a full log dump using |polledData| and the return value of each
    * tab's saveState function and passes it to |callback|.
    */
-  function onUpdateAllCompleted(userComments, callback, polledData) {
-    // Gather any tab-specific state information.
-    var tabData = {};
-    var categoryTabSwitcher = MainView.getInstance().categoryTabSwitcher();
-    var tabIds = categoryTabSwitcher.getAllTabIds();
-    for (var i = 0; i < tabIds.length; ++i) {
-      var view = categoryTabSwitcher.findTabById(tabIds[i]).contentView;
-      if (view.saveState)
-        tabData[tabIds[i]] = view.saveState();
-    }
-
+  function onUpdateAllCompleted(userComments, callback, securityStripping,
+                                polledData) {
     var logDump = createLogDump(userComments,
                                 Constants,
                                 g_browser.sourceTracker.getAllCapturedEvents(),
                                 polledData,
-                                tabData,
-                                new Date());
+                                getTabData_(),
+                                timeutil.getCurrentTime(),
+                                securityStripping);
     callback(JSON.stringify(logDump, null, ' '));
   }
 
@@ -80,13 +94,30 @@ logutil = (function() {
    * loaded.  Once a log dump has been created, |callback| is passed the dumped
    * text as a string.
    */
-  function createLogDumpAsync(userComments, callback) {
+  function createLogDumpAsync(userComments, callback, securityStripping) {
     g_browser.updateAllInfo(
-        onUpdateAllCompleted.bind(null, userComments, callback));
+        onUpdateAllCompleted.bind(null, userComments, callback,
+                                  securityStripping));
+  }
+
+  /**
+   * Gather any tab-specific state information prior to creating a log dump.
+   */
+  function getTabData_() {
+    var tabData = {};
+    var categoryTabSwitcher = MainView.getInstance().categoryTabSwitcher();
+    var tabIds = categoryTabSwitcher.getAllTabIds();
+    for (var i = 0; i < tabIds.length; ++i) {
+      var view = categoryTabSwitcher.findTabById(tabIds[i]).contentView;
+      if (view.saveState)
+        tabData[tabIds[i]] = view.saveState();
+    }
   }
 
   /**
    * Loads a full log dump.  Returns a string containing a log of the load.
+   * |opt_fileName| should always be given when loading from a file, instead of
+   * from a log dump generated in-memory.
    * The process goes like this:
    * 1)  Load constants.  If this fails, or the version number can't be handled,
    *     abort the load.  If this step succeeds, the load cannot be aborted.
@@ -105,7 +136,7 @@ logutil = (function() {
    *     valid data for the tab, so the tab is hidden.  Otherwise, the tab is
    *     shown.
    */
-  function loadLogDump(logDump, fileName) {
+  function loadLogDump(logDump, opt_fileName) {
     // Perform minimal validity check, and abort if it fails.
     if (typeof(logDump) != 'object')
       return 'Load failed.  Top level JSON data is not an object.';
@@ -139,7 +170,7 @@ logutil = (function() {
     // Prevent communication with the browser.  Once the constants have been
     // loaded, it's safer to continue trying to load the log, even in the case
     // of bad data.
-    MainView.getInstance().onLoadLogFile(fileName);
+    MainView.getInstance().onLoadLog(opt_fileName);
 
     // Delete all events.  This will also update all logObservers.
     g_browser.sourceTracker.deleteAllSourceEntries();
@@ -193,7 +224,7 @@ logutil = (function() {
       try {
         if (view.onLoadLogFinish(logDump.polledData,
                                  logDump.tabData[tabIds[i]],
-                                 logDump.userComments)) {
+                                 logDump)) {
           showView = true;
         }
       } catch (error) {
@@ -236,7 +267,8 @@ logutil = (function() {
 
   // Exports.
   return {
-    createLogDumpAsync : createLogDumpAsync,
-    loadLogFile : loadLogFile
+    createUpdatedLogDump: createUpdatedLogDump,
+    createLogDumpAsync: createLogDumpAsync,
+    loadLogFile: loadLogFile
   };
 })();

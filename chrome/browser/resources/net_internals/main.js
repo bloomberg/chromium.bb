@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -169,21 +169,28 @@ var MainView = (function() {
      * without reloading the page.  Must be called before passing loaded data
      * to the individual views.
      *
-     * @param {String} fileName The name of the log file that has been loaded.
+     * @param {String} opt_fileName The name of the log file that has been
+     *     loaded, if we're loading a log file.
      */
-    onLoadLogFile: function(fileName) {
+    onLoadLog: function(opt_fileName) {
       isViewingLoadedLog = true;
 
       g_browser.sourceTracker.setSecurityStripping(false);
       this.stopCapturing();
-      // Swap out the status bar to indicate we have loaded from a file.
-      this.statusView_.onSwitchMode(StatusView.FOR_FILE_ID, fileName);
+      if (opt_fileName != undefined) {
+        // If there's a file name, a log file was loaded, so swap out the status
+        // bar to indicate we're no longer capturing events.
+        this.statusView_.onSwitchMode(StatusView.FOR_FILE_ID, opt_fileName);
+      } else {
+        // Otherwise, the "Stop Capturing" button was presumably pressed.
+        this.statusView_.onSwitchMode(StatusView.FOR_VIEW_ID, '');
+      }
     },
 
     switchToViewOnlyMode: function() {
-      this.stopCapturing();
-      // Swap out the status bar to indicate we have loaded from a file.
-      this.statusView_.onSwitchMode(StatusView.FOR_VIEW_ID, '');
+      // Since this won't be dumped to a file, we don't want to remove
+      // cookies and credentials.
+      log_util.createLogDumpAsync('', log_util.loadLogFile, false);
     },
 
     stopCapturing: function() {

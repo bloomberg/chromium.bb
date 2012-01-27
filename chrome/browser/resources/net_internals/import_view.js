@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -69,9 +69,9 @@ var ImportView = (function() {
      * loading the new ones.  Returns true to indicate the view should
      * still be visible.
      */
-    onLoadLogFinish: function(data, unused, userComments) {
+    onLoadLogFinish: function(data, unused, logDump) {
       setNodeDisplay(this.loadedDiv_, true);
-      this.updateLoadedClientInfo(userComments);
+      this.updateLoadedClientInfo(logDump.userComments);
       return true;
     },
 
@@ -150,7 +150,7 @@ var ImportView = (function() {
     },
 
     onLoadLogFile: function(logFile, event) {
-      var result = logutil.loadLogFile(event.target.result, logFile.fileName);
+      var result = log_util.loadLogFile(event.target.result, logFile.fileName);
       this.setLoadFileStatus(result, false);
     },
 

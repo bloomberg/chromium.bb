@@ -86,7 +86,9 @@ var NetInternalsTest = (function() {
       ConstantsObserver.prototype.onReceivedConstants = function() {
         if (!this.testStarted_) {
           this.testStarted_ = true;
-          // Stat test asynchronously, to avoid running a nested test function.
+          // Stat test asynchronously, to avoid running a nested test function,
+          // and so we don't call any constants observers used by individual
+          // tests.
           window.setTimeout(runTest, 0);
         }
       };

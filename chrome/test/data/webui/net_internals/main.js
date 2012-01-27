@@ -15,7 +15,7 @@ GEN_INCLUDE(['net_internals_test.js']);
  */
 TEST_F('NetInternalsTest', 'netInternalsTourTabs', function() {
   // Prevent sending any events to the browser as we flip through tabs, since
-  // this tests is just intended to make sure everything's created and hooked
+  // this test is just intended to make sure everything's created and hooked
   // up properly Javascript side.
   g_browser.disable();
 
@@ -42,22 +42,6 @@ TEST_F('NetInternalsTest', 'netInternalsTourTabs', function() {
   };
 
   NetInternalsTest.checkTabHandleVisibility(tabVisibilityState, true);
-
-  testDone();
-});
-
-/**
- * Checks pressing the stop capturing button.
- */
-TEST_F('NetInternalsTest', 'netInternalsStopCapturing', function() {
-  expectFalse(g_browser.isDisabled());
-  NetInternalsTest.expectStatusViewNodeVisible(
-      StatusView.FOR_CAPTURE_ID);
-
-  $(StatusView.STOP_CAPTURING_BUTTON_ID).onclick();
-
-  expectTrue(g_browser.isDisabled());
-  NetInternalsTest.expectStatusViewNodeVisible(StatusView.FOR_VIEW_ID);
 
   testDone();
 });

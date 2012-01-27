@@ -54,7 +54,7 @@ LoadLogWithNewEventsTask.prototype = {
    * Starts creating a log dump.
    */
   start: function() {
-    logutil.createLogDumpAsync('test', this.onLogDumpCreated.bind(this));
+    log_util.createLogDumpAsync('test', this.onLogDumpCreated.bind(this), true);
   },
 
   /**
@@ -75,7 +75,7 @@ LoadLogWithNewEventsTask.prototype = {
                                                 this.endTime_, null));
     logDumpText = JSON.stringify(logDump);
 
-    assertEquals('Log loaded.', logutil.loadLogFile(logDumpText));
+    assertEquals('Log loaded.', log_util.loadLogFile(logDumpText));
 
     endTime = this.endTime_;
     startTime = this.startTime_;
