@@ -751,6 +751,12 @@
         '../dbus/dbus.gyp:dbus',
       ],
     }],
+    ['OS=="android"', {
+      'sources!': [
+        # A main loop would be handled in Java.
+        'browser/browser_main_loop.cc',
+        'browser/browser_main_loop.h',
+      ]}],
     ['OS=="mac"', {
       'sources': [
         # Build necessary Mozilla sources

@@ -106,8 +106,8 @@ class BrowserContext {
 
 }  // namespace content
 
-#if defined(COMPILER_GCC) && !defined(OS_ANDROID)
-namespace __gnu_cxx {
+#if defined(COMPILER_GCC)
+namespace BASE_HASH_NAMESPACE {
 
 template<>
 struct hash<content::BrowserContext*> {
@@ -116,7 +116,7 @@ struct hash<content::BrowserContext*> {
   }
 };
 
-}  // namespace __gnu_cxx
+}  // namespace BASE_HASH_NAMESPACE
 #endif
 
 #endif  // CONTENT_PUBLIC_BROWSER_BROWSER_CONTEXT_H_

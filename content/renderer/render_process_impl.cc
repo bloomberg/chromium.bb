@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -107,7 +107,8 @@ bool RenderProcessImpl::InProcessPlugins() {
 // Platform specific code for dealing with bitmap transport...
 
 TransportDIB* RenderProcessImpl::CreateTransportDIB(size_t size) {
-#if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_OPENBSD)
+#if defined(OS_WIN) || defined(OS_LINUX) || \
+    defined(OS_OPENBSD) || defined(OS_ANDROID)
   // Windows and Linux create transport DIBs inside the renderer
   return TransportDIB::Create(size, transport_dib_next_sequence_number_++);
 #elif defined(OS_MACOSX)

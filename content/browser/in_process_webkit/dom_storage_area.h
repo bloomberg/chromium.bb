@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -60,7 +60,12 @@ class DOMStorageArea {
 };
 
 #if defined(COMPILER_GCC)
+#if defined(OS_ANDROID)
+// Android stlport uses std namespace
+namespace std {
+#else
 namespace __gnu_cxx {
+#endif
 
 template<>
 struct hash<DOMStorageArea*> {

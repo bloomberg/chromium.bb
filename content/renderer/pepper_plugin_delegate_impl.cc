@@ -142,7 +142,7 @@ class PlatformImage2DImpl
     *byte_count = dib_->size();
 #if defined(OS_WIN)
     return reinterpret_cast<intptr_t>(dib_->handle());
-#elif defined(OS_MACOSX)
+#elif defined(OS_MACOSX) || defined(OS_ANDROID)
     return static_cast<intptr_t>(dib_->handle().fd);
 #elif defined(OS_POSIX)
     return static_cast<intptr_t>(dib_->handle());

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -751,6 +751,9 @@ void WebPluginDelegateProxy::Paint(WebKit::WebCanvas* canvas,
 bool WebPluginDelegateProxy::BackgroundChanged(
     gfx::NativeDrawingContext context,
     const gfx::Rect& rect) {
+#if defined(OS_ANDROID)
+  NOTIMPLEMENTED();
+#else
 #if defined(OS_WIN)
   HBITMAP hbitmap = static_cast<HBITMAP>(GetCurrentObject(context, OBJ_BITMAP));
   if (hbitmap == NULL) {
@@ -890,6 +893,7 @@ bool WebPluginDelegateProxy::BackgroundChanged(
       return true;
   }
 #endif
+#endif  // OS_ANDROID
 
   return false;
 }

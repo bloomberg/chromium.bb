@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -141,7 +141,7 @@ void CommonSubprocessInit(const std::string& process_type) {
   MSG msg;
   PeekMessage(&msg, NULL, 0, 0, PM_REMOVE);
 #endif
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
+#if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
   // Various things break when you're using a locale where the decimal
   // separator isn't a period.  See e.g. bugs 22782 and 39964.  For
   // all processes except the browser process (where we call system
@@ -308,9 +308,11 @@ int ContentMain(int argc,
   tc_set_new_mode(1);
 #endif
 
+#if !defined(OS_ANDROID)
   // Set C library locale to make sure CommandLine can parse argument values
   // in correct encoding.
   setlocale(LC_ALL, "");
+#endif
 
   SetupSignalHandlers();
 

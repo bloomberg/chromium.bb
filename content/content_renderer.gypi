@@ -257,6 +257,13 @@
           '../base/allocator/allocator.gyp:allocator',
       ],
     }],
+    # TODO(jrg): remove the OS=="android" section?
+    # Understand better how media_stream_ is tied into Chromium.
+    ['enable_webrtc==0 and OS=="android"', {
+      'sources/': [
+        ['exclude', '^renderer/media/media_stream_'],
+      ],
+    }],
     ['enable_webrtc==1', {
       'dependencies': [
         '../third_party/libjingle/libjingle.gyp:libjingle_peerconnection',
