@@ -8,6 +8,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "gpu/command_buffer/client/gles2_lib.h"
+#include "gpu/command_buffer/client/transfer_buffer.h"
 #include "gpu/command_buffer/service/context_group.h"
 #include "gpu/gles2_conform_support/egl/config.h"
 #include "gpu/gles2_conform_support/egl/surface.h"
@@ -21,8 +22,7 @@ namespace egl {
 
 Display::Display(EGLNativeDisplayType display_id)
     : display_id_(display_id),
-      is_initialized_(false),
-      transfer_buffer_id_(-1) {
+      is_initialized_(false) {
 }
 
 Display::~Display() {
@@ -131,15 +131,11 @@ EGLSurface Display::CreateWindowSurface(EGLConfig config,
   if (!cmd_helper->Initialize(kCommandBufferSize))
     return false;
 
-  int32 transfer_buffer_id =
-      command_buffer->CreateTransferBuffer(kTransferBufferSize, -1);
-  gpu::Buffer transfer_buffer =
-      command_buffer->GetTransferBuffer(transfer_buffer_id);
-  if (transfer_buffer.ptr == NULL)
-    return false;
+  scoped_ptr<gpu::TransferBuffer> transfer_buffer(new gpu::TransferBuffer(
+      cmd_helper.get()));
 
   command_buffer_.reset(command_buffer.release());
-  transfer_buffer_id_ = transfer_buffer_id;
+  transfer_buffer_.reset(transfer_buffer.release());
   gles2_cmd_helper_.reset(cmd_helper.release());
   surface_.reset(new Surface(win));
 
@@ -171,22 +167,25 @@ EGLContext Display::CreateContext(EGLConfig config,
                                   EGLContext share_ctx,
                                   const EGLint* attrib_list) {
   DCHECK(IsValidConfig(config));
-  // TODO(alokp): Command buffer does not support shared contexts.
+  // TODO(alokp): Add support for shared contexts.
   if (share_ctx != NULL)
     return EGL_NO_CONTEXT;
 
   DCHECK(command_buffer_ != NULL);
-  DCHECK(transfer_buffer_id_ != -1);
-  gpu::Buffer buffer = command_buffer_->GetTransferBuffer(transfer_buffer_id_);
-  DCHECK(buffer.ptr != NULL);
+  DCHECK(transfer_buffer_.get());
   bool share_resources = share_ctx != NULL;
   context_.reset(new gpu::gles2::GLES2Implementation(
       gles2_cmd_helper_.get(),
-      buffer.size,
-      buffer.ptr,
-      transfer_buffer_id_,
+      transfer_buffer_.get(),
       share_resources,
       true));
+
+  if (!context_->Initialize(
+      kTransferBufferSize / 2,
+      kTransferBufferSize,
+      kTransferBufferSize * 2)) {
+    return EGL_NO_CONTEXT;
+  }
 
   context_->EnableFeatureCHROMIUM("pepper3d_allow_buffers_on_multiple_targets");
   context_->EnableFeatureCHROMIUM("pepper3d_support_fixed_attribs");

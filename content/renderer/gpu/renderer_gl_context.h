@@ -25,6 +25,7 @@ class CommandBufferProxy;
 class GURL;
 
 namespace gpu {
+class TransferBuffer;
 namespace gles2 {
 class GLES2CmdHelper;
 class GLES2Implementation;
@@ -199,7 +200,7 @@ class RendererGLContext : public base::SupportsWeakPtr<RendererGLContext>,
   uint32 parent_texture_id_;
   CommandBufferProxy* command_buffer_;
   gpu::gles2::GLES2CmdHelper* gles2_helper_;
-  int32 transfer_buffer_id_;
+  gpu::TransferBuffer* transfer_buffer_;
   gpu::gles2::GLES2Implementation* gles2_implementation_;
   Error last_error_;
   int frame_number_;

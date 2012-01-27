@@ -130,10 +130,12 @@ TEST_F(GLES2ImplementationTest, CheckFramebufferStatus) {
 
   typedef CheckFramebufferStatus::Result Result;
   Cmds expected;
-  expected.cmd.Init(1, transfer_buffer_id_, 0);
+  ExpectedMemoryInfo result1 =
+      GetExpectedResultMemory(sizeof(CheckFramebufferStatus::Result));
+  expected.cmd.Init(1, result1.id, result1.offset);
 
-  EXPECT_CALL(*command_buffer_, OnFlush(_))
-      .WillOnce(SetMemory(uint32(1)))
+  EXPECT_CALL(*command_buffer(), OnFlush())
+      .WillOnce(SetMemory(result1.ptr, uint32(1)))
       .RetiresOnSaturation();
 
   GLboolean result = gl_->CheckFramebufferStatus(1);
@@ -551,9 +553,10 @@ TEST_F(GLES2ImplementationTest, GetBooleanv) {
   typedef GetBooleanv::Result Result;
   Result::Type result = 0;
   Cmds expected;
-  expected.cmd.Init(123, transfer_buffer_id_, 0);
-  EXPECT_CALL(*command_buffer_, OnFlush(_))
-      .WillOnce(SetMemory(SizedResultHelper<Result::Type>(1)))
+  ExpectedMemoryInfo result1 = GetExpectedResultMemory(4);
+  expected.cmd.Init(123, result1.id, result1.offset);
+  EXPECT_CALL(*command_buffer(), OnFlush())
+      .WillOnce(SetMemory(result1.ptr, SizedResultHelper<Result::Type>(1)))
       .RetiresOnSaturation();
   gl_->GetBooleanv(123, &result);
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
@@ -567,9 +570,10 @@ TEST_F(GLES2ImplementationTest, GetBufferParameteriv) {
   typedef GetBufferParameteriv::Result Result;
   Result::Type result = 0;
   Cmds expected;
-  expected.cmd.Init(123, GL_BUFFER_SIZE, transfer_buffer_id_, 0);
-  EXPECT_CALL(*command_buffer_, OnFlush(_))
-      .WillOnce(SetMemory(SizedResultHelper<Result::Type>(1)))
+  ExpectedMemoryInfo result1 = GetExpectedResultMemory(4);
+  expected.cmd.Init(123, GL_BUFFER_SIZE, result1.id, result1.offset);
+  EXPECT_CALL(*command_buffer(), OnFlush())
+      .WillOnce(SetMemory(result1.ptr, SizedResultHelper<Result::Type>(1)))
       .RetiresOnSaturation();
   gl_->GetBufferParameteriv(123, GL_BUFFER_SIZE, &result);
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
@@ -583,9 +587,10 @@ TEST_F(GLES2ImplementationTest, GetFloatv) {
   typedef GetFloatv::Result Result;
   Result::Type result = 0;
   Cmds expected;
-  expected.cmd.Init(123, transfer_buffer_id_, 0);
-  EXPECT_CALL(*command_buffer_, OnFlush(_))
-      .WillOnce(SetMemory(SizedResultHelper<Result::Type>(1)))
+  ExpectedMemoryInfo result1 = GetExpectedResultMemory(4);
+  expected.cmd.Init(123, result1.id, result1.offset);
+  EXPECT_CALL(*command_buffer(), OnFlush())
+      .WillOnce(SetMemory(result1.ptr, SizedResultHelper<Result::Type>(1)))
       .RetiresOnSaturation();
   gl_->GetFloatv(123, &result);
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
@@ -599,11 +604,12 @@ TEST_F(GLES2ImplementationTest, GetFramebufferAttachmentParameteriv) {
   typedef GetFramebufferAttachmentParameteriv::Result Result;
   Result::Type result = 0;
   Cmds expected;
+  ExpectedMemoryInfo result1 = GetExpectedResultMemory(4);
   expected.cmd.Init(
       123, GL_COLOR_ATTACHMENT0, GL_FRAMEBUFFER_ATTACHMENT_OBJECT_TYPE,
-      transfer_buffer_id_, 0);
-  EXPECT_CALL(*command_buffer_, OnFlush(_))
-      .WillOnce(SetMemory(SizedResultHelper<Result::Type>(1)))
+      result1.id, result1.offset);
+  EXPECT_CALL(*command_buffer(), OnFlush())
+      .WillOnce(SetMemory(result1.ptr, SizedResultHelper<Result::Type>(1)))
       .RetiresOnSaturation();
   gl_->GetFramebufferAttachmentParameteriv(
       123, GL_COLOR_ATTACHMENT0, GL_FRAMEBUFFER_ATTACHMENT_OBJECT_TYPE,
@@ -619,9 +625,10 @@ TEST_F(GLES2ImplementationTest, GetIntegerv) {
   typedef GetIntegerv::Result Result;
   Result::Type result = 0;
   Cmds expected;
-  expected.cmd.Init(123, transfer_buffer_id_, 0);
-  EXPECT_CALL(*command_buffer_, OnFlush(_))
-      .WillOnce(SetMemory(SizedResultHelper<Result::Type>(1)))
+  ExpectedMemoryInfo result1 = GetExpectedResultMemory(4);
+  expected.cmd.Init(123, result1.id, result1.offset);
+  EXPECT_CALL(*command_buffer(), OnFlush())
+      .WillOnce(SetMemory(result1.ptr, SizedResultHelper<Result::Type>(1)))
       .RetiresOnSaturation();
   gl_->GetIntegerv(123, &result);
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
@@ -635,9 +642,10 @@ TEST_F(GLES2ImplementationTest, GetProgramiv) {
   typedef GetProgramiv::Result Result;
   Result::Type result = 0;
   Cmds expected;
-  expected.cmd.Init(123, GL_DELETE_STATUS, transfer_buffer_id_, 0);
-  EXPECT_CALL(*command_buffer_, OnFlush(_))
-      .WillOnce(SetMemory(SizedResultHelper<Result::Type>(1)))
+  ExpectedMemoryInfo result1 = GetExpectedResultMemory(4);
+  expected.cmd.Init(123, GL_DELETE_STATUS, result1.id, result1.offset);
+  EXPECT_CALL(*command_buffer(), OnFlush())
+      .WillOnce(SetMemory(result1.ptr, SizedResultHelper<Result::Type>(1)))
       .RetiresOnSaturation();
   gl_->GetProgramiv(123, GL_DELETE_STATUS, &result);
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
@@ -652,9 +660,10 @@ TEST_F(GLES2ImplementationTest, GetRenderbufferParameteriv) {
   typedef GetRenderbufferParameteriv::Result Result;
   Result::Type result = 0;
   Cmds expected;
-  expected.cmd.Init(123, GL_RENDERBUFFER_RED_SIZE, transfer_buffer_id_, 0);
-  EXPECT_CALL(*command_buffer_, OnFlush(_))
-      .WillOnce(SetMemory(SizedResultHelper<Result::Type>(1)))
+  ExpectedMemoryInfo result1 = GetExpectedResultMemory(4);
+  expected.cmd.Init(123, GL_RENDERBUFFER_RED_SIZE, result1.id, result1.offset);
+  EXPECT_CALL(*command_buffer(), OnFlush())
+      .WillOnce(SetMemory(result1.ptr, SizedResultHelper<Result::Type>(1)))
       .RetiresOnSaturation();
   gl_->GetRenderbufferParameteriv(123, GL_RENDERBUFFER_RED_SIZE, &result);
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
@@ -668,9 +677,10 @@ TEST_F(GLES2ImplementationTest, GetShaderiv) {
   typedef GetShaderiv::Result Result;
   Result::Type result = 0;
   Cmds expected;
-  expected.cmd.Init(123, GL_SHADER_TYPE, transfer_buffer_id_, 0);
-  EXPECT_CALL(*command_buffer_, OnFlush(_))
-      .WillOnce(SetMemory(SizedResultHelper<Result::Type>(1)))
+  ExpectedMemoryInfo result1 = GetExpectedResultMemory(4);
+  expected.cmd.Init(123, GL_SHADER_TYPE, result1.id, result1.offset);
+  EXPECT_CALL(*command_buffer(), OnFlush())
+      .WillOnce(SetMemory(result1.ptr, SizedResultHelper<Result::Type>(1)))
       .RetiresOnSaturation();
   gl_->GetShaderiv(123, GL_SHADER_TYPE, &result);
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
@@ -686,9 +696,10 @@ TEST_F(GLES2ImplementationTest, GetTexParameterfv) {
   typedef GetTexParameterfv::Result Result;
   Result::Type result = 0;
   Cmds expected;
-  expected.cmd.Init(123, GL_TEXTURE_MAG_FILTER, transfer_buffer_id_, 0);
-  EXPECT_CALL(*command_buffer_, OnFlush(_))
-      .WillOnce(SetMemory(SizedResultHelper<Result::Type>(1)))
+  ExpectedMemoryInfo result1 = GetExpectedResultMemory(4);
+  expected.cmd.Init(123, GL_TEXTURE_MAG_FILTER, result1.id, result1.offset);
+  EXPECT_CALL(*command_buffer(), OnFlush())
+      .WillOnce(SetMemory(result1.ptr, SizedResultHelper<Result::Type>(1)))
       .RetiresOnSaturation();
   gl_->GetTexParameterfv(123, GL_TEXTURE_MAG_FILTER, &result);
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
@@ -702,9 +713,10 @@ TEST_F(GLES2ImplementationTest, GetTexParameteriv) {
   typedef GetTexParameteriv::Result Result;
   Result::Type result = 0;
   Cmds expected;
-  expected.cmd.Init(123, GL_TEXTURE_MAG_FILTER, transfer_buffer_id_, 0);
-  EXPECT_CALL(*command_buffer_, OnFlush(_))
-      .WillOnce(SetMemory(SizedResultHelper<Result::Type>(1)))
+  ExpectedMemoryInfo result1 = GetExpectedResultMemory(4);
+  expected.cmd.Init(123, GL_TEXTURE_MAG_FILTER, result1.id, result1.offset);
+  EXPECT_CALL(*command_buffer(), OnFlush())
+      .WillOnce(SetMemory(result1.ptr, SizedResultHelper<Result::Type>(1)))
       .RetiresOnSaturation();
   gl_->GetTexParameteriv(123, GL_TEXTURE_MAG_FILTER, &result);
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
@@ -721,10 +733,11 @@ TEST_F(GLES2ImplementationTest, GetVertexAttribfv) {
   typedef GetVertexAttribfv::Result Result;
   Result::Type result = 0;
   Cmds expected;
+  ExpectedMemoryInfo result1 = GetExpectedResultMemory(4);
   expected.cmd.Init(
-      123, GL_VERTEX_ATTRIB_ARRAY_NORMALIZED, transfer_buffer_id_, 0);
-  EXPECT_CALL(*command_buffer_, OnFlush(_))
-      .WillOnce(SetMemory(SizedResultHelper<Result::Type>(1)))
+      123, GL_VERTEX_ATTRIB_ARRAY_NORMALIZED, result1.id, result1.offset);
+  EXPECT_CALL(*command_buffer(), OnFlush())
+      .WillOnce(SetMemory(result1.ptr, SizedResultHelper<Result::Type>(1)))
       .RetiresOnSaturation();
   gl_->GetVertexAttribfv(123, GL_VERTEX_ATTRIB_ARRAY_NORMALIZED, &result);
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
@@ -738,10 +751,11 @@ TEST_F(GLES2ImplementationTest, GetVertexAttribiv) {
   typedef GetVertexAttribiv::Result Result;
   Result::Type result = 0;
   Cmds expected;
+  ExpectedMemoryInfo result1 = GetExpectedResultMemory(4);
   expected.cmd.Init(
-      123, GL_VERTEX_ATTRIB_ARRAY_NORMALIZED, transfer_buffer_id_, 0);
-  EXPECT_CALL(*command_buffer_, OnFlush(_))
-      .WillOnce(SetMemory(SizedResultHelper<Result::Type>(1)))
+      123, GL_VERTEX_ATTRIB_ARRAY_NORMALIZED, result1.id, result1.offset);
+  EXPECT_CALL(*command_buffer(), OnFlush())
+      .WillOnce(SetMemory(result1.ptr, SizedResultHelper<Result::Type>(1)))
       .RetiresOnSaturation();
   gl_->GetVertexAttribiv(123, GL_VERTEX_ATTRIB_ARRAY_NORMALIZED, &result);
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
@@ -766,10 +780,12 @@ TEST_F(GLES2ImplementationTest, IsBuffer) {
 
   typedef IsBuffer::Result Result;
   Cmds expected;
-  expected.cmd.Init(1, transfer_buffer_id_, 0);
+  ExpectedMemoryInfo result1 =
+      GetExpectedResultMemory(sizeof(IsBuffer::Result));
+  expected.cmd.Init(1, result1.id, result1.offset);
 
-  EXPECT_CALL(*command_buffer_, OnFlush(_))
-      .WillOnce(SetMemory(uint32(1)))
+  EXPECT_CALL(*command_buffer(), OnFlush())
+      .WillOnce(SetMemory(result1.ptr, uint32(1)))
       .RetiresOnSaturation();
 
   GLboolean result = gl_->IsBuffer(1);
@@ -784,10 +800,12 @@ TEST_F(GLES2ImplementationTest, IsEnabled) {
 
   typedef IsEnabled::Result Result;
   Cmds expected;
-  expected.cmd.Init(1, transfer_buffer_id_, 0);
+  ExpectedMemoryInfo result1 =
+      GetExpectedResultMemory(sizeof(IsEnabled::Result));
+  expected.cmd.Init(1, result1.id, result1.offset);
 
-  EXPECT_CALL(*command_buffer_, OnFlush(_))
-      .WillOnce(SetMemory(uint32(1)))
+  EXPECT_CALL(*command_buffer(), OnFlush())
+      .WillOnce(SetMemory(result1.ptr, uint32(1)))
       .RetiresOnSaturation();
 
   GLboolean result = gl_->IsEnabled(1);
@@ -802,10 +820,12 @@ TEST_F(GLES2ImplementationTest, IsFramebuffer) {
 
   typedef IsFramebuffer::Result Result;
   Cmds expected;
-  expected.cmd.Init(1, transfer_buffer_id_, 0);
+  ExpectedMemoryInfo result1 =
+      GetExpectedResultMemory(sizeof(IsFramebuffer::Result));
+  expected.cmd.Init(1, result1.id, result1.offset);
 
-  EXPECT_CALL(*command_buffer_, OnFlush(_))
-      .WillOnce(SetMemory(uint32(1)))
+  EXPECT_CALL(*command_buffer(), OnFlush())
+      .WillOnce(SetMemory(result1.ptr, uint32(1)))
       .RetiresOnSaturation();
 
   GLboolean result = gl_->IsFramebuffer(1);
@@ -820,10 +840,12 @@ TEST_F(GLES2ImplementationTest, IsProgram) {
 
   typedef IsProgram::Result Result;
   Cmds expected;
-  expected.cmd.Init(1, transfer_buffer_id_, 0);
+  ExpectedMemoryInfo result1 =
+      GetExpectedResultMemory(sizeof(IsProgram::Result));
+  expected.cmd.Init(1, result1.id, result1.offset);
 
-  EXPECT_CALL(*command_buffer_, OnFlush(_))
-      .WillOnce(SetMemory(uint32(1)))
+  EXPECT_CALL(*command_buffer(), OnFlush())
+      .WillOnce(SetMemory(result1.ptr, uint32(1)))
       .RetiresOnSaturation();
 
   GLboolean result = gl_->IsProgram(1);
@@ -838,10 +860,12 @@ TEST_F(GLES2ImplementationTest, IsRenderbuffer) {
 
   typedef IsRenderbuffer::Result Result;
   Cmds expected;
-  expected.cmd.Init(1, transfer_buffer_id_, 0);
+  ExpectedMemoryInfo result1 =
+      GetExpectedResultMemory(sizeof(IsRenderbuffer::Result));
+  expected.cmd.Init(1, result1.id, result1.offset);
 
-  EXPECT_CALL(*command_buffer_, OnFlush(_))
-      .WillOnce(SetMemory(uint32(1)))
+  EXPECT_CALL(*command_buffer(), OnFlush())
+      .WillOnce(SetMemory(result1.ptr, uint32(1)))
       .RetiresOnSaturation();
 
   GLboolean result = gl_->IsRenderbuffer(1);
@@ -856,10 +880,12 @@ TEST_F(GLES2ImplementationTest, IsShader) {
 
   typedef IsShader::Result Result;
   Cmds expected;
-  expected.cmd.Init(1, transfer_buffer_id_, 0);
+  ExpectedMemoryInfo result1 =
+      GetExpectedResultMemory(sizeof(IsShader::Result));
+  expected.cmd.Init(1, result1.id, result1.offset);
 
-  EXPECT_CALL(*command_buffer_, OnFlush(_))
-      .WillOnce(SetMemory(uint32(1)))
+  EXPECT_CALL(*command_buffer(), OnFlush())
+      .WillOnce(SetMemory(result1.ptr, uint32(1)))
       .RetiresOnSaturation();
 
   GLboolean result = gl_->IsShader(1);
@@ -874,10 +900,12 @@ TEST_F(GLES2ImplementationTest, IsTexture) {
 
   typedef IsTexture::Result Result;
   Cmds expected;
-  expected.cmd.Init(1, transfer_buffer_id_, 0);
+  ExpectedMemoryInfo result1 =
+      GetExpectedResultMemory(sizeof(IsTexture::Result));
+  expected.cmd.Init(1, result1.id, result1.offset);
 
-  EXPECT_CALL(*command_buffer_, OnFlush(_))
-      .WillOnce(SetMemory(uint32(1)))
+  EXPECT_CALL(*command_buffer(), OnFlush())
+      .WillOnce(SetMemory(result1.ptr, uint32(1)))
       .RetiresOnSaturation();
 
   GLboolean result = gl_->IsTexture(1);

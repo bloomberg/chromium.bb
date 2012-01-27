@@ -34,6 +34,7 @@
           '<(DEPTH)/gpu/command_buffer/client/gles2_cmd_helper.cc',
           '<(DEPTH)/gpu/command_buffer/client/gles2_implementation.cc',
           '<(DEPTH)/gpu/command_buffer/client/program_info_manager.cc',
+          '<(DEPTH)/gpu/command_buffer/client/transfer_buffer.cc',
           '<(DEPTH)/gpu/command_buffer/client/gles2_lib.cc',
           '<(DEPTH)/gpu/command_buffer/client/mapped_memory.cc',
           '<(DEPTH)/gpu/command_buffer/client/ring_buffer.cc',

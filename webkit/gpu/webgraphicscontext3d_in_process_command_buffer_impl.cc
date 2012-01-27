@@ -28,6 +28,7 @@
 #include "base/synchronization/lock.h"
 #include "gpu/command_buffer/client/gles2_lib.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
+#include "gpu/command_buffer/client/transfer_buffer.h"
 #include "gpu/command_buffer/common/constants.h"
 #include "gpu/command_buffer/service/context_group.h"
 #include "gpu/command_buffer/service/gpu_scheduler.h"
@@ -46,6 +47,7 @@ using gpu::CommandBufferService;
 using gpu::gles2::GLES2CmdHelper;
 using gpu::gles2::GLES2Implementation;
 using gpu::GpuScheduler;
+using gpu::TransferBuffer;
 
 namespace webkit {
 namespace gpu {
@@ -190,7 +192,7 @@ class GLInProcessContext : public base::SupportsWeakPtr<GLInProcessContext> {
   scoped_refptr<gfx::GLContext> context_;
   scoped_refptr<gfx::GLSurface> surface_;
   scoped_ptr<GLES2CmdHelper> gles2_helper_;
-  int32 transfer_buffer_id_;
+  scoped_ptr<TransferBuffer> transfer_buffer_;
   scoped_ptr<GLES2Implementation> gles2_implementation_;
   Error last_error_;
 
@@ -202,7 +204,9 @@ namespace {
 const int32 kCommandBufferSize = 1024 * 1024;
 // TODO(kbr): make the transfer buffer size configurable via context
 // creation attributes.
-const int32 kTransferBufferSize = 1024 * 1024;
+const size_t kStartTransferBufferSize = 4 * 1024 * 1024;
+const size_t kMinTransferBufferSize = 1 * 256 * 1024;
+const size_t kMaxTransferBufferSize = 16 * 1024 * 1024;
 
 static base::LazyInstance<
     std::set<WebGraphicsContext3DInProcessCommandBufferImpl*> >
@@ -392,7 +396,6 @@ GLInProcessContext::GLInProcessContext(GLInProcessContext* parent)
     : parent_(parent ?
           parent->AsWeakPtr() : base::WeakPtr<GLInProcessContext>()),
       parent_texture_id_(0),
-      transfer_buffer_id_(-1),
       last_error_(SUCCESS) {
 }
 
@@ -529,30 +532,21 @@ bool GLInProcessContext::Initialize(bool onscreen,
   }
 
   // Create a transfer buffer.
-  transfer_buffer_id_ =
-      command_buffer_->CreateTransferBuffer(
-          kTransferBufferSize, ::gpu::kCommandBufferSharedMemoryId);
-  if (transfer_buffer_id_ < 0) {
-    Destroy();
-    return false;
-  }
-
-  // Map the buffer.
-  Buffer transfer_buffer =
-      command_buffer_->GetTransferBuffer(transfer_buffer_id_);
-  if (!transfer_buffer.ptr) {
-    Destroy();
-    return false;
-  }
+  transfer_buffer_.reset(new TransferBuffer(gles2_helper_.get()));
 
   // Create the object exposing the OpenGL API.
   gles2_implementation_.reset(new GLES2Implementation(
       gles2_helper_.get(),
-      transfer_buffer.size,
-      transfer_buffer.ptr,
-      transfer_buffer_id_,
+      transfer_buffer_.get(),
       true,
       false));
+
+  if (!gles2_implementation_->Initialize(
+      kStartTransferBufferSize,
+      kMinTransferBufferSize,
+      kMaxTransferBufferSize)) {
+    return false;
+  }
 
   return true;
 }
@@ -574,13 +568,8 @@ void GLInProcessContext::Destroy() {
     gles2_implementation_.reset();
   }
 
-  if (command_buffer_.get() && transfer_buffer_id_ != -1) {
-    command_buffer_->DestroyTransferBuffer(transfer_buffer_id_);
-    transfer_buffer_id_ = -1;
-  }
-
+  transfer_buffer_.reset();
   gles2_helper_.reset();
-
   command_buffer_.reset();
 }
 

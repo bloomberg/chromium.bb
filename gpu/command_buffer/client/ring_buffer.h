@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -165,12 +165,12 @@ class RingBufferWrapper {
   }
 
   // Gets a pointer to a memory block given the base memory and the offset.
-  void* GetPointer(RingBuffer::Offset offset) {
+  void* GetPointer(RingBuffer::Offset offset) const {
     return static_cast<int8*>(base_) + offset;
   }
 
   // Gets the offset to a memory block given the base memory and the address.
-  RingBuffer::Offset GetOffset(void* pointer) {
+  RingBuffer::Offset GetOffset(void* pointer) const {
     return static_cast<int8*>(pointer) - static_cast<int8*>(base_);
   }
 

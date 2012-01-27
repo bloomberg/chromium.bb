@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,6 +15,9 @@
 #include "ui/gfx/native_widget_types.h"
 
 namespace gpu {
+
+class TransferBuffer;
+
 namespace demos {
 
 class Demo;
@@ -52,6 +55,7 @@ class Window {
   scoped_refptr<gfx::GLContext> context_;
   scoped_refptr<gfx::GLSurface> surface_;
   scoped_ptr<gpu::gles2::GLES2CmdHelper> gles2_cmd_helper_;
+  scoped_ptr<gpu::TransferBuffer> transfer_buffer_;
 
   DISALLOW_COPY_AND_ASSIGN(Window);
 };

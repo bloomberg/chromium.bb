@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,6 +15,7 @@
 
 namespace gpu {
 class CommandBuffer;
+class TransferBuffer;
 namespace gles2 {
 class GLES2CmdHelper;
 class GLES2Implementation;
@@ -63,6 +64,7 @@ class PluginGraphics3D : public PluginResource {
   // GLES2 Implementation objects.
   scoped_ptr<gpu::CommandBuffer> command_buffer_;
   scoped_ptr<gpu::gles2::GLES2Implementation> gles2_implementation_;
+  scoped_ptr<gpu::TransferBuffer> transfer_buffer_;
   scoped_ptr<gpu::gles2::GLES2CmdHelper> gles2_helper_;
   PP_Instance instance_id_;
 
