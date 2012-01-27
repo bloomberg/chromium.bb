@@ -459,8 +459,16 @@ void NativeWidgetAura::ShowWithWindowState(ui::WindowShowState state) {
     window_->SetIntProperty(aura::client::kShowStateKey, state);
   }
   window_->Show();
-  if (can_activate_ && state != ui::SHOW_STATE_INACTIVE) {
-    Activate();
+  if (can_activate_) {
+    if (state != ui::SHOW_STATE_INACTIVE)
+      Activate();
+    // SetInitialFocus() should be always be called, even for
+    // SHOW_STATE_INACTIVE. When a frameless modal dialog is created by
+    // a widget of TYPE_WINDOW_FRAMELESS, Widget::Show() will call into
+    // this function with the window state SHOW_STATE_INACTIVE,
+    // SetInitialFoucs() has to be called so that the dialog can get focus.
+    // This also matches NativeWidgetWin which invokes SetInitialFocus
+    // regardless of show state.
     GetWidget()->SetInitialFocus();
   }
 }
