@@ -85,7 +85,6 @@ def GetActualFilePathAndType(shortname):
   return actual_lib_path, file_type
 
 def GetTransitiveClosureOfNeeded(base_needed):
-  # TODO(jvoung): We may need to get the topological sort of depedencies.
   visited_portable = set()
   visited_native = set()
   all_needed = set(base_needed)
@@ -150,7 +149,7 @@ def main(argv):
 
   if not inputs or len(inputs) != 1:
     Usage()
-    DriverExit(0)
+    DriverExit(1)
   pexe_file = inputs[0]
   output = env.getone('OUTPUT')
   if output == '':

@@ -1367,13 +1367,6 @@ def GenerateManifestFunc(target, source, env):
   for k, v in obj['program'].items():
     obj['files']['main.nexe'][k] = v.copy()
     v['url'] = 'runnable-ld.so'
-  # Put runnable-ld.so into the 'program' field, for all known
-  # NMF architectures (besides 'portable').
-  new_program_dict = {}
-  obj['program'] = new_program_dict
-  for arch in ['x86-32', 'x86-64', 'arm']:
-    new_program_dict[arch] = {}
-    new_program_dict[arch]['url'] = 'runnable-ld.so'
   # Write the new manifest!
   target_file = open(str(target[0]), 'w')
   json.dump(obj, target_file)
