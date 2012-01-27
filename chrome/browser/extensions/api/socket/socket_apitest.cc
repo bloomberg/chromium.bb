@@ -121,6 +121,10 @@ IN_PROC_BROWSER_TEST_F(SocketApiTest, SocketUDPExtension) {
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 
+#if defined(OS_WIN)
+// http://crbug.com/111572
+#define SocketTCPExtension DISABLED_SocketTCPExtension
+#endif
 IN_PROC_BROWSER_TEST_F(SocketApiTest, SocketTCPExtension) {
   scoped_ptr<net::TestServer> test_server(
       new net::TestServer(net::TestServer::TYPE_TCP_ECHO,
