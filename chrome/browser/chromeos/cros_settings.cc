@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -124,6 +124,14 @@ bool CrosSettings::FindEmailInList(const std::string& path,
 bool CrosSettings::AddSettingsProvider(CrosSettingsProvider* provider) {
   DCHECK(CalledOnValidThread());
   providers_.push_back(provider);
+
+  // Allow the provider to notify this object when settings have changed.
+  // Providers instantiated inside this class will have the same callback
+  // passed to their constructor, but doing it here allows for providers
+  // to be instantiated outside this class.
+  CrosSettingsProvider::NotifyObserversCallback notify_cb(
+      base::Bind(&CrosSettings::FireObservers, base::Unretained(this)));
+  provider->SetNotifyObserversCallback(notify_cb);
   return true;
 }
 

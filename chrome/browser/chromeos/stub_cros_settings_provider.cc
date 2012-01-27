@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,6 +21,9 @@ const char* kHandledSettings[] = {
   kAccountsPrefUsers,
   kDeviceOwner,
   kReleaseChannel,
+  kReportDeviceVersionInfo,
+  kReportDeviceActivityTimes,
+  kReportDeviceBootMode,
   kSettingProxyEverywhere,
   kSignedDataRoamingEnabled,
   kStatsReportingPref
@@ -31,6 +34,11 @@ const char* kHandledSettings[] = {
 StubCrosSettingsProvider::StubCrosSettingsProvider(
     const NotifyObserversCallback& notify_cb)
     : CrosSettingsProvider(notify_cb) {
+  SetDefaults();
+}
+
+StubCrosSettingsProvider::StubCrosSettingsProvider()
+  : CrosSettingsProvider(CrosSettingsProvider::NotifyObserversCallback()) {
   SetDefaults();
 }
 

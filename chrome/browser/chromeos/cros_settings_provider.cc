@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -34,7 +34,13 @@ void CrosSettingsProvider::Set(const std::string& path,
 }
 
 void CrosSettingsProvider::NotifyObservers(const std::string& path) {
-  notify_cb_.Run(path);
+  if (!notify_cb_.is_null())
+    notify_cb_.Run(path);
+}
+
+void CrosSettingsProvider::SetNotifyObserversCallback(
+    const NotifyObserversCallback& notify_cb) {
+  notify_cb_ = notify_cb;
 }
 
 };  // namespace chromeos

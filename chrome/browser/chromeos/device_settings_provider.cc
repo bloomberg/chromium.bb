@@ -41,7 +41,10 @@ const char* kBooleanSettings[] = {
   kAccountsPrefAllowGuest,
   kAccountsPrefShowUserNamesOnSignIn,
   kSignedDataRoamingEnabled,
-  kStatsReportingPref
+  kStatsReportingPref,
+  kReportDeviceVersionInfo,
+  kReportDeviceActivityTimes,
+  kReportDeviceBootMode
 };
 
 const char* kStringSettings[] = {
@@ -281,6 +284,9 @@ void DeviceSettingsProvider::SetInPolicy() {
         whitelist_proto->add_user_whitelist(email.c_str());
     }
   } else {
+    // kReportDeviceVersionInfo, kReportDeviceActivityTimes, and
+    // kReportDeviceBootMode do not support being set in the policy, since
+    // they are not intended to be user-controlled.
     NOTREACHED();
   }
   data.set_policy_value(pol.SerializeAsString());
@@ -402,6 +408,21 @@ void DeviceSettingsProvider::UpdateValuesCache() {
     list->Append(base::Value::CreateStringValue(*it));
   }
   new_values_cache.SetValue(kAccountsPrefUsers, list);
+
+  if (pol.has_device_reporting()) {
+    if (pol.device_reporting().has_report_version_info()) {
+      new_values_cache.SetBoolean(kReportDeviceVersionInfo,
+          pol.device_reporting().report_version_info());
+    }
+    if (pol.device_reporting().has_report_activity_times()) {
+      new_values_cache.SetBoolean(kReportDeviceActivityTimes,
+          pol.device_reporting().report_activity_times());
+    }
+    if (pol.device_reporting().has_report_boot_mode()) {
+      new_values_cache.SetBoolean(kReportDeviceBootMode,
+          pol.device_reporting().report_boot_mode());
+    }
+  }
 
   // Collect all notifications but send them only after we have swapped the
   // cache so that if somebody actually reads the cache will be already valid.

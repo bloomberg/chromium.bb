@@ -7,10 +7,15 @@
 #include "base/message_loop.h"
 #include "base/time.h"
 #include "chrome/browser/idle.h"
+#include "chrome/browser/chromeos/cros_settings.h"
+#include "chrome/browser/chromeos/cros_settings_names.h"
+#include "chrome/browser/chromeos/cros_settings_provider.h"
+#include "chrome/browser/chromeos/stub_cros_settings_provider.h"
 #include "chrome/browser/chromeos/system/mock_statistics_provider.h"
 #include "chrome/browser/policy/proto/device_management_backend.pb.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/test/base/testing_pref_service.h"
+#include "content/test/test_browser_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -91,11 +96,31 @@ using ::testing::SetArgPointee;
 class DeviceStatusCollectorTest : public testing::Test {
  public:
   DeviceStatusCollectorTest()
-    :  prefs_(),
-       status_collector_(&prefs_, &statistics_provider_) {
+    : message_loop_(MessageLoop::TYPE_UI),
+      ui_thread_(content::BrowserThread::UI, &message_loop_),
+      file_thread_(content::BrowserThread::FILE, &message_loop_),
+      status_collector_(&prefs_, &statistics_provider_) {
+
     DeviceStatusCollector::RegisterPrefs(&prefs_);
     EXPECT_CALL(statistics_provider_, GetMachineStatistic(_, NotNull()))
         .WillRepeatedly(Return(false));
+
+    cros_settings_ = chromeos::CrosSettings::Get();
+
+    // Remove the real DeviceSettingsProvider and replace it with a stub.
+    device_settings_provider_ =
+        cros_settings_->GetProvider(chromeos::kReportDeviceVersionInfo);
+    EXPECT_TRUE(device_settings_provider_ != NULL);
+    EXPECT_TRUE(
+        cros_settings_->RemoveSettingsProvider(device_settings_provider_));
+    cros_settings_->AddSettingsProvider(&stub_settings_provider_);
+  }
+
+  ~DeviceStatusCollectorTest() {
+    // Restore the real DeviceSettingsProvider.
+    EXPECT_TRUE(
+      cros_settings_->RemoveSettingsProvider(&stub_settings_provider_));
+    cros_settings_->AddSettingsProvider(device_settings_provider_);
   }
 
  protected:
@@ -105,10 +130,16 @@ class DeviceStatusCollectorTest : public testing::Test {
   }
 
   MessageLoop message_loop_;
+  content::TestBrowserThread ui_thread_;
+  content::TestBrowserThread file_thread_;
+
   TestingPrefService prefs_;
   chromeos::system::MockStatisticsProvider statistics_provider_;
   TestingDeviceStatusCollector status_collector_;
   em::DeviceStatusReportRequest status_;
+  chromeos::CrosSettings* cros_settings_;
+  chromeos::CrosSettingsProvider* device_settings_provider_;
+  chromeos::StubCrosSettingsProvider stub_settings_provider_;
 };
 
 TEST_F(DeviceStatusCollectorTest, AllIdle) {
@@ -117,6 +148,8 @@ TEST_F(DeviceStatusCollectorTest, AllIdle) {
     IDLE_STATE_IDLE,
     IDLE_STATE_IDLE
   };
+  cros_settings_->SetBoolean(chromeos::kReportDeviceActivityTimes, true);
+
   // Test reporting with no data.
   status_collector_.GetStatus(&status_);
   EXPECT_EQ(0, status_.active_time_size());
@@ -142,6 +175,8 @@ TEST_F(DeviceStatusCollectorTest, AllActive) {
     IDLE_STATE_ACTIVE,
     IDLE_STATE_ACTIVE
   };
+  cros_settings_->SetBoolean(chromeos::kReportDeviceActivityTimes, true);
+
   // Test a single active sample.
   status_collector_.Simulate(test_states, 1);
   status_collector_.GetStatus(&status_);
@@ -168,6 +203,7 @@ TEST_F(DeviceStatusCollectorTest, MixedStates) {
     IDLE_STATE_IDLE,
     IDLE_STATE_ACTIVE
   };
+  cros_settings_->SetBoolean(chromeos::kReportDeviceActivityTimes, true);
   status_collector_.Simulate(test_states,
                              sizeof(test_states) / sizeof(IdleState));
   status_collector_.GetStatus(&status_);
@@ -184,6 +220,7 @@ TEST_F(DeviceStatusCollectorTest, StateKeptInPref) {
     IDLE_STATE_IDLE,
     IDLE_STATE_IDLE
   };
+  cros_settings_->SetBoolean(chromeos::kReportDeviceActivityTimes, true);
   status_collector_.Simulate(test_states,
                              sizeof(test_states) / sizeof(IdleState));
 
@@ -209,6 +246,7 @@ TEST_F(DeviceStatusCollectorTest, Times) {
     IDLE_STATE_IDLE,
     IDLE_STATE_IDLE
   };
+  cros_settings_->SetBoolean(chromeos::kReportDeviceActivityTimes, true);
   status_collector_.Simulate(test_states,
                              sizeof(test_states) / sizeof(IdleState));
   status_collector_.GetStatus(&status_);
@@ -224,6 +262,7 @@ TEST_F(DeviceStatusCollectorTest, MaxStoredPeriods) {
   };
   unsigned int max_periods = 10;
 
+  cros_settings_->SetBoolean(chromeos::kReportDeviceActivityTimes, true);
   status_collector_.set_max_stored_active_periods(max_periods);
 
   // Simulate 12 active periods.
@@ -237,9 +276,35 @@ TEST_F(DeviceStatusCollectorTest, MaxStoredPeriods) {
   EXPECT_EQ(static_cast<int>(max_periods), status_.active_time_size());
 }
 
+TEST_F(DeviceStatusCollectorTest, ActivityTimesDisabledByDefault) {
+  // If the pref for collecting device activity times isn't explicitly turned
+  // on, no data on activity times should be reported.
+
+  IdleState test_states[] = {
+    IDLE_STATE_ACTIVE,
+    IDLE_STATE_ACTIVE,
+    IDLE_STATE_ACTIVE
+  };
+  status_collector_.Simulate(test_states,
+                             sizeof(test_states) / sizeof(IdleState));
+  status_collector_.GetStatus(&status_);
+  EXPECT_EQ(0, status_.active_time_size());
+  EXPECT_EQ(0, GetActiveMilliseconds(status_));
+}
+
 TEST_F(DeviceStatusCollectorTest, DevSwitchBootMode) {
+  // Test that boot mode data is not reported if the pref is not turned on.
   status_collector_.GetStatus(&status_);
   EXPECT_EQ(false, status_.has_boot_mode());
+
+  EXPECT_CALL(statistics_provider_,
+              GetMachineStatistic("devsw_boot", NotNull()))
+      .WillRepeatedly(DoAll(SetArgPointee<1>("0"), Return(true)));
+  EXPECT_EQ(false, status_.has_boot_mode());
+
+  // Turn the pref on, and check that the status is reported iff the
+  // statistics provider returns valid data.
+  cros_settings_->SetBoolean(chromeos::kReportDeviceBootMode, true);
 
   EXPECT_CALL(statistics_provider_,
               GetMachineStatistic("devsw_boot", NotNull()))
@@ -264,6 +329,26 @@ TEST_F(DeviceStatusCollectorTest, DevSwitchBootMode) {
       .WillOnce(DoAll(SetArgPointee<1>("1"), Return(true)));
   status_collector_.GetStatus(&status_);
   EXPECT_EQ("Dev", status_.boot_mode());
+}
+
+TEST_F(DeviceStatusCollectorTest, VersionInfo) {
+  // When the pref to collect this data is not enabled, expect that none of
+  // the fields are present in the protobuf.
+  status_collector_.GetStatus(&status_);
+  EXPECT_EQ(false, status_.has_browser_version());
+  EXPECT_EQ(false, status_.has_os_version());
+  EXPECT_EQ(false, status_.has_firmware_version());
+
+  cros_settings_->SetBoolean(chromeos::kReportDeviceVersionInfo, true);
+  status_collector_.GetStatus(&status_);
+  EXPECT_EQ(true, status_.has_browser_version());
+  EXPECT_EQ(true, status_.has_os_version());
+  EXPECT_EQ(true, status_.has_firmware_version());
+
+  // Check that the browser version is not empty. OS version & firmware
+  // don't have any reasonable values inside the unit test, so those
+  // aren't checked.
+  EXPECT_NE("", status_.browser_version());
 }
 
 }  // namespace policy

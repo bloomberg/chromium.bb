@@ -10,8 +10,10 @@
 #include "base/timer.h"
 #include "chrome/browser/chromeos/version_loader.h"
 #include "chrome/browser/idle.h"
+#include "content/public/browser/notification_observer.h"
 
 namespace chromeos {
+class CrosSettings;
 namespace system {
 class StatisticsProvider;
 }
@@ -26,7 +28,7 @@ class PrefService;
 namespace policy {
 
 // Collects and summarizes the status of an enterprised-managed ChromeOS device.
-class DeviceStatusCollector {
+class DeviceStatusCollector : public content::NotificationObserver {
  public:
   DeviceStatusCollector(PrefService* local_state,
                         chromeos::system::StatisticsProvider* provider);
@@ -61,6 +63,23 @@ class DeviceStatusCollector {
   void OnOSFirmware(chromeos::VersionLoader::Handle handle,
                     std::string version);
 
+  // Helpers for the various portions of the status.
+  void GetActivityTimes(
+      enterprise_management::DeviceStatusReportRequest* request);
+  void GetVersionInfo(
+      enterprise_management::DeviceStatusReportRequest* request);
+  void GetBootMode(
+      enterprise_management::DeviceStatusReportRequest* request);
+
+  // Update the cached values of the reporting settings.
+  void UpdateReportingSettings();
+
+  // content::NotificationObserver interface.
+  virtual void Observe(
+      int type,
+      const content::NotificationSource& source,
+      const content::NotificationDetails& details) OVERRIDE;
+
   // How often to poll to see if the user is idle.
   int poll_interval_seconds_;
 
@@ -81,6 +100,13 @@ class DeviceStatusCollector {
   std::string firmware_version_;
 
   chromeos::system::StatisticsProvider* statistics_provider_;
+
+  chromeos::CrosSettings* cros_settings_;
+
+  // Cached values of the reporting settings from the device policy.
+  bool report_version_info_;
+  bool report_activity_times_;
+  bool report_boot_mode_;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceStatusCollector);
 };

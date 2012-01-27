@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -44,6 +44,8 @@ class CrosSettingsProvider {
 
   // Reloads the caches if the provider has any.
   virtual void Reload() = 0;
+
+  void SetNotifyObserversCallback(const NotifyObserversCallback& notify_cb);
 
  protected:
   // Notifies the observers about a setting change.

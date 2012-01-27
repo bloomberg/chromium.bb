@@ -7,10 +7,13 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/string_number_conversions.h"
+#include "chrome/browser/chromeos/cros_settings.h"
+#include "chrome/browser/chromeos/cros_settings_names.h"
 #include "chrome/browser/chromeos/system/statistics_provider.h"
 #include "chrome/browser/policy/proto/device_management_backend.pb.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_version_info.h"
 
 using base::Time;
@@ -25,9 +28,6 @@ const unsigned int kIdleStateThresholdSeconds = 300;
 
 // The maximum number of time periods stored in the local state.
 const unsigned int kMaxStoredActivePeriods = 500;
-
-// Stores the baseline timestamp, to which the active periods are relative.
-const char* const kPrefBaselineTime = "device_status.baseline_timestamp";
 
 // Stores a list of timestamps representing device active periods.
 const char* const kPrefDeviceActivePeriods = "device_status.active_periods";
@@ -50,11 +50,26 @@ DeviceStatusCollector::DeviceStatusCollector(
       local_state_(local_state),
       last_idle_check_(Time()),
       last_idle_state_(IDLE_STATE_UNKNOWN),
-      statistics_provider_(provider) {
+      statistics_provider_(provider),
+      report_version_info_(false),
+      report_activity_times_(false),
+      report_boot_mode_(false) {
   timer_.Start(FROM_HERE,
                TimeDelta::FromSeconds(
                    DeviceStatusCollector::kPollIntervalSeconds),
                this, &DeviceStatusCollector::CheckIdleState);
+
+  cros_settings_ = chromeos::CrosSettings::Get();
+
+  // Watch for changes to the individual policies that control what the status
+  // reports contain.
+  cros_settings_->AddSettingsObserver(chromeos::kReportDeviceVersionInfo, this);
+  cros_settings_->AddSettingsObserver(chromeos::kReportDeviceActivityTimes,
+                                      this);
+  cros_settings_->AddSettingsObserver(chromeos::kReportDeviceBootMode, this);
+
+  // Fetch the current values of the policies.
+  UpdateReportingSettings();
 
   // Get the the OS and firmware version info.
   version_loader_.GetVersion(&consumer_,
@@ -67,11 +82,15 @@ DeviceStatusCollector::DeviceStatusCollector(
 }
 
 DeviceStatusCollector::~DeviceStatusCollector() {
+  cros_settings_->RemoveSettingsObserver(chromeos::kReportDeviceVersionInfo,
+                                         this);
+  cros_settings_->RemoveSettingsObserver(chromeos::kReportDeviceActivityTimes,
+                                         this);
+  cros_settings_->RemoveSettingsObserver(chromeos::kReportDeviceBootMode, this);
 }
 
 // static
 void DeviceStatusCollector::RegisterPrefs(PrefService* local_state) {
-  local_state->RegisterInt64Pref(kPrefBaselineTime, Time::Now().ToTimeT());
   local_state->RegisterListPref(kPrefDeviceActivePeriods, new ListValue);
 }
 
@@ -79,6 +98,24 @@ void DeviceStatusCollector::CheckIdleState() {
   CalculateIdleState(kIdleStateThresholdSeconds,
       base::Bind(&DeviceStatusCollector::IdleStateCallback,
                  base::Unretained(this)));
+}
+
+void DeviceStatusCollector::UpdateReportingSettings() {
+  // Attempt to fetch the current value of the reporting settings.
+  // If trusted values are not available, register this function to be called
+  // back when they are available.
+  bool is_trusted = cros_settings_->GetTrusted(
+      chromeos::kReportDeviceVersionInfo,
+      base::Bind(&DeviceStatusCollector::UpdateReportingSettings,
+                 base::Unretained(this)));
+  if (is_trusted) {
+    cros_settings_->GetBoolean(
+        chromeos::kReportDeviceVersionInfo, &report_version_info_);
+    cros_settings_->GetBoolean(
+        chromeos::kReportDeviceActivityTimes, &report_activity_times_);
+    cros_settings_->GetBoolean(
+        chromeos::kReportDeviceBootMode, &report_boot_mode_);
+  }
 }
 
 Time DeviceStatusCollector::GetCurrentTime() {
@@ -118,6 +155,10 @@ void DeviceStatusCollector::AddActivePeriod(Time start, Time end) {
 }
 
 void DeviceStatusCollector::IdleStateCallback(IdleState state) {
+  // Do nothing if device activity reporting is disabled.
+  if (!report_activity_times_)
+    return;
+
   Time now = GetCurrentTime();
 
   if (state == IDLE_STATE_ACTIVE) {
@@ -134,8 +175,8 @@ void DeviceStatusCollector::IdleStateCallback(IdleState state) {
   last_idle_state_ = state;
 }
 
-void DeviceStatusCollector::GetStatus(em::DeviceStatusReportRequest* request) {
-  // Report device active periods.
+void DeviceStatusCollector::GetActivityTimes(
+    em::DeviceStatusReportRequest* request) {
   const ListValue* active_periods =
       local_state_->GetList(kPrefDeviceActivePeriods);
   em::TimePeriod* time_period;
@@ -159,13 +200,18 @@ void DeviceStatusCollector::GetStatus(em::DeviceStatusReportRequest* request) {
   }
   ListPrefUpdate update(local_state_, kPrefDeviceActivePeriods);
   update.Get()->Clear();
+}
 
+void DeviceStatusCollector::GetVersionInfo(
+    em::DeviceStatusReportRequest* request) {
   chrome::VersionInfo version_info;
   request->set_browser_version(version_info.Version());
   request->set_os_version(os_version_);
   request->set_firmware_version(firmware_version_);
+}
 
-  // Report the state of the dev switch at boot.
+void DeviceStatusCollector::GetBootMode(
+    em::DeviceStatusReportRequest* request) {
   std::string dev_switch_mode;
   if (statistics_provider_->GetMachineStatistic(
       "devsw_boot", &dev_switch_mode)) {
@@ -176,6 +222,17 @@ void DeviceStatusCollector::GetStatus(em::DeviceStatusReportRequest* request) {
   }
 }
 
+void DeviceStatusCollector::GetStatus(em::DeviceStatusReportRequest* request) {
+  if (report_activity_times_)
+    GetActivityTimes(request);
+
+  if (report_version_info_)
+    GetVersionInfo(request);
+
+  if (report_boot_mode_)
+    GetBootMode(request);
+}
+
 void DeviceStatusCollector::OnOSVersion(VersionLoader::Handle handle,
                                         std::string version) {
   os_version_ = version;
@@ -184,6 +241,16 @@ void DeviceStatusCollector::OnOSVersion(VersionLoader::Handle handle,
 void DeviceStatusCollector::OnOSFirmware(VersionLoader::Handle handle,
                                          std::string version) {
   firmware_version_ = version;
+}
+
+void DeviceStatusCollector::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
+  if (type == chrome::NOTIFICATION_SYSTEM_SETTING_CHANGED)
+    UpdateReportingSettings();
+  else
+    NOTREACHED();
 }
 
 }  // namespace policy
