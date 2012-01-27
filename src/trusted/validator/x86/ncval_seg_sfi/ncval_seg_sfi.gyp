@@ -99,6 +99,10 @@
             '<(DEPTH)/native_client/src/trusted/validator/x86/validate_x86.gyp:ncval_base_x86_32'
           ],
           'hard_dependency': 1,
+          # VS2010 does not correctly incrementally link obj files generated
+          # from asm files. This flag disables UseLibraryDependencyInputs to
+          # avoid this problem.
+          'msvs_2010_disable_uldi_when_referenced': 1,
         }],
     }],
     ['OS=="win"', {

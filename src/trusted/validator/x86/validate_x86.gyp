@@ -30,6 +30,10 @@
           '-Wswitch-enum',
           '-Wsign-compare'
         ],
+        # VS2010 does not correctly incrementally link obj files generated
+        # from asm files. This flag disables UseLibraryDependencyInputs to
+        # avoid this problem.
+        'msvs_2010_disable_uldi_when_referenced': 1,
         'xcode_settings': {
           'WARNING_CFLAGS!': [
             '-Wextra',
