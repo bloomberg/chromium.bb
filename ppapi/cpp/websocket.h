@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PPAPI_CPP_DEV_WEBSOCKET_DEV_H_
-#define PPAPI_CPP_DEV_WEBSOCKET_DEV_H_
+#ifndef PPAPI_CPP_WEBSOCKET_H_
+#define PPAPI_CPP_WEBSOCKET_H_
 
-#include "ppapi/c/dev/ppb_websocket_dev.h"
+#include "ppapi/c/ppb_websocket.h"
 #include "ppapi/cpp/resource.h"
 
 /// @file
-/// This file defines the WebSocket_Dev interface.
+/// This file defines the WebSocket interface.
 
 namespace pp {
 
@@ -17,14 +17,14 @@ class CompletionCallback;
 class Instance;
 class Var;
 
-/// The <code>WebSocket_Dev</code> class
-class WebSocket_Dev : public Resource {
+/// The <code>WebSocket</code> class
+class WebSocket : public Resource {
  public:
-  /// Constructs a WebSocket_Dev object.
-  WebSocket_Dev(Instance* instance);
+  /// Constructs a WebSocket object.
+  WebSocket(Instance* instance);
 
-  /// Destructs a WebSocket_Dev object.
-  virtual ~WebSocket_Dev();
+  /// Destructs a WebSocket object.
+  virtual ~WebSocket();
 
   /// Connect() connects to the specified WebSocket server. Caller can call
   /// this method at most once.
@@ -112,8 +112,8 @@ class WebSocket_Dev : public Resource {
   /// @return An int32_t containing an error code from
   /// <code>pp_errors.h</code>.
   /// Returns <code>PP_ERROR_FAILED</code> if the ReadyState is
-  /// <code>PP_WEBSOCKETREADYSTATE_CONNECTING_DEV</code>. It corresponds
-  /// JavaScript InvalidStateError of the specification.
+  /// <code>PP_WEBSOCKETREADYSTATE_CONNECTING</code>. It corresponds JavaScript
+  /// InvalidStateError of the specification.
   /// Returns <code>PP_ERROR_BADARGUMENT</code> if provided
   /// <code>message</code> of string type contains an invalid character as a
   /// UTF-8 string. It corresponds to JavaScript SyntaxError of the
@@ -169,9 +169,9 @@ class WebSocket_Dev : public Resource {
   /// GetReadyState() returns the ready state of the specified WebSocket
   /// connection.
   ///
-  /// @return Returns <code>PP_WEBSOCKETREADYSTATE_INVALID_DEV</code> if called
+  /// @return Returns <code>PP_WEBSOCKETREADYSTATE_INVALID</code> if called
   /// before connect() is called.
-  PP_WebSocketReadyState_Dev GetReadyState();
+  PP_WebSocketReadyState GetReadyState();
 
   /// GetURL() returns the URL associated with specified WebSocket connection.
   ///
@@ -182,4 +182,4 @@ class WebSocket_Dev : public Resource {
 
 }  // namespace pp
 
-#endif  // PPAPI_CPP_DEV_WEBSOCKET_DEV_H_
+#endif  // PPAPI_CPP_WEBSOCKET_H_

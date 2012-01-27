@@ -43,6 +43,7 @@
       'c/ppb_var.h',
       'c/ppb_var_array_buffer.h',
       'c/ppb_view.h',
+      'c/ppb_websocket.h',
       'c/ppp.h',
       'c/ppp_graphics_3d.h',
       'c/ppp_input_event.h',
@@ -72,7 +73,6 @@
       'c/dev/ppb_testing_dev.h',
       'c/dev/ppb_url_util_dev.h',
       'c/dev/ppb_video_decoder_dev.h',
-      'c/dev/ppb_websocket_dev.h',
       'c/dev/ppb_widget_dev.h',
       'c/dev/ppb_zoom_dev.h',
       'c/dev/ppp_cursor_control_dev.h',
@@ -173,6 +173,8 @@
       'cpp/var_array_buffer.h',
       'cpp/view.cc',
       'cpp/view.h',
+      'cpp/websocket.cc',
+      'cpp/websocket.h',
 
       # Dev interfaces.
       'cpp/dev/audio_input_dev.cc',
@@ -219,8 +221,6 @@
       'cpp/dev/video_decoder_client_dev.h',
       'cpp/dev/video_decoder_dev.cc',
       'cpp/dev/video_decoder_dev.h',
-      'cpp/dev/websocket_dev.cc',
-      'cpp/dev/websocket_dev.h',
       'cpp/dev/widget_client_dev.cc',
       'cpp/dev/widget_client_dev.h',
       'cpp/dev/widget_dev.cc',

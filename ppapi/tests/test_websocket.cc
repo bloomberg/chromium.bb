@@ -8,16 +8,16 @@
 #include <vector>
 
 #include "ppapi/c/dev/ppb_testing_dev.h"
-#include "ppapi/c/dev/ppb_websocket_dev.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/pp_var.h"
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/ppb_core.h"
 #include "ppapi/c/ppb_var.h"
 #include "ppapi/c/ppb_var_array_buffer.h"
-#include "ppapi/cpp/dev/websocket_dev.h"
+#include "ppapi/c/ppb_websocket.h"
 #include "ppapi/cpp/instance.h"
 #include "ppapi/cpp/module.h"
+#include "ppapi/cpp/websocket.h"
 #include "ppapi/tests/test_utils.h"
 #include "ppapi/tests/testing_instance.h"
 
@@ -49,8 +49,8 @@ const uint64_t kMessageFrameOverhead = 6;
 REGISTER_TEST_CASE(WebSocket);
 
 bool TestWebSocket::Init() {
-  websocket_interface_ = static_cast<const PPB_WebSocket_Dev*>(
-      pp::Module::Get()->GetBrowserInterface(PPB_WEBSOCKET_DEV_INTERFACE));
+  websocket_interface_ = static_cast<const PPB_WebSocket*>(
+      pp::Module::Get()->GetBrowserInterface(PPB_WEBSOCKET_INTERFACE));
   var_interface_ = static_cast<const PPB_Var*>(
       pp::Module::Get()->GetBrowserInterface(PPB_VAR_INTERFACE));
   arraybuffer_interface_ = static_cast<const PPB_VarArrayBuffer*>(
@@ -189,9 +189,9 @@ std::string TestWebSocket::TestUninitializedPropertiesAccess() {
   ASSERT_TRUE(AreEqualWithString(protocol, ""));
   ReleaseVar(protocol);
 
-  PP_WebSocketReadyState_Dev ready_state =
+  PP_WebSocketReadyState ready_state =
       websocket_interface_->GetReadyState(ws);
-  ASSERT_EQ(PP_WEBSOCKETREADYSTATE_INVALID_DEV, ready_state);
+  ASSERT_EQ(PP_WEBSOCKETREADYSTATE_INVALID, ready_state);
 
   PP_Var url = websocket_interface_->GetURL(ws);
   ASSERT_TRUE(AreEqualWithString(url, ""));
@@ -519,12 +519,12 @@ std::string TestWebSocket::TestBufferedAmount() {
   result = websocket_interface_->Close(ws, kCloseCodeNormalClosure, reason,
       static_cast<pp::CompletionCallback>(callback).pp_completion_callback());
   ASSERT_EQ(PP_OK_COMPLETIONPENDING, result);
-  ASSERT_EQ(PP_WEBSOCKETREADYSTATE_CLOSING_DEV,
+  ASSERT_EQ(PP_WEBSOCKETREADYSTATE_CLOSING,
       websocket_interface_->GetReadyState(ws));
 
   result = callback.WaitForResult();
   ASSERT_EQ(PP_OK, result);
-  ASSERT_EQ(PP_WEBSOCKETREADYSTATE_CLOSED_DEV,
+  ASSERT_EQ(PP_WEBSOCKETREADYSTATE_CLOSED,
       websocket_interface_->GetReadyState(ws));
 
   uint64_t base_buffered_amount = websocket_interface_->GetBufferedAmount(ws);
@@ -555,7 +555,7 @@ std::string TestWebSocket::TestBufferedAmount() {
 std::string TestWebSocket::TestCcInterfaces() {
   // C++ bindings is simple straightforward, then just verifies interfaces work
   // as a interface bridge fine.
-  pp::WebSocket_Dev ws(instance_);
+  pp::WebSocket ws(instance_);
 
   // Check uninitialized properties access.
   ASSERT_EQ(0, ws.GetBufferedAmount());
@@ -564,7 +564,7 @@ std::string TestWebSocket::TestCcInterfaces() {
   ASSERT_EQ(false, ws.GetCloseWasClean());
   ASSERT_TRUE(AreEqualWithString(ws.GetExtensions().pp_var(), ""));
   ASSERT_TRUE(AreEqualWithString(ws.GetProtocol().pp_var(), ""));
-  ASSERT_EQ(PP_WEBSOCKETREADYSTATE_INVALID_DEV, ws.GetReadyState());
+  ASSERT_EQ(PP_WEBSOCKETREADYSTATE_INVALID, ws.GetReadyState());
   ASSERT_TRUE(AreEqualWithString(ws.GetURL().pp_var(), ""));
 
   // Check communication interfaces (connect, send, receive, and close).
@@ -619,7 +619,7 @@ std::string TestWebSocket::TestCcInterfaces() {
   ASSERT_EQ(true, ws.GetCloseWasClean());
   ASSERT_TRUE(AreEqualWithString(ws.GetExtensions().pp_var(), ""));
   ASSERT_TRUE(AreEqualWithString(ws.GetProtocol().pp_var(), ""));
-  ASSERT_EQ(PP_WEBSOCKETREADYSTATE_CLOSED_DEV, ws.GetReadyState());
+  ASSERT_EQ(PP_WEBSOCKETREADYSTATE_CLOSED, ws.GetReadyState());
   ASSERT_TRUE(AreEqualWithString(ws.GetURL().pp_var(), kCloseServerURL));
 
   PASS();

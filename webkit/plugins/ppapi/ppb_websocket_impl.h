@@ -53,7 +53,7 @@ class PPB_WebSocket_Impl : public ::ppapi::Resource,
   virtual PP_Bool GetCloseWasClean() OVERRIDE;
   virtual PP_Var GetExtensions() OVERRIDE;
   virtual PP_Var GetProtocol() OVERRIDE;
-  virtual PP_WebSocketReadyState_Dev GetReadyState() OVERRIDE;
+  virtual PP_WebSocketReadyState GetReadyState() OVERRIDE;
   virtual PP_Var GetURL() OVERRIDE;
 
   // WebSocketClient implementation.
@@ -71,7 +71,7 @@ class PPB_WebSocket_Impl : public ::ppapi::Resource,
   int32_t DoReceive();
 
   scoped_ptr<WebKit::WebSocket> websocket_;
-  PP_WebSocketReadyState_Dev state_;
+  PP_WebSocketReadyState state_;
   bool error_was_received_;
 
   scoped_refptr< ::ppapi::TrackedCallback> connect_callback_;

@@ -12,7 +12,6 @@
 #include "ppapi/c/dev/ppb_memory_dev.h"
 #include "ppapi/c/dev/ppb_scrollbar_dev.h"
 #include "ppapi/c/dev/ppb_testing_dev.h"
-#include "ppapi/c/dev/ppb_websocket_dev.h"
 #include "ppapi/c/dev/ppb_widget_dev.h"
 #include "ppapi/c/dev/ppb_zoom_dev.h"
 #include "ppapi/c/pp_instance.h"
@@ -36,6 +35,7 @@
 #include "ppapi/c/ppb_var.h"
 #include "ppapi/c/ppb_var_array_buffer.h"
 #include "ppapi/c/ppb_view.h"
+#include "ppapi/c/ppb_websocket.h"
 #include "ppapi/c/private/ppb_net_address_private.h"
 #include "ppapi/c/private/ppb_pdf.h"
 #include "ppapi/c/private/ppb_tcp_socket_private.h"
@@ -133,7 +133,7 @@ const PPB_Var* PPBVarInterface();  // shared
 const PPB_VarArrayBuffer* PPBVarArrayBufferInterface();  // shared
 const PPB_View* PPBViewInterface();
 const PPB_WheelInputEvent* PPBWheelInputEventInterface();
-const PPB_WebSocket_Dev* PPBWebSocketInterface();
+const PPB_WebSocket* PPBWebSocketInterface();
 const PPB_Widget_Dev* PPBWidgetInterface();
 const PPB_Zoom_Dev* PPBZoomInterface();
 

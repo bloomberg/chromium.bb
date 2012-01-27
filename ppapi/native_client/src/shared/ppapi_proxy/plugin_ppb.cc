@@ -103,7 +103,7 @@ InterfaceMapElement interface_map[] = {
   { PPB_VAR_INTERFACE, PluginVar::GetInterface(), true },
   { PPB_VAR_INTERFACE_1_0, PluginVar::GetInterface1_0(), true },
   { PPB_VIEW_INTERFACE, PluginView::GetInterface(), true },
-  { PPB_WEBSOCKET_DEV_INTERFACE, PluginWebSocket::GetInterface(),
+  { PPB_WEBSOCKET_INTERFACE, PluginWebSocket::GetInterface(),
     true },
   { PPB_WHEEL_INPUT_EVENT_INTERFACE, PluginInputEvent::GetWheelInterface(),
     true },

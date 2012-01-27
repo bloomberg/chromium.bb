@@ -2,8 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 #
-# RPC methods used to implement PPB_WebSocket_Dev calls from the plugin.
-# See ppapi/c/dev/ppb_websocket_dev.h for interface details.
+# RPC methods used to implement PPB_WebSocket calls from the plugin.
+# See ppapi/c/ppb_websocket.h for interface details.
 
 {
  'name': 'PpbWebSocketRpc',

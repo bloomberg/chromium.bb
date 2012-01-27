@@ -110,10 +110,10 @@ PP_Var GetProtocol(PP_Resource resource) {
   return enter.object()->GetProtocol();
 }
 
-PP_WebSocketReadyState_Dev GetReadyState(PP_Resource resource) {
+PP_WebSocketReadyState GetReadyState(PP_Resource resource) {
   EnterResource<PPB_WebSocket_API> enter(resource, false);
   if (enter.failed())
-    return PP_WEBSOCKETREADYSTATE_INVALID_DEV;
+    return PP_WEBSOCKETREADYSTATE_INVALID;
   return enter.object()->GetReadyState();
 }
 
@@ -124,7 +124,7 @@ PP_Var GetURL(PP_Resource resource) {
   return enter.object()->GetURL();
 }
 
-const PPB_WebSocket_Dev_0_1 g_ppb_websocket_0_1_thunk = {
+const PPB_WebSocket_1_0 g_ppb_websocket_1_0_thunk = {
   &Create,
   &IsWebSocket,
   &Connect,
@@ -143,8 +143,8 @@ const PPB_WebSocket_Dev_0_1 g_ppb_websocket_0_1_thunk = {
 
 }  // namespace
 
-const PPB_WebSocket_Dev_0_1* GetPPB_WebSocket_Dev_0_1_Thunk() {
-  return &g_ppb_websocket_0_1_thunk;
+const PPB_WebSocket_1_0* GetPPB_WebSocket_1_0_Thunk() {
+  return &g_ppb_websocket_1_0_thunk;
 }
 
 }  // namespace thunk

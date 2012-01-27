@@ -90,9 +90,9 @@ const PPB_VarArrayBuffer* PPBVarArrayBufferInterface() {
       GetBrowserInterfaceSafe(PPB_VAR_ARRAY_BUFFER_INTERFACE));
 }
 
-const PPB_WebSocket_Dev* PPBWebSocketInterface() {
-  return static_cast<const PPB_WebSocket_Dev*>(
-      GetBrowserInterfaceSafe(PPB_WEBSOCKET_DEV_INTERFACE));
+const PPB_WebSocket* PPBWebSocketInterface() {
+  return static_cast<const PPB_WebSocket*>(
+      GetBrowserInterfaceSafe(PPB_WEBSOCKET_INTERFACE));
 }
 
 // Plugin interface helpers

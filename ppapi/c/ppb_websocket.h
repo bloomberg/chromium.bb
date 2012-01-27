@@ -3,10 +3,10 @@
  * found in the LICENSE file.
  */
 
-/* From dev/ppb_websocket_dev.idl modified Fri Jan 27 10:09:34 2012. */
+/* From ppb_websocket.idl modified Fri Jan 27 15:51:19 2012. */
 
-#ifndef PPAPI_C_DEV_PPB_WEBSOCKET_DEV_H_
-#define PPAPI_C_DEV_PPB_WEBSOCKET_DEV_H_
+#ifndef PPAPI_C_PPB_WEBSOCKET_H_
+#define PPAPI_C_PPB_WEBSOCKET_H_
 
 #include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_completion_callback.h"
@@ -16,12 +16,12 @@
 #include "ppapi/c/pp_stdint.h"
 #include "ppapi/c/pp_var.h"
 
-#define PPB_WEBSOCKET_DEV_INTERFACE_0_1 "PPB_WebSocket(Dev);0.1"
-#define PPB_WEBSOCKET_DEV_INTERFACE PPB_WEBSOCKET_DEV_INTERFACE_0_1
+#define PPB_WEBSOCKET_INTERFACE_1_0 "PPB_WebSocket;1.0"
+#define PPB_WEBSOCKET_INTERFACE PPB_WEBSOCKET_INTERFACE_1_0
 
 /**
  * @file
- * This file defines the <code>PPB_WebSocket_Dev</code> interface.
+ * This file defines the <code>PPB_WebSocket</code> interface.
  */
 
 
@@ -38,26 +38,26 @@ typedef enum {
   /**
    * Ready state is queried on an invalid resource.
    */
-  PP_WEBSOCKETREADYSTATE_INVALID_DEV = -1,
+  PP_WEBSOCKETREADYSTATE_INVALID = -1,
   /**
    * Ready state that the connection has not yet been established.
    */
-  PP_WEBSOCKETREADYSTATE_CONNECTING_DEV = 0,
+  PP_WEBSOCKETREADYSTATE_CONNECTING = 0,
   /**
    * Ready state that the WebSocket connection is established and communication
    * is possible.
    */
-  PP_WEBSOCKETREADYSTATE_OPEN_DEV = 1,
+  PP_WEBSOCKETREADYSTATE_OPEN = 1,
   /**
    * Ready state that the connection is going through the closing handshake.
    */
-  PP_WEBSOCKETREADYSTATE_CLOSING_DEV = 2,
+  PP_WEBSOCKETREADYSTATE_CLOSING = 2,
   /**
    * Ready state that the connection has been closed or could not be opened.
    */
-  PP_WEBSOCKETREADYSTATE_CLOSED_DEV = 3
-} PP_WebSocketReadyState_Dev;
-PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_WebSocketReadyState_Dev, 4);
+  PP_WEBSOCKETREADYSTATE_CLOSED = 3
+} PP_WebSocketReadyState;
+PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_WebSocketReadyState, 4);
 /**
  * @}
  */
@@ -66,7 +66,7 @@ PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_WebSocketReadyState_Dev, 4);
  * @addtogroup Interfaces
  * @{
  */
-struct PPB_WebSocket_Dev_0_1 {
+struct PPB_WebSocket_1_0 {
   /**
    * Create() creates a WebSocket instance.
    *
@@ -85,9 +85,9 @@ struct PPB_WebSocket_Dev_0_1 {
    * WebSocket.
    *
    * @return Returns <code>PP_TRUE</code> if <code>resource</code> is a
-   * <code>PPB_WebSocket_Dev</code>, <code>PP_FALSE</code> if the
+   * <code>PPB_WebSocket</code>, <code>PP_FALSE</code> if the
    * <code>resource</code> is invalid or some type other than
-   * <code>PPB_WebSocket_Dev</code>.
+   * <code>PPB_WebSocket</code>.
    */
   PP_Bool (*IsWebSocket)(PP_Resource resource);
   /**
@@ -176,7 +176,7 @@ struct PPB_WebSocket_Dev_0_1 {
    * <code>message</code>. The <code>message</code> must remain valid until
    * the ReceiveMessage operation completes. Its <code>PP_VarType</code>
    * will be <code>PP_VARTYPE_STRING</code> or
-   * <code>PP_VARTYPE_ARRAY_BYFFER</code> on receiving.
+   * <code>PP_VARTYPE_ARRAY_BUFFER</code> on receiving.
    *
    * @param[in] callback A <code>PP_CompletionCallback</code> which is called
    * when the receiving message is completed. It is ignored if ReceiveMessage
@@ -204,8 +204,8 @@ struct PPB_WebSocket_Dev_0_1 {
    *
    * @return An int32_t containing an error code from <code>pp_errors.h</code>.
    * Returns <code>PP_ERROR_FAILED</code> if the ReadyState is
-   * <code>PP_WEBSOCKETREADYSTATE_CONNECTING_DEV</code>. It corresponds
-   * JavaScript InvalidStateError of the specification.
+   * <code>PP_WEBSOCKETREADYSTATE_CONNECTING</code>. It corresponds JavaScript
+   * InvalidStateError of the specification.
    * Returns <code>PP_ERROR_BADARGUMENT</code> if provided <code>message</code>
    * of string type contains an invalid character as a UTF-8 string. It
    * corresponds to JavaScript SyntaxError of the specification.
@@ -291,10 +291,10 @@ struct PPB_WebSocket_Dev_0_1 {
    * @param[in] web_socket A <code>PP_Resource</code> corresponding to a
    * WebSocket.
    *
-   * @return Returns <code>PP_WEBSOCKETREADYSTATE_INVALID_DEV</code> if called
+   * @return Returns <code>PP_WEBSOCKETREADYSTATE_INVALID</code> if called
    * before connect() is called, or called on an invalid resource.
    */
-  PP_WebSocketReadyState_Dev (*GetReadyState)(PP_Resource web_socket);
+  PP_WebSocketReadyState (*GetReadyState)(PP_Resource web_socket);
   /**
    * GetURL() returns the URL associated with specified WebSocket connection.
    *
@@ -308,10 +308,10 @@ struct PPB_WebSocket_Dev_0_1 {
   struct PP_Var (*GetURL)(PP_Resource web_socket);
 };
 
-typedef struct PPB_WebSocket_Dev_0_1 PPB_WebSocket_Dev;
+typedef struct PPB_WebSocket_1_0 PPB_WebSocket;
 /**
  * @}
  */
 
-#endif  /* PPAPI_C_DEV_PPB_WEBSOCKET_DEV_H_ */
+#endif  /* PPAPI_C_PPB_WEBSOCKET_H_ */
 

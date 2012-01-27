@@ -6,7 +6,7 @@
 #define PPAPI_THUNK_WEBSOCKET_API_H_
 
 #include "ppapi/c/pp_completion_callback.h"
-#include "ppapi/c/dev/ppb_websocket_dev.h"
+#include "ppapi/c/ppb_websocket.h"
 
 namespace ppapi {
 namespace thunk {
@@ -31,7 +31,7 @@ class PPB_WebSocket_API {
   virtual PP_Bool GetCloseWasClean() = 0;
   virtual PP_Var GetExtensions() = 0;
   virtual PP_Var GetProtocol() = 0;
-  virtual PP_WebSocketReadyState_Dev GetReadyState() = 0;
+  virtual PP_WebSocketReadyState GetReadyState() = 0;
   virtual PP_Var GetURL() = 0;
 };
 

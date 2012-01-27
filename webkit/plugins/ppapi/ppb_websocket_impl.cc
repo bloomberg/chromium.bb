@@ -14,8 +14,8 @@
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/pp_var.h"
-#include "ppapi/c/ppb_var_array_buffer.h"
 #include "ppapi/c/ppb_var.h"
+#include "ppapi/c/ppb_var_array_buffer.h"
 #include "ppapi/shared_impl/var.h"
 #include "ppapi/shared_impl/var_tracker.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebArrayBuffer.h"
@@ -67,9 +67,9 @@ uint64_t GetFrameSize(uint64_t payload_size) {
   return SaturateAdd(payload_size, overhead);
 }
 
-bool InValidStateToReceive(PP_WebSocketReadyState_Dev state) {
-  return state == PP_WEBSOCKETREADYSTATE_OPEN_DEV ||
-      state == PP_WEBSOCKETREADYSTATE_CLOSING_DEV;
+bool InValidStateToReceive(PP_WebSocketReadyState state) {
+  return state == PP_WEBSOCKETREADYSTATE_OPEN ||
+      state == PP_WEBSOCKETREADYSTATE_CLOSING;
 }
 
 }  // namespace
@@ -79,7 +79,7 @@ namespace ppapi {
 
 PPB_WebSocket_Impl::PPB_WebSocket_Impl(PP_Instance instance)
     : Resource(instance),
-      state_(PP_WEBSOCKETREADYSTATE_INVALID_DEV),
+      state_(PP_WEBSOCKETREADYSTATE_INVALID),
       error_was_received_(false),
       receive_callback_var_(NULL),
       wait_for_receive_(false),
@@ -118,9 +118,9 @@ int32_t PPB_WebSocket_Impl::Connect(PP_Var url,
   // Connect() can be called at most once.
   if (websocket_.get())
     return PP_ERROR_INPROGRESS;
-  if (state_ != PP_WEBSOCKETREADYSTATE_INVALID_DEV)
+  if (state_ != PP_WEBSOCKETREADYSTATE_INVALID)
     return PP_ERROR_INPROGRESS;
-  state_ = PP_WEBSOCKETREADYSTATE_CLOSED_DEV;
+  state_ = PP_WEBSOCKETREADYSTATE_CLOSED;
 
   // Validate url and convert it to WebURL.
   scoped_refptr<StringVar> url_string = StringVar::FromPPVar(url);
@@ -198,7 +198,7 @@ int32_t PPB_WebSocket_Impl::Connect(PP_Var url,
   websocket_->setBinaryType(WebSocket::BinaryTypeArrayBuffer);
 
   websocket_->connect(web_url, web_protocols);
-  state_ = PP_WEBSOCKETREADYSTATE_CONNECTING_DEV;
+  state_ = PP_WEBSOCKETREADYSTATE_CONNECTING;
 
   // Install callback.
   connect_callback_ = new TrackedCallback(this, callback);
@@ -233,8 +233,8 @@ int32_t PPB_WebSocket_Impl::Close(uint16_t code,
     return PP_ERROR_BADARGUMENT;
 
   // Check state.
-  if (state_ == PP_WEBSOCKETREADYSTATE_CLOSING_DEV ||
-      state_ == PP_WEBSOCKETREADYSTATE_CLOSED_DEV)
+  if (state_ == PP_WEBSOCKETREADYSTATE_CLOSING ||
+      state_ == PP_WEBSOCKETREADYSTATE_CLOSED)
     return PP_ERROR_INPROGRESS;
 
   // Validate |callback| (Doesn't support blocking callback)
@@ -245,8 +245,8 @@ int32_t PPB_WebSocket_Impl::Close(uint16_t code,
   close_callback_ = new TrackedCallback(this, callback);
 
   // Abort ongoing connect.
-  if (state_ == PP_WEBSOCKETREADYSTATE_CONNECTING_DEV) {
-    state_ = PP_WEBSOCKETREADYSTATE_CLOSING_DEV;
+  if (state_ == PP_WEBSOCKETREADYSTATE_CONNECTING) {
+    state_ = PP_WEBSOCKETREADYSTATE_CLOSING;
     // Need to do a "Post" to avoid reentering the plugin.
     connect_callback_->PostAbort();
     connect_callback_ = NULL;
@@ -266,7 +266,7 @@ int32_t PPB_WebSocket_Impl::Close(uint16_t code,
   }
 
   // Close connection.
-  state_ = PP_WEBSOCKETREADYSTATE_CLOSING_DEV;
+  state_ = PP_WEBSOCKETREADYSTATE_CLOSING;
   WebString web_reason = WebString::fromUTF8(reason_string->value());
   websocket_->close(code, web_reason);
 
@@ -276,8 +276,8 @@ int32_t PPB_WebSocket_Impl::Close(uint16_t code,
 int32_t PPB_WebSocket_Impl::ReceiveMessage(PP_Var* message,
                                            PP_CompletionCallback callback) {
   // Check state.
-  if (state_ == PP_WEBSOCKETREADYSTATE_INVALID_DEV ||
-      state_ == PP_WEBSOCKETREADYSTATE_CONNECTING_DEV)
+  if (state_ == PP_WEBSOCKETREADYSTATE_INVALID ||
+      state_ == PP_WEBSOCKETREADYSTATE_CONNECTING)
     return PP_ERROR_BADARGUMENT;
 
   // Just return received message if any received message is queued.
@@ -287,7 +287,7 @@ int32_t PPB_WebSocket_Impl::ReceiveMessage(PP_Var* message,
   }
 
   // Check state again. In CLOSED state, no more messages will be received.
-  if (state_ == PP_WEBSOCKETREADYSTATE_CLOSED_DEV)
+  if (state_ == PP_WEBSOCKETREADYSTATE_CLOSED)
     return PP_ERROR_BADARGUMENT;
 
   // Returns PP_ERROR_FAILED after an error is received and received messages
@@ -313,12 +313,12 @@ int32_t PPB_WebSocket_Impl::SendMessage(PP_Var message) {
     return PP_ERROR_FAILED;
 
   // Check state.
-  if (state_ == PP_WEBSOCKETREADYSTATE_INVALID_DEV ||
-      state_ == PP_WEBSOCKETREADYSTATE_CONNECTING_DEV)
+  if (state_ == PP_WEBSOCKETREADYSTATE_INVALID ||
+      state_ == PP_WEBSOCKETREADYSTATE_CONNECTING)
     return PP_ERROR_BADARGUMENT;
 
-  if (state_ == PP_WEBSOCKETREADYSTATE_CLOSING_DEV ||
-      state_ == PP_WEBSOCKETREADYSTATE_CLOSED_DEV) {
+  if (state_ == PP_WEBSOCKETREADYSTATE_CLOSING ||
+      state_ == PP_WEBSOCKETREADYSTATE_CLOSED) {
     // Handle buffered_amount_after_close_.
     uint64_t payload_size = 0;
     if (message.type == PP_VARTYPE_STRING) {
@@ -402,7 +402,7 @@ PP_Var PPB_WebSocket_Impl::GetProtocol() {
   return StringVar::StringToPPVar(protocol);
 }
 
-PP_WebSocketReadyState_Dev PPB_WebSocket_Impl::GetReadyState() {
+PP_WebSocketReadyState PPB_WebSocket_Impl::GetReadyState() {
   return state_;
 }
 
@@ -413,8 +413,8 @@ PP_Var PPB_WebSocket_Impl::GetURL() {
 }
 
 void PPB_WebSocket_Impl::didConnect() {
-  DCHECK_EQ(PP_WEBSOCKETREADYSTATE_CONNECTING_DEV, state_);
-  state_ = PP_WEBSOCKETREADYSTATE_OPEN_DEV;
+  DCHECK_EQ(PP_WEBSOCKETREADYSTATE_CONNECTING, state_);
+  state_ = PP_WEBSOCKETREADYSTATE_OPEN;
   TrackedCallback::ClearAndRun(&connect_callback_, PP_OK);
 }
 
@@ -470,13 +470,13 @@ void PPB_WebSocket_Impl::didReceiveMessageError() {
 
 void PPB_WebSocket_Impl::didUpdateBufferedAmount(
     unsigned long buffered_amount) {
-  if (state_ == PP_WEBSOCKETREADYSTATE_CLOSED_DEV)
+  if (state_ == PP_WEBSOCKETREADYSTATE_CLOSED)
     return;
   buffered_amount_ = buffered_amount;
 }
 
 void PPB_WebSocket_Impl::didStartClosingHandshake() {
-  state_ = PP_WEBSOCKETREADYSTATE_CLOSING_DEV;
+  state_ = PP_WEBSOCKETREADYSTATE_CLOSING;
 }
 
 void PPB_WebSocket_Impl::didClose(unsigned long unhandled_buffered_amount,
@@ -490,7 +490,7 @@ void PPB_WebSocket_Impl::didClose(unsigned long unhandled_buffered_amount,
 
   // Set close_was_clean_.
   bool was_clean =
-      state_ == PP_WEBSOCKETREADYSTATE_CLOSING_DEV &&
+      state_ == PP_WEBSOCKETREADYSTATE_CLOSING &&
       !unhandled_buffered_amount &&
       status == WebSocketClient::ClosingHandshakeComplete;
   close_was_clean_ = was_clean ? PP_TRUE : PP_FALSE;
@@ -499,11 +499,11 @@ void PPB_WebSocket_Impl::didClose(unsigned long unhandled_buffered_amount,
   buffered_amount_ = unhandled_buffered_amount;
 
   // Handle state transition and invoking callback.
-  DCHECK_NE(PP_WEBSOCKETREADYSTATE_CLOSED_DEV, state_);
-  PP_WebSocketReadyState_Dev state = state_;
-  state_ = PP_WEBSOCKETREADYSTATE_CLOSED_DEV;
+  DCHECK_NE(PP_WEBSOCKETREADYSTATE_CLOSED, state_);
+  PP_WebSocketReadyState state = state_;
+  state_ = PP_WEBSOCKETREADYSTATE_CLOSED;
 
-  if (state == PP_WEBSOCKETREADYSTATE_CONNECTING_DEV)
+  if (state == PP_WEBSOCKETREADYSTATE_CONNECTING)
     TrackedCallback::ClearAndRun(&connect_callback_, PP_ERROR_FAILED);
 
   if (wait_for_receive_) {
@@ -512,7 +512,7 @@ void PPB_WebSocket_Impl::didClose(unsigned long unhandled_buffered_amount,
     TrackedCallback::ClearAndAbort(&receive_callback_);
   }
 
-  if (state == PP_WEBSOCKETREADYSTATE_CLOSING_DEV)
+  if (state == PP_WEBSOCKETREADYSTATE_CLOSING)
     TrackedCallback::ClearAndRun(&close_callback_, PP_OK);
 
   // Disconnect.

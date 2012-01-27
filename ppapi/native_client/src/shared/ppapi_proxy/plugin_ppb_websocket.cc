@@ -13,7 +13,7 @@
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/pp_var.h"
-#include "ppapi/c/dev/ppb_websocket_dev.h"
+#include "ppapi/c/ppb_websocket.h"
 #include "srpcgen/ppb_rpc.h"
 
 namespace ppapi_proxy {
@@ -267,7 +267,7 @@ PP_Var GetProtocol(PP_Resource ws) {
   return PP_MakeUndefined();
 }
 
-PP_WebSocketReadyState_Dev GetReadyState(PP_Resource ws) {
+PP_WebSocketReadyState GetReadyState(PP_Resource ws) {
   DebugPrintf(
       "PPB_WebSocket::GetReadyState: ws=%"NACL_PRId32"\n", ws);
 
@@ -279,8 +279,8 @@ PP_WebSocketReadyState_Dev GetReadyState(PP_Resource ws) {
       NaClSrpcErrorString(srpc_result));
 
   if (srpc_result != NACL_SRPC_RESULT_OK)
-    return PP_WEBSOCKETREADYSTATE_INVALID_DEV;
-  return static_cast<PP_WebSocketReadyState_Dev>(ready_state);
+    return PP_WEBSOCKETREADYSTATE_INVALID;
+  return static_cast<PP_WebSocketReadyState>(ready_state);
 }
 
 PP_Var GetURL(PP_Resource ws) {
@@ -305,8 +305,8 @@ PP_Var GetURL(PP_Resource ws) {
 
 }  // namespace
 
-const PPB_WebSocket_Dev* PluginWebSocket::GetInterface() {
-  static const PPB_WebSocket_Dev websocket_interface = {
+const PPB_WebSocket* PluginWebSocket::GetInterface() {
+  static const PPB_WebSocket websocket_interface = {
     &Create,
     &IsWebSocket,
     &Connect,

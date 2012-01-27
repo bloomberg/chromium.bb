@@ -4,10 +4,10 @@
  */
 
 /**
- * This file defines the <code>PPB_WebSocket_Dev</code> interface.
+ * This file defines the <code>PPB_WebSocket</code> interface.
  */
 label Chrome {
-  M17 = 0.1
+  M18 = 1.0
 };
 
 
@@ -17,34 +17,34 @@ label Chrome {
  * GetReadyState() returns one of these states.
  */
 [assert_size(4)]
-enum PP_WebSocketReadyState_Dev {
+enum PP_WebSocketReadyState {
   /**
    * Ready state is queried on an invalid resource.
    */
-  PP_WEBSOCKETREADYSTATE_INVALID_DEV = -1,
+  PP_WEBSOCKETREADYSTATE_INVALID = -1,
   /**
    * Ready state that the connection has not yet been established.
    */
-  PP_WEBSOCKETREADYSTATE_CONNECTING_DEV = 0,
+  PP_WEBSOCKETREADYSTATE_CONNECTING = 0,
 
   /**
    * Ready state that the WebSocket connection is established and communication
    * is possible.
    */
-  PP_WEBSOCKETREADYSTATE_OPEN_DEV = 1,
+  PP_WEBSOCKETREADYSTATE_OPEN = 1,
 
   /**
    * Ready state that the connection is going through the closing handshake.
    */
-  PP_WEBSOCKETREADYSTATE_CLOSING_DEV = 2,
+  PP_WEBSOCKETREADYSTATE_CLOSING = 2,
 
   /**
    * Ready state that the connection has been closed or could not be opened.
    */
-  PP_WEBSOCKETREADYSTATE_CLOSED_DEV = 3
+  PP_WEBSOCKETREADYSTATE_CLOSED = 3
 };
 
-interface PPB_WebSocket_Dev {
+interface PPB_WebSocket {
   /**
    * Create() creates a WebSocket instance.
    *
@@ -64,9 +64,9 @@ interface PPB_WebSocket_Dev {
    * WebSocket.
    *
    * @return Returns <code>PP_TRUE</code> if <code>resource</code> is a
-   * <code>PPB_WebSocket_Dev</code>, <code>PP_FALSE</code> if the
+   * <code>PPB_WebSocket</code>, <code>PP_FALSE</code> if the
    * <code>resource</code> is invalid or some type other than
-   * <code>PPB_WebSocket_Dev</code>.
+   * <code>PPB_WebSocket</code>.
    */
   PP_Bool IsWebSocket([in] PP_Resource resource);
 
@@ -158,7 +158,7 @@ interface PPB_WebSocket_Dev {
    * <code>message</code>. The <code>message</code> must remain valid until
    * the ReceiveMessage operation completes. Its <code>PP_VarType</code>
    * will be <code>PP_VARTYPE_STRING</code> or
-   * <code>PP_VARTYPE_ARRAY_BYFFER</code> on receiving.
+   * <code>PP_VARTYPE_ARRAY_BUFFER</code> on receiving.
    *
    * @param[in] callback A <code>PP_CompletionCallback</code> which is called
    * when the receiving message is completed. It is ignored if ReceiveMessage
@@ -187,8 +187,8 @@ interface PPB_WebSocket_Dev {
    *
    * @return An int32_t containing an error code from <code>pp_errors.h</code>.
    * Returns <code>PP_ERROR_FAILED</code> if the ReadyState is
-   * <code>PP_WEBSOCKETREADYSTATE_CONNECTING_DEV</code>. It corresponds
-   * JavaScript InvalidStateError of the specification.
+   * <code>PP_WEBSOCKETREADYSTATE_CONNECTING</code>. It corresponds JavaScript
+   * InvalidStateError of the specification.
    * Returns <code>PP_ERROR_BADARGUMENT</code> if provided <code>message</code>
    * of string type contains an invalid character as a UTF-8 string. It
    * corresponds to JavaScript SyntaxError of the specification.
@@ -282,10 +282,10 @@ interface PPB_WebSocket_Dev {
    * @param[in] web_socket A <code>PP_Resource</code> corresponding to a
    * WebSocket.
    *
-   * @return Returns <code>PP_WEBSOCKETREADYSTATE_INVALID_DEV</code> if called
+   * @return Returns <code>PP_WEBSOCKETREADYSTATE_INVALID</code> if called
    * before connect() is called, or called on an invalid resource.
    */
-  PP_WebSocketReadyState_Dev GetReadyState([in] PP_Resource web_socket);
+  PP_WebSocketReadyState GetReadyState([in] PP_Resource web_socket);
 
   /**
    * GetURL() returns the URL associated with specified WebSocket connection.

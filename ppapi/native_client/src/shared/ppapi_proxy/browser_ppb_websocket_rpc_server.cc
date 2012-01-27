@@ -11,8 +11,8 @@
 #include "native_client/src/shared/ppapi_proxy/utility.h"
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
-#include "ppapi/c/dev/ppb_websocket_dev.h"
 #include "srpcgen/ppb_rpc.h"
+#include "ppapi/c/ppb_websocket.h"
 
 using ppapi_proxy::DebugPrintf;
 using ppapi_proxy::DeleteRemoteCallbackInfo;
