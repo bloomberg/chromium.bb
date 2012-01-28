@@ -48,7 +48,7 @@ class NativeWidgetAuraTest : public testing::Test {
 TEST_F(NativeWidgetAuraTest, CenterWindowLargeParent) {
   // Make a parent window larger than the host represented by rootwindow.
   scoped_ptr<aura::Window> parent(new aura::Window(NULL));
-  parent->Init(ui::Layer::LAYER_HAS_NO_TEXTURE);
+  parent->Init(ui::Layer::LAYER_NOT_DRAWN);
   parent->SetBounds(gfx::Rect(0, 0, 1024, 800));
   scoped_ptr<Widget>  widget(new Widget());
   NativeWidgetAura* window = Init(parent.get(), widget.get());
@@ -64,7 +64,7 @@ TEST_F(NativeWidgetAuraTest, CenterWindowLargeParent) {
 TEST_F(NativeWidgetAuraTest, CenterWindowSmallParent) {
   // Make a parent window smaller than the host represented by rootwindow.
   scoped_ptr<aura::Window> parent(new aura::Window(NULL));
-  parent->Init(ui::Layer::LAYER_HAS_NO_TEXTURE);
+  parent->Init(ui::Layer::LAYER_NOT_DRAWN);
   parent->SetBounds(gfx::Rect(0, 0, 480, 320));
   scoped_ptr<Widget> widget(new Widget());
   NativeWidgetAura* window  = Init(parent.get(), widget.get());

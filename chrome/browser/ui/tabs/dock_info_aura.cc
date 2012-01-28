@@ -22,7 +22,7 @@ aura::Window* GetLocalProcessWindowAtPointImpl(
   if (!window->IsVisible())
     return NULL;
 
-  if (window->layer()->type() == ui::Layer::LAYER_HAS_TEXTURE) {
+  if (window->layer()->type() == ui::Layer::LAYER_TEXTURED) {
     gfx::Point window_point(screen_point);
     aura::Window::ConvertPointToWindow(aura::RootWindow::GetInstance(), window,
                                        &window_point);

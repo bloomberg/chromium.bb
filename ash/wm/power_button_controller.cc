@@ -301,22 +301,6 @@ bool PowerButtonController::TestApi::BackgroundLayerIsVisible() const {
          controller_->background_layer_->visible();
 }
 
-// Simple class that fills |background_layer_| with black.
-class PowerButtonController::BackgroundLayerDelegate
-    : public ui::LayerDelegate {
- public:
-  BackgroundLayerDelegate() {}
-  virtual ~BackgroundLayerDelegate() {}
-
-  // ui::LayerDelegate implementation:
-  virtual void OnPaintLayer(gfx::Canvas* canvas) OVERRIDE {
-    canvas->FillRect(SK_ColorBLACK, aura::RootWindow::GetInstance()->bounds());
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(BackgroundLayerDelegate);
-};
-
 PowerButtonController::PowerButtonController()
     : logged_in_as_non_guest_(false),
       locked_(false),
@@ -521,9 +505,8 @@ void PowerButtonController::ShowBackgroundLayer() {
     hide_background_layer_timer_.Stop();
 
   if (!background_layer_.get()) {
-    background_layer_delegate_.reset(new BackgroundLayerDelegate);
-    background_layer_.reset(new ui::Layer(ui::Layer::LAYER_HAS_TEXTURE));
-    background_layer_->set_delegate(background_layer_delegate_.get());
+    background_layer_.reset(new ui::Layer(ui::Layer::LAYER_SOLID_COLOR));
+    background_layer_->SetColor(SK_ColorBLACK);
 
     ui::Layer* root_layer = aura::RootWindow::GetInstance()->layer();
     background_layer_->SetBounds(root_layer->bounds());

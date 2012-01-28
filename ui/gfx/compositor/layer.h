@@ -13,6 +13,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebContentLayerClient.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebLayer.h"
 #include "ui/gfx/rect.h"
@@ -42,8 +43,15 @@ class COMPOSITOR_EXPORT Layer :
     NON_EXPORTED_BASE(public WebKit::WebContentLayerClient) {
  public:
   enum LayerType {
-    LAYER_HAS_NO_TEXTURE = 0,
-    LAYER_HAS_TEXTURE = 1
+    // A layer that has no onscreen representation (note that its children will
+    // still be drawn, though).
+    LAYER_NOT_DRAWN = 0,
+
+    // A layer that has a texture.
+    LAYER_TEXTURED = 1,
+
+    // A layer that's drawn as a single color.
+    LAYER_SOLID_COLOR = 2,
   };
 
   Layer();
@@ -163,8 +171,11 @@ class COMPOSITOR_EXPORT Layer :
   //             single-compositor world.
   void SetExternalTexture(ui::Texture* texture);
 
-  // Resets the canvas of the texture.
+  // Resets the canvas of the texture.  May only be called for LAYER_TEXTURED.
   void SetCanvas(const SkCanvas& canvas, const gfx::Point& origin);
+
+  // Sets the layer's fill color.  May only be called for LAYER_SOLID_COLOR.
+  void SetColor(SkColor color);
 
   // Adds |invalid_rect| to the Layer's pending invalid rect and calls
   // ScheduleDraw().

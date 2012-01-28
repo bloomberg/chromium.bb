@@ -43,7 +43,7 @@ class WorkspaceControllerTest : public aura::test::AuraTestBase {
 
   aura::Window* CreateTestWindow() {
     aura::Window* window = new aura::Window(NULL);
-    window->Init(ui::Layer::LAYER_HAS_NO_TEXTURE);
+    window->Init(ui::Layer::LAYER_NOT_DRAWN);
     contents_view()->AddChild(window);
     window->Show();
     return window;

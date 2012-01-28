@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -26,7 +26,7 @@ typedef ash::test::AuraShellTestBase ShadowControllerTest;
 TEST_F(ShadowControllerTest, Shadow) {
   scoped_ptr<aura::Window> window(new aura::Window(NULL));
   window->SetType(aura::client::WINDOW_TYPE_NORMAL);
-  window->Init(ui::Layer::LAYER_HAS_TEXTURE);
+  window->Init(ui::Layer::LAYER_TEXTURED);
   window->SetParent(NULL);
 
   // We should create the shadow before the window is visible (the shadow's
@@ -63,7 +63,7 @@ TEST_F(ShadowControllerTest, Shadow) {
 TEST_F(ShadowControllerTest, ShadowBounds) {
   scoped_ptr<aura::Window> window(new aura::Window(NULL));
   window->SetType(aura::client::WINDOW_TYPE_NORMAL);
-  window->Init(ui::Layer::LAYER_HAS_TEXTURE);
+  window->Init(ui::Layer::LAYER_TEXTURED);
   window->SetParent(NULL);
   window->Show();
 

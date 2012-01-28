@@ -19,7 +19,6 @@ class Size;
 
 namespace ui {
 class Layer;
-class LayerDelegate;
 }
 
 namespace ash {
@@ -154,8 +153,6 @@ class ASH_EXPORT PowerButtonController : public aura::RootWindowObserver {
   virtual void OnRootWindowResized(const gfx::Size& new_size) OVERRIDE;
 
  private:
-  class BackgroundLayerDelegate;
-
   // Requests that the screen be locked and starts |lock_fail_timer_|.
   void OnLockTimeout();
 
@@ -202,9 +199,6 @@ class ASH_EXPORT PowerButtonController : public aura::RootWindowObserver {
   // Was a command-line switch set telling us that we're running on hardware
   // that misreports power button releases?
   bool has_legacy_power_button_;
-
-  // Responsible for painting |background_layer_|.
-  scoped_ptr<BackgroundLayerDelegate> background_layer_delegate_;
 
   // Layer that's stacked under all of the root window's children to provide a
   // black background when we're scaling all of the other windows down.

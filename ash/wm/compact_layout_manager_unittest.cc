@@ -35,7 +35,7 @@ class CompactLayoutManagerTest : public aura::test::AuraTestBase {
         gfx::Insets(1, 2, 3, 4));
     aura::RootWindow::GetInstance()->SetHostSize(gfx::Size(800, 600));
     container_.reset(new aura::Window(NULL));
-    container_->Init(ui::Layer::LAYER_HAS_NO_TEXTURE);
+    container_->Init(ui::Layer::LAYER_NOT_DRAWN);
     container_->SetBounds(gfx::Rect(0, 0, 500, 500));
     layout_manager_ = new internal::CompactLayoutManager();
     container_->SetLayoutManager(layout_manager_);

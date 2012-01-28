@@ -227,11 +227,11 @@ TEST_F(WindowTest, GetChildById) {
 // and not containing NULL or parents.
 TEST_F(WindowTest, Contains) {
   Window parent(NULL);
-  parent.Init(ui::Layer::LAYER_HAS_NO_TEXTURE);
+  parent.Init(ui::Layer::LAYER_NOT_DRAWN);
   Window child1(NULL);
-  child1.Init(ui::Layer::LAYER_HAS_NO_TEXTURE);
+  child1.Init(ui::Layer::LAYER_NOT_DRAWN);
   Window child2(NULL);
-  child2.Init(ui::Layer::LAYER_HAS_NO_TEXTURE);
+  child2.Init(ui::Layer::LAYER_NOT_DRAWN);
 
   child1.SetParent(&parent);
   child2.SetParent(&child1);
@@ -259,7 +259,7 @@ TEST_F(WindowTest, ConvertPointToWindow) {
 TEST_F(WindowTest, HitTest) {
   Window w1(new ColorTestWindowDelegate(SK_ColorWHITE));
   w1.set_id(1);
-  w1.Init(ui::Layer::LAYER_HAS_TEXTURE);
+  w1.Init(ui::Layer::LAYER_TEXTURED);
   w1.SetBounds(gfx::Rect(10, 10, 50, 50));
   w1.Show();
   w1.SetParent(NULL);
@@ -387,11 +387,11 @@ TEST_F(WindowTest, OrphanedBeforeOnDestroyed) {
 // Make sure StackChildAtTop moves both the window and layer to the front.
 TEST_F(WindowTest, StackChildAtTop) {
   Window parent(NULL);
-  parent.Init(ui::Layer::LAYER_HAS_NO_TEXTURE);
+  parent.Init(ui::Layer::LAYER_NOT_DRAWN);
   Window child1(NULL);
-  child1.Init(ui::Layer::LAYER_HAS_NO_TEXTURE);
+  child1.Init(ui::Layer::LAYER_NOT_DRAWN);
   Window child2(NULL);
-  child2.Init(ui::Layer::LAYER_HAS_NO_TEXTURE);
+  child2.Init(ui::Layer::LAYER_NOT_DRAWN);
 
   child1.SetParent(&parent);
   child2.SetParent(&parent);
@@ -414,13 +414,13 @@ TEST_F(WindowTest, StackChildAtTop) {
 // Various assertions for StackChildAbove.
 TEST_F(WindowTest, StackChildAbove) {
   Window parent(NULL);
-  parent.Init(ui::Layer::LAYER_HAS_NO_TEXTURE);
+  parent.Init(ui::Layer::LAYER_NOT_DRAWN);
   Window child1(NULL);
-  child1.Init(ui::Layer::LAYER_HAS_NO_TEXTURE);
+  child1.Init(ui::Layer::LAYER_NOT_DRAWN);
   Window child2(NULL);
-  child2.Init(ui::Layer::LAYER_HAS_NO_TEXTURE);
+  child2.Init(ui::Layer::LAYER_NOT_DRAWN);
   Window child3(NULL);
-  child3.Init(ui::Layer::LAYER_HAS_NO_TEXTURE);
+  child3.Init(ui::Layer::LAYER_NOT_DRAWN);
 
   child1.SetParent(&parent);
   child2.SetParent(&parent);

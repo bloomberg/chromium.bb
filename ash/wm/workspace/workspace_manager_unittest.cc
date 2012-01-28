@@ -46,7 +46,7 @@ class WorkspaceManagerTest : public aura::test::AuraTestBase {
   aura::Window* CreateTestWindow() {
     aura::Window* window = new aura::Window(NULL);
     window->SetType(aura::client::WINDOW_TYPE_NORMAL);
-    window->Init(ui::Layer::LAYER_HAS_TEXTURE);
+    window->Init(ui::Layer::LAYER_TEXTURED);
     window->SetParent(viewport());
     return window;
   }

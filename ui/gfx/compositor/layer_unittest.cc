@@ -118,7 +118,7 @@ std::string GetLayerChildrenNames(const Layer& layer) {
 class ColoredLayer : public Layer, public LayerDelegate {
  public:
   explicit ColoredLayer(SkColor color)
-      : Layer(Layer::LAYER_HAS_TEXTURE),
+      : Layer(Layer::LAYER_TEXTURED),
         color_(color) {
     set_delegate(this);
   }
@@ -171,7 +171,7 @@ class LayerWithRealCompositorTest : public testing::Test {
   }
 
   Layer* CreateNoTextureLayer(const gfx::Rect& bounds) {
-    Layer* layer = CreateLayer(Layer::LAYER_HAS_NO_TEXTURE);
+    Layer* layer = CreateLayer(Layer::LAYER_NOT_DRAWN);
     layer->SetBounds(bounds);
     return layer;
   }
@@ -381,7 +381,7 @@ class LayerWithDelegateTest : public testing::Test, public CompositorDelegate {
   }
 
   virtual Layer* CreateNoTextureLayer(const gfx::Rect& bounds) {
-    Layer* layer = CreateLayer(Layer::LAYER_HAS_NO_TEXTURE);
+    Layer* layer = CreateLayer(Layer::LAYER_NOT_DRAWN);
     layer->SetBounds(bounds);
     return layer;
   }
@@ -587,13 +587,13 @@ class LayerWithNullDelegateTest : public LayerWithDelegateTest {
   }
 
   Layer* CreateTextureLayer(const gfx::Rect& bounds) {
-    Layer* layer = CreateLayer(Layer::LAYER_HAS_TEXTURE);
+    Layer* layer = CreateLayer(Layer::LAYER_TEXTURED);
     layer->SetBounds(bounds);
     return layer;
   }
 
   Layer* CreateNoTextureLayer(const gfx::Rect& bounds) OVERRIDE {
-    Layer* layer = CreateLayer(Layer::LAYER_HAS_NO_TEXTURE);
+    Layer* layer = CreateLayer(Layer::LAYER_NOT_DRAWN);
     layer->SetBounds(bounds);
     return layer;
   }
@@ -610,9 +610,9 @@ class LayerWithNullDelegateTest : public LayerWithDelegateTest {
 
 // Various visibile/drawn assertions.
 TEST_F(LayerWithNullDelegateTest, Visibility) {
-  scoped_ptr<Layer> l1(new Layer(Layer::LAYER_HAS_TEXTURE));
-  scoped_ptr<Layer> l2(new Layer(Layer::LAYER_HAS_TEXTURE));
-  scoped_ptr<Layer> l3(new Layer(Layer::LAYER_HAS_TEXTURE));
+  scoped_ptr<Layer> l1(new Layer(Layer::LAYER_TEXTURED));
+  scoped_ptr<Layer> l2(new Layer(Layer::LAYER_TEXTURED));
+  scoped_ptr<Layer> l3(new Layer(Layer::LAYER_TEXTURED));
   l1->Add(l2.get());
   l2->Add(l3.get());
 
@@ -654,10 +654,10 @@ TEST_F(LayerWithNullDelegateTest, Visibility) {
 
 // Checks that stacking-related methods behave as advertised.
 TEST_F(LayerWithNullDelegateTest, Stacking) {
-  scoped_ptr<Layer> root(new Layer(Layer::LAYER_HAS_NO_TEXTURE));
-  scoped_ptr<Layer> l1(new Layer(Layer::LAYER_HAS_TEXTURE));
-  scoped_ptr<Layer> l2(new Layer(Layer::LAYER_HAS_TEXTURE));
-  scoped_ptr<Layer> l3(new Layer(Layer::LAYER_HAS_TEXTURE));
+  scoped_ptr<Layer> root(new Layer(Layer::LAYER_NOT_DRAWN));
+  scoped_ptr<Layer> l1(new Layer(Layer::LAYER_TEXTURED));
+  scoped_ptr<Layer> l2(new Layer(Layer::LAYER_TEXTURED));
+  scoped_ptr<Layer> l3(new Layer(Layer::LAYER_TEXTURED));
   l1->set_name("1");
   l2->set_name("2");
   l3->set_name("3");

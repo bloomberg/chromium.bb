@@ -15,6 +15,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebFloatPoint.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebFloatRect.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebSize.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebSolidColorLayer.h"
 #include "ui/base/animation/animation.h"
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/compositor/compositor_switches.h"
@@ -28,7 +29,7 @@ namespace {
 
 const float EPSILON = 1e-3f;
 
-bool IsApproximateMultilpleOf(float value, float base) {
+bool IsApproximateMultipleOf(float value, float base) {
   float remainder = fmod(fabs(value), base);
   return remainder < EPSILON || base - remainder < EPSILON;
 }
@@ -42,7 +43,7 @@ const ui::Layer* GetRoot(const ui::Layer* layer) {
 namespace ui {
 
 Layer::Layer()
-    : type_(LAYER_HAS_TEXTURE),
+    : type_(LAYER_TEXTURED),
       compositor_(NULL),
       parent_(NULL),
       visible_(true),
@@ -193,7 +194,7 @@ bool Layer::IsDrawn() const {
 }
 
 bool Layer::ShouldDraw() const {
-  return type_ == LAYER_HAS_TEXTURE && GetCombinedOpacity() > 0.0f;
+  return type_ != LAYER_NOT_DRAWN && GetCombinedOpacity() > 0.0f;
 }
 
 // static
@@ -223,6 +224,7 @@ void Layer::SetFillsBoundsOpaquely(bool fills_bounds_opaquely) {
 }
 
 void Layer::SetExternalTexture(ui::Texture* texture) {
+  DCHECK_EQ(type_, LAYER_TEXTURED);
   layer_updated_externally_ = !!texture;
   texture_ = texture;
   if (web_layer_is_accelerated_ != layer_updated_externally_) {
@@ -264,7 +266,18 @@ void Layer::SetCanvas(const SkCanvas& canvas, const gfx::Point& origin) {
   NOTREACHED();
 }
 
+void Layer::SetColor(SkColor color) {
+  DCHECK_EQ(type_, LAYER_SOLID_COLOR);
+  // WebColor is equivalent to SkColor, per WebColor.h.
+  web_layer_.to<WebKit::WebSolidColorLayer>().setBackgroundColor(
+      static_cast<WebKit::WebColor>(color));
+  SetFillsBoundsOpaquely(SkColorGetA(color) == 0xFF);
+}
+
 void Layer::SchedulePaint(const gfx::Rect& invalid_rect) {
+  if (type_ == LAYER_SOLID_COLOR)
+    return;
+
   WebKit::WebFloatRect web_rect(
       invalid_rect.x(),
       invalid_rect.y(),
@@ -336,7 +349,7 @@ void Layer::GetLayerProperties(const ui::Transform& parent_transform,
       static_cast<float>(bounds().y()));
   current_transform.ConcatTransform(parent_transform);
 
-  if (fills_bounds_opaquely_ && type_ == LAYER_HAS_TEXTURE) {
+  if (fills_bounds_opaquely_ && type_ != LAYER_NOT_DRAWN) {
     LayerProperties properties;
     properties.layer = this;
     properties.transform_relative_to_root = current_transform;
@@ -442,7 +455,10 @@ float Layer::GetOpacityForAnimation() const {
 }
 
 void Layer::CreateWebLayer() {
-  web_layer_ = WebKit::WebContentLayer::create(this);
+  if (type_ == LAYER_SOLID_COLOR)
+    web_layer_ = WebKit::WebSolidColorLayer::create();
+  else
+    web_layer_ = WebKit::WebContentLayer::create(this);
   web_layer_.setAnchorPoint(WebKit::WebFloatPoint(0.f, 0.f));
   web_layer_.setOpaque(true);
   web_layer_is_accelerated_ = false;
@@ -461,9 +477,10 @@ void Layer::RecomputeTransform() {
 
 void Layer::RecomputeDrawsContentAndUVRect() {
   DCHECK(!web_layer_.isNull());
-  bool should_draw = type_ == LAYER_HAS_TEXTURE;
+  bool should_draw = type_ != LAYER_NOT_DRAWN;
   if (!web_layer_is_accelerated_) {
-    web_layer_.to<WebKit::WebContentLayer>().setDrawsContent(should_draw);
+    if (type_ != LAYER_SOLID_COLOR)
+      web_layer_.to<WebKit::WebContentLayer>().setDrawsContent(should_draw);
     web_layer_.setBounds(bounds_.size());
   } else {
     DCHECK(texture_);

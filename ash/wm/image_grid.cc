@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -48,7 +48,7 @@ void ImageGrid::Init(const gfx::Image* top_left_image,
                      const gfx::Image* bottom_left_image,
                      const gfx::Image* bottom_image,
                      const gfx::Image* bottom_right_image) {
-  layer_.reset(new ui::Layer(ui::Layer::LAYER_HAS_NO_TEXTURE));
+  layer_.reset(new ui::Layer(ui::Layer::LAYER_NOT_DRAWN));
 
   InitImage(top_left_image, &top_left_layer_, &top_left_painter_);
   InitImage(top_image, &top_layer_, &top_painter_);
@@ -230,7 +230,7 @@ void ImageGrid::InitImage(const gfx::Image* image,
   if (!image)
     return;
 
-  layer_ptr->reset(new ui::Layer(ui::Layer::LAYER_HAS_TEXTURE));
+  layer_ptr->reset(new ui::Layer(ui::Layer::LAYER_TEXTURED));
 
   const gfx::Size size = GetImageSize(image);
   layer_ptr->get()->SetBounds(gfx::Rect(0, 0, size.width(), size.height()));

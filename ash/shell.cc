@@ -269,7 +269,7 @@ void Shell::Init() {
   CreateSpecialContainers(&containers);
   aura::Window::Windows::const_iterator i;
   for (i = containers.begin(); i != containers.end(); ++i) {
-    (*i)->Init(ui::Layer::LAYER_HAS_NO_TEXTURE);
+    (*i)->Init(ui::Layer::LAYER_NOT_DRAWN);
     root_window->AddChild(*i);
     if ((*i)->id() != internal::kShellWindowId_UnparentedControlContainer)
       (*i)->Show();

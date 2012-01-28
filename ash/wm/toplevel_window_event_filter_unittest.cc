@@ -80,7 +80,7 @@ class ToplevelWindowEventFilterTest : public aura::test::AuraTestBase {
     TestWindowDelegate* d1 = new TestWindowDelegate(hittest_code);
     aura::Window* w1 = new aura::Window(d1);
     w1->set_id(1);
-    w1->Init(ui::Layer::LAYER_HAS_TEXTURE);
+    w1->Init(ui::Layer::LAYER_TEXTURED);
     w1->SetParent(NULL);
     w1->SetBounds(gfx::Rect(0, 0, 100, 100));
     w1->Show();

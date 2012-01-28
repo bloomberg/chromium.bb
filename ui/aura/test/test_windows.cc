@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -47,7 +47,7 @@ Window* CreateTestWindowWithDelegateAndType(WindowDelegate* delegate,
   Window* window = new Window(delegate);
   window->set_id(id);
   window->SetType(type);
-  window->Init(ui::Layer::LAYER_HAS_TEXTURE);
+  window->Init(ui::Layer::LAYER_TEXTURED);
   window->SetBounds(bounds);
   window->Show();
   window->SetParent(parent);
