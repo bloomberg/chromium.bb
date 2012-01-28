@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -49,14 +49,15 @@ class EnsureTerminateMessageFilter : public IPC::ChannelProxy::MessageFilter {
  private:
   virtual void OnChannelError() {
     // How long we wait before forcibly shutting down the process.
-    const int kPluginProcessTerminateTimeoutMs = 3000;
+    const base::TimeDelta kPluginProcessTerminateTimeout =
+        base::TimeDelta::FromSeconds(3);
     // Ensure that we don't wait indefinitely for the plugin to shutdown.
     // as the browser does not terminate plugin processes on shutdown.
     // We achieve this by posting an exit process task on the IO thread.
     MessageLoop::current()->PostDelayedTask(
         FROM_HERE,
         base::Bind(&EnsureTerminateMessageFilter::Terminate, this),
-        kPluginProcessTerminateTimeoutMs);
+        kPluginProcessTerminateTimeout);
   }
 
   void Terminate() {
