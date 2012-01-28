@@ -1,4 +1,4 @@
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -197,6 +197,9 @@
         'files/src/google/cacheinvalidation/v2/test/deterministic-scheduler.h',
         'files/src/google/cacheinvalidation/v2/test/test-logger.cc',
         'files/src/google/cacheinvalidation/v2/test/test-logger.h',
+        'files/src/google/cacheinvalidation/v2/test/test-utils.cc',
+        'files/src/google/cacheinvalidation/v2/test/test-utils.h',
+        'files/src/google/cacheinvalidation/v2/invalidation-client-impl_test.cc',
         'files/src/google/cacheinvalidation/v2/protocol-handler_test.cc',
         'files/src/google/cacheinvalidation/v2/throttle_test.cc',
       ],
