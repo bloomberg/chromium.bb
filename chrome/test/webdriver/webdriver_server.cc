@@ -53,6 +53,7 @@
 #include "chrome/test/webdriver/commands/title_command.h"
 #include "chrome/test/webdriver/commands/url_command.h"
 #include "chrome/test/webdriver/commands/webelement_commands.h"
+#include "chrome/test/webdriver/commands/window_commands.h"
 #include "chrome/test/webdriver/webdriver_dispatch.h"
 #include "chrome/test/webdriver/webdriver_logging.h"
 #include "chrome/test/webdriver/webdriver_session_manager.h"
@@ -140,6 +141,9 @@ void InitCallbacks(Dispatcher* dispatcher,
   dispatcher->Add<WindowCommand>(       "/session/*/window");
   dispatcher->Add<WindowHandleCommand>( "/session/*/window_handle");
   dispatcher->Add<WindowHandlesCommand>("/session/*/window_handles");
+  dispatcher->Add<WindowSizeCommand>(   "/session/*/window/*/size");
+  dispatcher->Add<WindowPositionCommand>(
+                                        "/session/*/window/*/position");
   dispatcher->Add<SetAsyncScriptTimeoutCommand>(
                                         "/session/*/timeouts/async_script");
   dispatcher->Add<ImplicitWaitCommand>( "/session/*/timeouts/implicit_wait");

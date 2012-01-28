@@ -85,6 +85,8 @@ enum ErrorCode {
   // An open modal dialog blocked the operation. The operation may have
   // partially completed.
   kBlockedByModalDialog = 2,
+  // An ID was supplied that is invalid or does not refer to an existing object.
+  kInvalidId = 3,
 };
 
 // Represents an automation error. Each error has a code and an error message.

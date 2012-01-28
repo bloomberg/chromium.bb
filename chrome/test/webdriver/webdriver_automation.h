@@ -37,6 +37,7 @@ namespace webdriver {
 class Error;
 class FramePath;
 class Point;
+class Rect;
 
 // Creates and controls the Chrome instance.
 // This class should be created and accessed on a single thread.
@@ -168,6 +169,12 @@ class Automation {
 
   // Closes the given view.
   void CloseView(const WebViewId& view_id, Error** error);
+
+  // Sets the bounds for the given view. The position should be in screen
+  // coordinates, while the size should be the desired size of the view.
+  void SetViewBounds(const WebViewId& view_id,
+                     const Rect& bounds,
+                     Error** error);
 
   // Gets the active JavaScript modal dialog's message.
   void GetAppModalDialogMessage(std::string* message, Error** error);

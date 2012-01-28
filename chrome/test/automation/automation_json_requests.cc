@@ -674,6 +674,26 @@ bool SendDragAndDropFilePathsJSONRequest(
   return SendAutomationJSONRequest(sender, dict, &reply_dict, error);
 }
 
+bool SendSetViewBoundsJSONRequest(
+    AutomationMessageSender* sender,
+    const WebViewId& id,
+    int x,
+    int y,
+    int width,
+    int height,
+    automation::Error* error) {
+  DictionaryValue dict;
+  dict.SetString("command", "SetViewBounds");
+  id.UpdateDictionary(&dict, "auto_id");
+  dict.SetInteger("bounds.x", x);
+  dict.SetInteger("bounds.y", y);
+  dict.SetInteger("bounds.width", width);
+  dict.SetInteger("bounds.height", height);
+
+  DictionaryValue reply_dict;
+  return SendAutomationJSONRequest(sender, dict, &reply_dict, error);
+}
+
 bool SendGetAppModalDialogMessageJSONRequest(
     AutomationMessageSender* sender,
     std::string* message,

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -32,6 +32,8 @@ const char* DefaultMessageForErrorCode(ErrorCode code) {
       return "No JavaScript modal dialog is open";
     case kBlockedByModalDialog:
       return "Command blocked by an open modal dialog";
+    case kInvalidId:
+      return "ID is invalid or does not refer to an existing object";
     default:
       return "<unknown>";
   }

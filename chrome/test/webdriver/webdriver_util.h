@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -33,6 +33,9 @@ std::string JsonStringifyForDisplay(const base::Value* value);
 
 // Returns the string representation of the given type, for display purposes.
 const char* GetJsonTypeName(base::Value::Type type);
+
+// Converts the automation ID to a string.
+std::string AutomationIdToString(const AutomationId& id);
 
 // Converts the string to an automation ID and returns true on success.
 bool StringToAutomationId(const std::string& string_id, AutomationId* id);

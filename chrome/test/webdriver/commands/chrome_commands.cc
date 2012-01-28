@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -246,7 +246,7 @@ void ViewsCommand::ExecuteGet(Response* const response) {
   for (size_t i = 0; i < views.size(); ++i) {
     DictionaryValue* dict = new DictionaryValue();
     AutomationId id = views[i].view_id.GetId();
-    dict->SetString("handle", JsonStringify(id.ToValue()));
+    dict->SetString("handle", WebViewIdToString(WebViewId::ForView(id)));
     dict->SetInteger("type", id.type());
     if (!views[i].extension_id.empty())
       dict->SetString("extension_id", views[i].extension_id);

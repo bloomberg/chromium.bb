@@ -404,6 +404,16 @@ bool SendDragAndDropFilePathsJSONRequest(
     const std::vector<FilePath::StringType>& paths,
     automation::Error* error) WARN_UNUSED_RESULT;
 
+// Requests to set the given view's bounds. Returns true on success.
+bool SendSetViewBoundsJSONRequest(
+    AutomationMessageSender* sender,
+    const WebViewId& id,
+    int x,
+    int y,
+    int width,
+    int height,
+    automation::Error* error) WARN_UNUSED_RESULT;
+
 // Requests to get the active JavaScript modal dialog's message. Returns true
 // on success.
 bool SendGetAppModalDialogMessageJSONRequest(

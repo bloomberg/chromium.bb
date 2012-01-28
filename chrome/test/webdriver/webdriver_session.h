@@ -174,6 +174,12 @@ class Session {
   // session.
   Error* CloseWindow();
 
+  // Gets the bounds for the specified window.
+  Error* GetWindowBounds(const WebViewId& window, Rect* bounds);
+
+  // Sets the bounds for the specified window.
+  Error* SetWindowBounds(const WebViewId& window, const Rect& bounds);
+
   // Gets the message of the currently active JavaScript modal dialog.
   Error* GetAlertMessage(std::string* text);
 

@@ -120,6 +120,7 @@
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/renderer_host/render_view_host.h"
+#include "content/browser/renderer_host/render_widget_host_view.h"
 #include "content/browser/tab_contents/interstitial_page.h"
 #include "content/public/browser/browser_child_process_host_iterator.h"
 #include "content/public/browser/child_process_data.h"
@@ -2354,6 +2355,8 @@ void TestingAutomationProvider::SendJSONRequest(int handle,
       &TestingAutomationProvider::DoesAutomationObjectExist;
   handler_map["CloseTab"] =
       &TestingAutomationProvider::CloseTabJSON;
+  handler_map["SetViewBounds"] =
+      &TestingAutomationProvider::SetViewBounds;
   handler_map["WebkitMouseMove"] =
       &TestingAutomationProvider::WebkitMouseMove;
   handler_map["WebkitMouseClick"] =
@@ -6308,7 +6311,8 @@ void TestingAutomationProvider::ExecuteJavascriptJSON(
   std::string error;
   RenderViewHost* render_view;
   if (!GetRenderViewFromJSONArgs(args, profile(), &render_view, &error)) {
-    AutomationJSONReply(this, reply_message).SendError(error);
+    AutomationJSONReply(this, reply_message).SendError(
+        Error(automation::kInvalidId, error));
     return;
   }
   if (!args->GetString("frame_xpath", &frame_xpath)) {
@@ -6595,6 +6599,28 @@ void TestingAutomationProvider::CloseTabJSON(
     return;
   }
   view->ClosePage();
+  reply.SendSuccess(NULL);
+}
+
+void TestingAutomationProvider::SetViewBounds(
+    base::DictionaryValue* args,
+    IPC::Message* reply_message) {
+  AutomationJSONReply reply(this, reply_message);
+  int x, y, width, height;
+  if (!args->GetInteger("bounds.x", &x) ||
+      !args->GetInteger("bounds.y", &y) ||
+      !args->GetInteger("bounds.width", &width) ||
+      !args->GetInteger("bounds.height", &height)) {
+    reply.SendError("Missing or invalid 'bounds'");
+    return;
+  }
+  Browser* browser;
+  std::string error;
+  if (!GetBrowserFromJSONArgs(args, &browser, &error)) {
+    reply.SendError(Error(automation::kInvalidId, error));
+    return;
+  }
+  browser->window()->SetBounds(gfx::Rect(x, y, width, height));
   reply.SendSuccess(NULL);
 }
 

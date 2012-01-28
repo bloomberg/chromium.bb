@@ -1024,6 +1024,8 @@
         'test/webdriver/commands/webdriver_command.h',
         'test/webdriver/commands/webelement_commands.cc',
         'test/webdriver/commands/webelement_commands.h',
+        'test/webdriver/commands/window_commands.cc',
+        'test/webdriver/commands/window_commands.h',
         'test/webdriver/frame_path.cc',
         'test/webdriver/frame_path.h',
         'test/webdriver/http_response.cc',

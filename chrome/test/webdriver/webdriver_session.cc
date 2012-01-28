@@ -773,6 +773,37 @@ Error* Session::CloseWindow() {
   return error;
 }
 
+Error* Session::GetWindowBounds(const WebViewId& window, Rect* bounds) {
+  const char* kGetWindowBoundsScript =
+      "function() {"
+      "  return {"
+      "    'left': window.screenX,"
+      "    'top': window.screenY,"
+      "    'width': window.outerWidth,"
+      "    'height': window.outerHeight"
+      "  }"
+      "}";
+  return ExecuteScriptAndParse(
+      FrameId(window, FramePath()),
+      kGetWindowBoundsScript,
+      "getWindowBoundsScript",
+      new ListValue(),
+      CreateDirectValueParser(bounds));
+}
+
+Error* Session::SetWindowBounds(
+    const WebViewId& window,
+    const Rect& bounds) {
+  Error* error = NULL;
+  RunSessionTask(base::Bind(
+      &Automation::SetViewBounds,
+      base::Unretained(automation_.get()),
+      window,
+      bounds,
+      &error));
+  return error;
+}
+
 Error* Session::GetAlertMessage(std::string* text) {
   Error* error = NULL;
   RunSessionTask(base::Bind(

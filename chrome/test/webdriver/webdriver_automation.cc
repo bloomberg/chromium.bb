@@ -713,6 +713,16 @@ void Automation::CloseView(const WebViewId& view_id, Error** error) {
     *error = Error::FromAutomationError(auto_error);
 }
 
+void Automation::SetViewBounds(const WebViewId& view_id,
+                               const Rect& bounds,
+                               Error** error) {
+  automation::Error auto_error;
+  if (!SendSetViewBoundsJSONRequest(
+          automation(), view_id, bounds.x(), bounds.y(),
+          bounds.width(), bounds.height(), &auto_error))
+    *error = Error::FromAutomationError(auto_error);
+}
+
 void Automation::GetAppModalDialogMessage(std::string* message, Error** error) {
   *error = CheckAlertsSupported();
   if (*error)

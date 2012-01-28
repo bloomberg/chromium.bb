@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -42,14 +42,14 @@ void AutomationJSONReply::SendSuccess(const Value* value) {
 }
 
 void AutomationJSONReply::SendError(const std::string& error_message) {
-  SendErrorInternal(Error(error_message));
+  SendError(Error(error_message));
 }
 
 void AutomationJSONReply::SendErrorCode(ErrorCode code) {
-  SendErrorInternal(Error(code));
+  SendError(Error(code));
 }
 
-void AutomationJSONReply::SendErrorInternal(const Error& error) {
+void AutomationJSONReply::SendError(const Error& error) {
   DCHECK(message_) << "Resending reply for JSON automation request";
 
   base::DictionaryValue dict;

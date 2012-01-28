@@ -1096,6 +1096,21 @@ class TestingAutomationProvider : public AutomationProvider,
   //   output: none
   void CloseTabJSON(base::DictionaryValue* args, IPC::Message* reply_message);
 
+  // Sets the specified web view bounds.
+  // The single |auto_id| must be given to specify the view.
+  // This method currently is only supported for tabs.
+  // Example:
+  //   input: { "auto_id": { "type": 0, "id": "awoein" },
+  //            "bounds": {
+  //              "x": 100,
+  //              "y": 200,
+  //              "width": 500,
+  //              "height": 800
+  //            }
+  //          }
+  //   output: none
+  void SetViewBounds(base::DictionaryValue* args, IPC::Message* reply_message);
+
   // Sends the WebKit events for a mouse click at a given coordinate.
   // The pair |windex| and |tab_index| or the single |auto_id| must be given
   // to specify the render view.
