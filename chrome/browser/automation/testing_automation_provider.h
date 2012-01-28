@@ -89,6 +89,7 @@ class TestingAutomationProvider : public AutomationProvider,
   void AppendTab(int handle, const GURL& url, IPC::Message* reply_message);
   void AppendBackgroundTab(int handle, const GURL& url,
                            IPC::Message* reply_message);
+  void GetMachPortCount(int* port_count);
   void GetActiveTabIndex(int handle, int* active_tab_index);
   void CloseTab(int tab_handle, bool wait_until_closed,
                 IPC::Message* reply_message);

@@ -154,6 +154,10 @@
 #include "chrome/browser/download/download_shelf.h"
 #endif
 
+#if defined(OS_MACOSX)
+#include "base/mach_ipc_mac.h"
+#endif
+
 using automation::Error;
 using automation::ErrorCode;
 using automation_util::SendErrorIfModalDialogActive;
@@ -321,6 +325,7 @@ bool TestingAutomationProvider::OnMessageReceived(
     IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_AppendTab, AppendTab)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_AppendBackgroundTab,
                                     AppendBackgroundTab)
+    IPC_MESSAGE_HANDLER(AutomationMsg_GetMachPortCount, GetMachPortCount)
     IPC_MESSAGE_HANDLER(AutomationMsg_ActiveTabIndex, GetActiveTabIndex)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_CloseTab, CloseTab)
     IPC_MESSAGE_HANDLER(AutomationMsg_GetCookies, GetCookies)
@@ -599,6 +604,14 @@ void TestingAutomationProvider::AppendBackgroundTab(
                                                         append_tab_response);
     Send(reply_message);
   }
+}
+
+void TestingAutomationProvider::GetMachPortCount(int* port_count) {
+#if defined(OS_MACOSX)
+  base::mac::GetNumberOfMachPorts(mach_task_self(), port_count);
+#else
+  *port_count = 0;
+#endif
 }
 
 void TestingAutomationProvider::GetActiveTabIndex(int handle,

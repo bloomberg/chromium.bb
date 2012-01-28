@@ -3502,6 +3502,9 @@
           'dependencies+++': [
             '../third_party/WebKit/Source/WebCore/WebCore.gyp/WebCore.gyp:webcore',
           ],
+          'sources': [
+            'test/perf/mach_ports_test.cc',
+          ],
         }],
         ['toolkit_uses_gtk == 1', {
           'dependencies': [

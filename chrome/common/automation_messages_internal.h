@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -1505,6 +1505,11 @@ IPC_SYNC_MESSAGE_CONTROL2_1(AutomationMsg_AppendBackgroundTab,
                             int,
                             GURL,
                             int)
+
+// Used on Mac OS X to read the number of active Mach ports used in the browser
+// process.
+IPC_SYNC_MESSAGE_CONTROL0_1(AutomationMsg_GetMachPortCount,
+                            int /* number of Mach ports */)
 
 // Browser -> renderer messages.
 
