@@ -142,7 +142,8 @@ void PpbFontRpcServer::PPB_Font_DrawTextAt(
       reinterpret_cast<struct PP_Point*>(position);
   struct PP_Rect* pp_clip =
       reinterpret_cast<struct PP_Rect*>(clip);
-  PP_Bool pp_image_data_is_opaque = PP_FromBool(image_data_is_opaque);
+  PP_Bool pp_image_data_is_opaque =
+      PP_FromBool(image_data_is_opaque ? true : false);
   PP_Bool pp_success = PPBFontInterface()->DrawTextAt(font,
                                                       image_data,
                                                       pp_text_run,
