@@ -178,7 +178,7 @@ class ChromeBrowserMainParts : public content::BrowserMainParts {
   scoped_refptr<chrome_browser_metrics::TrackingSynchronizer>
       tracking_synchronizer_;
   scoped_ptr<ProcessSingleton> process_singleton_;
-  scoped_ptr<FirstRun::MasterPrefs> master_prefs_;
+  scoped_ptr<first_run::MasterPrefs> master_prefs_;
   bool record_search_engine_;
   TranslateManager* translate_manager_;
   Profile* profile_;

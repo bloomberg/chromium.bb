@@ -38,6 +38,22 @@ class TemplateURLService;
 // install work for this user. After that the sentinel file is created.
 namespace first_run {
 
+// See ProcessMasterPreferences for more info about this structure.
+struct MasterPrefs {
+  MasterPrefs();
+  ~MasterPrefs();
+
+  int ping_delay;
+  bool homepage_defined;
+  int do_import_items;
+  int dont_import_items;
+  bool run_search_engine_experiment;
+  bool randomize_search_engine_experiment;
+  bool make_chrome_default;
+  std::vector<GURL> new_tabs;
+  std::vector<GURL> bookmarks;
+};
+
 // Returns true if this is the first time chrome is run for this user.
 bool IsChromeFirstRun();
 
@@ -98,19 +114,6 @@ FilePath MasterPrefsPath();
 // install work for this user. After that the sentinel file is created.
 class FirstRun {
  public:
-  // See ProcessMasterPreferences for more info about this structure.
-  struct MasterPrefs {
-    MasterPrefs();
-    ~MasterPrefs();
-
-    int ping_delay;
-    bool homepage_defined;
-    int do_import_items;
-    int dont_import_items;
-    bool make_chrome_default;
-    std::vector<GURL> new_tabs;
-    std::vector<GURL> bookmarks;
-  };
 
   // The master preferences is a JSON file with the same entries as the
   // 'Default\Preferences' file. This function locates this file from a standard
@@ -126,11 +129,9 @@ class FirstRun {
   // See chrome/installer/util/master_preferences.h for a description of
   // 'master_preferences' file.
   static bool ProcessMasterPreferences(const FilePath& user_data_dir,
-                                       MasterPrefs* out_prefs);
+                                       first_run::MasterPrefs* out_prefs);
 
  private:
-  friend class FirstRunTest;
-  FRIEND_TEST_ALL_PREFIXES(Toolbar5ImporterTest, BookmarkParse);
 
   // -- Platform-specific functions --
 

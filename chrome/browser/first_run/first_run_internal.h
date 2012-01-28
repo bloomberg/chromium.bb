@@ -23,6 +23,10 @@ class Profile;
 class ProcessSingleton;
 class TemplateURLService;
 
+namespace installer {
+class MasterPreferences;
+}
+
 namespace first_run {
 namespace internal {
 
@@ -37,6 +41,22 @@ extern FirstRunState first_run_;
 
 // The kSentinelFile file absence will tell us it is a first run.
 extern const char* const kSentinelFile;
+
+// Loads master preferences from the master preference file into the installer
+// master preferences. Passes the master preference file path out in
+// master_prefs_path. Returns the pointer to installer::MasterPreferences object
+// if successful; otherwise, returns NULL.
+installer::MasterPreferences* LoadMasterPrefs(FilePath* master_prefs_path);
+
+// Copies user preference file to master preference file. Returns true if
+// successful.
+bool CopyPrefFile(const FilePath& user_data_dir,
+                  const FilePath& master_prefs_path);
+
+// Sets up master preferences by preferences passed by installer.
+void SetupMasterPrefsFromInstallPrefs(
+    MasterPrefs* out_prefs,
+    installer::MasterPreferences* install_prefs);
 
 // -- Platform-specific functions --
 

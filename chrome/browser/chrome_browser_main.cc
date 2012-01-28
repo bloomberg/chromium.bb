@@ -1204,7 +1204,7 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
 #endif
 
   // These members must be initialized before returning from this function.
-  master_prefs_.reset(new FirstRun::MasterPrefs);
+  master_prefs_.reset(new first_run::MasterPrefs);
   browser_init_.reset(new BrowserInit);
 
   std::string try_chrome =

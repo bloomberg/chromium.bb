@@ -144,6 +144,93 @@ namespace internal {
 const char* const kSentinelFile = "First Run";
 FirstRunState first_run_ = FIRST_RUN_UNKNOWN;
 
+installer::MasterPreferences* LoadMasterPrefs(FilePath* master_prefs_path)
+{
+  *master_prefs_path = FilePath(MasterPrefsPath());
+  if (master_prefs_path->empty())
+    return NULL;
+  installer::MasterPreferences* install_prefs =
+      new installer::MasterPreferences(*master_prefs_path);
+  if (!install_prefs->read_from_file())
+    return NULL;
+
+  return install_prefs;
+}
+
+bool CopyPrefFile(const FilePath& user_data_dir,
+                  const FilePath& master_prefs_path) {
+  FilePath user_prefs = GetDefaultPrefFilePath(true, user_data_dir);
+  if (user_prefs.empty())
+    return false;
+
+  // The master prefs are regular prefs so we can just copy the file
+  // to the default place and they just work.
+  return file_util::CopyFile(master_prefs_path, user_prefs);
+}
+
+void SetupMasterPrefsFromInstallPrefs(
+    MasterPrefs* out_prefs,
+    installer::MasterPreferences* install_prefs) {
+  bool value = false;
+  if (install_prefs->GetBool(
+          installer::master_preferences::kDistroImportSearchPref, &value)) {
+    if (value) {
+      out_prefs->do_import_items |= importer::SEARCH_ENGINES;
+    } else {
+      out_prefs->dont_import_items |= importer::SEARCH_ENGINES;
+    }
+  }
+
+  // If we're suppressing the first-run bubble, set that preference now.
+  // Otherwise, wait until the user has completed first run to set it, so the
+  // user is guaranteed to see the bubble iff he or she has completed the first
+  // run process.
+  if (install_prefs->GetBool(
+          installer::master_preferences::kDistroSuppressFirstRunBubble,
+          &value) && value)
+    first_run::SetShowFirstRunBubblePref(false);
+
+  if (install_prefs->GetBool(
+          installer::master_preferences::kDistroImportHistoryPref,
+          &value)) {
+    if (value) {
+      out_prefs->do_import_items |= importer::HISTORY;
+    } else {
+      out_prefs->dont_import_items |= importer::HISTORY;
+    }
+  }
+
+  std::string not_used;
+  out_prefs->homepage_defined = install_prefs->GetString(
+      prefs::kHomePage, &not_used);
+
+  if (install_prefs->GetBool(
+          installer::master_preferences::kDistroImportHomePagePref,
+          &value)) {
+    if (value) {
+      out_prefs->do_import_items |= importer::HOME_PAGE;
+    } else {
+      out_prefs->dont_import_items |= importer::HOME_PAGE;
+    }
+  }
+
+  // Bookmarks are never imported unless specifically turned on.
+  if (install_prefs->GetBool(
+          installer::master_preferences::kDistroImportBookmarksPref,
+          &value)) {
+    if (value)
+      out_prefs->do_import_items |= importer::FAVORITES;
+    else
+      out_prefs->dont_import_items |= importer::FAVORITES;
+  }
+
+  if (install_prefs->GetBool(
+          installer::master_preferences::kMakeChromeDefaultForUser,
+          &value) && value) {
+    out_prefs->make_chrome_default = true;
+  }
+}
+
 // -- Platform-specific functions --
 
 #if !defined(OS_LINUX) && !defined(OS_BSD)
@@ -262,6 +349,18 @@ int ImportBookmarkFromFileIfNeeded(Profile* profile,
 
 namespace first_run {
 
+MasterPrefs::MasterPrefs()
+    : ping_delay(0),
+      homepage_defined(false),
+      do_import_items(0),
+      dont_import_items(0),
+      run_search_engine_experiment(false),
+      randomize_search_engine_experiment(false),
+      make_chrome_default(false) {
+}
+
+MasterPrefs::~MasterPrefs() {}
+
 bool IsChromeFirstRun() {
   if (internal::first_run_ != internal::FIRST_RUN_UNKNOWN)
     return internal::first_run_ == internal::FIRST_RUN_TRUE;
@@ -326,44 +425,33 @@ bool SetPersonalDataManagerFirstRunPref() {
 
 // FirstRun -------------------------------------------------------------------
 
-FirstRun::MasterPrefs::MasterPrefs()
-    : ping_delay(0),
-      homepage_defined(false),
-      do_import_items(0),
-      dont_import_items(0),
-      make_chrome_default(false) {
-}
-
-FirstRun::MasterPrefs::~MasterPrefs() {}
-
 // static
 bool FirstRun::ProcessMasterPreferences(const FilePath& user_data_dir,
-                                        MasterPrefs* out_prefs) {
+                                        first_run::MasterPrefs* out_prefs) {
   DCHECK(!user_data_dir.empty());
 
-  FilePath master_prefs = first_run::MasterPrefsPath();
-  if (master_prefs.empty())
-    return true;
-  installer::MasterPreferences prefs(master_prefs);
-  if (!prefs.read_from_file())
+  FilePath master_prefs_path;
+  scoped_ptr<installer::MasterPreferences>
+      install_prefs(first_run::internal::LoadMasterPrefs(&master_prefs_path));
+  if (!install_prefs.get())
     return true;
 
-  out_prefs->new_tabs = prefs.GetFirstRunTabs();
+  out_prefs->new_tabs = install_prefs->GetFirstRunTabs();
 
   bool value = false;
 
 #if defined(OS_WIN)
   // RLZ is currently a Windows-only phenomenon.  When it comes to the Mac/
   // Linux, enable it here.
-  if (!prefs.GetInt(installer::master_preferences::kDistroPingDelay,
+  if (!install_prefs->GetInt(installer::master_preferences::kDistroPingDelay,
                     &out_prefs->ping_delay)) {
     // 90 seconds is the default that we want to use in case master
     // preferences is missing, corrupt or ping_delay is missing.
     out_prefs->ping_delay = 90;
   }
 
-  if (prefs.GetBool(installer::master_preferences::kRequireEula, &value) &&
-      value) {
+  if (install_prefs->GetBool(installer::master_preferences::kRequireEula,
+          &value) && value) {
     // Show the post-installation EULA. This is done by setup.exe and the
     // result determines if we continue or not. We wait here until the user
     // dismisses the dialog.
@@ -391,85 +479,25 @@ bool FirstRun::ProcessMasterPreferences(const FilePath& user_data_dir,
   }
 #endif
 
-  FilePath user_prefs = GetDefaultPrefFilePath(true, user_data_dir);
-  if (user_prefs.empty())
-    return true;
-
-  // The master prefs are regular prefs so we can just copy the file
-  // to the default place and they just work.
-  if (!file_util::CopyFile(master_prefs, user_prefs))
+  if (!first_run::internal::CopyPrefFile(user_data_dir, master_prefs_path))
     return true;
 
 #if defined(OS_WIN)
   DictionaryValue* extensions = 0;
-  if (prefs.GetExtensionsBlock(&extensions)) {
+  if (install_prefs->GetExtensionsBlock(&extensions)) {
     VLOG(1) << "Extensions block found in master preferences";
     DoDelayedInstallExtensions();
   }
 #endif
 
-  if (prefs.GetBool(installer::master_preferences::kDistroImportSearchPref,
-                    &value)) {
-    if (value) {
-      out_prefs->do_import_items |= importer::SEARCH_ENGINES;
-    } else {
-      out_prefs->dont_import_items |= importer::SEARCH_ENGINES;
-    }
-  }
-
-  // If we're suppressing the first-run bubble, set that preference now.
-  // Otherwise, wait until the user has completed first run to set it, so the
-  // user is guaranteed to see the bubble iff he or she has completed the first
-  // run process.
-  if (prefs.GetBool(
-          installer::master_preferences::kDistroSuppressFirstRunBubble,
-          &value) && value)
-    first_run::SetShowFirstRunBubblePref(false);
-
-  if (prefs.GetBool(
-          installer::master_preferences::kDistroImportHistoryPref,
-          &value)) {
-    if (value) {
-      out_prefs->do_import_items |= importer::HISTORY;
-    } else {
-      out_prefs->dont_import_items |= importer::HISTORY;
-    }
-  }
-
-  std::string not_used;
-  out_prefs->homepage_defined = prefs.GetString(prefs::kHomePage, &not_used);
-
-  if (prefs.GetBool(
-          installer::master_preferences::kDistroImportHomePagePref,
-          &value)) {
-    if (value) {
-      out_prefs->do_import_items |= importer::HOME_PAGE;
-    } else {
-      out_prefs->dont_import_items |= importer::HOME_PAGE;
-    }
-  }
-
-  // Bookmarks are never imported unless specifically turned on.
-  if (prefs.GetBool(
-          installer::master_preferences::kDistroImportBookmarksPref,
-          &value)) {
-    if (value)
-      out_prefs->do_import_items |= importer::FAVORITES;
-    else
-      out_prefs->dont_import_items |= importer::FAVORITES;
-  }
-
-  if (prefs.GetBool(
-          installer::master_preferences::kMakeChromeDefaultForUser,
-          &value) && value) {
-    out_prefs->make_chrome_default = true;
-  }
+  first_run::internal::SetupMasterPrefsFromInstallPrefs(out_prefs,
+      install_prefs.get());
 
   // TODO(mirandac): Refactor skip-first-run-ui process into regular first run
   // import process.  http://crbug.com/49647
   // Note we are skipping all other master preferences if skip-first-run-ui
   // is *not* specified. (That is, we continue only if skipping first run ui.)
-  if (!prefs.GetBool(
+  if (!install_prefs->GetBool(
           installer::master_preferences::kDistroSkipFirstRunPref,
           &value) || !value) {
     return true;
@@ -487,13 +515,14 @@ bool FirstRun::ProcessMasterPreferences(const FilePath& user_data_dir,
   if (!first_run::CreateSentinel())
     return false;
 
-  if (prefs.GetBool(installer::master_preferences::kDistroShowWelcomePage,
-                    &value) && value) {
+  if (install_prefs->GetBool(
+          installer::master_preferences::kDistroShowWelcomePage, &value)
+          && value) {
     first_run::SetShowWelcomePagePref();
   }
 
   std::string import_bookmarks_path;
-  prefs.GetString(
+  install_prefs->GetString(
       installer::master_preferences::kDistroImportBookmarksFromFilePref,
       &import_bookmarks_path);
 
@@ -543,7 +572,7 @@ bool FirstRun::ProcessMasterPreferences(const FilePath& user_data_dir,
   // no policy has been set by the admin.
   if (!g_browser_process->local_state()->IsManagedPreference(
           prefs::kDefaultBrowserSettingEnabled)) {
-    if (prefs.GetBool(
+    if (install_prefs->GetBool(
             installer::master_preferences::kMakeChromeDefaultForUser,
             &value) && value) {
       ShellIntegration::SetAsDefaultBrowser();
