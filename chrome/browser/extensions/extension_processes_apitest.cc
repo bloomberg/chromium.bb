@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -24,7 +24,13 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, Processes) {
   ASSERT_TRUE(RunExtensionTest("processes/api")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ProcessesVsTaskManager) {
+// http://crbug.com/111787
+#ifdef OS_WIN
+#define MAYBE_ProcessesVsTaskManager DISABLED_ProcessesVsTaskManager
+#else
+#define MAYBE_ProcessesVsTaskManager ProcessesVsTaskManager
+#endif
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_ProcessesVsTaskManager) {
   CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableExperimentalExtensionApis);
 
