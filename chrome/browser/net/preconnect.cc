@@ -102,8 +102,8 @@ void PreconnectOnIOThread(
   ssl_config.verify_ev_cert = true;
 
   net::HttpStreamFactory* http_stream_factory = session->http_stream_factory();
-  http_stream_factory->PreconnectStreams(
-      count, request_info, ssl_config, ssl_config, net::BoundNetLog());
+  http_stream_factory->PreconnectStreams(count, request_info, ssl_config,
+                                         ssl_config);
 }
 
 }  // namespace chrome_browser_net
