@@ -10,6 +10,7 @@
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/lazy_instance.h"
+#include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/string16.h"
 #include "base/string_util.h"
@@ -56,6 +57,12 @@ class CertDatabaseNSSTest : public testing::Test {
     ASSERT_TRUE(slot_->os_module_handle());
 
     EXPECT_TRUE(CleanupSlotContents(slot_->os_module_handle()));
+
+    // Run the message loop to process any observer callbacks (e.g. for the
+    // ClientSocketFactory singleton) so that the scoped ref ptrs created in
+    // CertDatabase::NotifyObservers* get released.
+    MessageLoop::current()->RunAllPending();
+
     EXPECT_EQ(0U, ListCertsInSlot(slot_->os_module_handle()).size());
   }
 

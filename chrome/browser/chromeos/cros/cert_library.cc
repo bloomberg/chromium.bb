@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -257,12 +257,19 @@ class CertLibraryImpl
 
   virtual void OnUserCertAdded(const net::X509Certificate* cert) OVERRIDE {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-    VLOG(1) << "Certificate Added.";
     // Only load certificates if we have completed an initial request.
     if (certificates_loaded_) {
-      VLOG(1) << " Loading Certificates.";
-      // The certificate passed in is const, so we cannot add it to our
-      // ref counted list directly. Instead, re-load the certificate list.
+      BrowserThread::PostTask(
+          BrowserThread::DB, FROM_HERE,
+          base::Bind(&CertLibraryImpl::LoadCertificates,
+                     base::Unretained(this)));
+    }
+  }
+
+  virtual void OnUserCertRemoved(const net::X509Certificate* cert) OVERRIDE {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    // Only load certificates if we have completed an initial request.
+    if (certificates_loaded_) {
       BrowserThread::PostTask(
           BrowserThread::DB, FROM_HERE,
           base::Bind(&CertLibraryImpl::LoadCertificates,
@@ -276,6 +283,7 @@ class CertLibraryImpl
 
  private:
   void LoadCertificates() {
+    VLOG(1) << " Loading Certificates.";
     // Certificate fetch occurs on the DB thread.
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
     net::CertDatabase cert_db;
