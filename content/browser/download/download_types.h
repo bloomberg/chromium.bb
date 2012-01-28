@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,9 +17,7 @@
 // hold the state of the hash algorithm where we left off.
 struct CONTENT_EXPORT DownloadSaveInfo {
   DownloadSaveInfo();
-  DownloadSaveInfo(const DownloadSaveInfo& info);
   ~DownloadSaveInfo();
-  DownloadSaveInfo& operator=(const DownloadSaveInfo& info);
 
   // This is usually the tentative final name, but not during resumption
   // where it will be the intermediate file name.
@@ -34,6 +32,13 @@ struct CONTENT_EXPORT DownloadSaveInfo {
 
   // The state of the hash at the start of the download.  May be empty.
   std::string hash_state;
+
+  // If |prompt_for_save_location| is true, and |file_path| is empty, then
+  // the user will be prompted for a location to save the download. Otherwise,
+  // the location will be determined automatically using |file_path| as a
+  // basis if |file_path| is not empty.
+  // |prompt_for_save_location| defaults to false.
+  bool prompt_for_save_location;
 };
 
 #endif  // CONTENT_BROWSER_DOWNLOAD_DOWNLOAD_TYPES_H_

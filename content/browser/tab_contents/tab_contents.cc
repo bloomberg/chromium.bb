@@ -936,7 +936,14 @@ void TabContents::OnSavePage() {
     DownloadManager* dlm = GetBrowserContext()->GetDownloadManager();
     const GURL& current_page_url = GetURL();
     if (dlm && current_page_url.is_valid()) {
-      dlm->DownloadUrl(current_page_url, GURL(), "", this);
+      DownloadSaveInfo save_info;
+      save_info.prompt_for_save_location = true;
+      dlm->DownloadUrl(current_page_url,
+                       GURL(),
+                       "",
+                       true,  // prefer_cache
+                       save_info,
+                       this);
       download_stats::RecordDownloadCount(
           download_stats::INITIATED_BY_SAVE_PACKAGE_FAILURE_COUNT);
       return;
@@ -1417,7 +1424,9 @@ void TabContents::OnUpdateZoomLimits(int minimum_percent,
 
 void TabContents::OnSaveURL(const GURL& url) {
   DownloadManager* dlm = GetBrowserContext()->GetDownloadManager();
-  dlm->DownloadUrl(url, GetURL(), "", this);
+  DownloadSaveInfo save_info;
+  save_info.prompt_for_save_location = true;
+  dlm->DownloadUrl(url, GetURL(), "", true, save_info, this);
 }
 
 void TabContents::OnEnumerateDirectory(int request_id,

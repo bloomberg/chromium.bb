@@ -683,8 +683,6 @@ void RenderMessageFilter::OnDownloadUrl(const IPC::Message& message,
                                         const GURL& url,
                                         const GURL& referrer,
                                         const string16& suggested_name) {
-  // Don't show "Save As" UI.
-  bool prompt_for_save_location = false;
   DownloadSaveInfo save_info;
   save_info.suggested_name = suggested_name;
   scoped_ptr<net::URLRequest> request(
@@ -692,8 +690,8 @@ void RenderMessageFilter::OnDownloadUrl(const IPC::Message& message,
   request->set_referrer(referrer.spec());
   resource_dispatcher_host_->BeginDownload(
       request.Pass(),
+      false,
       save_info,
-      prompt_for_save_location,
       DownloadResourceHandler::OnStartedCallback(),
       render_process_id_,
       message.routing_id(),

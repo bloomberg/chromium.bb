@@ -132,11 +132,13 @@ void DragDownloadFile::InitiateDownload() {
   DownloadSaveInfo save_info;
   save_info.file_path = file_path_;
   save_info.file_stream = file_stream_;
-  download_manager_->DownloadUrlToFile(url_,
-                                       referrer_,
-                                       referrer_encoding_,
-                                       save_info,
-                                       web_contents_);
+
+  download_manager_->DownloadUrl(url_,
+                                 referrer_,
+                                 referrer_encoding_,
+                                 false,
+                                 save_info,
+                                 web_contents_);
   download_stats::RecordDownloadCount(
       download_stats::INITIATED_BY_DRAG_N_DROP_COUNT);
 }

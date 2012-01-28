@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -1697,8 +1697,10 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadUrl) {
         DownloadItem::COMPLETE,  // Really done
         false,                   // Ignore select file.
         DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_FAIL));
+  DownloadSaveInfo save_info;
+  save_info.prompt_for_save_location = true;
   DownloadManagerForBrowser(browser())->DownloadUrl(
-      url, GURL(""), "", web_contents);
+      url, GURL(""), "", false, save_info, web_contents);
   observer->WaitForFinished();
   EXPECT_TRUE(observer->select_file_dialog_seen());
 
@@ -1708,7 +1710,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadUrl) {
   CheckDownloadUI(browser(), true, true, file);
 }
 
-IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadUrlToFile) {
+IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadUrlToPath) {
   ASSERT_TRUE(InitialSetup(false));
   FilePath file(FILE_PATH_LITERAL("download-test1.lib"));
   GURL url(URLRequestMockHTTPJob::GetMockUrl(file));
@@ -1724,8 +1726,8 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadUrlToFile) {
   save_info.file_path = target_file_full_path;
 
   DownloadTestObserver* observer(CreateWaiter(browser(), 1));
-  DownloadManagerForBrowser(browser())->DownloadUrlToFile(
-      url, GURL(""), "", save_info, web_contents);
+  DownloadManagerForBrowser(browser())->DownloadUrl(
+      url, GURL(""), "", false, save_info, web_contents);
   observer->WaitForFinished();
 
   // Check state.
@@ -1736,4 +1738,38 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadUrlToFile) {
 
   // Temporary downloads won't be visible.
   CheckDownloadUI(browser(), false, false, file);
+}
+
+IN_PROC_BROWSER_TEST_F(DownloadTest, SavePageNonHTMLViaGet) {
+  // Do initial setup.
+  ASSERT_TRUE(InitialSetup(false));
+  ASSERT_TRUE(test_server()->Start());
+  NullSelectFile(browser());
+  std::vector<DownloadItem*> download_items;
+  GetDownloads(browser(), &download_items);
+  ASSERT_TRUE(download_items.empty());
+
+  // Navigate to a non-HTML resource. The resource also has
+  // Cache-Control: no-cache set, which normally requires revalidation
+  // each time.
+  GURL url = test_server()->GetURL("files/downloads/image.jpg");
+  ASSERT_TRUE(url.is_valid());
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  // Stop the test server, and then try to save the page. If cache validation
+  // is not bypassed then this will fail since the server is no longer
+  // reachable.
+  ASSERT_TRUE(test_server()->Stop());
+  scoped_ptr<DownloadTestObserver> waiter(
+      new DownloadTestObserver(
+          DownloadManagerForBrowser(browser()), 1, DownloadItem::COMPLETE,
+          false, DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_FAIL));
+  browser()->SavePage();
+  waiter->WaitForFinished();
+
+  // Validate that the correct file was downloaded.
+  GetDownloads(browser(), &download_items);
+  EXPECT_TRUE(waiter->select_file_dialog_seen());
+  ASSERT_EQ(1u, download_items.size());
+  ASSERT_EQ(url, download_items[0]->GetOriginalUrl());
 }

@@ -61,6 +61,7 @@
 #include "chrome/common/spellcheck_messages.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/child_process_security_policy.h"
+#include "content/browser/download/download_types.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
 #include "content/browser/speech/speech_input_preferences.h"
@@ -1495,8 +1496,15 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
                                                   params_.src_url);
       DownloadManager* dlm =
           DownloadServiceFactory::GetForProfile(profile_)->GetDownloadManager();
+      // For images and AV "Save As" context menu commands, save the cached
+      // data even if it is no longer valid. This helps ensure that the content
+      // that is visible on the page is what is saved. For links, this behavior
+      // is not desired since the content being linked to is not visible.
+      bool prefer_cache = (id != IDC_CONTENT_CONTEXT_SAVELINKAS);
+      DownloadSaveInfo save_info;
+      save_info.prompt_for_save_location = true;
       dlm->DownloadUrl(url, referrer, params_.frame_charset,
-                       source_web_contents_);
+                       prefer_cache, save_info, source_web_contents_);
       break;
     }
 

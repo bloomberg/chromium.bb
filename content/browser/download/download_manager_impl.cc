@@ -70,6 +70,7 @@ struct RenderParams {
 };
 
 void BeginDownload(const URLParams& url_params,
+                   bool prefer_cache,
                    const DownloadSaveInfo& save_info,
                    ResourceDispatcherHost* resource_dispatcher_host,
                    const RenderParams& render_params,
@@ -78,7 +79,7 @@ void BeginDownload(const URLParams& url_params,
       new net::URLRequest(url_params.url_, resource_dispatcher_host));
   request->set_referrer(url_params.referrer_.spec());
   resource_dispatcher_host->BeginDownload(
-      request.Pass(), save_info, true,
+      request.Pass(), prefer_cache, save_info,
       DownloadResourceHandler::OnStartedCallback(),
       render_params.render_process_id_,
       render_params.render_view_id_,
@@ -811,19 +812,13 @@ int DownloadManagerImpl::RemoveAllDownloads() {
 // Initiate a download of a specific URL. We send the request to the
 // ResourceDispatcherHost, and let it send us responses like a regular
 // download.
-void DownloadManagerImpl::DownloadUrl(const GURL& url,
-                                      const GURL& referrer,
-                                      const std::string& referrer_charset,
-                                      WebContents* web_contents) {
-  DownloadUrlToFile(url, referrer, referrer_charset, DownloadSaveInfo(),
-                    web_contents);
-}
-
-void DownloadManagerImpl::DownloadUrlToFile(const GURL& url,
-                                            const GURL& referrer,
-                                            const std::string& referrer_charset,
-                                            const DownloadSaveInfo& save_info,
-                                            WebContents* web_contents) {
+void DownloadManagerImpl::DownloadUrl(
+    const GURL& url,
+    const GURL& referrer,
+    const std::string& referrer_charset,
+    bool prefer_cache,
+    const DownloadSaveInfo& save_info,
+    WebContents* web_contents) {
   ResourceDispatcherHost* resource_dispatcher_host =
       ResourceDispatcherHost::Get();
 
@@ -832,8 +827,12 @@ void DownloadManagerImpl::DownloadUrlToFile(const GURL& url,
   // base::Bind can't handle 7 args, so we use URLParams and RenderParams.
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&BeginDownload,
-          URLParams(url, referrer), save_info, resource_dispatcher_host,
+      base::Bind(
+          &BeginDownload,
+          URLParams(url, referrer),
+          prefer_cache,
+          save_info,
+          resource_dispatcher_host,
           RenderParams(web_contents->GetRenderProcessHost()->GetID(),
                        web_contents->GetRenderViewHost()->routing_id()),
           &web_contents->GetBrowserContext()->GetResourceContext()));

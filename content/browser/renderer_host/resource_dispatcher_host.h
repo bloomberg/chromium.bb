@@ -86,8 +86,8 @@ class CONTENT_EXPORT ResourceDispatcherHost : public net::URLRequest::Delegate {
   // be returned.
   net::Error BeginDownload(
       scoped_ptr<net::URLRequest> request,
+      bool prefer_cache,
       const DownloadSaveInfo& save_info,
-      bool prompt_for_save_location,
       const DownloadResourceHandler::OnStartedCallback& started_cb,
       int child_id,
       int route_id,

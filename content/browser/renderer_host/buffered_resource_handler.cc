@@ -310,7 +310,6 @@ bool BufferedResourceHandler::CompleteResponseStarted(int request_id) {
                                   request_->url(),
                                   host_->download_file_manager(),
                                   request_,
-                                  false,
                                   DownloadResourceHandler::OnStartedCallback(),
                                   DownloadSaveInfo()));
 

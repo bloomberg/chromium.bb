@@ -215,8 +215,9 @@ void WebstoreInstaller::StartDownload(FilePath file) {
   // download system will then pass the crx to the CrxInstaller.
   download_util::RecordDownloadCount(
         download_util::INITIATED_BY_WEBSTORE_INSTALLER_COUNT);
-  profile_->GetDownloadManager()->DownloadUrlToFile(
-      download_url_, referrer, "", save_info, controller_->GetWebContents());
+  profile_->GetDownloadManager()->DownloadUrl(
+      download_url_, referrer, "",
+      false, save_info, controller_->GetWebContents());
 }
 
 void WebstoreInstaller::ReportFailure(const std::string& error) {

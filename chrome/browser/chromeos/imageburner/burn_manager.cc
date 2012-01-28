@@ -447,10 +447,11 @@ void Downloader::OnFileStreamCreatedOnUIThread(const GURL& url,
 
     download_util::RecordDownloadCount(
         download_util::INITIATED_BY_IMAGE_BURNER_COUNT);
-    download_manager->DownloadUrlToFile(
+    download_manager->DownloadUrl(
         url,
         web_contents->GetURL(),
         web_contents->GetEncoding(),
+        false,
         save_info,
         web_contents);
   } else {

@@ -878,8 +878,8 @@ void ResourceDispatcherHost::OnDidLoadResourceFromMemoryCache(
 // We are explicitly forcing the download of 'url'.
 net::Error ResourceDispatcherHost::BeginDownload(
     scoped_ptr<net::URLRequest> request,
+    bool prefer_cache,
     const DownloadSaveInfo& save_info,
-    bool prompt_for_save_location,
     const DownloadResourceHandler::OnStartedCallback& started_cb,
     int child_id,
     int route_id,
@@ -891,9 +891,13 @@ net::Error ResourceDispatcherHost::BeginDownload(
   const net::URLRequestContext* request_context = context.request_context();
   request->set_referrer(MaybeStripReferrer(GURL(request->referrer())).spec());
   request->set_context(request_context);
-  request->set_load_flags(request->load_flags() |
-                          net::LOAD_IS_DOWNLOAD | net::LOAD_DISABLE_CACHE);
-
+  int extra_load_flags = net::LOAD_IS_DOWNLOAD;
+  if (prefer_cache) {
+    extra_load_flags |= net::LOAD_PREFERRING_CACHE;
+  } else {
+    extra_load_flags |= net::LOAD_DISABLE_CACHE;
+  }
+  request->set_load_flags(request->load_flags() | extra_load_flags);
   // Check if the renderer is permitted to request the requested URL.
   if (!ChildProcessSecurityPolicy::GetInstance()->
           CanRequestURL(child_id, url)) {
@@ -912,14 +916,12 @@ net::Error ResourceDispatcherHost::BeginDownload(
                                   url,
                                   download_file_manager_.get(),
                                   request.get(),
-                                  prompt_for_save_location,
                                   started_cb,
                                   save_info));
 
   if (delegate_) {
     handler = delegate_->DownloadStarting(
-        handler, context, request.get(),
-        child_id, route_id, request_id_, true);
+        handler, context, request.get(), child_id, route_id, request_id_, true);
   }
 
   if (!request_context->job_factory()->IsHandledURL(url)) {

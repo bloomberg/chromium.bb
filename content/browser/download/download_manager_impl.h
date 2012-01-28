@@ -69,12 +69,9 @@ class CONTENT_EXPORT DownloadManagerImpl
   virtual void DownloadUrl(const GURL& url,
                            const GURL& referrer,
                            const std::string& referrer_encoding,
+                           bool prefer_cache,
+                           const DownloadSaveInfo& save_info,
                            content::WebContents* web_contents) OVERRIDE;
-  virtual void DownloadUrlToFile(const GURL& url,
-                                 const GURL& referrer,
-                                 const std::string& referrer_encoding,
-                                 const DownloadSaveInfo& save_info,
-                                 content::WebContents* web_contents) OVERRIDE;
   virtual void AddObserver(Observer* observer) OVERRIDE;
   virtual void RemoveObserver(Observer* observer) OVERRIDE;
   virtual void OnPersistentStoreQueryComplete(

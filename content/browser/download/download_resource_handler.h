@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -46,7 +46,6 @@ class DownloadResourceHandler : public ResourceHandler {
                           const GURL& url,
                           DownloadFileManager* download_file_manager,
                           net::URLRequest* request,
-                          bool save_as,
                           const OnStartedCallback& started_cb,
                           const DownloadSaveInfo& save_info);
 
@@ -113,7 +112,6 @@ class DownloadResourceHandler : public ResourceHandler {
   int64 content_length_;
   DownloadFileManager* download_file_manager_;
   net::URLRequest* request_;
-  bool save_as_;  // Request was initiated via "Save As" by the user.
   // This is used only on the UI thread.
   OnStartedCallback started_cb_;
   DownloadSaveInfo save_info_;

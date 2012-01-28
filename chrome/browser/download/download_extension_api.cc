@@ -442,6 +442,8 @@ void DownloadsDownloadFunction::BeginDownloadOnIOThread() {
   // TODO(benjhayden) Ensure that this filename is interpreted as a path
   // relative to the default downloads directory without allowing '..'.
   save_info.suggested_name = iodata_->filename;
+  save_info.prompt_for_save_location = iodata_->save_as;
+
   scoped_ptr<net::URLRequest> request(
       new net::URLRequest(iodata_->url, iodata_->rdh));
   request->set_method(iodata_->method);
@@ -461,8 +463,8 @@ void DownloadsDownloadFunction::BeginDownloadOnIOThread() {
   }
   net::Error error = iodata_->rdh->BeginDownload(
       request.Pass(),
+      false,  // prefer_cache
       save_info,
-      iodata_->save_as,
       base::Bind(&DownloadsDownloadFunction::OnStarted, this),
       iodata_->render_process_host_id,
       iodata_->render_view_host_routing_id,

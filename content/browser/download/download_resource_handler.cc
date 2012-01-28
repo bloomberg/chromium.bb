@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -42,7 +42,6 @@ DownloadResourceHandler::DownloadResourceHandler(
     const GURL& url,
     DownloadFileManager* download_file_manager,
     net::URLRequest* request,
-    bool save_as,
     const DownloadResourceHandler::OnStartedCallback& started_cb,
     const DownloadSaveInfo& save_info)
     : download_id_(DownloadId::Invalid()),
@@ -51,7 +50,6 @@ DownloadResourceHandler::DownloadResourceHandler(
       content_length_(0),
       download_file_manager_(download_file_manager),
       request_(request),
-      save_as_(save_as),
       started_cb_(started_cb),
       save_info_(save_info),
       buffer_(new content::DownloadBuffer),
@@ -141,7 +139,7 @@ bool DownloadResourceHandler::OnResponseStarted(
   }
 
   info->prompt_user_for_save_location =
-      save_as_ && save_info_.file_path.empty();
+      save_info_.prompt_for_save_location && save_info_.file_path.empty();
   info->referrer_charset = request_->context()->referrer_charset();
   info->save_info = save_info_;
 

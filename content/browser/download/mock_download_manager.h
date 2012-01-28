@@ -52,15 +52,12 @@ class MockDownloadManager : public content::DownloadManager {
                                            base::Time remove_end));
   MOCK_METHOD1(RemoveDownloads, int(base::Time remove_begin));
   MOCK_METHOD0(RemoveAllDownloads, int());
-  MOCK_METHOD4(DownloadUrl, void(const GURL& url,
+  MOCK_METHOD6(DownloadUrl, void(const GURL& url,
                                  const GURL& referrer,
                                  const std::string& referrer_encoding,
+                                 bool prefer_cache,
+                                 const DownloadSaveInfo& save_info,
                                  content::WebContents* web_contents));
-  MOCK_METHOD5(DownloadUrlToFile, void(const GURL& url,
-                                       const GURL& referrer,
-                                       const std::string& referrer_encoding,
-                                       const DownloadSaveInfo& save_info,
-                                       content::WebContents* web_contents));
   MOCK_METHOD1(AddObserver, void(Observer* observer));
   MOCK_METHOD1(RemoveObserver, void(Observer* observer));
   MOCK_METHOD1(OnPersistentStoreQueryComplete, void(
