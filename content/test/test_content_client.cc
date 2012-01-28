@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -36,11 +36,13 @@ void TestContentClient::AddNPAPIPlugins(
 }
 
 bool TestContentClient::CanSendWhileSwappedOut(const IPC::Message* msg) {
-  return true;
+  // TestContentClient does not need to send any additional messages.
+  return false;
 }
 
 bool TestContentClient::CanHandleWhileSwappedOut(const IPC::Message& msg) {
-  return true;
+  // TestContentClient does not need to handle any additional messages.
+  return false;
 }
 
 std::string TestContentClient::GetUserAgent(bool* overriding) const {

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -138,7 +138,8 @@ void JavaScriptAppModalDialog::NotifyDelegate(bool success,
   if (!valid_)
     return;
 
-  delegate()->OnDialogClosed(reply_msg_, success, user_input);
+  // TODO(creis): Should pass the actual RVH that sent the message.
+  delegate()->OnDialogClosed(NULL, reply_msg_, success, user_input);
 
   extra_data_->last_javascript_message_dismissal_ = base::TimeTicks::Now();
   extra_data_->suppress_javascript_messages_ = suppress_js_messages;

@@ -146,7 +146,8 @@ class JavaScriptDialogCreatorStub : public JavaScriptDialogCreator {
       JavaScriptDialogDelegate* delegate,
       const string16& message_text,
       IPC::Message* reply_message) OVERRIDE {
-    delegate->OnDialogClosed(reply_message, true, string16());
+    // TODO(creis): Pass in the RVH that sent the request.
+    delegate->OnDialogClosed(NULL, reply_message, true, string16());
   }
 
   virtual void ResetJavaScriptState(

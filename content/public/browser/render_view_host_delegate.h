@@ -294,7 +294,7 @@ class CONTENT_EXPORT RenderViewHostDelegate : public IPC::Channel::Listener {
       const content::GlobalRequestID& old_request_id) {}
 
   // A javascript message, confirmation or prompt should be shown.
-  virtual void RunJavaScriptMessage(const RenderViewHost* rvh,
+  virtual void RunJavaScriptMessage(RenderViewHost* rvh,
                                     const string16& message,
                                     const string16& default_prompt,
                                     const GURL& frame_url,
@@ -302,7 +302,7 @@ class CONTENT_EXPORT RenderViewHostDelegate : public IPC::Channel::Listener {
                                     IPC::Message* reply_msg,
                                     bool* did_suppress_message) {}
 
-  virtual void RunBeforeUnloadConfirm(const RenderViewHost* rvh,
+  virtual void RunBeforeUnloadConfirm(RenderViewHost* rvh,
                                       const string16& message,
                                       IPC::Message* reply_msg) {}
 

@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/utf_string_conversions.h"
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/browser_url_handler.h"
 #include "content/browser/mock_content_browser_client.h"
@@ -24,6 +25,7 @@
 #include "content/test/test_notification_tracker.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "googleurl/src/url_util.h"
+#include "ui/base/javascript_message_type.h"
 #include "webkit/glue/webkit_glue.h"
 
 using content::BrowserContext;
@@ -231,6 +233,85 @@ TEST_F(RenderViewHostManagerTest, NewTabPageProcesses) {
 
   EXPECT_EQ(active_rvh()->site_instance(),
       contents2.GetRenderViewHost()->site_instance());
+}
+
+// Ensure that the browser ignores most IPC messages that arrive from a
+// RenderViewHost that has been swapped out.  We do not want to take
+// action on requests from a non-active renderer.  The main exception is
+// for synchronous messages, which cannot be ignored without leaving the
+// renderer in a stuck state.  See http://crbug.com/93427.
+TEST_F(RenderViewHostManagerTest, FilterMessagesWhileSwappedOut) {
+  BrowserThreadImpl ui_thread(BrowserThread::UI, MessageLoop::current());
+  const GURL kNtpUrl(chrome::kTestNewTabURL);
+  const GURL kDestUrl("http://www.google.com/");
+
+  // Navigate our first tab to the new tab page and then to the destination.
+  NavigateActiveAndCommit(kNtpUrl);
+  TestRenderViewHost* ntp_rvh = static_cast<TestRenderViewHost*>(
+      contents()->GetRenderManagerForTesting()->current_host());
+
+  // Send an update title message and make sure it works.
+  const string16 ntp_title = ASCIIToUTF16("NTP Title");
+  WebKit::WebTextDirection direction = WebKit::WebTextDirectionLeftToRight;
+  EXPECT_TRUE(ntp_rvh->TestOnMessageReceived(
+      ViewHostMsg_UpdateTitle(rvh()->routing_id(), 0, ntp_title, direction)));
+  EXPECT_EQ(ntp_title, contents()->GetTitle());
+
+  // Navigate to a cross-site URL.
+  contents()->GetController().LoadURL(
+      kDestUrl, content::Referrer(), content::PAGE_TRANSITION_LINK,
+      std::string());
+  EXPECT_TRUE(contents()->cross_navigation_pending());
+  TestRenderViewHost* dest_rvh = static_cast<TestRenderViewHost*>(
+      contents()->GetRenderManagerForTesting()->pending_render_view_host());
+  ASSERT_TRUE(dest_rvh);
+  EXPECT_NE(ntp_rvh, dest_rvh);
+
+  // BeforeUnload finishes.
+  ntp_rvh->SendShouldCloseACK(true);
+
+  // Assume SwapOutACK times out, so the dest_rvh proceeds and commits.
+  dest_rvh->SendNavigate(101, kDestUrl);
+
+  // The new RVH should be able to update its title.
+  const string16 dest_title = ASCIIToUTF16("Google");
+  EXPECT_TRUE(dest_rvh->TestOnMessageReceived(
+      ViewHostMsg_UpdateTitle(rvh()->routing_id(), 101, dest_title,
+                              direction)));
+  EXPECT_EQ(dest_title, contents()->GetTitle());
+
+  // The old renderer, being slow, now updates the title. It should be filtered
+  // out and not take effect.
+  EXPECT_TRUE(ntp_rvh->is_swapped_out());
+  EXPECT_TRUE(ntp_rvh->TestOnMessageReceived(
+      ViewHostMsg_UpdateTitle(rvh()->routing_id(), 0, ntp_title, direction)));
+  EXPECT_EQ(dest_title, contents()->GetTitle());
+
+  // We cannot filter out synchronous IPC messages, because the renderer would
+  // be left waiting for a reply.  We pick RunBeforeUnloadConfirm as an example
+  // that can run easily within a unit test, and that needs to receive a reply
+  // without showing an actual dialog.
+  MockRenderProcessHost* ntp_process_host =
+      static_cast<MockRenderProcessHost*>(ntp_rvh->process());
+  ntp_process_host->sink().ClearMessages();
+  const string16 msg = ASCIIToUTF16("Message");
+  bool result = false;
+  string16 unused;
+  ViewHostMsg_RunBeforeUnloadConfirm before_unload_msg(
+      rvh()->routing_id(), kNtpUrl, msg, &result, &unused);
+  // Enable pumping for check in BrowserMessageFilter::CheckCanDispatchOnUI.
+  before_unload_msg.EnableMessagePumping();
+  EXPECT_TRUE(ntp_rvh->TestOnMessageReceived(before_unload_msg));
+  EXPECT_TRUE(ntp_process_host->sink().GetUniqueMessageMatching(IPC_REPLY_ID));
+
+  // Also test RunJavaScriptMessage.
+  ntp_process_host->sink().ClearMessages();
+  ViewHostMsg_RunJavaScriptMessage js_msg(
+      rvh()->routing_id(), msg, msg, kNtpUrl,
+      ui::JAVASCRIPT_MESSAGE_TYPE_CONFIRM, &result, &unused);
+  js_msg.EnableMessagePumping();
+  EXPECT_TRUE(ntp_rvh->TestOnMessageReceived(js_msg));
+  EXPECT_TRUE(ntp_process_host->sink().GetUniqueMessageMatching(IPC_REPLY_ID));
 }
 
 // When there is an error with the specified page, renderer exits view-source

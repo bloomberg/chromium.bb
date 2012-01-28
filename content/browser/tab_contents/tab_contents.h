@@ -268,14 +268,14 @@ class CONTENT_EXPORT TabContents
       WindowOpenDisposition disposition,
       int64 source_frame_id,
       const content::GlobalRequestID& transferred_global_request_id) OVERRIDE;
-  virtual void RunJavaScriptMessage(const RenderViewHost* rvh,
+  virtual void RunJavaScriptMessage(RenderViewHost* rvh,
                                     const string16& message,
                                     const string16& default_prompt,
                                     const GURL& frame_url,
                                     ui::JavascriptMessageType type,
                                     IPC::Message* reply_msg,
                                     bool* did_suppress_message) OVERRIDE;
-  virtual void RunBeforeUnloadConfirm(const RenderViewHost* rvh,
+  virtual void RunBeforeUnloadConfirm(RenderViewHost* rvh,
                                       const string16& message,
                                       IPC::Message* reply_msg) OVERRIDE;
   virtual content::RendererPreferences GetRendererPrefs(
@@ -336,7 +336,8 @@ class CONTENT_EXPORT TabContents
   virtual void CreateViewAndSetSizeForRVH(RenderViewHost* rvh) OVERRIDE;
 
   // Overridden from JavaScriptDialogDelegate:
-  virtual void OnDialogClosed(IPC::Message* reply_msg,
+  virtual void OnDialogClosed(RenderViewHost* rvh,
+                              IPC::Message* reply_msg,
                               bool success,
                               const string16& user_input) OVERRIDE;
   virtual gfx::NativeWindow GetDialogRootWindow() const OVERRIDE;

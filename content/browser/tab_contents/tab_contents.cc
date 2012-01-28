@@ -2017,7 +2017,7 @@ void TabContents::RequestTransferURL(const GURL& url,
 }
 
 void TabContents::RunJavaScriptMessage(
-    const RenderViewHost* rvh,
+    RenderViewHost* rvh,
     const string16& message,
     const string16& default_prompt,
     const GURL& frame_url,
@@ -2061,13 +2061,13 @@ void TabContents::RunJavaScriptMessage(
   if (suppress_this_message) {
     // If we are suppressing messages, just reply as if the user immediately
     // pressed "Cancel".
-    OnDialogClosed(reply_msg, false, string16());
+    OnDialogClosed(rvh, reply_msg, false, string16());
   }
 
   *did_suppress_message = suppress_this_message;
 }
 
-void TabContents::RunBeforeUnloadConfirm(const RenderViewHost* rvh,
+void TabContents::RunBeforeUnloadConfirm(RenderViewHost* rvh,
                                          const string16& message,
                                          IPC::Message* reply_msg) {
   if (delegate_)
@@ -2078,7 +2078,8 @@ void TabContents::RunBeforeUnloadConfirm(const RenderViewHost* rvh,
       !delegate_ ||
       delegate_->ShouldSuppressDialogs();
   if (suppress_this_message) {
-    GetRenderViewHost()->JavaScriptDialogClosed(reply_msg, true, string16());
+    // The reply must be sent to the RVH that sent the request.
+    rvh->JavaScriptDialogClosed(reply_msg, true, string16());
     return;
   }
 
@@ -2264,7 +2265,8 @@ bool TabContents::CreateRenderViewForRenderManager(
   return true;
 }
 
-void TabContents::OnDialogClosed(IPC::Message* reply_msg,
+void TabContents::OnDialogClosed(RenderViewHost* rvh,
+                                 IPC::Message* reply_msg,
                                  bool success,
                                  const string16& user_input) {
   if (is_showing_before_unload_dialog_ && !success) {
@@ -2275,7 +2277,11 @@ void TabContents::OnDialogClosed(IPC::Message* reply_msg,
     tab_close_start_time_ = base::TimeTicks();
   }
   is_showing_before_unload_dialog_ = false;
-  GetRenderViewHost()->JavaScriptDialogClosed(reply_msg, success, user_input);
+  // The reply must be sent to the RVH that sent the request.
+  // TODO(creis): Eliminate cases where we pass in null.
+  if (!rvh)
+    rvh = GetRenderViewHost();
+  rvh->JavaScriptDialogClosed(reply_msg, success, user_input);
 }
 
 gfx::NativeWindow TabContents::GetDialogRootWindow() const {

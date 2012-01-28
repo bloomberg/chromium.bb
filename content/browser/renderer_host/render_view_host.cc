@@ -666,10 +666,21 @@ bool RenderViewHost::OnMessageReceived(const IPC::Message& msg) {
     return true;
 
   // Filter out most IPC messages if this renderer is swapped out.
-  // We still want to certain ACKs to keep our state consistent.
-  if (is_swapped_out_)
-    if (!content::SwappedOutMessages::CanHandleWhileSwappedOut(msg))
+  // We still want to handle certain ACKs to keep our state consistent.
+  if (is_swapped_out_) {
+    if (!content::SwappedOutMessages::CanHandleWhileSwappedOut(msg)) {
+      // If this is a synchronous message and we decided not to handle it,
+      // we must send an error reply, or else the renderer will be stuck
+      // and won't respond to future requests.
+      if (msg.is_sync()) {
+        IPC::Message* reply = IPC::SyncMessage::GenerateReply(&msg);
+        reply->set_reply_error();
+        Send(reply);
+      }
+      // Don't continue looking for someone to handle it.
       return true;
+    }
+  }
 
   ObserverListBase<content::RenderViewHostObserver>::Iterator it(observers_);
   content::RenderViewHostObserver* observer;
