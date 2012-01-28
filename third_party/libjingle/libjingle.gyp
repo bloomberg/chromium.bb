@@ -366,9 +366,7 @@
           'sources': [
             'source/talk/base/sslstreamadapter.cc',
             'source/talk/base/sslstreamadapter.h',
-            # TODO(mallinath): Temporary fix for Android, remove when newer
-            # libjingle release is rolled.
-            'overrides/talk/base/unixfilesystem.cc',
+            'source/talk/base/unixfilesystem.cc',
             'source/talk/base/unixfilesystem.h',
           ],
         }],
@@ -497,6 +495,7 @@
         'source/talk/app/webrtc/mediastreamtrackproxy.h',
         'source/talk/app/webrtc/mediatrackimpl.h',
         'source/talk/app/webrtc/notifierimpl.h',
+        'source/talk/app/webrtc/peerconnection.h',
         'source/talk/app/webrtc/peerconnectionfactoryimpl.cc',
         'source/talk/app/webrtc/peerconnectionfactoryimpl.h',
         'source/talk/app/webrtc/peerconnectionimpl.cc',

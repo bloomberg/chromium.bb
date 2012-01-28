@@ -30,7 +30,7 @@ vars = {
       "b41a2e565716b3ddc0212d185afa79881e971c58",
   "nacl_toolchain_revision": "7537",
 
-  "libjingle_revision": "112",
+  "libjingle_revision": "114",
   "libphonenumber_revision": "407",
   "libvpx_revision": "117975",
   "lss_revision": "9",
