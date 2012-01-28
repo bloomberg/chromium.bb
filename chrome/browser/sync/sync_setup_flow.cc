@@ -83,9 +83,8 @@ bool HasConfigurationChanged(const SyncConfiguration& configuration,
   if (!service || !service->HasSyncSetupCompleted())
     return true;
 
-  if ((configuration.set_secondary_passphrase ||
-       configuration.set_gaia_passphrase) &&
-      !service->IsUsingSecondaryPassphrase()) {
+  if (configuration.set_secondary_passphrase !=
+      service->IsUsingSecondaryPassphrase()) {
     return true;
   }
 
@@ -201,7 +200,6 @@ void UpdateHistogram(const SyncConfiguration& configuration,
     }
     UMA_HISTOGRAM_BOOLEAN("Sync.EncryptAllData", configuration.encrypt_all);
     UMA_HISTOGRAM_BOOLEAN("Sync.CustomPassphrase",
-                          configuration.set_gaia_passphrase ||
                           configuration.set_secondary_passphrase);
   }
 }
