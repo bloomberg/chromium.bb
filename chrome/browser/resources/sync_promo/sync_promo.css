@@ -1,4 +1,4 @@
-/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -6,29 +6,25 @@
 html {
   font-family: segoe ui, arial, helvetica, sans-serif;
   font-size: 13px;
-  height: 100%;
 }
 
-body {
+html, body {
+  margin: 0;
+  min-height: 100%;
+  min-width: 100%;
+  padding 0;
+  position: absolute;
+}
+
+html[promo-version='0'] body {
   background-image: -webkit-linear-gradient(
       rgba(0, 0, 0, 0.0), rgba(0, 0, 0, 0.04));
 }
 
 #sync-setup-overlay {
   background-color: transparent;
+  margin: 0;
   width: 100%;
-}
-
-#sync-setup-login {
-  margin: 0 auto;
-  max-width: 900px;
-  min-width: 830px;
-  position: relative;
-  width: auto;
-}
-
-#sync-setup-login > div:first-of-type {
-  position: relative;
 }
 
 #sync-setup-configure {
@@ -38,15 +34,18 @@ body {
   width: 600px;
 }
 
-#sync-setup-login-promo-column {
-  left: 0;
-  position: absolute;
-  width: 444px;
+.sync-main-content {
+  margin: 0 auto;
+  max-width: 900px;
+  min-width: 830px;
+  padding: 23px 44px 0;
+  width: auto;
 }
 
-html[dir='rtl'] #sync-setup-login-promo-column {
-  left: auto;
-  right: 0;
+html[promo-version='3'] .sync-main-content {
+  max-width: none;
+  min-width: 0;
+  padding-top: 0;
 }
 
 #sync-setup-login-content-column {
@@ -58,37 +57,14 @@ html[dir='rtl'] #sync-setup-login-content-column {
   float: left;
 }
 
-#promo-title {
-  margin-top: 33px;
-  margin-bottom: 64px;
-  text-align: center;
+html[promo-version='3'] #sync-setup-login-content-column {
+  float: none;
+  margin: 0 auto;
 }
 
-#promo-title[hidden] + div {
-  margin-top: 30px;
-}
-
-#promo-infographic {
-  margin-top: 14px;
-}
-
-#promo-skip {
-  clear: both;
-  display: block;
-  padding-top: 85px;
-  text-align: center;
-}
-
-#promo-advanced,
-#promo-advanced:hover,
-#sync-setup-login-promo-column a:link,
-#sync-setup-login-promo-column a:hover {
-  color: #15c;
-}
-
-#promo-advanced:active,
-#sync-setup-login-promo-column a:active {
-  color: #d14836;
+#sync-setup-login-promo-column p,
+#sync-setup-login-promo-column h3 {
+  color: rgb(34, 34, 34);
 }
 
 /* When showing the full page promo, remove top margin from sign-in box. */
@@ -96,26 +72,133 @@ html[dir='rtl'] #sync-setup-login-content-column {
   margin-top: 0;
 }
 
-#sync-setup-login h1 {
-  color: #222;
+/* Links and buttons. *********************************************************/
+
+#promo-skip-button,
+#promo-skip-button:hover,
+#promo-advanced,
+#promo-advanced:hover,
+#sync-setup-overlay * a:link {
+  color: rgb(17, 85, 204);
+}
+
+#sync-setup-overlay * a:visited {
+  color: rgb(102, 17, 12);
+}
+
+#promo-skip-button:active,
+#promo-advanced:active,
+#sync-setup-overlay * a:active {
+  color: rgb(209, 72, 54);
+}
+
+#promo-skip-button,
+#promo-advanced,
+#sync-setup-overlay * a {
+  text-decoration: none;
+}
+
+#promo-skip-button:hover,
+#promo-advanced:hover,
+#sync-setup-overlay * a:hover {
+  text-decoration: underline;
+}
+
+#promo-skip {
+  text-align: center;
+  width: 335px;
+}
+
+#promo-skip-button {
+  -webkit-margin-end: 25px;
+}
+
+/* Page Title. ****************************************************************/
+
+#promo-title-container {
+  display: block;
+  margin-bottom: 35px;
+  margin-top: 37px;
+  text-align: center;
+}
+
+html[promo-version='1'] #promo-title-container,
+html[promo-version='3'] #promo-title-container {
+  margin-top: 41px;
+}
+
+html[promo-version='2'] #promo-title-container {
+  display: none;
+}
+
+h1 {
+  color: rgb(34, 34, 34);
   font-size: 27px;
+  font-weight: normal;
+  margin: 0;
+}
+
+html[promo-version='1'] #sync-setup-login h1,
+html[promo-version='3'] #sync-setup-login h1 {
+  font-size: 40px;
+}
+
+#promo-title-container h2 {
+  color: rgb(102, 102, 102);
+  font-size: 16px;
   font-weight: normal;
 }
 
-#sync-setup-login-promo-column h2 {
-  color: #222;
+html[promo-version='0'] #promo-title-container h2,
+html[promo-version='2'] #promo-title-container h2 {
+  display: none;
+}
+
+/* Signup header bar. *********************************************************/
+
+.signup-header-bar {
+  background: rgb(245, 245, 245);
+  border-bottom: 1px solid rgb(229, 229, 229);
+  height: 71px;
+  overflow: hidden;
+  padding: 0 44px;
+}
+
+.signup-header-bar .logo {
+  background: url('chrome://resources/images/google-logo-41.png') no-repeat;
+  float: left;
+  height: 41px;
+  margin: 17px 0 0;
+  width: 116px;
+}
+
+html[dir='rtl'] .signup-header-bar .logo {
+  float: right;
+}
+
+html[promo-version='2'] .signup-header-bar {
+  display: block;
+}
+
+.signup-header-bar .signup {
+  float: right;
+  font-weight: bold;
+  margin: 28px 0 0;
+}
+
+html[dir='rtl'] .signup-header-bar .signup {
+  float: left;
+}
+
+/* Promo graphic / info toggle column. ****************************************/
+
+#sync-setup-login-promo-column-0 h2 {
+  color: rgb(34, 34, 34);
   font-size: 18px;
   font-weight: normal;
 }
 
-#sync-setup-login-promo-column h3 {
-  color: #222;
-  font-size: 13px;
-  line-height: 13px;
-}
-
-#sync-setup-login-promo-column p {
-  color: #222;
+#sync-setup-login-promo-column-0 p {
   font-size: 13px;
   line-height: 20px;
 }
@@ -134,4 +217,99 @@ html[dir='rtl'] #sync-setup-login-content-column {
 #promo-info-pane > [hidden] {
   display: inline-block; /* Override default user-agent styles. */
   opacity: 0;
+}
+
+#promo-infographic {
+  background: url('chrome://theme/IRD_SYNC_PROMO_INFO_GRAPHIC') no-repeat;
+  height: 161px;
+  margin-top: 14px;
+  width: 444px;
+}
+
+#promo-infographic-1 {
+  background: url('chrome://theme/IRD_SYNC_PROMO_INFO_GRAPHIC_1') no-repeat;
+  height: 274px;
+  margin-top: 10px;
+  width: 451px;
+}
+
+/* Verbose feature list. ******************************************************/
+
+#sync-setup-login-promo-column-2 h2 {
+  color: rgb(221, 75, 57);
+  font-size: 25px;
+  font-weight: normal;
+  margin: 0 0 15px;
+}
+
+.features {
+  line-height: 17px;
+  list-style: none;
+  margin: 2em 0 0;
+  overflow: hidden;
+  padding: 0;
+}
+
+.features li {
+  margin: 3px 0 2em;
+}
+
+.feature-logo {
+  float: left;
+  margin: -3px 0 0;
+}
+
+html[dir='rtl'] .feature-logo {
+  float: right;
+}
+
+.features p,
+.features h3 {
+  -webkit-margin-start: 68px;
+  margin-bottom: 0;
+  margin-top: 0;
+}
+
+.features h3 {
+  font-size: 16px;
+  font-weight: normal;
+  margin-bottom: 0.3em;
+}
+
+#features-sync-logo {
+  background: url('chrome://resources/images/sync.png') no-repeat;
+  height: 42px;
+  width: 53px;
+}
+
+#features-sync-backup-logo {
+  background: url('chrome://resources/images/sync-backup.png') no-repeat;
+  height: 42px;
+  width: 42px;
+}
+
+#features-google-mail-logo {
+  background: url('chrome://resources/images/google-mail.png') no-repeat;
+  height: 43px;
+  width: 42px;
+}
+
+/* Promo information column. **************************************************/
+
+#sync-setup-login-promo-column {
+  display: block;
+}
+
+html[promo-version='3'] #sync-setup-login-promo-column {
+  display: none;
+}
+
+html[promo-version='0'] #sync-setup-login-promo-column-0,
+html[promo-version='1'] #sync-setup-login-promo-column-1,
+html[promo-version='2'] #sync-setup-login-promo-column-2 {
+  display: block;
+}
+
+#sync-setup-login-promo-column {
+  -webkit-margin-end: 385px;
 }

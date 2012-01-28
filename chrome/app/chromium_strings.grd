@@ -660,6 +660,11 @@ The extension "<ph name="EXTENSION_NAME">$1<ex>Gmail Checker</ex></ph>" has been
           Chromium Utility
         </message>
       </if>
+
+      <!-- Sync promo page chrome://syncpromo -->
+      <message name="IDS_SYNC_PROMO_V_LEARN_MORE" desc="Learn more link at the bottom of the sync promo.">
+        See <ph name="BEGIN_LINK">&lt;a target="_blank" href="$1"&gt;</ph>more benefits<ph name="END_LINK">&lt;/a&gt;</ph> of signing in to Chromium.
+      </message>
     </messages>
   </release>
 </grit>

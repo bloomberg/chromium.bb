@@ -1111,6 +1111,9 @@ const char kSyncNotificationMethod[]        = "sync-notification-method";
 // or "host:port".
 const char kSyncNotificationHost[]          = "sync-notification-host";
 
+// Specifies the sync promo version to display.
+const char kSyncPromoVersion[] = "sync-promo-version";
+
 // Overrides the default server used for profile sync.
 const char kSyncServiceURL[]                = "sync-url";
 

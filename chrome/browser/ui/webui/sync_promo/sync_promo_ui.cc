@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/webui/sync_promo/sync_promo_ui.h"
 
 #include "base/command_line.h"
+#include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/first_run/first_run.h"
@@ -288,4 +289,15 @@ std::string SyncPromoUI::GetSourceForSyncPromoURL(const GURL& url) {
 // static
 bool SyncPromoUI::UserHasSeenSyncPromoAtStartup(Profile* profile) {
   return profile->GetPrefs()->GetInteger(prefs::kSyncPromoStartupCount) > 0;
+}
+
+// static
+int SyncPromoUI::GetSyncPromoVersion() {
+  int version = 0;
+  if (base::StringToInt(CommandLine::ForCurrentProcess()->
+      GetSwitchValueASCII(switches::kSyncPromoVersion), &version)) {
+    return version;
+  }
+  // Default promo version is 0.
+  return 0;
 }

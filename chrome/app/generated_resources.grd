@@ -11014,16 +11014,9 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_SYNC_PROMO_MESSAGE_BODY_D" desc="The body of the sync promo message. Experiment choice 3.">
         Get your bookmarks, history, and settings on all your devices. Plus, you'll be automatically signed in to your favorite Google services.
       </message>
-      <if expr="pp_ifdef('use_titlecase')">
-        <message name="IDS_SYNC_PROMO_SKIP_BUTTON" desc="In Title Case: The button at the bottom to let the user skip the sync promo.">
-          Skip for Now
-        </message>
-      </if>
-      <if expr="not pp_ifdef('use_titlecase')">
-        <message name="IDS_SYNC_PROMO_SKIP_BUTTON" desc="The button at the bottom to let the user skip the sync promo.">
-          Skip for now
-        </message>
-      </if>
+      <message name="IDS_SYNC_PROMO_SKIP_BUTTON" desc="The link button at the bottom to let the user skip the sync promo.">
+        Skip for now
+      </message>
       <message name="IDS_SYNC_PROMO_ADVANCED" desc="The link button at the bottom to let the user customize the sync settings.">
         Advanced...
       </message>
@@ -11065,7 +11058,8 @@ Some features may be unavailable.  Please check that the profile exists and you 
         Add a bookmark on one device and it's instantly added on all your devices.
       </message>
       <message name="IDS_SYNC_PROMO_V_BACKUP_TITLE" desc="Verbose sync promo. Title of the backup message.">
-        Backup </message>
+        Backup
+      </message>
       <message name="IDS_SYNC_PROMO_V_BACKUP_BODY" desc="Verbose sync promo. Body of the backup message.">
         All your <ph name="SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph> settings are safe in case anything happens to your computer.
       </message>
@@ -11074,6 +11068,9 @@ Some features may be unavailable.  Please check that the profile exists and you 
       </message>
       <message name="IDS_SYNC_PROMO_V_SERVICES_BODY" desc="Verbose sync promo. Body of the Google Services message.">
         Automatically sign in to all your favorite Google services, like Gmail.
+      </message>
+      <message name="IDS_SYNC_PROMO_V_SIGN_UP" desc="Sign up link at the top of the sync promo.">
+        Sign up for a new Google Account
       </message>
 
       <!-- Translate Info Bar -->

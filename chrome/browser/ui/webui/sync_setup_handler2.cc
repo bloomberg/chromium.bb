@@ -207,39 +207,40 @@ void SyncSetupHandler2::GetStaticLocalizedValues(
       "cannotAccessAccountURL",
       google_util::StringAppendGoogleLocaleParam(
           chrome::kCanNotAccessAccountURL));
+  string16 product_name(GetStringUTF16(IDS_PRODUCT_NAME));
   localized_strings->SetString(
       "introduction",
-      GetStringFUTF16(IDS_SYNC_LOGIN_INTRODUCTION,
-                      GetStringUTF16(IDS_PRODUCT_NAME)));
+      GetStringFUTF16(IDS_SYNC_LOGIN_INTRODUCTION, product_name));
   localized_strings->SetString(
       "chooseDataTypesInstructions",
-      GetStringFUTF16(IDS_SYNC_CHOOSE_DATATYPES_INSTRUCTIONS,
-                      GetStringUTF16(IDS_PRODUCT_NAME)));
+      GetStringFUTF16(IDS_SYNC_CHOOSE_DATATYPES_INSTRUCTIONS, product_name));
   localized_strings->SetString(
       "encryptionInstructions",
-      GetStringFUTF16(IDS_SYNC_ENCRYPTION_INSTRUCTIONS,
-                      GetStringUTF16(IDS_PRODUCT_NAME)));
+      GetStringFUTF16(IDS_SYNC_ENCRYPTION_INSTRUCTIONS, product_name));
   localized_strings->SetString(
       "encryptionHelpURL",
       google_util::StringAppendGoogleLocaleParam(
           chrome::kSyncEncryptionHelpURL));
   localized_strings->SetString(
       "passphraseEncryptionMessage",
-      GetStringFUTF16(IDS_SYNC_PASSPHRASE_ENCRYPTION_MESSAGE,
-                      GetStringUTF16(IDS_PRODUCT_NAME)));
+      GetStringFUTF16(IDS_SYNC_PASSPHRASE_ENCRYPTION_MESSAGE, product_name));
   localized_strings->SetString(
       "passphraseRecover",
       GetStringFUTF16(IDS_SYNC_PASSPHRASE_RECOVER,
                       ASCIIToUTF16(google_util::StringAppendGoogleLocaleParam(
                           chrome::kSyncGoogleDashboardURL))));
+
+  bool is_launch_page = SyncPromoUI::GetIsLaunchPageForSyncPromoURL(
+      web_ui->GetWebContents()->GetURL());
+  int title_id = is_launch_page ? IDS_SYNC_PROMO_TITLE :
+                                  IDS_SYNC_PROMO_TITLE_EXISTING_USER;
+  string16 short_product_name(GetStringUTF16(IDS_SHORT_PRODUCT_NAME));
   localized_strings->SetString(
-      "promoTitle",
-      GetStringFUTF16(IDS_SYNC_PROMO_TITLE,
-                      GetStringUTF16(IDS_PRODUCT_NAME)));
+      "promoTitle", GetStringFUTF16(title_id, short_product_name));
+
   localized_strings->SetString(
       "promoMessageTitle",
-      GetStringFUTF16(IDS_SYNC_PROMO_MESSAGE_TITLE,
-                      GetStringUTF16(IDS_SHORT_PRODUCT_NAME)));
+      GetStringFUTF16(IDS_SYNC_PROMO_MESSAGE_TITLE, short_product_name));
   localized_strings->SetString(
       "syncEverythingHelpURL",
       google_util::StringAppendGoogleLocaleParam(
@@ -252,10 +253,8 @@ void SyncSetupHandler2::GetStaticLocalizedValues(
   // The experimental body string only appears if we are on the launch page
   // version of the Sync Promo.
   int message_body_resource_id = IDS_SYNC_PROMO_MESSAGE_BODY_A;
-  if (web_ui && SyncPromoUI::GetIsLaunchPageForSyncPromoURL(
-      web_ui->GetWebContents()->GetURL())) {
+  if (is_launch_page)
     message_body_resource_id = sync_promo_trial::GetMessageBodyResID();
-  }
   localized_strings->SetString(
       "promoMessageBody",
       GetStringUTF16(message_body_resource_id));
@@ -268,6 +267,19 @@ void SyncSetupHandler2::GetStaticLocalizedValues(
       create_account + UTF8ToUTF16("</a>");
   localized_strings->SetString("createAccountLinkHTML",
       GetStringFUTF16(IDS_SYNC_CREATE_ACCOUNT_PREFIX, create_account));
+
+  localized_strings->SetString("promoVerboseTitle", short_product_name);
+  localized_strings->SetString("promoVerboseMessageBody",
+      GetStringFUTF16(IDS_SYNC_PROMO_V_MESSAGE_BODY, short_product_name));
+
+  string16 sync_benefits_url(
+      UTF8ToUTF16(google_util::StringAppendGoogleLocaleParam(
+          chrome::kSyncLearnMoreURL)));
+  localized_strings->SetString("promoVerboseLearnMore",
+      GetStringFUTF16(IDS_SYNC_PROMO_V_LEARN_MORE, sync_benefits_url));
+  localized_strings->SetString("promoVerboseBackupBody",
+      GetStringFUTF16(IDS_SYNC_PROMO_V_BACKUP_BODY, short_product_name));
+  localized_strings->SetString("signUpURL", create_account_url);
 
   static OptionsStringResource resources[] = {
     { "syncSetupOverlayTitle", IDS_SYNC_SETUP_TITLE },
@@ -339,12 +351,19 @@ void SyncSetupHandler2::GetStaticLocalizedValues(
     { "encryptAllOption", IDS_SYNC_ENCRYPT_ALL_DATA },
     { "encryptAllOption", IDS_SYNC_ENCRYPT_ALL_DATA },
     { "aspWarningText", IDS_SYNC_ASP_PASSWORD_WARNING_TEXT },
-    { "promoPageTitle", IDS_SYNC_PROMO_TAB_TITLE},
-    { "promoSkipButton", IDS_SYNC_PROMO_SKIP_BUTTON},
-    { "promoAdvanced", IDS_SYNC_PROMO_ADVANCED},
-    { "promoLearnMoreShow", IDS_SYNC_PROMO_LEARN_MORE_SHOW},
-    { "promoLearnMoreHide", IDS_SYNC_PROMO_LEARN_MORE_HIDE},
-    { "promoInformation", IDS_SYNC_PROMO_INFORMATION},
+    { "promoPageTitle", IDS_SYNC_PROMO_TAB_TITLE },
+    { "promoSkipButton", IDS_SYNC_PROMO_SKIP_BUTTON },
+    { "promoAdvanced", IDS_SYNC_PROMO_ADVANCED },
+    { "promoLearnMoreShow", IDS_SYNC_PROMO_LEARN_MORE_SHOW },
+    { "promoLearnMoreHide", IDS_SYNC_PROMO_LEARN_MORE_HIDE },
+    { "promoInformation", IDS_SYNC_PROMO_INFORMATION },
+    { "promoVerboseSyncTitle", IDS_SYNC_PROMO_V_SYNC_TITLE },
+    { "promoVerboseSyncBody", IDS_SYNC_PROMO_V_SYNC_BODY },
+    { "promoVerboseBackupTitle", IDS_SYNC_PROMO_V_BACKUP_TITLE },
+    { "promoVerboseServicesTitle", IDS_SYNC_PROMO_V_SERVICES_TITLE },
+    { "promoVerboseServicesBody", IDS_SYNC_PROMO_V_SERVICES_BODY },
+    { "promoVerboseSignUp", IDS_SYNC_PROMO_V_SIGN_UP },
+    { "promoTitleShort", IDS_SYNC_PROMO_MESSAGE_TITLE_SHORT },
   };
 
   RegisterStrings(localized_strings, resources, arraysize(resources));

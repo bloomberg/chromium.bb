@@ -300,6 +300,7 @@ extern const char kSyncInvalidateXmppLogin[];
 extern const char kSyncerThreadTimedStop[];
 extern const char kSyncNotificationMethod[];
 extern const char kSyncNotificationHost[];
+extern const char kSyncPromoVersion[];
 extern const char kSyncServiceURL[];
 extern const char kSyncThrowUnrecoverableError[];
 extern const char kSyncTrySsltcpFirstForXmpp[];

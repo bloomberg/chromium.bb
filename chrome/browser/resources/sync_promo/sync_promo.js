@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -61,7 +61,6 @@ cr.define('sync_promo', function() {
 
       // Hide parts of the login UI and show the promo UI.
       this.hideOuterLoginUI_();
-      $('sync-setup-login-promo-column').hidden = false;
       $('promo-skip').hidden = false;
 
       this.showSetupUI_();
@@ -198,16 +197,6 @@ cr.define('sync_promo', function() {
           arguments);
     },
 
-    /**
-     * Shows or hides the title of the promo page.
-     * @param {Boolean} visible true if the title should be visible, false
-     *     otherwise.
-     * @private
-     */
-    setPromoTitleVisible_: function(visible) {
-      $('promo-title').hidden = !visible;
-    },
-
     /** @inheritDoc */
     setThrobbersVisible_: function(visible) {
       if (visible) {
@@ -222,6 +211,16 @@ cr.define('sync_promo', function() {
       // Pass through to SyncSetupOverlay to handle display logic.
       options.SyncSetupOverlay.prototype.setThrobbersVisible_.apply(
           this, arguments);
+    },
+
+    /**
+     * Shows the given promo version. Each version changes the UI slightly
+     * (for example, replacing text with an infographic).
+     * @param {Integer} the version of the promo.
+     * @private
+     */
+    showPromoVersion_: function(version) {
+      document.documentElement.setAttribute('promo-version', version);
     },
 
     /**
@@ -267,16 +266,16 @@ cr.define('sync_promo', function() {
     SyncPromo.getInstance().initializePage();
   };
 
-  SyncPromo.setPromoTitleVisible = function(visible) {
-    SyncPromo.getInstance().setPromoTitleVisible_(visible);
-  };
-
   SyncPromo.recordPageViewActions = function() {
     SyncPromo.getInstance().recordPageViewActions_();
   };
 
   SyncPromo.populatePromoMessage = function(resName) {
     SyncPromo.getInstance().populatePromoMessage_(resName);
+  };
+
+  SyncPromo.showPromoVersion = function(version) {
+    SyncPromo.getInstance().showPromoVersion_(version);
   };
 
   // Export

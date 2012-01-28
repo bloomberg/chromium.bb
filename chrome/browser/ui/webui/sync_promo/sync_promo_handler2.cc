@@ -227,9 +227,10 @@ void SyncPromoHandler2::HandleInitializeSyncPromo(const base::ListValue* args) {
       web_ui_->tab_contents()->GetURL());
   if (is_launch_page && sync_promo_trial::IsExperimentActive())
     sync_promo_trial::RecordUserSawMessage();
-  base::FundamentalValue visible(is_launch_page);
-  web_ui_->CallJavascriptFunction("SyncSetupOverlay.setPromoTitleVisible",
-                                  visible);
+
+  base::FundamentalValue version(SyncPromoUI::GetSyncPromoVersion());
+  web_ui_->CallJavascriptFunction("SyncSetupOverlay.showPromoVersion",
+                                  version);
 
   OpenSyncSetup();
   // We don't need to compute anything for this, just do this every time.
