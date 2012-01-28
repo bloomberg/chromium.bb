@@ -1594,10 +1594,24 @@ const char kHardwareKeyboardLayout[] = "intl.hardware_keyboard";
 const char kCarrierDealPromoShown[] =
     "settings.internet.mobile.carrier_deal_promo_shown";
 
-// A boolean pref of the auto-enrollment decision. This pref only exists if the
-// auto-enrollment check has been done once and completed. It can be reset to
-// false if the user opts out of auto enrollment.
+// A boolean pref of the auto-enrollment decision. Its value is only valid if
+// it's not the default value; otherwise, no auto-enrollment decision has been
+// made yet.
 const char kShouldAutoEnroll[] = "ShouldAutoEnroll";
+
+// An integer pref with the maximum number of bits used by the client in a
+// previous auto-enrollment request. If the client goes through an auto update
+// during OOBE and reboots into a version of the OS with a larger maximum
+// modulus, then it will retry auto-enrollment using the updated value.
+const char kAutoEnrollmentPowerLimit[] = "AutoEnrollmentPowerLimit";
+
+// A boolean pref that indicates whether OS & firmware version info should be
+// reported along with device policy requests.
+const char kReportDeviceVersionInfo[] = "device_status.report_version_info";
+
+// A boolean pref that indicates whether device activity times should be
+// recorded and reported along with device policy requests.
+const char kReportDeviceActivityTimes[] = "device_status.report_activity_times";
 #endif
 
 // Whether there is a Flash version installed that supports clearing LSO data.

@@ -615,6 +615,9 @@ extern const char kSignedSettingsCache[];
 extern const char kHardwareKeyboardLayout[];
 extern const char kCarrierDealPromoShown[];
 extern const char kShouldAutoEnroll[];
+extern const char kAutoEnrollmentPowerLimit[];
+extern const char kReportDeviceVersionInfo[];
+extern const char kReportDeviceActivityTimes[];
 #endif
 
 extern const char kClearPluginLSODataEnabled[];
