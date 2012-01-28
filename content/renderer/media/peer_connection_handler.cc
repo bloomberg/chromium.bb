@@ -4,21 +4,15 @@
 
 #include "content/renderer/media/peer_connection_handler.h"
 
-#include <stdlib.h>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/string_number_conversions.h"
-#include "base/synchronization/waitable_event.h"
-#include "base/threading/thread.h"
 #include "base/utf_string_conversions.h"
 #include "content/renderer/media/media_stream_dependency_factory.h"
 #include "content/renderer/media/media_stream_impl.h"
-#include "content/renderer/p2p/ipc_network_manager.h"
-#include "content/renderer/p2p/ipc_socket_factory.h"
-#include "third_party/libjingle/source/talk/base/thread.h"
-#include "third_party/libjingle/source/talk/p2p/base/portallocator.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebMediaStreamDescriptor.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebMediaStreamSource.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebPeerConnectionHandlerClient.h"
@@ -27,108 +21,54 @@
 PeerConnectionHandler::PeerConnectionHandler(
     WebKit::WebPeerConnectionHandlerClient* client,
     MediaStreamImpl* msi,
-    MediaStreamDependencyFactory* dependency_factory,
-    talk_base::Thread* signaling_thread,
-    content::P2PSocketDispatcher* socket_dispatcher,
-    content::IpcNetworkManager* network_manager,
-    content::IpcPacketSocketFactory* socket_factory)
+    MediaStreamDependencyFactory* dependency_factory)
     : client_(client),
       media_stream_impl_(msi),
       dependency_factory_(dependency_factory),
-      message_loop_proxy_(base::MessageLoopProxy::current()),
-      signaling_thread_(signaling_thread),
-      socket_dispatcher_(socket_dispatcher),
-      network_manager_(network_manager),
-      socket_factory_(socket_factory),
-      call_state_(NOT_STARTED) {
+      message_loop_proxy_(base::MessageLoopProxy::current()) {
 }
 
 PeerConnectionHandler::~PeerConnectionHandler() {
-  if (native_peer_connection_.get()) {
-    native_peer_connection_->RegisterObserver(NULL);
-    native_peer_connection_->Close();
-  }
 }
 
-bool PeerConnectionHandler::SetVideoRenderer(
+void PeerConnectionHandler::SetVideoRenderer(
     const std::string& stream_label,
-    cricket::VideoRenderer* renderer) {
-  return native_peer_connection_->SetVideoRenderer(stream_label, renderer);
+    webrtc::VideoRendererWrapperInterface* renderer) {
+  webrtc::MediaStreamInterface* stream =
+      native_peer_connection_->remote_streams()->find(stream_label);
+  webrtc::VideoTracks* video_tracks = stream->video_tracks();
+  // We assume there is only one enabled video track.
+  for(size_t i = 0; i < video_tracks->count(); ++i) {
+    webrtc::VideoTrackInterface* video_track = video_tracks->at(i);
+    if (video_track->enabled()) {
+      video_track->SetRenderer(renderer);
+      return;
+    }
+  }
+  DVLOG(1) << "No enabled video track.";
 }
 
 void PeerConnectionHandler::initialize(
     const WebKit::WebString& server_configuration,
     const WebKit::WebSecurityOrigin& security_origin) {
-  // We support the following server configuration format:
-  // "STUN <address>:<port>". We only support STUN at the moment.
-  // TODO(grunell): Support TURN.
-
-  // Strip "STUN ".
-  std::string strip_string = "STUN ";
-  std::string config = UTF16ToUTF8(server_configuration);
-  size_t pos = config.find(strip_string);
-  if (pos != 0) {
-    DVLOG(1) << "Invalid configuration string.";
-    return;
-  }
-  config = config.substr(strip_string.length());
-  // Parse out port.
-  pos = config.find(':');
-  if (pos == std::string::npos) {
-    DVLOG(1) << "Invalid configuration string.";
-    return;
-  }
-  int port = 0;
-  bool success = base::StringToInt(config.substr(pos+1), &port);
-  if (!success || (port == 0)) {
-    DVLOG(1) << "Invalid configuration string.";
-    return;
-  }
-  // Get address.
-  std::string address = config.substr(0, pos);
-
-  webkit_glue::P2PTransport::Config p2p_config;
-  p2p_config.stun_server = address;
-  p2p_config.stun_server_port = port;
-
-  port_allocator_.reset(dependency_factory_->CreatePortAllocator(
-      socket_dispatcher_,
-      network_manager_,
-      socket_factory_,
-      p2p_config));
-
-  native_peer_connection_.reset(dependency_factory_->CreatePeerConnection(
-      port_allocator_.get(),
-      signaling_thread_));
-  native_peer_connection_->RegisterObserver(this);
+  native_peer_connection_ = dependency_factory_->CreatePeerConnection(
+      UTF16ToUTF8(server_configuration),
+      this);
 }
 
 void PeerConnectionHandler::produceInitialOffer(
     const WebKit::WebVector<WebKit::WebMediaStreamDescriptor>&
         pending_add_streams) {
-  // We currently don't support creating an initial offer without a stream.
-  // Native PeerConnection will anyway create the initial offer when the first
-  // (and only) stream is added, so it will be done when processPendingStreams
-  // is called if not here.
-  if (pending_add_streams.isEmpty()) {
-    DVLOG(1) << "Can't produce initial offer with no stream.";
-    return;
-  }
-  // TODO(grunell): Support several streams.
-  DCHECK_EQ(pending_add_streams.size(), 1u);
-  WebKit::WebVector<WebKit::WebMediaStreamSource> source_vector;
-  pending_add_streams[0].sources(source_vector);
-  DCHECK_GT(source_vector.size(), 0u);
-  std::string label = UTF16ToUTF8(source_vector[0].id());
-  AddStream(label);
+  AddStreams(pending_add_streams);
+  native_peer_connection_->CommitStreamChanges();
 }
 
 void PeerConnectionHandler::handleInitialOffer(const WebKit::WebString& sdp) {
-  native_peer_connection_->SignalingMessage(UTF16ToUTF8(sdp));
+  native_peer_connection_->ProcessSignalingMessage(UTF16ToUTF8(sdp));
 }
 
 void PeerConnectionHandler::processSDP(const WebKit::WebString& sdp) {
-  native_peer_connection_->SignalingMessage(UTF16ToUTF8(sdp));
+  native_peer_connection_->ProcessSignalingMessage(UTF16ToUTF8(sdp));
 }
 
 void PeerConnectionHandler::processPendingStreams(
@@ -136,31 +76,34 @@ void PeerConnectionHandler::processPendingStreams(
         pending_add_streams,
     const WebKit::WebVector<WebKit::WebMediaStreamDescriptor>&
         pending_remove_streams) {
-  // TODO(grunell): Support several streams.
-  if (!pending_add_streams.isEmpty()) {
-    DCHECK_EQ(pending_add_streams.size(), 1u);
-    WebKit::WebVector<WebKit::WebMediaStreamSource> source_vector;
-    pending_add_streams[0].sources(source_vector);
-    DCHECK_GT(source_vector.size(), 0u);
-    std::string label = UTF16ToUTF8(source_vector[0].id());
-    AddStream(label);
-  }
-  // Currently we ignore remove stream, no support in native PeerConnection.
+  AddStreams(pending_add_streams);
+  RemoveStreams(pending_remove_streams);
+  native_peer_connection_->CommitStreamChanges();
 }
 
 void PeerConnectionHandler::sendDataStreamMessage(
     const char* data,
     size_t length) {
-  // TODO(grunell): Implement. Not supported in native PeerConnection.
+  // TODO(grunell): Implement.
   NOTIMPLEMENTED();
 }
 
 void PeerConnectionHandler::stop() {
-  if (native_peer_connection_.get())
-    native_peer_connection_->RegisterObserver(NULL);
-  native_peer_connection_.reset();
-  // The close function will delete us.
+  // TODO(ronghuawu): There's an issue with signaling messages being sent during
+  // close. We need to investigate further. Not calling Close() on native
+  // PeerConnection is OK for now.
+  native_peer_connection_ = NULL;
   media_stream_impl_->ClosePeerConnection();
+}
+
+void PeerConnectionHandler::OnError() {
+  // TODO(grunell): Implement.
+  NOTIMPLEMENTED();
+}
+
+void PeerConnectionHandler::OnMessage(const std::string& msg) {
+  // TODO(grunell): Implement.
+  NOTIMPLEMENTED();
 }
 
 void PeerConnectionHandler::OnSignalingMessage(const std::string& msg) {
@@ -174,101 +117,134 @@ void PeerConnectionHandler::OnSignalingMessage(const std::string& msg) {
   client_->didGenerateSDP(UTF8ToUTF16(msg));
 }
 
-void PeerConnectionHandler::OnAddStream(const std::string& stream_id,
-                                        bool video) {
-  if (!video)
+void PeerConnectionHandler::OnStateChange(StateType state_changed) {
+  // TODO(grunell): Implement.
+  NOTIMPLEMENTED();
+}
+
+void PeerConnectionHandler::OnAddStream(webrtc::MediaStreamInterface* stream) {
+  if (!stream)
     return;
 
   if (!message_loop_proxy_->BelongsToCurrentThread()) {
     message_loop_proxy_->PostTask(FROM_HERE, base::Bind(
         &PeerConnectionHandler::OnAddStreamCallback,
         base::Unretained(this),
-        stream_id));
+        stream));
   } else {
-    OnAddStreamCallback(stream_id);
+    OnAddStreamCallback(stream);
   }
 }
 
 void PeerConnectionHandler::OnRemoveStream(
-    const std::string& stream_id,
-    bool video) {
-  if (!video)
+    webrtc::MediaStreamInterface* stream) {
+  if (!stream)
     return;
 
   if (!message_loop_proxy_->BelongsToCurrentThread()) {
     message_loop_proxy_->PostTask(FROM_HERE, base::Bind(
         &PeerConnectionHandler::OnRemoveStreamCallback,
         base::Unretained(this),
-        remote_label_));
+        stream));
   } else {
-    OnRemoveStreamCallback(remote_label_);
+    OnRemoveStreamCallback(stream);
   }
 }
 
-void PeerConnectionHandler::AddStream(const std::string label) {
-  // TODO(grunell): Fix code in this function after a new native PeerConnection
-  // version has been rolled out.
-  if (call_state_ == NOT_STARTED) {
-    // TODO(grunell): Add audio and/or video depending on what's enabled
-    // in the stream.
-    std::string audio_label = label;
-    audio_label.append("-audio");
-    native_peer_connection_->AddStream(audio_label, false);  // Audio
-    native_peer_connection_->AddStream(label, true);  // Video
-    call_state_ = INITIATING;
+void PeerConnectionHandler::AddStreams(
+    const WebKit::WebVector<WebKit::WebMediaStreamDescriptor>& streams) {
+  for (size_t i = 0; i < streams.size(); ++i) {
+    talk_base::scoped_refptr<webrtc::LocalMediaStreamInterface> stream =
+        dependency_factory_->CreateLocalMediaStream(
+            UTF16ToUTF8(streams[i].label()));
+    WebKit::WebVector<WebKit::WebMediaStreamSource> source_vector;
+    streams[i].sources(source_vector);
+
+    // Get and add all tracks.
+    for (size_t j = 0; j < source_vector.size(); ++j) {
+      webrtc::MediaStreamTrackInterface* track =
+          media_stream_impl_->GetLocalMediaStreamTrack(
+              UTF16ToUTF8(source_vector[j].id()));
+      DCHECK(track);
+      if (source_vector[j].type() == WebKit::WebMediaStreamSource::TypeVideo) {
+        stream->AddTrack(static_cast<webrtc::VideoTrackInterface*>(track));
+      } else {
+        stream->AddTrack(static_cast<webrtc::AudioTrackInterface*>(track));
+      }
+    }
+
+    native_peer_connection_->AddStream(stream);
   }
-  if (call_state_ == INITIATING || call_state_ == RECEIVING) {
-    local_label_ = label;
-    if (media_stream_impl_->SetVideoCaptureModule(label))
-      native_peer_connection_->SetVideoCapture("");
-    if (call_state_ == INITIATING)
-      native_peer_connection_->Connect();
-    else if (call_state_ == RECEIVING)
-      call_state_ = SENDING_AND_RECEIVING;
-  } else {
-    DLOG(ERROR) << "Multiple streams not supported";
+}
+
+void PeerConnectionHandler::RemoveStreams(
+    const WebKit::WebVector<WebKit::WebMediaStreamDescriptor>& streams) {
+  for (size_t i = 0; i < streams.size(); ++i) {
+    webrtc::MediaStreamInterface* stream =
+        native_peer_connection_->remote_streams()->find(
+            UTF16ToUTF8(streams[i].label()));
+    native_peer_connection_->RemoveStream(
+        static_cast<webrtc::LocalMediaStreamInterface*>(stream));
   }
 }
 
 void PeerConnectionHandler::OnAddStreamCallback(
-    const std::string& stream_label) {
-  // TODO(grunell): Fix code in this function after a new native PeerConnection
-  // version has been rolled out.
-  if (call_state_ == NOT_STARTED) {
-    remote_label_ = stream_label;
-    call_state_ = RECEIVING;
-  } else if (call_state_ == INITIATING) {
-    remote_label_ = local_label_;
-    remote_label_ += "-remote";
-    call_state_ = SENDING_AND_RECEIVING;
-  }
-
-  // TODO(grunell): Support several tracks.
-  WebKit::WebVector<WebKit::WebMediaStreamSource> source_vector(
-      static_cast<size_t>(2));
-  source_vector[0].initialize(WebKit::WebString::fromUTF8(remote_label_),
-                              WebKit::WebMediaStreamSource::TypeVideo,
-                              WebKit::WebString::fromUTF8("RemoteVideo"));
-  source_vector[1].initialize(WebKit::WebString::fromUTF8(remote_label_),
-                              WebKit::WebMediaStreamSource::TypeAudio,
-                              WebKit::WebString::fromUTF8("RemoteAudio"));
-  WebKit::WebMediaStreamDescriptor descriptor;
-  descriptor.initialize(UTF8ToUTF16(remote_label_), source_vector);
+    webrtc::MediaStreamInterface* stream) {
+  DCHECK(remote_streams_.find(stream) == remote_streams_.end());
+  WebKit::WebMediaStreamDescriptor descriptor =
+      CreateWebKitStreamDescriptor(stream);
+  remote_streams_.insert(
+      std::pair<webrtc::MediaStreamInterface*,
+                WebKit::WebMediaStreamDescriptor>(stream, descriptor));
   client_->didAddRemoteStream(descriptor);
 }
 
 void PeerConnectionHandler::OnRemoveStreamCallback(
-    const std::string& stream_label) {
-  // TODO(grunell): Support several tracks.
-  WebKit::WebVector<WebKit::WebMediaStreamSource> source_vector(
-      static_cast<size_t>(2));
-  source_vector[0].initialize(WebKit::WebString::fromUTF8(stream_label),
-                              WebKit::WebMediaStreamSource::TypeVideo,
-                              WebKit::WebString::fromUTF8("RemoteVideo"));
-  source_vector[1].initialize(WebKit::WebString::fromUTF8(stream_label),
-                              WebKit::WebMediaStreamSource::TypeAudio,
-                              WebKit::WebString::fromUTF8("RemoteAudio"));
-  WebKit::WebMediaStreamDescriptor descriptor;
-  descriptor.initialize(UTF8ToUTF16(stream_label), source_vector);
+    webrtc::MediaStreamInterface* stream) {
+  RemoteStreamMap::iterator it = remote_streams_.find(stream);
+  if (it == remote_streams_.end()) {
+    NOTREACHED() << "Stream not found";
+    return;
+  }
+  WebKit::WebMediaStreamDescriptor descriptor = it->second;
+  DCHECK(!descriptor.isNull());
+  remote_streams_.erase(it);
   client_->didRemoveRemoteStream(descriptor);
+}
+
+WebKit::WebMediaStreamDescriptor
+PeerConnectionHandler::CreateWebKitStreamDescriptor(
+    webrtc::MediaStreamInterface* stream) {
+  webrtc::AudioTracks* audio_tracks = stream->audio_tracks();
+  webrtc::VideoTracks* video_tracks = stream->video_tracks();
+  WebKit::WebVector<WebKit::WebMediaStreamSource> source_vector(
+      audio_tracks->count() + video_tracks->count());
+
+  // Add audio tracks.
+  size_t i = 0;
+  for (; i < audio_tracks->count(); ++i) {
+    webrtc::AudioTrackInterface* audio_track = audio_tracks->at(i);
+    DCHECK(audio_track);
+    source_vector[i].initialize(
+          // TODO(grunell): Set id to something unique.
+          UTF8ToUTF16(audio_track->label()),
+          WebKit::WebMediaStreamSource::TypeAudio,
+          UTF8ToUTF16(audio_track->label()));
+  }
+
+  // Add video tracks.
+  for (i = 0; i < video_tracks->count(); ++i) {
+    webrtc::VideoTrackInterface* video_track = video_tracks->at(i);
+    DCHECK(video_track);
+    source_vector[audio_tracks->count() + i].initialize(
+        // TODO(grunell): Set id to something unique.
+          UTF8ToUTF16(video_track->label()),
+          WebKit::WebMediaStreamSource::TypeVideo,
+          UTF8ToUTF16(video_track->label()));
+  }
+
+  WebKit::WebMediaStreamDescriptor descriptor;
+  descriptor.initialize(UTF8ToUTF16(stream->label()), source_vector);
+
+  return descriptor;
 }

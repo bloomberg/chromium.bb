@@ -19,6 +19,9 @@
 #include "base/threading/thread.h"
 #include "content/common/content_export.h"
 #include "content/renderer/media/media_stream_dispatcher_eventhandler.h"
+#include "content/renderer/media/rtc_video_decoder.h"
+#include "third_party/libjingle/source/talk/app/webrtc/mediastream.h"
+#include "third_party/libjingle/source/talk/base/scoped_ref_ptr.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebUserMediaClient.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebUserMediaRequest.h"
 #include "webkit/media/media_stream_client.h"
@@ -31,10 +34,6 @@ namespace content {
 class IpcNetworkManager;
 class IpcPacketSocketFactory;
 class P2PSocketDispatcher;
-}
-
-namespace cricket {
-class WebRtcMediaEngine;
 }
 
 namespace talk_base {
@@ -74,9 +73,8 @@ class CONTENT_EXPORT MediaStreamImpl
   virtual WebKit::WebPeerConnectionHandler* CreatePeerConnectionHandler(
       WebKit::WebPeerConnectionHandlerClient* client);
   virtual void ClosePeerConnection();
-
-  // Returns true if created successfully or already exists, false otherwise.
-  virtual bool SetVideoCaptureModule(const std::string& label);
+  virtual webrtc::MediaStreamTrackInterface* GetLocalMediaStreamTrack(
+      const std::string& label);
 
   // WebKit::WebUserMediaClient implementation
   virtual void requestUserMedia(
@@ -117,21 +115,32 @@ class CONTENT_EXPORT MediaStreamImpl
  private:
   FRIEND_TEST_ALL_PREFIXES(MediaStreamImplTest, Basic);
 
+  class VideoRendererWrapper : public webrtc::VideoRendererWrapperInterface {
+   public:
+    VideoRendererWrapper();
+    virtual cricket::VideoRenderer* renderer() OVERRIDE {
+      return rtc_video_decoder_.get();
+    }
+    void SetVideoDecoder(RTCVideoDecoder* decoder);
+
+   protected:
+    virtual ~VideoRendererWrapper();
+
+   private:
+    scoped_refptr<RTCVideoDecoder> rtc_video_decoder_;
+  };
+
   void InitializeWorkerThread(
       talk_base::Thread** thread,
       base::WaitableEvent* event);
   void DeleteIpcNetworkManager();
+  bool EnsurePeerConnectionFactory();
 
   scoped_ptr<MediaStreamDependencyFactory> dependency_factory_;
 
   // media_stream_dispatcher_ is a weak reference, owned by RenderView. It's
   // valid for the lifetime of RenderView.
   MediaStreamDispatcher* media_stream_dispatcher_;
-
-  // media_engine_ is owned by PeerConnectionFactory (which is owned by
-  // dependency_factory_) and is valid for the lifetime of
-  // PeerConnectionFactory.
-  cricket::WebRtcMediaEngine* media_engine_;
 
   // p2p_socket_dispatcher_ is a weak reference, owned by RenderView. It's valid
   // for the lifetime of RenderView.
@@ -149,7 +158,14 @@ class CONTENT_EXPORT MediaStreamImpl
   // TODO(grunell): Support several PeerConnectionsHandlers.
   PeerConnectionHandler* peer_connection_handler_;
 
-  scoped_refptr<RTCVideoDecoder> rtc_video_decoder_;
+  // We keep a list of the generated local tracks, so that we can add capture
+  // devices when generated and also use them for recording.
+  typedef talk_base::scoped_refptr<webrtc::MediaStreamTrackInterface>
+      MediaStreamTrackPtr;
+  typedef std::map<std::string, MediaStreamTrackPtr> MediaStreamTrackPtrMap;
+  MediaStreamTrackPtrMap local_tracks_;
+
+  talk_base::scoped_refptr<VideoRendererWrapper> video_renderer_;
   scoped_refptr<base::MessageLoopProxy> message_loop_proxy_;
 
   // PeerConnection threads. signaling_thread_ is created from the
@@ -161,15 +177,6 @@ class CONTENT_EXPORT MediaStreamImpl
   static int next_request_id_;
   typedef std::map<int, WebKit::WebUserMediaRequest> MediaRequestMap;
   MediaRequestMap user_media_requests_;
-
-  std::list<std::string> stream_labels_;
-
-  // Make sure we only create the video capture module once. This is also
-  // temporary and will be handled differently when several PeerConnections
-  // and/or streams is supported.
-  // TODO(grunell): This shall be removed or changed when native PeerConnection
-  // has been updated to closer follow the specification.
-  bool vcm_created_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaStreamImpl);
 };

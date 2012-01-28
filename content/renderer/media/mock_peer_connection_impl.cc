@@ -4,88 +4,95 @@
 
 #include "content/renderer/media/mock_peer_connection_impl.h"
 
+#include <vector>
+
 #include "base/logging.h"
 
 namespace webrtc {
 
+class MockStreamCollection : public StreamCollectionInterface {
+ public:
+  virtual size_t count() OVERRIDE {
+    return streams_.size();
+  }
+  virtual MediaStreamInterface* at(size_t index) OVERRIDE {
+    return streams_[index];
+  }
+  virtual MediaStreamInterface* find(const std::string& label) OVERRIDE {
+    for (size_t i = 0; i < streams_.size(); ++i) {
+      if (streams_[i]->label() == label)
+        return streams_[i];
+    }
+    return NULL;
+  }
+  void AddStream(MediaStreamInterface* stream) {
+    streams_.push_back(stream);
+  }
+
+ protected:
+  virtual ~MockStreamCollection() {}
+
+ private:
+  std::vector<MediaStreamInterface*> streams_;
+};
+
 MockPeerConnectionImpl::MockPeerConnectionImpl()
-    : observer_(NULL),
-      video_stream_(false),
-      connected_(false),
-      video_capture_set_(false) {
+    : stream_changes_committed_(false),
+      remote_streams_(new talk_base::RefCountedObject<MockStreamCollection>) {
 }
 
 MockPeerConnectionImpl::~MockPeerConnectionImpl() {}
 
-void MockPeerConnectionImpl::RegisterObserver(
-    PeerConnectionObserver* observer) {
-  observer_ = observer;
+void MockPeerConnectionImpl::ProcessSignalingMessage(const std::string& msg) {
+  signaling_message_ = msg;
 }
 
-bool MockPeerConnectionImpl::SignalingMessage(
-    const std::string& signaling_message) {
-  signaling_message_ = signaling_message;
-  return true;
+bool MockPeerConnectionImpl::Send(const std::string& msg) {
+  NOTIMPLEMENTED();
+  return false;
 }
 
-bool MockPeerConnectionImpl::AddStream(
-    const std::string& stream_id,
-    bool video) {
-  stream_id_ = stream_id;
-  video_stream_ = video;
-  return true;
+talk_base::scoped_refptr<StreamCollectionInterface>
+MockPeerConnectionImpl::local_streams() {
+  NOTIMPLEMENTED();
+  return NULL;
 }
 
-bool MockPeerConnectionImpl::RemoveStream(const std::string& stream_id) {
-  stream_id_.clear();
-  video_stream_ = false;
-  return true;
+talk_base::scoped_refptr<StreamCollectionInterface>
+MockPeerConnectionImpl::remote_streams() {
+  return remote_streams_;
 }
 
-bool MockPeerConnectionImpl::Connect() {
-  connected_ = true;
-  return true;
+void MockPeerConnectionImpl::AddStream(LocalMediaStreamInterface* stream) {
+  stream_label_ = stream->label();
 }
 
-bool MockPeerConnectionImpl::Close() {
-  observer_ = NULL;
+void MockPeerConnectionImpl::RemoveStream(LocalMediaStreamInterface* stream) {
+  stream_label_.clear();
+}
+
+void MockPeerConnectionImpl::CommitStreamChanges() {
+  stream_changes_committed_ = true;
+}
+
+void MockPeerConnectionImpl::Close() {
   signaling_message_.clear();
-  stream_id_.clear();
-  video_stream_ = false;
-  connected_ = false;
-  video_capture_set_ = false;
-  return true;
+  stream_label_.clear();
+  stream_changes_committed_ = false;
 }
 
-bool MockPeerConnectionImpl::SetAudioDevice(
-    const std::string& wave_in_device,
-    const std::string& wave_out_device,
-    int opts) {
+MockPeerConnectionImpl::ReadyState MockPeerConnectionImpl::ready_state() {
   NOTIMPLEMENTED();
-  return false;
+  return kNew;
 }
 
-bool MockPeerConnectionImpl::SetLocalVideoRenderer(
-    cricket::VideoRenderer* renderer) {
+MockPeerConnectionImpl::SdpState MockPeerConnectionImpl::sdp_state() {
   NOTIMPLEMENTED();
-  return false;
+  return kSdpNew;
 }
 
-bool MockPeerConnectionImpl::SetVideoRenderer(
-    const std::string& stream_id,
-    cricket::VideoRenderer* renderer) {
-  video_renderer_stream_id_ = stream_id;
-  return true;
-}
-
-bool MockPeerConnectionImpl::SetVideoCapture(const std::string& cam_device) {
-  video_capture_set_ = true;
-  return true;
-}
-
-MockPeerConnectionImpl::ReadyState MockPeerConnectionImpl::GetReadyState() {
-  NOTIMPLEMENTED();
-  return NEW;
+void MockPeerConnectionImpl::AddRemoteStream(MediaStreamInterface* stream) {
+  remote_streams_->AddStream(stream);
 }
 
 }  // namespace webrtc

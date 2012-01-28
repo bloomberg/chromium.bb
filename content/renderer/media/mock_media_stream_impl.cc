@@ -4,6 +4,8 @@
 
 #include "content/renderer/media/mock_media_stream_impl.h"
 
+#include <utility>
+
 #include "content/renderer/media/rtc_video_decoder.h"
 
 MockMediaStreamImpl::MockMediaStreamImpl()
@@ -20,12 +22,15 @@ MockMediaStreamImpl::CreatePeerConnectionHandler(
 }
 
 void MockMediaStreamImpl::ClosePeerConnection() {
-  video_label_.clear();
 }
 
-bool MockMediaStreamImpl::SetVideoCaptureModule(const std::string& label) {
-  video_label_ = label;
-  return true;
+webrtc::MediaStreamTrackInterface*
+MockMediaStreamImpl::GetLocalMediaStreamTrack(const std::string& label) {
+  MockMediaStreamTrackPtrMap::iterator it = mock_local_tracks_.find(label);
+  if (it == mock_local_tracks_.end())
+    return NULL;
+  webrtc::MediaStreamTrackInterface* stream = it->second;
+  return stream;
 }
 
 scoped_refptr<media::VideoDecoder> MockMediaStreamImpl::GetVideoDecoder(
@@ -57,4 +62,11 @@ void MockMediaStreamImpl::OnAudioDeviceFailed(
     const std::string& label,
     int index) {
   NOTIMPLEMENTED();
+}
+
+void MockMediaStreamImpl::AddTrack(
+    const std::string& label,
+    webrtc::MediaStreamTrackInterface* track) {
+  mock_local_tracks_.insert(
+      std::pair<std::string, webrtc::MediaStreamTrackInterface*>(label, track));
 }

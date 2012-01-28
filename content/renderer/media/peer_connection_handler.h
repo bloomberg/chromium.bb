@@ -5,6 +5,7 @@
 #ifndef CONTENT_RENDERER_MEDIA_PEER_CONNECTION_HANDLER_H_
 #define CONTENT_RENDERER_MEDIA_PEER_CONNECTION_HANDLER_H_
 
+#include <map>
 #include <string>
 
 #include "base/basictypes.h"
@@ -13,35 +14,16 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop_proxy.h"
 #include "content/common/content_export.h"
-#include "third_party/libjingle/source/talk/app/webrtcv1/peerconnection.h"
-#include "third_party/libjingle/source/talk/base/socketaddress.h"
+#include "third_party/libjingle/source/talk/app/webrtc/mediastream.h"
+#include "third_party/libjingle/source/talk/app/webrtc/peerconnection.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebPeerConnectionHandler.h"
-
-namespace base {
-class Thread;
-class WaitableEvent;
-}
-
-namespace content {
-class IpcNetworkManager;
-class IpcPacketSocketFactory;
-class P2PSocketDispatcher;
-}
-
-namespace cricket {
-class PortAllocator;
-}
-
-namespace talk_base {
-class Thread;
-}
 
 class MediaStreamDependencyFactory;
 class MediaStreamImpl;
 
 // PeerConnectionHandler is a delegate for the PeerConnection API messages going
 // between WebKit and native PeerConnection in libjingle. It's owned by
-// MediaStreamImpl.
+// WebKit.
 class CONTENT_EXPORT PeerConnectionHandler
     : NON_EXPORTED_BASE(public WebKit::WebPeerConnectionHandler),
       NON_EXPORTED_BASE(public webrtc::PeerConnectionObserver) {
@@ -49,16 +31,13 @@ class CONTENT_EXPORT PeerConnectionHandler
   PeerConnectionHandler(
       WebKit::WebPeerConnectionHandlerClient* client,
       MediaStreamImpl* msi,
-      MediaStreamDependencyFactory* dependency_factory,
-      talk_base::Thread* signaling_thread,
-      content::P2PSocketDispatcher* socket_dispatcher,
-      content::IpcNetworkManager* network_manager,
-      content::IpcPacketSocketFactory* socket_factory);
+      MediaStreamDependencyFactory* dependency_factory);
   virtual ~PeerConnectionHandler();
 
   // Set the video renderer for the specified stream.
-  virtual bool SetVideoRenderer(const std::string& stream_label,
-                                cricket::VideoRenderer* renderer);
+  virtual void SetVideoRenderer(
+      const std::string& stream_label,
+      webrtc::VideoRendererWrapperInterface* renderer);
 
   // WebKit::WebPeerConnectionHandler implementation
   virtual void initialize(
@@ -75,21 +54,28 @@ class CONTENT_EXPORT PeerConnectionHandler
       const WebKit::WebVector<WebKit::WebMediaStreamDescriptor>&
           pending_remove_streams) OVERRIDE;
   virtual void sendDataStreamMessage(const char* data, size_t length) OVERRIDE;
+  // We will be deleted by WebKit after stop has been returned.
   virtual void stop() OVERRIDE;
 
   // webrtc::PeerConnectionObserver implementation
+  virtual void OnError() OVERRIDE;
+  virtual void OnMessage(const std::string& msg) OVERRIDE;
   virtual void OnSignalingMessage(const std::string& msg) OVERRIDE;
-  virtual void OnAddStream(const std::string& stream_id, bool video) OVERRIDE;
-  virtual void OnRemoveStream(
-      const std::string& stream_id,
-      bool video) OVERRIDE;
+  virtual void OnStateChange(StateType state_changed) OVERRIDE;
+  virtual void OnAddStream(webrtc::MediaStreamInterface* stream) OVERRIDE;
+  virtual void OnRemoveStream(webrtc::MediaStreamInterface* stream) OVERRIDE;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(PeerConnectionHandlerTest, Basic);
 
-  void AddStream(const std::string label);
-  void OnAddStreamCallback(const std::string& stream_label);
-  void OnRemoveStreamCallback(const std::string& stream_label);
+  void AddStreams(
+      const WebKit::WebVector<WebKit::WebMediaStreamDescriptor>& streams);
+  void RemoveStreams(
+      const WebKit::WebVector<WebKit::WebMediaStreamDescriptor>& streams);
+  void OnAddStreamCallback(webrtc::MediaStreamInterface* stream);
+  void OnRemoveStreamCallback(webrtc::MediaStreamInterface* stream);
+  WebKit::WebMediaStreamDescriptor CreateWebKitStreamDescriptor(
+      webrtc::MediaStreamInterface* stream);
 
   // client_ is a weak pointer, and is valid until stop() has returned.
   WebKit::WebPeerConnectionHandlerClient* client_;
@@ -104,55 +90,14 @@ class CONTENT_EXPORT PeerConnectionHandler
 
   // native_peer_connection_ is the native PeerConnection object,
   // it handles the ICE processing and media engine.
-  scoped_ptr<webrtc::PeerConnection> native_peer_connection_;
+  talk_base::scoped_refptr<webrtc::PeerConnectionInterface>
+      native_peer_connection_;
+
+  typedef std::map<webrtc::MediaStreamInterface*,
+                   WebKit::WebMediaStreamDescriptor> RemoteStreamMap;
+  RemoteStreamMap remote_streams_;
 
   scoped_refptr<base::MessageLoopProxy> message_loop_proxy_;
-
-  talk_base::Thread* signaling_thread_;
-
-  // socket_dispatcher_ is a weak reference, owned by RenderView. It's valid
-  // for the lifetime of RenderView.
-  content::P2PSocketDispatcher* socket_dispatcher_;
-
-  // network_manager_ and socket_factory_ are a weak references, owned by
-  // MediaStreamImpl.
-  content::IpcNetworkManager* network_manager_;
-  content::IpcPacketSocketFactory* socket_factory_;
-
-  scoped_ptr<cricket::PortAllocator> port_allocator_;
-
-  // Currently, a stream in WebKit has audio and/or video and has one label.
-  // Local and remote streams have different labels.
-  // In native PeerConnection, a stream has audio or video (not both), and they
-  // have separate labels. A remote stream has the same label as the
-  // corresponding local stream. Hence the workarounds in the implementation to
-  // handle this. It could look like this:
-  // WebKit: Local, audio and video: label "foo".
-  //         Remote, audio and video: label "foo-remote".
-  // Native: Local and remote, audio: label "foo-audio".
-  //         Local and remote, video: label "foo".
-  // TODO(grunell): This shall be removed or changed when native PeerConnection
-  // has been updated to closer follow the specification.
-  std::string local_label_;   // Label used in WebKit
-  std::string remote_label_;  // Label used in WebKit
-
-  // Call states. Possible transitions:
-  // NOT_STARTED -> INITIATING -> SENDING_AND_RECEIVING
-  // NOT_STARTED -> RECEIVING
-  // RECEIVING -> NOT_STARTED
-  // RECEIVING -> SENDING_AND_RECEIVING
-  // SENDING_AND_RECEIVING -> NOT_STARTED
-  // Note that when in state SENDING_AND_RECEIVING, the other side may or may
-  // not send media. Thus, this state does not necessarily mean full duplex.
-  // TODO(grunell): This shall be removed or changed when native PeerConnection
-  // has been updated to closer follow the specification.
-  enum CallState {
-    NOT_STARTED,
-    INITIATING,
-    RECEIVING,
-    SENDING_AND_RECEIVING
-  };
-  CallState call_state_;
 
   DISALLOW_COPY_AND_ASSIGN(PeerConnectionHandler);
 };

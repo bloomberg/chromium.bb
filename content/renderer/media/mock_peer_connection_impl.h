@@ -9,50 +9,45 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "third_party/libjingle/source/talk/app/webrtcv1/peerconnection.h"
+#include "third_party/libjingle/source/talk/app/webrtc/peerconnection.h"
 
 namespace webrtc {
 
-class MockPeerConnectionImpl : public PeerConnection {
+class MockStreamCollection;
+
+class MockPeerConnectionImpl : public PeerConnectionInterface {
  public:
   MockPeerConnectionImpl();
+
+  // PeerConnectionInterface implementation.
+  virtual void ProcessSignalingMessage(const std::string& msg) OVERRIDE;
+  virtual bool Send(const std::string& msg) OVERRIDE;
+  virtual talk_base::scoped_refptr<StreamCollectionInterface>
+      local_streams() OVERRIDE;
+  virtual talk_base::scoped_refptr<StreamCollectionInterface>
+      remote_streams() OVERRIDE;
+  virtual void AddStream(LocalMediaStreamInterface* stream) OVERRIDE;
+  virtual void RemoveStream(LocalMediaStreamInterface* stream) OVERRIDE;
+  virtual void CommitStreamChanges() OVERRIDE;
+  virtual void Close() OVERRIDE;
+  virtual ReadyState ready_state() OVERRIDE;
+  virtual SdpState sdp_state() OVERRIDE;
+
+  void AddRemoteStream(MediaStreamInterface* stream);
+  void ClearStreamChangesCommitted() { stream_changes_committed_ = false; }
+
+  const std::string& signaling_message() const { return signaling_message_; }
+  const std::string& stream_label() const { return stream_label_; }
+  bool stream_changes_committed() const { return stream_changes_committed_; }
+
+ protected:
   virtual ~MockPeerConnectionImpl();
 
-  // PeerConnection implementation.
-  virtual void RegisterObserver(PeerConnectionObserver* observer) OVERRIDE;
-  virtual bool SignalingMessage(const std::string& msg) OVERRIDE;
-  virtual bool AddStream(const std::string& stream_id, bool video) OVERRIDE;
-  virtual bool RemoveStream(const std::string& stream_id) OVERRIDE;
-  virtual bool Connect() OVERRIDE;
-  virtual bool Close() OVERRIDE;
-  virtual bool SetAudioDevice(
-      const std::string& wave_in_device,
-      const std::string& wave_out_device, int opts) OVERRIDE;
-  virtual bool SetLocalVideoRenderer(cricket::VideoRenderer* renderer) OVERRIDE;
-  virtual bool SetVideoRenderer(
-      const std::string& stream_id,
-      cricket::VideoRenderer* renderer) OVERRIDE;
-  virtual bool SetVideoCapture(const std::string& cam_device) OVERRIDE;
-  virtual ReadyState GetReadyState() OVERRIDE;
-
-  PeerConnectionObserver* observer() const { return observer_; }
-  const std::string& signaling_message() const { return signaling_message_; }
-  const std::string& stream_id() const { return stream_id_; }
-  bool video_stream() const { return video_stream_; }
-  bool connected() const { return connected_; }
-  bool video_capture_set() const { return video_capture_set_; }
-  const std::string& video_renderer_stream_id() const {
-    return video_renderer_stream_id_;
-  }
-
  private:
-  PeerConnectionObserver* observer_;
   std::string signaling_message_;
-  std::string stream_id_;
-  bool video_stream_;
-  bool connected_;
-  bool video_capture_set_;
-  std::string video_renderer_stream_id_;
+  std::string stream_label_;
+  bool stream_changes_committed_;
+  talk_base::scoped_refptr<MockStreamCollection> remote_streams_;
 
   DISALLOW_COPY_AND_ASSIGN(MockPeerConnectionImpl);
 };

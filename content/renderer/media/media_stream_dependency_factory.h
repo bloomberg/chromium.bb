@@ -10,7 +10,7 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"
-#include "third_party/libjingle/source/talk/app/webrtcv1/peerconnectionfactory.h"
+#include "third_party/libjingle/source/talk/app/webrtc/peerconnection.h"
 #include "webkit/glue/p2p_transport.h"
 
 namespace content {
@@ -20,9 +20,7 @@ class P2PSocketDispatcher;
 }
 
 namespace cricket {
-class MediaEngineInterface;
 class PortAllocator;
-class WebRtcMediaEngine;
 }
 
 namespace talk_base {
@@ -42,35 +40,39 @@ class CONTENT_EXPORT MediaStreamDependencyFactory {
   MediaStreamDependencyFactory();
   virtual ~MediaStreamDependencyFactory();
 
-  // WebRtcMediaEngine is used in CreatePeerConnectionFactory().
-  virtual cricket::WebRtcMediaEngine* CreateWebRtcMediaEngine();
-
   // Creates and deletes |pc_factory_|, which in turn is used for
-  // creating PeerConnection objects. |media_engine| is the engine created by
-  // CreateWebRtcMediaEngine(). |port_allocator| and |media_engine| will be
-  // owned by |pc_factory_|. |worker_thread| is owned by MediaStreamImpl.
+  // creating PeerConnection objects.
   virtual bool CreatePeerConnectionFactory(
-      cricket::MediaEngineInterface* media_engine,
-      talk_base::Thread* worker_thread);
-  virtual void DeletePeerConnectionFactory();
-  virtual bool PeerConnectionFactoryCreated();
-
-  // The port allocator is used in CreatePeerConnection().
-  virtual cricket::PortAllocator* CreatePortAllocator(
+      talk_base::Thread* worker_thread,
+      talk_base::Thread* signaling_thread,
       content::P2PSocketDispatcher* socket_dispatcher,
       talk_base::NetworkManager* network_manager,
-      talk_base::PacketSocketFactory* socket_factory,
-      const webkit_glue::P2PTransport::Config& config);
+      talk_base::PacketSocketFactory* socket_factory);
+  virtual void ReleasePeerConnectionFactory();
+  virtual bool PeerConnectionFactoryCreated();
 
-  // Asks the PeerConnection factory to create a PeerConnection object. See
-  // MediaStreamImpl for details about |signaling_thread|. The PeerConnection
-  // object is owned by PeerConnectionHandler.
-  virtual webrtc::PeerConnection* CreatePeerConnection(
-      cricket::PortAllocator* port_allocator,
-      talk_base::Thread* signaling_thread);
+  // Asks the PeerConnection factory to create a PeerConnection object.
+  // The PeerConnection object is owned by PeerConnectionHandler.
+  virtual talk_base::scoped_refptr<webrtc::PeerConnectionInterface>
+      CreatePeerConnection(const std::string& config,
+                           webrtc::PeerConnectionObserver* observer);
+
+  // Asks the PeerConnection factory to create a Local MediaStream object.
+  virtual talk_base::scoped_refptr<webrtc::LocalMediaStreamInterface>
+      CreateLocalMediaStream(const std::string& label);
+
+  // Asks the PeerConnection factory to create a Local VideoTrack object.
+  virtual talk_base::scoped_refptr<webrtc::LocalVideoTrackInterface>
+      CreateLocalVideoTrack(const std::string& label,
+                            cricket::VideoCapturer* video_device);
+
+  // Asks the PeerConnection factory to create a Local AudioTrack object.
+  virtual talk_base::scoped_refptr<webrtc::LocalAudioTrackInterface>
+      CreateLocalAudioTrack(const std::string& label,
+                            webrtc::AudioDeviceModule* audio_device);
 
  private:
-  scoped_ptr<webrtc::PeerConnectionFactory> pc_factory_;
+  talk_base::scoped_refptr<webrtc::PeerConnectionFactoryInterface> pc_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaStreamDependencyFactory);
 };

@@ -5,6 +5,7 @@
 #ifndef CONTENT_RENDERER_MEDIA_MOCK_MEDIA_STREAM_IMPL_H_
 #define CONTENT_RENDERER_MEDIA_MOCK_MEDIA_STREAM_IMPL_H_
 
+#include <map>
 #include <string>
 
 #include "content/renderer/media/media_stream_impl.h"
@@ -17,8 +18,8 @@ class MockMediaStreamImpl : public MediaStreamImpl {
   virtual WebKit::WebPeerConnectionHandler* CreatePeerConnectionHandler(
       WebKit::WebPeerConnectionHandlerClient* client) OVERRIDE;
   virtual void ClosePeerConnection() OVERRIDE;
-  // Returns true if created successfully or already exists, false otherwise.
-  virtual bool SetVideoCaptureModule(const std::string& label) OVERRIDE;
+  virtual webrtc::MediaStreamTrackInterface* GetLocalMediaStreamTrack(
+      const std::string& label) OVERRIDE;
 
   // Implement webkit_glue::MediaStreamClient.
   virtual scoped_refptr<media::VideoDecoder> GetVideoDecoder(
@@ -39,10 +40,14 @@ class MockMediaStreamImpl : public MediaStreamImpl {
       const std::string& label,
       int index) OVERRIDE;
 
-  const std::string& video_label() const { return video_label_; }
+  void AddTrack(
+      const std::string& label,
+      webrtc::MediaStreamTrackInterface* track);
 
  private:
-  std::string video_label_;
+  typedef std::map<std::string, webrtc::MediaStreamTrackInterface*>
+      MockMediaStreamTrackPtrMap;
+  MockMediaStreamTrackPtrMap mock_local_tracks_;
 
   DISALLOW_COPY_AND_ASSIGN(MockMediaStreamImpl);
 };
