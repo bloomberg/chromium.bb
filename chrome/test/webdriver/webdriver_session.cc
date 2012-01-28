@@ -1065,7 +1065,7 @@ Error* Session::SetOptionElementSelected(const FrameId& frame_id,
   Error* error = ExecuteAsyncScript(
       frame_id,
       base::StringPrintf(kSetSelectedWrapper,
-                         atoms::asString(atoms::TOGGLE).c_str()),
+                         atoms::asString(atoms::CLICK).c_str()),
       CreateListValueFrom(element, selected),
       &value);
   scoped_ptr<Value> scoped_value(value);

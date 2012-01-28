@@ -429,7 +429,7 @@ bool ElementToggleCommand::DoesPost() {
 void ElementToggleCommand::ExecutePost(Response* const response) {
   std::string script = base::StringPrintf(
       "return (%s).apply(null, arguments);",
-      atoms::asString(atoms::SET_SELECTED).c_str());
+      atoms::asString(atoms::CLICK).c_str());
 
   ListValue args;
   args.Append(element.ToValue());

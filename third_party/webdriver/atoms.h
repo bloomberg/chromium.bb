@@ -1,5 +1,6 @@
 /*
- * Copyright 2011 WebDriver committers
+ * Copyright 2011-2012 WebDriver committers
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -29,8 +30,10 @@ extern const char* const IS_ELEMENT_CLICKABLE[];
 extern const char* const CLEAR[];
 extern const char* const CLEAR_LOCAL_STORAGE[];
 extern const char* const CLEAR_SESSION_STORAGE[];
-extern const char* const EXECUTE_SCRIPT[];
+extern const char* const CLICK[];
 extern const char* const EXECUTE_ASYNC_SCRIPT[];
+extern const char* const EXECUTE_SCRIPT[];
+extern const char* const EXECUTE_SQL[];
 extern const char* const FIND_ELEMENT[];
 extern const char* const FIND_ELEMENTS[];
 extern const char* const GET_APPCACHE_STATUS[];
@@ -56,9 +59,7 @@ extern const char* const REMOVE_LOCAL_STORAGE_ITEM[];
 extern const char* const REMOVE_SESSION_STORAGE_ITEM[];
 extern const char* const SET_LOCAL_STORAGE_ITEM[];
 extern const char* const SET_SESSION_STORAGE_ITEM[];
-extern const char* const SET_SELECTED[];
 extern const char* const SUBMIT[];
-extern const char* const TOGGLE[];
 
 static inline std::string asString(const char* const atom[]) {
   std::string source;
