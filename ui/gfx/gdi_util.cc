@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -74,6 +74,29 @@ void SubtractRectanglesFromRegion(HRGN hrgn,
     }
     ::DeleteObject(cutout);
   }
+}
+
+double CalculatePageScale(HDC dc, int page_width, int page_height) {
+  int dc_width = GetDeviceCaps(dc, HORZRES);
+  int dc_height = GetDeviceCaps(dc, VERTRES);
+
+  // If page fits DC - no scaling needed.
+  if (dc_width >= page_width && dc_height >= page_height)
+    return 1.0;
+
+  double x_factor =
+      static_cast<double>(dc_width) / static_cast<double>(page_width);
+  double y_factor =
+      static_cast<double>(dc_height) / static_cast<double>(page_height);
+  return std::min(x_factor, y_factor);
+}
+
+// Apply scaling to the DC.
+bool ScaleDC(HDC dc, double scale_factor) {
+  SetGraphicsMode(dc, GM_ADVANCED);
+  XFORM xform = {0};
+  xform.eM11 = xform.eM22 = scale_factor;
+  return !!ModifyWorldTransform(dc, &xform, MWT_LEFTMULTIPLY);
 }
 
 }  // namespace gfx

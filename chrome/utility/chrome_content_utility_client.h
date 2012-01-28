@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -71,7 +71,8 @@ class ChromeContentUtilityClient : public content::ContentUtilityClient {
       int render_dpi,
       bool autorotate,
       const std::vector<printing::PageRange>& page_ranges,
-      int* highest_rendered_page_number);
+      int* highest_rendered_page_number,
+      double* scale_factor);
 #endif   // defined(OS_WIN)
 
   void OnGetPrinterCapsAndDefaults(const std::string& printer_name);

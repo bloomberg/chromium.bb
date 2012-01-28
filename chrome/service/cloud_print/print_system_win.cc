@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -420,22 +420,7 @@ class PrintSystemWin : public PrintSystem {
             return false;
 
           printer_dc_.Set(dc);
-          int printer_dpi = ::GetDeviceCaps(printer_dc_.Get(), LOGPIXELSX);
-          int offset_x = ::GetDeviceCaps(printer_dc_.Get(), PHYSICALOFFSETX);
-          int offset_y = ::GetDeviceCaps(printer_dc_.Get(), PHYSICALOFFSETY);
           saved_dc_ = SaveDC(printer_dc_.Get());
-          SetGraphicsMode(printer_dc_.Get(), GM_ADVANCED);
-
-          // Setup the matrix to translate and scale to the right place. Take in
-          // account the actual shrinking factor.
-          // Note that the printing output is relative to printable area of
-          // the page. That is 0,0 is offset by PHYSICALOFFSETX/Y from the page.
-          XFORM xform = {0};
-          xform.eDx = static_cast<float>(-offset_x);
-          xform.eDy = static_cast<float>(-offset_y);
-          xform.eM11 = xform.eM22 = static_cast<float>(printer_dpi) /
-              static_cast<float>(GetDeviceCaps(GetDC(NULL), LOGPIXELSX));
-          ModifyWorldTransform(printer_dc_.Get(), &xform, MWT_LEFTMULTIPLY);
           print_data_file_path_ = print_data_file_path;
           delegate_ = delegate;
           RenderNextPDFPages();
@@ -454,10 +439,27 @@ class PrintSystemWin : public PrintSystem {
         return true;
       }
 
+      void PreparePageDCForPrinting(HDC, double scale_factor) {
+        SetGraphicsMode(printer_dc_.Get(), GM_ADVANCED);
+        // Setup the matrix to translate and scale to the right place. Take in
+        // account the scale factor.
+        // Note that the printing output is relative to printable area of
+        // the page. That is 0,0 is offset by PHYSICALOFFSETX/Y from the page.
+        int offset_x = ::GetDeviceCaps(printer_dc_.Get(), PHYSICALOFFSETX);
+        int offset_y = ::GetDeviceCaps(printer_dc_.Get(), PHYSICALOFFSETY);
+        XFORM xform = {0};
+        xform.eDx = static_cast<float>(-offset_x);
+        xform.eDy = static_cast<float>(-offset_y);
+        xform.eM11 = xform.eM22 = 1.0 / scale_factor;
+        SetWorldTransform(printer_dc_.Get(), &xform);
+      }
+
       // ServiceUtilityProcessHost::Client implementation.
       virtual void OnRenderPDFPagesToMetafileSucceeded(
           const printing::Emf& metafile,
-          int highest_rendered_page_number) OVERRIDE {
+          int highest_rendered_page_number,
+          double scale_factor) OVERRIDE {
+        PreparePageDCForPrinting(printer_dc_.Get(), scale_factor);
         metafile.SafePlayback(printer_dc_.Get());
         bool done_printing = (highest_rendered_page_number !=
             last_page_printed_ + kPageCountPerBatch);

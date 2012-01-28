@@ -1462,13 +1462,15 @@ bool PluginInstance::PrintPDFOutput(PP_Resource print_output,
         current_print_settings_.printable_area.size.height,
         static_cast<int>(printing::kPointsPerInch),
         current_print_settings_.dpi));
-    // We need to render using the actual printer DPI (rendering to a smaller
-    // set of pixels leads to a blurry output). However, we need to counter the
-    // scaling up that will happen in the browser.
-    XFORM xform = {0};
-    xform.eM11 = xform.eM22 = static_cast<float>(printing::kPointsPerInch) /
-        static_cast<float>(current_print_settings_.dpi);
-    ModifyWorldTransform(dc, &xform, MWT_LEFTMULTIPLY);
+    // We need to scale down DC to fit an entire page into DC available area.
+    // Current metafile is based on screen DC and have current screen size.
+    // Writing outside of those boundaries will result in the cut-off output.
+    // On metafiles (this is the case here), scaling down will still record
+    // original coordinates and we'll be able to print in full resolution.
+    // Before playback we'll need to counter the scaling up that will happen
+    // in the browser (printed_document_win.cc).
+    gfx::ScaleDC(dc, gfx::CalculatePageScale(dc, size_in_pixels.width(),
+                                             size_in_pixels.height()));
 
     ret = render_proc(static_cast<unsigned char*>(mapper.data()), mapper.size(),
                       0, dc, current_print_settings_.dpi,

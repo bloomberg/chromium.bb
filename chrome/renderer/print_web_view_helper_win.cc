@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -108,9 +108,11 @@ void PrintWebViewHelper::PrintPageInternal(
 
   int page_number = params.page_number;
 
-  // Calculate the dpi adjustment.
-  double actual_shrink = static_cast<float>(params.params.desired_dpi /
-                                            params.params.dpi);
+  // Calculate scaling.
+  double actual_shrink = gfx::CalculatePageScale(
+      metafile->context(),
+      params.params.content_size.width(),
+      params.params.content_size.height());
 
   gfx::Size page_size_in_dpi;
   gfx::Rect content_area_in_dpi;

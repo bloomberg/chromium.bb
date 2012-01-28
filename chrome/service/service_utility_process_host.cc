@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -181,7 +181,8 @@ bool ServiceUtilityProcessHost::OnMessageReceived(const IPC::Message& message) {
 }
 
 void ServiceUtilityProcessHost::OnRenderPDFPagesToMetafileSucceeded(
-    int highest_rendered_page_number) {
+    int highest_rendered_page_number,
+    double scale_factor) {
   DCHECK(waiting_for_reply_);
   waiting_for_reply_ = false;
   // If the metafile was successfully created, we need to take our hands off the
@@ -191,7 +192,7 @@ void ServiceUtilityProcessHost::OnRenderPDFPagesToMetafileSucceeded(
   client_message_loop_proxy_->PostTask(
       FROM_HERE,
       base::Bind(&Client::MetafileAvailable, client_.get(), metafile_path_,
-                 highest_rendered_page_number));
+                 highest_rendered_page_number, scale_factor));
 }
 
 void ServiceUtilityProcessHost::OnRenderPDFPagesToMetafileFailed() {
@@ -225,7 +226,8 @@ void ServiceUtilityProcessHost::OnGetPrinterCapsAndDefaultsFailed(
 
 void ServiceUtilityProcessHost::Client::MetafileAvailable(
     const FilePath& metafile_path,
-    int highest_rendered_page_number) {
+    int highest_rendered_page_number,
+    double scale_factor) {
   // The metafile was created in a temp folder which needs to get deleted after
   // we have processed it.
   ScopedTempDir scratch_metafile_dir;
@@ -240,7 +242,8 @@ void ServiceUtilityProcessHost::Client::MetafileAvailable(
     OnRenderPDFPagesToMetafileFailed();
   } else {
     OnRenderPDFPagesToMetafileSucceeded(metafile,
-                                        highest_rendered_page_number);
+                                        highest_rendered_page_number,
+                                        scale_factor);
   }
 #endif  // defined(OS_WIN)
 }

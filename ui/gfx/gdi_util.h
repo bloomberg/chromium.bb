@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -34,6 +34,12 @@ void CreateMonochromeBitmapHeader(int width, int height, BITMAPINFOHEADER* hdr);
 UI_EXPORT void SubtractRectanglesFromRegion(
     HRGN hrgn,
     const std::vector<gfx::Rect>& cutouts);
+
+// Calculate scale to fit an entire page on DC.
+double CalculatePageScale(HDC dc, int page_width, int page_height);
+
+// Apply scaling to the DC.
+bool ScaleDC(HDC dc, double scale_factor);
 
 }  // namespace gfx
 
