@@ -37,6 +37,7 @@
     <output filename="chrome_frame_dialogs_lv.rc" type="rc_all" lang="lv" />
     <output filename="chrome_frame_dialogs_ml.rc" type="rc_all" lang="ml" />
     <output filename="chrome_frame_dialogs_mr.rc" type="rc_all" lang="mr" />
+    <output filename="chrome_frame_dialogs_ms.rc" type="rc_all" lang="ms" />
     <output filename="chrome_frame_dialogs_nl.rc" type="rc_all" lang="nl" />
     <!-- The translation console uses 'no' for Norwegian Bokmål. It should
          be 'nb'. -->
@@ -93,6 +94,7 @@
     <file path="../../chrome/app/resources/generated_resources_lv.xtb" lang="lv" />
     <file path="../../chrome/app/resources/generated_resources_ml.xtb" lang="ml" />
     <file path="../../chrome/app/resources/generated_resources_mr.xtb" lang="mr" />
+    <file path="../../chrome/app/resources/generated_resources_ms.xtb" lang="ms" />
     <file path="../../chrome/app/resources/generated_resources_nl.xtb" lang="nl" />
     <file path="../../chrome/app/resources/generated_resources_no.xtb" lang="no" />
     <file path="../../chrome/app/resources/generated_resources_pl.xtb" lang="pl" />

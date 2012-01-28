@@ -41,6 +41,7 @@ Chrome supports. -->
     <output filename="google_chrome_strings_lv.pak" type="data_package" lang="lv" />
     <output filename="google_chrome_strings_ml.pak" type="data_package" lang="ml" />
     <output filename="google_chrome_strings_mr.pak" type="data_package" lang="mr" />
+    <output filename="google_chrome_strings_ms.pak" type="data_package" lang="ms" />
     <output filename="google_chrome_strings_nl.pak" type="data_package" lang="nl" />
     <output filename="google_chrome_strings_nb.pak" type="data_package" lang="no" />
     <!-- 'no' for Norwegian Bokmål. It should be 'nb'. -->
@@ -97,6 +98,7 @@ Chrome supports. -->
     <file path="resources/google_chrome_strings_lv.xtb" lang="lv" />
     <file path="resources/google_chrome_strings_ml.xtb" lang="ml" />
     <file path="resources/google_chrome_strings_mr.xtb" lang="mr" />
+    <file path="resources/google_chrome_strings_ms.xtb" lang="ms" />
     <file path="resources/google_chrome_strings_nl.xtb" lang="nl" />
     <file path="resources/google_chrome_strings_no.xtb" lang="no" />
     <file path="resources/google_chrome_strings_pl.xtb" lang="pl" />

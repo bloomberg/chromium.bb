@@ -42,6 +42,7 @@ templates and will be translated for each locale. -->
     <output filename="app/policy/windows/admx/lv/chrome.adml" type="adml" lang="lv" />
     <output filename="app/policy/windows/admx/ml/chrome.adml" type="adml" lang="ml" />
     <output filename="app/policy/windows/admx/mr/chrome.adml" type="adml" lang="mr" />
+    <output filename="app/policy/windows/admx/ms/chrome.adml" type="adml" lang="ms" />
     <output filename="app/policy/windows/admx/nl/chrome.adml" type="adml" lang="nl" />
     <output filename="app/policy/windows/admx/nb/chrome.adml" type="adml" lang="no" />
     <!-- 'no' for Norwegian Bokmål. It should be 'nb'. -->
@@ -96,6 +97,7 @@ templates and will be translated for each locale. -->
     <output filename="app/policy/windows/adm/lv/chrome.adm" type="adm" lang="lv" />
     <output filename="app/policy/windows/adm/ml/chrome.adm" type="adm" lang="ml" />
     <output filename="app/policy/windows/adm/mr/chrome.adm" type="adm" lang="mr" />
+    <output filename="app/policy/windows/adm/ms/chrome.adm" type="adm" lang="ms" />
     <output filename="app/policy/windows/adm/nl/chrome.adm" type="adm" lang="nl" />
     <output filename="app/policy/windows/adm/nb/chrome.adm" type="adm" lang="no" />
     <!-- 'no' for Norwegian Bokmål. It should be 'nb'. -->
@@ -150,6 +152,7 @@ templates and will be translated for each locale. -->
     <output filename="app/policy/common/html/lv/chrome_policy_list.html" type="doc" lang="lv" />
     <output filename="app/policy/common/html/ml/chrome_policy_list.html" type="doc" lang="ml" />
     <output filename="app/policy/common/html/mr/chrome_policy_list.html" type="doc" lang="mr" />
+    <output filename="app/policy/common/html/ms/chrome_policy_list.html" type="doc" lang="ms" />
     <output filename="app/policy/common/html/nl/chrome_policy_list.html" type="doc" lang="nl" />
     <output filename="app/policy/common/html/nb/chrome_policy_list.html" type="doc" lang="no" />
     <!-- 'no' for Norwegian Bokmål. It should be 'nb'. -->
@@ -209,6 +212,7 @@ templates and will be translated for each locale. -->
       <output filename="app/policy/mac/strings/lv.lproj/Localizable.strings" type="plist_strings" lang="lv" />
       <output filename="app/policy/mac/strings/ml.lproj/Localizable.strings" type="plist_strings" lang="ml" />
       <output filename="app/policy/mac/strings/mr.lproj/Localizable.strings" type="plist_strings" lang="mr" />
+      <output filename="app/policy/mac/strings/ms.lproj/Localizable.strings" type="plist_strings" lang="ms" />
       <output filename="app/policy/mac/strings/nl.lproj/Localizable.strings" type="plist_strings" lang="nl" />
       <output filename="app/policy/mac/strings/nb.lproj/Localizable.strings" type="plist_strings" lang="no" />
       <!-- 'no' for Norwegian Bokmål. It should be 'nb'. -->
@@ -265,6 +269,7 @@ templates and will be translated for each locale. -->
     <file path="policy_templates_lv.xtb" lang="lv" />
     <file path="policy_templates_ml.xtb" lang="ml" />
     <file path="policy_templates_mr.xtb" lang="mr" />
+    <file path="policy_templates_ms.xtb" lang="ms" />
     <file path="policy_templates_nl.xtb" lang="nl" />
     <file path="policy_templates_no.xtb" lang="no" />
     <file path="policy_templates_pl.xtb" lang="pl" />

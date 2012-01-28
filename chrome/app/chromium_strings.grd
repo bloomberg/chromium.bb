@@ -74,9 +74,7 @@ be available for now. -->
     <output filename="chromium_strings_lv.pak" type="data_package" lang="lv" />
     <output filename="chromium_strings_ml.pak" type="data_package" lang="ml" />
     <output filename="chromium_strings_mr.pak" type="data_package" lang="mr" />
-    <if expr="pp_ifdef('use_third_party_translations')">
-      <output filename="chromium_strings_ms.pak" type="data_package" lang="ms" />
-    </if>
+    <output filename="chromium_strings_ms.pak" type="data_package" lang="ms" />
     <output filename="chromium_strings_nl.pak" type="data_package" lang="nl" />
     <output filename="chromium_strings_nb.pak" type="data_package" lang="no" />
     <!-- 'no' for Norwegian Bokmål. It should be 'nb'. -->

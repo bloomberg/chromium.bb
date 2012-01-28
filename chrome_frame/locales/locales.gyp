@@ -224,6 +224,12 @@
           ],
         },
         {
+          'target_name': 'ms',
+          'sources': [
+            '<(chrome_frame_grit_out_dir)/chrome_frame_dialogs_ms.rc',
+          ],
+        },
+        {
           'target_name': 'nb',
           'sources': [
             '<(chrome_frame_grit_out_dir)/chrome_frame_dialogs_nb.rc',
