@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -22,7 +22,8 @@ bool CollectGraphicsInfo(content::GPUInfo* gpu_info);
 // Similar to CollectGraphicsInfo, only this collects a subset of variables
 // without creating a GL/DirectX context (and without the danger of crashing).
 // The subset each platform collects may be different.
-bool CollectPreliminaryGraphicsInfo(content::GPUInfo* gpu_info);
+CONTENT_EXPORT bool CollectPreliminaryGraphicsInfo(
+    content::GPUInfo* gpu_info);
 
 #if defined(OS_WIN)
 // Windows provides two ways of doing graphics so we need two ways of

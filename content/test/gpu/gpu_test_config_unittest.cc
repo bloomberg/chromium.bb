@@ -214,7 +214,7 @@ TEST_F(GPUTestConfigTest, LoadCurrentConfig) {
   content::GPUInfo gpu_info;
   gpu_info.vendor_id = 0x10de;
   gpu_info.device_id = 0x0640;
-  EXPECT_TRUE(config.LoadCurrentConfig(gpu_info));
+  EXPECT_TRUE(config.LoadCurrentConfig(&gpu_info));
   EXPECT_TRUE(config.IsValid());
 }
 

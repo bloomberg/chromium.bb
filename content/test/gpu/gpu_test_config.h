@@ -97,7 +97,8 @@ class GPUTestBotConfig : public GPUTestConfig {
   bool Matches(const GPUTestConfig& config) const;
 
   // Setup the config with the current gpu testing environment.
-  bool LoadCurrentConfig(const content::GPUInfo& gpu_info);
+  // If gpu_info is NULL, collect GPUInfo first.
+  bool LoadCurrentConfig(const content::GPUInfo* gpu_info);
 };
 
 #endif  // CONTENT_TEST_GPU_GPU_TEST_CONFIG_H_

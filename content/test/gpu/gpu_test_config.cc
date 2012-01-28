@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/sys_info.h"
+#include "content/gpu/gpu_info_collector.h"
 #include "content/public/common/gpu_info.h"
 
 namespace {
@@ -188,8 +189,15 @@ bool GPUTestBotConfig::Matches(const GPUTestConfig& config) const {
   return true;
 }
 
-bool GPUTestBotConfig::LoadCurrentConfig(const content::GPUInfo& gpu_info) {
-  bool rt = SetGPUInfo(gpu_info);
+bool GPUTestBotConfig::LoadCurrentConfig(const content::GPUInfo* gpu_info) {
+  bool rt;
+  if (gpu_info == NULL) {
+    content::GPUInfo my_gpu_info;
+    gpu_info_collector::CollectPreliminaryGraphicsInfo(&my_gpu_info);
+    rt = SetGPUInfo(my_gpu_info);
+  } else {
+    rt = SetGPUInfo(*gpu_info);
+  }
   set_os(GetCurrentOS());
   if (os() == kOsUnknown)
     rt = false;
