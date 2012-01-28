@@ -128,18 +128,8 @@ void FileLog::Log(LogLevel level, const base::Time& time,
       "%s%s\n", padding.c_str(), message.c_str());
 
   base::AutoLock auto_lock(lock_);
-#if defined(OS_WIN)
-  SetFilePointer(file_.get(), 0, 0, SEEK_END);
-  DWORD num_written;
-  WriteFile(file_.get(),
-            static_cast<const void*>(entry.c_str()),
-            static_cast<DWORD>(entry.length()),
-            &num_written,
-            NULL);
-#else
   fprintf(file_.get(), "%s", entry.c_str());
   fflush(file_.get());
-#endif
 }
 
 bool FileLog::GetLogContents(std::string* contents) const {

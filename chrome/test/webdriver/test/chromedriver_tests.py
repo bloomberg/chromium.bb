@@ -777,30 +777,11 @@ class ElementEqualityTest(ChromeDriverTest):
 
 class LoggingTest(ChromeDriverTest):
 
-  def setUp(self):
-    self._server2 = ChromeDriverLauncher(self.GetDriverPath()).Launch()
-    self._factory2 = ChromeDriverFactory(self._server2)
-
-  def tearDown(self):
-    self._factory2.QuitAll()
-    self._server2.Kill()
-
-  def testNoVerboseLogging(self):
-    driver = self._factory2.GetNewDriver()
-    url = self._factory2.GetServer().GetUrl()
-    driver.execute_script('console.log("HI")')
+  def testLogging(self):
+    url = self.GetServer().GetUrl()
     req = SendRequest(url + '/log', method='GET')
     log = req.read()
-    self.assertTrue(':INFO:' not in log, ':INFO: in log: ' + log)
-
-  # crbug.com/94470
-  def DISABLED_testVerboseLogging(self):
-    driver = self._factory2.GetNewDriver({'chrome.verbose': True})
-    url = self._factory2.GetServer().GetUrl()
-    driver.execute_script('console.log("HI")')
-    req = SendRequest(url + '/log', method='GET')
-    log = req.read()
-    self.assertTrue(':INFO:' in log, ':INFO: not in log: ' + log)
+    self.assertTrue('INFO' in log, msg='INFO not in log: ' + log)
 
 
 class FileUploadControlTest(ChromeDriverTest):
