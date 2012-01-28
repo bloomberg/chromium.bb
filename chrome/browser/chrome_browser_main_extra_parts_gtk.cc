@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -34,7 +34,7 @@ void ChromeBrowserMainExtraPartsGtk::DetectRunningAsRoot() {
     // Get just enough of our resource machinery up so we can extract the
     // locale appropriate string. Note that the GTK implementation ignores the
     // passed in parameter and checks the LANG environment variables instead.
-    ResourceBundle::InitSharedInstance("");
+    ResourceBundle::InitSharedInstanceWithLocale("");
 
     std::string message = l10n_util::GetStringFUTF8(
             IDS_REFUSE_TO_RUN_AS_ROOT,

@@ -49,7 +49,7 @@ const SkColor ResourceBundle::toolbar_separator_color =
      SkColorSetRGB(182, 186, 192);
 
 // static
-std::string ResourceBundle::InitSharedInstance(
+std::string ResourceBundle::InitSharedInstanceWithLocale(
     const std::string& pref_locale) {
   DCHECK(g_shared_instance_ == NULL) << "ResourceBundle initialized twice";
   g_shared_instance_ = new ResourceBundle();
@@ -59,7 +59,7 @@ std::string ResourceBundle::InitSharedInstance(
 }
 
 // static
-void ResourceBundle::InitSharedInstanceForTest(const FilePath& path) {
+void ResourceBundle::InitSharedInstanceWithPakFile(const FilePath& path) {
   DCHECK(g_shared_instance_ == NULL) << "ResourceBundle initialized twice";
   g_shared_instance_ = new ResourceBundle();
 

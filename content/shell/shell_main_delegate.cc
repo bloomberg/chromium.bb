@@ -97,11 +97,7 @@ void ShellMainDelegate::InitializeShellContentClient(
 void ShellMainDelegate::InitializeResourceBundle() {
   FilePath pak_dir;
   PathService::Get(base::DIR_MODULE, &pak_dir);
-  PathService::Override(ui::FILE_RESOURCES_PAK,
-                        pak_dir.Append(
-                            FILE_PATH_LITERAL("content_shell.pak")));
 
-  // Force the content shell to run using en-US because our ResourceBundle
-  // can't run without a language and it doesn't matter.
-  ui::ResourceBundle::InitSharedInstance("en-US");
+  FilePath pak_file = pak_dir.Append(FILE_PATH_LITERAL("content_shell.pak"));
+  ui::ResourceBundle::InitSharedInstanceWithPakFile(pak_file);
 }

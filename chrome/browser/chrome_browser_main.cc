@@ -1184,7 +1184,7 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
     // On a POSIX OS other than ChromeOS, the parameter that is passed to the
     // method InitSharedInstance is ignored.
     const std::string loaded_locale =
-        ResourceBundle::InitSharedInstance(locale);
+        ResourceBundle::InitSharedInstanceWithLocale(locale);
     if (loaded_locale.empty() &&
         !parsed_command_line().HasSwitch(switches::kNoErrorDialogs)) {
       ShowMissingLocaleMessageBox();

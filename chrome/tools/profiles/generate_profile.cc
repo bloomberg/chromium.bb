@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -234,7 +234,7 @@ int main(int argc, const char* argv[]) {
 
   chrome::RegisterPathProvider();
   ui::RegisterPathProvider();
-  ResourceBundle::InitSharedInstance("en-US");
+  ResourceBundle::InitSharedInstanceWithLocale("en-US");
   scoped_ptr<content::NotificationService> notification_service(
       content::NotificationService::Create());
   MessageLoopForUI message_loop;

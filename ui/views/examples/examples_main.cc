@@ -42,7 +42,7 @@ int main(int argc, char** argv) {
   ui::RegisterPathProvider();
   bool icu_result = icu_util::Initialize();
   CHECK(icu_result);
-  ui::ResourceBundle::InitSharedInstance("en-US");
+  ui::ResourceBundle::InitSharedInstanceWithLocale("en-US");
 
   MessageLoop main_message_loop(MessageLoop::TYPE_UI);
 

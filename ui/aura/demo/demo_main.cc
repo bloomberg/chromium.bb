@@ -82,7 +82,7 @@ int main(int argc, char** argv) {
 
   ui::RegisterPathProvider();
   icu_util::Initialize();
-  ResourceBundle::InitSharedInstance("en-US");
+  ResourceBundle::InitSharedInstanceWithLocale("en-US");
 
   // Create the message-loop here before creating the root window.
   MessageLoop message_loop(MessageLoop::TYPE_UI);

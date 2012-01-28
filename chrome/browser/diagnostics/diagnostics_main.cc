@@ -278,7 +278,7 @@ class TestController : public DiagnosticsModel::Observer {
       writer_->WriteResult(false, L"Diagnostics start", L"ICU failure");
       return;
     }
-    ResourceBundle::InitSharedInstance("");
+    ResourceBundle::InitSharedInstanceWithLocale("");
     int count = model->GetTestAvailableCount();
     writer_->WriteInfoText(base::StringPrintf(
         L"%d available test(s)\n\n", count));

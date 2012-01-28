@@ -80,10 +80,11 @@ class UI_EXPORT ResourceBundle {
   // selected.
   // NOTE: Mac ignores this and always loads up resources for the language
   // defined by the Cocoa UI (ie-NSBundle does the langange work).
-  static std::string InitSharedInstance(const std::string& pref_locale);
+  static std::string InitSharedInstanceWithLocale(
+      const std::string& pref_locale);
 
   // Initialize the ResourceBundle using given data pack path for testing.
-  static void InitSharedInstanceForTest(const FilePath& path);
+  static void InitSharedInstanceWithPakFile(const FilePath& path);
 
   // Load a .pak file.  Returns NULL if we fail to load |path|.  The caller
   // is responsible for deleting up this pointer.

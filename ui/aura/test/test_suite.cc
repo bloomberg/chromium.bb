@@ -28,7 +28,7 @@ void AuraTestSuite::Initialize() {
 
   // Force unittests to run using en-US so if we test against string
   // output, it'll pass regardless of the system language.
-  ui::ResourceBundle::InitSharedInstance("en-US");
+  ui::ResourceBundle::InitSharedInstanceWithLocale("en-US");
   ui::CompositorTestSupport::Initialize();
 
   ui::SetupTestCompositor();

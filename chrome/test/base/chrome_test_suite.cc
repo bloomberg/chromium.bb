@@ -187,7 +187,7 @@ void ChromeTestSuite::Initialize() {
 
   // Force unittests to run using en-US so if we test against string
   // output, it'll pass regardless of the system language.
-  ResourceBundle::InitSharedInstance("en-US");
+  ResourceBundle::InitSharedInstanceWithLocale("en-US");
   FilePath resources_pack_path;
   PathService::Get(base::DIR_MODULE, &resources_pack_path);
   resources_pack_path =

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -29,7 +29,7 @@ void AfterInitialize(bool unit_test_mode) {
   FilePath data_path;
   PathService::Get(base::DIR_EXE, &data_path);
   data_path = data_path.Append("DumpRenderTree.pak");
-  ResourceBundle::InitSharedInstanceForTest(data_path);
+  ResourceBundle::InitSharedInstanceWithPakFile(data_path);
 
   // We enable file-over-http to bridge the file protocol to http protocol
   // in here, which can

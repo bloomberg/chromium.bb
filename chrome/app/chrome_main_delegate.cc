@@ -639,7 +639,7 @@ void ChromeMainDelegate::PreSandboxStartup() {
     const std::string locale =
         command_line.GetSwitchValueASCII(switches::kLang);
     const std::string loaded_locale =
-        ResourceBundle::InitSharedInstance(locale);
+        ResourceBundle::InitSharedInstanceWithLocale(locale);
     CHECK(!loaded_locale.empty()) << "Locale could not be found for " <<
         locale;
 

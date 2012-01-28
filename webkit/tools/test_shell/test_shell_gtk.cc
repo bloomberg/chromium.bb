@@ -161,7 +161,7 @@ void TestShell::InitializeTestShell(bool layout_test_mode,
   FilePath data_path;
   PathService::Get(base::DIR_EXE, &data_path);
   data_path = data_path.Append("test_shell.pak");
-  ResourceBundle::InitSharedInstanceForTest(data_path);
+  ResourceBundle::InitSharedInstanceWithPakFile(data_path);
 
   FilePath resources_dir;
   PathService::Get(base::DIR_SOURCE_ROOT, &resources_dir);
