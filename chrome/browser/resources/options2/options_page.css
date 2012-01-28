@@ -91,14 +91,25 @@ input[type='text']:disabled {
 
 .search-field-container {
   position: absolute;
-  left: 400px;
-  right: 400px;
+  right: 18px;
+  top: 18px;
+}
+
+html[dir="rtl"] .search-field-container {
+  left: 18px;
+  right: auto;
 }
 
 #search-field {
-  font-size: inherit;
+  -webkit-appearance: none;
+  -webkit-margin-end: 18px;
+  border: 1px solid rgba(0, 0, 0, 0.25);
+  border-radius: 2px;
+  font: normal 12px 'Open Sans';
   margin: 0;
-  width: 160px;
+  /* NOTE: Keep a relatively high min-width for this so we don't obscure the end
+   * of the default text in relatively spacious languages (i.e. German). */
+  min-width: 160px;
 }
 
 /*
@@ -139,7 +150,7 @@ html[touch-optimized] body {
 }
 
 #overlay {
-  z-index: 10;
+  z-index: 11;
 }
 
 .raw-button,
@@ -192,15 +203,18 @@ html.hide-menu .close-subpage {
   border-top: none;
 }
 
+#mainview-content .page {
+  padding-bottom: 20px;
+}
+
 #subpage-backdrop {
-  -webkit-transition: 250ms opacity;
-  background-color: rgba(233, 238, 242, .5);
-  height: 100%;
-  left: 216px;
-  right: 216px;
-  position: fixed;
-  top: 0;
-  width: 100%;
+  background: black;
+  cursor: pointer;
+  opacity: 0.3;
+}
+
+#subpage-backdrop:hover {
+  background: #424242;
 }
 
 .subpage-sheet-container {
@@ -208,11 +222,15 @@ html.hide-menu .close-subpage {
   box-sizing: border-box;
   min-height: 100%;
   position: absolute;
-  /* We set both left and right for the sake of RTL. */
   left: 0;
   right: 0;
   top: 0;
-  width: 100%;
+}
+
+/* Omit top padding (currently only on #browserPage) whenever the search page is
+ * showing. */
+#searchPage:not([hidden]) + #browserPage {
+  padding-top: 0;
 }
 
 #subpage-sheet-container-1 {
@@ -222,30 +240,54 @@ html.hide-menu .close-subpage {
 
 #subpage-sheet-container-2 {
   -webkit-padding-start: 80px;
-  z-index: 10;
+  z-index: 7;
 }
 
 #subpage-sheet-container-3 {
   -webkit-padding-start: 120px;
-  z-index: 15;
+  z-index: 9;
+}
+
+#subpage-sheet-container-1 header {
+  left: 60px;
+  right: 60px;
+}
+
+#subpage-sheet-container-2 header {
+  left: 100px;
+  right: 100px;
+}
+
+#subpage-sheet-container-3 header {
+  left: 140px;
+  right: 140px;
 }
 
 .subpage-sheet {
-  -webkit-box-shadow: #666 0 2px 5px;
+  -webkit-margin-start: -155px;
   background-color: white;
-  border-left: 1px solid #b8b8b8;
+  box-shadow: #666 0 2px 5px;
   box-sizing: border-box;
   min-height: 100%;
-  width: 100%;
   min-width: 651px;
+}
+
+/* Special shadow for only first subpage sheet. */
+#subpage-sheet-1 {
+  box-shadow: 0 0 17px rgba(0, 0, 0, 0.3), 0 0 57px rgba(0, 0, 0, 0.3);
 }
 
 .subpage-sheet-contents {
   box-sizing: border-box;
+  min-height: 100%;
   max-width: 900px;
   min-width: 650px;
-  padding: 0 20px 20px 20px;
+  padding: 0 20px;
   width: 95%;
+}
+
+.subpage-sheet-contents .page {
+  z-index: 1;
 }
 
 .managed-prefs-banner {
@@ -256,7 +298,7 @@ html.hide-menu .close-subpage {
   padding: 0;
   position: relative;
   vertical-align: middle;
-  z-index: 11;
+  z-index: 9;
 }
 
 .managed-prefs-banner.clickable:active {
@@ -276,10 +318,6 @@ html.hide-menu .close-subpage {
 
 .managed-prefs-text {
   vertical-align: middle;
-}
-
-.subpage-sheet .page h1 {
-  margin-bottom: 10px;
 }
 
 .overlay .page h1 {

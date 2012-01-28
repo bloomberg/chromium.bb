@@ -618,8 +618,11 @@ cr.define('options', function() {
     chrome.send('coreOptionsInitialize');
     this.initialized_ = true;
 
+    this.fixedHeaders_ = document.querySelectorAll('header');
+
     document.addEventListener('scroll', this.handleScroll_.bind(this));
     window.addEventListener('resize', this.handleResize_.bind(this));
+    window.addEventListener('message', this.handleWindowMessage_.bind(this));
 
     if (!document.documentElement.classList.contains('hide-menu')) {
       // Close subpages if the user clicks on the html body. Listen in the
@@ -639,7 +642,7 @@ cr.define('options', function() {
         subpageCloseButtons[i].onclick = function() {
           self.closeTopSubPage_();
         };
-      };
+      }
 
       // Install handler for key presses.
       document.addEventListener('keydown',
@@ -649,8 +652,9 @@ cr.define('options', function() {
                                 true);
     }
 
-    // Trigger the resize handler manually to set the initial state.
+    // Trigger the resize and scroll handlers manually to set the initial state.
     this.handleResize_(null);
+    this.handleScroll_();
   };
 
   /**
@@ -696,19 +700,11 @@ cr.define('options', function() {
   /**
    * Called when the page is scrolled; moves elements that are position:fixed
    * but should only behave as if they are fixed for vertical scrolling.
-   * @param {Event} e The scroll event.
    * @private
    */
-  OptionsPage.handleScroll_ = function(e) {
-    var scrollHorizontalOffset = document.body.scrollLeft;
-    // position:fixed doesn't seem to work for horizontal scrolling in RTL mode,
-    // so only adjust in LTR mode (where scroll values will be positive).
-    if (scrollHorizontalOffset >= 0) {
-      var subpageBackdrop = $('subpage-backdrop');
-      subpageBackdrop.style.left = HORIZONTAL_OFFSET -
-          scrollHorizontalOffset + 'px';
-      this.updateAllFrozenElementPositions_();
-    }
+  OptionsPage.handleScroll_ = function() {
+    this.updateAllFrozenElementPositions_();
+    this.updateAllHeaderElementPositions_();
   };
 
   /**
@@ -717,9 +713,20 @@ cr.define('options', function() {
    */
   OptionsPage.updateAllFrozenElementPositions_ = function() {
     var frozenElements = document.querySelectorAll('.frozen');
-    for (var i = 0; i < frozenElements.length; i++) {
+    for (var i = 0; i < frozenElements.length; i++)
       this.updateFrozenElementHorizontalPosition_(frozenElements[i]);
-    }
+  };
+
+  /**
+   * Update the left of all the position: fixed; header elements.
+   * @private
+   */
+  OptionsPage.updateAllHeaderElementPositions_ = function() {
+    var translate = 'translateX(' + (document.body.scrollLeft * -1) + 'px)';
+    for (var i = 0; i < this.fixedHeaders_.length; ++i)
+      this.fixedHeaders_[i].style.webkitTransform = translate;
+
+    uber.invokeMethodOnParent('adjustToScroll', document.body.scrollLeft);
   };
 
   /**
@@ -754,6 +761,27 @@ cr.define('options', function() {
       else
         subpageContainers[i].style.height = viewportHeight + 'px';
     }
+  };
+
+  /**
+   * Handles postMessage from chrome://chrome.
+   * @param {Event} e The post data.
+   * @private
+   */
+  OptionsPage.handleWindowMessage_ = function(e) {
+    if (e.data.method === 'frameSelected')
+      this.handleFrameSelected_();
+    else
+      console.error('Received unexpected message', e.data);
+  };
+
+  /**
+   * We receive this event via postMessage() when this page is selected via the
+   * navigation.
+   * @private
+   */
+  OptionsPage.handleFrameSelected_ = function() {
+    document.body.scrollLeft = 0;
   };
 
   /**
@@ -1007,7 +1035,8 @@ cr.define('options', function() {
     fadeCompleted_: function(container) {
       if (container.classList.contains('transparent')) {
         container.hidden = true;
-        uber.invokeMethodOnParent('stopInterceptingEvents');
+        if (this.nestingLevel == 1)
+          uber.invokeMethodOnParent('stopInterceptingEvents');
       }
     },
 

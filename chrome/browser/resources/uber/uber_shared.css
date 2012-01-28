@@ -1,0 +1,61 @@
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
+
+body.uber-frame {
+  -webkit-margin-start: 155px;
+}
+
+html[dir="rtl"] body.uber-frame {
+  /* Enable vertical scrollbar at all times in RTL to avoid visual glitches when
+   * showing sub-pages that vertically overflow. */
+  overflow-y: scroll;
+}
+
+/* TODO(dbeam): Remove .page class from overlays in settings so the junk below
+ * isn't necessary. */
+body.uber-frame #extension-settings.page,
+body.uber-frame #mainview-content .page,
+body.uber-frame .subpage-sheet-container .page {
+  padding-top: 55px;
+}
+
+body.uber-frame header {
+  background: white;
+  left: 155px;
+  min-width: 600px;
+  /* <section>s in options currently amount to 638px total, broken up into
+   * 600px max-width + 18px -webkit-padding-start + 20px -webkit-margin-end
+   * so we mirror this value here so the headers match width and horizontal
+   * alignment when scrolling sideways. */
+  max-width: 638px;
+  position: fixed;
+  right: 155px;
+  top: 0;
+  z-index: 2;
+}
+
+/* This is to make it appear that <headers> cover options <section> text when
+ * vertically scrolling. Without it, some text is visible beside a <header>. */
+html[dir="ltr"] body.uber-frame header:after,
+html[dir="rtl"] body.uber-frame header:before {
+  background: white;
+  content: " ";
+  display: block;
+  height: 100%;
+  position: absolute;
+  width: 100px;
+}
+
+body.uber-frame header,
+body.uber-frame header * {
+  -webkit-box-flex: 1;
+  display: -webkit-box;
+}
+
+body.uber-frame header > h1 {
+  border-bottom: 1px solid #f7f7f7;
+  line-height: 1;
+  margin: 0;
+  padding: 18px 0;
+}

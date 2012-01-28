@@ -5,14 +5,24 @@
 #navigation {
   height: 100%;
   left: 0;
+  /* This is a hack to prevent the navigation bar from occluding pointer events
+   * from the bottom scroll bar (which shows when one needs to horizontally
+   * scroll). Corresponding padding-top to offset this is in uber_frame.css */
+  margin-top: -20px;
   position: absolute;
-  right: 0;
+  /* This value is different from the left value to compensate for the scroll
+   * bar (which is always on and to the right) in RTL. */
+  right: 15px;
   width: 155px;
   z-index: 3;
 }
 
 #navigation.background {
   z-index: 1;
+}
+
+#navigation.animating {
+  -webkit-transition: -webkit-transform 100ms;
 }
 
 .iframe-container {

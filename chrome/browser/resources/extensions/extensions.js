@@ -59,8 +59,17 @@ cr.define('extensions', function() {
       $('update-extensions-now').addEventListener('click',
           this.handleUpdateExtensionNow_.bind(this));
 
+      this.pageHeader_ = $('page-header');
+
+      document.addEventListener('scroll', this.handleScroll_.bind(this));
+      window.addEventListener('message', this.handleWindowMessage_.bind(this));
+
       var packExtensionOverlay = extensions.PackExtensionOverlay.getInstance();
       packExtensionOverlay.initializePage();
+
+      // Trigger the scroll handler to tell the navigation if our page started
+      // with some scroll (happens when you use tab restore).
+      this.handleScroll_();
     },
 
     /**
@@ -145,6 +154,37 @@ cr.define('extensions', function() {
       }
 
       chrome.send('extensionSettingsToggleDeveloperMode', []);
+    },
+
+    /**
+     * Called when the page is scrolled; moves elements that are position:fixed
+     * but should only behave as if they are fixed for vertical scrolling.
+     * @private
+     */
+    handleScroll_: function() {
+      var offset = document.body.scrollLeft * -1;
+      this.pageHeader_.style.webkitTransform = 'translateX(' + offset + 'px)';
+      uber.invokeMethodOnParent('adjustToScroll', document.body.scrollLeft);
+    },
+
+    /**
+     * Handles postMessage from chrome://chrome.
+     * @param {Event} e The post data.
+     */
+    handleWindowMessage_: function(e) {
+      if (e.data.method === 'frameSelected')
+        this.handleFrameSelected_();
+      else
+        console.error('Received unexpected message', e.data);
+    },
+
+    /**
+     * This is called when a user selects this frame via the navigation bar
+     * frame (and is triggered via postMessage() from the uber page).
+     * @private
+     */
+    handleFrameSelected_: function() {
+      document.body.scrollLeft = 0;
     },
   };
 

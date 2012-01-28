@@ -350,10 +350,7 @@ cr.define('options', function() {
       }
 
       // Configure elements on the search results page based on search results.
-      if (foundMatches)
-        $('searchPageNoMatches').classList.add('search-hidden');
-      else
-        $('searchPageNoMatches').classList.remove('search-hidden');
+      $('searchPageNoMatches').hidden = foundMatches;
 
       // Create search balloons for sub-page results.
       length = bubbleControls.length;

@@ -13,6 +13,15 @@ cr.define('uber', function() {
   };
 
   /**
+  * We cache a reference to the #navigation frame here to so we don't need to
+  * grab it from the DOM on each scroll.
+  * @type {Node}
+  * @private
+  * @static
+  */
+  var navFrame;
+
+  /**
    * Handles page initialization.
    */
   function onLoad(e) {
@@ -23,6 +32,8 @@ cr.define('uber', function() {
       var iframe = $(params.id).querySelector('iframe');
       iframe.contentWindow.location.replace(iframe.src + params.path);
     }
+
+    navFrame = $('navigation');
 
     // Select a page based on the page-URL.
     showPage(params.id, HISTORY_STATE_OPTION.REPLACE);
@@ -145,22 +156,38 @@ cr.define('uber', function() {
       showPage(e.data.params.pageId, HISTORY_STATE_OPTION.PUSH);
     else if (e.data.method === 'navigationControlsLoaded')
       onNavigationControlsLoaded();
+    else if (e.data.method === 'adjustToScroll')
+      adjustToScroll(e.data.params);
     else
-      console.error('Received unexpected message: ' + e.data);
+      console.error('Received unexpected message',  e.data);
   }
 
   /**
    * Sends the navigation iframe to the background.
    */
   function backgroundNavigation() {
-    $('navigation').classList.add('background');
+    navFrame.classList.add('background');
   }
 
   /**
    * Retrieves the navigation iframe from the background.
    */
   function foregroundNavigation() {
-    $('navigation').classList.remove('background');
+    navFrame.classList.remove('background');
+  }
+
+  /**
+   * Enables animated transitions when horizontally scrolling.
+   */
+  function enableScrollEasing() {
+    navFrame.classList.add('animating');
+  }
+
+  /**
+   * Disables animated transitions when horizontally scrolling.
+   */
+  function disableScrollEasing() {
+    navFrame.classList.remove('animating');
   }
 
   /**
@@ -201,6 +228,12 @@ cr.define('uber', function() {
     container.classList.add('selected');
     document.title = container.title;
 
+    enableScrollEasing();
+    adjustToScroll(0);
+
+    var selectedFrame = getSelectedIframe().querySelector('iframe');
+    uber.invokeMethodOnWindow(selectedFrame.contentWindow, 'frameSelected');
+
     if (historyOption == HISTORY_STATE_OPTION.PUSH)
       window.history.pushState({pageId: pageId}, '', '/' + pageId);
     else if (historyOption == HISTORY_STATE_OPTION.REPLACE)
@@ -219,8 +252,22 @@ cr.define('uber', function() {
    */
   function updateNavigationControls() {
     var iframe = getSelectedIframe();
-    uber.invokeMethodOnWindow($('navigation').firstChild.contentWindow,
+    uber.invokeMethodOnWindow(navFrame.firstChild.contentWindow,
                               'changeSelection', {pageId: iframe.id});
+  }
+
+  /**
+   * Forwarded scroll offset from a content frame's scroll handler.
+   * @param {number} scrollOffset The scroll offset from the content frame.
+   */
+  function adjustToScroll(scrollOffset) {
+    // NOTE: The scroll is reset to 0 and easing turned on every time a user
+    // switches frames. If we receive a non-zero value it has to have come from
+    // a real user scroll, so we disable easing when this happens.
+    if (scrollOffset != 0)
+      disableScrollEasing();
+    navFrame.style.webkitTransform =
+        'translateX(' + (scrollOffset * -1) + 'px)';
   }
 
   return {

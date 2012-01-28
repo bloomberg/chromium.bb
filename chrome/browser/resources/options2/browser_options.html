@@ -1,17 +1,20 @@
 <div id="browserPage" class="page" hidden>
-  <span id="browser-options-search-field-container"
-      class="search-field-container">
-    <input id="search-field" type="search"
-        i18n-values="placeholder:searchPlaceholder;aria-label:searchPlaceholder"
-        incremental>
-  </span>
-  <header><h1 i18n-content="browserPage"></h1></header>
+  <header>
+    <h1 i18n-content="browserPage"></h1>
+    <span id="browser-options-search-field-container"
+        class="search-field-container">
+      <input id="search-field" type="search"
+          i18n-values="placeholder:searchPlaceholder;
+                       aria-label:searchPlaceholder" incremental>
+    </span>
+  </header>
 <if expr="not pp_ifdef('chromeos')">
   <section id="sync-section">
     <h3 i18n-content="sectionTitleSync"></h3>
     <div id="sync-overview" class="section-description" hidden>
       <p i18n-content="syncOverview"></p>
-      <a i18n-values="href:syncLearnMoreURL" i18n-content="learnMore"></a>
+      <a i18n-values="href:syncLearnMoreURL" i18n-content="learnMore"
+          target="_blank"></a>
     </div>
     <div id="sync-status" hidden>
       <span id="sync-status-text"></span>

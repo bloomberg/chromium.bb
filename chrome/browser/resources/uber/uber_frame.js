@@ -45,7 +45,7 @@ cr.define('uber_frame', function() {
     if (e.data.method === 'changeSelection')
       changeSelection(e.data.params);
     else
-      console.error('Received unexpected message: ' + e.data);
+      console.error('Received unexpected message', e.data);
   }
 
   /**
