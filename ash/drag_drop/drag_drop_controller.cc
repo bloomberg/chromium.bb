@@ -150,6 +150,10 @@ void DragDropController::Drop(aura::Window* target,
 
 void DragDropController::DragCancel() {
   RootWindow::GetInstance()->SetCursor(aura::kCursorPointer);
+  aura::client::DragDropDelegate* delegate = NULL;
+  if ((delegate = aura::client::GetDragDropDelegate(dragged_window_))) {
+    delegate->OnDragExited();
+  }
   Cleanup();
   drag_operation_ = 0;
   StartCanceledAnimation();
