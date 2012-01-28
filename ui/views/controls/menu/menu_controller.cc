@@ -1042,6 +1042,7 @@ MenuController::MenuController(bool blocking,
                                internal::MenuControllerDelegate* delegate)
     : blocking_run_(blocking),
       showing_(false),
+      drop_first_release_event_(false),
       exit_type_(EXIT_NONE),
       did_capture_(false),
       result_(NULL),
