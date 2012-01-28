@@ -22,6 +22,9 @@ class WeakUnlimitedSettingsStorage : public SettingsStorage {
   virtual ~WeakUnlimitedSettingsStorage();
 
   // SettingsStorage implementation.
+  virtual size_t GetBytesInUse(const std::string& key) OVERRIDE;
+  virtual size_t GetBytesInUse(const std::vector<std::string>& keys) OVERRIDE;
+  virtual size_t GetBytesInUse() OVERRIDE;
   virtual ReadResult Get(const std::string& key) OVERRIDE;
   virtual ReadResult Get(const std::vector<std::string>& keys) OVERRIDE;
   virtual ReadResult Get() OVERRIDE;

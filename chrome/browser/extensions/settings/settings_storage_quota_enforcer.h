@@ -17,14 +17,14 @@ namespace extensions {
 class SettingsStorageQuotaEnforcer : public SettingsStorage {
  public:
   struct Limits {
-    // The storage quota in bytes.
+    // The total quota in bytes.
     size_t quota_bytes;
 
-    // The quota per individual setting in bytes.
-    size_t quota_bytes_per_setting;
+    // The quota for each individual item in bytes.
+    size_t quota_bytes_per_item;
 
-    // The maximum number of settings keys allowed.
-    size_t max_keys;
+    // The maximum number of items allowed.
+    size_t max_items;
   };
 
   SettingsStorageQuotaEnforcer(const Limits& limits, SettingsStorage* delegate);
@@ -32,6 +32,9 @@ class SettingsStorageQuotaEnforcer : public SettingsStorage {
   virtual ~SettingsStorageQuotaEnforcer();
 
   // SettingsStorage implementation.
+  virtual size_t GetBytesInUse(const std::string& key) OVERRIDE;
+  virtual size_t GetBytesInUse(const std::vector<std::string>& keys) OVERRIDE;
+  virtual size_t GetBytesInUse() OVERRIDE;
   virtual ReadResult Get(const std::string& key) OVERRIDE;
   virtual ReadResult Get(const std::vector<std::string>& keys) OVERRIDE;
   virtual ReadResult Get() OVERRIDE;
@@ -52,11 +55,11 @@ class SettingsStorageQuotaEnforcer : public SettingsStorage {
   // The delegate storage area.
   scoped_ptr<SettingsStorage> const delegate_;
 
-  // Total size of the settings currently being used.  Includes both settings
-  // keys and their JSON-encoded values.
+  // Total bytes in used by |delegate_|. Includes both key lengths and
+  // JSON-encoded values.
   size_t used_total_;
 
-  // Map of key to size of that key, including the key itself.
+  // Map of item key to its size, including the key itself.
   std::map<std::string, size_t> used_per_setting_;
 
   DISALLOW_COPY_AND_ASSIGN(SettingsStorageQuotaEnforcer);

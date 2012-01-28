@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -143,7 +143,7 @@ static void GetModificationQuotaLimitHeuristics(
 
 bool GetSettingsFunction::RunWithStorage(SettingsStorage* storage) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  Value *input;
+  Value* input = NULL;
   EXTENSION_FUNCTION_VALIDATE(args_->Get(0, &input));
 
   switch (input->GetType()) {
@@ -182,9 +182,44 @@ bool GetSettingsFunction::RunWithStorage(SettingsStorage* storage) {
   }
 }
 
+bool GetBytesInUseSettingsFunction::RunWithStorage(SettingsStorage* storage) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  Value* input = NULL;
+  EXTENSION_FUNCTION_VALIDATE(args_->Get(0, &input));
+
+  size_t bytes_in_use = 0;
+
+  switch (input->GetType()) {
+    case Value::TYPE_NULL:
+      bytes_in_use = storage->GetBytesInUse();
+      break;
+
+    case Value::TYPE_STRING: {
+      std::string as_string;
+      input->GetAsString(&as_string);
+      bytes_in_use = storage->GetBytesInUse(as_string);
+      break;
+    }
+
+    case Value::TYPE_LIST: {
+      std::vector<std::string> as_string_list;
+      AddAllStringValues(*static_cast<ListValue*>(input), &as_string_list);
+      bytes_in_use = storage->GetBytesInUse(as_string_list);
+      break;
+    }
+
+    default:
+      error_ = kUnsupportedArgumentType;
+      return false;
+  }
+
+  result_.reset(Value::CreateIntegerValue(bytes_in_use));
+  return true;
+}
+
 bool SetSettingsFunction::RunWithStorage(SettingsStorage* storage) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  DictionaryValue* input;
+  DictionaryValue* input = NULL;
   EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &input));
   return UseWriteResult(storage->Set(SettingsStorage::DEFAULTS, *input));
 }
@@ -196,7 +231,7 @@ void SetSettingsFunction::GetQuotaLimitHeuristics(
 
 bool RemoveSettingsFunction::RunWithStorage(SettingsStorage* storage) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  Value *input;
+  Value* input = NULL;
   EXTENSION_FUNCTION_VALIDATE(args_->Get(0, &input));
 
   switch (input->GetType()) {
