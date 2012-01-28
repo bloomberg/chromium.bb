@@ -28,6 +28,7 @@
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
+#include "ui/base/ime/text_input_client.h"
 #include "ui/base/ime/text_input_type.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/simple_menu_model.h"
@@ -371,6 +372,17 @@ const AutocompleteEditModel* OmniboxViewViews::model() const {
 
 void OmniboxViewViews::SaveStateToTab(WebContents* tab) {
   DCHECK(tab);
+
+  // We don't want to keep the IME status, so force quit the current
+  // session here.  It may affect the selection status, so order is
+  // also important.
+  // This actually doesn't notify any events to the input method, but
+  // further call of SetText() will notify the current status, so
+  // that's fine.
+  // TODO(mukai): Add a method to InputMethod class to deal with such
+  // situation.  http://crbug.com/111578
+  if (textfield_->IsIMEComposing())
+    textfield_->GetTextInputClient()->ConfirmCompositionText();
 
   // NOTE: GetStateForTabSwitch may affect GetSelection, so order is important.
   AutocompleteEditModel::State model_state = model_->GetStateForTabSwitch();
