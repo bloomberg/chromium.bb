@@ -1063,14 +1063,13 @@ void Predictor::LoadUrlsForTrimming() {
 void Predictor::PostIncrementalTrimTask() {
   if (urls_being_trimmed_.empty())
     return;
-  const int64 kDurationBetweenTrimmingIncrementsMilliseconds =
-      TimeDelta::FromSeconds(kDurationBetweenTrimmingIncrementsSeconds)
-          .InMilliseconds();
+  const TimeDelta kDurationBetweenTrimmingIncrements =
+      TimeDelta::FromSeconds(kDurationBetweenTrimmingIncrementsSeconds);
   MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&Predictor::IncrementalTrimReferrers,
                  weak_factory_->GetWeakPtr(), false),
-      kDurationBetweenTrimmingIncrementsMilliseconds);
+      kDurationBetweenTrimmingIncrements);
 }
 
 void Predictor::IncrementalTrimReferrers(bool trim_all_now) {

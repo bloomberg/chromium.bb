@@ -197,11 +197,10 @@ void NetworkStats::OnReadComplete(int result) {
     // of 1ms so that the time-out will fire before we have time to really hog
     // the CPU too extensively (waiting for the time-out) in case of an infinite
     // loop.
-    const int kReadDataDelayMs = 1;
     MessageLoop::current()->PostDelayedTask(
         FROM_HERE,
         base::Bind(&NetworkStats::ReadData, weak_factory_.GetWeakPtr()),
-        kReadDataDelayMs);
+        base::TimeDelta::FromMilliseconds(1));
   }
 }
 
@@ -280,7 +279,7 @@ void NetworkStats::StartReadDataTimer(int milliseconds) {
   MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&NetworkStats::OnReadDataTimeout, weak_factory_.GetWeakPtr()),
-      milliseconds);
+      base::TimeDelta::FromMilliseconds(milliseconds));
 }
 
 void NetworkStats::OnReadDataTimeout() {

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -2019,6 +2019,7 @@ TEST_F(CookieMonsterTest, TestSecure) {
 }
 
 static const int kLastAccessThresholdMilliseconds = 200;
+static const int kAccessDelayMs = kLastAccessThresholdMilliseconds + 20;
 
 TEST_F(CookieMonsterTest, TestLastAccess) {
   scoped_refptr<CookieMonster> cm(
@@ -2033,7 +2034,8 @@ TEST_F(CookieMonsterTest, TestLastAccess) {
   EXPECT_TRUE(last_access_date == GetFirstCookieAccessDate(cm));
 
   // Reading after a short wait should update the access date.
-  base::PlatformThread::Sleep(kLastAccessThresholdMilliseconds + 20);
+  base::PlatformThread::Sleep(
+      base::TimeDelta::FromMilliseconds(kAccessDelayMs));
   EXPECT_EQ("A=B", GetCookies(cm, url_google_));
   EXPECT_FALSE(last_access_date == GetFirstCookieAccessDate(cm));
 }
@@ -2117,7 +2119,8 @@ TEST_F(CookieMonsterTest, GetAllCookiesForURL) {
 
   const Time last_access_date(GetFirstCookieAccessDate(cm));
 
-  base::PlatformThread::Sleep(kLastAccessThresholdMilliseconds + 20);
+  base::PlatformThread::Sleep(
+      base::TimeDelta::FromMilliseconds(kAccessDelayMs));
 
   // Check cookies for url.
   CookieList cookies = GetAllCookiesForURL(cm, url_google_);
