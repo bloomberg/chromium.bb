@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -300,6 +300,12 @@ class TabStripModel : public content::NotificationObserver {
 
   // Returns the controller controller that opened the TabContents at |index|.
   content::NavigationController* GetOpenerOfTabContentsAt(int index);
+
+  // Changes the |opener| of the TabContents at |index|.
+  // Note: |opener| must be in this tab strip.
+  void SetOpenerOfTabContentsAt(
+      int index,
+      content::NavigationController* opener);
 
   // Returns the index of the next TabContents in the sequence of TabContentses
   // spawned by the specified NavigationController after |start_index|.

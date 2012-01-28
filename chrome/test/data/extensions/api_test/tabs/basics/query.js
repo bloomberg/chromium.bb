@@ -173,6 +173,15 @@ chrome.test.runTests([
         }));
       }));
     }));
+  },
+
+  function queryIndex() {
+    chrome.tabs.query({index: 0}, pass(function(tabs) {
+      // Each of the 4 windows should have a tab at index 0.
+      assertEq(4, tabs.length);
+      for (var i = 0; i < tabs.length; i++)
+        assertEq(0, tabs[0].index);
+    }));
   }
 ]);
 

@@ -438,6 +438,14 @@ NavigationController* TabStripModel::GetOpenerOfTabContentsAt(int index) {
   return contents_data_.at(index)->opener;
 }
 
+void TabStripModel::SetOpenerOfTabContentsAt(
+    int index,
+    content::NavigationController* opener) {
+  DCHECK(ContainsIndex(index));
+  DCHECK(opener);
+  contents_data_[index]->opener = opener;
+}
+
 int TabStripModel::GetIndexOfNextTabContentsOpenedBy(
     const NavigationController* opener,
     int start_index,

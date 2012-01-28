@@ -668,6 +668,21 @@ TEST_F(TabStripModelTest, TestBasicOpenerAPI) {
   EXPECT_EQ(-1, tabstrip.GetIndexOfNextTabContentsOpenedBy(opener, 5, false));
   EXPECT_EQ(-1, tabstrip.GetIndexOfLastTabContentsOpenedBy(opener, 1));
 
+  // Specify the last tab as the opener of the others.
+  NavigationController* o5 = &contents5->web_contents()->GetController();
+  for (int i = 0; i < tabstrip.count() - 1; ++i)
+    tabstrip.SetOpenerOfTabContentsAt(i, o5);
+
+  for (int i = 0; i < tabstrip.count() - 1; ++i)
+    EXPECT_EQ(o5, tabstrip.GetOpenerOfTabContentsAt(i));
+
+  // If there is a next adjacent item, then the index should be of that item.
+  EXPECT_EQ(2, tabstrip.GetIndexOfNextTabContentsOpenedBy(o5, 1, false));
+
+  // If the last tab in the group is closed, the preceding tab in the same
+  // group should be selected.
+  EXPECT_EQ(3, tabstrip.GetIndexOfNextTabContentsOpenedBy(o5, 4, false));
+
   tabstrip.CloseAllTabs();
   EXPECT_TRUE(tabstrip.empty());
 }

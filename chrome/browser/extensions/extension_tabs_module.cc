@@ -788,6 +788,11 @@ bool QueryTabsFunction::RunImpl() {
     EXTENSION_FUNCTION_VALIDATE(
         query->GetInteger(keys::kWindowIdKey, &window_id));
 
+  int index = -1;
+  if (query->HasKey(keys::kIndexKey))
+    EXTENSION_FUNCTION_VALIDATE(
+        query->GetInteger(keys::kIndexKey, &index));
+
   std::string window_type;
   if (query->HasKey(keys::kWindowTypeLongKey))
     EXTENSION_FUNCTION_VALIDATE(
@@ -817,6 +822,9 @@ bool QueryTabsFunction::RunImpl() {
     for (int i = 0; i < tab_strip->count(); ++i) {
       const WebContents* web_contents =
           tab_strip->GetTabContentsAt(i)->web_contents();
+
+      if (index > -1 && i != index)
+        continue;
 
       if (!MatchesQueryArg(selected, tab_strip->IsTabSelected(i)))
         continue;
@@ -859,6 +867,23 @@ bool CreateTabFunction::RunImpl() {
   Browser* browser = NULL;
   if (!GetBrowserFromWindowID(this, window_id, &browser))
     return false;
+
+  // TODO(jstritar): Add a constant, chrome.tabs.TAB_ID_ACTIVE, that
+  // represents the active tab.
+  content::NavigationController* opener = NULL;
+  if (args->HasKey(keys::kOpenerTabIdKey)) {
+    int opener_id = -1;
+    EXTENSION_FUNCTION_VALIDATE(args->GetInteger(
+        keys::kOpenerTabIdKey, &opener_id));
+
+    TabContentsWrapper* opener_contents = NULL;
+    if (!ExtensionTabUtil::GetTabById(
+            opener_id, profile(), include_incognito(),
+            NULL, NULL, &opener_contents, NULL))
+      return false;
+
+    opener = &opener_contents->web_contents()->GetController();
+  }
 
   // TODO(rafaelw): handle setting remaining tab properties:
   // -title
@@ -936,6 +961,10 @@ bool CreateTabFunction::RunImpl() {
   params.tabstrip_add_types = add_types;
   browser::Navigate(&params);
 
+  int new_index = tab_strip->GetIndexOfTabContents(params.target_contents);
+  if (opener)
+    tab_strip->SetOpenerOfTabContentsAt(new_index, opener);
+
   if (active)
     params.target_contents->web_contents()->GetView()->SetInitialFocus();
 
@@ -943,9 +972,7 @@ bool CreateTabFunction::RunImpl() {
   if (has_callback()) {
     result_.reset(ExtensionTabUtil::CreateTabValue(
         params.target_contents->web_contents(),
-        params.browser->tabstrip_model(),
-        params.browser->tabstrip_model()->GetIndexOfTabContents(
-            params.target_contents)));
+        tab_strip, new_index));
   }
 
   return true;
@@ -1149,22 +1176,37 @@ bool UpdateTabFunction::RunImpl() {
     contents->web_contents()->Focus();
   }
 
-  bool highlighted = false;
   if (update_props->HasKey(keys::kHighlightedKey)) {
+    bool highlighted = false;
     EXTENSION_FUNCTION_VALIDATE(update_props->GetBoolean(
         keys::kHighlightedKey, &highlighted));
     if (highlighted != tab_strip->IsTabSelected(tab_index))
       tab_strip->ToggleSelectionAt(tab_index);
   }
 
-  bool pinned = false;
   if (update_props->HasKey(keys::kPinnedKey)) {
-    EXTENSION_FUNCTION_VALIDATE(update_props->GetBoolean(keys::kPinnedKey,
-                                                         &pinned));
+    bool pinned = false;
+    EXTENSION_FUNCTION_VALIDATE(update_props->GetBoolean(
+        keys::kPinnedKey, &pinned));
     tab_strip->SetTabPinned(tab_index, pinned);
 
     // Update the tab index because it may move when being pinned.
     tab_index = tab_strip->GetIndexOfTabContents(contents);
+  }
+
+  if (update_props->HasKey(keys::kOpenerTabIdKey)) {
+    int opener_id = -1;
+    EXTENSION_FUNCTION_VALIDATE(update_props->GetInteger(
+        keys::kOpenerTabIdKey, &opener_id));
+
+    TabContentsWrapper* opener_contents = NULL;
+    if (!ExtensionTabUtil::GetTabById(
+            opener_id, profile(), include_incognito(),
+            NULL, NULL, &opener_contents, NULL))
+      return false;
+
+    tab_strip->SetOpenerOfTabContentsAt(
+        tab_index, &opener_contents->web_contents()->GetController());
   }
 
   if (has_callback()) {
