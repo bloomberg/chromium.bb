@@ -39,6 +39,7 @@ class WebUILoginDisplayHost : public BaseLoginDisplayHost {
   virtual void StartWizard(const std::string& first_screen_name,
                            DictionaryValue* screen_parameters) OVERRIDE;
   virtual void StartSignInScreen() OVERRIDE;
+  virtual void CloseWindow() OVERRIDE;
 
   // BaseLoginDisplayHost overrides:
   virtual WizardController* CreateWizardController() OVERRIDE;

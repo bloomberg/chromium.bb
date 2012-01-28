@@ -41,8 +41,7 @@ WebUILoginDisplayHost::WebUILoginDisplayHost(const gfx::Rect& background_bounds)
 }
 
 WebUILoginDisplayHost::~WebUILoginDisplayHost() {
-  if (login_window_)
-    login_window_->Close();
+  CloseWindow();
 }
 
 // LoginDisplayHost implementation ---------------------------------------------
@@ -117,6 +116,14 @@ void WebUILoginDisplayHost::StartSignInScreen() {
   BaseLoginDisplayHost::StartSignInScreen();
   CHECK(webui_login_display_);
   GetOobeUI()->ShowSigninScreen(webui_login_display_);
+}
+
+void WebUILoginDisplayHost::CloseWindow() {
+  if (login_window_) {
+    login_window_->Close();
+    login_window_ = NULL;
+    login_view_ = NULL;
+  }
 }
 
 void WebUILoginDisplayHost::LoadURL(const GURL& url) {

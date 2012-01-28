@@ -17,10 +17,6 @@
 #include "content/public/browser/notification_registrar.h"
 #include "ui/gfx/rect.h"
 
-#if defined(USE_AURA)
-#include "ui/gfx/compositor/layer_animation_observer.h"
-#endif
-
 class PrefService;
 
 namespace policy {
@@ -35,9 +31,6 @@ class WizardController;
 // An abstract base class that defines OOBE/login screen host.
 // It encapsulates controllers, background integration and flow.
 class BaseLoginDisplayHost : public LoginDisplayHost,
-#if defined(USE_AURA)
-                             public ui::LayerAnimationObserver,
-#endif
                              public content::NotificationObserver {
  public:
   explicit BaseLoginDisplayHost(const gfx::Rect& background_bounds);
@@ -67,16 +60,6 @@ class BaseLoginDisplayHost : public LoginDisplayHost,
   const gfx::Rect& background_bounds() const { return background_bounds_; }
 
  private:
-#if defined(USE_AURA)
-  // ui::LayerAnimationObserver overrides:
-  virtual void OnLayerAnimationEnded(
-      const ui::LayerAnimationSequence* sequence) OVERRIDE;
-  virtual void OnLayerAnimationAborted(
-      const ui::LayerAnimationSequence* sequence) OVERRIDE;
-  virtual void OnLayerAnimationScheduled(
-      const ui::LayerAnimationSequence* sequence) OVERRIDE;
-#endif
-
   // content::NotificationObserver implementation:
   virtual void Observe(int type,
                        const content::NotificationSource& source,

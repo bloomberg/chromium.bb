@@ -1339,6 +1339,16 @@ void LoginUtils::DoBrowserLaunch(Profile* profile,
     return;
 
   StatusAreaViewChromeos::SetScreenMode(StatusAreaViewChromeos::BROWSER_MODE);
+  if (login_host) {
+    login_host->SetStatusAreaVisible(true);
+    login_host->SetStatusAreaEnabled(true);
+#if defined(USE_AURA)
+    // Close lock window now so that the launched browser can receive focus.
+    // TODO(oshima): Implement hide animation for lock screens.
+    login_host->CloseWindow();
+#endif
+  }
+
   BootTimesLoader::Get()->AddLoginTimeMarker("BrowserLaunched", false);
 
   VLOG(1) << "Launching browser...";
@@ -1358,9 +1368,6 @@ void LoginUtils::DoBrowserLaunch(Profile* profile,
   // browser before it is dereferenced by the login host.
   if (login_host) {
     login_host->OnSessionStart();
-    login_host->SetStatusAreaVisible(true);
-    login_host->SetStatusAreaEnabled(true);
-    login_host = NULL;
     content::NotificationService::current()->Notify(
         chrome::NOTIFICATION_SESSION_STARTED,
         content::NotificationService::AllSources(),

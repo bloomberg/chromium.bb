@@ -59,12 +59,10 @@
 namespace {
 
 // Whether sign in transitions are enabled.
-const bool kEnableSigninTransitions = true;
 const bool kEnableBackgroundAnimation = false;
 const bool kEnableBrowserWindowsOpacityAnimation = true;
 
 // Sign in transition timings.
-static const int kLoginFadeoutTransitionDurationMs = 700;
 static const int kBackgroundTransitionPauseMs = 100;
 static const int kBackgroundTransitionDurationMs = 400;
 static const int kBrowserTransitionPauseMs = 750;
@@ -185,13 +183,9 @@ void BaseLoginDisplayHost::OnSessionStart() {
   // Display host is deleted once animation is completed
   // since sign in screen widget has to stay alive.
 #if defined(USE_AURA)
-  if (kEnableSigninTransitions)
-    StartAnimation();
-  else
-    ShutdownDisplayHost(false);
-#else
-  ShutdownDisplayHost(false);
+  StartAnimation();
 #endif
+  ShutdownDisplayHost(false);
 }
 
 void BaseLoginDisplayHost::OnCompleteLogin() {
@@ -283,24 +277,6 @@ void BaseLoginDisplayHost::CheckForAutoEnrollment() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// BaseLoginDisplayHost, ui::LayerAnimationObserver implementation:
-
-#if defined(USE_AURA)
-void BaseLoginDisplayHost::OnLayerAnimationEnded(
-    const ui::LayerAnimationSequence* sequence) {
-  ShutdownDisplayHost(false);
-}
-
-void BaseLoginDisplayHost::OnLayerAnimationAborted(
-    const ui::LayerAnimationSequence* sequence) {
-}
-
-void BaseLoginDisplayHost::OnLayerAnimationScheduled(
-    const ui::LayerAnimationSequence* sequence) {
-}
-#endif
-
-////////////////////////////////////////////////////////////////////////////////
 // BaseLoginDisplayHost, content:NotificationObserver implementation:
 
 void BaseLoginDisplayHost::Observe(
@@ -312,10 +288,6 @@ void BaseLoginDisplayHost::Observe(
 }
 
 void BaseLoginDisplayHost::ShutdownDisplayHost(bool post_quit_task) {
-#if defined(USE_AURA)
-  if (kEnableSigninTransitions && GetWidget())
-    GetLayer(GetWidget())->GetAnimator()->RemoveObserver(this);
-#endif
   registrar_.RemoveAll();
   MessageLoop::current()->DeleteSoon(FROM_HERE, this);
   if (post_quit_task)
@@ -324,15 +296,6 @@ void BaseLoginDisplayHost::ShutdownDisplayHost(bool post_quit_task) {
 
 void BaseLoginDisplayHost::StartAnimation() {
 #if defined(USE_AURA)
-  // Fade out transition for sign in screen.
-  // BaseLoginDisplayHost will be deleted this animation is ended.
-  ui::Layer* layer = GetLayer(GetWidget());
-  layer->GetAnimator()->AddObserver(this);
-  ui::ScopedLayerAnimationSettings signin_animation(layer->GetAnimator());
-  signin_animation.SetTransitionDuration(
-      base::TimeDelta::FromMilliseconds(kLoginFadeoutTransitionDurationMs));
-  layer->SetOpacity(0.0f);
-
   if (ash::Shell::GetInstance()->GetContainer(
           ash::internal::kShellWindowId_DesktopBackgroundContainer)->
           children().empty()) {
