@@ -49,10 +49,10 @@ class ExtensionSettingsQuotaTest : public testing::Test {
  protected:
   // Creates |storage_|.  Must only be called once.
   void CreateStorage(
-      size_t quota_bytes, size_t quota_bytes_per_item, size_t max_items) {
+      size_t quota_bytes, size_t quota_bytes_per_setting, size_t max_keys) {
     ASSERT_TRUE(storage_.get() == NULL);
     SettingsStorageQuotaEnforcer::Limits limits =
-        { quota_bytes, quota_bytes_per_item, max_items };
+        { quota_bytes, quota_bytes_per_setting, max_keys };
     storage_.reset(new SettingsStorageQuotaEnforcer(limits, delegate_));
   }
 
@@ -555,41 +555,6 @@ TEST_F(ExtensionSettingsQuotaTest,
   EXPECT_TRUE(storage_->Set(DEFAULTS, "c", *byte_value_256_).HasError());
 
   EXPECT_TRUE(SettingsEqual(settings));
-}
-
-TEST_F(ExtensionSettingsQuotaTest, GetBytesInUse) {
-  // Just testing GetBytesInUse, no need for a quota.
-  CreateStorage(UINT_MAX, UINT_MAX, UINT_MAX);
-
-  std::vector<std::string> ab;
-  ab.push_back("a");
-  ab.push_back("b");
-
-  EXPECT_EQ(0u, storage_->GetBytesInUse());
-  EXPECT_EQ(0u, storage_->GetBytesInUse("a"));
-  EXPECT_EQ(0u, storage_->GetBytesInUse("b"));
-  EXPECT_EQ(0u, storage_->GetBytesInUse(ab));
-
-  storage_->Set(DEFAULTS, "a", *byte_value_1_);
-
-  EXPECT_EQ(2u, storage_->GetBytesInUse());
-  EXPECT_EQ(2u, storage_->GetBytesInUse("a"));
-  EXPECT_EQ(0u, storage_->GetBytesInUse("b"));
-  EXPECT_EQ(2u, storage_->GetBytesInUse(ab));
-
-  storage_->Set(DEFAULTS, "b", *byte_value_1_);
-
-  EXPECT_EQ(4u, storage_->GetBytesInUse());
-  EXPECT_EQ(2u, storage_->GetBytesInUse("a"));
-  EXPECT_EQ(2u, storage_->GetBytesInUse("b"));
-  EXPECT_EQ(4u, storage_->GetBytesInUse(ab));
-
-  storage_->Set(DEFAULTS, "c", *byte_value_1_);
-
-  EXPECT_EQ(6u, storage_->GetBytesInUse());
-  EXPECT_EQ(2u, storage_->GetBytesInUse("a"));
-  EXPECT_EQ(2u, storage_->GetBytesInUse("b"));
-  EXPECT_EQ(4u, storage_->GetBytesInUse(ab));
 }
 
 }  // namespace extensions

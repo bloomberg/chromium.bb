@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,9 +17,6 @@ class FailingSettingsStorage : public SettingsStorage {
   FailingSettingsStorage() {}
 
   // SettingsStorage implementation.
-  virtual size_t GetBytesInUse(const std::string& key) OVERRIDE;
-  virtual size_t GetBytesInUse(const std::vector<std::string>& keys) OVERRIDE;
-  virtual size_t GetBytesInUse() OVERRIDE;
   virtual ReadResult Get(const std::string& key) OVERRIDE;
   virtual ReadResult Get(const std::vector<std::string>& keys) OVERRIDE;
   virtual ReadResult Get() OVERRIDE;

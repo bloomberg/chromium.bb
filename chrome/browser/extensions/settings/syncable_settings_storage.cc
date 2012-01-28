@@ -32,22 +32,6 @@ SyncableSettingsStorage::~SyncableSettingsStorage() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 }
 
-size_t SyncableSettingsStorage::GetBytesInUse(const std::string& key) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  return delegate_->GetBytesInUse(key);
-}
-
-size_t SyncableSettingsStorage::GetBytesInUse(
-    const std::vector<std::string>& keys) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  return delegate_->GetBytesInUse(keys);
-}
-
-size_t SyncableSettingsStorage::GetBytesInUse() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  return delegate_->GetBytesInUse();
-}
-
 SettingsStorage::ReadResult SyncableSettingsStorage::Get(
     const std::string& key) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));

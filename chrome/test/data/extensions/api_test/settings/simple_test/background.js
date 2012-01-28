@@ -291,55 +291,12 @@ chrome.test.runTests([
     test(stage0);
   },
 
-
-  function quota() {
-    // Just check that the constants are defined; no need to be forced to
-    // update them here as well if/when they change.
-    chrome.test.assertTrue(chrome.storage.sync.QUOTA_BYTES > 0);
-    chrome.test.assertTrue(chrome.storage.sync.QUOTA_BYTES_PER_ITEM > 0);
-    chrome.test.assertTrue(chrome.storage.sync.MAX_ITEMS > 0);
-
-    chrome.test.assertTrue(chrome.storage.local.QUOTA_BYTES > 0);
-    chrome.test.assertEq('undefined',
-                         typeof chrome.storage.local.QUOTA_BYTES_PER_ITEM);
-    chrome.test.assertEq('undefined',
-                         typeof chrome.storage.local.MAX_ITEMS);
-
-    var area = chrome.storage.sync;
-    function stage0() {
-      area.getBytesInUse(null, stage1);
-    }
-    function stage1(bytesInUse) {
-      chrome.test.assertEq(0, bytesInUse);
-      area.set({ a: 42, b: 43, c: 44 }, stage2);
-    }
-    function stage2() {
-      area.getBytesInUse(null, stage3);
-    }
-    function stage3(bytesInUse) {
-      chrome.test.assertEq(9, bytesInUse);
-      area.getBytesInUse('a', stage4);
-    }
-    function stage4(bytesInUse) {
-      chrome.test.assertEq(3, bytesInUse);
-      area.getBytesInUse(['a', 'b'], stage5);
-    }
-    function stage5(bytesInUse) {
-      chrome.test.assertEq(6, bytesInUse);
-      chrome.test.succeed();
-    }
-    area.clear(stage0);
-  },
-
-  // NOTE: throttling test must come last, since each test runs with a single
-  // quota.
   function throttling() {
     // We can only really test one of the namespaces since they will all get
     // throttled together.
     var api = chrome.storage.sync;
 
-    // Should get throttled after 1000 calls (though in reality will be fewer
-    // due to previous tests).
+    // Should get throttled after 1000 calls.
     var maxRequests = 1001;
 
     function next() {
@@ -353,5 +310,4 @@ chrome.test.runTests([
     }
     api.clear(next);
   }
-
 ]);

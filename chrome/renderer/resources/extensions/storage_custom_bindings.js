@@ -10,7 +10,8 @@ native function GetChromeHidden();
 
 var chromeHidden = GetChromeHidden();
 
-chromeHidden.registerCustomType('StorageArea', function(typesAPI) {
+chromeHidden.registerCustomType('StorageNamespace',
+    function(typesAPI) {
   var sendRequest = typesAPI.sendRequest;
 
   function extendSchema(schema) {
@@ -19,7 +20,7 @@ chromeHidden.registerCustomType('StorageArea', function(typesAPI) {
     return extendedSchema;
   }
 
-  function StorageArea(namespace, schema) {
+  function StorageNamespace(namespace, schema) {
     // Binds an API function for a namespace to its browser-side call, e.g.
     // storage.sync.get('foo') -> (binds to) ->
     // storage.get('sync', 'foo').
@@ -37,11 +38,10 @@ chromeHidden.registerCustomType('StorageArea', function(typesAPI) {
             extendSchema(schema));
       };
     }
-    var apiFunctions = ['get', 'set', 'remove', 'clear', 'getBytesInUse'];
-    apiFunctions.forEach(bindApiFunction.bind(this));
+    ['get', 'set', 'remove', 'clear'].forEach(bindApiFunction.bind(this));
   }
 
-  return StorageArea;
+  return StorageNamespace;
 });
 
 })();

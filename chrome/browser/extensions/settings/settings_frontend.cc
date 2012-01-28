@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/file_path.h"
-#include "base/string_number_conversions.h"
 #include "chrome/browser/extensions/extension_event_names.h"
 #include "chrome/browser/extensions/extension_event_router.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -15,7 +14,6 @@
 #include "chrome/browser/extensions/settings/settings_leveldb_storage.h"
 #include "chrome/browser/extensions/settings/weak_unlimited_settings_storage.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/extensions/api/extension_api.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 
@@ -24,6 +22,29 @@ using content::BrowserThread;
 namespace extensions {
 
 namespace {
+
+const SettingsStorageQuotaEnforcer::Limits kSyncQuota = {
+  // 100K should be enough for simple use, but this can be increased as demand
+  // increases.
+  100 * 1024,
+
+  // Sync supports 5k per settings, so be a bit more restrictive than that.
+  2048,
+
+  // Keep low for sync.
+  512
+};
+
+const SettingsStorageQuotaEnforcer::Limits kLocalQuota = {
+  // Same as localStorage (5MB).
+  5 * 1000 * 1024,
+
+  // No need to be restrictive per key here.
+  UINT_MAX,
+
+  // Ditto.
+  UINT_MAX
+};
 
 // Settings change Observer which forwards changes on to the extension
 // processes for |profile| and its incognito partner if it exists.
@@ -86,40 +107,6 @@ void CallbackWithUnlimitedStorage(
   WeakUnlimitedSettingsStorage unlimited_storage(
       backend->GetStorage(extension_id));
   callback.Run(&unlimited_storage);
-}
-
-// Returns the integer at |path| in |dict| as a size_t, or a default value if
-// there's nothing found at that path.
-size_t GetStringAsInteger(
-    const DictionaryValue& dict, const std::string& path, size_t default_size) {
-  std::string as_string;
-  if (!dict.GetString(path, &as_string))
-    return default_size;
-  size_t as_integer = default_size;
-  CHECK(base::StringToSizeT(as_string, &as_integer));
-  return as_integer;
-}
-
-// Constructs a |Limits| configuration by looking up the QUOTA_BYTES,
-// QUOTA_BYTES_PER_ITEM, and MAX_ITEMS properties of a storage area defined
-// in chrome/common/extensions/api/storage.json (via ExtensionAPI).
-SettingsStorageQuotaEnforcer::Limits GetLimitsFromExtensionAPI(
-    const std::string& storage_area_id) {
-  const DictionaryValue* storage_schema =
-      ExtensionAPI::GetInstance()->GetSchema("storage");
-  CHECK(storage_schema);
-
-  DictionaryValue* properties = NULL;
-  storage_schema->GetDictionary(
-      "properties." + storage_area_id + ".properties", &properties);
-  CHECK(properties);
-
-  SettingsStorageQuotaEnforcer::Limits limits = {
-    GetStringAsInteger(*properties, "QUOTA_BYTES.value", UINT_MAX),
-    GetStringAsInteger(*properties, "QUOTA_BYTES_PER_ITEM.value", UINT_MAX),
-    GetStringAsInteger(*properties, "MAX_ITEMS.value", UINT_MAX),
-  };
-  return limits;
 }
 
 }  // namespace
@@ -227,9 +214,7 @@ SettingsFrontend* SettingsFrontend::Create(
 
 SettingsFrontend::SettingsFrontend(
     const scoped_refptr<SettingsStorageFactory>& factory, Profile* profile)
-    : local_quota_limit_(GetLimitsFromExtensionAPI("local")),
-      sync_quota_limit_(GetLimitsFromExtensionAPI("sync")),
-      profile_(profile),
+    : profile_(profile),
       observers_(new SettingsObserverList()),
       profile_observer_(new DefaultObserver(profile)) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -241,28 +226,28 @@ SettingsFrontend::SettingsFrontend(
   backends_[settings_namespace::LOCAL].app =
       BackendWrapper::CreateAndInit(
           factory,
-          local_quota_limit_,
+          kLocalQuota,
           observers_,
           profile_path.AppendASCII(
               ExtensionService::kLocalAppSettingsDirectoryName));
   backends_[settings_namespace::LOCAL].extension =
       BackendWrapper::CreateAndInit(
           factory,
-          local_quota_limit_,
+          kLocalQuota,
           observers_,
           profile_path.AppendASCII(
               ExtensionService::kLocalExtensionSettingsDirectoryName));
   backends_[settings_namespace::SYNC].app =
       BackendWrapper::CreateAndInit(
           factory,
-          sync_quota_limit_,
+          kSyncQuota,
           observers_,
           profile_path.AppendASCII(
               ExtensionService::kSyncAppSettingsDirectoryName));
   backends_[settings_namespace::SYNC].extension =
       BackendWrapper::CreateAndInit(
           factory,
-          sync_quota_limit_,
+          kSyncQuota,
           observers_,
           profile_path.AppendASCII(
               ExtensionService::kSyncExtensionSettingsDirectoryName));

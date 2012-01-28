@@ -16,7 +16,6 @@
 #include "chrome/browser/extensions/settings/settings_leveldb_storage.h"
 #include "chrome/browser/extensions/settings/settings_namespace.h"
 #include "chrome/browser/extensions/settings/settings_observer.h"
-#include "chrome/browser/extensions/settings/settings_storage_quota_enforcer.h"
 #include "chrome/browser/sync/api/syncable_service.h"
 
 class Profile;
@@ -30,11 +29,9 @@ class SettingsStorage;
 // All public methods must be called on the UI thread.
 class SettingsFrontend {
  public:
-  // Creates with the default factory. Ownership of |profile| not taken.
+  // Creates with the default factory.  Ownership of |profile| not taken.
   static SettingsFrontend* Create(Profile* profile);
 
-  // Creates with a specific factory |storage_factory| (presumably for tests).
-  // Ownership of |profile| not taken.
   static SettingsFrontend* Create(
       const scoped_refptr<SettingsStorageFactory>& storage_factory,
       // Owership NOT taken.
@@ -69,11 +66,6 @@ class SettingsFrontend {
       const scoped_refptr<SettingsStorageFactory>& storage_factory,
       // Ownership NOT taken.
       Profile* profile);
-
-  // The quota limit configurations for the local and sync areas, taken out of
-  // the schema in chrome/common/extensions/api/storage.json.
-  const SettingsStorageQuotaEnforcer::Limits local_quota_limit_;
-  const SettingsStorageQuotaEnforcer::Limits sync_quota_limit_;
 
   // The (non-incognito) Profile this Frontend belongs to.
   Profile* const profile_;

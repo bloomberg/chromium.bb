@@ -493,8 +493,6 @@ var chrome = chrome || {};
                 // the constructor.
                 value = { __proto__: constructor.prototype };
                 constructor.apply(value, args);
-                // Recursively add properties.
-                addProperties(value, property);
               } else if (property.type === 'object') {
                 // Recursively add properties.
                 addProperties(value, property);

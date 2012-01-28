@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -93,25 +93,6 @@ SettingsLeveldbStorage::~SettingsLeveldbStorage() {
           db_path_.value();
     }
   }
-}
-
-size_t SettingsLeveldbStorage::GetBytesInUse(const std::string& key) {
-  // Let SettingsStorageQuotaEnforcer implement this.
-  NOTREACHED() << "Not implemented";
-  return 0;
-}
-
-size_t SettingsLeveldbStorage::GetBytesInUse(
-    const std::vector<std::string>& keys) {
-  // Let SettingsStorageQuotaEnforcer implement this.
-  NOTREACHED() << "Not implemented";
-  return 0;
-}
-
-size_t SettingsLeveldbStorage::GetBytesInUse() {
-  // Let SettingsStorageQuotaEnforcer implement this.
-  NOTREACHED() << "Not implemented";
-  return 0;
 }
 
 SettingsStorage::ReadResult SettingsLeveldbStorage::Get(

@@ -100,15 +100,6 @@ class SettingsStorage {
 
   virtual ~SettingsStorage() {}
 
-  // Gets the amount of space being used by a single value, in bytes.
-  virtual size_t GetBytesInUse(const std::string& key) = 0;
-
-  // Gets the total amount of space being used by multiple values, in bytes.
-  virtual size_t GetBytesInUse(const std::vector<std::string>& keys) = 0;
-
-  // Gets the total amount of space being used by this storage area, in bytes.
-  virtual size_t GetBytesInUse() = 0;
-
   // Gets a single value from storage.
   virtual ReadResult Get(const std::string& key) = 0;
 

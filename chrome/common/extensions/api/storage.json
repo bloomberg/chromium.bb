@@ -19,7 +19,7 @@
         }
       },
       {
-        "id": "StorageArea",
+        "id": "StorageNamespace",
         "type": "object",
         "functions": [
           {
@@ -40,7 +40,7 @@
                     "additionalProperties": { "type": "any" }
                   }
                 ],
-                "description": "A single key to get, list of keys to get, or a dictionary specifying default values (see description of the object).  An empty list or object will return an empty result object.  Pass in <code>null</code> to get the entire contents of storage.",
+                "description": "A single key to get, list of keys to get, or a dictionary specifying default values (see description of the object).  An empty list or object will return an empty result object.  Pass in null or undefined to get the entire contents of storage; this should only be used for debugging.",
                 "optional": true
               },
               {
@@ -54,35 +54,6 @@
                     "properties": {},
                     "additionalProperties": { "type": "any" },
                     "description": "Object with items in their key-value mappings."
-                  }
-                ]
-              }
-            ]
-          },
-          {
-            "name": "getBytesInUse",
-            "unprivileged": true,
-            "type": "function",
-            "description": "Gets the amount of space (in bytes) being used by one or more items.",
-            "parameters": [
-              {
-                "name": "keys",
-                "choices": [
-                  { "type": "string" },
-                  { "type": "array", "items": { "type": "string" } }
-                ],
-                "description": "A single key or list of keys to get the total usage for. An empty list will return 0. Pass in <code>null</code> to get the total usage of all of storage.",
-                "optional": true
-              },
-              {
-                "name": "callback",
-                "type": "function",
-                "description": "Callback with the amount of space being used by storage, or on failure (in which case lastError will be set).",
-                "parameters": [
-                  {
-                    "name": "bytesInUse",
-                    "type": "integer",
-                    "description": "Amount of space being used in storage, in bytes."
                   }
                 ]
               }
@@ -175,44 +146,16 @@
     ],
     "properties": {
       "sync": {
-        "$ref": "StorageArea",
+        "$ref": "StorageNamespace",
         "description": "Items under the \"sync\" namespace are synced using Chrome Sync.",
         "unprivileged": true,
-        "value": [ "sync" ],
-        "properties": {
-          "QUOTA_BYTES": {
-            "type": "integer",
-            "value": "102400",
-            "unprivileged": true,
-            "description": "The maximum total amount (in bytes) of data that can be stored in sync storage."
-          },
-          "QUOTA_BYTES_PER_ITEM": {
-            "type": "integer",
-            "value": "2048",
-            "unprivileged": true,
-            "description": "The maximum size (in bytes) of each individual item in sync storage."
-          },
-          "MAX_ITEMS": {
-            "type": "integer",
-            "value": "512",
-            "unprivileged": true,
-            "description": "The maximum number of items that can be stored in sync storage."
-          }
-        }
+        "value": [ "sync" ]
       },
       "local": {
-        "$ref": "StorageArea",
+        "$ref": "StorageNamespace",
         "description": "Items under the \"local\" namespace are local to each machine.",
         "unprivileged": true,
-        "value": [ "local" ],
-        "properties": {
-          "QUOTA_BYTES": {
-            "type": "integer",
-            "value": "5120000",
-            "unprivileged": true,
-            "description": "The maximum amount (in bytes) of data that can be stored in local storage. This value may be ignored if the extension has the <code>unlimitedStorage</code> permission."
-          }
-        }
+        "value": [ "local" ]
       }
     }
   }
