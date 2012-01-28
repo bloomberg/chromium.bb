@@ -77,6 +77,18 @@ const int kBackgroundTranslate = -50;
 // network requests are made while the system is idle waiting for user input.
 const int64 kPolicyServiceInitializationDelayMilliseconds = 100;
 
+// Returns true if an auto-enrollment decision has been made and is cached in
+// local state. If so, the decision is stored in |auto_enroll|.
+bool GetAutoEnrollmentDecision(bool* auto_enroll) {
+  PrefService* local_state = g_browser_process->local_state();
+  const PrefService::Preference* pref =
+      local_state->FindPreference(prefs::kShouldAutoEnroll);
+  if (pref && !pref->IsDefaultValue())
+    return pref->GetValue()->GetAsBoolean(auto_enroll);
+  else
+    return false;
+}
+
 // Determines the hardware keyboard from the given locale code
 // and the OEM layout information, and saves it to "Locale State".
 // The information will be used in InputMethodUtil::GetHardwareInputMethodId().
@@ -154,6 +166,13 @@ BaseLoginDisplayHost::~BaseLoginDisplayHost() {
   g_browser_process->ReleaseModule();
 
   default_host_ = NULL;
+}
+
+// static
+void BaseLoginDisplayHost::RegisterPrefs(PrefService* local_state) {
+  local_state->RegisterBooleanPref(prefs::kShouldAutoEnroll,
+                                   false,
+                                   PrefService::UNSYNCABLE_PREF);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -359,6 +378,16 @@ void BaseLoginDisplayHost::OnOwnershipStatusCheckDone(
     return;
   }
 
+  bool auto_enroll = false;
+  if (GetAutoEnrollmentDecision(&auto_enroll)) {
+    // The auto-enrollment protocol has executed before and reached a decision,
+    // which has been stored in |auto_enroll|.
+    VLOG(1) << "CheckForAutoEnrollment: got cached decision: " << auto_enroll;
+    if (auto_enroll)
+      ForceAutoEnrollment();
+    return;
+  }
+
   // Kick off the auto-enrollment client.
   if (auto_enrollment_client_.get()) {
     // They client might have been started after the EULA screen, but we made
@@ -368,11 +397,6 @@ void BaseLoginDisplayHost::OnOwnershipStatusCheckDone(
     // CheckForAutoEnrollment() is also called when we reach the sign-in screen,
     // because that's what happens after an auto-update.
     VLOG(1) << "CheckForAutoEnrollment: client already started";
-
-    // If the client already started and already finished too, pass the decision
-    // to the |sign_in_controller_| now.
-    if (auto_enrollment_client_->should_auto_enroll())
-      ForceAutoEnrollment();
   } else {
     VLOG(1) << "CheckForAutoEnrollment: starting auto-enrollment client";
     auto_enrollment_client_.reset(policy::AutoEnrollmentClient::Create(
@@ -385,6 +409,12 @@ void BaseLoginDisplayHost::OnOwnershipStatusCheckDone(
 void BaseLoginDisplayHost::OnAutoEnrollmentClientDone() {
   bool auto_enroll = auto_enrollment_client_->should_auto_enroll();
   VLOG(1) << "OnAutoEnrollmentClientDone, decision is " << auto_enroll;
+
+  // Auto-update might be in progress and might force a reboot. Cache the
+  // decision in local_state.
+  PrefService* local_state = g_browser_process->local_state();
+  local_state->SetBoolean(prefs::kShouldAutoEnroll, auto_enroll);
+  local_state->CommitPendingWrite();
 
   if (auto_enroll)
     ForceAutoEnrollment();

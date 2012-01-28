@@ -6,13 +6,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/values.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/policy/mock_device_management_service.h"
-#include "chrome/browser/prefs/pref_service.h"
-#include "chrome/common/pref_names.h"
-#include "chrome/test/base/testing_browser_process.h"
-#include "chrome/test/base/testing_pref_service.h"
 #include "crypto/sha2.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -35,16 +29,11 @@ using ::testing::_;
 class AutoEnrollmentClientTest : public testing::Test {
  protected:
   AutoEnrollmentClientTest()
-      : scoped_testing_local_state_(
-            static_cast<TestingBrowserProcess*>(g_browser_process)),
-        local_state_(scoped_testing_local_state_.Get()),
-        service_(NULL),
+      : service_(NULL),
         completion_callback_count_(0) {}
 
   virtual void SetUp() OVERRIDE {
     CreateClient(kSerial, 4, 8);
-    ASSERT_FALSE(local_state_->GetUserPref(prefs::kShouldAutoEnroll));
-    ASSERT_FALSE(local_state_->GetUserPref(prefs::kAutoEnrollmentPowerLimit));
   }
 
   void CreateClient(const std::string& serial,
@@ -59,7 +48,6 @@ class AutoEnrollmentClientTest : public testing::Test {
                    base::Unretained(this));
     client_.reset(new AutoEnrollmentClient(callback,
                                            service_,
-                                           local_state_,
                                            serial,
                                            power_initial,
                                            power_limit));
@@ -99,19 +87,6 @@ class AutoEnrollmentClientTest : public testing::Test {
         .WillOnce(service_->SucceedJob(response));
   }
 
-  void VerifyCachedResult(bool should_enroll, int power_limit) {
-    base::FundamentalValue value_should_enroll(should_enroll);
-    base::FundamentalValue value_power_limit(power_limit);
-    EXPECT_TRUE(Value::Equals(
-        &value_should_enroll,
-        local_state_->GetUserPref(prefs::kShouldAutoEnroll)));
-    EXPECT_TRUE(Value::Equals(
-        &value_power_limit,
-        local_state_->GetUserPref(prefs::kAutoEnrollmentPowerLimit)));
-  }
-
-  ScopedTestingLocalState scoped_testing_local_state_;
-  TestingPrefService* local_state_;
   MockDeviceManagementService* service_;
   scoped_ptr<AutoEnrollmentClient> client_;
   em::DeviceAutoEnrollmentRequest last_request_;
@@ -130,7 +105,6 @@ TEST_F(AutoEnrollmentClientTest, NetworkFailure) {
   client_->Start();
   EXPECT_FALSE(client_->should_auto_enroll());
   EXPECT_EQ(1, completion_callback_count_);
-  VerifyCachedResult(false, 8);
 }
 
 TEST_F(AutoEnrollmentClientTest, EmptyReply) {
@@ -138,7 +112,6 @@ TEST_F(AutoEnrollmentClientTest, EmptyReply) {
   client_->Start();
   EXPECT_FALSE(client_->should_auto_enroll());
   EXPECT_EQ(1, completion_callback_count_);
-  VerifyCachedResult(false, 8);
 }
 
 TEST_F(AutoEnrollmentClientTest, ClientUploadsRightBits) {
@@ -150,7 +123,6 @@ TEST_F(AutoEnrollmentClientTest, ClientUploadsRightBits) {
   EXPECT_TRUE(last_request_.has_modulus());
   EXPECT_EQ(16, last_request_.modulus());
   EXPECT_EQ(kSerialHash[31] & 0xf, last_request_.remainder());
-  VerifyCachedResult(false, 8);
 }
 
 TEST_F(AutoEnrollmentClientTest, AskForMoreThenFail) {
@@ -160,7 +132,6 @@ TEST_F(AutoEnrollmentClientTest, AskForMoreThenFail) {
   client_->Start();
   EXPECT_FALSE(client_->should_auto_enroll());
   EXPECT_EQ(1, completion_callback_count_);
-  VerifyCachedResult(false, 8);
 }
 
 TEST_F(AutoEnrollmentClientTest, AskForMoreThenEvenMore) {
@@ -170,7 +141,6 @@ TEST_F(AutoEnrollmentClientTest, AskForMoreThenEvenMore) {
   client_->Start();
   EXPECT_FALSE(client_->should_auto_enroll());
   EXPECT_EQ(1, completion_callback_count_);
-  VerifyCachedResult(false, 8);
 }
 
 TEST_F(AutoEnrollmentClientTest, AskForLess) {
@@ -178,7 +148,6 @@ TEST_F(AutoEnrollmentClientTest, AskForLess) {
   client_->Start();
   EXPECT_FALSE(client_->should_auto_enroll());
   EXPECT_EQ(1, completion_callback_count_);
-  VerifyCachedResult(false, 8);
 }
 
 TEST_F(AutoEnrollmentClientTest, AskForSame) {
@@ -186,7 +155,6 @@ TEST_F(AutoEnrollmentClientTest, AskForSame) {
   client_->Start();
   EXPECT_FALSE(client_->should_auto_enroll());
   EXPECT_EQ(1, completion_callback_count_);
-  VerifyCachedResult(false, 8);
 }
 
 TEST_F(AutoEnrollmentClientTest, AskForTooMuch) {
@@ -194,7 +162,6 @@ TEST_F(AutoEnrollmentClientTest, AskForTooMuch) {
   client_->Start();
   EXPECT_FALSE(client_->should_auto_enroll());
   EXPECT_EQ(1, completion_callback_count_);
-  VerifyCachedResult(false, 8);
 }
 
 TEST_F(AutoEnrollmentClientTest, AskNonPowerOf2) {
@@ -208,7 +175,6 @@ TEST_F(AutoEnrollmentClientTest, AskNonPowerOf2) {
   EXPECT_TRUE(last_request_.has_modulus());
   EXPECT_EQ(128, last_request_.modulus());
   EXPECT_EQ(kSerialHash[31] & 0x7f, last_request_.remainder());
-  VerifyCachedResult(false, 8);
 }
 
 TEST_F(AutoEnrollmentClientTest, ConsumerDevice) {
@@ -216,7 +182,6 @@ TEST_F(AutoEnrollmentClientTest, ConsumerDevice) {
   client_->Start();
   EXPECT_FALSE(client_->should_auto_enroll());
   EXPECT_EQ(1, completion_callback_count_);
-  VerifyCachedResult(false, 8);
 }
 
 TEST_F(AutoEnrollmentClientTest, EnterpriseDevice) {
@@ -224,7 +189,6 @@ TEST_F(AutoEnrollmentClientTest, EnterpriseDevice) {
   client_->Start();
   EXPECT_TRUE(client_->should_auto_enroll());
   EXPECT_EQ(1, completion_callback_count_);
-  VerifyCachedResult(true, 8);
 }
 
 TEST_F(AutoEnrollmentClientTest, NoSerial) {
@@ -232,8 +196,6 @@ TEST_F(AutoEnrollmentClientTest, NoSerial) {
   client_->Start();
   EXPECT_FALSE(client_->should_auto_enroll());
   EXPECT_EQ(1, completion_callback_count_);
-  EXPECT_FALSE(local_state_->GetUserPref(prefs::kShouldAutoEnroll));
-  EXPECT_FALSE(local_state_->GetUserPref(prefs::kAutoEnrollmentPowerLimit));
 }
 
 TEST_F(AutoEnrollmentClientTest, NoBitsUploaded) {
@@ -246,7 +208,6 @@ TEST_F(AutoEnrollmentClientTest, NoBitsUploaded) {
   EXPECT_TRUE(last_request_.has_modulus());
   EXPECT_EQ(1, last_request_.modulus());
   EXPECT_EQ(0, last_request_.remainder());
-  VerifyCachedResult(false, 0);
 }
 
 TEST_F(AutoEnrollmentClientTest, ManyBitsUploaded) {
@@ -262,7 +223,6 @@ TEST_F(AutoEnrollmentClientTest, ManyBitsUploaded) {
     EXPECT_TRUE(last_request_.has_modulus());
     EXPECT_EQ(GG_INT64_C(1) << i, last_request_.modulus());
     EXPECT_EQ(bottom62 % (GG_INT64_C(1) << i), last_request_.remainder());
-    VerifyCachedResult(false, i);
   }
 }
 
@@ -270,35 +230,6 @@ TEST_F(AutoEnrollmentClientTest, MoreThan32BitsUploaded) {
   CreateClient(kSerial, 10, 37);
   InSequence sequence;
   ServerWillReply(GG_INT64_C(1) << 37, false, false);
-  ServerWillReply(-1, true, true);
-  client_->Start();
-  EXPECT_TRUE(client_->should_auto_enroll());
-  EXPECT_EQ(1, completion_callback_count_);
-  VerifyCachedResult(true, 37);
-}
-
-TEST_F(AutoEnrollmentClientTest, ReuseCachedDecision) {
-  EXPECT_CALL(*service_, CreateJob(_)).Times(0);
-  local_state_->SetUserPref(prefs::kShouldAutoEnroll,
-                            Value::CreateBooleanValue(true));
-  local_state_->SetUserPref(prefs::kAutoEnrollmentPowerLimit,
-                            Value::CreateIntegerValue(8));
-  client_->Start();
-  EXPECT_TRUE(client_->should_auto_enroll());
-  EXPECT_EQ(1, completion_callback_count_);
-  local_state_->SetUserPref(prefs::kShouldAutoEnroll,
-                            Value::CreateBooleanValue(false));
-  client_->Start();
-  EXPECT_FALSE(client_->should_auto_enroll());
-  EXPECT_EQ(2, completion_callback_count_);
-}
-
-TEST_F(AutoEnrollmentClientTest, RetryIfPowerLargerThanCached) {
-  local_state_->SetUserPref(prefs::kShouldAutoEnroll,
-                            Value::CreateBooleanValue(false));
-  local_state_->SetUserPref(prefs::kAutoEnrollmentPowerLimit,
-                            Value::CreateIntegerValue(8));
-  CreateClient(kSerial, 5, 10);
   ServerWillReply(-1, true, true);
   client_->Start();
   EXPECT_TRUE(client_->should_auto_enroll());
