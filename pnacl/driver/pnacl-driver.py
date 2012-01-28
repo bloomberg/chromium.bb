@@ -272,6 +272,7 @@ GCCPatterns = [
   ( '(-g)',                   AddCCFlag),
   ( '(-W.*)',                 AddCCFlag),
   ( '(-std=.*)',              AddCCFlag),
+  ( '(-ansi)',                AddCCFlag),
   ( ('(-D)','(.*)'),          AddCCFlag),
   ( '(-D.+)',                 AddCCFlag),
   ( ('(-U)','(.*)'),          AddCCFlag),
