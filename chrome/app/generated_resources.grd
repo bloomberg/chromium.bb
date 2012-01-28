@@ -11002,17 +11002,8 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_SYNC_PROMO_MESSAGE_TITLE_SHORT" desc="A short sync promo message displayed under the title.">
         Sign in to get your bookmarks, history, and settings on all your devices.
       </message>
-      <message name="IDS_SYNC_PROMO_MESSAGE_BODY_A" desc="The body of the sync promo message. This is experiment choice 0, and the control/default message.">
+      <message name="IDS_SYNC_PROMO_MESSAGE_BODY" desc="The body of the sync promo message.">
         Get your bookmarks, history, and settings on all your devices.
-      </message>
-      <message name="IDS_SYNC_PROMO_MESSAGE_BODY_B" desc="The body of the sync promo message. Experiment choice 1.">
-        Back up your bookmarks, history, and settings online.
-      </message>
-      <message name="IDS_SYNC_PROMO_MESSAGE_BODY_C" desc="The body of the sync promo message. Experiment choice 2.">
-        Sync your personalized browser features between all your devices.
-      </message>
-      <message name="IDS_SYNC_PROMO_MESSAGE_BODY_D" desc="The body of the sync promo message. Experiment choice 3.">
-        Get your bookmarks, history, and settings on all your devices. Plus, you'll be automatically signed in to your favorite Google services.
       </message>
       <message name="IDS_SYNC_PROMO_SKIP_BUTTON" desc="The link button at the bottom to let the user skip the sync promo.">
         Skip for now

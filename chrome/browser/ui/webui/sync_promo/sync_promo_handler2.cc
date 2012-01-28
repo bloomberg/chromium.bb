@@ -57,13 +57,6 @@ static bool IsValidUserFlowAction(int action) {
          action == SYNC_PROMO_LEFT_DURING_THROBBER;
 }
 
-static void RecordExperimentOutcomesOnSignIn() {
-  if (sync_promo_trial::IsExperimentActive())
-    sync_promo_trial::RecordUserSignedIn();
-  if (sync_promo_trial::IsPartOfBrandTrialToEnable())
-    sync_promo_trial::RecordUserSignedInWithTrialBrand();
-}
-
 }  // namespace
 
 namespace options2 {
@@ -134,12 +127,12 @@ void SyncPromoHandler2::RegisterMessages() {
 }
 
 void SyncPromoHandler2::ShowGaiaSuccessAndClose() {
-  RecordExperimentOutcomesOnSignIn();
+  sync_promo_trial::RecordUserSignedIn(web_ui());
   SyncSetupHandler2::ShowGaiaSuccessAndClose();
 }
 
 void SyncPromoHandler2::ShowGaiaSuccessAndSettingUp() {
-  RecordExperimentOutcomesOnSignIn();
+  sync_promo_trial::RecordUserSignedIn(web_ui());
   SyncSetupHandler2::ShowGaiaSuccessAndSettingUp();
 }
 
@@ -221,13 +214,6 @@ void SyncPromoHandler2::HandleCloseSyncPromo(const base::ListValue* args) {
 }
 
 void SyncPromoHandler2::HandleInitializeSyncPromo(const base::ListValue* args) {
-  // If the promo is also the Chrome launch page, we want to show the title and
-  // log an event if we are running an experiment.
-  bool is_launch_page = SyncPromoUI::GetIsLaunchPageForSyncPromoURL(
-      web_ui_->tab_contents()->GetURL());
-  if (is_launch_page && sync_promo_trial::IsExperimentActive())
-    sync_promo_trial::RecordUserSawMessage();
-
   base::FundamentalValue version(SyncPromoUI::GetSyncPromoVersion());
   web_ui_->CallJavascriptFunction("SyncSetupOverlay.showPromoVersion",
                                   version);

@@ -21,7 +21,6 @@
 #include "chrome/browser/sync/sync_setup_flow.h"
 #include "chrome/browser/sync/util/oauth.h"
 #include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/ui/webui/sync_promo/sync_promo_trial.h"
 #include "chrome/browser/ui/webui/sync_promo/sync_promo_ui.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
 #include "chrome/common/url_constants.h"
@@ -247,15 +246,6 @@ void SyncSetupHandler::GetStaticLocalizedValues(
       google_util::StringAppendGoogleLocaleParam(
           chrome::kSyncErrorsHelpURL));
 
-  // The experimental body string only appears if we are on the launch page
-  // version of the Sync Promo.
-  int message_body_resource_id = IDS_SYNC_PROMO_MESSAGE_BODY_A;
-  if (is_launch_page)
-    message_body_resource_id = sync_promo_trial::GetMessageBodyResID();
-  localized_strings->SetString(
-      "promoMessageBody",
-      GetStringUTF16(message_body_resource_id));
-
   std::string create_account_url = google_util::StringAppendGoogleLocaleParam(
       chrome::kSyncCreateNewAccountURL);
   string16 create_account = GetStringUTF16(IDS_SYNC_CREATE_ACCOUNT);
@@ -361,6 +351,7 @@ void SyncSetupHandler::GetStaticLocalizedValues(
     { "promoVerboseServicesBody", IDS_SYNC_PROMO_V_SERVICES_BODY },
     { "promoVerboseSignUp", IDS_SYNC_PROMO_V_SIGN_UP },
     { "promoTitleShort", IDS_SYNC_PROMO_MESSAGE_TITLE_SHORT },
+    { "promoMessageBody", IDS_SYNC_PROMO_MESSAGE_BODY },
   };
 
   RegisterStrings(localized_strings, resources, arraysize(resources));

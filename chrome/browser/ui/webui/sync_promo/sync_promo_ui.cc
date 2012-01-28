@@ -128,11 +128,7 @@ SyncPromoUI::SyncPromoUI(content::WebUI* web_ui) : WebUIController(web_ui) {
   html_source->set_default_resource(IDR_SYNC_PROMO_HTML);
   profile->GetChromeURLDataManager()->AddDataSource(html_source);
 
-  if (sync_promo_trial::IsPartOfBrandTrialToEnable()) {
-    bool is_start_up = GetIsLaunchPageForSyncPromoURL(
-        web_ui->GetWebContents()->GetURL());
-    sync_promo_trial::RecordUserShownPromoWithTrialBrand(is_start_up, profile);
-  }
+  sync_promo_trial::RecordUserShownPromo(web_ui);
 }
 
 // static
@@ -202,10 +198,17 @@ bool SyncPromoUI::ShouldShowSyncPromoAtStartup(Profile* profile,
   if (show_count >= kSyncPromoShowAtStartupMaximum)
     return false;
 
-  // If the current install has a brand code that's part of an experiment, honor
-  // that before master prefs.
-  if (sync_promo_trial::IsPartOfBrandTrialToEnable())
-    return sync_promo_trial::ShouldShowAtStartupBasedOnBrand();
+  // If the current install is part of trial then let the trial determine if we
+  // should show the promo or not.
+  switch (sync_promo_trial::GetStartupOverrideForCurrentTrial()) {
+    case sync_promo_trial::STARTUP_OVERRIDE_NONE:
+      // No override so simply continue.
+      break;
+    case sync_promo_trial::STARTUP_OVERRIDE_SHOW:
+      return true;
+    case sync_promo_trial::STARTUP_OVERRIDE_HIDE:
+      return false;
+  }
 
   // This pref can be set in the master preferences file to allow or disallow
   // showing the sync promo at startup.
@@ -298,6 +301,8 @@ int SyncPromoUI::GetSyncPromoVersion() {
       GetSwitchValueASCII(switches::kSyncPromoVersion), &version)) {
     return version;
   }
+  if (sync_promo_trial::GetSyncPromoVersionForCurrentTrial(&version))
+    return version;
   // Default promo version is 0.
   return 0;
 }
