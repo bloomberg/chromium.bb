@@ -5144,8 +5144,7 @@ Because search results are requested even while you're typing your query, your d
         http://support.google.com/chrome/bin/answer.py?answer=95440&amp;hl=[GRITLANGCODE]
       </message>
       <message name="IDS_INSTANT_PREF_WITH_WARNING" desc="Preference for enabling instant, along with the warning that used to be displayed beneath it.">
-        Enable Instant for faster searching and navigation (input may be
-        <ph name="BEGIN_LINK">&lt;a target="_blank" href="$1"&gt;</ph>logged<ph name="END_LINK">&lt;/a&gt;</ph>).
+        Enable Instant for faster searching (omnibox input may be <ph name="BEGIN_LINK">&lt;a target="_blank" href="$1"&gt;</ph>logged<ph name="END_LINK">&lt;/a&gt;</ph>).
       </message>
       <message name="IDS_INSTANT_PREF" desc="Preference for enabling instant">
         Enable Instant for faster searching
