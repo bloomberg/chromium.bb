@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -242,7 +242,7 @@ def FetchRevision(context, rev, filename, quit_event=None, progress_event=None):
     pass
 
 
-def RunRevision(context, revision, zipfile, profile, args):
+def RunRevision(context, revision, zipfile, profile, num_runs, args):
   """Given a zipped revision, unzip it and run the test."""
   print "Trying revision %d..." % revision
 
@@ -252,13 +252,14 @@ def RunRevision(context, revision, zipfile, profile, args):
   UnzipFilenameToDir(zipfile, tempdir)
   os.chdir(tempdir)
 
-  # Run the build.
+  # Run the build as many times as specified.
   testargs = [context.GetLaunchPath(), '--user-data-dir=%s' % profile] + args
-  subproc = subprocess.Popen(testargs,
-                             bufsize=-1,
-                             stdout=subprocess.PIPE,
-                             stderr=subprocess.PIPE)
-  (stdout, stderr) = subproc.communicate()
+  for i in range(0, num_runs):
+    subproc = subprocess.Popen(testargs,
+                               bufsize=-1,
+                               stdout=subprocess.PIPE,
+                               stderr=subprocess.PIPE)
+    (stdout, stderr) = subproc.communicate()
 
   os.chdir(cwd)
   try:
@@ -283,6 +284,7 @@ def AskIsGoodBuild(rev, status, stdout, stderr):
 def Bisect(platform,
            good_rev=0,
            bad_rev=0,
+           num_runs=1,
            try_args=(),
            profile=None,
            predicate=AskIsGoodBuild):
@@ -292,6 +294,7 @@ def Bisect(platform,
   @param platform Which build to download/run ('mac', 'win', 'linux64', etc.).
   @param good_rev Number/tag of the last known good revision.
   @param bad_rev Number/tag of the first known bad revision.
+  @param num_runs Number of times to run each build for asking good/bad.
   @param try_args A tuple of arguments to pass to the test application.
   @param profile The name of the user profile to run with.
   @param predicate A predicate function which returns True iff the argument
@@ -388,6 +391,7 @@ def Bisect(platform,
                                            rev,
                                            zipfile,
                                            profile,
+                                           num_runs,
                                            try_args)
     os.unlink(zipfile)
     zipfile = None
@@ -422,7 +426,8 @@ def Bisect(platform,
           zipfile = down_zipfile
     except SystemExit:
       print "Cleaning up..."
-      for f in [down_zipfile, up_zipfile]:
+      for f in [_GetDownloadPath(revlist[down_pivot]),
+                _GetDownloadPath(revlist[up_pivot])]:
         try:
           os.unlink(f)
         except OSError:
@@ -468,6 +473,10 @@ def main():
   parser.add_option('-p', '--profile', '--user-data-dir', type = 'str',
                     help = 'Profile to use; this will not reset every run. ' +
                     'Defaults to a clean profile.', default = 'profile')
+  parser.add_option('-t', '--times', type = 'int',
+                    help = 'Number of times to run each build before asking ' +
+                    'if it\'s good or bad. Temporary profiles are reused.',
+                    default = 1)
   (opts, args) = parser.parse_args()
 
   if opts.archive is None:
@@ -513,8 +522,14 @@ def main():
     except Exception, e:
       pass
 
+  if opts.times < 1:
+    print('Number of times to run (%d) must be greater than or equal to 1.' %
+          opts.times)
+    parser.print_help()
+    return 1
+
   (last_known_good_rev, first_known_bad_rev) = Bisect(
-      opts.archive, good_rev, bad_rev, args, opts.profile)
+      opts.archive, good_rev, bad_rev, opts.times, args, opts.profile)
 
   # Get corresponding webkit revisions.
   try:
