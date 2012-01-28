@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -206,6 +206,22 @@ void test_fail_on_validation_error() {
 
   rc = nacl_load_code(load_area, buf, sizeof(buf));
   assert(rc == -EINVAL);
+}
+
+void test_validation_error_does_not_leak() {
+  void *load_area = allocate_code_space(1);
+  uint8_t buf[BUF_SIZE];
+  int rc;
+
+  copy_and_pad_fragment(buf, sizeof(buf), &invalid_code, &invalid_code_end);
+  rc = nacl_load_code(load_area, buf, sizeof(buf));
+  assert(rc == -EINVAL);
+
+  /* Make sure that the failed validation didn't claim the memory. */
+  /* See: http://code.google.com/p/nativeclient/issues/detail?id=2566 */
+  copy_and_pad_fragment(buf, sizeof(buf), &template_func, &template_func_end);
+  rc = nacl_load_code(load_area, buf, sizeof(buf));
+  assert(rc == 0);
 }
 
 void test_fail_on_non_bundle_aligned_dest_addresses() {
@@ -441,6 +457,7 @@ int TestMain() {
   RUN_TEST(test_loading_large_chunk);
   RUN_TEST(test_loading_zero_size);
   RUN_TEST(test_fail_on_validation_error);
+  RUN_TEST(test_validation_error_does_not_leak);
   RUN_TEST(test_fail_on_non_bundle_aligned_dest_addresses);
   RUN_TEST(test_fail_on_load_to_static_code_area);
   RUN_TEST(test_fail_on_load_to_data_area);

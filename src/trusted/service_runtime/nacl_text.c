@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -733,24 +733,21 @@ int32_t NaClTextDyncodeCreate(struct NaClApp *nap,
 
   NaClXMutexLock(&nap->dynamic_load_mutex);
 
-  if (NaClDynamicRegionCreate(nap, dest_addr, size) == 1) {
-    /* target memory region is free */
-    if (!nap->skip_validator) {
-      validator_result = NaClValidateCode(nap, dest, code_copy, size);
-    } else {
-      NaClLog(LOG_ERROR, "VALIDATION SKIPPED.\n");
-      validator_result = LOAD_OK;
-    }
-
-    NaClPerfCounterMark(&time_dyncode_create,
-                        NACL_PERF_IMPORTANT_PREFIX "DynRegionValidate");
-    NaClPerfCounterIntervalLast(&time_dyncode_create);
+  /*
+   * Validate the code before trying to create the region.  This avoids the need
+   * to delete the region if validation fails.
+   * See: http://code.google.com/p/nativeclient/issues/detail?id=2566
+   */
+  if (!nap->skip_validator) {
+    validator_result = NaClValidateCode(nap, dest, code_copy, size);
   } else {
-    /* target addr is in use */
-    NaClLog(1, "NaClTextSysDyncode_Copy: Code range already allocated\n");
-    retval = -NACL_ABI_EINVAL;
-    goto cleanup_unlock;
+    NaClLog(LOG_ERROR, "VALIDATION SKIPPED.\n");
+    validator_result = LOAD_OK;
   }
+
+  NaClPerfCounterMark(&time_dyncode_create,
+                      NACL_PERF_IMPORTANT_PREFIX "DynRegionValidate");
+  NaClPerfCounterIntervalLast(&time_dyncode_create);
 
   if (validator_result != LOAD_OK
       && nap->ignore_validator_result) {
@@ -762,6 +759,13 @@ int32_t NaClTextDyncodeCreate(struct NaClApp *nap,
   if (validator_result != LOAD_OK) {
     NaClLog(1, "NaClTextSysDyncode_Copy: "
             "Validation of dynamic code failed\n");
+    retval = -NACL_ABI_EINVAL;
+    goto cleanup_unlock;
+  }
+
+  if (NaClDynamicRegionCreate(nap, dest_addr, size) != 1) {
+    /* target addr is in use */
+    NaClLog(1, "NaClTextSysDyncode_Copy: Code range already allocated\n");
     retval = -NACL_ABI_EINVAL;
     goto cleanup_unlock;
   }
