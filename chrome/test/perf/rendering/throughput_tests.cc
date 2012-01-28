@@ -8,12 +8,14 @@
 #include "base/test/trace_event_analyzer.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/test/base/test_switches.h"
 #include "chrome/test/base/tracing.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "chrome/test/perf/browser_perf_test.h"
 #include "chrome/test/perf/perf_test.h"
 #include "content/public/common/content_switches.h"
 #include "googleurl/src/gurl.h"
+#include "net/base/mock_host_resolver.h"
 #include "net/base/net_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/gl/gl_switches.h"
@@ -37,6 +39,25 @@ class ThroughputTest : public BrowserPerfTest {
     return CommandLine::ForCurrentProcess()->HasSwitch("enable-gpu");
   }
 
+  GURL GetURLFromCommandLine() {
+    CommandLine::StringType extra_chrome_flags =
+        CommandLine::ForCurrentProcess()->GetSwitchValueNative(
+            switches::kExtraChromeFlags);
+    return GURL(extra_chrome_flags);
+  }
+
+  void AllowExternalDNS() {
+    net::RuleBasedHostResolverProc* resolver =
+        new net::RuleBasedHostResolverProc(host_resolver());
+    resolver->AllowDirectLookup("*");
+    host_resolver_override_.reset(
+        new net::ScopedDefaultHostResolverProc(resolver));
+  }
+
+  void ResetAllowExternalDNS() {
+    host_resolver_override_.reset();
+  }
+
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     BrowserPerfTest::SetUpCommandLine(command_line);
     // We are measuring throughput, so we don't want any FPS throttling.
@@ -47,10 +68,6 @@ class ThroughputTest : public BrowserPerfTest {
     command_line->AppendSwitch(switches::kAllowFileAccessFromFiles);
     // Enable or disable GPU acceleration.
     if (use_gpu_) {
-      if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableThreadedCompositing)) {
-        command_line->AppendSwitch(switches::kEnableThreadedCompositing);
-      }
       command_line->AppendSwitch(switches::kEnableAccelerated2dCanvas);
       command_line->AppendSwitch(switches::kForceCompositingMode);
     } else {
@@ -66,21 +83,7 @@ class ThroughputTest : public BrowserPerfTest {
     ui_test_utils::RunMessageLoop();
   }
 
-  void RunTest(const std::string& test_name) {
-    RunTest(test_name, kNone);
-  }
-
   void RunTest(const std::string& test_name, ThroughputTestFlags flags) {
-    using trace_analyzer::Query;
-    using trace_analyzer::TraceAnalyzer;
-    using trace_analyzer::TraceEventVector;
-
-    if (use_gpu_ && !IsGpuAvailable()) {
-      LOG(WARNING) << "Test skipped: requires gpu. Pass --enable-gpu on the "
-                      "command line if use of GPU is desired.\n";
-      return;
-    }
-
     // Set path to test html.
     FilePath test_path;
     ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_path));
@@ -94,13 +97,27 @@ class ThroughputTest : public BrowserPerfTest {
     ASSERT_TRUE(file_util::PathExists(test_path))
         << "Missing test file: " << test_path.value();
 
+    RunTestWithURL(test_name, net::FilePathToFileURL(test_path));
+  }
+
+  void RunTestWithURL(const std::string& test_name, const GURL& gurl) {
+    using trace_analyzer::Query;
+    using trace_analyzer::TraceAnalyzer;
+    using trace_analyzer::TraceEventVector;
+
+    if (use_gpu_ && !IsGpuAvailable()) {
+      LOG(WARNING) << "Test skipped: requires gpu. Pass --enable-gpu on the "
+                      "command line if use of GPU is desired.\n";
+      return;
+    }
+
     std::string json_events;
     TraceEventVector events_sw, events_gpu;
     scoped_ptr<TraceAnalyzer> analyzer;
 
+    LOG(INFO) << gurl.possibly_invalid_spec();
     ui_test_utils::NavigateToURLWithDisposition(
-        browser(), net::FilePathToFileURL(test_path), CURRENT_TAB,
-        ui_test_utils::BROWSER_TEST_NONE);
+        browser(), gurl, CURRENT_TAB, ui_test_utils::BROWSER_TEST_NONE);
 
     // Let the test spin up.
     LOG(INFO) << "Spinning up test...\n";
@@ -157,6 +174,7 @@ class ThroughputTest : public BrowserPerfTest {
 
  private:
   bool use_gpu_;
+  scoped_ptr<net::ScopedDefaultHostResolverProc> host_resolver_override_;
 };
 
 // For running tests on GPU:
@@ -173,6 +191,21 @@ class ThroughputTestSW : public ThroughputTest {
 
 ////////////////////////////////////////////////////////////////////////////////
 /// Tests
+
+// Run this test with a URL on the command line:
+// performance_browser_tests --gtest_also_run_disabled_tests --enable-gpu
+//     --gtest_filter=ThroughputTest*URL --extra-chrome-flags=http://...
+IN_PROC_BROWSER_TEST_F(ThroughputTestSW, DISABLED_TestURL) {
+  AllowExternalDNS();
+  RunTestWithURL("URL", GetURLFromCommandLine());
+  ResetAllowExternalDNS();
+}
+
+IN_PROC_BROWSER_TEST_F(ThroughputTestGPU, DISABLED_TestURL) {
+  AllowExternalDNS();
+  RunTestWithURL("URL", GetURLFromCommandLine());
+  ResetAllowExternalDNS();
+}
 
 IN_PROC_BROWSER_TEST_F(ThroughputTestGPU, Particles) {
   RunTest("particles", kInternal);
