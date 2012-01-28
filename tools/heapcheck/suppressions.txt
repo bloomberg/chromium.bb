@@ -1830,3 +1830,14 @@
    fun:ResourceDispatcherHostTest::MakeTestRequest
    fun:ResourceDispatcherHostTest_*_Test::TestBody
 }
+{
+   bug_111757
+   Heapcheck:Leak
+   fun:WTF::fastMalloc
+   ...
+   fun:PeerConnectionHandler::CreateWebKitStreamDescriptor
+   fun:PeerConnectionHandler::OnAddStreamCallback
+   fun:PeerConnectionHandler::OnAddStream
+   fun:PeerConnectionHandlerTest_Basic_Test::TestBody
+}
+

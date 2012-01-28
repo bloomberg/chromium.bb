@@ -5637,6 +5637,30 @@
    fun:_Znw*
    fun:_ZN8appcache17AppCacheDiskCache10ActiveCall17OnAsyncCompletionEi
 }
+{
+   bug_111757a
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN9first_run8internal15LoadMasterPrefsEP8FilePath
+   fun:_ZN8FirstRun24ProcessMasterPreferencesERK8FilePathPN9first_run11MasterPrefsE
+   fun:_ZN22ChromeBrowserMainParts20PreCreateThreadsImplEv
+   fun:_ZN22ChromeBrowserMainParts16PreCreateThreadsEv
+   fun:_ZN7content15BrowserMainLoop23RunMainMessageLoopPartsEPb
+   fun:_Z11BrowserMainRKN7content18MainFunctionParamsE
+}
+{
+   bug_111757b
+   Memcheck:Leak
+   fun:malloc
+   fun:_ZN3WTF10fastMallocE*
+   ...
+   fun:_ZN7WebCore21MediaStreamDescriptor6createERKN3WTF6StringERKNS1_6VectorINS1_6RefPtrINS_17MediaStreamSourceEEEL*
+   fun:_ZN6WebKit24WebMediaStreamDescriptor10initializeERKNS_9WebStringERKNS_9WebVectorINS_20WebMediaStreamSourceEEE
+   fun:_ZN21PeerConnectionHandler28CreateWebKitStreamDescriptorEPN6webrtc20MediaStreamInterfaceE
+   fun:_ZN21PeerConnectionHandler19OnAddStreamCallbackEPN6webrtc20MediaStreamInterfaceE
+   fun:_ZN21PeerConnectionHandler11OnAddStreamEPN6webrtc20MediaStreamInterfaceE
+   fun:_ZN36PeerConnectionHandlerTest_Basic_Test8TestBodyEv
+}
 
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations
