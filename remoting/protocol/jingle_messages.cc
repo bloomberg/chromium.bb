@@ -55,7 +55,7 @@ T NameToValue(const NameMapElement<T> map[], size_t map_size,
   return default_value;
 }
 
-static const NameMapElement<JingleMessage::ActionType> kActionTypes[] = {
+const NameMapElement<JingleMessage::ActionType> kActionTypes[] = {
   { JingleMessage::SESSION_INITIATE, "session-initiate" },
   { JingleMessage::SESSION_ACCEPT, "session-accept" },
   { JingleMessage::SESSION_TERMINATE, "session-terminate" },
@@ -63,7 +63,7 @@ static const NameMapElement<JingleMessage::ActionType> kActionTypes[] = {
   { JingleMessage::TRANSPORT_INFO, "transport-info" },
 };
 
-static const NameMapElement<JingleMessage::Reason> kReasons[] = {
+const NameMapElement<JingleMessage::Reason> kReasons[] = {
   { JingleMessage::SUCCESS, "success" },
   { JingleMessage::DECLINE, "decline" },
   { JingleMessage::GENERAL_ERROR, "general-error" },

@@ -81,11 +81,12 @@ namespace npapi {
 
 namespace {
 
-static const char kFlashMimeType[] = "application/x-shockwave-flash";
-static const char kOctetStreamMimeType[] = "application/octet-stream";
-static const char kHTMLMimeType[] = "text/html";
-static const char kPlainTextMimeType[] = "text/plain";
-static const char kPluginFlashMimeType[] = "Plugin.FlashMIMEType";
+const char kFlashMimeType[] = "application/x-shockwave-flash";
+const char kOctetStreamMimeType[] = "application/octet-stream";
+const char kHTMLMimeType[] = "text/html";
+const char kPlainTextMimeType[] = "text/plain";
+const char kPluginFlashMimeType[] = "Plugin.FlashMIMEType";
+
 enum {
   MIME_TYPE_OK = 0,
   MIME_TYPE_EMPTY,

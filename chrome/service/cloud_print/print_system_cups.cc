@@ -35,17 +35,18 @@
 #include "ui/base/l10n/l10n_util.h"
 
 namespace {
+
 // CUPS specific options.
-static const char kCUPSPrinterInfoOpt[] = "printer-info";
-static const char kCUPSPrinterStateOpt[] = "printer-state";
+const char kCUPSPrinterInfoOpt[] = "printer-info";
+const char kCUPSPrinterStateOpt[] = "printer-state";
 
 // Print system config options.
-static const char kCUPSPrintServerURLs[] = "print_server_urls";
-static const char kCUPSUpdateTimeoutMs[] = "update_timeout_ms";
-static const char kCUPSNotifyDelete[] = "notify_delete";
+const char kCUPSPrintServerURLs[] = "print_server_urls";
+const char kCUPSUpdateTimeoutMs[] = "update_timeout_ms";
+const char kCUPSNotifyDelete[] = "notify_delete";
 
 // Default port for IPP print servers.
-static const int kDefaultIPPServerPort = 631;
+const int kDefaultIPPServerPort = 631;
 
 // Time interval to check for printer's updates.
 const int kCheckForPrinterUpdatesMs = 5*60*1000;

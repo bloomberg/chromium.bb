@@ -45,16 +45,17 @@
 #include "net/base/escape.h"
 
 namespace {
+
 enum InvariantCheckLevel {
   OFF = 0,
   VERIFY_IN_MEMORY = 1,
   FULL_DB_VERIFICATION = 2
 };
 
-static const InvariantCheckLevel kInvariantCheckLevel = VERIFY_IN_MEMORY;
+const InvariantCheckLevel kInvariantCheckLevel = VERIFY_IN_MEMORY;
 
 // Max number of milliseconds to spend checking syncable entry invariants
-static const int kInvariantCheckMaxMs = 50;
+const int kInvariantCheckMaxMs = 50;
 
 // This function checks to see if the given list of Metahandles has any nodes
 // whose PREV_ID, PARENT_ID or NEXT_ID values refer to ID values that do not

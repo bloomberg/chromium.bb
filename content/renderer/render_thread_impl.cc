@@ -101,14 +101,15 @@ using WebKit::WebView;
 using content::RenderProcessObserver;
 
 namespace {
-static const int64 kInitialIdleHandlerDelayMs = 1000;
-static const int64 kShortIdleHandlerDelayMs = 1000;
-static const int64 kLongIdleHandlerDelayMs = 30*1000;
-static const int kIdleCPUUsageThresholdInPercents = 3;
+
+const int64 kInitialIdleHandlerDelayMs = 1000;
+const int64 kShortIdleHandlerDelayMs = 1000;
+const int64 kLongIdleHandlerDelayMs = 30*1000;
+const int kIdleCPUUsageThresholdInPercents = 3;
 
 // Keep the global RenderThreadImpl in a TLS slot so it is impossible to access
 // incorrectly from the wrong thread.
-static base::LazyInstance<base::ThreadLocalPointer<RenderThreadImpl> >
+base::LazyInstance<base::ThreadLocalPointer<RenderThreadImpl> >
     lazy_tls = LAZY_INSTANCE_INITIALIZER;
 
 class RenderViewZoomer : public content::RenderViewVisitor {

@@ -33,9 +33,9 @@
 
 namespace {
 
-static const int kVideoCaptureWidth = 352;
-static const int kVideoCaptureHeight = 288;
-static const int kVideoCaptureFramePerSecond = 30;
+const int kVideoCaptureWidth = 352;
+const int kVideoCaptureHeight = 288;
+const int kVideoCaptureFramePerSecond = 30;
 
 }  // namespace
 

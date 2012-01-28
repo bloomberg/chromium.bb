@@ -160,10 +160,10 @@ const ui::TextInputType kPluginDefaultTextInputType = ui::TEXT_INPUT_TYPE_TEXT;
                    mismatching_enums)
 
 // <embed>/<object> attributes.
-static const char kWidth[] = "width";
-static const char kHeight[] = "height";
-static const char kBorder[] = "border";  // According to w3c, deprecated.
-static const char kStyle[] = "style";
+const char kWidth[] = "width";
+const char kHeight[] = "height";
+const char kBorder[] = "border";  // According to w3c, deprecated.
+const char kStyle[] = "style";
 
 COMPILE_ASSERT_MATCHING_ENUM(TypePointer, PP_CURSORTYPE_POINTER);
 COMPILE_ASSERT_MATCHING_ENUM(TypeCross, PP_CURSORTYPE_CROSS);

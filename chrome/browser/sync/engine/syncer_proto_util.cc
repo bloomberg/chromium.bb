@@ -39,7 +39,8 @@ using sessions::SyncSession;
 namespace {
 
 // Time to backoff syncing after receiving a throttled response.
-static const int kSyncDelayAfterThrottled = 2 * 60 * 60;  // 2 hours
+const int kSyncDelayAfterThrottled = 2 * 60 * 60;  // 2 hours
+
 void LogResponseProfilingData(const ClientToServerResponse& response) {
   if (response.has_profiling_data()) {
     stringstream response_trace;

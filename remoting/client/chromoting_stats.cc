@@ -7,10 +7,10 @@
 namespace {
 
 // The default window of bandwidth and frame rate in seconds.
-static const int kTimeWindow = 3;
+const int kTimeWindow = 3;
 
 // We take the last 10 latency numbers and report the average.
-static const int kLatencyWindow = 10;
+const int kLatencyWindow = 10;
 
 }  // namespace
 

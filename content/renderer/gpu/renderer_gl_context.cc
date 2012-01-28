@@ -53,7 +53,7 @@ class GLES2Initializer {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-static base::LazyInstance<GLES2Initializer> g_gles2_initializer =
+base::LazyInstance<GLES2Initializer> g_gles2_initializer =
     LAZY_INSTANCE_INITIALIZER;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -74,7 +74,7 @@ RendererGLContext::ContextLostReason ConvertReason(
 }
 #endif
 
-}  // namespace anonymous
+}  // namespace
 
 RendererGLContext::~RendererGLContext() {
   Destroy();

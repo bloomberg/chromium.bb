@@ -87,7 +87,7 @@ class GcryptInitializer {
   }
 };
 
-static base::LazyInstance<GcryptInitializer> g_gcrypt_initializer =
+base::LazyInstance<GcryptInitializer> g_gcrypt_initializer =
     LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace

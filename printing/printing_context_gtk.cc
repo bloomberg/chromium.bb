@@ -15,10 +15,12 @@
 #include "printing/units.h"
 
 namespace {
-  // Function pointer for creating print dialogs. |callback| is only used when
-  // |show_dialog| is true.
-  static printing::PrintDialogGtkInterface* (*create_dialog_func_)(
-      printing::PrintingContextGtk* context) = NULL;
+
+// Function pointer for creating print dialogs. |callback| is only used when
+// |show_dialog| is true.
+printing::PrintDialogGtkInterface* (*create_dialog_func_)(
+    printing::PrintingContextGtk* context) = NULL;
+
 }  // namespace
 
 namespace printing {

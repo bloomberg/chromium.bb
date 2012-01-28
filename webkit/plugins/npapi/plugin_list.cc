@@ -22,7 +22,7 @@
 
 namespace {
 
-static const char kApplicationOctetStream[] = "application/octet-stream";
+const char kApplicationOctetStream[] = "application/octet-stream";
 
 base::LazyInstance<webkit::npapi::PluginList> g_singleton =
     LAZY_INSTANCE_INITIALIZER;
