@@ -5349,14 +5349,6 @@
    fun:_ZN19ExtensionDispatcher18OnSetFunctionNamesERKSt6vectorISsSaISsEE
 }
 {
-   bug_109463
-   Memcheck:Leak
-   fun:malloc
-   fun:_ZN3WTF10fastMallocE*
-   fun:_ZN3WTF24ThreadSafeRefCountedBasenwE*
-   fun:_ZN7WebCore6IDBKey*
-}
-{
    bug_109466
    Memcheck:Uninitialized
    ...
@@ -5498,13 +5490,6 @@
    fun:_ZN5views17TreeViewViewsTest3AddEPNS_8TestNodeEiRKSs
 }
 {
-   bug_109868
-   Memcheck:Leak
-   fun:malloc
-   ...
-   fun:_ZN7WebCore6IDBKey12createNumberEd
-}
-{
    bug_109872
    Memcheck:Leak
    fun:_Znw*
@@ -5514,15 +5499,6 @@
    fun:_ZN7content15BrowserMainLoop21BrowserThreadsStartedEv
    fun:_ZN7content15BrowserMainLoop23RunMainMessageLoopPartsEPb
    fun:_Z11BrowserMainRKN7content18MainFunctionParamsE
-}
-{
-   bug_109873
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN6WebKit21IDBCursorBackendProxy16continueFunctionEN3WTF10PassRefPtrIN7WebCore6IDBKeyEEENS2_INS3_12IDBCallbacksEEERi
-   fun:_ZN7WebCore9IDBCursor16continueFunctionEN3WTF10PassRefPtrINS_6IDBKeyEEERi
-   fun:_ZN7WebCore9IDBCursor16continueFunctionERi
-   fun:_ZN7WebCore17IDBCursorInternalL16continueCallbackERKN2v89ArgumentsE
 }
 {
    bug_110734
