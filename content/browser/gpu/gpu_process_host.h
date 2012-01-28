@@ -80,12 +80,15 @@ class GpuProcessHost : public content::BrowserChildProcessHostDelegate,
   // Whether this GPU process is set up to use software rendering.
   bool software_rendering();
 
+  // Whether this GPU process is sandboxed.
+  bool sandboxed();
+
   void ForceShutdown();
 
  private:
   static bool HostIsValid(GpuProcessHost* host);
 
-  GpuProcessHost(int host_id);
+  GpuProcessHost(int host_id, bool sandboxed);
   virtual ~GpuProcessHost();
 
   bool Init();
@@ -149,6 +152,7 @@ class GpuProcessHost : public content::BrowserChildProcessHostDelegate,
   bool in_process_;
 
   bool software_rendering_;
+  bool sandboxed_;
 
   scoped_ptr<GpuMainThread> in_process_gpu_thread_;
 

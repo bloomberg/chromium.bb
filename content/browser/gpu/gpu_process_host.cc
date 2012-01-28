@@ -200,6 +200,9 @@ GpuProcessHost* GpuProcessHost::GetForRenderer(
        !it.IsAtEnd(); it.Advance()) {
     GpuProcessHost *host = it.GetCurrentValue();
 
+    if (host->sandboxed() != (client_id != 0))
+      continue;
+
     if (HostIsValid(host))
       return host;
   }
@@ -214,7 +217,7 @@ GpuProcessHost* GpuProcessHost::GetForRenderer(
                             cause,
                             content::CAUSE_FOR_GPU_LAUNCH_MAX_ENUM);
 
-  GpuProcessHost* host = new GpuProcessHost(host_id);
+  GpuProcessHost* host = new GpuProcessHost(host_id, client_id != 0);
   if (host->Init())
     return host;
 
@@ -246,11 +249,12 @@ GpuProcessHost* GpuProcessHost::FromID(int host_id) {
   return NULL;
 }
 
-GpuProcessHost::GpuProcessHost(int host_id)
+GpuProcessHost::GpuProcessHost(int host_id, bool sandboxed)
     : host_id_(host_id),
       gpu_process_(base::kNullProcessHandle),
       in_process_(false),
-      software_rendering_(false) {
+      software_rendering_(false),
+      sandboxed_(sandboxed) {
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess) ||
       CommandLine::ForCurrentProcess()->HasSwitch(switches::kInProcessGPU))
     in_process_ = true;
@@ -519,6 +523,10 @@ bool GpuProcessHost::software_rendering() {
   return software_rendering_;
 }
 
+bool GpuProcessHost::sandboxed() {
+  return sandboxed_;
+}
+
 void GpuProcessHost::ForceShutdown() {
   g_hosts_by_id.Pointer()->Remove(host_id_);
   process_->ForceShutdown();
@@ -550,6 +558,9 @@ bool GpuProcessHost::LaunchGpuProcess(const std::string& channel_id) {
   CommandLine* cmd_line = new CommandLine(exe_path);
   cmd_line->AppendSwitchASCII(switches::kProcessType, switches::kGpuProcess);
   cmd_line->AppendSwitchASCII(switches::kProcessChannelID, channel_id);
+
+  if (!sandboxed_)
+    cmd_line->AppendSwitch(switches::kDisableGpuSandbox);
 
   // Propagate relevant command line switches.
   static const char* const kSwitchNames[] = {

@@ -257,8 +257,10 @@ void GpuDataManager::RequestCompleteGpuInfoIfNeeded() {
 void GpuDataManager::UpdateGpuInfo(const content::GPUInfo& gpu_info) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  complete_gpu_info_available_ = true;
-  complete_gpu_info_already_requested_ = true;
+  complete_gpu_info_available_ =
+      complete_gpu_info_available_ || gpu_info.finalized;
+  complete_gpu_info_already_requested_ =
+      complete_gpu_info_already_requested_ || gpu_info.finalized;
   {
     base::AutoLock auto_lock(gpu_info_lock_);
     if (!Merge(&gpu_info_, gpu_info))

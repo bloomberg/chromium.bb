@@ -440,7 +440,7 @@ base::ProcessHandle StartProcessWithAccess(CommandLine* cmd_line,
 
   // If it is the GPU process then it can be disabled by a command line flag.
   if ((type == content::PROCESS_TYPE_GPU) &&
-      (browser_command_line.HasSwitch(switches::kDisableGpuSandbox))) {
+      (cmd_line->HasSwitch(switches::kDisableGpuSandbox))) {
     in_sandbox = false;
     DVLOG(1) << "GPU sandbox is disabled";
   }

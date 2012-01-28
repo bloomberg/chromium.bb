@@ -11,6 +11,7 @@
 
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
+#include "base/win/scoped_com_initializer.h"
 #include "content/gpu/gpu_info_collector.h"
 
 // Functions in this file depend on functions exported from dxguid.dll.
@@ -97,6 +98,7 @@ namespace gpu_info_collector {
 bool GetDxDiagnostics(content::DxDiagNode* output) {
   HRESULT hr;
   bool success = false;
+  base::win::ScopedCOMInitializer com_initializer;
 
   IDxDiagProvider* provider = NULL;
   hr = CoCreateInstance(CLSID_DxDiagProvider,

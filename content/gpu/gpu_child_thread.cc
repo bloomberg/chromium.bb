@@ -10,7 +10,6 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/threading/worker_pool.h"
-#include "base/win/scoped_com_initializer.h"
 #include "build/build_config.h"
 #include "content/common/child_process.h"
 #include "content/common/gpu/gpu_messages.h"
@@ -173,18 +172,21 @@ void GpuChildThread::OnCollectGraphicsInfo() {
     // Prevent concurrent collection of DirectX diagnostics.
     collecting_dx_diagnostics_ = true;
 
-    // Asynchronously collect the DirectX diagnostics because this can take a
-    // couple of seconds.
-    if (!base::WorkerPool::PostTask(
-        FROM_HERE, base::Bind(&GpuChildThread::CollectDxDiagnostics, this),
-        true)) {
-      // Flag GPU info as complete if the DirectX diagnostics cannot be
-      // collected.
-      collecting_dx_diagnostics_ = false;
-      gpu_info_.finalized = true;
-    } else {
-      // Do not send response if we are still completing the GPUInfo struct
-      return;
+    if (CommandLine::ForCurrentProcess()->HasSwitch(
+        switches::kDisableGpuSandbox)) {
+      // Asynchronously collect the DirectX diagnostics because this can take a
+      // couple of seconds.
+      if (!base::WorkerPool::PostTask(
+          FROM_HERE, base::Bind(&GpuChildThread::CollectDxDiagnostics, this),
+          true)) {
+        // Flag GPU info as complete if the DirectX diagnostics cannot be
+        // collected.
+        collecting_dx_diagnostics_ = false;
+        gpu_info_.finalized = true;
+      } else {
+        // Do not send response if we are still completing the GPUInfo struct
+        return;
+      }
     }
   }
 #endif
@@ -217,8 +219,6 @@ void GpuChildThread::OnHang() {
 // Runs on a worker thread. The GPU process never terminates voluntarily so
 // it is safe to assume that its message loop is valid.
 void GpuChildThread::CollectDxDiagnostics(GpuChildThread* thread) {
-  base::win::ScopedCOMInitializer com_initializer;
-
   content::DxDiagNode node;
   gpu_info_collector::GetDxDiagnostics(&node);
 
