@@ -1273,6 +1273,12 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
   // just changed it to include experiments.
   child_process_logging::SetCommandLine(CommandLine::ForCurrentProcess());
 
+#if defined(OS_LINUX) || defined(OS_OPENBSD)
+  // Set the product channel for crash reports.
+  child_process_logging::SetChannel(
+      chrome::VersionInfo::GetVersionStringModifier());
+#endif
+
   InitializeNetworkOptions(parsed_command_line());
   InitializeURLRequestThrottlerManager(browser_process_->net_log());
 

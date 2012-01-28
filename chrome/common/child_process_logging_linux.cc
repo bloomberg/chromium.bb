@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,12 +18,15 @@ namespace child_process_logging {
 // Account for the terminating null character.
 static const size_t kMaxActiveURLSize = 1024 + 1;
 static const size_t kClientIdSize = 32 + 1;
+static const size_t kChannelSize = 32;
 
 // We use static strings to hold the most recent active url and the client
 // identifier. If we crash, the crash handler code will send the contents of
 // these strings to the browser.
 char g_active_url[kMaxActiveURLSize];
 char g_client_id[kClientIdSize];
+
+char g_channel[kChannelSize] = "";
 
 static const size_t kGpuStringSize = 32;
 
@@ -121,6 +124,11 @@ void SetCommandLine(const CommandLine* command_line) {
   }
   strncpy(g_switches, command_line_str.c_str(), kMaxSwitchesSize - 1);
   g_switches[kMaxSwitchesSize - 1] = '\0';
+}
+
+void SetChannel(const std::string& channel) {
+  strncpy(g_channel, channel.c_str(), kChannelSize - 1);
+  g_channel[kChannelSize - 1] = '\0';
 }
 
 }  // namespace child_process_logging

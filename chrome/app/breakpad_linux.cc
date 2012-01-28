@@ -416,6 +416,11 @@ pid_t HandleCrashDump(const BreakpadInfo& info) {
   //   BOUNDARY \r\n
   //
   //   zero or one:
+  //   Content-Disposition: form-data; name="channel" \r\n \r\n
+  //   beta \r\n
+  //   BOUNDARY \r\n
+  //
+  //   zero or one:
   //   Content-Disposition: form-data; name="num-views" \r\n \r\n
   //   3 \r\n
   //   BOUNDARY \r\n
@@ -453,16 +458,13 @@ pid_t HandleCrashDump(const BreakpadInfo& info) {
     static const char chrome_product_msg[] = "Chrome_Linux";
 #endif
     static const char version_msg[] = PRODUCT_VERSION;
-    static const char prod_msg[] = "prod";
-    static const char ver_msg[] = "ver";
-    static const char guid_msg[] = "guid";
 
     writer.AddBoundary();
-    writer.AddPairString(prod_msg, chrome_product_msg);
+    writer.AddPairString("prod", chrome_product_msg);
     writer.AddBoundary();
-    writer.AddPairString(ver_msg, version_msg);
+    writer.AddPairString("ver", version_msg);
     writer.AddBoundary();
-    writer.AddPairString(guid_msg, info.guid);
+    writer.AddPairString("guid", info.guid);
     writer.AddBoundary();
     writer.Flush();
   }
@@ -487,8 +489,7 @@ pid_t HandleCrashDump(const BreakpadInfo& info) {
   }
 
   if (info.process_type_length) {
-    static const char process_type_msg[] = "ptype";
-    writer.AddPairString(process_type_msg, info.process_type);
+    writer.AddPairString("ptype", info.process_type);
     writer.AddBoundary();
     writer.Flush();
   }
@@ -531,19 +532,20 @@ pid_t HandleCrashDump(const BreakpadInfo& info) {
         MimeWriter::kMaxCrashChunkSize, false /* Don't strip whitespaces. */);
   }
 
-  unsigned num_views_len = my_strlen(child_process_logging::g_num_views);
-  if (num_views_len) {
-    static const char num_views_msg[] = "num-views";
-    writer.AddPairString(num_views_msg, child_process_logging::g_num_views);
+  if (my_strlen(child_process_logging::g_channel)) {
+    writer.AddPairString("channel", child_process_logging::g_channel);
     writer.AddBoundary();
     writer.Flush();
   }
 
-  unsigned num_extensions_len =
-      my_strlen(child_process_logging::g_num_extensions);
-  if (num_extensions_len) {
-    static const char num_extensions_msg[] = "num-extensions";
-    writer.AddPairString(num_extensions_msg,
+  if (my_strlen(child_process_logging::g_num_views)) {
+    writer.AddPairString("num-views", child_process_logging::g_num_views);
+    writer.AddBoundary();
+    writer.Flush();
+  }
+
+  if (my_strlen(child_process_logging::g_num_extensions)) {
+    writer.AddPairString("num-extensions",
                          child_process_logging::g_num_extensions);
     writer.AddBoundary();
     writer.Flush();
@@ -562,11 +564,8 @@ pid_t HandleCrashDump(const BreakpadInfo& info) {
         false /* Don't strip whitespace. */);
   }
 
-  unsigned num_switches_len =
-      my_strlen(child_process_logging::g_num_switches);
-  if (num_switches_len) {
-    static const char num_switches_msg[] = "num-switches";
-    writer.AddPairString(num_switches_msg,
+  if (my_strlen(child_process_logging::g_num_switches)) {
+    writer.AddPairString("num-switches",
                          child_process_logging::g_num_switches);
     writer.AddBoundary();
     writer.Flush();

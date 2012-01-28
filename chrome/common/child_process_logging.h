@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -37,6 +37,7 @@ namespace child_process_logging {
 // These are declared here so the crash reporter can access them directly in
 // compromised context without going through the standard library.
 extern char g_active_url[];
+extern char g_channel[];
 extern char g_client_id[];
 extern char g_extension_ids[];
 extern char g_gpu_vendor_id[];
@@ -84,6 +85,11 @@ void SetGpuInfo(const content::GPUInfo& gpu_info);
 // Sets the command line arguments to send along with crash reports to the
 // values in |command_line|.
 void SetCommandLine(const CommandLine* command_line);
+
+#if defined(OS_LINUX) || defined(OS_OPENBSD)
+// Sets the product channel data to send along with crash reports to |channel|.
+void SetChannel(const std::string& channel);
+#endif
 
 // Simple wrapper class that sets the active URL in it's constructor and clears
 // the active URL in the destructor.
