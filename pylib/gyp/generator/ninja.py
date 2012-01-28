@@ -1127,9 +1127,7 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
     if flavor == 'mac':
       gyp.xcode_emulation.MergeGlobalXcodeSettingsToSpec(data[build_file], spec)
 
-    # TODO: what is options.depth and how is it different than
-    # options.toplevel_dir?
-    build_file = gyp.common.RelativePath(build_file, options.depth)
+    build_file = gyp.common.RelativePath(build_file, options.toplevel_dir)
 
     base_path = os.path.dirname(build_file)
     obj = 'obj'
