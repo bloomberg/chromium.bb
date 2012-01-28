@@ -26,7 +26,8 @@ ExtensionSettingDataTypeController::ExtensionSettingDataTypeController(
                                     profile,
                                     profile_sync_service),
       type_(type),
-      profile_(profile),
+      settings_frontend_(
+          profile->GetExtensionService()->settings_frontend()),
       profile_sync_service_(profile_sync_service),
       settings_service_(NULL) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -46,16 +47,13 @@ ExtensionSettingDataTypeController::model_safe_group() const {
 }
 
 bool ExtensionSettingDataTypeController::StartModels() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  profile_->InitExtensions(true);
   return true;
 }
 
 bool ExtensionSettingDataTypeController::StartAssociationAsync() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK_EQ(state(), ASSOCIATING);
-  DCHECK(profile_->GetExtensionService());
-  profile_->GetExtensionService()->settings_frontend()->RunWithSyncableService(
+  settings_frontend_->RunWithSyncableService(
       type_,
       base::Bind(
           &ExtensionSettingDataTypeController::

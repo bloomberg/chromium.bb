@@ -216,10 +216,6 @@ void SyncTest::AddOptionalTypesToCommandLine(CommandLine* cl) {
   // TODO(sync): Remove this once sessions sync is enabled by default.
   if (!cl->HasSwitch(switches::kEnableSyncTabs))
     cl->AppendSwitch(switches::kEnableSyncTabs);
-  // TODO(kalman): Remove this once extension/app settings sync is enabled by
-  // default.
-  if (!cl->HasSwitch(switches::kEnableSyncExtensionSettings))
-    cl->AppendSwitch(switches::kEnableSyncExtensionSettings);
 }
 
 // static
