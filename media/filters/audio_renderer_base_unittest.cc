@@ -38,6 +38,7 @@ class MockAudioRendererBase : public AudioRendererBase {
   // AudioRendererBase implementation.
   MOCK_METHOD3(OnInitialize, bool(int, ChannelLayout, int));
   MOCK_METHOD0(OnStop, void());
+  MOCK_METHOD0(OnRenderEndOfStream, void());
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockAudioRendererBase);
@@ -148,7 +149,7 @@ class AudioRendererBaseTest : public ::testing::Test {
   bool ConsumeBufferedData(uint32 size, bool* muted) {
     scoped_array<uint8> buffer(new uint8[size]);
     uint32 bytes_read = renderer_->FillBuffer(buffer.get(), size,
-                                              base::TimeDelta(), true);
+                                              base::TimeDelta());
     if (bytes_read > 0 && muted) {
       *muted = (buffer[0] == kMutedAudio);
     }
@@ -240,6 +241,8 @@ TEST_F(AudioRendererBaseTest, EndOfStream) {
   EXPECT_FALSE(renderer_->HasEnded());
 
   // Drain internal buffer, now we should report ended.
+  EXPECT_CALL(*renderer_, OnRenderEndOfStream())
+      .WillOnce(Invoke(renderer_.get(), &AudioRendererBase::SignalEndOfStream));
   EXPECT_CALL(host_, NotifyEnded());
   EXPECT_TRUE(ConsumeBufferedData(bytes_buffered(), NULL));
   EXPECT_TRUE(renderer_->HasEnded());
@@ -320,6 +323,8 @@ TEST_F(AudioRendererBaseTest, Underflow_EndOfStream) {
   // stop reading after receiving an end of stream buffer. It should have also
   // called NotifyEnded() http://crbug.com/106641
   DeliverEndOfStream();
+  EXPECT_CALL(*renderer_, OnRenderEndOfStream())
+      .WillOnce(Invoke(renderer_.get(), &AudioRendererBase::SignalEndOfStream));
   EXPECT_CALL(host_, NotifyEnded());
   EXPECT_FALSE(ConsumeBufferedData(kDataSize, &muted));
   EXPECT_FALSE(muted);

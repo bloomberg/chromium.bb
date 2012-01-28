@@ -189,8 +189,7 @@ void AudioRendererBase::DecodedAudioReady(scoped_refptr<Buffer> buffer) {
 
 uint32 AudioRendererBase::FillBuffer(uint8* dest,
                                      uint32 dest_len,
-                                     const base::TimeDelta& playback_delay,
-                                     bool buffers_empty) {
+                                     const base::TimeDelta& playback_delay) {
   // The timestamp of the last buffer written during the last call to
   // FillBuffer().
   base::TimeDelta last_fill_buffer_time;
@@ -222,21 +221,21 @@ uint32 AudioRendererBase::FillBuffer(uint8* dest,
 
     // Use three conditions to determine the end of playback:
     // 1. Algorithm has no audio data. (algorithm_->IsQueueEmpty() == true)
-    // 2. Browser process has no audio data. (buffers_empty == true)
-    // 3. We've recieved an end of stream buffer.
+    // 2. We've recieved an end of stream buffer.
     //    (recieved_end_of_stream_ == true)
+    // 3. Browser process has no audio data being played.
+    //    There is no way to check that condition that would work for all
+    //    derived classes, so call virtual method that would either render
+    //    end of stream or schedule such rendering.
     //
     // Three conditions determine when an underflow occurs:
     // 1. Algorithm has no audio data.
     // 2. Currently in the kPlaying state.
     // 3. Have not received an end of stream buffer.
     if (algorithm_->IsQueueEmpty()) {
-      if (buffers_empty && recieved_end_of_stream_) {
-        if (!rendered_end_of_stream_) {
-          rendered_end_of_stream_ = true;
-          host()->NotifyEnded();
-        }
-      } else if (state_ == kPlaying && !recieved_end_of_stream_) {
+      if (recieved_end_of_stream_) {
+        OnRenderEndOfStream();
+      } else if (state_ == kPlaying) {
         state_ = kUnderflow;
         underflow_cb = underflow_callback_;
       }
@@ -267,6 +266,14 @@ uint32 AudioRendererBase::FillBuffer(uint8* dest,
     underflow_cb.Run();
 
   return dest_written;
+}
+
+void AudioRendererBase::SignalEndOfStream() {
+  DCHECK(recieved_end_of_stream_);
+  if (!rendered_end_of_stream_) {
+    rendered_end_of_stream_ = true;
+    host()->NotifyEnded();
+  }
 }
 
 void AudioRendererBase::ScheduleRead_Locked() {

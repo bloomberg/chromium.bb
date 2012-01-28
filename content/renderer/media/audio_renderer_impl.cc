@@ -218,13 +218,9 @@ size_t AudioRendererImpl::Render(const std::vector<float*>& audio_data,
   const size_t buf_size = number_of_frames * bytes_per_frame;
   scoped_array<uint8> buf(new uint8[buf_size]);
 
-  base::Time time_now = base::Time::Now();
-  uint32 filled = FillBuffer(buf.get(),
-                             buf_size,
-                             request_delay,
-                             time_now >= earliest_end_time_);
+  uint32 filled = FillBuffer(buf.get(), buf_size, request_delay);
   DCHECK_LE(filled, buf_size);
-  UpdateEarliestEndTime(filled, request_delay, time_now);
+  UpdateEarliestEndTime(filled, request_delay, base::Time::Now());
 
   uint32 filled_frames = filled / bytes_per_frame;
 
@@ -251,4 +247,10 @@ size_t AudioRendererImpl::Render(const std::vector<float*>& audio_data,
 
 void AudioRendererImpl::OnError() {
   host()->DisableAudioRenderer();
+}
+
+void AudioRendererImpl::OnRenderEndOfStream() {
+  // TODO(enal): schedule callback instead of polling.
+  if (base::Time::Now() >= earliest_end_time_)
+    SignalEndOfStream();
 }

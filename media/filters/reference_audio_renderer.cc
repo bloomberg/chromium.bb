@@ -15,6 +15,7 @@ ReferenceAudioRenderer::ReferenceAudioRenderer(AudioManager* audio_manager)
     : AudioRendererBase(),
       audio_manager_(audio_manager),
       bytes_per_second_(0),
+      has_buffered_data_(true),
       buffer_capacity_(0) {
 }
 
@@ -67,10 +68,18 @@ void ReferenceAudioRenderer::OnMoreData(AudioOutputController* controller,
   base::TimeDelta delay = base::TimeDelta::FromMicroseconds(
       base::Time::kMicrosecondsPerSecond * pending_bytes /
       bytes_per_second_);
-  bool buffers_empty = buffers_state.pending_bytes == 0;
-  uint32 read = FillBuffer(buffer_.get(), buffer_capacity_, delay,
-                           buffers_empty);
+  has_buffered_data_ = buffers_state.pending_bytes != 0;
+  uint32 read = FillBuffer(buffer_.get(), buffer_capacity_, delay);
   controller->EnqueueData(buffer_.get(), read);
+}
+
+void ReferenceAudioRenderer::OnRenderEndOfStream() {
+  // We cannot signal end of stream as long as we have buffered data.
+  // In such case eventually host would playback all the data, and OnMoreData()
+  // would be called with buffers_state.pending_bytes == 0. At that moment
+  // we'll call SignalEndOfStream();
+  if (!has_buffered_data_)
+    SignalEndOfStream();
 }
 
 bool ReferenceAudioRenderer::OnInitialize(int bits_per_channel,

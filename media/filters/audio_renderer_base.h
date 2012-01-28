@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,7 @@
 // must also implement the following methods:
 //   OnInitialized
 //   OnStop
+//   OnRenderEndOfStream
 //
 // The general assumption is that subclasses start a callback-based audio thread
 // which needs to be filled with decoded audio data.  AudioDecoderBase provides
@@ -47,6 +48,9 @@ class MEDIA_EXPORT AudioRendererBase : public AudioRenderer {
   virtual void ResumeAfterUnderflow(bool buffer_more_audio) OVERRIDE;
 
  protected:
+  FRIEND_TEST_ALL_PREFIXES(AudioRendererBaseTest, EndOfStream);
+  FRIEND_TEST_ALL_PREFIXES(AudioRendererBaseTest, Underflow_EndOfStream);
+
   // Subclasses should return true if they were able to initialize, false
   // otherwise.
   virtual bool OnInitialize(int bits_per_channel,
@@ -56,6 +60,11 @@ class MEDIA_EXPORT AudioRendererBase : public AudioRenderer {
   // Called by Stop().  Subclasses should perform any necessary cleanup during
   // this time, such as stopping any running threads.
   virtual void OnStop() = 0;
+
+  // Method called by FillBuffer() when it finds that it reached end of stream.
+  // FillBuffer() cannot immediately signal end of stream event because browser
+  // may have buffered data.
+  virtual void OnRenderEndOfStream() = 0;
 
   // Callback from the audio decoder delivering decoded audio samples.
   void DecodedAudioReady(scoped_refptr<Buffer> buffer);
@@ -76,15 +85,20 @@ class MEDIA_EXPORT AudioRendererBase : public AudioRenderer {
   // should the filled buffer be played. If FillBuffer() is called as the audio
   // hardware plays the buffer, then |playback_delay| should be zero.
   //
-  // |buffers_empty| is set to true when all the hardware buffers become empty.
-  // This is an indication that all the data written to the device has been
-  // played.
+  // FillBuffer() calls OnRenderEndOfStream() when it reaches end of stream.
+  // It is responsibility of derived class to provide implementation of
+  // OnRenderEndOfStream() that calls SignalEndOfStream() when all the hardware
+  // buffers become empty (i.e. when all the data written to the device has
+  // been played).
   //
   // Safe to call on any thread.
   uint32 FillBuffer(uint8* dest,
                     uint32 len,
-                    const base::TimeDelta& playback_delay,
-                    bool buffers_empty);
+                    const base::TimeDelta& playback_delay);
+
+  // Called by OnRenderEndOfStream() or some callback scheduled by derived class
+  // to signal end of stream.
+  void SignalEndOfStream();
 
   // Get/Set the playback rate of |algorithm_|.
   virtual void SetPlaybackRate(float playback_rate) OVERRIDE;

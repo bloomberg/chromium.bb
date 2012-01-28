@@ -57,6 +57,7 @@ class CONTENT_EXPORT AudioRendererImpl
                             ChannelLayout channel_layout,
                             int sample_rate) OVERRIDE;
   virtual void OnStop() OVERRIDE;
+  virtual void OnRenderEndOfStream() OVERRIDE;
 
  private:
   // For access to constructor and IO thread methods.

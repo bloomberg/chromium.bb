@@ -49,10 +49,12 @@ class MEDIA_EXPORT ReferenceAudioRenderer
                             ChannelLayout channel_layout,
                             int sample_rate) OVERRIDE;
   virtual void OnStop() OVERRIDE;
+  virtual void OnRenderEndOfStream() OVERRIDE;
 
  private:
   scoped_refptr<AudioManager> audio_manager_;
   int bytes_per_second_;
+  bool has_buffered_data_;
 
   // Audio output controller.
   scoped_refptr<media::AudioOutputController> controller_;

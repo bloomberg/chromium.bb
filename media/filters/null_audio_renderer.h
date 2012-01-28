@@ -37,6 +37,7 @@ class MEDIA_EXPORT NullAudioRenderer : public AudioRendererBase {
                             ChannelLayout channel_layout,
                             int sample_rate) OVERRIDE;
   virtual void OnStop() OVERRIDE;
+  virtual void OnRenderEndOfStream() OVERRIDE;
 
  private:
   // Audio thread task that periodically calls FillBuffer() to consume

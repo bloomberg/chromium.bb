@@ -61,10 +61,7 @@ void NullAudioRenderer::FillBufferTask() {
 
   // Only consume buffers when actually playing.
   if (GetPlaybackRate() > 0.0f)  {
-    size_t bytes = FillBuffer(buffer_.get(),
-                              buffer_size_,
-                              base::TimeDelta(),
-                              true);
+    size_t bytes = FillBuffer(buffer_.get(), buffer_size_, base::TimeDelta());
 
     // Calculate our sleep duration, taking playback rate into consideration.
     delay = base::TimeDelta::FromMilliseconds(
@@ -79,6 +76,10 @@ void NullAudioRenderer::FillBufferTask() {
       FROM_HERE,
       base::Bind(&NullAudioRenderer::FillBufferTask, this),
       std::max(delay, base::TimeDelta::FromMilliseconds(1)));
+}
+
+void NullAudioRenderer::OnRenderEndOfStream() {
+  SignalEndOfStream();
 }
 
 }  // namespace media
