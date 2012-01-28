@@ -56,7 +56,7 @@
         'test_web_graphics_context_3d.h',
       ],
       'conditions': [
-        ['OS == "win" and views_compositor == 1', {
+        ['OS == "win" and use_aura == 1', {
           # TODO(sky): before we make this real need to remove
           # IDR_BITMAP_BRUSH_IMAGE.
           'dependencies': [

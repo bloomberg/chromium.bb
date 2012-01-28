@@ -141,7 +141,7 @@
             '../build/linux/system.gyp:glib',
           ],
         }],
-        ['views_compositor==1', {
+        ['use_aura==1', {
           'dependencies': [
             '../ui/gfx/compositor/compositor.gyp:compositor',
           ],

@@ -2536,7 +2536,7 @@ TEST_F(ViewTest, AddExistingChild) {
 // Layers
 ////////////////////////////////////////////////////////////////////////////////
 
-#if defined(VIEWS_COMPOSITOR)
+#if defined(USE_AURA)
 
 namespace {
 
@@ -2575,14 +2575,10 @@ class ViewLayerTest : public ViewsTestBase {
 
   // Returns the Layer used by the RootView.
   ui::Layer* GetRootLayer() {
-#if defined(USE_AURA)
     ui::Layer* root_layer = NULL;
     gfx::Point origin;
     widget()->CalculateOffsetToAncestorWithLayer(&origin, &root_layer);
     return root_layer;
-#else
-    return widget()->GetRootView()->layer();
-#endif
   }
 
   virtual void SetUp() OVERRIDE {
@@ -2612,45 +2608,13 @@ class ViewLayerTest : public ViewsTestBase {
   bool old_use_acceleration_;
 };
 
-#if !defined(USE_AURA)
-// This test assumes a particular layer hierarchy that isn't valid for aura.
-// Ensures the RootView has a layer and its set up correctly.
-TEST_F(ViewLayerTest, RootState) {
-  ui::Layer* layer = widget()->GetRootView()->layer();
-  ASSERT_TRUE(layer);
-  EXPECT_FALSE(layer->parent());
-  EXPECT_EQ(0u, layer->children().size());
-  EXPECT_FALSE(layer->transform().HasChange());
-  EXPECT_EQ(widget()->GetRootView()->bounds(), layer->bounds());
-  EXPECT_TRUE(layer->GetCompositor() != NULL);
-}
-
-// Verifies that the complete bounds of a texture are updated if the texture
-// needs to be refreshed and paint with a clip is invoked.
-// This test invokes OnNativeWidgetPaintAccelerated, which is not used by aura.
-TEST_F(ViewLayerTest, PaintAll) {
-  View* view = widget()->GetRootView();
-  ui::Layer* layer = GetRootLayer();
-  view->SetBounds(0, 0, 200, 200);
-  widget()->OnNativeWidgetPaintAccelerated(gfx::Rect(0, 0, 1, 1));
-  ASSERT_TRUE(layer != NULL);
-  const ui::TestTexture* texture =
-      static_cast<const ui::TestTexture*>(layer->texture());
-  ASSERT_TRUE(texture != NULL);
-  EXPECT_EQ(view->GetLocalBounds(), texture->bounds_of_last_paint());
-}
-#endif
 
 TEST_F(ViewLayerTest, LayerToggling) {
   // Because we lazily create textures the calls to DrawTree are necessary to
   // ensure we trigger creation of textures.
-#if defined(USE_AURA)
   ui::Layer* root_layer = NULL;
   gfx::Point origin;
   widget()->CalculateOffsetToAncestorWithLayer(&origin, &root_layer);
-#else
-  ui::Layer* root_layer = widget()->GetRootView()->layer();
-#endif
   View* content_view = new View;
   widget()->SetContentsView(content_view);
 
@@ -2982,7 +2946,6 @@ TEST_F(ViewLayerTest, FLAKY_ViewLayerTreesInSync) {
   EXPECT_TRUE(ViewAndLayerTreeAreConsistent(content, content->layer()));
 }
 
-#if defined(USE_AURA)
 // Verifies when views are reordered the layer is also reordered. The widget is
 // providing the parent layer.
 TEST_F(ViewLayerTest, ReorderUnderWidget) {
@@ -3006,8 +2969,7 @@ TEST_F(ViewLayerTest, ReorderUnderWidget) {
   EXPECT_EQ(c1->layer(), parent_layer->children()[1]);
   EXPECT_EQ(c2->layer(), parent_layer->children()[0]);
 }
-#endif
 
-#endif  // VIEWS_COMPOSITOR
+#endif  // USE_AURA
 
 }  // namespace views

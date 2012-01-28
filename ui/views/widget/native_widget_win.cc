@@ -1297,24 +1297,6 @@ LRESULT NativeWidgetWin::OnCreate(CREATESTRUCT* create_struct) {
   // creation time.
   ClientAreaSizeChanged();
 
-#if defined(VIEWS_COMPOSITOR)
-  if (View::get_use_acceleration_when_possible()) {
-    if (ui::Compositor::compositor_factory()) {
-      compositor_ = (*Widget::compositor_factory())(this);
-    } else {
-      CRect window_rect;
-      GetClientRect(&window_rect);
-      compositor_ = ui::Compositor::Create(this,
-          hwnd(),
-          gfx::Size(window_rect.Width(), window_rect.Height()));
-    }
-    if (compositor_.get()) {
-      delegate_->AsWidget()->GetRootView()->SetPaintToLayer(true);
-      compositor_->SetRootLayer(delegate_->AsWidget()->GetRootView()->layer());
-    }
-  }
-#endif
-
   delegate_->OnNativeWidgetCreated();
 
   // Get access to a modifiable copy of the system menu.

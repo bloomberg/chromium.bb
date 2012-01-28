@@ -12,7 +12,7 @@ namespace ui {
 
 // Configures the compositor in such a way that it doesn't render anything.
 // Does nothing on platforms that aren't using the compositor.
-#if !defined(VIEWS_COMPOSITOR)
+#if !defined(USE_AURA)
 // To centralize the ifdef to this file we define the function as doing nothing
 // on all platforms that don't use a compositor.
 static inline void SetupTestCompositor() {}
