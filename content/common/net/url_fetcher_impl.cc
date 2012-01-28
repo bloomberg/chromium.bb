@@ -854,7 +854,8 @@ void URLFetcherImpl::Core::StartURLRequestWhenAppropriate() {
     StartURLRequest();
   } else {
     MessageLoop::current()->PostDelayedTask(
-        FROM_HERE, base::Bind(&Core::StartURLRequest, this), delay);
+        FROM_HERE, base::Bind(&Core::StartURLRequest, this),
+        base::TimeDelta::FromMilliseconds(delay));
   }
 }
 
