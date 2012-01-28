@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/aura/gestures/gesture_recognizer.h"
+#include "ui/aura/gestures/gesture_recognizer_aura.h"
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
@@ -11,13 +11,29 @@
 #include "ui/base/events.h"
 
 namespace {
-// TODO(Gajen): Make these configurable in sync with this CL http://code.google.
-//              com/p/chromium/issues/detail?id=100773.
+// TODO(girard): Make these configurable in sync with this CL
+//               http://crbug.com/100773
 const double kMaximumTouchDownDurationInSecondsForClick = 0.8;
 const double kMinimumTouchDownDurationInSecondsForClick = 0.01;
 const double kMaximumSecondsBetweenDoubleClick = 0.7;
 const int kMaximumTouchMoveInPixelsForClick = 20;
 const float kMinFlickSpeedSquared = 550.f * 550.f;
+
+// This is used to pop a std::queue when returning from a function.
+class ScopedPop {
+ public:
+  ScopedPop(std::queue<aura::TouchEvent*>* queue) : queue_(queue) {
+  }
+
+  ~ScopedPop() {
+    delete queue_->front();
+    queue_->pop();
+  }
+
+ private:
+  std::queue<aura::TouchEvent*>* queue_;
+  DISALLOW_COPY_AND_ASSIGN(ScopedPop);
+};
 
 }  // namespace
 
@@ -26,32 +42,32 @@ namespace aura {
 namespace {
 
 // Get equivalent TouchState from EventType |type|.
-GestureRecognizer::TouchState TouchEventTypeToTouchState(ui::EventType type) {
+GestureSequence::TouchState TouchEventTypeToTouchState(ui::EventType type) {
   switch (type) {
     case ui::ET_TOUCH_RELEASED:
-      return GestureRecognizer::TS_RELEASED;
+      return GestureSequence::TS_RELEASED;
     case ui::ET_TOUCH_PRESSED:
-      return GestureRecognizer::TS_PRESSED;
+      return GestureSequence::TS_PRESSED;
     case ui::ET_TOUCH_MOVED:
-      return GestureRecognizer::TS_MOVED;
+      return GestureSequence::TS_MOVED;
     case ui::ET_TOUCH_STATIONARY:
-      return GestureRecognizer::TS_STATIONARY;
+      return GestureSequence::TS_STATIONARY;
     case ui::ET_TOUCH_CANCELLED:
-      return GestureRecognizer::TS_CANCELLED;
+      return GestureSequence::TS_CANCELLED;
     default:
       VLOG(1) << "Unknown Touch Event type";
   }
-  return GestureRecognizer::TS_UNKNOWN;
+  return GestureSequence::TS_UNKNOWN;
 }
 
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
-// GestureRecognizer Public:
+// GestureSequence Public:
 
-GestureRecognizer::GestureRecognizer()
+GestureSequence::GestureSequence()
     : first_touch_time_(0.0),
-      state_(GestureRecognizer::GS_NO_GESTURE),
+      state_(GestureSequence::GS_NO_GESTURE),
       last_touch_time_(0.0),
       last_click_time_(0.0),
       x_velocity_(0.0),
@@ -59,10 +75,10 @@ GestureRecognizer::GestureRecognizer()
       flags_(0) {
 }
 
-GestureRecognizer::~GestureRecognizer() {
+GestureSequence::~GestureSequence() {
 }
 
-GestureRecognizer::Gestures* GestureRecognizer::ProcessTouchEventForGesture(
+GestureSequence::Gestures* GestureSequence::ProcessTouchEventForGesture(
     const TouchEvent& event,
     ui::TouchStatus status) {
   if (status != ui::TOUCH_STATUS_UNKNOWN)
@@ -95,27 +111,9 @@ GestureRecognizer::Gestures* GestureRecognizer::ProcessTouchEventForGesture(
   return gestures.release();
 }
 
-void GestureRecognizer::QueueTouchEventForGesture(Window* window,
-                                                  const TouchEvent& event) {
-  // TODO(sad):
-  NOTIMPLEMENTED();
-}
-
-GestureRecognizer::Gestures* GestureRecognizer::AdvanceTouchQueue(
-    Window* window, bool processed) {
-  // TODO(sad):
-  NOTIMPLEMENTED();
-  return NULL;
-}
-
-void GestureRecognizer::FlushTouchQueue(Window* window) {
-  // TODO(sad):
-  NOTIMPLEMENTED();
-}
-
-void GestureRecognizer::Reset() {
+void GestureSequence::Reset() {
   first_touch_time_ = 0.0;
-  state_ = GestureRecognizer::GS_NO_GESTURE;
+  state_ = GestureSequence::GS_NO_GESTURE;
   last_touch_time_ = 0.0;
   last_touch_position_.SetPoint(0, 0);
   x_velocity_ = 0.0;
@@ -123,48 +121,49 @@ void GestureRecognizer::Reset() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// GestureRecognizer Private:
+// GestureSequence Private:
 
-unsigned int GestureRecognizer::Signature(GestureState gesture_state,
-                                unsigned int touch_id, ui::EventType type,
-                                bool touch_handled) {
+unsigned int GestureSequence::Signature(GestureState gesture_state,
+    unsigned int touch_id,
+    ui::EventType type,
+    bool touch_handled) {
   CHECK((touch_id & 0xfff) == touch_id);
   TouchState touch_state = TouchEventTypeToTouchState(type);
   return 1 + ((touch_state & 0x7) << 1 | (touch_handled ? 1 << 4 : 0) |
              ((touch_id & 0xfff) << 5) | (gesture_state << 17));
 }
 
-bool GestureRecognizer::IsInClickTimeWindow() {
+bool GestureSequence::IsInClickTimeWindow() {
   double duration(last_touch_time_ - first_touch_time_);
   return duration >= kMinimumTouchDownDurationInSecondsForClick &&
          duration < kMaximumTouchDownDurationInSecondsForClick;
 }
 
-bool GestureRecognizer::IsInSecondClickTimeWindow() {
+bool GestureSequence::IsInSecondClickTimeWindow() {
   double duration(last_touch_time_ - last_click_time_);
   return duration < kMaximumSecondsBetweenDoubleClick;
 }
 
-bool GestureRecognizer::IsInsideManhattanSquare(const TouchEvent& event) {
+bool GestureSequence::IsInsideManhattanSquare(const TouchEvent& event) {
   int manhattanDistance = abs(event.x() - first_touch_position_.x()) +
                           abs(event.y() - first_touch_position_.y());
   return manhattanDistance < kMaximumTouchMoveInPixelsForClick;
 }
 
-bool GestureRecognizer::IsSecondClickInsideManhattanSquare(
+bool GestureSequence::IsSecondClickInsideManhattanSquare(
     const TouchEvent& event) {
   int manhattanDistance = abs(event.x() - last_click_position_.x()) +
                           abs(event.y() - last_click_position_.y());
   return manhattanDistance < kMaximumTouchMoveInPixelsForClick;
 }
 
-bool GestureRecognizer::IsOverMinFlickSpeed() {
+bool GestureSequence::IsOverMinFlickSpeed() {
   return (x_velocity_ * x_velocity_ + y_velocity_ * y_velocity_) >
           kMinFlickSpeedSquared;
 }
 
-void GestureRecognizer::AppendTapDownGestureEvent(const TouchEvent& event,
-                                                  Gestures* gestures) {
+void GestureSequence::AppendTapDownGestureEvent(const TouchEvent& event,
+                                                Gestures* gestures) {
   gestures->push_back(linked_ptr<GestureEvent>(new GestureEvent(
       ui::ET_GESTURE_TAP_DOWN,
       first_touch_position_.x(),
@@ -174,8 +173,8 @@ void GestureRecognizer::AppendTapDownGestureEvent(const TouchEvent& event,
       0.f, 0.f)));
 }
 
-void GestureRecognizer::AppendClickGestureEvent(const TouchEvent& event,
-                                                Gestures* gestures) {
+void GestureSequence::AppendClickGestureEvent(const TouchEvent& event,
+                                              Gestures* gestures) {
   gestures->push_back(linked_ptr<GestureEvent>(new GestureEvent(
       ui::ET_GESTURE_TAP,
       first_touch_position_.x(),
@@ -185,8 +184,8 @@ void GestureRecognizer::AppendClickGestureEvent(const TouchEvent& event,
       0.f, 0.f)));
 }
 
-void GestureRecognizer::AppendDoubleClickGestureEvent(const TouchEvent& event,
-                                                      Gestures* gestures) {
+void GestureSequence::AppendDoubleClickGestureEvent(const TouchEvent& event,
+                                                    Gestures* gestures) {
   gestures->push_back(linked_ptr<GestureEvent>(new GestureEvent(
       ui::ET_GESTURE_DOUBLE_TAP,
       first_touch_position_.x(),
@@ -196,8 +195,8 @@ void GestureRecognizer::AppendDoubleClickGestureEvent(const TouchEvent& event,
       0.f, 0.f)));
 }
 
-void GestureRecognizer::AppendScrollGestureBegin(const TouchEvent& event,
-                                                 Gestures* gestures) {
+void GestureSequence::AppendScrollGestureBegin(const TouchEvent& event,
+                                               Gestures* gestures) {
   gestures->push_back(linked_ptr<GestureEvent>(new GestureEvent(
       ui::ET_GESTURE_SCROLL_BEGIN,
       event.x(),
@@ -207,10 +206,10 @@ void GestureRecognizer::AppendScrollGestureBegin(const TouchEvent& event,
       0.f, 0.f)));
 }
 
-void GestureRecognizer::AppendScrollGestureEnd(const TouchEvent& event,
-                                               Gestures* gestures,
-                                               float x_velocity,
-                                               float y_velocity) {
+void GestureSequence::AppendScrollGestureEnd(const TouchEvent& event,
+                                             Gestures* gestures,
+                                             float x_velocity,
+                                             float y_velocity) {
   gestures->push_back(linked_ptr<GestureEvent>(new GestureEvent(
       ui::ET_GESTURE_SCROLL_END,
       event.x(),
@@ -220,8 +219,8 @@ void GestureRecognizer::AppendScrollGestureEnd(const TouchEvent& event,
       x_velocity, y_velocity)));
 }
 
-void GestureRecognizer:: AppendScrollGestureUpdate(const TouchEvent& event,
-                                                   Gestures* gestures) {
+void GestureSequence:: AppendScrollGestureUpdate(const TouchEvent& event,
+                                                 Gestures* gestures) {
   float delta_x(event.x() - first_touch_position_.x());
   float delta_y(event.y() - first_touch_position_.y());
 
@@ -236,7 +235,7 @@ void GestureRecognizer:: AppendScrollGestureUpdate(const TouchEvent& event,
   first_touch_position_ = event.location();
 }
 
-void GestureRecognizer::UpdateValues(const TouchEvent& event) {
+void GestureSequence::UpdateValues(const TouchEvent& event) {
   if (state_ != GS_NO_GESTURE && event.type() == ui::ET_TOUCH_MOVED) {
     double interval(event.time_stamp().InSecondsF() - last_touch_time_);
     x_velocity_ = (event.x() - last_touch_position_.x()) / interval;
@@ -252,7 +251,7 @@ void GestureRecognizer::UpdateValues(const TouchEvent& event) {
   }
 }
 
-bool GestureRecognizer::Click(const TouchEvent& event, Gestures* gestures) {
+bool GestureSequence::Click(const TouchEvent& event, Gestures* gestures) {
   bool gesture_added = false;
   if (IsInClickTimeWindow() && IsInsideManhattanSquare(event)) {
     gesture_added = true;
@@ -267,8 +266,8 @@ bool GestureRecognizer::Click(const TouchEvent& event, Gestures* gestures) {
   return gesture_added;
 }
 
-bool GestureRecognizer::InClickOrScroll(const TouchEvent& event,
-                                        Gestures* gestures) {
+bool GestureSequence::InClickOrScroll(const TouchEvent& event,
+                                      Gestures* gestures) {
   if (IsInClickTimeWindow() && IsInsideManhattanSquare(event)) {
     SetState(GS_PENDING_SYNTHETIC_CLICK);
     return false;
@@ -282,23 +281,23 @@ bool GestureRecognizer::InClickOrScroll(const TouchEvent& event,
   return false;
 }
 
-bool GestureRecognizer::InScroll(const TouchEvent& event, Gestures* gestures) {
+bool GestureSequence::InScroll(const TouchEvent& event, Gestures* gestures) {
   AppendScrollGestureUpdate(event, gestures);
   return true;
 }
 
-bool GestureRecognizer::NoGesture(const TouchEvent&, Gestures*) {
+bool GestureSequence::NoGesture(const TouchEvent&, Gestures*) {
   Reset();
   return false;
 }
 
-bool GestureRecognizer::TouchDown(const TouchEvent& event, Gestures* gestures) {
+bool GestureSequence::TouchDown(const TouchEvent& event, Gestures* gestures) {
   AppendTapDownGestureEvent(event, gestures);
   SetState(GS_PENDING_SYNTHETIC_CLICK);
   return false;
 }
 
-bool GestureRecognizer::ScrollEnd(const TouchEvent& event, Gestures* gestures) {
+bool GestureSequence::ScrollEnd(const TouchEvent& event, Gestures* gestures) {
   if (IsOverMinFlickSpeed() && event.type() != ui::ET_TOUCH_CANCELLED)
     AppendScrollGestureEnd(event, gestures, x_velocity_, y_velocity_);
   else
@@ -306,6 +305,67 @@ bool GestureRecognizer::ScrollEnd(const TouchEvent& event, Gestures* gestures) {
   SetState(GS_NO_GESTURE);
   Reset();
   return false;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// GestureRecognizerAura, public:
+
+GestureRecognizerAura::GestureRecognizerAura()
+    : default_sequence_(new GestureSequence()) {
+}
+
+GestureRecognizerAura::~GestureRecognizerAura() {
+}
+
+GestureSequence::Gestures* GestureRecognizerAura::ProcessTouchEventForGesture(
+    const TouchEvent& event,
+    ui::TouchStatus status) {
+  return default_sequence_->ProcessTouchEventForGesture(event, status);
+}
+
+void GestureRecognizerAura::QueueTouchEventForGesture(Window* window,
+                                                      const TouchEvent& event) {
+  if (!event_queue_[window])
+    event_queue_[window] = new std::queue<TouchEvent*>();
+  event_queue_[window]->push(event.Copy());
+}
+
+GestureSequence::Gestures* GestureRecognizerAura::AdvanceTouchQueue(
+    Window* window,
+    bool processed) {
+  if (!event_queue_[window]) {
+    LOG(ERROR) << "Trying to advance an empty gesture queue for " << window;
+    return NULL;
+  }
+
+  ScopedPop pop(event_queue_[window]);
+  TouchEvent* event = event_queue_[window]->front();
+
+  GestureSequence* sequence = window_sequence_[window];
+  if (!sequence) {
+    sequence = new GestureSequence();
+    window_sequence_[window] = sequence;
+  }
+
+  return sequence->ProcessTouchEventForGesture(*event,
+      processed ? ui::TOUCH_STATUS_CONTINUE : ui::TOUCH_STATUS_UNKNOWN);
+}
+
+void GestureRecognizerAura::FlushTouchQueue(Window* window) {
+  if (window_sequence_[window]) {
+    delete window_sequence_[window];
+    window_sequence_.erase(window);
+  }
+
+  if (event_queue_[window]) {
+    delete event_queue_[window];
+    event_queue_.erase(window);
+  }
+}
+
+// GestureRecognizer, static
+GestureRecognizer* GestureRecognizer::Create() {
+  return new GestureRecognizerAura();
 }
 
 }  // namespace aura

@@ -431,7 +431,7 @@ RootWindow::RootWindow()
       focused_window_(NULL),
       touch_event_handler_(NULL),
       gesture_handler_(NULL),
-      gesture_recognizer_(new GestureRecognizer()),
+      gesture_recognizer_(GestureRecognizer::Create()),
       synthesize_mouse_move_(false) {
   SetName("RootWindow");
   gfx::Screen::SetInstance(screen_);

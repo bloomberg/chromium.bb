@@ -194,6 +194,10 @@ class AURA_EXPORT TouchEvent : public LocatedEvent {
   float rotation_angle() const { return rotation_angle_; }
   float force() const { return force_; }
 
+  // Returns a copy of this touch event. Used when queueing events for
+  // asynchronous gesture recognition.
+  TouchEvent* Copy() const;
+
  private:
   // The identity (typically finger) of the touch starting at 0 and incrementing
   // for each separable additional touch that the hardware can detect.
