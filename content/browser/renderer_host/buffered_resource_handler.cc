@@ -26,6 +26,7 @@
 #include "net/base/mime_sniffer.h"
 #include "net/base/mime_util.h"
 #include "net/base/net_errors.h"
+#include "net/http/http_content_disposition.h"
 #include "net/http/http_response_headers.h"
 #include "webkit/plugins/webplugininfo.h"
 
@@ -351,37 +352,13 @@ bool BufferedResourceHandler::ShouldDownload(bool* need_plugin_list) {
   if (need_plugin_list)
     *need_plugin_list = false;
   std::string type = StringToLowerASCII(response_->mime_type);
+
+  // First, examine Content-Disposition.
   std::string disposition;
   request_->GetResponseHeaderByName("content-disposition", &disposition);
-  disposition = StringToLowerASCII(disposition);
-
-  // First, examine content-disposition.
   if (!disposition.empty()) {
-    bool should_download = true;
-
-    // Some broken sites just send ...
-    //    Content-Disposition: ; filename="file"
-    // ... screen those out here.
-    if (disposition[0] == ';')
-      should_download = false;
-
-    if (disposition.compare(0, 6, "inline") == 0)
-      should_download = false;
-
-    // Some broken sites just send ...
-    //    Content-Disposition: filename="file"
-    // ... without a disposition token... Screen those out.
-    if (disposition.compare(0, 8, "filename") == 0)
-      should_download = false;
-
-    // Also in use is Content-Disposition: name="file"
-    if (disposition.compare(0, 4, "name") == 0)
-      should_download = false;
-
-    // We have a content-disposition of "attachment" or unknown.
-    // RFC 2183, section 2.8 says that an unknown disposition
-    // value should be treated as "attachment".
-    if (should_download)
+    net::HttpContentDisposition parsed_disposition(disposition, std::string());
+    if (parsed_disposition.is_attachment())
       return true;
   }
 
