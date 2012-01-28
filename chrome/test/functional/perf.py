@@ -32,6 +32,7 @@ import re
 import SimpleHTTPServer
 import simplejson
 import SocketServer
+import subprocess
 import sys
 import tempfile
 import threading
@@ -81,8 +82,55 @@ class BasePerfTest(pyauto.PyUITest):
     # variable lets us know whether a perf measurement is for a new test
     # execution, or the current test execution.
     self._seen_graph_lines = {}
+    # Flush all buffers to disk and wait until system calms down.
+    if self.IsLinux() or self.IsMac() or self.IsChromeOS():
+      os.system('sync')
+      self._WaitForIdleCPU(60.0, 0.03)
 
     pyauto.PyUITest.setUp(self)
+
+  def _WaitForIdleCPU(self, timeout, utilization):
+    """Waits for the CPU to become idle (< utilization).
+
+    Args:
+      timeout: The longest time in seconds to wait before throwing an error.
+      utilization: The CPU usage below which the system should be considered
+                   idle (between 0 and 1.0 independent of cores/hyperthreads).
+    """
+    time_passed = 0.0
+    fraction_non_idle_time = 1.0
+    logging.info('Starting to wait up to %fs for idle CPU...' % timeout)
+    while fraction_non_idle_time >= utilization:
+      cpu_usage_start = self._GetCPUUsage()
+      time.sleep(2)
+      time_passed += 2.0
+      cpu_usage_end = self._GetCPUUsage()
+      fraction_non_idle_time = \
+          self._GetFractionNonIdleCPUTime(cpu_usage_start, cpu_usage_end)
+      logging.info('Current CPU utilization = %f.' % fraction_non_idle_time)
+      if time_passed > timeout:
+        self._LogProcessActivity()
+        self.fail('CPU did not idle after %fs wait (utilization = %f).'
+                  % (time_passed, fraction_non_idle_time))
+    logging.info('Wait for idle CPU took %fs (utilization = %f).'
+                 % (time_passed, fraction_non_idle_time))
+
+  def _LogProcessActivity(self):
+    """Logs the output of top on Linux/Mac/CrOS.
+
+       TODO: use taskmgr or similar on Windows.
+    """
+    if self.IsLinux() or self.IsMac() or self.IsChromeOS():
+      logging.info('Logging current process activity using top.')
+      cmd = 'top -b -d1 -n1'
+      if self.IsMac():
+        cmd = 'top -l1'
+      p = subprocess.Popen(cmd, shell=True, stdin=subprocess.PIPE,
+          stdout=subprocess.PIPE, stderr=subprocess.STDOUT, close_fds=True)
+      output = p.stdout.read()
+      logging.info(output)
+    else:
+      logging.info('Process activity logging not implemented on this OS.')
 
   def _AppendTab(self, url):
     """Appends a tab and increments a counter if the automation call times out.
