@@ -95,7 +95,7 @@ IN_PROC_BROWSER_TEST_F(SocketApiTest, SocketCreateBad) {
 }
 
 // http://crbug.com/111572
-IN_PROC_BROWSER_TEST_F(SocketApiTest, FLAKY_SocketUDPExtension) {
+IN_PROC_BROWSER_TEST_F(SocketApiTest, DISABLED_SocketUDPExtension) {
   scoped_ptr<net::TestServer> test_server(
       new net::TestServer(net::TestServer::TYPE_UDP_ECHO,
                           FilePath(FILE_PATH_LITERAL("net/data"))));
