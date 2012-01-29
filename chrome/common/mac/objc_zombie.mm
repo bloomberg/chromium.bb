@@ -199,12 +199,15 @@ void ZombieDealloc(id self, SEL _cmd) {
   // |_internal_object_dispose()| (in objc-class.m) does this, so it
   // should be safe (messaging free'd objects shouldn't be expected to
   // be thread-safe in the first place).
+#pragma clang diagnostic push  // clang warns about direct access to isa.
+#pragma clang diagnostic ignored "-Wdeprecated-objc-isa-usage"
   if (size >= g_fatZombieSize) {
     self->isa = g_fatZombieClass;
     static_cast<CrFatZombie*>(self)->wasa = wasa;
   } else {
     self->isa = g_zombieClass;
   }
+#pragma clang diagnostic pop
 
   // The new record to swap into |g_zombies|.  If |g_zombieCount| is
   // zero, then |self| will be freed immediately.
