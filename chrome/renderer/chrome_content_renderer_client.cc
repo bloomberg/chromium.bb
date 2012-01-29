@@ -229,6 +229,9 @@ void ChromeContentRendererClient::RenderThreadStarted() {
 
   WebString extension_scheme(ASCIIToUTF16(chrome::kExtensionScheme));
   WebSecurityPolicy::registerURLSchemeAsSecure(extension_scheme);
+
+  // chrome-extension: resources should be allowed to receive CORS requests.
+  WebSecurityPolicy::registerURLSchemeAsCORSEnabled(extension_scheme);
 }
 
 void ChromeContentRendererClient::RenderViewCreated(

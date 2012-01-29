@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -141,6 +141,30 @@ IN_PROC_BROWSER_TEST_F(ExtensionResourceRequestPolicyTest,
       L"window.domAutomationController.send(document.title)",
     &result));
   EXPECT_EQ("Loaded", result);
+
+  GURL xhr_accessible_resource(
+      test_server()->GetURL(
+          "files/extensions/api_test/extension_resource_request_policy/"
+          "web_accessible/xhr_accessible_resource.html"));
+  ui_test_utils::NavigateToURL(
+      browser(), xhr_accessible_resource);
+  ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractString(
+    browser()->GetSelectedWebContents()->GetRenderViewHost(), L"",
+      L"window.domAutomationController.send(document.title)",
+    &result));
+  EXPECT_EQ("XHR completed with status: 200", result);
+
+  GURL xhr_inaccessible_resource(
+      test_server()->GetURL(
+          "files/extensions/api_test/extension_resource_request_policy/"
+          "web_accessible/xhr_inaccessible_resource.html"));
+  ui_test_utils::NavigateToURL(
+      browser(), xhr_inaccessible_resource);
+  ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractString(
+    browser()->GetSelectedWebContents()->GetRenderViewHost(), L"",
+      L"window.domAutomationController.send(document.title)",
+    &result));
+  EXPECT_EQ("XHR failed to load resource", result);
 
   GURL nonaccessible_resource(
       test_server()->GetURL(
