@@ -41,9 +41,6 @@ class BaseLoginDisplayHost : public LoginDisplayHost,
     return default_host_;
   }
 
-  // Registers preferences in local state.
-  static void RegisterPrefs(PrefService* local_state);
-
   // LoginDisplayHost implementation:
   virtual void OnSessionStart() OVERRIDE;
   virtual void OnCompleteLogin() OVERRIDE;

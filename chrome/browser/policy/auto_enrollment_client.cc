@@ -11,10 +11,13 @@
 #include "base/message_loop_proxy.h"
 #include "base/metrics/histogram.h"
 #include "base/string_number_conversions.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/policy/device_management_service.h"
+#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/guid.h"
+#include "chrome/common/pref_names.h"
 #include "crypto/sha2.h"
 
 namespace em = enterprise_management;
@@ -68,6 +71,7 @@ namespace policy {
 
 AutoEnrollmentClient::AutoEnrollmentClient(const base::Closure& callback,
                                            DeviceManagementService* service,
+                                           PrefService* local_state,
                                            const std::string& serial_number,
                                            int power_initial,
                                            int power_limit)
@@ -76,13 +80,24 @@ AutoEnrollmentClient::AutoEnrollmentClient(const base::Closure& callback,
       device_id_(guid::GenerateGUID()),
       power_initial_(power_initial),
       power_limit_(power_limit),
-      device_management_service_(service) {
+      device_management_service_(service),
+      local_state_(local_state) {
   DCHECK_LE(power_initial_, power_limit_);
   if (!serial_number.empty())
     serial_number_hash_ = crypto::SHA256HashString(serial_number);
 }
 
 AutoEnrollmentClient::~AutoEnrollmentClient() {}
+
+// static
+void AutoEnrollmentClient::RegisterPrefs(PrefService* local_state) {
+  local_state->RegisterBooleanPref(prefs::kShouldAutoEnroll,
+                                   false,
+                                   PrefService::UNSYNCABLE_PREF);
+  local_state->RegisterIntegerPref(prefs::kAutoEnrollmentPowerLimit,
+                                   -1,
+                                   PrefService::UNSYNCABLE_PREF);
+}
 
 // static
 bool AutoEnrollmentClient::IsDisabled() {
@@ -122,6 +137,7 @@ AutoEnrollmentClient* AutoEnrollmentClient::Create(
 
   return new AutoEnrollmentClient(completion_callback,
                                   service,
+                                  g_browser_process->local_state(),
                                   BrowserPolicyConnector::GetSerialNumber(),
                                   power_initial,
                                   power_limit);
@@ -133,7 +149,10 @@ void AutoEnrollmentClient::Start() {
   should_auto_enroll_ = false;
   time_start_ = base::Time();  // reset to null.
 
-  if (device_management_service_.get()) {
+  if (GetCachedDecision()) {
+    VLOG(1) << "AutoEnrollmentClient: using cached decision: "
+            << should_auto_enroll_;
+  } else if (device_management_service_.get()) {
     if (serial_number_hash_.empty()) {
       LOG(ERROR) << "Failed to get the hash of the serial number, "
                  << "will not attempt to auto-enroll.";
@@ -160,6 +179,28 @@ void AutoEnrollmentClient::CancelAndDeleteSoon() {
     time_extra_start_ = base::Time::Now();
     completion_callback_.Reset();
   }
+}
+
+bool AutoEnrollmentClient::GetCachedDecision() {
+  const PrefService::Preference* should_enroll_pref =
+      local_state_->FindPreference(prefs::kShouldAutoEnroll);
+  const PrefService::Preference* previous_limit_pref =
+      local_state_->FindPreference(prefs::kAutoEnrollmentPowerLimit);
+  bool should_auto_enroll = false;
+  int previous_limit = -1;
+
+  if (!should_enroll_pref ||
+      should_enroll_pref->IsDefaultValue() ||
+      !should_enroll_pref->GetValue()->GetAsBoolean(&should_auto_enroll) ||
+      !previous_limit_pref ||
+      previous_limit_pref->IsDefaultValue() ||
+      !previous_limit_pref->GetValue()->GetAsInteger(&previous_limit) ||
+      power_limit_ > previous_limit) {
+    return false;
+  }
+
+  should_auto_enroll_ = should_auto_enroll;
+  return true;
 }
 
 void AutoEnrollmentClient::SendRequest(int power) {
@@ -267,6 +308,12 @@ void AutoEnrollmentClient::OnProtocolDone() {
     base::TimeDelta delta = now - time_start_;
     UMA_HISTOGRAM_CUSTOM_TIMES(kProtocolTime, delta, kMin, kMax, kBuckets);
     time_start_ = base::Time();
+
+    // The decision is cached only if the protocol was actually started, which
+    // is the case only if |time_start_| was not null.
+    local_state_->SetBoolean(prefs::kShouldAutoEnroll, should_auto_enroll_);
+    local_state_->SetInteger(prefs::kAutoEnrollmentPowerLimit, power_limit_);
+    local_state_->CommitPendingWrite();
   }
   base::TimeDelta delta = kZero;
   if (!time_extra_start_.is_null()) {

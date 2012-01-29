@@ -16,6 +16,8 @@
 #include "chrome/browser/policy/cloud_policy_constants.h"
 #include "third_party/protobuf/src/google/protobuf/repeated_field.h"
 
+class PrefService;
+
 namespace enterprise_management {
 class DeviceManagementResponse;
 }
@@ -33,14 +35,19 @@ class AutoEnrollmentClient {
   // |completion_callback| will be invoked on completion of the protocol, after
   // Start() is invoked.
   // Takes ownership of |device_management_service|.
+  // The result of the protocol will be cached in |local_state|.
   // |power_initial| and |power_limit| are exponents of power-of-2 values which
   // will be the initial modulus and the maximum modulus used by this client.
   AutoEnrollmentClient(const base::Closure& completion_callback,
                        DeviceManagementService* device_management_service,
+                       PrefService* local_state,
                        const std::string& serial_number,
                        int power_initial,
                        int power_limit);
   virtual ~AutoEnrollmentClient();
+
+  // Registers preferences in local state.
+  static void RegisterPrefs(PrefService* local_state);
 
   // Returns true if auto-enrollment is disabled in this device. In that case,
   // instances returned by Create() fail immediately once Start() is invoked.
@@ -67,6 +74,10 @@ class AutoEnrollmentClient {
   std::string device_id() const { return device_id_; }
 
  private:
+  // Tries to load the result of a previous execution of the protocol from
+  // local state. Returns true if that decision has been made and is valid.
+  bool GetCachedDecision();
+
   // Sends an auto-enrollment check request to the device management service.
   // |power| is the power of the power-of-2 to use as a modulus for this
   // request.
@@ -114,6 +125,9 @@ class AutoEnrollmentClient {
   // Used to communicate with the device management service.
   scoped_ptr<DeviceManagementService> device_management_service_;
   scoped_ptr<DeviceManagementRequestJob> request_job_;
+
+  // PrefService where the protocol's results are cached.
+  PrefService* local_state_;
 
   // Times used to determine the duration of the protocol, and the extra time
   // needed to complete after the signin was complete.
