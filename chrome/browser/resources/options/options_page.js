@@ -164,6 +164,11 @@ cr.define('options', function() {
    */
   OptionsPage.updateAriaHiddenForPages_ = function() {
     var visiblePages = OptionsPage.getVisiblePages_();
+
+    // |visiblePages| is empty when switching top-level pages.
+    if (!visiblePages.length)
+      return;
+
     var topmostPage = visiblePages.pop();
 
     for (var i = 0; i < visiblePages.length; ++i) {
