@@ -230,7 +230,7 @@ void SyncSetupHandler2::GetStaticLocalizedValues(
                       ASCIIToUTF16(google_util::StringAppendGoogleLocaleParam(
                           chrome::kSyncGoogleDashboardURL))));
 
-  bool is_launch_page = SyncPromoUI::GetIsLaunchPageForSyncPromoURL(
+  bool is_launch_page = web_ui && SyncPromoUI::GetIsLaunchPageForSyncPromoURL(
       web_ui->GetWebContents()->GetURL());
   int title_id = is_launch_page ? IDS_SYNC_PROMO_TITLE :
                                   IDS_SYNC_PROMO_TITLE_EXISTING_USER;
