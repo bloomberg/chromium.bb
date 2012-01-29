@@ -139,9 +139,6 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
   // Marks the a portion of window as needing to be painted.
   void SchedulePaintInRect(const gfx::Rect& rect);
 
-  // Sets the contents of the window.
-  void SetCanvas(const SkCanvas& canvas, const gfx::Point& origin);
-
   // Assigns a new external texture to the window's layer.
   void SetExternalTexture(ui::Texture* texture);
 

@@ -26,7 +26,6 @@
 #include "ui/aura/window_delegate.h"
 #include "ui/base/hit_test.h"
 #include "ui/gfx/compositor/compositor.h"
-#include "ui/gfx/compositor/compositor_cc.h"
 #include "ui/gfx/compositor/layer.h"
 #include "ui/gfx/compositor/layer_animator.h"
 
@@ -437,8 +436,8 @@ RootWindow::RootWindow()
   gfx::Screen::SetInstance(screen_);
   last_mouse_location_ = host_->QueryMouseLocation();
 
-  ui::CompositorCC::Initialize(false);
-  compositor_ = ui::Compositor::Create(this, host_->GetAcceleratedWidget(),
+  ui::Compositor::Initialize(false);
+  compositor_ = new ui::Compositor(this, host_->GetAcceleratedWidget(),
       host_->GetSize());
   DCHECK(compositor_.get());
 }
@@ -449,7 +448,7 @@ RootWindow::~RootWindow() {
   compositor_ = NULL;
   // An observer may have been added by an animation on the RootWindow.
   layer()->GetAnimator()->RemoveObserver(this);
-  ui::CompositorCC::Terminate();
+  ui::Compositor::Terminate();
   if (instance_ == this)
     instance_ = NULL;
 }

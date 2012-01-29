@@ -352,8 +352,11 @@ void RenderWidgetHostViewAura::UpdateExternalTexture() {
 #if defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
   if (current_surface_ != gfx::kNullPluginWindow &&
       host_->is_accelerated_compositing_active()) {
-    window_->SetExternalTexture(
-        accelerated_surface_containers_[current_surface_]->GetTexture());
+    AcceleratedSurfaceContainerLinux* container =
+        accelerated_surface_containers_[current_surface_];
+    if (container)
+      container->Update();
+    window_->SetExternalTexture(container);
     glFlush();
   } else {
     window_->SetExternalTexture(NULL);
@@ -374,7 +377,7 @@ void RenderWidgetHostViewAura::AcceleratedSurfaceBuffersSwapped(
     RenderWidgetHost::AcknowledgeSwapBuffers(params.route_id, gpu_host_id);
   } else {
     gfx::Size surface_size =
-        accelerated_surface_containers_[params.surface_handle]->GetSize();
+        accelerated_surface_containers_[params.surface_handle]->size();
     window_->SchedulePaintInRect(gfx::Rect(surface_size));
 
     // Add sending an ACK to the list of things to do OnCompositingEnded
@@ -403,7 +406,7 @@ void RenderWidgetHostViewAura::AcceleratedSurfacePostSubBuffer(
     RenderWidgetHost::AcknowledgePostSubBuffer(params.route_id, gpu_host_id);
   } else {
     gfx::Size surface_size =
-        accelerated_surface_containers_[params.surface_handle]->GetSize();
+        accelerated_surface_containers_[params.surface_handle]->size();
 
     // Co-ordinates come in OpenGL co-ordinate space.
     // We need to convert to layer space.
@@ -433,7 +436,7 @@ void RenderWidgetHostViewAura::AcceleratedSurfaceNew(
       uint64* surface_handle,
       TransportDIB::Handle* shm_handle) {
   scoped_refptr<AcceleratedSurfaceContainerLinux> surface(
-      AcceleratedSurfaceContainerLinux::Create(gfx::Size(width, height)));
+      new AcceleratedSurfaceContainerLinux(gfx::Size(width, height)));
   if (!surface->Initialize(surface_handle)) {
     LOG(ERROR) << "Failed to create AcceleratedSurfaceContainer";
     return;

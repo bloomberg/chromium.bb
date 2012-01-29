@@ -10,30 +10,32 @@
 #include "ui/gfx/compositor/compositor.h"
 #include "ui/gfx/surface/transport_dib.h"
 
+class ImageTransportClient;
+
 // Helper class for storing image data from the GPU process renderered
 // on behalf of the RWHVV. It assumes that GL context that will display
 // the image data is current  when an instance of this object is created
 // or destroyed.
-class AcceleratedSurfaceContainerLinux {
+class AcceleratedSurfaceContainerLinux : public ui::Texture {
  public:
-  virtual ~AcceleratedSurfaceContainerLinux() { }
-  virtual void AddRef() = 0;
-  virtual void Release() = 0;
+  explicit AcceleratedSurfaceContainerLinux(const gfx::Size& size);
+  virtual ~AcceleratedSurfaceContainerLinux();
 
   // Initialize the surface container, and returns an ID for it.
   // The |surface_handle| given to this function may be modified, and the
   // modified value should be used to identify the object.
-  virtual bool Initialize(uint64* surface_handle) = 0;
+  bool Initialize(uint64* surface_handle);
 
   // Some implementations of this class use shared memory, this is the handle
   // to the shared buffer, which is part of the surface container.
-  virtual TransportDIB::Handle Handle() const = 0;
+  TransportDIB::Handle Handle() const;
 
-  virtual ui::Texture* GetTexture() = 0;
+  void Update();
 
-  virtual const gfx::Size& GetSize() = 0;
-
-  static AcceleratedSurfaceContainerLinux* Create(const gfx::Size& size);
+ private:
+  scoped_ptr<ImageTransportClient> image_transport_client_;
+  bool acquired_;
+  DISALLOW_COPY_AND_ASSIGN(AcceleratedSurfaceContainerLinux);
 };
 
 #endif  // CONTENT_BROWSER_RENDERER_HOST_ACCELERATED_SURFACE_CONTAINER_LINUX_H_

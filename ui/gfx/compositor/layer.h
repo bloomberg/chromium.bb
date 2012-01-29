@@ -171,9 +171,6 @@ class COMPOSITOR_EXPORT Layer :
   //             single-compositor world.
   void SetExternalTexture(ui::Texture* texture);
 
-  // Resets the canvas of the texture.  May only be called for LAYER_TEXTURED.
-  void SetCanvas(const SkCanvas& canvas, const gfx::Point& origin);
-
   // Sets the layer's fill color.  May only be called for LAYER_SOLID_COLOR.
   void SetColor(SkColor color);
 

@@ -7,7 +7,7 @@
 #include "base/message_loop.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebKit.h"
 #include "ui/base/ui_base_paths.h"
-#include "ui/gfx/compositor/compositor_cc.h"
+#include "ui/gfx/compositor/compositor.h"
 #include "ui/gfx/compositor/test/compositor_test_support.h"
 #include "ui/gfx/gfx_paths.h"
 #include "ui/gfx/gl/gl_implementation.h"
@@ -27,11 +27,11 @@ void CompositorTestSuite::Initialize() {
 
   message_loop_.reset(new MessageLoop(MessageLoop::TYPE_UI));
   ui::CompositorTestSupport::Initialize();
-  ui::CompositorCC::Initialize(false);
+  ui::Compositor::Initialize(false);
 }
 
 void CompositorTestSuite::Shutdown() {
-  ui::CompositorCC::Terminate();
+  ui::Compositor::Terminate();
   ui::CompositorTestSupport::Terminate();
   message_loop_.reset();
 

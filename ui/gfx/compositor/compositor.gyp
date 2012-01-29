@@ -28,8 +28,6 @@
         'compositor.cc',
         'compositor.h',
         'compositor_export.h',
-        'compositor_cc.cc',
-        'compositor_cc.h',
         'compositor_observer.h',
         'compositor_setup.h',
         'compositor_switches.cc',

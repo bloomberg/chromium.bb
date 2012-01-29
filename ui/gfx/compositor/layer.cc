@@ -23,8 +23,6 @@
 #include "ui/gfx/interpolated_transform.h"
 #include "ui/gfx/point3.h"
 
-#include "ui/gfx/compositor/compositor_cc.h"
-
 namespace {
 
 const float EPSILON = 1e-3f;
@@ -223,7 +221,7 @@ void Layer::SetFillsBoundsOpaquely(bool fills_bounds_opaquely) {
   RecomputeDebugBorderColor();
 }
 
-void Layer::SetExternalTexture(ui::Texture* texture) {
+void Layer::SetExternalTexture(Texture* texture) {
   DCHECK_EQ(type_, LAYER_TEXTURED);
   layer_updated_externally_ = !!texture;
   texture_ = texture;
@@ -231,10 +229,14 @@ void Layer::SetExternalTexture(ui::Texture* texture) {
     // Switch to a different type of layer.
     web_layer_.removeAllChildren();
     WebKit::WebLayer new_layer;
-    if (layer_updated_externally_)
-      new_layer = WebKit::WebExternalTextureLayer::create();
-    else
+    if (layer_updated_externally_) {
+      WebKit::WebExternalTextureLayer texture_layer =
+          WebKit::WebExternalTextureLayer::create();
+      texture_layer.setFlipped(texture_->flipped());
+      new_layer = texture_layer;
+    } else {
       new_layer = WebKit::WebContentLayer::create(this);
+    }
     if (parent_) {
       DCHECK(!parent_->web_layer_.isNull());
       parent_->web_layer_.replaceChild(web_layer_, new_layer);
@@ -252,18 +254,7 @@ void Layer::SetExternalTexture(ui::Texture* texture) {
     RecomputeTransform();
     RecomputeDebugBorderColor();
   }
-  if (texture) {
-    TextureCC* texture_cc = static_cast<TextureCC*>(texture);
-    texture_cc->Update();
-    WebKit::WebExternalTextureLayer texture_layer =
-        web_layer_.to<WebKit::WebExternalTextureLayer>();
-    texture_layer.setFlipped(texture_cc->flipped());
-  }
   RecomputeDrawsContentAndUVRect();
-}
-
-void Layer::SetCanvas(const SkCanvas& canvas, const gfx::Point& origin) {
-  NOTREACHED();
 }
 
 void Layer::SetColor(SkColor color) {
@@ -484,18 +475,18 @@ void Layer::RecomputeDrawsContentAndUVRect() {
     web_layer_.setBounds(bounds_.size());
   } else {
     DCHECK(texture_);
-    TextureCC* texture_cc = static_cast<TextureCC*>(texture_.get());
-    unsigned int texture_id = texture_cc->texture_id();
+    unsigned int texture_id = texture_->texture_id();
     WebKit::WebExternalTextureLayer texture_layer =
         web_layer_.to<WebKit::WebExternalTextureLayer>();
     texture_layer.setTextureId(should_draw ? texture_id : 0);
-    gfx::Size size(std::min(bounds_.width(), texture_cc->size().width()),
-                   std::min(bounds_.height(), texture_cc->size().height()));
+    gfx::Size texture_size = texture_->size();
+    gfx::Size size(std::min(bounds_.width(), texture_size.width()),
+                   std::min(bounds_.height(), texture_size.height()));
     WebKit::WebFloatRect rect(
         0,
         0,
-        static_cast<float>(size.width())/texture_cc->size().width(),
-        static_cast<float>(size.height())/texture_cc->size().height());
+        static_cast<float>(size.width())/texture_size.width(),
+        static_cast<float>(size.height())/texture_size.height());
     texture_layer.setUVRect(rect);
     web_layer_.setBounds(size);
   }

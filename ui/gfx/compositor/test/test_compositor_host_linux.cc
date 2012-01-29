@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -80,7 +80,7 @@ void TestCompositorHostLinux::Show() {
     if (event.type == MapNotify && event.xmap.window == window_)
       break;
   }
-  compositor_ = ui::Compositor::Create(this, window_, bounds_.size());
+  compositor_ = new ui::Compositor(this, window_, bounds_.size());
 }
 
 ui::Compositor* TestCompositorHostLinux::GetCompositor() {

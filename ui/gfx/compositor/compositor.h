@@ -7,15 +7,23 @@
 #pragma once
 
 #include "base/memory/ref_counted.h"
+#include "base/memory/singleton.h"
 #include "base/observer_list.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebLayer.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebLayerTreeView.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebLayerTreeViewClient.h"
 #include "ui/gfx/compositor/compositor_export.h"
 #include "ui/gfx/transform.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/size.h"
 
+
 class SkBitmap;
 class SkCanvas;
 namespace gfx {
+class GLContext;
+class GLSurface;
+class GLShareGroup;
 class Point;
 class Rect;
 class ScopedMakeCurrent;
@@ -26,69 +34,52 @@ namespace ui {
 class CompositorObserver;
 class Layer;
 
-class SharedResources {
+class COMPOSITOR_EXPORT SharedResources {
  public:
-  virtual ~SharedResources() {}
+  static SharedResources* GetInstance();
 
   // Creates an instance of ScopedMakeCurrent.
   // Note: Caller is responsible for managing lifetime of returned pointer.
-  virtual gfx::ScopedMakeCurrent* GetScopedMakeCurrent() = 0;
+  gfx::ScopedMakeCurrent* GetScopedMakeCurrent();
 
-  virtual void* GetDisplay() = 0;
-};
-
-struct TextureDrawParams {
-  TextureDrawParams();
-
-  // The transform to be applied to the texture.
-  ui::Transform transform;
-
-  // If this is true, then the texture is blended with the pixels behind it.
-  // Otherwise, the drawn pixels clobber the old pixels.
-  bool blend;
-
-  // If this is false, the alpha values for this texture should not be trusted.
-  bool has_valid_alpha_channel;
-
-  // This multiplier is applied to all pixels before blending. The intent is to
-  // allow alpha to be animated (for effects such as cross fades).
-  float opacity;
-
-  // Sometimes the texture is vertically flipped. In this case we have to
-  // draw the texture differently.
-  bool vertically_flipped;
-
-  // The size of the surface that the texture is drawn to.
-  gfx::Size compositor_size;
-
-  // Copy and assignment are allowed.
-};
-
-// Textures are created by a Compositor for managing an accelerated view.
-// Any time a View with a texture needs to redraw itself it invokes SetCanvas().
-// When the view is ready to be drawn Draw() is invoked.
-//
-// Texture is really a proxy to the gpu. Texture does not itself keep a copy of
-// the bitmap.
-//
-// Views own the Texture.
-class COMPOSITOR_EXPORT Texture : public base::RefCounted<Texture> {
- public:
-  // Sets the canvas of this texture. The origin is at |origin|.
-  // |overall_size| gives the total size of texture.
-  virtual void SetCanvas(const SkCanvas& canvas,
-                         const gfx::Point& origin,
-                         const gfx::Size& overall_size) = 0;
-
-  // Draws the portion of the texture contained within clip_bounds
-  virtual void Draw(const ui::TextureDrawParams& params,
-                    const gfx::Rect& clip_bounds_in_texture) = 0;
-
- protected:
-  virtual ~Texture() {}
+  void* GetDisplay();
+  gfx::GLShareGroup* GetShareGroup();
 
  private:
-  friend class base::RefCounted<Texture>;
+  friend struct DefaultSingletonTraits<SharedResources>;
+
+  SharedResources();
+  ~SharedResources();
+
+  bool Initialize();
+  void Destroy();
+
+  bool initialized_;
+
+  scoped_refptr<gfx::GLContext> context_;
+  scoped_refptr<gfx::GLSurface> surface_;
+
+  DISALLOW_COPY_AND_ASSIGN(SharedResources);
+};
+
+// Texture provide an abstraction over the external texture that can be passed
+// to a layer.
+class COMPOSITOR_EXPORT Texture : public base::RefCounted<Texture> {
+ public:
+  Texture();
+  virtual ~Texture();
+
+  unsigned int texture_id() const { return texture_id_; }
+  bool flipped() const { return flipped_; }
+  gfx::Size size() const { return size_; }
+
+ protected:
+  unsigned int texture_id_;
+  bool flipped_;
+  gfx::Size size_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(Texture);
 };
 
 // An interface to allow the compositor to communicate with its owner.
@@ -106,21 +97,20 @@ class COMPOSITOR_EXPORT CompositorDelegate {
 // displayable form of pixels comprising a single widget's contents. It draws an
 // appropriately transformed texture for each transformed view in the widget's
 // view hierarchy.
-class COMPOSITOR_EXPORT Compositor : public base::RefCounted<Compositor> {
+class COMPOSITOR_EXPORT Compositor
+    : public base::RefCounted<Compositor>,
+      NON_EXPORTED_BASE(public WebKit::WebLayerTreeViewClient) {
  public:
-  // Create a compositor from the provided handle.
-  static Compositor* Create(CompositorDelegate* delegate,
-                            gfx::AcceleratedWidget widget,
-                            const gfx::Size& size);
+  Compositor(CompositorDelegate* delegate,
+             gfx::AcceleratedWidget widget,
+             const gfx::Size& size);
+  virtual ~Compositor();
 
-  // Creates a new texture. The caller owns the returned object.
-  virtual Texture* CreateTexture() = 0;
-
-  // Blurs the specific region in the compositor.
-  virtual void Blur(const gfx::Rect& bounds) = 0;
+  static void Initialize(bool useThread);
+  static void Terminate();
 
   // Schedules a redraw of the layer tree associated with this compositor.
-  virtual void ScheduleDraw();
+  void ScheduleDraw();
 
   // Sets the root of the layer tree drawn by this Compositor. The root layer
   // must have no parent. The compositor's root layer is reset if the root layer
@@ -139,16 +129,11 @@ class COMPOSITOR_EXPORT Compositor : public base::RefCounted<Compositor> {
   // Reads the region |bounds| of the contents of the last rendered frame
   // into the given bitmap.
   // Returns false if the pixels could not be read.
-  virtual bool ReadPixels(SkBitmap* bitmap, const gfx::Rect& bounds) = 0;
+  bool ReadPixels(SkBitmap* bitmap, const gfx::Rect& bounds);
 
   // Notifies the compositor that the size of the widget that it is
   // drawing to has changed.
-  void WidgetSizeChanged(const gfx::Size& size) {
-    if (size.IsEmpty())
-      return;
-    size_ = size;
-    OnWidgetSizeChanged();
-  }
+  void WidgetSizeChanged(const gfx::Size& size);
 
   // Returns the size of the widget that is being drawn to.
   const gfx::Size& size() { return size_; }
@@ -159,23 +144,17 @@ class COMPOSITOR_EXPORT Compositor : public base::RefCounted<Compositor> {
   void RemoveObserver(CompositorObserver* observer);
   bool HasObserver(CompositorObserver* observer);
 
- protected:
-  Compositor(CompositorDelegate* delegate, const gfx::Size& size);
-  virtual ~Compositor();
+  // WebLayerTreeViewClient implementation.
+  virtual void updateAnimations(double frameBeginTime);
+  virtual void layout();
+  virtual void applyScrollAndScale(const WebKit::WebSize& scrollDelta,
+                                   float scaleFactor);
+  virtual WebKit::WebGraphicsContext3D* createContext3D();
+  virtual void didCompleteSwapBuffers();
+  virtual void didRebindGraphicsContext(bool success);
+  virtual void scheduleComposite();
 
-  // Notifies the compositor that compositing is about to start.
-  virtual void OnNotifyStart(bool clear) = 0;
-
-  // Notifies the compositor that compositing is complete.
-  virtual void OnNotifyEnd() = 0;
-
-  virtual void OnWidgetSizeChanged() = 0;
-  virtual void OnRootLayerChanged();
-  virtual void DrawTree();
-  virtual bool CompositesAsynchronously();
-
-  CompositorDelegate* delegate() { return delegate_; }
-
+ private:
   // When reading back pixel data we often get RGBA rather than BGRA pixels and
   // and the image often needs to be flipped vertically.
   static void SwizzleRGBAToBGRAAndFlip(unsigned char* pixels,
@@ -184,11 +163,6 @@ class COMPOSITOR_EXPORT Compositor : public base::RefCounted<Compositor> {
   // Notifies the compositor that compositing is complete.
   void NotifyEnd();
 
- private:
-  // Notifies the compositor that compositing is about to start. See Draw() for
-  // notes about |force_clear|.
-  void NotifyStart(bool force_clear);
-
   CompositorDelegate* delegate_;
   gfx::Size size_;
 
@@ -196,6 +170,10 @@ class COMPOSITOR_EXPORT Compositor : public base::RefCounted<Compositor> {
   Layer* root_layer_;
 
   ObserverList<CompositorObserver> observer_list_;
+
+  gfx::AcceleratedWidget widget_;
+  WebKit::WebLayer root_web_layer_;
+  WebKit::WebLayerTreeView host_;
 
   friend class base::RefCounted<Compositor>;
 };

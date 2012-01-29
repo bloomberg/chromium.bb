@@ -362,7 +362,7 @@ class LayerWithDelegateTest : public testing::Test, public CompositorDelegate {
   // Overridden from testing::Test:
   virtual void SetUp() OVERRIDE {
     ui::SetupTestCompositor();
-    compositor_ = ui::Compositor::Create(this, NULL, gfx::Size(1000, 1000));
+    compositor_ = new ui::Compositor(this, NULL, gfx::Size(1000, 1000));
   }
 
   virtual void TearDown() OVERRIDE {

@@ -399,7 +399,7 @@
     'browser/quota_permission_context.h',
     'browser/renderer_host/accelerated_plugin_view_mac.h',
     'browser/renderer_host/accelerated_plugin_view_mac.mm',
-    'browser/renderer_host/accelerated_surface_container_linux_cc.cc',
+    'browser/renderer_host/accelerated_surface_container_linux.cc',
     'browser/renderer_host/accelerated_surface_container_linux.h',
     'browser/renderer_host/accelerated_surface_container_mac.cc',
     'browser/renderer_host/accelerated_surface_container_mac.h',
@@ -823,7 +823,7 @@
       ],
     }, {
       'sources/': [
-        ['exclude', '^browser/renderer_host/accelerated_surface_container_linux_cc.cc'],
+        ['exclude', '^browser/renderer_host/accelerated_surface_container_linux.cc'],
         ['exclude', '^browser/renderer_host/accelerated_surface_container_linux.h'],
         ['exclude', '^browser/renderer_host/image_transport_client.cc'],
         ['exclude', '^browser/renderer_host/image_transport_client.h'],

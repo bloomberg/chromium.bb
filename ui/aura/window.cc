@@ -212,17 +212,6 @@ void Window::SchedulePaintInRect(const gfx::Rect& rect) {
       WindowObserver, observers_, OnWindowPaintScheduled(this, rect));
 }
 
-void Window::SetCanvas(const SkCanvas& canvas, const gfx::Point& origin) {
-  // TODO: figure out how this is going to work when animating the layer. In
-  // particular if we're animating the size then the underlying Texture is going
-  // to be unhappy if we try to set a texture on a size bigger than the size of
-  // the texture.
-  layer_->SetCanvas(canvas, origin);
-  gfx::Rect region(gfx::Point(), bounds().size());
-  FOR_EACH_OBSERVER(
-      WindowObserver, observers_, OnWindowPaintScheduled(this, region));
-}
-
 void Window::SetExternalTexture(ui::Texture* texture) {
   layer_->SetExternalTexture(texture);
   gfx::Rect region(gfx::Point(), bounds().size());
