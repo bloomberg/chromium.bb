@@ -12,6 +12,20 @@ WeakUnlimitedSettingsStorage::WeakUnlimitedSettingsStorage(
 
 WeakUnlimitedSettingsStorage::~WeakUnlimitedSettingsStorage() {}
 
+size_t WeakUnlimitedSettingsStorage::GetBytesInUse(const std::string& key) {
+  return delegate_->GetBytesInUse(key);
+}
+
+size_t WeakUnlimitedSettingsStorage::GetBytesInUse(
+    const std::vector<std::string>& keys) {
+  return delegate_->GetBytesInUse(keys);
+}
+
+
+size_t WeakUnlimitedSettingsStorage::GetBytesInUse() {
+  return delegate_->GetBytesInUse();
+}
+
 SettingsStorage::ReadResult WeakUnlimitedSettingsStorage::Get(
     const std::string& key) {
   return delegate_->Get(key);

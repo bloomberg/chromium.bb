@@ -443,6 +443,7 @@ void FactoryRegistry::ResetFunctions() {
   RegisterFunction<extensions::SetSettingsFunction>();
   RegisterFunction<extensions::RemoveSettingsFunction>();
   RegisterFunction<extensions::ClearSettingsFunction>();
+  RegisterFunction<extensions::GetBytesInUseSettingsFunction>();
 
   // Content settings.
   RegisterFunction<GetResourceIdentifiersFunction>();

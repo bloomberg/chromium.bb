@@ -378,19 +378,21 @@
           </li>
                 </ol>
               </li><li>
-                <a href="#type-StorageNamespace">StorageNamespace</a>
+                <a href="#type-StorageArea">StorageArea</a>
                 <ol>
                   <li>
-            <a href="#global-StorageNamespace-methods">Methods</a>
+            <a href="#global-StorageArea-methods">Methods</a>
             <ol>
               <li>
-                <a href="#method-StorageNamespace-clear">clear</a>
+                <a href="#method-StorageArea-clear">clear</a>
               </li><li>
-                <a href="#method-StorageNamespace-get">get</a>
+                <a href="#method-StorageArea-get">get</a>
               </li><li>
-                <a href="#method-StorageNamespace-remove">remove</a>
+                <a href="#method-StorageArea-getBytesInUse">getBytesInUse</a>
               </li><li>
-                <a href="#method-StorageNamespace-set">set</a>
+                <a href="#method-StorageArea-remove">remove</a>
+              </li><li>
+                <a href="#method-StorageArea-set">set</a>
               </li>
             </ol>
           </li>
@@ -449,7 +451,7 @@
                     <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
                       <span>
-                        <a href="storage.html#type-StorageNamespace">StorageNamespace</a>
+                        <a href="storage.html#type-StorageArea">StorageArea</a>
                       </span>
                       <span style="display: none; ">
                         <span>
@@ -523,7 +525,7 @@
                     <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
                       <span>
-                        <a href="storage.html#type-StorageNamespace">StorageNamespace</a>
+                        <a href="storage.html#type-StorageArea">StorageArea</a>
                       </span>
                       <span style="display: none; ">
                         <span>
@@ -1059,8 +1061,8 @@
         </div>
 
             </div><div class="apiItem">
-              <a name="type-StorageNamespace"></a>
-              <h4>StorageNamespace</h4>
+              <a name="type-StorageArea"></a>
+              <h4>StorageArea</h4>
 
               <div>
           <dt>
@@ -1118,17 +1120,17 @@
           <!-- OBJECT METHODS -->
           <dd>
             <div class="apiGroup" style="">
-            <a name="global-StorageNamespace-methods"></a>
-            <h3>Methods of StorageNamespace</h3>
+            <a name="global-StorageArea-methods"></a>
+            <h3>Methods of StorageArea</h3>
 
             <!-- iterates over all functions -->
             <div class="apiItem">
-              <a name="method-StorageNamespace-clear"></a> <!-- method-anchor -->
+              <a name="method-StorageArea-clear"></a> <!-- method-anchor -->
               <h4>clear</h4>
 
               <div class="summary"><span style="display: none; ">void</span>
                   <!-- Note: intentionally longer 80 columns -->
-                  <span>storageNamespace.clear</span>(<span class="optional"><span style="display: none; ">, </span><span>function</span>
+                  <span>storageArea.clear</span>(<span class="optional"><span style="display: none; ">, </span><span>function</span>
                       <var><span>callback</span></var></span>)</div>
 
               <div class="description">
@@ -1252,12 +1254,12 @@
               </div> <!-- /description -->
 
             </div><div class="apiItem">
-              <a name="method-StorageNamespace-get"></a> <!-- method-anchor -->
+              <a name="method-StorageArea-get"></a> <!-- method-anchor -->
               <h4>get</h4>
 
               <div class="summary"><span style="display: none; ">void</span>
                   <!-- Note: intentionally longer 80 columns -->
-                  <span>storageNamespace.get</span>(<span class="optional"><span style="display: none; ">, </span><span>string or array of string or object</span>
+                  <span>storageArea.get</span>(<span class="optional"><span style="display: none; ">, </span><span>string or array of string or object</span>
                       <var><span>keys</span></var></span><span class="null"><span>, </span><span>function</span>
                       <var><span>callback</span></var></span>)</div>
 
@@ -1299,7 +1301,7 @@
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>A single key to get, list of keys to get, or a dictionary specifying default values (see description of the object).  An empty list or object will return an empty result object.  Pass in null or undefined to get the entire contents of storage; this should only be used for debugging.</dd>
+          <dd>A single key to get, list of keys to get, or a dictionary specifying default values (see description of the object).  An empty list or object will return an empty result object.  Pass in <code>null</code> to get the entire contents of storage.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -1515,12 +1517,275 @@
               </div> <!-- /description -->
 
             </div><div class="apiItem">
-              <a name="method-StorageNamespace-remove"></a> <!-- method-anchor -->
+              <a name="method-StorageArea-getBytesInUse"></a> <!-- method-anchor -->
+              <h4>getBytesInUse</h4>
+
+              <div class="summary"><span style="display: none; ">void</span>
+                  <!-- Note: intentionally longer 80 columns -->
+                  <span>storageArea.getBytesInUse</span>(<span class="optional"><span style="display: none; ">, </span><span>string or array of string</span>
+                      <var><span>keys</span></var></span><span class="null"><span>, </span><span>function</span>
+                      <var><span>callback</span></var></span>)</div>
+
+              <div class="description">
+                <p class="todo" style="display: none; ">Undocumented.</p>
+                <p>Gets the amount of space (in bytes) being used by one or more items.</p>
+
+                <!-- PARAMETERS -->
+                <h4>Parameters</h4>
+                <dl>
+                  <div>
+                    <div>
+          <dt>
+            <var>keys</var>
+              <em>
+
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional">optional</span>
+                    <span class="enum" style="display: none; ">enumerated</span>
+                    <span id="typeTemplate">
+                      <span style="display: none; ">
+                        <a> Type</a>
+                      </span>
+                      <span>
+                        <span style="display: none; ">
+                          array of <span><span></span></span>
+                        </span>
+                        <span>string or array of string</span>
+                        <span style="display: none; "></span>
+                      </span>
+                    </span>
+                  )
+                </div>
+
+              </em>
+          </dt>
+          <dd class="todo" style="display: none; ">
+            Undocumented.
+          </dd>
+          <dd>A single key or list of keys to get the total usage for. An empty list will return 0. Pass in <code>null</code> to get the total usage of all of storage.</dd>
+          <dd style="display: none; ">
+            This parameter was added in version
+            <b><span></span></b>.
+            You must omit this parameter in earlier versions,
+            and you may omit it in any version.  If you require this
+            parameter, the manifest key
+            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
+            can ensure that your extension won't be run in an earlier browser version.
+          </dd>
+
+          <!-- OBJECT PROPERTIES -->
+          <dd style="display: none; ">
+            <dl>
+              <div>
+                <div>
+                </div>
+              </div>
+            </dl>
+          </dd>
+
+          <!-- OBJECT METHODS -->
+          <dd style="display: none; ">
+            <div></div>
+          </dd>
+
+          <!-- OBJECT EVENT FIELDS -->
+          <dd style="display: none; ">
+            <div></div>
+          </dd>
+
+          <!-- FUNCTION PARAMETERS -->
+          <dd style="display: none; ">
+            <div></div>
+          </dd>
+
+        </div>
+                  </div><div>
+                    <div>
+          <dt>
+            <var>callback</var>
+              <em>
+
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional" style="display: none; ">optional</span>
+                    <span class="enum" style="display: none; ">enumerated</span>
+                    <span id="typeTemplate">
+                      <span style="display: none; ">
+                        <a> Type</a>
+                      </span>
+                      <span>
+                        <span style="display: none; ">
+                          array of <span><span></span></span>
+                        </span>
+                        <span>function</span>
+                        <span style="display: none; "></span>
+                      </span>
+                    </span>
+                  )
+                </div>
+
+              </em>
+          </dt>
+          <dd class="todo" style="display: none; ">
+            Undocumented.
+          </dd>
+          <dd>Callback with the amount of space being used by storage, or on failure (in which case lastError will be set).</dd>
+          <dd style="display: none; ">
+            This parameter was added in version
+            <b><span></span></b>.
+            You must omit this parameter in earlier versions,
+            and you may omit it in any version.  If you require this
+            parameter, the manifest key
+            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
+            can ensure that your extension won't be run in an earlier browser version.
+          </dd>
+
+          <!-- OBJECT PROPERTIES -->
+          <dd style="display: none; ">
+            <dl>
+              <div>
+                <div>
+                </div>
+              </div>
+            </dl>
+          </dd>
+
+          <!-- OBJECT METHODS -->
+          <dd style="display: none; ">
+            <div></div>
+          </dd>
+
+          <!-- OBJECT EVENT FIELDS -->
+          <dd style="display: none; ">
+            <div></div>
+          </dd>
+
+          <!-- FUNCTION PARAMETERS -->
+          <dd style="display: none; ">
+            <div></div>
+          </dd>
+
+        </div>
+                  </div>
+                </dl>
+
+                <!-- RETURNS -->
+                <h4 style="display: none; ">Returns</h4>
+                <dl>
+                  <div style="display: none; ">
+                    <div>
+                    </div>
+                  </div>
+                </dl>
+
+                <!-- CALLBACK -->
+                <div>
+                  <div>
+                  <h4>Callback function</h4>
+                  <p>
+                    The callback <em>parameter</em> should specify a function
+                    that looks like this:
+                  </p>
+                  <p style="display: none; ">
+                    If you specify the <em>callback</em> parameter, it should
+                    specify a function that looks like this:
+                  </p>
+
+                  <!-- Note: intentionally longer 80 columns -->
+                  <pre>function(<span>integer bytesInUse</span>) <span class="subdued">{...}</span>;</pre>
+                  <dl>
+                    <div>
+                      <div>
+          <dt>
+            <var>bytesInUse</var>
+              <em>
+
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional" style="display: none; ">optional</span>
+                    <span class="enum" style="display: none; ">enumerated</span>
+                    <span id="typeTemplate">
+                      <span style="display: none; ">
+                        <a> Type</a>
+                      </span>
+                      <span>
+                        <span style="display: none; ">
+                          array of <span><span></span></span>
+                        </span>
+                        <span>integer</span>
+                        <span style="display: none; "></span>
+                      </span>
+                    </span>
+                  )
+                </div>
+
+              </em>
+          </dt>
+          <dd class="todo" style="display: none; ">
+            Undocumented.
+          </dd>
+          <dd>Amount of space being used in storage, in bytes.</dd>
+          <dd style="display: none; ">
+            This parameter was added in version
+            <b><span></span></b>.
+            You must omit this parameter in earlier versions,
+            and you may omit it in any version.  If you require this
+            parameter, the manifest key
+            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
+            can ensure that your extension won't be run in an earlier browser version.
+          </dd>
+
+          <!-- OBJECT PROPERTIES -->
+          <dd style="display: none; ">
+            <dl>
+              <div>
+                <div>
+                </div>
+              </div>
+            </dl>
+          </dd>
+
+          <!-- OBJECT METHODS -->
+          <dd style="display: none; ">
+            <div></div>
+          </dd>
+
+          <!-- OBJECT EVENT FIELDS -->
+          <dd style="display: none; ">
+            <div></div>
+          </dd>
+
+          <!-- FUNCTION PARAMETERS -->
+          <dd style="display: none; ">
+            <div></div>
+          </dd>
+
+        </div>
+                    </div>
+                  </dl>
+                  </div>
+                </div>
+
+                <!-- MIN_VERSION -->
+                <p style="display: none; ">
+                  This function was added in version <b><span></span></b>.
+                  If you require this function, the manifest key
+                  <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
+                  can ensure that your extension won't be run in an earlier browser version.
+                </p>
+              </div> <!-- /description -->
+
+            </div><div class="apiItem">
+              <a name="method-StorageArea-remove"></a> <!-- method-anchor -->
               <h4>remove</h4>
 
               <div class="summary"><span style="display: none; ">void</span>
                   <!-- Note: intentionally longer 80 columns -->
-                  <span>storageNamespace.remove</span>(<span class="null"><span style="display: none; ">, </span><span>string or array of string</span>
+                  <span>storageArea.remove</span>(<span class="null"><span style="display: none; ">, </span><span>string or array of string</span>
                       <var><span>keys</span></var></span><span class="optional"><span>, </span><span>function</span>
                       <var><span>callback</span></var></span>)</div>
 
@@ -1713,12 +1978,12 @@
               </div> <!-- /description -->
 
             </div><div class="apiItem">
-              <a name="method-StorageNamespace-set"></a> <!-- method-anchor -->
+              <a name="method-StorageArea-set"></a> <!-- method-anchor -->
               <h4>set</h4>
 
               <div class="summary"><span style="display: none; ">void</span>
                   <!-- Note: intentionally longer 80 columns -->
-                  <span>storageNamespace.set</span>(<span class="null"><span style="display: none; ">, </span><span>object</span>
+                  <span>storageArea.set</span>(<span class="null"><span style="display: none; ">, </span><span>object</span>
                       <var><span>items</span></var></span><span class="optional"><span>, </span><span>function</span>
                       <var><span>callback</span></var></span>)</div>
 

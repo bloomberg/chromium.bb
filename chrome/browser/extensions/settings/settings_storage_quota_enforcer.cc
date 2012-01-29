@@ -9,6 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/metrics/histogram.h"
+#include "chrome/common/extensions/api/extension_api.h"
 
 namespace extensions {
 
@@ -18,9 +19,9 @@ const char* kExceededQuotaErrorMessage = "Quota exceeded";
 
 // Resources there are a quota for.
 enum Resource {
-  TOTAL_BYTES,
-  BYTES_PER_SETTING,
-  KEY_COUNT
+  QUOTA_BYTES,
+  QUOTA_BYTES_PER_ITEM,
+  MAX_ITEMS
 };
 
 // Allocates a setting in a record of total and per-setting usage.
@@ -54,15 +55,15 @@ void Free(
 // Returns an error result and logs the quota exceeded to UMA.
 SettingsStorage::WriteResult QuotaExceededFor(Resource resource) {
   switch (resource) {
-    case TOTAL_BYTES:
+    case QUOTA_BYTES:
       UMA_HISTOGRAM_COUNTS_100(
           "Extensions.SettingsQuotaExceeded.TotalBytes", 1);
       break;
-    case BYTES_PER_SETTING:
+    case QUOTA_BYTES_PER_ITEM:
       UMA_HISTOGRAM_COUNTS_100(
           "Extensions.SettingsQuotaExceeded.BytesPerSetting", 1);
       break;
-    case KEY_COUNT:
+    case MAX_ITEMS:
       UMA_HISTOGRAM_COUNTS_100(
           "Extensions.SettingsQuotaExceeded.KeyCount", 1);
       break;
@@ -93,6 +94,28 @@ SettingsStorageQuotaEnforcer::SettingsStorageQuotaEnforcer(
 
 SettingsStorageQuotaEnforcer::~SettingsStorageQuotaEnforcer() {}
 
+size_t SettingsStorageQuotaEnforcer::GetBytesInUse(const std::string& key) {
+  std::map<std::string, size_t>::iterator maybe_used =
+      used_per_setting_.find(key);
+  return maybe_used == used_per_setting_.end() ? 0u : maybe_used->second;
+}
+
+size_t SettingsStorageQuotaEnforcer::GetBytesInUse(
+    const std::vector<std::string>& keys) {
+  size_t used = 0;
+  for (std::vector<std::string>::const_iterator it = keys.begin();
+      it != keys.end(); ++it) {
+    used += GetBytesInUse(*it);
+  }
+  return used;
+}
+
+size_t SettingsStorageQuotaEnforcer::GetBytesInUse() {
+  // All SettingsStorage implementations rely on GetBytesInUse being
+  // implemented here.
+  return used_total_;
+}
+
 SettingsStorage::ReadResult SettingsStorageQuotaEnforcer::Get(
     const std::string& key) {
   return delegate_->Get(key);
@@ -115,13 +138,13 @@ SettingsStorage::WriteResult SettingsStorageQuotaEnforcer::Set(
 
   if (options != IGNORE_QUOTA) {
     if (new_used_total > limits_.quota_bytes) {
-      return QuotaExceededFor(TOTAL_BYTES);
+      return QuotaExceededFor(QUOTA_BYTES);
     }
-    if (new_used_per_setting[key] > limits_.quota_bytes_per_setting) {
-      return QuotaExceededFor(BYTES_PER_SETTING);
+    if (new_used_per_setting[key] > limits_.quota_bytes_per_item) {
+      return QuotaExceededFor(QUOTA_BYTES_PER_ITEM);
     }
-    if (new_used_per_setting.size() > limits_.max_keys) {
-      return QuotaExceededFor(KEY_COUNT);
+    if (new_used_per_setting.size() > limits_.max_items) {
+      return QuotaExceededFor(MAX_ITEMS);
     }
   }
 
@@ -143,17 +166,17 @@ SettingsStorage::WriteResult SettingsStorageQuotaEnforcer::Set(
     Allocate(it.key(), it.value(), &new_used_total, &new_used_per_setting);
 
     if (options != IGNORE_QUOTA &&
-        new_used_per_setting[it.key()] > limits_.quota_bytes_per_setting) {
-      return QuotaExceededFor(BYTES_PER_SETTING);
+        new_used_per_setting[it.key()] > limits_.quota_bytes_per_item) {
+      return QuotaExceededFor(QUOTA_BYTES_PER_ITEM);
     }
   }
 
   if (options != IGNORE_QUOTA) {
     if (new_used_total > limits_.quota_bytes) {
-      return QuotaExceededFor(TOTAL_BYTES);
+      return QuotaExceededFor(QUOTA_BYTES);
     }
-    if (new_used_per_setting.size() > limits_.max_keys) {
-      return QuotaExceededFor(KEY_COUNT);
+    if (new_used_per_setting.size() > limits_.max_items) {
+      return QuotaExceededFor(MAX_ITEMS);
     }
   }
 

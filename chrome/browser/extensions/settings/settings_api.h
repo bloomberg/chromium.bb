@@ -99,6 +99,14 @@ class ClearSettingsFunction : public SettingsFunction {
       QuotaLimitHeuristics* heuristics) const OVERRIDE;
 };
 
+class GetBytesInUseSettingsFunction : public SettingsFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION_NAME("storage.getBytesInUse");
+
+ protected:
+  virtual bool RunWithStorage(SettingsStorage* storage) OVERRIDE;
+};
+
 }  // namespace extensions
 
 #endif  // CHROME_BROWSER_EXTENSIONS_SETTINGS_SETTINGS_API_H_
