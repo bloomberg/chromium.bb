@@ -52,6 +52,26 @@ class ForgivingBuilderStage(NonHaltingBuilderStage):
     return results_lib.Results.FORGIVEN, None
 
 
+class BoardSpecificBuilderStage(bs.BuilderStage):
+
+  def __init__(self, bot_id, options, build_config, board, suffix=None):
+    super(BoardSpecificBuilderStage, self).__init__(bot_id, options,
+                                                    build_config, suffix)
+    self._current_board = board
+
+    if not isinstance(board, basestring):
+      raise TypeError('Expected string, got %r' % (board,))
+
+    # Add a board name suffix to differentiate between various boards (in case
+    # more than one board is built on a single builder.)
+    self.name += '[%s]' % (board,)
+
+  def GetImageDirSymlink(self, pointer='latest-cbuildbot'):
+    """Get the location of the current image."""
+    buildroot, board = self._options.buildroot, self._current_board
+    return os.path.join(buildroot, 'src', 'build', 'images', board, pointer)
+
+
 class CleanUpStage(bs.BuilderStage):
   """Stages that cleans up build artifacts from previous runs.
 
@@ -564,7 +584,7 @@ class UprevStage(bs.BuilderStage):
       sys.exit(0)
 
 
-class BuildTargetStage(bs.BuilderStage):
+class BuildTargetStage(BoardSpecificBuilderStage):
   """This stage builds Chromium OS for a target.
 
   Specifically, we build Chromium OS packages and perform imaging to get
@@ -572,8 +592,8 @@ class BuildTargetStage(bs.BuilderStage):
 
   option_name = 'build'
 
-  def __init__(self, bot_id, options, build_config, archive_stage):
-    super(BuildTargetStage, self).__init__(bot_id, options, build_config)
+  def __init__(self, bot_id, options, build_config, board, archive_stage):
+    super(BuildTargetStage, self).__init__(bot_id, options, build_config, board)
     self._env = {}
     if self._build_config.get('useflags'):
       self._env['USE'] = ' '.join(self._build_config['useflags'])
@@ -605,13 +625,13 @@ class BuildTargetStage(bs.BuilderStage):
         images_can_build)
 
     commands.BuildImage(self._build_root,
-                        self._build_config['board'],
+                        self._current_board,
                         list(images_to_build),
                         extra_env=self._env)
 
     if self._build_config['vm_tests']:
       commands.BuildVMImageForTesting(self._build_root,
-                                      self._build_config['board'],
+                                      self._current_board,
                                       extra_env=self._env)
 
     # Update link to latest image.
@@ -628,7 +648,7 @@ class BuildTargetStage(bs.BuilderStage):
     # here because the test directory is modified during the test phase, and we
     # don't want to include the modifications in the tarball.
     commands.BuildAutotestTarball(self._build_root,
-                                  self._build_config['board'],
+                                  self._current_board,
                                   self._autotest_tarball)
     self._archive_stage.AutotestTarballReady(self._autotest_tarball)
 
@@ -641,7 +661,7 @@ class BuildTargetStage(bs.BuilderStage):
     skip_toolchain_update = self._build_config['latest_toolchain']
 
     commands.Build(self._build_root,
-                   self._build_config['board'],
+                   self._current_board,
                    build_autotest=build_autotest,
                    skip_toolchain_update=skip_toolchain_update,
                    fast=self._build_config['fast'],
@@ -673,13 +693,13 @@ class BuildTargetStage(bs.BuilderStage):
     return super(BuildTargetStage, self)._HandleStageException(exception)
 
 
-class ChromeTestStage(bs.BuilderStage):
+class ChromeTestStage(BoardSpecificBuilderStage):
   """Run chrome tests in a virtual machine."""
 
   option_name = 'tests'
 
-  def __init__(self, bot_id, options, build_config, archive_stage):
-    super(ChromeTestStage, self).__init__(bot_id, options, build_config)
+  def __init__(self, bot_id, options, build_config, board, archive_stage):
+    super(ChromeTestStage, self).__init__(bot_id, options, build_config, board)
     self._archive_stage = archive_stage
 
   def _PerformStage(self):
@@ -687,7 +707,7 @@ class ChromeTestStage(bs.BuilderStage):
       test_results_dir = None
       test_results_dir = commands.CreateTestRoot(self._build_root)
       commands.RunChromeSuite(self._build_root,
-                              self._build_config['board'],
+                              self._current_board,
                               self.GetImageDirSymlink(),
                               os.path.join(test_results_dir,
                                            'chrome_results'))
@@ -703,7 +723,7 @@ class ChromeTestStage(bs.BuilderStage):
       self._archive_stage.TestResultsReady(test_tarball)
 
 
-class UnitTestStage(bs.BuilderStage):
+class UnitTestStage(BoardSpecificBuilderStage):
   """Run unit tests."""
 
   option_name = 'tests'
@@ -711,18 +731,18 @@ class UnitTestStage(bs.BuilderStage):
   def _PerformStage(self):
     if self._build_config['unittests'] and self._options.tests:
       commands.RunUnitTests(self._build_root,
-                            self._build_config['board'],
+                            self._current_board,
                             full=(not self._build_config['quick_unit']),
                             nowithdebug=self._build_config['nowithdebug'])
 
 
-class VMTestStage(bs.BuilderStage):
+class VMTestStage(BoardSpecificBuilderStage):
   """Run autotests in a virtual machine."""
 
   option_name = 'tests'
 
-  def __init__(self, bot_id, options, build_config, archive_stage):
-    super(VMTestStage, self).__init__(bot_id, options, build_config)
+  def __init__(self, bot_id, options, build_config, board, archive_stage):
+    super(VMTestStage, self).__init__(bot_id, options, build_config, board)
     self._archive_stage = archive_stage
 
   def _PerformStage(self):
@@ -742,7 +762,7 @@ class VMTestStage(bs.BuilderStage):
       test_results_dir = commands.CreateTestRoot(self._build_root)
 
       commands.RunTestSuite(self._build_root,
-                            self._build_config['board'],
+                            self._current_board,
                             self.GetImageDirSymlink(),
                             os.path.join(test_results_dir,
                                          'test_harness'),
@@ -765,15 +785,15 @@ class VMTestStage(bs.BuilderStage):
       self._archive_stage.VMTestStatus(tests_passed)
 
 
-class HWTestStage(bs.BuilderStage):
+class HWTestStage(BoardSpecificBuilderStage):
   """Stage that runs tests in the Autotest lab."""
 
   option_name = 'tests'
 
-  def __init__(self, bot_id, options, build_config, archive_stage, suite,
-               platform):
-    super(HWTestStage, self).__init__(bot_id, options, build_config,
-                                      suffix='[' + suite + ']')
+  def __init__(self, bot_id, options, build_config, board, archive_stage,
+               suite, platform):
+    super(HWTestStage, self).__init__(bot_id, options, build_config, board,
+                                      suffix='[%s]' % suite)
     self._archive_url = archive_stage.GetGSUploadLocation()
     self._archive_stage = archive_stage
     self._suite = suite
@@ -815,7 +835,7 @@ class SDKTestStage(bs.BuilderStage):
     cros_lib.RunCommand(cmd, cwd=self._build_root)
 
 
-class ArchiveStage(NonHaltingBuilderStage):
+class ArchiveStage(BoardSpecificBuilderStage):
   """Archives build and test artifacts for developer consumption."""
 
   option_name = 'archive'
@@ -828,8 +848,8 @@ class ArchiveStage(NonHaltingBuilderStage):
           'No images found to archive.')
 
   # This stage is intended to run in the background, in parallel with tests.
-  def __init__(self, bot_id, options, build_config):
-    super(ArchiveStage, self).__init__(bot_id, options, build_config)
+  def __init__(self, bot_id, options, build_config, board):
+    super(ArchiveStage, self).__init__(bot_id, options, build_config, board)
     if build_config['gs_path'] == cbuildbot_config.GS_PATH_DEFAULT:
       self._gsutil_archive = 'gs://chromeos-image-archive/' + bot_id
     else:
@@ -1049,7 +1069,7 @@ class ArchiveStage(NonHaltingBuilderStage):
   def _PerformStage(self):
     buildroot = self._build_root
     config = self._build_config
-    board = config['board']
+    board = self._current_board
     debug = self._options.debug
     upload_url = self.GetGSUploadLocation()
     archive_path = self._SetupArchivePath()
@@ -1273,7 +1293,7 @@ class ArchiveStage(NonHaltingBuilderStage):
     return super(ArchiveStage, self)._HandleStageException(exception)
 
 
-class UploadPrebuiltsStage(bs.BuilderStage):
+class UploadPrebuiltsStage(BoardSpecificBuilderStage):
   """Uploads binaries generated by this build for developer use."""
 
   option_name = 'prebuilts'
@@ -1285,7 +1305,7 @@ class UploadPrebuiltsStage(bs.BuilderStage):
     manifest_manager = ManifestVersionedSyncStage.manifest_manager
     overlay_config = self._build_config['overlays']
     prebuilt_type = self._prebuilt_type
-    board = self._build_config['board']
+    board = self._current_board
     binhost_bucket = self._build_config['binhost_bucket']
     binhost_key = self._build_config['binhost_key']
     binhost_base_url = self._build_config['binhost_base_url']
@@ -1298,24 +1318,31 @@ class UploadPrebuiltsStage(bs.BuilderStage):
       version = manifest_manager.current_version
       extra_args = ['--set-version', version]
 
-    if prebuilt_type == constants.CHROOT_BUILDER_TYPE:
-      board = 'amd64'
-    elif prebuilt_type not in [constants.BUILD_FROM_SOURCE_TYPE,
-                               constants.CANARY_TYPE]:
-      assert prebuilt_type in (constants.PFQ_TYPE, constants.CHROME_PFQ_TYPE)
-
+    if prebuilt_type in (constants.PFQ_TYPE, constants.CHROME_PFQ_TYPE):
       overlays = self._build_config['overlays']
-      if self._build_config['master']:
-        extra_args.append('--sync-binhost-conf')
 
-        # Update binhost conf files for slaves.
-        if manifest_manager:
-          config = cbuildbot_config.config
+      # The master builder updates all the binhost conf files, and needs to do
+      # so only once so as to ensure it doesn't try to update the same file
+      # more than once. We arbitrarily decided to update the binhost conf
+      # files when we run prebuilt.py for the last board. The other boards are
+      # marked as slave boards.
+      if self._build_config['master'] and board == self._boards[-1]:
+        extra_args.append('--sync-binhost-conf')
+        config = cbuildbot_config.config
+
+        # If we share a version number with our slaves, we know what URLs
+        # they are going to use, so we can update the binhost conf on their
+        # behalf.
+        builders = []
+        if manifest_manager and manifest_manager.current_version:
           builders = self._GetImportantBuildersForMaster(config)
-          for builder in builders:
-            builder_config = config[builder]
-            if not builder_config['master'] and builder_config['prebuilts']:
-              slave_board = builder_config['board']
+
+        for builder in builders:
+          builder_config = config[builder]
+          if builder_config['prebuilts']:
+            for slave_board in builder_config['boards']:
+              if builder_config['master'] and slave_board == board:
+                continue
               extra_args.extend(['--slave-board', slave_board])
               slave_profile = builder_config.get('profile')
               if slave_profile:

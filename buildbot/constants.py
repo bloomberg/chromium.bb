@@ -93,6 +93,7 @@ CANARY_TYPE = 'canary'
 # Special build type for Chroot builders.  These builds focus on building
 # toolchains and validate that they work.
 CHROOT_BUILDER_TYPE = 'chroot'
+CHROOT_BUILDER_BOARD = 'amd64-host'
 
 # Build that refreshes the online Portage package status spreadsheet.
 REFRESH_PACKAGES_TYPE = 'refresh_packages'

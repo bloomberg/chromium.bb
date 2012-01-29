@@ -35,7 +35,6 @@ class CBuildBotTest(mox.MoxTestBase):
     self._test_cros_workon_packages = (
         'chromeos-base/kernel\nchromeos-base/chromeos-login\n')
     self._test_board = 'test-board'
-    self._board = 'x86-generic'
     self._buildroot = '.'
     self._test_dict = {'kernel': ['chromos-base/kernel', 'dev-util/perf'],
                        'cros': ['chromos-base/libcros']

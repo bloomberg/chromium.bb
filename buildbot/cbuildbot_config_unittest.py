@@ -51,12 +51,16 @@ class CBuildBotTest(mox.MoxTestBase):
           isinstance(useflags, list),
           'Config %s: useflags should be a list.' % build_name)
 
-  def testBoardFlag(self):
-    """Verify 'board' is explicitly set for every config."""
+  def testBoards(self):
+    """Verify 'boards' is explicitly set for every config."""
 
     for build_name, config in cbuildbot_config.config.iteritems():
-      self.assertTrue(config['board'],
-                      "Config %s doesn't have the board set." % build_name)
+      self.assertTrue(isinstance(config['boards'], list),
+                      "Config %s doesn't have a list of boards." % build_name)
+      self.assertEqual(len(set(config['boards'])), len(config['boards']),
+                       'Config %s has duplicate boards.' % build_name)
+      self.assertTrue(config['boards'],
+                      'Config %s has at least one board.' % build_name)
 
   def testOverlaySettings(self):
     """Verify overlays and push_overlays have legal values."""

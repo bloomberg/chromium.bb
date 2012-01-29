@@ -53,6 +53,8 @@ class AbstractStageTest(mox.MoxTestBase):
     self.bot_id = 'x86-generic-pre-flight-queue'
     self.build_config = config.config[self.bot_id].copy()
     self.build_root = '/fake_root'
+    self._boards = self.build_config['boards']
+    self._current_board = self._boards[0]
 
     self.url = 'fake_url'
     self.build_config['git_url'] = self.url
@@ -110,7 +112,7 @@ class BuilderStageTest(AbstractStageTest):
                         error_ok=True).AndReturn(obj)
     self.mox.ReplayAll()
     stage = self.ConstructStage()
-    board = self.build_config['board']
+    board = self._current_board
     result = stage._GetPortageEnvVar(envvar, board)
     self.mox.VerifyAll()
     self.assertEqual(result, 'RESULT')
@@ -312,9 +314,9 @@ class BuildBoardTest(AbstractStageTest):
                         extra_env=mox.IgnoreArg()
                         )
     os.path.isdir(os.path.join(self.build_root, 'chroot', 'build',
-                               self.build_config['board'])).AndReturn(False)
+                               self._current_board)).AndReturn(False)
     commands.SetupBoard(self.build_root,
-                        board=self.build_config['board'],
+                        board=self._current_board,
                         fast=True,
                         usepkg=False,
                         latest_toolchain=False,
@@ -341,9 +343,9 @@ class BuildBoardTest(AbstractStageTest):
                         extra_env=mox.IgnoreArg()
                         )
     os.path.isdir(os.path.join(self.build_root, 'chroot', 'build',
-                               self.build_config['board'])).AndReturn(False)
+                               self._current_board)).AndReturn(False)
     commands.SetupBoard(self.build_root,
-                        board=self.build_config['board'],
+                        board=self._current_board,
                         fast=True,
                         usepkg=False,
                         latest_toolchain=False,
@@ -371,9 +373,9 @@ class BuildBoardTest(AbstractStageTest):
                         extra_env=mox.IgnoreArg()
                         )
     os.path.isdir(os.path.join(self.build_root, 'chroot', 'build',
-                               self.build_config['board'])).AndReturn(False)
+                               self._current_board)).AndReturn(False)
     commands.SetupBoard(self.build_root,
-                        board=self.build_config['board'],
+                        board=self._current_board,
                         fast=True,
                         usepkg=False,
                         latest_toolchain=False,
@@ -393,7 +395,7 @@ class BuildBoardTest(AbstractStageTest):
 
     os.path.isdir(os.path.join(self.build_root, 'chroot')).AndReturn(True)
     os.path.isdir(os.path.join(self.build_root, 'chroot', 'build',
-                               self.build_config['board'])).AndReturn(True)
+                               self._current_board)).AndReturn(True)
 
     commands.RunChrootUpgradeHooks(self.build_root)
 
@@ -415,10 +417,10 @@ class BuildBoardTest(AbstractStageTest):
                         )
 
     os.path.isdir(os.path.join(self.build_root, 'chroot', 'build',
-                               self.build_config['board'])).AndReturn(False)
+                               self._current_board)).AndReturn(False)
 
     commands.SetupBoard(self.build_root,
-                        board=self.build_config['board'],
+                        board=self._current_board,
                         fast=self.build_config['fast'],
                         usepkg=self.build_config['usepkg_setup_board'],
                         latest_toolchain=self.build_config['latest_toolchain'],
@@ -444,7 +446,7 @@ class VMTestStageTest(AbstractStageTest):
 
   def ConstructStage(self):
     return stages.VMTestStage(self.bot_id, self.options, self.build_config,
-                              self.archive_stage_mock)
+                              self._current_board, self.archive_stage_mock)
 
   def testFullTests(self):
     """Tests if full unit and cros_au_test_harness tests are run correctly."""
@@ -459,7 +461,7 @@ class VMTestStageTest(AbstractStageTest):
     tempfile.mkdtemp(prefix='cbuildbot').AndReturn(self.fake_results_dir)
     commands.CreateTestRoot(self.build_root).AndReturn(self.fake_results_dir)
     commands.RunTestSuite(self.build_root,
-                          self.build_config['board'],
+                          self._current_board,
                           mox.IgnoreArg(),
                           os.path.join(self.fake_results_dir,
                                        'test_harness'),
@@ -489,7 +491,7 @@ class VMTestStageTest(AbstractStageTest):
     tempfile.mkdtemp(prefix='cbuildbot').AndReturn(self.fake_results_dir)
     commands.CreateTestRoot(self.build_root).AndReturn(self.fake_results_dir)
     commands.RunTestSuite(self.build_root,
-                          self.build_config['board'],
+                          self._current_board,
                           mox.IgnoreArg(),
                           os.path.join(self.fake_results_dir,
                                        'test_harness'),
@@ -517,12 +519,13 @@ class UnitTestStageTest(AbstractStageTest):
     self.mox.StubOutWithMock(commands, 'RunUnitTests')
 
   def ConstructStage(self):
-    return stages.UnitTestStage(self.bot_id, self.options, self.build_config)
+    return stages.UnitTestStage(self.bot_id, self.options, self.build_config,
+                                self._current_board)
 
   def testQuickTests(self):
     self.build_config['quick_unit'] = True
-    commands.RunUnitTests(self.build_root, self.build_config['board'],
-                          full=False, nowithdebug=mox.IgnoreArg())
+    commands.RunUnitTests(self.build_root, self._current_board, full=False,
+                          nowithdebug=mox.IgnoreArg())
     self.mox.ReplayAll()
     self.RunStage()
     self.mox.VerifyAll()
@@ -530,8 +533,8 @@ class UnitTestStageTest(AbstractStageTest):
   def testFullTests(self):
     """Tests if full unit and cros_au_test_harness tests are run correctly."""
     self.build_config['quick_unit'] = False
-    commands.RunUnitTests(self.build_root, self.build_config['board'],
-                          full=True, nowithdebug=mox.IgnoreArg())
+    commands.RunUnitTests(self.build_root, self._current_board, full=True,
+                          nowithdebug=mox.IgnoreArg())
     self.mox.ReplayAll()
     self.RunStage()
     self.mox.VerifyAll()
@@ -550,8 +553,8 @@ class HWTestStageTest(AbstractStageTest):
 
   def ConstructStage(self):
     return stages.HWTestStage(self.bot_id, self.options, self.build_config,
-                              self.archive_stage_mock, self.suite,
-                              self.platform)
+                              self._current_board, self.archive_stage_mock,
+                              self.suite, self.platform)
 
   def testWithSuite(self):
     """Test if run correctly with a test suite."""
@@ -596,7 +599,7 @@ class UprevStageTest(AbstractStageTest):
         self.build_root,
         self.TRACKING_BRANCH,
         self.options.chrome_rev,
-        [self.build_config['board']],
+        self._boards,
         chrome_root=None,
         chrome_version=None).AndReturn(chrome_atom)
 
@@ -612,7 +615,7 @@ class UprevStageTest(AbstractStageTest):
         self.build_root,
         self.TRACKING_BRANCH,
         self.options.chrome_rev,
-        [self.build_config['board']],
+        self._boards,
         chrome_root=None,
         chrome_version=None)
 
@@ -628,7 +631,7 @@ class UprevStageTest(AbstractStageTest):
 
     commands.UprevPackages(
         self.build_root,
-        [self.build_config['board']],
+        self._boards,
         [self.overlay])
 
     self.mox.ReplayAll()
@@ -653,13 +656,13 @@ class UprevStageTest(AbstractStageTest):
         self.build_root,
         self.TRACKING_BRANCH,
         self.options.chrome_rev,
-        [self.build_config['board']],
+        self._boards,
         chrome_root=None,
         chrome_version=None).AndReturn(None)
 
     commands.UprevPackages(
         self.build_root,
-        [self.build_config['board']],
+        self._boards,
         [self.overlay])
 
     self.mox.ReplayAll()
@@ -711,7 +714,7 @@ class BuildTargetStageTest(AbstractStageTest):
   def ConstructStage(self):
     return stages.BuildTargetStage(
         self.bot_id, self.options, self.build_config,
-        self.archive_stage_mock)
+        self._current_board, self.archive_stage_mock)
 
   def testAllConditionalPaths(self):
     """Enable all paths to get line coverage."""
@@ -738,7 +741,7 @@ class BuildTargetStageTest(AbstractStageTest):
     autotest_tarball_path = os.path.join(fake_autotest_dir, tarball_name)
 
     commands.Build(self.build_root,
-                   self.build_config['board'],
+                   self._current_board,
                    build_autotest=True,
                    usepkg=True,
                    fast=True,
@@ -746,12 +749,12 @@ class BuildTargetStageTest(AbstractStageTest):
                    nowithdebug=False,
                    extra_env=proper_env)
 
-    commands.BuildImage(self.build_root, self.build_config['board'],
+    commands.BuildImage(self.build_root, self._current_board,
                         ['test', 'base', 'dev'], extra_env=proper_env)
-    commands.BuildVMImageForTesting(self.build_root, self.build_config['board'],
+    commands.BuildVMImageForTesting(self.build_root, self._current_board,
                                     extra_env=proper_env)
     tempfile.mkdtemp(prefix='autotest').AndReturn(fake_autotest_dir)
-    commands.BuildAutotestTarball(self.build_root, self.build_config['board'],
+    commands.BuildAutotestTarball(self.build_root, self._current_board,
                                   autotest_tarball_path)
     self.archive_stage_mock.AutotestTarballReady(autotest_tarball_path)
     os.path.isdir(self.latest_cbuildbot).AndReturn(True)
@@ -769,7 +772,7 @@ class BuildTargetStageTest(AbstractStageTest):
     self.build_config['useflags'] = None
 
     commands.Build(self.build_root,
-                   self.build_config['board'],
+                   self._current_board,
                    build_autotest=mox.IgnoreArg(),
                    fast=mox.IgnoreArg(),
                    usepkg=mox.IgnoreArg(),
@@ -777,7 +780,7 @@ class BuildTargetStageTest(AbstractStageTest):
                    nowithdebug=mox.IgnoreArg(),
                    extra_env={})
     self.archive_stage_mock.AutotestTarballReady(None)
-    commands.BuildImage(self.build_root, self.build_config['board'], ['test'],
+    commands.BuildImage(self.build_root, self._current_board, ['test'],
                         extra_env={})
     os.path.isdir(self.latest_cbuildbot).AndReturn(True)
     self.archive_stage_mock.SetVersion(self.latest_cbuildbot)
@@ -803,7 +806,7 @@ class BuildTargetStageTest(AbstractStageTest):
     proper_env = {'USE' : ' '.join(self.build_config['useflags'])}
 
     commands.Build(self.build_root,
-                   self.build_config['board'],
+                   self._current_board,
                    build_autotest=True,
                    usepkg=True,
                    fast=True,
@@ -811,7 +814,7 @@ class BuildTargetStageTest(AbstractStageTest):
                    nowithdebug=True,
                    extra_env=proper_env)
     self.archive_stage_mock.AutotestTarballReady(None)
-    commands.BuildImage(self.build_root, self.build_config['board'], ['test'],
+    commands.BuildImage(self.build_root, self._current_board, ['test'],
                         extra_env=proper_env)
     os.path.isdir(self.latest_cbuildbot).AndReturn(True)
     self.archive_stage_mock.SetVersion(self.latest_cbuildbot)
@@ -846,7 +849,8 @@ class ArchiveStageTest(AbstractStageTest):
     self._build_config['push_image'] = True
 
   def ConstructStage(self):
-    return stages.ArchiveStage(self.bot_id, self.options, self._build_config)
+    return stages.ArchiveStage(self.bot_id, self.options, self._build_config,
+                               self._current_board)
 
   @_replace_archive_path
   def testArchive(self):
@@ -860,7 +864,7 @@ class ArchiveStageTest(AbstractStageTest):
 
     self.mox.StubOutWithMock(commands, 'PushImages')
     commands.PushImages(self.build_root,
-                        board=self._build_config['board'],
+                        board=self._current_board,
                         branch_name='master',
                         archive_url=mox.IgnoreArg(),
                         profile=None)
@@ -904,10 +908,11 @@ class UploadPrebuiltsStageTest(AbstractStageTest):
   def ConstructStage(self):
     return stages.UploadPrebuiltsStage(self.bot_id,
                                        self.options,
-                                       self.build_config)
+                                       self.build_config,
+                                       self._current_board)
 
   def ConstructBinhosts(self):
-    for board in (self.build_config['board'], None):
+    for board in (self._current_board, None):
       binhost = 'http://binhost/?board=' + str(board)
       stages.UploadPrebuiltsStage._GetPortageEnvVar(stages._PORTAGE_BINHOST,
           board).AndReturn(binhost)
@@ -918,7 +923,7 @@ class UploadPrebuiltsStageTest(AbstractStageTest):
 
     self.ConstructBinhosts()
     commands.UploadPrebuilts(
-        self.build_root, self.build_config['board'],
+        self.build_root, self._current_board,
         self.build_config['overlays'],
         self.build_config['build_type'],
         self.options.chrome_rev,
@@ -940,7 +945,7 @@ class UploadPrebuiltsStageTest(AbstractStageTest):
 
     self.ConstructBinhosts()
     commands.UploadPrebuilts(
-        self.build_root, self.build_config['board'],
+        self.build_root, self._current_board,
         self.build_config['overlays'],
         self.build_config['build_type'],
         self.options.chrome_rev,

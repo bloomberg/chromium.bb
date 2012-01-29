@@ -72,9 +72,8 @@ config = {}
 
 _settings = dict(
 
-# board -- The board of the image to build.  If build_type is CHROOT_BUILD_TYPE,
-#          may be an array of boards to setup.
-  board=None,
+# boards -- A list of boards to build.
+  boards=None,
 
 # paladin_builder_name -- Used by paladin logic. The name of the builder on the
 #                         buildbot waterfall if it differs from the config name.
@@ -274,7 +273,6 @@ class _config(dict):
     Returns:
       See the docstring of derive.
     """
-    global config
     new_config = self.derive(*inherits, **overrides)
 
     # Derive directly from defaults so missing values are added.
@@ -367,18 +365,18 @@ internal = _config(
 full.add_config('chromiumos-sdk',
   # The amd64-host has to be last as that is when the toolchains
   # are bundled up for inclusion in the sdk.
-  board=['x86-generic', 'arm-generic', 'amd64-generic', 'amd64-host'],
+  boards=['x86-generic', 'arm-generic', 'amd64-generic', 'amd64-host'],
   build_type=constants.CHROOT_BUILDER_TYPE,
   use_sdk=False,
 )
 
 _config.add_raw_config('refresh-packages',
-  board=['x86-generic', 'arm-generic'],
+  boards=['x86-generic', 'arm-generic'],
   build_type=constants.REFRESH_PACKAGES_TYPE,
 )
 
 pfq.add_config('x86-generic-pre-flight-queue',
-  board='x86-generic',
+  boards=['x86-generic'],
   master=True,
   push_overlays='public',
   description='x86-generic PFQ',
@@ -386,37 +384,37 @@ pfq.add_config('x86-generic-pre-flight-queue',
 
 pfq.add_config('arm-tegra2-bin',
   arm,
-  board='tegra2',
+  boards=['tegra2'],
   description='arm-tegra2 PFQ',
 )
 
 pfq.add_config('amd64-corei7-bin',
   amd64,
-  board='amd64-corei7',
+  boards=['amd64-corei7'],
   description='amd64-corei7 PFQ',
 )
 
 commit_queue.add_config('x86-generic-commit-queue',
-  board='x86-generic',
+  boards=['x86-generic'],
   master=True,
   paladin_builder_name='x86 generic commit queue',
 )
 
 commit_queue.add_config('arm-tegra2-commit-queue',
   arm,
-  board='tegra2',
+  boards=['tegra2'],
   paladin_builder_name='tegra2 commit queue',
 )
 
 commit_queue.add_config('amd64-corei7-commit-queue',
   amd64,
-  board='amd64-corei7',
+  boards=['amd64-corei7'],
   paladin_builder_name='amd64 corei7 commit queue',
 )
 
 commit_queue.add_config('x86-mario-commit-queue',
   internal,
-  board='x86-mario',
+  boards=['x86-mario'],
   master=True,
   overlays='private',
   paladin_builder_name='TOT Commit Queue',
@@ -431,27 +429,27 @@ chrome_pfq = _config(
 )
 
 chrome_pfq.add_config('x86-generic-chrome-pre-flight-queue',
-  board='x86-generic',
+  boards=['x86-generic'],
   master=True,
   push_overlays='public',
   chrome_rev=constants.CHROME_REV_LATEST,
 )
 
 chrome_pfq.add_config('aura-chrome-pre-flight-queue',
-  board='x86-generic',
+  boards=['x86-generic'],
   profile='aura',
   chrome_rev=constants.CHROME_REV_LATEST,
 )
 
 chrome_pfq.add_config('arm-tegra2-chrome-pre-flight-queue',
   arm,
-  board='tegra2',
+  boards=['tegra2'],
   chrome_rev=constants.CHROME_REV_LATEST,
 )
 
 chrome_pfq.add_config('amd64-corei7-chrome-pre-flight-queue',
   amd64,
-  board='amd64-corei7',
+  boards=['amd64-corei7'],
   chrome_rev=constants.CHROME_REV_LATEST,
 )
 
@@ -465,82 +463,82 @@ chrome_pfq_info = chrome_pfq.derive(
 )
 
 chrome_pfq_info.add_config('x86-generic-tot-chrome-pfq-informational',
-  board='x86-generic',
+  boards=['x86-generic'],
 )
 
 cpfq_arm = \
 chrome_pfq_info.add_config('arm-generic-tot-chrome-pfq-informational',
   arm,
-  board='arm-generic',
+  boards=['arm-generic'],
 )
 
 cpfq_arm.add_config('arm-tegra2-tot-chrome-pfq-informational',
-  board='tegra2',
+  boards=['tegra2'],
 )
 
 chrome_pfq_info.add_config('amd64-corei7-tot-chrome-pfq-informational',
   amd64,
-  board='arm-generic',
+  boards=['arm-generic'],
 )
 
 # TODO(ferringb): Remove this builder config -- it isn't used anymore.
 chrome_pfq_info.add_config('patch-tot-chrome-pfq-informational',
   arm,
-  board='arm-generic',
+  boards=['arm-generic'],
   useflags=['touchui_patches'],
 )
 
 chrome_pfq_info.add_config('aura-tot-chrome-pfq-informational',
-  board='x86-generic',
+  boards=['x86-generic'],
   profile='aura',
 )
 
 
 arm_generic_full = \
 full.add_config('arm-generic-full', arm,
-  board='arm-generic',
+  boards=['arm-generic'],
 )
 
 arm_generic_full.add_config('arm-tegra2-full',
-  board='tegra2',
+  boards=['tegra2'],
 )
 
 arm_generic_full.add_config('arm-tegra2-seaboard-full',
-  board='tegra2_seaboard',
+  boards=['tegra2_seaboard'],
 )
 
 x86_generic_full = \
 full.add_config('x86-generic-full',
-  board='x86-generic',
+  boards=['x86-generic'],
 )
 
 x86_generic_full.add_config('x86-pineview-full',
-  board='x86-pineview',
+  boards=['x86-pineview'],
 )
 
 _toolchain = full.derive(latest_toolchain=True, prebuilts=False)
 
 _toolchain.add_config('x86-generic-toolchain',
-  board='x86-generic',
+  boards=['x86-generic'],
 )
 
 _toolchain.add_config('arm-tegra2-seaboard-toolchain', arm,
-  board='tegra2_seaboard',
+  boards=['tegra2_seaboard'],
 )
 
 
 full.add_config('amd64-generic-full',
-  board='amd64-generic',
+  boards=['amd64-generic'],
 )
 
 full.add_config('amd64-corei7-full',
-  board='amd64-corei7',
+  boards=['amd64-corei7'],
   unittests=False,
   vm_tests=None,
 )
 
 _config.add_raw_config('x86-generic-asan',
-  board='x86-generic',
+  boards=['x86-generic'],
   profile='asan',
   prebuilts=False,
   useflags=['asan'],
@@ -560,7 +558,7 @@ x86_internal_pfq = internal_pfq.derive(
 )
 
 x86_internal_pfq.add_config('x86-mario-pre-flight-queue',
-  board='x86-mario',
+  boards=['x86-mario'],
   gs_path='gs://chromeos-x86-mario/pre-flight-master',
   overlays='private',
   push_overlays='private',
@@ -568,23 +566,23 @@ x86_internal_pfq.add_config('x86-mario-pre-flight-queue',
 )
 
 x86_internal_pfq.add_config('x86-alex-pre-flight-branch',
-  board='x86-alex',
+  boards=['x86-alex'],
 )
 
 x86_internal_pfq.add_config('x86-mario-pre-flight-branch',
-  board='x86-mario',
+  boards=['x86-mario'],
   master=False,
 )
 
 internal_arm_pfq = internal_pfq.derive(arm, overlays='private')
 
 internal_arm_pfq.add_config('arm-tegra2_kaen-private-bin',
-  board='tegra2_kaen',
+  boards=['tegra2_kaen'],
   description='tegra2_kaen PFQ'
 )
 
 internal_arm_pfq.add_config('arm-tegra2_kaen-aura-private-bin',
-  board='tegra2_kaen',
+  boards=['tegra2_kaen'],
   profile='aura',
   description='tegra2_kaen Aura PFQ',
   important=False,
@@ -596,37 +594,37 @@ x86_internal_pfq = internal.derive(pfq,
 )
 
 x86_internal_pfq.add_config('x86-zgb-private-bin',
-  board='x86-zgb',
+  boards=['x86-zgb'],
   description='ZGB PFQ',
   important=False,
 )
 
 x86_internal_pfq.add_config('x86-alex-private-bin',
-  board='x86-alex',
+  boards=['x86-alex'],
   description='Alex PFQ',
 )
 
 internal_pfq.add_config('stumpy-private-bin',
-  board='stumpy',
+  boards=['stumpy'],
   overlays='private',
   description='Stumpy PFQ',
 )
 
 internal_pfq.add_config('lumpy-private-bin',
-  board='lumpy',
+  boards=['lumpy'],
   overlays='private',
   description='Lumpy PFQ',
 )
 
 internal_pfq.add_config('lumpy64-private-bin',
-  board='lumpy64',
+  boards=['lumpy64'],
   overlays='private',
   description='Lumpy64 PFQ',
   important=False,
 )
 
 internal_pfq.add_config('link-private-bin',
-  board='link',
+  boards=['link'],
   overlays='private',
   description='link PFQ',
 )
@@ -645,12 +643,12 @@ _internal_toolchain = _toolchain.derive(internal, full, official,
 )
 
 _internal_toolchain.add_config('x86-alex-toolchain',
-  board='x86-alex',
+  boards=['x86-alex'],
 )
 
 _internal_toolchain.add_config('arm-tegra2_seaboard-toolchain',
   arm,
-  board='tegra2_seaboard',
+  boards=['tegra2_seaboard'],
 )
 
 _release = full.derive(official, internal,
@@ -673,12 +671,12 @@ _release = full.derive(official, internal,
 )
 
 _release.add_config('x86-mario-release',
-  board='x86-mario',
+  boards=['x86-mario'],
 )
 
 _alex_release = \
 _release.add_config('x86-alex-release',
-  board='x86-alex',
+  boards=['x86-alex'],
 )
 
 _alex_release.add_config('aura-release',
@@ -686,37 +684,37 @@ _alex_release.add_config('aura-release',
 )
 
 _release.add_config('x86-alex_he-release',
-  board='x86-alex_he',
+  boards=['x86-alex_he'],
 )
 
 _release.add_config('x86-zgb-release',
-  board='x86-zgb',
+  boards=['x86-zgb'],
 )
 
 _release.add_config('x86-zgb_he-release',
-  board='x86-zgb_he',
+  boards=['x86-zgb_he'],
 )
 
 _release.add_config('stumpy-release',
-  board='stumpy',
+  boards=['stumpy'],
 )
 
 _release.add_config('lumpy-release',
-  board='lumpy',
+  boards=['lumpy'],
 )
 
 _release.add_config('lumpy64-release',
-  board='lumpy64',
+  boards=['lumpy64'],
 )
 
 _release.add_config('link-release',
-  board='link',
+  boards=['link'],
   prebuilts=False,
   vm_tests=None,
 )
 
 _release.add_config('autotest-experimental',
-  board='x86-alex',
+  boards=['x86-alex'],
   prebuilts=False,
   platform='netbook_ALEX',
   hw_tests=['bvt', 'regression', 'performance', 'platform', 'pyauto']
@@ -725,15 +723,15 @@ _release.add_config('autotest-experimental',
 _arm_release = _release.derive(arm)
 
 _arm_release.add_config('arm-tegra2_seaboard-release',
-  board='tegra2_seaboard',
+  boards=['tegra2_seaboard'],
 )
 
 _arm_release.add_config('arm-tegra2_kaen-release',
-  board='tegra2_kaen',
+  boards=['tegra2_kaen'],
 )
 
 _arm_release.add_config('arm-tegra2_kaen-aura-release',
-  board='tegra2_kaen',
+  boards=['tegra2_kaen'],
   profile='aura',
 )
 

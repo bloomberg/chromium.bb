@@ -41,22 +41,19 @@ class BuilderStage(object):
     self._bot_id = bot_id
     self._options = options
     self._build_config = build_config
-    self._prebuilt_type = None
     self.name = self.name_stage_re.match(self.__class__.__name__).group(1)
     if suffix:
       self.name += suffix
-    self._ExtractVariables()
+    self._boards = self._build_config['boards']
+    self._build_root = os.path.abspath(self._options.buildroot)
+    self._prebuilt_type = None
+    if self._options.prebuilts and self._build_config['prebuilts']:
+      self._prebuilt_type = self._build_config['build_type']
 
     # Determine correct chrome_rev.
     self._chrome_rev = self._build_config['chrome_rev']
-    if self._options.chrome_rev: self._chrome_rev = self._options.chrome_rev
-
-  def _ExtractVariables(self):
-    """Extracts common variables from build config and options into class."""
-    self._boards = self._ListifyBoard(self._build_config['board'])
-    self._build_root = os.path.abspath(self._options.buildroot)
-    if self._options.prebuilts and self._build_config['prebuilts']:
-      self._prebuilt_type = self._build_config['build_type']
+    if self._options.chrome_rev:
+      self._chrome_rev = self._options.chrome_rev
 
   def _ExtractOverlays(self):
     """Extracts list of overlays into class."""
@@ -72,17 +69,6 @@ class BuilderStage(object):
     assert self._build_config['master'] or not push_overlays
 
     return overlays, push_overlays
-
-  def _ListifyBoard(self, board):
-    """Return list of boards from either str or list |board|."""
-    boards = None
-    if isinstance(board, str):
-      boards = [board]
-    else:
-      boards = board
-
-    assert isinstance(boards, list), 'Board was neither an array or a string.'
-    return boards
 
   def _PrintLoudly(self, msg):
     """Prints a msg with loudly."""
@@ -177,11 +163,6 @@ class BuilderStage(object):
       description = traceback.format_exc()
     print >> sys.stderr, description
     return exception, description
-
-  def GetImageDirSymlink(self, pointer='latest-cbuildbot'):
-    """Get the location of the current image."""
-    buildroot, board = self._options.buildroot, self._build_config['board']
-    return os.path.join(buildroot, 'src', 'build', 'images', board, pointer)
 
   def HandleSkip(self):
     """Run if the stage is skipped."""

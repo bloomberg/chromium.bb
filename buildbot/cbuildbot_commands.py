@@ -646,12 +646,10 @@ def UploadPrebuilts(buildroot, board, overlay_config, category,
   if overlay_config in ('private', 'both'):
     cmd.extend(['--private', '--binhost-conf-dir', _PRIVATE_BINHOST_CONF_DIR])
 
+  cmd.extend(['--board', board])
   if category == 'chroot':
     cmd.extend(['--sync-host',
-                '--board', 'amd64-host',
                 '--upload-board-tarball'])
-  else:
-    cmd.extend(['--board', board])
 
   if binhost_key is not None:
     cmd.extend(['--key', binhost_key])
