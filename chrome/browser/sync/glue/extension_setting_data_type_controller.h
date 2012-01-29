@@ -58,7 +58,7 @@ class ExtensionSettingDataTypeController
   syncable::ModelType type_;
 
   // These only used on the UI thread.
-  extensions::SettingsFrontend* settings_frontend_;
+  Profile* profile_;
   ProfileSyncService* profile_sync_service_;
 
   // Only used on the FILE thread.
