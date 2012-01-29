@@ -21,6 +21,9 @@ class ShellRenderViewObserver : public RenderViewObserver {
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
  private:
+  // Message handlers.
+  void OnCaptureTextDump(bool recursive);
+
   DISALLOW_COPY_AND_ASSIGN(ShellRenderViewObserver);
 };
 

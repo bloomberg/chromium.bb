@@ -8,6 +8,7 @@
 #include "content/shell/shell.h"
 #include "content/shell/shell_browser_main.h"
 #include "content/shell/shell_devtools_delegate.h"
+#include "content/shell/shell_render_view_host_observer.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "webkit/glue/webpreferences.h"
@@ -52,6 +53,7 @@ WebContentsView* ShellContentBrowserClient::CreateWebContentsView(
 
 void ShellContentBrowserClient::RenderViewHostCreated(
     RenderViewHost* render_view_host) {
+  new ShellRenderViewHostObserver(render_view_host);
 }
 
 void ShellContentBrowserClient::RenderProcessHostCreated(

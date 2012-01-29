@@ -13,6 +13,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/string_piece.h"
 #include "content/public/browser/web_contents_delegate.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "ui/gfx/native_widget_types.h"
 
 #if defined(OS_LINUX)
@@ -31,7 +32,8 @@ class SiteInstance;
 
 // This represents one window of the Content Shell, i.e. all the UI including
 // buttons and url bar, as well as the web content area.
-class Shell : public WebContentsDelegate {
+class Shell : public WebContentsDelegate,
+              public WebContentsObserver {
  public:
   virtual ~Shell();
 
@@ -71,7 +73,7 @@ class Shell : public WebContentsDelegate {
     STOP_BUTTON
   };
 
-  Shell();
+  explicit Shell(TabContents* tab_contents);
 
   // Helper to create a new Shell given a newly created TabContents.
   static Shell* CreateShell(TabContents* tab_contents);
@@ -106,6 +108,11 @@ class Shell : public WebContentsDelegate {
   virtual void DidNavigateMainFramePostCommit(WebContents* tab) OVERRIDE;
   virtual void UpdatePreferredSize(WebContents* source,
                                    const gfx::Size& pref_size) OVERRIDE;
+
+  // content::WebContentsObserver
+  virtual void DidFinishLoad(int64 frame_id,
+                             const GURL& validated_url,
+                             bool is_main_frame) OVERRIDE;
 
 #if defined(OS_WIN)
   static ATOM RegisterWindowClass();

@@ -4,11 +4,15 @@
 
 #include "content/shell/shell.h"
 
+#include "base/command_line.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/string_util.h"
+#include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/navigation_controller_impl.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/shell/shell_messages.h"
+#include "content/shell/shell_switches.h"
 #include "ui/gfx/size.h"
 
 // Content area size for newly created windows.
@@ -19,8 +23,9 @@ namespace content {
 
 std::vector<Shell*> Shell::windows_;
 
-Shell::Shell()
-    : window_(NULL),
+Shell::Shell(TabContents* tab_contents)
+    : WebContentsObserver(tab_contents),
+      window_(NULL),
       url_edit_view_(NULL)
 #if defined(OS_WIN)
       , default_edit_wnd_proc_(0)
@@ -41,7 +46,7 @@ Shell::~Shell() {
 }
 
 Shell* Shell::CreateShell(TabContents* tab_contents) {
-  Shell* shell = new Shell();
+  Shell* shell = new Shell(tab_contents);
   shell->PlatformCreateWindow(kTestWindowWidth, kTestWindowHeight);
 
   shell->tab_contents_.reset(tab_contents);
@@ -128,6 +133,18 @@ void Shell::DidNavigateMainFramePostCommit(WebContents* tab) {
 void Shell::UpdatePreferredSize(WebContents* source,
                                 const gfx::Size& pref_size) {
   PlatformSizeTo(pref_size.width(), pref_size.height());
+}
+
+void Shell::DidFinishLoad(int64 frame_id,
+                          const GURL& validated_url,
+                          bool is_main_frame) {
+  if (!is_main_frame)
+    return;
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree))
+    return;
+  RenderViewHost* render_view_host = tab_contents_->GetRenderViewHost();
+  render_view_host->Send(
+      new ShellViewMsg_CaptureTextDump(render_view_host->routing_id(), false));
 }
 
 }  // namespace content
