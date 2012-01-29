@@ -20,7 +20,6 @@
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/custom_home_pages_table_model.h"
-#include "chrome/browser/google/google_util.h"
 #include "chrome/browser/instant/instant_confirm_dialog.h"
 #include "chrome/browser/instant/instant_controller.h"
 #include "chrome/browser/instant/instant_field_trial.h"
@@ -186,25 +185,21 @@ void BrowserOptionsHandler::GetLocalizedValues(
       l10n_util::GetStringFUTF16(IDS_SYNC_OVERVIEW,
                                  l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
 
-  localized_strings->SetString(
-      "syncLearnMoreURL",
-      google_util::StringAppendGoogleLocaleParam(chrome::kSyncLearnMoreURL));
+  localized_strings->SetString("syncLearnMoreURL", chrome::kSyncLearnMoreURL);
   localized_strings->SetString(
       "profilesSingleUser",
       l10n_util::GetStringFUTF16(IDS_PROFILES_SINGLE_USER_MESSAGE,
                                  l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
 
+  string16 learn_more_url = ASCIIToUTF16(chrome::kInstantLearnMoreURL);
   localized_strings->SetString(
       "defaultSearchGroupLabel",
-      l10n_util::GetStringFUTF16(IDS_SEARCH_PREF_EXPLANATION,
-          l10n_util::GetStringUTF16(IDS_OMNIBOX_LEARN_MORE_URL)));
+      l10n_util::GetStringFUTF16(IDS_SEARCH_PREF_EXPLANATION, learn_more_url));
   localized_strings->SetString(
       "instantPrefAndWarning",
       l10n_util::GetStringFUTF16(IDS_INSTANT_PREF_WITH_WARNING,
-          l10n_util::GetStringUTF16(IDS_INSTANT_LEARN_MORE_URL)));
-  localized_strings->SetString(
-      "instantLearnMoreLink",
-      ASCIIToUTF16(browser::InstantLearnMoreURL().spec()));
+                                 learn_more_url));
+  localized_strings->SetString("instantLearnMoreLink", learn_more_url);
 
   localized_strings->SetString(
       "defaultBrowserUnknown",

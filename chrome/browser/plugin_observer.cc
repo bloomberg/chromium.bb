@@ -10,7 +10,6 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
-#include "chrome/browser/google/google_util.h"
 #include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/plugin_finder.h"
 #include "chrome/browser/profiles/profile.h"
@@ -86,7 +85,7 @@ bool PluginInfoBarDelegate::Cancel() {
 
 bool PluginInfoBarDelegate::LinkClicked(WindowOpenDisposition disposition) {
   OpenURLParams params(
-      google_util::AppendGoogleLocaleParam(GURL(GetLearnMoreURL())), Referrer(),
+      GURL(GetLearnMoreURL()), Referrer(),
       (disposition == CURRENT_TAB) ? NEW_FOREGROUND_TAB : disposition,
       content::PAGE_TRANSITION_LINK,
       false);

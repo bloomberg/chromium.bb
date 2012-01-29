@@ -5150,9 +5150,6 @@ Because search results are requested even while you're typing your query, your d
       <message name="IDS_INSTANT_PREF_WARNING" desc="Warning displayed beneath instant pref">
         Omnibox input may be logged
       </message>
-      <message name="IDS_INSTANT_LEARN_MORE_URL" desc="URL of help center page that explains browser instant" translateable="false">
-        http://www.google.com/support/chrome/bin/answer.py?answer=180655&amp;hl=[GRITLANGCODE]
-      </message>
 
       <!-- Conflicts page -->
       <message name="IDS_CONFLICTS_CHECK_PAGE_TABLE_TITLE_SUFFIX_ONE" desc="What gets appended after the page title if no conflicts were found.">

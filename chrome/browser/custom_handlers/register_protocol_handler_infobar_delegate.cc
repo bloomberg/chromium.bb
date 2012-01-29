@@ -6,7 +6,6 @@
 
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
-#include "chrome/browser/google/google_util.h"
 #include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/user_metrics.h"
@@ -88,8 +87,7 @@ bool RegisterProtocolHandlerInfoBarDelegate::LinkClicked(
   content::RecordAction(
       UserMetricsAction("RegisterProtocolHandler.InfoBar_LearnMore"));
   OpenURLParams params(
-      google_util::AppendGoogleLocaleParam(GURL(
-          chrome::kLearnMoreRegisterProtocolHandlerURL)),
+      GURL(chrome::kLearnMoreRegisterProtocolHandlerURL),
       Referrer(),
       (disposition == CURRENT_TAB) ? NEW_FOREGROUND_TAB : disposition,
       content::PAGE_TRANSITION_LINK,

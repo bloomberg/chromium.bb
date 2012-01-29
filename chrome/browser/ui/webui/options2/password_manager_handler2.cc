@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,7 +8,6 @@
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/google/google_util.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -74,8 +73,7 @@ void PasswordManagerHandler::GetLocalizedValues(
                 IDS_PASSWORDS_EXCEPTIONS_WINDOW_TITLE);
 
   localized_strings->SetString("passwordManagerLearnMoreURL",
-      google_util::AppendGoogleLocaleParam(
-          GURL(chrome::kPasswordManagerLearnMoreURL)).spec());
+                               chrome::kPasswordManagerLearnMoreURL);
 }
 
 void PasswordManagerHandler::Initialize() {

@@ -264,6 +264,18 @@ extern const char kPasswordManagerLearnMoreURL[];
 // General help link for Chrome.
 extern const char kChromeHelpURL[];
 
+// Help URL for the settings page's search feature.
+extern const char kSettingsSearchHelpURL[];
+
+// "About" URL for the translate bar's options menu.
+extern const char kAboutGoogleTranslateURL[];
+
+// Help URL for the Autofill dialog.
+extern const char kAutofillHelpURL[];
+
+// "Learn more" URL for the Instant feature.
+extern const char kInstantLearnMoreURL[];
+
 // "What do these mean?" URL for the Page Info bubble.
 extern const char kPageInfoHelpCenterURL[];
 

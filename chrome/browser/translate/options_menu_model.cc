@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,10 +6,10 @@
 
 #include "base/metrics/histogram.h"
 #include "chrome/app/chrome_command_ids.h"
-#include "chrome/browser/google/google_util.h"
 #include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/translate/translate_infobar_delegate.h"
+#include "chrome/common/url_constants.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
@@ -21,17 +21,6 @@ using content::NavigationEntry;
 using content::OpenURLParams;
 using content::Referrer;
 using content::WebContents;
-
-namespace {
-
-const char kAboutGoogleTranslateUrl[] =
-#if defined(OS_CHROMEOS)
-    "https://www.google.com/support/chromeos/bin/answer.py?answer=173424";
-#else
-    "https://www.google.com/support/chrome/bin/answer.py?answer=173424";
-#endif
-
-}  // namespace
 
 OptionsMenuModel::OptionsMenuModel(
     TranslateInfoBarDelegate* translate_delegate)
@@ -144,11 +133,9 @@ void OptionsMenuModel::ExecuteCommand(int command_id) {
       WebContents* web_contents =
           translate_infobar_delegate_->owner()->web_contents();
       if (web_contents) {
-        GURL about_url = google_util::AppendGoogleLocaleParam(
-            GURL(kAboutGoogleTranslateUrl));
         OpenURLParams params(
-            about_url, Referrer(), NEW_FOREGROUND_TAB,
-            content::PAGE_TRANSITION_LINK, false);
+            GURL(chrome::kAboutGoogleTranslateURL), Referrer(),
+            NEW_FOREGROUND_TAB, content::PAGE_TRANSITION_LINK, false);
         web_contents->OpenURL(params);
       }
       break;

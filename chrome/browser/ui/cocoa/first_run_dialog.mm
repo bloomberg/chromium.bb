@@ -13,7 +13,6 @@
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/first_run/first_run_dialog.h"
-#include "chrome/browser/google/google_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
@@ -280,9 +279,7 @@ void ShowFirstRunDialog(Profile* profile) {
 }
 
 - (IBAction)learnMore:(id)sender {
-  GURL url = google_util::AppendGoogleLocaleParam(
-      GURL(chrome::kLearnMoreReportingURL));
-  NSString* urlStr = base::SysUTF8ToNSString(url.spec());;
+  NSString* urlStr = base::SysUTF8ToNSString(chrome::kLearnMoreReportingURL);
   NSURL* learnMoreUrl = [NSURL URLWithString:urlStr];
   [[NSWorkspace sharedWorkspace] openURL:learnMoreUrl];
 }

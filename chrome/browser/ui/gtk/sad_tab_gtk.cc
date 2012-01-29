@@ -1,11 +1,10 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/ui/gtk/sad_tab_gtk.h"
 
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/google/google_util.h"
 #include "chrome/browser/ui/gtk/gtk_chrome_link_button.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/web_contents.h"
@@ -158,13 +157,11 @@ SadTabGtk::~SadTabGtk() {
 
 void SadTabGtk::OnLinkButtonClick(GtkWidget* sender) {
   if (web_contents_ != NULL) {
-    GURL help_url =
-        google_util::AppendGoogleLocaleParam(GURL(
-            kind_ == CRASHED ?
-            chrome::kCrashReasonURL :
-            chrome::kKillReasonURL));
-    web_contents_->OpenURL(OpenURLParams(
+    GURL help_url(
+        kind_ == CRASHED ? chrome::kCrashReasonURL : chrome::kKillReasonURL);
+    OpenURLParams params(
         help_url, content::Referrer(), CURRENT_TAB,
-        content::PAGE_TRANSITION_LINK, false));
+        content::PAGE_TRANSITION_LINK, false);
+    web_contents_->OpenURL(params);
   }
 }

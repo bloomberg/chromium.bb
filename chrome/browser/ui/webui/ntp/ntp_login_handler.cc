@@ -12,7 +12,6 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/google/google_util.h"
 #include "chrome/browser/prefs/pref_notifier.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -253,8 +252,7 @@ void NTPLoginHandler::GetLocalizedValues(Profile* profile,
   values->SetString("login_status_message",
       l10n_util::GetStringFUTF16(IDS_SYNC_PROMO_NTP_BUBBLE_MESSAGE,
           l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME)));
-  values->SetString("login_status_url",
-      google_util::StringAppendGoogleLocaleParam(chrome::kSyncLearnMoreURL));
+  values->SetString("login_status_url", chrome::kSyncLearnMoreURL);
   values->SetString("login_status_learn_more",
       l10n_util::GetStringUTF16(IDS_LEARN_MORE));
   values->SetString("login_status_advanced",

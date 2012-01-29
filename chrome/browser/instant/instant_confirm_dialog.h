@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,13 +8,9 @@
 
 #include "ui/gfx/native_widget_types.h"
 
-class GURL;
 class Profile;
 
 namespace browser {
-
-// URL for learning more about instant.
-GURL InstantLearnMoreURL();
 
 // Invoked from the opt-in and preferences when the user toggles instant. If the
 // instant confirm dialog hasn't been shown, it's shown. If the instant dialog

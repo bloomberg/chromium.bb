@@ -15,7 +15,6 @@
 #include "chrome/app/chrome_command_ids.h"  // IDC_*
 #include "chrome/browser/bookmarks/bookmark_editor.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/google/google_util.h"
 #include "chrome/browser/instant/instant_controller.h"
 #include "chrome/browser/profiles/avatar_menu_model.h"
 #include "chrome/browser/profiles/profile.h"
@@ -1711,11 +1710,9 @@ enum {
     SadTabController* sad_tab = static_cast<SadTabController*>(sender);
     WebContents* web_contents = [sad_tab webContents];
     if (web_contents) {
-      GURL helpUrl =
-          google_util::AppendGoogleLocaleParam(GURL(chrome::kCrashReasonURL));
       OpenURLParams params(
-          helpUrl, Referrer(), CURRENT_TAB, content::PAGE_TRANSITION_LINK,
-          false);
+          GURL(chrome::kCrashReasonURL), Referrer(), CURRENT_TAB,
+          content::PAGE_TRANSITION_LINK, false);
       web_contents->OpenURL(params);
     }
   }

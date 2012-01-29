@@ -11,7 +11,6 @@
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/first_run/first_run_dialog.h"
-#include "chrome/browser/google/google_util.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/process_singleton.h"
 #include "chrome/browser/shell_integration.h"
@@ -204,8 +203,7 @@ void FirstRunDialog::OnResponseDialog(GtkWidget* widget, int response) {
 }
 
 void FirstRunDialog::OnLearnMoreLinkClicked(GtkButton* button) {
-  platform_util::OpenExternal(google_util::AppendGoogleLocaleParam(
-      GURL(chrome::kLearnMoreReportingURL)));
+  platform_util::OpenExternal(GURL(chrome::kLearnMoreReportingURL));
 }
 
 void FirstRunDialog::FirstRunDone() {

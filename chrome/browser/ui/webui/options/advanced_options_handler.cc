@@ -15,7 +15,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_page_zoom.h"
 #include "chrome/browser/download/download_prefs.h"
-#include "chrome/browser/google/google_util.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_proxy_service.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_proxy_service_factory.h"
@@ -183,13 +182,11 @@ void AdvancedOptionsHandler::GetLocalizedValues(
                 IDS_OPTIONS_ADVANCED_TAB_LABEL);
 
   localized_strings->SetString("privacyLearnMoreURL",
-      google_util::AppendGoogleLocaleParam(
-          GURL(chrome::kPrivacyLearnMoreURL)).spec());
+                               chrome::kPrivacyLearnMoreURL);
 
 #if defined(OS_CHROMEOS)
   localized_strings->SetString("cloudPrintLearnMoreURL",
-      google_util::AppendGoogleLocaleParam(
-          GURL(chrome::kCloudPrintLearnMoreURL)).spec());
+                               chrome::kCloudPrintLearnMoreURL);
 #endif
 }
 

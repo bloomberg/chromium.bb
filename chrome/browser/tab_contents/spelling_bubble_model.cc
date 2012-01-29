@@ -5,7 +5,6 @@
 #include "chrome/browser/tab_contents/spelling_bubble_model.h"
 
 #include "base/logging.h"
-#include "chrome/browser/google/google_util.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -63,7 +62,7 @@ string16 SpellingBubbleModel::GetLinkText() const {
 void SpellingBubbleModel::LinkClicked() {
   Browser* browser = BrowserList::GetLastActiveWithProfile(profile_);
   OpenURLParams params(
-      google_util::AppendGoogleLocaleParam(GURL(chrome::kPrivacyLearnMoreURL)),
-      Referrer(), NEW_FOREGROUND_TAB, content::PAGE_TRANSITION_LINK, false);
+      GURL(chrome::kPrivacyLearnMoreURL), Referrer(), NEW_FOREGROUND_TAB,
+      content::PAGE_TRANSITION_LINK, false);
   browser->OpenURL(params);
 }

@@ -9,7 +9,6 @@
 #include "base/metrics/histogram.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/feedback/feedback_util.h"
-#include "chrome/browser/google/google_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/webui/feedback_ui.h"
 #include "chrome/common/url_constants.h"
@@ -72,16 +71,12 @@ SadTabView::~SadTabView() {}
 void SadTabView::LinkClicked(views::Link* source, int event_flags) {
   DCHECK(web_contents_);
   if (source == help_link_) {
-    GURL help_url =
-        google_util::AppendGoogleLocaleParam(GURL(kind_ == CRASHED ?
-                                                  chrome::kCrashReasonURL :
-                                                  chrome::kKillReasonURL));
-    web_contents_->OpenURL(OpenURLParams(
-        help_url,
-        content::Referrer(),
-        CURRENT_TAB,
-        content::PAGE_TRANSITION_LINK,
-        false /* is renderer initiated */));
+    GURL help_url(
+        kind_ == CRASHED ? chrome::kCrashReasonURL : chrome::kKillReasonURL);
+    OpenURLParams params(
+        help_url, content::Referrer(), CURRENT_TAB,
+        content::PAGE_TRANSITION_LINK, false);
+    web_contents_->OpenURL(params);
   } else if (source == feedback_link_) {
     browser::ShowHtmlFeedbackView(
         Browser::GetBrowserForController(&web_contents_->GetController(), NULL),

@@ -10,6 +10,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/common/url_constants.h"
+#include "googleurl/src/gurl.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
@@ -84,7 +86,7 @@ ui::ModalType InstantConfirmView::GetModalType() const {
 void InstantConfirmView::LinkClicked(views::Link* source, int event_flags) {
   Browser* browser = BrowserList::GetLastActiveWithProfile(profile_);
   OpenURLParams params(
-      browser::InstantLearnMoreURL(), Referrer(), NEW_FOREGROUND_TAB,
+      GURL(chrome::kInstantLearnMoreURL), Referrer(), NEW_FOREGROUND_TAB,
       content::PAGE_TRANSITION_TYPED, false);
   browser->OpenURL(params);
 }

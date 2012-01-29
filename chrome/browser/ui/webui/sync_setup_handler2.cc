@@ -200,13 +200,9 @@ void SyncSetupHandler2::GetStaticLocalizedValues(
   DCHECK(localized_strings);
 
   localized_strings->SetString(
-      "invalidPasswordHelpURL",
-      google_util::StringAppendGoogleLocaleParam(
-          chrome::kInvalidPasswordHelpURL));
+      "invalidPasswordHelpURL", chrome::kInvalidPasswordHelpURL);
   localized_strings->SetString(
-      "cannotAccessAccountURL",
-      google_util::StringAppendGoogleLocaleParam(
-          chrome::kCanNotAccessAccountURL));
+      "cannotAccessAccountURL", chrome::kCanNotAccessAccountURL);
   string16 product_name(GetStringUTF16(IDS_PRODUCT_NAME));
   localized_strings->SetString(
       "introduction",
@@ -218,9 +214,7 @@ void SyncSetupHandler2::GetStaticLocalizedValues(
       "encryptionInstructions",
       GetStringFUTF16(IDS_SYNC_ENCRYPTION_INSTRUCTIONS, product_name));
   localized_strings->SetString(
-      "encryptionHelpURL",
-      google_util::StringAppendGoogleLocaleParam(
-          chrome::kSyncEncryptionHelpURL));
+      "encryptionHelpURL", chrome::kSyncEncryptionHelpURL);
   localized_strings->SetString(
       "passphraseEncryptionMessage",
       GetStringFUTF16(IDS_SYNC_PASSPHRASE_ENCRYPTION_MESSAGE, product_name));
@@ -242,13 +236,9 @@ void SyncSetupHandler2::GetStaticLocalizedValues(
       "promoMessageTitle",
       GetStringFUTF16(IDS_SYNC_PROMO_MESSAGE_TITLE, short_product_name));
   localized_strings->SetString(
-      "syncEverythingHelpURL",
-      google_util::StringAppendGoogleLocaleParam(
-          chrome::kSyncEverythingLearnMoreURL));
+      "syncEverythingHelpURL", chrome::kSyncEverythingLearnMoreURL);
   localized_strings->SetString(
-      "syncErrorHelpURL",
-      google_util::StringAppendGoogleLocaleParam(
-          chrome::kSyncErrorsHelpURL));
+      "syncErrorHelpURL", chrome::kSyncErrorsHelpURL);
 
   std::string create_account_url = google_util::StringAppendGoogleLocaleParam(
       chrome::kSyncCreateNewAccountURL);

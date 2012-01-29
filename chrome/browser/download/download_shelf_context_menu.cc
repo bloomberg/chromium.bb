@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,7 +6,6 @@
 
 #include "chrome/browser/download/download_item_model.h"
 #include "chrome/browser/download/download_prefs.h"
-#include "chrome/browser/google/google_util.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/url_constants.h"
@@ -113,8 +112,7 @@ void DownloadShelfContextMenu::ExecuteCommand(int command_id) {
     case LEARN_MORE: {
       Browser* browser = BrowserList::GetLastActive();
       DCHECK(browser && browser->is_type_tabbed());
-      GURL learn_more_url(chrome::kDownloadScanningLearnMoreURL);
-      OpenURLParams params(google_util::AppendGoogleLocaleParam(learn_more_url),
+      OpenURLParams params(GURL(chrome::kDownloadScanningLearnMoreURL),
                            content::Referrer(), NEW_FOREGROUND_TAB,
                            content::PAGE_TRANSITION_TYPED, false);
       browser->OpenURL(params);

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,7 +10,6 @@
 #include "base/message_loop.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/certificate_viewer.h"
-#include "chrome/browser/google/google_util.h"
 #include "chrome/browser/page_info_model.h"
 #include "chrome/browser/page_info_model_observer.h"
 #include "chrome/browser/profiles/profile.h"
@@ -213,12 +212,10 @@ void ShowPageInfoBubble(gfx::NativeWindow parent,
 }
 
 - (IBAction)showHelpPage:(id)sender {
-  GURL url = google_util::AppendGoogleLocaleParam(
-      GURL(chrome::kPageInfoHelpCenterURL));
   Browser* browser = BrowserList::GetLastActive();
   OpenURLParams params(
-      url, Referrer(), NEW_FOREGROUND_TAB, content::PAGE_TRANSITION_LINK,
-      false);
+      GURL(chrome::kPageInfoHelpCenterURL), Referrer(), NEW_FOREGROUND_TAB,
+      content::PAGE_TRANSITION_LINK, false);
   browser->OpenURL(params);
 }
 

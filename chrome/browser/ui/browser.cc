@@ -59,7 +59,6 @@
 #include "chrome/browser/file_select_helper.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/google/google_url_tracker.h"
-#include "chrome/browser/google/google_util.h"
 #include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/instant/instant_controller.h"
 #include "chrome/browser/instant/instant_unload_handler.h"
@@ -229,26 +228,6 @@ using content::WebContents;
 ///////////////////////////////////////////////////////////////////////////////
 
 namespace {
-
-// The URL to be loaded to display Help.
-const char kHelpContentUrl[] =
-#if defined(OS_CHROMEOS)
-  #if defined(OFFICIAL_BUILD)
-      "chrome-extension://honijodknafkokifofgiaalefdiedpko/main.html";
-  #else
-      "https://www.google.com/support/chromeos/";
-  #endif
-#else
-    "https://www.google.com/support/chrome/";
-#endif
-
-// The URL to be opened when the Help link on the Autofill dialog is clicked.
-const char kAutofillHelpUrl[] =
-#if defined(OS_CHROMEOS)
-    "https://www.google.com/support/chromeos/bin/answer.py?answer=142893";
-#else
-    "https://www.google.com/support/chrome/bin/answer.py?answer=142893";
-#endif
 
 // The URL to be loaded to display the "Report a broken page" form.
 const char kBrokenPageUrl[] =
@@ -2329,9 +2308,7 @@ void Browser::OpenUpdateChromeDialog() {
 
 void Browser::ShowHelpTab() {
   content::RecordAction(UserMetricsAction("ShowHelpTab"));
-  GURL help_url(kHelpContentUrl);
-  GURL localized_help_url = google_util::AppendGoogleLocaleParam(help_url);
-  ShowSingletonTab(localized_help_url);
+  ShowSingletonTab(GURL(chrome::kChromeHelpURL));
 }
 
 void Browser::OpenPrivacyDashboardTabAndActivate() {
@@ -2342,8 +2319,8 @@ void Browser::OpenPrivacyDashboardTabAndActivate() {
 }
 
 void Browser::OpenAutofillHelpTabAndActivate() {
-  GURL help_url = google_util::AppendGoogleLocaleParam(GURL(kAutofillHelpUrl));
-  AddSelectedTabWithURL(help_url, content::PAGE_TRANSITION_LINK);
+  AddSelectedTabWithURL(GURL(chrome::kAutofillHelpURL),
+                        content::PAGE_TRANSITION_LINK);
 }
 
 void Browser::OpenSearchEngineOptionsDialog() {

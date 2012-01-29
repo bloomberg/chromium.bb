@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/gtk/gtk_chrome_link_button.h"
+#include "chrome/common/url_constants.h"
 #include "googleurl/src/gurl.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -75,7 +76,7 @@ void InstantConfirmDialogGtk::OnLinkButtonClicked(GtkWidget* button) {
   // We open a new browser window so the Options dialog doesn't get lost behind
   // other windows.
   Browser* browser = Browser::Create(profile_);
-  browser->AddSelectedTabWithURL(browser::InstantLearnMoreURL(),
+  browser->AddSelectedTabWithURL(GURL(chrome::kInstantLearnMoreURL),
                                  content::PAGE_TRANSITION_LINK);
   browser->window()->Show();
 }

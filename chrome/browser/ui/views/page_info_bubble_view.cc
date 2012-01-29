@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,7 +8,6 @@
 
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/certificate_viewer.h"
-#include "chrome/browser/google/google_util.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/toolbar_view.h"
@@ -308,11 +307,10 @@ gfx::Rect PageInfoBubbleView::GetAnchorRect() {
 }
 
 void PageInfoBubbleView::LinkClicked(views::Link* source, int event_flags) {
-  GURL url = google_util::AppendGoogleLocaleParam(
-      GURL(chrome::kPageInfoHelpCenterURL));
   Browser* browser = BrowserList::GetLastActive();
   OpenURLParams params(
-      url, Referrer(), NEW_FOREGROUND_TAB, content::PAGE_TRANSITION_LINK, false);
+      GURL(chrome::kPageInfoHelpCenterURL), Referrer(), NEW_FOREGROUND_TAB,
+      content::PAGE_TRANSITION_LINK, false);
   browser->OpenURL(params);
   // NOTE: The bubble closes automatically on deactivation as the link opens.
 }

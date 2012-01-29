@@ -276,88 +276,126 @@ const char kSyncGoogleDashboardURL[] = "https://www.google.com/dashboard/";
 
 const char kPasswordManagerLearnMoreURL[] =
 #if defined(OS_CHROMEOS)
-    "https://www.google.com/support/chromeos/bin/answer.py?answer=95606";
+    "https://support.google.com/chromeos/?p=settings_password";
 #else
-    "https://www.google.com/support/chrome/bin/answer.py?answer=95606";
+    "https://support.google.com/chrome/?p=settings_password";
 #endif
 
 const char kChromeHelpURL[] =
 #if defined(OS_CHROMEOS)
-  "https://www.google.com/support/chromeos/";
+#if defined(OFFICIAL_BUILD)
+    "chrome-extension://honijodknafkokifofgiaalefdiedpko/main.html";
 #else
-  "https://www.google.com/support/chrome/";
+    "https://support.google.com/chromeos/?p=wrench";
+#endif  // defined(OFFICIAL_BUILD
+#else
+    "https://support.google.com/chrome/?p=wrench";
+#endif
+
+const char kSettingsSearchHelpURL[] =
+#if defined(OS_CHROMEOS)
+    "https://support.google.com/chromeos/?p=settings_search_help";
+#else
+    "https://support.google.com/chrome/?p=settings_search_help";
+#endif
+
+const char kAboutGoogleTranslateURL[] =
+#if defined(OS_CHROMEOS)
+    "https://support.google.com/chromeos/?p=ib_translation_bar";
+#else
+    "https://support.google.com/chrome/?p=ib_translation_bar";
+#endif
+
+const char kAutofillHelpURL[] =
+#if defined(OS_CHROMEOS)
+    "https://support.google.com/chromeos/?p=settings_autofill";
+#else
+    "https://support.google.com/chrome/?p=settings_autofill";
+#endif
+
+const char kInstantLearnMoreURL[] =
+#if defined(OS_CHROMEOS)
+    "https://support.google.com/chromeos/?p=settings_instant_policy";
+#else
+    "https://support.google.com/chrome/?p=settings_instant_policy";
 #endif
 
 const char kPageInfoHelpCenterURL[] =
 #if defined(OS_CHROMEOS)
-    "https://www.google.com/support/chromeos/bin/answer.py?answer=95617";
+    "https://support.google.com/chromeos/?p=ui_security_indicator";
 #else
-    "https://www.google.com/support/chrome/bin/answer.py?answer=95617";
+    "https://support.google.com/chrome/?p=ui_security_indicator";
 #endif
 
 const char kCrashReasonURL[] =
 #if defined(OS_CHROMEOS)
-    "https://www.google.com/support/chromeos/bin/answer.py?answer=1047340";
+    "https://support.google.com/chromeos/?p=e_awsnap";
 #else
-    "https://www.google.com/support/chrome/bin/answer.py?answer=95669";
+    "https://support.google.com/chrome/?p=e_awsnap";
 #endif
 
 const char kKillReasonURL[] =
-    "http://www.google.com/support/chrome/bin/answer.py?answer=1270364";
+#if defined(OS_CHROMEOS)
+    "https://support.google.com/chromeos/?p=e_deadjim";
+#else
+    "https://support.google.com/chrome/?p=e_deadjim";
+#endif
 
 const char kPrivacyLearnMoreURL[] =
 #if defined(OS_CHROMEOS)
-    "https://www.google.com/support/chromeos/bin/answer.py?answer=1047334";
+    "https://support.google.com/chromeos/?p=settings_privacy";
 #else
-    "https://www.google.com/support/chrome/bin/answer.py?answer=114836";
+    "https://support.google.com/chrome/?p=settings_privacy";
 #endif
 
 const char kChromiumProjectURL[] = "http://code.google.com/chromium/";
 
 const char kLearnMoreReportingURL[] =
-    "https://www.google.com/support/chrome/bin/answer.py?answer=96817";
+    "https://support.google.com/chrome/?p=ui_usagestat";
 
 const char kOutdatedPluginLearnMoreURL[] =
-    "https://www.google.com/support/chrome/bin/answer.py?answer=1181003";
+    "https://support.google.com/chrome/?p=ib_outdated_plugin";
 
 const char kBlockedPluginLearnMoreURL[] =
-    "https://www.google.com/support/chrome/bin/answer.py?answer=1247383";
+    "https://support.google.com/chrome/?p=ib_blocked_plugin";
 
 const char kSpeechInputAboutURL[] =
-    "https://www.google.com/support/chrome/bin/answer.py?answer=1407892";
+    "https://support.google.com/chrome/?p=ui_speech_input";
 
 const char kLearnMoreRegisterProtocolHandlerURL[] =
-    "http://www.google.com/support/chrome/bin/answer.py?answer=1382847";
+    "https://support.google.com/chrome/?p=ib_protocol_handler";
 
 const char kSyncLearnMoreURL[] =
-    "http://www.google.com/support/chrome/bin/answer.py?answer=165139";
+    "https://support.google.com/chrome/?p=settings_sign_in";
 
 const char kDownloadScanningLearnMoreURL[] =
-    "http://www.google.com/support/chrome/bin/answer.py?answer=99020";
+    "https://support.google.com/chrome/?p=ib_download_scan";
 
 const char kSyncEverythingLearnMoreURL[] =
-    "https://www.google.com/support/chrome/bin/answer.py?answer=185277";
+    "https://support.google.com/chrome/?p=settings_sync_all";
 
-#if defined(OS_CHROMEOS)
 const char kCloudPrintLearnMoreURL[] =
-    "https://www.google.com/support/chromeos/bin/topic.py?topic=29023";
+#if defined(OS_CHROMEOS)
+    "https://support.google.com/chromeos/?p=settings_cloud_print";
+#else
+    "https://support.google.com/chrome/?p=settings_cloud_print";
 #endif
 
 const char kInvalidPasswordHelpURL[] =
-    "http://www.google.com/support/accounts/bin/answer.py?ctx=ch&answer=27444";
+    "https://support.google.com/accounts/bin/answer.py?ctx=ch&answer=27444";
 
 const char kCanNotAccessAccountURL[] =
-    "http://www.google.com/support/accounts/bin/answer.py?answer=48598";
+    "https://support.google.com/accounts/bin/answer.py?answer=48598";
 
 const char kSyncEncryptionHelpURL[] =
 #if defined(OS_CHROMEOS)
-    "http://www.google.com/support/chromeos/bin/answer.py?answer=1181035";
+    "https://support.google.com/chromeos/?p=settings_encryption";
 #else
-    "http://www.google.com/support/chrome/bin/answer.py?answer=1181035";
+    "https://support.google.com/chrome/?p=settings_encryption";
 #endif
 
 const char kSyncErrorsHelpURL[] =
-  "http://www.google.com/support/chrome/bin/answer.py?answer=1181420";
+    "https://support.google.com/chrome/?p=settings_sync_error";
 
 const char kSyncCreateNewAccountURL[] =
     "https://www.google.com/accounts/NewAccount?service=chromiumsync";

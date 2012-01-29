@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,7 +13,6 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/google/google_util.h"
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -88,8 +87,7 @@ void CoreOptionsHandler::GetStaticLocalizedValues(
       l10n_util::GetStringFUTF16(IDS_OPTIONS_SEARCH_PAGE_HELP_TITLE,
           l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
   localized_strings->SetString("searchPageHelpURL",
-      google_util::AppendGoogleLocaleParam(
-          GURL(chrome::kChromeHelpURL)).spec());
+                               chrome::kSettingsSearchHelpURL);
 
   // Common
   localized_strings->SetString("ok",

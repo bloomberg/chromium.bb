@@ -17,7 +17,6 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/google/google_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_info_util.h"
@@ -88,8 +87,7 @@ void PersonalOptionsHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(IDS_SYNC_OPTIONS_GROUP_NAME));
   localized_strings->SetString("customizeSync",
       l10n_util::GetStringUTF16(IDS_SYNC_CUSTOMIZE_BUTTON_LABEL));
-  localized_strings->SetString("syncLearnMoreURL",
-      google_util::StringAppendGoogleLocaleParam(chrome::kSyncLearnMoreURL));
+  localized_strings->SetString("syncLearnMoreURL", chrome::kSyncLearnMoreURL);
 
   localized_strings->SetString("profiles",
       l10n_util::GetStringUTF16(IDS_PROFILES_OPTIONS_GROUP_NAME));
