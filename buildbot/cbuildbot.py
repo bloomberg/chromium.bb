@@ -143,8 +143,11 @@ def _IsIncrementalBuild(buildroot, clobber):
 def _RunSudoNoOp(repeat_interval=0):
   """Run sudo with a noop, to reset the sudo timestamp.
   Args:
-   repeat_interval: in minutes, the frequency to run the update
-                    if zero, runs once and returns
+   repeat_interval: In minutes, the frequency to run the update
+                    if zero, runs once and returns.  Note that if this is
+                    set, it will invoke sudo in the foreground once before
+                    returning so as to ensure that the backgrounded process
+                    will have an auth cookie.
   Returns:
    if repeat_interval is 0, None, else a subprocess.Popen instance.
    invoker is responsible for invoking terminate to shut down the
@@ -155,6 +158,12 @@ def _RunSudoNoOp(repeat_interval=0):
   # way to ensure that sudo has access to both invoking tty, and
   # will update the user's tty-less cookie.
   # see crosbug/18393.
+
+  # If we're going into the background, ensure we run at least one
+  # sudo in the foreground to get the first ticket.  Failure to do so
+  # can result in multiple sudo instances trying to auth at the same time.
+  if repeat_interval:
+     _RunSudoNoOp(0)
 
   cmd = 'sudo true;sudo true < /dev/null > /dev/null 2>&1'
   repeat_interval *= 60
