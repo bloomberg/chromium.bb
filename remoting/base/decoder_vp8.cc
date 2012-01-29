@@ -92,22 +92,22 @@ Decoder::DecodeResult DecoderVp8::DecodePacket(const VideoPacket* packet) {
   }
   last_image_ = image;
 
-  RectVector rects;
-  rects.reserve(packet->dirty_rects_size());
+  SkRegion region;
   for (int i = 0; i < packet->dirty_rects_size(); ++i) {
     Rect remoting_rect = packet->dirty_rects(i);
-    rects.push_back(SkIRect::MakeXYWH(remoting_rect.x(),
-                                      remoting_rect.y(),
-                                      remoting_rect.width(),
-                                      remoting_rect.height()));
+    SkIRect rect = SkIRect::MakeXYWH(remoting_rect.x(),
+                                     remoting_rect.y(),
+                                     remoting_rect.width(),
+                                     remoting_rect.height());
+    region.op(rect, SkRegion::kUnion_Op);
   }
 
-  RefreshRects(rects);
+  RefreshRegion(region);
   return DECODE_DONE;
 }
 
-void DecoderVp8::GetUpdatedRects(RectVector* rects) {
-  rects->swap(updated_rects_);
+void DecoderVp8::GetUpdatedRegion(SkRegion* region) {
+  region->swap(updated_region_);
 }
 
 void DecoderVp8::Reset() {
@@ -131,7 +131,7 @@ void DecoderVp8::SetClipRect(const SkIRect& clip_rect) {
   clip_rect_ = clip_rect;
 }
 
-void DecoderVp8::RefreshRects(const RectVector& rects) {
+void DecoderVp8::RefreshRegion(const SkRegion& region) {
   // TODO(wez): Fix the rest of the decode pipeline not to assume the frame
   // size is the host dimensions, since it's not when scaling.  If the host
   // gets smaller, then the output size will be too big and we'll overrun the
@@ -142,10 +142,11 @@ void DecoderVp8::RefreshRects(const RectVector& rects) {
   if (output_size_.height() > static_cast<int>(frame_->height()))
     output_size_.set(output_size_.width(), frame_->height());
 
-  if (!DoScaling())
-    ConvertRects(rects, &updated_rects_);
-  else
-    ScaleAndConvertRects(rects, &updated_rects_);
+  if (!DoScaling()) {
+    ConvertRegion(region, &updated_region_);
+  } else {
+    ScaleAndConvertRegion(region, &updated_region_);
+  }
 }
 
 bool DecoderVp8::DoScaling() const {
@@ -153,12 +154,12 @@ bool DecoderVp8::DoScaling() const {
   return !output_size_.equals(last_image_->d_w, last_image_->d_h);
 }
 
-void DecoderVp8::ConvertRects(const RectVector& input_rects,
-                              RectVector* output_rects) {
+void DecoderVp8::ConvertRegion(const SkRegion& input_region,
+                               SkRegion* output_region) {
   if (!last_image_)
     return;
 
-  output_rects->clear();
+  output_region->setEmpty();
 
   // Clip based on both the output dimensions and Pepper clip rect.
   // ConvertYUVToRGB32WithRect() requires even X and Y coordinates, so we align
@@ -171,12 +172,11 @@ void DecoderVp8::ConvertRects(const RectVector& input_rects,
 
   uint8* output_rgb_buf = frame_->data(media::VideoFrame::kRGBPlane);
   const int output_stride = frame_->stride(media::VideoFrame::kRGBPlane);
-  output_rects->reserve(input_rects.size());
 
-  for (size_t i = 0; i < input_rects.size(); ++i) {
+  for (SkRegion::Iterator i(input_region); !i.done(); i.next()) {
     // Align the rectangle so the top-left coordinates are even, for
     // ConvertYUVToRGB32WithRect().
-    SkIRect dest_rect(AlignRect(input_rects[i]));
+    SkIRect dest_rect(AlignRect(i.rect()));
 
     // Clip the rectangle, preserving alignment since |clip_rect| is aligned.
     if (!dest_rect.intersect(clip_rect))
@@ -191,19 +191,19 @@ void DecoderVp8::ConvertRects(const RectVector& input_rects,
                               last_image_->stride[1],
                               output_stride);
 
-    output_rects->push_back(dest_rect);
+    output_region->op(dest_rect, SkRegion::kUnion_Op);
   }
 }
 
-void DecoderVp8::ScaleAndConvertRects(const RectVector& input_rects,
-                                      RectVector* output_rects) {
+void DecoderVp8::ScaleAndConvertRegion(const SkRegion& input_region,
+                                       SkRegion* output_region) {
   if (!last_image_)
     return;
 
   DCHECK(output_size_.width() <= static_cast<int>(frame_->width()));
   DCHECK(output_size_.height() <= static_cast<int>(frame_->height()));
 
-  output_rects->clear();
+  output_region->setEmpty();
 
   // Clip based on both the output dimensions and Pepper clip rect.
   SkIRect clip_rect = clip_rect_;
@@ -214,11 +214,9 @@ void DecoderVp8::ScaleAndConvertRects(const RectVector& input_rects,
   uint8* output_rgb_buf = frame_->data(media::VideoFrame::kRGBPlane);
   const int output_stride = frame_->stride(media::VideoFrame::kRGBPlane);
 
-  output_rects->reserve(input_rects.size());
-
-  for (size_t i = 0; i < input_rects.size(); ++i) {
+  for (SkRegion::Iterator i(input_region); !i.done(); i.next()) {
     // Determine the scaled area affected by this rectangle changing.
-    SkIRect output_rect = ScaleRect(input_rects[i], image_size, output_size_);
+    SkIRect output_rect = ScaleRect(i.rect(), image_size, output_size_);
     if (!output_rect.intersect(clip_rect))
       continue;
 
@@ -238,7 +236,8 @@ void DecoderVp8::ScaleAndConvertRects(const RectVector& input_rects,
                                    last_image_->stride[0],
                                    last_image_->stride[1],
                                    output_stride);
-    output_rects->push_back(output_rect);
+
+    output_region->op(output_rect, SkRegion::kUnion_Op);
   }
 }
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -22,7 +22,7 @@ class DecoderRowBased : public Decoder {
   virtual bool IsReadyForData() OVERRIDE;
   virtual void Initialize(scoped_refptr<media::VideoFrame> frame) OVERRIDE;
   virtual DecodeResult DecodePacket(const VideoPacket* packet) OVERRIDE;
-  virtual void GetUpdatedRects(RectVector* rects) OVERRIDE;
+  virtual void GetUpdatedRegion(SkRegion* region) OVERRIDE;
   virtual void Reset() OVERRIDE;
   virtual VideoPacketFormat::Encoding Encoding() OVERRIDE;
 
@@ -63,7 +63,7 @@ class DecoderRowBased : public Decoder {
   // The current row in the rect that we are updaing.
   int row_y_;
 
-  RectVector updated_rects_;
+  SkRegion updated_region_;
 
   DISALLOW_COPY_AND_ASSIGN(DecoderRowBased);
 };

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -44,7 +44,7 @@ void DecoderRowBased::Reset() {
   frame_ = NULL;
   decompressor_->Reset();
   state_ = kUninitialized;
-  updated_rects_.clear();
+  updated_region_.setEmpty();
 }
 
 bool DecoderRowBased::IsReadyForData() {
@@ -128,7 +128,7 @@ Decoder::DecodeResult DecoderRowBased::DecodePacket(const VideoPacket* packet) {
       return DECODE_ERROR;
     }
 
-    updated_rects_.push_back(clip_);
+    updated_region_.op(clip_, SkRegion::kUnion_Op);
     decompressor_->Reset();
   }
 
@@ -186,9 +186,9 @@ void DecoderRowBased::UpdateStateForPacket(const VideoPacket* packet) {
   return;
 }
 
-void DecoderRowBased::GetUpdatedRects(RectVector* rects) {
-  rects->swap(updated_rects_);
-  updated_rects_.clear();
+void DecoderRowBased::GetUpdatedRegion(SkRegion* region) {
+  region->swap(updated_region_);
+  updated_region_.setEmpty();
 }
 
 VideoPacketFormat::Encoding DecoderRowBased::Encoding() {

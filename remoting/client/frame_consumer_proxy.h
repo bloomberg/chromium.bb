@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -36,7 +36,7 @@ class FrameConsumerProxy
                              const base::Closure& done) OVERRIDE;
   virtual void ReleaseFrame(media::VideoFrame* frame) OVERRIDE;
   virtual void OnPartialFrameOutput(media::VideoFrame* frame,
-                                    RectVector* rects,
+                                    SkRegion* region,
                                     const base::Closure& done) OVERRIDE;
 
   // Detaches from |frame_consumer_|, ensuring no further calls reach it.
