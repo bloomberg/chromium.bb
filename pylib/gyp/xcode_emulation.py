@@ -274,6 +274,7 @@ class XcodeSettings(object):
     self._Appendf(cflags, 'MACOSX_DEPLOYMENT_TARGET', '-mmacosx-version-min=%s')
 
     # TODO:
+    self._WarnUnimplemented('ARCHS')
     if self._Test('COPY_PHASE_STRIP', 'YES', default='NO'):
       self._WarnUnimplemented('COPY_PHASE_STRIP')
     self._WarnUnimplemented('GCC_DEBUGGING_SYMBOLS')
@@ -284,12 +285,10 @@ class XcodeSettings(object):
     self._WarnUnimplemented('MACH_O_TYPE')
     self._WarnUnimplemented('PRODUCT_TYPE')
 
-    archs = self._Settings().get('ARCHS', ['i386'])
-    if len(archs) != 1:
-      # TODO: Supporting fat binaries will be annoying.
-      self._WarnUnimplemented('ARCHS')
-      archs = ['i386']
-    cflags.append('-arch ' + archs[0])
+    # TODO: Do not hardcode arch. Supporting fat binaries will be annoying.
+    # Even if self._Settings()['ARCHS'] contains only a single arch, dependent
+    # targets might have been built with a different single arch.
+    cflags.append('-arch i386')
 
     cflags += self._Settings().get('OTHER_CFLAGS', [])
     cflags += self._Settings().get('WARNING_CFLAGS', [])
