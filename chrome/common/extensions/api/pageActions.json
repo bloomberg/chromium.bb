@@ -2,6 +2,7 @@
   {
     "namespace": "pageActions",
     "nodoc": true,
+    "maximumManifestVersion": 1,
     "types": [],
     "functions": [
       {

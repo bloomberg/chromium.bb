@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -233,11 +233,8 @@ var chrome = chrome || {};
   chromeHidden.onLoad = new chrome.Event();
   chromeHidden.onUnload = new chrome.Event();
 
-  chromeHidden.dispatchOnLoad = function(extensionId, isExtensionProcess,
-                                         isIncognitoContext) {
-    chromeHidden.onLoad.dispatch(extensionId, isExtensionProcess,
-                                 isIncognitoContext);
-  };
+  chromeHidden.dispatchOnLoad =
+      chromeHidden.onLoad.dispatch.bind(chromeHidden.onLoad);
 
   chromeHidden.dispatchOnUnload = function() {
     chromeHidden.onUnload.dispatch();

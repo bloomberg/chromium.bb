@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,6 +20,7 @@ var chrome = chrome || {};
   native function Print();
 
   var chromeHidden = GetChromeHidden();
+  var manifestVersion;
 
   // The reserved channel name for the sendRequest API.
   chromeHidden.kRequestChannel = "chrome.extension.sendRequest";
@@ -125,8 +126,8 @@ var chrome = chrome || {};
     if (connectEvent.hasListeners()) {
       var port = chromeHidden.Port.createPort(portId, channelName);
       port.sender = sender;
-      // TODO(EXTENSIONS_DEPRECATED): port.tab is obsolete.
-      port.tab = port.sender.tab;
+      if (manifestVersion < 2)
+        port.tab = port.sender.tab;
 
       connectEvent.dispatch(port);
     }
@@ -195,14 +196,19 @@ var chrome = chrome || {};
 
   // This function is called on context initialization for both content scripts
   // and extension contexts.
-  chromeHidden.onLoad.addListener(function(extensionId, isExtensionProcess,
-                                           inIncognitoContext) {
+  chromeHidden.onLoad.addListener(function(extensionId,
+                                           isExtensionProcess,
+                                           inIncognitoContext,
+                                           tempManifestVersion) {
     chromeHidden.extensionId = extensionId;
+    manifestVersion = tempManifestVersion;
 
     chrome.extension = chrome.extension || {};
     chrome.self = chrome.extension;
 
-    chrome.extension.inIncognitoTab = inIncognitoContext;  // deprecated
+    if (manifestVersion < 2)
+      chrome.extension.inIncognitoTab = inIncognitoContext;
+
     chrome.extension.inIncognitoContext = inIncognitoContext;
 
     // Events for when a message channel is opened to our extension.

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -35,7 +35,6 @@ const char kIconIndexOutOfBounds[] = "Page action icon index out of bounds.";
 const char kNoIconSpecified[] = "Page action has no icons to show.";
 }
 
-// TODO(EXTENSIONS_DEPRECATED): obsolete API.
 bool PageActionFunction::SetPageActionEnabled(bool enable) {
   std::string page_action_id;
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &page_action_id));

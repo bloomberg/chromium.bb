@@ -133,8 +133,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, WebKitPrefsBackgroundPage) {
   ASSERT_FALSE(prefs.accelerated_2d_canvas_enabled);
 }
 
-// Tests that we can load page actions in the Omnibox.
-IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, PageAction) {
+IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, PageActionCrash25562) {
   ASSERT_TRUE(test_server()->Start());
 
   CommandLine::ForCurrentProcess()->AppendSwitch(
@@ -145,6 +144,20 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, PageAction) {
   ASSERT_TRUE(LoadExtension(
       test_data_dir_.AppendASCII("browsertest")
                     .AppendASCII("crash_25562")));
+
+  // Navigate to the feed page.
+  GURL feed_url = test_server()->GetURL(kFeedPage);
+  ui_test_utils::NavigateToURL(browser(), feed_url);
+  // We should now have one page action ready to go in the LocationBar.
+  ASSERT_TRUE(WaitForPageActionVisibilityChangeTo(1));
+}
+
+// Tests that we can load page actions in the Omnibox.
+IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, PageAction) {
+  ASSERT_TRUE(test_server()->Start());
+
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kAllowLegacyExtensionManifests);
 
   ASSERT_TRUE(LoadExtension(
       test_data_dir_.AppendASCII("subscribe_page_action")));

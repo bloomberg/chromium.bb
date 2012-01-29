@@ -163,6 +163,7 @@
         "name": "getExtensionTabs",
         "nodoc": true,
         "type": "function",
+        "maximumManifestVersion": 1,
         "description": "Deprecated. Please use getViews({type: 'TAB'}). Returns an array of the JavaScript 'window' objects for each of the tabs running inside the current extension. If windowId is specified, returns only the 'window' objects of tabs attached to the specified window.",
         "parameters": [
           {"type": "integer", "name": "windowId", "optional": true}

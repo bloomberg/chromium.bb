@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -65,7 +65,8 @@ class ChromeV8Context {
   // Fires the onload and onunload events on the chromeHidden object.
   // TODO(aa): Move this to EventBindings.
   void DispatchOnLoadEvent(bool is_extension_process,
-                           bool is_incognito_process) const;
+                           bool is_incognito_process,
+                           int manifest_version) const;
   void DispatchOnUnloadEvent() const;
 
   // Call the named method of the chromeHidden object in this context.

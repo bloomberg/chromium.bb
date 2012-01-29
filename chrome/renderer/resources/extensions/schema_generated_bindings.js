@@ -352,8 +352,25 @@ var chrome = chrome || {};
     return "unknown";
   }
 
-  chromeHidden.onLoad.addListener(function(extensionId, isExtensionProcess,
-                                           isIncognitoProcess) {
+  function isPlatformSupported(schemaNode, platform) {
+    return !schemaNode.platforms ||
+        schemaNode.platforms.indexOf(platform) > -1;
+  }
+
+  function isManifestVersionSupported(schemaNode, manifestVersion) {
+    return !schemaNode.maximumManifestVersion ||
+        manifestVersion <= schemaNode.maximumManifestVersion;
+  }
+
+  function isSchemaNodeSupported(schemaNode, platform, manifestVersion) {
+    return isPlatformSupported(schemaNode, platform) &&
+        isManifestVersionSupported(schemaNode, manifestVersion);
+  }
+
+  chromeHidden.onLoad.addListener(function(extensionId,
+                                           isExtensionProcess,
+                                           isIncognitoProcess,
+                                           manifestVersion) {
     var apiDefinitions = GetExtensionAPIDefinition();
 
     // Read api definitions and setup api functions in the chrome namespace.
@@ -365,10 +382,8 @@ var chrome = chrome || {};
     var platform = getPlatform();
 
     apiDefinitions.forEach(function(apiDef) {
-      // Only generate bindings if supported by this platform.
-      if (apiDef.platforms && apiDef.platforms.indexOf(platform) == -1) {
+      if (!isSchemaNodeSupported(apiDef, platform, manifestVersion))
         return;
-      }
 
       var module = chrome;
       var namespaces = apiDef.namespace.split('.');
@@ -380,6 +395,9 @@ var chrome = chrome || {};
       // Add types to global validationTypes
       if (apiDef.types) {
         apiDef.types.forEach(function(t) {
+          if (!isSchemaNodeSupported(t, platform, manifestVersion))
+            return;
+
           chromeHidden.validationTypes.push(t);
           if (t.type == 'object' && customTypes[t.id]) {
             customTypes[t.id].prototype.setSchema(t);
@@ -407,6 +425,9 @@ var chrome = chrome || {};
       // Setup Functions.
       if (apiDef.functions) {
         apiDef.functions.forEach(function(functionDef) {
+          if (!isSchemaNodeSupported(functionDef, platform, manifestVersion))
+            return;
+
           if (functionDef.name in module ||
               addUnprivilegedAccessGetter(module, functionDef.name,
                                           functionDef.unprivileged)) {
@@ -449,6 +470,9 @@ var chrome = chrome || {};
       // Setup Events
       if (apiDef.events) {
         apiDef.events.forEach(function(eventDef) {
+          if (!isSchemaNodeSupported(eventDef, platform, manifestVersion))
+            return;
+
           if (eventDef.name in module ||
               addUnprivilegedAccessGetter(module, eventDef.name,
                                           eventDef.unprivileged)) {
@@ -471,6 +495,9 @@ var chrome = chrome || {};
         // Parse any values defined for properties.
         if (def.properties) {
           forEach(def.properties, function(prop, property) {
+            if (!isSchemaNodeSupported(property, platform, manifestVersion))
+              return;
+
             if (prop in m ||
                 addUnprivilegedAccessGetter(m, prop, property.unprivileged)) {
               return;
@@ -525,8 +552,7 @@ var chrome = chrome || {};
     // custom hooks in extension processes, to maintain current behaviour. We
     // should fix this this with a smaller hammer.
     apiDefinitions.forEach(function(apiDef) {
-      // Only generate bindings if supported by this platform.
-      if (apiDef.platforms && apiDef.platforms.indexOf(platform) == -1)
+      if (!isSchemaNodeSupported(apiDef, platform, manifestVersion))
         return;
 
       var hook = customHooks[apiDef.namespace];

@@ -319,9 +319,15 @@ void ExtensionDispatcher::DidCreateScriptContext(
       new ChromeV8Context(v8_context, frame, GetExtensionID(frame, world_id));
   v8_context_set_.Add(context);
 
+  const Extension* extension = extensions_.GetByID(context->extension_id());
+  int manifest_version = 1;
+  if (extension)
+    manifest_version = extension->manifest_version();
+
   context->DispatchOnLoadEvent(
       is_extension_process_,
-      ChromeRenderProcessObserver::is_incognito_process());
+      ChromeRenderProcessObserver::is_incognito_process(),
+      manifest_version);
 
   VLOG(1) << "Num tracked contexts: " << v8_context_set_.size();
 }

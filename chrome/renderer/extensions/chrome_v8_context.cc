@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -112,12 +112,14 @@ bool ChromeV8Context::CallChromeHiddenMethod(
 }
 
 void ChromeV8Context::DispatchOnLoadEvent(bool is_extension_process,
-                                          bool is_incognito_process) const {
+                                          bool is_incognito_process,
+                                          int manifest_version) const {
   v8::HandleScope handle_scope;
-  v8::Handle<v8::Value> argv[3];
+  v8::Handle<v8::Value> argv[4];
   argv[0] = v8::String::New(extension_id_.c_str());
   argv[1] = v8::Boolean::New(is_extension_process);
   argv[2] = v8::Boolean::New(is_incognito_process);
+  argv[3] = v8::Integer::New(manifest_version);
   CallChromeHiddenMethod("dispatchOnLoad", arraysize(argv), argv, NULL);
 }
 

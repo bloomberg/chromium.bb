@@ -19,7 +19,8 @@ var WINDOW_ID_NONE = -1;
 GetChromeHidden().registerCustomHook('extension', function(bindingsAPI) {
   // getTabContentses is retained for backwards compatibility.
   // See http://crbug.com/21433
-  chrome.extension.getTabContentses = chrome.extension.getExtensionTabs;
+  if (chrome.extension.getExtensionTabs)
+    chrome.extension.getTabContentses = chrome.extension.getExtensionTabs;
 
   var apiFunctions = bindingsAPI.apiFunctions;
 

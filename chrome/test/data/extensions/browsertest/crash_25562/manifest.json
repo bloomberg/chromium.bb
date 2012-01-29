@@ -8,12 +8,9 @@
    } ],
    "description": "A page action with incorrect icon specification",
    "name": "Test extension",
-   "page_actions": [ {
-      "icon": "chrome-16.png",
-      "id": "TestId",
-      "name": "Page action name",
-      "tooltip": "Page action tooltip"
-   } ],
+   "page_action": {
+      "icon": "chrome-16.png"
+   },
    "permissions": [ "http://*/*" ],
    "manifest_version": 2,
    "version": "1.0"

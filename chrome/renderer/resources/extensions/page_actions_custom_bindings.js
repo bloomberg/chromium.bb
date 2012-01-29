@@ -13,7 +13,6 @@ GetChromeHidden().registerCustomHook(
     'pageActions', function(bindingsAPI, extensionId) {
   var pageActions = GetCurrentPageActions(extensionId);
   var oldStyleEventName = "pageActions";
-  // TODO(EXTENSIONS_DEPRECATED): only one page action
   for (var i = 0; i < pageActions.length; ++i) {
     // Setup events for each extension_id/page_action_id string we find.
     chrome.pageActions[pageActions[i]] = new chrome.Event(oldStyleEventName);
