@@ -420,6 +420,7 @@ void SyncBackendHost::ConfigureDataTypes(
     syncable::ModelTypeSet types_to_remove,
     sync_api::ConfigureReason reason,
     base::Callback<void(syncable::ModelTypeSet)> ready_task,
+    base::Callback<void()> retry_callback,
     bool enable_nigori) {
   syncable::ModelTypeSet types_to_add_with_nigori = types_to_add;
   syncable::ModelTypeSet types_to_remove_with_nigori = types_to_remove;
@@ -442,6 +443,7 @@ void SyncBackendHost::ConfigureDataTypes(
       registrar_->ConfigureDataTypes(types_to_add_with_nigori,
                                      types_to_remove_with_nigori);
   pending_config_mode_state_->reason = reason;
+  pending_config_mode_state_->retry_callback = retry_callback;
 
   // Cleanup disabled types before starting configuration so that
   // callers can assume that the data types are cleaned up once
@@ -578,10 +580,10 @@ void SyncBackendHost::HandleSyncCycleCompletedOnFrontendLoop(
   // if this sync cycle has initialized all of the types we've been
   // waiting for.
   if (pending_download_state_.get()) {
-    scoped_ptr<PendingConfigureDataTypesState> state(
-        pending_download_state_.release());
-    const syncable::ModelTypeSet types_to_add = state->types_to_add;
-    const syncable::ModelTypeSet added_types = state->added_types;
+    const syncable::ModelTypeSet types_to_add =
+        pending_download_state_->types_to_add;
+    const syncable::ModelTypeSet added_types =
+        pending_download_state_->added_types;
     DCHECK(types_to_add.HasAll(added_types));
     const syncable::ModelTypeSet initial_sync_ended =
         snapshot->initial_sync_ended;
@@ -594,7 +596,24 @@ void SyncBackendHost::HandleSyncCycleCompletedOnFrontendLoop(
         << syncable::ModelTypeSetToString(initial_sync_ended)
         << ", failed configuration types: "
         << syncable::ModelTypeSetToString(failed_configuration_types);
+
+    if (!failed_configuration_types.Empty() &&
+        snapshot->retry_scheduled) {
+      // Inform the caller that download failed but we are retrying.
+      if (!pending_download_state_->retry_in_progress) {
+        pending_download_state_->retry_callback.Run();
+        pending_download_state_->retry_in_progress = true;
+      }
+      // Nothing more to do.
+      return;
+    }
+
+    scoped_ptr<PendingConfigureDataTypesState> state(
+        pending_download_state_.release());
     state->ready_task.Run(failed_configuration_types);
+
+    // Syncer did not report an error but did not download everything
+    // we requested either. So abort. The caller of the config will cleanup.
     if (!failed_configuration_types.Empty())
       return;
   }
@@ -729,7 +748,8 @@ SyncBackendHost::Core::~Core() {
 
 SyncBackendHost::PendingConfigureDataTypesState::
 PendingConfigureDataTypesState()
-    : reason(sync_api::CONFIGURE_REASON_UNKNOWN) {}
+    : reason(sync_api::CONFIGURE_REASON_UNKNOWN),
+      retry_in_progress(false) {}
 
 SyncBackendHost::PendingConfigureDataTypesState::
 ~PendingConfigureDataTypesState() {}
@@ -1050,6 +1070,14 @@ void SyncBackendHost::AddExperimentalTypes() {
     frontend_->OnDataTypesChanged(to_add);
 }
 
+void SyncBackendHost::OnNigoriDownloadRetry() {
+  DCHECK_EQ(MessageLoop::current(), frontend_loop_);
+  if (!frontend_)
+    return;
+
+  frontend_->OnSyncConfigureRetry();
+}
+
 void SyncBackendHost::HandleInitializationCompletedOnFrontendLoop(
     const WeakHandle<JsBackend>& js_backend, bool success) {
   DCHECK_NE(NOT_ATTEMPTED, initialization_state_);
@@ -1089,6 +1117,8 @@ void SyncBackendHost::HandleInitializationCompletedOnFrontendLoop(
               &SyncBackendHost::
                   HandleNigoriConfigurationCompletedOnFrontendLoop,
               weak_ptr_factory_.GetWeakPtr(), js_backend),
+          base::Bind(&SyncBackendHost::OnNigoriDownloadRetry,
+                     weak_ptr_factory_.GetWeakPtr()),
           true);
       break;
     case DOWNLOADING_NIGORI:

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -235,6 +235,8 @@ void DataTypeManagerImpl::Restart(sync_api::ConfigureReason reason,
       reason,
       base::Bind(&DataTypeManagerImpl::DownloadReady,
                  weak_ptr_factory_.GetWeakPtr()),
+      base::Bind(&DataTypeManagerImpl::OnDownloadRetry,
+                 weak_ptr_factory_.GetWeakPtr()),
       enable_nigori);
 }
 
@@ -266,6 +268,21 @@ bool DataTypeManagerImpl::ProcessReconfigure() {
   last_configure_reason_ = sync_api::CONFIGURE_REASON_UNKNOWN;
   last_enable_nigori_ = false;
   return true;
+}
+
+void DataTypeManagerImpl::OnDownloadRetry() {
+  DCHECK_EQ(state_, DOWNLOAD_PENDING);
+
+  // Inform the listeners we are waiting.
+  ConfigureResult result;
+  result.status = DataTypeManager::RETRY;
+
+  // TODO(lipalani): Add a new  NOTIFICATION_SYNC_CONFIGURE_RETRY.
+  // crbug.com/111676.
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_SYNC_CONFIGURE_DONE,
+      content::Source<DataTypeManager>(this),
+      content::Details<const ConfigureResult>(&result));
 }
 
 void DataTypeManagerImpl::DownloadReady(

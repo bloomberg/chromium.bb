@@ -124,7 +124,8 @@ SyncSessionSnapshot::SyncSessionSnapshot(
     bool did_commit_items,
     const SyncSourceInfo& source,
     size_t num_entries,
-    base::Time sync_start_time)
+    base::Time sync_start_time,
+    bool retry_scheduled)
     : syncer_status(syncer_status),
       errors(errors),
       num_server_changes_remaining(num_server_changes_remaining),
@@ -139,7 +140,8 @@ SyncSessionSnapshot::SyncSessionSnapshot(
       did_commit_items(did_commit_items),
       source(source),
       num_entries(num_entries),
-      sync_start_time(sync_start_time) {
+      sync_start_time(sync_start_time),
+      retry_scheduled(retry_scheduled) {
   for (int i = syncable::FIRST_REAL_MODEL_TYPE;
        i < syncable::MODEL_TYPE_COUNT; ++i) {
     const_cast<std::string&>(this->download_progress_markers[i]).assign(

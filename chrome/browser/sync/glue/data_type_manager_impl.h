@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -66,6 +66,10 @@ class DataTypeManagerImpl : public DataTypeManager {
 
   void Restart(sync_api::ConfigureReason reason, bool enable_nigori);
   void DownloadReady(syncable::ModelTypeSet failed_configuration_types);
+
+  // Notification from the SBH that download failed due to a transient
+  // error and it will be retried.
+  void OnDownloadRetry();
   void NotifyStart();
   void NotifyDone(const ConfigureResult& result);
   void SetBlockedAndNotify();

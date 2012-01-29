@@ -64,6 +64,10 @@ class SyncFrontend {
   // The backend queried the server recently and received some updates.
   virtual void OnSyncCycleCompleted() = 0;
 
+  // Configure ran into some kind of error. But it is scheduled to be
+  // retried.
+  virtual void OnSyncConfigureRetry() = 0;
+
   // The backend encountered an authentication problem and requests new
   // credentials to be provided. See SyncBackendHost::Authenticate for details.
   virtual void OnAuthError() = 0;
@@ -200,6 +204,7 @@ class SyncBackendHost {
       syncable::ModelTypeSet types_to_remove,
       sync_api::ConfigureReason reason,
       base::Callback<void(syncable::ModelTypeSet)> ready_task,
+      base::Callback<void()> retry_callback,
       bool enable_nigori);
 
   // Makes an asynchronous call to syncer to switch to config mode. When done
@@ -336,6 +341,13 @@ class SyncBackendHost {
     // argument is non-empty, then an error was encountered).
     base::Callback<void(syncable::ModelTypeSet)> ready_task;
 
+    // The retry callback will be run when the download failed due to a
+    // transient error. This is to notify DTM so it can apropriately inform
+    // the UI. Note: The retry_callback will be run only once and after
+    // that we will not notify DTM until the sync is successful or in a
+    // permanent error state.
+    base::Callback<void()> retry_callback;
+
     // The set of types that we are waiting to be initially synced in a
     // configuration cycle.
     syncable::ModelTypeSet types_to_add;
@@ -343,12 +355,16 @@ class SyncBackendHost {
     // Additional details about which types were added.
     syncable::ModelTypeSet added_types;
     sync_api::ConfigureReason reason;
+    bool retry_in_progress;
   };
 
   // Checks if we have received a notice to turn on experimental datatypes
   // (via the nigori node) and informs the frontend if that is the case.
   // Note: it is illegal to call this before the backend is initialized.
   void AddExperimentalTypes();
+
+  // Downloading of nigori failed and will be retried.
+  virtual void OnNigoriDownloadRetry();
 
   // InitializationComplete passes through the SyncBackendHost to forward
   // on to |frontend_|, and so that tests can intercept here if they need to

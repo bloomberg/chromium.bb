@@ -134,7 +134,8 @@ struct SyncSessionSnapshot {
       bool did_commit_items,
       const SyncSourceInfo& source,
       size_t num_entries,
-      base::Time sync_start_time);
+      base::Time sync_start_time,
+      bool retry_scheduled);
   ~SyncSessionSnapshot();
 
   // Caller takes ownership of the returned dictionary.
@@ -157,6 +158,7 @@ struct SyncSessionSnapshot {
   const SyncSourceInfo source;
   const size_t num_entries;
   base::Time sync_start_time;
+  const bool retry_scheduled;
 };
 
 // Tracks progress of conflicts and their resolution using conflict sets.

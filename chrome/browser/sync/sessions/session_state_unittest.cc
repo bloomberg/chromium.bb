@@ -157,7 +157,8 @@ TEST_F(SessionStateTest, SyncSessionSnapshotToValue) {
                                kDidCommitItems,
                                source,
                                0,
-                               base::Time::Now());
+                               base::Time::Now(),
+                               false);
   scoped_ptr<DictionaryValue> value(snapshot.ToValue());
   EXPECT_EQ(14u, value->size());
   ExpectDictDictionaryValue(*expected_syncer_status_value, *value,

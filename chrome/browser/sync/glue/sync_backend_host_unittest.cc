@@ -50,6 +50,7 @@ class MockSyncFrontend : public SyncFrontend {
   MOCK_METHOD1(OnDataTypesChanged, void(syncable::ModelTypeSet));
   MOCK_METHOD1(OnActionableError,
       void(const browser_sync::SyncProtocolError& sync_error));
+  MOCK_METHOD0(OnSyncConfigureRetry, void());
 };
 
 }  // namespace

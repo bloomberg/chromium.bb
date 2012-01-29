@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -59,6 +59,7 @@ void DoConfigureDataTypes(
     syncable::ModelTypeSet types_to_remove,
     sync_api::ConfigureReason reason,
     base::Callback<void(syncable::ModelTypeSet)> ready_task,
+    base::Callback<void()> retry_task,
     bool enable_nigori) {
   ready_task.Run(syncable::ModelTypeSet());
 }
@@ -178,7 +179,7 @@ class DataTypeManagerImplTest : public testing::Test {
     SetStartStopExpectations(bookmark_dtc);
     controllers_[syncable::BOOKMARKS] = bookmark_dtc;
     EXPECT_CALL(backend_,
-                ConfigureDataTypes(_, _, _, _, enable_nigori)).Times(1);
+                ConfigureDataTypes(_, _, _, _, _, enable_nigori)).Times(1);
     DataTypeManagerImpl dtm(&backend_, &controllers_);
     types_.Put(syncable::BOOKMARKS);
     SetConfigureStartExpectation();
@@ -213,7 +214,7 @@ class DataTypeManagerImplTest : public testing::Test {
     controllers_[syncable::PREFERENCES] = preference_dtc;
 
     DataTypeManagerImpl dtm(&backend_, &controllers_);
-    EXPECT_CALL(backend_, ConfigureDataTypes(_, _, _, _, enable_nigori))
+    EXPECT_CALL(backend_, ConfigureDataTypes(_, _, _, _, _, enable_nigori))
         .WillOnce(Invoke(DoConfigureDataTypes))
         .WillOnce(DoAll(Invoke(DoConfigureDataTypes),
                         InvokeWithoutArgs(QuitMessageLoop)));
@@ -257,7 +258,7 @@ class DataTypeManagerImplTest : public testing::Test {
     base::Callback<void(syncable::ModelTypeSet)> task;
     // Grab the task the first time this is called so we can configure
     // before it is finished.
-    EXPECT_CALL(backend_, ConfigureDataTypes(_, _, _, _, enable_nigori)).
+    EXPECT_CALL(backend_, ConfigureDataTypes(_, _, _, _, _, enable_nigori)).
         WillOnce(SaveArg<3>(&task)).
         WillOnce(DoDefault());
 
@@ -314,7 +315,7 @@ TEST_F(DataTypeManagerImplTest, ConfigureOneStopWhileStarting) {
   SetBusyStartStopExpectations(bookmark_dtc,
                                DataTypeController::MODEL_STARTING);
   controllers_[syncable::BOOKMARKS] = bookmark_dtc;
-  EXPECT_CALL(backend_, ConfigureDataTypes(_, _, _, _, true)).Times(1);
+  EXPECT_CALL(backend_, ConfigureDataTypes(_, _, _, _, _, true)).Times(1);
   DataTypeManagerImpl dtm(&backend_, &controllers_);
   types_.Put(syncable::BOOKMARKS);
   SetConfigureStartExpectation();
@@ -329,7 +330,7 @@ TEST_F(DataTypeManagerImplTest, ConfigureOneStopWhileAssociating) {
   DataTypeControllerMock* bookmark_dtc = MakeBookmarkDTC();
   SetBusyStartStopExpectations(bookmark_dtc, DataTypeController::ASSOCIATING);
   controllers_[syncable::BOOKMARKS] = bookmark_dtc;
-  EXPECT_CALL(backend_, ConfigureDataTypes(_, _, _, _, true)).Times(1);
+  EXPECT_CALL(backend_, ConfigureDataTypes(_, _, _, _, _, true)).Times(1);
   DataTypeManagerImpl dtm(&backend_, &controllers_);
   types_.Put(syncable::BOOKMARKS);
   SetConfigureStartExpectation();
@@ -349,7 +350,7 @@ TEST_F(DataTypeManagerImplTest, OneWaitingForCrypto) {
                               DataTypeController::NEEDS_CRYPTO));
 
   controllers_[syncable::PASSWORDS] = password_dtc;
-  EXPECT_CALL(backend_, ConfigureDataTypes(_, _, _, _, true)).Times(1);
+  EXPECT_CALL(backend_, ConfigureDataTypes(_, _, _, _, _, true)).Times(1);
 
   DataTypeManagerImpl dtm(&backend_, &controllers_);
   types_.Put(syncable::PASSWORDS);
@@ -370,7 +371,7 @@ TEST_F(DataTypeManagerImplTest, OneWaitingForCrypto) {
   EXPECT_CALL(*password_dtc, Start(_)).
       WillOnce(InvokeCallback(syncable::PASSWORDS,
                               DataTypeController::OK));
-  EXPECT_CALL(backend_, ConfigureDataTypes(_, _, _, _, true)).Times(1);
+  EXPECT_CALL(backend_, ConfigureDataTypes(_, _, _, _, _, true)).Times(1);
   dtm.Configure(types_, sync_api::CONFIGURE_REASON_RECONFIGURATION);
 
   EXPECT_EQ(DataTypeManager::CONFIGURED, dtm.state());
@@ -387,7 +388,7 @@ TEST_F(DataTypeManagerImplTest, ConfigureOneThenAnother) {
   SetStartStopExpectations(preference_dtc);
   controllers_[syncable::PREFERENCES] = preference_dtc;
 
-  EXPECT_CALL(backend_, ConfigureDataTypes(_, _, _, _, true)).Times(2);
+  EXPECT_CALL(backend_, ConfigureDataTypes(_, _, _, _, _, true)).Times(2);
   DataTypeManagerImpl dtm(&backend_, &controllers_);
   types_.Put(syncable::BOOKMARKS);
 
@@ -414,7 +415,7 @@ TEST_F(DataTypeManagerImplTest, ConfigureOneThenSwitch) {
   SetStartStopExpectations(preference_dtc);
   controllers_[syncable::PREFERENCES] = preference_dtc;
 
-  EXPECT_CALL(backend_, ConfigureDataTypes(_, _, _, _, true)).Times(2);
+  EXPECT_CALL(backend_, ConfigureDataTypes(_, _, _, _, _, true)).Times(2);
   DataTypeManagerImpl dtm(&backend_, &controllers_);
   types_.Put(syncable::BOOKMARKS);
 
@@ -455,7 +456,7 @@ TEST_F(DataTypeManagerImplTest, OneFailingController) {
   DataTypeManagerImpl dtm(&backend_, &controllers_);
   SetConfigureStartExpectation();
   SetConfigureDoneExpectation(DataTypeManager::UNRECOVERABLE_ERROR);
-  EXPECT_CALL(backend_, ConfigureDataTypes(_, _, _, _, true)).Times(1);
+  EXPECT_CALL(backend_, ConfigureDataTypes(_, _, _, _, _, true)).Times(1);
 
   types_.Put(syncable::BOOKMARKS);
   dtm.Configure(types_, sync_api::CONFIGURE_REASON_RECONFIGURATION);
@@ -479,7 +480,7 @@ TEST_F(DataTypeManagerImplTest, StopWhileInFlight) {
   DataTypeManagerImpl dtm(&backend_, &controllers_);
   SetConfigureStartExpectation();
   SetConfigureDoneExpectation(DataTypeManager::ABORTED);
-  EXPECT_CALL(backend_, ConfigureDataTypes(_, _, _, _, true)).Times(1);
+  EXPECT_CALL(backend_, ConfigureDataTypes(_, _, _, _, _, true)).Times(1);
 
   types_.Put(syncable::BOOKMARKS);
   types_.Put(syncable::PREFERENCES);
@@ -513,7 +514,7 @@ TEST_F(DataTypeManagerImplTest, SecondControllerFails) {
   DataTypeManagerImpl dtm(&backend_, &controllers_);
   SetConfigureStartExpectation();
   SetConfigureDoneExpectation(DataTypeManager::UNRECOVERABLE_ERROR);
-  EXPECT_CALL(backend_, ConfigureDataTypes(_, _, _, _, true)).Times(1);
+  EXPECT_CALL(backend_, ConfigureDataTypes(_, _, _, _, _, true)).Times(1);
 
   types_.Put(syncable::BOOKMARKS);
   types_.Put(syncable::PREFERENCES);
@@ -549,7 +550,7 @@ TEST_F(DataTypeManagerImplTest, OneControllerFailsAssociation) {
   DataTypeManagerImpl dtm(&backend_, &controllers_);
   SetConfigureStartExpectation();
   SetConfigureDoneExpectation(DataTypeManager::PARTIAL_SUCCESS);
-  EXPECT_CALL(backend_, ConfigureDataTypes(_, _, _, _, true)).Times(1);
+  EXPECT_CALL(backend_, ConfigureDataTypes(_, _, _, _, _, true)).Times(1);
 
   types_.Put(syncable::BOOKMARKS);
   types_.Put(syncable::PREFERENCES);
@@ -599,7 +600,7 @@ TEST_F(DataTypeManagerImplTest, StopWhileDownloadPending) {
   base::Callback<void(syncable::ModelTypeSet)> task;
   // Grab the task the first time this is called so we can stop
   // before it is finished.
-  EXPECT_CALL(backend_, ConfigureDataTypes(_, _, _, _, true)).
+  EXPECT_CALL(backend_, ConfigureDataTypes(_, _, _, _, _, true)).
       WillOnce(SaveArg<3>(&task));
 
   types_.Put(syncable::BOOKMARKS);

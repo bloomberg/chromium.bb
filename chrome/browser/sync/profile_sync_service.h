@@ -24,6 +24,7 @@
 #include "chrome/browser/sync/engine/model_safe_worker.h"
 #include "chrome/browser/sync/failed_datatypes_handler.h"
 #include "chrome/browser/sync/glue/data_type_controller.h"
+#include "chrome/browser/sync/glue/data_type_manager.h"
 #include "chrome/browser/sync/glue/sync_backend_host.h"
 #include "chrome/browser/sync/internal_api/includes/unrecoverable_error_handler.h"
 #include "chrome/browser/sync/internal_api/sync_manager.h"
@@ -216,6 +217,7 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
       const browser_sync::WeakHandle<browser_sync::JsBackend>& js_backend,
       bool success) OVERRIDE;
   virtual void OnSyncCycleCompleted() OVERRIDE;
+  virtual void OnSyncConfigureRetry() OVERRIDE;
   virtual void OnAuthError() OVERRIDE;
   virtual void OnStopSyncingPermanently() OVERRIDE;
   virtual void OnClearServerDataFailed() OVERRIDE;
@@ -492,6 +494,10 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
 
   virtual const FailedDatatypesHandler& failed_datatypes_handler();
 
+  browser_sync::DataTypeManager::ConfigureStatus configure_status() {
+    return configure_status_;
+  }
+
   // ProfileKeyedService implementation.
   virtual void Shutdown() OVERRIDE;
 
@@ -711,6 +717,8 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
 
   scoped_ptr<browser_sync::BackendUnrecoverableErrorHandler>
       backend_unrecoverable_error_handler_;
+
+  browser_sync::DataTypeManager::ConfigureStatus configure_status_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileSyncService);
 };

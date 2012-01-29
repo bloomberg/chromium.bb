@@ -32,7 +32,6 @@
 #include "chrome/browser/sync/backend_migrator.h"
 #include "chrome/browser/sync/glue/change_processor.h"
 #include "chrome/browser/sync/glue/data_type_controller.h"
-#include "chrome/browser/sync/glue/data_type_manager.h"
 #include "chrome/browser/sync/glue/session_data_type_controller.h"
 #include "chrome/browser/sync/glue/session_model_associator.h"
 #include "chrome/browser/sync/glue/typed_url_data_type_controller.h"
@@ -127,7 +126,8 @@ ProfileSyncService::ProfileSyncService(ProfileSyncComponentsFactory* factory,
       encrypt_everything_(false),
       encryption_pending_(false),
       auto_start_enabled_(start_behavior == AUTO_START),
-      failed_datatypes_handler_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+      failed_datatypes_handler_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
+      configure_status_(DataTypeManager::UNKNOWN) {
   // By default, dev, canary, and unbranded Chromium users will go to the
   // development servers. Development servers have more features than standard
   // sync servers. Users with officially-branded Chrome stable and beta builds
@@ -351,6 +351,26 @@ void ProfileSyncService::OnSyncConfigureDone(
     ReconfigureDatatypeManager();
   }
 }
+
+void ProfileSyncService::OnSyncConfigureRetry() {
+  // In platforms with auto start we would just wait for the
+  // configure to finish. In other platforms we would throw
+  // an unrecoverable error. The reason we do this is so that
+  // the login dialog would show an error and the user would have
+  // to relogin.
+  // Also if backend has been initialized(the user is authenticated
+  // and nigori is downloaded) we would simply wait rather than going into
+  // unrecoverable error, even if the platform has auto start disabled.
+  // Note: In those scenarios the UI does not wait for the configuration
+  // to finish.
+  if (!auto_start_enabled_ && !backend_initialized_) {
+    OnUnrecoverableError(FROM_HERE,
+                         "Configure failed to download.");
+  }
+
+  NotifyObservers();
+}
+
 
 void ProfileSyncService::StartUp() {
   // Don't start up multiple times.
@@ -1331,16 +1351,35 @@ void ProfileSyncService::Observe(int type,
       DataTypeManager::ConfigureResult* result =
           content::Details<DataTypeManager::ConfigureResult>(details).ptr();
 
-      DataTypeManager::ConfigureStatus status = result->status;
-      DVLOG(1) << "PSS SYNC_CONFIGURE_DONE called with status: " << status;
-      if (status == DataTypeManager::ABORTED &&
+      configure_status_ = result->status;
+      DVLOG(1) << "PSS SYNC_CONFIGURE_DONE called with status: "
+               << configure_status_;
+
+      // The possible status values:
+      //    ABORT - Configuration was aborted. This is not an error, if
+      //            initiated by user.
+      //    RETRY - Configure failed but we are retrying.
+      //    OK - Everything succeeded.
+      //    PARTIAL_SUCCESS - Some datatypes failed to start.
+      //    Everything else is an UnrecoverableError. So treat it as such.
+
+      // First handle the abort case.
+      if (configure_status_ == DataTypeManager::ABORTED &&
           expect_sync_configuration_aborted_) {
         DVLOG(0) << "ProfileSyncService::Observe Sync Configure aborted";
         expect_sync_configuration_aborted_ = false;
         return;
       }
-      if (status != DataTypeManager::OK &&
-          status != DataTypeManager::PARTIAL_SUCCESS) {
+
+      // Handle retry case.
+      if (configure_status_ == DataTypeManager::RETRY) {
+        OnSyncConfigureRetry();
+        return;
+      }
+
+      // Handle unrecoverable error.
+      if (configure_status_ != DataTypeManager::OK &&
+          configure_status_ != DataTypeManager::PARTIAL_SUCCESS) {
         // Something catastrophic had happened. We should only have one
         // error representing it.
         DCHECK(result->errors.size() == 1);
@@ -1348,7 +1387,7 @@ void ProfileSyncService::Observe(int type,
         DCHECK(error.IsSet());
         std::string message =
           "Sync configuration failed with status " +
-          DataTypeManager::ConfigureStatusToString(status) +
+          DataTypeManager::ConfigureStatusToString(configure_status_) +
           " during " + syncable::ModelTypeToString(error.type()) +
           ": " + error.message();
         LOG(ERROR) << "ProfileSyncService error: "
@@ -1358,6 +1397,7 @@ void ProfileSyncService::Observe(int type,
         return;
       }
 
+      // Now handle partial success and full success.
       MessageLoop::current()->PostTask(FROM_HERE,
           base::Bind(&ProfileSyncService::OnSyncConfigureDone,
                      weak_factory_.GetWeakPtr(), *result));
