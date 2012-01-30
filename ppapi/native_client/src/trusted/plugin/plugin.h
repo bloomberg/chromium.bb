@@ -148,10 +148,10 @@ class Plugin : public pp::InstancePrivate {
   // A helper SRPC NaCl module can be loaded given a DescWrapper.
   // Blocks until the helper module signals initialization is done.
   // Does not update nacl_module_origin().
-  // Returns kInvalidNaClSubprocessId or the ID of the new helper NaCl module.
-  NaClSubprocessId LoadHelperNaClModule(nacl::DescWrapper* wrapper,
-                                        const Manifest* manifest,
-                                        ErrorInfo* error_info);
+  // Returns NULL or the NaClSubprocess of the new helper NaCl module.
+  NaClSubprocess* LoadHelperNaClModule(nacl::DescWrapper* wrapper,
+                                       const Manifest* manifest,
+                                       ErrorInfo* error_info);
 
   // Returns the argument value for the specified key, or NULL if not found.
   // The callee retains ownership of the result.
@@ -243,17 +243,6 @@ class Plugin : public pp::InstancePrivate {
   bool nexe_error_reported() const { return nexe_error_reported_; }
   void set_nexe_error_reported(bool val) {
     nexe_error_reported_ = val;
-  }
-
-  // Get the NaCl module subprocess that was assigned the ID |id|.
-  NaClSubprocess* nacl_subprocess(NaClSubprocessId id) const {
-    if (kInvalidNaClSubprocessId == id) {
-      return NULL;
-    }
-    return nacl_subprocesses_[id];
-  }
-  NaClSubprocessId next_nacl_subprocess_id() const {
-    return static_cast<NaClSubprocessId>(nacl_subprocesses_.size());
   }
 
   nacl::DescWrapperFactory* wrapper_factory() const { return wrapper_factory_; }
@@ -359,7 +348,7 @@ class Plugin : public pp::InstancePrivate {
             char* argv[]);
   void LoadMethods();
   // Shuts down socket connection, service runtime, and receive thread,
-  // in this order, for all spun up NaCl module subprocesses.
+  // in this order, for the main nacl subprocess.
   void ShutDownSubprocesses();
 
   ScriptableHandle* scriptable_handle() const { return scriptable_handle_; }
@@ -477,9 +466,8 @@ class Plugin : public pp::InstancePrivate {
   char** argn_;
   char** argv_;
 
-  // Keep track of the NaCl module subprocesses that were spun up in the plugin.
+  // Keep track of the NaCl module subprocess that was spun up in the plugin.
   NaClSubprocess main_subprocess_;
-  std::vector<NaClSubprocess*> nacl_subprocesses_;
 
   nacl::string plugin_base_url_;
   nacl::string manifest_base_url_;

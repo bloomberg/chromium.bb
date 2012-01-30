@@ -11,27 +11,32 @@
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_NACL_SUBPROCESS_H_
 #define NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_NACL_SUBPROCESS_H_
 
+#include <stdarg.h>
+
+#include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/include/nacl_string.h"
+#include "native_client/src/include/portability.h"
+
 #include "native_client/src/trusted/plugin/service_runtime.h"
 #include "native_client/src/trusted/plugin/srpc_client.h"
 
 namespace plugin {
 
+class BrowserInterface;
 class Plugin;
 class ServiceRuntime;
+class SrpcParams;
 
-// Identifier for helper NaCl nexes. Should be non-negative for valid nexes.
-typedef int32_t NaClSubprocessId;
-const NaClSubprocessId kInvalidNaClSubprocessId = -1;
-const NaClSubprocessId kMainSubprocessId = -2;
 
 // A class representing an instance of a NaCl module, loaded by the plugin.
 class NaClSubprocess {
  public:
-  NaClSubprocess(NaClSubprocessId assigned_id,
+  NaClSubprocess(const nacl::string& description,
+                 BrowserInterface* browser_interface,
                  ServiceRuntime* service_runtime,
                  SrpcClient* srpc_client)
-    : assigned_id_(assigned_id),
+    : description_(description),
+      browser_interface_(browser_interface),
       service_runtime_(service_runtime),
       srpc_client_(srpc_client) {
   }
@@ -62,17 +67,36 @@ class NaClSubprocess {
   bool InitParams(uintptr_t method_id, SrpcParams* params) const;
   bool Invoke(uintptr_t method_id, SrpcParams* params) const;
 
+  // Invoke an Srpc Method.  |out_params| must be allocated and cleaned up
+  // outside of this function, but it will be initialized by this function, and
+  // on success any out-params (if any) will be placed in |out_params|.
+  // Input types must be listed in |input_signature|, with the actual
+  // arguments passed in as var-args.  Returns |true| on success.
+  bool InvokeSrpcMethod(const nacl::string& method_name,
+                        const nacl::string& input_signature,
+                        SrpcParams* out_params,
+                        ...);
+
   // Fully shut down the subprocess.
   void Shutdown();
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(NaClSubprocess);
 
-  NaClSubprocessId assigned_id_;
+  bool SetupSrpcInvocation(const nacl::string& method_name,
+                           SrpcParams* params,
+                           uintptr_t* kMethodIdent);
 
+  bool VInvokeSrpcMethod(const nacl::string& method_name,
+                         const nacl::string& signature,
+                         SrpcParams* params,
+                         va_list vl);
+
+  nacl::string description_;
+
+  BrowserInterface* browser_interface_;
   // The service runtime representing the NaCl module instance.
   nacl::scoped_ptr<ServiceRuntime> service_runtime_;
-
   // Ownership of srpc_client taken from the service runtime.
   nacl::scoped_ptr<SrpcClient> srpc_client_;
 };

@@ -50,20 +50,29 @@ class PnaclCoordinator;
 //     read by:    sel_ldr (passed in explicitly to command channel)
 //
 
-// PnaclFileDescPair represents a file used as a temporary between stages in
+// LocalTempFile represents a file used as a temporary between stages in
 // translation.  It is created in the local temporary file system of the page
 // being processed.  The name of the temporary file is a random 32-character
 // hex string.  Because both reading and writing are necessary, two I/O objects
 // for the file are opened.
-class PnaclFileDescPair {
+class LocalTempFile {
  public:
-  PnaclFileDescPair(Plugin* plugin,
-                    pp::FileSystem* file_system,
-                    PnaclCoordinator* coordinator);
-  ~PnaclFileDescPair();
-  // Opens a pair of file IO objects referring to a randomly named file in
-  // file_system_.  One IO is for writing the file and another for reading it.
-  void Open(const pp::CompletionCallback& cb);
+  LocalTempFile(Plugin* plugin,
+                pp::FileSystem* file_system,
+                PnaclCoordinator* coordinator);
+  ~LocalTempFile();
+  // Opens a writeable file IO object and descriptor referring to the file.
+  void OpenWrite(const pp::CompletionCallback& cb);
+  // Opens a read only file IO object and descriptor referring to the file.
+  void OpenRead(const pp::CompletionCallback& cb);
+  // Closes the open descriptors.
+  void Close(const pp::CompletionCallback& cb);
+  // Deletes the temporary file.
+  void Delete(const pp::CompletionCallback& cb);
+  // Renames the temporary file.
+  void Rename(const nacl::string& new_name,
+              const pp::CompletionCallback& cb);
+
   // Accessors.
   // The nacl::DescWrapper* for the writeable version of the file.
   nacl::DescWrapper* write_wrapper() { return write_wrapper_.get(); }
@@ -77,7 +86,7 @@ class PnaclFileDescPair {
   }
 
  private:
-  NACL_DISALLOW_COPY_AND_ASSIGN(PnaclFileDescPair);
+  NACL_DISALLOW_COPY_AND_ASSIGN(LocalTempFile);
 
   // Gets the POSIX file descriptor for a resource.
   int32_t GetFD(int32_t pp_error,
@@ -87,19 +96,20 @@ class PnaclFileDescPair {
   void WriteFileDidOpen(int32_t pp_error);
   // Called when the readable file IO was opened.
   void ReadFileDidOpen(int32_t pp_error);
+  // Completes the close operation after quota update.
+  void CloseContinuation(int32_t pp_error);
 
   Plugin* plugin_;
   pp::FileSystem* file_system_;
   PnaclCoordinator* coordinator_;
   const PPB_FileIOTrusted* file_io_trusted_;
-  pp::CompletionCallbackFactory<PnaclFileDescPair> callback_factory_;
+  pp::CompletionCallbackFactory<LocalTempFile> callback_factory_;
   nacl::string filename_;
+  nacl::scoped_ptr<pp::FileRef> file_ref_;
   // The PPAPI and wrapper state for the writeable file.
-  nacl::scoped_ptr<pp::FileRef> write_ref_;
   nacl::scoped_ptr<pp::FileIO> write_io_;
   nacl::scoped_ptr<nacl::DescWrapper> write_wrapper_;
   // The PPAPI and wrapper state for the read-only file.
-  nacl::scoped_ptr<pp::FileRef> read_ref_;
   nacl::scoped_ptr<pp::FileIO> read_io_;
   nacl::scoped_ptr<nacl::DescWrapper> read_wrapper_;
   // The callback invoked when both file I/O objects are created.
@@ -152,21 +162,34 @@ class PnaclRefCount {
 //     Complete when ResourcesDidLoad is invoked.
 // OPEN_LOCAL_FILE_SYSTEM
 //     Complete when FileSystemDidOpen is invoked.
-// OPEN_TMP_FOP_LLC_TO_LD_COMMUNICATION
-//     Complete when ObjectPairDidOpen is invoked.
-// OPEN_TMP_FOR_LD_TO_SEL_LDR_COMMUNICATION
-//     Complete when NexePairDidOpen is invoked.
+// OPENED_PNACL_TEMP_DIRECTORY
+//     Complete when DirectoryWasOpened is invoked.
+// QUERIED_PNACL_TEMP_DIRECTORY
+//     Complete when DirectoryWasQueried is invoked.
+// CREATED_PNACL_TEMP_DIRECTORY
+//     Complete when DirectoryWasCreated is invoked.
+// OPEN_TMP_WRITE_FOR_LLC_TO_LD_COMMUNICATION
+//     Complete when ObjectWriteDidOpen is invoked.
+// OPEN_TMP_READ_FOR_LLC_TO_LD_COMMUNICATION
+//     Complete when ObjectReadDidOpen is invoked.
+// OPEN_TMP_FOR_LD_WRITING
+//     Complete when NexeWriteDidOpen is invoked.
 // PREPARE_PEXE_FOR_STREAMING
 //     Complete when RunTranslate is invoked.
 // START_LD_AND_LLC_SUBPROCESS_AND_INITIATE_TRANSLATION
 //     Complete when RunTranslate returns.
 // TRANSLATION_COMPLETE
 //     Complete when TranslateFinished is invoked.
-//
-// It should be noted that at the moment we are not properly freeing the
-// PPAPI resources used for the temporary files used in translation. Until
-// that is fixed, (4) and (5) should be done in that order.
-// TODO(sehr): Fix freeing of temporary files.
+// CLOSE_OBJECT_FILE
+//     Complete when ObjectFileWasClosed is invoked.
+// DELETE_OBJECT_FILE
+//     Complete when ObjectFileWasDeleted is invoked.
+// CLOSE_NEXE_FILE
+//     Complete when NexeFileWasClosed is invoked.
+// RENAME_NEXE_FILE
+//     Complete when NexeFileWasRenamed is invoked.
+// OPEN_NEXE_FOR_SEL_LDR
+//     Complete when NexeReadDidOpen is invoked.
 class PnaclCoordinator {
  public:
   virtual ~PnaclCoordinator();
@@ -213,10 +236,28 @@ class PnaclCoordinator {
   // They are invoked from ResourcesDidLoad and proceed in declaration order.
   // Invoked when the temporary file system is successfully opened in PPAPI.
   void FileSystemDidOpen(int32_t pp_error);
-  // Invoked when the obj_file_ temporary file I/O pair is created.
-  void ObjectPairDidOpen(int32_t pp_error);
-  // Invoked when the nexe_file_ temporary file I/O pair is created.
-  void NexePairDidOpen(int32_t pp_error);
+  // Invoked after the PNaCl temporary directory was opened for querying.
+  void DirectoryWasOpened(int32_t pp_error);
+  // Invoked after the PNaCl temporary directory was queried.
+  void DirectoryWasQueried(int32_t pp_error);
+  // Invoked after we are sure the PNaCl temporary directory exists.
+  void DirectoryWasCreated(int32_t pp_error);
+  // Invoked when the write descriptor for obj_file_ is created.
+  void ObjectWriteDidOpen(int32_t pp_error);
+  // Invoked when the read descriptor for obj_file_ is created.
+  void ObjectReadDidOpen(int32_t pp_error);
+  // Invoked when the read descriptor for nexe_file_ is created.
+  void NexeWriteDidOpen(int32_t pp_error);
+  // Invoked when the descriptors for obj_file_ have been closed.
+  void ObjectFileWasClosed(int32_t pp_error);
+  // Invoked when the obj_file_ temporary has been deleted.
+  void ObjectFileWasDeleted(int32_t pp_error);
+  // Invoked when the descriptors for nexe_file_ have been closed.
+  void NexeFileWasClosed(int32_t pp_error);
+  // Invoked when the nexe_file_ temporary has been renamed to the nexe name.
+  void NexeFileWasRenamed(int32_t pp_error);
+  // Invoked when the read descriptor for nexe_file_ is created.
+  void NexeReadDidOpen(int32_t pp_error);
 
   // Once llc and ld nexes have been loaded and the two temporary files have
   // been created, this starts the translation.  Translation starts two
@@ -271,16 +312,21 @@ class PnaclCoordinator {
   // An auxiliary class that manages downloaded resources (llc and ld nexes).
   nacl::scoped_ptr<PnaclResources> resources_;
 
+  // State used for querying the temporary directory.
+  nacl::scoped_ptr<pp::FileRef> dir_ref_;
+  nacl::scoped_ptr<pp::FileIO> dir_io_;
+  PP_FileInfo dir_info_;
+
   // The URL for the pexe file.
   nacl::string pexe_url_;
   // Borrowed reference which must outlive the thread.
   nacl::scoped_ptr<nacl::DescWrapper> pexe_wrapper_;
   // Object file, produced by the translator and consumed by the linker.
-  nacl::scoped_ptr<PnaclFileDescPair> obj_file_;
+  nacl::scoped_ptr<LocalTempFile> obj_file_;
   // Translated nexe file, produced by the linker and consumed by sel_ldr.
-  nacl::scoped_ptr<PnaclFileDescPair> nexe_file_;
+  nacl::scoped_ptr<LocalTempFile> nexe_file_;
   // Callbacks to run when tasks or completed or an error has occurred.
-  pp::CompletionCallback translate_done_cb_;
+  pp::CompletionCallback report_translate_finished_;
 
   // Used to report information when errors (PPAPI or otherwise) are reported.
   ErrorInfo error_info_;

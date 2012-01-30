@@ -633,15 +633,9 @@ void Plugin::ShutDownSubprocesses() {
   PLUGIN_PRINTF(("Plugin::ShutDownSubprocesses (%s)\n",
                  main_subprocess_.detailed_description().c_str()));
 
-  // Shutdown service runtime. This must be done before all other calls so
+  // Shut down service runtime. This must be done before all other calls so
   // they don't block forever when waiting for the upcall thread to exit.
   main_subprocess_.Shutdown();
-  for (size_t i = 0; i < nacl_subprocesses_.size(); ++i) {
-    PLUGIN_PRINTF(("Plugin::ShutDownSubprocesses (%s)\n",
-                   nacl_subprocesses_[i]->detailed_description().c_str()));
-    delete nacl_subprocesses_[i];
-  }
-  nacl_subprocesses_.clear();
 
   PLUGIN_PRINTF(("Plugin::ShutDownSubprocess (this=%p, return)\n",
                  static_cast<void*>(this)));
@@ -732,8 +726,8 @@ bool Plugin::LoadNaClModule(nacl::DescWrapper* wrapper,
   // associated listener threads do not go unjoined because if they
   // outlive the Plugin object, they will not be memory safe.
   ShutDownSubprocesses();
-  if (!(LoadNaClModuleCommon(wrapper, &main_subprocess_, manifest_.get(),
-                             true, error_info, init_done_cb, crash_cb))) {
+  if (!LoadNaClModuleCommon(wrapper, &main_subprocess_, manifest_.get(),
+                            true, error_info, init_done_cb, crash_cb)) {
     return false;
   }
   PLUGIN_PRINTF(("Plugin::LoadNaClModule (%s)\n",
@@ -751,16 +745,15 @@ bool Plugin::LoadNaClModuleContinuationIntern(ErrorInfo* error_info) {
   return true;
 }
 
-NaClSubprocessId Plugin::LoadHelperNaClModule(nacl::DescWrapper* wrapper,
-                                              const Manifest* manifest,
-                                              ErrorInfo* error_info) {
-  NaClSubprocessId next_id = next_nacl_subprocess_id();
+NaClSubprocess* Plugin::LoadHelperNaClModule(nacl::DescWrapper* wrapper,
+                                             const Manifest* manifest,
+                                             ErrorInfo* error_info) {
   nacl::scoped_ptr<NaClSubprocess> nacl_subprocess(
-      new(std::nothrow) NaClSubprocess(next_id, NULL, NULL));
+      new NaClSubprocess("helper module", browser_interface_, NULL, NULL));
   if (NULL == nacl_subprocess.get()) {
     error_info->SetReport(ERROR_SEL_LDR_INIT,
                           "unable to allocate helper subprocess.");
-    return kInvalidNaClSubprocessId;
+    return NULL;
   }
 
   // Do not report UMA stats for translator-related nexes.
@@ -782,14 +775,13 @@ NaClSubprocessId Plugin::LoadHelperNaClModule(nacl::DescWrapper* wrapper,
         // manifest is a per-plugin-instance object, not a per
         // NaClSubprocess object.
         && StartSrpcServicesCommon(nacl_subprocess.get(), error_info))) {
-    return kInvalidNaClSubprocessId;
+    return NULL;
   }
 
   PLUGIN_PRINTF(("Plugin::LoadHelperNaClModule (%s)\n",
                  nacl_subprocess.get()->detailed_description().c_str()));
 
-  nacl_subprocesses_.push_back(nacl_subprocess.release());
-  return next_id;
+  return nacl_subprocess.release();
 }
 
 char* Plugin::LookupArgument(const char* key) {
@@ -998,7 +990,7 @@ Plugin::Plugin(PP_Instance pp_instance)
       argc_(-1),
       argn_(NULL),
       argv_(NULL),
-      main_subprocess_(kMainSubprocessId, NULL, NULL),
+      main_subprocess_("main subprocess", NULL, NULL, NULL),
       nacl_ready_state_(UNSENT),
       nexe_error_reported_(false),
       wrapper_factory_(NULL),
@@ -1041,7 +1033,7 @@ Plugin::~Plugin() {
   ScriptableHandle* scriptable_handle_ = scriptable_handle();
   ScriptableHandle::Unref(&scriptable_handle_);
 
-  // ShutDownSubprocesses shuts down the subprocesses, which shuts
+  // ShutDownSubprocesses shuts down the main subprocess, which shuts
   // down the main ServiceRuntime object, which kills the subprocess.
   // As a side effect of the subprocess being killed, the reverse
   // services thread(s) will get EOF on the reverse channel(s), and

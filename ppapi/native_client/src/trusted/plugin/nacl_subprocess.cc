@@ -4,6 +4,10 @@
 
 #include "native_client/src/trusted/plugin/nacl_subprocess.h"
 
+#include <stdarg.h>
+
+#include "native_client/src/trusted/plugin/browser_interface.h"
+#include "native_client/src/trusted/plugin/method_map.h"
 #include "native_client/src/trusted/plugin/plugin_error.h"
 #include "native_client/src/trusted/plugin/scriptable_handle.h"
 #include "native_client/src/trusted/plugin/service_runtime.h"
@@ -11,13 +15,7 @@
 namespace plugin {
 
 nacl::string NaClSubprocess::description() const {
-  nacl::stringstream ss;
-  if (assigned_id_ == kMainSubprocessId) {
-    ss << "main subprocess";
-  } else {
-    ss << "helper subprocess #" << assigned_id_;
-  }
-  return ss.str();
+  return description_;
 }
 
 nacl::string NaClSubprocess::detailed_description() const {
@@ -71,6 +69,86 @@ bool NaClSubprocess::Invoke(uintptr_t method_id, SrpcParams* params) const {
     return false;
   }
   return srpc_client_->Invoke(method_id, params);
+}
+
+bool NaClSubprocess::InvokeSrpcMethod(const nacl::string& method_name,
+                                      const nacl::string& input_signature,
+                                      SrpcParams* params,
+                                      ...) {
+  va_list vl;
+  va_start(vl, params);
+  bool result = VInvokeSrpcMethod(method_name, input_signature, params, vl);
+  va_end(vl);
+  return result;
+}
+
+bool NaClSubprocess::VInvokeSrpcMethod(const nacl::string& method_name,
+                                       const nacl::string& input_signature,
+                                       SrpcParams* params,
+                                       va_list vl) {
+  uintptr_t method_ident;
+  if (!SetupSrpcInvocation(method_name, params, &method_ident)) {
+    return false;
+  }
+
+  // Set up inputs.
+  for (size_t i = 0; i < input_signature.length(); ++i) {
+    char c = input_signature[i];
+    // Only handle the limited number of SRPC types used for PNaCl.
+    // Add more as needed.
+    switch (c) {
+      default:
+        PLUGIN_PRINTF(("PnaclSrpcLib::InvokeSrpcMethod unhandled type: %c\n",
+                       c));
+        return false;
+      case NACL_SRPC_ARG_TYPE_BOOL: {
+        int input = va_arg(vl, int);
+        params->ins()[i]->u.bval = input;
+        break;
+      }
+      case NACL_SRPC_ARG_TYPE_DOUBLE: {
+        double input = va_arg(vl, double);
+        params->ins()[i]->u.dval = input;
+        break;
+      }
+      case NACL_SRPC_ARG_TYPE_CHAR_ARRAY: {
+        // SrpcParam's destructor *should* free the dup'ed string.
+        const char* orig_str = va_arg(vl, const char*);
+        char* input = strdup(orig_str);
+        params->ins()[i]->arrays.str = input;
+        break;
+      }
+      case NACL_SRPC_ARG_TYPE_HANDLE: {
+        NaClSrpcImcDescType input = va_arg(vl, NaClSrpcImcDescType);
+        params->ins()[i]->u.hval = input;
+        break;
+      }
+      case NACL_SRPC_ARG_TYPE_INT: {
+        int32_t input = va_arg(vl, int32_t);
+        params->ins()[i]->u.ival = input;
+        break;
+      }
+      case NACL_SRPC_ARG_TYPE_LONG: {
+        int64_t input = va_arg(vl, int64_t);
+        params->ins()[i]->u.lval = input;
+        break;
+      }
+    }
+  }
+
+  return Invoke(method_ident, params);
+}
+
+bool NaClSubprocess::SetupSrpcInvocation(const nacl::string& method_name,
+                                         SrpcParams* params,
+                                         uintptr_t* method_ident) {
+  *method_ident = browser_interface_->StringToIdentifier(method_name);
+  if (!HasMethod(*method_ident)) {
+    PLUGIN_PRINTF(("SetupSrpcInvocation (no %s method found)\n",
+                   method_name.c_str()));
+    return false;
+  }
+  return InitParams(*method_ident, params);
 }
 
 }  // namespace plugin
