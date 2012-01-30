@@ -54,6 +54,7 @@ void PeerConnectionHandler::initialize(
   native_peer_connection_ = dependency_factory_->CreatePeerConnection(
       UTF16ToUTF8(server_configuration),
       this);
+  CHECK(native_peer_connection_);
 }
 
 void PeerConnectionHandler::produceInitialOffer(
