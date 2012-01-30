@@ -16,7 +16,8 @@ html[dir="rtl"] body.uber-frame {
  * isn't necessary. */
 body.uber-frame #extension-settings.page,
 body.uber-frame #mainview-content .page,
-body.uber-frame .subpage-sheet-container .page {
+body.uber-frame .subpage-sheet-container .page,
+body.uber-frame > .page {
   padding-top: 55px;
 }
 
@@ -55,7 +56,6 @@ body.uber-frame header * {
 
 body.uber-frame header > h1 {
   border-bottom: 1px solid #f7f7f7;
-  line-height: 1;
   margin: 0;
-  padding: 18px 0;
+  padding: 18px 0 13px;
 }
