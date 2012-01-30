@@ -31,11 +31,6 @@
           '<(grit_base_out_dir)/ui_strings',
         ],
       },
-      'conditions': [
-        ['OS=="win"', {
-          'dependencies': ['../../../build/win/system.gyp:cygwin'],
-        }],
-      ],
     },
   ],
   'conditions': [
