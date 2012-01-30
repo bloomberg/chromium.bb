@@ -407,13 +407,15 @@
 <a name="H2-0"></a><h2>Default Policy Restrictions</h2>
 
 <p>
-  By default, Chrome defines a content security policy of:
+  For packages using <a href="manifest.html#manifest_version">
+  <code>manifest_version</code></a> 2, Chrome defines a content security policy
+  of:
 </p>
 
 <pre>script-src 'self'; object-src 'self'</pre>
 
 <p>
-  This policy limits extensions in two ways:
+  This policy adds security by limiting extensions and applications in two ways:
 </p>
 
 <a name="H3-1"></a><h3>Inline JavaScript will not be executed</h3>
