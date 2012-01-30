@@ -77,6 +77,7 @@ fun! CrCompileFile()
   let l:oldmakepgr = &makeprg
   python set_makepgr_to_single_file_ninja()
   silent make | cwindow
+  redraw!
   let &makeprg = l:oldmakepgr
 endfun
 
