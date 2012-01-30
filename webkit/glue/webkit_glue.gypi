@@ -518,9 +518,6 @@
           'include_dirs': [
             '<(DEPTH)/third_party/wtl/include',
           ],
-          'dependencies': [
-            '<(DEPTH)/build/win/system.gyp:cygwin',
-          ],
           'sources!': [
             'plugins/plugin_stubs.cc',
           ],
