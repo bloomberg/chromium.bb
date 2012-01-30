@@ -1506,8 +1506,15 @@ WebScreenInfo RenderWidget::screenInfo() {
   WebScreenInfo results;
   if (host_window_)
     Send(new ViewHostMsg_GetScreenInfo(routing_id_, host_window_, &results));
-  else
+  else {
     DLOG(WARNING) << "Unable to retrieve screen information, no host window";
+#if defined(USE_AURA)
+    // TODO(backer): Remove this a temporary workaround for crbug.com/111929
+    // once we get a proper fix.
+    results.availableRect.width = 1;
+    results.availableRect.height = 1;
+#endif
+  }
   return results;
 }
 
