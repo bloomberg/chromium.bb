@@ -244,6 +244,11 @@
           # removed when we change to that.  (This is also why we don't
           # bother fixing all these cases today.)
           '-Wno-unnamed-type-template-args',
+          # Allow 'default' label in switch even when all enumeration
+          # cases have been covered.
+          '-Wno-covered-switch-default',
+          # Allow C++11 extensions (for "override")
+          '-Wno-c++11-extensions',
         ],
         'cflags!': [
           # Clang doesn't seem to know know this flag.
@@ -666,7 +671,7 @@
         'msvs_cygwin_dirs': ['../third_party/cygwin'],
         # TODO(bsy) remove 4355 once cross-repo
         # NACL_ALLOW_THIS_IN_INITIALIZER_LIST changes go in.
-        'msvs_disabled_warnings': [4355, 4396, 4503, 4819],
+        'msvs_disabled_warnings': [4355, 4396, 4503, 4800, 4819],
         'msvs_settings': {
           'VCCLCompilerTool': {
             'MinimalRebuild': 'false',
