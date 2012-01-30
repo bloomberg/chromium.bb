@@ -1,17 +1,14 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/command_line.h"
 #include "base/memory/scoped_vector.h"
 #include "base/message_loop.h"
 #include "base/time.h"
 #include "chrome/browser/prerender/prerender_contents.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_origin.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/testing_browser_process.h"
-#include "chrome/test/base/testing_profile.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/test/test_browser_thread.h"
 #include "googleurl/src/gurl.h"
@@ -28,11 +25,11 @@ class DummyPrerenderContents : public PrerenderContents {
   DummyPrerenderContents(PrerenderManager* prerender_manager,
                          PrerenderTracker* prerender_tracker,
                          const GURL& url,
-                         Origin origin,
                          FinalStatus expected_final_status)
       : PrerenderContents(prerender_manager, prerender_tracker,
                           NULL, url, content::Referrer(),
-                          origin, PrerenderManager::kNoExperiment),
+                          ORIGIN_LINK_REL_PRERENDER,
+                          PrerenderManager::kNoExperiment),
         has_started_(false),
         expected_final_status_(expected_final_status) {
   }
@@ -69,7 +66,7 @@ class DummyPrerenderContents : public PrerenderContents {
 class TestPrerenderManager : public PrerenderManager {
  public:
   explicit TestPrerenderManager(PrerenderTracker* prerender_tracker)
-      : PrerenderManager(&profile_, prerender_tracker),
+      : PrerenderManager(NULL, prerender_tracker),
         time_(base::Time::Now()),
         time_ticks_(base::TimeTicks::Now()),
         next_prerender_contents_(NULL),
@@ -107,19 +104,7 @@ class TestPrerenderManager : public PrerenderManager {
       FinalStatus expected_final_status) {
     DummyPrerenderContents* prerender_contents =
         new DummyPrerenderContents(this, prerender_tracker_, url,
-                                   ORIGIN_LINK_REL_PRERENDER,
                                    expected_final_status);
-    SetNextPrerenderContents(prerender_contents);
-    return prerender_contents;
-  }
-
-  DummyPrerenderContents* CreateNextPrerenderContents(
-      const GURL& url,
-      Origin origin,
-      FinalStatus expected_final_status) {
-    DummyPrerenderContents* prerender_contents =
-        new DummyPrerenderContents(this, prerender_tracker_, url,
-                                   origin, expected_final_status);
     SetNextPrerenderContents(prerender_contents);
     return prerender_contents;
   }
@@ -130,7 +115,6 @@ class TestPrerenderManager : public PrerenderManager {
       FinalStatus expected_final_status) {
     DummyPrerenderContents* prerender_contents =
         new DummyPrerenderContents(this, prerender_tracker_, url,
-                                   ORIGIN_LINK_REL_PRERENDER,
                                    expected_final_status);
     for (std::vector<GURL>::const_iterator it = alias_urls.begin();
          it != alias_urls.end();
@@ -178,8 +162,6 @@ class TestPrerenderManager : public PrerenderManager {
       Origin origin,
       uint8 experiment_id) OVERRIDE {
     DCHECK(next_prerender_contents_.get());
-    DCHECK_EQ(next_prerender_contents_->prerender_url(), url);
-    DCHECK_EQ(next_prerender_contents_->origin(), origin);
     return next_prerender_contents_.release();
   }
 
@@ -191,8 +173,6 @@ class TestPrerenderManager : public PrerenderManager {
   ScopedVector<PrerenderContents> used_prerender_contents_;
 
   PrerenderTracker* prerender_tracker_;
-
-  TestingProfile profile_;
 };
 
 class RestorePrerenderMode {
@@ -212,10 +192,6 @@ class PrerenderManagerTest : public testing::Test {
   PrerenderManagerTest() : ui_thread_(BrowserThread::UI, &message_loop_),
                            prerender_manager_(
                                new TestPrerenderManager(prerender_tracker())) {
-    // Enable omnibox prerendering.
-    CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-        switches::kPrerenderFromOmnibox,
-        switches::kPrerenderFromOmniboxSwitchValueEnabled);
   }
 
   TestPrerenderManager* prerender_manager() {
@@ -551,48 +527,6 @@ TEST_F(PrerenderManagerTest, ClearTest) {
   prerender_manager()->ClearData(PrerenderManager::CLEAR_PRERENDER_CONTENTS);
   DummyPrerenderContents* null = NULL;
   EXPECT_EQ(null, prerender_manager()->GetEntry(url));
-}
-
-// Make sure canceling works as expected.
-TEST_F(PrerenderManagerTest, CancelAllTest) {
-  const DummyPrerenderContents* null = NULL;
-  GURL url("http://www.google.com/");
-  DummyPrerenderContents* prerender_contents =
-      prerender_manager()->CreateNextPrerenderContents(
-          url, FINAL_STATUS_CANCELLED);
-  EXPECT_TRUE(prerender_manager()->AddSimplePrerender(url));
-  EXPECT_TRUE(prerender_contents->has_started());
-  prerender_manager()->CancelAllPrerenders();
-  EXPECT_EQ(null, prerender_manager()->GetEntry(url));
-}
-
-// Make sure canceling for omnibox works as expected.
-TEST_F(PrerenderManagerTest, CancelOmniboxTest) {
-  const DummyPrerenderContents* null = NULL;
-  // Check canceling removes the Omnibox url.
-  {
-    GURL url("http://www.google.com/");
-    DummyPrerenderContents* prerender_contents =
-        prerender_manager()->CreateNextPrerenderContents(
-            url, ORIGIN_OMNIBOX, FINAL_STATUS_CANCELLED);
-    EXPECT_TRUE(prerender_manager()->AddPrerenderFromOmnibox(url, NULL));
-    EXPECT_TRUE(prerender_contents->has_started());
-    prerender_manager()->CancelOmniboxPrerenders();
-    EXPECT_EQ(null, prerender_manager()->GetEntry(url));
-  }
-
-  // Check canceling does not remove a Link url.
-  {
-    GURL url("http://www.google.com/");
-    DummyPrerenderContents* prerender_contents =
-        prerender_manager()->CreateNextPrerenderContents(
-            url, ORIGIN_LINK_REL_PRERENDER, FINAL_STATUS_CANCELLED);
-    EXPECT_TRUE(prerender_manager()->AddSimplePrerender(url));
-    EXPECT_TRUE(prerender_contents->has_started());
-    prerender_manager()->CancelOmniboxPrerenders();
-    EXPECT_NE(null, prerender_manager()->GetEntry(url));
-  }
-
 }
 
 }  // namespace prerender
