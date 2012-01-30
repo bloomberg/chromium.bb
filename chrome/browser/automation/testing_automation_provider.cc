@@ -1380,7 +1380,7 @@ void TestingAutomationProvider::GetShelfVisibility(int handle, bool* visible) {
   if (browser_tracker_->ContainsHandle(handle)) {
     Browser* browser = browser_tracker_->GetResource(handle);
     if (browser) {
-#if defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS) && !defined(USE_AURA)
       *visible = ActiveDownloadsUI::GetPopup();
 #else
       *visible = browser->window()->IsDownloadShelfVisible();
