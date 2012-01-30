@@ -14,11 +14,13 @@
 #import "chrome/browser/ui/cocoa/history_overlay_controller.h"
 #import "chrome/browser/ui/cocoa/view_id_util.h"
 #include "chrome/common/spellcheck_messages.h"
+#include "chrome/common/url_constants.h"
 #include "content/browser/mac/closure_blocks_leopard_compat.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_widget_host.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
 #include "content/public/browser/render_view_host_observer.h"
+#include "content/public/browser/web_contents.h"
 
 // Declare things that are part of the 10.7 SDK.
 #if !defined(MAC_OS_X_VERSION_10_7) || \
@@ -136,7 +138,7 @@ class SpellCheckRenderViewObserver : public content::RenderViewHostObserver {
 }
 
 - (void)gotUnhandledWheelEvent {
-  gotUnhandledWheelEvent_ = true;
+  gotUnhandledWheelEvent_ = YES;
 }
 
 - (void)scrollOffsetPinnedToLeft:(BOOL)left toRight:(BOOL)right {
@@ -160,7 +162,7 @@ class SpellCheckRenderViewObserver : public content::RenderViewHostObserver {
   // swiping if they come back unhandled.
   if ([theEvent phase] == NSEventPhaseBegan) {
     totalScrollDelta_ = NSZeroSize;
-    gotUnhandledWheelEvent_ = false;
+    gotUnhandledWheelEvent_ = NO;
   }
 
   if (!render_widget_host_ || !render_widget_host_->IsRenderView())
@@ -169,6 +171,20 @@ class SpellCheckRenderViewObserver : public content::RenderViewHostObserver {
       static_cast<RenderViewHost*>(render_widget_host_));
   if (isDevtoolsRwhv)
     return NO;
+
+  // TODO(thakis): This is wrong, as it will navigate the frontmost browser
+  // for swipe events on background windows. It also navigates the frontmost
+  // browser for swipes on extensions popups. And it's a dependency problem,
+  // too. http://crbug.com/102541
+  Browser* browser = BrowserList::GetLastActive();
+
+  if (browser && [NSEvent isSwipeTrackingFromScrollEventsEnabled]) {
+    content::WebContents* contents = browser->GetSelectedWebContents();
+    if (contents && contents->GetURL() == GURL(chrome::kChromeUINewTabURL)) {
+      // Always do history navigation on the NTP if it's enabled.
+      gotUnhandledWheelEvent_ = YES;
+    }
+  }
 
   if (gotUnhandledWheelEvent_ &&
       [NSEvent isSwipeTrackingFromScrollEventsEnabled] &&
@@ -182,7 +198,7 @@ class SpellCheckRenderViewObserver : public content::RenderViewHostObserver {
     bool isRightScroll = [theEvent scrollingDeltaX] < 0;
     bool goForward = isRightScroll;
     bool canGoBack = false, canGoForward = false;
-    if (Browser* browser = BrowserList::GetLastActive()) {
+    if (browser) {
       canGoBack = browser->CanGoBack();
       canGoForward = browser->CanGoForward();
     }
@@ -263,7 +279,7 @@ class SpellCheckRenderViewObserver : public content::RenderViewHostObserver {
       return YES;
     }
   }
-  return NO;
+  return gotUnhandledWheelEvent_;
 }
 
 - (BOOL)validateUserInterfaceItem:(id<NSValidatedUserInterfaceItem>)item

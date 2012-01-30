@@ -1493,8 +1493,7 @@ bool Browser::IsClosingPermitted() {
 }
 
 bool Browser::CanGoBack() const {
-  return GetSelectedTabContentsWrapper()->
-      web_contents()->GetController().CanGoBack();
+  return GetSelectedWebContents()->GetController().CanGoBack();
 }
 
 void Browser::GoBack(WindowOpenDisposition disposition) {
@@ -1513,8 +1512,7 @@ void Browser::GoBack(WindowOpenDisposition disposition) {
 }
 
 bool Browser::CanGoForward() const {
-  return GetSelectedTabContentsWrapper()->
-      web_contents()->GetController().CanGoForward();
+  return GetSelectedWebContents()->GetController().CanGoForward();
 }
 
 void Browser::GoForward(WindowOpenDisposition disposition) {
