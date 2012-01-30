@@ -250,7 +250,10 @@ if test "x$INTEL" != "xno" -o "x$RADEON" != "xno"; then
 
     else
            if test "x$INTEL" != "xno"; then
-                   INTEL=yes
+                   case $host_os in
+                           i?86-*|x86_64-*) INTEL=yes ;;
+                           *) INTEL=no ;;
+                   esac
            fi
            if test "x$RADEON" != "xno"; then
                    RADEON=yes
