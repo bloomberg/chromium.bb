@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -50,6 +50,7 @@ static int DoFilter(AVBitStreamFilterContext* bsfc,
 
 static void DoClose(AVBitStreamFilterContext* bsfc) {}
 
+static bool g_stream_filter_registered = false;
 static AVBitStreamFilter g_stream_filter = {
   kTestFilterName,
   0, // Private Data Size
@@ -73,8 +74,10 @@ class BitstreamConverterTest : public testing::Test {
 
   static void SetUpTestCase() {
     // Register g_stream_filter if it isn't already registered.
-    if (!g_stream_filter.next)
+    if (!g_stream_filter_registered) {
       av_register_bitstream_filter(&g_stream_filter);
+      g_stream_filter_registered = true;
+    }
   }
 
   AVCodecContext test_stream_context_;
