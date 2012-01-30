@@ -106,6 +106,13 @@ class desktopui_PyAutoPerfTests(chrome_test.ChromeTestBase):
         utils.system(login_cmd)
 
         # Run the PyAuto performance tests.
+        print 'About to run the pyauto performance tests.'
+        print 'Note: you will see two timestamps for each logging message.'
+        print '      The outer timestamp occurs when the autotest dumps the '
+        print '      pyauto output, which only occurs after all tests are '
+        print '      complete. The inner timestamp is the time at which the '
+        print '      message was logged by pyauto while the test was actually '
+        print '      running.'
         functional_cmd = cros_ui.xcommand_as(
             '%s/chrome_test/test_src/chrome/test/functional/'
             'pyauto_functional.py --suite=%s %s' % (
