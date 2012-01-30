@@ -26,7 +26,13 @@ const size_t kInvalidPanelIndex = static_cast<size_t>(-1);
 const double kPanelDefaultWidthToHeightRatio = 1.62;  // golden ratio
 
 // Maxmium width of a panel is based on a factor of the entire panel strip.
+#if defined(OS_CHROMEOS)
+// ChromeOS device screens are relatively small and limiting the width
+// interferes with some apps (e.g. http://crbug.com/111121).
+const double kPanelMaxWidthFactor = 0.80;
+#else
 const double kPanelMaxWidthFactor = 0.35;
+#endif
 
 // New panels that cannot fit in the panel strip are moved to overflow
 // after a brief delay.
