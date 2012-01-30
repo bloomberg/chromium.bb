@@ -35,8 +35,6 @@ function FileManager(dialogDom) {
   this.butterTimer_ = null;
   this.currentButter_ = null;
 
-  // True if we should filter out files that start with a dot.
-  this.filterFiles_ = true;
   this.subscribedOnDirectoryChanges_ = false;
 
   this.commands_ = {};
@@ -3258,8 +3256,8 @@ FileManager.prototype = {
 
       case 190:  // Ctrl-. => Toggle filter files.
         if (event.ctrlKey) {
-          this.filterFiles_ = !this.filterFiles_;
-          this.directoryModel_.rescan();
+          var dm = this.directoryModel_;
+          dm.filterHidden = !dm.filterHidden;
         }
         break;
     }

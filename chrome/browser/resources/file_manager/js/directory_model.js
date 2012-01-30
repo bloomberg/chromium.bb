@@ -34,6 +34,9 @@ function DirectoryModel(root, singleSelection) {
   this.rootsListSelection_ = new cr.ui.ListSingleSelectionModel();
   this.rootsListSelection_.addEventListener(
       'change', this.onRootsSelectionChanged_.bind(this));
+
+  // True if we should filter out files that start with a dot.
+  this.filterHidden_ = true;
 }
 
 /**
@@ -122,6 +125,17 @@ DirectoryModel.prototype = {
     return path == '/' ||
            path == '/' + DirectoryModel.REMOVABLE_DIRECTORY ||
            path == '/' + DirectoryModel.ARCHIVE_DIRECTORY;
+  },
+
+  get filterHidden() {
+    return this.filterHidden_;
+  },
+
+  set filterHidden(value) {
+    if (this.filterHidden_ != value) {
+      this.filterHidden_ = value;
+      this.rescan();
+    }
   },
 
   /**
@@ -257,7 +271,7 @@ DirectoryModel.prototype = {
         onSuccess,
         onFailure,
         this.prefetchCacheForSorting_.bind(this),
-        this.filterFiles_);
+        this.filterHidden_);
   },
 
   replaceFileList_: function(entries) {
@@ -814,7 +828,7 @@ DirectoryModel.Scanner.prototype = {
     // Hide files that start with a dot ('.').
     // TODO(rginda): User should be able to override this. Support for other
     // commonly hidden patterns might be nice too.
-    if (this.filterFiles_) {
+    if (this.filterHidden_) {
       spliceArgs = spliceArgs.filter(function(e) {
         return e.name.substr(0, 1) != '.';
       });
