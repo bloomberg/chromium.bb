@@ -437,14 +437,14 @@ BuildAndInstallQemu() {
   local tmpdir="${TMP}/qemu.nacl"
   # We have not ported out local patch yet to /qemu-1.0-rc1
   #local patch=$(readlink -f tools/patches/qemu-0.10.1.patch_arm)
-  local tarball=$(readlink -f ../third_party/qemu/qemu-1.0-rc1.tar.gz)
+  local tarball=$(readlink -f ../third_party/qemu/qemu-1.0.tar.gz)
   Banner "Building qemu in ${tmpdir}"
   rm -rf ${tmpdir}
   mkdir ${tmpdir}
   cd ${tmpdir}
   SubBanner "Untaring"
   tar zxf  ${tarball}
-  cd qemu-1.0rc1
+  cd qemu-1.0
   # We have not ported out local patch yet to /qemu-1.0-rc1
   #SubBanner "Patching"
   #patch -p1 < ${patch}
