@@ -704,7 +704,7 @@ TEST_PPAPI_OUT_OF_PROCESS(Flash_GetLocalTimeZoneOffset)
 TEST_PPAPI_OUT_OF_PROCESS(Flash_GetCommandLineArgs)
 
 // Intermittently fails on OSX. http://crbug.com/111636
-#if defined(OS_MAXOSX)
+#if defined(OS_MACOSX)
 #define MAYBE_WebSocket_CcInterfaces FLAKY_WebSocket_CcInterfaces
 #else
 #define MAYBE_WebSocket_CcInterfaces WebSocket_CcInterfaces
