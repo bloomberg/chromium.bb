@@ -12,6 +12,7 @@
 #include "ui/aura/client/visibility_client.h"
 #include "ui/aura/event.h"
 #include "ui/aura/focus_manager.h"
+#include "ui/aura/layout_manager.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/root_window_observer.h"
 #include "ui/aura/test/aura_test_base.h"
@@ -1339,6 +1340,126 @@ TEST_F(WindowTest, MouseEventsOnWindowChange) {
   w11.reset();
   RunAllPendingInMessageLoop();
   EXPECT_EQ("1 1 0", d1.GetMouseCountsAndReset());
+}
+
+class StackingMadrigalLayoutManager : public LayoutManager {
+ public:
+  StackingMadrigalLayoutManager() {
+    RootWindow::GetInstance()->SetLayoutManager(this);
+  }
+  virtual ~StackingMadrigalLayoutManager() {
+  }
+
+ private:
+  // Overridden from LayoutManager:
+  virtual void OnWindowResized() OVERRIDE {}
+  virtual void OnWindowAddedToLayout(Window* child) OVERRIDE {}
+  virtual void OnWillRemoveWindowFromLayout(Window* child) OVERRIDE {}
+  virtual void OnChildWindowVisibilityChanged(Window* child,
+                                              bool visible) OVERRIDE {
+    Window::Windows::const_iterator it =
+        RootWindow::GetInstance()->children().begin();
+    Window* last_window = NULL;
+    for (; it != RootWindow::GetInstance()->children().end(); ++it) {
+      if (*it == child && last_window) {
+        if (!visible)
+          RootWindow::GetInstance()->StackChildAbove(last_window, *it);
+        else
+          RootWindow::GetInstance()->StackChildAbove(*it, last_window);
+        break;
+      }
+      last_window = *it;
+    }
+  }
+  virtual void SetChildBounds(Window* child,
+                              const gfx::Rect& requested_bounds) OVERRIDE {
+    SetChildBoundsDirect(child, requested_bounds);
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(StackingMadrigalLayoutManager);
+};
+
+class StackingMadrigalVisibilityClient : public client::VisibilityClient {
+ public:
+  StackingMadrigalVisibilityClient() : ignored_window_(NULL) {
+    client::SetVisibilityClient(this);
+  }
+  virtual ~StackingMadrigalVisibilityClient() {
+    client::SetVisibilityClient(NULL);
+  }
+
+  void set_ignored_window(Window* ignored_window) {
+    ignored_window_ = ignored_window;
+  }
+
+ private:
+  // Overridden from client::VisibilityClient:
+  virtual void UpdateLayerVisibility(Window* window, bool visible) OVERRIDE {
+    if (!visible) {
+      if (window == ignored_window_)
+        window->layer()->set_delegate(NULL);
+      else
+        window->layer()->SetVisible(visible);
+    } else {
+      window->layer()->SetVisible(visible);
+    }
+  }
+
+  Window* ignored_window_;
+
+  DISALLOW_COPY_AND_ASSIGN(StackingMadrigalVisibilityClient);
+};
+
+// This test attempts to reconstruct a circumstance that can happen when the
+// aura client attempts to manipulate the visibility and delegate of a layer
+// independent of window visibility.
+// A use case is where the client attempts to keep a window's visible onscreen
+// even after code has called Hide() on the window. The use case for this would
+// be that window hides are animated (e.g. the window fades out). To prevent
+// spurious updating the client code may also clear window's layer's delegate,
+// so that the window cannot attempt to paint or update it further. The window
+// uses the presence of a NULL layer delegate as a signal in stacking to note
+// that the window is being manipulated by such a use case and its stacking
+// should not be adjusted.
+// One issue that can arise when a window opens two transient children, and the
+// first is hidden. Subsequent attempts to activate the transient parent can
+// result in the transient parent being stacked above the second transient
+// child. A fix is made to Window::StackAbove to prevent this, and this test
+// verifies this fix.
+TEST_F(WindowTest, StackingMadrigal) {
+  new StackingMadrigalLayoutManager;
+  StackingMadrigalVisibilityClient visibility_client;
+
+  scoped_ptr<Window> window1(CreateTestWindowWithId(1, NULL));
+  scoped_ptr<Window> window11(CreateTransientChild(11, window1.get()));
+
+  visibility_client.set_ignored_window(window11.get());
+
+  window11->Show();
+  window11->Hide();
+
+  // As a transient, window11 should still be stacked above window1, even when
+  // hidden.
+  EXPECT_TRUE(WindowIsAbove(window11.get(), window1.get()));
+  EXPECT_TRUE(LayerIsAbove(window11.get(), window1.get()));
+
+  scoped_ptr<Window> window12(CreateTransientChild(12, window1.get()));
+  window12->Show();
+
+  EXPECT_TRUE(WindowIsAbove(window12.get(), window11.get()));
+  EXPECT_TRUE(LayerIsAbove(window12.get(), window11.get()));
+
+  // Prior to the NULL check in the transient restacking loop in
+  // Window::StackChildAbove() introduced with this change, attempting to stack
+  // window1 above window12 at this point would actually restack the layers
+  // resulting in window12's layer being below window1's layer (though the
+  // windows themselves would still be correctly stacked, so events would pass
+  // through.)
+  RootWindow::GetInstance()->StackChildAbove(window1.get(), window12.get());
+
+  // Both window12 and its layer should be stacked above window1.
+  EXPECT_TRUE(WindowIsAbove(window12.get(), window1.get()));
+  EXPECT_TRUE(LayerIsAbove(window12.get(), window1.get()));
 }
 
 }  // namespace test

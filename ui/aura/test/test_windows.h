@@ -31,6 +31,16 @@ Window* CreateTestWindowWithDelegateAndType(WindowDelegate* delegate,
                                             const gfx::Rect& bounds,
                                             Window* parent);
 
+// Creates a transient child window of |parent|.
+Window* CreateTransientChild(int id, Window* parent);
+
+// Returns true if |upper| is above |lower| in the window stacking order.
+bool WindowIsAbove(Window* upper, Window* lower);
+
+// Returns true if |upper|'s layer is above |lower|'s layer in the layer
+// stacking order.
+bool LayerIsAbove(Window* upper, Window* lower);
+
 }  // namespace test
 }  // namespace aura
 

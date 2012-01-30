@@ -247,6 +247,8 @@ void Window::StackChildAbove(Window* child, Window* other) {
   children_.erase(children_.begin() + child_i);
   children_.insert(children_.begin() + dest_i, child);
 
+  // See test WindowTest.StackingMadrigal for an explanation of this and the
+  // check below in the transient loop.
   if (other->layer()->delegate())
     layer()->StackAbove(child->layer(), other->layer());
 
@@ -258,7 +260,8 @@ void Window::StackChildAbove(Window* child, Window* other) {
     Window* transient_child = *i;
     if (transient_child->parent_ == this) {
       StackChildAbove(transient_child, last_transient);
-      last_transient = transient_child;
+      if (transient_child->layer()->delegate())
+        last_transient = transient_child;
     }
   }
 
