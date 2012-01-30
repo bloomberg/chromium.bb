@@ -131,6 +131,9 @@ void WebUILoginDisplayHost::LoadURL(const GURL& url) {
     views::Widget::InitParams params(
         views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
     params.bounds = background_bounds();
+#if defined(USE_AURA)
+    params.show_state = ui::SHOW_STATE_FULLSCREEN;
+#endif
 
     login_window_ = new views::Widget;
     login_window_->Init(params);

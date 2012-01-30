@@ -18,6 +18,7 @@
 #include "ash/shell_window_ids.h"
 #include "ash/tooltips/tooltip_controller.h"
 #include "ash/wm/activation_controller.h"
+#include "ash/wm/base_layout_manager.h"
 #include "ash/wm/compact_layout_manager.h"
 #include "ash/wm/compact_status_area_layout_manager.h"
 #include "ash/wm/dialog_frame_view.h"
@@ -112,6 +113,7 @@ void CreateSpecialContainers(aura::Window::Windows* containers) {
   // TODO(beng): Figure out if we can make this use
   // SystemModalContainerEventFilter instead of stops_event_propagation.
   aura::Window* lock_container = new aura::Window(NULL);
+  lock_container->SetLayoutManager(new internal::BaseLayoutManager);
   lock_container->set_stops_event_propagation(true);
   lock_container->set_id(internal::kShellWindowId_LockScreenContainer);
   containers->push_back(lock_container);
