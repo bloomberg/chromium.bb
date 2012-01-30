@@ -57,7 +57,6 @@ BluetoothOptionsHandler::~BluetoothOptionsHandler() {
 void BluetoothOptionsHandler::GetLocalizedValues(
     DictionaryValue* localized_strings) {
   DCHECK(localized_strings);
-
   localized_strings->SetString("bluetooth",
       l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_SECTION_TITLE_BLUETOOTH));
   localized_strings->SetString("disableBluetooth",
@@ -137,13 +136,13 @@ void BluetoothOptionsHandler::Initialize() {
   }
 
   web_ui()->CallJavascriptFunction(
-      "options.SystemOptions.showBluetoothSettings");
+      "options.AdvancedOptions.showBluetoothSettings");
 
   // TODO(kevers): Determine whether bluetooth adapter is powered.
   bool bluetooth_on = false;
   base::FundamentalValue checked(bluetooth_on);
   web_ui()->CallJavascriptFunction(
-      "options.SystemOptions.setBluetoothState", checked);
+      "options.AdvancedOptions.setBluetoothState", checked);
 
   chromeos::BluetoothManager* bluetooth_manager =
       chromeos::BluetoothManager::GetInstance();
@@ -174,7 +173,7 @@ void BluetoothOptionsHandler::EnableChangeCallback(
   // TODO(kevers): Call Bluetooth API to enable or disable.
   base::FundamentalValue checked(bluetooth_enabled);
   web_ui()->CallJavascriptFunction(
-      "options.SystemOptions.setBluetoothState", checked);
+      "options.AdvancedOptions.setBluetoothState", checked);
 }
 
 void BluetoothOptionsHandler::FindDevicesCallback(
@@ -245,7 +244,7 @@ void BluetoothOptionsHandler::SendDeviceNotification(
     js_properties.MergeDictionary(params);
   }
   web_ui()->CallJavascriptFunction(
-      "options.SystemOptions.addBluetoothDevice",
+      "options.AdvancedOptions.addBluetoothDevice",
       js_properties);
 }
 
@@ -328,8 +327,6 @@ void BluetoothOptionsHandler::DiscoveryStarted(const std::string& adapter_id) {
 
 void BluetoothOptionsHandler::DiscoveryEnded(const std::string& adapter_id) {
   VLOG(2) << "Discovery ended on " << adapter_id;
-  web_ui()->CallJavascriptFunction(
-      "options.SystemOptions.notifyBluetoothSearchComplete");
 
   // Stop the discovery session.
   // TODO(vlaviano): We may want to expose DeviceDisappeared, remove the
@@ -392,8 +389,6 @@ void BluetoothOptionsHandler::GenerateFakeDeviceList() {
     false,
     false,
     "");
-  web_ui()->CallJavascriptFunction(
-      "options.SystemOptions.notifyBluetoothSearchComplete");
 }
 
 void BluetoothOptionsHandler::GenerateFakeDevice(
