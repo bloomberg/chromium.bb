@@ -448,7 +448,7 @@ class ChromiumEnv : public Env {
 
   virtual void SleepForMicroseconds(int micros) {
     // Round up to the next millisecond.
-    ::base::PlatformThread::Sleep((micros + 999) / 1000);
+    ::base::PlatformThread::Sleep(::base::TimeDelta::FromMicroseconds(micros));
   }
 
  private:

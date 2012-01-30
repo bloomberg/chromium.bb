@@ -28,7 +28,7 @@ MultiProcessLock* TakeNamedLock(const std::string& name, bool waiting) {
       break;
     }
     if (!waiting) break;
-    base::PlatformThread::Sleep(100 * i);
+    base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(100 * i));
   }
   if (!got_lock) {
     lock.reset();

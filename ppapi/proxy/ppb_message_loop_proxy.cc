@@ -191,7 +191,8 @@ void MessageLoopResource::PostClosure(
     const base::Closure& closure,
     int64 delay_ms) {
   if (loop_.get()) {
-    loop_->PostDelayedTask(from_here, closure, delay_ms);
+    loop_->PostDelayedTask(
+        from_here, closure, base::TimeDelta::FromMilliseconds(delay_ms));
   } else {
     TaskInfo info;
     info.from_here = FROM_HERE;

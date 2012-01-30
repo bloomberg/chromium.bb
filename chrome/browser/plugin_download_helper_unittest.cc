@@ -73,7 +73,7 @@ class PluginInstallerDownloadTest : public testing::Test {
 
     message_loop_.PostDelayedTask(
         FROM_HERE, MessageLoop::QuitClosure(),
-        TestTimeouts::action_max_timeout_ms());
+        TestTimeouts::action_max_timeout());
   }
 
   void OnDownloadCompleted(const FilePath& download_path) {
