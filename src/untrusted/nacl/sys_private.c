@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -67,6 +67,14 @@ clock_t clock(void) {
 
 int nanosleep(const struct timespec *req, struct timespec *rem) {
   return errno_call(NACL_GC_WRAP_SYSCALL(NACL_SYSCALL(nanosleep)(req, rem)));
+}
+
+int clock_getres(clockid_t clk_id, struct timespec *res) {
+  return errno_call(NACL_SYSCALL(clock_getres)(clk_id, res));
+}
+
+int clock_gettime(clockid_t clk_id, struct timespec *tp) {
+  return errno_call(NACL_SYSCALL(clock_getres)(clk_id, tp));
 }
 
 int sched_yield(void) {

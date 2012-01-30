@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -221,6 +221,30 @@ extern clock_t clock(void);
  *  sets errno appropriately.
  */
 extern int nanosleep(const struct timespec *req, struct timespec *rem);
+
+/**
+ * @nqPosix
+ * Returns clock timer resolution.
+ * @param clk_id The identifier for the clock.
+ * @param res The struct timespec to store the timer resolution.
+ * @return On success, clock_getres returns zero.  On error, it returns -1
+ * and sets errno appropriately.
+ */
+#ifndef __GLIBC__
+extern int clock_getres(clockid_t clk_id, struct timespec *res);
+#endif
+
+/**
+ * @nqPosix
+ * Returns clock timer reading.
+ * @param clk_id The identifier for the clock.
+ * @param res The struct timespec to store the timer's value.
+ * @return On success, clock_gettime returns zero.  On error, it returns -1
+ * and sets errno appropriately.
+ */
+#ifndef __GLIBC__
+extern int clock_gettime(clockid_t clk_id, struct timespec *res);
+#endif
 
 /**
  *  @nqPosix
