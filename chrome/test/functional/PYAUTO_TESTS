@@ -428,6 +428,9 @@
       'nacl_sdk',
       'translate',
 
+      # Remove when r119687 reaches official builds.  Revisit 01/31/2012
+      '-special_tabs.SpecialTabsTest.testSpecialAcceratorTabs',
+
       # ==================================================
       # Disabled tests that need to be investigated/fixed.
       # ==================================================
