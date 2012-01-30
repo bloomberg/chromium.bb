@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -98,7 +98,7 @@ void HistoryQuickProvider::DoAutocomplete() {
     const ScoredHistoryMatch& history_match(*match_iter);
     if (history_match.raw_score > 0) {
       AutocompleteMatch ac_match = QuickMatchToACMatch(
-          history_match, matches,
+          history_match,
           PreventInlineAutocomplete(autocomplete_input_),
           &max_match_score);
       matches_.push_back(ac_match);
@@ -108,7 +108,6 @@ void HistoryQuickProvider::DoAutocomplete() {
 
 AutocompleteMatch HistoryQuickProvider::QuickMatchToACMatch(
     const ScoredHistoryMatch& history_match,
-    const ScoredHistoryMatches& history_matches,
     bool prevent_inline_autocomplete,
     int* max_match_score) {
   DCHECK(max_match_score);
@@ -123,19 +122,24 @@ AutocompleteMatch HistoryQuickProvider::QuickMatchToACMatch(
   // Format the URL autocomplete presentation.
   std::vector<size_t> offsets =
       OffsetsFromTermMatches(history_match.url_matches);
-  match.contents = net::FormatUrlWithOffsets(info.url(), languages_,
-      net::kFormatUrlOmitAll, net::UnescapeRule::SPACES, NULL, NULL, &offsets);
+  const net::FormatUrlTypes format_types = net::kFormatUrlOmitAll &
+      ~(!history_match.match_in_scheme ? 0 : net::kFormatUrlOmitHTTP);
+  match.fill_into_edit =
+      AutocompleteInput::FormattedStringWithEquivalentMeaning(info.url(),
+          net::FormatUrlWithOffsets(info.url(), languages_, format_types,
+              net::UnescapeRule::SPACES, NULL, NULL, &offsets));
+  match.contents = net::FormatUrl(info.url(), languages_);
   history::TermMatches new_matches =
       ReplaceOffsetsInTermMatches(history_match.url_matches, offsets);
   match.contents_class =
       SpansFromTermMatch(new_matches, match.contents.length(), true);
-  match.fill_into_edit = match.contents;
 
   if (prevent_inline_autocomplete || !history_match.can_inline) {
     match.inline_autocomplete_offset = string16::npos;
   } else {
-    match.inline_autocomplete_offset =
-        history_match.input_location + match.fill_into_edit.length();
+    DCHECK(!new_matches.empty());
+    match.inline_autocomplete_offset = new_matches[0].offset +
+        new_matches[0].length;
     DCHECK_LE(match.inline_autocomplete_offset, match.fill_into_edit.length());
   }
 

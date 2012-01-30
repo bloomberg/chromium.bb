@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -49,11 +49,9 @@ class HistoryQuickProvider : public HistoryProvider {
   void DoAutocomplete();
 
   // Creates an AutocompleteMatch from |history_match|. |max_match_score| gives
-  // the maximum possible score for the match. |history_matches| is the full set
-  // of matches to compare each match to when calculating confidence.
+  // the maximum possible score for the match.
   AutocompleteMatch QuickMatchToACMatch(
       const history::ScoredHistoryMatch& history_match,
-      const history::ScoredHistoryMatches& history_matches,
       bool prevent_inline_autocomplete,
       int* max_match_score);
 

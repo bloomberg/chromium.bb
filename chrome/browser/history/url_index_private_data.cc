@@ -543,6 +543,7 @@ ScoredHistoryMatch URLIndexPrivateData::ScoredMatchForURL(
       (match.url_matches[0].offset == 0 ||
        IsInlineablePrefix(url.substr(0, match.url_matches[0].offset))) &&
       !IsWhitespace(*(lower_string.rbegin()));
+  match.match_in_scheme = match.can_inline && match.url_matches[0].offset == 0;
 
   // Get partial scores based on term matching. Note that the score for
   // each of the URL and title are adjusted by the fraction of the
