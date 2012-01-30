@@ -128,13 +128,6 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
       message_loop_factory_->GetMessageLoop("PipelineThread");
   CHECK(pipeline_message_loop) << "Failed to create a new thread";
   pipeline_ = new media::Pipeline(pipeline_message_loop, media_log_);
-  pipeline_->Init(
-      base::Bind(&WebMediaPlayerProxy::PipelineEndedCallback,
-                 proxy_.get()),
-      base::Bind(&WebMediaPlayerProxy::PipelineErrorCallback,
-                 proxy_.get()),
-      base::Bind(&WebMediaPlayerProxy::NetworkEventCallback,
-                 proxy_.get()));
 
   // Let V8 know we started new thread if we did not did it yet.
   // Made separate task to avoid deletion of player currently being created.
@@ -837,6 +830,9 @@ void WebMediaPlayerImpl::StartPipeline(const GURL& gurl) {
   pipeline_->Start(
       filter_collection_.Pass(),
       gurl.spec(),
+      base::Bind(&WebMediaPlayerProxy::PipelineEndedCallback, proxy_.get()),
+      base::Bind(&WebMediaPlayerProxy::PipelineErrorCallback, proxy_.get()),
+      base::Bind(&WebMediaPlayerProxy::NetworkEventCallback, proxy_.get()),
       base::Bind(&WebMediaPlayerProxy::PipelineInitializationCallback,
                  proxy_.get()));
 }

@@ -142,7 +142,10 @@ bool InitPipeline(MessageLoop* message_loop,
   // Create the pipeline and start it.
   *pipeline = new media::Pipeline(message_loop, new media::MediaLog());
   media::PipelineStatusNotification note;
-  (*pipeline)->Start(collection.Pass(), filename, note.Callback());
+  (*pipeline)->Start(
+      collection.Pass(), filename, media::PipelineStatusCB(),
+      media::PipelineStatusCB(), media::NetworkEventCB(),
+      note.Callback());
 
   // Wait until the pipeline is fully initialized.
   note.Wait();

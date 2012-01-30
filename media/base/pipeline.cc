@@ -86,18 +86,11 @@ Pipeline::~Pipeline() {
       media_log_->CreateEvent(MediaLogEvent::PIPELINE_DESTROYED));
 }
 
-void Pipeline::Init(const PipelineStatusCB& ended_callback,
-                    const PipelineStatusCB& error_callback,
-                    const NetworkEventCB& network_callback) {
-  DCHECK(!IsRunning())
-      << "Init() should be called before the pipeline has started";
-  ended_callback_ = ended_callback;
-  error_callback_ = error_callback;
-  network_callback_ = network_callback;
-}
-
 void Pipeline::Start(scoped_ptr<FilterCollection> collection,
                      const std::string& url,
+                     const PipelineStatusCB& ended_callback,
+                     const PipelineStatusCB& error_callback,
+                     const NetworkEventCB& network_callback,
                      const PipelineStatusCB& start_callback) {
   base::AutoLock auto_lock(lock_);
   CHECK(!running_) << "Media pipeline is already running";
@@ -105,7 +98,7 @@ void Pipeline::Start(scoped_ptr<FilterCollection> collection,
   running_ = true;
   message_loop_->PostTask(FROM_HERE, base::Bind(
       &Pipeline::StartTask, this, base::Passed(&collection),
-      url, start_callback));
+      url, ended_callback, error_callback, network_callback, start_callback));
 }
 
 void Pipeline::Stop(const PipelineStatusCB& stop_callback) {
@@ -606,11 +599,17 @@ void Pipeline::OnUpdateStatistics(const PipelineStatistics& stats) {
 
 void Pipeline::StartTask(scoped_ptr<FilterCollection> filter_collection,
                          const std::string& url,
+                         const PipelineStatusCB& ended_callback,
+                         const PipelineStatusCB& error_callback,
+                         const NetworkEventCB& network_callback,
                          const PipelineStatusCB& start_callback) {
   DCHECK_EQ(MessageLoop::current(), message_loop_);
   DCHECK_EQ(kCreated, state_);
   filter_collection_ = filter_collection.Pass();
   url_ = url;
+  ended_callback_ = ended_callback;
+  error_callback_ = error_callback;
+  network_callback_ = network_callback;
   seek_callback_ = start_callback;
 
   // Kick off initialization.

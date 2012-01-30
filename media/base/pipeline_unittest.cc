@@ -70,10 +70,6 @@ class PipelineTest : public ::testing::Test {
  public:
   PipelineTest()
       : pipeline_(new Pipeline(&message_loop_, new MediaLog())) {
-    pipeline_->Init(
-        base::Bind(&CallbackHelper::OnEnded, base::Unretained(&callbacks_)),
-        base::Bind(&CallbackHelper::OnError, base::Unretained(&callbacks_)),
-        Pipeline::NetworkEventCB());
     mocks_.reset(new MockFilterCollection());
 
     // InitializeDemuxer adds overriding expectations for expected non-NULL
@@ -203,13 +199,13 @@ class PipelineTest : public ::testing::Test {
     // Expect an initialization callback.
     EXPECT_CALL(callbacks_, OnStart(start_status));
 
-    pipeline_->Start(mocks_->filter_collection(true,
-                                               true,
-                                               true,
-                                               build_status).Pass(),
-                     "",
-                     base::Bind(&CallbackHelper::OnStart,
-                                base::Unretained(&callbacks_)));
+    pipeline_->Start(
+        mocks_->filter_collection(true, true, true, build_status).Pass(),
+        "",
+        base::Bind(&CallbackHelper::OnEnded, base::Unretained(&callbacks_)),
+        base::Bind(&CallbackHelper::OnError, base::Unretained(&callbacks_)),
+        NetworkEventCB(),
+        base::Bind(&CallbackHelper::OnStart, base::Unretained(&callbacks_)));
 
     message_loop_.RunAllPending();
   }
@@ -318,13 +314,13 @@ TEST_F(PipelineTest, NeverInitializes) {
   // This test hangs during initialization by never calling
   // InitializationComplete().  StrictMock<> will ensure that the callback is
   // never executed.
-  pipeline_->Start(mocks_->filter_collection(false,
-                                             false,
-                                             true,
-                                             PIPELINE_OK).Pass(),
-                   "",
-                   base::Bind(&CallbackHelper::OnStart,
-                              base::Unretained(&callbacks_)));
+  pipeline_->Start(
+        mocks_->filter_collection(false, false, true, PIPELINE_OK).Pass(),
+        "",
+        base::Bind(&CallbackHelper::OnEnded, base::Unretained(&callbacks_)),
+        base::Bind(&CallbackHelper::OnError, base::Unretained(&callbacks_)),
+        NetworkEventCB(),
+        base::Bind(&CallbackHelper::OnStart, base::Unretained(&callbacks_)));
   message_loop_.RunAllPending();
 
   EXPECT_FALSE(pipeline_->IsInitialized());
@@ -347,9 +343,13 @@ TEST_F(PipelineTest, RequiredFilterMissing) {
   // Create a filter collection with missing filter.
   scoped_ptr<FilterCollection> collection(mocks_->filter_collection(
       false, true, true, PIPELINE_ERROR_REQUIRED_FILTER_MISSING));
-  pipeline_->Start(collection.Pass(), "",
-                   base::Bind(&CallbackHelper::OnStart,
-                              base::Unretained(&callbacks_)));
+  pipeline_->Start(
+        collection.Pass(),
+        "",
+        base::Bind(&CallbackHelper::OnEnded, base::Unretained(&callbacks_)),
+        base::Bind(&CallbackHelper::OnError, base::Unretained(&callbacks_)),
+        NetworkEventCB(),
+        base::Bind(&CallbackHelper::OnStart, base::Unretained(&callbacks_)));
   message_loop_.RunAllPending();
 
   EXPECT_FALSE(pipeline_->IsInitialized());
