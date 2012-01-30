@@ -135,7 +135,7 @@ void SystemInitProcess(int init_fd, int child_pid, int proc_fd, int null_fd) {
   sigprocmask(SIG_BLOCK, &mask, NULL);
 
   // Notify other processes that we are done initializing
-  write(init_fd, " ", 1);
+  if (write(init_fd, " ", 1)) { }
   close(init_fd);
 
   // Handle dying processes that have been re-parented to the "init" process
