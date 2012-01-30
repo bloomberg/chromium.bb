@@ -71,10 +71,10 @@
           'target_name': 'harfbuzz',
           'type': 'none',
           'dependencies': [
-            '../harfbuzz-ng/harfbuzz.gyp:harfbuzz'
+            '../harfbuzz-ng/harfbuzz.gyp:harfbuzz-ng'
           ],
           'export_dependent_settings': [
-            '../harfbuzz-ng/harfbuzz.gyp:harfbuzz'
+            '../harfbuzz-ng/harfbuzz.gyp:harfbuzz-ng'
           ],
         }
       ]
