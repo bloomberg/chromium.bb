@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,11 +18,12 @@
 
 class BackingStore;
 class SkBitmap;
-
 namespace base {
 class DictionaryValue;
 }  // namespace base
-
+namespace content {
+class WebContents;
+}  // namespace content
 // Windows
 class GetWindowFunction : public SyncExtensionFunction {
   virtual ~GetWindowFunction() {}
@@ -112,10 +113,14 @@ class UpdateTabFunction : public AsyncExtensionFunction,
  private:
   virtual ~UpdateTabFunction() {}
   virtual bool RunImpl() OVERRIDE;
+  virtual void WebContentsDestroyed(content::WebContents* tab) OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
   void OnExecuteCodeFinished(int request_id,
                              bool success,
                              const std::string& error);
+  void PopulateResult();
+
+  content::WebContents* web_contents_;
   DECLARE_EXTENSION_FUNCTION_NAME("tabs.update")
 };
 class MoveTabsFunction : public SyncExtensionFunction {

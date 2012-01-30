@@ -1058,7 +1058,7 @@ bool HighlightTabsFunction::RunImpl() {
   return true;
 }
 
-UpdateTabFunction::UpdateTabFunction() {
+UpdateTabFunction::UpdateTabFunction() : web_contents_(NULL) {
 }
 
 bool UpdateTabFunction::RunImpl() {
@@ -1094,11 +1094,16 @@ bool UpdateTabFunction::RunImpl() {
                   NULL, &tab_strip, &contents, &tab_index, &error_)) {
     return false;
   }
-  NavigationController& controller = contents->web_contents()->GetController();
+
+  web_contents_ = contents->web_contents();
+  NavigationController& controller = web_contents_->GetController();
 
   // TODO(rafaelw): handle setting remaining tab properties:
   // -title
   // -favIconUrl
+
+  // We wait to fire the callback when executing 'javascript:' URLs in tabs.
+  bool is_async = false;
 
   // Navigate the tab to a new location if the url is different.
   std::string url_string;
@@ -1123,7 +1128,7 @@ bool UpdateTabFunction::RunImpl() {
     // we need to check host permissions before allowing them.
     if (url.SchemeIs(chrome::kJavaScriptScheme)) {
       if (!GetExtension()->CanExecuteScriptOnPage(
-              contents->web_contents()->GetURL(), NULL, &error_)) {
+              web_contents_->GetURL(), NULL, &error_)) {
         return false;
       }
 
@@ -1135,16 +1140,15 @@ bool UpdateTabFunction::RunImpl() {
       params.all_frames = false;
       params.in_main_world = true;
 
-      RenderViewHost* render_view_host =
-          contents->web_contents()->GetRenderViewHost();
+      RenderViewHost* render_view_host = web_contents_->GetRenderViewHost();
       render_view_host->Send(
           new ExtensionMsg_ExecuteCode(render_view_host->routing_id(),
                                        params));
 
-      Observe(contents->web_contents());
-      AddRef();  // balanced in Observe()
+      Observe(web_contents_);
+      AddRef();  // Balanced in OnExecuteCodeFinished().
 
-      return true;
+      is_async = true;
     }
 
     controller.LoadURL(
@@ -1153,7 +1157,7 @@ bool UpdateTabFunction::RunImpl() {
     // The URL of a tab contents never actually changes to a JavaScript URL, so
     // this check only makes sense in other cases.
     if (!url.SchemeIs(chrome::kJavaScriptScheme))
-      DCHECK_EQ(url.spec(), contents->web_contents()->GetURL().spec());
+      DCHECK_EQ(url.spec(), web_contents_->GetURL().spec());
   }
 
   bool active = false;
@@ -1173,7 +1177,7 @@ bool UpdateTabFunction::RunImpl() {
       tab_strip->ActivateTabAt(tab_index, false);
       DCHECK_EQ(contents, tab_strip->GetActiveTabContents());
     }
-    contents->web_contents()->Focus();
+    web_contents_->Focus();
   }
 
   if (update_props->HasKey(keys::kHighlightedKey)) {
@@ -1209,18 +1213,28 @@ bool UpdateTabFunction::RunImpl() {
         tab_index, &opener_contents->web_contents()->GetController());
   }
 
-  if (has_callback()) {
-    if (GetExtension()->HasAPIPermission(ExtensionAPIPermission::kTab)) {
-      result_.reset(ExtensionTabUtil::CreateTabValue(contents->web_contents(),
-                                                     tab_strip,
-                                                     tab_index));
-    } else {
-      result_.reset(Value::CreateNullValue());
-    }
+  if (!is_async) {
+    PopulateResult();
+    SendResponse(true);
   }
-
-  SendResponse(true);
   return true;
+}
+
+void UpdateTabFunction::PopulateResult() {
+  if (!has_callback())
+    return;
+
+  if (GetExtension()->HasAPIPermission(ExtensionAPIPermission::kTab) &&
+      web_contents_ != NULL) {
+    result_.reset(ExtensionTabUtil::CreateTabValue(web_contents_));
+  } else {
+    result_.reset(Value::CreateNullValue());
+  }
+}
+
+void UpdateTabFunction::WebContentsDestroyed(WebContents* tab) {
+  CHECK_EQ(tab, web_contents_);
+  web_contents_ = NULL;
 }
 
 bool UpdateTabFunction::OnMessageReceived(const IPC::Message& message) {
@@ -1252,10 +1266,12 @@ void UpdateTabFunction::OnExecuteCodeFinished(int request_id,
     error_ = error;
   }
 
+  if (success)
+    PopulateResult();
   SendResponse(success);
 
   Observe(NULL);
-  Release();  // balanced in Execute()
+  Release();  // Balanced in RunImpl().
 }
 
 bool MoveTabsFunction::RunImpl() {

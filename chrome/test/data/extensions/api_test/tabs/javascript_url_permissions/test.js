@@ -1,9 +1,12 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+var assertEq = chrome.test.assertEq;
+var pass = chrome.test.callbackPass;
+
 chrome.test.getConfig(function(config) {
-  var javaScriptURL = "javascript:void(document.body.bgColor='red')";
+  var javaScriptURL = "javascript:void(document.title='js-url-success')";
 
   var fixPort = function(url) {
     return url.replace(/PORT/, config.testServer.port);
@@ -26,8 +29,13 @@ chrome.test.getConfig(function(config) {
         },
 
         function javaScriptURLShouldSucceed() {
-          chrome.tabs.update(secondTabId, {url: javaScriptURL},
-              chrome.test.callbackPass());
+          chrome.tabs.update(
+              secondTabId,
+              {url: javaScriptURL},
+              pass(function(tab) {
+            assertEq(secondTabId, tab.id);
+            assertEq('js-url-success', tab.title);
+          }));
         }
       ]);
     });

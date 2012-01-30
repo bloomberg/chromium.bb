@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -77,16 +77,7 @@ IN_PROC_BROWSER_TEST_F(ExecuteScriptApiTest, NavigationRaceExecuteScript) {
                                   "execute_script.html")) << message_;
 }
 
-
-#if defined(OS_LINUX)
-// Fails on Linux.  http://crbug.com/89731
-#define MAYBE_NavigationRaceJavaScriptUrl DISABLED_NavigationRaceJavaScriptUrl
-#else
-#define MAYBE_NavigationRaceJavaScriptUrl NavigationRaceJavaScriptUrl
-#endif
-
-IN_PROC_BROWSER_TEST_F(ExecuteScriptApiTest,
-                       MAYBE_NavigationRaceJavaScriptUrl) {
+IN_PROC_BROWSER_TEST_F(ExecuteScriptApiTest, NavigationRaceJavaScriptURL) {
   host_resolver()->AddRule("a.com", "127.0.0.1");
   host_resolver()->AddRule("b.com", "127.0.0.1");
   ASSERT_TRUE(StartTestServer());
