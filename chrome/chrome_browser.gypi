@@ -503,6 +503,8 @@
         'browser/chromeos/gdata/gdata_parser.h',
         'browser/chromeos/gview_request_interceptor.cc',
         'browser/chromeos/gview_request_interceptor.h',
+        'browser/chromeos/imageburner/burn_controller.cc',
+        'browser/chromeos/imageburner/burn_controller.h',
         'browser/chromeos/imageburner/burn_manager.cc',
         'browser/chromeos/imageburner/burn_manager.h',
         'browser/chromeos/input_method/candidate_window.cc',
