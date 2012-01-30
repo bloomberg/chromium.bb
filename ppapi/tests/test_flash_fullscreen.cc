@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -76,10 +76,14 @@ std::string TestFlashFullscreen::TestNormalToFullscreenToNormal() {
   pp::Graphics2D graphics2d_fullscreen(instance_, pp::Size(10, 10), false);
   if (graphics2d_fullscreen.is_null())
     return "Failed to create graphics2d_fullscreen";
-  if (instance_->BindGraphics(graphics2d_fullscreen))
-    return ReportError("BindGraphics() in fullscreen transition", true);
-  if (screen_mode_.IsFullscreen())
-    return ReportError("IsFullscreen() in fullscreen transtion", true);
+  // The out-of-process proxy is asynchronous, so testing for the following
+  // conditions is flaky and can only be done reliably in-process.
+  if (!testing_interface_->IsOutOfProcess()) {
+    if (instance_->BindGraphics(graphics2d_fullscreen))
+      return ReportError("BindGraphics() in fullscreen transition", true);
+    if (screen_mode_.IsFullscreen())
+      return ReportError("IsFullscreen() in fullscreen transtion", true);
+  }
 
   // DidChangeView() will call the callback once in fullscreen mode.
   fullscreen_callback_.WaitForResult();

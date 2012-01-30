@@ -614,7 +614,7 @@ TEST_PPAPI_NACL_VIA_HTTP(FileSystem)
 #define MAYBE_OutOfProcessFlashFullscreen DISABLED_FlashFullscreen
 #else
 #define MAYBE_FlashFullscreen FlashFullscreen
-#define MAYBE_OutOfProcessFlashFullscreen FLAKY_FlashFullscreen
+#define MAYBE_OutOfProcessFlashFullscreen FlashFullscreen
 #endif
 
 TEST_F(PPAPITest, MAYBE_FlashFullscreen) {
