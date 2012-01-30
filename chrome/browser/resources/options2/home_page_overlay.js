@@ -59,7 +59,7 @@ cr.define('options', function() {
     updateHomePageInput_: function() {
       var homepageInput = $('homepageURL');
       var homepageUseURL = $('homepage-use-url');
-      homepageInput.disabled = !homepageUseURL.checked;
+      homepageInput.setDisabled('radio-choice', !homepageUseURL.checked);
     },
   };
 
