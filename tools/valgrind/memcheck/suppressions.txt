@@ -5562,6 +5562,7 @@
    fun:sec_asn1e_allocate_item
    fun:SEC_ASN1EncodeItem_Util
    fun:common_EncodeDerSig
+   ...
    fun:_ZN6crypto12_GLOBAL__N_18SignDataEP11PLArenaPoolP10SECItemStrS4_P19SECKEYPrivateKeyStr13HASH_HashType
    fun:_ZN6crypto18ECSignatureCreator4SignEPKhiPSt6vectorIhSaIhEE
    fun:_ZN37ECSignatureCreatorTest_BasicTest_Test8TestBodyEv
@@ -5638,7 +5639,7 @@
    fun:_ZN8appcache17AppCacheDiskCache10ActiveCall17OnAsyncCompletionEi
 }
 {
-   bug_111757a
+   bug_111922
    Memcheck:Leak
    fun:_Znw*
    fun:_ZN9first_run8internal15LoadMasterPrefsEP8FilePath
@@ -5649,7 +5650,7 @@
    fun:_Z11BrowserMainRKN7content18MainFunctionParamsE
 }
 {
-   bug_111757b
+   bug_111757
    Memcheck:Leak
    fun:malloc
    fun:_ZN3WTF10fastMallocE*
@@ -5660,6 +5661,25 @@
    fun:_ZN21PeerConnectionHandler19OnAddStreamCallbackEPN6webrtc20MediaStreamInterfaceE
    fun:_ZN21PeerConnectionHandler11OnAddStreamEPN6webrtc20MediaStreamInterfaceE
    fun:_ZN36PeerConnectionHandlerTest_Basic_Test8TestBodyEv
+}
+{
+   bug_105580
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   fun:malloc_set_zone_name
+   fun:malloc_default_purgeable_zone
+   ...
+   fun:_ZN4base30EnableTerminationOnOutOfMemoryEv
+   fun:_ZN7leveldb12_GLOBAL__N_111ChromiumEnvC2Ev
+   fun:_ZN7leveldb12_GLOBAL__N_111ChromiumEnvC1Ev
+   ...
+   fun:_ZN4base12LazyInstanceIN7leveldb12_GLOBAL__N_111ChromiumEnvENS_8internal23LeakyLazyInstanceTraitsIS3_EEE7PointerEv
+   ...
+   fun:_ZN7leveldb7OptionsC2Ev
+   ...
+   fun:_ZN7fileapi27FileSystemDirectoryDatabase4InitEv
+   fun:_ZN7fileapi27FileSystemDirectoryDatabase11GetFileInfoExPNS0_8FileInfoE
+   fun:_ZN7fileapi59FileSystemDirectoryDatabaseTest_TestMissingFileGetInfo_Test8TestBodyEv
 }
 
 #-----------------------------------------------------------------------
