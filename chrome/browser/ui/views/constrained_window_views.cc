@@ -559,7 +559,7 @@ ConstrainedWindowViews::ConstrainedWindowViews(
     : wrapper_(wrapper),
       ALLOW_THIS_IN_INITIALIZER_LIST(native_constrained_window_(
           NativeConstrainedWindow::CreateNativeConstrainedWindow(this))) {
-  views::Widget::InitParams params;
+  views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
   params.delegate = widget_delegate;
   params.native_widget = native_constrained_window_->AsNativeWidget();
   params.child = true;

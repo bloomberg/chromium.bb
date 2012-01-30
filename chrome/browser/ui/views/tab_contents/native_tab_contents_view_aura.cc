@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/views/tab_contents/native_tab_contents_view_aura.h"
 
+// TODO(beng): USE_ASH
+#include "ash/wm/visibility_controller.h"
 #include "base/event_types.h"
 #include "base/message_loop.h"
 #include "chrome/browser/ui/views/tab_contents/native_tab_contents_view_delegate.h"
@@ -153,6 +155,7 @@ void NativeTabContentsViewAura::InitNativeTabContentsView() {
   params.parent = NULL;
   params.can_activate = true;
   GetWidget()->Init(params);
+  ash::SetChildWindowVisibilityChangesAnimated(GetWidget()->GetNativeView());
 
   // Hide the widget to prevent it from showing up on the root window. This is
   // needed for TabContentses that aren't immediately added to the tabstrip,
