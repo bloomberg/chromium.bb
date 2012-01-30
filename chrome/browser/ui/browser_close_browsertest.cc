@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -516,7 +516,14 @@ IN_PROC_BROWSER_TEST_F(BrowserCloseTest, DownloadsCloseCheck_1) {
   }
 }
 
-IN_PROC_BROWSER_TEST_F(BrowserCloseTest, DownloadsCloseCheck_2) {
+// Timing out on XP debug. http://crbug.com/111914
+#if defined(OS_WIN)
+#define MAYBE_DownloadsCloseCheck_2 FLAKY_DownloadsCloseCheck_2
+#else
+#define MAYBE_DownloadsCloseCheck_2 DownloadsCloseCheck_2
+#endif
+
+IN_PROC_BROWSER_TEST_F(BrowserCloseTest, MAYBE_DownloadsCloseCheck_2) {
   ASSERT_TRUE(SetupForDownloadCloseCheck());
   for (size_t i = 2 * arraysize(download_close_check_cases) / 6;
        i < 3 * arraysize(download_close_check_cases) / 6; ++i) {
@@ -540,7 +547,14 @@ IN_PROC_BROWSER_TEST_F(BrowserCloseTest, DownloadsCloseCheck_4) {
   }
 }
 
-IN_PROC_BROWSER_TEST_F(BrowserCloseTest, DownloadsCloseCheck_5) {
+// Timing out on XP debug. http://crbug.com/111914
+#if defined(OS_WIN)
+#define MAYBE_DownloadsCloseCheck_5 FLAKY_DownloadsCloseCheck_5
+#else
+#define MAYBE_DownloadsCloseCheck_5 DownloadsCloseCheck_5
+#endif
+
+IN_PROC_BROWSER_TEST_F(BrowserCloseTest, MAYBE_DownloadsCloseCheck_5) {
   ASSERT_TRUE(SetupForDownloadCloseCheck());
   for (size_t i = 5 * arraysize(download_close_check_cases) / 6;
        i < 6 * arraysize(download_close_check_cases) / 6; ++i) {
