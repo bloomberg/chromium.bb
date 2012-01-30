@@ -46,7 +46,6 @@ const char kCryptohomeDoAutomaticFreeDiskSpaceControl[] =
 const char kCryptohomeAsyncDoAutomaticFreeDiskSpaceControl[] =
     "AsyncDoAutomaticFreeDiskSpaceControl";
 const char kCryptohomeAsyncDoesUsersExist[] = "AsyncDoesUsersExist";
-const char kCryptohomeAsyncSetOwnerUser[] = "AsyncSetOwnerUser";
 const char kCryptohomeInstallAttributesGet[] = "InstallAttributesGet";
 const char kCryptohomeInstallAttributesSet[] = "InstallAttributesSet";
 const char kCryptohomeInstallAttributesCount[] = "InstallAttributesCount";
