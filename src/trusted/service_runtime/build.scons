@@ -435,6 +435,9 @@ unittest_inputs = [
     'sel_mem_test.cc',
     'sel_ldr_test.cc',
 ]
+if env.Bit('windows'):
+  # This tests win/thread_suspension.c, which is only used on Windows.
+  unittest_inputs += ['win/thread_suspension_test.cc']
 
 if (not env.CrossToolsBuild() and
     (not env.Bit('coverage_enabled') or not env.Bit('windows'))):

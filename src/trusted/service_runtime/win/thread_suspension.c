@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -57,9 +57,30 @@ void NaClUntrustedThreadsSuspend(struct NaClApp *nap) {
     old_state = natp->suspend_state;
     natp->suspend_state = old_state | NACL_APP_THREAD_SUSPENDING;
     if (old_state == NACL_APP_THREAD_UNTRUSTED) {
+      CONTEXT context;
       if (SuspendThread(natp->thread.tid) == (DWORD) -1) {
         NaClLog(LOG_FATAL, "NaClUntrustedThreadsSuspend: "
                 "SuspendThread() call failed\n");
+      }
+      /*
+       * SuspendThread() can return before the thread has been
+       * suspended, because internally it only sends a message asking
+       * for the thread to be suspended.
+       * See http://code.google.com/p/nativeclient/issues/detail?id=2557
+       *
+       * Calling GetThreadContext() is a workaround: it should only be
+       * able to return a snapshot of the register state once the
+       * thread has actually suspended.
+       *
+       * TODO(mseaborn): A possible refinement here would be to do
+       * SuspendThread() and GetThreadContext() in separate loops
+       * across the threads.  This might be faster, since we would not
+       * be waiting for each thread to suspend one by one.  It would
+       * take advantage of SuspendThread()'s asynchronous nature.
+       */
+      if (!GetThreadContext(natp->thread.tid, &context)) {
+        NaClLog(LOG_FATAL, "NaClUntrustedThreadsSuspend: "
+                "GetThreadContext() failed\n");
       }
     }
     NaClXMutexUnlock(&natp->mu);
