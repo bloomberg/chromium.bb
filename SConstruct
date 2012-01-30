@@ -544,14 +544,6 @@ werror_flags = werror_flags + ['-Wno-variadic-macros']
 if pre_base_env.Bit('bitcode') and pre_base_env.Bit('nacl_glibc'):
   werror_flags += ['-Wno-array-bounds']
 
-if pre_base_env.Bit('clang'):
-  # Allow 'default' label in switch even when all enumeration cases
-  # have been covered.
-  werror_flags += ['-Wno-covered-switch-default']
-  # Allow C++11 extensions (for "override")
-  werror_flags += ['-Wno-c++11-extensions']
-
-
 # ----------------------------------------------------------
 # Method to make sure -pedantic, etc, are not stripped from the
 # default env, since occasionally an engineer will be tempted down the
@@ -2558,13 +2550,11 @@ def MakeWindowsEnv():
           ['_WIN32_WINNT', '0x0501'],
           ['__STDC_LIMIT_MACROS', '1'],
           ['NOMINMAX', '1'],
-          # WIN32 is used by ppapi
-          ['WIN32', '1'],
       ],
       LIBS = ['wsock32', 'advapi32'],
       # TODO(bsy) remove 4355 once cross-repo
       # NACL_ALLOW_THIS_IN_INITIALIZER_LIST changes go in.
-      CCFLAGS = ['/EHsc', '/WX', '/wd4355', '/wd4800'],
+      CCFLAGS = ['/EHsc', '/WX', '/wd4355'],
   )
 
   # This linker option allows us to ensure our builds are compatible with
