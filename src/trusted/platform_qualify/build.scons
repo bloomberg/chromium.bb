@@ -1,7 +1,11 @@
 # -*- python -*-
-# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Copyright (c) 2012 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+#
+# TODO(bradchen):
+# - update plaform_qualify.gyp to be consistent with build.scons
+# - update sel_ldr to include blacklist check
 
 Import('env')
 
@@ -40,12 +44,13 @@ if env.Bit('build_x86') and env.Bit('target_x86'):
   if env.Bit('linux'):
     vcpuid_env.Append(CCFLAGS = ['-msse3'])
   env.Append(LIBS = ['platform_qual_lib',
-                     TargetLib(env, 'ncval_base')])
-  # TODO(bradchen): need to fix vcpuid to use intrinsics rather than inline
-  # assembly code. (Issue 440)
-  if not (env.Bit('target_x86_64') and env.Bit('windows')):
-    nacl_vcpuid = vcpuid_env.ComponentLibrary('vcpuid', 'arch/x86/vcpuid.c')
-    env.Append(LIBS = ['vcpuid'])
+                     TargetLib(env, 'ncval_base'),
+                     'platform', 'gio'])
+  if env.Bit('windows'):
+    # 'sel' is required for nacl_signal_common.c and friends
+    env.Append(LIBS = ['platform_qual_lib', 'sel'])
+  nacl_vcpuid = vcpuid_env.ComponentLibrary('vcpuid', 'arch/x86/vcpuid.c')
+  env.Append(LIBS = ['vcpuid'])
 
   if env.Bit('target_x86_64'):
     # Compile x86-64 primitives for verifying NX functionality
@@ -53,9 +58,8 @@ if env.Bit('build_x86') and env.Bit('target_x86'):
   elif env.Bit('target_x86_32'):
     pql_inputs += ['arch/x86_32/nacl_dep_qualify_arch.c']
 
-# TODO(bradchen): re-enable when issue 440 is fixed
-#  env.ComponentProgram('platform_qual_test',
-#                       'arch/x86/platform_qual_test.c')
+  env.ComponentProgram('platform_qual_test',
+                       'arch/x86/platform_qual_test.c')
   env.ComponentProgram('nacl_cpuwhitelist_test',
                        'arch/x86/nacl_cpuwhitelist_test.c')
 

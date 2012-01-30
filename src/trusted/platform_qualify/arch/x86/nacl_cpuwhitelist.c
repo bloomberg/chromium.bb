@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -16,23 +16,23 @@
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/trusted/validator/x86/nacl_cpuid.h"
 #include "native_client/src/trusted/platform_qualify/nacl_cpuwhitelist.h"
-#include "native_client/src/trusted/platform_qualify/arch/x86/nacl_cpuidwhitelist.h"
 
 
 static int idcmp(const void *s1, const void *s2) {
   return strncmp((char *)s1, *(char **)s2, kCPUIDStringLength);
 }
 
-
-
+/* NOTE: The blacklist must be in alphabetical order. */
 static const char* const kNaclCpuBlacklist[] = {
 /*          1         2        */
 /* 12345678901234567890 + '\0' */
   " FakeEntry0000000000",
   " FakeEntry0000000001",
+  NACL_BLACKLIST_TEST_ENTRY,
   "zFakeEntry0000000000",
 };
 
+/* NOTE: The whitelist must be in alphabetical order. */
 static const char* const kNaclCpuWhitelist[] = {
 /*          1         2        */
 /* 12345678901234567890 + '\0' */

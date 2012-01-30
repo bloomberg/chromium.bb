@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -14,19 +14,28 @@
 #include <stdlib.h>
 #include "native_client/src/trusted/validator/x86/nacl_cpuid.h"
 #include "native_client/src/trusted/platform_qualify/nacl_cpuwhitelist.h"
-#include "native_client/src/trusted/platform_qualify/arch/x86/nacl_cpuidwhitelist.h"
 
 static void CPUIDWhitelistUnitTests() {
-  if (!NaCl_VerifyWhitelist()) {
-    fprintf(stderr, "ERROR: whitelist malformed\n");
-    exit(-1);
-  }
-
+  /* blacklist tests */
   if (!NaCl_VerifyBlacklist()) {
     fprintf(stderr, "ERROR: blacklist malformed\n");
     exit(-1);
   }
-
+  if (!NaCl_CPUIsBlacklisted(NACL_BLACKLIST_TEST_ENTRY)) {
+    fprintf(stderr, "ERROR: blacklist test 1 failed\n");
+    exit(-1);
+  }
+  if (NaCl_CPUIsBlacklisted("GenuineFooFooCPU")) {
+    fprintf(stderr, "ERROR: blacklist test 2 failed\n");
+    exit(-1);
+  }
+  printf("All blacklist unit tests passed\n");
+  /* whitelist tests */
+  /* NOTE: whitelist is not currently used */
+  if (!NaCl_VerifyWhitelist()) {
+    fprintf(stderr, "ERROR: whitelist malformed\n");
+    exit(-1);
+  }
   if (!NaCl_CPUIsWhitelisted(" FakeEntry0000000000")) {
     fprintf(stderr, "ERROR: whitelist search 1 failed\n");
     exit(-1);

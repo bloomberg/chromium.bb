@@ -43,7 +43,6 @@
           # x86 common sources
           ['target_arch=="ia32" or target_arch=="x64"', {
             'sources': [
-              'arch/x86/nacl_cpuidwhitelist.h',
               'arch/x86/nacl_cpuwhitelist.c',
               #'arch/x86/vcpuid.h',
               #'arch/x86/vcpuid.c',

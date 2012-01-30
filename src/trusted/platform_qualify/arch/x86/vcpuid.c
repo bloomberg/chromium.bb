@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -12,6 +12,10 @@
  * This uses shell status code to indicate its result; non-zero return
  * code indicates the CPUID instruction is not implemented or not
  * implemented correctly.
+ *
+ * The asm_ tests use inline assembler, which is not supported on
+ * 64-bit Windows. We use #if to prevent these routines from being
+ * provided on 64-bit Windows.
  *
  * TODO(bradchen): test on a machine with SSE4.
  */
@@ -33,12 +37,14 @@ const int kMagicConst_ROUNDSS = 0xc0000000;
 const int kMagicConst_POPCNT = 13;
 const int kMagicConst_CRC32  = 0xb906c3ea;
 
+#if !(NACL_WINDOWS && (NACL_BUILD_SUBARCH == 64))
 static int asm_HasCPUID() {
-/* TODO(bradchen): split into Windows, etc. files */
-  volatile int before, after, result;
 #if NACL_BUILD_SUBARCH == 64
+  /* ASSERTION: All 64-bit x86 implementations have CPUID */
   return 1;
-#endif
+#elif NACL_BUILD_SUBARCH == 32
+  volatile int before, after, result;
+
 #if defined(__GNUC__)
   __asm__ volatile("pushfl                \n\t" /* save EFLAGS to eax */
                    "pop %%eax             \n\t"
@@ -67,6 +73,9 @@ static int asm_HasCPUID() {
 #endif
   result = (before ^ after) & 0x0200000;
   return result;
+#else
+# error Unsupported platform: x86 must be either 32- or 64-bit
+#endif
 }
 
 static int asm_HasMMX() {
@@ -413,7 +422,8 @@ static int asm_HasCX8() {
   printf("ebx == %x  ecx == %x\n", _ebx, _ecx);
   return (foo64 == (uint64_t)kMagicConst);
 }
-#endif
+#endif  /* 0 */
+#endif  /* 64-bit Windows */
 
 #if (NACL_LINUX || NACL_OSX)
 /* Linux/MacOS signal handling code, for trapping illegal instruction faults */
@@ -540,6 +550,11 @@ int CPUIDImplIsValid() {
     PrintFail("CPU not supported");
     return 0;
   }
+
+#if (NACL_WINDOWS && (NACL_BUILD_SUBARCH == 64))
+  /* Unfortunately the asm_ tests will not work on 64-bit Windows */
+  return 1;
+#else
   rcode = DoTest(asm_HasCPUID, "CPUID");  /* This test is redundant. */
   /* CPUID feature is required/mandatory */
   if (rcode) {
@@ -568,7 +583,7 @@ int CPUIDImplIsValid() {
   rcode |= DoTest(asm_HasPOPCNT, "POPCNT");
   rcode |= DoTest(asm_HasCMOV, "CMOV");
 #endif
-
+#endif  /* 64-bit Windows */
   /*
    * TODO(brad): implement the rest of these tests
    * if (cpuf.f_CX8)   rcode |= DoTest(asm_HasCX8, "CMPXCHG8B");

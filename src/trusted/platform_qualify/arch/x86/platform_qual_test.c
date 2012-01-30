@@ -1,7 +1,7 @@
 /*
- * Copyright 2008 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 /*
@@ -15,13 +15,19 @@
  */
 #include "native_client/src/include/portability.h"
 #include <stdio.h>
-#include "native_client/src/trusted/validator_x86/nacl_cpuid.h"
+#include "native_client/src/trusted/validator/x86/nacl_cpuid.h"
 #include "native_client/src/trusted/platform_qualify/nacl_cpuwhitelist.h"
 #include "native_client/src/trusted/platform_qualify/nacl_os_qualify.h"
 #include "native_client/src/trusted/platform_qualify/nacl_dep_qualify.h"
 #include "native_client/src/trusted/platform_qualify/arch/x86/vcpuid.h"
+#include "native_client/src/trusted/service_runtime/nacl_signal.h"
 
 int main() {
+#if NACL_WINDOWS
+  /* required by nacl_dep_qualify.c: */
+  NaClSignalHandlerInit();
+#endif
+
   if (NaClOsIsSupported() != 1) return -1;
   printf("OS is supported\n");
 
