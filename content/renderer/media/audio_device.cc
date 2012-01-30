@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/debug/trace_event.h"
 #include "base/message_loop.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/time.h"
 #include "content/common/child_process.h"
 #include "content/common/media/audio_messages.h"
@@ -244,7 +245,7 @@ void AudioDevice::OnLowLatencyCreated(
 
   shared_memory_handle_ = handle;
   memory_length_ = length;
-  audio_socket_ = new AudioSocket(socket_handle);
+  audio_socket_.reset(new base::CancelableSyncSocket(socket_handle));
 
   audio_thread_.reset(
       new base::DelegateSimpleThread(this, "renderer_audio_thread"));
@@ -271,20 +272,25 @@ void AudioDevice::Run() {
 
   base::SharedMemory shared_memory(shared_memory_handle_, false);
   shared_memory.Map(media::TotalSharedMemorySizeInBytes(memory_length_));
-  scoped_refptr<AudioSocket> audio_socket(audio_socket_);
+  base::CancelableSyncSocket* audio_socket = audio_socket_.get();
 
-  int pending_data;
   const int samples_per_ms = static_cast<int>(sample_rate_) / 1000;
   const int bytes_per_ms = channels_ * (bits_per_sample_ / 8) * samples_per_ms;
 
-  while (sizeof(pending_data) ==
-      audio_socket->socket()->Receive(&pending_data, sizeof(pending_data))) {
-    if (pending_data == media::AudioOutputController::kPauseMark) {
+  while (true) {
+    uint32 pending_data = 0;
+    size_t bytes_read = audio_socket->Receive(&pending_data,
+                                              sizeof(pending_data));
+    if (bytes_read != sizeof(pending_data)) {
+      DCHECK_EQ(bytes_read, 0U);
+      break;
+    }
+
+    if (pending_data ==
+        static_cast<uint32>(media::AudioOutputController::kPauseMark)) {
       memset(shared_memory.memory(), 0, memory_length_);
       media::SetActualDataSizeInBytes(&shared_memory, memory_length_, 0);
       continue;
-    } else if (pending_data < 0) {
-      break;
     }
 
     // Convert the number of pending bytes in the render buffer
@@ -298,7 +304,6 @@ void AudioDevice::Run() {
                                     memory_length_,
                                     num_frames * channels_ * sizeof(int16));
   }
-  audio_socket->Close();
 }
 
 size_t AudioDevice::FireRenderCallback(int16* data) {
@@ -328,9 +333,11 @@ void AudioDevice::ShutDownAudioThread() {
   if (audio_thread_.get()) {
     // Close the socket to terminate the main thread function in the
     // audio thread.
-    audio_socket_->Close();
-    audio_socket_ = NULL;
+    audio_socket_->Shutdown();  // Stops blocking Receive calls.
+    // TODO(tommi): We must not do this from the IO thread.  Fix.
+    base::ThreadRestrictions::ScopedAllowIO allow_wait;
     audio_thread_->Join();
     audio_thread_.reset(NULL);
+    audio_socket_.reset();
   }
 }

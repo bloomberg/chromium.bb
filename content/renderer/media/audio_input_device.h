@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -164,6 +164,8 @@ class CONTENT_EXPORT AudioInputDevice
   void StartOnIOThread();
   void ShutDownOnIOThread(base::WaitableEvent* completion);
   void SetVolumeOnIOThread(double volume);
+  // Closes socket and joins with the audio thread.
+  void ShutDownAudioThread();
 
   void Send(IPC::Message* message);
 
@@ -209,7 +211,7 @@ class CONTENT_EXPORT AudioInputDevice
   bool pending_device_ready_;
 
   base::SharedMemoryHandle shared_memory_handle_;
-  base::SyncSocket::Handle socket_handle_;
+  scoped_ptr<base::CancelableSyncSocket> audio_socket_;
   int memory_length_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(AudioInputDevice);

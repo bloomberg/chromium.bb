@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/message_loop.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/time.h"
 #include "content/common/child_process.h"
 #include "content/common/media/audio_messages.h"
@@ -27,7 +28,6 @@ AudioInputDevice::AudioInputDevice(size_t buffer_size,
       session_id_(0),
       pending_device_ready_(false),
       shared_memory_handle_(base::SharedMemory::NULLHandle()),
-      socket_handle_(base::SyncSocket::kInvalidHandle),
       memory_length_(0) {
   filter_ = RenderThreadImpl::current()->audio_input_message_filter();
   audio_data_.reserve(channels);
@@ -77,13 +77,8 @@ void AudioInputDevice::SetDevice(int session_id) {
 void AudioInputDevice::Stop() {
   DCHECK(MessageLoop::current() != ChildProcess::current()->io_message_loop());
   VLOG(1) << "Stop()";
-  // Max waiting time for Stop() to complete. If this time limit is passed,
-  // we will stop waiting and return false. It ensures that Stop() can't block
-  // the calling thread forever.
-  const base::TimeDelta kMaxTimeOut = base::TimeDelta::FromMilliseconds(1000);
 
   base::WaitableEvent completion(false, false);
-
   ChildProcess::current()->io_message_loop()->PostTask(
       FROM_HERE,
       base::Bind(&AudioInputDevice::ShutDownOnIOThread, this,
@@ -92,20 +87,7 @@ void AudioInputDevice::Stop() {
   // We wait here for the IO task to be completed to remove race conflicts
   // with OnLowLatencyCreated() and to ensure that Stop() acts as a synchronous
   // function call.
-  if (!completion.TimedWait(kMaxTimeOut)) {
-    LOG(ERROR) << "Failed to shut down audio input on IO thread";
-  }
-
-  if (audio_thread_.get()) {
-    // Terminate the main thread function in the audio thread.
-    {
-      base::SyncSocket socket(socket_handle_);
-    }
-    // Wait for the audio thread to exit.
-    audio_thread_->Join();
-    // Ensures that we can call Stop() multiple times.
-    audio_thread_.reset(NULL);
-  }
+  completion.Wait();
 }
 
 bool AudioInputDevice::SetVolume(double volume) {
@@ -161,6 +143,8 @@ void AudioInputDevice::ShutDownOnIOThread(base::WaitableEvent* completion) {
   filter_->RemoveDelegate(stream_id_);
   Send(new AudioInputHostMsg_CloseStream(stream_id_));
 
+  ShutDownAudioThread();
+
   stream_id_ = 0;
   session_id_ = 0;
   pending_device_ready_ = false;
@@ -200,8 +184,7 @@ void AudioInputDevice::OnLowLatencyCreated(
 
   shared_memory_handle_ = handle;
   memory_length_ = length;
-
-  socket_handle_ = socket_handle;
+  audio_socket_.reset(new base::CancelableSyncSocket(socket_handle));
 
   audio_thread_.reset(
       new base::DelegateSimpleThread(this, "RendererAudioInputThread"));
@@ -220,21 +203,15 @@ void AudioInputDevice::OnStateChanged(AudioStreamState state) {
   DCHECK(MessageLoop::current() == ChildProcess::current()->io_message_loop());
   switch (state) {
     case kAudioStreamPaused:
+      // TODO(xians): Should we just call ShutDownOnIOThread here instead?
+
       // Do nothing if the stream has been closed.
       if (!stream_id_)
         return;
 
       filter_->RemoveDelegate(stream_id_);
 
-      // Joining the audio thread will be quite soon, since the stream has
-      // been closed before.
-      if (audio_thread_.get()) {
-        {
-          base::SyncSocket socket(socket_handle_);
-        }
-        audio_thread_->Join();
-        audio_thread_.reset(NULL);
-      }
+      ShutDownAudioThread();
 
       if (event_handler_)
         event_handler_->OnDeviceStopped();
@@ -268,8 +245,8 @@ void AudioInputDevice::OnDeviceReady(const std::string& device_id) {
     filter_->RemoveDelegate(stream_id_);
     stream_id_ = 0;
   } else {
-    Send(new AudioInputHostMsg_CreateStream(
-        stream_id_, audio_parameters_, true, device_id));
+    Send(new AudioInputHostMsg_CreateStream(stream_id_, audio_parameters_,
+                                            true, device_id));
   }
 
   pending_device_ready_ = false;
@@ -290,17 +267,20 @@ void AudioInputDevice::Run() {
   base::SharedMemory shared_memory(shared_memory_handle_, false);
   shared_memory.Map(memory_length_);
 
-  base::SyncSocket socket(socket_handle_);
+  base::CancelableSyncSocket* socket = audio_socket_.get();
 
-  int pending_data;
   const int samples_per_ms =
       static_cast<int>(audio_parameters_.sample_rate) / 1000;
   const int bytes_per_ms = audio_parameters_.channels *
       (audio_parameters_.bits_per_sample / 8) * samples_per_ms;
 
-  while ((sizeof(pending_data) == socket.Receive(&pending_data,
-                                                sizeof(pending_data))) &&
-         (pending_data >= 0)) {
+  while (true) {
+    uint32 pending_data = 0;
+    size_t received = socket->Receive(&pending_data, sizeof(pending_data));
+    if (received != sizeof(pending_data)) {
+      DCHECK(received == 0U);
+      break;
+    }
     // TODO(henrika): investigate the provided |pending_data| value
     // and ensure that it is actually an accurate delay estimation.
 
@@ -314,7 +294,7 @@ void AudioInputDevice::Run() {
 
 void AudioInputDevice::FireCaptureCallback(int16* input_audio) {
   if (!callback_)
-      return;
+    return;
 
   const size_t number_of_frames = audio_parameters_.samples_per_packet;
 
@@ -337,4 +317,23 @@ void AudioInputDevice::FireCaptureCallback(int16* input_audio) {
   callback_->Capture(audio_data_,
                      number_of_frames,
                      audio_delay_milliseconds_);
+}
+
+void AudioInputDevice::ShutDownAudioThread() {
+  DCHECK_EQ(MessageLoop::current(), ChildProcess::current()->io_message_loop());
+
+  // TODO(tommi): This is a copy/paste of the same method in AudioDevice.
+  // We could extract the worker thread+socket bits out to a separate
+  // class to avoid having to fix the same issues twice in these classes.
+
+  if (audio_thread_.get()) {
+    // Close the socket to terminate the main thread function in the
+    // audio thread.
+    audio_socket_->Shutdown();  // Stops blocking Receive calls.
+    // TODO(tommi): We must not do this from the IO thread.  Fix.
+    base::ThreadRestrictions::ScopedAllowIO allow_wait;
+    audio_thread_->Join();
+    audio_thread_.reset(NULL);
+    audio_socket_.reset();
+  }
 }

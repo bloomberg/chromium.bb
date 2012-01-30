@@ -142,33 +142,6 @@ class CONTENT_EXPORT AudioDevice
   virtual void OnVolume(double volume) OVERRIDE;
 
  private:
-  // Encapsulate socket into separate class to avoid double-close.
-  // Class is ref-counted to avoid potential race condition if audio device
-  // is deleted simultaneously with audio thread stopping.
-  class AudioSocket : public base::RefCountedThreadSafe<AudioSocket> {
-   public:
-    explicit AudioSocket(base::SyncSocket::Handle socket_handle)
-        : socket_(socket_handle) {
-    }
-    base::SyncSocket* socket() {
-      return &socket_;
-    }
-    void Close() {
-      // Close() should be thread-safe, obtain the lock.
-      base::AutoLock auto_lock(lock_);
-      socket_.Close();
-    }
-
-   private:
-    // Magic required by ref_counted.h to avoid any code deleting the object
-    // accidentally while there are references to it.
-    friend class base::RefCountedThreadSafe<AudioSocket>;
-    ~AudioSocket() { }
-
-    base::Lock lock_;
-    base::SyncSocket socket_;
-  };
-
   // Magic required by ref_counted.h to avoid any code deleting the object
   // accidentally while there are references to it.
   friend class base::RefCountedThreadSafe<AudioDevice>;
@@ -248,7 +221,7 @@ class CONTENT_EXPORT AudioDevice
   // These variables must only be set on the IO thread while the audio_thread_
   // is not running.
   base::SharedMemoryHandle shared_memory_handle_;
-  scoped_refptr<AudioSocket> audio_socket_;
+  scoped_ptr<base::CancelableSyncSocket> audio_socket_;
   int memory_length_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioDevice);

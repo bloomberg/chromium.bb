@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -45,12 +45,12 @@ class AudioSyncReader : public media::AudioOutputController::SyncReader {
   base::SharedMemory* shared_memory_;
   base::Time previous_call_time_;
 
-  // A pair of SyncSocket for transmitting audio data.
-  scoped_ptr<base::SyncSocket> socket_;
+  // Socket for transmitting audio data.
+  scoped_ptr<base::CancelableSyncSocket> socket_;
 
-  // SyncSocket to be used by the renderer. The reference is released after
+  // Socket to be used by the renderer. The reference is released after
   // PrepareForeignSocketHandle() is called and ran successfully.
-  scoped_ptr<base::SyncSocket> foreign_socket_;
+  scoped_ptr<base::CancelableSyncSocket> foreign_socket_;
 
   // Protect socket_ access by lock to prevent race condition when audio
   // controller thread closes the reader and hardware audio thread is reading
