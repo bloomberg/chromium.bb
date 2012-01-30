@@ -37,6 +37,8 @@ tc-test-bot() {
   echo "@@@BUILD_STEP show-config@@@"
   ${PNACL_BUILD} show-config
 
+  /usr/bin/python build/download_toolchains.py --x86-version 7667 --arm-trusted-version 7001 --pnacl-version 7667
+
   # Build the un-sandboxed toolchain
   echo "@@@BUILD_STEP compile_toolchain@@@"
   ${PNACL_BUILD} clean
