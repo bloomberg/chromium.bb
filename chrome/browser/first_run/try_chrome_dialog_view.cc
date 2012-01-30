@@ -36,22 +36,23 @@ const wchar_t kHelpCenterUrl[] =
 
 // static
 TryChromeDialogView::Result TryChromeDialogView::Show(
-    size_t version,
+    size_t flavor,
     ProcessSingleton* process_singleton) {
-  if (version > 10000) {
+  if (flavor > 10000) {
     // This is a test value. We want to make sure we exercise
-    // returning this early. See EarlyReturnTest test harness.
+    // returning this early. See TryChromeDialogBrowserTest test.
     return NOT_NOW;
   }
-  TryChromeDialogView dialog(version);
+  TryChromeDialogView dialog(flavor);
   return dialog.ShowModal(process_singleton);
 }
 
-TryChromeDialogView::TryChromeDialogView(size_t version)
-    : version_(version),
+TryChromeDialogView::TryChromeDialogView(size_t flavor)
+    : flavor_(flavor),
       popup_(NULL),
       try_chrome_(NULL),
       kill_chrome_(NULL),
+      dont_try_chrome_(NULL),
       result_(COUNT) {
 }
 
@@ -128,6 +129,10 @@ TryChromeDialogView::Result TryChromeDialogView::ShowModal(
   columns->AddPaddingColumn(0, views::kRelatedControlHorizontalSpacing);
   columns->AddColumn(views::GridLayout::LEADING, views::GridLayout::FILL, 1,
                      views::GridLayout::USE_PREF, 0, 0);
+  // Optional fourth row: [button].
+  columns = layout->AddColumnSet(5);
+  columns->AddColumn(views::GridLayout::CENTER, views::GridLayout::FILL, 1,
+                     views::GridLayout::USE_PREF, 0, 0);
   // First row views.
   layout->StartRow(0, 0);
   layout->AddView(icon);
@@ -139,7 +144,7 @@ TryChromeDialogView::Result TryChromeDialogView::ShowModal(
     return DIALOG_ERROR;
   }
   BrowserDistribution::UserExperiment experiment;
-  if (!dist->GetExperimentDetails(&experiment, version_) ||
+  if (!dist->GetExperimentDetails(&experiment, flavor_) ||
       !experiment.heading) {
     NOTREACHED() << "Cannot determine which headline to show.";
     return DIALOG_ERROR;
@@ -170,27 +175,45 @@ TryChromeDialogView::Result TryChromeDialogView::ShowModal(
   try_chrome_->SetChecked(true);
 
   // Third row views.
-  const string16 kill_it(l10n_util::GetStringUTF16(IDS_UNINSTALL_CHROME));
   layout->StartRow(0, 2);
-  kill_chrome_ = new views::RadioButton(kill_it, 1);
-  layout->AddView(kill_chrome_);
+  if (experiment.compact_bubble) {
+    // The compact bubble has, as its second radio button, "Don't bug me".
+    const string16 decline(l10n_util::GetStringUTF16(IDS_TRY_TOAST_CANCEL));
+    dont_try_chrome_ = new views::RadioButton(decline, 1);
+    layout->AddView(dont_try_chrome_);
+  } else {
+    // The regular bubble has, as its second radio button, "Uninstall Chrome".
+    const string16 kill_it(l10n_util::GetStringUTF16(IDS_UNINSTALL_CHROME));
+    kill_chrome_ = new views::RadioButton(kill_it, 1);
+    layout->AddView(kill_chrome_);
+  }
 
   // Fourth row views.
   const string16 ok_it(l10n_util::GetStringUTF16(IDS_OK));
   const string16 cancel_it(l10n_util::GetStringUTF16(IDS_TRY_TOAST_CANCEL));
   const string16 why_this(l10n_util::GetStringUTF16(IDS_TRY_TOAST_WHY));
-  layout->StartRowWithPadding(0, 3, 0, 10);
   views::Button* accept_button = new views::NativeTextButton(this, ok_it);
   accept_button->set_tag(BT_OK_BUTTON);
+
+  // The compact bubble uses a centered button column for buttons, since only
+  // the OK button appears.
+  int column_id_buttons = experiment.compact_bubble ? 5 : 3;
+  layout->StartRowWithPadding(0, column_id_buttons, 0, 10);
   layout->AddView(accept_button);
-  views::Button* cancel_button = new views::NativeTextButton(this, cancel_it);
-  cancel_button->set_tag(BT_CLOSE_BUTTON);
-  layout->AddView(cancel_button);
-  // Fifth row views.
-  layout->StartRowWithPadding(0, 4, 0, 10);
-  views::Link* link = new views::Link(why_this);
-  link->set_listener(this);
-  layout->AddView(link);
+  if (!experiment.compact_bubble) {
+    // The regular bubble needs a "Don't bug me" as a button, since it is not
+    // one of the options for the radio buttons. We also decided to include the
+    // "Why am I seeing this?" link for the regular bubble only.
+    views::Button* cancel_button = new views::NativeTextButton(this, cancel_it);
+    cancel_button->set_tag(BT_CLOSE_BUTTON);
+    layout->AddView(cancel_button);
+
+    // Fifth row views.
+    layout->StartRowWithPadding(0, 4, 0, 10);
+    views::Link* link = new views::Link(why_this);
+    link->set_listener(this);
+    layout->AddView(link);
+  }
 
   // We resize the window according to the layout manager. This takes into
   // account the differences between XP and Vista fonts and buttons.
@@ -252,7 +275,14 @@ void TryChromeDialogView::ButtonPressed(views::Button* sender,
     result_ = TRY_CHROME;
   } else {
     // The outcome is according to the selected ratio button.
-    result_ = try_chrome_->checked() ? TRY_CHROME : UNINSTALL_CHROME;
+    if (try_chrome_->checked())
+      result_ = TRY_CHROME;
+    else if (dont_try_chrome_ && dont_try_chrome_->checked())
+      result_ = NOT_NOW;
+    else if (kill_chrome_ && kill_chrome_->checked())
+      result_ = UNINSTALL_CHROME;
+    else
+      NOTREACHED() << "Unknown radio button selected";
   }
   popup_->Close();
   MessageLoop::current()->Quit();

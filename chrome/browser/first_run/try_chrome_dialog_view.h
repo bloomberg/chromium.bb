@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -25,7 +25,7 @@ class Widget;
 
 // This class displays a modal dialog using the views system. The dialog asks
 // the user to give chrome another try. This class only handles the UI so the
-// resulting actions are up to the caller. One version looks like this:
+// resulting actions are up to the caller. One flavor looks like this:
 //
 //   +-----------------------------------------------+
 //   | |icon| You stopped using Google Chrome    [x] |
@@ -51,13 +51,13 @@ class TryChromeDialogView : public views::ButtonListener,
   // Shows a modal dialog asking the user to give chrome another try. See
   // above for the possible outcomes of the function. This is an experimental,
   // non-localized dialog.
-  // |version| can be 0, 1 or 2 and selects what strings to present.
+  // |flavor| can be 0, 1, 2 or 3 and selects what strings to present.
   // |process_singleton| needs to be valid and it will be locked while
   // the dialog is shown.
   // Note that the dialog has no parent and it will position itself in a lower
   // corner of the screen. The dialog does not steal focus and does not have an
   // entry in the taskbar.
-  static Result Show(size_t version, ProcessSingleton* process_singleton);
+  static Result Show(size_t flavor, ProcessSingleton* process_singleton);
 
  private:
   enum ButtonTags {
@@ -66,7 +66,7 @@ class TryChromeDialogView : public views::ButtonListener,
     BT_OK_BUTTON,
   };
 
-  explicit TryChromeDialogView(size_t version);
+  explicit TryChromeDialogView(size_t flavor);
   virtual ~TryChromeDialogView();
 
   Result ShowModal(ProcessSingleton* process_singleton);
@@ -93,14 +93,15 @@ class TryChromeDialogView : public views::ButtonListener,
   // by some convoluted logic should not be chrome.
   virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE;
 
-  // Controls which version of the text to use.
-  size_t version_;
+  // Controls which flavor of the heading text to use.
+  size_t flavor_;
 
   // We don't own any of these pointers. The |popup_| owns itself and owns the
   // other views.
   views::Widget* popup_;
   views::RadioButton* try_chrome_;
   views::RadioButton* kill_chrome_;
+  views::RadioButton* dont_try_chrome_;
   Result result_;
 
   DISALLOW_COPY_AND_ASSIGN(TryChromeDialogView);

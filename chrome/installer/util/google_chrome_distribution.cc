@@ -601,12 +601,16 @@ bool GoogleChromeDistribution::GetExperimentDetails(
                             // of headings (below).
     int headings[kMax];     // A list of IDs per experiment. 0 == no heading.
   } kExperimentFlavors[] = {
-    // First in this order are the brand specific ones.
-    {L"en-US", kSkype, 1, L'Z', L'A', 1, { kSkype1, 0, 0, 0 } },
-    // And then we have catch-alls, like en-US (all brands).
-    {L"en-US", kAll,   1, L'T', L'V', 4, { kEnUs1, kEnUs2, kEnUs3, kEnUs4} },
-    // Japan has two experiments, same IDs as en-US but translated differently.
-    {L"jp",    kAll,   1, L'T', L'V', 2, { kEnUs1, kEnUs2, 0, 0} },
+    // This list should be ordered most-specific rule first (catch-all, like all
+    // brands or all locales should be last).
+
+    // The experiment with the more compact bubble. This one is a bit special
+    // because it is split into two: CAxx is regular style bubble and CBxx is
+    // compact style bubble. See |compact_bubble| below.
+    {L"en-US", kBrief, 1, L'C', L'A', 2, { kEnUs3, kEnUs3, 0, 0 } },
+
+    // Catch-all rules.
+    {kAll, kAll, 1, L'B', L'A', 1, {kEnUs3, 0, 0, 0} },
   };
 
   std::wstring locale;
@@ -657,6 +661,7 @@ bool GoogleChromeDistribution::GetExperimentDetails(
       experiment->prefix.resize(2);
       experiment->prefix[0] = kExperimentFlavors[i].prefix1;
       experiment->prefix[1] = kExperimentFlavors[i].prefix2 + flavor;
+      experiment->compact_bubble = (brand == kBrief) && (flavor == 1);
       return true;
     }
   }

@@ -29,6 +29,9 @@ const wchar_t kSkype[] = L"SKPC,SKPG,SKPH,SKPI,SKPL,SKPM,SKPN";
 // The brand code for enterprise installations.
 const wchar_t kEnterprise[] = L"GGRV";
 
+// The brand code for showing more compact bubbles (experimental).
+const wchar_t kBrief[] = L"CHMA";
+
 // Constants for the "infobar plugins" experiment. These strings become
 // the registry omaha |client| value. The last one is considered to be
 // the control group which reflects the current behavior. Note that

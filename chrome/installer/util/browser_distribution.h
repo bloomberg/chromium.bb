@@ -41,6 +41,7 @@ class BrowserDistribution {
                           // also known as the 'TV' part in 'TV80'.
     int flavor;           // The flavor index for this experiment.
     int heading;          // The heading resource ID to use for this experiment.
+    bool compact_bubble;  // Whether to show the compact heading or not.
     int control_group;    // Size of the control group (in percentages). Control
                           // group is the group that qualifies for the
                           // experiment but does not participate.
