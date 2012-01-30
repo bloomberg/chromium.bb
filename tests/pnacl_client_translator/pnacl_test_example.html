@@ -16,19 +16,50 @@
     //<![CDATA[
     function pageDidLoad() {
       // Set up a ticker so that we know that the UI thread is not blocked.
+      var quantum = 50;
       var startTime = (new Date).getTime();
       var updateUI = function() {
          var counter_div = $('counter_area');
          var now = (new Date).getTime();
          counter_div.innerText = String(now - startTime);
-         setTimeout(updateUI, 100);
+         updateCanvas();
+         setTimeout(updateUI, quantum);
       }
-      setTimeout(updateUI, 100);
+      setTimeout(updateUI, quantum);
 
       var updateProgress = function() {
          var progress_div = $('progress_area');
          progress_div.innerText += '.';
       }
+
+      // For canvas drawing.
+      var hpos = 0;
+      var color = 0;
+      // The colors of the rainbow.
+      var palette =
+        new Array("#ff0000", "#ff7f00", "#ffff00", "#00ff00", "#0000ff",
+                  "#6600ff", "#8b00ff");
+      var updateCanvas = function() {
+        var canvas = document.getElementById('canvas');
+        var hsize = canvas.width;
+        var boxHeight = canvas.height;
+        var ctx = canvas.getContext('2d');
+        ctx.fillStyle = palette[color];
+        if (!ctx) {
+          return;
+        }
+        boxWidth = Math.min(boxHeight, hsize - hpos);
+        ctx.fillRect(hpos, 0, boxWidth, boxHeight);
+        hpos += boxWidth;
+        if (hpos >= hsize) {
+          hpos = 0;
+          color++;
+          if (color >= palette.length) {
+            color = 0;
+          }
+        }
+      }
+
       var nexe_div = $('test_nexe');
       nexe_div.addEventListener('loadstart', updateProgress, true);
       nexe_div.addEventListener('progress', updateProgress, true);
@@ -59,8 +90,10 @@
 
   <p> This should tick when the UI thread is not blocked:</p>
   <div id="counter_area"> 0.0 </div>
+  <canvas id="canvas" width="200" height="10">
+  </canvas>
 
-  <p> Progress:</p>
+  <p> Download progress:</p>
   <div id="progress_area" style="font-size:28pt; color:#FF9900;"> </div>
 
 </body>
