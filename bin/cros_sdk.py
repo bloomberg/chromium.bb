@@ -218,7 +218,7 @@ Action taken is the following:
                     help=('Delete the current SDK chroot'))
   parser.add_option('', '--download',
                     action='store_true', dest='download', default=False,
-                    help=('Download and download a prebuilt SDK'))
+                    help=('Download and install a prebuilt SDK'))
   parser.add_option('', '--enter',
                     action='store_true', dest='enter', default=False,
                     help=('Enter the SDK chroot, possibly (re)create first'))
