@@ -64,7 +64,6 @@ include_rules = [
   "+content/browser/gpu/gpu_data_manager.h",
   "+content/browser/gpu/gpu_process_host.h",
   "+content/browser/gpu/gpu_process_host_ui_shim.h",
-  "+content/browser/host_zoom_map.h",
   "+content/browser/in_process_webkit/dom_storage_context.h",
   "+content/browser/in_process_webkit/session_storage_namespace.h",
   "+content/browser/in_process_webkit/webkit_context.h",

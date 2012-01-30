@@ -14,7 +14,6 @@
 
 class DownloadManager;
 class DownloadStatusUpdater;
-class HostZoomMap;
 class SSLHostState;
 
 namespace content {

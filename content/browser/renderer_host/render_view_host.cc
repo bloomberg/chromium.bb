@@ -20,7 +20,7 @@
 #include "content/browser/child_process_security_policy.h"
 #include "content/browser/cross_site_request_manager.h"
 #include "content/browser/gpu/gpu_surface_tracker.h"
-#include "content/browser/host_zoom_map.h"
+#include "content/browser/host_zoom_map_impl.h"
 #include "content/browser/in_process_webkit/session_storage_namespace.h"
 #include "content/browser/power_save_blocker.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
@@ -1466,7 +1466,8 @@ void RenderViewHost::OnScriptEvalResponse(int id, const ListValue& result) {
 void RenderViewHost::OnDidZoomURL(double zoom_level,
                                   bool remember,
                                   const GURL& url) {
-  HostZoomMap* host_zoom_map = process()->GetBrowserContext()->GetHostZoomMap();
+  HostZoomMapImpl* host_zoom_map = static_cast<HostZoomMapImpl*>(
+      process()->GetBrowserContext()->GetHostZoomMap());
   if (remember) {
     host_zoom_map->SetZoomLevel(net::GetHostOrSpecFromURL(url), zoom_level);
   } else {

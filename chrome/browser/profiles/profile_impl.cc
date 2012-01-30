@@ -95,11 +95,11 @@
 #include "content/browser/appcache/chrome_appcache_service.h"
 #include "content/browser/chrome_blob_storage_context.h"
 #include "content/browser/file_system/browser_file_system_helper.h"
-#include "content/browser/host_zoom_map.h"
 #include "content/browser/in_process_webkit/webkit_context.h"
 #include "content/browser/speech/speech_input_manager.h"
 #include "content/browser/ssl/ssl_host_state.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/host_zoom_map.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/user_metrics.h"
 #include "grit/locale_settings.h"
@@ -138,6 +138,7 @@ using base::Time;
 using base::TimeDelta;
 using content::BrowserThread;
 using content::DownloadManager;
+using content::HostZoomMap;
 using content::UserMetricsAction;
 
 namespace {
@@ -895,8 +896,8 @@ HostContentSettingsMap* ProfileImpl::GetHostContentSettingsMap() {
 
 HostZoomMap* ProfileImpl::GetHostZoomMap() {
   if (!host_zoom_map_) {
-    host_zoom_map_ = new HostZoomMap();
-    host_zoom_map_->set_default_zoom_level(
+    host_zoom_map_ = HostZoomMap::Create();
+    host_zoom_map_->SetDefaultZoomLevel(
         GetPrefs()->GetDouble(prefs::kDefaultZoomLevel));
 
     const DictionaryValue* host_zoom_dictionary =
@@ -1301,7 +1302,7 @@ void ProfileImpl::Observe(int type,
       } else if (*pref_name_in == prefs::kProfileName) {
         UpdateProfileNameCache();
       } else if (*pref_name_in == prefs::kDefaultZoomLevel) {
-          GetHostZoomMap()->set_default_zoom_level(
+          GetHostZoomMap()->SetDefaultZoomLevel(
               prefs->GetDouble(prefs::kDefaultZoomLevel));
       }
       break;
@@ -1318,7 +1319,7 @@ void ProfileImpl::Observe(int type,
         double level = host_zoom_map_->GetZoomLevel(host);
         DictionaryPrefUpdate update(prefs_.get(), prefs::kPerHostZoomLevels);
         DictionaryValue* host_zoom_dictionary = update.Get();
-        if (level == host_zoom_map_->default_zoom_level()) {
+        if (level == host_zoom_map_->GetDefaultZoomLevel()) {
           host_zoom_dictionary->RemoveWithoutPathExpansion(host, NULL);
         } else {
           host_zoom_dictionary->SetWithoutPathExpansion(

@@ -230,7 +230,7 @@ class TestingProfile : public Profile {
   virtual content::GeolocationPermissionContext*
       GetGeolocationPermissionContext() OVERRIDE;
   virtual SpeechInputPreferences* GetSpeechInputPreferences() OVERRIDE;
-  virtual HostZoomMap* GetHostZoomMap() OVERRIDE;
+  virtual content::HostZoomMap* GetHostZoomMap() OVERRIDE;
   virtual bool HasProfileSyncService() OVERRIDE;
   virtual std::wstring GetName();
   virtual void SetName(const std::wstring& name) {}

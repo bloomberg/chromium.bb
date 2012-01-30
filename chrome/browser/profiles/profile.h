@@ -192,7 +192,7 @@ class Profile : public content::BrowserContext {
       int renderer_child_id) = 0;
   virtual net::URLRequestContextGetter* GetRequestContextForMedia() = 0;
   virtual const content::ResourceContext& GetResourceContext() = 0;
-  virtual HostZoomMap* GetHostZoomMap() = 0;
+  virtual content::HostZoomMap* GetHostZoomMap() = 0;
   virtual content::GeolocationPermissionContext*
       GetGeolocationPermissionContext() = 0;
   virtual SpeechInputPreferences* GetSpeechInputPreferences() = 0;

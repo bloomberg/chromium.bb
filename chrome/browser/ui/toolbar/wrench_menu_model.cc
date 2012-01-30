@@ -58,6 +58,7 @@
 #include "chrome/browser/enumerate_modules_model_win.h"
 #endif
 
+using content::HostZoomMap;
 using content::UserMetricsAction;
 using content::WebContents;
 

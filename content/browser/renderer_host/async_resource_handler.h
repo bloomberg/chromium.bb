@@ -11,7 +11,6 @@
 #include "content/browser/renderer_host/resource_handler.h"
 #include "googleurl/src/gurl.h"
 
-class HostZoomMap;
 class ResourceDispatcherHost;
 class ResourceMessageFilter;
 class SharedIOBuffer;
@@ -59,7 +58,6 @@ class AsyncResourceHandler : public ResourceHandler {
   scoped_refptr<SharedIOBuffer> read_buffer_;
   scoped_refptr<ResourceMessageFilter> filter_;
   int routing_id_;
-  HostZoomMap* host_zoom_map_;
   ResourceDispatcherHost* rdh_;
 
   // |next_buffer_size_| is the size of the buffer to be allocated on the next

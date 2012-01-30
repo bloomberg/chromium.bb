@@ -12,7 +12,7 @@
 #include "base/logging.h"
 #include "base/shared_memory.h"
 #include "content/browser/debugger/devtools_netlog_observer.h"
-#include "content/browser/host_zoom_map.h"
+#include "content/browser/host_zoom_map_impl.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/browser/renderer_host/resource_dispatcher_host_request_info.h"
 #include "content/browser/renderer_host/resource_message_filter.h"
@@ -84,7 +84,6 @@ AsyncResourceHandler::AsyncResourceHandler(
     ResourceDispatcherHost* resource_dispatcher_host)
     : filter_(filter),
       routing_id_(routing_id),
-      host_zoom_map_(NULL),
       rdh_(resource_dispatcher_host),
       next_buffer_size_(kInitialReadBufSize),
       url_(url) {
@@ -136,7 +135,7 @@ bool AsyncResourceHandler::OnResponseStarted(
 
   const content::ResourceContext& resource_context =
       filter_->resource_context();
-  HostZoomMap* host_zoom_map = resource_context.host_zoom_map();
+  content::HostZoomMap* host_zoom_map = resource_context.host_zoom_map();
 
   ResourceDispatcherHostRequestInfo* info = rdh_->InfoForRequest(request);
   if (info->resource_type() == ResourceType::MAIN_FRAME && host_zoom_map) {

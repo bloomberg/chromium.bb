@@ -28,7 +28,6 @@ class ChromeAppCacheService;
 class ChromeBlobStorageContext;
 class FilePath;
 class SpeechInputPreferences;
-class HostZoomMap;
 class SSLHostState;
 class WebKitContext;
 
@@ -36,6 +35,7 @@ namespace content {
 
 class DownloadManager;
 class GeolocationPermissionContext;
+class HostZoomMap;
 class ResourceContext;
 
 // This class holds the context needed for a browsing session.

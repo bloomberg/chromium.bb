@@ -4,7 +4,7 @@
 
 #include <cmath>
 
-#include "content/browser/host_zoom_map.h"
+#include "content/browser/host_zoom_map_impl.h"
 
 #include "base/string_piece.h"
 #include "base/utf_string_conversions.h"
@@ -25,19 +25,28 @@ using WebKit::WebView;
 using content::BrowserThread;
 using content::RenderProcessHost;
 
-HostZoomMap::HostZoomMap()
+namespace content {
+
+HostZoomMap* HostZoomMap::Create() {
+  return new HostZoomMapImpl();
+}
+
+}  // namespace content
+
+HostZoomMapImpl::HostZoomMapImpl()
     : default_zoom_level_(0.0) {
   registrar_.Add(
       this, content::NOTIFICATION_RENDER_VIEW_HOST_WILL_CLOSE_RENDER_VIEW,
       content::NotificationService::AllSources());
 }
 
-void HostZoomMap::CopyFrom(HostZoomMap* copy) {
+void HostZoomMapImpl::CopyFrom(HostZoomMap* copy_interface) {
   // This can only be called on the UI thread to avoid deadlocks, otherwise
   //   UI: a.CopyFrom(b);
   //   IO: b.CopyFrom(a);
   // can deadlock.
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  HostZoomMapImpl* copy = static_cast<HostZoomMapImpl*>(copy_interface);
   base::AutoLock auto_lock(lock_);
   base::AutoLock copy_auto_lock(copy->lock_);
   for (HostZoomLevels::const_iterator i(copy->host_zoom_levels_.begin());
@@ -46,13 +55,13 @@ void HostZoomMap::CopyFrom(HostZoomMap* copy) {
   }
 }
 
-double HostZoomMap::GetZoomLevel(const std::string& host) const {
+double HostZoomMapImpl::GetZoomLevel(const std::string& host) const {
   base::AutoLock auto_lock(lock_);
   HostZoomLevels::const_iterator i(host_zoom_levels_.find(host));
   return (i == host_zoom_levels_.end()) ? default_zoom_level_ : i->second;
 }
 
-void HostZoomMap::SetZoomLevel(std::string host, double level) {
+void HostZoomMapImpl::SetZoomLevel(std::string host, double level) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   {
@@ -80,8 +89,16 @@ void HostZoomMap::SetZoomLevel(std::string host, double level) {
       content::Details<const std::string>(&host));
 }
 
-double HostZoomMap::GetTemporaryZoomLevel(int render_process_id,
-                                          int render_view_id) const {
+double HostZoomMapImpl::GetDefaultZoomLevel() const {
+  return default_zoom_level_;
+}
+
+void HostZoomMapImpl::SetDefaultZoomLevel(double level) {
+  default_zoom_level_ = level;
+}
+
+double HostZoomMapImpl::GetTemporaryZoomLevel(int render_process_id,
+                                              int render_view_id) const {
   base::AutoLock auto_lock(lock_);
   for (size_t i = 0; i < temporary_zoom_levels_.size(); ++i) {
     if (temporary_zoom_levels_[i].render_process_id == render_process_id &&
@@ -92,9 +109,9 @@ double HostZoomMap::GetTemporaryZoomLevel(int render_process_id,
   return 0;
 }
 
-void HostZoomMap::SetTemporaryZoomLevel(int render_process_id,
-                                        int render_view_id,
-                                        double level) {
+void HostZoomMapImpl::SetTemporaryZoomLevel(int render_process_id,
+                                            int render_view_id,
+                                            double level) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   {
@@ -128,7 +145,7 @@ void HostZoomMap::SetTemporaryZoomLevel(int render_process_id,
       content::Details<const std::string>(&host));
 }
 
-void HostZoomMap::Observe(
+void HostZoomMapImpl::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
@@ -156,5 +173,5 @@ void HostZoomMap::Observe(
   }
 }
 
-HostZoomMap::~HostZoomMap() {
+HostZoomMapImpl::~HostZoomMapImpl() {
 }

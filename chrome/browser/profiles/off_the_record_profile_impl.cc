@@ -48,10 +48,10 @@
 #include "content/browser/appcache/chrome_appcache_service.h"
 #include "content/browser/chrome_blob_storage_context.h"
 #include "content/browser/file_system/browser_file_system_helper.h"
-#include "content/browser/host_zoom_map.h"
 #include "content/browser/in_process_webkit/webkit_context.h"
 #include "content/browser/ssl/ssl_host_state.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/host_zoom_map.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
 #include "net/base/transport_security_state.h"
@@ -66,6 +66,7 @@
 
 using content::BrowserThread;
 using content::DownloadManager;
+using content::HostZoomMap;
 
 namespace {
 
@@ -391,7 +392,7 @@ HostContentSettingsMap* OffTheRecordProfileImpl::GetHostContentSettingsMap() {
 HostZoomMap* OffTheRecordProfileImpl::GetHostZoomMap() {
   // Create new host zoom map and copy zoom levels from parent.
   if (!host_zoom_map_) {
-    host_zoom_map_ = new HostZoomMap();
+    host_zoom_map_ = HostZoomMap::Create();
     host_zoom_map_->CopyFrom(profile_->GetHostZoomMap());
     // Observe parent's HZM change for propagating change of parent's
     // change to this HZM.

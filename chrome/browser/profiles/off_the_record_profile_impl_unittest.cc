@@ -12,10 +12,12 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_pref_service.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/browser/host_zoom_map.h"
+#include "content/public/browser/host_zoom_map.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
+
+using content::HostZoomMap;
 
 namespace {
 
@@ -28,7 +30,7 @@ class TestingProfileWithHostZoomMap : public TestingProfile,
 
   virtual HostZoomMap* GetHostZoomMap() {
     if (!host_zoom_map_) {
-      host_zoom_map_ = new HostZoomMap();
+      host_zoom_map_ = HostZoomMap::Create();
 
       registrar_.Add(this, content::NOTIFICATION_ZOOM_LEVEL_CHANGED,
                      content::Source<HostZoomMap>(host_zoom_map_));
@@ -51,18 +53,18 @@ class TestingProfileWithHostZoomMap : public TestingProfile,
                        const content::NotificationDetails& details) OVERRIDE {
     const std::string& host =
         *(content::Details<const std::string>(details).ptr());
-    if (type == content::NOTIFICATION_ZOOM_LEVEL_CHANGED) {
-      if (!host.empty()) {
-        double level = host_zoom_map_->GetZoomLevel(host);
-        DictionaryPrefUpdate update(prefs_.get(), prefs::kPerHostZoomLevels);
-        DictionaryValue* host_zoom_dictionary = update.Get();
-        if (level == host_zoom_map_->default_zoom_level()) {
-          host_zoom_dictionary->RemoveWithoutPathExpansion(host, NULL);
-        } else {
-          host_zoom_dictionary->SetWithoutPathExpansion(
-              host, Value::CreateDoubleValue(level));
-        }
-      }
+    DCHECK(type == content::NOTIFICATION_ZOOM_LEVEL_CHANGED);
+    if (host.empty())
+      return;
+
+    double level = host_zoom_map_->GetZoomLevel(host);
+    DictionaryPrefUpdate update(prefs_.get(), prefs::kPerHostZoomLevels);
+    DictionaryValue* host_zoom_dictionary = update.Get();
+    if (level == host_zoom_map_->GetDefaultZoomLevel()) {
+      host_zoom_dictionary->RemoveWithoutPathExpansion(host, NULL);
+    } else {
+      host_zoom_dictionary->SetWithoutPathExpansion(
+          host, Value::CreateDoubleValue(level));
     }
   }
 

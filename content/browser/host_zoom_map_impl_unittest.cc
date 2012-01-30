@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/host_zoom_map.h"
+#include "content/browser/host_zoom_map_impl.h"
 
 #include "base/memory/ref_counted.h"
 #include "base/message_loop.h"
@@ -21,7 +21,7 @@ class HostZoomMapTest : public testing::Test {
 };
 
 TEST_F(HostZoomMapTest, GetSetZoomLevel) {
-  scoped_refptr<HostZoomMap> host_zoom_map = new HostZoomMap;
+  scoped_refptr<HostZoomMapImpl> host_zoom_map = new HostZoomMapImpl;
 
   double zoomed = 2.5;
   host_zoom_map->SetZoomLevel("zoomed.com", zoomed);
@@ -29,4 +29,3 @@ TEST_F(HostZoomMapTest, GetSetZoomLevel) {
   EXPECT_DOUBLE_EQ(host_zoom_map->GetZoomLevel("normal.com"), 0);
   EXPECT_DOUBLE_EQ(host_zoom_map->GetZoomLevel("zoomed.com"), zoomed);
 }
-

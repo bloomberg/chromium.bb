@@ -79,7 +79,7 @@ class OffTheRecordProfileImpl : public Profile,
   virtual const content::ResourceContext& GetResourceContext() OVERRIDE;
   virtual net::SSLConfigService* GetSSLConfigService() OVERRIDE;
   virtual HostContentSettingsMap* GetHostContentSettingsMap() OVERRIDE;
-  virtual HostZoomMap* GetHostZoomMap() OVERRIDE;
+  virtual content::HostZoomMap* GetHostZoomMap() OVERRIDE;
   virtual content::GeolocationPermissionContext*
       GetGeolocationPermissionContext() OVERRIDE;
   virtual SpeechInputPreferences* GetSpeechInputPreferences() OVERRIDE;
@@ -153,7 +153,7 @@ class OffTheRecordProfileImpl : public Profile,
   scoped_refptr<HostContentSettingsMap> host_content_settings_map_;
 
   // Use a separate zoom map for OTR.
-  scoped_refptr<HostZoomMap> host_zoom_map_;
+  scoped_refptr<content::HostZoomMap> host_zoom_map_;
 
   // Use a special WebKit context for OTR browsing.
   scoped_refptr<WebKitContext> webkit_context_;

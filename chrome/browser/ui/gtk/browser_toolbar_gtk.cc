@@ -59,6 +59,7 @@
 #include "ui/gfx/image/cairo_cached_surface.h"
 #include "ui/gfx/skbitmap_operations.h"
 
+using content::HostZoomMap;
 using content::UserMetricsAction;
 using content::WebContents;
 

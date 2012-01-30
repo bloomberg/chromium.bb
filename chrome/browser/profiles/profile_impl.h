@@ -56,7 +56,7 @@ class ProfileImpl : public Profile,
       int renderer_child_id) OVERRIDE;
   virtual net::URLRequestContextGetter* GetRequestContextForMedia() OVERRIDE;
   virtual const content::ResourceContext& GetResourceContext() OVERRIDE;
-  virtual HostZoomMap* GetHostZoomMap() OVERRIDE;
+  virtual content::HostZoomMap* GetHostZoomMap() OVERRIDE;
   virtual content::GeolocationPermissionContext*
       GetGeolocationPermissionContext() OVERRIDE;
   virtual SpeechInputPreferences* GetSpeechInputPreferences() OVERRIDE;
@@ -241,7 +241,7 @@ class ProfileImpl : public Profile,
   scoped_ptr<SSLConfigServiceManager> ssl_config_service_manager_;
 
   scoped_refptr<HostContentSettingsMap> host_content_settings_map_;
-  scoped_refptr<HostZoomMap> host_zoom_map_;
+  scoped_refptr<content::HostZoomMap> host_zoom_map_;
   scoped_refptr<content::GeolocationPermissionContext>
       geolocation_permission_context_;
   scoped_refptr<SpeechInputPreferences> speech_input_preferences_;

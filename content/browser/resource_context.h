@@ -15,7 +15,6 @@
 class AudioManager;
 class ChromeAppCacheService;
 class ChromeBlobStorageContext;
-class HostZoomMap;
 class MediaObserver;
 namespace fileapi {
 class FileSystemContext;
@@ -35,6 +34,8 @@ class DatabaseTracker;
 }  // namespace webkit_database
 
 namespace content {
+
+class HostZoomMap;
 
 // ResourceContext contains the relevant context information required for
 // resource loading. It lives on the IO thread, although it is constructed on

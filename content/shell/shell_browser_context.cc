@@ -15,7 +15,7 @@
 #include "content/browser/download/download_manager_impl.h"
 #include "content/browser/download/download_status_updater.h"
 #include "content/browser/file_system/browser_file_system_helper.h"
-#include "content/browser/host_zoom_map.h"
+#include "content/browser/host_zoom_map_impl.h"
 #include "content/browser/in_process_webkit/webkit_context.h"
 #include "content/browser/speech/speech_input_preferences.h"
 #include "content/browser/ssl/ssl_host_state.h"
@@ -181,7 +181,7 @@ const ResourceContext& ShellBrowserContext::GetResourceContext()  {
 
 HostZoomMap* ShellBrowserContext::GetHostZoomMap()  {
   if (!host_zoom_map_)
-    host_zoom_map_ = new HostZoomMap();
+    host_zoom_map_ = HostZoomMap::Create();
   return host_zoom_map_.get();
 }
 

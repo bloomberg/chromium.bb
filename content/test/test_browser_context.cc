@@ -10,6 +10,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using content::DownloadManager;
+using content::HostZoomMap;
 
 TestBrowserContext::TestBrowserContext() {
   EXPECT_TRUE(browser_context_dir_.CreateUniqueTempDir());

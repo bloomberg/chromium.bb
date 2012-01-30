@@ -17,7 +17,7 @@
 #include "content/browser/debugger/devtools_manager_impl.h"
 #include "content/browser/download/download_stats.h"
 #include "content/browser/download/save_package.h"
-#include "content/browser/host_zoom_map.h"
+#include "content/browser/host_zoom_map_impl.h"
 #include "content/browser/in_process_webkit/session_storage_namespace.h"
 #include "content/browser/intents/web_intents_dispatcher_impl.h"
 #include "content/browser/load_from_memory_cache_details.h"
@@ -1044,7 +1044,8 @@ bool TabContents::GetClosedByUserGesture() const {
 }
 
 double TabContents::GetZoomLevel() const {
-  HostZoomMap* zoom_map = GetBrowserContext()->GetHostZoomMap();
+  HostZoomMapImpl* zoom_map = static_cast<HostZoomMapImpl*>(
+      GetBrowserContext()->GetHostZoomMap());
   if (!zoom_map)
     return 0;
 

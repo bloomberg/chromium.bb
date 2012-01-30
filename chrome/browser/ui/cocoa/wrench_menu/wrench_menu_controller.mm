@@ -31,6 +31,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/menu_model.h"
 
+using content::HostZoomMap;
 using content::UserMetricsAction;
 
 @interface WrenchMenuController (Private)

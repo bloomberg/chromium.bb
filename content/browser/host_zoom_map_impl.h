@@ -2,55 +2,35 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Maps hostnames to custom zoom levels.  Written on the UI thread and read on
-// any thread.  One instance per browser context.
-
-#ifndef CONTENT_BROWSER_HOST_ZOOM_MAP_H_
-#define CONTENT_BROWSER_HOST_ZOOM_MAP_H_
+#ifndef CONTENT_BROWSER_HOST_ZOOM_MAP_IMPL_H_
+#define CONTENT_BROWSER_HOST_ZOOM_MAP_IMPL_H_
 #pragma once
 
 #include <map>
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
-#include "base/memory/ref_counted.h"
+#include "base/compiler_specific.h"
 #include "base/message_loop_helpers.h"
 #include "base/synchronization/lock.h"
-#include "content/common/content_export.h"
-#include "content/public/browser/browser_thread.h"
+#include "content/public/browser/host_zoom_map.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
 // HostZoomMap needs to be deleted on the UI thread because it listens
 // to notifications on there (and holds a NotificationRegistrar).
-class CONTENT_EXPORT HostZoomMap
-    : public content::NotificationObserver,
-      public base::RefCountedThreadSafe<
-          HostZoomMap, content::BrowserThread::DeleteOnUIThread> {
+class CONTENT_EXPORT HostZoomMapImpl
+    : public NON_EXPORTED_BASE(content::HostZoomMap),
+      public content::NotificationObserver {
  public:
-  HostZoomMap();
+  HostZoomMapImpl();
 
-  // Copy the zoom levels from the given map. Can only be called on the UI
-  // thread.
-  void CopyFrom(HostZoomMap* copy);
-
-  // Returns the zoom level for the host or spec for a given url. The zoom
-  // level is determined by the host portion of the URL, or (in the absence of
-  // a host) the complete spec of the URL. In most cases, there is no custom
-  // zoom level, and this returns the user's default zoom level.  Otherwise,
-  // returns the saved zoom level, which may be positive (to zoom in) or
-  // negative (to zoom out).
-  //
-  // This may be called on any thread.
-  double GetZoomLevel(const std::string& host) const;
-
-  // Sets the zoom level for the host or spec for a given url to |level|.  If
-  // the level matches the current default zoom level, the host is erased
-  // from the saved preferences; otherwise the new value is written out.
-  //
-  // This should only be called on the UI thread.
-  void SetZoomLevel(std::string host, double level);
+  // HostZoomMap implementation:
+  virtual void CopyFrom(HostZoomMap* copy) OVERRIDE;
+  virtual double GetZoomLevel(const std::string& host) const OVERRIDE;
+  virtual void SetZoomLevel(std::string host, double level) OVERRIDE;
+  virtual double GetDefaultZoomLevel() const OVERRIDE;
+  virtual void SetDefaultZoomLevel(double level) OVERRIDE;
 
   // Returns the temporary zoom level that's only valid for the lifetime of
   // the given tab (i.e. isn't saved and doesn't affect other tabs) if it
@@ -73,19 +53,10 @@ class CONTENT_EXPORT HostZoomMap
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
-  double default_zoom_level() const { return default_zoom_level_; }
-  void set_default_zoom_level(double level) { default_zoom_level_ = level; }
-
  private:
-  friend class base::RefCountedThreadSafe<
-      HostZoomMap, content::BrowserThread::DeleteOnUIThread>;
-  friend struct content::BrowserThread::DeleteOnThread<
-      content::BrowserThread::UI>;
-  friend class base::DeleteHelper<HostZoomMap>;
-
   typedef std::map<std::string, double> HostZoomLevels;
 
-  virtual ~HostZoomMap();
+  virtual ~HostZoomMapImpl();
 
   // Copy of the pref data, so that we can read it on the IO thread.
   HostZoomLevels host_zoom_levels_;
@@ -107,7 +78,7 @@ class CONTENT_EXPORT HostZoomMap
 
   content::NotificationRegistrar registrar_;
 
-  DISALLOW_COPY_AND_ASSIGN(HostZoomMap);
+  DISALLOW_COPY_AND_ASSIGN(HostZoomMapImpl);
 };
 
-#endif  // CONTENT_BROWSER_HOST_ZOOM_MAP_H_
+#endif  // CONTENT_BROWSER_HOST_ZOOM_MAP_IMPL_H_

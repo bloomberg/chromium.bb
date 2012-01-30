@@ -44,6 +44,7 @@
 #include "ui/views/controls/menu/submenu_view.h"
 #include "ui/views/widget/widget.h"
 
+using content::HostZoomMap;
 using content::UserMetricsAction;
 using content::WebContents;
 using ui::MenuModel;

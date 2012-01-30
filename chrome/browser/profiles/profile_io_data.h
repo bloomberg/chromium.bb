@@ -27,7 +27,6 @@ class CookieSettings;
 class DesktopNotificationService;
 class ExtensionInfoMap;
 class HostContentSettingsMap;
-class HostZoomMap;
 class IOThread;
 class Profile;
 class ProtocolHandlerRegistry;
@@ -148,7 +147,7 @@ class ProfileIOData {
     scoped_refptr<AudioManager> audio_manager;
     scoped_refptr<HostContentSettingsMap> host_content_settings_map;
     scoped_refptr<CookieSettings> cookie_settings;
-    scoped_refptr<HostZoomMap> host_zoom_map;
+    scoped_refptr<content::HostZoomMap> host_zoom_map;
     scoped_refptr<net::SSLConfigService> ssl_config_service;
     scoped_refptr<net::CookieMonster::Delegate> cookie_monster_delegate;
     scoped_refptr<webkit_database::DatabaseTracker> database_tracker;
@@ -288,7 +287,7 @@ class ProfileIOData {
   mutable scoped_refptr<ChromeBlobStorageContext> blob_storage_context_;
   mutable scoped_refptr<fileapi::FileSystemContext> file_system_context_;
   mutable scoped_refptr<quota::QuotaManager> quota_manager_;
-  mutable scoped_refptr<HostZoomMap> host_zoom_map_;
+  mutable scoped_refptr<content::HostZoomMap> host_zoom_map_;
   mutable scoped_ptr<media_stream::MediaStreamManager> media_stream_manager_;
 
   // TODO(willchan): Remove from ResourceContext.
