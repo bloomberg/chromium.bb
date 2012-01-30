@@ -214,7 +214,6 @@
             '<(DEPTH)/build/temp_gyp/googleurl.gyp:googleurl',
             '<(DEPTH)/build/util/build_util.gyp:lastchange#target',
             '<(DEPTH)/build/util/support/support.gyp:*',
-            '<(DEPTH)/build/win/system.gyp:cygwin',
             '<(DEPTH)/chrome_frame/chrome_frame.gyp:chrome_tab_idl',
             '<(DEPTH)/chrome_frame/chrome_frame.gyp:npchrome_frame',
             '<(DEPTH)/breakpad/breakpad.gyp:breakpad_handler',

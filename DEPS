@@ -480,6 +480,11 @@ hooks = [
     "action": ["python", "src/tools/clang/scripts/update.py", "--mac-only"],
   },
   {
+    # Update the cygwin mount on Windows.
+    "pattern": ".",
+    "action": ["python", "src/build/win/setup_cygwin_mount.py", "--win-only"],
+  },
+  {
     # A change to a .gyp, .gypi, or to GYP itself should run the generator.
     "pattern": ".",
     "action": ["python", "src/build/gyp_chromium"],
