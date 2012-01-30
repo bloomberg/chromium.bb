@@ -12,7 +12,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/perftimer.h"
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
-#include "content/browser/javascript_dialogs.h"
+#include "content/public/browser/javascript_dialogs.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_delegate.h"

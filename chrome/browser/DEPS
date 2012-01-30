@@ -68,7 +68,6 @@ include_rules = [
   "+content/browser/in_process_webkit/session_storage_namespace.h",
   "+content/browser/in_process_webkit/webkit_context.h",
   "+content/browser/intents/intent_injector.h",
-  "+content/browser/javascript_dialogs.h",
   "+content/browser/load_notification_details.h",
   "+content/browser/mac/closure_blocks_leopard_compat.h",
   "+content/browser/mach_broker_mac.h",

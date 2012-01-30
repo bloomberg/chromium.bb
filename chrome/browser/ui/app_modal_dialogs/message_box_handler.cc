@@ -13,7 +13,6 @@
 #include "chrome/browser/ui/app_modal_dialogs/app_modal_dialog_queue.h"
 #include "chrome/browser/ui/app_modal_dialogs/js_modal_dialog.h"
 #include "chrome/common/chrome_constants.h"
-#include "content/browser/javascript_dialogs.h"
 #include "grit/generated_resources.h"
 #include "ui/base/javascript_message_type.h"
 #include "ui/base/l10n/l10n_util.h"

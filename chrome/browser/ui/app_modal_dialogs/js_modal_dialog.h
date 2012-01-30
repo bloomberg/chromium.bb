@@ -12,7 +12,7 @@
 #include "base/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/app_modal_dialogs/app_modal_dialog.h"
-#include "content/browser/javascript_dialogs.h"
+#include "content/public/browser/javascript_dialogs.h"
 
 // Extra data for JavaScript dialogs to add Chrome-only features.
 class ChromeJavaScriptDialogExtraData {

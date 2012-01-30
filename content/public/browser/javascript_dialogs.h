@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_JAVASCRIPT_DIALOGS_H_
-#define CONTENT_BROWSER_JAVASCRIPT_DIALOGS_H_
+#ifndef CONTENT_PUBLIC_BROWSER_JAVASCRIPT_DIALOGS_H_
+#define CONTENT_PUBLIC_BROWSER_JAVASCRIPT_DIALOGS_H_
 #pragma once
 
 #include "base/callback.h"
@@ -20,7 +20,6 @@ class WebContents;
 // dialogs.
 class JavaScriptDialogCreator {
  public:
-
   typedef base::Callback<void(bool /* success */,
                               const string16& /* user_input */)>
                                   DialogClosedCallback;
@@ -58,4 +57,4 @@ class JavaScriptDialogCreator {
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_JAVASCRIPT_DIALOGS_H_
+#endif  // CONTENT_PUBLIC_BROWSER_JAVASCRIPT_DIALOGS_H_
