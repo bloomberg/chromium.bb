@@ -983,6 +983,8 @@ rotate_grab_motion(struct wl_grab *grab,
 		container_of(grab, struct rotate_grab, grab);
 	struct wl_input_device *device = grab->input_device;
 	struct shell_surface *surface = rotate->surface;
+	GLfloat cx = 0.5f * surface->surface->geometry.width;
+	GLfloat cy = 0.5f * surface->surface->geometry.height;
 	GLfloat dx, dy;
 	GLfloat r;
 
@@ -1004,15 +1006,13 @@ rotate_grab_motion(struct wl_grab *grab,
 		rotate->rotation.d[5] = rotate->rotation.d[0];
 
 		weston_matrix_init(matrix);
-		weston_matrix_translate(matrix, -rotate->center.x,
-					-rotate->center.y, 0.0f);
+		weston_matrix_translate(matrix, -cx, -cy, 0.0f);
 		weston_matrix_multiply(matrix, &surface->rotation.rotation);
 		weston_matrix_multiply(matrix, &rotate->rotation);
-		weston_matrix_translate(matrix, rotate->center.x,
-					rotate->center.y, 0.0f);
+		weston_matrix_translate(matrix, cx, cy, 0.0f);
 
 		wl_list_insert(
-			surface->surface->geometry.transformation_list.prev,
+			&surface->surface->geometry.transformation_list,
 			&surface->rotation.transform.link);
 	} else {
 		wl_list_init(&surface->rotation.transform.link);
