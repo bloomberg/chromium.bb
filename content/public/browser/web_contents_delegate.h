@@ -312,9 +312,8 @@ class CONTENT_EXPORT WebContentsDelegate {
   // been committed.
   virtual void DidNavigateToPendingEntry(WebContents* tab) {}
 
-  // Returns a pointer to a service to create JavaScript dialogs. The default
-  // pointer returned is to a stub service that marks all dialogs as suppressed
-  // and displays nothing.
+  // Returns a pointer to a service to create JavaScript dialogs. May return
+  // NULL in which case dialogs aren't shown.
   virtual JavaScriptDialogCreator* GetJavaScriptDialogCreator();
 
   // Called when a file selection is to be done.

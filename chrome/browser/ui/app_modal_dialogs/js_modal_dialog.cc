@@ -6,7 +6,12 @@
 
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/ui/app_modal_dialogs/native_app_modal_dialog.h"
+#include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_view.h"
 #include "ui/base/text/text_elider.h"
+
+using content::JavaScriptDialogCreator;
+using content::WebContents;
 
 namespace {
 
@@ -47,7 +52,7 @@ ChromeJavaScriptDialogExtraData::ChromeJavaScriptDialogExtraData()
 }
 
 JavaScriptAppModalDialog::JavaScriptAppModalDialog(
-    content::JavaScriptDialogDelegate* delegate,
+    WebContents* web_contents,
     ChromeJavaScriptDialogExtraData* extra_data,
     const string16& title,
     ui::JavascriptMessageType javascript_message_type,
@@ -55,13 +60,13 @@ JavaScriptAppModalDialog::JavaScriptAppModalDialog(
     const string16& default_prompt_text,
     bool display_suppress_checkbox,
     bool is_before_unload_dialog,
-    IPC::Message* reply_msg)
-    : AppModalDialog(delegate, title),
+    const JavaScriptDialogCreator::DialogClosedCallback& callback)
+    : AppModalDialog(web_contents, title),
       extra_data_(extra_data),
       javascript_message_type_(javascript_message_type),
       display_suppress_checkbox_(display_suppress_checkbox),
       is_before_unload_dialog_(is_before_unload_dialog),
-      reply_msg_(reply_msg),
+      callback_(callback),
       use_override_prompt_text_(false) {
   EnforceMaxTextSize(message_text, &message_text_);
   EnforceMaxPromptSize(default_prompt_text, &default_prompt_text_);
@@ -71,7 +76,8 @@ JavaScriptAppModalDialog::~JavaScriptAppModalDialog() {
 }
 
 NativeAppModalDialog* JavaScriptAppModalDialog::CreateNativeDialog() {
-  gfx::NativeWindow parent_window = delegate_->GetDialogRootWindow();
+  gfx::NativeWindow parent_window =
+      web_contents()->GetView()->GetTopLevelNativeWindow();
   return NativeAppModalDialog::CreateNativeJavaScriptPrompt(this,
                                                             parent_window);
 }
@@ -85,13 +91,9 @@ void JavaScriptAppModalDialog::Invalidate() {
     return;
 
   valid_ = false;
-  delegate_ = NULL;
+  callback_.Reset();
   if (native_dialog_)
     CloseModalDialog();
-}
-
-content::JavaScriptDialogDelegate* JavaScriptAppModalDialog::delegate() const {
-  return static_cast<content::JavaScriptDialogDelegate*>(delegate_);
 }
 
 void JavaScriptAppModalDialog::OnCancel(bool suppress_js_messages) {
@@ -138,8 +140,7 @@ void JavaScriptAppModalDialog::NotifyDelegate(bool success,
   if (!valid_)
     return;
 
-  // TODO(creis): Should pass the actual RVH that sent the message.
-  delegate()->OnDialogClosed(NULL, reply_msg_, success, user_input);
+  callback_.Run(success, user_input);
 
   extra_data_->last_javascript_message_dismissal_ = base::TimeTicks::Now();
   extra_data_->suppress_javascript_messages_ = suppress_js_messages;

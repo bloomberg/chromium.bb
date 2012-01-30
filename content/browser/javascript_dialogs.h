@@ -6,48 +6,25 @@
 #define CONTENT_BROWSER_JAVASCRIPT_DIALOGS_H_
 #pragma once
 
+#include "base/callback.h"
 #include "base/string16.h"
-#include "content/browser/renderer_host/render_view_host.h"
 #include "content/common/content_export.h"
 #include "ui/base/javascript_message_type.h"
 #include "ui/gfx/native_widget_types.h"
 
-namespace IPC {
-class Message;
-}
-
 namespace content {
 
-class CONTENT_EXPORT DialogDelegate {
- public:
-  // Returns the root native window with which to associate the dialog.
-  virtual gfx::NativeWindow GetDialogRootWindow() const = 0;
-
-  // Called right before the dialog is shown.
-  virtual void OnDialogShown() {}
-
- protected:
-  virtual ~DialogDelegate() {}
-};
-
-// A class that invokes a JavaScript dialog must implement this interface to
-// allow the dialog implementation to get needed information and return results.
-class CONTENT_EXPORT JavaScriptDialogDelegate : public DialogDelegate {
- public:
-  // This callback is invoked when the dialog is closed.
-  virtual void OnDialogClosed(RenderViewHost* rvh,
-                              IPC::Message* reply_msg,
-                              bool success,
-                              const string16& user_input) = 0;
-
- protected:
-  virtual ~JavaScriptDialogDelegate() {}
-};
+class WebContents;
 
 // An interface consisting of methods that can be called to produce JavaScript
 // dialogs.
 class JavaScriptDialogCreator {
  public:
+
+  typedef base::Callback<void(bool /* success */,
+                              const string16& /* user_input */)>
+                                  DialogClosedCallback;
+
   enum TitleType {
     DIALOG_TITLE_NONE,
     DIALOG_TITLE_PLAIN_STRING,
@@ -57,23 +34,23 @@ class JavaScriptDialogCreator {
   // Displays a JavaScript dialog. |did_suppress_message| will not be nil; if
   // |true| is returned in it, the caller will handle faking the reply.
   virtual void RunJavaScriptDialog(
-      JavaScriptDialogDelegate* delegate,
+      WebContents* web_contents,
       TitleType title_type,
       const string16& title,
       ui::JavascriptMessageType javascript_message_type,
       const string16& message_text,
       const string16& default_prompt_text,
-      IPC::Message* reply_message,
+      const DialogClosedCallback& callback,
       bool* did_suppress_message) = 0;
 
   // Displays a dialog asking the user if they want to leave a page.
-  virtual void RunBeforeUnloadDialog(JavaScriptDialogDelegate* delegate,
+  virtual void RunBeforeUnloadDialog(WebContents* web_contents,
                                      const string16& message_text,
-                                     IPC::Message* reply_message) = 0;
+                                     const DialogClosedCallback& callback) = 0;
 
   // Cancels all pending dialogs and resets any saved JavaScript dialog state
-  // for the delegate.
-  virtual void ResetJavaScriptState(JavaScriptDialogDelegate* delegate) = 0;
+  // for the given WebContents.
+  virtual void ResetJavaScriptState(WebContents* web_contents) = 0;
 
  protected:
   virtual ~JavaScriptDialogCreator() {}

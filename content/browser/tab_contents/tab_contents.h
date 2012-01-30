@@ -15,7 +15,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "base/property_bag.h"
-#include "content/browser/javascript_dialogs.h"
 #include "content/browser/renderer_host/java/java_bridge_dispatcher_host_manager.h"
 #include "content/browser/tab_contents/navigation_controller_impl.h"
 #include "content/browser/tab_contents/render_view_host_manager.h"
@@ -40,8 +39,9 @@ struct ViewHostMsg_DidFailProvisionalLoadWithError_Params;
 namespace content {
 class DownloadItem;
 class SiteInstance;
-class WebContentsObserver;
+class JavaScriptDialogCreator;
 class WebContentsDelegate;
+class WebContentsObserver;
 class WebContentsView;
 }
 
@@ -52,8 +52,7 @@ struct WebIntentData;
 class CONTENT_EXPORT TabContents
     : public NON_EXPORTED_BASE(content::WebContents),
       public content::RenderViewHostDelegate,
-      public RenderViewHostManager::Delegate,
-      public content::JavaScriptDialogDelegate {
+      public RenderViewHostManager::Delegate {
  public:
   // See WebContents::Create for a description of these parameters.
   TabContents(content::BrowserContext* browser_context,
@@ -335,14 +334,6 @@ class CONTENT_EXPORT TabContents
   virtual void SetFocusToLocationBar(bool select_all) OVERRIDE;
   virtual void CreateViewAndSetSizeForRVH(RenderViewHost* rvh) OVERRIDE;
 
-  // Overridden from JavaScriptDialogDelegate:
-  virtual void OnDialogClosed(RenderViewHost* rvh,
-                              IPC::Message* reply_msg,
-                              bool success,
-                              const string16& user_input) OVERRIDE;
-  virtual gfx::NativeWindow GetDialogRootWindow() const OVERRIDE;
-  virtual void OnDialogShown() OVERRIDE;
-
  protected:
   friend class content::WebContentsObserver;
 
@@ -378,6 +369,12 @@ class CONTENT_EXPORT TabContents
 
   // TODO(brettw) TestTabContents shouldn't exist!
   friend class TestTabContents;
+
+  // Callback function when showing JS dialogs.
+  void OnDialogClosed(RenderViewHost* rvh,
+                      IPC::Message* reply_msg,
+                      bool success,
+                      const string16& user_input);
 
   // Message handlers.
   void OnRegisterIntentService(const string16& action,

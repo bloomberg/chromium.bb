@@ -20,6 +20,7 @@
 #include "content/browser/host_zoom_map_impl.h"
 #include "content/browser/in_process_webkit/session_storage_namespace.h"
 #include "content/browser/intents/web_intents_dispatcher_impl.h"
+#include "content/browser/javascript_dialogs.h"
 #include "content/browser/load_from_memory_cache_details.h"
 #include "content/browser/load_notification_details.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
@@ -2032,7 +2033,8 @@ void TabContents::RunJavaScriptMessage(
       rvh->is_swapped_out() ||
       ShowingInterstitialPage() ||
       !delegate_ ||
-      delegate_->ShouldSuppressDialogs();
+      delegate_->ShouldSuppressDialogs() ||
+      !delegate_->GetJavaScriptDialogCreator();
 
   if (!suppress_this_message) {
     content::JavaScriptDialogCreator::TitleType title_type;
@@ -2049,14 +2051,12 @@ void TabContents::RunJavaScriptMessage(
     }
 
     dialog_creator_ = delegate_->GetJavaScriptDialogCreator();
-    dialog_creator_->RunJavaScriptDialog(this,
-                                         title_type,
-                                         title,
-                                         javascript_message_type,
-                                         message,
-                                         default_prompt,
-                                         reply_msg,
-                                         &suppress_this_message);
+    dialog_creator_->RunJavaScriptDialog(
+        this, title_type, title, javascript_message_type, message,
+        default_prompt,
+        base::Bind(&TabContents::OnDialogClosed, base::Unretained(this), rvh,
+                   reply_msg),
+        &suppress_this_message);
   }
 
   if (suppress_this_message) {
@@ -2077,7 +2077,8 @@ void TabContents::RunBeforeUnloadConfirm(RenderViewHost* rvh,
   bool suppress_this_message =
       rvh->is_swapped_out() ||
       !delegate_ ||
-      delegate_->ShouldSuppressDialogs();
+      delegate_->ShouldSuppressDialogs() ||
+      !delegate_->GetJavaScriptDialogCreator();
   if (suppress_this_message) {
     // The reply must be sent to the RVH that sent the request.
     rvh->JavaScriptDialogClosed(reply_msg, true, string16());
@@ -2086,9 +2087,10 @@ void TabContents::RunBeforeUnloadConfirm(RenderViewHost* rvh,
 
   is_showing_before_unload_dialog_ = true;
   dialog_creator_ = delegate_->GetJavaScriptDialogCreator();
-  dialog_creator_->RunBeforeUnloadDialog(this,
-                                         message,
-                                         reply_msg);
+  dialog_creator_->RunBeforeUnloadDialog(
+      this, message,
+      base::Bind(&TabContents::OnDialogClosed, base::Unretained(this), rvh,
+                 reply_msg));
 }
 
 WebPreferences TabContents::GetWebkitPrefs() {
@@ -2283,14 +2285,6 @@ void TabContents::OnDialogClosed(RenderViewHost* rvh,
   if (!rvh)
     rvh = GetRenderViewHost();
   rvh->JavaScriptDialogClosed(reply_msg, success, user_input);
-}
-
-gfx::NativeWindow TabContents::GetDialogRootWindow() const {
-  return view_->GetTopLevelNativeWindow();
-}
-
-void TabContents::OnDialogShown() {
-  Activate();
 }
 
 void TabContents::SetEncoding(const std::string& encoding) {

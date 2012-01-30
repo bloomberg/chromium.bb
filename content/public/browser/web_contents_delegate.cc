@@ -123,42 +123,8 @@ bool WebContentsDelegate::ShouldCreateWebContents(
   return true;
 }
 
-// A stubbed-out version of JavaScriptDialogCreator that doesn't do anything.
-class JavaScriptDialogCreatorStub : public JavaScriptDialogCreator {
- public:
-  static JavaScriptDialogCreatorStub* GetInstance() {
-    return Singleton<JavaScriptDialogCreatorStub>::get();
-  }
-
-  virtual void RunJavaScriptDialog(
-      JavaScriptDialogDelegate* delegate,
-      TitleType title_type,
-      const string16& title,
-      ui::JavascriptMessageType javascript_message_type,
-      const string16& message_text,
-      const string16& default_prompt_text,
-      IPC::Message* reply_message,
-      bool* did_suppress_message) OVERRIDE {
-    *did_suppress_message = true;
-  }
-
-  virtual void RunBeforeUnloadDialog(
-      JavaScriptDialogDelegate* delegate,
-      const string16& message_text,
-      IPC::Message* reply_message) OVERRIDE {
-    // TODO(creis): Pass in the RVH that sent the request.
-    delegate->OnDialogClosed(NULL, reply_message, true, string16());
-  }
-
-  virtual void ResetJavaScriptState(
-      JavaScriptDialogDelegate* delegate) OVERRIDE {
-  }
- private:
-  friend struct DefaultSingletonTraits<JavaScriptDialogCreatorStub>;
-};
-
 JavaScriptDialogCreator* WebContentsDelegate::GetJavaScriptDialogCreator() {
-  return JavaScriptDialogCreatorStub::GetInstance();
+  return NULL;
 }
 
 bool WebContentsDelegate::IsFullscreenForTab(const WebContents* tab) const {

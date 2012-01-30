@@ -15,16 +15,15 @@
 class NativeAppModalDialog;
 
 namespace content {
-class DialogDelegate;
+class WebContents;
 }
 
 // A controller+model base class for modal dialogs.
 class AppModalDialog {
  public:
   // A union of data necessary to determine the type of message box to
-  // show. |tab_contents| parameter is optional, if provided that tab will be
-  // activated before the modal dialog is displayed.
-  AppModalDialog(content::DialogDelegate* delegate, const string16& title);
+  // show.
+  AppModalDialog(content::WebContents* web_contents, const string16& title);
   virtual ~AppModalDialog();
 
   // Called by the AppModalDialogQueue to show this dialog.
@@ -40,10 +39,9 @@ class AppModalDialog {
   // TODO(beng): Get rid of this method.
   void CompleteDialog();
 
-  // Dialog window title.
   string16 title() const { return title_; }
-
   NativeAppModalDialog* native_dialog() const { return native_dialog_; }
+  content::WebContents* web_contents() const { return web_contents_; }
 
   // Creates an implementation of NativeAppModalDialog and shows it.
   // When the native dialog is closed, the implementation of
@@ -68,8 +66,6 @@ class AppModalDialog {
   // dialog.
   virtual bool IsJavaScriptModalDialog();
 
-  virtual content::DialogDelegate* delegate() const;
-
  protected:
   // Overridden by subclasses to create the feature-specific native dialog box.
   virtual NativeAppModalDialog* CreateNativeDialog() = 0;
@@ -78,15 +74,14 @@ class AppModalDialog {
   // tab navigated away while the dialog was queued.
   bool valid_;
 
-  // The owner of this dialog.
-  content::DialogDelegate* delegate_;
-
   // The toolkit-specific implementation of the app modal dialog box.
   NativeAppModalDialog* native_dialog_;
 
  private:
   // Information about the message box is held in the following variables.
   string16 title_;
+
+  content::WebContents* web_contents_;
 
   DISALLOW_COPY_AND_ASSIGN(AppModalDialog);
 };
