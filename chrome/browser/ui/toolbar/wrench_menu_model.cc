@@ -500,24 +500,7 @@ void WrenchMenuModel::Build() {
     AddSeparator();
   }
 
-#if defined(USE_AURA)
-#if defined(OS_WIN)
-  AddItemWithStringId(IDC_OPTIONS, IDS_OPTIONS);
-#else
-  AddItemWithStringId(IDC_OPTIONS, IDS_PREFERENCES);
-#endif
-#elif defined(OS_MACOSX)
-  AddItemWithStringId(IDC_OPTIONS, IDS_PREFERENCES);
-#elif defined(TOOLKIT_USES_GTK)
-  string16 preferences = gtk_util::GetStockPreferencesMenuLabel();
-  if (!preferences.empty())
-    AddItem(IDC_OPTIONS, preferences);
-  else
-    AddItemWithStringId(IDC_OPTIONS, IDS_PREFERENCES);
-#else
-  AddItemWithStringId(IDC_OPTIONS, IDS_OPTIONS);
-#endif
-
+  AddItemWithStringId(IDC_OPTIONS, IDS_SETTINGS);
   AddItem(IDC_ABOUT, l10n_util::GetStringUTF16(IDS_ABOUT));
   string16 num_background_pages = base::FormatNumber(
       TaskManager::GetBackgroundPageCount());

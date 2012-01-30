@@ -644,6 +644,10 @@ The extension "<ph name="EXTENSION_NAME">$1<ex>Gmail Checker</ex></ph>" has been
       <message name="IDS_SYNC_PROMO_V_LEARN_MORE" desc="Learn more link at the bottom of the sync promo.">
         See <ph name="BEGIN_LINK">&lt;a target="_blank" href="$1"&gt;</ph>more benefits<ph name="END_LINK">&lt;/a&gt;</ph> of signing in to Chrome.
       </message>
+
+      <message name="IDS_AUTOFILL_OPTIONS_POPUP" desc="The value of the Autofill options menu entry.">
+        Chrome Autofill settings
+      </message>
     </messages>
   </release>
 </grit>

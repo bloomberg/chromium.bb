@@ -10,6 +10,7 @@
 #include "chrome/common/chrome_constants.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/public/browser/web_contents.h"
+#include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -114,8 +115,7 @@ void AutofillExternalDelegate::OnSuggestionsReturned(
 
   if (has_autofill_item) {
     // Append the 'Chrome Autofill options' menu item;
-    v.push_back(l10n_util::GetStringFUTF16(IDS_AUTOFILL_OPTIONS_POPUP,
-        WideToUTF16(chrome::kBrowserAppName)));
+    v.push_back(l10n_util::GetStringUTF16(IDS_AUTOFILL_OPTIONS_POPUP));
     l.push_back(string16());
     i.push_back(string16());
     ids.push_back(0);

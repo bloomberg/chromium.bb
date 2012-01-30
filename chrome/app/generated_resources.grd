@@ -1304,7 +1304,7 @@ are declared in build/common.gypi.
         </message>
       </if>
 
-      <!-- Search Engine Preferences-->
+      <!-- Search Engine Settings -->
       <message name="IDS_SEARCH_ENGINES_EDITOR_WINDOW_TITLE"
                desc="Title of the search engines window">
         Search Engines
@@ -1379,7 +1379,7 @@ are declared in build/common.gypi.
       </message>
       <message name="IDS_SEARCH_ENGINES_EDITOR_MAIN_SEPARATOR"
                desc="Title above the set of keywords the user has modified and or explicitly created">
-        Default search options
+        Default search settings
       </message>
       <message name="IDS_SEARCH_ENGINES_EDITOR_OTHER_SEPARATOR"
                desc="Title above the set of keywords Chrome automatically created as the user browses">
@@ -4706,7 +4706,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Cloud Print Connector
       </message>
       <message name="IDS_FLAGS_CLOUD_PRINT_CONNECTOR_DESCRIPTION" desc="Description of the Cloud Print Connector lab">
-        Enables a background service that connects the Google Cloud Print service to any printers installed on this computer. Once this lab is enabled, you can turn the Google Cloud Print Connector on by logging in with your Google account in the Options/Preferences in the Under the Hood section.
+        Enables a background service that connects the Google Cloud Print service to any printers installed on this computer. Once this lab is enabled, you can turn the Google Cloud Print Connector on by logging in with your Google account in the Under the Hood section of Settings.
       </message>
       <message name="IDS_FLAGS_CRXLESS_WEB_APPS_NAME" desc="Title of the CRX-less web apps lab">
         CRX-less Web Apps
@@ -4883,26 +4883,26 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Enable syncing search engines
       </message>
       <message name="IDS_FLAGS_SYNC_SEARCH_ENGINES_DESCRIPTION" desc="Description for the flag to enable syncing the Search Engines datatype">
-        Enable search engines in the sync options. This allows syncing your custom search engines to other clients.
+        Enable search engines in the sync settings. This allows syncing your custom search engines to other clients.
       </message>
       <message name="IDS_FLAGS_SYNC_TABS_NAME" desc="Title for the flag to enable syncing the open tabs datatype">
         Enable syncing open tabs
       </message>
       <message name="IDS_FLAGS_SYNC_TABS_DESCRIPTION" desc="Description for the flag to enable syncing the open tabs datatype">
-        Enable open tabs in the sync options. This allows syncing your open tabs to other clients.
+        Enable open tabs in the sync settings. This allows syncing your open tabs to other clients.
       </message>
       <message name="IDS_FLAGS_SYNC_APP_NOTIFICATIONS_NAME" desc="Title for the flag to disable syncing the app notifications datatype">
         Disable syncing app notifications
       </message>
       <message name="IDS_FLAGS_SYNC_APP_NOTIFICATIONS_DESCRIPTION" desc="Description for the flag to disable syncing the app notifications datatype">
-        Disable app notifications in the sync options. This turns off syncing notifications received from your apps to other clients.
+        Disable app notifications in the sync settings. This turns off syncing notifications received from your apps to other clients.
       </message>
       <if expr="pp_ifdef('android')">
         <message name="IDS_FLAGS_SYNC_TYPED_URLS_NAME" desc="Title for the flag to enable syncing the TypedUrl datatype">
           Enable syncing typed URLs
         </message>
         <message name="IDS_FLAGS_SYNC_TYPED_URLS_DESCRIPTION" desc="Description for the flag to enable syncing the TypedURL datatype">
-          Enable typed URLs in the sync options. This allows syncing your typed URL history to other clients to assist in omnibox auto-completion.
+          Enable typed URLs in the sync settings. This allows syncing your typed URL history to other clients to assist in omnibox auto-completion.
         </message>
       </if>
       <if expr="not pp_ifdef('android')">
@@ -4910,7 +4910,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
           Enable syncing Omnibox History
         </message>
         <message name="IDS_FLAGS_SYNC_TYPED_URLS_DESCRIPTION" desc="Description for the flag to enable syncing the TypedURL datatype">
-          Enable Omnibox History in the sync options. This allows syncing your typed URL history to other clients to assist in omnibox auto-completion.
+          Enable Omnibox History in the sync settings. This allows syncing your typed URL history to other clients to assist in omnibox auto-completion.
         </message>
       </if>
       <message name="IDS_FLAGS_PRERENDER_FROM_OMNIBOX_NAME" desc="Title for the flag to prerender from the omnibox">
@@ -7923,25 +7923,9 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
         The settings and extensions web-ui will be reverted to the prior implementation.
       </message>
 
-      <if expr="pp_ifdef('chromeos')">
-        <message name="IDS_SETTINGS_TITLE" desc="Title for the settings tab.">
-          Settings
-        </message>
-      </if>
-      <if expr="not pp_ifdef('chromeos') and is_posix">
-        <message name="IDS_SETTINGS_TITLE" desc="Title for the settings tab.">
-          Preferences
-        </message>
-      </if>
-      <if expr="is_win">
-        <message name="IDS_SETTINGS_TITLE" desc="Title for the settings tab.">
-          Options
-        </message>
-      </if>
-
-      <!-- Options Window -->
-      <message name="IDS_OPTIONS_DIALOG_TITLE" desc="The title of the Options dialog box">
-        <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> Options
+      <!-- Settings -->
+      <message name="IDS_SETTINGS_TITLE" desc="Title for the settings tab.">
+        Settings
       </message>
       <if expr="pp_ifdef('chromeos')">
         <message name="IDS_OPTIONS_SYSTEM_TAB_LABEL" desc="The title of the System tab">
@@ -8349,32 +8333,9 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
         </message>
       </if>
 
-      <if expr="pp_ifdef('chromeos')">
-        <message name="IDS_AUTOFILL_OPTIONS_TITLE" desc="The title of the Autofill dialog.">
-          Autofill Settings
-        </message>
-        <message name="IDS_AUTOFILL_OPTIONS_POPUP" desc="The value of the Autofill options menu entry.">
-          <ph name="PRODUCT_NAME_SHORT">$1<ex>Chrome</ex></ph> Autofill settings
-        </message>
-      </if>
-
-      <if expr="is_posix and not pp_ifdef('chromeos')">
-        <message name="IDS_AUTOFILL_OPTIONS_TITLE" desc="The title of the Autofill dialog.">
-          Autofill Preferences
-        </message>
-        <message name="IDS_AUTOFILL_OPTIONS_POPUP" desc="The value of the Autofill options menu entry.">
-          <ph name="PRODUCT_NAME_SHORT">$1<ex>Chrome</ex></ph> Autofill Preferences
-        </message>
-      </if>
-
-      <if expr="is_win">
-        <message name="IDS_AUTOFILL_OPTIONS_TITLE" desc="The title of the Autofill dialog.">
-          Autofill Options
-        </message>
-        <message name="IDS_AUTOFILL_OPTIONS_POPUP" desc="The value of the Autofill options menu entry.">
-          <ph name="PRODUCT_NAME_SHORT">$1<ex>Chrome</ex></ph> Autofill options
-        </message>
-      </if>
+      <message name="IDS_AUTOFILL_OPTIONS_TITLE" desc="The title of the Autofill dialog.">
+        Autofill Settings
+      </message>
 
       <message name="IDS_AUTOFILL_USE_MAC_ADDRESS_BOOK" desc="Checkbox label to enable Address Book on Mac.">
         Include addresses from my Address Book card
@@ -8684,69 +8645,27 @@ experiment id: "<ph name="EXPERIMENT_ID">$5<ex>ar1</ex></ph>"
         Apply recommendation
       </message>
 
-      <if expr="pp_ifdef('chromeos')">
-        <message name="IDS_OPTIONS_POLICY_MANAGED_PREFS" desc="Banner displayed in case there are policy-managed options the user won't be able to change.">
-          Some settings are managed by your administrator.
-        </message>
-        <message name="IDS_OPTIONS_EXTENSION_MANAGED_PREFS" desc="Banner displayed in case there are extension-managed options the user won't be able to change.">
-          Some settings are managed by an extension.
-        </message>
-        <message name="IDS_OPTIONS_POLICY_EXTENSION_MANAGED_PREFS" desc="Banner displayed in case there are policy- and extension-managed options the user won't be able to change.">
-          Some settings have been disabled by your administrator and others are managed by an extension.
-        </message>
-        <message name="IDS_OPTIONS_UNMODIFIABLE_PREFS" desc="Banner displayed in case there are options that the user won't be able to change.">
-          Some settings cannot be modified by the user.
-        </message>
-        <message name="IDS_OPTIONS_CONTROLLED_SETTING_POLICY" desc="Text displayed in the controlled settings bubble in case the setting is forced by policy.">
-          This setting is enforced by your administrator.
-        </message>
-        <message name="IDS_OPTIONS_CONTROLLED_SETTING_EXTENSION" desc="Text displayed in the controlled settings bubble in case the setting controlled by an extension.">
-          This setting is managed by an extension.
-        </message>
-        <message name="IDS_OPTIONS_CONTROLLED_SETTING_RECOMMENDED" desc="Text displayed in the controlled settings bubble in case the setting has a policy-supplied default value.">
-          Your administrator recommends a specific value for this setting.
-        </message>
-      </if>
-      <if expr="not pp_ifdef('chromeos') and is_posix">
-        <message name="IDS_OPTIONS_POLICY_MANAGED_PREFS" desc="Banner displayed in case there are policy-managed options the user won't be able to change.">
-          Some preferences are managed by your administrator.
-        </message>
-        <message name="IDS_OPTIONS_EXTENSION_MANAGED_PREFS" desc="Banner displayed in case there are extension-managed options the user won't be able to change.">
-          Some preferences are managed by an extension.
-        </message>
-        <message name="IDS_OPTIONS_POLICY_EXTENSION_MANAGED_PREFS" desc="Banner displayed in case there are policy- and extension-managed options the user won't be able to change.">
-          Some preferences have been disabled by your administrator and others are managed by an extension.
-        </message>
-        <message name="IDS_OPTIONS_CONTROLLED_SETTING_POLICY" desc="Text displayed in the controlled settings bubble in case the setting is forced by policy.">
-          This preference is enforced by your administrator.
-        </message>
-        <message name="IDS_OPTIONS_CONTROLLED_SETTING_EXTENSION" desc="Text displayed in the controlled settings bubble in case the setting controlled by an extension.">
-          This preference is managed by an extension.
-        </message>
-        <message name="IDS_OPTIONS_CONTROLLED_SETTING_RECOMMENDED" desc="Text displayed in the controlled settings bubble in case the setting has a policy-supplied default value.">
-          Your administrator recommends a specific value for this preference.
-        </message>
-      </if>
-      <if expr="is_win">
-        <message name="IDS_OPTIONS_POLICY_MANAGED_PREFS" desc="Banner displayed in case there are policy-managed options the user won't be able to change.">
-          Some options are managed by your administrator.
-        </message>
-        <message name="IDS_OPTIONS_EXTENSION_MANAGED_PREFS" desc="Banner displayed in case there are extension-managed options the user won't be able to change.">
-          Some options are managed by an extension.
-        </message>
-        <message name="IDS_OPTIONS_POLICY_EXTENSION_MANAGED_PREFS" desc="Banner displayed in case there are policy- and extension-managed options the user won't be able to change.">
-          Some options have been disabled by your administrator and others are managed by an extension.
-        </message>
-        <message name="IDS_OPTIONS_CONTROLLED_SETTING_POLICY" desc="Text displayed in the controlled settings bubble in case the setting is forced by policy.">
-          This option is enforced by your administrator.
-        </message>
-        <message name="IDS_OPTIONS_CONTROLLED_SETTING_EXTENSION" desc="Text displayed in the controlled settings bubble in case the setting controlled by an extension.">
-          This option is managed by an extension.
-        </message>
-        <message name="IDS_OPTIONS_CONTROLLED_SETTING_RECOMMENDED" desc="Text displayed in the controlled settings bubble in case the setting has a policy-supplied default value.">
-          Your administrator recommends a specific value for this option.
-        </message>
-      </if>
+      <message name="IDS_OPTIONS_POLICY_MANAGED_PREFS" desc="Banner displayed in case there are policy-managed options the user won't be able to change.">
+        Some settings are managed by your administrator.
+      </message>
+      <message name="IDS_OPTIONS_EXTENSION_MANAGED_PREFS" desc="Banner displayed in case there are extension-managed options the user won't be able to change.">
+        Some settings are managed by an extension.
+      </message>
+      <message name="IDS_OPTIONS_POLICY_EXTENSION_MANAGED_PREFS" desc="Banner displayed in case there are policy- and extension-managed options the user won't be able to change.">
+        Some settings have been disabled by your administrator and others are managed by an extension.
+      </message>
+      <message name="IDS_OPTIONS_UNMODIFIABLE_PREFS" desc="Banner displayed in case there are options that the user won't be able to change.">
+        Some settings cannot be modified by the user.
+      </message>
+      <message name="IDS_OPTIONS_CONTROLLED_SETTING_POLICY" desc="Text displayed in the controlled settings bubble in case the setting is forced by policy.">
+        This setting is enforced by your administrator.
+      </message>
+      <message name="IDS_OPTIONS_CONTROLLED_SETTING_EXTENSION" desc="Text displayed in the controlled settings bubble in case the setting controlled by an extension.">
+        This setting is managed by an extension.
+      </message>
+      <message name="IDS_OPTIONS_CONTROLLED_SETTING_RECOMMENDED" desc="Text displayed in the controlled settings bubble in case the setting has a policy-supplied default value.">
+        Your administrator recommends a specific value for this setting.
+      </message>
 
       <!-- Options search page strings. -->
       <message name="IDS_OPTIONS_SEARCH_PAGE_TITLE" desc="Title of the settings search page.">
@@ -8761,21 +8680,9 @@ experiment id: "<ph name="EXPERIMENT_ID">$5<ex>ar1</ex></ph>"
       <message name="IDS_OPTIONS_SEARCH_PAGE_HELP_TITLE" desc="Help link for a search that has no results.">
         <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> Help
       </message>
-      <if expr="pp_ifdef('chromeos')">
-        <message name="IDS_OPTIONS_SEARCH_PLACEHOLDER" desc="Text placeholder for an empty search field on ChromeOS.">
-          Search settings
-        </message>
-      </if>
-      <if expr="not pp_ifdef('chromeos') and is_posix">
-        <message name="IDS_OPTIONS_SEARCH_PLACEHOLDER" desc="Text placeholder for an empty search field on Mac/Linux.">
-          Search preferences
-        </message>
-      </if>
-      <if expr="is_win">
-        <message name="IDS_OPTIONS_SEARCH_PLACEHOLDER" desc="Text placeholder for an empty search field on Windows.">
-          Search options
-        </message>
-      </if>
+      <message name="IDS_OPTIONS_SEARCH_PLACEHOLDER" desc="Text placeholder for an empty search field on ChromeOS.">
+        Search settings
+      </message>
 
       <!-- Misc advanced option description strings. -->
       <message name="IDS_NETWORK_PREDICTION_ENABLED_DESCRIPTION" desc="In the advanced options tab, the text next to the checkbox that enables prediction of network actions.  Actions include DNS prefetching, TCP and SSL preconnection, and prerendering of webpages.">
@@ -9401,12 +9308,12 @@ experiment id: "<ph name="EXPERIMENT_ID">$5<ex>ar1</ex></ph>"
         </message>
       </if>
       <if expr="not pp_ifdef('use_titlecase')">
-        <message name="IDS_PROFILES_SYNC_CUSTOMIZE_BUTTON_LABEL" desc="The text to display on the button to customize the profile's sync preferences.">
+        <message name="IDS_PROFILES_SYNC_CUSTOMIZE_BUTTON_LABEL" desc="The text to display on the button to customize the profile's sync settings.">
           Customize sync settings...
         </message>
       </if>
       <if expr="pp_ifdef('use_titlecase')">
-        <message name="IDS_PROFILES_SYNC_CUSTOMIZE_BUTTON_LABEL" desc="The text to display on the button to customize the profile's sync preferences.">
+        <message name="IDS_PROFILES_SYNC_CUSTOMIZE_BUTTON_LABEL" desc="The text to display on the button to customize the profile's sync settings.">
           Customize Sync Settings...
         </message>
       </if>
@@ -9423,10 +9330,10 @@ experiment id: "<ph name="EXPERIMENT_ID">$5<ex>ar1</ex></ph>"
       <message name="IDS_PROFILES_DEFAULT_NAME" desc="The name to display for a profile when the user is not signed in.">
         Default
       </message>
-      <message name="IDS_SYNC_CUSTOMIZE_LINK_LABEL" desc="The text to display on the link to customize the sync preferences.">
+      <message name="IDS_SYNC_CUSTOMIZE_LINK_LABEL" desc="The text to display on the link to customize the sync settings.">
         Advanced
       </message>
-      <message name="IDS_SYNC_USE_DEFAULT_SETTINGS" desc="The text to display on the link to go back to the default sync preferences.">
+      <message name="IDS_SYNC_USE_DEFAULT_SETTINGS" desc="The text to display on the link to go back to the default sync settings.">
         Use default settings
       </message>
       <if expr="pp_ifdef('use_titlecase')">
@@ -10561,7 +10468,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
         Just now
       </message>
       <message name="IDS_SYNC_ADVANCED_OPTIONS" desc="The text in the link that brings up the sync configure screen in the new tab page new data type notification.">
-        Advanced options
+        Advanced settings
       </message>
 
       <!-- Sync / Extension interaction messages -->
@@ -10663,10 +10570,10 @@ Some features may be unavailable.  Please check that the profile exists and you 
           Advanced Sync Settings
         </message>
       </if>
-      <message name="IDS_SYNC_CONFIRM_SYNC_PREFERENCES" desc="In title case: The title of the 'Confirm Sync Preferences' page of the customize sync dialog.">
-        Confirm Sync Preferences
+      <message name="IDS_SYNC_CONFIRM_SYNC_PREFERENCES" desc="In title case: The title of the 'Confirm Sync Settings' page of the customize sync dialog.">
+        Confirm Sync Settings
       </message>
-      <message name="IDS_SYNC_SYNC_EVERYTHING" desc="The text of the OK button of the 'Confirm Sync Preferences' page of the customize sync dialog.">
+      <message name="IDS_SYNC_SYNC_EVERYTHING" desc="The text of the OK button of the 'Confirm Sync Settings' page of the customize sync dialog.">
         OK, sync everything
       </message>
 
@@ -10675,7 +10582,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
         Sync the following items automatically:
       </message>
       <message name="IDS_SYNC_CHOOSE_DATATYPES_INSTRUCTIONS" desc="Text explaining the 'Choose Datatypes' dialog.">
-        <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> securely syncs your data with your Google account. Keep everything synced or customize synced data types and encryption options.
+        <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> securely syncs your data with your Google account. Keep everything synced or customize synced data types and encryption settings.
       </message>
       <message name="IDS_SYNC_EVERYTHING" desc="A radio button for users who want to sync all data types.">
         Sync everything
@@ -10689,8 +10596,8 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_SYNC_DATATYPE_BOOKMARKS" desc="Bookmarks, one of the data types that we allow syncing.">
         Bookmarks
       </message>
-      <message name="IDS_SYNC_DATATYPE_PREFERENCES" desc="Preferences, one of the data types that we allow syncing.">
-        Preferences
+      <message name="IDS_SYNC_DATATYPE_PREFERENCES" desc="Settings, one of the data types that we allow syncing.">
+        Settings
       </message>
       <message name="IDS_SYNC_DATATYPE_AUTOFILL" desc="Form Autofill items, one of the data types that we allow syncing.">
         Autofill
@@ -10824,7 +10731,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
 
       <!-- Login dialog strings -->
       <message name="IDS_SYNC_LOGIN_INTRODUCTION" desc="The message to display at the top of the login dialog">
-        <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> sync makes it easy to share your data (such as bookmarks and preferences) between your computers.
+        <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> sync makes it easy to share your data (such as bookmarks and settings) between your computers.
         <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> synchronizes your data by storing it online with Google when you sign in with your Google Account.
       </message>
       <if expr="not pp_ifdef('use_titlecase')">
@@ -11706,7 +11613,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
 
     <!-- Status Area Strings (not ChromeOS specific) -->
     <message name="IDS_STATUSBAR_CLOCK_OPEN_OPTIONS_DIALOG" desc="The menu item in the clock menu button for opening the options dialog">
-      Open date and time options...
+      Open date and time settings...
     </message>
     <message name="IDS_STATUSBAR_CLOCK_TOOLTIP" desc="Tooltip for the clock in the status bar.">
       <ph name="DATE">$1<ex>Aug 16, 2010</ex></ph>

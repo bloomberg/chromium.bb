@@ -13,6 +13,7 @@
 #include "chrome/renderer/autofill/form_autofill_util.h"
 #include "chrome/renderer/autofill/password_autofill_manager.h"
 #include "content/public/renderer/render_view.h"
+#include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFormControlElement.h"
@@ -310,8 +311,7 @@ void AutofillAgent::OnSuggestionsReturned(int query_id,
 
   if (has_autofill_item) {
     // Append the 'Chrome Autofill options' menu item;
-    v.push_back(l10n_util::GetStringFUTF16(IDS_AUTOFILL_OPTIONS_POPUP,
-        WideToUTF16(chrome::kBrowserAppName)));
+    v.push_back(l10n_util::GetStringUTF16(IDS_AUTOFILL_OPTIONS_POPUP));
     l.push_back(string16());
     i.push_back(string16());
     ids.push_back(0);
