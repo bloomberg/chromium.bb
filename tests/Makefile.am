@@ -6,7 +6,7 @@ endif
 
 
 AM_CFLAGS = $(GCC_CFLAGS)
-AM_CPPFLAGS = -I../src -DUNIT_TEST
+AM_CPPFLAGS = -I../src -DUNIT_TEST $(COMPOSITOR_CFLAGS)
 
 matrix_test_SOURCES =				\
 	matrix-test.c				\
