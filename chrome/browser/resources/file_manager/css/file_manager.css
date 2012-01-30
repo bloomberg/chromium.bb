@@ -529,6 +529,7 @@ input.rename {
 .preview-panel {
   -webkit-box-orient: horizontal;
   display: -webkit-box;
+  -webkit-box-align: center;
   height: 61px;
   background-color: #F0F0F0;
   padding: 0 14px;
@@ -596,11 +597,6 @@ input.rename {
   -webkit-transform: translate(0, 0) scale(1.0);
   opacity: 1;
   pointer-events: auto;
-}
-
-.preview-panel > * {
-  display: -webkit-box;
-  -webkit-box-align: center;
 }
 
 /* cr.ui.Table has a black focus border by default, which we don't want. */
@@ -803,28 +799,31 @@ li.table-row {
   -webkit-margin-end: 6px;
 }
 
-/* The task buttons at the bottom of the preview pane. */
-.task-buttons {
+.preview-panel .spacer {
   -webkit-box-flex: 1;
-  overflow: hidden;
-
-  display: -webkit-box;
-  -webkit-box-orient: horizontal;
-  -webkit-box-pack: end;
 }
 
-.task-button {
-  display: -webkit-box;
-  -webkit-box-orient: horizontal;
-  -webkit-margin-end: 4px;
+.delete-button {
   -webkit-margin-start: 4px;
-  height: 29px;
-  text-align: left;
-  vertical-align: middle;
-  padding: 6px;
+  -webkit-margin-end: 4px;
 }
 
-.task-button > img {
+.task-item {
+  display: -webkit-box;
+  -webkit-box-orient: horizontal;
+  -webkit-box-align: center;
+  text-align: left;
+  padding: 5px;
+}
+
+.task-item > div {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding-right: 5px;
+}
+
+.task-item > img {
   -webkit-margin-end: 5px;
 }
 

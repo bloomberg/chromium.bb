@@ -629,7 +629,7 @@ FileManager.prototype = {
     this.previewFilename_ = this.dialogDom_.querySelector('.preview-filename');
     this.previewSummary_ = this.dialogDom_.querySelector('.preview-summary');
     this.filenameInput_ = this.dialogDom_.querySelector('.filename-input');
-    this.taskButtons_ = this.dialogDom_.querySelector('.task-buttons');
+    this.taskItems_ = this.dialogDom_.querySelector('.tasks');
     this.okButton_ = this.dialogDom_.querySelector('.ok');
     this.cancelButton_ = this.dialogDom_.querySelector('.cancel');
     this.deleteButton_ = this.dialogDom_.querySelector('.delete-button');
@@ -677,6 +677,10 @@ FileManager.prototype = {
         'click', this.onDetailViewButtonClick_.bind(this));
     this.dialogDom_.querySelector('button.thumbnail-view').addEventListener(
         'click', this.onThumbnailViewButtonClick_.bind(this));
+
+    cr.ui.ComboButton.decorate(this.taskItems_);
+    this.taskItems_.addEventListener('select',
+        this.onTaskItemClicked_.bind(this));
 
     this.dialogDom_.ownerDocument.defaultView.addEventListener(
         'resize', this.onResize_.bind(this));
@@ -1788,7 +1792,8 @@ FileManager.prototype = {
     // Removing childrens of task buttons and preview thumbnails after simple
     // event dispatched (see above). This can ensure a smooth disappearing
     // animation when nothing is selected.
-    removeChildren(this.taskButtons_);
+    this.taskItems_.visible = false;
+    this.taskItems_.clear();
     removeChildren(this.previewThumbnails_);
 
     var fileCount = 0;
@@ -1819,6 +1824,7 @@ FileManager.prototype = {
         var thumbnail = this.renderThumbnailBox_(entry, true, imageLoadCalback);
         box.appendChild(thumbnail);
         box.style.zIndex = MAX_PREVIEW_THUMBAIL_COUNT + 1 - i;
+        box.addEventListener('click', this.dispatchDefaultTask_.bind(this));
 
         this.previewThumbnails_.appendChild(box);
         thumbnailCount++;
@@ -1866,7 +1872,7 @@ FileManager.prototype = {
     }
 
     if (this.dialogType_ == FileManager.DialogType.FULL_PAGE) {
-      removeChildren(this.taskButtons_);
+      this.taskItems_.clear();
       // Some internal tasks cannot be defined in terms of file patterns,
       // so we pass selection to check for them manually.
       if (selection.directoryCount == 0 && selection.fileCount > 0) {
@@ -2022,7 +2028,7 @@ FileManager.prototype = {
    * @param {Array.<Task>} tasksList The tasks list.
    */
   FileManager.prototype.onTasksFound_ = function(selection, tasksList) {
-    removeChildren(this.taskButtons_);
+    this.taskItems_.clear();
 
     for (var i = 0; i < tasksList.length; i++) {
       var task = tasksList[i];
@@ -2054,29 +2060,42 @@ FileManager.prototype = {
           this.galleryTask_ = task;
         }
       }
-      this.renderTaskButton_(task);
+      this.renderTaskItem_(task);
     }
 
+    this.taskItems_.visible = tasksList.length > 0;
+
+    selection.tasksList = tasksList;
+    if (selection.dispatchDefault) {
+      // We got a request to dispatch the default task for the selection.
+      selection.dispatchDefault = false;
+      if (tasksList.length > 0) {
+        this.dispatchFileTask_(tasksList[0], selection.urls);
+      } else {
+        this.alert.showWithTitle(
+            strf('ERROR_VIEWING_FILE_TITLE', selection.entries[0].name),
+            strf('ERROR_VIEWING_FILE'));
+      }
+    }
     // These are done in separate functions, as the checks require
     // asynchronous function calls.
     this.maybeRenderFormattingTask_(selection);
   };
 
-  FileManager.prototype.renderTaskButton_ = function(task) {
-    var button = this.document_.createElement('button');
-    button.addEventListener('click',
-        this.onTaskButtonClicked_.bind(this, task));
-    button.className = 'task-button';
+  FileManager.prototype.renderTaskItem_ = function(task) {
+    var item = this.document_.createElement('div');
+    item.className = 'task-item';
+    item.task = task;
 
     var img = this.document_.createElement('img');
     img.src = task.iconUrl;
+    item.appendChild(img);
 
-    button.appendChild(img);
     var label = this.document_.createElement('div');
-    label.appendChild(this.document_.createTextNode(task.title))
-    button.appendChild(label);
+    label.appendChild(this.document_.createTextNode(task.title));
+    item.appendChild(label);
 
-    this.taskButtons_.appendChild(button);
+    this.taskItems_.addItem(item);
   };
 
   /**
@@ -2106,7 +2125,7 @@ FileManager.prototype = {
             title: str('FORMAT_DEVICE'),
             internal: true
           };
-          self.renderTaskButton_(task);
+          self.renderTaskItem_(task);
         }
       }
 
@@ -2138,19 +2157,34 @@ FileManager.prototype = {
     }
   };
 
-  FileManager.prototype.onTaskButtonClicked_ = function(task, event) {
-    this.dispatchFileTask_(task, this.selection.urls);
+  FileManager.prototype.onTaskItemClicked_ = function(event) {
+    this.dispatchFileTask_(event.item.task, this.selection.urls);
+  };
+
+  /**
+   * Dispatches default task for the current selection. If tasks are not ready
+   * yet, dispatches after task are available.
+   */
+  FileManager.prototype.dispatchDefaultTask_ = function() {
+    if (this.selection.tasksList) {
+      if (this.selection.tasksList.length > 0 && this.selection.urls.length > 0)
+        this.dispatchFileTask_(this.selection.tasksList[0],
+            this.selection.urls);
+    } else {
+      // Request to dispatch default task after we get all the tasks.
+      this.selection.dispatchDefault = true;
+    }
   };
 
   FileManager.prototype.dispatchFileTask_ = function(task, urls) {
+    chrome.fileBrowserPrivate.executeTask(task.taskId, urls);
     if (task.internal) {
-      // For internal tasks call the handler directly to avoid being handled
-      // multiple times.
+      // For internal tasks we do not listen to the event to avoid
+      // handling the same task instance from multiple tabs.
+      // So, we manually execute the task.
       var taskId = task.taskId.split('|')[1];
       this.onFileTaskExecute_(taskId, {urls: urls, task: task});
-      return;
     }
-    chrome.fileBrowserPrivate.executeTask(task.taskId, urls);
   };
 
   /**
@@ -2824,9 +2858,12 @@ FileManager.prototype = {
       return this.onDirectoryAction(entry);
     }
 
-    if (!this.okButton_.disabled)
-      this.onOk_();
-
+    if (this.dialogType_ == FileManager.DialogType.FULL_PAGE) {
+      this.dispatchDefaultTask_();
+    } else {
+      if (!this.okButton_.disabled)
+        this.onOk_();
+    }
   };
 
   FileManager.prototype.onDirectoryAction = function(entry) {
