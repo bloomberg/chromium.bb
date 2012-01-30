@@ -137,14 +137,8 @@
 0x12300220:      0x00000000:    dword 5
 0x12300224:      0x00000000:    dword 6
 0x12300228:      0x78140001: 3DSTATE_WM
-0x1230022c:      0xa0000040:    kernel start pointer 0
-0x12300230:      0x00000000:    SPF=0, VME=0, Sampler Count 0, Binding table count 0
-0x12300234:      0x782a0000:    scratch offset
-0x12300238:      0x00007d40:    Depth Clear 0, Depth Resolve 0, HiZ Resolve 0, Dispatch GRF start[0] 0, start[1] 125, start[2] 64
-0x1230023c:      0x782f0000:    MaxThreads 61, PS KillPixel 0, PS computed Z 1, PS use sourceZ 0, Thread Dispatch 1, PS use sourceW 0, Dispatch32 0, Dispatch16 0, Dispatch8 0
-0x12300240:      0x00000000:    Num SF output 0, Pos XY offset 0, ZW interp mode 0 , Barycentric interp mode 0x0, Point raster rule 0, Multisample mode 0, Multisample Dispatch mode 0
-0x12300244:      0x78170005:    kernel start pointer 1
-0x12300248:      0x00000001:    kernel start pointer 2
+0x1230022c:      0xa0000040:    (), point UR
+0x12300230:      0x00000000:    MS
 0x12300234:      0x782a0000: 3DSTATE_BINDING_TABLE_POINTERS_PS
 0x12300238:      0x00007d40:    dword 1
 0x1230023c:      0x782f0000: 3DSTATE_SAMPLER_STATE_POINTERS_PS
@@ -276,14 +270,8 @@
 0x12300434:      0x00000000:    dword 5
 0x12300438:      0x00000000:    dword 6
 0x1230043c:      0x78140001: 3DSTATE_WM
-0x12300440:      0xa0000040:    kernel start pointer 0
-0x12300444:      0x00000000:    SPF=0, VME=0, Sampler Count 0, Binding table count 0
-0x12300448:      0x782a0000:    scratch offset
-0x1230044c:      0x00007a00:    Depth Clear 0, Depth Resolve 0, HiZ Resolve 0, Dispatch GRF start[0] 0, start[1] 122, start[2] 0
-0x12300450:      0x782f0000:    MaxThreads 61, PS KillPixel 0, PS computed Z 1, PS use sourceZ 0, Thread Dispatch 1, PS use sourceW 0, Dispatch32 0, Dispatch16 0, Dispatch8 0
-0x12300454:      0x00000000:    Num SF output 0, Pos XY offset 0, ZW interp mode 0 , Barycentric interp mode 0x0, Point raster rule 0, Multisample mode 0, Multisample Dispatch mode 0
-0x12300458:      0x78170005:    kernel start pointer 1
-0x1230045c:      0x00000000:    kernel start pointer 2
+0x12300440:      0xa0000040:    (), point UR
+0x12300444:      0x00000000:    MS
 0x12300448:      0x782a0000: 3DSTATE_BINDING_TABLE_POINTERS_PS
 0x1230044c:      0x00007a00:    dword 1
 0x12300450:      0x782f0000: 3DSTATE_SAMPLER_STATE_POINTERS_PS
@@ -517,14 +505,8 @@
 0x123007e0:      0x00000000:    dword 5
 0x123007e4:      0x00000000:    dword 6
 0x123007e8:      0x78140001: 3DSTATE_WM
-0x123007ec:      0xa0000840:    kernel start pointer 0
-0x123007f0:      0x00000000:    SPF=0, VME=0, Sampler Count 0, Binding table count 0
-0x123007f4:      0x782a0000:    scratch offset
-0x123007f8:      0x00007a00:    Depth Clear 0, Depth Resolve 0, HiZ Resolve 0, Dispatch GRF start[0] 0, start[1] 122, start[2] 0
-0x123007fc:      0x782f0000:    MaxThreads 61, PS KillPixel 0, PS computed Z 1, PS use sourceZ 0, Thread Dispatch 1, PS use sourceW 0, Dispatch32 0, Dispatch16 0, Dispatch8 0
-0x12300800:      0x00000000:    Num SF output 0, Pos XY offset 0, ZW interp mode 0 , Barycentric interp mode 0x0, Point raster rule 0, Multisample mode 0, Multisample Dispatch mode 0
-0x12300804:      0x78170005:    kernel start pointer 1
-0x12300808:      0x00000000:    kernel start pointer 2
+0x123007ec:      0xa0000840:    (PP ), point UR
+0x123007f0:      0x00000000:    MS
 0x123007f4:      0x782a0000: 3DSTATE_BINDING_TABLE_POINTERS_PS
 0x123007f8:      0x00007a00:    dword 1
 0x123007fc:      0x782f0000: 3DSTATE_SAMPLER_STATE_POINTERS_PS
@@ -609,14 +591,8 @@
 0x12300938:      0x00000000:    dword 5
 0x1230093c:      0x00000000:    dword 6
 0x12300940:      0x78140001: 3DSTATE_WM
-0x12300944:      0xa0000040:    kernel start pointer 0
-0x12300948:      0x00000000:    SPF=0, VME=0, Sampler Count 0, Binding table count 0
-0x1230094c:      0x782a0000:    scratch offset
-0x12300950:      0x00007a00:    Depth Clear 0, Depth Resolve 0, HiZ Resolve 0, Dispatch GRF start[0] 0, start[1] 122, start[2] 0
-0x12300954:      0x782f0000:    MaxThreads 61, PS KillPixel 0, PS computed Z 1, PS use sourceZ 0, Thread Dispatch 1, PS use sourceW 0, Dispatch32 0, Dispatch16 0, Dispatch8 0
-0x12300958:      0x00000000:    Num SF output 0, Pos XY offset 0, ZW interp mode 0 , Barycentric interp mode 0x0, Point raster rule 0, Multisample mode 0, Multisample Dispatch mode 0
-0x1230095c:      0x78170005:    kernel start pointer 1
-0x12300960:      0x00000000:    kernel start pointer 2
+0x12300944:      0xa0000040:    (), point UR
+0x12300948:      0x00000000:    MS
 0x1230094c:      0x782a0000: 3DSTATE_BINDING_TABLE_POINTERS_PS
 0x12300950:      0x00007a00:    dword 1
 0x12300954:      0x782f0000: 3DSTATE_SAMPLER_STATE_POINTERS_PS
@@ -824,14 +800,8 @@
 0x12300c7c:      0x00000000:    dword 5
 0x12300c80:      0x00000000:    dword 6
 0x12300c84:      0x78140001: 3DSTATE_WM
-0x12300c88:      0xa0000840:    kernel start pointer 0
-0x12300c8c:      0x00000000:    SPF=0, VME=0, Sampler Count 0, Binding table count 0
-0x12300c90:      0x782a0000:    scratch offset
-0x12300c94:      0x00007a00:    Depth Clear 0, Depth Resolve 0, HiZ Resolve 0, Dispatch GRF start[0] 0, start[1] 122, start[2] 0
-0x12300c98:      0x782f0000:    MaxThreads 61, PS KillPixel 0, PS computed Z 1, PS use sourceZ 0, Thread Dispatch 1, PS use sourceW 0, Dispatch32 0, Dispatch16 0, Dispatch8 0
-0x12300c9c:      0x00000000:    Num SF output 0, Pos XY offset 0, ZW interp mode 0 , Barycentric interp mode 0x0, Point raster rule 0, Multisample mode 0, Multisample Dispatch mode 0
-0x12300ca0:      0x78170005:    kernel start pointer 1
-0x12300ca4:      0x00000000:    kernel start pointer 2
+0x12300c88:      0xa0000840:    (PP ), point UR
+0x12300c8c:      0x00000000:    MS
 0x12300c90:      0x782a0000: 3DSTATE_BINDING_TABLE_POINTERS_PS
 0x12300c94:      0x00007a00:    dword 1
 0x12300c98:      0x782f0000: 3DSTATE_SAMPLER_STATE_POINTERS_PS
@@ -916,14 +886,8 @@
 0x12300dd4:      0x00000000:    dword 5
 0x12300dd8:      0x00000000:    dword 6
 0x12300ddc:      0x78140001: 3DSTATE_WM
-0x12300de0:      0xa0000040:    kernel start pointer 0
-0x12300de4:      0x00000000:    SPF=0, VME=0, Sampler Count 0, Binding table count 0
-0x12300de8:      0x782a0000:    scratch offset
-0x12300dec:      0x00007a00:    Depth Clear 0, Depth Resolve 0, HiZ Resolve 0, Dispatch GRF start[0] 0, start[1] 122, start[2] 0
-0x12300df0:      0x782f0000:    MaxThreads 61, PS KillPixel 0, PS computed Z 1, PS use sourceZ 0, Thread Dispatch 1, PS use sourceW 0, Dispatch32 0, Dispatch16 0, Dispatch8 0
-0x12300df4:      0x00000000:    Num SF output 0, Pos XY offset 0, ZW interp mode 0 , Barycentric interp mode 0x0, Point raster rule 0, Multisample mode 0, Multisample Dispatch mode 0
-0x12300df8:      0x78170005:    kernel start pointer 1
-0x12300dfc:      0x00000000:    kernel start pointer 2
+0x12300de0:      0xa0000040:    (), point UR
+0x12300de4:      0x00000000:    MS
 0x12300de8:      0x782a0000: 3DSTATE_BINDING_TABLE_POINTERS_PS
 0x12300dec:      0x00007a00:    dword 1
 0x12300df0:      0x782f0000: 3DSTATE_SAMPLER_STATE_POINTERS_PS
@@ -1131,14 +1095,8 @@
 0x12301118:      0x00000000:    dword 5
 0x1230111c:      0x00000000:    dword 6
 0x12301120:      0x78140001: 3DSTATE_WM
-0x12301124:      0xa0000840:    kernel start pointer 0
-0x12301128:      0x00000000:    SPF=0, VME=0, Sampler Count 0, Binding table count 0
-0x1230112c:      0x782a0000:    scratch offset
-0x12301130:      0x00007a00:    Depth Clear 0, Depth Resolve 0, HiZ Resolve 0, Dispatch GRF start[0] 0, start[1] 122, start[2] 0
-0x12301134:      0x782f0000:    MaxThreads 61, PS KillPixel 0, PS computed Z 1, PS use sourceZ 0, Thread Dispatch 1, PS use sourceW 0, Dispatch32 0, Dispatch16 0, Dispatch8 0
-0x12301138:      0x00000000:    Num SF output 0, Pos XY offset 0, ZW interp mode 0 , Barycentric interp mode 0x0, Point raster rule 0, Multisample mode 0, Multisample Dispatch mode 0
-0x1230113c:      0x78170005:    kernel start pointer 1
-0x12301140:      0x00000000:    kernel start pointer 2
+0x12301124:      0xa0000840:    (PP ), point UR
+0x12301128:      0x00000000:    MS
 0x1230112c:      0x782a0000: 3DSTATE_BINDING_TABLE_POINTERS_PS
 0x12301130:      0x00007a00:    dword 1
 0x12301134:      0x782f0000: 3DSTATE_SAMPLER_STATE_POINTERS_PS

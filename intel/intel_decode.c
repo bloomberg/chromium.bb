@@ -2859,6 +2859,140 @@ gen7_3DSTATE_CONSTANT_HS(struct drm_intel_decode *ctx)
 	return gen7_3DSTATE_CONSTANT(ctx, "HS");
 }
 
+
+static int
+gen6_3DSTATE_WM(struct drm_intel_decode *ctx)
+{
+	instr_out(ctx, 0, "3DSTATE_WM\n");
+	instr_out(ctx, 1, "kernel start pointer 0\n");
+	instr_out(ctx, 2,
+		  "SPF=%d, VME=%d, Sampler Count %d, "
+		  "Binding table count %d\n",
+		  (ctx->data[2] >> 31) & 1,
+		  (ctx->data[2] >> 30) & 1,
+		  (ctx->data[2] >> 27) & 7,
+		  (ctx->data[2] >> 18) & 0xff);
+	instr_out(ctx, 3, "scratch offset\n");
+	instr_out(ctx, 4,
+		  "Depth Clear %d, Depth Resolve %d, HiZ Resolve %d, "
+		  "Dispatch GRF start[0] %d, start[1] %d, start[2] %d\n",
+		  (ctx->data[4] & (1 << 30)) != 0,
+		  (ctx->data[4] & (1 << 28)) != 0,
+		  (ctx->data[4] & (1 << 27)) != 0,
+		  (ctx->data[4] >> 16) & 0x7f,
+		  (ctx->data[4] >> 8) & 0x7f,
+		  (ctx->data[4] & 0x7f));
+	instr_out(ctx, 5,
+		  "MaxThreads %d, PS KillPixel %d, PS computed Z %d, "
+		  "PS use sourceZ %d, Thread Dispatch %d, PS use sourceW %d, "
+		  "Dispatch32 %d, Dispatch16 %d, Dispatch8 %d\n",
+		  ((ctx->data[5] >> 25) & 0x7f) + 1,
+		  (ctx->data[5] & (1 << 22)) != 0,
+		  (ctx->data[5] & (1 << 21)) != 0,
+		  (ctx->data[5] & (1 << 20)) != 0,
+		  (ctx->data[5] & (1 << 19)) != 0,
+		  (ctx->data[5] & (1 << 8)) != 0,
+		  (ctx->data[5] & (1 << 2)) != 0,
+		  (ctx->data[5] & (1 << 1)) != 0,
+		  (ctx->data[5] & (1 << 0)) != 0);
+	instr_out(ctx, 6,
+		  "Num SF output %d, Pos XY offset %d, ZW interp mode %d , "
+		  "Barycentric interp mode 0x%x, Point raster rule %d, "
+		  "Multisample mode %d, "
+		  "Multisample Dispatch mode %d\n",
+		  (ctx->data[6] >> 20) & 0x3f,
+		  (ctx->data[6] >> 18) & 3,
+		  (ctx->data[6] >> 16) & 3,
+		  (ctx->data[6] >> 10) & 0x3f,
+		  (ctx->data[6] & (1 << 9)) != 0,
+		  (ctx->data[6] >> 1) & 3,
+		  (ctx->data[6] & 1));
+	instr_out(ctx, 7, "kernel start pointer 1\n");
+	instr_out(ctx, 8, "kernel start pointer 2\n");
+
+	return 9;
+}
+
+static int
+gen7_3DSTATE_WM(struct drm_intel_decode *ctx)
+{
+	const char *computed_depth = "";
+	const char *early_depth = "";
+	const char *zw_interp = "";
+
+	switch ((ctx->data[1] >> 23) & 0x3) {
+	case 0:
+		computed_depth = "";
+		break;
+	case 1:
+		computed_depth = "computed depth";
+		break;
+	case 2:
+		computed_depth = "computed depth >=";
+		break;
+	case 3:
+		computed_depth = "computed depth <=";
+		break;
+	}
+
+	switch ((ctx->data[1] >> 21) & 0x3) {
+	case 0:
+		early_depth = "";
+		break;
+	case 1:
+		early_depth = ", EDSC_PSEXEC";
+		break;
+	case 2:
+		early_depth = ", EDSC_PREPS";
+		break;
+	case 3:
+		early_depth = ", BAD EDSC";
+		break;
+	}
+
+	switch ((ctx->data[1] >> 17) & 0x3) {
+	case 0:
+		early_depth = "";
+		break;
+	case 1:
+		early_depth = ", BAD ZW interp";
+		break;
+	case 2:
+		early_depth = ", ZW centroid";
+		break;
+	case 3:
+		early_depth = ", ZW sample";
+		break;
+	}
+
+	instr_out(ctx, 0, "3DSTATE_WM\n");
+	instr_out(ctx, 1, "(%s%s%s%s%s%s)%s%s%s%s%s%s%s%s%s%s%s%s%s%s\n",
+		  (ctx->data[1] & (1 << 11)) ? "PP " : "",
+		  (ctx->data[1] & (1 << 12)) ? "PC " : "",
+		  (ctx->data[1] & (1 << 13)) ? "PS " : "",
+		  (ctx->data[1] & (1 << 14)) ? "NPP " : "",
+		  (ctx->data[1] & (1 << 15)) ? "NPC " : "",
+		  (ctx->data[1] & (1 << 16)) ? "NPS " : "",
+		  (ctx->data[1] & (1 << 30)) ? ", depth clear" : "",
+		  (ctx->data[1] & (1 << 29)) ? "" : ", disabled",
+		  (ctx->data[1] & (1 << 28)) ? ", depth resolve" : "",
+		  (ctx->data[1] & (1 << 27)) ? ", hiz resolve" : "",
+		  (ctx->data[1] & (1 << 25)) ? ", kill" : "",
+		  computed_depth,
+		  early_depth,
+		  zw_interp,
+		  (ctx->data[1] & (1 << 20)) ? ", source depth" : "",
+		  (ctx->data[1] & (1 << 19)) ? ", source W" : "",
+		  (ctx->data[1] & (1 << 10)) ? ", coverage" : "",
+		  (ctx->data[1] & (1 << 4)) ? ", poly stipple" : "",
+		  (ctx->data[1] & (1 << 3)) ? ", line stipple" : "",
+		  (ctx->data[1] & (1 << 2)) ? ", point UL" : ", point UR"
+		  );
+	instr_out(ctx, 2, "MS\n");
+
+	return 3;
+}
+
 static int
 decode_3d_965(struct drm_intel_decode *ctx)
 {
@@ -2907,8 +3041,8 @@ decode_3d_965(struct drm_intel_decode *ctx)
 		{ 0x7812, 0x00ff, 4, 4, "3DSTATE_CLIP" },
 		{ 0x7813, 0x00ff, 20, 20, "3DSTATE_SF", 6 },
 		{ 0x7813, 0x00ff, 7, 7, "3DSTATE_SF", 7 },
-		{ 0x7814, 0x00ff, 3, 3, "3DSTATE_WM", 7 },
-		{ 0x7814, 0x00ff, 9, 9, "3DSTATE_WM" },
+		{ 0x7814, 0x00ff, 3, 3, "3DSTATE_WM", 7, gen7_3DSTATE_WM },
+		{ 0x7814, 0x00ff, 9, 9, "3DSTATE_WM", 6, gen6_3DSTATE_WM },
 		{ 0x7815, 0x00ff, 5, 5, "3DSTATE_CONSTANT_VS_STATE", 6 },
 		{ 0x7815, 0x00ff, 7, 7, "3DSTATE_CONSTANT_VS", 7, gen7_3DSTATE_CONSTANT_VS },
 		{ 0x7816, 0x00ff, 5, 5, "3DSTATE_CONSTANT_GS_STATE", 6 },
@@ -3300,46 +3434,6 @@ decode_3d_965(struct drm_intel_decode *ctx)
 			  "Attrib 7-0 WrapShortest Enable\n");
 		instr_out(ctx, 19,
 			  "Attrib 15-8 WrapShortest Enable\n");
-
-		return len;
-
-	case 0x7814:
-		instr_out(ctx, 0, "3DSTATE_WM\n");
-		instr_out(ctx, 1, "kernel start pointer 0\n");
-		instr_out(ctx, 2,
-			  "SPF=%d, VME=%d, Sampler Count %d, "
-			  "Binding table count %d\n", (data[2] >> 31) & 1,
-			  (data[2] >> 30) & 1, (data[2] >> 27) & 7,
-			  (data[2] >> 18) & 0xff);
-		instr_out(ctx, 3, "scratch offset\n");
-		instr_out(ctx, 4,
-			  "Depth Clear %d, Depth Resolve %d, HiZ Resolve %d, "
-			  "Dispatch GRF start[0] %d, start[1] %d, start[2] %d\n",
-			  (data[4] & (1 << 30)) != 0,
-			  (data[4] & (1 << 28)) != 0,
-			  (data[4] & (1 << 27)) != 0, (data[4] >> 16) & 0x7f,
-			  (data[4] >> 8) & 0x7f, (data[4] & 0x7f));
-		instr_out(ctx, 5,
-			  "MaxThreads %d, PS KillPixel %d, PS computed Z %d, "
-			  "PS use sourceZ %d, Thread Dispatch %d, PS use sourceW %d, Dispatch32 %d, "
-			  "Dispatch16 %d, Dispatch8 %d\n",
-			  ((data[5] >> 25) & 0x7f) + 1,
-			  (data[5] & (1 << 22)) != 0,
-			  (data[5] & (1 << 21)) != 0,
-			  (data[5] & (1 << 20)) != 0,
-			  (data[5] & (1 << 19)) != 0, (data[5] & (1 << 8)) != 0,
-			  (data[5] & (1 << 2)) != 0, (data[5] & (1 << 1)) != 0,
-			  (data[5] & (1 << 0)) != 0);
-		instr_out(ctx, 6,
-			  "Num SF output %d, Pos XY offset %d, ZW interp mode %d , "
-			  "Barycentric interp mode 0x%x, Point raster rule %d, Multisample mode %d, "
-			  "Multisample Dispatch mode %d\n",
-			  (data[6] >> 20) & 0x3f, (data[6] >> 18) & 3,
-			  (data[6] >> 16) & 3, (data[6] >> 10) & 0x3f,
-			  (data[6] & (1 << 9)) != 0, (data[6] >> 1) & 3,
-			  (data[6] & 1));
-		instr_out(ctx, 7, "kernel start pointer 1\n");
-		instr_out(ctx, 8, "kernel start pointer 2\n");
 
 		return len;
 
