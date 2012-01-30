@@ -530,11 +530,13 @@ destroy_surface(struct wl_resource *resource)
 			     struct weston_surface, surface.resource);
 	struct weston_compositor *compositor = surface->compositor;
 
-	weston_surface_damage_below(surface);
-	weston_surface_flush_damage(surface);
+	if (surface->output) {
+		weston_surface_damage_below(surface);
+		weston_surface_flush_damage(surface);
 
-	wl_list_remove(&surface->link);
-	weston_compositor_repick(compositor);
+		wl_list_remove(&surface->link);
+		weston_compositor_repick(compositor);
+	}
 
 	glDeleteTextures(1, &surface->texture);
 
@@ -1075,7 +1077,7 @@ surface_attach(struct wl_client *client,
 {
 	struct weston_surface *es = resource->data;
 	struct weston_shell *shell = es->compositor->shell;
-	struct wl_buffer *buffer = buffer_resource->data;
+	struct wl_buffer *buffer;
 
 	weston_surface_damage_below(es);
 
@@ -1084,6 +1086,14 @@ surface_attach(struct wl_client *client,
 		wl_list_remove(&es->buffer_destroy_listener.link);
 	}
 
+	if (!buffer_resource && es->output) {
+		wl_list_remove(&es->link);
+		es->visual = WESTON_NONE_VISUAL;
+		es->output = NULL;
+		return;
+	}
+
+	buffer = buffer_resource->data;
 	buffer->busy_count++;
 	es->buffer = buffer;
 	wl_list_insert(es->buffer->resource.destroy_listener_list.prev,
