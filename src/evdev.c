@@ -30,6 +30,7 @@
 
 #include "compositor.h"
 #include "evdev.h"
+#include "launcher-util.h"
 
 struct evdev_input {
 	struct weston_input_device base;
@@ -492,7 +493,7 @@ evdev_input_device_create(struct evdev_input *master,
 	/* Use non-blocking mode so that we can loop on read on
 	 * evdev_input_device_data() until all events on the fd are
 	 * read.  mtdev_get() also expects this. */
-	device->fd = open(path, O_RDONLY | O_NONBLOCK);
+	device->fd = weston_launcher_open(ec, path, O_RDONLY | O_NONBLOCK);
 	if (device->fd < 0)
 		goto err0;
 

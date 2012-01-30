@@ -81,7 +81,6 @@ try_open_vt(struct tty *tty)
 {
 	int tty0, fd;
 	char filename[16];
-	struct vt_stat vts;
 
 	tty0 = open("/dev/tty0", O_WRONLY | O_CLOEXEC);
 	if (tty0 < 0) {
@@ -102,18 +101,6 @@ try_open_vt(struct tty *tty)
 	if (fd < 0)
 		return fd;
 
-	if (ioctl(fd, VT_GETSTATE, &vts) == 0)
-		tty->starting_vt = vts.v_active;
-	else
-		tty->starting_vt = tty->vt;
-
-	if (ioctl(fd, VT_ACTIVATE, tty->vt) < 0 ||
-	    ioctl(fd, VT_WAITACTIVE, tty->vt) < 0) {
-		fprintf(stderr, "failed to swtich to new vt\n");
-		close(fd);
-		return -1;
-	}
-
 	return fd;
 }
 
@@ -128,6 +115,7 @@ tty_create(struct weston_compositor *compositor, tty_vt_func_t vt_func,
 	struct wl_event_loop *loop;
 	struct stat buf;
 	char filename[16];
+	struct vt_stat vts;
 
 	tty = malloc(sizeof *tty);
 	if (tty == NULL)
@@ -136,14 +124,22 @@ tty_create(struct weston_compositor *compositor, tty_vt_func_t vt_func,
 	memset(tty, 0, sizeof *tty);
 	tty->compositor = compositor;
 	tty->vt_func = vt_func;
+
+	tty->fd = weston_environment_get_fd("WESTON_TTY_FD");
+	if (tty->fd < 0)
+		tty->fd = STDIN_FILENO;
+
 	if (tty_nr > 0) {
 		snprintf(filename, sizeof filename, "/dev/tty%d", tty_nr);
 		fprintf(stderr, "compositor: using %s\n", filename);
 		tty->fd = open(filename, O_RDWR | O_NOCTTY | O_CLOEXEC);
+		tty->vt = tty_nr;
 	} else if (fstat(tty->fd, &buf) == 0 &&
 		   major(buf.st_rdev) == TTY_MAJOR &&
 		   minor(buf.st_rdev) > 0) {
-		tty->fd = fcntl(0, F_DUPFD_CLOEXEC, 0);
+		if (tty->fd == STDIN_FILENO)
+			tty->fd = fcntl(STDIN_FILENO, F_DUPFD_CLOEXEC, 0);
+		tty->vt = minor(buf.st_rdev);
 	} else {
 		/* Fall back to try opening a new VT.  This typically
 		 * requires root. */
@@ -154,6 +150,19 @@ tty_create(struct weston_compositor *compositor, tty_vt_func_t vt_func,
 		fprintf(stderr, "failed to open tty: %m\n");
 		free(tty);
 		return NULL;
+	}
+
+	if (ioctl(tty->fd, VT_GETSTATE, &vts) == 0)
+		tty->starting_vt = vts.v_active;
+	else
+		tty->starting_vt = tty->vt;
+
+	if (tty->starting_vt != tty->vt) {
+		if (ioctl(tty->fd, VT_ACTIVATE, tty->vt) < 0 ||
+		    ioctl(tty->fd, VT_WAITACTIVE, tty->vt) < 0) {
+			fprintf(stderr, "failed to swtich to new vt\n");
+			return NULL;
+		}
 	}
 
 	if (tcgetattr(tty->fd, &tty->terminal_attributes) < 0) {

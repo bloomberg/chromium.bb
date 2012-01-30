@@ -2331,6 +2331,7 @@ weston_compositor_init(struct weston_compositor *ec, struct wl_display *display)
 	const char *extensions;
 
 	ec->wl_display = display;
+	ec->launcher_sock = weston_environment_get_fd("WESTON_LAUNCHER_SOCK");
 
 	if (!wl_display_add_global(display, &wl_compositor_interface,
 				   ec, compositor_bind))

@@ -39,6 +39,7 @@
 
 #include "compositor.h"
 #include "evdev.h"
+#include "launcher-util.h"
 
 struct drm_compositor {
 	struct weston_compositor base;
@@ -1449,7 +1450,8 @@ drm_destroy(struct weston_compositor *ec)
 
 	gbm_device_destroy(d->gbm);
 	destroy_sprites(d);
-	drmDropMaster(d->drm.fd);
+	if (weston_launcher_drm_set_master(&d->base, d->drm.fd, 0) < 0)
+		fprintf(stderr, "failed to drop master: %m\n");
 	tty_destroy(d->tty);
 
 	free(d);
@@ -1489,7 +1491,7 @@ vt_func(struct weston_compositor *compositor, int event)
 	switch (event) {
 	case TTY_ENTER_VT:
 		compositor->focus = 1;
-		if (drmSetMaster(ec->drm.fd)) {
+		if (weston_launcher_drm_set_master(&ec->base, ec->drm.fd, 1)) {
 			fprintf(stderr, "failed to set master: %m\n");
 			wl_display_terminate(compositor->wl_display);
 		}
@@ -1529,7 +1531,7 @@ vt_func(struct weston_compositor *compositor, int event)
 		wl_list_for_each(input, &compositor->input_device_list, link)
 			evdev_remove_devices(input);
 
-		if (drmDropMaster(ec->drm.fd) < 0)
+		if (weston_launcher_drm_set_master(&ec->base, ec->drm.fd, 0) < 0)
 			fprintf(stderr, "failed to drop master: %m\n");
 
 		break;

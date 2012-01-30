@@ -231,6 +231,7 @@ struct weston_compositor {
 	int (*authenticate)(struct weston_compositor *c, uint32_t id);
 
 	struct screenshooter *screenshooter;
+	int launcher_sock;
 };
 
 #define MODIFIER_CTRL	(1 << 8)
@@ -443,6 +444,9 @@ weston_compositor_run_binding(struct weston_compositor *compositor,
 			      struct weston_input_device *device,
 			      uint32_t time,
 			      uint32_t key, uint32_t button, uint32_t axis, int32_t state);
+int
+weston_environment_get_fd(const char *env);
+
 struct wl_list *
 weston_compositor_top(struct weston_compositor *compositor);
 

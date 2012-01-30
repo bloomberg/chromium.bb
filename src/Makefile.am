@@ -1,4 +1,5 @@
-bin_PROGRAMS = weston
+bin_PROGRAMS = weston				\
+	       $(weston_launch)
 
 AM_CPPFLAGS =					\
 	-DDATADIR='"$(datadir)"'		\
@@ -22,13 +23,32 @@ weston_SOURCES =			\
 	util.c					\
 	matrix.c				\
 	matrix.h				\
+	weston-launch.h				\
 	$(xserver_launcher_sources)
+
+if BUILD_WESTON_LAUNCH
+weston_launch = weston-launch
+weston_launch_SOURCES = weston-launch.c weston-launch.h
+weston_launch_CFLAGS= $(GCC_CFLAGS)
+weston_launch_CPPFLAGS = $(WESTON_LAUNCH_CFLAGS) $(SYSTEMD_LOGIN_CFLAGS) \
+		 -DBINDIR='"$(bindir)"'
+weston_launch_LDADD = $(WESTON_LAUNCH_LIBS) $(SYSTEMD_LOGIN_LIBS)
+
+if ENABLE_SETUID_INSTALL
+install-exec-hook:
+	chown root $(DESTDIR)$(bindir)/weston-launch
+	chmod u+s $(DESTDIR)$(bindir)/weston-launch
+endif
+
+else # BUILD_WESTON_LAUNCH
 
 if ENABLE_SETUID_INSTALL
 install-exec-hook:
 	chown root $(DESTDIR)$(bindir)/weston
 	chmod u+s $(DESTDIR)$(bindir)/weston
 endif
+
+endif # BUILD_WESTON_LAUNCH
 
 if ENABLE_XSERVER_LAUNCHER
 xserver_launcher_sources =			\
@@ -67,6 +87,8 @@ drm_backend_la_SOURCES =			\
 	tty.c					\
 	evdev.c					\
 	evdev.h					\
+	launcher-util.c				\
+	launcher-util.h				\
 	libbacklight.c				\
 	libbacklight.h
 endif

@@ -151,6 +151,22 @@ if test x$enable_clients = xyes; then
         [AC_MSG_WARN([Cairo-EGL not found - clients will use cairo image])])
 fi
 
+AC_ARG_ENABLE(weston-launch, [  --enable-weston-launch],, enable_weston_launch=yes)
+AM_CONDITIONAL(BUILD_WESTON_LAUNCH, test x$enable_weston_launch == xyes)
+if test x$enable_weston_launch == xyes; then
+  PKG_CHECK_MODULES(WESTON_LAUNCH, [libdrm])
+  PKG_CHECK_MODULES(SYSTEMD_LOGIN, [libsystemd-login],
+		    [have_systemd_login=yes], [have_systemd_login=no])
+  AS_IF([test "x$have_systemd_login" = "xyes"],
+	[AC_DEFINE([HAVE_SYSTEMD_LOGIN], [1], [Have systemd-login])])
+
+  AC_CHECK_LIB([pam], [pam_open_session], [have_pam=yes], [have_pam=no])
+  if test x$have_pam == xno; then
+    AC_ERROR([weston-launch requires pam])
+  fi
+  WESTON_LAUNCH_LIBS="$WESTON_LAUNCH_LIBS -lpam"
+fi
+
 AM_CONDITIONAL(HAVE_POPPLER, test "x$have_poppler" = "xyes")
 
 AM_CONDITIONAL(BUILD_FULL_GL_CLIENTS,

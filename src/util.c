@@ -25,6 +25,9 @@
 #include <stdio.h>
 #include <math.h>
 
+#include <unistd.h>
+#include <fcntl.h>
+
 #include "compositor.h"
 
 WL_EXPORT void
@@ -295,4 +298,27 @@ weston_compositor_run_binding(struct weston_compositor *compositor,
 						     time, key);
 		}
 	}
+}
+
+WL_EXPORT int
+weston_environment_get_fd(const char *env)
+{
+	char *e, *end;
+	int fd, flags;
+
+	e = getenv(env);
+	if (!e)
+		return -1;
+	fd = strtol(e, &end, 0);
+	if (*end != '\0')
+		return -1;
+
+	flags = fcntl(fd, F_GETFD);
+	if (flags == -1)
+		return -1;
+
+	fcntl(fd, F_SETFD, flags | FD_CLOEXEC);
+	unsetenv(env);
+
+	return fd;
 }
