@@ -109,7 +109,8 @@ scoped_ptr<Authenticator> Me2MeHostAuthenticatorFactory::CreateAuthenticator(
 
   if (V2Authenticator::IsEkeMessage(first_message)) {
     return V2Authenticator::CreateForHost(
-        local_cert_, *local_private_key_, shared_secret_hash_.value);
+        local_cert_, *local_private_key_, shared_secret_hash_.value,
+        Authenticator::WAITING_MESSAGE);
   }
 
   // TODO(sergeyu): Old clients still use V1 auth protocol. Remove

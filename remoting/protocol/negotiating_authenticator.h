@@ -2,17 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_PROTOCOL_V2_AUTHENTICATOR_H_
-#define REMOTING_PROTOCOL_V2_AUTHENTICATOR_H_
+#ifndef REMOTING_PROTOCOL_NEGOTIATING_AUTHENTICATOR_H_
+#define REMOTING_PROTOCOL_NEGOTIATING_AUTHENTICATOR_H_
 
 #include <string>
-#include <queue>
+#include <vector>
 
-#include "base/compiler_specific.h"
-#include "base/gtest_prod_util.h"
+#include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
-#include "crypto/p224_spake.h"
 #include "remoting/protocol/authenticator.h"
+#include "remoting/protocol/authentication_method.h"
 
 namespace crypto {
 class RSAPrivateKey;
@@ -21,21 +20,20 @@ class RSAPrivateKey;
 namespace remoting {
 namespace protocol {
 
-class V2Authenticator : public Authenticator {
+class NegotiatingAuthenticator : public Authenticator {
  public:
-  static bool IsEkeMessage(const buzz::XmlElement* message);
+  virtual ~NegotiatingAuthenticator();
 
   static scoped_ptr<Authenticator> CreateForClient(
+      const std::string& authentication_tag,
       const std::string& shared_secret,
-      State initial_state);
+      const std::vector<AuthenticationMethod>& methods);
 
   static scoped_ptr<Authenticator> CreateForHost(
       const std::string& local_cert,
       const crypto::RSAPrivateKey& local_private_key,
-      const std::string& shared_secret,
-      State initial_state);
-
-  virtual ~V2Authenticator();
+      const std::string& shared_secret_hash,
+      AuthenticationMethod::HashFunction hash_function);
 
   // Authenticator interface.
   virtual State state() const OVERRIDE;
@@ -46,33 +44,34 @@ class V2Authenticator : public Authenticator {
       CreateChannelAuthenticator() const OVERRIDE;
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(V2AuthenticatorTest, InvalidSecret);
+  NegotiatingAuthenticator(Authenticator::State initial_state);
 
-  V2Authenticator(crypto::P224EncryptedKeyExchange::PeerType type,
-                  const std::string& shared_secret,
-                  State initial_state);
-
+  void AddMethod(const AuthenticationMethod& method);
+  void CreateAuthenticator(State initial_state);
   bool is_host_side() const;
 
   // Used only for host authenticators.
   std::string local_cert_;
   scoped_ptr<crypto::RSAPrivateKey> local_private_key_;
   bool certificate_sent_;
+  std::string shared_secret_hash_;
 
   // Used only for client authenticators.
   std::string remote_cert_;
+  std::string authentication_tag_;
+  std::string shared_secret_;
 
   // Used for both host and client authenticators.
-  crypto::P224EncryptedKeyExchange key_exchange_impl_;
+  std::vector<AuthenticationMethod> methods_;
+  AuthenticationMethod current_method_;
+  scoped_ptr<Authenticator> current_authenticator_;
   State state_;
   RejectionReason rejection_reason_;
-  std::queue<std::string> pending_messages_;
-  std::string auth_key_;
 
-  DISALLOW_COPY_AND_ASSIGN(V2Authenticator);
+  DISALLOW_COPY_AND_ASSIGN(NegotiatingAuthenticator);
 };
 
 }  // namespace protocol
 }  // namespace remoting
 
-#endif  // REMOTING_PROTOCOL_V2_AUTHENTICATOR_H_
+#endif  // REMOTING_PROTOCOL_NEGOTIATING_AUTHENTICATOR_H_

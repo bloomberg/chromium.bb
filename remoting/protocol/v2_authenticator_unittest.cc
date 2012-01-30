@@ -41,8 +41,9 @@ class V2AuthenticatorTest : public AuthenticatorTestBase {
   void InitAuthenticators(const std::string& client_secret,
                           const std::string& host_secret) {
     host_ = V2Authenticator::CreateForHost(
-        host_cert_, *private_key_, host_secret);
-    client_ = V2Authenticator::CreateForClient(client_secret);
+        host_cert_, *private_key_, host_secret, Authenticator::WAITING_MESSAGE);
+    client_ = V2Authenticator::CreateForClient(
+        client_secret, Authenticator::MESSAGE_READY);
   }
 
   DISALLOW_COPY_AND_ASSIGN(V2AuthenticatorTest);

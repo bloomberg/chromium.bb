@@ -36,30 +36,32 @@ bool V2Authenticator::IsEkeMessage(const buzz::XmlElement* message) {
 
 // static
 scoped_ptr<Authenticator> V2Authenticator::CreateForClient(
-      const std::string& shared_secret) {
+    const std::string& shared_secret,
+    Authenticator::State initial_state) {
   return scoped_ptr<Authenticator>(new V2Authenticator(
-      P224EncryptedKeyExchange::kPeerTypeClient, shared_secret));
+      P224EncryptedKeyExchange::kPeerTypeClient, shared_secret, initial_state));
 }
 
 // static
 scoped_ptr<Authenticator> V2Authenticator::CreateForHost(
     const std::string& local_cert,
     const crypto::RSAPrivateKey& local_private_key,
-    const std::string& shared_secret) {
-  V2Authenticator* result = new V2Authenticator(
-      P224EncryptedKeyExchange::kPeerTypeServer, shared_secret);
+    const std::string& shared_secret,
+    Authenticator::State initial_state) {
+  scoped_ptr<V2Authenticator> result(new V2Authenticator(
+      P224EncryptedKeyExchange::kPeerTypeServer, shared_secret, initial_state));
   result->local_cert_ = local_cert;
   result->local_private_key_.reset(local_private_key.Copy());
-  result->state_ = WAITING_MESSAGE;
-  return scoped_ptr<Authenticator>(result);
+  return scoped_ptr<Authenticator>(result.Pass());
 }
 
 V2Authenticator::V2Authenticator(
     crypto::P224EncryptedKeyExchange::PeerType type,
-    const std::string& shared_secret)
+    const std::string& shared_secret,
+    Authenticator::State initial_state)
     : certificate_sent_(false),
       key_exchange_impl_(type, shared_secret),
-      state_(MESSAGE_READY),
+      state_(initial_state),
       rejection_reason_(INVALID_CREDENTIALS) {
   pending_messages_.push(key_exchange_impl_.GetMessage());
 }
@@ -168,6 +170,7 @@ scoped_ptr<buzz::XmlElement> V2Authenticator::GetNextMessage() {
     }
     certificate_tag->SetBodyText(base64_cert);
     message->AddElement(certificate_tag);
+    certificate_sent_ = true;
   }
 
   if (state_ != ACCEPTED) {

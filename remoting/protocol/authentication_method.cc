@@ -42,25 +42,12 @@ AuthenticationMethod AuthenticationMethod::FromString(
   }
 }
 
-AuthenticationMethod::AuthenticationMethod()
-    : invalid_(true),
-      version_(VERSION_2),
-      hash_function_(NONE) {
-}
-
-AuthenticationMethod::AuthenticationMethod(Version version,
-                                           HashFunction hash_function)
-    : invalid_(false),
-      version_(version),
-      hash_function_(hash_function) {
-}
-
+// static
 std::string AuthenticationMethod::ApplyHashFunction(
+    HashFunction hash_function,
     const std::string& tag,
     const std::string& shared_secret) {
-  DCHECK(is_valid());
-
-  switch (hash_function_) {
+  switch (hash_function) {
     case NONE:
       return shared_secret;
       break;
@@ -84,10 +71,23 @@ std::string AuthenticationMethod::ApplyHashFunction(
   return shared_secret;
 }
 
+AuthenticationMethod::AuthenticationMethod()
+    : invalid_(true),
+      version_(VERSION_2),
+      hash_function_(NONE) {
+}
+
+AuthenticationMethod::AuthenticationMethod(Version version,
+                                           HashFunction hash_function)
+    : invalid_(false),
+      version_(version),
+      hash_function_(hash_function) {
+}
+
 scoped_ptr<Authenticator> AuthenticationMethod::CreateAuthenticator(
     const std::string& local_jid,
     const std::string& tag,
-    const std::string& shared_secret) {
+    const std::string& shared_secret) const {
   DCHECK(is_valid());
 
   switch (version_) {
@@ -98,7 +98,8 @@ scoped_ptr<Authenticator> AuthenticationMethod::CreateAuthenticator(
 
     case VERSION_2:
       return protocol::V2Authenticator::CreateForClient(
-          ApplyHashFunction(tag, shared_secret));
+          ApplyHashFunction(hash_function_, tag, shared_secret),
+          Authenticator::MESSAGE_READY);
   }
 
   NOTREACHED();
@@ -133,6 +134,16 @@ const std::string AuthenticationMethod::ToString() const {
 
   NOTREACHED();
   return "";
+}
+
+bool AuthenticationMethod::operator ==(
+    const AuthenticationMethod& other) const {
+  if (!is_valid())
+    return !other.is_valid();
+  if (!other.is_valid())
+    return false;
+  return version_ == other.version_ &&
+      hash_function_ == other.hash_function_;
 }
 
 }  // namespace protocol

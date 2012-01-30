@@ -49,6 +49,12 @@ class AuthenticationMethod {
   // invalid value if the string is invalid.
   static AuthenticationMethod FromString(const std::string& value);
 
+  // Applies the specified hash function to |shared_secret| with the
+  // specified |tag| as a key.
+  static std::string ApplyHashFunction(HashFunction hash_function,
+                                       const std::string& tag,
+                                       const std::string& shared_secret);
+
   // Returns true
   bool is_valid() const { return !invalid_; }
 
@@ -63,16 +69,18 @@ class AuthenticationMethod {
   // Returns string representation of the value stored in this object.
   const std::string ToString() const;
 
-  // Applies the current hash function to |shared_secret| with the
-  // specified |tag| as a key.
-  std::string ApplyHashFunction(const std::string& tag,
-                                const std::string& shared_secret);
-
   // Creates client authenticator using the specified parameters.
   scoped_ptr<Authenticator> CreateAuthenticator(
       const std::string& local_jid,
       const std::string& tag,
-      const std::string& shared_secret);
+      const std::string& shared_secret) const;
+
+  // Comparison operators so that std::find() can be used with
+  // collections of this class.
+  bool operator ==(const AuthenticationMethod& other) const;
+  bool operator !=(const AuthenticationMethod& other) const {
+    return !(*this == other);
+  }
 
  private:
   AuthenticationMethod();
