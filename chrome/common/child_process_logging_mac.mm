@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -187,7 +187,7 @@ void SetCommandLine(const CommandLine* command_line) {
   // Note the total number of switches, not including the exec path.
   const CommandLine::StringVector& argv = command_line->argv();
   SetCrashKeyValue(kNumSwitchesKey,
-                   [NSString stringWithFormat:@"%d", argv.size() - 1]);
+                   [NSString stringWithFormat:@"%zu", argv.size() - 1]);
 
   size_t key_i = 0;
   for (size_t i = 1; i < argv.size() && key_i < kMaxSwitches; ++i) {
