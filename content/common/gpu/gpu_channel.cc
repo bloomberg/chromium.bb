@@ -26,7 +26,7 @@
 #endif
 
 namespace {
-const int64 kHandleMoreWorkPeriod = 1;
+const int64 kHandleMoreWorkPeriodMs = 1;
 }
 
 GpuChannel::GpuChannel(GpuChannelManager* gpu_channel_manager,
@@ -266,7 +266,7 @@ void GpuChannel::HandleMessage() {
               FROM_HERE,
               base::Bind(&GpuChannel::HandleMessage,
                          weak_factory_.GetWeakPtr()),
-              kHandleMoreWorkPeriod);
+              base::TimeDelta::FromMilliseconds(kHandleMoreWorkPeriodMs));
           handle_messages_scheduled_ = true;
         }
       }
