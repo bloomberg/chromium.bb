@@ -32,7 +32,7 @@ const int kMinAllowedBalloonCount = 2;
 
 // Delay from the mouse leaving the balloon collection before
 // there is a relayout, in milliseconds.
-const int kRepositionDelay = 300;
+const int kRepositionDelayMs = 300;
 
 // The spacing between the balloon and the panel.
 const int kVerticalSpacingBetweenBalloonAndPanel = 5;
@@ -264,7 +264,7 @@ void BalloonCollectionImpl::HandleMouseMoveEvent() {
           FROM_HERE,
           base::Bind(&BalloonCollectionImpl::CancelOffsets,
                      reposition_factory_.GetWeakPtr()),
-          kRepositionDelay);
+          base::TimeDelta::FromMilliseconds(kRepositionDelayMs));
     }
   } else {
     // Mouse moved back into the region.  Cancel the reposition.
