@@ -155,6 +155,8 @@
           'target_name': 'chrome_sandbox',
           'type': 'executable',
           'sources': [
+            'linux/suid/init_process.c',
+            'linux/suid/init_process.h',
             'linux/suid/linux_util.c',
             'linux/suid/linux_util.h',
             'linux/suid/process_util.h',
