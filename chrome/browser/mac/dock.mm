@@ -17,13 +17,65 @@
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/mac/launchd.h"
 
+extern "C" {
+
+// Undocumented private internal CFURL functions. The Dock uses these to
+// serialize and deserialize CFURLs for use in its plist's file-data keys. See
+// 10.5.8 CF-476.19 and 10.7.2 CF-635.15's CFPriv.h and CFURL.c. The property
+// list representation will contain, at the very least, the _CFURLStringType
+// and _CFURLString keys. _CFURLStringType is a number that defines the
+// interpretation of the _CFURLString. It may be a CFURLPathStyle value, or
+// the CFURL-internal FULL_URL_REPRESENTATION value (15). Prior to Mac OS X
+// 10.7.2, the Dock plist always used kCFURLPOSIXPathStyle (0), formatting
+// _CFURLString as a POSIX path. In Mac OS X 10.7.2 (CF-635.15), it uses
+// FULL_URL_REPRESENTATION along with a file:/// URL. This is due to a change
+// in _CFURLInit.
+
+CFPropertyListRef _CFURLCopyPropertyListRepresentation(CFURLRef url);
+CFURLRef _CFURLCreateFromPropertyListRepresentation(
+    CFAllocatorRef allocator, CFPropertyListRef property_list_representation);
+
+}  // extern "C"
+
 namespace dock {
 namespace {
 
 NSString* const kDockTileDataKey = @"tile-data";
 NSString* const kDockFileDataKey = @"file-data";
-NSString* const kDockCFURLStringKey = @"_CFURLString";
-NSString* const kDockCFURLStringTypeKey = @"_CFURLStringType";
+
+// A wrapper around _CFURLCopyPropertyListRepresentation that operates on
+// Foundation data types and returns an autoreleased NSDictionary.
+NSDictionary* NSURLCopyDictionary(NSURL* url) {
+  CFURLRef url_cf = base::mac::NSToCFCast(url);
+  base::mac::ScopedCFTypeRef<CFPropertyListRef> property_list(
+      _CFURLCopyPropertyListRepresentation(url_cf));
+  CFDictionaryRef dictionary_cf =
+      base::mac::CFCast<CFDictionaryRef>(property_list);
+  NSDictionary* dictionary = base::mac::CFToNSCast(dictionary_cf);
+
+  if (!dictionary) {
+    return nil;
+  }
+
+  NSMakeCollectable(property_list.release());
+  return [dictionary autorelease];
+}
+
+// A wrapper around _CFURLCreateFromPropertyListRepresentation that operates
+// on Foundation data types and returns an autoreleased NSURL.
+NSURL* NSURLCreateFromDictionary(NSDictionary* dictionary) {
+  CFDictionaryRef dictionary_cf = base::mac::NSToCFCast(dictionary);
+  base::mac::ScopedCFTypeRef<CFURLRef> url_cf(
+      _CFURLCreateFromPropertyListRepresentation(NULL, dictionary_cf));
+  NSURL* url = base::mac::CFToNSCast(url_cf);
+
+  if (!url) {
+    return nil;
+  }
+
+  NSMakeCollectable(url_cf.release());
+  return [url autorelease];
+}
 
 // Returns an array parallel to |persistent_apps| containing only the
 // pathnames of the Dock tiles contained therein. Returns nil on failure, such
@@ -50,22 +102,18 @@ NSMutableArray* PersistentAppPaths(NSArray* persistent_apps) {
       return nil;
     }
 
-    NSNumber* type = [file_data objectForKey:kDockCFURLStringTypeKey];
-    if (![type isKindOfClass:[NSNumber class]]) {
-      LOG(ERROR) << "type not NSNumber";
-      return nil;
-    }
-    if ([type intValue] != 0) {
-      LOG(ERROR) << "type not 0";
+    NSURL* url = NSURLCreateFromDictionary(file_data);
+    if (!url) {
+      LOG(ERROR) << "no URL";
       return nil;
     }
 
-    NSString* path = [file_data objectForKey:kDockCFURLStringKey];
-    if (![path isKindOfClass:[NSString class]]) {
-      LOG(ERROR) << "path not NSString";
+    if (![url isFileURL]) {
+      LOG(ERROR) << "non-file URL";
       return nil;
     }
 
+    NSString* path = [url path];
     [app_paths addObject:path];
   }
 
@@ -316,13 +364,15 @@ void AddIcon(NSString* installed_path, NSString* dmg_app_path) {
     }
 
     // Set up the new Dock tile.
-    NSDictionary* new_tile_file_data =
-        [NSDictionary dictionaryWithObjectsAndKeys:
-            installed_path_dock, kDockCFURLStringKey,
-            [NSNumber numberWithInt:0], kDockCFURLStringTypeKey,
-            nil];
+    NSURL* url = [NSURL fileURLWithPath:installed_path_dock];
+    NSDictionary* url_dict = NSURLCopyDictionary(url);
+    if (!url_dict) {
+      LOG(ERROR) << "couldn't create url_dict";
+      return;
+    }
+
     NSDictionary* new_tile_data =
-        [NSDictionary dictionaryWithObject:new_tile_file_data
+        [NSDictionary dictionaryWithObject:url_dict
                                     forKey:kDockFileDataKey];
     NSDictionary* new_tile =
         [NSDictionary dictionaryWithObject:new_tile_data
