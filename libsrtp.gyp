@@ -97,7 +97,6 @@
       'type': 'static_library',
       'sources': [
         # includes
-        'srtp/config_in.h',
         'srtp/include/ekt.h',
         'srtp/include/getopt_s.h',
         'srtp/include/rtp.h',
