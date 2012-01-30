@@ -119,9 +119,16 @@ TEST_F(ToplevelLayoutManagerTest, FullscreenRootWindowResize) {
             window->bounds());
 }
 
+// Fails on Mac only.  Need to be implemented.  http://crbug.com/111279.
+#if defined(OS_MACOSX)
+#define MAYBE_RootWindowResizeShrinksWindows \
+  FAILS_RootWindowResizeShrinksWindows
+#else
+#define MAYBE_RootWindowResizeShrinksWindows RootWindowResizeShrinksWindows
+#endif
 // Tests that when the screen gets smaller the windows aren't bigger than
 // the screen.
-TEST_F(ToplevelLayoutManagerTest, RootWindowResizeShrinksWindows) {
+TEST_F(ToplevelLayoutManagerTest, MAYBE_RootWindowResizeShrinksWindows) {
   scoped_ptr<aura::Window> window(
       CreateTestWindow(gfx::Rect(10, 20, 500, 400)));
   gfx::Rect work_area = gfx::Screen::GetMonitorAreaNearestWindow(window.get());

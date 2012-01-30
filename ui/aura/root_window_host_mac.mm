@@ -7,6 +7,7 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/compiler_specific.h"
+#include "base/mac/bundle_locations.h"
 #include "base/memory/scoped_nsobject.h"
 #include "ui/aura/event.h"
 #include "ui/aura/root_window.h"
@@ -74,13 +75,20 @@ RootWindowHostMacDelegate::~RootWindowHostMacDelegate() {
 
 RootWindowHostMac::RootWindowHostMac(const gfx::Rect& bounds)
     : root_window_(NULL), bounds_(bounds) {
-  controller_.reset([[NSWindowController alloc]
-                        initWithWindowNibName:@"RootWindow"]);
+  NSString* nibpath = [base::mac::FrameworkBundle()
+                           pathForResource:@"RootWindow"
+                                    ofType:@"nib"];
+  NSWindowController* controller = [NSWindowController alloc];
+  controller_.reset([controller initWithWindowNibPath:nibpath
+                                                owner:controller]);
   SetSize(bounds.size());
   SetLocation(bounds);
 }
 
 RootWindowHostMac::~RootWindowHostMac() {
+  RootWindowView* view = [[controller_ window] contentView];
+  [view setCompositor:NULL];
+  [controller_ close];
 }
 
 // static

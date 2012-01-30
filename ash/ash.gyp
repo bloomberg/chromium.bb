@@ -220,6 +220,8 @@
         'test/test_shell_delegate.h',
         'test/test_suite.cc',
         'test/test_suite.h',
+        'test/test_suite_init.h',
+        'test/test_suite_init.mm',
         'tooltips/tooltip_controller_unittest.cc',
         'wm/activation_controller_unittest.cc',
         'wm/base_layout_manager_unittest.cc',
@@ -251,8 +253,17 @@
         }],
         ['OS=="mac"', {
           'sources/': [
+            ['exclude', 'accelerators/accelerator_filter_unittest.cc'],
             ['exclude', 'drag_drop/drag_drop_controller_unittest.cc'],
+            ['exclude', 'tooltips/tooltip_controller_unittest.cc'],
           ],
+          'dependencies': [
+            # Mac tests access resources via the 'AuraShell.app' directory.
+            'ash_shell',
+          ],
+          # Special linker instructions that avoids stripping Obj-C classes that
+          # are not referenced in code, but are referenced in nibs.
+          'xcode_settings': {'OTHER_LDFLAGS': ['-Wl,-ObjC']},
         }],
       ],
     },
@@ -283,8 +294,8 @@
         'shell/example_factory.h',
         'shell/lock_view.cc',
         'shell/shell_main.cc',
-        'shell/shell_main_parts.h',
         'shell/shell_main_parts.cc',
+        'shell/shell_main_parts.h',
         'shell/shell_main_parts_mac.mm',
         'shell/toplevel_window.cc',
         'shell/toplevel_window.h',

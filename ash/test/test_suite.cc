@@ -9,10 +9,13 @@
 #include "build/build_config.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
+#include "ui/gfx/compositor/compositor_setup.h"
 #include "ui/gfx/compositor/test/compositor_test_support.h"
 #include "ui/gfx/gfx_paths.h"
 
-#include "ui/gfx/compositor/compositor_setup.h"
+#if defined(OS_MACOSX)
+#include "ash/test/test_suite_init.h"
+#endif
 
 namespace ash {
 namespace test {
@@ -26,6 +29,10 @@ void AuraShellTestSuite::Initialize() {
   gfx::RegisterPathProvider();
   ui::RegisterPathProvider();
 
+#if defined(OS_MACOSX)
+  ash::test::OverrideFrameworkBundle();
+#endif
+
   // Force unittests to run using en-US so if we test against string
   // output, it'll pass regardless of the system language.
   ui::ResourceBundle::InitSharedInstanceWithLocale("en-US");
@@ -36,7 +43,6 @@ void AuraShellTestSuite::Initialize() {
 void AuraShellTestSuite::Shutdown() {
   ui::CompositorTestSupport::Terminate();
   ui::ResourceBundle::CleanupSharedInstance();
-
   base::TestSuite::Shutdown();
 }
 

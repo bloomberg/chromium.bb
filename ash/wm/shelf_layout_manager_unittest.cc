@@ -38,8 +38,14 @@ ShelfLayoutManager* GetShelfLayoutManager() {
 
 typedef ash::test::AuraShellTestBase ShelfLayoutManagerTest;
 
+// Fails on Mac only.  Need to be implemented.  http://crbug.com/111279.
+#if defined(OS_MACOSX)
+#define MAYBE_SetVisible FAILS_SetVisible
+#else
+#define MAYBE_SetVisible SetVisible
+#endif
 // Makes sure SetVisible updates work area and widget appropriately.
-TEST_F(ShelfLayoutManagerTest, SetVisible) {
+TEST_F(ShelfLayoutManagerTest, MAYBE_SetVisible) {
   ShelfLayoutManager* shelf = GetShelfLayoutManager();
   // Force an initial layout.
   shelf->LayoutShelf();

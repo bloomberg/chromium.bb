@@ -446,6 +446,10 @@ RootWindow::~RootWindow() {
   // Make sure to destroy the compositor before terminating so that state is
   // cleared and we don't hit asserts.
   compositor_ = NULL;
+
+  // Tear down in reverse.  Frees any references held by the host.
+  host_.reset(NULL);
+
   // An observer may have been added by an animation on the RootWindow.
   layer()->GetAnimator()->RemoveObserver(this);
   ui::Compositor::Terminate();
