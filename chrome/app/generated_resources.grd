@@ -10969,6 +10969,9 @@ Some features may be unavailable.  Please check that the profile exists and you 
         </message>
       </if>
       <if expr="not pp_ifdef('use_titlecase') and pp_ifdef('chromeos')">
+        <message name="IDS_SYNC_SIGN_IN_ERROR_BUBBLE_VIEW_ACCEPT_CHROMEOS" desc="The accept button in the sync error bubble view when the user needs to sign in again.">
+          Sign out then sign in again...
+        </message>
         <message name="IDS_SYNC_SIGN_IN_ERROR_WRENCH_MENU_ITEM_CHROMEOS" desc="The sync error wrench menu item when the user needs to sign in again to CrOS.">
           Sync Error: Sign out then sign in again...
         </message>
@@ -10991,6 +10994,9 @@ Some features may be unavailable.  Please check that the profile exists and you 
         </message>
       </if>
       <if expr="pp_ifdef('use_titlecase') and pp_ifdef('chromeos')">
+        <message name="IDS_SYNC_SIGN_IN_ERROR_BUBBLE_VIEW_ACCEPT_CHROMEOS" desc="The accept button in the sync error bubble view when the user needs to sign in again.">
+          Sign out then Sign in Again...
+        </message>
         <message name="IDS_SYNC_SIGN_IN_ERROR_WRENCH_MENU_ITEM_CHROMEOS" desc="The sync error wrench menu item when the user needs to sign in again to CrOS.">
           Sync Error: Sign out then Sign in Again...
         </message>
