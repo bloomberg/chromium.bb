@@ -2280,10 +2280,6 @@ void TabContents::OnDialogClosed(RenderViewHost* rvh,
     tab_close_start_time_ = base::TimeTicks();
   }
   is_showing_before_unload_dialog_ = false;
-  // The reply must be sent to the RVH that sent the request.
-  // TODO(creis): Eliminate cases where we pass in null.
-  if (!rvh)
-    rvh = GetRenderViewHost();
   rvh->JavaScriptDialogClosed(reply_msg, success, user_input);
 }
 
