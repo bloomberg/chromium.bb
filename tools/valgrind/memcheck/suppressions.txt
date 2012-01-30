@@ -4932,6 +4932,7 @@
    fun:_ZN18ProfileSyncService8Shutdown*
    fun:_ZN18ProfileSyncServiceD2Ev
    fun:_ZN22TestProfileSyncServiceD0Ev
+   ...
    fun:_ZN10scoped_ptrI22TestProfileSyncServiceE5resetEPS0_
    fun:_ZN30ProfileSyncServiceTypedUrlTest8TearDownEv
 }
@@ -5496,6 +5497,7 @@
    fun:_ZN18BrowserProcessImpl29ResourceDispatcherHostCreatedEv
    fun:_ZN6chrome26ChromeContentBrowserClient29ResourceDispatcherHostCreatedEv
    fun:_ZN22ResourceDispatcherHost*
+   ...
    fun:_ZN7content15BrowserMainLoop21BrowserThreadsStartedEv
    fun:_ZN7content15BrowserMainLoop23RunMainMessageLoopPartsEPb
    fun:_Z11BrowserMainRKN7content18MainFunctionParamsE
