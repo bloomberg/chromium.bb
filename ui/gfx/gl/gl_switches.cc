@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -38,5 +38,9 @@ const char kSwiftShaderPath[]               = "swiftshader-path";
 // screen saving mode, etc.  Note that this flag does not ensure that a GPU
 // context will never be lost in any situations, say, a GPU reset.
 const char kGpuNoContextLost[]              = "gpu-no-context-lost";
+
+// Flag used for Linux tests: for desktop GL bindings, try to load this GL
+// library first, but fall back to regular library if loading fails.
+const char kTestGLLib[]                     = "test-gl-lib";
 
 }  // namespace switches

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,6 +13,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "ui/gfx/gl/gl_bindings.h"
 #include "ui/gfx/gl/gl_implementation.h"
+#include "ui/gfx/gl/gl_switches.h"
 
 namespace gfx {
 namespace {
@@ -102,11 +103,21 @@ bool InitializeGLBindings(GLImplementation implementation) {
       break;
     }
     case kGLImplementationDesktopGL: {
+      base::NativeLibrary library = NULL;
+      const CommandLine* command_line = CommandLine::ForCurrentProcess();
+
+      if (command_line->HasSwitch(switches::kTestGLLib))
+        library = LoadLibrary(command_line->GetSwitchValueASCII(
+            switches::kTestGLLib).c_str());
+
+      if (!library) {
 #if defined(OS_OPENBSD)
-      base::NativeLibrary library = LoadLibrary("libGL.so");
+        library = LoadLibrary("libGL.so");
 #else
-      base::NativeLibrary library = LoadLibrary("libGL.so.1");
+        library = LoadLibrary("libGL.so.1");
 #endif
+      }
+
       if (!library)
         return false;
 
