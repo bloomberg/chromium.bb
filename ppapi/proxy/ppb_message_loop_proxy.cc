@@ -26,7 +26,7 @@ namespace {
 
 typedef thunk::EnterResource<PPB_MessageLoop_API> EnterMessageLoop;
 
-static base::ThreadLocalStorage::Slot tls_slot(base::LINKER_INITIALIZED);
+static base::ThreadLocalStorage::StaticSlot tls_slot = TLS_INITIALIZER;
 
 class MessageLoopResource : public Resource, public PPB_MessageLoop_API {
  public:
