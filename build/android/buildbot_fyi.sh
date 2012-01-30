@@ -15,6 +15,6 @@ ROOT=$(cd "$(dirname $0)"; pwd)
 bb_baseline_setup "${ROOT}"/../..
 bb_compile
 bb_compile_experimental
-bb_run_tests_emulator
+bb_run_tests
 
 

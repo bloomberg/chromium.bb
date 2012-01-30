@@ -100,6 +100,6 @@ function bb_run_tests_emulator {
 
 # Run tests on an actual device.  (Better have one plugged in!)
 function bb_run_tests {
-  echo "@@@BUILD_STEP Run Tests on an Emulator@@@"
+  echo "@@@BUILD_STEP Run Tests on actual hardware@@@"
   build/android/run_tests.py --xvfb --verbose
 }
