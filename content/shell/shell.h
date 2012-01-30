@@ -55,10 +55,16 @@ class Shell : public WebContentsDelegate,
                                 int routing_id,
                                 TabContents* base_tab_contents);
 
+  // Returns the Shell object corresponding to the given RenderViewHost.
+  static Shell* FromRenderViewHost(RenderViewHost* rvh);
+
   // Closes all windows and exits.
   static void PlatformExit();
 
   TabContents* tab_contents() const { return tab_contents_.get(); }
+
+  // layoutTestController related methods.
+  void set_wait_until_done() { wait_until_done_ = true; }
 
 #if defined(OS_MACOSX)
   // Public to be called by an ObjC bridge object.
@@ -133,6 +139,9 @@ class Shell : public WebContentsDelegate,
 #endif
 
   scoped_ptr<TabContents> tab_contents_;
+
+  // layoutTestController related variables.
+  bool wait_until_done_;
 
   gfx::NativeWindow window_;
   gfx::NativeEditView url_edit_view_;

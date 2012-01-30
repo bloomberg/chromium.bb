@@ -44,6 +44,8 @@
       'sources': [
         'browser/tab_contents/tab_contents_view_win.cc',
         'browser/tab_contents/tab_contents_view_win.h',
+        'shell/layout_test_controller_bindings.cc',
+        'shell/layout_test_controller_bindings.h',
         'shell/shell.cc',
         'shell/shell.h',
         'shell/shell_gtk.cc',
@@ -71,6 +73,8 @@
         'shell/shell_main_delegate.h',
         'shell/shell_messages.cc',
         'shell/shell_messages.h',
+        'shell/shell_render_process_observer.cc',
+        'shell/shell_render_process_observer.h',
         'shell/shell_render_view_host_observer.cc',
         'shell/shell_render_view_host_observer.h',
         'shell/shell_render_view_observer.cc',

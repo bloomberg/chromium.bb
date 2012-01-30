@@ -7,12 +7,16 @@
 #pragma once
 
 #include "base/compiler_specific.h"
+#include "base/memory/scoped_ptr.h"
 #include "content/public/renderer/content_renderer_client.h"
 
 namespace content {
 
+class ShellRenderProcessObserver;
+
 class ShellContentRendererClient : public ContentRendererClient {
  public:
+  ShellContentRendererClient();
   virtual ~ShellContentRendererClient();
   virtual void RenderThreadStarted() OVERRIDE;
   virtual void RenderViewCreated(RenderView* render_view) OVERRIDE;
@@ -76,6 +80,9 @@ class ShellContentRendererClient : public ContentRendererClient {
   virtual void RegisterPPAPIInterfaceFactories(
       webkit::ppapi::PpapiInterfaceFactoryManager* factory_manager) OVERRIDE;
   virtual bool AllowSocketAPI(const GURL& url) OVERRIDE;
+
+ private:
+  scoped_ptr<ShellRenderProcessObserver> shell_observer_;
 };
 
 }  // namespace content

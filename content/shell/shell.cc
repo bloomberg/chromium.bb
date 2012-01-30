@@ -25,6 +25,7 @@ std::vector<Shell*> Shell::windows_;
 
 Shell::Shell(TabContents* tab_contents)
     : WebContentsObserver(tab_contents),
+      wait_until_done_(false),
       window_(NULL),
       url_edit_view_(NULL)
 #if defined(OS_WIN)
@@ -56,6 +57,16 @@ Shell* Shell::CreateShell(TabContents* tab_contents) {
 
   shell->PlatformResizeSubViews();
   return shell;
+}
+
+Shell* Shell::FromRenderViewHost(RenderViewHost* rvh) {
+  for (size_t i = 0; i < windows_.size(); ++i) {
+    if (windows_[i]->tab_contents() &&
+        windows_[i]->tab_contents()->GetRenderViewHost() == rvh) {
+      return windows_[i];
+    }
+  }
+  return NULL;
 }
 
 Shell* Shell::CreateNewWindow(content::BrowserContext* browser_context,
@@ -138,7 +149,7 @@ void Shell::UpdatePreferredSize(WebContents* source,
 void Shell::DidFinishLoad(int64 frame_id,
                           const GURL& validated_url,
                           bool is_main_frame) {
-  if (!is_main_frame)
+  if (!is_main_frame || wait_until_done_)
     return;
   if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree))
     return;

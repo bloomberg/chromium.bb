@@ -12,6 +12,7 @@
 #include "content/shell/shell_content_plugin_client.h"
 #include "content/shell/shell_content_renderer_client.h"
 #include "content/shell/shell_content_utility_client.h"
+#include "content/shell/shell_render_process_observer.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
 

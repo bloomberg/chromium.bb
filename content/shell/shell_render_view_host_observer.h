@@ -24,6 +24,14 @@ class ShellRenderViewHostObserver : public RenderViewHostObserver {
   // Message handlers.
   void OnTextDump(const std::string& dump);
 
+  // layoutTestController handlers.
+  void OnNotifyDone();
+  void OnDumpAsText();
+  void OnDumpChildFramesAsText();
+  void OnWaitUntilDone();
+
+  bool dump_child_frames_;
+
   DISALLOW_COPY_AND_ASSIGN(ShellRenderViewHostObserver);
 };
 

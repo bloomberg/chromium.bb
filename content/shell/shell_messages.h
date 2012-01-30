@@ -17,3 +17,9 @@ IPC_MESSAGE_ROUTED1(ShellViewMsg_CaptureTextDump,
 // Send a text dump of the tab contents to the render host.
 IPC_MESSAGE_ROUTED1(ShellViewHostMsg_TextDump,
                     std::string /* dump */)
+
+// The following messages correspond to methods of the layoutTestController.
+IPC_MESSAGE_ROUTED0(ShellViewHostMsg_NotifyDone)
+IPC_MESSAGE_ROUTED0(ShellViewHostMsg_DumpAsText)
+IPC_MESSAGE_ROUTED0(ShellViewHostMsg_DumpChildFramesAsText)
+IPC_MESSAGE_ROUTED0(ShellViewHostMsg_WaitUntilDone)

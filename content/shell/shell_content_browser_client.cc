@@ -4,11 +4,13 @@
 
 #include "content/shell/shell_content_browser_client.h"
 
+#include "base/command_line.h"
 #include "base/file_path.h"
 #include "content/shell/shell.h"
 #include "content/shell/shell_browser_main.h"
 #include "content/shell/shell_devtools_delegate.h"
 #include "content/shell/shell_render_view_host_observer.h"
+#include "content/shell/shell_switches.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "webkit/glue/webpreferences.h"
@@ -109,6 +111,8 @@ std::string ShellContentBrowserClient::GetCanonicalEncodingNameByAliasName(
 
 void ShellContentBrowserClient::AppendExtraCommandLineSwitches(
     CommandLine* command_line, int child_process_id) {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree))
+    command_line->AppendSwitch(switches::kDumpRenderTree);
 }
 
 std::string ShellContentBrowserClient::GetApplicationLocale() {
