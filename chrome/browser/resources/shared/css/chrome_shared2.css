@@ -30,17 +30,13 @@ h1 {
   margin-top: 1em;
 }
 
-a:link {
-  color: rgb(63, 110, 194);
-  text-decoration: none;
-}
-
-a:hover {
+a {
+  color: #1155cc;
   text-decoration: underline;
 }
 
 a:active {
-  color: rgb(5, 37, 119);
+  color: #052577;
 }
 
 div.checkbox,
