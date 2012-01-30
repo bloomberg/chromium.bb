@@ -265,6 +265,16 @@ hooks = [
     'action':
          [
     'python',
+    'src/build/win/setup_cygwin_mount.py',
+    '--win-only'
+],
+    'pattern':
+         '.'
+},
+    {
+    'action':
+         [
+    'python',
     'src/build/gyp_chromium'
 ],
     'pattern':
