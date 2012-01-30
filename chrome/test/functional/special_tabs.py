@@ -18,13 +18,9 @@ class SpecialTabsTest(pyauto.PyUITest):
     """Get a dict of accelerators and corresponding tab titles."""
     ret = {
         pyauto.IDC_SHOW_HISTORY: 'History',
-        pyauto.IDC_MANAGE_EXTENSIONS: 'Preferences - Extensions',
+        pyauto.IDC_MANAGE_EXTENSIONS: 'Settings - Extensions',
         pyauto.IDC_SHOW_DOWNLOADS: 'Downloads',
     }
-    if pyauto.PyUITest.IsWin():
-      ret[pyauto.IDC_MANAGE_EXTENSIONS] = 'Options - Extensions'
-    elif pyauto.PyUITest.IsChromeOS():
-      ret[pyauto.IDC_MANAGE_EXTENSIONS] = 'Settings - Extensions'
     return ret
 
   special_url_redirects = {
@@ -51,7 +47,7 @@ class SpecialTabsTest(pyauto.PyUITest):
     'chrome://credits': { 'title': 'Credits', 'CSP': False },
     'chrome://downloads': { 'title': 'Downloads' },
     'chrome://dns': { 'title': 'About DNS' },
-    'chrome://settings/extensions': { 'title': 'Preferences - Extensions' },
+    'chrome://settings/extensions': { 'title': 'Settings - Extensions' },
     'chrome://flags': {},
     'chrome://flash': {},
     'chrome://gpu-internals': {},
@@ -64,7 +60,7 @@ class SpecialTabsTest(pyauto.PyUITest):
     'chrome://newtab': { 'title': 'New Tab', 'CSP': False },
     'chrome://plugins': { 'title': 'Plug-ins' },
     'chrome://sessions': { 'title': 'Sessions' },
-    'chrome://settings': { 'title': 'Preferences - Basics' },
+    'chrome://settings': { 'title': 'Settings - Basics' },
     'chrome://stats': {},
     'chrome://sync': { 'title': 'Sync Internals' },
     'chrome://sync-internals': { 'title': 'Sync Internals' },
@@ -158,10 +154,6 @@ class SpecialTabsTest(pyauto.PyUITest):
 
   win_special_url_tabs = {
     'chrome://conflicts': {},
-
-    # OVERRIDE - different title for page.
-    'chrome://settings': { 'title': 'Options - Basics' },
-    'chrome://settings/extensions': { 'title': 'Options - Extensions' },
   }
   broken_win_special_url_tabs = {
     # Sync on windows badly broken at the moment.
