@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -44,7 +44,8 @@ bool DesktopBackgroundView::OnMousePressed(const views::MouseEvent& event) {
 }
 
 void DesktopBackgroundView::OnMouseReleased(const views::MouseEvent& event) {
-  Shell::GetInstance()->ToggleOverview();
+  if (event.IsRightMouseButton())
+    Shell::GetInstance()->ShowBackgroundMenu(GetWidget(), event.location());
 }
 
 views::Widget* CreateDesktopBackground() {

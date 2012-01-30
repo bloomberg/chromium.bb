@@ -34,13 +34,11 @@ WorkspaceLayoutManager::~WorkspaceLayoutManager() {}
 void WorkspaceLayoutManager::PrepareForMoveOrResize(
     aura::Window* drag,
     aura::MouseEvent* event) {
-  workspace_manager_->set_ignored_window(drag);
 }
 
 void WorkspaceLayoutManager::CancelMoveOrResize(
     aura::Window* drag,
     aura::MouseEvent* event) {
-  workspace_manager_->set_ignored_window(NULL);
 }
 
 void WorkspaceLayoutManager::ProcessMove(
@@ -54,14 +52,12 @@ void WorkspaceLayoutManager::EndMove(
     aura::Window* drag,
     aura::MouseEvent* evnet) {
   // TODO: see comment in ProcessMove.
-  workspace_manager_->set_ignored_window(NULL);
 }
 
 void WorkspaceLayoutManager::EndResize(
     aura::Window* drag,
     aura::MouseEvent* evnet) {
   // TODO: see comment in ProcessMove.
-  workspace_manager_->set_ignored_window(NULL);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -75,8 +71,23 @@ void WorkspaceLayoutManager::OnWindowAddedToLayout(aura::Window* child) {
   if (!workspace_manager_->IsManagedWindow(child))
     return;
 
-  if (child->IsVisible())
+  if (child->IsVisible()) {
     workspace_manager_->AddWindow(child);
+  } else if (window_util::IsWindowMaximized(child) ||
+             workspace_manager_->ShouldMaximize(child)) {
+    if (!GetRestoreBounds(child))
+      SetRestoreBounds(child, child->GetTargetBounds());
+    if (!window_util::IsWindowMaximized(child))
+      window_util::MaximizeWindow(child);
+    SetChildBoundsDirect(child,
+                         gfx::Screen::GetMonitorWorkAreaNearestWindow(child));
+  } else if (window_util::IsWindowFullscreen(child)) {
+    SetChildBoundsDirect(child,
+                         gfx::Screen::GetMonitorAreaNearestWindow(child));
+  } else {
+    SetChildBoundsDirect(
+        child, workspace_manager_->AlignBoundsToGrid(child->GetTargetBounds()));
+  }
 }
 
 void WorkspaceLayoutManager::OnWillRemoveWindowFromLayout(
@@ -99,14 +110,17 @@ void WorkspaceLayoutManager::OnChildWindowVisibilityChanged(
 void WorkspaceLayoutManager::SetChildBounds(
     aura::Window* child,
     const gfx::Rect& requested_bounds) {
-  // Allow setting the bounds for any window we don't care about, isn't visible,
-  // or we're setting the bounds of. All other request are dropped on the floor.
   if (child == workspace_manager_->ignored_window() ||
-      !workspace_manager_->IsManagedWindow(child) || !child->IsVisible() ||
-      (!window_util::IsWindowMaximized(child) &&
-       !window_util::IsWindowFullscreen(child))) {
+      !workspace_manager_->IsManagedWindow(child)) {
+    // Allow requests for |ignored_window_| or unmanaged windows.
     SetChildBoundsDirect(child, requested_bounds);
+  } else if (!window_util::IsWindowMaximized(child) &&
+             !window_util::IsWindowFullscreen(child)) {
+    // Align normal windows to the grid.
+    SetChildBoundsDirect(
+        child, workspace_manager_->AlignBoundsToGrid(requested_bounds));
   }
+  // All other requests we ignore.
 }
 
 }  // namespace internal

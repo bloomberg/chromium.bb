@@ -46,6 +46,24 @@ void SetWindowLayerVisibility(const std::vector<aura::Window*>& windows,
   }
 }
 
+// TODO(sky): this is a copy of that in ToplevelWindowEventFilter. Figure out
+// the right place to put it.
+int AlignToGrid(int location, int grid_size) {
+  if (grid_size <= 1 || location % grid_size == 0)
+    return location;
+  return floor(static_cast<float>(location) / static_cast<float>(grid_size) +
+               .5f) * grid_size;
+}
+
+gfx::Rect AlignRectToGrid(const gfx::Rect& rect, int grid_size) {
+  if (grid_size <= 1)
+    return rect;
+  return gfx::Rect(AlignToGrid(rect.x(), grid_size),
+                   AlignToGrid(rect.y(), grid_size),
+                   AlignToGrid(rect.width(), grid_size),
+                   AlignToGrid(rect.height(), grid_size));
+}
+
 }
 
 namespace ash {
@@ -54,13 +72,18 @@ namespace internal {
 ////////////////////////////////////////////////////////////////////////////////
 // WindowManager, public:
 
+// static
+const int WorkspaceManager::kOpenMaximizedThreshold = 1600;
+
 WorkspaceManager::WorkspaceManager(aura::Window* contents_view)
     : contents_view_(contents_view),
       active_workspace_(NULL),
       workspace_size_(
           gfx::Screen::GetMonitorAreaNearestWindow(contents_view_).size()),
       is_overview_(false),
-      ignored_window_(NULL) {
+      ignored_window_(NULL),
+      grid_size_(0),
+      open_new_windows_maximized_(true) {
   DCHECK(contents_view);
 }
 
@@ -79,26 +102,38 @@ bool WorkspaceManager::IsManagedWindow(aura::Window* window) const {
          !window->transient_parent();
 }
 
+bool WorkspaceManager::ShouldMaximize(aura::Window* window) const {
+  return !window->GetProperty(aura::client::kShowStateKey) &&
+         open_new_windows_maximized_ &&
+         contents_view_->bounds().width() < kOpenMaximizedThreshold;
+}
+
 void WorkspaceManager::AddWindow(aura::Window* window) {
   DCHECK(IsManagedWindow(window));
 
   if (FindBy(window))
     return;  // Already know about this window.
 
-  window->AddObserver(this);
-
   if (!window->GetProperty(aura::client::kShowStateKey)) {
-    // TODO: set maximized if width < x.
-    window->SetIntProperty(aura::client::kShowStateKey, ui::SHOW_STATE_NORMAL);
+    if (ShouldMaximize(window)) {
+      window->SetIntProperty(aura::client::kShowStateKey,
+                             ui::SHOW_STATE_MAXIMIZED);
+    } else {
+      window->SetIntProperty(aura::client::kShowStateKey,
+                             ui::SHOW_STATE_NORMAL);
+    }
   }
 
-  // TODO: handle fullscreen.
-  if (window_util::IsWindowMaximized(window)) {
-    if (!GetRestoreBounds(window))
-      SetRestoreBounds(window, window->GetTargetBounds());
-    else
-      SetWindowBounds(window, GetWorkAreaBounds());
+  if (window_util::IsWindowMaximized(window) ||
+      window_util::IsWindowFullscreen(window)) {
+    SetFullScreenOrMaximizedBounds(window);
+  } else {
+    if (grid_size_ > 1)
+      SetWindowBounds(window, AlignBoundsToGrid(window->GetTargetBounds()));
   }
+
+  // Add the observer after we change the state in anyway.
+  window->AddObserver(this);
 
   Workspace* workspace = NULL;
   Workspace::Type type_for_window = Workspace::TypeForWindow(window);
@@ -178,6 +213,12 @@ void WorkspaceManager::SetWorkspaceSize(const gfx::Size& workspace_size) {
   }
 }
 
+gfx::Rect WorkspaceManager::AlignBoundsToGrid(const gfx::Rect& bounds) {
+  if (grid_size_ <= 1)
+    return bounds;
+  return AlignRectToGrid(bounds, grid_size_);
+}
+
 void WorkspaceManager::OnWindowPropertyChanged(aura::Window* window,
                                                const char* name,
                                                void* old) {
@@ -186,14 +227,18 @@ void WorkspaceManager::OnWindowPropertyChanged(aura::Window* window,
 
   if (name != aura::client::kShowStateKey)
     return;
-  // TODO: handle fullscreen.
-  bool is_maximized = window->GetIntProperty(name) == ui::SHOW_STATE_MAXIMIZED;
-  bool was_maximized =
-      (old == reinterpret_cast<void*>(ui::SHOW_STATE_MAXIMIZED));
-  if (is_maximized == was_maximized)
-    return;
 
-  MaximizedStateChanged(window);
+  DCHECK(FindBy(window));
+
+  Workspace::Type old_type = FindBy(window)->type();
+  Workspace::Type new_type = Workspace::TypeForWindow(window);
+  if (new_type != old_type) {
+    OnTypeOfWorkspacedNeededChanged(window);
+  } else if (new_type == Workspace::TYPE_MAXIMIZED) {
+    // Even though the type didn't change, the window may have gone from
+    // maximized to fullscreen. Adjust the bounds appropriately.
+    SetFullScreenOrMaximizedBounds(window);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -272,8 +317,6 @@ int WorkspaceManager::GetWorkspaceIndexContaining(aura::Window* window) const {
 
 void WorkspaceManager::SetWindowBounds(aura::Window* window,
                                        const gfx::Rect& bounds) {
-  // TODO: I suspect it's possible for this to be invoked when ignored_window_
-  // is non-NULL.
   ignored_window_ = window;
   window->SetBounds(bounds);
   ignored_window_ = NULL;
@@ -283,25 +326,33 @@ void WorkspaceManager::SetWindowBoundsFromRestoreBounds(aura::Window* window) {
   Workspace* workspace = FindBy(window);
   DCHECK(workspace);
   const gfx::Rect* restore = GetRestoreBounds(window);
+  gfx::Rect bounds;
   if (restore) {
-    SetWindowBounds(window,
-                    restore->AdjustToFit(workspace->GetWorkAreaBounds()));
+    bounds = restore->AdjustToFit(workspace->GetWorkAreaBounds());
   } else {
-    SetWindowBounds(window, window->bounds().AdjustToFit(
-                        workspace->GetWorkAreaBounds()));
+    bounds = window->bounds().AdjustToFit(workspace->GetWorkAreaBounds());
   }
+  SetWindowBounds(window, AlignRectToGrid(bounds, grid_size_));
   ash::ClearRestoreBounds(window);
 }
 
-void WorkspaceManager::MaximizedStateChanged(aura::Window* window) {
+void WorkspaceManager::SetFullScreenOrMaximizedBounds(aura::Window* window) {
+  if (!GetRestoreBounds(window))
+    SetRestoreBounds(window, window->GetTargetBounds());
+  if (window_util::IsWindowMaximized(window))
+    SetWindowBounds(window, GetWorkAreaBounds());
+  else if (window_util::IsWindowFullscreen(window))
+    SetWindowBounds(window, gfx::Screen::GetMonitorAreaNearestWindow(window));
+}
+
+void WorkspaceManager::OnTypeOfWorkspacedNeededChanged(aura::Window* window) {
+  // TODO: needs to handle transitioning to split.
   DCHECK(IsManagedWindow(window));
-  bool is_maximized = window_util::IsWindowMaximized(window);
   Workspace* current_workspace = FindBy(window);
   DCHECK(current_workspace);
-  if (is_maximized) {
+  if (Workspace::TypeForWindow(window) == Workspace::TYPE_MAXIMIZED) {
     // Unmaximized -> maximized; create a new workspace (unless current only has
     // one window).
-    SetRestoreBounds(window, window->GetTargetBounds());
     if (current_workspace->num_windows() != 1) {
       current_workspace->RemoveWindow(window);
       Workspace* workspace = new Workspace(this);
@@ -311,7 +362,7 @@ void WorkspaceManager::MaximizedStateChanged(aura::Window* window) {
     } else {
       current_workspace->SetType(Workspace::TYPE_MAXIMIZED);
     }
-    SetWindowBounds(window, GetWorkAreaBounds());
+    SetFullScreenOrMaximizedBounds(window);
   } else {
     // Maximized -> unmaximized; move window to unmaximized workspace (or reuse
     // current if there isn't one).
@@ -326,10 +377,8 @@ void WorkspaceManager::MaximizedStateChanged(aura::Window* window) {
     } else {
       current_workspace->SetType(Workspace::TYPE_NORMAL);
     }
-
     SetWindowBoundsFromRestoreBounds(window);
   }
-
   SetActiveWorkspace(current_workspace);
 }
 

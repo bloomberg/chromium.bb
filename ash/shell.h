@@ -24,6 +24,7 @@ class RootWindow;
 class Window;
 }
 namespace gfx {
+class Point;
 class Rect;
 class Size;
 }
@@ -88,8 +89,8 @@ class ASH_EXPORT Shell {
   void RemoveRootWindowEventFilter(aura::EventFilter* filter);
   size_t GetRootWindowEventFilterCount() const;
 
-  // Toggles between overview mode and normal mode.
-  void ToggleOverview();
+  // Shows the background menu over |widget|.
+  void ShowBackgroundMenu(views::Widget* widget, const gfx::Point& location);
 
   // Toggles app list.
   void ToggleAppList();

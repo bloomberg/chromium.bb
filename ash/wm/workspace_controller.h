@@ -6,47 +6,54 @@
 #define ASH_WM_WORKSPACE_CONTROLLER_H_
 #pragma once
 
-#include "ash/launcher/launcher_model_observer.h"
+#include "ash/ash_export.h"
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/aura/root_window_observer.h"
 #include "ui/aura/window_observer.h"
-#include "ash/ash_export.h"
+#include "ui/base/models/simple_menu_model.h"
 
 namespace aura {
 class Window;
 }
 
 namespace gfx {
+class Point;
 class Size;
 }
 
-namespace ash {
-class LauncherModel;
+namespace views {
+class MenuRunner;
+class Widget;
+}
 
+namespace ash {
 namespace internal {
 
+class WorkspaceEventFilter;
+class WorkspaceLayoutManager;
 class WorkspaceManager;
 
-// WorkspaceController owns a WorkspaceManager. WorkspaceController bridges
-// events from RootWindowObserver translating them to WorkspaceManager, and
-// a move event between Launcher and Workspace.
+// WorkspaceController acts as a central place that ties together all the
+// various workspace pieces: WorkspaceManager, WorkspaceLayoutManager and
+// WorkspaceEventFilter.
 class ASH_EXPORT WorkspaceController :
       public aura::RootWindowObserver,
       public aura::WindowObserver,
-      public ash::LauncherModelObserver {
+      public ui::SimpleMenuModel::Delegate {
  public:
-  explicit WorkspaceController(aura::Window* workspace_viewport);
+  explicit WorkspaceController(aura::Window* viewport);
   virtual ~WorkspaceController();
 
   void ToggleOverview();
-
-  void SetLauncherModel(LauncherModel* launcher_model);
 
   // Returns the workspace manager that this controler owns.
   WorkspaceManager* workspace_manager() {
     return workspace_manager_.get();
   }
+
+  // Shows the menu allowing you to configure various aspects of workspaces.
+  void ShowMenu(views::Widget* widget, const gfx::Point& location);
 
   // aura::RootWindowObserver overrides:
   virtual void OnRootWindowResized(const gfx::Size& new_size) OVERRIDE;
@@ -56,23 +63,31 @@ class ASH_EXPORT WorkspaceController :
                                        const char* key,
                                        void* old) OVERRIDE;
 
-  // Invoked after an item has been added to the model.
-  virtual void LauncherItemAdded(int index) OVERRIDE;
-  virtual void LauncherItemRemoved(int index) OVERRIDE;
-  virtual void LauncherItemMoved(int start_index, int target_index) OVERRIDE;
-  virtual void LauncherItemChanged(int index,
-                                   const ash::LauncherItem& old_item) OVERRIDE;
-  virtual void LauncherItemWillChange(int index) OVERRIDE {}
+  // ui::SimpleMenuModel::Delegate overrides:
+  virtual bool IsCommandIdChecked(int command_id) const OVERRIDE;
+  virtual bool IsCommandIdEnabled(int command_id) const OVERRIDE;
+  virtual void ExecuteCommand(int command_id) OVERRIDE;
+  virtual bool GetAcceleratorForCommandId(
+      int command_id,
+      ui::Accelerator* accelerator) OVERRIDE;
 
  private:
+  enum MenuItem {
+    MENU_SNAP_TO_GRID,
+    MENU_OPEN_MAXIMIZED,
+  };
+
+  aura::Window* viewport_;
+
   scoped_ptr<WorkspaceManager> workspace_manager_;
 
-  // Owned by Launcher.
-  LauncherModel* launcher_model_;
+  // Owned by the window its attached to.
+  WorkspaceLayoutManager* layout_manager_;
 
-  // True while the controller is moving window either on workspace or launcher.
-  // Used to prevent infinite recursive call between the workspace and launcher.
-  bool ignore_move_event_;
+  // Owned the window set on.
+  WorkspaceEventFilter* event_filter_;
+
+  scoped_ptr<views::MenuRunner> menu_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(WorkspaceController);
 };

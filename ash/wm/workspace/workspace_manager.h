@@ -31,11 +31,18 @@ class WorkspaceManagerTest;
 // WorkspaceManager manages multiple workspaces in the desktop.
 class ASH_EXPORT WorkspaceManager : public aura::WindowObserver{
  public:
+  // If open_new_windows_maximized() is true and the size of the viewport is
+  // smaller than this value, newly created windows are forced maximized.
+  static const int kOpenMaximizedThreshold;
+
   explicit WorkspaceManager(aura::Window* viewport);
   virtual ~WorkspaceManager();
 
   // Returns true if |window| should be managed by the WorkspaceManager.
   bool IsManagedWindow(aura::Window* window) const;
+
+  // Returns true if |window| should be maximized.
+  bool ShouldMaximize(aura::Window* window) const;
 
   // Adds/removes a window creating/destroying workspace as necessary.
   void AddWindow(aura::Window* window);
@@ -62,12 +69,27 @@ class ASH_EXPORT WorkspaceManager : public aura::WindowObserver{
   // Sets the size of a single workspace (all workspaces have the same size).
   void SetWorkspaceSize(const gfx::Size& workspace_size);
 
-  // Sets/Returns the ignored window that the workspace manager does not
-  // set bounds on.
-  void set_ignored_window(aura::Window* ignored_window) {
-    ignored_window_ = ignored_window;
-  }
+  // Returns the window the layout manager should allow the size to be set for.
+  // TODO: maybe this should be set on WorkspaceLayoutManager.
   aura::Window* ignored_window() { return ignored_window_; }
+
+  // Sets whether newly added windows open maximized. This is only applicable if
+  // the size of the root window is less than kOpenMaximizedThreshold. Default
+  // is true.
+  void set_open_new_windows_maximized(bool value) {
+    open_new_windows_maximized_ = value;
+  }
+  bool open_new_windows_maximized() const {
+    return open_new_windows_maximized_;
+  }
+
+  // Sets the size of the grid. Newly added windows are forced to align to the
+  // size of the grid.
+  void set_grid_size(int size) { grid_size_ = size; }
+  int grid_size() const { return grid_size_; }
+
+  // Returns a bounds aligned to the grid. Returns |bounds| if grid_size is 0.
+  gfx::Rect AlignBoundsToGrid(const gfx::Rect& bounds);
 
   // Overriden from aura::WindowObserver:
   virtual void OnWindowPropertyChanged(aura::Window* window,
@@ -77,6 +99,11 @@ class ASH_EXPORT WorkspaceManager : public aura::WindowObserver{
  private:
   friend class Workspace;
   friend class WorkspaceManagerTest;
+
+  // See description above getter.
+  void set_ignored_window(aura::Window* ignored_window) {
+    ignored_window_ = ignored_window;
+  }
 
   void AddWorkspace(Workspace* workspace);
   void RemoveWorkspace(Workspace* workspace);
@@ -104,8 +131,11 @@ class ASH_EXPORT WorkspaceManager : public aura::WindowObserver{
   // it fits in the the windows current workspace.
   void SetWindowBoundsFromRestoreBounds(aura::Window* window);
 
-  // Invoked when the maximized state of |window| changes.
-  void MaximizedStateChanged(aura::Window* window);
+  // Reset the bounds of |window|. Use when |window| is fullscreen or maximized.
+  void SetFullScreenOrMaximizedBounds(aura::Window* window);
+
+  // Invoked when the type of workspace needed for |window| changes.
+  void OnTypeOfWorkspacedNeededChanged(aura::Window* window);
 
   // Returns the Workspace whose type is TYPE_NORMAL, or NULL if there isn't
   // one.
@@ -126,6 +156,12 @@ class ASH_EXPORT WorkspaceManager : public aura::WindowObserver{
 
   // The window that WorkspaceManager does not set the bounds on.
   aura::Window* ignored_window_;
+
+  // See description above setter.
+  int grid_size_;
+
+  // See description above setter.
+  bool open_new_windows_maximized_;
 
   DISALLOW_COPY_AND_ASSIGN(WorkspaceManager);
 };

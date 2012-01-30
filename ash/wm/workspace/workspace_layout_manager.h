@@ -46,10 +46,10 @@ class ASH_EXPORT WorkspaceLayoutManager : public aura::LayoutManager {
   void ProcessMove(aura::Window* window, aura::MouseEvent* event);
 
   // Invoked when a user finished moving window.
-  void EndMove(aura::Window* drag, aura::MouseEvent* evnet);
+  void EndMove(aura::Window* drag, aura::MouseEvent* event);
 
   // Invoked when a user finished resizing window.
-  void EndResize(aura::Window* drag, aura::MouseEvent* evnet);
+  void EndResize(aura::Window* drag, aura::MouseEvent* event);
 
   // Overridden from aura::LayoutManager:
   virtual void OnWindowResized() OVERRIDE;

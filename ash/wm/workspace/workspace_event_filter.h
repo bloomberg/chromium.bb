@@ -40,7 +40,7 @@ class WorkspaceEventFilter : public ToplevelWindowEventFilter,
   // If the mouse is currently over a portion of the window that should
   // trigger a drag or resize, drag_state_ is set appropriately and true
   // is returned. If the mouse is not over a portion of the window that should
-  // trigger a more or resize, drag_state_ is not updated and false is returend.
+  // trigger a more or resize, drag_state_ is not updated and false is returned.
   bool UpdateDragState();
 
   // Updates the top-level window under the mouse so that we can change
@@ -48,6 +48,7 @@ class WorkspaceEventFilter : public ToplevelWindowEventFilter,
   void UpdateHoveredWindow(aura::Window* toplevel);
 
   DragState drag_state_;
+
   // Top-level window under the mouse cursor.
   aura::Window* hovered_window_;
 

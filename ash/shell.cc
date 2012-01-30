@@ -372,9 +372,10 @@ size_t Shell::GetRootWindowEventFilterCount() const {
       aura::RootWindow::GetInstance()->event_filter())->GetFilterCount();
 }
 
-void Shell::ToggleOverview() {
+void Shell::ShowBackgroundMenu(views::Widget* widget,
+                               const gfx::Point& location) {
   if (workspace_controller_.get())
-    workspace_controller_->ToggleOverview();
+    workspace_controller_->ShowMenu(widget, location);
 }
 
 void Shell::ToggleAppList() {
@@ -486,12 +487,6 @@ void Shell::SetupNormalWindowMode() {
     // Workspace manager has its own layout managers.
     workspace_controller_.reset(
         new internal::WorkspaceController(default_container));
-    workspace_controller_->SetLauncherModel(launcher_->model());
-    default_container->SetEventFilter(
-        new internal::WorkspaceEventFilter(default_container));
-    default_container->SetLayoutManager(
-        new internal::WorkspaceLayoutManager(
-            workspace_controller_->workspace_manager()));
   } else {
     // Default layout manager.
     internal::ToplevelLayoutManager* toplevel_layout_manager =
