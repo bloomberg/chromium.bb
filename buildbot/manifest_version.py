@@ -440,6 +440,7 @@ class BuildSpecsManager(object):
 
   def RefreshManifestCheckout(self):
     """Checks out manifest versions into the manifest directory."""
+    logging.info('Refreshing manifest-versions checkout.')
     _RemoveDirs(self._TMP_MANIFEST_DIR)
     repository.CloneGitRepo(self._TMP_MANIFEST_DIR, self.manifest_repo)
 
