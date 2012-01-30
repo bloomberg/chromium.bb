@@ -871,7 +871,7 @@ void StartupTimeBomb::DeleteStartupWatchdog() {
       FROM_HERE,
       base::Bind(&StartupTimeBomb::DeleteStartupWatchdog,
                  base::Unretained(this)),
-      base::TimeDelta::FromSeconds(10).InMilliseconds());
+      base::TimeDelta::FromSeconds(10));
 }
 
 // static

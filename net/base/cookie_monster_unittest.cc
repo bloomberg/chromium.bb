@@ -695,7 +695,7 @@ class CookieMonsterTest : public testing::Test {
     // Runs the test thread message loop for up to |ms| milliseconds.
     MessageLoop::current()->PostDelayedTask(
         FROM_HERE, base::Bind(&MessageLoop::Quit, weak_factory_.GetWeakPtr()),
-        ms);
+        base::TimeDelta::FromMilliseconds(ms));
     MessageLoop::current()->Run();
     weak_factory_.InvalidateWeakPtrs();
   }
