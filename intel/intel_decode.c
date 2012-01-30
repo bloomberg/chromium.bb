@@ -2745,6 +2745,17 @@ gen7_3DSTATE_DEPTH_STENCIL_STATE_POINTERS(struct drm_intel_decode *ctx)
 }
 
 static int
+gen7_3DSTATE_HIER_DEPTH_BUFFER(struct drm_intel_decode *ctx)
+{
+	instr_out(ctx, 0, "3DSTATE_HIER_DEPTH_BUFFER\n");
+	instr_out(ctx, 1, "pitch %db\n",
+		  (ctx->data[1] & 0x1ffff) + 1);
+	instr_out(ctx, 2, "pointer to HiZ buffer\n");
+
+	return 3;
+}
+
+static int
 gen6_3DSTATE_CC_STATE_POINTERS(struct drm_intel_decode *ctx)
 {
 	instr_out(ctx, 0, "3DSTATE_CC_STATE_POINTERS\n");
@@ -3027,7 +3038,8 @@ decode_3d_965(struct drm_intel_decode *ctx)
 		{ 0x7805, 0x00ff, 3, 3, "3DSTATE_URB" },
 		{ 0x7804, 0x00ff, 3, 3, "3DSTATE_CLEAR_PARAMS" },
 		{ 0x7806, 0x00ff, 3, 3, "3DSTATE_STENCIL_BUFFER" },
-		{ 0x7807, 0x00ff, 4, 4, "3DSTATE_HIER_DEPTH_BUFFER" },
+		{ 0x7807, 0x00ff, 4, 4, "3DSTATE_HIER_DEPTH_BUFFER", 6 },
+		{ 0x7807, 0x00ff, 3, 3, "3DSTATE_HIER_DEPTH_BUFFER", 7, gen7_3DSTATE_HIER_DEPTH_BUFFER },
 		{ 0x7808, 0x00ff, 5, 257, "3DSTATE_VERTEX_BUFFERS" },
 		{ 0x7809, 0x00ff, 3, 256, "3DSTATE_VERTEX_ELEMENTS" },
 		{ 0x780a, 0x00ff, 3, 3, "3DSTATE_INDEX_BUFFER" },
