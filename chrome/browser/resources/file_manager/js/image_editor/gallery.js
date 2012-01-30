@@ -134,8 +134,8 @@ Gallery.prototype.initDom_ = function(shareActions) {
   this.mediaToolbar_.className = 'media-controls';
   this.toolbar_.appendChild(this.mediaToolbar_);
 
-  this.mediaControls_ =
-      new MediaControls(this.videoElement_, this.mediaToolbar_);
+  this.mediaControls_ = new MediaControls(this.videoElement_,
+      this.mediaToolbar_, this.toggleFullscreen_.bind(this));
 
   this.arrowBox_ = this.document_.createElement('div');
   this.arrowBox_.className = 'arrow-box';
@@ -379,7 +379,22 @@ Gallery.prototype.isRenaming_ = function() {
   return this.container_.hasAttribute('renaming');
 };
 
+Gallery.prototype.toggleFullscreen_ = function() {
+  if (this.document_.webkitIsFullScreen) {
+    this.document_.webkitCancelFullScreen();
+  } else {
+    this.document_.body.webkitRequestFullScreen();
+  }
+};
+
 Gallery.prototype.onClose_ = function() {
+  if (this.document_.webkitIsFullScreen) {
+    // Closing the Gallery iframe while in full screen will crash the tab.
+    this.document_.addEventListener(
+        'webkitfullscreenchange', this.onClose_.bind(this));
+    this.document_.webkitCancelFullScreen();
+    return;
+  }
   // TODO: handle write errors gracefully (suggest retry or saving elsewhere).
   this.saveChanges_(this.closeCallback_);
 };

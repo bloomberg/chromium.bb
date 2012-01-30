@@ -10,14 +10,15 @@
 /**
  * @param {HTMLMediaElement} mediaElement The media element to control.
  * @param {HTMLElement} containerElement The container for the controls.
+ * @param {function} fullScreenToggle Function to toggle the fullscreen mode.
  * @constructor
  */
-function MediaControls(mediaElement, containerElement) {
+function MediaControls(mediaElement, containerElement, fullScreenToggle) {
   this.media_ = mediaElement;
   this.container_ = containerElement;
   this.document_ = this.container_.ownerDocument;
 
-  this.setupPlaybackControls_();
+  this.setupPlaybackControls_(fullScreenToggle);
 
   this.setupMediaEvents_();
 }
@@ -97,8 +98,10 @@ MediaControls.PROGRESS_RANGE = 1000;
 
 /**
  * Create playback controls in DOM.
+ *
+ * @param {function} fullScreenToggle Function to toggle the fullscreen mode.
  */
-MediaControls.prototype.setupPlaybackControls_ = function() {
+MediaControls.prototype.setupPlaybackControls_ = function(fullScreenToggle) {
   this.playButton_ = this.createButton_(
       'play', this.onPlayButtonClick_.bind(this));
 
@@ -146,8 +149,9 @@ MediaControls.prototype.setupPlaybackControls_ = function() {
 
   this.volume_.setValue(this.media_.volume);
 
-  this.fullscreenButton_ = this.createButton_(
-      'fullscreen', this.onFullscreenButtonClick_.bind(this));
+  if (fullScreenToggle) {
+    this.fullscreenButton_ = this.createButton_('fullscreen', fullScreenToggle);
+  }
 };
 
 MediaControls.prototype.displayProgress_ = function(current, duration) {
@@ -276,11 +280,6 @@ MediaControls.prototype.onVolumeMouseDown_ = function () {
   if (this.media_.volume != 0) {
     this.savedVolume_ = this.media_.volume;
   }
-};
-
-MediaControls.prototype.onFullscreenButtonClick_ = function() {
-  this.fullscreenButton_.classList.toggle('on');
-  // TODO: invoke the actual full screen mode
 };
 
 /**

@@ -2257,6 +2257,7 @@ FileManager.prototype = {
     var galleryFrame = this.document_.createElement('iframe');
     galleryFrame.className = 'overlay-pane';
     galleryFrame.scrolling = 'no';
+    galleryFrame.setAttribute('webkitallowfullscreen', true);
 
     var selectedUrl;
     if (urls.length == 1) {

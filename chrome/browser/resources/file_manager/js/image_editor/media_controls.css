@@ -202,7 +202,7 @@
   background-position: 4px 4px;
 }
 
-.media-controls .fullscreen.on {
+body:-webkit-full-screen .media-controls .fullscreen {
   background-image: url(../../images/mediaplayer_full_screen_exit.png);
   background-position: 4px 4px;
 }
