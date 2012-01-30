@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -27,10 +27,6 @@ NetworkLoginObserver::~NetworkLoginObserver() {
 }
 
 void NetworkLoginObserver::CreateModalPopup(views::WidgetDelegate* view) {
-#if defined(USE_AURA)
-  // TODO(saintlou): This needs to be done for Aura.
-  NOTIMPLEMENTED();
-#else
   Browser* browser = BrowserList::GetLastActive();
   if (browser && !browser->is_type_tabbed()) {
     browser = BrowserList::FindTabbedBrowser(browser->profile(), true);
@@ -48,7 +44,6 @@ void NetworkLoginObserver::CreateModalPopup(views::WidgetDelegate* view) {
     window->SetAlwaysOnTop(true);
     window->Show();
   }
-#endif
 }
 
 void NetworkLoginObserver::OnNetworkManagerChanged(NetworkLibrary* cros) {
