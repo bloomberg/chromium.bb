@@ -50,7 +50,12 @@ namespace {
 const int kTitlebarHeight = 24;
 
 // The thickness in pixels of the border.
+#if defined(USE_AURA)
+// No border inside the window frame; see comment in PaintFrameBorder().
+const int kBorderThickness = 0;
+#else
 const int kBorderThickness = 1;
+#endif
 
 // No client edge is present.
 const int kPanelClientEdgeThickness = 0;
@@ -784,6 +789,16 @@ void PanelBrowserFrameView::PaintFrameBorder(gfx::Canvas* canvas) {
     canvas->TileImageInt(*bitmap, 0, 0, width(), kTitlebarHeight);
   }
 
+#if defined(USE_AURA)
+  // Aura recognizes aura::client::WINDOW_TYPE_PANEL and will draw the
+  // appropriate frame and shadow. See ash/wm/shadow_controller.h.
+
+  // Draw the divider between the titlebar and the client area.
+  if (height() > kTitlebarHeight) {
+    canvas->DrawRect(gfx::Rect(0, kTitlebarHeight, width() - 1, 1),
+                     kDividerColor);
+  }
+#else
   // Draw the top border.
   const EdgeResources& frame_edges = GetFrameEdges();
   canvas->DrawBitmapInt(*(frame_edges.top_left), 0, 0);
@@ -829,6 +844,7 @@ void PanelBrowserFrameView::PaintFrameBorder(gfx::Canvas* canvas) {
                                width() - 1 - 2 * kBorderThickness,
                                kBorderThickness), kDividerColor);
   }
+#endif  // !defined(USE_AURA)
 }
 
 string16 PanelBrowserFrameView::GetTitleText() const {
