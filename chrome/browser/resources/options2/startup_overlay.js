@@ -122,8 +122,9 @@ cr.define('options', function() {
     'updateStartupPages',
     'updateAutocompleteSuggestions',
   ].forEach(function(name) {
-    StartupOverlay[name] = function(value) {
-      StartupOverlay.getInstance()[name + '_'](value);
+    StartupOverlay[name] = function() {
+      var instance = StartupOverlay.getInstance();
+      return instance[name + '_'].apply(instance, arguments);
     };
   });
 

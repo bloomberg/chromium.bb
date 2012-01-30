@@ -591,8 +591,9 @@ cr.define('options', function() {
     'updateSearchEngines',
     'updateStartupPages',
   ].forEach(function(name) {
-    BrowserOptions[name] = function(value) {
-      return BrowserOptions.getInstance()[name + '_'](value);
+    BrowserOptions[name] = function() {
+      var instance = BrowserOptions.getInstance();
+      return instance[name + '_'].apply(instance, arguments);
     };
   });
 
