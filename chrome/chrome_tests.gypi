@@ -1395,8 +1395,6 @@
         'browser/cookies_tree_model_unittest.cc',
         'browser/custom_handlers/protocol_handler_registry_unittest.cc',
         'browser/diagnostics/diagnostics_model_unittest.cc',
-        'browser/download/download_item_unittest.cc',
-        'browser/download/download_manager_unittest.cc',
         'browser/download/download_request_infobar_delegate_unittest.cc',
         'browser/download/download_request_limiter_unittest.cc',
         'browser/download/download_shelf_unittest.cc',

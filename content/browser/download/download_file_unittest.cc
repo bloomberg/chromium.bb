@@ -11,7 +11,6 @@
 #include "content/browser/download/download_request_handle.h"
 #include "content/browser/download/download_status_updater.h"
 #include "content/browser/download/mock_download_manager.h"
-#include "content/browser/download/mock_download_manager_delegate.h"
 #include "content/public/browser/download_manager.h"
 #include "net/base/file_stream.h"
 #include "net/base/net_errors.h"

@@ -10,6 +10,7 @@
 #include "base/callback.h"
 #include "base/file_path.h"
 #include "base/time.h"
+#include "content/common/content_export.h"
 #include "content/public/browser/save_page_type.h"
 
 namespace content {
@@ -22,41 +23,39 @@ typedef base::Callback<void(const FilePath&, content::SavePageType)>
     SaveFilePathPickedCallback;
 
 // Browser's download manager: manages all downloads and destination view.
-class DownloadManagerDelegate {
+class CONTENT_EXPORT DownloadManagerDelegate {
  public:
   virtual ~DownloadManagerDelegate() {}
 
   // Lets the delegate know that the download manager is shutting down.
-  virtual void Shutdown() = 0;
+  virtual void Shutdown() {}
 
   // Returns a new DownloadId.
-  virtual DownloadId GetNextId() = 0;
+  virtual DownloadId GetNextId();
 
   // Notifies the delegate that a download is starting. The delegate can return
   // false to delay the start of the download, in which case it should call
   // DownloadManager::RestartDownload when it's ready.
-  virtual bool ShouldStartDownload(int32 download_id) = 0;
+  virtual bool ShouldStartDownload(int32 download_id);
 
   // Asks the user for the path for a download. The delegate calls
   // DownloadManager::FileSelected or DownloadManager::FileSelectionCanceled to
   // give the answer.
   virtual void ChooseDownloadPath(WebContents* web_contents,
                                   const FilePath& suggested_path,
-                                  void* data) = 0;
+                                  void* data) {}
 
-  // Allows the embedder to override the file path for the download while it's
-  // progress. Return false to leave the filename as item->full_path(), or
-  // return true and set |intermediate_path| with the intermediate path.
-  virtual bool OverrideIntermediatePath(DownloadItem* item,
-                                        FilePath* intermediate_path) = 0;
+  // Allows the embedder to set an intermediate name for the download until it's
+  // complete. If the embedder doesn't want this return the suggested path.
+  virtual FilePath GetIntermediatePath(const FilePath& suggested_path);
 
   // Called when the download system wants to alert a WebContents that a
   // download has started, but the TabConetnts has gone away. This lets an
   // delegate return an alternative WebContents. The delegate can return NULL.
-  virtual WebContents* GetAlternativeWebContentsToNotifyForDownload() = 0;
+  virtual WebContents* GetAlternativeWebContentsToNotifyForDownload();
 
   // Tests if a file type should be opened automatically.
-  virtual bool ShouldOpenFileBasedOnExtension(const FilePath& path) = 0;
+  virtual bool ShouldOpenFileBasedOnExtension(const FilePath& path);
 
   // Allows the delegate to override completion of the download.  If this
   // function returns false, the download completion is delayed and the
@@ -65,52 +64,49 @@ class DownloadManagerDelegate {
   // future.  Note that at that point this function will be called again,
   // and is responsible for returning true when it really is ok for the
   // download to complete.
-  virtual bool ShouldCompleteDownload(DownloadItem* item) = 0;
+  virtual bool ShouldCompleteDownload(DownloadItem* item);
 
   // Allows the delegate to override opening the download. If this function
   // returns false, the delegate needs to call
   // DownloadItem::DelayedDownloadOpened when it's done with the item,
   // and is responsible for opening it.  This function is called
   // after the final rename, but before the download state is set to COMPLETED.
-  virtual bool ShouldOpenDownload(DownloadItem* item) = 0;
+  virtual bool ShouldOpenDownload(DownloadItem* item);
 
   // Returns true if we need to generate a binary hash for downloads.
-  virtual bool GenerateFileHash() = 0;
-
-  // Informs the delegate that given download has finishd downloading.
-  virtual void OnResponseCompleted(DownloadItem* item) = 0;
+  virtual bool GenerateFileHash();
 
   // Notifies the delegate that a new download item is created. The
   // DownloadManager waits for the delegate to add information about this
   // download to its persistent store. When the delegate is done, it calls
   // DownloadManager::OnDownloadItemAddedToPersistentStore.
-  virtual void AddItemToPersistentStore(DownloadItem* item) = 0;
+  virtual void AddItemToPersistentStore(DownloadItem* item) {}
 
   // Notifies the delegate that information about the given download has change,
   // so that it can update its persistent store.
   // Does not update |url|, |start_time|, |total_bytes|; uses |db_handle| only
   // to select the row in the database table to update.
-  virtual void UpdateItemInPersistentStore(DownloadItem* item) = 0;
+  virtual void UpdateItemInPersistentStore(DownloadItem* item) {}
 
   // Notifies the delegate that path for the download item has changed, so that
   // it can update its persistent store.
   virtual void UpdatePathForItemInPersistentStore(
       DownloadItem* item,
-      const FilePath& new_path) = 0;
+      const FilePath& new_path) {}
 
   // Notifies the delegate that it should remove the download item from its
   // persistent store.
-  virtual void RemoveItemFromPersistentStore(DownloadItem* item) = 0;
+  virtual void RemoveItemFromPersistentStore(DownloadItem* item) {}
 
   // Notifies the delegate to remove downloads from the given time range.
   virtual void RemoveItemsFromPersistentStoreBetween(
       base::Time remove_begin,
-      base::Time remove_end) = 0;
+      base::Time remove_end) {}
 
   // Retrieve the directories to save html pages and downloads to.
   virtual void GetSaveDir(WebContents* web_contents,
                           FilePath* website_save_dir,
-                          FilePath* download_save_dir) = 0;
+                          FilePath* download_save_dir) {}
 
   // Asks the user for the path to save a page. The delegate calls the callback
   // to give the answer.
@@ -118,15 +114,10 @@ class DownloadManagerDelegate {
                               const FilePath& suggested_path,
                               const FilePath::StringType& default_extension,
                               bool can_save_as_complete,
-                              SaveFilePathPickedCallback callback) = 0;
+                              SaveFilePathPickedCallback callback) {}
 
   // Informs the delegate that the progress of downloads has changed.
-  virtual void DownloadProgressUpdated() = 0;
-
- protected:
-  DownloadManagerDelegate() {}
-
-  DISALLOW_COPY_AND_ASSIGN(DownloadManagerDelegate);
+  virtual void DownloadProgressUpdated() {}
 };
 
 }  // namespace content

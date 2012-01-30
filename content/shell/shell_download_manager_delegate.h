@@ -24,39 +24,11 @@ class ShellDownloadManagerDelegate
 
   void SetDownloadManager(DownloadManager* manager);
 
-  virtual void Shutdown() OVERRIDE;
   virtual DownloadId GetNextId() OVERRIDE;
   virtual bool ShouldStartDownload(int32 download_id) OVERRIDE;
   virtual void ChooseDownloadPath(WebContents* web_contents,
                                   const FilePath& suggested_path,
                                   void* data) OVERRIDE;
-  virtual bool OverrideIntermediatePath(DownloadItem* item,
-                                        FilePath* intermediate_path) OVERRIDE;
-  virtual WebContents* GetAlternativeWebContentsToNotifyForDownload() OVERRIDE;
-  virtual bool ShouldOpenFileBasedOnExtension(const FilePath& path) OVERRIDE;
-  virtual bool ShouldCompleteDownload(DownloadItem* item) OVERRIDE;
-  virtual bool ShouldOpenDownload(DownloadItem* item) OVERRIDE;
-  virtual bool GenerateFileHash() OVERRIDE;
-  virtual void OnResponseCompleted(DownloadItem* item) OVERRIDE;
-  virtual void AddItemToPersistentStore(DownloadItem* item) OVERRIDE;
-  virtual void UpdateItemInPersistentStore(DownloadItem* item) OVERRIDE;
-  virtual void UpdatePathForItemInPersistentStore(
-      DownloadItem* item,
-      const FilePath& new_path) OVERRIDE;
-  virtual void RemoveItemFromPersistentStore(DownloadItem* item) OVERRIDE;
-  virtual void RemoveItemsFromPersistentStoreBetween(
-      base::Time remove_begin,
-      base::Time remove_end) OVERRIDE;
-  virtual void GetSaveDir(WebContents* web_contents,
-                          FilePath* website_save_dir,
-                          FilePath* download_save_dir) OVERRIDE;
-  virtual void ChooseSavePath(
-      content::WebContents* web_contents,
-      const FilePath& suggested_path,
-      const FilePath::StringType& default_extension,
-      bool can_save_as_complete,
-      content::SaveFilePathPickedCallback callback) OVERRIDE;
-  virtual void DownloadProgressUpdated() OVERRIDE;
 
  private:
   friend class base::RefCountedThreadSafe<ShellDownloadManagerDelegate>;

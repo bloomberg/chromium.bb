@@ -36,9 +36,6 @@ void ShellDownloadManagerDelegate::SetDownloadManager(
   download_manager_ = download_manager;
 }
 
-void ShellDownloadManagerDelegate::Shutdown() {
-}
-
 DownloadId ShellDownloadManagerDelegate::GetNextId() {
   static int next_id;
   return DownloadId(this, ++next_id);
@@ -139,76 +136,6 @@ void ShellDownloadManagerDelegate::ChooseDownloadPath(
   } else {
     download_manager_->FileSelected(result, data);
   }
-}
-
-bool ShellDownloadManagerDelegate::OverrideIntermediatePath(
-    DownloadItem* item,
-    FilePath* intermediate_path) {
-  return false;
-}
-
-WebContents* ShellDownloadManagerDelegate::
-    GetAlternativeWebContentsToNotifyForDownload() {
-  return NULL;
-}
-
-bool ShellDownloadManagerDelegate::ShouldOpenFileBasedOnExtension(
-    const FilePath& path) {
-  return false;
-}
-
-bool ShellDownloadManagerDelegate::ShouldCompleteDownload(DownloadItem* item) {
-  return true;
-}
-
-bool ShellDownloadManagerDelegate::ShouldOpenDownload(DownloadItem* item) {
-  return true;
-}
-
-bool ShellDownloadManagerDelegate::GenerateFileHash() {
-  return false;
-}
-
-void ShellDownloadManagerDelegate::OnResponseCompleted(DownloadItem* item) {
-}
-
-void ShellDownloadManagerDelegate::AddItemToPersistentStore(
-    DownloadItem* item) {
-}
-
-void ShellDownloadManagerDelegate::UpdateItemInPersistentStore(
-    DownloadItem* item) {
-}
-
-void ShellDownloadManagerDelegate::UpdatePathForItemInPersistentStore(
-    DownloadItem* item,
-    const FilePath& new_path) {
-}
-
-void ShellDownloadManagerDelegate::RemoveItemFromPersistentStore(
-    DownloadItem* item) {
-}
-
-void ShellDownloadManagerDelegate::RemoveItemsFromPersistentStoreBetween(
-    base::Time remove_begin,
-    base::Time remove_end) {
-}
-
-void ShellDownloadManagerDelegate::GetSaveDir(
-    WebContents* web_contents,
-    FilePath* website_save_dir,
-    FilePath* download_save_dir) {
-}
-
-void ShellDownloadManagerDelegate::ChooseSavePath(
-    WebContents* web_contents,
-    const FilePath& suggested_path,
-    const FilePath::StringType& default_extension,
-    bool can_save_as_complete,
-    SaveFilePathPickedCallback callback) {
-}
-
-void ShellDownloadManagerDelegate::DownloadProgressUpdated() {
 }
 
 }  // namespace content

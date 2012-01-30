@@ -5,7 +5,6 @@
 #include "base/message_loop.h"
 #include "base/stl_util.h"
 #include "base/threading/thread.h"
-#include "chrome/test/base/testing_profile.h"
 #include "content/browser/download/download_create_info.h"
 #include "content/browser/download/download_item_impl.h"
 #include "content/browser/download/download_request_handle.h"

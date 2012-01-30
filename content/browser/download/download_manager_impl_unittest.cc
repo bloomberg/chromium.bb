@@ -7,8 +7,6 @@
 
 #include "base/bind.h"
 #include "base/file_util.h"
-#include "base/i18n/number_formatting.h"
-#include "base/i18n/rtl.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/scoped_temp_dir.h"
@@ -17,32 +15,25 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "build/build_config.h"
-#include "chrome/browser/download/chrome_download_manager_delegate.h"
-#include "chrome/browser/download/download_item_model.h"
-#include "chrome/browser/download/download_prefs.h"
-#include "chrome/browser/download/download_util.h"
-#include "chrome/browser/prefs/pref_service.h"
-#include "chrome/common/pref_names.h"
-#include "chrome/test/base/testing_profile.h"
 #include "content/browser/download/download_buffer.h"
 #include "content/browser/download/download_create_info.h"
 #include "content/browser/download/download_file_impl.h"
 #include "content/browser/download/download_file_manager.h"
+#include "content/browser/download/download_manager_impl.h"
 #include "content/browser/download/download_request_handle.h"
 #include "content/browser/download/download_status_updater.h"
 #include "content/browser/download/interrupt_reasons.h"
 #include "content/browser/download/mock_download_file.h"
 #include "content/browser/download/mock_download_manager.h"
 #include "content/public/browser/download_item.h"
-#include "content/public/browser/download_manager.h"
+#include "content/public/browser/download_manager_delegate.h"
+#include "content/test/test_browser_context.h"
 #include "content/test/test_browser_thread.h"
-#include "grit/generated_resources.h"
 #include "net/base/io_buffer.h"
+#include "net/base/net_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gmock_mutant.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/base/l10n/l10n_util.h"
-#include "ui/base/text/bytes_formatting.h"
 
 #if defined(USE_AURA) && defined(OS_WIN)
 // http://crbug.com/105200
@@ -63,16 +54,22 @@
 #define MAYBE_DownloadFileErrorTest DownloadFileErrorTest
 #endif
 
+using content::BrowserContext;
 using content::BrowserThread;
 using content::DownloadFile;
 using content::DownloadId;
 using content::DownloadItem;
 using content::DownloadManager;
+using content::WebContents;
 using ::testing::ReturnRef;
 using ::testing::Return;
-using content::WebContents;
 
 namespace {
+
+FilePath GetTempDownloadPath(const FilePath& suggested_path) {
+  return DownloadFile::AppendSuffixToPath(
+      suggested_path, FILE_PATH_LITERAL(".temp"));
+}
 
 class MockDownloadFileFactory
     : public DownloadFileManager::DownloadFileFactory {
@@ -96,11 +93,40 @@ DownloadFile* MockDownloadFileFactory::CreateFile(
 
 DownloadId::Domain kValidIdDomain = "valid DownloadId::Domain";
 
-class TestDownloadManagerDelegate : public ChromeDownloadManagerDelegate {
+class TestDownloadManagerDelegate : public content::DownloadManagerDelegate {
  public:
-  explicit TestDownloadManagerDelegate(Profile* profile)
-      : ChromeDownloadManagerDelegate(profile),
-        mark_content_dangerous_(false) {
+  TestDownloadManagerDelegate()
+      : mark_content_dangerous_(false),
+        prompt_user_for_save_location_(false),
+        download_manager_(NULL) {
+  }
+
+  void set_download_manager(content::DownloadManager* dm) {
+    download_manager_ = dm;
+  }
+
+  void set_prompt_user_for_save_location(bool value) {
+    prompt_user_for_save_location_ = value;
+  }
+
+  virtual bool ShouldStartDownload(int32 download_id) OVERRIDE {
+    DownloadItem* item = download_manager_->GetActiveDownloadItem(download_id);
+    DownloadStateInfo state = item->GetStateInfo();
+    FilePath path = net::GenerateFileName(item->GetURL(),
+                                          item->GetContentDisposition(),
+                                          item->GetReferrerCharset(),
+                                          item->GetSuggestedFilename(),
+                                          item->GetMimeType(),
+                                          std::string());
+    if (!ShouldOpenFileBasedOnExtension(path) && prompt_user_for_save_location_)
+      state.prompt_user_for_save_location = true;
+    item->SetFileCheckResults(state);
+    return true;
+  }
+
+  virtual FilePath GetIntermediatePath(
+      const FilePath& suggested_path) OVERRIDE {
+    return GetTempDownloadPath(suggested_path);
   }
 
   virtual void ChooseDownloadPath(WebContents* web_contents,
@@ -114,18 +140,27 @@ class TestDownloadManagerDelegate : public ChromeDownloadManagerDelegate {
       BrowserThread::PostTask(
           BrowserThread::UI, FROM_HERE,
           base::Bind(&DownloadManager::FileSelectionCanceled,
-                     download_manager_.get(),
+                     download_manager_,
                      base::Unretained(data)));
     } else {
       BrowserThread::PostTask(
           BrowserThread::UI, FROM_HERE,
           base::Bind(&DownloadManager::FileSelected,
-                     download_manager_.get(),
+                     download_manager_,
                      file_selection_response_,
                      base::Unretained(data)));
     }
     expected_suggested_path_.clear();
     file_selection_response_.clear();
+  }
+
+  virtual bool ShouldOpenFileBasedOnExtension(const FilePath& path) OVERRIDE {
+    return path.Extension() == FilePath::StringType(FILE_PATH_LITERAL(".pdf"));
+  }
+
+  virtual void AddItemToPersistentStore(DownloadItem* item) OVERRIDE {
+    static int64 db_handle = DownloadItem::kUninitializedHandle;
+    download_manager_->OnItemAddedToPersistentStore(item->GetId(), --db_handle);
   }
 
   void SetFileSelectionExpectation(const FilePath& suggested_path,
@@ -143,7 +178,7 @@ class TestDownloadManagerDelegate : public ChromeDownloadManagerDelegate {
       BrowserThread::PostTask(
           BrowserThread::UI, FROM_HERE,
           base::Bind(&TestDownloadManagerDelegate::MarkContentDangerous,
-                     this, item->GetId()));
+                     base::Unretained(this), item->GetId()));
       mark_content_dangerous_ = false;
       return false;
     } else {
@@ -163,6 +198,8 @@ class TestDownloadManagerDelegate : public ChromeDownloadManagerDelegate {
   FilePath expected_suggested_path_;
   FilePath file_selection_response_;
   bool mark_content_dangerous_;
+  bool prompt_user_for_save_location_;
+  DownloadManager* download_manager_;
 };
 
 } // namespace
@@ -173,25 +210,24 @@ class DownloadManagerTest : public testing::Test {
   static const size_t kTestDataLen;
 
   DownloadManagerTest()
-      : profile_(new TestingProfile()),
-        download_manager_delegate_(new TestDownloadManagerDelegate(
-            profile_.get())),
+      : browser_context(new TestBrowserContext()),
+        download_manager_delegate_(new TestDownloadManagerDelegate()),
         download_manager_(DownloadManager::Create(
-            download_manager_delegate_, &download_status_updater_)),
+            download_manager_delegate_.get(), &download_status_updater_)),
         ui_thread_(BrowserThread::UI, &message_loop_),
         file_thread_(BrowserThread::FILE, &message_loop_),
         download_buffer_(new content::DownloadBuffer) {
-    download_manager_->Init(profile_.get());
-    download_manager_delegate_->SetDownloadManager(download_manager_);
+    download_manager_->Init(browser_context.get());
+    download_manager_delegate_->set_download_manager(download_manager_);
   }
 
   ~DownloadManagerTest() {
     download_manager_->Shutdown();
-    // profile_ must outlive download_manager_, so we explicitly delete
+    // browser_context must outlive download_manager_, so we explicitly delete
     // download_manager_ first.
     download_manager_ = NULL;
-    download_manager_delegate_ = NULL;
-    profile_.reset(NULL);
+    download_manager_delegate_.reset();
+    browser_context.reset(NULL);
     message_loop_.RunAllPending();
   }
 
@@ -250,8 +286,8 @@ class DownloadManagerTest : public testing::Test {
 
  protected:
   DownloadStatusUpdater download_status_updater_;
-  scoped_ptr<TestingProfile> profile_;
-  scoped_refptr<TestDownloadManagerDelegate> download_manager_delegate_;
+  scoped_ptr<TestBrowserContext> browser_context;
+  scoped_ptr<TestDownloadManagerDelegate> download_manager_delegate_;
   scoped_refptr<DownloadManager> download_manager_;
   scoped_refptr<DownloadFileManager> file_manager_;
   MessageLoopForUI message_loop_;
@@ -387,15 +423,15 @@ const struct {
   int expected_rename_count;
 } kDownloadRenameCases[] = {
   // Safe download, download finishes BEFORE file name determined.
-  // Renamed twice (linear path through UI).  Crdownload file does not need
+  // Renamed twice (linear path through UI).  temp file does not need
   // to be deleted.
   { FILE_PATH_LITERAL("foo.zip"), content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
     true, 2, },
   // Potentially dangerous download (e.g., file is dangerous), download finishes
   // BEFORE file name determined. Needs to be renamed only once.
-  { FILE_PATH_LITERAL("Unconfirmed xxx.crdownload"),
+  { FILE_PATH_LITERAL("Unconfirmed xxx.temp"),
     content::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT, true, 1, },
-  { FILE_PATH_LITERAL("Unconfirmed xxx.crdownload"),
+  { FILE_PATH_LITERAL("Unconfirmed xxx.temp"),
     content::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE, true, 1, },
   // Safe download, download finishes AFTER file name determined.
   // Needs to be renamed twice.
@@ -403,9 +439,9 @@ const struct {
     false, 2, },
   // Potentially dangerous download, download finishes AFTER file name
   // determined. Needs to be renamed only once.
-  { FILE_PATH_LITERAL("Unconfirmed xxx.crdownload"),
+  { FILE_PATH_LITERAL("Unconfirmed xxx.temp"),
     content::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT, false, 1, },
-  { FILE_PATH_LITERAL("Unconfirmed xxx.crdownload"),
+  { FILE_PATH_LITERAL("Unconfirmed xxx.temp"),
     content::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE, false, 1, },
 };
 
@@ -483,16 +519,9 @@ class ItemObserver : public DownloadItem::Observer {
 
 TEST_F(DownloadManagerTest, MAYBE_StartDownload) {
   content::TestBrowserThread io_thread(BrowserThread::IO, &message_loop_);
-  PrefService* prefs = profile_->GetPrefs();
-  prefs->SetFilePath(prefs::kDownloadDefaultDirectory, FilePath());
-  DownloadPrefs* download_prefs =
-      DownloadPrefs::FromDownloadManager(download_manager_);
-  download_prefs->EnableAutoOpenBasedOnExtension(
-      FilePath(FILE_PATH_LITERAL("example.pdf")));
-
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kStartDownloadCases); ++i) {
-    prefs->SetBoolean(prefs::kPromptForDownload,
-                      kStartDownloadCases[i].prompt_for_download);
+    download_manager_delegate_->set_prompt_user_for_save_location(
+        kStartDownloadCases[i].prompt_for_download);
 
     SelectFileObserver observer(download_manager_);
     // Normally, the download system takes ownership of info, and is
@@ -571,7 +600,7 @@ const struct DownloadFilenameTestCase {
     DONT_PROMPT,
     content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
     FILE_PATH_LITERAL(""),
-    FILE_PATH_LITERAL("$dl/foo.txt.crdownload"),
+    FILE_PATH_LITERAL("$dl/foo.txt.temp"),
     FILE_PATH_LITERAL("$dl/foo.txt"),
     DONT_VALIDATE
   },
@@ -582,7 +611,7 @@ const struct DownloadFilenameTestCase {
     PROMPT,
     content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
     FILE_PATH_LITERAL("$dl/foo.txt"),
-    FILE_PATH_LITERAL("$dl/foo.txt.crdownload"),
+    FILE_PATH_LITERAL("$dl/foo.txt.temp"),
     FILE_PATH_LITERAL("$dl/foo.txt"),
     DONT_VALIDATE
   },
@@ -594,7 +623,7 @@ const struct DownloadFilenameTestCase {
     PROMPT,
     content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
     FILE_PATH_LITERAL("$dl/foo.txt"),
-    FILE_PATH_LITERAL("$dl/bar.txt.crdownload"),
+    FILE_PATH_LITERAL("$dl/bar.txt.temp"),
     FILE_PATH_LITERAL("$dl/bar.txt"),
     DONT_VALIDATE
   },
@@ -606,7 +635,7 @@ const struct DownloadFilenameTestCase {
     PROMPT,
     content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
     FILE_PATH_LITERAL("$dl/foo.txt"),
-    FILE_PATH_LITERAL("$alt/bar.txt.crdownload"),
+    FILE_PATH_LITERAL("$alt/bar.txt.temp"),
     FILE_PATH_LITERAL("$alt/bar.txt"),
     DONT_VALIDATE
   },
@@ -699,7 +728,7 @@ const struct DownloadFilenameTestCase {
     DONT_PROMPT,
     content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
     FILE_PATH_LITERAL(""),
-    FILE_PATH_LITERAL("$dl/exists.txt.crdownload"),
+    FILE_PATH_LITERAL("$dl/exists.txt.temp"),
     FILE_PATH_LITERAL("$dl/exists.txt"),
     DONT_VALIDATE
   },
@@ -869,8 +898,8 @@ TEST_F(DownloadManagerTest, DownloadRenameTest) {
           .WillOnce(Return(net::OK));
     } else {
       ASSERT_EQ(2, kDownloadRenameCases[i].expected_rename_count);
-      FilePath crdownload(download_util::GetCrDownloadPath(new_path));
-      EXPECT_CALL(*download_file, Rename(crdownload))
+      FilePath temp(GetTempDownloadPath(new_path));
+      EXPECT_CALL(*download_file, Rename(temp))
           .Times(1)
           .WillOnce(Return(net::OK));
       EXPECT_CALL(*download_file, Rename(new_path))
@@ -917,7 +946,7 @@ TEST_F(DownloadManagerTest, DownloadInterruptTest) {
   info->url_chain.push_back(GURL());
   info->total_bytes = static_cast<int64>(kTestDataLen);
   const FilePath new_path(FILE_PATH_LITERAL("foo.zip"));
-  const FilePath cr_path(download_util::GetCrDownloadPath(new_path));
+  const FilePath cr_path(GetTempDownloadPath(new_path));
 
   MockDownloadFile* download_file(new MockDownloadFile());
   ON_CALL(*download_file, AppendDataToFile(_, _))
@@ -934,9 +963,6 @@ TEST_F(DownloadManagerTest, DownloadInterruptTest) {
 
   DownloadItem* download = GetActiveDownloadItem(0);
   ASSERT_TRUE(download != NULL);
-  scoped_ptr<DownloadItemModel> download_item_model(
-      new DownloadItemModel(download));
-
   EXPECT_EQ(DownloadItem::IN_PROGRESS, download->GetState());
   scoped_ptr<ItemObserver> observer(new ItemObserver(download));
 
@@ -961,15 +987,6 @@ TEST_F(DownloadManagerTest, DownloadInterruptTest) {
   EXPECT_FALSE(observer->was_opened());
   EXPECT_FALSE(download->GetFileExternallyRemoved());
   EXPECT_EQ(DownloadItem::INTERRUPTED, download->GetState());
-  ui::DataUnits amount_units = ui::GetByteDisplayUnits(kTestDataLen);
-  string16 simple_size =
-      ui::FormatBytesWithUnits(error_size, amount_units, false);
-  string16 simple_total = base::i18n::GetDisplayStringInLTRDirectionality(
-      ui::FormatBytesWithUnits(kTestDataLen, amount_units, true));
-  EXPECT_EQ(download_item_model->GetStatusText(),
-            l10n_util::GetStringFUTF16(IDS_DOWNLOAD_STATUS_INTERRUPTED,
-                                       simple_size,
-                                       simple_total));
 
   download->Cancel(true);
 
@@ -1022,9 +1039,6 @@ TEST_F(DownloadManagerTest, MAYBE_DownloadFileErrorTest) {
 
   DownloadItem* download = GetActiveDownloadItem(0);
   ASSERT_TRUE(download != NULL);
-  // This will keep track of what should be displayed on the shelf.
-  scoped_ptr<DownloadItemModel> download_item_model(
-      new DownloadItemModel(download));
 
   EXPECT_EQ(DownloadItem::IN_PROGRESS, download->GetState());
   scoped_ptr<ItemObserver> observer(new ItemObserver(download));
@@ -1056,19 +1070,6 @@ TEST_F(DownloadManagerTest, MAYBE_DownloadFileErrorTest) {
   EXPECT_FALSE(download->GetFileExternallyRemoved());
   EXPECT_EQ(DownloadItem::INTERRUPTED, download->GetState());
 
-  // Check the download shelf's information.
-  size_t error_size = kTestDataLen * 3;
-  size_t total_size = kTestDataLen * 3;
-  ui::DataUnits amount_units = ui::GetByteDisplayUnits(kTestDataLen);
-  string16 simple_size =
-      ui::FormatBytesWithUnits(error_size, amount_units, false);
-  string16 simple_total = base::i18n::GetDisplayStringInLTRDirectionality(
-      ui::FormatBytesWithUnits(total_size, amount_units, true));
-  EXPECT_EQ(l10n_util::GetStringFUTF16(IDS_DOWNLOAD_STATUS_INTERRUPTED,
-                                       simple_size,
-                                       simple_total),
-            download_item_model->GetStatusText());
-
   // Clean up.
   download->Cancel(true);
   message_loop_.RunAllPending();
@@ -1089,7 +1090,7 @@ TEST_F(DownloadManagerTest, DownloadCancelTest) {
   info->prompt_user_for_save_location = false;
   info->url_chain.push_back(GURL());
   const FilePath new_path(FILE_PATH_LITERAL("foo.zip"));
-  const FilePath cr_path(download_util::GetCrDownloadPath(new_path));
+  const FilePath cr_path(GetTempDownloadPath(new_path));
 
   MockDownloadFile* download_file(new MockDownloadFile());
   ON_CALL(*download_file, AppendDataToFile(_, _))
@@ -1105,8 +1106,6 @@ TEST_F(DownloadManagerTest, DownloadCancelTest) {
 
   DownloadItem* download = GetActiveDownloadItem(0);
   ASSERT_TRUE(download != NULL);
-  scoped_ptr<DownloadItemModel> download_item_model(
-      new DownloadItemModel(download));
 
   EXPECT_EQ(DownloadItem::IN_PROGRESS, download->GetState());
   scoped_ptr<ItemObserver> observer(new ItemObserver(download));
@@ -1130,8 +1129,6 @@ TEST_F(DownloadManagerTest, DownloadCancelTest) {
   EXPECT_FALSE(observer->was_opened());
   EXPECT_FALSE(download->GetFileExternallyRemoved());
   EXPECT_EQ(DownloadItem::CANCELLED, download->GetState());
-  EXPECT_EQ(download_item_model->GetStatusText(),
-            l10n_util::GetStringUTF16(IDS_DOWNLOAD_STATUS_CANCELED));
 
   file_manager()->CancelDownload(id);
 
@@ -1151,7 +1148,7 @@ TEST_F(DownloadManagerTest, MAYBE_DownloadOverwriteTest) {
 
   // File names we're using.
   const FilePath new_path(temp_dir_.path().AppendASCII("foo.txt"));
-  const FilePath cr_path(download_util::GetCrDownloadPath(new_path));
+  const FilePath cr_path(GetTempDownloadPath(new_path));
   EXPECT_FALSE(file_util::PathExists(new_path));
 
   // Create the file that we will overwrite.  Will be automatically cleaned
@@ -1179,8 +1176,6 @@ TEST_F(DownloadManagerTest, MAYBE_DownloadOverwriteTest) {
 
   DownloadItem* download = GetActiveDownloadItem(0);
   ASSERT_TRUE(download != NULL);
-  scoped_ptr<DownloadItemModel> download_item_model(
-      new DownloadItemModel(download));
 
   EXPECT_EQ(DownloadItem::IN_PROGRESS, download->GetState());
   scoped_ptr<ItemObserver> observer(new ItemObserver(download));
@@ -1193,7 +1188,7 @@ TEST_F(DownloadManagerTest, MAYBE_DownloadOverwriteTest) {
       new DownloadFileImpl(info.get(), new DownloadRequestHandle(),
                            download_manager_, false));
   download_file->Rename(cr_path);
-  // This creates the .crdownload version of the file.
+  // This creates the .temp version of the file.
   download_file->Initialize();
   // |download_file| is owned by DownloadFileManager.
   AddDownloadToFileManager(info->download_id.local(), download_file);
@@ -1219,7 +1214,6 @@ TEST_F(DownloadManagerTest, MAYBE_DownloadOverwriteTest) {
   EXPECT_FALSE(observer->was_opened());
   EXPECT_FALSE(download->GetFileExternallyRemoved());
   EXPECT_EQ(DownloadItem::COMPLETE, download->GetState());
-  EXPECT_EQ(download_item_model->GetStatusText(), string16());
 
   EXPECT_TRUE(file_util::PathExists(new_path));
   EXPECT_FALSE(file_util::PathExists(cr_path));
@@ -1241,7 +1235,7 @@ TEST_F(DownloadManagerTest, MAYBE_DownloadRemoveTest) {
 
   // File names we're using.
   const FilePath new_path(temp_dir_.path().AppendASCII("foo.txt"));
-  const FilePath cr_path(download_util::GetCrDownloadPath(new_path));
+  const FilePath cr_path(GetTempDownloadPath(new_path));
   EXPECT_FALSE(file_util::PathExists(new_path));
 
   // Normally, the download system takes ownership of info, and is
@@ -1256,8 +1250,6 @@ TEST_F(DownloadManagerTest, MAYBE_DownloadRemoveTest) {
 
   DownloadItem* download = GetActiveDownloadItem(0);
   ASSERT_TRUE(download != NULL);
-  scoped_ptr<DownloadItemModel> download_item_model(
-      new DownloadItemModel(download));
 
   EXPECT_EQ(DownloadItem::IN_PROGRESS, download->GetState());
   scoped_ptr<ItemObserver> observer(new ItemObserver(download));
@@ -1270,7 +1262,7 @@ TEST_F(DownloadManagerTest, MAYBE_DownloadRemoveTest) {
       new DownloadFileImpl(info.get(), new DownloadRequestHandle(),
                            download_manager_, false));
   download_file->Rename(cr_path);
-  // This creates the .crdownload version of the file.
+  // This creates the .temp version of the file.
   download_file->Initialize();
   // |download_file| is owned by DownloadFileManager.
   AddDownloadToFileManager(info->download_id.local(), download_file);
@@ -1296,7 +1288,6 @@ TEST_F(DownloadManagerTest, MAYBE_DownloadRemoveTest) {
   EXPECT_FALSE(observer->was_opened());
   EXPECT_FALSE(download->GetFileExternallyRemoved());
   EXPECT_EQ(DownloadItem::COMPLETE, download->GetState());
-  EXPECT_EQ(download_item_model->GetStatusText(), string16());
 
   EXPECT_TRUE(file_util::PathExists(new_path));
   EXPECT_FALSE(file_util::PathExists(cr_path));
@@ -1316,8 +1307,6 @@ TEST_F(DownloadManagerTest, MAYBE_DownloadRemoveTest) {
   EXPECT_FALSE(observer->was_opened());
   EXPECT_TRUE(download->GetFileExternallyRemoved());
   EXPECT_EQ(DownloadItem::COMPLETE, download->GetState());
-  EXPECT_EQ(download_item_model->GetStatusText(),
-            l10n_util::GetStringUTF16(IDS_DOWNLOAD_STATUS_REMOVED));
 
   EXPECT_FALSE(file_util::PathExists(new_path));
 }

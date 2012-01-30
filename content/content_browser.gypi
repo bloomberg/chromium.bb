@@ -55,6 +55,7 @@
     'public/browser/download_manager.h',
     'public/browser/download_query.cc',
     'public/browser/download_query.h',
+    'public/browser/download_manager_delegate.cc',
     'public/browser/download_manager_delegate.h',
     'public/browser/favicon_status.cc',
     'public/browser/favicon_status.h',

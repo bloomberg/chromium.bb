@@ -59,15 +59,13 @@ class ChromeDownloadManagerDelegate
   virtual void ChooseDownloadPath(content::WebContents* web_contents,
                                   const FilePath& suggested_path,
                                   void* data) OVERRIDE;
-  virtual bool OverrideIntermediatePath(content::DownloadItem* item,
-                                        FilePath* intermediate_path) OVERRIDE;
+  virtual FilePath GetIntermediatePath(const FilePath& suggested_path) OVERRIDE;
   virtual content::WebContents*
       GetAlternativeWebContentsToNotifyForDownload() OVERRIDE;
   virtual bool ShouldOpenFileBasedOnExtension(const FilePath& path) OVERRIDE;
   virtual bool ShouldCompleteDownload(content::DownloadItem* item) OVERRIDE;
   virtual bool ShouldOpenDownload(content::DownloadItem* item) OVERRIDE;
   virtual bool GenerateFileHash() OVERRIDE;
-  virtual void OnResponseCompleted(content::DownloadItem* item) OVERRIDE;
   virtual void AddItemToPersistentStore(content::DownloadItem* item) OVERRIDE;
   virtual void UpdateItemInPersistentStore(
       content::DownloadItem* item) OVERRIDE;
