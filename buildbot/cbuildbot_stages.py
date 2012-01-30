@@ -64,7 +64,7 @@ class BoardSpecificBuilderStage(bs.BuilderStage):
 
     # Add a board name suffix to differentiate between various boards (in case
     # more than one board is built on a single builder.)
-    self.name += '[%s]' % (board,)
+    self.name += ' [%s]' % (board,)
 
   def GetImageDirSymlink(self, pointer='latest-cbuildbot'):
     """Get the location of the current image."""
@@ -793,7 +793,7 @@ class HWTestStage(BoardSpecificBuilderStage):
   def __init__(self, bot_id, options, build_config, board, archive_stage,
                suite, platform):
     super(HWTestStage, self).__init__(bot_id, options, build_config, board,
-                                      suffix='[%s]' % suite)
+                                      suffix=' [%s]' % suite)
     self._archive_url = archive_stage.GetGSUploadLocation()
     self._archive_stage = archive_stage
     self._suite = suite
