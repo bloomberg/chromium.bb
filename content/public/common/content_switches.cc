@@ -253,6 +253,9 @@ const char kEnableSandboxLogging[]          = "enable-sandbox-logging";
 // Enable the seccomp sandbox (Linux only)
 const char kEnableSeccompSandbox[]          = "enable-seccomp-sandbox";
 
+// Enable shadow DOM API
+const char kEnableShadowDOM[]          = "enable-shadow-dom";
+
 // Enables StatsTable, logging statistics to a global named shared memory table.
 const char kEnableStatsTable[]              = "enable-stats-table";
 

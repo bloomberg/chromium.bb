@@ -5078,6 +5078,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_MEDIA_STREAM_DESCRIPTION" desc="Description for the flag to enable MediaStream, GetUserMedia and PeerConnection.">
         Enable MediaStream, GetUserMedia, and PeerConnection APIs for WebRTC functionality. More info at webrtc.org.
       </message>
+      <message name="IDS_FLAGS_SHADOW_DOM_NAME" desc="Name for the flag to enable Shadow DOM.">
+        Enable Shadow DOM.
+      </message>
+      <message name="IDS_FLAGS_SHADOW_DOM_DESCRIPTION" desc="Description for the flag to enable Shadow DOM.">
+        This API allows web applications to use Web Components.
+      </message>
       <!-- Crashes -->
       <message name="IDS_CRASHES_TITLE" desc="Title for the chrome://crashes page.">
         Crashes

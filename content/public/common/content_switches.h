@@ -88,6 +88,7 @@ CONTENT_EXPORT extern const char kEnablePrivilegedWebGLExtensions[];
 extern const char kEnableSSLCachedInfo[];
 extern const char kEnableSandboxLogging[];
 extern const char kEnableSeccompSandbox[];
+extern const char kEnableShadowDOM[];
 CONTENT_EXPORT extern const char kEnableStatsTable[];
 extern const char kEnableStrictSiteIsolation[];
 CONTENT_EXPORT extern const char kEnableThreadedCompositing[];

@@ -547,6 +547,9 @@ void RenderThreadImpl::EnsureWebKitInitialized() {
 
   WebRuntimeFeatures::enableQuota(true);
 
+  WebRuntimeFeatures::enableShadowDOM(
+      command_line.HasSwitch(switches::kEnableShadowDOM));
+
   FOR_EACH_OBSERVER(RenderProcessObserver, observers_, WebKitInitialized());
 
   if (content::GetContentClient()->renderer()->

@@ -558,6 +558,13 @@ const Experiment kExperiments[] = {
     kOsAll,
     SINGLE_VALUE_TYPE(switches::kDisableUberPage)
   },
+  {
+    "enable-shadow-dom",
+    IDS_FLAGS_SHADOW_DOM_NAME,
+    IDS_FLAGS_SHADOW_DOM_DESCRIPTION,
+    kOsAll,
+    SINGLE_VALUE_TYPE(switches::kEnableShadowDOM)
+  },
 };
 
 const Experiment* experiments = kExperiments;
