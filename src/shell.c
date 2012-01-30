@@ -231,7 +231,7 @@ shell_surface_move(struct wl_client *client, struct wl_resource *resource,
 struct weston_resize_grab {
 	struct wl_grab grab;
 	uint32_t edges;
-	int32_t dx, dy, width, height;
+	int32_t width, height;
 	struct shell_surface *shsurf;
 };
 
@@ -242,19 +242,27 @@ resize_grab_motion(struct wl_grab *grab,
 	struct weston_resize_grab *resize = (struct weston_resize_grab *) grab;
 	struct wl_input_device *device = grab->input_device;
 	int32_t width, height;
+	int32_t from_x, from_y;
+	int32_t to_x, to_y;
+
+	weston_surface_from_global(resize->shsurf->surface,
+				   device->grab_x, device->grab_y,
+				   &from_x, &from_y);
+	weston_surface_from_global(resize->shsurf->surface,
+				   device->x, device->y, &to_x, &to_y);
 
 	if (resize->edges & WL_SHELL_SURFACE_RESIZE_LEFT) {
-		width = device->grab_x - device->x + resize->width;
+		width = resize->width + from_x - to_x;
 	} else if (resize->edges & WL_SHELL_SURFACE_RESIZE_RIGHT) {
-		width = device->x - device->grab_x + resize->width;
+		width = resize->width + to_x - from_x;
 	} else {
 		width = resize->width;
 	}
 
 	if (resize->edges & WL_SHELL_SURFACE_RESIZE_TOP) {
-		height = device->grab_y - device->y + resize->height;
+		height = resize->height + from_y - to_y;
 	} else if (resize->edges & WL_SHELL_SURFACE_RESIZE_BOTTOM) {
-		height = device->y - device->grab_y + resize->height;
+		height = resize->height + to_y - from_y;
 	} else {
 		height = resize->height;
 	}
@@ -288,9 +296,12 @@ weston_surface_resize(struct shell_surface *shsurf,
 		    uint32_t time, uint32_t edges)
 {
 	struct weston_resize_grab *resize;
-	struct weston_surface *es = shsurf->surface;
 
 	/* FIXME: Reject if fullscreen */
+
+	if (edges == 0 || edges > 15 ||
+	    (edges & 3) == 3 || (edges & 12) == 12)
+		return 0;
 
 	resize = malloc(sizeof *resize);
 	if (!resize)
@@ -298,25 +309,15 @@ weston_surface_resize(struct shell_surface *shsurf,
 
 	resize->grab.interface = &resize_grab_interface;
 	resize->edges = edges;
-	resize->dx = es->geometry.x - wd->input_device.grab_x;
-	resize->dy = es->geometry.y - wd->input_device.grab_y;
-	resize->width = es->geometry.width;
-	resize->height = es->geometry.height;
+	resize->width = shsurf->surface->geometry.width;
+	resize->height = shsurf->surface->geometry.height;
 	resize->shsurf = shsurf;
-
-	if (edges == 0 || edges > 15 ||
-	    (edges & 3) == 3 || (edges & 12) == 12)
-		goto err_out;
 
 	wl_input_device_start_grab(&wd->input_device, &resize->grab, time);
 
 	wl_input_device_set_pointer_focus(&wd->input_device,
 					  NULL, time, 0, 0, 0, 0);
 
-	return 0;
-
-err_out:
-	free(resize);
 	return 0;
 }
 
@@ -943,9 +944,8 @@ resize_binding(struct wl_input_device *device, uint32_t time,
 			break;
 	}
 
-	/* FIXME: convert properly to surface coordinates */
-	x = device->grab_x - surface->geometry.x;
-	y = device->grab_y - surface->geometry.y;
+	weston_surface_from_global(surface,
+				   device->grab_x, device->grab_y, &x, &y);
 
 	if (x < surface->geometry.width / 3)
 		edges |= WL_SHELL_SURFACE_RESIZE_LEFT;
