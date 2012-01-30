@@ -14771,6 +14771,18 @@ Battery full
     <message name="IDS_FIND_MORE_INTENT_HANDLER_TOOLTIP" desc="Tooltip text for the web store plus button on the intent picker dialog.">
       Find services in the Chrome Web Store
     </message>
+    <message name="IDS_INTENT_PICKER_NO_SERVICES_REGISTERED" desc="Prompt indicating to the user that there are no services registered for the given Web Intents action.">
+      No services are registered for this action.
+    </message>
+    <message name="IDS_INTENT_PICKER_CHOOSE_SERVICE" desc="Prompt to the user to select one of the given services to complete a Web Intents action.">
+      Which service do you want to use?
+    </message>
+    <message name="IDS_INTENT_PICKER_GET_MORE_SERVICES" desc="Heading in the Web Intents picker box for a section containing suggested applications from the Chrome Web Store">
+      App suggestions from the Chrome Web Store
+    </message>
+    <message name="IDS_INTENT_PICKER_MORE_SUGGESTIONS" desc="Link text providing a Chrome Web Store link to select more apps.">
+      More suggestions
+    </message>
 
     <!-- PDF with unsupported feature Info Bar -->
     <message name="IDS_PDF_INFOBAR_QUESTION_READER_INSTALLED" desc="Question asked on the info bar when a user views a PDF with an unsupported feature and they have Adobe Reader installed.">
