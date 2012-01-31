@@ -273,13 +273,6 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kAppsNewInstallBubble)
   },
   {
-    "click-to-play",  // FLAGS:RECORD_UMA
-    IDS_FLAGS_CLICK_TO_PLAY_NAME,
-    IDS_FLAGS_CLICK_TO_PLAY_DESCRIPTION,
-    kOsAll,
-    SINGLE_VALUE_TYPE(switches::kEnableClickToPlay)
-  },
-  {
     "disable-hyperlink-auditing",
     IDS_FLAGS_DISABLE_HYPERLINK_AUDITING_NAME,
     IDS_FLAGS_DISABLE_HYPERLINK_AUDITING_DESCRIPTION,

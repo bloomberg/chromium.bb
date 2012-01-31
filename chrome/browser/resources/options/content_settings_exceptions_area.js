@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -361,8 +361,7 @@ cr.define('options.contentSettings', function() {
       var exceptionList = this;
 
       // Whether the exceptions in this list allow an 'Ask every time' option.
-      this.enableAskOption = (this.contentType == 'plugins' &&
-                              templateData.enable_click_to_play);
+      this.enableAskOption = this.contentType == 'plugins';
 
       this.autoExpands = true;
       this.reset();

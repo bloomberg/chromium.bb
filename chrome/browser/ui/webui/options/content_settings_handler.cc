@@ -280,9 +280,6 @@ void ContentSettingsHandler::GetLocalizedValues(
   RegisterStrings(localized_strings, resources, arraysize(resources));
   RegisterTitle(localized_strings, "contentSettingsPage",
                 IDS_CONTENT_SETTINGS_TITLE);
-  localized_strings->SetBoolean("enable_click_to_play",
-      CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableClickToPlay));
   localized_strings->SetBoolean("enable_web_intents",
       !CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableWebIntents));

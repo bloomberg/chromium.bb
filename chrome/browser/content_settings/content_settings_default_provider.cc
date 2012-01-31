@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -349,15 +349,6 @@ void DefaultProvider::GetSettingsFromDictionary(
               CONTENT_SETTING_ASK) {
     default_settings_[CONTENT_SETTINGS_TYPE_COOKIES].reset(
         Value::CreateIntegerValue(CONTENT_SETTING_BLOCK));
-  }
-
-  if (default_settings_[CONTENT_SETTINGS_TYPE_PLUGINS].get()) {
-    ContentSetting plugin_setting = ValueToContentSetting(
-        default_settings_[CONTENT_SETTINGS_TYPE_PLUGINS].get());
-    plugin_setting =
-        ClickToPlayFixup(CONTENT_SETTINGS_TYPE_PLUGINS, plugin_setting);
-    default_settings_[CONTENT_SETTINGS_TYPE_PLUGINS].reset(
-        Value::CreateIntegerValue(plugin_setting));
   }
 }
 

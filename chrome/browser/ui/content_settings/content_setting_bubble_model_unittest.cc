@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -107,7 +107,6 @@ TEST_F(ContentSettingBubbleModelTest, MultiplePlugins) {
   CommandLine* cmd = CommandLine::ForCurrentProcess();
   AutoReset<CommandLine> auto_reset(cmd, *cmd);
   cmd->AppendSwitch(switches::kEnableResourceContentSettings);
-  cmd->AppendSwitch(switches::kEnableClickToPlay);
 
   HostContentSettingsMap* map = profile()->GetHostContentSettingsMap();
   std::string fooPlugin = "foo";

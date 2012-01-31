@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -418,8 +418,6 @@ void PrefProvider::ReadContentSettingsFromPref(bool overwrite) {
             found = resource_dictionary->GetIntegerWithoutPathExpansion(
                 resource_identifier, &setting);
             DCHECK_NE(CONTENT_SETTING_DEFAULT, setting);
-            setting = ClickToPlayFixup(content_type,
-                                       ContentSetting(setting));
             value_map_.SetValue(pattern_pair.first,
                                 pattern_pair.second,
                                 content_type,
@@ -434,8 +432,6 @@ void PrefProvider::ReadContentSettingsFromPref(bool overwrite) {
           DCHECK_NE(CONTENT_SETTING_DEFAULT, setting);
           setting = FixObsoleteCookiePromptMode(content_type,
                                                 ContentSetting(setting));
-          setting = ClickToPlayFixup(content_type,
-                                     ContentSetting(setting));
           value_map_.SetValue(pattern_pair.first,
                               pattern_pair.second,
                               content_type,
@@ -742,7 +738,6 @@ void PrefProvider::MigrateObsoletePerhostPref() {
           ContentSetting setting = IntToContentSetting(setting_int_value);
 
           setting = FixObsoleteCookiePromptMode(content_type, setting);
-          setting = ClickToPlayFixup(content_type, setting);
 
           if (setting != CONTENT_SETTING_DEFAULT) {
             SetWebsiteSetting(

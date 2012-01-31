@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -64,9 +64,6 @@ cr.define('options', function() {
         chrome.send('coreOptionsUserMetricsAction', ['Options_ShowCookies']);
         OptionsPage.navigateToPage('cookies');
       };
-
-      if (!templateData.enable_click_to_play)
-        $('click_to_play').hidden = true;
 
       if (!templateData.enable_web_intents && $('intent-section'))
         $('intent-section').hidden = true;

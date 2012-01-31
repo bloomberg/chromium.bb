@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -57,11 +57,6 @@ TEST_F(HostContentSettingsMapTest, DefaultValues) {
                 CONTENT_SETTINGS_TYPE_IMAGES,
                 std::string()));
   {
-    // Click-to-play needs to be enabled to set the content setting to ASK.
-    CommandLine* cmd = CommandLine::ForCurrentProcess();
-    AutoReset<CommandLine> auto_reset(cmd, *cmd);
-    cmd->AppendSwitch(switches::kEnableClickToPlay);
-
     host_content_settings_map->SetDefaultContentSetting(
         CONTENT_SETTINGS_TYPE_PLUGINS, CONTENT_SETTING_ASK);
     EXPECT_EQ(CONTENT_SETTING_ASK,

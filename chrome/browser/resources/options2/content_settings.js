@@ -64,9 +64,6 @@ cr.define('options', function() {
         OptionsPage.navigateToPage('cookies');
       };
 
-      if (!templateData.enable_click_to_play)
-        $('click_to_play').hidden = true;
-
       if (!templateData.enable_web_intents && $('intent-section'))
         $('intent-section').hidden = true;
     },

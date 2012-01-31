@@ -449,9 +449,6 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     command_line->AppendSwitchASCII(switches::kPrerenderMode,
                                     switches::kPrerenderModeSwitchValueEnabled);
-    // This is needed to enable click-to-play without triggering a DCHECK.
-    // It does not actually enable click-to-play.
-    command_line->AppendSwitchASCII(switches::kEnableClickToPlay, "");
 #if defined(OS_MACOSX)
     // The plugins directory isn't read by default on the Mac, so it needs to be
     // explicitly registered.

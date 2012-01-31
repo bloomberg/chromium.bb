@@ -478,9 +478,6 @@ const char kEnableBenchmarking[]            = "enable-benchmarking";
 // there's a server endpoint deployed.
 const char kEnableClearServerData[]         = "enable-clear-server-data";
 
-// Enables click-to-play for blocked plug-ins.
-const char kEnableClickToPlay[]             = "enable-click-to-play";
-
 // This applies only when the process type is "service". Enables the Cloud
 // Print Proxy component within the service process.
 const char kEnableCloudPrintProxy[]         = "enable-cloud-print-proxy";
