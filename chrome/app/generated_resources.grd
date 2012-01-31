@@ -10442,6 +10442,11 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_SYNC_RELOGIN_LINK_LABEL" desc="The text to display on in the hyperlink when the user needs to sign in again to use sync.">
         Sign in again
       </message>
+      <if expr="pp_ifdef('chromeos')">
+        <message name="IDS_SYNC_RELOGIN_LINK_LABEL_CHROMEOS" desc="The text to display on in the hyperlink when the user needs to sign in again to use sync.">
+          Sign out then sign in again
+        </message>
+      </if>
       <message name="IDS_SYNC_PRIVACY_DASHBOARD_LINK_LABEL" desc="The label on a link that brings users to the Google Privacy Dashboard to control sync">
         Manage your synced data on the Google Dashboard
       </message>
