@@ -407,6 +407,16 @@ void RootWindow::SetGestureRecognizerForTesting(GestureRecognizer* gr) {
   gesture_recognizer_.reset(gr);
 }
 
+#if !defined(NDEBUG)
+void RootWindow::ToggleFullScreen() {
+  host_->ToggleFullScreen();
+}
+#endif
+
+RootWindow* RootWindow::GetRootWindow() {
+  return this;
+}
+
 void RootWindow::SetTransform(const ui::Transform& transform) {
   Window::SetTransform(transform);
 
@@ -415,12 +425,6 @@ void RootWindow::SetTransform(const ui::Transform& transform) {
   if (!layer()->GetAnimator()->is_animating())
     OnHostResized(host_->GetSize());
 }
-
-#if !defined(NDEBUG)
-void RootWindow::ToggleFullScreen() {
-  host_->ToggleFullScreen();
-}
-#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 // RootWindow, private:
@@ -628,10 +632,6 @@ bool RootWindow::CanReceiveEvents() const {
 }
 
 internal::FocusManager* RootWindow::GetFocusManager() {
-  return this;
-}
-
-RootWindow* RootWindow::GetRootWindow() {
   return this;
 }
 

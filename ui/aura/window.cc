@@ -144,6 +144,15 @@ ui::Layer* Window::AcquireLayer() {
   return layer_owner_.release();
 }
 
+RootWindow* Window::GetRootWindow() {
+  return const_cast<RootWindow*>(
+      static_cast<const Window*>(this)->GetRootWindow());
+}
+
+const RootWindow* Window::GetRootWindow() const {
+  return parent_ ? parent_->GetRootWindow() : NULL;
+}
+
 void Window::Show() {
   SetVisible(true);
 }
@@ -508,10 +517,6 @@ bool Window::StopsEventPropagation() const {
       std::find_if(children_.begin(), children_.end(),
                    std::mem_fun(&aura::Window::IsVisible));
   return it != children_.end();
-}
-
-RootWindow* Window::GetRootWindow() {
-  return parent_ ? parent_->GetRootWindow() : NULL;
 }
 
 void Window::OnWindowDetachingFromRootWindow(aura::Window* window) {

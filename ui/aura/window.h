@@ -105,6 +105,11 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
   Window* parent() { return parent_; }
   const Window* parent() const { return parent_; }
 
+  // Returns the RootWindow that contains this Window or NULL if the Window is
+  // not contained by a RootWindow.
+  virtual RootWindow* GetRootWindow();
+  virtual const RootWindow* GetRootWindow() const;
+
   // The Window does not own this object.
   void set_user_data(void* user_data) { user_data_ = user_data; }
   void* user_data() const { return user_data_; }
@@ -289,10 +294,6 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
   bool StopsEventPropagation() const;
 
  protected:
-  // Returns the root window or NULL if we aren't yet attached to the root
-  // window.
-  virtual RootWindow* GetRootWindow();
-
   // Called when the |window| is being detached from the root window
   // by being removed from its parent. It is called before |parent_| is
   // set to NULL.

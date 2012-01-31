@@ -180,13 +180,14 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   // Provided only for testing:
   void SetGestureRecognizerForTesting(GestureRecognizer* gr);
 
-  // Overridden from Window:
-  virtual void SetTransform(const ui::Transform& transform) OVERRIDE;
-
 #if !defined(NDEBUG)
   // Toggles the host's full screen state.
   void ToggleFullScreen();
 #endif
+
+  // Overridden from Window:
+  virtual RootWindow* GetRootWindow() OVERRIDE;
+  virtual void SetTransform(const ui::Transform& transform) OVERRIDE;
 
   // Overridden from ui::CompositorDelegate:
   virtual void ScheduleDraw() OVERRIDE;
@@ -215,7 +216,6 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   virtual bool CanFocus() const OVERRIDE;
   virtual bool CanReceiveEvents() const OVERRIDE;
   virtual internal::FocusManager* GetFocusManager() OVERRIDE;
-  virtual RootWindow* GetRootWindow() OVERRIDE;
 
   // Overridden from ui::LayerAnimationObserver:
   virtual void OnLayerAnimationEnded(
