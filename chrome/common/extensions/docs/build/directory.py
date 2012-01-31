@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -122,6 +122,8 @@ class ApiManifest(object):
     if module.has_key(key):
       methods.extend(module[key])
     for method in methods:
+      if method.has_key('nodoc'):
+        continue
       method_name = 'chrome.%s.%s' % (namespace, method['name'])
       hashprefix = 'method'
       if key == 'events':
