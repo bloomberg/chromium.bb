@@ -2841,6 +2841,11 @@ void TestingAutomationProvider::GetBrowserInfo(
   FilePath dumps_path;
   PathService::Get(chrome::DIR_CRASH_DUMPS, &dumps_path);
   properties->SetString("DIR_CRASH_DUMPS", dumps_path.value());
+#if defined(USE_AURA)
+  properties->SetBoolean("aura", true);
+#else
+  properties->SetBoolean("aura", false);
+#endif
 
   std::string branding;
 #if defined(GOOGLE_CHROME_BUILD)
