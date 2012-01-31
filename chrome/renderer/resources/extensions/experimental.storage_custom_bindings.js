@@ -32,7 +32,7 @@ chromeHidden.registerCustomType('StorageArea', function(typesAPI) {
         var schema = this.parameters[functionName];
         chromeHidden.validate(arguments, schema);
         return sendRequest(
-            'storage.' + functionName,
+            'experimental.storage.' + functionName,
             [namespace].concat(Array.prototype.slice.call(arguments)),
             extendSchema(schema));
       };

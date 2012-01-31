@@ -1,6 +1,6 @@
 [
   {
-    "namespace": "storage",
+    "namespace": "experimental.storage",
     "types": [
       {
         "id": "StorageChange",

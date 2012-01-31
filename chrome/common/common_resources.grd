@@ -53,7 +53,7 @@
       <include name="IDR_EXTENSION_API_JSON_PERMISSIONS" file="extensions\api\permissions.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_PRIVACY" file="extensions\api\privacy.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_PROXY" file="extensions\api\proxy.json" type="BINDATA" />
-      <include name="IDR_EXTENSION_API_JSON_STORAGE" file="extensions\api\storage.json" type="BINDATA" />
+      <include name="IDR_EXTENSION_API_JSON_EXPERIMENTAL_STORAGE" file="extensions\api\experimental.storage.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_SYSTEMPRIVATE" file="extensions\api\systemPrivate.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_TABS" file="extensions\api\tabs.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_TERMINALPRIVATE" file="extensions\api\terminalPrivate.json" type="BINDATA" />

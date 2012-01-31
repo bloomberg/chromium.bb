@@ -4,8 +4,8 @@
 
 function test(stage0) {
   var apis = [
-    chrome.storage.sync,
-    chrome.storage.local
+    chrome.experimental.storage.sync,
+    chrome.experimental.storage.local
   ];
   apis.forEach(function(api) {
     api.succeed = chrome.test.callbackPass(api.clear.bind(api));
@@ -295,17 +295,20 @@ chrome.test.runTests([
   function quota() {
     // Just check that the constants are defined; no need to be forced to
     // update them here as well if/when they change.
-    chrome.test.assertTrue(chrome.storage.sync.QUOTA_BYTES > 0);
-    chrome.test.assertTrue(chrome.storage.sync.QUOTA_BYTES_PER_ITEM > 0);
-    chrome.test.assertTrue(chrome.storage.sync.MAX_ITEMS > 0);
+    chrome.test.assertTrue(chrome.experimental.storage.sync.QUOTA_BYTES > 0);
+    chrome.test.assertTrue(
+        chrome.experimental.storage.sync.QUOTA_BYTES_PER_ITEM > 0);
+    chrome.test.assertTrue(chrome.experimental.storage.sync.MAX_ITEMS > 0);
 
-    chrome.test.assertTrue(chrome.storage.local.QUOTA_BYTES > 0);
-    chrome.test.assertEq('undefined',
-                         typeof chrome.storage.local.QUOTA_BYTES_PER_ITEM);
-    chrome.test.assertEq('undefined',
-                         typeof chrome.storage.local.MAX_ITEMS);
+    chrome.test.assertTrue(chrome.experimental.storage.local.QUOTA_BYTES > 0);
+    chrome.test.assertEq(
+        'undefined',
+        typeof chrome.experimental.storage.local.QUOTA_BYTES_PER_ITEM);
+    chrome.test.assertEq(
+        'undefined',
+        typeof chrome.experimental.storage.local.MAX_ITEMS);
 
-    var area = chrome.storage.sync;
+    var area = chrome.experimental.storage.sync;
     function stage0() {
       area.getBytesInUse(null, stage1);
     }
@@ -336,7 +339,7 @@ chrome.test.runTests([
   function throttling() {
     // We can only really test one of the namespaces since they will all get
     // throttled together.
-    var api = chrome.storage.sync;
+    var api = chrome.experimental.storage.sync;
 
     // Should get throttled after 1000 calls (though in reality will be fewer
     // due to previous tests).
