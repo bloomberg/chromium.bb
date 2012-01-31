@@ -2108,7 +2108,7 @@ passIsKeyword (const char *token)
   int length = strlen (token);
   int ch = passLine.chars[passLinepos + length + 1];
   if (((ch | 32) >= 'a' && (ch | 32) <= 'z') || (ch >= '0' && ch <= '9'))
-      return 0;
+    return 0;
   for (k = 0; k < length && passLine.chars[passLinepos + k + 1]
        == (widechar) token[k]; k++);
   if (k == length)
@@ -3198,9 +3198,8 @@ swap.");
     default:
       break;
     }
-  if (!addRule (passNested, opcode, &passRuleChars, &passRuleDots, 
-  after, 
-  before))
+  if (!addRule (passNested, opcode, &passRuleChars, &passRuleDots,
+		after, before))
     return 0;
   return 1;
 }
@@ -4953,9 +4952,8 @@ lou_compileString (const char *tableList, const char *inString)
  * This procedure provides a target for cals that serve as breakpoints 
  * for gdb.
  */
-void 
+void
 debugHook ()
 {
   char *hook = "debug hook";
 }
- 

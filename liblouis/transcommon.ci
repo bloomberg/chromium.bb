@@ -748,9 +748,9 @@ passDoTest (void)
 		   passInstructions[passIC + 4]; k++)
 		{
 		  if (currentInput[passSrc] == ENDSEGMENT)
-		  {
-		  itsTrue = 0;
-		    break;
+		    {
+		      itsTrue = 0;
+		      break;
 		    }
 		  else
 		    if (!

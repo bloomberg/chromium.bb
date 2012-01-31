@@ -580,19 +580,19 @@ validMatch ()
   for (k = src; k < src + transCharslen; k++)
     {
       if (currentInput[k] == ENDSEGMENT)
-      {
-      if (k == src && transCharslen == 1)
-      return 1;
-      else
-      return 0;
-      }
+	{
+	  if (k == src && transCharslen == 1)
+	    return 1;
+	  else
+	    return 0;
+	}
       currentInputChar = findCharOrDots (currentInput[k], 0);
       if (k == src)
 	prevAttr = currentInputChar->attributes;
       ruleChar = findCharOrDots (transRule->charsdots[kk++], 0);
       if ((currentInputChar->lowercase != ruleChar->lowercase)
-	  || (typebuf != NULL && (typebuf[src] & capsemph) == 0 && 
-(typebuf[k] & mask) != (typebuf[src] & mask))
+	  || (typebuf != NULL && (typebuf[src] & capsemph) == 0 &&
+	      (typebuf[k] & mask) != (typebuf[src] & mask))
 	  || (k != (src + 1) && (prevAttr &
 				 CTC_Letter)
 	      && (currentInputChar->attributes & CTC_Letter)
@@ -1191,9 +1191,7 @@ for_selectRule (void)
 	  transRule = (TranslationTableRule *) & table->ruleArea[ruleOffset];
 	  transOpcode = transRule->opcode;
 	  transCharslen = transRule->charslen;
-	  if (tryThis == 1 ||
- 	  ((transCharslen <= length) 
-	  && validMatch ()))
+	  if (tryThis == 1 || ((transCharslen <= length) && validMatch ()))
 	    {
 	      /* check this rule */
 	      setAfter (transCharslen);
