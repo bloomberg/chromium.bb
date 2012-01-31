@@ -413,9 +413,6 @@ void RootWindow::ToggleFullScreen() {
 }
 #endif
 
-////////////////////////////////////////////////////////////////////////////////
-// RootWindow, Window overrides:
-
 RootWindow* RootWindow::GetRootWindow() {
   return this;
 }
@@ -427,17 +424,6 @@ void RootWindow::SetTransform(const ui::Transform& transform) {
   // immediately.
   if (!layer()->GetAnimator()->is_animating())
     OnHostResized(host_->GetSize());
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// RootWindow, ui::CompositorDelegate implementation:
-
-void RootWindow::ScheduleDraw() {
-  if (!schedule_paint_factory_.HasWeakPtrs()) {
-    MessageLoop::current()->PostTask(
-        FROM_HERE,
-        base::Bind(&RootWindow::Draw, schedule_paint_factory_.GetWeakPtr()));
-  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -629,7 +615,27 @@ bool RootWindow::ProcessGestures(GestureRecognizer::Gestures* gestures) {
   return handled;
 }
 
-void RootWindow::OnWindowRemovedFromRootWindow(Window* detached) {
+void RootWindow::ScheduleDraw() {
+  if (!schedule_paint_factory_.HasWeakPtrs()) {
+    MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(&RootWindow::Draw, schedule_paint_factory_.GetWeakPtr()));
+  }
+}
+
+bool RootWindow::CanFocus() const {
+  return IsVisible();
+}
+
+bool RootWindow::CanReceiveEvents() const {
+  return IsVisible();
+}
+
+internal::FocusManager* RootWindow::GetFocusManager() {
+  return this;
+}
+
+void RootWindow::OnWindowDetachingFromRootWindow(Window* detached) {
   DCHECK(capture_window_ != this);
 
   // If the ancestor of the capture window is detached,
@@ -657,22 +663,10 @@ void RootWindow::OnWindowRemovedFromRootWindow(Window* detached) {
   }
 }
 
-void RootWindow::OnWindowAddedToRootWindow(Window* attached) {
+void RootWindow::OnWindowAttachedToRootWindow(Window* attached) {
   if (attached->IsVisible() &&
       attached->ContainsPointInRoot(last_mouse_location_))
     PostMouseMoveEventAfterWindowChange();
-}
-
-bool RootWindow::CanFocus() const {
-  return IsVisible();
-}
-
-bool RootWindow::CanReceiveEvents() const {
-  return IsVisible();
-}
-
-internal::FocusManager* RootWindow::GetFocusManager() {
-  return this;
 }
 
 void RootWindow::OnLayerAnimationEnded(
