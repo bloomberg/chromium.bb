@@ -1171,7 +1171,7 @@ int Browser::GetIndexOfController(
 }
 
 TabContentsWrapper* Browser::GetSelectedTabContentsWrapper() const {
-  return tabstrip_model()->GetActiveTabContents();
+  return tab_handler_->GetTabStripModel()->GetActiveTabContents();
 }
 
 WebContents* Browser::GetSelectedWebContents() const {
@@ -1180,11 +1180,11 @@ WebContents* Browser::GetSelectedWebContents() const {
 }
 
 TabContentsWrapper* Browser::GetTabContentsWrapperAt(int index) const {
-  return tabstrip_model()->GetTabContentsAt(index);
+  return tab_handler_->GetTabStripModel()->GetTabContentsAt(index);
 }
 
 WebContents* Browser::GetWebContentsAt(int index) const {
-  TabContentsWrapper* wrapper = tabstrip_model()->GetTabContentsAt(index);
+  TabContentsWrapper* wrapper = GetTabContentsWrapperAt(index);
   if (wrapper)
     return wrapper->web_contents();
   return NULL;
@@ -1195,7 +1195,7 @@ void Browser::ActivateTabAt(int index, bool user_gesture) {
 }
 
 bool Browser::IsTabPinned(int index) const {
-  return tabstrip_model()->IsTabPinned(index);
+  return tab_handler_->GetTabStripModel()->IsTabPinned(index);
 }
 
 bool Browser::IsTabDiscarded(int index) const {
@@ -1306,7 +1306,9 @@ WebContents* Browser::AddRestoredTab(
   int add_types = select ? TabStripModel::ADD_ACTIVE :
       TabStripModel::ADD_NONE;
   if (pin) {
-    tab_index = std::min(tab_index, tabstrip_model()->IndexOfFirstNonMiniTab());
+    int first_mini_tab_idx =
+        tab_handler_->GetTabStripModel()->IndexOfFirstNonMiniTab();
+    tab_index = std::min(tab_index, first_mini_tab_idx);
     add_types |= TabStripModel::ADD_PINNED;
   }
   tab_handler_->GetTabStripModel()->InsertTabContentsAt(tab_index, wrapper,
@@ -1354,8 +1356,7 @@ void Browser::ReplaceRestoredTab(
   DCHECK_EQ(0u, entries.size());
 
   tab_handler_->GetTabStripModel()->ReplaceNavigationControllerAt(
-      tab_handler_->GetTabStripModel()->active_index(),
-      wrapper);
+      active_index(), wrapper);
 }
 
 bool Browser::CanRestoreTab() {
@@ -1611,7 +1612,7 @@ void Browser::OpenCurrentURL() {
 
 void Browser::Stop() {
   content::RecordAction(UserMetricsAction("Stop"));
-  GetSelectedTabContentsWrapper()->web_contents()->Stop();
+  GetSelectedWebContents()->Stop();
 }
 
 void Browser::NewWindow() {
@@ -1651,7 +1652,7 @@ void Browser::NewTab() {
 
   if (is_type_tabbed()) {
     AddBlankTab(true);
-    GetSelectedTabContentsWrapper()->web_contents()->GetView()->RestoreFocus();
+    GetSelectedWebContents()->GetView()->RestoreFocus();
   } else {
     Browser* b = GetOrCreateTabbedBrowser(profile_);
     b->AddBlankTab(true);
@@ -1659,8 +1660,7 @@ void Browser::NewTab() {
     // The call to AddBlankTab above did not set the focus to the tab as its
     // window was not active, so we have to do it explicitly.
     // See http://crbug.com/6380.
-    b->GetSelectedTabContentsWrapper()->web_contents()->GetView()->
-        RestoreFocus();
+    b->GetSelectedWebContents()->GetView()->RestoreFocus();
   }
 }
 
@@ -1707,7 +1707,7 @@ void Browser::MoveTabPrevious() {
 void Browser::SelectNumberedTab(int index) {
   if (index < tab_count()) {
     content::RecordAction(UserMetricsAction("SelectNumberedTab"));
-    tab_handler_->GetTabStripModel()->ActivateTabAt(index, true);
+    ActivateTabAt(index, true);
   }
 }
 
@@ -1748,9 +1748,8 @@ void Browser::WriteCurrentURLToClipboard() {
 
 void Browser::ConvertPopupToTabbedBrowser() {
   content::RecordAction(UserMetricsAction("ShowAsTab"));
-  int tab_strip_index = tab_handler_->GetTabStripModel()->active_index();
   TabContentsWrapper* contents =
-      tab_handler_->GetTabStripModel()->DetachTabContentsAt(tab_strip_index);
+      tab_handler_->GetTabStripModel()->DetachTabContentsAt(active_index());
   Browser* browser = Browser::Create(profile_);
   browser->tabstrip_model()->AppendTabContents(contents, true);
   browser->window()->Show();
@@ -1944,8 +1943,7 @@ void Browser::Zoom(content::PageZoom zoom) {
   if (is_devtools())
     return;
 
-  RenderViewHost* host =
-      GetSelectedTabContentsWrapper()->web_contents()->GetRenderViewHost();
+  RenderViewHost* host = GetSelectedWebContents()->GetRenderViewHost();
   if (zoom == content::PAGE_ZOOM_RESET) {
     host->SetZoomLevel(0);
     content::RecordAction(UserMetricsAction("ZoomNormal"));
@@ -2083,7 +2081,7 @@ void Browser::ToggleDevToolsWindow(DevToolsToggleAction action) {
     content::RecordAction(UserMetricsAction("DevTools_ToggleWindow"));
 
   DevToolsWindow::ToggleDevToolsWindow(
-      GetSelectedTabContentsWrapper()->web_contents()->GetRenderViewHost(),
+      GetSelectedWebContents()->GetRenderViewHost(),
       action);
 }
 
@@ -2587,8 +2585,7 @@ Browser* Browser::GetBrowserForController(
     const NavigationController* controller, int* index_result) {
   BrowserList::const_iterator it;
   for (it = BrowserList::begin(); it != BrowserList::end(); ++it) {
-    int index = (*it)->tab_handler_->GetTabStripModel()->GetIndexOfController(
-        controller);
+    int index = (*it)->GetIndexOfController(controller);
     if (index != TabStripModel::kNoTab) {
       if (index_result)
         *index_result = index;
@@ -3062,7 +3059,7 @@ int Browser::GetLastBlockedCommand(WindowOpenDisposition* disposition) {
 void Browser::UpdateUIForNavigationInTab(TabContentsWrapper* contents,
                                          content::PageTransition transition,
                                          bool user_initiated) {
-  tabstrip_model()->TabNavigating(contents, transition);
+  tab_handler_->GetTabStripModel()->TabNavigating(contents, transition);
 
   bool contents_is_selected = contents == GetSelectedTabContentsWrapper();
   if (user_initiated && contents_is_selected && window()->GetLocationBar()) {
@@ -3196,7 +3193,7 @@ void Browser::DuplicateContentsAt(int index) {
     // window next to the tab being duplicated.
     int index = tab_handler_->GetTabStripModel()->
         GetIndexOfTabContents(contents);
-    pinned = tab_handler_->GetTabStripModel()->IsTabPinned(index);
+    pinned = IsTabPinned(index);
     int add_types = TabStripModel::ADD_ACTIVE |
         TabStripModel::ADD_INHERIT_GROUP |
         (pinned ? TabStripModel::ADD_PINNED : 0);
@@ -3285,8 +3282,7 @@ bool Browser::CanCloseContents(std::vector<int>* indices) {
   // in-progress downloads.
   // Note that the next call when it returns false will ask the user for
   // confirmation before closing the browser if the user decides so.
-  if (tab_handler_->GetTabStripModel()->count() ==
-          static_cast<int>(indices->size()) &&
+  if (tab_count() == static_cast<int>(indices->size()) &&
       !CanCloseWithInProgressDownloads()) {
     indices->clear();
     can_close_all = false;
@@ -3427,8 +3423,7 @@ void Browser::ActiveTabChanged(TabContentsWrapper* old_contents,
   SessionService* session_service =
       SessionServiceFactory::GetForProfileIfExisting(profile_);
   if (session_service && !tab_handler_->GetTabStripModel()->closing_all()) {
-    session_service->SetSelectedTabInWindow(
-        session_id(), tab_handler_->GetTabStripModel()->active_index());
+    session_service->SetSelectedTabInWindow(session_id(), active_index());
   }
 
   UpdateBookmarkBarState(BOOKMARK_BAR_STATE_CHANGE_TAB_SWITCH);
@@ -3447,8 +3442,7 @@ void Browser::TabReplacedAt(TabStripModel* tab_strip_model,
                             TabContentsWrapper* new_contents,
                             int index) {
   TabDetachedAtImpl(old_contents, index, DETACH_TYPE_REPLACE);
-  TabInsertedAt(new_contents, index,
-                (index == tab_handler_->GetTabStripModel()->active_index()));
+  TabInsertedAt(new_contents, index, (index == active_index()));
 
   int entry_count =
       new_contents->web_contents()->GetController().GetEntryCount();
@@ -3465,8 +3459,7 @@ void Browser::TabReplacedAt(TabStripModel* tab_strip_model,
   if (session_service) {
     // The new_contents may end up with a different navigation stack. Force
     // the session service to update itself.
-    session_service->TabRestored(
-        new_contents, tab_handler_->GetTabStripModel()->IsTabPinned(index));
+    session_service->TabRestored(new_contents, IsTabPinned(index));
   }
 
   content::DevToolsManager::GetInstance()->TabReplaced(
@@ -3480,7 +3473,7 @@ void Browser::TabPinnedStateChanged(TabContentsWrapper* contents, int index) {
     session_service->SetPinnedState(
         session_id(),
         GetTabContentsWrapperAt(index)->restore_tab_helper()->session_id(),
-        tab_handler_->GetTabStripModel()->IsTabPinned(index));
+        IsTabPinned(index));
   }
 }
 
@@ -3503,9 +3496,8 @@ void Browser::TabStripEmpty() {
 WebContents* Browser::OpenURLFromTab(WebContents* source,
                                      const OpenURLParams& params) {
   browser::NavigateParams nav_params(this, params.url, params.transition);
-  nav_params.source_contents =
-      tabstrip_model()->GetTabContentsAt(
-          tabstrip_model()->GetWrapperIndex(source));
+  nav_params.source_contents = GetTabContentsWrapperAt(
+      tab_handler_->GetTabStripModel()->GetWrapperIndex(source));
   nav_params.referrer = params.referrer;
   nav_params.disposition = params.disposition;
   nav_params.tabstrip_add_types = TabStripModel::ADD_NONE;
@@ -3584,10 +3576,9 @@ void Browser::AddNewContents(WebContents* source,
   }
 
   browser::NavigateParams params(this, new_wrapper);
-  params.source_contents =
-      source ? tabstrip_model()->GetTabContentsAt(
-                   tabstrip_model()->GetWrapperIndex(source))
-             : NULL;
+  params.source_contents = source ? GetTabContentsWrapperAt(
+      tab_handler_->GetTabStripModel()->GetWrapperIndex(source))
+      : NULL;
   params.disposition = disposition;
   params.window_bounds = initial_pos;
   params.window_action = browser::NavigateParams::SHOW_WINDOW;
@@ -3596,8 +3587,8 @@ void Browser::AddNewContents(WebContents* source,
 }
 
 void Browser::ActivateContents(WebContents* contents) {
-  tab_handler_->GetTabStripModel()->ActivateTabAt(
-      tab_handler_->GetTabStripModel()->GetWrapperIndex(contents), false);
+  ActivateTabAt(tab_handler_->GetTabStripModel()->GetWrapperIndex(contents),
+                false);
   window_->Activate();
 }
 
@@ -3861,8 +3852,8 @@ void Browser::ShowPageInfo(content::BrowserContext* browser_context,
 
 void Browser::ViewSourceForTab(WebContents* source, const GURL& page_url) {
   DCHECK(source);
-  int index = tabstrip_model()->GetWrapperIndex(source);
-  TabContentsWrapper* wrapper = tabstrip_model()->GetTabContentsAt(index);
+  TabContentsWrapper* wrapper = GetTabContentsWrapperAt(
+      tab_handler_->GetTabStripModel()->GetWrapperIndex(source));
   ViewSource(wrapper);
 }
 
@@ -3870,8 +3861,8 @@ void Browser::ViewSourceForFrame(WebContents* source,
                                  const GURL& frame_url,
                                  const std::string& frame_content_state) {
   DCHECK(source);
-  int index = tabstrip_model()->GetWrapperIndex(source);
-  TabContentsWrapper* wrapper = tabstrip_model()->GetTabContentsAt(index);
+  TabContentsWrapper* wrapper = GetTabContentsWrapperAt(
+      tab_handler_->GetTabStripModel()->GetWrapperIndex(source));
   ViewSource(wrapper, frame_url, frame_content_state);
 }
 
@@ -4421,13 +4412,15 @@ void Browser::SwapTabContents(TabContentsWrapper* old_tab_contents,
 }
 
 void Browser::SetTabContentBlocked(TabContentsWrapper* wrapper, bool blocked) {
-  int index = tabstrip_model()->GetIndexOfTabContents(wrapper);
+  int index = tab_handler_->GetTabStripModel()->GetIndexOfTabContents(wrapper);
   if (index == TabStripModel::kNoTab) {
     NOTREACHED();
     return;
   }
-  tabstrip_model()->SetTabBlocked(index, blocked);
+  tab_handler_->GetTabStripModel()->SetTabBlocked(index, blocked);
   UpdatePrintingState(wrapper->web_contents()->GetContentRestrictions());
+  if (!blocked && GetSelectedTabContentsWrapper() == wrapper)
+    wrapper->web_contents()->Focus();
 }
 
 void Browser::SetSuggestedText(const string16& text,
@@ -4887,8 +4880,7 @@ void Browser::ScheduleUIUpdate(const WebContents* source,
     // immediately start/stop, which gives a more snappy feel. We want to do
     // this for any tab so they start & stop quickly.
     tab_handler_->GetTabStripModel()->UpdateTabContentsStateAt(
-        tab_handler_->GetTabStripModel()->GetIndexOfController(
-            &source->GetController()),
+        GetIndexOfController(&source->GetController()),
         TabStripModelObserver::LOADING_ONLY);
     // The status bubble needs to be updated during INVALIDATE_TYPE_LOAD too,
     // but we do that asynchronously by not stripping INVALIDATE_TYPE_LOAD from
@@ -4901,8 +4893,7 @@ void Browser::ScheduleUIUpdate(const WebContents* source,
     // the TabStripModel, so we notify the TabStripModel now and notify others
     // asynchronously.
     tab_handler_->GetTabStripModel()->UpdateTabContentsStateAt(
-        tab_handler_->GetTabStripModel()->GetIndexOfController(
-            &source->GetController()),
+        GetIndexOfController(&source->GetController()),
         TabStripModelObserver::TITLE_NOT_LOADING);
   }
 
@@ -5027,7 +5018,7 @@ void Browser::SyncHistoryWithTabs(int index) {
         session_service->SetPinnedState(
             session_id(),
             tab->restore_tab_helper()->session_id(),
-            tab_handler_->GetTabStripModel()->IsTabPinned(i));
+            IsTabPinned(i));
       }
     }
   }
@@ -5226,8 +5217,7 @@ void Browser::TabDetachedAtImpl(TabContentsWrapper* contents, int index,
   SetAsDelegate(contents, NULL);
   RemoveScheduledUpdatesFor(contents->web_contents());
 
-  if (find_bar_controller_.get() &&
-      index == tab_handler_->GetTabStripModel()->active_index()) {
+  if (find_bar_controller_.get() && index == active_index()) {
     find_bar_controller_->ChangeTabContents(NULL);
   }
 
@@ -5378,8 +5368,8 @@ void Browser::ViewSource(TabContentsWrapper* contents,
   if (CanSupportWindowFeature(FEATURE_TABSTRIP)) {
     // If this is a tabbed browser, just create a duplicate tab inside the same
     // window next to the tab being duplicated.
-    int index = tab_handler_->GetTabStripModel()->
-        GetIndexOfTabContents(contents);
+    int index =
+        tab_handler_->GetTabStripModel()->GetIndexOfTabContents(contents);
     int add_types = TabStripModel::ADD_ACTIVE |
         TabStripModel::ADD_INHERIT_GROUP;
     tab_handler_->GetTabStripModel()->InsertTabContentsAt(index + 1,
@@ -5473,8 +5463,7 @@ void Browser::ShowSyncSetup() {
 }
 
 void Browser::ToggleSpeechInput() {
-  GetSelectedTabContentsWrapper()->web_contents()->GetRenderViewHost()->
-      ToggleSpeechInput();
+  GetSelectedWebContents()->GetRenderViewHost()->ToggleSpeechInput();
 }
 
 void Browser::OnWindowDidShow() {
