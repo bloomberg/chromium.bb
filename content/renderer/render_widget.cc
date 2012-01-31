@@ -175,6 +175,8 @@ void RenderWidget::CompleteInit(gfx::NativeViewId parent_hwnd) {
 
   host_window_ = parent_hwnd;
 
+  DoDeferredUpdate();
+
   Send(new ViewHostMsg_RenderViewReady(routing_id_));
 }
 
@@ -737,6 +739,11 @@ void RenderWidget::DoDeferredUpdate() {
 
   if (!webwidget_)
     return;
+
+  if (!host_window_) {
+    TRACE_EVENT0("renderer", "EarlyOut_NoHostWindow");
+    return;
+  }
   if (update_reply_pending_) {
     TRACE_EVENT0("renderer", "EarlyOut_UpdateReplyPending");
     return;
@@ -754,6 +761,9 @@ void RenderWidget::DoDeferredUpdate() {
     TRACE_EVENT0("renderer", "EarlyOut_NotVisible");
     return;
   }
+
+  if (is_accelerated_compositing_active_)
+    using_asynchronous_swapbuffers_ = SupportsAsynchronousSwapBuffers();
 
   // Tracking of frame rate jitter
   base::TimeTicks frame_begin_ticks = base::TimeTicks::Now();
@@ -1010,10 +1020,6 @@ void RenderWidget::didActivateCompositor(int compositor_identifier) {
   is_accelerated_compositing_active_ = true;
   Send(new ViewHostMsg_DidActivateAcceleratedCompositing(
       routing_id_, is_accelerated_compositing_active_));
-
-  // Note: asynchronous swapbuffer support currently only matters if
-  // compositing scheduling happens on the RenderWidget.
-  using_asynchronous_swapbuffers_ = SupportsAsynchronousSwapBuffers();
 }
 
 void RenderWidget::didDeactivateCompositor() {
