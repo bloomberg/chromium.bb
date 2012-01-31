@@ -34,10 +34,11 @@
 #include "chrome/browser/chromeos/net/cros_network_change_notifier_factory.h"
 #include "chrome/browser/chromeos/net/network_change_notifier_chromeos.h"
 #include "chrome/browser/chromeos/power/brightness_observer.h"
+#include "chrome/browser/chromeos/power/resume_observer.h"
+#include "chrome/browser/chromeos/power/screen_lock_observer.h"
 #include "chrome/browser/chromeos/status/status_area_view_chromeos.h"
 #include "chrome/browser/chromeos/system/runtime_environment.h"
 #include "chrome/browser/chromeos/system/statistics_provider.h"
-#include "chrome/browser/chromeos/system/system_event_observer.h"
 #include "chrome/browser/chromeos/system_key_event_listener.h"
 #include "chrome/browser/chromeos/upgrade_detector_chromeos.h"
 #include "chrome/browser/chromeos/web_socket_proxy_controller.h"
@@ -276,6 +277,8 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopStart() {
   brightness_observer_.reset(new chromeos::BrightnessObserver());
   chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(
       brightness_observer_.get());
+  resume_observer_.reset(new chromeos::ResumeObserver());
+  screen_lock_observer_.reset(new chromeos::ScreenLockObserver());
   // Initialize the session manager observer so that we'll take actions
   // per signals sent from the session manager.
   session_manager_observer_.reset(new chromeos::SessionManagerObserver);
@@ -287,9 +290,6 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopStart() {
 
   // Initialize the burn manager.
   chromeos::imageburner::BurnManager::Initialize();
-
-  // Initialize the system event observer.
-  chromeos::system::SystemEventObserver::Initialize();
 
   // Initialize the network change notifier for Chrome OS. The network
   // change notifier starts to monitor changes from the power manager and
@@ -500,6 +500,8 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
     chromeos::DBusThreadManager::Get()->GetSessionManagerClient()->
         RemoveObserver(session_manager_observer_.get());
   }
+  screen_lock_observer_.reset();
+  resume_observer_.reset();
   if (brightness_observer_.get()) {
     chromeos::DBusThreadManager::Get()->GetPowerManagerClient()
         ->RemoveObserver(brightness_observer_.get());
@@ -508,7 +510,6 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   // Shut these down here instead of in the destructor in case we exited before
   // running BrowserMainLoop::RunMainMessageLoopParts() and never initialized
   // these.
-  chromeos::system::SystemEventObserver::Shutdown();
   chromeos::BluetoothManager::Shutdown();
 
   // The XInput2 event listener needs to be shut down earlier than when
