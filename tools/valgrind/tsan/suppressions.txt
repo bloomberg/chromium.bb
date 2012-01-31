@@ -564,21 +564,6 @@
   fun:media::FFmpegVideoDecoder::ReleaseFFmpegResources
 }
 {
-  bug_95509
-  ThreadSanitizer:Race
-  ...
-  fun:AudioDevice::ShutDownAudioThread
-}
-{
-  bug_95509_b
-  ThreadSanitizer:Race
-  fun:base::SyncSocket::Receive
-  fun:AudioDevice::Run
-  fun:base::DelegateSimpleThread::Run
-  fun:base::SimpleThread::ThreadMain
-  fun:base::::ThreadFunc
-}
-{
   bug_100020
   ThreadSanitizer:Race
   fun:linked_ptr_internal::join
