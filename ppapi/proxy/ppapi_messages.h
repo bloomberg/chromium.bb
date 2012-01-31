@@ -511,6 +511,13 @@ IPC_MESSAGE_ROUTED2(PpapiMsg_PPPVideoDecoder_NotifyError,
 IPC_MESSAGE_CONTROL1(PpapiHostMsg_ChannelCreated,
                      IPC::ChannelHandle /* handle */)
 
+// Logs the given message to the console of all instances.
+IPC_MESSAGE_CONTROL4(PpapiHostMsg_LogWithSource,
+                     PP_Instance /* instance */,
+                     int /* log_level */,
+                     std::string /* source */,
+                     std::string /* value */)
+
 // PPB_Audio.
 IPC_SYNC_MESSAGE_ROUTED3_1(PpapiHostMsg_PPBAudio_Create,
                            PP_Instance /* instance_id */,
@@ -909,15 +916,6 @@ IPC_SYNC_MESSAGE_ROUTED2_2(PpapiHostMsg_PPBInstance_ExecuteScript,
 IPC_SYNC_MESSAGE_ROUTED1_1(PpapiHostMsg_PPBInstance_GetDefaultCharSet,
                            PP_Instance /* instance */,
                            ppapi::proxy::SerializedVar /* result */)
-IPC_MESSAGE_ROUTED3(PpapiHostMsg_PPBInstance_Log,
-                    PP_Instance /* instance */,
-                    int /* log_level */,
-                    ppapi::proxy::SerializedVar /* value */)
-IPC_MESSAGE_ROUTED4(PpapiHostMsg_PPBInstance_LogWithSource,
-                    PP_Instance /* instance */,
-                    int /* log_level */,
-                    ppapi::proxy::SerializedVar /* source */,
-                    ppapi::proxy::SerializedVar /* value */)
 IPC_SYNC_MESSAGE_ROUTED2_1(PpapiHostMsg_PPBInstance_SetFullscreen,
                            PP_Instance /* instance */,
                            PP_Bool /* fullscreen */,

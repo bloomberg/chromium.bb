@@ -14,6 +14,7 @@
 #include "ppapi/proxy/interface_list.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/resource_creation_proxy.h"
+#include "ppapi/shared_impl/ppapi_globals.h"
 
 namespace ppapi {
 namespace proxy {
@@ -174,6 +175,14 @@ bool HostDispatcher::OnMessageReceived(const IPC::Message& msg) {
   BoolRestorer restorer(&allow_plugin_reentrancy_);
   allow_plugin_reentrancy_ = false;
 
+  bool handled = true;
+  IPC_BEGIN_MESSAGE_MAP(HostDispatcher, msg)
+    IPC_MESSAGE_HANDLER(PpapiHostMsg_LogWithSource, OnHostMsgLogWithSource)
+    IPC_MESSAGE_UNHANDLED(handled = false)
+  IPC_END_MESSAGE_MAP()
+
+  if (handled)
+    return true;
   return Dispatcher::OnMessageReceived(msg);
 }
 
@@ -213,6 +222,19 @@ const void* HostDispatcher::GetProxiedInterface(const std::string& iface_name) {
 void HostDispatcher::OnInvalidMessageReceived() {
   // TODO(brettw) bug 95345 kill the plugin when an invalid message is
   // received.
+}
+
+void HostDispatcher::OnHostMsgLogWithSource(PP_Instance instance,
+                                            int int_log_level,
+                                            const std::string& source,
+                                            const std::string& value) {
+  PP_LogLevel_Dev level = static_cast<PP_LogLevel_Dev>(int_log_level);
+  if (instance) {
+    PpapiGlobals::Get()->LogWithSource(instance, level, source, value);
+  } else {
+    PpapiGlobals::Get()->BroadcastLogWithSource(pp_module_, level,
+                                                source, value);
+  }
 }
 
 // ScopedModuleReference -------------------------------------------------------

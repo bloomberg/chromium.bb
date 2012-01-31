@@ -5,8 +5,11 @@
 #ifndef PPAPI_SHARED_IMPL_PPAPI_GLOBALS_H_
 #define PPAPI_SHARED_IMPL_PPAPI_GLOBALS_H_
 
+#include <string>
+
 #include "base/basictypes.h"
 #include "base/threading/thread_local.h"  // For testing purposes only.
+#include "ppapi/c/dev/ppb_console_dev.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_module.h"
 #include "ppapi/shared_impl/api_id.h"
@@ -63,6 +66,26 @@ class PPAPI_SHARED_EXPORT PpapiGlobals {
   virtual CallbackTracker* GetCallbackTrackerForInstance(
       PP_Instance instance) = 0;
   virtual base::Lock* GetProxyLock() = 0;
+
+  // Logs the given string to the JS console. If "source" is empty, the name of
+  // the current module will be used, if it can be determined.
+  virtual void LogWithSource(PP_Instance instance,
+                             PP_LogLevel_Dev level,
+                             const std::string& source,
+                             const std::string& value) = 0;
+
+  // Like LogWithSource but broadcasts the log to all instances of the given
+  // module. The module may be 0 to specify that all consoles possibly
+  // associated with the calling code should be notified. This allows us to
+  // log errors for things like bad resource IDs where we may not have an
+  // associated instance.
+  //
+  // Note that in the plugin process, the module parameter is ignored since
+  // there is only one possible one.
+  virtual void BroadcastLogWithSource(PP_Module module,
+                                      PP_LogLevel_Dev level,
+                                      const std::string& source,
+                                      const std::string& value) = 0;
 
   // Returns the function object corresponding to the given ID, or NULL if
   // there isn't one.

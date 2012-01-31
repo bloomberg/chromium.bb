@@ -103,8 +103,13 @@ int32_t PPB_URLLoader_Impl::Open(PP_Resource request_id,
     return PP_ERROR_INPROGRESS;
 
   EnterResourceNoLock<PPB_URLRequestInfo_API> enter_request(request_id, true);
-  if (enter_request.failed())
+  if (enter_request.failed()) {
+    Log(PP_LOGLEVEL_ERROR,
+        "PPB_URLLoader.Open: invalid request resource ID. (Hint to C++ wrapper"
+        " users: use the ResourceRequest constructor that takes an instance or"
+        " else the request will be null.)");
     return PP_ERROR_BADARGUMENT;
+  }
   PPB_URLRequestInfo_Impl* request = static_cast<PPB_URLRequestInfo_Impl*>(
       enter_request.object());
 
@@ -112,8 +117,13 @@ int32_t PPB_URLLoader_Impl::Open(PP_Resource request_id,
   if (rv != PP_OK)
     return rv;
 
-  if (request->RequiresUniversalAccess() && !has_universal_access_)
+  if (request->RequiresUniversalAccess() && !has_universal_access_) {
+    Log(PP_LOGLEVEL_ERROR, "PPB_URLLoader.Open: The URL you're requesting is "
+        " on a different security origin than your plugin. To request "
+        " cross-origin resources, see "
+        " PP_URLREQUESTPROPERTY_ALLOWCROSSORIGINREQUESTS.");
     return PP_ERROR_NOACCESS;
+  }
 
   if (loader_.get())
     return PP_ERROR_INPROGRESS;

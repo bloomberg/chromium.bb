@@ -85,6 +85,11 @@ class PPAPI_PROXY_EXPORT HostDispatcher : public Dispatcher {
   virtual void OnInvalidMessageReceived();
 
  private:
+  void OnHostMsgLogWithSource(PP_Instance instance,
+                              int int_log_level,
+                              const std::string& source,
+                              const std::string& value);
+
   PP_Module pp_module_;
 
   // Maps interface name to whether that interface is supported. If an interface

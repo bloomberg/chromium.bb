@@ -64,6 +64,9 @@ class PpapiThread : public ChildThread,
                             int renderer_id,
                             IPC::ChannelHandle* handle);
 
+  // Sets up the name of the plugin for logging using the given path.
+  void SavePluginName(const FilePath& path);
+
   // True if running in a broker process rather than a normal plugin process.
   bool is_broker_;
 

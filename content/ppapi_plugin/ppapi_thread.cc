@@ -147,6 +147,8 @@ void PpapiThread::Unregister(uint32 plugin_dispatcher_id) {
 }
 
 void PpapiThread::OnMsgLoadPlugin(const FilePath& path) {
+  SavePluginName(path);
+
   std::string error;
   base::ScopedNativeLibrary library(base::LoadNativeLibrary(path, &error));
 
@@ -318,4 +320,9 @@ bool PpapiThread::SetupRendererChannel(base::ProcessHandle host_process_handle,
   // From here, the dispatcher will manage its own lifetime according to the
   // lifetime of the attached channel.
   return true;
+}
+
+void PpapiThread::SavePluginName(const FilePath& path) {
+  ppapi::proxy::PluginGlobals::Get()->set_plugin_name(
+      path.BaseName().AsUTF8Unsafe());
 }

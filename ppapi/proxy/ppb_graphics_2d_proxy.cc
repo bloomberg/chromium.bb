@@ -91,8 +91,11 @@ void Graphics2D::PaintImageData(PP_Resource image_data,
                                 const PP_Rect* src_rect) {
   Resource* image_object =
       PpapiGlobals::Get()->GetResourceTracker()->GetResource(image_data);
-  if (!image_object || pp_instance() != image_object->pp_instance())
+  if (!image_object || pp_instance() != image_object->pp_instance()) {
+    Log(PP_LOGLEVEL_ERROR,
+        "PPB_Graphics2D.PaintImageData: Bad image resource.");
     return;
+  }
 
   PP_Rect dummy;
   memset(&dummy, 0, sizeof(PP_Rect));
@@ -113,8 +116,11 @@ void Graphics2D::Scroll(const PP_Rect* clip_rect,
 void Graphics2D::ReplaceContents(PP_Resource image_data) {
   Resource* image_object =
       PpapiGlobals::Get()->GetResourceTracker()->GetResource(image_data);
-  if (!image_object || pp_instance() != image_object->pp_instance())
+  if (!image_object || pp_instance() != image_object->pp_instance()) {
+    Log(PP_LOGLEVEL_ERROR,
+        "PPB_Graphics2D.PaintImageData: Bad image resource.");
     return;
+  }
 
   GetDispatcher()->Send(new PpapiHostMsg_PPBGraphics2D_ReplaceContents(
       kApiID, host_resource(), image_object->host_resource()));

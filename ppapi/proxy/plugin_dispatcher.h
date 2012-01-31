@@ -13,6 +13,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/process.h"
 #include "build/build_config.h"
+#include "ppapi/c/dev/ppb_console_dev.h"
 #include "ppapi/c/pp_rect.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/proxy/dispatcher.h"
@@ -79,6 +80,14 @@ class PPAPI_PROXY_EXPORT PluginDispatcher : public Dispatcher {
   // Implements the GetInterface function for the plugin to call to retrieve
   // a browser interface.
   static const void* GetBrowserInterface(const char* interface_name);
+
+  // Logs the given log message to the given instance, or, if the instance is
+  // invalid, to all instances associated with all dispatchers. Used for
+  // global log messages.
+  static void LogWithSource(PP_Instance instance,
+                            PP_LogLevel_Dev level,
+                            const std::string& source,
+                            const std::string& value);
 
   const void* GetPluginInterface(const std::string& interface_name);
 

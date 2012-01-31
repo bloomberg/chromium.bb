@@ -5,6 +5,7 @@
 #include "ppapi/proxy/plugin_globals.h"
 
 #include "ppapi/proxy/plugin_dispatcher.h"
+#include "ppapi/thunk/enter.h"
 
 namespace ppapi {
 namespace proxy {
@@ -64,6 +65,24 @@ base::Lock* PluginGlobals::GetProxyLock() {
 #else
   return NULL;
 #endif
+}
+
+void PluginGlobals::LogWithSource(PP_Instance instance,
+                                  PP_LogLevel_Dev level,
+                                  const std::string& source,
+                                  const std::string& value) {
+  const std::string& fixed_up_source = source.empty() ? plugin_name_ : source;
+  PluginDispatcher::LogWithSource(instance, level, fixed_up_source, value);
+}
+
+void PluginGlobals::BroadcastLogWithSource(PP_Module /* module */,
+                                           PP_LogLevel_Dev level,
+                                           const std::string& source,
+                                           const std::string& value) {
+  // Since we have only one module in a plugin process, broadcast is always
+  // the same as "send to everybody" which is what the dispatcher implements
+  // for the "instance = 0" case.
+  LogWithSource(0, level, source, value);
 }
 
 bool PluginGlobals::IsPluginGlobals() const {

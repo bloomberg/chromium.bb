@@ -5,6 +5,7 @@
 #ifndef PPAPI_THUNK_INSTANCE_API_H_
 #define PPAPI_THUNK_INSTANCE_API_H_
 
+#include "ppapi/c/dev/ppb_console_dev.h"
 #include "ppapi/c/dev/ppb_gamepad_dev.h"
 #include "ppapi/c/dev/ppb_url_util_dev.h"
 #include "ppapi/c/pp_completion_callback.h"
@@ -47,10 +48,10 @@ class PPB_Instance_FunctionAPI {
 
   // Console.
   virtual void Log(PP_Instance instance,
-                   int log_level,
+                   PP_LogLevel_Dev log_level,
                    PP_Var value) = 0;
   virtual void LogWithSource(PP_Instance instance,
-                             int log_level,
+                             PP_LogLevel_Dev log_level,
                              PP_Var source,
                              PP_Var value) = 0;
 

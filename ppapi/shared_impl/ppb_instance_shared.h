@@ -5,14 +5,26 @@
 #ifndef PPAPI_SHARED_IMPL_PPB_INSTANCE_SHARED_H_
 #define PPAPI_SHARED_IMPL_PPB_INSTANCE_SHARED_H_
 
+#include "base/compiler_specific.h"
 #include "ppapi/c/pp_stdint.h"
 #include "ppapi/shared_impl/ppapi_shared_export.h"
+#include "ppapi/thunk/ppb_instance_api.h"
 
 namespace ppapi {
 
-class PPAPI_SHARED_EXPORT PPB_Instance_Shared {
+class PPAPI_SHARED_EXPORT PPB_Instance_Shared
+    : NON_EXPORTED_BASE(public thunk::PPB_Instance_FunctionAPI) {
  public:
   virtual ~PPB_Instance_Shared();
+
+  // Implementation of some shared PPB_Instance_FunctionAPI functions.
+  virtual void Log(PP_Instance instance,
+                   PP_LogLevel_Dev log_level,
+                   PP_Var value) OVERRIDE;
+  virtual void LogWithSource(PP_Instance instance,
+                             PP_LogLevel_Dev log_level,
+                             PP_Var source,
+                             PP_Var value) OVERRIDE;
 
   // Error checks the given resquest to Request[Filtering]InputEvents. Returns
   // PP_OK if the given classes are all valid, PP_ERROR_NOTSUPPORTED if not.

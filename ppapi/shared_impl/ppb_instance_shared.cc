@@ -4,12 +4,36 @@
 
 #include "ppapi/shared_impl/ppb_instance_shared.h"
 
+#include <string>
+
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/ppb_input_event.h"
+#include "ppapi/shared_impl/ppapi_globals.h"
+#include "ppapi/shared_impl/var.h"
 
 namespace ppapi {
 
 PPB_Instance_Shared::~PPB_Instance_Shared() {
+}
+
+void PPB_Instance_Shared::Log(PP_Instance instance,
+                              PP_LogLevel_Dev level,
+                              PP_Var value) {
+  LogWithSource(instance, level, PP_MakeUndefined(), value);
+}
+
+void PPB_Instance_Shared::LogWithSource(PP_Instance instance,
+                                        PP_LogLevel_Dev level,
+                                        PP_Var source,
+                                        PP_Var value) {
+  // The source defaults to empty if it's not a string. The PpapiGlobals
+  // implementation will convert the empty string to the module name if
+  // possible.
+  std::string source_str;
+  if (source.type == PP_VARTYPE_STRING)
+    source_str = Var::PPVarToLogString(source);
+  std::string value_str = Var::PPVarToLogString(value);
+  PpapiGlobals::Get()->LogWithSource(instance, level, source_str, value_str);
 }
 
 int32_t PPB_Instance_Shared::ValidateRequestInputEvents(

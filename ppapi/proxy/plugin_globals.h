@@ -41,6 +41,14 @@ class PPAPI_PROXY_EXPORT PluginGlobals : public PpapiGlobals {
                                             ApiID id) OVERRIDE;
   virtual PP_Module GetModuleForInstance(PP_Instance instance) OVERRIDE;
   virtual base::Lock* GetProxyLock() OVERRIDE;
+  virtual void LogWithSource(PP_Instance instance,
+                             PP_LogLevel_Dev level,
+                             const std::string& source,
+                             const std::string& value) OVERRIDE;
+  virtual void BroadcastLogWithSource(PP_Module module,
+                                      PP_LogLevel_Dev level,
+                                      const std::string& source,
+                                      const std::string& value) OVERRIDE;
 
   // Getters for the plugin-specific versions.
   PluginResourceTracker* plugin_resource_tracker() {
@@ -58,6 +66,10 @@ class PPAPI_PROXY_EXPORT PluginGlobals : public PpapiGlobals {
     plugin_proxy_delegate_ = d;
   }
 
+  // The embedder should call this function when the name of the plugin module
+  // is known. This will be used for error logging.
+  void set_plugin_name(const std::string& name) { plugin_name_ = name; }
+
  private:
   // PpapiGlobals overrides.
   virtual bool IsPluginGlobals() const OVERRIDE;
@@ -69,6 +81,10 @@ class PPAPI_PROXY_EXPORT PluginGlobals : public PpapiGlobals {
   PluginVarTracker plugin_var_tracker_;
   scoped_refptr<CallbackTracker> callback_tracker_;
   base::Lock proxy_lock_;
+
+  // Name of the plugin used for error logging. This will be empty until
+  // SetPluginName is called.
+  std::string plugin_name_;
 
   DISALLOW_COPY_AND_ASSIGN(PluginGlobals);
 };

@@ -29,8 +29,7 @@ class SerializedVarOutParam;
 class SerializedVarReturnValue;
 
 class PPB_Instance_Proxy : public InterfaceProxy,
-                           public PPB_Instance_Shared,
-                           public thunk::PPB_Instance_FunctionAPI {
+                           public PPB_Instance_Shared {
  public:
   PPB_Instance_Proxy(Dispatcher* dispatcher);
   virtual ~PPB_Instance_Proxy();
@@ -54,13 +53,6 @@ class PPB_Instance_Proxy : public InterfaceProxy,
                                PP_Var script,
                                PP_Var* exception) OVERRIDE;
   virtual PP_Var GetDefaultCharSet(PP_Instance instance) OVERRIDE;
-  virtual void Log(PP_Instance instance,
-                   int log_level,
-                   PP_Var value) OVERRIDE;
-  virtual void LogWithSource(PP_Instance instance,
-                             int log_level,
-                             PP_Var source,
-                             PP_Var value) OVERRIDE;
   virtual void NumberOfFindResultsChanged(PP_Instance instance,
                                           int32_t total,
                                           PP_Bool final_result) OVERRIDE;
@@ -122,13 +114,6 @@ class PPB_Instance_Proxy : public InterfaceProxy,
                               SerializedVarReturnValue result);
   void OnHostMsgGetDefaultCharSet(PP_Instance instance,
                                   SerializedVarReturnValue result);
-  void OnHostMsgLog(PP_Instance instance,
-                    int log_level,
-                    SerializedVarReceiveInput value);
-  void OnHostMsgLogWithSource(PP_Instance instance,
-                              int log_level,
-                              SerializedVarReceiveInput source,
-                              SerializedVarReceiveInput value);
   void OnHostMsgSetFullscreen(PP_Instance instance,
                               PP_Bool fullscreen,
                               PP_Bool* result);

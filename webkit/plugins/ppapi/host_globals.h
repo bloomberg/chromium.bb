@@ -43,6 +43,14 @@ class HostGlobals : public ::ppapi::PpapiGlobals {
       ::ppapi::ApiID id) OVERRIDE;
   virtual PP_Module GetModuleForInstance(PP_Instance instance) OVERRIDE;
   virtual base::Lock* GetProxyLock() OVERRIDE;
+  virtual void LogWithSource(PP_Instance instance,
+                             PP_LogLevel_Dev level,
+                             const std::string& source,
+                             const std::string& value) OVERRIDE;
+  virtual void BroadcastLogWithSource(PP_Module module,
+                                      PP_LogLevel_Dev level,
+                                      const std::string& source,
+                                      const std::string& value) OVERRIDE;
 
   HostVarTracker* host_var_tracker() {
     return &host_var_tracker_;

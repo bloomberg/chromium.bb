@@ -44,4 +44,16 @@ base::Lock* TestGlobals::GetProxyLock() {
   return NULL;
 }
 
+void TestGlobals::LogWithSource(PP_Instance instance,
+                                PP_LogLevel_Dev level,
+                                const std::string& source,
+                                const std::string& value) {
+}
+
+void TestGlobals::BroadcastLogWithSource(PP_Module module,
+                                         PP_LogLevel_Dev level,
+                                         const std::string& source,
+                                         const std::string& value) {
+}
+
 }  // namespace ppapi

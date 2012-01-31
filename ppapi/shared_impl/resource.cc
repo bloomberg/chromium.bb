@@ -45,6 +45,11 @@ void Resource::InstanceWasDeleted() {
   host_resource_ = HostResource();
 }
 
+void Resource::Log(PP_LogLevel_Dev level, const std::string& message) {
+  PpapiGlobals::Get()->LogWithSource(pp_instance(), level, std::string(),
+                                     message);
+}
+
 #define DEFINE_TYPE_GETTER(RESOURCE) \
   thunk::RESOURCE* Resource::As##RESOURCE() { return NULL; }
 FOR_ALL_PPAPI_RESOURCE_APIS(DEFINE_TYPE_GETTER)

@@ -60,6 +60,8 @@ class WEBKIT_PLUGINS_EXPORT PluginModule :
     PPP_ShutdownModuleFunc shutdown_module;  // Optional, may be NULL.
   };
 
+  typedef std::set<PluginInstance*> PluginInstanceSet;
+
   // You must call one of the Init functions after the constructor to create a
   // module of the type you desire.
   //
@@ -105,6 +107,8 @@ class WEBKIT_PLUGINS_EXPORT PluginModule :
   // callbacks up to the browser layer that are not inherently per-instance,
   // but the delegate lives only on the plugin instance so we need one of them.
   PluginInstance* GetSomeInstance() const;
+
+  const PluginInstanceSet& GetAllInstances() const { return instances_; }
 
   // Calls the plugin's GetInterface and returns the given interface pointer,
   // which could be NULL.
@@ -188,7 +192,6 @@ class WEBKIT_PLUGINS_EXPORT PluginModule :
 
   // Non-owning pointers to all instances associated with this module. When
   // there are no more instances, this object should be deleted.
-  typedef std::set<PluginInstance*> PluginInstanceSet;
   PluginInstanceSet instances_;
 
   PP_Bool (*reserve_instance_id_)(PP_Module, PP_Instance);

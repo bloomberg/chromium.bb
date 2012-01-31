@@ -34,7 +34,6 @@
 #include "ppapi/shared_impl/function_group_base.h"
 #include "ppapi/shared_impl/ppb_instance_shared.h"
 #include "ppapi/shared_impl/ppb_view_shared.h"
-#include "ppapi/thunk/ppb_instance_api.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebCanvas.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
@@ -85,7 +84,6 @@ class PPB_URLRequestInfo_Impl;
 class WEBKIT_PLUGINS_EXPORT PluginInstance :
     public base::RefCounted<PluginInstance>,
     public ::ppapi::FunctionGroupBase,
-    NON_EXPORTED_BASE(public ::ppapi::thunk::PPB_Instance_FunctionAPI),
     public ::ppapi::PPB_Instance_Shared {
  public:
   // Create and return a PluginInstance object which supports the
@@ -332,13 +330,6 @@ class WEBKIT_PLUGINS_EXPORT PluginInstance :
                                PP_Var script,
                                PP_Var* exception) OVERRIDE;
   virtual PP_Var GetDefaultCharSet(PP_Instance instance) OVERRIDE;
-  virtual void Log(PP_Instance instance,
-                   int log_level,
-                   PP_Var value) OVERRIDE;
-  virtual void LogWithSource(PP_Instance instance,
-                             int log_level,
-                             PP_Var source,
-                             PP_Var value) OVERRIDE;
   virtual void NumberOfFindResultsChanged(PP_Instance instance,
                                           int32_t total,
                                           PP_Bool final_result) OVERRIDE;

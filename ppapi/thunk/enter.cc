@@ -7,7 +7,9 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
+#include "base/stringprintf.h"
 #include "ppapi/c/pp_errors.h"
+#include "ppapi/shared_impl/ppapi_globals.h"
 #include "ppapi/thunk/ppb_instance_api.h"
 #include "ppapi/thunk/resource_creation_api.h"
 
@@ -74,15 +76,32 @@ Resource* EnterBase::GetResource(PP_Resource resource) const {
   return PpapiGlobals::Get()->GetResourceTracker()->GetResource(resource);
 }
 
-void EnterBase::SetStateForResourceError(PP_Resource /* pp_resource */,
-                                         Resource* /* resource_base */,
+void EnterBase::SetStateForResourceError(PP_Resource pp_resource,
+                                         Resource* resource_base,
                                          void* object,
-                                         bool /* report_error */) {
+                                         bool report_error) {
   if (object)
     return;  // Everything worked.
 
   retval_ = PP_ERROR_BADRESOURCE;
-  // TODO(brettw) log the error.
+
+  // We choose to silently ignore the error when the pp_resource is null
+  // because this is a pretty common case and we don't want to have lots
+  // of errors in the log. This should be an obvious case to debug.
+  if (report_error && pp_resource) {
+    std::string message;
+    if (resource_base) {
+      message = base::StringPrintf(
+          "0x%X is not the correct type for this function.",
+          pp_resource);
+    } else {
+      message = base::StringPrintf(
+          "0x%X is not a valid resource ID.",
+          pp_resource);
+    }
+    PpapiGlobals::Get()->BroadcastLogWithSource(0, PP_LOGLEVEL_ERROR,
+                                                std::string(), message);
+  }
 }
 
 }  // namespace subtle

@@ -223,8 +223,11 @@ void PPB_Graphics2D_Impl::PaintImageData(PP_Resource image_data,
     return;
 
   EnterResourceNoLock<PPB_ImageData_API> enter(image_data, true);
-  if (enter.failed())
+  if (enter.failed()) {
+    Log(PP_LOGLEVEL_ERROR,
+        "PPB_Graphics2D.PaintImageData: Bad image resource.");
     return;
+  }
   PPB_ImageData_Impl* image_resource =
       static_cast<PPB_ImageData_Impl*>(enter.object());
 
@@ -232,8 +235,11 @@ void PPB_Graphics2D_Impl::PaintImageData(PP_Resource image_data,
   operation.paint_image = image_resource;
   if (!ValidateAndConvertRect(src_rect, image_resource->width(),
                               image_resource->height(),
-                              &operation.paint_src_rect))
+                              &operation.paint_src_rect)) {
+    Log(PP_LOGLEVEL_ERROR,
+        "PPB_Graphics2D.PaintImageData: Rectangle is outside bounds.");
     return;
+  }
 
   // Validate the bitmap position using the previously-validated rect, there
   // should be no painted area outside of the image.
@@ -259,16 +265,22 @@ void PPB_Graphics2D_Impl::Scroll(const PP_Rect* clip_rect,
   if (!ValidateAndConvertRect(clip_rect,
                               image_data_->width(),
                               image_data_->height(),
-                              &operation.scroll_clip_rect))
+                              &operation.scroll_clip_rect)) {
+    Log(PP_LOGLEVEL_ERROR,
+        "PPB_Graphics2D.Scroll: Rectangle is outside bounds.");
     return;
+  }
 
   // If we're being asked to scroll by more than the clip rect size, just
   // ignore this scroll command and say it worked.
   int32 dx = amount->x;
   int32 dy = amount->y;
   if (dx <= -image_data_->width() || dx >= image_data_->width() ||
-      dy <= -image_data_->height() || dy >= image_data_->height())
+      dy <= -image_data_->height() || dy >= image_data_->height()) {
+    Log(PP_LOGLEVEL_ERROR,
+        "PPB_Graphics2D.Scroll: Scroll amount is larger than image size.");
     return;
+  }
 
   operation.scroll_dx = dx;
   operation.scroll_dy = dy;
@@ -284,12 +296,19 @@ void PPB_Graphics2D_Impl::ReplaceContents(PP_Resource image_data) {
       static_cast<PPB_ImageData_Impl*>(enter.object());
 
   if (!PPB_ImageData_Impl::IsImageDataFormatSupported(
-          image_resource->format()))
+          image_resource->format())) {
+    Log(PP_LOGLEVEL_ERROR,
+        "PPB_Graphics2D.ReplaceContents: Image data format is not supported.");
     return;
+  }
 
   if (image_resource->width() != image_data_->width() ||
-      image_resource->height() != image_data_->height())
+      image_resource->height() != image_data_->height()) {
+    Log(PP_LOGLEVEL_ERROR,
+        "PPB_Graphics2D.ReplaceContents: Image size doesn't match "
+        "Graphics2D size.");
     return;
+  }
 
   QueuedOperation operation(QueuedOperation::REPLACE);
   operation.replace_image = image_resource;

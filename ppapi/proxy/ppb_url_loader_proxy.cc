@@ -179,8 +179,13 @@ PPB_URLLoader_API* URLLoader::AsPPB_URLLoader_API() {
 int32_t URLLoader::Open(PP_Resource request_id,
                         PP_CompletionCallback callback) {
   EnterResourceNoLock<thunk::PPB_URLRequestInfo_API> enter(request_id, true);
-  if (enter.failed())
+  if (enter.failed()) {
+    Log(PP_LOGLEVEL_ERROR, "PPB_URLLoader.Open: The URL you're requesting is "
+        " on a different security origin than your plugin. To request "
+        " cross-origin resources, see "
+        " PP_URLREQUESTPROPERTY_ALLOWCROSSORIGINREQUESTS.");
     return PP_ERROR_BADRESOURCE;
+  }
 
   if (TrackedCallback::IsPending(current_callback_))
     return PP_ERROR_INPROGRESS;

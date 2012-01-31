@@ -84,10 +84,6 @@ bool PPB_Instance_Proxy::OnMessageReceived(const IPC::Message& msg) {
                         OnHostMsgExecuteScript)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBInstance_GetDefaultCharSet,
                         OnHostMsgGetDefaultCharSet)
-    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBInstance_Log,
-                        OnHostMsgLog)
-    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBInstance_LogWithSource,
-                        OnHostMsgLogWithSource)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBInstance_PostMessage,
                         OnHostMsgPostMessage)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBInstance_FlashSetFullscreen,
@@ -196,24 +192,6 @@ PP_Var PPB_Instance_Proxy::GetDefaultCharSet(PP_Instance instance) {
   dispatcher->Send(new PpapiHostMsg_PPBInstance_GetDefaultCharSet(
       API_ID_PPB_INSTANCE, instance, &result));
   return result.Return(dispatcher);
-}
-
-void PPB_Instance_Proxy::Log(PP_Instance instance,
-                             int log_level,
-                             PP_Var value) {
-  dispatcher()->Send(new PpapiHostMsg_PPBInstance_Log(
-      API_ID_PPB_INSTANCE, instance, static_cast<int>(log_level),
-      SerializedVarSendInput(dispatcher(), value)));
-}
-
-void PPB_Instance_Proxy::LogWithSource(PP_Instance instance,
-                                       int log_level,
-                                       PP_Var source,
-                                       PP_Var value) {
-  dispatcher()->Send(new PpapiHostMsg_PPBInstance_LogWithSource(
-      API_ID_PPB_INSTANCE, instance, static_cast<int>(log_level),
-      SerializedVarSendInput(dispatcher(), source),
-      SerializedVarSendInput(dispatcher(), value)));
 }
 
 void PPB_Instance_Proxy::NumberOfFindResultsChanged(PP_Instance instance,
@@ -459,27 +437,6 @@ void PPB_Instance_Proxy::OnHostMsgGetDefaultCharSet(
   EnterInstanceNoLock enter(instance, false);
   if (enter.succeeded())
     result.Return(dispatcher(), enter.functions()->GetDefaultCharSet(instance));
-}
-
-void PPB_Instance_Proxy::OnHostMsgLog(PP_Instance instance,
-                                      int log_level,
-                                      SerializedVarReceiveInput value) {
-  EnterInstanceNoLock enter(instance, false);
-  if (enter.succeeded())
-    enter.functions()->Log(instance, log_level, value.Get(dispatcher()));
-}
-
-void PPB_Instance_Proxy::OnHostMsgLogWithSource(
-    PP_Instance instance,
-    int log_level,
-    SerializedVarReceiveInput source,
-    SerializedVarReceiveInput value) {
-  EnterInstanceNoLock enter(instance, false);
-  if (enter.succeeded()) {
-    enter.functions()->LogWithSource(instance, log_level,
-                                     source.Get(dispatcher()),
-                                     value.Get(dispatcher()));
-  }
 }
 
 void PPB_Instance_Proxy::OnHostMsgSetFullscreen(PP_Instance instance,
