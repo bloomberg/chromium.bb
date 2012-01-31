@@ -419,9 +419,8 @@ remoting.connectMe2Me = function(hostId, retryIfOffline) {
   remoting.hostId = hostId;
   remoting.retryIfOffline = retryIfOffline;
 
-  // TODO(jamiewalch): Reinstate the PIN screen once it's supported.
-  // remoting.setMode(remoting.AppMode.CLIENT_PIN_PROMPT);
-  remoting.connectMe2MeWithPin();
+  // TODO(sergeyu): Ask pin only when it is necessary: crbug.com/111290 .
+  remoting.setMode(remoting.AppMode.CLIENT_PIN_PROMPT);
 }
 
 /**
@@ -462,7 +461,7 @@ function connectMe2MeWithAccessToken_(token) {
     remoting.clientSession =
         new remoting.ClientSession(
             remoting.hostJid, remoting.hostPublicKey,
-            pin, "v1_token", remoting.hostId,
+            pin, "spake2_hmac,spake2_plain", remoting.hostId,
             /** @type {string} */ (remoting.oauth2.getCachedEmail()),
             remoting.ClientSession.Mode.ME2ME, onClientStateChange_);
     remoting.clientSession.createPluginAndConnect(
