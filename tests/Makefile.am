@@ -6,10 +6,10 @@ endif
 
 
 AM_CFLAGS = $(GCC_CFLAGS)
-AM_CPPFLAGS = -I../src -DUNIT_TEST $(COMPOSITOR_CFLAGS)
+AM_CPPFLAGS = -I$(top_srcdir)/src -DUNIT_TEST $(COMPOSITOR_CFLAGS)
 
 matrix_test_SOURCES =				\
 	matrix-test.c				\
-	../src/matrix.c				\
-	../src/matrix.h
+	$(top_srcdir)/src/matrix.c		\
+	$(top_srcdir)/src/matrix.h
 matrix_test_LDADD = -lm -lrt
