@@ -1,0 +1,229 @@
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+//
+// Stores information about the user's brower and system configuration.
+// The system configuration fields are recorded once per client session.
+
+syntax = "proto2";
+
+option optimize_for = LITE_RUNTIME;
+
+package metrics;
+
+// Next tag: 9
+message SystemProfileProto {
+  // The time when the client was compiled/linked, in seconds since the epoch.
+  optional int64 build_timestamp = 1;
+
+  // A version number string for the application.
+  // Most commonly this is the browser version number found in a user agent
+  // string, and is typically a 4-tuple of numbers separated by periods.  In
+  // cases where the user agent version might be ambiguous (example: Linux 64-
+  // bit build, rather than 32-bit build, or a Windows version used in some
+  // special context, such as ChromeFrame running in IE), then this may include
+  // some additional postfix to provide clarification not available in the UA
+  // string.
+  //
+  // An example of a browser version 4-tuple is "5.0.322.0".  Currently used
+  // postfixes are:
+  //
+  //   "-64": a 64-bit build
+  //   "-F": Chrome is running under control of ChromeFrame
+  //   "-devel": this is not an official build of Chrome
+  //
+  // A full version number string could look similar to:
+  // "5.0.322.0-F-devel".
+  //
+  // This value, when available, is more trustworthy than the UA string
+  // associated with the request; and including the postfix, may be more
+  // specific.
+  optional string app_version = 2;
+
+  // The date the user installed the browser, in seconds since the epoch.
+  optional int64 install_date = 3;
+
+  // The user's selected application locale, i.e. the user interface language.
+  // The locale includes a language code and, possibly, also a country code,
+  // e.g. "en-US".
+  optional string application_locale = 4;
+
+  // Information on the user's operating system.
+  message OS {
+    // The user's operating system.
+    optional string name = 1;
+
+    // The version of the OS.  The meaning of this field is OS-dependent.
+    optional string version = 2;
+  }
+  optional OS os = 5;
+
+  // Information on the user's hardware.
+  message Hardware {
+    // The CPU architecture (x86, PowerPC, x86_64, ...)
+    optional string cpu_architecture = 1;
+
+    // The amount of RAM present on the system, in megabytes.
+    optional int64 system_ram_mb = 2;
+
+    // The base memory address that chrome.dll was loaded at.
+    // (Logged only on Windows.)
+    optional int64 dll_base = 3;
+
+    // The Chrome OS device hardware class ID is a unique string associated with
+    // each Chrome OS device product revision generally assigned at hardware
+    // qualification time.  The hardware class effectively identifies the
+    // configured system components such as CPU, WiFi adapter, etc.
+    //
+    // An example of such a hardware class is "IEC MARIO PONY 6101".  An
+    // internal database associates this hardware class with the qualified
+    // device specifications including OEM information, schematics, hardware
+    // qualification reports, test device tags, etc.
+    optional string hardware_class = 4;
+
+    // The number of physical screens.
+    optional int32 screen_count = 5;
+
+    // The screen dimensions of the primary screen, in pixels.
+    optional int32 primary_screen_width = 6;
+    optional int32 primary_screen_height = 7;
+
+    // Information on the GPU
+    message Graphics {
+      // The GPU manufacturer's vendor id.
+      optional uint32 vendor_id = 1;
+
+      // The GPU manufacturer's device id for the chip set.
+      optional uint32 device_id = 2;
+
+      // The driver version on the GPU.
+      optional string driver_version = 3;
+
+      // The driver date on the GPU.
+      optional string driver_date = 4;
+
+      // The GPU performance statistics.
+      // See http://src.chromium.org/viewvc/chrome/trunk/src/content/browser/gpu/gpu_performance_stats.h?view=markup
+      // for details.  Currently logged only on Windows.
+      message PerformanceStatistics {
+        optional float graphics_score = 1;
+        optional float gaming_score = 2;
+        optional float overall_score = 3;
+      }
+      optional PerformanceStatistics performance_statistics = 5;
+    }
+    optional Graphics gpu = 8;
+  }
+  optional Hardware hardware = 6;
+
+  // Information on all installed plugins.
+  message Plugin {
+    // The plugin's self-reported name and filename (without path).
+    optional string name = 1;
+    optional string filename = 2;
+
+    // The plugin's version.
+    optional string version = 3;
+
+    // True if the plugin is disabled.
+    // If a client has multiple local Chrome user accounts, this is logged based
+    // on the first user account launched during the current session.
+    optional bool is_disabled = 4;
+  }
+  repeated Plugin plugin = 7;
+
+  // Figures that can be used to generate application stability metrics.
+  // All values are counts of events since the last time that these
+  // values were reported.
+  message Stability {
+    // Total amount of time that the program was running, in seconds.
+    optional int64 uptime_sec = 1;
+
+    // Page loads along with renderer crashes and hangs, since page load count
+    // roughly corresponds to usage.
+    optional int32 page_load_count = 2;
+    optional int32 renderer_crash_count = 3;
+    optional int32 renderer_hang_count = 4;
+
+    // Number of renderer crashes that were for extensions.
+    // TODO(isherman): Figure out whether this is also counted in
+    // |renderer_crash_count|.
+    optional int32 extension_renderer_crash_count = 5;
+
+    // Number of non-renderer child process crashes.
+    optional int32 child_process_crash_count = 6;
+
+    // Number of times the browser has crashed while logged in as the "other
+    // user" (guest) account.
+    // Logged on ChromeOS only.
+    optional int32 other_user_crash_count = 7;
+
+    // Number of times the kernel has crashed.
+    // Logged on ChromeOS only.
+    optional int32 kernel_crash_count = 8;
+
+    // Number of times the system has shut down uncleanly.
+    // Logged on ChromeOS only.
+    optional int32 unclean_system_shutdown_count = 9;
+
+    //
+    // All the remaining fields in the Stability are recorded at most once per
+    // client session.
+    //
+
+    // The number of times the program was launched.
+    // This will typically be equal to 1.  However, it is possible that Chrome
+    // was unable to upload stability metrics for previous launches (e.g. due to
+    // crashing early during startup), and hence this value might be greater
+    // than 1.
+    optional int32 launch_count = 15;
+    // The number of times that it didn't exit cleanly (which we assume to be
+    // mostly crashes).
+    optional int32 crash_count = 16;
+
+    // The number of times the program began, but did not complete, the shutdown
+    // process.  (For example, this may occur when Windows is shutting down, and
+    // it only gives the process a few seconds to clean up.)
+    optional int32 incomplete_shutdown_count = 17;
+
+    // The number of times the program was able register with breakpad crash
+    // services.
+    optional int32 breakpad_registration_success_count = 18;
+
+    // The number of times the program failed to register with breakpad crash
+    // services.  If crash registration fails then when the program crashes no
+    // crash report will be generated.
+    optional int32 breakpad_registration_failure_count = 19;
+
+    // The number of times the program has run under a debugger.  This should
+    // be an exceptional condition.  Running under a debugger prevents crash
+    // dumps from being generated.
+    optional int32 debugger_present_count = 20;
+
+    // The number of times the program has run without a debugger attached.
+    // This should be most common scenario and should be very close to
+    // |launch_count|.
+    optional int32 debugger_not_present_count = 21;
+
+    // Stability information for all installed plugins.
+    message PluginStability {
+      // The relevant plugin's information (name, etc.)
+      optional Plugin plugin = 1;
+
+      // The number of times this plugin's process was launched.
+      optional int32 launch_count = 2;
+
+      // The number of times this plugin was instantiated on a web page.
+      // This will be >= |launch_count|.
+      // (A page load with multiple sections drawn by this plugin will
+      // increase this count multiple times.)
+      optional int32 instance_count = 3;
+
+      // The number of times this plugin process crashed.
+      // This value will be <= |launch_count|.
+      optional int32 crash_count = 4;
+    }
+    repeated PluginStability plugin_stability = 22;
+  }
+  optional Stability stability = 8;
+}

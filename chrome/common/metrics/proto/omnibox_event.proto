@@ -1,0 +1,106 @@
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+//
+// Stores information about an omnibox interaction.
+
+syntax = "proto2";
+
+option optimize_for = LITE_RUNTIME;
+
+package metrics;
+
+// Next tag: 10
+message OmniboxEventProto {
+  // The timestamp for the event, in seconds since the epoch.
+  optional int64 time = 1;
+
+  // The id of the originating tab for this omnibox interaction.
+  // This is the current tab *unless* the user opened the target in a new tab.
+  // In those cases, this is unset.  Tab ids are unique for a given session_id
+  // (in the containing protocol buffer ChromeUserMetricsExtensionsProto).
+  optional int32 tab_id = 2;
+
+  // The number of characters the user had typed before autocompleting.
+  optional int32 typed_length = 3;
+
+  // The number of terms that the user typed in the omnibox.
+  optional int32 num_typed_terms = 4;
+
+  // The index of the item that the user selected in the omnibox popup list.
+  // This corresponds the index of the |suggestion| below.
+  optional int32 selected_index = 5;
+
+  // The length of the inline autocomplete text in the omnibox.
+  // The sum |typed_length| + |completed_length| gives the full length of the
+  // user-visible text in the omnibox.
+  optional int32 completed_length = 6;
+
+  // The amount of time, in milliseconds, since the user first began modifying
+  // the text in the omnibox.  If at some point after modifying the text, the
+  // user reverts the modifications (thus seeing the current web page's URL
+  // again), then writes in the omnibox again, this elapsed time should start
+  // from the time of the second series of modification.
+  optional int64 typing_duration_ms = 7;
+
+  // What kind of input the user provided.
+  enum InputType {
+    INVALID = 0;        // Empty input (should not reach here)
+    UNKNOWN = 1;        // Valid input whose type cannot be determined
+    REQUESTED_URL = 2;  // Input autodetected as UNKNOWN, which the user wants
+                        // to treat as an URL by specifying a desired_tld
+    URL = 3;            // Input autodetected as a URL
+    QUERY = 4;          // Input autodetected as a query
+    FORCED_QUERY = 5;   // Input forced to be a query by an initial '?'
+  }
+  optional InputType input_type = 8;
+
+  // The result set displayed on the completion popup
+  message Suggestion {
+    // Where does this result come from?
+    enum ProviderType {
+      UNKNOWN_PROVIDER = 0;  // Unknown provider (should not reach here)
+      URL = 1;               // URLs in history, or user-typed URLs
+      HISTORY_CONTENTS = 2;  // Matches for page contents of pages in history
+      HISTORY_QUICK = 3;     // Matches for recently or frequently visited pages
+                             // in history
+      SEARCH = 4;            // Search suggestions for the default search engine
+      KEYWORD = 5;           // Keyword-triggered searches
+      BUILTIN = 6;           // Built-in URLs, such as chrome://version
+      SHORTCUTS = 7;         // Recently selected omnibox suggestions
+      EXTENSION_APPS = 8;    // Custom suggestions from extensions and/or apps
+    }
+    optional ProviderType provider = 1;
+
+    // What kind of result this is.
+    // This corresponds to the AutocompleteMatch::Type enumeration in
+    // chrome/browser/autocomplete/autocomplete_match.h
+    enum ResultType {
+      UNKNOWN_RESULT_TYPE = 0;    // Unknown type (should not reach here)
+      URL_WHAT_YOU_TYPED = 1;     // The input as a URL
+      HISTORY_URL = 2;            // A past page whose URL contains the input
+      HISTORY_TITLE = 3;          // A past page whose title contains the input
+      HISTORY_BODY = 4;           // A past page whose body contains the input
+      HISTORY_KEYWORD = 5;        // A past page whose keyword contains the
+                                  // input
+      NAVSUGGEST = 6;             // A suggested URL
+      SEARCH_WHAT_YOU_TYPED = 7;  // The input as a search query (with the
+                                  // default engine)
+      SEARCH_HISTORY = 8;         // A past search (with the default engine)
+                                  // containing the input
+      SEARCH_SUGGEST = 9;         // A suggested search (with the default
+                                  // engine)
+      SEARCH_OTHER_ENGINE = 10;   // A search with a non-default engine
+      EXTENSION_APP = 11;         // An Extension App with a title/url that
+                                  // contains the input
+    };
+    optional ResultType result_type = 2;
+
+    // The relevance score for this suggestion.
+    optional int32 relevance = 3;
+
+    // Whether this item is starred (bookmarked) or not.
+    optional bool is_starred = 4;
+  }
+  repeated Suggestion suggestion = 9;
+}

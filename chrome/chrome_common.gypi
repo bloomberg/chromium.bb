@@ -28,6 +28,7 @@
         'common_constants',
         'common_net',
         'common_version',
+        'metrics_proto',
         '<(DEPTH)/base/base.gyp:base',
         '<(DEPTH)/base/base.gyp:base_i18n',
         '<(DEPTH)/base/base.gyp:base_static',
@@ -450,6 +451,23 @@
       'variables': {
         'proto_in_dir': 'common/safe_browsing',
         'proto_out_dir': 'chrome/common/safe_browsing',
+      },
+      'includes': [ '../build/protoc.gypi' ],
+    },
+    {
+      # Protobuf compiler / generator for UMA (User Metrics Analysis).
+      'target_name': 'metrics_proto',
+      'type': 'static_library',
+      'sources': [
+        'common/metrics/proto/chrome_user_metrics_extension.proto',
+        'common/metrics/proto/histogram_event.proto',
+        'common/metrics/proto/omnibox_event.proto',
+        'common/metrics/proto/system_profile.proto',
+        'common/metrics/proto/user_action_event.proto',
+      ],
+      'variables': {
+        'proto_in_dir': 'common/metrics/proto',
+        'proto_out_dir': 'chrome/common/metrics/proto',
       },
       'includes': [ '../build/protoc.gypi' ],
     },
