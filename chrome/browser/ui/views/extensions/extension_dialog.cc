@@ -19,6 +19,7 @@
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/web_contents.h"
 #include "googleurl/src/gurl.h"
+#include "ui/views/background.h"
 #include "ui/views/widget/widget.h"
 
 using content::WebContents;
@@ -30,6 +31,8 @@ ExtensionDialog::ExtensionDialog(ExtensionHost* host,
       observer_(observer) {
   AddRef();  // Balanced in DeleteDelegate();
 
+  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING,
+                 content::Source<Profile>(host->profile()));
   // Listen for the containing view calling window.close();
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_HOST_VIEW_SHOULD_CLOSE,
                  content::Source<Profile>(host->profile()));
@@ -56,6 +59,13 @@ ExtensionDialog* ExtensionDialog::Show(
   ExtensionDialog* dialog = new ExtensionDialog(host, observer);
   dialog->set_title(title);
   dialog->InitWindow(browser, width, height);
+
+  // Show a white background while the extension loads.  This is prettier than
+  // flashing a black unfilled window frame.
+  host->view()->set_background(
+      views::Background::CreateSolidBackground(0xFF, 0xFF, 0xFF));
+  host->view()->SetVisible(true);
+
   // Ensure the DOM JavaScript can respond immediately to keyboard shortcuts.
   host->host_contents()->Focus();
   return dialog;
@@ -88,6 +98,7 @@ void ExtensionDialog::InitWindow(Browser* browser, int width, int height) {
   window_->SetBounds(gfx::Rect(x, y, width, height));
 
   window_->Show();
+  // TODO(jamescook): Remove redundant call to Activate()?
   window_->Activate();
 }
 
@@ -151,6 +162,11 @@ void ExtensionDialog::Observe(int type,
                              const content::NotificationSource& source,
                              const content::NotificationDetails& details) {
   switch (type) {
+    case chrome::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING:
+      // Avoid potential overdraw by removing the temporary background after
+      // the extension finishes loading.
+      extension_host_->view()->set_background(NULL);
+      break;
     case chrome::NOTIFICATION_EXTENSION_HOST_VIEW_SHOULD_CLOSE:
       // If we aren't the host of the popup, then disregard the notification.
       if (content::Details<ExtensionHost>(host()) != details)
