@@ -119,6 +119,8 @@
       '-nacl_sdk.NaClSDKTest.testVerifyNaClPlugin',
       # crbug.com/105560
       '-notifications',
+      # crbug.com/112051
+      '-prefs_ui.PrefsUITest.testChangeExceptionBehaviorUI',
     ],
 
     'win': [
