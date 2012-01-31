@@ -181,7 +181,7 @@ header_map = {
       'semaphore.h': 'src/untrusted/pthread/semaphore.h',
       'dynamic_annotations.h': 'src/untrusted/valgrind/dynamic_annotations.h',
       'dynamic_annotations.h': 'src/untrusted/valgrind/dynamic_annotations.h',
-      'nacl_dyncode.h': ' src/untrusted/nacl/nacl_dyncode.h',
+      'nacl_dyncode.h': 'src/untrusted/nacl/nacl_dyncode.h',
       'nacl_startup.h': 'src/untrusted/nacl/nacl_startup.h',
       'nacl_thread.h': 'src/untrusted/nacl/nacl_thread.h',
       'pnacl.h': 'src/untrusted/nacl/pnacl.h',
@@ -191,7 +191,7 @@ header_map = {
   'glibc': {
       'dynamic_annotations.h': 'src/untrusted/valgrind/dynamic_annotations.h',
       'dynamic_annotations.h': 'src/untrusted/valgrind/dynamic_annotations.h',
-      'nacl_dyncode.h': ' src/untrusted/nacl/nacl_dyncode.h',
+      'nacl_dyncode.h': 'src/untrusted/nacl/nacl_dyncode.h',
       'nacl_startup.h': 'src/untrusted/nacl/nacl_startup.h',
       'nacl_thread.h': 'src/untrusted/nacl/nacl_thread.h',
       'pnacl.h': 'src/untrusted/nacl/pnacl.h',
@@ -303,7 +303,7 @@ def main():
     # Then rename/move it to the pepper toolchain directory
     srcdir = os.path.join(tmpdir, 'sdk', 'nacl-sdk')
     newlibdir = os.path.join(pepperdir, 'toolchain', tcname + '_newlib')
-    print "BUildbot mv %s to %s" % (srcdir, newlibdir)
+    print "Buildbot mv %s to %s" % (srcdir, newlibdir)
     MoveDir(srcdir, newlibdir)
     print "Done with buildbot move"
     # Untar the glibc toolchains
@@ -335,7 +335,7 @@ def main():
       InstallHeaders(GetToolchainNaClInclude(newlibdir, 'x86'),
                      pepper_ver, 
                      'newlib')
-      InstallHeaders(GetToolchainNaClInclude(newlibdir, 'x86'),
+      InstallHeaders(GetToolchainNaClInclude(glibcdir, 'x86'),
                      pepper_ver,
                      'glibc')
     else:
