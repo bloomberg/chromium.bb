@@ -485,6 +485,12 @@ hooks = [
     "action": ["python", "src/build/win/setup_cygwin_mount.py", "--win-only"],
   },
   {
+    # Update LASTCHANGE.
+    "pattern": ".",
+    "action": ["python", "src/build/util/lastchange.py",
+               "-o", "src/build/util/LASTCHANGE"],
+  },
+  {
     # A change to a .gyp, .gypi, or to GYP itself should run the generator.
     "pattern": ".",
     "action": ["python", "src/build/gyp_chromium"],

@@ -1160,7 +1160,7 @@
               'extension': 'ver',
               'variables': {
                 'lastchange_path':
-                  '<(SHARED_INTERMEDIATE_DIR)/build/LASTCHANGE',
+                  '<(DEPTH)/build/util/LASTCHANGE',
                 'template_input_path': 'app/chrome_version.rc.version',
               },
               'conditions': [
@@ -1209,7 +1209,7 @@
               'action_name': 'version_header',
               'variables': {
                 'lastchange_path':
-                  '<(SHARED_INTERMEDIATE_DIR)/build/LASTCHANGE',
+                  '<(DEPTH)/build/util/LASTCHANGE',
               },
               'conditions': [
                 [ 'branding == "Chrome"', {

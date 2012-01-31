@@ -4,7 +4,7 @@
 
 {
   'variables': {
-    'lastchange_path': '<(SHARED_INTERMEDIATE_DIR)/build/LASTCHANGE',
+    'lastchange_path': '<(DEPTH)/build/util/LASTCHANGE',
     # 'branding_dir' is set in the 'conditions' section at the bottom.
   },
   'conditions': [

@@ -6,7 +6,7 @@
   'variables': {
     'version_py': '../../chrome/tools/build/version.py',
     'version_path': '../../chrome/VERSION',
-    'lastchange_path': '<(SHARED_INTERMEDIATE_DIR)/build/LASTCHANGE',
+    'lastchange_path': '<(DEPTH)/build/util/LASTCHANGE',
     # 'branding_dir' is set in the 'conditions' section at the bottom.
     'msvs_use_common_release': 0,
     'msvs_use_common_linker_extras': 0,
