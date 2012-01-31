@@ -116,6 +116,7 @@ void CreateSpecialContainers(aura::Window::Windows* containers) {
   lock_container->SetLayoutManager(new internal::BaseLayoutManager);
   lock_container->set_stops_event_propagation(true);
   lock_container->set_id(internal::kShellWindowId_LockScreenContainer);
+  SetChildWindowVisibilityChangesAnimated(lock_container);
   containers->push_back(lock_container);
 
   aura::Window* lock_modal_container = new aura::Window(NULL);

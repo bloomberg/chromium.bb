@@ -7,6 +7,7 @@
 #pragma once
 
 #include "ash/ash_export.h"
+#include "base/time.h"
 
 namespace aura {
 class Window;
@@ -23,13 +24,32 @@ enum WindowVisibilityAnimationType {
   WINDOW_VISIBILITY_ANIMATION_TYPE_FADE         // Fades in/out.
 };
 
+// Type of visibility change transition that a window should animate.
+// Default behavior is to animate both show and hide.
+enum WindowVisibilityAnimationTransition {
+  // 0 is used as default.
+  ANIMATE_SHOW = 0x1,
+  ANIMATE_HIDE = 0x2,
+  ANIMATE_BOTH = ANIMATE_SHOW | ANIMATE_HIDE,
+  ANIMATE_NONE = 0x4,
+};
+
 void ASH_EXPORT SetWindowVisibilityAnimationType(
     aura::Window* window,
     WindowVisibilityAnimationType type);
 
+void ASH_EXPORT SetWindowVisibilityAnimationTransition(
+    aura::Window* window,
+    WindowVisibilityAnimationTransition transition);
+
+void ASH_EXPORT SetWindowVisibilityAnimationDuration(
+    aura::Window* window,
+    const base::TimeDelta& duration);
+
 namespace internal {
 
-void AnimateOnChildWindowVisibilityChanged(aura::Window* window, bool visible);
+// Returns false if the |window| didn't animate.
+bool AnimateOnChildWindowVisibilityChanged(aura::Window* window, bool visible);
 
 }  // namespace internal
 }  // namespace ash

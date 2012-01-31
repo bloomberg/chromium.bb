@@ -7,6 +7,8 @@
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
+#include "base/stl_util.h"
+#include "base/time.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
@@ -17,11 +19,38 @@ namespace ash {
 namespace internal {
 const char kWindowVisibilityAnimationTypeKey[] =
     "WindowVisibilityAnimationType";
+
+const char kWindowVisibilityAnimationDurationKey[] =
+    "WindowVisibilityAnimationDuration";
+
+const char kWindowVisibilityAnimationTransitionKey[] =
+    "WindowVisibilityAnimationTransition";
 }  // namespace internal
 
 void SetWindowVisibilityAnimationType(aura::Window* window,
                                       WindowVisibilityAnimationType type) {
   window->SetIntProperty(internal::kWindowVisibilityAnimationTypeKey, type);
+}
+
+void SetWindowVisibilityAnimationTransition(
+    aura::Window* window,
+    WindowVisibilityAnimationTransition transition) {
+  window->SetIntProperty(internal::kWindowVisibilityAnimationTransitionKey,
+                         transition);
+}
+
+void SetWindowVisibilityAnimationDuration(aura::Window* window,
+                                          const base::TimeDelta& duration) {
+  window->SetIntProperty(internal::kWindowVisibilityAnimationDurationKey,
+                         static_cast<int>(duration.ToInternalValue()));
+}
+
+bool HasWindowVisibilityAnimationTransition(
+    aura::Window* window,
+    WindowVisibilityAnimationTransition transition) {
+  int prop = window->GetIntProperty(
+      internal::kWindowVisibilityAnimationTransitionKey);
+  return !prop || (prop & transition) != 0;
 }
 
 namespace internal {
@@ -67,7 +96,9 @@ class HidingWindowAnimationObserver : public ui::ImplicitAnimationObserver,
       : window_(window) {
     window_->AddObserver(this);
   }
-  virtual ~HidingWindowAnimationObserver() {}
+  virtual ~HidingWindowAnimationObserver() {
+    STLDeleteElements(&layers_);
+  }
 
  private:
   // Overridden from ui::ImplicitAnimationObserver:
@@ -84,15 +115,26 @@ class HidingWindowAnimationObserver : public ui::ImplicitAnimationObserver,
   // Overridden from aura::WindowObserver:
   virtual void OnWindowDestroying(aura::Window* window) OVERRIDE {
     DCHECK_EQ(window, window_);
-    layer_.reset(window_->AcquireLayer());
+    DCHECK(layers_.empty());
+    AcquireAllLayers(window_);
     window_->RemoveObserver(this);
     window_ = NULL;
   }
 
-  ui::Layer* layer() { return window_ ? window_->layer() : layer_.get(); }
+  void AcquireAllLayers(aura::Window* window) {
+    ui::Layer* layer = window->AcquireLayer();
+    DCHECK(layer);
+    layers_.push_back(layer);
+    for (aura::Window::Windows::const_iterator it = window->children().begin();
+         it != window->children().end();
+         ++it)
+      AcquireAllLayers(*it);
+  }
+
+  ui::Layer* layer() { return window_ ? window_->layer() : layers_[0]; }
 
   aura::Window* window_;
-  scoped_ptr<ui::Layer> layer_;
+  std::vector<ui::Layer*> layers_;
 
   DISALLOW_COPY_AND_ASSIGN(HidingWindowAnimationObserver);
 };
@@ -109,6 +151,13 @@ void AnimateShowWindowCommon(aura::Window* window,
   {
     // Property sets within this scope will be implicitly animated.
     ui::ScopedLayerAnimationSettings settings(window->layer()->GetAnimator());
+    int duration =
+        window->GetIntProperty(internal::kWindowVisibilityAnimationDurationKey);
+    if (duration > 0) {
+      settings.SetTransitionDuration(
+          base::TimeDelta::FromInternalValue(duration));
+    }
+
     window->layer()->SetTransform(end_transform);
     window->layer()->SetOpacity(kWindowAnimation_ShowOpacity);
   }
@@ -123,6 +172,12 @@ void AnimateHideWindowCommon(aura::Window* window,
   // Property sets within this scope will be implicitly animated.
   ui::ScopedLayerAnimationSettings settings(window->layer()->GetAnimator());
   settings.AddImplicitObserver(new HidingWindowAnimationObserver(window));
+  int duration =
+      window->GetIntProperty(internal::kWindowVisibilityAnimationDurationKey);
+  if (duration > 0) {
+    settings.SetTransitionDuration(
+        base::TimeDelta::FromInternalValue(duration));
+  }
 
   window->layer()->SetOpacity(kWindowAnimation_HideOpacity);
   window->layer()->SetTransform(end_transform);
@@ -171,37 +226,43 @@ void AnimateHideWindow_Fade(aura::Window* window) {
   AnimateHideWindowCommon(window, ui::Transform());
 }
 
-void AnimateShowWindow(aura::Window* window) {
+bool AnimateShowWindow(aura::Window* window) {
+  if (!HasWindowVisibilityAnimationTransition(window, ANIMATE_SHOW))
+    return false;
+
   switch (GetWindowVisibilityAnimationType(window)) {
     case WINDOW_VISIBILITY_ANIMATION_TYPE_DROP:
       AnimateShowWindow_Drop(window);
-      break;
+      return true;
     case WINDOW_VISIBILITY_ANIMATION_TYPE_VERTICAL:
       AnimateShowWindow_Vertical(window);
-      break;
+      return true;
     case WINDOW_VISIBILITY_ANIMATION_TYPE_FADE:
       AnimateShowWindow_Fade(window);
-      break;
+      return true;
     default:
       NOTREACHED();
-      break;
+      return false;
   }
 }
 
-void AnimateHideWindow(aura::Window* window) {
+bool AnimateHideWindow(aura::Window* window) {
+  if (!HasWindowVisibilityAnimationTransition(window, ANIMATE_HIDE))
+    return false;
+
   switch (GetWindowVisibilityAnimationType(window)) {
     case WINDOW_VISIBILITY_ANIMATION_TYPE_DROP:
       AnimateHideWindow_Drop(window);
-      break;
+      return true;
     case WINDOW_VISIBILITY_ANIMATION_TYPE_VERTICAL:
       AnimateHideWindow_Vertical(window);
-      break;
+      return true;
     case WINDOW_VISIBILITY_ANIMATION_TYPE_FADE:
       AnimateHideWindow_Fade(window);
-      break;
+      return true;
     default:
       NOTREACHED();
-      break;
+      return false;
   }
 }
 
@@ -210,15 +271,15 @@ void AnimateHideWindow(aura::Window* window) {
 ////////////////////////////////////////////////////////////////////////////////
 // WindowAnimation, public:
 
-void AnimateOnChildWindowVisibilityChanged(aura::Window* window, bool visible) {
+bool AnimateOnChildWindowVisibilityChanged(aura::Window* window, bool visible) {
   if (window->GetIntProperty(aura::client::kAnimationsDisabledKey) == 1)
-    return;
+    return false;
   if (visible) {
-    AnimateShowWindow(window);
+    return AnimateShowWindow(window);
   } else {
     // Don't start hiding the window again if it's already being hidden.
-    if (window->layer()->GetTargetOpacity() != 0.0f)
-      AnimateHideWindow(window);
+    return window->layer()->GetTargetOpacity() != 0.0f &&
+        AnimateHideWindow(window);
   }
 }
 

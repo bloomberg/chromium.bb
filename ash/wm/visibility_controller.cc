@@ -35,8 +35,7 @@ void VisibilityController::UpdateLayerVisibility(aura::Window* window,
   bool animated = GetChildWindowVisibilityChangesAnimated(window->parent()) &&
                   window->type() != aura::client::WINDOW_TYPE_CONTROL &&
                   window->type() != aura::client::WINDOW_TYPE_UNKNOWN;
-  if (animated)
-    AnimateOnChildWindowVisibilityChanged(window, visible);
+  animated = animated && AnimateOnChildWindowVisibilityChanged(window, visible);
 
   // When a window is made visible, we always make its layer visible
   // immediately. When a window is hidden, the layer must be left visible and
