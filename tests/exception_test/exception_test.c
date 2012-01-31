@@ -5,6 +5,7 @@
  */
 
 #include <assert.h>
+#include <errno.h>
 #include <setjmp.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -165,6 +166,22 @@ void test_getting_previous_handler() {
   assert(prev_handler == NULL);
 }
 
+void test_invalid_handlers() {
+  int rc;
+  handler_func_t unaligned_func_ptr =
+    (handler_func_t) ((uintptr_t) handler + 1);
+  const char *ptr_in_rodata_segment = "";
+
+  /* An alignment check is required for safety in all NaCl sandboxes. */
+  rc = NACL_SYSCALL(exception_handler)(unaligned_func_ptr, NULL);
+  assert(rc == -EFAULT);
+
+  /* A range check is required for safety in the NaCl ARM sandbox. */
+  rc = NACL_SYSCALL(exception_handler)(
+      (handler_func_t) (uintptr_t) ptr_in_rodata_segment, NULL);
+  assert(rc == -EFAULT);
+}
+
 int main() {
   /* Test exceptions without having an exception stack set up. */
   test_exception_stack_with_size(NULL, 0);
@@ -181,6 +198,7 @@ int main() {
   }
 
   test_getting_previous_handler();
+  test_invalid_handlers();
 
   fprintf(stderr, "** intended_exit_status=0\n");
   return 0;
