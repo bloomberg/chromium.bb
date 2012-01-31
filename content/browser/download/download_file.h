@@ -71,27 +71,6 @@ class CONTENT_EXPORT DownloadFile {
   virtual const DownloadId& GlobalId() const = 0;
 
   virtual std::string DebugString() const = 0;
-
-  // Appends the passed-in |number| between parenthesis to the |path| before
-  // the file extension.
-  static void AppendNumberToPath(FilePath* path, int number);
-
-  // Appends the passed-in |suffix| to the |path|.
-  static FilePath AppendSuffixToPath(const FilePath& path,
-                                     const FilePath::StringType& suffix);
-
-  // Attempts to find a number that can be appended to the |path| to make it
-  // unique. If |path| does not exist, 0 is returned.  If it fails to find such
-  // a number, -1 is returned.
-  static int GetUniquePathNumber(const FilePath& path);
-
-  // Same as GetUniquePathNumber, except that it also checks the existence
-  // of it with the given suffix.
-  // If |path| does not exist, 0 is returned.  If it fails to find such
-  // a number, -1 is returned.
-  static int GetUniquePathNumberWithSuffix(
-      const FilePath& path,
-      const FilePath::StringType& suffix);
 };
 
 }  // namespace content

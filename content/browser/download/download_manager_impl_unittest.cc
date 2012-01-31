@@ -67,8 +67,7 @@ using ::testing::Return;
 namespace {
 
 FilePath GetTempDownloadPath(const FilePath& suggested_path) {
-  return DownloadFile::AppendSuffixToPath(
-      suggested_path, FILE_PATH_LITERAL(".temp"));
+  return FilePath(suggested_path.value() + FILE_PATH_LITERAL(".temp"));
 }
 
 class MockDownloadFileFactory
@@ -1159,10 +1158,12 @@ TEST_F(DownloadManagerTest, MAYBE_DownloadOverwriteTest) {
 
   // Construct the unique file name that normally would be created, but
   // which we will override.
-  int uniquifier = DownloadFile::GetUniquePathNumber(new_path);
+  int uniquifier =
+      file_util::GetUniquePathNumber(new_path, FILE_PATH_LITERAL(""));
   FilePath unique_new_path = new_path;
   EXPECT_NE(0, uniquifier);
-  DownloadFile::AppendNumberToPath(&unique_new_path, uniquifier);
+  unique_new_path = unique_new_path.InsertBeforeExtensionASCII(
+            StringPrintf(" (%d)", uniquifier));
 
   // Normally, the download system takes ownership of info, and is
   // responsible for deleting it.  In these unit tests, however, we

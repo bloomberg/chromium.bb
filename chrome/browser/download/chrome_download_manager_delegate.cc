@@ -32,7 +32,6 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/user_script.h"
 #include "chrome/common/pref_names.h"
-#include "content/browser/download/download_file.h"
 #include "content/browser/download/download_status_updater.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"
@@ -42,7 +41,6 @@
 #include "ui/base/l10n/l10n_util.h"
 
 using content::BrowserThread;
-using content::DownloadFile;
 using content::DownloadId;
 using content::DownloadItem;
 using content::DownloadManager;
@@ -526,8 +524,8 @@ void ChromeDownloadManagerDelegate::CheckIfSuggestedPathExists(
     }
     // We know the final path, build it if necessary.
     if (state.path_uniquifier > 0) {
-      DownloadFile::AppendNumberToPath(&(state.suggested_path),
-                                       state.path_uniquifier);
+      state.suggested_path = state.suggested_path.InsertBeforeExtensionASCII(
+          StringPrintf(" (%d)", state.path_uniquifier));
       // Setting path_uniquifier to 0 to make sure we don't try to unique it
       // later on.
       state.path_uniquifier = 0;

@@ -295,9 +295,12 @@ class DownloadFileManagerTest : public testing::Test {
     int uniquifier = 0;
 
     if (is_complete && !replace) {
-      uniquifier = content::DownloadFile::GetUniquePathNumber(new_path);
-      if (uniquifier > 0)
-        content::DownloadFile::AppendNumberToPath(&unique_path, uniquifier);
+      uniquifier =
+          file_util::GetUniquePathNumber(new_path, FILE_PATH_LITERAL(""));
+      if (uniquifier > 0) {
+        unique_path = unique_path.InsertBeforeExtensionASCII(
+            StringPrintf(" (%d)", uniquifier));
+      }
     }
 
     EXPECT_CALL(*file, Rename(unique_path))

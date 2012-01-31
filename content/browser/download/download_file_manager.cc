@@ -399,9 +399,11 @@ void DownloadFileManager::RenameCompletingDownloadFile(
     // not exists yet, so the second file gets the same name.
     // This should not happen in the SAFE case, and we check for that in the UI
     // thread.
-    uniquifier = DownloadFile::GetUniquePathNumber(new_path);
+    uniquifier =
+        file_util::GetUniquePathNumber(new_path, FILE_PATH_LITERAL(""));
     if (uniquifier > 0) {
-      DownloadFile::AppendNumberToPath(&new_path, uniquifier);
+      new_path = new_path.InsertBeforeExtensionASCII(
+          StringPrintf(" (%d)", uniquifier));
     }
   }
 

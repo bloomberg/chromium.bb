@@ -790,9 +790,8 @@ FilePath DownloadItemImpl::GetTargetFilePath() const {
 
 FilePath DownloadItemImpl::GetFileNameToReportUser() const {
   if (state_info_.path_uniquifier > 0) {
-    FilePath name(state_info_.target_name);
-    DownloadFile::AppendNumberToPath(&name, state_info_.path_uniquifier);
-    return name;
+    return state_info_.target_name.InsertBeforeExtensionASCII(
+        StringPrintf(" (%d)", state_info_.path_uniquifier));
   }
   return state_info_.target_name;
 }

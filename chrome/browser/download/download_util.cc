@@ -33,7 +33,6 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/time_format.h"
 #include "content/browser/download/download_create_info.h"
-#include "content/browser/download/download_file.h"
 #include "content/browser/download/download_types.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/public/browser/browser_thread.h"
@@ -593,13 +592,12 @@ void UpdateAppIconDownloadProgress(int download_count,
 #endif
 
 int GetUniquePathNumberWithCrDownload(const FilePath& path) {
-  return DownloadFile::GetUniquePathNumberWithSuffix(
+  return file_util::GetUniquePathNumber(
       path, FILE_PATH_LITERAL(".crdownload"));
 }
 
 FilePath GetCrDownloadPath(const FilePath& suggested_path) {
-  return DownloadFile::AppendSuffixToPath(
-      suggested_path, FILE_PATH_LITERAL(".crdownload"));
+  return FilePath(suggested_path.value() + FILE_PATH_LITERAL(".crdownload"));
 }
 
 bool IsSavableURL(const GURL& url) {

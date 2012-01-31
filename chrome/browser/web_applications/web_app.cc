@@ -14,6 +14,7 @@
 #include "base/i18n/file_util_icu.h"
 #include "base/md5.h"
 #include "base/path_service.h"
+#include "base/stringprintf.h"
 #include "base/string_util.h"
 #include "base/threading/thread.h"
 #include "base/utf_string_conversions.h"
@@ -21,7 +22,6 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/download/download_file.h"
 #include "content/public/browser/browser_thread.h"
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
@@ -33,7 +33,6 @@
 #endif  // defined(OS_WIN)
 
 using content::BrowserThread;
-using content::DownloadFile;
 
 namespace {
 
@@ -290,12 +289,14 @@ void CreateShortcutTask(const FilePath& web_app_path,
     FilePath shortcut_file = shortcut_paths[i].Append(file_name).
         ReplaceExtension(FILE_PATH_LITERAL(".lnk"));
 
-    int unique_number = DownloadFile::GetUniquePathNumber(shortcut_file);
+    int unique_number =
+        file_util::GetUniquePathNumber(shortcut_file, FILE_PATH_LITERAL(""));
     if (unique_number == -1) {
       success = false;
       continue;
     } else if (unique_number > 0) {
-      DownloadFile::AppendNumberToPath(&shortcut_file, unique_number);
+      shortcut_file = shortcut_file.InsertBeforeExtensionASCII(
+          StringPrintf(" (%d)", unique_number));
     }
 
     success &= file_util::CreateShortcutLink(chrome_exe.value().c_str(),

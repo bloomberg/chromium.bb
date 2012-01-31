@@ -25,7 +25,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
-#include "content/browser/download/download_file.h"
 #include "content/browser/download/download_types.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_manager.h"
@@ -37,7 +36,6 @@
 #include "net/base/escape.h"
 
 using content::BrowserThread;
-using content::DownloadFile;
 using content::NavigationController;
 
 namespace {
@@ -102,9 +100,9 @@ void GetDownloadFilePath(const FilePath& download_directory,
 
   FilePath file = directory.AppendASCII(id + "_" + random_number + ".crx");
 
-  int uniquifier = DownloadFile::GetUniquePathNumber(file);
+  int uniquifier = file_util::GetUniquePathNumber(file, FILE_PATH_LITERAL(""));
   if (uniquifier > 0)
-    DownloadFile::AppendNumberToPath(&file, uniquifier);
+    file = file.InsertBeforeExtensionASCII(StringPrintf(" (%d)", uniquifier));
 
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
                           base::Bind(callback, file));
