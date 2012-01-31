@@ -78,6 +78,7 @@ class ChromeTests(object):
     # The known list of tests.
     # Recognise the original abbreviations as well as full executable names.
     self._test_list = {
+      "ash": self.TestAsh,              "aura_shell_unittests": self.TestAsh,
       "base": self.TestBase,            "base_unittests": self.TestBase,
       "browser": self.TestBrowser,      "browser_tests": self.TestBrowser,
       "crypto": self.TestCrypto,        "crypto_unittests": self.TestCrypto,
@@ -241,6 +242,9 @@ class ChromeTests(object):
     else:
       os.putenv("LD_LIBRARY_PATH", self._options.build_dir)
     return heapcheck_test.RunTool(cmd, supp, module)
+
+  def TestAsh(self):
+    return self.SimpleTest("ash", "aura_shell_unittests")
 
   def TestBase(self):
     return self.SimpleTest("base", "base_unittests")

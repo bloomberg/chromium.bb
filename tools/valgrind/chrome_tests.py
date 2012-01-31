@@ -222,6 +222,9 @@ class ChromeTests:
     self.SetupLdPath(False)
     return tool.Run(cmd, None)
 
+  def TestAsh(self):
+    return self.SimpleTest("ash", "aura_shell_unittests")
+
   def TestBase(self):
     return self.SimpleTest("base", "base_unittests")
 
@@ -438,6 +441,7 @@ class ChromeTests:
   # Recognise the original abbreviations as well as full executable names.
   _test_list = {
     "cmdline" : RunCmdLine,
+    "ash": TestAsh,              "aura_shell_unittests": TestAsh,
     "automated_ui" : TestAutomatedUI,
     "base": TestBase,            "base_unittests": TestBase,
     "browser": TestBrowser,      "browser_tests": TestBrowser,
