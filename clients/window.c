@@ -2038,9 +2038,11 @@ window_resize(struct window *window, int32_t width, int32_t height)
 				       allocation.height,
 				       widget->user_data);
 
-	window->allocation = widget->allocation;
-
-	window_schedule_redraw(window);
+	if (window->allocation.width != widget->allocation.width ||
+	    window->allocation.height != widget->allocation.height) {
+		window->allocation = widget->allocation;
+		window_schedule_redraw(window);
+	}
 }
 
 static void

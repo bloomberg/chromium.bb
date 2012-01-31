@@ -106,6 +106,16 @@ draw_stuff(cairo_surface_t *surface, int width, int height)
 }
 
 static void
+resize_handler(struct widget *widget,
+	       int32_t width, int32_t height, void *data)
+{
+	struct flower *flower = data;
+
+	/* Dont resize me */
+	widget_set_size(flower->widget, flower->width, flower->height);
+}
+
+static void
 redraw_handler(struct widget *widget, void *data)
 {
 	struct flower *flower = data;
@@ -173,6 +183,7 @@ int main(int argc, char *argv[])
 	flower.window = window_create(d, flower.width, flower.height);
 	flower.widget = window_add_widget(flower.window, &flower);
 
+	widget_set_resize_handler(flower.widget, resize_handler);
 	widget_set_redraw_handler(flower.widget, redraw_handler);
 	widget_set_motion_handler(flower.widget, motion_handler);
 	widget_set_button_handler(flower.widget, button_handler);
