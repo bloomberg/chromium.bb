@@ -456,13 +456,14 @@ static NSString* PathWithBaseURLAndName(NSURL* base, NSString* name) {
 
 // Returns if there is already a file |name| at dir NSURL |base|.
 static BOOL FileAlreadyExists(NSURL* base, NSString* name) {
-  return [[NSFileManager defaultManager]
-          fileExistsAtPath:PathWithBaseURLAndName(base, name)];
+  NSString* path = PathWithBaseURLAndName(base, name);
+  DCHECK([path hasSuffix:name]);
+  return [[NSFileManager defaultManager] fileExistsAtPath:path];
 }
 
 // Takes a destination URL, a suggested file name, & an extension (eg .webloc).
 // Returns the complete file name with extension you should use.
-// The name returned will not contain / or :, will not be longer than
+// The name returned will not contain /, : or ?, will not be longer than
 // kMaxNameLength + length of extension, and will not be a file name that
 // already exists in that directory. If necessary it will try appending a space
 // and a number to the name (but before the extension) trying numbers up to and
@@ -478,6 +479,8 @@ static NSString* UnusedLegalNameForNewDropFile(NSURL* saveLocation,
   NSString* filteredName = [fileName stringByReplacingOccurrencesOfString:@"/"
                                                                withString:@"-"];
   filteredName = [filteredName stringByReplacingOccurrencesOfString:@":"
+                                                         withString:@"-"];
+  filteredName = [filteredName stringByReplacingOccurrencesOfString:@"?"
                                                          withString:@"-"];
 
   if ([filteredName length] > kMaxNameLength)
@@ -512,6 +515,8 @@ static NSString* UnusedLegalNameForNewDropFile(NSURL* saveLocation,
 
   NSString* nameWithExtensionStr =
       UnusedLegalNameForNewDropFile(dropDestination, nameStr, @".webloc");
+  if (!nameWithExtensionStr)
+    return NULL;
 
   NSDictionary* urlDict = [NSDictionary dictionaryWithObject:urlStr
                                                       forKey:@"URL"];
