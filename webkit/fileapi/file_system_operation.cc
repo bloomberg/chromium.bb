@@ -786,7 +786,7 @@ bool FileSystemOperation::SetupSrcContextForWrite(const GURL& path,
                                                   bool create) {
   GURL origin_url;
   FileSystemType type;
-  FileSystemFileUtil* file_util;
+  FileSystemFileUtil* file_util = NULL;
   bool result = VerifyFileSystemPathForWrite(
       path, create, &origin_url, &type, &src_virtual_path_, &file_util);
   operation_context_.set_src_origin_url(origin_url);
@@ -800,7 +800,7 @@ bool FileSystemOperation::SetupDestContextForWrite(const GURL& path,
                                                    bool create) {
   GURL origin_url;
   FileSystemType type;
-  FileSystemFileUtil* file_util;
+  FileSystemFileUtil* file_util = NULL;
   bool result = VerifyFileSystemPathForWrite(
       path, create, &origin_url, &type, &dest_virtual_path_, &file_util);
   operation_context_.set_dest_origin_url(origin_url);
