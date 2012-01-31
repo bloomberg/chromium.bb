@@ -36,6 +36,7 @@ void FeedbackData::UpdateData(Profile* profile,
                                , const std::string& user_email
                                , const bool send_sys_info
                                , const bool sent_report
+                               , const std::string& timestamp
 #endif
                                ) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -49,6 +50,7 @@ void FeedbackData::UpdateData(Profile* profile,
   user_email_ = user_email;
   send_sys_info_ = send_sys_info;
   sent_report_ = sent_report;
+  timestamp_ = timestamp;
 #endif
 }
 
@@ -75,6 +77,7 @@ void FeedbackData::SendReport() {
                             , zip_content_ ? zip_content_->c_str() : NULL
                             , zip_content_ ? zip_content_->length() : 0
                             , send_sys_info_ ? sys_info_ : NULL
+                            , timestamp_
 #endif
                           );
 

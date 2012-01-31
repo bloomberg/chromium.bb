@@ -49,24 +49,27 @@ const char kReportPhishingUrl[] =
     "http://www.google.com/safebrowsing/report_phish/";
 
 // URL to post bug reports to.
-static char const kFeedbackPostUrl[] =
+const char kFeedbackPostUrl[] =
     "https://www.google.com/tools/feedback/chrome/__submit";
 
-static char const kProtBufMimeType[] = "application/x-protobuf";
-static char const kPngMimeType[] = "image/png";
+const char kProtBufMimeType[] = "application/x-protobuf";
+const char kPngMimeType[] = "image/png";
 
 // Tags we use in product specific data
-static char const kChromeVersionTag[] = "CHROME VERSION";
-static char const kOsVersionTag[] = "OS VERSION";
+const char kChromeVersionTag[] = "CHROME VERSION";
+const char kOsVersionTag[] = "OS VERSION";
+#if defined(OS_CHROMEOS)
+const char kTimestampTag[] = "TIMESTAMP";
+#endif
 
-static int const kHttpPostSuccessNoContent = 204;
-static int const kHttpPostFailNoConnection = -1;
-static int const kHttpPostFailClientError = 400;
-static int const kHttpPostFailServerError = 500;
+const int kHttpPostSuccessNoContent = 204;
+const int kHttpPostFailNoConnection = -1;
+const int kHttpPostFailClientError = 400;
+const int kHttpPostFailServerError = 500;
 
 #if defined(OS_CHROMEOS)
-static char const kBZip2MimeType[] = "application/x-bzip2";
-static char const kLogsAttachmentName[] = "system_logs.bz2";
+const char kBZip2MimeType[] = "application/x-bzip2";
+const char kLogsAttachmentName[] = "system_logs.bz2";
 // Maximum number of lines in system info log chunk to be still included
 // in product specific data.
 const size_t kMaxLineCount       = 40;
@@ -248,6 +251,7 @@ void FeedbackUtil::SendReport(
     , const char* zipped_logs_data
     , int zipped_logs_length
     , const chromeos::system::LogDictionaryType* const sys_info
+    , const std::string& timestamp
 #endif
     ) {
   // Create google feedback protocol buffer objects
@@ -337,6 +341,9 @@ void FeedbackUtil::SendReport(
       *(feedback_data.add_product_specific_binary_data()) = attachment;
     }
   }
+
+  if (timestamp != "")
+    AddFeedbackData(&feedback_data, std::string(kTimestampTag), timestamp);
 #endif
 
   // Set our category tag if we have one

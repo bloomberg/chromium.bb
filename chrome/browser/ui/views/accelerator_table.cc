@@ -94,6 +94,9 @@ const AcceleratorMapping kAcceleratorMap[] = {
   { ui::VKEY_L,              true,  true,  false, IDC_LOCK_SCREEN },
 #endif
   { ui::VKEY_I,              true,  true,  false, IDC_DEV_TOOLS },
+#if defined(OS_CHROMEOS)
+  { ui::VKEY_I,              false,  true,  true, IDC_FEEDBACK },
+#endif
   { ui::VKEY_F12,            false, false, false, IDC_DEV_TOOLS },
   { ui::VKEY_J,              true,  true,  false, IDC_DEV_TOOLS_CONSOLE },
   { ui::VKEY_C,              true,  true,  false, IDC_DEV_TOOLS_INSPECT },

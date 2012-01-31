@@ -12,7 +12,9 @@
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
 #include "base/string_number_conversions.h"
+#include "base/string_util.h"
 #include "base/utf_string_conversions.h"
+#include "base/time.h"
 #include "base/values.h"
 #include "chrome/browser/feedback/feedback_data.h"
 #include "chrome/browser/feedback/feedback_util.h"
@@ -56,9 +58,15 @@ namespace {
 
 const char kScreenshotBaseUrl[] = "chrome://screenshots/";
 const char kCurrentScreenshotUrl[] = "chrome://screenshots/current";
+
+const char kCategoryTagParameter[] = "categoryTag=";
+const char kDescriptionParameter[] = "description=";
+
 #if defined(OS_CHROMEOS)
 const char kSavedScreenshotsUrl[] = "chrome://screenshots/saved/";
 const char kScreenshotPattern[] = "screenshot-*.png";
+
+const char kTimestampParameter[] = "timestamp=";
 
 const size_t kMaxSavedScreenshots = 2;
 #endif
@@ -130,6 +138,13 @@ namespace browser {
 void ShowHtmlFeedbackView(Browser* browser,
                            const std::string& description_template,
                            const std::string& category_tag) {
+#if defined(OS_CHROMEOS)
+  // Grab the timestamp before we do anything else - this is crucial to help
+  // diagnose some hardware issues.
+  base::Time now = base::Time::Now();
+  std::string timestamp = base::DoubleToString(now.ToDoubleT());
+#endif
+
   // First check if we're already open (we cannot depend on ShowSingletonTab
   // for this functionality since we need to make *sure* we never get
   // instantiated again while we are open - with singleton tabs, that can
@@ -153,9 +168,15 @@ void ShowHtmlFeedbackView(Browser* browser,
   FeedbackUtil::SetScreenshotSize(success ? snapshot_bounds : gfx::Rect());
 
   std::string feedback_url = std::string(chrome::kChromeUIFeedbackURL) +
-      "#" + base::IntToString(browser->active_index()) +
-      "?description=" + net::EscapeUrlEncodedData(description_template, false) +
-      "&categoryTag=" + net::EscapeUrlEncodedData(category_tag, false);
+      "#" + base::IntToString(browser->active_index()) + "?" +
+      kDescriptionParameter +
+      net::EscapeUrlEncodedData(description_template, false) + "&" +
+      kCategoryTagParameter + net::EscapeUrlEncodedData(category_tag, false);
+
+#if defined(OS_CHROMEOS)
+  feedback_url = feedback_url + "&" + kTimestampParameter +
+                 net::EscapeUrlEncodedData(timestamp, false);
+#endif
   browser->ShowSingletonTab(GURL(feedback_url));
 }
 
@@ -199,6 +220,9 @@ class FeedbackHandler : public WebUIMessageHandler,
   // Variables to track SyslogsProvider::RequestSyslogs callback.
   chromeos::system::SyslogsProvider::Handle syslogs_handle_;
   CancelableRequestConsumer syslogs_consumer_;
+
+  // Timestamp of when the feedback request was initiated
+  std::string timestamp_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(FeedbackHandler);
@@ -304,22 +328,38 @@ bool FeedbackHandler::Init() {
      page_url = tab_->GetController().GetActiveEntry()->GetURL().spec();
   }
 
-  std::string params = page_url.substr(strlen(chrome::kChromeUIFeedbackURL));
-  // Erase the # - the first character.
-  if (params.length())
-    params.erase(params.begin(), params.begin() + 1);
+  url_parse::Parsed parts;
+  ParseStandardURL(page_url.c_str(), page_url.length(), &parts);
 
-  size_t additional_params_pos = params.find('?');
-  if (additional_params_pos != std::string::npos)
-    params.erase(params.begin() + additional_params_pos, params.end());
+  size_t params_start = page_url.find("?");
+  std::string index_str = page_url.substr(parts.ref.begin,
+                                          params_start - parts.ref.begin);
+  std::string query = page_url.substr(params_start + 1);
 
   int index = 0;
-  if (!base::StringToInt(params, &index))
+  if (!base::StringToInt(index_str, &index))
     return false;
+
+#if defined(OS_CHROMEOS)
+  std::vector<std::string> params;
+  if (Tokenize(query, std::string("&"), &params)) {
+    for (std::vector<std::string>::iterator it = params.begin();
+         it != params.end(); ++it) {
+      if (StartsWithASCII(*it, std::string(kTimestampParameter), true)) {
+        timestamp_ = *it;
+        ReplaceFirstSubstringAfterOffset(&timestamp_,
+                                         0,
+                                         kTimestampParameter,
+                                         "");
+        break;
+      }
+    }
+  }
+#endif
 
   Browser* browser = BrowserList::GetLastActive();
   // Sanity checks.
-  if (((index == 0) && (params != "0")) || !browser ||
+  if (((index == 0) && (index_str != "0")) || !browser ||
       index >= browser->tab_count()) {
     return false;
   }
@@ -469,6 +509,7 @@ void FeedbackHandler::HandleSendReport(const ListValue* list_value) {
                                , user_email
                                , send_sys_info
                                , false  // sent_report
+                               , timestamp_
 #endif
                                );
 

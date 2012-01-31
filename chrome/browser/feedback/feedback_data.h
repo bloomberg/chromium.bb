@@ -34,6 +34,7 @@ class FeedbackData {
                   , const std::string& user_email
                   , const bool send_sys_info
                   , const bool sent_report
+                  , const std::string& timestamp
 #endif
                   );
 
@@ -74,6 +75,7 @@ class FeedbackData {
   chromeos::system::LogDictionaryType* sys_info_;
   // Content of the compressed system logs.
   std::string* zip_content_;
+  std::string timestamp_;
   // NOTE: Extra boolean sent_report_ is required because callback may
   // occur before or after we call SendReport().
   bool sent_report_;
