@@ -49,8 +49,14 @@ const wchar_t kIEBrokerImageName[] = L"ieuser.exe";
 const char kChromeImageName[] = "chrome.exe";
 const wchar_t kIEProfileName[] = L"iexplore";
 const wchar_t kChromeLauncher[] = L"chrome_launcher.exe";
-const int kChromeFrameLongNavigationTimeoutInSeconds = 10;
-const int kChromeFrameVeryLongNavigationTimeoutInSeconds = 30;
+
+#ifndef NDEBUG
+const int kChromeFrameLongNavigationTimeoutInSeconds = 30;
+const int kChromeFrameVeryLongNavigationTimeoutInSeconds = 90;
+#else
+const int kChromeFrameLongNavigationTimeoutInSeconds = 15;
+const int kChromeFrameVeryLongNavigationTimeoutInSeconds = 45;
+#endif
 
 // Callback function for EnumThreadWindows.
 BOOL CALLBACK CloseWindowsThreadCallback(HWND hwnd, LPARAM param) {
