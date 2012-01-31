@@ -9,3 +9,5 @@ EXPORTS
   LaunchGoogleChrome                       PRIVATE
   LaunchGoogleChromeWithDimensions  @16    PRIVATE
   GoogleChromeDaysSinceLastRun             PRIVATE
+  CanOfferReactivation                     PRIVATE
+  ReactivateChrome                         PRIVATE

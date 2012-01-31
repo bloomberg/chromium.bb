@@ -25,6 +25,8 @@
             'installer/gcapi/gcapi.cc',
             'installer/gcapi/gcapi.def',
             'installer/gcapi/gcapi.h',
+            'installer/gcapi/gcapi_reactivation.cc',
+            'installer/gcapi/gcapi_reactivation.h',
           ],
         },
         {
@@ -41,6 +43,8 @@
           'sources': [
             'installer/gcapi/gcapi.cc',
             'installer/gcapi/gcapi.h',
+            'installer/gcapi/gcapi_reactivation.cc',
+            'installer/gcapi/gcapi_reactivation.h',
           ],
         },
         {
@@ -60,6 +64,7 @@
           ],
           'sources': [
             'installer/gcapi/gcapi_last_run_test.cc',
+            'installer/gcapi/gcapi_reactivation_test.cc',
             'installer/gcapi/gcapi_test.cc',
             'installer/gcapi/gcapi_test.rc',
             'installer/gcapi/resource.h',

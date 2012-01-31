@@ -1,0 +1,77 @@
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "chrome/installer/gcapi/gcapi_reactivation.h"
+
+#include "base/time.h"
+#include "base/win/registry.h"
+#include "chrome/installer/util/google_update_constants.h"
+
+using base::Time;
+using base::win::RegKey;
+
+namespace {
+const wchar_t kReactivationHistoryKey[] = L"reactivation";
+
+std::wstring GetReactivationHistoryKeyPath() {
+  std::wstring reactivation_path(google_update::kRegPathClientState);
+  reactivation_path += L"\\";
+  reactivation_path += google_update::kChromeUpgradeCode;
+  reactivation_path += L"\\";
+  reactivation_path += kReactivationHistoryKey;
+  return reactivation_path;
+}
+}  // namespace
+
+bool HasBeenReactivatedByBrandCodes(
+    const std::vector<std::wstring>& brand_codes) {
+  bool success = false;
+
+  RegKey reactivation_key(HKEY_CURRENT_USER,
+                          GetReactivationHistoryKeyPath().c_str(),
+                          KEY_QUERY_VALUE);
+  if (reactivation_key.Valid()) {
+    std::vector<std::wstring>::const_iterator brand_iter(brand_codes.begin());
+    for (; brand_iter != brand_codes.end(); ++brand_iter) {
+      if (reactivation_key.HasValue(brand_iter->c_str())) {
+        success = true;
+        break;
+      }
+    }
+  }
+
+  return success;
+}
+
+bool SetReactivationBrandCode(const std::wstring& brand_code) {
+  bool success = false;
+
+  std::wstring path(google_update::kRegPathClientState);
+  path += L"\\";
+  path += google_update::kChromeUpgradeCode;
+
+  RegKey client_state_key(HKEY_CURRENT_USER, path.c_str(), KEY_SET_VALUE);
+  if (client_state_key.Valid()) {
+    success = client_state_key.WriteValue(
+        google_update::kRegRLZReactivationBrandField,
+        brand_code.c_str()) == ERROR_SUCCESS;
+  }
+
+  if (success) {
+    // Store this brand code in the reactivation history. Store it with a
+    // a currently un-used timestamp for future proofing.
+    RegKey reactivation_key(HKEY_CURRENT_USER,
+                            GetReactivationHistoryKeyPath().c_str(),
+                            KEY_WRITE);
+    if (reactivation_key.Valid()) {
+      int64 timestamp = Time::Now().ToInternalValue();
+      reactivation_key.WriteValue(brand_code.c_str(),
+                                  &timestamp,
+                                  sizeof(timestamp),
+                                  REG_QWORD);
+    }
+  }
+
+  return success;
+}
