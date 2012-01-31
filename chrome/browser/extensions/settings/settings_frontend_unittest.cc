@@ -220,8 +220,13 @@ TEST_F(ExtensionSettingsFrontendTest,
   EXPECT_TRUE(storage->Remove("foo").HasError());
 }
 
+#if defined(OS_WIN)
+// Failing on vista dbg. http://crbug.com/111100, http://crbug.com/108724
+#define QuotaLimitsEnforcedCorrectlyForSyncAndLocal \
+  DISABLED_QuotaLimitsEnforcedCorrectlyForSyncAndLocal
+#endif
 TEST_F(ExtensionSettingsFrontendTest,
-    QuotaLimitsEnforcedCorrectlyForSyncAndLocal) {
+       QuotaLimitsEnforcedCorrectlyForSyncAndLocal) {
   const std::string id = "ext";
   profile_->GetMockExtensionService()->AddExtensionWithId(
       id, Extension::TYPE_EXTENSION);
