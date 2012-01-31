@@ -25,7 +25,8 @@ class ConstrainedHtmlDelegateMac :
 
  public:
   ConstrainedHtmlDelegateMac(Profile* profile,
-                             HtmlDialogUIDelegate* delegate);
+                             HtmlDialogUIDelegate* delegate,
+                             HtmlDialogTabContentsDelegate* tab_delegate);
   ~ConstrainedHtmlDelegateMac() {
     if (release_tab_on_close_)
       ignore_result(tab_.release());
@@ -62,6 +63,7 @@ class ConstrainedHtmlDelegateMac :
   // Holds the HTML to be displayed in the sheet.
   scoped_ptr<TabContentsWrapper> tab_;
   HtmlDialogUIDelegate* html_delegate_;  // weak.
+  scoped_ptr<HtmlDialogTabContentsDelegate> override_tab_delegate_;
 
   // The constrained window that owns |this|. Saved here because it needs to be
   // closed in response to the WebUI OnDialogClose callback.
@@ -92,7 +94,8 @@ class ConstrainedHtmlDelegateMac :
 
 ConstrainedHtmlDelegateMac::ConstrainedHtmlDelegateMac(
   Profile* profile,
-  HtmlDialogUIDelegate* delegate)
+  HtmlDialogUIDelegate* delegate,
+  HtmlDialogTabContentsDelegate* tab_delegate)
   : HtmlDialogTabContentsDelegate(profile),
     html_delegate_(delegate),
     constrained_window_(NULL),
@@ -101,7 +104,12 @@ ConstrainedHtmlDelegateMac::ConstrainedHtmlDelegateMac(
   WebContents* web_contents = WebContents::Create(
       profile, NULL, MSG_ROUTING_NONE, NULL, NULL);
   tab_.reset(new TabContentsWrapper(web_contents));
-  web_contents->SetDelegate(this);
+  if (tab_delegate) {
+    override_tab_delegate_.reset(tab_delegate);
+    web_contents->SetDelegate(tab_delegate);
+  } else {
+    web_contents->SetDelegate(this);
+  }
 
   // Set |this| as a property on the tab contents so that the ConstrainedHtmlUI
   // can get a reference to |this|.
@@ -156,10 +164,11 @@ void ConstrainedHtmlDelegateMac::ReleaseTabContentsOnDialogClose() {
 ConstrainedHtmlUIDelegate* ConstrainedHtmlUI::CreateConstrainedHtmlDialog(
     Profile* profile,
     HtmlDialogUIDelegate* delegate,
+    HtmlDialogTabContentsDelegate* tab_delegate,
     TabContentsWrapper* wrapper) {
   // Deleted when ConstrainedHtmlDelegateMac::DeleteDelegate() runs.
   ConstrainedHtmlDelegateMac* constrained_delegate =
-      new ConstrainedHtmlDelegateMac(profile, delegate);
+      new ConstrainedHtmlDelegateMac(profile, delegate, tab_delegate);
   // Deleted when ConstrainedHtmlDelegateMac::OnDialogCloseFromWebUI() runs.
   ConstrainedWindow* constrained_window =
       new ConstrainedWindowMac(wrapper, constrained_delegate);

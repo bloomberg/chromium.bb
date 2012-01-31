@@ -10,7 +10,6 @@
 #include "base/utf_string_conversions.h"
 #include "base/string_number_conversions.h"
 #include "chrome/browser/certificate_viewer.h"
-#include "chrome/browser/ui/dialog_style.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -92,6 +91,7 @@ void CertificateViewerDialog::Show(gfx::NativeWindow parent) {
   window_ = ConstrainedHtmlUI::CreateConstrainedHtmlDialog(
       current_wrapper->profile(),
       this,
+      NULL,
       current_wrapper)->window()->GetNativeWindow();
 #elif defined(OS_CHROMEOS)
   window_ = browser->BrowserShowHtmlDialog(this, parent,
@@ -167,12 +167,8 @@ void CertificateViewerDialogHandler::RegisterMessages() {
 
 void CertificateViewerDialogHandler::ExportCertificate(
     const base::ListValue* args) {
-  int cert_index;
-  double val;
-  if (!(args->GetDouble(0, &val)))
-    return;
-  cert_index = (int)val;
-  if (cert_index < 0 || cert_index >= (int)cert_chain_.size())
+  int cert_index = GetCertificateIndex(args);
+  if (cert_index < 0)
     return;
 
   ShowCertExportDialog(web_ui()->GetWebContents(),
@@ -277,13 +273,10 @@ void CertificateViewerDialogHandler::RequestCertificateInfo(
 
 void CertificateViewerDialogHandler::RequestCertificateFields(
     const base::ListValue* args) {
-  int cert_index;
-  double val;
-  if (!(args->GetDouble(0, &val)))
+  int cert_index = GetCertificateIndex(args);
+  if (cert_index < 0)
     return;
-  cert_index = (int)val;
-  if (cert_index < 0 || cert_index >= (int)cert_chain_.size())
-    return;
+
   net::X509Certificate::OSCertHandle cert = cert_chain_[cert_index];
 
   ListValue root_list;
@@ -425,4 +418,16 @@ void CertificateViewerDialogHandler::RequestCertificateFields(
   // Send certificate information to javascript.
   web_ui()->CallJavascriptFunction("cert_viewer.getCertificateFields",
       root_list);
+}
+
+int CertificateViewerDialogHandler::GetCertificateIndex(
+    const base::ListValue* args) const {
+  int cert_index;
+  double val;
+  if (!(args->GetDouble(0, &val)))
+    return -1;
+  cert_index = static_cast<int>(val);
+  if (cert_index < 0 || cert_index >= static_cast<int>(cert_chain_.size()))
+    return -1;
+  return cert_index;
 }

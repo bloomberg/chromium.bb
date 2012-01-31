@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/webui/tab_modal_confirm_dialog_webui.h"
 
 #include <string>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/json/json_reader.h"
@@ -54,7 +55,10 @@ TabModalConfirmDialogWebUI::TabModalConfirmDialogWebUI(
   profile->GetChromeURLDataManager()->AddDataSource(data_source);
 
   constrained_html_ui_delegate_ =
-      ConstrainedHtmlUI::CreateConstrainedHtmlDialog(profile, this, wrapper);
+      ConstrainedHtmlUI::CreateConstrainedHtmlDialog(profile,
+                                                     this,
+                                                     NULL,
+                                                     wrapper);
   delegate_->set_window(constrained_html_ui_delegate_->window());
 }
 

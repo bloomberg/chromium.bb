@@ -26,7 +26,8 @@ class ConstrainedHtmlDelegateGtk : public views::NativeWidgetGtk,
                                    public HtmlDialogTabContentsDelegate {
  public:
   ConstrainedHtmlDelegateGtk(Profile* profile,
-                             HtmlDialogUIDelegate* delegate);
+                             HtmlDialogUIDelegate* delegate,
+                             HtmlDialogTabContentsDelegate* tab_delegate);
   ~ConstrainedHtmlDelegateGtk();
 
   void set_window(ConstrainedWindow* window) {
@@ -45,7 +46,6 @@ class ConstrainedHtmlDelegateGtk : public views::NativeWidgetGtk,
   virtual TabContentsWrapper* tab() OVERRIDE {
     return html_tab_contents_.get();
   }
-
 
   // ConstrainedWindowGtkDelegate implementation.
   virtual GtkWidget* GetWidgetRoot() OVERRIDE {
@@ -73,8 +73,8 @@ class ConstrainedHtmlDelegateGtk : public views::NativeWidgetGtk,
  private:
   scoped_ptr<TabContentsWrapper> html_tab_contents_;
   TabContentsContainer* tab_container_;
-
   HtmlDialogUIDelegate* html_delegate_;
+  scoped_ptr<HtmlDialogTabContentsDelegate> override_tab_delegate_;
 
   // The constrained window that owns |this|.  Saved so we can close it later.
   ConstrainedWindow* window_;
@@ -89,7 +89,8 @@ class ConstrainedHtmlDelegateGtk : public views::NativeWidgetGtk,
 
 ConstrainedHtmlDelegateGtk::ConstrainedHtmlDelegateGtk(
     Profile* profile,
-    HtmlDialogUIDelegate* delegate)
+    HtmlDialogUIDelegate* delegate,
+    HtmlDialogTabContentsDelegate* tab_delegate)
     : views::NativeWidgetGtk(new views::Widget),
       HtmlDialogTabContentsDelegate(profile),
       tab_container_(NULL),
@@ -101,7 +102,12 @@ ConstrainedHtmlDelegateGtk::ConstrainedHtmlDelegateGtk(
   WebContents* web_contents =
       WebContents::Create(profile, NULL, MSG_ROUTING_NONE, NULL, NULL);
   html_tab_contents_.reset(new TabContentsWrapper(web_contents));
-  web_contents->SetDelegate(this);
+  if (tab_delegate) {
+    override_tab_delegate_.reset(tab_delegate);
+    web_contents->SetDelegate(tab_delegate);
+  } else {
+    web_contents->SetDelegate(this);
+  }
 
   // Set |this| as a property so the ConstrainedHtmlUI can retrieve it.
   ConstrainedHtmlUI::GetPropertyAccessor().SetProperty(
@@ -144,9 +150,10 @@ void ConstrainedHtmlDelegateGtk::OnDialogCloseFromWebUI() {
 ConstrainedHtmlUIDelegate* ConstrainedHtmlUI::CreateConstrainedHtmlDialog(
     Profile* profile,
     HtmlDialogUIDelegate* delegate,
+    HtmlDialogTabContentsDelegate* tab_delegate,
     TabContentsWrapper* wrapper) {
   ConstrainedHtmlDelegateGtk* constrained_delegate =
-      new ConstrainedHtmlDelegateGtk(profile, delegate);
+      new ConstrainedHtmlDelegateGtk(profile, delegate, tab_delegate);
   ConstrainedWindow* constrained_window =
       new ConstrainedWindowGtk(wrapper, constrained_delegate);
   constrained_delegate->set_window(constrained_window);

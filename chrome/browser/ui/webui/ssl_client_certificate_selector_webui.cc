@@ -122,7 +122,7 @@ void SSLClientCertificateSelectorWebUI::ShowDialog(
                                             cert_request_info,
                                             delegate);
   Profile* profile = wrapper->profile();
-  ConstrainedHtmlUI::CreateConstrainedHtmlDialog(profile, ui, wrapper);
+  ConstrainedHtmlUI::CreateConstrainedHtmlDialog(profile, ui, NULL, wrapper);
 }
 
 SSLClientCertificateSelectorWebUI::SSLClientCertificateSelectorWebUI(

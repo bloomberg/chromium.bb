@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -62,6 +62,7 @@ IN_PROC_BROWSER_TEST_F(ConstrainedHtmlDialogBrowserTest, BasicTest) {
   ConstrainedHtmlUIDelegate* html_ui_delegate =
       ConstrainedHtmlUI::CreateConstrainedHtmlDialog(browser()->profile(),
                                                      delegate,
+                                                     NULL,
                                                      wrapper);
   ASSERT_TRUE(html_ui_delegate);
   EXPECT_TRUE(html_ui_delegate->window());
@@ -80,6 +81,7 @@ IN_PROC_BROWSER_TEST_F(ConstrainedHtmlDialogBrowserTest,
   ConstrainedHtmlUIDelegate* html_ui_delegate =
       ConstrainedHtmlUI::CreateConstrainedHtmlDialog(browser()->profile(),
                                                      delegate,
+                                                     NULL,
                                                      wrapper);
   ASSERT_TRUE(html_ui_delegate);
   scoped_ptr<TabContentsWrapper> new_tab(html_ui_delegate->tab());

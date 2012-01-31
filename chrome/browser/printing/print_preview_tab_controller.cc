@@ -19,8 +19,10 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_navigator.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/webui/constrained_html_ui.h"
+#include "chrome/browser/ui/webui/html_dialog_tab_contents_delegate.h"
 #include "chrome/browser/ui/webui/html_dialog_ui.h"
 #include "chrome/browser/ui/webui/print_preview/print_preview_ui.h"
 #include "chrome/common/chrome_content_client.h"
@@ -53,6 +55,8 @@ void EnableInternalPDFPluginForTab(TabContentsWrapper* preview_tab) {
         ASCIIToUTF16(chrome::ChromeContentClient::kPDFPluginName));
 }
 
+// HtmlDialogUIDelegate that specifies what the print preview dialog will look
+// like.
 class PrintPreviewTabDelegate : public HtmlDialogUIDelegate {
  public:
   explicit PrintPreviewTabDelegate(TabContentsWrapper* initiator_tab);
@@ -140,6 +144,46 @@ bool PrintPreviewTabDelegate::ShouldShowDialogTitle() const {
   // Not used, returning dummy value.
   NOTREACHED();
   return false;
+}
+
+// WebContentsDelegate that forwards shortcut keys in the print preview
+// renderer to the browser.
+class PrintPreviewWebContentDelegate : public HtmlDialogTabContentsDelegate {
+ public:
+  PrintPreviewWebContentDelegate(Profile* profile,
+                                 TabContentsWrapper* initiator_tab);
+  virtual ~PrintPreviewWebContentDelegate();
+
+  virtual bool CanReloadContents(WebContents* source) const OVERRIDE;
+  virtual void HandleKeyboardEvent(
+      const NativeWebKeyboardEvent& event) OVERRIDE;
+
+ private:
+  TabContentsWrapper* tab_;
+
+  DISALLOW_COPY_AND_ASSIGN(PrintPreviewWebContentDelegate);
+};
+
+PrintPreviewWebContentDelegate::PrintPreviewWebContentDelegate(
+    Profile* profile,
+    TabContentsWrapper* initiator_tab)
+    : HtmlDialogTabContentsDelegate(profile),
+      tab_(initiator_tab) {}
+
+PrintPreviewWebContentDelegate::~PrintPreviewWebContentDelegate() {}
+
+bool PrintPreviewWebContentDelegate::CanReloadContents(
+    WebContents* source) const {
+  return false;
+}
+
+void PrintPreviewWebContentDelegate::HandleKeyboardEvent(
+    const NativeWebKeyboardEvent& event) {
+  Browser* current_browser =
+      BrowserList::FindBrowserWithWebContents(tab_->web_contents());
+  if (!current_browser)
+    return;
+  current_browser->window()->HandleKeyboardEvent(event);
 }
 
 }  // namespace
@@ -304,9 +348,6 @@ void PrintPreviewTabController::OnNavEntryCommitted(
           nav_type == content::NAVIGATION_TYPE_NEW_PAGE) {
         waiting_for_new_preview_page_ = false;
         SetInitiatorTabURLAndTitle(preview_tab);
-
-        // Disabling the delegate will prevent all future navigation.
-        tab->web_contents()->SetDelegate(NULL);
         return;
       }
 
@@ -379,12 +420,20 @@ TabContentsWrapper* PrintPreviewTabController::CreatePrintPreviewTab(
     }
   }
 
-  HtmlDialogUIDelegate* delegate = new PrintPreviewTabDelegate(initiator_tab);
-  ConstrainedHtmlUIDelegate* html_delegate =
+  // |html_dialog_ui_delegate| deletes itself in
+  // PrintPreviewTabDelegate::OnDialogClosed().
+  HtmlDialogUIDelegate* html_dialog_ui_delegate =
+      new PrintPreviewTabDelegate(initiator_tab);
+  // |html_tab_content_delegate|'s owner is |constrained_html_ui_delegate|.
+  PrintPreviewWebContentDelegate* html_tab_content_delegate =
+      new PrintPreviewWebContentDelegate(current_browser->profile(),
+                                         initiator_tab);
+  ConstrainedHtmlUIDelegate* constrained_html_ui_delegate =
       ConstrainedHtmlUI::CreateConstrainedHtmlDialog(current_browser->profile(),
-                                                     delegate,
+                                                     html_dialog_ui_delegate,
+                                                     html_tab_content_delegate,
                                                      initiator_tab);
-  TabContentsWrapper* preview_tab = html_delegate->tab();
+  TabContentsWrapper* preview_tab = constrained_html_ui_delegate->tab();
   EnableInternalPDFPluginForTab(preview_tab);
 
   // Add an entry to the map.

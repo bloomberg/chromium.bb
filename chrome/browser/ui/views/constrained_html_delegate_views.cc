@@ -25,7 +25,8 @@ class ConstrainedHtmlDelegateViews : public TabContentsContainer,
                                      public HtmlDialogTabContentsDelegate {
  public:
   ConstrainedHtmlDelegateViews(Profile* profile,
-                               HtmlDialogUIDelegate* delegate);
+                               HtmlDialogUIDelegate* delegate,
+                               HtmlDialogTabContentsDelegate* tab_delegate);
   ~ConstrainedHtmlDelegateViews();
 
   void set_window(ConstrainedWindow* window) {
@@ -88,8 +89,8 @@ class ConstrainedHtmlDelegateViews : public TabContentsContainer,
 
  private:
   scoped_ptr<TabContentsWrapper> html_tab_contents_;
-
   HtmlDialogUIDelegate* html_delegate_;
+  scoped_ptr<HtmlDialogTabContentsDelegate> override_tab_delegate_;
 
   // The constrained window that owns |this|.  Saved so we can close it later.
   ConstrainedWindow* window_;
@@ -104,7 +105,8 @@ class ConstrainedHtmlDelegateViews : public TabContentsContainer,
 
 ConstrainedHtmlDelegateViews::ConstrainedHtmlDelegateViews(
     Profile* profile,
-    HtmlDialogUIDelegate* delegate)
+    HtmlDialogUIDelegate* delegate,
+    HtmlDialogTabContentsDelegate* tab_delegate)
     : HtmlDialogTabContentsDelegate(profile),
       html_delegate_(delegate),
       window_(NULL),
@@ -114,7 +116,12 @@ ConstrainedHtmlDelegateViews::ConstrainedHtmlDelegateViews(
   WebContents* web_contents =
       WebContents::Create(profile, NULL, MSG_ROUTING_NONE, NULL, NULL);
   html_tab_contents_.reset(new TabContentsWrapper(web_contents));
-  web_contents->SetDelegate(this);
+  if (tab_delegate) {
+    override_tab_delegate_.reset(tab_delegate);
+    web_contents->SetDelegate(tab_delegate);
+  } else {
+    web_contents->SetDelegate(this);
+  }
 
   // Set |this| as a property so the ConstrainedHtmlUI can retrieve it.
   ConstrainedHtmlUI::GetPropertyAccessor().SetProperty(
@@ -147,9 +154,10 @@ void ConstrainedHtmlDelegateViews::ReleaseTabContentsOnDialogClose() {
 ConstrainedHtmlUIDelegate* ConstrainedHtmlUI::CreateConstrainedHtmlDialog(
     Profile* profile,
     HtmlDialogUIDelegate* delegate,
+    HtmlDialogTabContentsDelegate* tab_delegate,
     TabContentsWrapper* container) {
   ConstrainedHtmlDelegateViews* constrained_delegate =
-      new ConstrainedHtmlDelegateViews(profile, delegate);
+      new ConstrainedHtmlDelegateViews(profile, delegate, tab_delegate);
   ConstrainedWindow* constrained_window =
       new ConstrainedWindowViews(container, constrained_delegate);
   constrained_delegate->set_window(constrained_window);

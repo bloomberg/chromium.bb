@@ -263,7 +263,7 @@ void LoginHandlerHtml::BuildViewForPasswordManager(
   delegate_ = new LoginHandlerHtmlDelegate(this, explanation);
   ConstrainedWindow* dialog =
       ConstrainedHtmlUI::CreateConstrainedHtmlDialog(
-          profile, delegate_, wrapper)->window();
+          profile, delegate_, NULL, wrapper)->window();
 
   SetModel(manager);
   SetDialog(dialog);

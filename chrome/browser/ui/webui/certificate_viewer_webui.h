@@ -6,6 +6,9 @@
 #define CHROME_BROWSER_UI_WEBUI_CERTIFICATE_VIEWER_WEBUI_H_
 #pragma once
 
+#include <string>
+#include <vector>
+
 #include "base/compiler_specific.h"
 #include "base/values.h"
 #include "chrome/browser/ui/webui/html_dialog_ui.h"
@@ -91,6 +94,10 @@ class CertificateViewerDialogHandler : public content::WebUIMessageHandler {
   // Extracts the certificate details and returns them to the javascript
   // function cert_viewer.getCertificateInfo in a dictionary structure.
   void RequestCertificateInfo(const base::ListValue* args);
+
+  // Helper function to get the certificate index from |args|. Returns -1 if
+  // the index is out of range.
+  int GetCertificateIndex(const base::ListValue* args) const;
 
   // The certificate being viewed.
   scoped_refptr<net::X509Certificate> cert_;
