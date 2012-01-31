@@ -477,7 +477,7 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     self.set_clear_profile(clear_profile)
     if pre_launch_hook:
       pre_launch_hook()
-    logging.debug('Restarting browser with clear_profile=%s' %
+    logging.debug('Restarting browser with clear_profile=%s',
                   self.get_clear_profile())
     self.LaunchBrowserAndServer()
     self.set_clear_profile(orig_clear_state)  # Reset to original state.
@@ -718,14 +718,24 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
       timeout = self.action_max_timeout_ms() / 1000.0
     assert callable(function), "function should be a callable"
     begin = time.time()
+    debug_begin = begin
     while timeout is None or time.time() - begin <= timeout:
       retval = function(*args)
       if (expect_retval is None and retval) or expect_retval == retval:
         return True
-      if debug:
-        logging.debug('WaitUntil(%s) still waiting. '
-                      'Expecting %s. Last returned %s.' % (
-                      function, expect_retval, retval))
+      if debug and time.time() - debug_begin > 5:
+        debug_begin += 5
+        if function.func_name == (lambda: True).func_name:
+          function_info = inspect.getsource(function).strip()
+        else:
+          function_info = '%s()' % function.func_name
+        logging.debug('WaitUntil(%s:%d %s) still waiting. '
+                      'Expecting %s. Last returned %s.',
+                      os.path.basename(inspect.getsourcefile(function)),
+                      inspect.getsourcelines(function)[1],
+                      function_info,
+                      True if expect_retval is None else expect_retval,
+                      retval)
       time.sleep(retry_sleep)
     return False
 
@@ -742,14 +752,14 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     assert sync_server.Start(), 'Could not start sync server'
     sync_server.ports = dict(port=sync_server.GetPort(),
                              xmpp_port=sync_server.GetSyncXmppPort())
-    logging.debug('Started sync server at ports %s.' % sync_server.ports)
+    logging.debug('Started sync server at ports %s.', sync_server.ports)
     return sync_server
 
   def StopSyncServer(self, sync_server):
     """Stop the local sync server."""
     assert sync_server, 'Sync Server not yet started'
     assert sync_server.Stop(), 'Could not stop sync server'
-    logging.debug('Stopped sync server at ports %s.' % sync_server.ports)
+    logging.debug('Stopped sync server at ports %s.', sync_server.ports)
 
   def StartFTPServer(self, data_dir):
     """Start a local file server hosting data files over ftp://
@@ -763,7 +773,7 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     ftp_server = pyautolib.TestServer(pyautolib.TestServer.TYPE_FTP,
         pyautolib.FilePath(data_dir))
     assert ftp_server.Start(), 'Could not start ftp server'
-    logging.debug('Started ftp server at "%s".' % data_dir)
+    logging.debug('Started ftp server at "%s".', data_dir)
     return ftp_server
 
   def StopFTPServer(self, ftp_server):
@@ -785,7 +795,7 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     http_server = pyautolib.TestServer(pyautolib.TestServer.TYPE_HTTP,
         pyautolib.FilePath(data_dir))
     assert http_server.Start(), 'Could not start HTTP server'
-    logging.debug('Started HTTP server at "%s".' % data_dir)
+    logging.debug('Started HTTP server at "%s".', data_dir)
     return http_server
 
   def StopHTTPServer(self, http_server):
@@ -4530,7 +4540,7 @@ class PyUITestSuite(pyautolib.PyUITestSuiteBase, unittest.TestSuite):
         pyautolib.FilePath(http_data_dir))
     assert http_server.Start(), 'Could not start http server'
     _HTTP_SERVER = http_server
-    logging.debug('Started http server at "%s".' % http_data_dir)
+    logging.debug('Started http server at "%s".', http_data_dir)
 
   def _StopHTTPServer(self):
     """Stop the local http server."""
@@ -4769,7 +4779,7 @@ class Main(object):
     elif type(obj) == types.UnboundMethodType:
       return [name]
     else:
-      logging.warn('No tests in "%s"' % name)
+      logging.warn('No tests in "%s"', name)
       return []
 
   def _ListMissingTests(self):
@@ -4830,7 +4840,7 @@ class Main(object):
         pyauto_tests_file = os.path.join(self.TestsDir(), self._tests_filename)
         logging.debug("Reading %s", pyauto_tests_file)
         if not os.path.exists(pyauto_tests_file):
-          logging.warn("%s missing. Cannot load tests." % pyauto_tests_file)
+          logging.warn("%s missing. Cannot load tests.", pyauto_tests_file)
         else:
           args = self._ExpandTestNamesFrom(pyauto_tests_file,
                                            self._options.suite)
@@ -4853,7 +4863,7 @@ class Main(object):
       platform = 'chromeos'
     assert platform in self._platform_map, '%s unsupported' % platform
     def _NamesInSuite(suite_name):
-      logging.debug('Expanding suite %s' % suite_name)
+      logging.debug('Expanding suite %s', suite_name)
       platforms = suites.get(suite_name)
       names = platforms.get('all', []) + \
               platforms.get(self._platform_map[platform], [])
@@ -4880,9 +4890,9 @@ class Main(object):
       if name in args:
         args.remove(name)
       else:
-        logging.warn('Cannot exclude %s. Not included. Ignoring' % name)
+        logging.warn('Cannot exclude %s. Not included. Ignoring', name)
     if excluded:
-      logging.debug('Excluded %d test(s): %s' % (len(excluded), excluded))
+      logging.debug('Excluded %d test(s): %s', len(excluded), excluded)
     return args
 
   def _Run(self):
