@@ -67,6 +67,7 @@ class ResourceCreationProxy : public InterfaceProxy,
                                        PP_FileSystemType type) OVERRIDE;
   virtual PP_Resource CreateFlashMenu(PP_Instance instance,
                                       const PP_Flash_Menu* menu_data) OVERRIDE;
+  virtual PP_Resource CreateFlashMessageLoop(PP_Instance instance) OVERRIDE;
   virtual PP_Resource CreateFlashNetConnector(PP_Instance instance) OVERRIDE;
   virtual PP_Resource CreateFontObject(
       PP_Instance instance,

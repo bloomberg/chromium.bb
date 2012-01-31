@@ -87,6 +87,8 @@
         'proxy/ppb_flash_proxy.h',
         'proxy/ppb_flash_menu_proxy.cc',
         'proxy/ppb_flash_menu_proxy.h',
+        'proxy/ppb_flash_message_loop_proxy.cc',
+        'proxy/ppb_flash_message_loop_proxy.h',
         'proxy/ppb_flash_net_connector_proxy.cc',
         'proxy/ppb_flash_net_connector_proxy.h',
         'proxy/ppb_font_proxy.cc',

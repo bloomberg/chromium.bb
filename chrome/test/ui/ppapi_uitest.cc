@@ -815,4 +815,9 @@ TEST_PPAPI_OUT_OF_PROCESS(ResourceArray_OutOfRangeAccess)
 TEST_PPAPI_OUT_OF_PROCESS(ResourceArray_EmptyArray)
 TEST_PPAPI_OUT_OF_PROCESS(ResourceArray_InvalidElement)
 
+TEST_PPAPI_IN_PROCESS(FlashMessageLoop_Basics)
+TEST_PPAPI_IN_PROCESS(FlashMessageLoop_RunWithoutQuit)
+TEST_PPAPI_OUT_OF_PROCESS(FlashMessageLoop_Basics)
+TEST_PPAPI_OUT_OF_PROCESS(FlashMessageLoop_RunWithoutQuit)
+
 #endif // ADDRESS_SANITIZER

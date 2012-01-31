@@ -766,6 +766,16 @@ IPC_MESSAGE_ROUTED3(PpapiMsg_PPBFlashMenu_ShowACK,
                     int32_t /* selected_id */,
                     int32_t /* result */)
 
+// PPB_Flash_MessageLoop.
+IPC_SYNC_MESSAGE_ROUTED1_1(PpapiHostMsg_PPBFlashMessageLoop_Create,
+                           PP_Instance /* instance */,
+                           ppapi::HostResource /* result */)
+IPC_SYNC_MESSAGE_ROUTED1_1(PpapiHostMsg_PPBFlashMessageLoop_Run,
+                           ppapi::HostResource /* flash_message_loop */,
+                           int32_t /* result */)
+IPC_SYNC_MESSAGE_ROUTED1_0(PpapiHostMsg_PPBFlashMessageLoop_Quit,
+                           ppapi::HostResource /* flash_message_loop */)
+
 // PPB_Flash_NetConnector.
 IPC_SYNC_MESSAGE_ROUTED1_1(PpapiHostMsg_PPBFlashNetConnector_Create,
                            PP_Instance /* instance_id */,

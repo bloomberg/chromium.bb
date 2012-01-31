@@ -70,6 +70,7 @@
 #include "ppapi/c/private/ppb_flash_clipboard.h"
 #include "ppapi/c/private/ppb_flash_file.h"
 #include "ppapi/c/private/ppb_flash_fullscreen.h"
+#include "ppapi/c/private/ppb_flash_message_loop.h"
 #include "ppapi/c/private/ppb_flash_tcp_socket.h"
 #include "ppapi/c/private/ppb_gpu_blacklist_private.h"
 #include "ppapi/c/private/ppb_instance_private.h"
@@ -321,6 +322,8 @@ const void* GetInterface(const char* name) {
     return PPB_Flash_File_ModuleLocal_Impl::GetInterface();
   if (strcmp(name, PPB_FLASH_MENU_INTERFACE_0_2) == 0)
     return ::ppapi::thunk::GetPPB_Flash_Menu_0_2_Thunk();
+  if (strcmp(name, PPB_FLASH_MESSAGELOOP_INTERFACE_0_1) == 0)
+    return ::ppapi::thunk::GetPPB_Flash_MessageLoop_0_1_Thunk();
   if (strcmp(name, PPB_FLASH_TCPSOCKET_INTERFACE_0_2) == 0)
     return ::ppapi::thunk::GetPPB_TCPSocket_Private_0_3_Thunk();
   if (strcmp(name, PPB_FULLSCREEN_DEV_INTERFACE_0_5) == 0)

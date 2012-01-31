@@ -19,6 +19,7 @@
 #include "ppapi/proxy/ppb_file_ref_proxy.h"
 #include "ppapi/proxy/ppb_file_system_proxy.h"
 #include "ppapi/proxy/ppb_flash_menu_proxy.h"
+#include "ppapi/proxy/ppb_flash_message_loop_proxy.h"
 #include "ppapi/proxy/ppb_flash_net_connector_proxy.h"
 #include "ppapi/proxy/ppb_font_proxy.h"
 #include "ppapi/proxy/ppb_graphics_2d_proxy.h"
@@ -142,6 +143,11 @@ PP_Resource ResourceCreationProxy::CreateFlashMenu(
     PP_Instance instance,
     const PP_Flash_Menu* menu_data) {
   return PPB_Flash_Menu_Proxy::CreateProxyResource(instance, menu_data);
+}
+
+PP_Resource ResourceCreationProxy::CreateFlashMessageLoop(
+    PP_Instance instance) {
+  return PPB_Flash_MessageLoop_Proxy::CreateProxyResource(instance);
 }
 
 PP_Resource ResourceCreationProxy::CreateFlashNetConnector(

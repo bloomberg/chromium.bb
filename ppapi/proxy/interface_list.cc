@@ -51,6 +51,7 @@
 #include "ppapi/c/private/ppb_flash_fullscreen.h"
 #include "ppapi/c/private/ppb_flash.h"
 #include "ppapi/c/private/ppb_flash_menu.h"
+#include "ppapi/c/private/ppb_flash_message_loop.h"
 #include "ppapi/c/private/ppb_flash_net_connector.h"
 #include "ppapi/c/private/ppb_flash_tcp_socket.h"
 #include "ppapi/c/private/ppb_net_address_private.h"
@@ -74,6 +75,7 @@
 #include "ppapi/proxy/ppb_flash_clipboard_proxy.h"
 #include "ppapi/proxy/ppb_flash_file_proxy.h"
 #include "ppapi/proxy/ppb_flash_menu_proxy.h"
+#include "ppapi/proxy/ppb_flash_message_loop_proxy.h"
 #include "ppapi/proxy/ppb_flash_net_connector_proxy.h"
 #include "ppapi/proxy/ppb_flash_proxy.h"
 #include "ppapi/proxy/ppb_font_proxy.h"
@@ -286,6 +288,11 @@ void InterfaceList::AddFlashInterfaces() {
   AddProxy(API_ID_PPB_FLASH_MENU, &ProxyFactory<PPB_Flash_Menu_Proxy>);
   AddPPB(PPB_FLASH_MENU_INTERFACE_0_2, API_ID_PPB_FLASH_MENU,
          thunk::GetPPB_Flash_Menu_0_2_Thunk());
+
+  AddProxy(API_ID_PPB_FLASH_MESSAGELOOP,
+           &ProxyFactory<PPB_Flash_MessageLoop_Proxy>);
+  AddPPB(PPB_FLASH_MESSAGELOOP_INTERFACE_0_1, API_ID_PPB_FLASH_MESSAGELOOP,
+         thunk::GetPPB_Flash_MessageLoop_0_1_Thunk());
 
   // Only add the interface; PPB_TCPSocket_Private provides the API ID's proxy.
   AddPPB(PPB_FLASH_TCPSOCKET_INTERFACE_0_2, API_ID_PPB_TCPSOCKET_PRIVATE,

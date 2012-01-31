@@ -92,6 +92,7 @@
 #include "ppapi/c/ppp_mouse_lock.h"
 #include "ppapi/c/private/ppb_flash.h"
 #include "ppapi/c/private/ppb_flash_menu.h"
+#include "ppapi/c/private/ppb_flash_message_loop.h"
 #include "ppapi/c/private/ppb_flash_tcp_socket.h"
 #include "ppapi/c/private/ppb_gpu_blacklist_private.h"
 #include "ppapi/c/trusted/ppb_graphics_3d_trusted.h"

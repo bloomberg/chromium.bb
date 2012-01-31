@@ -179,6 +179,8 @@
         'thunk/ppb_flash_fullscreen_thunk.cc',
         'thunk/ppb_flash_menu_api.h',
         'thunk/ppb_flash_menu_thunk.cc',
+        'thunk/ppb_flash_message_loop_api.h',
+        'thunk/ppb_flash_message_loop_thunk.cc',
         'thunk/ppb_flash_net_connector_api.h',
         'thunk/ppb_flash_net_connector_thunk.cc',
         'thunk/ppb_font_api.h',

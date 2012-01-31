@@ -8,6 +8,7 @@
 #include "ppapi/c/ppb_graphics_3d.h"
 #include "ppapi/c/private/ppb_flash_clipboard.h"
 #include "ppapi/c/private/ppb_flash_menu.h"
+#include "ppapi/c/private/ppb_flash_message_loop.h"
 #include "ppapi/c/private/ppb_flash_net_connector.h"
 #include "ppapi/c/private/ppb_flash_fullscreen.h"
 #include "ppapi/c/private/ppb_instance_private.h"
@@ -60,6 +61,8 @@ PPAPI_THUNK_EXPORT const PPB_FileChooserTrusted_0_5*
 PPAPI_THUNK_EXPORT const PPB_Flash_Clipboard_3_0*
     GetPPB_Flash_Clipboard_3_0_Thunk();
 PPAPI_THUNK_EXPORT const PPB_Flash_Menu_0_2* GetPPB_Flash_Menu_0_2_Thunk();
+PPAPI_THUNK_EXPORT const PPB_Flash_MessageLoop_0_1*
+    GetPPB_Flash_MessageLoop_0_1_Thunk();
 PPAPI_THUNK_EXPORT const PPB_Flash_NetConnector_0_2*
     GetPPB_Flash_NetConnector_0_2_Thunk();
 PPAPI_THUNK_EXPORT const PPB_Graphics3DTrusted_1_0*
