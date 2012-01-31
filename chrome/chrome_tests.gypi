@@ -2658,7 +2658,6 @@
         'browser/infobars/infobar_extension_apitest.cc',
         'browser/importer/toolbar_importer_utils_browsertest.cc',
         'browser/magic_iframe_browsertest.cc',
-        'browser/media/media_browsertest.cc',
         'browser/net/cookie_policy_browsertest.cc',
         'browser/net/ftp_browsertest.cc',
         'browser/notifications/desktop_notifications_unittest.cc',
