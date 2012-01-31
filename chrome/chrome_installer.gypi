@@ -14,6 +14,7 @@
           'target_name': 'gcapi_dll',
           'type': 'loadable_module',
           'dependencies': [
+            'gcapi_lib',
             'installer_util',
             '<(DEPTH)/base/base.gyp:base',
             '<(DEPTH)/google_update/google_update.gyp:google_update',
@@ -22,9 +23,7 @@
             '<(DEPTH)',
           ],
           'sources': [
-            'installer/gcapi/gcapi.cc',
             'installer/gcapi/gcapi.def',
-            'installer/gcapi/gcapi.h',
           ],
         },
         {
@@ -41,6 +40,8 @@
           'sources': [
             'installer/gcapi/gcapi.cc',
             'installer/gcapi/gcapi.h',
+            'installer/gcapi/gcapi_reactivation.cc',
+            'installer/gcapi/gcapi_reactivation.h',
           ],
         },
         {
@@ -60,6 +61,7 @@
           ],
           'sources': [
             'installer/gcapi/gcapi_last_run_test.cc',
+            'installer/gcapi/gcapi_reactivation_test.cc',
             'installer/gcapi/gcapi_test.cc',
             'installer/gcapi/gcapi_test.rc',
             'installer/gcapi/resource.h',
