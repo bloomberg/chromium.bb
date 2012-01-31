@@ -59,13 +59,13 @@ select:not(.custom-appearance):focus {
   -webkit-transition: border-color 200ms;
   /* We use border color because it follows the border radius (unlike outline).
    * This is particularly noticeable on mac. */
-  border-color: #4080fa;
+  border-color: rgb(64, 128, 250);
   outline: none;
 }
 
 /* Search boxes use an outline because it follows the contours of the box. */
 input[type='search']:not(.custom-appearance):focus {
-  outline-color: #4080fa;
+  outline-color: rgb(64, 128, 250);
 }
 
 /* TODO(jhawkins): Refactor button styling and remove !important here. This is
@@ -77,8 +77,11 @@ input[type='search']:not(.custom-appearance):focus {
   -webkit-box-shadow: none !important;
   background: transparent none !important;
   border: none !important;
-  color: #1155cc !important;
+  color: rgb(17, 85, 204) !important;
   cursor: pointer;
+  /* Input elements have -webkit-small-control which overrides the body font.
+   * Resolve this by using 'inherit'. */
+  font-family: inherit;
   margin: 0;
   padding: 0 4px !important;
 }
@@ -88,6 +91,6 @@ input[type='search']:not(.custom-appearance):focus {
 }
 
 .link-button:active {
-  color: #052577 !important;
+  color: rgb(5, 37, 119) !important;
   text-decoration: underline;
 }

@@ -13,7 +13,7 @@
 
 body {
   cursor: default;
-  font-family: Open Sans, sans-serif;
+  font-family: 'Open Sans', sans-serif;
   font-size: 12px;
   margin: 0;
 }
@@ -31,12 +31,12 @@ h1 {
 }
 
 a {
-  color: #1155cc;
+  color: rgb(17, 85, 204);
   text-decoration: underline;
 }
 
 a:active {
-  color: #052577;
+  color: rgb(5, 37, 119);
 }
 
 div.checkbox,
