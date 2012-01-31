@@ -275,6 +275,17 @@ hooks = [
     'action':
          [
     'python',
+    'src/build/util/lastchange.py',
+    '-o',
+    'src/build/util/LASTCHANGE'
+],
+    'pattern':
+         '.'
+},
+    {
+    'action':
+         [
+    'python',
     'src/build/gyp_chromium'
 ],
     'pattern':
