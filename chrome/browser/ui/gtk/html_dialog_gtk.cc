@@ -38,6 +38,10 @@ gfx::NativeWindow ShowHtmlDialog(gfx::NativeWindow parent,
   return html_dialog->InitDialog();
 }
 
+void CloseHtmlDialog(gfx::NativeWindow window) {
+  gtk_widget_destroy(GTK_WIDGET(window));
+}
+
 } // namespace browser
 
 namespace {
@@ -149,6 +153,30 @@ void HtmlDialogGtk::CloseContents(WebContents* source) {
   OnCloseContents(source, &close_dialog);
   if (close_dialog)
     OnDialogClosed(std::string());
+}
+
+content::WebContents* HtmlDialogGtk::OpenURLFromTab(
+    content::WebContents* source,
+    const content::OpenURLParams& params) {
+  content::WebContents* new_contents = NULL;
+  if (delegate_ &&
+      delegate_->HandleOpenURLFromTab(source, params, &new_contents)) {
+    return new_contents;
+  }
+  return HtmlDialogTabContentsDelegate::OpenURLFromTab(source, params);
+}
+
+void HtmlDialogGtk::AddNewContents(content::WebContents* source,
+                                   content::WebContents* new_contents,
+                                   WindowOpenDisposition disposition,
+                                   const gfx::Rect& initial_pos,
+                                   bool user_gesture) {
+  if (delegate_ && delegate_->HandleAddNewContents(
+          source, new_contents, disposition, initial_pos, user_gesture)) {
+    return;
+  }
+  HtmlDialogTabContentsDelegate::AddNewContents(
+      source, new_contents, disposition, initial_pos, user_gesture);
 }
 
 bool HtmlDialogGtk::ShouldShowDialogTitle() const {

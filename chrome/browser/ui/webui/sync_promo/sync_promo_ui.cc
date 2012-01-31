@@ -295,14 +295,17 @@ bool SyncPromoUI::UserHasSeenSyncPromoAtStartup(Profile* profile) {
 }
 
 // static
-int SyncPromoUI::GetSyncPromoVersion() {
-  int version = 0;
+SyncPromoUI::Version SyncPromoUI::GetSyncPromoVersion() {
+  int value = 0;
   if (base::StringToInt(CommandLine::ForCurrentProcess()->
-      GetSwitchValueASCII(switches::kSyncPromoVersion), &version)) {
-    return version;
+      GetSwitchValueASCII(switches::kSyncPromoVersion), &value)) {
+    if (value >= VERSION_DEFAULT && value < VERSION_COUNT)
+      return static_cast<Version>(value);
   }
+
+  Version version;
   if (sync_promo_trial::GetSyncPromoVersionForCurrentTrial(&version))
     return version;
-  // Default promo version is 0.
-  return 0;
+
+  return VERSION_DEFAULT;
 }

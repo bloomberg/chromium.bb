@@ -49,6 +49,9 @@ gfx::NativeWindow ShowHtmlDialog(gfx::NativeWindow parent,
                                  HtmlDialogUIDelegate* delegate,
                                  DialogStyle style);
 
+// Closes the given dialog.
+void CloseHtmlDialog(gfx::NativeWindow window);
+
 // Creates the ExtensionInstalledBubble and schedules it to be shown once
 // the extension has loaded. |extension| is the installed extension. |browser|
 // is the browser window which will host the bubble. |icon| is the install

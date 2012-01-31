@@ -11,6 +11,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/string16.h"
+#include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_ui_controller.h"
 #include "googleurl/src/gurl.h"
 #include "ui/base/ui_base_types.h"
@@ -78,6 +79,24 @@ class HtmlDialogUIDelegate {
   // Returns true iff you do NOT want the standard context menu to be
   // shown (because you want to handle it yourself).
   virtual bool HandleContextMenu(const ContextMenuParams& params);
+
+  // A callback to allow the delegate to open a new URL inside |source|.
+  // On return |out_new_contents| should contain the WebContents the URL
+  // is opened in. Return false to use the default handler.
+  virtual bool HandleOpenURLFromTab(content::WebContents* source,
+                                    const content::OpenURLParams& params,
+                                    content::WebContents** out_new_contents);
+
+  // A callback to create a new tab with |new_contents|. |source| is the
+  // WebContent where the operation originated. |disposition| controls how the
+  // new tab should be opened. |initial_pos| is the position of the window if a
+  // new window is created. |user_gesture| is true if the operation was started
+  // by a user gesture. Return false to use the default handler.
+  virtual bool HandleAddNewContents(content::WebContents* source,
+                                    content::WebContents* new_contents,
+                                    WindowOpenDisposition disposition,
+                                    const gfx::Rect& initial_pos,
+                                    bool user_gesture);
 
   // Stores the dialog bounds.
   virtual void StoreDialogSize(const gfx::Size& dialog_size) {}

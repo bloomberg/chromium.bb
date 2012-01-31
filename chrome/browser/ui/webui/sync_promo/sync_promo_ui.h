@@ -14,6 +14,15 @@ class PrefService;
 // The Web UI handler for chrome://syncpromo.
 class SyncPromoUI : public content::WebUIController {
  public:
+  enum Version {
+    VERSION_DEFAULT = 0,
+    VERSION_DEVICES,
+    VERSION_VERBOSE,
+    VERSION_SIMPLE,
+    VERSION_DIALOG,
+    VERSION_COUNT,
+  };
+
   // Constructs a SyncPromoUI.
   explicit SyncPromoUI(content::WebUI* web_ui);
 
@@ -67,7 +76,7 @@ class SyncPromoUI : public content::WebUIController {
   // Returns the version of the sync promo UI that we should display.
   // Each version changes the UI slightly (for example, replacing text with
   // an infographic).
-  static int GetSyncPromoVersion();
+  static Version GetSyncPromoVersion();
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SyncPromoUI);

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -33,48 +33,74 @@ void HtmlDialogTabContentsDelegate::Detach() {
 
 WebContents* HtmlDialogTabContentsDelegate::OpenURLFromTab(
     WebContents* source, const OpenURLParams& params) {
-  if (profile_) {
-    // Specify a NULL browser for navigation. This will cause Navigate()
-    // to find a browser matching params.profile or create a new one.
-    Browser* browser = NULL;
-    browser::NavigateParams nav_params(browser, params.url, params.transition);
-    nav_params.profile = profile_;
-    nav_params.referrer = params.referrer;
-    if (source && source->IsCrashed() &&
-        params.disposition == CURRENT_TAB &&
-        params.transition == content::PAGE_TRANSITION_LINK)
-      nav_params.disposition = NEW_FOREGROUND_TAB;
-    else
-      nav_params.disposition = params.disposition;
-    nav_params.window_action = browser::NavigateParams::SHOW_WINDOW;
-    nav_params.user_gesture = true;
-    browser::Navigate(&nav_params);
-    return nav_params.target_contents ?
-        nav_params.target_contents->web_contents() : NULL;
+  WebContents* new_contents = NULL;
+  StaticOpenURLFromTab(profile_, source, params, &new_contents);
+  return new_contents;
+}
+
+// static
+Browser* HtmlDialogTabContentsDelegate::StaticOpenURLFromTab(
+    Profile* profile, WebContents* source, const OpenURLParams& params,
+    WebContents** out_new_contents) {
+  if (!profile)
+    return NULL;
+
+  // Specify a NULL browser for navigation. This will cause Navigate()
+  // to find a browser matching params.profile or create a new one.
+  Browser* browser = NULL;
+  browser::NavigateParams nav_params(browser, params.url, params.transition);
+  nav_params.profile = profile;
+  nav_params.referrer = params.referrer;
+  if (source && source->IsCrashed() &&
+      params.disposition == CURRENT_TAB &&
+      params.transition == content::PAGE_TRANSITION_LINK) {
+    nav_params.disposition = NEW_FOREGROUND_TAB;
+  } else {
+    nav_params.disposition = params.disposition;
   }
-  return NULL;
+  nav_params.window_action = browser::NavigateParams::SHOW_WINDOW;
+  nav_params.user_gesture = true;
+  browser::Navigate(&nav_params);
+  *out_new_contents = nav_params.target_contents ?
+      nav_params.target_contents->web_contents() : NULL;
+  return nav_params.browser;
 }
 
 void HtmlDialogTabContentsDelegate::AddNewContents(
     WebContents* source, WebContents* new_contents,
     WindowOpenDisposition disposition, const gfx::Rect& initial_pos,
     bool user_gesture) {
-  if (profile_) {
-    // Specify a NULL browser for navigation. This will cause Navigate()
-    // to find a browser matching params.profile or create a new one.
-    Browser* browser = NULL;
+  StaticAddNewContents(profile_, source, new_contents, disposition,
+                       initial_pos, user_gesture);
+}
 
-    TabContentsWrapper* wrapper = new TabContentsWrapper(new_contents);
-    browser::NavigateParams params(browser, wrapper);
-    params.profile = profile_;
-    // TODO(pinkerton): no way to get a wrapper for this.
-    // params.source_contents = source;
-    params.disposition = disposition;
-    params.window_bounds = initial_pos;
-    params.window_action = browser::NavigateParams::SHOW_WINDOW;
-    params.user_gesture = true;
-    browser::Navigate(&params);
-  }
+// static
+Browser* HtmlDialogTabContentsDelegate::StaticAddNewContents(
+    Profile* profile,
+    WebContents* source,
+    WebContents* new_contents,
+    WindowOpenDisposition disposition,
+    const gfx::Rect& initial_pos,
+    bool user_gesture) {
+  if (!profile)
+    return NULL;
+
+  // Specify a NULL browser for navigation. This will cause Navigate()
+  // to find a browser matching params.profile or create a new one.
+  Browser* browser = NULL;
+
+  TabContentsWrapper* wrapper = new TabContentsWrapper(new_contents);
+  browser::NavigateParams params(browser, wrapper);
+  params.profile = profile;
+  // TODO(pinkerton): no way to get a wrapper for this.
+  // params.source_contents = source;
+  params.disposition = disposition;
+  params.window_bounds = initial_pos;
+  params.window_action = browser::NavigateParams::SHOW_WINDOW;
+  params.user_gesture = true;
+  browser::Navigate(&params);
+
+  return params.browser;
 }
 
 bool HtmlDialogTabContentsDelegate::IsPopupOrPanel(

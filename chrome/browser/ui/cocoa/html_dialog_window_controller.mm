@@ -61,6 +61,14 @@ public:
   virtual void MoveContents(WebContents* source, const gfx::Rect& pos);
   virtual void HandleKeyboardEvent(const NativeWebKeyboardEvent& event);
   virtual void CloseContents(WebContents* source) OVERRIDE;
+  virtual content::WebContents* OpenURLFromTab(
+      content::WebContents* source,
+      const content::OpenURLParams& params) OVERRIDE;
+  virtual void AddNewContents(content::WebContents* source,
+                              content::WebContents* new_contents,
+                              WindowOpenDisposition disposition,
+                              const gfx::Rect& initial_pos,
+                              bool user_gesture) OVERRIDE;
 
 private:
   HtmlDialogWindowController* controller_;  // weak
@@ -95,6 +103,10 @@ gfx::NativeWindow ShowHtmlDialog(gfx::NativeWindow parent,
   return [HtmlDialogWindowController showHtmlDialog:delegate
       profile:profile
       browser:browser];
+}
+
+void CloseHtmlDialog(gfx::NativeWindow window) {
+  [window performClose:nil];
 }
 
 }  // namespace html_dialog_window_controller
@@ -198,6 +210,31 @@ void HtmlDialogWindowDelegateBridge::CloseContents(WebContents* source) {
   OnCloseContents(source, &close_dialog);
   if (close_dialog)
     OnDialogClosed(std::string());
+}
+
+content::WebContents* HtmlDialogWindowDelegateBridge::OpenURLFromTab(
+    content::WebContents* source,
+    const content::OpenURLParams& params) {
+  content::WebContents* new_contents = NULL;
+  if (delegate_ &&
+      delegate_->HandleOpenURLFromTab(source, params, &new_contents)) {
+    return new_contents;
+  }
+  return HtmlDialogTabContentsDelegate::OpenURLFromTab(source, params);
+}
+
+void HtmlDialogWindowDelegateBridge::AddNewContents(
+    content::WebContents* source,
+    content::WebContents* new_contents,
+    WindowOpenDisposition disposition,
+    const gfx::Rect& initial_pos,
+    bool user_gesture) {
+  if (delegate_ && delegate_->HandleAddNewContents(
+          source, new_contents, disposition, initial_pos, user_gesture)) {
+    return;
+  }
+  HtmlDialogTabContentsDelegate::AddNewContents(
+      source, new_contents, disposition, initial_pos, user_gesture);
 }
 
 void HtmlDialogWindowDelegateBridge::MoveContents(WebContents* source,

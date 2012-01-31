@@ -205,7 +205,7 @@ void SyncPromoHandler2::HandleCloseSyncPromo(const base::ListValue* args) {
   // close.
   Browser* browser =
       BrowserList::FindBrowserWithWebContents(web_ui()->GetWebContents());
-  if (browser && !browser->IsAttemptingToCloseBrowser()) {
+  if (!browser || !browser->IsAttemptingToCloseBrowser()) {
     GURL url = SyncPromoUI::GetNextPageURLForSyncPromoURL(
         web_ui_->tab_contents()->GetURL());
     web_ui_->tab_contents()->OpenURL(url, GURL(), CURRENT_TAB,
@@ -213,8 +213,27 @@ void SyncPromoHandler2::HandleCloseSyncPromo(const base::ListValue* args) {
   }
 }
 
+int SyncPromoHandler2::GetPromoVersion() {
+  switch (SyncPromoUI::GetSyncPromoVersion()) {
+    case SyncPromoUI::VERSION_DEFAULT:
+      return 0;
+    case SyncPromoUI::VERSION_DEVICES:
+      return 1;
+    case SyncPromoUI::VERSION_VERBOSE:
+      return 2;
+    case SyncPromoUI::VERSION_SIMPLE:
+      return 3;
+    case SyncPromoUI::VERSION_DIALOG:
+      // Use the simple sync promo layout for the dialog version.
+      return 3;
+    default:
+      NOTREACHED();
+      return 0;
+  }
+}
+
 void SyncPromoHandler2::HandleInitializeSyncPromo(const base::ListValue* args) {
-  base::FundamentalValue version(SyncPromoUI::GetSyncPromoVersion());
+  base::FundamentalValue version(GetPromoVersion());
   web_ui_->CallJavascriptFunction("SyncSetupOverlay.showPromoVersion",
                                   version);
 

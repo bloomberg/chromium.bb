@@ -226,7 +226,7 @@ void SyncSetupHandler2::GetStaticLocalizedValues(
 
   bool is_launch_page = web_ui && SyncPromoUI::GetIsLaunchPageForSyncPromoURL(
       web_ui->GetWebContents()->GetURL());
-  int title_id = is_launch_page ? IDS_SYNC_PROMO_TITLE :
+  int title_id = is_launch_page ? IDS_SYNC_PROMO_TITLE_SHORT :
                                   IDS_SYNC_PROMO_TITLE_EXISTING_USER;
   string16 short_product_name(GetStringUTF16(IDS_SHORT_PRODUCT_NAME));
   localized_strings->SetString(

@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_WEBUI_SYNC_PROMO_SYNC_PROMO_TRIAL_H_
 
 #include "base/basictypes.h"
+#include "chrome/browser/ui/webui/sync_promo/sync_promo_ui.h"
 
 class Profile;
 namespace content {
@@ -38,7 +39,7 @@ void RecordUserSignedIn(content::WebUI* web_ui);
 // Returns true if a sync promo trial is running that overrides the sync promo
 // version. If such a trial is running then on return |version| will contain the
 // version of the sync promo to show. |version| must not be NULL.
-bool GetSyncPromoVersionForCurrentTrial(int* version);
+bool GetSyncPromoVersionForCurrentTrial(SyncPromoUI::Version* version);
 
 }  // namespace sync_promo_trial
 

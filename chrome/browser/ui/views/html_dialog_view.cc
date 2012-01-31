@@ -50,6 +50,10 @@ gfx::NativeWindow ShowHtmlDialog(gfx::NativeWindow parent,
   return html_view->GetWidget()->GetNativeWindow();
 }
 
+void CloseHtmlDialog(gfx::NativeWindow window) {
+  views::Widget::GetWidgetForNativeWindow(window)->Close();
+}
+
 }  // namespace browser
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -250,6 +254,30 @@ void HtmlDialogView::CloseContents(WebContents* source) {
   OnCloseContents(source, &close_dialog);
   if (close_dialog)
     OnDialogClosed(std::string());
+}
+
+content::WebContents* HtmlDialogView::OpenURLFromTab(
+    content::WebContents* source,
+    const content::OpenURLParams& params) {
+  content::WebContents* new_contents = NULL;
+  if (delegate_ &&
+      delegate_->HandleOpenURLFromTab(source, params, &new_contents)) {
+    return new_contents;
+  }
+  return HtmlDialogTabContentsDelegate::OpenURLFromTab(source, params);
+}
+
+void HtmlDialogView::AddNewContents(content::WebContents* source,
+                                    content::WebContents* new_contents,
+                                    WindowOpenDisposition disposition,
+                                    const gfx::Rect& initial_pos,
+                                    bool user_gesture) {
+  if (delegate_ && delegate_->HandleAddNewContents(
+          source, new_contents, disposition, initial_pos, user_gesture)) {
+    return;
+  }
+  HtmlDialogTabContentsDelegate::AddNewContents(
+      source, new_contents, disposition, initial_pos, user_gesture);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -28,6 +28,7 @@ enum LayoutExperimentType {
   LAYOUT_EXPERIMENT_VERBOSE,
   LAYOUT_EXPERIMENT_SIMPLE,
   LAYOUT_EXPERIMENT_NONE,
+  LAYOUT_EXPERIMENT_DIALOG,
   LAYOUT_EXPERIMENT_BOUNDARY,
 };
 
@@ -58,6 +59,8 @@ bool GetActiveLayoutExperiment(LayoutExperimentType* type) {
       *type = LAYOUT_EXPERIMENT_SIMPLE;
     else if (brand == "GGRL" || brand == "CHCL")
       *type = LAYOUT_EXPERIMENT_NONE;
+    else if (brand == "GGRK" || brand == "CHCK")
+      *type = LAYOUT_EXPERIMENT_DIALOG;
     else
       return false;
   } else {
@@ -83,12 +86,13 @@ void Activate() {
   // For dev and beta we don't have brand codes so we randomly enroll users.
   if (chrome::VersionInfo::GetChannel() !=
       chrome::VersionInfo::CHANNEL_STABLE) {
-    // Create a field trial that expires in August 8, 2012. It contains 5 groups
+    // Create a field trial that expires in August 8, 2012. It contains 6 groups
     // with each group having an equal chance of enrollment.
     scoped_refptr<base::FieldTrial> trial(new base::FieldTrial(
         kLayoutExperimentTrialName, 5, "default", 2012, 8, 1));
     if (base::FieldTrialList::IsOneTimeRandomizationEnabled())
       trial->UseOneTimeRandomization();
+    trial->AppendGroup("", 1);
     trial->AppendGroup("", 1);
     trial->AppendGroup("", 1);
     trial->AppendGroup("", 1);
@@ -143,7 +147,7 @@ void RecordUserSignedIn(content::WebUI* web_ui) {
   }
 }
 
-bool GetSyncPromoVersionForCurrentTrial(int* version) {
+bool GetSyncPromoVersionForCurrentTrial(SyncPromoUI::Version* version) {
   DCHECK(sync_promo_trial_initialized);
   DCHECK(version);
 
@@ -153,16 +157,19 @@ bool GetSyncPromoVersionForCurrentTrial(int* version) {
 
   switch (type) {
     case LAYOUT_EXPERIMENT_DEFAULT:
-      *version = 0;
+      *version = SyncPromoUI::VERSION_DEFAULT;
       return true;
     case LAYOUT_EXPERIMENT_DEVICES:
-      *version = 1;
+      *version = SyncPromoUI::VERSION_DEVICES;
       return true;
     case LAYOUT_EXPERIMENT_VERBOSE:
-      *version = 2;
+      *version = SyncPromoUI::VERSION_VERBOSE;
       return true;
     case LAYOUT_EXPERIMENT_SIMPLE:
-      *version = 3;
+      *version = SyncPromoUI::VERSION_SIMPLE;
+      return true;
+    case LAYOUT_EXPERIMENT_DIALOG:
+      *version = SyncPromoUI::VERSION_DIALOG;
       return true;
     default:
       return false;

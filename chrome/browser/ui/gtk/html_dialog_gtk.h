@@ -55,6 +55,14 @@ class HtmlDialogGtk : public HtmlDialogTabContentsDelegate,
   virtual void HandleKeyboardEvent(
       const NativeWebKeyboardEvent& event) OVERRIDE;
   virtual void CloseContents(content::WebContents* source) OVERRIDE;
+  virtual content::WebContents* OpenURLFromTab(
+      content::WebContents* source,
+      const content::OpenURLParams& params) OVERRIDE;
+  virtual void AddNewContents(content::WebContents* source,
+                              content::WebContents* new_contents,
+                              WindowOpenDisposition disposition,
+                              const gfx::Rect& initial_pos,
+                              bool user_gesture) OVERRIDE;
 
  private:
   CHROMEGTK_CALLBACK_1(HtmlDialogGtk, void, OnResponse, int);

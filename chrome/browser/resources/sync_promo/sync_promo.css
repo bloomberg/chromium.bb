@@ -117,14 +117,8 @@ html[promo-version='3'] #sync-setup-login-content-column {
 
 #promo-title-container {
   display: block;
-  margin-bottom: 35px;
-  margin-top: 37px;
+  margin: 37px 44px 35px;
   text-align: center;
-}
-
-html[promo-version='1'] #promo-title-container,
-html[promo-version='3'] #promo-title-container {
-  margin-top: 41px;
 }
 
 html[promo-version='2'] #promo-title-container {
@@ -138,9 +132,12 @@ h1 {
   margin: 0;
 }
 
-html[promo-version='1'] #sync-setup-login h1,
-html[promo-version='3'] #sync-setup-login h1 {
+html[promo-version='1'] #sync-setup-login h1 {
   font-size: 40px;
+}
+
+html[promo-version='3'] #sync-setup-login h1 {
+  font-size: 36px;
 }
 
 #promo-title-container h2 {
@@ -152,6 +149,10 @@ html[promo-version='3'] #sync-setup-login h1 {
 html[promo-version='0'] #promo-title-container h2,
 html[promo-version='2'] #promo-title-container h2 {
   display: none;
+}
+
+html[promo-version='3'] #promo-title-container h2 {
+  font-size: 14px;
 }
 
 /* Signup header bar. *********************************************************/
