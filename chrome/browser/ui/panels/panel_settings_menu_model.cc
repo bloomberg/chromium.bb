@@ -27,7 +27,8 @@ PanelSettingsMenuModel::PanelSettingsMenuModel(Panel* panel)
 
   AddItem(COMMAND_NAME, UTF8ToUTF16(extension->name()));
   AddSeparator();
-  AddItem(COMMAND_CONFIGURE, l10n_util::GetStringUTF16(IDS_EXTENSIONS_OPTIONS));
+  AddItem(COMMAND_CONFIGURE,
+          l10n_util::GetStringUTF16(IDS_EXTENSIONS_OPTIONS_MENU_ITEM));
   AddItem(COMMAND_DISABLE, l10n_util::GetStringUTF16(IDS_EXTENSIONS_DISABLE));
   AddItem(COMMAND_UNINSTALL,
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_UNINSTALL));

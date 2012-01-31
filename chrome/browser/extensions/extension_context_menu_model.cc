@@ -68,7 +68,7 @@ void ExtensionContextMenuModel::InitCommonCommands() {
 
   AddItem(NAME, UTF8ToUTF16(extension->name()));
   AddSeparator();
-  AddItemWithStringId(CONFIGURE, IDS_EXTENSIONS_OPTIONS);
+  AddItemWithStringId(CONFIGURE, IDS_EXTENSIONS_OPTIONS_MENU_ITEM);
   AddItemWithStringId(DISABLE, IDS_EXTENSIONS_DISABLE);
   AddItem(UNINSTALL, l10n_util::GetStringUTF16(IDS_EXTENSIONS_UNINSTALL));
   if (extension->browser_action())

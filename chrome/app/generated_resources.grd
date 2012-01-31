@@ -4183,9 +4183,6 @@ Update checks have repeatedly failed for the extension "<ph name="EXTENSION_NAME
         To use this extension, type "<ph name="EXTENSION_KEYWORD">$1<ex>search</ex></ph>", then TAB, then your command or search.
       </message>
 
-      <message name="IDS_MANAGE_EXTENSIONS" desc="The 'Manage Extensions...' text in the context menu for when right-clicking on extension icons">
-        Manage extensions...
-      </message>
       <message name="IDS_EXTENSION_INSTALLED_MANAGE_INFO" desc="Text displayed in the InfoBubble with instructions on how to find the chrome://extensions/ management page">
         Manage your extensions by clicking Extensions in the Tools menu.
       </message>
@@ -4239,9 +4236,6 @@ Update checks have repeatedly failed for the extension "<ph name="EXTENSION_NAME
       <message name="IDS_EXTENSIONS_INSPECT_VIEWS" desc="The text for the label in front of the links to inspect active views.">
         Inspect active views:
       </message>
-      <message name="IDS_EXTENSIONS_DISABLE" desc="The link for disabling an extension.">
-        Disable
-      </message>
       <message name="IDS_EXTENSIONS_ENABLE" desc="The link for enabling extensions.">
         Enable
       </message>
@@ -4263,18 +4257,48 @@ Update checks have repeatedly failed for the extension "<ph name="EXTENSION_NAME
       <message name="IDS_EXTENSIONS_RELOAD" desc="The link for reloading extensions.">
         Reload
       </message>
-      <message name="IDS_EXTENSIONS_OPTIONS" desc="The button text for the options button.">
+      <message name="IDS_EXTENSIONS_OPTIONS_LINK" desc="The button text for the options button.">
         Options
       </message>
       <message name="IDS_EXTENSIONS_SHOW_BUTTON" desc="The text for the Show link.">
         Show button
       </message>
-      <message name="IDS_EXTENSIONS_HIDE_BUTTON" desc="The text for the Hide context menu item.">
-        Hide button
-      </message>
-      <message name="IDS_EXTENSION_ACTION_INSPECT_POPUP" desc="The text for the right-click menu of page and browser actions which shows the popup and opens the developer tools.">
-        Inspect popup
-      </message>
+
+      <if expr="not pp_ifdef('use_titlecase')">
+        <message name="IDS_EXTENSIONS_OPTIONS_MENU_ITEM" desc="The text for the options menu item in context menus (sentence case).">
+          Options
+        </message>
+        <message name="IDS_EXTENSIONS_DISABLE" desc="The link for disabling an extension (sentence case).">
+          Disable
+        </message>
+        <message name="IDS_EXTENSIONS_HIDE_BUTTON" desc="The text for the Hide context menu item (sentence case).">
+          Hide button
+        </message>
+        <message name="IDS_MANAGE_EXTENSIONS" desc="The 'Manage Extensions...' text in the context menu for when right-clicking on extension icons (sentence case).">
+          Manage extensions...
+        </message>
+        <message name="IDS_EXTENSION_ACTION_INSPECT_POPUP" desc="The text for the right-click menu of page and browser actions which shows the popup and opens the developer tools (sentence case).">
+          Inspect popup
+        </message>
+      </if>
+      <if expr="pp_ifdef('use_titlecase')">
+        <message name="IDS_EXTENSIONS_OPTIONS_MENU_ITEM" desc="The text for the options menu item in context menus (title case).">
+          Options
+        </message>
+        <message name="IDS_EXTENSIONS_DISABLE" desc="The link for disabling an extension (title case).">
+          Disable
+        </message>
+        <message name="IDS_EXTENSIONS_HIDE_BUTTON" desc="The text for the Hide context menu item (title case).">
+          Hide Button
+        </message>
+        <message name="IDS_MANAGE_EXTENSIONS" desc="The 'Manage Extensions...' text in the context menu for when right-clicking on extension icons (title case).">
+          Manage Extensions...
+        </message>
+        <message name="IDS_EXTENSION_ACTION_INSPECT_POPUP" desc="The text for the right-click menu of page and browser actions which shows the popup and opens the developer tools (title case).">
+          Inspect Popup
+        </message>
+      </if>
+
       <message name="IDS_EXTENSIONS_POLICY_CONTROLLED" desc="The text informing the user that an extension is policy controlled">
         (this extension is managed and can not be removed or disabled)
       </message>
