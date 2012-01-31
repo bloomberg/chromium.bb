@@ -251,6 +251,31 @@ TEST_F(GestureRecognizerTest, GestureEventScroll) {
   EXPECT_EQ(29, delegate->scroll_x());
   EXPECT_EQ(0, delegate->scroll_y());
 
+  // Move some more to generate a few more scroll updates.
+  delegate->Reset();
+  TouchEvent move1(ui::ET_TOUCH_MOVED, gfx::Point(110, 211), 0);
+  RootWindow::GetInstance()->DispatchTouchEvent(&move1);
+  EXPECT_FALSE(delegate->tap());
+  EXPECT_FALSE(delegate->tap_down());
+  EXPECT_FALSE(delegate->double_tap());
+  EXPECT_FALSE(delegate->scroll_begin());
+  EXPECT_TRUE(delegate->scroll_update());
+  EXPECT_FALSE(delegate->scroll_end());
+  EXPECT_EQ(-20, delegate->scroll_x());
+  EXPECT_EQ(10, delegate->scroll_y());
+
+  delegate->Reset();
+  TouchEvent move2(ui::ET_TOUCH_MOVED, gfx::Point(140, 215), 0);
+  RootWindow::GetInstance()->DispatchTouchEvent(&move2);
+  EXPECT_FALSE(delegate->tap());
+  EXPECT_FALSE(delegate->tap_down());
+  EXPECT_FALSE(delegate->double_tap());
+  EXPECT_FALSE(delegate->scroll_begin());
+  EXPECT_TRUE(delegate->scroll_update());
+  EXPECT_FALSE(delegate->scroll_end());
+  EXPECT_EQ(30, delegate->scroll_x());
+  EXPECT_EQ(4, delegate->scroll_y());
+
   // Release the touch. This should end the scroll.
   delegate->Reset();
   TouchEvent release(ui::ET_TOUCH_RELEASED, gfx::Point(101, 201), 0);
