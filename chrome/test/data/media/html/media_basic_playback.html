@@ -14,24 +14,30 @@
     var video = document.querySelector('video');
 
     // Used to keep track of events.
-    var events = [];
+    var events;
+
+    // List of events to log.  Events in this list are those which are expected
+    // plus those which are unexpected and will have a negative impact on
+    // playback.
+    var eventsToLog = [
+      'abort', 'emptied', 'error', 'playing', 'stalled', 'suspend', 'waiting'];
 
     function logEvent(evt) {
       events.push(evt.type);
     }
 
+    for(var i = 0; i < eventsToLog.length; i++)
+      video.addEventListener(eventsToLog[i], logEvent, false);
+
     video.addEventListener('ended', function(event) {
       firstEndedEvent = events.indexOf('ended') < 0;
       logEvent(event);
 
-      // At the end of the first playback, seek near end and replay.
+      // At the end of the first playback, seek near end and replay.  0.8 was
+      // chosen arbitrarily.
       if (firstEndedEvent) {
         video.currentTime = 0.8 * video.duration;
-        video.play();
       } else {
-        // PyAuto has trouble with arrays, so convert to string.
-        events = events.join(',');
-
         // Notify PyAuto that we've completed testing.  Send test of currentTime
         // at the same time for efficiency.
         window.domAutomationController.send(
@@ -39,13 +45,14 @@
       }
     }, false);
 
-    video.addEventListener('playing', logEvent, false);
-    video.addEventListener('error', logEvent, false);
-    video.addEventListener('abort', logEvent, false);
-    video.addEventListener('seeked', logEvent, false);
+    video.addEventListener('seeked', function(event) {
+      logEvent(event);
+      video.play();
+    }, false);
 
-    // Retrieve video file name from URL query parameters.  See utils.js.
-    video.src = '../' + QueryString.media;
-    video.play();
+    function startTest(media) {
+      events = [];
+      video.src = '../' + media;
+    }
   </script>
 </html>
