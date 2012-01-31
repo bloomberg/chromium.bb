@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,10 +14,6 @@
 #include "chrome/browser/extensions/extension_function.h"
 #include "googleurl/src/url_util.h"
 #include "webkit/fileapi/file_system_callback_dispatcher.h"
-
-#ifdef OS_CHROMEOS
-#include "chrome/browser/chromeos/disks/disk_mount_manager.h"
-#endif
 
 class GURL;
 
@@ -338,10 +334,6 @@ class GetVolumeMetadataFunction
   virtual bool RunImpl() OVERRIDE;
 
  private:
-#if defined(OS_CHROMEOS)
-  std::string DeviceTypeToString(chromeos::DeviceType type);
-#endif
-
   DECLARE_EXTENSION_FUNCTION_NAME("fileBrowserPrivate.getVolumeMetadata");
 };
 

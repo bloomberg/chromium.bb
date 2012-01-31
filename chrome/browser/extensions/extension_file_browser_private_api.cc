@@ -49,6 +49,11 @@
 #include "webkit/fileapi/file_system_types.h"
 #include "webkit/fileapi/file_system_util.h"
 
+#ifdef OS_CHROMEOS
+#include "chrome/browser/chromeos/disks/disk_mount_manager.h"
+#endif
+
+using chromeos::disks::DiskMountManager;
 using content::BrowserThread;
 using content::SiteInstance;
 using content::WebContents;
@@ -266,12 +271,12 @@ void UpdateFileHandlerUsageStats(Profile* profile, const std::string& task_id) {
 
 #ifdef OS_CHROMEOS
 base::DictionaryValue* MountPointToValue(Profile* profile,
-    const chromeos::disks::DiskMountManager::MountPointInfo& mount_point_info) {
+    const DiskMountManager::MountPointInfo& mount_point_info) {
 
     base::DictionaryValue *mount_info = new base::DictionaryValue();
 
     mount_info->SetString("mountType",
-                          chromeos::disks::DiskMountManager::MountTypeToString(
+                          DiskMountManager::MountTypeToString(
                               mount_point_info.mount_type));
 
     if (mount_point_info.mount_type == chromeos::MOUNT_TYPE_ARCHIVE) {
@@ -296,8 +301,8 @@ base::DictionaryValue* MountPointToValue(Profile* profile,
     }
 
     mount_info->SetString("mountCondition",
-        chromeos::disks::DiskMountManager::MountConditionToString(
-        mount_point_info.mount_condition));
+        DiskMountManager::MountConditionToString(
+            mount_point_info.mount_condition));
 
     return mount_info;
 }
@@ -1244,8 +1249,7 @@ void AddMountFunction::GetLocalPathsResponseOnUIThread(
 #ifdef OS_CHROMEOS
   FilePath::StringType source_file = files[0].value();
 
-  chromeos::disks::DiskMountManager* disk_mount_manager =
-      chromeos::disks::DiskMountManager::GetInstance();
+  DiskMountManager* disk_mount_manager = DiskMountManager::GetInstance();
 
   chromeos::MountType mount_type =
       disk_mount_manager->MountTypeFromString(mount_type_str);
@@ -1294,8 +1298,7 @@ void RemoveMountFunction::GetLocalPathsResponseOnUIThread(
     return;
   }
 #ifdef OS_CHROMEOS
-  chromeos::disks::DiskMountManager::GetInstance()->UnmountPath(
-      files[0].value());
+  DiskMountManager::GetInstance()->UnmountPath(files[0].value());
 #endif
 
   SendResponse(true);
@@ -1315,12 +1318,11 @@ bool GetMountPointsFunction::RunImpl() {
   result_.reset(mounts);
 
 #ifdef OS_CHROMEOS
-  chromeos::disks::DiskMountManager* disk_mount_manager =
-      chromeos::disks::DiskMountManager::GetInstance();
-  chromeos::disks::DiskMountManager::MountPointMap mount_points =
+  DiskMountManager* disk_mount_manager = DiskMountManager::GetInstance();
+  DiskMountManager::MountPointMap mount_points =
       disk_mount_manager->mount_points();
 
-  for (chromeos::disks::DiskMountManager::MountPointMap::const_iterator it =
+  for (DiskMountManager::MountPointMap::const_iterator it =
            mount_points.begin();
        it != mount_points.end();
        ++it) {
@@ -1380,7 +1382,7 @@ void GetSizeStatsFunction::CallGetSizeStatsOnFileThread(
   size_t total_size_kb = 0;
   size_t remaining_size_kb = 0;
 #ifdef OS_CHROMEOS
-  chromeos::disks::DiskMountManager::GetInstance()->
+  DiskMountManager::GetInstance()->
       GetSizeStatsOnFileThread(mount_path, &total_size_kb, &remaining_size_kb);
 #endif
 
@@ -1443,8 +1445,7 @@ void FormatDeviceFunction::GetLocalPathsResponseOnUIThread(
   }
 
 #ifdef OS_CHROMEOS
-  chromeos::disks::DiskMountManager::GetInstance()->FormatMountedDevice(
-      files[0].value());
+  DiskMountManager::GetInstance()->FormatMountedDevice(files[0].value());
 #endif
 
   SendResponse(true);
@@ -1468,14 +1469,13 @@ bool GetVolumeMetadataFunction::RunImpl() {
   }
 
 #ifdef OS_CHROMEOS
-  chromeos::disks::DiskMountManager* disk_mount_manager =
-      chromeos::disks::DiskMountManager::GetInstance();
-  chromeos::disks::DiskMountManager::DiskMap::const_iterator volume_it =
+  DiskMountManager* disk_mount_manager = DiskMountManager::GetInstance();
+  DiskMountManager::DiskMap::const_iterator volume_it =
       disk_mount_manager->disks().find(volume_device_path);
 
   if (volume_it != disk_mount_manager->disks().end() &&
       !volume_it->second->is_hidden()) {
-    chromeos::disks::DiskMountManager::Disk* volume = volume_it->second;
+    DiskMountManager::Disk* volume = volume_it->second;
     DictionaryValue* volume_info = new DictionaryValue();
     result_.reset(volume_info);
     // Localising mount path.
@@ -1493,7 +1493,7 @@ bool GetVolumeMetadataFunction::RunImpl() {
     volume_info->SetString("deviceLabel", volume->device_label());
     volume_info->SetString("driveLabel", volume->drive_label());
     volume_info->SetString("deviceType",
-        DeviceTypeToString(volume->device_type()));
+        DiskMountManager::DeviceTypeToString(volume->device_type()));
     volume_info->SetInteger("totalSize", volume->total_size_in_bytes());
     volume_info->SetBoolean("isParent", volume->is_parent());
     volume_info->SetBoolean("isReadOnly", volume->is_read_only());
@@ -1506,23 +1506,6 @@ bool GetVolumeMetadataFunction::RunImpl() {
   error_ = kVolumeDevicePathNotFound;
   return false;
 }
-
-#ifdef OS_CHROMEOS
-std::string GetVolumeMetadataFunction::DeviceTypeToString(
-    chromeos::DeviceType type) {
-  switch (type) {
-    case chromeos::FLASH:
-      return kVolumeTypeFlash;
-    case chromeos::OPTICAL:
-      return kVolumeTypeOptical;
-    case chromeos::HDD:
-      return kVolumeTypeHardDrive;
-    default:
-      break;
-  }
-  return kVolumeTypeUnknown;
-}
-#endif
 
 bool FileDialogStringsFunction::RunImpl() {
   result_.reset(new DictionaryValue());

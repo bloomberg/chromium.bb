@@ -2106,7 +2106,8 @@ FileManager.prototype = {
     function onMountPointsFound(mountPoints) {
       self.mountPoints_ = mountPoints;
       function onVolumeMetadataFound(volumeMetadata) {
-        if (volumeMetadata.deviceType == "flash") {
+        if (volumeMetadata.deviceType == "usb" ||
+            volumeMetadata.deviceType == "sd") {
           if (self.selection.entries.length != 1 ||
               normalizeAbsolutePath(self.selection.entries[0].fullPath) !=
               normalizeAbsolutePath(volumeMetadata.mountPath)) {

@@ -36,7 +36,9 @@ const uint64 kMinDeviceSize = static_cast<uint64>(3.9 * 1000 * 1000 * 1000);
 
 // Returns true when |disk| is a device on which we can burn recovery image.
 bool IsBurnableDevice(const disks::DiskMountManager::Disk& disk) {
-  return disk.is_parent() && !disk.on_boot_device();
+  return disk.is_parent() && !disk.on_boot_device() &&
+         (disk.device_type() == DEVICE_TYPE_USB ||
+          disk.device_type() == DEVICE_TYPE_SD);
 }
 
 class BurnControllerImpl

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -61,7 +61,7 @@ void MockDiskMountManager::NotifyDeviceInsertEvents() {
       std::string(),
       std::string(kTestDriveLabel),
       std::string(kTestSystemPathPrefix),
-      FLASH,
+      DEVICE_TYPE_USB,
       4294967295U,
       false,  // is_parent
       false,  // is_read_only
@@ -91,7 +91,7 @@ void MockDiskMountManager::NotifyDeviceInsertEvents() {
       std::string(kTestDeviceLabel),
       std::string(kTestDriveLabel),
       std::string(kTestSystemPathPrefix),
-      FLASH,
+      DEVICE_TYPE_MOBILE,
       1073741824,
       false,  // is_parent
       false,  // is_read_only
@@ -114,7 +114,7 @@ void MockDiskMountManager::NotifyDeviceRemoveEvents() {
       std::string(kTestDeviceLabel),
       std::string(kTestDriveLabel),
       std::string(kTestSystemPathPrefix),
-      FLASH,
+      DEVICE_TYPE_SD,
       1073741824,
       false,  // is_parent
       false,  // is_read_only

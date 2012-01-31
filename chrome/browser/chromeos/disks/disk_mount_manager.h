@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -232,6 +232,9 @@ class DiskMountManager {
 
   // Returns corresponding string to |type| like "unknown_filesystem".
   static std::string MountConditionToString(MountCondition type);
+
+  // Returns corresponding string to |type|, like "sd", "usb".
+  static std::string DeviceTypeToString(DeviceType type);
 
   // Creates the global DiskMountManager instance.
   static void Initialize();

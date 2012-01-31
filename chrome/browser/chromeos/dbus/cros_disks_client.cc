@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -27,13 +27,36 @@ const char* kDefaultUnmountOptions[] = {
   "force",
 };
 
-// Returns the device type from the given arguments.
-DeviceType GetDeviceType(bool is_optical, bool is_rotational) {
-  if (is_optical)
-    return OPTICAL;
-  if (is_rotational)
-    return HDD;
-  return FLASH;
+// Checks if retrieved media type is in boundaries of DeviceMediaType.
+bool IsValidMediaType(uint32 type) {
+  return type < static_cast<uint32>(cros_disks::DEVICE_MEDIA_NUM_VALUES);
+}
+
+
+// Translates enum used in cros-disks to enum used in Chrome.
+// Note that we could just do static_cast, but this is less sensitive to
+// changes in cros-disks.
+DeviceType DeviceMediaTypeToDeviceType(uint32 media_type_uint32) {
+  if (!IsValidMediaType(media_type_uint32))
+    return DEVICE_TYPE_UNKNOWN;
+
+  cros_disks::DeviceMediaType media_type =
+      cros_disks::DeviceMediaType(media_type_uint32);
+
+  switch (media_type) {
+    case(cros_disks::DEVICE_MEDIA_UNKNOWN):
+      return DEVICE_TYPE_UNKNOWN;
+    case(cros_disks::DEVICE_MEDIA_USB):
+      return DEVICE_TYPE_USB;
+    case(cros_disks::DEVICE_MEDIA_SD):
+      return DEVICE_TYPE_SD;
+    case(cros_disks::DEVICE_MEDIA_OPTICAL_DISC):
+      return DEVICE_TYPE_OPTICAL_DISC;
+    case(cros_disks::DEVICE_MEDIA_MOBILE):
+      return DEVICE_TYPE_MOBILE;
+    default:
+      return DEVICE_TYPE_UNKNOWN;
+  }
 }
 
 // Pops a bool value when |reader| is not NULL.
@@ -50,6 +73,15 @@ bool MaybePopString(dbus::MessageReader* reader, std::string* value) {
   if (!reader)
     return false;
   return reader->PopString(value);
+}
+
+// Pops a uint32 value when |reader| is not NULL.
+// Returns true when a value is popped, false otherwise.
+bool MaybePopUint32(dbus::MessageReader* reader, uint32* value) {
+  if (!reader)
+    return false;
+
+  return reader->PopUint32(value);
 }
 
 // Pops a uint64 value when |reader| is not NULL.
@@ -375,7 +407,7 @@ DiskInfo::DiskInfo(const std::string& device_path, dbus::Response* response)
       is_drive_(false),
       has_media_(false),
       on_boot_device_(false),
-      device_type_(UNDEFINED),
+      device_type_(DEVICE_TYPE_UNKNOWN),
       total_size_in_bytes_(0),
       is_read_only_(false),
       is_hidden_(true) {
@@ -502,18 +534,16 @@ void DiskInfo::InitializeFromResponse(dbus::Response* response) {
   MaybePopString(properties[cros_disks::kIdLabel], &label_);
   MaybePopUint64(properties[cros_disks::kDeviceSize], &total_size_in_bytes_);
 
+  uint32 media_type_uint32 = 0;
+  if (MaybePopUint32(properties[cros_disks::kDeviceMediaType],
+                     &media_type_uint32)) {
+    device_type_ = DeviceMediaTypeToDeviceType(media_type_uint32);
+  }
+
   std::vector<std::string> mount_paths;
   if (MaybePopArrayOfStrings(properties[cros_disks::kDeviceMountPaths],
                              &mount_paths) && !mount_paths.empty())
     mount_path_ = mount_paths[0];
-
-  bool is_rotational = false;
-  bool is_optical = false;
-  if (MaybePopBool(properties[cros_disks::kDriveIsRotational],
-                   &is_rotational) &&
-      MaybePopBool(properties[cros_disks::kDeviceIsOpticalDisc],
-                   &is_optical))
-    device_type_ = GetDeviceType(is_optical, is_rotational);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

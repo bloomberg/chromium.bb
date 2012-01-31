@@ -32,6 +32,7 @@ const char kPropertyDevicePath[] = "devicePath";
 const char kPropertyFilePath[] = "filePath";
 const char kPropertyLabel[] = "label";
 const char kPropertyPath[] = "path";
+const char kPropertyDeviceType[] = "type";
 
 // Link displayed on imageburner ui.
 const char kMoreInfoLink[] =
@@ -190,6 +191,8 @@ class WebUIHandler
     disk_value->SetString(std::string(kPropertyLabel), label);
     disk_value->SetString(std::string(kPropertyFilePath), disk.file_path());
     disk_value->SetString(std::string(kPropertyDevicePath), disk.device_path());
+    disk_value->SetString(std::string(kPropertyDeviceType),
+        disks::DiskMountManager::DeviceTypeToString(disk.device_type()));
   }
 
   // Callback for the "getDevices" message.

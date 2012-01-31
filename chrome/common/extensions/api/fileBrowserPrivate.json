@@ -37,7 +37,7 @@
           },
           "deviceType": {
             "type": "string",
-            "enum": ["flash", "hdd", "optical", "undefined"],
+            "enum": ["sd", "usb", "optical", "mobile", "unknown"],
             "description": "Device type."
           },
           "readOnly": {
@@ -121,7 +121,7 @@
           },
           "deviceType": {
             "type": "string",
-            "enum": ["flash", "hdd", "optical", "undefined"],
+            "enum": ["usb", "sd", "optical", "mobile", "unknown"],
             "description": "Device type."
           },
           "isParent": {

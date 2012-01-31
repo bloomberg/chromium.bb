@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,6 +20,8 @@
 #include "webkit/fileapi/file_system_types.h"
 #include "webkit/fileapi/file_system_util.h"
 
+using chromeos::disks::DiskMountManager;
+using chromeos::disks::DiskMountManagerEventType;
 using content::BrowserThread;
 
 namespace {
@@ -29,27 +31,14 @@ namespace {
   const char kPathChanged[] = "changed";
   const char kPathWatchError[] = "error";
 
-  const char* DeviceTypeToString(chromeos::DeviceType type) {
-    switch (type) {
-      case chromeos::FLASH:
-        return "flash";
-      case chromeos::HDD:
-        return "hdd";
-      case chromeos::OPTICAL:
-        return "optical";
-      default:
-        break;
-    }
-    return "undefined";
-  }
-
   DictionaryValue* DiskToDictionaryValue(
-      const chromeos::disks::DiskMountManager::Disk* disk) {
+      const DiskMountManager::Disk* disk) {
     DictionaryValue* result = new DictionaryValue();
     result->SetString("mountPath", disk->mount_path());
     result->SetString("devicePath", disk->device_path());
     result->SetString("label", disk->device_label());
-    result->SetString("deviceType", DeviceTypeToString(disk->device_type()));
+    result->SetString("deviceType",
+        DiskMountManager::DeviceTypeToString(disk->device_type()));
     result->SetInteger("totalSizeKB", disk->total_size_in_bytes() / 1024);
     result->SetBoolean("readOnly", disk->is_read_only());
     return result;
@@ -94,7 +83,7 @@ ExtensionFileBrowserEventRouter::~ExtensionFileBrowserEventRouter() {
     return;
   }
   profile_ = NULL;
-  chromeos::disks::DiskMountManager::GetInstance()->RemoveObserver(this);
+  DiskMountManager::GetInstance()->RemoveObserver(this);
 }
 
 void ExtensionFileBrowserEventRouter::ObserveFileSystemEvents() {
@@ -103,8 +92,7 @@ void ExtensionFileBrowserEventRouter::ObserveFileSystemEvents() {
     return;
   }
   if (chromeos::UserManager::Get()->user_is_logged_in()) {
-    chromeos::disks::DiskMountManager* disk_mount_manager =
-        chromeos::disks::DiskMountManager::GetInstance();
+    DiskMountManager* disk_mount_manager = DiskMountManager::GetInstance();
     disk_mount_manager->RemoveObserver(this);
     disk_mount_manager->AddObserver(this);
     disk_mount_manager->RequestMountInfoRefresh();
@@ -148,8 +136,8 @@ void ExtensionFileBrowserEventRouter::RemoveFileWatch(
 }
 
 void ExtensionFileBrowserEventRouter::DiskChanged(
-    chromeos::disks::DiskMountManagerEventType event,
-    const chromeos::disks::DiskMountManager::Disk* disk) {
+    DiskMountManagerEventType event,
+    const DiskMountManager::Disk* disk) {
   // Disregard hidden devices.
   if (disk->is_hidden())
     return;
@@ -161,7 +149,7 @@ void ExtensionFileBrowserEventRouter::DiskChanged(
 }
 
 void ExtensionFileBrowserEventRouter::DeviceChanged(
-    chromeos::disks::DiskMountManagerEventType event,
+    DiskMountManagerEventType event,
     const std::string& device_path) {
   if (event == chromeos::disks::MOUNT_DEVICE_ADDED) {
     OnDeviceAdded(device_path);
@@ -186,21 +174,20 @@ void ExtensionFileBrowserEventRouter::DeviceChanged(
 }
 
 void ExtensionFileBrowserEventRouter::MountCompleted(
-    chromeos::disks::DiskMountManager::MountEvent event_type,
+    DiskMountManager::MountEvent event_type,
     chromeos::MountError error_code,
-    const chromeos::disks::DiskMountManager::MountPointInfo& mount_info) {
+    const DiskMountManager::MountPointInfo& mount_info) {
   DispatchMountCompletedEvent(event_type, error_code, mount_info);
 
   if (mount_info.mount_type == chromeos::MOUNT_TYPE_DEVICE &&
-      event_type == chromeos::disks::DiskMountManager::MOUNTING) {
-    chromeos::disks::DiskMountManager* disk_mount_manager =
-        chromeos::disks::DiskMountManager::GetInstance();
-    chromeos::disks::DiskMountManager::DiskMap::const_iterator disk_it =
+      event_type == DiskMountManager::MOUNTING) {
+    DiskMountManager* disk_mount_manager = DiskMountManager::GetInstance();
+    DiskMountManager::DiskMap::const_iterator disk_it =
         disk_mount_manager->disks().find(mount_info.source_path);
     if (disk_it == disk_mount_manager->disks().end()) {
       return;
     }
-    chromeos::disks::DiskMountManager::Disk* disk = disk_it->second;
+    DiskMountManager::Disk* disk = disk_it->second;
 
      notifications_->ManageNotificationsOnMountCompleted(
         disk->system_path_prefix(), disk->drive_label(), disk->is_parent(),
@@ -253,7 +240,7 @@ void ExtensionFileBrowserEventRouter::DispatchFolderChangeEvent(
 }
 
 void ExtensionFileBrowserEventRouter::DispatchDiskEvent(
-    const chromeos::disks::DiskMountManager::Disk* disk, bool added) {
+    const DiskMountManager::Disk* disk, bool added) {
   if (!profile_) {
     NOTREACHED();
     return;
@@ -275,9 +262,9 @@ void ExtensionFileBrowserEventRouter::DispatchDiskEvent(
 }
 
 void ExtensionFileBrowserEventRouter::DispatchMountCompletedEvent(
-    chromeos::disks::DiskMountManager::MountEvent event,
+    DiskMountManager::MountEvent event,
     chromeos::MountError error_code,
-    const chromeos::disks::DiskMountManager::MountPointInfo& mount_info) {
+    const DiskMountManager::MountPointInfo& mount_info) {
   if (!profile_ || mount_info.mount_type == chromeos::MOUNT_TYPE_INVALID) {
     NOTREACHED();
     return;
@@ -286,7 +273,7 @@ void ExtensionFileBrowserEventRouter::DispatchMountCompletedEvent(
   ListValue args;
   DictionaryValue* mount_info_value = new DictionaryValue();
   args.Append(mount_info_value);
-  if (event == chromeos::disks::DiskMountManager::MOUNTING) {
+  if (event == DiskMountManager::MOUNTING) {
     mount_info_value->SetString("eventType", "mount");
   } else {
     mount_info_value->SetString("eventType", "unmount");
@@ -294,8 +281,7 @@ void ExtensionFileBrowserEventRouter::DispatchMountCompletedEvent(
   mount_info_value->SetString("status", MountErrorToString(error_code));
   mount_info_value->SetString(
       "mountType",
-      chromeos::disks::DiskMountManager::MountTypeToString(
-          mount_info.mount_type));
+      DiskMountManager::MountTypeToString(mount_info.mount_type));
 
   if (mount_info.mount_type == chromeos::MOUNT_TYPE_ARCHIVE) {
     GURL source_url;
@@ -336,13 +322,13 @@ void ExtensionFileBrowserEventRouter::DispatchMountCompletedEvent(
   if (relative_mount_path_set &&
       mount_info.mount_type == chromeos::MOUNT_TYPE_DEVICE &&
       !mount_info.mount_condition &&
-      event == chromeos::disks::DiskMountManager::MOUNTING) {
+      event == DiskMountManager::MOUNTING) {
     file_manager_util::ViewFolder(FilePath(mount_info.mount_path));
   }
 }
 
 void ExtensionFileBrowserEventRouter::OnDiskAdded(
-    const chromeos::disks::DiskMountManager::Disk* disk) {
+    const DiskMountManager::Disk* disk) {
   VLOG(1) << "Disk added: " << disk->device_path();
   if (disk->device_path().empty()) {
     VLOG(1) << "Empty system path for " << disk->device_path();
@@ -352,19 +338,18 @@ void ExtensionFileBrowserEventRouter::OnDiskAdded(
   // If disk is not mounted yet, give it a try.
   if (disk->mount_path().empty()) {
     // Initiate disk mount operation.
-    chromeos::disks::DiskMountManager::GetInstance()->MountPath(
+    DiskMountManager::GetInstance()->MountPath(
         disk->device_path(), chromeos::MOUNT_TYPE_DEVICE);
   }
   DispatchDiskEvent(disk, true);
 }
 
 void ExtensionFileBrowserEventRouter::OnDiskRemoved(
-    const chromeos::disks::DiskMountManager::Disk* disk) {
+    const DiskMountManager::Disk* disk) {
   VLOG(1) << "Disk removed: " << disk->device_path();
 
   if (!disk->mount_path().empty()) {
-    chromeos::disks::DiskMountManager::GetInstance()->UnmountPath(
-        disk->mount_path());
+    DiskMountManager::GetInstance()->UnmountPath(disk->mount_path());
   }
   DispatchDiskEvent(disk, false);
 }
@@ -416,8 +401,8 @@ void ExtensionFileBrowserEventRouter::OnFormattingFinished(
     notifications_->HideNotificationDelayed(
         FileBrowserNotifications::FORMAT_SUCCESS, device_path, 4000);
 
-    chromeos::disks::DiskMountManager::GetInstance()->MountPath(
-        device_path, chromeos::MOUNT_TYPE_DEVICE);
+    DiskMountManager::GetInstance()->MountPath(device_path,
+                                               chromeos::MOUNT_TYPE_DEVICE);
   } else {
     notifications_->HideNotification(FileBrowserNotifications::FORMAT_START,
                                      device_path);

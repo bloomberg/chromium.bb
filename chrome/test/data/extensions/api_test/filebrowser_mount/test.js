@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,7 +10,7 @@ var expectedVolume1 = {
   filePath: 'file_path1',
   deviceLabel: 'device_label1',
   driveLabel: 'drive_label1',
-  deviceType: 'flash',
+  deviceType: 'usb',
   totalSize:  1073741824,
   isParent: false,
   isReadOnly: false,
@@ -26,7 +26,7 @@ var expectedVolume2 = {
   filePath: 'file_path2',
   deviceLabel: 'device_label2',
   driveLabel: 'drive_label2',
-  deviceType: 'hdd',
+  deviceType: 'mobile',
   totalSize:  47723,
   isParent: true,
   isReadOnly: true,
