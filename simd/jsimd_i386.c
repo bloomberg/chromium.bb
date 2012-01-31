@@ -3,7 +3,7 @@
  *
  * Copyright 2009 Pierre Ossman <ossman@cendio.se> for Cendio AB
  * Copyright 2009-2011 D. R. Commander
- * 
+ *
  * Based on the x86 SIMD extension for IJG JPEG library,
  * Copyright (C) 1999-2006, MIYASAKA Masaru.
  * For conditions of distribution and use, see copyright notice in jsimdext.inc
@@ -61,6 +61,7 @@ init_simd (void)
     simd_support &= JSIMD_SSE2;
 }
 
+#ifndef JPEG_DECODE_ONLY
 GLOBAL(int)
 jsimd_can_rgb_ycc (void)
 {
@@ -82,6 +83,7 @@ jsimd_can_rgb_ycc (void)
 
   return 0;
 }
+#endif
 
 GLOBAL(int)
 jsimd_can_rgb_gray (void)
@@ -127,6 +129,7 @@ jsimd_can_ycc_rgb (void)
   return 0;
 }
 
+#ifndef JPEG_DECODE_ONLY
 GLOBAL(void)
 jsimd_rgb_ycc_convert (j_compress_ptr cinfo,
                        JSAMPARRAY input_buf, JSAMPIMAGE output_buf,
@@ -179,6 +182,7 @@ jsimd_rgb_ycc_convert (j_compress_ptr cinfo,
     mmxfct(cinfo->image_width, input_buf,
         output_buf, output_row, num_rows);
 }
+#endif
 
 GLOBAL(void)
 jsimd_rgb_gray_convert (j_compress_ptr cinfo,
@@ -286,6 +290,7 @@ jsimd_ycc_rgb_convert (j_decompress_ptr cinfo,
         input_row, output_buf, num_rows);
 }
 
+#ifndef JPEG_DECODE_ONLY
 GLOBAL(int)
 jsimd_can_h2v2_downsample (void)
 {
@@ -351,6 +356,7 @@ jsimd_h2v1_downsample (j_compress_ptr cinfo, jpeg_component_info * compptr,
         compptr->v_samp_factor, compptr->width_in_blocks,
         input_data, output_data);
 }
+#endif
 
 GLOBAL(int)
 jsimd_can_h2v2_upsample (void)
@@ -392,7 +398,7 @@ jsimd_can_h2v1_upsample (void)
 
 GLOBAL(void)
 jsimd_h2v2_upsample (j_decompress_ptr cinfo,
-                     jpeg_component_info * compptr, 
+                     jpeg_component_info * compptr,
                      JSAMPARRAY input_data,
                      JSAMPARRAY * output_data_ptr)
 {
@@ -406,7 +412,7 @@ jsimd_h2v2_upsample (j_decompress_ptr cinfo,
 
 GLOBAL(void)
 jsimd_h2v1_upsample (j_decompress_ptr cinfo,
-                     jpeg_component_info * compptr, 
+                     jpeg_component_info * compptr,
                      JSAMPARRAY input_data,
                      JSAMPARRAY * output_data_ptr)
 {
@@ -460,7 +466,7 @@ jsimd_can_h2v1_fancy_upsample (void)
 
 GLOBAL(void)
 jsimd_h2v2_fancy_upsample (j_decompress_ptr cinfo,
-                           jpeg_component_info * compptr, 
+                           jpeg_component_info * compptr,
                            JSAMPARRAY input_data,
                            JSAMPARRAY * output_data_ptr)
 {
@@ -475,7 +481,7 @@ jsimd_h2v2_fancy_upsample (j_decompress_ptr cinfo,
 
 GLOBAL(void)
 jsimd_h2v1_fancy_upsample (j_decompress_ptr cinfo,
-                           jpeg_component_info * compptr, 
+                           jpeg_component_info * compptr,
                            JSAMPARRAY input_data,
                            JSAMPARRAY * output_data_ptr)
 {
@@ -636,6 +642,7 @@ jsimd_h2v1_merged_upsample (j_decompress_ptr cinfo,
         in_row_group_ctr, output_buf);
 }
 
+#ifndef JPEG_DECODE_ONLY
 GLOBAL(int)
 jsimd_can_convsamp (void)
 {
@@ -855,6 +862,7 @@ jsimd_quantize_float (JCOEFPTR coef_block, FAST_FLOAT * divisors,
   else if (simd_support & JSIMD_3DNOW)
     jsimd_quantize_float_3dnow(coef_block, divisors, workspace);
 }
+#endif
 
 GLOBAL(int)
 jsimd_can_idct_2x2 (void)
