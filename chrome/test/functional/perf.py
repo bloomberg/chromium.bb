@@ -82,12 +82,15 @@ class BasePerfTest(pyauto.PyUITest):
     # variable lets us know whether a perf measurement is for a new test
     # execution, or the current test execution.
     self._seen_graph_lines = {}
-    # Flush all buffers to disk and wait until system calms down.
+
+    pyauto.PyUITest.setUp(self)
+
+    # Flush all buffers to disk and wait until system calms down.  Must be done
+    # *after* calling pyauto.PyUITest.setUp, since that is where Chrome is
+    # killed and re-initialized for a new test.
     if self.IsLinux() or self.IsMac() or self.IsChromeOS():
       os.system('sync')
       self._WaitForIdleCPU(60.0, 0.03)
-
-    pyauto.PyUITest.setUp(self)
 
   def _WaitForIdleCPU(self, timeout, utilization):
     """Waits for the CPU to become idle (< utilization).
