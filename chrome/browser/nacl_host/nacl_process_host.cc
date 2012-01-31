@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -33,12 +33,124 @@
 #if defined(OS_POSIX)
 #include "ipc/ipc_channel_posix.h"
 #elif defined(OS_WIN)
+#include "base/threading/thread.h"
+#include "base/process_util.h"
 #include "chrome/browser/nacl_host/nacl_broker_service_win.h"
+#include "native_client/src/trusted/service_runtime/win/debug_exception_handler.h"
+#include <windows.h>
 #endif
 
 using content::BrowserThread;
 using content::ChildProcessData;
 using content::ChildProcessHost;
+
+#if defined(OS_WIN)
+class NaClProcessHost::DebugContext
+  : public base::RefCountedThreadSafe<NaClProcessHost::DebugContext> {
+ public:
+  DebugContext()
+      : can_send_start_msg_(false),
+        child_process_host_(NULL) {
+  }
+
+  ~DebugContext() {
+  }
+
+  void AttachDebugger(int pid, base::ProcessHandle process);
+
+  // 6 methods below must be called on Browser::IO thread.
+  void SetStartMessage(IPC::Message* start_msg);
+  void SetChildProcessHost(content::ChildProcessHost* child_process_host);
+  void SetDebugThread(base::Thread* thread_);
+
+  // Start message is sent from 2 flows of execution. The first flow is
+  // NaClProcessHost::SendStart. The second flow is
+  // NaClProcessHost::OnChannelConnected and
+  // NaClProcessHost::DebugContext::AttachThread. The message itself is created
+  // by first flow. But the moment it can be sent is determined by second flow.
+  // So first flow executes SetStartMessage and SendStartMessage while second
+  // flow uses AllowAndSendStartMessage to either send potentially pending
+  // start message or set the flag that allows the first flow to do this.
+
+  // Clears the flag that prevents sending start message.
+  void AllowToSendStartMsg();
+  // Send start message to the NaCl process or do nothing if message is not
+  // set or not allowed to be send. If message is sent, it is cleared and
+  // repeated calls do nothing.
+  void SendStartMessage();
+  // Clear the flag that prevents further sending start message and send start
+  // message if it is set.
+  void AllowAndSendStartMessage();
+ private:
+  void StopThread();
+  // These 4 fields are accessed only from Browser::IO thread.
+  scoped_ptr<base::Thread> thread_;
+  scoped_ptr<IPC::Message> start_msg_;
+  // Debugger is attached or exception handling is not switched on.
+  // This means that start message can be sent to the NaCl process.
+  bool can_send_start_msg_;
+  content::ChildProcessHost* child_process_host_;
+};
+
+void NaClProcessHost::DebugContext::AttachDebugger(
+    int pid, base::ProcessHandle process) {
+  BOOL attached;
+  DWORD exit_code;
+  attached = DebugActiveProcess(pid);
+  if (!attached) {
+    LOG(ERROR) << "Failed to connect to the process";
+  }
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(
+          &NaClProcessHost::DebugContext::AllowAndSendStartMessage, this));
+  if (attached) {
+    // debug the process
+    NaClDebugLoop(process, &exit_code);
+    base::CloseProcessHandle(process);
+  }
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&NaClProcessHost::DebugContext::StopThread, this));
+}
+
+void NaClProcessHost::DebugContext::SetStartMessage(IPC::Message* start_msg) {
+  start_msg_.reset(start_msg);
+}
+
+void NaClProcessHost::DebugContext::SetChildProcessHost(
+    content::ChildProcessHost* child_process_host) {
+  child_process_host_ = child_process_host;
+}
+
+void NaClProcessHost::DebugContext::SetDebugThread(base::Thread* thread) {
+  thread_.reset(thread);
+}
+
+void NaClProcessHost::DebugContext::AllowToSendStartMsg() {
+  can_send_start_msg_ = true;
+}
+
+void NaClProcessHost::DebugContext::SendStartMessage() {
+  if (start_msg_.get() && can_send_start_msg_) {
+    if (child_process_host_) {
+      if (!child_process_host_->Send(start_msg_.release())) {
+        LOG(ERROR) << "Failed to send start message";
+      }
+    }
+  }
+}
+
+void NaClProcessHost::DebugContext::AllowAndSendStartMessage() {
+  AllowToSendStartMsg();
+  SendStartMessage();
+}
+
+void NaClProcessHost::DebugContext::StopThread() {
+  thread_->Stop();
+  thread_.reset();
+}
+#endif
 
 namespace {
 
@@ -118,6 +230,11 @@ NaClProcessHost::NaClProcessHost(const std::wstring& url)
   process_.reset(content::BrowserChildProcessHost::Create(
       content::PROCESS_TYPE_NACL_LOADER, this));
   process_->SetName(WideToUTF16Hack(url));
+#if defined(OS_WIN)
+  if (!RunningOnWOW64()) {
+    debug_context_ = new DebugContext();
+  }
+#endif
 }
 
 NaClProcessHost::~NaClProcessHost() {
@@ -153,6 +270,11 @@ NaClProcessHost::~NaClProcessHost() {
     reply_msg_->set_reply_error();
     chrome_render_message_filter_->Send(reply_msg_);
   }
+#if defined(OS_WIN)
+  if (!RunningOnWOW64()) {
+    debug_context_->SetChildProcessHost(NULL);
+  }
+#endif
 
 #if defined(OS_WIN)
   NaClBrokerService::GetInstance()->OnLoaderDied();
@@ -409,6 +531,55 @@ void NaClProcessHost::IrtReady() {
   }
 }
 
+#if defined(OS_WIN)
+bool NaClProcessHost::IsHardwareExceptionHandlingEnabled() {
+  return CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableNaClExceptionHandling) && !RunningOnWOW64();
+}
+
+void NaClProcessHost::OnChannelConnected(int32 peer_pid) {
+  if (!IsHardwareExceptionHandlingEnabled()) {
+    return;
+  }
+  // Start new thread for debug loop
+  debug_context_->SetChildProcessHost(process_->GetHost());
+  // We can't use process_->GetData().handle because it doesn't have necessary
+  // access rights.
+  base::ProcessHandle process;
+  if (!base::OpenProcessHandleWithAccess(
+           peer_pid,
+           base::kProcessAccessQueryInformation |
+           base::kProcessAccessSuspendResume |
+           base::kProcessAccessTerminate |
+           base::kProcessAccessVMOperation |
+           base::kProcessAccessVMRead |
+           base::kProcessAccessVMWrite |
+           base::kProcessAccessWaitForTermination,
+           &process)) {
+    LOG(ERROR) << "Failed to open the process";
+    debug_context_->AllowAndSendStartMessage();
+    return;
+  }
+  base::Thread* dbg_thread = new base::Thread("Debug thread");
+  if (!dbg_thread->Start()) {
+    LOG(ERROR) << "Debug thread not started";
+    debug_context_->AllowAndSendStartMessage();
+    base::CloseProcessHandle(process);
+    return;
+  }
+  debug_context_->SetDebugThread(dbg_thread);
+  // System can not reallocate pid until we close process handle. So using
+  // pid in different thread is fine.
+  dbg_thread->message_loop()->PostTask(FROM_HERE,
+      base::Bind(&NaClProcessHost::DebugContext::AttachDebugger,
+      debug_context_, peer_pid, process));
+}
+#else
+void NaClProcessHost::OnChannelConnected(int32 peer_pid) {
+}
+#endif
+
+
 static bool SendHandleToSelLdr(
     base::ProcessHandle processh,
     nacl::Handle sourceh, bool close_source,
@@ -543,7 +714,18 @@ void NaClProcessHost::SendStart(base::PlatformFile irt_file) {
   handles_for_sel_ldr.push_back(memory_fd);
 #endif
 
+#if defined(OS_WIN)
+  if (IsHardwareExceptionHandlingEnabled()) {
+    debug_context_->SetStartMessage(
+        new NaClProcessMsg_Start(handles_for_sel_ldr));
+    debug_context_->SendStartMessage();
+  } else {
+    process_->Send(new NaClProcessMsg_Start(handles_for_sel_ldr));
+  }
+#else
   process_->Send(new NaClProcessMsg_Start(handles_for_sel_ldr));
+#endif
+
   internal_->sockets_for_sel_ldr.clear();
 }
 

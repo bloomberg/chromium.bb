@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -44,6 +44,8 @@ class NaClProcessHost : public content::BrowserChildProcessHostDelegate {
               int socket_count,
               IPC::Message* reply_msg);
 
+  virtual void OnChannelConnected(int32 peer_pid) OVERRIDE;
+
   void OnProcessLaunchedByBroker(base::ProcessHandle handle);
 
  private:
@@ -63,7 +65,14 @@ class NaClProcessHost : public content::BrowserChildProcessHostDelegate {
   void IrtReady();
   void SendStart(base::PlatformFile irt_file);
 
+  bool IsHardwareExceptionHandlingEnabled();
+
  private:
+#if defined(OS_WIN)
+  class DebugContext;
+
+  scoped_refptr<DebugContext> debug_context_;
+#endif
   // The ChromeRenderMessageFilter that requested this NaCl process.  We use
   // this for sending the reply once the process has started.
   scoped_refptr<ChromeRenderMessageFilter> chrome_render_message_filter_;

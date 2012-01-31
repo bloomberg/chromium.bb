@@ -156,6 +156,7 @@ extern const char kEnableMacCookies[];
 extern const char kEnableMemoryInfo[];
 extern const char kEnableNaCl[];
 extern const char kEnableNaClDebug[];
+extern const char kEnableNaClExceptionHandling[];
 extern const char kEnablePanels[];
 extern const char kEnablePartialSwap[];
 extern const char kEnablePlatformApps[];

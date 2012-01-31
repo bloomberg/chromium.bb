@@ -552,6 +552,9 @@ const char kEnableNaCl[]                    = "enable-nacl";
 // Enables debugging via RSP over a socket.
 const char kEnableNaClDebug[]               = "enable-nacl-debug";
 
+// Enables hardware exception handling via debugger process.
+const char kEnableNaClExceptionHandling[]   = "enable-nacl-exception-handling";
+
 // Enables panels (always on-top docked pop-up windows).
 const char kEnablePanels[]                 = "enable-panels";
 

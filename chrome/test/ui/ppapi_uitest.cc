@@ -262,6 +262,13 @@ class PPAPINaClTestDisallowedSockets : public PPAPITestBase {
   }
 };
 
+class NaClTestEnableHardwareExceptions : public PPAPINaClTest {
+ public:
+  NaClTestEnableHardwareExceptions() {
+    launch_arguments_.AppendSwitch(switches::kEnableNaClExceptionHandling);
+  }
+};
+
 // This macro finesses macro expansion to do what we want.
 #define STRIP_PREFIXES(test_name) StripPrefixes(#test_name)
 
@@ -301,6 +308,7 @@ class PPAPINaClTestDisallowedSockets : public PPAPITestBase {
 #define TEST_PPAPI_NACL_VIA_HTTP(test_name)
 #define TEST_PPAPI_NACL_VIA_HTTP_DISALLOWED_SOCKETS(test_name)
 #define TEST_PPAPI_NACL_VIA_HTTP_WITH_WS(test_name)
+#define TEST_NACL_VIA_HTTP_WITH_HARDWARE_EXCEPTION_HANDLING(test_name)
 #else
 
 // NaCl based PPAPI tests
@@ -319,6 +327,12 @@ class PPAPINaClTestDisallowedSockets : public PPAPITestBase {
 #define TEST_PPAPI_NACL_VIA_HTTP_WITH_WS(test_name) \
     TEST_F(PPAPINaClTest, test_name) { \
       RunTestWithWebSocketServer(STRIP_PREFIXES(test_name)); \
+    }
+
+// NaCl tests with hardware exception handling
+#define TEST_NACL_VIA_HTTP_WITH_HARDWARE_EXCEPTION_HANDLING(test_name) \
+    TEST_F(NaClTestEnableHardwareExceptions, test_name) { \
+      RunTestViaHTTP(STRIP_PREFIXES(test_name)); \
     }
 #endif
 
@@ -736,6 +750,10 @@ TEST_PPAPI_NACL_VIA_HTTP_WITH_WS(WebSocket_TextSendReceive)
 TEST_PPAPI_NACL_VIA_HTTP_WITH_WS(WebSocket_BinarySendReceive)
 TEST_PPAPI_NACL_VIA_HTTP_WITH_WS(WebSocket_BufferedAmount)
 TEST_PPAPI_NACL_VIA_HTTP_WITH_WS(MAYBE_WebSocket_CcInterfaces)
+
+#if defined(OS_WIN)
+TEST_NACL_VIA_HTTP_WITH_HARDWARE_EXCEPTION_HANDLING(Exception)
+#endif
 
 TEST_PPAPI_IN_PROCESS(AudioConfig_ValidConfigs)
 TEST_PPAPI_IN_PROCESS(AudioConfig_InvalidConfigs)

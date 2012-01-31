@@ -308,6 +308,7 @@
       'tests/test_audio_config.cc',
       'tests/test_cursor_control.cc',
       'tests/test_directory_reader.cc',
+      'tests/test_exception.cc',
       'tests/test_file_io.cc',
       'tests/test_file_ref.cc',
       'tests/test_file_system.cc',
