@@ -78,7 +78,7 @@ deps = {
     "/trunk/deps/third_party/WebKit@76115",
 
   "src/third_party/icu":
-    "/trunk/deps/third_party/icu46@118861",
+    "/trunk/deps/third_party/icu46@119726",
 
   "src/third_party/hunspell":
    "/trunk/deps/third_party/hunspell@110423",
@@ -335,7 +335,7 @@ deps_os = {
 
     # Chrome Frame related deps
     "src/third_party/xulrunner-sdk":
-      "/trunk/deps/third_party/xulrunner-sdk@71609",
+      "/trunk/deps/third_party/xulrunner-sdk@119756",
     "src/chrome_frame/tools/test/reference_build/chrome_win":
       "/trunk/deps/reference_builds/chrome_win@89574",
 

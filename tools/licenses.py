@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -94,6 +94,8 @@ ADDITIONAL_PATHS = (
     # The directory with the word list for Chinese and Japanese segmentation
     # with different license terms than ICU.
     os.path.join('third_party','icu','source','data','brkitr'),
+    # Fake directory so we can include the strongtalk license.
+    os.path.join('v8', 'strongtalk'),
 )
 
 
@@ -136,6 +138,11 @@ SPECIAL_CASES = {
         "Name": "pdfsqueeze",
         "URL": "http://code.google.com/p/pdfsqueeze/",
         "License File": "COPYING",
+    },
+    os.path.join('v8', 'strongtalk'): {
+        "Name": "Strongtalk",
+        "URL": "http://www.strongtalk.org/",
+        "License File": "/v8/LICENSE.strongtalk",
     },
 }
 
