@@ -52,8 +52,6 @@ class WebWidgetHost;
 
 namespace WebKit {
 class WebDeviceOrientationClient;
-class WebSpeechInputController;
-class WebSpeechInputListener;
 class WebStorageNamespace;
 struct WebWindowFeatures;
 }

@@ -44,9 +44,6 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPopupMenu.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebRange.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebScreenInfo.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebSpeechInputController.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebSpeechInputControllerMock.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebSpeechInputListener.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebStorageNamespace.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURL.h"
@@ -560,7 +557,7 @@ TestWebViewDelegate::deviceOrientationClient() {
 
 WebKit::WebSpeechInputController* TestWebViewDelegate::speechInputController(
     WebKit::WebSpeechInputListener* listener) {
-  return shell_->CreateSpeechInputControllerMock(listener);
+  return 0;
 }
 
 // WebWidgetClient -----------------------------------------------------------
@@ -1000,8 +997,6 @@ void TestWebViewDelegate::Reset() {
   TestShell* shell = shell_;
   this->~TestWebViewDelegate();
   new (this) TestWebViewDelegate(shell);
-  if (shell->speech_input_controller_mock())
-    shell->speech_input_controller_mock()->clearResults();
 }
 
 void TestWebViewDelegate::SetSmartInsertDeleteEnabled(bool enabled) {
