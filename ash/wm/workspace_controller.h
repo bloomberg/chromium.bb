@@ -87,7 +87,9 @@ class ASH_EXPORT WorkspaceController :
   // Owned the window set on.
   WorkspaceEventFilter* event_filter_;
 
+#if !defined(OS_MACOSX)
   scoped_ptr<views::MenuRunner> menu_runner_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(WorkspaceController);
 };

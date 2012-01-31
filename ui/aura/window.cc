@@ -607,8 +607,9 @@ Window* Window::GetWindowForPoint(const gfx::Point& local_point,
   if (!return_tightest && delegate_)
     return this;
 
-  for (Windows::const_reverse_iterator it = children_.rbegin();
-       it != children_.rend(); ++it) {
+  for (Windows::const_reverse_iterator it = children_.rbegin(),
+           rend = children_.rend();
+       it != rend; ++it) {
     Window* child = *it;
     if (!child->IsVisible() || (for_event_handling && child->ignore_events_))
       continue;

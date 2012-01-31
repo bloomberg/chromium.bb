@@ -491,8 +491,9 @@ bool RootWindow::ProcessMouseEvent(Window* target, MouseEvent* event) {
 
   EventFilters filters;
   GetEventFiltersToNotify(target->parent(), &filters);
-  for (EventFilters::const_reverse_iterator it = filters.rbegin();
-       it != filters.rend(); ++it) {
+  for (EventFilters::const_reverse_iterator it = filters.rbegin(),
+           rend = filters.rend();
+       it != rend; ++it) {
     if ((*it)->PreHandleMouseEvent(target, event))
       return true;
   }
@@ -514,8 +515,9 @@ bool RootWindow::ProcessKeyEvent(Window* target, KeyEvent* event) {
     GetEventFiltersToNotify(target->parent(), &filters);
   }
 
-  for (EventFilters::const_reverse_iterator it = filters.rbegin();
-       it != filters.rend(); ++it) {
+  for (EventFilters::const_reverse_iterator it = filters.rbegin(),
+           rend = filters.rend();
+       it != rend; ++it) {
     if ((*it)->PreHandleKeyEvent(target, event))
       return true;
   }
@@ -532,8 +534,9 @@ ui::TouchStatus RootWindow::ProcessTouchEvent(Window* target,
 
   EventFilters filters;
   GetEventFiltersToNotify(target->parent(), &filters);
-  for (EventFilters::const_reverse_iterator it = filters.rbegin();
-       it != filters.rend(); ++it) {
+  for (EventFilters::const_reverse_iterator it = filters.rbegin(),
+           rend = filters.rend();
+       it != rend; ++it) {
     ui::TouchStatus status = (*it)->PreHandleTouchEvent(target, event);
     if (status != ui::TOUCH_STATUS_UNKNOWN)
       return status;
@@ -550,8 +553,9 @@ ui::GestureStatus RootWindow::ProcessGestureEvent(Window* target,
   EventFilters filters;
   GetEventFiltersToNotify(target->parent(), &filters);
   ui::GestureStatus status = ui::GESTURE_STATUS_UNKNOWN;
-  for (EventFilters::const_reverse_iterator it = filters.rbegin();
-       it != filters.rend(); ++it) {
+  for (EventFilters::const_reverse_iterator it = filters.rbegin(),
+           rend = filters.rend();
+       it != rend; ++it) {
     status = (*it)->PreHandleGestureEvent(target, event);
     if (status != ui::GESTURE_STATUS_UNKNOWN)
       return status;

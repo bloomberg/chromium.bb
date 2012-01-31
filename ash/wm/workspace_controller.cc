@@ -53,6 +53,7 @@ void WorkspaceController::ToggleOverview() {
 
 void WorkspaceController::ShowMenu(views::Widget* widget,
                                    const gfx::Point& location) {
+#if !defined(OS_MACOSX)
   ui::SimpleMenuModel menu_model(this);
   // This is just for testing and will be ripped out before we ship, so none of
   // the strings are localized.
@@ -67,6 +68,7 @@ void WorkspaceController::ShowMenu(views::Widget* widget,
           views::MenuItemView::TOPRIGHT, views::MenuRunner::HAS_MNEMONICS) ==
       views::MenuRunner::MENU_DELETED)
     return;
+#endif  // !defined(OS_MACOSX)
 }
 
 void WorkspaceController::OnRootWindowResized(const gfx::Size& new_size) {
