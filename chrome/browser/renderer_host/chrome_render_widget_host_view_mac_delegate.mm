@@ -172,12 +172,7 @@ class SpellCheckRenderViewObserver : public content::RenderViewHostObserver {
   if (isDevtoolsRwhv)
     return NO;
 
-  // TODO(thakis): This is wrong, as it will navigate the frontmost browser
-  // for swipe events on background windows. It also navigates the frontmost
-  // browser for swipes on extensions popups. And it's a dependency problem,
-  // too. http://crbug.com/102541
-  Browser* browser = BrowserList::GetLastActive();
-
+  Browser* browser = BrowserList::FindBrowserWithWindow([theEvent window]);
   if (browser && [NSEvent isSwipeTrackingFromScrollEventsEnabled]) {
     content::WebContents* contents = browser->GetSelectedWebContents();
     if (contents && contents->GetURL() == GURL(chrome::kChromeUINewTabURL)) {
@@ -221,8 +216,8 @@ class SpellCheckRenderViewObserver : public content::RenderViewHostObserver {
       // Released by the tracking handler once the gesture is complete.
       HistoryOverlayController* historyOverlay =
           [[HistoryOverlayController alloc]
-            initForMode:goForward ? kHistoryOverlayModeForward :
-                                    kHistoryOverlayModeBack];
+              initForMode:goForward ? kHistoryOverlayModeForward :
+                                      kHistoryOverlayModeBack];
 
       // The way this API works: gestureAmount is between -1 and 1 (float).  If
       // the user does the gesture for more than about 25% (i.e. < -0.25 or >
@@ -262,7 +257,8 @@ class SpellCheckRenderViewObserver : public content::RenderViewHostObserver {
 
           // |gestureAmount| obeys -[NSEvent isDirectionInvertedFromDevice]
           // automatically.
-          Browser* browser = BrowserList::GetLastActive();
+          Browser* browser = BrowserList::FindBrowserWithWindow(
+              historyOverlay.view.window);
           if (phase == NSEventPhaseEnded && browser) {
             if (goForward)
               browser->GoForward(CURRENT_TAB);
