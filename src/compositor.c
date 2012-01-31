@@ -1073,7 +1073,7 @@ weston_surface_assign_output(struct weston_surface *es)
 static void
 surface_attach(struct wl_client *client,
 	       struct wl_resource *resource,
-	       struct wl_resource *buffer_resource, int32_t x, int32_t y)
+	       struct wl_resource *buffer_resource, int32_t sx, int32_t sy)
 {
 	struct weston_surface *es = resource->data;
 	struct weston_shell *shell = es->compositor->shell;
@@ -1101,12 +1101,18 @@ surface_attach(struct wl_client *client,
 
 	if (es->visual == WESTON_NONE_VISUAL) {
 		shell->map(shell, es, buffer->width, buffer->height);
-	} else if (x != 0 || y != 0 ||
+	} else if (sx != 0 || sy != 0 ||
 		   es->geometry.width != buffer->width ||
 		   es->geometry.height != buffer->height) {
-		/* FIXME: the x,y delta should be in surface-local coords */
-		shell->configure(shell, es, es->geometry.x + x,
-				 es->geometry.y + y,
+		int32_t from_x, from_y;
+		int32_t to_x, to_y;
+
+		/* FIXME: this has serious cumulating rounding errors */
+		weston_surface_to_global(es, 0, 0, &from_x, &from_y);
+		weston_surface_to_global(es, sx, sy, &to_x, &to_y);
+		shell->configure(shell, es,
+				 es->geometry.x + to_x - from_x,
+				 es->geometry.y + to_y - from_y,
 				 buffer->width, buffer->height);
 	}
 
