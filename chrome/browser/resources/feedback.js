@@ -25,7 +25,7 @@ function selectImage(divId, thumbnailId) {
   var thumbnailDivs = $(divId).children;
   selectedThumbnailDivId = divId;
   if (thumbnailDivs.length == 0) {
-    $(divId).style.display = 'none';
+    $(divId).hidden = true;
     return;
   }
   for (var i = 0; i < thumbnailDivs.length; i++) {
@@ -71,6 +71,18 @@ function addScreenshot(divId, screenshot) {
 
   if (!selectedThumbnailId)
     selectImage(divId, thumbnailDiv.id);
+}
+
+/**
+ * Disables screenshots completely.
+ */
+function disableScreenshots() {
+  $('screenshot-row').hidden = true;
+  $('screenshot-checkbox').checked = false;
+
+  $('current-screenshots').hidden = true;
+  if ($('saved-screenshots'))
+    $('saved-screenshots').hidden = true;
 }
 
 /**
@@ -122,9 +134,9 @@ function cancel() {
  */
 function currentSelected() {
   // TODO(rkc): Change this to use a class instead.
-  $('current-screenshots').style.display = 'block';
+  $('current-screenshots').hidden = false;
   if ($('saved-screenshots'))
-    $('saved-screenshots').style.display = 'none';
+    $('saved-screenshots').hidden = true;
 
   if (selectedThumbnailDivId != 'current-screenshots')
     selectImage('current-screenshots',
@@ -138,13 +150,13 @@ function currentSelected() {
  * selected when we had this div open previously.
  */
 function savedSelected() {
-  $('current-screenshots').style.display = 'none';
+  $('current-screenshots').hidden = true;
 
   if ($('saved-screenshots').childElementCount == 0) {
     // setupSavedScreenshots will take care of changing visibility
     chrome.send('refreshSavedScreenshots', []);
   } else {
-    $('saved-screenshots').style.display = 'block';
+    $('saved-screenshots').hidden = false;
     if (selectedThumbnailDivId != 'saved-screenshots')
       selectImage('saved-screenshots', savedThumbnailIds['saved-screenshots']);
   }
@@ -158,12 +170,12 @@ function savedSelected() {
  * the current screenshot to saved screenshots
  */
 function changeToSaved() {
-  $('screenshot-label-current').style.display = 'none';
-  $('screenshot-label-saved').style.display = 'inline';
+  $('screenshot-label-current').hidden = true;
+  $('screenshot-label-saved').hidden = false;
 
   // Change the link to say "go to original"
-  $('screenshot-link-tosaved').style.display = 'none';
-  $('screenshot-link-tocurrent').style.display = 'inline';
+  $('screenshot-link-tosaved').hidden = true;
+  $('screenshot-link-tocurrent').hidden = false;
 
   savedSelected();
 }
@@ -173,12 +185,12 @@ function changeToSaved() {
  * the saved screenshots to the current screenshots
  */
 function changeToCurrent() {
-  $('screenshot-label-current').style.display = 'inline';
-  $('screenshot-label-saved').style.display = 'none';
+  $('screenshot-label-current').hidden = false;
+  $('screenshot-label-saved').hidden = true;
 
-  // Change the link to say "go to original"
-  $('screenshot-link-tosaved').style.display = 'inline';
-  $('screenshot-link-tocurrent').style.display = 'none';
+  // Change the link to say "go to saved"
+  $('screenshot-link-tosaved').hidden = false;
+  $('screenshot-link-tocurrent').hidden = true;
 
   currentSelected();
 }
@@ -211,6 +223,7 @@ function load() {
   var parameters = {
     'description': '',
     'categoryTag': '',
+    'customPageUrl': '',
   };
   var queryPos = window.location.hash.indexOf('?');
   if (queryPos !== -1) {
@@ -228,6 +241,12 @@ function load() {
 
   // Set the initial description text.
   $('description-text').textContent = parameters['description'];
+  // If a page url is spcified in the parameters, override the default page url.
+  if (parameters['customPageUrl'] != '') {
+    $('page-url-text').value = parameters['customPageUrl'];
+    // and disable the page image, since it doesn't make sense on a custum url.
+    disableScreenshots();
+  }
 
   // Pick up the category tag (for most cases this will be an empty string)
   categoryTag = parameters['categoryTag'];
@@ -246,7 +265,7 @@ function setupSavedScreenshots(screenshots) {
         localStrings.getString('no-saved-screenshots');
 
     // Make sure we make the display the message.
-    $('saved-screenshots').style.display = 'block';
+    $('saved-screenshots').hidden = false;
 
     // In case the user tries to send now; fail safe, do not send a screenshot
     // at all versus sending the current screenshot.
@@ -264,7 +283,8 @@ function setupSavedScreenshots(screenshots) {
 
 function setupDialogDefaults(defaults) {
   if (defaults.length > 0) {
-    $('page-url-text').value = defaults[0];
+    if ($('page-url-text').value == '')
+      $('page-url-text').value = defaults[0];
     if (defaults[0] == '')
       $('page-url-checkbox').checked = false;
 
@@ -274,10 +294,10 @@ function setupDialogDefaults(defaults) {
       if (defaults[2] == '') {
         // if we didn't get an e-mail address from cros,
         // disable the user email display totally.
-        $('user-email-table').style.display = 'none';
+        $('user-email-table').hidden = true;
 
         // this also means we are in privacy mode, so no saved screenshots.
-        $('screenshot-link-tosaved').style.display = 'none';
+        $('screenshot-link-tosaved').hidden = true;
       }
     }
   }

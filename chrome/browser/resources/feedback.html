@@ -108,7 +108,7 @@
                     </tr>
 </if>
                     <!--  Screenshot -->
-                    <tr>
+                    <tr id="screenshot-row">
                       <td>
                         <table class="feedback-table">
                           <tr>
@@ -120,15 +120,14 @@
                               </label>
 <if expr="pp_ifdef('chromeos')">
                               <span id="screenshot-label-saved"
-                                  style="display: none;"
-                                  i18n-content="saved-screenshot">
+                                  i18n-content="saved-screenshot" hidden>
                               </span>
                               <a id="screenshot-link-tosaved" href="#"
                                   i18n-content="choose-different-screenshot">
                               </a>
                               <a id="screenshot-link-tocurrent" href="#"
-                                  style="display: none;"
-                                  i18n-content="choose-original-screenshot">
+                                i18n-content="choose-original-screenshot"
+                                hidden>
                               </a>
 </if>
                             </td>
@@ -139,8 +138,8 @@
                     <tr>
                       <td>
 <if expr="pp_ifdef('chromeos')">
-                        <div id="saved-screenshots" style="display: none;"
-                            class="thumbnail-list"></div>
+                        <div id="saved-screenshots" class="thumbnail-list"
+                            hidden></div>
 </if>
                         <div id="current-screenshots" class="thumbnail-list">
                         </div>

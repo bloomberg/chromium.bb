@@ -1,3 +1,8 @@
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
 .feedback-label {
   text-align: start;
   vertical-align: text-top;
@@ -39,7 +44,6 @@ hr {
 .thumbnail-list {
   -webkit-margin-start: 1em;
   width: 33.5em;
-  display: block;
   margin-top: 0.5em;
   margin-bottom: 1em;
 }
