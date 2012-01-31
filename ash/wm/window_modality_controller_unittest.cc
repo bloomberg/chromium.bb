@@ -35,6 +35,7 @@ bool ValidateStacking(aura::Window* parent, int ids[], int count) {
 // Validates:
 // - it should be possible to activate w12 even when w11 is open.
 // - activating w1 activates w12 and updates stacking order appropriately.
+// - closing a window passes focus up the stack.
 TEST_F(WindowModalityControllerTest, BasicActivation) {
   aura::test::TestWindowDelegate d;
   scoped_ptr<aura::Window> w1(
@@ -67,6 +68,11 @@ TEST_F(WindowModalityControllerTest, BasicActivation) {
   // is why this order is not -11, -1, -12.
   int check2[] = { -1, -11, -12 };
   EXPECT_TRUE(ValidateStacking(w1->parent(), check2, arraysize(check2)));
+
+  w12.reset();
+  EXPECT_TRUE(IsActiveWindow(w11.get()));
+  w11.reset();
+  EXPECT_TRUE(IsActiveWindow(w1.get()));
 }
 
 // Create two toplevel windows w1 and w2, and nest two modals w11 and w111 below
@@ -74,6 +80,7 @@ TEST_F(WindowModalityControllerTest, BasicActivation) {
 // Validates:
 // - activating w1 while w11/w111 is showing always activates most deeply nested
 //   descendant.
+// - closing a window passes focus up the stack.
 TEST_F(WindowModalityControllerTest, NestedModals) {
   aura::test::TestWindowDelegate d;
   scoped_ptr<aura::Window> w1(
@@ -114,6 +121,48 @@ TEST_F(WindowModalityControllerTest, NestedModals) {
   EXPECT_TRUE(IsActiveWindow(w2.get()));
   int check2[] = { -1, -11, -111, -2 };
   EXPECT_TRUE(ValidateStacking(w1->parent(), check2, arraysize(check2)));
+
+  w2.reset();
+  EXPECT_TRUE(IsActiveWindow(w111.get()));
+  w111.reset();
+  EXPECT_TRUE(IsActiveWindow(w11.get()));
+  w11.reset();
+  EXPECT_TRUE(IsActiveWindow(w1.get()));
+}
+
+// Create two toplevel windows w1 and w2, and nest two modals w11 and w111 below
+// w1.
+// Validates:
+// - destroying w11 while w111 is focused activates w1.
+TEST_F(WindowModalityControllerTest, NestedModalsOuterClosed) {
+  aura::test::TestWindowDelegate d;
+  scoped_ptr<aura::Window> w1(
+      aura::test::CreateTestWindowWithDelegate(&d, -1, gfx::Rect(), NULL));
+  scoped_ptr<aura::Window> w11(
+      aura::test::CreateTestWindowWithDelegate(&d, -11, gfx::Rect(), NULL));
+  // |w111| will be owned and deleted by |w11|.
+  aura::Window* w111 =
+      aura::test::CreateTestWindowWithDelegate(&d, -111, gfx::Rect(), NULL);
+  scoped_ptr<aura::Window> w2(
+      aura::test::CreateTestWindowWithDelegate(&d, -2, gfx::Rect(), NULL));
+
+  w1->AddTransientChild(w11.get());
+  w11->AddTransientChild(w111);
+
+  ActivateWindow(w1.get());
+  EXPECT_TRUE(IsActiveWindow(w1.get()));
+  ActivateWindow(w2.get());
+  EXPECT_TRUE(IsActiveWindow(w2.get()));
+
+  // Set up modality.
+  w11->SetIntProperty(aura::client::kModalKey, ui::MODAL_TYPE_WINDOW);
+  w111->SetIntProperty(aura::client::kModalKey, ui::MODAL_TYPE_WINDOW);
+
+  ActivateWindow(w1.get());
+  EXPECT_TRUE(IsActiveWindow(w111));
+
+  w11.reset();
+  EXPECT_TRUE(IsActiveWindow(w1.get()));
 }
 
 // Modality also prevents events from being passed to the transient parent.

@@ -172,7 +172,7 @@ void ActivationController::OnWindowVisibilityChanged(aura::Window* window,
     ActivateNextWindow(window);
 }
 
-void ActivationController::OnWindowDestroyed(aura::Window* window) {
+void ActivationController::OnWindowDestroying(aura::Window* window) {
   if (IsActiveWindow(window)) {
     // Clear the property before activating something else, since
     // ActivateWindow() will attempt to notify the window stored in this value

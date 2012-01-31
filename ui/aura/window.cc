@@ -76,7 +76,8 @@ Window::~Window() {
            children_.end());
   }
 
-  // Removes ourselves from our transient parent.
+  // Removes ourselves from our transient parent (if it hasn't been done by the
+  // RootWindow).
   if (transient_parent_)
     transient_parent_->RemoveTransientChild(this);
 

@@ -277,8 +277,17 @@ void RootWindow::OnWindowInitialized(Window* window) {
 
 void RootWindow::OnWindowDestroying(Window* window) {
   // Update the focused window state if the window was focused.
-  if (focused_window_ == window)
-    SetFocusedWindow(focused_window_->parent());
+  if (focused_window_ == window) {
+    Window* transient_parent = focused_window_->transient_parent();
+    if (transient_parent) {
+      // Has to be removed from the transient parent before focusing, otherwise
+      // |window| will be focused again.
+      transient_parent->RemoveTransientChild(window);
+      SetFocusedWindow(transient_parent);
+    } else {
+      SetFocusedWindow(focused_window_->parent());
+    }
+  }
 
   // When a window is being destroyed it's likely that the WindowDelegate won't
   // want events, so we reset the mouse_pressed_handler_ and capture_window_ and

@@ -39,7 +39,7 @@ class ASH_EXPORT ActivationController
   // Overridden from aura::WindowObserver:
   virtual void OnWindowVisibilityChanged(aura::Window* window,
                                          bool visible) OVERRIDE;
-  virtual void OnWindowDestroyed(aura::Window* window) OVERRIDE;
+  virtual void OnWindowDestroying(aura::Window* window) OVERRIDE;
 
   // Overridden from aura::RootWindowObserver:
   virtual void OnWindowInitialized(aura::Window* window) OVERRIDE;
