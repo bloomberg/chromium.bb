@@ -1252,7 +1252,8 @@ WebPreferences ChromeContentBrowserClient::GetWebkitPrefs(RenderViewHost* rvh) {
         GpuProcessHost::gpu_enabled() &&
         command_line.HasSwitch(switches::kEnableAcceleratedFilters);
     web_prefs.accelerated_layers_enabled =
-        !command_line.HasSwitch(switches::kDisableAcceleratedLayers);
+        web_prefs.accelerated_animation_enabled =
+            !command_line.HasSwitch(switches::kDisableAcceleratedLayers);
     web_prefs.composite_to_texture_enabled =
         command_line.HasSwitch(switches::kEnableCompositeToTexture);
     web_prefs.accelerated_plugins_enabled =
@@ -1314,10 +1315,12 @@ WebPreferences ChromeContentBrowserClient::GetWebkitPrefs(RenderViewHost* rvh) {
     if (blacklist_flags & GpuFeatureFlags::kGpuFeatureMultisampling)
       web_prefs.gl_multisampling_enabled = false;
 
-    // Accelerated video is slower than regular when using a software 3d
-    // rasterizer.
-    if (gpu_data_manager->software_rendering())
+    // Accelerated video and animation are slower than regular when using a
+    // software 3d rasterizer.
+    if (gpu_data_manager->software_rendering()) {
       web_prefs.accelerated_video_enabled = false;
+      web_prefs.accelerated_animation_enabled = false;
+    }
   }
 
   web_prefs.uses_universal_detector =

@@ -84,6 +84,7 @@ WebPreferences::WebPreferences()
       composite_to_texture_enabled(false),
       fixed_position_compositing_enabled(false),
       accelerated_layers_enabled(false),
+      accelerated_animation_enabled(false),
       accelerated_video_enabled(false),
       accelerated_2d_canvas_enabled(false),
       accelerated_painting_enabled(false),
@@ -295,7 +296,7 @@ void WebPreferences::Apply(WebView* web_view) const {
   settings->setAcceleratedCompositingForVideoEnabled(
       accelerated_video_enabled);
   settings->setAcceleratedCompositingForAnimationEnabled(
-      accelerated_layers_enabled);
+      accelerated_animation_enabled);
 
   // Enabling accelerated plugins if specified from the command line.
   settings->setAcceleratedCompositingForPluginsEnabled(
