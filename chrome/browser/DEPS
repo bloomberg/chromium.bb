@@ -42,6 +42,7 @@ include_rules = [
   "+content/browser/disposition_utils.h",
   "+content/browser/download/download_buffer.h",
   "+content/browser/download/download_create_info.h",
+  "+content/browser/download/download_file.h",
   "+content/browser/download/download_file_impl.h",
   "+content/browser/download/download_file_manager.h",
   "+content/browser/download/download_persistent_store_info.h",

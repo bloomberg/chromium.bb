@@ -6,15 +6,11 @@
 #define CONTENT_BROWSER_DOWNLOAD_DOWNLOAD_FILE_IMPL_H_
 #pragma once
 
-#include "content/public/browser/download_file.h"
+#include "content/browser/download/download_file.h"
 
-#include <string>
-
-#include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "content/browser/download/base_file.h"
 #include "content/browser/download/download_request_handle.h"
-#include "content/common/content_export.h"
 
 struct DownloadCreateInfo;
 

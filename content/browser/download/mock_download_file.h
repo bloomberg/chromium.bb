@@ -11,7 +11,7 @@
 
 #include "base/file_path.h"
 #include "base/memory/ref_counted.h"
-#include "content/public/browser/download_file.h"
+#include "content/browser/download/download_file.h"
 #include "content/public/browser/download_id.h"
 #include "content/public/browser/download_manager.h"
 #include "net/base/net_errors.h"
