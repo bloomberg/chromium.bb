@@ -151,8 +151,10 @@ installer::MasterPreferences* LoadMasterPrefs(FilePath* master_prefs_path)
     return NULL;
   installer::MasterPreferences* install_prefs =
       new installer::MasterPreferences(*master_prefs_path);
-  if (!install_prefs->read_from_file())
+  if (!install_prefs->read_from_file()) {
+    delete install_prefs;
     return NULL;
+  }
 
   return install_prefs;
 }
