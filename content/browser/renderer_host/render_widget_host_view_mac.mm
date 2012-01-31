@@ -934,6 +934,9 @@ void RenderWidgetHostViewMac::AcceleratedSurfacePostSubBuffer(
   }
 }
 
+void RenderWidgetHostViewMac::AcceleratedSurfaceSuspend() {
+}
+
 void RenderWidgetHostViewMac::UpdateRootGpuViewVisibility(
     bool show_gpu_widget) {
   TRACE_EVENT1("renderer_host",

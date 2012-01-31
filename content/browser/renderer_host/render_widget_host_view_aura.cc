@@ -429,6 +429,9 @@ void RenderWidgetHostViewAura::AcceleratedSurfacePostSubBuffer(
 #endif
 }
 
+void RenderWidgetHostViewAura::AcceleratedSurfaceSuspend() {
+}
+
 #if defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
 void RenderWidgetHostViewAura::AcceleratedSurfaceNew(
       int32 width,

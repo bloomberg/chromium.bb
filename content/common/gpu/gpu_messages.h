@@ -251,6 +251,11 @@ IPC_MESSAGE_CONTROL1(GpuHostMsg_AcceleratedSurfacePostSubBuffer,
 IPC_MESSAGE_CONTROL1(GpuHostMsg_AcceleratedSurfaceRelease,
                      GpuHostMsg_AcceleratedSurfaceRelease_Params)
 
+// Tells the browser to release resources for the given surface until the next
+// time swap buffers or post sub buffer is sent.
+IPC_MESSAGE_CONTROL1(GpuHostMsg_AcceleratedSurfaceSuspend,
+                     int32 /* surface_id */)
+
 //------------------------------------------------------------------------------
 // GPU Channel Messages
 // These are messages from a renderer process to the GPU process.

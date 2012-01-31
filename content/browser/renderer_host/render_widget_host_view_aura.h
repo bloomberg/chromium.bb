@@ -94,6 +94,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   virtual void AcceleratedSurfacePostSubBuffer(
       const GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params& params,
       int gpu_host_id) OVERRIDE;
+  virtual void AcceleratedSurfaceSuspend() OVERRIDE;
 #if defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
   virtual void AcceleratedSurfaceNew(
       int32 width,

@@ -2140,6 +2140,13 @@ void RenderWidgetHostViewWin::AcceleratedSurfacePostSubBuffer(
   RenderWidgetHost::AcknowledgePostSubBuffer(params.route_id, gpu_host_id);
 }
 
+void RenderWidgetHostViewWin::AcceleratedSurfaceSuspend() {
+    if (!accelerated_surface_.get())
+      return;
+
+    accelerated_surface_->Suspend();
+}
+
 void RenderWidgetHostViewWin::SetAccessibilityFocus(int acc_obj_id) {
   if (!render_widget_host_)
     return;

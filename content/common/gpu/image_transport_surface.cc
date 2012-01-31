@@ -172,6 +172,10 @@ bool ImageTransportHelper::MakeCurrent() {
   return decoder->MakeCurrent();
 }
 
+void ImageTransportHelper::Suspend() {
+  manager_->Send(new GpuHostMsg_AcceleratedSurfaceSuspend(stub_->surface_id()));
+}
+
 gpu::GpuScheduler* ImageTransportHelper::Scheduler() {
   if (!stub_.get())
     return NULL;

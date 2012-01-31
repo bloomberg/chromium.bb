@@ -222,6 +222,9 @@ void TestRenderWidgetHostView::AcceleratedSurfacePostSubBuffer(
     int gpu_host_id) {
 }
 
+void TestRenderWidgetHostView::AcceleratedSurfaceSuspend() {
+}
+
 #if defined(OS_MACOSX)
 
 gfx::Rect TestRenderWidgetHostView::GetViewCocoaBounds() const {

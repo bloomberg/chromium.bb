@@ -30,6 +30,11 @@ class SURFACE_EXPORT AcceleratedSurface {
   // Synchronously present a frame with no acknowledgement.
   bool Present(HWND window);
 
+  // Temporarily release resources until a new surface is asynchronously
+  // presented. Present will not be able to represent the last surface after
+  // calling this and will return false.
+  void Suspend();
+
  private:
   linked_ptr<AcceleratedPresenter> presenter_;
   DISALLOW_COPY_AND_ASSIGN(AcceleratedSurface);

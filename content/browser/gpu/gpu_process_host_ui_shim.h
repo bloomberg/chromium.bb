@@ -94,6 +94,7 @@ class GpuProcessHostUIShim
       const GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params& params);
   void OnAcceleratedSurfacePostSubBuffer(
       const GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params& params);
+  void OnAcceleratedSurfaceSuspend(int32 surface_id);
 
 #if defined(OS_MACOSX) || defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
   void OnAcceleratedSurfaceNew(

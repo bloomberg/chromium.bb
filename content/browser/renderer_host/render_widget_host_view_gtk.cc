@@ -1023,6 +1023,10 @@ void RenderWidgetHostViewGtk::AcceleratedSurfacePostSubBuffer(
   RenderWidgetHost::AcknowledgePostSubBuffer(params.route_id, gpu_host_id);
 }
 
+void RenderWidgetHostViewGtk::AcceleratedSurfaceSuspend() {
+}
+
+
 void RenderWidgetHostViewGtk::SetBackground(const SkBitmap& background) {
   RenderWidgetHostView::SetBackground(background);
   host_->Send(new ViewMsg_SetBackground(host_->routing_id(), background));

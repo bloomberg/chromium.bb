@@ -122,6 +122,10 @@ class AcceleratedPresenter {
   const int thread_affinity_;
   base::ScopedNativeLibrary d3d_module_;
 
+  // Whether the presenter is suspended and therefore unable to represent. Only
+  // accessed on the UI thread so the lock is unnecessary.
+  bool suspended_;
+
   // The size of the swap chain once any pending resizes have been processed.
   // Only accessed on the UI thread so the lock is unnecessary.
   gfx::Size pending_size_;
@@ -151,6 +155,7 @@ class AcceleratedPresenter {
 
 AcceleratedPresenter::AcceleratedPresenter()
     : thread_affinity_(g_present_thread_pool.Pointer()->NextThread()),
+      suspended_(true),
       num_pending_resizes_(0) {
   g_present_thread_pool.Pointer()->PostTask(
       thread_affinity_,
@@ -196,12 +201,17 @@ void AcceleratedPresenter::AsyncPresentAndAcknowledge(
                  size,
                  surface_id,
                  completion_task));
+
+  suspended_ = false;
 }
 
 bool AcceleratedPresenter::Present(gfx::NativeWindow window) {
   TRACE_EVENT0("surface", "Present");
 
   HRESULT hr;
+
+  if (suspended_)
+    return false;
 
   base::AutoLock locked(lock_);
 
@@ -265,6 +275,8 @@ void AcceleratedPresenter::Suspend() {
       base::Bind(&AcceleratedPresenter::DoResize,
                  base::Unretained(this),
                  gfx::Size(1, 1)));
+
+  suspended_ = true;
 }
 
 void AcceleratedPresenter::DoInitialize() {
@@ -499,3 +511,8 @@ void AcceleratedSurface::AsyncPresentAndAcknowledge(
 bool AcceleratedSurface::Present(HWND window) {
   return presenter_->Present(window);
 }
+
+void AcceleratedSurface::Suspend() {
+  presenter_->Suspend();
+}
+

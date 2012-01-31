@@ -187,6 +187,8 @@ bool GpuProcessHostUIShim::OnControlMessageReceived(
                         OnAcceleratedSurfaceBuffersSwapped)
     IPC_MESSAGE_HANDLER(GpuHostMsg_AcceleratedSurfacePostSubBuffer,
                         OnAcceleratedSurfacePostSubBuffer)
+    IPC_MESSAGE_HANDLER(GpuHostMsg_AcceleratedSurfaceSuspend,
+                        OnAcceleratedSurfaceSuspend)
     IPC_MESSAGE_HANDLER(GpuHostMsg_GraphicsInfoCollected,
                         OnGraphicsInfoCollected)
 
@@ -369,6 +371,17 @@ void GpuProcessHostUIShim::OnAcceleratedSurfacePostSubBuffer(
 
   // View must send ACK message after next composite.
   view->AcceleratedSurfacePostSubBuffer(params, host_id_);
+}
+
+void GpuProcessHostUIShim::OnAcceleratedSurfaceSuspend(int32 surface_id) {
+  TRACE_EVENT0("renderer",
+      "GpuProcessHostUIShim::OnAcceleratedSurfaceSuspend");
+
+  RenderWidgetHostView* view = GetRenderWidgetHostViewFromSurfaceID(surface_id);
+  if (!view)
+    return;
+
+  view->AcceleratedSurfaceSuspend();
 }
 
 #if defined(UI_COMPOSITOR_IMAGE_TRANSPORT)

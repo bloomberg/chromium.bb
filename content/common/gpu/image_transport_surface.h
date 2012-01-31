@@ -109,6 +109,8 @@ class ImageTransportHelper : public IPC::Channel::Listener {
   // Make the surface's context current.
   bool MakeCurrent();
 
+  void Suspend();
+
  private:
   gpu::GpuScheduler* Scheduler();
   gpu::gles2::GLES2Decoder* Decoder();

@@ -224,6 +224,10 @@ class RenderWidgetHostView {
       const GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params& params,
       int gpu_host_id) = 0;
 
+  // Release the accelerated surface temporarily. It will be recreated on the
+  // next swap buffers or post sub buffer.
+  virtual void AcceleratedSurfaceSuspend() = 0;
+
 #if defined(OS_MACOSX)
   // Tells the view whether or not to accept first responder status.  If |flag|
   // is true, the view does not accept first responder status and instead
