@@ -24,6 +24,11 @@ extern uintptr_t stack_ptr_at_crash;
 extern char prog_ctr_at_crash[];
 #endif
 
+#if defined(__i386__)
+extern uint32_t exception_handler_esp;
+void exception_handler_wrapper(int prog_ctr, int stack_ptr);
+#endif
+
 char stack[4096];
 
 jmp_buf g_jmp_buf;
@@ -34,7 +39,7 @@ size_t g_registered_stack_size;
 char *main_stack;
 
 
-#define STACK_ALIGNMENT 32
+#define STACK_ALIGNMENT 16
 
 struct AlignedType {
   int blah;
@@ -59,7 +64,7 @@ void check_stack_is_aligned() {
 }
 
 
-void handler(int eip, int esp) {
+void exception_handler(int eip, int esp) {
   printf("handler called\n");
 
   check_stack_is_aligned();
@@ -81,27 +86,34 @@ void handler(int eip, int esp) {
   assert(eip == (uintptr_t) prog_ctr_at_crash);
 #endif
 
+  char *stack_top;
   char local_var;
   if (g_registered_stack == NULL) {
-    assert((char *) esp - kMaxStackFrameSize < &local_var);
-    assert(&local_var < (char *) esp);
+    /* Check that our current stack is just below the saved stack pointer. */
+    stack_top = (char *) esp;
+    assert(stack_top - kMaxStackFrameSize < &local_var);
+    assert(&local_var < stack_top);
   } else {
     /* Check that we are running on the exception stack. */
-    char *stack_top = g_registered_stack + g_registered_stack_size;
+    stack_top = g_registered_stack + g_registered_stack_size;
     assert(g_registered_stack <= &local_var);
     assert(&local_var < stack_top);
-    /*
-     * On x86-32, we can check our stack more exactly because arguments
-     * are passed on the stack, and the last argument should be at the
-     * top of the exception stack.
-     */
-#ifdef __i386__
-    char *frame_top = (char *) (&esp + 1);
-    /* Check that no more than the stack alignment size is wasted. */
-    assert(stack_top - STACK_ALIGNMENT < frame_top);
-    assert(frame_top <= stack_top);
-#endif
   }
+
+  /*
+   * If we can link in assembly code, we can check the exception
+   * handler's initial stack pointer more exactly.
+   */
+#if defined(__i386__)
+  /* Skip over the 4 byte return address. */
+  uintptr_t frame_base = exception_handler_esp + 4;
+  assert(frame_base % STACK_ALIGNMENT == 0);
+  /* Skip over the 2 arguments, which are 4 bytes each. */
+  char *frame_top = (char *) (frame_base + 2 * 4);
+  /* Check that no more than the stack alignment size is wasted. */
+  assert(stack_top - STACK_ALIGNMENT < frame_top);
+  assert(frame_top <= stack_top);
+#endif
 
   /*
    * Clear the exception flag so that future faults will invoke the
@@ -115,6 +127,13 @@ void handler(int eip, int esp) {
 }
 
 void test_exception_stack_with_size(char *stack, size_t stack_size) {
+  handler_func_t handler;
+#if defined(__i386__)
+  handler = exception_handler_wrapper;
+#else
+  handler = exception_handler;
+#endif
+
   if (0 != NACL_SYSCALL(exception_handler)(handler, 0)) {
     printf("failed to set exception handler\n");
     exit(4);
@@ -154,12 +173,12 @@ void test_getting_previous_handler() {
   int rc;
   handler_func_t prev_handler;
 
-  rc = NACL_SYSCALL(exception_handler)(handler, NULL);
+  rc = NACL_SYSCALL(exception_handler)(exception_handler, NULL);
   assert(rc == 0);
 
   rc = NACL_SYSCALL(exception_handler)(NULL, &prev_handler);
   assert(rc == 0);
-  assert(prev_handler == handler);
+  assert(prev_handler == exception_handler);
 
   rc = NACL_SYSCALL(exception_handler)(NULL, &prev_handler);
   assert(rc == 0);
@@ -169,7 +188,7 @@ void test_getting_previous_handler() {
 void test_invalid_handlers() {
   int rc;
   handler_func_t unaligned_func_ptr =
-    (handler_func_t) ((uintptr_t) handler + 1);
+    (handler_func_t) ((uintptr_t) exception_handler + 1);
   const char *ptr_in_rodata_segment = "";
 
   /* An alignment check is required for safety in all NaCl sandboxes. */
@@ -193,7 +212,7 @@ int main() {
    * different addresses modulo the stack alignment size.
    */
   int diff;
-  for (diff = 0; diff <= STACK_ALIGNMENT; diff++) {
+  for (diff = 0; diff <= STACK_ALIGNMENT * 2; diff++) {
     test_exception_stack_with_size(stack, sizeof(stack) - diff);
   }
 

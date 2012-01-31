@@ -15,7 +15,8 @@ is_broken = not env.Bit('host_windows') or not env.Bit('build_x86_32')
 if env.Bit('bitcode'):
   helper_files = []
 else:
-  helper_files = ['crash_at_known_address_x86.S']
+  helper_files = ['crash_at_known_address_x86.S',
+                  'handler_wrapper_x86.S']
 exception_test = env.ComponentProgram('exception_test',
                                       ['exception_test.c'] + helper_files,
                                       EXTRA_LIBS=['${NONIRT_LIBS}'])
