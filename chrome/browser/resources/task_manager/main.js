@@ -37,6 +37,12 @@ var DEFAULT_COLUMNS = [
     ['v8MemoryAllocatedSize', 'javascriptMemoryAllocatedColumn', 120, false],
 ];
 
+/*
+ * Height of each tasks. It is 20px, which is also defined in CSS.
+ * @const
+ */
+var HEIGHT_OF_TASK = 20;
+
 var COMMAND_CONTEXTMENU_COLUMN_PREFIX = 'columnContextMenu';
 var COMMAND_CONTEXTMENU_TABLE_PREFIX = 'tableContextMenu';
 
@@ -532,6 +538,11 @@ TaskManager.prototype = {
       // Stores the cell element to the dictionary.
       this.elementsCache_[pid].cell[i] = cell;
     }
+
+    // Specifies the height of the row. The height of each row is
+    // 'num_of_tasks * HEIGHT_OF_TASK' px.
+    listItem.style.height = (data['uniqueId'].length * HEIGHT_OF_TASK) + 'px';
+
     listItem.data = data;
 
     // Stores the list item element, the number of columns and the number of

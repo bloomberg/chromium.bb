@@ -133,7 +133,7 @@ cr.define('cr.ui', function() {
         this.dataModel_ = dataModel;
 
         this.cachedItems_ = {};
-        this.cachedItemSizes_ = {};
+        this.cachedItemHeights_ = {};
         this.selectionModel.clear();
         if (dataModel)
           this.selectionModel.adjustLength(dataModel.length);
@@ -331,6 +331,22 @@ cr.define('cr.ui', function() {
     },
 
     /**
+     * @param {ListItem=} item The list item to measure.
+     * @return {number} The height of the given item. If the fixed height on CSS
+     * is set by 'px', uses that value as height. Otherwise, measures the size.
+     * @private
+     */
+    measureItemHeight_: function(item) {
+      var height = item.style.height;
+      // Use the fixed height if set it on CSS, to save a time of layout
+      // calculation.
+      if (height && height.substr(-2) == 'px')
+        return parseInt(height.substr(0, height.length - 2));
+
+      return this.measureItem(item).height;
+    },
+
+    /**
      * @return {number} The height of default item, measuring it if necessary.
      * @private
      */
@@ -340,29 +356,21 @@ cr.define('cr.ui', function() {
 
     /**
      * @param {number} index The index of the item.
-     * @return {number} The height of the item.
+     * @return {number} The height of the item, measuring it if necessary.
      */
     getItemHeightByIndex_: function(index) {
       // If |this.fixedHeight_| is true, all the rows have same default height.
       if (this.fixedHeight_)
         return this.getDefaultItemHeight_();
 
-      if (this.cachedItemSizes_[index])
-        return this.cachedItemSizes_[index].height;
+      if (this.cachedItemHeights_[index])
+        return this.cachedItemHeights_[index];
 
       var item = this.getListItemByIndex(index);
       if (item)
-        return this.getItemSize_(item).height;
+        return this.measureItemHeight_(item);
 
       return this.getDefaultItemHeight_();
-    },
-
-    /**
-     * @return {number} The width of default item, measuring it if necessary.
-     * @private
-     */
-    getDefaultItemWidth_: function() {
-      return this.getDefaultItemSize_().width;
     },
 
     /**
@@ -375,22 +383,6 @@ cr.define('cr.ui', function() {
         this.measured_ = this.measureItem();
       }
       return this.measured_;
-    },
-
-    /**
-     * @return {{height: number, width: number}} The height and width
-     *     of an item, measuring it if necessary.
-     * @private
-     */
-    getItemSize_: function(item) {
-      if (this.cachedItemSizes_[item.listIndex])
-        return this.cachedItemSizes_[item.listIndex];
-
-      var size = this.measureItem(item);
-      if (!isNaN(size.height) && !isNaN(size.weight))
-        this.cachedItemSizes_[item.listIndex] = size;
-
-      return size;
     },
 
     /**
@@ -635,14 +627,14 @@ cr.define('cr.ui', function() {
       }
       this.cachedItems_ = newCachedItems;
 
-      var newCachedItemSizes = {};
-      for (var index in this.cachedItemSizes_) {
+      var newCachedItemHeights = {};
+      for (var index in this.cachedItemHeights_) {
         if (e.permutation[index] != -1) {
-          newCachedItemSizes[e.permutation[index]] =
-              this.cachedItemSizes_[index];
+          newCachedItemHeights[e.permutation[index]] =
+              this.cachedItemHeights_[index];
         }
       }
-      this.cachedItemSizes_ = newCachedItemSizes;
+      this.cachedItemHeights_ = newCachedItemHeights;
 
       this.startBatchUpdates();
 
@@ -655,7 +647,7 @@ cr.define('cr.ui', function() {
 
     handleDataModelChange_: function(e) {
       delete this.cachedItems_[e.index];
-      delete this.cachedItemSizes_[e.index];
+      delete this.cachedItemHeights_[e.index];
       this.cachedMeasuredItem_ = null;
 
       if (e.index >= this.firstIndex_ &&
@@ -991,7 +983,7 @@ cr.define('cr.ui', function() {
     ensureAllItemSizesInCache: function() {
       var measuringIndexes = [];
       for (var y = 0; y < this.dataModel.length; y++) {
-        if (!this.cachedItemSizes_[y])
+        if (!this.cachedItemHeights_[y])
           measuringIndexes.push(y);
       }
 
@@ -1011,7 +1003,8 @@ cr.define('cr.ui', function() {
       // performance reducing.
       for (var y = 0; y < measuringIndexes.length; y++) {
         var index = measuringIndexes[y];
-        this.cachedItemSizes_[index] = this.measureItem(measuringItems[y]);
+        this.cachedItemHeights_[index] =
+            this.measureItemHeight_(measuringItems[y]);
       }
 
       // Removes all the temprary elements.
@@ -1069,9 +1062,6 @@ cr.define('cr.ui', function() {
       var scrollTop = this.scrollTop;
       var clientHeight = this.clientHeight;
 
-      var lastItemHeights = this.getHeightsForIndex_(dataModel.length - 1);
-      var desiredScrollHeight = lastItemHeights.top + lastItemHeights.height;
-
       var itemsInViewPort = this.getItemsInViewPort(scrollTop, clientHeight);
       // Draws the hidden rows just above/below the viewport to prevent
       // flashing in scroll.
@@ -1127,7 +1117,8 @@ cr.define('cr.ui', function() {
       // performance reducing.
       if (!this.fixedHeight_) {
         for (var y = firstIndex; y < lastIndex; y++)
-          this.cachedItemSizes_[y] = this.measureItem(newCachedItems[y]);
+          this.cachedItemHeights_[y] =
+              this.measureItemHeight_(newCachedItems[y]);
       }
 
       // Measure again in case the item height has changed due to a page zoom.
