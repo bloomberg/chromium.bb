@@ -93,7 +93,7 @@
       'targets': [
         {
           'target_name': 'libflac',
-          'type': 'settings',
+          'type': 'none',
           'direct_dependent_settings': {
             'defines': [
               'USE_SYSTEM_FLAC',
