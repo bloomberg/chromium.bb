@@ -20,6 +20,8 @@
 #include "chrome/browser/history/history_notifications.h"
 #include "chrome/browser/history/in_memory_database.h"
 #include "chrome/browser/prerender/prerender_field_trial.h"
+#include "chrome/browser/prerender/prerender_manager.h"
+#include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/guid.h"
@@ -235,6 +237,15 @@ void NetworkActionPredictor::OnOmniboxOpenedUrl(const AutocompleteLog& log) {
 
   const GURL& opened_url = match.destination_url;
 
+  // If the Omnibox triggered a prerender but the URL doesn't match the one the
+  // user is navigating to, cancel the prerender.
+  prerender::PrerenderManager* prerender_manager =
+      prerender::PrerenderManagerFactory::GetForProfile(profile_);
+  // |prerender_manager| can be NULL in incognito mode or if prerendering is
+  // otherwise disabled.
+  if (prerender_manager && !prerender_manager->IsPrerendering(opened_url))
+    prerender_manager->CancelOmniboxPrerenders();
+
   const string16 lower_user_text(base::i18n::ToLower(log.text));
 
   BeginTransaction();
@@ -290,7 +301,6 @@ void NetworkActionPredictor::OnOmniboxOpenedUrl(const AutocompleteLog& log) {
   }
   tracked_urls_.clear();
 }
-
 
 void NetworkActionPredictor::DeleteOldIdsFromCaches(
     history::URLDatabase* url_db,
