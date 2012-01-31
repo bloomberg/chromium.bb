@@ -100,8 +100,6 @@ AC_ARG_WITH(cairo-glesv2, AS_HELP_STRING([--with-cairo-gles2],
               [Use GLESv2 cairo instead of full GL]),
               [cairo_modules="cairo-glesv2"],
               [cairo_modules="cairo-gl"])
-AM_CONDITIONAL(BUILD_FULL_GL_CLIENTS,
-	       test x$cairo_modules == "xcairo-gl")
 if test x$cairo_modules == xcairo-glesv2; then
   AC_DEFINE([USE_CAIRO_GLESV2], [1], [Use the GLESv2 GL cairo backend])
 fi
@@ -140,6 +138,9 @@ if test x$enable_clients == xyes; then
 fi
 
 AM_CONDITIONAL(HAVE_POPPLER, test "x$have_poppler" = "xyes")
+
+AM_CONDITIONAL(BUILD_FULL_GL_CLIENTS,
+	       test x$cairo_modules == "xcairo-gl" -a "x$have_cairo_egl" = "xyes")
 
 AM_CONDITIONAL(ENABLE_DESKTOP_SHELL, true)
 
