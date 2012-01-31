@@ -313,7 +313,7 @@ gears_create(struct display *display)
 	gears = malloc(sizeof *gears);
 	memset(gears, 0, sizeof *gears);
 	gears->d = display;
-	gears->window = window_create(display, width, height);
+	gears->window = window_create(display);
 	gears->widget = frame_create(gears->window, gears);
 	window_set_transparent(gears->window, 1);
 	window_set_title(gears->window, "Wayland Gears");

@@ -193,10 +193,10 @@ typedef void (*widget_button_handler_t)(struct widget *widget,
 					int button, int state, void *data);
 
 struct window *
-window_create(struct display *display, int32_t width, int32_t height);
+window_create(struct display *display);
 struct window *
 window_create_transient(struct display *display, struct window *parent,
-			int32_t x, int32_t y, int32_t width, int32_t height);
+			int32_t x, int32_t y);
 
 typedef void (*menu_func_t)(struct window *window, int index, void *data);
 

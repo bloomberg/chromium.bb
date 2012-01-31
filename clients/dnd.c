@@ -506,7 +506,7 @@ dnd_create(struct display *display)
 		return dnd;
 	memset(dnd, 0, sizeof *dnd);
 
-	dnd->window = window_create(display, 400, 400);
+	dnd->window = window_create(display);
 	dnd->widget = frame_create(dnd->window, dnd);
 	window_set_title(dnd->window, "Wayland Drag and Drop Demo");
 

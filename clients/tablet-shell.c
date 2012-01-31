@@ -213,9 +213,7 @@ show_lockscreen(void *data, struct tablet_shell *tablet_shell)
 {
 	struct tablet_shell *shell = data;
 
-	shell->lockscreen = window_create(shell->display,
-					  shell->allocation.width,
-					  shell->allocation.height);
+	shell->lockscreen = window_create(shell->display);
 	window_set_user_data(shell->lockscreen, shell);
 	window_set_custom(shell->lockscreen);
 
@@ -229,7 +227,7 @@ show_switcher(void *data, struct tablet_shell *tablet_shell)
 {
 	struct tablet_shell *shell = data;
 
-	shell->switcher = window_create(shell->display, 0, 0);
+	shell->switcher = window_create(shell->display);
 	window_set_user_data(shell->switcher, shell);
 	window_set_custom(shell->switcher);
 	tablet_shell_set_switcher(shell->tablet_shell,
@@ -264,9 +262,7 @@ tablet_shell_create(struct display *display, uint32_t id)
 	output = display_get_output(display);
 	output_get_allocation(output, &shell->allocation);
 
-	shell->homescreen = window_create(display,
-					  shell->allocation.width,
-					  shell->allocation.height);
+	shell->homescreen = window_create(display);
 	window_set_user_data(shell->homescreen, shell);
 	window_set_custom(shell->homescreen);
 

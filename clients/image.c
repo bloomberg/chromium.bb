@@ -205,7 +205,7 @@ image_create(struct display *display, const char *filename)
 
 	image->filename = g_strdup(filename);
 
-	image->window = window_create(display, 500, 400);
+	image->window = window_create(display);
 	image->widget = frame_create(image->window, image);
 	window_set_title(image->window, title);
 	image->display = display;

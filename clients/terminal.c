@@ -2269,7 +2269,7 @@ terminal_create(struct display *display, int fullscreen)
 	terminal_init(terminal);
 	terminal->margin_top = 0;
 	terminal->margin_bottom = -1;
-	terminal->window = window_create(display, 500, 400);
+	terminal->window = window_create(display);
 	terminal->widget = frame_create(terminal->window, terminal);
 	window_set_title(terminal->window, "Wayland Terminal");
 
@@ -2306,6 +2306,8 @@ terminal_create(struct display *display, int fullscreen)
 	cairo_font_extents(cr, &terminal->extents);
 	cairo_destroy(cr);
 	cairo_surface_destroy(surface);
+
+	window_schedule_resize(terminal->window, 500, 400);
 
 	return terminal;
 }

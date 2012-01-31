@@ -233,7 +233,7 @@ view_create(struct display *display,
                 title = "File not found";
         }
 
-	view->window = window_create(display, 500, 400);
+	view->window = window_create(display);
 	view->widget = frame_create(view->window, view);
 	window_set_title(view->window, title);
 	view->display = display;

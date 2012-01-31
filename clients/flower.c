@@ -180,7 +180,7 @@ int main(int argc, char *argv[])
 	flower.width = 200;
 	flower.height = 200;
 	flower.display = d;
-	flower.window = window_create(d, flower.width, flower.height);
+	flower.window = window_create(d);
 	flower.widget = window_add_widget(flower.window, &flower);
 
 	widget_set_resize_handler(flower.widget, resize_handler);
@@ -188,7 +188,7 @@ int main(int argc, char *argv[])
 	widget_set_motion_handler(flower.widget, motion_handler);
 	widget_set_button_handler(flower.widget, button_handler);
 
-	window_schedule_redraw(flower.window);
+	window_schedule_resize(flower.window, flower.width, flower.height);
 
 	display_run(d);
 

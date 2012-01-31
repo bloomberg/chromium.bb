@@ -2271,8 +2271,7 @@ window_damage(struct window *window, int32_t x, int32_t y,
 }
 
 static struct window *
-window_create_internal(struct display *display, struct window *parent,
-			int32_t width, int32_t height)
+window_create_internal(struct display *display, struct window *parent)
 {
 	struct window *window;
 
@@ -2291,8 +2290,8 @@ window_create_internal(struct display *display, struct window *parent,
 	}
 	window->allocation.x = 0;
 	window->allocation.y = 0;
-	window->allocation.width = width;
-	window->allocation.height = height;
+	window->allocation.width = 0;
+	window->allocation.height = 0;
 	window->saved_allocation = window->allocation;
 	window->transparent = 1;
 
@@ -2319,11 +2318,11 @@ window_create_internal(struct display *display, struct window *parent,
 }
 
 struct window *
-window_create(struct display *display, int32_t width, int32_t height)
+window_create(struct display *display)
 {
 	struct window *window;
 
-	window = window_create_internal(display, NULL, width, height);
+	window = window_create_internal(display, NULL);
 	if (!window)
 		return NULL;
 
@@ -2332,12 +2331,11 @@ window_create(struct display *display, int32_t width, int32_t height)
 
 struct window *
 window_create_transient(struct display *display, struct window *parent,
-			int32_t x, int32_t y, int32_t width, int32_t height)
+			int32_t x, int32_t y)
 {
 	struct window *window;
 
-	window = window_create_internal(parent->display,
-					parent, width, height);
+	window = window_create_internal(parent->display, parent);
 	if (!window)
 		return NULL;
 
@@ -2468,8 +2466,7 @@ window_show_menu(struct display *display,
 	if (!menu)
 		return;
 
-	window = window_create_internal(parent->display, parent,
-					200, count * 20 + margin * 2);
+	window = window_create_internal(parent->display, parent);
 	if (!window)
 		return;
 
@@ -2497,7 +2494,7 @@ window_show_menu(struct display *display,
 	widget_set_button_handler(menu->widget, menu_button_handler);
 
 	input_grab(input, menu->widget, 0);
-	window_schedule_redraw(window);
+	window_schedule_resize(window, 200, count * 20 + margin * 2);
 }
 
 void

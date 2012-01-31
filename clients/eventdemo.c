@@ -266,7 +266,7 @@ eventdemo_create(struct display *d)
 	if(e == NULL)
 		return NULL;
 
-	e->window = window_create(d, width, height);
+	e->window = window_create(d);
 	e->widget = frame_create(e->window, e);
 	window_set_title(e->window, title);
 	e->display = d;
@@ -309,7 +309,7 @@ eventdemo_create(struct display *d)
 	}
 
 	/* Initial drawing of the window */
-	window_schedule_redraw(e->window);
+	window_schedule_resize(e->window, width, height);
 
 	return e;
 }

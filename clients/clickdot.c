@@ -130,7 +130,7 @@ clickdot_create(struct display *display)
 		return clickdot;
 	memset(clickdot, 0, sizeof *clickdot);
 
-	clickdot->window = window_create(display, 500, 400);
+	clickdot->window = window_create(display);
 	clickdot->widget = frame_create(clickdot->window, clickdot);
 	window_set_title(clickdot->window, "Wayland ClickDot");
 	clickdot->display = display;
