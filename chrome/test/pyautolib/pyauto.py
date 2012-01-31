@@ -263,12 +263,12 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
         A list of strings, where each string represents a currently-running
         'chrome' process ID.
       """
-      proc = subprocess.Popen(['pgrep', 'chrome'], stdout=subprocess.PIPE)
+      proc = subprocess.Popen(['pgrep', '^chrome$'], stdout=subprocess.PIPE)
       proc.wait()
       return [x.strip() for x in proc.stdout.readlines()]
 
     orig_pids = _GetListOfChromePids()
-    subprocess.call(['pkill', 'chrome'])
+    subprocess.call(['pkill', '^chrome$'])
 
     def _AreOrigPidsDead(orig_pids):
       """Determines whether all originally-running 'chrome' processes are dead.
