@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -69,16 +69,17 @@ TEST_F(TemplateURLTest, URLRefTestSearchTerms) {
   struct SearchTermsCase {
     const char* url;
     const string16 terms;
-    const char* output;
+    const std::string output;
+    bool valid_url;
   } search_term_cases[] = {
     { "http://foo{searchTerms}", ASCIIToUTF16("sea rch/bar"),
-      "http://foosea%20rch/bar" },
+      "http://foosea%20rch%2Fbar", false },
     { "http://foo{searchTerms}?boo=abc", ASCIIToUTF16("sea rch/bar"),
-      "http://foosea%20rch/bar?boo=abc" },
+      "http://foosea%20rch%2Fbar?boo=abc", false },
     { "http://foo/?boo={searchTerms}", ASCIIToUTF16("sea rch/bar"),
-      "http://foo/?boo=sea+rch%2Fbar" },
+      "http://foo/?boo=sea+rch%2Fbar", true },
     { "http://en.wikipedia.org/{searchTerms}", ASCIIToUTF16("wiki/?"),
-      "http://en.wikipedia.org/wiki/%3F" }
+      "http://en.wikipedia.org/wiki%2F%3F", true }
   };
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(search_term_cases); ++i) {
     const SearchTermsCase& value = search_term_cases[i];
@@ -87,10 +88,11 @@ TEST_F(TemplateURLTest, URLRefTestSearchTerms) {
     ASSERT_TRUE(ref.IsValid());
 
     ASSERT_TRUE(ref.SupportsReplacement());
-    GURL result = GURL(ref.ReplaceSearchTerms(t_url, value.terms,
-        TemplateURLRef::NO_SUGGESTIONS_AVAILABLE, string16()));
-    ASSERT_TRUE(result.is_valid());
-    ASSERT_EQ(value.output, result.spec());
+    std::string result = ref.ReplaceSearchTerms(t_url, value.terms,
+        TemplateURLRef::NO_SUGGESTIONS_AVAILABLE, string16());
+    ASSERT_EQ(value.output, result);
+    GURL result_url = GURL(result);
+    ASSERT_EQ(value.valid_url, result_url.is_valid());
   }
 }
 
@@ -365,6 +367,12 @@ TEST_F(TemplateURLTest, ReplaceArbitrarySearchTerms) {
     { "UTF-8", ASCIIToUTF16("blah"),
       "http://foo/?{searchTerms}{inputEncoding}",
       "http://foo/?blahUTF-8" },
+    { "Shift_JIS", UTF8ToUTF16("\xe3\x81\x82"),
+      "http://foo/{searchTerms}/bar",
+      "http://foo/%82%A0/bar"},
+    { "Shift_JIS", UTF8ToUTF16("\xe3\x81\x82 \xe3\x81\x84"),
+      "http://foo/{searchTerms}/bar",
+      "http://foo/%82%A0%20%82%A2/bar"},
   };
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(data); ++i) {
     TemplateURL turl;

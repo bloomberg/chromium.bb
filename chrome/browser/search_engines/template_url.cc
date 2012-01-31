@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -340,34 +340,28 @@ std::string TemplateURLRef::ReplaceSearchTermsUsingTermsData(
   string16 encoded_terms;
   string16 encoded_original_query;
   std::string input_encoding;
-  // If the search terms are in query - escape them respecting the encoding.
-  if (is_in_query) {
-    // Encode the search terms so that we know the encoding.
-    const std::vector<std::string>& encodings = host.input_encodings();
-    for (size_t i = 0; i < encodings.size(); ++i) {
-      if (net::EscapeQueryParamValue(terms,
-                                     encodings[i].c_str(), true,
-                                     &encoded_terms)) {
-        if (!original_query_for_suggestion.empty()) {
-          net::EscapeQueryParamValue(original_query_for_suggestion,
-                                     encodings[i].c_str(),
-                                     true,
-                                     &encoded_original_query);
-        }
-        input_encoding = encodings[i];
-        break;
+  // Encode the search terms so that we know the encoding.
+  const std::vector<std::string>& encodings = host.input_encodings();
+  for (size_t i = 0; i < encodings.size(); ++i) {
+    if (net::EscapeQueryParamValue(terms,
+                                   encodings[i].c_str(), is_in_query,
+                                   &encoded_terms)) {
+      if (is_in_query && !original_query_for_suggestion.empty()) {
+        net::EscapeQueryParamValue(original_query_for_suggestion,
+                                   encodings[i].c_str(),
+                                   is_in_query,
+                                   &encoded_original_query);
       }
+      input_encoding = encodings[i];
+      break;
     }
-    if (input_encoding.empty()) {
-      encoded_terms = net::EscapeQueryParamValueUTF8(terms, true);
-      if (!original_query_for_suggestion.empty()) {
-        encoded_original_query =
-            net::EscapeQueryParamValueUTF8(original_query_for_suggestion, true);
-      }
-      input_encoding = "UTF-8";
+  }
+  if (input_encoding.empty()) {
+    encoded_terms = net::EscapeQueryParamValueUTF8(terms, is_in_query);
+    if (is_in_query && !original_query_for_suggestion.empty()) {
+      encoded_original_query =
+          net::EscapeQueryParamValueUTF8(original_query_for_suggestion, true);
     }
-  } else {
-    encoded_terms = UTF8ToUTF16(net::EscapePath(UTF16ToUTF8(terms)));
     input_encoding = "UTF-8";
   }
 
