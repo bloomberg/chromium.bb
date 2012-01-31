@@ -33,6 +33,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_result_codes.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/common/worker_thread_ticker.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/install_util.h"
@@ -136,8 +137,10 @@ bool CreateChromeQuickLaunchShortcut() {
       true);  // create if doesn't exist.
 }
 
-void PlatformSetup() {
-  CreateChromeDesktopShortcut();
+void PlatformSetup(Profile* profile) {
+  if (CreateChromeDesktopShortcut())
+    profile->GetPrefs()->SetBoolean(prefs::kProfileShortcutCreated, true);
+
   // Windows 7 has deprecated the quick launch bar.
   if (base::win::GetVersion() < base::win::VERSION_WIN7)
     CreateChromeQuickLaunchShortcut();
@@ -454,7 +457,7 @@ void AutoImport(
   // discarded, which is the correct behavior during the import process.
   process_singleton->Lock(NULL);
 
-  PlatformSetup();
+  PlatformSetup(profile);
 
   scoped_refptr<ImporterHost> importer_host;
   importer_host = new ImporterHost;
