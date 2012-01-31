@@ -47,7 +47,6 @@ class Manifest {
   // Resolves a URL relative to the manifest base URL
   virtual bool ResolveURL(const nacl::string& relative_url,
                           nacl::string* full_url,
-                          bool* permit_extension_url,
                           ErrorInfo* error_info) const = 0;
 
   // Gets the file names from the "files" section of the manifest.  No
@@ -64,7 +63,6 @@ class Manifest {
   // representation or an ISA-specific version of the file.
   virtual bool ResolveKey(const nacl::string& key,
                           nacl::string* full_url,
-                          bool* permit_extension_url,
                           ErrorInfo* error_info,
                           bool* is_portable) const = 0;
 

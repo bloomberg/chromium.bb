@@ -53,7 +53,6 @@ class JsonManifest : public Manifest {
   // Resolves a URL relative to the manifest base URL
   virtual bool ResolveURL(const nacl::string& relative_url,
                           nacl::string* full_url,
-                          bool* permit_extension_url,
                           ErrorInfo* error_info) const;
 
   // Gets the file names from the "files" section of the manifest.  No
@@ -70,7 +69,6 @@ class JsonManifest : public Manifest {
   // representation or an ISA-specific version of the file.
   virtual bool ResolveKey(const nacl::string& key,
                           nacl::string* full_url,
-                          bool* permit_extension_url,
                           ErrorInfo* error_info,
                           bool* is_portable) const;
 

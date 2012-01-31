@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -43,11 +43,9 @@ void FileDownloader::Initialize(Plugin* instance) {
 bool FileDownloader::Open(
     const nacl::string& url,
     DownloadFlags flags,
-    bool allow_extension_url,
     const pp::CompletionCallback& callback,
     PP_URLLoaderTrusted_StatusCallback progress_callback) {
-  PLUGIN_PRINTF(("FileDownloader::Open (url=%s, allow_extension_url=%d)\n",
-                 url.c_str(), allow_extension_url));
+  PLUGIN_PRINTF(("FileDownloader::Open (url=%s)\n", url.c_str()));
   if (callback.pp_completion_callback().func == NULL ||
       instance_ == NULL ||
       file_io_trusted_interface_ == NULL)
@@ -70,14 +68,14 @@ bool FileDownloader::Open(
     url_scheme_ = instance_->GetUrlScheme(url);
     bool grant_universal_access = false;
     if (url_scheme_ == SCHEME_CHROME_EXTENSION) {
-      if (allow_extension_url) {
-        // This NEXE has been granted rights to access URLs in the chrome
-        // extension scheme.
-        grant_universal_access = true;
-      }
+      // Use CORS to access URLs in the chrome extension scheme. If the files
+      // are truly restricted, then they should not be listed as a
+      // web_accessible_resource in the extension manifest.
+      url_request.SetAllowCrossOriginRequests(true);
     } else if (url_scheme_ == SCHEME_DATA) {
       // TODO(elijahtaylor) Remove this when data URIs can be read without
       // universal access.
+      // https://bugs.webkit.org/show_bug.cgi?id=17352
       if (streaming_to_buffer()) {
         grant_universal_access = true;
       } else {
@@ -92,9 +90,8 @@ bool FileDownloader::Open(
 
     if (url_loader_trusted_interface_ != NULL) {
       if (grant_universal_access) {
-        // TODO(sehr,jvoung): this should use
-        // pp::URLRequestInfo::SetAllowCrossOriginRequests() when
-        // support for web accessible resources is added to extensions.
+        // TODO(sehr,jvoung): See if we can remove this -- currently
+        // only used for data URIs.
         url_loader_trusted_interface_->GrantUniversalAccess(
             url_loader_.pp_resource());
       }

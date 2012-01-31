@@ -253,8 +253,7 @@ void PluginReverseInterface::OpenManifestEntry_MainThreadContinuation(
   NaClLog(4, "Entered OpenManifestEntry_MainThreadContinuation\n");
 
   std::string mapped_url;
-  bool permit_extension_url = false;
-  if (!manifest_->ResolveKey(p->url, &mapped_url, &permit_extension_url,
+  if (!manifest_->ResolveKey(p->url, &mapped_url,
                              p->error_info, p->is_portable)) {
     NaClLog(4, "OpenManifestEntry_MainThreadContinuation: ResolveKey failed\n");
     // Failed, and error_info has the details on what happened.  Wake
@@ -278,7 +277,6 @@ void PluginReverseInterface::OpenManifestEntry_MainThreadContinuation(
       &PluginReverseInterface::StreamAsFile_MainThreadContinuation,
       open_cont);
   if (!plugin_->StreamAsFile(mapped_url,
-                             permit_extension_url,
                              stream_cc.pp_completion_callback())) {
     NaClLog(4,
             "OpenManifestEntry_MainThreadContinuation: StreamAsFile failed\n");

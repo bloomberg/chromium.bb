@@ -943,8 +943,7 @@ bool Plugin::Init(uint32_t argc, const char* argn[], const char* argv[]) {
       manifest_url = LookupArgument(kNaClManifestAttribute);
       // For content handlers the NEXE runs in the security context of the
       // content it is rendering and the NEXE itself appears to be a
-      // cross-origin resource stored in a Chrome extension.  We request
-      // universal access during the NEXE load so that we can read the NEXE.
+      // cross-origin resource stored in a Chrome extension.
     }
     // Use the document URL as the base for resolving relative URLs to find the
     // manifest.  This takes into account the setting of <base> tags that
@@ -1631,7 +1630,6 @@ void Plugin::ProcessNaClManifest(const nacl::string& manifest_json) {
       CHECK(
           nexe_downloader_.Open(program_url,
                                 DOWNLOAD_TO_FILE,
-                                NexeIsContentHandler(),
                                 open_callback,
                                 &UpdateDownloadProgress));
       return;
@@ -1673,7 +1671,6 @@ void Plugin::RequestNaClManifest(const nacl::string& url) {
     // Will always call the callback on success or failure.
     CHECK(nexe_downloader_.Open(nmf_resolved_url.AsString(),
                                 DOWNLOAD_TO_BUFFER,
-                                NexeIsContentHandler(),
                                 open_callback,
                                 NULL));
   } else {
@@ -1682,7 +1679,6 @@ void Plugin::RequestNaClManifest(const nacl::string& url) {
     // Will always call the callback on success or failure.
     CHECK(nexe_downloader_.Open(nmf_resolved_url.AsString(),
                                 DOWNLOAD_TO_FILE,
-                                NexeIsContentHandler(),
                                 open_callback,
                                 NULL));
   }
@@ -1753,10 +1749,8 @@ int32_t Plugin::GetPOSIXFileDesc(const nacl::string& url) {
 
 
 bool Plugin::StreamAsFile(const nacl::string& url,
-                          bool permits_extension_urls,
                           PP_CompletionCallback callback) {
-  PLUGIN_PRINTF(("Plugin::StreamAsFile (url='%s', permits_extension_urls=%d)\n",
-                 url.c_str(), permits_extension_urls));
+  PLUGIN_PRINTF(("Plugin::StreamAsFile (url='%s')\n", url.c_str()));
   FileDownloader* downloader = new FileDownloader();
   downloader->Initialize(this);
   url_downloaders_.insert(downloader);
@@ -1777,7 +1771,6 @@ bool Plugin::StreamAsFile(const nacl::string& url,
   // If true, will always call the callback on success or failure.
   return downloader->Open(url,
                           DOWNLOAD_TO_FILE,
-                          permits_extension_urls || NexeIsContentHandler(),
                           open_callback,
                           &UpdateDownloadProgress);
 }

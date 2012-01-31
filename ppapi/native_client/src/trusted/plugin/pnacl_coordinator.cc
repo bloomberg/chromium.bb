@@ -248,16 +248,11 @@ class ExtensionManifest : public Manifest {
 
   virtual bool ResolveURL(const nacl::string& relative_url,
                           nacl::string* full_url,
-                          bool* permit_extension_url,
                           ErrorInfo* error_info) const {
     // Does not do general URL resolution, simply appends relative_url to
     // the end of manifest_base_url_.
     UNREFERENCED_PARAMETER(error_info);
     *full_url = manifest_base_url_ + relative_url;
-    // Since the pnacl coordinator manifest provides access to resources
-    // in the chrome extension, lookups will need to access resources in their
-    // extension origin rather than the plugin's origin.
-    *permit_extension_url = true;
     return true;
   }
 
@@ -270,7 +265,6 @@ class ExtensionManifest : public Manifest {
 
   virtual bool ResolveKey(const nacl::string& key,
                           nacl::string* full_url,
-                          bool* permit_extension_url,
                           ErrorInfo* error_info,
                           bool* is_portable) const {
     *is_portable = false;
@@ -284,7 +278,7 @@ class ExtensionManifest : public Manifest {
     }
     // Append what follows files to the pnacl URL prefix.
     nacl::string key_basename = key.substr(kFilesPrefix.length());
-    return ResolveURL(key_basename, full_url, permit_extension_url, error_info);
+    return ResolveURL(key_basename, full_url, error_info);
   }
 
  private:
@@ -322,14 +316,11 @@ class PnaclLDManifest : public Manifest {
 
   virtual bool ResolveURL(const nacl::string& relative_url,
                           nacl::string* full_url,
-                          bool* permit_extension_url,
                           ErrorInfo* error_info) const {
-    if (nexe_manifest_->ResolveURL(relative_url, full_url,
-                                   permit_extension_url, error_info)) {
+    if (nexe_manifest_->ResolveURL(relative_url, full_url, error_info)) {
       return true;
     }
-    return extension_manifest_->ResolveURL(relative_url, full_url,
-                                           permit_extension_url, error_info);
+    return extension_manifest_->ResolveURL(relative_url, full_url, error_info);
   }
 
   virtual bool GetFileKeys(std::set<nacl::string>* keys) const {
@@ -341,14 +332,12 @@ class PnaclLDManifest : public Manifest {
 
   virtual bool ResolveKey(const nacl::string& key,
                           nacl::string* full_url,
-                          bool* permit_extension_url,
                           ErrorInfo* error_info,
                           bool* is_portable) const {
-    if (nexe_manifest_->ResolveKey(key, full_url, permit_extension_url,
-                                   error_info, is_portable)) {
+    if (nexe_manifest_->ResolveKey(key, full_url, error_info, is_portable)) {
       return true;
     }
-    return extension_manifest_->ResolveKey(key, full_url, permit_extension_url,
+    return extension_manifest_->ResolveKey(key, full_url,
                                            error_info, is_portable);
   }
 
@@ -696,8 +685,7 @@ void PnaclCoordinator::NexeWriteDidOpen(int32_t pp_error) {
   pp::CompletionCallback cb =
       callback_factory_.NewCallback(&PnaclCoordinator::RunTranslate);
 
-  // "false" here indicates the pexe must be in user's manifest file origin.
-  if (!plugin_->StreamAsFile(pexe_url_, false, cb.pp_completion_callback())) {
+  if (!plugin_->StreamAsFile(pexe_url_, cb.pp_completion_callback())) {
     ReportNonPpapiError(nacl::string("failed to download ") + pexe_url_ + ".");
   }
 }

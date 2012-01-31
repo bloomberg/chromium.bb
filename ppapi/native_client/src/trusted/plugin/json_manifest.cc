@@ -196,7 +196,6 @@ bool GetKeyUrl(const Json::Value& dictionary,
                const nacl::string& sandbox_isa,
                const Manifest* manifest,
                nacl::string* full_url,
-               bool* permit_extension_url,
                ErrorInfo* error_info,
                bool* is_portable) {
   CHECK(full_url != NULL && error_info != NULL);
@@ -210,14 +209,12 @@ bool GetKeyUrl(const Json::Value& dictionary,
   if (isa_dict.isMember(sandbox_isa)) {
     nacl::string relative_url = isa_dict[sandbox_isa][kUrlKey].asString();
     *is_portable = false;
-    return manifest->ResolveURL(relative_url, full_url, permit_extension_url,
-                                error_info);
+    return manifest->ResolveURL(relative_url, full_url, error_info);
   }
   if (isa_dict.isMember(kPortableKey)) {
     nacl::string relative_url = isa_dict[kPortableKey][kUrlKey].asString();
     *is_portable = true;
-    return manifest->ResolveURL(relative_url, full_url, permit_extension_url,
-                                error_info);
+    return manifest->ResolveURL(relative_url, full_url, error_info);
   }
   error_info->SetReport(ERROR_MANIFEST_RESOLVE_URL,
                         "neither ISA-specific nor portable representations"
@@ -330,10 +327,7 @@ bool JsonManifest::MatchesSchema(ErrorInfo* error_info) {
 
 bool JsonManifest::ResolveURL(const nacl::string& relative_url,
                               nacl::string* full_url,
-                              bool* permit_extension_url,
                               ErrorInfo* error_info) const {
-  // JSON manifests cannot confer extension access rights.
-  *permit_extension_url = false;
   // The contents of the manifest are resolved relative to the manifest URL.
   CHECK(url_util_ != NULL);
   pp::Var resolved_url =
@@ -374,10 +368,7 @@ bool JsonManifest::GetProgramURL(nacl::string* full_url,
     return false;
   }
 
-  // The program URL must be in the current origin.
-  bool dummy_permit_extension_url;
-  return ResolveURL(nexe_url, full_url, &dummy_permit_extension_url,
-                    error_info);
+  return ResolveURL(nexe_url, full_url, error_info);
 }
 
 bool JsonManifest::GetFileKeys(std::set<nacl::string>* keys) const {
@@ -396,7 +387,6 @@ bool JsonManifest::GetFileKeys(std::set<nacl::string>* keys) const {
 
 bool JsonManifest::ResolveKey(const nacl::string& key,
                               nacl::string* full_url,
-                              bool* permit_extension_url,
                               ErrorInfo* error_info,
                               bool* is_portable) const {
   NaClLog(3, "JsonManifest::ResolveKey(%s)\n", key.c_str());
@@ -405,7 +395,7 @@ bool JsonManifest::ResolveKey(const nacl::string& key,
   *full_url = "";
   if (key == kProgramKey) {
     return GetKeyUrl(dictionary_, key, sandbox_isa_, this, full_url,
-                     permit_extension_url, error_info, is_portable);
+                     error_info, is_portable);
   }
   nacl::string::const_iterator p = find(key.begin(), key.end(), '/');
   if (p == key.end()) {
@@ -442,7 +432,7 @@ bool JsonManifest::ResolveKey(const nacl::string& key,
     return false;
   }
   return GetKeyUrl(files, rest, sandbox_isa_, this, full_url,
-                   permit_extension_url, error_info, is_portable);
+                   error_info, is_portable);
 }
 
 }  // namespace plugin

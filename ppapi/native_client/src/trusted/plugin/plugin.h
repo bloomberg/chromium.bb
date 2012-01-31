@@ -288,12 +288,7 @@ class Plugin : public pp::InstancePrivate {
   // Requests a URL asynchronously resulting in a call to pp_callback with
   // a PP_Error indicating status. On success an open file descriptor
   // corresponding to the url body is recorded for further lookup.
-  // permits_extension_urls determines whether a call to stream as file
-  // should be allowed to load URLs that are outside of the origin of the
-  // plugin.  This is used by, e.g., the pnacl coordinator, which loads
-  // llc, ld, and various object files from a chrome extension URL.
   bool StreamAsFile(const nacl::string& url,
-                    bool permits_extension_urls,
                     PP_CompletionCallback pp_callback);
   // Returns an open POSIX file descriptor retrieved by StreamAsFile()
   // or NACL_NO_FILE_DESC. The caller must take ownership of the descriptor.
