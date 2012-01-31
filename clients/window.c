@@ -111,6 +111,7 @@ struct window {
 	struct wl_shell_surface *shell_surface;
 	char *title;
 	struct rectangle allocation, saved_allocation, server_allocation;
+	struct rectangle pending_allocation;
 	int x, y;
 	int resize_edges;
 	int redraw_scheduled;
@@ -2018,24 +2019,21 @@ window_move(struct window *window, struct input *input, uint32_t time)
 }
 
 static void
-window_resize(struct window *window, int32_t width, int32_t height)
+window_resize(struct window *window)
 {
-	struct rectangle allocation;
 	struct widget *widget;
 
-	allocation.x = 0;
-	allocation.y = 0;
-	allocation.width = width;
-	allocation.height = height;
-
 	widget = window->widget;
-	widget_set_allocation(widget, allocation.x, allocation.y,
-			      allocation.width, allocation.height);
+	widget_set_allocation(widget,
+			      window->pending_allocation.x,
+			      window->pending_allocation.y,
+			      window->pending_allocation.width,
+			      window->pending_allocation.height);
 
 	if (widget->resize_handler)
 		widget->resize_handler(widget,
-				       allocation.width,
-				       allocation.height,
+				       widget->allocation.width,
+				       widget->allocation.height,
 				       widget->user_data);
 
 	if (window->allocation.width != widget->allocation.width ||
@@ -2051,17 +2049,19 @@ idle_resize(struct task *task, uint32_t events)
 	struct window *window =
 		container_of(task, struct window, resize_task);
 
-	window_resize(window,
-		      window->allocation.width, window->allocation.height);
+	window_resize(window);
 	window->resize_scheduled = 0;
 }
 
 void
 window_schedule_resize(struct window *window, int width, int height)
 {
+	window->pending_allocation.x = 0;
+	window->pending_allocation.y = 0;
+	window->pending_allocation.width = width;
+	window->pending_allocation.height = height;
+
 	if (!window->resize_scheduled) {
-		window->allocation.width = width;
-		window->allocation.height = height;
 		window->resize_task.run = idle_resize;
 		display_defer(window->display, &window->resize_task);
 		window->resize_scheduled = 1;
@@ -2085,8 +2085,7 @@ handle_configure(void *data, struct wl_shell_surface *shell_surface,
 		return;
 
 	window->resize_edges = edges;
-
-	window_resize(window, width, height);
+	window_schedule_resize(window, width, height);
 }
 
 static void
