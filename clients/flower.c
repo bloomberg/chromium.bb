@@ -33,6 +33,7 @@
 #include <sys/time.h>
 #include <glib.h>
 
+#include <linux/input.h>
 #include <wayland-client.h>
 #include "window.h"
 
@@ -135,8 +136,20 @@ button_handler(struct widget *widget,
 {
 	struct flower *flower = data;
 
-	if (state)
-		window_move(flower->window, input, time);
+	switch (button) {
+	case BTN_LEFT:
+		if (state)
+			window_move(flower->window, input, time);
+		break;
+	case BTN_MIDDLE:
+		if (state)
+			widget_schedule_redraw(widget);
+		break;
+	case BTN_RIGHT:
+		if (state)
+			window_show_frame_menu(flower->window, input, time);
+		break;
+	}
 }
 
 int main(int argc, char *argv[])
