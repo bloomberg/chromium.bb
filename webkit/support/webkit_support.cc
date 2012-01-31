@@ -451,12 +451,16 @@ WebDevToolsAgentClient::WebKitClientMessageLoop* CreateDevToolsMessageLoop() {
 
 void PostDelayedTask(void (*func)(void*), void* context, int64 delay_ms) {
   MessageLoop::current()->PostDelayedTask(
-      FROM_HERE, base::Bind(func, context), delay_ms);
+      FROM_HERE,
+      base::Bind(func, context),
+      base::TimeDelta::FromMilliseconds(delay_ms));
 }
 
 void PostDelayedTask(TaskAdaptor* task, int64 delay_ms) {
   MessageLoop::current()->PostDelayedTask(
-      FROM_HERE, base::Bind(&TaskAdaptor::Run, base::Owned(task)), delay_ms);
+      FROM_HERE,
+      base::Bind(&TaskAdaptor::Run, base::Owned(task)),
+      base::TimeDelta::FromMilliseconds(delay_ms));
 }
 
 // Wrappers for FilePath and file_util
