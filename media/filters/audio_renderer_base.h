@@ -113,6 +113,11 @@ class MEDIA_EXPORT AudioRendererBase : public AudioRenderer {
   // Safe to call from any thread.
   void ScheduleRead_Locked();
 
+  // Returns true if the data in the buffer is all before
+  // |seek_timestamp_|. This can only return true while
+  // in the kSeeking state.
+  bool IsBeforeSeekTime(const scoped_refptr<Buffer>& buffer);
+
   // Audio decoder.
   scoped_refptr<AudioDecoder> decoder_;
 
@@ -128,7 +133,6 @@ class MEDIA_EXPORT AudioRendererBase : public AudioRenderer {
     kSeeking,
     kPlaying,
     kStopped,
-    kError,
     kUnderflow,
     kRebuffering,
   };

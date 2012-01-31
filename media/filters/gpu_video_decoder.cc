@@ -224,6 +224,16 @@ void GpuVideoDecoder::RequestBufferDecode(const scoped_refptr<Buffer>& buffer) {
   }
   demuxer_read_in_progress_ = false;
 
+  if (!buffer) {
+    if (pending_read_cb_.is_null())
+      return;
+
+    gvd_loop_proxy_->PostTask(FROM_HERE, base::Bind(
+        pending_read_cb_, scoped_refptr<VideoFrame>()));
+    pending_read_cb_.Reset();
+    return;
+  }
+
   if (!vda_) {
     EnqueueFrameAndTriggerFrameDelivery(VideoFrame::CreateEmptyFrame());
     return;

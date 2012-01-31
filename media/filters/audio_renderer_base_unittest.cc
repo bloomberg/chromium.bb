@@ -16,6 +16,8 @@ using ::testing::_;
 using ::testing::AnyNumber;
 using ::testing::Invoke;
 using ::testing::Return;
+using ::testing::ReturnPointee;
+using ::testing::SaveArg;
 using ::testing::StrictMock;
 
 namespace media {
@@ -111,6 +113,18 @@ class AudioRendererBaseTest : public ::testing::Test {
     renderer_->SetPlaybackRate(1.0f);
   }
 
+  void Seek(base::TimeDelta seek_time) {
+    next_timestamp_ = seek_time;
+
+    // Seek to trigger prerolling.
+    EXPECT_CALL(*decoder_, Read(_));
+    renderer_->Seek(seek_time, NewSeekCB());
+
+    // Fill entire buffer to complete prerolling.
+    EXPECT_CALL(*this, OnSeekComplete(PIPELINE_OK));
+    DeliverRemainingAudio();
+  }
+
   // Delivers |size| bytes with value kPlayingAudio to |renderer_|.
   //
   // There must be a pending read callback.
@@ -120,9 +134,20 @@ class AudioRendererBaseTest : public ::testing::Test {
     buffer->SetDataSize(size);
     memset(buffer->GetWritableData(), kPlayingAudio, buffer->GetDataSize());
 
+    buffer->SetTimestamp(next_timestamp_);
+    int64 bps = decoder_->bits_per_channel() * decoder_->samples_per_second();
+    buffer->SetDuration(base::TimeDelta::FromMilliseconds(8000 * size / bps));
+    next_timestamp_ += buffer->GetDuration();
+
     AudioDecoder::ReadCB read_cb;
     std::swap(read_cb, read_cb_);
     read_cb.Run(buffer);
+  }
+
+  void AbortPendingRead() {
+    AudioDecoder::ReadCB read_cb;
+    std::swap(read_cb, read_cb_);
+    read_cb.Run(NULL);
   }
 
   // Delivers an end of stream buffer to |renderer_|.
@@ -182,6 +207,7 @@ class AudioRendererBaseTest : public ::testing::Test {
   scoped_refptr<MockAudioDecoder> decoder_;
   StrictMock<MockFilterHost> host_;
   AudioDecoder::ReadCB read_cb_;
+  base::TimeDelta next_timestamp_;
 
  private:
   void SaveReadCallback(const AudioDecoder::ReadCB& callback) {
@@ -326,6 +352,9 @@ TEST_F(AudioRendererBaseTest, Underflow_EndOfStream) {
   EXPECT_CALL(*renderer_, OnRenderEndOfStream())
       .WillOnce(Invoke(renderer_.get(), &AudioRendererBase::SignalEndOfStream));
   EXPECT_CALL(host_, NotifyEnded());
+
+  EXPECT_CALL(host_, GetTime()).WillOnce(Return(base::TimeDelta()));
+  EXPECT_CALL(host_, SetTime(_));
   EXPECT_FALSE(ConsumeBufferedData(kDataSize, &muted));
   EXPECT_FALSE(muted);
 }
@@ -357,6 +386,41 @@ TEST_F(AudioRendererBaseTest, Underflow_ResumeFromCallback) {
   EXPECT_CALL(*decoder_, Read(_));
   EXPECT_TRUE(ConsumeBufferedData(kDataSize, &muted));
   EXPECT_FALSE(muted);
+}
+
+TEST_F(AudioRendererBaseTest, AbortPendingRead_Preroll) {
+  Initialize();
+
+  // Seek to trigger prerolling.
+  EXPECT_CALL(*decoder_, Read(_));
+  renderer_->Seek(base::TimeDelta(), NewSeekCB());
+
+  // Simulate the decoder aborting the pending read.
+  EXPECT_CALL(*this, OnSeekComplete(PIPELINE_OK));
+  AbortPendingRead();
+
+  // Seek to trigger another preroll and verify it completes
+  // normally.
+  Seek(base::TimeDelta::FromSeconds(1));
+
+  ASSERT_TRUE(read_cb_.is_null());
+}
+
+TEST_F(AudioRendererBaseTest, AbortPendingRead_Pause) {
+  Initialize();
+
+  Preroll();
+  Play();
+
+  // Partially drain internal buffer so we get a pending read.
+  EXPECT_CALL(*decoder_, Read(_));
+  EXPECT_TRUE(ConsumeBufferedData(bytes_buffered() / 2, NULL));
+
+  renderer_->Pause(NewExpectedClosure());
+
+  AbortPendingRead();
+
+  Seek(base::TimeDelta::FromSeconds(1));
 }
 
 }  // namespace media

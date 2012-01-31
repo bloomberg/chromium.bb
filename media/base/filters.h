@@ -135,7 +135,9 @@ class MEDIA_EXPORT VideoDecoder : public Filter {
   // Implementations guarantee that the callback will not be called from within
   // this method.
   //
-  // Frames will be non-NULL yet may be end of stream frames.
+  // Non-NULL frames contain decoded video data or may indicate the  end of
+  // the stream. NULL video frames indicate an aborted read. This can happen if
+  // the DemuxerStream gets flushed and doesn't have any more data to return.
   typedef base::Callback<void(scoped_refptr<VideoFrame>)> ReadCB;
   virtual void Read(const ReadCB& callback) = 0;
 
@@ -183,7 +185,10 @@ class MEDIA_EXPORT AudioDecoder : public Filter {
   // Implementations guarantee that the callback will not be called from within
   // this method.
   //
-  // Sample buffers will be non-NULL yet may be end of stream buffers.
+  // Non-NULL sample buffer pointers will contain decoded audio data or may
+  // indicate the end of the stream. A NULL buffer pointer indicates an aborted
+  // Read(). This can happen if the DemuxerStream gets flushed and doesn't have
+  // any more data to return.
   typedef base::Callback<void(scoped_refptr<Buffer>)> ReadCB;
   virtual void Read(const ReadCB& callback) = 0;
 

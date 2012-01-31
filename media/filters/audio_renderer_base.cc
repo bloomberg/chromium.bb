@@ -67,6 +67,7 @@ void AudioRendererBase::Seek(base::TimeDelta time, const FilterStatusCB& cb) {
   base::AutoLock auto_lock(lock_);
   DCHECK_EQ(kPaused, state_);
   DCHECK(!pending_read_) << "Pending read must complete before seeking";
+  DCHECK(pause_callback_.is_null());
   DCHECK(seek_cb_.is_null());
   state_ = kSeeking;
   seek_cb_ = cb;
@@ -144,46 +145,46 @@ void AudioRendererBase::DecodedAudioReady(scoped_refptr<Buffer> buffer) {
   CHECK(pending_read_);
   pending_read_ = false;
 
-  // TODO(scherkus): this happens due to a race, primarily because Stop() is a
-  // synchronous call when it should be asynchronous and accept a callback.
-  // Refer to http://crbug.com/16059
-  if (state_ == kStopped) {
-    return;
-  }
-
-  // Don't enqueue an end-of-stream buffer because it has no data, otherwise
-  // discard decoded audio data until we reach our desired seek timestamp.
-  if (buffer->IsEndOfStream()) {
+  if (buffer && buffer->IsEndOfStream()) {
     recieved_end_of_stream_ = true;
 
-    // Transition to kPlaying if we are currently handling an underflow since no
-    // more data will be arriving.
+    // Transition to kPlaying if we are currently handling an underflow since
+    // no more data will be arriving.
     if (state_ == kUnderflow || state_ == kRebuffering)
       state_ = kPlaying;
-  } else if (state_ == kSeeking && !buffer->IsEndOfStream() &&
-             (buffer->GetTimestamp() + buffer->GetDuration()) <
-                 seek_timestamp_) {
-    ScheduleRead_Locked();
-  } else {
-    // Note: Calling this may schedule more reads.
-    algorithm_->EnqueueBuffer(buffer);
   }
 
-  // Check for our preroll complete condition.
-  if (state_ == kSeeking) {
-    DCHECK(!seek_cb_.is_null());
-    if (algorithm_->IsQueueFull() || recieved_end_of_stream_) {
-      // Transition into paused whether we have data in |algorithm_| or not.
-      // FillBuffer() will play silence if there's nothing to fill.
+  switch (state_) {
+    case kUninitialized:
+      NOTREACHED();
+      return;
+    case kPaused:
+      if (buffer && !buffer->IsEndOfStream())
+        algorithm_->EnqueueBuffer(buffer);
+      DCHECK(!pending_read_);
+      ResetAndRunCB(&pause_callback_);
+      return;
+    case kSeeking:
+      if (IsBeforeSeekTime(buffer)) {
+        ScheduleRead_Locked();
+        return;
+      }
+      if (buffer && !buffer->IsEndOfStream()) {
+        algorithm_->EnqueueBuffer(buffer);
+        if (!algorithm_->IsQueueFull())
+          return;
+      }
       state_ = kPaused;
       ResetAndRunCB(&seek_cb_, PIPELINE_OK);
-    }
-  } else if (state_ == kPaused && !pending_read_) {
-    // No more pending read!  We're now officially "paused".
-    if (!pause_callback_.is_null()) {
-      pause_callback_.Run();
-      pause_callback_.Reset();
-    }
+      return;
+    case kPlaying:
+    case kUnderflow:
+    case kRebuffering:
+      if (buffer && !buffer->IsEndOfStream())
+        algorithm_->EnqueueBuffer(buffer);
+      return;
+    case kStopped:
+      return;
   }
 }
 
@@ -278,7 +279,7 @@ void AudioRendererBase::SignalEndOfStream() {
 
 void AudioRendererBase::ScheduleRead_Locked() {
   lock_.AssertAcquired();
-  if (pending_read_)
+  if (pending_read_ || state_ == kPaused)
     return;
   pending_read_ = true;
   decoder_->Read(read_cb_);
@@ -292,6 +293,11 @@ void AudioRendererBase::SetPlaybackRate(float playback_rate) {
 float AudioRendererBase::GetPlaybackRate() {
   base::AutoLock auto_lock(lock_);
   return algorithm_->playback_rate();
+}
+
+bool AudioRendererBase::IsBeforeSeekTime(const scoped_refptr<Buffer>& buffer) {
+  return (state_ == kSeeking) && buffer && !buffer->IsEndOfStream() &&
+      (buffer->GetTimestamp() + buffer->GetDuration()) < seek_timestamp_;
 }
 
 }  // namespace media
