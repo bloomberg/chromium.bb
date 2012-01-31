@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -399,12 +399,12 @@ void CloudPrintProxyBackend::Core::PollForJobs() {
 
 void CloudPrintProxyBackend::Core::ScheduleJobPoll() {
   if (!job_poll_scheduled_) {
-    int interval_in_seconds = base::RandInt(kMinJobPollIntervalSecs,
-                                            kMaxJobPollIntervalSecs);
+    base::TimeDelta interval = base::TimeDelta::FromSeconds(
+        base::RandInt(kMinJobPollIntervalSecs, kMaxJobPollIntervalSecs));
     MessageLoop::current()->PostDelayedTask(
         FROM_HERE,
         base::Bind(&CloudPrintProxyBackend::Core::PollForJobs, this),
-        interval_in_seconds * 1000);
+        interval);
     job_poll_scheduled_ = true;
   }
 }

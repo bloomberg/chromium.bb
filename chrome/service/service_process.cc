@@ -43,13 +43,13 @@ ServiceProcess* g_service_process = NULL;
 
 namespace {
 
-// Delay in millseconds after the last service is disabled before we attempt
+// Delay in seconds after the last service is disabled before we attempt
 // a shutdown.
-const int64 kShutdownDelay = 60000;
+const int kShutdownDelaySeconds = 60;
 
-// Delay in milliseconds between launching a browser process to check the
-// policy for us. 8 hours * 60 * 60 * 1000
-const int64 kPolicyCheckDelay = 28800000;
+// Delay in hours between launching a browser process to check the
+// policy for us.
+const int64 kPolicyCheckDelayHours = 8;
 
 const char kDefaultServiceProcessLocale[] = "en-US";
 
@@ -356,7 +356,7 @@ void ServiceProcess::ScheduleShutdownCheck() {
   MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&ServiceProcess::ShutdownIfNeeded, base::Unretained(this)),
-      kShutdownDelay);
+      base::TimeDelta::FromSeconds(kShutdownDelaySeconds));
 }
 
 void ServiceProcess::ShutdownIfNeeded() {
@@ -378,7 +378,7 @@ void ServiceProcess::ScheduleCloudPrintPolicyCheck() {
       FROM_HERE,
       base::Bind(&ServiceProcess::CloudPrintPolicyCheckIfNeeded,
                  base::Unretained(this)),
-      kPolicyCheckDelay);
+      base::TimeDelta::FromHours(kPolicyCheckDelayHours));
 }
 
 void ServiceProcess::CloudPrintPolicyCheckIfNeeded() {
