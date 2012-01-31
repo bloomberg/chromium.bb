@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -652,4 +652,25 @@ TEST_F(SessionServiceTest, CloseTabUserGesture) {
   ReadWindows(&(windows.get()));
 
   ASSERT_TRUE(windows->empty());
+}
+
+// Verifies SetWindowBounds maps SHOW_STATE_DEFAULT to SHOW_STATE_NORMAL.
+TEST_F(SessionServiceTest, DontPersistDefault) {
+  SessionID tab_id;
+  ASSERT_NE(window_id.id(), tab_id.id());
+  TabNavigation nav1(0, GURL("http://google.com"),
+                     content::Referrer(GURL("http://www.referrer.com"),
+                                       WebKit::WebReferrerPolicyDefault),
+                     ASCIIToUTF16("abc"), "def",
+                     content::PAGE_TRANSITION_QUALIFIER_MASK);
+  helper_.PrepareTabInWindow(window_id, tab_id, 0, true);
+  UpdateNavigation(window_id, tab_id, nav1, 0, true);
+  service()->SetWindowBounds(window_id,
+                             window_bounds,
+                             ui::SHOW_STATE_DEFAULT);
+
+  ScopedVector<SessionWindow> windows;
+  ReadWindows(&(windows.get()));
+  ASSERT_EQ(1U, windows->size());
+  EXPECT_EQ(ui::SHOW_STATE_NORMAL, windows[0]->show_state);
 }

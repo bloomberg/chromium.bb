@@ -141,6 +141,23 @@ struct PinnedStatePayload {
   bool pinned_state;
 };
 
+// Returns the show state to store to disk based |state|.
+ui::WindowShowState AdjustShowState(ui::WindowShowState state) {
+  switch (state) {
+    case ui::SHOW_STATE_NORMAL:
+    case ui::SHOW_STATE_MINIMIZED:
+    case ui::SHOW_STATE_MAXIMIZED:
+    case ui::SHOW_STATE_FULLSCREEN:
+      return state;
+
+    case ui::SHOW_STATE_DEFAULT:
+    case ui::SHOW_STATE_INACTIVE:
+    case ui::SHOW_STATE_END:
+      return ui::SHOW_STATE_NORMAL;
+  }
+  return ui::SHOW_STATE_NORMAL;
+}
+
 }  // namespace
 
 // SessionService -------------------------------------------------------------
@@ -679,7 +696,7 @@ SessionCommand* SessionService::CreateSetWindowBoundsCommand(
   payload.y = bounds.y();
   payload.w = bounds.width();
   payload.h = bounds.height();
-  payload.show_state = show_state;
+  payload.show_state = AdjustShowState(show_state);
   SessionCommand* command = new SessionCommand(kCommandSetWindowBounds3,
                                                sizeof(payload));
   memcpy(command->contents(), &payload, sizeof(payload));
