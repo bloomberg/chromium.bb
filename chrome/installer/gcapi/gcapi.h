@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,17 +16,6 @@ extern "C" {
 #define GCCC_ERROR_OSNOTSUPPORTED                0x08
 #define GCCC_ERROR_ALREADYOFFERED                0x10
 #define GCCC_ERROR_INTEGRITYLEVEL                0x20
-
-// Error conditions for CanReactivateChrome().
-#define REACTIVATE_ERROR_NOTINSTALLED            0x01
-#define REACTIVATE_ERROR_NOTDORMANT              0x02
-#define REACTIVATE_ERROR_ALREADY_REACTIVATED     0x04
-#define REACTIVATE_ERROR_INVALID_INPUT           0x08
-#define REACTIVATE_ERROR_REACTIVATION_FAILED     0x10
-
-// The minimum number of days an installation can be dormant before reactivation
-// may be offered.
-const int kReactivationMinDaysDormant = 50;
 
 // This function returns TRUE if Google Chrome should be offered.
 // If the return is FALSE, the reasons DWORD explains why.  If you don't care
@@ -65,41 +54,11 @@ BOOL __stdcall LaunchGoogleChromeWithDimensions(int x,
 // launched.
 int __stdcall GoogleChromeDaysSinceLastRun();
 
-// Returns true if a vendor with the specified |brand_code| may offer
-// reactivation at this time. If the vendor has previously used other brand
-// codes, they must pass them in an array of size |previous_brand_codes_length|
-// as |previous_brand_codes|. Returns false if the vendor may not offer
-// reactivation at this time, and places one of the REACTIVATE_ERROR_XXX values
-// in |error_code| if |error_code| is non-null.
-BOOL __stdcall CanOfferReactivation(const wchar_t* brand_code,
-                                    int previous_brand_codes_length,
-                                    const wchar_t** previous_brand_codes,
-                                    DWORD* error_code);
-
-// Attempts to reactivate Chrome for the specified |brand_code|. If the vendor
-// has previously used other brand codes, they must pass them in an array of
-// size |previous_brand_codes_length| as |previous_brand_codes|. Returns false
-// if reactivation fails, and places one of the REACTIVATE_ERROR_XXX values
-// in |error_code| if |error_code| is non-null.
-BOOL __stdcall ReactivateChrome(wchar_t* brand_code,
-                                int previous_brand_codes_length,
-                                const wchar_t** previous_brand_codes,
-                                DWORD* error_code);
-
-// Function pointer type declarations to use with GetProcAddress.
+// Funtion pointer type declarations to use with GetProcAddress.
 typedef BOOL (__stdcall *GCCC_CompatibilityCheck)(BOOL, DWORD *);
 typedef BOOL (__stdcall *GCCC_LaunchGC)(HANDLE *);
 typedef BOOL (__stdcall *GCCC_LaunchGCWithDimensions)(int, int, int, int);
 typedef int (__stdcall *GCCC_GoogleChromeDaysSinceLastRun)();
-typedef BOOL (__stdcall *GCCC_CanOfferReactivation)(const wchar_t*,
-                                                    int,
-                                                    const wchar_t**,
-                                                    DWORD*);
-typedef BOOL (__stdcall *GCCC_ReactivateChrome)(const wchar_t*,
-                                                int,
-                                                const wchar_t**,
-                                                DWORD*);
-
 }  // extern "C"
 
 #endif  // CHROME_INSTALLER_GCAPI_GCAPI_H_

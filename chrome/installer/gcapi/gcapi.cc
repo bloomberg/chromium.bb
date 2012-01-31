@@ -29,7 +29,6 @@
 #include "base/win/scoped_com_initializer.h"
 #include "base/win/scoped_comptr.h"
 #include "base/win/scoped_handle.h"
-#include "chrome/installer/gcapi/gcapi_reactivation.h"
 #include "chrome/installer/util/google_update_constants.h"
 #include "chrome/installer/util/util_constants.h"
 
@@ -540,74 +539,3 @@ int __stdcall GoogleChromeDaysSinceLastRun() {
 
   return days_since_last_run;
 }
-
-BOOL __stdcall CanOfferReactivation(const wchar_t* brand_code,
-                                    int previous_brand_codes_length,
-                                    const wchar_t** previous_brand_codes,
-                                    DWORD* error_code) {
-  DCHECK(error_code);
-
-  if (!brand_code ||
-      (previous_brand_codes_length > 0 && previous_brand_codes == NULL)) {
-    if (error_code)
-      *error_code = REACTIVATE_ERROR_INVALID_INPUT;
-    return FALSE;
-  }
-
-  bool has_system_install = IsChromeInstalled(HKEY_LOCAL_MACHINE);
-  bool has_user_install = IsChromeInstalled(HKEY_CURRENT_USER);
-
-  if (!has_system_install && !has_user_install) {
-    if (error_code)
-      *error_code = REACTIVATE_ERROR_NOTINSTALLED;
-    return FALSE;
-  }
-
-  int days_since_last_run = GoogleChromeDaysSinceLastRun();
-  if (days_since_last_run > 0 &&
-      days_since_last_run < kReactivationMinDaysDormant) {
-    if (error_code)
-      *error_code = REACTIVATE_ERROR_NOTDORMANT;
-    return FALSE;
-  }
-
-  // Make sure we haven't previously been reactivated by this brand code
-  // or any of the previous brand codes from this partner.
-  std::vector<std::wstring> reactivation_brands;
-  reactivation_brands.push_back(brand_code);
-  if (previous_brand_codes_length > 0 && previous_brand_codes != NULL) {
-    std::copy(previous_brand_codes,
-              previous_brand_codes + previous_brand_codes_length,
-              std::back_inserter(reactivation_brands));
-  }
-  if (HasBeenReactivatedByBrandCodes(reactivation_brands)) {
-    if (error_code)
-      *error_code = REACTIVATE_ERROR_ALREADY_REACTIVATED;
-    return FALSE;
-  }
-
-  return TRUE;
-}
-
-BOOL __stdcall ReactivateChrome(wchar_t* brand_code,
-                                int previous_brand_codes_length,
-                                const wchar_t** previous_brand_codes,
-                                DWORD* error_code) {
-  BOOL result = FALSE;
-  if (CanOfferReactivation(brand_code,
-                           previous_brand_codes_length,
-                           previous_brand_codes,
-                           error_code)) {
-    if (SetReactivationBrandCode(brand_code)) {
-      // TODO(robertshield): Set Omaha reg key to add experiment label for
-      // tracking 7DA.
-      result = TRUE;
-    } else {
-      if (error_code)
-        *error_code = REACTIVATE_ERROR_REACTIVATION_FAILED;
-    }
-  }
-
-  return result;
-}
-
