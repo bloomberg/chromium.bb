@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,7 +21,6 @@ WebDropData::WebDropData(const WebDragData& drag_data)
     : url(drag_data.url()),
       url_title(drag_data.urlTitle()),
       download_metadata(drag_data.downloadMetadata()),
-      file_extension(drag_data.fileExtension()),
       plain_text(drag_data.plainText()),
       text_html(drag_data.htmlText()),
       html_base_url(drag_data.htmlBaseURL()),
@@ -54,7 +53,6 @@ WebDragData WebDropData::ToDragData() const {
   result.initialize();
   result.setURL(url);
   result.setURLTitle(url_title);
-  result.setFileExtension(file_extension);
   result.setFilenames(filenames);
   result.setPlainText(plain_text);
   result.setHTMLText(text_html);

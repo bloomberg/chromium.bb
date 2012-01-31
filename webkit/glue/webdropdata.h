@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -37,9 +37,6 @@ struct WEBKIT_GLUE_EXPORT WebDropData {
 
   // User is dragging a link out-of the webview.
   string16 download_metadata;
-
-  // File extension for dragging images from a webview to the desktop.
-  string16 file_extension;
 
   // User is dropping one or more files on the webview.
   std::vector<string16> filenames;

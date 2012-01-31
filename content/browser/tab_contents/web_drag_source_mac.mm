@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -54,21 +54,20 @@ FilePath FilePathFromFilename(const string16& filename) {
 // TODO(viettrungluu): Refactor to make it common across platforms,
 // and move it somewhere sensible.
 FilePath GetFileNameFromDragData(const WebDropData& drop_data) {
-  // Images without ALT text will only have a file extension so we need to
-  // synthesize one from the provided extension and URL.
   FilePath file_name(FilePathFromFilename(drop_data.file_description_filename));
+  std::string extension = file_name.Extension();
   file_name = file_name.BaseName().RemoveExtension();
 
+  // Images without ALT text will only have a file extension so we need to
+  // synthesize one from the provided extension and URL.
   if (file_name.empty()) {
     // Retrieve the name from the URL.
     string16 suggested_filename =
-        net::GetSuggestedFilename(drop_data.url, "", "", "", "", std::string());
+        net::GetSuggestedFilename(drop_data.url, "", "", "", "", "");
     file_name = FilePathFromFilename(suggested_filename);
   }
 
-  file_name = file_name.ReplaceExtension(UTF16ToUTF8(drop_data.file_extension));
-
-  return file_name;
+  return file_name.ReplaceExtension(extension);
 }
 
 // This helper's sole task is to write out data for a promised file; the caller
@@ -123,6 +122,8 @@ void PromiseWriterHelper(const WebDropData& drop_data,
 
     dragOperationMask_ = dragOperationMask;
 
+    fileExtension_ = nil;
+
     [self fillPasteboard];
   }
 
@@ -174,8 +175,8 @@ void PromiseWriterHelper(const WebDropData& drop_data,
 
   // File contents.
   } else if ([type isEqualToString:NSFileContentsPboardType] ||
-      [type isEqualToString:NSCreateFileContentsPboardType(
-              SysUTF16ToNSString(dropData_->file_extension))]) {
+      (fileExtension_ &&
+       [type isEqualToString:NSCreateFileContentsPboardType(fileExtension_)])) {
     // TODO(viettrungluu: find something which is known to accept
     // NSFileContentsPboardType to check that this actually works!
     scoped_nsobject<NSFileWrapper> file_wrapper(
@@ -372,15 +373,13 @@ void PromiseWriterHelper(const WebDropData& drop_data,
                                                     kNSURLTitlePboardType, nil]
                     owner:contentsView_];
 
+  std::string fileExtension;
+
   // File.
   if (!dropData_->file_contents.empty() ||
       !dropData_->download_metadata.empty()) {
-    NSString* fileExtension = 0;
-
     if (dropData_->download_metadata.empty()) {
-      // |dropData_->file_extension| comes with the '.', which we must strip.
-      fileExtension = (dropData_->file_extension.length() > 0) ?
-          SysUTF16ToNSString(dropData_->file_extension.substr(1)) : @"";
+      fileExtension = GetFileNameFromDragData(*dropData_).Extension();
     } else {
       string16 mimeType;
       FilePath fileName;
@@ -400,24 +399,29 @@ void PromiseWriterHelper(const WebDropData& drop_data,
                                   fileName.value(),
                                   UTF16ToUTF8(mimeType),
                                   defaultName);
-        fileExtension = SysUTF8ToNSString(downloadFileName_.Extension());
+        fileExtension = downloadFileName_.Extension();
       }
     }
 
-    if (fileExtension) {
-      // File contents (with and without specific type), file (HFS) promise,
-      // TIFF.
+    if (!fileExtension.empty()) {
+      // Strip the leading dot.
+      fileExtension_ = SysUTF8ToNSString(fileExtension.substr(1));
+      // File contents (with and without specific type), and file (HFS) promise.
       // TODO(viettrungluu): others?
-      [pasteboard_ addTypes:[NSArray arrayWithObjects:
-                                  NSFileContentsPboardType,
-                                  NSCreateFileContentsPboardType(fileExtension),
-                                  NSFilesPromisePboardType,
-                                  NSTIFFPboardType,
-                                  nil]
-                      owner:contentsView_];
+      NSArray* types = [NSArray arrayWithObjects:
+          NSFileContentsPboardType,
+          NSCreateFileContentsPboardType(fileExtension_),
+          NSFilesPromisePboardType,
+          nil];
+      [pasteboard_ addTypes:types owner:contentsView_];
+
+      if (!dropData_->file_contents.empty()) {
+        [pasteboard_ addTypes:[NSArray arrayWithObject:NSTIFFPboardType]
+                        owner:contentsView_];
+      }
 
       // For the file promise, we need to specify the extension.
-      [pasteboard_ setPropertyList:[NSArray arrayWithObject:fileExtension]
+      [pasteboard_ setPropertyList:[NSArray arrayWithObject:fileExtension_]
                            forType:NSFilesPromisePboardType];
     }
   }

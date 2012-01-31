@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,7 +20,6 @@ IPC_STRUCT_TRAITS_BEGIN(WebDropData)
   IPC_STRUCT_TRAITS_MEMBER(url)
   IPC_STRUCT_TRAITS_MEMBER(url_title)
   IPC_STRUCT_TRAITS_MEMBER(download_metadata)
-  IPC_STRUCT_TRAITS_MEMBER(file_extension)
   IPC_STRUCT_TRAITS_MEMBER(filenames)
   IPC_STRUCT_TRAITS_MEMBER(plain_text)
   IPC_STRUCT_TRAITS_MEMBER(text_html)

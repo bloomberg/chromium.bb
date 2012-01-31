@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -42,6 +42,9 @@ struct WebDropData;
 
   // The URL to download from for a drag-out download.
   GURL downloadURL_;
+
+  // The file extension associated with the file drag, if any.
+  NSString* fileExtension_;
 }
 
 // Initialize a WebDragSource object for a drag (originating on the given
