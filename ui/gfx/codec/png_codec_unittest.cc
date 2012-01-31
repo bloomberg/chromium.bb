@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -329,14 +329,14 @@ TEST(PNGCodec, EncodeWithComment) {
   const unsigned char kExpected3[] =
       "\x00\x00\x00\x18tEXthave some\x00spaces in both\x8d\x69\x34\x2d";
 
-  EXPECT_NE(search(encoded.begin(), encoded.end(), kExpected1,
-                   kExpected1 + arraysize(kExpected1)),
+  EXPECT_NE(std::search(encoded.begin(), encoded.end(), kExpected1,
+                        kExpected1 + arraysize(kExpected1)),
             encoded.end());
-  EXPECT_NE(search(encoded.begin(), encoded.end(), kExpected2,
-                   kExpected2 + arraysize(kExpected2)),
+  EXPECT_NE(std::search(encoded.begin(), encoded.end(), kExpected2,
+                        kExpected2 + arraysize(kExpected2)),
             encoded.end());
-  EXPECT_NE(search(encoded.begin(), encoded.end(), kExpected3,
-                   kExpected3 + arraysize(kExpected3)),
+  EXPECT_NE(std::search(encoded.begin(), encoded.end(), kExpected3,
+                        kExpected3 + arraysize(kExpected3)),
             encoded.end());
 }
 

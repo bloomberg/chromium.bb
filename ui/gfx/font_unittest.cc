@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,7 +8,7 @@
 #include "base/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
+#if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
 #include <pango/pango.h>
 #elif defined(OS_WIN)
 #include "ui/gfx/platform_font_win.h"
@@ -23,7 +23,7 @@ class FontTest : public testing::Test {
   // Fulfills the memory management contract as outlined by the comment at
   // gfx::Font::GetNativeFont().
   void FreeIfNecessary(gfx::NativeFont font) {
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
+#if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
     pango_font_description_free(font);
 #endif
   }
