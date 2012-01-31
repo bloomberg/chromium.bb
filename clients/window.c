@@ -1334,6 +1334,21 @@ frame_menu_func(struct window *window, int index, void *data)
 	}
 }
 
+void
+window_show_frame_menu(struct window *window,
+		       struct input *input, uint32_t time)
+{
+	int32_t x, y;
+
+	static const char *entries[] = {
+		"Close", "Fullscreen", "Rotate", "Scale"
+	};
+
+	input_get_position(input, &x, &y);
+	window_show_menu(window->display, input, time, window,
+			 x - 10, y - 10, frame_menu_func, entries, 4);
+}
+
 static int
 frame_enter_handler(struct widget *widget,
 		    struct input *input, uint32_t time,
@@ -1359,11 +1374,6 @@ frame_button_handler(struct widget *widget,
 	struct frame *frame = data;
 	struct window *window = widget->window;
 	int location;
-	int32_t x, y;
-	static const char *entries[] = {
-		"Close", "Fullscreen", "Rotate", "Scale"
-	};
-
 	location = frame_get_pointer_location(frame, input->sx, input->sy);
 
 	if (window->display->shell && button == BTN_LEFT && state == 1) {
@@ -1394,9 +1404,7 @@ frame_button_handler(struct widget *widget,
 			break;
 		}
 	} else if (button == BTN_RIGHT && state == 1) {
-		input_get_position(input, &x, &y);
-		window_show_menu(window->display, input, time, window,
-				 x - 10, y - 10, frame_menu_func, entries, 4);
+		window_show_frame_menu(window, input, time);
 	}
 }
 

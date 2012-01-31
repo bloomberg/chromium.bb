@@ -207,6 +207,10 @@ window_show_menu(struct display *display,
 		 menu_func_t func, const char **entries, int count);
 
 void
+window_show_frame_menu(struct window *window,
+		       struct input *input, uint32_t time);
+
+void
 window_destroy(struct window *window);
 
 struct widget *
