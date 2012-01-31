@@ -267,6 +267,13 @@ void NavigationControllerImpl::ReloadInternal(bool check_for_repost,
     DiscardNonCommittedEntriesInternal();
 
     pending_entry_index_ = current_index;
+
+    // The title of the page being reloaded might have been removed in the
+    // meanwhile, so we need to revert to the default title upon reload and
+    // invalidate the previously cached title (SetTitle will do both).
+    // See Chromium issue 96041.
+    entries_[pending_entry_index_]->SetTitle(string16());
+
     entries_[pending_entry_index_]->SetTransitionType(
         content::PAGE_TRANSITION_RELOAD);
     NavigateToPendingEntry(reload_type);

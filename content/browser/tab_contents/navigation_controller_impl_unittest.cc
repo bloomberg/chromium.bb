@@ -559,7 +559,7 @@ TEST_F(NavigationControllerTest, Reload) {
   rvh()->SendNavigate(0, url1);
   EXPECT_TRUE(notifications.Check1AndReset(
       content::NOTIFICATION_NAV_ENTRY_COMMITTED));
-
+  controller.GetActiveEntry()->SetTitle(ASCIIToUTF16("Title"));
   controller.Reload(true);
   EXPECT_EQ(0U, notifications.size());
 
@@ -571,6 +571,10 @@ TEST_F(NavigationControllerTest, Reload) {
   EXPECT_TRUE(controller.GetPendingEntry());
   EXPECT_FALSE(controller.CanGoBack());
   EXPECT_FALSE(controller.CanGoForward());
+  // Make sure the title has been cleared (will be redrawn just after reload).
+  // Avoids a stale cached title when the new page being reloaded has no title.
+  // See http://crbug.com/96041.
+  EXPECT_TRUE(controller.GetActiveEntry()->GetTitle().empty());
 
   rvh()->SendNavigate(0, url1);
   EXPECT_TRUE(notifications.Check1AndReset(
