@@ -8,6 +8,7 @@ body {
 }
 
 h1 {
+  -webkit-margin-before: 18px;
   -webkit-margin-start: 23px;
   color: rgb(92, 97, 102);
 }

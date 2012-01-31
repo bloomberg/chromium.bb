@@ -39,6 +39,9 @@ cr.define('uber', function() {
     showPage(params.id, HISTORY_STATE_OPTION.REPLACE);
 
     window.addEventListener('message', handleWindowMessage);
+    window.setTimeout(function() {
+      document.documentElement.classList.remove('loading');
+    }, 0);
   }
 
   /**
@@ -193,6 +196,11 @@ cr.define('uber', function() {
     var lastSelected = document.querySelector('.iframe-container.selected');
     if (lastSelected === container)
       return;
+
+    // Lazy load of iframe contents.
+    var frame = container.querySelector('iframe');
+    if (!frame.getAttribute('src'))
+      frame.setAttribute('src', frame.dataset.url);
 
     if (lastSelected)
       lastSelected.classList.remove('selected');
