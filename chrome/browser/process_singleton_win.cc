@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -37,6 +37,24 @@ BOOL CALLBACK BrowserWindowEnumeration(HWND window, LPARAM param) {
   *result = IsWindowVisible(window) != 0;
   // Stops enumeration if a visible window has been found.
   return !*result;
+}
+
+// This function thunks to the object's version of the windowproc, taking in
+// consideration that there are several messages being dispatched before
+// WM_NCCREATE which we let windows handle.
+LRESULT CALLBACK ThunkWndProc(HWND hwnd, UINT message,
+                              WPARAM wparam, LPARAM lparam) {
+  ProcessSingleton* singleton =
+      reinterpret_cast<ProcessSingleton*>(ui::GetWindowUserData(hwnd));
+  if (message == WM_NCCREATE) {
+    CREATESTRUCT* cs = reinterpret_cast<CREATESTRUCT*>(lparam);
+    singleton = reinterpret_cast<ProcessSingleton*>(cs->lpCreateParams);
+    CHECK(singleton);
+    ui::SetWindowUserData(hwnd, singleton);
+  } else if (!singleton) {
+    return ::DefWindowProc(hwnd, message, wparam, lparam);
+  }
+  return singleton->WndProc(hwnd, message, wparam, lparam);
 }
 
 }  // namespace
@@ -111,8 +129,8 @@ ProcessSingleton::ProcessSingleton(const FilePath& user_data_dir)
 
 ProcessSingleton::~ProcessSingleton() {
   if (window_) {
-    DestroyWindow(window_);
-    UnregisterClass(chrome::kMessageWindowClass, GetModuleHandle(NULL));
+    ::DestroyWindow(window_);
+    ::UnregisterClass(chrome::kMessageWindowClass, GetModuleHandle(NULL));
   }
 }
 
@@ -208,15 +226,19 @@ bool ProcessSingleton::Create() {
   if (window_)
     return true;
 
-  HINSTANCE hinst = GetModuleHandle(NULL);
+  HINSTANCE hinst = 0;
+  if (!::GetModuleHandleExA(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS,
+                            reinterpret_cast<char*>(&ThunkWndProc),
+                            &hinst)) {
+    NOTREACHED();
+  }
 
   WNDCLASSEX wc = {0};
   wc.cbSize = sizeof(wc);
-  wc.lpfnWndProc =
-      base::win::WrappedWindowProc<ProcessSingleton::WndProcStatic>;
+  wc.lpfnWndProc = base::win::WrappedWindowProc<ThunkWndProc>;
   wc.hInstance = hinst;
   wc.lpszClassName = chrome::kMessageWindowClass;
-  ATOM clazz = RegisterClassEx(&wc);
+  ATOM clazz = ::RegisterClassEx(&wc);
   DCHECK(clazz);
 
   FilePath user_data_dir;
@@ -224,11 +246,10 @@ bool ProcessSingleton::Create() {
 
   // Set the window's title to the path of our user data directory so other
   // Chrome instances can decide if they should forward to us or not.
-  window_ = CreateWindow(chrome::kMessageWindowClass,
-                         user_data_dir.value().c_str(),
-                         0, 0, 0, 0, 0, HWND_MESSAGE, 0, hinst, 0);
-  ui::CheckWindowCreated(window_);
-  ui::SetWindowUserData(window_, this);
+  window_ = ::CreateWindow(MAKEINTATOM(clazz),
+                           user_data_dir.value().c_str(),
+                           0, 0, 0, 0, 0, HWND_MESSAGE, 0, hinst, this);
+  CHECK(window_);
   return true;
 }
 
@@ -340,8 +361,8 @@ LRESULT ProcessSingleton::OnCopyData(HWND hwnd, const COPYDATASTRUCT* cds) {
   return TRUE;
 }
 
-LRESULT CALLBACK ProcessSingleton::WndProc(HWND hwnd, UINT message,
-                                           WPARAM wparam, LPARAM lparam) {
+LRESULT ProcessSingleton::WndProc(HWND hwnd, UINT message,
+                                  WPARAM wparam, LPARAM lparam) {
   switch (message) {
     case WM_COPYDATA:
       return OnCopyData(reinterpret_cast<HWND>(wparam),

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -118,6 +118,10 @@ class ProcessSingleton : public base::NonThreadSafe {
     return locked_;
   }
 
+#if defined(OS_WIN)
+  LRESULT WndProc(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam);
+#endif
+
  private:
 #if !defined(OS_MACOSX)
   // Timeout for the current browser process to respond. 20 seconds should be
@@ -131,20 +135,6 @@ class ProcessSingleton : public base::NonThreadSafe {
 #if defined(OS_WIN)
   // This ugly behemoth handles startup commands sent from another process.
   LRESULT OnCopyData(HWND hwnd, const COPYDATASTRUCT* cds);
-
-  LRESULT CALLBACK WndProc(HWND hwnd,
-                           UINT message,
-                           WPARAM wparam,
-                           LPARAM lparam);
-
-  static LRESULT CALLBACK WndProcStatic(HWND hwnd,
-                                        UINT message,
-                                        WPARAM wparam,
-                                        LPARAM lparam) {
-    ProcessSingleton* msg_wnd = reinterpret_cast<ProcessSingleton*>(
-        GetWindowLongPtr(hwnd, GWLP_USERDATA));
-    return msg_wnd->WndProc(hwnd, message, wparam, lparam);
-  }
 
   bool EscapeVirtualization(const FilePath& user_data_dir);
 
