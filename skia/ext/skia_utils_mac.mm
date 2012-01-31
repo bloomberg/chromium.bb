@@ -333,7 +333,15 @@ CGContextRef SkiaBitLocker::cgContext() {
 
   // Apply clip in device coordinates.
   CGMutablePathRef clipPath = CGPathCreateMutable();
-  SkRegion::Iterator iter(canvas_->getTotalClip());
+  const SkRegion& clipRgn = canvas_->getTotalClip();
+  if (clipRgn.isEmpty()) {
+    // CoreGraphics does not consider a newly created path to be empty.
+    // Explicitly set it to empty so the subsequent drawing is clipped out.
+    // It would be better to make the CGContext hidden if there was a CG call
+    // that does that.
+    CGPathAddRect(clipPath, 0, CGRectMake(0, 0, 0, 0));
+  }
+  SkRegion::Iterator iter(clipRgn);
   const SkIPoint& pt = device->getOrigin();
   for (; !iter.done(); iter.next()) {
     SkIRect skRect = iter.rect();
