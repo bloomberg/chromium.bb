@@ -21,6 +21,7 @@
                     'pepper_emu_3d_stub.cc',
                     'pnacl_emu_coordinator.cc',
                     'pnacl_emu_handler.cc',
+                    'pnacl_emu_stream.cc',
                     'primitives_simple.cc',
                     'reverse_emulate.cc',
                     'replay_handler.cc',

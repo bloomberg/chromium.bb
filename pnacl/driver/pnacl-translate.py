@@ -130,6 +130,7 @@ EXTRA_ENV = {
   'LLC_MCPU_X8664'  : 'core2',
 
   'RUN_LLC'       : '${LLC} ${LLC_FLAGS} ${input} -o ${output}',
+  'STREAM_BITCODE' : '0',
 }
 env.update(EXTRA_ENV)
 
@@ -167,6 +168,7 @@ TranslatorPatterns = [
   ( '-fPIC',           "env.set('PIC', '1')"),
 
   ( '-Wl,(.*)',        "env.append('LD_FLAGS', *($0).split(','))"),
+  ( '-bitcode-stream-rate=([0-9]+)', "env.set('STREAM_BITCODE', $0)"),
 
   ( '(-.*)',            UnrecognizedOption),
 
@@ -360,18 +362,25 @@ def RunLLCSRPC():
 
 def MakeSelUniversalScriptForLLC(infile, outfile, flags, use_default):
   script = []
-  script.append('readonly_file myfile %s' % infile)
   script.append('readwrite_file objfile %s' % outfile)
-  if use_default:
-    script.append('rpc RunWithDefaultCommandLine  h(myfile) h(objfile) *'
-                  ' i() s() s()');
+  stream_bitcode = int(env.getraw('STREAM_BITCODE'))
+  if stream_bitcode == 0:
+    script.append('readonly_file myfile %s' % infile)
+    if use_default:
+      script.append('rpc RunWithDefaultCommandLine  h(myfile) h(objfile) *'
+                    ' i() s() s()');
+    else:
+      # command_line is a NUL (\x00) terminated sequence.
+      kTerminator = '\0'
+      command_line = kTerminator.join(['llc'] + flags) + kTerminator
+      command_line_escaped = command_line.replace(kTerminator, '\\x00')
+      script.append('rpc Run h(myfile) h(objfile) C(%d,%s) * i() s() s()' %
+                    (len(command_line), command_line_escaped))
   else:
-    # command_line is a NUL (\x00) terminated sequence.
-    kTerminator = '\0'
-    command_line = kTerminator.join(['llc'] + flags) + kTerminator
-    command_line_escaped = command_line.replace(kTerminator, '\\x00')
-    script.append('rpc Run h(myfile) h(objfile) C(%d,%s) * i() s() s()' %
-                  (len(command_line), command_line_escaped))
+    script.append('rpc StreamInit h(objfile) * s()')
+    # specify filename, chunk size and rate in bits/s
+    script.append('stream_file %s %s %s' % (infile, 64 * 1024, stream_bitcode))
+    script.append('rpc StreamEnd * i() s() s() s()')
   script.append('echo "llc complete"')
   script.append('')
   return '\n'.join(script)

@@ -29,4 +29,7 @@ bool HandlerPnaclEmuInitialize(NaClCommandLoop* ncl,
 bool HandlerPnaclEmuAddVarnameMapping(NaClCommandLoop* ncl,
                                       const std::vector<std::string>& args);
 
+bool HandlerPnaclFileStream(NaClCommandLoop* ncl,
+                            const std::vector<std::string>& args);
+
 #endif  /* NATIVE_CLIENT_SRC_TRUSTED_SEL_UNIVERSAL_PNACL_EMU_HANDLER_H_*/

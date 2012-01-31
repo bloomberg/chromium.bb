@@ -7,6 +7,7 @@
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_SEL_UNIVERSAL_PNACL_EMU_H_
 #define NATIVE_CLIENT_SRC_TRUSTED_SEL_UNIVERSAL_PNACL_EMU_H_
 
+#include <string>
 class NaClCommandLoop;
 
 // The PNaCl coordinator (for in-browser translation) exports a service that

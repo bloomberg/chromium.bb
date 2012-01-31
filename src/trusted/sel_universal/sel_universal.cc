@@ -293,6 +293,7 @@ int raii_main(int argc, char* argv[]) {
                   HandlerReverseEmuAddManifestMapping);
   loop.AddHandler("reverse_service_dump_manifest_mappings",
                   HandlerReverseEmuDumpManifestMappings);
+  loop.AddHandler("stream_file", HandlerPnaclFileStream);
 
   loop.AddHandler("pepper_emu_initialize", HandlerPepperEmuInitialize);
   loop.AddHandler("pepper_emu_event_loop", HandlerPepperEmuEventLoop);

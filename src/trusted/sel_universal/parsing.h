@@ -14,6 +14,7 @@
 using std::string;
 using std::vector;
 
+struct NaClDesc;
 struct NaClSrpcArg;
 class NaClCommandLoop;
 

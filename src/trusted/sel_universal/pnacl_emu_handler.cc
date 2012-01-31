@@ -5,17 +5,9 @@
  */
 
 #include "native_client/src/trusted/sel_universal/pnacl_emu_handler.h"
-#include <string.h>
-#include <fstream>
-#include <queue>
-#include <string>
 
-#include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/platform/nacl_log.h"
-#include "native_client/src/shared/srpc/nacl_srpc.h"
 
-
-#include "native_client/src/trusted/sel_universal/rpc_universal.h"
 #include "native_client/src/trusted/sel_universal/parsing.h"
 #include "native_client/src/trusted/sel_universal/pnacl_emu.h"
 
