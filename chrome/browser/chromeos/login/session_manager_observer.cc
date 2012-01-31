@@ -1,10 +1,11 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/chromeos/login/session_manager_observer.h"
 
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/dbus/dbus_thread_manager.h"
 #include "chrome/browser/chromeos/login/signed_settings.h"
 #include "chrome/browser/chromeos/login/signed_settings_cache.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -41,9 +42,11 @@ class StubDelegate
 }  // namespace
 
 SessionManagerObserver::SessionManagerObserver() {
+  DBusThreadManager::Get()->GetSessionManagerClient()->AddObserver(this);
 }
 
 SessionManagerObserver::~SessionManagerObserver() {
+  DBusThreadManager::Get()->GetSessionManagerClient()->RemoveObserver(this);
 }
 
 void SessionManagerObserver::OwnerKeySet(bool success) {

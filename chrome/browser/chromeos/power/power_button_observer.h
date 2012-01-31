@@ -19,6 +19,7 @@ namespace chromeos {
 class PowerButtonObserver : public content::NotificationObserver,
                             public PowerManagerClient::Observer {
  public:
+  // This class registers/unregisters itself as an observer in ctor/dtor.
   PowerButtonObserver();
   virtual ~PowerButtonObserver();
 

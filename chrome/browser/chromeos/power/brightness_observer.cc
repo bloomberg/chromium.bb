@@ -4,11 +4,20 @@
 
 #include "chrome/browser/chromeos/power/brightness_observer.h"
 
+#include "chrome/browser/chromeos/dbus/dbus_thread_manager.h"
 #include "chrome/browser/chromeos/ui/brightness_bubble.h"
 #include "chrome/browser/chromeos/ui/volume_bubble.h"
 #include "chrome/browser/extensions/system/system_api.h"
 
 namespace chromeos {
+
+BrightnessObserver::BrightnessObserver() {
+  DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(this);
+}
+
+BrightnessObserver::~BrightnessObserver() {
+  DBusThreadManager::Get()->GetPowerManagerClient()->RemoveObserver(this);
+}
 
 void BrightnessObserver::BrightnessChanged(int level, bool user_initiated) {
   if (user_initiated)

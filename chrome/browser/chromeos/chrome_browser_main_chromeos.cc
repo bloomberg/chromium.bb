@@ -275,20 +275,14 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopStart() {
   // Initialize the brightness observer so that we'll display an onscreen
   // indication of brightness changes during login.
   brightness_observer_.reset(new chromeos::BrightnessObserver());
-  chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(
-      brightness_observer_.get());
   resume_observer_.reset(new chromeos::ResumeObserver());
   screen_lock_observer_.reset(new chromeos::ScreenLockObserver());
   // Initialize the session manager observer so that we'll take actions
   // per signals sent from the session manager.
   session_manager_observer_.reset(new chromeos::SessionManagerObserver);
-  chromeos::DBusThreadManager::Get()->GetSessionManagerClient()->
-      AddObserver(session_manager_observer_.get());
 
-  // Initialize the disk mount manager.
   chromeos::disks::DiskMountManager::Initialize();
 
-  // Initialize the burn manager.
   chromeos::imageburner::BurnManager::Initialize();
 
   // Initialize the network change notifier for Chrome OS. The network
@@ -323,7 +317,6 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopStart() {
 // Threads are initialized MainMessageLoopStart and MainMessageLoopRun.
 
 void ChromeBrowserMainPartsChromeos::PreMainMessageLoopRun() {
-  // Initialize the audio handler on ChromeOS.
   chromeos::AudioHandler::Initialize();
 
   // Listen for system key events so that the user will be able to adjust the
@@ -467,9 +460,6 @@ void ChromeBrowserMainPartsChromeos::PostBrowserStart() {
   // These are dependent on the ash::Shell singleton already having been
   // initialized.
   power_button_observer_.reset(new chromeos::PowerButtonObserver);
-  chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(
-      power_button_observer_.get());
-
   video_property_writer_.reset(new chromeos::VideoPropertyWriter);
 #endif
 
@@ -496,16 +486,10 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
 
   // We should remove observers attached to D-Bus clients before
   // DBusThreadManager is shut down.
-  if (session_manager_observer_.get()) {
-    chromeos::DBusThreadManager::Get()->GetSessionManagerClient()->
-        RemoveObserver(session_manager_observer_.get());
-  }
+  session_manager_observer_.reset();
   screen_lock_observer_.reset();
   resume_observer_.reset();
-  if (brightness_observer_.get()) {
-    chromeos::DBusThreadManager::Get()->GetPowerManagerClient()
-        ->RemoveObserver(brightness_observer_.get());
-  }
+  brightness_observer_.reset();
 
   // Shut these down here instead of in the destructor in case we exited before
   // running BrowserMainLoop::RunMainMessageLoopParts() and never initialized
@@ -527,6 +511,9 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   // Let VideoPropertyWriter unregister itself as an observer of the ash::Shell
   // singleton before the shell is destroyed.
   video_property_writer_.reset();
+  // Remove PowerButtonObserver attached to a D-Bus client before
+  // DBusThreadManager is shut down.
+  power_button_observer_.reset();
 #endif
 
   ChromeBrowserMainPartsLinux::PostMainMessageLoopRun();

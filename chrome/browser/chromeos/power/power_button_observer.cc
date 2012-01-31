@@ -7,6 +7,7 @@
 #include "ash/shell.h"
 #include "ash/wm/power_button_controller.h"
 #include "base/logging.h"
+#include "chrome/browser/chromeos/dbus/dbus_thread_manager.h"
 #include "chrome/browser/chromeos/login/screen_locker.h"
 #include "chrome/browser/chromeos/login/user.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
@@ -30,6 +31,8 @@ PowerButtonObserver::PowerButtonObserver() {
       chrome::NOTIFICATION_SCREEN_LOCK_STATE_CHANGED,
       content::NotificationService::AllSources());
 
+  DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(this);
+
   // Tell the controller about the initial state.
   const UserManager* user_manager = UserManager::Get();
   bool logged_in = user_manager->user_is_logged_in();
@@ -42,6 +45,7 @@ PowerButtonObserver::PowerButtonObserver() {
 }
 
 PowerButtonObserver::~PowerButtonObserver() {
+  DBusThreadManager::Get()->GetPowerManagerClient()->RemoveObserver(this);
 }
 
 void PowerButtonObserver::Observe(int type,
