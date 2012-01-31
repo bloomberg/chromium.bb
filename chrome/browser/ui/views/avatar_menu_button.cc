@@ -1,9 +1,10 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/ui/views/avatar_menu_button.h"
 
+#include "chrome/browser/profiles/avatar_menu_model.h"
 #include "chrome/browser/profiles/profile_metrics.h"
 #include "chrome/browser/profiles/profile_info_util.h"
 #include "chrome/browser/ui/browser.h"
@@ -35,6 +36,10 @@ static inline int Round(double x) {
 void DrawTaskBarDecoration(gfx::NativeWindow window, const gfx::Image* image) {
 #if defined(OS_WIN) && !defined(USE_AURA)
   if (base::win::GetVersion() < base::win::VERSION_WIN7)
+    return;
+  // Don't badge the task bar in the single profile case to match the behavior
+  // of the title bar.
+  if (!AvatarMenuModel::ShouldShowAvatarMenu())
     return;
   // SetOverlayIcon does nothing if the window is not visible so testing
   // here avoids all the wasted effort of the image resizing.
