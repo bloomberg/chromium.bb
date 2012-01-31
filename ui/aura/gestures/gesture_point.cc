@@ -85,6 +85,11 @@ bool GesturePoint::IsInFlickWindow(const TouchEvent& event) const {
   return IsOverMinFlickSpeed() && event.type() != ui::ET_TOUCH_CANCELLED;
 }
 
+bool GesturePoint::DidScroll(const TouchEvent& event) const {
+  return abs(last_touch_position_.x() - first_touch_position_.x()) > 0 ||
+         abs(last_touch_position_.y() - first_touch_position_.y()) > 0;
+}
+
 bool GesturePoint::IsInClickTimeWindow() const {
   double duration = last_touch_time_ - first_touch_time_;
   return duration >= kMinimumTouchDownDurationInSecondsForClick &&

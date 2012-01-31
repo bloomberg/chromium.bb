@@ -99,7 +99,7 @@ GestureSequence::Gestures* GestureSequence::ProcessTouchEventForGesture(
 }
 
 void GestureSequence::Reset() {
-  state_ = GS_NO_GESTURE;
+  set_state(GS_NO_GESTURE);
   for (int i = 0; i < point_count_; ++i)
     points_[i].Reset();
 }
@@ -196,6 +196,7 @@ bool GestureSequence::Click(const TouchEvent& event,
     AppendClickGestureEvent(point, gestures);
     if (point.IsInDoubleClickWindow(event))
       AppendDoubleClickGestureEvent(point, gestures);
+    set_state(GS_NO_GESTURE);
     return true;
   }
   return false;
@@ -218,6 +219,8 @@ bool GestureSequence::InClickOrScroll(const TouchEvent& event,
 
 bool GestureSequence::InScroll(const TouchEvent& event,
     const GesturePoint& point, Gestures* gestures) {
+  if (!point.DidScroll(event))
+    return false;
   AppendScrollGestureUpdate(point, gestures);
   return true;
 }
@@ -242,7 +245,6 @@ bool GestureSequence::ScrollEnd(const TouchEvent& event,
         point.y_velocity());
   else
     AppendScrollGestureEnd(point, gestures, 0.f, 0.f);
-  set_state(GS_NO_GESTURE);
   Reset();
   return false;
 }

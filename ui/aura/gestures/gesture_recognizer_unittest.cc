@@ -291,6 +291,107 @@ TEST_F(GestureRecognizerTest, GestureEventScroll) {
   EXPECT_TRUE(delegate->scroll_end());
 }
 
+TEST_F(GestureRecognizerTest, GestureTapFollowedByScroll) {
+  // First, tap. Then, do a scroll using the same touch-id.
+  scoped_ptr<GestureEventConsumeDelegate> delegate(
+      new GestureEventConsumeDelegate());
+  const int kWindowWidth = 123;
+  const int kWindowHeight = 45;
+  gfx::Rect bounds(100, 200, kWindowWidth, kWindowHeight);
+  scoped_ptr<aura::Window> window(CreateTestWindowWithDelegate(
+      delegate.get(), -1234, bounds, NULL));
+
+  delegate->Reset();
+  TouchEvent press(ui::ET_TOUCH_PRESSED, gfx::Point(101, 201), 0);
+  RootWindow::GetInstance()->DispatchTouchEvent(&press);
+  EXPECT_FALSE(delegate->tap());
+  EXPECT_TRUE(delegate->tap_down());
+  EXPECT_FALSE(delegate->double_tap());
+  EXPECT_FALSE(delegate->scroll_begin());
+  EXPECT_FALSE(delegate->scroll_update());
+  EXPECT_FALSE(delegate->scroll_end());
+
+  // Make sure there is enough delay before the touch is released so that it is
+  // recognized as a tap.
+  delegate->Reset();
+  TouchEvent release(ui::ET_TOUCH_RELEASED, gfx::Point(101, 201), 0);
+  Event::TestApi test_release(&release);
+  test_release.set_time_stamp(press.time_stamp() +
+                              base::TimeDelta::FromMilliseconds(50));
+  RootWindow::GetInstance()->DispatchTouchEvent(&release);
+  EXPECT_TRUE(delegate->tap());
+  EXPECT_FALSE(delegate->tap_down());
+  EXPECT_FALSE(delegate->double_tap());
+  EXPECT_FALSE(delegate->scroll_begin());
+  EXPECT_FALSE(delegate->scroll_update());
+  EXPECT_FALSE(delegate->scroll_end());
+
+  // Now, do a scroll gesture. Delay it sufficiently so that it doesn't trigger
+  // a double-tap.
+  delegate->Reset();
+  TouchEvent press1(ui::ET_TOUCH_PRESSED, gfx::Point(101, 201), 0);
+  Event::TestApi test_release1(&press1);
+  test_release1.set_time_stamp(release.time_stamp() +
+                               base::TimeDelta::FromMilliseconds(1000));
+  RootWindow::GetInstance()->DispatchTouchEvent(&press1);
+  EXPECT_FALSE(delegate->tap());
+  EXPECT_TRUE(delegate->tap_down());
+  EXPECT_FALSE(delegate->double_tap());
+  EXPECT_FALSE(delegate->scroll_begin());
+  EXPECT_FALSE(delegate->scroll_update());
+  EXPECT_FALSE(delegate->scroll_end());
+
+  // Move the touch-point enough so that it is considered as a scroll. This
+  // should generate both SCROLL_BEGIN and SCROLL_UPDATE gestures.
+  delegate->Reset();
+  TouchEvent move(ui::ET_TOUCH_MOVED, gfx::Point(130, 201), 0);
+  RootWindow::GetInstance()->DispatchTouchEvent(&move);
+  EXPECT_FALSE(delegate->tap());
+  EXPECT_FALSE(delegate->tap_down());
+  EXPECT_FALSE(delegate->double_tap());
+  EXPECT_TRUE(delegate->scroll_begin());
+  EXPECT_TRUE(delegate->scroll_update());
+  EXPECT_FALSE(delegate->scroll_end());
+  EXPECT_EQ(29, delegate->scroll_x());
+  EXPECT_EQ(0, delegate->scroll_y());
+
+  // Move some more to generate a few more scroll updates.
+  delegate->Reset();
+  TouchEvent move1(ui::ET_TOUCH_MOVED, gfx::Point(110, 211), 0);
+  RootWindow::GetInstance()->DispatchTouchEvent(&move1);
+  EXPECT_FALSE(delegate->tap());
+  EXPECT_FALSE(delegate->tap_down());
+  EXPECT_FALSE(delegate->double_tap());
+  EXPECT_FALSE(delegate->scroll_begin());
+  EXPECT_TRUE(delegate->scroll_update());
+  EXPECT_FALSE(delegate->scroll_end());
+  EXPECT_EQ(-20, delegate->scroll_x());
+  EXPECT_EQ(10, delegate->scroll_y());
+
+  delegate->Reset();
+  TouchEvent move2(ui::ET_TOUCH_MOVED, gfx::Point(140, 215), 0);
+  RootWindow::GetInstance()->DispatchTouchEvent(&move2);
+  EXPECT_FALSE(delegate->tap());
+  EXPECT_FALSE(delegate->tap_down());
+  EXPECT_FALSE(delegate->double_tap());
+  EXPECT_FALSE(delegate->scroll_begin());
+  EXPECT_TRUE(delegate->scroll_update());
+  EXPECT_FALSE(delegate->scroll_end());
+  EXPECT_EQ(30, delegate->scroll_x());
+  EXPECT_EQ(4, delegate->scroll_y());
+
+  // Release the touch. This should end the scroll.
+  delegate->Reset();
+  TouchEvent release1(ui::ET_TOUCH_RELEASED, gfx::Point(101, 201), 0);
+  RootWindow::GetInstance()->DispatchTouchEvent(&release1);
+  EXPECT_FALSE(delegate->tap());
+  EXPECT_FALSE(delegate->tap_down());
+  EXPECT_FALSE(delegate->double_tap());
+  EXPECT_FALSE(delegate->scroll_begin());
+  EXPECT_FALSE(delegate->scroll_update());
+  EXPECT_TRUE(delegate->scroll_end());
+}
+
 // Check that unprocessed gesture events generate appropriate synthetic mouse
 // events.
 TEST_F(GestureRecognizerTest, GestureTapSyntheticMouse) {
