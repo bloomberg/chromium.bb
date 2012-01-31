@@ -13,14 +13,12 @@
 #include "chrome/browser/chromeos/imageburner/burn_manager.h"
 #include "chrome/browser/chromeos/system/statistics_provider.h"
 #include "content/public/browser/browser_context.h"
-#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/generated_resources.h"
 #include "googleurl/src/gurl.h"
 
-using content::BrowserThread;
 using content::DownloadItem;
 
 namespace chromeos {
@@ -41,52 +39,6 @@ bool IsBurnableDevice(const disks::DiskMountManager::Disk& disk) {
   return disk.is_parent() && !disk.on_boot_device();
 }
 
-////////////////////////////////////////////////////////////////////////////////
-//
-// BurnControllerTaskProxy
-//
-////////////////////////////////////////////////////////////////////////////////
-
-class BurnControllerTaskProxy
-    : public base::RefCountedThreadSafe<BurnControllerTaskProxy> {
- public:
-  class Delegate : public base::SupportsWeakPtr<Delegate> {
-   public:
-    virtual void CreateImageDirOnFileThread() = 0;
-    virtual void ImageDirCreatedOnUIThread(bool success) = 0;
-  };
-
-  explicit BurnControllerTaskProxy(Delegate* delegate) {
-    delegate_ = delegate->AsWeakPtr();
-    delegate_->DetachFromThread();
-  }
-
-  void CreateImageDir() {
-    if (delegate_)
-      delegate_->CreateImageDirOnFileThread();
-  }
-
-  void OnImageDirCreated(bool success) {
-    if (delegate_)
-      delegate_->ImageDirCreatedOnUIThread(success);
-  }
-
- private:
-  base::WeakPtr<Delegate> delegate_;
-
-  friend class base::RefCountedThreadSafe<BurnControllerTaskProxy>;
-  ~BurnControllerTaskProxy() {
-  }
-
-  DISALLOW_COPY_AND_ASSIGN(BurnControllerTaskProxy);
-};
-
-////////////////////////////////////////////////////////////////////////////////
-//
-// BurnController
-//
-////////////////////////////////////////////////////////////////////////////////
-
 class BurnControllerImpl
     : public BurnController,
       public disks::DiskMountManager::Observer,
@@ -96,7 +48,6 @@ class BurnControllerImpl
       public content::DownloadManager::Observer,
       public Downloader::Listener,
       public StateMachine::Observer,
-      public BurnControllerTaskProxy::Delegate,
       public BurnManager::Delegate {
  public:
   explicit BurnControllerImpl(content::WebContents* contents,
@@ -256,27 +207,8 @@ class BurnControllerImpl
     working_ = false;
   }
 
-  // Part of BurnControllerTaskProxy::Delegate interface.
-  virtual void CreateImageDirOnFileThread() OVERRIDE {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-    burn_manager_->CreateImageDir(this);
-  }
-
   // Part of BurnManager::Delegate interface.
   virtual void OnImageDirCreated(bool success) OVERRIDE {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-    // Transfer to UI thread.
-    scoped_refptr<BurnControllerTaskProxy> task(
-        new BurnControllerTaskProxy(this));
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::Bind(&BurnControllerTaskProxy::OnImageDirCreated,
-                   task.get(), success));
-  }
-
-  // Part of BurnControllerTaskProxy::Delegate interface.
-  virtual void ImageDirCreatedOnUIThread(bool success) OVERRIDE {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     if (success) {
       zip_image_file_path_ =
           burn_manager_->GetImageDir().Append(kImageZipFileName);
@@ -374,14 +306,9 @@ class BurnControllerImpl
     // config file
     delegate_->OnProgress(DOWNLOADING, 0, 0);
     if (burn_manager_->GetImageDir().empty()) {
-      // Create image dir on File thread.
-      scoped_refptr<BurnControllerTaskProxy> task =
-          new BurnControllerTaskProxy(this);
-      BrowserThread::PostTask(
-          BrowserThread::FILE, FROM_HERE,
-          base::Bind(&BurnControllerTaskProxy::CreateImageDir, task.get()));
+      burn_manager_->CreateImageDir(this);
     } else {
-      ImageDirCreatedOnUIThread(true);
+      OnImageDirCreated(true);
     }
   }
 
@@ -412,7 +339,6 @@ class BurnControllerImpl
   }
 
   void FinalizeBurn() {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     state_machine_->OnSuccess();
     burn_manager_->ResetTargetPaths();
     CrosLibrary::Get()->GetBurnLibrary()->RemoveObserver(this);

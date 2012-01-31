@@ -36,14 +36,14 @@ class Downloader {
     virtual void OnBurnDownloadStarted(bool success) = 0;
   };
 
- public:
   Downloader();
   ~Downloader();
 
   // Downloads a file from the Internet.
   // Should be called from UI thread.
-  void DownloadFile(const GURL& url, const FilePath& target_file,
-      content::WebContents* web_contents);
+  void DownloadFile(const GURL& url,
+                    const FilePath& target_file,
+                    content::WebContents* web_contents);
 
   // Adds an item to list of listeners that wait for confirmation that download
   // has started.
@@ -53,23 +53,15 @@ class Downloader {
   // Let listeners know if download started successfully.
   void DownloadStarted(bool success, const GURL& url);
 
-  // Creates file stream for a download.
-  // Must be called from FILE thread.
-  void CreateFileStreamOnFileThread(const GURL& url,
-                                    const FilePath& file_path,
-                                    int render_process_id,
-                                    int render_view_id);
-
   // Gets called after file stream is created and starts download.
-  void OnFileStreamCreatedOnUIThread(const GURL& url,
-      const FilePath& file_path,
-      int render_process_id,
-      int render_view_id,
-      net::FileStream* created_file_stream);
+  void OnFileStreamCreated(const GURL& url,
+                           const FilePath& file_path,
+                           content::WebContents* web_contents,
+                           net::FileStream* file_stream);
 
- private:
   typedef std::multimap<GURL, base::WeakPtr<Listener> > ListenerMap;
   ListenerMap listeners_;
+  base::WeakPtrFactory<Downloader> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(Downloader);
 };
@@ -251,10 +243,6 @@ class BurnManager
   // The directory has to be previously created.
   const FilePath& GetImageDir();
 
-  void OnConfigFileDownloadedOnFileThread();
-
-  void ConfigFileFetchedOnUIThread(bool fetched, const std::string& content);
-
   const FilePath& target_device_path() { return target_device_path_; }
   void set_target_device_path(const FilePath& path) {
     target_device_path_ = path;
@@ -287,6 +275,12 @@ class BurnManager
  private:
   BurnManager();
   virtual ~BurnManager();
+
+  void OnImageDirCreated(Delegate* delegate, bool success);
+  void OnConfigFileDownloaded();
+  void ConfigFileFetched(bool fetched, const std::string& content);
+
+  base::WeakPtrFactory<BurnManager> weak_ptr_factory_;
 
   FilePath image_dir_;
   FilePath target_device_path_;

@@ -35,6 +35,39 @@ const char kConfigFileName[] = "recovery.conf";
 
 BurnManager* g_burn_manager = NULL;
 
+// Cretes a directory and calls |callback| with the result on UI thread.
+void CreateDirectory(const FilePath& path,
+                     base::Callback<void(bool success)> callback) {
+  const bool success = file_util::CreateDirectory(path);
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                          base::Bind(callback, success));
+}
+
+// Reads file content and calls |callback| with the result on UI thread.
+void ReadFile(const FilePath& path,
+              base::Callback<void(bool success,
+                                  const std::string& file_content)> callback) {
+  std::string file_content;
+  const bool success = file_util::ReadFileToString(path, &file_content);
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                          base::Bind(callback, success, file_content));
+}
+
+// Creates a FileStream and calls |callback| with the result on UI thread.
+void CreateFileStream(
+    const FilePath& file_path,
+    base::Callback<void(net::FileStream* file_stream)> callback) {
+  scoped_ptr<net::FileStream> file_stream(new net::FileStream);
+  // TODO(tbarzic): Save temp image file to temp folder instead of Downloads
+  // once extracting image directly to removalbe device is implemented
+  if (file_stream->Open(file_path, base::PLATFORM_FILE_OPEN_ALWAYS |
+                        base::PLATFORM_FILE_WRITE))
+    file_stream.reset();
+
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                          base::Bind(callback, file_stream.release()));
+}
+
 }  // namespace
 
 const char kName[] = "name";
@@ -190,41 +223,13 @@ void StateMachine::OnCancelation() {
 
 ////////////////////////////////////////////////////////////////////////////////
 //
-// BurnManagerTaskProxy
-//
-////////////////////////////////////////////////////////////////////////////////
-
-class BurnManagerTaskProxy
-    : public base::RefCountedThreadSafe<BurnManagerTaskProxy> {
- public:
-  BurnManagerTaskProxy() {}
-
-  void OnConfigFileDownloaded() {
-    BurnManager::GetInstance()->
-        OnConfigFileDownloadedOnFileThread();
-  }
-
-  void ConfigFileFetched(bool success, std::string content) {
-    BurnManager::GetInstance()->
-        ConfigFileFetchedOnUIThread(success, content);
-  }
-
- private:
-  ~BurnManagerTaskProxy() {}
-
-  friend class base::RefCountedThreadSafe<BurnManagerTaskProxy>;
-
-  DISALLOW_COPY_AND_ASSIGN(BurnManagerTaskProxy);
-};
-
-////////////////////////////////////////////////////////////////////////////////
-//
 // BurnManager
 //
 ////////////////////////////////////////////////////////////////////////////////
 
 BurnManager::BurnManager()
-    : download_manager_(NULL),
+    : weak_ptr_factory_(this),
+      download_manager_(NULL),
       download_item_observer_added_(false),
       active_download_item_(NULL),
       config_file_url_(kConfigFileUrl),
@@ -243,7 +248,6 @@ BurnManager::~BurnManager() {
   if (download_manager_)
     download_manager_->RemoveObserver(this);
 }
-
 
 // static
 void BurnManager::Initialize() {
@@ -273,28 +277,21 @@ BurnManager* BurnManager::GetInstance() {
 
 void BurnManager::OnDownloadUpdated(DownloadItem* download) {
   if (download->IsCancelled()) {
-    ConfigFileFetchedOnUIThread(false, "");
+    ConfigFileFetched(false, "");
     DCHECK(!download_item_observer_added_);
     DCHECK(active_download_item_ == NULL);
   } else if (download->IsComplete()) {
-    scoped_refptr<BurnManagerTaskProxy> task =
-        new BurnManagerTaskProxy();
-    BrowserThread::PostTask(
-        BrowserThread::FILE, FROM_HERE,
-        base::Bind(&BurnManagerTaskProxy::OnConfigFileDownloaded, task.get()));
+    OnConfigFileDownloaded();
   }
 }
 
-void BurnManager::OnConfigFileDownloadedOnFileThread() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  std::string config_file_content;
-  bool success =
-      file_util::ReadFileToString(config_file_path_, &config_file_content);
-  scoped_refptr<BurnManagerTaskProxy> task = new BurnManagerTaskProxy();
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(&BurnManagerTaskProxy::ConfigFileFetched, task.get(), success,
-                 config_file_content));
+void BurnManager::OnConfigFileDownloaded() {
+  BrowserThread::PostBlockingPoolTask(
+      FROM_HERE,
+      base::Bind(ReadFile,
+                 config_file_path_,
+                 base::Bind(&BurnManager::ConfigFileFetched,
+                            weak_ptr_factory_.GetWeakPtr())));
 }
 
 void BurnManager::ModelChanged() {
@@ -316,18 +313,27 @@ void BurnManager::ModelChanged() {
 
 void BurnManager::OnBurnDownloadStarted(bool success) {
   if (!success)
-    ConfigFileFetchedOnUIThread(false, "");
+    ConfigFileFetched(false, "");
 }
 
 void BurnManager::CreateImageDir(Delegate* delegate) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-
-  bool success = true;
   if (image_dir_.empty()) {
     CHECK(PathService::Get(chrome::DIR_DEFAULT_DOWNLOADS, &image_dir_));
     image_dir_ = image_dir_.Append(kTempImageFolderName);
-    success = file_util::CreateDirectory(image_dir_);
+    BrowserThread::PostBlockingPoolTask(
+        FROM_HERE,
+        base::Bind(CreateDirectory,
+                   image_dir_,
+                   base::Bind(&BurnManager::OnImageDirCreated,
+                              weak_ptr_factory_.GetWeakPtr(),
+                              delegate)));
+  } else {
+    const bool success = true;
+    OnImageDirCreated(delegate, success);
   }
+}
+
+void BurnManager::OnImageDirCreated(Delegate* delegate, bool success) {
   delegate->OnImageDirCreated(success);
 }
 
@@ -336,7 +342,7 @@ const FilePath& BurnManager::GetImageDir() {
 }
 
 void BurnManager::FetchConfigFile(WebContents* web_contents,
-    Delegate* delegate) {
+                                  Delegate* delegate) {
   if (config_file_fetched_) {
     delegate->OnConfigFileFetched(config_file_, true);
     return;
@@ -354,10 +360,7 @@ void BurnManager::FetchConfigFile(WebContents* web_contents,
   downloader()->DownloadFile(config_file_url_, config_file_path_, web_contents);
 }
 
-void BurnManager::ConfigFileFetchedOnUIThread(bool fetched,
-    const std::string& content) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
+void BurnManager::ConfigFileFetched(bool fetched, const std::string& content) {
   if (config_file_fetched_)
     return;
 
@@ -391,58 +394,33 @@ void BurnManager::ConfigFileFetchedOnUIThread(bool fetched,
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-Downloader::Downloader() {}
+Downloader::Downloader() : weak_ptr_factory_(this) {}
 
 Downloader::~Downloader() {}
 
 void Downloader::DownloadFile(const GURL& url,
     const FilePath& file_path, WebContents* web_contents) {
-  // First we have to create file stream we will download file to.
-  // That has to be done on File thread.
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
-      base::Bind(&Downloader::CreateFileStreamOnFileThread,
-                 base::Unretained(this), url, file_path,
-                 web_contents->GetRenderProcessHost()->GetID(),
-                 web_contents->GetRenderViewHost()->routing_id()));
+  BrowserThread::PostBlockingPoolTask(
+      FROM_HERE,
+      base::Bind(CreateFileStream,
+                 file_path,
+                 base::Bind(&Downloader::OnFileStreamCreated,
+                            weak_ptr_factory_.GetWeakPtr(),
+                            url,
+                            file_path,
+                            web_contents)));
 }
 
-void Downloader::CreateFileStreamOnFileThread(
-    const GURL& url, const FilePath& file_path, int render_process_id,
-    int render_view_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  DCHECK(!file_path.empty());
-
-  scoped_ptr<net::FileStream> file_stream(new net::FileStream);
-  // TODO(tbarzic): Save temp image file to temp folder instead of Downloads
-  // once extracting image directly to removalbe device is implemented
-  if (file_stream->Open(file_path, base::PLATFORM_FILE_OPEN_ALWAYS |
-                        base::PLATFORM_FILE_WRITE))
-    file_stream.reset(NULL);
-
-  // Call callback method on UI thread.
-  BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::Bind(&Downloader::OnFileStreamCreatedOnUIThread,
-                   base::Unretained(this), url, file_path, render_process_id,
-                   render_view_id, file_stream.release()));
-}
-
-void Downloader::OnFileStreamCreatedOnUIThread(const GURL& url,
-    const FilePath& file_path, int render_process_id, int render_view_id,
-    net::FileStream* created_file_stream) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  WebContents* web_contents =
-      tab_util::GetWebContentsByID(render_process_id, render_view_id);
-  if (!web_contents)
-    return;
-
-  if (created_file_stream) {
+void Downloader::OnFileStreamCreated(const GURL& url,
+                                     const FilePath& file_path,
+                                     WebContents* web_contents,
+                                     net::FileStream* file_stream) {
+  if (file_stream) {
     DownloadManager* download_manager =
         web_contents->GetBrowserContext()->GetDownloadManager();
     DownloadSaveInfo save_info;
     save_info.file_path = file_path;
-    save_info.file_stream = linked_ptr<net::FileStream>(created_file_stream);
+    save_info.file_stream = linked_ptr<net::FileStream>(file_stream);
     DownloadStarted(true, url);
 
     download_util::RecordDownloadCount(
