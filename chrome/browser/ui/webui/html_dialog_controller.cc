@@ -14,10 +14,14 @@ HtmlDialogController::HtmlDialogController(HtmlDialogUIDelegate* delegate,
                                            Profile* profile,
                                            Browser* browser)
       : dialog_delegate_(delegate) {
-  // It's only safe to show an off the record profile if we have a browser which
-  // has this profile to maintain its existence.
-  DCHECK(!profile->IsOffTheRecord() || (browser &&
-                                        browser->profile() == profile));
+  // It's only safe to show an off the record profile under one of two
+  // circumstances:
+  // 1. For a modal dialog where the parent will maintain the profile.
+  // 2. If we have a browser which will keep the reference to this profile
+  //    alive. The dialog will be closed if this browser is closed.
+  DCHECK(!profile->IsOffTheRecord() ||
+         delegate->GetDialogModalType() != ui::MODAL_TYPE_NONE ||
+         (browser && browser->profile() == profile));
   // If we're passed a browser it should own the profile we're using.
   DCHECK(!browser || browser->profile() == profile);
   if (browser) {
