@@ -20,7 +20,8 @@ AutofillExternalDelegateGtk::AutofillExternalDelegateGtk(
     TabContentsWrapper* tab_contents_wrapper,
     AutofillManager* autofill_manager)
     : AutofillExternalDelegate(tab_contents_wrapper, autofill_manager),
-      web_contents_(tab_contents_wrapper->web_contents()) {
+      web_contents_(tab_contents_wrapper->web_contents()),
+      event_handler_id_(0) {
   tab_native_view_ = web_contents_->GetView()->GetNativeView();
 }
 
