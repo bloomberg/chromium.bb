@@ -77,35 +77,6 @@ cr.define('uber', function() {
   }
 
   /**
-   * Selects the page for |navItem|, or does nothing if that item has already
-   * been selected.
-   * @param {Object} navItem The navigation control li.
-   * @return {boolean} True if the item became selected, false if it had already
-   *     been selected.
-   */
-  function selectPageForNavItem(navItem) {
-    // Note that |iframe| is the containing element of the underlying iframe, as
-    // opposed to the iframe element itself.
-    var iframe = navItem.associatedIframe;
-    var currentIframe = getSelectedIframe();
-    if (currentIframe == iframe)
-      return false;
-
-    // Restore the cached title.
-    if (iframe.title)
-      document.title = iframe.title;
-
-    currentIframe.classList.remove('selected');
-    iframe.classList.add('selected');
-
-    var currentNavItem = document.querySelector('li.selected');
-    currentNavItem.classList.remove('selected');
-    navItem.classList.add('selected');
-
-    return true;
-  }
-
-  /**
    * Handler for window.onpopstate.
    * @param {Event} e The history event.
    */
@@ -151,7 +122,7 @@ cr.define('uber', function() {
     else if (e.data.method === 'stopInterceptingEvents')
       foregroundNavigation();
     else if (e.data.method === 'setTitle')
-      setTitle_(e.origin, e.data.params);
+      setTitle_(e.origin, e.data.params.title);
     else if (e.data.method === 'showPage')
       showPage(e.data.params.pageId, HISTORY_STATE_OPTION.PUSH);
     else if (e.data.method === 'navigationControlsLoaded')
@@ -193,9 +164,9 @@ cr.define('uber', function() {
   /**
    * Sets the title of the page.
    * @param {Object} origin The origin of the source iframe.
-   * @param {Object} params Must contain a |title| property.
+   * @param {string} title The title of the page.
    */
-  function setTitle_(origin, params) {
+  function setTitle_(origin, title) {
     // |iframe.src| always contains a trailing backslash while |origin| does not
     // so add the trailing source for normalization.
     var query = '.iframe-container > iframe[src="' + origin + '/"]';
@@ -204,11 +175,11 @@ cr.define('uber', function() {
     // title. querySelector returns the actual iframe element, so use parentNode
     // to get back to the container.
     var container = document.querySelector(query).parentNode;
-    container.title = params.title;
+    container.title = title;
 
     // Only update the currently displayed title if this is the visible frame.
     if (container == getSelectedIframe())
-      document.title = params.title;
+      document.title = title;
   }
 
   /**
@@ -227,6 +198,7 @@ cr.define('uber', function() {
       lastSelected.classList.remove('selected');
     container.classList.add('selected');
     document.title = container.title;
+    $('favicon').href = container.dataset.favicon;
 
     enableScrollEasing();
     adjustToScroll(0);

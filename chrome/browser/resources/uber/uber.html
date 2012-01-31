@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <title i18n-content="pageTitle"></title>
+<link id="favicon" rel="icon" type="image/png">
 
 <link rel="stylesheet" href="../shared/css/chrome_shared2.css">
 <link rel="stylesheet" href="uber.css">
@@ -18,13 +19,16 @@
 
 <div id="navigation"><iframe src="chrome://uber-frame/"></iframe></div>
 
-<div class="iframe-container" i18n-values="id:settingsHost">
+<div class="iframe-container" i18n-values="id:settingsHost"
+    data-favicon="chrome://theme/IDR_SETTINGS_FAVICON">
   <iframe src="chrome://settings-frame/"></iframe></div>
-<div class="iframe-container" i18n-values="id:extensionsHost">
+<div class="iframe-container" i18n-values="id:extensionsHost"
+    data-favicon="chrome://theme/IDR_EXTENSIONS_FAVICON">
   <iframe src="chrome://extensions-frame/"></iframe></div>
 
 <if expr="pp_ifdef('chromeos')">
-<div class="iframe-container" i18n-values="id:aboutPageHost">
+<div class="iframe-container" i18n-values="id:aboutPageHost"
+    data-favicon="chrome://theme/IDR_PRODUCT_LOGO_16">
   <iframe src="chrome://about-page-frame/"></iframe></div>
 </if>
 
