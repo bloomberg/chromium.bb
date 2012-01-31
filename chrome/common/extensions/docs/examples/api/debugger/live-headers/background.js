@@ -8,7 +8,7 @@ chrome.browserAction.onClicked.addListener(function() {
   });
 });
 
-var version = "0.1";
+var version = "1.0";
 
 function actionClicked(tab) {
   chrome.debugger.attach({tabId:tab.id}, version, onAttach.bind(null, tab.id));

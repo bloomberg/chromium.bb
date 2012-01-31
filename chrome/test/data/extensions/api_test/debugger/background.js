@@ -7,7 +7,7 @@ var fail = chrome.test.callbackFail;
 
 var tabId;
 var debuggee;
-var protocolVersion = "0.1";
+var protocolVersion = "1.0";
 
 chrome.test.runTests([
 
@@ -20,8 +20,8 @@ chrome.test.runTests([
 
   function attachUnsupportedVersion() {
     chrome.tabs.getSelected(null, function(tab) {
-      chrome.debugger.attach({tabId: tab.id}, "1.0",
-          fail("Requested protocol version is not supported: 1.0."));
+      chrome.debugger.attach({tabId: tab.id}, "100.0",
+          fail("Requested protocol version is not supported: 100.0."));
     });
   },
 

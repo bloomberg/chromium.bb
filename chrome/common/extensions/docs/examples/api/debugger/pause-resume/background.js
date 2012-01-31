@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 var attachedTabs = {};
-var version = "0.1";
+var version = "1.0";
 
 chrome.debugger.onEvent.addListener(onEvent);
 chrome.debugger.onDetach.addListener(onDetach);
