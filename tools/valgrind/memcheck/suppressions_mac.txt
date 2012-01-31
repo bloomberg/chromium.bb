@@ -2332,3 +2332,24 @@
    fun:_ZN7history14HistoryBackend8InitImplERKSs
    fun:_ZN7history14HistoryBackend4InitERKSsb
 }
+{
+   bug_112078
+   Memcheck:Uninitialized
+   fun:glViewport_Exec
+   fun:glViewport
+   fun:-[AcceleratedPluginView globalFrameDidChange:]
+   fun:-[AcceleratedPluginView renewGState]
+   fun:-[NSView _invalidateGStatesForTree]
+   fun:-[NSView(NSInternal) _setHidden:setNeedsDisplay:]
+   fun:-[NSView _setHidden:]
+   fun:_ZN23RenderWidgetHostViewMac17MovePluginWindowsERKSt6vectorIN6webkit5npapi17WebPluginGeometryESaIS3_EE
+   fun:_ZN27RenderWidgetHostViewMacTest24AddAcceleratedPluginViewEii
+   fun:_ZN53RenderWidgetHostViewMacTest_FocusAcceleratedView_Test8TestBodyEv
+}
+{
+   bug_112086
+   Memcheck:Uninitialized
+   fun:x_zone_size
+   fun:find_registered_purgeable_zone
+   fun:malloc_make_purgeable
+}

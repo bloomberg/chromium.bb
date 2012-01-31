@@ -4617,10 +4617,10 @@
    fun:_ZN12OCSPResponseC2ERK9cssm_datad
    fun:tpVerifyCertGroupWithOCSP
    fun:_ZN14AppleTPSession15CertGroupVerifyEllRK14cssm_certgroupPK22cssm_tp_verify_contextP29cssm_tp_verify_context_result
-   fun:_Z20cssm_CertGroupVerifylllPK14cssm_certgroupPK22cssm_tp_verify_contextP29cssm_tp_verify_context_result
+   fun:_Z*cssm_CertGroupVerifylllPK14cssm_certgroupPK22cssm_tp_verify_contextP29cssm_tp_verify_context_result
    fun:CSSM_TP_CertGroupVerify
    fun:_ZN8Security10CssmClient6TPImpl15certGroupVerifyERKNS_9CertGroupERKNS_15TPVerifyContextEPNS_14TPVerifyResultE
-   fun:_ZN8Security12KeychainCore5Trust8evaluateEv
+   fun:_ZN8Security12KeychainCore5Trust8evaluateE*
    fun:SecTrustEvaluate
    fun:_ZNK3net15X509Certificate14VerifyInternalERKSsiPNS_6CRLSetEPNS_16CertVerifyResultE
    fun:_ZNK3net15X509Certificate6VerifyERKSsiPNS_6CRLSetEPNS_16CertVerifyResultE
@@ -5664,25 +5664,6 @@
    fun:_ZN21PeerConnectionHandler19OnAddStreamCallbackEPN6webrtc20MediaStreamInterfaceE
    fun:_ZN21PeerConnectionHandler11OnAddStreamEPN6webrtc20MediaStreamInterfaceE
    fun:_ZN36PeerConnectionHandlerTest_Basic_Test8TestBodyEv
-}
-{
-   bug_105580
-   Memcheck:Leak
-   fun:malloc_zone_malloc
-   fun:malloc_set_zone_name
-   fun:malloc_default_purgeable_zone
-   ...
-   fun:_ZN4base30EnableTerminationOnOutOfMemoryEv
-   fun:_ZN7leveldb12_GLOBAL__N_111ChromiumEnvC2Ev
-   fun:_ZN7leveldb12_GLOBAL__N_111ChromiumEnvC1Ev
-   ...
-   fun:_ZN4base12LazyInstanceIN7leveldb12_GLOBAL__N_111ChromiumEnvENS_8internal23LeakyLazyInstanceTraitsIS3_EEE7PointerEv
-   ...
-   fun:_ZN7leveldb7OptionsC2Ev
-   ...
-   fun:_ZN7fileapi27FileSystemDirectoryDatabase4InitEv
-   fun:_ZN7fileapi27FileSystemDirectoryDatabase11GetFileInfoExPNS0_8FileInfoE
-   fun:_ZN7fileapi59FileSystemDirectoryDatabaseTest_TestMissingFileGetInfo_Test8TestBodyEv
 }
 
 #-----------------------------------------------------------------------
