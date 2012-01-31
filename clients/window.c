@@ -2019,10 +2019,13 @@ window_move(struct window *window, struct input *input, uint32_t time)
 }
 
 static void
-window_resize(struct window *window)
+idle_resize(struct task *task, uint32_t events)
 {
+	struct window *window =
+		container_of(task, struct window, resize_task);
 	struct widget *widget;
 
+	window->resize_scheduled = 0;
 	widget = window->widget;
 	widget_set_allocation(widget,
 			      window->pending_allocation.x,
@@ -2041,16 +2044,6 @@ window_resize(struct window *window)
 		window->allocation = widget->allocation;
 		window_schedule_redraw(window);
 	}
-}
-
-static void
-idle_resize(struct task *task, uint32_t events)
-{
-	struct window *window =
-		container_of(task, struct window, resize_task);
-
-	window_resize(window);
-	window->resize_scheduled = 0;
 }
 
 void
