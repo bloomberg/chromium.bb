@@ -249,6 +249,7 @@ RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget)
 }
 
 RenderWidgetHostViewMac::~RenderWidgetHostViewMac() {
+  UnlockMouse();
 }
 
 void RenderWidgetHostViewMac::SetDelegate(
