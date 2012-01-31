@@ -200,8 +200,7 @@ class TooltipController::Tooltip {
 // TooltipController public:
 
 TooltipController::TooltipController()
-    : aura::EventFilter(NULL),
-      tooltip_window_(NULL),
+    : tooltip_window_(NULL),
       tooltip_(new Tooltip),
       tooltips_enabled_(true) {
   tooltip_timer_.Start(FROM_HERE,

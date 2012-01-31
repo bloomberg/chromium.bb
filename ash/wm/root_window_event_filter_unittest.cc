@@ -403,10 +403,8 @@ TEST_F(RootWindowEventFilterTest, AdditionalFilters) {
   ash::ActivateWindow(w1.get());
 
   // Creates two addition filters
-  scoped_ptr<aura::test::TestEventFilter> f1(
-      new aura::test::TestEventFilter(NULL));
-  scoped_ptr<aura::test::TestEventFilter> f2(
-      new aura::test::TestEventFilter(NULL));
+  scoped_ptr<aura::test::TestEventFilter> f1(new aura::test::TestEventFilter);
+  scoped_ptr<aura::test::TestEventFilter> f2(new aura::test::TestEventFilter);
 
   // Adds them to root window event filter.
   internal::RootWindowEventFilter* root_window_filter =

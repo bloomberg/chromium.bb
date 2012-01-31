@@ -17,8 +17,7 @@ class SystemModalContainerEventFilterDelegate;
 
 class ASH_EXPORT SystemModalContainerEventFilter : public aura::EventFilter {
  public:
-  SystemModalContainerEventFilter(
-      aura::Window* container,
+  explicit SystemModalContainerEventFilter(
       SystemModalContainerEventFilterDelegate* delegate);
   virtual ~SystemModalContainerEventFilter();
 

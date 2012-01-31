@@ -43,8 +43,7 @@ gfx::NativeCursor CursorForWindowComponent(int window_component) {
 ////////////////////////////////////////////////////////////////////////////////
 // RootWindowEventFilter, public:
 
-RootWindowEventFilter::RootWindowEventFilter()
-    : EventFilter(aura::RootWindow::GetInstance()) {
+RootWindowEventFilter::RootWindowEventFilter() {
 }
 
 RootWindowEventFilter::~RootWindowEventFilter() {

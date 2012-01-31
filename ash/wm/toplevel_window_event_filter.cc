@@ -154,7 +154,7 @@ int AlignToGridRoundUp(int location, int grid_size) {
 }  // namespace
 
 ToplevelWindowEventFilter::ToplevelWindowEventFilter(aura::Window* owner)
-    : EventFilter(owner),
+    : owner_(owner),
       in_move_loop_(false),
       window_component_(HTNOWHERE),
       did_move_or_resize_(false),

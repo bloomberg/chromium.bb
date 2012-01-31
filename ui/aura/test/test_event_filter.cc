@@ -7,9 +7,8 @@
 namespace aura {
 namespace test {
 
-TestEventFilter::TestEventFilter(Window* owner)
-    : EventFilter(owner),
-      key_event_count_(0),
+TestEventFilter::TestEventFilter()
+    : key_event_count_(0),
       mouse_event_count_(0),
       touch_event_count_(0),
       consumes_key_events_(false),

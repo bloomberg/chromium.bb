@@ -67,7 +67,6 @@
         'root_window.h',
         'event.cc',
         'event.h',
-        'event_filter.cc',
         'event_filter.h',
         'event_mac.mm',
         'event_mac.h',

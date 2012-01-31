@@ -52,6 +52,8 @@ class ASH_EXPORT ToplevelWindowEventFilter :
   virtual void EndMoveLoop() OVERRIDE;
 
  protected:
+  aura::Window* owner() { return owner_; }
+
   // Returns the |window_component_|. See the variable definition below for
   // more details.
   int window_component() const { return window_component_; }
@@ -105,6 +107,8 @@ class ASH_EXPORT ToplevelWindowEventFilter :
                        int size_change_direction,
                        int min_height,
                        int* delta_y) const;
+
+  aura::Window* owner_;
 
   // The mouse position in the target window when the mouse was pressed, in
   // the target window's parent's coordinates.

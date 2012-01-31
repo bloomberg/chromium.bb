@@ -23,8 +23,7 @@ namespace internal {
 ////////////////////////////////////////////////////////////////////////////////
 // AcceleratorFilter, public:
 
-AcceleratorFilter::AcceleratorFilter()
-    : EventFilter(aura::RootWindow::GetInstance()) {
+AcceleratorFilter::AcceleratorFilter() {
 }
 
 AcceleratorFilter::~AcceleratorFilter() {

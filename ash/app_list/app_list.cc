@@ -46,10 +46,7 @@ ui::Layer* GetLayer(views::Widget* widget) {
 ////////////////////////////////////////////////////////////////////////////////
 // AppList, public:
 
-AppList::AppList()
-    : aura::EventFilter(NULL),
-      is_visible_(false),
-      widget_(NULL) {
+AppList::AppList() : is_visible_(false), widget_(NULL) {
 }
 
 AppList::~AppList() {

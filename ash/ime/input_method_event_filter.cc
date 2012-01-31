@@ -19,8 +19,7 @@ namespace internal {
 // InputMethodEventFilter, public:
 
 InputMethodEventFilter::InputMethodEventFilter()
-    : EventFilter(aura::RootWindow::GetInstance()),
-      ALLOW_THIS_IN_INITIALIZER_LIST(
+    : ALLOW_THIS_IN_INITIALIZER_LIST(
           input_method_(ui::CreateInputMethod(this))) {
   // TODO(yusukes): Check if the root window is currently focused and pass the
   // result to Init().

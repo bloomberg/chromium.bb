@@ -92,10 +92,9 @@ TEST_F(EventFilterTest, Basic) {
   TestEventFilterWindowDelegate* d1111 = new TestEventFilterWindowDelegate;
   scoped_ptr<Window> w1111(CreateWindow(1111, w111.get(), d1111));
 
-  TestEventFilter* root_window_filter =
-      new TestEventFilter(RootWindow::GetInstance());
-  TestEventFilter* w1_filter = new TestEventFilter(w1.get());
-  TestEventFilter* w111_filter = new TestEventFilter(w111.get());
+  TestEventFilter* root_window_filter = new TestEventFilter;
+  TestEventFilter* w1_filter = new TestEventFilter;
+  TestEventFilter* w111_filter = new TestEventFilter;
   RootWindow::GetInstance()->SetEventFilter(root_window_filter);
   w1->SetEventFilter(w1_filter);
   w111->SetEventFilter(w111_filter);

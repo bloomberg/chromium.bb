@@ -34,8 +34,7 @@ const base::TimeDelta kDragDropAnimationDuration =
 // DragDropController, public:
 
 DragDropController::DragDropController()
-    : aura::EventFilter(RootWindow::GetInstance()),
-      drag_image_(NULL),
+    : drag_image_(NULL),
       drag_data_(NULL),
       drag_operation_(0),
       dragged_window_(NULL),

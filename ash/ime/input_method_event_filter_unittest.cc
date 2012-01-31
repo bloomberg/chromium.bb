@@ -49,7 +49,7 @@ TEST_F(InputMethodEventFilterTest, TestInputMethodKeyEventPropagation) {
   aura::RootWindow* root_window = aura::RootWindow::GetInstance();
 
   // Add TestEventFilter to the RootWindow.
-  aura::test::TestEventFilter test_filter(root_window);
+  aura::test::TestEventFilter test_filter;
   internal::RootWindowEventFilter* root_filter =
       static_cast<internal::RootWindowEventFilter*>(
           root_window->event_filter());

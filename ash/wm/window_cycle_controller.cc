@@ -36,8 +36,7 @@ class WindowCycleEventFilter : public aura::EventFilter {
 };
 
 // Watch for all keyboard events by filtering the root window.
-WindowCycleEventFilter::WindowCycleEventFilter()
-    : aura::EventFilter(aura::RootWindow::GetInstance()) {
+WindowCycleEventFilter::WindowCycleEventFilter() {
 }
 
 WindowCycleEventFilter::~WindowCycleEventFilter() {

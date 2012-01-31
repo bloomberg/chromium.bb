@@ -60,7 +60,7 @@ SystemModalContainerLayoutManager::SystemModalContainerLayoutManager(
     : container_(container),
       modal_screen_(NULL),
       ALLOW_THIS_IN_INITIALIZER_LIST(modality_filter_(
-          new SystemModalContainerEventFilter(container, this))) {
+          new SystemModalContainerEventFilter(this))) {
 }
 
 SystemModalContainerLayoutManager::~SystemModalContainerLayoutManager() {

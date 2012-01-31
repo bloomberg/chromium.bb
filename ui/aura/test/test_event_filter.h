@@ -19,7 +19,7 @@ namespace test {
 // optinally be set to consume those events.
 class TestEventFilter : public EventFilter {
  public:
-  explicit TestEventFilter(Window* owner);
+  TestEventFilter();
   virtual ~TestEventFilter();
 
   // Resets all event counters.

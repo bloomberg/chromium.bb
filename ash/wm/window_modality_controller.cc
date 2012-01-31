@@ -25,7 +25,7 @@ bool TransientChildIsWindowModal(aura::Window* window) {
 ////////////////////////////////////////////////////////////////////////////////
 // WindowModalityController, public:
 
-WindowModalityController::WindowModalityController() : aura::EventFilter(NULL) {
+WindowModalityController::WindowModalityController() {
 }
 
 WindowModalityController::~WindowModalityController() {

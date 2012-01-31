@@ -11,10 +11,8 @@ namespace ash {
 namespace internal {
 
 SystemModalContainerEventFilter::SystemModalContainerEventFilter(
-    aura::Window* container,
     SystemModalContainerEventFilterDelegate* delegate)
-    : EventFilter(container),
-      delegate_(delegate) {
+    : delegate_(delegate) {
 }
 
 SystemModalContainerEventFilter::~SystemModalContainerEventFilter() {
