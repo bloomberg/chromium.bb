@@ -67,6 +67,7 @@
       'policy_prefs_ui',
       'popups',
       'prefs',
+      'prefs_ui',
       'process_count',
       'protector',
       'pyauto_webdriver',
@@ -342,6 +343,8 @@
       '-notifications.NotificationsTest.testOriginPrefsNotSavedInIncognito',
       # crbug.com/103379
       '-policy.PolicyTest.testDisable3DAPIs',
+      # Chrome driver does not work in Chrome OS.
+      '-prefs_ui',
     ],
   },
 
