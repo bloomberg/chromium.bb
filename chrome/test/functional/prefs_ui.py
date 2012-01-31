@@ -147,7 +147,6 @@ class PrefsUITest(pyauto.PyUITest):
         self._driver, content_type)
 
     pattern, behavior = ('bing.com', Behaviors.BLOCK)
-    raw_input()
     page.AddNewException(pattern, behavior)
     self.assertEqual(page.GetExceptions()[pattern], Behaviors.BLOCK,
                      msg='The behavior "%s" was not added for pattern "%s"'

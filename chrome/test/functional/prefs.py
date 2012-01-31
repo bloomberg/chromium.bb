@@ -248,7 +248,7 @@ class PrefsTest(pyauto.PyUITest):
     hostname_pattern = (
         '/'.join(self.GetHttpURLForDataPath('').split('/')[0:3]) + '/')
     self.assertEqual(
-        {hostname_pattern: {hostname_pattern: 3}},  # Block the hostname.
+        {hostname_pattern: {hostname_pattern: 2}},  # Block the hostname.
         self.GetPrefsInfo().Prefs(pyauto.kGeolocationContentSettings))
 
 
