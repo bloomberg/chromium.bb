@@ -193,6 +193,10 @@ bool UITestBase::ShouldFilterInet() {
 }
 
 void UITestBase::SetLaunchSwitches() {
+  // All flags added here should also be added in ExtraChromeFlags() in
+  // chrome/test/pyautolib/pyauto.py as well to take effect for all tests
+  // on chromeos.
+
   // We need cookies on file:// for things like the page cycler.
   if (enable_file_cookies_)
     launch_arguments_.AppendSwitch(switches::kEnableFileCookies);
