@@ -1822,7 +1822,8 @@ FileManager.prototype = {
         var thumbnail = this.renderThumbnailBox_(entry, true, imageLoadCalback);
         box.appendChild(thumbnail);
         box.style.zIndex = MAX_PREVIEW_THUMBAIL_COUNT + 1 - i;
-        box.addEventListener('click', this.dispatchDefaultTask_.bind(this));
+        box.addEventListener('click',
+            this.dispatchDefaultTask_.bind(this, selection));
 
         this.previewThumbnails_.appendChild(box);
         thumbnailCount++;
@@ -2067,13 +2068,7 @@ FileManager.prototype = {
     if (selection.dispatchDefault) {
       // We got a request to dispatch the default task for the selection.
       selection.dispatchDefault = false;
-      if (tasksList.length > 0) {
-        this.dispatchFileTask_(tasksList[0], selection.urls);
-      } else {
-        this.alert.showWithTitle(
-            strf('ERROR_VIEWING_FILE_TITLE', selection.entries[0].name),
-            strf('ERROR_VIEWING_FILE'));
-      }
+      this.dispatchDefaultTask_(selection);
     }
     // These are done in separate functions, as the checks require
     // asynchronous function calls.
@@ -2162,16 +2157,36 @@ FileManager.prototype = {
   /**
    * Dispatches default task for the current selection. If tasks are not ready
    * yet, dispatches after task are available.
+   * @param {Object=} opt_selection
    */
-  FileManager.prototype.dispatchDefaultTask_ = function() {
-    if (this.selection.tasksList) {
-      if (this.selection.tasksList.length > 0 && this.selection.urls.length > 0)
-        this.dispatchFileTask_(this.selection.tasksList[0],
-            this.selection.urls);
-    } else {
-      // Request to dispatch default task after we get all the tasks.
-      this.selection.dispatchDefault = true;
+  FileManager.prototype.dispatchDefaultTask_ = function(opt_selection) {
+    var selection = opt_selection || this.selection;
+
+    if (selection.urls.length == 0)
+      return;
+
+    if (!selection.tasksList) {
+      // Don't have tasks list yet - wait until get it.
+      selection.dispatchDefault = true;
+      return;
     }
+
+    if (selection.tasksList.length > 0) {
+      this.dispatchFileTask_(selection.tasksList[0], selection.urls);
+      return;
+    }
+
+    function callback(success) {
+      if (!success && selection.entries.length == 1)
+        this.alert.showWithTitle(
+            unescape(selection.entries[0].name),
+            strf('ERROR_VIEWING_FILE'),
+            function() {});
+    }
+
+    // We don't have tasks, so try the default browser action.
+    chrome.fileBrowserPrivate.viewFiles(selection.urls, 'default',
+        callback.bind(this));
   };
 
   FileManager.prototype.dispatchFileTask_ = function(task, urls) {
@@ -2856,12 +2871,19 @@ FileManager.prototype = {
       return this.onDirectoryAction(entry);
     }
 
+    this.dispatchSelectionAction_();
+  };
+
+  FileManager.prototype.dispatchSelectionAction_ = function() {
     if (this.dialogType_ == FileManager.DialogType.FULL_PAGE) {
       this.dispatchDefaultTask_();
-    } else {
-      if (!this.okButton_.disabled)
-        this.onOk_();
+      return true;
     }
+    if (!this.okButton_.disabled) {
+      this.onOk_();
+      return true;
+    }
+    return false;
   };
 
   FileManager.prototype.onDirectoryAction = function(entry) {
@@ -3288,9 +3310,8 @@ FileManager.prototype = {
             this.dialogType_ != FileManager.SELECT_FOLDER) {
           event.preventDefault();
           this.onDirectoryAction(this.selection.entries[0]);
-        } else if (!this.okButton_.disabled) {
+        } else if (this.dispatchSelectionAction_()) {
           event.preventDefault();
-          this.onOk_();
         }
         break;
 
@@ -3499,61 +3520,6 @@ FileManager.prototype = {
     if (this.dialogType_ == FileManager.DialogType.SELECT_OPEN_MULTI_FILE) {
       // Closes the window and does not return.
       this.selectFiles_(files);
-      return;
-    }
-
-    // In full page mode there is no OK button, but this code is called
-    // on double click. Open the selected files for viewing.
-    if (this.dialogType_ == FileManager.DialogType.FULL_PAGE) {
-      var urls = [];
-      var imageCount = 0;
-      var videoCount = 0;
-      for (i = 0; i < selectedIndexes.length; i++) {
-        var entry = dm.item(selectedIndexes[i]);
-        var type = this.getFileType(entry).type;
-        if (type == 'image') {
-          imageCount++;
-        } else if (type == 'video') {
-          videoCount++;
-        } else {
-          break;
-        }
-        urls.push(entry.toURL());
-      }
-      if (imageCount == selectedIndexes.length) {  // Selection is all images
-        this.dispatchFileTask_(this.galleryTask_, urls);
-        return;
-      }
-      if (videoCount == selectedIndexes.length) {  // Selection is all videos
-        this.dispatchFileTask_(this.playTask_, urls);
-        return;
-      }
-      chrome.fileBrowserPrivate.viewFiles(files, "default", function(success) {
-        if (success || files.length != 1)
-          return;
-        // Run the default task if the browser wasn't able to handle viewing.
-        chrome.fileBrowserPrivate.getFileTasks(
-            files,
-            function(tasksList) {
-              // Run the top task from the list when double click can't
-              // be handled by the browser internally.
-              if (tasksList && tasksList.length == 1) {
-                var task = tasksList[0];
-                var task_parts = task.taskId.split('|');
-                if (task_parts[0] == self.getExtensionId_())
-                  task.internal = true;
-
-                self.dispatchFileTask_(task, files);
-              } else {
-                var fileUrl = files[0];
-                self.alert.showWithTitle(
-                    unescape(fileUrl.substr(fileUrl.lastIndexOf('/') + 1)),
-                    str('ERROR_VIEWING_FILE'),
-                    function() {});
-              }
-            });
-      });
-      // Window stays open.
       return;
     }
 
