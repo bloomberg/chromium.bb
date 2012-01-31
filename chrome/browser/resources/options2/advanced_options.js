@@ -429,6 +429,8 @@ cr.define('options', function() {
     if (!checked) {
       $('bluetooth-paired-devices-list').clear();
       $('bluetooth-unpaired-devices-list').clear();
+    } else {
+      chrome.send('getPairedBluetoothDevices');
     }
   }
 

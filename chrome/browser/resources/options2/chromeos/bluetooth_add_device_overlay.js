@@ -34,6 +34,7 @@ cr.define('options', function() {
       this.createDeviceList_();
 
       $('bluetooth-add-device-cancel-button').onclick = function(event) {
+        chrome.send('stopBluetoothDeviceDiscovery');
         OptionsPage.closeOverlay();
       };
 
@@ -41,6 +42,7 @@ cr.define('options', function() {
       $('bluetooth-add-device-apply-button').onclick = function(event) {
         var device = self.deviceList_.selectedItem;
         var address = device.address;
+        chrome.send('stopBluetoothDeviceDiscovery');
         chrome.send('updateBluetoothDevice', [address, 'connect']);
         OptionsPage.closeOverlay();
       };

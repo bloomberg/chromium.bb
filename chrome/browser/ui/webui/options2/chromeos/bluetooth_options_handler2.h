@@ -61,6 +61,16 @@ class BluetoothOptionsHandler : public ::options2::OptionsPageUIHandler,
   // argument is present, it is the passkey for pairing confirmation.
   void UpdateDeviceCallback(const base::ListValue* args);
 
+  // Called when the "Add a device" dialog closes to stop the discovery
+  // process.
+  // |args| will be an empty list.
+  void StopDiscoveryCallback(const base::ListValue* args);
+
+  // Called when the list of paired devices is initialized in order to
+  // populate the list.
+  // |args| will be an empty list.
+  void GetPairedDevicesCallback(const base::ListValue* args);
+
   // Sends a notification to the Web UI of the status of a Bluetooth device.
   // |device| is the Bluetooth device.
   // |params| is an optional set of parameters.

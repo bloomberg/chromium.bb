@@ -164,6 +164,13 @@ void BluetoothOptionsHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("updateBluetoothDevice",
       base::Bind(&BluetoothOptionsHandler::UpdateDeviceCallback,
                  base::Unretained(this)));
+  web_ui()->RegisterMessageCallback("stopBluetoothDeviceDiscovery",
+      base::Bind(&BluetoothOptionsHandler::StopDiscoveryCallback,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback("getPairedBluetoothDevices",
+      base::Bind(&BluetoothOptionsHandler::GetPairedDevicesCallback,
+                 base::Unretained(this)));
+
 }
 
 void BluetoothOptionsHandler::EnableChangeCallback(
@@ -220,6 +227,31 @@ void BluetoothOptionsHandler::UpdateDeviceCallback(
     // Initiating a device connection or disconnecting
     DVLOG(1) << "UpdateDeviceCallback: " << address << ": " << command;
   }
+}
+
+void BluetoothOptionsHandler::StopDiscoveryCallback(
+    const ListValue* args) {
+ chromeos::BluetoothManager* bluetooth_manager =
+      chromeos::BluetoothManager::GetInstance();
+  DCHECK(bluetooth_manager);
+
+  chromeos::BluetoothAdapter* default_adapter =
+      bluetooth_manager->DefaultAdapter();
+
+  ValidateDefaultAdapter(default_adapter);
+
+  if (default_adapter == NULL) {
+    VLOG(1) << "DiscoveryEnded: no default adapter";
+    return;
+  }
+
+  default_adapter->StopDiscovery();
+}
+
+void BluetoothOptionsHandler::GetPairedDevicesCallback(
+    const ListValue* args) {
+  // TODO(keybuk): Iterate over list of paired devices calling
+  // SetDeviceNotification for each device.
 }
 
 void BluetoothOptionsHandler::SendDeviceNotification(
@@ -327,27 +359,6 @@ void BluetoothOptionsHandler::DiscoveryStarted(const std::string& adapter_id) {
 
 void BluetoothOptionsHandler::DiscoveryEnded(const std::string& adapter_id) {
   VLOG(2) << "Discovery ended on " << adapter_id;
-
-  // Stop the discovery session.
-  // TODO(vlaviano): We may want to expose DeviceDisappeared, remove the
-  // "Find devices" button, and let the discovery session continue throughout
-  // the time that the page is visible rather than just doing a single discovery
-  // cycle in response to a button click.
-  chromeos::BluetoothManager* bluetooth_manager =
-      chromeos::BluetoothManager::GetInstance();
-  DCHECK(bluetooth_manager);
-
-  chromeos::BluetoothAdapter* default_adapter =
-      bluetooth_manager->DefaultAdapter();
-
-  ValidateDefaultAdapter(default_adapter);
-
-  if (default_adapter == NULL) {
-    VLOG(1) << "DiscoveryEnded: no default adapter";
-    return;
-  }
-
-  default_adapter->StopDiscovery();
 }
 
 void BluetoothOptionsHandler::DeviceFound(const std::string& adapter_id,
