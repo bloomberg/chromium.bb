@@ -294,8 +294,10 @@ void Window::AddChild(Window* child) {
   child->OnParentChanged();
 
   RootWindow* root_window = child->GetRootWindow();
-  if (root_window)
-    root_window->OnWindowAttachedToRootWindow(child);
+  if (root_window) {
+    root_window->OnWindowAddedToRootWindow(child);
+    NotifyAddedToRootWindow();
+  }
 }
 
 void Window::AddTransientChild(Window* child) {
@@ -323,8 +325,10 @@ void Window::RemoveChild(Window* child) {
     layout_manager_->OnWillRemoveWindowFromLayout(child);
   FOR_EACH_OBSERVER(WindowObserver, observers_, OnWillRemoveWindow(child));
   RootWindow* root_window = child->GetRootWindow();
-  if (root_window)
-    root_window->OnWindowDetachingFromRootWindow(child);
+  if (root_window) {
+    root_window->OnWindowRemovedFromRootWindow(child);
+    child->NotifyRemovingFromRootWindow();
+  }
   child->parent_ = NULL;
   // We should only remove the child's layer if the child still owns that layer.
   // Someone else may have acquired ownership of it via AcquireLayer() and may
@@ -519,12 +523,6 @@ bool Window::StopsEventPropagation() const {
   return it != children_.end();
 }
 
-void Window::OnWindowDetachingFromRootWindow(aura::Window* window) {
-}
-
-void Window::OnWindowAttachedToRootWindow(aura::Window* window) {
-}
-
 void Window::SetBoundsInternal(const gfx::Rect& new_bounds) {
   gfx::Rect actual_new_bounds(new_bounds);
 
@@ -641,6 +639,24 @@ void Window::OnParentChanged() {
 
 void Window::OnStackingChanged() {
   FOR_EACH_OBSERVER(WindowObserver, observers_, OnWindowStackingChanged(this));
+}
+
+void Window::NotifyRemovingFromRootWindow() {
+  FOR_EACH_OBSERVER(WindowObserver, observers_,
+                    OnWindowRemovingFromRootWindow(this));
+  for (Window::Windows::const_iterator it = children_.begin();
+       it != children_.end(); ++it) {
+    (*it)->NotifyRemovingFromRootWindow();
+  }
+}
+
+void Window::NotifyAddedToRootWindow() {
+  FOR_EACH_OBSERVER(WindowObserver, observers_,
+                    OnWindowAddedToRootWindow(this));
+  for (Window::Windows::const_iterator it = children_.begin();
+       it != children_.end(); ++it) {
+    (*it)->NotifyAddedToRootWindow();
+  }
 }
 
 void Window::OnPaintLayer(gfx::Canvas* canvas) {
