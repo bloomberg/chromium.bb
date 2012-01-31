@@ -1,0 +1,21 @@
+<html>
+<head>
+<script>
+// Issue a bunch of seeks in a row, with some overlap.
+var seekCount = 0;
+function seeked() {
+  if (++seekCount == 100)
+    document.title = 'Done';  // Signals completion to the C++ side.
+  var a = document.querySelector('audio');
+  a.currentTime = Math.random() * a.duration;
+  window.setTimeout(seeked, 1);  // Overlaps the onseeked listener.
+}
+</script>
+</head>
+<body>
+  Test that rapid seeking fails to crash the browser.
+
+  <audio controls autoplay src="bear_pcm.wav"
+         onseeked="seeked()" onplaying="seeked()" onended="seeked()"></audio>
+</body>
+</html>
