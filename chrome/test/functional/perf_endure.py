@@ -73,7 +73,9 @@ class ChromeEndureBaseTest(perf.BasePerfTest):
           tab_proc_info.append(proc_info)
     self.assertEqual(len(tab_proc_info), 1,
                      msg='Expected to find 1 %s tab process, but found %d '
-                         'instead.' % (tab_title_substring, len(tab_proc_info)))
+                         'instead.\nCurrent process info:\n%s.' % (
+                         tab_title_substring, len(tab_proc_info),
+                         self.pformat(info)))
     tab_proc_info = tab_proc_info[0]
     return {
       'private_mem': tab_proc_info['working_set_mem']['priv']

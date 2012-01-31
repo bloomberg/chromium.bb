@@ -442,7 +442,7 @@ class _RemoteInspectorBaseThread(threading.Thread):
     while asyncore.socket_map:
       if self._client.handshake_done or self._killed:
         break
-      asyncore.loop(timeout=1, count=1)
+      asyncore.loop(timeout=1, count=1, use_poll=True)
 
   def NotifySocketClientException(self):
     """Notifies that the _DevToolsSocketClient encountered an exception."""
@@ -959,7 +959,7 @@ class PerformanceSnapshotter(object):
       while asyncore.socket_map:
         if not snapshotter_thread.is_alive():
           break
-        asyncore.loop(timeout=1, count=1)
+        asyncore.loop(timeout=1, count=1, use_poll=True)
     except KeyboardInterrupt:
       pass
     self._logger.debug('Waiting for snapshotter thread to die...')
@@ -976,7 +976,7 @@ class PerformanceSnapshotter(object):
       while asyncore.socket_map:
         if not gc_thread.is_alive():
           break
-        asyncore.loop(timeout=1, count=1)
+        asyncore.loop(timeout=1, count=1, use_poll=True)
     except KeyboardInterrupt:
       pass
     gc_thread.join()
@@ -998,7 +998,7 @@ class PerformanceSnapshotter(object):
       while asyncore.socket_map:
         if not mem_count_thread.is_alive():
           break
-        asyncore.loop(timeout=1, count=1)
+        asyncore.loop(timeout=1, count=1, use_poll=True)
     except KeyboardInterrupt:
       pass
     mem_count_thread.join()
