@@ -95,7 +95,7 @@ extern "C"
 
   typedef enum
   {
-    pass_first  = '`',
+    pass_first = '`',
     pass_last = '~',
     pass_lookback = '_',
     pass_string = '\"',
@@ -402,7 +402,7 @@ extern "C"
     TranslationTableOffset letterSign;
     TranslationTableOffset numberSign;
     /*Do not change the order of the following emphasis rule pointers! 
-*/
+     */
     TranslationTableOffset firstWordItal;
     TranslationTableOffset lastWordItalBefore;
     TranslationTableOffset lastWordItalAfter;
@@ -432,7 +432,7 @@ extern "C"
     TranslationTableOffset lastWordCapsAfter;
     TranslationTableOffset beginCapitalSign;
     TranslationTableOffset endCapitalSign;	/*end capitals sign */
-    TranslationTableOffset capitalSign;	
+    TranslationTableOffset capitalSign;
     TranslationTableOffset CapsWord;
     TranslationTableOffset lenCapsPhrase;
     /* End of ordered emphasis rule poiinters */
@@ -526,27 +526,26 @@ extern "C"
 * containing dot patterns. Opposite of showDots. */
 
   int other_translate (const char *trantab, const widechar
-		     *inbuf,
-		     int *inlen, widechar * outbuf, int *outlen,
-		     char *typeform, char *spacing, int *outputPos, int 
-*inputPos, int *cursorPos, int mode);
+		       * inbuf,
+		       int *inlen, widechar * outbuf, int *outlen,
+		       char *typeform, char *spacing, int *outputPos, int
+		       *inputPos, int *cursorPos, int mode);
 
 /*Call wrappers for other translators */
   int other_backTranslate (const char *trantab, const widechar
-		     *inbuf,
-		     int *inlen, widechar * outbuf, int *outlen,
-		     char *typeform, char *spacing, int *outputPos, int 
-*inputPos, int *cursorPos, int mode);
+			   * inbuf,
+			   int *inlen, widechar * outbuf, int *outlen,
+			   char *typeform, char *spacing, int *outputPos, int
+			   *inputPos, int *cursorPos, int mode);
 /*Call wrappers for other back-translators.*/
 
 
-int other_dotsToChar (const char *trantab, widechar *inbuf, 
-      widechar *outbuf, int length, int mode);
-int other_charToDots (const char *trantab, const widechar 
-*inbuf, 
-      widechar *outbuf, int length, int mode);
+  int other_dotsToChar (const char *trantab, widechar * inbuf,
+			widechar * outbuf, int length, int mode);
+  int other_charToDots (const char *trantab, const widechar
+			* inbuf, widechar * outbuf, int length, int mode);
 
-void debugHook ();
+  void debugHook ();
 
 #ifdef __cplusplus
 }
