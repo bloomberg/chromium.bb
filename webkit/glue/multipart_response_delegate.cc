@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -248,7 +248,7 @@ bool MultipartResponseDelegate::ParseHeaders() {
   std::string charset;
   bool has_charset = false;
   net::HttpUtil::ParseContentType(content_type, &mime_type, &charset,
-                                  &has_charset);
+                                  &has_charset, NULL);
   WebURLResponse response(original_response_.url());
   response.setMIMEType(WebString::fromUTF8(mime_type));
   response.setTextEncodingName(WebString::fromUTF8(charset));

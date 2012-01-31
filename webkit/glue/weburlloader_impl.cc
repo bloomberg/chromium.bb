@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,6 +19,7 @@
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
 #include "net/http/http_response_headers.h"
+#include "net/http/http_util.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebHTTPHeaderVisitor.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebHTTPLoadInfo.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityPolicy.h"
@@ -561,8 +562,12 @@ void WebURLLoaderImpl::Context::OnReceivedResponse(
     std::string content_type;
     info.headers->EnumerateHeader(NULL, "content-type", &content_type);
 
-    std::string boundary = net::GetHeaderParamValue(
-        content_type, "boundary", net::QuoteRule::REMOVE_OUTER_QUOTES);
+    std::string mime_type;
+    std::string charset;
+    bool had_charset;
+    std::string boundary;
+    net::HttpUtil::ParseContentType(content_type, &mime_type, &charset,
+                                    &had_charset, &boundary);
     TrimString(boundary, " \"", &boundary);
 
     // If there's no boundary, just handle the request normally.  In the gecko
