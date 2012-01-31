@@ -7,6 +7,7 @@
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "ui/base/range/range.h"
 #include "ui/base/text/text_elider.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/font_list.h"
@@ -81,27 +82,45 @@ int VAlignText(const gfx::Font& font,
   return double_offset / 2 - 2;
 }
 
+// Strips accelerator character prefixes in |text| if needed, based on |flags|.
+// Returns a range in |text| to underline or ui::Range::InvalidRange() if
+// underlining is not needed.
+ui::Range StripAcceleratorChars(int flags, string16* text) {
+  if (flags & (gfx::Canvas::SHOW_PREFIX | gfx::Canvas::HIDE_PREFIX)) {
+    int char_pos = -1;
+    int char_span = 0;
+    *text = gfx::RemoveAcceleratorChar(*text, '&', &char_pos, &char_span);
+    if ((flags & gfx::Canvas::SHOW_PREFIX) && char_pos != -1)
+      return ui::Range(char_pos, char_pos + char_span);
+  }
+  return ui::Range::InvalidRange();
+}
+
+// Elides |text| and adjusts |range| appropriately. If eliding causes |range|
+// to no longer point to the same character in |text|, |range| is made invalid.
+void ElideTextAndAdjustRange(const gfx::Font& font,
+                             int width,
+                             string16* text,
+                             ui::Range* range) {
+  const char16 start_char = (range->IsValid() ? text->at(range->start()) : 0);
+  *text = ui::ElideText(*text, font, width, ui::ELIDE_AT_END);
+  if (!range->IsValid())
+    return;
+  if (range->start() >= text->length() ||
+      text->at(range->start()) != start_char) {
+    *range = ui::Range::InvalidRange();
+  }
+}
+
 // Updates |render_text| from the specified parameters.
-void UpdateRenderText(gfx::RenderText* render_text,
-                      const gfx::Rect& rect,
+void UpdateRenderText(const gfx::Rect& rect,
                       const string16& text,
                       const gfx::Font& font,
                       int flags,
-                      SkColor color) {
-  int accelerated_char_pos = -1;
-  int accelerated_char_span = 0;
-  string16 transformed_text = text;
-
-  // Strip accelerator character prefixes.
-  if (flags & (gfx::Canvas::SHOW_PREFIX | gfx::Canvas::HIDE_PREFIX)) {
-    transformed_text = gfx::RemoveAcceleratorChar(text,
-                                                  '&',
-                                                  &accelerated_char_pos,
-                                                  &accelerated_char_span);
-  }
-
+                      SkColor color,
+                      gfx::RenderText* render_text) {
   render_text->SetFontList(gfx::FontList(font));
-  render_text->SetText(transformed_text);
+  render_text->SetText(text);
   render_text->SetCursorEnabled(false);
 
   gfx::Rect display_rect = rect;
@@ -123,16 +142,15 @@ void UpdateRenderText(gfx::RenderText* render_text,
     style.underline = true;
   render_text->set_default_style(style);
   render_text->ApplyDefaultStyle();
+}
 
-  // Underline the accelerator char, if present.
-  if ((flags & gfx::Canvas::SHOW_PREFIX) && accelerated_char_pos != -1 &&
-      !style.underline) {
-    gfx::StyleRange underline_style = style;
-    int accelerated_char_end = accelerated_char_pos + accelerated_char_span;
-    underline_style.range.set_start(accelerated_char_pos);
-    underline_style.range.set_end(accelerated_char_end);
-    underline_style.underline = true;
-    render_text->ApplyStyleRange(underline_style);
+// Adds an underline style to |render_text| over |range|.
+void ApplyUnderlineStyle(const ui::Range& range, gfx::RenderText* render_text) {
+  gfx::StyleRange style = render_text->default_style();
+  if (range.IsValid() && !style.underline) {
+    style.range = range;
+    style.underline = true;
+    render_text->ApplyStyleRange(style);
   }
 }
 
@@ -160,13 +178,12 @@ void CanvasSkia::SizeStringInt(const string16& text,
     ui::ElideRectangleText(text, font, rect.width(), rect.height(),
                            wrap_behavior, &strings);
     scoped_ptr<RenderText> render_text(RenderText::CreateRenderText());
-    UpdateRenderText(render_text.get(), rect, string16(), font, flags, 0);
+    UpdateRenderText(rect, string16(), font, flags, 0, render_text.get());
 
     int h = 0;
     int w = 0;
     for (size_t i = 0; i < strings.size(); ++i) {
-      if (flags & (SHOW_PREFIX | HIDE_PREFIX))
-        strings[i] = gfx::RemoveAcceleratorChar(strings[i], '&', NULL, NULL);
+      StripAcceleratorChars(flags, &strings[i]);
       render_text->SetText(strings[i]);
       w = std::max(w, render_text->GetStringWidth());
       h += font.GetHeight();
@@ -182,7 +199,9 @@ void CanvasSkia::SizeStringInt(const string16& text,
     } else {
       scoped_ptr<RenderText> render_text(RenderText::CreateRenderText());
       gfx::Rect rect(*width, *height);
-      UpdateRenderText(render_text.get(), rect, text, font, flags, 0);
+      string16 adjusted_text = text;
+      StripAcceleratorChars(flags, &adjusted_text);
+      UpdateRenderText(rect, adjusted_text, font, flags, 0, render_text.get());
       *width = render_text->GetStringWidth();
     }
     *height = font.GetHeight();
@@ -227,17 +246,21 @@ void CanvasSkia::DrawStringInt(const string16& text,
 
     rect.Offset(0, VAlignText(font, strings.size(), flags, h));
     for (size_t i = 0; i < strings.size(); i++) {
-      UpdateRenderText(render_text.get(), rect, strings[i], font, flags, color);
+      ui::Range range = StripAcceleratorChars(flags, &strings[i]);
+      UpdateRenderText(rect, strings[i], font, flags, color, render_text.get());
+      ApplyUnderlineStyle(range, render_text.get());
       render_text->Draw(this);
       rect.Offset(0, font.GetHeight());
     }
   } else {
+    ui::Range range = StripAcceleratorChars(flags, &adjusted_text);
     if (!(flags & NO_ELLIPSIS))
-      adjusted_text = ui::ElideText(adjusted_text, font, w, ui::ELIDE_AT_END);
+      ElideTextAndAdjustRange(font, w, &adjusted_text, &range);
 
     rect.Offset(0, VAlignText(font, 1, flags, h));
-    UpdateRenderText(render_text.get(), rect, adjusted_text, font, flags,
-                     color);
+    UpdateRenderText(rect, adjusted_text, font, flags, color,
+                     render_text.get());
+    ApplyUnderlineStyle(range, render_text.get());
     render_text->Draw(this);
   }
 
@@ -343,10 +366,9 @@ void CanvasSkia::DrawFadeTruncatingString(
       break;
   }
 
-  gfx::Rect text_rect = display_rect;
-  text_rect.Offset(0, VAlignText(font, 1, flags, display_rect.height()));
-  UpdateRenderText(render_text.get(), text_rect, clipped_text, font, flags,
-                   color);
+  gfx::Rect rect = display_rect;
+  rect.Offset(0, VAlignText(font, 1, flags, display_rect.height()));
+  UpdateRenderText(rect, clipped_text, font, flags, color, render_text.get());
 
   canvas_->save(SkCanvas::kClip_SaveFlag);
   ClipRect(display_rect);
