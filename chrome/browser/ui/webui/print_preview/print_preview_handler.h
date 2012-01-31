@@ -198,6 +198,7 @@ class PrintPreviewHandler : public content::WebUIMessageHandler,
   static printing::ColorModels last_used_color_model_;
   static printing::MarginType last_used_margins_type_;
   static printing::PageSizeMargins* last_used_page_size_margins_;
+  static bool last_used_headers_footers_;
 
   // A count of how many requests received to regenerate preview data.
   // Initialized to 0 then incremented and emitted to a histogram.

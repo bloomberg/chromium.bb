@@ -196,10 +196,11 @@ function setInitialSettings(initialSettings) {
         initialSettings['measurementSystem']);
     marginSettings.setLastUsedMargins(initialSettings);
   }
-  setDefaultPrinter(initialSettings['printerName'],
-                    initialSettings['cloudPrintData']);
   printAutomaticallyInKioskMode =
       initialSettings['printAutomaticallyInKioskMode'];
+  headerFooterSettings.setChecked(initialSettings['headerFooterEnabled']);
+  setDefaultPrinter(initialSettings['printerName'],
+                    initialSettings['cloudPrintData']);
 }
 
 /**

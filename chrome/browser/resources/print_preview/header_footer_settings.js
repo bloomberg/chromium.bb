@@ -37,6 +37,15 @@ cr.define('print_preview', function() {
     },
 
     /**
+     * Sets the state of the headers footers checkbox.
+     * @param {boolean} checked True if the headers footers checkbox shoule be
+     *     checked, false if not.
+     */
+    setChecked: function(checked) {
+      this.headerFooterCheckbox_.checked = checked;
+    },
+
+    /**
      * Adding listeners to header footer related controls.
      * @private
      */

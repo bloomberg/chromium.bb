@@ -205,6 +205,7 @@ printing::MarginType PrintPreviewHandler::last_used_margins_type_ =
     printing::DEFAULT_MARGINS;
 printing::PageSizeMargins*
     PrintPreviewHandler::last_used_page_size_margins_ = NULL;
+bool PrintPreviewHandler::last_used_headers_footers_ = true;
 
 PrintPreviewHandler::PrintPreviewHandler()
     : print_backend_(printing::PrintBackend::CreateInstance(NULL)),
@@ -378,10 +379,10 @@ void PrintPreviewHandler::HandlePrint(const ListValue* args) {
     color_model = printing::GRAY;
   last_used_color_model_ = static_cast<printing::ColorModels>(color_model);
 
-  // Storing last used margin settings.
   bool is_modifiable;
   settings->GetBoolean(printing::kSettingPreviewModifiable, &is_modifiable);
   if (is_modifiable) {
+    // Storing last used margin settings.
     int margin_type;
     if (!settings->GetInteger(printing::kSettingMarginsType, &margin_type))
       margin_type = printing::DEFAULT_MARGINS;
@@ -391,6 +392,9 @@ void PrintPreviewHandler::HandlePrint(const ListValue* args) {
         last_used_page_size_margins_ = new printing::PageSizeMargins();
       GetCustomMarginsFromJobSettings(*settings, last_used_page_size_margins_);
     }
+    // Storing last used header and footer setting.
+    settings->GetBoolean(
+        printing::kSettingHeaderFooterEnabled, &last_used_headers_footers_);
   }
 
   // Never try to add headers/footers here. It's already in the generated PDF.
@@ -685,6 +689,9 @@ void PrintPreviewHandler::SendInitialSettings(
   initial_settings.SetString(printing::kSettingPrinterName,
                              default_printer);
   initial_settings.SetString(kCloudPrintData, cloud_print_data);
+  initial_settings.SetBoolean(printing::kSettingHeaderFooterEnabled,
+                              last_used_headers_footers_);
+
 
 #if defined(OS_MACOSX)
   bool kiosk_mode = false;  // No kiosk mode on Mac yet.
