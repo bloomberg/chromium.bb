@@ -1511,8 +1511,8 @@ WebScreenInfo RenderWidget::screenInfo() {
 #if defined(USE_AURA)
     // TODO(backer): Remove this a temporary workaround for crbug.com/111929
     // once we get a proper fix.
-    results.availableRect.width = 1;
-    results.availableRect.height = 1;
+    results.availableRect.width = 1000;
+    results.availableRect.height = 1000;
 #endif
   }
   return results;
