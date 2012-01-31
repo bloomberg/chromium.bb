@@ -300,9 +300,20 @@ bool ExtensionDispatcher::AllowScriptExtension(
     std::string custom_binding_api_name =
         custom_bindings_util::GetAPIName(v8_extension_name);
     if (!custom_binding_api_name.empty()) {
-      const Extension* extension =
-          extensions_.GetByID(GetExtensionID(frame, world_id));
-      CHECK(extension);
+      std::string extension_id = GetExtensionID(frame, world_id);
+      const Extension* extension = extensions_.GetByID(extension_id);
+      if (!extension) {
+        // This can happen when a resource is blocked due to CSP; a valid
+        // chrome-extension:// URL is navigated to, so it passes the initial
+        // checks, but the URL gets changed to "chrome-extension://invalid"
+        // afterwards (see chrome_content_renderer_client.cc). An extension
+        // page still gets loaded, just for the extension with ID "invalid",
+        // which of course isn't found so GetById extension will be NULL.
+        //
+        // Reference: http://crbug.com/111614.
+        CHECK_EQ("invalid", extension_id);
+        return false;
+      }
       return custom_bindings_util::AllowAPIInjection(
           custom_binding_api_name, *extension);
     }
