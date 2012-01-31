@@ -68,8 +68,6 @@ class CONTENT_EXPORT PluginServiceImpl
   // content::PluginService implementation:
   virtual void Init() OVERRIDE;
   virtual void StartWatchingPlugins() OVERRIDE;
-  virtual PluginProcessHost* FindNpapiPluginProcess(
-      const FilePath& plugin_path) OVERRIDE;
   virtual bool GetPluginInfoArray(
       const GURL& url,
       const std::string& mime_type,
@@ -95,6 +93,7 @@ class CONTENT_EXPORT PluginServiceImpl
       const FilePath& plugin_path) OVERRIDE;
   virtual void SetFilter(content::PluginServiceFilter* filter) OVERRIDE;
   virtual content::PluginServiceFilter* GetFilter() OVERRIDE;
+  virtual void ForcePluginShutdown(const FilePath& plugin_path) OVERRIDE;
   virtual void RefreshPlugins() OVERRIDE;
   virtual void AddExtraPluginPath(const FilePath& path) OVERRIDE;
   virtual void AddExtraPluginDir(const FilePath& path) OVERRIDE;
@@ -106,10 +105,6 @@ class CONTENT_EXPORT PluginServiceImpl
   virtual webkit::npapi::PluginList* GetPluginList() OVERRIDE;
   virtual void SetPluginListForTesting(
       webkit::npapi::PluginList* plugin_list) OVERRIDE;
-
-  // Like FindNpapiPluginProcess but for Pepper.
-  PpapiPluginProcessHost* FindPpapiPluginProcess(const FilePath& plugin_path);
-  PpapiPluginProcessHost* FindPpapiBrokerProcess(const FilePath& broker_path);
 
   // Returns the plugin process host corresponding to the plugin process that
   // has been started by this service. This will start a process to host the
@@ -156,6 +151,13 @@ class CONTENT_EXPORT PluginServiceImpl
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
+
+  // Returns the plugin process host corresponding to the plugin process that
+  // has been started by this service. Returns NULL if no process has been
+  // started.
+  PluginProcessHost* FindNpapiPluginProcess(const FilePath& plugin_path);
+  PpapiPluginProcessHost* FindPpapiPluginProcess(const FilePath& plugin_path);
+  PpapiPluginProcessHost* FindPpapiBrokerProcess(const FilePath& broker_path);
 
   void RegisterPepperPlugins();
 

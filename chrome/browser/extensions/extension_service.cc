@@ -92,7 +92,6 @@
 #include "chrome/common/extensions/extension_resource.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/plugin_process_host.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/devtools_agent_host_registry.h"
 #include "content/public/browser/devtools_manager.h"
@@ -144,13 +143,6 @@ static const int kOmniboxIconPaddingRight = 0;
 #endif
 
 const char* kNaClPluginMimeType = "application/x-nacl";
-
-static void ForceShutdownPlugin(const FilePath& plugin_path) {
-  PluginProcessHost* plugin =
-      PluginService::GetInstance()->FindNpapiPluginProcess(plugin_path);
-  if (plugin)
-    plugin->ForceShutdown();
-}
 
 static bool IsSyncableExtension(const Extension& extension) {
   return extension.GetSyncType() == Extension::SYNC_TYPE_EXTENSION;
@@ -1158,9 +1150,7 @@ void ExtensionService::NotifyExtensionUnloaded(
   bool plugins_changed = false;
   for (size_t i = 0; i < extension->plugins().size(); ++i) {
     const Extension::PluginInfo& plugin = extension->plugins()[i];
-    if (!BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                                 base::Bind(&ForceShutdownPlugin, plugin.path)))
-      NOTREACHED();
+    PluginService::GetInstance()->ForcePluginShutdown(plugin.path);
     PluginService::GetInstance()->RefreshPlugins();
     PluginService::GetInstance()->RemoveExtraPluginPath(plugin.path);
     plugins_changed = true;

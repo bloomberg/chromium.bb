@@ -68,7 +68,6 @@
 #include "content/browser/child_process_security_policy.h"
 #include "content/browser/gpu/gpu_data_manager.h"
 #include "content/browser/gpu/gpu_process_host.h"
-#include "content/browser/plugin_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/resource_context.h"
 #include "content/browser/ssl/ssl_cert_error_handler.h"

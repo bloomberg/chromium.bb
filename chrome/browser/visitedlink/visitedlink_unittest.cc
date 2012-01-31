@@ -18,7 +18,7 @@
 #include "chrome/renderer/visitedlink_slave.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/browser/renderer_host/render_process_host_impl.h"
+#include "content/browser/renderer_host/mock_render_process_host.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/test/test_browser_thread.h"
@@ -499,11 +499,11 @@ class VisitCountingProfile : public TestingProfile {
 };
 
 // Stub out as little as possible, borrowing from RenderProcessHost.
-class VisitRelayingRenderProcessHost : public RenderProcessHostImpl {
+class VisitRelayingRenderProcessHost : public MockRenderProcessHost {
  public:
   explicit VisitRelayingRenderProcessHost(
       content::BrowserContext* browser_context)
-          : RenderProcessHostImpl(browser_context) {
+          : MockRenderProcessHost(browser_context), widgets_(0) {
     content::NotificationService::current()->Notify(
         content::NOTIFICATION_RENDERER_PROCESS_CREATED,
         content::Source<RenderProcessHost>(this),
@@ -516,23 +516,11 @@ class VisitRelayingRenderProcessHost : public RenderProcessHostImpl {
         content::NotificationService::NoDetails());
   }
 
-  virtual bool Init(bool is_accessibility_enabled) {
-    return true;
-  }
+  virtual void WidgetRestored() OVERRIDE { widgets_++; }
+  virtual void WidgetHidden() OVERRIDE { widgets_--; }
+  virtual int VisibleWidgetCount() const OVERRIDE { return widgets_; }
 
-  virtual void CancelResourceRequests(int render_widget_id) {
-  }
-
-  virtual void CrossSiteSwapOutACK(const ViewMsg_SwapOut_Params& params) {
-  }
-
-  virtual bool WaitForPaintMsg(int render_widget_id,
-                               const base::TimeDelta& max_delay,
-                               IPC::Message* msg) {
-    return false;
-  }
-
-  virtual bool Send(IPC::Message* msg) {
+  virtual bool Send(IPC::Message* msg) OVERRIDE {
     VisitCountingProfile* counting_profile =
         static_cast<VisitCountingProfile*>(
             Profile::FromBrowserContext(GetBrowserContext()));
@@ -550,11 +538,9 @@ class VisitRelayingRenderProcessHost : public RenderProcessHostImpl {
     return true;
   }
 
-  virtual void SetBackgrounded(bool backgrounded) {
-    backgrounded_ = backgrounded;
-  }
-
  private:
+  int widgets_;
+
   DISALLOW_COPY_AND_ASSIGN(VisitRelayingRenderProcessHost);
 };
 
@@ -579,9 +565,7 @@ class VisitedLinkEventsTest : public ChromeRenderViewHostTestHarness {
       : ui_thread_(BrowserThread::UI, &message_loop_),
         file_thread_(BrowserThread::FILE, &message_loop_) {}
   virtual ~VisitedLinkEventsTest() {}
-  virtual void SetFactoryMode() {}
   virtual void SetUp() {
-    SetFactoryMode();
     rvh_factory_.set_render_process_host_factory(&vc_rph_factory_);
     browser_context_.reset(new VisitCountingProfile());
     ChromeRenderViewHostTestHarness::SetUp();

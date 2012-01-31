@@ -63,12 +63,6 @@ class PluginService {
   // Starts watching for changes in the list of installed plug-ins.
   virtual void StartWatchingPlugins() = 0;
 
-  // Returns the plugin process host corresponding to the plugin process that
-  // has been started by this service. Returns NULL if no process has been
-  // started.
-  virtual PluginProcessHost* FindNpapiPluginProcess(
-      const FilePath& plugin_path) = 0;
-
   // Gets the plugin in the list of plugins that matches the given url and mime
   // type. Returns true if the data is frome a stale plugin list, false if it
   // is up to date. This can be called from any thread.
@@ -115,6 +109,9 @@ class PluginService {
 
   virtual void SetFilter(PluginServiceFilter* filter) = 0;
   virtual PluginServiceFilter* GetFilter() = 0;
+
+  // If the plugin with the given path is running, cleanly shuts it down.
+  virtual void ForcePluginShutdown(const FilePath& plugin_path) = 0;
 
   // The following functions are wrappers around webkit::npapi::PluginList.
   // These must be used instead of those in order to ensure that we have a

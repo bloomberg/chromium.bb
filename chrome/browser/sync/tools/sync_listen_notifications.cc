@@ -23,7 +23,7 @@
 #include "chrome/browser/sync/syncable/model_type_payload_map.h"
 #include "chrome/test/base/test_url_request_context_getter.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/browser/browser_thread_impl.h"
+#include "content/test/test_browser_thread.h"
 
 using content::BrowserThread;
 
@@ -100,11 +100,11 @@ int main(int argc, char* argv[]) {
       logging::DISABLE_DCHECK_FOR_NON_OFFICIAL_RELEASE_BUILDS);
 
   MessageLoop ui_loop;
-  content::BrowserThreadImpl ui_thread(BrowserThread::UI, &ui_loop);
-  content::BrowserThreadImpl io_thread(BrowserThread::IO);
+  content::TestBrowserThread ui_thread(BrowserThread::UI, &ui_loop);
+  content::TestBrowserThread io_thread(BrowserThread::IO);
   base::Thread::Options options;
   options.message_loop_type = MessageLoop::TYPE_IO;
-  io_thread.StartWithOptions(options);
+  io_thread.StartIOThread();
 
   // Parse command line.
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
