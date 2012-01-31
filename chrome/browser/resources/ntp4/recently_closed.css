@@ -3,8 +3,11 @@
  * found in the LICENSE file. */
 
 #recently-closed-menu-button {
+  -webkit-appearance: none;
   -webkit-padding-end: 15px;
   -webkit-padding-start: 9px;
+  -webkit-transition: opacity 200ms;
+  -webkit-transition-delay: 100ms;
   background: none;
   border: 0;
   color: #7F7F7F;
@@ -17,9 +20,6 @@
   /* The padding increases the clickable area. */
   padding-bottom: 0;
   padding-top: 0;
-  -webkit-appearance: none;
-  -webkit-transition: opacity 200ms;
-  -webkit-transition-delay: 100ms;
 }
 
 .enable-cws-experiment #recently-closed-menu-button {
@@ -53,6 +53,10 @@
 #footer.showing-trash-mode #recently-closed-menu-button {
   opacity: 0;
   -webkit-transition-delay: 0;
+}
+
+#recently-closed-menu-button > * {
+  vertical-align: middle;
 }
 
 .recent-menu {
@@ -111,6 +115,7 @@ html[dir='rtl'] .recent-menu-item {
   display: inline-block;
   height: 9px;
   width: 9px;
+  -webkit-margin-start: 2px;
   -webkit-mask-image: url('images/disclosure_triangle_mask.png');
 }
 
@@ -118,15 +123,10 @@ html[dir='rtl'] .recent-menu-item {
   background-color: #B2B2B2;
   display: none;
   height: 20px;
-  position: absolute;
-  right: 0;
-  top: 14px;
+  left: 15px;
+  position: relative;
+  right: 15px;
   width: 1px;
-}
-
-html[dir="rtl"] #vertical-separator {
-  left: 0;
-  right: auto;
 }
 
 .enable-cws-experiment #vertical-separator {

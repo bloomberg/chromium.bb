@@ -324,40 +324,37 @@ html[dir='rtl'] #footer.showing-trash-mode #trash.drag-target .lid {
 }
 
 #chrome-web-store-href {
+  -webkit-padding-end: 12px;
   /* Match transition delay of recently closed button. */
   -webkit-transition-delay: 100ms;
+  color: #7F7F7F;
   cursor: pointer;
   display: none;
   margin: 0;
-  padding: 0;
   text-decoration: none;
 }
 
 #chrome-web-store-title {
+  -webkit-padding-end: 26px;
   -webkit-padding-start: 16px;
-  color: #7F7F7F;
+  background: url('chrome://theme/IDR_WEBSTORE_ICON_24') right 50% no-repeat;
+  display: inline-block;
   font-weight: bold;
   font-size: 9pt;
-  padding-bottom: 17px;
-  padding-top: 17px;
+  line-height: 49px;
 }
 
-#chrome-web-store-title:hover {
+#chrome-web-store-href:hover {
   color: #666;
 }
 
-#chrome-web-store-icon {
-  -webkit-padding-end: 19px;
-  -webkit-padding-start: 2px;
-  height: 24px;
-  padding-bottom: 13px;
-  padding-top: 12px;
-  width: 24px;
+html[dir='rtl'] #chrome-web-store-title {
+  background-position-x: left;
 }
 
 /* Show the chrome-web-store button when the experiment is turned on. */
 .enable-cws-experiment #chrome-web-store-href {
-  display: inline;
+  display: inline-block;
 }
 
 /* Reserve space for the menu button even when it's hidden. */
