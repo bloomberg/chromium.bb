@@ -699,14 +699,17 @@ weston_surface_draw(struct weston_surface *es, struct weston_output *output)
 
 	if (ec->current_shader != es->shader) {
 		glUseProgram(es->shader->program);
-		glUniformMatrix4fv(es->shader->proj_uniform,
-				   1, GL_FALSE, output->matrix.d);
-		if (es->shader->tex_uniform != GL_NONE)
-			glUniform1i(es->shader->tex_uniform, 0);
-		if (es->shader->color_uniform != GL_NONE)
-			glUniform4fv(es->shader->color_uniform,1, es->color);
 		ec->current_shader = es->shader;
 	}
+
+	glUniformMatrix4fv(es->shader->proj_uniform,
+			   1, GL_FALSE, output->matrix.d);
+
+	if (es->shader->tex_uniform != GL_NONE)
+		glUniform1i(es->shader->tex_uniform, 0);
+
+	if (es->shader->color_uniform != GL_NONE)
+		glUniform4fv(es->shader->color_uniform,1, es->color);
 
 	if (es->shader->alpha_uniform && es->alpha != ec->current_alpha) {
 		glUniform1f(es->shader->alpha_uniform, es->alpha / 255.0);
