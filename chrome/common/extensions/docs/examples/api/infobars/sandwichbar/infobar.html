@@ -29,14 +29,6 @@
       The word <em>sandwich</em> appears <em id="count">X</em> times on this
       page.
     </div>
-    <script>
-      // Obtain the count of sandwiches from the page URL.
-      var count = window.location.hash.substring(1);
-      if (count) {
-        // Replace the placeholder text with the actual count.
-        var domcount = document.querySelector('#count');
-        domcount.innerText = count;
-      }
-    </script>
+    <script src="infobar.js"></script>
   </body>
 </html>

@@ -1,6 +1,6 @@
 {
   "name": "Keyboard Pin",
-  "version": "0.1",
+  "version": "0.2",
   "description": "Creates a keyboard shortcut (C + Shift + P) to toggle the pinned state of the currently selected tab",
   "permissions": [
     "tabs"
@@ -13,5 +13,6 @@
       "matches": ["<all_urls>"],
       "js": ["inject.js"]
     }
-  ]
+  ],
+  "manifest_version": 2
 }

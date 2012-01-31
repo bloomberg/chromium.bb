@@ -1,5 +1,5 @@
 <!--
-Copyright (c) 2009 The Chromium Authors. All rights reserved. Use of this
+Copyright (c) 2012 The Chromium Authors. All rights reserved. Use of this
 source code is governed by a BSD-style license that can be found in the
 LICENSE file.
 -->
@@ -7,32 +7,16 @@ LICENSE file.
 <html>
   <head>
     <style>
-body {
-  color: black;
-  width: 300px;
-}
+      body {
+        color: black;
+        width: 300px;
+      }
     </style>
-    <script>
-      function setChildTextNode(elementId, text) {
-        document.getElementById(elementId).innerText = text;
-      }
-
-      function init() {
-        setChildTextNode('languageSpan', chrome.i18n.getMessage("click_here"));
-      }
-
-      function getAcceptLanguages() {
-        chrome.i18n.getAcceptLanguages(function(languageList) {
-          var languages = languageList.join(",");
-          setChildTextNode('languageSpan',
-              chrome.i18n.getMessage("chrome_accept_languages", languages));
-        })
-      }
-    </script>
+    <script src="popup.js"></script>
   </head>
-  <body onload="init()">
-    <div onclick="getAcceptLanguages();">
-    <span id="languageSpan"></span>
+  <body>
+    <div id="accept_lang">
+      <span id="languageSpan"></span>
     </div>
   </body>
 </html>

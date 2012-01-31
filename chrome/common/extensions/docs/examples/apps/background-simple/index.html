@@ -6,40 +6,23 @@
 -->
 <html>
   <head>
-    <title> Simple Background App </title>
+    <title>Simple Background App</title>
     <style>
       .hidden { display: none; }
       #unsupported { color: #d00; }
     </style>
   </head>
   <body>
-    <h1> Simple Background App </h1>
+    <h1>Simple Background App</h1>
     <p id="supported" class="hidden">
-      <button onclick="openBackgroundWindow()">Open background window</button>
-      <button onclick="closeBackgroundWindow()">Close background window</button>
+      <button id="openBackgroundWindow">Open background window</button>
+      <button id="closeBackgroundWindow">Close background window</button>
     </p>
     <p id="unsupported" class="hidden">
       You are not using Chrome or have not installed the application for this
       page.
     </p>
-    <script>
-      // Check for support
-      if (window.chrome && window.chrome.app && window.chrome.app.isInstalled) {
-        document.getElementById('supported').className = '';
-      } else {
-        document.getElementById('unsupported').className = '';
-      }
-      var bgWinUrl = "background.html#yay";
-      var bgWinName = "bgNotifier";
-
-      function openBackgroundWindow() {
-        window.open(bgWinUrl, bgWinName, "background");
-      }
-      function closeBackgroundWindow() {
-        var w = window.open(bgWinUrl, bgWinName, "background");
-        w.close();
-      }
-    </script>
+    <script src="index.js"></script>
     <p>
       This app displays a notification
       whenever its background window is created.

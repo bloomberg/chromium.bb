@@ -1,6 +1,6 @@
 {
   "name" : "Cookie API Test Extension",
-  "version" : "0.7",
+  "version" : "0.8",
   "description" : "Testing Cookie API",
   "permissions": [ "cookies", "tabs", "http://*/*", "https://*/*" ],
   "icons": { "16": "cookie.png", "48": "cookie.png", "128": "cookie.png" },
@@ -9,5 +9,6 @@
   },
   "background": {
     "scripts": ["background.js"]
-  }
+  },
+  "manifest_version": 2
 }

@@ -1,12 +1,13 @@
 {
   "name": "Animated Page Action",
   "description": "This extension adds an animated browser action to the toolbar.",
-  "version": "1.0",
+  "version": "1.1",
   "permissions": ["tabs"],
   "background": {
     "page": "background.html"
   },
   "page_action": {
     "default_title": "First icon"
-  }
+  },
+  "manifest_version": 2
 }

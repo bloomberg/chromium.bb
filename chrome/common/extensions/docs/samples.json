@@ -72,6 +72,7 @@
     "chrome.experimental.devtools.console.addMessage": "experimental.devtools.console.html#method-addMessage",
     "chrome.experimental.devtools.console.getMessages": "experimental.devtools.console.html#method-getMessages",
     "chrome.experimental.devtools.console.onMessageAdded": "experimental.devtools.console.html#event-onMessageAdded",
+    "chrome.experimental.extension.onInstalled": "experimental.extension.html#event-onInstalled",
     "chrome.experimental.infobars.show": "experimental.infobars.html#method-show",
     "chrome.experimental.speechInput.isRecording": "experimental.speechInput.html#method-isRecording",
     "chrome.experimental.speechInput.onError": "experimental.speechInput.html#event-onError",
@@ -332,9 +333,10 @@
         "_locales\/es\/messages.json",
         "_locales\/sr\/messages.json",
         "manifest.json",
-        "popup.html"
+        "popup.html",
+        "popup.js"
       ],
-      "source_hash": "1875c022f58e1db83f134957840a36c7dfc1989f",
+      "source_hash": "0a70bd0763deafbccfc27edb0514051138aed995",
       "zip_path": "examples\/api\/i18n\/getMessage.zip"
     },
     {
@@ -366,7 +368,7 @@
         "background.html",
         "manifest.json"
       ],
-      "source_hash": "8d7f891bdbec9f378a3b215cd23d9ba5dbd69455",
+      "source_hash": "4d43d769e554aca75ce06df2095d15feff6b415a",
       "zip_path": "examples\/api\/pageAction\/set_icon.zip"
     },
     {
@@ -417,7 +419,7 @@
         "blank.html",
         "manifest.json"
       ],
-      "source_hash": "477acf6d15e3fa252e6307e156707538b61c86db",
+      "source_hash": "83d28f3c350187fd6885e6e4c0c148f6788f46be",
       "zip_path": "examples\/api\/override\/blank_ntp.zip"
     },
     {
@@ -502,9 +504,10 @@
         "background.js",
         "content.js",
         "devtools.html",
+        "devtools.js",
         "manifest.json"
       ],
-      "source_hash": "e5e09cdd2ab1db8c1ef8d7dbfb7d4619ed52b42c",
+      "source_hash": "44648be98237278fda3a08ef2ded7355fcdcf1da",
       "zip_path": "examples\/api\/devtools\/audits\/broken-links.zip"
     },
     {
@@ -552,9 +555,10 @@
       "search_string": "CHROME QUERY EXTENDS THE DEVELOPER TOOLS, ADDING A SIDEBAR THAT DISPLAYS THE JQUERY DATA ASSOCIATED WITH THE SELECTED DOM ELEMENT. DEVTOOLS_PAGE",
       "source_files": [
         "devtools.html",
+        "devtools.js",
         "manifest.json"
       ],
-      "source_hash": "4c71a5bb5bde6571148baf32e6aa63945641d83a",
+      "source_hash": "e4e53e3e1b8582e0d81e7f45afc6aecf7ba87f0d",
       "zip_path": "examples\/api\/devtools\/panels\/chrome-query.zip"
     },
     {
@@ -701,7 +705,7 @@
         "background.js",
         "manifest.json"
       ],
-      "source_hash": "1d6e16eedea418d21ccee0d76bb5206079712cbe",
+      "source_hash": "ca3ac66fbffe38050b6d8e0d7ce32c9a89940ee7",
       "zip_path": "examples\/api\/i18n\/cld.zip"
     },
     {
@@ -838,9 +842,10 @@
       "source_files": [
         "background.js",
         "manager.html",
+        "manager.js",
         "manifest.json"
       ],
-      "source_hash": "a2ed26f6e125718bbf89fc0132bffb7a57684465",
+      "source_hash": "699c4bffce6b427dec806441036bbb2fe83076c7",
       "zip_path": "examples\/api\/cookies.zip"
     },
     {
@@ -1200,9 +1205,10 @@
       "source_files": [
         "background.js",
         "history.html",
+        "history.js",
         "manifest.json"
       ],
-      "source_hash": "0eb1edd6c1b133dc92d8e9bb3d1fc826fec6b6e2",
+      "source_hash": "9065167b9ce5d326aabb3bfee908ea79e8f42ee7",
       "zip_path": "examples\/api\/idle\/idle_simple.zip"
     },
     {
@@ -1223,7 +1229,7 @@
         "manifest.json",
         "redirect.html"
       ],
-      "source_hash": "8ee76608adbf87c3260f9905e6cb1c8a45bd8e0c",
+      "source_hash": "9cfbfae849bc748f520a92f123fa36a8e3416fb2",
       "zip_path": "examples\/api\/override\/override_igoogle.zip"
     },
     {
@@ -1298,7 +1304,7 @@
         "background.js",
         "manifest.json"
       ],
-      "source_hash": "f5f27af53db763a611cc283c1db57a431e7f3c11",
+      "source_hash": "72ab72063122e2acce5b6d76d194009b90da7927",
       "zip_path": "examples\/api\/debugger\/pause-resume.zip"
     },
     {
@@ -1327,7 +1333,7 @@
         "inject.js",
         "manifest.json"
       ],
-      "source_hash": "907dc82db81f365f12d41fdddd563bc688dc6a0a",
+      "source_hash": "771aa7d71a4140287d104eacd00f536f02973371",
       "zip_path": "examples\/api\/tabs\/pin.zip"
     },
     {
@@ -1361,9 +1367,10 @@
       "source_files": [
         "background.js",
         "headers.html",
+        "headers.js",
         "manifest.json"
       ],
-      "source_hash": "e97370efc9177c52593a5c48a5c514d1bc1ce54d",
+      "source_hash": "838c73e2b783cb2382bf2226edbd574b21ce2d5b",
       "zip_path": "examples\/api\/debugger\/live-headers.zip"
     },
     {
@@ -1463,9 +1470,10 @@
       "source_files": [
         "manifest.json",
         "page.js",
-        "popup.html"
+        "popup.html",
+        "popup.js"
       ],
-      "source_hash": "653bfc40d0e3bac43d79de31b44338c314ae70a9",
+      "source_hash": "a5df8c8c15aa0181a148cc409548a89fc6a8d4c4",
       "zip_path": "examples\/api\/messaging\/timer.zip"
     },
     {
@@ -1649,7 +1657,7 @@
         "newTab.html",
         "newTab.js"
       ],
-      "source_hash": "fcaa8182e40d3ad7a4ed836e42d533cade008716",
+      "source_hash": "4d7cc6f66c8bee44ae3857b7dcb7bdae7c3e60f5",
       "zip_path": "examples\/api\/topsites\/magic8ball.zip"
     },
     {
@@ -1673,7 +1681,7 @@
         "background.js",
         "manifest.json"
       ],
-      "source_hash": "9a925b29e8e9d9c3953d140f1bdee2bae3f0b3ac",
+      "source_hash": "9ade0d5265e48a28b9b3a4bcd8e3a956e90a5d1f",
       "zip_path": "examples\/api\/omnibox\/simple-example.zip"
     },
     {
@@ -1700,7 +1708,7 @@
         "contentscript.js",
         "manifest.json"
       ],
-      "source_hash": "33f0ca9200f88e609c7ec7dc47287d00fad248fb",
+      "source_hash": "4f889e0a2e85d55dad63a85f3cc6c4db31c0ba99",
       "zip_path": "examples\/api\/pageAction\/pageaction_by_content.zip"
     },
     {
@@ -1890,9 +1898,10 @@
       "search_string": "PROCESS MONITOR ADDS A BROWSER ACTION THAT MONITORS RESOURCE USAGE OF ALL BROWSER PROCESSES. BROWSER_ACTION EXPERIMENTAL TABS",
       "source_files": [
         "manifest.json",
-        "popup.html"
+        "popup.html",
+        "popup.js"
       ],
-      "source_hash": "268ab065e8bafff9bf1578799a975f769513d99b",
+      "source_hash": "0d3542c6bdc5b79f9c261ff69b701f43540cb657",
       "zip_path": "examples\/api\/processes\/process_monitor.zip"
     },
     {
@@ -2003,9 +2012,10 @@
         "background.js",
         "contentscript.js",
         "infobar.html",
+        "infobar.js",
         "manifest.json"
       ],
-      "source_hash": "8eb292df71e744b1ccba9ed72d8d10ae372a97fb",
+      "source_hash": "370452fb1adc87631f89b7799e03f69b0aeaad26",
       "zip_path": "examples\/api\/infobars\/sandwichbar.zip"
     },
     {
@@ -2197,9 +2207,10 @@
         "background.js",
         "jstemplate_compiled.js",
         "manifest.json",
-        "tabs_api.html"
+        "tabs_api.html",
+        "tabs_api.js"
       ],
-      "source_hash": "5872b06c80edb857d72e28ea6e7d67d0f8a1c369",
+      "source_hash": "eb8f26004a36d01dad8680bae1370a2ac1ce01c8",
       "zip_path": "examples\/api\/tabs\/inspector.zip"
     },
     {
@@ -2301,7 +2312,7 @@
         "popup.html",
         "popup.js"
       ],
-      "source_hash": "100ad15bc7e23dc43bfa967ed7ab993fb9c93c6a",
+      "source_hash": "683f9b121326abe7053ea011b27dbd03f5b7b9d7",
       "zip_path": "examples\/api\/permissions\/extension-questions.zip"
     },
     {
@@ -2383,7 +2394,7 @@
         "typedUrls.html",
         "typedUrls.js"
       ],
-      "source_hash": "72d5c3586feefc692c63039ce8bdb5f9d366c0e2",
+      "source_hash": "42a4d00d90126ca4a8731f0f625ca75b7a546252",
       "zip_path": "examples\/api\/history\/showHistory.zip"
     },
     {

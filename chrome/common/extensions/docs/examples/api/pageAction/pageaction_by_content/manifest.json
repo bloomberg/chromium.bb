@@ -1,6 +1,6 @@
 {
   "name" : "Page action by content",
-  "version" : "1.0",
+  "version" : "1.1",
   "description" : "Shows a page action for HTML pages containing the word 'sandwich'",
   "background" : {
     "scripts": ["background.js"]
@@ -24,5 +24,6 @@
   "icons" : {
     "48" : "sandwich-48.png",
     "128" : "sandwich-128.png"
-  }
+  },
+  "manifest_version": 2
 }

@@ -1,7 +1,8 @@
 {
   "name": "iGoogle new tab page",
-  "version": "0.1",
+  "version": "0.2",
   "chrome_url_overrides": {
     "newtab": "redirect.html"
-  }
+  },
+  "manifest_version": 2
 }

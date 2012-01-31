@@ -1,7 +1,7 @@
 {
   "name": "Live HTTP headers",
   "description": "Displays the live log with the http requests headers",
-  "version": "0.5",
+  "version": "0.6",
   "permissions": [
     "tabs",
     "debugger"
@@ -12,6 +12,7 @@
   "browser_action": {
     "default_icon": "icon.png",
     "default_title": "Live HTTP headers"
-  }
+  },
+  "manifest_version": 2
 }
 

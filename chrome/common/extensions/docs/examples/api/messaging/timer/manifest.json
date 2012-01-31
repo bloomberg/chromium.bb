@@ -1,6 +1,6 @@
 {
   "name": "Message Timer",
-  "version": "1.0",
+  "version": "1.2",
   "description": "Times how long it takes to send a message to a content script and back.",
   "permissions": ["tabs"],
   "content_scripts": [
@@ -13,5 +13,6 @@
     "default_title": "Time to current page",
     "default_icon": "clock.png",
     "default_popup": "popup.html"
-  }
+  },
+  "manifest_version": 2
 }

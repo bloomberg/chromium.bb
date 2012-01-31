@@ -1,6 +1,6 @@
 {
   "name": "Top Chrome Extension Questions",
-  "version": "0.1",
+  "version": "0.2",
   "description": "Sample demonstration of the optional permissions API.",
   "icons": {
     "128": "images/icon.png",
@@ -13,5 +13,6 @@
   },
   "options_page": "options.html",
   "permissions": ["experimental"],
-  "optional_permissions": ["http://api.stackoverflow.com/"]
+  "optional_permissions": ["http://api.stackoverflow.com/"],
+  "manifest_version": 2
 }

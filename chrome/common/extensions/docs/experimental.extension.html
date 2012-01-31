@@ -16,7 +16,7 @@
     <script type="text/javascript" src="js/api_page_generator.js"></script>
     <script type="text/javascript" src="js/bootstrap.js"></script>
     <script type="text/javascript" src="js/sidebar.js"></script>
-  <title>chrome.* APIs - Google Chrome Extensions - Google Code</title></head>
+  <meta name="description" content="Documentation for the chrome.experimental.extension module, which is part of the Google Chrome  extension APIs."><title>chrome.experimental.extension - Google Chrome Extensions - Google Code</title></head>
   <body>  <div id="devModeWarning" class="displayModeWarning">
     You are viewing extension docs in chrome via the 'file:' scheme: are you expecting to see local changes when you refresh? You'll need run chrome with --allow-file-access-from-files.
   </div>
@@ -290,7 +290,7 @@
                 </ul>
               </li>
               <li><a href="permission_warnings.html">Permission Warnings</a></li>
-              <li class="leftNavSelected">chrome.* APIs</li>
+              <li><a href="api_index.html">chrome.* APIs</a></li>
               <li><a href="api_other.html">Other APIs</a></li>
             </ul>
           </li>
@@ -311,41 +311,59 @@
 
     <div class="g-unit" id="gc-pagecontent">
       <div id="pageTitle">
-        <h1 class="page_title">chrome.* APIs</h1>
+        <h1 class="page_title">chrome.experimental.extension</h1>
       </div>
         <!-- TABLE OF CONTENTS -->
         <div id="toc">
           <h2>Contents</h2>
           <ol>
-            <li>
-              <a href="#supported">Supported APIs</a>
+            <li style="display: none; ">
+              <a>h2Name</a>
               <ol>
-                <li style="display: none; ">
-                  <a>h3Name</a>
-                </li>
-              </ol>
-            </li><li>
-              <a href="#experimental">Experimental APIs</a>
-              <ol>
-                <li style="display: none; ">
-                  <a>h3Name</a>
-                </li>
-              </ol>
-            </li><li>
-              <a href="#conventions">API conventions</a>
-              <ol>
-                <li style="display: none; ">
+                <li>
                   <a>h3Name</a>
                 </li>
               </ol>
             </li>
-              <li style="display: none; ">
-                <a href="#apiReference">API reference</a>
+              <li>
+                <a href="#apiReference">API reference: chrome.experimental.extension</a>
+                <ol>
+                  <li style="display: none; ">
+            <a href="#properties">Properties</a>
+            <ol>
+              <li>
+                <a href="#property-anchor">propertyName</a>
+              </li>
+            </ol>
+          </li>
+                  <li style="display: none; ">
+            <a>Methods</a>
+            <ol>
+              <li>
+                <a href="#method-anchor">methodName</a>
+              </li>
+            </ol>
+          </li>
+                  <li>
+            <a href="#global-events">Events</a>
+            <ol>
+              <li>
+                <a href="#event-onInstalled">onInstalled</a>
+              </li>
+            </ol>
+          </li>
+                  <li style="display: none; ">
+            <a href="#types">Types</a>
+            <ol>
+              <li>
+                <a href="#id-anchor">id</a>
                 <ol>
                   <div></div>
                   <div></div>
-                  <div></div>
-                  <div></div>
+                </ol>
+              </li>
+            </ol>
+          </li>
                 </ol>
               </li>
           </ol>
@@ -353,63 +371,20 @@
         <!-- /TABLE OF CONTENTS -->
 
         <!-- Standard content lead-in for experimental API pages -->
-        <p id="classSummary" style="display: none; ">
+        <p id="classSummary">
           For information on how to use experimental APIs, see the <a href="experimental.html">chrome.experimental.* APIs</a> page.
         </p>
 
         <!-- STATIC CONTENT PLACEHOLDER -->
-        <div id="static"><div id="pageData-name" class="pageData">chrome.* APIs</div>
-<div id="pageData-showTOC" class="pageData">true</div>
-
-<p>
-Google Chrome provides APIs such as
-<code>chrome.bookmarks</code> and <code>chrome.tab</code>
-so that extensions can interact with the browser.
-</p>
-
-<h2 id="supported">Supported APIs</h2>
-
-<p>
-Here are the supported chrome.* APIs:
-</p>
-
-<ul>
-  <li><a href="bookmarks.html" js="">bookmarks</a></li><li><a href="browserAction.html" js="">browserAction</a></li><li><a href="contentSettings.html" js="">contentSettings</a></li><li><a href="contextMenus.html" js="">contextMenus</a></li><li><a href="cookies.html" js="">cookies</a></li><li><a href="debugger.html" js="">debugger</a></li><li><a href="extension.html" js="">extension</a></li><li><a href="fileBrowserHandler.html" js="">fileBrowserHandler</a></li><li><a href="history.html" js="">history</a></li><li><a href="i18n.html" js="">i18n</a></li><li><a href="idle.html" js="">idle</a></li><li><a href="input.ime.html" js="">input.ime</a></li><li><a href="management.html" js="">management</a></li><li><a href="omnibox.html" js="">omnibox</a></li><li><a href="pageAction.html" js="">pageAction</a></li><li><a href="pageCapture.html" js="">pageCapture</a></li><li><a href="permissions.html" js="">permissions</a></li><li><a href="privacy.html" js="">privacy</a></li><li><a href="proxy.html" js="">proxy</a></li><li><a href="tabs.html" js="">tabs</a></li><li><a href="tts.html" js="">tts</a></li><li><a href="ttsEngine.html" js="">ttsEngine</a></li><li><a href="types.html" js="">types</a></li><li><a href="webNavigation.html" js="">webNavigation</a></li><li><a href="webRequest.html" js="">webRequest</a></li><li><a href="windows.html" js="">windows</a></li>
-</ul>
-
-<h2 id="experimental">Experimental APIs</h2>
-
-<p>
-Google Chrome also has
-<a href="experimental.html">experimental APIs</a>,
-some of which will become supported APIs
-in future releases of Chrome.
-</p>
-
-<h2 id="conventions">API conventions</h2>
-
-<p>
-Unless the doc says otherwise,
-methods in the chrome.* APIs are <b>asynchronous</b>:
-they return immediately,
-without waiting for the operation to finish.
-If you need to know the outcome of an operation,
-then you pass a callback function into the method.
-For more information, watch this video:
-</p>
-
-<p>
-<iframe title="YouTube video player" width="640" height="390" src="http://www.youtube.com/embed/bmxr75CV36A?rel=0" frameborder="0" allowfullscreen=""></iframe>
-</p>
-</div>
+        <div id="static"></div>
 
         <!-- API PAGE -->
-        <div class="apiPage" style="display: none; ">
+        <div class="apiPage">
         <a name="apiReference"></a>
-        <h2>API reference: chrome.apiname </h2>
+        <h2>API reference: chrome.experimental.extension</h2>
 
           <!-- PROPERTIES -->
-          <div class="apiGroup">
+          <div class="apiGroup" style="display: none; ">
             <a name="properties"></a>
             <h3 id="properties">Properties</h3>
 
@@ -427,7 +402,7 @@ For more information, watch this video:
           </div> <!-- /apiGroup -->
 
           <!-- METHODS -->
-          <div id="methodsTemplate" class="apiGroup">
+          <div id="methodsTemplate" class="apiGroup" style="display: none; ">
             <a></a>
             <h3>Methods</h3>
 
@@ -504,26 +479,24 @@ For more information, watch this video:
 
           <!-- EVENTS -->
           <div id="eventsTemplate" class="apiGroup">
-            <a></a>
+            <a name="global-events"></a>
             <h3>Events</h3>
             <!-- iterates over all events -->
             <div class="apiItem">
-              <a></a>
-              <h4>event name</h4>
+              <a name="event-onInstalled"></a>
+              <h4>onInstalled</h4>
 
               <div class="summary">
                 <!-- Note: intentionally longer 80 columns -->
-                <span class="subdued">chrome.bookmarks</span><span>onEvent</span><span class="subdued">.addListener</span>(function(<span>Type param1, Type param2</span>) <span class="subdued">{...}</span><span>, Type opt_param1, Type opt_param2</span>);
+                <span class="subdued">chrome.experimental.extension.</span><span>onInstalled</span><span class="subdued">.addListener</span>(function(<span></span>) <span class="subdued">{...}</span><span></span>);
               </div>
 
               <div class="description">
-                <p class="todo">Undocumented.</p>
-                <p>
-                  A description from the json schema def of the event goes here.
-                </p>
+                <p class="todo" style="display: none; ">Undocumented.</p>
+                <p>Fired when the extension is first installed.</p>
 
                 <!-- LISTENER PARAMETERS -->
-                <div>
+                <div style="display: none; ">
                   <h4>Listener parameters</h4>
                   <dl>
                     <div>
@@ -534,7 +507,7 @@ For more information, watch this video:
                 </div>
 
                 <!-- EXTRA PARAMETERS -->
-                <div>
+                <div style="display: none; ">
                   <h4>Extra parameters to addListener</h4>
                   <dl>
                     <div>
@@ -545,9 +518,9 @@ For more information, watch this video:
                 </div>
 
                 <!-- LISTENER RETURN VALUE -->
-                <h4>Listener returns</h4>
+                <h4 style="display: none; ">Listener returns</h4>
                 <dl>
-                  <div>
+                  <div style="display: none; ">
                     <div>
                     </div>
                   </div>
@@ -559,7 +532,7 @@ For more information, watch this video:
           </div> <!-- /apiGroup -->
 
           <!-- TYPES -->
-          <div class="apiGroup">
+          <div class="apiGroup" style="display: none; ">
             <a name="types"></a>
             <h3 id="types">Types</h3>
 
