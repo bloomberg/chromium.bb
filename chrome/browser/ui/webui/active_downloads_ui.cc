@@ -38,7 +38,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
-#include "chrome/browser/ui/webui/fileicon_source_chromeos.h"
+#include "chrome/browser/ui/webui/fileicon_source.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
@@ -181,7 +181,7 @@ ActiveDownloadsHandler::~ActiveDownloadsHandler() {
 
 void ActiveDownloadsHandler::RegisterMessages() {
   profile_ = Profile::FromWebUI(web_ui());
-  profile_->GetChromeURLDataManager()->AddDataSource(new FileIconSourceCros());
+  profile_->GetChromeURLDataManager()->AddDataSource(new FileIconSource());
 
   web_ui()->RegisterMessageCallback("getDownloads",
       base::Bind(&ActiveDownloadsHandler::HandleGetDownloads,

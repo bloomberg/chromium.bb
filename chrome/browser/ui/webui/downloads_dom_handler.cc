@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -27,7 +27,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/browser/ui/webui/fileicon_source.h"
-#include "chrome/browser/ui/webui/fileicon_source_chromeos.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/user_metrics.h"
@@ -128,12 +127,7 @@ DownloadsDOMHandler::DownloadsDOMHandler(DownloadManager* dlm)
       download_manager_(dlm) {
   // Create our fileicon data source.
   Profile::FromBrowserContext(dlm->GetBrowserContext())->
-      GetChromeURLDataManager()->AddDataSource(
-#if defined(OS_CHROMEOS)
-      new FileIconSourceCros());
-#else
-      new FileIconSource());
-#endif  // OS_CHROMEOS
+      GetChromeURLDataManager()->AddDataSource(new FileIconSource());
 }
 
 DownloadsDOMHandler::~DownloadsDOMHandler() {

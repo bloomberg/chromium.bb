@@ -394,7 +394,8 @@ Download.prototype.update = function(download) {
     this.safe_.style.display = 'none';
   } else {
     downloads.scheduleIconLoad(this.nodeImg_,
-                               'chrome://fileicon/' + this.filePath_);
+                               'chrome://fileicon/' +
+                                   encodeURIComponent(this.filePath_));
 
     if (this.state_ == Download.States.COMPLETE &&
         !this.fileExternallyRemoved_) {

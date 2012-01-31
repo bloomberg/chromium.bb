@@ -233,10 +233,11 @@ DownloadRow.prototype = {
   },
 
   setDangerousIcon_: function(warning) {
+    var escapedPath = encodeURIComponent(this.path).replace(/'/g,'%27');
     this.icon.className = warning ? 'iconwarning' : 'icon';
     this.icon.style.background = warning ? '' :
-        'url(chrome://fileicon' + escape(this.path) +
-        '?iconsize=small) no-repeat';
+        'url(\'chrome://fileicon/' + escapedPath +
+        '?iconsize=small\') no-repeat';
   },
 
   /**

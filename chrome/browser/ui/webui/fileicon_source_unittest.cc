@@ -1,0 +1,98 @@
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "base/memory/ref_counted_memory.h"
+#include "base/message_loop.h"
+#include "chrome/browser/icon_manager.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/webui/fileicon_source.h"
+#include "chrome/test/base/testing_profile.h"
+#include "content/test/test_browser_thread.h"
+#include "testing/gtest/include/gtest/gtest.h"
+#include "testing/gmock/include/gmock/gmock.h"
+
+using content::BrowserThread;
+
+namespace {
+
+class TestFileIconSource : public FileIconSource {
+ public:
+  explicit TestFileIconSource() {}
+
+  MOCK_METHOD3(FetchFileIcon, void(const FilePath& path,
+                                   IconLoader::IconSize icon_size,
+                                   int request_id));
+};
+
+class FileIconSourceTest : public testing::Test {
+ public:
+  FileIconSourceTest()
+      : loop_(MessageLoop::TYPE_UI),
+        ui_thread_(BrowserThread::UI, MessageLoop::current()),
+        file_thread_(BrowserThread::FILE, MessageLoop::current()) {}
+
+  static TestFileIconSource* CreateFileIconSource() {
+    return new TestFileIconSource();
+  }
+
+ private:
+  MessageLoop loop_;
+  content::TestBrowserThread ui_thread_;
+  content::TestBrowserThread file_thread_;
+};
+
+const struct FetchFileIconExpectation {
+  const char* request_path;
+  const FilePath::CharType* unescaped_path;
+  IconLoader::IconSize size;
+} kBasicExpectations[] = {
+  { "foo?bar", FILE_PATH_LITERAL("foo"), IconLoader::NORMAL },
+  { "foo?iconsize=small", FILE_PATH_LITERAL("foo"), IconLoader::SMALL },
+  { "foo?iconsize=normal", FILE_PATH_LITERAL("foo"), IconLoader::NORMAL },
+  { "foo?iconsize=large", FILE_PATH_LITERAL("foo"), IconLoader::LARGE },
+  { "foo?iconsize=asdf", FILE_PATH_LITERAL("foo"), IconLoader::NORMAL },
+  { "foo?blah=b&iconsize=small", FILE_PATH_LITERAL("foo"), IconLoader::SMALL },
+  { "foo?blah&iconsize=small", FILE_PATH_LITERAL("foo"), IconLoader::SMALL },
+  { "a%3Fb%26c%3Dd.txt?iconsize=small", FILE_PATH_LITERAL("a?b&c=d.txt"),
+    IconLoader::SMALL },
+  { "a%3Ficonsize%3Dsmall?iconsize=large",
+    FILE_PATH_LITERAL("a?iconsize=small"), IconLoader::LARGE },
+  { "o%40%23%24%25%26*()%20%2B%3D%3F%2C%3A%3B%22.jpg",
+    FILE_PATH_LITERAL("o@#$%&*() +=?,:;\".jpg"), IconLoader::NORMAL },
+#if defined(OS_WIN)
+  { "c:/foo/bar/baz", FILE_PATH_LITERAL("c:\\foo\\bar\\baz"),
+    IconLoader::NORMAL },
+  { "/foo?bar=asdf&asdf", FILE_PATH_LITERAL("\\foo"), IconLoader::NORMAL },
+  { "c%3A%2Fusers%2Ffoo%20user%2Fbar.txt",
+    FILE_PATH_LITERAL("c:\\users\\foo user\\bar.txt"), IconLoader::NORMAL },
+  { "c%3A%2Fusers%2F%C2%A9%202000.pdf",
+    FILE_PATH_LITERAL("c:\\users\\\xa9 2000.pdf"), IconLoader::NORMAL },
+  { "%E0%B6%9A%E0%B6%BB%E0%B7%9D%E0%B6%B8%E0%B7%8A",
+    FILE_PATH_LITERAL("\x0d9a\x0dbb\x0ddd\x0db8\x0dca"), IconLoader::NORMAL },
+  { "%2Ffoo%2Fbar", FILE_PATH_LITERAL("\\foo\\bar"), IconLoader::NORMAL },
+  { "%2Fbaz%20(1).txt?iconsize=small", FILE_PATH_LITERAL("\\baz (1).txt"),
+    IconLoader::SMALL },
+#else
+  { "/foo/bar/baz", FILE_PATH_LITERAL("/foo/bar/baz"), IconLoader::NORMAL },
+  { "/foo?bar", FILE_PATH_LITERAL("/foo"), IconLoader::NORMAL },
+  { "%2Ffoo%2f%E0%B6%9A%E0%B6%BB%E0%B7%9D%E0%B6%B8%E0%B7%8A",
+    FILE_PATH_LITERAL("/foo/\xe0\xb6\x9a\xe0\xb6\xbb\xe0\xb7\x9d")
+    FILE_PATH_LITERAL("\xe0\xb6\xb8\xe0\xb7\x8a"), IconLoader::NORMAL },
+  { "%2Ffoo%2Fbar", FILE_PATH_LITERAL("/foo/bar"), IconLoader::NORMAL },
+  { "%2Fbaz%20(1).txt?iconsize=small", FILE_PATH_LITERAL("/baz (1).txt"),
+    IconLoader::SMALL },
+#endif
+};
+
+}  // namespace
+
+TEST_F(FileIconSourceTest, FileIconSource_Parse) {
+  for (unsigned i = 0; i < arraysize(kBasicExpectations); i++) {
+    scoped_refptr<TestFileIconSource> source(CreateFileIconSource());
+    EXPECT_CALL(*source.get(),
+                FetchFileIcon(FilePath(kBasicExpectations[i].unescaped_path),
+                              kBasicExpectations[i].size, i));
+    source->StartDataRequest(kBasicExpectations[i].request_path, false, i);
+  }
+}
