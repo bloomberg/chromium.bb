@@ -10,9 +10,11 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/message_loop.h"
+#include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/autocomplete/autocomplete_field_trial.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/history/history_backend.h"
@@ -315,11 +317,24 @@ HistoryURLProvider::HistoryURLProvider(ACProviderListener* listener,
       prefixes_(GetPrefixes()),
       params_(NULL),
       enable_aggressive_scoring_(false) {
+  enum AggressivenessOption {
+    AGGRESSIVENESS_DISABLED = 0,
+    AGGRESSIVENESS_ENABLED = 1,
+    AGGRESSIVENESS_AUTO_BUT_NOT_IN_FIELD_TRIAL = 2,
+    AGGRESSIVENESS_FIELD_TRIAL_DEFAULT_GROUP = 3,
+    AGGRESSIVENESS_FIELD_TRIAL_EXPERIMENT_GROUP = 4,
+    NUM_OPTIONS = 5
+  };
+  // should always be overwritten
+  AggressivenessOption aggressiveness_option = NUM_OPTIONS;
+
   const std::string switch_value = CommandLine::ForCurrentProcess()->
       GetSwitchValueASCII(switches::kOmniboxAggressiveHistoryURL);
   if (switch_value == switches::kOmniboxAggressiveHistoryURLEnabled) {
+    aggressiveness_option = AGGRESSIVENESS_ENABLED;
     enable_aggressive_scoring_ = true;
   } else if (switch_value == switches::kOmniboxAggressiveHistoryURLDisabled) {
+    aggressiveness_option = AGGRESSIVENESS_DISABLED;
     enable_aggressive_scoring_ = false;
   } else {
     // Either: switch_value == switches::kOmniboxAggressiveHistoryURLAuto
@@ -331,9 +346,28 @@ HistoryURLProvider::HistoryURLProvider(ACProviderListener* listener,
                  << "received on command line: " << switch_value;
       LOG(ERROR) << "Making automatic.";
     }
-    // For now automatic means disabled / not aggressive.
-    enable_aggressive_scoring_ = false;
+    // Automatic means eligible for the field trial.
+    if (AutocompleteFieldTrial::InAggressiveHUPFieldTrial()) {
+      if (AutocompleteFieldTrial::InAggressiveHUPFieldTrialExperimentGroup()) {
+        enable_aggressive_scoring_ = true;
+        aggressiveness_option = AGGRESSIVENESS_FIELD_TRIAL_EXPERIMENT_GROUP;
+      } else {
+        enable_aggressive_scoring_ = false;
+        aggressiveness_option = AGGRESSIVENESS_FIELD_TRIAL_DEFAULT_GROUP;
+      }
+    } else {
+      enable_aggressive_scoring_ = false;
+      aggressiveness_option = AGGRESSIVENESS_AUTO_BUT_NOT_IN_FIELD_TRIAL;
+    }
   }
+
+  // Add a beacon to the logs that'll allow us to identify later what
+  // aggressiveness state a user is in.  Do this by incrementing a
+  // bucket in a histogram, where the bucket represents the user's
+  // aggressiveness state.
+  UMA_HISTOGRAM_ENUMERATION(
+      "Omnibox.AggressiveHistoryURLProviderFieldTrialBeacon",
+      aggressiveness_option, NUM_OPTIONS);
 }
 
 void HistoryURLProvider::Start(const AutocompleteInput& input,

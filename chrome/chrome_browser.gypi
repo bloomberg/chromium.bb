@@ -104,6 +104,8 @@
         'browser/autocomplete/autocomplete_controller_delegate.h',
         'browser/autocomplete/autocomplete_edit.cc',
         'browser/autocomplete/autocomplete_edit.h',
+        'browser/autocomplete/autocomplete_field_trial.cc',
+        'browser/autocomplete/autocomplete_field_trial.h',
         'browser/autocomplete/autocomplete_match.cc',
         'browser/autocomplete/autocomplete_match.h',
         'browser/autocomplete/autocomplete_popup_model.cc',

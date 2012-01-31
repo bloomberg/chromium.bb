@@ -30,6 +30,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/about_flags.h"
 #include "chrome/browser/auto_launch_trial.h"
+#include "chrome/browser/autocomplete/autocomplete_field_trial.h"
 #include "chrome/browser/background/background_mode_manager.h"
 #include "chrome/browser/browser_process_impl.h"
 #include "chrome/browser/browser_shutdown.h"
@@ -1029,6 +1030,7 @@ void ChromeBrowserMainParts::SetupFieldTrials(bool metrics_recording_enabled,
   PredictorFieldTrial();
   DefaultAppsFieldTrial();
   AutoLaunchChromeFieldTrial();
+  AutocompleteFieldTrial::Activate();
   sync_promo_trial::Activate();
   NewTabUI::SetupFieldTrials();
 }
