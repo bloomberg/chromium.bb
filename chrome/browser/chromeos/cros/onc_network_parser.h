@@ -197,6 +197,20 @@ class OncNetworkParser : public NetworkParser {
   DISALLOW_COPY_AND_ASSIGN(OncNetworkParser);
 };
 
+// Class for parsing Ethernet networks.
+class OncEthernetNetworkParser : public OncNetworkParser {
+ public:
+  OncEthernetNetworkParser();
+  virtual ~OncEthernetNetworkParser();
+  static bool ParseEthernetValue(OncNetworkParser* parser,
+                                 PropertyIndex index,
+                                 const base::Value& value,
+                                 Network* ethernet_network);
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(OncEthernetNetworkParser);
+};
+
 // Base for wireless networks.
 class OncWirelessNetworkParser : public OncNetworkParser {
  public:

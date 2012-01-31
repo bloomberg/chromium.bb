@@ -9,13 +9,19 @@ namespace chromeos {
 // Constants for ONC properties.
 namespace onc {
 
+const char kEthernet[] = "Ethernet";
 const char kGUID[] = "GUID";
-const char kProxySettings[] = "ProxySettings";
 const char kName[] = "Name";
+const char kProxySettings[] = "ProxySettings";
 const char kRemove[] = "Remove";
 const char kType[] = "Type";
 const char kVPN[] = "VPN";
 const char kWiFi[] = "WiFi";
+
+namespace ethernet {
+const char kAuthentication[] = "Authentication";
+const char kEAP[] = "EAP";
+}  // namespace ethernet
 
 namespace wifi {
 const char kAutoConnect[] = "AutoConnect";

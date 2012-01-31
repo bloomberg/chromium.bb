@@ -49,15 +49,22 @@ EnumMapper<PropertyIndex>::Pair network_configuration_table[] = {
 };
 
 OncValueSignature network_configuration_signature[] = {
-  // TODO(crosbug.com/23673): Support Ethernet settings.
   { onc::kGUID, PROPERTY_INDEX_GUID, TYPE_STRING },
   { onc::kProxySettings, PROPERTY_INDEX_ONC_PROXY_SETTINGS, TYPE_DICTIONARY },
   { onc::kName, PROPERTY_INDEX_NAME, TYPE_STRING },
   // TODO(crosbug.com/23604): Handle removing networks.
   { onc::kRemove, PROPERTY_INDEX_ONC_REMOVE, TYPE_BOOLEAN },
   { onc::kType, PROPERTY_INDEX_TYPE, TYPE_STRING },
+  { onc::kEthernet, PROPERTY_INDEX_ONC_ETHERNET, TYPE_DICTIONARY },
   { onc::kWiFi, PROPERTY_INDEX_ONC_WIFI, TYPE_DICTIONARY },
   { onc::kVPN, PROPERTY_INDEX_ONC_VPN, TYPE_DICTIONARY },
+  { NULL }
+};
+
+OncValueSignature ethernet_signature[] = {
+  { onc::ethernet::kAuthentication, PROPERTY_INDEX_AUTHENTICATION,
+    TYPE_STRING },
+  { onc::ethernet::kEAP, PROPERTY_INDEX_EAP, TYPE_DICTIONARY },
   { NULL }
 };
 
@@ -191,6 +198,7 @@ const EnumMapper<PropertyIndex>* get_onc_mapper() {
 
 ConnectionType ParseNetworkType(const std::string& type) {
   static EnumMapper<ConnectionType>::Pair table[] = {
+    { "Ethernet", TYPE_ETHERNET },
     { "WiFi", TYPE_WIFI },
     { "VPN", TYPE_VPN },
   };
@@ -597,7 +605,9 @@ Network* OncNetworkParser::CreateNewNetwork(
     ConnectionType type, const std::string& service_path) {
   Network* network = NetworkParser::CreateNewNetwork(type, service_path);
   if (network) {
-    if (type == TYPE_WIFI)
+    if (type == TYPE_ETHERNET)
+      network->SetNetworkParser(new OncEthernetNetworkParser());
+    else if (type == TYPE_WIFI)
       network->SetNetworkParser(new OncWifiNetworkParser());
     else if (type == TYPE_VPN)
       network->SetNetworkParser(new OncVirtualNetworkParser());
@@ -635,6 +645,10 @@ bool OncNetworkParser::ParseNetworkConfigurationValue(
     const base::Value& value,
     Network* network) {
   switch (index) {
+    case PROPERTY_INDEX_ONC_ETHERNET: {
+      return parser->ParseNestedObject(network, "Ethernet", value,
+          ethernet_signature, OncEthernetNetworkParser::ParseEthernetValue);
+    }
     case PROPERTY_INDEX_ONC_WIFI: {
       return parser->ParseNestedObject(network,
                                        "WiFi",
@@ -1181,6 +1195,31 @@ net::ProxyServer OncNetworkParser::ParseProxyLocationValue(
   return net::ProxyServer(scheme, host_port);
 }
 
+// -------------------- OncEthernetNetworkParser --------------------
+
+OncEthernetNetworkParser::OncEthernetNetworkParser() {}
+OncEthernetNetworkParser::~OncEthernetNetworkParser() {}
+
+bool OncEthernetNetworkParser::ParseEthernetValue(OncNetworkParser* parser,
+                                                  PropertyIndex index,
+                                                  const base::Value& value,
+                                                  Network* network) {
+  if (!CheckNetworkType(network, TYPE_ETHERNET, "Ethernet"))
+    return false;
+  // EthernetNetwork* ethernet_network = static_cast<EthernetNetwork*>(network);
+  switch (index) {
+    case PROPERTY_INDEX_AUTHENTICATION:
+      // TODO(chocobo): Handle authentication.
+      return true;
+    case PROPERTY_INDEX_EAP:
+      // TODO(chocobo): Implement EAP authentication.
+      return true;
+    default:
+      break;
+  }
+  return false;
+}
+
 // -------------------- OncWirelessNetworkParser --------------------
 
 OncWirelessNetworkParser::OncWirelessNetworkParser() {}
@@ -1189,7 +1228,6 @@ OncWirelessNetworkParser::~OncWirelessNetworkParser() {}
 // -------------------- OncWifiNetworkParser --------------------
 
 OncWifiNetworkParser::OncWifiNetworkParser() {}
-
 OncWifiNetworkParser::~OncWifiNetworkParser() {}
 
 // static

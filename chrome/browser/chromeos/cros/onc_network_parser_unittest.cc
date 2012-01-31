@@ -223,6 +223,20 @@ TEST_F(OncNetworkParserTest, TestCreateNetworkWifi) {
   CheckStringProperty(wifi, PROPERTY_INDEX_PASSPHRASE, "z123456789012");
 }
 
+TEST_F(OncNetworkParserTest, TestCreateNetworkEthernet) {
+  std::string test_blob;
+  GetTestData("network-ethernet.onc", &test_blob);
+  OncNetworkParser parser(test_blob, "", NetworkUIData::ONC_SOURCE_USER_IMPORT);
+
+  EXPECT_GE(parser.GetNetworkConfigsSize(), 1);
+  scoped_ptr<Network> network(parser.ParseNetwork(0));
+  ASSERT_TRUE(network.get());
+
+  EXPECT_EQ(network->type(), chromeos::TYPE_ETHERNET);
+  EthernetNetwork* ethernet = static_cast<EthernetNetwork*>(network.get());
+  EXPECT_EQ(ethernet->name(), "My Ethernet Network");
+}
+
 TEST_F(OncNetworkParserTest, TestLoadEncryptedOnc) {
   std::string test_blob;
   GetTestData("encrypted.onc", &test_blob);
