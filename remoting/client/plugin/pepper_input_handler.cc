@@ -70,6 +70,8 @@ bool PepperInputHandler::HandleInputEvent(const pp::InputEvent& event) {
       if (mouse_event.has_button()) {
         bool is_down = (event.GetType() == PP_INPUTEVENT_TYPE_MOUSEDOWN);
         mouse_event.set_button_down(is_down);
+        mouse_event.set_x(pp_mouse_event.GetPosition().x());
+        mouse_event.set_y(pp_mouse_event.GetPosition().y());
         input_stub_->InjectMouseEvent(mouse_event);
       }
       return true;
