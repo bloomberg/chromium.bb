@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -212,14 +212,14 @@ void ContentSettingBubbleContents::Init() {
   const ContentSettingBubbleModel::RadioGroup& radio_group =
       bubble_content.radio_group;
   if (!radio_group.radio_items.empty()) {
+    if (!bubble_content_empty)
+      layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
     for (ContentSettingBubbleModel::RadioItems::const_iterator i =
          radio_group.radio_items.begin();
          i != radio_group.radio_items.end(); ++i) {
       views::RadioButton* radio = new views::RadioButton(UTF8ToUTF16(*i), 0);
       radio->set_listener(this);
       radio_group_.push_back(radio);
-      if (!bubble_content_empty)
-        layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
       layout->StartRow(0, single_column_set_id);
       layout->AddView(radio);
       bubble_content_empty = false;
