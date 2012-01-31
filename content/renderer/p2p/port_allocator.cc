@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -265,8 +265,8 @@ void P2PPortAllocatorSession::AddConfig() {
       new cricket::PortConfiguration(stun_server_address_,
                                      relay_username_, relay_password_, "");
 
-  cricket::PortConfiguration::PortList ports;
   if (relay_ip_.ip() != 0) {
+    cricket::PortConfiguration::PortList ports;
     if (relay_udp_port_ > 0) {
       talk_base::SocketAddress address(relay_ip_.ip(), relay_udp_port_);
       ports.push_back(cricket::ProtocolAddress(address, cricket::PROTO_UDP));
@@ -279,8 +279,9 @@ void P2PPortAllocatorSession::AddConfig() {
       talk_base::SocketAddress address(relay_ip_.ip(), relay_ssltcp_port_);
       ports.push_back(cricket::ProtocolAddress(address, cricket::PROTO_SSLTCP));
     }
+    if (!ports.empty())
+      config->AddRelay(ports, 0.0f);
   }
-  config->AddRelay(ports, 0.0f);
   ConfigReady(config);
 }
 
