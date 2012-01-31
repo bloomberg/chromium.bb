@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -60,9 +60,7 @@ class VIEWS_EXPORT BubbleBorder : public views::Border {
   }
 
   // Sets the location for the arrow.
-  void set_arrow_location(ArrowLocation arrow_location) {
-    arrow_location_ = arrow_location;
-  }
+  void set_arrow_location(ArrowLocation loc) { arrow_location_ = loc; }
   ArrowLocation arrow_location() const { return arrow_location_; }
 
   // Sets the alignment.
@@ -95,10 +93,11 @@ class VIEWS_EXPORT BubbleBorder : public views::Border {
 
   // Sets the background color for the arrow body.  This is irrelevant if you do
   // not also set the arrow location to something other than NONE.
-  void set_background_color(SkColor background_color) {
-    background_color_ = background_color;
-  }
+  void set_background_color(SkColor color) { background_color_ = color; }
   SkColor background_color() const { return background_color_; }
+
+  void set_client_bounds(const gfx::Rect& bounds) { client_bounds_ = bounds; }
+  const gfx::Rect& client_bounds() const { return client_bounds_; }
 
   // For borders with an arrow, gives the desired bounds (in screen coordinates)
   // given the rect to point to and the size of the contained contents.  This
@@ -164,6 +163,10 @@ class VIEWS_EXPORT BubbleBorder : public views::Border {
   ArrowLocation arrow_location_;
   BubbleAlignment alignment_;
   SkColor background_color_;
+
+  // The client/content bounds; must be clipped from the background on Windows.
+  // TODO(msw): Clean this up when Windows native controls are no longer needed.
+  gfx::Rect client_bounds_;
 
   DISALLOW_COPY_AND_ASSIGN(BubbleBorder);
 };

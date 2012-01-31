@@ -37,9 +37,10 @@ Widget* CreateBubbleWidget(BubbleDelegateView* bubble, Widget* parent) {
 }
 
 #if defined(OS_WIN) && !defined(USE_AURA)
-// The border widget's delegate, needed for transparent Windows native controls.
-// TODO(msw): Remove this when Windows native controls are no longer needed.
-class VIEWS_EXPORT BubbleBorderDelegateView : public WidgetDelegateView {
+// Windows uses two widgets and some extra complexity to host partially
+// transparent native controls and use per-pixel HWND alpha on the border.
+// TODO(msw): Clean these up when Windows native controls are no longer needed.
+class BubbleBorderDelegateView : public WidgetDelegateView {
  public:
   explicit BubbleBorderDelegateView(BubbleDelegateView* bubble)
       : bubble_(bubble) {}
@@ -268,6 +269,11 @@ void BubbleDelegateView::SizeToContents() {
 #if defined(OS_WIN) && !defined(USE_AURA)
   border_widget_->SetBounds(GetBubbleBounds());
   GetWidget()->SetBounds(GetBubbleClientBounds());
+
+  // Update the local client bounds clipped out by the border widget background.
+  // Used to correctly display overlapping semi-transparent widgets on Windows.
+  GetBubbleFrameView()->bubble_border()->set_client_bounds(
+      GetBubbleFrameView()->GetBoundsForClientView());
 #else
   GetWidget()->SetBounds(GetBubbleBounds());
 #endif

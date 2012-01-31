@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -51,7 +51,6 @@ struct BubbleBorder::BorderImages {
 // static
 struct BubbleBorder::BorderImages* BubbleBorder::normal_images_ = NULL;
 struct BubbleBorder::BorderImages* BubbleBorder::shadow_images_ = NULL;
-
 
 // The height inside the arrow image, in pixels.
 static const int kArrowInteriorHeight = 7;
@@ -497,6 +496,16 @@ void BubbleBorder::DrawArrowInterior(gfx::Canvas* canvas,
 /////////////////////////
 
 void BubbleBackground::Paint(gfx::Canvas* canvas, views::View* view) const {
+  // Clip out the client bounds to prevent overlapping transparent widgets.
+  if (!border_->client_bounds().IsEmpty()) {
+    SkRect client_rect;
+    client_rect.set(SkIntToScalar(border_->client_bounds().x()),
+                    SkIntToScalar(border_->client_bounds().y()),
+                    SkIntToScalar(border_->client_bounds().right()),
+                    SkIntToScalar(border_->client_bounds().bottom()));
+    canvas->GetSkCanvas()->clipRect(client_rect, SkRegion::kDifference_Op);
+  }
+
   // The border of this view creates an anti-aliased round-rect region for the
   // contents, which we need to fill with the background color.
   // NOTE: This doesn't handle an arrow location of "NONE", which has square top
