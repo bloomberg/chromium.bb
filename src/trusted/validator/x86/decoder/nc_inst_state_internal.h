@@ -106,6 +106,11 @@ struct NaClInstState {
    * It defines the decoder tables to use to decode the instruction.
    */
   struct NaClDecodeTables* decoder_tables;
+  /* True if the instruction is unchanged while dynamically replacing code.
+   * False if the instruction has changed or if code replacement is not being
+   * performed (i.e. normal validation.)
+   */
+  Bool unchanged;
 };
 
 /* Model of an instruction iterator. */

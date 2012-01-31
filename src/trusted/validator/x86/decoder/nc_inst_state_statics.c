@@ -66,6 +66,7 @@ static void NaClInstStateInit(NaClInstIter* iter, NaClInstState* state) {
   state->inst = NULL;
   state->nodes.is_defined = FALSE;
   state->nodes.number_expr_nodes = 0;
+  state->unchanged = FALSE;
 }
 
 /* Computes the number of bytes defined for operands of the matched

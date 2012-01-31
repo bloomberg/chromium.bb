@@ -483,8 +483,9 @@ static void NCDecoderStateInitFields(NCDecoderState* this) {
   for (dbindex = 0; dbindex < this->inst_buffer_size; ++dbindex) {
     this->inst_buffer[dbindex].dstate = this;
     this->inst_buffer[dbindex].inst_index = dbindex;
-    this->inst_buffer[dbindex].inst_count = 0;
+    this->inst_buffer[dbindex].inst_count = 1;
     this->inst_buffer[dbindex].inst_addr = 0;
+    this->inst_buffer[dbindex].unchanged = FALSE;
     NCInstBytesInitMemory(&this->inst_buffer[dbindex].inst.bytes,
                           &this->memory);
     NCInstBytesPtrInit((NCInstBytesPtr*) &this->inst_buffer[dbindex].inst_bytes,
@@ -540,6 +541,7 @@ static NCDecoderInst* IncrementInst(NCDecoderInst* inst) {
   next_inst->inst_addr = inst->inst_addr + inst->inst.bytes.length;
   next_inst->dstate->cur_inst_index = next_inst->inst_index;
   next_inst->inst_count = inst->inst_count + 1;
+  next_inst->unchanged = FALSE;
   return next_inst;
 }
 
@@ -652,7 +654,6 @@ Bool NCDecoderStateDecode(NCDecoderState* this) {
   DEBUG( printf("DecodeSegment(%p[%"NACL_PRIxNaClPcAddress"])\n",
                 (void*) this->memory.mpc, (NaClPcAddress) this->size) );
   NCDecoderStateNewSegment(this);
-  dinst->inst_count = 1;
   while (dinst->inst_addr < this->size) {
     ConsumeNextInstruction(dinst);
     if (this->memory.overflow_count) {

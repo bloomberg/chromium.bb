@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -34,6 +34,10 @@ extern char template_instr;
 extern char template_instr_end;
 extern char template_instr_replace;
 extern char template_instr_replace_end;
+extern char jump_into_super_inst_original;
+extern char jump_into_super_inst_original_end;
+extern char jump_into_super_inst_modified;
+extern char jump_into_super_inst_modified_end;
 #endif
 
 extern char template_func_external_jump_target;

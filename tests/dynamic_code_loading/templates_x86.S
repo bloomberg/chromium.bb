@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -63,6 +63,62 @@ template_func_replacement:
 # error "Unsupported architecture"
 #endif
 template_func_replacement_end:
+
+
+#if defined(__i386__)
+        .global jump_into_super_inst_original
+        .global jump_into_super_inst_original_end
+        .p2align 5
+jump_into_super_inst_original:
+jump_is_ok:
+        and  $0xffffffe0,%ecx
+        jmp  *%ecx
+        call jump_is_ok
+jump_into_super_inst_original_end:
+
+
+/* This should not validate, so keep it as data. */
+        .data
+        .global jump_into_super_inst_modified
+        .global jump_into_super_inst_modified_end
+        .p2align 5
+jump_into_super_inst_modified:
+        and  $0xffffffe0,%ecx
+jump_is_awful:
+        jmp  *%ecx
+        call jump_is_awful
+jump_into_super_inst_modified_end:
+        .text
+#endif
+
+
+#if defined(__x86_64__)
+        .global jump_into_super_inst_original
+        .global jump_into_super_inst_original_end
+        .p2align 5
+jump_into_super_inst_original:
+jump_is_ok:
+        andl $0xffffffe0,%r11d
+        addq %r15,%r11
+        jmpq *%r11
+        call jump_is_ok
+jump_into_super_inst_original_end:
+
+
+/* This should not validate, so keep it as data. */
+        .data
+        .global jump_into_super_inst_modified
+        .global jump_into_super_inst_modified_end
+        .p2align 5
+jump_into_super_inst_modified:
+        andl $0xffffffe0,%r11d
+        addq %r15,%r11
+jump_is_awful:
+        jmpq *%r11
+        call jump_is_awful
+jump_into_super_inst_modified_end:
+        .text
+#endif
 
 
         .global template_func_nonreplacement

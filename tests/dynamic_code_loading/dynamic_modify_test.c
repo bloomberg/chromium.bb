@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -311,6 +311,61 @@ void test_replacing_code_unaligned_disabled() {
   assert(rc == 1234);
 }
 
+#if defined(__i386__) || defined(__x86_64__)
+void test_jump_into_super_inst_create() {
+  uint8_t *load_area = allocate_code_space(1);
+  uint8_t buf[BUF_SIZE];
+  int rc;
+
+  /* A direct jump into a bundle is invalid. */
+  copy_and_pad_fragment(buf, sizeof(buf), &jump_into_super_inst_modified,
+                        &jump_into_super_inst_modified_end);
+  rc = nacl_dyncode_create(load_area, buf, sizeof(buf));
+  assert(rc != 0);
+  assert(errno == EINVAL);
+}
+
+void test_start_with_super_inst_replace() {
+  uint8_t *load_area = allocate_code_space(1);
+  uint8_t buf[BUF_SIZE];
+  int rc;
+
+  /* The original version is fine. */
+  copy_and_pad_fragment(buf, sizeof(buf), &jump_into_super_inst_original,
+                        &jump_into_super_inst_original_end);
+  rc = nacl_dyncode_create(load_area, buf, sizeof(buf));
+  assert(rc == 0);
+
+  /* Replace the code with itself.  This makes sure that replacement code can
+   * start with a super instruction.
+   */
+  copy_and_pad_fragment(buf, sizeof(buf), &jump_into_super_inst_original,
+                        &jump_into_super_inst_original_end);
+  rc = nacl_dyncode_modify(load_area, buf, sizeof(buf));
+  assert(rc == 0);
+}
+
+void test_jump_into_super_inst_replace() {
+  uint8_t *load_area = allocate_code_space(1);
+  uint8_t buf[BUF_SIZE];
+  int rc;
+
+  /* The original version is fine. */
+  copy_and_pad_fragment(buf, sizeof(buf), &jump_into_super_inst_original,
+                        &jump_into_super_inst_original_end);
+  rc = nacl_dyncode_create(load_area, buf, sizeof(buf));
+  assert(rc == 0);
+
+  /* The modified version cannot be used as a replacement.
+   * See: http://code.google.com/p/nativeclient/issues/detail?id=2563
+   */
+  copy_and_pad_fragment(buf, sizeof(buf), &jump_into_super_inst_modified,
+                        &jump_into_super_inst_modified_end);
+  rc = nacl_dyncode_modify(load_area, buf, sizeof(buf));
+  assert(rc != 0);
+  assert(errno == EINVAL);
+}
+#endif
 
 void run_test(const char *test_name, void (*test_func)(void)) {
   printf("Running %s...\n", test_name);
@@ -334,6 +389,9 @@ int TestMain() {
   RUN_TEST(test_replacing_code_unaligned);
 #if defined(__i386__) || defined(__x86_64__)
   RUN_TEST(test_replacing_code_slowpaths);
+  RUN_TEST(test_jump_into_super_inst_create);
+  RUN_TEST(test_start_with_super_inst_replace);
+  RUN_TEST(test_jump_into_super_inst_replace);
 #endif
   RUN_TEST(test_illegal_code_replacment);
   RUN_TEST(test_external_jump_target_replacement);

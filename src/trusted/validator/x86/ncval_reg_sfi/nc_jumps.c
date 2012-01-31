@@ -87,6 +87,17 @@ static void NaClAddJumpToJumpSets(NaClValidatorState* vstate,
      * the 4GB untrusted address space, but there is no need for this
      * restriction and it would make validation judgements position-dependent.
      */
+  } else if (inst->unchanged) {
+    /* If we are replacing this instruction during dynamic code modification
+     * and it has not changed, the jump target must be valid because the
+     * instruction has been previously validated.  However, we may be only
+     * replacing a subsection of the code segment and therefore may not have
+     * information about instruction boundaries outside of the code being
+     * replaced. Therefore, we allow unaligned direct jumps outside of the code
+     * being validated if and only if the instruction is unchanged.
+     * If dynamic code replacement is not being performed, inst->unchanged
+     * should always be false.
+     */
   } else {
     NaClValidatorInstMessage(LOG_ERROR, vstate, inst,
                              "Instruction jumps to bad address\n");

@@ -886,12 +886,9 @@ void NaClValidateSegmentPair(uint8_t *mbase_old, uint8_t *mbase_new,
     vstate->cur_iter = iter_new;
     while (NaClInstIterHasNextInline(iter_old) &&
            NaClValidatorStateIterHasNextInline(vstate)) {
-      Bool inst_changed;
-      inst_changed = NaClValidateInstReplacement(iter_old, iter_new, vstate);
-      if (inst_changed)
-        NaClApplyValidators(vstate);
-      else
-        NaClJumpValidatorRememberIpOnly(vstate);
+      vstate->cur_inst_state->unchanged =
+          !NaClValidateInstReplacement(iter_old, iter_new, vstate);
+      NaClApplyValidators(vstate);
       if (vstate->quit) break;
       NaClInstIterAdvanceInline(iter_old);
       NaClValidatorStateIterAdvanceInline(vstate);

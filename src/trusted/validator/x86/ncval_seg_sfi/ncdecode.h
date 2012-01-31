@@ -196,6 +196,11 @@ typedef struct NCDecoderInst {
    * exist.
    */
   size_t inst_count;
+  /* True if the instruction is unchanged while dynamically replacing code.
+   * False if the instruction has changed or if code replacement is not being
+   * performed (i.e. normal validation.)
+   */
+  Bool unchanged;
 } NCDecoderInst;
 
 /* Given a (decoded) instruction, return the instruction that appeared

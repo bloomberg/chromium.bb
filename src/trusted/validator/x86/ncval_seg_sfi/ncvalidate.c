@@ -432,6 +432,17 @@ static void RememberJumpTarget(const NCDecoderInst *dinst, int32_t jump_offset,
     NCSetAdrTable(target, vstate->kttable);
   } else if ((target & vstate->alignmask) == 0) {
     /* Allow bundle-aligned jumps. */
+  } else if (dinst->unchanged) {
+    /* If we are replacing this instruction during dynamic code modification
+     * and it has not changed, the jump target must be valid because the
+     * instruction has been previously validated.  However, we may be only
+     * replacing a subsection of the code segment and therefore may not have
+     * information about instruction boundaries outside of the code being
+     * replaced. Therefore, we allow unaligned direct jumps outside of the code
+     * being validated if and only if the instruction is unchanged.
+     * If dynamic code replacement is not being performed, inst->unchanged
+     * should always be false.
+     */
   } else {
     ValidatePrintInstructionError(dinst, "JUMP TARGET out of range", vstate);
     NCStatsBadTarget(vstate);
@@ -903,19 +914,10 @@ static void ValidateIndirect5Replacement(NCDecoderInst *dinst_old,
 static Bool ValidateInstReplacement(NCDecoderStatePair* tthis,
                                     NCDecoderInst *dinst_old,
                                     NCDecoderInst *dinst_new) {
-  /* Only validate individual instructions that have changed. */
-  if (memcmp(dinst_old->inst.bytes.byte,
-             dinst_new->inst.bytes.byte,
-             dinst_new->inst.bytes.length)) {
-    /* Call single instruction validator first, will call ValidateIndirect5() */
-    ValidateInst(dinst_new);
-  } else {
-    /* Still need to record there is an intruction here for NCValidateFinish()
-     * to verify basic block alignment.
-     */
-    RememberInstructionBoundary(dinst_new,
-                                NCVALIDATOR_STATE_DOWNCAST(dinst_new->dstate));
-  }
+  dinst_new->unchanged = memcmp(dinst_old->inst.bytes.byte,
+                                dinst_new->inst.bytes.byte,
+                                dinst_new->inst.bytes.length) == 0;
+  ValidateInst(dinst_new);
 
   if (dinst_old->opinfo->insttype == NACLi_INDIRECT
     || dinst_new->opinfo->insttype == NACLi_INDIRECT) {
