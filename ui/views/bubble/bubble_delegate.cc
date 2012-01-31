@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -115,10 +115,7 @@ BubbleDelegateView::BubbleDelegateView(
   AddAccelerator(ui::Accelerator(ui::VKEY_ESCAPE, 0));
 }
 
-BubbleDelegateView::~BubbleDelegateView() {
-  if (border_widget_)
-    border_widget_->Close();
-}
+BubbleDelegateView::~BubbleDelegateView() {}
 
 // static
 Widget* BubbleDelegateView::CreateBubble(BubbleDelegateView* bubble_delegate) {
@@ -154,12 +151,36 @@ NonClientFrameView* BubbleDelegateView::CreateNonClientFrameView() {
   return new BubbleFrameView(arrow_location(), color(), margin());
 }
 
+void BubbleDelegateView::OnWidgetClosing(Widget* widget) {
+  if (widget == GetWidget()) {
+    widget->RemoveObserver(this);
+    if (border_widget_) {
+      border_widget_->Close();
+      border_widget_ = NULL;
+    }
+  }
+}
+
+void BubbleDelegateView::OnWidgetVisibilityChanged(Widget* widget,
+                                                   bool visible) {
+  if (widget == GetWidget()) {
+    if (visible) {
+      if (border_widget_)
+        border_widget_->Show();
+      GetFocusManager()->SetFocusedView(GetInitiallyFocusedView());
+      Widget* anchor_widget = anchor_view() ? anchor_view()->GetWidget() : NULL;
+      if (anchor_widget && anchor_widget->GetTopLevelWidget())
+        anchor_widget->GetTopLevelWidget()->DisableInactiveRendering();
+    } else if (border_widget_) {
+      border_widget_->Hide();
+    }
+  }
+}
+
 void BubbleDelegateView::OnWidgetActivationChanged(Widget* widget,
                                                    bool active) {
-  if (close_on_deactivate() && widget == GetWidget() && !active) {
-    GetWidget()->RemoveObserver(this);
+  if (close_on_deactivate() && widget == GetWidget() && !active)
     GetWidget()->Close();
-  }
 }
 
 gfx::Rect BubbleDelegateView::GetAnchorRect() {
@@ -167,13 +188,7 @@ gfx::Rect BubbleDelegateView::GetAnchorRect() {
 }
 
 void BubbleDelegateView::Show() {
-  if (border_widget_)
-    border_widget_->Show();
   GetWidget()->Show();
-  GetFocusManager()->SetFocusedView(GetInitiallyFocusedView());
-  if (anchor_view() && anchor_view()->GetWidget() &&
-      anchor_view()->GetWidget()->GetTopLevelWidget())
-    anchor_view()->GetWidget()->GetTopLevelWidget()->DisableInactiveRendering();
 }
 
 void BubbleDelegateView::StartFade(bool fade_in) {

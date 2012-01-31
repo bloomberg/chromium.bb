@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -46,6 +46,8 @@ class VIEWS_EXPORT BubbleDelegateView : public WidgetDelegateView,
   virtual NonClientFrameView* CreateNonClientFrameView() OVERRIDE;
 
   // Widget::Observer overrides:
+  virtual void OnWidgetClosing(Widget* widget) OVERRIDE;
+  virtual void OnWidgetVisibilityChanged(Widget* widget, bool visible) OVERRIDE;
   virtual void OnWidgetActivationChanged(Widget* widget, bool active) OVERRIDE;
 
   bool close_on_esc() const { return close_on_esc_; }
