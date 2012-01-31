@@ -7,22 +7,29 @@
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/google/google_util.h"
 #include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/token_service.h"
 #include "chrome/browser/tab_contents/confirm_infobar_delegate.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/webui/sync_promo/sync_promo_ui.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
 #include "chrome/common/net/gaia/gaia_urls.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/url_constants.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/navigation_controller.h"
+#include "content/public/browser/page_navigator.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/common/referrer.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -38,10 +45,25 @@ namespace {
 
 // Enum values used for UMA histograms.
 enum {
+  // The infobar was shown to the user.
   HISTOGRAM_SHOWN,
+
+  // The user pressed the accept button to perform the suggested action.
   HISTOGRAM_ACCEPTED,
+
+  // The user pressed the reject to turn off the feature.
   HISTOGRAM_REJECTED,
+
+  // The user pressed the X button to dismiss the infobar this time.
+  HISTOGRAM_DISMISSED,
+
+  // The user completely ignored the infoar.  Either they navigated away, or
+  // they used the page as is.
   HISTOGRAM_IGNORED,
+
+  // The user clicked on the learn more link in the infobar.
+  HISTOGRAM_LEARN_MORE,
+
   HISTOGRAM_MAX
 };
 
@@ -141,15 +163,9 @@ void AutoLoginRedirector::RedirectToMergeSession(const std::string& token) {
 
 AutoLoginInfoBarDelegate::AutoLoginInfoBarDelegate(
     InfoBarTabHelper* owner,
-    NavigationController* navigation_controller,
-    TokenService* token_service,
-    PrefService* pref_service,
     const std::string& username,
     const std::string& args)
     : ConfirmInfoBarDelegate(owner),
-      navigation_controller_(navigation_controller),
-      token_service_(token_service),
-      pref_service_(pref_service),
       username_(username),
       args_(args),
       button_pressed_(false) {
@@ -157,9 +173,13 @@ AutoLoginInfoBarDelegate::AutoLoginInfoBarDelegate(
 }
 
 AutoLoginInfoBarDelegate::~AutoLoginInfoBarDelegate() {
-  if (!button_pressed_) {
+  if (!button_pressed_)
     RecordHistogramAction(HISTOGRAM_IGNORED);
-  }
+}
+
+void AutoLoginInfoBarDelegate::InfoBarDismissed() {
+  RecordHistogramAction(HISTOGRAM_DISMISSED);
+  button_pressed_ = true;
 }
 
 gfx::Image* AutoLoginInfoBarDelegate::GetIcon() const {
@@ -183,15 +203,22 @@ string16 AutoLoginInfoBarDelegate::GetButtonLabel(
 }
 
 bool AutoLoginInfoBarDelegate::Accept() {
+  TokenService* token_service =
+      TabContentsWrapper::GetCurrentWrapperForContents(
+          owner()->web_contents())->profile()->GetTokenService();
   // AutoLoginRedirector deletes itself.
-  new AutoLoginRedirector(token_service_, navigation_controller_, args_);
+  new AutoLoginRedirector(token_service,
+                          &owner()->web_contents()->GetController(), args_);
   RecordHistogramAction(HISTOGRAM_ACCEPTED);
   button_pressed_ = true;
   return true;
 }
 
 bool AutoLoginInfoBarDelegate::Cancel() {
-  pref_service_->SetBoolean(prefs::kAutologinEnabled, false);
+  PrefService* pref_service =
+      TabContentsWrapper::GetCurrentWrapperForContents(
+          owner()->web_contents())->profile()->GetPrefs();
+  pref_service->SetBoolean(prefs::kAutologinEnabled, false);
   RecordHistogramAction(HISTOGRAM_REJECTED);
   button_pressed_ = true;
   return true;
@@ -206,12 +233,8 @@ void AutoLoginInfoBarDelegate::RecordHistogramAction(int action) {
 
 ReverseAutoLoginInfoBarDelegate::ReverseAutoLoginInfoBarDelegate(
     InfoBarTabHelper* owner,
-    NavigationController* navigation_controller,
-    PrefService* pref_service,
     const std::string& continue_url)
     : ConfirmInfoBarDelegate(owner),
-      navigation_controller_(navigation_controller),
-      pref_service_(pref_service),
       continue_url_(continue_url),
       button_pressed_(false) {
   DCHECK(!continue_url.empty());
@@ -219,9 +242,13 @@ ReverseAutoLoginInfoBarDelegate::ReverseAutoLoginInfoBarDelegate(
 }
 
 ReverseAutoLoginInfoBarDelegate::~ReverseAutoLoginInfoBarDelegate() {
-  if (!button_pressed_) {
+  if (!button_pressed_)
     RecordHistogramAction(HISTOGRAM_IGNORED);
-  }
+}
+
+void ReverseAutoLoginInfoBarDelegate::InfoBarDismissed() {
+  RecordHistogramAction(HISTOGRAM_DISMISSED);
+  button_pressed_ = true;
 }
 
 gfx::Image* ReverseAutoLoginInfoBarDelegate::GetIcon() const {
@@ -254,19 +281,39 @@ bool ReverseAutoLoginInfoBarDelegate::Accept() {
   // would have landed on with the regular google login.
   GURL sync_promo_url = SyncPromoUI::GetSyncPromoURL(GURL(continue_url_), false,
                                                      "ReverseAutoLogin");
-  navigation_controller_->LoadURL(sync_promo_url, content::Referrer(),
-                                  content::PAGE_TRANSITION_AUTO_BOOKMARK,
-                                  std::string());
+  content::OpenURLParams params(sync_promo_url, content::Referrer(),
+      CURRENT_TAB, content::PAGE_TRANSITION_AUTO_BOOKMARK, false);
+  owner()->web_contents()->OpenURL(params);
   RecordHistogramAction(HISTOGRAM_ACCEPTED);
   button_pressed_ = true;
   return true;
 }
 
 bool ReverseAutoLoginInfoBarDelegate::Cancel() {
-  pref_service_->SetBoolean(prefs::kReverseAutologinEnabled, false);
+  PrefService* pref_service =
+      TabContentsWrapper::GetCurrentWrapperForContents(
+          owner()->web_contents())->profile()->GetPrefs();
+  pref_service->SetBoolean(prefs::kReverseAutologinEnabled, false);
   RecordHistogramAction(HISTOGRAM_REJECTED);
   button_pressed_ = true;
   return true;
+}
+
+string16 ReverseAutoLoginInfoBarDelegate::GetLinkText() const {
+  return l10n_util::GetStringUTF16(IDS_LEARN_MORE);
+}
+
+bool ReverseAutoLoginInfoBarDelegate::LinkClicked(
+    WindowOpenDisposition disposition) {
+  content::OpenURLParams params(
+      google_util::AppendGoogleLocaleParam(GURL(chrome::kSyncLearnMoreURL)),
+      content::Referrer(),
+      (disposition == CURRENT_TAB) ? NEW_FOREGROUND_TAB : disposition,
+      content::PAGE_TRANSITION_LINK,
+      false);
+  owner()->web_contents()->OpenURL(params);
+  RecordHistogramAction(HISTOGRAM_LEARN_MORE);
+  return false;
 }
 
 void ReverseAutoLoginInfoBarDelegate::RecordHistogramAction(int action) {

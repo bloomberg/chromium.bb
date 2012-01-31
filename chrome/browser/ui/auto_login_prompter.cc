@@ -191,17 +191,13 @@ void AutoLoginPrompter::Observe(int type,
     // |wrapper| is NULL for TabContents hosted in HTMLDialog.
     if (wrapper) {
       InfoBarTabHelper* infobar_helper = wrapper->infobar_tab_helper();
-      Profile* profile = wrapper->profile();
       InfoBarDelegate* delegate = NULL;
       if (use_normal_auto_login_infobar_) {
-        delegate = new AutoLoginInfoBarDelegate(
-            infobar_helper, &web_contents_->GetController(),
-            profile->GetTokenService(), profile->GetPrefs(),
-            username_, args_);
+        delegate = new AutoLoginInfoBarDelegate(infobar_helper, username_,
+                                                args_);
       } else {
-        delegate = new ReverseAutoLoginInfoBarDelegate(
-            infobar_helper, &web_contents_->GetController(),
-            profile->GetPrefs(), continue_url_);
+        delegate = new ReverseAutoLoginInfoBarDelegate(infobar_helper,
+                                                       continue_url_);
       }
 
       infobar_helper->AddInfoBar(delegate);
