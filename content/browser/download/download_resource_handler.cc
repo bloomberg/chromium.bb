@@ -296,7 +296,7 @@ void DownloadResourceHandler::OnRequestClosed() {
 
 void DownloadResourceHandler::StartOnUIThread(
     scoped_ptr<DownloadCreateInfo> info,
-    DownloadRequestHandle handle) {
+    const DownloadRequestHandle& handle) {
   DownloadManager* download_manager = handle.GetDownloadManager();
   if (!download_manager) {
     // NULL in unittests or if the page closed right after starting the

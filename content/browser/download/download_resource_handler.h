@@ -101,7 +101,7 @@ class DownloadResourceHandler : public ResourceHandler {
 
   // Generates a DownloadId and calls DownloadFileManager.
   void StartOnUIThread(scoped_ptr<DownloadCreateInfo> info,
-                       DownloadRequestHandle handle);
+                       const DownloadRequestHandle& handle);
   void set_download_id(content::DownloadId id);
 
   content::DownloadId download_id_;
