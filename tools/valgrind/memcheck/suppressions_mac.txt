@@ -2222,7 +2222,9 @@
    fun:_ZN7WebCore10ImageFrame9setStatusENS0_11FrameStatusE
    fun:_ZN7WebCore15PNGImageDecoder11pngCompleteEv
    fun:_ZN7WebCoreL11pngCompleteEP14png_struct_defP15png_info_struct
+   ...
    fun:wk_png_push_read_chunk
+   ...
    fun:wk_png_process_data
    fun:_ZN7WebCore14PNGImageReader6decodeERKNS_12SharedBufferEb
    fun:_ZN7WebCore15PNGImageDecoder6decodeEb
@@ -2230,6 +2232,7 @@
    fun:_ZN7WebCore11ImageSource18createFrameAtIndexEm
    fun:_ZN6WebKit8WebImage8fromDataERKNS_7WebDataERKNS_7WebSizeE
    fun:_ZNK11webkit_glue12ImageDecoder6DecodeEPKhm
+   ...
 }
 {
    bug_107158
