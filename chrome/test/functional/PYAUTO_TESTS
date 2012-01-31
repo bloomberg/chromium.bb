@@ -34,6 +34,7 @@
   'CONTINUOUS': {
     'all': [
       'autofill',
+      'about_plugins_ui.AboutPluginsTest.testAboutPluginDetailInfo',
       'bookmark_bar',
       'bookmarks',
       'browser',
@@ -289,6 +290,8 @@
       '-policy_prefs_ui',
       # No Protector on ChromeOS.
       '-protector',
+      # No Web Driver test for ChromeOS.
+      '-aboutplugins_ui',
 
       # ==================================================
       # Disabled tests that need to be investigated/fixed.
@@ -432,6 +435,7 @@
       'media.media_basic_playback',
       'nacl_sdk',
       'translate',
+      'about_plugins_ui',
 
       # Remove when r119687 reaches official builds.  Revisit 01/31/2012
       '-special_tabs.SpecialTabsTest.testSpecialAcceratorTabs',
@@ -554,6 +558,8 @@
       # ===========================
       # No NaCl support on ChromeOS.
       '-nacl_sdk',
+      # No Web Driver test for ChromeOS.
+      '-aboutplugins_ui',
 
       # ==================================================
       # Disabled tests that need to be investigated/fixed.
