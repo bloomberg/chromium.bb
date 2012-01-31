@@ -1,3 +1,9 @@
+# crbug 51716
+# Disabling all unit tests
+# Problems reappeared after r119922
+*
+*.*
+
 # Times out too often
 # crbug.com/15817
 IPCSyncChannelTest.*
