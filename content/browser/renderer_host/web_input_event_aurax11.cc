@@ -382,9 +382,9 @@ WebKit::WebTouchPoint* UpdateWebTouchEventFromAuraEvent(
   point->position.x = event->x();
   point->position.y = event->y();
 
-  // TODO(sad): Convert to screen coordinates.
-  point->screenPosition.x = point->position.x;
-  point->screenPosition.y = point->position.y;
+  const gfx::Point root_point = event->root_location();
+  point->screenPosition.x = root_point.x();
+  point->screenPosition.y = root_point.y();
 
   // Mark the rest of the points as stationary.
   for (unsigned i = 0; i < web_event->touchesLength; ++i) {
