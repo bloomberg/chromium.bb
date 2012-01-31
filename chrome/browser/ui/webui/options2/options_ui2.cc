@@ -19,6 +19,8 @@
 #include "chrome/browser/browser_about_handler.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/webui/options/options_sync_setup_handler.h"
+#include "chrome/browser/ui/webui/options/stop_syncing_handler.h"
 #include "chrome/browser/ui/webui/options2/advanced_options_handler2.h"
 #include "chrome/browser/ui/webui/options2/autofill_options_handler2.h"
 #include "chrome/browser/ui/webui/options2/browser_options_handler2.h"
@@ -31,11 +33,9 @@
 #include "chrome/browser/ui/webui/options2/import_data_handler2.h"
 #include "chrome/browser/ui/webui/options2/language_options_handler2.h"
 #include "chrome/browser/ui/webui/options2/manage_profile_handler2.h"
-#include "chrome/browser/ui/webui/options2/options_sync_setup_handler2.h"
 #include "chrome/browser/ui/webui/options2/password_manager_handler2.h"
 #include "chrome/browser/ui/webui/options2/search_engine_manager_handler2.h"
 #include "chrome/browser/ui/webui/options2/startup_pages_handler2.h"
-#include "chrome/browser/ui/webui/options2/stop_syncing_handler2.h"
 #include "chrome/browser/ui/webui/options2/web_intents_settings_handler2.h"
 #include "chrome/browser/ui/webui/theme_source.h"
 #include "chrome/common/jstemplate_builder.h"
@@ -150,44 +150,6 @@ std::string OptionsUIHTMLSource::GetMimeType(const std::string& path) const {
     return "application/javascript";
 
   return "text/html";
-}
-
-////////////////////////////////////////////////////////////////////////////////
-//
-// OptionsPageUIHandler
-//
-////////////////////////////////////////////////////////////////////////////////
-
-OptionsPageUIHandler::OptionsPageUIHandler() {
-}
-
-OptionsPageUIHandler::~OptionsPageUIHandler() {
-}
-
-bool OptionsPageUIHandler::IsEnabled() {
-  return true;
-}
-
-// static
-void OptionsPageUIHandler::RegisterStrings(
-    DictionaryValue* localized_strings,
-    const OptionsStringResource* resources,
-    size_t length) {
-  for (size_t i = 0; i < length; ++i) {
-    localized_strings->SetString(
-        resources[i].name, l10n_util::GetStringUTF16(resources[i].id));
-  }
-}
-
-void OptionsPageUIHandler::RegisterTitle(DictionaryValue* localized_strings,
-                                         const std::string& variable_name,
-                                         int title_id) {
-  localized_strings->SetString(variable_name,
-      l10n_util::GetStringUTF16(title_id));
-  localized_strings->SetString(variable_name + "TabTitle",
-      l10n_util::GetStringFUTF16(IDS_OPTIONS_TAB_TITLE,
-          l10n_util::GetStringUTF16(IDS_SETTINGS_TITLE),
-          l10n_util::GetStringUTF16(title_id)));
 }
 
 ////////////////////////////////////////////////////////////////////////////////

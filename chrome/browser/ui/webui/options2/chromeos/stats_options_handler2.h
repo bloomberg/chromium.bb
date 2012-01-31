@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,7 +16,7 @@ namespace options2 {
 // settings page. This handler does only ChromeOS-specific actions while default
 // code is in Chrome's AdvancedOptionsHandler
 // (chrome/browser/webui/advanced_options_handler.cc).
-class StatsOptionsHandler : public ::options2::OptionsPageUIHandler {
+class StatsOptionsHandler : public OptionsPageUIHandler {
  public:
   StatsOptionsHandler();
 

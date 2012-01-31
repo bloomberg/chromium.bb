@@ -14,7 +14,7 @@ namespace chromeos {
 namespace options2 {
 
 // Customize modifier keys overlay page UI handler.
-class KeyboardHandler : public ::options2::OptionsPageUIHandler {
+class KeyboardHandler : public OptionsPageUIHandler {
  public:
   KeyboardHandler();
   virtual ~KeyboardHandler();

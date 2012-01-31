@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,7 +21,7 @@ namespace chromeos {
 namespace options2 {
 
 // ChromeOS user image options page UI handler.
-class ChangePictureOptionsHandler : public ::options2::OptionsPageUIHandler,
+class ChangePictureOptionsHandler : public OptionsPageUIHandler,
                                     public SelectFileDialog::Listener,
                                     public TakePhotoDialog::Delegate {
  public:

@@ -16,7 +16,7 @@ namespace chromeos {
 namespace options2 {
 
 // Pointer settings overlay page UI handler.
-class PointerHandler : public ::options2::OptionsPageUIHandler,
+class PointerHandler : public OptionsPageUIHandler,
                        public chromeos::DeviceHierarchyObserver,
                        public base::SupportsWeakPtr<PointerHandler> {
  public:
