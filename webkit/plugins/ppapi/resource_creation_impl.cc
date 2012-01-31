@@ -260,6 +260,8 @@ PP_Resource ResourceCreationImpl::CreateTransport(PP_Instance instance,
                                                   PP_TransportType type) {
 #if defined(ENABLE_P2P_APIS)
   return PPB_Transport_Impl::Create(instance, name, type);
+#else
+  return 0;
 #endif
 }
 
