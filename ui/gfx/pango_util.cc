@@ -36,8 +36,7 @@ const double kFadeWidthFactor = 1.5;
 // End state of the elliding fade.
 const double kFadeFinalAlpha = 0.15;
 
-// Return |cairo_font_options|. If needed, allocate and update it based on
-// GtkSettings.
+// Return |cairo_font_options|. If needed, allocate and update it.
 cairo_font_options_t* GetCairoFontOptions() {
   // Font settings that we initialize once and then use when drawing text.
   static cairo_font_options_t* cairo_font_options = NULL;
@@ -47,13 +46,12 @@ cairo_font_options_t* GetCairoFontOptions() {
 
   cairo_font_options = cairo_font_options_create();
 
+#if defined(TOOLKIT_USES_GTK)
   gint antialias = 0;
   gint hinting = 0;
   gchar* hint_style = NULL;
   gchar* rgba_style = NULL;
 
-#if !defined(USE_WAYLAND) && defined(TOOLKIT_USES_GTK)
-  // TODO(xji): still has gtk dependency.
   GtkSettings* gtk_settings = gtk_settings_get_default();
   g_object_get(gtk_settings,
                "gtk-xft-antialias", &antialias,
@@ -61,7 +59,6 @@ cairo_font_options_t* GetCairoFontOptions() {
                "gtk-xft-hintstyle", &hint_style,
                "gtk-xft-rgba", &rgba_style,
                NULL);
-#endif
 
   // g_object_get() doesn't tell us whether the properties were present or not,
   // but if they aren't (because gnome-settings-daemon isn't running), we'll get
@@ -108,6 +105,17 @@ cairo_font_options_t* GetCairoFontOptions() {
     g_free(hint_style);
   if (rgba_style)
     g_free(rgba_style);
+#else
+  // For non-GTK builds (read: Aura), use the same settings that were previously
+  // used for GTK Chrome OS builds: RGB subpixel rendering with strong hinting.
+  // Note: We should probably be getting per-font settings from FontConfig here,
+  // but this path will be made obsolete by http://crbug.com/105550.
+  cairo_font_options_set_antialias(cairo_font_options,
+                                   CAIRO_ANTIALIAS_SUBPIXEL);
+  cairo_font_options_set_subpixel_order(cairo_font_options,
+                                        CAIRO_SUBPIXEL_ORDER_RGB);
+  cairo_font_options_set_hint_style(cairo_font_options, CAIRO_HINT_STYLE_FULL);
+#endif
 
   return cairo_font_options;
 }
