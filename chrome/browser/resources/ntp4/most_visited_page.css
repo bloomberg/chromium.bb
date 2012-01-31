@@ -5,6 +5,7 @@
 
 .most-visited {
   position: absolute;
+  z-index: 0;
 }
 
 .most-visited {
@@ -85,7 +86,7 @@ html[dir='rtl'] .most-visited .favicon {
   margin-bottom: 8px;
   position: absolute;
   width: 100%;
-  z-index: 100;
+  z-index: 10;
 }
 
 .most-visited .title {

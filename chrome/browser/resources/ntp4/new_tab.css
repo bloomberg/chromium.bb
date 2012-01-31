@@ -34,7 +34,7 @@ body {
   margin-top: 2px;
   position: relative;
   text-align: center;
-  z-index: 100;
+  z-index: 15;
 }
 
 #notification-container.inactive {
@@ -186,7 +186,7 @@ html[dir='rtl'] #attribution {
   right: 0;
   text-align: right;
   top: 0;
-  z-index: 100;
+  z-index: 10;
 }
 
 html[dir='rtl'] #login-container {
