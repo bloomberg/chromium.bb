@@ -564,7 +564,7 @@ void WebURLLoaderImpl::Context::OnReceivedResponse(
 
     std::string mime_type;
     std::string charset;
-    bool had_charset;
+    bool had_charset = false;
     std::string boundary;
     net::HttpUtil::ParseContentType(content_type, &mime_type, &charset,
                                     &had_charset, &boundary);
