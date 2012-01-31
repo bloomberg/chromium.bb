@@ -164,14 +164,25 @@ SessionCommand* BaseSessionService::CreateUpdateTabNavigationCommand(
                         entry.GetTitle());
 
   if (entry.GetHasPostData()) {
-    UMA_HISTOGRAM_MEMORY_KB("SessionService.ContentStateSizeWithPost",
-                            entry.GetContentState().size() / 1024);
     // Remove the form data, it may contain sensitive information.
+    std::string content_state_without_post =
+        webkit_glue::RemoveFormDataFromHistoryState(entry.GetContentState());
     WriteStringToPickle(pickle, &bytes_written, max_state_size,
-        webkit_glue::RemoveFormDataFromHistoryState(entry.GetContentState()));
+                        content_state_without_post);
+
+    int original_size = entry.GetContentState().size() / 1024;
+    int new_size = content_state_without_post.size() / 1024;
+    UMA_HISTOGRAM_CUSTOM_COUNTS(
+        "SessionService.ContentStateSizeWithPostOriginal", original_size,
+        62, 100000, 50);
+    UMA_HISTOGRAM_CUSTOM_COUNTS(
+        "SessionService.ContentStateSizeWithPostRemoved", new_size,
+        62, 100000, 50);
   } else {
-    UMA_HISTOGRAM_MEMORY_KB("SessionService.ContentStateSize",
-                            entry.GetContentState().size() / 1024);
+    UMA_HISTOGRAM_CUSTOM_COUNTS(
+        "SessionService.ContentStateSizeWithoutPost",
+        entry.GetContentState().size() / 1024,
+        62, 100000, 50);
     WriteStringToPickle(pickle, &bytes_written, max_state_size,
                         entry.GetContentState());
   }
