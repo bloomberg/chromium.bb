@@ -446,6 +446,9 @@ namespace extension_misc {
     // feature that let you make desktop shortcuts from the file menu.
     APP_LAUNCH_CMD_LINE_APP_LEGACY,
 
+    // User clicked web store link on the NTP footer.
+    APP_LAUNCH_NTP_WEBSTORE_FOOTER,
+
     APP_LAUNCH_BUCKET_BOUNDARY,
     APP_LAUNCH_BUCKET_INVALID
   };

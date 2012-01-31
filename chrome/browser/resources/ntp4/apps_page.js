@@ -14,7 +14,8 @@ cr.define('ntp4', function() {
     NTP_APPS_MENU: 2,
     NTP_MOST_VISITED: 3,
     NTP_RECENTLY_CLOSED: 4,
-    NTP_APP_RE_ENABLE: 16
+    NTP_APP_RE_ENABLE: 16,
+    NTP_WEBSTORE_FOOTER: 18,
   };
 
   // Histogram buckets for UMA tracking of where a DnD drop came from.

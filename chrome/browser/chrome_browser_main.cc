@@ -55,28 +55,29 @@
 #include "chrome/browser/nacl_host/nacl_process_host.h"
 #include "chrome/browser/net/chrome_net_log.h"
 #include "chrome/browser/net/predictor.h"
-#include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/notifications/desktop_notification_service_factory.h"
+#include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/plugin_prefs.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/pref_value_store.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/prerender/prerender_field_trial.h"
-#include "chrome/browser/printing/cloud_print/cloud_print_proxy_service.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_proxy_service_factory.h"
+#include "chrome/browser/printing/cloud_print/cloud_print_proxy_service.h"
 #include "chrome/browser/process_singleton.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/search_engines/search_engine_type.h"
 #include "chrome/browser/search_engines/template_url.h"
-#include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
+#include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/service/service_process_control.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/translate/translate_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_init.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager_backend.h"
+#include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
 #include "chrome/browser/ui/webui/sync_promo/sync_promo_trial.h"
 #include "chrome/common/child_process_logging.h"
 #include "chrome/common/chrome_constants.h"
@@ -1029,6 +1030,7 @@ void ChromeBrowserMainParts::SetupFieldTrials(bool metrics_recording_enabled,
   DefaultAppsFieldTrial();
   AutoLaunchChromeFieldTrial();
   sync_promo_trial::Activate();
+  NewTabUI::SetupFieldTrials();
 }
 
 void ChromeBrowserMainParts::StartMetricsRecording() {

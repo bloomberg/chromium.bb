@@ -623,6 +623,9 @@ const char kEnableWatchdog[]                = "enable-watchdog";
 // Uses WebSocket over SPDY.
 const char kEnableWebSocketOverSpdy[]       = "enable-websocket-over-spdy";
 
+// Enables the web store link experiment.
+const char kEnableWebStoreLink[]            = "enable-webstore-link";
+
 // Enables experimental features for Spellchecker. Right now, the first
 // experimental feature is auto spell correct, which corrects words which are
 // misppelled by typing the word with two consecutive letters swapped. The

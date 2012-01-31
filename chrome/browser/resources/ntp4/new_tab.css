@@ -13,13 +13,13 @@ html {
 }
 
 body {
-  background-size: auto 100%;
-  margin: 0;
   /* Don't highlight links when they're tapped.  Safari has bugs here that
      show up as flicker when dragging in some situations */
   -webkit-tap-highlight-color: transparent;
   /* Don't allow selecting text - can occur when dragging */
   -webkit-user-select: none;
+  background-size: auto 100%;
+  margin: 0;
 }
 
 /* [hidden] does display:none, but its priority is too low in some cases. */
@@ -28,18 +28,18 @@ body {
 }
 
 #notification-container {
+  -webkit-transition-duration: 100ms;
+  -webkit-transition-property: opacity;
   display: block;
   margin-top: 2px;
   position: relative;
   text-align: center;
   z-index: 100;
-  -webkit-transition-duration: 100ms;
-  -webkit-transition-property: opacity;
 }
 
 #notification-container.inactive {
-  opacity: 0;
   -webkit-transition-duration: 200ms;
+  opacity: 0;
 }
 
 #notification {
@@ -58,8 +58,8 @@ body {
 }
 
 #notification .close-button {
-  vertical-align: middle;
   -webkit-margin-start: 0.5em;
+  vertical-align: middle;
 }
 
 .close-button {
@@ -85,11 +85,11 @@ body {
 }
 
 .linkButton {
+  -webkit-margin-start: 0.5em;
   color: #06C;
   cursor: pointer;
   display: inline-block;
   text-decoration: underline;
-  -webkit-margin-start: 0.5em;
 }
 
 #card-slider-frame {
@@ -152,9 +152,9 @@ html[dir='rtl'] #attribution {
 }
 
 #footer-content {
+  -webkit-box-align: center;
   display: -webkit-box;
   height: 49px;
-  -webkit-box-align: center;
 }
 
 #footer-content > * {
@@ -172,6 +172,7 @@ html[dir='rtl'] #attribution {
 /* Login Status. **************************************************************/
 
 #login-container {
+  -webkit-box-shadow: none;
   background: transparent none;
   border: none;
   cursor: pointer;
@@ -186,7 +187,6 @@ html[dir='rtl'] #attribution {
   text-align: right;
   top: 0;
   z-index: 100;
-  -webkit-box-shadow: none;
 }
 
 html[dir='rtl'] #login-container {
@@ -195,10 +195,10 @@ html[dir='rtl'] #login-container {
 }
 
 .login-status-icon {
+  -webkit-padding-end: 37px;
   background-position: right center;
   background-repeat: no-repeat;
   min-height: 27px;
-  -webkit-padding-end: 37px;
 }
 
 html[dir='rtl'] .login-status-icon {
@@ -226,10 +226,10 @@ html[dir='rtl'] .login-status-icon {
 }
 
 .login-status-row {
-  display: -webkit-box;
   -webkit-box-align: center;
   -webkit-box-orient: horizontal;
   -webkit-box-pack: end;
+  display: -webkit-box;
 }
 
 #login-status-advanced-container {
@@ -308,6 +308,7 @@ html[dir='rtl'] #footer.showing-trash-mode #trash.drag-target .lid {
 /* Page switcher buttons. *****************************************************/
 
 .page-switcher {
+  -webkit-transition: width 150ms, right 150ms, background-color 150ms;
   background-color: transparent;
   border: none;
   bottom: 0;
@@ -320,5 +321,51 @@ html[dir='rtl'] #footer.showing-trash-mode #trash.drag-target .lid {
   outline: none;
   top: 0;
   z-index: 5;
-  -webkit-transition: width 150ms, right 150ms, background-color 150ms;
+}
+
+#chrome-web-store-href {
+  /* Match transition delay of recently closed button. */
+  -webkit-transition-delay: 100ms;
+  cursor: pointer;
+  display: none;
+  margin: 0;
+  padding: 0;
+  text-decoration: none;
+}
+
+#chrome-web-store-title {
+  -webkit-padding-start: 16px;
+  color: #7F7F7F;
+  font-weight: bold;
+  font-size: 9pt;
+  padding-bottom: 17px;
+  padding-top: 17px;
+}
+
+#chrome-web-store-title:hover {
+  color: #666;
+}
+
+#chrome-web-store-icon {
+  -webkit-padding-end: 19px;
+  -webkit-padding-start: 2px;
+  height: 24px;
+  padding-bottom: 13px;
+  padding-top: 12px;
+  width: 24px;
+}
+
+/* Show the chrome-web-store button when the experiment is turned on. */
+.enable-cws-experiment #chrome-web-store-href {
+  display: inline;
+}
+
+/* Reserve space for the menu button even when it's hidden. */
+#footer.showing-trash-mode #chrome-web-store-href {
+  visibility: hidden;
+}
+
+#footer.showing-trash-mode #chrome-web-store-href {
+  -webkit-transition-delay: 0;
+  opacity: 0;
 }

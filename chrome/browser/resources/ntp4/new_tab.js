@@ -113,6 +113,17 @@ cr.define('ntp4', function() {
                               false);
     chrome.send('getMostVisited');
 
+    if (templateData.isWebStoreExperimentEnabled) {
+      var webstoreLink = localStrings.getString('webStoreLink');
+      var url = appendParam(webstoreLink, 'utm_source', 'chrome-ntp-launcher');
+      $('chrome-web-store-href').href = url;
+
+      $('chrome-web-store-href').addEventListener('click',
+          onChromeWebStoreButtonClick);
+
+      $('footer-content').classList.add('enable-cws-experiment');
+    }
+
     if (localStrings.getString('login_status_message')) {
       loginBubble = new cr.ui.Bubble;
       loginBubble.anchorNode = $('login-container');
@@ -170,6 +181,17 @@ cr.define('ntp4', function() {
                   [rect.left, rect.top, rect.width, rect.height]);
     });
     chrome.send('initializeSyncLogin');
+  }
+
+  /**
+   * Launches the chrome web store app with the chrome-ntp-launcher
+   * source.
+   * @param {Event} e The click event.
+   */
+  function onChromeWebStoreButtonClick(e) {
+    chrome.send('recordAppLaunchByURL',
+                [encodeURIComponent(this.href),
+                 ntp4.APP_LAUNCH.NTP_WEBSTORE_FOOTER]);
   }
 
   /**

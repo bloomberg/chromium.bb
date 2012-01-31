@@ -296,6 +296,8 @@ void NTPResourceCache::CreateNewTabHTML() {
       l10n_util::GetStringUTF16(IDS_NEW_TAB_RESTORE_THUMBNAILS_SHORT_LINK));
   localized_strings.SetString("recentlyclosed",
       l10n_util::GetStringUTF16(IDS_NEW_TAB_RECENTLY_CLOSED));
+  localized_strings.SetString("webStoreTitle",
+      l10n_util::GetStringUTF16(IDS_EXTENSION_WEB_STORE_TITLE));
   localized_strings.SetString("closedwindowsingle",
       l10n_util::GetStringUTF16(IDS_NEW_TAB_RECENTLY_CLOSED_WINDOW_SINGLE));
   localized_strings.SetString("closedwindowmultiple",
@@ -330,6 +332,11 @@ void NTPResourceCache::CreateNewTabHTML() {
       l10n_util::GetStringUTF16(IDS_SYNC_START_SYNC_BUTTON_LABEL));
   localized_strings.SetString("syncLinkText",
       l10n_util::GetStringUTF16(IDS_SYNC_ADVANCED_OPTIONS));
+  localized_strings.SetString("webStoreLink",
+      GetUrlWithLang(GURL(extension_urls::GetWebstoreLaunchURL())));
+  localized_strings.SetBoolean("isWebStoreExperimentEnabled",
+      NewTabUI::IsWebStoreExperimentEnabled());
+
 #if defined(OS_CHROMEOS)
   localized_strings.SetString("expandMenu",
       l10n_util::GetStringUTF16(IDS_NEW_TAB_CLOSE_MENU_EXPAND));

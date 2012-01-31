@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -29,6 +29,13 @@ class NewTabUI : public content::WebUIController,
   virtual ~NewTabUI();
 
   static void RegisterUserPrefs(PrefService* prefs);
+
+  // Sets up any experiment in which the NTP might want to participate.
+  // The CWS footer link is one such example.
+  static void SetupFieldTrials();
+
+  // Returns whether or not the CWS footer experiment is enabled.
+  static bool IsWebStoreExperimentEnabled();
 
   // Adds "url", "title", and "direction" keys on incoming dictionary, setting
   // title as the url as a fallback on empty title.

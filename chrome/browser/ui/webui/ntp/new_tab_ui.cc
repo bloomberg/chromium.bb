@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,6 +14,7 @@
 #include "base/i18n/rtl.h"
 #include "base/lazy_instance.h"
 #include "base/memory/singleton.h"
+#include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/string_number_conversions.h"
 #include "base/threading/thread.h"
@@ -23,8 +24,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_types.h"
 #include "chrome/browser/sync/profile_sync_service.h"
-#include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
+#include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/webui/metrics_handler.h"
 #include "chrome/browser/ui/webui/ntp/app_launcher_handler.h"
@@ -34,8 +35,8 @@
 #include "chrome/browser/ui/webui/ntp/new_tab_page_handler.h"
 #include "chrome/browser/ui/webui/ntp/new_tab_page_sync_handler.h"
 #include "chrome/browser/ui/webui/ntp/ntp_login_handler.h"
-#include "chrome/browser/ui/webui/ntp/ntp_resource_cache.h"
 #include "chrome/browser/ui/webui/ntp/ntp_resource_cache_factory.h"
+#include "chrome/browser/ui/webui/ntp/ntp_resource_cache.h"
 #include "chrome/browser/ui/webui/ntp/recently_closed_tabs_handler.h"
 #include "chrome/browser/ui/webui/theme_source.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -70,6 +71,9 @@ const char kRTLHtmlTextDirection[] = "rtl";
 const char kLTRHtmlTextDirection[] = "ltr";
 
 static base::LazyInstance<std::set<const WebUIController*> > g_live_new_tabs;
+
+// The Web Store footer experiment FieldTrial name.
+const char kWebStoreLinkExperiment[] = "WebStoreLinkExperiment";
 
 }  // namespace
 
@@ -213,6 +217,33 @@ void NewTabUI::RegisterUserPrefs(PrefService* prefs) {
   NewTabPageHandler::RegisterUserPrefs(prefs);
   AppLauncherHandler::RegisterUserPrefs(prefs);
   MostVisitedHandler::RegisterUserPrefs(prefs);
+}
+
+// static
+void NewTabUI::SetupFieldTrials() {
+  scoped_refptr<base::FieldTrial> trial(
+      new base::FieldTrial("WebStoreLinkExperiment", 1000, "Disabled",
+                           2012, 6, 1));
+
+  // Try to give the user a consistent experience, if possible.
+  if (base::FieldTrialList::IsOneTimeRandomizationEnabled())
+    trial->UseOneTimeRandomization();
+
+  // 4% in Enabled group.
+  trial->AppendGroup("Enabled", 40);
+}
+
+// static
+bool NewTabUI::IsWebStoreExperimentEnabled() {
+  const CommandLine* cli = CommandLine::ForCurrentProcess();
+  if (cli->HasSwitch(switches::kEnableWebStoreLink))
+    return true;
+
+  if (!base::FieldTrialList::TrialExists(kWebStoreLinkExperiment))
+    return false;
+
+  return base::FieldTrialList::FindValue(kWebStoreLinkExperiment) !=
+             base::FieldTrial::kDefaultGroupNumber;
 }
 
 // static
