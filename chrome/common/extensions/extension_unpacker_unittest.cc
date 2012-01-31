@@ -19,6 +19,12 @@ namespace keys = extension_manifest_keys;
 
 class ExtensionUnpackerTest : public testing::Test {
 public:
+  ~ExtensionUnpackerTest() {
+    LOG(WARNING) << "Deleting temp dir: "
+                 << temp_dir_.path().LossyDisplayName();
+    LOG(WARNING) << temp_dir_.Delete();
+  }
+
   void SetupUnpacker(const std::string& crx_name) {
     FilePath original_path;
     ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &original_path));
@@ -48,7 +54,7 @@ public:
 
 // Crashes intermittently on Windows, see http://crbug.com/109238
 #if defined(OS_WIN)
-#define MAYBE_EmptyDefaultLocale DISABLED_EmptyDefaultLocale
+#define MAYBE_EmptyDefaultLocale EmptyDefaultLocale
 #else
 #define MAYBE_EmptyDefaultLocale EmptyDefaultLocale
 #endif
@@ -62,7 +68,7 @@ TEST_F(ExtensionUnpackerTest, MAYBE_EmptyDefaultLocale) {
 // Crashes intermittently on Vista, see http://crbug.com/109385
 #if defined(OS_WIN)
 #define MAYBE_HasDefaultLocaleMissingLocalesFolder \
-  DISABLED_HasDefaultLocaleMissingLocalesFolder
+  HasDefaultLocaleMissingLocalesFolder
 #else
 #define MAYBE_HasDefaultLocaleMissingLocalesFolder \
   HasDefaultLocaleMissingLocalesFolder
@@ -76,7 +82,7 @@ TEST_F(ExtensionUnpackerTest, MAYBE_HasDefaultLocaleMissingLocalesFolder) {
 
 // Crashes intermittently on Windows, see http://crbug.com/109238
 #if defined(OS_WIN)
-#define MAYBE_InvalidDefaultLocale DISABLED_InvalidDefaultLocale
+#define MAYBE_InvalidDefaultLocale InvalidDefaultLocale
 #else
 #define MAYBE_InvalidDefaultLocale InvalidDefaultLocale
 #endif
@@ -89,7 +95,7 @@ TEST_F(ExtensionUnpackerTest, MAYBE_InvalidDefaultLocale) {
 
 // Crashes intermittently on Windows, see http://crbug.com/109738
 #if defined(OS_WIN)
-#define MAYBE_InvalidMessagesFile DISABLED_InvalidMessagesFile
+#define MAYBE_InvalidMessagesFile InvalidMessagesFile
 #else
 #define MAYBE_InvalidMessagesFile InvalidMessagesFile
 #endif
@@ -103,7 +109,7 @@ TEST_F(ExtensionUnpackerTest, MAYBE_InvalidMessagesFile) {
 
 // Crashes intermittently on Vista, see http://crbug.com/109238
 #if defined(OS_WIN)
-#define MAYBE_MissingDefaultData DISABLED_MissingDefaultData
+#define MAYBE_MissingDefaultData MissingDefaultData
 #else
 #define MAYBE_MissingDefaultData MissingDefaultData
 #endif
@@ -117,7 +123,7 @@ TEST_F(ExtensionUnpackerTest, MAYBE_MissingDefaultData) {
 // Crashes intermittently on Vista, see http://crbug.com/109238
 #if defined(OS_WIN)
 #define MAYBE_MissingDefaultLocaleHasLocalesFolder \
-  DISABLED_MissingDefaultLocaleHasLocalesFolder
+  MissingDefaultLocaleHasLocalesFolder
 #else
 #define MAYBE_MissingDefaultLocaleHasLocalesFolder \
   MissingDefaultLocaleHasLocalesFolder
@@ -131,7 +137,7 @@ TEST_F(ExtensionUnpackerTest, MAYBE_MissingDefaultLocaleHasLocalesFolder) {
 
 // Crashes intermittently on Vista, see http://crbug.com/109238
 #if defined(OS_WIN)
-#define MAYBE_MissingMessagesFile DISABLED_MissingMessagesFile
+#define MAYBE_MissingMessagesFile MissingMessagesFile
 #else
 #define MAYBE_MissingMessagesFile MissingMessagesFile
 #endif
@@ -145,7 +151,7 @@ TEST_F(ExtensionUnpackerTest, MAYBE_MissingMessagesFile) {
 
 // Crashes intermittently on Vista, see http://crbug.com/109238
 #if defined(OS_WIN)
-#define MAYBE_NoLocaleData DISABLED_NoLocaleData
+#define MAYBE_NoLocaleData NoLocaleData
 #else
 #define MAYBE_NoLocaleData NoLocaleData
 #endif
@@ -158,7 +164,7 @@ TEST_F(ExtensionUnpackerTest, MAYBE_NoLocaleData) {
 
 // Crashes intermittently on Vista, see http://crbug.com/109238
 #if defined(OS_WIN)
-#define MAYBE_GoodL10n DISABLED_GoodL10n
+#define MAYBE_GoodL10n GoodL10n
 #else
 #define MAYBE_GoodL10n GoodL10n
 #endif
@@ -171,7 +177,7 @@ TEST_F(ExtensionUnpackerTest, MAYBE_GoodL10n) {
 
 // Crashes intermittently on Vista, see http://crbug.com/109238
 #if defined(OS_WIN)
-#define MAYBE_NoL10n DISABLED_NoL10n
+#define MAYBE_NoL10n NoL10n
 #else
 #define MAYBE_NoL10n NoL10n
 #endif
