@@ -9,6 +9,7 @@
 #include "base/basictypes.h"
 #include "base/metrics/histogram.h"
 #include "base/string_util.h"
+#include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier.h"
@@ -392,6 +393,8 @@ void AutocompleteEditModel::SetInputInProgress(bool in_progress) {
     return;
 
   user_input_in_progress_ = in_progress;
+  if (user_input_in_progress_)
+    time_user_first_modified_omnibox_ = base::TimeTicks::Now();
   controller_->OnInputInProgress(in_progress);
 }
 
@@ -510,12 +513,15 @@ void AutocompleteEditModel::OpenMatch(const AutocompleteMatch& match,
   // We only care about cases where there is a selection (i.e. the popup is
   // open).
   if (popup_->IsOpen()) {
-    AutocompleteLog log(autocomplete_controller_->input().text(),
-                        autocomplete_controller_->input().type(),
-                        popup_->selected_line(),
-                        -1,  // don't yet know tab ID; set later if appropriate
-                        0,  // inline autocomplete length; possibly set later
-                        result());
+    AutocompleteLog log(
+        autocomplete_controller_->input().text(),
+        autocomplete_controller_->input().type(),
+        popup_->selected_line(),
+        -1,  // don't yet know tab ID; set later if appropriate
+        base::TimeDelta::FromMilliseconds(-1),  // typing duration; usually
+                                                // over-written later
+        0,  // inline autocomplete length; possibly set later
+        result());
     if (index != AutocompletePopupModel::kNoMatch)
       log.selected_index = index;
     else if (!has_temporary_text_)
@@ -526,6 +532,17 @@ void AutocompleteEditModel::OpenMatch(const AutocompleteMatch& match,
       // tab, we don't know the tab ID yet.)
       log.tab_id = controller_->GetTabContentsWrapper()->
                        restore_tab_helper()->session_id().id();
+    }
+    if (user_input_in_progress_) {
+      // This case should happen every time except possibly in unit tests.
+      // If we somehow got into OpenMatch() by selecting an autocomplete
+      // match without going through user_input_in_progress_, that
+      // means we never properly set time_user_first_modified_omnibox_
+      // (because we didn't know the user started typing!).  In that
+      // case, leave the elapsed_time_since_user_first_modified_omnibox
+      // set to -1 ms.
+      log.elapsed_time_since_user_first_modified_omnibox =
+          base::TimeTicks::Now() - time_user_first_modified_omnibox_;
     }
     content::NotificationService::current()->Notify(
         chrome::NOTIFICATION_OMNIBOX_OPENED_URL,

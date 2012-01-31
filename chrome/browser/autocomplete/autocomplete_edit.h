@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
+#include "base/time.h"
 #include "chrome/browser/autocomplete/autocomplete_controller_delegate.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/common/instant_types.h"
@@ -461,6 +462,10 @@ class AutocompleteEditModel : public AutocompleteControllerDelegate {
   // The text that the user has entered.  This does not include inline
   // autocomplete text that has not yet been accepted.
   string16 user_text_;
+
+  // We keep track of when the user began modifying the omnibox text.
+  // This should be valid whenever user_input_in_progress_ is true.
+  base::TimeTicks time_user_first_modified_omnibox_;
 
   // When the user closes the popup, we need to remember the URL for their
   // desired choice, so that if they hit enter without reopening the popup we

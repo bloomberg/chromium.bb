@@ -13,6 +13,7 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/string16.h"
+#include "base/time.h"
 #include "base/timer.h"
 #include "chrome/browser/sessions/session_id.h"
 #include "googleurl/src/gurl.h"
@@ -743,19 +744,14 @@ class AutocompleteController : public ACProviderListener {
 // The data to log (via the metrics service) when the user selects an item
 // from the omnibox popup.
 struct AutocompleteLog {
-  AutocompleteLog(const string16& text,
-                  AutocompleteInput::Type input_type,
-                  size_t selected_index,
-                  SessionID::id_type tab_id,
-                  size_t inline_autocompleted_length,
-                  const AutocompleteResult& result)
-      : text(text),
-        input_type(input_type),
-        selected_index(selected_index),
-        tab_id(tab_id),
-        inline_autocompleted_length(inline_autocompleted_length),
-        result(result) {
-  }
+  AutocompleteLog(
+      const string16& text,
+      AutocompleteInput::Type input_type,
+      size_t selected_index,
+      SessionID::id_type tab_id,
+      base::TimeDelta elapsed_time_since_user_first_modified_omnibox,
+      size_t inline_autocompleted_length,
+      const AutocompleteResult& result);
   // The user's input text in the omnibox.
   string16 text;
   // The detected type of the user's input.
@@ -765,6 +761,15 @@ struct AutocompleteLog {
   // ID of the tab the selected autocomplete suggestion was opened in.
   // Set to -1 if we haven't yet determined the destination tab.
   SessionID::id_type tab_id;
+  // The amount of time since the user first began modifying the text
+  // in the omnibox.  If at some point after modifying the text, the
+  // user reverts the modifications (thus seeing the current web
+  // page's URL again), then writes in the omnibox again, this time
+  // delta should be computed starting from the second series of
+  // modifications.  If we somehow skipped the logic to record
+  // the time the user began typing (this should only happen in
+  // unit tests), this elapsed time is set to -1 milliseconds.
+  base::TimeDelta elapsed_time_since_user_first_modified_omnibox;
   // Inline autocompleted length (if displayed).
   size_t inline_autocompleted_length;
   // Result set.

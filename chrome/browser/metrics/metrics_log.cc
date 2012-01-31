@@ -513,6 +513,12 @@ void MetricsLog::RecordOmniboxOpenedURL(const AutocompleteLog& log) {
     WriteIntAttribute("selectedindex", static_cast<int>(log.selected_index));
     WriteIntAttribute("completedlength",
                       static_cast<int>(log.inline_autocompleted_length));
+    if (log.elapsed_time_since_user_first_modified_omnibox !=
+        base::TimeDelta::FromMilliseconds(-1)) {
+      // Only upload the typing duration if it is set/valid.
+      WriteInt64Attribute("typingduration",
+          log.elapsed_time_since_user_first_modified_omnibox.InMilliseconds());
+    }
     const std::string input_type(
         AutocompleteInput::TypeToString(log.input_type));
     if (!input_type.empty())
