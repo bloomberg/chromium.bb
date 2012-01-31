@@ -16,7 +16,6 @@ MediaStreamImpl::MediaStreamImpl(
     MediaStreamDependencyFactory* dependency_factory)
     : dependency_factory_(dependency_factory),
       media_stream_dispatcher_(media_stream_dispatcher),
-      media_engine_(NULL),
       p2p_socket_dispatcher_(p2p_socket_dispatcher),
       network_manager_(NULL),
       vc_manager_(vc_manager),
@@ -24,15 +23,10 @@ MediaStreamImpl::MediaStreamImpl(
       message_loop_proxy_(base::MessageLoopProxy::current()),
       signaling_thread_(NULL),
       worker_thread_(NULL),
-      chrome_worker_thread_("Chrome_libJingle_WorkerThread"),
-      vcm_created_(false) {
+      chrome_worker_thread_("Chrome_libJingle_WorkerThread") {
 }
 
-MediaStreamImpl::~MediaStreamImpl() {
-  DCHECK(!peer_connection_handler_);
-  if (dependency_factory_.get())
-    dependency_factory_->DeletePeerConnectionFactory();
-}
+MediaStreamImpl::~MediaStreamImpl() {}
 
 WebKit::WebPeerConnectionHandler* MediaStreamImpl::CreatePeerConnectionHandler(
     WebKit::WebPeerConnectionHandlerClient* client) {
@@ -42,8 +36,9 @@ WebKit::WebPeerConnectionHandler* MediaStreamImpl::CreatePeerConnectionHandler(
 void MediaStreamImpl::ClosePeerConnection() {
 }
 
-bool MediaStreamImpl::SetVideoCaptureModule(const std::string& label) {
-  return false;
+webrtc::MediaStreamTrackInterface* MediaStreamImpl::GetLocalMediaStreamTrack(
+    const std::string& label) {
+  return NULL;
 }
 
 void MediaStreamImpl::requestUserMedia(
@@ -69,8 +64,7 @@ void MediaStreamImpl::OnStreamGenerated(
     const media_stream::StreamDeviceInfoArray& video_array) {
 }
 
-void MediaStreamImpl::OnStreamGenerationFailed(int request_id) {
-}
+void MediaStreamImpl::OnStreamGenerationFailed(int request_id) {}
 
 void MediaStreamImpl::OnVideoDeviceFailed(const std::string& label,
                                           int index) {
@@ -85,8 +79,7 @@ void MediaStreamImpl::OnDevicesEnumerated(
     const media_stream::StreamDeviceInfoArray& device_array) {
 }
 
-void MediaStreamImpl::OnDevicesEnumerationFailed(int request_id) {
-}
+void MediaStreamImpl::OnDevicesEnumerationFailed(int request_id) {}
 
 void MediaStreamImpl::OnDeviceOpened(
     int request_id,
@@ -94,5 +87,4 @@ void MediaStreamImpl::OnDeviceOpened(
     const media_stream::StreamDeviceInfo& video_device) {
 }
 
-void MediaStreamImpl::OnDeviceOpenFailed(int request_id) {
-}
+void MediaStreamImpl::OnDeviceOpenFailed(int request_id) {}
