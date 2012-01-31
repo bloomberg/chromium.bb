@@ -257,22 +257,26 @@ class SpellCheckRenderViewObserver : public content::RenderViewHostObserver {
             return;
           }
 
+          BOOL ended = phase == NSEventPhaseEnded;
+
+          // Dismiss the panel before navigation for immediate visual feedback.
+          [historyOverlay setProgress:gestureAmount];
+          if (ended)
+            [historyOverlay dismiss];
+
           // |gestureAmount| obeys -[NSEvent isDirectionInvertedFromDevice]
           // automatically.
           Browser* browser = BrowserList::FindBrowserWithWindow(
               historyOverlay.view.window);
-          if (phase == NSEventPhaseEnded && browser) {
+          if (ended && browser) {
             if (goForward)
               browser->GoForward(CURRENT_TAB);
             else
               browser->GoBack(CURRENT_TAB);
           }
 
-          [historyOverlay setProgress:gestureAmount];
-          if (isComplete) {
-            [historyOverlay dismiss];
+          if (isComplete)
             [historyOverlay release];
-          }
         }];
       return YES;
     }
