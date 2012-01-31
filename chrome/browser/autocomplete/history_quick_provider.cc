@@ -128,7 +128,8 @@ AutocompleteMatch HistoryQuickProvider::QuickMatchToACMatch(
       AutocompleteInput::FormattedStringWithEquivalentMeaning(info.url(),
           net::FormatUrlWithOffsets(info.url(), languages_, format_types,
               net::UnescapeRule::SPACES, NULL, NULL, &offsets));
-  match.contents = net::FormatUrl(info.url(), languages_);
+  match.contents = net::FormatUrl(info.url(), languages_, format_types,
+              net::UnescapeRule::SPACES, NULL, NULL, NULL);
   history::TermMatches new_matches =
       ReplaceOffsetsInTermMatches(history_match.url_matches, offsets);
   match.contents_class =
