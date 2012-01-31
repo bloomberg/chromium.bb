@@ -339,7 +339,7 @@ WebStorageNamespace* TestWebViewDelegate::createSessionStorageNamespace(
 }
 
 WebGraphicsContext3D* TestWebViewDelegate::createGraphicsContext3D(
-    WebGraphicsContext3D::Attributes attributes,
+    const WebGraphicsContext3D::Attributes& attributes,
     bool direct) {
   if (!shell_->webView())
     return NULL;

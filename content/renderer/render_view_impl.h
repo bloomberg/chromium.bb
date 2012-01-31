@@ -342,7 +342,7 @@ class RenderViewImpl : public RenderWidget,
   virtual WebKit::WebStorageNamespace* createSessionStorageNamespace(
       unsigned quota);
   virtual WebKit::WebGraphicsContext3D* createGraphicsContext3D(
-      WebKit::WebGraphicsContext3D::Attributes attributes,
+      const WebKit::WebGraphicsContext3D::Attributes& attributes,
       bool direct);
   virtual void didAddMessageToConsole(
       const WebKit::WebConsoleMessage& message,

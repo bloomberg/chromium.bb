@@ -581,6 +581,28 @@ RendererWebKitPlatformSupportImpl::createGraphicsContext3D() {
   }
 }
 
+WebKit::WebGraphicsContext3D*
+RendererWebKitPlatformSupportImpl::createOffscreenGraphicsContext3D(
+    const WebGraphicsContext3D::Attributes& attributes) {
+  // The WebGraphicsContext3DInProcessImpl code path is used for
+  // layout tests (though not through this code) as well as for
+  // debugging and bringing up new ports.
+  scoped_ptr<WebGraphicsContext3D> context;
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kInProcessWebGL)) {
+    context.reset(new webkit::gpu::WebGraphicsContext3DInProcessImpl(
+        gfx::kNullPluginWindow, NULL));
+  } else {
+#if defined(ENABLE_GPU)
+    context.reset(new WebGraphicsContext3DCommandBufferImpl());
+#else
+    return NULL;
+#endif
+  }
+  if (!context->initialize(attributes, NULL, false))
+    return NULL;
+  return context.release();
+}
+
 double RendererWebKitPlatformSupportImpl::audioHardwareSampleRate() {
   return audio_hardware::GetOutputSampleRate();
 }

@@ -1473,7 +1473,7 @@ WebStorageNamespace* RenderViewImpl::createSessionStorageNamespace(
 }
 
 WebGraphicsContext3D* RenderViewImpl::createGraphicsContext3D(
-    WebGraphicsContext3D::Attributes attributes,
+    const WebGraphicsContext3D::Attributes& attributes,
     bool direct) {
   if (!webview())
     return NULL;

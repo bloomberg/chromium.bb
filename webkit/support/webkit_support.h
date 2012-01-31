@@ -100,7 +100,7 @@ void SetGraphicsContext3DImplementation(GraphicsContext3DImplementation);
 GraphicsContext3DImplementation GetGraphicsContext3DImplementation();
 
 WebKit::WebGraphicsContext3D* CreateGraphicsContext3D(
-    WebKit::WebGraphicsContext3D::Attributes attributes,
+    const WebKit::WebGraphicsContext3D::Attributes& attributes,
     WebKit::WebView* web_view,
     bool direct);
 

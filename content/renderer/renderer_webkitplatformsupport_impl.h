@@ -11,6 +11,7 @@
 #include "base/platform_file.h"
 #include "content/common/content_export.h"
 #include "content/common/webkitplatformsupport_impl.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebGraphicsContext3D.h"
 
 class RendererClipboardClient;
 class WebSharedWorkerRepositoryImpl;
@@ -82,6 +83,8 @@ class CONTENT_EXPORT RendererWebKitPlatformSupportImpl
   virtual WebKit::WebFileSystem* fileSystem() OVERRIDE;
   virtual WebKit::WebSharedWorkerRepository* sharedWorkerRepository() OVERRIDE;
   virtual WebKit::WebGraphicsContext3D* createGraphicsContext3D() OVERRIDE;
+  virtual WebKit::WebGraphicsContext3D* createOffscreenGraphicsContext3D(
+      const WebKit::WebGraphicsContext3D::Attributes& attributes);
   virtual double audioHardwareSampleRate() OVERRIDE;
   virtual size_t audioHardwareBufferSize() OVERRIDE;
   virtual WebKit::WebAudioDevice* createAudioDevice(

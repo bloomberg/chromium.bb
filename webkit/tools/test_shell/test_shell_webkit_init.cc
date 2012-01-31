@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -303,6 +303,17 @@ TestShellWebKitInit::sharedWorkerRepository() {
 WebKit::WebGraphicsContext3D* TestShellWebKitInit::createGraphicsContext3D() {
   return new webkit::gpu::WebGraphicsContext3DInProcessImpl(
       gfx::kNullPluginWindow, NULL);
+}
+
+WebKit::WebGraphicsContext3D*
+TestShellWebKitInit::createOffscreenGraphicsContext3D(
+    const WebKit::WebGraphicsContext3D::Attributes& attributes) {
+  scoped_ptr<WebGraphicsContext3D> context(
+      new webkit::gpu::WebGraphicsContext3DInProcessImpl(
+          gfx::kNullPluginWindow, NULL));
+  if (!context->initialize(attributes, NULL, false))
+    return NULL;
+  return context.release();
 }
 
 void TestShellWebKitInit::GetPlugins(

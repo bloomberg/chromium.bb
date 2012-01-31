@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -385,6 +385,25 @@ TestWebKitPlatformSupport::createGraphicsContext3D() {
       CHECK(false) << "Unknown GraphicsContext3D Implementation";
       return NULL;
   }
+}
+
+WebKit::WebGraphicsContext3D*
+TestWebKitPlatformSupport::createOffscreenGraphicsContext3D(
+    const WebKit::WebGraphicsContext3D::Attributes& attributes) {
+  scoped_ptr<WebKit::WebGraphicsContext3D> context;
+  switch (webkit_support::GetGraphicsContext3DImplementation()) {
+    case webkit_support::IN_PROCESS:
+      context.reset(new webkit::gpu::WebGraphicsContext3DInProcessImpl(
+          gfx::kNullPluginWindow, NULL));
+      break;
+    case webkit_support::IN_PROCESS_COMMAND_BUFFER:
+      context.reset(
+          new webkit::gpu::WebGraphicsContext3DInProcessCommandBufferImpl());
+      break;
+  }
+  if (!context->initialize(attributes, NULL, false))
+    return NULL;
+  return context.release();
 }
 
 double TestWebKitPlatformSupport::audioHardwareSampleRate() {
