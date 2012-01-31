@@ -743,3 +743,13 @@
   ...
   fun:pa_rtpoll_run
 }
+{
+  bug_112200
+  ThreadSanitizer:Race
+  fun:park_frame_worker_threads
+  fun:ff_thread_flush
+  fun:avcodec_flush_buffers
+  fun:avcodec_flush_buffers
+  fun:media::FFmpegVideoDecoder::Flush
+  fun:base::internal::RunnableAdapter::Run
+}
