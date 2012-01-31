@@ -8,9 +8,10 @@
 #include "remoting/client/chromoting_view.h"
 #include "remoting/client/client_context.h"
 #include "remoting/client/rectangle_update_decoder.h"
-#include "remoting/protocol/authenticator.h"
 #include "remoting/protocol/authentication_method.h"
 #include "remoting/protocol/connection_to_host.h"
+#include "remoting/protocol/negotiating_authenticator.h"
+#include "remoting/protocol/v1_authenticator.h"
 #include "remoting/protocol/session_config.h"
 
 namespace remoting {
@@ -48,10 +49,15 @@ ChromotingClient::~ChromotingClient() {
 void ChromotingClient::Start(scoped_refptr<XmppProxy> xmpp_proxy) {
   DCHECK(message_loop()->BelongsToCurrentThread());
 
-  scoped_ptr<protocol::Authenticator> authenticator =
-      config_.authentication_method.CreateAuthenticator(
-          config_.local_jid, config_.authentication_tag,
-          config_.shared_secret);
+  scoped_ptr<protocol::Authenticator> authenticator;
+  if (config_.use_v1_authenticator) {
+    authenticator.reset(new protocol::V1ClientAuthenticator(
+        config_.local_jid, config_.shared_secret));
+  } else {
+    authenticator = protocol::NegotiatingAuthenticator::CreateForClient(
+        config_.authentication_tag,
+        config_.shared_secret, config_.authentication_methods);
+  }
 
   connection_->Connect(xmpp_proxy, config_.local_jid, config_.host_jid,
                        config_.host_public_key, authenticator.Pass(),

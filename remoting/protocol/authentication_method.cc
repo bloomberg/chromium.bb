@@ -19,21 +19,14 @@ AuthenticationMethod AuthenticationMethod::Invalid() {
 }
 
 // static
-AuthenticationMethod AuthenticationMethod::V1Token() {
-  return AuthenticationMethod(VERSION_1, NONE);
-}
-
-// static
 AuthenticationMethod AuthenticationMethod::Spake2(HashFunction hash_function) {
-  return AuthenticationMethod(VERSION_2, hash_function);
+  return AuthenticationMethod(hash_function);
 }
 
 // static
 AuthenticationMethod AuthenticationMethod::FromString(
     const std::string& value) {
-  if (value == "v1_token") {
-    return V1Token();
-  } else if (value == "spake2_plain") {
+  if (value == "spake2_plain") {
     return Spake2(NONE);
   } else if (value == "spake2_hmac") {
     return Spake2(HMAC_SHA256);
@@ -73,42 +66,12 @@ std::string AuthenticationMethod::ApplyHashFunction(
 
 AuthenticationMethod::AuthenticationMethod()
     : invalid_(true),
-      version_(VERSION_2),
       hash_function_(NONE) {
 }
 
-AuthenticationMethod::AuthenticationMethod(Version version,
-                                           HashFunction hash_function)
+AuthenticationMethod::AuthenticationMethod(HashFunction hash_function)
     : invalid_(false),
-      version_(version),
       hash_function_(hash_function) {
-}
-
-scoped_ptr<Authenticator> AuthenticationMethod::CreateAuthenticator(
-    const std::string& local_jid,
-    const std::string& tag,
-    const std::string& shared_secret) const {
-  DCHECK(is_valid());
-
-  switch (version_) {
-    case VERSION_1:
-      DCHECK_EQ(hash_function_, NONE);
-      return scoped_ptr<Authenticator>(
-          new protocol::V1ClientAuthenticator(local_jid, shared_secret));
-
-    case VERSION_2:
-      return protocol::V2Authenticator::CreateForClient(
-          ApplyHashFunction(hash_function_, tag, shared_secret),
-          Authenticator::MESSAGE_READY);
-  }
-
-  NOTREACHED();
-  return scoped_ptr<Authenticator>(NULL);
-}
-
-AuthenticationMethod::Version AuthenticationMethod::version() const {
-  DCHECK(is_valid());
-  return version_;
 }
 
 AuthenticationMethod::HashFunction AuthenticationMethod::hash_function() const {
@@ -119,17 +82,11 @@ AuthenticationMethod::HashFunction AuthenticationMethod::hash_function() const {
 const std::string AuthenticationMethod::ToString() const {
   DCHECK(is_valid());
 
-  switch (version_) {
-    case VERSION_1:
-      return "v1_token";
-
-    case VERSION_2:
-      switch (hash_function_) {
-        case NONE:
-          return "spake2_plain";
-        case HMAC_SHA256:
-          return "spake2_hmac";
-      }
+  switch (hash_function_) {
+    case NONE:
+      return "spake2_plain";
+    case HMAC_SHA256:
+      return "spake2_hmac";
   }
 
   NOTREACHED();
@@ -142,8 +99,7 @@ bool AuthenticationMethod::operator ==(
     return !other.is_valid();
   if (!other.is_valid())
     return false;
-  return version_ == other.version_ &&
-      hash_function_ == other.hash_function_;
+  return hash_function_ == other.hash_function_;
 }
 
 }  // namespace protocol

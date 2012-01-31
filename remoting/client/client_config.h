@@ -6,6 +6,7 @@
 #define REMOTING_CLIENT_CLIENT_CONFIG_H_
 
 #include <string>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "remoting/protocol/authentication_method.h"
@@ -22,7 +23,8 @@ struct ClientConfig {
   std::string host_public_key;
 
   std::string shared_secret;
-  protocol::AuthenticationMethod authentication_method;
+  bool use_v1_authenticator;
+  std::vector<protocol::AuthenticationMethod> authentication_methods;
   std::string authentication_tag;
 };
 

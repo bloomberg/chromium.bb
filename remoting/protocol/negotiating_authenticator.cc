@@ -28,6 +28,12 @@ const char kSupportedMethodsSeparator = ',';
 }  // namespace
 
 // static
+bool NegotiatingAuthenticator::IsNegotiableMessage(
+    const buzz::XmlElement* message) {
+  return message->HasAttr(kSupportedMethodsAttributeQName);
+}
+
+// static
 scoped_ptr<Authenticator> NegotiatingAuthenticator::CreateForClient(
     const std::string& authentication_tag,
     const std::string& shared_secret,

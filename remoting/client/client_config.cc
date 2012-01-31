@@ -7,7 +7,7 @@
 namespace remoting {
 
 ClientConfig::ClientConfig()
-    : authentication_method(protocol::AuthenticationMethod::Invalid()) {
+    : use_v1_authenticator(false) {
 }
 
 ClientConfig::~ClientConfig() {

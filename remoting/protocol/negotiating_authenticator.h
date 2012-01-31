@@ -24,6 +24,8 @@ class NegotiatingAuthenticator : public Authenticator {
  public:
   virtual ~NegotiatingAuthenticator();
 
+  static bool IsNegotiableMessage(const buzz::XmlElement* message);
+
   static scoped_ptr<Authenticator> CreateForClient(
       const std::string& authentication_tag,
       const std::string& shared_secret,

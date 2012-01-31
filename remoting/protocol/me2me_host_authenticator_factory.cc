@@ -8,8 +8,8 @@
 #include "base/string_util.h"
 #include "crypto/rsa_private_key.h"
 #include "remoting/protocol/channel_authenticator.h"
+#include "remoting/protocol/negotiating_authenticator.h"
 #include "remoting/protocol/v1_authenticator.h"
-#include "remoting/protocol/v2_authenticator.h"
 #include "third_party/libjingle/source/talk/xmllite/xmlelement.h"
 
 namespace remoting {
@@ -107,10 +107,10 @@ scoped_ptr<Authenticator> Me2MeHostAuthenticatorFactory::CreateAuthenticator(
     return scoped_ptr<Authenticator>(new RejectingAuthenticator());
   }
 
-  if (V2Authenticator::IsEkeMessage(first_message)) {
-    return V2Authenticator::CreateForHost(
+  if (NegotiatingAuthenticator::IsNegotiableMessage(first_message)) {
+    return NegotiatingAuthenticator::CreateForHost(
         local_cert_, *local_private_key_, shared_secret_hash_.value,
-        Authenticator::WAITING_MESSAGE);
+        shared_secret_hash_.hash_function);
   }
 
   // TODO(sergeyu): Old clients still use V1 auth protocol. Remove
