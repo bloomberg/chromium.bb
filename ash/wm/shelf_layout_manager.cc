@@ -10,6 +10,7 @@
 #include "ui/aura/root_window.h"
 #include "ui/aura/screen_aura.h"
 #include "ui/gfx/compositor/layer.h"
+#include "ui/gfx/compositor/layer_animation_observer.h"
 #include "ui/gfx/compositor/layer_animator.h"
 #include "ui/gfx/compositor/scoped_layer_animation_settings.h"
 #include "ui/views/widget/widget.h"
@@ -30,8 +31,7 @@ ui::Layer* GetLayer(views::Widget* widget) {
 
 ShelfLayoutManager::ShelfLayoutManager(views::Widget* launcher,
                                        views::Widget* status)
-    : animating_(false),
-      in_layout_(false),
+    : in_layout_(false),
       visible_(true),
       max_height_(-1),
       launcher_(launcher),
@@ -39,11 +39,9 @@ ShelfLayoutManager::ShelfLayoutManager(views::Widget* launcher,
   gfx::Rect launcher_bounds = launcher->GetWindowScreenBounds();
   gfx::Rect status_bounds = status->GetWindowScreenBounds();
   max_height_ = std::max(launcher_bounds.height(), status_bounds.height());
-  GetLayer(launcher)->GetAnimator()->AddObserver(this);
 }
 
 ShelfLayoutManager::~ShelfLayoutManager() {
-  GetLayer(launcher_)->GetAnimator()->RemoveObserver(this);
   // Without a shelf we don't need special insets anymore.
   aura::RootWindow::GetInstance()->
       screen()->set_work_area_insets(gfx::Insets());
@@ -66,19 +64,36 @@ void ShelfLayoutManager::LayoutShelf() {
 }
 
 void ShelfLayoutManager::SetVisible(bool visible) {
-  bool current_visibility = animating_ ? !visible_ : visible_;
+  ui::Layer* launcher_layer = GetLayer(launcher_);
+  ui::Layer* status_layer = GetLayer(status_);
+
+  // TODO(vollick): once visibility is animatable, use GetTargetVisibility.
+  bool current_visibility = visible_ &&
+      launcher_layer->GetTargetOpacity() > 0.0f &&
+      status_layer->GetTargetOpacity() > 0.0f;
+
   if (visible == current_visibility)
     return;  // Nothing changed.
 
   StopAnimating();
 
+  visible_ = visible;
   TargetBounds target_bounds;
   float target_opacity = visible ? 1.0f : 0.0f;
   CalculateTargetBounds(visible, &target_bounds);
-  AnimateWidgetTo(launcher_, target_bounds.launcher_bounds, target_opacity);
-  AnimateWidgetTo(status_, target_bounds.status_bounds, target_opacity);
-  animating_ = true;
-  // |visible_| is updated once the animation completes.
+
+  ui::ScopedLayerAnimationSettings launcher_animation_setter(
+      launcher_layer->GetAnimator());
+  ui::ScopedLayerAnimationSettings status_animation_setter(
+      status_layer->GetAnimator());
+
+  launcher_animation_setter.AddObserver(this);
+  status_animation_setter.AddObserver(this);
+
+  launcher_layer->SetBounds(target_bounds.launcher_bounds);
+  launcher_layer->SetOpacity(target_opacity);
+  status_layer->SetBounds(target_bounds.status_bounds);
+  status_layer->SetOpacity(target_opacity);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -109,10 +124,7 @@ void ShelfLayoutManager::SetChildBounds(aura::Window* child,
 // ShelfLayoutManager, private:
 
 void ShelfLayoutManager::StopAnimating() {
-  if (animating_) {
-    animating_ = false;
-    visible_ = !visible_;
-  }
+  StopObservingImplicitAnimations();
   GetLayer(launcher_)->GetAnimator()->StopAnimating();
   GetLayer(status_)->GetAnimator()->StopAnimating();
 }
@@ -135,23 +147,7 @@ void ShelfLayoutManager::CalculateTargetBounds(bool visible,
     target_bounds->work_area_insets = gfx::Insets(0, 0, max_height_, 0);
 }
 
-void ShelfLayoutManager::AnimateWidgetTo(views::Widget* widget,
-                                         const gfx::Rect& target_bounds,
-                                         float target_opacity) {
-  ui::Layer* layer = GetLayer(widget);
-  ui::ScopedLayerAnimationSettings animation_setter(layer->GetAnimator());
-  // Don't go through the widget, otherwise we end up back in SetChildBounds and
-  // cancel the animation/layout.
-  layer->SetBounds(target_bounds);
-  layer->SetOpacity(target_opacity);
-}
-
-void ShelfLayoutManager::OnLayerAnimationEnded(
-    const ui::LayerAnimationSequence* sequence) {
-  if (!animating_)
-    return;
-  animating_ = false;
-  visible_ = !visible_;
+void ShelfLayoutManager::OnImplicitAnimationsCompleted() {
   TargetBounds target_bounds;
   CalculateTargetBounds(visible_, &target_bounds);
   aura::RootWindow::GetInstance()->screen()->set_work_area_insets(

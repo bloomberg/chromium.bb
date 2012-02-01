@@ -676,16 +676,16 @@ internal::FocusManager* RootWindow::GetFocusManager() {
 }
 
 void RootWindow::OnLayerAnimationEnded(
-    const ui::LayerAnimationSequence* animation) {
+    ui::LayerAnimationSequence* animation) {
   OnHostResized(host_->GetSize());
 }
 
 void RootWindow::OnLayerAnimationScheduled(
-    const ui::LayerAnimationSequence* animation) {
+    ui::LayerAnimationSequence* animation) {
 }
 
 void RootWindow::OnLayerAnimationAborted(
-    const ui::LayerAnimationSequence* animation) {
+    ui::LayerAnimationSequence* animation) {
 }
 
 void RootWindow::SetFocusedWindow(Window* focused_window) {

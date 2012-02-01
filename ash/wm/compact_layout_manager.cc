@@ -140,18 +140,9 @@ void CompactLayoutManager::OnWindowStackingChanged(aura::Window* window) {
 /////////////////////////////////////////////////////////////////////////////
 // CompactLayoutManager, AnimationDelegate overrides:
 
-void CompactLayoutManager::OnLayerAnimationEnded(
-    const ui::LayerAnimationSequence* animation) {
+void CompactLayoutManager::OnImplicitAnimationsCompleted() {
   if (!GetDefaultContainerLayer()->GetAnimator()->is_animating())
     HideWindows();
-}
-
-void CompactLayoutManager::OnLayerAnimationScheduled(
-    const ui::LayerAnimationSequence* animation) {
-}
-
-void CompactLayoutManager::OnLayerAnimationAborted(
-    const ui::LayerAnimationSequence* animation) {
 }
 
 //////////////////////////////////////////////////////////////////////////////

@@ -219,11 +219,11 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
 
   // Overridden from ui::LayerAnimationObserver:
   virtual void OnLayerAnimationEnded(
-      const ui::LayerAnimationSequence* animation) OVERRIDE;
+      ui::LayerAnimationSequence* animation) OVERRIDE;
   virtual void OnLayerAnimationScheduled(
-      const ui::LayerAnimationSequence* animation) OVERRIDE;
+      ui::LayerAnimationSequence* animation) OVERRIDE;
   virtual void OnLayerAnimationAborted(
-      const ui::LayerAnimationSequence* animation) OVERRIDE;
+      ui::LayerAnimationSequence* animation) OVERRIDE;
 
   // Overridden from FocusManager:
   virtual void SetFocusedWindow(Window* window) OVERRIDE;
