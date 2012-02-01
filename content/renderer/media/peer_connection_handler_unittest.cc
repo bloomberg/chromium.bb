@@ -31,6 +31,28 @@ class MockVideoRendererWrapper : public VideoRendererWrapperInterface {
 
 }  // namespace webrtc
 
+TEST(PeerConnectionHandlerTest, WebMediaStreamDescriptorMemoryTest) {
+  std::string stream_label("stream-label");
+  std::string video_track_id("video-label");
+  const size_t kSizeOne = 1;
+
+  WebKit::WebMediaStreamSource source;
+  source.initialize(WebKit::WebString::fromUTF8(video_track_id),
+                    WebKit::WebMediaStreamSource::TypeVideo,
+                    WebKit::WebString::fromUTF8("RemoteVideo"));
+
+  WebKit::WebVector<WebKit::WebMediaStreamSource> source_vector(kSizeOne);
+  source_vector[0] = source;
+
+  WebKit::WebMediaStreamDescriptor local_stream;
+  local_stream.initialize(UTF8ToUTF16(stream_label), source_vector);
+
+  WebKit::WebMediaStreamDescriptor copy_1(local_stream);
+  {
+    WebKit::WebMediaStreamDescriptor copy_2(copy_1);
+  }
+}
+
 TEST(PeerConnectionHandlerTest, Basic) {
   MessageLoop loop;
 
