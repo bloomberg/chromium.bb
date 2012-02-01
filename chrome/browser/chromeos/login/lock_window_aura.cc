@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,7 @@
 
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
+#include "ash/wm/window_animations.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 
@@ -47,6 +48,8 @@ void LockWindowAura::Init() {
   ash::Shell::GetInstance()->GetContainer(
       ash::internal::kShellWindowId_LockScreenContainer)->
       AddChild(GetNativeView());
+  ash::SetWindowVisibilityAnimationTransition(GetNativeView(),
+                                              ash::ANIMATE_NONE);
 }
 
 }  // namespace chromeos

@@ -54,6 +54,10 @@ class BaseLoginDisplayHost : public LoginDisplayHost,
   // Creates specific WizardController.
   virtual WizardController* CreateWizardController() = 0;
 
+  // Called when the first browser window is created, but before it's
+  // ready (shown).
+  virtual void OnBrowserCreated() = 0;
+
   const gfx::Rect& background_bounds() const { return background_bounds_; }
 
  private:

@@ -30,6 +30,7 @@
 #include "chrome/browser/policy/auto_enrollment_client.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/prefs/pref_service.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
@@ -137,6 +138,13 @@ BaseLoginDisplayHost::BaseLoginDisplayHost(const gfx::Rect& background_bounds)
   // will block the shutdown.
   registrar_.Add(this,
                  content::NOTIFICATION_APP_EXITING,
+                 content::NotificationService::AllSources());
+
+  // NOTIFICATION_BROWSER_OPENED is issued after browser is created, but
+  // not shown yet. Lock window has to be closed at this point so that
+  // a browser window exists and the window can acquire input focus.
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_BROWSER_OPENED,
                  content::NotificationService::AllSources());
   DCHECK(default_host_ == NULL);
   default_host_ = this;
@@ -264,8 +272,17 @@ void BaseLoginDisplayHost::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  CHECK(type == content::NOTIFICATION_APP_EXITING);
-  ShutdownDisplayHost(true);
+  registrar_.RemoveAll();
+  switch (type) {
+    case content::NOTIFICATION_APP_EXITING:
+      ShutdownDisplayHost(true);
+      break;
+    case chrome::NOTIFICATION_BROWSER_OPENED:
+      OnBrowserCreated();
+      break;
+    default:
+      LOG(FATAL) << "Unknown notification type:" << type;
+  }
 }
 
 void BaseLoginDisplayHost::ShutdownDisplayHost(bool post_quit_task) {

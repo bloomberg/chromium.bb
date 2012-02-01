@@ -74,7 +74,6 @@ class MockLoginDisplayHost : public LoginDisplayHost {
   MOCK_METHOD2(StartWizard, void(const std::string&, DictionaryValue*));
   MOCK_METHOD0(StartSignInScreen, void(void));
   MOCK_METHOD0(ResumeSignInScreen, void(void));
-  MOCK_METHOD0(CloseWindow, void(void));
 
  private:
  DISALLOW_COPY_AND_ASSIGN(MockLoginDisplayHost);

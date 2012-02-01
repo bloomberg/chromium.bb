@@ -1346,13 +1346,10 @@ void LoginUtils::DoBrowserLaunch(Profile* profile,
 
   StatusAreaViewChromeos::SetScreenMode(StatusAreaViewChromeos::BROWSER_MODE);
   if (login_host) {
+    // Enable status area now as the login window may be destructed anytime
+    // after LaunchBrowser.
     login_host->SetStatusAreaVisible(true);
     login_host->SetStatusAreaEnabled(true);
-#if defined(USE_AURA)
-    // Close lock window now so that the launched browser can receive focus.
-    // TODO(oshima): Implement hide animation for lock screens.
-    login_host->CloseWindow();
-#endif
   }
 
   BootTimesLoader::Get()->AddLoginTimeMarker("BrowserLaunched", false);

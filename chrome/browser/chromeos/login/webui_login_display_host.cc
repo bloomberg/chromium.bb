@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/time.h"
 #include "chrome/browser/chromeos/login/oobe_display.h"
 #include "chrome/browser/chromeos/login/webui_login_display.h"
 #include "chrome/browser/chromeos/login/webui_login_view.h"
@@ -17,6 +18,7 @@
 #if defined(USE_AURA)
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
+#include "ash/wm/window_animations.h"
 #include "ui/aura/window.h"
 #endif
 
@@ -28,6 +30,9 @@ namespace {
 const char kLoginURL[] = "chrome://oobe/login";
 // URL which corresponds to the OOBE WebUI.
 const char kOobeURL[] = "chrome://oobe";
+
+// Duration of sign-in transition animation.
+const int kLoginFadeoutTransitionDurationMs = 700;
 
 }  // namespace
 
@@ -41,7 +46,8 @@ WebUILoginDisplayHost::WebUILoginDisplayHost(const gfx::Rect& background_bounds)
 }
 
 WebUILoginDisplayHost::~WebUILoginDisplayHost() {
-  CloseWindow();
+  if (login_window_)
+    login_window_->Close();
 }
 
 // LoginDisplayHost implementation ---------------------------------------------
@@ -118,12 +124,15 @@ void WebUILoginDisplayHost::StartSignInScreen() {
   GetOobeUI()->ShowSigninScreen(webui_login_display_);
 }
 
-void WebUILoginDisplayHost::CloseWindow() {
+void WebUILoginDisplayHost::OnBrowserCreated() {
+#if defined(USE_AURA)
+  // Close lock window now so that the launched browser can receive focus.
   if (login_window_) {
     login_window_->Close();
     login_window_ = NULL;
     login_view_ = NULL;
   }
+#endif
 }
 
 void WebUILoginDisplayHost::LoadURL(const GURL& url) {
@@ -145,6 +154,12 @@ void WebUILoginDisplayHost::LoadURL(const GURL& url) {
     ash::Shell::GetInstance()->GetContainer(
         ash::internal::kShellWindowId_LockScreenContainer)->
         AddChild(login_window_->GetNativeView());
+    ash::SetWindowVisibilityAnimationDuration(
+        login_window_->GetNativeView(),
+        base::TimeDelta::FromMilliseconds(kLoginFadeoutTransitionDurationMs));
+    ash::SetWindowVisibilityAnimationTransition(
+        login_window_->GetNativeView(),
+        ash::ANIMATE_HIDE);
 #endif
 
     login_window_->SetContentsView(login_view_);

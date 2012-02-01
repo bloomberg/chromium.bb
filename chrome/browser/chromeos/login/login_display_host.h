@@ -73,9 +73,6 @@ class LoginDisplayHost {
 
   // Resumes a previously started sign in screen.
   virtual void ResumeSignInScreen() = 0;
-
-  // Closes the login window.
-  virtual void CloseWindow() = 0;
 };
 
 }  // namespace chromeos
