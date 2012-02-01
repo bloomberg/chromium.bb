@@ -155,7 +155,7 @@ def _RebuildRepoCheckout(target_root, reference_map,
   _UpdateGitAlternates(proj_root, projects)
 
 
-def WalkReferences(repo_root, max_depth=5):
+def WalkReferences(repo_root, max_depth=5, suppress=()):
   """
   Given a repo checkout root, find the repo's it references up to max_depth
 
@@ -169,10 +169,20 @@ def WalkReferences(repo_root, max_depth=5):
   """
 
   original_root = repo_root
-  yield repo_root
+  seen = set(os.path.abspath(x) for x in suppress)
 
-  cur_depth = max_depth
-  while cur_depth:
+  for _x in xrange(0, max_depth):
+    repo_root = os.path.abspath(repo_root)
+
+    if repo_root in seen:
+      # Cyclic reference graph; break out of it, if someone induced this the
+      # necessary objects should be in place.  If they aren't, really isn't
+      # much that can be done.
+      return
+
+    yield repo_root
+    seen.add(repo_root)
+
     base = os.path.join(repo_root, '.repo', 'manifests.git')
     result = cros_build_lib.RunCommand(
         ['git', 'config', '--file', os.path.join(base, 'config'),
@@ -188,10 +198,7 @@ def WalkReferences(repo_root, max_depth=5):
     if not repo_root:
       break
 
-    yield repo_root
-    cur_depth -= 1
-
-  if not cur_depth:
+  else:
     raise Failed('While tracing out the references of %s, we recursed more '
                  'than the allowed %i times ending at %s'
                  % (original_root, max_depth, repo_root))
@@ -211,7 +218,8 @@ def RebuildRepoCheckout(repo_root, initial_reference,
       work from within the chroot.
   """
 
-  reference_roots = list(WalkReferences(initial_reference))
+  reference_roots = list(WalkReferences(initial_reference,
+                                        suppress=[repo_root]))
   if chroot_reference_root:
     alternates_dir = 'chroot/alternates'
     base = os.path.join(chroot_reference_root, '.repo', 'chroot', 'external')
