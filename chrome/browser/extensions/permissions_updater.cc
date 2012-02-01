@@ -74,9 +74,10 @@ void PermissionsUpdater::RemovePermissions(
 void PermissionsUpdater::GrantActivePermissions(const Extension* extension) {
   CHECK(extension);
 
-  // We only maintain the granted permissions prefs for extensions that can't
-  // silently increase their permissions.
-  if (extension->CanSilentlyIncreasePermissions())
+  // We only maintain the granted permissions prefs for INTERNAL and LOAD
+  // extensions.
+  if (extension->location() != Extension::LOAD &&
+      extension->location() != Extension::INTERNAL)
     return;
 
   GetExtensionPrefs()->AddGrantedPermissions(

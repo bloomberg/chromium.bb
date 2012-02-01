@@ -2665,7 +2665,7 @@ bool Extension::ParsePermissions(const extensions::Manifest* source,
 }
 
 bool Extension::CanSilentlyIncreasePermissions() const {
-  return location() != INTERNAL && location() != LOAD;
+  return location() != INTERNAL;
 }
 
 bool Extension::CanSpecifyHostPermission(const URLPattern& pattern,

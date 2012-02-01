@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -84,6 +84,7 @@ void InstalledLoader::Load(const ExtensionInfo& info, bool write_to_prefs) {
 
   // Once installed, non-unpacked extensions cannot change their IDs (e.g., by
   // updating the 'key' field in their manifest).
+  // TODO(jstritar): migrate preferences when unpacked extensions change IDs.
   if (extension &&
       extension->location() != Extension::LOAD &&
       info.extension_id != extension->id()) {

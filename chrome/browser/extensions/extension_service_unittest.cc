@@ -98,6 +98,7 @@ const char* const page_action = "obcimlgaoabeegjmmpldobjndiealpln";
 const char* const theme_crx = "iamefpfkojoapidjnbafmgkgncegbkad";
 const char* const theme2_crx = "pjpgmfcmabopnnfonnhmdjglfpjjfkbf";
 const char* const permissions_crx = "eagpmdpfmaekmmcejjbmjoecnejeiiin";
+const char* const unpacked = "cbcdidchbppangcjoddlpdjlenngjldk";
 
 struct ExtensionsOrder {
   bool operator()(const Extension* a, const Extension* b) {
@@ -1893,6 +1894,50 @@ TEST_F(ExtensionServiceTest, LoadLocalizedTheme) {
   const Extension* theme = *service_->extensions()->begin();
   EXPECT_EQ("name", theme->name());
   EXPECT_EQ("description", theme->description());
+}
+
+// Tests that we can change the ID of an unpacked extension by adding a key
+// to its manifest.
+TEST_F(ExtensionServiceTest, UnpackedExtensionCanChangeID) {
+  InitializeEmptyExtensionService();
+
+  ScopedTempDir temp;
+  ASSERT_TRUE(temp.CreateUniqueTempDir());
+
+  FilePath extension_path = temp.path();
+  FilePath manifest_path = extension_path.Append(Extension::kManifestFilename);
+  FilePath manifest_no_key = data_dir_.
+      AppendASCII("unpacked").
+      AppendASCII("manifest_no_key.json");
+
+  FilePath manifest_with_key = data_dir_.
+      AppendASCII("unpacked").
+      AppendASCII("manifest_with_key.json");
+
+  ASSERT_TRUE(file_util::PathExists(manifest_no_key));
+  ASSERT_TRUE(file_util::PathExists(manifest_with_key));
+
+  // Load the unpacked extension with no key.
+  file_util::CopyFile(manifest_no_key, manifest_path);
+  extensions::UnpackedInstaller::Create(service_)->Load(extension_path);
+
+  loop_.RunAllPending();
+  EXPECT_EQ(0u, GetErrors().size());
+  ASSERT_EQ(1u, loaded_.size());
+  EXPECT_EQ(1u, service_->extensions()->size());
+
+  // Add the key to the manifest.
+  file_util::CopyFile(manifest_with_key, manifest_path);
+  loaded_.clear();
+
+  // Reload the extensions.
+  service_->ReloadExtensions();
+  const Extension* extension = service_->GetExtensionById(unpacked, false);
+  EXPECT_EQ(unpacked, extension->id());
+  ASSERT_EQ(1u, loaded_.size());
+
+  // TODO(jstritar): Right now this just makes sure we don't crash and burn, but
+  // we should also test that preferences are preserved.
 }
 
 TEST_F(ExtensionServiceTest, InstallLocalizedTheme) {
