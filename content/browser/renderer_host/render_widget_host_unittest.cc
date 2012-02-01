@@ -749,9 +749,8 @@ TEST_F(RenderWidgetHostTest, StopAndStartHangMonitorTimeout) {
 
 // Test that the hang monitor catches two input events but only one ack.
 // This can happen if the second input event causes the renderer to hang.
-// This test will catch a regression of crbug.com/111185 and will only
-// pass when the compositor thread is being used.
-TEST_F(RenderWidgetHostTest, FAILS_MultipleInputEvents) {
+// This test will catch a regression of crbug.com/111185.
+TEST_F(RenderWidgetHostTest, MultipleInputEvents) {
   // Configure the host to wait 10ms before considering
   // the renderer hung.
   host_->set_hung_renderer_delay_ms(10);
