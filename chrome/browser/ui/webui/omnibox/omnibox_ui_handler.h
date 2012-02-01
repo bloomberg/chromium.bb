@@ -8,6 +8,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/time.h"
+#include "chrome/browser/autocomplete/autocomplete.h"
 #include "chrome/browser/autocomplete/autocomplete_controller_delegate.h"
 #include "content/public/browser/web_ui_message_handler.h"
 
@@ -21,9 +22,9 @@ class Profile;
 // UI Handler for chrome://omnibox/
 // It listens for calls from javascript to StartOmniboxQuery() and
 // passes those calls to its private AutocompleteController. It also
-// listens for updates from the AutocompleteController to
-// OnResultChanged() and passes those results on calling back into the
-// javascript to update the page.
+// listens for updates from the AutocompleteController to OnResultChanged()
+// and passes those results on calling back into the Javascript to
+// update the page.
 class OmniboxUIHandler : public AutocompleteControllerDelegate,
                          public content::WebUIMessageHandler {
  public:
@@ -32,8 +33,8 @@ class OmniboxUIHandler : public AutocompleteControllerDelegate,
 
   // AutocompleteControllerDelegate implementation.
   // Gets called when the result set of the AutocompleteController changes.
-  // We transform the AutocompleteResult into a javascript object and
-  // call the javascript function gotNewAutocompleteResult with it.
+  // We transform the AutocompleteResult into a Javascript object and
+  // call the Javascript function gotNewAutocompleteResult with it.
   // |default_match_changed| is given to us by the AutocompleteController
   // but we don't need it.  It's ignored.
   virtual void OnResultChanged(bool default_match_changed) OVERRIDE;
@@ -50,6 +51,14 @@ class OmniboxUIHandler : public AutocompleteControllerDelegate,
   // |one_element_input_string| is expected to be a one-element list
   // where the first element is the input string.
   void StartOmniboxQuery(const base::ListValue* one_element_input_string);
+
+  // Helper function for OnResultChanged().
+  // Takes an iterator over AutocompleteMatches and packages them into
+  // the DictionaryValue output, all stored under the given prefix.
+  void AddResultToDictionary(const std::string prefix,
+                             ACMatches::const_iterator result_it,
+                             ACMatches::const_iterator end,
+                             base::DictionaryValue* output);
 
   // The omnibox AutocompleteController that collects/sorts/dup-
   // eliminates the results as they come in.

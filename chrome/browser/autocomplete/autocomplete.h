@@ -177,6 +177,7 @@ struct AutocompleteMatch;
 class AutocompleteProvider;
 class AutocompleteResult;
 class KeywordProvider;
+class OmniboxUIHandler;
 class Profile;
 class SearchProvider;
 class TemplateURL;
@@ -684,6 +685,7 @@ class AutocompleteController : public ACProviderListener {
   const AutocompleteInput& input() const { return input_; }
   const AutocompleteResult& result() const { return result_; }
   bool done() const { return done_; }
+  const ACProviders* providers() const { return &providers_; }
 
   // From AutocompleteProvider::Listener
   virtual void OnProviderUpdate(bool updated_matches);

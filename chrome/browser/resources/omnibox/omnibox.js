@@ -29,6 +29,8 @@ cr.define('omniboxDebug', function() {
         'change', refresh);
     document.getElementById('show-incomplete-results').addEventListener(
         'change', refresh);
+    document.getElementById('show-all-providers').addEventListener(
+        'change', refresh);
   }
 
   /**
@@ -88,8 +90,6 @@ cr.define('omniboxDebug', function() {
     new PresentationInfoRecord('Type', '', 'type', true),
     new PresentationInfoRecord('Relevance', '', 'relevance', true),
     new PresentationInfoRecord('Starred', '', 'starred', false),
-    new PresentationInfoRecord(
-        '== default_match iterator', '', 'is_default_match', false),
     new PresentationInfoRecord(
         'Is History What You Typed Match', '',
         'is_history_what_you_typed_match', false),
@@ -188,24 +188,37 @@ cr.define('omniboxDebug', function() {
    * autocomplete matches.  Here's an example of what it looks like:
    * <pre>
    * {@code
-   * { 'done': false,
+   * {
+   *   'done': false,
    *   'time_since_omnibox_started_ms': 15,
-   *   'num_items': 4,
-   *   'item_0': {
-   *     'destination_url': 'http://mail.google.com',
-   *     'provider_name': 'HistoryURL',
-   *     'relevance': 1410,
-   *     'is_default_match': true,
+   *   'combined_results' : {
+   *     'num_items': 4,
+   *     'item_0': {
+   *       'destination_url': 'http://mail.google.com',
+   *       'provider_name': 'HistoryURL',
+   *       'relevance': 1410,
+   *       ...
+   *     }
+   *     'item_1: {
+   *       ...
+   *     }
    *     ...
    *   }
-   *   'item_1: {
+   *   'results_by_provider': {
+   *     'HistoryURL' : {
+   *       'num_items': 3,
+   *         ...
+   *       }
+   *     'Search' : {
+   *       'num_items': 1,
+   *       ...
+   *     }
    *     ...
    *   }
-   *   ...
    * }
    * }
    * </pre>
-   * For information on how the result is packed, see the
+   * For more information on how the result is packed, see the
    * corresponding code in chrome/browser/ui/webui/omnibox_ui.cc
    */
   function addResultToOutput(result) {
@@ -213,6 +226,8 @@ cr.define('omniboxDebug', function() {
     var inDetailedMode = document.getElementById('show-details').checked;
     var showIncompleteResults =
         document.getElementById('show-incomplete-results').checked;
+    var showPerProviderResults =
+        document.getElementById('show-all-providers').checked;
 
     // Output the result-level features in detailed mode and in
     // show incomplete results mode.  We do the latter because without
@@ -228,6 +243,36 @@ cr.define('omniboxDebug', function() {
       output.appendChild(p2);
     }
 
+    if (!showPerProviderResults) {
+      // Add combined/merged result table (without label).
+      output.appendChild(addResultTableToOutput(result.combined_results));
+    } else {
+      // Add combined/merged result table with label.
+      var p = document.createElement('p');
+      p.textContent = 'combined results:';
+      p.appendChild(addResultTableToOutput(result.combined_results));
+      output.appendChild(p);
+      // Add the pre-provider result tables with labels.
+      for (var provider in result.results_by_provider) {
+        p = document.createElement('p');
+        p.appendChild(document.createTextNode(provider + ' provider results:'));
+        p.appendChild(addResultTableToOutput(
+            result.results_by_provider[provider]));
+        output.appendChild(p);
+      }
+    }
+  }
+
+  /**
+   * @param {Object} result either the combined_results component of
+   *     the structure described in the comment by addResultToOutput()
+   *     above or one of the per-provider results in the structure.
+   *     (Both have the same format.)
+   * @return {HTMLTableCellElement} that is a user-readable HTML
+   *     representation of this object.
+   */
+  function addResultTableToOutput(result) {
+    var inDetailedMode = document.getElementById('show-details').checked;
     // Create a table to hold all the autocomplete items.
     var table = document.createElement('table');
     table.className = 'autocomplete-results-table';
@@ -268,7 +313,7 @@ cr.define('omniboxDebug', function() {
 
       table.appendChild(row);
     }
-    output.appendChild(table);
+    return table;
   }
 
   /* Repaints the page based on the contents of the array
