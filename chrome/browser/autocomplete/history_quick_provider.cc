@@ -128,10 +128,10 @@ AutocompleteMatch HistoryQuickProvider::QuickMatchToACMatch(
       AutocompleteInput::FormattedStringWithEquivalentMeaning(info.url(),
           net::FormatUrlWithOffsets(info.url(), languages_, format_types,
               net::UnescapeRule::SPACES, NULL, NULL, &offsets));
-  match.contents = net::FormatUrl(info.url(), languages_, format_types,
-              net::UnescapeRule::SPACES, NULL, NULL, NULL);
   history::TermMatches new_matches =
       ReplaceOffsetsInTermMatches(history_match.url_matches, offsets);
+  match.contents = net::FormatUrl(info.url(), languages_, format_types,
+              net::UnescapeRule::SPACES, NULL, NULL, NULL);
   match.contents_class =
       SpansFromTermMatch(new_matches, match.contents.length(), true);
 
@@ -141,7 +141,11 @@ AutocompleteMatch HistoryQuickProvider::QuickMatchToACMatch(
     DCHECK(!new_matches.empty());
     match.inline_autocomplete_offset = new_matches[0].offset +
         new_matches[0].length;
-    DCHECK_LE(match.inline_autocomplete_offset, match.fill_into_edit.length());
+    // The following will happen if the user has typed an URL with a scheme
+    // and the last character typed is a slash because that slash is removed
+    // by the FormatURLWithOffsets call above.
+    if (match.inline_autocomplete_offset > match.fill_into_edit.length())
+      match.inline_autocomplete_offset = match.fill_into_edit.length();
   }
 
   // Format the description autocomplete presentation.
