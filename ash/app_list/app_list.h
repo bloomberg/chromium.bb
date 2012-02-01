@@ -20,7 +20,7 @@ namespace internal {
 // While the UI is visible, it monitors things such as app list widget's
 // activation state and desktop mouse click to auto dismiss the UI.
 class AppList : public aura::EventFilter,
-                public ui::ImplicitAnimationObserver,
+                public ui::LayerAnimationObserver,
                 public views::Widget::Observer {
  public:
   AppList();
@@ -54,8 +54,13 @@ class AppList : public aura::EventFilter,
       aura::Window* target,
       aura::GestureEvent* event) OVERRIDE;
 
-  // ui::ImplicitAnimationObserver overrides:
-  virtual void OnImplicitAnimationsCompleted() OVERRIDE;
+  // ui::LayerAnimationObserver overrides:
+  virtual void OnLayerAnimationEnded(
+      const ui::LayerAnimationSequence* sequence) OVERRIDE;
+  virtual void OnLayerAnimationAborted(
+      const ui::LayerAnimationSequence* sequence) OVERRIDE;
+  virtual void OnLayerAnimationScheduled(
+      const ui::LayerAnimationSequence* sequence) OVERRIDE;
 
   // views::Widget::Observer overrides:
   virtual void OnWidgetClosing(views::Widget* widget) OVERRIDE;

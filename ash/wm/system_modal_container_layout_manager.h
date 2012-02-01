@@ -35,7 +35,7 @@ namespace internal {
 class ASH_EXPORT SystemModalContainerLayoutManager
     : public aura::LayoutManager,
       public aura::WindowObserver,
-      public ui::ImplicitAnimationObserver,
+      public ui::LayerAnimationObserver,
       public SystemModalContainerEventFilterDelegate {
  public:
   explicit SystemModalContainerLayoutManager(aura::Window* container);
@@ -55,8 +55,13 @@ class ASH_EXPORT SystemModalContainerLayoutManager
                                        const char* key,
                                        void* old) OVERRIDE;
 
-  // Overridden from ui::ImplicitAnimationObserver:
-  virtual void OnImplicitAnimationsCompleted() OVERRIDE;
+  // Overridden from ui::LayerAnimationObserver:
+  virtual void OnLayerAnimationEnded(
+      const ui::LayerAnimationSequence* sequence) OVERRIDE;
+  virtual void OnLayerAnimationAborted(
+      const ui::LayerAnimationSequence* sequence) OVERRIDE;
+  virtual void OnLayerAnimationScheduled(
+      const ui::LayerAnimationSequence* sequence) OVERRIDE;
 
   // Overridden from SystemModalContainerEventFilterDelegate:
   virtual bool CanWindowReceiveEvents(aura::Window* window) OVERRIDE;

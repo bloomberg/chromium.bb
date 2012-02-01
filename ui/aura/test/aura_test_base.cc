@@ -9,7 +9,6 @@
 #endif
 
 #include "ui/aura/root_window.h"
-#include "ui/gfx/compositor/layer_animator.h"
 
 namespace aura {
 namespace test {
@@ -23,9 +22,6 @@ AuraTestBase::AuraTestBase()
 
   RootWindow::GetInstance()->Show();
   RootWindow::GetInstance()->SetHostSize(gfx::Size(600, 600));
-
-  // Disable animations during tests.
-  ui::LayerAnimator::set_disable_animations_for_test(true);
 }
 
 AuraTestBase::~AuraTestBase() {

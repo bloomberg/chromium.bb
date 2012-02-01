@@ -25,7 +25,7 @@ namespace internal {
 // maximized, fill the screen, and only one tabbed browser window is visible at
 // a time.  The status area appears in the top-right corner of the screen.
 class ASH_EXPORT CompactLayoutManager : public BaseLayoutManager,
-                                        public ui::ImplicitAnimationObserver {
+                                        public ui::LayerAnimationObserver {
  public:
   CompactLayoutManager();
   virtual ~CompactLayoutManager();
@@ -48,8 +48,13 @@ class ASH_EXPORT CompactLayoutManager : public BaseLayoutManager,
                                        void* old) OVERRIDE;
   virtual void OnWindowStackingChanged(aura::Window* window) OVERRIDE;
 
-  // ui::OnImplicitAnimationsCompleted:
-  virtual void OnImplicitAnimationsCompleted() OVERRIDE;
+  // ui::LayerAnimationObserver:
+  virtual void OnLayerAnimationEnded(
+      const ui::LayerAnimationSequence* animation) OVERRIDE;
+  virtual void OnLayerAnimationScheduled(
+      const ui::LayerAnimationSequence* animation) OVERRIDE;
+  virtual void OnLayerAnimationAborted(
+      const ui::LayerAnimationSequence* animation) OVERRIDE;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(CompactLayoutManagerTransitionTest,
