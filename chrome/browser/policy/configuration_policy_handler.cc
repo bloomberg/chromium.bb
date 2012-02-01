@@ -514,6 +514,8 @@ bool DefaultSearchPolicyHandler::CheckPolicySettings(const PolicyMap& policies,
 void DefaultSearchPolicyHandler::ApplyPolicySettings(const PolicyMap& policies,
                                                      PrefValueMap* prefs) {
   if (DefaultSearchProviderIsDisabled(policies)) {
+    prefs->SetBoolean(prefs::kDefaultSearchProviderEnabled, false);
+
     // If default search is disabled, the other fields are ignored.
     prefs->SetString(prefs::kDefaultSearchProviderName, std::string());
     prefs->SetString(prefs::kDefaultSearchProviderSearchURL, std::string());
