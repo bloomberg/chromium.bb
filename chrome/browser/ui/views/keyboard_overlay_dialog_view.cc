@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/views/keyboard_overlay_dialog_view.h"
 
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/chromeos/frame/bubble_window.h"
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/views/accelerator_table.h"
@@ -37,7 +36,7 @@ KeyboardOverlayDialogView::KeyboardOverlayDialogView(
     Profile* profile,
     HtmlDialogUIDelegate* delegate,
     BrowserView* parent_view)
-    : HtmlDialogView(profile, NULL, delegate),
+    : HtmlDialogView(profile, parent_view->browser(), delegate),
       parent_view_(parent_view) {
 }
 
@@ -93,9 +92,7 @@ void KeyboardOverlayDialogView::ShowDialog(
                                     parent_view);
   delegate->set_view(html_view);
   html_view->InitDialog();
-  chromeos::BubbleWindow::Create(owning_window,
-                                 STYLE_FLUSH,
-                                 html_view);
+  browser::CreateFramelessViewsWindow(owning_window, html_view);
   html_view->GetWidget()->Show();
 }
 

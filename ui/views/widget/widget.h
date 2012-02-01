@@ -663,6 +663,9 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   // Sizes and positions the window just after it is created.
   void SetInitialBounds(const gfx::Rect& bounds);
 
+  // Sizes and positions the frameless window just after it is created.
+  void SetInitialBoundsForFramelessWindow(const gfx::Rect& bounds);
+
   // Returns the bounds and "show" state from the delegate. Returns true if
   // the delegate wants to use a specified bounds.
   bool GetSavedWindowPlacement(gfx::Rect* bounds,

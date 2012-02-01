@@ -45,6 +45,33 @@ views::Widget* CreateViewsWindow(gfx::NativeWindow parent,
 #endif
 }
 
+views::Widget* CreateFramelessViewsWindow(gfx::NativeWindow parent,
+                                          views::WidgetDelegate* delegate) {
+#if defined(OS_CHROMEOS) && !defined(USE_AURA)
+  return chromeos::BubbleWindow::Create(parent, STYLE_FLUSH, delegate);
+#else
+  return CreateFramelessWindowWithParentAndBounds(delegate,
+      parent, gfx::Rect());
+#endif
+}
+
+views::Widget* CreateFramelessWindowWithParentAndBounds(
+    views::WidgetDelegate* delegate,
+    gfx::NativeWindow parent,
+    const gfx::Rect& bounds) {
+  views::Widget* widget = new views::Widget;
+  views::Widget::InitParams params(
+      views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
+  params.delegate = delegate;
+  // Will this function be called if !defined(USE_AURA)?
+#if defined(OS_WIN) || defined(USE_AURA)
+  params.parent = parent;
+#endif
+  params.bounds = bounds;
+  widget->Init(params);
+  return widget;
+}
+
 views::Widget* CreateViewsBubble(views::BubbleDelegateView* delegate) {
   views::Widget* bubble_widget =
       views::BubbleDelegateView::CreateBubble(delegate);

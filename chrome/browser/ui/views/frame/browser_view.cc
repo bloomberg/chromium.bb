@@ -1367,12 +1367,7 @@ void BrowserView::ShowMobileSetup() {
 }
 
 void BrowserView::ShowKeyboardOverlay(gfx::NativeWindow owning_window) {
-#if defined(TOOLKIT_USES_GTK)
   KeyboardOverlayDialogView::ShowDialog(owning_window, this);
-#else
-  // TODO(saintlou): Add Keyboard Overlay for Aura: crbug.com/99858.
-  NOTIMPLEMENTED();
-#endif
 }
 #endif
 

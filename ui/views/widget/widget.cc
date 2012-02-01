@@ -336,6 +336,9 @@ void Widget::Init(const InitParams& params) {
     else if (params.show_state == ui::SHOW_STATE_MINIMIZED)
       Minimize();
     UpdateWindowTitle();
+  } else if (params.delegate) {
+    SetContentsView(params.delegate->GetContentsView());
+    SetInitialBoundsForFramelessWindow(params.bounds);
   }
   native_widget_initialized_ = true;
 }
@@ -406,6 +409,9 @@ const Widget* Widget::GetTopLevelWidget() const {
 }
 
 void Widget::SetContentsView(View* view) {
+  // Do not SetContentsView() again if it is already set to the same view.
+  if (view == GetContentsView())
+    return;
   root_view_->SetContentsView(view);
   if (non_client_view_ != view)
     non_client_view_ = NULL;
@@ -1201,6 +1207,21 @@ void Widget::SetInitialBounds(const gfx::Rect& bounds) {
       // Use the supplied initial bounds.
       SetBoundsConstrained(bounds);
     }
+  }
+}
+
+void Widget::SetInitialBoundsForFramelessWindow(const gfx::Rect& bounds) {
+  if (bounds.IsEmpty()) {
+    View* contents_view = GetContentsView();
+    DCHECK(contents_view);
+    // No initial bounds supplied, so size the window to its content and
+    // center over its parent if preferred size is provided.
+    gfx::Size size = contents_view->GetPreferredSize();
+    if (!size.IsEmpty())
+      native_widget_->CenterWindow(size);
+  } else {
+    // Use the supplied initial bounds.
+    SetBoundsConstrained(bounds);
   }
 }
 
