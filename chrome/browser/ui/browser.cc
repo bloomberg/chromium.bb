@@ -2253,9 +2253,15 @@ void Browser::ShowOptionsTab(const std::string& sub_page) {
     params.path_behavior = browser::NavigateParams::IGNORE_AND_NAVIGATE;
     ShowSingletonTabOverwritingNTP(params);
   } else {
-    browser::NavigateParams params(GetSingletonTabNavigateParams(
-        GURL(std::string(chrome::kChromeUIUberURL) +
-             chrome::kChromeUISettingsHost + '/' + sub_page)));
+    std::string url;
+    if (sub_page == chrome::kExtensionsSubPage) {
+      url = std::string(chrome::kChromeUIUberURL) +
+          chrome::kChromeUIExtensionsHost;
+    } else {
+      url = std::string(chrome::kChromeUIUberURL) +
+          chrome::kChromeUISettingsHost + '/' + sub_page;
+    }
+    browser::NavigateParams params(GetSingletonTabNavigateParams(GURL(url)));
     params.path_behavior = browser::NavigateParams::IGNORE_AND_NAVIGATE;
     ShowSingletonTabOverwritingNTP(params);
   }

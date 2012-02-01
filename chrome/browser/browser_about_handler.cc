@@ -134,6 +134,13 @@ bool WillHandleBrowserAboutURL(GURL* url,
       host = chrome::kChromeUISettingsHost;
       path = chrome::kExtensionsSubPage;
     }
+  // Redirect chrome://settings/extensions.
+  // TODO(csilv): Fix all code paths for this page once Uber page is enabled
+  // permanently.
+  } else if (enableUberPage && host == chrome::kChromeUISettingsHost &&
+      url->path() == std::string("/") + chrome::kExtensionsSubPage) {
+    host = chrome::kChromeUIUberHost;
+    path = chrome::kChromeUIExtensionsHost;
   // Redirect chrome://settings
   } else if (enableUberPage && host == chrome::kChromeUISettingsHost) {
     host = chrome::kChromeUIUberHost;
