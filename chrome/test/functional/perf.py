@@ -911,6 +911,49 @@ class YoutubePerfTest(BasePerfTest, YoutubeTestHelper):
         graph_name='YoutubeCPUExtrapolation')
 
 
+class FlashVideoPerfTest(BasePerfTest):
+  """General flash video performance tests."""
+
+  def FlashVideo1080P(self):
+    """Measures total dropped frames and average FPS for a 1080p flash video.
+
+    This is a temporary test to be run manually for now, needed to collect some
+    performance statistics across different ChromeOS devices.
+    """
+    # Open up the test webpage; it's assumed the test will start automatically.
+    webpage_url = 'http://www/~arscott/fl/FlashVideoTests.html'
+    self.assertTrue(self.AppendTab(pyauto.GURL(webpage_url)),
+                    msg='Failed to append tab for webpage.')
+
+    # Wait until the test is complete.
+    js_is_done = """
+        window.domAutomationController.send(JSON.stringify(tests_done));
+    """
+    self.assertTrue(
+        self.WaitUntil(
+            lambda: self.ExecuteJavascript(js_is_done, tab_index=1) == 'true',
+            timeout=300, expect_retval=True, retry_sleep=1),
+        msg='Timed out when waiting for test result.')
+
+    # Retrieve and output the test results.
+    js_results = """
+        window.domAutomationController.send(JSON.stringify(tests_results));
+    """
+    test_result = eval(self.ExecuteJavascript(js_results, tab_index=1))
+    test_result[0] = test_result[0].replace('true', 'True')
+    test_result = eval(test_result[0])  # Webpage only does 1 test right now.
+
+    description = 'FlashVideo1080P'
+    result = test_result['averageFPS']
+    logging.info('Result for %s: %f FPS (average)', description, result)
+    self._OutputPerfGraphValue(description, result, 'FPS',
+                               graph_name=description)
+    result = test_result['droppedFrames']
+    logging.info('Result for %s: %f dropped frames', description, result)
+    self._OutputPerfGraphValue(description, result, 'DroppedFrames',
+                               graph_name=description)
+
+
 class WebGLTest(BasePerfTest):
   """Tests for WebGL performance."""
 
