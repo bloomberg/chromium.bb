@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -116,6 +116,10 @@ class AutomationProvider
 
   // Called when the chromeos WebUI login is ready.
   void OnLoginWebuiReady();
+
+  // Checks all of the initial load conditions, then sends the
+  // InitialLoadsComplete message over the automation channel.
+  void SendInitialLoadMessage();
 
   // Get the index of a particular NavigationController object
   // in the given parent window.  This method uses

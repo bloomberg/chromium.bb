@@ -271,23 +271,27 @@ void AutomationProvider::SetExpectedTabCount(size_t expected_tabs) {
 void AutomationProvider::OnInitialTabLoadsComplete() {
   initial_tab_loads_complete_ = true;
   VLOG(2) << "OnInitialTabLoadsComplete";
-  if (is_connected_ && network_library_initialized_ && login_webui_ready_)
-    Send(new AutomationMsg_InitialLoadsComplete());
+  SendInitialLoadMessage();
 }
 
 void AutomationProvider::OnNetworkLibraryInit() {
   network_library_initialized_ = true;
   VLOG(2) << "OnNetworkLibraryInit";
-  if (is_connected_ && initial_tab_loads_complete_ && login_webui_ready_)
-    Send(new AutomationMsg_InitialLoadsComplete());
+  SendInitialLoadMessage();
 }
 
 void AutomationProvider::OnLoginWebuiReady() {
   login_webui_ready_ = true;
   VLOG(2) << "OnLoginWebuiReady";
+  SendInitialLoadMessage();
+}
+
+void AutomationProvider::SendInitialLoadMessage() {
   if (is_connected_ && initial_tab_loads_complete_ &&
-      network_library_initialized_)
+      network_library_initialized_ && login_webui_ready_) {
+    LOG(INFO) << "Initial loads complete; sending initial loads message.";
     Send(new AutomationMsg_InitialLoadsComplete());
+  }
 }
 
 void AutomationProvider::AddLoginHandler(NavigationController* tab,
@@ -376,13 +380,12 @@ const Extension* AutomationProvider::GetDisabledExtension(
 
 void AutomationProvider::OnChannelConnected(int pid) {
   is_connected_ = true;
-  LOG(INFO) << "Testing channel connected, sending hello message";
 
   // Send a hello message with our current automation protocol version.
+  LOG(INFO) << "Testing channel connected, sending hello message";
   channel_->Send(new AutomationMsg_Hello(GetProtocolVersion()));
-  if (initial_tab_loads_complete_ && network_library_initialized_ &&
-      login_webui_ready_)
-    Send(new AutomationMsg_InitialLoadsComplete());
+
+  SendInitialLoadMessage();
 }
 
 void AutomationProvider::OnEndTracingComplete() {
