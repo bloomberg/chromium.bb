@@ -5,8 +5,9 @@
 
 Import('env')
 
-# Exception handling support is only implemented for x86-32 Windows.
-is_broken = not env.Bit('host_windows') or not env.Bit('build_x86_32')
+# Exception handling support is not implemented everywhere yet.
+is_broken = (not (env.Bit('host_windows') or env.Bit('host_mac')) or
+             not env.Bit('build_x86_32'))
 
 # To keep PNaCl enthusiasts happy, we support a pure-bitcode version
 # of the test, but it is less strict.  The non-PNaCl version uses

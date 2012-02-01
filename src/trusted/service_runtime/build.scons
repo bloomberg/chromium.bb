@@ -160,8 +160,14 @@ if env.Bit('windows'):
     'win/sel_segments.c',
   ]
 elif env.Bit('mac'):
+  env.Command(
+     [GENERATED + '/nacl_exc.h', GENERATED + '/nacl_exc_server.c'],
+     ['osx/run_mig.py', '/usr/include/mach/exc.defs'],
+     '${PYTHON} ${SOURCES} ${TARGETS}')
   ldr_inputs += [
+    GENERATED + '/nacl_exc_server.c',
     'osx/crash_filter.c',
+    'osx/mach_exception_handler.c',
     'osx/nacl_ldt.c',
     'osx/nacl_oop_debugger_hooks.c',
     'osx/nacl_thread_nice.c',

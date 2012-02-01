@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -55,6 +55,8 @@
 #include "native_client/src/trusted/service_runtime/win/exception_patch/ntdll_patch.h"
 #if NACL_WINDOWS
 #include "native_client/src/trusted/service_runtime/win/debug_exception_handler.h"
+#elif NACL_OSX
+#include "native_client/src/trusted/service_runtime/osx/mach_exception_handler.h"
 #endif
 
 static void VmentryPrinter(void           *state,
@@ -198,6 +200,7 @@ int main(int  argc,
   int                           skip_qualification = 0;
   int                           enable_debug_stub = 0;
   int                           handle_signals = 0;
+  int                           exception_handling_requested = 0;
   int                           exception_handling = 0;
   struct NaClPerfCounter        time_all_main;
   const char                    **envp;
@@ -277,7 +280,7 @@ int main(int  argc,
                        "aB:ceE:f:Fgh:i:Il:Qr:RsSvw:X:")) != -1) {
     switch (opt) {
       case 'e':
-        exception_handling = 1;
+        exception_handling_requested = 1;
         break;
 #if NACL_LINUX
       case 'D':
@@ -389,25 +392,35 @@ int main(int  argc,
     }
   }
 
-  if (exception_handling) {
 #if NACL_WINDOWS
+  if (exception_handling_requested) {
     int status;
     DWORD exit_code;
+    exception_handling = 1;
     status = NaClLaunchAndDebugItself(argv[0], &exit_code);
     if (status == DEBUG_EXCEPTION_HANDLER_NOT_SUPPORTED) {
       exception_handling = 0;
     } else if (status == DEBUG_EXCEPTION_HANDLER_SUCCESS) {
       return exit_code;
     } else if (status == DEBUG_EXCEPTION_HANDLER_ERROR) {
-      fprintf(stderr, "ERROR in debug exception handling %d\n", GetLastError());
+      fprintf(stderr, "ERROR in debug exception handling %d\n",
+              GetLastError());
       return -1;
     }
-#else
-    exception_handling = 0;
-#endif
-    if (!exception_handling) {
-      fprintf(stderr, "WARNING: exception handling is not supported\n");
+  }
+#elif NACL_OSX
+  if (exception_handling_requested) {
+    int status;
+    exception_handling = 1;
+    status = NaClInterceptMachExceptions();
+    if (!status) {
+      fprintf(stderr, "ERROR setting up Mach exception interception.\n");
+      return -1;
     }
+  }
+#endif
+  if (exception_handling_requested && !exception_handling) {
+    fprintf(stderr, "WARNING: exception handling is not supported\n");
   }
 
   if (debug_mode_ignore_validator == 1)

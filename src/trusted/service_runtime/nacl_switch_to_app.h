@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -31,6 +31,10 @@ extern NORETURN void NaClSwitchSavingStackPtr(
     struct NaClThreadContext *user_context,
     struct NaClThreadContext *sys_context,
     void (*NaClSwitch)(struct NaClThreadContext *context));
+#if NACL_OSX
+/* Same as NaClSwitchNoSSE but context in %ecx */
+extern NORETURN void NaClSwitchNoSSEViaECX();
+#endif
 #else
 extern NORETURN void NaClSwitch(struct NaClThreadContext *context);
 #endif

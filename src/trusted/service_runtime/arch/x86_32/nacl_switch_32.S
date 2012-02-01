@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -56,10 +56,14 @@ ENDMACRO
 #define DO_NONE 0
 #define DO_SSE 1
 #define DO_AVX 2
+#define DO_USING_ARG_IN_ECX 3
 
 MACRO(switcher)
 MACROENTRY
+/* For DO_USING_ARG_IN_ECX don't touch the stack. */
+.if MACROARG2 != DO_USING_ARG_IN_ECX
         popl    %eax /* throw away the return addr */
+.endif
 
         /*
          * Clear the vector registers.
@@ -84,10 +88,16 @@ MACROENTRY
         xorps   %xmm7, %xmm7
 .endif
 
+/*
+ * For DO_USING_ARG_IN_ECX get the thread context from ecx instead of the
+ * stack.
+ */
+.if MACROARG2 != DO_USING_ARG_IN_ECX
         /* do not leak info to app */
         xorl    %ecx, %ecx
         /* xorl will leave eflags in a known state, so no info leaks */
         popl    %ecx
+.endif
         movl    0x30(%ecx), %edx /* new_eip */
         movl    0x14(%ecx), %ebp /* frame_ptr.ptr_32.ptr */
         movl    0x8(%ecx), %edi /* edi */
@@ -110,3 +120,8 @@ ENDMACRO
         switcher NaClSwitchNoSSE, DO_NONE
         switcher NaClSwitchSSE, DO_SSE
         switcher NaClSwitchAVX, DO_AVX
+
+/* Generate register only version on OSX. */
+#if NACL_OSX
+        switcher NaClSwitchNoSSEViaECX, DO_USING_ARG_IN_ECX
+#endif

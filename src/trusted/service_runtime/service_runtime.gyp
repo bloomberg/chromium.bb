@@ -98,12 +98,37 @@
             ['OS=="mac"', {
               'sources': [
                 'osx/crash_filter.c',
+                'osx/mach_exception_handler.c',
                 'osx/nacl_ldt.c',
                 'osx/nacl_oop_debugger_hooks.c',
                 'osx/nacl_thread_nice.c',
                 'linux/sel_memory.c',
                 'linux/x86/sel_segments.c',
                 'osx/outer_sandbox.c',
+              ],
+              'actions': [
+                {
+                  'action_name': 'mig_exc_generation',
+                  'variables': {
+                    'gen_dir': '<(INTERMEDIATE_DIR)/gen/native_client/src/trusted/service_runtime',
+                  },
+                  'inputs': [
+                    'osx/run_mig.py',
+                    '/usr/include/mach/exc.defs',
+                  ],
+                  'outputs': [
+                    '<(gen_dir)/nacl_exc.h',
+                    '<(gen_dir)/nacl_exc_server.c',
+                  ],
+                  'process_outputs_as_sources': 1,
+                  'action': [
+                    '<(python_exe)', '<@(_inputs)', '<@(_outputs)',
+                  ],
+                  'message': 'Generating mig plumbing for exc.defs',
+                },
+              ],
+              'include_dirs': [
+                '<(INTERMEDIATE_DIR)',
               ],
             }],
             ['OS=="win"', {
