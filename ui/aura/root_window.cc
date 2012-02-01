@@ -762,6 +762,8 @@ void RootWindow::SynthesizeMouseMoveEvent() {
   if (!synthesize_mouse_move_)
     return;
   synthesize_mouse_move_ = false;
+#if !defined(OS_WIN)
+  // Temporarily disabled for windows. See crbug.com/112222.
   gfx::Point orig_mouse_location = last_mouse_location_;
   layer()->transform().TransformPoint(orig_mouse_location);
 
@@ -771,7 +773,8 @@ void RootWindow::SynthesizeMouseMoveEvent() {
                    orig_mouse_location,
                    orig_mouse_location,
                    0);
-  //DispatchMouseEvent(&event);
+  DispatchMouseEvent(&event);
+#endif
 }
 
 }  // namespace aura

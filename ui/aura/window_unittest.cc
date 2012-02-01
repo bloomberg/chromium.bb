@@ -1265,9 +1265,11 @@ TEST_F(WindowTest, VisibilityClientIsVisible) {
   EXPECT_TRUE(window->layer()->visible());
 }
 
+#if !defined(OS_WIN)
+// Temporarily disabled for windows. See crbug.com/112222.
+
 // Tests mouse events on window change.
-// See http://crbug.com/112246
-TEST_F(WindowTest, FAILS_MouseEventsOnWindowChange) {
+TEST_F(WindowTest, MouseEventsOnWindowChange) {
   RootWindow* root_window = RootWindow::GetInstance();
   gfx::Size size = root_window->GetHostSize();
 
@@ -1342,6 +1344,7 @@ TEST_F(WindowTest, FAILS_MouseEventsOnWindowChange) {
   RunAllPendingInMessageLoop();
   EXPECT_EQ("1 1 0", d1.GetMouseCountsAndReset());
 }
+#endif
 
 class StackingMadrigalLayoutManager : public LayoutManager {
  public:
