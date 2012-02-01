@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -753,8 +753,10 @@ void AddInstallWorkItems(const InstallationState& original_state,
   // Extra executable for 64 bit systems.
   // NOTE: We check for "not disabled" so that if the API call fails, we play it
   // safe and copy the executable anyway.
+  // NOTE: the file wow_helper.exe is only needed for Vista and below.
   if (base::win::OSInfo::GetInstance()->wow64_status() !=
-      base::win::OSInfo::WOW64_DISABLED) {
+      base::win::OSInfo::WOW64_DISABLED &&
+      base::win::GetVersion() <= base::win::VERSION_VISTA) {
     install_list->AddMoveTreeWorkItem(
         src_path.Append(installer::kWowHelperExe).value(),
         target_path.Append(installer::kWowHelperExe).value(),
