@@ -93,9 +93,9 @@ deps = {
     'src/third_party/sfntly/cpp/src':
         Var('git_url') + '/external/sfntly/cpp/src.git@ca72e2646f852b6c39ef1b07fa9b250988ce9d54',
     'src/third_party/skia/include':
-        Var('git_url') + '/external/skia/include.git@2bce42701a035a7be7f2cff4a41c9730d4039b55',
+        Var('git_url') + '/external/skia/include.git@404a301012233b749b73f3a550f8a127879a1a45',
     'src/third_party/skia/src':
-        Var('git_url') + '/external/skia/src.git@49ea60a9bfacb7235618b50c7ad49b822f25d92e',
+        Var('git_url') + '/external/skia/src.git@968b7858f50d91a43f42ebd72fa9472135d59212',
     'src/third_party/skia/third_party/glu':
         Var('git_url') + '/external/skia/third_party/glu.git@53680310e174393579d8946c84c78625e6ac133c',
     'src/third_party/smhasher/src':
@@ -125,7 +125,7 @@ deps = {
     'src/tools/page_cycler/acid3':
         Var('git_url') + '/chromium/deps/acid3.git@633fc66cc99ae5bb92b567c6beafde7a01cfdb49',
     'src/v8':
-        Var('git_url') + '/external/v8.git@659ceec4628056d3c6e7076c850fba1c412cbb8a',
+        Var('git_url') + '/external/v8.git@fa458e413c3e5b8d479e49258d060b7bb4567c57',
 }
 
 deps_os = {
