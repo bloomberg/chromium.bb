@@ -2336,7 +2336,8 @@ void Browser::OpenSearchEngineOptionsDialog() {
 #if defined(FILE_MANAGER_EXTENSION)
 void Browser::OpenFileManager() {
   content::RecordAction(UserMetricsAction("OpenFileManager"));
-  ShowSingletonTabRespectRef(GURL(chrome::kChromeUIFileManagerURL));
+  OpenURL(OpenURLParams(GURL(chrome::kChromeUIFileManagerURL), Referrer(),
+            NEW_FOREGROUND_TAB, content::PAGE_TRANSITION_LINK, false));
 }
 #endif
 
