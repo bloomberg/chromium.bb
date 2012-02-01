@@ -1,15 +1,21 @@
 liblouis NEWS -- history of user-visible changes.
 
-* Noteworthy changes in release 2.4.0 (???-??-??)
+* Noteworthy changes in release 2.4.1 (???-??-??)
 
 ** Improved the documentation
 
 ** Bug fixes
 
 ** New features
+   - Czech hyphenation table thanks to Jan Hegr
+
+** Braille Table Improvements
+
+* Noteworthy changes in release 2.4.0 (2012-01-31)
+
+** New features
    - New Generic Farsi Grade 1 table: A new table for Generic Farsi
      Grade 1 braille has been provided by Mesar Hameed.
-   - Czech hyphenation table thanks to Jan Hegr
    - Emacs mode for editing Braille tables thanks to Christian Egli
 
 ** Braille Table Improvements

@@ -1,3 +1,9 @@
+2012-02-01  Christian Egli  <christian.egli@sbs.ch>
+
+	* tables/hyph_cs_CZ.dic:
+	* tables/Makefile.am (table_files): Added hyphenation table for
+	Czech provided by Jan Halousek
+
 2012-01-09  Christian Egli  <christian.egli@sbs.ch>
 
 	* tables/ar-ar-g1.utb: Added updates to Generic Arabic table by

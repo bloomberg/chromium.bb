@@ -106,6 +106,7 @@ table_files = \
 	hu1.ctb \
 	hu.ctb \
 	hy.ctb \
+	hyph_cs_CZ.dic \
 	hyph_de_DE.dic \
 	hyph_en_US.dic \
 	hyph_es_ES.dic \
