@@ -47,11 +47,13 @@
 #include "chrome/browser/metrics/metrics_service.h"
 #include "chrome/browser/oom_priority_manager.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
+#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/views/browser_dialogs.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/logging_chrome.h"
+#include "chrome/common/pref_names.h"
 #include "content/public/common/main_function_params.h"
 #include "grit/platform_locale_settings.h"
 #include "net/base/network_change_notifier.h"
@@ -400,13 +402,20 @@ void ChromeBrowserMainPartsChromeos::PostProfileInit() {
   // -- This used to be in ChromeBrowserMainParts::PreMainMessageLoopRun()
   // -- just after CreateProfile().
 
-  // Pass the TokenService pointer to the policy connector so user policy can
-  // grab a token and register with the policy server.
-  // TODO(mnissler): Remove once OAuth is the only authentication mechanism.
   if (parsed_command_line().HasSwitch(switches::kLoginUser) &&
       !parsed_command_line().HasSwitch(switches::kLoginPassword)) {
+    // Pass the TokenService pointer to the policy connector so user policy can
+    // grab a token and register with the policy server.
+    // TODO(mnissler): Remove once OAuth is the only authentication mechanism.
     g_browser_process->browser_policy_connector()->SetUserPolicyTokenService(
         profile()->GetTokenService());
+
+    // Make sure we flip every profile to not share proxies if the user hasn't
+    // specified so explicitly.
+    const PrefService::Preference* use_shared_proxies_pref =
+        profile()->GetPrefs()->FindPreference(prefs::kUseSharedProxies);
+    if (use_shared_proxies_pref->IsDefaultValue())
+      profile()->GetPrefs()->SetBoolean(prefs::kUseSharedProxies, false);
   }
 
   // Tests should be able to tune login manager before showing it.
