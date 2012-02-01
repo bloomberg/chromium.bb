@@ -542,7 +542,7 @@ void ProxyConfigServiceImpl::RegisterPrefs(PrefService* pref_service) {
   // Use shared proxies default to off.  GetUseSharedProxies will return the
   // correct value based on pre-login and login.
   pref_service->RegisterBooleanPref(prefs::kUseSharedProxies,
-                                    false,
+                                    true,
                                     PrefService::UNSYNCABLE_PREF);
 }
 
@@ -664,7 +664,7 @@ void ProxyConfigServiceImpl::SetProxyConfigForNetwork(
 bool ProxyConfigServiceImpl::GetUseSharedProxies() {
   const PrefService::Preference* use_shared_proxies_pref =
       prefs()->FindPreference(prefs::kUseSharedProxies);
-  if (!use_shared_proxies_pref || use_shared_proxies_pref->IsDefaultValue())
+  if (!use_shared_proxies_pref)
     return !UserManager::Get()->user_is_logged_in();
   return use_shared_proxies_.GetValue();
 }
