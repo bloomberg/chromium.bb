@@ -248,7 +248,9 @@ SigninScreenHandler::SigninScreenHandler()
       show_on_init_(false),
       oobe_ui_(false),
       is_first_webui_ready_(false),
-      is_first_attempt_(true),
+      // TODO(altimofeev): Mark as a first attempt (init to true) when
+      // http://crosbug.com/23743 is fixed.
+      is_first_attempt_(false),
       dns_cleared_(false),
       dns_clear_task_running_(false),
       cookies_cleared_(false),
