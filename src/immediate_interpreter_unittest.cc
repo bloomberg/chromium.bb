@@ -684,6 +684,7 @@ TEST(ImmediateInterpreter, TapRecordTest) {
     {0, 0, 0, 0, 75, 0, 4, 9, kF2},
     {0, 0, 0, 0, 50, 0, 7, 4, kF1}
   };
+  HardwareState nullstate = { 0.0, 0, 0, 0, NULL };
   HardwareState hw[] = {
     // time, buttons, finger count, finger states pointer
     { 0.0, 0, 1, 1, &fs[0] },
@@ -694,39 +695,39 @@ TEST(ImmediateInterpreter, TapRecordTest) {
     { 0.5, 0, 1, 1, &fs[2] }
   };
 
-  tr.Update(hw[0], MkSet(kF1), MkSet(), MkSet());
+  tr.Update(hw[0], nullstate, MkSet(kF1), MkSet(), MkSet());
   EXPECT_FALSE(tr.Moving(hw[0], kTapMoveDist));
   EXPECT_FALSE(tr.TapComplete());
-  tr.Update(hw[1], MkSet(), MkSet(), MkSet());
+  tr.Update(hw[1], hw[0], MkSet(), MkSet(), MkSet());
   EXPECT_FALSE(tr.Moving(hw[1], kTapMoveDist));
   EXPECT_FALSE(tr.TapComplete());
-  tr.Update(hw[2], MkSet(), MkSet(kF1), MkSet());
+  tr.Update(hw[2], hw[1], MkSet(), MkSet(kF1), MkSet());
   EXPECT_FALSE(tr.Moving(hw[2], kTapMoveDist));
   EXPECT_TRUE(tr.TapComplete());
   EXPECT_EQ(GESTURES_BUTTON_LEFT, tr.TapType());
 
   tr.Clear();
   EXPECT_FALSE(tr.TapComplete());
-  tr.Update(hw[2], MkSet(kF2), MkSet(), MkSet());
+  tr.Update(hw[2], hw[1], MkSet(kF2), MkSet(), MkSet());
   EXPECT_FALSE(tr.Moving(hw[2], kTapMoveDist));
   EXPECT_FALSE(tr.TapComplete());
-  tr.Update(hw[3], MkSet(kF1), MkSet(), MkSet(kF2));
+  tr.Update(hw[3], hw[2], MkSet(kF1), MkSet(), MkSet(kF2));
   EXPECT_FALSE(tr.Moving(hw[3], kTapMoveDist));
   EXPECT_FALSE(tr.TapComplete());
-  tr.Update(hw[4], MkSet(), MkSet(kF1), MkSet());
+  tr.Update(hw[4], hw[3], MkSet(), MkSet(kF1), MkSet());
   EXPECT_FALSE(tr.Moving(hw[4], kTapMoveDist));
   EXPECT_TRUE(tr.TapComplete());
 
   tr.Clear();
   EXPECT_FALSE(tr.TapComplete());
-  tr.Update(hw[0], MkSet(kF1), MkSet(), MkSet());
-  tr.Update(hw[5], MkSet(), MkSet(), MkSet());
+  tr.Update(hw[0], nullstate, MkSet(kF1), MkSet(), MkSet());
+  tr.Update(hw[5], hw[4], MkSet(), MkSet(), MkSet());
   EXPECT_TRUE(tr.Moving(hw[5], kTapMoveDist));
   EXPECT_FALSE(tr.TapComplete());
 
   // This should log an error
   tr.Clear();
-  tr.Update(hw[2], MkSet(), MkSet(kF1), MkSet());
+  tr.Update(hw[2], hw[1], MkSet(), MkSet(kF1), MkSet());
 }
 
 struct HWStateGs {
@@ -791,6 +792,8 @@ TEST(ImmediateInterpreterTest, TapToClickStateMachineTest) {
     {0, 0, 0, 0, 50, 0, 9, 9, 98},
 
     {0, 0, 0, 0, 80, 0, 5, 9, 70},  // thumb
+    {0, 0, 0, 0, 50, 0, 4, 4, 91},
+    {0, 0, 0, 0, 80, 0, 5, 9, 71},  // thumb-new id
   };
   HWStateGs hwsgs[] = {
     // Simple 1-finger tap
@@ -933,17 +936,58 @@ TEST(ImmediateInterpreterTest, TapToClickStateMachineTest) {
     {{ 0.12, 0, 1, 1, &fs[2] }, -1, MkSet(93), kBL,   0, kSTB, false },
     {{ 0.22, 0, 0, 0, NULL   }, -1, MkSet(),     0, kBL, kTpC, true },
     {{ 0.90, 0, 0, 0, NULL   }, .9, MkSet(),   kBL, kBL, kIdl, false },
+    // T5R2 tap tests:
+    // (1f and 2f tap w/o resting thumb and 1f w/ resting thumb are the same as
+    // above)
+    // 2f tap w/ resting thumb
+    {{ 0.00, 0, 1, 1, &fs[16] }, -1, MkSet(70),   0,   0, kFTB, false },  // 119
+    {{ 1.00, 0, 1, 1, &fs[16] }, -1, MkSet(70),   0,   0, kIdl, false },
+    {{ 1.01, 0, 1, 3, &fs[16] }, -1, MkSet(70),   0,   0, kFTB, false },
+    {{ 1.02, 0, 2, 3, &fs[16] }, -1, MkSet(70, 91), 0, 0, kFTB, false },
+    {{ 1.03, 0, 0, 2, NULL    }, -1, MkSet(),     0,   0, kFTB, false },
+    {{ 1.04, 0, 1, 1, &fs[18] }, -1, MkSet(71), kBR, kBR, kIdl, false },
+    // 3f tap w/o resting thumb
+    {{ 0.00, 0, 2, 3, &fs[0] }, -1,  MkSet(91, 92), 0, 0, kFTB, false },  // 125
+    {{ 0.01, 0, 0, 1, NULL   }, -1,  MkSet(),       0, 0, kFTB, false },
+    {{ 0.02, 0, 0, 0, NULL   }, -1,  MkSet(),   kBR, kBR, kIdl, false },
+    // 3f tap w/o resting thumb (slightly different)
+    {{ 0.00, 0, 2, 3, &fs[0] }, -1,  MkSet(91, 92), 0, 0, kFTB, false },  // 128
+    {{ 0.01, 0, 2, 3, &fs[0] }, -1,  MkSet(91, 92), 0, 0, kFTB, false },
+    {{ 0.02, 0, 0, 0, NULL   }, -1,  MkSet(),   kBR, kBR, kIdl, false },
+    // 3f tap w/ resting thumb
+    {{ 0.00, 0, 1, 1, &fs[16] }, -1, MkSet(70),   0,   0, kFTB, false },  // 131
+    {{ 1.00, 0, 1, 1, &fs[16] }, -1, MkSet(70),   0,   0, kIdl, false },
+    {{ 1.01, 0, 1, 4, &fs[16] }, -1, MkSet(70),   0,   0, kFTB, false },
+    {{ 1.02, 0, 2, 4, &fs[16] }, -1, MkSet(70, 91), 0, 0, kFTB, false },
+    {{ 1.03, 0, 1, 1, &fs[16] }, -1, MkSet(70), kBR, kBR, kIdl, false },
+    // 4f tap w/o resting thumb
+    {{ 0.00, 0, 2, 3, &fs[0] }, -1,  MkSet(91, 92), 0, 0, kFTB, false },  // 136
+    {{ 0.01, 0, 1, 4, &fs[0] }, -1,  MkSet(91),     0, 0, kFTB, false },
+    {{ 0.02, 0, 2, 4, &fs[0] }, -1,  MkSet(91, 92), 0, 0, kFTB, false },
+    {{ 0.03, 0, 0, 0, NULL   }, -1,  MkSet(),   kBR, kBR, kIdl, false },
+    // 4f tap w/ resting thumb
+    {{ 0.00, 0, 1, 1, &fs[16] }, -1, MkSet(70),   0,   0, kFTB, false },  // 140
+    {{ 1.00, 0, 1, 1, &fs[16] }, -1, MkSet(70),   0,   0, kIdl, false },
+    {{ 1.01, 0, 1, 5, &fs[16] }, -1, MkSet(70),   0,   0, kFTB, false },
+    {{ 1.02, 0, 1, 1, &fs[16] }, -1, MkSet(70), kBR, kBR, kIdl, false },
+    // 4f tap w/ resting thumb (slightly different)
+    {{ 0.00, 0, 1, 1, &fs[16] }, -1, MkSet(70),   0,   0, kFTB, false },  // 144
+    {{ 1.00, 0, 1, 1, &fs[16] }, -1, MkSet(70),   0,   0, kIdl, false },
+    {{ 1.01, 0, 1, 5, &fs[16] }, -1, MkSet(70),   0,   0, kFTB, false },
+    {{ 1.02, 0, 2, 5, &fs[16] }, -1, MkSet(70, 91), 0, 0, kFTB, false },
+    {{ 1.03, 0, 1, 1, &fs[16] }, -1, MkSet(70), kBR, kBR, kIdl, false },
   };
   const size_t kSlowDoubleTapStartIndex = 114;
+  const size_t kT5R2TestFirstIndex = 119;
 
   // Algorithmically add a resting thumb to a copy of all above cases
-  HWStateGs hwsgs_full[arraysize(hwsgs) * 2];
+  HWStateGs hwsgs_full[arraysize(hwsgs) + kT5R2TestFirstIndex];
   std::copy(hwsgs, hwsgs + arraysize(hwsgs), hwsgs_full);
-  std::copy(hwsgs, hwsgs + arraysize(hwsgs), hwsgs_full + arraysize(hwsgs));
+  std::copy(hwsgs, hwsgs + kT5R2TestFirstIndex, hwsgs_full + arraysize(hwsgs));
 
   vector<vector<FingerState> > thumb_fs(arraysize(hwsgs));
   const FingerState& fs_thumb = fs[arraysize(fs) - 1];
-  for (size_t i = 0; i < arraysize(hwsgs); ++i) {
+  for (size_t i = 0; i < kT5R2TestFirstIndex; ++i) {
     HardwareState* hs = &hwsgs_full[i + arraysize(hwsgs)].hws;
     vector<FingerState>& newfs = thumb_fs[i];
     newfs.resize(hs->finger_cnt + 1);
@@ -955,6 +999,7 @@ TEST(ImmediateInterpreterTest, TapToClickStateMachineTest) {
       gs.insert(fs_thumb.tracking_id);
     hs->fingers = &thumb_fs[i][0];
     hs->finger_cnt++;
+    hs->touch_cnt++;
   }
 
   for (size_t i = 0; i < arraysize(hwsgs_full); ++i) {

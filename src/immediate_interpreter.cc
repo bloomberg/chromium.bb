@@ -56,10 +56,25 @@ void TapRecord::Remove(short the_id) {
 }
 
 void TapRecord::Update(const HardwareState& hwstate,
+                       const HardwareState& prev_hwstate,
                        const set<short, kMaxTapFingers>& added,
                        const set<short, kMaxTapFingers>& removed,
                        const set<short, kMaxFingers>& dead) {
   Log("Updating TapRecord.");
+  if (!t5r2_ && hwstate.finger_cnt != hwstate.touch_cnt) {
+    // switch to T5R2 mode
+    t5r2_ = true;
+    t5r2_touched_size_ = touched_.size();
+    t5r2_released_size_ = released_.size();
+  }
+  if (t5r2_) {
+    short diff = static_cast<short>(hwstate.touch_cnt) -
+        static_cast<short>(prev_hwstate.touch_cnt);
+    if (diff > 0)
+      t5r2_touched_size_ += diff;
+    else if (diff < 0)
+      t5r2_released_size_ += -diff;
+  }
   for (set<short, kMaxTapFingers>::const_iterator it = added.begin(),
            e = added.end(); it != e; ++it)
     Log("Added: %d", *it);
@@ -80,6 +95,9 @@ void TapRecord::Update(const HardwareState& hwstate,
 }
 
 void TapRecord::Clear() {
+  t5r2_ = false;
+  t5r2_touched_size_ = 0;
+  t5r2_released_size_ = 0;
   touched_.clear();
   released_.clear();
 }
@@ -103,22 +121,33 @@ bool TapRecord::Moving(const HardwareState& hwstate,
   return false;
 }
 
+bool TapRecord::TapBegan() const {
+  if (t5r2_)
+    return t5r2_touched_size_ > 0;
+  return !touched_.empty();
+}
+
 bool TapRecord::TapComplete() const {
   Log("called TapComplete()");
+  bool ret = false;
+  if (t5r2_)
+    ret = t5r2_touched_size_ && t5r2_touched_size_ == t5r2_released_size_;
+  else
+    ret = !touched_.empty() && (touched_.size() == released_.size());
   for (map<short, FingerState, kMaxTapFingers>::const_iterator
            it = touched_.begin(), e = touched_.end(); it != e; ++it)
     Log("touched_: %d", (*it).first);
   for (set<short, kMaxTapFingers>::const_iterator it = released_.begin(),
            e = released_.end(); it != e; ++it)
     Log("released_: %d", *it);
-  bool ret = !touched_.empty() && (touched_.size() == released_.size());
   Log("TapComplete() returning %d", ret);
   return ret;
 }
 
 int TapRecord::TapType() const {
   // TODO(adlr): use better logic here
-  return touched_.size() > 1 ? GESTURES_BUTTON_RIGHT : GESTURES_BUTTON_LEFT;
+  size_t touched_size = t5r2_ ? t5r2_touched_size_ : touched_.size();
+  return touched_size > 1 ? GESTURES_BUTTON_RIGHT : GESTURES_BUTTON_LEFT;
 }
 
 ImmediateInterpreter::ImmediateInterpreter(PropRegistry* prop_reg)
@@ -760,10 +789,12 @@ void ImmediateInterpreter::UpdateTapState(
 
   switch (tap_to_click_state_) {
     case kTtcIdle:
-      if (!added_fingers.empty()) {
+      if (hwstate) {
         tap_record_.Update(
-            *hwstate, added_fingers, removed_fingers, dead_fingers);
-        SetTapToClickState(kTtcFirstTapBegan, now);
+            *hwstate, prev_state_, added_fingers, removed_fingers,
+            dead_fingers);
+        if (tap_record_.TapBegan())
+          SetTapToClickState(kTtcFirstTapBegan, now);
       }
       break;
     case kTtcFirstTapBegan:
@@ -776,7 +807,7 @@ void ImmediateInterpreter::UpdateTapState(
         break;
       }
       tap_record_.Update(
-          *hwstate, added_fingers, removed_fingers, dead_fingers);
+          *hwstate, prev_state_, added_fingers, removed_fingers, dead_fingers);
       Log("Is tap? %d Is moving? %d",
           tap_record_.TapComplete(),
           tap_record_.Moving(*hwstate, tap_move_dist_.val_));
@@ -799,7 +830,8 @@ void ImmediateInterpreter::UpdateTapState(
         *buttons_down = tap_record_.TapType();
         tap_record_.Clear();
         tap_record_.Update(
-            *hwstate, added_fingers, removed_fingers, dead_fingers);
+            *hwstate, prev_state_, added_fingers, removed_fingers,
+            dead_fingers);
         SetTapToClickState(kTtcSubsequentTapBegan, now);
       } else if (is_timeout) {
         *buttons_down = *buttons_up = tap_record_.TapType();
@@ -813,7 +845,8 @@ void ImmediateInterpreter::UpdateTapState(
       }
       if (hwstate)
         tap_record_.Update(
-            *hwstate, added_fingers, removed_fingers, dead_fingers);
+            *hwstate, prev_state_, added_fingers, removed_fingers,
+            dead_fingers);
       if (is_timeout || tap_record_.Moving(*hwstate, tap_move_dist_.val_)) {
         if (tap_record_.TapType() == GESTURES_BUTTON_LEFT) {
           SetTapToClickState(kTtcDrag, now);
@@ -832,7 +865,8 @@ void ImmediateInterpreter::UpdateTapState(
     case kTtcDrag:
       if (hwstate)
         tap_record_.Update(
-            *hwstate, added_fingers, removed_fingers, dead_fingers);
+            *hwstate, prev_state_, added_fingers, removed_fingers,
+            dead_fingers);
       if (tap_record_.TapComplete()) {
         tap_record_.Clear();
         if (drag_lock_enable_.val_) {
@@ -853,7 +887,8 @@ void ImmediateInterpreter::UpdateTapState(
     case kTtcDragRelease:
       if (!added_fingers.empty()) {
         tap_record_.Update(
-            *hwstate, added_fingers, removed_fingers, dead_fingers);
+            *hwstate, prev_state_, added_fingers, removed_fingers,
+            dead_fingers);
         SetTapToClickState(kTtcDragRetouch, now);
       } else if (is_timeout) {
         *buttons_up = GESTURES_BUTTON_LEFT;
@@ -863,7 +898,8 @@ void ImmediateInterpreter::UpdateTapState(
     case kTtcDragRetouch:
       if (hwstate)
         tap_record_.Update(
-            *hwstate, added_fingers, removed_fingers, dead_fingers);
+            *hwstate, prev_state_, added_fingers, removed_fingers,
+            dead_fingers);
       if (tap_record_.TapComplete()) {
         *buttons_up = GESTURES_BUTTON_LEFT;
         if (tap_record_.TapType() == GESTURES_BUTTON_LEFT)
