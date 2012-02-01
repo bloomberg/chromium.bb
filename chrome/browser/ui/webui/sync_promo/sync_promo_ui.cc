@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/webui/sync_promo/sync_promo_ui.h"
 
 #include "base/command_line.h"
-#include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/first_run/first_run.h"
@@ -219,8 +218,12 @@ bool SyncPromoUI::ShouldShowSyncPromoAtStartup(Profile* profile,
   if (!AllowPromoAtStartupForCurrentBrand())
     return false;
 
-  // Default to show the promo.
+  // Default to show the promo for Google Chrome builds.
+#if defined(GOOGLE_CHROME_BUILD)
   return true;
+#else
+  return false;
+#endif
 }
 
 void SyncPromoUI::DidShowSyncPromoAtStartup(Profile* profile) {
@@ -296,13 +299,6 @@ bool SyncPromoUI::UserHasSeenSyncPromoAtStartup(Profile* profile) {
 
 // static
 SyncPromoUI::Version SyncPromoUI::GetSyncPromoVersion() {
-  int value = 0;
-  if (base::StringToInt(CommandLine::ForCurrentProcess()->
-      GetSwitchValueASCII(switches::kSyncPromoVersion), &value)) {
-    if (value >= VERSION_DEFAULT && value < VERSION_COUNT)
-      return static_cast<Version>(value);
-  }
-
   Version version;
   if (sync_promo_trial::GetSyncPromoVersionForCurrentTrial(&version))
     return version;

@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/metrics/field_trial.h"
+#include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/metrics/metrics_service.h"
@@ -40,8 +41,29 @@ bool sync_promo_trial_initialized;
 bool GetActiveLayoutExperiment(LayoutExperimentType* type) {
   DCHECK(type);
 
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kSyncPromoVersion))
-    return false;
+  int version = 0;
+  if (base::StringToInt(CommandLine::ForCurrentProcess()->
+      GetSwitchValueASCII(switches::kSyncPromoVersion), &version)) {
+    switch (version) {
+      case SyncPromoUI::VERSION_DEFAULT:
+        *type = LAYOUT_EXPERIMENT_DEFAULT;
+        return true;
+      case SyncPromoUI::VERSION_DEVICES:
+        *type = LAYOUT_EXPERIMENT_DEVICES;
+        return true;
+      case SyncPromoUI::VERSION_VERBOSE:
+        *type = LAYOUT_EXPERIMENT_VERBOSE;
+        return true;
+      case SyncPromoUI::VERSION_SIMPLE:
+        *type = LAYOUT_EXPERIMENT_SIMPLE;
+        return true;
+      case SyncPromoUI::VERSION_DIALOG:
+        *type = LAYOUT_EXPERIMENT_DIALOG;
+        return true;
+      default:
+        return false;
+    }
+  }
 
   if (chrome::VersionInfo::GetChannel() ==
       chrome::VersionInfo::CHANNEL_STABLE) {
@@ -86,10 +108,11 @@ void Activate() {
   // For dev and beta we don't have brand codes so we randomly enroll users.
   if (chrome::VersionInfo::GetChannel() !=
       chrome::VersionInfo::CHANNEL_STABLE) {
+#if defined(GOOGLE_CHROME_BUILD)
     // Create a field trial that expires in August 8, 2012. It contains 6 groups
     // with each group having an equal chance of enrollment.
     scoped_refptr<base::FieldTrial> trial(new base::FieldTrial(
-        kLayoutExperimentTrialName, 5, "default", 2012, 8, 1));
+        kLayoutExperimentTrialName, 6, "default", 2012, 8, 1));
     if (base::FieldTrialList::IsOneTimeRandomizationEnabled())
       trial->UseOneTimeRandomization();
     trial->AppendGroup("", 1);
@@ -97,6 +120,7 @@ void Activate() {
     trial->AppendGroup("", 1);
     trial->AppendGroup("", 1);
     trial->AppendGroup("", 1);
+#endif
   }
 }
 
