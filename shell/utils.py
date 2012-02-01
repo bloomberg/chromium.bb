@@ -322,7 +322,7 @@ def EnterChroot(chroot_config, func, *args, **kwargs):
     #   ...but, at the moment, that fails if you're in src/scripts
     #   which already has a chromite folder.
     cmd = (
-        './enter_chroot.sh --chroot="%s" %s --'
+        'cros_sdk --chroot="%s" %s --'
         ' python ../../chromite/shell/main.py --resume-state %s') % (
             chroot_dir,
             chroot_config.get('CHROOT', 'enter_chroot_flags'),
