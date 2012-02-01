@@ -3,13 +3,27 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-'''Entry point for both build and try bots'''
+"""Entry point for both build and try bots
 
-import build_utils
-import lastchange
+This script is invoked from XXX, usually without arguments
+to package an SDK. It automatically determines whether
+this SDK is for mac, win, linux.
+
+The script inspects the following environment variables:
+
+BUILDBOT_BUILDERNAME to determine whether the script is run locally
+and whether it should upload an SDK to file storage (GSTORE)
+"""
+
+# std python includes
 import os
 import subprocess
 import sys
+
+# local includes
+import build_utils
+import lastchange
+
 
 # Create the various paths of interest
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -25,14 +39,18 @@ PPAPI_DIR = os.path.join(SRC_DIR, 'ppapi')
 sys.path.append(os.path.join(SDK_SRC_DIR, 'tools'))
 sys.path.append(os.path.join(NACL_DIR, 'build'))
 
-
+import getos
 import http_download
-from getos import GetPlatform
 import oshelpers
 
 GSTORE = 'http://commondatastorage.googleapis.com/nativeclient-mirror/nacl/'
 MAKE = 'nacl_sdk/make_3_81/make.exe'
-GSUTIL = '/b/build/scripts/slave/gsutil'
+# For buildbots assume gsutil is stored in the build directory.
+BOT_GSUTIL = '/b/build/scripts/slave/gsutil'
+# For local runs just make sure gsutil is in your PATH.
+LOCAL_GSUTIL = 'gsutil'
+CYGTAR = os.path.join(NACL_DIR, 'build', 'cygtar.py')
+
 
 def ErrorExit(msg):
   """Write and error to stderr, then exit with 1 signaling failure."""
@@ -68,11 +86,9 @@ def Archive(filename):
   full_dst = 'gs://%s' % bucket_path
 
   if os.environ.get('BUILDBOT_BUILDERNAME', ''):
-    # For buildbots assume gsutil is stored in the build directory.
-    gsutil = '/b/build/scripts/slave/gsutil'
+    gsutil = BOT_GSUTIL
   else:
-    # For non buildpots, you must have it in your path.
-    gsutil = 'gsutil'
+    gsutil = LOCAL_GSUTIL
 
   subprocess.check_call(
       '%s cp -a public-read %s %s' % (
@@ -167,8 +183,7 @@ def GetBuildArgs(tcname, tcpath, arch, xarch=None):
   plat = 'platform=' + arch_name
   bin = ('bindir=' +
          BuildOutputDir('pepper_' + build_utils.ChromeMajorVersion(), 'tools'))
-  lib = ('libdir=' +
-         os.path.join(GetToolchainNaClLib(tcpath, arch, xarch)))
+  lib = 'libdir=' + GetToolchainNaClLib(tcpath, arch, xarch)
   args = [scons, mode, plat, bin, lib, '-j10',
           'install_bin', 'install_lib']
   if tcname == 'glibc':
@@ -264,8 +279,9 @@ def InstallHeaders(tc_dst_inc, pepper_ver, tc_name):
 
 
 def main():
-  platform = GetPlatform()
+  platform = getos.GetPlatform()
   arch = 'x86'
+  # the vars below are intended for debugging
   skip_untar = 0
   skip_build = 0
   skip_tar = 0
@@ -286,12 +302,10 @@ def main():
     MakeDir(os.path.join(pepperdir, 'tools'))
 
   BuildStep('Untar Toolchains')
-  tmpdir = os.path.join(SRC_DIR, 'out', 'tc_temp')
   tcname = platform + '_' + arch
   tmpdir = os.path.join(SRC_DIR, 'out', 'tc_temp')
-  cygtar = os.path.join(NACL_DIR, 'build', 'cygtar.py')
 
-    # Clean out the temporary toolchain untar directory
+  # Clean out the temporary toolchain untar directory
   if not skip_untar:
     RemoveDir(tmpdir)
     MakeDir(tmpdir)
@@ -299,7 +313,7 @@ def main():
 
     # Untar the newlib toolchains
     tarfile = GetNewlibToolchain(platform, arch)
-    Run([sys.executable, cygtar, '-C', tmpdir, '-xf', tarfile], cwd=NACL_DIR)
+    Run([sys.executable, CYGTAR, '-C', tmpdir, '-xf', tarfile], cwd=NACL_DIR)
 
     # Then rename/move it to the pepper toolchain directory
     srcdir = os.path.join(tmpdir, 'sdk', 'nacl-sdk')
@@ -309,7 +323,7 @@ def main():
     print "Done with buildbot move"
     # Untar the glibc toolchains
     tarfile = GetGlibcToolchain(platform, arch)
-    Run([sys.executable, cygtar, '-C', tmpdir, '-xf', tarfile], cwd=NACL_DIR)
+    Run([sys.executable, CYGTAR, '-C', tmpdir, '-xf', tarfile], cwd=NACL_DIR)
 
     # Then rename/move it to the pepper toolchain directory
     srcdir = os.path.join(tmpdir, 'toolchain', tcname)
@@ -360,7 +374,7 @@ def main():
   BuildStep('Tar Pepper Bundle')
   if not skip_tar:
     tarfile = os.path.join(OUT_DIR, 'naclsdk_' + platform + '.bz2')
-    Run([sys.executable, cygtar, '-C', OUT_DIR, '-cjf', tarfile,
+    Run([sys.executable, CYGTAR, '-C', OUT_DIR, '-cjf', tarfile,
          'pepper_' + pepper_ver], cwd=NACL_DIR)
 
   # Archive on non-trybots.
@@ -385,4 +399,3 @@ def main():
 
 if __name__ == '__main__':
   sys.exit(main())
-
