@@ -108,18 +108,18 @@ class SpellCheckRenderViewObserver : public content::RenderViewHostObserver {
 
 @implementation ChromeRenderWidgetHostViewMacDelegate
 
-- (id)initWithRenderWidgetHost:(RenderWidgetHost*)render_widget_host {
+- (id)initWithRenderWidgetHost:(RenderWidgetHost*)renderWidgetHost {
   self = [super init];
   if (self) {
-    render_widget_host_ = render_widget_host;
-    NSView* native_view = render_widget_host_->view()->GetNativeView();
-    view_id_util::SetID(native_view, VIEW_ID_TAB_CONTAINER_FOCUS_VIEW);
+    renderWidgetHost_ = renderWidgetHost;
+    NSView* nativeView = renderWidgetHost_->view()->GetNativeView();
+    view_id_util::SetID(nativeView, VIEW_ID_TAB_CONTAINER_FOCUS_VIEW);
 
-    if (render_widget_host_->IsRenderView()) {
-      spelling_observer_.reset(
+    if (renderWidgetHost_->IsRenderView()) {
+      spellingObserver_.reset(
           new ChromeRenderWidgetHostViewMacDelegateInternal::
               SpellCheckRenderViewObserver(
-                  static_cast<RenderViewHost*>(render_widget_host_), self));
+                  static_cast<RenderViewHost*>(renderWidgetHost_), self));
     }
   }
   return self;
@@ -146,8 +146,8 @@ class SpellCheckRenderViewObserver : public content::RenderViewHostObserver {
   isPinnedRight_ = right;
 }
 
-- (void)setHasHorizontalScrollbar:(BOOL)has_horizontal_scrollbar {
-  hasHorizontalScrollbar_ = has_horizontal_scrollbar;
+- (void)setHasHorizontalScrollbar:(BOOL)hasHorizontalScrollbar {
+  hasHorizontalScrollbar_ = hasHorizontalScrollbar;
 }
 
 // Checks if |theEvent| should trigger history swiping, and if so, does
@@ -165,10 +165,10 @@ class SpellCheckRenderViewObserver : public content::RenderViewHostObserver {
     gotUnhandledWheelEvent_ = NO;
   }
 
-  if (!render_widget_host_ || !render_widget_host_->IsRenderView())
+  if (!renderWidgetHost_ || !renderWidgetHost_->IsRenderView())
     return NO;
   if (DevToolsWindow::IsDevToolsWindow(
-      static_cast<RenderViewHost*>(render_widget_host_))) {
+      static_cast<RenderViewHost*>(renderWidgetHost_))) {
     return NO;
   }
 
@@ -253,7 +253,7 @@ class SpellCheckRenderViewObserver : public content::RenderViewHostObserver {
                                              BOOL *stop) {
           if (phase == NSEventPhaseBegan) {
             [historyOverlay showPanelForView:
-                render_widget_host_->view()->GetNativeView()];
+                renderWidgetHost_->view()->GetNativeView()];
             return;
           }
 
@@ -292,17 +292,17 @@ class SpellCheckRenderViewObserver : public content::RenderViewHostObserver {
   // this is sub-optimal.
   // TODO(suzhe): Plumb the "can*" methods up from WebCore.
   if (action == @selector(checkSpelling:)) {
-    *valid = render_widget_host_->IsRenderView();
+    *valid = renderWidgetHost_->IsRenderView();
     return YES;
   }
 
   if (action == @selector(toggleContinuousSpellChecking:)) {
     if ([(id)item respondsToSelector:@selector(setState:)]) {
-      NSCellStateValue checked_state =
-          spellcheck_checked_ ? NSOnState : NSOffState;
-      [(id)item setState:checked_state];
+      NSCellStateValue checkedState =
+          spellcheckChecked_ ? NSOnState : NSOffState;
+      [(id)item setState:checkedState];
     }
-    *valid = spellcheck_enabled_;
+    *valid = spellcheckEnabled_;
     return YES;
   }
 
@@ -320,7 +320,7 @@ class SpellCheckRenderViewObserver : public content::RenderViewHostObserver {
   // that we want to replace the selected word in the text with.
   NSString* newWord = [[sender selectedCell] stringValue];
   if (newWord != nil) {
-    render_widget_host_->Replace(base::SysNSStringToUTF16(newWord));
+    renderWidgetHost_->Replace(base::SysNSStringToUTF16(newWord));
   }
 }
 
@@ -332,8 +332,8 @@ class SpellCheckRenderViewObserver : public content::RenderViewHostObserver {
 // catch this and advance to the next word for you. Thanks Apple.
 // This is also called from the Edit -> Spelling -> Check Spelling menu item.
 - (void)checkSpelling:(id)sender {
-  render_widget_host_->Send(new SpellCheckMsg_AdvanceToNextMisspelling(
-      render_widget_host_->routing_id()));
+  renderWidgetHost_->Send(new SpellCheckMsg_AdvanceToNextMisspelling(
+      renderWidgetHost_->routing_id()));
 }
 
 // This message is sent by the spelling panel whenever a word is ignored.
@@ -348,19 +348,19 @@ class SpellCheckRenderViewObserver : public content::RenderViewHostObserver {
 }
 
 - (void)showGuessPanel:(id)sender {
-  render_widget_host_->Send(new SpellCheckMsg_ToggleSpellPanel(
-      render_widget_host_->routing_id(),
+  renderWidgetHost_->Send(new SpellCheckMsg_ToggleSpellPanel(
+      renderWidgetHost_->routing_id(),
       spellcheck_mac::SpellingPanelVisible()));
 }
 
 - (void)toggleContinuousSpellChecking:(id)sender {
-  render_widget_host_->Send(
-      new SpellCheckMsg_ToggleSpellCheck(render_widget_host_->routing_id()));
+  renderWidgetHost_->Send(
+      new SpellCheckMsg_ToggleSpellCheck(renderWidgetHost_->routing_id()));
 }
 
 - (void)spellCheckEnabled:(BOOL)enabled checked:(BOOL)checked {
-  spellcheck_enabled_ = enabled;
-  spellcheck_checked_ = checked;
+  spellcheckEnabled_ = enabled;
+  spellcheckChecked_ = checked;
 }
 
 // END Spellchecking methods
