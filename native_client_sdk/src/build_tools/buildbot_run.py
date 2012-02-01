@@ -179,21 +179,21 @@ header_map = {
   'newlib': {
       'pthread.h': 'src/untrusted/pthread/pthread.h',
       'semaphore.h': 'src/untrusted/pthread/semaphore.h',
-      'dynamic_annotations.h': 'src/untrusted/valgrind/dynamic_annotations.h',
-      'dynamic_annotations.h': 'src/untrusted/valgrind/dynamic_annotations.h',
-      'nacl_dyncode.h': 'src/untrusted/nacl/nacl_dyncode.h',
-      'nacl_startup.h': 'src/untrusted/nacl/nacl_startup.h',
-      'nacl_thread.h': 'src/untrusted/nacl/nacl_thread.h',
+      'nacl/dynamic_annotations.h':
+          'src/untrusted/valgrind/dynamic_annotations.h',
+      'nacl/nacl_dyncode.h': 'src/untrusted/nacl/nacl_dyncode.h',
+      'nacl/nacl_startup.h': 'src/untrusted/nacl/nacl_startup.h',
+      'nacl/nacl_thread.h': 'src/untrusted/nacl/nacl_thread.h',
       'pnacl.h': 'src/untrusted/nacl/pnacl.h',
       'irt.h': 'src/untrusted/irt/irt.h',
       'irt_ppapi.h': 'src/untrusted/irt/irt_ppapi.h',
   },
   'glibc': {
-      'dynamic_annotations.h': 'src/untrusted/valgrind/dynamic_annotations.h',
-      'dynamic_annotations.h': 'src/untrusted/valgrind/dynamic_annotations.h',
-      'nacl_dyncode.h': 'src/untrusted/nacl/nacl_dyncode.h',
-      'nacl_startup.h': 'src/untrusted/nacl/nacl_startup.h',
-      'nacl_thread.h': 'src/untrusted/nacl/nacl_thread.h',
+      'nacl/dynamic_annotations.h':
+          'src/untrusted/valgrind/dynamic_annotations.h',
+      'nacl/nacl_dyncode.h': 'src/untrusted/nacl/nacl_dyncode.h',
+      'nacl/nacl_startup.h': 'src/untrusted/nacl/nacl_startup.h',
+      'nacl/nacl_thread.h': 'src/untrusted/nacl/nacl_thread.h',
       'pnacl.h': 'src/untrusted/nacl/pnacl.h',
       'irt.h': 'src/untrusted/irt/irt.h',
       'irt_ppapi.h': 'src/untrusted/irt/irt_ppapi.h',
@@ -207,6 +207,7 @@ def InstallHeaders(tc_dst_inc, pepper_ver, tc_name):
   for filename in tc_map:
     src = os.path.join(NACL_DIR, tc_map[filename])
     dst = os.path.join(tc_dst_inc, filename)
+    MakeDir(os.path.dirname(dst))
     oshelpers.Copy(['-v', src, dst])
 
   # Clean out per toolchain ppapi directory
