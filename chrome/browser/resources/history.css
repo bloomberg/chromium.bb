@@ -1,4 +1,4 @@
-/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -66,12 +66,17 @@
   cursor: default;
   display: -webkit-box;
   float: left;  /* Box will shrink to fit its content. */
-  line-height: 1.6em;
+  font-size: 13px;
+
+  /* An odd line-height ensures a consistent baseline on all platforms. */
+  line-height: 21px;
 
   /* The box should be no bigger than its parent. */
   max-width: 100%;
 
   overflow: hidden;
+
+  padding-top: 1px;
 }
 
 html[dir=rtl] .entry-box {
@@ -104,14 +109,15 @@ html[dir=rtl] .entry-box {
 }
 
 .drop-down {
-  -webkit-margin-end: 4px;
-  background: white -webkit-canvas(drop-down-arrow) no-repeat center center;
+  -webkit-margin-end: 5px;
+  background: white -webkit-canvas(drop-down-arrow) no-repeat center 4px;
   border: 1px solid rgb(182, 212, 252);
   border-radius: 2px;
-  height: 13px;
+  height: 12px;
+  padding: 0;
   position: relative;
-  top: 2px;
-  width: 13px;
+  top: 1px;
+  width: 12px;
 }
 
 .drop-down:hover {
@@ -145,7 +151,7 @@ html[dir='rtl'] .entry .title {
 .entry input[type=checkbox] {
   -webkit-margin-end: 6px;
   -webkit-margin-start: 4px;
-  height: 13px;
+  height: 14px;
   line-height: 12px;
   text-indent: -1px;
   top: 2px;
@@ -188,8 +194,8 @@ html[dir='rtl'] .entry .title {
   -webkit-padding-start: 20px;
 
   /* Control the favicon appearance. */
+  background-position-y: 2px;
   background-repeat: no-repeat;
-  background-position-y: center;
 }
 
 .entry .starred {
