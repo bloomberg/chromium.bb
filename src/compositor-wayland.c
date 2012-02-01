@@ -59,6 +59,12 @@ struct wayland_compositor {
 		uint32_t event_mask;
 	} parent;
 
+	struct {
+		int32_t top, bottom, left, right;
+		GLuint texture;
+		int32_t width, height;
+	} border;
+
 	struct wl_list input_list;
 };
 
@@ -79,6 +85,155 @@ struct wayland_input {
 	struct wl_input_device *input_device;
 	struct wl_list link;
 };
+
+
+static int
+texture_border(struct wayland_output *output)
+{
+	struct wayland_compositor *c =
+		(struct wayland_compositor *) output->base.compositor;
+	GLfloat *d;
+	unsigned int *p;
+	int i, j, k, n;
+	GLfloat x[4], y[4], u[4], v[4];
+
+	x[0] = -c->border.left;
+	x[1] = 0;
+	x[2] = output->base.current->width;
+	x[3] = output->base.current->width + c->border.right;
+
+	y[0] = -c->border.top;
+	y[1] = 0;
+	y[2] = output->base.current->height;
+	y[3] = output->base.current->height + c->border.bottom;
+
+	u[0] = 0.0;
+	u[1] = (GLfloat) c->border.left / c->border.width;
+	u[2] = (GLfloat) (c->border.width - c->border.right) / c->border.width;
+	u[3] = 1.0;
+
+	v[0] = 0.0;
+	v[1] = (GLfloat) c->border.top / c->border.height;
+	v[2] = (GLfloat) (c->border.height - c->border.bottom) / c->border.height;
+	v[3] = 1.0;
+
+	n = 8;
+	d = wl_array_add(&c->base.vertices, n * 16 * sizeof *d);
+	p = wl_array_add(&c->base.indices, n * 6 * sizeof *p);
+
+	k = 0;
+	for (i = 0; i < 3; i++)
+		for (j = 0; j < 3; j++) {
+
+			if (i == 1 && j == 1)
+				continue;
+
+			d[ 0] = x[i];
+			d[ 1] = y[j];
+			d[ 2] = u[i];
+			d[ 3] = v[j];
+
+			d[ 4] = x[i];
+			d[ 5] = y[j + 1];
+			d[ 6] = u[i];
+			d[ 7] = v[j + 1];
+
+			d[ 8] = x[i + 1];
+			d[ 9] = y[j];
+			d[10] = u[i + 1];
+			d[11] = v[j];
+
+			d[12] = x[i + 1];
+			d[13] = y[j + 1];
+			d[14] = u[i + 1];
+			d[15] = v[j + 1];
+
+			p[0] = k + 0;
+			p[1] = k + 1;
+			p[2] = k + 2;
+			p[3] = k + 2;
+			p[4] = k + 1;
+			p[5] = k + 3;
+
+			d += 16;
+			p += 6;
+			k += 4;
+		}
+
+	return k / 4;
+}
+
+static void
+draw_border(struct wayland_output *output)
+{
+	struct wayland_compositor *c =
+		(struct wayland_compositor *) output->base.compositor;
+	struct weston_shader *shader = &c->base.texture_shader;
+	GLfloat *v;
+	int n;
+
+	glDisable(GL_BLEND);
+	glUseProgram(shader->program);
+	c->base.current_shader = shader;
+
+	glUniformMatrix4fv(shader->proj_uniform,
+			   1, GL_FALSE, output->base.matrix.d);
+
+	glUniform1i(shader->tex_uniform, 0);
+	glUniform1f(shader->alpha_uniform, 1);
+	c->base.current_alpha = 255;
+	glUniform1f(shader->texwidth_uniform, 1);
+
+	n = texture_border(output);
+
+	glBindTexture(GL_TEXTURE_2D, c->border.texture);
+
+	v = c->base.vertices.data;
+	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof *v, &v[0]);
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof *v, &v[2]);
+	glEnableVertexAttribArray(0);
+	glEnableVertexAttribArray(1);
+
+	glDrawElements(GL_TRIANGLES, n * 6,
+		       GL_UNSIGNED_INT, c->base.indices.data);
+
+	glDisableVertexAttribArray(1);
+	glDisableVertexAttribArray(0);
+
+	c->base.vertices.size = 0;
+	c->base.indices.size = 0;
+}
+
+static void
+create_border(struct wayland_compositor *c)
+{
+	uint32_t *pixels, stride;
+
+	pixels = weston_load_image(DATADIR "/weston/border.png",
+				   &c->border.width,
+				   &c->border.height, &stride);
+	if (!pixels) {
+		fprintf(stderr, "could'nt load border image\n");
+		return;
+	}
+
+	glGenTextures(1, &c->border.texture);
+	glBindTexture(GL_TEXTURE_2D, c->border.texture);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_BGRA_EXT,
+		     c->border.width,
+		     c->border.height,
+		     0, GL_BGRA_EXT, GL_UNSIGNED_BYTE, pixels);
+
+	c->border.top = 25;
+	c->border.bottom = 50;
+	c->border.left = 25;
+	c->border.right = 25;
+}
 
 static int
 wayland_input_create(struct wayland_compositor *c)
@@ -108,7 +263,7 @@ wayland_compositor_init_egl(struct wayland_compositor *c)
 		EGL_RED_SIZE, 1,
 		EGL_GREEN_SIZE, 1,
 		EGL_BLUE_SIZE, 1,
-		EGL_ALPHA_SIZE, 0,
+		EGL_ALPHA_SIZE, 1,
 		EGL_DEPTH_SIZE, 1,
 		EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT,
 		EGL_NONE
@@ -192,6 +347,8 @@ wayland_output_repaint(struct weston_output *output_base)
 	wl_list_for_each_reverse(surface, &compositor->base.surface_list, link)
 		weston_surface_draw(surface, &output->base);
 
+	draw_border(output);
+
 	eglSwapBuffers(compositor->base.display, output->egl_surface);
 	callback = wl_surface_frame(output->parent.surface);
 	wl_callback_add_listener(callback, &frame_listener, output);
@@ -242,12 +399,21 @@ wayland_compositor_create_output(struct wayland_compositor *c,
 	weston_output_init(&output->base, &c->base, 0, 0, width, height,
 			 WL_OUTPUT_FLIPPED);
 
+	output->base.border.top = c->border.top;
+	output->base.border.bottom = c->border.bottom;
+	output->base.border.left = c->border.left;
+	output->base.border.right = c->border.right;
+
+	weston_output_move(&output->base, 0, 0);
+
 	output->parent.surface =
 		wl_compositor_create_surface(c->parent.compositor);
 	wl_surface_set_user_data(output->parent.surface, output);
 
 	output->parent.egl_window =
-		wl_egl_window_create(output->parent.surface, width, height);
+		wl_egl_window_create(output->parent.surface,
+				     width + c->border.left + c->border.right,
+				     height + c->border.top + c->border.bottom);
 	if (!output->parent.egl_window) {
 		fprintf(stderr, "failure to create wl_egl_window\n");
 		goto cleanup_output;
@@ -273,8 +439,6 @@ wayland_compositor_create_output(struct wayland_compositor *c,
 					   output->parent.surface);
 	/* FIXME: add shell_surface listener for resizing */
 	wl_shell_surface_set_toplevel(output->parent.shell_surface);
-
-	glClearColor(0, 0, 0, 0.5);
 
 	output->base.repaint = wayland_output_repaint;
 	output->base.set_hardware_cursor = wayland_output_set_cursor;
@@ -343,7 +507,8 @@ input_handle_motion(void *data, struct wl_input_device *input_device,
 	struct wayland_input *input = data;
 	struct wayland_compositor *c = input->compositor;
 
-	notify_motion(c->base.input_device, time, sx, sy);
+	notify_motion(c->base.input_device, time,
+		      sx - c->border.left, sy - c->border.top);
 }
 
 static void
@@ -528,6 +693,7 @@ wayland_compositor_create(struct wl_display *display,
 	if (weston_compositor_init(&c->base, display) < 0)
 		return NULL;
 
+	create_border(c);
 	if (wayland_compositor_create_output(c, width, height) < 0)
 		return NULL;
 

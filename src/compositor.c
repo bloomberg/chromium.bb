@@ -906,8 +906,13 @@ weston_output_repaint(struct weston_output *output, int msecs)
 	struct weston_frame_callback *cb, *cnext;
 	pixman_region32_t opaque, new_damage, total_damage,
 		overlap, surface_overlap;
+	int32_t width, height;
 
-	glViewport(0, 0, output->current->width, output->current->height);
+	width = output->current->width +
+		output->border.left + output->border.right;
+	height = output->current->height +
+		output->border.top + output->border.bottom;
+	glViewport(0, 0, width, height);
 
 	pixman_region32_init(&new_damage);
 	pixman_region32_init(&opaque);
@@ -1911,13 +1916,13 @@ weston_output_move(struct weston_output *output, int x, int y)
 
 	weston_matrix_init(&output->matrix);
 	weston_matrix_translate(&output->matrix,
-			      -output->x - output->current->width / 2.0,
-			      -output->y - output->current->height / 2.0, 0);
+				-(output->x + (output->border.right + output->current->width - output->border.left) / 2.0),
+				-(output->y + (output->border.bottom + output->current->height - output->border.top) / 2.0), 0);
 
 	flip = (output->flags & WL_OUTPUT_FLIPPED) ? -1 : 1;
 	weston_matrix_scale(&output->matrix,
-			  2.0 / output->current->width,
-			  flip * 2.0 / output->current->height, 1);
+			    2.0 / (output->current->width + output->border.left + output->border.right),
+			    flip * 2.0 / (output->current->height + output->border.top + output->border.bottom), 1);
 
 	weston_output_damage(output);
 }
@@ -1929,6 +1934,10 @@ weston_output_init(struct weston_output *output, struct weston_compositor *c,
 	output->compositor = c;
 	output->x = x;
 	output->y = y;
+	output->border.top = 0;
+	output->border.bottom = 0;
+	output->border.left = 0;
+	output->border.right = 0;
 	output->mm_width = width;
 	output->mm_height = height;
 

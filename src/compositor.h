@@ -50,12 +50,17 @@ struct weston_mode {
 	struct wl_list link;
 };
 
+struct weston_border {
+	int32_t left, right, top, bottom;
+};
+
 struct weston_output {
 	struct wl_list link;
 	struct weston_compositor *compositor;
 	struct weston_matrix matrix;
 	struct wl_list frame_callback_list;
 	int32_t x, y, mm_width, mm_height;
+	struct weston_border border;
 	pixman_region32_t region;
 	pixman_region32_t previous_damage;
 	uint32_t flags;

@@ -22,7 +22,8 @@ dist_westondata_DATA =				\
 	wayland.svg				\
 	$(wayland_icon_png)			\
 	pattern.png				\
-	terminal.png
+	terminal.png				\
+	border.png
 
 if HAVE_RSVG_CONVERT
 wayland_icon_png = wayland.png
