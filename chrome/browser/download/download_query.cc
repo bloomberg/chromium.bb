@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/public/browser/download_query.h"
+#include "chrome/browser/download/download_query.h"
 
 #include <algorithm>
 #include <string>
@@ -25,8 +25,6 @@
 
 using content::DownloadDangerType;
 using content::DownloadItem;
-
-namespace content {
 
 namespace {
 
@@ -284,7 +282,7 @@ struct DownloadQuery::Sorter {
 
 class DownloadQuery::DownloadComparator {
  public:
-  DownloadComparator(const DownloadQuery::SorterVector& terms)
+  explicit DownloadComparator(const DownloadQuery::SorterVector& terms)
     : terms_(terms) {
   }
 
@@ -358,5 +356,3 @@ void DownloadQuery::FinishSearch(DownloadQuery::DownloadVector* results) const {
   if (results->size() > limit_)
     results->resize(limit_);
 }
-
-}  // namespace content

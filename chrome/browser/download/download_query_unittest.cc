@@ -12,8 +12,8 @@
 #include "base/string16.h"
 #include "base/time.h"
 #include "base/values.h"
-#include "content/public/browser/download_query.h"
-#include "content/browser/download/mock_download_item.h"
+#include "chrome/browser/download/download_query.h"
+#include "content/test/mock_download_item.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -23,7 +23,6 @@ using ::testing::_;
 using base::Time;
 using base::Value;
 using content::DownloadItem;
-using content::DownloadQuery;
 typedef DownloadQuery::DownloadVector DownloadVector;
 
 namespace {

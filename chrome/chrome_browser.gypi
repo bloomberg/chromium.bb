@@ -934,6 +934,8 @@
         'browser/download/download_item_model.h',
         'browser/download/download_prefs.cc',
         'browser/download/download_prefs.h',
+        'browser/download/download_query.cc',
+        'browser/download/download_query.h',
         'browser/download/download_request_infobar_delegate.cc',
         'browser/download/download_request_infobar_delegate.h',
         'browser/download/download_request_limiter.cc',

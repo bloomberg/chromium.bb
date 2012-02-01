@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_DOWNLOAD_MOCK_DOWNLOAD_ITEM_H_
-#define CONTENT_BROWSER_DOWNLOAD_MOCK_DOWNLOAD_ITEM_H_
+#ifndef CONTENT_TEST_MOCK_DOWNLOAD_ITEM_H_
+#define CONTENT_TEST_MOCK_DOWNLOAD_ITEM_H_
 
 #include <string>
 #include <vector>
@@ -114,4 +114,4 @@ class MockDownloadItem : public content::DownloadItem {
   MOCK_METHOD1(GetExternalData, ExternalData*(const void*));
   MOCK_METHOD2(SetExternalData, void(const void*, ExternalData*));
 };
-#endif  // CONTENT_BROWSER_DOWNLOAD_MOCK_DOWNLOAD_ITEM_H_
+#endif  // CONTENT_TEST_MOCK_DOWNLOAD_ITEM_H_

@@ -31,7 +31,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/download_manager_delegate.h"
-#include "content/public/browser/download_query.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_process_host.h"
@@ -250,12 +249,6 @@ void DownloadManagerImpl::GetAllDownloads(
         (dir_path.empty() || it->second->GetFullPath().DirName() == dir_path))
       result->push_back(it->second);
   }
-}
-
-void DownloadManagerImpl::SearchByQuery(const content::DownloadQuery& query,
-                                        DownloadVector* results) {
-  query.Search(MapValueIteratorAdapter(history_downloads_.begin()),
-               MapValueIteratorAdapter(history_downloads_.end()), results);
 }
 
 void DownloadManagerImpl::SearchDownloads(const string16& query,

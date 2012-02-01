@@ -26,6 +26,7 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/download/download_file_icon_extractor.h"
+#include "chrome/browser/download/download_query.h"
 #include "chrome/browser/download/download_service.h"
 #include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/download/download_util.h"
@@ -42,7 +43,6 @@
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/public/browser/download_item.h"
-#include "content/public/browser/download_query.h"
 #include "content/public/browser/render_process_host.h"
 #include "net/http/http_util.h"
 #include "net/url_request/url_request.h"
@@ -51,7 +51,6 @@ using content::BrowserThread;
 using content::DownloadId;
 using content::DownloadItem;
 using content::DownloadManager;
-using content::DownloadQuery;
 
 namespace download_extension_errors {
 
@@ -593,20 +592,17 @@ bool DownloadsSearchFunction::ParseOrderBy(const base::Value& order_by_value) {
 }
 
 bool DownloadsSearchFunction::RunInternal() {
-  DownloadQuery::DownloadVector cpp_results;
+  DownloadQuery::DownloadVector all_items, cpp_results;
   DownloadManager* manager = DownloadServiceFactory::GetForProfile(profile())
     ->GetDownloadManager();
   if (has_get_id_) {
     DownloadItem* item = manager->GetDownloadItem(get_id_);
-    if (item != NULL) {
-      DownloadQuery::DownloadVector all_items;
+    if (item != NULL)
       all_items.push_back(item);
-      query_->Search(all_items.begin(), all_items.end(), &cpp_results);
-    }
   } else {
-    query_->AddFilter(base::Bind(&IsNotTemporaryDownloadFilter));
-    manager->SearchByQuery(*query_.get(), &cpp_results);
+    manager->GetAllDownloads(FilePath(FILE_PATH_LITERAL("")), &all_items);
   }
+  query_->Search(all_items.begin(), all_items.end(), &cpp_results);
   base::ListValue* json_results = new base::ListValue();
   for (DownloadManager::DownloadVector::const_iterator it = cpp_results.begin();
        it != cpp_results.end(); ++it) {

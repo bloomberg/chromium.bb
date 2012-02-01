@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_PUBLIC_BROWSER_DOWNLOAD_QUERY_H_
-#define CONTENT_PUBLIC_BROWSER_DOWNLOAD_QUERY_H_
+#ifndef CHROME_BROWSER_DOWNLOAD_DOWNLOAD_QUERY_H_
+#define CHROME_BROWSER_DOWNLOAD_DOWNLOAD_QUERY_H_
 #pragma once
 
 #include <map>
@@ -16,8 +16,6 @@
 namespace base {
 class Value;
 }
-
-namespace content {
 
 // Filter and sort a vector of DownloadItem*s.
 //
@@ -40,7 +38,7 @@ namespace content {
 // query.Limit(20);
 // DownloadVector all_items, results;
 // query.Search(all_items.begin(), all_items.end(), &results);
-class CONTENT_EXPORT DownloadQuery {
+class DownloadQuery {
  public:
   typedef std::vector<content::DownloadItem*> DownloadVector;
 
@@ -148,6 +146,4 @@ class CONTENT_EXPORT DownloadQuery {
   DISALLOW_COPY_AND_ASSIGN(DownloadQuery);
 };
 
-}  // namespace content
-
-#endif  // CONTENT_PUBLIC_BROWSER_DOWNLOAD_QUERY_H_
+#endif  // CHROME_BROWSER_DOWNLOAD_DOWNLOAD_QUERY_H_

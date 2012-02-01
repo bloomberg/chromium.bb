@@ -20,11 +20,11 @@
 #include "content/public/browser/download_manager.h"
 
 class DownloadFileIconExtractor;
+class DownloadQuery;
 class ResourceDispatcherHost;
 
 namespace content {
 class ResourceContext;
-class DownloadQuery;
 }
 
 // Functions in the chrome.experimental.downloads namespace facilitate
@@ -160,7 +160,7 @@ class DownloadsSearchFunction : public SyncDownloadsFunction {
  private:
   bool ParseOrderBy(const base::Value& order_by_value);
 
-  scoped_ptr<content::DownloadQuery> query_;
+  scoped_ptr<DownloadQuery> query_;
   int get_id_;
   bool has_get_id_;
 
