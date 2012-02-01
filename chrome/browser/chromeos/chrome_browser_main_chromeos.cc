@@ -51,9 +51,11 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/views/browser_dialogs.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/pref_names.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/common/main_function_params.h"
 #include "grit/platform_locale_settings.h"
 #include "net/base/network_change_notifier.h"
@@ -388,6 +390,10 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
     // initialization code sees policy settings.
     g_browser_process->browser_policy_connector()->InitializeUserPolicy(
         username, false  /* wait_for_policy_fetch */);
+    content::NotificationService::current()->Notify(
+        chrome::NOTIFICATION_SESSION_STARTED,
+        content::NotificationService::AllSources(),
+        content::NotificationService::NoDetails());
   } else if (parsed_command_line().HasSwitch(switches::kLoginManager)) {
     // Initialize status area mode early on.
     chromeos::StatusAreaViewChromeos::
