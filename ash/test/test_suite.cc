@@ -31,7 +31,12 @@ void AuraShellTestSuite::Initialize() {
 
 #if defined(OS_MACOSX)
   ash::test::OverrideFrameworkBundle();
-#endif
+#elif defined(OS_POSIX)
+  FilePath pak_dir;
+  PathService::Get(base::DIR_MODULE, &pak_dir);
+  pak_dir = pak_dir.AppendASCII("aura_shell_unittests_strings");
+  PathService::Override(ui::DIR_LOCALES, pak_dir);
+#endif  // defined(OS_MACOSX)
 
   // Force unittests to run using en-US so if we test against string
   // output, it'll pass regardless of the system language.
