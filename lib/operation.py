@@ -8,6 +8,7 @@ This module implements the concept of an operation, which has regular progress
 updates, verbose text display and perhaps some errors.
 """
 
+import contextlib
 import os
 import re
 import sys
@@ -45,6 +46,12 @@ class Operation:
   progress: True / False
     The output from subprocesses can be analysed in a very basic manner to
     try to present progress information to the user.
+
+  explicit_verbose: True / False
+    False if we are not just using default verbosity. In that case we allow
+    verbosity to be enabled on request, since the user has not explicitly
+    disabled it. This is used by commands that the user issues with the
+    expectation that output would ordinarily be visible.
   """
   # Force color on/off, or use color only if stdout is a terminal.
   COLOR_OFF, COLOR_ON, COLOR_IF_TERMINAL = range(3)
@@ -65,6 +72,7 @@ class Operation:
     self._column = 0    # Current output column (always 0 unless verbose).
     self._update_len = 0    # Length of last progress update message.
     self._line = ''   # text of current line, so far
+    self.explicit_verbose = False
 
     # By default, we display ANSI colors unless output is redirected.
     want_color = (color == self.COLOR_ON or
@@ -384,3 +392,22 @@ class Operation:
     """
     self.Error(line)
     sys.exit(1)
+
+  @contextlib.contextmanager
+  def RequestVerbose(self, request):
+    """Perform something in verbose mode if the user hasn't disallowed it
+
+    This is intended to be used with something like:
+
+      with oper.RequestVerbose(True):
+        ... do some things that generate output
+
+    Args:
+      request: True to request verbose mode if available, False to do nothing.
+
+    """
+    self.old_verbose = self.verbose
+    if request and not self.explicit_verbose:
+      self.verbose = True
+    yield
+    self.verbose = self.old_verbose
