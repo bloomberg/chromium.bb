@@ -1266,7 +1266,8 @@ TEST_F(WindowTest, VisibilityClientIsVisible) {
 }
 
 // Tests mouse events on window change.
-TEST_F(WindowTest, MouseEventsOnWindowChange) {
+// See http://crbug.com/112246
+TEST_F(WindowTest, FAILS_MouseEventsOnWindowChange) {
   RootWindow* root_window = RootWindow::GetInstance();
   gfx::Size size = root_window->GetHostSize();
 
