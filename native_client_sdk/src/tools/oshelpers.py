@@ -126,6 +126,8 @@ def Copy(args):
   src_list = []
   for src in srcs:
     files = glob.glob(src)
+    if len(files) == 0:
+      raise OSError('cp: no such file or directory: ' + src)
     if files:
       src_list.extend(files)
 
