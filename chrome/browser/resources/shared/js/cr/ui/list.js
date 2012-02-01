@@ -1048,6 +1048,10 @@ cr.define('cr.ui', function() {
         return;
       }
 
+      // Save the previous positions before any manipulation of elements.
+      var scrollTop = this.scrollTop;
+      var clientHeight = this.clientHeight;
+
       // Store all the item sizes into the cache in advance, to prevent
       // interleave measuring with mutating dom.
       if (!this.fixedHeight_)
@@ -1059,8 +1063,6 @@ cr.define('cr.ui', function() {
       var newCachedItems = {};
 
       var autoExpands = this.autoExpands_;
-      var scrollTop = this.scrollTop;
-      var clientHeight = this.clientHeight;
 
       var itemsInViewPort = this.getItemsInViewPort(scrollTop, clientHeight);
       // Draws the hidden rows just above/below the viewport to prevent
