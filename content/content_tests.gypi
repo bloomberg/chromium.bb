@@ -18,11 +18,6 @@
         '../third_party/libjingle/libjingle.gyp:libjingle_peerconnection',
         '../third_party/libvpx/libvpx.gyp:libvpx',
         '../third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:webkit',
-        '../third_party/webrtc/modules/modules.gyp:audio_device',
-        '../third_party/webrtc/modules/modules.gyp:video_capture_module',
-        '../third_party/webrtc/system_wrappers/source/system_wrappers.gyp:system_wrappers',
-        '../third_party/webrtc/video_engine/video_engine.gyp:video_engine_core',
-        '../third_party/webrtc/voice_engine/voice_engine.gyp:voice_engine_core',
         '../ui/gfx/surface/surface.gyp:surface',
         '../ui/ui.gyp:ui_test_support',
         '../webkit/support/webkit_support.gyp:appcache',
@@ -118,8 +113,6 @@
         'test/test_web_contents_view.h',
         'test/unittest_test_suite.cc',
         'test/unittest_test_suite.h',
-        'test/webrtc_audio_device_test.cc',
-        'test/webrtc_audio_device_test.h',
 
         # TODO(phajdan.jr): Those files should be moved to webkit
         # test support target.
@@ -129,6 +122,18 @@
         '../webkit/quota/mock_special_storage_policy.h',
       ],
       'conditions': [
+        ['enable_webrtc==1', {
+          'sources': [
+            'test/webrtc_audio_device_test.cc',
+            'test/webrtc_audio_device_test.h',
+          ],
+          'dependencies': [
+            '../third_party/webrtc/modules/modules.gyp:audio_device',
+            '../third_party/webrtc/modules/modules.gyp:video_capture_module',
+            '../third_party/webrtc/system_wrappers/source/system_wrappers.gyp:system_wrappers',
+            '../third_party/webrtc/video_engine/video_engine.gyp:video_engine_core',
+            '../third_party/webrtc/voice_engine/voice_engine.gyp:voice_engine_core'],
+        }],
         ['toolkit_uses_gtk == 1', {
           'dependencies': [
             '../build/linux/system.gyp:gtk',
@@ -172,10 +177,6 @@
         '../third_party/libjingle/libjingle.gyp:libjingle_peerconnection',
         '../third_party/libvpx/libvpx.gyp:libvpx',
         '../third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:webkit',
-        '../third_party/webrtc/modules/modules.gyp:video_capture_module',
-        '../third_party/webrtc/system_wrappers/source/system_wrappers.gyp:system_wrappers',
-        '../third_party/webrtc/video_engine/video_engine.gyp:video_engine_core',
-        '../third_party/webrtc/voice_engine/voice_engine.gyp:voice_engine_core',
         '../ui/gfx/gl/gl.gyp:gl',
         '../ui/ui.gyp:ui',
         '../v8/tools/gyp/v8.gyp:v8',
@@ -291,6 +292,14 @@
         'test/run_all_unittests.cc',
       ],
       'conditions': [
+        ['enable_webrtc==1', {
+          'dependencies': [
+            '../third_party/webrtc/modules/modules.gyp:video_capture_module',
+            '../third_party/webrtc/system_wrappers/source/system_wrappers.gyp:system_wrappers',
+            '../third_party/webrtc/video_engine/video_engine.gyp:video_engine_core',
+            '../third_party/webrtc/voice_engine/voice_engine.gyp:voice_engine_core',
+          ],
+        }],
         ['input_speech==0', {
           'sources/': [
             ['exclude', '^browser/speech/'],
