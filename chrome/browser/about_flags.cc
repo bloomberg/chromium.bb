@@ -88,10 +88,15 @@ const Experiment::Choice kOmniboxAggressiveHistoryURLChoices[] = {
 #if defined(USE_AURA)
 const Experiment::Choice kAuraWindowModeChoices[] = {
   { IDS_FLAGS_AURA_WINDOW_MODE_AUTOMATIC, "", "" },
-  { IDS_FLAGS_AURA_WINDOW_MODE_NORMAL,
-      ash::switches::kAuraWindowMode, ash::switches::kAuraWindowModeNormal },
   { IDS_FLAGS_AURA_WINDOW_MODE_COMPACT,
-      ash::switches::kAuraWindowMode, ash::switches::kAuraWindowModeCompact }
+      ash::switches::kAuraWindowMode,
+      ash::switches::kAuraWindowModeCompact },
+  { IDS_FLAGS_AURA_WINDOW_MODE_MANAGED,
+      ash::switches::kAuraWindowMode,
+      ash::switches::kAuraWindowModeManaged },
+  { IDS_FLAGS_AURA_WINDOW_MODE_OVERLAPPING,
+      ash::switches::kAuraWindowMode,
+      ash::switches::kAuraWindowModeOverlapping },
 };
 #endif
 
@@ -465,13 +470,6 @@ const Experiment kExperiments[] = {
   },
 #if defined(USE_AURA)
   {
-    "aura-workspace-manager",
-    IDS_FLAGS_AURA_WORKSPACE_MANAGER_NAME,
-    IDS_FLAGS_AURA_WORKSPACE_MANAGER_DESCRIPTION,
-    kOsWin | kOsLinux | kOsCrOS,
-    SINGLE_VALUE_TYPE(ash::switches::kAuraWorkspaceManager)
-  },
-  {
     "aura-translucent-frames",
     IDS_FLAGS_AURA_TRANSLUCENT_FRAMES_NAME,
     IDS_FLAGS_AURA_TRANSLUCENT_FRAMES_DESCRIPTION,
@@ -485,9 +483,6 @@ const Experiment kExperiments[] = {
     kOsWin | kOsLinux | kOsCrOS,
     SINGLE_VALUE_TYPE(ash::switches::kAuraGoogleDialogFrames)
   },
-  // TODO(jamescook): Enable this for all ChromeOS builds when we're sure
-  // Aura laptop mode performance and feature set match traditional non-Aura
-  // builds.
   {
     "aura-window-mode",
     IDS_FLAGS_AURA_WINDOW_MODE_NAME,

@@ -131,9 +131,9 @@ bool HandleRotateScreen() {
 
 bool HandleToggleCompactWindowMode() {
   if (ash::Shell::GetInstance()->IsWindowModeCompact())
-    ash::Shell::GetInstance()->ChangeWindowMode(ash::Shell::NORMAL_MODE);
+    ash::Shell::GetInstance()->ChangeWindowMode(ash::Shell::MODE_OVERLAPPING);
   else
-    ash::Shell::GetInstance()->ChangeWindowMode(ash::Shell::COMPACT_MODE);
+    ash::Shell::GetInstance()->ChangeWindowMode(ash::Shell::MODE_COMPACT);
   return true;
 }
 

@@ -32,18 +32,19 @@ const char kAuraNoShadows[] = "aura-no-shadows";
 const char kAuraTranslucentFrames[] = "aura-translucent-frames";
 
 // Use a custom window style, e.g. --aura-window-mode=compact.
-// When this flag is not passed we default to "normal" mode.
+// When this flag is not passed we default to "overlapping" mode.
 const char kAuraWindowMode[] = "aura-window-mode";
 
 // Show only a single maximized window, like traditional non-Aura builds.
 // Useful for low-resolution screens, such as on laptops.
 const char kAuraWindowModeCompact[] = "compact";
 
-// Default window management with multiple draggable windows.
-const char kAuraWindowModeNormal[] = "normal";
+// Smart window management with workspace manager that automatically lays out
+// windows.
+const char kAuraWindowModeManaged[] = "managed";
 
-// Use Aura-style workspace window dragging and sizing.
-const char kAuraWorkspaceManager[] = "aura-workspace-manager";
+// Traditional window management with multiple draggable windows.
+const char kAuraWindowModeOverlapping[] = "overlapping";
 
 }  // namespace switches
 }  // namespace ash

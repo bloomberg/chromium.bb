@@ -176,7 +176,7 @@ Shell::Shell(ShellDelegate* delegate)
     : ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)),
       accelerator_controller_(new AcceleratorController),
       delegate_(delegate),
-      window_mode_(NORMAL_MODE),
+      window_mode_(MODE_OVERLAPPING),
       root_window_layout_(NULL),
       status_widget_(NULL) {
   aura::RootWindow::GetInstance()->SetEventFilter(
@@ -198,10 +198,8 @@ Shell::~Shell() {
   // ShelfLayoutManager has a reference to the launcher widget. To avoid any of
   // these trying to reference launcher after it's deleted we delete them all,
   // then the launcher.
-  if (!CommandLine::ForCurrentProcess()->
-      HasSwitch(switches::kAuraWorkspaceManager)) {
+  if (window_mode_ != MODE_MANAGED)
     ResetLayoutManager(internal::kShellWindowId_DefaultContainer);
-  }
   ResetLayoutManager(internal::kShellWindowId_StatusContainer);
   ResetLayoutManager(internal::kShellWindowId_LauncherContainer);
   // Make sure we delete WorkspaceController before launcher is
@@ -292,10 +290,10 @@ void Shell::Init() {
       GetContainer(internal::kShellWindowId_DefaultContainer);
   launcher_.reset(new Launcher(default_container));
 
-  if (IsWindowModeCompact())
+  if (window_mode_ == MODE_COMPACT)
     SetupCompactWindowMode();
   else
-    SetupNormalWindowMode();
+    SetupNonCompactWindowMode();
 
   if (!command_line->HasSwitch(switches::kAuraNoShadows))
     shadow_controller_.reset(new internal::ShadowController());
@@ -325,30 +323,32 @@ void Shell::Init() {
 Shell::WindowMode Shell::ComputeWindowMode(const gfx::Size& monitor_size,
                                            CommandLine* command_line) const {
   if (command_line->HasSwitch(switches::kAuraForceCompactWindowMode))
-    return COMPACT_MODE;
+    return MODE_COMPACT;
 
   // If user set the flag, use their desired behavior.
   if (command_line->HasSwitch(switches::kAuraWindowMode)) {
     std::string mode =
         command_line->GetSwitchValueASCII(switches::kAuraWindowMode);
-    if (mode == switches::kAuraWindowModeNormal)
-      return NORMAL_MODE;
     if (mode == switches::kAuraWindowModeCompact)
-      return COMPACT_MODE;
+      return MODE_COMPACT;
+    if (mode == switches::kAuraWindowModeManaged)
+      return MODE_MANAGED;
+    if (mode == switches::kAuraWindowModeOverlapping)
+      return MODE_OVERLAPPING;
   }
 
   // Developers often run the Aura shell in small windows on their desktop.
-  // Prefer normal mode for them.
+  // Prefer overlapping mode for them.
   if (!aura::RootWindow::use_fullscreen_host_window())
-    return NORMAL_MODE;
+    return MODE_OVERLAPPING;
 
   // If the screen is narrow we prefer a single compact window display.
   // We explicitly don't care about height, since users don't generally stack
   // browser windows vertically.
   if (monitor_size.width() <= kCompactWindowModeWidthThreshold)
-    return COMPACT_MODE;
+    return MODE_COMPACT;
 
-  return NORMAL_MODE;
+  return MODE_OVERLAPPING;
 }
 
 aura::Window* Shell::GetContainer(int container_id) {
@@ -392,10 +392,10 @@ void Shell::ChangeWindowMode(WindowMode mode) {
     return;
   // Window mode must be set before we resize/layout the windows.
   window_mode_ = mode;
-  if (window_mode_ == COMPACT_MODE)
+  if (window_mode_ == MODE_COMPACT)
     SetupCompactWindowMode();
   else
-    SetupNormalWindowMode();
+    SetupNonCompactWindowMode();
   // Force a layout.
   aura::RootWindow::GetInstance()->layout_manager()->OnWindowResized();
 }
@@ -464,7 +464,7 @@ void Shell::SetupCompactWindowMode() {
   root_window_layout_->SetBackgroundWidget(NULL);
 }
 
-void Shell::SetupNormalWindowMode() {
+void Shell::SetupNonCompactWindowMode() {
   DCHECK(root_window_layout_);
   DCHECK(status_widget_);
 
@@ -485,8 +485,7 @@ void Shell::SetupNormalWindowMode() {
 
   aura::Window* default_container =
       GetContainer(internal::kShellWindowId_DefaultContainer);
-  if (CommandLine::ForCurrentProcess()->
-          HasSwitch(switches::kAuraWorkspaceManager)) {
+  if (window_mode_ == MODE_MANAGED) {
     // Workspace manager has its own layout managers.
     workspace_controller_.reset(
         new internal::WorkspaceController(default_container));

@@ -65,11 +65,12 @@ class WorkspaceController;
 class ASH_EXPORT Shell {
  public:
   // In compact window mode we fill the screen with a single maximized window,
-  // similar to ChromeOS R17 and earlier.  In normal mode we have draggable
-  // windows.
+  // similar to ChromeOS R17 and earlier.  In overlapping mode we have draggable
+  // windows.  In managed mode the workspace arranges windows for the user.
   enum WindowMode {
-    NORMAL_MODE,
-    COMPACT_MODE
+    MODE_COMPACT,
+    MODE_MANAGED,
+    MODE_OVERLAPPING,
   };
 
   // A shell must be explicitly created so that it can call |Init()| with the
@@ -107,7 +108,7 @@ class ASH_EXPORT Shell {
   bool IsModalWindowOpen() const;
 
   // See enum WindowMode for details.
-  bool IsWindowModeCompact() const { return window_mode_ == COMPACT_MODE; }
+  bool IsWindowModeCompact() const { return window_mode_ == MODE_COMPACT; }
 
   // Creates a default views::NonClientFrameView for use by windows in the
   // Ash environment.
@@ -158,7 +159,7 @@ class ASH_EXPORT Shell {
   // Initializes or re-initializes the layout managers and event filters needed
   // to support a given window mode and cleans up the unneeded ones.
   void SetupCompactWindowMode();
-  void SetupNormalWindowMode();
+  void SetupNonCompactWindowMode();
 
   // Sets the LayoutManager of the container with the specified id to NULL. This
   // has the effect of deleting the current LayoutManager.

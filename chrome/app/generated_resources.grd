@@ -5021,12 +5021,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_MEDIA_SOURCE_DESCRIPTION" desc="Description for the flag to enable the Media Source API on &lt;video&gt; elements.">
         Enable experimental Media Source API on the video elements. This API allows JavaScript to send media data directly to a video element.
       </message>
-      <message name="IDS_FLAGS_AURA_WORKSPACE_MANAGER_NAME" desc="Title for flag for workspace manager window dragging.">
-        Workspace manager
-      </message>
-      <message name="IDS_FLAGS_AURA_WORKSPACE_MANAGER_DESCRIPTION" desc="Description for flag for workspace manager window dragging.">
-        Enable multiple workspaces and smart window sizing and dragging.
-      </message>
       <message name="IDS_FLAGS_AURA_TRANSLUCENT_FRAMES_NAME" desc="Title for the flag to enable fancy translucent windows.">
         Translucent windows
       </message>
@@ -5049,16 +5043,19 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Window mode
       </message>
       <message name="IDS_FLAGS_AURA_WINDOW_MODE_DESCRIPTION" desc="Description for the flag to choose how windows are displayed.">
-        Normal mode shows draggable windows.  Compact mode shows a single maximized window, useful for low-resolution devices such as laptops.
+        Compact mode shows a single maximized window, useful for low-resolution devices such as laptops. Managed mode automatically arranges windows. Overlapping window mode shows traditional draggable windows.
       </message>
       <message name="IDS_FLAGS_AURA_WINDOW_MODE_AUTOMATIC" desc="Option name for automatic selection of window display mode.">
         Automatic
       </message>
-      <message name="IDS_FLAGS_AURA_WINDOW_MODE_NORMAL" desc="Option name for normal window display mode.">
-        Normal
-      </message>
       <message name="IDS_FLAGS_AURA_WINDOW_MODE_COMPACT" desc="Option name for compact/low-resolution window display mode.">
         Compact
+      </message>
+      <message name="IDS_FLAGS_AURA_WINDOW_MODE_MANAGED" desc="Option name for automatically managed window display mode.">
+        Managed
+      </message>
+      <message name="IDS_FLAGS_AURA_WINDOW_MODE_OVERLAPPING" desc="Option name for overlapping window display mode.">
+        Overlapping
       </message>
       <message name="IDS_FLAGS_ENABLE_PLATFORM_APPS_NAME" desc="Title for the flag to enable platform apps.">
         Enable platform apps

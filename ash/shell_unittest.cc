@@ -301,32 +301,32 @@ TEST_F(ShellTest, ComputeWindowMode) {
   Shell* shell = Shell::GetInstance();
   gfx::Size monitor_size(1440, 900);
   CommandLine command_line(CommandLine::NO_PROGRAM);
-  EXPECT_EQ(Shell::NORMAL_MODE,
+  EXPECT_EQ(Shell::MODE_OVERLAPPING,
             shell->ComputeWindowMode(monitor_size, &command_line));
 
   // Alex-sized screens need compact mode.
   monitor_size.SetSize(1280, 800);
-  EXPECT_EQ(Shell::COMPACT_MODE,
+  EXPECT_EQ(Shell::MODE_COMPACT,
             shell->ComputeWindowMode(monitor_size, &command_line));
 
   // ZGB-sized screens need compact mode.
   monitor_size.SetSize(1366, 768);
-  EXPECT_EQ(Shell::COMPACT_MODE,
+  EXPECT_EQ(Shell::MODE_COMPACT,
             shell->ComputeWindowMode(monitor_size, &command_line));
 
-  // Even for a small screen, the user can force normal mode.
+  // Even for a small screen, the user can force overlapping mode.
   monitor_size.SetSize(800, 600);
   command_line.AppendSwitchASCII(ash::switches::kAuraWindowMode,
-                                 ash::switches::kAuraWindowModeNormal);
-  EXPECT_EQ(Shell::NORMAL_MODE,
+                                 ash::switches::kAuraWindowModeOverlapping);
+  EXPECT_EQ(Shell::MODE_OVERLAPPING,
             shell->ComputeWindowMode(monitor_size, &command_line));
 
   // Even for a large screen, the user can force compact mode.
   monitor_size.SetSize(1920, 1080);
   CommandLine command_line2(CommandLine::NO_PROGRAM);
   command_line2.AppendSwitchASCII(ash::switches::kAuraWindowMode,
-                                 ash::switches::kAuraWindowModeCompact);
-  EXPECT_EQ(Shell::COMPACT_MODE,
+                                  ash::switches::kAuraWindowModeCompact);
+  EXPECT_EQ(Shell::MODE_COMPACT,
             shell->ComputeWindowMode(monitor_size, &command_line2));
 }
 
@@ -352,7 +352,7 @@ TEST_F(ShellTest, ChangeWindowMode) {
   EXPECT_FALSE(widget->IsMaximized());
 
   // Set our new mode.
-  shell->ChangeWindowMode(Shell::COMPACT_MODE);
+  shell->ChangeWindowMode(Shell::MODE_COMPACT);
   EXPECT_TRUE(shell->IsWindowModeCompact());
   // Compact mode does not use a default container event filter.
   EXPECT_FALSE(GetDefaultContainer()->event_filter());
@@ -369,8 +369,8 @@ TEST_F(ShellTest, ChangeWindowMode) {
   // Desktop background is gone.
   EXPECT_FALSE(shell->root_window_layout_->background_widget());
 
-  // Switch back to normal mode.
-  shell->ChangeWindowMode(Shell::NORMAL_MODE);
+  // Switch back to overlapping mode.
+  shell->ChangeWindowMode(Shell::MODE_OVERLAPPING);
   EXPECT_FALSE(shell->IsWindowModeCompact());
   // Event filter came back.
   EXPECT_TRUE(GetDefaultContainer()->event_filter());
