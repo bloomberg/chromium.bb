@@ -1834,5 +1834,5 @@
    fun:v8::internal::HeapProfiler::TakeSnapshot
    fun:v8::HeapProfiler::TakeSnapshot
    fun:GetNumObjects
-   fun:ListenerLeakTest_ReferenceCycle_Test::TestBody
+   ...
 }

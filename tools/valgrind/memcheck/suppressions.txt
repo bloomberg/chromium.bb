@@ -5680,6 +5680,23 @@
    fun:neutral_DrawElements
 }
 
+{
+   bug_112315
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN2v88internal21NativeObjectsExplorer18FindOrAddGroupInfoEPKc
+   ...
+   fun:_ZN2v88internal21NativeObjectsExplorer27IterateAndExtractReferencesEPNS0_23SnapshotFillerInterfaceE
+   fun:_ZN2v88internal21HeapSnapshotGenerator25CountEntriesAndReferencesEv
+   fun:_ZN2v88internal21HeapSnapshotGenerator16GenerateSnapshotEv
+   fun:_ZN2v88internal12HeapProfiler16TakeSnapshotImplEPKciPNS_15ActivityControlE
+   ...
+   fun:_ZN2v88internal12HeapProfiler12TakeSnapshotEPNS0_6StringEiPNS_15ActivityControlE
+   fun:_ZN2v812HeapProfiler12TakeSnapshotENS_6HandleINS_6StringEEENS_12HeapSnapshot4TypeEPNS_15ActivityControlE
+   fun:_ZL13GetNumObjectsPKc
+   ...
+}
+
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations
 
