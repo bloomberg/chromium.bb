@@ -46,7 +46,8 @@ const char* kPerTabPrefsToObserve[] = {
   prefs::kWebKitDefaultFontSize,
   prefs::kWebKitDefaultFixedFontSize,
   prefs::kWebKitMinimumFontSize,
-  prefs::kWebKitMinimumLogicalFontSize
+  prefs::kWebKitMinimumLogicalFontSize,
+  prefs::kWebKitXSSAuditorEnabled
 };
 
 const int kPerTabPrefsToObserveLength = arraysize(kPerTabPrefsToObserve);
@@ -107,6 +108,9 @@ static void RegisterPerTabUserPrefs(PrefService* prefs) {
                              PrefService::UNSYNCABLE_PREF);
   prefs->RegisterBooleanPref(prefs::kWebKitPluginsEnabled,
                              pref_defaults.plugins_enabled,
+                             PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterBooleanPref(prefs::kWebKitXSSAuditorEnabled,
+                             pref_defaults.xss_auditor_enabled,
                              PrefService::UNSYNCABLE_PREF);
   RegisterFontsAndCharsetPrefs(prefs);
 }
@@ -434,6 +438,8 @@ void PrefsTabHelper::InitPerTabUserPrefStore(
   pref_store->RegisterOverlayPref(
       prefs::kWebKitMinimumLogicalFontSize,
       prefs::kWebKitGlobalMinimumLogicalFontSize);
+  pref_store->RegisterOverlayPref(
+      prefs::kWebKitXSSAuditorEnabled);
 }
 
 // static
@@ -641,6 +647,8 @@ void PrefsTabHelper::UpdateWebPreferences() {
       per_tab_prefs_->GetInteger(prefs::kWebKitMinimumFontSize);
   prefs.minimum_logical_font_size =
       per_tab_prefs_->GetInteger(prefs::kWebKitMinimumLogicalFontSize);
+  prefs.xss_auditor_enabled =
+      per_tab_prefs_->GetBoolean(prefs::kWebKitXSSAuditorEnabled);
   prefs.default_encoding =
       per_tab_prefs_->GetString(prefs::kDefaultCharset);
 

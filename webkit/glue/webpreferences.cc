@@ -54,7 +54,7 @@ WebPreferences::WebPreferences()
       uses_page_cache(false),
       remote_fonts_enabled(true),
       javascript_can_access_clipboard(false),
-      xss_auditor_enabled(false),
+      xss_auditor_enabled(true),
       dns_prefetching_enabled(true),
       local_storage_enabled(false),
       databases_enabled(false),

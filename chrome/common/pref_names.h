@@ -117,6 +117,7 @@ extern const char kWebKitJavaEnabled[];
 extern const char kWebkitTabsToLinks[];
 extern const char kWebKitAllowDisplayingInsecureContent[];
 extern const char kWebKitAllowRunningInsecureContent[];
+extern const char kWebKitXSSAuditorEnabled[];
 extern const char kPasswordManagerEnabled[];
 extern const char kPasswordManagerAllowShowPasswords[];
 extern const char kAutologinEnabled[];

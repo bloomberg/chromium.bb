@@ -216,6 +216,8 @@ const char kWebKitAllowDisplayingInsecureContent[] =
     "webkit.webprefs.allow_displaying_insecure_content";
 const char kWebKitAllowRunningInsecureContent[] =
     "webkit.webprefs.allow_running_insecure_content";
+const char kWebKitXSSAuditorEnabled[] =
+    "webkit.webprefs.xss_auditor_enabled";
 
 // Settings below can be overridden for each tab individually.
 const char kDefaultCharset[] = "intl.charset_default";
