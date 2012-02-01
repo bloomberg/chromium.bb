@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -37,6 +37,7 @@ namespace ui {
 typedef enum {
   VKEY_BACK = 0x08,
   VKEY_TAB = 0x09,
+  VKEY_BACKTAB = 0x0A,
   VKEY_CLEAR = 0x0C,
   VKEY_RETURN = 0x0D,
   VKEY_SHIFT = 0x10,

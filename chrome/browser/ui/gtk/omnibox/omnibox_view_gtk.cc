@@ -555,16 +555,22 @@ void OmniboxViewGtk::SetUserText(const string16& text,
                                  bool update_popup) {
   model_->SetUserText(text);
   // TODO(deanm): something about selection / focus change here.
-  SetWindowTextAndCaretPos(display_text, display_text.length());
-  if (update_popup)
-    UpdatePopup();
-  TextChanged();
+  SetWindowTextAndCaretPos(display_text, display_text.length(), update_popup,
+      true);
 }
 
 void OmniboxViewGtk::SetWindowTextAndCaretPos(const string16& text,
-                                              size_t caret_pos) {
+                                              size_t caret_pos,
+                                              bool update_popup,
+                                              bool notify_text_changed) {
   CharRange range(static_cast<int>(caret_pos), static_cast<int>(caret_pos));
   SetTextAndSelectedRange(text, range);
+
+  if (update_popup)
+    UpdatePopup();
+
+  if (notify_text_changed)
+    TextChanged();
 }
 
 void OmniboxViewGtk::SetForcedQuery() {
@@ -639,7 +645,7 @@ void OmniboxViewGtk::OnTemporaryTextMaybeChanged(
     saved_temporary_selection_ = GetSelection();
 
   StartUpdatingHighlightedText();
-  SetWindowTextAndCaretPos(display_text, display_text.length());
+  SetWindowTextAndCaretPos(display_text, display_text.length(), false, false);
   FinishUpdatingHighlightedText();
   TextChanged();
 }
@@ -1078,7 +1084,8 @@ gboolean OmniboxViewGtk::HandleKeyPress(GtkWidget* widget, GdkEventKey* event) {
   // if IME did not handle it then "move-focus" signal will be emitted by the
   // default signal handler of |text_view_|. So we can intercept "move-focus"
   // signal of |text_view_| to know if a Tab key press event was handled by IME,
-  // and trigger Tab to search behavior when necessary in the signal handler.
+  // and trigger Tab to search or result traversal behavior when necessary in
+  // the signal handler.
   //
   // But for Enter key, if IME did not handle the key event, the default signal
   // handler will delete current selection range and insert '\n' and always
@@ -1120,7 +1127,9 @@ gboolean OmniboxViewGtk::HandleKeyPress(GtkWidget* widget, GdkEventKey* event) {
   tab_was_pressed_ = (event->keyval == GDK_Tab ||
                       event->keyval == GDK_ISO_Left_Tab ||
                       event->keyval == GDK_KP_Tab) &&
-                     !(event->state & (GDK_CONTROL_MASK | GDK_SHIFT_MASK));
+                     !(event->state & GDK_CONTROL_MASK);
+
+  shift_was_pressed_ = event->state & GDK_SHIFT_MASK;
 
   delete_was_pressed_ = event->keyval == GDK_Delete ||
                         event->keyval == GDK_KP_Delete;
@@ -1716,23 +1725,24 @@ void OmniboxViewGtk::HandleViewMoveFocus(GtkWidget* widget,
   bool handled = false;
 
   // Trigger Tab to search behavior only when Tab key is pressed.
-  if (model_->is_keyword_hint())
+  if (model_->is_keyword_hint() && !shift_was_pressed_) {
     handled = model_->AcceptKeyword();
+  } else if (model_->popup_model()->IsOpen()) {
+    if (shift_was_pressed_ &&
+        model_->popup_model()->selected_line_state() ==
+            AutocompletePopupModel::KEYWORD)
+      model_->ClearKeyword(GetText());
+    else
+      model_->OnUpOrDownKeyPressed(shift_was_pressed_ ? -1 : 1);
+
+    handled = true;
+  }
 
   if (supports_pre_edit_ && !handled && !pre_edit_.empty())
     handled = true;
 
   if (!handled && gtk_widget_get_visible(instant_view_))
     handled = model_->CommitSuggestedText(true);
-
-  if (!handled) {
-    if (!IsCaretAtEnd()) {
-      OnBeforePossibleChange();
-      PlaceCaretAt(GetTextLength());
-      OnAfterPossibleChange();
-      handled = true;
-    }
-  }
 
   if (!handled)
     handled = model_->AcceptCurrentInstantPreview();

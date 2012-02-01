@@ -5,6 +5,7 @@
 #include "chrome/browser/autocomplete/autocomplete.h"
 
 #include <algorithm>
+#include <set>
 
 #include "base/basictypes.h"
 #include "base/command_line.h"
@@ -24,12 +25,16 @@
 #include "chrome/browser/autocomplete/search_provider.h"
 #include "chrome/browser/autocomplete/shortcuts_provider.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
 #include "chrome/browser/instant/instant_field_trial.h"
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_io_data.h"
+#include "chrome/browser/search_engines/template_url.h"
+#include "chrome/browser/search_engines/template_url_service.h"
+#include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/webui/history_ui.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
@@ -683,6 +688,9 @@ void AutocompleteResult::AddMatch(const AutocompleteMatch& match) {
 }
 
 void AutocompleteResult::SortAndCull(const AutocompleteInput& input) {
+  for (ACMatches::iterator i = matches_.begin(); i != matches_.end(); ++i)
+    i->ComputeStrippedDestinationURL();
+
   // Remove duplicates.
   std::sort(matches_.begin(), matches_.end(),
             &AutocompleteMatch::DestinationSortFunc);
@@ -991,6 +999,7 @@ void AutocompleteController::UpdateResult(bool is_synchronous_pass) {
   }
 
   UpdateKeywordDescriptions(&result_);
+  UpdateAssociatedKeywords(&result_);
 
   bool notify_default_match = is_synchronous_pass;
   if (!is_synchronous_pass) {
@@ -998,17 +1007,52 @@ void AutocompleteController::UpdateResult(bool is_synchronous_pass) {
         last_result.default_match() != last_result.end();
     const bool default_is_valid = result_.default_match() != result_.end();
     // We've gotten async results. Send notification that the default match
-    // updated if fill_into_edit differs. We don't check the URL as that may
-    // change for the default match even though the fill into edit hasn't
-    // changed (see SearchProvider for one case of this).
+    // updated if fill_into_edit differs or associated_keyword differ.  (The
+    // latter can change if we've just started Chrome and the keyword database
+    // finishes loading while processing this request.) We don't check the URL
+    // as that may change for the default match even though the fill into edit
+    // hasn't changed (see SearchProvider for one case of this).
     notify_default_match =
         (last_default_was_valid != default_is_valid) ||
         (default_is_valid &&
-         (result_.default_match()->fill_into_edit !=
-          last_result.default_match()->fill_into_edit));
+          ((result_.default_match()->fill_into_edit !=
+            last_result.default_match()->fill_into_edit) ||
+            (result_.default_match()->associated_keyword.get() !=
+              last_result.default_match()->associated_keyword.get())));
   }
 
   NotifyChanged(notify_default_match);
+}
+
+void AutocompleteController::UpdateAssociatedKeywords(
+    AutocompleteResult* result) {
+  if (!keyword_provider_)
+    return;
+
+  std::set<string16> keywords;
+  for (ACMatches::iterator match(result->begin()); match != result->end();
+       ++match) {
+    if (!match->keyword.empty()) {
+      keywords.insert(match->keyword);
+    } else {
+      string16 keyword = match->associated_keyword.get() ?
+          match->associated_keyword->keyword :
+          keyword_provider_->GetKeywordForText(match->fill_into_edit);
+
+      // Only add the keyword if the match does not have a duplicate keyword
+      // with a more relevant match.
+      if (!keyword.empty() && !keywords.count(keyword)) {
+        keywords.insert(keyword);
+
+        if (!match->associated_keyword.get())
+          match->associated_keyword.reset(new AutocompleteMatch(
+              keyword_provider_->CreateAutocompleteMatch(match->fill_into_edit,
+                  keyword, input_)));
+      } else {
+        match->associated_keyword.reset();
+      }
+    }
+  }
 }
 
 void AutocompleteController::UpdateKeywordDescriptions(

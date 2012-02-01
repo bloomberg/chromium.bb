@@ -113,7 +113,9 @@ class OmniboxViewViews
                            const string16& display_text,
                            bool update_popup) OVERRIDE;
   virtual void SetWindowTextAndCaretPos(const string16& text,
-                                        size_t caret_pos) OVERRIDE;
+                                        size_t caret_pos,
+                                        bool update_popup,
+                                        bool notify_text_changed) OVERRIDE;
   virtual void SetForcedQuery() OVERRIDE;
   virtual bool IsSelectAll() OVERRIDE;
   virtual bool DeleteAtEndPressed() OVERRIDE;
