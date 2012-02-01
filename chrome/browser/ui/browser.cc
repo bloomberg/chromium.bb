@@ -199,6 +199,9 @@
 #include "chrome/browser/chromeos/boot_times_loader.h"
 #include "chrome/browser/chromeos/dbus/dbus_thread_manager.h"
 #include "chrome/browser/chromeos/dbus/power_manager_client.h"
+#if defined(USE_AURA)
+#include "chrome/browser/extensions/api/terminal/terminal_extension_helper.h"
+#endif
 #include "chrome/browser/ui/webui/active_downloads_ui.h"
 #endif
 
@@ -2379,6 +2382,17 @@ void Browser::OpenMobilePlanTabAndActivate() {
 }
 #endif
 
+#if defined(OS_CHROMEOS) && defined(USE_AURA)
+void Browser::OpenCrosh() {
+  GURL crosh_url = TerminalExtensionHelper::GetCroshExtensionURL(profile_);
+  if (!crosh_url.is_valid())
+    return;
+  OpenURL(OpenURLParams(crosh_url, Referrer(), NEW_FOREGROUND_TAB,
+          content::PAGE_TRANSITION_GENERATED,
+          false));
+}
+#endif
+
 void Browser::OpenPluginsTabAndActivate() {
   OpenURL(OpenURLParams(
       GURL(chrome::kChromeUIPluginsURL), Referrer(), NEW_FOREGROUND_TAB,
@@ -2979,6 +2993,9 @@ void Browser::ExecuteCommandWithDisposition(
     case IDC_SYSTEM_OPTIONS:        OpenSystemOptionsDialog();        break;
     case IDC_INTERNET_OPTIONS:      OpenInternetOptionsDialog();      break;
     case IDC_LANGUAGE_OPTIONS:      OpenLanguageOptionsDialog();      break;
+#endif
+#if defined(OS_CHROMEOS) && defined(USE_AURA)
+    case IDC_NEW_CROSH_TAB:         OpenCrosh();                    break;
 #endif
     case IDC_SHOW_SYNC_SETUP:       ShowSyncSetup();                  break;
     case IDC_TOGGLE_SPEECH_INPUT:   ToggleSpeechInput();              break;
@@ -4471,6 +4488,9 @@ void Browser::InitCommandState() {
   // Window management commands
   command_updater_.UpdateCommandEnabled(IDC_CLOSE_WINDOW, true);
   command_updater_.UpdateCommandEnabled(IDC_NEW_TAB, true);
+#if defined(OS_CHROMEOS) && defined(USE_AURA)
+  command_updater_.UpdateCommandEnabled(IDC_NEW_CROSH_TAB, true);
+#endif
   command_updater_.UpdateCommandEnabled(IDC_CLOSE_TAB, true);
   command_updater_.UpdateCommandEnabled(IDC_DUPLICATE_TAB, true);
   command_updater_.UpdateCommandEnabled(IDC_RESTORE_TAB, false);

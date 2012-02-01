@@ -641,6 +641,9 @@ class Browser : public TabHandlerDelegate,
   void OpenSystemTabAndActivate();
   void OpenMobilePlanTabAndActivate();
 #endif
+#if defined(OS_CHROMEOS) && defined(USE_AURA)
+  void OpenCrosh();
+#endif
   void OpenPluginsTabAndActivate();
   void ShowSyncSetup();
   void ToggleSpeechInput();
