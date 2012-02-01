@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -281,6 +281,12 @@ class ChromeTests:
     return self.SimpleTest("webkit", "test_shell_tests")
 
   def TestUnit(self):
+    # http://crbug.com/51716
+    # Disabling all unit tests
+    # Problems reappeared after r119922
+    if common.IsMac() and (self._options.valgrind_tool == "memcheck"):
+      logging.warning("unit_tests are disabled for memcheck on MacOS.")
+      return 0;
     return self.SimpleTest("chrome", "unit_tests")
 
   def TestUIUnit(self):
