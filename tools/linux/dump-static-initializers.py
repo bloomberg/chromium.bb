@@ -93,25 +93,24 @@ def QualifyFilename(filename, symbol):
 
 # Regex matching nm output for the symbols we're interested in.
 # Example line:
-#   0000000001919920 0000000000000008 b _ZN12_GLOBAL__N_119g_nine_box_prelightE
+#   0000000001919920 0000000000000008 t _ZN12_GLOBAL__I_safe_browsing_service.cc
 nm_re = re.compile(r'(\S+) (\S+) t _GLOBAL__I_(.*)')
 def ParseNm(binary):
-  """Given a binary, yield static initializers as (start, size, file) pairs."""
+  """Given a binary, yield static initializers as (file, start, size) tuples."""
 
   nm = subprocess.Popen(['nm', '-S', binary], stdout=subprocess.PIPE)
   for line in nm.stdout:
     match = nm_re.match(line)
     if match:
       addr, size, filename = match.groups()
-      yield int(addr, 16), int(size, 16), filename
-
+      yield filename, int(addr, 16), int(size, 16)
 
 # Regex matching objdump output for the symbols we're interested in.
 # Example line:
 #     12354ab:  (disassembly, including <FunctionReference>)
 disassembly_re = re.compile(r'^\s+[0-9a-f]+:.*<(\S+)>')
 def ExtractSymbolReferences(binary, start, end):
-  """Given a span of addresses, yields symbol references from disassembly."""
+  """Given a span of addresses, returns symbol references from disassembly."""
   cmd = ['objdump', binary, '--disassemble',
          '--start-address=0x%x' % start, '--stop-address=0x%x' % end]
   objdump = subprocess.Popen(cmd, stdout=subprocess.PIPE)
@@ -132,17 +131,15 @@ def ExtractSymbolReferences(binary, start, end):
         # Probably a relative jump within this function.
         continue
       refs.add(ref)
-      continue
 
-  for ref in sorted(refs):
-    yield ref
-
+  return sorted(refs)
 
 def main():
-  parser = optparse.OptionParser(usage='%prog filename')
-  parser.add_option('-i', '--instances', dest='calculate_instances',
+  parser = optparse.OptionParser(usage='%prog [option] filename')
+  parser.add_option('-d', '--diffable', dest='diffable',
                     action='store_true', default=False,
-                    help='Only print out the number of static initializers')
+                    help='Prints the filename on each line, for more easily '
+                         'diff-able output.')
   opts, args = parser.parse_args()
   if len(args) != 1:
     parser.error('missing filename argument')
@@ -150,36 +147,44 @@ def main():
   binary = args[0]
 
   demangler = Demangler()
-  static_initializers_count = 0
-  for addr, size, filename in ParseNm(binary):
+  file_count = 0
+  initializer_count = 0
+
+  files = ParseNm(binary)
+  if opts.diffable:
+    files = sorted(files)
+  for filename, addr, size in files:
     if size == 2:
       # gcc generates a two-byte 'repz retq' initializer when there is nothing
       # to do.  jyasskin tells me this is fixed in gcc 4.6.
-      # Two bytes is too small to do anything, so just ignore it.
       continue
 
-    if (opts.calculate_instances):
-      static_initializers_count += 1
-      continue
+    file_count += 1
 
-    ref_output = ''
+    ref_output = []
     qualified_filename = QualifyFilenameAsProto(filename)
     for ref in ExtractSymbolReferences(binary, addr, addr+size):
+      initializer_count += 1
+
       ref = demangler.Demangle(ref)
       if qualified_filename == filename:
         qualified_filename = QualifyFilename(filename, ref)
       if ref in NOTES:
-        ref_output = ref_output + '  %s [%s]\n' % (ref, NOTES[ref])
+        ref_output.append('  %s [%s]' % (ref, NOTES[ref]))
       else:
-        ref_output = ref_output + '  ' + ref + '\n'
-    print '%s (initializer offset 0x%x size 0x%x)' % (qualified_filename,
-                                                      addr, size)
-    print ref_output
+        ref_output.append('  ' + ref)
 
-  if opts.calculate_instances:
-    print static_initializers_count
+    if opts.diffable:
+      print '\n'.join(qualified_filename + r for r in ref_output)
+    else:
+      print '%s (initializer offset 0x%x size 0x%x)' % (qualified_filename,
+                                                        addr, size)
+      print '\n'.join(ref_output) + '\n'
+
+  print 'Found %d static initializers in %d files.' % (initializer_count,
+                                                       file_count)
+
   return 0
-
 
 if '__main__' == __name__:
   sys.exit(main())
