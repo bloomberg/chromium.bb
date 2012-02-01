@@ -540,6 +540,7 @@ void DeviceManagementService::OnURLFetchComplete(
       LOG(WARNING) << "Proxy failed while contacting dmserver.";
       retry = true;
     } else if (source->GetStatus().is_success() &&
+               source->GetResponseCode() == kSuccess &&
                source->WasFetchedViaProxy() &&
                !IsProtobufMimeType(source)) {
       // The proxy server can be misconfigured but pointing to an existing
