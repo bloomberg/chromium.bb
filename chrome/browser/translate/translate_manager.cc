@@ -150,14 +150,15 @@ const LanguageCodeSynonym kLanguageCodeSynonyms[] = {
 };
 
 const char* const kTranslateScriptURL =
-    "http://translate.google.com/translate_a/element.js?"
+    "https://translate.google.com/translate_a/element.js?"
     "cb=cr.googleTranslate.onTranslateElementLoad";
 const char* const kTranslateScriptHeader =
     "Google-Translate-Element-Mode: library";
 const char* const kReportLanguageDetectionErrorURL =
+    // TODO(palmer): bug 112236. Make this https://.
     "http://translate.google.com/translate_error";
 const char* const kLanguageListFetchURL =
-    "http://translate.googleapis.com/translate_a/l?client=chrome&cb=sl";
+    "https://translate.googleapis.com/translate_a/l?client=chrome&cb=sl";
 const int kMaxRetryLanguageListFetch = 5;
 const int kTranslateScriptExpirationDelayDays = 1;
 
