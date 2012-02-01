@@ -191,6 +191,19 @@ class TooltipController::Tooltip {
     tooltip_rect.Offset(kCursorOffsetX, kCursorOffsetY);
     gfx::Rect monitor_bounds =
         gfx::Screen::GetMonitorAreaNearestPoint(tooltip_rect.origin());
+
+    // If tooltip is out of bounds on the x axis, we simply shift it
+    // horizontally by the offset.
+    if (tooltip_rect.right() > monitor_bounds.right()) {
+      int h_offset = tooltip_rect.right() - monitor_bounds.right();
+      tooltip_rect.Offset(-h_offset, 0);
+    }
+
+    // If tooltip is out of bounds on the y axis, we flip it to appear above the
+    // mouse cursor instead of below.
+    if (tooltip_rect.bottom() > monitor_bounds.bottom())
+      tooltip_rect.set_y(mouse_pos.y() - tooltip_height);
+
     widget_->SetBounds(tooltip_rect.AdjustToFit(monitor_bounds));
   }
 
