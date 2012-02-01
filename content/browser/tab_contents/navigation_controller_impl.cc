@@ -266,16 +266,38 @@ void NavigationControllerImpl::ReloadInternal(bool check_for_repost,
   } else {
     DiscardNonCommittedEntriesInternal();
 
-    pending_entry_index_ = current_index;
+    NavigationEntryImpl* entry = entries_[current_index].get();
+    SiteInstanceImpl* site_instance = entry->site_instance();
+    DCHECK(site_instance);
 
-    // The title of the page being reloaded might have been removed in the
-    // meanwhile, so we need to revert to the default title upon reload and
-    // invalidate the previously cached title (SetTitle will do both).
-    // See Chromium issue 96041.
-    entries_[pending_entry_index_]->SetTitle(string16());
+    // If we are reloading an entry that no longer belongs to the current
+    // site instance (for example, refreshing a page for just installed app),
+    // the reload must happen in a new process.
+    // The new entry must have a new page_id and site instance, so it behaves
+    // as new navigation (which happens to clear forward history).
+    if (site_instance->HasWrongProcessForURL(entry->GetURL())) {
+      // Create a navigation entry that resembles the current one, but do not
+      // copy page id, site instance, and content state.
+      NavigationEntryImpl* nav_entry = NavigationEntryImpl::FromNavigationEntry(
+          CreateNavigationEntry(
+              entry->GetURL(), entry->GetReferrer(), entry->GetTransitionType(),
+              false, entry->extra_headers(), browser_context_));
 
-    entries_[pending_entry_index_]->SetTransitionType(
-        content::PAGE_TRANSITION_RELOAD);
+      nav_entry->set_is_cross_site_reload(true);
+      pending_entry_ = nav_entry;
+    } else {
+      pending_entry_index_ = current_index;
+
+      // The title of the page being reloaded might have been removed in the
+      // meanwhile, so we need to revert to the default title upon reload and
+      // invalidate the previously cached title (SetTitle will do both).
+      // See Chromium issue 96041.
+      entries_[pending_entry_index_]->SetTitle(string16());
+
+      entries_[pending_entry_index_]->SetTransitionType(
+          content::PAGE_TRANSITION_RELOAD);
+    }
+
     NavigateToPendingEntry(reload_type);
   }
 }
@@ -589,6 +611,13 @@ bool NavigationControllerImpl::RendererDidNavigate(
   // Restored entries start out with a null SiteInstance, but we should have
   // assigned one in NavigateToPendingEntry.
   DCHECK(pending_entry_index_ == -1 || pending_entry_->site_instance());
+
+  // If we are doing a cross-site reload, we need to replace the existing
+  // navigation entry, not add another entry to the history. This has the side
+  // effect of removing forward browsing history, if such existed.
+  if (pending_entry_ != NULL) {
+    details->did_replace_entry = pending_entry_->is_cross_site_reload();
+  }
 
   // is_in_page must be computed before the entry gets committed.
   details->is_in_page = IsURLInPageNavigation(params.url);

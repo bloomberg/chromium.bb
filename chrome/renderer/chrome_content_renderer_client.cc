@@ -623,12 +623,20 @@ bool ChromeContentRendererClient::ShouldFork(WebFrame* frame,
                                              bool is_content_initiated,
                                              bool is_initial_navigation,
                                              bool* send_referrer) {
+  const ExtensionSet* extensions = extension_dispatcher_->extensions();
+
+  // Determine if the new URL is an extension (excluding bookmark apps).
+  const Extension* new_url_extension = extensions::GetNonBookmarkAppExtension(
+      *extensions, ExtensionURLInfo(url));
+  bool is_extension_url = !!new_url_extension;
+
   // If the navigation would cross an app extent boundary, we also need
   // to defer to the browser to ensure process isolation.
   // TODO(erikkay) This is happening inside of a check to is_content_initiated
   // which means that things like the back button won't trigger it.  Is that
   // OK?
-  if (CrossesExtensionExtents(frame, url, is_initial_navigation)) {
+  if (CrossesExtensionExtents(frame, url, *extensions, is_extension_url,
+          is_initial_navigation)) {
     // Include the referrer in this case since we're going from a hosted web
     // page. (the packaged case is handled previously by the extension
     // navigation test)
@@ -646,6 +654,15 @@ bool ChromeContentRendererClient::ShouldFork(WebFrame* frame,
       }
     }
     return true;
+  }
+
+  // If this is a reload, check whether it has the wrong process type.  We
+  // should send it to the browser if it's an extension URL (e.g., hosted app)
+  // in a normal process, or if it's a process for an extension that has been
+  // uninstalled.
+  if (frame->top()->document().url() == url) {
+    if (is_extension_url != extension_dispatcher_->is_extension_process())
+      return true;
   }
 
   // Navigating to a new chrome:// scheme (in a new tab) from within a
@@ -751,13 +768,10 @@ void ChromeContentRendererClient::SetExtensionDispatcher(
 bool ChromeContentRendererClient::CrossesExtensionExtents(
     WebFrame* frame,
     const GURL& new_url,
+    const ExtensionSet& extensions,
+    bool is_extension_url,
     bool is_initial_navigation) {
-  const ExtensionSet* extensions = extension_dispatcher_->extensions();
   GURL old_url(frame->top()->document().url());
-
-  // Determine if the new URL is an extension (excluding bookmark apps).
-  const Extension* new_url_extension = extensions::GetNonBookmarkAppExtension(
-      *extensions, ExtensionURLInfo(new_url));
 
   // If old_url is still empty and this is an initial navigation, then this is
   // a window.open operation.  We should look at the opener URL.
@@ -768,10 +782,10 @@ bool ChromeContentRendererClient::CrossesExtensionExtents(
     WebDocument opener_document = frame->opener()->document();
     GURL opener_url = opener_document.url();
     WebSecurityOrigin opener_origin = opener_document.securityOrigin();
-    bool opener_is_extension_url = !!extensions->GetExtensionOrAppByURL(
+    bool opener_is_extension_url = !!extensions.GetExtensionOrAppByURL(
         ExtensionURLInfo(opener_origin, opener_url));
     WebSecurityOrigin opener = frame->opener()->document().securityOrigin();
-    if (!new_url_extension &&
+    if (!is_extension_url &&
         !opener_is_extension_url &&
         extension_dispatcher_->is_extension_process() &&
         opener.canRequest(WebURL(new_url)))
@@ -784,7 +798,7 @@ bool ChromeContentRendererClient::CrossesExtensionExtents(
   }
 
   return extensions::CrossesExtensionProcessBoundary(
-      *extensions, ExtensionURLInfo(old_url), ExtensionURLInfo(new_url));
+      extensions, ExtensionURLInfo(old_url), ExtensionURLInfo(new_url));
 }
 
 void ChromeContentRendererClient::OnPurgeMemory() {

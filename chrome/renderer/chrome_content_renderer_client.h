@@ -139,6 +139,8 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
   // extension app's extent.
   bool CrossesExtensionExtents(WebKit::WebFrame* frame,
                                const GURL& new_url,
+                               const ExtensionSet& extensions,
+                               bool is_extension_url,
                                bool is_initial_navigation);
 
   // Returns true if the NaCl plugin can be created. If it returns true, as a

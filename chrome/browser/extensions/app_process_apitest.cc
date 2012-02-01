@@ -387,8 +387,7 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, MAYBE_AppProcessRedirectBack) {
 
 // Ensure that reloading a URL after installing or uninstalling it as an app
 // correctly swaps the process.  (http://crbug.com/80621)
-// Disabled until we get a correct fix for 80621.  See http://crbug.com/102408.
-IN_PROC_BROWSER_TEST_F(AppApiTest, DISABLED_ReloadIntoAppProcess) {
+IN_PROC_BROWSER_TEST_F(AppApiTest, ReloadIntoAppProcess) {
   CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kDisablePopupBlocking);
 
@@ -467,7 +466,7 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, DISABLED_ReloadIntoAppProcess) {
           &browser()->GetSelectedTabContentsWrapper()->web_contents()->
               GetController()));
   ASSERT_TRUE(ui_test_utils::ExecuteJavaScript(contents->GetRenderViewHost(),
-                                               L"", L"location.reload();"));
+                                               L"", L"location = location;"));
   js_reload_observer2.Wait();
   EXPECT_FALSE(process_map->Contains(
       contents->GetRenderProcessHost()->GetID()));
