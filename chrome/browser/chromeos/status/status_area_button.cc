@@ -59,7 +59,7 @@ StatusAreaButton::StatusAreaButton(Delegate* button_delegate,
 void StatusAreaButton::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
   if (state() == BS_PUSHED) {
     // Apply 10% white when pushed down.
-    canvas->FillRect(SkColorSetARGB(0x19, 0xFF, 0xFF, 0xFF), GetLocalBounds());
+    canvas->FillRect(GetLocalBounds(), SkColorSetARGB(0x19, 0xFF, 0xFF, 0xFF));
   }
 
   views::MenuButton::PaintButton(canvas, mode);

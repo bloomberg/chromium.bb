@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -314,12 +314,12 @@ void DialogClientView::OnPaint(gfx::Canvas* canvas) {
   if (!GTK_IS_WINDOW(widget))
     return;
   SkColor bg_color = gfx::GdkColorToSkColor(
-                         gtk_widget_get_style(widget)->bg[GTK_STATE_NORMAL]);
+      gtk_widget_get_style(widget)->bg[GTK_STATE_NORMAL]);
 #else
   SkColor bg_color = gfx::NativeTheme::instance()->GetSystemColor(
-                         gfx::NativeTheme::kColorId_DialogBackground);
+      gfx::NativeTheme::kColorId_DialogBackground);
 #endif
-  canvas->FillRect(bg_color, GetLocalBounds());
+  canvas->FillRect(GetLocalBounds(), bg_color);
 }
 
 void DialogClientView::PaintChildren(gfx::Canvas* canvas) {

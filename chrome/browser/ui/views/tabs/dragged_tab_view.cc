@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -141,14 +141,14 @@ void DraggedTabView::PaintDetachedView(gfx::Canvas* canvas) {
   bitmap_device.eraseARGB(0, 0, 0, 0);
 
   int tab_height = renderer_bounds_.back().height();
-  scale_canvas.FillRect(kDraggedTabBorderColor,
-                        gfx::Rect(0, tab_height - kDragFrameBorderSize,
-                                  ps.width(), ps.height() - tab_height));
+  scale_canvas.FillRect(gfx::Rect(0, tab_height - kDragFrameBorderSize,
+                                  ps.width(), ps.height() - tab_height),
+                        kDraggedTabBorderColor);
   gfx::Rect image_rect(kDragFrameBorderSize,
                        tab_height,
                        ps.width() - kTwiceDragFrameBorderSize,
                        contents_size_.height());
-  scale_canvas.FillRect(SK_ColorBLACK, image_rect);
+  scale_canvas.FillRect(image_rect, SK_ColorBLACK);
   photobooth_->PaintScreenshotIntoCanvas(&scale_canvas, image_rect);
   for (size_t i = 0; i < renderers_.size(); ++i)
     renderers_[i]->Paint(&scale_canvas);

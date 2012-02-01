@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -28,8 +28,8 @@ void DetachableToolbarView::PaintBackgroundAttachedMode(
     views::View* view,
     const gfx::Point& background_origin) {
   ui::ThemeProvider* tp = view->GetThemeProvider();
-  SkColor theme_toolbar_color = tp->GetColor(ThemeService::COLOR_TOOLBAR);
-  canvas->FillRect(theme_toolbar_color, view->GetLocalBounds());
+  canvas->FillRect(view->GetLocalBounds(),
+                   tp->GetColor(ThemeService::COLOR_TOOLBAR));
   canvas->TileImageInt(*tp->GetBitmapNamed(IDR_THEME_TOOLBAR),
                        background_origin.x(), background_origin.y(), 0, 0,
                        view->width(), view->height());
@@ -56,8 +56,8 @@ void DetachableToolbarView::PaintHorizontalBorder(gfx::Canvas* canvas,
   // the view (bar/shelf) is attached or detached.
   int thickness = views::NonClientFrameView::kClientEdgeThickness;
   int y = view->IsDetached() ? 0 : (view->height() - thickness);
-  canvas->FillRect(ResourceBundle::toolbar_separator_color,
-                   gfx::Rect(0, y, view->width(), thickness));
+  canvas->FillRect(gfx::Rect(0, y, view->width(), thickness),
+                   ResourceBundle::toolbar_separator_color);
 }
 
 // static

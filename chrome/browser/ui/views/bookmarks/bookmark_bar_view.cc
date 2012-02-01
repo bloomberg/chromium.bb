@@ -660,7 +660,7 @@ void BookmarkBarView::PaintChildren(gfx::Canvas* canvas) {
     indicator_bounds.set_x(GetMirroredXForRect(indicator_bounds));
 
     // TODO(sky/glen): make me pretty!
-    canvas->FillRect(kDropIndicatorColor, indicator_bounds);
+    canvas->FillRect(indicator_bounds, kDropIndicatorColor);
   }
 }
 

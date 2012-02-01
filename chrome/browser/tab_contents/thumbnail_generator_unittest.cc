@@ -212,7 +212,7 @@ TEST_F(ThumbnailGeneratorSimpleTest, CalculateBoringScore_SingleColor) {
   const gfx::Size kSize(20, 10);
   gfx::CanvasSkia canvas(kSize, true);
   // Fill all pixesl in black.
-  canvas.FillRect(kBlack, gfx::Rect(gfx::Point(), kSize));
+  canvas.FillRect(gfx::Rect(gfx::Point(), kSize), kBlack);
 
   SkBitmap bitmap =
       skia::GetTopDevice(*canvas.sk_canvas())->accessBitmap(false);
@@ -227,9 +227,9 @@ TEST_F(ThumbnailGeneratorSimpleTest, CalculateBoringScore_TwoColors) {
 
   gfx::CanvasSkia canvas(kSize, true);
   // Fill all pixesl in black.
-  canvas.FillRect(kBlack, gfx::Rect(gfx::Point(), kSize));
+  canvas.FillRect(gfx::Rect(gfx::Point(), kSize), kBlack);
   // Fill the left half pixels in white.
-  canvas.FillRect(kWhite, gfx::Rect(0, 0, kSize.width() / 2, kSize.height()));
+  canvas.FillRect(gfx::Rect(0, 0, kSize.width() / 2, kSize.height()), kWhite);
 
   SkBitmap bitmap =
       skia::GetTopDevice(*canvas.sk_canvas())->accessBitmap(false);

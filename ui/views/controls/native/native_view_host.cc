@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -125,7 +125,7 @@ void NativeViewHost::OnPaint(gfx::Canvas* canvas) {
   // It would be nice if this used some approximation of the page's
   // current background color.
   if (native_wrapper_->HasInstalledClip())
-    canvas->FillRect(SK_ColorWHITE, GetLocalBounds());
+    canvas->FillRect(GetLocalBounds(), SK_ColorWHITE);
 }
 
 void NativeViewHost::VisibilityChanged(View* starting_from, bool is_visible) {

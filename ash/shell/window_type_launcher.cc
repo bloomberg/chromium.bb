@@ -58,7 +58,7 @@ class ModalWindow : public views::WidgetDelegateView,
 
   // Overridden from views::View:
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
-    canvas->FillRect(color_, GetLocalBounds());
+    canvas->FillRect(GetLocalBounds(), color_);
   }
   virtual gfx::Size GetPreferredSize() OVERRIDE {
     return gfx::Size(200, 200);
@@ -130,7 +130,7 @@ class NonModalTransient : public views::WidgetDelegateView {
 
   // Overridden from views::View:
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
-    canvas->FillRect(color_, GetLocalBounds());
+    canvas->FillRect(GetLocalBounds(), color_);
   }
   virtual gfx::Size GetPreferredSize() OVERRIDE {
     return gfx::Size(250, 250);
@@ -222,7 +222,7 @@ WindowTypeLauncher::~WindowTypeLauncher() {
 }
 
 void WindowTypeLauncher::OnPaint(gfx::Canvas* canvas) {
-  canvas->FillRect(SK_ColorWHITE, GetLocalBounds());
+  canvas->FillRect(GetLocalBounds(), SK_ColorWHITE);
 }
 
 void WindowTypeLauncher::Layout() {

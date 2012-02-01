@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -320,11 +320,11 @@ void GlassBrowserFrameView::PaintToolbarBackground(gfx::Canvas* canvas) {
                         right_x, y);
 
   // Draw the content/toolbar separator.
-  canvas->FillRect(ResourceBundle::toolbar_separator_color,
-      gfx::Rect(x + kClientEdgeThickness,
-                toolbar_bounds.bottom() - kClientEdgeThickness,
-                w - (2 * kClientEdgeThickness),
-                kClientEdgeThickness));
+  canvas->FillRect(gfx::Rect(x + kClientEdgeThickness,
+                             toolbar_bounds.bottom() - kClientEdgeThickness,
+                             w - (2 * kClientEdgeThickness),
+                             kClientEdgeThickness),
+                   ResourceBundle::toolbar_separator_color);
 }
 
 void GlassBrowserFrameView::PaintRestoredClientEdge(gfx::Canvas* canvas) {
@@ -364,16 +364,17 @@ void GlassBrowserFrameView::PaintRestoredClientEdge(gfx::Canvas* canvas) {
   // images because the images are meant to alpha-blend atop the frame whereas
   // these rects are meant to be fully opaque, without anything overlaid.
   SkColor toolbar_color = tp->GetColor(ThemeService::COLOR_TOOLBAR);
-  canvas->FillRect(toolbar_color,
-      gfx::Rect(client_area_bounds.x() - kClientEdgeThickness, client_area_top,
-                kClientEdgeThickness,
-                client_area_bottom + kClientEdgeThickness - client_area_top));
-  canvas->FillRect(toolbar_color,
-                   gfx::Rect(client_area_bounds.x(), client_area_bottom,
-                             client_area_bounds.width(), kClientEdgeThickness));
-  canvas->FillRect(toolbar_color, gfx::Rect(client_area_bounds.right(),
-       client_area_top, kClientEdgeThickness,
-       client_area_bottom + kClientEdgeThickness - client_area_top));
+  canvas->FillRect(gfx::Rect(client_area_bounds.x() - kClientEdgeThickness,
+      client_area_top, kClientEdgeThickness,
+      client_area_bottom + kClientEdgeThickness - client_area_top),
+      toolbar_color);
+  canvas->FillRect(gfx::Rect(client_area_bounds.x(), client_area_bottom,
+                             client_area_bounds.width(), kClientEdgeThickness),
+                   toolbar_color);
+  canvas->FillRect(gfx::Rect(client_area_bounds.right(), client_area_top,
+       kClientEdgeThickness,
+       client_area_bottom + kClientEdgeThickness - client_area_top),
+       toolbar_color);
 }
 
 void GlassBrowserFrameView::LayoutAvatar() {

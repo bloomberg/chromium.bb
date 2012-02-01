@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -139,8 +139,8 @@ void FrameBackground::PaintMaximized(gfx::Canvas* canvas, View* view) const {
   // account for the top_offset, but this is how it worked before.
   int theme_frame_bottom = maximized_top_offset_ + theme_bitmap_->height();
   if (top_area_height_ > theme_frame_bottom) {
-    canvas->FillRect(frame_color_,
-                     gfx::Rect(0, 0, view->width(), top_area_height_));
+    canvas->FillRect(gfx::Rect(0, 0, view->width(), top_area_height_),
+                     frame_color_);
   }
 
   int left_offset = 0;
@@ -171,8 +171,8 @@ void FrameBackground::PaintMaximized(gfx::Canvas* canvas, View* view) const {
 
 void FrameBackground::PaintFrameColor(gfx::Canvas* canvas, View* view) const {
   // Fill the top area.
-  canvas->FillRect(frame_color_,
-                   gfx::Rect(0, 0, view->width(), top_area_height_));
+  canvas->FillRect(gfx::Rect(0, 0, view->width(), top_area_height_),
+                   frame_color_);
 
   // If the window is very short, we're done.
   int remaining_height = view->height() - top_area_height_;
@@ -180,14 +180,11 @@ void FrameBackground::PaintFrameColor(gfx::Canvas* canvas, View* view) const {
     return;
 
   // Fill down the sides.
-  canvas->FillRect(frame_color_,
-                   gfx::Rect(0, top_area_height_,
-                             left_edge_->width(), remaining_height));
-  canvas->FillRect(frame_color_,
-                   gfx::Rect(view->width() - right_edge_->width(),
-                             top_area_height_,
-                             right_edge_->width(),
-                             remaining_height));
+  canvas->FillRect(gfx::Rect(0, top_area_height_, left_edge_->width(),
+                             remaining_height), frame_color_);
+  canvas->FillRect(gfx::Rect(view->width() - right_edge_->width(),
+                             top_area_height_, right_edge_->width(),
+                             remaining_height), frame_color_);
 
   // If the window is very narrow, we're done.
   int center_width =
@@ -196,11 +193,10 @@ void FrameBackground::PaintFrameColor(gfx::Canvas* canvas, View* view) const {
     return;
 
   // Fill the bottom area.
-  canvas->FillRect(frame_color_,
-                   gfx::Rect(left_edge_->width(),
+  canvas->FillRect(gfx::Rect(left_edge_->width(),
                              view->height() - bottom_edge_->height(),
-                             center_width,
-                             bottom_edge_->height()));
+                             center_width, bottom_edge_->height()),
+                             frame_color_);
 }
 
 }  // namespace views

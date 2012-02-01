@@ -246,8 +246,7 @@ SkBitmap NewTabButton::GetBitmapForState(
   }
 
   if (state == views::CustomButton::BS_HOT) {
-    canvas.FillRect(SkColorSetARGB(64, 255, 255, 255),
-                    gfx::Rect(size()));
+    canvas.FillRect(gfx::Rect(size()), SkColorSetARGB(64, 255, 255, 255));
   }
 
   canvas.DrawBitmapInt(*overlay, 0, 0);

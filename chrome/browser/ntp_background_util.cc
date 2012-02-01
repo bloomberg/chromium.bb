@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -61,7 +61,7 @@ void NtpBackgroundUtil::PaintBackgroundDetachedMode(ui::ThemeProvider* tp,
                                                     const gfx::Rect& area,
                                                     int tab_contents_height) {
   // Draw the background to match the new tab page.
-  canvas->FillRect(tp->GetColor(ThemeService::COLOR_NTP_BACKGROUND), area);
+  canvas->FillRect(area, tp->GetColor(ThemeService::COLOR_NTP_BACKGROUND));
 
   if (tp->HasCustomImage(IDR_THEME_NTP_BACKGROUND)) {
     int tiling = ThemeService::NO_REPEAT;

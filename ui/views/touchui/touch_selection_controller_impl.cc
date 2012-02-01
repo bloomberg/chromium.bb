@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -191,15 +191,15 @@ class ContextMenuButtonBackground : public Background {
     }
     int w = view->width();
     int h = view->height();
-    canvas->FillRect(background_color, gfx::Rect(1, 1, w - 2, h - 2));
-    canvas->FillRect(border_color, gfx::Rect(2, 0, w - 4, 1));
-    canvas->FillRect(border_color, gfx::Rect(1, 1, 1, 1));
-    canvas->FillRect(border_color, gfx::Rect(0, 2, 1, h - 4));
-    canvas->FillRect(border_color, gfx::Rect(1, h - 2, 1, 1));
-    canvas->FillRect(border_color, gfx::Rect(2, h - 1, w - 4, 1));
-    canvas->FillRect(border_color, gfx::Rect(w - 2, 1, 1, 1));
-    canvas->FillRect(border_color, gfx::Rect(w - 1, 2, 1, h - 4));
-    canvas->FillRect(border_color, gfx::Rect(w - 2, h - 2, 1, 1));
+    canvas->FillRect(gfx::Rect(1, 1, w - 2, h - 2), background_color);
+    canvas->FillRect(gfx::Rect(2, 0, w - 4, 1), border_color);
+    canvas->FillRect(gfx::Rect(1, 1, 1, 1), border_color);
+    canvas->FillRect(gfx::Rect(0, 2, 1, h - 4), border_color);
+    canvas->FillRect(gfx::Rect(1, h - 2, 1, 1), border_color);
+    canvas->FillRect(gfx::Rect(2, h - 1, w - 4, 1), border_color);
+    canvas->FillRect(gfx::Rect(w - 2, 1, 1, 1), border_color);
+    canvas->FillRect(gfx::Rect(w - 1, 2, 1, h - 4), border_color);
+    canvas->FillRect(gfx::Rect(w - 2, h - 2, 1, 1), border_color);
   }
 
  private:

@@ -242,7 +242,7 @@ void TableView::OnPaint(gfx::Canvas* canvas) {
   for (int i = min_row; i < max_row; ++i) {
     gfx::Rect row_bounds(GetRowBounds(i));
     if (i == selected_row_) {
-      canvas->FillRect(kSelectedBackgroundColor, row_bounds);
+      canvas->FillRect(row_bounds, kSelectedBackgroundColor);
       if (HasFocus())
         canvas->DrawFocusRect(row_bounds);
     }

@@ -510,9 +510,8 @@ void BalloonViewImpl::OnPaint(gfx::Canvas* canvas) {
 
   // Draw a 1-pixel gray line between the content and the menu bar.
   int line_width = GetTotalWidth() - kLeftMargin - kRightMargin;
-  canvas->FillRect(kControlBarSeparatorLineColor,
-                   gfx::Rect(kLeftMargin, 1 + GetShelfHeight(), line_width, 1));
-
+  canvas->FillRect(gfx::Rect(kLeftMargin, 1 + GetShelfHeight(), line_width, 1),
+                   kControlBarSeparatorLineColor);
   View::OnPaint(canvas);
   OnPaintBorder(canvas);
 }

@@ -661,7 +661,7 @@ void TreeView::PaintRow(gfx::Canvas* canvas,
     if (base::i18n::IsRTL())
       text_bounds.set_x(bounds.x());
     if (node == selected_node_) {
-      canvas->FillRect(kSelectedBackgroundColor, text_bounds);
+      canvas->FillRect(text_bounds, kSelectedBackgroundColor);
       if (HasFocus())
         canvas->DrawFocusRect(text_bounds);
     }
@@ -688,16 +688,15 @@ void TreeView::PaintExpandControl(gfx::Canvas* canvas,
   if (!expanded) {
     int delta = base::i18n::IsRTL() ? 1 : -1;
     for (int i = 0; i < 4; ++i) {
-      canvas->FillRect(kArrowColor,
-                       gfx::Rect(center_x + delta * (2 - i),
-                                 center_y - (3 - i), 1, (3 - i) * 2 + 1));
+      canvas->FillRect(gfx::Rect(center_x + delta * (2 - i),
+                                 center_y - (3 - i), 1, (3 - i) * 2 + 1),
+                       kArrowColor);
     }
   } else {
     center_y -= 2;
     for (int i = 0; i < 4; ++i) {
-      canvas->FillRect(kArrowColor,
-                       gfx::Rect(center_x - (3 - i), center_y + i,
-                                 (3 - i) * 2 + 1, 1));
+      canvas->FillRect(gfx::Rect(center_x - (3 - i), center_y + i,
+                                 (3 - i) * 2 + 1, 1), kArrowColor);
     }
   }
 }

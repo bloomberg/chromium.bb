@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -583,7 +583,7 @@ void ToolbarView::OnPaint(gfx::Canvas* canvas) {
   // toolbar background below the location bar for us.
   // NOTE: Keep this in sync with BrowserView::GetInfoBarSeparatorColor()!
   if (GetWidget()->ShouldUseNativeFrame())
-    canvas->FillRect(SK_ColorBLACK, gfx::Rect(0, height() - 1, width(), 1));
+    canvas->FillRect(gfx::Rect(0, height() - 1, width(), 1), SK_ColorBLACK);
 }
 
 // Note this method is ignored on Windows, but needs to be implemented for

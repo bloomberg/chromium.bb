@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -37,7 +37,7 @@ void Separator::GetAccessibleState(ui::AccessibleViewState* state) {
 }
 
 void Separator::Paint(gfx::Canvas* canvas) {
-  canvas->FillRect(kDefaultColor, bounds());
+  canvas->FillRect(bounds(), kDefaultColor);
 }
 
 std::string Separator::GetClassName() const {

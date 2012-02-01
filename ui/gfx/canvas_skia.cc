@@ -138,12 +138,12 @@ void CanvasSkia::Scale(int x_scale, int y_scale) {
   canvas_->scale(SkIntToScalar(x_scale), SkIntToScalar(y_scale));
 }
 
-void CanvasSkia::FillRect(const SkColor& color, const gfx::Rect& rect) {
-  FillRect(color, rect, SkXfermode::kSrcOver_Mode);
+void CanvasSkia::FillRect(const gfx::Rect& rect, const SkColor& color) {
+  FillRect(rect, color, SkXfermode::kSrcOver_Mode);
 }
 
-void CanvasSkia::FillRect(const SkColor& color,
-                          const gfx::Rect& rect,
+void CanvasSkia::FillRect(const gfx::Rect& rect,
+                          const SkColor& color,
                           SkXfermode::Mode mode) {
   SkPaint paint;
   paint.setColor(color);
@@ -152,7 +152,7 @@ void CanvasSkia::FillRect(const SkColor& color,
   DrawRect(rect, paint);
 }
 
-void CanvasSkia::FillRect(const gfx::Brush* brush, const gfx::Rect& rect) {
+void CanvasSkia::FillRect(const gfx::Rect& rect, const gfx::Brush* brush) {
   const SkiaShader* shader = static_cast<const SkiaShader*>(brush);
   SkPaint paint;
   paint.setShader(shader->shader());

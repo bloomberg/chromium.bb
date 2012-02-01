@@ -105,17 +105,17 @@ class UI_EXPORT Canvas {
 
   virtual void Scale(int x_scale, int y_scale) = 0;
 
-  // Fills the specified region with the specified color using a transfer
-  // mode of SkXfermode::kSrcOver_Mode.
-  virtual void FillRect(const SkColor& color, const gfx::Rect& rect) = 0;
+  // Fills |rect| with |color| using a transfer mode of
+  // SkXfermode::kSrcOver_Mode.
+  virtual void FillRect(const gfx::Rect& rect, const SkColor& color) = 0;
 
-  // Fills the specified region with the specified color and mode.
-  virtual void FillRect(const SkColor& color,
-                        const gfx::Rect& rect,
+  // Fills |rect| with the specified |color| and |mode|.
+  virtual void FillRect(const gfx::Rect& rect,
+                        const SkColor& color,
                         SkXfermode::Mode mode) = 0;
 
-  // Fills the specified region with the specified brush.
-  virtual void FillRect(const gfx::Brush* brush, const gfx::Rect& rect) = 0;
+  // Fills |rect| with the specified |brush|.
+  virtual void FillRect(const gfx::Rect& rect, const gfx::Brush* brush) = 0;
 
   // Draws a single pixel rect in the specified region with the specified
   // color, using a transfer mode of SkXfermode::kSrcOver_Mode.

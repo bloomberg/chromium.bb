@@ -36,15 +36,15 @@ SolidBorder::SolidBorder(int thickness, SkColor color)
 
 void SolidBorder::Paint(const View& view, gfx::Canvas* canvas) const {
   // Top border.
-  canvas->FillRect(color_, gfx::Rect(0, 0, view.width(), insets_.top()));
+  canvas->FillRect(gfx::Rect(0, 0, view.width(), insets_.top()), color_);
   // Left border.
-  canvas->FillRect(color_, gfx::Rect(0, 0, insets_.left(), view.height()));
+  canvas->FillRect(gfx::Rect(0, 0, insets_.left(), view.height()), color_);
   // Bottom border.
-  canvas->FillRect(color_, gfx::Rect(0, view.height() - insets_.bottom(),
-                                     view.width(), insets_.bottom()));
+  canvas->FillRect(gfx::Rect(0, view.height() - insets_.bottom(), view.width(),
+                             insets_.bottom()), color_);
   // Right border.
-  canvas->FillRect(color_, gfx::Rect(view.width() - insets_.right(), 0,
-                                     insets_.right(), view.height()));
+  canvas->FillRect(gfx::Rect(view.width() - insets_.right(), 0, insets_.right(),
+                             view.height()), color_);
 }
 
 void SolidBorder::GetInsets(gfx::Insets* insets) const {

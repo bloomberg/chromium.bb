@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -40,7 +40,7 @@ gfx::Size PanelScrollerHeader::GetPreferredSize() {
 
 void PanelScrollerHeader::OnPaint(gfx::Canvas* canvas) {
   // TODO(brettw) fill this out with real styling.
-  canvas->FillRect(0xFFFFFFFF, GetLocalBounds());
+  canvas->FillRect(GetLocalBounds(), 0xFFFFFFFF);
   canvas->DrawLineInt(0xFFE6E6E6, 0, size().height() - 1,
                       size().width(), size().height() - 1);
 

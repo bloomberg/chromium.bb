@@ -1017,9 +1017,8 @@ SkBitmap* GtkThemeService::GenerateFrameImage(
     canvas.DrawRect(gfx::Rect(0, 0, kToolbarImageWidth, gradient_size), paint);
   }
 
-  canvas.FillRect(base, gfx::Rect(0, gradient_size,
-                                  kToolbarImageWidth,
-                                  kToolbarImageHeight - gradient_size));
+  canvas.FillRect(gfx::Rect(0, gradient_size, kToolbarImageWidth,
+                            kToolbarImageHeight - gradient_size), base);
   return new SkBitmap(canvas.ExtractBitmap());
 }
 

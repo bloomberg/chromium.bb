@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -135,13 +135,13 @@ DefaultSearchView::~DefaultSearchView() {
 
 void DefaultSearchView::OnPaint(gfx::Canvas* canvas) {
   // Fill in behind the background image with the standard gray toolbar color.
-  canvas->FillRect(GetThemeProvider()->GetColor(ThemeService::COLOR_TOOLBAR),
-                   gfx::Rect(0, 0, width(), background_image_->height()));
+  canvas->FillRect(gfx::Rect(0, 0, width(), background_image_->height()),
+                   GetThemeProvider()->GetColor(ThemeService::COLOR_TOOLBAR));
   // The rest of the dialog background should be white.
   DCHECK(height() > background_image_->height());
-  canvas->FillRect(SK_ColorWHITE,
-                   gfx::Rect(0, background_image_->height(), width(),
-                             height() - background_image_->height()));
+  canvas->FillRect(gfx::Rect(0, background_image_->height(), width(),
+                             height() - background_image_->height()),
+                   SK_ColorWHITE);
 }
 
 void DefaultSearchView::ButtonPressed(views::Button* sender,

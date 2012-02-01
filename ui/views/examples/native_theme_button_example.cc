@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -193,7 +193,7 @@ gfx::Size ExampleNativeThemeButton::GetPreferredSize() {
 void ExampleNativeThemeButton::OnPaintBackground(gfx::Canvas* canvas) {
   // Fill the background with a known colour so that we know where the bounds
   // of the View are.
-  canvas->FillRect(SkColorSetRGB(255, 128, 128), GetLocalBounds());
+  canvas->FillRect(GetLocalBounds(), SkColorSetRGB(255, 128, 128));
   CustomButton::OnPaintBackground(canvas);
 }
 

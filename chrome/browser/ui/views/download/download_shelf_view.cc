@@ -174,7 +174,7 @@ void DownloadShelfView::OnPaint(gfx::Canvas* canvas) {
 }
 
 void DownloadShelfView::OnPaintBorder(gfx::Canvas* canvas) {
-  canvas->FillRect(kBorderColor, gfx::Rect(0, 0, width(), 1));
+  canvas->FillRect(gfx::Rect(0, 0, width(), 1), kBorderColor);
 }
 
 void DownloadShelfView::OpenedDownload(DownloadItemView* view) {

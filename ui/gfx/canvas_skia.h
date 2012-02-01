@@ -111,12 +111,12 @@ class UI_EXPORT CanvasSkia : public Canvas {
   virtual bool ClipRect(const gfx::Rect& rect) OVERRIDE;
   virtual void Translate(const gfx::Point& point) OVERRIDE;
   virtual void Scale(int x_scale, int y_scale) OVERRIDE;
-  virtual void FillRect(const SkColor& color, const gfx::Rect& rect) OVERRIDE;
-  virtual void FillRect(const SkColor& color,
-                        const gfx::Rect& rect,
+  virtual void FillRect(const gfx::Rect& rect, const SkColor& color) OVERRIDE;
+  virtual void FillRect(const gfx::Rect& rect,
+                        const SkColor& color,
                         SkXfermode::Mode mode) OVERRIDE;
-  virtual void FillRect(const gfx::Brush* brush,
-                        const gfx::Rect& rect) OVERRIDE;
+  virtual void FillRect(const gfx::Rect& rect,
+                        const gfx::Brush* brush) OVERRIDE;
   virtual void DrawRect(const gfx::Rect& rect, const SkColor& color) OVERRIDE;
   virtual void DrawRect(const gfx::Rect& rect,
                         const SkColor& color,

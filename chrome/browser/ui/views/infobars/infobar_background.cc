@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -57,7 +57,7 @@ void InfoBarBackground::Paint(gfx::Canvas* canvas, views::View* view) const {
   paint.setAntiAlias(false);
 
   // Now draw the separator at the bottom.
-  canvas->FillRect(separator_color_,
-                   gfx::Rect(0, view->height() - InfoBar::kSeparatorLineHeight,
-                             view->width(), InfoBar::kSeparatorLineHeight));
+  canvas->FillRect(gfx::Rect(0, view->height() - InfoBar::kSeparatorLineHeight,
+                             view->width(), InfoBar::kSeparatorLineHeight),
+                   separator_color_);
 }

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -47,7 +47,7 @@ void SuggestedTextView::OnPaintBackground(gfx::Canvas* canvas) {
     return;
 
   // TODO(sky): these numbers need to come from the edit.
-  canvas->FillRect(bg_color_, gfx::Rect(0, 2, width(), height() - 5));
+  canvas->FillRect(gfx::Rect(0, 2, width(), height() - 5), bg_color_);
 }
 
 void SuggestedTextView::AnimationEnded(const ui::Animation* animation) {

@@ -843,7 +843,7 @@ void RenderText::DrawSelection(Canvas* canvas) {
       NativeTheme::kColorId_TextfieldSelectionBackgroundUnfocused;
   SkColor color = NativeTheme::instance()->GetSystemColor(color_id);
   for (std::vector<Rect>::const_iterator i = sel.begin(); i < sel.end(); ++i)
-    canvas->FillRect(color, *i);
+    canvas->FillRect(*i, color);
 }
 
 void RenderText::DrawCursor(Canvas* canvas) {
@@ -852,7 +852,7 @@ void RenderText::DrawCursor(Canvas* canvas) {
   if (cursor_enabled() && cursor_visible() && focused()) {
     const Rect& bounds = GetUpdatedCursorBounds();
     if (bounds.width() != 0)
-      canvas->FillRect(kCursorColor, bounds);
+      canvas->FillRect(bounds, kCursorColor);
     else
       canvas->DrawRect(bounds, kCursorColor);
   }

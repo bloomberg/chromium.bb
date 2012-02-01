@@ -35,7 +35,7 @@ class ScreenView : public views::View {
 
   // Overridden from views::View:
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
-    canvas->FillRect(GetOverlayColor(), GetLocalBounds());
+    canvas->FillRect(GetLocalBounds(), GetOverlayColor());
   }
 
  private:

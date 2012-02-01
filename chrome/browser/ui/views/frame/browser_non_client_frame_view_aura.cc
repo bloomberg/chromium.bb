@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -94,7 +94,7 @@ class WindowControlButton : public views::CustomButton {
     views::CustomButton::OnMouseExited(event);
   }
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
-    canvas->FillRect(GetBackgroundColor(), GetLocalBounds());
+    canvas->FillRect(GetLocalBounds(), GetBackgroundColor());
     canvas->DrawBitmapInt(icon_, 0, 0);
   }
   virtual gfx::Size GetPreferredSize() OVERRIDE {

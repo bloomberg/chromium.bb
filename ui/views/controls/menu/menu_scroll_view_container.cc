@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -99,7 +99,7 @@ class MenuScrollButton : public View {
       y += config.scroll_arrow_height;
     }
     for (int i = 0; i < config.scroll_arrow_height; ++i, --x, y += delta_y)
-      canvas->FillRect(arrow_color, gfx::Rect(x, y, (i * 2) + 1, 1));
+      canvas->FillRect(gfx::Rect(x, y, (i * 2) + 1, 1), arrow_color);
   }
 
  private:

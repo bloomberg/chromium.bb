@@ -8,7 +8,6 @@
 #include "content/browser/renderer_host/backing_store_skia.h"
 #include "content/browser/renderer_host/render_widget_host.h"
 #include "content/browser/renderer_host/web_input_event_aura.h"
-#include "content/public/browser/native_web_keyboard_event.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCompositionUnderline.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
@@ -917,8 +916,8 @@ void RenderWidgetHostViewAura::OnPaint(gfx::Canvas* canvas) {
     static_cast<BackingStoreSkia*>(backing_store)->SkiaShowRect(gfx::Point(),
                                                                 canvas);
   } else {
-    canvas->FillRect(SK_ColorWHITE,
-                     gfx::Rect(gfx::Point(), window_->bounds().size()));
+    canvas->FillRect(gfx::Rect(gfx::Point(), window_->bounds().size()),
+                     SK_ColorWHITE);
   }
 }
 

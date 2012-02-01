@@ -486,8 +486,8 @@ void ConstrainedWindowFrameView::PaintClientEdge(gfx::Canvas* canvas) {
   gfx::Rect frame_shadow_bounds(client_edge_bounds);
   frame_shadow_bounds.Inset(-kFrameShadowThickness, -kFrameShadowThickness);
 
-  canvas->FillRect(kContentsBorderShadow, frame_shadow_bounds);
-  canvas->FillRect(ResourceBundle::toolbar_color, client_edge_bounds);
+  canvas->FillRect(frame_shadow_bounds, kContentsBorderShadow);
+  canvas->FillRect(client_edge_bounds, ResourceBundle::toolbar_color);
 }
 
 void ConstrainedWindowFrameView::LayoutWindowControls() {

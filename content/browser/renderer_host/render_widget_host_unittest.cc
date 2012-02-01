@@ -438,10 +438,10 @@ TEST_F(RenderWidgetHostTest, Background) {
 
   // Create a checkerboard background to test with.
   gfx::CanvasSkia canvas(gfx::Size(4, 4), true);
-  canvas.FillRect(SK_ColorBLACK, gfx::Rect(0, 0, 2, 2));
-  canvas.FillRect(SK_ColorWHITE, gfx::Rect(2, 0, 2, 2));
-  canvas.FillRect(SK_ColorWHITE, gfx::Rect(0, 2, 2, 2));
-  canvas.FillRect(SK_ColorBLACK, gfx::Rect(2, 2, 2, 2));
+  canvas.FillRect(gfx::Rect(0, 0, 2, 2), SK_ColorBLACK);
+  canvas.FillRect(gfx::Rect(2, 0, 2, 2), SK_ColorWHITE);
+  canvas.FillRect(gfx::Rect(0, 2, 2, 2), SK_ColorWHITE);
+  canvas.FillRect(gfx::Rect(2, 2, 2, 2), SK_ColorBLACK);
   const SkBitmap& background =
       canvas.sk_canvas()->getDevice()->accessBitmap(false);
 
