@@ -192,13 +192,9 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   // Overridden from ui::CompositorDelegate:
   virtual void ScheduleDraw() OVERRIDE;
 
-  // Overridden from Window:
-  virtual void OnWindowAttachedToRootWindow(
-      Window* window) OVERRIDE;
-  virtual void OnWindowDetachingFromRootWindow(
-      Window* window) OVERRIDE;
-
  private:
+  friend class Window;
+
   RootWindow();
   virtual ~RootWindow();
 
@@ -211,6 +207,10 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   ui::TouchStatus ProcessTouchEvent(Window* target, TouchEvent* event);
   ui::GestureStatus ProcessGestureEvent(Window* target, GestureEvent* event);
   bool ProcessGestures(GestureRecognizer::Gestures* gestures);
+
+  // Called when a Window is attached or detached from the RootWindow.
+  void OnWindowAddedToRootWindow(Window* window);
+  void OnWindowRemovedFromRootWindow(Window* window);
 
   // Overridden from Window:
   virtual bool CanFocus() const OVERRIDE;

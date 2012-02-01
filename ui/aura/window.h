@@ -293,16 +293,6 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
   // propagation for any windows behind it in the z-order.
   bool StopsEventPropagation() const;
 
- protected:
-  // Called when the |window| is being detached from the root window
-  // by being removed from its parent. It is called before |parent_| is
-  // set to NULL.
-  virtual void OnWindowDetachingFromRootWindow(aura::Window* window);
-
-  // Called when the |window| is attached to the root window by being added
-  // to its parent.
-  virtual void OnWindowAttachedToRootWindow(aura::Window* window);
-
  private:
   friend class LayoutManager;
 
@@ -331,6 +321,11 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
 
   // Called when this window's stacking order among its siblings is changed.
   void OnStackingChanged();
+
+  // Notifies observers registered with this Window (and its subtree) when the
+  // Window has been added or is about to be removed from a RootWindow.
+  void NotifyAddedToRootWindow();
+  void NotifyRemovingFromRootWindow();
 
   // Overridden from ui::LayerDelegate:
   virtual void OnPaintLayer(gfx::Canvas* canvas) OVERRIDE;

@@ -1462,5 +1462,98 @@ TEST_F(WindowTest, StackingMadrigal) {
   EXPECT_TRUE(LayerIsAbove(window12.get(), window1.get()));
 }
 
+class RootWindowAttachmentObserver : public WindowObserver {
+ public:
+  RootWindowAttachmentObserver() : added_count_(0), removed_count_(0) {}
+  virtual ~RootWindowAttachmentObserver() {}
+
+  int added_count() const { return added_count_; }
+  int removed_count() const { return removed_count_; }
+
+  void Clear() {
+    added_count_ = 0;
+    removed_count_ = 0;
+  }
+
+  // Overridden from WindowObserver:
+  virtual void OnWindowAddedToRootWindow(Window* window) OVERRIDE {
+    ++added_count_;
+  }
+  virtual void OnWindowRemovingFromRootWindow(Window* window) OVERRIDE {
+    ++removed_count_;
+  }
+
+ private:
+  int added_count_;
+  int removed_count_;
+
+  DISALLOW_COPY_AND_ASSIGN(RootWindowAttachmentObserver);
+};
+
+TEST_F(WindowTest, RootWindowAttachment) {
+  RootWindowAttachmentObserver observer;
+
+  // Test a direct add/remove from the RootWindow.
+  scoped_ptr<Window> w1(new Window(NULL));
+  w1->Init(ui::Layer::LAYER_NOT_DRAWN);
+  w1->AddObserver(&observer);
+
+  w1->SetParent(NULL);
+  EXPECT_EQ(1, observer.added_count());
+  EXPECT_EQ(0, observer.removed_count());
+
+  w1.reset();
+  EXPECT_EQ(1, observer.added_count());
+  EXPECT_EQ(1, observer.removed_count());
+
+  observer.Clear();
+
+  // Test an indirect add/remove from the RootWindow.
+  w1.reset(new Window(NULL));
+  w1->Init(ui::Layer::LAYER_NOT_DRAWN);
+  Window* w11 = new Window(NULL);
+  w11->Init(ui::Layer::LAYER_NOT_DRAWN);
+  w11->AddObserver(&observer);
+  w11->SetParent(w1.get());
+  EXPECT_EQ(0, observer.added_count());
+  EXPECT_EQ(0, observer.removed_count());
+
+  w1->SetParent(NULL);
+  EXPECT_EQ(1, observer.added_count());
+  EXPECT_EQ(0, observer.removed_count());
+
+  w1.reset();  // Deletes w11.
+  w11 = NULL;
+  EXPECT_EQ(1, observer.added_count());
+  EXPECT_EQ(1, observer.removed_count());
+
+  observer.Clear();
+
+  // Test an indirect add/remove with nested observers.
+  w1.reset(new Window(NULL));
+  w1->Init(ui::Layer::LAYER_NOT_DRAWN);
+  w11 = new Window(NULL);
+  w11->Init(ui::Layer::LAYER_NOT_DRAWN);
+  w11->AddObserver(&observer);
+  w11->SetParent(w1.get());
+  Window* w111 = new Window(NULL);
+  w111->Init(ui::Layer::LAYER_NOT_DRAWN);
+  w111->AddObserver(&observer);
+  w111->SetParent(w11);
+
+  EXPECT_EQ(0, observer.added_count());
+  EXPECT_EQ(0, observer.removed_count());
+
+  w1->SetParent(NULL);
+  EXPECT_EQ(2, observer.added_count());
+  EXPECT_EQ(0, observer.removed_count());
+
+  w1.reset();  // Deletes w11 and w111.
+  w11 = NULL;
+  w111 = NULL;
+  EXPECT_EQ(2, observer.added_count());
+  EXPECT_EQ(2, observer.removed_count());
+}
+
 }  // namespace test
 }  // namespace aura
