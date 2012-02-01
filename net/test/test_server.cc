@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -318,10 +318,7 @@ bool TestServer::SetPythonPath() {
                        .AppendASCII("browser")
                        .AppendASCII("sync")
                        .AppendASCII("protocol"));
-  AppendToPythonPath(pyproto_dir.AppendASCII("chrome")
-                       .AppendASCII("browser")
-                       .AppendASCII("policy")
-                       .AppendASCII("proto"));
+  AppendToPythonPath(pyproto_dir.AppendASCII("device_management_pb"));
 
   return true;
 }
