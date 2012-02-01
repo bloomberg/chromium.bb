@@ -5653,6 +5653,33 @@
    fun:_Z11BrowserMainRKN7content18MainFunctionParamsE
 }
 
+{
+   bug_112278
+   Memcheck:Uninitialized
+   fun:fetch_texel_2d_f_rgba8888
+   fun:sample_2d_linear
+   fun:sample_linear_2d
+   fun:fetch_texel_lod
+   fun:fetch_texel
+   fun:_mesa_execute_program
+   fun:run_program
+   fun:_swrast_exec_fragment_program
+   fun:shade_texture_span
+   fun:_swrast_write_rgba_span
+   fun:general_triangle
+   fun:_swrast_validate_triangle
+   fun:_swrast_Triangle
+   fun:triangle_rgba
+   fun:_tnl_render_triangles_elts
+   fun:run_render
+   fun:_tnl_run_pipeline
+   fun:_tnl_draw_prims
+   fun:_tnl_vbo_draw_prims
+   fun:vbo_validated_drawrangeelements
+   fun:vbo_exec_DrawElements
+   fun:neutral_DrawElements
+}
+
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations
 
