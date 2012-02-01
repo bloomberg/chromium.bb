@@ -1821,4 +1821,18 @@
    fun:ResourceDispatcherHostTest::MakeTestRequest
    fun:ResourceDispatcherHostTest_*_Test::TestBody
 }
-
+{
+   bug_112315
+   Heapcheck:Leak
+   fun:v8::internal::NativeObjectsExplorer::FindOrAddGroupInfo
+   fun:v8::internal::NativeObjectsExplorer::SetNativeRootReference
+   fun:v8::internal::NativeObjectsExplorer::IterateAndExtractReferences
+   fun:v8::internal::HeapSnapshotGenerator::CountEntriesAndReferences
+   fun:v8::internal::HeapSnapshotGenerator::GenerateSnapshot
+   fun:v8::internal::HeapProfiler::TakeSnapshotImpl
+   fun:v8::internal::HeapProfiler::TakeSnapshotImpl
+   fun:v8::internal::HeapProfiler::TakeSnapshot
+   fun:v8::HeapProfiler::TakeSnapshot
+   fun:GetNumObjects
+   fun:ListenerLeakTest_ReferenceCycle_Test::TestBody
+}
