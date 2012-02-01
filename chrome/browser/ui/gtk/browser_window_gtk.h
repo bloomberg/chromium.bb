@@ -454,6 +454,10 @@ class BrowserWindowGtk : public BrowserWindow,
   // The position and size of the current window.
   gfx::Rect bounds_;
 
+  // The configure bounds of the current window, used to figure out whether to
+  // ignore later configure events. See OnConfigure() for more information.
+  gfx::Rect configure_bounds_;
+
   // The position and size of the non-maximized, non-fullscreen window.
   gfx::Rect restored_bounds_;
 

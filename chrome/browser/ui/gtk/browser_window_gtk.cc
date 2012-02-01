@@ -1472,7 +1472,7 @@ gboolean BrowserWindowGtk::OnConfigure(GtkWidget* widget,
   // When the window moves, we'll get multiple configure-event signals. We can
   // also get events when the bounds haven't changed, but the window's stacking
   // has, which we aren't interested in. http://crbug.com/70125
-  if (bounds == bounds_)
+  if (bounds == configure_bounds_)
     return FALSE;
 
   GetLocationBar()->location_entry()->ClosePopup();
@@ -1491,6 +1491,7 @@ gboolean BrowserWindowGtk::OnConfigure(GtkWidget* widget,
   // window-manager specific.  We update |restored_bounds_| in the debounced
   // handler below, after the window state has been updated.
   bounds_ = bounds;
+  configure_bounds_ = bounds;
 
   // The GdkEventConfigure* we get here doesn't have quite the right
   // coordinates though (they're relative to the drawable window area, rather
@@ -1748,7 +1749,9 @@ void BrowserWindowGtk::ConnectHandlersToSignals() {
 
 void BrowserWindowGtk::InitWidgets() {
   ConnectHandlersToSignals();
-  bounds_ = restored_bounds_ = GetInitialWindowBounds(window_);
+
+  bounds_ = configure_bounds_ = restored_bounds_ =
+      GetInitialWindowBounds(window_);
 
   // This vbox encompasses all of the widgets within the browser.  This is
   // everything except the custom frame border.
