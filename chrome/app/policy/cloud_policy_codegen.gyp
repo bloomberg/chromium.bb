@@ -60,37 +60,17 @@
     {
       'target_name': 'cloud_policy_proto_compile',
       'type': 'none',
-      'actions': [
-        {
-          'action_name': 'compile_generated_proto',
-          'inputs': [
-            '<(PRODUCT_DIR)/<(EXECUTABLE_PREFIX)protoc<(EXECUTABLE_SUFFIX)',
-            '<(policy_out_dir)/policy/cloud_policy.proto',
-          ],
-          'outputs': [
-            '<(PRODUCT_DIR)/pyproto/device_management_pb/cloud_policy_pb2.py',
-            '<(protoc_out_dir)/<(proto_path_substr)/cloud_policy.pb.h',
-            '<(protoc_out_dir)/<(proto_path_substr)/cloud_policy.pb.cc',
-          ],
-          'action': [
-            '<(PRODUCT_DIR)/<(EXECUTABLE_PREFIX)protoc<(EXECUTABLE_SUFFIX)',
-            '--proto_path=<(policy_out_dir)/policy',
-            '<(policy_out_dir)/policy/cloud_policy.proto',
-            '--cpp_out=<(protoc_out_dir)/<(proto_path_substr)',
-            '--python_out=<(PRODUCT_DIR)/pyproto/device_management_pb',
-          ],
-          'message': 'Compiling generated cloud policy protobuf',
-        },
+      'sources': [
+        '<(policy_out_dir)/policy/cloud_policy.proto',
       ],
+      'variables': {
+        'proto_in_dir': '<(policy_out_dir)/policy',
+        'proto_out_dir': '<(proto_path_substr)',
+      },
       'dependencies': [
-        '<(DEPTH)/third_party/protobuf/protobuf.gyp:protoc#host',
         'cloud_policy_code_generate',
       ],
-      'direct_dependent_settings': {
-        'include_dirs': [
-          '<(protoc_out_dir)',
-        ]
-      },
+      'includes': [ '../../../build/protoc.gypi' ],
     },
     {
       'target_name': 'cloud_policy_backend_header_compile',
@@ -101,36 +81,14 @@
         '<(proto_rel_path)/device_management_local.proto',
         '<(proto_rel_path)/old_generic_format.proto',
       ],
-      'rules': [
-        {
-          'rule_name': 'gen_proto',
-          'extension': 'proto',
-          'inputs': [
-            '<(PRODUCT_DIR)/<(EXECUTABLE_PREFIX)protoc<(EXECUTABLE_SUFFIX)',
-          ],
-          'outputs': [
-            '<(PRODUCT_DIR)/pyproto/device_management_pb/<(RULE_INPUT_ROOT)_pb2.py',
-            '<(protoc_out_dir)/<(proto_path_substr)/<(RULE_INPUT_ROOT).pb.h',
-            '<(protoc_out_dir)/<(proto_path_substr)/<(RULE_INPUT_ROOT).pb.cc',
-          ],
-          'action': [
-            '<(PRODUCT_DIR)/<(EXECUTABLE_PREFIX)protoc<(EXECUTABLE_SUFFIX)',
-            '--proto_path=<(proto_rel_path)',
-            '<(proto_rel_path)/<(RULE_INPUT_NAME)',
-            '--cpp_out=<(protoc_out_dir)/<(proto_path_substr)',
-            '--python_out=<(PRODUCT_DIR)/pyproto/device_management_pb',
-          ],
-          'message': 'Generating C++ and Python code from <(RULE_INPUT_PATH)',
-        },
-      ],
-      'dependencies': [
-        '<(DEPTH)/third_party/protobuf/protobuf.gyp:protoc#host',
-      ],
-      'direct_dependent_settings': {
-        'include_dirs': [
-          '<(protoc_out_dir)',
-        ]
+      'variables': {
+        'proto_in_dir': '<(proto_rel_path)',
+        'proto_out_dir': '<(proto_path_substr)',
       },
+      'dependencies': [
+        'cloud_policy_code_generate',
+      ],
+      'includes': [ '../../../build/protoc.gypi' ],
     },
     {
       'target_name': 'policy',
