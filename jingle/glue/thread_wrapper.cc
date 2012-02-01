@@ -216,7 +216,7 @@ void JingleThreadWrapper::PostTaskInternal(
     message_loop_->PostDelayedTask(FROM_HERE,
                                    base::Bind(&JingleThreadWrapper::RunTask,
                                               base::Unretained(this), task_id),
-                                   delay_ms);
+                                   base::TimeDelta::FromMilliseconds(delay_ms));
   }
 }
 
