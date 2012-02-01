@@ -44,11 +44,13 @@ std::vector<aura::Window*> TestShellDelegate::GetCycleWindowList(
     CycleOrder order) const {
   // We just use the Shell's default container of windows, so tests can be
   // written with the usual CreateTestWindowWithId() calls. But window cycling
-  // expects the topmost window at the front of the list, so reverse the order.
+  // expects the topmost window at the front of the list, so reverse the order
+  // if we are mimicking MRU.
   aura::Window* default_container = Shell::GetInstance()->GetContainer(
       internal::kShellWindowId_DefaultContainer);
   std::vector<aura::Window*> windows = default_container->children();
-  std::reverse(windows.begin(), windows.end());
+  if (order != ShellDelegate::ORDER_LINEAR)
+    std::reverse(windows.begin(), windows.end());
   return windows;
 }
 

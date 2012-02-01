@@ -10,6 +10,7 @@
 #include "ash/wm/base_layout_manager.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/gtest_prod_util.h"
 #include "ui/gfx/compositor/layer_animation_observer.h"
 
 namespace views {
@@ -56,6 +57,9 @@ class ASH_EXPORT CompactLayoutManager : public BaseLayoutManager,
       const ui::LayerAnimationSequence* animation) OVERRIDE;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(CompactLayoutManagerTransitionTest,
+                           TransitionTest);
+
   // Hides the status area if we are managing it and full screen windows are
   // visible.
   void UpdateStatusAreaVisibility();

@@ -4,7 +4,11 @@
 
 #include "ash/wm/compact_layout_manager.h"
 
+#include "ash/shell.h"
+#include "ash/shell_window_ids.h"
+#include "ash/test/test_shell_delegate.h"
 #include "ash/wm/shelf_layout_manager.h"
+#include "ash/wm/window_util.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "ui/aura/client/aura_constants.h"
@@ -84,4 +88,123 @@ TEST_F(CompactLayoutManagerTest, StatusAreaVisibility) {
   EXPECT_TRUE(widget->IsVisible());
 }
 
+namespace {
+
+const int kMaxWidth = 800;
+const int kMaxHeight = 600;
+
+}  // namespace
+
+namespace internal {
+
+class CompactLayoutManagerTransitionTest : public aura::test::AuraTestBase {
+ public:
+  CompactLayoutManagerTransitionTest() : layout_manager_(NULL) {
+  }
+  virtual ~CompactLayoutManagerTransitionTest() {}
+
+  virtual void SetUp() OVERRIDE {
+    aura::test::AuraTestBase::SetUp();
+    ash::Shell::CreateInstance(new ash::test::TestShellDelegate);
+    aura::RootWindow::GetInstance()->Show();
+    aura::RootWindow::GetInstance()->SetHostSize(
+        gfx::Size(kMaxWidth, kMaxHeight));
+    default_container()->SetBounds(gfx::Rect(0, 0, kMaxWidth, kMaxHeight));
+    layout_manager_ = new internal::CompactLayoutManager();
+    default_container()->SetLayoutManager(layout_manager_);
+    default_container()->Show();
+    // Control layer animation stepping.
+    default_container()->layer()->GetAnimator()->
+        set_disable_timer_for_test(true);
+  }
+
+  virtual void TearDown() OVERRIDE {
+    ash::Shell::DeleteInstance();
+    aura::test::AuraTestBase::TearDown();
+  }
+
+  aura::Window* CreateNormalWindow(int id) {
+    aura::Window* window = new aura::Window(NULL);
+    window->set_id(id);
+    window->SetType(aura::client::WINDOW_TYPE_NORMAL);
+    window->Init(ui::Layer::LAYER_TEXTURED);
+    window->SetBounds(gfx::Rect(0, 0, kMaxWidth, kMaxHeight));
+    window->SetParent(default_container());
+    window_util::MaximizeWindow(window);
+    window->Show();
+    RunAllPendingInMessageLoop();
+    return window;
+  }
+
+  aura::Window* default_container() const {
+    return ash::Shell::GetInstance()->GetContainer(
+        ash::internal::kShellWindowId_DefaultContainer);
+  }
+
+  int default_container_layer_width() const {
+    return default_container()->layer()->bounds().width();
+  }
+
+  ui::Transform default_container_layer_transform() const {
+    return default_container()->layer()->GetTargetTransform();
+  }
+
+  ui::AnimationContainerElement* animation_element() {
+    return default_container()->layer()->GetAnimator();
+  }
+
+ protected:
+  internal::CompactLayoutManager* layout_manager_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(CompactLayoutManagerTransitionTest);
+};
+
+TEST_F(CompactLayoutManagerTransitionTest, TransitionTest) {
+  // Assert on viewport size to be the host size.
+  ASSERT_EQ(kMaxWidth, default_container_layer_width());
+  // Create 3 windows, check that the layer grow as each one is added
+  // to the layout.
+  aura::Window* window1 = CreateNormalWindow(0);
+  EXPECT_EQ(kMaxWidth, default_container_layer_width());
+  aura::Window* window2 =  CreateNormalWindow(1);
+  EXPECT_EQ(kMaxWidth * 2, default_container_layer_width());
+  aura::Window* window3 =  CreateNormalWindow(2);
+  EXPECT_EQ(kMaxWidth * 3, default_container_layer_width());
+  animation_element()->Step(base::TimeTicks::Now() +
+                            base::TimeDelta::FromSeconds(1));
+  RunAllPendingInMessageLoop();
+
+  // Check laid out position of the windows.
+  EXPECT_EQ(0, window1->bounds().x());
+  EXPECT_EQ(kMaxWidth, window2->bounds().x());
+  EXPECT_EQ(kMaxWidth * 2, window3->bounds().x());
+
+  // Check layer transformation.
+  ui::Transform target_transform;
+  target_transform.ConcatTranslate(-window3->bounds().x(), 0);
+  EXPECT_EQ(target_transform, default_container_layer_transform());
+  RunAllPendingInMessageLoop();
+
+  // Check that only one window is visible.
+  EXPECT_EQ(window3, layout_manager_->current_window_);
+  EXPECT_FALSE(window1->IsVisible());
+  EXPECT_FALSE(window2->IsVisible());
+  EXPECT_TRUE(window3->IsVisible());
+
+  // That window disappear, check that we transform the layer, and
+  // again only have one window visible.
+  window3->Hide();
+  animation_element()->Step(base::TimeTicks::Now() +
+                            base::TimeDelta::FromSeconds(1));
+  ui::Transform target_transform1;
+  target_transform1.ConcatTranslate(-window1->bounds().x(), 0);
+  EXPECT_EQ(target_transform1, default_container_layer_transform());
+  EXPECT_TRUE(window1->IsVisible());
+  EXPECT_FALSE(window2->IsVisible());
+  EXPECT_FALSE(window3->IsVisible());
+  EXPECT_EQ(window1, layout_manager_->current_window_);
+}
+
+}  // namespace internal
 }  // namespace ash
