@@ -10,6 +10,7 @@ liblouis NEWS -- history of user-visible changes.
    - Czech hyphenation table thanks to Jan Hegr
 
 ** Braille Table Improvements
+   - Improvements to the Portuguese grade1 braille tables
 
 * Noteworthy changes in release 2.4.0 (2012-01-31)
 

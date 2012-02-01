@@ -1,5 +1,8 @@
 2012-02-01  Christian Egli  <christian.egli@sbs.ch>
 
+	* tables/pt-pt-g1.utb: Added improvements to Portuguese table by
+	Rui Batista <ruiandrebatista@gmail.com>.
+
 	* tables/hyph_cs_CZ.dic:
 	* tables/Makefile.am (table_files): Added hyphenation table for
 	Czech provided by Jan Halousek
