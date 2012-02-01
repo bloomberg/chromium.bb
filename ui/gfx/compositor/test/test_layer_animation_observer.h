@@ -21,13 +21,13 @@ class TestLayerAnimationObserver : public LayerAnimationObserver {
   virtual ~TestLayerAnimationObserver();
 
   virtual void OnLayerAnimationEnded(
-      const LayerAnimationSequence* sequence) OVERRIDE;
+      LayerAnimationSequence* sequence) OVERRIDE;
 
   virtual void OnLayerAnimationAborted(
-      const LayerAnimationSequence* sequence) OVERRIDE;
+      LayerAnimationSequence* sequence) OVERRIDE;
 
   virtual void OnLayerAnimationScheduled(
-      const LayerAnimationSequence* sequence) OVERRIDE;
+      LayerAnimationSequence* sequence) OVERRIDE;
 
   virtual bool RequiresNotificationWhenAnimatorDestroyed() const OVERRIDE;
 

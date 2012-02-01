@@ -36,8 +36,8 @@ class DragImageView;
 class ASH_EXPORT DragDropController
     : public aura::client::DragDropClient,
       public aura::EventFilter,
-      public ui::LayerAnimationObserver {
- public:
+      public ui::ImplicitAnimationObserver {
+public:
   DragDropController();
   virtual ~DragDropController();
 
@@ -69,13 +69,8 @@ class ASH_EXPORT DragDropController
  private:
   friend class ash::test::DragDropControllerTest;
 
-  // Overridden from ui::LayerAnimationObserver:
-  virtual void OnLayerAnimationEnded(
-      const ui::LayerAnimationSequence* sequence) OVERRIDE;
-  virtual void OnLayerAnimationAborted(
-      const ui::LayerAnimationSequence* sequence) OVERRIDE;
-  virtual void OnLayerAnimationScheduled(
-      const ui::LayerAnimationSequence* sequence) OVERRIDE {}
+  // Implementation of ImplicitAnimationObserver
+  virtual void OnImplicitAnimationsCompleted() OVERRIDE;
 
   // Helper method to start drag widget flying back animation.
   void StartCanceledAnimation();

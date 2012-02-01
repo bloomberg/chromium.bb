@@ -26,25 +26,17 @@ ScopedLayerAnimationSettings::ScopedLayerAnimationSettings(
 ScopedLayerAnimationSettings::~ScopedLayerAnimationSettings() {
   animator_->transition_duration_ = old_transition_duration_;
 
-  for (std::set<LayerAnimationObserver*>::const_iterator i =
-       observers_.begin(); i != observers_.end(); ++i)
-      animator_->observers_.RemoveObserver(*i);
-
   for (std::set<ImplicitAnimationObserver*>::const_iterator i =
-       implicit_observers_.begin(); i != implicit_observers_.end(); ++i)
-      (*i)->SetActive(true);
+       observers_.begin(); i != observers_.end(); ++i) {
+    animator_->observers_.RemoveObserver(*i);
+    (*i)->SetActive(true);
+  }
 }
 
 void ScopedLayerAnimationSettings::AddObserver(
-    LayerAnimationObserver* observer) {
+    ImplicitAnimationObserver* observer) {
   observers_.insert(observer);
   animator_->AddObserver(observer);
-}
-
-void ScopedLayerAnimationSettings::AddImplicitObserver(
-    ImplicitAnimationObserver* observer) {
-  implicit_observers_.insert(observer);
-  AddObserver(observer);
 }
 
 void ScopedLayerAnimationSettings::SetTransitionDuration(

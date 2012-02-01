@@ -933,6 +933,9 @@ TEST_F(WindowTest, Property) {
 }
 
 TEST_F(WindowTest, SetBoundsInternalShouldCheckTargetBounds) {
+  // We cannot short-circuit animations in this test.
+  ui::LayerAnimator::set_disable_animations_for_test(false);
+
   scoped_ptr<Window> w1(
       CreateTestWindowWithBounds(gfx::Rect(0, 0, 100, 100), NULL));
 
@@ -966,7 +969,7 @@ TEST_F(WindowTest, SetBoundsInternalShouldCheckTargetBounds) {
 
   // Confirm that the target bounds are reached.
   base::TimeTicks start_time =
-      w1->layer()->GetAnimator()->get_last_step_time_for_test();
+      w1->layer()->GetAnimator()->last_step_time();
 
   element->Step(start_time + base::TimeDelta::FromMilliseconds(1000));
 

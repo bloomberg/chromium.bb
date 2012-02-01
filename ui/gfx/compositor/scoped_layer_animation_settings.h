@@ -27,15 +27,13 @@ class COMPOSITOR_EXPORT ScopedLayerAnimationSettings {
   explicit ScopedLayerAnimationSettings(LayerAnimator* animator);
   virtual ~ScopedLayerAnimationSettings();
 
-  void AddObserver(LayerAnimationObserver* observer);
-  void AddImplicitObserver(ImplicitAnimationObserver* observer);
+  void AddObserver(ImplicitAnimationObserver* observer);
   void SetTransitionDuration(base::TimeDelta duration);
 
  private:
   LayerAnimator* animator_;
   base::TimeDelta old_transition_duration_;
-  std::set<LayerAnimationObserver*> observers_;
-  std::set<ImplicitAnimationObserver*> implicit_observers_;
+  std::set<ImplicitAnimationObserver*> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedLayerAnimationSettings);
 };

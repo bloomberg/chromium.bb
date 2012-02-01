@@ -33,6 +33,8 @@ class Transform;
 
 // When a property of layer needs to be changed it is set by way of
 // LayerAnimator. This enables LayerAnimator to animate property changes.
+// NB: during many tests, set_disable_animations_for_test is used and causes
+// all animations to complete immediately.
 class COMPOSITOR_EXPORT LayerAnimator : public AnimationContainerElement {
  public:
   enum PreemptionStrategy {
@@ -108,16 +110,21 @@ class COMPOSITOR_EXPORT LayerAnimator : public AnimationContainerElement {
   // Stops all animation and clears any queued animations.
   void StopAnimating();
 
-  // For testing purposes only.
-  void set_disable_timer_for_test(bool enabled) {
-    disable_timer_for_test_ = enabled;
-  }
-  base::TimeTicks get_last_step_time_for_test() { return last_step_time_; }
-
   // These functions are used for adding or removing observers from the observer
   // list. The observers are notified when animations end.
   void AddObserver(LayerAnimationObserver* observer);
   void RemoveObserver(LayerAnimationObserver* observer);
+
+  // For testing purposes only.
+  void set_disable_timer_for_test(bool disable_timer) {
+    disable_timer_for_test_ = disable_timer;
+  }
+  base::TimeTicks last_step_time() const { return last_step_time_; }
+
+  // When set to true, all animations complete immediately.
+  static void set_disable_animations_for_test(bool disable_animations) {
+    disable_animations_for_test_ = disable_animations;
+  }
 
  protected:
   LayerAnimationDelegate* delegate() { return delegate_; }
@@ -232,6 +239,9 @@ class COMPOSITOR_EXPORT LayerAnimator : public AnimationContainerElement {
   // This prevents the animator from automatically stepping through animations
   // and allows for manual stepping.
   bool disable_timer_for_test_;
+
+  // This causes all animations to complete immediately.
+  static bool disable_animations_for_test_;
 
   // Observers are notified when layer animations end, are scheduled or are
   // aborted.
