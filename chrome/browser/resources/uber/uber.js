@@ -25,18 +25,11 @@ cr.define('uber', function() {
    * Handles page initialization.
    */
   function onLoad(e) {
-    // If the pathname points to a sub-page, we may need to alter the location
-    // of one of the frames.
-    var params = resolvePageInfoFromPath(window.location.pathname);
-    if (params.path) {
-      var iframe = $(params.id).querySelector('iframe');
-      iframe.contentWindow.location.replace(iframe.src + params.path);
-    }
-
     navFrame = $('navigation');
 
     // Select a page based on the page-URL.
-    showPage(params.id, HISTORY_STATE_OPTION.REPLACE);
+    var params = resolvePageInfoFromPath(window.location.pathname);
+    showPage(params.id, HISTORY_STATE_OPTION.REPLACE, params.path);
 
     window.addEventListener('message', handleWindowMessage);
     window.setTimeout(function() {
@@ -190,8 +183,9 @@ cr.define('uber', function() {
    * @param {String} pageId Should matche an id of one of the iframe containers.
    * @param {integer} historyOption Indicates whether we should push or replace
    *     browser history.
+   * @param {String=} path An optional sub-page path.
    */
-  function showPage(pageId, historyOption) {
+  function showPage(pageId, historyOption, path) {
     var container = $(pageId);
     var lastSelected = document.querySelector('.iframe-container.selected');
     if (lastSelected === container)
@@ -199,8 +193,12 @@ cr.define('uber', function() {
 
     // Lazy load of iframe contents.
     var frame = container.querySelector('iframe');
+    var sourceURL = frame.dataset.url;
     if (!frame.getAttribute('src'))
-      frame.setAttribute('src', frame.dataset.url);
+      frame.src = sourceURL;
+    // If there is a non-empty path, alter the location of the frame.
+    if (path && path.length)
+      frame.contentWindow.location.replace(sourceURL + path);
 
     if (lastSelected)
       lastSelected.classList.remove('selected');
