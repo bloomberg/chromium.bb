@@ -16,29 +16,22 @@ namespace ui {
 
 class LayerAnimationSequence;
 class ScopedLayerAnimationSettings;
-class ImplicitAnimationObserver;
 
 // LayerAnimationObservers are notified when animations complete.
 class COMPOSITOR_EXPORT LayerAnimationObserver  {
  public:
   // Called when the |sequence| ends. Not called if |sequence| is aborted.
   virtual void OnLayerAnimationEnded(
-      LayerAnimationSequence* sequence) = 0;
+      const LayerAnimationSequence* sequence) = 0;
 
   // Called if |sequence| is aborted for any reason. Should never do anything
   // that may cause another animation to be started.
   virtual void OnLayerAnimationAborted(
-      LayerAnimationSequence* sequence) = 0;
+      const LayerAnimationSequence* sequence) = 0;
 
   // Called when the animation is scheduled.
   virtual void OnLayerAnimationScheduled(
-      LayerAnimationSequence* sequence) = 0;
-
- protected:
-  typedef std::set<LayerAnimationSequence*> AttachedSequences;
-
-  LayerAnimationObserver();
-  virtual ~LayerAnimationObserver();
+      const LayerAnimationSequence* sequence) = 0;
 
   // If the animator is destroyed during an animation, the animations are
   // aborted. The resulting NotifyAborted notifications will NOT be sent to
@@ -47,18 +40,9 @@ class COMPOSITOR_EXPORT LayerAnimationObserver  {
   // OBSERVER WHEN YOU ARE DESTROYED.
   virtual bool RequiresNotificationWhenAnimatorDestroyed() const;
 
-  // Called when |this| is added to |sequence|'s observer list.
-  virtual void OnAttachedToSequence(LayerAnimationSequence* sequence);
-
-  // Called when |this| is removed to |sequence|'s observer list.
-  virtual void OnDetachedFromSequence(LayerAnimationSequence* sequence);
-
-  // Detaches this observer from all sequences it is currently observing.
-  void StopObserving();
-
-  const AttachedSequences& attached_sequences() const {
-    return attached_sequences_;
-  }
+ protected:
+  LayerAnimationObserver();
+  virtual ~LayerAnimationObserver();
 
  private:
   friend class LayerAnimationSequence;
@@ -69,7 +53,7 @@ class COMPOSITOR_EXPORT LayerAnimationObserver  {
   // Called when |this| is removed to |sequence|'s observer list.
   void DetachedFromSequence(LayerAnimationSequence* sequence);
 
-  AttachedSequences attached_sequences_;
+  std::set<LayerAnimationSequence*> attached_sequences_;
 };
 
 // An implicit animation observer is intended to be used in conjunction with a
@@ -83,33 +67,29 @@ class COMPOSITOR_EXPORT ImplicitAnimationObserver
 
   virtual void OnImplicitAnimationsCompleted() = 0;
 
- protected:
-  // Deactivates the observer and clears the collection of animations it is
-  // waiting for.
-  void StopObservingImplicitAnimations();
-
  private:
   friend class ScopedLayerAnimationSettings;
-
-  // LayerAnimationObserver implementation
-  virtual void OnLayerAnimationEnded(
-      LayerAnimationSequence* sequence) OVERRIDE;
-  virtual void OnLayerAnimationAborted(
-      LayerAnimationSequence* sequence) OVERRIDE;
-  virtual void OnLayerAnimationScheduled(
-      LayerAnimationSequence* sequence) OVERRIDE;
-  virtual void OnAttachedToSequence(
-      LayerAnimationSequence* sequence) OVERRIDE;
-  virtual void OnDetachedFromSequence(
-      LayerAnimationSequence* sequence) OVERRIDE;
 
   // OnImplicitAnimationsCompleted is not fired unless the observer is active.
   bool active() const { return active_; }
   void SetActive(bool active);
 
+  // LayerAnimationObserver implementation
+  virtual void OnLayerAnimationEnded(
+      const LayerAnimationSequence* sequence) OVERRIDE;
+  virtual void OnLayerAnimationAborted(
+      const LayerAnimationSequence* sequence) OVERRIDE;
+  virtual void OnLayerAnimationScheduled(
+      const LayerAnimationSequence* sequence) OVERRIDE;
+
   void CheckCompleted();
 
   bool active_;
+
+  // This tracks the number of scheduled animations that have yet to complete.
+  // If this value is zero, and the observer is active, then
+  // OnImplicitAnimationsCompleted is fired.
+  size_t animation_count_;
 };
 
 }  // namespace ui

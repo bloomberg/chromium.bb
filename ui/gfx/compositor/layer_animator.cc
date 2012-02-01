@@ -45,9 +45,6 @@ LayerAnimator::~LayerAnimator() {
 }
 
 // static
-bool LayerAnimator::disable_animations_for_test_ = false;
-
-// static
 LayerAnimator* LayerAnimator::CreateDefaultAnimator() {
   return new LayerAnimator(base::TimeDelta::FromMilliseconds(0));
 }
@@ -58,12 +55,9 @@ LayerAnimator* LayerAnimator::CreateImplicitAnimator() {
 }
 
 void LayerAnimator::SetTransform(const Transform& transform) {
-  base::TimeDelta duration = transition_duration_;
-  if (disable_animations_for_test_)
-    duration = base::TimeDelta();
   StartAnimation(new LayerAnimationSequence(
       LayerAnimationElement::CreateTransformElement(
-          transform, duration)));
+          transform, transition_duration_)));
 }
 
 Transform LayerAnimator::GetTargetTransform() const {
@@ -73,12 +67,9 @@ Transform LayerAnimator::GetTargetTransform() const {
 }
 
 void LayerAnimator::SetBounds(const gfx::Rect& bounds) {
-  base::TimeDelta duration = transition_duration_;
-  if (disable_animations_for_test_)
-    duration = base::TimeDelta();
   StartAnimation(new LayerAnimationSequence(
       LayerAnimationElement::CreateBoundsElement(
-          bounds, duration)));
+          bounds, transition_duration_)));
 }
 
 gfx::Rect LayerAnimator::GetTargetBounds() const {
@@ -88,12 +79,9 @@ gfx::Rect LayerAnimator::GetTargetBounds() const {
 }
 
 void LayerAnimator::SetOpacity(float opacity) {
-  base::TimeDelta duration = transition_duration_;
-  if (disable_animations_for_test_)
-    duration = base::TimeDelta();
   StartAnimation(new LayerAnimationSequence(
       LayerAnimationElement::CreateOpacityElement(
-          opacity, duration)));
+          opacity, transition_duration_)));
 }
 
 float LayerAnimator::GetTargetOpacity() const {

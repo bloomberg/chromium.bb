@@ -19,17 +19,17 @@ TestLayerAnimationObserver::~TestLayerAnimationObserver() {
 }
 
 void TestLayerAnimationObserver::OnLayerAnimationEnded(
-    LayerAnimationSequence* sequence) {
+    const LayerAnimationSequence* sequence) {
   last_ended_sequence_ = sequence;
 }
 
 void TestLayerAnimationObserver::OnLayerAnimationAborted(
-    LayerAnimationSequence* sequence) {
+    const LayerAnimationSequence* sequence) {
   last_aborted_sequence_ = sequence;
 }
 
 void TestLayerAnimationObserver::OnLayerAnimationScheduled(
-    LayerAnimationSequence* sequence) {
+    const LayerAnimationSequence* sequence) {
   last_scheduled_sequence_ = sequence;
 }
 

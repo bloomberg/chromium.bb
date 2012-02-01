@@ -87,6 +87,7 @@ void AppList::SetWidget(views::Widget* widget) {
 
   if (is_visible_) {
     widget_ = widget;
+    widget_->AddObserver(this);
     GetLayer(widget_)->GetAnimator()->AddObserver(this);
     Shell::GetInstance()->AddRootWindowEventFilter(this);
 
@@ -118,19 +119,13 @@ void AppList::ScheduleAnimation() {
     return;
 
   ui::Layer* layer = GetLayer(widget_);
-
-  // Stop observing previous animation.
-  StopObservingImplicitAnimations();
-
   ui::ScopedLayerAnimationSettings app_list_animation(layer->GetAnimator());
-  app_list_animation.AddObserver(this);
   layer->SetBounds(GetPreferredBounds(is_visible_));
   layer->SetOpacity(is_visible_ ? 1.0 : 0.0);
 
   ui::Layer* default_container_layer = default_container->layer();
   ui::ScopedLayerAnimationSettings default_container_animation(
       default_container_layer->GetAnimator());
-  app_list_animation.AddObserver(this);
   default_container_layer->SetOpacity(is_visible_ ? 0.0 : 1.0);
 }
 
@@ -164,11 +159,20 @@ ui::GestureStatus AppList::PreHandleGestureEvent(
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// AppList, ui::ImplicitAnimationObserver implementation:
+// AppList, ui::LayerAnimationObserver implementation:
 
-void AppList::OnImplicitAnimationsCompleted() {
+void AppList::OnLayerAnimationEnded(
+    const ui::LayerAnimationSequence* sequence) {
   if (!is_visible_ )
     widget_->Close();
+}
+
+void AppList::OnLayerAnimationAborted(
+    const ui::LayerAnimationSequence* sequence) {
+}
+
+void AppList::OnLayerAnimationScheduled(
+    const ui::LayerAnimationSequence* sequence) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////

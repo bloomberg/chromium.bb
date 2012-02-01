@@ -28,7 +28,7 @@ namespace {
 const gfx::Point kDragDropWidgetOffset(0, 0);
 const base::TimeDelta kDragDropAnimationDuration =
     base::TimeDelta::FromMilliseconds(250);
-}  // namespace
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // DragDropController, public:
@@ -47,8 +47,11 @@ DragDropController::DragDropController()
 DragDropController::~DragDropController() {
   Shell::GetInstance()->RemoveRootWindowEventFilter(this);
   Cleanup();
-  if (drag_image_.get())
+  if (drag_image_.get()) {
+    aura::Window* window = drag_image_->GetWidget()->GetNativeView();
+    window->layer()->GetAnimator()->RemoveObserver(this);
     drag_image_.reset();
+  }
 }
 
 int DragDropController::StartDragAndDrop(const ui::OSExchangeData& data,
@@ -203,7 +206,14 @@ ui::GestureStatus DragDropController::PreHandleGestureEvent(
 ////////////////////////////////////////////////////////////////////////////////
 // DragDropController, private:
 
-void DragDropController::OnImplicitAnimationsCompleted() OVERRIDE {
+void DragDropController::OnLayerAnimationEnded(
+    const ui::LayerAnimationSequence* sequence) {
+  DCHECK(drag_image_.get());
+  drag_image_.reset();
+}
+
+void DragDropController::OnLayerAnimationAborted(
+    const ui::LayerAnimationSequence* sequence) {
   DCHECK(drag_image_.get());
   drag_image_.reset();
 }
@@ -213,13 +223,9 @@ void DragDropController::StartCanceledAnimation() {
   ui::LayerAnimator* animator = window->layer()->GetAnimator();
   animator->set_preemption_strategy(
       ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
-
-  // Stop waiting for any as yet unfinished implicit animations.
-  StopObservingImplicitAnimations();
-
+  animator->AddObserver(this);
   ui::ScopedLayerAnimationSettings animation_setter(animator);
   animation_setter.SetTransitionDuration(kDragDropAnimationDuration);
-  animation_setter.AddObserver(this);
   window->SetBounds(gfx::Rect(drag_start_location_, window->bounds().size()));
 }
 

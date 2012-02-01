@@ -122,12 +122,20 @@ void SystemModalContainerLayoutManager::OnWindowPropertyChanged(
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// SystemModalContainerLayoutManager,
-//     ui::ImplicitAnimationObserver implementation:
+// SystemModalContainerLayoutManager, ui::LayerAnimationObserver implementation:
 
-void SystemModalContainerLayoutManager::OnImplicitAnimationsCompleted() {
+void SystemModalContainerLayoutManager::OnLayerAnimationEnded(
+    const ui::LayerAnimationSequence* sequence) {
   if (modal_screen_ && !modal_screen_->GetNativeView()->layer()->ShouldDraw())
     DestroyModalScreen();
+}
+
+void SystemModalContainerLayoutManager::OnLayerAnimationAborted(
+    const ui::LayerAnimationSequence* sequence) {
+}
+
+void SystemModalContainerLayoutManager::OnLayerAnimationScheduled(
+    const ui::LayerAnimationSequence* sequence) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -178,33 +186,27 @@ void SystemModalContainerLayoutManager::CreateModalScreen() {
       "SystemModalContainerLayoutManager.ModalScreen");
   modal_screen_->SetContentsView(new ScreenView);
   modal_screen_->GetNativeView()->layer()->SetOpacity(0.0f);
+  modal_screen_->GetNativeView()->layer()->GetAnimator()->AddObserver(this);
 
   Shell::GetInstance()->AddRootWindowEventFilter(modality_filter_.get());
 
-  StopObservingImplicitAnimations();
-
   ui::ScopedLayerAnimationSettings settings(
       modal_screen_->GetNativeView()->layer()->GetAnimator());
-  settings.AddObserver(this);
   modal_screen_->Show();
   modal_screen_->GetNativeView()->layer()->SetOpacity(0.5f);
   container_->StackChildAtTop(modal_screen_->GetNativeView());
 }
 
 void SystemModalContainerLayoutManager::DestroyModalScreen() {
-  // Stop observing the modal screen's animations.
-  StopObservingImplicitAnimations();
+  modal_screen_->GetNativeView()->layer()->GetAnimator()->RemoveObserver(this);
   modal_screen_->Close();
   modal_screen_ = NULL;
 }
 
 void SystemModalContainerLayoutManager::HideModalScreen() {
-  StopObservingImplicitAnimations();
-
   Shell::GetInstance()->RemoveRootWindowEventFilter(modality_filter_.get());
   ui::ScopedLayerAnimationSettings settings(
       modal_screen_->GetNativeView()->layer()->GetAnimator());
-  settings.AddObserver(this);
   modal_screen_->GetNativeView()->layer()->SetOpacity(0.0f);
 }
 
