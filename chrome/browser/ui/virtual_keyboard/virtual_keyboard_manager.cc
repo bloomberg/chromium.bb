@@ -21,12 +21,12 @@
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/site_instance.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "ui/base/animation/animation_delegate.h"
 #include "ui/base/animation/slide_animation.h"
 #include "ui/base/ime/text_input_type.h"
 #include "ui/gfx/compositor/layer.h"
-#include "ui/gfx/interpolated_transform.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/ime/text_input_type_tracker.h"
 #include "ui/views/widget/widget.h"
@@ -100,7 +100,7 @@ class KeyboardWidget
   // widget.
   views::Widget* GetBrowserWidget();
 
-  // Update layer opacity and transform with values in animation_.
+  // Update layer opacity and bounds with values in animation_.
   void UpdateForAnimation();
 
   // Overridden from views::Widget.
@@ -149,9 +149,6 @@ class KeyboardWidget
   // The animation.
   scoped_ptr<ui::SlideAnimation> animation_;
 
-  // Interpolated transform used during animation.
-  scoped_ptr<ui::InterpolatedTransform> transform_;
-
   GURL keyboard_url_;
 
   // The DOM view to host the keyboard.
@@ -193,7 +190,8 @@ KeyboardWidget::KeyboardWidget()
 
   // Setup the DOM view to host the keyboard.
   Profile* profile = ProfileManager::GetDefaultProfile();
-  dom_view_->Init(profile, SiteInstance::CreateForURL(profile, keyboard_url_));
+  dom_view_->Init(profile,
+                  content::SiteInstance::CreateForURL(profile, keyboard_url_));
   dom_view_->LoadURL(keyboard_url_);
   dom_view_->SetVisible(true);
   SetContentsView(dom_view_);
@@ -228,7 +226,7 @@ KeyboardWidget::KeyboardWidget()
 #endif
 
 #if defined(USE_AURA)
-  aura::RootWindow::GetInstance()->AddObserver(this);
+  aura::RootWindow::GetInstance()->AddRootWindowObserver(this);
 #endif
 }
 
@@ -243,7 +241,7 @@ KeyboardWidget::~KeyboardWidget() {
 #endif
 
 #if defined(USE_AURA)
-  aura::RootWindow::GetInstance()->RemoveObserver(this);
+  aura::RootWindow::GetInstance()->RemoveRootWindowObserver(this);
 #endif
   // TODO(sad): Do anything else?
 }
@@ -252,9 +250,6 @@ void KeyboardWidget::ShowKeyboardForWidget(views::Widget* widget) {
   if (target_ == widget && IsVisible() && !animation_->is_animating())
     return;
   SetTarget(widget);
-
-  transform_.reset(new ui::InterpolatedTranslation(
-      gfx::Point(0, keyboard_height_), gfx::Point()));
 
   UpdateForAnimation();
   animation_->Show();
@@ -312,7 +307,9 @@ bool KeyboardWidget::OnKeyEvent(const views::KeyEvent& event) {
 
 void KeyboardWidget::UpdateForAnimation() {
   float t = static_cast<float>(animation_->GetCurrentValue());
-  GetRootView()->SetTransform(transform_->Interpolate(t));
+  gfx::Rect bounds = GetKeyboardPosition(keyboard_height_);
+  bounds.Offset(0, keyboard_height_*(1 - t));
+  SetBounds(bounds);
   if (GetRootView()->layer())
     GetRootView()->layer()->SetOpacity(t * t);
 }

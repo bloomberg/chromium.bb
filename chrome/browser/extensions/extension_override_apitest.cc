@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -51,7 +51,7 @@ class ExtensionOverrideTest : public ExtensionApiTest {
     ui_test_utils::NavigateToURL(browser(), GURL("chrome://keyboard/"));
     WebContents* tab = browser()->GetSelectedWebContents();
     ASSERT_TRUE(tab->GetController().GetActiveEntry());
-    EXPECT_TRUE(tab->GetController().GetActiveEntry()->url().
+    EXPECT_TRUE(tab->GetController().GetActiveEntry()->GetURL().
                 SchemeIs(chrome::kExtensionScheme));
   }
 #endif
