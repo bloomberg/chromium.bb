@@ -107,7 +107,7 @@ RenderWidgetHostView* TabContentsViewMac::CreateViewForWidget(
   ChromeRenderWidgetHostViewMacDelegate* rw_delegate =
       [[ChromeRenderWidgetHostViewMacDelegate alloc]
           initWithRenderWidgetHost:render_widget_host];
-  view->SetDelegate((RenderWidgetHostViewMacDelegate*)rw_delegate);
+  view->SetDelegate(rw_delegate);
 
   // Fancy layout comes later; for now just make it our size and resize it
   // with us. In case there are other siblings of the content area, we want

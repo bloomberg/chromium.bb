@@ -102,7 +102,7 @@ static inline int ToWebKitModifiers(NSUInteger flags) {
 
 + (BOOL)shouldAutohideCursorForEvent:(NSEvent*)event;
 - (id)initWithRenderWidgetHostViewMac:(RenderWidgetHostViewMac*)r;
-- (void)setRWHVDelegate:(RenderWidgetHostViewMacDelegate*)delegate;
+- (void)setRWHVDelegate:(NSObject<RenderWidgetHostViewMacDelegate>*)delegate;
 - (void)gotUnhandledWheelEvent;
 - (void)scrollOffsetPinnedToLeft:(BOOL)left toRight:(BOOL)right;
 - (void)setHasHorizontalScrollbar:(BOOL)has_horizontal_scrollbar;
@@ -253,7 +253,7 @@ RenderWidgetHostViewMac::~RenderWidgetHostViewMac() {
 }
 
 void RenderWidgetHostViewMac::SetDelegate(
-    RenderWidgetHostViewMacDelegate* delegate) {
+    NSObject<RenderWidgetHostViewMacDelegate>* delegate) {
   [cocoa_view_ setRWHVDelegate:delegate];
 }
 
@@ -1176,7 +1176,7 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
   [super dealloc];
 }
 
-- (void)setRWHVDelegate:(RenderWidgetHostViewMacDelegate*)delegate {
+- (void)setRWHVDelegate:(NSObject<RenderWidgetHostViewMacDelegate>*)delegate {
   delegate_ = delegate;
 }
 

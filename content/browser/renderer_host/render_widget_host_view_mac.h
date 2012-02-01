@@ -22,7 +22,7 @@
 
 @class AcceleratedPluginView;
 class RenderWidgetHostViewMac;
-@class RenderWidgetHostViewMacDelegate;
+@protocol RenderWidgetHostViewMacDelegate;
 class RenderWidgetHostViewMacEditCommandHelper;
 @class ToolTip;
 
@@ -40,7 +40,7 @@ class RenderWidgetHostViewMacEditCommandHelper;
                 BrowserAccessibilityDelegateCocoa> {
  @private
   scoped_ptr<RenderWidgetHostViewMac> renderWidgetHostView_;
-  RenderWidgetHostViewMacDelegate* delegate_;  // weak
+  NSObject<RenderWidgetHostViewMacDelegate>* delegate_;  // weak
   BOOL canBeKeyView_;
   BOOL takesFocusOnlyOnMouseDown_;
   BOOL closeOnDeactivate_;
@@ -168,7 +168,7 @@ class RenderWidgetHostViewMac : public RenderWidgetHostView {
 
   RenderWidgetHostViewCocoa* cocoa_view() const { return cocoa_view_; }
 
-  void SetDelegate(RenderWidgetHostViewMacDelegate* delegate);
+  void SetDelegate(NSObject<RenderWidgetHostViewMacDelegate>* delegate);
 
   // Implementation of RenderWidgetHostView:
   virtual void InitAsChild(gfx::NativeView parent_view) OVERRIDE;
