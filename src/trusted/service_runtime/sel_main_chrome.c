@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -47,15 +47,8 @@ static void NaClLoadIrt(struct NaClApp *nap) {
   struct GioPio gio_pio;
   struct Gio *gio_desc;
 
-  /*
-   * TODO(mseaborn): Eventually we should make the two warnings below
-   * into errors, and require use of the IRT.
-   * See http://code.google.com/p/nativeclient/issues/detail?id=1691
-   */
   if (g_irt_file_desc == -1) {
-    NaClLog(0, "NaClLoadIrt: Integrated runtime (IRT) not present.  "
-            "Continuing anyway.\n");
-    return;
+    NaClLog(LOG_FATAL, "NaClLoadIrt: Integrated runtime (IRT) not present.\n");
   }
 
   file_desc = DUP(g_irt_file_desc);
@@ -73,9 +66,9 @@ static void NaClLoadIrt(struct NaClApp *nap) {
   gio_desc = (struct Gio *) &gio_pio;
 
   if (NaClAppLoadFileDynamically(nap, gio_desc) != LOAD_OK) {
-    NaClLog(0, "NaClLoadIrt: Failed to load the integrated runtime (IRT).  "
-            "The user executable was probably not built to use the IRT.  "
-            "Continuing anyway.\n");
+    NaClLog(LOG_FATAL,
+            "NaClLoadIrt: Failed to load the integrated runtime (IRT).  "
+            "The user executable was probably not built to use the IRT.\n");
   }
 
   (*NACL_VTBL(Gio, gio_desc)->Close)(gio_desc);
