@@ -4229,7 +4229,8 @@
           'sources!': [
             'browser/protector/keys.cc',
           ],
-        }, {  # branding!="Chrome"
+        }],
+        ['branding!="Chrome"', {
           'sources!': [
             'browser/protector/internal/keys_internal.cc',
           ],
@@ -4307,7 +4308,8 @@
             ['exclude', 'browser/ui/webui/about_page/about_page_ui.h'],
             ['exclude', 'browser/ui/webui/active_downloads_ui.cc'],
           ],
-        }, {  # chromeos==1
+        }],
+        ['chromeos==1', {
           'dependencies': [
             '../build/linux/system.gyp:dbus-glib',
             '../third_party/libevent/libevent.gyp:libevent',
@@ -4371,44 +4373,9 @@
         }],
         # linux/chromeos only status area button.
         ['OS=="linux" and use_aura==1', {
-          'dependencies': [
-            '../build/linux/system.gyp:dbus',
-            '../build/linux/system.gyp:fontconfig',
-            '../build/linux/system.gyp:x11',
-            '../dbus/dbus.gyp:dbus',
-          ],
           'sources/': [
-            # Must remove GTK files in PureViews case
-            ['exclude', '^browser/google/google_update.cc'],
-            ['exclude', '^browser/google/google_update.h'],
-            ['exclude', '^browser/platform_util_common_linux.cc'],
-            ['exclude', '^browser/ui/webui/collected_cookies_ui_delegate.cc'],
-            ['exclude', '^browser/ui/webui/collected_cookies_ui_delegate.h'],
             ['include', '^browser/chromeos/status/memory_menu_button.cc'],
             ['include', '^browser/chromeos/status/memory_menu_button.h'],
-            ['include', '^browser/ui/views/aura/'],
-            ['include', '^browser/ui/views/bookmarks/bookmark_editor_view.cc'],
-            ['include', '^browser/ui/views/bookmarks/bookmark_editor_view.h'],
-            ['include', '^browser/ui/views/collected_cookies_views.cc'],
-            ['include', '^browser/ui/views/collected_cookies_views.h'],
-            ['include', '^browser/ui/views/constrained_html_delegate_views.cc'],
-            ['include', '^browser/ui/views/constrained_window_views.cc'],
-            ['include', '^browser/ui/views/cookie_info_view.cc'],
-            ['include', '^browser/ui/views/cookie_info_view.h'],
-            ['include', '^browser/ui/views/dropdown_bar_host_aura.cc'],
-            ['include', '^browser/ui/views/find_bar_host_aura.cc'],
-            ['include', '^browser/ui/views/first_run_bubble.cc'],
-            ['include', '^browser/ui/views/frame/browser_frame_aura.cc'],
-            ['include', '^browser/ui/views/frame/browser_non_client_frame_view_aura.cc'],
-            ['include', '^browser/ui/views/frame/browser_non_client_frame_view_aura.h'],
-            ['include', '^browser/ui/views/frame/browser_non_client_frame_view_factory_aura.cc'],
-            ['include', '^browser/ui/views/importer/import_lock_dialog_view.cc'],
-            ['include', '^browser/ui/views/native_constrained_window_aura.cc'],
-            ['include', '^browser/ui/views/stubs_aura.cc'],
-            ['include', '^browser/ui/views/tabs/tab_drag_controller2.cc'],
-            ['include', '^browser/ui/views/tabs/tab_drag_controller2.h'],
-            ['include', '^browser/ui/views/unhandled_keyboard_event_handler_aurax11.cc'],
-            ['include', '^browser/ui/views/unhandled_keyboard_event_handler.cc'],
           ],
         }],
         ['use_aura==1', {
@@ -4540,9 +4507,18 @@
               ],
             }],
           ],
-        }, {  # os_posix == 0 or OS == "mac"'
-          # Exclude WebUI certificate viewer if not POSIX or mac (these OS's have
-          # native certificate viewers).
+        }],
+        ['OS=="linux" and use_aura==1', {
+          'dependencies': [
+            '../build/linux/system.gyp:dbus',
+            '../build/linux/system.gyp:fontconfig',
+            '../build/linux/system.gyp:x11',
+            '../dbus/dbus.gyp:dbus',
+          ],
+        }],
+        # Exclude WebUI certificate viewer if not POSIX or mac (these OS's have
+        # native certificate viewers).
+        ['os_posix == 0 or OS == "mac"', {
           'sources/': [
             ['exclude', '^browser/ui/webui/certificate_viewer_webui.cc'],
             ['exclude', '^browser/ui/webui/certificate_viewer_webui.h'],
@@ -5350,6 +5326,39 @@
             'browser/extensions/extension_tts_api_win.cc',
             'browser/google/google_update.cc',
             'browser/importer/ie_importer.cc',
+          ],
+        }],
+        # Must remove GTK files in PureViews case
+        ['use_aura==1 and OS=="linux"', {
+          'sources/': [
+            ['exclude', '^browser/google/google_update.cc'],
+            ['exclude', '^browser/google/google_update.h'],
+            ['exclude', '^browser/platform_util_common_linux.cc'],
+            ['include', '^browser/ui/views/aura/'],
+            ['include', '^browser/ui/views/bookmarks/bookmark_editor_view.cc'],
+            ['include', '^browser/ui/views/bookmarks/bookmark_editor_view.h'],
+            ['include', '^browser/ui/views/collected_cookies_views.cc'],
+            ['include', '^browser/ui/views/collected_cookies_views.h'],
+            ['include', '^browser/ui/views/constrained_html_delegate_views.cc'],
+            ['include', '^browser/ui/views/constrained_window_views.cc'],
+            ['include', '^browser/ui/views/cookie_info_view.cc'],
+            ['include', '^browser/ui/views/cookie_info_view.h'],
+            ['include', '^browser/ui/views/dropdown_bar_host_aura.cc'],
+            ['include', '^browser/ui/views/find_bar_host_aura.cc'],
+            ['include', '^browser/ui/views/first_run_bubble.cc'],
+            ['include', '^browser/ui/views/frame/browser_frame_aura.cc'],
+            ['include', '^browser/ui/views/frame/browser_non_client_frame_view_aura.cc'],
+            ['include', '^browser/ui/views/frame/browser_non_client_frame_view_aura.h'],
+            ['include', '^browser/ui/views/frame/browser_non_client_frame_view_factory_aura.cc'],
+            ['include', '^browser/ui/views/importer/import_lock_dialog_view.cc'],
+            ['include', '^browser/ui/views/native_constrained_window_aura.cc'],
+            ['include', '^browser/ui/views/stubs_aura.cc'],
+            ['include', '^browser/ui/views/tabs/tab_drag_controller2.cc'],
+            ['include', '^browser/ui/views/tabs/tab_drag_controller2.h'],
+            ['include', '^browser/ui/views/unhandled_keyboard_event_handler.cc'],
+            ['include', '^browser/ui/views/unhandled_keyboard_event_handler_aurax11.cc'],
+            ['exclude', '^browser/ui/webui/collected_cookies_ui_delegate.cc'],
+            ['exclude', '^browser/ui/webui/collected_cookies_ui_delegate.h'],
           ],
         }],
         # Build Aura with ChromeOS.
