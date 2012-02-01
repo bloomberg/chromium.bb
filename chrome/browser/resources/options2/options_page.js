@@ -723,13 +723,14 @@ cr.define('options', function() {
   };
 
   /**
-   * Update the left of all the position: fixed; header elements.
+   * Update the start margin of all the position: fixed; header elements.
    * @private
    */
   OptionsPage.updateAllHeaderElementPositions_ = function() {
-    var translate = 'translateX(' + (document.body.scrollLeft * -1) + 'px)';
+    var adjust = isRTL() ? 1 : -1;
+    var marginStart = document.body.scrollLeft * adjust + 'px';
     for (var i = 0; i < this.fixedHeaders_.length; ++i)
-      this.fixedHeaders_[i].style.webkitTransform = translate;
+      this.fixedHeaders_[i].style.webkitMarginStart = marginStart;
 
     uber.invokeMethodOnParent('adjustToScroll', document.body.scrollLeft);
   };
@@ -740,7 +741,7 @@ cr.define('options', function() {
    * @private
    */
   OptionsPage.updateFrozenElementHorizontalPosition_ = function(e) {
-    if (document.documentElement.dir == 'rtl')
+    if (isRTL())
       e.style.right = HORIZONTAL_OFFSET + 'px';
     else
       e.style.left = HORIZONTAL_OFFSET - document.body.scrollLeft + 'px';
