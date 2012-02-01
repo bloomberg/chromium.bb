@@ -461,8 +461,6 @@
       '-execute_javascript.ExecuteJavascriptTest.testExecuteJavascriptInExtension',
       # crbug.com/111407
       '-indexeddb.IndexedDBTest.testConnectionsClosedOnTabClose',
-      # crbug.com/100893
-      '-enterprise.EnterpriseTestReverse.testEnableSPDY',
     ],
 
     'win': [
@@ -495,6 +493,8 @@
       '-autofill.AutofillTest.testPostalCodeAndStateLabelsBasedOnCountry',
       # crbug.com/111289
       '-extensions.ExtensionsTest.testAllowAccessFileURLs',
+      # crbug.com/100893
+      '-enterprise.EnterpriseTestReverse.testEnableSPDY',
     ],
 
     'mac': [
@@ -550,6 +550,8 @@
       '-extensions.ExtensionsTest.testAllowAccessFileURLs',
       # crbug.com/100365
       '-autofill.AutofillTest.testDisplayLineItemForEntriesWithNoCCNum',
+      # crbug.com/100893
+      '-enterprise.EnterpriseTestReverse.testEnableSPDY',
     ],
 
     'chromeos': [
