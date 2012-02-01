@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -390,6 +390,10 @@ CommandBufferProxy::CreateVideoDecoder(
   channel_->AddRoute(decoder_route_id, decoder_host->AsWeakPtr());
 
   return decoder_host;
+}
+
+gpu::error::Error CommandBufferProxy::GetLastError() {
+  return last_state_.error;
 }
 
 bool CommandBufferProxy::Send(IPC::Message* msg) {

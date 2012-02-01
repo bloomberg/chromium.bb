@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -30,6 +30,14 @@ const char* GetCommandName(CommandId command_id) {
 }
 
 }  // namespace cmd
+
+// TODO(apatrick): this is a temporary optimization while skia is calling
+// RendererGLContext::MakeCurrent prior to every GL call. It saves returning 6
+// ints redundantly when only the error is needed for the CommandBufferProxy
+// implementation.
+error::Error CommandBuffer::GetLastError() {
+  return GetLastState().error;
+}
 
 }  // namespace gpu
 
