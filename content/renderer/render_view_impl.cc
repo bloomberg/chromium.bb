@@ -397,6 +397,8 @@ RenderViewImpl::RenderViewImpl(
       cached_is_main_frame_pinned_to_right_(false),
       cached_has_main_frame_horizontal_scrollbar_(false),
       cached_has_main_frame_vertical_scrollbar_(false),
+      context_has_swapbuffers_complete_callback_(false),
+      queried_for_swapbuffers_complete_callback_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(cookie_jar_(this)),
       geolocation_dispatcher_(NULL),
       speech_input_dispatcher_(NULL),
@@ -4495,12 +4497,21 @@ bool RenderViewImpl::SupportsAsynchronousSwapBuffers() {
   if (WebWidgetHandlesCompositorScheduling())
     return false;
 
+  if (queried_for_swapbuffers_complete_callback_)
+    return context_has_swapbuffers_complete_callback_;
+
+  queried_for_swapbuffers_complete_callback_ = true;
+
   WebKit::WebGraphicsContext3D* context = webview()->graphicsContext3D();
-  if (!context)
-    return false;
-  std::string extensions(context->getRequestableExtensionsCHROMIUM().utf8());
-  return extensions.find("GL_CHROMIUM_swapbuffers_complete_callback") !=
-      std::string::npos;
+  if (context) {
+    context->makeContextCurrent();
+    std::string extensions(context->getRequestableExtensionsCHROMIUM().utf8());
+    context_has_swapbuffers_complete_callback_ =
+        extensions.find("GL_CHROMIUM_swapbuffers_complete_callback")
+            != std::string::npos;
+  }
+
+  return context_has_swapbuffers_complete_callback_;
 }
 
 void RenderViewImpl::OnSetFocus(bool enable) {
