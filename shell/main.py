@@ -22,6 +22,8 @@ from chromite.lib import operation
 # Set up the cros system.
 _cros_env = chromite_env.ChromiteEnv()
 
+# Find the correct chroot
+_cros_env.EnsureValidRoot()
 
 def _CommandHelp():
   """Returns a help string listing all available sub-commands"""
@@ -178,12 +180,10 @@ def main():
 
   parser = optparse.OptionParser()
 
-  # Verbose defaults to full for now, just to keep people acclimatized to
-  # vast amounts of comforting output.
-  parser.add_option('-v', dest='verbose', default=3, type='int',
-      help='Control verbosity: 0=silent, 1=progress, 3=full')
-  parser.add_option('-q', action='store_const', dest='verbose', const=1,
-      help='Be quieter (sets verbosity to 1)')
+  # By default display only progrss information.
+  parser.add_option('-v', dest='verbose', default=-1, type='int',
+      help='Control verbosity: 0=silent, 1=progress, 2=notice, '
+           '3=info, 4=debug')
   if not cros_lib.IsInsideChroot():
     parser.add_option('--chroot', action='store', type='string',
         dest='chroot_name', default='chroot',
@@ -196,6 +196,12 @@ def main():
 
   # Configure the operation setup.
   oper = _cros_env.GetOperation()
+
+  # If we saw an explicit verbose option, remember that.
+  if options.verbose == -1:
+    options.verbose = 1
+  else:
+    oper.explicit_verbose = True
   oper.verbose = options.verbose >= 3
   oper.progress = options.verbose >= 1
 
