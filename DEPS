@@ -310,6 +310,9 @@ deps = {
   "src/third_party/libphonenumber/src/resources":
      (Var("googlecode_url") % "libphonenumber") + "/trunk/resources@" +
          Var("libphonenumber_revision"),
+
+  "src/third_party/undoview":
+    "/trunk/deps/third_party/undoview@119694",
 }
 
 
