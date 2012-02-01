@@ -61,8 +61,11 @@ static void DumpPerformanceTiming(const WebPerformance& performance,
   DCHECK(!navigation_start.is_null());
   DCHECK(!request_start.is_null());
   DCHECK(!response_start.is_null());
-  DCHECK(!load_event_start.is_null());
-  DCHECK(!load_event_end.is_null());
+  // TODO(dominich): Investigate conditions under which |load_event_start| and
+  // |load_event_end| may be NULL as in the non-PT_ case below. Examples in
+  // http://crbug.com/112006.
+  // DCHECK(!load_event_start.is_null());
+  // DCHECK(!load_event_end.is_null());
 
   if (document_state->web_timing_histograms_recorded())
     return;
@@ -71,16 +74,24 @@ static void DumpPerformanceTiming(const WebPerformance& performance,
   // TODO(simonjam): There is no way to distinguish between abandonment and
   // intentional Javascript navigation before the load event fires.
   // TODO(dominich): Load type breakdown
+  if (!load_event_start.is_null()) {
+    PLT_HISTOGRAM("PLT.PT_BeginToFinishDoc", load_event_start - begin);
+    PLT_HISTOGRAM("PLT.PT_CommitToFinishDoc",
+                  load_event_start - response_start);
+  }
+  if (!load_event_end.is_null()) {
+    PLT_HISTOGRAM("PLT.PT_BeginToFinish", load_event_end - begin);
+    PLT_HISTOGRAM("PLT.PT_CommitToFinish", load_event_end - response_start);
+    PLT_HISTOGRAM("PLT.PT_RequestToFinish", load_event_end - navigation_start);
+    PLT_HISTOGRAM("PLT.PT_StartToFinish", load_event_end - request_start);
+  }
+  if (!load_event_start.is_null() && !load_event_end.is_null()) {
+    PLT_HISTOGRAM("PLT.PT_FinishDocToFinish",
+                  load_event_end - load_event_start);
+  }
   PLT_HISTOGRAM("PLT.PT_BeginToCommit", response_start - begin);
-  PLT_HISTOGRAM("PLT.PT_BeginToFinish", load_event_end - begin);
-  PLT_HISTOGRAM("PLT.PT_BeginToFinishDoc", load_event_start - begin);
-  PLT_HISTOGRAM("PLT.PT_CommitToFinish", load_event_end - response_start);
-  PLT_HISTOGRAM("PLT.PT_CommitToFinishDoc", load_event_start - response_start);
-  PLT_HISTOGRAM("PLT.PT_FinishDocToFinish", load_event_end - load_event_start);
-  PLT_HISTOGRAM("PLT.PT_RequestToFinish", load_event_end - navigation_start);
   PLT_HISTOGRAM("PLT.PT_RequestToStart", request_start - navigation_start);
   PLT_HISTOGRAM("PLT.PT_StartToCommit", response_start - request_start);
-  PLT_HISTOGRAM("PLT.PT_StartToFinish", load_event_end - request_start);
 }
 
 enum MissingStartType {
