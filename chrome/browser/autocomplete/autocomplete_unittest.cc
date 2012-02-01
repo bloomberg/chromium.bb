@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -30,8 +30,8 @@ static std::ostream& operator<<(std::ostream& os,
 }
 
 namespace {
-const size_t kResultsPerProvider = 3;
-}
+
+const size_t num_results_per_provider = 3;
 
 // Autocomplete provider that provides known results. Note that this is
 // refcounted so that it can also be a task on the message loop.
@@ -79,8 +79,8 @@ void TestProvider::Start(const AutocompleteInput& input,
 }
 
 void TestProvider::Run() {
-  DCHECK_GT(kResultsPerProvider, 0U);
-  AddResults(1, kResultsPerProvider);
+  DCHECK_GT(num_results_per_provider, 0U);
+  AddResults(1, num_results_per_provider);
   done_ = true;
   DCHECK(listener_);
   listener_->OnProviderUpdate(true);
@@ -108,32 +108,19 @@ void TestProvider::AddResults(int start_at, int num) {
 class AutocompleteProviderTest : public testing::Test,
                                  public content::NotificationObserver {
  protected:
-  struct KeywordTestData {
-    const string16 fill_into_edit;
-    const string16 keyword;
-    const bool expected_keyword_result;
-  };
-
- protected:
   void ResetControllerWithTestProviders(bool same_destinations);
 
   // Runs a query on the input "a", and makes sure both providers' input is
   // properly collected.
   void RunTest();
 
-  void RunRedundantKeywordTest(const KeywordTestData* match_data, size_t size);
-
-  void RunQuery(const string16 query);
-
   void ResetControllerWithTestProvidersWithKeywordAndSearchProviders();
-  void ResetControllerWithKeywordProvider();
   void RunExactKeymatchTest(bool allow_exact_keyword_match);
 
   // These providers are owned by the controller once it's created.
   ACProviders providers_;
 
   AutocompleteResult result_;
-  scoped_ptr<AutocompleteController> controller_;
 
  private:
   // content::NotificationObserver
@@ -142,6 +129,7 @@ class AutocompleteProviderTest : public testing::Test,
                        const content::NotificationDetails& details);
 
   MessageLoopForUI message_loop_;
+  scoped_ptr<AutocompleteController> controller_;
   content::NotificationRegistrar registrar_;
   TestingProfile profile_;
 };
@@ -153,12 +141,12 @@ void AutocompleteProviderTest::ResetControllerWithTestProviders(
   providers_.clear();
 
   // Construct two new providers, with either the same or different prefixes.
-  TestProvider* providerA = new TestProvider(kResultsPerProvider,
+  TestProvider* providerA = new TestProvider(num_results_per_provider,
                                              ASCIIToUTF16("http://a"));
   providerA->AddRef();
   providers_.push_back(providerA);
 
-  TestProvider* providerB = new TestProvider(kResultsPerProvider * 2,
+  TestProvider* providerB = new TestProvider(num_results_per_provider * 2,
       same_destinations ? ASCIIToUTF16("http://a") : ASCIIToUTF16("http://b"));
   providerB->AddRef();
   providers_.push_back(providerB);
@@ -213,84 +201,19 @@ void AutocompleteProviderTest::
   search_provider->AddRef();
   providers_.push_back(search_provider);
 
-  controller_.reset(new AutocompleteController(providers_, &profile_));
-}
-
-void AutocompleteProviderTest::
-    ResetControllerWithKeywordProvider() {
-  profile_.CreateTemplateURLService();
-
-  TemplateURLService* turl_model =
-      TemplateURLServiceFactory::GetForProfile(&profile_);
-
-  // Create a TemplateURL for KeywordProvider.
-  TemplateURL* keyword_t_url = new TemplateURL();
-  keyword_t_url->set_short_name(ASCIIToUTF16("foo.com"));
-  keyword_t_url->set_keyword(ASCIIToUTF16("foo.com"));
-  keyword_t_url->SetURL("http://foo.com/{searchTerms}", 0, 0);
-  turl_model->Add(keyword_t_url);
-  ASSERT_NE(0, keyword_t_url->id());
-
-  // Create another TemplateURL for KeywordProvider.
-  keyword_t_url = new TemplateURL();
-  keyword_t_url->set_short_name(ASCIIToUTF16("bar.com"));
-  keyword_t_url->set_keyword(ASCIIToUTF16("bar.com"));
-  keyword_t_url->SetURL("http://bar.com/{searchTerms}", 0, 0);
-  turl_model->Add(keyword_t_url);
-  ASSERT_NE(0, keyword_t_url->id());
-
-  // Forget about any existing providers.  The controller owns them and will
-  // Release() them below, when we delete it during the call to reset().
-  providers_.clear();
-
-  // Create both a keyword and search provider, and add them in that order.
-  // (Order is important; see comments in RunExactKeymatchTest().)
-  KeywordProvider* keyword_provider = new KeywordProvider(NULL,
-      &profile_);
-  keyword_provider->AddRef();
-  providers_.push_back(keyword_provider);
-
   AutocompleteController* controller =
       new AutocompleteController(providers_, &profile_);
-  controller->set_keyword_provider(keyword_provider);
   controller_.reset(controller);
 }
 
 void AutocompleteProviderTest::RunTest() {
-  RunQuery(ASCIIToUTF16("a"));
-}
-
-void AutocompleteProviderTest::RunRedundantKeywordTest(
-    const KeywordTestData* match_data,
-    size_t size) {
-  ACMatches matches;
-  for (size_t i = 0; i < size; ++i) {
-    AutocompleteMatch match;
-    match.fill_into_edit = match_data[i].fill_into_edit;
-    match.keyword = match_data[i].keyword;
-    matches.push_back(match);
-  }
-
-  AutocompleteResult result;
-  result.AppendMatches(matches);
-  controller_->UpdateAssociatedKeywords(&result);
-
-  for (size_t j = 0; j < result.size(); ++j) {
-    EXPECT_EQ(match_data[j].expected_keyword_result,
-        result.match_at(j).associated_keyword.get() != NULL);
-  }
-}
-
-
-void AutocompleteProviderTest::RunQuery(const string16 query) {
   result_.Reset();
-  controller_->Start(query, string16(), true, false, true,
-      AutocompleteInput::ALL_MATCHES);
+  controller_->Start(ASCIIToUTF16("a"), string16(), true, false, true,
+                     AutocompleteInput::ALL_MATCHES);
 
-  if (!controller_->done())
-    // The message loop will terminate when all autocomplete input has been
-    // collected.
-    MessageLoop::current()->Run();
+  // The message loop will terminate when all autocomplete input has been
+  // collected.
+  MessageLoop::current()->Run();
 }
 
 void AutocompleteProviderTest::RunExactKeymatchTest(
@@ -327,7 +250,7 @@ TEST_F(AutocompleteProviderTest, Query) {
 
   // Make sure the default match gets set to the highest relevance match.  The
   // highest relevance matches should come from the second provider.
-  EXPECT_EQ(kResultsPerProvider * 2, result_.size());  // two providers
+  EXPECT_EQ(num_results_per_provider * 2, result_.size());  // two providers
   ASSERT_NE(result_.end(), result_.default_match());
   EXPECT_EQ(providers_[1], result_.default_match()->provider);
 }
@@ -338,7 +261,7 @@ TEST_F(AutocompleteProviderTest, RemoveDuplicates) {
 
   // Make sure all the first provider's results were eliminated by the second
   // provider's.
-  EXPECT_EQ(kResultsPerProvider, result_.size());
+  EXPECT_EQ(num_results_per_provider, result_.size());
   for (AutocompleteResult::const_iterator i(result_.begin());
        i != result_.end(); ++i)
     EXPECT_EQ(providers_[1], i->provider);
@@ -348,48 +271,6 @@ TEST_F(AutocompleteProviderTest, AllowExactKeywordMatch) {
   ResetControllerWithTestProvidersWithKeywordAndSearchProviders();
   RunExactKeymatchTest(true);
   RunExactKeymatchTest(false);
-}
-
-// Test that redundant associated keywords are removed.
-TEST_F(AutocompleteProviderTest, RedundantKeywordsIgnoredInResult) {
-  ResetControllerWithKeywordProvider();
-
-  // Get the controller's internal members in the correct state.
-  RunQuery(ASCIIToUTF16("fo"));
-
-  {
-    KeywordTestData duplicate_url[] = {
-      { ASCIIToUTF16("fo"), string16(), false },
-      { ASCIIToUTF16("foo.com"), string16(), true },
-      { ASCIIToUTF16("foo.com"), string16(), false }
-    };
-
-    SCOPED_TRACE("Duplicate url");
-    RunRedundantKeywordTest(duplicate_url, ARRAYSIZE_UNSAFE(duplicate_url));
-  }
-
-  {
-    KeywordTestData keyword_match[] = {
-      { ASCIIToUTF16("foo.com"), ASCIIToUTF16("foo.com"), false },
-      { ASCIIToUTF16("foo.com"), string16(), false }
-    };
-
-    SCOPED_TRACE("Duplicate url with keyword match");
-    RunRedundantKeywordTest(keyword_match, ARRAYSIZE_UNSAFE(keyword_match));
-  }
-
-  {
-    KeywordTestData multiple_keyword[] = {
-      { ASCIIToUTF16("fo"), string16(), false },
-      { ASCIIToUTF16("foo.com"), string16(), true },
-      { ASCIIToUTF16("foo.com"), string16(), false },
-      { ASCIIToUTF16("bar.com"), string16(), true },
-    };
-
-    SCOPED_TRACE("Duplicate url with multiple keywords");
-    RunRedundantKeywordTest(multiple_keyword,
-        ARRAYSIZE_UNSAFE(multiple_keyword));
-  }
 }
 
 typedef testing::Test AutocompleteTest;
@@ -603,3 +484,5 @@ TEST(AutocompleteInput, ParseForEmphasizeComponent) {
     EXPECT_EQ(input_cases[i].host.len, host.len);
   }
 }
+
+}  // namespace

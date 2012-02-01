@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -55,15 +55,6 @@ class KeywordProvider : public AutocompleteProvider,
   // For testing.
   KeywordProvider(ACProviderListener* listener, TemplateURLService* model);
 
-  // Extracts the next whitespace-delimited token from input and returns it.
-  // Sets |remaining_input| to everything after the first token (skipping over
-  // the first intervening whitespace).
-  // If |trim_leading_whitespace| is true then leading whitespace in
-  // |*remaining_input| will be trimmed.
-  static string16 SplitKeywordFromInput(const string16& input,
-    bool trim_leading_whitespace,
-    string16* remaining_input);
-
   // Returns the replacement string from the user input. The replacement
   // string is the portion of the input that does not contain the keyword.
   // For example, the replacement string for "b blah" is blah.
@@ -79,17 +70,6 @@ class KeywordProvider : public AutocompleteProvider,
       Profile* profile,
       const AutocompleteInput& input,
       string16* remaining_input);
-
-  // If |text| corresponds (in the sense of
-  // TemplateURLModel::CleanUserInputKeyword()) to an enabled, substituting
-  // keyword, returns that keyword; returns the empty string otherwise.
-  string16 GetKeywordForText(const string16& text) const;
-
-  // Creates a fully marked-up AutocompleteMatch for a specific keyword.
-  AutocompleteMatch CreateAutocompleteMatch(
-      const string16& text,
-      const string16& keyword,
-      const AutocompleteInput& input);
 
   // AutocompleteProvider
   virtual void Start(const AutocompleteInput& input,
@@ -112,6 +92,15 @@ class KeywordProvider : public AutocompleteProvider,
   static bool ExtractKeywordFromInput(const AutocompleteInput& input,
                                       string16* keyword,
                                       string16* remaining_input);
+
+  // Extracts the next whitespace-delimited token from input and returns it.
+  // Sets |remaining_input| to everything after the first token (skipping over
+  // the first intervening whitespace).
+  // If |trim_leading_whitespace| is true then leading whitespace in
+  // |*remaining_input| will be trimmed.
+  static string16 SplitKeywordFromInput(const string16& input,
+                                        bool trim_leading_whitespace,
+                                        string16* remaining_input);
 
   // Fills in the "destination_url" and "contents" fields of |match| with the
   // provided user input and keyword data.
@@ -149,8 +138,6 @@ class KeywordProvider : public AutocompleteProvider,
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
-
-  TemplateURLService* GetTemplateURLService() const;
 
   // Model for the keywords.  This is only non-null when testing, otherwise the
   // TemplateURLService from the Profile is used.

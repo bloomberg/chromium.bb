@@ -264,18 +264,10 @@ bool OmniboxViewViews::HandleAfterKeyEvent(const views::KeyEvent& event,
     handled = true;
   } else if (!handled &&
              event.key_code() == ui::VKEY_TAB &&
+             !event.IsShiftDown() &&
              !event.IsControlDown()) {
-    if (model_->is_keyword_hint() && !event.IsShiftDown()) {
+    if (model_->is_keyword_hint()) {
       handled = model_->AcceptKeyword();
-    } else if (model_->popup_model()->IsOpen()) {
-      if (event.IsShiftDown() &&
-          model_->popup_model()->selected_line_state() ==
-              AutocompletePopupModel::KEYWORD) {
-        model_->ClearKeyword(GetText());
-      } else {
-        model_->OnUpOrDownKeyPressed(event.IsShiftDown() ? -1 : 1);
-      }
-      handled = true;
     } else {
       string16::size_type start = 0;
       string16::size_type end = 0;
@@ -469,14 +461,14 @@ void OmniboxViewViews::SetUserText(const string16& text,
                                    const string16& display_text,
                                    bool update_popup) {
   model_->SetUserText(text);
-  SetWindowTextAndCaretPos(display_text, display_text.length(), update_popup,
-      true);
+  SetWindowTextAndCaretPos(display_text, display_text.length());
+  if (update_popup)
+    UpdatePopup();
+  TextChanged();
 }
 
 void OmniboxViewViews::SetWindowTextAndCaretPos(const string16& text,
-                                                size_t caret_pos,
-                                                bool update_popup,
-                                                bool notify_text_changed) {
+                                                size_t caret_pos) {
   const ui::Range range(caret_pos, caret_pos);
   SetTextAndSelectedRange(text, range);
 }
@@ -552,7 +544,8 @@ void OmniboxViewViews::OnTemporaryTextMaybeChanged(
   if (save_original_selection)
     textfield_->GetSelectedRange(&saved_temporary_selection_);
 
-  SetWindowTextAndCaretPos(display_text, display_text.length(), false, true);
+  SetWindowTextAndCaretPos(display_text, display_text.length());
+  TextChanged();
 }
 
 bool OmniboxViewViews::OnInlineAutocompleteTextMaybeChanged(

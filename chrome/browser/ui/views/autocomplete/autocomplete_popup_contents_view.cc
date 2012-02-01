@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -52,7 +52,6 @@ namespace {
 
 const SkAlpha kGlassPopupAlpha = 240;
 const SkAlpha kOpaquePopupAlpha = 255;
-
 // The size delta between the font used for the edit and the result rows. Passed
 // to gfx::Font::DeriveFont.
 #if defined(OS_CHROMEOS)
@@ -236,13 +235,6 @@ AutocompletePopupContentsView::AutocompletePopupContentsView(
   set_border(bubble_border);
   // The contents is owned by the LocationBarView.
   set_parent_owned(false);
-
-  for (size_t i = 0; i < AutocompleteResult::kMaxMatches; ++i) {
-    AutocompleteResultView* result_view =
-        CreateResultView(this, i, result_font_, result_bold_font_);
-    result_view->SetVisible(false);
-    AddChildViewAt(result_view, static_cast<int>(i));
-  }
 }
 
 AutocompletePopupContentsView::~AutocompletePopupContentsView() {
@@ -288,14 +280,7 @@ bool AutocompletePopupContentsView::IsOpen() const {
 }
 
 void AutocompletePopupContentsView::InvalidateLine(size_t line) {
-  AutocompleteResultView* result = static_cast<AutocompleteResultView*>(
-      child_at(static_cast<int>(line)));
-  result->Invalidate();
-
-  if (HasMatchAt(line) && GetMatchAtIndex(line).associated_keyword.get()) {
-    result->ShowKeyword(IsSelectedIndex(line) &&
-        model_->selected_line_state() == AutocompletePopupModel::KEYWORD);
-  }
+  child_at(static_cast<int>(line))->SchedulePaint();
 }
 
 void AutocompletePopupContentsView::UpdatePopupAppearance() {
@@ -303,7 +288,6 @@ void AutocompletePopupContentsView::UpdatePopupAppearance() {
     // No matches, close any existing popup.
     if (popup_ != NULL) {
       size_animation_.Stop();
-
       // NOTE: Do NOT use CloseNow() here, as we may be deep in a callstack
       // triggered by the popup receiving a message (e.g. LBUTTONUP), and
       // destroying the popup would cause us to read garbage when we unwind back
@@ -321,14 +305,19 @@ void AutocompletePopupContentsView::UpdatePopupAppearance() {
     DCHECK_GT(child_rv_count, 0u);
     child_rv_count--;
   }
-  const size_t result_size = model_->result().size();
-  for (size_t i = 0; i < result_size; ++i) {
-    AutocompleteResultView* view = static_cast<AutocompleteResultView*>(
-        child_at(i));
-    view->SetMatch(GetMatchAtIndex(i));
-    view->SetVisible(true);
+  for (size_t i = 0; i < model_->result().size(); ++i) {
+    AutocompleteResultView* result_view;
+    if (i >= child_rv_count) {
+      result_view =
+          CreateResultView(this, i, result_font_, result_bold_font_);
+      AddChildViewAt(result_view, static_cast<int>(i));
+    } else {
+      result_view = static_cast<AutocompleteResultView*>(child_at(i));
+      result_view->SetVisible(true);
+    }
+    result_view->SetMatch(GetMatchAtIndex(i));
   }
-  for (size_t i = result_size; i < child_rv_count; ++i)
+  for (size_t i = model_->result().size(); i < child_rv_count; ++i)
     child_at(i)->SetVisible(false);
 
   PromoCounter* counter = profile_->GetInstantPromoCounter();
@@ -406,11 +395,11 @@ void AutocompletePopupContentsView::OnDragCanceled() {
 // AutocompletePopupContentsView, AutocompleteResultViewModel implementation:
 
 bool AutocompletePopupContentsView::IsSelectedIndex(size_t index) const {
-  return index == model_->selected_line();
+  return HasMatchAt(index) ? index == model_->selected_line() : false;
 }
 
 bool AutocompletePopupContentsView::IsHoveredIndex(size_t index) const {
-  return index == model_->hovered_line();
+  return HasMatchAt(index) ? index == model_->hovered_line() : false;
 }
 
 const SkBitmap* AutocompletePopupContentsView::GetIconIfExtensionMatch(
@@ -446,7 +435,7 @@ void AutocompletePopupContentsView::Layout() {
 
 views::View* AutocompletePopupContentsView::GetEventHandlerForPoint(
     const gfx::Point& point) {
-  // If there is no opt in view then we want all mouse events. Otherwise, let
+  // If there is no opt in view, then we want all mouse events. Otherwise let
   // any descendants of the opt-in view get mouse events.
   if (!opt_in_view_)
     return this;
@@ -657,8 +646,10 @@ void AutocompletePopupContentsView::OpenIndex(
   // extension, |match| and its contents.  So copy the relevant match out to
   // make sure it stays alive until the call completes.
   AutocompleteMatch match = model_->result().match_at(index);
+  string16 keyword;
+  const bool is_keyword_hint = model_->GetKeywordForMatch(match, &keyword);
   omnibox_view_->OpenMatch(match, disposition, GURL(), index,
-      match.keyword);
+                         is_keyword_hint ? string16() : keyword);
 }
 
 size_t AutocompletePopupContentsView::GetIndexForPoint(

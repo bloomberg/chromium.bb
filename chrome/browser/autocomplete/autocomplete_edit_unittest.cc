@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -35,9 +35,7 @@ class TestingOmniboxView : public OmniboxView {
                            const string16& display_text,
                            bool update_popup) OVERRIDE {}
   virtual void SetWindowTextAndCaretPos(const string16& text,
-                                        size_t caret_pos,
-                                        bool update_popup,
-                                        bool notify_text_changed) OVERRIDE {}
+                                        size_t caret_pos) OVERRIDE {}
   virtual void SetForcedQuery() OVERRIDE {}
   virtual bool IsSelectAll() OVERRIDE { return false; }
   virtual bool DeleteAtEndPressed() OVERRIDE { return false; }
@@ -157,9 +155,9 @@ TEST(AutocompleteEditTest, AdjustTextForCopy) {
   TestingOmniboxView view;
   TestingAutocompleteEditController controller;
   TestingProfile profile;
-  profile.CreateTemplateURLService();
-  profile.CreateAutocompleteClassifier();
   AutocompleteEditModel model(&view, &controller, &profile);
+  profile.CreateAutocompleteClassifier();
+  profile.CreateTemplateURLService();
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(input); ++i) {
     model.UpdatePermanentText(ASCIIToUTF16(input[i].perm_text));

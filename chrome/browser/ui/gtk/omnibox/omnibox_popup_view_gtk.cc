@@ -479,8 +479,10 @@ void OmniboxPopupViewGtk::AcceptLine(size_t line,
   // extension, |match| and its contents.  So copy the relevant match out to
   // make sure it stays alive until the call completes.
   AutocompleteMatch match = model_->result().match_at(line);
+  string16 keyword;
+  const bool is_keyword_hint = model_->GetKeywordForMatch(match, &keyword);
   omnibox_view_->OpenMatch(match, disposition, GURL(), line,
-                           match.keyword);
+                           is_keyword_hint ? string16() : keyword);
 }
 
 const gfx::Image* OmniboxPopupViewGtk::IconForMatch(
