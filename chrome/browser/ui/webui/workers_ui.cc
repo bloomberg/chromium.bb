@@ -16,7 +16,6 @@
 #include "chrome/browser/ui/webui/chrome_url_data_manager_backend.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/worker_host/worker_process_host.h"
 #include "content/public/browser/child_process_data.h"
 #include "content/public/browser/devtools_agent_host_registry.h"
 #include "content/public/browser/browser_thread.h"
@@ -53,14 +52,18 @@ static const char kPidField[]  = "pid";
 namespace {
 
 
-DictionaryValue* BuildWorkerData(const ChildProcessData& data,
-    const WorkerProcessHost::WorkerInstance& instance) {
+DictionaryValue* BuildWorkerData(
+    const GURL& url,
+    const string16& name,
+    int process_id,
+    int route_id,
+    base::ProcessHandle handle) {
   DictionaryValue* worker_data = new DictionaryValue();
-  worker_data->SetInteger(kWorkerProcessHostIdField, data.id);
-  worker_data->SetInteger(kWorkerRouteIdField, instance.worker_route_id());
-  worker_data->SetString(kUrlField, instance.url().spec());
-  worker_data->SetString(kNameField, instance.name());
-  worker_data->SetInteger(kPidField, base::GetProcId(data.handle));
+  worker_data->SetInteger(kWorkerProcessHostIdField, process_id);
+  worker_data->SetInteger(kWorkerRouteIdField, route_id);
+  worker_data->SetString(kUrlField, url.spec());
+  worker_data->SetString(kNameField, name);
+  worker_data->SetInteger(kPidField, base::GetProcId(handle));
   return worker_data;
 }
 
@@ -94,19 +97,19 @@ void WorkersUIHTMLSource::StartDataRequest(const std::string& path,
 }
 
 void WorkersUIHTMLSource::SendSharedWorkersData(int request_id) {
-    ListValue workers_list;
-    for (WorkerProcessHostIterator iter; !iter.Done(); ++iter) {
-      const WorkerProcessHost::Instances& instances = iter->instances();
-      for (WorkerProcessHost::Instances::const_iterator i = instances.begin();
-           i != instances.end(); ++i) {
-         workers_list.Append(BuildWorkerData(iter.GetData(), *i));
-      }
-    }
+  ListValue workers_list;
+  std::vector<WorkerService::WorkerInfo> worker_info =
+      WorkerService::GetInstance()->GetWorkers();
+  for (size_t i = 0; i < worker_info.size(); ++i) {
+    workers_list.Append(BuildWorkerData(
+        worker_info[i].url, worker_info[i].name, worker_info[i].process_id,
+        worker_info[i].route_id, worker_info[i].handle));
+  }
 
-    std::string json_string;
-    base::JSONWriter::Write(&workers_list, false, &json_string);
+  std::string json_string;
+  base::JSONWriter::Write(&workers_list, false, &json_string);
 
-    SendResponse(request_id, base::RefCountedString::TakeString(&json_string));
+  SendResponse(request_id, base::RefCountedString::TakeString(&json_string));
 }
 
 class WorkersDOMHandler : public WebUIMessageHandler {
@@ -156,13 +159,8 @@ void WorkersDOMHandler::HandleOpenDevTools(const ListValue* args) {
   DevToolsWindow::OpenDevToolsWindowForWorker(profile, agent_host);
 }
 
-static void TerminateWorker(int worker_process_id, int worker_route_id) {
-  for (WorkerProcessHostIterator iter; !iter.Done(); ++iter) {
-      if (iter.GetData().id == worker_process_id) {
-      iter->TerminateWorker(worker_route_id);
-      return;
-    }
-  }
+static void TerminateWorker(int process_id, int route_id) {
+  WorkerService::GetInstance()->TerminateWorker(process_id, route_id);
 }
 
 void WorkersDOMHandler::HandleTerminateWorker(const ListValue* args) {
@@ -209,27 +207,27 @@ class WorkersUI::WorkerCreationDestructionListener
   }
 
   virtual void WorkerCreated(
-      WorkerProcessHost* process,
-      const WorkerProcessHost::WorkerInstance& instance) OVERRIDE {
+      const GURL& url,
+      const string16& name,
+      int process_id,
+      int route_id) OVERRIDE {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        base::Bind(
-            &WorkerCreationDestructionListener::NotifyWorkerCreated,
-            this, base::Owned(BuildWorkerData(process->GetData(), instance))));
+        base::Bind(&WorkerCreationDestructionListener::NotifyWorkerCreated,
+                   this,
+                   base::Owned(BuildWorkerData(url, name, process_id, route_id,
+                                               base::kNullProcessHandle))));
   }
-  virtual void WorkerDestroyed(
-      WorkerProcessHost* process,
-      int worker_route_id) OVERRIDE {
+  virtual void WorkerDestroyed(int process_id, int route_id) OVERRIDE {
     DictionaryValue* worker_data = new DictionaryValue();
-    worker_data->SetInteger(kWorkerProcessHostIdField, process->GetData().id);
-    worker_data->SetInteger(kWorkerRouteIdField, worker_route_id);
+    worker_data->SetInteger(kWorkerProcessHostIdField, process_id);
+    worker_data->SetInteger(kWorkerRouteIdField, route_id);
 
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
         base::Bind(&WorkerCreationDestructionListener::NotifyWorkerDestroyed,
                    this, base::Owned(worker_data)));
   }
-  virtual void WorkerContextStarted(WorkerProcessHost*, int) OVERRIDE {}
 
   void NotifyWorkerCreated(DictionaryValue* worker_data) {
     if (workers_ui_) {

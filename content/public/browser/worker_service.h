@@ -6,7 +6,12 @@
 #define CONTENT_PUBLIC_BROWSER_WORKER_SERVICE_H_
 #pragma once
 
+#include <vector>
+
+#include "base/process.h"
 #include "content/common/content_export.h"
+
+class GURL;
 
 namespace content {
 
@@ -14,13 +19,28 @@ class WorkerServiceObserver;
 
 // A singleton for managing HTML5 shared web workers. These are run in a
 // separate process, since multiple renderer processes can be talking to a
-// single shared worker.
+// single shared worker. All the methods below can only be called on the IO
+// thread.
 class WorkerService {
  public:
   virtual ~WorkerService() {}
 
   // Returns the WorkerService singleton.
   CONTENT_EXPORT static WorkerService* GetInstance();
+
+  // Terminates the given worker. Returns true if the process was found.
+  virtual bool TerminateWorker(int process_id, int route_id) = 0;
+
+  struct WorkerInfo {
+    GURL url;
+    string16 name;
+    int process_id;
+    int route_id;
+    base::ProcessHandle handle;
+  };
+
+  // Return information about all the currently running workers.
+  virtual std::vector<WorkerInfo> GetWorkers() = 0;
 
   virtual void AddObserver(WorkerServiceObserver* observer) = 0;
   virtual void RemoveObserver(WorkerServiceObserver* observer) = 0;

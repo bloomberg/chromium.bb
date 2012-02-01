@@ -29,6 +29,8 @@ class CONTENT_EXPORT WorkerServiceImpl
   static WorkerServiceImpl* GetInstance();
 
   // WorkerService implementation:
+  virtual bool TerminateWorker(int process_id, int route_id) OVERRIDE;
+  virtual std::vector<WorkerInfo> GetWorkers() OVERRIDE;
   virtual void AddObserver(WorkerServiceObserver* observer) OVERRIDE;
   virtual void RemoveObserver(WorkerServiceObserver* observer) OVERRIDE;
 
@@ -65,9 +67,6 @@ class CONTENT_EXPORT WorkerServiceImpl
       int worker_process_id);
 
   void NotifyWorkerDestroyed(
-      WorkerProcessHost* process,
-      int worker_route_id);
-  void NotifyWorkerContextStarted(
       WorkerProcessHost* process,
       int worker_route_id);
 

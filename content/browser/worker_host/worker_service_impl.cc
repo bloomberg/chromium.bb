@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/sys_info.h"
 #include "base/threading/thread.h"
+#include "content/browser/debugger/worker_devtools_manager.h"
 #include "content/browser/resource_context.h"
 #include "content/browser/worker_host/worker_message_filter.h"
 #include "content/browser/worker_host/worker_process_host.h"
@@ -84,7 +85,7 @@ void WorkerServiceImpl::CreateWorker(
     const ViewHostMsg_CreateWorker_Params& params,
     int route_id,
     WorkerMessageFilter* filter,
-    const content::ResourceContext& resource_context) {
+    const ResourceContext& resource_context) {
   // Generate a unique route id for the browser-worker communication that's
   // unique among all worker processes.  That way when the worker process sends
   // a wrapped IPC message through us, we know which WorkerProcessHost to give
@@ -108,7 +109,7 @@ void WorkerServiceImpl::LookupSharedWorker(
     const ViewHostMsg_CreateWorker_Params& params,
     int route_id,
     WorkerMessageFilter* filter,
-    const content::ResourceContext* resource_context,
+    const ResourceContext* resource_context,
     bool* exists,
     bool* url_mismatch) {
   *exists = true;
@@ -294,8 +295,11 @@ bool WorkerServiceImpl::CreateWorkerFromInstance(
   // DCHECK(worker->request_context() == instance.request_context());
 
   worker->CreateWorker(instance);
-  FOR_EACH_OBSERVER(WorkerServiceObserver, observers_,
-                    WorkerCreated(worker, instance));
+  FOR_EACH_OBSERVER(
+      WorkerServiceObserver, observers_,
+      WorkerCreated(instance.url(), instance.name(), worker->GetData().id,
+                    instance.worker_route_id()));
+  WorkerDevToolsManager::GetInstance()->WorkerCreated(worker, instance);
   return true;
 }
 
@@ -452,6 +456,34 @@ const WorkerProcessHost::WorkerInstance* WorkerServiceImpl::FindWorkerInstance(
   return NULL;
 }
 
+bool WorkerServiceImpl::TerminateWorker(int process_id, int route_id) {
+  for (WorkerProcessHostIterator iter; !iter.Done(); ++iter) {
+    if (iter.GetData().id == process_id) {
+      iter->TerminateWorker(route_id);
+      return true;
+    }
+  }
+  return false;
+}
+
+std::vector<WorkerService::WorkerInfo> WorkerServiceImpl::GetWorkers() {
+  std::vector<WorkerService::WorkerInfo> results;
+  for (WorkerProcessHostIterator iter; !iter.Done(); ++iter) {
+    const WorkerProcessHost::Instances& instances = (*iter)->instances();
+    for (WorkerProcessHost::Instances::const_iterator i = instances.begin();
+         i != instances.end(); ++i) {
+      WorkerService::WorkerInfo info;
+      info.url = i->url();
+      info.name = i->name();
+      info.route_id = i->worker_route_id();
+      info.process_id = iter.GetData().id;
+      info.handle = iter.GetData().handle;
+      results.push_back(info);
+    }
+  }
+  return results;
+}
+
 void WorkerServiceImpl::AddObserver(WorkerServiceObserver* observer) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   observers_.AddObserver(observer);
@@ -465,20 +497,16 @@ void WorkerServiceImpl::RemoveObserver(WorkerServiceObserver* observer) {
 void WorkerServiceImpl::NotifyWorkerDestroyed(
     WorkerProcessHost* process,
     int worker_route_id) {
+  WorkerDevToolsManager::GetInstance()->WorkerDestroyed(
+      process, worker_route_id);
   FOR_EACH_OBSERVER(WorkerServiceObserver, observers_,
-                    WorkerDestroyed(process, worker_route_id));
-}
-
-void WorkerServiceImpl::NotifyWorkerContextStarted(WorkerProcessHost* process,
-                                                   int worker_route_id) {
-  FOR_EACH_OBSERVER(WorkerServiceObserver, observers_,
-                    WorkerContextStarted(process, worker_route_id));
+                    WorkerDestroyed(process->GetData().id, worker_route_id));
 }
 
 WorkerProcessHost::WorkerInstance* WorkerServiceImpl::FindSharedWorkerInstance(
     const GURL& url,
     const string16& name,
-    const content::ResourceContext* resource_context) {
+    const ResourceContext* resource_context) {
   for (WorkerProcessHostIterator iter; !iter.Done(); ++iter) {
     for (WorkerProcessHost::Instances::iterator instance_iter =
              iter->mutable_instances().begin();
@@ -494,7 +522,7 @@ WorkerProcessHost::WorkerInstance* WorkerServiceImpl::FindSharedWorkerInstance(
 WorkerProcessHost::WorkerInstance* WorkerServiceImpl::FindPendingInstance(
     const GURL& url,
     const string16& name,
-    const content::ResourceContext* resource_context) {
+    const ResourceContext* resource_context) {
   // Walk the pending instances looking for a matching pending worker.
   for (WorkerProcessHost::Instances::iterator iter =
            pending_shared_workers_.begin();
@@ -511,7 +539,7 @@ WorkerProcessHost::WorkerInstance* WorkerServiceImpl::FindPendingInstance(
 void WorkerServiceImpl::RemovePendingInstances(
     const GURL& url,
     const string16& name,
-    const content::ResourceContext* resource_context) {
+    const ResourceContext* resource_context) {
   // Walk the pending instances looking for a matching pending worker.
   for (WorkerProcessHost::Instances::iterator iter =
            pending_shared_workers_.begin();
@@ -527,7 +555,7 @@ void WorkerServiceImpl::RemovePendingInstances(
 WorkerProcessHost::WorkerInstance* WorkerServiceImpl::CreatePendingInstance(
     const GURL& url,
     const string16& name,
-    const content::ResourceContext* resource_context) {
+    const ResourceContext* resource_context) {
   // Look for an existing pending shared worker.
   WorkerProcessHost::WorkerInstance* instance =
       FindPendingInstance(url, name, resource_context);

@@ -185,6 +185,10 @@ class WorkerProcessHost : public content::BrowserChildProcessHostDelegate,
   // Updates the title shown in the task manager.
   void UpdateTitle();
 
+  // Return a vector of all the render process/render view IDs that use the
+  // given worker.
+  std::vector<std::pair<int, int> > GetRenderViewIDsForWorker(int route_id);
+
   Instances instances_;
 
   const content::ResourceContext* const resource_context_;

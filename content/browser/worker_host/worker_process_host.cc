@@ -18,6 +18,7 @@
 #include "content/browser/appcache/appcache_dispatcher_host.h"
 #include "content/browser/browser_child_process_host_impl.h"
 #include "content/browser/child_process_security_policy.h"
+#include "content/browser/debugger/worker_devtools_manager.h"
 #include "content/browser/debugger/worker_devtools_message_filter.h"
 #include "content/browser/file_system/file_system_dispatcher_host.h"
 #include "content/browser/mime_registry_message_filter.h"
@@ -52,6 +53,7 @@ using content::BrowserThread;
 using content::ChildProcessData;
 using content::ChildProcessHost;
 using content::UserMetricsAction;
+using content::WorkerDevToolsManager;
 using content::WorkerServiceImpl;
 
 namespace {
@@ -373,14 +375,16 @@ void WorkerProcessHost::OnAllowDatabase(int worker_route_id,
                                         unsigned long estimated_size,
                                         bool* result) {
   *result = content::GetContentClient()->browser()->AllowWorkerDatabase(
-      worker_route_id, url, name, display_name, estimated_size, this);
+      url, name, display_name, estimated_size, *resource_context_,
+      GetRenderViewIDsForWorker(worker_route_id));
 }
 
 void WorkerProcessHost::OnAllowFileSystem(int worker_route_id,
                                           const GURL& url,
                                           bool* result) {
   *result = content::GetContentClient()->browser()->AllowWorkerFileSystem(
-      worker_route_id, url, this);
+      url, *resource_context_,
+      GetRenderViewIDsForWorker(worker_route_id));
 }
 
 void WorkerProcessHost::RelayMessage(
@@ -440,7 +444,7 @@ void WorkerProcessHost::RelayMessage(
     new_message->set_routing_id(route_id);
     filter->Send(new_message);
     if (message.type() == WorkerMsg_StartWorkerContext::ID) {
-      WorkerServiceImpl::GetInstance()->NotifyWorkerContextStarted(
+      WorkerDevToolsManager::GetInstance()->WorkerContextStarted(
           this, route_id);
     }
     return;
@@ -523,6 +527,25 @@ void WorkerProcessHost::TerminateWorker(int worker_route_id) {
 
 const ChildProcessData& WorkerProcessHost::GetData() {
   return process_->GetData();
+}
+
+std::vector<std::pair<int, int> > WorkerProcessHost::GetRenderViewIDsForWorker(
+    int worker_route_id) {
+  std::vector<std::pair<int, int> > result;
+  WorkerProcessHost::Instances::const_iterator i;
+  for (i = instances_.begin(); i != instances_.end(); ++i) {
+    if (i->worker_route_id() != worker_route_id)
+      continue;
+    const WorkerDocumentSet::DocumentInfoSet& documents =
+        i->worker_document_set()->documents();
+    for (WorkerDocumentSet::DocumentInfoSet::const_iterator doc =
+         documents.begin(); doc != documents.end(); ++doc) {
+      result.push_back(
+          std::make_pair(doc->render_process_id(), doc->render_view_id()));
+    }
+    break;
+  }
+  return result;
 }
 
 WorkerProcessHost::WorkerInstance::WorkerInstance(

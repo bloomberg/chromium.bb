@@ -7,6 +7,7 @@
 #pragma once
 
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/callback_forward.h"
@@ -26,7 +27,6 @@ class ResourceDispatcherHost;
 class SSLCertErrorHandler;
 class SSLClientAuthHandler;
 class SkBitmap;
-class WorkerProcessHost;
 struct WebPreferences;
 
 namespace content {
@@ -185,23 +185,25 @@ class ContentBrowserClient {
   virtual bool AllowSaveLocalState(
       const content::ResourceContext& context) = 0;
 
-  // Allow the embedder to control if access to web database by a worker is
-  // allowed.
+  // Allow the embedder to control if access to web database by a shared worker
+  // is allowed. |render_views| is a vector of pairs of
+  // RenderProcessID/RenderViewID of RenderViews that are using this worker.
   // This is called on the IO thread.
-  virtual bool AllowWorkerDatabase(int worker_route_id,
-                                   const GURL& url,
-                                   const string16& name,
-                                   const string16& display_name,
-                                   unsigned long estimated_size,
-                                   WorkerProcessHost* worker_process_host) = 0;
+  virtual bool AllowWorkerDatabase(
+      const GURL& url,
+      const string16& name,
+      const string16& display_name,
+      unsigned long estimated_size,
+      const content::ResourceContext& context,
+      const std::vector<std::pair<int, int> >& render_views) = 0;
 
-  // Allow the embedder to control if access to file system by a worker is
-  // allowed.
+  // Allow the embedder to control if access to file system by a shared worker
+  // is allowed.
   // This is called on the IO thread.
   virtual bool AllowWorkerFileSystem(
-      int worker_route_id,
       const GURL& url,
-      WorkerProcessHost* worker_process_host) = 0;
+      const content::ResourceContext& context,
+      const std::vector<std::pair<int, int> >& render_views) = 0;
 
   // Allows the embedder to override the request context based on the URL for
   // certain operations, like cookie access. Returns NULL to indicate the

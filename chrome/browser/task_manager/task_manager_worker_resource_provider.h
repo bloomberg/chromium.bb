@@ -40,13 +40,11 @@ class TaskManagerWorkerResourceProvider
   virtual void StopUpdating() OVERRIDE;
 
   // content::WorkerServiceObserver implementation.
-  virtual void WorkerCreated(
-      WorkerProcessHost* process,
-      const WorkerProcessHost::WorkerInstance& instance) OVERRIDE;
-  virtual void WorkerDestroyed(
-      WorkerProcessHost* process,
-      int worker_route_id) OVERRIDE;
-  virtual void WorkerContextStarted(WorkerProcessHost*, int) OVERRIDE {}
+  virtual void WorkerCreated(const GURL& url,
+                             const string16& name,
+                             int process_id,
+                             int route_id) OVERRIDE;
+  virtual void WorkerDestroyed(int process_id, int route_id) OVERRIDE;
 
   // content::NotificationObserver implementation.
   virtual void Observe(int type,

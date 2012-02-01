@@ -24,8 +24,6 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/browser/renderer_host/render_view_host.h"
-#include "content/browser/worker_host/worker_process_host.h"
-#include "content/public/browser/browser_child_process_host_iterator.h"
 #include "content/public/browser/child_process_data.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/devtools_agent_host_registry.h"
@@ -292,21 +290,17 @@ class WorkerDevToolsSanityTest : public InProcessBrowserTest {
     virtual ~WorkerCreationObserver() {}
 
     virtual void WorkerCreated (
-        WorkerProcessHost* process,
-        const WorkerProcessHost::WorkerInstance& instance) OVERRIDE {
-      worker_data_->worker_process_id = process->GetData().id;
-      worker_data_->worker_route_id = instance.worker_route_id();
+        const GURL& url,
+        const string16& name,
+        int process_id,
+        int route_id) OVERRIDE {
+      worker_data_->worker_process_id = process_id;
+      worker_data_->worker_route_id = route_id;
       WorkerService::GetInstance()->RemoveObserver(this);
       BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
           MessageLoop::QuitClosure());
       delete this;
     }
-    virtual void WorkerDestroyed(
-        WorkerProcessHost*,
-        int worker_route_id) OVERRIDE {}
-    virtual void WorkerContextStarted(
-        WorkerProcessHost*,
-        int worker_route_id) OVERRIDE {}
     scoped_refptr<WorkerData> worker_data_;
   };
 
@@ -319,22 +313,14 @@ class WorkerDevToolsSanityTest : public InProcessBrowserTest {
    private:
     virtual ~WorkerTerminationObserver() {}
 
-    virtual void WorkerCreated (
-        WorkerProcessHost* process,
-        const WorkerProcessHost::WorkerInstance& instance) OVERRIDE {}
-    virtual void WorkerDestroyed(
-        WorkerProcessHost* process,
-        int worker_route_id) OVERRIDE {
-      ASSERT_EQ(worker_data_->worker_process_id, process->GetData().id);
-      ASSERT_EQ(worker_data_->worker_route_id, worker_route_id);
+    virtual void WorkerDestroyed(int process_id, int route_id) OVERRIDE {
+      ASSERT_EQ(worker_data_->worker_process_id, process_id);
+      ASSERT_EQ(worker_data_->worker_route_id, route_id);
       WorkerService::GetInstance()->RemoveObserver(this);
       BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
           MessageLoop::QuitClosure());
       delete this;
     }
-    virtual void WorkerContextStarted(
-        WorkerProcessHost*,
-        int worker_route_id) OVERRIDE {}
     scoped_refptr<WorkerData> worker_data_;
   };
 
@@ -349,15 +335,12 @@ class WorkerDevToolsSanityTest : public InProcessBrowserTest {
     CloseDevToolsWindow();
   }
 
-  static void TerminateWorkerOnIOThread(
-      scoped_refptr<WorkerData> worker_data) {
-    for (WorkerProcessHostIterator iter; !iter.Done(); ++iter) {
-      if (iter.GetData().id == worker_data->worker_process_id) {
-        iter->TerminateWorker(worker_data->worker_route_id);
-        WorkerService::GetInstance()->AddObserver(
-            new WorkerTerminationObserver(worker_data));
-        return;
-      }
+  static void TerminateWorkerOnIOThread(scoped_refptr<WorkerData> worker_data) {
+    if (WorkerService::GetInstance()->TerminateWorker(
+            worker_data->worker_process_id, worker_data->worker_route_id)) {
+      WorkerService::GetInstance()->AddObserver(
+          new WorkerTerminationObserver(worker_data));
+      return;
     }
     FAIL() << "Failed to terminate worker.\n";
   }
@@ -371,17 +354,14 @@ class WorkerDevToolsSanityTest : public InProcessBrowserTest {
 
   static void WaitForFirstSharedWorkerOnIOThread(
       scoped_refptr<WorkerData> worker_data) {
-    for (WorkerProcessHostIterator iter; !iter.Done(); ++iter) {
-      const WorkerProcessHost::Instances& instances = iter->instances();
-      for (WorkerProcessHost::Instances::const_iterator i = instances.begin();
-           i != instances.end(); ++i) {
-
-        worker_data->worker_process_id = iter.GetData().id;
-        worker_data->worker_route_id = i->worker_route_id();
-        BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-            MessageLoop::QuitClosure());
-        return;
-      }
+    std::vector<WorkerService::WorkerInfo> worker_info =
+        WorkerService::GetInstance()->GetWorkers();
+    if (!worker_info.empty()) {
+      worker_data->worker_process_id = worker_info[0].process_id;
+      worker_data->worker_route_id = worker_info[0].route_id;
+      BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+          MessageLoop::QuitClosure());
+      return;
     }
 
     WorkerService::GetInstance()->AddObserver(

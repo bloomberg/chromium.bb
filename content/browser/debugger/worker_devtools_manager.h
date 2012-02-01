@@ -14,18 +14,14 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "content/common/content_export.h"
-#include "content/public/browser/worker_service_observer.h"
-
-namespace IPC {
-class Message;
-}
+#include "content/browser/worker_host/worker_process_host.h"
 
 namespace content {
 
 class DevToolsAgentHost;
 
 // All methods are supposed to be called on the IO thread.
-class WorkerDevToolsManager : private WorkerServiceObserver {
+class WorkerDevToolsManager {
  public:
   // Returns the WorkerDevToolsManager singleton.
   static WorkerDevToolsManager* GetInstance();
@@ -42,6 +38,13 @@ class WorkerDevToolsManager : private WorkerServiceObserver {
                              int worker_route_id,
                              const std::string& state);
 
+  // Called on the IO thread.
+  void WorkerCreated(
+      WorkerProcessHost* process,
+      const WorkerProcessHost::WorkerInstance& instance);
+  void WorkerDestroyed(WorkerProcessHost* process, int worker_route_id);
+  void WorkerContextStarted(WorkerProcessHost* process, int worker_route_id);
+
  private:
   friend struct DefaultSingletonTraits<WorkerDevToolsManager>;
   typedef std::pair<int, int> WorkerId;
@@ -53,16 +56,6 @@ class WorkerDevToolsManager : private WorkerServiceObserver {
 
   WorkerDevToolsManager();
   virtual ~WorkerDevToolsManager();
-
-  // WorkerServiceObserver implementation.
-  virtual void WorkerCreated(
-      WorkerProcessHost* process,
-      const WorkerProcessHost::WorkerInstance& instance) OVERRIDE;
-  virtual void WorkerDestroyed(
-      WorkerProcessHost* process,
-      int worker_route_id) OVERRIDE;
-  virtual void WorkerContextStarted(WorkerProcessHost* process,
-                                    int worker_route_id) OVERRIDE;
 
   void RemoveInspectedWorkerData(const WorkerId& id);
   InspectedWorkersList::iterator FindInspectedWorker(int host_id, int route_id);

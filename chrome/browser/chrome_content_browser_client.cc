@@ -72,7 +72,6 @@
 #include "content/browser/resource_context.h"
 #include "content/browser/ssl/ssl_cert_error_handler.h"
 #include "content/browser/ssl/ssl_client_auth_handler.h"
-#include "content/browser/worker_host/worker_process_host.h"
 #include "content/public/browser/browser_main_parts.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/site_instance.h"
@@ -781,70 +780,47 @@ bool ChromeContentBrowserClient::AllowSaveLocalState(
 }
 
 bool ChromeContentBrowserClient::AllowWorkerDatabase(
-    int worker_route_id,
     const GURL& url,
     const string16& name,
     const string16& display_name,
     unsigned long estimated_size,
-    WorkerProcessHost* worker_process_host) {
+    const content::ResourceContext& context,
+    const std::vector<std::pair<int, int> >& render_views) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   ProfileIOData* io_data = reinterpret_cast<ProfileIOData*>(
-      worker_process_host->resource_context()->GetUserData(NULL));
+      context.GetUserData(NULL));
   CookieSettings* cookie_settings = io_data->GetCookieSettings();
   bool allow = cookie_settings->IsSettingCookieAllowed(url, url);
 
-  // Record access to database for potential display in UI: Find the worker
-  // instance and forward the message to all attached documents.
-  WorkerProcessHost::Instances::const_iterator i;
-  for (i = worker_process_host->instances().begin();
-       i != worker_process_host->instances().end(); ++i) {
-    if (i->worker_route_id() != worker_route_id)
-      continue;
-    const WorkerDocumentSet::DocumentInfoSet& documents =
-        i->worker_document_set()->documents();
-    for (WorkerDocumentSet::DocumentInfoSet::const_iterator doc =
-         documents.begin(); doc != documents.end(); ++doc) {
-      BrowserThread::PostTask(
-          BrowserThread::UI, FROM_HERE,
-          base::Bind(
-              &TabSpecificContentSettings::WebDatabaseAccessed,
-              doc->render_process_id(), doc->render_view_id(),
-              url, name, display_name, !allow));
-    }
-    break;
+  // Record access to database for potential display in UI.
+  std::vector<std::pair<int, int> >::const_iterator i;
+  for (i = render_views.begin(); i != render_views.end(); ++i) {
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::Bind(&TabSpecificContentSettings::WebDatabaseAccessed,
+                   i->first, i->second, url, name, display_name, !allow));
   }
 
   return allow;
 }
 
 bool ChromeContentBrowserClient::AllowWorkerFileSystem(
-    int worker_route_id,
     const GURL& url,
-    WorkerProcessHost* worker_process_host) {
+    const content::ResourceContext& context,
+    const std::vector<std::pair<int, int> >& render_views) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   ProfileIOData* io_data = reinterpret_cast<ProfileIOData*>(
-      worker_process_host->resource_context()->GetUserData(NULL));
+      context.GetUserData(NULL));
   CookieSettings* cookie_settings = io_data->GetCookieSettings();
   bool allow = cookie_settings->IsSettingCookieAllowed(url, url);
 
-  // Record access to file system for potential display in UI: Find the worker
-  // instance and forward the message to all attached documents.
-  WorkerProcessHost::Instances::const_iterator i;
-  for (i = worker_process_host->instances().begin();
-       i != worker_process_host->instances().end(); ++i) {
-    if (i->worker_route_id() != worker_route_id)
-      continue;
-    const WorkerDocumentSet::DocumentInfoSet& documents =
-        i->worker_document_set()->documents();
-    for (WorkerDocumentSet::DocumentInfoSet::const_iterator doc =
-         documents.begin(); doc != documents.end(); ++doc) {
-      BrowserThread::PostTask(
-          BrowserThread::UI, FROM_HERE,
-          base::Bind(
-              &TabSpecificContentSettings::FileSystemAccessed,
-              doc->render_process_id(), doc->render_view_id(), url, !allow));
-    }
-    break;
+  // Record access to file system for potential display in UI.
+  std::vector<std::pair<int, int> >::const_iterator i;
+  for (i = render_views.begin(); i != render_views.end(); ++i) {
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::Bind(&TabSpecificContentSettings::FileSystemAccessed,
+                   i->first, i->second, url, !allow));
   }
 
   return allow;

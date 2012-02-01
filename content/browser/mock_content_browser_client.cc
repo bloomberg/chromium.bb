@@ -138,19 +138,19 @@ bool MockContentBrowserClient::AllowSaveLocalState(
 }
 
 bool MockContentBrowserClient::AllowWorkerDatabase(
-    int worker_route_id,
     const GURL& url,
     const string16& name,
     const string16& display_name,
     unsigned long estimated_size,
-    WorkerProcessHost* worker_process_host) {
+    const content::ResourceContext& context,
+    const std::vector<std::pair<int, int> >& render_views) {
   return true;
 }
 
 bool MockContentBrowserClient::AllowWorkerFileSystem(
-    int worker_route_id,
     const GURL& url,
-    WorkerProcessHost* worker_process_host) {
+    const content::ResourceContext& context,
+    const std::vector<std::pair<int, int> >& render_views) {
   return true;
 }
 
