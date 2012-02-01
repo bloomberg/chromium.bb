@@ -455,6 +455,7 @@ am__src_common_dumper_unittest_SOURCES_DIST =  \
 	src/common/dwarf/dwarf2diehandler_unittest.cc \
 	src/common/dwarf/dwarf2reader.cc \
 	src/common/dwarf/dwarf2reader_cfi_unittest.cc \
+	src/common/dwarf/dwarf2reader_die_unittest.cc \
 	src/common/linux/dump_symbols.cc \
 	src/common/linux/dump_symbols_unittest.cc \
 	src/common/linux/elf_core_dump.cc \
@@ -497,6 +498,7 @@ am__src_common_dumper_unittest_SOURCES_DIST =  \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/dwarf/src_common_dumper_unittest-dwarf2diehandler_unittest.$(OBJEXT) \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/dwarf/src_common_dumper_unittest-dwarf2reader.$(OBJEXT) \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/dwarf/src_common_dumper_unittest-dwarf2reader_cfi_unittest.$(OBJEXT) \
+@DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/dwarf/src_common_dumper_unittest-dwarf2reader_die_unittest.$(OBJEXT) \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/linux/src_common_dumper_unittest-dump_symbols.$(OBJEXT) \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/linux/src_common_dumper_unittest-dump_symbols_unittest.$(OBJEXT) \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/linux/src_common_dumper_unittest-elf_core_dump.$(OBJEXT) \
@@ -1481,6 +1483,7 @@ TESTS_ENVIRONMENT =
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/dwarf/dwarf2diehandler_unittest.cc \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/dwarf/dwarf2reader.cc \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/dwarf/dwarf2reader_cfi_unittest.cc \
+@DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/dwarf/dwarf2reader_die_unittest.cc \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/linux/dump_symbols.cc \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/linux/dump_symbols_unittest.cc \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/linux/elf_core_dump.cc \
@@ -2604,6 +2607,9 @@ src/common/dwarf/src_common_dumper_unittest-dwarf2reader.$(OBJEXT):  \
 src/common/dwarf/src_common_dumper_unittest-dwarf2reader_cfi_unittest.$(OBJEXT):  \
 	src/common/dwarf/$(am__dirstamp) \
 	src/common/dwarf/$(DEPDIR)/$(am__dirstamp)
+src/common/dwarf/src_common_dumper_unittest-dwarf2reader_die_unittest.$(OBJEXT):  \
+	src/common/dwarf/$(am__dirstamp) \
+	src/common/dwarf/$(DEPDIR)/$(am__dirstamp)
 src/common/linux/src_common_dumper_unittest-dump_symbols.$(OBJEXT):  \
 	src/common/linux/$(am__dirstamp) \
 	src/common/linux/$(DEPDIR)/$(am__dirstamp)
@@ -3107,6 +3113,7 @@ mostlyclean-compile:
 	-rm -f src/common/dwarf/src_common_dumper_unittest-dwarf2diehandler_unittest.$(OBJEXT)
 	-rm -f src/common/dwarf/src_common_dumper_unittest-dwarf2reader.$(OBJEXT)
 	-rm -f src/common/dwarf/src_common_dumper_unittest-dwarf2reader_cfi_unittest.$(OBJEXT)
+	-rm -f src/common/dwarf/src_common_dumper_unittest-dwarf2reader_die_unittest.$(OBJEXT)
 	-rm -f src/common/dwarf_cfi_to_module.$(OBJEXT)
 	-rm -f src/common/dwarf_cu_to_module.$(OBJEXT)
 	-rm -f src/common/dwarf_line_to_module.$(OBJEXT)
@@ -3359,6 +3366,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@src/common/dwarf/$(DEPDIR)/src_common_dumper_unittest-dwarf2diehandler_unittest.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/common/dwarf/$(DEPDIR)/src_common_dumper_unittest-dwarf2reader.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/common/dwarf/$(DEPDIR)/src_common_dumper_unittest-dwarf2reader_cfi_unittest.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/common/dwarf/$(DEPDIR)/src_common_dumper_unittest-dwarf2reader_die_unittest.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/common/linux/$(DEPDIR)/dump_symbols.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/common/linux/$(DEPDIR)/elf_core_dump.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/common/linux/$(DEPDIR)/elf_symbols_to_module.Po@am__quote@
@@ -4122,6 +4130,20 @@ src/common/dwarf/src_common_dumper_unittest-dwarf2reader_cfi_unittest.obj: src/c
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='src/common/dwarf/dwarf2reader_cfi_unittest.cc' object='src/common/dwarf/src_common_dumper_unittest-dwarf2reader_cfi_unittest.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_common_dumper_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/common/dwarf/src_common_dumper_unittest-dwarf2reader_cfi_unittest.obj `if test -f 'src/common/dwarf/dwarf2reader_cfi_unittest.cc'; then $(CYGPATH_W) 'src/common/dwarf/dwarf2reader_cfi_unittest.cc'; else $(CYGPATH_W) '$(srcdir)/src/common/dwarf/dwarf2reader_cfi_unittest.cc'; fi`
+
+src/common/dwarf/src_common_dumper_unittest-dwarf2reader_die_unittest.o: src/common/dwarf/dwarf2reader_die_unittest.cc
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_common_dumper_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/common/dwarf/src_common_dumper_unittest-dwarf2reader_die_unittest.o -MD -MP -MF src/common/dwarf/$(DEPDIR)/src_common_dumper_unittest-dwarf2reader_die_unittest.Tpo -c -o src/common/dwarf/src_common_dumper_unittest-dwarf2reader_die_unittest.o `test -f 'src/common/dwarf/dwarf2reader_die_unittest.cc' || echo '$(srcdir)/'`src/common/dwarf/dwarf2reader_die_unittest.cc
+@am__fastdepCXX_TRUE@	$(am__mv) src/common/dwarf/$(DEPDIR)/src_common_dumper_unittest-dwarf2reader_die_unittest.Tpo src/common/dwarf/$(DEPDIR)/src_common_dumper_unittest-dwarf2reader_die_unittest.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='src/common/dwarf/dwarf2reader_die_unittest.cc' object='src/common/dwarf/src_common_dumper_unittest-dwarf2reader_die_unittest.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_common_dumper_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/common/dwarf/src_common_dumper_unittest-dwarf2reader_die_unittest.o `test -f 'src/common/dwarf/dwarf2reader_die_unittest.cc' || echo '$(srcdir)/'`src/common/dwarf/dwarf2reader_die_unittest.cc
+
+src/common/dwarf/src_common_dumper_unittest-dwarf2reader_die_unittest.obj: src/common/dwarf/dwarf2reader_die_unittest.cc
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_common_dumper_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/common/dwarf/src_common_dumper_unittest-dwarf2reader_die_unittest.obj -MD -MP -MF src/common/dwarf/$(DEPDIR)/src_common_dumper_unittest-dwarf2reader_die_unittest.Tpo -c -o src/common/dwarf/src_common_dumper_unittest-dwarf2reader_die_unittest.obj `if test -f 'src/common/dwarf/dwarf2reader_die_unittest.cc'; then $(CYGPATH_W) 'src/common/dwarf/dwarf2reader_die_unittest.cc'; else $(CYGPATH_W) '$(srcdir)/src/common/dwarf/dwarf2reader_die_unittest.cc'; fi`
+@am__fastdepCXX_TRUE@	$(am__mv) src/common/dwarf/$(DEPDIR)/src_common_dumper_unittest-dwarf2reader_die_unittest.Tpo src/common/dwarf/$(DEPDIR)/src_common_dumper_unittest-dwarf2reader_die_unittest.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='src/common/dwarf/dwarf2reader_die_unittest.cc' object='src/common/dwarf/src_common_dumper_unittest-dwarf2reader_die_unittest.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_common_dumper_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/common/dwarf/src_common_dumper_unittest-dwarf2reader_die_unittest.obj `if test -f 'src/common/dwarf/dwarf2reader_die_unittest.cc'; then $(CYGPATH_W) 'src/common/dwarf/dwarf2reader_die_unittest.cc'; else $(CYGPATH_W) '$(srcdir)/src/common/dwarf/dwarf2reader_die_unittest.cc'; fi`
 
 src/common/linux/src_common_dumper_unittest-dump_symbols.o: src/common/linux/dump_symbols.cc
 @am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_common_dumper_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/common/linux/src_common_dumper_unittest-dump_symbols.o -MD -MP -MF src/common/linux/$(DEPDIR)/src_common_dumper_unittest-dump_symbols.Tpo -c -o src/common/linux/src_common_dumper_unittest-dump_symbols.o `test -f 'src/common/linux/dump_symbols.cc' || echo '$(srcdir)/'`src/common/linux/dump_symbols.cc

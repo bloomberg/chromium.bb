@@ -398,6 +398,7 @@ src_common_dumper_unittest_SOURCES = \
 	src/common/dwarf/dwarf2diehandler_unittest.cc \
 	src/common/dwarf/dwarf2reader.cc \
 	src/common/dwarf/dwarf2reader_cfi_unittest.cc \
+	src/common/dwarf/dwarf2reader_die_unittest.cc \
 	src/common/linux/dump_symbols.cc \
 	src/common/linux/dump_symbols_unittest.cc \
 	src/common/linux/elf_core_dump.cc \
