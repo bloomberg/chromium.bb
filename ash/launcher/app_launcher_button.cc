@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "ash/launcher/launcher_button_host.h"
+#include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/gfx/canvas_skia.h"
 
 namespace ash {
@@ -79,6 +80,11 @@ bool AppLauncherButton::OnMouseDragged(const views::MouseEvent& event) {
 void AppLauncherButton::OnMouseExited(const views::MouseEvent& event) {
   ImageButton::OnMouseExited(event);
   host_->MouseExitedButton(this);
+}
+
+void AppLauncherButton::GetAccessibleState(ui::AccessibleViewState* state) {
+  state->role = ui::AccessibilityTypes::ROLE_PUSHBUTTON;
+  state->name = host_->GetAccessibleName(this);
 }
 
 }  // namespace internal

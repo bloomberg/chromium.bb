@@ -13,6 +13,7 @@
       'target_name': 'ash',
       'type': '<(component)',
       'dependencies': [
+        'ash_strings',
         '../base/base.gyp:base',
         '../base/base.gyp:base_i18n',
         '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
@@ -330,6 +331,21 @@
           },
         }],
       ],
+    },
+    {
+      'target_name': 'ash_strings',
+      'type': 'none',
+      'actions': [
+        # Localizable resources.
+        {
+          'action_name': 'ash_strings',
+          'variables': {
+            'grit_grd_file': 'ash_strings.grd',
+          },
+          'includes': [ '../build/grit_action.gypi' ],
+        },
+      ],
+      'includes': [ '../build/grit_target.gypi' ],
     },
   ],
 }

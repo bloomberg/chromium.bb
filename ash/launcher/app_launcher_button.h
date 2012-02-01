@@ -31,6 +31,7 @@ class AppLauncherButton : public views::ImageButton {
   virtual void OnMouseCaptureLost() OVERRIDE;
   virtual bool OnMouseDragged(const views::MouseEvent& event) OVERRIDE;
   virtual void OnMouseExited(const views::MouseEvent& event) OVERRIDE;
+  virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
 
  private:
   LauncherButtonHost* host_;
