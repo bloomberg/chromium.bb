@@ -54,6 +54,8 @@ function onLoad() {
       { event: 'click', id: 'client-reconnect-button', fn: reload },
       { event: 'click', id: 'cancel-button',
         fn: remoting.cancelPendingOperation },
+      { event: 'click', id: 'toolbar-stub',
+        fn: function() { remoting.toolbar.toggle(); } },
       { event: 'submit', id: 'access-code-form', fn: sendAccessCode },
       { event: 'submit', id: 'pin-form', fn: connectHostWithPin }
   ];

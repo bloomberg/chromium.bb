@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -23,48 +23,58 @@ remoting.Toolbar = function(toolbar) {
    */
   this.toolbar_ = toolbar;
   /**
-   * @type {boolean} False if the tool-bar is currently hidden, or should be
-   *      hidden once the over-shoot timer expires; true otherwise.
+   * @type {Element}
+   * @private
    */
-  this.visible = false;
+  this.stub_ = toolbar.querySelector('.toolbar-stub');
   /**
-   * @type {number?} The id of the current timer, if any.
+   * @type {number?} The id of the preview timer, if any.
+   * @private
    */
-  this.timerId = null;
+  this.timerId_ = null;
+  /**
+   * @type {number} The left edge of the tool-bar stub, updated on resize.
+   * @private
+   */
+  this.stubLeft_ = 0;
+  /**
+   * @type {number} The right edge of the tool-bar stub, updated on resize.
+   * @private
+   */
+  this.stubRight_ = 0;
 
   /** @type {remoting.Toolbar} */
   var that = this;
 
-  /**
-   * @param {Event} event The mouseout event, used to determine whether or
-   *     not the mouse is leaving the tool-bar or (due to event-bubbling)
-   *     one of its children.
-   */
-  var onMouseOut = function(event) {
-    for (var e = event.toElement; e != null; e = e.parentElement) {
-      if (e == that.toolbar_) {
-        return;  // Still over a child element => ignore.
-      }
-    }
-    that.hide_();
-  };
-  this.toolbar_.onmouseout = onMouseOut;
-
-  this.toolbar_.onmouseover = function() {
-    that.showForAtLeast_(1000);
-  };
-
+  window.addEventListener('mousemove', remoting.Toolbar.onMouseMove, false);
   window.addEventListener('resize', function() { that.center(); }, false);
+
+  // Prevent the preview canceling if the user is interacting with the tool-bar.
+  var stopTimer = function() {
+    if (that.timerId_) {
+      window.clearTimeout(that.timerId_);
+      that.timerId_ = null;
+    }
+  }
+  this.toolbar_.addEventListener('mousemove', stopTimer, false);
 };
 
 /**
- * Preview the tool-bar functionality by showing it for 3s if it is not
- *     already visible.
+ * Preview the tool-bar functionality by showing it for 3s.
  * @return {void} Nothing.
  */
 remoting.Toolbar.prototype.preview = function() {
-  this.showForAtLeast_(3000);
-  this.visible = false;
+  addClass(this.toolbar_, remoting.Toolbar.VISIBLE_CLASS_);
+  if (this.timerId_) {
+    window.clearTimeout(this.timerId_);
+    this.timerId_ = null;
+  }
+  /** @type {remoting.Toolbar} */
+  var that = this;
+  var endPreview = function() {
+    removeClass(that.toolbar_, remoting.Toolbar.VISIBLE_CLASS_);
+  };
+  this.timerId_ = window.setTimeout(endPreview, 3000);
 };
 
 /**
@@ -73,67 +83,66 @@ remoting.Toolbar.prototype.preview = function() {
 remoting.Toolbar.prototype.center = function() {
   var toolbarX = (window.innerWidth - this.toolbar_.clientWidth) / 2;
   this.toolbar_.style['left'] = toolbarX + 'px';
+  var r = this.stub_.getBoundingClientRect();
+  this.stubLeft_ = r.left;
+  this.stubRight_ = r.right;
 };
 
 /**
- * If the tool-bar is not currently visible, show it and start a timer to
- * prevent it from being hidden again for a short time. This is to guard
- * against users over-shooting the tool-bar stub when trying to access it.
- *
- * @param {number} timeout The minimum length of time, in ms, for which to
- *     show the tool-bar. If the hide_() method is called within this time,
- *     it will not take effect until the timeout expires.
- * @return {void} Nothing.
- * @private
+ * Toggle the tool-bar visibility.
  */
-remoting.Toolbar.prototype.showForAtLeast_ = function(timeout) {
-  if (this.visible) {
-    return;
-  }
-  addClass(this.toolbar_, remoting.Toolbar.VISIBLE_CLASS_);
-  this.visible = true;
-  if (this.timerId) {
-    window.clearTimeout(this.timerId);
-    this.timerId = null;
-  }
-  /** @type {remoting.Toolbar} */
-  var that = this;
-  var checkVisibility = function() { that.checkVisibility_(); };
-  this.timerId = window.setTimeout(checkVisibility, timeout);
-};
-
-/**
- * Hide the tool-bar if it is visible. If there is a visibility timer running,
- * the tool-bar will not be hidden until it expires.
- *
- * @return {void} Nothing.
- * @private
- */
-remoting.Toolbar.prototype.hide_ = function() {
-  if (!this.visible) {
-    return;
-  }
-  this.visible = false;
-  if (!this.timerId) {
-    this.checkVisibility_();
-  }
-};
-
-/**
- * Hide the tool-bar if it is visible and should not be.
- *
- * @return {void} Nothing.
- * @private
- */
-remoting.Toolbar.prototype.checkVisibility_ = function() {
-  this.timerId = null;
-  if (!this.visible) {
+remoting.Toolbar.prototype.toggle = function() {
+  if (hasClass(this.toolbar_.className,
+               remoting.Toolbar.VISIBLE_CLASS_)) {
     removeClass(this.toolbar_, remoting.Toolbar.VISIBLE_CLASS_);
+  } else {
+    addClass(this.toolbar_, remoting.Toolbar.VISIBLE_CLASS_);
+  }
+};
+
+/**
+ * Test the specified co-ordinate to see if it is close enough to the stub
+ * to activate it.
+ *
+ * @param {number} x The x co-ordinate.
+ * @param {number} y The y co-ordinate.
+ * @return {boolean} True if the position should activate the tool-bar stub, or
+ *     false otherwise.
+ * @private
+ */
+remoting.Toolbar.prototype.hitTest_ = function(x, y) {
+  var threshold = 50;
+  return (x >= this.stubLeft_ - threshold &&
+          x <= this.stubRight_ + threshold &&
+          y < threshold);
+};
+
+/**
+ * Called whenever the mouse moves in the document. This is used to make the
+ * active area of the tool-bar stub larger without making a corresponding area
+ * of the host screen inactive.
+ *
+ * @param {Event} event The mouse move event.
+ * @return {void} Nothing.
+ */
+remoting.Toolbar.onMouseMove = function(event) {
+  if (remoting.toolbar) {
+    if (remoting.toolbar.hitTest_(event.x, event.y)) {
+      addClass(remoting.toolbar.stub_, remoting.Toolbar.STUB_EXTENDED_CLASS_);
+    } else {
+      removeClass(remoting.toolbar.stub_,
+                  remoting.Toolbar.STUB_EXTENDED_CLASS_);
+    }
+  } else {
+    document.removeEventListener('mousemove',
+                                 remoting.Toolbar.onMouseMove, false);
   }
 };
 
 /** @type {remoting.Toolbar} */
 remoting.toolbar = null;
 
+/** @private */
+remoting.Toolbar.STUB_EXTENDED_CLASS_ = 'toolbar-stub-extended';
 /** @private */
 remoting.Toolbar.VISIBLE_CLASS_ = 'toolbar-visible';

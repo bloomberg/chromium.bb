@@ -288,7 +288,7 @@ function startSession_() {
   remoting.clientSession =
       new remoting.ClientSession(
           remoting.hostJid, remoting.hostPublicKey,
-          remoting.accessCode, "v1_token", "",
+          remoting.accessCode, 'v1_token', '',
           /** @type {string} */ (remoting.oauth2.getCachedEmail()),
           remoting.ClientSession.Mode.IT2ME,
           onClientStateChange_);
@@ -421,7 +421,7 @@ remoting.connectMe2Me = function(hostId, retryIfOffline) {
 
   // TODO(sergeyu): Ask pin only when it is necessary: crbug.com/111290 .
   remoting.setMode(remoting.AppMode.CLIENT_PIN_PROMPT);
-}
+};
 
 /**
  * Start a connection to the specified host, using the cached details
@@ -461,7 +461,7 @@ function connectMe2MeWithAccessToken_(token) {
     remoting.clientSession =
         new remoting.ClientSession(
             remoting.hostJid, remoting.hostPublicKey,
-            pin, "spake2_hmac,spake2_plain", remoting.hostId,
+            pin, 'spake2_hmac,spake2_plain', remoting.hostId,
             /** @type {string} */ (remoting.oauth2.getCachedEmail()),
             remoting.ClientSession.Mode.ME2ME, onClientStateChange_);
     remoting.clientSession.createPluginAndConnect(
