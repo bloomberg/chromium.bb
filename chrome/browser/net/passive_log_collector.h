@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -268,33 +268,49 @@ class PassiveLogCollector : public ChromeNetLog::ThreadSafeObserverImpl {
   };
 
   // Tracks the log entries for the last seen SOURCE_HOST_RESOLVER_IMPL_REQUEST.
-  class DNSRequestTracker : public SourceTracker {
+  class HostResolverRequestTracker : public SourceTracker {
    public:
     static const size_t kMaxNumSources;
     static const size_t kMaxGraveyardSize;
 
-    DNSRequestTracker();
+    HostResolverRequestTracker();
 
    private:
     virtual Action DoAddEntry(const ChromeNetLog::Entry& entry,
                               SourceInfo* out_info) OVERRIDE;
 
-    DISALLOW_COPY_AND_ASSIGN(DNSRequestTracker);
+    DISALLOW_COPY_AND_ASSIGN(HostResolverRequestTracker);
   };
 
   // Tracks the log entries for the last seen SOURCE_HOST_RESOLVER_IMPL_JOB.
-  class DNSJobTracker : public SourceTracker {
+  class HostResolverJobTracker : public SourceTracker {
    public:
     static const size_t kMaxNumSources;
     static const size_t kMaxGraveyardSize;
 
-    DNSJobTracker();
+    HostResolverJobTracker();
 
    private:
     virtual Action DoAddEntry(const ChromeNetLog::Entry& entry,
                               SourceInfo* out_info) OVERRIDE;
 
-    DISALLOW_COPY_AND_ASSIGN(DNSJobTracker);
+    DISALLOW_COPY_AND_ASSIGN(HostResolverJobTracker);
+  };
+
+  // Tracks the log entries for the last seen
+  // SOURCE_HOST_RESOLVER_IMPL_PROC_TASK.
+  class HostResolverProcTaskTracker : public SourceTracker {
+   public:
+    static const size_t kMaxNumSources;
+    static const size_t kMaxGraveyardSize;
+
+    HostResolverProcTaskTracker();
+
+   private:
+    virtual Action DoAddEntry(const ChromeNetLog::Entry& entry,
+                              SourceInfo* out_info) OVERRIDE;
+
+    DISALLOW_COPY_AND_ASSIGN(HostResolverProcTaskTracker);
   };
 
   // Tracks the log entries for the last seen SOURCE_DISK_CACHE_ENTRY.
@@ -464,8 +480,9 @@ class PassiveLogCollector : public ChromeNetLog::ThreadSafeObserverImpl {
   RequestTracker socket_stream_tracker_;
   ProxyScriptDeciderTracker proxy_script_decider_tracker_;
   SpdySessionTracker spdy_session_tracker_;
-  DNSRequestTracker dns_request_tracker_;
-  DNSJobTracker dns_job_tracker_;
+  HostResolverRequestTracker dns_request_tracker_;
+  HostResolverJobTracker dns_job_tracker_;
+  HostResolverProcTaskTracker dns_proc_task_tracker_;
   DiskCacheEntryTracker disk_cache_entry_tracker_;
   MemCacheEntryTracker mem_cache_entry_tracker_;
   HttpStreamJobTracker http_stream_job_tracker_;

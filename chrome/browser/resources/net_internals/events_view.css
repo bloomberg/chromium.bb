@@ -1,8 +1,8 @@
-/*
-Copyright (c) 2011 The Chromium Authors. All rights reserved.
-Use of this source code is governed by a BSD-style license that can be
-found in the LICENSE file.
-*/
+/**
+ * Copyright (c) 2012 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
 
 #events-view-filter-box {
   background: #efefef;
@@ -74,6 +74,7 @@ found in the LICENSE file.
 
 #events-view-source-list-tbody .source_HOST_RESOLVER_IMPL_JOB,
 #events-view-source-list-tbody .source_HOST_RESOLVER_IMPL_REQUEST,
+#events-view-source-list-tbody .source_HOST_RESOLVER_IMPL_PROC_TASK,
 #events-view-source-list-tbody .source_ASYNC_HOST_RESOLVER_REQUEST,
 #events-view-source-list-tbody .source_DNS_TRANSACTION {
   color: #206060;

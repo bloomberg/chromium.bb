@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -72,6 +72,8 @@ PassiveLogCollector::PassiveLogCollector()
   trackers_[net::NetLog::SOURCE_HOST_RESOLVER_IMPL_REQUEST] =
       &dns_request_tracker_;
   trackers_[net::NetLog::SOURCE_HOST_RESOLVER_IMPL_JOB] = &dns_job_tracker_;
+  trackers_[net::NetLog::SOURCE_HOST_RESOLVER_IMPL_PROC_TASK] =
+      &dns_proc_task_tracker_;
   trackers_[net::NetLog::SOURCE_DISK_CACHE_ENTRY] = &disk_cache_entry_tracker_;
   trackers_[net::NetLog::SOURCE_MEMORY_CACHE_ENTRY] = &mem_cache_entry_tracker_;
   trackers_[net::NetLog::SOURCE_HTTP_STREAM_JOB] = &http_stream_job_tracker_;
@@ -536,18 +538,20 @@ PassiveLogCollector::SpdySessionTracker::DoAddEntry(
 }
 
 //----------------------------------------------------------------------------
-// DNSRequestTracker
+// HostResolverRequestTracker
 //----------------------------------------------------------------------------
 
-const size_t PassiveLogCollector::DNSRequestTracker::kMaxNumSources = 200;
-const size_t PassiveLogCollector::DNSRequestTracker::kMaxGraveyardSize = 20;
+const size_t
+PassiveLogCollector::HostResolverRequestTracker::kMaxNumSources = 200;
+const size_t
+PassiveLogCollector::HostResolverRequestTracker::kMaxGraveyardSize = 20;
 
-PassiveLogCollector::DNSRequestTracker::DNSRequestTracker()
+PassiveLogCollector::HostResolverRequestTracker::HostResolverRequestTracker()
     : SourceTracker(kMaxNumSources, kMaxGraveyardSize, NULL) {
 }
 
 PassiveLogCollector::SourceTracker::Action
-PassiveLogCollector::DNSRequestTracker::DoAddEntry(
+PassiveLogCollector::HostResolverRequestTracker::DoAddEntry(
     const ChromeNetLog::Entry& entry, SourceInfo* out_info) {
   AddEntryToSourceInfo(entry, out_info);
   if (entry.type == net::NetLog::TYPE_HOST_RESOLVER_IMPL_REQUEST &&
@@ -558,21 +562,47 @@ PassiveLogCollector::DNSRequestTracker::DoAddEntry(
 }
 
 //----------------------------------------------------------------------------
-// DNSJobTracker
+// HostResolverJobTracker
 //----------------------------------------------------------------------------
 
-const size_t PassiveLogCollector::DNSJobTracker::kMaxNumSources = 100;
-const size_t PassiveLogCollector::DNSJobTracker::kMaxGraveyardSize = 15;
+const size_t
+PassiveLogCollector::HostResolverJobTracker::kMaxNumSources = 100;
+const size_t
+PassiveLogCollector::HostResolverJobTracker::kMaxGraveyardSize = 15;
 
-PassiveLogCollector::DNSJobTracker::DNSJobTracker()
+PassiveLogCollector::HostResolverJobTracker::HostResolverJobTracker()
     : SourceTracker(kMaxNumSources, kMaxGraveyardSize, NULL) {
 }
 
 PassiveLogCollector::SourceTracker::Action
-PassiveLogCollector::DNSJobTracker::DoAddEntry(const ChromeNetLog::Entry& entry,
-                                               SourceInfo* out_info) {
+PassiveLogCollector::HostResolverJobTracker::DoAddEntry(
+    const ChromeNetLog::Entry& entry, SourceInfo* out_info) {
   AddEntryToSourceInfo(entry, out_info);
   if (entry.type == net::NetLog::TYPE_HOST_RESOLVER_IMPL_JOB &&
+      entry.phase == net::NetLog::PHASE_END) {
+    return ACTION_MOVE_TO_GRAVEYARD;
+  }
+  return ACTION_NONE;
+}
+
+//----------------------------------------------------------------------------
+// HostResolverProcTaskTracker
+//----------------------------------------------------------------------------
+
+const size_t
+PassiveLogCollector::HostResolverProcTaskTracker::kMaxNumSources = 100;
+const size_t
+PassiveLogCollector::HostResolverProcTaskTracker::kMaxGraveyardSize = 15;
+
+PassiveLogCollector::HostResolverProcTaskTracker::HostResolverProcTaskTracker()
+    : SourceTracker(kMaxNumSources, kMaxGraveyardSize, NULL) {
+}
+
+PassiveLogCollector::SourceTracker::Action
+PassiveLogCollector::HostResolverProcTaskTracker::DoAddEntry(
+    const ChromeNetLog::Entry& entry, SourceInfo* out_info) {
+  AddEntryToSourceInfo(entry, out_info);
+  if (entry.type == net::NetLog::TYPE_HOST_RESOLVER_IMPL_PROC_TASK &&
       entry.phase == net::NetLog::PHASE_END) {
     return ACTION_MOVE_TO_GRAVEYARD;
   }
