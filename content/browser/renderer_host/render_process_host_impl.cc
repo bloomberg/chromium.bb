@@ -142,7 +142,7 @@ class RendererMainThread : public base::Thread {
 #endif
 
     render_process_ = new RenderProcessImpl();
-    render_process_->set_main_thread(new RenderThreadImpl(channel_id_));
+    new RenderThreadImpl(channel_id_);
   }
 
   virtual void CleanUp() {

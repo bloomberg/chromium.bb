@@ -186,6 +186,9 @@ void RenderThreadImpl::Init() {
     initialize_com_.reset(new base::win::ScopedCOMInitializer());
 #endif
 
+  // Register this object as the main thread.
+  ChildProcess::current()->set_main_thread(this);
+
   // In single process the single process is all there is.
   suspend_webkit_shared_timer_ = true;
   notify_webkit_of_modal_loop_ = true;

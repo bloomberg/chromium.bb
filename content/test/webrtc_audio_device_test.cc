@@ -122,7 +122,6 @@ void WebRTCAudioDeviceTest::SetUp() {
   WaitForIOThreadCompletion();
 
   render_thread_ = new RenderThreadImpl(kThreadName);
-  mock_process_->set_main_thread(render_thread_);
 }
 
 void WebRTCAudioDeviceTest::TearDown() {

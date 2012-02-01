@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -88,7 +88,6 @@ class AudioRendererImplTest
 
     mock_process_.reset(new MockRenderProcess);
     render_thread_ = new RenderThreadImpl(kThreadName);
-    mock_process_->set_main_thread(render_thread_);
 
     // Setup expectations for initialization.
     decoder_ = new media::MockAudioDecoder();

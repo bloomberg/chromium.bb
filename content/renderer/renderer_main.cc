@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -215,7 +215,7 @@ int RendererMain(const content::MainFunctionParams& parameters) {
     // TODO(markus): Check if it is OK to unconditionally move this
     // instruction down.
     RenderProcessImpl render_process;
-    render_process.set_main_thread(new RenderThreadImpl());
+    new RenderThreadImpl();
 #endif
     bool run_loop = true;
     if (!no_sandbox) {
@@ -225,7 +225,7 @@ int RendererMain(const content::MainFunctionParams& parameters) {
     }
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
     RenderProcessImpl render_process;
-    render_process.set_main_thread(new RenderThreadImpl());
+    new RenderThreadImpl();
 #endif
 
     platform.RunSandboxTests();
