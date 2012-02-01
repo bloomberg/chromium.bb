@@ -540,7 +540,7 @@ TEST(ImmediateInterpreterTest, PressureChangeMoveTest) {
   };
   ii.SetHardwareProperties(hwprops);
 
-  const int kBig = 70;  // large pressure
+  const int kBig = 81;  // large pressure
   const int kSml = 50;  // small pressure
 
   FingerState finger_states[] = {
@@ -1380,6 +1380,92 @@ TEST(ImmediateInterpreterTest, ClickTest) {
         break;
     }
   }
+}
+
+TEST(ImmediateInterpreterTest, ChangeTimeoutTest) {
+  ImmediateInterpreter ii(NULL);
+  HardwareProperties hwprops = {
+    0,  // left edge
+    0,  // top edge
+    1000,  // right edge
+    1000,  // bottom edge
+    500,  // pixels/TP width
+    500,  // pixels/TP height
+    96,  // screen DPI x
+    96,  // screen DPI y
+    2,  // max fingers
+    5,  // max touch
+    0,  // tripletap
+    0,  // semi-mt
+    1  // is button pad
+  };
+
+  FingerState finger_states[] = {
+    // TM, Tm, WM, Wm, Press, Orientation, X, Y, TrID
+    {0, 0, 0, 0, 1, 0, 30, 30, 2},
+    {0, 0, 0, 0, 1, 0, 10, 10, 1},
+    {0, 0, 0, 0, 1, 0, 10, 20, 1},
+    {0, 0, 0, 0, 1, 0, 20, 20, 1}
+  };
+  HardwareState hardware_states[] = {
+    // time, buttons down, finger count, finger states pointer
+    // One finger moves
+    { 0.10, 0, 1, 1, &finger_states[1] },
+    { 0.12, 0, 1, 1, &finger_states[2] },
+    { 0.16, 0, 1, 1, &finger_states[3] },
+    { 0.5,  0, 0, 0, NULL },
+    // One finger moves after another finger leaves
+    { 1.09, 0, 2, 2, &finger_states[0] },
+    { 1.10, 0, 1, 1, &finger_states[1] },
+    { 1.12, 0, 1, 1, &finger_states[2] },
+    { 1.16, 0, 1, 1, &finger_states[3] },
+    { 1.5,  0, 0, 0, NULL },
+  };
+
+  ii.SetHardwareProperties(hwprops);
+
+  EXPECT_EQ(NULL, ii.SyncInterpret(&hardware_states[0], NULL));
+
+  // One finger moves, change_timeout_ is not applied.
+  Gesture* gs = ii.SyncInterpret(&hardware_states[1], NULL);
+  ASSERT_NE(reinterpret_cast<Gesture*>(NULL), gs);
+  EXPECT_EQ(kGestureTypeMove, gs->type);
+  EXPECT_EQ(0, gs->details.move.dx);
+  EXPECT_EQ(10, gs->details.move.dy);
+  EXPECT_EQ(0.10, gs->start_time);
+  EXPECT_EQ(0.12, gs->end_time);
+
+  // One finger moves, change_timeout_ does not block the gesture.
+  gs = ii.SyncInterpret(&hardware_states[2], NULL);
+  EXPECT_NE(reinterpret_cast<Gesture*>(NULL), gs);
+  EXPECT_EQ(kGestureTypeMove, gs->type);
+  EXPECT_EQ(10, gs->details.move.dx);
+  EXPECT_EQ(0, gs->details.move.dy);
+  EXPECT_EQ(0.12, gs->start_time);
+  EXPECT_EQ(0.16, gs->end_time);
+
+  // No finger.
+  EXPECT_EQ(NULL, ii.SyncInterpret(&hardware_states[3], NULL));
+
+  // Start with 2 fingers.
+  EXPECT_EQ(NULL, ii.SyncInterpret(&hardware_states[4], NULL));
+  // One finger leaves, finger_leave_time_ recorded.
+  EXPECT_EQ(NULL, ii.SyncInterpret(&hardware_states[5], NULL));
+  EXPECT_EQ(ii.finger_leave_time_, 1.10);
+  // One finger moves, change_timeout_ blocks the gesture.
+  EXPECT_EQ(NULL, ii.SyncInterpret(&hardware_states[6], NULL));
+
+  // One finger moves, finger_leave_time_ + change_timeout_
+  // has been passed.
+  gs = ii.SyncInterpret(&hardware_states[7], NULL);
+  EXPECT_NE(reinterpret_cast<Gesture*>(NULL), gs);
+  EXPECT_EQ(kGestureTypeMove, gs->type);
+  EXPECT_EQ(10, gs->details.move.dx);
+  EXPECT_EQ(0, gs->details.move.dy);
+  EXPECT_EQ(1.12, gs->start_time);
+  EXPECT_EQ(1.16, gs->end_time);
+
+  EXPECT_EQ(NULL, ii.SyncInterpret(&hardware_states[8], NULL));
 }
 
 }  // namespace gestures

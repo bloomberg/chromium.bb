@@ -58,6 +58,7 @@ class TapRecord {
 };
 
 class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
+  FRIEND_TEST(ImmediateInterpreterTest, ChangeTimeoutTest);
   FRIEND_TEST(ImmediateInterpreterTest, PalmTest);
   FRIEND_TEST(ImmediateInterpreterTest, PalmAtEdgeTest);
   FRIEND_TEST(ImmediateInterpreterTest, GetGesturingFingersTest);
@@ -243,6 +244,9 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
 
   // When fingers change, we record the time
   stime_t changed_time_;
+
+  // When fingers leave, we record the time
+  stime_t finger_leave_time_;
 
   // When fingers change, we keep track of where they started.
   // Map: Finger ID -> (x, y) coordinate

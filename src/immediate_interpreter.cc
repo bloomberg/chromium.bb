@@ -154,6 +154,7 @@ ImmediateInterpreter::ImmediateInterpreter(PropRegistry* prop_reg)
     : button_type_(0),
       sent_button_down_(false),
       button_down_timeout_(0.0),
+      finger_leave_time_(0.0),
       tap_to_click_state_(kTtcIdle),
       tap_enable_(prop_reg, "Tap Enable", false),
       tap_timeout_(prop_reg, "Tap Timeout", 0.2),
@@ -166,7 +167,7 @@ ImmediateInterpreter::ImmediateInterpreter(PropRegistry* prop_reg)
       palm_edge_width_(prop_reg, "Palm Edge Zone Width", 14.0),
       palm_edge_point_speed_(prop_reg, "Palm Edge Zone Min Point Speed", 100.0),
       palm_min_distance_(prop_reg, "Palm Min Distance", 40.0),
-      wiggle_max_dist_(prop_reg, "Wiggle Max Distance", 8.0),
+      wiggle_max_dist_(prop_reg, "Wiggle Max Distance", 4.0),
       wiggle_suppress_timeout_(prop_reg, "Wiggle Timeout", 0.075),
       wiggle_button_down_timeout_(prop_reg, "Wiggle Button Down Timeout", 0.75),
       change_timeout_(prop_reg, "Change Timeout", 0.04),
@@ -185,7 +186,7 @@ ImmediateInterpreter::ImmediateInterpreter(PropRegistry* prop_reg)
       two_finger_scroll_distance_thresh_(prop_reg,
                                          "Two Finger Scroll Distance Thresh",
                                          2.0),
-      max_pressure_change_(prop_reg, "Max Allowed Pressure Change", 8.0),
+      max_pressure_change_(prop_reg, "Max Allowed Pressure Change", 30.0),
       scroll_stationary_finger_max_distance_(
           prop_reg, "Scroll Stationary Finger Max Distance", 1.0),
       bottom_zone_size_(prop_reg, "Bottom Zone Size", 10.0),
@@ -222,6 +223,11 @@ Gesture* ImmediateInterpreter::SyncInterpret(HardwareState* hwstate,
     ResetSameFingersState(hwstate->timestamp);
     FillStartPositions(*hwstate);
   }
+
+  if (hwstate->finger_cnt < prev_state_.finger_cnt) {
+    finger_leave_time_ = hwstate->timestamp;
+  }
+
   UpdatePalmState(*hwstate);
   UpdateClickWiggle(*hwstate);
   UpdateThumbState(*hwstate);
@@ -498,18 +504,25 @@ set<short, kMaxGesturingFingers> ImmediateInterpreter::GetGesturingFingers(
   GetGesturingFingersCompare compare;
   // Pull the kMaxSize FingerStates w/ the lowest position_y to the
   // front of fs[].
-  std::partial_sort(fs, fs + kMaxSize, fs + hwstate.finger_cnt, compare);
   set<short, kMaxGesturingFingers> ret;
-  ret.insert(fs[0]->tracking_id);
-  ret.insert(fs[1]->tracking_id);
+  if (hwstate.finger_cnt >= kMaxSize) {
+    std::partial_sort(fs, fs + kMaxSize, fs + hwstate.finger_cnt, compare);
+    for (size_t i = 0; i < kMaxSize; i++)
+      ret.insert(fs[i]->tracking_id);
+  } else {
+    std::sort(fs, fs + hwstate.finger_cnt, compare);
+    for (int i = 0; i < hwstate.finger_cnt; i++)
+      ret.insert(fs[i]->tracking_id);
+  }
   return ret;
 }
 
 void ImmediateInterpreter::UpdateCurrentGestureType(
     const HardwareState& hwstate,
     const set<short, kMaxGesturingFingers>& gs_fingers) {
-
-  if (hwstate.timestamp < changed_time_ + change_timeout_.val_) {
+  // When a finger leaves, we hold the gesture processing for
+  // change_timeout_ time.
+  if (hwstate.timestamp < finger_leave_time_ + change_timeout_.val_) {
     current_gesture_type_ = kGestureTypeNull;
     return;
   }
@@ -581,6 +594,10 @@ bool ImmediateInterpreter::TwoFingersGesturing(
 GestureType ImmediateInterpreter::GetTwoFingerGestureType(
     const FingerState& finger1,
     const FingerState& finger2) {
+  if (!MapContainsKey(start_positions_, finger1.tracking_id) ||
+      !MapContainsKey(start_positions_, finger2.tracking_id))
+    return kGestureTypeNull;
+
   // Compute distance traveled since fingers changed for each finger
   float dx1 = finger1.position_x -
       start_positions_[finger1.tracking_id].x_;
@@ -1079,6 +1096,8 @@ void ImmediateInterpreter::FillResultGesture(
                fingers.begin(), e = fingers.end(); it != e; ++it) {
         const FingerState* fs = hwstate.GetFingerState(*it);
         const FingerState* prev = prev_state_.GetFingerState(*it);
+        if (!prev)
+          return;
         if (fabsf(fs->pressure - prev->pressure) > max_pressure_change_.val_)
           return;
         float local_dx = fs->position_x - prev->position_x;
@@ -1110,6 +1129,7 @@ void ImmediateInterpreter::FillResultGesture(
     default:
       result_.type = kGestureTypeNull;
   }
+  current_gesture_type_ = kGestureTypeNull;
 }
 
 void ImmediateInterpreter::IntWasWritten(IntProperty* prop) {
