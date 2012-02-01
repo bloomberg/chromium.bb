@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+  <!--
+  Copyright (c) 2011 The Chromium Authors. All rights reserved.
+  Use of this source code is governed by a BSD-style license that can be
+  found in the LICENSE file.
+  -->
+<head>
+  <title>Magic Eightball</title>
+  <script type="text/javascript">
+
+  function moduleDidLoad() {
+  }
+
+  function handleMessage(message_event) {
+    if(message_event.data=='Eightball loaded!')
+    {
+      document.getElementById('consolec').innerHTML = " \
+Eightball loaded, type a question below, press the button, and get a response. \
+<br /> \
+<form name='form' Value='Hello Me' onSubmit='return askBall()'> \
+  <input type='textarea' size='64' name='inputtext' /> \
+  <input type='button' NAME='button' Value='ASK!' onClick='askBall()' /> \
+</form>";
+    }
+    else
+    {
+      if(message_event.data[0]=='!')
+      {
+        document.getElementById('answerlog').innerHTML +=
+          (document.form.inputtext.value + ": " + message_event.data +"<br />");
+      }
+      else
+      {
+        document.getElementById('consolec').innerHTML += 
+            message_event.data + "<br />";
+        console.log(message_event.data);
+      }
+    }
+  }
+
+  function pageDidUnload() {
+      clearInterval(paintInterval);
+  }
+
+  function askBall()
+  {
+    dlopen.postMessage('query');
+    return false;
+  }
+  </script>
+</head>
+<body id="bodyId" onunload="pageDidUnload()">
+<div id="listener">
+  <script type="text/javascript">
+    var listener = document.getElementById('listener')
+    listener.addEventListener('load', moduleDidLoad, true);
+    listener.addEventListener('message', handleMessage, true);
+  </script>
+<h1>The Magic 8 Ball </h1>
+<embed name="nacl_module"
+       id="dlopen"
+       width=1 height=1
+       src="dlopen.nmf"
+       type="application/x-nacl" />
+</div>
+  <br />
+  <div id="consolec">..loading dynamic libraries...</div>
+<div id="answerlog"></div>
+</body>
+</html>

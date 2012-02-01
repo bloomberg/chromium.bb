@@ -16,6 +16,7 @@ and whether it should upload an SDK to file storage (GSTORE)
 """
 
 # std python includes
+import optparse
 import os
 import subprocess
 import sys
@@ -23,7 +24,6 @@ import sys
 # local includes
 import build_utils
 import lastchange
-
 
 # Create the various paths of interest
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -116,20 +116,24 @@ def CopyDir(src, dst, excludes=['.svn']):
   print "cp -r %s %s" % (src, dst)
   oshelpers.Copy(args)
 
+
 def RemoveDir(dst):
   """Remove the provided path."""
   print "rm -fr " + dst
   oshelpers.Remove(['-fr', dst])
+
 
 def MakeDir(dst):
   """Create the path including all parent directories as needed."""
   print "mkdir -p " + dst
   oshelpers.Mkdir(['-p', dst])
 
+
 def MoveDir(src, dst):
   """Move the path src to dst."""
   print "mv -fr %s %s" % (src, dst)
   oshelpers.Move(['-f', src, dst])
+
 
 def BuildOutputDir(*paths):
   return os.path.join(OUT_DIR, *paths)
@@ -189,6 +193,7 @@ def GetBuildArgs(tcname, tcpath, arch, xarch=None):
   if tcname == 'glibc':
     args.append('--nacl_glibc')
   return args
+
 
 header_map = {
   'newlib': {
@@ -278,17 +283,39 @@ def InstallHeaders(tc_dst_inc, pepper_ver, tc_name):
           os.path.join(tc_dst_inc, 'KHR'))
 
 
-def main():
+def main(args):
+  parser = optparse.OptionParser()
+  # Modes
+  parser.add_option('--examples-only', help='Rebuild the examples.',
+      action='store_true', dest='examples_only', default=False)
+  parser.add_option('--skip-tar', help='Skip generating a tarball.',
+      action='store_true', dest='skip_tar', default=False)
+  parser.add_option('--archive', help='Force the archive step.',
+      action='store_true', dest='archive')
+  
+  options, args = parser.parse_args(args[1:])
+
   platform = getos.GetPlatform()
   arch = 'x86'
-  # the vars below are intended for debugging
-  skip_untar = 0
-  skip_build = 0
-  skip_tar = 0
-  skip_examples = 0
-  skip_headers = 0
-  skip_make = 0
-  force_archive = 0
+
+  skip_examples = False
+  skip_untar = False
+  skip_build = False
+  skip_headers = False
+  skip_tar = False
+  force_archive = options.archive
+
+  if options.examples_only:
+    skip_untar = True
+    skip_build = True
+    skip_headers = True
+    skip_tar = True
+
+  if options.skip_tar:
+    skip_tar = True
+
+  if options.archive and (options.examples_only or options.skip_tar):
+    parser.error('Incompatible arguments with archive.')
 
   pepper_ver = build_utils.ChromeMajorVersion()
   clnumber = lastchange.FetchVersionInfo(None).revision
@@ -369,7 +396,6 @@ def main():
     RemoveDir(os.path.join(pepperdir, 'examples'))
     CopyDir(os.path.join(SDK_SRC_DIR, 'examples'), pepperdir)
 
-
   tarname = 'naclsdk_' + platform + '.bz2'
   BuildStep('Tar Pepper Bundle')
   if not skip_tar:
@@ -382,7 +408,7 @@ def main():
     BuildStep('Archive build')
     Archive(tarname)
 
-  if not skip_make:
+  if not skip_examples:
     BuildStep('Test Build Examples')
     filelist = os.listdir(os.path.join(pepperdir, 'examples'))
     for filenode in filelist:
@@ -398,4 +424,4 @@ def main():
 
 
 if __name__ == '__main__':
-  sys.exit(main())
+  sys.exit(main(sys.argv))

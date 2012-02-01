@@ -29,9 +29,12 @@ FORMAT_ARCH_MAP = {
     # Names returned by x86_64-nacl-objdump:
     'elf64-nacl': 'x86-64',
     'elf32-nacl': 'x86-32',
-    # TODO(mball): Add support for 'arm-32' and 'portable' architectures
-    # 'elf32-little': 'arm-32',
     }
+
+ARCH_LOCATION = {
+    'x86-32': 'lib32',
+    'x86-64': 'lib64',
+}
 
 # These constants are used within nmf files.
 RUNNABLE_LD = 'runnable-ld.so'  # Name of the dynamic loader
@@ -110,14 +113,16 @@ class NmfUtils(object):
     self.needed = None
     self.lib_prefix = lib_prefix or []
 
+
   def GleanFromObjdump(self, files):
     '''Get architecture and dependency information for given files
 
     Args:
       files: A dict with key=filename and value=list or set of archs.  E.g.:
-          { '/path/to/my.nexe': ['x86-32', 'x86-64'],
-            '/path/to/libmy.so': ['x86-32'],
-            '/path/to/my2.nexe': None }  # Indicates all architectures
+          { '/path/to/my.nexe': ['x86-32']
+            '/path/to/lib64/libmy.so': ['x86-64'],
+            '/path/to/mydata.so': ['x86-32', 'x86-64'],
+            '/path/to/my.data': None }  # Indicates all architectures
 
     Returns: A tuple with the following members:
       input_info: A dict with key=filename and value=ArchFile of input files.
@@ -147,7 +152,7 @@ class NmfUtils(object):
               arch=arch,
               name=name,
               path=filename,
-              url='/'.join(self.lib_prefix + [arch, name]))
+              url='/'.join(self.lib_prefix + [ARCH_LOCATION[arch], name]))
       matched = NeededMatcher.match(line)
       if matched is not None:
         if files[filename] is None or arch in files[filename]:
@@ -189,7 +194,7 @@ class NmfUtils(object):
       all_files, unexamined = self.GleanFromObjdump(
           dict([(file, None) for file in self.main_files]))
       for name, arch_file in all_files.items():
-        arch_file.url = os.path.basename(name)
+        arch_file.url = name
         if unexamined:
           unexamined.add('/'.join([arch_file.arch, RUNNABLE_LD]))
       while unexamined:
@@ -232,41 +237,43 @@ class NmfUtils(object):
           os.path.normcase(os.path.abspath(destination))):
         shutil.copy2(source, destination)
 
-  def _GenerateManifest(self):
-    programs = {}
-    files = {}
-
-    def add_files(needed):
-      for filename, arch_file in needed.items():
-        files.setdefault(arch_file.arch, set()).add(arch_file.name)
-
+  def _GenerateManifest(self, runnable=True):
+    '''Create a JSON formatted dict containing the files
+    
+    NaCl will map url requests based on architecture.  The startup NEXE
+    can always be found under the top key PROGRAM.  Additional files are under
+    the FILES key further mapped by file name.  In the case of 'runnable' the
+    PROGRAM key is populated with urls pointing the runnable-ld.so which acts
+    as the startup nexe.  The application itself, is then placed under the 
+    FILES key mapped as 'main.exe' instead of it's original name so that the
+    loader can find it.'''
+    manifest = { FILES_KEY: {}, PROGRAM_KEY: {} }
     needed = self.GetNeeded()
-    add_files(needed)
 
-    for filename in self.main_files:
-      arch_file = needed[filename]
-      programs[arch_file.arch] = arch_file.name
+    for need in needed:
+      archinfo = needed[need]
+      urlinfo = { URL_KEY: archinfo.url }
+      name = archinfo.name
 
-    filemap = {}
-    for arch in files:
-      for file in files[arch]:
-        if file not in programs.values() and file != RUNNABLE_LD:
-          filemap.setdefault(file, set()).add(arch)
+      # If starting with runnable-ld.so, make that the main executable.
+      if runnable:
+        if need.endswith(RUNNABLE_LD):
+          manifest[PROGRAM_KEY][archinfo.arch] = urlinfo
+          continue
 
-    def arch_name(arch, file):
-      # nmf files expect unix-style path separators
-      return {URL_KEY: '/'.join(self.lib_prefix + [arch, file])}
+      # For the main nexes:
+      if need.endswith('.nexe') and need in self.main_files:
+        # Place it under program if we aren't using the runnable-ld.so.
+        if not runnable:
+          manifest[PROGRAM_KEY][archinfo.arch] = urlinfo
+          continue
+        # Otherwise, treat it like another another file named main.nexe.
+        name = MAIN_NEXE
 
-    # TODO(mcgrathr): perhaps notice a program with no deps
-    # (i.e. statically linked) and generate program=nexe instead?
-    manifest = {PROGRAM_KEY: {}, FILES_KEY: {MAIN_NEXE: {}}}
-    for arch in programs:
-      manifest[PROGRAM_KEY][arch] = arch_name(arch, RUNNABLE_LD)
-      manifest[FILES_KEY][MAIN_NEXE][arch] = {URL_KEY: programs[arch]}
+      fileinfo = manifest[FILES_KEY].get(name, {})
+      fileinfo[archinfo.arch] = urlinfo
+      manifest[FILES_KEY][name] = fileinfo
 
-    for file in filemap:
-      manifest[FILES_KEY][file] = dict([(arch, arch_name(arch, file))
-                                      for arch in filemap[file]])
     self.manifest = manifest
 
   def GetManifest(self):
@@ -301,6 +308,9 @@ def Main(argv):
   parser.add_option('-s', '--stage-dependencies', dest='stage_dependencies',
                     help='Destination directory for staging libraries',
                     metavar='DIRECTORY')
+  parser.add_option('-r', '--remove', dest='remove',
+                    help='Remove the prefix from the files.',
+                    metavar='PATH')
   (options, args) = parser.parse_args(argv)
 
   if len(args) < 1:
