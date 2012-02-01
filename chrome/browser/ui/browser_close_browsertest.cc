@@ -518,7 +518,7 @@ IN_PROC_BROWSER_TEST_F(BrowserCloseTest, DownloadsCloseCheck_1) {
 
 // Timing out on XP debug. http://crbug.com/111914
 #if defined(OS_WIN)
-#define MAYBE_DownloadsCloseCheck_2 FLAKY_DownloadsCloseCheck_2
+#define MAYBE_DownloadsCloseCheck_2 DISABLED_DownloadsCloseCheck_2
 #else
 #define MAYBE_DownloadsCloseCheck_2 DownloadsCloseCheck_2
 #endif
@@ -549,7 +549,7 @@ IN_PROC_BROWSER_TEST_F(BrowserCloseTest, DownloadsCloseCheck_4) {
 
 // Timing out on XP debug. http://crbug.com/111914
 #if defined(OS_WIN)
-#define MAYBE_DownloadsCloseCheck_5 FLAKY_DownloadsCloseCheck_5
+#define MAYBE_DownloadsCloseCheck_5 DISABLED_DownloadsCloseCheck_5
 #else
 #define MAYBE_DownloadsCloseCheck_5 DownloadsCloseCheck_5
 #endif
