@@ -162,6 +162,29 @@
             'app/chrome_main_delegate.h',
           ],
         }],
+        ['OS=="linux"', {
+          'conditions': [
+            ['branding=="Chrome"', {
+              'dependencies': [
+                'linux_installer_configs',
+              ],
+            }],
+            ['selinux==0', {
+              'dependencies': [
+                '../sandbox/sandbox.gyp:sandbox',
+              ],
+            }],
+            # For now, do not build nacl_helper when disable_nacl=1
+            # or when arm is enabled
+            # http://code.google.com/p/gyp/issues/detail?id=239
+            ['disable_nacl==0 and target_arch!="arm"', {
+              'dependencies': [
+                '../native_client/src/trusted/service_runtime/linux/nacl_bootstrap.gyp:nacl_helper_bootstrap',
+                'nacl_helper',
+                ],
+            }],
+          ],
+        }],
         ['OS=="mac"', {
           # 'branding' is a variable defined in common.gypi
           # (e.g. "Chromium", "Chrome")
@@ -241,6 +264,9 @@
             'CHROMIUM_SHORT_NAME': '<(branding)',
           },
           'dependencies': [
+            # On Mac, make sure we've built chrome_dll, which contains all of
+            # the library code with Chromium functionality.
+            'chrome_dll',
             'helper_app',
             'infoplist_strings_tool',
             'interpose_dependency_shim',
@@ -381,22 +407,7 @@
               ],
             },
           ],  # postbuilds
-        }],
-        ['OS=="linux"', {
-          'conditions': [
-            ['branding=="Chrome"', {
-              'dependencies': [
-                'linux_installer_configs',
-              ],
-            }],
-            ['selinux==0', {
-              'dependencies': [
-                '../sandbox/sandbox.gyp:sandbox',
-              ],
-            }],
-          ],
-        }],
-        ['OS != "mac"', {
+        }, {  # OS != "mac"
           'conditions': [
             # TODO:  add a:
             #   'product_name': 'chromium'
@@ -420,26 +431,6 @@
             # file decide what to do on a per-OS basis; on Mac, internal plugins
             # go inside the framework, so this dependency is in chrome_dll.gypi.
             '../third_party/adobe/flash/flash_player.gyp:flash_player',
-          ],
-        }],
-        ['OS=="linux"', {
-          'conditions': [
-            # For now, do not build nacl_helper when disable_nacl=1
-            # or when arm is enabled
-            # http://code.google.com/p/gyp/issues/detail?id=239
-            ['disable_nacl==0 and target_arch!="arm"', {
-              'dependencies': [
-                '../native_client/src/trusted/service_runtime/linux/nacl_bootstrap.gyp:nacl_helper_bootstrap',
-                'nacl_helper',
-                ],
-            }],
-          ],
-        }],
-        ['OS=="mac"', {
-          'dependencies': [
-            # On Mac, make sure we've built chrome_dll, which contains all of
-            # the library code with Chromium functionality.
-            'chrome_dll',
           ],
         }],
         ['OS=="mac" and asan==1', {
