@@ -6,6 +6,7 @@
 #include "base/path_service.h"
 #include "base/stringprintf.h"
 #include "base/test/trace_event_analyzer.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/test_switches.h"
@@ -27,7 +28,7 @@ enum ThroughputTestFlags {
   kInternal = 1 << 0 // Test uses internal test data.
 };
 
-const int kSpinUpTimeMs = 5 * 1000;
+const int kSpinUpTimeMs = 4 * 1000;
 const int kRunTimeMs = 10 * 1000;
 const int kIgnoreSomeFrames = 3;
 
@@ -118,6 +119,7 @@ class ThroughputTest : public BrowserPerfTest {
     LOG(INFO) << gurl.possibly_invalid_spec();
     ui_test_utils::NavigateToURLWithDisposition(
         browser(), gurl, CURRENT_TAB, ui_test_utils::BROWSER_TEST_NONE);
+    ui_test_utils::WaitForLoadStop(browser()->GetSelectedWebContents());
 
     // Let the test spin up.
     LOG(INFO) << "Spinning up test...\n";
