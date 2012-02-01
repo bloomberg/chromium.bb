@@ -152,6 +152,13 @@ void SystemKeyEventListener::Stop() {
   stopped_ = true;
 }
 
+AudioHandler* SystemKeyEventListener::GetAudioHandler() const {
+  AudioHandler* audio_handler = AudioHandler::GetInstance();
+  if (!audio_handler || !audio_handler->IsInitialized())
+    return NULL;
+  return audio_handler;
+}
+
 void SystemKeyEventListener::AddCapsLockObserver(CapsLockObserver* observer) {
   caps_lock_observers_.AddObserver(observer);
 }
@@ -206,7 +213,7 @@ void SystemKeyEventListener::OnBrightnessUp() {
 }
 
 void SystemKeyEventListener::OnVolumeMute() {
-  AudioHandler* audio_handler = AudioHandler::GetInstanceIfInitialized();
+  AudioHandler* audio_handler = GetAudioHandler();
   if (!audio_handler)
     return;
 
@@ -220,7 +227,7 @@ void SystemKeyEventListener::OnVolumeMute() {
 }
 
 void SystemKeyEventListener::OnVolumeDown() {
-  AudioHandler* audio_handler = AudioHandler::GetInstanceIfInitialized();
+  AudioHandler* audio_handler = GetAudioHandler();
   if (!audio_handler)
     return;
 
@@ -235,7 +242,7 @@ void SystemKeyEventListener::OnVolumeDown() {
 }
 
 void SystemKeyEventListener::OnVolumeUp() {
-  AudioHandler* audio_handler = AudioHandler::GetInstanceIfInitialized();
+  AudioHandler* audio_handler = GetAudioHandler();
   if (!audio_handler)
     return;
 
@@ -253,13 +260,12 @@ void SystemKeyEventListener::OnVolumeUp() {
 }
 
 void SystemKeyEventListener::OnCapsLock(bool enabled) {
-  FOR_EACH_OBSERVER(CapsLockObserver,
-                    caps_lock_observers_,
-                    OnCapsLockChange(enabled));
+  FOR_EACH_OBSERVER(
+      CapsLockObserver, caps_lock_observers_, OnCapsLockChange(enabled));
 }
 
 void SystemKeyEventListener::ShowVolumeBubble() {
-  AudioHandler* audio_handler = AudioHandler::GetInstanceIfInitialized();
+  AudioHandler* audio_handler = GetAudioHandler();
   if (audio_handler) {
     VolumeBubble::GetInstance()->ShowBubble(
         audio_handler->GetVolumePercent(),

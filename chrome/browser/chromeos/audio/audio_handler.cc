@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -49,10 +49,8 @@ AudioHandler* AudioHandler::GetInstance() {
   return g_audio_handler;
 }
 
-// static
-AudioHandler* AudioHandler::GetInstanceIfInitialized() {
-  return g_audio_handler && g_audio_handler->IsMixerInitialized() ?
-         g_audio_handler : NULL;
+bool AudioHandler::IsInitialized() {
+  return mixer_->IsInitialized();
 }
 
 double AudioHandler::GetVolumePercent() {
@@ -62,7 +60,6 @@ double AudioHandler::GetVolumePercent() {
 void AudioHandler::SetVolumePercent(double volume_percent) {
   volume_percent = min(max(volume_percent, 0.0), 100.0);
   mixer_->SetVolumeDb(PercentToVolumeDb(volume_percent));
-  FOR_EACH_OBSERVER(VolumeObserver, volume_observers_, OnVolumeChanged());
 }
 
 void AudioHandler::AdjustVolumeByPercent(double adjust_by_percent) {
@@ -77,15 +74,6 @@ bool AudioHandler::IsMuted() {
 
 void AudioHandler::SetMuted(bool mute) {
   mixer_->SetMuted(mute);
-  FOR_EACH_OBSERVER(VolumeObserver, volume_observers_, OnVolumeChanged());
-}
-
-void AudioHandler::AddVolumeObserver(VolumeObserver* observer) {
-  volume_observers_.AddObserver(observer);
-}
-
-void AudioHandler::RemoveVolumeObserver(VolumeObserver* observer) {
-  volume_observers_.RemoveObserver(observer);
 }
 
 AudioHandler::AudioHandler()
@@ -96,10 +84,6 @@ AudioHandler::AudioHandler()
 AudioHandler::~AudioHandler() {
   mixer_.reset();
 };
-
-bool AudioHandler::IsMixerInitialized() {
-  return mixer_->IsInitialized();
-}
 
 // VolumeDbToPercent() and PercentToVolumeDb() conversion functions allow us
 // complete control over how the 0 to 100% range is mapped to actual loudness.

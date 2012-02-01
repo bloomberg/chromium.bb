@@ -28,12 +28,7 @@ class SystemKeyEventListener : public MessageLoopForUI::Observer {
   class CapsLockObserver {
    public:
     virtual void OnCapsLockChange(bool enabled) = 0;
-   protected:
-    CapsLockObserver() {}
-    virtual ~CapsLockObserver() {}
-    DISALLOW_COPY_AND_ASSIGN(CapsLockObserver);
   };
-
   static void Initialize();
   static void Shutdown();
   // GetInstance returns NULL if not initialized or if already shutdown.
@@ -52,6 +47,8 @@ class SystemKeyEventListener : public MessageLoopForUI::Observer {
 
   SystemKeyEventListener();
   virtual ~SystemKeyEventListener();
+
+  AudioHandler* GetAudioHandler() const;
 
 #if defined(TOOLKIT_USES_GTK)
   // This event filter intercepts events before they reach GDK, allowing us to

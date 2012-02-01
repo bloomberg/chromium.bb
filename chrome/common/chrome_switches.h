@@ -349,7 +349,6 @@ extern const char kLoginUserWithNewPassword[];
 extern const char kParallelAuth[];
 extern const char kCandidateWindowLang[];
 extern const char kGuestSession[];
-extern const char kShowVolumeStatus[];
 extern const char kStubCros[];
 extern const char kStubCrosSettings[];
 extern const char kScreenSaverUrl[];

@@ -1263,9 +1263,6 @@ const char kCandidateWindowLang[]           = "lang";
 // mode. Should completely disable extensions, sync and bookmarks.
 const char kGuestSession[]                  = "bwsi";
 
-// Show volume controls in status bar on ChromeOS.
-const char kShowVolumeStatus[]              = "show-volume-status";
-
 // Indicates that stub implementations of the libcros library should be used.
 // This is typically used to test the chromeos build of chrome on the desktop.
 const char kStubCros[]                      = "stub-cros";
