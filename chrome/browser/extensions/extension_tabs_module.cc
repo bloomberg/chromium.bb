@@ -961,6 +961,9 @@ bool CreateTabFunction::RunImpl() {
   params.tabstrip_add_types = add_types;
   browser::Navigate(&params);
 
+  // The tab may have been created in a different window, so make sure we look
+  // at the right tab strip.
+  tab_strip = params.browser->tabstrip_model();
   int new_index = tab_strip->GetIndexOfTabContents(params.target_contents);
   if (opener)
     tab_strip->SetOpenerOfTabContentsAt(new_index, opener);

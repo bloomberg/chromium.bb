@@ -110,6 +110,18 @@ chrome.test.runTests([
     });
     // Pretend to click a link (openers aren't tracked when using tabs.create).
     clickLink("test_link");
-  }
+  },
 
+  // The window on chrome.tabs.create is ignored if it doesn't accept tabs.
+  function testRedirectingToAnotherWindow() {
+    chrome.windows.create(
+        {url: 'about:blank', type: 'popup'},
+        pass(function(window) {
+      chrome.tabs.create(
+          {url: 'about:blank', windowId: window.id},
+          pass(function(tab) {
+        assertTrue(window.id != tab.windowId);
+      }));
+    }));
+  }
 ]);
