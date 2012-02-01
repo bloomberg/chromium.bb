@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -54,8 +54,8 @@ void GLContextNSView::Destroy() {
 }
 
 bool GLContextNSView::MakeCurrent(GLSurface* surface) {
-  PluginWindowHandle view =
-      static_cast<PluginWindowHandle>(surface->GetHandle());
+  AcceleratedWidget view =
+      static_cast<AcceleratedWidget>(surface->GetHandle());
   // Only set the context's view if the view is parented.
   // I.e. it is a valid drawable.
   if ([view window])

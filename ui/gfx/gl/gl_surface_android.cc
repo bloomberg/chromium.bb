@@ -38,7 +38,7 @@ bool GLSurface::InitializeOneOffInternal() {
 }
 // static
 scoped_refptr<GLSurface>
-GLSurface::CreateViewGLSurface(bool software, gfx::PluginWindowHandle window) {
+GLSurface::CreateViewGLSurface(bool software, gfx::AcceleratedWidget window) {
   if (software)
     return NULL;
 

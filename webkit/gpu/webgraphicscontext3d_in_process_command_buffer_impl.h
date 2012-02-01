@@ -481,10 +481,6 @@ class WebGraphicsContext3DInProcessCommandBufferImpl
 
   // If rendering directly to WebView, weak pointer to it.
   WebKit::WebView* web_view_;
-#if defined(OS_MACOSX)
-  // "Fake" plugin window handle in browser process for the compositor's output.
-  gfx::PluginWindowHandle plugin_handle_;
-#endif
   WebGraphicsContext3D::WebGraphicsContextLostCallback* context_lost_callback_;
   WGC3Denum context_lost_reason_;
 

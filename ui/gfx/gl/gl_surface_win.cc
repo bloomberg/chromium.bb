@@ -20,7 +20,7 @@ namespace gfx {
 // view.
 class NativeViewGLSurfaceOSMesa : public GLSurfaceOSMesa {
  public:
-  explicit NativeViewGLSurfaceOSMesa(gfx::PluginWindowHandle window);
+  explicit NativeViewGLSurfaceOSMesa(gfx::AcceleratedWidget window);
   virtual ~NativeViewGLSurfaceOSMesa();
 
   // Implement subset of GLSurface.
@@ -32,7 +32,7 @@ class NativeViewGLSurfaceOSMesa : public GLSurfaceOSMesa {
   virtual bool PostSubBuffer(int x, int y, int width, int height) OVERRIDE;
 
  private:
-  gfx::PluginWindowHandle window_;
+  gfx::AcceleratedWidget window_;
   HDC device_context_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeViewGLSurfaceOSMesa);
@@ -59,7 +59,7 @@ bool GLSurface::InitializeOneOffInternal() {
 }
 
 NativeViewGLSurfaceOSMesa::NativeViewGLSurfaceOSMesa(
-    gfx::PluginWindowHandle window)
+    gfx::AcceleratedWidget window)
   : GLSurfaceOSMesa(OSMESA_RGBA, gfx::Size(1, 1)),
     window_(window),
     device_context_(NULL) {
@@ -173,7 +173,7 @@ bool NativeViewGLSurfaceOSMesa::PostSubBuffer(
 
 scoped_refptr<GLSurface> GLSurface::CreateViewGLSurface(
     bool software,
-    gfx::PluginWindowHandle window) {
+    gfx::AcceleratedWidget window) {
   switch (GetGLImplementation()) {
     case kGLImplementationOSMesaGL: {
       scoped_refptr<GLSurface> surface(

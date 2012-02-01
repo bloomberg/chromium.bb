@@ -56,7 +56,7 @@ class GL_EXPORT GLSurfaceEGL : public GLSurface {
 // Encapsulates an EGL surface bound to a view.
 class NativeViewGLSurfaceEGL : public GLSurfaceEGL {
  public:
-  NativeViewGLSurfaceEGL(bool software, gfx::PluginWindowHandle window);
+  NativeViewGLSurfaceEGL(bool software, gfx::AcceleratedWidget window);
   virtual ~NativeViewGLSurfaceEGL();
 
   // Implement GLSurface.
@@ -73,7 +73,7 @@ class NativeViewGLSurfaceEGL : public GLSurfaceEGL {
   void SetHandle(EGLSurface surface);
 
  private:
-  gfx::PluginWindowHandle window_;
+  gfx::AcceleratedWidget window_;
   EGLSurface surface_;
   bool supports_post_sub_buffer_;
 

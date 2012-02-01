@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -103,7 +103,7 @@ void* GLSurfaceGLX::GetDisplay() {
   return g_display;
 }
 
-NativeViewGLSurfaceGLX::NativeViewGLSurfaceGLX(gfx::PluginWindowHandle window)
+NativeViewGLSurfaceGLX::NativeViewGLSurfaceGLX(gfx::AcceleratedWidget window)
   : window_(window),
     config_(NULL) {
 }

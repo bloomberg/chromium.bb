@@ -57,7 +57,7 @@ void Window::OnPaint() {
   ::gles2::GetGLContext()->SwapBuffers();
 }
 
-bool Window::CreateRenderContext(gfx::PluginWindowHandle hwnd) {
+bool Window::CreateRenderContext(gfx::AcceleratedWidget hwnd) {
   command_buffer_.reset(new CommandBufferService);
   if (!command_buffer_->Initialize()) {
     return false;

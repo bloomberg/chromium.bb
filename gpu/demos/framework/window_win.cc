@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -96,7 +96,7 @@ gfx::NativeWindow Window::CreateNativeWindow(const wchar_t* title,
   return hwnd;
 }
 
-gfx::PluginWindowHandle Window::PluginWindow(gfx::NativeWindow hwnd) {
+gfx::AcceleratedWidget Window::PluginWindow(gfx::NativeWindow hwnd) {
   return hwnd;
 }
 

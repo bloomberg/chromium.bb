@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -29,7 +29,7 @@ class GLSurfaceWGL : public GLSurface {
 // A surface used to render to a view.
 class NativeViewGLSurfaceWGL : public GLSurfaceWGL {
  public:
-  explicit NativeViewGLSurfaceWGL(gfx::PluginWindowHandle window);
+  explicit NativeViewGLSurfaceWGL(gfx::AcceleratedWidget window);
   virtual ~NativeViewGLSurfaceWGL();
 
   // Implement GLSurface.
@@ -41,8 +41,8 @@ class NativeViewGLSurfaceWGL : public GLSurfaceWGL {
   virtual void* GetHandle();
 
  private:
-  gfx::PluginWindowHandle window_;
-  gfx::PluginWindowHandle child_window_;
+  gfx::AcceleratedWidget window_;
+  gfx::AcceleratedWidget child_window_;
   HDC device_context_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeViewGLSurfaceWGL);

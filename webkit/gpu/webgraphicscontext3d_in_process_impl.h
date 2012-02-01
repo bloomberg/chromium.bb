@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -57,7 +57,7 @@ class WebGraphicsContext3DInProcessImpl : public WebGraphicsContext3D {
   // is gfx::kNullPluginWindow, then it creates an offscreen context.
   // share_group is the group this context shares namespaces with. It's only
   // used for window-bound countexts.
-  WebGraphicsContext3DInProcessImpl(gfx::PluginWindowHandle window,
+  WebGraphicsContext3DInProcessImpl(gfx::AcceleratedWidget window,
                                     gfx::GLShareGroup* share_group);
   virtual ~WebGraphicsContext3DInProcessImpl();
 
@@ -522,7 +522,7 @@ class WebGraphicsContext3DInProcessImpl : public WebGraphicsContext3D {
 
   ShHandle fragment_compiler_;
   ShHandle vertex_compiler_;
-  gfx::PluginWindowHandle window_;
+  gfx::AcceleratedWidget window_;
   scoped_refptr<gfx::GLShareGroup> share_group_;
 };
 

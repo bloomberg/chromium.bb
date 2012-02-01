@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -43,7 +43,7 @@ class GL_EXPORT GLSurfaceGLX : public GLSurface {
 // A surface used to render to a view.
 class GL_EXPORT NativeViewGLSurfaceGLX : public GLSurfaceGLX {
  public:
-  explicit NativeViewGLSurfaceGLX(gfx::PluginWindowHandle window);
+  explicit NativeViewGLSurfaceGLX(gfx::AcceleratedWidget window);
   virtual ~NativeViewGLSurfaceGLX();
 
   // Implement GLSurfaceGLX.
@@ -60,7 +60,7 @@ class GL_EXPORT NativeViewGLSurfaceGLX : public GLSurfaceGLX {
  protected:
   NativeViewGLSurfaceGLX();
 
-  gfx::PluginWindowHandle window_;
+  gfx::AcceleratedWidget window_;
 
  private:
   void* config_;

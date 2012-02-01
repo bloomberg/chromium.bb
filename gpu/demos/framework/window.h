@@ -42,9 +42,9 @@ class Window {
   gfx::NativeWindow CreateNativeWindow(const wchar_t* title,
                                        int width, int height);
   // Converts native window handle to NPAPI plugin window handle.
-  gfx::PluginWindowHandle PluginWindow(gfx::NativeWindow hwnd);
+  gfx::AcceleratedWidget PluginWindow(gfx::NativeWindow hwnd);
   // Creates an OpenGL ES 2.0 rendering context for the given window.
-  bool CreateRenderContext(gfx::PluginWindowHandle hwnd);
+  bool CreateRenderContext(gfx::AcceleratedWidget hwnd);
 
   gfx::NativeWindow window_handle_;
   scoped_ptr<Demo> demo_;

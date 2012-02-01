@@ -44,7 +44,7 @@ struct WebGraphicsContext3DInProcessImpl::ShaderSourceEntry {
 };
 
 WebGraphicsContext3DInProcessImpl::WebGraphicsContext3DInProcessImpl(
-    gfx::PluginWindowHandle window,
+    gfx::AcceleratedWidget window,
     gfx::GLShareGroup* share_group)
     : initialized_(false),
       render_directly_to_web_view_(false),

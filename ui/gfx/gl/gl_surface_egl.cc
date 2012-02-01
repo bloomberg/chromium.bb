@@ -179,7 +179,7 @@ EGLNativeDisplayType GLSurfaceEGL::GetNativeDisplay() {
 }
 
 NativeViewGLSurfaceEGL::NativeViewGLSurfaceEGL(bool software,
-                                               gfx::PluginWindowHandle window)
+                                               gfx::AcceleratedWidget window)
     : window_(window),
       surface_(NULL),
       supports_post_sub_buffer_(false)

@@ -61,7 +61,7 @@ struct CGContext;
 class NSEvent;
 class NSFont;
 class NSImage;
-class NSView;
+struct NSView;
 class NSWindow;
 class NSTextField;
 #endif  // __OBJC__
@@ -260,14 +260,15 @@ const AcceleratedWidget kNullAcceleratedWidget = NULL;
 #elif defined(USE_X11)
 typedef unsigned long AcceleratedWidget;
 const AcceleratedWidget kNullAcceleratedWidget = 0;
-#elif defined(USE_AURA) && defined(OS_MACOSX)
-// Mac-Aura uses NSView-backed GLSurface.  Regular Mac does not.
-// TODO(dhollowa): Rationalize these two definitions. http://crbug.com/104551.
+#elif defined(OS_MACOSX)
 typedef NSView* AcceleratedWidget;
 const AcceleratedWidget kNullAcceleratedWidget = 0;
+#elif defined(OS_ANDROID)
+typedef uint64 PluginWindowHandle;
+const PluginWindowHandle kNullPluginWindow = 0;
+const PluginWindowHandle kDummyPluginWindow = 0xFEEDBEEF;
 #else
-typedef void* AcceleratedWidget;
-const AcceleratedWidget kNullAcceleratedWidget = NULL;
+#error unknown platform
 #endif
 
 }  // namespace gfx

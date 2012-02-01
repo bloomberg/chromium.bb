@@ -31,7 +31,7 @@ Display* g_osmesa_display;
 // view.
 class NativeViewGLSurfaceOSMesa : public GLSurfaceOSMesa {
  public:
-  explicit NativeViewGLSurfaceOSMesa(gfx::PluginWindowHandle window);
+  explicit NativeViewGLSurfaceOSMesa(gfx::AcceleratedWidget window);
   virtual ~NativeViewGLSurfaceOSMesa();
 
   static bool InitializeOneOff();
@@ -47,7 +47,7 @@ class NativeViewGLSurfaceOSMesa : public GLSurfaceOSMesa {
 
  private:
   GC window_graphics_context_;
-  gfx::PluginWindowHandle window_;
+  gfx::AcceleratedWidget window_;
   GC pixmap_graphics_context_;
   Pixmap pixmap_;
 
@@ -88,7 +88,7 @@ bool GLSurface::InitializeOneOffInternal() {
 #if !defined(USE_WAYLAND)
 
 NativeViewGLSurfaceOSMesa::NativeViewGLSurfaceOSMesa(
-    gfx::PluginWindowHandle window)
+    gfx::AcceleratedWidget window)
   : GLSurfaceOSMesa(OSMESA_BGRA, gfx::Size(1, 1)),
     window_graphics_context_(0),
     window_(window),
@@ -276,7 +276,7 @@ bool NativeViewGLSurfaceOSMesa::PostSubBuffer(
 
 scoped_refptr<GLSurface> GLSurface::CreateViewGLSurface(
     bool software,
-    gfx::PluginWindowHandle window) {
+    gfx::AcceleratedWidget window) {
   if (software)
     return NULL;
 
