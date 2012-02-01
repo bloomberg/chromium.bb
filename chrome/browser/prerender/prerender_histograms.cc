@@ -8,6 +8,8 @@
 
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
+#include "base/stringprintf.h"
+#include "chrome/browser/autocomplete/network_action_predictor.h"
 #include "chrome/browser/prerender/prerender_util.h"
 #include "chrome/browser/prerender/prerender_field_trial.h"
 
@@ -43,7 +45,10 @@ std::string GetHistogramName(Origin origin, uint8 experiment_id,
 
   switch (origin) {
     case ORIGIN_OMNIBOX:
-      return ComposeHistogramName("omnibox", name);
+      return ComposeHistogramName(
+          StringPrintf("omnibox_%.1f",
+                       NetworkActionPredictor::get_hit_weight()).c_str(),
+          name);
     case ORIGIN_LINK_REL_PRERENDER:
       return ComposeHistogramName("web", name);
     case ORIGIN_GWS_PRERENDER:  // Handled above.

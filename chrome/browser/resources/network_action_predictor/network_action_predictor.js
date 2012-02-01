@@ -14,29 +14,31 @@ function requestNetworkActionPredictorDb() {
 /**
  * Callback from backend with the database contents. Sets up some globals and
  * calls to create the UI.
- * @param {boolean} enabled Whether or not NetworkActionPredictor is enabled.
- * @param {Array} database The database as a flattened list.
+ * @param {Dictionary} database Information about NetworkActionPredictor
+ *     including the database as a flattened list, a boolean indicating if the
+ *     system is enabled and the current hit weight.
  */
-function updateDatabaseTable(enabled, database) {
+function updateDatabaseTable(database) {
   console.debug('Updating Table NAP DB');
 
   var filter = $('filter');
   filter.disabled = false;
   filter.onchange = function() {
-    updateDatabaseView(enabled, database);
+    updateDatabaseView(database);
   };
 
-  updateDatabaseView(enabled, database);
+  updateDatabaseView(database);
 }
 
 /**
  * Updates the table from the database.
- * @param {boolean} enabled Whether or not NetworkActionPredictor is enabled.
- * @param {Array} database The database as a flattened list.
+ * @param {Dictionary} database Information about NetworkActionPredictor
+ *     including the database as a flattened list, a boolean indicating if the
+ *     system is enabled and the current hit weight.
  */
-function updateDatabaseView(enabled, database) {
+function updateDatabaseView(database) {
   var databaseSection = $('databaseTableBody');
-  var showEnabled = database && enabled;
+  var showEnabled = database.enabled && database.db;
 
   $('enabledMode').hidden = !showEnabled;
   $('disabledMode').hidden = showEnabled;
@@ -49,8 +51,8 @@ function updateDatabaseView(enabled, database) {
   // Clear any previous list.
   databaseSection.textContent = '';
 
-  for (var i = 0; i < database.length; ++i) {
-    var entry = database[i];
+  for (var i = 0; i < database.db.length; ++i) {
+    var entry = database.db[i];
 
     if (!filter.checked || entry.confidence > 0) {
       var row = document.createElement('tr');
@@ -69,6 +71,7 @@ function updateDatabaseView(enabled, database) {
     }
   }
   $('countBanner').textContent = 'Entries: ' + databaseSection.children.length;
+  $('countBanner').textContent += '  Hit Weight: ' + database.hit_weight;
 }
 
 document.addEventListener('DOMContentLoaded', requestNetworkActionPredictorDb);

@@ -62,6 +62,8 @@ bool GetURLRowForAutocompleteMatch(Profile* profile,
 
 const int NetworkActionPredictor::kMaximumDaysToKeepEntry = 14;
 
+double NetworkActionPredictor::hit_weight_ = 1.0;
+
 NetworkActionPredictor::NetworkActionPredictor(Profile* profile)
     : profile_(profile),
       db_(new NetworkActionPredictorDatabase(profile)),
@@ -407,8 +409,8 @@ double NetworkActionPredictor::CalculateConfidenceForDbEntry(
   if (value.number_of_hits < kMinimumNumberOfHits)
     return 0.0;
 
-  return static_cast<double>(value.number_of_hits) /
-      (value.number_of_hits + value.number_of_misses);
+  const double number_of_hits = value.number_of_hits * hit_weight_;
+  return number_of_hits / (number_of_hits + value.number_of_misses);
 }
 
 void NetworkActionPredictor::AddRow(

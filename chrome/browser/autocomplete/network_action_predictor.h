@@ -51,6 +51,9 @@ class NetworkActionPredictor
   explicit NetworkActionPredictor(Profile* profile);
   virtual ~NetworkActionPredictor();
 
+  static void set_hit_weight(double weight) { hit_weight_ = weight; }
+  static double get_hit_weight() { return hit_weight_; }
+
   // Registers an AutocompleteResult for a given |user_text|. This will be used
   // when the user navigates from the Omnibox to determine early opportunities
   // to predict their actions.
@@ -114,6 +117,11 @@ class NetworkActionPredictor
       DBIdCacheMap;
 
   static const int kMaximumDaysToKeepEntry;
+
+  // Multiplying factor applied to the |number_of_hits| for a database entry
+  // when calculating the confidence. It is currently set by a field trial so is
+  // static. Once the field trial ends, this will be a constant value.
+  static double hit_weight_;
 
   // ProfileKeyedService
   virtual void Shutdown() OVERRIDE;

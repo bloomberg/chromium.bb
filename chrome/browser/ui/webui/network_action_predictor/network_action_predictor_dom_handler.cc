@@ -28,10 +28,12 @@ void NetworkActionPredictorDOMHandler::RegisterMessages() {
 
 void NetworkActionPredictorDOMHandler::RequestNetworkActionPredictorDb(
     const base::ListValue* args) {
-  bool enabled = (network_action_predictor_ != NULL);
-  base::ListValue list;
+  const bool enabled = (network_action_predictor_ != NULL);
+  base::DictionaryValue dict;
+  dict.SetBoolean("enabled", enabled);
 
   if (enabled) {
+    base::ListValue* db = new base::ListValue();
     for (NetworkActionPredictor::DBCacheMap::const_iterator it =
              network_action_predictor_->db_cache_.begin();
          it != network_action_predictor_->db_cache_.end();
@@ -43,10 +45,11 @@ void NetworkActionPredictorDOMHandler::RequestNetworkActionPredictorDb(
       entry->SetInteger("miss_count", it->second.number_of_misses);
       entry->SetDouble("confidence",
           network_action_predictor_->CalculateConfidenceForDbEntry(it));
-      list.Append(entry);
+      db->Append(entry);
     }
+    dict.Set("db", db);
+    dict.SetDouble("hit_weight", NetworkActionPredictor::get_hit_weight());
   }
 
-  base::FundamentalValue enabled_value(enabled);
-  web_ui()->CallJavascriptFunction("updateDatabaseTable", enabled_value, list);
+  web_ui()->CallJavascriptFunction("updateDatabaseTable", dict);
 }
