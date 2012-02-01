@@ -151,6 +151,8 @@ const char* CompilationUnit::SkipAttribute(const char* start,
       start += len;
       return SkipAttribute(start, form);
 
+    case DW_FORM_flag_present:
+      return start;
     case DW_FORM_data1:
     case DW_FORM_flag:
     case DW_FORM_ref1:
@@ -163,6 +165,7 @@ const char* CompilationUnit::SkipAttribute(const char* start,
       return start + 4;
     case DW_FORM_ref8:
     case DW_FORM_data8:
+    case DW_FORM_ref_sig8:
       return start + 8;
     case DW_FORM_string:
       return start + strlen(start) + 1;
@@ -192,11 +195,13 @@ const char* CompilationUnit::SkipAttribute(const char* start,
       return start + 2 + reader_->ReadTwoBytes(start);
     case DW_FORM_block4:
       return start + 4 + reader_->ReadFourBytes(start);
-    case DW_FORM_block: {
+    case DW_FORM_block:
+    case DW_FORM_exprloc: {
       uint64 size = reader_->ReadUnsignedLEB128(start, &len);
       return start + size + len;
     }
     case DW_FORM_strp:
+    case DW_FORM_sec_offset:
       return start + reader_->OffsetSize();
   }
   fprintf(stderr,"Unhandled form type");
@@ -310,6 +315,9 @@ const char* CompilationUnit::ProcessAttribute(
       start += len;
       return ProcessAttribute(dieoffset, start, attr, form);
 
+    case DW_FORM_flag_present:
+      handler_->ProcessAttributeUnsigned(dieoffset, attr, form, 1);
+      return start;
     case DW_FORM_data1:
     case DW_FORM_flag:
       handler_->ProcessAttributeUnsigned(dieoffset, attr, form,
@@ -347,6 +355,10 @@ const char* CompilationUnit::ProcessAttribute(
       handler_->ProcessAttributeUnsigned(dieoffset, attr, form,
                                          reader_->ReadAddress(start));
       return start + reader_->AddressSize();
+    case DW_FORM_sec_offset:
+      handler_->ProcessAttributeUnsigned(dieoffset, attr, form,
+                                         reader_->ReadOffset(start));
+      return start + reader_->OffsetSize();
 
     case DW_FORM_ref1:
       handler_->ProcessAttributeReference(dieoffset, attr, form,
@@ -388,6 +400,10 @@ const char* CompilationUnit::ProcessAttribute(
         return start + reader_->OffsetSize();
       }
       break;
+    case DW_FORM_ref_sig8:
+      handler_->ProcessAttributeSignature(dieoffset, attr, form,
+                                          reader_->ReadEightBytes(start));
+      return start + 8;
 
     case DW_FORM_block1: {
       uint64 datalen = reader_->ReadOneByte(start);
@@ -407,7 +423,8 @@ const char* CompilationUnit::ProcessAttribute(
                                        datalen);
       return start + 4 + datalen;
     }
-    case DW_FORM_block: {
+    case DW_FORM_block:
+    case DW_FORM_exprloc: {
       uint64 datalen = reader_->ReadUnsignedLEB128(start, &len);
       handler_->ProcessAttributeBuffer(dieoffset, attr, form, start + len,
                                        datalen);
