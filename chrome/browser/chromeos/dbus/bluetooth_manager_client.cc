@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -27,6 +27,14 @@ class BluetoothManagerClientImpl : public BluetoothManagerClient {
     bluetooth_manager_proxy_ = bus->GetObjectProxy(
         bluetooth_manager::kBluetoothManagerServiceName,
         bluetooth_manager::kBluetoothManagerServicePath);
+
+    bluetooth_manager_proxy_->ConnectToSignal(
+        bluetooth_manager::kBluetoothManagerInterface,
+        bluetooth_manager::kAdapterAddedSignal,
+        base::Bind(&BluetoothManagerClientImpl::AdapterAddedReceived,
+                   weak_ptr_factory_.GetWeakPtr()),
+        base::Bind(&BluetoothManagerClientImpl::AdapterAddedConnected,
+                   weak_ptr_factory_.GetWeakPtr()));
 
     bluetooth_manager_proxy_->ConnectToSignal(
         bluetooth_manager::kBluetoothManagerInterface,
@@ -79,18 +87,39 @@ class BluetoothManagerClientImpl : public BluetoothManagerClient {
   }
 
  private:
+  // Called by dbus:: when an AdapterAdded signal is received.
+  void AdapterAddedReceived(dbus::Signal* signal) {
+    DCHECK(signal);
+    dbus::MessageReader reader(signal);
+    std::string object_path;
+    if (!reader.PopObjectPath(&object_path)) {
+      LOG(ERROR) << "AdapterAdded signal has incorrect parameters: "
+          << signal->ToString();
+      return;
+    }
+    VLOG(1) << "Adapter added: " << object_path;
+    FOR_EACH_OBSERVER(Observer, observers_, AdapterAdded(object_path));
+  }
+
+  // Called by dbus:: when the AdapterAdded signal is initially connected.
+  void AdapterAddedConnected(const std::string& interface_name,
+                             const std::string& signal_name,
+                             bool success) {
+    LOG_IF(WARNING, !success) << "Failed to connect to AdapterAdded signal.";
+  }
+
   // Called by dbus:: when an AdapterRemoved signal is received.
   void AdapterRemovedReceived(dbus::Signal* signal) {
     DCHECK(signal);
     dbus::MessageReader reader(signal);
-    std::string adapter;
-    if (!reader.PopObjectPath(&adapter)) {
+    std::string object_path;
+    if (!reader.PopObjectPath(&object_path)) {
       LOG(ERROR) << "AdapterRemoved signal has incorrect parameters: "
           << signal->ToString();
       return;
     }
-    VLOG(1) << "Adapter removed: " << adapter;
-    FOR_EACH_OBSERVER(Observer, observers_, AdapterRemoved(adapter));
+    VLOG(1) << "Adapter removed: " << object_path;
+    FOR_EACH_OBSERVER(Observer, observers_, AdapterRemoved(object_path));
   }
 
   // Called by dbus:: when the AdapterRemoved signal is initially connected.

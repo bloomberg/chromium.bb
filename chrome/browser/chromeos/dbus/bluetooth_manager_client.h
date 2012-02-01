@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -26,9 +26,13 @@ class BluetoothManagerClient {
    public:
     virtual ~Observer() {}
 
+    // Called when a local bluetooth adapter is added.
+    // |object_path| is the dbus object path of the adapter.
+    virtual void AdapterAdded(const std::string& object_path) {}
+
     // Called when a local bluetooth adapter is removed.
-    // |adapter| is the dbus object path of the adapter.
-    virtual void AdapterRemoved(const std::string& adapter) {}
+    // |object_path| is the dbus object path of the adapter.
+    virtual void AdapterRemoved(const std::string& object_path) {}
 
     // Called when the default local bluetooth adapter changes.
     // |adapter| is the dbus object path of the new default adapter.
