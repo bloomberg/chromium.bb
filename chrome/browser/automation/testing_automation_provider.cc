@@ -1358,7 +1358,7 @@ void TestingAutomationProvider::GetTabIndex(int handle, int* tabstrip_index) {
   if (tab_tracker_->ContainsHandle(handle)) {
     NavigationController* tab = tab_tracker_->GetResource(handle);
     Browser* browser = Browser::GetBrowserForController(tab, NULL);
-    *tabstrip_index = browser->tabstrip_model()->GetIndexOfController(tab);
+    *tabstrip_index = browser->GetIndexOfController(tab);
   }
 }
 
@@ -1564,7 +1564,7 @@ void TestingAutomationProvider::GetBrowserForWindow(int window_handle,
     return;
 
   BrowserList::const_iterator iter = BrowserList::begin();
-  for (;iter != BrowserList::end(); ++iter) {
+  for (; iter != BrowserList::end(); ++iter) {
     gfx::NativeWindow this_window = (*iter)->window()->GetNativeHandle();
     if (window == this_window) {
       // Add() returns the existing handle for the resource if any.
@@ -1838,7 +1838,7 @@ void TestingAutomationProvider::GetBookmarkBarVisibility(int handle,
 void TestingAutomationProvider::GetBookmarksAsJSON(
     int handle,
     std::string* bookmarks_as_json,
-    bool *success) {
+    bool* success) {
   *success = false;
   if (browser_tracker_->ContainsHandle(handle)) {
     Browser* browser = browser_tracker_->GetResource(handle);
@@ -3983,7 +3983,7 @@ void TestingAutomationProvider::AddSavedPassword(
   }
 
   // This observer will delete itself.
-  PasswordStoreLoginsChangedObserver *observer =
+  PasswordStoreLoginsChangedObserver* observer =
       new PasswordStoreLoginsChangedObserver(this, reply_message,
                                              PasswordStoreChange::ADD,
                                              "password_added");
@@ -4661,13 +4661,10 @@ namespace {
 
 // Selects the given |browser| and |tab| if not selected already.
 void EnsureTabSelected(Browser* browser, WebContents* tab) {
-  TabContentsWrapper* active =
-      browser->tabstrip_model()->GetActiveTabContents();
-  if (!active || active->web_contents() != tab ||
+  if (browser->GetSelectedWebContents() != tab ||
       browser != BrowserList::GetLastActive()) {
-    browser->ActivateTabAt(
-        browser->tabstrip_model()->GetIndexOfController(&tab->GetController()),
-        true /* user_gesture */);
+    browser->ActivateTabAt(browser->GetIndexOfController(&tab->GetController()),
+                           true /* user_gesture */);
   }
 }
 

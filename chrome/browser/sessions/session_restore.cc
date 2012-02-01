@@ -7,7 +7,7 @@
 #include <algorithm>
 #include <list>
 #include <set>
-#include <vector>
+#include <string>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -811,7 +811,7 @@ class SessionRestoreImpl : public content::NotificationObserver {
         SessionServiceFactory::GetForProfile(profile_);
     for (int i = initial_count; i < browser->tab_count(); ++i)
       session_service->TabRestored(browser->GetTabContentsWrapperAt(i),
-                                   browser->tabstrip_model()->IsTabPinned(i));
+                                   browser->IsTabPinned(i));
   }
 
   // The profile to create the sessions for.

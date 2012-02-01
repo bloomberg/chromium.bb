@@ -4,9 +4,10 @@
 
 #include "chrome/browser/ui/gtk/browser_window_gtk.h"
 
+#include <dlfcn.h>
 #include <gdk/gdkkeysyms.h>
 
-#include <dlfcn.h>
+#include <algorithm>
 #include <string>
 
 #include "base/base_paths.h"
@@ -809,8 +810,7 @@ void BrowserWindowGtk::UpdateDevTools() {
       browser_->GetSelectedWebContents());
 }
 
-void BrowserWindowGtk::SetDevToolsDockSide(DevToolsDockSide side)
-{
+void BrowserWindowGtk::SetDevToolsDockSide(DevToolsDockSide side) {
   if (devtools_dock_side_ == side)
     return;
 
@@ -1273,7 +1273,7 @@ void BrowserWindowGtk::TabDetachedAt(TabContentsWrapper* contents, int index) {
   // We use index here rather than comparing |contents| because by this time
   // the model has already removed |contents| from its list, so
   // browser_->GetSelectedWebContents() will return NULL or something else.
-  if (index == browser_->tabstrip_model()->active_index()) {
+  if (index == browser_->active_index()) {
     infobar_container_->ChangeTabContents(NULL);
     UpdateDevToolsForContents(NULL);
   }

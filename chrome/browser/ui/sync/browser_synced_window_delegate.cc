@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -44,11 +44,11 @@ BrowserSyncedWindowDelegate::~BrowserSyncedWindowDelegate() {}
 
 bool BrowserSyncedWindowDelegate::IsTabPinned(
     const browser_sync::SyncedTabDelegate* tab) const {
-  for (int i = 0; i < browser_->tabstrip_model()->count(); i++) {
+  for (int i = 0; i < browser_->tab_count(); i++) {
     browser_sync::SyncedTabDelegate* current =
-        browser_->tabstrip_model()->GetTabContentsAt(i)->synced_tab_delegate();
+        browser_->GetTabContentsWrapperAt(i)->synced_tab_delegate();
     if (tab == current)
-      return browser_->tabstrip_model()->IsTabPinned(i);
+      return browser_->IsTabPinned(i);
   }
   NOTREACHED();
   return false;

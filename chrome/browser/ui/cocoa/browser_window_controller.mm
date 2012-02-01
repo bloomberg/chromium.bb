@@ -1217,7 +1217,7 @@ enum {
 
     // Before the tab is detached from its originating tab strip, store the
     // pinned state so that it can be maintained between the windows.
-    bool isPinned = dragBWC->browser_->tabstrip_model()->IsTabPinned(index);
+    bool isPinned = dragBWC->browser_->IsTabPinned(index);
 
     // Now that we have enough information about the tab, we can remove it from
     // the dragging window. We need to do this *before* we add it to the new
@@ -1299,7 +1299,7 @@ enum {
                                 -tabOverflow.width, -tabOverflow.height);
 
   // Before detaching the tab, store the pinned state.
-  bool isPinned = browser_->tabstrip_model()->IsTabPinned(index);
+  bool isPinned = browser_->IsTabPinned(index);
 
   // Detach it from the source window, which just updates the model without
   // deleting the tab contents. This needs to come before creating the new
@@ -1449,7 +1449,7 @@ enum {
 
 - (NSInteger)numberOfTabs {
   // count() includes pinned tabs.
-  return browser_->tabstrip_model()->count();
+  return browser_->tab_count();
 }
 
 - (BOOL)hasLiveTabs {

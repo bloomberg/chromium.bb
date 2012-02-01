@@ -5,8 +5,8 @@
 #include "chrome/browser/sessions/session_service.h"
 
 #include <algorithm>
-#include <limits>
 #include <set>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -1206,7 +1206,7 @@ void SessionService::BuildCommandsForBrowser(
     DCHECK(tab);
     if (tab->profile() == profile() || profile() == NULL) {
       BuildCommandsForTab(browser->session_id(), tab, i,
-                          browser->tabstrip_model()->IsTabPinned(i),
+                          browser->IsTabPinned(i),
                           commands, tab_to_available_range);
       if (windows_to_track && !added_to_windows_to_track) {
         windows_to_track->insert(browser->session_id().id());
