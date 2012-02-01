@@ -7,7 +7,6 @@
 #include "chrome/browser/extensions/extension_message_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/extension_messages.h"
-#include "content/browser/child_process_security_policy.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host_delegate.h"
