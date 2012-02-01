@@ -28,6 +28,9 @@ const char kHostIdAttr[] = "hostid";
 const char kHeartbeatSignatureTag[] = "signature";
 const char kSignatureTimeAttr[] = "time";
 
+const char kErrorTag[] = "error";
+const char kNotFoundTag[] = "item-not-found";
+
 const char kHeartbeatResultTag[] = "heartbeat-result";
 const char kSetIntervalTag[] = "set-interval";
 
@@ -80,6 +83,18 @@ void HeartbeatSender::DoSendStanza() {
 void HeartbeatSender::ProcessResponse(const XmlElement* response) {
   std::string type = response->Attr(buzz::QN_TYPE);
   if (type == buzz::STR_ERROR) {
+    const XmlElement* error_element =
+        response->FirstNamed(QName(buzz::NS_CLIENT, kErrorTag));
+    if (error_element) {
+      if (error_element->FirstNamed(QName(buzz::NS_STANZA, kNotFoundTag))) {
+        // TODO(lambroslambrou): Trigger an application-defined callback to
+        // shut down the host properly, instead of just exiting here
+        // (http://crbug.com/112160).
+        LOG(ERROR) << "Received error: Host ID invalid";
+        exit(1);
+      }
+    }
+
     LOG(ERROR) << "Received error in response to heartbeat: "
                << response->Str();
     return;
