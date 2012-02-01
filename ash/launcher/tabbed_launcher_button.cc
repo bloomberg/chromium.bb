@@ -8,7 +8,6 @@
 
 #include "ash/launcher/launcher_button_host.h"
 #include "grit/ui_resources.h"
-#include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/animation/multi_animation.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
@@ -161,11 +160,6 @@ void TabbedLauncherButton::OnMouseMoved(const views::MouseEvent& event) {
 void TabbedLauncherButton::OnMouseExited(const views::MouseEvent& event) {
   ImageButton::OnMouseExited(event);
   hover_controller_.Hide();
-}
-
-void TabbedLauncherButton::GetAccessibleState(ui::AccessibleViewState* state) {
-  state->role = ui::AccessibilityTypes::ROLE_PUSHBUTTON;
-  state->name = host_->GetAccessibleName(this);
 }
 
 // static

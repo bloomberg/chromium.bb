@@ -13,7 +13,6 @@
       'target_name': 'ash',
       'type': '<(component)',
       'dependencies': [
-        'ash_strings',
         '../base/base.gyp:base',
         '../base/base.gyp:base_i18n',
         '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
@@ -266,11 +265,6 @@
           # are not referenced in code, but are referenced in nibs.
           'xcode_settings': {'OTHER_LDFLAGS': ['-Wl,-ObjC']},
         }],
-        ['use_glib == 1', {
-          'dependencies': [
-            'aura_shell_unittests_strings',
-          ],
-        }],
       ],
     },
     {
@@ -337,53 +331,5 @@
         }],
       ],
     },
-    {
-      'target_name': 'ash_strings',
-      'type': 'none',
-      'actions': [
-        # Localizable resources.
-        {
-          'action_name': 'ash_strings',
-          'variables': {
-            'grit_grd_file': 'ash_strings.grd',
-            'grit_out_dir': '<(SHARED_INTERMEDIATE_DIR)/ash_strings',
-          },
-          'includes': [ '../build/grit_action.gypi' ],
-        },
-      ],
-      'includes': [ '../build/grit_target.gypi' ],
-    },
-  ],
-  'conditions': [
-    ['os_posix == 1 and OS != "mac"', {
-      'targets': [{
-        'target_name': 'aura_shell_unittests_strings',
-        'type': 'none',
-        'variables': {
-          'repack_path': '<(DEPTH)/tools/grit/grit/format/repack.py',
-        },
-        'actions': [
-          {
-            'action_name': 'repack_aura_shell_unittests_strings',
-            'variables': {
-              'pak_inputs': [
-                '<(SHARED_INTERMEDIATE_DIR)/ash_strings/ash_strings_en-US.pak',
-                '<(SHARED_INTERMEDIATE_DIR)/ui/ui_strings/ui_strings_en-US.pak',
-                '<(SHARED_INTERMEDIATE_DIR)/ui/app_locale_settings/app_locale_settings_en-US.pak',
-              ],
-            },
-            'inputs': [
-              '<(repack_path)',
-              '<@(pak_inputs)',
-            ],
-            'outputs': [
-              '<(PRODUCT_DIR)/aura_shell_unittests_strings/en-US.pak',
-            ],
-            'action': ['python', '<(repack_path)', '<@(_outputs)',
-                       '<@(pak_inputs)'],
-          },
-        ],
-      }],
-    }],
   ],
 }
