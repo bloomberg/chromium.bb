@@ -503,6 +503,9 @@ const char kEnableExperimentalExtensionApis[] =
 const char kEnableExtensionActivityLogging[] =
     "enable-extension-activity-logging";
 
+// Enables the extension activity UI.
+const char kEnableExtensionActivityUI[]     = "enable-extension-activity-ui";
+
 // Enables experimental timeline API.
 const char kEnableExtensionTimelineApi[]    = "enable-extension-timeline-api";
 

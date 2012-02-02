@@ -147,6 +147,13 @@ cr.define('options', function() {
         e.preventDefault();
       });
 
+      if (extension.allow_activity) {
+        var activity = node.querySelector('.activity-link');
+        activity.href = 'chrome://extension-activity?extensionId=' +
+            extension.id;
+        activity.hidden = false;
+      }
+
       // The 'View in Web Store' checkbox.
       if (extension.homepageUrl) {
         var store = node.querySelector('.store-link');

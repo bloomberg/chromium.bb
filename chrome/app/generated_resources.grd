@@ -4260,6 +4260,9 @@ Update checks have repeatedly failed for the extension "<ph name="EXTENSION_NAME
       <message name="IDS_EXTENSIONS_OPTIONS_LINK" desc="The button text for the options button.">
         Options
       </message>
+      <message name="IDS_EXTENSIONS_ACTIVITY_LINK" desc="The link for showing extension activity.">
+        Activity
+      </message>
       <message name="IDS_EXTENSIONS_SHOW_BUTTON" desc="The text for the Show link.">
         Show button
       </message>
@@ -4384,6 +4387,17 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_EXTENSIONS_HIDE_DETAILS" desc="Tooltip for the button next to an extension that hides details">
         Hide Details
+      </message>
+
+      <!-- chrome://extension-activity page -->
+      <message name="IDS_EXTENSION_ACTIVITY_TITLE" desc="Title for the extension-activity tab.">
+        Extension Activity
+      </message>
+      <message name="IDS_EXTENSION_ACTIVITY_API_CALL" desc="Text for the label next to an activity message that represents a call to the extension API.">
+        API Call
+      </message>
+      <message name="IDS_EXTENSION_ACTIVITY_API_BLOCK" desc="Text for the label next to an activity message that represents a blocked call to the extension API.">
+        Blocked API Call
       </message>
 
       <!-- Global error messages for extensions -->
@@ -5110,6 +5124,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_FLAGS_SHADOW_DOM_DESCRIPTION" desc="Description for the flag to enable Shadow DOM.">
         This API allows web applications to use Web Components.
+      </message>
+      <message name="IDS_FLAGS_ENABLE_EXTENSION_ACTIVITY_UI_NAME" desc="Name for the flag to enable the extension activity UI.">
+        Enable extension activity UI
+      </message>
+      <message name="IDS_FLAGS_ENABLE_EXTENSION_ACTIVITY_UI_DESCRIPTION" desc="Description for the flag to enable the extension activity UI.">
+        Enable experimental UI that shows a log of extension activity.
       </message>
       <!-- Crashes -->
       <message name="IDS_CRASHES_TITLE" desc="Title for the chrome://crashes page.">

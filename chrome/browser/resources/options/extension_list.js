@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -219,6 +219,15 @@ cr.define('options', function() {
           link.textContent = localStrings.getString('extensionSettingsOptions');
           link.href = '#';
           link.addEventListener('click', this.handleOptions_.bind(this));
+          vbox.appendChild(link);
+        }
+
+        if (extension.allow_activity) {
+          var link = this.ownerDocument.createElement('a');
+          link.classList.add('extension-links-trailing');
+          link.textContent =
+              localStrings.getString('extensionSettingsActivity');
+          link.href = 'chrome://extension-activity?extensionId=' + extension.id;
           vbox.appendChild(link);
         }
 

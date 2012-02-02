@@ -3837,6 +3837,8 @@
         'browser/ui/webui/edit_search_engine_dialog_webui.h',
         'browser/ui/webui/edit_search_engine_dialog_ui_webui.cc',
         'browser/ui/webui/edit_search_engine_dialog_ui_webui.h',
+        'browser/ui/webui/extensions/extension_activity_ui.cc',
+        'browser/ui/webui/extensions/extension_activity_ui.h',
         'browser/ui/webui/extensions/extension_icon_source.cc',
         'browser/ui/webui/extensions/extension_icon_source.h',
         'browser/ui/webui/extensions/extensions_ui.cc',

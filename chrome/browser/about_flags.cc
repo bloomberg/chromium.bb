@@ -562,6 +562,13 @@ const Experiment kExperiments[] = {
     kOsAll,
     SINGLE_VALUE_TYPE(switches::kEnableShadowDOM)
   },
+  {
+    "enable-extension-activity-ui",
+    IDS_FLAGS_ENABLE_EXTENSION_ACTIVITY_UI_NAME,
+    IDS_FLAGS_ENABLE_EXTENSION_ACTIVITY_UI_DESCRIPTION,
+    kOsAll,
+    SINGLE_VALUE_TYPE(switches::kEnableExtensionActivityUI)
+  }
 };
 
 const Experiment* experiments = kExperiments;

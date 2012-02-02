@@ -21,6 +21,7 @@
 #include "chrome/browser/ui/webui/devtools_ui.h"
 #include "chrome/browser/ui/webui/downloads_ui.h"
 #include "chrome/browser/ui/webui/edit_search_engine_dialog_ui_webui.h"
+#include "chrome/browser/ui/webui/extensions/extension_activity_ui.h"
 #include "chrome/browser/ui/webui/extensions/extensions_ui.h"
 #include "chrome/browser/ui/webui/feedback_ui.h"
 #include "chrome/browser/ui/webui/task_manager_ui.h"
@@ -341,6 +342,12 @@ WebUIFactoryFunction GetWebUIFactoryFunction(content::WebUI* web_ui,
 #endif
       ) {
     return &NewWebUI<AboutUI>;
+  }
+
+  if (url.host() == chrome::kChromeUIExtensionActivityHost &&
+      CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableExtensionActivityUI)) {
+    return &NewWebUI<ExtensionActivityUI>;
   }
 
   DLOG(WARNING) << "Unknown WebUI:" << url;

@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html i18n-values="dir:textdirection;">
+<head>
+<meta charset="utf-8">
+
+<link rel="stylesheet" href="extensions.css">
+<link rel="stylesheet" href="extension_activity.css">
+<link rel="stylesheet" href="../shared/css/chrome_shared2.css">
+
+<script src="chrome://resources/js/cr.js"></script>
+<script src="chrome://resources/js/i18n_template.js"></script>
+<script src="chrome://resources/js/util.js"></script>
+
+<script src="chrome://extension-activity/strings.js"></script>
+<script src="chrome://extension-activity/extension_activity.js"></script>
+
+</head>
+
+<body>
+
+<div id="extension-activity">
+  <h1 i18n-content="extensionActivity"></h1>
+  <div class="extension-list-item">
+    <div class="extension-details">
+      <div>
+        <span class="extension-title"></span>
+        <span class="extension-version"></span>
+      </div>
+      <p class="extension-description"></p>
+    </div>
+  </div>
+  <div id="extension-activity-list"></div>
+</div>
+
+<div id="template-collection" hidden>
+  <div class="extension-activity-labels">
+    <!-- The indices here match the activity enum defined in
+         chrome/browser/extensions/extension_activity_log.h -->
+    <span class="extension-activity-label-0"
+        i18n-content="extensionActivityApiCall"></span>
+    <span class="extension-activity-label-1"
+        i18n-content="extensionActivityApiBlock"></span>
+  </div>
+
+  <div class="extension-activity-item">
+    <span class="extension-activity-time"></span>
+    <span class="extension-activity-label"></span>
+    <span class="extension-activity-message"></span>
+  </div>
+</div>
+
+</body>
+</html>

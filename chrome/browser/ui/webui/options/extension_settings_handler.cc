@@ -548,6 +548,8 @@ void ExtensionSettingsHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_RELOAD));
   localized_strings->SetString("extensionSettingsOptions",
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_OPTIONS_LINK));
+  localized_strings->SetString("extensionSettingsActivity",
+      l10n_util::GetStringUTF16(IDS_EXTENSIONS_ACTIVITY_LINK));
   localized_strings->SetString("extensionSettingsPolicyControlled",
      l10n_util::GetStringUTF16(IDS_EXTENSIONS_POLICY_CONTROLLED));
   localized_strings->SetString("extensionSettingsShowButton",
@@ -666,6 +668,9 @@ DictionaryValue* ExtensionSettingsHandler::CreateExtensionDetailValue(
   extension_data->SetBoolean("wantsFileAccess", extension->wants_file_access());
   extension_data->SetBoolean("allowFileAccess",
       service ? service->AllowFileAccess(extension) : false);
+  extension_data->SetBoolean("allow_activity",
+      enabled && CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableExtensionActivityUI));
   extension_data->SetBoolean("allow_reload",
                              extension->location() == Extension::LOAD);
   extension_data->SetBoolean("is_hosted_app", extension->is_hosted_app());
