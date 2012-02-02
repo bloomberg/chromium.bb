@@ -286,13 +286,13 @@ html[dir='rtl'] .feature-logo {
 #features-sync-backup-logo {
   background: url('chrome://resources/images/sync-backup.png') no-repeat;
   height: 42px;
-  width: 42px;
+  width: 52px;
 }
 
 #features-google-mail-logo {
   background: url('chrome://resources/images/google-mail.png') no-repeat;
   height: 43px;
-  width: 42px;
+  width: 52px;
 }
 
 /* Promo information column. **************************************************/
