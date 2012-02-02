@@ -780,7 +780,7 @@ void OpaqueBrowserFrameView::PaintToolbarBackground(gfx::Canvas* canvas) {
                              toolbar_bounds.bottom() - kClientEdgeThickness,
                              w - (2 * kClientEdgeThickness),
                              kClientEdgeThickness),
-                   ResourceBundle::toolbar_separator_color);
+      ThemeService::GetDefaultColor(ThemeService::COLOR_TOOLBAR_SEPARATOR));
 }
 
 void OpaqueBrowserFrameView::PaintRestoredClientEdge(gfx::Canvas* canvas) {
@@ -901,7 +901,7 @@ SkBitmap* OpaqueBrowserFrameView::GetFrameBitmap() const {
     return GetThemeProvider()->GetBitmapNamed(resource_id);
   }
   // Never theme app and popup windows.
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   if (ShouldPaintAsActive()) {
     resource_id = is_incognito ?
         IDR_THEME_FRAME_INCOGNITO : IDR_FRAME;

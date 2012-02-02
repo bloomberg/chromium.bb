@@ -324,7 +324,7 @@ void GlassBrowserFrameView::PaintToolbarBackground(gfx::Canvas* canvas) {
                              toolbar_bounds.bottom() - kClientEdgeThickness,
                              w - (2 * kClientEdgeThickness),
                              kClientEdgeThickness),
-                   ResourceBundle::toolbar_separator_color);
+      ThemeService::GetDefaultColor(ThemeService::COLOR_TOOLBAR_SEPARATOR));
 }
 
 void GlassBrowserFrameView::PaintRestoredClientEdge(gfx::Canvas* canvas) {
@@ -491,7 +491,7 @@ void GlassBrowserFrameView::Observe(
 void GlassBrowserFrameView::InitThrobberIcons() {
   static bool initialized = false;
   if (!initialized) {
-    ResourceBundle &rb = ResourceBundle::GetSharedInstance();
+    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
     for (int i = 0; i < kThrobberIconCount; ++i) {
       throbber_icons_[i] = rb.LoadThemeIcon(IDI_THROBBER_01 + i);
       DCHECK(throbber_icons_[i]);

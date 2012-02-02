@@ -267,7 +267,7 @@ class ResizeCorner : public views::View {
     if (!widget || (widget->IsMaximized() || widget->IsFullscreen()))
       return;
 
-    SkBitmap* bitmap = ResourceBundle::GetSharedInstance().GetBitmapNamed(
+    SkBitmap* bitmap = ui::ResourceBundle::GetSharedInstance().GetBitmapNamed(
         IDR_TEXTAREA_RESIZER);
     bitmap->buildMipMap(false);
     canvas->DrawBitmapInt(*bitmap, width() - bitmap->width(),
@@ -535,7 +535,7 @@ SkBitmap BrowserView::GetOTRAvatarIcon() const {
   static SkBitmap* otr_avatar_ = new SkBitmap();
 
   if (otr_avatar_->isNull()) {
-    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
     *otr_avatar_ = *rb.GetBitmapNamed(IDR_OTR_ICON);
   }
   return *otr_avatar_;
@@ -546,7 +546,7 @@ SkBitmap BrowserView::GetGuestAvatarIcon() const {
   static SkBitmap* guest_avatar_ = new SkBitmap();
 
   if (guest_avatar_->isNull()) {
-    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
     *guest_avatar_ = *rb.GetBitmapNamed(IDR_GUEST_ICON);
   }
   return *guest_avatar_;
@@ -1825,7 +1825,8 @@ void BrowserView::GetAccessibleState(ui::AccessibleViewState* state) {
 SkColor BrowserView::GetInfoBarSeparatorColor() const {
   // NOTE: Keep this in sync with ToolbarView::OnPaint()!
   return (IsTabStripVisible() || !frame_->ShouldUseNativeFrame()) ?
-      ResourceBundle::toolbar_separator_color : SK_ColorBLACK;
+      ThemeService::GetDefaultColor(ThemeService::COLOR_TOOLBAR_SEPARATOR) :
+      SK_ColorBLACK;
 }
 
 void BrowserView::InfoBarContainerStateChanged(bool is_animating) {

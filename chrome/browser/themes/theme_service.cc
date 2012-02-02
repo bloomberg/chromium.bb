@@ -81,6 +81,7 @@ const SkColor kDefaultColorToolbar = SkColorSetRGB(230, 230, 230);
 #else
 const SkColor kDefaultColorToolbar = SkColorSetRGB(223, 223, 223);
 #endif
+const SkColor kDefaultColorToolbarSeparator = SkColorSetRGB(182, 186, 192);
 const SkColor kDefaultColorTabText = SK_ColorBLACK;
 #if defined(OS_MACOSX)
 const SkColor kDefaultColorBackgroundTabText = SK_ColorBLACK;
@@ -476,6 +477,8 @@ SkColor ThemeService::GetDefaultColor(int id) {
       return kDefaultColorFrameIncognitoInactive;
     case COLOR_TOOLBAR:
       return kDefaultColorToolbar;
+    case COLOR_TOOLBAR_SEPARATOR:
+      return kDefaultColorToolbarSeparator;
     case COLOR_TAB_TEXT:
       return kDefaultColorTabText;
     case COLOR_BACKGROUND_TAB_TEXT:

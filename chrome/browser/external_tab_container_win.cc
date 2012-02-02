@@ -24,6 +24,7 @@
 #include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/repost_form_warning_controller.h"
+#include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/ui/app_modal_dialogs/message_box_handler.h"
 #include "chrome/browser/ui/blocked_content/blocked_content_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
@@ -64,7 +65,6 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityPolicy.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/menu_model.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/base/view_prop.h"
 #include "ui/views/layout/grid_layout.h"
 
@@ -1001,7 +1001,7 @@ scoped_refptr<ExternalTabContainer> ExternalTabContainer::RemovePendingTab(
 }
 
 SkColor ExternalTabContainer::GetInfoBarSeparatorColor() const {
-  return ResourceBundle::toolbar_separator_color;
+  return ThemeService::GetDefaultColor(ThemeService::COLOR_TOOLBAR_SEPARATOR);
 }
 
 void ExternalTabContainer::InfoBarContainerStateChanged(bool is_animating) {

@@ -45,8 +45,6 @@ ResourceBundle* ResourceBundle::g_shared_instance_ = NULL;
 // static
 const SkColor ResourceBundle::toolbar_color =
      SkColorSetRGB(210, 225, 246);
-const SkColor ResourceBundle::toolbar_separator_color =
-     SkColorSetRGB(182, 186, 192);
 
 // static
 std::string ResourceBundle::InitSharedInstanceWithLocale(

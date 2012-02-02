@@ -193,7 +193,6 @@ class UI_EXPORT ResourceBundle {
 
   // TODO(beng): These browser-specific concepts should move to ThemeProvider.
   static const SkColor toolbar_color;
-  static const SkColor toolbar_separator_color;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ResourceBundle, LoadDataResourceBytes);

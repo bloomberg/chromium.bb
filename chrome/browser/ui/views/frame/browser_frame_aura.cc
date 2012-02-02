@@ -19,7 +19,6 @@
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/compositor/layer.h"
@@ -153,7 +152,7 @@ void ToolbarBackground::Paint(gfx::Canvas* canvas, views::View* view) const {
       toolbar_bounds.bottom() - views::NonClientFrameView::kClientEdgeThickness,
       w - (2 * views::NonClientFrameView::kClientEdgeThickness),
       views::NonClientFrameView::kClientEdgeThickness),
-      ResourceBundle::toolbar_separator_color);
+      ThemeService::GetDefaultColor(ThemeService::COLOR_TOOLBAR_SEPARATOR));
 }
 
 ////////////////////////////////////////////////////////////////////////////////

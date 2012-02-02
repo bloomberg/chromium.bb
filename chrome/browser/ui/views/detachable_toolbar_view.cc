@@ -57,7 +57,7 @@ void DetachableToolbarView::PaintHorizontalBorder(gfx::Canvas* canvas,
   int thickness = views::NonClientFrameView::kClientEdgeThickness;
   int y = view->IsDetached() ? 0 : (view->height() - thickness);
   canvas->FillRect(gfx::Rect(0, y, view->width(), thickness),
-                   ResourceBundle::toolbar_separator_color);
+      ThemeService::GetDefaultColor(ThemeService::COLOR_TOOLBAR_SEPARATOR));
 }
 
 // static

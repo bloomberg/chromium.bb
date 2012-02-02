@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,6 +16,7 @@
 #include "chrome/browser/instant/instant_confirm_dialog.h"
 #include "chrome/browser/instant/promo_counter.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/ui/omnibox/omnibox_view.h"
 #include "chrome/browser/ui/views/autocomplete/autocomplete_result_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
@@ -102,7 +103,7 @@ class OptInButtonBorder : public views::Border {
   // Creates 9 patch painter from the image with the id |image_id|.
   views::Painter* CreatePainter(int image_id) {
     SkBitmap* image =
-        ResourceBundle::GetSharedInstance().GetBitmapNamed(image_id);
+        ui::ResourceBundle::GetSharedInstance().GetBitmapNamed(image_id);
     int w = image->width() / 2;
     if (image->width() % 2 == 0)
       w--;
@@ -183,7 +184,7 @@ class AutocompletePopupContentsView::InstantOptInView
                        height() - kOptInBackgroundVInset * 2, canvas);
     canvas->DrawRect(gfx::Rect(0, 0, width() - kOptInBackgroundHInset * 2,
                                height() - kOptInBackgroundVInset * 2),
-                     ResourceBundle::toolbar_separator_color);
+        ThemeService::GetDefaultColor(ThemeService::COLOR_TOOLBAR_SEPARATOR));
     canvas->Restore();
   }
 
