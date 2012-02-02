@@ -145,9 +145,6 @@ WizardController::~WizardController() {
   } else {
     NOTREACHED() << "More than one controller are alive.";
   }
-
-  chromeos::WizardAccessibilityHelper::GetInstance()->
-      UnregisterNotifications();
 }
 
 void WizardController::Init(const std::string& first_screen_name,

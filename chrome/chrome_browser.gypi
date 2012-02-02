@@ -683,8 +683,6 @@
         'browser/chromeos/login/webui_login_view.h',
         'browser/chromeos/login/webui_screen_locker.cc',
         'browser/chromeos/login/webui_screen_locker.h',
-        'browser/chromeos/login/wizard_accessibility_handler.cc',
-        'browser/chromeos/login/wizard_accessibility_handler.h',
         'browser/chromeos/login/wizard_accessibility_helper.cc',
         'browser/chromeos/login/wizard_accessibility_helper.h',
         'browser/chromeos/login/wizard_controller.cc',
