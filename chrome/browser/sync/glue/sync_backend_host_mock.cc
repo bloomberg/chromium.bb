@@ -12,7 +12,8 @@ ACTION(InvokeTask) {
   arg3.Run(syncable::ModelTypeSet());
 }
 
-SyncBackendHostMock::SyncBackendHostMock() {
+SyncBackendHostMock::SyncBackendHostMock()
+    : SyncBackendHost(&profile_) {
   // By default, invoke the ready callback.
   ON_CALL(*this, ConfigureDataTypes(_, _, _, _, _, _)).
       WillByDefault(InvokeTask());
