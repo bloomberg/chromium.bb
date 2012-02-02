@@ -59,7 +59,7 @@ html[dir='rtl'] .overlay .page .action-area {
   left: 0;
 }
 
-.overlay .page action-area-right {
+.overlay .page .action-area-right {
   display: -webkit-box;
 }
 
