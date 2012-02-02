@@ -179,11 +179,14 @@ bool PrintPreviewWebContentDelegate::CanReloadContents(
 
 void PrintPreviewWebContentDelegate::HandleKeyboardEvent(
     const NativeWebKeyboardEvent& event) {
+  // Disabled on Mac due to http://crbug.com/112173.
+#if !defined(OS_MACOSX)
   Browser* current_browser =
       BrowserList::FindBrowserWithWebContents(tab_->web_contents());
   if (!current_browser)
     return;
   current_browser->window()->HandleKeyboardEvent(event);
+#endif
 }
 
 }  // namespace
