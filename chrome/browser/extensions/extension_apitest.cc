@@ -162,6 +162,7 @@ bool ExtensionApiTest::RunPageTest(const std::string& page_url) {
 }
 
 bool ExtensionApiTest::RunPlatformAppTest(const char* extension_name) {
+  web_app::SetDisableShortcutCreationForTests(true);
   return RunExtensionTestImpl(extension_name, "", kFlagLaunchAppShell);
 }
 
@@ -211,7 +212,6 @@ bool ExtensionApiTest::RunExtensionTestImpl(const char* extension_name,
     ui_test_utils::NavigateToURL(browser(), url);
 
   } else if (launch_shell) {
-    web_app::SetDisableShortcutCreationForTests(true);
     Browser::OpenApplication(
         browser()->profile(),
         extension,
