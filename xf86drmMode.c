@@ -96,6 +96,10 @@ void drmModeFreeResources(drmModeResPtr ptr)
 	if (!ptr)
 		return;
 
+	drmFree(ptr->fbs);
+	drmFree(ptr->crtcs);
+	drmFree(ptr->connectors);
+	drmFree(ptr->encoders);
 	drmFree(ptr);
 
 }
@@ -898,6 +902,7 @@ retry:
 				 ovr.count_format_types, sizeof(uint32_t));
 	if (ovr.count_format_types && !r->formats) {
 		drmFree(r->formats);
+		drmFree(r);
 		r = 0;
 	}
 
@@ -951,6 +956,7 @@ retry:
 				  res.count_planes, sizeof(uint32_t));
 	if (res.count_planes && !r->planes) {
 		drmFree(r->planes);
+		drmFree(r);
 		r = 0;
 	}
 
