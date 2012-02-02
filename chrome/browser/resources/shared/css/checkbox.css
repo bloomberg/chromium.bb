@@ -119,8 +119,6 @@ input[type='radio']:active:checked::before {
 
 .checkbox label,
 .radio label {
-  /* The extra 100px expands the clickable area past the end of the text. */
-  -webkit-padding-end: 100px;
   /* Don't expand horizontally: http://crbug.com/112091 */
   display: -webkit-inline-box;
 }
