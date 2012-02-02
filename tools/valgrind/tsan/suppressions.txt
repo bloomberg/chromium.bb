@@ -753,3 +753,24 @@
   fun:media::FFmpegVideoDecoder::Flush
   fun:base::internal::RunnableAdapter::Run
 }
+
+{
+  bug_112419
+  ThreadSanitizer:Race
+  ...
+  fun:::OCSPTrySendAndReceive
+  fun:pkix_pl_Pk11CertStore_GetCRL
+  fun:pkix_CrlChecker_CheckExternal
+  fun:PKIX_RevocationChecker_Check
+  fun:pkix_CheckChain
+  fun:pkix_Build_ValidateEntireChain
+  fun:pkix_BuildForwardDepthFirstSearch
+  fun:pkix_Build_InitiateBuildChain
+  fun:PKIX_BuildChain
+  fun:CERT_PKIXVerifyCert
+  fun:net::::PKIXVerifyCert
+  fun:net::X509Certificate::VerifyInternal
+  fun:net::X509Certificate::Verify
+  fun:net::CertVerifierWorker::Run
+  fun:base::internal::RunnableAdapter::Run
+}
