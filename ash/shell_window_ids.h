@@ -43,12 +43,15 @@ const int kShellWindowId_LockSystemModalContainer = 8;
 // The container for the status area.
 const int kShellWindowId_StatusContainer = 9;
 
-// The container for menus and tooltips.
-const int kShellWindowId_MenuAndTooltipContainer = 10;
+// The container for menus.
+const int kShellWindowId_MenuContainer = 10;
+
+// The container for drag/drop images and tooltips.
+const int kShellWindowId_DragImageAndTooltipContainer = 11;
 
 // The container for bubbles briefly overlaid onscreen to show settings changes
 // (volume, brightness, etc.).
-const int kShellWindowId_SettingBubbleContainer = 11;
+const int kShellWindowId_SettingBubbleContainer = 12;
 
 }  // namespace internal
 

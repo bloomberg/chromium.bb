@@ -73,7 +73,8 @@ const int kScreenLockerContainerIds[] = {
 // is locked.
 const int kRelatedContainerIds[] = {
   internal::kShellWindowId_StatusContainer,
-  internal::kShellWindowId_MenuAndTooltipContainer,
+  internal::kShellWindowId_MenuContainer,
+  internal::kShellWindowId_DragImageAndTooltipContainer,
   internal::kShellWindowId_SettingBubbleContainer,
 };
 

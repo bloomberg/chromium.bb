@@ -54,8 +54,10 @@ aura::Window* StackingController::GetDefaultParent(aura::Window* window) {
     case aura::client::WINDOW_TYPE_PANEL:
       return GetContainer(internal::kShellWindowId_PanelContainer);
     case aura::client::WINDOW_TYPE_MENU:
+      return GetContainer(internal::kShellWindowId_MenuContainer);
     case aura::client::WINDOW_TYPE_TOOLTIP:
-      return GetContainer(internal::kShellWindowId_MenuAndTooltipContainer);
+      return GetContainer(
+          internal::kShellWindowId_DragImageAndTooltipContainer);
     case aura::client::WINDOW_TYPE_CONTROL:
       return GetContainer(internal::kShellWindowId_UnparentedControlContainer);
     default:

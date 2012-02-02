@@ -59,7 +59,9 @@ void ExpectAllContainers() {
   EXPECT_TRUE(
       shell->GetContainer(internal::kShellWindowId_StatusContainer));
   EXPECT_TRUE(
-      shell->GetContainer(internal::kShellWindowId_MenuAndTooltipContainer));
+      shell->GetContainer(internal::kShellWindowId_MenuContainer));
+  EXPECT_TRUE(shell->GetContainer(
+      internal::kShellWindowId_DragImageAndTooltipContainer));
   EXPECT_TRUE(
       shell->GetContainer(internal::kShellWindowId_SettingBubbleContainer));
 }

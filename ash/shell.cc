@@ -133,9 +133,15 @@ void CreateSpecialContainers(aura::Window::Windows* containers) {
   containers->push_back(status_container);
 
   aura::Window* menu_container = new aura::Window(NULL);
-  menu_container->set_id(internal::kShellWindowId_MenuAndTooltipContainer);
+  menu_container->set_id(internal::kShellWindowId_MenuContainer);
   SetChildWindowVisibilityChangesAnimated(menu_container);
   containers->push_back(menu_container);
+
+  aura::Window* drag_drop_container = new aura::Window(NULL);
+  drag_drop_container->set_id(
+      internal::kShellWindowId_DragImageAndTooltipContainer);
+  SetChildWindowVisibilityChangesAnimated(drag_drop_container);
+  containers->push_back(drag_drop_container);
 
   aura::Window* setting_bubble_container = new aura::Window(NULL);
   setting_bubble_container->set_id(

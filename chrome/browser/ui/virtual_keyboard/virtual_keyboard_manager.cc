@@ -184,7 +184,7 @@ KeyboardWidget::KeyboardWidget()
   Init(params);
 #if defined(USE_AURA)
   ash::Shell::GetInstance()->GetContainer(
-      ash::internal::kShellWindowId_MenuAndTooltipContainer)->
+      ash::internal::kShellWindowId_MenuContainer)->
       AddChild(GetNativeView());
 #endif
 
