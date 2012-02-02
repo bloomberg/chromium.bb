@@ -33,10 +33,14 @@ void HostEventLogger::OnAccessDenied(const std::string& jid) {
   Log("Access denied for client: " + jid);
 }
 
-void HostEventLogger::OnClientIpAddress(const std::string& jid,
-                                        const std::string& channel_name,
-                                        const net::IPEndPoint& end_point) {
-  Log("Channel IP for client: " + jid + " ip='" + end_point.ToString() +
+void HostEventLogger::OnClientRouteChange(
+    const std::string& jid,
+    const std::string& channel_name,
+    const net::IPEndPoint& remote_end_point,
+    const net::IPEndPoint& local_end_point) {
+  Log("Channel IP for client: " + jid +
+      " ip='" + remote_end_point.ToString() +
+      "' host_ip='" + local_end_point.ToString() +
       "' channel='" + channel_name + "'");
 }
 

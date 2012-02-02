@@ -49,9 +49,11 @@ class MockConnectionToClientEventHandler :
                                         Session::Error error));
   MOCK_METHOD2(OnSequenceNumberUpdated, void(ConnectionToClient* connection,
                                              int64 sequence_number));
-  MOCK_METHOD3(OnClientIpAddress, void(ConnectionToClient* connection,
-                                       const std::string& channel_name,
-                                       const net::IPEndPoint& end_point));
+  MOCK_METHOD4(OnRouteChange, void(
+      ConnectionToClient* connection,
+      const std::string& channel_name,
+      const net::IPEndPoint& remote_end_point,
+      const net::IPEndPoint& local_end_point));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockConnectionToClientEventHandler);

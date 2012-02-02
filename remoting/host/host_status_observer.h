@@ -32,9 +32,10 @@ class HostStatusObserver {
 
   // Called on notification of a route change event, when a channel is
   // connected.
-  virtual void OnClientIpAddress(const std::string& jid,
-                                 const std::string& channel_name,
-                                 const net::IPEndPoint& end_point) { }
+  virtual void OnClientRouteChange(const std::string& jid,
+                                   const std::string& channel_name,
+                                   const net::IPEndPoint& remote_end_point,
+                                   const net::IPEndPoint& local_end_point) { }
 
   // Called when the host shuts down.
   virtual void OnShutdown() = 0;

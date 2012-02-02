@@ -53,9 +53,10 @@ class ConnectionToClient : public base::NonThreadSafe {
 
     // Called on notification of a route change event, which happens when a
     // channel is connected.
-    virtual void OnClientIpAddress(ConnectionToClient* connection,
-                                   const std::string& channel_name,
-                                   const net::IPEndPoint& end_point) = 0;
+    virtual void OnRouteChange(ConnectionToClient* connection,
+                               const std::string& channel_name,
+                               const net::IPEndPoint& remote_end_point,
+                               const net::IPEndPoint& local_end_point) = 0;
   };
 
   // Constructs a ConnectionToClient object for the |session|. Takes
@@ -92,7 +93,8 @@ class ConnectionToClient : public base::NonThreadSafe {
   void OnSessionStateChange(Session::State state);
 
   void OnSessionRouteChange(const std::string& channel_name,
-                            const net::IPEndPoint& end_point);
+                            const net::IPEndPoint& remote_end_point,
+                            const net::IPEndPoint& local_end_point);
 
   // Callback for channel initialization.
   void OnChannelInitialized(bool successful);

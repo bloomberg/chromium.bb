@@ -225,13 +225,15 @@ void ChromotingHost::OnSessionSequenceNumber(ClientSession* session,
     recorder_->UpdateSequenceNumber(sequence_number);
 }
 
-void ChromotingHost::OnSessionIpAddress(ClientSession* session,
-                                        const std::string& channel_name,
-                                        const net::IPEndPoint& end_point) {
+void ChromotingHost::OnSessionRouteChange(
+    ClientSession* session,
+    const std::string& channel_name,
+    const net::IPEndPoint& remote_end_point,
+    const net::IPEndPoint& local_end_point) {
   DCHECK(context_->network_message_loop()->BelongsToCurrentThread());
   FOR_EACH_OBSERVER(HostStatusObserver, status_observers_,
-                    OnClientIpAddress(session->client_jid(), channel_name,
-                                      end_point));
+                    OnClientRouteChange(session->client_jid(), channel_name,
+                                        remote_end_point, local_end_point));
 }
 
 void ChromotingHost::OnSessionManagerReady() {

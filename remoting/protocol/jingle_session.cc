@@ -507,15 +507,27 @@ void JingleSession::OnChannelConnectorFinished(
 
 void JingleSession::OnRouteChange(cricket::TransportChannel* channel,
                                   const cricket::Candidate& candidate) {
-  net::IPEndPoint end_point;
+  net::IPEndPoint remote_end_point;
   if (!jingle_glue::SocketAddressToIPEndPoint(candidate.address(),
-                                              &end_point)) {
+                                              &remote_end_point)) {
+    NOTREACHED();
+    return;
+  }
+
+  DCHECK(channel->GetP2PChannel());
+  DCHECK(channel->GetP2PChannel()->best_connection());
+  const cricket::Candidate& local_candidate =
+      channel->GetP2PChannel()->best_connection()->local_candidate();
+  net::IPEndPoint local_end_point;
+  if (!jingle_glue::SocketAddressToIPEndPoint(local_candidate.address(),
+                                              &local_end_point)) {
     NOTREACHED();
     return;
   }
 
   if (!route_change_callback_.is_null())
-    route_change_callback_.Run(channel->name(), end_point);
+    route_change_callback_.Run(channel->name(), remote_end_point,
+                               local_end_point);
 }
 
 const cricket::ContentInfo* JingleSession::GetContentInfo() const {

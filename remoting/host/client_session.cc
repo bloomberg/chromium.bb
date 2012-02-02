@@ -125,12 +125,15 @@ void ClientSession::OnSequenceNumberUpdated(
   event_handler_->OnSessionSequenceNumber(this, sequence_number);
 }
 
-void ClientSession::OnClientIpAddress(protocol::ConnectionToClient* connection,
-                                      const std::string& channel_name,
-                                      const net::IPEndPoint& end_point) {
+void ClientSession::OnRouteChange(
+    protocol::ConnectionToClient* connection,
+    const std::string& channel_name,
+    const net::IPEndPoint& remote_end_point,
+    const net::IPEndPoint& local_end_point) {
   DCHECK(CalledOnValidThread());
   DCHECK_EQ(connection_.get(), connection);
-  event_handler_->OnSessionIpAddress(this, channel_name, end_point);
+  event_handler_->OnSessionRouteChange(this, channel_name, remote_end_point,
+                                       local_end_point);
 }
 
 void ClientSession::Disconnect() {

@@ -73,7 +73,8 @@ class Session : public base::NonThreadSafe {
   // single interface.
   typedef base::Callback<void(
       const std::string& channel_name,
-      const net::IPEndPoint& end_point)> RouteChangeCallback;
+      const net::IPEndPoint& remote_end_point,
+      const net::IPEndPoint& local_end_point)> RouteChangeCallback;
 
   // TODO(sergeyu): Specify connection error code when channel
   // connection fails.
