@@ -1,8 +1,10 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_view.h"
+
+#include <cmath>  // floor
 
 #include "base/logging.h"
 #include "base/mac/mac_util.h"
@@ -75,7 +77,7 @@
 
     // What proportion of the vertical space is dedicated to the arrow tip,
     // i.e., (arrow tip height)/(amount of vertical space).
-    const CGFloat kArrowTipProportion = 0.5;
+    const CGFloat kArrowTipProportion = 0.55;
 
     // This is a slope, i.e., (arrow tip height)/(0.5 * arrow tip width).
     const CGFloat kArrowTipSlope = 1.2;
@@ -85,6 +87,7 @@
     const CGFloat kArrowStemProportion = 0.33;
 
     NSPoint arrowTipPos = [self dropArrowPosition];
+    arrowTipPos.x = std::floor(arrowTipPos.x);  // Draw on the pixel.
     arrowTipPos.y += kArrowBottomInset;  // Inset on the bottom.
 
     // Height we have to work with (insetting on the top).
