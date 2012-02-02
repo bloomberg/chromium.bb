@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (c) 2011 The Chromium OS Authors. All rights reserved.
+# Copyright (c) 2011-2012 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -8,15 +8,14 @@
 
 import optparse
 import os
-import subprocess
 import sys
-import urllib
 import urlparse
 
 
-sys.path.insert(0, os.path.abspath(__file__ + '/../..'))
-import lib.cros_build_lib as cros_build_lib
-import buildbot.constants as constants
+sys.path.insert(0, os.path.abspath(__file__ + '/../../..'))
+from chromite.buildbot import constants
+from chromite.lib import cros_build_lib
+from chromite.lib import sudo
 
 
 DEFAULT_CHROOT_DIR = 'chroot'
@@ -205,11 +204,6 @@ def EnterChroot(chroot_path, chrome_root, chrome_root_mount, additional_args):
     sys.exit(1)
 
 
-def RefreshSudoCredentials():
-  """Runs sudo on a harmless command to request sudo credentials explicitly."""
-  cros_build_lib.RunCommand(['sudo', 'true'], print_cmd=False)
-
-
 def main():
   usage="""usage: %prog [options] [VAR1=val1 .. VARn=valn -- <args>]
 
@@ -315,31 +309,29 @@ Action taken is the following:
     print "Not doing anything. The chroot you want to remove doesn't exist."
     sys.exit(0)
 
-  # Request sudo credentials before we do anything else, to not ask for them
-  # inside of a lengthy process.
-  RefreshSudoCredentials()
+  with sudo.SudoKeepAlive():
 
-  if options.delete:
-    DeleteChroot(chroot_path)
-    sys.exit(0)
+    if options.delete:
+      DeleteChroot(chroot_path)
+      sys.exit(0)
 
-  # Print a suggestion for replacement, but not if running just --enter.
-  if os.path.exists(chroot_path) and not options.replace and \
-     (options.bootstrap or options.download):
+    # Print a suggestion for replacement, but not if running just --enter.
+    if os.path.exists(chroot_path) and not options.replace and \
+        (options.bootstrap or options.download):
       print "Chroot already exists. Run with --replace to re-create."
 
-  # Chroot doesn't exist or asked to replace.
-  if not os.path.exists(chroot_path) or options.replace:
-    if options.bootstrap:
-      BootstrapChroot(chroot_path, options.sdk_url,
-                      options.replace)
-    else:
-      CreateChroot(options.sdk_url, sdk_version,
-                   chroot_path, options.replace)
+    # Chroot doesn't exist or we were told to replace it.
+    if not os.path.exists(chroot_path) or options.replace:
+      if options.bootstrap:
+        BootstrapChroot(chroot_path, options.sdk_url,
+                        options.replace)
+      else:
+        CreateChroot(options.sdk_url, sdk_version,
+                     chroot_path, options.replace)
 
-  if options.enter:
-    EnterChroot(chroot_path, options.chrome_root, options.chrome_root_mount,
-                remaining_arguments)
+    if options.enter:
+      EnterChroot(chroot_path, options.chrome_root, options.chrome_root_mount,
+                  remaining_arguments)
 
 
 if __name__ == '__main__':
