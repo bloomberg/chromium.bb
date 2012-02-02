@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -303,8 +303,9 @@ void FileStream::Close() {
   async_context_.reset();
 
   if (file_ != base::kInvalidPlatformFileValue) {
-    if (!base::ClosePlatformFile(file_))
+    if (close(file_) != 0) {
       NOTREACHED();
+    }
     file_ = base::kInvalidPlatformFileValue;
   }
 }
