@@ -191,11 +191,11 @@ TEST_F(JsSyncManagerObserverTest, SensitiveNotifiations) {
                            HasDetailsAsDictionary(redacted_token_details)));
   EXPECT_CALL(mock_js_event_handler_,
               HandleJsEvent(
-                  "OnBootstrapTokenUpdated",
+                  "onPassphraseAccepted",
                   HasDetailsAsDictionary(redacted_bootstrap_token_details)));
 
   js_sync_manager_observer_.OnUpdatedToken("sensitive_token");
-  js_sync_manager_observer_.OnBootstrapTokenUpdated("sensitive_token");
+  js_sync_manager_observer_.OnPassphraseAccepted("sensitive_token");
   PumpLoop();
 }
 

@@ -453,9 +453,7 @@ void SyncSetupFlow::OnUserConfigured(const SyncConfiguration& configuration) {
     // Caller passed a gaia passphrase. This is illegal if we are currently
     // using a secondary passphrase.
     DCHECK(!service_->IsUsingSecondaryPassphrase());
-    service_->SetPassphrase(configuration.gaia_passphrase,
-                            ProfileSyncService::IMPLICIT,
-                            ProfileSyncService::USER_PROVIDED);
+    service_->SetPassphrase(configuration.gaia_passphrase, false);
     // Since the user entered the passphrase manually, set this flag so we can
     // report an error if the passphrase setting failed.
     user_tried_setting_passphrase_ = true;
@@ -466,9 +464,7 @@ void SyncSetupFlow::OnUserConfigured(const SyncConfiguration& configuration) {
   // as an attempt to encrypt the user's data using this new passphrase.
   if (configuration.set_secondary_passphrase &&
       !configuration.secondary_passphrase.empty()) {
-    service_->SetPassphrase(configuration.secondary_passphrase,
-                            ProfileSyncService::EXPLICIT,
-                            ProfileSyncService::USER_PROVIDED);
+    service_->SetPassphrase(configuration.secondary_passphrase, true);
     if (service_->IsUsingSecondaryPassphrase()) {
       user_tried_setting_passphrase_ = true;
       set_new_decryption_passphrase = true;
@@ -498,9 +494,7 @@ void SyncSetupFlow::OnUserConfigured(const SyncConfiguration& configuration) {
 
 void SyncSetupFlow::OnPassphraseEntry(const std::string& passphrase) {
   Advance(SyncSetupWizard::SETTING_UP);
-  service_->SetPassphrase(passphrase,
-                          ProfileSyncService::EXPLICIT,
-                          ProfileSyncService::USER_PROVIDED);
+  service_->SetPassphrase(passphrase, true);
   user_tried_setting_passphrase_ = true;
 }
 

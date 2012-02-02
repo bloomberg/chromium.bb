@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -107,9 +107,7 @@ void RemoveLogins(PasswordStore* store) {
 
 void SetPassphrase(int index, const std::string& passphrase) {
   test()->GetProfile(index)->GetProfileSyncService()->SetPassphrase(
-      passphrase,
-      ProfileSyncService::EXPLICIT,
-      ProfileSyncService::USER_PROVIDED);
+      passphrase, true);
 }
 
 PasswordStore* GetPasswordStore(int index) {

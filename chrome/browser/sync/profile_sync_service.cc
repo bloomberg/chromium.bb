@@ -810,9 +810,7 @@ void ProfileSyncService::OnPassphraseRequired(
     cached_passphrases_.gaia_passphrase.clear();
     DVLOG(1) << "Attempting gaia passphrase.";
     // SetPassphrase will re-cache this passphrase if the syncer isn't ready.
-    SetPassphrase(gaia_passphrase, IMPLICIT,
-                  (cached_passphrases_.user_provided_gaia ?
-                       USER_PROVIDED : INTERNAL));
+    SetPassphrase(gaia_passphrase, false);
     return;
   }
 
@@ -823,7 +821,7 @@ void ProfileSyncService::OnPassphraseRequired(
     cached_passphrases_.explicit_passphrase.clear();
     DVLOG(1) << "Attempting explicit passphrase.";
     // SetPassphrase will re-cache this passphrase if the syncer isn't ready.
-    SetPassphrase(explicit_passphrase, EXPLICIT, USER_PROVIDED);
+    SetPassphrase(explicit_passphrase, true);
     return;
   }
 
@@ -1290,27 +1288,15 @@ void ProfileSyncService::DeactivateDataType(syncable::ModelType type) {
 }
 
 void ProfileSyncService::SetPassphrase(const std::string& passphrase,
-                                       PassphraseType type,
-                                       PassphraseSource source) {
-  DCHECK(source == USER_PROVIDED || type == IMPLICIT);
+                                       bool is_explicit) {
   if (ShouldPushChanges() || IsPassphraseRequired()) {
-    DVLOG(1) << "Setting " << (type == EXPLICIT ? "explicit" : "implicit")
-             << " passphrase.";
-    backend_->SetPassphrase(passphrase,
-                            type == EXPLICIT,
-                            source == USER_PROVIDED);
+    DVLOG(1) << "Setting " << (is_explicit ? "explicit" : "implicit");
+    backend_->SetPassphrase(passphrase, is_explicit);
   } else {
-    if (type == EXPLICIT) {
-      NOTREACHED() << "SetPassphrase should only be called after the backend "
-                   << "is initialized.";
+    if (is_explicit) {
       cached_passphrases_.explicit_passphrase = passphrase;
     } else {
       cached_passphrases_.gaia_passphrase = passphrase;
-      cached_passphrases_.user_provided_gaia = (source == USER_PROVIDED);
-      DVLOG(1) << "Caching "
-               << (cached_passphrases_.user_provided_gaia ? "user provided" :
-                       "internal")
-               << " gaia passphrase.";
     }
   }
 }
@@ -1451,12 +1437,13 @@ void ProfileSyncService::Observe(int type,
       // want to suppress start up anymore.
       sync_prefs_.SetStartSuppressed(false);
 
-      // Because we specify IMPLICIT to SetPassphrase, we know it won't override
-      // an explicit one.  Thus, we either update the implicit passphrase
-      // (idempotent if the passphrase didn't actually change), or the user has
-      // an explicit passphrase set so this becomes a no-op.
+      // We pass 'false' to SetPassphrase to denote that this is an implicit
+      // request and shouldn't override an explicit one.  Thus, we either
+      // update the implicit passphrase (idempotent if the passphrase didn't
+      // actually change), or the user has an explicit passphrase set so this
+      // becomes a no-op.
       if (!successful->password.empty())
-        SetPassphrase(successful->password, IMPLICIT, INTERNAL);
+        SetPassphrase(successful->password, false);
       break;
     }
     case chrome::NOTIFICATION_TOKEN_REQUEST_FAILED: {

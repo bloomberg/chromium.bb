@@ -82,8 +82,7 @@ class SyncBackendHost::Core
   virtual void OnPassphraseRequired(
       sync_api::PassphraseRequiredReason reason,
       const sync_pb::EncryptedData& pending_keys) OVERRIDE;
-  virtual void OnPassphraseAccepted() OVERRIDE;
-  virtual void OnBootstrapTokenUpdated(
+  virtual void OnPassphraseAccepted(
       const std::string& bootstrap_token) OVERRIDE;
   virtual void OnStopSyncingPermanently() OVERRIDE;
   virtual void OnUpdatedToken(const std::string& token) OVERRIDE;
@@ -126,9 +125,7 @@ class SyncBackendHost::Core
 
   // Called to set the passphrase on behalf of
   // SyncBackendHost::SupplyPassphrase.
-  void DoSetPassphrase(const std::string& passphrase,
-                       bool is_explicit,
-                       bool user_provided);
+  void DoSetPassphrase(const std::string& passphrase, bool is_explicit);
 
   // Called to turn on encryption of all sync data as well as
   // reencrypt everything.
@@ -326,8 +323,7 @@ void SyncBackendHost::StartSyncingWithServer() {
 }
 
 void SyncBackendHost::SetPassphrase(const std::string& passphrase,
-                                    bool is_explicit,
-                                    bool user_provided) {
+                                    bool is_explicit) {
   if (!IsNigoriEnabled()) {
     SLOG(WARNING) << "Silently dropping SetPassphrase request.";
     return;
@@ -339,7 +335,7 @@ void SyncBackendHost::SetPassphrase(const std::string& passphrase,
   // If encryption is enabled and we've got a SetPassphrase
   sync_thread_.message_loop()->PostTask(FROM_HERE,
       base::Bind(&SyncBackendHost::Core::DoSetPassphrase, core_.get(),
-                 passphrase, is_explicit, user_provided));
+                 passphrase, is_explicit));
 }
 
 void SyncBackendHost::StopSyncManagerForShutdown(
@@ -808,23 +804,14 @@ void SyncBackendHost::Core::OnPassphraseRequired(
       &SyncBackendHost::NotifyPassphraseRequired, reason, pending_keys);
 }
 
-void SyncBackendHost::Core::OnPassphraseAccepted() {
-  if (!sync_loop_)
-    return;
-  DCHECK_EQ(MessageLoop::current(), sync_loop_);
-  host_.Call(
-      FROM_HERE,
-      &SyncBackendHost::NotifyPassphraseAccepted);
-}
-
-void SyncBackendHost::Core::OnBootstrapTokenUpdated(
+void SyncBackendHost::Core::OnPassphraseAccepted(
     const std::string& bootstrap_token) {
   if (!sync_loop_)
     return;
   DCHECK_EQ(MessageLoop::current(), sync_loop_);
   host_.Call(
       FROM_HERE,
-      &SyncBackendHost::PersistEncryptionBootstrapToken, bootstrap_token);
+      &SyncBackendHost::NotifyPassphraseAccepted, bootstrap_token);
 }
 
 void SyncBackendHost::Core::OnStopSyncingPermanently() {
@@ -994,10 +981,9 @@ void SyncBackendHost::Core::DoRequestCleanupDisabledTypes() {
 }
 
 void SyncBackendHost::Core::DoSetPassphrase(const std::string& passphrase,
-                                            bool is_explicit,
-                                            bool user_provided) {
+                                            bool is_explicit) {
   DCHECK_EQ(MessageLoop::current(), sync_loop_);
-  sync_manager_->SetPassphrase(passphrase, is_explicit, user_provided);
+  sync_manager_->SetPassphrase(passphrase, is_explicit);
 }
 
 void SyncBackendHost::Core::DoEnableEncryptEverything() {
@@ -1198,7 +1184,8 @@ void SyncBackendHost::NotifyPassphraseRequired(
   frontend_->OnPassphraseRequired(reason, pending_keys);
 }
 
-void SyncBackendHost::NotifyPassphraseAccepted() {
+void SyncBackendHost::NotifyPassphraseAccepted(
+    const std::string& bootstrap_token) {
   if (!frontend_)
     return;
 
@@ -1206,6 +1193,8 @@ void SyncBackendHost::NotifyPassphraseAccepted() {
 
   // Clear our cache of the cryptographer's pending keys.
   cached_pending_keys_.clear_blob();
+
+  PersistEncryptionBootstrapToken(bootstrap_token);
   frontend_->OnPassphraseAccepted();
 }
 

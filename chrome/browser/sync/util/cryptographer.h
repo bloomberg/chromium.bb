@@ -131,11 +131,6 @@ class Cryptographer {
   // Encrypt.
   bool AddKey(const KeyParams& params);
 
-  // Same as AddKey(..), but builds the new Nigori from a previously persisted
-  // bootstrap token. This can be useful when consuming a bootstrap token
-  // with a cryptographer that has already been initialized.
-  bool AddKeyFromBootstrapToken(const std::string restored_bootstrap_token);
-
   // Decrypts |encrypted| and uses its contents to initialize Nigori instances.
   // Returns true unless decryption of |encrypted| fails. The caller is
   // responsible for checking that CanDecrypt(encrypted) == true.
