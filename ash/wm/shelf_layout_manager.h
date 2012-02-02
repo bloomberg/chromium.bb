@@ -28,7 +28,7 @@ namespace internal {
 // To respond to bounds changes in the status area StatusAreaLayoutManager works
 // closely with ShelfLayoutManager.
 class ASH_EXPORT ShelfLayoutManager : public aura::LayoutManager,
-                                      public ui::LayerAnimationObserver {
+                                      public ui::ImplicitAnimationObserver {
  public:
   ShelfLayoutManager(views::Widget* launcher, views::Widget* status);
   virtual ~ShelfLayoutManager();
@@ -41,7 +41,7 @@ class ASH_EXPORT ShelfLayoutManager : public aura::LayoutManager,
 
   // Sets the visibility of the shelf to |visible|.
   void SetVisible(bool visible);
-  bool visible() const { return animating_ ? !visible_ : visible_; }
+  bool visible() const { return visible_; }
 
   views::Widget* launcher() { return launcher_; }
   views::Widget* status() { return status_; }
@@ -72,21 +72,8 @@ class ASH_EXPORT ShelfLayoutManager : public aura::LayoutManager,
   void CalculateTargetBounds(bool visible,
                              TargetBounds* target_bounds);
 
-  // Animates |widget| to the specified bounds and opacity.
-  void AnimateWidgetTo(views::Widget* widget,
-                       const gfx::Rect& target_bounds,
-                       float target_opacity);
-
-  // LayerAnimationObserver overrides:
-  virtual void OnLayerAnimationEnded(
-      const ui::LayerAnimationSequence* sequence) OVERRIDE;
-  virtual void OnLayerAnimationAborted(
-      const ui::LayerAnimationSequence* sequence) OVERRIDE {}
-  virtual void OnLayerAnimationScheduled(
-      const ui::LayerAnimationSequence* sequence) OVERRIDE {}
-
-  // Are we animating?
-  bool animating_;
+  // Implementation of ImplicitAnimationObserver
+  virtual void OnImplicitAnimationsCompleted() OVERRIDE;
 
   // True when inside LayoutShelf method. Used to prevent calling LayoutShelf
   // again from SetChildBounds().

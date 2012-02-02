@@ -171,7 +171,8 @@ void AnimateHideWindowCommon(aura::Window* window,
 
   // Property sets within this scope will be implicitly animated.
   ui::ScopedLayerAnimationSettings settings(window->layer()->GetAnimator());
-  settings.AddImplicitObserver(new HidingWindowAnimationObserver(window));
+  settings.AddObserver(new HidingWindowAnimationObserver(window));
+
   int duration =
       window->GetIntProperty(internal::kWindowVisibilityAnimationDurationKey);
   if (duration > 0) {
