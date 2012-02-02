@@ -88,9 +88,9 @@ class CapsLockHandlerTest : public InProcessBrowserTest {
 
 }  // namespace
 
-#if defined(OS_CHROMEOS)
 // Check if HandleToggleCapsLock() really changes the lock state.
 IN_PROC_BROWSER_TEST_F(CapsLockHandlerTest, TestCapsLock) {
+#if defined(OS_CHROMEOS)
   EXPECT_EQ(initial_caps_lock_state_, handler_->caps_lock_is_on_for_test());
   EXPECT_TRUE(handler_->HandleToggleCapsLock());
   EXPECT_EQ(!initial_caps_lock_state_, xkeyboard_.CapsLockIsEnabled());
@@ -100,5 +100,5 @@ IN_PROC_BROWSER_TEST_F(CapsLockHandlerTest, TestCapsLock) {
   handler_->OnCapsLockChange(initial_caps_lock_state_);
   EXPECT_EQ(initial_caps_lock_state_, xkeyboard_.CapsLockIsEnabled());
   EXPECT_EQ(initial_caps_lock_state_, handler_->caps_lock_is_on_for_test());
-}
 #endif
+}

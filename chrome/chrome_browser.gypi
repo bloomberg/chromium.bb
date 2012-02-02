@@ -4776,6 +4776,8 @@
             'browser/ui/webui/collected_cookies_ui_delegate.h',
             'browser/ui/webui/cookies_tree_model_adapter.cc',
             'browser/ui/webui/cookies_tree_model_adapter.h',
+            'browser/ui/webui/tab_modal_confirm_dialog_webui.cc',
+            'browser/ui/webui/tab_modal_confirm_dialog_webui.h',
           ],
           'conditions': [
             ['win_use_allocator_shim==1', {
@@ -5110,6 +5112,8 @@
                 ['include', '^browser/ui/webui/collected_cookies_ui_delegate.h'],
                 ['include', '^browser/ui/webui/cookies_tree_model_adapter.cc'],
                 ['include', '^browser/ui/webui/cookies_tree_model_adapter.h'],
+                ['include', '^browser/ui/webui/tab_modal_confirm_dialog_webui.cc'],
+                ['include', '^browser/ui/webui/tab_modal_confirm_dialog_webui.h'],
 
                 ['include', '^browser/ui/window_sizer.cc'],
                 ['include', '^browser/ui/window_sizer.h'],
@@ -5139,6 +5143,8 @@
                 ['exclude', '^browser/ui/webui/collected_cookies_ui_delegate.h'],
                 ['exclude', '^browser/ui/webui/cookies_tree_model_adapter.cc'],
                 ['exclude', '^browser/ui/webui/cookies_tree_model_adapter.h'],
+                ['exclude', '^browser/ui/webui/tab_modal_confirm_dialog_webui.cc'],
+                ['exclude', '^browser/ui/webui/tab_modal_confirm_dialog_webui.h'],
               ]
             }],
             # Exclude these toolkit_views specific files again.
@@ -5248,8 +5254,6 @@
                 ['exclude', '^browser/ui/views/download/download_shelf_context_menu_view.h'],
                 ['exclude', '^browser/ui/views/download/download_shelf_view.cc'],
                 ['exclude', '^browser/ui/views/download/download_shelf_view.h'],
-                ['include', '^browser/ui/webui/tab_modal_confirm_dialog_webui.cc'],
-                ['include', '^browser/ui/webui/tab_modal_confirm_dialog_webui.h'],
               ],
             }],
             ['chromeos==1',{
