@@ -173,12 +173,19 @@ static void surf_minify(struct radeon_surface *surf,
 static int r6_init_hw_info(struct radeon_surface_manager *surf_man)
 {
     uint32_t tiling_config;
+    drmVersionPtr version;
     int r;
 
     r = radeon_get_value(surf_man->fd, RADEON_INFO_TILING_CONFIG,
                          &tiling_config);
     if (r) {
         return r;
+    }
+
+    surf_man->hw_info.allow_2d = 0;
+    version = drmGetVersion(surf_man->fd);
+    if (version && version->version_minor >= 14) {
+        surf_man->hw_info.allow_2d = 1;
     }
 
     switch ((tiling_config & 0xe) >> 1) {
@@ -357,6 +364,13 @@ static int r6_surface_init(struct radeon_surface_manager *surf_man,
 
     /* tiling mode */
     mode = (surf->flags >> RADEON_SURF_MODE_SHIFT) & RADEON_SURF_MODE_MASK;
+
+    /* force 1d on kernel that can't do 2d */
+    if (!surf_man->hw_info.allow_2d && mode > RADEON_SURF_MODE_1D) {
+        mode = RADEON_SURF_MODE_1D;
+        surf->flags = RADEON_SURF_CLR(surf->flags, MODE);
+        surf->flags |= RADEON_SURF_SET(mode, MODE);
+    }
 
     /* check surface dimension */
     if (surf->npix_x > 8192 || surf->npix_y > 8192 || surf->npix_z > 8192) {
@@ -629,69 +643,64 @@ static int eg_surface_sanity(struct radeon_surface_manager *surf_man,
         return -EINVAL;
     }
 
-    /* check tile split */
-    switch (surf->tile_split) {
-    case 0:
-        if (mode == RADEON_SURF_MODE_2D) {
-            return -EINVAL;
-        }
-    case 64:
-    case 128:
-    case 256:
-    case 512:
-    case 1024:
-    case 2048:
-    case 4096:
-        break;
-    default:
-        return -EINVAL;
-    }
-    switch (surf->mtilea) {
-    case 0:
-    case 1:
-    case 2:
-    case 4:
-    case 8:
-        break;
-    default:
-        return -EINVAL;
-    }
-    /* check aspect ratio */
-    if (surf_man->hw_info.num_banks < surf->mtilea) {
-        return -EINVAL;
-    }
-    /* check bank width */
-    switch (surf->bankw) {
-    case 0:
-    case 1:
-    case 2:
-    case 4:
-    case 8:
-        break;
-    default:
-        return -EINVAL;
-    }
-    /* check bank height */
-    switch (surf->bankh) {
-    case 0:
-    case 1:
-    case 2:
-    case 4:
-    case 8:
-        break;
-    default:
-        return -EINVAL;
-    }
-    tileb = MIN2(surf->tile_split, 64 * surf->bpe * surf->nsamples);
-    if ((tileb * surf->bankh * surf->bankw) < surf_man->hw_info.group_bytes) {
-        if (mode == RADEON_SURF_MODE_2D) {
-            return -EINVAL;
-        }
-    }
-
     /* force 1d on kernel that can't do 2d */
     if (!surf_man->hw_info.allow_2d && mode > RADEON_SURF_MODE_1D) {
         mode = RADEON_SURF_MODE_1D;
+        surf->flags = RADEON_SURF_CLR(surf->flags, MODE);
+        surf->flags |= RADEON_SURF_SET(mode, MODE);
+    }
+
+    /* check tile split */
+    if (mode == RADEON_SURF_MODE_2D) {
+        switch (surf->tile_split) {
+        case 64:
+        case 128:
+        case 256:
+        case 512:
+        case 1024:
+        case 2048:
+        case 4096:
+            break;
+        default:
+            return -EINVAL;
+        }
+        switch (surf->mtilea) {
+        case 1:
+        case 2:
+        case 4:
+        case 8:
+            break;
+        default:
+            return -EINVAL;
+        }
+        /* check aspect ratio */
+        if (surf_man->hw_info.num_banks < surf->mtilea) {
+            return -EINVAL;
+        }
+        /* check bank width */
+        switch (surf->bankw) {
+        case 1:
+        case 2:
+        case 4:
+        case 8:
+            break;
+        default:
+            return -EINVAL;
+        }
+        /* check bank height */
+        switch (surf->bankh) {
+        case 1:
+        case 2:
+        case 4:
+        case 8:
+            break;
+        default:
+            return -EINVAL;
+        }
+        tileb = MIN2(surf->tile_split, 64 * surf->bpe * surf->nsamples);
+        if ((tileb * surf->bankh * surf->bankw) < surf_man->hw_info.group_bytes) {
+            return -EINVAL;
+        }
     }
 
     return 0;
