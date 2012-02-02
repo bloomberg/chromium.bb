@@ -117,23 +117,19 @@ RenderWidgetHostViewAura::RenderWidgetHostViewAura(RenderWidgetHost* host)
       paint_canvas_(NULL),
       synthetic_move_sent_(false) {
   host_->SetView(this);
+  window_->AddObserver(this);
   aura::client::SetTooltipText(window_, &tooltip_);
   aura::client::SetActivationDelegate(window_, this);
 }
 
 RenderWidgetHostViewAura::~RenderWidgetHostViewAura() {
+  window_->RemoveObserver(this);
   UnlockMouse();
   if (popup_type_ != WebKit::WebPopupTypeNone) {
     DCHECK(popup_parent_host_view_);
     popup_parent_host_view_->popup_child_host_view_ = NULL;
   }
   aura::client::SetTooltipText(window_, NULL);
-#if defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
-  // TODO: It would be better to not use aura::RootWindow here
-  ui::Compositor* compositor = aura::RootWindow::GetInstance()->compositor();
-  if (compositor && compositor->HasObserver(this))
-    compositor->RemoveObserver(this);
-#endif
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -162,7 +158,7 @@ void RenderWidgetHostViewAura::InitAsPopup(
   // |popup_parent_host_view_|'s coordinates first.
   gfx::Point origin = pos.origin();
   aura::Window::ConvertPointToWindow(
-      aura::RootWindow::GetInstance(),
+      window_->GetRootWindow(),
       popup_parent_host_view_->window_, &origin);
   SetBounds(gfx::Rect(origin, pos.size()));
 }
@@ -370,7 +366,8 @@ void RenderWidgetHostViewAura::AcceleratedSurfaceBuffersSwapped(
   current_surface_ = params.surface_handle;
   UpdateExternalTexture();
 
-  if (!aura::RootWindow::GetInstance()->compositor()) {
+  ui::Compositor* compositor = GetCompositor();
+  if (!compositor) {
     // We have no compositor, so we have no way to display the surface.
     // Must still send the ACK.
     RenderWidgetHost::AcknowledgeSwapBuffers(params.route_id, gpu_host_id);
@@ -383,7 +380,6 @@ void RenderWidgetHostViewAura::AcceleratedSurfaceBuffersSwapped(
     on_compositing_ended_callbacks_.push_back(
         base::Bind(&RenderWidgetHost::AcknowledgeSwapBuffers,
                    params.route_id, gpu_host_id));
-    ui::Compositor* compositor = aura::RootWindow::GetInstance()->compositor();
     if (!compositor->HasObserver(this))
       compositor->AddObserver(this);
   }
@@ -399,7 +395,8 @@ void RenderWidgetHostViewAura::AcceleratedSurfacePostSubBuffer(
   current_surface_ = params.surface_handle;
   UpdateExternalTexture();
 
-  if (!aura::RootWindow::GetInstance()->compositor()) {
+  ui::Compositor* compositor = GetCompositor();
+  if (!compositor) {
     // We have no compositor, so we have no way to display the surface
     // Must still send the ACK
     RenderWidgetHost::AcknowledgePostSubBuffer(params.route_id, gpu_host_id);
@@ -419,7 +416,6 @@ void RenderWidgetHostViewAura::AcceleratedSurfacePostSubBuffer(
     on_compositing_ended_callbacks_.push_back(
         base::Bind(&RenderWidgetHost::AcknowledgePostSubBuffer,
                    params.route_id, gpu_host_id));
-    ui::Compositor* compositor = aura::RootWindow::GetInstance()->compositor();
     if (!compositor->HasObserver(this))
       compositor->AddObserver(this);
   }
@@ -489,7 +485,9 @@ void RenderWidgetHostViewAura::UnhandledWheelEvent(
 void RenderWidgetHostViewAura::ProcessTouchAck(bool processed) {
   // The ACKs for the touch-events arrive in the same sequence as they were
   // dispatched.
-  aura::RootWindow::GetInstance()->AdvanceQueuedTouchEvent(window_, processed);
+  aura::RootWindow* root_window = window_->GetRootWindow();
+  if (root_window)
+    root_window->AdvanceQueuedTouchEvent(window_, processed);
 }
 
 void RenderWidgetHostViewAura::SetHasHorizontalScrollbar(
@@ -521,12 +519,15 @@ gfx::PluginWindowHandle RenderWidgetHostViewAura::GetCompositingSurface() {
 #endif
 
 bool RenderWidgetHostViewAura::LockMouse() {
+  aura::RootWindow* root_window = window_->GetRootWindow();
+  if (!root_window)
+    return false;
+
   if (mouse_locked_)
     return true;
 
   mouse_locked_ = true;
 
-  aura::RootWindow* root_window = aura::RootWindow::GetInstance();
   root_window->SetCapture(window_);
   if (root_window->ConfineCursorToWindow()) {
     root_window->ShowCursor(false);
@@ -543,12 +544,12 @@ bool RenderWidgetHostViewAura::LockMouse() {
 }
 
 void RenderWidgetHostViewAura::UnlockMouse() {
-  if (!mouse_locked_)
+  aura::RootWindow* root_window = window_->GetRootWindow();
+  if (!mouse_locked_ || !root_window)
     return;
 
   mouse_locked_ = false;
 
-  aura::RootWindow* root_window = aura::RootWindow::GetInstance();
   root_window->ReleaseCapture(window_);
   root_window->MoveCursorTo(unlocked_global_mouse_position_);
   root_window->ShowCursor(true);
@@ -635,7 +636,7 @@ gfx::Rect RenderWidgetHostViewAura::GetCaretBounds() {
   gfx::Point origin = rect.origin();
   gfx::Point end = gfx::Point(rect.right(), rect.bottom());
 
-  aura::RootWindow* root_window = aura::RootWindow::GetInstance();
+  aura::RootWindow* root_window = window_->GetRootWindow();
   aura::Window::ConvertPointToWindow(window_, root_window, &origin);
   aura::Window::ConvertPointToWindow(window_, root_window, &end);
   // TODO(yusukes): Unlike Chrome OS, |root_window| origin might not be the
@@ -820,7 +821,7 @@ bool RenderWidgetHostViewAura::OnMouseEvent(aura::MouseEvent* event) {
       // Check if the mouse has reached the border and needs to be centered.
       if (ShouldMoveToCenter()) {
         synthetic_move_sent_ = true;
-        aura::RootWindow::GetInstance()->MoveCursorTo(center);
+        window_->GetRootWindow()->MoveCursorTo(center);
       }
 
       // Forward event to renderer.
@@ -933,6 +934,19 @@ void RenderWidgetHostViewAura::OnWindowVisibilityChanged(bool visible) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// RenderWidgetHostViewAura, aura::WindowObserver implementation:
+
+void RenderWidgetHostViewAura::OnWindowRemovingFromRootWindow(
+    aura::Window* window) {
+#if defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
+  // TODO: It would be better to not use aura::RootWindow here
+  ui::Compositor* compositor = GetCompositor();
+  if (compositor && compositor->HasObserver(this))
+    compositor->RemoveObserver(this);
+#endif
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // RenderWidgetHostViewAura, aura::client::ActivationDelegate implementation:
 
 bool RenderWidgetHostViewAura::ShouldActivate(aura::Event* event) {
@@ -965,7 +979,10 @@ void RenderWidgetHostViewAura::OnCompositingEnded(ui::Compositor* compositor) {
 
 void RenderWidgetHostViewAura::UpdateCursorIfOverSelf() {
   const gfx::Point screen_point = gfx::Screen::GetCursorScreenPoint();
-  aura::RootWindow* root_window = aura::RootWindow::GetInstance();
+  aura::RootWindow* root_window = window_->GetRootWindow();
+  if (!root_window)
+    return;
+
   if (root_window->GetEventHandlerForPoint(screen_point) != window_)
     return;
 
@@ -973,13 +990,17 @@ void RenderWidgetHostViewAura::UpdateCursorIfOverSelf() {
   if (is_loading_ && cursor == aura::kCursorPointer)
     cursor = aura::kCursorProgress;
 
-  aura::RootWindow::GetInstance()->SetCursor(cursor);
+  root_window->SetCursor(cursor);
 }
 
 ui::InputMethod* RenderWidgetHostViewAura::GetInputMethod() const {
-  aura::RootWindow* root_window = aura::RootWindow::GetInstance();
+  aura::RootWindow* root_window = window_->GetRootWindow();
   return reinterpret_cast<ui::InputMethod*>(
       root_window->GetProperty(aura::client::kRootWindowInputMethod));
+}
+
+bool RenderWidgetHostViewAura::NeedsInputGrab() {
+  return popup_type_ == WebKit::WebPopupTypeSelect;
 }
 
 void RenderWidgetHostViewAura::FinishImeCompositionSession() {
@@ -1047,8 +1068,9 @@ bool RenderWidgetHostViewAura::ShouldMoveToCenter() {
       global_mouse_position_.y() > rect.bottom() - border_y;
 }
 
-bool RenderWidgetHostViewAura::NeedsInputGrab() {
-  return popup_type_ == WebKit::WebPopupTypeSelect;
+ui::Compositor* RenderWidgetHostViewAura::GetCompositor() {
+  aura::RootWindow* root_window = window_->GetRootWindow();
+  return root_window ? root_window->compositor() : NULL;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -12,6 +12,7 @@
 #include "content/common/content_export.h"
 #include "ui/aura/client/activation_delegate.h"
 #include "ui/aura/window_delegate.h"
+#include "ui/aura/window_observer.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/compositor/compositor_observer.h"
@@ -45,6 +46,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
 #endif
       public ui::TextInputClient,
       public aura::WindowDelegate,
+      public aura::WindowObserver,
       public aura::client::ActivationDelegate {
  public:
   virtual ~RenderWidgetHostViewAura();
@@ -158,6 +160,9 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   virtual void OnWindowDestroyed() OVERRIDE;
   virtual void OnWindowVisibilityChanged(bool visible) OVERRIDE;
 
+  // Overridden from aura::WindowObserver:
+  virtual void OnWindowRemovingFromRootWindow(aura::Window* window) OVERRIDE;
+
   // Overridden from aura::client::ActivationDelegate:
   virtual bool ShouldActivate(aura::Event* event) OVERRIDE;
   virtual void OnActivated() OVERRIDE;
@@ -197,6 +202,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   // Helper method to determine if, in mouse locked mode, the cursor should be
   // moved to center.
   bool ShouldMoveToCenter();
+
+  ui::Compositor* GetCompositor();
 
   // The model object.
   RenderWidgetHost* host_;
