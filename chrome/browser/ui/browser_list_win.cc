@@ -8,5 +8,7 @@
 
 // static
 void BrowserList::AllBrowsersClosedAndAppExiting() {
+#if !defined(USE_AURA)
   views::Widget::CloseAllSecondaryWidgets();
+#endif
 }
