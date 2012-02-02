@@ -663,8 +663,10 @@ bool NativeWidgetAura::OnKeyEvent(aura::KeyEvent* event) {
     // Windows). In this case, we just skip these.
     return false;
   }
-
-  DCHECK(window_->IsVisible());
+  // Renderer may send a key event back to us if the key event wasn't handled,
+  // and the window may be invisible by that time.
+  if (!window_->IsVisible())
+    return false;
   InputMethod* input_method = GetWidget()->GetInputMethod();
   DCHECK(input_method);
   KeyEvent views_event(event);
