@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -202,7 +202,7 @@ TEST_F(ExtensionAppsPromo, PromoHiddenByPref) {
   prefs()->SetBoolean(prefs::kDefaultAppsInstalled, true);
 
   // When the "hide" pref is false, the promo should still appear.
-  prefs()->SetBoolean(prefs::kNTPHideWebStorePromo, false);
+  prefs()->SetBoolean(prefs::kNtpHideWebStorePromo, false);
   AppsPromo::PromoData promo_data(
       kPromoId, kPromoHeader, kPromoButton, GURL(kPromoLink), kPromoExpire,
       GURL(""), AppsPromo::USERS_NEW | AppsPromo::USERS_EXISTING);
@@ -213,7 +213,7 @@ TEST_F(ExtensionAppsPromo, PromoHiddenByPref) {
   EXPECT_TRUE(show_promo);
 
   // When the "hide" pref is true, the promo should NOT appear.
-  prefs()->SetBoolean(prefs::kNTPHideWebStorePromo, true);
+  prefs()->SetBoolean(prefs::kNtpHideWebStorePromo, true);
   show_promo = apps_promo()->ShouldShowPromo(
       apps_promo()->old_default_apps(), &just_expired);
   EXPECT_FALSE(show_promo);

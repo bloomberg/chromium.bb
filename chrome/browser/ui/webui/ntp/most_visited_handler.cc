@@ -104,7 +104,7 @@ void MostVisitedHandler::SendPagesValue() {
   if (pages_value_.get()) {
     Profile* profile = Profile::FromWebUI(web_ui());
     const DictionaryValue* url_blacklist =
-        profile->GetPrefs()->GetDictionary(prefs::kNTPMostVisitedURLsBlacklist);
+        profile->GetPrefs()->GetDictionary(prefs::kNtpMostVisitedURLsBlacklist);
     bool has_blacklisted_urls = !url_blacklist->empty();
     history::TopSites* ts = profile->GetTopSites();
     if (ts)
@@ -207,9 +207,9 @@ std::string MostVisitedHandler::GetDictionaryKeyForURL(const std::string& url) {
 
 // static
 void MostVisitedHandler::RegisterUserPrefs(PrefService* prefs) {
-  prefs->RegisterDictionaryPref(prefs::kNTPMostVisitedURLsBlacklist,
+  prefs->RegisterDictionaryPref(prefs::kNtpMostVisitedURLsBlacklist,
                                 PrefService::UNSYNCABLE_PREF);
   // TODO(estade): remove this.
-  prefs->RegisterDictionaryPref(prefs::kNTPMostVisitedPinnedURLs,
+  prefs->RegisterDictionaryPref(prefs::kNtpMostVisitedPinnedURLs,
                                 PrefService::UNSYNCABLE_PREF);
 }

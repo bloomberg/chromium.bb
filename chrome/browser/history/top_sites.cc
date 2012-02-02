@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -160,16 +160,16 @@ TopSites::TopSites(Profile* profile)
   // We create update objects here to be sure that dictionaries are created
   // in the user preferences.
   DictionaryPrefUpdate(profile_->GetPrefs(),
-                       prefs::kNTPMostVisitedURLsBlacklist).Get();
+                       prefs::kNtpMostVisitedURLsBlacklist).Get();
   DictionaryPrefUpdate(profile_->GetPrefs(),
-                       prefs::kNTPMostVisitedPinnedURLs).Get();
+                       prefs::kNtpMostVisitedPinnedURLs).Get();
 
   // Now the dictionaries are guaranteed to exist and we can cache pointers
   // to them.
   blacklist_ =
-      profile_->GetPrefs()->GetDictionary(prefs::kNTPMostVisitedURLsBlacklist);
+      profile_->GetPrefs()->GetDictionary(prefs::kNtpMostVisitedURLsBlacklist);
   pinned_urls_ =
-      profile_->GetPrefs()->GetDictionary(prefs::kNTPMostVisitedPinnedURLs);
+      profile_->GetPrefs()->GetDictionary(prefs::kNtpMostVisitedPinnedURLs);
   DCHECK(blacklist_ != NULL);
   DCHECK(pinned_urls_ != NULL);
 }
@@ -395,7 +395,7 @@ void TopSites::AddBlacklistedURL(const GURL& url) {
   Value* dummy = Value::CreateNullValue();
   {
     DictionaryPrefUpdate update(profile_->GetPrefs(),
-                                prefs::kNTPMostVisitedURLsBlacklist);
+                                prefs::kNtpMostVisitedURLsBlacklist);
     DictionaryValue* blacklist = update.Get();
     blacklist->SetWithoutPathExpansion(GetURLHash(url), dummy);
   }
@@ -408,7 +408,7 @@ void TopSites::RemoveBlacklistedURL(const GURL& url) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   {
     DictionaryPrefUpdate update(profile_->GetPrefs(),
-                                prefs::kNTPMostVisitedURLsBlacklist);
+                                prefs::kNtpMostVisitedURLsBlacklist);
     DictionaryValue* blacklist = update.Get();
     blacklist->RemoveWithoutPathExpansion(GetURLHash(url), NULL);
   }
@@ -425,7 +425,7 @@ void TopSites::ClearBlacklistedURLs() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   {
     DictionaryPrefUpdate update(profile_->GetPrefs(),
-                                prefs::kNTPMostVisitedURLsBlacklist);
+                                prefs::kNtpMostVisitedURLsBlacklist);
     DictionaryValue* blacklist = update.Get();
     blacklist->Clear();
   }
@@ -447,7 +447,7 @@ void TopSites::AddPinnedURL(const GURL& url, size_t pinned_index) {
 
   {
     DictionaryPrefUpdate update(profile_->GetPrefs(),
-                                prefs::kNTPMostVisitedPinnedURLs);
+                                prefs::kNtpMostVisitedPinnedURLs);
     DictionaryValue* pinned_urls = update.Get();
     pinned_urls->SetWithoutPathExpansion(GetURLString(url), index);
   }
@@ -466,7 +466,7 @@ void TopSites::RemovePinnedURL(const GURL& url) {
 
   {
     DictionaryPrefUpdate update(profile_->GetPrefs(),
-                                prefs::kNTPMostVisitedPinnedURLs);
+                                prefs::kNtpMostVisitedPinnedURLs);
     DictionaryValue* pinned_urls = update.Get();
     pinned_urls->RemoveWithoutPathExpansion(GetURLString(url), NULL);
   }
@@ -721,7 +721,7 @@ void TopSites::MigratePinnedURLs() {
 
   {
     DictionaryPrefUpdate update(profile_->GetPrefs(),
-                                prefs::kNTPMostVisitedPinnedURLs);
+                                prefs::kNtpMostVisitedPinnedURLs);
     DictionaryValue* pinned_urls = update.Get();
     pinned_urls->Clear();
   }

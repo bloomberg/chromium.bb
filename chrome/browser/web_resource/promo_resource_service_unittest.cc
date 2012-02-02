@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -68,20 +68,20 @@ class NTPSignInPromoTest : public PromoResourceServiceTest,
  protected:
   void ClearNTPSignInPromoPrefs() {
     PrefService* prefs = profile_.GetPrefs();
-    prefs->ClearPref(prefs::kNTPSignInPromoGroup);
-    prefs->ClearPref(prefs::kNTPSignInPromoGroupMax);
-    ASSERT_FALSE(prefs->HasPrefPath(prefs::kNTPSignInPromoGroup));
-    ASSERT_FALSE(prefs->HasPrefPath(prefs::kNTPSignInPromoGroupMax));
+    prefs->ClearPref(prefs::kNtpSignInPromoGroup);
+    prefs->ClearPref(prefs::kNtpSignInPromoGroupMax);
+    ASSERT_FALSE(prefs->HasPrefPath(prefs::kNtpSignInPromoGroup));
+    ASSERT_FALSE(prefs->HasPrefPath(prefs::kNtpSignInPromoGroupMax));
   }
 
   void InvalidTestCase(const std::string& question) {
     PrefService* prefs = profile_.GetPrefs();
     ASSERT_TRUE(prefs != NULL);
-    prefs->SetInteger(prefs::kNTPSignInPromoGroup, 50);
-    prefs->SetInteger(prefs::kNTPSignInPromoGroupMax, 75);
+    prefs->SetInteger(prefs::kNtpSignInPromoGroup, 50);
+    prefs->SetInteger(prefs::kNtpSignInPromoGroupMax, 75);
     UnpackNTPSignInPromo(question);
-    EXPECT_FALSE(prefs->HasPrefPath(prefs::kNTPSignInPromoGroup));
-    EXPECT_FALSE(prefs->HasPrefPath(prefs::kNTPSignInPromoGroupMax));
+    EXPECT_FALSE(prefs->HasPrefPath(prefs::kNtpSignInPromoGroup));
+    EXPECT_FALSE(prefs->HasPrefPath(prefs::kNtpSignInPromoGroupMax));
   }
 
   void SetupNTPSignInPromoCase(int build, int max_group) {
@@ -142,10 +142,10 @@ TEST_F(PromoResourceServiceTest, UnpackLogoSignal) {
   ASSERT_TRUE(prefs != NULL);
 
   double logo_start =
-      prefs->GetDouble(prefs::kNTPCustomLogoStart);
+      prefs->GetDouble(prefs::kNtpCustomLogoStart);
   EXPECT_EQ(logo_start, 1264899600);  // unix epoch for Jan 31 2010 0100 GMT.
   double logo_end =
-      prefs->GetDouble(prefs::kNTPCustomLogoEnd);
+      prefs->GetDouble(prefs::kNtpCustomLogoEnd);
   EXPECT_EQ(logo_end, 1327971600);  // unix epoch for Jan 31 2012 0100 GMT.
 
   // Change the start only and recheck.
@@ -170,7 +170,7 @@ TEST_F(PromoResourceServiceTest, UnpackLogoSignal) {
   // Check that prefs are set correctly.
   web_resource_service_->UnpackLogoSignal(*(test_json.get()));
 
-  logo_start = prefs->GetDouble(prefs::kNTPCustomLogoStart);
+  logo_start = prefs->GetDouble(prefs::kNtpCustomLogoStart);
   EXPECT_EQ(logo_start, 1267365600);  // date changes to Feb 28 2010 1400 GMT.
 
   // If no date is included in the prefs, reset custom logo dates to 0.
@@ -188,9 +188,9 @@ TEST_F(PromoResourceServiceTest, UnpackLogoSignal) {
 
   // Check that prefs are set correctly.
   web_resource_service_->UnpackLogoSignal(*(test_json.get()));
-  logo_start = prefs->GetDouble(prefs::kNTPCustomLogoStart);
+  logo_start = prefs->GetDouble(prefs::kNtpCustomLogoStart);
   EXPECT_EQ(logo_start, 0);  // date value reset to 0;
-  logo_end = prefs->GetDouble(prefs::kNTPCustomLogoEnd);
+  logo_end = prefs->GetDouble(prefs::kNtpCustomLogoEnd);
   EXPECT_EQ(logo_end, 0);  // date value reset to 0;
 }
 
@@ -303,8 +303,8 @@ class NotificationPromoTestDelegate : public NotificationPromo::Delegate {
     EXPECT_EQ(notification_promo_->gplus_, gplus_);
     EXPECT_EQ(notification_promo_->feature_mask_, feature_mask_);
     // Test the prefs.
-    EXPECT_EQ(prefs_->GetBoolean(prefs::kNTPPromoIsLoggedInToPlus), gplus_);
-    EXPECT_EQ(prefs_->GetInteger(prefs::kNTPPromoFeatureMask), feature_mask_);
+    EXPECT_EQ(prefs_->GetBoolean(prefs::kNtpPromoIsLoggedInToPlus), gplus_);
+    EXPECT_EQ(prefs_->GetInteger(prefs::kNtpPromoFeatureMask), feature_mask_);
 
     // Set group_ manually to a passing group.
     notification_promo_->group_ = max_group_ - 1;
@@ -318,7 +318,7 @@ class NotificationPromoTestDelegate : public NotificationPromo::Delegate {
     notification_promo_->feature_mask_ = NotificationPromo::FEATURE_GPLUS;
     // Force a notification when gplus_ is found to be false.
     notification_promo_->prefs_->
-        SetBoolean(prefs::kNTPPromoIsLoggedInToPlus, true);
+        SetBoolean(prefs::kNtpPromoIsLoggedInToPlus, true);
 
     TestCookie("WRONG=123456;", true, false);
     // Should not trigger notification on second call.
@@ -333,7 +333,7 @@ class NotificationPromoTestDelegate : public NotificationPromo::Delegate {
     notification_promo_->feature_mask_ = NotificationPromo::NO_FEATURE;
     gplus_ = false;
     notification_promo_->prefs_->
-        SetBoolean(prefs::kNTPPromoIsLoggedInToPlus, false);
+        SetBoolean(prefs::kNtpPromoIsLoggedInToPlus, false);
     notification_promo_->gplus_ = false;
   }
 
@@ -363,22 +363,22 @@ class NotificationPromoTestDelegate : public NotificationPromo::Delegate {
   }
 
   void TestPrefs() {
-    EXPECT_EQ(prefs_->GetDouble(prefs::kNTPPromoStart), start_);
-    EXPECT_EQ(prefs_->GetDouble(prefs::kNTPPromoEnd), end_);
+    EXPECT_EQ(prefs_->GetDouble(prefs::kNtpPromoStart), start_);
+    EXPECT_EQ(prefs_->GetDouble(prefs::kNtpPromoEnd), end_);
 
-    EXPECT_EQ(prefs_->GetInteger(prefs::kNTPPromoBuild), build_);
-    EXPECT_EQ(prefs_->GetInteger(prefs::kNTPPromoGroupTimeSlice), time_slice_);
-    EXPECT_EQ(prefs_->GetInteger(prefs::kNTPPromoGroupMax), max_group_);
-    EXPECT_EQ(prefs_->GetInteger(prefs::kNTPPromoViewsMax), max_views_);
-    EXPECT_EQ(prefs_->GetInteger(prefs::kNTPPromoPlatform), platform_);
+    EXPECT_EQ(prefs_->GetInteger(prefs::kNtpPromoBuild), build_);
+    EXPECT_EQ(prefs_->GetInteger(prefs::kNtpPromoGroupTimeSlice), time_slice_);
+    EXPECT_EQ(prefs_->GetInteger(prefs::kNtpPromoGroupMax), max_group_);
+    EXPECT_EQ(prefs_->GetInteger(prefs::kNtpPromoViewsMax), max_views_);
+    EXPECT_EQ(prefs_->GetInteger(prefs::kNtpPromoPlatform), platform_);
 
-    EXPECT_EQ(prefs_->GetInteger(prefs::kNTPPromoGroup),
+    EXPECT_EQ(prefs_->GetInteger(prefs::kNtpPromoGroup),
         notification_promo_ ? notification_promo_->group_: 0);
-    EXPECT_EQ(prefs_->GetInteger(prefs::kNTPPromoViews), 0);
-    EXPECT_EQ(prefs_->GetString(prefs::kNTPPromoLine), text_);
-    EXPECT_EQ(prefs_->GetBoolean(prefs::kNTPPromoClosed), closed_);
-    EXPECT_EQ(prefs_->GetBoolean(prefs::kNTPPromoIsLoggedInToPlus), gplus_);
-    EXPECT_EQ(prefs_->GetInteger(prefs::kNTPPromoFeatureMask), feature_mask_);
+    EXPECT_EQ(prefs_->GetInteger(prefs::kNtpPromoViews), 0);
+    EXPECT_EQ(prefs_->GetString(prefs::kNtpPromoLine), text_);
+    EXPECT_EQ(prefs_->GetBoolean(prefs::kNtpPromoClosed), closed_);
+    EXPECT_EQ(prefs_->GetBoolean(prefs::kNtpPromoIsLoggedInToPlus), gplus_);
+    EXPECT_EQ(prefs_->GetInteger(prefs::kNtpPromoFeatureMask), feature_mask_);
   }
 
   // Create a new NotificationPromo from prefs and compare to current
@@ -988,68 +988,68 @@ TEST_F(NTPSignInPromoTest, UnpackNTPSignInPromoSignal) {
 
   // Test on by default (currently should be false).
   EXPECT_FALSE(PromoResourceService::CanShowNTPSignInPromo(&profile_));
-  EXPECT_FALSE(prefs->HasPrefPath(prefs::kNTPSignInPromoGroup));
-  EXPECT_FALSE(prefs->HasPrefPath(prefs::kNTPSignInPromoGroupMax));
+  EXPECT_FALSE(prefs->HasPrefPath(prefs::kNtpSignInPromoGroup));
+  EXPECT_FALSE(prefs->HasPrefPath(prefs::kNtpSignInPromoGroupMax));
 
   // Non-targeted build.
   ClearNTPSignInPromoPrefs();
   SetupNTPSignInPromoCase(2, 50);
   EXPECT_FALSE(PromoResourceService::CanShowNTPSignInPromo(&profile_));
-  EXPECT_FALSE(prefs->HasPrefPath(prefs::kNTPSignInPromoGroup));
-  EXPECT_FALSE(prefs->HasPrefPath(prefs::kNTPSignInPromoGroupMax));
+  EXPECT_FALSE(prefs->HasPrefPath(prefs::kNtpSignInPromoGroup));
+  EXPECT_FALSE(prefs->HasPrefPath(prefs::kNtpSignInPromoGroupMax));
 
   // Targeted build, doesn't create bucket and doesn't show promo because
   // groupMax < group.
   ClearNTPSignInPromoPrefs();
   SetupNTPSignInPromoCase(1, 0);
   EXPECT_FALSE(PromoResourceService::CanShowNTPSignInPromo(&profile_));
-  EXPECT_EQ(prefs->GetInteger(prefs::kNTPSignInPromoGroupMax), 0);
-  EXPECT_FALSE(prefs->HasPrefPath(prefs::kNTPSignInPromoGroup));
+  EXPECT_EQ(prefs->GetInteger(prefs::kNtpSignInPromoGroupMax), 0);
+  EXPECT_FALSE(prefs->HasPrefPath(prefs::kNtpSignInPromoGroup));
 
   // Targeted build, max_group = 50, ensure group pref created and within the
   // group bounds.
   ClearNTPSignInPromoPrefs();
   SetupNTPSignInPromoCase(1, 50);
   PromoResourceService::CanShowNTPSignInPromo(&profile_);
-  EXPECT_EQ(prefs->GetInteger(prefs::kNTPSignInPromoGroupMax), 50);
-  EXPECT_TRUE(prefs->HasPrefPath(prefs::kNTPSignInPromoGroup));
-  EXPECT_GT(prefs->GetInteger(prefs::kNTPSignInPromoGroup), 0);
-  EXPECT_LE(prefs->GetInteger(prefs::kNTPSignInPromoGroup), 100);
+  EXPECT_EQ(prefs->GetInteger(prefs::kNtpSignInPromoGroupMax), 50);
+  EXPECT_TRUE(prefs->HasPrefPath(prefs::kNtpSignInPromoGroup));
+  EXPECT_GT(prefs->GetInteger(prefs::kNtpSignInPromoGroup), 0);
+  EXPECT_LE(prefs->GetInteger(prefs::kNtpSignInPromoGroup), 100);
 
   // Set user group = 50, now shows promo.
-  prefs->SetInteger(prefs::kNTPSignInPromoGroup, 50);
+  prefs->SetInteger(prefs::kNtpSignInPromoGroup, 50);
   EXPECT_TRUE(PromoResourceService::CanShowNTPSignInPromo(&profile_));
-  EXPECT_EQ(prefs->GetInteger(prefs::kNTPSignInPromoGroup), 50);
-  EXPECT_EQ(prefs->GetInteger(prefs::kNTPSignInPromoGroupMax), 50);
+  EXPECT_EQ(prefs->GetInteger(prefs::kNtpSignInPromoGroup), 50);
+  EXPECT_EQ(prefs->GetInteger(prefs::kNtpSignInPromoGroupMax), 50);
 
   // Bump user group, ensure that we should not show promo.
-  prefs->SetInteger(prefs::kNTPSignInPromoGroup, 51);
+  prefs->SetInteger(prefs::kNtpSignInPromoGroup, 51);
   EXPECT_FALSE(PromoResourceService::CanShowNTPSignInPromo(&profile_));
-  EXPECT_EQ(prefs->GetInteger(prefs::kNTPSignInPromoGroup), 51);
-  EXPECT_EQ(prefs->GetInteger(prefs::kNTPSignInPromoGroupMax), 50);
+  EXPECT_EQ(prefs->GetInteger(prefs::kNtpSignInPromoGroup), 51);
+  EXPECT_EQ(prefs->GetInteger(prefs::kNtpSignInPromoGroupMax), 50);
 
   // If the max group gets bumped to the user's group (or above), it should
   // show.
-  prefs->SetInteger(prefs::kNTPSignInPromoGroupMax, 51);
+  prefs->SetInteger(prefs::kNtpSignInPromoGroupMax, 51);
   EXPECT_TRUE(PromoResourceService::CanShowNTPSignInPromo(&profile_));
-  EXPECT_EQ(prefs->GetInteger(prefs::kNTPSignInPromoGroup), 51);
-  EXPECT_EQ(prefs->GetInteger(prefs::kNTPSignInPromoGroupMax), 51);
+  EXPECT_EQ(prefs->GetInteger(prefs::kNtpSignInPromoGroup), 51);
+  EXPECT_EQ(prefs->GetInteger(prefs::kNtpSignInPromoGroupMax), 51);
 
   // Reduce max group.
-  prefs->SetInteger(prefs::kNTPSignInPromoGroupMax, 49);
+  prefs->SetInteger(prefs::kNtpSignInPromoGroupMax, 49);
   EXPECT_FALSE(PromoResourceService::CanShowNTPSignInPromo(&profile_));
-  EXPECT_EQ(prefs->GetInteger(prefs::kNTPSignInPromoGroup), 51);
-  EXPECT_EQ(prefs->GetInteger(prefs::kNTPSignInPromoGroupMax), 49);
+  EXPECT_EQ(prefs->GetInteger(prefs::kNtpSignInPromoGroup), 51);
+  EXPECT_EQ(prefs->GetInteger(prefs::kNtpSignInPromoGroupMax), 49);
 
   // Ignore non-targeted builds.
-  prefs->SetInteger(prefs::kNTPSignInPromoGroup, 50);
-  prefs->SetInteger(prefs::kNTPSignInPromoGroupMax, 75);
+  prefs->SetInteger(prefs::kNtpSignInPromoGroup, 50);
+  prefs->SetInteger(prefs::kNtpSignInPromoGroupMax, 75);
   EXPECT_TRUE(PromoResourceService::CanShowNTPSignInPromo(&profile_));
   SetupNTPSignInPromoCase(2, 25);
   // Make sure the prefs are deleted.
   EXPECT_FALSE(PromoResourceService::CanShowNTPSignInPromo(&profile_));
-  EXPECT_FALSE(prefs->HasPrefPath(prefs::kNTPSignInPromoGroup));
-  EXPECT_FALSE(prefs->HasPrefPath(prefs::kNTPSignInPromoGroupMax));
+  EXPECT_FALSE(prefs->HasPrefPath(prefs::kNtpSignInPromoGroup));
+  EXPECT_FALSE(prefs->HasPrefPath(prefs::kNtpSignInPromoGroupMax));
 }
 
 // Throw random stuff at UnpackNTPSignInPromoSignal and make sure no segfaults

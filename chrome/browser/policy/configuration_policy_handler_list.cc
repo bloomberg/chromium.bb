@@ -271,7 +271,7 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     prefs::kMaxConnectionsPerProxy,
     Value::TYPE_INTEGER },
   { key::kHideWebStorePromo,
-    prefs::kNTPHideWebStorePromo,
+    prefs::kNtpHideWebStorePromo,
     Value::TYPE_BOOLEAN },
   { key::kURLBlacklist,
     prefs::kUrlBlacklist,

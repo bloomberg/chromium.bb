@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -203,11 +203,11 @@ void NotificationPromo::CheckForNewNotification(bool found_cookie) {
   bool new_notification = false;
 
   gplus_ = found_cookie;
-  const double old_start = GetTimeFromPrefs(prefs_, prefs::kNTPPromoStart);
-  const double old_end = GetTimeFromPrefs(prefs_, prefs::kNTPPromoEnd);
-  const bool old_gplus = prefs_->GetBoolean(prefs::kNTPPromoIsLoggedInToPlus);
+  const double old_start = GetTimeFromPrefs(prefs_, prefs::kNtpPromoStart);
+  const double old_end = GetTimeFromPrefs(prefs_, prefs::kNtpPromoEnd);
+  const bool old_gplus = prefs_->GetBoolean(prefs::kNtpPromoIsLoggedInToPlus);
   const bool has_feature_mask =
-      prefs_->HasPrefPath(prefs::kNTPPromoFeatureMask);
+      prefs_->HasPrefPath(prefs::kNtpPromoFeatureMask);
   // Trigger a new notification if the times have changed, or if
   // we previously never wrote out a feature_mask, or if the user's gplus
   // cookies have changed.
@@ -237,45 +237,45 @@ int NotificationPromo::NewGroup() {
 
 // static
 void NotificationPromo::RegisterUserPrefs(PrefService* prefs) {
-  prefs->RegisterDoublePref(prefs::kNTPPromoStart,
+  prefs->RegisterDoublePref(prefs::kNtpPromoStart,
                             0,
                             PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterDoublePref(prefs::kNTPPromoEnd,
+  prefs->RegisterDoublePref(prefs::kNtpPromoEnd,
                             0,
                             PrefService::UNSYNCABLE_PREF);
 
-  prefs->RegisterIntegerPref(prefs::kNTPPromoBuild,
+  prefs->RegisterIntegerPref(prefs::kNtpPromoBuild,
                              PromoResourceService::NO_BUILD,
                              PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterIntegerPref(prefs::kNTPPromoGroupTimeSlice,
+  prefs->RegisterIntegerPref(prefs::kNtpPromoGroupTimeSlice,
                              0,
                              PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterIntegerPref(prefs::kNTPPromoGroupMax,
+  prefs->RegisterIntegerPref(prefs::kNtpPromoGroupMax,
                              0,
                              PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterIntegerPref(prefs::kNTPPromoViewsMax,
+  prefs->RegisterIntegerPref(prefs::kNtpPromoViewsMax,
                              0,
                              PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterIntegerPref(prefs::kNTPPromoPlatform,
+  prefs->RegisterIntegerPref(prefs::kNtpPromoPlatform,
                              PLATFORM_NONE,
                              PrefService::UNSYNCABLE_PREF);
 
-  prefs->RegisterStringPref(prefs::kNTPPromoLine,
+  prefs->RegisterStringPref(prefs::kNtpPromoLine,
                             std::string(),
                             PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterIntegerPref(prefs::kNTPPromoGroup,
+  prefs->RegisterIntegerPref(prefs::kNtpPromoGroup,
                              0,
                              PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterIntegerPref(prefs::kNTPPromoViews,
+  prefs->RegisterIntegerPref(prefs::kNtpPromoViews,
                              0,
                              PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterBooleanPref(prefs::kNTPPromoClosed,
+  prefs->RegisterBooleanPref(prefs::kNtpPromoClosed,
                              false,
                              PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterBooleanPref(prefs::kNTPPromoIsLoggedInToPlus,
+  prefs->RegisterBooleanPref(prefs::kNtpPromoIsLoggedInToPlus,
                              false,
                              PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterIntegerPref(prefs::kNTPPromoFeatureMask,
+  prefs->RegisterIntegerPref(prefs::kNtpPromoFeatureMask,
                              0,
                              PrefService::UNSYNCABLE_PREF);
 }
@@ -287,41 +287,41 @@ NotificationPromo* NotificationPromo::Create(Profile *profile,
 }
 
 void NotificationPromo::WritePrefs() {
-  prefs_->SetDouble(prefs::kNTPPromoStart, start_);
-  prefs_->SetDouble(prefs::kNTPPromoEnd, end_);
+  prefs_->SetDouble(prefs::kNtpPromoStart, start_);
+  prefs_->SetDouble(prefs::kNtpPromoEnd, end_);
 
-  prefs_->SetInteger(prefs::kNTPPromoBuild, build_);
-  prefs_->SetInteger(prefs::kNTPPromoGroupTimeSlice, time_slice_);
-  prefs_->SetInteger(prefs::kNTPPromoGroupMax, max_group_);
-  prefs_->SetInteger(prefs::kNTPPromoViewsMax, max_views_);
-  prefs_->SetInteger(prefs::kNTPPromoPlatform, platform_);
+  prefs_->SetInteger(prefs::kNtpPromoBuild, build_);
+  prefs_->SetInteger(prefs::kNtpPromoGroupTimeSlice, time_slice_);
+  prefs_->SetInteger(prefs::kNtpPromoGroupMax, max_group_);
+  prefs_->SetInteger(prefs::kNtpPromoViewsMax, max_views_);
+  prefs_->SetInteger(prefs::kNtpPromoPlatform, platform_);
 
-  prefs_->SetString(prefs::kNTPPromoLine, text_);
-  prefs_->SetInteger(prefs::kNTPPromoGroup, group_);
-  prefs_->SetInteger(prefs::kNTPPromoViews, views_);
-  prefs_->SetBoolean(prefs::kNTPPromoClosed, closed_);
-  prefs_->SetBoolean(prefs::kNTPPromoIsLoggedInToPlus, gplus_);
-  prefs_->SetInteger(prefs::kNTPPromoFeatureMask, feature_mask_);
+  prefs_->SetString(prefs::kNtpPromoLine, text_);
+  prefs_->SetInteger(prefs::kNtpPromoGroup, group_);
+  prefs_->SetInteger(prefs::kNtpPromoViews, views_);
+  prefs_->SetBoolean(prefs::kNtpPromoClosed, closed_);
+  prefs_->SetBoolean(prefs::kNtpPromoIsLoggedInToPlus, gplus_);
+  prefs_->SetInteger(prefs::kNtpPromoFeatureMask, feature_mask_);
 }
 
 void NotificationPromo::InitFromPrefs() {
-  start_ = prefs_->GetDouble(prefs::kNTPPromoStart);
-  end_ = prefs_->GetDouble(prefs::kNTPPromoEnd);
-  build_ = prefs_->GetInteger(prefs::kNTPPromoBuild);
-  time_slice_ = prefs_->GetInteger(prefs::kNTPPromoGroupTimeSlice);
-  max_group_ = prefs_->GetInteger(prefs::kNTPPromoGroupMax);
-  max_views_ = prefs_->GetInteger(prefs::kNTPPromoViewsMax);
-  platform_ = prefs_->GetInteger(prefs::kNTPPromoPlatform);
-  text_ = prefs_->GetString(prefs::kNTPPromoLine);
-  group_ = prefs_->GetInteger(prefs::kNTPPromoGroup);
-  views_ = prefs_->GetInteger(prefs::kNTPPromoViews);
-  closed_ = prefs_->GetBoolean(prefs::kNTPPromoClosed);
+  start_ = prefs_->GetDouble(prefs::kNtpPromoStart);
+  end_ = prefs_->GetDouble(prefs::kNtpPromoEnd);
+  build_ = prefs_->GetInteger(prefs::kNtpPromoBuild);
+  time_slice_ = prefs_->GetInteger(prefs::kNtpPromoGroupTimeSlice);
+  max_group_ = prefs_->GetInteger(prefs::kNtpPromoGroupMax);
+  max_views_ = prefs_->GetInteger(prefs::kNtpPromoViewsMax);
+  platform_ = prefs_->GetInteger(prefs::kNtpPromoPlatform);
+  text_ = prefs_->GetString(prefs::kNtpPromoLine);
+  group_ = prefs_->GetInteger(prefs::kNtpPromoGroup);
+  views_ = prefs_->GetInteger(prefs::kNtpPromoViews);
+  closed_ = prefs_->GetBoolean(prefs::kNtpPromoClosed);
 
-  if (prefs_->HasPrefPath(prefs::kNTPPromoIsLoggedInToPlus))
-    gplus_ = prefs_->GetBoolean(prefs::kNTPPromoIsLoggedInToPlus);
+  if (prefs_->HasPrefPath(prefs::kNtpPromoIsLoggedInToPlus))
+    gplus_ = prefs_->GetBoolean(prefs::kNtpPromoIsLoggedInToPlus);
 
-  if (prefs_->HasPrefPath(prefs::kNTPPromoFeatureMask))
-    feature_mask_ = prefs_->GetInteger(prefs::kNTPPromoFeatureMask);
+  if (prefs_->HasPrefPath(prefs::kNtpPromoFeatureMask))
+    feature_mask_ = prefs_->GetInteger(prefs::kNtpPromoFeatureMask);
 }
 
 bool NotificationPromo::CanShow() const {
@@ -338,18 +338,18 @@ bool NotificationPromo::CanShow() const {
 
 void NotificationPromo::HandleClosed() {
   content::RecordAction(UserMetricsAction("NTPPromoClosed"));
-  prefs_->SetBoolean(prefs::kNTPPromoClosed, true);
+  prefs_->SetBoolean(prefs::kNtpPromoClosed, true);
 }
 
 bool NotificationPromo::HandleViewed() {
   content::RecordAction(UserMetricsAction("NTPPromoShown"));
-  if (prefs_->HasPrefPath(prefs::kNTPPromoViewsMax))
-    max_views_ = prefs_->GetInteger(prefs::kNTPPromoViewsMax);
+  if (prefs_->HasPrefPath(prefs::kNtpPromoViewsMax))
+    max_views_ = prefs_->GetInteger(prefs::kNtpPromoViewsMax);
 
-  if (prefs_->HasPrefPath(prefs::kNTPPromoViews))
-    views_ = prefs_->GetInteger(prefs::kNTPPromoViews);
+  if (prefs_->HasPrefPath(prefs::kNtpPromoViews))
+    views_ = prefs_->GetInteger(prefs::kNtpPromoViews);
 
-  prefs_->SetInteger(prefs::kNTPPromoViews, ++views_);
+  prefs_->SetInteger(prefs::kNtpPromoViews, ++views_);
   return views_ >= max_views_;
 }
 

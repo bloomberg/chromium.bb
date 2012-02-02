@@ -1290,130 +1290,130 @@ const char kExtensionBlacklistUpdateVersion[] =
     "extensions.blacklistupdate.version";
 
 // Number of times the NTP4 informational bubble has been shown.
-const char kNTP4IntroDisplayCount[] = "ntp.intro_display_count";
+const char kNtp4IntroDisplayCount[] = "ntp.intro_display_count";
 
 // New Tab Page URLs that should not be shown as most visited thumbnails.
-const char kNTPMostVisitedURLsBlacklist[] = "ntp.most_visited_blacklist";
+const char kNtpMostVisitedURLsBlacklist[] = "ntp.most_visited_blacklist";
 
 // The URLs that have been pinned to the Most Visited section of the New Tab
 // Page.
-const char kNTPMostVisitedPinnedURLs[] = "ntp.pinned_urls";
+const char kNtpMostVisitedPinnedURLs[] = "ntp.pinned_urls";
 
 // Data downloaded from promo resource pages (JSON, RSS) to be used to
 // dynamically deliver data for the new tab page.
-const char kNTPPromoResourceCache[] = "ntp.promo_resource_cache";
+const char kNtpPromoResourceCache[] = "ntp.promo_resource_cache";
 
 // Last time of update of promo_resource_cache.
-const char kNTPPromoResourceCacheUpdate[] = "ntp.promo_resource_cache_update";
+const char kNtpPromoResourceCacheUpdate[] = "ntp.promo_resource_cache_update";
 
 // Is user logged into G+ (used for G+ extension promo).
-const char kNTPPromoIsLoggedInToPlus[] = "ntp.promo_is_logged_in_to_plus";
+const char kNtpPromoIsLoggedInToPlus[] = "ntp.promo_is_logged_in_to_plus";
 
 // Bit mask used to decide when to show the NTP Promo.
-const char kNTPPromoFeatureMask[] = "ntp.promo_feature_mask";
+const char kNtpPromoFeatureMask[] = "ntp.promo_feature_mask";
 
 // Serves promo resources for the NTP.
-const char kNTPPromoResourceServer[] = "ntp.web_resource_server";
+const char kNtpPromoResourceServer[] = "ntp.web_resource_server";
 
 // Serves tips for the NTP.
-const char kNTPTipsResourceServer[] = "ntp.tips_resource_server";
+const char kNtpTipsResourceServer[] = "ntp.tips_resource_server";
 
 // Serves dates to determine display of elements on the NTP.
-const char kNTPDateResourceServer[] = "ntp.date_resource_server";
+const char kNtpDateResourceServer[] = "ntp.date_resource_server";
 
 // Which bookmarks folder should be visible on the new tab page v4.
-const char kNTPShownBookmarksFolder[] = "ntp.shown_bookmarks_folder";
+const char kNtpShownBookmarksFolder[] = "ntp.shown_bookmarks_folder";
 
 // Which page should be visible on the new tab page v4
-const char kNTPShownPage[] = "ntp.shown_page";
+const char kNtpShownPage[] = "ntp.shown_page";
 
 // Dates between which the NTP should show a custom logo rather than the
 // standard one.
-const char kNTPCustomLogoStart[] = "ntp.alt_logo_start";
-const char kNTPCustomLogoEnd[] = "ntp.alt_logo_end";
+const char kNtpCustomLogoStart[] = "ntp.alt_logo_start";
+const char kNtpCustomLogoEnd[] = "ntp.alt_logo_end";
 
 // The promo resource service version number.
-const char kNTPPromoVersion[] = "ntp.promo_version";
+const char kNtpPromoVersion[] = "ntp.promo_version";
 
 // The last locale the promo was fetched for.
-const char kNTPPromoLocale[] = "ntp.promo_locale";
+const char kNtpPromoLocale[] = "ntp.promo_locale";
 
 // Whether promo should be shown to Dev builds, Beta and Dev, or all builds.
-const char kNTPPromoBuild[] = "ntp.promo_build";
+const char kNtpPromoBuild[] = "ntp.promo_build";
 
 // True if user has explicitly closed the promo line.
-const char kNTPPromoClosed[] = "ntp.promo_closed";
+const char kNtpPromoClosed[] = "ntp.promo_closed";
 
 // Users are randomly divided into 100 groups in order to slowly roll out
 // special promos.
-const char kNTPPromoGroup[] = "ntp.promo_group";
+const char kNtpPromoGroup[] = "ntp.promo_group";
 
 // Amount of time each promo group should be shown a promo that is being slowly
 // rolled out, in hours.
-const char kNTPPromoGroupTimeSlice[] = "ntp.promo_group_timeslice";
+const char kNtpPromoGroupTimeSlice[] = "ntp.promo_group_timeslice";
 
 // Number of groups to roll out this promo to.
-const char kNTPPromoGroupMax[] = "ntp.promo_group_max";
+const char kNtpPromoGroupMax[] = "ntp.promo_group_max";
 
 // Number of views of this promo.
-const char kNTPPromoViews[] = "ntp.promo_views";
+const char kNtpPromoViews[] = "ntp.promo_views";
 
 // Max number of views of this promo.
-const char kNTPPromoViewsMax[] = "ntp.promo_views_max";
+const char kNtpPromoViewsMax[] = "ntp.promo_views_max";
 
 // Target platform for this promo.
-const char kNTPPromoPlatform[] = "ntp.promo_platform";
+const char kNtpPromoPlatform[] = "ntp.promo_platform";
 
 // Promo line from server.
-const char kNTPPromoLine[] = "ntp.promo_line";
+const char kNtpPromoLine[] = "ntp.promo_line";
 
 // Dates between which the NTP should show a promotional line downloaded
 // from the promo server.
-const char kNTPPromoStart[] = "ntp.promo_start";
-const char kNTPPromoEnd[] = "ntp.promo_end";
+const char kNtpPromoStart[] = "ntp.promo_start";
+const char kNtpPromoEnd[] = "ntp.promo_end";
 
 // A randomly generated group created to control the number of users we show the
 // sync promo to on the NTP.
-const char kNTPSignInPromoGroup[] = "ntp.sign_in_promo.group";
+const char kNtpSignInPromoGroup[] = "ntp.sign_in_promo.group";
 
 // The maximum allowable group that can be shown the sync promotion on the NTP.
-const char kNTPSignInPromoGroupMax[] = "ntp.sign_in_promo.group_max";
+const char kNtpSignInPromoGroupMax[] = "ntp.sign_in_promo.group_max";
 
 // Boolean indicating whether the web store is active for the current locale.
-const char kNTPWebStoreEnabled[] = "ntp.webstore_enabled";
+const char kNtpWebStoreEnabled[] = "ntp.webstore_enabled";
 
 // The id of the last web store promo actually displayed on the NTP.
-const char kNTPWebStorePromoLastId[] = "ntp.webstore_last_promo_id";
+const char kNtpWebStorePromoLastId[] = "ntp.webstore_last_promo_id";
 
 // The id of the current web store promo.
-const char kNTPWebStorePromoId[] = "ntp.webstorepromo.id";
+const char kNtpWebStorePromoId[] = "ntp.webstorepromo.id";
 
 // The header line for the NTP web store promo.
-const char kNTPWebStorePromoHeader[] = "ntp.webstorepromo.header";
+const char kNtpWebStorePromoHeader[] = "ntp.webstorepromo.header";
 
 // The button text for the NTP web store promo.
-const char kNTPWebStorePromoButton[] = "ntp.webstorepromo.button";
+const char kNtpWebStorePromoButton[] = "ntp.webstorepromo.button";
 
 // The button link for the NTP web store promo.
-const char kNTPWebStorePromoLink[] = "ntp.webstorepromo.link";
+const char kNtpWebStorePromoLink[] = "ntp.webstorepromo.link";
 
 // The image URL for the NTP web store promo logo.
-const char kNTPWebStorePromoLogo[] = "ntp.webstorepromo.logo";
+const char kNtpWebStorePromoLogo[] = "ntp.webstorepromo.logo";
 
 // The original URL for the NTP web store promo logo.
-const char kNTPWebStorePromoLogoSource[] = "ntp.webstorepromo.logo_source";
+const char kNtpWebStorePromoLogoSource[] = "ntp.webstorepromo.logo_source";
 
 // The "hide this" link text for the NTP web store promo.
-const char kNTPWebStorePromoExpire[] = "ntp.webstorepromo.expire";
+const char kNtpWebStorePromoExpire[] = "ntp.webstorepromo.expire";
 
 // Specifies what users should maximize the NTP web store promo.
-const char kNTPWebStorePromoUserGroup[] = "ntp.webstorepromo.usergroup";
+const char kNtpWebStorePromoUserGroup[] = "ntp.webstorepromo.usergroup";
 
 // Customized app page names that appear on the New Tab Page.
-const char kNTPAppPageNames[] = "ntp.app_page_names";
+const char kNtpAppPageNames[] = "ntp.app_page_names";
 
 // When true, web store promos will never be shown.
-const char kNTPHideWebStorePromo[] = "ntp.hide_webstore_promo";
+const char kNtpHideWebStorePromo[] = "ntp.hide_webstore_promo";
 
 const char kDevToolsDisabled[] = "devtools.disabled";
 

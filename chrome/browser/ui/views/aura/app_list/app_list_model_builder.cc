@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -87,7 +87,7 @@ void AppListModelBuilder::GetExtensionApps() {
 
   // Put all items into model and group them by page ordinal.
   PrefService* prefs = profile_->GetPrefs();
-  const ListValue* app_page_names = prefs->GetList(prefs::kNTPAppPageNames);
+  const ListValue* app_page_names = prefs->GetList(prefs::kNtpAppPageNames);
   for (size_t i = 0; i < items.size(); ++i) {
     ExtensionAppItem* item = items[i];
 
@@ -119,4 +119,3 @@ void AppListModelBuilder::GetBrowserCommands() {
                                         IDS_APP_LIST_SETTINGS,
                                         IDR_APP_LIST_SETTINGS));
 }
-

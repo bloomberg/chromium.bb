@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -26,7 +26,7 @@
 static const int kIntroDisplayMax = 10;
 
 // The URL of a knowledge-base article about the new NTP.
-static const char kNTP4IntroURL[] =
+static const char kNtp4IntroURL[] =
   "http://www.google.com/support/chrome/bin/answer.py?answer=95451";
 
 NewTabPageHandler::NewTabPageHandler() : page_switch_count_(0) {
@@ -40,7 +40,7 @@ NewTabPageHandler::~NewTabPageHandler() {
 void NewTabPageHandler::RegisterMessages() {
   // Record an open of the NTP with its default page type.
   PrefService* prefs = Profile::FromWebUI(web_ui())->GetPrefs();
-  int shown_page_type = prefs->GetInteger(prefs::kNTPShownPage) >>
+  int shown_page_type = prefs->GetInteger(prefs::kNtpShownPage) >>
       kPageIdOffset;
   UMA_HISTOGRAM_ENUMERATION("NewTabPage.DefaultPageType",
                             shown_page_type, kHistogramEnumerationMax);
@@ -98,11 +98,11 @@ void NewTabPageHandler::HandlePageSelected(const ListValue* args) {
 
   PrefService* prefs = Profile::FromWebUI(web_ui())->GetPrefs();
   int previous_shown_page =
-      prefs->GetInteger(prefs::kNTPShownPage) >> kPageIdOffset;
+      prefs->GetInteger(prefs::kNtpShownPage) >> kPageIdOffset;
   UMA_HISTOGRAM_ENUMERATION("NewTabPage.PreviousSelectedPageType",
                             previous_shown_page, kHistogramEnumerationMax);
 
-  prefs->SetInteger(prefs::kNTPShownPage, page_id | index);
+  prefs->SetInteger(prefs::kNtpShownPage, page_id | index);
 
   int shown_page_type = page_id >> kPageIdOffset;
   UMA_HISTOGRAM_ENUMERATION("NewTabPage.SelectedPageType",
@@ -120,27 +120,27 @@ void NewTabPageHandler::HandlePageSelected(const ListValue* args) {
 
 void NewTabPageHandler::HandleIntroMessageDismissed(const ListValue* args) {
   PrefService* prefs = g_browser_process->local_state();
-  prefs->SetInteger(prefs::kNTP4IntroDisplayCount, kIntroDisplayMax + 1);
+  prefs->SetInteger(prefs::kNtp4IntroDisplayCount, kIntroDisplayMax + 1);
   Notify(chrome::NTP4_INTRO_PREF_CHANGED);
 }
 
 void NewTabPageHandler::HandleIntroMessageSeen(const ListValue* args) {
   PrefService* prefs = g_browser_process->local_state();
-  int intro_displays = prefs->GetInteger(prefs::kNTP4IntroDisplayCount);
-  prefs->SetInteger(prefs::kNTP4IntroDisplayCount, intro_displays + 1);
+  int intro_displays = prefs->GetInteger(prefs::kNtp4IntroDisplayCount);
+  prefs->SetInteger(prefs::kNtp4IntroDisplayCount, intro_displays + 1);
   Notify(chrome::NTP4_INTRO_PREF_CHANGED);
 }
 
 // static
 void NewTabPageHandler::RegisterUserPrefs(PrefService* prefs) {
   // TODO(estade): should be syncable.
-  prefs->RegisterIntegerPref(prefs::kNTPShownPage, APPS_PAGE_ID,
+  prefs->RegisterIntegerPref(prefs::kNtpShownPage, APPS_PAGE_ID,
                              PrefService::UNSYNCABLE_PREF);
 }
 
 // static
 void NewTabPageHandler::RegisterPrefs(PrefService* prefs) {
-  prefs->RegisterIntegerPref(prefs::kNTP4IntroDisplayCount, 0,
+  prefs->RegisterIntegerPref(prefs::kNtp4IntroDisplayCount, 0,
                              PrefService::UNSYNCABLE_PREF);
 }
 
@@ -151,25 +151,25 @@ void NewTabPageHandler::GetLocalizedValues(Profile* profile,
   values->SetInteger("apps_page_id", APPS_PAGE_ID);
 
   PrefService* prefs = profile->GetPrefs();
-  int shown_page = prefs->GetInteger(prefs::kNTPShownPage);
+  int shown_page = prefs->GetInteger(prefs::kNtpShownPage);
   values->SetInteger("shown_page_type", shown_page & ~INDEX_MASK);
   values->SetInteger("shown_page_index", shown_page & INDEX_MASK);
 
   PrefService* local_state = g_browser_process->local_state();
-  int intro_displays = local_state->GetInteger(prefs::kNTP4IntroDisplayCount);
+  int intro_displays = local_state->GetInteger(prefs::kNtp4IntroDisplayCount);
   // This preference used to exist in profile, so check the profile if it has
   // not been set in local state yet.
   if (!intro_displays) {
-    prefs->RegisterIntegerPref(prefs::kNTP4IntroDisplayCount, 0,
+    prefs->RegisterIntegerPref(prefs::kNtp4IntroDisplayCount, 0,
                                PrefService::UNSYNCABLE_PREF);
-    intro_displays = prefs->GetInteger(prefs::kNTP4IntroDisplayCount);
+    intro_displays = prefs->GetInteger(prefs::kNtp4IntroDisplayCount);
     if (intro_displays)
-      local_state->SetInteger(prefs::kNTP4IntroDisplayCount, intro_displays);
+      local_state->SetInteger(prefs::kNtp4IntroDisplayCount, intro_displays);
   }
   if (intro_displays <= kIntroDisplayMax) {
     values->SetString("ntp4_intro_message",
                       l10n_util::GetStringUTF16(IDS_NTP4_INTRO_MESSAGE));
-    values->SetString("ntp4_intro_url", kNTP4IntroURL);
+    values->SetString("ntp4_intro_url", kNtp4IntroURL);
     values->SetString("learn_more",
                       l10n_util::GetStringUTF16(IDS_LEARN_MORE));
   }
@@ -177,7 +177,7 @@ void NewTabPageHandler::GetLocalizedValues(Profile* profile,
 
 // static
 void NewTabPageHandler::DismissIntroMessage(PrefService* prefs) {
-  prefs->SetInteger(prefs::kNTP4IntroDisplayCount, kIntroDisplayMax + 1);
+  prefs->SetInteger(prefs::kNtp4IntroDisplayCount, kIntroDisplayMax + 1);
   // No need to send notification to update resource cache, because this method
   // is only called during startup before the ntp resource cache is constructed.
 }

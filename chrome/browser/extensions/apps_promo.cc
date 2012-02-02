@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -79,15 +79,15 @@ AppsPromo::PromoData::~PromoData() {}
 // static
 void AppsPromo::RegisterPrefs(PrefService* local_state) {
   std::string empty;
-  local_state->RegisterBooleanPref(prefs::kNTPWebStoreEnabled, false);
-  local_state->RegisterStringPref(prefs::kNTPWebStorePromoId, empty);
-  local_state->RegisterStringPref(prefs::kNTPWebStorePromoHeader, empty);
-  local_state->RegisterStringPref(prefs::kNTPWebStorePromoButton, empty);
-  local_state->RegisterStringPref(prefs::kNTPWebStorePromoLink, empty);
-  local_state->RegisterStringPref(prefs::kNTPWebStorePromoLogo, empty);
-  local_state->RegisterStringPref(prefs::kNTPWebStorePromoLogoSource, empty);
-  local_state->RegisterStringPref(prefs::kNTPWebStorePromoExpire, empty);
-  local_state->RegisterIntegerPref(prefs::kNTPWebStorePromoUserGroup, 0);
+  local_state->RegisterBooleanPref(prefs::kNtpWebStoreEnabled, false);
+  local_state->RegisterStringPref(prefs::kNtpWebStorePromoId, empty);
+  local_state->RegisterStringPref(prefs::kNtpWebStorePromoHeader, empty);
+  local_state->RegisterStringPref(prefs::kNtpWebStorePromoButton, empty);
+  local_state->RegisterStringPref(prefs::kNtpWebStorePromoLink, empty);
+  local_state->RegisterStringPref(prefs::kNtpWebStorePromoLogo, empty);
+  local_state->RegisterStringPref(prefs::kNtpWebStorePromoLogoSource, empty);
+  local_state->RegisterStringPref(prefs::kNtpWebStorePromoExpire, empty);
+  local_state->RegisterIntegerPref(prefs::kNtpWebStorePromoUserGroup, 0);
 }
 
 // static
@@ -100,10 +100,10 @@ void AppsPromo::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterBooleanPref(prefs::kDefaultAppsInstalled,
                              false,
                              PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterStringPref(prefs::kNTPWebStorePromoLastId,
+  prefs->RegisterStringPref(prefs::kNtpWebStorePromoLastId,
                             std::string(),
                             PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterBooleanPref(prefs::kNTPHideWebStorePromo,
+  prefs->RegisterBooleanPref(prefs::kNtpHideWebStorePromo,
                              false,
                              PrefService::UNSYNCABLE_PREF);
 }
@@ -113,39 +113,39 @@ bool AppsPromo::IsPromoSupportedForLocale() {
   PrefService* local_state = g_browser_process->local_state();
   // PromoResourceService will clear the promo data if the current locale is
   // not supported.
-  return local_state->HasPrefPath(prefs::kNTPWebStorePromoId) &&
-      local_state->HasPrefPath(prefs::kNTPWebStorePromoHeader) &&
-      local_state->HasPrefPath(prefs::kNTPWebStorePromoButton) &&
-      local_state->HasPrefPath(prefs::kNTPWebStorePromoLink) &&
-      local_state->HasPrefPath(prefs::kNTPWebStorePromoLogo) &&
-      local_state->HasPrefPath(prefs::kNTPWebStorePromoExpire) &&
-      local_state->HasPrefPath(prefs::kNTPWebStorePromoUserGroup);
+  return local_state->HasPrefPath(prefs::kNtpWebStorePromoId) &&
+      local_state->HasPrefPath(prefs::kNtpWebStorePromoHeader) &&
+      local_state->HasPrefPath(prefs::kNtpWebStorePromoButton) &&
+      local_state->HasPrefPath(prefs::kNtpWebStorePromoLink) &&
+      local_state->HasPrefPath(prefs::kNtpWebStorePromoLogo) &&
+      local_state->HasPrefPath(prefs::kNtpWebStorePromoExpire) &&
+      local_state->HasPrefPath(prefs::kNtpWebStorePromoUserGroup);
 }
 
 // static
 bool AppsPromo::IsWebStoreSupportedForLocale() {
   PrefService* local_state = g_browser_process->local_state();
-  return local_state->GetBoolean(prefs::kNTPWebStoreEnabled);
+  return local_state->GetBoolean(prefs::kNtpWebStoreEnabled);
 }
 
 // static
 void AppsPromo::SetWebStoreSupportedForLocale(bool supported) {
   PrefService* local_state = g_browser_process->local_state();
-  local_state->SetBoolean(prefs::kNTPWebStoreEnabled, supported);
+  local_state->SetBoolean(prefs::kNtpWebStoreEnabled, supported);
 }
 
 // static
 void AppsPromo::ClearPromo() {
   PrefService* local_state = g_browser_process->local_state();
-  local_state->ClearPref(prefs::kNTPWebStoreEnabled);
-  local_state->ClearPref(prefs::kNTPWebStorePromoId);
-  local_state->ClearPref(prefs::kNTPWebStorePromoHeader);
-  local_state->ClearPref(prefs::kNTPWebStorePromoButton);
-  local_state->ClearPref(prefs::kNTPWebStorePromoLink);
-  local_state->ClearPref(prefs::kNTPWebStorePromoLogo);
-  local_state->ClearPref(prefs::kNTPWebStorePromoLogoSource);
-  local_state->ClearPref(prefs::kNTPWebStorePromoExpire);
-  local_state->ClearPref(prefs::kNTPWebStorePromoUserGroup);
+  local_state->ClearPref(prefs::kNtpWebStoreEnabled);
+  local_state->ClearPref(prefs::kNtpWebStorePromoId);
+  local_state->ClearPref(prefs::kNtpWebStorePromoHeader);
+  local_state->ClearPref(prefs::kNtpWebStorePromoButton);
+  local_state->ClearPref(prefs::kNtpWebStorePromoLink);
+  local_state->ClearPref(prefs::kNtpWebStorePromoLogo);
+  local_state->ClearPref(prefs::kNtpWebStorePromoLogoSource);
+  local_state->ClearPref(prefs::kNtpWebStorePromoExpire);
+  local_state->ClearPref(prefs::kNtpWebStorePromoUserGroup);
 }
 
 // static
@@ -153,14 +153,14 @@ AppsPromo::PromoData AppsPromo::GetPromo() {
   PromoData data;
   PrefService* local_state = g_browser_process->local_state();
 
-  data.id = GetStringPref(prefs::kNTPWebStorePromoId, "");
-  data.link = GURL(GetStringPref(prefs::kNTPWebStorePromoLink, kDefaultLink));
-  data.user_group = local_state->GetInteger(prefs::kNTPWebStorePromoUserGroup);
-  data.header = GetStringPref(prefs::kNTPWebStorePromoHeader, kDefaultHeader);
-  data.button = GetStringPref(prefs::kNTPWebStorePromoButton, kDefaultButton);
-  data.expire = GetStringPref(prefs::kNTPWebStorePromoExpire, kDefaultExpire);
+  data.id = GetStringPref(prefs::kNtpWebStorePromoId, "");
+  data.link = GURL(GetStringPref(prefs::kNtpWebStorePromoLink, kDefaultLink));
+  data.user_group = local_state->GetInteger(prefs::kNtpWebStorePromoUserGroup);
+  data.header = GetStringPref(prefs::kNtpWebStorePromoHeader, kDefaultHeader);
+  data.button = GetStringPref(prefs::kNtpWebStorePromoButton, kDefaultButton);
+  data.expire = GetStringPref(prefs::kNtpWebStorePromoExpire, kDefaultExpire);
 
-  GURL logo_url(local_state->GetString(prefs::kNTPWebStorePromoLogo));
+  GURL logo_url(local_state->GetString(prefs::kNtpWebStorePromoLogo));
   if (logo_url.is_valid() && logo_url.SchemeIs(chrome::kDataScheme))
     data.logo = logo_url;
   else
@@ -172,24 +172,24 @@ AppsPromo::PromoData AppsPromo::GetPromo() {
 // static
 void AppsPromo::SetPromo(AppsPromo::PromoData data) {
   PrefService* local_state = g_browser_process->local_state();
-  local_state->SetString(prefs::kNTPWebStorePromoId, data.id);
-  local_state->SetString(prefs::kNTPWebStorePromoButton, data.button);
-  local_state->SetString(prefs::kNTPWebStorePromoHeader, data.header);
-  local_state->SetString(prefs::kNTPWebStorePromoLink, data.link.spec());
-  local_state->SetString(prefs::kNTPWebStorePromoLogo, data.logo.spec());
-  local_state->SetString(prefs::kNTPWebStorePromoExpire, data.expire);
-  local_state->SetInteger(prefs::kNTPWebStorePromoUserGroup, data.user_group);
+  local_state->SetString(prefs::kNtpWebStorePromoId, data.id);
+  local_state->SetString(prefs::kNtpWebStorePromoButton, data.button);
+  local_state->SetString(prefs::kNtpWebStorePromoHeader, data.header);
+  local_state->SetString(prefs::kNtpWebStorePromoLink, data.link.spec());
+  local_state->SetString(prefs::kNtpWebStorePromoLogo, data.logo.spec());
+  local_state->SetString(prefs::kNtpWebStorePromoExpire, data.expire);
+  local_state->SetInteger(prefs::kNtpWebStorePromoUserGroup, data.user_group);
 }
 
 // static
 GURL AppsPromo::GetSourcePromoLogoURL() {
-  return GURL(GetStringPref(prefs::kNTPWebStorePromoLogoSource, ""));
+  return GURL(GetStringPref(prefs::kNtpWebStorePromoLogoSource, ""));
 }
 
 // static
 void AppsPromo::SetSourcePromoLogoURL(GURL logo_source) {
   PrefService* local_state = g_browser_process->local_state();
-  local_state->SetString(prefs::kNTPWebStorePromoLogoSource,
+  local_state->SetString(prefs::kNtpWebStorePromoLogoSource,
                          logo_source.spec());
 }
 
@@ -212,7 +212,7 @@ bool AppsPromo::ShouldShowPromo(const ExtensionIdSet& installed_ids,
   }
 
   // Don't show the promo if the policy says not to.
-  if (prefs_->GetBoolean(prefs::kNTPHideWebStorePromo)) {
+  if (prefs_->GetBoolean(prefs::kNtpHideWebStorePromo)) {
     ExpireDefaultApps();
     return false;
   }
@@ -283,11 +283,11 @@ void AppsPromo::HidePromo() {
 }
 
 std::string AppsPromo::GetLastPromoId() {
-  return prefs_->GetString(prefs::kNTPWebStorePromoLastId);
+  return prefs_->GetString(prefs::kNtpWebStorePromoLastId);
 }
 
 void AppsPromo::SetLastPromoId(const std::string& id) {
-  prefs_->SetString(prefs::kNTPWebStorePromoLastId, id);
+  prefs_->SetString(prefs::kNtpWebStorePromoLastId, id);
 }
 
 int AppsPromo::GetPromoCounter() const {
@@ -304,7 +304,7 @@ bool AppsPromo::GetDefaultAppsInstalled() const {
 
 AppsPromo::UserGroup AppsPromo::GetCurrentUserGroup() const {
   const PrefService::Preference* last_promo_id
-      = prefs_->FindPreference(prefs::kNTPWebStorePromoLastId);
+      = prefs_->FindPreference(prefs::kNtpWebStorePromoLastId);
   CHECK(last_promo_id);
   return last_promo_id->IsDefaultValue() ? USERS_NEW : USERS_EXISTING;
 }

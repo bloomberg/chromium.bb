@@ -181,7 +181,7 @@ NTPResourceCache::NTPResourceCache(Profile* profile) : profile_(profile) {
   pref_change_registrar_.Init(profile_->GetPrefs());
   pref_change_registrar_.Add(prefs::kSyncAcknowledgedSyncTypes, this);
   pref_change_registrar_.Add(prefs::kShowBookmarkBar, this);
-  pref_change_registrar_.Add(prefs::kNTPShownPage, this);
+  pref_change_registrar_.Add(prefs::kNtpShownPage, this);
   pref_change_registrar_.Add(prefs::kSyncPromoShowNTPBubble, this);
 }
 
@@ -367,11 +367,11 @@ void NTPResourceCache::CreateNewTabHTML() {
 
   // If the user has preferences for a start and end time for a custom logo,
   // and the time now is between these two times, show the custom logo.
-  if (profile_->GetPrefs()->FindPreference(prefs::kNTPCustomLogoStart) &&
-      profile_->GetPrefs()->FindPreference(prefs::kNTPCustomLogoEnd)) {
+  if (profile_->GetPrefs()->FindPreference(prefs::kNtpCustomLogoStart) &&
+      profile_->GetPrefs()->FindPreference(prefs::kNtpCustomLogoEnd)) {
     localized_strings.SetString("customlogo",
-        InDateRange(profile_->GetPrefs()->GetDouble(prefs::kNTPCustomLogoStart),
-                    profile_->GetPrefs()->GetDouble(prefs::kNTPCustomLogoEnd)) ?
+        InDateRange(profile_->GetPrefs()->GetDouble(prefs::kNtpCustomLogoStart),
+                    profile_->GetPrefs()->GetDouble(prefs::kNtpCustomLogoEnd)) ?
         "true" : "false");
   } else {
     localized_strings.SetString("customlogo", "false");
@@ -381,7 +381,7 @@ void NTPResourceCache::CreateNewTabHTML() {
   // the server, and this promo string exists, set the localized string.
   if (PromoResourceService::CanShowNotificationPromo(profile_)) {
     localized_strings.SetString("serverpromo",
-        profile_->GetPrefs()->GetString(prefs::kNTPPromoLine));
+        profile_->GetPrefs()->GetString(prefs::kNtpPromoLine));
   }
 
   // Load the new tab page appropriate for this build

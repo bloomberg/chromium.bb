@@ -412,9 +412,9 @@ void AppLauncherHandler::FillAppDictionary(DictionaryValue* dictionary) {
           extension_service_->GetAppIds()));
 
   PrefService* prefs = Profile::FromWebUI(web_ui())->GetPrefs();
-  const ListValue* app_page_names = prefs->GetList(prefs::kNTPAppPageNames);
+  const ListValue* app_page_names = prefs->GetList(prefs::kNtpAppPageNames);
   if (!app_page_names || !app_page_names->GetSize()) {
-    ListPrefUpdate update(prefs, prefs::kNTPAppPageNames);
+    ListPrefUpdate update(prefs, prefs::kNtpAppPageNames);
     ListValue* list = update.Get();
     list->Set(0, Value::CreateStringValue(
         l10n_util::GetStringUTF16(IDS_APP_DEFAULT_PAGE_NAME)));
@@ -488,7 +488,7 @@ void AppLauncherHandler::HandleGetApps(const ListValue* args) {
     pref_change_registrar_.Init(
         extension_service_->extension_prefs()->pref_service());
     pref_change_registrar_.Add(ExtensionPrefs::kExtensionsPref, this);
-    pref_change_registrar_.Add(prefs::kNTPAppPageNames, this);
+    pref_change_registrar_.Add(prefs::kNtpAppPageNames, this);
 
     registrar_.Add(this, chrome::NOTIFICATION_APP_NOTIFICATION_STATE_CHANGED,
         content::Source<Profile>(profile));
@@ -714,7 +714,7 @@ void AppLauncherHandler::HandleSaveAppPageName(const ListValue* args) {
 
   AutoReset<bool> auto_reset(&ignore_changes_, true);
   PrefService* prefs = Profile::FromWebUI(web_ui())->GetPrefs();
-  ListPrefUpdate update(prefs, prefs::kNTPAppPageNames);
+  ListPrefUpdate update(prefs, prefs::kNtpAppPageNames);
   ListValue* list = update.Get();
   list->Set(static_cast<size_t>(page_index), Value::CreateStringValue(name));
 }
@@ -839,7 +839,7 @@ void AppLauncherHandler::SetAppToBeHighlighted() {
 
 // static
 void AppLauncherHandler::RegisterUserPrefs(PrefService* pref_service) {
-  pref_service->RegisterListPref(prefs::kNTPAppPageNames,
+  pref_service->RegisterListPref(prefs::kNtpAppPageNames,
                                  PrefService::SYNCABLE_PREF);
 }
 

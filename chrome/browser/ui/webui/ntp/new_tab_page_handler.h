@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -56,7 +56,7 @@ class NewTabPageHandler : public content::WebUIMessageHandler {
   size_t page_switch_count_;
 
   // The purpose of this enum is to track which page on the NTP is showing.
-  // The lower 10 bits of kNTPShownPage are used for the index within the page
+  // The lower 10 bits of kNtpShownPage are used for the index within the page
   // group, and the rest of the bits are used for the page group ID (defined
   // here).
   static const int kPageIdOffset = 10;
