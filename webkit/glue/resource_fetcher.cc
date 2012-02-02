@@ -1,10 +1,11 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "webkit/glue/resource_fetcher.h"
 
 #include "base/logging.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebKit.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebKitPlatformSupport.h"
@@ -50,6 +51,7 @@ void ResourceFetcher::Cancel() {
 void ResourceFetcher::Start(WebFrame* frame) {
   WebURLRequest request(url_);
   request.setTargetType(target_type_);
+  request.setFirstPartyForCookies(frame->document().firstPartyForCookies());
   frame->dispatchWillSendRequest(request);
 
   loader_.reset(WebKit::webKitPlatformSupport()->createURLLoader());
