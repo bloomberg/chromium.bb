@@ -17,6 +17,7 @@
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "content/public/browser/web_contents.h"
 #include "skia/ext/skia_utils_mac.h"
+#include "ui/gfx/image/image.h"
 
 using content::WebContents;
 
@@ -42,21 +43,29 @@ class InlineHtmlContentDelegate: public content::WebContentsDelegate {
 // static
 WebIntentPicker* WebIntentPicker::Create(Browser* browser,
                                          TabContentsWrapper* wrapper,
-                                         WebIntentPickerDelegate* delegate) {
-  return new WebIntentPickerCocoa(browser, wrapper, delegate);
+                                         WebIntentPickerDelegate* delegate,
+                                         WebIntentPickerModel* model) {
+  return new WebIntentPickerCocoa(browser, wrapper, delegate, model);
 }
 
 WebIntentPickerCocoa::WebIntentPickerCocoa()
-    : delegate_(NULL), browser_(NULL), controller_(NULL) {
+    : delegate_(NULL),
+      model_(NULL),
+      browser_(NULL),
+      controller_(NULL) {
 }
 
 
 WebIntentPickerCocoa::WebIntentPickerCocoa(Browser* browser,
                                            TabContentsWrapper* wrapper,
-                                           WebIntentPickerDelegate* delegate)
-    : delegate_(delegate),
-      browser_(browser),
-      controller_(NULL) {
+                                           WebIntentPickerDelegate* delegate,
+                                           WebIntentPickerModel* model)
+   : delegate_(delegate),
+     model_(model),
+     browser_(browser),
+     controller_(NULL) {
+  model_->set_observer(this);
+
   DCHECK(browser);
   DCHECK(delegate);
   NSWindow* parentWindow = browser->window()->GetNativeHandle();
@@ -74,54 +83,58 @@ WebIntentPickerCocoa::WebIntentPickerCocoa(Browser* browser,
                                          anchoredAt:anchor];
 }
 
-void WebIntentPickerCocoa::SetServiceURLs(const std::vector<GURL>& urls) {
-  DCHECK(controller_);
-  scoped_nsobject<NSMutableArray> urlArray(
-      [[NSMutableArray alloc] initWithCapacity:urls.size()]);
-
-  for (std::vector<GURL>::const_iterator iter(urls.begin());
-       iter != urls.end(); ++iter) {
-    [urlArray addObject:
-        [NSString stringWithUTF8String:iter->spec().c_str()]];
-  }
-
-  [controller_ setServiceURLs:urlArray];
-}
-
-void WebIntentPickerCocoa::SetServiceIcon(size_t index, const SkBitmap& icon) {
-  DCHECK(controller_);
-  if (icon.empty())
-    return;
-
-  NSImage* image = gfx::SkBitmapToNSImage(icon);
-  [controller_ replaceImageAtIndex:index withImage:image];
-}
-
-void WebIntentPickerCocoa::SetDefaultServiceIcon(size_t index) {
+WebIntentPickerCocoa::~WebIntentPickerCocoa() {
+  if (model_ != NULL)
+    model_->set_observer(NULL);
 }
 
 void WebIntentPickerCocoa::Close() {
 }
 
-WebContents* WebIntentPickerCocoa::SetInlineDisposition(const GURL& url) {
-  WebContents* web_contents = WebContents::Create(
+void WebIntentPickerCocoa::OnModelChanged(WebIntentPickerModel* model) {
+  DCHECK(controller_);
+  scoped_nsobject<NSMutableArray> urlArray(
+      [[NSMutableArray alloc] initWithCapacity:model->GetItemCount()]);
+
+  for (size_t i = 0; i < model->GetItemCount(); ++i) {
+    const WebIntentPickerModel::Item& item = model->GetItemAt(i);
+
+    [urlArray addObject:
+        [NSString stringWithUTF8String:item.url.spec().c_str()]];
+    [controller_ replaceImageAtIndex:i withImage:item.favicon.ToNSImage()];
+  }
+
+  [controller_ setServiceURLs:urlArray];
+}
+
+void WebIntentPickerCocoa::OnFaviconChanged(WebIntentPickerModel* model,
+                                            size_t index) {
+  DCHECK(controller_);
+
+  const WebIntentPickerModel::Item& item = model->GetItemAt(index);
+  [controller_ replaceImageAtIndex:index withImage:item.favicon.ToNSImage()];
+}
+
+void WebIntentPickerCocoa::OnInlineDisposition(WebIntentPickerModel* model) {
+  const WebIntentPickerModel::Item& item = model->GetItemAt(
+      model->inline_disposition_index());
+
+  content::WebContents* web_contents = content::WebContents::Create(
       browser_->profile(), NULL, MSG_ROUTING_NONE, NULL, NULL);
   inline_disposition_tab_contents_.reset(new TabContentsWrapper(web_contents));
   inline_disposition_delegate_.reset(new InlineHtmlContentDelegate);
   web_contents->SetDelegate(inline_disposition_delegate_.get());
 
   inline_disposition_tab_contents_->web_contents()->GetController().LoadURL(
-      url,
+      item.url,
       content::Referrer(),
       content::PAGE_TRANSITION_START_PAGE,
       std::string());
 
   [controller_ setInlineDispositionTabContents:
       inline_disposition_tab_contents_.get()];
-  return inline_disposition_tab_contents_->web_contents();
-}
 
-WebIntentPickerCocoa::~WebIntentPickerCocoa() {
+  delegate_->OnInlineDispositionWebContentsCreated(web_contents);
 }
 
 void WebIntentPickerCocoa::OnCancelled() {
@@ -132,7 +145,8 @@ void WebIntentPickerCocoa::OnCancelled() {
 
 void WebIntentPickerCocoa::OnServiceChosen(size_t index) {
   DCHECK(delegate_);
-  delegate_->OnServiceChosen(index);
+  const WebIntentPickerModel::Item& item = model_->GetItemAt(index);
+  delegate_->OnServiceChosen(index, item.disposition);
 }
 
 void WebIntentPickerCocoa::set_controller(

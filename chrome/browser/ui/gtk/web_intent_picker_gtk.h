@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,6 +15,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/gtk/bubble/bubble_gtk.h"
 #include "chrome/browser/ui/intents/web_intent_picker.h"
+#include "chrome/browser/ui/intents/web_intent_picker_model_observer.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "ui/base/gtk/gtk_signal.h"
 #include "ui/base/gtk/owned_widget_gtk.h"
@@ -29,24 +30,30 @@ class WebIntentPickerDelegate;
 
 // Gtk implementation of WebIntentPicker.
 class WebIntentPickerGtk : public WebIntentPicker,
+                           public WebIntentPickerModelObserver,
                            public BubbleDelegateGtk {
  public:
   WebIntentPickerGtk(Browser* browser,
                      TabContentsWrapper* tab_contents,
-                     WebIntentPickerDelegate* delegate);
+                     WebIntentPickerDelegate* delegate,
+                     WebIntentPickerModel* model);
   virtual ~WebIntentPickerGtk();
 
   // WebIntentPicker implementation.
-  virtual void SetServiceURLs(const std::vector<GURL>& urls) OVERRIDE;
-  virtual void SetServiceIcon(size_t index, const SkBitmap& icon) OVERRIDE;
-  virtual void SetDefaultServiceIcon(size_t index) OVERRIDE;
   virtual void Close() OVERRIDE;
-  virtual content::WebContents* SetInlineDisposition(const GURL& url) OVERRIDE;
+
+  // WebIntentPickerModelObserver implementation.
+  virtual void OnModelChanged(WebIntentPickerModel* model) OVERRIDE;
+  virtual void OnFaviconChanged(WebIntentPickerModel* model,
+                                size_t index) OVERRIDE;
+  virtual void OnInlineDisposition(WebIntentPickerModel* model) OVERRIDE;
 
   // BubbleDelegateGtk implementation.
   virtual void BubbleClosing(BubbleGtk* bubble, bool closed_by_escape) OVERRIDE;
 
  private:
+  // Callback when picker is destroyed.
+  CHROMEGTK_CALLBACK_0(WebIntentPickerGtk, void, OnDestroy);
   // Callback when a service button is clicked.
   CHROMEGTK_CALLBACK_0(WebIntentPickerGtk, void, OnServiceButtonClick);
   // Callback when close button is clicked.
@@ -80,13 +87,16 @@ class WebIntentPickerGtk : public WebIntentPicker,
   // chooses a service or cancels.
   WebIntentPickerDelegate* delegate_;
 
+  // A weak pointer to the picker model.
+  WebIntentPickerModel* model_;
+
   // A weak pointer to the widget that contains all other widgets in
   // the bubble.
   GtkWidget* contents_;
 
-  // A weak pointer to the hbox that contains the buttons used to choose the
+  // A weak pointer to the vbox that contains the buttons used to choose the
   // service.
-  GtkWidget* button_hbox_;
+  GtkWidget* button_vbox_;
 
   // A button to close the bubble.
   scoped_ptr<CustomDrawButton> close_button_;

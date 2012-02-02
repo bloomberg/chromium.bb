@@ -10,19 +10,23 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/intents/web_intent_picker.h"
+#include "chrome/browser/ui/intents/web_intent_picker_model.h"
+#include "chrome/browser/ui/intents/web_intent_picker_model_observer.h"
 
 class InlineHtmlContentDelegate;
 class TabContentsWrapper;
 @class WebIntentBubbleController;
 
 // A bridge class that enables communication between ObjectiveC and C++.
-class WebIntentPickerCocoa : public WebIntentPicker {
+class WebIntentPickerCocoa : public WebIntentPicker,
+                             public WebIntentPickerModelObserver {
  public:
   // |browser| and |delegate| cannot be NULL.
   // |wrapper| is unused.
   WebIntentPickerCocoa(Browser* browser,
                        TabContentsWrapper* wrapper,
-                       WebIntentPickerDelegate* delegate);
+                       WebIntentPickerDelegate* delegate,
+                       WebIntentPickerModel* model);
   virtual ~WebIntentPickerCocoa();
 
   // WebIntentPickerDelegate forwarding API.
@@ -32,15 +36,20 @@ class WebIntentPickerCocoa : public WebIntentPicker {
   void set_controller(WebIntentBubbleController* controller);
 
   // WebIntentPicker:
-  virtual void SetServiceURLs(const std::vector<GURL>& urls) OVERRIDE;
-  virtual void SetServiceIcon(size_t index, const SkBitmap& icon) OVERRIDE;
-  virtual void SetDefaultServiceIcon(size_t index) OVERRIDE;
   virtual void Close() OVERRIDE;
-  virtual content::WebContents* SetInlineDisposition(const GURL& url) OVERRIDE;
+
+  // WebIntentPickerModelObserver implementation.
+  virtual void OnModelChanged(WebIntentPickerModel* model) OVERRIDE;
+  virtual void OnFaviconChanged(WebIntentPickerModel* model,
+                                size_t index) OVERRIDE;
+  virtual void OnInlineDisposition(WebIntentPickerModel* model) OVERRIDE;
 
  private:
   // Weak pointer to the |delegate_| to notify about user choice/cancellation.
   WebIntentPickerDelegate* delegate_;
+
+  // The picker model. Weak reference.
+  WebIntentPickerModel* model_;
 
   Browser* browser_;  // The browser we're in. Weak Reference.
 

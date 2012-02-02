@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,14 +18,18 @@
 
 class Browser;
 class GURL;
-class SkBitmap;
+class TabContents;
 class TabContentsWrapper;
 class WebIntentPicker;
-class WebIntentPickerFactory;
+class WebIntentPickerModel;
 
 namespace content {
 class WebContents;
 class WebIntentsDispatcher;
+}
+
+namespace gfx {
+class Image;
 }
 
 namespace webkit_glue {
@@ -38,8 +42,7 @@ class WebIntentPickerController : public content::NotificationObserver,
                                   public WebIntentPickerDelegate {
  public:
   // Takes ownership of |factory|.
-  WebIntentPickerController(TabContentsWrapper* wrapper,
-                            WebIntentPickerFactory* factory);
+  explicit WebIntentPickerController(TabContentsWrapper* wrapper);
   virtual ~WebIntentPickerController();
 
   // Sets the intent data and return pathway handler object for which
@@ -60,32 +63,43 @@ class WebIntentPickerController : public content::NotificationObserver,
                        const content::NotificationDetails& details) OVERRIDE;
 
   // WebIntentPickerDelegate implementation.
-  virtual void OnServiceChosen(size_t index) OVERRIDE;
+  virtual void OnServiceChosen(size_t index, Disposition disposition) OVERRIDE;
+  virtual void OnInlineDispositionWebContentsCreated(
+      content::WebContents* web_contents) OVERRIDE;
   virtual void OnCancelled() OVERRIDE;
   virtual void OnClosing() OVERRIDE;
 
  private:
-  // Gets a notification when the return message is sent to the source tab,
-  // so we can close the picker dialog or service tab.
-  void OnSendReturnMessage();
-
-  friend class WebIntentPickerControllerTest;
   friend class WebIntentPickerControllerBrowserTest;
   friend class InvokingTabObserver;
   class WebIntentDataFetcher;
   class FaviconFetcher;
 
-  int pending_async_count() const { return pending_async_count_; }
+  // Gets a notification when the return message is sent to the source tab,
+  // so we can close the picker dialog or service tab.
+  void OnSendReturnMessage();
+
+  // Exposed for tests only.
+  void set_picker(WebIntentPicker* picker) { picker_ = picker; }
+
+  // Exposed for tests only.
+  void set_model_observer(WebIntentPickerModelObserver* observer) {
+    picker_model_->set_observer(observer);
+  }
 
   // Called from the WebIntentDataFetcher when intent data is available.
   void OnWebIntentDataAvailable(
       const std::vector<webkit_glue::WebIntentServiceData>& services);
 
   // Called from the FaviconDataFetcher when a favicon is available.
-  void OnFaviconDataAvailable(size_t index, const SkBitmap& icon_bitmap);
+  void OnFaviconDataAvailable(size_t index, const gfx::Image& icon);
 
   // Called from the FaviconDataFetcher when a favicon is not available.
   void OnFaviconDataUnavailable(size_t index);
+
+  // Decrements the |pending_async_count_| and notifies the picker if it
+  // reaches zero.
+  void AsyncOperationFinished();
 
   // Closes the currently active picker.
   void ClosePicker();
@@ -97,9 +111,6 @@ class WebIntentPickerController : public content::NotificationObserver,
   // to close the picker ui.
   content::NotificationRegistrar registrar_;
 
-  // A factory to create a new picker.
-  scoped_ptr<WebIntentPickerFactory> picker_factory_;
-
   // A helper class to fetch web intent data asynchronously.
   scoped_ptr<WebIntentDataFetcher> web_intent_data_fetcher_;
 
@@ -109,14 +120,17 @@ class WebIntentPickerController : public content::NotificationObserver,
   // A weak pointer to the picker this controller controls.
   WebIntentPicker* picker_;
 
-  // A list of URLs to display in the UI.
-  std::vector<GURL> urls_;
-
-  // A list of the service data on display in the UI.
-  std::vector<webkit_glue::WebIntentServiceData> service_data_;
+  // The model for the picker. Owned by this controller. It should not be NULL
+  // while this controller exists, even if the picker is not shown.
+  scoped_ptr<WebIntentPickerModel> picker_model_;
 
   // A count of the outstanding asynchronous calls.
   int pending_async_count_;
+
+  // Is true if the picker is currently visible.
+  // This bool is not equivalent to picker != NULL in a unit test. In that
+  // case, a picker may be non-NULL before it is shown.
+  bool picker_shown_;
 
   // The routing object for the renderer which launched the intent.
   // Contains the intent data and a way to signal back to the client page.

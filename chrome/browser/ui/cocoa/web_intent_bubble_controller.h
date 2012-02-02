@@ -25,9 +25,6 @@ class WebIntentPickerCocoa;
   // URLs associated with the individual services.
   scoped_nsobject<NSArray> serviceURLs_;
 
-  // Default icon to use if no icon is specified.
-  scoped_nsobject<NSImage> defaultIcon_;
-
   // C++ <-> ObjectiveC bridge. Weak reference.
   WebIntentPickerCocoa* picker_;
 

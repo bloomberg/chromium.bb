@@ -35,7 +35,6 @@
 #include "chrome/browser/ui/bookmarks/bookmark_tab_helper.h"
 #include "chrome/browser/ui/constrained_window_tab_helper.h"
 #include "chrome/browser/ui/find_bar/find_tab_helper.h"
-#include "chrome/browser/ui/intents/web_intent_picker_factory_impl.h"
 #include "chrome/browser/ui/intents/web_intent_picker_controller.h"
 #include "chrome/browser/ui/pdf/pdf_tab_observer.h"
 #include "chrome/browser/ui/prefs/prefs_tab_helper.h"
@@ -104,8 +103,7 @@ TabContentsWrapper::TabContentsWrapper(WebContents* contents)
   synced_tab_delegate_.reset(new TabContentsWrapperSyncedTabDelegate(this));
   content_settings_.reset(new TabSpecificContentSettings(contents));
   translate_tab_helper_.reset(new TranslateTabHelper(contents));
-  web_intent_picker_controller_.reset(new WebIntentPickerController(
-      this, new WebIntentPickerFactoryImpl()));
+  web_intent_picker_controller_.reset(new WebIntentPickerController(this));
 
   // Create the per-tab observers.
   alternate_error_page_tab_observer_.reset(

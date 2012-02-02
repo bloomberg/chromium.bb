@@ -75,9 +75,6 @@ const CGFloat kTextWidth = kWindowWidth - (kImageSize + kImageSpacing +
         NSPointerFunctionsStrongMemory |
         NSPointerFunctionsObjectPersonality]);
 
-    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-    defaultIcon_.reset([rb.GetNativeImageNamed(IDR_DEFAULT_FAVICON) retain]);
-
     [[self bubble] setArrowLocation:info_bubble::kTopLeft];
     [self performLayout];
     [self showWindow:nil];
@@ -241,7 +238,7 @@ const CGFloat kTextWidth = kWindowWidth - (kImageSize + kImageSpacing +
     scoped_nsobject<NSButtonCell> cell([[NSButtonCell alloc] init]);
     NSImage* image = static_cast<NSImage*>([iconImages_ pointerAtIndex:i]);
     if (!image)
-      image = defaultIcon_;
+      continue;
 
     // Set cell styles so it acts as image button.
     [cell setBordered:NO];
@@ -254,7 +251,7 @@ const CGFloat kTextWidth = kWindowWidth - (kImageSize + kImageSpacing +
     [cell setEnabled:YES];
 
     [matrix putCell:cell atRow:(i / iconsPerRow) column:(i % iconsPerRow)];
-    if (serviceURLs_ && [serviceURLs_ count] >= i)
+    if (serviceURLs_ && i < [serviceURLs_ count])
       [matrix setToolTip:[serviceURLs_ objectAtIndex:i] forCell:cell];
   }
 
