@@ -271,9 +271,9 @@ int drmModeAddFB2(int fd, uint32_t width, uint32_t height,
 	f.height = height;
 	f.pixel_format = pixel_format;
 	f.flags = flags;
-	memcpy(f.handles, bo_handles, sizeof(bo_handles));
-	memcpy(f.pitches, pitches, sizeof(pitches));
-	memcpy(f.offsets, offsets, sizeof(offsets));
+	memcpy(f.handles, bo_handles, 4 * sizeof(bo_handles[0]));
+	memcpy(f.pitches, pitches, 4 * sizeof(pitches[0]));
+	memcpy(f.offsets, offsets, 4 * sizeof(offsets[0]));
 
 	if ((ret = DRM_IOCTL(fd, DRM_IOCTL_MODE_ADDFB2, &f)))
 		return ret;
