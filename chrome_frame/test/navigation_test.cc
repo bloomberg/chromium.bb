@@ -943,8 +943,9 @@ TEST_P(FullTabNavigationTest, RefreshContents) {
     return;
   }
 
-  const char kHeaders[] = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n"
-                          "X-UA-Compatible: chrome=1\r\n";
+  const char kHeaders[] =
+      "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n"
+      "X-UA-Compatible: chrome=1\r\nCache-control: no-cache\r\n";
 
   const char kBody[] =  "<html><body>Hi there. Got new content?"
                         "</body></html>";
@@ -953,10 +954,7 @@ TEST_P(FullTabNavigationTest, RefreshContents) {
 
   EXPECT_CALL(server_mock_, Get(_, StrEq(L"/refresh_src.html"), _))
       .Times(2)
-      .WillOnce(SendFast(kHeaders, kBody))
-      .WillOnce(testing::DoAll(
-          SendFast(kHeaders, kBody),
-          DelayCloseBrowserMock(&loop_, 4000, &ie_mock_)));
+      .WillRepeatedly(SendFast(kHeaders, kBody));
 
   EXPECT_CALL(ie_mock_, OnFileDownload(_, _)).Times(testing::AnyNumber());
 
@@ -970,7 +968,7 @@ TEST_P(FullTabNavigationTest, RefreshContents) {
   EXPECT_CALL(ie_mock_, OnLoad(in_cf, StrEq(src_url)))
       .Times(2)
       .WillOnce(DelayRefresh(&ie_mock_, &loop_, 50))
-      .WillOnce(testing::Return());
+      .WillOnce(CloseBrowserMock(&ie_mock_));
 
   LaunchIENavigateAndLoop(src_url,
                           kChromeFrameVeryLongNavigationTimeoutInSeconds);
@@ -1108,9 +1106,9 @@ TEST_F(FullTabDownloadTest, TopLevelPostReissueFromChromeFramePage) {
   EXPECT_CALL(ie_mock_, OnLoad(false, StrEq(src_url)));
 
   EXPECT_CALL(ie_mock_, OnLoad(true, StrEq(tgt_url)))
-      .Times(testing::Between(1,2))
+      .Times(2)
       .WillOnce(DelayRefresh(&ie_mock_, &loop_, 50))
-      .WillOnce(testing::Return());
+      .WillOnce(CloseBrowserMock(&ie_mock_));
 
   EXPECT_CALL(ie_mock_, OnBeforeNavigate2(_,
                               testing::Field(&VARIANT::bstrVal,
@@ -1120,9 +1118,7 @@ TEST_F(FullTabDownloadTest, TopLevelPostReissueFromChromeFramePage) {
   EXPECT_CALL(ie_mock_, OnNavigateComplete2(_,
                               testing::Field(&VARIANT::bstrVal,
                               StrEq(tgt_url))))
-      .Times(2)
-      .WillOnce(DelayCloseBrowserMock(&loop_, 4000, &ie_mock_))
-      .WillOnce(testing::Return());
+      .Times(2);
 
   LaunchIENavigateAndLoop(src_url,
                           kChromeFrameVeryLongNavigationTimeoutInSeconds);
@@ -1153,7 +1149,8 @@ TEST_P(FullTabNavigationTest, RefreshContentsUATest) {
                        "<body>Hi there. Got new content?"
                        "</body></html>";
 
-  std::string headers = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n";
+  std::string headers = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n"
+                        "Cache-control: no-cache\r\n";
   bool in_cf = GetParam().invokes_cf();
   if (in_cf) {
     headers.append("X-UA-Compatible: chrome=1\r\n");
@@ -1170,13 +1167,24 @@ TEST_P(FullTabNavigationTest, RefreshContentsUATest) {
 
   std::wstring src_url = server_mock_.Resolve(L"/refresh_src.html");
 
-  EXPECT_CALL(server_mock_, Get(_, StrEq(L"/refresh_src.html"),
-                                UserAgentHeaderMatcher("chromeframe")))
-      .Times(2)
-      .WillOnce(SendFast(headers, kBody))
-      .WillOnce(testing::DoAll(
-          SendFast(headers, kBody),
-          DelayCloseBrowserMock(&loop_, 4000, &ie_mock_)));
+  if (in_cf) {
+    // In the case of Chrome Frame, end the test when the second OnLoad is
+    // fired.
+    EXPECT_CALL(server_mock_, Get(_, StrEq(L"/refresh_src.html"),
+                                  UserAgentHeaderMatcher("chromeframe")))
+        .Times(2)
+        .WillRepeatedly(SendFast(headers, kBody));
+  } else {
+    // In the case of IE, we never receive a second OnLoad event, so end the
+    // test when the second request is made on the server.
+    EXPECT_CALL(server_mock_, Get(_, StrEq(L"/refresh_src.html"),
+                                  UserAgentHeaderMatcher("chromeframe")))
+        .Times(2)
+        .WillOnce(SendFast(headers, kBody))
+        .WillOnce(testing::DoAll(
+            SendFast(headers, kBody),
+            CloseBrowserMock(&ie_mock_)));
+  }
 
   EXPECT_CALL(ie_mock_, OnFileDownload(_, _)).Times(testing::AnyNumber());
 
@@ -1187,10 +1195,18 @@ TEST_P(FullTabNavigationTest, RefreshContentsUATest) {
   EXPECT_CALL(ie_mock_,
               OnNavigateComplete2(_, testing::Field(&VARIANT::bstrVal,
                                                     StrEq(src_url))));
-  EXPECT_CALL(ie_mock_, OnLoad(in_cf, StrEq(src_url)))
-      .Times(testing::Between(1, 2))
-      .WillOnce(DelayRefresh(&ie_mock_, &loop_, 50))
-      .WillOnce(testing::Return());
+  if (in_cf) {
+    // As mentioned above, end the test once the refreshed document is loaded.
+    EXPECT_CALL(ie_mock_, OnLoad(in_cf, StrEq(src_url)))
+        .Times(2)
+        .WillOnce(DelayRefresh(&ie_mock_, &loop_, 50))
+        .WillOnce(CloseBrowserMock(&ie_mock_));
+  } else {
+    // As mentioned above, we only receive an OnLoad for the intial load, not
+    // for the refresh.
+    EXPECT_CALL(ie_mock_, OnLoad(in_cf, StrEq(src_url)))
+        .WillOnce(DelayRefresh(&ie_mock_, &loop_, 50));
+  }
 
   LaunchIENavigateAndLoop(src_url,
                           kChromeFrameVeryLongNavigationTimeoutInSeconds);
