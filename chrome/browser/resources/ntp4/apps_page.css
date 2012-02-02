@@ -169,3 +169,46 @@ html[dir="rtl"] .apps-promo-extras {
 .app .invisible {
   visibility: hidden;
 }
+
+/* App install hint */
+
+.app-install-hint {
+  -webkit-transition: opacity 150ms;
+  display: block;
+  opacity: 0.8;
+  position: absolute;
+}
+
+.app-install-hint:active {
+  opacity: 1.0;
+}
+
+.app-install-hint-interior {
+  border: 5px dashed #666;
+  border-radius: 20%;
+  box-sizing: border-box;
+  height: 60%;
+  left: 20%;
+  position: absolute;
+  right: 20%;
+  top: 12.5%;
+  width: 60%;
+}
+
+.app-install-hint-interior > div {
+  border-radius: 3px;
+  height: 50%;
+  left: 44%;
+  position: absolute;
+  right: 44%;
+  top: 25%;
+  width: 12%;
+}
+
+.app-install-hint-interior > div:first-child {
+  -webkit-transform: rotate(90deg);
+}
+
+html.dragging-mode .app-install-hint {
+  opacity: 0;
+}

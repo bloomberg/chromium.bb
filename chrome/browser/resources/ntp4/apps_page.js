@@ -646,6 +646,11 @@ cr.define('ntp4', function() {
     initialize: function() {
       this.classList.add('apps-page');
 
+      if (templateData.appInstallHintEnabled) {
+        this.appInstallHint_ = $('app-install-hint-template').cloneNode(true);
+        this.content_.appendChild(this.appInstallHint_);
+      }
+
       this.addEventListener('cardselected', this.onCardSelected_);
       // Add event listeners for two events, so we can temporarily suppress
       // the app notification bubbles when the app card slides in and out of
@@ -673,6 +678,7 @@ cr.define('ntp4', function() {
         this.content_.scrollTop = this.content_.scrollHeight;
       }
       this.appendTile(new App(appData), animate);
+      this.repositionHint_();
     },
 
     /**
@@ -865,6 +871,38 @@ cr.define('ntp4', function() {
         ntp4.setCurrentDropEffect(dataTransfer, 'move');
       else
         ntp4.setCurrentDropEffect(dataTransfer, 'copy');
+    },
+
+    /**
+     * Repositions the app tile hint (to be called when tiles move).
+     * @private
+     */
+    repositionHint_: function() {
+      if (!this.appInstallHint_)
+        return;
+
+      var layout = this.layoutValues_;
+
+      var index = this.tileElements_.length;
+      var col = index % layout.numRowTiles;
+      var row = Math.floor(index / layout.numRowTiles);
+      var realX = this.tileGrid_.offsetLeft +
+          col * layout.colWidth + layout.leftMargin;
+      var realY = this.tileGrid_.offsetTop + row * layout.rowHeight;
+
+      this.appInstallHint_.style.left = realX + 'px';
+      this.appInstallHint_.style.right = realX + 'px';
+      this.appInstallHint_.style.top = realY + 'px';
+      this.appInstallHint_.style.width = layout.tileWidth + 'px';
+      this.appInstallHint_.style.height = layout.tileWidth + 'px';
+      this.appInstallHint_.querySelector('.app-install-hint-interior').
+          style.borderWidth = (layout.tileWidth / 32) + 'px';
+    },
+
+    /** @inheritDoc */
+    repositionTiles_: function(ignoreNode) {
+      TilePage.prototype.repositionTiles_.call(this, ignoreNode);
+      this.repositionHint_();
     },
   };
 

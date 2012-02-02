@@ -1,4 +1,4 @@
-/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -97,4 +97,21 @@ body {
 
 .filler .thumbnail {
   border-color: $2;  /* COLOR_NTP_BACKGROUND */
+}
+
+/* App install hint ***********************************************************/
+
+.app-install-hint:hover .app-install-hint-interior,
+.app-install-hint:active .app-install-hint-interior {
+  -webkit-box-shadow: 0 0 40px $11;  /* COLOR_NTP_SECTION_BORDER */
+  /* COLOR_NTP_SECTION_BORDER */
+  background: -webkit-radial-gradient(rgba($22, 0.3), rgba($22, 0.15));
+}
+
+.app-install-hint-interior > div {
+  background-color: $21;  /* COLOR_NTP_TEXT_LIGHT */
+}
+
+.app-install-hint-interior {
+  border-color: $21;  /* COLOR_NTP_TEXT_LIGHT */
 }

@@ -335,6 +335,9 @@ extern const char kSyncErrorsHelpURL[];
 // The URL to create a new Google account via sync.
 extern const char kSyncCreateNewAccountURL[];
 
+// The URL for the big experimental [+] on the apps pages of the NTP.
+extern const char kNtpAppInstallHintURL[];
+
 // "Debug" pages which are dangerous and not for general consumption.
 extern const char* const kChromeDebugURLs[];
 extern int kNumberOfChromeDebugURLs;

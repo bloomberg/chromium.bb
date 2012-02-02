@@ -429,6 +429,8 @@ cr.define('ntp4', function() {
 
       if (ntp4.getCurrentlyDraggingTile().firstChild.canBeRemoved())
         $('footer').classList.add('showing-trash-mode');
+
+      document.documentElement.classList.add('dragging-mode');
     },
 
     /**
@@ -446,6 +448,7 @@ cr.define('ntp4', function() {
       }
 
       $('footer').classList.remove('showing-trash-mode');
+      document.documentElement.classList.remove('dragging-mode');
     },
 
     /**

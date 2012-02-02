@@ -886,6 +886,9 @@ const char kNoStartupWindow[]               = "no-startup-window";
 // user needs to re-authenticate.
 const char kNotifyCloudPrintTokenExpired[]  = "notify-cp-token-expired";
 
+// Shows a [+] at the end of apps pages on the NTP.
+const char kNtpAppInstallHint[]             = "ntp-app-install-hint";
+
 // Specifies the maximum number of threads to use for running the Proxy
 // Autoconfig (PAC) script.
 const char kNumPacThreads[]                 = "num-pac-threads";

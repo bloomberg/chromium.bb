@@ -563,12 +563,19 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kEnableShadowDOM)
   },
   {
+    "ntp-app-install-hint",
+    IDS_FLAGS_APP_INSTALL_HINT_NAME,
+    IDS_FLAGS_APP_INSTALL_HINT_DESCRIPTION,
+    kOsAll,
+    SINGLE_VALUE_TYPE(switches::kNtpAppInstallHint)
+  },
+  {
     "enable-extension-activity-ui",
     IDS_FLAGS_ENABLE_EXTENSION_ACTIVITY_UI_NAME,
     IDS_FLAGS_ENABLE_EXTENSION_ACTIVITY_UI_DESCRIPTION,
     kOsAll,
     SINGLE_VALUE_TYPE(switches::kEnableExtensionActivityUI)
-  }
+  },
 };
 
 const Experiment* experiments = kExperiments;
