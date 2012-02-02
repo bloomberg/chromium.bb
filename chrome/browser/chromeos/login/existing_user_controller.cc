@@ -17,6 +17,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/accessibility/accessibility_util.h"
 #include "chrome/browser/chromeos/boot_times_loader.h"
 #include "chrome/browser/chromeos/cros_settings.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
@@ -29,7 +30,6 @@
 #include "chrome/browser/chromeos/login/login_display_host.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
-#include "chrome/browser/chromeos/login/wizard_accessibility_helper.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/system/statistics_provider.h"
 #include "chrome/browser/google/google_util.h"
@@ -332,9 +332,8 @@ void ExistingUserController::CompleteLoginInternal(std::string username,
       OwnershipService::OWNERSHIP_NONE;
 
   login_performer_->CompleteLogin(username, password);
-  WizardAccessibilityHelper::GetInstance()->MaybeSpeak(
-      l10n_util::GetStringUTF8(IDS_CHROMEOS_ACC_LOGIN_SIGNING_IN).c_str(),
-      false, true);
+  accessibility::MaybeSpeak(
+      l10n_util::GetStringUTF8(IDS_CHROMEOS_ACC_LOGIN_SIGNING_IN));
 }
 
 void ExistingUserController::Login(const std::string& username,
@@ -368,9 +367,8 @@ void ExistingUserController::Login(const std::string& username,
     login_performer_.reset(new LoginPerformer(delegate));
   }
   login_performer_->Login(username, password);
-  WizardAccessibilityHelper::GetInstance()->MaybeSpeak(
-      l10n_util::GetStringUTF8(IDS_CHROMEOS_ACC_LOGIN_SIGNING_IN).c_str(),
-      false, true);
+  accessibility::MaybeSpeak(
+      l10n_util::GetStringUTF8(IDS_CHROMEOS_ACC_LOGIN_SIGNING_IN));
 }
 
 void ExistingUserController::LoginAsGuest() {
@@ -401,9 +399,8 @@ void ExistingUserController::LoginAsGuest() {
   login_performer_.reset(NULL);
   login_performer_.reset(new LoginPerformer(this));
   login_performer_->LoginOffTheRecord();
-  WizardAccessibilityHelper::GetInstance()->MaybeSpeak(
-      l10n_util::GetStringUTF8(IDS_CHROMEOS_ACC_LOGIN_SIGNIN_OFFRECORD).c_str(),
-      false, true);
+  accessibility::MaybeSpeak(
+      l10n_util::GetStringUTF8(IDS_CHROMEOS_ACC_LOGIN_SIGNIN_OFFRECORD));
 }
 
 void ExistingUserController::OnUserSelected(const std::string& username) {

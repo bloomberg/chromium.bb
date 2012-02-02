@@ -6,6 +6,8 @@
 #define CHROME_BROWSER_CHROMEOS_ACCESSIBILITY_ACCESSIBILITY_UTIL_H_
 #pragma once
 
+#include <string>
+
 namespace content {
 class WebUI;
 }
@@ -33,10 +35,13 @@ void EnableVirtualKeyboard(bool enabled);
 void ToggleAccessibility(content::WebUI* login_web_ui);
 
 // Speaks the specified string.
-void Speak(const char* speak_str);
+void Speak(const std::string& utterance);
 
 // Returns true if Accessibility is enabled, or false if not.
 bool IsAccessibilityEnabled();
+
+// Speak the given text if the accessibility pref is already set.
+void MaybeSpeak(const std::string& utterance);
 
 }  // namespace accessibility
 }  // namespace chromeos

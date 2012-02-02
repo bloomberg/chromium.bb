@@ -4,10 +4,10 @@
 
 #include "chrome/browser/chromeos/login/webui_login_display.h"
 
+#include "chrome/browser/chromeos/accessibility/accessibility_util.h"
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"
 #include "chrome/browser/chromeos/input_method/xkeyboard.h"
 #include "chrome/browser/chromeos/login/webui_login_view.h"
-#include "chrome/browser/chromeos/login/wizard_accessibility_helper.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "grit/chromium_strings.h"
@@ -141,8 +141,7 @@ void WebUILoginDisplay::ShowError(int error_msg_id,
 
   webui_handler_->ShowError(login_attempts, error_text, help_link,
                             help_topic_id);
-  WizardAccessibilityHelper::GetInstance()->MaybeSpeak(
-      error_text.c_str(), false, false);
+  accessibility::MaybeSpeak(error_text);
 }
 
 // WebUILoginDisplay, SigninScreenHandlerDelegate implementation: --------------

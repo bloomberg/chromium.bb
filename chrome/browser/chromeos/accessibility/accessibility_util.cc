@@ -179,11 +179,11 @@ void ToggleAccessibility(content::WebUI* login_web_ui) {
   EnableAccessibility(accessibility_enabled, login_web_ui);
 };
 
-void Speak(const char* utterance) {
+void Speak(const std::string& utterance) {
   UtteranceContinuousParameters params;
   ExtensionTtsPlatformImpl::GetInstance()->Speak(
       -1,  // No utterance ID because we don't need a callback when it finishes.
-      utterance,
+      utterance.c_str(),
       g_browser_process->GetApplicationLocale(),
       params);
 }
@@ -196,6 +196,11 @@ bool IsAccessibilityEnabled() {
   bool accessibility_enabled = prefs &&
       prefs->GetBoolean(prefs::kSpokenFeedbackEnabled);
   return accessibility_enabled;
+}
+
+void MaybeSpeak(const std::string& utterance) {
+  if (IsAccessibilityEnabled())
+    Speak(utterance);
 }
 
 }  // namespace accessibility
