@@ -165,6 +165,7 @@ for source in gtest_sources:
                 gtest_env.NaClTargetArchSuffix('ncval_seg_sfi'),
                 gtest_env.NaClTargetArchSuffix('nc_decoder'),
                 gtest_env.NaClTargetArchSuffix('ncdis_decode_tables'),
+                gtest_env.NaClTargetArchSuffix('nc_opcode_modeling_verbose'),
                 ])
   test_node = gtest_env.CommandTest(
       source+'Tests.out',
