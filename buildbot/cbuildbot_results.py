@@ -131,7 +131,7 @@ class _Results(object):
       self._previous[record[0]] = record
 
 
-  def Report(self, out, archive_url=None, current_version=None):
+  def Report(self, out, archive_urls=None, current_version=None):
     """Generate a user friendly text display of the results data."""
     results = self._results_log
 
@@ -179,10 +179,11 @@ class _Results(object):
 
     out.write(line)
 
-    if archive_url:
+    if archive_urls:
       out.write('%s BUILD ARTIFACTS FOR THIS BUILD CAN BE FOUND AT:\n' % edge)
-      out.write('%s  %s\n' % (edge, archive_url))
-      out.write('@@@STEP_LINK@Artifacts@%s@@@\n' % archive_url)
+      for board, url in sorted(archive_urls.iteritems()):
+        out.write('%s  %s: %s\n' % (edge, board, url))
+        out.write('@@@STEP_LINK@Artifacts[%s]@%s@@@\n' % (board, url))
       out.write(line)
 
     if first_exception:

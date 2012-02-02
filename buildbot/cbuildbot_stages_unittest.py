@@ -15,7 +15,7 @@ import tempfile
 import unittest
 
 import constants
-sys.path.append(constants.SOURCE_ROOT)
+sys.path.insert(0, constants.SOURCE_ROOT)
 from chromite.buildbot import builderstage as bs
 from chromite.buildbot import cbuildbot
 from chromite.buildbot import cbuildbot_background as background
@@ -1101,7 +1101,6 @@ class BuildStagesResultsTest(unittest.TestCase):
   def testStagesReportSuccess(self):
     """Tests Stage reporting."""
 
-    bs.BuilderStage.archive_url = None
     stages.ManifestVersionedSyncStage.manifest_manager = None
 
     # Store off a known set of results and generate a report
@@ -1143,7 +1142,6 @@ class BuildStagesResultsTest(unittest.TestCase):
   def testStagesReportError(self):
     """Tests Stage reporting with exceptions."""
 
-    bs.BuilderStage.archive_url = None
     stages.ManifestVersionedSyncStage.manifest_manager = None
 
     # Store off a known set of results and generate a report
@@ -1193,7 +1191,8 @@ class BuildStagesResultsTest(unittest.TestCase):
     """Tests Release Tag entry in stages report."""
 
     current_version = "release_tag_string"
-    archive_url = 'result_url'
+    archive_urls = {'board1': 'result_url1',
+                    'board2': 'result_url2'}
 
     # Store off a known set of results and generate a report
     results_lib.Results.Clear()
@@ -1201,7 +1200,7 @@ class BuildStagesResultsTest(unittest.TestCase):
 
     results = StringIO.StringIO()
 
-    results_lib.Results.Report(results, archive_url, current_version)
+    results_lib.Results.Report(results, archive_urls, current_version)
 
     expectedResults = (
         "************************************************************\n"
@@ -1212,8 +1211,10 @@ class BuildStagesResultsTest(unittest.TestCase):
         "** PASS Pass (0:00:01)\n"
         "************************************************************\n"
         "** BUILD ARTIFACTS FOR THIS BUILD CAN BE FOUND AT:\n"
-        "**  result_url\n"
-        "@@@STEP_LINK@Artifacts@result_url@@@\n"
+        "**  board1: result_url1\n"
+        "@@@STEP_LINK@Artifacts[board1]@result_url1@@@\n"
+        "**  board2: result_url2\n"
+        "@@@STEP_LINK@Artifacts[board2]@result_url2@@@\n"
         "************************************************************\n")
 
     expectedLines = expectedResults.split('\n')

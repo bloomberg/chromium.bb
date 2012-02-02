@@ -170,7 +170,7 @@ class Builder(object):
 
     self.completed_stages_file = os.path.join(options.buildroot,
                                               '.completed_stages')
-    self.archive_url = None
+    self.archive_urls = {}
     self.release_tag = None
     self.tracking_branch = _GetChromiteTrackingBranch()
     self.gerrit_patches = None
@@ -302,7 +302,7 @@ class Builder(object):
       if print_report:
         self._WriteCheckpoint()
         print '\n\n\n@@@BUILD_STEP Report@@@\n'
-        results_lib.Results.Report(sys.stdout, self.archive_url,
+        results_lib.Results.Report(sys.stdout, self.archive_urls,
                                    self.release_tag)
         success = results_lib.Results.BuildSucceededSoFar()
 
@@ -341,7 +341,7 @@ class SimpleBuilder(Builder):
     unit_test_stage = self._GetStageInstance(stages.UnitTestStage, board)
     prebuilts_stage = self._GetStageInstance(stages.UploadPrebuiltsStage,
                                              board)
-    self.archive_url = archive_stage.GetDownloadUrl()
+    self.archive_urls[board] = archive_stage.GetDownloadUrl()
     try:
       bg.AddStep(archive_stage.Run)
       bg.start()
