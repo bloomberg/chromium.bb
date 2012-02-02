@@ -1750,6 +1750,7 @@
         'browser/sync/util/cryptographer_unittest.cc',
         'browser/sync/util/get_session_name_task_unittest.cc',
         'browser/sync/util/nigori_unittest.cc',
+        'browser/tab_contents/moving_to_content/tab_contents_view_mac_unittest.mm',
         'browser/tab_contents/render_view_context_menu_unittest.cc',
         'browser/tab_contents/thumbnail_generator_unittest.cc',
         'browser/tabs/pinned_tab_codec_unittest.cc',
