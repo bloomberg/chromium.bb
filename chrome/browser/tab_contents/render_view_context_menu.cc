@@ -1853,7 +1853,7 @@ void RenderViewContextMenu::MenuWillShow(ui::SimpleMenuModel* source) {
 
   RenderWidgetHostView* view = source_web_contents_->GetRenderWidgetHostView();
   if (view)
-    view->SetShowingContextMenu(true);
+    view->ShowingContextMenu(true);
 }
 
 void RenderViewContextMenu::MenuClosed(ui::SimpleMenuModel* source) {
@@ -1863,7 +1863,7 @@ void RenderViewContextMenu::MenuClosed(ui::SimpleMenuModel* source) {
 
   RenderWidgetHostView* view = source_web_contents_->GetRenderWidgetHostView();
   if (view)
-    view->SetShowingContextMenu(false);
+    view->ShowingContextMenu(false);
   RenderViewHost* rvh = source_web_contents_->GetRenderViewHost();
   if (rvh) {
     rvh->NotifyContextMenuClosed(params_.custom_context);

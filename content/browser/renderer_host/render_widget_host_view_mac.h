@@ -211,7 +211,7 @@ class RenderWidgetHostViewMac : public RenderWidgetHostView {
   virtual void SelectionChanged(const string16& text,
                                 size_t offset,
                                 const ui::Range& range) OVERRIDE;
-  virtual void SetShowingContextMenu(bool showing) OVERRIDE;
+  virtual void ShowingContextMenu(bool showing) OVERRIDE;
   virtual BackingStore* AllocBackingStore(const gfx::Size& size) OVERRIDE;
   virtual void OnAcceleratedCompositingStateChange() OVERRIDE;
   virtual void SetTakesFocusOnlyOnMouseDown(bool flag) OVERRIDE;
@@ -268,6 +268,9 @@ class RenderWidgetHostViewMac : public RenderWidgetHostView {
   virtual void GetScreenInfo(WebKit::WebScreenInfo* results) OVERRIDE;
   virtual gfx::Rect GetRootWindowBounds() OVERRIDE;
   virtual gfx::PluginWindowHandle GetCompositingSurface() OVERRIDE;
+
+  // Returns |true| if a context menu is currently being shown.
+  bool is_showing_context_menu() const { return is_showing_context_menu_; }
 
   void DrawAcceleratedSurfaceInstance(
       CGLContextObj context,
@@ -376,6 +379,9 @@ class RenderWidgetHostViewMac : public RenderWidgetHostView {
 
   // true if the View is not visible.
   bool is_hidden_;
+
+  // Whether we are showing a context menu.
+  bool is_showing_context_menu_;
 
   // The text to be shown in the tooltip, supplied by the renderer.
   string16 tooltip_text_;
