@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -29,8 +29,8 @@ void ObservableProvider::RemoveAllObservers() {
 }
 
 void ObservableProvider::NotifyObservers(
-    ContentSettingsPattern primary_pattern,
-    ContentSettingsPattern secondary_pattern,
+    const ContentSettingsPattern& primary_pattern,
+    const ContentSettingsPattern& secondary_pattern,
     ContentSettingsType content_type,
     std::string resource_identifier) {
   FOR_EACH_OBSERVER(Observer,

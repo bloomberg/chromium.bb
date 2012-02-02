@@ -341,8 +341,8 @@ bool HostContentSettingsMap::IsSettingAllowedForType(
 }
 
 void HostContentSettingsMap::OnContentSettingChanged(
-    ContentSettingsPattern primary_pattern,
-    ContentSettingsPattern secondary_pattern,
+    const ContentSettingsPattern& primary_pattern,
+    const ContentSettingsPattern& secondary_pattern,
     ContentSettingsType content_type,
     std::string resource_identifier) {
   const ContentSettingsDetails details(primary_pattern,
