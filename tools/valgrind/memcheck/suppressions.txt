@@ -173,6 +173,14 @@
    fun:pango_layout_line_get_extents
 }
 {
+   bug_46177_d (Third Party)
+   Memcheck:Leak
+   fun:malloc
+   fun:FcFontSetCreate
+   fun:FcFontSetSort
+   fun:FcFontSort
+}
+{
    dlopen invalid read, probably a bug in glibc.  TODO(dkegel): file glibc bug
    Memcheck:Uninitialized
    ...
