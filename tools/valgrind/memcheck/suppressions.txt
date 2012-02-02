@@ -5634,7 +5634,6 @@
    fun:_ZN7content15BrowserMainLoop23RunMainMessageLoopPartsEPb
    fun:_Z11BrowserMainRKN7content18MainFunctionParamsE
 }
-
 {
    bug_112278
    Memcheck:Uninitialized
@@ -5661,7 +5660,6 @@
    fun:vbo_exec_DrawElements
    fun:neutral_DrawElements
 }
-
 {
    bug_112315
    Memcheck:Leak
@@ -5678,7 +5676,6 @@
    fun:_ZL13GetNumObjectsPKc
    ...
 }
-
 {
    bug_112416
    Memcheck:Leak
@@ -5688,6 +5685,36 @@
    fun:FLAC__stream_encoder_process
    fun:_ZN12_GLOBAL__N_111FLACEncoder6EncodeEPKsi
    ...
+}
+{
+   bug_112450_a
+   Memcheck:Leak
+   fun:posix_memalign
+   fun:av_malloc
+   fun:av_new_packet
+   fun:av_get_packet
+   fun:wav_read_packet
+   fun:av_read_packet
+   fun:av_read_frame_internal
+   fun:av_read_frame
+   fun:av_read_frame
+   fun:_ZN5media15AudioFileReader4ReadERKSt6vectorIPfSaIS2_EEm
+   fun:_ZN12webkit_media19DecodeAudioFileDataEPN6WebKit11WebAudioBusEPKcmd
+   fun:_ZN11webkit_glue25WebKitPlatformSupportImpl17loadAudioResourceEPN6WebKit11WebAudioBusEPKcmd
+   fun:_ZN7WebCore15PlatformSupport19decodeAudioFileDataEPKcmd
+}
+{
+   bug_112450_b
+   Memcheck:Unaddressable
+   fun:_ZN7WebCore15PlatformSupport25loadPlatformAudioResourceEPKcd
+   fun:_ZN7WebCore8AudioBus20loadPlatformResourceEPKcf
+   fun:_ZN7WebCore13HRTFElevation35calculateKernelsForAzimuthElevationEiifRKN3WTF6StringERNS1_6RefPtrINS_10HRTFKernelEEES8_
+   fun:_ZN7WebCore13HRTFElevation16createForSubjectERKN3WTF6StringEif
+   fun:_ZN7WebCore12HRTFDatabaseC1Ef
+   fun:_ZN7WebCore12HRTFDatabase6createEf
+   fun:_ZN7WebCore18HRTFDatabaseLoader4loadEv
+   fun:_ZN7WebCoreL19databaseLoaderEntryEPv
+   fun:_ZN3WTFL16threadEntryPointEPv
 }
 
 #-----------------------------------------------------------------------
