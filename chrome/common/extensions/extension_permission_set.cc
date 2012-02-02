@@ -258,6 +258,9 @@ void ExtensionAPIPermission::RegisterAllPermissions(
       kPrivacy, "privacy", IDS_EXTENSION_PROMPT_WARNING_PRIVACY,
       ExtensionPermissionMessage::kPrivacy, kFlagNone, kTypeDefault);
   info->RegisterPermission(
+      kStorage, "storage", 0,
+      ExtensionPermissionMessage::kNone, kFlagNone, kTypeDefault);
+  info->RegisterPermission(
       kTab, "tabs", IDS_EXTENSION_PROMPT_WARNING_TABS,
       ExtensionPermissionMessage::kTabs, kFlagNone,
       kTypeDefault - kTypePlatformApp);

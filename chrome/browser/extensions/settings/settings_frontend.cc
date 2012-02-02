@@ -102,11 +102,11 @@ size_t GetStringAsInteger(
 
 // Constructs a |Limits| configuration by looking up the QUOTA_BYTES,
 // QUOTA_BYTES_PER_ITEM, and MAX_ITEMS properties of a storage area defined
-// in chrome/common/extensions/api/experimental.storage.json (via ExtensionAPI).
+// in chrome/common/extensions/api/storage.json (via ExtensionAPI).
 SettingsStorageQuotaEnforcer::Limits GetLimitsFromExtensionAPI(
     const std::string& storage_area_id) {
   const DictionaryValue* storage_schema =
-      ExtensionAPI::GetInstance()->GetSchema("experimental.storage");
+      ExtensionAPI::GetInstance()->GetSchema("storage");
   CHECK(storage_schema);
 
   DictionaryValue* properties = NULL;

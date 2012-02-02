@@ -60,7 +60,7 @@ class SettingsFunction : public AsyncExtensionFunction {
 
 class GetSettingsFunction : public SettingsFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.storage.get");
+  DECLARE_EXTENSION_FUNCTION_NAME("storage.get");
 
  protected:
   virtual bool RunWithStorage(SettingsStorage* storage) OVERRIDE;
@@ -68,7 +68,7 @@ class GetSettingsFunction : public SettingsFunction {
 
 class SetSettingsFunction : public SettingsFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.storage.set");
+  DECLARE_EXTENSION_FUNCTION_NAME("storage.set");
 
  protected:
   virtual bool RunWithStorage(SettingsStorage* storage) OVERRIDE;
@@ -79,7 +79,7 @@ class SetSettingsFunction : public SettingsFunction {
 
 class RemoveSettingsFunction : public SettingsFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.storage.remove");
+  DECLARE_EXTENSION_FUNCTION_NAME("storage.remove");
 
  protected:
   virtual bool RunWithStorage(SettingsStorage* storage) OVERRIDE;
@@ -90,7 +90,7 @@ class RemoveSettingsFunction : public SettingsFunction {
 
 class ClearSettingsFunction : public SettingsFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.storage.clear");
+  DECLARE_EXTENSION_FUNCTION_NAME("storage.clear");
 
  protected:
   virtual bool RunWithStorage(SettingsStorage* storage) OVERRIDE;
@@ -101,7 +101,7 @@ class ClearSettingsFunction : public SettingsFunction {
 
 class GetBytesInUseSettingsFunction : public SettingsFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.storage.getBytesInUse");
+  DECLARE_EXTENSION_FUNCTION_NAME("storage.getBytesInUse");
 
  protected:
   virtual bool RunWithStorage(SettingsStorage* storage) OVERRIDE;

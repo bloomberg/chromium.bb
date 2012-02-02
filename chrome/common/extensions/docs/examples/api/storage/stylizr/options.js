@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 // Store settings in the synchronized repository.
-var storage = chrome.experimental.storage.sync;
+var storage = chrome.storage.sync;
 
 // Get at the DOM controls used in the sample.
 var resetButton = document.querySelector('button.reset');

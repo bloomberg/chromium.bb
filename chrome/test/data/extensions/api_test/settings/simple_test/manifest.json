@@ -3,7 +3,7 @@
   "version": "1.0",
   "manifest_version": 2,
   "description": "Tests that the Storage API works.",
-  "permissions": ["experimental"],
+  "permissions": ["storage"],
   "background": {
     "scripts": ["background.js"]
   }

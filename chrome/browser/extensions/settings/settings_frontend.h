@@ -71,7 +71,7 @@ class SettingsFrontend {
       Profile* profile);
 
   // The quota limit configurations for the local and sync areas, taken out of
-  // the schema in chrome/common/extensions/api/experimental.storage.json.
+  // the schema in chrome/common/extensions/api/storage.json.
   const SettingsStorageQuotaEnforcer::Limits local_quota_limit_;
   const SettingsStorageQuotaEnforcer::Limits sync_quota_limit_;
 

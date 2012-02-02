@@ -64,7 +64,7 @@ var MODULE_SCHEMAS = [
   '../api/permissions.json',
   '../api/privacy.json',
   '../api/proxy.json',
-  '../api/experimental.storage.json',
+  '../api/storage.json',
   '../api/systemPrivate.json',
   '../api/tabs.json',
   '../api/test.json',

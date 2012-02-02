@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-var api = chrome.experimental.storage;
+var api = chrome.storage;
 var assertEq = chrome.test.assertEq;
 var inIncognitoContext = chrome.extension.inIncognitoContext;
 
