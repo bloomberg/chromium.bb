@@ -1818,3 +1818,13 @@
    fun:GetNumObjects
    ...
 }
+
+{
+   bug_112416
+   Heapcheck:Leak
+   fun:FLAC__MD5Accumulate
+   fun:process_frame_
+   fun:FLAC__stream_encoder_process
+   fun:::FLACEncoder::Encode
+   ...
+}
