@@ -174,9 +174,8 @@ class MEDIA_EXPORT AudioDecoder : public Filter {
   // Initialize a AudioDecoder with the given DemuxerStream, executing the
   // callback upon completion.
   // stats_callback is used to update global pipeline statistics.
-  //
-  // TODO(scherkus): switch to PipelineStatus callback.
-  virtual void Initialize(DemuxerStream* stream, const base::Closure& callback,
+  virtual void Initialize(DemuxerStream* stream,
+                          const PipelineStatusCB& callback,
                           const StatisticsCallback& stats_callback) = 0;
 
   // Request samples to be decoded and returned via the provided callback.
@@ -207,7 +206,8 @@ class MEDIA_EXPORT VideoRenderer : public Filter {
  public:
   // Initialize a VideoRenderer with the given VideoDecoder, executing the
   // callback upon completion.
-  virtual void Initialize(VideoDecoder* decoder, const base::Closure& callback,
+  virtual void Initialize(VideoDecoder* decoder,
+                          const PipelineStatusCB& callback,
                           const StatisticsCallback& stats_callback) = 0;
 
   // Returns true if this filter has received and processed an end-of-stream
@@ -225,7 +225,7 @@ class MEDIA_EXPORT AudioRenderer : public Filter {
   // to resume playback. Pause(), Seek(), or Stop() cancels the underflow
   // condition.
   virtual void Initialize(AudioDecoder* decoder,
-                          const base::Closure& init_callback,
+                          const PipelineStatusCB& init_callback,
                           const base::Closure& underflow_callback) = 0;
 
   // Returns true if this filter has received and processed an end-of-stream

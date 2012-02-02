@@ -1175,7 +1175,7 @@ bool Pipeline::InitializeAudioDecoder(
   pipeline_init_state_->audio_decoder_ = audio_decoder;
   audio_decoder->Initialize(
       stream,
-      base::Bind(&Pipeline::OnFilterInitialize, this, PIPELINE_OK),
+      base::Bind(&Pipeline::OnFilterInitialize, this),
       base::Bind(&Pipeline::OnUpdateStatistics, this));
   return true;
 }
@@ -1231,7 +1231,7 @@ bool Pipeline::InitializeAudioRenderer(
 
   audio_renderer_->Initialize(
       decoder,
-      base::Bind(&Pipeline::OnFilterInitialize, this, PIPELINE_OK),
+      base::Bind(&Pipeline::OnFilterInitialize, this),
       base::Bind(&Pipeline::OnAudioUnderflow, this));
   return true;
 }
@@ -1255,7 +1255,7 @@ bool Pipeline::InitializeVideoRenderer(
 
   video_renderer_->Initialize(
       decoder,
-      base::Bind(&Pipeline::OnFilterInitialize, this, PIPELINE_OK),
+      base::Bind(&Pipeline::OnFilterInitialize, this),
       base::Bind(&Pipeline::OnUpdateStatistics, this));
   return true;
 }

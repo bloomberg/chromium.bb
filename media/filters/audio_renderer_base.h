@@ -42,7 +42,7 @@ class MEDIA_EXPORT AudioRendererBase : public AudioRenderer {
 
   // AudioRenderer implementation.
   virtual void Initialize(AudioDecoder* decoder,
-                          const base::Closure& init_callback,
+                          const PipelineStatusCB& init_callback,
                           const base::Closure& underflow_callback) OVERRIDE;
   virtual bool HasEnded() OVERRIDE;
   virtual void ResumeAfterUnderflow(bool buffer_more_audio) OVERRIDE;

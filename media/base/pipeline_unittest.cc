@@ -142,7 +142,7 @@ class PipelineTest : public ::testing::Test {
   // Sets up expectations to allow the audio decoder to initialize.
   void InitializeAudioDecoder(MockDemuxerStream* stream) {
     EXPECT_CALL(*mocks_->audio_decoder(), Initialize(stream, _, _))
-        .WillOnce(Invoke(&RunFilterCallback3));
+        .WillOnce(Invoke(&RunPipelineStatusCB3));
     EXPECT_CALL(*mocks_->audio_decoder(), SetPlaybackRate(0.0f));
     EXPECT_CALL(*mocks_->audio_decoder(), Seek(base::TimeDelta(), _))
         .WillOnce(Invoke(&RunFilterStatusCB));
@@ -154,7 +154,7 @@ class PipelineTest : public ::testing::Test {
   void InitializeVideoRenderer() {
     EXPECT_CALL(*mocks_->video_renderer(),
                 Initialize(mocks_->video_decoder(), _, _))
-        .WillOnce(Invoke(&RunFilterCallback3));
+        .WillOnce(Invoke(&RunPipelineStatusCB3));
     EXPECT_CALL(*mocks_->video_renderer(), SetPlaybackRate(0.0f));
     EXPECT_CALL(*mocks_->video_renderer(),
                 Seek(mocks_->demuxer()->GetStartTime(), _))
@@ -168,12 +168,12 @@ class PipelineTest : public ::testing::Test {
     if (disable_after_init_callback) {
       EXPECT_CALL(*mocks_->audio_renderer(),
                   Initialize(mocks_->audio_decoder(), _, _))
-          .WillOnce(DoAll(Invoke(&RunFilterCallback3),
+          .WillOnce(DoAll(Invoke(&RunPipelineStatusCB3),
                           DisableAudioRenderer(mocks_->audio_renderer())));
     } else {
       EXPECT_CALL(*mocks_->audio_renderer(),
                   Initialize(mocks_->audio_decoder(), _, _))
-          .WillOnce(Invoke(&RunFilterCallback3));
+          .WillOnce(Invoke(&RunPipelineStatusCB3));
     }
     EXPECT_CALL(*mocks_->audio_renderer(), SetPlaybackRate(0.0f));
     EXPECT_CALL(*mocks_->audio_renderer(), SetVolume(1.0f));

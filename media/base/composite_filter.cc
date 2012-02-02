@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -443,17 +443,6 @@ void CompositeFilter::OnStatusCB(const base::Closure& callback,
 }
 
 void CompositeFilter::SetError(PipelineStatus error) {
-  // TODO(acolwell): Temporary hack to handle errors that occur
-  // during filter initialization. In this case we just forward
-  // the error to the host even if it is on the wrong thread. We
-  // have to do this because if we defer the call, we can't be
-  // sure the host will get the error before the "init done" callback
-  // is executed. This will be cleaned up when filter init is refactored.
-  if (state_ == kCreated) {
-    SendErrorToHost(error);
-    return;
-  }
-
   if (message_loop_ != MessageLoop::current()) {
     message_loop_->PostTask(FROM_HERE,
         base::Bind(&CompositeFilter::SetError, this, error));
@@ -461,6 +450,7 @@ void CompositeFilter::SetError(PipelineStatus error) {
   }
 
   DCHECK_EQ(message_loop_, MessageLoop::current());
+  DCHECK_NE(state_, kCreated);
 
   // Drop errors recieved while stopping or stopped.
   // This shields the owner of this object from having

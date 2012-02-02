@@ -95,7 +95,7 @@ class AudioRendererBaseTest : public ::testing::Test {
     EXPECT_CALL(*renderer_, OnInitialize(_, _, _))
         .WillOnce(Return(true));
     renderer_->Initialize(
-        decoder_, NewExpectedClosure(), NewUnderflowClosure());
+        decoder_, NewExpectedStatusCB(PIPELINE_OK), NewUnderflowClosure());
   }
 
   void Preroll() {
@@ -221,8 +221,10 @@ class AudioRendererBaseTest : public ::testing::Test {
 TEST_F(AudioRendererBaseTest, Initialize_Failed) {
   EXPECT_CALL(*renderer_, OnInitialize(_, _, _))
       .WillOnce(Return(false));
-  EXPECT_CALL(host_, SetError(PIPELINE_ERROR_INITIALIZATION_FAILED));
-  renderer_->Initialize(decoder_, NewExpectedClosure(), NewUnderflowClosure());
+  renderer_->Initialize(
+      decoder_,
+      NewExpectedStatusCB(PIPELINE_ERROR_INITIALIZATION_FAILED),
+      NewUnderflowClosure());
 
   // We should have no reads.
   EXPECT_TRUE(read_cb_.is_null());
@@ -231,7 +233,8 @@ TEST_F(AudioRendererBaseTest, Initialize_Failed) {
 TEST_F(AudioRendererBaseTest, Initialize_Successful) {
   EXPECT_CALL(*renderer_, OnInitialize(_, _, _))
       .WillOnce(Return(true));
-  renderer_->Initialize(decoder_, NewExpectedClosure(), NewUnderflowClosure());
+  renderer_->Initialize(decoder_, NewExpectedStatusCB(PIPELINE_OK),
+                        NewUnderflowClosure());
 
   // We should have no reads.
   EXPECT_TRUE(read_cb_.is_null());

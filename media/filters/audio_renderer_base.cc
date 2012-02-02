@@ -83,7 +83,7 @@ void AudioRendererBase::Seek(base::TimeDelta time, const FilterStatusCB& cb) {
 }
 
 void AudioRendererBase::Initialize(AudioDecoder* decoder,
-                                   const base::Closure& init_callback,
+                                   const PipelineStatusCB& init_callback,
                                    const base::Closure& underflow_callback) {
   DCHECK(decoder);
   DCHECK(!init_callback.is_null());
@@ -108,14 +108,13 @@ void AudioRendererBase::Initialize(AudioDecoder* decoder,
 
   // Give the subclass an opportunity to initialize itself.
   if (!OnInitialize(bits_per_channel, channel_layout, sample_rate)) {
-    host()->SetError(PIPELINE_ERROR_INITIALIZATION_FAILED);
-    init_callback.Run();
+    init_callback.Run(PIPELINE_ERROR_INITIALIZATION_FAILED);
     return;
   }
 
   // Finally, execute the start callback.
   state_ = kPaused;
-  init_callback.Run();
+  init_callback.Run(PIPELINE_OK);
 }
 
 bool AudioRendererBase::HasEnded() {

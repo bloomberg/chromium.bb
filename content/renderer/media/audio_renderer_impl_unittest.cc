@@ -105,7 +105,8 @@ class AudioRendererImplTest
 
     // Create and initialize the audio renderer.
     renderer_ = new TestAudioRendererImpl(default_sink.get());
-    renderer_->Initialize(decoder_, media::NewExpectedClosure(),
+    renderer_->Initialize(decoder_,
+                          media::NewExpectedStatusCB(media::PIPELINE_OK),
                           NewUnderflowClosure());
 
     // We need an event to verify that all tasks are done before leaving

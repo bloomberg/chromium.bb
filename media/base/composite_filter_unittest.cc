@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -747,11 +747,6 @@ TEST_F(CompositeFilterTest, TestErrorWhilePlaying) {
   InSequence sequence;
 
   SetupAndAdd2Filters();
-
-  // Simulate an error on |filter_2_| while in kCreated state. This
-  // can happen if an error occurs during filter initialization.
-  EXPECT_CALL(*mock_filter_host_, SetError(PIPELINE_ERROR_OUT_OF_MEMORY));
-  filter_2_->host()->SetError(PIPELINE_ERROR_OUT_OF_MEMORY);
 
   DoPlay();
 
