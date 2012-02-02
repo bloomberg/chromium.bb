@@ -1,4 +1,4 @@
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -28,6 +28,7 @@ def CommonChecks(input_api, output_api, tests_to_black_list):
       r'^cpplint\.py$',
       r'^cpplint_chromium\.py$',
       r'^python_bin[\/\\].+',
+      r'^site-packages-py[0-9]\.[0-9][\/\\].+',
       r'^svn_bin[\/\\].+',
       r'^testing_support[\/\\]_rietveld[\/\\].+']
   results.extend(input_api.canned_checks.RunPylint(
