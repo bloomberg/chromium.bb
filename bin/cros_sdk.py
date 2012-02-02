@@ -93,11 +93,27 @@ def FetchRemoteTarball(url):
   cmd = ['curl', '-f', '--retry', '5', '-L', '-y', '30',
          '--output', tarball_dest]
 
-  if not url.startswith('file://'):
+  if not url.startswith('file://') and os.path.exists(tarball_dest):
     # Only resume for remote URLs. If the file is local, there's no
     # real speedup, and using the same filename for different files
     # locally will cause issues.
     cmd.extend(['-C', '-'])
+
+    # Additionally, certain versions of curl incorrectly fail if
+    # told to resume a file that is fully downloaded, thus do a
+    # check on our own.
+    # see:
+    # https://sourceforge.net/tracker/?func=detail&atid=100976&aid=3482927&group_id=976
+    result = cros_build_lib.RunCommand(['curl', '-I', url],
+                                       redirect_stdout=True, print_cmd=False)
+    for x in result.output.splitlines():
+      if x.lower().startswith("content-length:"):
+        length = int(x.split(":", 1)[-1].strip())
+        if length == os.path.getsize(tarball_dest):
+          # Fully fetched; bypass invoking curl, since it can screw up handling
+          # of this (>=7.21.4 and up).
+          return tarball_dest
+        break
 
   cmd.append(url)
 
