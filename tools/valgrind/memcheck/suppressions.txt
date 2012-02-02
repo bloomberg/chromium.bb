@@ -5671,6 +5671,17 @@
    ...
 }
 
+{
+   bug_112416
+   Memcheck:Leak
+   ...
+   fun:FLAC__MD5Accumulate
+   fun:process_frame_
+   fun:FLAC__stream_encoder_process
+   fun:_ZN12_GLOBAL__N_111FLACEncoder6EncodeEPKsi
+   ...
+}
+
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations
 
