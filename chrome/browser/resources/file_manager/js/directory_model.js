@@ -37,6 +37,9 @@ function DirectoryModel(root, singleSelection) {
 
   // True if we should filter out files that start with a dot.
   this.filterHidden_ = true;
+
+  // Readonly status for removable volumes.
+  this.readonly_ = false;
 }
 
 /**
@@ -116,8 +119,32 @@ DirectoryModel.prototype = {
     return DirectoryModel.getRootPath(this.currentEntry.fullPath);
   },
 
+  get rootType() {
+    return DirectoryModel.getRootType(this.currentEntry.fullPath);
+  },
+
+  /**
+   * True if current directory is read only. Value may be set
+   * for directories on a removable device.
+   * @type {boolean}
+   */
   get readonly() {
-    return this.isSystemDirectoy;
+    switch (this.rootType) {
+      case DirectoryModel.RootType.REMOVABLE:
+        return this.readonly_;
+      case DirectoryModel.RootType.ARCHIVE:
+        return true;
+      case DirectoryModel.RootType.CHROMEBOOK:
+        return false;
+      default:
+        return true;
+    }
+  },
+
+  set readonly(value) {
+    if (this.rootType == DirectoryModel.RootType.REMOVABLE) {
+      this.readonly_ = !!value;
+    }
   },
 
   get isSystemDirectoy() {
@@ -439,6 +466,7 @@ DirectoryModel.prototype = {
       this.changeDirectoryEntry_(dirEntry, autoSelect, false);
     }.bind(this);
 
+    this.readonly_ = false;
     if (path == '/')
       return onDirectoryResolved(this.root_);
 

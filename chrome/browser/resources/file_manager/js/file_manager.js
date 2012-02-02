@@ -477,6 +477,7 @@ FileManager.prototype = {
     // The list of active mount points to distinct them from other directories.
     chrome.fileBrowserPrivate.getMountPoints(function(mountPoints) {
       self.mountPoints_ = mountPoints;
+      self.updateVolumeMetadata_();
       onDone();
     });
 
@@ -2208,6 +2209,7 @@ FileManager.prototype = {
     var self = this;
     chrome.fileBrowserPrivate.getMountPoints(function(mountPoints) {
       self.mountPoints_ = mountPoints;
+      self.updateVolumeMetadata_();
       var changeDirectoryTo = null;
 
       if (event.eventType == 'mount') {
@@ -2968,6 +2970,31 @@ FileManager.prototype = {
           }
       });
     }
+
+    this.updateVolumeMetadata_();
+  };
+
+  FileManager.prototype.updateVolumeMetadata_ = function() {
+    var dm = this.directoryModel_;
+    var mp = this.mountPoints_;
+    if (!dm || !mp)
+      return;
+
+    var rootPath = normalizeAbsolutePath(dm.rootPath);
+    var mountPoint = mp.filter(function(p) {
+      return normalizeAbsolutePath(p.mountPath) == rootPath;
+    })[0];
+
+    if (!mountPoint)
+      return;
+
+    dm.readonly = true;
+    var current = dm.currentEntry;
+    chrome.fileBrowserPrivate.getVolumeMetadata(mountPoint.sourceUrl,
+                                                function(metadata) {
+      if (metadata && dm.currentEntry == current)
+        dm.readonly = metadata.isReadOnly;
+    });
   };
 
   FileManager.prototype.findListItemForEvent_ = function(event) {
