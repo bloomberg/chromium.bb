@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -36,7 +36,7 @@ class FakeSpeechInputManager : public SpeechInputManager {
       : caller_id_(0),
         delegate_(NULL),
         did_cancel_all_(false),
-        send_fake_response_(true) {
+        should_send_fake_response_(true) {
   }
 
   std::string grammar() {
@@ -47,8 +47,12 @@ class FakeSpeechInputManager : public SpeechInputManager {
     return did_cancel_all_;
   }
 
-  void set_send_fake_response(bool send) {
-    send_fake_response_ = send;
+  void set_should_send_fake_response(bool send) {
+    should_send_fake_response_ = send;
+  }
+
+  bool should_send_fake_response() {
+    return should_send_fake_response_;
   }
 
   // SpeechInputManager methods.
@@ -65,7 +69,7 @@ class FakeSpeechInputManager : public SpeechInputManager {
     caller_id_ = caller_id;
     delegate_ = delegate;
     grammar_ = grammar;
-    if (send_fake_response_) {
+    if (should_send_fake_response_) {
       // Give the fake result in a short while.
       MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
           &FakeSpeechInputManager::SetFakeRecognitionResult,
@@ -93,7 +97,7 @@ class FakeSpeechInputManager : public SpeechInputManager {
     // delegate_ is set to NULL if a fake result was received (see below), so
     // check that delegate_ matches the incoming parameter only when there is
     // no fake result sent.
-    EXPECT_TRUE(send_fake_response_ || delegate_ == delegate);
+    EXPECT_TRUE(should_send_fake_response_ || delegate_ == delegate);
     did_cancel_all_ = true;
   }
 
@@ -134,7 +138,7 @@ class FakeSpeechInputManager : public SpeechInputManager {
   Delegate* delegate_;
   std::string grammar_;
   bool did_cancel_all_;
-  bool send_fake_response_;
+  bool should_send_fake_response_;
 };
 
 class SpeechInputBrowserTest : public InProcessBrowserTest {
@@ -167,10 +171,16 @@ class SpeechInputBrowserTest : public InProcessBrowserTest {
     ui_test_utils::WindowedNotificationObserver observer(
         content::NOTIFICATION_LOAD_STOP,
         content::Source<NavigationController>(&web_contents->GetController()));
+
     web_contents->GetRenderViewHost()->ForwardMouseEvent(mouse_event);
     mouse_event.type = WebKit::WebInputEvent::MouseUp;
     web_contents->GetRenderViewHost()->ForwardMouseEvent(mouse_event);
-    observer.Wait();
+
+    // We should wait for a navigation event, raised by the test page JS code
+    // upon the onwebkitspeechchange event, in all cases except when the
+    // speech response is inhibited.
+    if (fake_speech_input_manager_.should_send_fake_response())
+      observer.Wait();
   }
 
   void RunSpeechInputTest(const FilePath::CharType* filename) {
@@ -184,7 +194,7 @@ class SpeechInputBrowserTest : public InProcessBrowserTest {
 
   // InProcessBrowserTest methods.
   virtual void SetUpInProcessBrowserTestFixture() {
-    fake_speech_input_manager_.set_send_fake_response(true);
+    fake_speech_input_manager_.set_should_send_fake_response(true);
     speech_input_manager_ = &fake_speech_input_manager_;
 
     // Inject the fake manager factory so that the test result is returned to
@@ -205,8 +215,6 @@ class SpeechInputBrowserTest : public InProcessBrowserTest {
 
 SpeechInputManager* SpeechInputBrowserTest::speech_input_manager_ = NULL;
 
-// Marked as DISABLED due to http://crbug.com/51337
-//
 // TODO(satish): Once this flakiness has been fixed, add a second test here to
 // check for sending many clicks in succession to the speech button and verify
 // that it doesn't cause any crash but works as expected. This should act as the
@@ -216,36 +224,23 @@ SpeechInputManager* SpeechInputBrowserTest::speech_input_manager_ = NULL;
 // another test here to check that when speech recognition is in progress and
 // a renderer crashes, we get a call to
 // SpeechInputManager::CancelAllRequestsWithDelegate.
-//
-// Marked as DISABLED due to http://crbug.com/71227
-#if defined(GOOGLE_CHROME_BUILD)
-#define MAYBE_TestBasicRecognition DISABLED_TestBasicRecognition
-#else
-#define MAYBE_TestBasicRecognition TestBasicRecognition
-#endif
-IN_PROC_BROWSER_TEST_F(SpeechInputBrowserTest, MAYBE_TestBasicRecognition) {
+IN_PROC_BROWSER_TEST_F(SpeechInputBrowserTest, TestBasicRecognition) {
   RunSpeechInputTest(FILE_PATH_LITERAL("basic_recognition.html"));
   EXPECT_TRUE(fake_speech_input_manager_.grammar().empty());
 }
 
-// Marked as FLAKY due to http://crbug.com/51337
-// Marked as DISALBED due to http://crbug.com/71227
-#if defined(GOOGLE_CHROME_BUILD)
-#define MAYBE_GrammarAttribute DISABLED_GrammarAttribute
-#else
-#define MAYBE_GrammarAttribute GrammarAttribute
-#endif
-IN_PROC_BROWSER_TEST_F(SpeechInputBrowserTest, MAYBE_GrammarAttribute) {
+IN_PROC_BROWSER_TEST_F(SpeechInputBrowserTest, GrammarAttribute) {
   RunSpeechInputTest(FILE_PATH_LITERAL("grammar_attribute.html"));
   EXPECT_EQ("http://example.com/grammar.xml",
             fake_speech_input_manager_.grammar());
 }
 
-// Marked as DISABLED due to http://crbug.com/71227
-IN_PROC_BROWSER_TEST_F(SpeechInputBrowserTest, DISABLED_TestCancelAll) {
+IN_PROC_BROWSER_TEST_F(SpeechInputBrowserTest, TestCancelAll) {
   // The test checks that the cancel-all callback gets issued when a session
   // is pending, so don't send a fake response.
-  fake_speech_input_manager_.set_send_fake_response(false);
+  // We are not expecting a navigation event being raised from the JS of the
+  // test page JavaScript in this case.
+  fake_speech_input_manager_.set_should_send_fake_response(false);
 
   LoadAndStartSpeechInputTest(FILE_PATH_LITERAL("basic_recognition.html"));
 
