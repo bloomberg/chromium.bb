@@ -15,11 +15,11 @@ typedef TabModalConfirmDialogMac TabModalConfirmDialog;
 #elif defined(TOOLKIT_GTK)
 #include "chrome/browser/ui/gtk/tab_modal_confirm_dialog_gtk.h"
 typedef TabModalConfirmDialogGtk TabModalConfirmDialog;
-#elif defined(OS_CHROMEOS) || defined(USE_AURA)
+#elif defined(OS_CHROMEOS) && !defined(USE_AURA)
 #include "chrome/browser/ui/webui/constrained_html_ui.h"
 #include "chrome/browser/ui/webui/tab_modal_confirm_dialog_webui.h"
 typedef TabModalConfirmDialogWebUI TabModalConfirmDialog;
-#elif defined(OS_WIN)
+#else
 #include "chrome/browser/ui/views/tab_modal_confirm_dialog_views.h"
 typedef TabModalConfirmDialogViews TabModalConfirmDialog;
 #endif

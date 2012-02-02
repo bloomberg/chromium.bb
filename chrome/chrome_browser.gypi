@@ -5109,8 +5109,6 @@
                 ['include', '^browser/ui/webui/collected_cookies_ui_delegate.h'],
                 ['include', '^browser/ui/webui/cookies_tree_model_adapter.cc'],
                 ['include', '^browser/ui/webui/cookies_tree_model_adapter.h'],
-                ['include', '^browser/ui/webui/tab_modal_confirm_dialog_webui.cc'],
-                ['include', '^browser/ui/webui/tab_modal_confirm_dialog_webui.h'],
 
                 ['include', '^browser/ui/window_sizer.cc'],
                 ['include', '^browser/ui/window_sizer.h'],
@@ -5141,7 +5139,7 @@
                 ['exclude', '^browser/ui/webui/cookies_tree_model_adapter.cc'],
                 ['exclude', '^browser/ui/webui/cookies_tree_model_adapter.h'],
                 ['exclude', '^browser/ui/webui/tab_modal_confirm_dialog_webui.cc'],
-                ['exclude', '^browser/ui/webui/tab_modal_confirm_dialog_webui.h'],
+                ['exclude', '^browser/ui/webui/tab_modal_confirm_dialog_webui.h'],                
               ]
             }],
             # Exclude these toolkit_views specific files again.
@@ -5251,6 +5249,8 @@
                 ['exclude', '^browser/ui/views/download/download_shelf_context_menu_view.h'],
                 ['exclude', '^browser/ui/views/download/download_shelf_view.cc'],
                 ['exclude', '^browser/ui/views/download/download_shelf_view.h'],
+                ['include', '^browser/ui/webui/tab_modal_confirm_dialog_webui.cc'],
+                ['include', '^browser/ui/webui/tab_modal_confirm_dialog_webui.h'],
               ],
             }],
             ['chromeos==1',{
@@ -5388,6 +5388,12 @@
             ['include', '^browser/chromeos/notifications/system_notification.h'],
             ['include', '^browser/chromeos/notifications/system_notification_factory.cc'],
             ['include', '^browser/chromeos/notifications/system_notification_factory.h'],
+          ],
+        }],
+        ['use_aura==1', {
+          'sources/': [
+            ['include', '^browser/ui/views/tab_modal_confirm_dialog_views.cc'],
+            ['include', '^browser/ui/views/tab_modal_confirm_dialog_views.h'],
           ],
         }],
         ['enable_plugin_installation==0', {
