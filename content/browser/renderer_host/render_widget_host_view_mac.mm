@@ -235,7 +235,6 @@ RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget)
       text_input_type_(ui::TEXT_INPUT_TYPE_NONE),
       is_loading_(false),
       is_hidden_(false),
-      is_showing_context_menu_(false),
       weak_factory_(this),
       accelerated_compositing_active_(false),
       needs_gpu_visibility_update_after_repaint_(false),
@@ -497,7 +496,7 @@ void RenderWidgetHostViewMac::UpdateCursorIfNecessary() {
   // a page? TODO(avi): decide
 
   // Don't update the cursor if a context menu is being shown.
-  if (is_showing_context_menu_)
+  if (showing_context_menu())
     return;
 
   // Can we synchronize to the event stream? Switch to -[NSWindow
@@ -694,9 +693,8 @@ void RenderWidgetHostViewMac::SelectionChanged(const string16& text,
   }
 }
 
-void RenderWidgetHostViewMac::ShowingContextMenu(bool showing) {
-  DCHECK_NE(is_showing_context_menu_, showing);
-  is_showing_context_menu_ = showing;
+void RenderWidgetHostViewMac::SetShowingContextMenu(bool showing) {
+  RenderWidgetHostView::SetShowingContextMenu(showing);
 
   // If the menu was closed, restore the cursor to the saved version initially,
   // as the renderer will not re-send it if there was no change.

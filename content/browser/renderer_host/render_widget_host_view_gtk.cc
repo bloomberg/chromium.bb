@@ -244,7 +244,7 @@ class RenderWidgetHostViewGtkWidget {
     gdk_window_set_cursor(gtk_widget_get_window(widget), NULL);
     // If we are showing a context menu, maintain the illusion that webkit has
     // focus.
-    if (!host_view->is_showing_context_menu_) {
+    if (!host_view->showing_context_menu()) {
       host_view->GetRenderWidgetHost()->SetActive(false);
       host_view->GetRenderWidgetHost()->Blur();
     }
@@ -566,7 +566,6 @@ RenderWidgetHostViewGtk::RenderWidgetHostViewGtk(RenderWidgetHost* widget_host)
       about_to_validate_and_paint_(false),
       is_hidden_(false),
       is_loading_(false),
-      is_showing_context_menu_(false),
       parent_(NULL),
       is_popup_first_mouse_release_(true),
       was_imcontext_focused_before_grab_(false),
@@ -931,10 +930,6 @@ void RenderWidgetHostViewGtk::SelectionBoundsChanged(
     const gfx::Rect& start_rect,
     const gfx::Rect& end_rect) {
   im_context_->UpdateCaretBounds(start_rect.Union(end_rect));
-}
-
-void RenderWidgetHostViewGtk::ShowingContextMenu(bool showing) {
-  is_showing_context_menu_ = showing;
 }
 
 #if !defined(TOOLKIT_VIEWS)
