@@ -272,6 +272,7 @@ void SyncSetupHandler::GetStaticLocalizedValues(
     { "unrecoverableErrorHelpURL", IDS_SYNC_UNRECOVERABLE_ERROR_HELP_URL },
     { "cannotAccessAccount", IDS_SYNC_CANNOT_ACCESS_ACCOUNT },
     { "cancel", IDS_CANCEL },
+    { "loginSuccess", IDS_SYNC_SUCCESS },
     { "settingUp", IDS_SYNC_LOGIN_SETTING_UP },
     { "errorSigningIn", IDS_SYNC_ERROR_SIGNING_IN },
     { "signinHeader", IDS_SYNC_PROMO_SIGNIN_HEADER},
