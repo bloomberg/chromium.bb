@@ -6,10 +6,13 @@
 #define CHROME_FRAME_TEST_MOCK_IE_EVENT_SINK_ACTIONS_H_
 
 #include <windows.h>
+#include <algorithm>
 #include <string>
 
 #include "base/basictypes.h"
 #include "base/bind.h"
+#include "base/string_util.h"
+#include "base/string16.h"
 #include "base/threading/platform_thread.h"
 #include "base/time.h"
 #include "chrome/common/chrome_switches.h"
@@ -30,6 +33,37 @@ MATCHER_P(UrlPathEq, url, "equals the path and query portion of the url") {
 
 MATCHER_P(AccSatisfies, matcher, "satisfies the given AccObjectMatcher") {
   return matcher.DoesMatch(arg);
+}
+
+// Returns true if the title of the page rendered in the window |arg| equals
+// |the_title|. For pages rendered in Chrome, the title of the parent of |arg|
+// is the page title. For pages rendered in IE, the title of the grandparent of
+// |arg| begins with the page title. To handle both cases, attempt a prefix
+// match on each window starting with the parent of |arg|.
+MATCHER_P(TabContentsTitleEq, the_title, "") {
+  const string16 title(the_title);
+  DCHECK(!title.empty());
+  HWND parent = GetParent(arg);
+  if (parent != NULL) {
+    string16 parent_title(255, L'\0');
+    std::ostringstream titles_found(std::string("titles found: "));
+    string16 first_title;
+    do {
+      parent_title.resize(255, L'\0');
+      parent_title.resize(GetWindowText(parent, &parent_title[0],
+                                        parent_title.size()));
+      if (parent_title.size() >= title.size() &&
+          std::equal(title.begin(), title.end(), parent_title.begin())) {
+          return true;
+      }
+      titles_found << "\"" << UTF16ToASCII(parent_title) << "\" ";
+      parent = GetParent(parent);
+    } while(parent != NULL);
+    *result_listener << titles_found.str();
+  } else {
+    *result_listener << "the window has no parent";
+  }
+  return false;
 }
 
 // IWebBrowser2 actions

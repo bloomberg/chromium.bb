@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -192,10 +192,12 @@ TEST_P(FullTabNavigationTest, FLAKY_MultipleBackForward) {
 
 // Test multiple back and forward operations among urls with anchors.
 TEST_P(FullTabNavigationTest, BackForwardAnchor) {
+  std::wstring title(GetAnchorPageTitle());
   bool in_cf = GetParam().invokes_cf();
   ie_mock_.ExpectAnyNavigations();
   server_mock_.ExpectAndServeAnyRequests(GetParam());
   MockAccEventObserver acc_observer;
+  EXPECT_CALL(acc_observer, OnAccDocLoad(_)).Times(testing::AnyNumber());
 
   // Navigate to anchor 1.
   // Back/Forward state at this point:
@@ -203,9 +205,9 @@ TEST_P(FullTabNavigationTest, BackForwardAnchor) {
   // Forward: 0
   EXPECT_CALL(ie_mock_, OnLoad(in_cf, StrEq(GetAnchorPageUrl(0))))
       .Times(testing::AtMost(1));
-  EXPECT_CALL(acc_observer, OnAccDocLoad(_))
+  EXPECT_CALL(acc_observer, OnAccDocLoad(TabContentsTitleEq(title)))
       .WillOnce(AccDoDefaultAction(AccObjectMatcher(L"*1", L"link")))
-      .WillRepeatedly(testing::Return());
+      .RetiresOnSaturation();
 
   InSequence expect_in_sequence_for_scope;
   // Navigate to anchor 2 after the previous navigation is complete
@@ -335,18 +337,18 @@ TEST_P(FullTabNavigationTest, DISABLED_JavascriptWindowOpenDifferentDomain) {
     LOG(ERROR) << "Test disabled for this configuration.";
     return;
   }
-  std::wstring parent_url =
-      GetTestUrl(L"window_open.html?http://www.nonexistent.com");
+  std::wstring parent_url = GetWindowOpenUrl(L"http://www.nonexistent.com");
   MockAccEventObserver acc_observer;
   MockIEEventSink new_window_mock;
   ie_mock_.ExpectAnyNavigations();
   new_window_mock.ExpectAnyNavigations();
   server_mock_.ExpectAndServeAnyRequests(GetParam());
+  EXPECT_CALL(acc_observer, OnAccDocLoad(_)).Times(testing::AnyNumber());
 
   EXPECT_CALL(ie_mock_, OnLoad(GetParam().invokes_cf(), StrEq(parent_url)));
-  EXPECT_CALL(acc_observer, OnAccDocLoad(_))
-      .WillOnce(AccLeftClick(AccObjectMatcher()))
-      .WillRepeatedly(testing::Return());
+  EXPECT_CALL(acc_observer,
+              OnAccDocLoad(TabContentsTitleEq(GetWindowOpenTitle())))
+      .WillOnce(AccLeftClick(AccObjectMatcher()));
 
   ie_mock_.ExpectNewWindow(&new_window_mock);
   EXPECT_CALL(new_window_mock, OnNavigateError(_, _, _, _, _))
@@ -377,19 +379,20 @@ TEST_P(FullTabNavigationTest, JavascriptWindowOpenCanClose) {
     return;
   }
 
-  std::wstring parent_url = GetTestUrl(L"window_open.html?simple.html");
+  std::wstring parent_url = GetWindowOpenUrl(L"simple.html");
   MockAccEventObserver acc_observer;
   MockIEEventSink new_window_mock;
   ie_mock_.ExpectAnyNavigations();
   new_window_mock.ExpectAnyNavigations();
   server_mock_.ExpectAndServeAnyRequests(GetParam());
+  EXPECT_CALL(acc_observer, OnAccDocLoad(_)).Times(testing::AnyNumber());
 
   // Tell the page to open the popup. Some versions of IE will prevent a popup
   // unless a click is involved.
   EXPECT_CALL(ie_mock_, OnLoad(GetParam().invokes_cf(), StrEq(parent_url)));
-  EXPECT_CALL(acc_observer, OnAccDocLoad(_))
-      .WillOnce(AccLeftClick(AccObjectMatcher()))
-      .WillRepeatedly(testing::Return());
+  EXPECT_CALL(acc_observer,
+              OnAccDocLoad(TabContentsTitleEq(GetWindowOpenTitle())))
+      .WillOnce(AccLeftClick(AccObjectMatcher()));
 
   ie_mock_.ExpectNewWindow(&new_window_mock);
   EXPECT_CALL(new_window_mock, OnLoad(_, StrEq(GetSimplePageUrl())))
@@ -472,19 +475,20 @@ TEST_P(NavigationTransitionTest, JavascriptWindowOpen) {
     return;
   }
 
-  std::wstring parent_url = GetTestUrl(L"window_open.html?simple.html");
+  std::wstring parent_url = GetWindowOpenUrl(L"simple.html");
   std::wstring new_window_url = GetSimplePageUrl();
   MockAccEventObserver acc_observer;
   testing::StrictMock<MockIEEventSink> new_window_mock;
 
+  EXPECT_CALL(acc_observer, OnAccDocLoad(_)).Times(testing::AnyNumber());
   ie_mock_.ExpectNavigation(page1_.invokes_cf(), parent_url);
   server_mock_.ExpectAndServeRequest(page1_, parent_url);
   EXPECT_CALL(ie_mock_, OnLoad(page1_.invokes_cf(), StrEq(parent_url)));
   // Tell the page to open the popup. Some versions of IE will prevent a popup
   // unless a click is involved.
-  EXPECT_CALL(acc_observer, OnAccDocLoad(_))
-      .WillOnce(AccLeftClick(AccObjectMatcher()))
-      .WillRepeatedly(testing::Return());
+  EXPECT_CALL(acc_observer,
+              OnAccDocLoad(TabContentsTitleEq(GetWindowOpenTitle())))
+      .WillOnce(AccLeftClick(AccObjectMatcher()));
 
   // If the parent window is in CF, the child should always load in CF since
   // the domain is the same.
@@ -544,7 +548,8 @@ TEST_P(NavigationTransitionTest, FollowLink) {
       .Times(testing::Between(1, 2))
       .WillRepeatedly(SendResponse(&server_mock_, page1_));
   EXPECT_CALL(ie_mock_, OnLoad(page1_.invokes_cf(), StrEq(GetLinkPageUrl())));
-  EXPECT_CALL(acc_observer, OnAccDocLoad(_))
+  EXPECT_CALL(acc_observer,
+              OnAccDocLoad(TabContentsTitleEq(GetLinkPageTitle())))
       .WillOnce(AccDoDefaultAction(AccObjectMatcher(L"", L"link")))
       .RetiresOnSaturation();
 
@@ -659,14 +664,15 @@ TEST_P(FullTabNavigationTest, FormPostBackForward) {
   std::wstring kFormPostUrl = GetTestUrl(L"form-get.html");
   std::wstring kFormPostActionUrl =
       GetTestUrl(L"action.html?field1=a&field2=b&submit=Submit");
+  std::wstring kFormPostTitle(L"ChromeFrame form submit test(GET method)");
 
   MockAccEventObserver acc_observer;
   server_mock_.ExpectAndServeAnyRequests(GetParam());
+  EXPECT_CALL(acc_observer, OnAccDocLoad(_)).Times(testing::AnyNumber());
 
-  EXPECT_CALL(acc_observer, OnAccDocLoad(_))
-      .Times(testing::AtLeast(1))
+  EXPECT_CALL(acc_observer, OnAccDocLoad(TabContentsTitleEq(kFormPostTitle)))
       .WillOnce(AccDoDefaultAction(AccObjectMatcher(L"Submit")))
-      .WillRepeatedly(testing::Return());
+      .RetiresOnSaturation();
 
   InSequence expect_in_sequence_for_scope;
 
@@ -1202,13 +1208,14 @@ TEST_F(FullTabNavigationTest, JavascriptWindowOpenNoReferrerOpensInHost) {
   }
 
   MockAccEventObserver acc_observer;
+  EXPECT_CALL(acc_observer, OnAccDocLoad(_)).Times(testing::AnyNumber());
 
   testing::StrictMock<MockIEEventSink> new_window_mock;
   testing::StrictMock<MockIEEventSink>
       no_referrer_target_opener_window_mock;
 
   std::wstring initial_url =
-      GetTestUrl(L"window_open.html?open_href_target_no_referrer.html");
+      GetWindowOpenUrl(L"open_href_target_no_referrer.html");
 
   std::wstring parent_url = GetTestUrl(
       L"open_href_target_no_referrer.html");
@@ -1218,9 +1225,10 @@ TEST_F(FullTabNavigationTest, JavascriptWindowOpenNoReferrerOpensInHost) {
   ie_mock_.ExpectNavigation(false, initial_url);
   EXPECT_CALL(ie_mock_, OnLoad(false, StrEq(initial_url)));
 
-  EXPECT_CALL(acc_observer, OnAccDocLoad(_))
+  EXPECT_CALL(acc_observer,
+              OnAccDocLoad(TabContentsTitleEq(GetWindowOpenTitle())))
       .WillOnce(AccLeftClick(AccObjectMatcher()))
-      .WillRepeatedly(testing::Return());
+      .RetiresOnSaturation();
 
   ie_mock_.ExpectNewWindow(&no_referrer_target_opener_window_mock);
 
