@@ -261,7 +261,11 @@ DirectoryModel.prototype = {
     }
 
     var fileList = [];
-    var successCallback = this.replaceFileList_.bind(this, fileList);
+    var successCallback = (function() {
+      this.replaceFileList_(fileList);
+      cr.dispatchSimpleEvent(this, 'rescan-completed');
+    }).bind(this);
+
     if (this.runningScan_) {
       if (!this.pendingScan_)
         this.pendingScan_ = this.createScanner_(fileList, successCallback);
@@ -368,12 +372,12 @@ DirectoryModel.prototype = {
     for (var i = 0; i < entries.length; i++) {
       var entry = entries[i];
 
-      function onSuccess() {
-        var index = fileList.indexOf(entry);
+      var onSuccess = function(removedEntry) {
+        var index = fileList.indexOf(removedEntry);
         if (index >= 0)
           fileList.splice(index, 1);
         onComplete();
-      }
+      }.bind(null, entry);
 
       if (entry.isFile) {
         entry.remove(

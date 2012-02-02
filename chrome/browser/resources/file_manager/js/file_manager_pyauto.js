@@ -97,7 +97,14 @@ var pyautoAPI = {
    * Paste items from clipboard.
    */
   pasteItems: function() {
-    fileManager.pasteFromClipboard(this.sendDone_);
+    var dm = fileManager.directoryModel_;
+    var onRescan = function() {
+      dm.removeEventListener('rescan-completed', onRescan);
+      this.sendDone_();
+    }.bind(this);
+
+    dm.addEventListener('rescan-completed', onRescan);
+    fileManager.pasteFromClipboard();
   },
 
   /**
