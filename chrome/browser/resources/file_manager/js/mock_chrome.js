@@ -2,6 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+function MockEventSource() {
+  this.listeners_ = [];
+}
+
+MockEventSource.prototype.addListener = function(listener) {
+  this.listeners_.push(listener);
+};
+
+MockEventSource.prototype.notify = function(var_args) {
+  for (var i = 0; i != this.listeners_.length; i++) {
+    this.listeners_[i].apply(null, arguments);
+  }
+};
+
 /**
  * Mock out the chrome.fileBrowserPrivate API for use in the harness.
  */
@@ -53,18 +67,12 @@ chrome.fileBrowserPrivate = {
   /**
    * Disk mount/unmount notification.
    */
-  onMountCompleted: {
-    callbacks: [],
-    addListener: function(cb) { this.callbacks.push(cb) }
-  },
+  onMountCompleted: new MockEventSource(),
 
   /**
    * File system change notification.
    */
-  onFileChanged: {
-    callbacks: [],
-    addListener: function(cb) { this.callbacks.push(cb) }
-  },
+  onFileChanged: new MockEventSource(),
 
   /**
    * File watchers.
@@ -139,36 +147,24 @@ chrome.fileBrowserPrivate = {
         toURL: function() { return url; }
       };
     }
-    var details = {entries: urlList.map(createEntry)};
-    var listeners = chrome.fileBrowserHandler.onExecute.listeners_;
-    for (var listener, index = 0; listener = listeners[index]; ++index) {
-      listener(taskId, details);
-    }
+    chrome.fileBrowserHandler.onExecute.notify(
+        taskId, {entries: urlList.map(createEntry)});
   },
 
   /**
    * Event fired on mount and unmount operations.
    */
-  onDiskChanged: {
-    listeners_: [],
-    addListener: function(listener) {
-      chrome.fileBrowserPrivate.onDiskChanged.listeners_.push(listener);
-    }
-  },
+  onDiskChanged: new MockEventSource(),
 
   addMount: function(source, type, options) {
-    var event = {
+    chrome.fileBrowserPrivate.onDiskChanged.notify({
       eventType: 'added',
       volumeInfo: {
         devicePath: source,
         type: type,
         mountPath: '/'
       }
-    };
-    var listeners = chrome.fileBrowserPrivate.onDiskChanged.listeners_;
-    for (var listener, index = 0; listener = listeners[index]; ++index) {
-      listener(event);
-    }
+    });
   },
 
   getMountPoints: function(callback) {
@@ -181,18 +177,14 @@ chrome.fileBrowserPrivate = {
 
   removeMount: function(mountPoint) {
     console.log('unmounted: ' + mountPoint);
-    var event = {
+    chrome.fileBrowserPrivate.onDiskChanged.notify({
       eventType: 'removed',
       volumeInfo: {
         devicePath: '',
         type: '',
         mountPath: mountPoint
       }
-    };
-    var listeners = chrome.fileBrowserPrivate.onDiskChanged.listeners_;
-    for (var listener, index = 0; listener = listeners[index]; ++index) {
-      listener(event);
-    }
+    });
   },
 
   getSizeStats: function() {},
@@ -380,12 +372,7 @@ chrome.test = {
 };
 
 chrome.fileBrowserHandler = {
-  onExecute: {
-    listeners_: [],
-    addListener: function(listener) {
-      chrome.fileBrowserHandler.onExecute.listeners_.push(listener);
-    }
-  }
+  onExecute: new MockEventSource()
 };
 
 chrome.tabs = {

@@ -24,6 +24,9 @@ var harness = {
           function () {});
       util.getOrCreateDirectory(filesystem.root, '/removable/disk2',
           function () {});
+
+      var iframe = document.getElementById('dialog');
+      iframe.setAttribute('src', 'main.html' + document.location.search);
     }
 
     window.webkitStorageInfo.requestQuota(
@@ -44,9 +47,6 @@ var harness = {
     var input = document.getElementById('default-path');
     input.value = this.params.defaultPath || '';
     input.addEventListener('keyup', this.onInputKeyUp.bind(this));
-
-    var iframe = document.getElementById('dialog');
-    iframe.setAttribute('src', 'main.html' + document.location.search);
   },
 
   onInputKeyUp: function(event) {
@@ -106,6 +106,9 @@ var harness = {
   get pyautoAPI() {
     return document.getElementById('dialog').contentWindow.pyautoAPI;
   },
+  get chrome() {
+    return document.getElementById('dialog').contentWindow.chrome;
+  },
 
   /**
    * Import a list of File objects into harness.filesystem.
@@ -140,6 +143,9 @@ var harness = {
     function processNextFile() {
       if (files.length == 0) {
         console.log('Import complete: ' + importCount + ' file(s)');
+        harness.chrome.fileBrowserPrivate.onFileChanged.notify({
+          fileUrl: harness.fileManager.getCurrentDirectoryURL()
+        });
         return;
       }
 

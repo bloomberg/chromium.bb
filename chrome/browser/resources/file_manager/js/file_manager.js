@@ -2490,6 +2490,14 @@ FileManager.prototype = {
         this.directoryModel_.currentEntry.fullPath;
   };
 
+  /**
+   * Return URL of the current directory or null.
+   */
+  FileManager.prototype.getCurrentDirectoryURL = function() {
+    return this.directoryModel_ &&
+        this.directoryModel_.currentEntry.toURL();
+  };
+
   FileManager.prototype.deleteEntries = function(entries, force, opt_callback) {
     if (!force) {
       var self = this;
@@ -2927,7 +2935,7 @@ FileManager.prototype = {
     if (this.subscribedOnDirectoryChanges_) {
       this.subscribedOnDirectoryChanges_ = false;
       chrome.fileBrowserPrivate.removeFileWatch(
-          this.directoryModel_.currentEntry.toURL(),
+          this.getCurrentDirectoryURL(),
           function(result) {
             if (!result) {
               console.log('Failed to remove file watch');
@@ -2938,7 +2946,7 @@ FileManager.prototype = {
 
   FileManager.prototype.onFileChanged_ = function(event) {
     // We receive a lot of events even in folders we are not interested in.
-    if (event.fileUrl == this.directoryModel_.currentEntry.toURL())
+    if (event.fileUrl == this.getCurrentDirectoryURL())
       this.directoryModel_.rescanLater();
   };
 
@@ -3372,7 +3380,7 @@ FileManager.prototype = {
    * @param {Event} event The click event.
    */
   FileManager.prototype.onOk_ = function(event) {
-    var currentDirUrl = this.directoryModel_.currentEntry.toURL();
+    var currentDirUrl = this.getCurrentDirectoryURL();
 
     if (currentDirUrl.charAt(currentDirUrl.length - 1) != '/')
       currentDirUrl += '/';
