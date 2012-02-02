@@ -204,11 +204,16 @@ class MEDIA_EXPORT AudioDecoder : public Filter {
 
 class MEDIA_EXPORT VideoRenderer : public Filter {
  public:
+  // Used to update the pipeline's clock time. The parameter is the time that
+  // the clock should not exceed.
+  typedef base::Callback<void(base::TimeDelta)> VideoTimeCB;
+
   // Initialize a VideoRenderer with the given VideoDecoder, executing the
   // callback upon completion.
   virtual void Initialize(VideoDecoder* decoder,
                           const PipelineStatusCB& callback,
-                          const StatisticsCallback& stats_callback) = 0;
+                          const StatisticsCallback& stats_callback,
+                          const VideoTimeCB& time_cb) = 0;
 
   // Returns true if this filter has received and processed an end-of-stream
   // buffer.
@@ -218,6 +223,11 @@ class MEDIA_EXPORT VideoRenderer : public Filter {
 
 class MEDIA_EXPORT AudioRenderer : public Filter {
  public:
+  // Used to update the pipeline's clock time. The first parameter is the
+  // current time, and the second parameter is the time that the clock must not
+  // exceed.
+  typedef base::Callback<void(base::TimeDelta, base::TimeDelta)> AudioTimeCB;
+
   // Initialize a AudioRenderer with the given AudioDecoder, executing the
   // |init_callback| upon completion. |underflow_callback| is called when the
   // renderer runs out of data to pass to the audio card during playback.
@@ -226,7 +236,8 @@ class MEDIA_EXPORT AudioRenderer : public Filter {
   // condition.
   virtual void Initialize(AudioDecoder* decoder,
                           const PipelineStatusCB& init_callback,
-                          const base::Closure& underflow_callback) = 0;
+                          const base::Closure& underflow_callback,
+                          const AudioTimeCB& time_cb) = 0;
 
   // Returns true if this filter has received and processed an end-of-stream
   // buffer.

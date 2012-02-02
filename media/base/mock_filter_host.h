@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -27,17 +27,9 @@ class MockFilterHost : public FilterHost {
   MOCK_METHOD1(SetError, void(PipelineStatus error));
   MOCK_CONST_METHOD0(GetDuration, base::TimeDelta());
   MOCK_CONST_METHOD0(GetTime, base::TimeDelta());
-  MOCK_METHOD1(SetTime, void(base::TimeDelta time));
-  MOCK_METHOD1(SetDuration, void(base::TimeDelta duration));
-  MOCK_METHOD1(SetBufferedTime, void(base::TimeDelta buffered_time));
-  MOCK_METHOD1(SetTotalBytes, void(int64 total_bytes));
-  MOCK_METHOD1(SetBufferedBytes, void(int64 buffered_bytes));
   MOCK_METHOD1(SetNaturalVideoSize, void(const gfx::Size& size));
-  MOCK_METHOD1(SetNetworkActivity, void(bool network_activity));
   MOCK_METHOD0(NotifyEnded, void());
   MOCK_METHOD0(DisableAudioRenderer, void());
-  MOCK_METHOD1(SetCurrentReadPosition, void(int64 offset));
-  MOCK_METHOD0(GetCurrentReadPosition, int64());
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockFilterHost);

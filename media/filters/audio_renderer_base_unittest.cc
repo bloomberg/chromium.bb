@@ -91,11 +91,22 @@ class AudioRendererBaseTest : public ::testing::Test {
                       base::Unretained(this));
   }
 
+  void OnAudioTimeCallback(
+      base::TimeDelta current_time, base::TimeDelta max_time) {
+    CHECK(current_time <= max_time);
+  }
+
+  AudioRenderer::AudioTimeCB NewAudioTimeClosure() {
+    return base::Bind(&AudioRendererBaseTest::OnAudioTimeCallback,
+                      base::Unretained(this));
+  }
+
   void Initialize() {
     EXPECT_CALL(*renderer_, OnInitialize(_, _, _))
         .WillOnce(Return(true));
     renderer_->Initialize(
-        decoder_, NewExpectedStatusCB(PIPELINE_OK), NewUnderflowClosure());
+        decoder_, NewExpectedStatusCB(PIPELINE_OK), NewUnderflowClosure(),
+        NewAudioTimeClosure());
   }
 
   void Preroll() {
@@ -224,7 +235,7 @@ TEST_F(AudioRendererBaseTest, Initialize_Failed) {
   renderer_->Initialize(
       decoder_,
       NewExpectedStatusCB(PIPELINE_ERROR_INITIALIZATION_FAILED),
-      NewUnderflowClosure());
+      NewUnderflowClosure(), NewAudioTimeClosure());
 
   // We should have no reads.
   EXPECT_TRUE(read_cb_.is_null());
@@ -234,7 +245,7 @@ TEST_F(AudioRendererBaseTest, Initialize_Successful) {
   EXPECT_CALL(*renderer_, OnInitialize(_, _, _))
       .WillOnce(Return(true));
   renderer_->Initialize(decoder_, NewExpectedStatusCB(PIPELINE_OK),
-                        NewUnderflowClosure());
+                        NewUnderflowClosure(), NewAudioTimeClosure());
 
   // We should have no reads.
   EXPECT_TRUE(read_cb_.is_null());
@@ -357,7 +368,6 @@ TEST_F(AudioRendererBaseTest, Underflow_EndOfStream) {
   EXPECT_CALL(host_, NotifyEnded());
 
   EXPECT_CALL(host_, GetTime()).WillOnce(Return(base::TimeDelta()));
-  EXPECT_CALL(host_, SetTime(_));
   EXPECT_FALSE(ConsumeBufferedData(kDataSize, &muted));
   EXPECT_FALSE(muted);
 }

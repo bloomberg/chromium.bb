@@ -57,6 +57,8 @@ void AudioRendererBase::Stop(const base::Closure& callback) {
     base::AutoLock auto_lock(lock_);
     state_ = kStopped;
     algorithm_.reset(NULL);
+    audio_time_cb_.Reset();
+    underflow_callback_.Reset();
   }
   if (!callback.is_null()) {
     callback.Run();
@@ -84,13 +86,16 @@ void AudioRendererBase::Seek(base::TimeDelta time, const FilterStatusCB& cb) {
 
 void AudioRendererBase::Initialize(AudioDecoder* decoder,
                                    const PipelineStatusCB& init_callback,
-                                   const base::Closure& underflow_callback) {
+                                   const base::Closure& underflow_callback,
+                                   const AudioTimeCB& audio_time_cb) {
   DCHECK(decoder);
   DCHECK(!init_callback.is_null());
   DCHECK(!underflow_callback.is_null());
+  DCHECK(!audio_time_cb.is_null());
   DCHECK_EQ(kUninitialized, state_);
   decoder_ = decoder;
   underflow_callback_ = underflow_callback;
+  audio_time_cb_ = audio_time_cb;
 
   // Create a callback so our algorithm can request more reads.
   base::Closure cb = base::Bind(&AudioRendererBase::ScheduleRead_Locked, this);
@@ -249,17 +254,11 @@ uint32 AudioRendererBase::FillBuffer(uint8* dest,
   }
 
   // Update the pipeline's time if it was set last time.
+  base::TimeDelta new_current_time = last_fill_buffer_time - playback_delay;
   if (last_fill_buffer_time.InMicroseconds() > 0 &&
       (last_fill_buffer_time != last_fill_buffer_time_ ||
-       (last_fill_buffer_time - playback_delay) > host()->GetTime())) {
-    // Adjust the |last_fill_buffer_time| with the playback delay.
-    // TODO(hclam): If there is a playback delay, the pipeline would not be
-    // updated with a correct timestamp when the stream is played at the very
-    // end since we use decoded packets to trigger time updates. A better
-    // solution is to start a timer when an audio packet is decoded to allow
-    // finer time update events.
-    last_fill_buffer_time -= playback_delay;
-    host()->SetTime(last_fill_buffer_time);
+       new_current_time > host()->GetTime())) {
+    audio_time_cb_.Run(new_current_time, last_fill_buffer_time);
   }
 
   if (!underflow_cb.is_null())

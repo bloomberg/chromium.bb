@@ -214,11 +214,7 @@ base::TimeDelta Pipeline::GetCurrentTime() const {
 
 base::TimeDelta Pipeline::GetCurrentTime_Locked() const {
   lock_.AssertAcquired();
-  base::TimeDelta elapsed = clock_->Elapsed();
-  if (elapsed > duration_)
-    return duration_;
-
-  return elapsed;
+  return clock_->Elapsed();
 }
 
 base::TimeDelta Pipeline::GetBufferedTime() {
@@ -226,8 +222,8 @@ base::TimeDelta Pipeline::GetBufferedTime() {
 
   // If media is fully loaded, then return duration.
   if (local_source_ || total_bytes_ == buffered_bytes_) {
-    max_buffered_time_ = duration_;
-    return duration_;
+    max_buffered_time_ = clock_->Duration();
+    return max_buffered_time_;
   }
 
   base::TimeDelta current_time = GetCurrentTime_Locked();
@@ -241,7 +237,8 @@ base::TimeDelta Pipeline::GetBufferedTime() {
 
   // If buffered time was not set, we use current time, current bytes, and
   // buffered bytes to estimate the buffered time.
-  double estimated_rate = duration_.InMillisecondsF() / total_bytes_;
+  double estimated_rate =
+      clock_->Duration().InMillisecondsF() / total_bytes_;
   double estimated_current_time = estimated_rate * current_bytes_;
   DCHECK_GE(buffered_bytes_, current_bytes_);
   base::TimeDelta buffered_time = base::TimeDelta::FromMilliseconds(
@@ -249,7 +246,7 @@ base::TimeDelta Pipeline::GetBufferedTime() {
                          estimated_current_time));
 
   // Cap approximated buffered time at the length of the video.
-  buffered_time = std::min(buffered_time, duration_);
+  buffered_time = std::min(buffered_time, clock_->Duration());
 
   // Make sure buffered_time is at least the current time
   buffered_time = std::max(buffered_time, current_time);
@@ -262,7 +259,7 @@ base::TimeDelta Pipeline::GetBufferedTime() {
 
 base::TimeDelta Pipeline::GetMediaDuration() const {
   base::AutoLock auto_lock(lock_);
-  return duration_;
+  return clock_->Duration();
 }
 
 int64 Pipeline::GetBufferedBytes() const {
@@ -323,7 +320,6 @@ void Pipeline::ResetState() {
   tearing_down_     = false;
   error_caused_teardown_ = false;
   playback_rate_change_pending_ = false;
-  duration_         = kZero;
   buffered_time_    = kZero;
   buffered_bytes_   = 0;
   streaming_        = false;
@@ -339,7 +335,7 @@ void Pipeline::ResetState() {
   has_video_        = false;
   waiting_for_clock_update_ = false;
   audio_disabled_   = false;
-  clock_->SetTime(kZero);
+  clock_->Reset();
   download_rate_monitor_.Reset();
 }
 
@@ -451,20 +447,31 @@ base::TimeDelta Pipeline::GetDuration() const {
   return GetMediaDuration();
 }
 
-void Pipeline::SetTime(base::TimeDelta time) {
+void Pipeline::OnAudioTimeUpdate(base::TimeDelta time,
+                                     base::TimeDelta max_time) {
+  DCHECK(time <= max_time);
   DCHECK(IsRunning());
   base::AutoLock auto_lock(lock_);
 
-  // If we were waiting for a valid timestamp and such timestamp arrives, we
-  // need to clear the flag for waiting and start the clock.
-  if (waiting_for_clock_update_) {
-    if (time < clock_->Elapsed())
-      return;
-    clock_->SetTime(time);
-    StartClockIfWaitingForTimeUpdate_Locked();
+  if (!has_audio_)
     return;
-  }
-  clock_->SetTime(time);
+  if (waiting_for_clock_update_ && time < clock_->Elapsed())
+    return;
+
+  clock_->SetTime(time, max_time);
+  StartClockIfWaitingForTimeUpdate_Locked();
+}
+
+void Pipeline::OnVideoTimeUpdate(base::TimeDelta max_time) {
+  DCHECK(IsRunning());
+  base::AutoLock auto_lock(lock_);
+
+  if (has_audio_)
+    return;
+
+  DCHECK(!waiting_for_clock_update_);
+  DCHECK(clock_->Elapsed() <= max_time);
+  clock_->SetMaxTime(max_time);
 }
 
 void Pipeline::SetDuration(base::TimeDelta duration) {
@@ -475,7 +482,7 @@ void Pipeline::SetDuration(base::TimeDelta duration) {
   UMA_HISTOGRAM_LONG_TIMES("Media.Duration", duration);
 
   base::AutoLock auto_lock(lock_);
-  duration_ = duration;
+  clock_->SetDuration(duration);
 }
 
 void Pipeline::SetBufferedTime(base::TimeDelta buffered_time) {
@@ -903,6 +910,7 @@ void Pipeline::NotifyEndedTask() {
     // Start clock since there is no more audio to
     // trigger clock updates.
     base::AutoLock auto_lock(lock_);
+    clock_->SetMaxTime(clock_->Duration());
     StartClockIfWaitingForTimeUpdate_Locked();
   }
 
@@ -914,8 +922,7 @@ void Pipeline::NotifyEndedTask() {
   SetState(kEnded);
   {
     base::AutoLock auto_lock(lock_);
-    clock_->Pause();
-    clock_->SetTime(duration_);
+    clock_->EndOfStream();
   }
 
   if (!ended_callback_.is_null()) {
@@ -947,6 +954,7 @@ void Pipeline::DisableAudioRendererTask() {
 
   // Start clock since there is no more audio to
   // trigger clock updates.
+  clock_->SetMaxTime(clock_->Duration());
   StartClockIfWaitingForTimeUpdate_Locked();
 }
 
@@ -975,7 +983,7 @@ void Pipeline::FilterStateTransitionTask() {
   SetState(FindNextState(state_));
   if (state_ == kSeeking) {
     base::AutoLock auto_lock(lock_);
-    clock_->SetTime(seek_timestamp_);
+    clock_->SetTime(seek_timestamp_, seek_timestamp_);
   }
 
   // Carry out the action for the current state.
@@ -1014,8 +1022,10 @@ void Pipeline::FilterStateTransitionTask() {
     // We use audio stream to update the clock. So if there is such a stream,
     // we pause the clock until we receive a valid timestamp.
     waiting_for_clock_update_ = true;
-    if (!has_audio_)
+    if (!has_audio_) {
+      clock_->SetMaxTime(clock_->Duration());
       StartClockIfWaitingForTimeUpdate_Locked();
+    }
 
     // Start monitoring rate of downloading.
     int bitrate = 0;
@@ -1144,7 +1154,7 @@ void Pipeline::OnDemuxerBuilt(PipelineStatus status, Demuxer* demuxer) {
     base::AutoLock auto_lock(lock_);
     // We do not want to start the clock running. We only want to set the base
     // media time so our timestamp calculations will be correct.
-    clock_->SetTime(demuxer_->GetStartTime());
+    clock_->SetTime(demuxer_->GetStartTime(), demuxer_->GetStartTime());
   }
 
   OnFilterInitialize(PIPELINE_OK);
@@ -1232,7 +1242,9 @@ bool Pipeline::InitializeAudioRenderer(
   audio_renderer_->Initialize(
       decoder,
       base::Bind(&Pipeline::OnFilterInitialize, this),
-      base::Bind(&Pipeline::OnAudioUnderflow, this));
+      base::Bind(&Pipeline::OnAudioUnderflow, this),
+      base::Bind(&Pipeline::OnAudioTimeUpdate, this));
+
   return true;
 }
 
@@ -1256,7 +1268,8 @@ bool Pipeline::InitializeVideoRenderer(
   video_renderer_->Initialize(
       decoder,
       base::Bind(&Pipeline::OnFilterInitialize, this),
-      base::Bind(&Pipeline::OnUpdateStatistics, this));
+      base::Bind(&Pipeline::OnUpdateStatistics, this),
+      base::Bind(&Pipeline::OnVideoTimeUpdate, this));
   return true;
 }
 

@@ -21,7 +21,6 @@ class CompositeFilter::FilterHostImpl : public FilterHost {
   virtual void SetError(PipelineStatus error) OVERRIDE;
   virtual base::TimeDelta GetTime() const OVERRIDE;
   virtual base::TimeDelta GetDuration() const OVERRIDE;
-  virtual void SetTime(base::TimeDelta time) OVERRIDE;
   virtual void SetNaturalVideoSize(const gfx::Size& size) OVERRIDE;
   virtual void NotifyEnded() OVERRIDE;
   virtual void DisableAudioRenderer() OVERRIDE;
@@ -484,10 +483,6 @@ base::TimeDelta CompositeFilter::FilterHostImpl::GetTime() const {
 
 base::TimeDelta CompositeFilter::FilterHostImpl::GetDuration() const {
   return host_->GetDuration();
-}
-
-void CompositeFilter::FilterHostImpl::SetTime(base::TimeDelta time) {
-  host_->SetTime(time);
 }
 
 void CompositeFilter::FilterHostImpl::SetNaturalVideoSize(

@@ -36,10 +36,6 @@ class MEDIA_EXPORT FilterHost {
   // Gets the duration.
   virtual base::TimeDelta GetDuration() const = 0;
 
-  // Updates the current time.  Other filters should poll to examine the updated
-  // time.
-  virtual void SetTime(base::TimeDelta time) = 0;
-
   // Sets the natural size of the video output in pixel units.
   virtual void SetNaturalVideoSize(const gfx::Size& size) = 0;
 

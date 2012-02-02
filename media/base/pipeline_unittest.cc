@@ -153,8 +153,8 @@ class PipelineTest : public ::testing::Test {
   // Sets up expectations to allow the video renderer to initialize.
   void InitializeVideoRenderer() {
     EXPECT_CALL(*mocks_->video_renderer(),
-                Initialize(mocks_->video_decoder(), _, _))
-        .WillOnce(Invoke(&RunPipelineStatusCB3));
+                Initialize(mocks_->video_decoder(), _, _, _))
+        .WillOnce(Invoke(&RunPipelineStatusCB4));
     EXPECT_CALL(*mocks_->video_renderer(), SetPlaybackRate(0.0f));
     EXPECT_CALL(*mocks_->video_renderer(),
                 Seek(mocks_->demuxer()->GetStartTime(), _))
@@ -167,13 +167,13 @@ class PipelineTest : public ::testing::Test {
   void InitializeAudioRenderer(bool disable_after_init_callback = false) {
     if (disable_after_init_callback) {
       EXPECT_CALL(*mocks_->audio_renderer(),
-                  Initialize(mocks_->audio_decoder(), _, _))
-          .WillOnce(DoAll(Invoke(&RunPipelineStatusCB3),
+                  Initialize(mocks_->audio_decoder(), _, _, _))
+          .WillOnce(DoAll(Invoke(&RunPipelineStatusCB4),
                           DisableAudioRenderer(mocks_->audio_renderer())));
     } else {
       EXPECT_CALL(*mocks_->audio_renderer(),
-                  Initialize(mocks_->audio_decoder(), _, _))
-          .WillOnce(Invoke(&RunPipelineStatusCB3));
+                  Initialize(mocks_->audio_decoder(), _, _, _))
+          .WillOnce(Invoke(&RunPipelineStatusCB4));
     }
     EXPECT_CALL(*mocks_->audio_renderer(), SetPlaybackRate(0.0f));
     EXPECT_CALL(*mocks_->audio_renderer(), SetVolume(1.0f));
@@ -681,6 +681,10 @@ TEST_F(PipelineTest, AudioStreamShorterThanVideo) {
   streams.push_back(audio_stream());
   streams.push_back(video_stream());
 
+  // Replace the clock so we can simulate wallclock time advancing w/o using
+  // Sleep().
+  pipeline_->SetClockForTesting(new Clock(&StaticClockFunction));
+
   InitializeDemuxer(&streams, duration);
   InitializeAudioDecoder(audio_stream());
   InitializeAudioRenderer();
@@ -690,10 +694,6 @@ TEST_F(PipelineTest, AudioStreamShorterThanVideo) {
 
   // For convenience to simulate filters calling the methods.
   FilterHost* host = pipeline_;
-
-  // Replace the clock so we can simulate wallclock time advancing w/o using
-  // Sleep().
-  pipeline_->SetClockForTesting(new Clock(&StaticClockFunction));
 
   EXPECT_EQ(0, host->GetTime().ToInternalValue());
 
