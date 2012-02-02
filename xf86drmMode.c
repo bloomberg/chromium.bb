@@ -965,3 +965,12 @@ err_allocs:
 
 	return r;
 }
+
+void drmModeFreePlaneResources(drmModePlaneResPtr ptr)
+{
+	if (!ptr)
+		return;
+
+	drmFree(ptr->planes);
+	drmFree(ptr);
+}

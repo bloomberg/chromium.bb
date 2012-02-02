@@ -305,6 +305,7 @@ extern void drmModeFreeCrtc( drmModeCrtcPtr ptr );
 extern void drmModeFreeConnector( drmModeConnectorPtr ptr );
 extern void drmModeFreeEncoder( drmModeEncoderPtr ptr );
 extern void drmModeFreePlane( drmModePlanePtr ptr );
+extern void drmModeFreePlaneResources(drmModePlaneResPtr ptr);
 
 /**
  * Retrives all of the resources associated with a card.
