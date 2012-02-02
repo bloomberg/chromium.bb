@@ -170,15 +170,6 @@ static NaClOpKind NaClGetMnemonicSegmentRegister(NaClInstState* state) {
   return RegUnknown;
 }
 
-/* Append that we don't bother to translate the instruction argument,
- * since it is NaCl illegal. Used to handle cases where we don't implement
- * 16-bit modrm effective addresses.
- */
-static INLINE NaClExp* NaClAppendNaClIllegal(NaClInstState* state) {
-  return NaClAppendExp(ExprNaClIllegal, 0,
-                       NACL_EFLAG(ExprSize16), &state->nodes);
-}
-
 /* Append the given constant onto the given vector of expression
  * nodes. Returns the appended expression node.
  */
@@ -1141,13 +1132,6 @@ static NaClExp* NaClAppendES_EDI(NaClInstState* state) {
 static NaClExp* NaClAppendMod00EffectiveAddress(
     NaClInstState* state, const NaClOp* operand) {
   DEBUG(NaClLog(LOG_INFO, "Translate modrm(%02x).mod == 00\n", state->modrm));
-  if ((32 == NACL_TARGET_SUBARCH) &&
-      NaClHasBit(state->prefix_mask, kPrefixADDR16)) {
-    /* This code doesn't know how to translate 16-bit modrm effective addresses.
-     * However, such arguments are not nacl legal. Communicate this explicitly.
-     */
-    return NaClAppendNaClIllegal(state);
-  }
   switch (modrm_rmInline(state->modrm)) {
     case 4:
       return NaClAppendSib(state);
@@ -1190,13 +1174,6 @@ static NaClExp* NaClAppendMod00EffectiveAddress(
 static NaClExp* NaClAppendMod01EffectiveAddress(
     NaClInstState* state, const NaClOp* operand) {
   DEBUG(NaClLog(LOG_INFO, "Translate modrm(%02x).mod == 01\n", state->modrm));
-  if ((32 == NACL_TARGET_SUBARCH) &&
-      NaClHasBit(state->prefix_mask, kPrefixADDR16)) {
-    /* This code doesn't know how to translate 16-bit modrm effective addresses.
-     * However, such arguments are not nacl legal. Communicate this explicitly.
-     */
-    return NaClAppendNaClIllegal(state);
-  }
   if (4 == modrm_rmInline(state->modrm)) {
     return NaClAppendSib(state);
   } else {
@@ -1222,13 +1199,6 @@ static NaClExp* NaClAppendMod01EffectiveAddress(
 static NaClExp* NaClAppendMod10EffectiveAddress(
     NaClInstState* state, const NaClOp* operand) {
   DEBUG(NaClLog(LOG_INFO, "Translate modrm(%02x).mod == 10\n", state->modrm));
-  if ((32 == NACL_TARGET_SUBARCH) &&
-      NaClHasBit(state->prefix_mask, kPrefixADDR16)) {
-    /* This code doesn't know how to translate 16-bit modrm effective addresses.
-     * However, such arguments are not nacl legal. Communicate this explicitly.
-     */
-    return NaClAppendNaClIllegal(state);
-  }
   if (4 == modrm_rmInline(state->modrm)) {
     return NaClAppendSib(state);
   } else {

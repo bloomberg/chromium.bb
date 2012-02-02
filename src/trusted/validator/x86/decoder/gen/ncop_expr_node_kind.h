@@ -18,8 +18,7 @@ typedef enum NaClExpKind {
   ExprConstant = 3,
   ExprSegmentAddress = 4,
   ExprMemOffset = 5,
-  ExprNaClIllegal = 6,
-  NaClExpKindEnumSize = 7, /* special size marker */
+  NaClExpKindEnumSize = 6, /* special size marker */
 } NaClExpKind;
 
 /* Returns the name of an NaClExpKind constant. */

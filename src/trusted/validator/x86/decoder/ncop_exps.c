@@ -283,9 +283,6 @@ static int NaClPrintDisassembledExp(struct Gio* file,
       return NaClPrintDisassembledSegmentAddr(file, state, index);
     case ExprMemOffset:
       return NaClPrintDisassembledMemOffset(file, state, index);
-    case ExprNaClIllegal:
-      gprintf(file, "*NaClIllegal*");
-      return index + 1;
   }
 }
 

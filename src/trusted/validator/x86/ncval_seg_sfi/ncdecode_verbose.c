@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -337,14 +337,6 @@ static void SegPrefixPrint(const NCDecoderInst *dinst, struct Gio* fp) {
   }
 }
 
-/* Append that we don't bother to translate the instruction argument,
- * since it is NaCl illegal. Used to handle cases where we don't implement
- * 16-bit modrm effective addresses.
- */
-static INLINE void NaClIllegalOp(struct Gio* fp) {
-  gprintf(fp, "*NaClIllegal*");
-}
-
 /* Print out the register (from the list of register names),
  * that is referenced by the decoded instruction in the
  * decoder state. If is_gp_regs is true, the register names
@@ -362,24 +354,17 @@ static void RegMemPrint(const NCDecoderInst *dinst,
              modrm_modInline(dinst->inst.mrm)) );
   switch (modrm_modInline(dinst->inst.mrm)) {
     case 0:
-      SegPrefixPrint(dinst, fp);
-      if (NaClHasBit(dinst->inst.prefixmask, kPrefixADDR16)) {
-        NaClIllegalOp(fp);
+     SegPrefixPrint(dinst, fp);
+      if (4 == modrm_rmInline(dinst->inst.mrm)) {
+        SibPrint(dinst, fp);
+      } else if (5 == modrm_rmInline(dinst->inst.mrm)) {
+        gprintf(fp, "[0x%x]", DwordImmedAtOffset(dinst, NCDispOffset(dinst)));
       } else {
-        if (4 == modrm_rmInline(dinst->inst.mrm)) {
-          SibPrint(dinst, fp);
-        } else if (5 == modrm_rmInline(dinst->inst.mrm)) {
-          gprintf(fp, "[0x%x]", DwordImmedAtOffset(dinst, NCDispOffset(dinst)));
-        } else {
-          gprintf(fp, "[%s]", gp_regs[modrm_rmInline(dinst->inst.mrm)]);
-        }
+        gprintf(fp, "[%s]", gp_regs[modrm_rmInline(dinst->inst.mrm)]);
       }
       break;
-    case 1:
-      SegPrefixPrint(dinst, fp);
-      if (NaClHasBit(dinst->inst.prefixmask, kPrefixADDR16)) {
-        NaClIllegalOp(fp);
-      } else {
+    case 1: {
+        SegPrefixPrint(dinst, fp);
         gprintf(fp, "0x%x", ByteImmedAtOffset(dinst, NCDispOffset(dinst)));
         if (4 == modrm_rmInline(dinst->inst.mrm)) {
           SibPrint(dinst, fp);
@@ -388,11 +373,8 @@ static void RegMemPrint(const NCDecoderInst *dinst,
         }
       }
       break;
-    case 2:
-      SegPrefixPrint(dinst, fp);
-      if (NaClHasBit(dinst->inst.prefixmask, kPrefixADDR16)) {
-        NaClIllegalOp(fp);
-      } else {
+    case 2: {
+        SegPrefixPrint(dinst, fp);
         gprintf(fp, "0x%x", DwordImmedAtOffset(dinst, NCDispOffset(dinst)));
         if (4 == modrm_rmInline(dinst->inst.mrm)) {
           SibPrint(dinst, fp);
