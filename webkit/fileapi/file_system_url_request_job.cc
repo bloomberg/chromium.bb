@@ -267,7 +267,7 @@ void FileSystemURLRequestJob::DidOpen(base::PlatformFileError error_code,
     return;
   }
 
-  stream_.reset(new net::FileStream(file.ReleaseValue(), kFileFlags));
+  stream_.reset(new net::FileStream(file.ReleaseValue(), kFileFlags, NULL));
 
   remaining_bytes_ = byte_range_.last_byte_position() -
                      byte_range_.first_byte_position() + 1;

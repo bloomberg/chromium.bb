@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,7 +18,7 @@
 namespace {
 
 bool AddFileToZip(zipFile zip_file, const FilePath& src_dir) {
-  net::FileStream stream;
+  net::FileStream stream(NULL);
   int flags = base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_READ;
   if (stream.Open(src_dir, flags) != 0) {
     DLOG(ERROR) << "Could not open stream for path "

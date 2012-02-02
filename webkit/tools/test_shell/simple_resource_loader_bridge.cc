@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -190,6 +190,7 @@ class RequestProxy : public net::URLRequest::Delegate,
   // Takes ownership of the params.
   RequestProxy()
       : download_to_file_(false),
+        file_stream_(NULL),
         buf_(new net::IOBuffer(kDataSize)),
         last_upload_position_(0) {
   }

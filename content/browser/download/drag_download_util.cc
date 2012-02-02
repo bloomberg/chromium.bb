@@ -59,7 +59,7 @@ bool ParseDownloadMetadata(const string16& metadata,
 FileStream* CreateFileStreamForDrop(FilePath* file_path) {
   DCHECK(file_path && !file_path->empty());
 
-  scoped_ptr<FileStream> file_stream(new FileStream);
+  scoped_ptr<FileStream> file_stream(new FileStream(NULL));
   const int kMaxSeq = 99;
   for (int seq = 0; seq <= kMaxSeq; seq++) {
     FilePath new_file_path;

@@ -118,9 +118,11 @@ void FileWriterDelegate::OnGetFileInfoAndCallStartUpdate(
   if (kint64max - overlap > allowed_bytes_growth)
     allowed_bytes_to_write_ += overlap;
   size_ = file_info.size;
-  file_stream_.reset(new net::FileStream(file_,
+  file_stream_.reset(new net::FileStream(
+      file_,
       base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_WRITE |
-      base::PLATFORM_FILE_ASYNC));
+      base::PLATFORM_FILE_ASYNC,
+      NULL));
   request_->Start();
 }
 

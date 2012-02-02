@@ -87,6 +87,8 @@ PassiveLogCollector::PassiveLogCollector()
       &cert_verifier_job_tracker_;
   trackers_[net::NetLog::SOURCE_HTTP_PIPELINED_CONNECTION] =
       &http_pipelined_connection_tracker_;
+  trackers_[net::NetLog::SOURCE_FILESTREAM] =
+      &file_stream_tracker_;
   // Make sure our mapping is up-to-date.
   for (size_t i = 0; i < arraysize(trackers_); ++i)
     DCHECK(trackers_[i]) << "Unhandled SourceType: " << i;
@@ -839,6 +841,33 @@ PassiveLogCollector::HttpPipelinedConnectionTracker::DoAddEntry(
     SourceInfo* out_info) {
   AddEntryToSourceInfo(entry, out_info);
   if (entry.type == net::NetLog::TYPE_HTTP_PIPELINED_CONNECTION &&
+      entry.phase == net::NetLog::PHASE_END) {
+    return ACTION_MOVE_TO_GRAVEYARD;
+  }
+  return ACTION_NONE;
+}
+
+//----------------------------------------------------------------------------
+// FileStreamTracker
+//----------------------------------------------------------------------------
+
+const size_t
+PassiveLogCollector::FileStreamTracker::kMaxNumSources = 100;
+
+const size_t
+PassiveLogCollector::FileStreamTracker::kMaxGraveyardSize = 25;
+
+PassiveLogCollector::
+    FileStreamTracker::FileStreamTracker()
+        : SourceTracker(kMaxNumSources, kMaxGraveyardSize, NULL) {
+}
+
+PassiveLogCollector::SourceTracker::Action
+PassiveLogCollector::FileStreamTracker::DoAddEntry(
+    const ChromeNetLog::Entry& entry,
+    SourceInfo* out_info) {
+  AddEntryToSourceInfo(entry, out_info);
+  if (entry.type == net::NetLog::TYPE_FILE_STREAM_ALIVE &&
       entry.phase == net::NetLog::PHASE_END) {
     return ACTION_MOVE_TO_GRAVEYARD;
   }

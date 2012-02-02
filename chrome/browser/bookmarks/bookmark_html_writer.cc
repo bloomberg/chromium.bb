@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -93,7 +93,8 @@ class Writer : public base::RefCountedThreadSafe<Writer> {
       : bookmarks_(bookmarks),
         path_(path),
         favicons_map_(favicons_map),
-        observer_(observer) {
+        observer_(observer),
+        file_stream_(NULL) {
   }
 
   // Writing bookmarks and favicons data to file.

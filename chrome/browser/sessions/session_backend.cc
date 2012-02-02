@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -45,7 +45,7 @@ class SessionFileReader {
         buffer_(SessionBackend::kFileReadBufferSize, 0),
         buffer_position_(0),
         available_count_(0) {
-    file_.reset(new net::FileStream());
+    file_.reset(new net::FileStream(NULL));
     if (file_util::PathExists(path))
       file_->Open(path, base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_READ);
   }
@@ -363,7 +363,7 @@ void SessionBackend::ResetFile() {
 
 net::FileStream* SessionBackend::OpenAndWriteHeader(const FilePath& path) {
   DCHECK(!path.empty());
-  scoped_ptr<net::FileStream> file(new net::FileStream());
+  scoped_ptr<net::FileStream> file(new net::FileStream(NULL));
   if (file->Open(path, base::PLATFORM_FILE_CREATE_ALWAYS |
       base::PLATFORM_FILE_WRITE | base::PLATFORM_FILE_EXCLUSIVE_WRITE |
       base::PLATFORM_FILE_EXCLUSIVE_READ) != net::OK)

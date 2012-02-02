@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -190,7 +190,7 @@ bool ZipReader::ExtractCurrentEntryToFilePath(
   if (!file_util::CreateDirectory(output_dir_path))
     return false;
 
-  net::FileStream stream;
+  net::FileStream stream(NULL);
   const int flags = (base::PLATFORM_FILE_CREATE_ALWAYS |
                      base::PLATFORM_FILE_WRITE);
   if (stream.Open(output_file_path, flags) != 0)

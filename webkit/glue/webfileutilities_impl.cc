@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -127,7 +127,7 @@ long long WebFileUtilitiesImpl::seekFile(base::PlatformFile handle,
                                          int origin) {
   if (handle == base::kInvalidPlatformFileValue)
     return -1;
-  net::FileStream file_stream(handle, 0);
+  net::FileStream file_stream(handle, 0, NULL);
   return file_stream.Seek(static_cast<net::Whence>(origin), offset);
 }
 
@@ -135,7 +135,7 @@ bool WebFileUtilitiesImpl::truncateFile(base::PlatformFile handle,
                                         long long offset) {
   if (handle == base::kInvalidPlatformFileValue || offset < 0)
     return false;
-  net::FileStream file_stream(handle, base::PLATFORM_FILE_WRITE);
+  net::FileStream file_stream(handle, base::PLATFORM_FILE_WRITE, NULL);
   return file_stream.Truncate(offset) >= 0;
 }
 
@@ -146,7 +146,7 @@ int WebFileUtilitiesImpl::readFromFile(base::PlatformFile handle,
     return -1;
   std::string buffer;
   buffer.resize(length);
-  net::FileStream file_stream(handle, base::PLATFORM_FILE_READ);
+  net::FileStream file_stream(handle, base::PLATFORM_FILE_READ, NULL);
   return file_stream.Read(data, length, net::CompletionCallback());
 }
 
@@ -155,7 +155,7 @@ int WebFileUtilitiesImpl::writeToFile(base::PlatformFile handle,
                                       int length) {
   if (handle == base::kInvalidPlatformFileValue || !data || length <= 0)
     return -1;
-  net::FileStream file_stream(handle, base::PLATFORM_FILE_WRITE);
+  net::FileStream file_stream(handle, base::PLATFORM_FILE_WRITE, NULL);
   return file_stream.Write(data, length, net::CompletionCallback());
 }
 

@@ -164,7 +164,8 @@ void RedirectToFileResourceHandler::DidCreateTemporaryFile(
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE));
   file_stream_.reset(new net::FileStream(file_handle.ReleaseValue(),
                                          base::PLATFORM_FILE_WRITE |
-                                         base::PLATFORM_FILE_ASYNC));
+                                         base::PLATFORM_FILE_ASYNC,
+                                         NULL));
   host_->RegisterDownloadedTempFile(
       process_id_, request_id_, deletable_file_.get());
   host_->StartDeferredRequest(process_id_, request_id_);

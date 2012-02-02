@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -286,7 +286,7 @@ const int kPreloadIDs[] = {
 // Returns a piece of memory with the contents of the file |path|.
 RefCountedMemory* ReadFileData(const FilePath& path) {
   if (!path.empty()) {
-    net::FileStream file;
+    net::FileStream file(NULL);
     int flags = base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_READ;
     if (file.Open(path, flags) == net::OK) {
       int64 avail = file.Available();

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -108,7 +108,7 @@ class BaseFileTest : public testing::Test {
       return false;
 
     // Create a new file stream.
-    mock_file_stream_.reset(new net::testing::MockFileStream);
+    mock_file_stream_.reset(new net::testing::MockFileStream(NULL));
     if (mock_file_stream_->Open(
         path,
         base::PLATFORM_FILE_OPEN_ALWAYS | base::PLATFORM_FILE_WRITE) != 0) {

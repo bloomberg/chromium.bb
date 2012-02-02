@@ -97,6 +97,10 @@
   color: green;
 }
 
+#events-view-source-list-tbody .source_FILESTREAM {
+  color: #700070;
+}
+
 #events-view-source-list-tbody .source_NONE {
   color: red;
 }

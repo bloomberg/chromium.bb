@@ -132,6 +132,9 @@ var SourceEntry = (function() {
         case LogSourceType.DNS_TRANSACTION:
           this.description_ = e.params.hostname;
           break;
+        case LogSourceType.FILESTREAM:
+          this.description_ = e.params.file_name;
+          break;
       }
 
       if (this.description_ == undefined)
@@ -156,6 +159,11 @@ var SourceEntry = (function() {
     getStartEntry_: function() {
       if (this.entries_.length < 1)
         return undefined;
+      if (this.entries_[0].source.type == LogSourceType.FILESTREAM) {
+        var e = this.findLogEntryByType_(LogEventType.FILE_STREAM_OPEN);
+        if (e != undefined)
+          return e;
+      }
       if (this.entries_.length >= 2) {
         if (this.entries_[0].type == LogEventType.REQUEST_ALIVE ||
             this.entries_[0].type == LogEventType.SOCKET_POOL_CONNECT_JOB ||
@@ -164,6 +172,19 @@ var SourceEntry = (function() {
         }
       }
       return this.entries_[0];
+    },
+
+    /**
+     * Returns the first entry with the specified type, or undefined if not
+     * found.
+     */
+    findLogEntryByType_: function(type) {
+      for (var i = 0; i < this.entries_.length; ++i) {
+        if (this.entries_[i].type == type) {
+          return this.entries_[i];
+        }
+      }
+      return undefined;
     },
 
     getLogEntries: function() {

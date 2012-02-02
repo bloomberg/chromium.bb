@@ -57,7 +57,7 @@ void ReadFile(const FilePath& path,
 void CreateFileStream(
     const FilePath& file_path,
     base::Callback<void(net::FileStream* file_stream)> callback) {
-  scoped_ptr<net::FileStream> file_stream(new net::FileStream);
+  scoped_ptr<net::FileStream> file_stream(new net::FileStream(NULL));
   // TODO(tbarzic): Save temp image file to temp folder instead of Downloads
   // once extracting image directly to removalbe device is implemented
   if (file_stream->Open(file_path, base::PLATFORM_FILE_OPEN_ALWAYS |

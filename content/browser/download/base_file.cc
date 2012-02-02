@@ -449,7 +449,7 @@ void BaseFile::AnnotateWithSourceInformation() {
 }
 
 void BaseFile::CreateFileStream() {
-  file_stream_.reset(new net::FileStream);
+  file_stream_.reset(new net::FileStream(NULL));
 }
 
 net::Error BaseFile::Open() {

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -88,7 +88,7 @@ bool BloomFilter::Exists(SBPrefix hash) const {
 
 // static.
 BloomFilter* BloomFilter::LoadFile(const FilePath& filter_name) {
-  net::FileStream filter;
+  net::FileStream filter(NULL);
 
   if (filter.Open(filter_name,
                   base::PLATFORM_FILE_OPEN |
@@ -154,7 +154,7 @@ BloomFilter* BloomFilter::LoadFile(const FilePath& filter_name) {
 }
 
 bool BloomFilter::WriteFile(const FilePath& filter_name) const {
-  net::FileStream filter;
+  net::FileStream filter(NULL);
 
   if (filter.Open(filter_name,
                   base::PLATFORM_FILE_WRITE |
