@@ -95,56 +95,6 @@ void NaClBaseRegisterMemoryInitialize(NaClValidatorState* state) {
   state->set_base_registers.current_index = 1;
 }
 
-#ifndef NCVAL_TESTING
-/* Returns true if the instruction is of the form
- *   OP %esp, C
- * where OP in { add , sub } and C is a 32 bit constant.
- */
-static Bool NaClIsAddOrSubBoundedConstFromEsp(NaClInstState* state) {
-  const NaClInst* inst = NaClInstStateInst(state);
-  NaClExpVector* vector = NaClInstStateExpVector(state);
-  return (InstAdd == inst->name || InstSub == inst->name) &&
-      2 == NaClGetInstNumberOperandsInline(inst) &&
-      /* Note: Since the vector contains a list of operand expressions, the
-       * first operand reference is always at index zero, and its first child
-       * (where the register would be defined) is at index 1.
-       */
-      ExprRegister == vector->node[1].kind &&
-      RegESP == NaClGetExpRegisterInline(&vector->node[1]) &&
-      /* Note: Since the first subtree is a register operand, it uses
-       * nodes 0 and 1 in the vector (node 0 is the operand reference, and
-       * node 1 is its child defining a register value). The second operand
-       * reference therefore lies at node 2, and if the operand is defined by
-       * a 32 bit constant, it is the first kid of node 2, which is node 3.
-       */
-      ExprConstant == vector->node[3].kind;
-}
-#endif
-
-/* Applies the precondition "EspBounded32" to the previous instruction.
- * Returns true if the previous instruction is of the form
- *   OP %esp, C
- * where OP in { add , sub } and C is a 32 bit constant.
- */
-static Bool NaClIsAddOrSubBoundedConstFromEspPrecond(
-    NaClValidatorState* state) {
-#ifdef NCVAL_TESTING
-    char* buffer;
-    size_t buffer_size;
-    NaClConditionAppend(state->precond, &buffer, &buffer_size);
-    SNPRINTF(buffer, buffer_size, "EspBounded32");
-    return TRUE;
-#else
-    if (NaClInstIterHasLookbackStateInline(state->cur_iter,1) &&
-        NaClIsAddOrSubBoundedConstFromEsp(
-            NaClInstIterGetLookbackStateInline(state->cur_iter, 1))) {
-      NaClMarkInstructionJumpIllegal(state, state->cur_inst_state);
-      return TRUE;
-    }
-    return FALSE;
-#endif
-}
-
 /* Returns true iff the instruction of form "lea _, [%reg+%rbase*1]" */
 static Bool NaClIsLeaAddressRegPlusRbase(NaClValidatorState* state,
                                          NaClInstState* inst_state,
@@ -251,6 +201,8 @@ static void NaClCheckRspAssignments(struct NaClValidatorState* state,
    *        add %rsp, %rbase
    *     where OP is a operator in { add , sub },
    *     and C is a 32-bit constant.
+   *     Note: Since add/sub are zero-extending operations for operand
+   *     size 32, this doesn't have to be treated as a special case!
    * (5) Allow "and $rsp, 0xXX" where 0xXX is an immediate 8 bit
    *     value that is negative. Used to realign the stack pointer.
    * (6) %esp = zero extend 32-bit value.
@@ -281,6 +233,11 @@ static void NaClCheckRspAssignments(struct NaClValidatorState* state,
   const NaClInst* inst = state->cur_inst;
   NaClMnemonic inst_name = inst->name;
   NaClExpVector* vector = state->cur_inst_vector;
+#ifdef NCVAL_TESTING
+  char* buffer;
+  size_t buffer_size;
+#endif
+
   switch (inst_name) {
     case InstPush:
     case InstPop:
@@ -309,8 +266,13 @@ static void NaClCheckRspAssignments(struct NaClValidatorState* state,
               state->decoder_tables,
               inst, inst_name, vector, RegRSP,
               state->base_register) &&
-          (NaClAssignsRegisterWithZeroExtends32(state, 1, RegESP)
-           || NaClIsAddOrSubBoundedConstFromEspPrecond(state))) {
+          NaClAssignsRegisterWithZeroExtends32(state, 1, RegESP)) {
+#ifdef NCVAL_TESTING
+        /* Report precondition of test. */
+        NaClConditionAppend(state->precond, &buffer, &buffer_size);
+        SNPRINTF(buffer, buffer_size, "ZeroExtends(esp)");
+#endif
+        NaClMarkInstructionJumpIllegal(state, state->cur_inst_state);
         state->set_base_registers.buffer[
             state->set_base_registers.previous_index].esp_set_inst = NULL;
         return;
@@ -322,6 +284,12 @@ static void NaClCheckRspAssignments(struct NaClValidatorState* state,
          * instruction is legal, so long as the two instructions
          * are atomic.
          */
+#ifdef NCVAL_TESTING
+        /* Report precondition of test. */
+        NaClConditionAppend(state->precond, &buffer, &buffer_size);
+        SNPRINTF(buffer, buffer_size, "ZeroExtends(esp)");
+#endif
+        NaClMarkInstructionJumpIllegal(state, state->cur_inst_state);
         state->set_base_registers.buffer[
             state->set_base_registers.previous_index].esp_set_inst = NULL;
         return;
@@ -389,23 +357,39 @@ static void NaClCheckRbpAssignments(struct NaClValidatorState* state,
   const NaClInst* inst = state->cur_inst;
   NaClMnemonic inst_name = inst->name;
   NaClExpVector* vector = state->cur_inst_vector;
+#ifdef NCVAL_TESTING
+  char* buffer;
+  size_t buffer_size;
+#endif
+
   switch (inst_name) {
     case InstAdd:
+      /* case 2. */
       if (NaClIsBinarySetUsingRegisters(
               state->decoder_tables,
               inst, InstAdd, vector,
-              RegRBP, state->base_register)) {
-        if (NaClAssignsRegisterWithZeroExtends32(state, 1, RegEBP)) {
-          /* case 2. */
-          state->set_base_registers.buffer[
-              state->set_base_registers.previous_index].ebp_set_inst = NULL;
-          return;
-        }
+              RegRBP, state->base_register) &&
+          NaClAssignsRegisterWithZeroExtends32(state, 1, RegEBP)) {
+#ifdef NCVAL_TESTING
+        /* Report precondition of test. */
+        NaClConditionAppend(state->precond, &buffer, &buffer_size);
+        SNPRINTF(buffer, buffer_size, "ZeroExtends(ebp)");
+#endif
+        NaClMarkInstructionJumpIllegal(state, state->cur_inst_state);
+        state->set_base_registers.buffer[
+            state->set_base_registers.previous_index].ebp_set_inst = NULL;
+        return;
       }
       break;
     case InstLea:
+      /* case 3 */
       if (NaClAcceptLeaWithMoveLea32To64(state, RegRBP)) {
-        /* case 3 */
+#ifdef NCVAL_TESTING
+        /* Report precondition of test. */
+        NaClConditionAppend(state->precond, &buffer, &buffer_size);
+        SNPRINTF(buffer, buffer_size, "ZeroExtends(ebp)");
+#endif
+        NaClMarkInstructionJumpIllegal(state, state->cur_inst_state);
         state->set_base_registers.buffer[
             state->set_base_registers.previous_index].ebp_set_inst = NULL;
         return;

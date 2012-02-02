@@ -47,11 +47,10 @@ extern Bool NACL_FLAGS_read_sandbox;
 void NaClMemoryReferenceValidator(struct NaClValidatorState* state);
 
 #ifdef NCVAL_TESTING
-/* Checks if the current instruction is an LEA instruction that generates a safe
- * memory address. If so, it adds the corresponding postcondition to the
- * instruction.
+/* Returns true if the current instruction is an LEA instruction that
+ * generates a safe memory address.
  */
-void NaClAcceptLeaSafeAddress(struct NaClValidatorState* state);
+Bool NaClAcceptLeaSafeAddress(struct NaClValidatorState* state);
 #endif
 
 #endif  /* NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NCVAL_REG_SFI_NC_MEMORY_PROTECT_H__ */

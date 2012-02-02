@@ -132,37 +132,17 @@ Bool NaClAssignsRegisterWithZeroExtends32(
   DEBUG(NaClLog(LOG_INFO, "zero extend precond? %s %u\n",
                 NaClOpKindName(reg32), (unsigned) distance));
 #ifdef NCVAL_TESTING
-  /* Only report preconditions if for previous instruction of
-   * the current instruction.
+  /* Assume we match previous instructions when generating pre/post
+   * conditions.
    */
-  if (0 == distance) {
-    if (NaClAssignsRegisterWithZeroExtends(state->cur_inst_state, reg32)) {
-      char* buffer;
-      size_t buffer_size;
-      char reg_name[kMaxBufferSize];
-      NaClOpRegName(reg32, reg_name, kMaxBufferSize);
-      NaClConditionAppend(state->postcond, &buffer, &buffer_size);
-      SNPRINTF(buffer, buffer_size, "ZeroExtends(%s)", reg_name);
-    }
-  }
-  else if (distance == 1) {
-    char* buffer;
-    size_t buffer_size;
-    char reg_name[kMaxBufferSize];
-    NaClOpRegName(reg32, reg_name, kMaxBufferSize);
-    NaClConditionAppend(state->precond, &buffer, &buffer_size);
-    SNPRINTF(buffer, buffer_size, "ZeroExtends(%s)", reg_name);
-  }
-  result = TRUE;
-#else
+  if (distance > 0) return TRUE;
+#endif
+
   if (NaClInstIterHasLookbackStateInline(state->cur_iter, distance)) {
     result = NaClAssignsRegisterWithZeroExtends(
         NaClInstIterGetLookbackStateInline(state->cur_iter, distance), reg32);
-    if (result) {
-      NaClMarkInstructionJumpIllegal(state, state->cur_inst_state);
-    }
   }
-#endif
+
   DEBUG(if (result)
           NaClValidatorMessage(
               LOG_INFO, state, "zero extends = %d\n", result));

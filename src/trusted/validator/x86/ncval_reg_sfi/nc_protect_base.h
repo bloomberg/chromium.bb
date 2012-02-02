@@ -79,9 +79,6 @@ void NaClBaseRegisterSummarize(struct NaClValidatorState* state);
  * where reg64 is the passed 64-bit register, reg32 is the
  * corresponding 32-bit register, and op is a 32-bit zero-extending
  * operation (such as mov).
- *
- * Note: As a side effect, the instruction LEA is marked as
- * a non-entry point to the atomic sequence above.
  */
 Bool NaClAcceptLeaWithMoveLea32To64(struct NaClValidatorState* state,
                                     NaClOpKind reg);

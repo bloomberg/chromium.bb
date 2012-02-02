@@ -88,16 +88,10 @@ static Bool NaClIsMov32UsingReg(NaClValidatorState* state,
   NaClInstState* inst_state;
 
 #ifdef NCVAL_TESTING
-  /* Add precondition if needed from previous instruction. */
-  if (1 == distance) {
-    char* buffer;
-    size_t buffer_size;
-    char reg_name[kMaxBufferSize];
-    NaClOpRegName(reg, reg_name, kMaxBufferSize);
-    NaClConditionAppend(state->precond, &buffer, &buffer_size);
-    SNPRINTF(buffer, buffer_size, "ZeroExtends(%s)", reg_name);
-    return TRUE;
-  }
+  /* Assume we match previous instructions when generating pre/post
+   * conditions.
+   */
+  if (distance > 0) return TRUE;
 #endif
 
   /* Get the instruction to be checked. */
@@ -165,6 +159,13 @@ static NaClPatternLength NaClMatchValidMemOffset(
   NaClExpVector* vector;
   NaClExp* node;
   NaClPatternLength pattern_length = 0;
+
+#ifdef NCVAL_TESTING
+  /* Assume we  match previous instructions when generating pre/post
+   * conditions.
+   */
+  if (distance > 0) return pattern_length;
+#endif
 
   /* Get the instruction to be checked. */
   inst = NaClGetValInstStateAt(state, distance);
@@ -260,6 +261,7 @@ static NaClPatternLength NaClMatchValidMemOffset(
       NaClValidatorInstMessage(LOG_ERROR, state, inst,
                                "Invalid displacement in memory offset\n");
     }
+    return kNaClPatternMatchFailed;
   }
 
   /* If reached, we matched the pattern, return number of instructions
@@ -267,6 +269,20 @@ static NaClPatternLength NaClMatchValidMemOffset(
    */
   DEBUG(NaClLog(LOG_INFO, "Memory Offset pattern length = %d\n",
                 pattern_length));
+#ifdef NCVAL_TESTING
+  if ((0 == distance) && (RegUnknown != index_reg)) {
+    /* Report precondition of test.
+     * TODO(karl): This should be lifted out of this test, and
+     * only applied when pattern matches.
+     */
+    char* buffer;
+    size_t buffer_size;
+    char reg_name[kMaxBufferSize];
+    NaClOpRegName(NaClGet32For64BitReg(index_reg), reg_name, kMaxBufferSize);
+    NaClConditionAppend(state->precond, &buffer, &buffer_size);
+    SNPRINTF(buffer, buffer_size, "ZeroExtends(%s)", reg_name);
+  }
+#endif
   return pattern_length;
 }
 
@@ -279,10 +295,7 @@ static NaClPatternLength NaClMatchValidMemOffset(
  *    lea %r64, [%r15+%r64*1]   ; rebase address and put in r64
  *
  * where r32 is the corresponding 32-bit register for the 64-bit register
- * r64.
- *
- * When NCVAL_TESTING is defined, this function always returns true, and
- * adds the corresponding precondition to the current instruction.
+ * r64. Returns true if the precondition is met.
  */
 static Bool NaClMatchLeaSafeAddress(
     NaClValidatorState* state,
@@ -298,20 +311,11 @@ static Bool NaClMatchLeaSafeAddress(
   DEBUG(NaClLog(LOG_INFO, "reg64 = %s, distance = %d\n",
                 NaClOpKindName(reg64), (int) distance));
 
-#if NCVAL_TESTING
-  if (1 == distance) {
-    /* Assume that previous instruction is an LEA, since
-     * we want to only generate pre/post conditions.
-     */
-    char* buffer;
-    size_t buffer_size;
-    char reg_name[kMaxBufferSize];
-    NaClOpRegName(reg64, reg_name, kMaxBufferSize);
-    NaClConditionAppend(state->precond, &buffer, &buffer_size);
-    SNPRINTF(buffer, buffer_size, "SafeAddress(%s)", reg_name);
-    return TRUE;
-  }
+#ifdef NCVAL_TESTING
+  /* Don't match previous instructions when pattern matching. */
+  if (distance > 0) return TRUE;
 #endif
+
   /* Get the instruction to be checked. */
   inst_state = NaClGetValInstStateAt(state, distance);
   if (NULL == inst_state) return FALSE;
@@ -344,17 +348,7 @@ static Bool NaClMatchLeaSafeAddress(
                                            FALSE);
   if (kNaClPatternMatchFailed == pattern_length) return FALSE;
 
-#ifdef NCVAL_TESTING
-  if (0 == distance) {
-    /* Add postcondition associated with the test. */
-    char* buffer;
-    size_t buffer_size;
-    char reg_name[kMaxBufferSize];
-    NaClOpRegName(reg64, reg_name, kMaxBufferSize);
-    NaClConditionAppend(state->postcond, &buffer, &buffer_size);
-    SNPRINTF(buffer, buffer_size, "SafeAddress(%s)", reg_name);
-  }
-#endif
+  /* If reached, matched pattern! */
   return TRUE;
 }
 
@@ -490,6 +484,19 @@ void NaClMemoryReferenceValidator(NaClValidatorState* state) {
           pattern_length += 2;
           DEBUG(NaClLog(LOG_INFO, "updated pattern_length = %d\n",
                         pattern_length));
+#ifdef NCVAL_TESTING
+          {
+            /* Assume that previous instruction is an LEA, since
+             * we want to only generate pre/post conditions.
+             */
+            char* buffer;
+            size_t buffer_size;
+            char reg_name[kMaxBufferSize];
+            NaClOpRegName(addr_reg, reg_name, kMaxBufferSize);
+            NaClConditionAppend(state->precond, &buffer, &buffer_size);
+            SNPRINTF(buffer, buffer_size, "SafeAddress(%s)", reg_name);
+          }
+#endif
           continue;
         }
         default:
@@ -549,20 +556,20 @@ void NaClMemoryReferenceValidator(NaClValidatorState* state) {
 }
 
 #ifdef NCVAL_TESTING
-void NaClAcceptLeaSafeAddress(struct NaClValidatorState* state) {
+Bool NaClAcceptLeaSafeAddress(struct NaClValidatorState* state) {
   const NaClInst* inst;
 
   /* Check that it is an LEA instruction. */
   inst = NaClInstStateInst(state->cur_inst_state);
-  if (InstLea != inst->name) return;
+  if (InstLea != inst->name) return FALSE;
 
   /* Note that first argument of LEA is always a register,
    * (under an OperandReference), and hence is always at
    * index 1.
    */
-  NaClMatchLeaSafeAddress(state, 0,
-                          NaClGetExpVectorRegister(
-                              NaClInstStateExpVector(state->cur_inst_state),
-                              1));
+  return NaClMatchLeaSafeAddress(
+      state, 0,
+      NaClGetExpVectorRegister(NaClInstStateExpVector(state->cur_inst_state),
+                               1));
 }
 #endif

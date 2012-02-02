@@ -43,11 +43,20 @@ void NaClAddAssignsRegisterWithZeroExtendsPostconds(
    */
   for (i = 0; i < vector->number_expr_nodes; ++i) {
     NaClExp* node = &vector->node[i];
+    NaClOpKind node_reg;
     if (ExprRegister != node->kind) continue;
     if (!NaClHasBit(node->flags, NACL_EFLAG(ExprSet))) continue;
     if (!NaClHasBit(node->flags, NACL_EFLAG(ExprSize32))) continue;
-    NaClAssignsRegisterWithZeroExtends32(
-        state, 0, NaClGetExpRegisterInline(node));
+    node_reg = NaClGetExpRegisterInline(node);
+    if (node_reg == RegUnknown) continue;
+    if (NaClAssignsRegisterWithZeroExtends32(state, 0, node_reg)) {
+      char* buffer;
+      size_t buffer_size;
+      char reg_name[kMaxBufferSize];
+      NaClOpRegName(node_reg, reg_name, kMaxBufferSize);
+      NaClConditionAppend(state->postcond, &buffer, &buffer_size);
+      SNPRINTF(buffer, buffer_size, "ZeroExtends(%s)", reg_name);
+    }
   }
   DEBUG(NaClValidatorMessage(
       LOG_INFO, state, "<- Finished ZeroExtends postconditions...\n"));
@@ -80,8 +89,13 @@ void NaClAddLeaSafeAddressPostconds(
       if (InstLea != NaClInstStateInst(state->cur_inst_state)->name) {
         NaClAcceptLeaWithMoveLea32To64(state, reg);
       }
-    } else {
-      NaClAcceptLeaSafeAddress(state);
+    } else if (NaClAcceptLeaSafeAddress(state)) {
+      char* buffer;
+      size_t buffer_size;
+      char reg_name[kMaxBufferSize];
+      NaClOpRegName(reg, reg_name, kMaxBufferSize);
+      NaClConditionAppend(state->postcond, &buffer, &buffer_size);
+      SNPRINTF(buffer, buffer_size, "SafeAddress(%s)", reg_name);
     }
   }
   DEBUG(NaClValidatorMessage(
