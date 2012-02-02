@@ -795,6 +795,9 @@ def _CreateParser():
   group.add_option('--nosync', action='store_false', dest='sync',
                     default=True,
                     help="Don't sync before building.")
+  group.add_option('--nocgroups', action='store_false', dest='cgroups',
+                    default=True,
+                    help='Disable cbuildbots usage of cgroups.')
   group.add_option('--reference-repo', action='store', default=None,
                     dest='reference_repo',
                     help='Reuse git data stored in an existing repo '
@@ -932,7 +935,7 @@ def main(argv=None):
       if not os.path.exists(repository.GetTrybotMarkerPath(options.buildroot)):
         _ConfirmBuildRoot(options.buildroot)
 
-  with cgroup.CGroup():
+  with cgroup.CGroup(disable=not options.cgroups):
     if options.buildbot:
       _RunBuildStagesWrapper(bot_id, options, build_config)
     else:

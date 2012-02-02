@@ -374,7 +374,8 @@ class FullInterfaceTest(unittest.TestCase):
         constants.SOURCE_ROOT, '.repo')).InAnyOrder().AndReturn(True)
     parser.error(mox.IgnoreArg()).InAnyOrder().AndRaise(TestExitedException())
     cros_lib.IsInsideChroot().InAnyOrder().AndReturn(False)
-    cbuildbot.cgroup.CGroup.__init__().InAnyOrder().AndReturn(None)
+    cbuildbot.cgroup.CGroup.__init__(disable=False).InAnyOrder().AndReturn(None)
+    cbuildbot.cgroup.CGroup.__init__(disable=True).InAnyOrder().AndReturn(None)
     cbuildbot.cgroup.CGroup.__enter__().InAnyOrder().AndReturn(None)
     cbuildbot.cgroup.CGroup.__exit__(
         mox.IgnoreArg(),

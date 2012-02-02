@@ -133,13 +133,14 @@ class CGroup(object):
     # Assign this root process to the new cgroup.
     self.SudoSet(path, 'tasks', '%d' % pid)
 
-  def __init__(self, parent=None):
+  def __init__(self, parent=None, disable=False):
     """Constructor.
 
     args:
       parent - The parent CGroup. Root hierarchy if empty.
     """
-    if not self.cgroup_supported:
+    self._disabled = disable
+    if disable or not self.cgroup_supported:
       return
 
     # Calculate derived paths, because CGROUP_ROOT is variable.
@@ -157,7 +158,7 @@ class CGroup(object):
     self._cgroup_supported = None
 
   def __enter__(self):
-    if not self.cgroup_supported:
+    if self._disabled or not self.cgroup_supported:
       return
 
     self.AssertBasicStructure()
@@ -168,7 +169,7 @@ class CGroup(object):
     self.AssignPidToGroup(self.path, self.pid)
 
   def __exit__(self, _type, value, traceback):
-    if not self.cgroup_supported:
+    if self._disabled or not self.cgroup_supported:
       return
 
     # Do not commit suicide - move self to the dump group first.
@@ -207,4 +208,3 @@ class CGroup(object):
       time.sleep(STEP / 10)
 
     self.RemoveNamedCGroup(self.path)
-
