@@ -41,130 +41,7 @@
       <!-- In particular, sub-templates that recurse, must be used by allowing
            jstemplate to make a copy of the template in this section which
            are not operated on by way of the jsskip="true" -->
-      <div style="display:none">
-
-        <!-- VALUE -->
-        <div id="valueTemplate">
-          <dt>
-            <var>paramName</var>
-              <em>
-
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span class="optional">optional</span>
-                    <span class="enum">enumerated</span>
-                    <span id="typeTemplate">
-                      <span>
-                        <a> Type</a>
-                      </span>
-                      <span>
-                        <span>
-                          array of <span><span></span></span>
-                        </span>
-                        <span>paramType</span>
-                        <span></span>
-                      </span>
-                    </span>
-                  )
-                </div>
-
-              </em>
-          </dt>
-          <dd class="todo">
-            Undocumented.
-          </dd>
-          <dd>
-            Description of this parameter from the json schema.
-          </dd>
-          <dd>
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
-          <!-- OBJECT PROPERTIES -->
-          <dd>
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-
-          <!-- OBJECT METHODS -->
-          <dd>
-            <div></div>
-          </dd>
-
-          <!-- OBJECT EVENT FIELDS -->
-          <dd>
-            <div></div>
-          </dd>
-
-          <!-- FUNCTION PARAMETERS -->
-          <dd>
-            <div></div>
-          </dd>
-
-        </div> <!-- /VALUE -->
-
-        <div id="functionParametersTemplate">
-          <h5>Parameters</h5>
-          <dl>
-            <div>
-              <div>
-              </div>
-            </div>
-          </dl>
-        </div>
-
-        <!-- Individual subsections from the table of contents -->
-        <ol>
-          <li id="propertiesTocTemplate">
-            <a href="#properties">Properties</a>
-            <ol>
-              <li>
-                <a href="#property-anchor">propertyName</a>
-              </li>
-            </ol>
-          </li>
-          <li id="methodsTocTemplate">
-            <a>Methods</a>
-            <ol>
-              <li>
-                <a href="#method-anchor">methodName</a>
-              </li>
-            </ol>
-          </li>
-          <li id="eventsTocTemplate">
-            <a>Events</a>
-            <ol>
-              <li>
-                <a href="#event-anchor">eventName</a>
-              </li>
-            </ol>
-          </li>
-          <li id="typesTocTemplate">
-            <a href="#types">Types</a>
-            <ol>
-              <li>
-                <a href="#id-anchor">id</a>
-                <ol>
-                  <div></div>
-                  <div></div>
-                </ol>
-              </li>
-            </ol>
-          </li>
-        </ol>
-      </div> <!-- /SUBTEMPLATES -->
-
+       <!-- /SUBTEMPLATES -->
   <a id="top"></a>
     <div id="skipto">
       <a href="#gc-pagecontent">Skip to page content</a>
@@ -185,7 +62,6 @@
               <span class="greytext">e.g. "page action" or "tabs"</span>
             </div>
           </form>
-
           <script type="text/javascript" src="https://www.google.com/jsapi"></script>
           <script type="text/javascript">google.load("elements", "1", {packages: "transliteration"});</script>
           <script type="text/javascript" src="https://www.google.com/coop/cse/t13n?form=cse&amp;t13n_langs=en"></script>
@@ -193,9 +69,7 @@
         </td>
       </tr>
     </tbody></table>
-
     <div id="codesiteContent" class="">
-
       <a id="gc-topnav-anchor"></a>
       <div id="gc-topnav">
         <h1>Google Chrome Extensions (<a href="http://code.google.com/labs/">Labs</a>)</h1>
@@ -220,7 +94,6 @@
           </li>
         </ul>
       </div> <!-- end gc-topnav -->
-
     <div class="g-section g-tpl-170">
       <!-- SIDENAV -->
       <div class="g-unit g-first" id="gc-toc">
@@ -308,7 +181,6 @@
       <script>
         initToggles();
       </script>
-
     <div class="g-unit" id="gc-pagecontent">
       <div id="pageTitle">
         <h1 class="page_title">WebNavigation API</h1>
@@ -320,50 +192,27 @@
             <li>
               <a href="#H2-0">Manifest</a>
               <ol>
-                <li style="display: none; ">
-                  <a>h3Name</a>
-                </li>
               </ol>
             </li><li>
               <a href="#H2-1">Examples</a>
               <ol>
-                <li style="display: none; ">
-                  <a>h3Name</a>
-                </li>
               </ol>
             </li><li>
               <a href="#H2-2">Event order</a>
               <ol>
-                <li style="display: none; ">
-                  <a>h3Name</a>
-                </li>
               </ol>
             </li><li>
               <a href="#H2-3">Relation to webRequest events</a>
               <ol>
-                <li style="display: none; ">
-                  <a>h3Name</a>
-                </li>
               </ol>
             </li><li>
               <a href="#H2-4">A note about timestamps</a>
               <ol>
-                <li style="display: none; ">
-                  <a>h3Name</a>
-                </li>
               </ol>
             </li>
               <li>
                 <a href="#apiReference">API reference: chrome.webNavigation</a>
                 <ol>
-                  <li style="display: none; ">
-            <a href="#properties">Properties</a>
-            <ol>
-              <li>
-                <a href="#property-anchor">propertyName</a>
-              </li>
-            </ol>
-          </li>
                   <li>
             <a href="#global-methods">Methods</a>
             <ol>
@@ -394,38 +243,19 @@
               </li>
             </ol>
           </li>
-                  <li style="display: none; ">
-            <a href="#types">Types</a>
-            <ol>
-              <li>
-                <a href="#id-anchor">id</a>
-                <ol>
-                  <div></div>
-                  <div></div>
-                </ol>
-              </li>
-            </ol>
-          </li>
                 </ol>
               </li>
           </ol>
         </div>
         <!-- /TABLE OF CONTENTS -->
-
         <!-- Standard content lead-in for experimental API pages -->
-        <p id="classSummary" style="display: none; ">
-          For information on how to use experimental APIs, see the <a href="experimental.html">chrome.experimental.* APIs</a> page.
-        </p>
-
         <!-- STATIC CONTENT PLACEHOLDER -->
         <div id="static"><div id="pageData-name" class="pageData">WebNavigation API</div>
-
 <!-- BEGIN AUTHORED CONTENT -->
 <p id="classSummary">
 Use the <code>chrome.webNavigation</code> module to receive
 notifications about the status of navigations requests in-flight.
 </p>
-
 <a name="H2-0"></a><h2>Manifest</h2>
 <p>
 All <code>chrome.webNavigation</code> methods and events require you to declare
@@ -433,7 +263,6 @@ the "webNavigation" permission in the <a href="manifest.html">extension
 manifest</a>.
 For example:
 </p>
-
 <pre>{
   "name": "My extension",
   ...
@@ -442,10 +271,7 @@ For example:
   ]</b>,
   ...
 }</pre>
-
-
 <a name="H2-1"></a><h2>Examples</h2>
-
 <p>
 You can find simple examples of using the tabs module in the
 <a href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/webNavigation/">examples/api/webNavigation</a>
@@ -453,7 +279,6 @@ directory.
 For other examples and for help in viewing the source code, see
 <a href="samples.html">Samples</a>.
 </p>
-
 <a name="H2-2"></a><h2>Event order</h2>
 <p>
 For a navigation that is successfully completed, events are fired in the
@@ -478,7 +303,6 @@ If the reference fragment of a frame is changed, a
 time after <code>onDOMContentLoaded</code>, even after
 <code>onCompleted</code>.
 </p>
-
 <a name="H2-3"></a><h2>Relation to webRequest events</h2>
 <p>
 There is no defined ordering between events of the <a href="experimental.webRequest.html">webRequest API</a> and the events of the
@@ -491,7 +315,6 @@ In general, the webNavigation events are closely related to the navigation
 state that is displayed in the UI, while the webRequest events correspond to
 the state of the network stack which is generally opaque to the user.
 </p>
-
 <a name="H2-4"></a><h2>A note about timestamps</h2>
 <p>
 It's important to note that some technical oddities in the OS's handling
@@ -505,50 +328,27 @@ unexpected results.
 </p>
 <!-- END AUTHORED CONTENT -->
 </div>
-
         <!-- API PAGE -->
         <div class="apiPage">
         <a name="apiReference"></a>
         <h2>API reference: chrome.webNavigation</h2>
-
           <!-- PROPERTIES -->
-          <div class="apiGroup" style="display: none; ">
-            <a name="properties"></a>
-            <h3 id="properties">Properties</h3>
-
-            <div>
-              <a></a>
-              <h4>getLastError</h4>
-              <div class="summary">
-                <!-- Note: intentionally longer 80 columns -->
-                <span>chrome.extension</span><span>lastError</span>
-              </div>
-              <div>
-              </div>
-            </div>
-
-          </div> <!-- /apiGroup -->
-
+           <!-- /apiGroup -->
           <!-- METHODS -->
           <div id="methodsTemplate" class="apiGroup">
             <a name="global-methods"></a>
             <h3>Methods</h3>
-
             <!-- iterates over all functions -->
             <div class="apiItem">
               <a name="method-getAllFrames"></a> <!-- method-anchor -->
               <h4>getAllFrames</h4>
-
-              <div class="summary"><span style="display: none; ">void</span>
+              <div class="summary">
                   <!-- Note: intentionally longer 80 columns -->
-                  <span>chrome.webNavigation.getAllFrames</span>(<span class="null"><span style="display: none; ">, </span><span>object</span>
+                  <span>chrome.webNavigation.getAllFrames</span>(<span class="null"><span>object</span>
                       <var><span>details</span></var></span><span class="null"><span>, </span><span>function</span>
                       <var><span>callback</span></var></span>)</div>
-
               <div class="description">
-                <p class="todo" style="display: none; ">Undocumented.</p>
                 <p>Retrieves information about all frames of a given tab.</p>
-
                 <!-- PARAMETERS -->
                 <h4>Parameters</h4>
                 <dl>
@@ -557,43 +357,19 @@ unexpected results.
           <dt>
             <var>details</var>
               <em>
-
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
-                    <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
                       <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
                         <span>object</span>
-                        <span style="display: none; "></span>
                       </span>
                     </span>
                   )
                 </div>
-
               </em>
           </dt>
-          <dd class="todo" style="display: none; ">
-            Undocumented.
-          </dd>
           <dd>Information about the tab to retrieve all frames from.</dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
           <!-- OBJECT PROPERTIES -->
           <dd>
             <dl>
@@ -602,171 +378,61 @@ unexpected results.
           <dt>
             <var>tabId</var>
               <em>
-
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
-                    <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
                       <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
                         <span>integer</span>
-                        <span style="display: none; "></span>
                       </span>
                     </span>
                   )
                 </div>
-
               </em>
           </dt>
-          <dd class="todo" style="display: none; ">
-            Undocumented.
-          </dd>
           <dd>The ID of the tab.</dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
           <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-
           <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
         </div>
               </div>
             </dl>
           </dd>
-
           <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
         </div>
                   </div><div>
                     <div>
           <dt>
             <var>callback</var>
               <em>
-
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
-                    <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
                       <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
                         <span>function</span>
-                        <span style="display: none; "></span>
                       </span>
                     </span>
                   )
                 </div>
-
               </em>
           </dt>
           <dd class="todo">
             Undocumented.
           </dd>
-          <dd style="display: none; ">
-            Description of this parameter from the json schema.
-          </dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
           <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-
           <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
         </div>
                   </div>
                 </dl>
-
                 <!-- RETURNS -->
-                <h4 style="display: none; ">Returns</h4>
                 <dl>
-                  <div style="display: none; ">
-                    <div>
-                    </div>
-                  </div>
                 </dl>
-
                 <!-- CALLBACK -->
                 <div>
                   <div>
@@ -775,11 +441,6 @@ unexpected results.
                     The callback <em>parameter</em> should specify a function
                     that looks like this:
                   </p>
-                  <p style="display: none; ">
-                    If you specify the <em>callback</em> parameter, it should
-                    specify a function that looks like this:
-                  </p>
-
                   <!-- Note: intentionally longer 80 columns -->
                   <pre>function(<span>array of object details</span>) <span class="subdued">{...}</span>;</pre>
                   <dl>
@@ -788,54 +449,26 @@ unexpected results.
           <dt>
             <var>details</var>
               <em>
-
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
                     <span class="optional">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
                       <span>
                         <span>
                           array of <span><span>
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
                       <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
                         <span>object</span>
-                        <span style="display: none; "></span>
                       </span>
                     </span></span>
                         </span>
-                        <span style="display: none; ">paramType</span>
-                        <span style="display: none; "></span>
                       </span>
                     </span>
                   )
                 </div>
-
               </em>
           </dt>
-          <dd class="todo" style="display: none; ">
-            Undocumented.
-          </dd>
           <dd>A list of frames in the given tab, null if the specified tab ID is invalid.</dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
           <!-- OBJECT PROPERTIES -->
           <dd>
             <dl>
@@ -844,253 +477,93 @@ unexpected results.
           <dt>
             <var>errorOccurred</var>
               <em>
-
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
-                    <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
                       <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
                         <span>boolean</span>
-                        <span style="display: none; "></span>
                       </span>
                     </span>
                   )
                 </div>
-
               </em>
           </dt>
-          <dd class="todo" style="display: none; ">
-            Undocumented.
-          </dd>
           <dd>True if the last navigation in this frame was interrupted by an error, i.e. the onErrorOccurred event fired.</dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
           <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-
           <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
         </div>
               </div><div>
                 <div>
           <dt>
             <var>frameId</var>
               <em>
-
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
-                    <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
                       <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
                         <span>integer</span>
-                        <span style="display: none; "></span>
                       </span>
                     </span>
                   )
                 </div>
-
               </em>
           </dt>
-          <dd class="todo" style="display: none; ">
-            Undocumented.
-          </dd>
           <dd>The ID of the frame. 0 indicates that this is the main frame; a positive value indicates the ID of a subframe.</dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
           <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-
           <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
         </div>
               </div><div>
                 <div>
           <dt>
             <var>url</var>
               <em>
-
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
-                    <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
                       <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
                         <span>string</span>
-                        <span style="display: none; "></span>
                       </span>
                     </span>
                   )
                 </div>
-
               </em>
           </dt>
-          <dd class="todo" style="display: none; ">
-            Undocumented.
-          </dd>
           <dd>The URL currently associated with this frame, if the frame identified by the frameId existed at one point in the given tab. The fact that an URL is associated with a given frameId does not imply that the corresponding frame still exists.</dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
           <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-
           <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
         </div>
               </div>
             </dl>
           </dd>
-
           <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
         </div>
                     </div>
                   </dl>
                   </div>
                 </div>
-
                 <!-- MIN_VERSION -->
-                <p style="display: none; ">
-                  This function was added in version <b><span></span></b>.
-                  If you require this function, the manifest key
-                  <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-                  can ensure that your extension won't be run in an earlier browser version.
-                </p>
               </div> <!-- /description -->
-
             </div><div class="apiItem">
               <a name="method-getFrame"></a> <!-- method-anchor -->
               <h4>getFrame</h4>
-
-              <div class="summary"><span style="display: none; ">void</span>
+              <div class="summary">
                   <!-- Note: intentionally longer 80 columns -->
-                  <span>chrome.webNavigation.getFrame</span>(<span class="null"><span style="display: none; ">, </span><span>object</span>
+                  <span>chrome.webNavigation.getFrame</span>(<span class="null"><span>object</span>
                       <var><span>details</span></var></span><span class="null"><span>, </span><span>function</span>
                       <var><span>callback</span></var></span>)</div>
-
               <div class="description">
-                <p class="todo" style="display: none; ">Undocumented.</p>
                 <p>Retrieves information about the given frame. A frame refers to an &lt;iframe&gt; or a &lt;frame&gt; of a web page and is identified by a tab ID and a frame ID.</p>
-
                 <!-- PARAMETERS -->
                 <h4>Parameters</h4>
                 <dl>
@@ -1099,43 +572,19 @@ unexpected results.
           <dt>
             <var>details</var>
               <em>
-
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
-                    <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
                       <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
                         <span>object</span>
-                        <span style="display: none; "></span>
                       </span>
                     </span>
                   )
                 </div>
-
               </em>
           </dt>
-          <dd class="todo" style="display: none; ">
-            Undocumented.
-          </dd>
           <dd>Information about the frame to retrieve information about.</dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
           <!-- OBJECT PROPERTIES -->
           <dd>
             <dl>
@@ -1144,239 +593,84 @@ unexpected results.
           <dt>
             <var>tabId</var>
               <em>
-
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
-                    <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
                       <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
                         <span>integer</span>
-                        <span style="display: none; "></span>
                       </span>
                     </span>
                   )
                 </div>
-
               </em>
           </dt>
-          <dd class="todo" style="display: none; ">
-            Undocumented.
-          </dd>
           <dd>The ID of the tab in which the frame is.</dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
           <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-
           <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
         </div>
               </div><div>
                 <div>
           <dt>
             <var>frameId</var>
               <em>
-
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
-                    <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
                       <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
                         <span>integer</span>
-                        <span style="display: none; "></span>
                       </span>
                     </span>
                   )
                 </div>
-
               </em>
           </dt>
-          <dd class="todo" style="display: none; ">
-            Undocumented.
-          </dd>
           <dd>The ID of the frame in the given tab.</dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
           <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-
           <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
         </div>
               </div>
             </dl>
           </dd>
-
           <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
         </div>
                   </div><div>
                     <div>
           <dt>
             <var>callback</var>
               <em>
-
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
-                    <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
                       <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
                         <span>function</span>
-                        <span style="display: none; "></span>
                       </span>
                     </span>
                   )
                 </div>
-
               </em>
           </dt>
           <dd class="todo">
             Undocumented.
           </dd>
-          <dd style="display: none; ">
-            Description of this parameter from the json schema.
-          </dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
           <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-
           <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
         </div>
                   </div>
                 </dl>
-
                 <!-- RETURNS -->
-                <h4 style="display: none; ">Returns</h4>
                 <dl>
-                  <div style="display: none; ">
-                    <div>
-                    </div>
-                  </div>
                 </dl>
-
                 <!-- CALLBACK -->
                 <div>
                   <div>
@@ -1385,11 +679,6 @@ unexpected results.
                     The callback <em>parameter</em> should specify a function
                     that looks like this:
                   </p>
-                  <p style="display: none; ">
-                    If you specify the <em>callback</em> parameter, it should
-                    specify a function that looks like this:
-                  </p>
-
                   <!-- Note: intentionally longer 80 columns -->
                   <pre>function(<span>object details</span>) <span class="subdued">{...}</span>;</pre>
                   <dl>
@@ -1398,43 +687,20 @@ unexpected results.
           <dt>
             <var>details</var>
               <em>
-
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
                     <span class="optional">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
                       <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
                         <span>object</span>
-                        <span style="display: none; "></span>
                       </span>
                     </span>
                   )
                 </div>
-
               </em>
           </dt>
-          <dd class="todo" style="display: none; ">
-            Undocumented.
-          </dd>
           <dd>Information about the requested frame, null if the specified frame ID and/or tab ID are invalid.</dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
           <!-- OBJECT PROPERTIES -->
           <dd>
             <dl>
@@ -1443,175 +709,62 @@ unexpected results.
           <dt>
             <var>errorOccurred</var>
               <em>
-
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
-                    <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
                       <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
                         <span>boolean</span>
-                        <span style="display: none; "></span>
                       </span>
                     </span>
                   )
                 </div>
-
               </em>
           </dt>
-          <dd class="todo" style="display: none; ">
-            Undocumented.
-          </dd>
           <dd>True if the last navigation in this frame was interrupted by an error, i.e. the onErrorOccurred event fired.</dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
           <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-
           <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
         </div>
               </div><div>
                 <div>
           <dt>
             <var>url</var>
               <em>
-
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
-                    <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
                       <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
                         <span>string</span>
-                        <span style="display: none; "></span>
                       </span>
                     </span>
                   )
                 </div>
-
               </em>
           </dt>
-          <dd class="todo" style="display: none; ">
-            Undocumented.
-          </dd>
           <dd>The URL currently associated with this frame, if the frame identified by the frameId existed at one point in the given tab. The fact that an URL is associated with a given frameId does not imply that the corresponding frame still exists.</dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
           <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-
           <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
         </div>
               </div>
             </dl>
           </dd>
-
           <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
         </div>
                     </div>
                   </dl>
                   </div>
                 </div>
-
                 <!-- MIN_VERSION -->
-                <p style="display: none; ">
-                  This function was added in version <b><span></span></b>.
-                  If you require this function, the manifest key
-                  <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-                  can ensure that your extension won't be run in an earlier browser version.
-                </p>
               </div> <!-- /description -->
-
             </div>  <!-- /apiItem -->
-
           </div>  <!-- /apiGroup -->
-
           <!-- EVENTS -->
           <div id="eventsTemplate" class="apiGroup">
             <a name="global-events"></a>
@@ -1620,16 +773,12 @@ unexpected results.
             <div class="apiItem">
               <a name="event-onBeforeNavigate"></a>
               <h4>onBeforeNavigate</h4>
-
               <div class="summary">
                 <!-- Note: intentionally longer 80 columns -->
                 <span class="subdued">chrome.webNavigation.</span><span>onBeforeNavigate</span><span class="subdued">.addListener</span>(function(<span>object details</span>) <span class="subdued">{...}</span><span></span>);
               </div>
-
               <div class="description">
-                <p class="todo" style="display: none; ">Undocumented.</p>
                 <p>Fired when a navigation is about to occur.</p>
-
                 <!-- LISTENER PARAMETERS -->
                 <div>
                   <h4>Listener parameters</h4>
@@ -1639,45 +788,21 @@ unexpected results.
           <dt>
             <var>details</var>
               <em>
-
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
-                    <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
                       <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
                         <span>object</span>
-                        <span style="display: none; "></span>
                       </span>
                     </span>
                   )
                 </div>
-
               </em>
           </dt>
           <dd class="todo">
             Undocumented.
           </dd>
-          <dd style="display: none; ">
-            Description of this parameter from the json schema.
-          </dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
           <!-- OBJECT PROPERTIES -->
           <dd>
             <dl>
@@ -1686,333 +811,119 @@ unexpected results.
           <dt>
             <var>tabId</var>
               <em>
-
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
-                    <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
                       <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
                         <span>integer</span>
-                        <span style="display: none; "></span>
                       </span>
                     </span>
                   )
                 </div>
-
               </em>
           </dt>
-          <dd class="todo" style="display: none; ">
-            Undocumented.
-          </dd>
           <dd>The ID of the tab in which the navigation is about to occur.</dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
           <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-
           <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
         </div>
               </div><div>
                 <div>
           <dt>
             <var>url</var>
               <em>
-
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
-                    <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
                       <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
                         <span>string</span>
-                        <span style="display: none; "></span>
                       </span>
                     </span>
                   )
                 </div>
-
               </em>
           </dt>
           <dd class="todo">
             Undocumented.
           </dd>
-          <dd style="display: none; ">
-            Description of this parameter from the json schema.
-          </dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
           <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-
           <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
         </div>
               </div><div>
                 <div>
           <dt>
             <var>frameId</var>
               <em>
-
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
-                    <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
                       <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
                         <span>integer</span>
-                        <span style="display: none; "></span>
                       </span>
                     </span>
                   )
                 </div>
-
               </em>
           </dt>
-          <dd class="todo" style="display: none; ">
-            Undocumented.
-          </dd>
           <dd>0 indicates the navigation happens in the tab content window; a positive value indicates navigation in a subframe. Frame IDs are unique within a tab.</dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
           <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-
           <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
         </div>
               </div><div>
                 <div>
           <dt>
             <var>timeStamp</var>
               <em>
-
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
-                    <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
                       <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
                         <span>number</span>
-                        <span style="display: none; "></span>
                       </span>
                     </span>
                   )
                 </div>
-
               </em>
           </dt>
-          <dd class="todo" style="display: none; ">
-            Undocumented.
-          </dd>
           <dd>The time when the browser was about to start the navigation, in milliseconds since the epoch.</dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
           <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-
           <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
         </div>
               </div>
             </dl>
           </dd>
-
           <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
         </div>
                     </div>
                   </dl>
                 </div>
-
                 <!-- EXTRA PARAMETERS -->
-                <div style="display: none; ">
-                  <h4>Extra parameters to addListener</h4>
-                  <dl>
-                    <div>
-                      <div>
-                      </div>
-                    </div>
-                  </dl>
-                </div>
-
                 <!-- LISTENER RETURN VALUE -->
-                <h4 style="display: none; ">Listener returns</h4>
                 <dl>
-                  <div style="display: none; ">
-                    <div>
-                    </div>
-                  </div>
                 </dl>
-
               </div> <!-- /description -->
             </div><div class="apiItem">
               <a name="event-onCommitted"></a>
               <h4>onCommitted</h4>
-
               <div class="summary">
                 <!-- Note: intentionally longer 80 columns -->
                 <span class="subdued">chrome.webNavigation.</span><span>onCommitted</span><span class="subdued">.addListener</span>(function(<span>object details</span>) <span class="subdued">{...}</span><span></span>);
               </div>
-
               <div class="description">
-                <p class="todo" style="display: none; ">Undocumented.</p>
                 <p>Fired when a navigation is committed. The document (and the resources it refers to, such as images and subframes) might still be downloading, but at least part of the document has been received from the server and the browser has decided to switch to the new document.</p>
-
                 <!-- LISTENER PARAMETERS -->
                 <div>
                   <h4>Listener parameters</h4>
@@ -2022,45 +933,21 @@ unexpected results.
           <dt>
             <var>details</var>
               <em>
-
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
-                    <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
                       <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
                         <span>object</span>
-                        <span style="display: none; "></span>
                       </span>
                     </span>
                   )
                 </div>
-
               </em>
           </dt>
           <dd class="todo">
             Undocumented.
           </dd>
-          <dd style="display: none; ">
-            Description of this parameter from the json schema.
-          </dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
           <!-- OBJECT PROPERTIES -->
           <dd>
             <dl>
@@ -2069,480 +956,174 @@ unexpected results.
           <dt>
             <var>tabId</var>
               <em>
-
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
-                    <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
                       <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
                         <span>integer</span>
-                        <span style="display: none; "></span>
                       </span>
                     </span>
                   )
                 </div>
-
               </em>
           </dt>
-          <dd class="todo" style="display: none; ">
-            Undocumented.
-          </dd>
           <dd>The ID of the tab in which the navigation occurs.</dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
           <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-
           <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
         </div>
               </div><div>
                 <div>
           <dt>
             <var>url</var>
               <em>
-
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
-                    <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
                       <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
                         <span>string</span>
-                        <span style="display: none; "></span>
                       </span>
                     </span>
                   )
                 </div>
-
               </em>
           </dt>
           <dd class="todo">
             Undocumented.
           </dd>
-          <dd style="display: none; ">
-            Description of this parameter from the json schema.
-          </dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
           <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-
           <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
         </div>
               </div><div>
                 <div>
           <dt>
             <var>frameId</var>
               <em>
-
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
-                    <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
                       <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
                         <span>integer</span>
-                        <span style="display: none; "></span>
                       </span>
                     </span>
                   )
                 </div>
-
               </em>
           </dt>
-          <dd class="todo" style="display: none; ">
-            Undocumented.
-          </dd>
           <dd>0 indicates the navigation happens in the tab content window; a positive value indicates navigation in a subframe. Frame IDs are unique within a tab.</dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
           <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-
           <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
         </div>
               </div><div>
                 <div>
           <dt>
             <var>transitionType</var>
               <em>
-
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
-                    <span class="optional" style="display: none; ">optional</span>
                     <span class="enum">enumerated</span>
                     <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
                       <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
                         <span>string</span>
                         <span>["link", "typed", "auto_bookmark", "auto_subframe", "manual_subframe", "generated", "start_page", "form_submit", "reload", "keyword", "keyword_generated"]</span>
                       </span>
                     </span>
                   )
                 </div>
-
               </em>
           </dt>
-          <dd class="todo" style="display: none; ">
-            Undocumented.
-          </dd>
           <dd>Cause of the navigation. The same transition types as defined in the history API are used.</dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
           <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-
           <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
         </div>
               </div><div>
                 <div>
           <dt>
             <var>transitionQualifiers</var>
               <em>
-
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
-                    <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
                       <span>
                         <span>
                           array of <span><span>
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
                       <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
                         <span>string</span>
                         <span>["client_redirect", "server_redirect", "forward_back", "from_address_bar"]</span>
                       </span>
                     </span></span>
                         </span>
-                        <span style="display: none; ">paramType</span>
-                        <span style="display: none; "></span>
                       </span>
                     </span>
                   )
                 </div>
-
               </em>
           </dt>
-          <dd class="todo" style="display: none; ">
-            Undocumented.
-          </dd>
           <dd>A list of transition qualifiers.</dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
           <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-
           <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
         </div>
               </div><div>
                 <div>
           <dt>
             <var>timeStamp</var>
               <em>
-
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
-                    <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
                       <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
                         <span>number</span>
-                        <span style="display: none; "></span>
                       </span>
                     </span>
                   )
                 </div>
-
               </em>
           </dt>
-          <dd class="todo" style="display: none; ">
-            Undocumented.
-          </dd>
           <dd>The time when the navigation was committed, in milliseconds since the epoch.</dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
           <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-
           <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
         </div>
               </div>
             </dl>
           </dd>
-
           <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
         </div>
                     </div>
                   </dl>
                 </div>
-
                 <!-- EXTRA PARAMETERS -->
-                <div style="display: none; ">
-                  <h4>Extra parameters to addListener</h4>
-                  <dl>
-                    <div>
-                      <div>
-                      </div>
-                    </div>
-                  </dl>
-                </div>
-
                 <!-- LISTENER RETURN VALUE -->
-                <h4 style="display: none; ">Listener returns</h4>
                 <dl>
-                  <div style="display: none; ">
-                    <div>
-                    </div>
-                  </div>
                 </dl>
-
               </div> <!-- /description -->
             </div><div class="apiItem">
               <a name="event-onCompleted"></a>
               <h4>onCompleted</h4>
-
               <div class="summary">
                 <!-- Note: intentionally longer 80 columns -->
                 <span class="subdued">chrome.webNavigation.</span><span>onCompleted</span><span class="subdued">.addListener</span>(function(<span>object details</span>) <span class="subdued">{...}</span><span></span>);
               </div>
-
               <div class="description">
-                <p class="todo" style="display: none; ">Undocumented.</p>
                 <p>Fired when a document, including the resources it refers to, is completely loaded and initialized.</p>
-
                 <!-- LISTENER PARAMETERS -->
                 <div>
                   <h4>Listener parameters</h4>
@@ -2552,45 +1133,21 @@ unexpected results.
           <dt>
             <var>details</var>
               <em>
-
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
-                    <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
                       <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
                         <span>object</span>
-                        <span style="display: none; "></span>
                       </span>
                     </span>
                   )
                 </div>
-
               </em>
           </dt>
           <dd class="todo">
             Undocumented.
           </dd>
-          <dd style="display: none; ">
-            Description of this parameter from the json schema.
-          </dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
           <!-- OBJECT PROPERTIES -->
           <dd>
             <dl>
@@ -2599,333 +1156,119 @@ unexpected results.
           <dt>
             <var>tabId</var>
               <em>
-
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
-                    <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
                       <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
                         <span>integer</span>
-                        <span style="display: none; "></span>
                       </span>
                     </span>
                   )
                 </div>
-
               </em>
           </dt>
-          <dd class="todo" style="display: none; ">
-            Undocumented.
-          </dd>
           <dd>The ID of the tab in which the navigation occurs.</dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
           <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-
           <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
         </div>
               </div><div>
                 <div>
           <dt>
             <var>url</var>
               <em>
-
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
-                    <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
                       <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
                         <span>string</span>
-                        <span style="display: none; "></span>
                       </span>
                     </span>
                   )
                 </div>
-
               </em>
           </dt>
           <dd class="todo">
             Undocumented.
           </dd>
-          <dd style="display: none; ">
-            Description of this parameter from the json schema.
-          </dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
           <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-
           <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
         </div>
               </div><div>
                 <div>
           <dt>
             <var>frameId</var>
               <em>
-
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
-                    <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
                       <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
                         <span>integer</span>
-                        <span style="display: none; "></span>
                       </span>
                     </span>
                   )
                 </div>
-
               </em>
           </dt>
-          <dd class="todo" style="display: none; ">
-            Undocumented.
-          </dd>
           <dd>0 indicates the navigation happens in the tab content window; a positive value indicates navigation in a subframe. Frame IDs are unique within a tab.</dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
           <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-
           <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
         </div>
               </div><div>
                 <div>
           <dt>
             <var>timeStamp</var>
               <em>
-
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
-                    <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
                       <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
                         <span>number</span>
-                        <span style="display: none; "></span>
                       </span>
                     </span>
                   )
                 </div>
-
               </em>
           </dt>
-          <dd class="todo" style="display: none; ">
-            Undocumented.
-          </dd>
           <dd>The time when the document finished loading, in milliseconds since the epoch.</dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
           <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-
           <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
         </div>
               </div>
             </dl>
           </dd>
-
           <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
         </div>
                     </div>
                   </dl>
                 </div>
-
                 <!-- EXTRA PARAMETERS -->
-                <div style="display: none; ">
-                  <h4>Extra parameters to addListener</h4>
-                  <dl>
-                    <div>
-                      <div>
-                      </div>
-                    </div>
-                  </dl>
-                </div>
-
                 <!-- LISTENER RETURN VALUE -->
-                <h4 style="display: none; ">Listener returns</h4>
                 <dl>
-                  <div style="display: none; ">
-                    <div>
-                    </div>
-                  </div>
                 </dl>
-
               </div> <!-- /description -->
             </div><div class="apiItem">
               <a name="event-onCreatedNavigationTarget"></a>
               <h4>onCreatedNavigationTarget</h4>
-
               <div class="summary">
                 <!-- Note: intentionally longer 80 columns -->
                 <span class="subdued">chrome.webNavigation.</span><span>onCreatedNavigationTarget</span><span class="subdued">.addListener</span>(function(<span>object details</span>) <span class="subdued">{...}</span><span></span>);
               </div>
-
               <div class="description">
-                <p class="todo" style="display: none; ">Undocumented.</p>
                 <p>Fired when a new window, or a new tab in an existing window, is created to host a navigation.</p>
-
                 <!-- LISTENER PARAMETERS -->
                 <div>
                   <h4>Listener parameters</h4>
@@ -2935,45 +1278,21 @@ unexpected results.
           <dt>
             <var>details</var>
               <em>
-
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
-                    <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
                       <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
                         <span>object</span>
-                        <span style="display: none; "></span>
                       </span>
                     </span>
                   )
                 </div>
-
               </em>
           </dt>
           <dd class="todo">
             Undocumented.
           </dd>
-          <dd style="display: none; ">
-            Description of this parameter from the json schema.
-          </dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
           <!-- OBJECT PROPERTIES -->
           <dd>
             <dl>
@@ -2982,399 +1301,140 @@ unexpected results.
           <dt>
             <var>sourceTabId</var>
               <em>
-
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
-                    <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
                       <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
                         <span>integer</span>
-                        <span style="display: none; "></span>
                       </span>
                     </span>
                   )
                 </div>
-
               </em>
           </dt>
-          <dd class="todo" style="display: none; ">
-            Undocumented.
-          </dd>
           <dd>The ID of the tab in which the navigation is triggered.</dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
           <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-
           <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
         </div>
               </div><div>
                 <div>
           <dt>
             <var>sourceFrameId</var>
               <em>
-
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
-                    <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
                       <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
                         <span>integer</span>
-                        <span style="display: none; "></span>
                       </span>
                     </span>
                   )
                 </div>
-
               </em>
           </dt>
-          <dd class="todo" style="display: none; ">
-            Undocumented.
-          </dd>
           <dd>The ID of the frame with sourceTabId in which the navigation is triggered. 0 indicates the main frame.</dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
           <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-
           <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
         </div>
               </div><div>
                 <div>
           <dt>
             <var>url</var>
               <em>
-
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
-                    <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
                       <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
                         <span>string</span>
-                        <span style="display: none; "></span>
                       </span>
                     </span>
                   )
                 </div>
-
               </em>
           </dt>
-          <dd class="todo" style="display: none; ">
-            Undocumented.
-          </dd>
           <dd>The URL to be opened in the new window.</dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
           <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-
           <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
         </div>
               </div><div>
                 <div>
           <dt>
             <var>tabId</var>
               <em>
-
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
-                    <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
                       <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
                         <span>integer</span>
-                        <span style="display: none; "></span>
                       </span>
                     </span>
                   )
                 </div>
-
               </em>
           </dt>
-          <dd class="todo" style="display: none; ">
-            Undocumented.
-          </dd>
           <dd>The ID of the tab in which the url is opened</dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
           <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-
           <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
         </div>
               </div><div>
                 <div>
           <dt>
             <var>timeStamp</var>
               <em>
-
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
-                    <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
                       <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
                         <span>number</span>
-                        <span style="display: none; "></span>
                       </span>
                     </span>
                   )
                 </div>
-
               </em>
           </dt>
-          <dd class="todo" style="display: none; ">
-            Undocumented.
-          </dd>
           <dd>The time when the browser was about to create a new view, in milliseconds since the epoch.</dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
           <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-
           <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
         </div>
               </div>
             </dl>
           </dd>
-
           <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
         </div>
                     </div>
                   </dl>
                 </div>
-
                 <!-- EXTRA PARAMETERS -->
-                <div style="display: none; ">
-                  <h4>Extra parameters to addListener</h4>
-                  <dl>
-                    <div>
-                      <div>
-                      </div>
-                    </div>
-                  </dl>
-                </div>
-
                 <!-- LISTENER RETURN VALUE -->
-                <h4 style="display: none; ">Listener returns</h4>
                 <dl>
-                  <div style="display: none; ">
-                    <div>
-                    </div>
-                  </div>
                 </dl>
-
               </div> <!-- /description -->
             </div><div class="apiItem">
               <a name="event-onDOMContentLoaded"></a>
               <h4>onDOMContentLoaded</h4>
-
               <div class="summary">
                 <!-- Note: intentionally longer 80 columns -->
                 <span class="subdued">chrome.webNavigation.</span><span>onDOMContentLoaded</span><span class="subdued">.addListener</span>(function(<span>object details</span>) <span class="subdued">{...}</span><span></span>);
               </div>
-
               <div class="description">
-                <p class="todo" style="display: none; ">Undocumented.</p>
                 <p>Fired when the page's DOM is fully constructed, but the referenced resources may not finish loading.</p>
-
                 <!-- LISTENER PARAMETERS -->
                 <div>
                   <h4>Listener parameters</h4>
@@ -3384,45 +1444,21 @@ unexpected results.
           <dt>
             <var>details</var>
               <em>
-
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
-                    <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
                       <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
                         <span>object</span>
-                        <span style="display: none; "></span>
                       </span>
                     </span>
                   )
                 </div>
-
               </em>
           </dt>
           <dd class="todo">
             Undocumented.
           </dd>
-          <dd style="display: none; ">
-            Description of this parameter from the json schema.
-          </dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
           <!-- OBJECT PROPERTIES -->
           <dd>
             <dl>
@@ -3431,333 +1467,119 @@ unexpected results.
           <dt>
             <var>tabId</var>
               <em>
-
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
-                    <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
                       <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
                         <span>integer</span>
-                        <span style="display: none; "></span>
                       </span>
                     </span>
                   )
                 </div>
-
               </em>
           </dt>
-          <dd class="todo" style="display: none; ">
-            Undocumented.
-          </dd>
           <dd>The ID of the tab in which the navigation occurs.</dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
           <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-
           <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
         </div>
               </div><div>
                 <div>
           <dt>
             <var>url</var>
               <em>
-
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
-                    <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
                       <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
                         <span>string</span>
-                        <span style="display: none; "></span>
                       </span>
                     </span>
                   )
                 </div>
-
               </em>
           </dt>
           <dd class="todo">
             Undocumented.
           </dd>
-          <dd style="display: none; ">
-            Description of this parameter from the json schema.
-          </dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
           <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-
           <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
         </div>
               </div><div>
                 <div>
           <dt>
             <var>frameId</var>
               <em>
-
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
-                    <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
                       <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
                         <span>integer</span>
-                        <span style="display: none; "></span>
                       </span>
                     </span>
                   )
                 </div>
-
               </em>
           </dt>
-          <dd class="todo" style="display: none; ">
-            Undocumented.
-          </dd>
           <dd>0 indicates the navigation happens in the tab content window; a positive value indicates navigation in a subframe. Frame IDs are unique within a tab.</dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
           <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-
           <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
         </div>
               </div><div>
                 <div>
           <dt>
             <var>timeStamp</var>
               <em>
-
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
-                    <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
                       <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
                         <span>number</span>
-                        <span style="display: none; "></span>
                       </span>
                     </span>
                   )
                 </div>
-
               </em>
           </dt>
-          <dd class="todo" style="display: none; ">
-            Undocumented.
-          </dd>
           <dd>The time when the page's DOM was fully constructed, in milliseconds since the epoch.</dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
           <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-
           <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
         </div>
               </div>
             </dl>
           </dd>
-
           <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
         </div>
                     </div>
                   </dl>
                 </div>
-
                 <!-- EXTRA PARAMETERS -->
-                <div style="display: none; ">
-                  <h4>Extra parameters to addListener</h4>
-                  <dl>
-                    <div>
-                      <div>
-                      </div>
-                    </div>
-                  </dl>
-                </div>
-
                 <!-- LISTENER RETURN VALUE -->
-                <h4 style="display: none; ">Listener returns</h4>
                 <dl>
-                  <div style="display: none; ">
-                    <div>
-                    </div>
-                  </div>
                 </dl>
-
               </div> <!-- /description -->
             </div><div class="apiItem">
               <a name="event-onErrorOccurred"></a>
               <h4>onErrorOccurred</h4>
-
               <div class="summary">
                 <!-- Note: intentionally longer 80 columns -->
                 <span class="subdued">chrome.webNavigation.</span><span>onErrorOccurred</span><span class="subdued">.addListener</span>(function(<span>object details</span>) <span class="subdued">{...}</span><span></span>);
               </div>
-
               <div class="description">
-                <p class="todo" style="display: none; ">Undocumented.</p>
                 <p>Fired when an error occurs and the navigation is aborted. This can happen if either a network error occurred, or the user aborted the navigation.</p>
-
                 <!-- LISTENER PARAMETERS -->
                 <div>
                   <h4>Listener parameters</h4>
@@ -3767,45 +1589,21 @@ unexpected results.
           <dt>
             <var>details</var>
               <em>
-
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
-                    <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
                       <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
                         <span>object</span>
-                        <span style="display: none; "></span>
                       </span>
                     </span>
                   )
                 </div>
-
               </em>
           </dt>
           <dd class="todo">
             Undocumented.
           </dd>
-          <dd style="display: none; ">
-            Description of this parameter from the json schema.
-          </dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
           <!-- OBJECT PROPERTIES -->
           <dd>
             <dl>
@@ -3814,401 +1612,142 @@ unexpected results.
           <dt>
             <var>tabId</var>
               <em>
-
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
-                    <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
                       <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
                         <span>integer</span>
-                        <span style="display: none; "></span>
                       </span>
                     </span>
                   )
                 </div>
-
               </em>
           </dt>
-          <dd class="todo" style="display: none; ">
-            Undocumented.
-          </dd>
           <dd>The ID of the tab in which the navigation occurs.</dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
           <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-
           <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
         </div>
               </div><div>
                 <div>
           <dt>
             <var>url</var>
               <em>
-
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
-                    <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
                       <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
                         <span>string</span>
-                        <span style="display: none; "></span>
                       </span>
                     </span>
                   )
                 </div>
-
               </em>
           </dt>
           <dd class="todo">
             Undocumented.
           </dd>
-          <dd style="display: none; ">
-            Description of this parameter from the json schema.
-          </dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
           <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-
           <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
         </div>
               </div><div>
                 <div>
           <dt>
             <var>frameId</var>
               <em>
-
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
-                    <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
                       <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
                         <span>integer</span>
-                        <span style="display: none; "></span>
                       </span>
                     </span>
                   )
                 </div>
-
               </em>
           </dt>
-          <dd class="todo" style="display: none; ">
-            Undocumented.
-          </dd>
           <dd>0 indicates the navigation happens in the tab content window; a positive value indicates navigation in a subframe. Frame IDs are unique within a tab.</dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
           <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-
           <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
         </div>
               </div><div>
                 <div>
           <dt>
             <var>error</var>
               <em>
-
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
-                    <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
                       <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
                         <span>string</span>
-                        <span style="display: none; "></span>
                       </span>
                     </span>
                   )
                 </div>
-
               </em>
           </dt>
-          <dd class="todo" style="display: none; ">
-            Undocumented.
-          </dd>
           <dd>The error description.</dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
           <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-
           <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
         </div>
               </div><div>
                 <div>
           <dt>
             <var>timeStamp</var>
               <em>
-
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
-                    <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
                       <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
                         <span>number</span>
-                        <span style="display: none; "></span>
                       </span>
                     </span>
                   )
                 </div>
-
               </em>
           </dt>
-          <dd class="todo" style="display: none; ">
-            Undocumented.
-          </dd>
           <dd>The time when the error occurred, in milliseconds since the epoch.</dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
           <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-
           <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
         </div>
               </div>
             </dl>
           </dd>
-
           <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
         </div>
                     </div>
                   </dl>
                 </div>
-
                 <!-- EXTRA PARAMETERS -->
-                <div style="display: none; ">
-                  <h4>Extra parameters to addListener</h4>
-                  <dl>
-                    <div>
-                      <div>
-                      </div>
-                    </div>
-                  </dl>
-                </div>
-
                 <!-- LISTENER RETURN VALUE -->
-                <h4 style="display: none; ">Listener returns</h4>
                 <dl>
-                  <div style="display: none; ">
-                    <div>
-                    </div>
-                  </div>
                 </dl>
-
               </div> <!-- /description -->
             </div><div class="apiItem">
               <a name="event-onReferenceFragmentUpdated"></a>
               <h4>onReferenceFragmentUpdated</h4>
-
               <div class="summary">
                 <!-- Note: intentionally longer 80 columns -->
                 <span class="subdued">chrome.webNavigation.</span><span>onReferenceFragmentUpdated</span><span class="subdued">.addListener</span>(function(<span>object details</span>) <span class="subdued">{...}</span><span></span>);
               </div>
-
               <div class="description">
-                <p class="todo" style="display: none; ">Undocumented.</p>
                 <p>Fired when the reference fragment of a frame was updated. All future events for that frame will use the updated URL.</p>
-
                 <!-- LISTENER PARAMETERS -->
                 <div>
                   <h4>Listener parameters</h4>
@@ -4218,45 +1757,21 @@ unexpected results.
           <dt>
             <var>details</var>
               <em>
-
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
-                    <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
                       <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
                         <span>object</span>
-                        <span style="display: none; "></span>
                       </span>
                     </span>
                   )
                 </div>
-
               </em>
           </dt>
           <dd class="todo">
             Undocumented.
           </dd>
-          <dd style="display: none; ">
-            Description of this parameter from the json schema.
-          </dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
           <!-- OBJECT PROPERTIES -->
           <dd>
             <dl>
@@ -4265,488 +1780,169 @@ unexpected results.
           <dt>
             <var>tabId</var>
               <em>
-
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
-                    <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
                       <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
                         <span>integer</span>
-                        <span style="display: none; "></span>
                       </span>
                     </span>
                   )
                 </div>
-
               </em>
           </dt>
-          <dd class="todo" style="display: none; ">
-            Undocumented.
-          </dd>
           <dd>The ID of the tab in which the navigation occurs.</dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
           <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-
           <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
         </div>
               </div><div>
                 <div>
           <dt>
             <var>url</var>
               <em>
-
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
-                    <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
                       <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
                         <span>string</span>
-                        <span style="display: none; "></span>
                       </span>
                     </span>
                   )
                 </div>
-
               </em>
           </dt>
           <dd class="todo">
             Undocumented.
           </dd>
-          <dd style="display: none; ">
-            Description of this parameter from the json schema.
-          </dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
           <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-
           <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
         </div>
               </div><div>
                 <div>
           <dt>
             <var>frameId</var>
               <em>
-
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
-                    <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
                       <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
                         <span>integer</span>
-                        <span style="display: none; "></span>
                       </span>
                     </span>
                   )
                 </div>
-
               </em>
           </dt>
-          <dd class="todo" style="display: none; ">
-            Undocumented.
-          </dd>
           <dd>0 indicates the navigation happens in the tab content window; a positive value indicates navigation in a subframe. Frame IDs are unique within a tab.</dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
           <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-
           <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
         </div>
               </div><div>
                 <div>
           <dt>
             <var>transitionType</var>
               <em>
-
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
-                    <span class="optional" style="display: none; ">optional</span>
                     <span class="enum">enumerated</span>
                     <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
                       <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
                         <span>string</span>
                         <span>["link", "typed", "auto_bookmark", "auto_subframe", "manual_subframe", "generated", "start_page", "form_submit", "reload", "keyword", "keyword_generated"]</span>
                       </span>
                     </span>
                   )
                 </div>
-
               </em>
           </dt>
-          <dd class="todo" style="display: none; ">
-            Undocumented.
-          </dd>
           <dd>Cause of the navigation. The same transition types as defined in the history API are used.</dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
           <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-
           <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
         </div>
               </div><div>
                 <div>
           <dt>
             <var>transitionQualifiers</var>
               <em>
-
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
-                    <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
                       <span>
                         <span>
                           array of <span><span>
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
                       <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
                         <span>string</span>
                         <span>["client_redirect", "server_redirect", "forward_back", "from_address_bar"]</span>
                       </span>
                     </span></span>
                         </span>
-                        <span style="display: none; ">paramType</span>
-                        <span style="display: none; "></span>
                       </span>
                     </span>
                   )
                 </div>
-
               </em>
           </dt>
-          <dd class="todo" style="display: none; ">
-            Undocumented.
-          </dd>
           <dd>A list of transition qualifiers.</dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
           <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-
           <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
         </div>
               </div><div>
                 <div>
           <dt>
             <var>timeStamp</var>
               <em>
-
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
-                    <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
                       <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
                         <span>number</span>
-                        <span style="display: none; "></span>
                       </span>
                     </span>
                   )
                 </div>
-
               </em>
           </dt>
-          <dd class="todo" style="display: none; ">
-            Undocumented.
-          </dd>
           <dd>The time when the navigation was committed, in milliseconds since the epoch.</dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
           <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-
           <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
         </div>
               </div>
             </dl>
           </dd>
-
           <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
         </div>
                     </div>
                   </dl>
                 </div>
-
                 <!-- EXTRA PARAMETERS -->
-                <div style="display: none; ">
-                  <h4>Extra parameters to addListener</h4>
-                  <dl>
-                    <div>
-                      <div>
-                      </div>
-                    </div>
-                  </dl>
-                </div>
-
                 <!-- LISTENER RETURN VALUE -->
-                <h4 style="display: none; ">Listener returns</h4>
                 <dl>
-                  <div style="display: none; ">
-                    <div>
-                    </div>
-                  </div>
                 </dl>
-
               </div> <!-- /description -->
             </div> <!-- /apiItem -->
-
           </div> <!-- /apiGroup -->
-
           <!-- TYPES -->
-          <div class="apiGroup" style="display: none; ">
-            <a name="types"></a>
-            <h3 id="types">Types</h3>
-
-            <!-- iterates over all types -->
-            <div class="apiItem">
-              <a></a>
-              <h4>type name</h4>
-
-              <div>
-              </div>
-
-            </div> <!-- /apiItem -->
-
-          </div> <!-- /apiGroup -->
-
+           <!-- /apiGroup -->
         </div> <!-- /apiPage -->
       </div> <!-- /gc-pagecontent -->
     </div> <!-- /g-section -->
@@ -4762,18 +1958,15 @@ unexpected results.
   <p>
   ©2011 Google
   </p>
-
 <!-- begin analytics -->
 <script src="https://www.google-analytics.com/urchin.js" type="text/javascript"></script>
 <script src="https://www.google-analytics.com/ga.js" type="text/javascript"></script>
-
 <script type="text/javascript">
   // chrome doc tracking
   try {
     var engdocs = _gat._getTracker("YT-10763712-2");
     engdocs._trackPageview();
   } catch(err) {}
-
   // code.google.com site-wide tracking
   try {
     _uacct="UA-18071-1";

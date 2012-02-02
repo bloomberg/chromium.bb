@@ -41,130 +41,7 @@
       <!-- In particular, sub-templates that recurse, must be used by allowing
            jstemplate to make a copy of the template in this section which
            are not operated on by way of the jsskip="true" -->
-      <div style="display:none">
-
-        <!-- VALUE -->
-        <div id="valueTemplate">
-          <dt>
-            <var>paramName</var>
-              <em>
-
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span class="optional">optional</span>
-                    <span class="enum">enumerated</span>
-                    <span id="typeTemplate">
-                      <span>
-                        <a> Type</a>
-                      </span>
-                      <span>
-                        <span>
-                          array of <span><span></span></span>
-                        </span>
-                        <span>paramType</span>
-                        <span></span>
-                      </span>
-                    </span>
-                  )
-                </div>
-
-              </em>
-          </dt>
-          <dd class="todo">
-            Undocumented.
-          </dd>
-          <dd>
-            Description of this parameter from the json schema.
-          </dd>
-          <dd>
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
-          <!-- OBJECT PROPERTIES -->
-          <dd>
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-
-          <!-- OBJECT METHODS -->
-          <dd>
-            <div></div>
-          </dd>
-
-          <!-- OBJECT EVENT FIELDS -->
-          <dd>
-            <div></div>
-          </dd>
-
-          <!-- FUNCTION PARAMETERS -->
-          <dd>
-            <div></div>
-          </dd>
-
-        </div> <!-- /VALUE -->
-
-        <div id="functionParametersTemplate">
-          <h5>Parameters</h5>
-          <dl>
-            <div>
-              <div>
-              </div>
-            </div>
-          </dl>
-        </div>
-
-        <!-- Individual subsections from the table of contents -->
-        <ol>
-          <li id="propertiesTocTemplate">
-            <a href="#properties">Properties</a>
-            <ol>
-              <li>
-                <a href="#property-anchor">propertyName</a>
-              </li>
-            </ol>
-          </li>
-          <li id="methodsTocTemplate">
-            <a>Methods</a>
-            <ol>
-              <li>
-                <a href="#method-anchor">methodName</a>
-              </li>
-            </ol>
-          </li>
-          <li id="eventsTocTemplate">
-            <a>Events</a>
-            <ol>
-              <li>
-                <a href="#event-anchor">eventName</a>
-              </li>
-            </ol>
-          </li>
-          <li id="typesTocTemplate">
-            <a href="#types">Types</a>
-            <ol>
-              <li>
-                <a href="#id-anchor">id</a>
-                <ol>
-                  <div></div>
-                  <div></div>
-                </ol>
-              </li>
-            </ol>
-          </li>
-        </ol>
-      </div> <!-- /SUBTEMPLATES -->
-
+       <!-- /SUBTEMPLATES -->
   <a id="top"></a>
     <div id="skipto">
       <a href="#gc-pagecontent">Skip to page content</a>
@@ -185,7 +62,6 @@
               <span class="greytext">e.g. "page action" or "tabs"</span>
             </div>
           </form>
-
           <script type="text/javascript" src="https://www.google.com/jsapi"></script>
           <script type="text/javascript">google.load("elements", "1", {packages: "transliteration"});</script>
           <script type="text/javascript" src="https://www.google.com/coop/cse/t13n?form=cse&amp;t13n_langs=en"></script>
@@ -193,9 +69,7 @@
         </td>
       </tr>
     </tbody></table>
-
     <div id="codesiteContent" class="">
-
       <a id="gc-topnav-anchor"></a>
       <div id="gc-topnav">
         <h1>Google Chrome Extensions (<a href="http://code.google.com/labs/">Labs</a>)</h1>
@@ -220,7 +94,6 @@
           </li>
         </ul>
       </div> <!-- end gc-topnav -->
-
     <div class="g-section g-tpl-170">
       <!-- SIDENAV -->
       <div class="g-unit g-first" id="gc-toc">
@@ -308,7 +181,6 @@
       <script>
         initToggles();
       </script>
-
     <div class="g-unit" id="gc-pagecontent">
       <div id="pageTitle">
         <h1 class="page_title">chrome.debugger</h1>
@@ -320,36 +192,19 @@
             <li>
               <a href="#manifest">Notes</a>
               <ol>
-                <li style="display: none; ">
-                  <a>h3Name</a>
-                </li>
               </ol>
             </li><li>
               <a href="#manifest">Manifest</a>
               <ol>
-                <li style="display: none; ">
-                  <a>h3Name</a>
-                </li>
               </ol>
             </li><li>
               <a href="#examples">Examples</a>
               <ol>
-                <li style="display: none; ">
-                  <a>h3Name</a>
-                </li>
               </ol>
             </li>
               <li>
                 <a href="#apiReference">API reference: chrome.debugger</a>
                 <ol>
-                  <li style="display: none; ">
-            <a href="#properties">Properties</a>
-            <ol>
-              <li>
-                <a href="#property-anchor">propertyName</a>
-              </li>
-            </ol>
-          </li>
                   <li>
             <a href="#global-methods">Methods</a>
             <ol>
@@ -378,22 +233,6 @@
               <li>
                 <a href="#type-Debuggee">Debuggee</a>
                 <ol>
-                  <li style="display: none; ">
-            <a>Methods</a>
-            <ol>
-              <li>
-                <a href="#method-anchor">methodName</a>
-              </li>
-            </ol>
-          </li>
-                  <li style="display: none; ">
-            <a>Events</a>
-            <ol>
-              <li>
-                <a href="#event-anchor">eventName</a>
-              </li>
-            </ol>
-          </li>
                 </ol>
               </li>
             </ol>
@@ -403,17 +242,10 @@
           </ol>
         </div>
         <!-- /TABLE OF CONTENTS -->
-
         <!-- Standard content lead-in for experimental API pages -->
-        <p id="classSummary" style="display: none; ">
-          For information on how to use experimental APIs, see the <a href="experimental.html">chrome.experimental.* APIs</a> page.
-        </p>
-
         <!-- STATIC CONTENT PLACEHOLDER -->
         <div id="static"><!-- BEGIN AUTHORED CONTENT -->
-
 <h2 id="manifest">Notes</h2>
-
 <p>
 Debugger API serves as an alternate transport for Chrome's
 <a href="http://code.google.com/chrome/devtools/docs/remote-debugging.html">
@@ -422,21 +254,17 @@ to attach to one or more tabs to instrument network interaction, debug
 JavaScript, mutate the DOM  and CSS, etc. Use the Debuggee tabId to target tabs
 with sendCommand and route events by <code>tabId</code> from onEvent callbacks. 
 </p>
-
 <p>
 As of today, attaching to the tab by means of the debugger API
 and using embedded Chrome DevTools with that tab are mutually exclusive.
 If user invokes Chrome DevTools while extension is attached to the tab,
 debugging session is terminated. Extension can re-establish it later.
 </p>
-
 <h2 id="manifest">Manifest</h2>
-
 <p>
 You must declare the "debugger" permission in your extension's manifest
 to use this API.
 </p>
-
 <pre>{
   "name": "My extension",
   ...
@@ -445,62 +273,35 @@ to use this API.
   ]</b>,
   ...
 }</pre>
-
-
 <h2 id="examples">Examples</h2>
-
 <p>
 You can find samples of this API in
 <a href="samples.html#debugger">Samples</a>.
 </p>
-
 <!-- END AUTHORED CONTENT -->
 </div>
-
         <!-- API PAGE -->
         <div class="apiPage">
         <a name="apiReference"></a>
         <h2>API reference: chrome.debugger</h2>
-
           <!-- PROPERTIES -->
-          <div class="apiGroup" style="display: none; ">
-            <a name="properties"></a>
-            <h3 id="properties">Properties</h3>
-
-            <div>
-              <a></a>
-              <h4>getLastError</h4>
-              <div class="summary">
-                <!-- Note: intentionally longer 80 columns -->
-                <span>chrome.extension</span><span>lastError</span>
-              </div>
-              <div>
-              </div>
-            </div>
-
-          </div> <!-- /apiGroup -->
-
+           <!-- /apiGroup -->
           <!-- METHODS -->
           <div id="methodsTemplate" class="apiGroup">
             <a name="global-methods"></a>
             <h3>Methods</h3>
-
             <!-- iterates over all functions -->
             <div class="apiItem">
               <a name="method-attach"></a> <!-- method-anchor -->
               <h4>attach</h4>
-
-              <div class="summary"><span style="display: none; ">void</span>
+              <div class="summary">
                   <!-- Note: intentionally longer 80 columns -->
-                  <span>chrome.debugger.attach</span>(<span class="null"><span style="display: none; ">, </span><span>Debuggee</span>
+                  <span>chrome.debugger.attach</span>(<span class="null"><span>Debuggee</span>
                       <var><span>target</span></var></span><span class="null"><span>, </span><span>string</span>
                       <var><span>requiredVersion</span></var></span><span class="optional"><span>, </span><span>function</span>
                       <var><span>callback</span></var></span>)</div>
-
               <div class="description">
-                <p class="todo" style="display: none; ">Undocumented.</p>
                 <p>Attaches debugger to the given target.</p>
-
                 <!-- PARAMETERS -->
                 <h4>Parameters</h4>
                 <dl>
@@ -509,264 +310,102 @@ You can find samples of this API in
           <dt>
             <var>target</var>
               <em>
-
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
-                    <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
                       <span>
                         <a href="debugger.html#type-Debuggee">Debuggee</a>
                       </span>
-                      <span style="display: none; ">
-                        <span>
-                          array of <span><span></span></span>
-                        </span>
-                        <span>paramType</span>
-                        <span></span>
-                      </span>
                     </span>
                   )
                 </div>
-
               </em>
           </dt>
-          <dd class="todo" style="display: none; ">
-            Undocumented.
-          </dd>
           <dd>Debugging target to which you want to attach.</dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
           <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-
           <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
         </div>
                   </div><div>
                     <div>
           <dt>
             <var>requiredVersion</var>
               <em>
-
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
-                    <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
                       <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
                         <span>string</span>
-                        <span style="display: none; "></span>
                       </span>
                     </span>
                   )
                 </div>
-
               </em>
           </dt>
-          <dd class="todo" style="display: none; ">
-            Undocumented.
-          </dd>
           <dd>Required debugging protocol version ("0.1"). One can only attach to the debuggee with matching major version and greater or equal minor version. List of the protocol versions can be obtained <a href="http://code.google.com/chrome/devtools/docs/remote-debugging.html">here</a>.</dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
           <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-
           <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
         </div>
                   </div><div>
                     <div>
           <dt>
             <var>callback</var>
               <em>
-
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
                     <span class="optional">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
                       <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
                         <span>function</span>
-                        <span style="display: none; "></span>
                       </span>
                     </span>
                   )
                 </div>
-
               </em>
           </dt>
-          <dd class="todo" style="display: none; ">
-            Undocumented.
-          </dd>
           <dd>Called once the attach operation succeeds or fails. Callback receives no arguments. If the attach fails, <a href="extension.html#property-lastError">chrome.extension.lastError</a> will be set to the error message.</dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
           <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-
           <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
         </div>
                   </div>
                 </dl>
-
                 <!-- RETURNS -->
-                <h4 style="display: none; ">Returns</h4>
                 <dl>
-                  <div style="display: none; ">
-                    <div>
-                    </div>
-                  </div>
                 </dl>
-
                 <!-- CALLBACK -->
                 <div>
                   <div>
                   <h4>Callback function</h4>
-                  <p style="display: none; ">
-                    The callback <em>parameter</em> should specify a function
-                    that looks like this:
-                  </p>
                   <p>
                     If you specify the <em>callback</em> parameter, it should
                     specify a function that looks like this:
                   </p>
-
                   <!-- Note: intentionally longer 80 columns -->
                   <pre>function(<span></span>) <span class="subdued">{...}</span>;</pre>
                   <dl>
-                    <div style="display: none; ">
-                      <div>
-                      </div>
-                    </div>
                   </dl>
                   </div>
                 </div>
-
                 <!-- MIN_VERSION -->
-                <p style="display: none; ">
-                  This function was added in version <b><span></span></b>.
-                  If you require this function, the manifest key
-                  <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-                  can ensure that your extension won't be run in an earlier browser version.
-                </p>
               </div> <!-- /description -->
-
             </div><div class="apiItem">
               <a name="method-detach"></a> <!-- method-anchor -->
               <h4>detach</h4>
-
-              <div class="summary"><span style="display: none; ">void</span>
+              <div class="summary">
                   <!-- Note: intentionally longer 80 columns -->
-                  <span>chrome.debugger.detach</span>(<span class="null"><span style="display: none; ">, </span><span>Debuggee</span>
+                  <span>chrome.debugger.detach</span>(<span class="null"><span>Debuggee</span>
                       <var><span>target</span></var></span><span class="optional"><span>, </span><span>function</span>
                       <var><span>callback</span></var></span>)</div>
-
               <div class="description">
-                <p class="todo" style="display: none; ">Undocumented.</p>
                 <p>Detaches debugger from the given target.</p>
-
                 <!-- PARAMETERS -->
                 <h4>Parameters</h4>
                 <dl>
@@ -775,198 +414,81 @@ You can find samples of this API in
           <dt>
             <var>target</var>
               <em>
-
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
-                    <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
                       <span>
                         <a href="debugger.html#type-Debuggee">Debuggee</a>
                       </span>
-                      <span style="display: none; ">
-                        <span>
-                          array of <span><span></span></span>
-                        </span>
-                        <span>paramType</span>
-                        <span></span>
-                      </span>
                     </span>
                   )
                 </div>
-
               </em>
           </dt>
-          <dd class="todo" style="display: none; ">
-            Undocumented.
-          </dd>
           <dd>Debugging target from which you want to detach.</dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
           <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-
           <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
         </div>
                   </div><div>
                     <div>
           <dt>
             <var>callback</var>
               <em>
-
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
                     <span class="optional">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
                       <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
                         <span>function</span>
-                        <span style="display: none; "></span>
                       </span>
                     </span>
                   )
                 </div>
-
               </em>
           </dt>
-          <dd class="todo" style="display: none; ">
-            Undocumented.
-          </dd>
           <dd>Called once the detach operation succeeds or fails. Callback receives no arguments. If the detach fails, <a href="extension.html#property-lastError">chrome.extension.lastError</a> will be set to the error message.</dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
           <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-
           <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
         </div>
                   </div>
                 </dl>
-
                 <!-- RETURNS -->
-                <h4 style="display: none; ">Returns</h4>
                 <dl>
-                  <div style="display: none; ">
-                    <div>
-                    </div>
-                  </div>
                 </dl>
-
                 <!-- CALLBACK -->
                 <div>
                   <div>
                   <h4>Callback function</h4>
-                  <p style="display: none; ">
-                    The callback <em>parameter</em> should specify a function
-                    that looks like this:
-                  </p>
                   <p>
                     If you specify the <em>callback</em> parameter, it should
                     specify a function that looks like this:
                   </p>
-
                   <!-- Note: intentionally longer 80 columns -->
                   <pre>function(<span></span>) <span class="subdued">{...}</span>;</pre>
                   <dl>
-                    <div style="display: none; ">
-                      <div>
-                      </div>
-                    </div>
                   </dl>
                   </div>
                 </div>
-
                 <!-- MIN_VERSION -->
-                <p style="display: none; ">
-                  This function was added in version <b><span></span></b>.
-                  If you require this function, the manifest key
-                  <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-                  can ensure that your extension won't be run in an earlier browser version.
-                </p>
               </div> <!-- /description -->
-
             </div><div class="apiItem">
               <a name="method-sendCommand"></a> <!-- method-anchor -->
               <h4>sendCommand</h4>
-
-              <div class="summary"><span style="display: none; ">void</span>
+              <div class="summary">
                   <!-- Note: intentionally longer 80 columns -->
-                  <span>chrome.debugger.sendCommand</span>(<span class="null"><span style="display: none; ">, </span><span>Debuggee</span>
+                  <span>chrome.debugger.sendCommand</span>(<span class="null"><span>Debuggee</span>
                       <var><span>target</span></var></span><span class="null"><span>, </span><span>string</span>
                       <var><span>method</span></var></span><span class="optional"><span>, </span><span>object</span>
                       <var><span>params</span></var></span><span class="optional"><span>, </span><span>function</span>
                       <var><span>callback</span></var></span>)</div>
-
               <div class="description">
-                <p class="todo" style="display: none; ">Undocumented.</p>
                 <p>Sends given command to the debugging target.</p>
-
                 <!-- PARAMETERS -->
                 <h4>Parameters</h4>
                 <dl>
@@ -975,298 +497,112 @@ You can find samples of this API in
           <dt>
             <var>target</var>
               <em>
-
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
-                    <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
                       <span>
                         <a href="debugger.html#type-Debuggee">Debuggee</a>
                       </span>
-                      <span style="display: none; ">
-                        <span>
-                          array of <span><span></span></span>
-                        </span>
-                        <span>paramType</span>
-                        <span></span>
-                      </span>
                     </span>
                   )
                 </div>
-
               </em>
           </dt>
-          <dd class="todo" style="display: none; ">
-            Undocumented.
-          </dd>
           <dd>Debugging target to which you want to send the command.</dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
           <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-
           <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
         </div>
                   </div><div>
                     <div>
           <dt>
             <var>method</var>
               <em>
-
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
-                    <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
                       <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
                         <span>string</span>
-                        <span style="display: none; "></span>
                       </span>
                     </span>
                   )
                 </div>
-
               </em>
           </dt>
-          <dd class="todo" style="display: none; ">
-            Undocumented.
-          </dd>
           <dd>Method name. Should be one of the methods defined by the <a href="http://code.google.com/chrome/devtools/docs/remote-debugging.html">remote debugging protocol</a>.</dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
           <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-
           <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
         </div>
                   </div><div>
                     <div>
           <dt>
             <var>params</var>
               <em>
-
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
                     <span class="optional">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
                       <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
                         <span>object</span>
-                        <span style="display: none; "></span>
                       </span>
                     </span>
                   )
                 </div>
-
               </em>
           </dt>
-          <dd class="todo" style="display: none; ">
-            Undocumented.
-          </dd>
           <dd>JSON object with request parameters. This object must conform to the remote debugging params scheme for given method.</dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
           <!-- OBJECT PROPERTIES -->
           <dd>
             <dl>
-              <div style="display: none; ">
-                <div>
-                </div>
-              </div>
             </dl>
           </dd>
-
           <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
         </div>
                   </div><div>
                     <div>
           <dt>
             <var>callback</var>
               <em>
-
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
                     <span class="optional">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
                       <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
                         <span>function</span>
-                        <span style="display: none; "></span>
                       </span>
                     </span>
                   )
                 </div>
-
               </em>
           </dt>
-          <dd class="todo" style="display: none; ">
-            Undocumented.
-          </dd>
           <dd>Response body. If an error occurs while posting the message, the callback will be called with no arguments and <a href="extension.html#property-lastError">chrome.extension.lastError</a> will be set to the error message.</dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
           <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-
           <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
         </div>
                   </div>
                 </dl>
-
                 <!-- RETURNS -->
-                <h4 style="display: none; ">Returns</h4>
                 <dl>
-                  <div style="display: none; ">
-                    <div>
-                    </div>
-                  </div>
                 </dl>
-
                 <!-- CALLBACK -->
                 <div>
                   <div>
                   <h4>Callback function</h4>
-                  <p style="display: none; ">
-                    The callback <em>parameter</em> should specify a function
-                    that looks like this:
-                  </p>
                   <p>
                     If you specify the <em>callback</em> parameter, it should
                     specify a function that looks like this:
                   </p>
-
                   <!-- Note: intentionally longer 80 columns -->
                   <pre>function(<span>object result</span>) <span class="subdued">{...}</span>;</pre>
                   <dl>
@@ -1275,87 +611,37 @@ You can find samples of this API in
           <dt>
             <var>result</var>
               <em>
-
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
                     <span class="optional">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
                       <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
                         <span>object</span>
-                        <span style="display: none; "></span>
                       </span>
                     </span>
                   )
                 </div>
-
               </em>
           </dt>
-          <dd class="todo" style="display: none; ">
-            Undocumented.
-          </dd>
           <dd>JSON object with the response. Structure of the response varies depending on the method and is defined by the remote debugging protocol.</dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
           <!-- OBJECT PROPERTIES -->
           <dd>
             <dl>
-              <div style="display: none; ">
-                <div>
-                </div>
-              </div>
             </dl>
           </dd>
-
           <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
         </div>
                     </div>
                   </dl>
                   </div>
                 </div>
-
                 <!-- MIN_VERSION -->
-                <p style="display: none; ">
-                  This function was added in version <b><span></span></b>.
-                  If you require this function, the manifest key
-                  <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-                  can ensure that your extension won't be run in an earlier browser version.
-                </p>
               </div> <!-- /description -->
-
             </div>  <!-- /apiItem -->
-
           </div>  <!-- /apiGroup -->
-
           <!-- EVENTS -->
           <div id="eventsTemplate" class="apiGroup">
             <a name="global-events"></a>
@@ -1364,16 +650,12 @@ You can find samples of this API in
             <div class="apiItem">
               <a name="event-onDetach"></a>
               <h4>onDetach</h4>
-
               <div class="summary">
                 <!-- Note: intentionally longer 80 columns -->
                 <span class="subdued">chrome.debugger.</span><span>onDetach</span><span class="subdued">.addListener</span>(function(<span>Debuggee source</span>) <span class="subdued">{...}</span><span></span>);
               </div>
-
               <div class="description">
-                <p class="todo" style="display: none; ">Undocumented.</p>
                 <p>Fired when browser terminates debugging session for the tab. This happens when either the tab is being closed or Chrome DevTools is being invoked for the attached tab.</p>
-
                 <!-- LISTENER PARAMETERS -->
                 <div>
                   <h4>Listener parameters</h4>
@@ -1383,107 +665,41 @@ You can find samples of this API in
           <dt>
             <var>source</var>
               <em>
-
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
-                    <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
                       <span>
                         <a href="debugger.html#type-Debuggee">Debuggee</a>
                       </span>
-                      <span style="display: none; ">
-                        <span>
-                          array of <span><span></span></span>
-                        </span>
-                        <span>paramType</span>
-                        <span></span>
-                      </span>
                     </span>
                   )
                 </div>
-
               </em>
           </dt>
-          <dd class="todo" style="display: none; ">
-            Undocumented.
-          </dd>
           <dd>The debuggee that was detached.</dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
           <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-
           <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
         </div>
                     </div>
                   </dl>
                 </div>
-
                 <!-- EXTRA PARAMETERS -->
-                <div style="display: none; ">
-                  <h4>Extra parameters to addListener</h4>
-                  <dl>
-                    <div>
-                      <div>
-                      </div>
-                    </div>
-                  </dl>
-                </div>
-
                 <!-- LISTENER RETURN VALUE -->
-                <h4 style="display: none; ">Listener returns</h4>
                 <dl>
-                  <div style="display: none; ">
-                    <div>
-                    </div>
-                  </div>
                 </dl>
-
               </div> <!-- /description -->
             </div><div class="apiItem">
               <a name="event-onEvent"></a>
               <h4>onEvent</h4>
-
               <div class="summary">
                 <!-- Note: intentionally longer 80 columns -->
                 <span class="subdued">chrome.debugger.</span><span>onEvent</span><span class="subdued">.addListener</span>(function(<span>Debuggee source, string method, object params</span>) <span class="subdued">{...}</span><span></span>);
               </div>
-
               <div class="description">
-                <p class="todo" style="display: none; ">Undocumented.</p>
                 <p>Fired whenever debugging target issues instrumentation event.</p>
-
                 <!-- LISTENER PARAMETERS -->
                 <div>
                   <h4>Listener parameters</h4>
@@ -1493,285 +709,109 @@ You can find samples of this API in
           <dt>
             <var>source</var>
               <em>
-
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
-                    <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
                       <span>
                         <a href="debugger.html#type-Debuggee">Debuggee</a>
                       </span>
-                      <span style="display: none; ">
-                        <span>
-                          array of <span><span></span></span>
-                        </span>
-                        <span>paramType</span>
-                        <span></span>
-                      </span>
                     </span>
                   )
                 </div>
-
               </em>
           </dt>
-          <dd class="todo" style="display: none; ">
-            Undocumented.
-          </dd>
           <dd>The debuggee that generated this event.</dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
           <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-
           <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
         </div>
                     </div><div>
                       <div>
           <dt>
             <var>method</var>
               <em>
-
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
-                    <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
                       <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
                         <span>string</span>
-                        <span style="display: none; "></span>
                       </span>
                     </span>
                   )
                 </div>
-
               </em>
           </dt>
-          <dd class="todo" style="display: none; ">
-            Undocumented.
-          </dd>
           <dd>Method name. Should be one of the notifications defined by the <a href="http://code.google.com/chrome/devtools/docs/remote-debugging.html">remote debugging protocol</a>.</dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
           <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-
           <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
         </div>
                     </div><div>
                       <div>
           <dt>
             <var>params</var>
               <em>
-
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
                     <span class="optional">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
                       <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
                         <span>object</span>
-                        <span style="display: none; "></span>
                       </span>
                     </span>
                   )
                 </div>
-
               </em>
           </dt>
-          <dd class="todo" style="display: none; ">
-            Undocumented.
-          </dd>
           <dd>JSON object with the response. Structure of the response varies depending on the method and is defined by the remote debugging protocol.</dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
           <!-- OBJECT PROPERTIES -->
           <dd>
             <dl>
-              <div style="display: none; ">
-                <div>
-                </div>
-              </div>
             </dl>
           </dd>
-
           <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
         </div>
                     </div>
                   </dl>
                 </div>
-
                 <!-- EXTRA PARAMETERS -->
-                <div style="display: none; ">
-                  <h4>Extra parameters to addListener</h4>
-                  <dl>
-                    <div>
-                      <div>
-                      </div>
-                    </div>
-                  </dl>
-                </div>
-
                 <!-- LISTENER RETURN VALUE -->
-                <h4 style="display: none; ">Listener returns</h4>
                 <dl>
-                  <div style="display: none; ">
-                    <div>
-                    </div>
-                  </div>
                 </dl>
-
               </div> <!-- /description -->
             </div> <!-- /apiItem -->
-
           </div> <!-- /apiGroup -->
-
           <!-- TYPES -->
           <div class="apiGroup">
             <a name="types"></a>
             <h3 id="types">Types</h3>
-
             <!-- iterates over all types -->
             <div class="apiItem">
               <a name="type-Debuggee"></a>
               <h4>Debuggee</h4>
-
               <div>
           <dt>
-            <var style="display: none; ">paramName</var>
               <em>
-
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
-                    <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
                       <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
                         <span>object</span>
-                        <span style="display: none; "></span>
                       </span>
                     </span>
                   )
                 </div>
-
               </em>
           </dt>
-          <dd class="todo" style="display: none; ">
-            Undocumented.
-          </dd>
           <dd>Debuggee identifier.</dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
           <!-- OBJECT PROPERTIES -->
           <dd>
             <dl>
@@ -1780,94 +820,33 @@ You can find samples of this API in
           <dt>
             <var>tabId</var>
               <em>
-
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
-                    <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
                       <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
                         <span>integer</span>
-                        <span style="display: none; "></span>
                       </span>
                     </span>
                   )
                 </div>
-
               </em>
           </dt>
-          <dd class="todo" style="display: none; ">
-            Undocumented.
-          </dd>
           <dd>The id of the tab which you intend to debug.</dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
           <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-
           <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
         </div>
               </div>
             </dl>
           </dd>
-
           <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
         </div>
-
             </div> <!-- /apiItem -->
-
           </div> <!-- /apiGroup -->
-
         </div> <!-- /apiPage -->
       </div> <!-- /gc-pagecontent -->
     </div> <!-- /g-section -->
@@ -1883,18 +862,15 @@ You can find samples of this API in
   <p>
   ©2011 Google
   </p>
-
 <!-- begin analytics -->
 <script src="https://www.google-analytics.com/urchin.js" type="text/javascript"></script>
 <script src="https://www.google-analytics.com/ga.js" type="text/javascript"></script>
-
 <script type="text/javascript">
   // chrome doc tracking
   try {
     var engdocs = _gat._getTracker("YT-10763712-2");
     engdocs._trackPageview();
   } catch(err) {}
-
   // code.google.com site-wide tracking
   try {
     _uacct="UA-18071-1";

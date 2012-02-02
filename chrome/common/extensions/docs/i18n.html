@@ -41,130 +41,7 @@
       <!-- In particular, sub-templates that recurse, must be used by allowing
            jstemplate to make a copy of the template in this section which
            are not operated on by way of the jsskip="true" -->
-      <div style="display:none">
-
-        <!-- VALUE -->
-        <div id="valueTemplate">
-          <dt>
-            <var>paramName</var>
-              <em>
-
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span class="optional">optional</span>
-                    <span class="enum">enumerated</span>
-                    <span id="typeTemplate">
-                      <span>
-                        <a> Type</a>
-                      </span>
-                      <span>
-                        <span>
-                          array of <span><span></span></span>
-                        </span>
-                        <span>paramType</span>
-                        <span></span>
-                      </span>
-                    </span>
-                  )
-                </div>
-
-              </em>
-          </dt>
-          <dd class="todo">
-            Undocumented.
-          </dd>
-          <dd>
-            Description of this parameter from the json schema.
-          </dd>
-          <dd>
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
-          <!-- OBJECT PROPERTIES -->
-          <dd>
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-
-          <!-- OBJECT METHODS -->
-          <dd>
-            <div></div>
-          </dd>
-
-          <!-- OBJECT EVENT FIELDS -->
-          <dd>
-            <div></div>
-          </dd>
-
-          <!-- FUNCTION PARAMETERS -->
-          <dd>
-            <div></div>
-          </dd>
-
-        </div> <!-- /VALUE -->
-
-        <div id="functionParametersTemplate">
-          <h5>Parameters</h5>
-          <dl>
-            <div>
-              <div>
-              </div>
-            </div>
-          </dl>
-        </div>
-
-        <!-- Individual subsections from the table of contents -->
-        <ol>
-          <li id="propertiesTocTemplate">
-            <a href="#properties">Properties</a>
-            <ol>
-              <li>
-                <a href="#property-anchor">propertyName</a>
-              </li>
-            </ol>
-          </li>
-          <li id="methodsTocTemplate">
-            <a>Methods</a>
-            <ol>
-              <li>
-                <a href="#method-anchor">methodName</a>
-              </li>
-            </ol>
-          </li>
-          <li id="eventsTocTemplate">
-            <a>Events</a>
-            <ol>
-              <li>
-                <a href="#event-anchor">eventName</a>
-              </li>
-            </ol>
-          </li>
-          <li id="typesTocTemplate">
-            <a href="#types">Types</a>
-            <ol>
-              <li>
-                <a href="#id-anchor">id</a>
-                <ol>
-                  <div></div>
-                  <div></div>
-                </ol>
-              </li>
-            </ol>
-          </li>
-        </ol>
-      </div> <!-- /SUBTEMPLATES -->
-
+       <!-- /SUBTEMPLATES -->
   <a id="top"></a>
     <div id="skipto">
       <a href="#gc-pagecontent">Skip to page content</a>
@@ -185,7 +62,6 @@
               <span class="greytext">e.g. "page action" or "tabs"</span>
             </div>
           </form>
-
           <script type="text/javascript" src="https://www.google.com/jsapi"></script>
           <script type="text/javascript">google.load("elements", "1", {packages: "transliteration"});</script>
           <script type="text/javascript" src="https://www.google.com/coop/cse/t13n?form=cse&amp;t13n_langs=en"></script>
@@ -193,9 +69,7 @@
         </td>
       </tr>
     </tbody></table>
-
     <div id="codesiteContent" class="">
-
       <a id="gc-topnav-anchor"></a>
       <div id="gc-topnav">
         <h1>Google Chrome Extensions (<a href="http://code.google.com/labs/">Labs</a>)</h1>
@@ -220,7 +94,6 @@
           </li>
         </ul>
       </div> <!-- end gc-topnav -->
-
     <div class="g-section g-tpl-170">
       <!-- SIDENAV -->
       <div class="g-unit g-first" id="gc-toc">
@@ -308,7 +181,6 @@
       <script>
         initToggles();
       </script>
-
     <div class="g-unit" id="gc-pagecontent">
       <div id="pageTitle">
         <h1 class="page_title">Internationalization (i18n)</h1>
@@ -320,16 +192,10 @@
             <li>
               <a href="#l10">How to support multiple languages</a>
               <ol>
-                <li style="display: none; ">
-                  <a>h3Name</a>
-                </li>
               </ol>
             </li><li>
               <a href="#overview-predefined">Predefined messages</a>
               <ol>
-                <li style="display: none; ">
-                  <a>h3Name</a>
-                </li>
               </ol>
             </li><li>
               <a href="#overview-locales">Locales</a>
@@ -355,14 +221,6 @@
               <li>
                 <a href="#apiReference">API reference: chrome.i18n</a>
                 <ol>
-                  <li style="display: none; ">
-            <a href="#properties">Properties</a>
-            <ol>
-              <li>
-                <a href="#property-anchor">propertyName</a>
-              </li>
-            </ol>
-          </li>
                   <li>
             <a href="#global-methods">Methods</a>
             <ol>
@@ -373,45 +231,18 @@
               </li>
             </ol>
           </li>
-                  <li style="display: none; ">
-            <a>Events</a>
-            <ol>
-              <li>
-                <a href="#event-anchor">eventName</a>
-              </li>
-            </ol>
-          </li>
-                  <li style="display: none; ">
-            <a href="#types">Types</a>
-            <ol>
-              <li>
-                <a href="#id-anchor">id</a>
-                <ol>
-                  <div></div>
-                  <div></div>
-                </ol>
-              </li>
-            </ol>
-          </li>
                 </ol>
               </li>
           </ol>
         </div>
         <!-- /TABLE OF CONTENTS -->
-
         <!-- Standard content lead-in for experimental API pages -->
-        <p id="classSummary" style="display: none; ">
-          For information on how to use experimental APIs, see the <a href="experimental.html">chrome.experimental.* APIs</a> page.
-        </p>
-
         <!-- STATIC CONTENT PLACEHOLDER -->
         <div id="static"><div id="pageData-name" class="pageData">Internationalization (i18n)</div>
-
 <!--
 [NOTEs for editors:
  * Try to be consistent about string vs. message (it's probably not yet).
 -->
-
 <!-- BEGIN AUTHORED CONTENT -->
 <p id="classSummary">
 An <em>internationalized</em> extension
@@ -420,7 +251,6 @@ can be easily
 adapted to languages and regions
 that it didn't originally support.
 </p>
-
 <p>
 To internationalize your extension,
 you need to put all of its user-visible strings into a file
@@ -432,7 +262,6 @@ named <code>_locales/<em>localeCode</em></code>,
 where <em>localeCode</em> is a code such as
 <code>en</code> for English.
 </p>
-
 <p>
 Here's the file hierarchy
 for an internationalized extension that supports
@@ -440,19 +269,13 @@ English (<code>en</code>),
 Spanish (<code>es</code>), and
 Korean (<code>ko</code>):
 </p>
-
 <img src="images/i18n-hierarchy.gif" alt="In the extension directory: manifest.json, *.html, *.js, _locales directory. In the _locales directory: en, es, and ko directories, each with a messages.json file." width="385" height="77">
-
-
 <h2 id="l10">How to support multiple languages</h2>
-
 <p>
 Say you have an extension
 with the files shown in the following figure:
 </p>
-
 <img src="images/i18n-before.gif" alt="A manifest.json file and a file with JavaScript. The .json file has &quot;name&quot;: &quot;Hello World&quot;. The JavaScript file has title = &quot;Hello World&quot;;" width="323" height="148">
-
 <p>
 To internationalize this extension,
 you name each user-visible string
@@ -462,45 +285,37 @@ CSS files,
 and JavaScript code
 use each string's name to get its localized version.
 </p>
-
 <p>
 Here's what the extension looks like when it's internationalized
 (note that it still has only English strings):
 </p>
-
 <img src="images/i18n-after-1.gif" alt="In the manifest.json file, &quot;Hello World&quot; has been changed to &quot;__MSG_extName__&quot;, and a new &quot;default_locale&quot; item has the value &quot;en&quot;. In the JavaScript file, &quot;Hello World&quot; has been changed to chrome.i18n.getMessage(&quot;extName&quot;). A new file named _locales/en/messages.json defines &quot;extName&quot;." width="782" height="228">
-
 <p class="note">
 <b>Important:</b>
 If an extension has a <code>_locales</code> directory,
 the <a href="manifest.html">manifest</a>
 <b>must</b> define "default_locale".
 </p>
-
 <p>
 Some notes about internationalizing extensions:
 </p>
-
 <ul>
   <li><p>
     You can use any of the <a href="#overview-locales">supported locales</a>.
     If you use an unsupported locale,
     Google Chrome ignores it.
   </p></li>
-
   <li>
     In <code>manifest.json</code>
     and CSS files,
     refer to a string named <em>messagename</em> like this:
     <pre>__MSG_<em>messagename</em>__</pre>
   </li>
-
   <li>
     In your extension's JavaScript code,
     refer to a string named <em>messagename</em>
     like this:
     <pre>chrome.i18n.getMessage("<em>messagename</em>")</pre>
-
   </li><li> <p>
     In each call to <code>getMessage()</code>,
     you can supply up to 9 strings
@@ -509,7 +324,6 @@ Some notes about internationalizing extensions:
     for details.
     </p>
   </li>
-
   <li><p>
     Some messages, such as <code>@@bidi_dir</code> and <code>@@ui_locale</code>,
     are provided by the internationalization system.
@@ -517,7 +331,6 @@ Some notes about internationalizing extensions:
     for a full list of predefined message names.
     </p>
   </li>
-
   <li>
     In <code>messages.json</code>,
     each user-visible string has a name, a "message" item,
@@ -538,14 +351,12 @@ Some notes about internationalizing extensions:
   },
   ...
 }</pre>
-
 <p>
 For more information, see
 <a href="i18n-messages.html">Formats: Locale-Specific Messages</a>.
 </p>
   </li>
 </ul>
-
 <p>
 Once an extension is internationalized,
 translating it is simple.
@@ -558,12 +369,8 @@ under <code>_locales/es</code>.
 The following figure shows the previous extension
 with a new Spanish translation.
 </p>
-
 <img src="images/i18n-after-2.gif" alt="This looks the same as the previous figure, but with a new file at _locales/es/messages.json that contains a Spanish translation of the messages." width="782" height="358">
-
-
 <h2 id="overview-predefined">Predefined messages</h2>
-
 <p>
 The internationalization system provides a few predefined
 messages to help you localize your extension.
@@ -575,18 +382,15 @@ The latter messages have similar names to constants in the
 <a href="http://code.google.com/apis/gadgets/docs/i18n.html#BIDI">
 gadgets BIDI (bi-directional) API</a>.
 </p>
-
 <p>
 The special message <code>@@extension_id</code>
 can be used in the CSS and JavaScript files of any extension,
 whether or not the extension is localized.
 This message doesn't work in manifest files.
 </p>
-
 <p>
 The following table describes each predefined message.
 </p>
-
 <table>
 <tbody><tr>
   <th>Message name</th> <th>Description</th>
@@ -628,33 +432,26 @@ The following table describes each predefined message.
        otherwise, it's "left". </td>
 </tr>
 </tbody></table>
-
 <p>
 Here's an example of using <code>@@extension_id</code> in a CSS file
 to construct a URL:
 </p>
-
 <pre>body {
   <b>background-image:url('chrome-extension://__MSG_@@extension_id__/background.png');</b>
 }
 </pre>
-
 <p>
 If the extension ID is abcdefghijklmnopqrstuvwxyzabcdef,
 then the bold line in the previous code snippet becomes:
 </p>
-
 <pre>background-image:url('chrome-extension://abcdefghijklmnopqrstuvwxyzabcdef/background.png');
 </pre>
-
 <p>
 Here's an example of using <code>@@bidi_*</code> messages in a CSS file:
 </p>
-
 <pre>body {
   <b>direction: __MSG_@@bidi_dir__;</b>
 }
-
 div#header {
   margin-bottom: 1.05em;
   overflow: hidden;
@@ -664,38 +461,27 @@ div#header {
   position: relative;
 }
 </pre>
-
 <p>
 For left-to-right languages such as English,
 the bold lines become:
 </p>
-
 <pre>dir: ltr;
 padding-left: 0;
 padding-right: 1.5em;
 </pre>
-
-
 <h2 id="overview-locales">Locales</h2>
-
 <p>
 You can choose from many locales,
 including some (such as <code>en</code>)
 that let a single translation support multiple variations of a language
 (such as <code>en_GB</code> and <code>en_US</code>).
 </p>
-
-
 <h3 id="locales-supported">Supported locales</h3>
-
 <p>
 Extensions can use any of the
 <a href="http://code.google.com/chrome/webstore/docs/i18n.html#localeTable">locales that the Chrome Web Store supports</a>.
 </p>
-
-
 <h3 id="locales-usage">How extensions find strings</h3>
-
 <p>
 You don't have to define every string for every locale
 that your internationalized extension supports.
@@ -704,7 +490,6 @@ has a value for every string,
 your extension will run no matter how sparse a translation is.
 Here's how the extension system searches for a message:
 </p>
-
 <ol>
   <li>
      Search the messages file (if any)
@@ -735,7 +520,6 @@ Here's how the extension system searches for a message:
      <code>_locales/es/messages.json</code>.
   </li>
 </ol>
-
 <p>
 In the following figure,
 the message named "colores" is in all three locales
@@ -749,11 +533,8 @@ Because the default language is Spanish,
 users running Google Chrome in any non-English language
 see the label "Colores" and the extension name "Hola mundo".
 </p>
-
 <img src="images/i18n-strings.gif" alt="Four files: manifest.json and three messages.json files (for es, en, and en_GB).  The es and en files show entries for messages named &quot;extName&quot; and &quot;colores&quot;; the en_GB file has just one entry (for &quot;colores&quot;)." width="493" height="488">
-
 <h3 id="locales-testing">How to set your browser's locale</h3>
-
 <p>
 To test translations, you might want to set your browser's locale.
 This section tells you how to set the locale in
@@ -761,9 +542,7 @@ This section tells you how to set the locale in
 <a href="#testing-mac">Mac OS X</a>, and
 <a href="#testing-linux">Linux</a>.
 </p>
-
 <h4 id="testing-win">Windows</h4>
-
 <p>
 You can change the locale using either
 a locale-specific shortcut
@@ -771,14 +550,11 @@ or the Google Chrome UI.
 The shortcut approach is quicker, once you've set it up,
 and it lets you use several languages at once.
 </p>
-
 <h5 id="win-shortcut">Using a locale-specific shortcut</h5>
-
 <p>
 To create and use a shortcut that launches Google Chrome
 with a particular locale:
 </p>
-
 <ol>
   <li>
     Make a copy of the Google Chrome shortcut
@@ -793,34 +569,27 @@ with a particular locale:
     <code>--lang</code> and
     <code>--user-data-dir</code> flags.
     The target should look something like this:
-
 <pre><em>path_to_chrome.exe</em> --lang=<em>locale</em> --user-data-dir=c:\<em>locale_profile_dir</em></pre>
   </li>
-
   <li>
     Launch Google Chrome by double-clicking the shortcut.
   </li>
 </ol>
-
 <p>
 For example, to create a shortcut
 that launches Google Chrome in Spanish (<code>es</code>),
 you might create a shortcut named <code>chrome-es</code>
 that has the following target:
 </p>
-
 <pre><em>path_to_chrome.exe</em> --lang=es --user-data-dir=c:\chrome-profile-es</pre>
-
 <p>
 You can create as many shortcuts as you like,
 making it easy to test your extension in multiple languages.
 For example:
 </p>
-
 <pre><em>path_to_chrome.exe</em> --lang=en --user-data-dir=c:\chrome-profile-en
 <em>path_to_chrome.exe</em> --lang=en_GB --user-data-dir=c:\chrome-profile-en_GB
 <em>path_to_chrome.exe</em> --lang=ko --user-data-dir=c:\chrome-profile-ko</pre>
-
 <p class="note">
 <b>Note:</b>
 Specifying <code>--user-data-dir</code> is optional but handy.
@@ -833,14 +602,10 @@ which can be challenging when you don't speak the language.
 For more information, see
 <a href="http://www.chromium.org/developers/creating-and-using-profiles">Creating and Using Profiles</a>.
 </p>
-
-
 <h5 id="win-ui">Using the UI</h5>
-
 <p>
 Here's how to change the locale using the UI on Google Chrome for Windows:
 </p>
-
 <ol>
   <li> Wrench icon &gt; <b>Options</b> </li>
   <li> Choose the <b>Under the Hood</b> tab </li>
@@ -850,25 +615,18 @@ Here's how to change the locale using the UI on Google Chrome for Windows:
   <li> Use the drop down to set the <b>Google Chrome language</b> </li>
   <li> Restart Chrome </li>
 </ol>
-
-
 <h4 id="testing-mac">Mac OS X</h4>
-
 <p>
 To change the locale on Mac,
 you use the system preferences.
 </p>
-
 <ol>
   <li> From the Apple menu, choose <b>System Preferences</b> </li>
   <li> Under the <b>Personal</b> section, choose <b>International</b> </li>
   <li> Choose your language and location </li>
   <li> Restart Chrome </li>
 </ol>
-
-
 <h4 id="testing-linux">Linux</h4>
-
 <p>
 To change the locale on Linux,
 first quit Google Chrome.
@@ -877,13 +635,9 @@ set the LANGUAGE environment variable
 and launch Google Chrome.
 For example:
 </p>
-
 <pre>LANGUAGE=es ./chrome
 </pre>
-
-
 <h2 id="overview-examples">Examples</h2>
-
 <p>
 You can find simple examples of internationalization in the
 <a href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/i18n/">examples/api/i18n</a>
@@ -893,35 +647,27 @@ For a complete example, see
 For other examples and for help in viewing the source code, see
 <a href="samples.html">Samples</a>.
 </p>
-
-
 <h3 id="examples-getMessage">Examples: getMessage</h3>
-
 <!--
 [PENDING: improve this section. it should probably start with a
 one-variable example that includes the messages.json code.]
 -->
-
 <p>
 The following code gets a localized message from the browser
 and displays it as a string.
 It replaces two placeholders within the message with the strings
 "string1" and "string2".
 </p>
-
 <pre>function getMessage() {
   var message = chrome.i18n.getMessage("click_here", ["string1", "string2"]);
   document.getElementById("languageSpan").innerHTML = message;
 }
 </pre>
-
 <p>
 Here's how you'd supply and use a single string:
 </p>
-
 <pre><em>// In JavaScript code</em>
 status.innerText = chrome.i18n.getMessage("error", errorDetails);
-
 <em>// In messages.json</em>
 "error": {
   "message": "Error: $details$",
@@ -934,20 +680,17 @@ status.innerText = chrome.i18n.getMessage("error", errorDetails);
   }
 }
 </pre>
-
 <p>
 For more information about placeholders, see the
 <a href="i18n-messages.html">Locale-Specific Messages</a> page.
 For details on calling <code>getMessage()</code>, see the
 <a href="#method-getMessage">API reference</a>.
 </p>
-
 <h3 id="example-accept-languages">Example: getAcceptLanguages</h3>
 <p>
 The following code gets accept-languages from the browser and displays them as a
 string by separating each accept-language with ','.
 </p>
-
 <pre>function getAcceptLanguages() {
   chrome.i18n.getAcceptLanguages(function(languageList) {
     var languages = languageList.join(",");
@@ -955,57 +698,32 @@ string by separating each accept-language with ','.
   })
 }
 </pre>
-
 <p>
 For details on calling <code>getAcceptLanguages()</code>, see the
 <a href="#method-getAcceptLanguages">API reference</a>.
 </p>
-
 <!-- END AUTHORED CONTENT -->
 </div>
-
         <!-- API PAGE -->
         <div class="apiPage">
         <a name="apiReference"></a>
         <h2>API reference: chrome.i18n</h2>
-
           <!-- PROPERTIES -->
-          <div class="apiGroup" style="display: none; ">
-            <a name="properties"></a>
-            <h3 id="properties">Properties</h3>
-
-            <div>
-              <a></a>
-              <h4>getLastError</h4>
-              <div class="summary">
-                <!-- Note: intentionally longer 80 columns -->
-                <span>chrome.extension</span><span>lastError</span>
-              </div>
-              <div>
-              </div>
-            </div>
-
-          </div> <!-- /apiGroup -->
-
+           <!-- /apiGroup -->
           <!-- METHODS -->
           <div id="methodsTemplate" class="apiGroup">
             <a name="global-methods"></a>
             <h3>Methods</h3>
-
             <!-- iterates over all functions -->
             <div class="apiItem">
               <a name="method-getAcceptLanguages"></a> <!-- method-anchor -->
               <h4>getAcceptLanguages</h4>
-
-              <div class="summary"><span style="display: none; ">void</span>
+              <div class="summary">
                   <!-- Note: intentionally longer 80 columns -->
-                  <span>chrome.i18n.getAcceptLanguages</span>(<span class="null"><span style="display: none; ">, </span><span>function</span>
+                  <span>chrome.i18n.getAcceptLanguages</span>(<span class="null"><span>function</span>
                       <var><span>callback</span></var></span>)</div>
-
               <div class="description">
-                <p class="todo" style="display: none; ">Undocumented.</p>
                 <p>Gets the accept-languages of the browser. This is different from the locale used by the browser; to get the locale, use <code>window.navigator.language</code>.</p>
-
                 <!-- PARAMETERS -->
                 <h4>Parameters</h4>
                 <dl>
@@ -1014,83 +732,31 @@ For details on calling <code>getAcceptLanguages()</code>, see the
           <dt>
             <var>callback</var>
               <em>
-
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
-                    <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
                       <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
                         <span>function</span>
-                        <span style="display: none; "></span>
                       </span>
                     </span>
                   )
                 </div>
-
               </em>
           </dt>
           <dd class="todo">
             Undocumented.
           </dd>
-          <dd style="display: none; ">
-            Description of this parameter from the json schema.
-          </dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
           <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-
           <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
         </div>
                   </div>
                 </dl>
-
                 <!-- RETURNS -->
-                <h4 style="display: none; ">Returns</h4>
                 <dl>
-                  <div style="display: none; ">
-                    <div>
-                    </div>
-                  </div>
                 </dl>
-
                 <!-- CALLBACK -->
                 <div>
                   <div>
@@ -1099,11 +765,6 @@ For details on calling <code>getAcceptLanguages()</code>, see the
                     The callback <em>parameter</em> should specify a function
                     that looks like this:
                   </p>
-                  <p style="display: none; ">
-                    If you specify the <em>callback</em> parameter, it should
-                    specify a function that looks like this:
-                  </p>
-
                   <!-- Note: intentionally longer 80 columns -->
                   <pre>function(<span>array of string languages</span>) <span class="subdued">{...}</span>;</pre>
                   <dl>
@@ -1112,108 +773,46 @@ For details on calling <code>getAcceptLanguages()</code>, see the
           <dt>
             <var>languages</var>
               <em>
-
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
-                    <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
                       <span>
                         <span>
                           array of <span><span>
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
                       <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
                         <span>string</span>
-                        <span style="display: none; "></span>
                       </span>
                     </span></span>
                         </span>
-                        <span style="display: none; ">paramType</span>
-                        <span style="display: none; "></span>
                       </span>
                     </span>
                   )
                 </div>
-
               </em>
           </dt>
-          <dd class="todo" style="display: none; ">
-            Undocumented.
-          </dd>
           <dd>Array of the accept languages of the browser, such as en-US,en,zh-CN</dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
           <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-
           <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
         </div>
                     </div>
                   </dl>
                   </div>
                 </div>
-
                 <!-- MIN_VERSION -->
-                <p style="display: none; ">
-                  This function was added in version <b><span></span></b>.
-                  If you require this function, the manifest key
-                  <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-                  can ensure that your extension won't be run in an earlier browser version.
-                </p>
               </div> <!-- /description -->
-
             </div><div class="apiItem">
               <a name="method-getMessage"></a> <!-- method-anchor -->
               <h4>getMessage</h4>
-
               <div class="summary"><span>string</span>
                   <!-- Note: intentionally longer 80 columns -->
-                  <span>chrome.i18n.getMessage</span>(<span class="null"><span style="display: none; ">, </span><span>string</span>
+                  <span>chrome.i18n.getMessage</span>(<span class="null"><span>string</span>
                       <var><span>messageName</span></var></span><span class="optional"><span>, </span><span>string or array of string</span>
                       <var><span>substitutions</span></var></span>)</div>
-
               <div class="description">
-                <p class="todo" style="display: none; ">Undocumented.</p>
                 <p>Gets the localized string for the specified message. If the message is missing, this method returns an empty string (''). If the format of the <code>getMessage()</code> call is wrong — for example, <em>messageName</em> is not a string or the <em>substitutions</em> array is empty or has more than 9 elements — this method returns <code>undefined</code>.</p>
-
                 <!-- PARAMETERS -->
                 <h4>Parameters</h4>
                 <dl>
@@ -1222,324 +821,86 @@ For details on calling <code>getAcceptLanguages()</code>, see the
           <dt>
             <var>messageName</var>
               <em>
-
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
-                    <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
                       <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
                         <span>string</span>
-                        <span style="display: none; "></span>
                       </span>
                     </span>
                   )
                 </div>
-
               </em>
           </dt>
-          <dd class="todo" style="display: none; ">
-            Undocumented.
-          </dd>
           <dd>The name of the message, as specified in the <a href="i18n-messages.html"><code>messages.json</code></a> file.</dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
           <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-
           <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
         </div>
                   </div><div>
                     <div>
           <dt>
             <var>substitutions</var>
               <em>
-
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
                     <span class="optional">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
                       <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
                         <span>string or array of string</span>
-                        <span style="display: none; "></span>
                       </span>
                     </span>
                   )
                 </div>
-
               </em>
           </dt>
-          <dd class="todo" style="display: none; ">
-            Undocumented.
-          </dd>
           <dd>1 - 9 substitution strings, if the message requires any.</dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
           <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-
           <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
         </div>
                   </div>
                 </dl>
-
                 <!-- RETURNS -->
                 <h4>Returns</h4>
                 <dl>
                   <div>
                     <div>
           <dt>
-            <var style="display: none; ">paramName</var>
               <em>
-
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
-                    <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
                       <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
                         <span>string</span>
-                        <span style="display: none; "></span>
                       </span>
                     </span>
                   )
                 </div>
-
               </em>
           </dt>
-          <dd class="todo" style="display: none; ">
-            Undocumented.
-          </dd>
           <dd>Message localized for current locale.</dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
           <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-
           <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
         </div>
                   </div>
                 </dl>
-
                 <!-- CALLBACK -->
-                <div style="display: none; ">
-                  <div>
-                  <h4>Callback function</h4>
-                  <p>
-                    The callback <em>parameter</em> should specify a function
-                    that looks like this:
-                  </p>
-                  <p>
-                    If you specify the <em>callback</em> parameter, it should
-                    specify a function that looks like this:
-                  </p>
-
-                  <!-- Note: intentionally longer 80 columns -->
-                  <pre>function(<span>Type param1, Type param2</span>) <span class="subdued">{...}</span>;</pre>
-                  <dl>
-                    <div>
-                      <div>
-                      </div>
-                    </div>
-                  </dl>
-                  </div>
-                </div>
-
                 <!-- MIN_VERSION -->
-                <p style="display: none; ">
-                  This function was added in version <b><span></span></b>.
-                  If you require this function, the manifest key
-                  <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-                  can ensure that your extension won't be run in an earlier browser version.
-                </p>
               </div> <!-- /description -->
-
             </div>  <!-- /apiItem -->
-
           </div>  <!-- /apiGroup -->
-
           <!-- EVENTS -->
-          <div id="eventsTemplate" class="apiGroup" style="display: none; ">
-            <a></a>
-            <h3>Events</h3>
-            <!-- iterates over all events -->
-            <div class="apiItem">
-              <a></a>
-              <h4>event name</h4>
-
-              <div class="summary">
-                <!-- Note: intentionally longer 80 columns -->
-                <span class="subdued">chrome.bookmarks</span><span>onEvent</span><span class="subdued">.addListener</span>(function(<span>Type param1, Type param2</span>) <span class="subdued">{...}</span><span>, Type opt_param1, Type opt_param2</span>);
-              </div>
-
-              <div class="description">
-                <p class="todo">Undocumented.</p>
-                <p>
-                  A description from the json schema def of the event goes here.
-                </p>
-
-                <!-- LISTENER PARAMETERS -->
-                <div>
-                  <h4>Listener parameters</h4>
-                  <dl>
-                    <div>
-                      <div>
-                      </div>
-                    </div>
-                  </dl>
-                </div>
-
-                <!-- EXTRA PARAMETERS -->
-                <div>
-                  <h4>Extra parameters to addListener</h4>
-                  <dl>
-                    <div>
-                      <div>
-                      </div>
-                    </div>
-                  </dl>
-                </div>
-
-                <!-- LISTENER RETURN VALUE -->
-                <h4>Listener returns</h4>
-                <dl>
-                  <div>
-                    <div>
-                    </div>
-                  </div>
-                </dl>
-
-              </div> <!-- /description -->
-            </div> <!-- /apiItem -->
-
-          </div> <!-- /apiGroup -->
-
+           <!-- /apiGroup -->
           <!-- TYPES -->
-          <div class="apiGroup" style="display: none; ">
-            <a name="types"></a>
-            <h3 id="types">Types</h3>
-
-            <!-- iterates over all types -->
-            <div class="apiItem">
-              <a></a>
-              <h4>type name</h4>
-
-              <div>
-              </div>
-
-            </div> <!-- /apiItem -->
-
-          </div> <!-- /apiGroup -->
-
+           <!-- /apiGroup -->
         </div> <!-- /apiPage -->
       </div> <!-- /gc-pagecontent -->
     </div> <!-- /g-section -->
@@ -1555,18 +916,15 @@ For details on calling <code>getAcceptLanguages()</code>, see the
   <p>
   ©2011 Google
   </p>
-
 <!-- begin analytics -->
 <script src="https://www.google-analytics.com/urchin.js" type="text/javascript"></script>
 <script src="https://www.google-analytics.com/ga.js" type="text/javascript"></script>
-
 <script type="text/javascript">
   // chrome doc tracking
   try {
     var engdocs = _gat._getTracker("YT-10763712-2");
     engdocs._trackPageview();
   } catch(err) {}
-
   // code.google.com site-wide tracking
   try {
     _uacct="UA-18071-1";

@@ -41,130 +41,7 @@
       <!-- In particular, sub-templates that recurse, must be used by allowing
            jstemplate to make a copy of the template in this section which
            are not operated on by way of the jsskip="true" -->
-      <div style="display:none">
-
-        <!-- VALUE -->
-        <div id="valueTemplate">
-          <dt>
-            <var>paramName</var>
-              <em>
-
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span class="optional">optional</span>
-                    <span class="enum">enumerated</span>
-                    <span id="typeTemplate">
-                      <span>
-                        <a> Type</a>
-                      </span>
-                      <span>
-                        <span>
-                          array of <span><span></span></span>
-                        </span>
-                        <span>paramType</span>
-                        <span></span>
-                      </span>
-                    </span>
-                  )
-                </div>
-
-              </em>
-          </dt>
-          <dd class="todo">
-            Undocumented.
-          </dd>
-          <dd>
-            Description of this parameter from the json schema.
-          </dd>
-          <dd>
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
-          <!-- OBJECT PROPERTIES -->
-          <dd>
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-
-          <!-- OBJECT METHODS -->
-          <dd>
-            <div></div>
-          </dd>
-
-          <!-- OBJECT EVENT FIELDS -->
-          <dd>
-            <div></div>
-          </dd>
-
-          <!-- FUNCTION PARAMETERS -->
-          <dd>
-            <div></div>
-          </dd>
-
-        </div> <!-- /VALUE -->
-
-        <div id="functionParametersTemplate">
-          <h5>Parameters</h5>
-          <dl>
-            <div>
-              <div>
-              </div>
-            </div>
-          </dl>
-        </div>
-
-        <!-- Individual subsections from the table of contents -->
-        <ol>
-          <li id="propertiesTocTemplate">
-            <a href="#properties">Properties</a>
-            <ol>
-              <li>
-                <a href="#property-anchor">propertyName</a>
-              </li>
-            </ol>
-          </li>
-          <li id="methodsTocTemplate">
-            <a>Methods</a>
-            <ol>
-              <li>
-                <a href="#method-anchor">methodName</a>
-              </li>
-            </ol>
-          </li>
-          <li id="eventsTocTemplate">
-            <a>Events</a>
-            <ol>
-              <li>
-                <a href="#event-anchor">eventName</a>
-              </li>
-            </ol>
-          </li>
-          <li id="typesTocTemplate">
-            <a href="#types">Types</a>
-            <ol>
-              <li>
-                <a href="#id-anchor">id</a>
-                <ol>
-                  <div></div>
-                  <div></div>
-                </ol>
-              </li>
-            </ol>
-          </li>
-        </ol>
-      </div> <!-- /SUBTEMPLATES -->
-
+       <!-- /SUBTEMPLATES -->
   <a id="top"></a>
     <div id="skipto">
       <a href="#gc-pagecontent">Skip to page content</a>
@@ -185,7 +62,6 @@
               <span class="greytext">e.g. "page action" or "tabs"</span>
             </div>
           </form>
-
           <script type="text/javascript" src="https://www.google.com/jsapi"></script>
           <script type="text/javascript">google.load("elements", "1", {packages: "transliteration"});</script>
           <script type="text/javascript" src="https://www.google.com/coop/cse/t13n?form=cse&amp;t13n_langs=en"></script>
@@ -193,9 +69,7 @@
         </td>
       </tr>
     </tbody></table>
-
     <div id="codesiteContent" class="">
-
       <a id="gc-topnav-anchor"></a>
       <div id="gc-topnav">
         <h1>Google Chrome Extensions (<a href="http://code.google.com/labs/">Labs</a>)</h1>
@@ -220,7 +94,6 @@
           </li>
         </ul>
       </div> <!-- end gc-topnav -->
-
     <div class="g-section g-tpl-170">
       <!-- SIDENAV -->
       <div class="g-unit g-first" id="gc-toc">
@@ -308,7 +181,6 @@
       <script>
         initToggles();
       </script>
-
     <div class="g-unit" id="gc-pagecontent">
       <div id="pageTitle">
         <h1 class="page_title">Cookies</h1>
@@ -320,29 +192,15 @@
             <li>
               <a href="#manifest">Manifest</a>
               <ol>
-                <li style="display: none; ">
-                  <a>h3Name</a>
-                </li>
               </ol>
             </li><li>
               <a href="#examples"> Examples </a>
               <ol>
-                <li style="display: none; ">
-                  <a>h3Name</a>
-                </li>
               </ol>
             </li>
               <li>
                 <a href="#apiReference">API reference: chrome.cookies</a>
                 <ol>
-                  <li style="display: none; ">
-            <a href="#properties">Properties</a>
-            <ol>
-              <li>
-                <a href="#property-anchor">propertyName</a>
-              </li>
-            </ol>
-          </li>
                   <li>
             <a href="#global-methods">Methods</a>
             <ol>
@@ -373,42 +231,10 @@
               <li>
                 <a href="#type-Cookie">Cookie</a>
                 <ol>
-                  <li style="display: none; ">
-            <a>Methods</a>
-            <ol>
-              <li>
-                <a href="#method-anchor">methodName</a>
-              </li>
-            </ol>
-          </li>
-                  <li style="display: none; ">
-            <a>Events</a>
-            <ol>
-              <li>
-                <a href="#event-anchor">eventName</a>
-              </li>
-            </ol>
-          </li>
                 </ol>
               </li><li>
                 <a href="#type-CookieStore">CookieStore</a>
                 <ol>
-                  <li style="display: none; ">
-            <a>Methods</a>
-            <ol>
-              <li>
-                <a href="#method-anchor">methodName</a>
-              </li>
-            </ol>
-          </li>
-                  <li style="display: none; ">
-            <a>Events</a>
-            <ol>
-              <li>
-                <a href="#event-anchor">eventName</a>
-              </li>
-            </ol>
-          </li>
                 </ol>
               </li>
             </ol>
@@ -418,25 +244,17 @@
           </ol>
         </div>
         <!-- /TABLE OF CONTENTS -->
-
         <!-- Standard content lead-in for experimental API pages -->
-        <p id="classSummary" style="display: none; ">
-          For information on how to use experimental APIs, see the <a href="experimental.html">chrome.experimental.* APIs</a> page.
-        </p>
-
         <!-- STATIC CONTENT PLACEHOLDER -->
         <div id="static"><div id="pageData-name" class="pageData">Cookies</div>
-
 <!-- BEGIN AUTHORED CONTENT -->
 <h2 id="manifest">Manifest</h2>
-
 <p>To use the cookies API,
 you must declare the "cookies" permission in your manifest,
 along with <a href="manifest.html#permissions">host permissions</a>
 for any hosts whose cookies
 you want to access.
 For example:</p>
-
 <pre>{
   "name": "My extension",
   ...
@@ -446,9 +264,7 @@ For example:</p>
   ]</b>,
   ...
 }</pre>
-
 <h2 id="examples"> Examples </h2>
-
 <p>
 You can find a simple example
 of using the cookies API in the
@@ -458,53 +274,29 @@ For other examples
 and for help in viewing the source code,
 see <a href="samples.html">Samples</a>.
 </p>
-
 <!-- END AUTHORED CONTENT -->
 </div>
-
         <!-- API PAGE -->
         <div class="apiPage">
         <a name="apiReference"></a>
         <h2>API reference: chrome.cookies</h2>
-
           <!-- PROPERTIES -->
-          <div class="apiGroup" style="display: none; ">
-            <a name="properties"></a>
-            <h3 id="properties">Properties</h3>
-
-            <div>
-              <a></a>
-              <h4>getLastError</h4>
-              <div class="summary">
-                <!-- Note: intentionally longer 80 columns -->
-                <span>chrome.extension</span><span>lastError</span>
-              </div>
-              <div>
-              </div>
-            </div>
-
-          </div> <!-- /apiGroup -->
-
+           <!-- /apiGroup -->
           <!-- METHODS -->
           <div id="methodsTemplate" class="apiGroup">
             <a name="global-methods"></a>
             <h3>Methods</h3>
-
             <!-- iterates over all functions -->
             <div class="apiItem">
               <a name="method-get"></a> <!-- method-anchor -->
               <h4>get</h4>
-
-              <div class="summary"><span style="display: none; ">void</span>
+              <div class="summary">
                   <!-- Note: intentionally longer 80 columns -->
-                  <span>chrome.cookies.get</span>(<span class="null"><span style="display: none; ">, </span><span>object</span>
+                  <span>chrome.cookies.get</span>(<span class="null"><span>object</span>
                       <var><span>details</span></var></span><span class="null"><span>, </span><span>function</span>
                       <var><span>callback</span></var></span>)</div>
-
               <div class="description">
-                <p class="todo" style="display: none; ">Undocumented.</p>
                 <p>Retrieves information about a single cookie. If more than one cookie of the same name exists for the given URL, the one with the longest path will be returned. For cookies with the same path length, the cookie with the earliest creation time will be returned.</p>
-
                 <!-- PARAMETERS -->
                 <h4>Parameters</h4>
                 <dl>
@@ -513,43 +305,19 @@ see <a href="samples.html">Samples</a>.
           <dt>
             <var>details</var>
               <em>
-
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
-                    <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
                       <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
                         <span>object</span>
-                        <span style="display: none; "></span>
                       </span>
                     </span>
                   )
                 </div>
-
               </em>
           </dt>
-          <dd class="todo" style="display: none; ">
-            Undocumented.
-          </dd>
           <dd>Details to identify the cookie being retrieved.</dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
           <!-- OBJECT PROPERTIES -->
           <dd>
             <dl>
@@ -558,307 +326,108 @@ see <a href="samples.html">Samples</a>.
           <dt>
             <var>url</var>
               <em>
-
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
-                    <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
                       <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
                         <span>string</span>
-                        <span style="display: none; "></span>
                       </span>
                     </span>
                   )
                 </div>
-
               </em>
           </dt>
-          <dd class="todo" style="display: none; ">
-            Undocumented.
-          </dd>
           <dd>The URL with which the cookie to retrieve is associated. This argument may be a full URL, in which case any data following the URL path (e.g. the query string) is simply ignored. If host permissions for this URL are not specified in the manifest file, the API call will fail.</dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
           <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-
           <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
         </div>
               </div><div>
                 <div>
           <dt>
             <var>name</var>
               <em>
-
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
-                    <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
                       <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
                         <span>string</span>
-                        <span style="display: none; "></span>
                       </span>
                     </span>
                   )
                 </div>
-
               </em>
           </dt>
-          <dd class="todo" style="display: none; ">
-            Undocumented.
-          </dd>
           <dd>The name of the cookie to retrieve.</dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
           <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-
           <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
         </div>
               </div><div>
                 <div>
           <dt>
             <var>storeId</var>
               <em>
-
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
                     <span class="optional">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
                       <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
                         <span>string</span>
-                        <span style="display: none; "></span>
                       </span>
                     </span>
                   )
                 </div>
-
               </em>
           </dt>
-          <dd class="todo" style="display: none; ">
-            Undocumented.
-          </dd>
           <dd>The ID of the cookie store in which to look for the cookie. By default, the current execution context's cookie store will be used.</dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
           <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-
           <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
         </div>
               </div>
             </dl>
           </dd>
-
           <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
         </div>
                   </div><div>
                     <div>
           <dt>
             <var>callback</var>
               <em>
-
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
-                    <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
                       <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
                         <span>function</span>
-                        <span style="display: none; "></span>
                       </span>
                     </span>
                   )
                 </div>
-
               </em>
           </dt>
           <dd class="todo">
             Undocumented.
           </dd>
-          <dd style="display: none; ">
-            Description of this parameter from the json schema.
-          </dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
           <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-
           <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
         </div>
                   </div>
                 </dl>
-
                 <!-- RETURNS -->
-                <h4 style="display: none; ">Returns</h4>
                 <dl>
-                  <div style="display: none; ">
-                    <div>
-                    </div>
-                  </div>
                 </dl>
-
                 <!-- CALLBACK -->
                 <div>
                   <div>
@@ -867,11 +436,6 @@ see <a href="samples.html">Samples</a>.
                     The callback <em>parameter</em> should specify a function
                     that looks like this:
                   </p>
-                  <p style="display: none; ">
-                    If you specify the <em>callback</em> parameter, it should
-                    specify a function that looks like this:
-                  </p>
-
                   <!-- Note: intentionally longer 80 columns -->
                   <pre>function(<span>Cookie cookie</span>) <span class="subdued">{...}</span>;</pre>
                   <dl>
@@ -880,97 +444,41 @@ see <a href="samples.html">Samples</a>.
           <dt>
             <var>cookie</var>
               <em>
-
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
                     <span class="optional">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
                       <span>
                         <a href="cookies.html#type-Cookie">Cookie</a>
                       </span>
-                      <span style="display: none; ">
-                        <span>
-                          array of <span><span></span></span>
-                        </span>
-                        <span>paramType</span>
-                        <span></span>
-                      </span>
                     </span>
                   )
                 </div>
-
               </em>
           </dt>
-          <dd class="todo" style="display: none; ">
-            Undocumented.
-          </dd>
           <dd>Contains details about the cookie. This parameter is null if no such cookie was found.</dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
           <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-
           <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
         </div>
                     </div>
                   </dl>
                   </div>
                 </div>
-
                 <!-- MIN_VERSION -->
-                <p style="display: none; ">
-                  This function was added in version <b><span></span></b>.
-                  If you require this function, the manifest key
-                  <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-                  can ensure that your extension won't be run in an earlier browser version.
-                </p>
               </div> <!-- /description -->
-
             </div><div class="apiItem">
               <a name="method-getAll"></a> <!-- method-anchor -->
               <h4>getAll</h4>
-
-              <div class="summary"><span style="display: none; ">void</span>
+              <div class="summary">
                   <!-- Note: intentionally longer 80 columns -->
-                  <span>chrome.cookies.getAll</span>(<span class="null"><span style="display: none; ">, </span><span>object</span>
+                  <span>chrome.cookies.getAll</span>(<span class="null"><span>object</span>
                       <var><span>details</span></var></span><span class="null"><span>, </span><span>function</span>
                       <var><span>callback</span></var></span>)</div>
-
               <div class="description">
-                <p class="todo" style="display: none; ">Undocumented.</p>
                 <p>Retrieves all cookies from a single cookie store that match the given information.  The cookies returned will be sorted, with those with the longest path first.  If multiple cookies have the same path length, those with the earliest creation time will be first.</p>
-
                 <!-- PARAMETERS -->
                 <h4>Parameters</h4>
                 <dl>
@@ -979,43 +487,19 @@ see <a href="samples.html">Samples</a>.
           <dt>
             <var>details</var>
               <em>
-
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
-                    <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
                       <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
                         <span>object</span>
-                        <span style="display: none; "></span>
                       </span>
                     </span>
                   )
                 </div>
-
               </em>
           </dt>
-          <dd class="todo" style="display: none; ">
-            Undocumented.
-          </dd>
           <dd>Information to filter the cookies being retrieved.</dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
           <!-- OBJECT PROPERTIES -->
           <dd>
             <dl>
@@ -1024,579 +508,206 @@ see <a href="samples.html">Samples</a>.
           <dt>
             <var>url</var>
               <em>
-
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
                     <span class="optional">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
                       <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
                         <span>string</span>
-                        <span style="display: none; "></span>
                       </span>
                     </span>
                   )
                 </div>
-
               </em>
           </dt>
-          <dd class="todo" style="display: none; ">
-            Undocumented.
-          </dd>
           <dd>Restricts the retrieved cookies to those that would match the given URL.</dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
           <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-
           <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
         </div>
               </div><div>
                 <div>
           <dt>
             <var>name</var>
               <em>
-
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
                     <span class="optional">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
                       <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
                         <span>string</span>
-                        <span style="display: none; "></span>
                       </span>
                     </span>
                   )
                 </div>
-
               </em>
           </dt>
-          <dd class="todo" style="display: none; ">
-            Undocumented.
-          </dd>
           <dd>Filters the cookies by name.</dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
           <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-
           <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
         </div>
               </div><div>
                 <div>
           <dt>
             <var>domain</var>
               <em>
-
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
                     <span class="optional">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
                       <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
                         <span>string</span>
-                        <span style="display: none; "></span>
                       </span>
                     </span>
                   )
                 </div>
-
               </em>
           </dt>
-          <dd class="todo" style="display: none; ">
-            Undocumented.
-          </dd>
           <dd>Restricts the retrieved cookies to those whose domains match or are subdomains of this one.</dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
           <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-
           <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
         </div>
               </div><div>
                 <div>
           <dt>
             <var>path</var>
               <em>
-
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
                     <span class="optional">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
                       <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
                         <span>string</span>
-                        <span style="display: none; "></span>
                       </span>
                     </span>
                   )
                 </div>
-
               </em>
           </dt>
-          <dd class="todo" style="display: none; ">
-            Undocumented.
-          </dd>
           <dd>Restricts the retrieved cookies to those whose path exactly matches this string.</dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
           <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-
           <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
         </div>
               </div><div>
                 <div>
           <dt>
             <var>secure</var>
               <em>
-
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
                     <span class="optional">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
                       <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
                         <span>boolean</span>
-                        <span style="display: none; "></span>
                       </span>
                     </span>
                   )
                 </div>
-
               </em>
           </dt>
-          <dd class="todo" style="display: none; ">
-            Undocumented.
-          </dd>
           <dd>Filters the cookies by their Secure property.</dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
           <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-
           <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
         </div>
               </div><div>
                 <div>
           <dt>
             <var>session</var>
               <em>
-
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
                     <span class="optional">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
                       <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
                         <span>boolean</span>
-                        <span style="display: none; "></span>
                       </span>
                     </span>
                   )
                 </div>
-
               </em>
           </dt>
-          <dd class="todo" style="display: none; ">
-            Undocumented.
-          </dd>
           <dd>Filters out session vs. persistent cookies.</dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
           <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-
           <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
         </div>
               </div><div>
                 <div>
           <dt>
             <var>storeId</var>
               <em>
-
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
                     <span class="optional">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
                       <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
                         <span>string</span>
-                        <span style="display: none; "></span>
                       </span>
                     </span>
                   )
                 </div>
-
               </em>
           </dt>
-          <dd class="todo" style="display: none; ">
-            Undocumented.
-          </dd>
           <dd>The cookie store to retrieve cookies from. If omitted, the current execution context's cookie store will be used.</dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
           <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-
           <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
         </div>
               </div>
             </dl>
           </dd>
-
           <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
         </div>
                   </div><div>
                     <div>
           <dt>
             <var>callback</var>
               <em>
-
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
-                    <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
                       <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
                         <span>function</span>
-                        <span style="display: none; "></span>
                       </span>
                     </span>
                   )
                 </div>
-
               </em>
           </dt>
           <dd class="todo">
             Undocumented.
           </dd>
-          <dd style="display: none; ">
-            Description of this parameter from the json schema.
-          </dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
           <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-
           <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
         </div>
                   </div>
                 </dl>
-
                 <!-- RETURNS -->
-                <h4 style="display: none; ">Returns</h4>
                 <dl>
-                  <div style="display: none; ">
-                    <div>
-                    </div>
-                  </div>
                 </dl>
-
                 <!-- CALLBACK -->
                 <div>
                   <div>
@@ -1605,11 +716,6 @@ see <a href="samples.html">Samples</a>.
                     The callback <em>parameter</em> should specify a function
                     that looks like this:
                   </p>
-                  <p style="display: none; ">
-                    If you specify the <em>callback</em> parameter, it should
-                    specify a function that looks like this:
-                  </p>
-
                   <!-- Note: intentionally longer 80 columns -->
                   <pre>function(<span>array of Cookie cookies</span>) <span class="subdued">{...}</span>;</pre>
                   <dl>
@@ -1618,107 +724,45 @@ see <a href="samples.html">Samples</a>.
           <dt>
             <var>cookies</var>
               <em>
-
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
-                    <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
                       <span>
                         <span>
                           array of <span><span>
                       <span>
                         <a href="cookies.html#type-Cookie">Cookie</a>
                       </span>
-                      <span style="display: none; ">
-                        <span>
-                          array of <span><span></span></span>
-                        </span>
-                        <span>paramType</span>
-                        <span></span>
-                      </span>
                     </span></span>
                         </span>
-                        <span style="display: none; ">paramType</span>
-                        <span style="display: none; "></span>
                       </span>
                     </span>
                   )
                 </div>
-
               </em>
           </dt>
-          <dd class="todo" style="display: none; ">
-            Undocumented.
-          </dd>
           <dd>All the existing, unexpired cookies that match the given cookie info.</dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
           <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-
           <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
         </div>
                     </div>
                   </dl>
                   </div>
                 </div>
-
                 <!-- MIN_VERSION -->
-                <p style="display: none; ">
-                  This function was added in version <b><span></span></b>.
-                  If you require this function, the manifest key
-                  <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-                  can ensure that your extension won't be run in an earlier browser version.
-                </p>
               </div> <!-- /description -->
-
             </div><div class="apiItem">
               <a name="method-getAllCookieStores"></a> <!-- method-anchor -->
               <h4>getAllCookieStores</h4>
-
-              <div class="summary"><span style="display: none; ">void</span>
+              <div class="summary">
                   <!-- Note: intentionally longer 80 columns -->
-                  <span>chrome.cookies.getAllCookieStores</span>(<span class="null"><span style="display: none; ">, </span><span>function</span>
+                  <span>chrome.cookies.getAllCookieStores</span>(<span class="null"><span>function</span>
                       <var><span>callback</span></var></span>)</div>
-
               <div class="description">
-                <p class="todo" style="display: none; ">Undocumented.</p>
                 <p>Lists all existing cookie stores.</p>
-
                 <!-- PARAMETERS -->
                 <h4>Parameters</h4>
                 <dl>
@@ -1727,83 +771,31 @@ see <a href="samples.html">Samples</a>.
           <dt>
             <var>callback</var>
               <em>
-
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
-                    <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
                       <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
                         <span>function</span>
-                        <span style="display: none; "></span>
                       </span>
                     </span>
                   )
                 </div>
-
               </em>
           </dt>
           <dd class="todo">
             Undocumented.
           </dd>
-          <dd style="display: none; ">
-            Description of this parameter from the json schema.
-          </dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
           <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-
           <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
         </div>
                   </div>
                 </dl>
-
                 <!-- RETURNS -->
-                <h4 style="display: none; ">Returns</h4>
                 <dl>
-                  <div style="display: none; ">
-                    <div>
-                    </div>
-                  </div>
                 </dl>
-
                 <!-- CALLBACK -->
                 <div>
                   <div>
@@ -1812,11 +804,6 @@ see <a href="samples.html">Samples</a>.
                     The callback <em>parameter</em> should specify a function
                     that looks like this:
                   </p>
-                  <p style="display: none; ">
-                    If you specify the <em>callback</em> parameter, it should
-                    specify a function that looks like this:
-                  </p>
-
                   <!-- Note: intentionally longer 80 columns -->
                   <pre>function(<span>array of CookieStore cookieStores</span>) <span class="subdued">{...}</span>;</pre>
                   <dl>
@@ -1825,108 +812,46 @@ see <a href="samples.html">Samples</a>.
           <dt>
             <var>cookieStores</var>
               <em>
-
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
-                    <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
                       <span>
                         <span>
                           array of <span><span>
                       <span>
                         <a href="cookies.html#type-CookieStore">CookieStore</a>
                       </span>
-                      <span style="display: none; ">
-                        <span>
-                          array of <span><span></span></span>
-                        </span>
-                        <span>paramType</span>
-                        <span></span>
-                      </span>
                     </span></span>
                         </span>
-                        <span style="display: none; ">paramType</span>
-                        <span style="display: none; "></span>
                       </span>
                     </span>
                   )
                 </div>
-
               </em>
           </dt>
-          <dd class="todo" style="display: none; ">
-            Undocumented.
-          </dd>
           <dd>All the existing cookie stores.</dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
           <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-
           <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
         </div>
                     </div>
                   </dl>
                   </div>
                 </div>
-
                 <!-- MIN_VERSION -->
-                <p style="display: none; ">
-                  This function was added in version <b><span></span></b>.
-                  If you require this function, the manifest key
-                  <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-                  can ensure that your extension won't be run in an earlier browser version.
-                </p>
               </div> <!-- /description -->
-
             </div><div class="apiItem">
               <a name="method-remove"></a> <!-- method-anchor -->
               <h4>remove</h4>
-
-              <div class="summary"><span style="display: none; ">void</span>
+              <div class="summary">
                   <!-- Note: intentionally longer 80 columns -->
-                  <span>chrome.cookies.remove</span>(<span class="null"><span style="display: none; ">, </span><span>object</span>
+                  <span>chrome.cookies.remove</span>(<span class="null"><span>object</span>
                       <var><span>details</span></var></span><span class="optional"><span>, </span><span>function</span>
                       <var><span>callback</span></var></span>)</div>
-
               <div class="description">
-                <p class="todo" style="display: none; ">Undocumented.</p>
                 <p>Deletes a cookie by name.</p>
-
                 <!-- PARAMETERS -->
                 <h4>Parameters</h4>
                 <dl>
@@ -1935,43 +860,19 @@ see <a href="samples.html">Samples</a>.
           <dt>
             <var>details</var>
               <em>
-
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
-                    <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
                       <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
                         <span>object</span>
-                        <span style="display: none; "></span>
                       </span>
                     </span>
                   )
                 </div>
-
               </em>
           </dt>
-          <dd class="todo" style="display: none; ">
-            Undocumented.
-          </dd>
           <dd>Information to identify the cookie to remove.</dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
           <!-- OBJECT PROPERTIES -->
           <dd>
             <dl>
@@ -1980,258 +881,98 @@ see <a href="samples.html">Samples</a>.
           <dt>
             <var>url</var>
               <em>
-
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
-                    <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
                       <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
                         <span>string</span>
-                        <span style="display: none; "></span>
                       </span>
                     </span>
                   )
                 </div>
-
               </em>
           </dt>
-          <dd class="todo" style="display: none; ">
-            Undocumented.
-          </dd>
           <dd>The URL associated with the cookie. If host permissions for this URL are not specified in the manifest file, the API call will fail.</dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
           <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-
           <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
         </div>
               </div><div>
                 <div>
           <dt>
             <var>name</var>
               <em>
-
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
-                    <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
                       <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
                         <span>string</span>
-                        <span style="display: none; "></span>
                       </span>
                     </span>
                   )
                 </div>
-
               </em>
           </dt>
-          <dd class="todo" style="display: none; ">
-            Undocumented.
-          </dd>
           <dd>The name of the cookie to remove.</dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
           <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-
           <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
         </div>
               </div><div>
                 <div>
           <dt>
             <var>storeId</var>
               <em>
-
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
                     <span class="optional">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
                       <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
                         <span>string</span>
-                        <span style="display: none; "></span>
                       </span>
                     </span>
                   )
                 </div>
-
               </em>
           </dt>
-          <dd class="todo" style="display: none; ">
-            Undocumented.
-          </dd>
           <dd>The ID of the cookie store to look in for the cookie. If unspecified, the cookie is looked for by default in the current execution context's cookie store.</dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
           <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-
           <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
         </div>
               </div>
             </dl>
           </dd>
-
           <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
         </div>
                   </div><div>
                     <div>
           <dt>
             <var>callback</var>
               <em>
-
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
                     <span class="optional">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
                       <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
                         <span>function</span>
-                        <span style="display: none; "></span>
                       </span>
                     </span>
                   )
                 </div>
-
               </em>
           </dt>
           <dd class="todo">
             Undocumented.
-          </dd>
-          <dd style="display: none; ">
-            Description of this parameter from the json schema.
           </dd>
           <dd>
             This parameter was added in version
@@ -2242,58 +983,24 @@ see <a href="samples.html">Samples</a>.
             <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
             can ensure that your extension won't be run in an earlier browser version.
           </dd>
-
           <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-
           <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
         </div>
                   </div>
                 </dl>
-
                 <!-- RETURNS -->
-                <h4 style="display: none; ">Returns</h4>
                 <dl>
-                  <div style="display: none; ">
-                    <div>
-                    </div>
-                  </div>
                 </dl>
-
                 <!-- CALLBACK -->
                 <div>
                   <div>
                   <h4>Callback function</h4>
-                  <p style="display: none; ">
-                    The callback <em>parameter</em> should specify a function
-                    that looks like this:
-                  </p>
                   <p>
                     If you specify the <em>callback</em> parameter, it should
                     specify a function that looks like this:
                   </p>
-
                   <!-- Note: intentionally longer 80 columns -->
                   <pre>function(<span>object details</span>) <span class="subdued">{...}</span>;</pre>
                   <dl>
@@ -2302,43 +1009,20 @@ see <a href="samples.html">Samples</a>.
           <dt>
             <var>details</var>
               <em>
-
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
                     <span class="optional">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
                       <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
                         <span>object</span>
-                        <span style="display: none; "></span>
                       </span>
                     </span>
                   )
                 </div>
-
               </em>
           </dt>
-          <dd class="todo" style="display: none; ">
-            Undocumented.
-          </dd>
           <dd>Contains details about the cookie that's been removed.  If removal failed for any reason, this will be "null", and "chrome.extension.lastError" will be set.</dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
           <!-- OBJECT PROPERTIES -->
           <dd>
             <dl>
@@ -2347,253 +1031,93 @@ see <a href="samples.html">Samples</a>.
           <dt>
             <var>url</var>
               <em>
-
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
-                    <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
                       <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
                         <span>string</span>
-                        <span style="display: none; "></span>
                       </span>
                     </span>
                   )
                 </div>
-
               </em>
           </dt>
-          <dd class="todo" style="display: none; ">
-            Undocumented.
-          </dd>
           <dd>The URL associated with the cookie that's been removed.</dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
           <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-
           <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
         </div>
               </div><div>
                 <div>
           <dt>
             <var>name</var>
               <em>
-
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
-                    <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
                       <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
                         <span>string</span>
-                        <span style="display: none; "></span>
                       </span>
                     </span>
                   )
                 </div>
-
               </em>
           </dt>
-          <dd class="todo" style="display: none; ">
-            Undocumented.
-          </dd>
           <dd>The name of the cookie that's been removed.</dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
           <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-
           <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
         </div>
               </div><div>
                 <div>
           <dt>
             <var>storeId</var>
               <em>
-
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
-                    <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
                       <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
                         <span>string</span>
-                        <span style="display: none; "></span>
                       </span>
                     </span>
                   )
                 </div>
-
               </em>
           </dt>
-          <dd class="todo" style="display: none; ">
-            Undocumented.
-          </dd>
           <dd>The ID of the cookie store from which the cookie was removed.</dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
           <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-
           <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
         </div>
               </div>
             </dl>
           </dd>
-
           <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
         </div>
                     </div>
                   </dl>
                   </div>
                 </div>
-
                 <!-- MIN_VERSION -->
-                <p style="display: none; ">
-                  This function was added in version <b><span></span></b>.
-                  If you require this function, the manifest key
-                  <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-                  can ensure that your extension won't be run in an earlier browser version.
-                </p>
               </div> <!-- /description -->
-
             </div><div class="apiItem">
               <a name="method-set"></a> <!-- method-anchor -->
               <h4>set</h4>
-
-              <div class="summary"><span style="display: none; ">void</span>
+              <div class="summary">
                   <!-- Note: intentionally longer 80 columns -->
-                  <span>chrome.cookies.set</span>(<span class="null"><span style="display: none; ">, </span><span>object</span>
+                  <span>chrome.cookies.set</span>(<span class="null"><span>object</span>
                       <var><span>details</span></var></span><span class="optional"><span>, </span><span>function</span>
                       <var><span>callback</span></var></span>)</div>
-
               <div class="description">
-                <p class="todo" style="display: none; ">Undocumented.</p>
                 <p>Sets a cookie with the given cookie data; may overwrite equivalent cookies if they exist.</p>
-
                 <!-- PARAMETERS -->
                 <h4>Parameters</h4>
                 <dl>
@@ -2602,43 +1126,19 @@ see <a href="samples.html">Samples</a>.
           <dt>
             <var>details</var>
               <em>
-
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
-                    <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
                       <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
                         <span>object</span>
-                        <span style="display: none; "></span>
                       </span>
                     </span>
                   )
                 </div>
-
               </em>
           </dt>
-          <dd class="todo" style="display: none; ">
-            Undocumented.
-          </dd>
           <dd>Details about the cookie being set.</dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
           <!-- OBJECT PROPERTIES -->
           <dd>
             <dl>
@@ -2647,666 +1147,243 @@ see <a href="samples.html">Samples</a>.
           <dt>
             <var>url</var>
               <em>
-
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
-                    <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
                       <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
                         <span>string</span>
-                        <span style="display: none; "></span>
                       </span>
                     </span>
                   )
                 </div>
-
               </em>
           </dt>
-          <dd class="todo" style="display: none; ">
-            Undocumented.
-          </dd>
           <dd>The request-URI to associate with the setting of the cookie. This value can affect the default domain and path values of the created cookie. If host permissions for this URL are not specified in the manifest file, the API call will fail.</dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
           <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-
           <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
         </div>
               </div><div>
                 <div>
           <dt>
             <var>name</var>
               <em>
-
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
                     <span class="optional">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
                       <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
                         <span>string</span>
-                        <span style="display: none; "></span>
                       </span>
                     </span>
                   )
                 </div>
-
               </em>
           </dt>
-          <dd class="todo" style="display: none; ">
-            Undocumented.
-          </dd>
           <dd>The name of the cookie. Empty by default if omitted.</dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
           <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-
           <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
         </div>
               </div><div>
                 <div>
           <dt>
             <var>value</var>
               <em>
-
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
                     <span class="optional">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
                       <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
                         <span>string</span>
-                        <span style="display: none; "></span>
                       </span>
                     </span>
                   )
                 </div>
-
               </em>
           </dt>
-          <dd class="todo" style="display: none; ">
-            Undocumented.
-          </dd>
           <dd>The value of the cookie. Empty by default if omitted.</dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
           <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-
           <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
         </div>
               </div><div>
                 <div>
           <dt>
             <var>domain</var>
               <em>
-
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
                     <span class="optional">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
                       <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
                         <span>string</span>
-                        <span style="display: none; "></span>
                       </span>
                     </span>
                   )
                 </div>
-
               </em>
           </dt>
-          <dd class="todo" style="display: none; ">
-            Undocumented.
-          </dd>
           <dd>The domain of the cookie. If omitted, the cookie becomes a host-only cookie.</dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
           <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-
           <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
         </div>
               </div><div>
                 <div>
           <dt>
             <var>path</var>
               <em>
-
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
                     <span class="optional">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
                       <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
                         <span>string</span>
-                        <span style="display: none; "></span>
                       </span>
                     </span>
                   )
                 </div>
-
               </em>
           </dt>
-          <dd class="todo" style="display: none; ">
-            Undocumented.
-          </dd>
           <dd>The path of the cookie. Defaults to the path portion of the url parameter.</dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
           <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-
           <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
         </div>
               </div><div>
                 <div>
           <dt>
             <var>secure</var>
               <em>
-
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
                     <span class="optional">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
                       <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
                         <span>boolean</span>
-                        <span style="display: none; "></span>
                       </span>
                     </span>
                   )
                 </div>
-
               </em>
           </dt>
-          <dd class="todo" style="display: none; ">
-            Undocumented.
-          </dd>
           <dd>Whether the cookie should be marked as Secure. Defaults to false.</dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
           <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-
           <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
         </div>
               </div><div>
                 <div>
           <dt>
             <var>httpOnly</var>
               <em>
-
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
                     <span class="optional">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
                       <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
                         <span>boolean</span>
-                        <span style="display: none; "></span>
                       </span>
                     </span>
                   )
                 </div>
-
               </em>
           </dt>
-          <dd class="todo" style="display: none; ">
-            Undocumented.
-          </dd>
           <dd>Whether the cookie should be marked as HttpOnly. Defaults to false.</dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
           <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-
           <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
         </div>
               </div><div>
                 <div>
           <dt>
             <var>expirationDate</var>
               <em>
-
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
                     <span class="optional">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
                       <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
                         <span>number</span>
-                        <span style="display: none; "></span>
                       </span>
                     </span>
                   )
                 </div>
-
               </em>
           </dt>
-          <dd class="todo" style="display: none; ">
-            Undocumented.
-          </dd>
           <dd>The expiration date of the cookie as the number of seconds since the UNIX epoch. If omitted, the cookie becomes a session cookie.</dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
           <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-
           <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
         </div>
               </div><div>
                 <div>
           <dt>
             <var>storeId</var>
               <em>
-
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
                     <span class="optional">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
                       <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
                         <span>string</span>
-                        <span style="display: none; "></span>
                       </span>
                     </span>
                   )
                 </div>
-
               </em>
           </dt>
-          <dd class="todo" style="display: none; ">
-            Undocumented.
-          </dd>
           <dd>The ID of the cookie store in which to set the cookie. By default, the cookie is set in the current execution context's cookie store.</dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
           <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-
           <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
         </div>
               </div>
             </dl>
           </dd>
-
           <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
         </div>
                   </div><div>
                     <div>
           <dt>
             <var>callback</var>
               <em>
-
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
                     <span class="optional">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
                       <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
                         <span>function</span>
-                        <span style="display: none; "></span>
                       </span>
                     </span>
                   )
                 </div>
-
               </em>
           </dt>
           <dd class="todo">
             Undocumented.
-          </dd>
-          <dd style="display: none; ">
-            Description of this parameter from the json schema.
           </dd>
           <dd>
             This parameter was added in version
@@ -3317,58 +1394,24 @@ see <a href="samples.html">Samples</a>.
             <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
             can ensure that your extension won't be run in an earlier browser version.
           </dd>
-
           <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-
           <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
         </div>
                   </div>
                 </dl>
-
                 <!-- RETURNS -->
-                <h4 style="display: none; ">Returns</h4>
                 <dl>
-                  <div style="display: none; ">
-                    <div>
-                    </div>
-                  </div>
                 </dl>
-
                 <!-- CALLBACK -->
                 <div>
                   <div>
                   <h4>Callback function</h4>
-                  <p style="display: none; ">
-                    The callback <em>parameter</em> should specify a function
-                    that looks like this:
-                  </p>
                   <p>
                     If you specify the <em>callback</em> parameter, it should
                     specify a function that looks like this:
                   </p>
-
                   <!-- Note: intentionally longer 80 columns -->
                   <pre>function(<span>Cookie cookie</span>) <span class="subdued">{...}</span>;</pre>
                   <dl>
@@ -3377,87 +1420,33 @@ see <a href="samples.html">Samples</a>.
           <dt>
             <var>cookie</var>
               <em>
-
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
                     <span class="optional">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
                       <span>
                         <a href="cookies.html#type-Cookie">Cookie</a>
                       </span>
-                      <span style="display: none; ">
-                        <span>
-                          array of <span><span></span></span>
-                        </span>
-                        <span>paramType</span>
-                        <span></span>
-                      </span>
                     </span>
                   )
                 </div>
-
               </em>
           </dt>
-          <dd class="todo" style="display: none; ">
-            Undocumented.
-          </dd>
           <dd>Contains details about the cookie that's been set.  If setting failed for any reason, this will be "null", and "chrome.extension.lastError" will be set.</dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
           <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-
           <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
         </div>
                     </div>
                   </dl>
                   </div>
                 </div>
-
                 <!-- MIN_VERSION -->
-                <p style="display: none; ">
-                  This function was added in version <b><span></span></b>.
-                  If you require this function, the manifest key
-                  <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-                  can ensure that your extension won't be run in an earlier browser version.
-                </p>
               </div> <!-- /description -->
-
             </div>  <!-- /apiItem -->
-
           </div>  <!-- /apiGroup -->
-
           <!-- EVENTS -->
           <div id="eventsTemplate" class="apiGroup">
             <a name="global-events"></a>
@@ -3466,16 +1455,12 @@ see <a href="samples.html">Samples</a>.
             <div class="apiItem">
               <a name="event-onChanged"></a>
               <h4>onChanged</h4>
-
               <div class="summary">
                 <!-- Note: intentionally longer 80 columns -->
                 <span class="subdued">chrome.cookies.</span><span>onChanged</span><span class="subdued">.addListener</span>(function(<span>object changeInfo</span>) <span class="subdued">{...}</span><span></span>);
               </div>
-
               <div class="description">
-                <p class="todo" style="display: none; ">Undocumented.</p>
                 <p>Fired when a cookie is set or removed. As a special case, note that updating a cookie's properties is implemented as a two step process: the cookie to be updated is first removed entirely, generating a notification with "cause" of "overwrite" .  Afterwards, a new cookie is written with the updated values, generating a second notification with "cause" "explicit".</p>
-
                 <!-- LISTENER PARAMETERS -->
                 <div>
                   <h4>Listener parameters</h4>
@@ -3485,45 +1470,21 @@ see <a href="samples.html">Samples</a>.
           <dt>
             <var>changeInfo</var>
               <em>
-
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
-                    <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
                       <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
                         <span>object</span>
-                        <span style="display: none; "></span>
                       </span>
                     </span>
                   )
                 </div>
-
               </em>
           </dt>
           <dd class="todo">
             Undocumented.
           </dd>
-          <dd style="display: none; ">
-            Description of this parameter from the json schema.
-          </dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
           <!-- OBJECT PROPERTIES -->
           <dd>
             <dl>
@@ -3532,168 +1493,66 @@ see <a href="samples.html">Samples</a>.
           <dt>
             <var>removed</var>
               <em>
-
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
-                    <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
                       <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
                         <span>boolean</span>
-                        <span style="display: none; "></span>
                       </span>
                     </span>
                   )
                 </div>
-
               </em>
           </dt>
-          <dd class="todo" style="display: none; ">
-            Undocumented.
-          </dd>
           <dd>True if a cookie was removed.</dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
           <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-
           <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
         </div>
               </div><div>
                 <div>
           <dt>
             <var>cookie</var>
               <em>
-
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
-                    <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
                       <span>
                         <a href="cookies.html#type-Cookie">Cookie</a>
                       </span>
-                      <span style="display: none; ">
-                        <span>
-                          array of <span><span></span></span>
-                        </span>
-                        <span>paramType</span>
-                        <span></span>
-                      </span>
                     </span>
                   )
                 </div>
-
               </em>
           </dt>
-          <dd class="todo" style="display: none; ">
-            Undocumented.
-          </dd>
           <dd>Information about the cookie that was set or removed.</dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
           <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-
           <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
         </div>
               </div><div>
                 <div>
           <dt>
             <var>cause</var>
               <em>
-
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
-                    <span class="optional" style="display: none; ">optional</span>
                     <span class="enum">enumerated</span>
                     <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
                       <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
                         <span>string</span>
                         <span>["evicted", "expired", "explicit", "expired_overwrite", "overwrite"]</span>
                       </span>
                     </span>
                   )
                 </div>
-
               </em>
           </dt>
-          <dd class="todo" style="display: none; ">
-            Undocumented.
-          </dd>
           <dd>The underlying reason behind the cookie's change. If a cookie was inserted, or removed via an explicit call to "chrome.cookies.remove", "cause" will be "explicit". If a cookie was automatically removed due to expiry, "cause" will be "expired". If a cookie was removed due to being overwritten with an already-expired expiration date, "cause" will be set to "expired_overwrite".  If a cookie was automatically removed due to garbage collection, "cause" will be "evicted".  If a cookie was automatically removed due to a "set" call that overwrote it, "cause" will be "overwrite". Plan your response accordingly.</dd>
           <dd>
             This parameter was added in version
@@ -3704,133 +1563,52 @@ see <a href="samples.html">Samples</a>.
             <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
             can ensure that your extension won't be run in an earlier browser version.
           </dd>
-
           <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-
           <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
         </div>
               </div>
             </dl>
           </dd>
-
           <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
         </div>
                     </div>
                   </dl>
                 </div>
-
                 <!-- EXTRA PARAMETERS -->
-                <div style="display: none; ">
-                  <h4>Extra parameters to addListener</h4>
-                  <dl>
-                    <div>
-                      <div>
-                      </div>
-                    </div>
-                  </dl>
-                </div>
-
                 <!-- LISTENER RETURN VALUE -->
-                <h4 style="display: none; ">Listener returns</h4>
                 <dl>
-                  <div style="display: none; ">
-                    <div>
-                    </div>
-                  </div>
                 </dl>
-
               </div> <!-- /description -->
             </div> <!-- /apiItem -->
-
           </div> <!-- /apiGroup -->
-
           <!-- TYPES -->
           <div class="apiGroup">
             <a name="types"></a>
             <h3 id="types">Types</h3>
-
             <!-- iterates over all types -->
             <div class="apiItem">
               <a name="type-Cookie"></a>
               <h4>Cookie</h4>
-
               <div>
           <dt>
-            <var style="display: none; ">paramName</var>
               <em>
-
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
-                    <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
                       <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
                         <span>object</span>
-                        <span style="display: none; "></span>
                       </span>
                     </span>
                   )
                 </div>
-
               </em>
           </dt>
-          <dd class="todo" style="display: none; ">
-            Undocumented.
-          </dd>
           <dd>Represents information about an HTTP cookie.</dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
           <!-- OBJECT PROPERTIES -->
           <dd>
             <dl>
@@ -3839,747 +1617,258 @@ see <a href="samples.html">Samples</a>.
           <dt>
             <var>name</var>
               <em>
-
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
-                    <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
                       <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
                         <span>string</span>
-                        <span style="display: none; "></span>
                       </span>
                     </span>
                   )
                 </div>
-
               </em>
           </dt>
-          <dd class="todo" style="display: none; ">
-            Undocumented.
-          </dd>
           <dd>The name of the cookie.</dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
           <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-
           <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
         </div>
               </div><div>
                 <div>
           <dt>
             <var>value</var>
               <em>
-
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
-                    <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
                       <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
                         <span>string</span>
-                        <span style="display: none; "></span>
                       </span>
                     </span>
                   )
                 </div>
-
               </em>
           </dt>
-          <dd class="todo" style="display: none; ">
-            Undocumented.
-          </dd>
           <dd>The value of the cookie.</dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
           <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-
           <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
         </div>
               </div><div>
                 <div>
           <dt>
             <var>domain</var>
               <em>
-
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
-                    <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
                       <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
                         <span>string</span>
-                        <span style="display: none; "></span>
                       </span>
                     </span>
                   )
                 </div>
-
               </em>
           </dt>
-          <dd class="todo" style="display: none; ">
-            Undocumented.
-          </dd>
           <dd>The domain of the cookie (e.g. "www.google.com", "example.com").</dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
           <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-
           <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
         </div>
               </div><div>
                 <div>
           <dt>
             <var>hostOnly</var>
               <em>
-
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
-                    <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
                       <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
                         <span>boolean</span>
-                        <span style="display: none; "></span>
                       </span>
                     </span>
                   )
                 </div>
-
               </em>
           </dt>
-          <dd class="todo" style="display: none; ">
-            Undocumented.
-          </dd>
           <dd>True if the cookie is a host-only cookie (i.e. a request's host must exactly match the domain of the cookie).</dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
           <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-
           <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
         </div>
               </div><div>
                 <div>
           <dt>
             <var>path</var>
               <em>
-
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
-                    <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
                       <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
                         <span>string</span>
-                        <span style="display: none; "></span>
                       </span>
                     </span>
                   )
                 </div>
-
               </em>
           </dt>
-          <dd class="todo" style="display: none; ">
-            Undocumented.
-          </dd>
           <dd>The path of the cookie.</dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
           <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-
           <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
         </div>
               </div><div>
                 <div>
           <dt>
             <var>secure</var>
               <em>
-
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
-                    <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
                       <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
                         <span>boolean</span>
-                        <span style="display: none; "></span>
                       </span>
                     </span>
                   )
                 </div>
-
               </em>
           </dt>
-          <dd class="todo" style="display: none; ">
-            Undocumented.
-          </dd>
           <dd>True if the cookie is marked as Secure (i.e. its scope is limited to secure channels, typically HTTPS).</dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
           <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-
           <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
         </div>
               </div><div>
                 <div>
           <dt>
             <var>httpOnly</var>
               <em>
-
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
-                    <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
                       <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
                         <span>boolean</span>
-                        <span style="display: none; "></span>
                       </span>
                     </span>
                   )
                 </div>
-
               </em>
           </dt>
-          <dd class="todo" style="display: none; ">
-            Undocumented.
-          </dd>
           <dd>True if the cookie is marked as HttpOnly (i.e. the cookie is inaccessible to client-side scripts).</dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
           <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-
           <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
         </div>
               </div><div>
                 <div>
           <dt>
             <var>session</var>
               <em>
-
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
-                    <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
                       <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
                         <span>boolean</span>
-                        <span style="display: none; "></span>
                       </span>
                     </span>
                   )
                 </div>
-
               </em>
           </dt>
-          <dd class="todo" style="display: none; ">
-            Undocumented.
-          </dd>
           <dd>True if the cookie is a session cookie, as opposed to a persistent cookie with an expiration date.</dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
           <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-
           <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
         </div>
               </div><div>
                 <div>
           <dt>
             <var>expirationDate</var>
               <em>
-
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
                     <span class="optional">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
                       <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
                         <span>number</span>
-                        <span style="display: none; "></span>
                       </span>
                     </span>
                   )
                 </div>
-
               </em>
           </dt>
-          <dd class="todo" style="display: none; ">
-            Undocumented.
-          </dd>
           <dd>The expiration date of the cookie as the number of seconds since the UNIX epoch. Not provided for session cookies.</dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
           <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-
           <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
         </div>
               </div><div>
                 <div>
           <dt>
             <var>storeId</var>
               <em>
-
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
-                    <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
                       <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
                         <span>string</span>
-                        <span style="display: none; "></span>
                       </span>
                     </span>
                   )
                 </div>
-
               </em>
           </dt>
-          <dd class="todo" style="display: none; ">
-            Undocumented.
-          </dd>
           <dd>The ID of the cookie store containing this cookie, as provided in getAllCookieStores().</dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
           <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-
           <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
         </div>
               </div>
             </dl>
           </dd>
-
           <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
         </div>
-
             </div><div class="apiItem">
               <a name="type-CookieStore"></a>
               <h4>CookieStore</h4>
-
               <div>
           <dt>
-            <var style="display: none; ">paramName</var>
               <em>
-
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
-                    <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
                       <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
                         <span>object</span>
-                        <span style="display: none; "></span>
                       </span>
                     </span>
                   )
                 </div>
-
               </em>
           </dt>
-          <dd class="todo" style="display: none; ">
-            Undocumented.
-          </dd>
           <dd>Represents a cookie store in the browser. An incognito mode window, for instance, uses a separate cookie store from a non-incognito window.</dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
           <!-- OBJECT PROPERTIES -->
           <dd>
             <dl>
@@ -4588,173 +1877,62 @@ see <a href="samples.html">Samples</a>.
           <dt>
             <var>id</var>
               <em>
-
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
-                    <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
                       <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
                         <span>string</span>
-                        <span style="display: none; "></span>
                       </span>
                     </span>
                   )
                 </div>
-
               </em>
           </dt>
-          <dd class="todo" style="display: none; ">
-            Undocumented.
-          </dd>
           <dd>The unique identifier for the cookie store.</dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
           <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-
           <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
         </div>
               </div><div>
                 <div>
           <dt>
             <var>tabIds</var>
               <em>
-
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
-                    <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
                       <span>
                         <span>
                           array of <span><span>
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
                       <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
                         <span>integer</span>
-                        <span style="display: none; "></span>
                       </span>
                     </span></span>
                         </span>
-                        <span style="display: none; ">paramType</span>
-                        <span style="display: none; "></span>
                       </span>
                     </span>
                   )
                 </div>
-
               </em>
           </dt>
-          <dd class="todo" style="display: none; ">
-            Undocumented.
-          </dd>
           <dd>Identifiers of all the browser tabs that share this cookie store.</dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
           <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-
           <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
         </div>
               </div>
             </dl>
           </dd>
-
           <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
           <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
         </div>
-
             </div> <!-- /apiItem -->
-
           </div> <!-- /apiGroup -->
-
         </div> <!-- /apiPage -->
       </div> <!-- /gc-pagecontent -->
     </div> <!-- /g-section -->
@@ -4770,18 +1948,15 @@ see <a href="samples.html">Samples</a>.
   <p>
   ©2011 Google
   </p>
-
 <!-- begin analytics -->
 <script src="https://www.google-analytics.com/urchin.js" type="text/javascript"></script>
 <script src="https://www.google-analytics.com/ga.js" type="text/javascript"></script>
-
 <script type="text/javascript">
   // chrome doc tracking
   try {
     var engdocs = _gat._getTracker("YT-10763712-2");
     engdocs._trackPageview();
   } catch(err) {}
-
   // code.google.com site-wide tracking
   try {
     _uacct="UA-18071-1";

@@ -41,130 +41,7 @@
       <!-- In particular, sub-templates that recurse, must be used by allowing
            jstemplate to make a copy of the template in this section which
            are not operated on by way of the jsskip="true" -->
-      <div style="display:none">
-
-        <!-- VALUE -->
-        <div id="valueTemplate">
-          <dt>
-            <var>paramName</var>
-              <em>
-
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span class="optional">optional</span>
-                    <span class="enum">enumerated</span>
-                    <span id="typeTemplate">
-                      <span>
-                        <a> Type</a>
-                      </span>
-                      <span>
-                        <span>
-                          array of <span><span></span></span>
-                        </span>
-                        <span>paramType</span>
-                        <span></span>
-                      </span>
-                    </span>
-                  )
-                </div>
-
-              </em>
-          </dt>
-          <dd class="todo">
-            Undocumented.
-          </dd>
-          <dd>
-            Description of this parameter from the json schema.
-          </dd>
-          <dd>
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
-          <!-- OBJECT PROPERTIES -->
-          <dd>
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-
-          <!-- OBJECT METHODS -->
-          <dd>
-            <div></div>
-          </dd>
-
-          <!-- OBJECT EVENT FIELDS -->
-          <dd>
-            <div></div>
-          </dd>
-
-          <!-- FUNCTION PARAMETERS -->
-          <dd>
-            <div></div>
-          </dd>
-
-        </div> <!-- /VALUE -->
-
-        <div id="functionParametersTemplate">
-          <h5>Parameters</h5>
-          <dl>
-            <div>
-              <div>
-              </div>
-            </div>
-          </dl>
-        </div>
-
-        <!-- Individual subsections from the table of contents -->
-        <ol>
-          <li id="propertiesTocTemplate">
-            <a href="#properties">Properties</a>
-            <ol>
-              <li>
-                <a href="#property-anchor">propertyName</a>
-              </li>
-            </ol>
-          </li>
-          <li id="methodsTocTemplate">
-            <a>Methods</a>
-            <ol>
-              <li>
-                <a href="#method-anchor">methodName</a>
-              </li>
-            </ol>
-          </li>
-          <li id="eventsTocTemplate">
-            <a>Events</a>
-            <ol>
-              <li>
-                <a href="#event-anchor">eventName</a>
-              </li>
-            </ol>
-          </li>
-          <li id="typesTocTemplate">
-            <a href="#types">Types</a>
-            <ol>
-              <li>
-                <a href="#id-anchor">id</a>
-                <ol>
-                  <div></div>
-                  <div></div>
-                </ol>
-              </li>
-            </ol>
-          </li>
-        </ol>
-      </div> <!-- /SUBTEMPLATES -->
-
+       <!-- /SUBTEMPLATES -->
   <a id="top"></a>
     <div id="skipto">
       <a href="#gc-pagecontent">Skip to page content</a>
@@ -185,7 +62,6 @@
               <span class="greytext">e.g. "page action" or "tabs"</span>
             </div>
           </form>
-
           <script type="text/javascript" src="https://www.google.com/jsapi"></script>
           <script type="text/javascript">google.load("elements", "1", {packages: "transliteration"});</script>
           <script type="text/javascript" src="https://www.google.com/coop/cse/t13n?form=cse&amp;t13n_langs=en"></script>
@@ -193,9 +69,7 @@
         </td>
       </tr>
     </tbody></table>
-
     <div id="codesiteContent" class="">
-
       <a id="gc-topnav-anchor"></a>
       <div id="gc-topnav">
         <h1>Google Chrome Extensions (<a href="http://code.google.com/labs/">Labs</a>)</h1>
@@ -220,7 +94,6 @@
           </li>
         </ul>
       </div> <!-- end gc-topnav -->
-
     <div class="g-section g-tpl-170">
       <!-- SIDENAV -->
       <div class="g-unit g-first" id="gc-toc">
@@ -308,7 +181,6 @@
       <script>
         initToggles();
       </script>
-
     <div class="g-unit" id="gc-pagecontent">
       <div id="pageTitle">
         <h1 class="page_title">Other Deployment Options</h1>
@@ -320,9 +192,6 @@
             <li>
               <a href="#prereqs">Before you begin</a>
               <ol>
-                <li style="display: none; ">
-                  <a>h3Name</a>
-                </li>
               </ol>
             </li><li>
               <a href="#preferences">Using a preferences file</a>
@@ -334,54 +203,29 @@
             </li><li>
               <a href="#registry">Using the Windows registry</a>
               <ol>
-                <li style="display: none; ">
-                  <a>h3Name</a>
-                </li>
               </ol>
             </li><li>
               <a href="#updating">Updating and uninstalling</a>
               <ol>
-                <li style="display: none; ">
-                  <a>h3Name</a>
-                </li>
               </ol>
             </li><li>
               <a href="#faq">FAQ</a>
               <ol>
-                <li style="display: none; ">
-                  <a>h3Name</a>
-                </li>
               </ol>
             </li>
-              <li style="display: none; ">
-                <a href="#apiReference">API reference</a>
-                <ol>
-                  <div></div>
-                  <div></div>
-                  <div></div>
-                  <div></div>
-                </ol>
-              </li>
           </ol>
         </div>
         <!-- /TABLE OF CONTENTS -->
-
         <!-- Standard content lead-in for experimental API pages -->
-        <p id="classSummary" style="display: none; ">
-          For information on how to use experimental APIs, see the <a href="experimental.html">chrome.experimental.* APIs</a> page.
-        </p>
-
         <!-- STATIC CONTENT PLACEHOLDER -->
         <div id="static"><div id="pageData-name" class="pageData">Other Deployment Options</div>
 <div id="pageData-showTOC" class="pageData">true</div>
-
 <p>
 Usually, users install their own extensions.
 But sometimes you might want an extension
 to be installed automatically.
 Here are two typical cases:
 </p>
-
 <ul>
   <li>
     An extension is associated with some other software,
@@ -395,19 +239,16 @@ Here are two typical cases:
     throughout the company.
   </li>
 </ul>
-
 <p>
 An extension that's installed automatically is known as an
 <em>external extension</em>.
 Google Chrome supports two ways of
 installing external extensions:
 </p>
-
 <ul>
   <li> Using a preferences JSON file </li>
   <li> Using the Windows registry (Windows only) </li>
 </ul>
-
 <p>
 Both ways support installing an extension from a <code>.crx</code> extension
 file on the user's computer.  The preferences JSON file also supports installing
@@ -415,9 +256,7 @@ an extension hosted at an
 <a href="autoupdate.html#H2-1">update URL</a>.
 See <a href="hosting.html">hosting</a> for details on hosting an extension.
 </p>
-
 <h2 id="prereqs">Before you begin</h2>
-
 <p>
 First, package a
 <a href="packaging.html"><code>.crx</code> file</a>
@@ -428,12 +267,10 @@ If you wish to install from an
  <a href="autoupdate.html#H2-1">update URL</a>, ensure that the extension
 is properly <a href="hosting.html">hosted</a>.
 </p>
-
 <p>
 Then, before you edit the preferences file or the registry,
 make a note of the following:
 </p>
-
 <ul>
  <li> The intended <b>location</b> of the extension's <code>.crx</code> file,
         or the update URL from which it is served </li>
@@ -443,22 +280,17 @@ make a note of the following:
    (from the <b>chrome://extensions</b> page
    when you've loaded the packed extension) </li>
 </ul>
-
 <p>
 The following examples assume the version is <code>1.0</code>
 and the ID is <code>aaaaaaaaaabbbbbbbbbbcccccccccc</code>.
 </p>
-
 <h2 id="preferences">Using a preferences file</h2>
-
 <p class="note">
 <b>Windows note:</b>
 Until <a href="http://crbug.com/41902">bug 41902</a> is fixed,
 you might want to use the <a href="#registry">Windows registry</a>
 instead of the preferences file.
-
 </p>
-
 <ol>
 <li>If you are installing from a file, make the <code>.crx</code> extension
 file available to the machine you want to install the extension on.
@@ -483,7 +315,6 @@ or <code>/home/share/extension.crx</code>.)
     <b>Note:</b> The above path for all users was added in Chrome 16.  Prior versions used a different path, which is now deprecated:
     <code>/Applications/Google Chrome.app/Contents/Extensions/</code> .</p>
   </dd>
-
   <dt> Linux: </dt>
     <dd> <code>/opt/google/chrome/extensions/</code> <br>
     <b>Note:</b> Use <code>chmod</code> if necessary
@@ -496,7 +327,6 @@ or <code>/home/share/extension.crx</code>.)
 for your extension's ID.  If you are installing from a file, specify the
 extension's location and version with fields named "external_crx" and
 "external_version".
-
 Example:
 <pre>{
   "aaaaaaaaaabbbbbbbbbbcccccccccc": {
@@ -504,7 +334,6 @@ Example:
     "external_version": "1.0"
   }
 }</pre>
-
 <p class="note">
 <b>Note:</b>
 You need to escape
@@ -540,16 +369,12 @@ Example:
   }
 }</pre>
 </li>
-
 <li>Save the JSON file. </li>
 <li>Launch Google Chrome and go to <b>chrome://extensions</b>;
 you should see the extension listed. </li>
 </ol>
-
 <h3 id="troubleshooting">Troubleshooting Mac OS permissions problems</h3>
-
 <p>On Mac OS, the external extensions file for all users is only read if file system permissions prevent unprivelaged users from changing it.  If you do not see external extensions installed when Chrome is launched, there may be a permissions problem with the external extensions preferences file.  To see if this is the problem, follow these steps:</p>
-
 <ol>
   <li> Launch the Console program.  You can find it under /Applications/Utilities/Console. </li>
   <li> If the leftmost icon in the Console says "Show Log List", click that icon.  A second column appears at the left. </li>
@@ -558,9 +383,7 @@ you should see the extension listed. </li>
      "Path /Library/Application Support/Google/Chrome is owned by the wrong group", you need to use <code>chgrp</code> or the Finder's Get Info dialog to change the directory's group owner to the Administrator group.</li>
   <li> After fixing the issue, relaunch Chrome.  Test that the external extension is now installed.  It is possible that one permissions error keeps Chrome from detecting a second error.  If the external extension was not installed, repeat these steps until you do not see an error in the Console application.
 </li></ol>
-
 <h2 id="registry">Using the Windows registry</h2>
-
 <ol>
 <li>Make the <code>.crx</code> extension file available
 to the machine you want to install the extension on.
@@ -574,7 +397,6 @@ registry:
   <li> 64-bit Windows: <code>HKEY_LOCAL_MACHINE\Software\Wow6432Node\Google\Chrome\Extensions</code> </li>
 </ul>
 </li>
-
 <li>Create a new key (folder)
 under the <b>Extensions</b> key with the
 same name as the ID of your extension
@@ -592,41 +414,31 @@ same name as the ID of your extension
 <b>chrome://extensions</b>; you should
 see the extension listed. </li>
 </ol>
-
 <h2 id="updating">Updating and uninstalling</h2>
-
 <p>Google Chrome scans the metadata entries
 in the preferences and registry
 each time the browser starts, and makes
 any necessary changes to the installed
 external extensions. </p>
-
 <p>To update your extension to a new version,
 update the file, and then update the version
 in the preferences or registry. </p>
-
 <p>To uninstall your extension
 (for example, if your software is uninstalled),
 remove the metadata from the preferences file
 or registry. </p>
-
 <h2 id="faq">FAQ</h2>
-
 <p>
 This section answers common questions about external extensions.
 </p>
-
 <br>
-
 <p><b>Can I specify a URL as a path to the external extension?</b> </p>
 <p>Yes, if you use a <a href="#preferences">preferences JSON</a> file. The
 extension must be hosted as explained in <a href="hosting.html">hosting</a>.
 Use the "external_update_url" property to point to an
 <a href="autoupdate.html#H2-2">update manifest</a> that has the URL for your
 extension.</p>
-
 <br>
-
 <p><b>What are some common mistakes when installing with the preferences
 file?</b></p>
 <ul>
@@ -651,9 +463,7 @@ file?</b></p>
   <li>
     Permissions problems on a network share </li>
 </ul>
-
 <br>
-
 <p><b>What are some common mistakes when installing with the registry?</b> </p>
 <ul>
   <li>Not specifying the same id/version
@@ -663,16 +473,12 @@ file?</b></p>
     (or path specified but no filename) </li>
   <li>Permissions problems on a network share </li>
 </ul>
-
 <br>
-
 <p><b>What if the user uninstalls the extension?</b> </p>
 <p>If the user uninstalls the extension through the UI, it will no
 longer be installed or updated on each startup. In other words, the
 external extension is blacklisted. </p>
-
 <br>
-
 <p><b>How do I get off the blacklist?</b> </p>
 <p>If the user uninstalls your extension, you should respect that
 decision. However, if you (the developer) accidentally uninstalled
@@ -681,180 +487,8 @@ you can remove the blacklist tag
 by installing the extension normally
 through the UI, and then uninstalling it. </p>
 </div>
-
         <!-- API PAGE -->
-        <div class="apiPage" style="display: none; ">
-        <a name="apiReference"></a>
-        <h2>API reference: chrome.apiname </h2>
-
-          <!-- PROPERTIES -->
-          <div class="apiGroup">
-            <a name="properties"></a>
-            <h3 id="properties">Properties</h3>
-
-            <div>
-              <a></a>
-              <h4>getLastError</h4>
-              <div class="summary">
-                <!-- Note: intentionally longer 80 columns -->
-                <span>chrome.extension</span><span>lastError</span>
-              </div>
-              <div>
-              </div>
-            </div>
-
-          </div> <!-- /apiGroup -->
-
-          <!-- METHODS -->
-          <div id="methodsTemplate" class="apiGroup">
-            <a></a>
-            <h3>Methods</h3>
-
-            <!-- iterates over all functions -->
-            <div class="apiItem">
-              <a></a> <!-- method-anchor -->
-              <h4>method name</h4>
-
-              <div class="summary"><span>void</span>
-                  <!-- Note: intentionally longer 80 columns -->
-                  <span>chrome.module.methodName</span>(<span><span>, </span><span></span>
-                      <var><span></span></var></span>)</div>
-
-              <div class="description">
-                <p class="todo">Undocumented.</p>
-                <p>
-                  A description from the json schema def of the function goes here.
-                </p>
-
-                <!-- PARAMETERS -->
-                <h4>Parameters</h4>
-                <dl>
-                  <div>
-                    <div>
-                    </div>
-                  </div>
-                </dl>
-
-                <!-- RETURNS -->
-                <h4>Returns</h4>
-                <dl>
-                  <div>
-                    <div>
-                    </div>
-                  </div>
-                </dl>
-
-                <!-- CALLBACK -->
-                <div>
-                  <div>
-                  <h4>Callback function</h4>
-                  <p>
-                    The callback <em>parameter</em> should specify a function
-                    that looks like this:
-                  </p>
-                  <p>
-                    If you specify the <em>callback</em> parameter, it should
-                    specify a function that looks like this:
-                  </p>
-
-                  <!-- Note: intentionally longer 80 columns -->
-                  <pre>function(<span>Type param1, Type param2</span>) <span class="subdued">{...}</span>;</pre>
-                  <dl>
-                    <div>
-                      <div>
-                      </div>
-                    </div>
-                  </dl>
-                  </div>
-                </div>
-
-                <!-- MIN_VERSION -->
-                <p>
-                  This function was added in version <b><span></span></b>.
-                  If you require this function, the manifest key
-                  <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-                  can ensure that your extension won't be run in an earlier browser version.
-                </p>
-              </div> <!-- /description -->
-
-            </div>  <!-- /apiItem -->
-
-          </div>  <!-- /apiGroup -->
-
-          <!-- EVENTS -->
-          <div id="eventsTemplate" class="apiGroup">
-            <a></a>
-            <h3>Events</h3>
-            <!-- iterates over all events -->
-            <div class="apiItem">
-              <a></a>
-              <h4>event name</h4>
-
-              <div class="summary">
-                <!-- Note: intentionally longer 80 columns -->
-                <span class="subdued">chrome.bookmarks</span><span>onEvent</span><span class="subdued">.addListener</span>(function(<span>Type param1, Type param2</span>) <span class="subdued">{...}</span><span>, Type opt_param1, Type opt_param2</span>);
-              </div>
-
-              <div class="description">
-                <p class="todo">Undocumented.</p>
-                <p>
-                  A description from the json schema def of the event goes here.
-                </p>
-
-                <!-- LISTENER PARAMETERS -->
-                <div>
-                  <h4>Listener parameters</h4>
-                  <dl>
-                    <div>
-                      <div>
-                      </div>
-                    </div>
-                  </dl>
-                </div>
-
-                <!-- EXTRA PARAMETERS -->
-                <div>
-                  <h4>Extra parameters to addListener</h4>
-                  <dl>
-                    <div>
-                      <div>
-                      </div>
-                    </div>
-                  </dl>
-                </div>
-
-                <!-- LISTENER RETURN VALUE -->
-                <h4>Listener returns</h4>
-                <dl>
-                  <div>
-                    <div>
-                    </div>
-                  </div>
-                </dl>
-
-              </div> <!-- /description -->
-            </div> <!-- /apiItem -->
-
-          </div> <!-- /apiGroup -->
-
-          <!-- TYPES -->
-          <div class="apiGroup">
-            <a name="types"></a>
-            <h3 id="types">Types</h3>
-
-            <!-- iterates over all types -->
-            <div class="apiItem">
-              <a></a>
-              <h4>type name</h4>
-
-              <div>
-              </div>
-
-            </div> <!-- /apiItem -->
-
-          </div> <!-- /apiGroup -->
-
-        </div> <!-- /apiPage -->
+         <!-- /apiPage -->
       </div> <!-- /gc-pagecontent -->
     </div> <!-- /g-section -->
   </div> <!-- /codesiteContent -->
@@ -869,18 +503,15 @@ through the UI, and then uninstalling it. </p>
   <p>
   ©2011 Google
   </p>
-
 <!-- begin analytics -->
 <script src="https://www.google-analytics.com/urchin.js" type="text/javascript"></script>
 <script src="https://www.google-analytics.com/ga.js" type="text/javascript"></script>
-
 <script type="text/javascript">
   // chrome doc tracking
   try {
     var engdocs = _gat._getTracker("YT-10763712-2");
     engdocs._trackPageview();
   } catch(err) {}
-
   // code.google.com site-wide tracking
   try {
     _uacct="UA-18071-1";

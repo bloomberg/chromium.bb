@@ -297,10 +297,10 @@ function renderTemplate() {
    * in the final rendered template.
    */
   var preRender = document.querySelectorAll('script[type="text/prerenderjs"]');
-  for (var i = 0; i < preRender.length; i++) {
-    preRender[i].parentElement.removeChild(preRender[i]);
-    eval(preRender[i].innerText);
-  }
+  Array.prototype.slice.call(preRender).forEach(function(element) {
+    element.parentElement.removeChild(element);
+    eval(element.innerText);
+  });
 
   // Render to template
   var input = new JsEvalContext(pageData);
@@ -331,24 +331,48 @@ function renderTemplate() {
     parent.done();
 }
 
-function removeJsTemplateAttributes(root) {
+function cleanupJstemplateMess(root) {
   var jsattributes = ['jscontent', 'jsselect', 'jsdisplay', 'transclude',
                       'jsvalues', 'jsvars', 'jseval', 'jsskip', 'jstcache',
                       'jsinstance'];
 
   var nodes = root.getElementsByTagName('*');
+  var displayNone = [];
+
   for (var i = 0; i < nodes.length; i++) {
     var n = nodes[i]
+
+    // Delete nodes which are hidden. There are lots of these since jsdisplay
+    // just hides nodes, not deletes them.
+    if (n.style && n.style.display === 'none') {
+      displayNone.push(n);
+      continue;
+    }
+
+    // Remove jstemplate attributes from nodes that stick around.
     jsattributes.forEach(function(attributeName) {
       n.removeAttribute(attributeName);
     });
   }
+
+  displayNone.forEach(function(element) {
+    element.parentElement.removeChild(element);
+  });
+}
+
+// Strip empty lines, primarily so that elements which are jsdisplay=false and
+// removed leave no whitespace-trace.
+function stripEmptyLines(string) {
+  function notEmpty(s) {
+    return s.trim().length > 0;
+  }
+  return string.split('\n').filter(notEmpty).join('\n');
 }
 
 function serializePage() {
- removeJsTemplateAttributes(document);
+ cleanupJstemplateMess(document);
  var s = new XMLSerializer();
- return s.serializeToString(document);
+ return stripEmptyLines(s.serializeToString(document));
 }
 
 function evalXPathFromNode(expression, node) {

@@ -41,130 +41,7 @@
       <!-- In particular, sub-templates that recurse, must be used by allowing
            jstemplate to make a copy of the template in this section which
            are not operated on by way of the jsskip="true" -->
-      <div style="display:none">
-
-        <!-- VALUE -->
-        <div id="valueTemplate">
-          <dt>
-            <var>paramName</var>
-              <em>
-
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span class="optional">optional</span>
-                    <span class="enum">enumerated</span>
-                    <span id="typeTemplate">
-                      <span>
-                        <a> Type</a>
-                      </span>
-                      <span>
-                        <span>
-                          array of <span><span></span></span>
-                        </span>
-                        <span>paramType</span>
-                        <span></span>
-                      </span>
-                    </span>
-                  )
-                </div>
-
-              </em>
-          </dt>
-          <dd class="todo">
-            Undocumented.
-          </dd>
-          <dd>
-            Description of this parameter from the json schema.
-          </dd>
-          <dd>
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
-          <!-- OBJECT PROPERTIES -->
-          <dd>
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-
-          <!-- OBJECT METHODS -->
-          <dd>
-            <div></div>
-          </dd>
-
-          <!-- OBJECT EVENT FIELDS -->
-          <dd>
-            <div></div>
-          </dd>
-
-          <!-- FUNCTION PARAMETERS -->
-          <dd>
-            <div></div>
-          </dd>
-
-        </div> <!-- /VALUE -->
-
-        <div id="functionParametersTemplate">
-          <h5>Parameters</h5>
-          <dl>
-            <div>
-              <div>
-              </div>
-            </div>
-          </dl>
-        </div>
-
-        <!-- Individual subsections from the table of contents -->
-        <ol>
-          <li id="propertiesTocTemplate">
-            <a href="#properties">Properties</a>
-            <ol>
-              <li>
-                <a href="#property-anchor">propertyName</a>
-              </li>
-            </ol>
-          </li>
-          <li id="methodsTocTemplate">
-            <a>Methods</a>
-            <ol>
-              <li>
-                <a href="#method-anchor">methodName</a>
-              </li>
-            </ol>
-          </li>
-          <li id="eventsTocTemplate">
-            <a>Events</a>
-            <ol>
-              <li>
-                <a href="#event-anchor">eventName</a>
-              </li>
-            </ol>
-          </li>
-          <li id="typesTocTemplate">
-            <a href="#types">Types</a>
-            <ol>
-              <li>
-                <a href="#id-anchor">id</a>
-                <ol>
-                  <div></div>
-                  <div></div>
-                </ol>
-              </li>
-            </ol>
-          </li>
-        </ol>
-      </div> <!-- /SUBTEMPLATES -->
-
+       <!-- /SUBTEMPLATES -->
   <a id="top"></a>
     <div id="skipto">
       <a href="#gc-pagecontent">Skip to page content</a>
@@ -185,7 +62,6 @@
               <span class="greytext">e.g. "page action" or "tabs"</span>
             </div>
           </form>
-
           <script type="text/javascript" src="https://www.google.com/jsapi"></script>
           <script type="text/javascript">google.load("elements", "1", {packages: "transliteration"});</script>
           <script type="text/javascript" src="https://www.google.com/coop/cse/t13n?form=cse&amp;t13n_langs=en"></script>
@@ -193,9 +69,7 @@
         </td>
       </tr>
     </tbody></table>
-
     <div id="codesiteContent" class="">
-
       <a id="gc-topnav-anchor"></a>
       <div id="gc-topnav">
         <h1>Google Chrome Extensions (<a href="http://code.google.com/labs/">Labs</a>)</h1>
@@ -220,7 +94,6 @@
           </li>
         </ul>
       </div> <!-- end gc-topnav -->
-
     <div class="g-section g-tpl-170">
       <!-- SIDENAV -->
       <div class="g-unit g-first" id="gc-toc">
@@ -308,7 +181,6 @@
       <script>
         initToggles();
       </script>
-
     <div class="g-unit" id="gc-pagecontent">
       <div id="pageTitle">
         <h1 class="page_title">Message Passing</h1>
@@ -320,68 +192,37 @@
             <li>
               <a href="#simple">Simple one-time requests</a>
               <ol>
-                <li style="display: none; ">
-                  <a>h3Name</a>
-                </li>
               </ol>
             </li><li>
               <a href="#connect">Long-lived connections</a>
               <ol>
-                <li style="display: none; ">
-                  <a>h3Name</a>
-                </li>
               </ol>
             </li><li>
               <a href="#external">Cross-extension messaging</a>
               <ol>
-                <li style="display: none; ">
-                  <a>h3Name</a>
-                </li>
               </ol>
             </li><li>
               <a href="#security-considerations">Security considerations</a>
               <ol>
-                <li style="display: none; ">
-                  <a>h3Name</a>
-                </li>
               </ol>
             </li><li>
               <a href="#examples">Examples</a>
               <ol>
-                <li style="display: none; ">
-                  <a>h3Name</a>
-                </li>
               </ol>
             </li>
-              <li style="display: none; ">
-                <a href="#apiReference">API reference</a>
-                <ol>
-                  <div></div>
-                  <div></div>
-                  <div></div>
-                  <div></div>
-                </ol>
-              </li>
           </ol>
         </div>
         <!-- /TABLE OF CONTENTS -->
-
         <!-- Standard content lead-in for experimental API pages -->
-        <p id="classSummary" style="display: none; ">
-          For information on how to use experimental APIs, see the <a href="experimental.html">chrome.experimental.* APIs</a> page.
-        </p>
-
         <!-- STATIC CONTENT PLACEHOLDER -->
         <div id="static"><div id="pageData-name" class="pageData">Message Passing</div>
 <div id="pageData-showTOC" class="pageData">true</div>
-
 <p>
 Since content scripts run in the context of a web page and not the extension,
 they often need some way of communicating with the rest of the extension. For
 example, an RSS reader extension might use content scripts to detect the
 presence of an RSS feed on a page, then notify the background page in order to
 display a page action icon for that page.
-
 </p><p>
 Communication between extensions and their content scripts works by using
 message passing. Either side can listen for messages sent from the other end,
@@ -395,8 +236,6 @@ send a message to another extension if you know its ID, which is covered in
 the
 <a href="#external">cross-extension messages</a>
 section.
-
-
 </p><h2 id="simple">Simple one-time requests</h2>
 <p>
 If you only need to send a single message to another part of your extension
@@ -408,7 +247,6 @@ methods. This lets you send a one-time JSON-serializable message from a
 content script to extension, or vice versa, respectively. An optional
 callback parameter allows you handle the response from the other side, if
 there is one.
-
 </p><p>
 Sending a request from a content script looks like this:
 </p><pre>contentscript.js
@@ -417,7 +255,6 @@ chrome.extension.sendRequest({greeting: "hello"}, function(response) {
   console.log(response.farewell);
 });
 </pre>
-
 <p>
 Sending a request from the extension to a content script looks very similar,
 except that you need to specify which tab to send it to. This example
@@ -430,7 +267,6 @@ chrome.tabs.getSelected(null, function(tab) {
   });
 });
 </pre>
-
 <p>
 On the receiving end, you need to set up an
 <a href="extension.html#event-onRequest">chrome.extension.onRequest</a>
@@ -449,14 +285,11 @@ object to allow the request to be cleaned up.
       sendResponse({}); // snub them.
   });
 </pre>
-
 <p class="note">
 <b>Note:</b> If multiple pages are listening for onRequest events, only the
 first to call sendResponse() for a particular event will succeed in sending the
 response. All other responses to that event will be ignored.
 </p>
-
-
 <h2 id="connect">Long-lived connections</h2>
 <p>
 Sometimes it's useful to have a conversation that lasts longer than a single
@@ -467,20 +300,17 @@ or
 <a href="tabs.html#method-connect">chrome.tabs.connect()</a> respectively. The
 channel can optionally have a name, allowing you to distinguish between
 different types of connections.
-
 </p><p>
 One use case might be an automatic form fill extension. The content script
 could open a channel to the extension page for a particular login, and send a
 message to the extension for each input element on the page to request the
 form data to fill in. The shared connection allows the extension to keep
 shared state linking the several messages coming from the content script.
-
 </p><p>
 When establishing a connection, each end is given a
 <a href="extension.html#type-Port">Port</a>
 object which is used for sending and receiving messages through that
 connection.
-
 </p><p>
 Here is how you open a channel from a content script, and send and listen for
 messages:
@@ -495,14 +325,12 @@ port.onMessage.addListener(function(msg) {
     port.postMessage({answer: "Madame... Bovary"});
 });
 </pre>
-
 <p>
 Sending a request from the extension to a content script looks very similar,
 except that you need to specify which tab to connect to. Simply replace the
 call to connect in the above example with
 <a href="tabs.html#method-connect">chrome.tabs.connect(tabId, {name:
 "knockknock"})</a>.
-
 </p><p>
 In order to handle incoming connections, you need to set up a
 <a href="extension.html#event-onConnect">chrome.extension.onConnect</a>
@@ -524,7 +352,6 @@ what it looks like to respond to incoming connections:
   });
 });
 </pre>
-
 <p>
 You may want to find out when a connection is closed, for example if you are
 maintaining separate state for each open port. For this you can listen to the
@@ -534,14 +361,11 @@ calls
 <a href="extension.html#type-Port">Port.disconnect()</a>, or when the page
 containing the port is unloaded (for example if the tab is navigated).
 onDisconnect is guaranteed to be fired only once for any given port.
-
-
 </p><h2 id="external">Cross-extension messaging</h2>
 <p>
 In addition to sending messages between different components in your
 extension, you can use the messaging API to communicate with other extensions.
 This lets you expose a public API that other extensions can take advantage of.
-
 </p><p>
 Listening for incoming requests and connections is similar to the internal
 case, except you use the
@@ -561,7 +385,6 @@ chrome.extension.onRequestExternal.addListener(
       sendResponse({activateLasers: success});
     }
   });
-
 // For long-lived connections:
 chrome.extension.onConnectExternal.addListener(function(port) {
   port.onMessage.addListener(function(msg) {
@@ -569,28 +392,23 @@ chrome.extension.onConnectExternal.addListener(function(port) {
   });
 });
 </pre>
-
 <p>
 Likewise, sending a message to another extension is similar to sending one
 within your extension. The only difference is that you must pass the ID of the
 extension you want to communicate with. For example:
 </p><pre>// The ID of the extension we want to talk to.
 var laserExtensionId = "abcdefghijklmnoabcdefhijklmnoabc";
-
 // Make a simple request:
 chrome.extension.sendRequest(laserExtensionId, {getTargetData: true},
   function(response) {
     if (targetInRange(response.targetData))
       chrome.extension.sendRequest(laserExtensionId, {activateLasers: true});
   });
-
 // Start a long-running conversation:
 var port = chrome.extension.connect(laserExtensionId);
 port.postMessage(...);
 </pre>
-
 <h2 id="security-considerations">Security considerations</h2>
-
 <p>
 When receiving a message from a content script or another extension, your
 background page should be careful not to fall victim to <a href="http://en.wikipedia.org/wiki/Cross-site_scripting">cross-site
@@ -603,7 +421,6 @@ chrome.tabs.sendRequest(tab.id, {greeting: "hello"}, function(response) {
   // WARNING! Might be evaluating an evil script!
   var resp = eval("(" + response.farewell + ")");
 });
-
 background.html
 ===============
 chrome.tabs.sendRequest(tab.id, {greeting: "hello"}, function(response) {
@@ -620,7 +437,6 @@ chrome.tabs.sendRequest(tab.id, {greeting: "hello"}, function(response) {
   // JSON.parse does not evaluate the attacker's scripts.
   var resp = JSON.parse(response.farewell);
 });
-
 background.html
 ===============
 chrome.tabs.sendRequest(tab.id, {greeting: "hello"}, function(response) {
@@ -628,9 +444,7 @@ chrome.tabs.sendRequest(tab.id, {greeting: "hello"}, function(response) {
   document.getElementById("resp").innerText = response.farewell;
 });
 </pre>
-
 <h2 id="examples">Examples</h2>
-
 <p>
 You can find simple examples of communication via messages in the
 <a href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/messaging/">examples/api/messaging</a>
@@ -644,180 +458,8 @@ For more examples and for help in viewing the source code, see
 <a href="samples.html">Samples</a>.
 </p>
 </div>
-
         <!-- API PAGE -->
-        <div class="apiPage" style="display: none; ">
-        <a name="apiReference"></a>
-        <h2>API reference: chrome.apiname </h2>
-
-          <!-- PROPERTIES -->
-          <div class="apiGroup">
-            <a name="properties"></a>
-            <h3 id="properties">Properties</h3>
-
-            <div>
-              <a></a>
-              <h4>getLastError</h4>
-              <div class="summary">
-                <!-- Note: intentionally longer 80 columns -->
-                <span>chrome.extension</span><span>lastError</span>
-              </div>
-              <div>
-              </div>
-            </div>
-
-          </div> <!-- /apiGroup -->
-
-          <!-- METHODS -->
-          <div id="methodsTemplate" class="apiGroup">
-            <a></a>
-            <h3>Methods</h3>
-
-            <!-- iterates over all functions -->
-            <div class="apiItem">
-              <a></a> <!-- method-anchor -->
-              <h4>method name</h4>
-
-              <div class="summary"><span>void</span>
-                  <!-- Note: intentionally longer 80 columns -->
-                  <span>chrome.module.methodName</span>(<span><span>, </span><span></span>
-                      <var><span></span></var></span>)</div>
-
-              <div class="description">
-                <p class="todo">Undocumented.</p>
-                <p>
-                  A description from the json schema def of the function goes here.
-                </p>
-
-                <!-- PARAMETERS -->
-                <h4>Parameters</h4>
-                <dl>
-                  <div>
-                    <div>
-                    </div>
-                  </div>
-                </dl>
-
-                <!-- RETURNS -->
-                <h4>Returns</h4>
-                <dl>
-                  <div>
-                    <div>
-                    </div>
-                  </div>
-                </dl>
-
-                <!-- CALLBACK -->
-                <div>
-                  <div>
-                  <h4>Callback function</h4>
-                  <p>
-                    The callback <em>parameter</em> should specify a function
-                    that looks like this:
-                  </p>
-                  <p>
-                    If you specify the <em>callback</em> parameter, it should
-                    specify a function that looks like this:
-                  </p>
-
-                  <!-- Note: intentionally longer 80 columns -->
-                  <pre>function(<span>Type param1, Type param2</span>) <span class="subdued">{...}</span>;</pre>
-                  <dl>
-                    <div>
-                      <div>
-                      </div>
-                    </div>
-                  </dl>
-                  </div>
-                </div>
-
-                <!-- MIN_VERSION -->
-                <p>
-                  This function was added in version <b><span></span></b>.
-                  If you require this function, the manifest key
-                  <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-                  can ensure that your extension won't be run in an earlier browser version.
-                </p>
-              </div> <!-- /description -->
-
-            </div>  <!-- /apiItem -->
-
-          </div>  <!-- /apiGroup -->
-
-          <!-- EVENTS -->
-          <div id="eventsTemplate" class="apiGroup">
-            <a></a>
-            <h3>Events</h3>
-            <!-- iterates over all events -->
-            <div class="apiItem">
-              <a></a>
-              <h4>event name</h4>
-
-              <div class="summary">
-                <!-- Note: intentionally longer 80 columns -->
-                <span class="subdued">chrome.bookmarks</span><span>onEvent</span><span class="subdued">.addListener</span>(function(<span>Type param1, Type param2</span>) <span class="subdued">{...}</span><span>, Type opt_param1, Type opt_param2</span>);
-              </div>
-
-              <div class="description">
-                <p class="todo">Undocumented.</p>
-                <p>
-                  A description from the json schema def of the event goes here.
-                </p>
-
-                <!-- LISTENER PARAMETERS -->
-                <div>
-                  <h4>Listener parameters</h4>
-                  <dl>
-                    <div>
-                      <div>
-                      </div>
-                    </div>
-                  </dl>
-                </div>
-
-                <!-- EXTRA PARAMETERS -->
-                <div>
-                  <h4>Extra parameters to addListener</h4>
-                  <dl>
-                    <div>
-                      <div>
-                      </div>
-                    </div>
-                  </dl>
-                </div>
-
-                <!-- LISTENER RETURN VALUE -->
-                <h4>Listener returns</h4>
-                <dl>
-                  <div>
-                    <div>
-                    </div>
-                  </div>
-                </dl>
-
-              </div> <!-- /description -->
-            </div> <!-- /apiItem -->
-
-          </div> <!-- /apiGroup -->
-
-          <!-- TYPES -->
-          <div class="apiGroup">
-            <a name="types"></a>
-            <h3 id="types">Types</h3>
-
-            <!-- iterates over all types -->
-            <div class="apiItem">
-              <a></a>
-              <h4>type name</h4>
-
-              <div>
-              </div>
-
-            </div> <!-- /apiItem -->
-
-          </div> <!-- /apiGroup -->
-
-        </div> <!-- /apiPage -->
+         <!-- /apiPage -->
       </div> <!-- /gc-pagecontent -->
     </div> <!-- /g-section -->
   </div> <!-- /codesiteContent -->
@@ -832,18 +474,15 @@ For more examples and for help in viewing the source code, see
   <p>
   ©2011 Google
   </p>
-
 <!-- begin analytics -->
 <script src="https://www.google-analytics.com/urchin.js" type="text/javascript"></script>
 <script src="https://www.google-analytics.com/ga.js" type="text/javascript"></script>
-
 <script type="text/javascript">
   // chrome doc tracking
   try {
     var engdocs = _gat._getTracker("YT-10763712-2");
     engdocs._trackPageview();
   } catch(err) {}
-
   // code.google.com site-wide tracking
   try {
     _uacct="UA-18071-1";

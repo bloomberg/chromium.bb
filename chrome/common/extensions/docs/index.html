@@ -41,130 +41,7 @@
       <!-- In particular, sub-templates that recurse, must be used by allowing
            jstemplate to make a copy of the template in this section which
            are not operated on by way of the jsskip="true" -->
-      <div style="display:none">
-
-        <!-- VALUE -->
-        <div id="valueTemplate">
-          <dt>
-            <var>paramName</var>
-              <em>
-
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span class="optional">optional</span>
-                    <span class="enum">enumerated</span>
-                    <span id="typeTemplate">
-                      <span>
-                        <a> Type</a>
-                      </span>
-                      <span>
-                        <span>
-                          array of <span><span></span></span>
-                        </span>
-                        <span>paramType</span>
-                        <span></span>
-                      </span>
-                    </span>
-                  )
-                </div>
-
-              </em>
-          </dt>
-          <dd class="todo">
-            Undocumented.
-          </dd>
-          <dd>
-            Description of this parameter from the json schema.
-          </dd>
-          <dd>
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
-          <!-- OBJECT PROPERTIES -->
-          <dd>
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-
-          <!-- OBJECT METHODS -->
-          <dd>
-            <div></div>
-          </dd>
-
-          <!-- OBJECT EVENT FIELDS -->
-          <dd>
-            <div></div>
-          </dd>
-
-          <!-- FUNCTION PARAMETERS -->
-          <dd>
-            <div></div>
-          </dd>
-
-        </div> <!-- /VALUE -->
-
-        <div id="functionParametersTemplate">
-          <h5>Parameters</h5>
-          <dl>
-            <div>
-              <div>
-              </div>
-            </div>
-          </dl>
-        </div>
-
-        <!-- Individual subsections from the table of contents -->
-        <ol>
-          <li id="propertiesTocTemplate">
-            <a href="#properties">Properties</a>
-            <ol>
-              <li>
-                <a href="#property-anchor">propertyName</a>
-              </li>
-            </ol>
-          </li>
-          <li id="methodsTocTemplate">
-            <a>Methods</a>
-            <ol>
-              <li>
-                <a href="#method-anchor">methodName</a>
-              </li>
-            </ol>
-          </li>
-          <li id="eventsTocTemplate">
-            <a>Events</a>
-            <ol>
-              <li>
-                <a href="#event-anchor">eventName</a>
-              </li>
-            </ol>
-          </li>
-          <li id="typesTocTemplate">
-            <a href="#types">Types</a>
-            <ol>
-              <li>
-                <a href="#id-anchor">id</a>
-                <ol>
-                  <div></div>
-                  <div></div>
-                </ol>
-              </li>
-            </ol>
-          </li>
-        </ol>
-      </div> <!-- /SUBTEMPLATES -->
-
+       <!-- /SUBTEMPLATES -->
   <a id="top"></a>
     <div id="skipto">
       <a href="#gc-pagecontent">Skip to page content</a>
@@ -185,7 +62,6 @@
               <span class="greytext">e.g. "page action" or "tabs"</span>
             </div>
           </form>
-
           <script type="text/javascript" src="https://www.google.com/jsapi"></script>
           <script type="text/javascript">google.load("elements", "1", {packages: "transliteration"});</script>
           <script type="text/javascript" src="https://www.google.com/coop/cse/t13n?form=cse&amp;t13n_langs=en"></script>
@@ -193,9 +69,7 @@
         </td>
       </tr>
     </tbody></table>
-
     <div id="codesiteContent" class="hideSideNav">
-
       <a id="gc-topnav-anchor"></a>
       <div id="gc-topnav">
         <h1>Google Chrome Extensions (<a href="http://code.google.com/labs/">Labs</a>)</h1>
@@ -220,154 +94,37 @@
           </li>
         </ul>
       </div> <!-- end gc-topnav -->
-
     <div class="g-section g-tpl-170">
       <!-- SIDENAV -->
-      <div class="g-unit g-first" id="gc-toc" style="display: none; ">
-        <ul>
-          <li><a href="getstarted.html">Getting Started</a></li>
-          <li><a href="overview.html">Overview</a></li>
-          <li><a href="whats_new.html">What's New?</a></li>
-          <li><h2><a href="devguide.html">Developer's Guide</a></h2>
-            <ul>
-              <li>Browser UI
-                <ul>
-                  <li><a href="browserAction.html">Browser Actions</a></li>
-                  <li><a href="contextMenus.html">Context Menus</a></li>
-                  <li><a href="notifications.html">Desktop Notifications</a></li>
-                  <li><a href="omnibox.html">Omnibox</a></li>
-                  <li><a href="options.html">Options Pages</a></li>
-                  <li><a href="override.html">Override Pages</a></li>
-                  <li><a href="pageAction.html">Page Actions</a></li>
-                </ul>
-              </li>
-              <li>Browser Interaction
-                <ul>
-                  <li><a href="bookmarks.html">Bookmarks</a></li>
-                  <li><a href="cookies.html">Cookies</a></li>
-                  <li><a href="devtools.html">Developer Tools</a></li>
-                  <li><a href="events.html">Events</a></li>
-                  <li><a href="history.html">History</a></li>
-                  <li><a href="management.html">Management</a></li>
-                  <li><a href="tabs.html">Tabs</a></li>
-                  <li><a href="windows.html">Windows</a></li>
-                </ul>
-              </li>
-              <li>Implementation
-                <ul>
-                  <li><a href="a11y.html">Accessibility</a></li>
-                  <li><a href="background_pages.html">Background Pages</a></li>
-                  <li><a href="content_scripts.html">Content Scripts</a></li>
-                  <li><a href="xhr.html">Cross-Origin XHR</a></li>
-                  <li><a href="i18n.html">Internationalization</a></li>
-                  <li><a href="messaging.html">Message Passing</a></li>
-                  <li><a href="permissions.html">Optional Permissions</a></li>
-                  <li><a href="npapi.html">NPAPI Plugins</a></li>
-                </ul>
-              </li>
-              <li>Finishing
-                <ul>
-                  <li><a href="hosting.html">Hosting</a></li>
-                  <li><a href="external_extensions.html">Other Deployment Options</a></li>
-                </ul>
-              </li>
-            </ul>
-          </li>
-          <li><h2><a href="apps.html">Packaged Apps</a></h2></li>
-          <li><h2><a href="tutorials.html">Tutorials</a></h2>
-            <ul>
-              <li><a href="tut_debugging.html">Debugging</a></li>
-              <li><a href="tut_analytics.html">Google Analytics</a></li>
-              <li><a href="tut_oauth.html">OAuth</a></li>
-            </ul>
-          </li>
-          <li><h2>Reference</h2>
-            <ul>
-              <li>Formats
-                <ul>
-                  <li><a href="manifest.html">Manifest Files</a></li>
-                  <li><a href="match_patterns.html">Match Patterns</a></li>
-                </ul>
-              </li>
-              <li><a href="permission_warnings.html">Permission Warnings</a></li>
-              <li><a href="api_index.html">chrome.* APIs</a></li>
-              <li><a href="api_other.html">Other APIs</a></li>
-            </ul>
-          </li>
-          <li><h2><a href="samples.html">Samples</a></h2></li>
-          <div class="line"> </div>
-          <li><h2>More</h2>
-            <ul>
-              <li class="leftNavSelected">Chrome Web Store</li>
-              <li><a href="http://code.google.com/chrome/apps/docs/developers_guide.html">Hosted Apps</a></li>
-              <li><a href="themes.html">Themes</a></li>
-            </ul>
-          </li>
-        </ul>
-      </div>
       <script>
         initToggles();
       </script>
-
     <div class="g-unit" id="gc-pagecontent">
       <div id="pageTitle">
         <h1 class="page_title"></h1>
       </div>
         <!-- TABLE OF CONTENTS -->
-        <div id="toc" style="display: none; ">
-          <h2>Contents</h2>
-          <ol>
-            <li>
-              <a>h2Name</a>
-              <ol>
-                <li>
-                  <a>h3Name</a>
-                </li>
-              </ol>
-            </li>
-              <li>
-                <a href="#apiReference">API reference</a>
-                <ol>
-                  <div></div>
-                  <div></div>
-                  <div></div>
-                  <div></div>
-                </ol>
-              </li>
-          </ol>
-        </div>
         <!-- /TABLE OF CONTENTS -->
-
         <!-- Standard content lead-in for experimental API pages -->
-        <p id="classSummary" style="display: none; ">
-          For information on how to use experimental APIs, see the <a href="experimental.html">chrome.experimental.* APIs</a> page.
-        </p>
-
         <!-- STATIC CONTENT PLACEHOLDER -->
         <div id="static"><div id="pageData-name" class="pageData"></div>
 <div id="pageData-showSideNav" class="pageData">false</div>
-
 <style>
 cs {
   border:none;
   margin:0;
 }
-
 #pics td {
   padding:0 1em 0 0;
 }
-
 #pics img {
   border:none;
 }
 </style>
-
 <table class="columns" style="margin:0">
-
 <tbody><tr>
 <td>
 <h3>What are extensions?</h3>
-
 <p>
 Extensions are small software programs that
 can modify and enhance the functionality of the Chrome browser.
@@ -378,7 +135,6 @@ You can also use the extension system to build
 a downloadable kind of
 <a href="http://code.google.com/chrome/apps/index.html">installable web app</a>.
 </p>
-
 <p>
 <img src="images/index/gmail-small.png" width="91" height="35" align="right" style="margin-top:0px; margin-left:0.5em" alt="A screenshot of an extension's icon in the browser bar">
 From a user's point of view,
@@ -389,7 +145,6 @@ For example, the image to the right shows the icon
 that provides the UI for the
 <a href="samples.html#gmail">Gmail extension</a>.
 </p>
-
 <p>
 <img src="images/index/html5app.png" width="200" height="160" align="right" style="margin-top:0px; margin-left:0.5em" alt="A screenshot of a packaged app that implements a jigsaw puzzle">
 Packaged apps, on the other hand,
@@ -399,7 +154,6 @@ and rich UI.
 The image to the right shows a jigsaw puzzle game
 implemented by a packaged app.
 </p>
-
 <p>
 Both extensions and packaged apps bundle all their files
 into a single file that the user downloads and installs.
@@ -407,7 +161,6 @@ This bundling means that, unlike ordinary web apps,
 extensions and packaged apps don't need to depend
 on content from the web.
 </p>
-
 <p>
 You can distribute your extension or packaged app
 by using the
@@ -417,11 +170,9 @@ to publish to the
 For more information, see the
 <a href="http://code.google.com/chrome/webstore">store developer documentation</a>.
 </p>
-
 </td>
 <td style="width:330px">
 <h3>How do I start?</h3>
-
 <p>
 </p><ol>
   <li>
@@ -443,14 +194,11 @@ For more information, see the
   </li>
 </ol>
 <p></p>
-
 <h3>Featured videos</h3>
-
 <p>
 <a href="http://www.youtube.com/view_play_list?p=CA101D6A85FE9D4B">Technical videos</a> <br>
 <a href="http://www.youtube.com/view_play_list?p=38DF05697DE372B1">Developer snapshots</a> (below)
 </p>
-
 <p>
 <iframe title="YouTube video player" width="300" height="199" src="http://www.youtube.com/embed/wRDPTnY3yO8?rel=0" frameborder="0" allowfullscreen=""></iframe>
 </p>
@@ -458,180 +206,8 @@ For more information, see the
 </tr>
 </tbody></table>
 </div>
-
         <!-- API PAGE -->
-        <div class="apiPage" style="display: none; ">
-        <a name="apiReference"></a>
-        <h2>API reference: chrome.apiname </h2>
-
-          <!-- PROPERTIES -->
-          <div class="apiGroup">
-            <a name="properties"></a>
-            <h3 id="properties">Properties</h3>
-
-            <div>
-              <a></a>
-              <h4>getLastError</h4>
-              <div class="summary">
-                <!-- Note: intentionally longer 80 columns -->
-                <span>chrome.extension</span><span>lastError</span>
-              </div>
-              <div>
-              </div>
-            </div>
-
-          </div> <!-- /apiGroup -->
-
-          <!-- METHODS -->
-          <div id="methodsTemplate" class="apiGroup">
-            <a></a>
-            <h3>Methods</h3>
-
-            <!-- iterates over all functions -->
-            <div class="apiItem">
-              <a></a> <!-- method-anchor -->
-              <h4>method name</h4>
-
-              <div class="summary"><span>void</span>
-                  <!-- Note: intentionally longer 80 columns -->
-                  <span>chrome.module.methodName</span>(<span><span>, </span><span></span>
-                      <var><span></span></var></span>)</div>
-
-              <div class="description">
-                <p class="todo">Undocumented.</p>
-                <p>
-                  A description from the json schema def of the function goes here.
-                </p>
-
-                <!-- PARAMETERS -->
-                <h4>Parameters</h4>
-                <dl>
-                  <div>
-                    <div>
-                    </div>
-                  </div>
-                </dl>
-
-                <!-- RETURNS -->
-                <h4>Returns</h4>
-                <dl>
-                  <div>
-                    <div>
-                    </div>
-                  </div>
-                </dl>
-
-                <!-- CALLBACK -->
-                <div>
-                  <div>
-                  <h4>Callback function</h4>
-                  <p>
-                    The callback <em>parameter</em> should specify a function
-                    that looks like this:
-                  </p>
-                  <p>
-                    If you specify the <em>callback</em> parameter, it should
-                    specify a function that looks like this:
-                  </p>
-
-                  <!-- Note: intentionally longer 80 columns -->
-                  <pre>function(<span>Type param1, Type param2</span>) <span class="subdued">{...}</span>;</pre>
-                  <dl>
-                    <div>
-                      <div>
-                      </div>
-                    </div>
-                  </dl>
-                  </div>
-                </div>
-
-                <!-- MIN_VERSION -->
-                <p>
-                  This function was added in version <b><span></span></b>.
-                  If you require this function, the manifest key
-                  <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-                  can ensure that your extension won't be run in an earlier browser version.
-                </p>
-              </div> <!-- /description -->
-
-            </div>  <!-- /apiItem -->
-
-          </div>  <!-- /apiGroup -->
-
-          <!-- EVENTS -->
-          <div id="eventsTemplate" class="apiGroup">
-            <a></a>
-            <h3>Events</h3>
-            <!-- iterates over all events -->
-            <div class="apiItem">
-              <a></a>
-              <h4>event name</h4>
-
-              <div class="summary">
-                <!-- Note: intentionally longer 80 columns -->
-                <span class="subdued">chrome.bookmarks</span><span>onEvent</span><span class="subdued">.addListener</span>(function(<span>Type param1, Type param2</span>) <span class="subdued">{...}</span><span>, Type opt_param1, Type opt_param2</span>);
-              </div>
-
-              <div class="description">
-                <p class="todo">Undocumented.</p>
-                <p>
-                  A description from the json schema def of the event goes here.
-                </p>
-
-                <!-- LISTENER PARAMETERS -->
-                <div>
-                  <h4>Listener parameters</h4>
-                  <dl>
-                    <div>
-                      <div>
-                      </div>
-                    </div>
-                  </dl>
-                </div>
-
-                <!-- EXTRA PARAMETERS -->
-                <div>
-                  <h4>Extra parameters to addListener</h4>
-                  <dl>
-                    <div>
-                      <div>
-                      </div>
-                    </div>
-                  </dl>
-                </div>
-
-                <!-- LISTENER RETURN VALUE -->
-                <h4>Listener returns</h4>
-                <dl>
-                  <div>
-                    <div>
-                    </div>
-                  </div>
-                </dl>
-
-              </div> <!-- /description -->
-            </div> <!-- /apiItem -->
-
-          </div> <!-- /apiGroup -->
-
-          <!-- TYPES -->
-          <div class="apiGroup">
-            <a name="types"></a>
-            <h3 id="types">Types</h3>
-
-            <!-- iterates over all types -->
-            <div class="apiItem">
-              <a></a>
-              <h4>type name</h4>
-
-              <div>
-              </div>
-
-            </div> <!-- /apiItem -->
-
-          </div> <!-- /apiGroup -->
-
-        </div> <!-- /apiPage -->
+         <!-- /apiPage -->
       </div> <!-- /gc-pagecontent -->
     </div> <!-- /g-section -->
   </div> <!-- /codesiteContent -->
@@ -646,18 +222,15 @@ For more information, see the
   <p>
   ©2011 Google
   </p>
-
 <!-- begin analytics -->
 <script src="https://www.google-analytics.com/urchin.js" type="text/javascript"></script>
 <script src="https://www.google-analytics.com/ga.js" type="text/javascript"></script>
-
 <script type="text/javascript">
   // chrome doc tracking
   try {
     var engdocs = _gat._getTracker("YT-10763712-2");
     engdocs._trackPageview();
   } catch(err) {}
-
   // code.google.com site-wide tracking
   try {
     _uacct="UA-18071-1";

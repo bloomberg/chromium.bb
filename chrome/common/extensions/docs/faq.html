@@ -41,130 +41,7 @@
       <!-- In particular, sub-templates that recurse, must be used by allowing
            jstemplate to make a copy of the template in this section which
            are not operated on by way of the jsskip="true" -->
-      <div style="display:none">
-
-        <!-- VALUE -->
-        <div id="valueTemplate">
-          <dt>
-            <var>paramName</var>
-              <em>
-
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span class="optional">optional</span>
-                    <span class="enum">enumerated</span>
-                    <span id="typeTemplate">
-                      <span>
-                        <a> Type</a>
-                      </span>
-                      <span>
-                        <span>
-                          array of <span><span></span></span>
-                        </span>
-                        <span>paramType</span>
-                        <span></span>
-                      </span>
-                    </span>
-                  )
-                </div>
-
-              </em>
-          </dt>
-          <dd class="todo">
-            Undocumented.
-          </dd>
-          <dd>
-            Description of this parameter from the json schema.
-          </dd>
-          <dd>
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
-          <!-- OBJECT PROPERTIES -->
-          <dd>
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-
-          <!-- OBJECT METHODS -->
-          <dd>
-            <div></div>
-          </dd>
-
-          <!-- OBJECT EVENT FIELDS -->
-          <dd>
-            <div></div>
-          </dd>
-
-          <!-- FUNCTION PARAMETERS -->
-          <dd>
-            <div></div>
-          </dd>
-
-        </div> <!-- /VALUE -->
-
-        <div id="functionParametersTemplate">
-          <h5>Parameters</h5>
-          <dl>
-            <div>
-              <div>
-              </div>
-            </div>
-          </dl>
-        </div>
-
-        <!-- Individual subsections from the table of contents -->
-        <ol>
-          <li id="propertiesTocTemplate">
-            <a href="#properties">Properties</a>
-            <ol>
-              <li>
-                <a href="#property-anchor">propertyName</a>
-              </li>
-            </ol>
-          </li>
-          <li id="methodsTocTemplate">
-            <a>Methods</a>
-            <ol>
-              <li>
-                <a href="#method-anchor">methodName</a>
-              </li>
-            </ol>
-          </li>
-          <li id="eventsTocTemplate">
-            <a>Events</a>
-            <ol>
-              <li>
-                <a href="#event-anchor">eventName</a>
-              </li>
-            </ol>
-          </li>
-          <li id="typesTocTemplate">
-            <a href="#types">Types</a>
-            <ol>
-              <li>
-                <a href="#id-anchor">id</a>
-                <ol>
-                  <div></div>
-                  <div></div>
-                </ol>
-              </li>
-            </ol>
-          </li>
-        </ol>
-      </div> <!-- /SUBTEMPLATES -->
-
+       <!-- /SUBTEMPLATES -->
   <a id="top"></a>
     <div id="skipto">
       <a href="#gc-pagecontent">Skip to page content</a>
@@ -185,7 +62,6 @@
               <span class="greytext">e.g. "page action" or "tabs"</span>
             </div>
           </form>
-
           <script type="text/javascript" src="https://www.google.com/jsapi"></script>
           <script type="text/javascript">google.load("elements", "1", {packages: "transliteration"});</script>
           <script type="text/javascript" src="https://www.google.com/coop/cse/t13n?form=cse&amp;t13n_langs=en"></script>
@@ -193,9 +69,7 @@
         </td>
       </tr>
     </tbody></table>
-
     <div id="codesiteContent" class="">
-
       <a id="gc-topnav-anchor"></a>
       <div id="gc-topnav">
         <h1>Google Chrome Extensions (<a href="http://code.google.com/labs/">Labs</a>)</h1>
@@ -220,7 +94,6 @@
           </li>
         </ul>
       </div> <!-- end gc-topnav -->
-
     <div class="g-section g-tpl-170">
       <!-- SIDENAV -->
       <div class="g-unit g-first" id="gc-toc">
@@ -308,47 +181,16 @@
       <script>
         initToggles();
       </script>
-
     <div class="g-unit" id="gc-pagecontent">
       <div id="pageTitle">
         <h1 class="page_title">Frequently Asked Questions</h1>
       </div>
         <!-- TABLE OF CONTENTS -->
-        <div id="toc" style="display: none; ">
-          <h2>Contents</h2>
-          <ol>
-            <li>
-              <a>h2Name</a>
-              <ol>
-                <li>
-                  <a>h3Name</a>
-                </li>
-              </ol>
-            </li>
-              <li>
-                <a href="#apiReference">API reference</a>
-                <ol>
-                  <div></div>
-                  <div></div>
-                  <div></div>
-                  <div></div>
-                </ol>
-              </li>
-          </ol>
-        </div>
         <!-- /TABLE OF CONTENTS -->
-
         <!-- Standard content lead-in for experimental API pages -->
-        <p id="classSummary" style="display: none; ">
-          For information on how to use experimental APIs, see the <a href="experimental.html">chrome.experimental.* APIs</a> page.
-        </p>
-
         <!-- STATIC CONTENT PLACEHOLDER -->
         <div id="static"><div id="pageData-name" class="pageData">Frequently Asked Questions</div>
-
-
 <!-- <div id="pageData-showTOC" class="pageData">true</div> -->
-
 <p>
 If you don't find an answer to your question here,
 try the
@@ -357,7 +199,6 @@ try the
 <a href="http://groups.google.com/a/chromium.org/group/chromium-extensions">group</a>, or the
 <a href="http://www.google.com/support/chrome_webstore/">store help</a>.
 </p>
-
 <div id="faq-TOC">
   <h4>General</h4>
   <ul>
@@ -400,16 +241,13 @@ try the
     <li><a href="#faq-fea-02">I have a feature request! How can I report it?</a></li>
   </ul>
 </div>
-
 <h2>General</h2>
-
 <h3 id="faq-gen-01">What are Google Chrome Extensions?</h3>
 <p>
   Google Chrome Extensions are applications that run inside the
   Chrome browser and provide additional functionality, integration with third
   party websites or services, and customized browsing experiences.
 </p>
-
 <h3 id="faq-dev-01">How can I set up Chrome for extension development?</h3>
 <p>
   As long as you are using a version of Chrome that supports
@@ -417,7 +255,6 @@ try the
   extension of your own.
   You can start by turning on Developer mode.
   </p>
-
   <p>
   Click the wrench icon
   <img src="images/toolsmenu.gif" height="29" width="29" alt="" class="nomargin">
@@ -429,7 +266,6 @@ try the
   and more. For a complete tutorial, see
   <a href="http://code.google.com/chrome/extensions/getstarted.html">Getting Started</a>.
 </p>
-
 <h3 id="faq-gen-02">What technologies are used to write extensions for Chrome?</h3>
 <p>
   Extensions are written using the same standard web
@@ -442,8 +278,6 @@ try the
   that help perform functions like JSON encoding and interacting with the
   browser.
 </p>
-
-
 <h3 id="faq-gen-03">Are extensions fetched from the web every time the browser is loaded?</h3>
 <p>
   Extensions are downloaded by the Chrome browser upon install, and
@@ -454,7 +288,6 @@ try the
   content at any time, in order to interact with a web service or pull new
   content from the web.
 </p>
-
 <h3 id="faq-dev-14">How do I determine which version of Chrome is deployed to which channel?</h3>
 <p>
   To determine which version of Chrome is currently available on each
@@ -462,7 +295,6 @@ try the
   <a href="http://omahaproxy.appspot.com">omahaproxy.appspot.com</a>.  On that
   site you will see data in a format similar to:
 </p>
-
 <pre>cf,dev,#.#.###.#,#.#.###.#,mm/dd/yy,mm/dd/yy,#####,#####,#####
 cf,beta,#.#.###.#,#.#.###.#,mm/dd/yy,mm/dd/yy,#####,#####,#####
 cf,stable,#.#.###.#,#.#.###.#,mm/dd/yy,mm/dd/yy,#####,#####,#####
@@ -478,7 +310,6 @@ win,beta,#.#.###.#,#.#.###.#,mm/dd/yy,mm/dd/yy,#####,#####,#####
 win,stable,#.#.###.#,#.#.###.#,mm/dd/yy,mm/dd/yy,#####,#####,#####
 cros,dev,#.#.###.#,#.#.###.#,mm/dd/yy,mm/dd/yy,#####,#####,#####
 cros,beta,#.#.###.#,#.#.###.#,mm/dd/yy,mm/dd/yy,#####,#####,#####</pre>
-
 <p>
   Each line represents information about a different platform and channel
   combination. The
@@ -492,24 +323,19 @@ cros,beta,#.#.###.#,#.#.###.#,mm/dd/yy,mm/dd/yy,#####,#####,#####</pre>
   combination.  The rest of the information is metadata about when the releases
   were first pushed, as well as revision numbers associated with each build.
 </p>
-
-
 <h2>Capabilities</h2>
-
 <h3 id="faq-dev-02">Can extensions make cross-domain Ajax requests?</h3>
 <p>
   Yes. Extensions can make cross-domain requests.  See
   <a href="http://code.google.com/chrome/extensions/xhr.html">this page</a>
   for more information.
 </p>
-
 <h3 id="faq-dev-03">Can extensions use 3rd party web services?</h3>
 <p>
   Yes. Extensions are capable of making cross-domain Ajax
   requests, so they can call remote APIs directly. APIs that provide data
   in JSON format are particularly easy to use.
 </p>
-
 <h3 id="faq-dev-07">Can extensions encode/decode JSON data?</h3>
 <p>
   Yes, because V8 (Chrome's JavaScript engine) supports
@@ -518,7 +344,6 @@ cros,beta,#.#.###.#,#.#.###.#,mm/dd/yy,mm/dd/yy,#####,#####,#####</pre>
   <a href="http://json.org/js.html">as described here</a> without including
   any additional JSON libraries in your code.
 </p>
-
 <h3 id="faq-dev-08">Can extensions store data locally?</h3>
 <p>
   Yes, extensions can use <a href="http://dev.w3.org/html5/webstorage/">localStorage</a>
@@ -529,7 +354,6 @@ cros,beta,#.#.###.#,#.#.###.#,mm/dd/yy,mm/dd/yy,#####,#####,#####</pre>
   <a href="http://dev.w3.org/html5/webdatabase/">client side SQL databases</a>,
   which may be used as well.
 </p>
-
 <h3 id="faq-dev-04">Can extensions use OAuth?</h3>
 <p>
   Yes, there are extensions that use OAuth to access remote data
@@ -537,14 +361,12 @@ cros,beta,#.#.###.#,#.#.###.#,mm/dd/yy,mm/dd/yy,#####,#####,#####</pre>
   <a href="http://unitedheroes.net/OAuthSimple/js/OAuthSimple.js">JavaScript OAuth library</a>
   in order to simplify the process of signing OAuth requests.
 </p>
-
 <h3 id="faq-dev-06">Can extensions load DLLs?</h3>
 <p>
   Yes, using the <a href="npapi.html">NPAPI interface</a>.
   Because of the possibility for abuse, though, we will review your extension
   before hosting it in the Chrome Web Store.
 </p>
-
 <h3 id="faq-dev-05">Can extensions create UI outside of the rendered web page?</h3>
 <p>
   Yes, your extension may add buttons to the Chrome browser's user interface.
@@ -556,20 +378,17 @@ cros,beta,#.#.###.#,#.#.###.#,mm/dd/yy,mm/dd/yy,#####,#####,#####</pre>
   browser window.  See the <a href="notifications.html">desktop
     notifications</a> documentation for more details.
 </p>
-
 <h3 id="faq-interact-chrome">Can extensions listen to clicks on Chrome tabs and
   navigation buttons?</h3>
 <p>
   No.  Extensions are limited to listening to the events described in the <a href="api_index.html">API documentation</a>.
 </p>
-
 <h3 id="faq-dev-11">Can two extensions communicate with each other?</h3>
 <p>
   Yes, extensions may pass messages to other extensions. See the
   <a href="messaging.html#external">message passing documentation</a>
   for more information.
 </p>
-
 <h3 id="faq-dev-13">Can extensions use Google Analytics?</h3>
 <p>
   Yes, since extensions are built just like websites, they can use
@@ -579,7 +398,6 @@ cros,beta,#.#.###.#,#.#.###.#,mm/dd/yy,mm/dd/yy,#####,#####,#####</pre>
   <a href="tut_analytics.html">this tutorial</a> for more information on doing
   this.
 </p>
-
 <h3 id="faq-dev-15">Can extensions modify chrome:// URLs?</h3>
 <p>
   No. The extensions APIs have been designed to minimize backwards
@@ -592,7 +410,6 @@ cros,beta,#.#.###.#,#.#.###.#,mm/dd/yy,mm/dd/yy,#####,#####,#####</pre>
   of these pages could cause an extension to break, causing key parts of the
   browser to stop working for users of that extension.
 </p>
-
 <p>
   The reason that <a href="override.html">replacing the content</a>
   hosted at these URLs entirely is
@@ -600,14 +417,12 @@ cros,beta,#.#.###.#,#.#.###.#,mm/dd/yy,mm/dd/yy,#####,#####,#####</pre>
   functionality they want without depending on the browser's internal implementation
   to stay the same.
 </p>
-
 <h3 id="faq-open-popups">Can extensions open browser/page action popups without
   user interaction?</h3>
 <p>
   No, popups can only be opened if the user clicks on the corresponding page or
   browser action.  An extension cannot open its popup programatically.
 </p>
-
 <h3 id="faq-persist-popups">Can extensions keep popups open after the user
   clicks away from them?</h3>
 <p>
@@ -615,7 +430,6 @@ cros,beta,#.#.###.#,#.#.###.#,mm/dd/yy,mm/dd/yy,#####,#####,#####</pre>
   browser outside of the popup.  There is no way to keep the popup open after
   the user has clicked away.
 </p>
-
 <h3 id="faq-lifecycle-events">Can extensions be notified when they are
   installed/uninstalled?</h3>
 <p>
@@ -623,11 +437,7 @@ cros,beta,#.#.###.#,#.#.###.#,mm/dd/yy,mm/dd/yy,#####,#####,#####</pre>
   whether it has been installed or uninstalled.  However, an extension can
   determine when it has been run for the first time.  See <a href="#faq-firstrun">this FAQ entry</a> for information.
 </p>
-
-
 <h2>Development</h2>
-
-
 <h3 id="faq-building-ui">How do I build a UI for my extension?</h3>
 <p>
   Extensions use HTML and CSS to define their user interfaces, so you can use
@@ -635,12 +445,10 @@ cros,beta,#.#.###.#,#.#.###.#,mm/dd/yy,mm/dd/yy,#####,#####,#####</pre>
   as you would a web page.  Additionally, extensions can add
   <a href="#faq-dev-05">some limited UI elements to Chrome itself.</a>
 </p>
-
 <h3 id="faq-dev-09">How much data can I store in localStorage?</h3>
 <p>
   Extensions can store up to 5MB of data in localStorage.
 </p>
-
 <h3 id="faq-dev-10">How do I create an options menu for my application?</h3>
 <p>
   You can let users set options for your extension by creating an
@@ -650,7 +458,6 @@ cros,beta,#.#.###.#,#.#.###.#,mm/dd/yy,mm/dd/yy,#####,#####,#####</pre>
   to localStorage, or even send options to a web server so that they can be
   persisted across browsers.
 </p>
-
 <h3 id="faq-dev-12">What debugging tools are available to extension developers?</h3>
 <p>
   Chrome's built-in developer tools can be used to debug extensions
@@ -658,7 +465,6 @@ cros,beta,#.#.###.#,#.#.###.#,mm/dd/yy,mm/dd/yy,#####,#####,#####</pre>
   <a href="http://code.google.com/chrome/extensions/tut_debugging.html ">tutorial on debugging extensions</a>
   for more information.
 </p>
-
 <h3 id="faq-dev-16">Why do wildcard matches not work for top level domains
   (TLDs)?</h3>
 <p>
@@ -682,7 +488,6 @@ cros,beta,#.#.###.#,#.#.###.#,mm/dd/yy,mm/dd/yy,#####,#####,#####</pre>
   You should explicitly enumerate the TLDs that you wish to run
   your extension on.
 </p>
-
 <h3 id="faq-management">Why does the management API not fire events when my
   extension is installed/uninstalled?</h3>
 <p>
@@ -690,7 +495,6 @@ cros,beta,#.#.###.#,#.#.###.#,mm/dd/yy,mm/dd/yy,#####,#####,#####</pre>
   new tab page replacement extensions.  It was not intended to fire
   install/uninstall events for the current extension.
 </p>
-
 <h3 id="faq-firstrun">How can an extension determine whether it is running for
   the first time?</h3>
 <p>
@@ -698,20 +502,14 @@ cros,beta,#.#.###.#,#.#.###.#,mm/dd/yy,mm/dd/yy,#####,#####,#####</pre>
   checking for the presence of a value in localStorage, and writing the value if
   it does not exist. For example:
 </p>
-
 <pre>var firstRun = (localStorage['firstRun'] == 'true');
 if (!firstRun) {
   localStorage['firstRun'] = 'true';
 }</pre>
-
 <p>
   Note that this check should be run in a background page, not a content script.
 </p>
-
-
 <h2>Features and bugs</h2>
-
-
 <h3 id="faq-fea-01">I think I've found a bug! How do I make sure it gets
   fixed?</h3>
 <p>
@@ -721,9 +519,7 @@ if (!firstRun) {
   report is filed, and the Chromium team has enough information to reproduce
   the behavior.
 </p>
-
 <p>The steps you should follow to ensure this are:</p>
-
 <ol>
   <li>
     Come up with a <em>minimal</em> test extension that demonstrates the issue
@@ -778,15 +574,11 @@ if (!firstRun) {
     experiencing the same issue to find the correct bug.
   </li>
 </ol>
-
 <h3 id="faq-fea-02">I have a feature request! How can I report it?</h3>
-
 <p>If you identify a feature (especially if it's related to an experimental
   API) that could be added to improve the extension development experience,
   make sure an appropriate request is filed in the issue tracker.</p>
-
 <p>The steps you should follow to ensure this are:</p>
-
 <ol>
   <li>
     Search the issue tracker at
@@ -827,182 +619,9 @@ if (!firstRun) {
     with the same request to find the correct ticket.
   </li>
 </ol>
-
 </div>
-
         <!-- API PAGE -->
-        <div class="apiPage" style="display: none; ">
-        <a name="apiReference"></a>
-        <h2>API reference: chrome.apiname </h2>
-
-          <!-- PROPERTIES -->
-          <div class="apiGroup">
-            <a name="properties"></a>
-            <h3 id="properties">Properties</h3>
-
-            <div>
-              <a></a>
-              <h4>getLastError</h4>
-              <div class="summary">
-                <!-- Note: intentionally longer 80 columns -->
-                <span>chrome.extension</span><span>lastError</span>
-              </div>
-              <div>
-              </div>
-            </div>
-
-          </div> <!-- /apiGroup -->
-
-          <!-- METHODS -->
-          <div id="methodsTemplate" class="apiGroup">
-            <a></a>
-            <h3>Methods</h3>
-
-            <!-- iterates over all functions -->
-            <div class="apiItem">
-              <a></a> <!-- method-anchor -->
-              <h4>method name</h4>
-
-              <div class="summary"><span>void</span>
-                  <!-- Note: intentionally longer 80 columns -->
-                  <span>chrome.module.methodName</span>(<span><span>, </span><span></span>
-                      <var><span></span></var></span>)</div>
-
-              <div class="description">
-                <p class="todo">Undocumented.</p>
-                <p>
-                  A description from the json schema def of the function goes here.
-                </p>
-
-                <!-- PARAMETERS -->
-                <h4>Parameters</h4>
-                <dl>
-                  <div>
-                    <div>
-                    </div>
-                  </div>
-                </dl>
-
-                <!-- RETURNS -->
-                <h4>Returns</h4>
-                <dl>
-                  <div>
-                    <div>
-                    </div>
-                  </div>
-                </dl>
-
-                <!-- CALLBACK -->
-                <div>
-                  <div>
-                  <h4>Callback function</h4>
-                  <p>
-                    The callback <em>parameter</em> should specify a function
-                    that looks like this:
-                  </p>
-                  <p>
-                    If you specify the <em>callback</em> parameter, it should
-                    specify a function that looks like this:
-                  </p>
-
-                  <!-- Note: intentionally longer 80 columns -->
-                  <pre>function(<span>Type param1, Type param2</span>) <span class="subdued">{...}</span>;</pre>
-                  <dl>
-                    <div>
-                      <div>
-                      </div>
-                    </div>
-                  </dl>
-                  </div>
-                </div>
-
-                <!-- MIN_VERSION -->
-                <p>
-                  This function was added in version <b><span></span></b>.
-                  If you require this function, the manifest key
-                  <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-                  can ensure that your extension won't be run in an earlier browser version.
-                </p>
-              </div> <!-- /description -->
-
-            </div>  <!-- /apiItem -->
-
-          </div>  <!-- /apiGroup -->
-
-          <!-- EVENTS -->
-          <div id="eventsTemplate" class="apiGroup">
-            <a></a>
-            <h3>Events</h3>
-            <!-- iterates over all events -->
-            <div class="apiItem">
-              <a></a>
-              <h4>event name</h4>
-
-              <div class="summary">
-                <!-- Note: intentionally longer 80 columns -->
-                <span class="subdued">chrome.bookmarks</span><span>onEvent</span><span class="subdued">.addListener</span>(function(<span>Type param1, Type param2</span>) <span class="subdued">{...}</span><span>, Type opt_param1, Type opt_param2</span>);
-              </div>
-
-              <div class="description">
-                <p class="todo">Undocumented.</p>
-                <p>
-                  A description from the json schema def of the event goes here.
-                </p>
-
-                <!-- LISTENER PARAMETERS -->
-                <div>
-                  <h4>Listener parameters</h4>
-                  <dl>
-                    <div>
-                      <div>
-                      </div>
-                    </div>
-                  </dl>
-                </div>
-
-                <!-- EXTRA PARAMETERS -->
-                <div>
-                  <h4>Extra parameters to addListener</h4>
-                  <dl>
-                    <div>
-                      <div>
-                      </div>
-                    </div>
-                  </dl>
-                </div>
-
-                <!-- LISTENER RETURN VALUE -->
-                <h4>Listener returns</h4>
-                <dl>
-                  <div>
-                    <div>
-                    </div>
-                  </div>
-                </dl>
-
-              </div> <!-- /description -->
-            </div> <!-- /apiItem -->
-
-          </div> <!-- /apiGroup -->
-
-          <!-- TYPES -->
-          <div class="apiGroup">
-            <a name="types"></a>
-            <h3 id="types">Types</h3>
-
-            <!-- iterates over all types -->
-            <div class="apiItem">
-              <a></a>
-              <h4>type name</h4>
-
-              <div>
-              </div>
-
-            </div> <!-- /apiItem -->
-
-          </div> <!-- /apiGroup -->
-
-        </div> <!-- /apiPage -->
+         <!-- /apiPage -->
       </div> <!-- /gc-pagecontent -->
     </div> <!-- /g-section -->
   </div> <!-- /codesiteContent -->
@@ -1017,18 +636,15 @@ if (!firstRun) {
   <p>
   ©2011 Google
   </p>
-
 <!-- begin analytics -->
 <script src="https://www.google-analytics.com/urchin.js" type="text/javascript"></script>
 <script src="https://www.google-analytics.com/ga.js" type="text/javascript"></script>
-
 <script type="text/javascript">
   // chrome doc tracking
   try {
     var engdocs = _gat._getTracker("YT-10763712-2");
     engdocs._trackPageview();
   } catch(err) {}
-
   // code.google.com site-wide tracking
   try {
     _uacct="UA-18071-1";

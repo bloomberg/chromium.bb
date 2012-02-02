@@ -41,130 +41,7 @@
       <!-- In particular, sub-templates that recurse, must be used by allowing
            jstemplate to make a copy of the template in this section which
            are not operated on by way of the jsskip="true" -->
-      <div style="display:none">
-
-        <!-- VALUE -->
-        <div id="valueTemplate">
-          <dt>
-            <var>paramName</var>
-              <em>
-
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span class="optional">optional</span>
-                    <span class="enum">enumerated</span>
-                    <span id="typeTemplate">
-                      <span>
-                        <a> Type</a>
-                      </span>
-                      <span>
-                        <span>
-                          array of <span><span></span></span>
-                        </span>
-                        <span>paramType</span>
-                        <span></span>
-                      </span>
-                    </span>
-                  )
-                </div>
-
-              </em>
-          </dt>
-          <dd class="todo">
-            Undocumented.
-          </dd>
-          <dd>
-            Description of this parameter from the json schema.
-          </dd>
-          <dd>
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
-          <!-- OBJECT PROPERTIES -->
-          <dd>
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-
-          <!-- OBJECT METHODS -->
-          <dd>
-            <div></div>
-          </dd>
-
-          <!-- OBJECT EVENT FIELDS -->
-          <dd>
-            <div></div>
-          </dd>
-
-          <!-- FUNCTION PARAMETERS -->
-          <dd>
-            <div></div>
-          </dd>
-
-        </div> <!-- /VALUE -->
-
-        <div id="functionParametersTemplate">
-          <h5>Parameters</h5>
-          <dl>
-            <div>
-              <div>
-              </div>
-            </div>
-          </dl>
-        </div>
-
-        <!-- Individual subsections from the table of contents -->
-        <ol>
-          <li id="propertiesTocTemplate">
-            <a href="#properties">Properties</a>
-            <ol>
-              <li>
-                <a href="#property-anchor">propertyName</a>
-              </li>
-            </ol>
-          </li>
-          <li id="methodsTocTemplate">
-            <a>Methods</a>
-            <ol>
-              <li>
-                <a href="#method-anchor">methodName</a>
-              </li>
-            </ol>
-          </li>
-          <li id="eventsTocTemplate">
-            <a>Events</a>
-            <ol>
-              <li>
-                <a href="#event-anchor">eventName</a>
-              </li>
-            </ol>
-          </li>
-          <li id="typesTocTemplate">
-            <a href="#types">Types</a>
-            <ol>
-              <li>
-                <a href="#id-anchor">id</a>
-                <ol>
-                  <div></div>
-                  <div></div>
-                </ol>
-              </li>
-            </ol>
-          </li>
-        </ol>
-      </div> <!-- /SUBTEMPLATES -->
-
+       <!-- /SUBTEMPLATES -->
   <a id="top"></a>
     <div id="skipto">
       <a href="#gc-pagecontent">Skip to page content</a>
@@ -185,7 +62,6 @@
               <span class="greytext">e.g. "page action" or "tabs"</span>
             </div>
           </form>
-
           <script type="text/javascript" src="https://www.google.com/jsapi"></script>
           <script type="text/javascript">google.load("elements", "1", {packages: "transliteration"});</script>
           <script type="text/javascript" src="https://www.google.com/coop/cse/t13n?form=cse&amp;t13n_langs=en"></script>
@@ -193,9 +69,7 @@
         </td>
       </tr>
     </tbody></table>
-
     <div id="codesiteContent" class="">
-
       <a id="gc-topnav-anchor"></a>
       <div id="gc-topnav">
         <h1>Google Chrome Extensions (<a href="http://code.google.com/labs/">Labs</a>)</h1>
@@ -220,7 +94,6 @@
           </li>
         </ul>
       </div> <!-- end gc-topnav -->
-
     <div class="g-section g-tpl-170">
       <!-- SIDENAV -->
       <div class="g-unit g-first" id="gc-toc">
@@ -308,7 +181,6 @@
       <script>
         initToggles();
       </script>
-
     <div class="g-unit" id="gc-pagecontent">
       <div id="pageTitle">
         <h1 class="page_title">Content Scripts</h1>
@@ -327,75 +199,39 @@
             </li><li>
               <a href="#pi">Programmatic injection</a>
               <ol>
-                <li style="display: none; ">
-                  <a>h3Name</a>
-                </li>
               </ol>
             </li><li>
               <a href="#execution-environment">Execution environment</a>
               <ol>
-                <li style="display: none; ">
-                  <a>h3Name</a>
-                </li>
               </ol>
             </li><li>
               <a href="#host-page-communication">Communication with the embedding page</a>
               <ol>
-                <li style="display: none; ">
-                  <a>h3Name</a>
-                </li>
               </ol>
             </li><li>
               <a href="#security-considerations">Security considerations</a>
               <ol>
-                <li style="display: none; ">
-                  <a>h3Name</a>
-                </li>
               </ol>
             </li><li>
               <a href="#extension-files">Referring to extension files</a>
               <ol>
-                <li style="display: none; ">
-                  <a>h3Name</a>
-                </li>
               </ol>
             </li><li>
               <a href="#examples"> Examples </a>
               <ol>
-                <li style="display: none; ">
-                  <a>h3Name</a>
-                </li>
               </ol>
             </li><li>
               <a href="#videos"> Videos </a>
               <ol>
-                <li style="display: none; ">
-                  <a>h3Name</a>
-                </li>
               </ol>
             </li>
-              <li style="display: none; ">
-                <a href="#apiReference">API reference</a>
-                <ol>
-                  <div></div>
-                  <div></div>
-                  <div></div>
-                  <div></div>
-                </ol>
-              </li>
           </ol>
         </div>
         <!-- /TABLE OF CONTENTS -->
-
         <!-- Standard content lead-in for experimental API pages -->
-        <p id="classSummary" style="display: none; ">
-          For information on how to use experimental APIs, see the <a href="experimental.html">chrome.experimental.* APIs</a> page.
-        </p>
-
         <!-- STATIC CONTENT PLACEHOLDER -->
         <div id="static"><div id="pageData-name" class="pageData">Content Scripts</div>
 <div id="pageData-showTOC" class="pageData">true</div>
-
 <p>
 Content scripts are JavaScript files that run in the context of web pages.
 By using the standard
@@ -404,22 +240,18 @@ Object Model</a> (DOM),
 they can read details of the web pages the browser visits,
 or make changes to them.
 </p>
-
 <p>
 Here are some examples of what content scripts can do:
 </p>
-
 <ul>
   <li>Find unlinked URLs in web pages and convert them into hyperlinks
   </li><li>Increase the font size to make text more legible
   </li><li>Find and process <a href="http://microformats.org/">microformat</a> data in the DOM
 </li></ul>
-
 <p>
 However, content scripts have some limitations.
 They <b>cannot</b>:
 </p>
-
 <ul>
   <li>
     Use chrome.* APIs
@@ -433,7 +265,6 @@ They <b>cannot</b>:
     Use variables or functions defined by web pages or by other content scripts
   </li>
 </ul>
-
 <p>
 These limitations aren't as bad as they sound.
 Content scripts can <em>indirectly</em> use the chrome.* APIs,
@@ -451,16 +282,13 @@ For more insight into what content scripts can and can't do,
 learn about the
 <a href="#execution-environment">execution environment</a>.
 </p>
-
 <h2 id="registration">Manifest</h2>
-
 <p>If your content script's code should always be injected,
 register it in the
 <a href="manifest.html">extension manifest</a>
 using the <code>content_scripts</code> field,
 as in the following example.
 </p>
-
 <pre>{
   "name": "My extension",
   ...
@@ -473,14 +301,12 @@ as in the following example.
   ]</b>,
   ...
 }</pre>
-
 <p>
 If you want to inject the code only sometimes,
 use the
 <a href="manifest.html#permissions"><code>permissions</code></a> field instead,
 as described in <a href="#pi">Programmatic injection</a>.
 </p>
-
 <pre>{
   "name": "My extension",
   ...
@@ -489,14 +315,12 @@ as described in <a href="#pi">Programmatic injection</a>.
   ]</b>,
   ...
 }</pre>
-
 <p>
 Using the <code>content_scripts</code> field,
 an extension can insert multiple content scripts into a page;
 each of these content scripts can have multiple JavaScript and CSS files.
 Each item in the <code>content_scripts</code> array
 can have the following properties:</p>
-
 <table>
   <tbody><tr>
     <th>Name</th>
@@ -541,21 +365,13 @@ can have the following properties:</p>
     <td>string</td>
     <td><em>Optional.</em>
     Controls when the files in <code>js</code> are injected. Can be "document_start", "document_end", or "document_idle". Defaults to "document_idle".
-
     <br><br>
-
     In the case of "document_start", the files are injected after any files from <code>css</code>, but before any other DOM is constructed or any other script is run.
-
     <br><br>
-
     In the case of "document_end", the files are injected immediately after the DOM is complete, but before subresources like images and frames have loaded.
-
     <br><br>
-
     In the case of "document_idle", the browser chooses a time to inject scripts between "document_end" and immediately after the <code><a href="http://www.whatwg.org/specs/web-apps/current-work/#handler-onload">window.onload</a></code> event fires. The exact moment of injection depends on how complex the document is and how long it is taking to load, and is optimized for page load speed.
-
     <br><br>
-
     <b>Note:</b> With "document_idle", content scripts may not necessarily receive the <code>window.onload</code> event, because they may run after it has
     already fired. In most cases, listening for the <code>onload</code> event is unnecessary for content scripts running at "document_idle" because they are guaranteed to run after the DOM is complete. If your script definitely needs to run after <code>window.onload</code>, you can check if <code>onload</code> has already fired by using the <code><a href="http://www.whatwg.org/specs/web-apps/current-work/#dom-document-readystate">document.readyState</a></code> property.</td>
   </tr>
@@ -583,15 +399,11 @@ can have the following properties:</p>
     See <a href="#match-patterns-globs">Match patterns and globs</a> below for more details.</td>
   </tr>
 </tbody></table>
-
 <h3 id="match-patterns-globs">Match patterns and globs</h3>
-
 <p>
 The content script will be injected into a page if its URL matches any <code>matches</code> pattern and any <code>include_globs</code> pattern, as long as the URL doesn't also match an <code>exclude_matches</code> or <code>exclude_globs</code> pattern.
-
 Because the <code>matches</code> property is required, <code>exclude_matches</code>, <code>include_globs</code>, and <code>exclude_globs</code> can only be used to limit which pages will be affected.
 </p>
-
 <p>
 For example, assume <code>matches</code> is <code>["http://*.nytimes.com/*"]</code>:
 </p>
@@ -601,11 +413,9 @@ For example, assume <code>matches</code> is <code>["http://*.nytimes.com/*"]</co
 <li>If <code>exclude_globs</code> is <code>["*science*"]</code>, then the content script would be injected into "http://www.nytimes.com" but not into "http://science.nytimes.com" or "http://www.nytimes.com/science".</li>
 </ul>
 <p>
-
 </p><p>
 Glob properties follow a different, more flexible syntax than <a href="match_patterns.html">match patterns</a>.  Acceptable glob strings are URLs that may contain "wildcard" asterisks and question marks. The asterisk (*) matches any string of any length (including the empty string); the question mark (?) matches any single character.
 </p>
-
 <p>
 For example, the glob "http://???.example.com/foo/*" matches any of the following:
 </p>
@@ -621,9 +431,7 @@ However, it does <em>not</em> match the following:
   <li>"http://example.com/foo/"</li>
   <li>"http://www.example.com/foo"</li>
 </ul>
-
 <h2 id="pi">Programmatic injection</h2>
-
 <p>
 Inserting code into a page programmatically is useful
 when your JavaScript or CSS code
@@ -632,7 +440,6 @@ that matches the pattern —
 for example, if you want a script to run
 only when the user clicks a browser action's icon.
 </p>
-
 <p>
 To insert code into a page,
 your extension must have
@@ -643,7 +450,6 @@ You can get both kinds of permission
 using the manifest file's
 <a href="manifest.html#permissions">permissions</a> field.
 </p>
-
 <p>
 Once you have permissions set up,
 you can inject JavaScript into a page by calling
@@ -651,7 +457,6 @@ you can inject JavaScript into a page by calling
 To inject CSS, use
 <a href="tabs.html#method-insertCSS"><code>insertCSS()</code></a>.
 </p>
-
 <p>
 The following code
 (from the
@@ -660,19 +465,16 @@ reacts to a user click
 by inserting JavaScript into the current tab's page
 and executing the script.
 </p>
-
 <pre><em>/* in background.html */</em>
 chrome.browserAction.onClicked.addListener(function(tab) {
   chrome.tabs.executeScript(null,
                            {code:"document.body.bgColor='red'"});
 });
-
 <em>/* in manifest.json */</em>
 "permissions": [
   "tabs", "http://*/*"
 ],
 </pre>
-
 <p>
 When the browser is displaying an HTTP page
 and the user clicks this extension's browser action,
@@ -681,22 +483,15 @@ The result,
 unless the page has CSS that sets the background color,
 is that the page turns red.
 </p>
-
 <p>
 Usually, instead of inserting code directly (as in the previous sample),
 you put the code in a file.
 You inject the file's contents like this:
 </p>
-
 <pre>chrome.tabs.executeScript(null, {file: "content_script.js"});</pre>
-
-
 <h2 id="execution-environment">Execution environment</h2>
-
 <p>Content scripts execute in a special environment called an <em>isolated world</em>. They have access to the DOM of the page they are injected into, but not to any JavaScript variables or functions created by the page. It looks to each content script as if there is no other JavaScript executing on the page it is running on. The same is true in reverse: JavaScript running on the page cannot call any functions or access any variables defined by content scripts.
-
 </p><p>For example, consider this simple page:
-
 </p><pre>hello.html
 ==========
 &lt;html&gt;
@@ -710,9 +505,7 @@ You inject the file's contents like this:
     }, false);
   &lt;/script&gt;
 &lt;/html&gt;</pre>
-
 <p>Now, suppose this content script was injected into hello.html:
-
 </p><pre>contentscript.js
 ================
 var greeting = "hola, ";
@@ -722,44 +515,30 @@ button.addEventListener("click", function() {
   alert(greeting + button.person_name + ".");
 }, false);
 </pre>
-
 <p>Now, if the button is pressed, you will see both greetings.
-
 </p><p>Isolated worlds allow each content script to make changes to its JavaScript environment without worrying about conflicting with the page or with other content scripts. For example, a content script could include JQuery v1 and the page could include JQuery v2, and they wouldn't conflict with each other.
-
 </p><p>Another important benefit of isolated worlds is that they completely separate the JavaScript on the page from the JavaScript in extensions. This allows us to offer extra functionality to content scripts that should not be accessible from web pages without worrying about web pages accessing it.
-
-
 </p><h2 id="host-page-communication">Communication with the embedding page</h2>
-
 <p>Although the execution environments of content scripts and the pages that host them are isolated from each other, they share access to the page's DOM. If the page wishes to communicate with the content script (or with the extension via the content script), it must do so through the shared DOM.</p>
-
 <p>An example can be accomplished using custom DOM events and storing data in a known location. Consider: </p>
-
 <pre>http://foo.com/example.html
 ===========================
 var customEvent = document.createEvent('Event');
 customEvent.initEvent('myCustomEvent', true, true);
-
 function fireCustomEvent(data) {
   hiddenDiv = document.getElementById('myCustomEventDiv');
   hiddenDiv.innerText = data
   hiddenDiv.dispatchEvent(customEvent);
 }</pre>
-
 <pre>contentscript.js
 ================
 var port = chrome.extension.connect();
-
 document.getElementById('myCustomEventDiv').addEventListener('myCustomEvent', function() {
   var eventData = document.getElementById('myCustomEventDiv').innerText;
   port.postMessage({message: "myCustomEvent", values: eventData});
 });</pre>
-
 <p>In the above example, example.html (which is not a part of the extension) creates a custom event and then can decide to fire the event by setting the event data to a known location in the DOM and then dispatching the custom event. The content script listens for the name of the custom event on the known element and handles the event by inspecting the data of the element, and turning around to post the message to the extension process. In this way the page establishes a line of communication to the extension. The reverse is possible through similar means.</p>
-
 <h2 id="security-considerations">Security considerations</h2>
-
 <p>When writing a content script, you should be aware of two security issues.
 First, be careful not to introduce security vulnerabilities into the web site
 your content script is injected into.  For example, if your content script
@@ -770,7 +549,6 @@ For example, prefer to inject content via innerText rather than innerHTML.
 Be especially careful when retrieving HTTP content on an HTTPS page because
 the HTTP content might have been corrupted by a network <a href="http://en.wikipedia.org/wiki/Man-in-the-middle_attack">"man-in-the-middle"</a>
 if the user is on a hostile network.</p>
-
 <p>Second, although running your content script in an isolated world provides
 some protection from the web page, a malicious web page might still be able
 to attack your content script if you use content from the web page
@@ -780,7 +558,6 @@ indiscriminately.  For example, the following patterns are dangerous:
 var data = document.getElementById("json-data")
 // WARNING! Might be evaluating an evil script!
 var parsed = eval("(" + data + ")")
-
 contentscript.js
 ================
 var elmt_id = ...
@@ -793,7 +570,6 @@ window.setTimeout("animate(" + elmt_id + ")", 200);
 var data = document.getElementById("json-data")
 // JSON.parse does not evaluate the attacker's scripts.
 var parsed = JSON.parse(data)
-
 contentscript.js
 ================
 var elmt_id = ...
@@ -802,9 +578,7 @@ window.setTimeout(function() {
   animate(elmt_id);
 }, 200);
 </pre>
-
 <h2 id="extension-files">Referring to extension files</h2>
-
 <p>
 Get the URL of an extension's file using
 <code>chrome.extension.getURL()</code>.
@@ -812,15 +586,11 @@ You can use the result
 just like you would any other URL,
 as the following code shows.
 </p>
-
-
 <pre><em>//Code for displaying &lt;extensionDir&gt;/images/myimage.png:</em>
 var imgURL = <b>chrome.extension.getURL("images/myimage.png")</b>;
 document.getElementById("someImage").src = imgURL;
 </pre>
-
 <h2 id="examples"> Examples </h2>
-
 <p>
 You can find many
 <a href="samples.html#script">examples that use content scripts</a>.
@@ -830,203 +600,25 @@ See <a href="samples.html#ede3c47b7757245be42ec33fd5ca63df4b490066">make_page_re
 <a href="samples.html#028eb5364924344029bcbe1d527f132fc72b34e5">email_this_page</a>
 for examples of programmatic injection.
 </p>
-
-
 <h2 id="videos"> Videos </h2>
-
 <p>
 The following videos discuss concepts that are important for content scripts.
 The first video describes content scripts and isolated worlds.
 </p>
-
 <p>
 <iframe title="YouTube video player" width="640" height="390" src="http://www.youtube.com/embed/laLudeUmXHM?rel=0" frameborder="0" allowfullscreen=""></iframe>
 </p>
-
 <p>
 The next video describes message passing,
 featuring an example of a content script
 sending a request to its parent extension.
 </p>
-
 <p>
 <iframe title="YouTube video player" width="640" height="390" src="http://www.youtube.com/embed/B4M_a7xejYI?rel=0" frameborder="0" allowfullscreen=""></iframe>
 </p>
 </div>
-
         <!-- API PAGE -->
-        <div class="apiPage" style="display: none; ">
-        <a name="apiReference"></a>
-        <h2>API reference: chrome.apiname </h2>
-
-          <!-- PROPERTIES -->
-          <div class="apiGroup">
-            <a name="properties"></a>
-            <h3 id="properties">Properties</h3>
-
-            <div>
-              <a></a>
-              <h4>getLastError</h4>
-              <div class="summary">
-                <!-- Note: intentionally longer 80 columns -->
-                <span>chrome.extension</span><span>lastError</span>
-              </div>
-              <div>
-              </div>
-            </div>
-
-          </div> <!-- /apiGroup -->
-
-          <!-- METHODS -->
-          <div id="methodsTemplate" class="apiGroup">
-            <a></a>
-            <h3>Methods</h3>
-
-            <!-- iterates over all functions -->
-            <div class="apiItem">
-              <a></a> <!-- method-anchor -->
-              <h4>method name</h4>
-
-              <div class="summary"><span>void</span>
-                  <!-- Note: intentionally longer 80 columns -->
-                  <span>chrome.module.methodName</span>(<span><span>, </span><span></span>
-                      <var><span></span></var></span>)</div>
-
-              <div class="description">
-                <p class="todo">Undocumented.</p>
-                <p>
-                  A description from the json schema def of the function goes here.
-                </p>
-
-                <!-- PARAMETERS -->
-                <h4>Parameters</h4>
-                <dl>
-                  <div>
-                    <div>
-                    </div>
-                  </div>
-                </dl>
-
-                <!-- RETURNS -->
-                <h4>Returns</h4>
-                <dl>
-                  <div>
-                    <div>
-                    </div>
-                  </div>
-                </dl>
-
-                <!-- CALLBACK -->
-                <div>
-                  <div>
-                  <h4>Callback function</h4>
-                  <p>
-                    The callback <em>parameter</em> should specify a function
-                    that looks like this:
-                  </p>
-                  <p>
-                    If you specify the <em>callback</em> parameter, it should
-                    specify a function that looks like this:
-                  </p>
-
-                  <!-- Note: intentionally longer 80 columns -->
-                  <pre>function(<span>Type param1, Type param2</span>) <span class="subdued">{...}</span>;</pre>
-                  <dl>
-                    <div>
-                      <div>
-                      </div>
-                    </div>
-                  </dl>
-                  </div>
-                </div>
-
-                <!-- MIN_VERSION -->
-                <p>
-                  This function was added in version <b><span></span></b>.
-                  If you require this function, the manifest key
-                  <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-                  can ensure that your extension won't be run in an earlier browser version.
-                </p>
-              </div> <!-- /description -->
-
-            </div>  <!-- /apiItem -->
-
-          </div>  <!-- /apiGroup -->
-
-          <!-- EVENTS -->
-          <div id="eventsTemplate" class="apiGroup">
-            <a></a>
-            <h3>Events</h3>
-            <!-- iterates over all events -->
-            <div class="apiItem">
-              <a></a>
-              <h4>event name</h4>
-
-              <div class="summary">
-                <!-- Note: intentionally longer 80 columns -->
-                <span class="subdued">chrome.bookmarks</span><span>onEvent</span><span class="subdued">.addListener</span>(function(<span>Type param1, Type param2</span>) <span class="subdued">{...}</span><span>, Type opt_param1, Type opt_param2</span>);
-              </div>
-
-              <div class="description">
-                <p class="todo">Undocumented.</p>
-                <p>
-                  A description from the json schema def of the event goes here.
-                </p>
-
-                <!-- LISTENER PARAMETERS -->
-                <div>
-                  <h4>Listener parameters</h4>
-                  <dl>
-                    <div>
-                      <div>
-                      </div>
-                    </div>
-                  </dl>
-                </div>
-
-                <!-- EXTRA PARAMETERS -->
-                <div>
-                  <h4>Extra parameters to addListener</h4>
-                  <dl>
-                    <div>
-                      <div>
-                      </div>
-                    </div>
-                  </dl>
-                </div>
-
-                <!-- LISTENER RETURN VALUE -->
-                <h4>Listener returns</h4>
-                <dl>
-                  <div>
-                    <div>
-                    </div>
-                  </div>
-                </dl>
-
-              </div> <!-- /description -->
-            </div> <!-- /apiItem -->
-
-          </div> <!-- /apiGroup -->
-
-          <!-- TYPES -->
-          <div class="apiGroup">
-            <a name="types"></a>
-            <h3 id="types">Types</h3>
-
-            <!-- iterates over all types -->
-            <div class="apiItem">
-              <a></a>
-              <h4>type name</h4>
-
-              <div>
-              </div>
-
-            </div> <!-- /apiItem -->
-
-          </div> <!-- /apiGroup -->
-
-        </div> <!-- /apiPage -->
+         <!-- /apiPage -->
       </div> <!-- /gc-pagecontent -->
     </div> <!-- /g-section -->
   </div> <!-- /codesiteContent -->
@@ -1041,18 +633,15 @@ sending a request to its parent extension.
   <p>
   ©2011 Google
   </p>
-
 <!-- begin analytics -->
 <script src="https://www.google-analytics.com/urchin.js" type="text/javascript"></script>
 <script src="https://www.google-analytics.com/ga.js" type="text/javascript"></script>
-
 <script type="text/javascript">
   // chrome doc tracking
   try {
     var engdocs = _gat._getTracker("YT-10763712-2");
     engdocs._trackPageview();
   } catch(err) {}
-
   // code.google.com site-wide tracking
   try {
     _uacct="UA-18071-1";

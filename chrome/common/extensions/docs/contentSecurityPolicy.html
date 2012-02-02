@@ -41,130 +41,7 @@
       <!-- In particular, sub-templates that recurse, must be used by allowing
            jstemplate to make a copy of the template in this section which
            are not operated on by way of the jsskip="true" -->
-      <div style="display:none">
-
-        <!-- VALUE -->
-        <div id="valueTemplate">
-          <dt>
-            <var>paramName</var>
-              <em>
-
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span class="optional">optional</span>
-                    <span class="enum">enumerated</span>
-                    <span id="typeTemplate">
-                      <span>
-                        <a> Type</a>
-                      </span>
-                      <span>
-                        <span>
-                          array of <span><span></span></span>
-                        </span>
-                        <span>paramType</span>
-                        <span></span>
-                      </span>
-                    </span>
-                  )
-                </div>
-
-              </em>
-          </dt>
-          <dd class="todo">
-            Undocumented.
-          </dd>
-          <dd>
-            Description of this parameter from the json schema.
-          </dd>
-          <dd>
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
-          <!-- OBJECT PROPERTIES -->
-          <dd>
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-
-          <!-- OBJECT METHODS -->
-          <dd>
-            <div></div>
-          </dd>
-
-          <!-- OBJECT EVENT FIELDS -->
-          <dd>
-            <div></div>
-          </dd>
-
-          <!-- FUNCTION PARAMETERS -->
-          <dd>
-            <div></div>
-          </dd>
-
-        </div> <!-- /VALUE -->
-
-        <div id="functionParametersTemplate">
-          <h5>Parameters</h5>
-          <dl>
-            <div>
-              <div>
-              </div>
-            </div>
-          </dl>
-        </div>
-
-        <!-- Individual subsections from the table of contents -->
-        <ol>
-          <li id="propertiesTocTemplate">
-            <a href="#properties">Properties</a>
-            <ol>
-              <li>
-                <a href="#property-anchor">propertyName</a>
-              </li>
-            </ol>
-          </li>
-          <li id="methodsTocTemplate">
-            <a>Methods</a>
-            <ol>
-              <li>
-                <a href="#method-anchor">methodName</a>
-              </li>
-            </ol>
-          </li>
-          <li id="eventsTocTemplate">
-            <a>Events</a>
-            <ol>
-              <li>
-                <a href="#event-anchor">eventName</a>
-              </li>
-            </ol>
-          </li>
-          <li id="typesTocTemplate">
-            <a href="#types">Types</a>
-            <ol>
-              <li>
-                <a href="#id-anchor">id</a>
-                <ol>
-                  <div></div>
-                  <div></div>
-                </ol>
-              </li>
-            </ol>
-          </li>
-        </ol>
-      </div> <!-- /SUBTEMPLATES -->
-
+       <!-- /SUBTEMPLATES -->
   <a id="top"></a>
     <div id="skipto">
       <a href="#gc-pagecontent">Skip to page content</a>
@@ -185,7 +62,6 @@
               <span class="greytext">e.g. "page action" or "tabs"</span>
             </div>
           </form>
-
           <script type="text/javascript" src="https://www.google.com/jsapi"></script>
           <script type="text/javascript">google.load("elements", "1", {packages: "transliteration"});</script>
           <script type="text/javascript" src="https://www.google.com/coop/cse/t13n?form=cse&amp;t13n_langs=en"></script>
@@ -193,9 +69,7 @@
         </td>
       </tr>
     </tbody></table>
-
     <div id="codesiteContent" class="">
-
       <a id="gc-topnav-anchor"></a>
       <div id="gc-topnav">
         <h1>Google Chrome Extensions (<a href="http://code.google.com/labs/">Labs</a>)</h1>
@@ -220,7 +94,6 @@
           </li>
         </ul>
       </div> <!-- end gc-topnav -->
-
     <div class="g-section g-tpl-170">
       <!-- SIDENAV -->
       <div class="g-unit g-first" id="gc-toc">
@@ -308,7 +181,6 @@
       <script>
         initToggles();
       </script>
-
     <div class="g-unit" id="gc-pagecontent">
       <div id="pageTitle">
         <h1 class="page_title">Content Security Policy (CSP)</h1>
@@ -329,40 +201,19 @@
             </li><li>
               <a href="#H2-3">Relaxing the default policy</a>
               <ol>
-                <li style="display: none; ">
-                  <a>h3Name</a>
-                </li>
               </ol>
             </li><li>
               <a href="#H2-4">Tightening the default policy</a>
               <ol>
-                <li style="display: none; ">
-                  <a>h3Name</a>
-                </li>
               </ol>
             </li>
-              <li style="display: none; ">
-                <a href="#apiReference">API reference</a>
-                <ol>
-                  <div></div>
-                  <div></div>
-                  <div></div>
-                  <div></div>
-                </ol>
-              </li>
           </ol>
         </div>
         <!-- /TABLE OF CONTENTS -->
-
         <!-- Standard content lead-in for experimental API pages -->
-        <p id="classSummary" style="display: none; ">
-          For information on how to use experimental APIs, see the <a href="experimental.html">chrome.experimental.* APIs</a> page.
-        </p>
-
         <!-- STATIC CONTENT PLACEHOLDER -->
         <div id="static"><div id="pageData-name" class="pageData">Content Security Policy (CSP)</div>
 <div id="pageData-showTOC" class="pageData">true</div>
-
 <p>
   In order to mitigate a large class of potental cross-site scripting issues,
   Chrome's extension system has incorporated the general concept of
@@ -373,7 +224,6 @@
   enforce rules governing the types of content that can be loaded and executed
   by your extensions and applications.
 </p>
-
 <p>
   In general, CSP works as a black/whitelisting mechanism for resources loaded
   or executed by your extensions. Defining a reasonable policy for your
@@ -383,50 +233,40 @@
   the <a href="manifest.html#permissions">host permissions</a> your extension
   requests; they're an additional layer of protection, not a replacement.
 </p>
-
 <p>
   On the web, such a policy is defined via an HTTP header or <code>meta</code>
   element. Inside Chrome's extension system, neither is an appropriate
   mechanism. Instead, an extension's policy is defined via the extension's
   <a href="manifest.html"><code>manifest.json</code></a> file as follows:
 </p>
-
 <pre>{
   ...,
   "content_security_policy": "[POLICY STRING GOES HERE]"
   ...
 }</pre>
-
 <p class="note">
   For full details regarding CSP's syntax, please take a look at
   <a href="http://dvcs.w3.org/hg/content-security-policy/raw-file/tip/csp-specification.dev.html#syntax">
     the Content Security Policy specification
   </a>.
 </p>
-
 <a name="H2-0"></a><h2>Default Policy Restrictions</h2>
-
 <p>
   For packages using <a href="manifest.html#manifest_version">
   <code>manifest_version</code></a> 2, Chrome defines a content security policy
   of:
 </p>
-
 <pre>script-src 'self'; object-src 'self'</pre>
-
 <p>
   This policy adds security by limiting extensions and applications in two ways:
 </p>
-
 <a name="H3-1"></a><h3>Inline JavaScript will not be executed</h3>
-
 <p>
   Inline JavaScript, as well as dangerous string-to-JavaScript methods like
  <code>eval</code>, will not be executed. This restriction bans both inline
  <code>&lt;script&gt;</code> blocks <strong>and</strong> inline event handlers
  (e.g. <code>&lt;button onclick="..."&gt;</code>).
 </p>
-
 <p>
   The first restriction wipes out a huge class of cross-site scripting attacks
   by making it impossible for you to accidentally execute script provided by a
@@ -436,7 +276,6 @@
   <a href="browserAction.html#popups">Browser Action's popup</a> as a single
   <code>popup.html</code> containing:
 </p>
-
 <pre>&lt;!doctype html&gt;
 &lt;html&gt;
   &lt;head&gt;
@@ -445,11 +284,9 @@
       function awesome() {
         // do something awesome!
       }
-
       function totallyAwesome() {
         // do something TOTALLY awesome!
       }
-
       function clickHandler(element) {
         setTimeout(<strong>"awesome(); totallyAwesome()"</strong>, 1000);
       }
@@ -461,12 +298,10 @@
     &lt;/button&gt;
   &lt;/body&gt;
 &lt;/html&gt;</pre>
-
 <p>
   Three things will need to change in order to make this work the way you expect
   it to:
 </p>
-
 <ul>
   <li>
     The <code>clickHandler</code> definition needs to move into an external
@@ -482,43 +317,34 @@
     JavaScript for execution.
   </li>
 </ul>
-
 <p>
   Those changes might look something like the following:
 </p>
-
 <pre>popup.js:
 =========
-
 function awesome() {
   // Do something awesome!
 }
-
 function totallyAwesome() {
   // do something TOTALLY awesome!
 }
-
 <strong>
 function awesomeTask() {
   awesome();
   totallyAwesome();
 }
 </strong>
-
 function clickHandler(e) {
   setTimeout(<strong>awesomeTask</strong>, 1000);
 }
-
 // Add event listeners once the DOM has fully loaded by listening for the
 // `DOMContentLoaded` event on the document, and adding your listeners to
 // specific elements when it triggers.
 document.addEventListener('DOMContentLoaded', function () {
   document.querySelector('button').addEventListener('click', clickHandler);
 });
-
 popup.html:
 ===========
-
 &lt;!doctype html&gt;
 &lt;html&gt;
   &lt;head&gt;
@@ -530,25 +356,19 @@ popup.html:
     &lt;button&gt;Click for awesomeness!&lt;/button&gt;
   &lt;/body&gt;
 &lt;/html&gt;</pre>
-
 <p>
-  
-
 </p><a name="H3-2"></a><h3>Only local script and and object resources are loaded</h3>
-
 <p>
   Script and object resources can only be loaded from the extension's
   package, not from the web at large. This ensures that your extension only
   executes the code you've specifically approved, preventing an active network
   attacker from maliciously redirecting your request for a resource.
 </p>
-
 <p>
   Instead of writing code that depends on jQuery (or any other library) loading
   from an external CDN, consider including the specific version of jQuery in
   your extension package. That is, instead of:
 </p>
-
 <pre>&lt;!doctype html&gt;
 &lt;html&gt;
   &lt;head&gt;
@@ -560,11 +380,9 @@ popup.html:
     &lt;button&gt;Click for awesomeness!&lt;/button&gt;
   &lt;/body&gt;
 &lt;/html&gt;</pre>
-
 <p>
   Download the file, include it in your package, and write:
 </p><p>
-
 </p><pre>&lt;!doctype html&gt;
 &lt;html&gt;
   &lt;head&gt;
@@ -576,15 +394,12 @@ popup.html:
     &lt;button&gt;Click for awesomeness!&lt;/button&gt;
   &lt;/body&gt;
 &lt;/html&gt;</pre>
-
 <a name="H2-3"></a><h2>Relaxing the default policy</h2>
-
 <p>
   There is no mechanism for relaxing the restriction against executing inline
   JavaScript. In particular, setting a script policy that includes
   <code>unsafe-inline</code> will have no effect. This is intentional.
 </p>
-
 <p>
   If, on the other hand, you have a need for some external JavaScript or object
   resources, you can relax the policy to a limited extent by whitelisting
@@ -596,24 +411,20 @@ popup.html:
   attacks</a> are both trivial and undetectable over HTTP, only HTTPS origins
   will be accepted.
 </p>
-
 <p>
   A relaxed policy definition which allows script resources to be loaded from
   <code>example.com</code> over HTTPS might look like:
 </p>
-
 <pre>{
   ...,
   "content_security_policy": "script-src 'self' https://example.com; object-src 'self'",
   ...
 }</pre>
-
 <p class="note">
   Note that both <code>script-src</code> and <code>object-src</code> are defined
   by the policy. Chrome will not accept a policy that doesn't limit each of
   these values to (at least) <code>'self'</code>.
 </p>
-
 <p>
   Making use of Google Analytics is the canonical example for this sort of
   policy definition. It's common enough that we've provided an Analytics
@@ -621,9 +432,7 @@ popup.html:
   with Google Analytics</a> sample extension, and a
 <a href="tut_analytics.html">brief tutorial</a> that goes into more detail.
 </p>
-
 <a name="H2-4"></a><h2>Tightening the default policy</h2>
-
 <p>
   You may, of course, tighten this policy to whatever extent your extension
   allows in order to increase security at the expense of convenience. To specify
@@ -634,180 +443,8 @@ popup.html:
   beyond the defaults.
 </p>
 </div>
-
         <!-- API PAGE -->
-        <div class="apiPage" style="display: none; ">
-        <a name="apiReference"></a>
-        <h2>API reference: chrome.apiname </h2>
-
-          <!-- PROPERTIES -->
-          <div class="apiGroup">
-            <a name="properties"></a>
-            <h3 id="properties">Properties</h3>
-
-            <div>
-              <a></a>
-              <h4>getLastError</h4>
-              <div class="summary">
-                <!-- Note: intentionally longer 80 columns -->
-                <span>chrome.extension</span><span>lastError</span>
-              </div>
-              <div>
-              </div>
-            </div>
-
-          </div> <!-- /apiGroup -->
-
-          <!-- METHODS -->
-          <div id="methodsTemplate" class="apiGroup">
-            <a></a>
-            <h3>Methods</h3>
-
-            <!-- iterates over all functions -->
-            <div class="apiItem">
-              <a></a> <!-- method-anchor -->
-              <h4>method name</h4>
-
-              <div class="summary"><span>void</span>
-                  <!-- Note: intentionally longer 80 columns -->
-                  <span>chrome.module.methodName</span>(<span><span>, </span><span></span>
-                      <var><span></span></var></span>)</div>
-
-              <div class="description">
-                <p class="todo">Undocumented.</p>
-                <p>
-                  A description from the json schema def of the function goes here.
-                </p>
-
-                <!-- PARAMETERS -->
-                <h4>Parameters</h4>
-                <dl>
-                  <div>
-                    <div>
-                    </div>
-                  </div>
-                </dl>
-
-                <!-- RETURNS -->
-                <h4>Returns</h4>
-                <dl>
-                  <div>
-                    <div>
-                    </div>
-                  </div>
-                </dl>
-
-                <!-- CALLBACK -->
-                <div>
-                  <div>
-                  <h4>Callback function</h4>
-                  <p>
-                    The callback <em>parameter</em> should specify a function
-                    that looks like this:
-                  </p>
-                  <p>
-                    If you specify the <em>callback</em> parameter, it should
-                    specify a function that looks like this:
-                  </p>
-
-                  <!-- Note: intentionally longer 80 columns -->
-                  <pre>function(<span>Type param1, Type param2</span>) <span class="subdued">{...}</span>;</pre>
-                  <dl>
-                    <div>
-                      <div>
-                      </div>
-                    </div>
-                  </dl>
-                  </div>
-                </div>
-
-                <!-- MIN_VERSION -->
-                <p>
-                  This function was added in version <b><span></span></b>.
-                  If you require this function, the manifest key
-                  <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-                  can ensure that your extension won't be run in an earlier browser version.
-                </p>
-              </div> <!-- /description -->
-
-            </div>  <!-- /apiItem -->
-
-          </div>  <!-- /apiGroup -->
-
-          <!-- EVENTS -->
-          <div id="eventsTemplate" class="apiGroup">
-            <a></a>
-            <h3>Events</h3>
-            <!-- iterates over all events -->
-            <div class="apiItem">
-              <a></a>
-              <h4>event name</h4>
-
-              <div class="summary">
-                <!-- Note: intentionally longer 80 columns -->
-                <span class="subdued">chrome.bookmarks</span><span>onEvent</span><span class="subdued">.addListener</span>(function(<span>Type param1, Type param2</span>) <span class="subdued">{...}</span><span>, Type opt_param1, Type opt_param2</span>);
-              </div>
-
-              <div class="description">
-                <p class="todo">Undocumented.</p>
-                <p>
-                  A description from the json schema def of the event goes here.
-                </p>
-
-                <!-- LISTENER PARAMETERS -->
-                <div>
-                  <h4>Listener parameters</h4>
-                  <dl>
-                    <div>
-                      <div>
-                      </div>
-                    </div>
-                  </dl>
-                </div>
-
-                <!-- EXTRA PARAMETERS -->
-                <div>
-                  <h4>Extra parameters to addListener</h4>
-                  <dl>
-                    <div>
-                      <div>
-                      </div>
-                    </div>
-                  </dl>
-                </div>
-
-                <!-- LISTENER RETURN VALUE -->
-                <h4>Listener returns</h4>
-                <dl>
-                  <div>
-                    <div>
-                    </div>
-                  </div>
-                </dl>
-
-              </div> <!-- /description -->
-            </div> <!-- /apiItem -->
-
-          </div> <!-- /apiGroup -->
-
-          <!-- TYPES -->
-          <div class="apiGroup">
-            <a name="types"></a>
-            <h3 id="types">Types</h3>
-
-            <!-- iterates over all types -->
-            <div class="apiItem">
-              <a></a>
-              <h4>type name</h4>
-
-              <div>
-              </div>
-
-            </div> <!-- /apiItem -->
-
-          </div> <!-- /apiGroup -->
-
-        </div> <!-- /apiPage -->
+         <!-- /apiPage -->
       </div> <!-- /gc-pagecontent -->
     </div> <!-- /g-section -->
   </div> <!-- /codesiteContent -->
@@ -822,18 +459,15 @@ popup.html:
   <p>
   ©2011 Google
   </p>
-
 <!-- begin analytics -->
 <script src="https://www.google-analytics.com/urchin.js" type="text/javascript"></script>
 <script src="https://www.google-analytics.com/ga.js" type="text/javascript"></script>
-
 <script type="text/javascript">
   // chrome doc tracking
   try {
     var engdocs = _gat._getTracker("YT-10763712-2");
     engdocs._trackPageview();
   } catch(err) {}
-
   // code.google.com site-wide tracking
   try {
     _uacct="UA-18071-1";

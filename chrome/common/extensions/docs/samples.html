@@ -41,130 +41,7 @@
       <!-- In particular, sub-templates that recurse, must be used by allowing
            jstemplate to make a copy of the template in this section which
            are not operated on by way of the jsskip="true" -->
-      <div style="display:none">
-
-        <!-- VALUE -->
-        <div id="valueTemplate">
-          <dt>
-            <var>paramName</var>
-              <em>
-
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span class="optional">optional</span>
-                    <span class="enum">enumerated</span>
-                    <span id="typeTemplate">
-                      <span>
-                        <a> Type</a>
-                      </span>
-                      <span>
-                        <span>
-                          array of <span><span></span></span>
-                        </span>
-                        <span>paramType</span>
-                        <span></span>
-                      </span>
-                    </span>
-                  )
-                </div>
-
-              </em>
-          </dt>
-          <dd class="todo">
-            Undocumented.
-          </dd>
-          <dd>
-            Description of this parameter from the json schema.
-          </dd>
-          <dd>
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
-          <!-- OBJECT PROPERTIES -->
-          <dd>
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-
-          <!-- OBJECT METHODS -->
-          <dd>
-            <div></div>
-          </dd>
-
-          <!-- OBJECT EVENT FIELDS -->
-          <dd>
-            <div></div>
-          </dd>
-
-          <!-- FUNCTION PARAMETERS -->
-          <dd>
-            <div></div>
-          </dd>
-
-        </div> <!-- /VALUE -->
-
-        <div id="functionParametersTemplate">
-          <h5>Parameters</h5>
-          <dl>
-            <div>
-              <div>
-              </div>
-            </div>
-          </dl>
-        </div>
-
-        <!-- Individual subsections from the table of contents -->
-        <ol>
-          <li id="propertiesTocTemplate">
-            <a href="#properties">Properties</a>
-            <ol>
-              <li>
-                <a href="#property-anchor">propertyName</a>
-              </li>
-            </ol>
-          </li>
-          <li id="methodsTocTemplate">
-            <a>Methods</a>
-            <ol>
-              <li>
-                <a href="#method-anchor">methodName</a>
-              </li>
-            </ol>
-          </li>
-          <li id="eventsTocTemplate">
-            <a>Events</a>
-            <ol>
-              <li>
-                <a href="#event-anchor">eventName</a>
-              </li>
-            </ol>
-          </li>
-          <li id="typesTocTemplate">
-            <a href="#types">Types</a>
-            <ol>
-              <li>
-                <a href="#id-anchor">id</a>
-                <ol>
-                  <div></div>
-                  <div></div>
-                </ol>
-              </li>
-            </ol>
-          </li>
-        </ol>
-      </div> <!-- /SUBTEMPLATES -->
-
+       <!-- /SUBTEMPLATES -->
   <a id="top"></a>
     <div id="skipto">
       <a href="#gc-pagecontent">Skip to page content</a>
@@ -185,7 +62,6 @@
               <span class="greytext">e.g. "page action" or "tabs"</span>
             </div>
           </form>
-
           <script type="text/javascript" src="https://www.google.com/jsapi"></script>
           <script type="text/javascript">google.load("elements", "1", {packages: "transliteration"});</script>
           <script type="text/javascript" src="https://www.google.com/coop/cse/t13n?form=cse&amp;t13n_langs=en"></script>
@@ -193,9 +69,7 @@
         </td>
       </tr>
     </tbody></table>
-
     <div id="codesiteContent" class="">
-
       <a id="gc-topnav-anchor"></a>
       <div id="gc-topnav">
         <h1>Google Chrome Extensions (<a href="http://code.google.com/labs/">Labs</a>)</h1>
@@ -220,7 +94,6 @@
           </li>
         </ul>
       </div> <!-- end gc-topnav -->
-
     <div class="g-section g-tpl-170">
       <!-- SIDENAV -->
       <div class="g-unit g-first" id="gc-toc">
@@ -308,41 +181,13 @@
       <script>
         initToggles();
       </script>
-
     <div class="g-unit" id="gc-pagecontent">
       <div id="pageTitle">
         <h1 class="page_title">Samples</h1>
       </div>
         <!-- TABLE OF CONTENTS -->
-        <div id="toc" style="display: none; ">
-          <h2>Contents</h2>
-          <ol>
-            <li>
-              <a>h2Name</a>
-              <ol>
-                <li>
-                  <a>h3Name</a>
-                </li>
-              </ol>
-            </li>
-              <li>
-                <a href="#apiReference">API reference</a>
-                <ol>
-                  <div></div>
-                  <div></div>
-                  <div></div>
-                  <div></div>
-                </ol>
-              </li>
-          </ol>
-        </div>
         <!-- /TABLE OF CONTENTS -->
-
         <!-- Standard content lead-in for experimental API pages -->
-        <p id="classSummary" style="display: none; ">
-          For information on how to use experimental APIs, see the <a href="experimental.html">chrome.experimental.* APIs</a> page.
-        </p>
-
         <!-- STATIC CONTENT PLACEHOLDER -->
         <div id="static"><link rel="stylesheet" href="css/samples.css">
 <script>var search_data = {
@@ -415,16 +260,11 @@
 };
 </script>
 <script src="js/sample_search.js"></script>
-
-
-
 <div id="controls">
   <div id="searchbox" class="controlbox">
     <strong>Filter by keyword:</strong>
     <input autofocus="" type="search" id="searchinput" placeholder="Type to search" onkeyup="filterSamples();">
-    <a id="clearlink" href="javascript:void(0);" onclick="clearFilter();" style="display: none;">clear</a>
   </div>
-
   <div id="filterbox" class="controlbox">
     <strong>Filter by API:</strong>
     <span>
@@ -483,29 +323,24 @@
       </span><span>
         <a href="javascript:void(0);" onclick="setFilter('chrome.webRequest', this)">chrome.webRequest</a><span>, </span>
       </span><span>
-        <a href="javascript:void(0);" onclick="setFilter('chrome.windows', this)">chrome.windows</a><span style="display: none; ">, </span>
+        <a href="javascript:void(0);" onclick="setFilter('chrome.windows', this)">chrome.windows</a>
       </span>
     </span>
   </div>
 </div>
-
 <div class="sample" id="0262260daf0c8f7b28feff2ef23b05e7abf9d1e0">
-  <img class="icon" style="display: none; ">
   <img class="icon" src="images/sample-default-icon.png">
   <h2 class="name">
     <a href="#0262260daf0c8f7b28feff2ef23b05e7abf9d1e0">A browser action which changes its icon when clicked.</a>
-    <span style="display: none; ">(packaged app)</span>
   </h2>
   <p class="metadata features">Uses
     <span>
       <strong>background_page</strong><span>, </span>
-      <span style="display: none; "> and</span>
     </span><span>
-      <strong>browser_action</strong><span style="display: none; ">, </span>
+      <strong>browser_action</strong>
       <span> and</span>
     </span><span>
-      <strong>tabs</strong><span style="display: none; ">, </span>
-      <span style="display: none; "> and</span>
+      <strong>tabs</strong>
     </span>
   </p>
   <p></p>
@@ -530,24 +365,18 @@
   <div>
     <a href="examples/api/browserAction/set_icon_path.zip">Download source</a>
     <!-- Only show the Install CRX link if a CRX file is provided -->
-    <span style="display: none; ">
-    - <a>Install extension</a>
-    </span>
   </div>
 </div><div class="sample" id="ea2894c41cb8e80a4433a3e6c5772dadce9be90d">
-  <img class="icon" style="display: none; ">
   <img class="icon" src="images/sample-default-icon.png">
   <h2 class="name">
     <a href="#ea2894c41cb8e80a4433a3e6c5772dadce9be90d">A browser action with a popup that changes the page color.</a>
-    <span style="display: none; ">(packaged app)</span>
   </h2>
   <p class="metadata features">Uses
     <span>
-      <strong>browser_action</strong><span style="display: none; ">, </span>
+      <strong>browser_action</strong>
       <span> and</span>
     </span><span>
-      <strong>tabs</strong><span style="display: none; ">, </span>
-      <span style="display: none; "> and</span>
+      <strong>tabs</strong>
     </span>
   </p>
   <p></p>
@@ -572,27 +401,20 @@
   <div>
     <a href="examples/api/browserAction/set_page_color.zip">Download source</a>
     <!-- Only show the Install CRX link if a CRX file is provided -->
-    <span style="display: none; ">
-    - <a>Install extension</a>
-    </span>
   </div>
 </div><div class="sample" id="ede3c47b7757245be42ec33fd5ca63df4b490066">
-  <img class="icon" style="display: none; ">
   <img class="icon" src="images/sample-default-icon.png">
   <h2 class="name">
     <a href="#ede3c47b7757245be42ec33fd5ca63df4b490066">A browser action with no icon that makes the page red</a>
-    <span style="display: none; ">(packaged app)</span>
   </h2>
   <p class="metadata features">Uses
     <span>
       <strong>background_page</strong><span>, </span>
-      <span style="display: none; "> and</span>
     </span><span>
-      <strong>browser_action</strong><span style="display: none; ">, </span>
+      <strong>browser_action</strong>
       <span> and</span>
     </span><span>
-      <strong>tabs</strong><span style="display: none; ">, </span>
-      <span style="display: none; "> and</span>
+      <strong>tabs</strong>
     </span>
   </p>
   <p></p>
@@ -621,21 +443,15 @@
   <div>
     <a href="examples/api/browserAction/make_page_red.zip">Download source</a>
     <!-- Only show the Install CRX link if a CRX file is provided -->
-    <span style="display: none; ">
-    - <a>Install extension</a>
-    </span>
   </div>
 </div><div class="sample" id="fbf0aa1a09a15ff8cc4fc7de4fd176d6c663d07a">
-  <img class="icon" style="display: none; ">
   <img class="icon" src="images/sample-default-icon.png">
   <h2 class="name">
     <a href="#fbf0aa1a09a15ff8cc4fc7de4fd176d6c663d07a">AcceptLanguage</a>
-    <span style="display: none; ">(packaged app)</span>
   </h2>
   <p class="metadata features">Uses
     <span>
-      <strong>browser_action</strong><span style="display: none; ">, </span>
-      <span style="display: none; "> and</span>
+      <strong>browser_action</strong>
     </span>
   </p>
   <p>Returns accept languages of the browser</p>
@@ -668,27 +484,20 @@
   <div>
     <a href="examples/api/i18n/getMessage.zip">Download source</a>
     <!-- Only show the Install CRX link if a CRX file is provided -->
-    <span style="display: none; ">
-    - <a>Install extension</a>
-    </span>
   </div>
 </div><div class="sample" id="9a6e4ec46997fb92b324974afa08a3d007e2537f">
-  <img class="icon" style="display: none; ">
   <img class="icon" src="images/sample-default-icon.png">
   <h2 class="name">
     <a href="#9a6e4ec46997fb92b324974afa08a3d007e2537f">Animated Page Action</a>
-    <span style="display: none; ">(packaged app)</span>
   </h2>
   <p class="metadata features">Uses
     <span>
       <strong>background_page</strong><span>, </span>
-      <span style="display: none; "> and</span>
     </span><span>
-      <strong>page_action</strong><span style="display: none; ">, </span>
+      <strong>page_action</strong>
       <span> and</span>
     </span><span>
-      <strong>tabs</strong><span style="display: none; ">, </span>
-      <span style="display: none; "> and</span>
+      <strong>tabs</strong>
     </span>
   </p>
   <p>This extension adds an animated browser action to the toolbar.</p>
@@ -721,24 +530,18 @@
   <div>
     <a href="examples/api/pageAction/set_icon.zip">Download source</a>
     <!-- Only show the Install CRX link if a CRX file is provided -->
-    <span style="display: none; ">
-    - <a>Install extension</a>
-    </span>
   </div>
 </div><div class="sample" id="a1f7cf79dd555b04fa8d603247a040e644996293">
-  <img class="icon" style="display: none; ">
   <img class="icon" src="images/sample-default-icon.png">
   <h2 class="name">
     <a href="#a1f7cf79dd555b04fa8d603247a040e644996293">App Launcher</a>
-    <span style="display: none; ">(packaged app)</span>
   </h2>
   <p class="metadata features">Uses
     <span>
-      <strong>browser_action</strong><span style="display: none; ">, </span>
+      <strong>browser_action</strong>
       <span> and</span>
     </span><span>
-      <strong>management</strong><span style="display: none; ">, </span>
-      <span style="display: none; "> and</span>
+      <strong>management</strong>
     </span>
   </p>
   <p></p>
@@ -773,31 +576,18 @@
   <div>
     <a href="examples/extensions/app_launcher.zip">Download source</a>
     <!-- Only show the Install CRX link if a CRX file is provided -->
-    <span style="display: none; ">
-    - <a>Install extension</a>
-    </span>
   </div>
 </div><div class="sample" id="9747e3d6a3eab39bc7c17f11a80573c62d44c7e5">
-  <img class="icon" style="display: none; ">
   <img class="icon" src="images/sample-default-icon.png">
   <h2 class="name">
     <a href="#9747e3d6a3eab39bc7c17f11a80573c62d44c7e5">Blank new tab page</a>
-    <span style="display: none; ">(packaged app)</span>
   </h2>
   <p class="metadata features">Uses
     <span>
-      <strong>chrome_url_overrides</strong><span style="display: none; ">, </span>
-      <span style="display: none; "> and</span>
+      <strong>chrome_url_overrides</strong>
     </span>
   </p>
   <p></p>
-  <div class="apicalls" style="display: none; "><strong>Calls:</strong>
-    <ul>
-      <li>
-        <code><a></a></code>
-      </li>
-    </ul>
-  </div>
   <div class="sourcefiles"><strong>Source files:</strong>
     <ul>
       <li>
@@ -810,24 +600,18 @@
   <div>
     <a href="examples/api/override/blank_ntp.zip">Download source</a>
     <!-- Only show the Install CRX link if a CRX file is provided -->
-    <span style="display: none; ">
-    - <a>Install extension</a>
-    </span>
   </div>
 </div><div class="sample" id="0bf0930a32829dfb77170535ecb27adc2de3998a">
-  <img class="icon" style="display: none; ">
   <img class="icon" src="images/sample-default-icon.png">
   <h2 class="name">
     <a href="#0bf0930a32829dfb77170535ecb27adc2de3998a">Block/allow referrer API example extension</a>
-    <span style="display: none; ">(packaged app)</span>
   </h2>
   <p class="metadata features">Uses
     <span>
-      <strong>browser_action</strong><span style="display: none; ">, </span>
+      <strong>browser_action</strong>
       <span> and</span>
     </span><span>
-      <strong>privacy</strong><span style="display: none; ">, </span>
-      <span style="display: none; "> and</span>
+      <strong>privacy</strong>
     </span>
   </p>
   <p>Sample extension which demonstrates how to access a preference.</p>
@@ -854,24 +638,18 @@
   <div>
     <a href="examples/api/preferences/enableReferrer.zip">Download source</a>
     <!-- Only show the Install CRX link if a CRX file is provided -->
-    <span style="display: none; ">
-    - <a>Install extension</a>
-    </span>
   </div>
 </div><div class="sample" id="7da105f28e200d42510aff3591dfa5aeb0b82605">
-  <img class="icon" style="display: none; ">
   <img class="icon" src="images/sample-default-icon.png">
   <h2 class="name">
     <a href="#7da105f28e200d42510aff3591dfa5aeb0b82605">Block/allow third-party cookies API example extension</a>
-    <span style="display: none; ">(packaged app)</span>
   </h2>
   <p class="metadata features">Uses
     <span>
-      <strong>browser_action</strong><span style="display: none; ">, </span>
+      <strong>browser_action</strong>
       <span> and</span>
     </span><span>
-      <strong>privacy</strong><span style="display: none; ">, </span>
-      <span style="display: none; "> and</span>
+      <strong>privacy</strong>
     </span>
   </p>
   <p>Sample extension which demonstrates how to access a preference.</p>
@@ -898,30 +676,22 @@
   <div>
     <a href="examples/api/preferences/allowThirdPartyCookies.zip">Download source</a>
     <!-- Only show the Install CRX link if a CRX file is provided -->
-    <span style="display: none; ">
-    - <a>Install extension</a>
-    </span>
   </div>
 </div><div class="sample" id="9004d1a1b975859d07bdff94ea0a4baa106c4fd1">
-  <img class="icon" style="display: none; ">
   <img class="icon" src="images/sample-default-icon.png">
   <h2 class="name">
     <a href="#9004d1a1b975859d07bdff94ea0a4baa106c4fd1">Broken Links</a>
-    <span style="display: none; ">(packaged app)</span>
   </h2>
   <p class="metadata features">Uses
     <span>
       <strong>background_page</strong><span>, </span>
-      <span style="display: none; "> and</span>
     </span><span>
       <strong>devtools_page</strong><span>, </span>
-      <span style="display: none; "> and</span>
     </span><span>
-      <strong>experimental</strong><span style="display: none; ">, </span>
+      <strong>experimental</strong>
       <span> and</span>
     </span><span>
-      <strong>tabs</strong><span style="display: none; ">, </span>
-      <span style="display: none; "> and</span>
+      <strong>tabs</strong>
     </span>
   </p>
   <p>Extends the Developer Tools, adding an audit category that finds broken links on the inspected page.</p>
@@ -958,27 +728,20 @@
   <div>
     <a href="examples/api/devtools/audits/broken-links.zip">Download source</a>
     <!-- Only show the Install CRX link if a CRX file is provided -->
-    <span style="display: none; ">
-    - <a>Install extension</a>
-    </span>
   </div>
 </div><div class="sample" id="7f4d3fac7ae1ad4d514a15cd0b2c48c57a58c55e">
-  <img class="icon" style="display: none; ">
   <img class="icon" src="images/sample-default-icon.png">
   <h2 class="name">
     <a href="#7f4d3fac7ae1ad4d514a15cd0b2c48c57a58c55e">CatBlock</a>
-    <span style="display: none; ">(packaged app)</span>
   </h2>
   <p class="metadata features">Uses
     <span>
       <strong>background_page</strong><span>, </span>
-      <span style="display: none; "> and</span>
     </span><span>
-      <strong>webRequest</strong><span style="display: none; ">, </span>
+      <strong>webRequest</strong>
       <span> and</span>
     </span><span>
-      <strong>webRequestBlocking</strong><span style="display: none; ">, </span>
-      <span style="display: none; "> and</span>
+      <strong>webRequestBlocking</strong>
     </span>
   </p>
   <p>I can't has cheezburger!</p>
@@ -1003,31 +766,18 @@
   <div>
     <a href="examples/extensions/catblock.zip">Download source</a>
     <!-- Only show the Install CRX link if a CRX file is provided -->
-    <span style="display: none; ">
-    - <a>Install extension</a>
-    </span>
   </div>
 </div><div class="sample" id="924f75a201bb0ec8d6c0b1c9c88c679ea211c93d">
-  <img class="icon" style="display: none; ">
   <img class="icon" src="images/sample-default-icon.png">
   <h2 class="name">
     <a href="#924f75a201bb0ec8d6c0b1c9c88c679ea211c93d">Chrome Query</a>
-    <span style="display: none; ">(packaged app)</span>
   </h2>
   <p class="metadata features">Uses
     <span>
-      <strong>devtools_page</strong><span style="display: none; ">, </span>
-      <span style="display: none; "> and</span>
+      <strong>devtools_page</strong>
     </span>
   </p>
   <p>Extends the Developer Tools, adding a sidebar that displays the jQuery data associated with the selected DOM element.</p>
-  <div class="apicalls" style="display: none; "><strong>Calls:</strong>
-    <ul>
-      <li>
-        <code><a></a></code>
-      </li>
-    </ul>
-  </div>
   <div class="sourcefiles"><strong>Source files:</strong>
     <ul>
       <li>
@@ -1042,30 +792,22 @@
   <div>
     <a href="examples/api/devtools/panels/chrome-query.zip">Download source</a>
     <!-- Only show the Install CRX link if a CRX file is provided -->
-    <span style="display: none; ">
-    - <a>Install extension</a>
-    </span>
   </div>
 </div><div class="sample" id="903e7277139e1e6caec123d3319cab295d8d1b3a">
   <img class="icon" src="examples/extensions/fx/icon.png">
-  <img class="icon" src="images/sample-default-icon.png" style="display: none; ">
   <h2 class="name">
     <a href="#903e7277139e1e6caec123d3319cab295d8d1b3a">Chrome Sounds</a>
-    <span style="display: none; ">(packaged app)</span>
   </h2>
   <p class="metadata features">Uses
     <span>
       <strong>background_page</strong><span>, </span>
-      <span style="display: none; "> and</span>
     </span><span>
       <strong>bookmarks</strong><span>, </span>
-      <span style="display: none; "> and</span>
     </span><span>
-      <strong>options_page</strong><span style="display: none; ">, </span>
+      <strong>options_page</strong>
       <span> and</span>
     </span><span>
-      <strong>tabs</strong><span style="display: none; ">, </span>
-      <span style="display: none; "> and</span>
+      <strong>tabs</strong>
     </span>
   </p>
   <p>Enjoy a more magical and immersive experience when browsing the web using the power of sound.</p>
@@ -1124,30 +866,22 @@
   <div>
     <a href="examples/extensions/fx.zip">Download source</a>
     <!-- Only show the Install CRX link if a CRX file is provided -->
-    <span style="display: none; ">
-    - <a>Install extension</a>
-    </span>
   </div>
 </div><div class="sample" id="0e790e035a4a00b6f1def5ef9a7d7be1bce95ab5">
   <img class="icon" src="examples/extensions/buildbot/icon.png">
-  <img class="icon" src="images/sample-default-icon.png" style="display: none; ">
   <h2 class="name">
     <a href="#0e790e035a4a00b6f1def5ef9a7d7be1bce95ab5">Chromium Buildbot Monitor</a>
-    <span style="display: none; ">(packaged app)</span>
   </h2>
   <p class="metadata features">Uses
     <span>
       <strong>background_page</strong><span>, </span>
-      <span style="display: none; "> and</span>
     </span><span>
       <strong>browser_action</strong><span>, </span>
-      <span style="display: none; "> and</span>
     </span><span>
-      <strong>notifications</strong><span style="display: none; ">, </span>
+      <strong>notifications</strong>
       <span> and</span>
     </span><span>
-      <strong>options_page</strong><span style="display: none; ">, </span>
-      <span style="display: none; "> and</span>
+      <strong>options_page</strong>
     </span>
   </p>
   <p>Displays the status of the Chromium buildbot in the toolbar.  Click to see more detailed status in a popup.</p>
@@ -1184,24 +918,18 @@
   <div>
     <a href="examples/extensions/buildbot.zip">Download source</a>
     <!-- Only show the Install CRX link if a CRX file is provided -->
-    <span style="display: none; ">
-    - <a>Install extension</a>
-    </span>
   </div>
 </div><div class="sample" id="ac31228200b41a87982e386cc90d3a6eee4ad885">
-  <img class="icon" style="display: none; ">
   <img class="icon" src="images/sample-default-icon.png">
   <h2 class="name">
     <a href="#ac31228200b41a87982e386cc90d3a6eee4ad885">Chromium Search</a>
-    <span style="display: none; ">(packaged app)</span>
   </h2>
   <p class="metadata features">Uses
     <span>
-      <strong>background_page</strong><span style="display: none; ">, </span>
+      <strong>background_page</strong>
       <span> and</span>
     </span><span>
-      <strong>tabs</strong><span style="display: none; ">, </span>
-      <span style="display: none; "> and</span>
+      <strong>tabs</strong>
     </span>
   </p>
   <p>Add support to the omnibox to search the Chromium source code.</p>
@@ -1236,27 +964,20 @@
   <div>
     <a href="examples/extensions/chrome_search.zip">Download source</a>
     <!-- Only show the Install CRX link if a CRX file is provided -->
-    <span style="display: none; ">
-    - <a>Install extension</a>
-    </span>
   </div>
 </div><div class="sample" id="7d5d6cf195bc25480256618e360aa38c6e6fba82">
-  <img class="icon" style="display: none; ">
   <img class="icon" src="images/sample-default-icon.png">
   <h2 class="name">
     <a href="#7d5d6cf195bc25480256618e360aa38c6e6fba82">CLD</a>
-    <span style="display: none; ">(packaged app)</span>
   </h2>
   <p class="metadata features">Uses
     <span>
       <strong>background_page</strong><span>, </span>
-      <span style="display: none; "> and</span>
     </span><span>
-      <strong>browser_action</strong><span style="display: none; ">, </span>
+      <strong>browser_action</strong>
       <span> and</span>
     </span><span>
-      <strong>tabs</strong><span style="display: none; ">, </span>
-      <span style="display: none; "> and</span>
+      <strong>tabs</strong>
     </span>
   </p>
   <p>Displays the language of a tab</p>
@@ -1285,30 +1006,22 @@
   <div>
     <a href="examples/api/i18n/cld.zip">Download source</a>
     <!-- Only show the Install CRX link if a CRX file is provided -->
-    <span style="display: none; ">
-    - <a>Install extension</a>
-    </span>
   </div>
 </div><div class="sample" id="b745d48df80e88222d7344efe7c19e03fd8202f4">
-  <img class="icon" style="display: none; ">
   <img class="icon" src="images/sample-default-icon.png">
   <h2 class="name">
     <a href="#b745d48df80e88222d7344efe7c19e03fd8202f4">Clear API: Basics</a>
-    <span style="display: none; ">(packaged app)</span>
   </h2>
   <p class="metadata features">Uses
     <span>
       <strong>browser_action</strong><span>, </span>
-      <span style="display: none; "> and</span>
     </span><span>
       <strong>clear</strong><span>, </span>
-      <span style="display: none; "> and</span>
     </span><span>
-      <strong>experimental</strong><span style="display: none; ">, </span>
+      <strong>experimental</strong>
       <span> and</span>
     </span><span>
-      <strong>popup</strong><span style="display: none; ">, </span>
-      <span style="display: none; "> and</span>
+      <strong>popup</strong>
     </span>
   </p>
   <p>A trivial usage example.</p>
@@ -1335,31 +1048,13 @@
   <div>
     <a href="examples/api/clear/basic.zip">Download source</a>
     <!-- Only show the Install CRX link if a CRX file is provided -->
-    <span style="display: none; ">
-    - <a>Install extension</a>
-    </span>
   </div>
 </div><div class="sample" id="6871d09f4a96bf9d4b6cc724d00e909cee0f3902">
   <img class="icon" src="examples/howto/contentscript_xhr/sample-128.png">
-  <img class="icon" src="images/sample-default-icon.png" style="display: none; ">
   <h2 class="name">
     <a href="#6871d09f4a96bf9d4b6cc724d00e909cee0f3902">Content Script Cross-Domain XMLHttpRequest Example</a>
-    <span style="display: none; ">(packaged app)</span>
   </h2>
-  <p class="metadata features" style="display: none; ">Uses
-    <span>
-      <strong></strong><span>, </span>
-      <span> and</span>
-    </span>
-  </p>
   <p>Demonstrates making cross domain requests from a content script by putting Twitter trends on Google News.</p>
-  <div class="apicalls" style="display: none; "><strong>Calls:</strong>
-    <ul>
-      <li>
-        <code><a></a></code>
-      </li>
-    </ul>
-  </div>
   <div class="sourcefiles"><strong>Source files:</strong>
     <ul>
       <li>
@@ -1372,27 +1067,20 @@
   <div>
     <a href="examples/howto/contentscript_xhr.zip">Download source</a>
     <!-- Only show the Install CRX link if a CRX file is provided -->
-    <span style="display: none; ">
-    - <a>Install extension</a>
-    </span>
   </div>
 </div><div class="sample" id="e1f97e61e28ff33131d66dd28a4ed70a77874a51">
-  <img class="icon" style="display: none; ">
   <img class="icon" src="images/sample-default-icon.png">
   <h2 class="name">
     <a href="#e1f97e61e28ff33131d66dd28a4ed70a77874a51">Content settings</a>
-    <span style="display: none; ">(packaged app)</span>
   </h2>
   <p class="metadata features">Uses
     <span>
       <strong>browser_action</strong><span>, </span>
-      <span style="display: none; "> and</span>
     </span><span>
-      <strong>contentSettings</strong><span style="display: none; ">, </span>
+      <strong>contentSettings</strong>
       <span> and</span>
     </span><span>
-      <strong>tabs</strong><span style="display: none; ">, </span>
-      <span style="display: none; "> and</span>
+      <strong>tabs</strong>
     </span>
   </p>
   <p>Shows the content settings for the current site.</p>
@@ -1417,24 +1105,18 @@
   <div>
     <a href="examples/api/contentSettings.zip">Download source</a>
     <!-- Only show the Install CRX link if a CRX file is provided -->
-    <span style="display: none; ">
-    - <a>Install extension</a>
-    </span>
   </div>
 </div><div class="sample" id="5d81304a17cf7ac2887484f730fbd2b01e51e166">
-  <img class="icon" style="display: none; ">
   <img class="icon" src="images/sample-default-icon.png">
   <h2 class="name">
     <a href="#5d81304a17cf7ac2887484f730fbd2b01e51e166">Context Menus Sample</a>
-    <span style="display: none; ">(packaged app)</span>
   </h2>
   <p class="metadata features">Uses
     <span>
-      <strong>background_page</strong><span style="display: none; ">, </span>
+      <strong>background_page</strong>
       <span> and</span>
     </span><span>
-      <strong>contextMenus</strong><span style="display: none; ">, </span>
-      <span style="display: none; "> and</span>
+      <strong>contextMenus</strong>
     </span>
   </p>
   <p>Shows some of the features of the Context Menus API</p>
@@ -1457,30 +1139,22 @@
   <div>
     <a href="examples/api/contextMenus/basic.zip">Download source</a>
     <!-- Only show the Install CRX link if a CRX file is provided -->
-    <span style="display: none; ">
-    - <a>Install extension</a>
-    </span>
   </div>
 </div><div class="sample" id="4daa6becd0899a54776d9cf7f09613ed1a9f4d77">
   <img class="icon" src="examples/api/cookies/cookie.png">
-  <img class="icon" src="images/sample-default-icon.png" style="display: none; ">
   <h2 class="name">
     <a href="#4daa6becd0899a54776d9cf7f09613ed1a9f4d77">Cookie API Test Extension</a>
-    <span style="display: none; ">(packaged app)</span>
   </h2>
   <p class="metadata features">Uses
     <span>
       <strong>background_page</strong><span>, </span>
-      <span style="display: none; "> and</span>
     </span><span>
       <strong>browser_action</strong><span>, </span>
-      <span style="display: none; "> and</span>
     </span><span>
-      <strong>cookies</strong><span style="display: none; ">, </span>
+      <strong>cookies</strong>
       <span> and</span>
     </span><span>
-      <strong>tabs</strong><span style="display: none; ">, </span>
-      <span style="display: none; "> and</span>
+      <strong>tabs</strong>
     </span>
   </p>
   <p>Testing Cookie API</p>
@@ -1525,30 +1199,22 @@
   <div>
     <a href="examples/api/cookies.zip">Download source</a>
     <!-- Only show the Install CRX link if a CRX file is provided -->
-    <span style="display: none; ">
-    - <a>Install extension</a>
-    </span>
   </div>
 </div><div class="sample" id="028eb5364924344029bcbe1d527f132fc72b34e5">
   <img class="icon" src="examples/extensions/email_this_page/mail_128x128.png">
-  <img class="icon" src="images/sample-default-icon.png" style="display: none; ">
   <h2 class="name">
     <a href="#028eb5364924344029bcbe1d527f132fc72b34e5">Email this page (by Google)</a>
-    <span style="display: none; ">(packaged app)</span>
   </h2>
   <p class="metadata features">Uses
     <span>
       <strong>background_page</strong><span>, </span>
-      <span style="display: none; "> and</span>
     </span><span>
       <strong>browser_action</strong><span>, </span>
-      <span style="display: none; "> and</span>
     </span><span>
-      <strong>options_page</strong><span style="display: none; ">, </span>
+      <strong>options_page</strong>
       <span> and</span>
     </span><span>
-      <strong>tabs</strong><span style="display: none; ">, </span>
-      <span style="display: none; "> and</span>
+      <strong>tabs</strong>
     </span>
   </p>
   <p>This extension adds an email button to the toolbar which allows you to email the page link using your default mail client or Gmail.</p>
@@ -1587,31 +1253,18 @@
   <div>
     <a href="examples/extensions/email_this_page.zip">Download source</a>
     <!-- Only show the Install CRX link if a CRX file is provided -->
-    <span style="display: none; ">
-    - <a>Install extension</a>
-    </span>
   </div>
 </div><div class="sample" id="763a08e9b06595d785568a8d392b95a2f3700258">
   <img class="icon" src="examples/tutorials/analytics/analytics-extension-icon-128.png">
-  <img class="icon" src="images/sample-default-icon.png" style="display: none; ">
   <h2 class="name">
     <a href="#763a08e9b06595d785568a8d392b95a2f3700258">Event Tracking with Google Analytics</a>
-    <span style="display: none; ">(packaged app)</span>
   </h2>
   <p class="metadata features">Uses
     <span>
-      <strong>browser_action</strong><span style="display: none; ">, </span>
-      <span style="display: none; "> and</span>
+      <strong>browser_action</strong>
     </span>
   </p>
   <p>A sample extension which uses Google Analytics to track usage.</p>
-  <div class="apicalls" style="display: none; "><strong>Calls:</strong>
-    <ul>
-      <li>
-        <code><a></a></code>
-      </li>
-    </ul>
-  </div>
   <div class="sourcefiles"><strong>Source files:</strong>
     <ul>
       <li>
@@ -1626,27 +1279,20 @@
   <div>
     <a href="examples/tutorials/analytics.zip">Download source</a>
     <!-- Only show the Install CRX link if a CRX file is provided -->
-    <span style="display: none; ">
-    - <a>Install extension</a>
-    </span>
   </div>
 </div><div class="sample" id="4efa12eaaa442b6b7c880e7a38ceeb0cff7e8b77">
-  <img class="icon" style="display: none; ">
   <img class="icon" src="images/sample-default-icon.png">
   <h2 class="name">
     <a href="#4efa12eaaa442b6b7c880e7a38ceeb0cff7e8b77">FirePHP for Chrome</a>
-    <span style="display: none; ">(packaged app)</span>
   </h2>
   <p class="metadata features">Uses
     <span>
       <strong>background_page</strong><span>, </span>
-      <span style="display: none; "> and</span>
     </span><span>
-      <strong>devtools_page</strong><span style="display: none; ">, </span>
+      <strong>devtools_page</strong>
       <span> and</span>
     </span><span>
-      <strong>tabs</strong><span style="display: none; ">, </span>
-      <span style="display: none; "> and</span>
+      <strong>tabs</strong>
     </span>
   </p>
   <p>Extends the Developer Tools, adding support for parsing FirePHP messages from server</p>
@@ -1681,30 +1327,22 @@
   <div>
     <a href="examples/api/devtools/network/chrome-firephp.zip">Download source</a>
     <!-- Only show the Install CRX link if a CRX file is provided -->
-    <span style="display: none; ">
-    - <a>Install extension</a>
-    </span>
   </div>
 </div><div class="sample" id="8b0dd31216235941bdd8eb33fda915ef5cf79a82">
   <img class="icon" src="examples/extensions/calendar/images/icon-128.gif">
-  <img class="icon" src="images/sample-default-icon.png" style="display: none; ">
   <h2 class="name">
     <a href="#8b0dd31216235941bdd8eb33fda915ef5cf79a82">Google Calendar Checker (by Google)</a>
-    <span style="display: none; ">(packaged app)</span>
   </h2>
   <p class="metadata features">Uses
     <span>
       <strong>background_page</strong><span>, </span>
-      <span style="display: none; "> and</span>
     </span><span>
       <strong>browser_action</strong><span>, </span>
-      <span style="display: none; "> and</span>
     </span><span>
-      <strong>options_page</strong><span style="display: none; ">, </span>
+      <strong>options_page</strong>
       <span> and</span>
     </span><span>
-      <strong>tabs</strong><span style="display: none; ">, </span>
-      <span style="display: none; "> and</span>
+      <strong>tabs</strong>
     </span>
   </p>
   <p>Quickly see the time until your next meeting from any of your calendars. Click on the button to be taken to your calendar.</p>
@@ -1843,30 +1481,22 @@
   <div>
     <a href="examples/extensions/calendar.zip">Download source</a>
     <!-- Only show the Install CRX link if a CRX file is provided -->
-    <span style="display: none; ">
-    - <a>Install extension</a>
-    </span>
   </div>
 </div><div class="sample" id="4e35caa9742fb82dbd628892d23a781614f6eff6">
   <img class="icon" src="examples/extensions/gdocs/img/docs_spreadsheets-128.gif">
-  <img class="icon" src="images/sample-default-icon.png" style="display: none; ">
   <h2 class="name">
     <a href="#4e35caa9742fb82dbd628892d23a781614f6eff6">Google Document List Viewer</a>
-    <span style="display: none; ">(packaged app)</span>
   </h2>
   <p class="metadata features">Uses
     <span>
       <strong>background_page</strong><span>, </span>
-      <span style="display: none; "> and</span>
     </span><span>
       <strong>browser_action</strong><span>, </span>
-      <span style="display: none; "> and</span>
     </span><span>
-      <strong>options_page</strong><span style="display: none; ">, </span>
+      <strong>options_page</strong>
       <span> and</span>
     </span><span>
-      <strong>tabs</strong><span style="display: none; ">, </span>
-      <span style="display: none; "> and</span>
+      <strong>tabs</strong>
     </span>
   </p>
   <p>Demonstrates how to use OAuth to connect the Google Documents List Data API.</p>
@@ -1913,30 +1543,22 @@
   <div>
     <a href="examples/extensions/gdocs.zip">Download source</a>
     <!-- Only show the Install CRX link if a CRX file is provided -->
-    <span style="display: none; ">
-    - <a>Install extension</a>
-    </span>
   </div>
 </div><div class="sample" id="bb57f7a0132cbeb36ad7e7bb0ab75c21704234ca">
   <img class="icon" src="examples/extensions/gmail/icon_128.png">
-  <img class="icon" src="images/sample-default-icon.png" style="display: none; ">
   <h2 class="name">
     <a href="#bb57f7a0132cbeb36ad7e7bb0ab75c21704234ca">Google Mail Checker</a>
-    <span style="display: none; ">(packaged app)</span>
   </h2>
   <p class="metadata features">Uses
     <span>
       <strong>background_page</strong><span>, </span>
-      <span style="display: none; "> and</span>
     </span><span>
       <strong>browser_action</strong><span>, </span>
-      <span style="display: none; "> and</span>
     </span><span>
-      <strong>options_page</strong><span style="display: none; ">, </span>
+      <strong>options_page</strong>
       <span> and</span>
     </span><span>
-      <strong>tabs</strong><span style="display: none; ">, </span>
-      <span style="display: none; "> and</span>
+      <strong>tabs</strong>
     </span>
   </p>
   <p>Displays the number of unread messages in your Google Mail inbox. You can also click the button to open your inbox.</p>
@@ -2067,31 +1689,18 @@
   <div>
     <a href="examples/extensions/gmail.zip">Download source</a>
     <!-- Only show the Install CRX link if a CRX file is provided -->
-    <span style="display: none; ">
-    - <a>Install extension</a>
-    </span>
   </div>
 </div><div class="sample" id="14b9651fda4e57b2a5914ba73a779812201b750a">
-  <img class="icon" style="display: none; ">
   <img class="icon" src="images/sample-default-icon.png">
   <h2 class="name">
     <a href="#14b9651fda4e57b2a5914ba73a779812201b750a">Hello World</a>
-    <span style="display: none; ">(packaged app)</span>
   </h2>
   <p class="metadata features">Uses
     <span>
-      <strong>browser_action</strong><span style="display: none; ">, </span>
-      <span style="display: none; "> and</span>
+      <strong>browser_action</strong>
     </span>
   </p>
   <p>The first extension that I made.</p>
-  <div class="apicalls" style="display: none; "><strong>Calls:</strong>
-    <ul>
-      <li>
-        <code><a></a></code>
-      </li>
-    </ul>
-  </div>
   <div class="sourcefiles"><strong>Source files:</strong>
     <ul>
       <li>
@@ -2106,27 +1715,20 @@
   <div>
     <a href="examples/tutorials/getstarted.zip">Download source</a>
     <!-- Only show the Install CRX link if a CRX file is provided -->
-    <span style="display: none; ">
-    - <a>Install extension</a>
-    </span>
   </div>
 </div><div class="sample" id="2020d72f2577f53caf8e94e3dbac0fb849ceaa4d">
   <img class="icon" src="examples/api/idle/idle_simple/sample-128.png">
-  <img class="icon" src="images/sample-default-icon.png" style="display: none; ">
   <h2 class="name">
     <a href="#2020d72f2577f53caf8e94e3dbac0fb849ceaa4d">Idle - Simple Example</a>
-    <span style="display: none; ">(packaged app)</span>
   </h2>
   <p class="metadata features">Uses
     <span>
       <strong>background_page</strong><span>, </span>
-      <span style="display: none; "> and</span>
     </span><span>
-      <strong>browser_action</strong><span style="display: none; ">, </span>
+      <strong>browser_action</strong>
       <span> and</span>
     </span><span>
-      <strong>idle</strong><span style="display: none; ">, </span>
-      <span style="display: none; "> and</span>
+      <strong>idle</strong>
     </span>
   </p>
   <p>Demonstrates the Idle API</p>
@@ -2159,31 +1761,18 @@
   <div>
     <a href="examples/api/idle/idle_simple.zip">Download source</a>
     <!-- Only show the Install CRX link if a CRX file is provided -->
-    <span style="display: none; ">
-    - <a>Install extension</a>
-    </span>
   </div>
 </div><div class="sample" id="0ea1588bd07b20338fc21f725de1542a5fdf9726">
-  <img class="icon" style="display: none; ">
   <img class="icon" src="images/sample-default-icon.png">
   <h2 class="name">
     <a href="#0ea1588bd07b20338fc21f725de1542a5fdf9726">iGoogle new tab page</a>
-    <span style="display: none; ">(packaged app)</span>
   </h2>
   <p class="metadata features">Uses
     <span>
-      <strong>chrome_url_overrides</strong><span style="display: none; ">, </span>
-      <span style="display: none; "> and</span>
+      <strong>chrome_url_overrides</strong>
     </span>
   </p>
   <p></p>
-  <div class="apicalls" style="display: none; "><strong>Calls:</strong>
-    <ul>
-      <li>
-        <code><a></a></code>
-      </li>
-    </ul>
-  </div>
   <div class="sourcefiles"><strong>Source files:</strong>
     <ul>
       <li>
@@ -2196,27 +1785,20 @@
   <div>
     <a href="examples/api/override/override_igoogle.zip">Download source</a>
     <!-- Only show the Install CRX link if a CRX file is provided -->
-    <span style="display: none; ">
-    - <a>Install extension</a>
-    </span>
   </div>
 </div><div class="sample" id="646325c25f572a1d15edc73d057f821d847a4fbe">
   <img class="icon" src="examples/extensions/imageinfo/imageinfo-128.png">
-  <img class="icon" src="images/sample-default-icon.png" style="display: none; ">
   <h2 class="name">
     <a href="#646325c25f572a1d15edc73d057f821d847a4fbe">Imageinfo</a>
-    <span style="display: none; ">(packaged app)</span>
   </h2>
   <p class="metadata features">Uses
     <span>
       <strong>background_page</strong><span>, </span>
-      <span style="display: none; "> and</span>
     </span><span>
-      <strong>contextMenus</strong><span style="display: none; ">, </span>
+      <strong>contextMenus</strong>
       <span> and</span>
     </span><span>
-      <strong>tabs</strong><span style="display: none; ">, </span>
-      <span style="display: none; "> and</span>
+      <strong>tabs</strong>
     </span>
   </p>
   <p>Get image info for images, including EXIF data</p>
@@ -2259,30 +1841,22 @@
   <div>
     <a href="examples/extensions/imageinfo.zip">Download source</a>
     <!-- Only show the Install CRX link if a CRX file is provided -->
-    <span style="display: none; ">
-    - <a>Install extension</a>
-    </span>
   </div>
 </div><div class="sample" id="8f52a8a59c6fc16cb0d1ed0680b7f005be033d58">
-  <img class="icon" style="display: none; ">
   <img class="icon" src="images/sample-default-icon.png">
   <h2 class="name">
     <a href="#8f52a8a59c6fc16cb0d1ed0680b7f005be033d58">JavaScript pause/resume</a>
-    <span style="display: none; ">(packaged app)</span>
   </h2>
   <p class="metadata features">Uses
     <span>
       <strong>background_page</strong><span>, </span>
-      <span style="display: none; "> and</span>
     </span><span>
       <strong>browser_action</strong><span>, </span>
-      <span style="display: none; "> and</span>
     </span><span>
-      <strong>debugger</strong><span style="display: none; ">, </span>
+      <strong>debugger</strong>
       <span> and</span>
     </span><span>
-      <strong>tabs</strong><span style="display: none; ">, </span>
-      <span style="display: none; "> and</span>
+      <strong>tabs</strong>
     </span>
   </p>
   <p>Pauses / resumes JavaScript execution</p>
@@ -2325,24 +1899,18 @@
   <div>
     <a href="examples/api/debugger/pause-resume.zip">Download source</a>
     <!-- Only show the Install CRX link if a CRX file is provided -->
-    <span style="display: none; ">
-    - <a>Install extension</a>
-    </span>
   </div>
 </div><div class="sample" id="65b2fe595b7ac38dddd89cca50f5efd0017b0bd4">
-  <img class="icon" style="display: none; ">
   <img class="icon" src="images/sample-default-icon.png">
   <h2 class="name">
     <a href="#65b2fe595b7ac38dddd89cca50f5efd0017b0bd4">Keyboard Pin</a>
-    <span style="display: none; ">(packaged app)</span>
   </h2>
   <p class="metadata features">Uses
     <span>
-      <strong>background_page</strong><span style="display: none; ">, </span>
+      <strong>background_page</strong>
       <span> and</span>
     </span><span>
-      <strong>tabs</strong><span style="display: none; ">, </span>
-      <span style="display: none; "> and</span>
+      <strong>tabs</strong>
     </span>
   </p>
   <p>Creates a keyboard shortcut (C + Shift + P) to toggle the pinned state of the currently selected tab</p>
@@ -2373,30 +1941,22 @@
   <div>
     <a href="examples/api/tabs/pin.zip">Download source</a>
     <!-- Only show the Install CRX link if a CRX file is provided -->
-    <span style="display: none; ">
-    - <a>Install extension</a>
-    </span>
   </div>
 </div><div class="sample" id="cc8563a6666add797264184a960c7b7c8bd3e64d">
-  <img class="icon" style="display: none; ">
   <img class="icon" src="images/sample-default-icon.png">
   <h2 class="name">
     <a href="#cc8563a6666add797264184a960c7b7c8bd3e64d">Live HTTP headers</a>
-    <span style="display: none; ">(packaged app)</span>
   </h2>
   <p class="metadata features">Uses
     <span>
       <strong>background_page</strong><span>, </span>
-      <span style="display: none; "> and</span>
     </span><span>
       <strong>browser_action</strong><span>, </span>
-      <span style="display: none; "> and</span>
     </span><span>
-      <strong>debugger</strong><span style="display: none; ">, </span>
+      <strong>debugger</strong>
       <span> and</span>
     </span><span>
-      <strong>tabs</strong><span style="display: none; ">, </span>
-      <span style="display: none; "> and</span>
+      <strong>tabs</strong>
     </span>
   </p>
   <p>Displays the live log with the http requests headers</p>
@@ -2439,27 +1999,20 @@
   <div>
     <a href="examples/api/debugger/live-headers.zip">Download source</a>
     <!-- Only show the Install CRX link if a CRX file is provided -->
-    <span style="display: none; ">
-    - <a>Install extension</a>
-    </span>
   </div>
 </div><div class="sample" id="ec97ec20ca2f095d081e39f1565fc12af09ef067">
   <img class="icon" src="examples/extensions/mappy/icon.png">
-  <img class="icon" src="images/sample-default-icon.png" style="display: none; ">
   <h2 class="name">
     <a href="#ec97ec20ca2f095d081e39f1565fc12af09ef067">Mappy</a>
-    <span style="display: none; ">(packaged app)</span>
   </h2>
   <p class="metadata features">Uses
     <span>
       <strong>background_page</strong><span>, </span>
-      <span style="display: none; "> and</span>
     </span><span>
-      <strong>page_action</strong><span style="display: none; ">, </span>
+      <strong>page_action</strong>
       <span> and</span>
     </span><span>
-      <strong>tabs</strong><span style="display: none; ">, </span>
-      <span style="display: none; "> and</span>
+      <strong>tabs</strong>
     </span>
   </p>
   <p>Finds addresses in the web page you're on and pops up a map window.</p>
@@ -2504,27 +2057,20 @@
   <div>
     <a href="examples/extensions/mappy.zip">Download source</a>
     <!-- Only show the Install CRX link if a CRX file is provided -->
-    <span style="display: none; ">
-    - <a>Install extension</a>
-    </span>
   </div>
 </div><div class="sample" id="b2f5f8a790e16f091a7e4e0a39b2d0a6d32e3a6d">
   <img class="icon" src="examples/api/windows/merge_windows/merge_windows_128.png">
-  <img class="icon" src="images/sample-default-icon.png" style="display: none; ">
   <h2 class="name">
     <a href="#b2f5f8a790e16f091a7e4e0a39b2d0a6d32e3a6d">Merge Windows</a>
-    <span style="display: none; ">(packaged app)</span>
   </h2>
   <p class="metadata features">Uses
     <span>
       <strong>background_page</strong><span>, </span>
-      <span style="display: none; "> and</span>
     </span><span>
-      <strong>browser_action</strong><span style="display: none; ">, </span>
+      <strong>browser_action</strong>
       <span> and</span>
     </span><span>
-      <strong>tabs</strong><span style="display: none; ">, </span>
-      <span style="display: none; "> and</span>
+      <strong>tabs</strong>
     </span>
   </p>
   <p>Merges all of the browser's windows into the current window</p>
@@ -2557,24 +2103,18 @@
   <div>
     <a href="examples/api/windows/merge_windows.zip">Download source</a>
     <!-- Only show the Install CRX link if a CRX file is provided -->
-    <span style="display: none; ">
-    - <a>Install extension</a>
-    </span>
   </div>
 </div><div class="sample" id="51a83d2ba3a32e3ff1bdb624d4e18ccec4c4038e">
-  <img class="icon" style="display: none; ">
   <img class="icon" src="images/sample-default-icon.png">
   <h2 class="name">
     <a href="#51a83d2ba3a32e3ff1bdb624d4e18ccec4c4038e">Message Timer</a>
-    <span style="display: none; ">(packaged app)</span>
   </h2>
   <p class="metadata features">Uses
     <span>
-      <strong>browser_action</strong><span style="display: none; ">, </span>
+      <strong>browser_action</strong>
       <span> and</span>
     </span><span>
-      <strong>tabs</strong><span style="display: none; ">, </span>
-      <span style="display: none; "> and</span>
+      <strong>tabs</strong>
     </span>
   </p>
   <p>Times how long it takes to send a message to a content script and back.</p>
@@ -2609,27 +2149,20 @@
   <div>
     <a href="examples/api/messaging/timer.zip">Download source</a>
     <!-- Only show the Install CRX link if a CRX file is provided -->
-    <span style="display: none; ">
-    - <a>Install extension</a>
-    </span>
   </div>
 </div><div class="sample" id="4f6785ec4f937add6728615682dd37c9a42d9548">
-  <img class="icon" style="display: none; ">
   <img class="icon" src="images/sample-default-icon.png">
   <h2 class="name">
     <a href="#4f6785ec4f937add6728615682dd37c9a42d9548">My Bookmarks</a>
-    <span style="display: none; ">(packaged app)</span>
   </h2>
   <p class="metadata features">Uses
     <span>
       <strong>bookmarks</strong><span>, </span>
-      <span style="display: none; "> and</span>
     </span><span>
-      <strong>browser_action</strong><span style="display: none; ">, </span>
+      <strong>browser_action</strong>
       <span> and</span>
     </span><span>
-      <strong>tabs</strong><span style="display: none; ">, </span>
-      <span style="display: none; "> and</span>
+      <strong>tabs</strong>
     </span>
   </p>
   <p>A browser action with a popup dump of all bookmarks, including search, add, edit and delete.</p>
@@ -2664,24 +2197,18 @@
   <div>
     <a href="examples/api/bookmarks/basic.zip">Download source</a>
     <!-- Only show the Install CRX link if a CRX file is provided -->
-    <span style="display: none; ">
-    - <a>Install extension</a>
-    </span>
   </div>
 </div><div class="sample" id="597015d3bcce3da693b02314afd607bec4f55291">
   <img class="icon" src="examples/extensions/news_a11y/news_icon.png">
-  <img class="icon" src="images/sample-default-icon.png" style="display: none; ">
   <h2 class="name">
     <a href="#597015d3bcce3da693b02314afd607bec4f55291">News Reader</a>
-    <span style="display: none; ">(packaged app)</span>
   </h2>
   <p class="metadata features">Uses
     <span>
-      <strong>browser_action</strong><span style="display: none; ">, </span>
+      <strong>browser_action</strong>
       <span> and</span>
     </span><span>
-      <strong>tabs</strong><span style="display: none; ">, </span>
-      <span style="display: none; "> and</span>
+      <strong>tabs</strong>
     </span>
   </p>
   <p>Displays the first 5 items from the 'Google News - top news' RSS feed in a popup.</p>
@@ -2712,24 +2239,18 @@
   <div>
     <a href="examples/extensions/news_a11y.zip">Download source</a>
     <!-- Only show the Install CRX link if a CRX file is provided -->
-    <span style="display: none; ">
-    - <a>Install extension</a>
-    </span>
   </div>
 </div><div class="sample" id="6444e5c8ae112a6a433909c5e770669cd16e2e5f">
   <img class="icon" src="examples/extensions/news_i18n/news_icon.png">
-  <img class="icon" src="images/sample-default-icon.png" style="display: none; ">
   <h2 class="name">
     <a href="#6444e5c8ae112a6a433909c5e770669cd16e2e5f">News Reader</a>
-    <span style="display: none; ">(packaged app)</span>
   </h2>
   <p class="metadata features">Uses
     <span>
-      <strong>browser_action</strong><span style="display: none; ">, </span>
+      <strong>browser_action</strong>
       <span> and</span>
     </span><span>
-      <strong>tabs</strong><span style="display: none; ">, </span>
-      <span style="display: none; "> and</span>
+      <strong>tabs</strong>
     </span>
   </p>
   <p>Displays the first 5 items from the 'Google News - top news' RSS feed in a popup.</p>
@@ -2760,30 +2281,22 @@
   <div>
     <a href="examples/extensions/news_i18n.zip">Download source</a>
     <!-- Only show the Install CRX link if a CRX file is provided -->
-    <span style="display: none; ">
-    - <a>Install extension</a>
-    </span>
   </div>
 </div><div class="sample" id="3aea027164cb9b732ba4a8c51cb93708891726ef">
   <img class="icon" src="examples/extensions/news/images/news_icon.png">
-  <img class="icon" src="images/sample-default-icon.png" style="display: none; ">
   <h2 class="name">
     <a href="#3aea027164cb9b732ba4a8c51cb93708891726ef">News Reader (by Google)</a>
-    <span style="display: none; ">(packaged app)</span>
   </h2>
   <p class="metadata features">Uses
     <span>
       <strong>background_page</strong><span>, </span>
-      <span style="display: none; "> and</span>
     </span><span>
       <strong>browser_action</strong><span>, </span>
-      <span style="display: none; "> and</span>
     </span><span>
-      <strong>options_page</strong><span style="display: none; ">, </span>
+      <strong>options_page</strong>
       <span> and</span>
     </span><span>
-      <strong>tabs</strong><span style="display: none; ">, </span>
-      <span style="display: none; "> and</span>
+      <strong>tabs</strong>
     </span>
   </p>
   <p>Displays the latest stories from Google News in a popup.</p>
@@ -2826,40 +2339,25 @@
   <div>
     <a href="examples/extensions/news.zip">Download source</a>
     <!-- Only show the Install CRX link if a CRX file is provided -->
-    <span style="display: none; ">
-    - <a>Install extension</a>
-    </span>
   </div>
 </div><div class="sample" id="f799e26ceef2367cf836f24bcb47df4398b0df58">
   <img class="icon" src="examples/api/notifications/128.png">
-  <img class="icon" src="images/sample-default-icon.png" style="display: none; ">
   <h2 class="name">
     <a href="#f799e26ceef2367cf836f24bcb47df4398b0df58">Notification Demo</a>
-    <span style="display: none; ">(packaged app)</span>
   </h2>
   <p class="metadata features">Uses
     <span>
       <strong>background_page</strong><span>, </span>
-      <span style="display: none; "> and</span>
     </span><span>
       <strong>notifications</strong><span>, </span>
-      <span style="display: none; "> and</span>
     </span><span>
-      <strong>options_page</strong><span style="display: none; ">, </span>
+      <strong>options_page</strong>
       <span> and</span>
     </span><span>
-      <strong>tabs</strong><span style="display: none; ">, </span>
-      <span style="display: none; "> and</span>
+      <strong>tabs</strong>
     </span>
   </p>
   <p>Shows off desktop notifications, which are "toast" windows that pop up on the desktop.</p>
-  <div class="apicalls" style="display: none; "><strong>Calls:</strong>
-    <ul>
-      <li>
-        <code><a></a></code>
-      </li>
-    </ul>
-  </div>
   <div class="sourcefiles"><strong>Source files:</strong>
     <ul>
       <li>
@@ -2878,34 +2376,21 @@
   <div>
     <a href="examples/api/notifications.zip">Download source</a>
     <!-- Only show the Install CRX link if a CRX file is provided -->
-    <span style="display: none; ">
-    - <a>Install extension</a>
-    </span>
   </div>
 </div><div class="sample" id="2df34c9db20549bd52f2dec3d59d564853bdefac">
-  <img class="icon" style="display: none; ">
   <img class="icon" src="images/sample-default-icon.png">
   <h2 class="name">
     <a href="#2df34c9db20549bd52f2dec3d59d564853bdefac">NTP prototyping extension</a>
-    <span style="display: none; ">(packaged app)</span>
   </h2>
   <p class="metadata features">Uses
     <span>
-      <strong>chrome_url_overrides</strong><span style="display: none; ">, </span>
+      <strong>chrome_url_overrides</strong>
       <span> and</span>
     </span><span>
-      <strong>experimental</strong><span style="display: none; ">, </span>
-      <span style="display: none; "> and</span>
+      <strong>experimental</strong>
     </span>
   </p>
   <p>extension to prototype new NTP designs</p>
-  <div class="apicalls" style="display: none; "><strong>Calls:</strong>
-    <ul>
-      <li>
-        <code><a></a></code>
-      </li>
-    </ul>
-  </div>
   <div class="sourcefiles"><strong>Source files:</strong>
     <ul>
       <li>
@@ -2922,21 +2407,15 @@
   <div>
     <a href="examples/api/topsites/magic8ball.zip">Download source</a>
     <!-- Only show the Install CRX link if a CRX file is provided -->
-    <span style="display: none; ">
-    - <a>Install extension</a>
-    </span>
   </div>
 </div><div class="sample" id="e787b322bddbc6289bb31b7d7550b1bf6456a80b">
-  <img class="icon" style="display: none; ">
   <img class="icon" src="images/sample-default-icon.png">
   <h2 class="name">
     <a href="#e787b322bddbc6289bb31b7d7550b1bf6456a80b">Omnibox Example</a>
-    <span style="display: none; ">(packaged app)</span>
   </h2>
   <p class="metadata features">Uses
     <span>
-      <strong>background_page</strong><span style="display: none; ">, </span>
-      <span style="display: none; "> and</span>
+      <strong>background_page</strong>
     </span>
   </p>
   <p>To use, type 'omnix' plus a search term into the Omnibox.</p>
@@ -2961,24 +2440,18 @@
   <div>
     <a href="examples/api/omnibox/simple-example.zip">Download source</a>
     <!-- Only show the Install CRX link if a CRX file is provided -->
-    <span style="display: none; ">
-    - <a>Install extension</a>
-    </span>
   </div>
 </div><div class="sample" id="8d0a50b57c26bb498be592e871001ffed91541b4">
   <img class="icon" src="examples/api/pageAction/pageaction_by_content/sandwich-128.png">
-  <img class="icon" src="images/sample-default-icon.png" style="display: none; ">
   <h2 class="name">
     <a href="#8d0a50b57c26bb498be592e871001ffed91541b4">Page action by content</a>
-    <span style="display: none; ">(packaged app)</span>
   </h2>
   <p class="metadata features">Uses
     <span>
-      <strong>background_page</strong><span style="display: none; ">, </span>
+      <strong>background_page</strong>
       <span> and</span>
     </span><span>
-      <strong>page_action</strong><span style="display: none; ">, </span>
-      <span style="display: none; "> and</span>
+      <strong>page_action</strong>
     </span>
   </p>
   <p>Shows a page action for HTML pages containing the word 'sandwich'</p>
@@ -3007,27 +2480,20 @@
   <div>
     <a href="examples/api/pageAction/pageaction_by_content.zip">Download source</a>
     <!-- Only show the Install CRX link if a CRX file is provided -->
-    <span style="display: none; ">
-    - <a>Install extension</a>
-    </span>
   </div>
 </div><div class="sample" id="80b86ccc6e8520660fa591caa565826f0ed1b12c">
   <img class="icon" src="examples/api/pageAction/pageaction_by_url/icon-128.png">
-  <img class="icon" src="images/sample-default-icon.png" style="display: none; ">
   <h2 class="name">
     <a href="#80b86ccc6e8520660fa591caa565826f0ed1b12c">Page action by URL</a>
-    <span style="display: none; ">(packaged app)</span>
   </h2>
   <p class="metadata features">Uses
     <span>
       <strong>background_page</strong><span>, </span>
-      <span style="display: none; "> and</span>
     </span><span>
-      <strong>page_action</strong><span style="display: none; ">, </span>
+      <strong>page_action</strong>
       <span> and</span>
     </span><span>
-      <strong>tabs</strong><span style="display: none; ">, </span>
-      <span style="display: none; "> and</span>
+      <strong>tabs</strong>
     </span>
   </p>
   <p>Shows a page action for urls which have the letter 'g' in them.</p>
@@ -3052,30 +2518,22 @@
   <div>
     <a href="examples/api/pageAction/pageaction_by_url.zip">Download source</a>
     <!-- Only show the Install CRX link if a CRX file is provided -->
-    <span style="display: none; ">
-    - <a>Install extension</a>
-    </span>
   </div>
 </div><div class="sample" id="d74c3c18a1c1dd18b035149105a306f837c8823e">
-  <img class="icon" style="display: none; ">
   <img class="icon" src="images/sample-default-icon.png">
   <h2 class="name">
     <a href="#d74c3c18a1c1dd18b035149105a306f837c8823e">Page Benchmarker</a>
-    <span style="display: none; ">(packaged app)</span>
   </h2>
   <p class="metadata features">Uses
     <span>
       <strong>background_page</strong><span>, </span>
-      <span style="display: none; "> and</span>
     </span><span>
       <strong>browser_action</strong><span>, </span>
-      <span style="display: none; "> and</span>
     </span><span>
-      <strong>options_page</strong><span style="display: none; ">, </span>
+      <strong>options_page</strong>
       <span> and</span>
     </span><span>
-      <strong>tabs</strong><span style="display: none; ">, </span>
-      <span style="display: none; "> and</span>
+      <strong>tabs</strong>
     </span>
   </p>
   <p>Chromium Page Benchmarker.</p>
@@ -3158,24 +2616,18 @@
   <div>
     <a href="examples/extensions/benchmark.zip">Download source</a>
     <!-- Only show the Install CRX link if a CRX file is provided -->
-    <span style="display: none; ">
-    - <a>Install extension</a>
-    </span>
   </div>
 </div><div class="sample" id="ab4b9e00a673701b355db9eb8f9ebf2c850cd784">
   <img class="icon" src="examples/extensions/plugin_settings/bunny128.png">
-  <img class="icon" src="images/sample-default-icon.png" style="display: none; ">
   <h2 class="name">
     <a href="#ab4b9e00a673701b355db9eb8f9ebf2c850cd784">Per-plugin content settings</a>
-    <span style="display: none; ">(packaged app)</span>
   </h2>
   <p class="metadata features">Uses
     <span>
-      <strong>contentSettings</strong><span style="display: none; ">, </span>
+      <strong>contentSettings</strong>
       <span> and</span>
     </span><span>
-      <strong>options_page</strong><span style="display: none; ">, </span>
-      <span style="display: none; "> and</span>
+      <strong>options_page</strong>
     </span>
   </p>
   <p>Customize your content setting for different plug-ins.</p>
@@ -3254,27 +2706,20 @@
   <div>
     <a href="examples/extensions/plugin_settings.zip">Download source</a>
     <!-- Only show the Install CRX link if a CRX file is provided -->
-    <span style="display: none; ">
-    - <a>Install extension</a>
-    </span>
   </div>
 </div><div class="sample" id="e6ae17ab4ccfd7e059c8c01f25760ca5d894c7fd">
-  <img class="icon" style="display: none; ">
   <img class="icon" src="images/sample-default-icon.png">
   <h2 class="name">
     <a href="#e6ae17ab4ccfd7e059c8c01f25760ca5d894c7fd">Print this page</a>
-    <span style="display: none; ">(packaged app)</span>
   </h2>
   <p class="metadata features">Uses
     <span>
       <strong>background_page</strong><span>, </span>
-      <span style="display: none; "> and</span>
     </span><span>
-      <strong>browser_action</strong><span style="display: none; ">, </span>
+      <strong>browser_action</strong>
       <span> and</span>
     </span><span>
-      <strong>tabs</strong><span style="display: none; ">, </span>
-      <span style="display: none; "> and</span>
+      <strong>tabs</strong>
     </span>
   </p>
   <p>Adds a print button to the browser.</p>
@@ -3299,37 +2744,23 @@
   <div>
     <a href="examples/api/browserAction/print.zip">Download source</a>
     <!-- Only show the Install CRX link if a CRX file is provided -->
-    <span style="display: none; ">
-    - <a>Install extension</a>
-    </span>
   </div>
 </div><div class="sample" id="beff6ecd9677dea0a7c648c5042165b48bb66f09">
-  <img class="icon" style="display: none; ">
   <img class="icon" src="images/sample-default-icon.png">
   <h2 class="name">
     <a href="#beff6ecd9677dea0a7c648c5042165b48bb66f09">Process Monitor</a>
-    <span style="display: none; ">(packaged app)</span>
   </h2>
   <p class="metadata features">Uses
     <span>
       <strong>browser_action</strong><span>, </span>
-      <span style="display: none; "> and</span>
     </span><span>
-      <strong>experimental</strong><span style="display: none; ">, </span>
+      <strong>experimental</strong>
       <span> and</span>
     </span><span>
-      <strong>tabs</strong><span style="display: none; ">, </span>
-      <span style="display: none; "> and</span>
+      <strong>tabs</strong>
     </span>
   </p>
   <p>Adds a browser action that monitors resource usage of all browser processes.</p>
-  <div class="apicalls" style="display: none; "><strong>Calls:</strong>
-    <ul>
-      <li>
-        <code><a></a></code>
-      </li>
-    </ul>
-  </div>
   <div class="sourcefiles"><strong>Source files:</strong>
     <ul>
       <li>
@@ -3344,27 +2775,20 @@
   <div>
     <a href="examples/api/processes/process_monitor.zip">Download source</a>
     <!-- Only show the Install CRX link if a CRX file is provided -->
-    <span style="display: none; ">
-    - <a>Install extension</a>
-    </span>
   </div>
 </div><div class="sample" id="3e8e226d87e431296bb110b4f6eb7eec2ca7a826">
   <img class="icon" src="examples/extensions/proxy_configuration/icon128.png">
-  <img class="icon" src="images/sample-default-icon.png" style="display: none; ">
   <h2 class="name">
     <a href="#3e8e226d87e431296bb110b4f6eb7eec2ca7a826">Proxy Extension API Sample</a>
-    <span style="display: none; ">(packaged app)</span>
   </h2>
   <p class="metadata features">Uses
     <span>
       <strong>background_page</strong><span>, </span>
-      <span style="display: none; "> and</span>
     </span><span>
-      <strong>browser_action</strong><span style="display: none; ">, </span>
+      <strong>browser_action</strong>
       <span> and</span>
     </span><span>
-      <strong>proxy</strong><span style="display: none; ">, </span>
-      <span style="display: none; "> and</span>
+      <strong>proxy</strong>
     </span>
   </p>
   <p>Set Chrome-specific proxies; a demonstration of Chrome's Proxy API</p>
@@ -3421,27 +2845,20 @@
   <div>
     <a href="examples/extensions/proxy_configuration.zip">Download source</a>
     <!-- Only show the Install CRX link if a CRX file is provided -->
-    <span style="display: none; ">
-    - <a>Install extension</a>
-    </span>
   </div>
 </div><div class="sample" id="56a8d2ac24ca7bba78fd88ad57f43fc13c784497">
   <img class="icon" src="examples/extensions/oauth_contacts/img/icon-128.png">
-  <img class="icon" src="images/sample-default-icon.png" style="display: none; ">
   <h2 class="name">
     <a href="#56a8d2ac24ca7bba78fd88ad57f43fc13c784497">Sample - OAuth Contacts</a>
-    <span style="display: none; ">(packaged app)</span>
   </h2>
   <p class="metadata features">Uses
     <span>
       <strong>background_page</strong><span>, </span>
-      <span style="display: none; "> and</span>
     </span><span>
-      <strong>browser_action</strong><span style="display: none; ">, </span>
+      <strong>browser_action</strong>
       <span> and</span>
     </span><span>
-      <strong>tabs</strong><span style="display: none; ">, </span>
-      <span style="display: none; "> and</span>
+      <strong>tabs</strong>
     </span>
   </p>
   <p>Uses OAuth to connect to Google's contacts service and display a list of your contacts.</p>
@@ -3488,24 +2905,18 @@
   <div>
     <a href="examples/extensions/oauth_contacts.zip">Download source</a>
     <!-- Only show the Install CRX link if a CRX file is provided -->
-    <span style="display: none; ">
-    - <a>Install extension</a>
-    </span>
   </div>
 </div><div class="sample" id="38f6e1e17756ede38b1364c7114a738ca717dcbb">
   <img class="icon" src="examples/api/infobars/sandwichbar/sandwich-128.png">
-  <img class="icon" src="images/sample-default-icon.png" style="display: none; ">
   <h2 class="name">
     <a href="#38f6e1e17756ede38b1364c7114a738ca717dcbb">SandwichBar</a>
-    <span style="display: none; ">(packaged app)</span>
   </h2>
   <p class="metadata features">Uses
     <span>
-      <strong>background_page</strong><span style="display: none; ">, </span>
+      <strong>background_page</strong>
       <span> and</span>
     </span><span>
-      <strong>experimental</strong><span style="display: none; ">, </span>
-      <span style="display: none; "> and</span>
+      <strong>experimental</strong>
     </span>
   </p>
   <p>Shows an infobar on pages which contain the word 'sandwich'</p>
@@ -3538,27 +2949,20 @@
   <div>
     <a href="examples/api/infobars/sandwichbar.zip">Download source</a>
     <!-- Only show the Install CRX link if a CRX file is provided -->
-    <span style="display: none; ">
-    - <a>Install extension</a>
-    </span>
   </div>
 </div><div class="sample" id="fc89b35755483af30b66cd72cefa34a43a3e8312">
-  <img class="icon" style="display: none; ">
   <img class="icon" src="images/sample-default-icon.png">
   <h2 class="name">
     <a href="#fc89b35755483af30b66cd72cefa34a43a3e8312">Show Tabs in Process</a>
-    <span style="display: none; ">(packaged app)</span>
   </h2>
   <p class="metadata features">Uses
     <span>
       <strong>browser_action</strong><span>, </span>
-      <span style="display: none; "> and</span>
     </span><span>
-      <strong>experimental</strong><span style="display: none; ">, </span>
+      <strong>experimental</strong>
       <span> and</span>
     </span><span>
-      <strong>tabs</strong><span style="display: none; ">, </span>
-      <span style="display: none; "> and</span>
+      <strong>tabs</strong>
     </span>
   </p>
   <p>Adds a browser action showing which tabs share the current tab's process.</p>
@@ -3595,36 +2999,26 @@
   <div>
     <a href="examples/api/processes/show_tabs.zip">Download source</a>
     <!-- Only show the Install CRX link if a CRX file is provided -->
-    <span style="display: none; ">
-    - <a>Install extension</a>
-    </span>
   </div>
 </div><div class="sample" id="a491a2faa1fe79cb49b2fe9ed2720f4723c14184">
   <img class="icon" src="examples/extensions/speak_selection/SpeakSel128.png">
-  <img class="icon" src="images/sample-default-icon.png" style="display: none; ">
   <h2 class="name">
     <a href="#a491a2faa1fe79cb49b2fe9ed2720f4723c14184">Speak Selection</a>
-    <span style="display: none; ">(packaged app)</span>
   </h2>
   <p class="metadata features">Uses
     <span>
       <strong>&lt;all_urls&gt;</strong><span>, </span>
-      <span style="display: none; "> and</span>
     </span><span>
       <strong>background_page</strong><span>, </span>
-      <span style="display: none; "> and</span>
     </span><span>
       <strong>browser_action</strong><span>, </span>
-      <span style="display: none; "> and</span>
     </span><span>
       <strong>options_page</strong><span>, </span>
-      <span style="display: none; "> and</span>
     </span><span>
-      <strong>tabs</strong><span style="display: none; ">, </span>
+      <strong>tabs</strong>
       <span> and</span>
     </span><span>
-      <strong>tts</strong><span style="display: none; ">, </span>
-      <span style="display: none; "> and</span>
+      <strong>tts</strong>
     </span>
   </p>
   <p>Speaks the current selection out loud.</p>
@@ -3681,27 +3075,20 @@
   <div>
     <a href="examples/extensions/speak_selection.zip">Download source</a>
     <!-- Only show the Install CRX link if a CRX file is provided -->
-    <span style="display: none; ">
-    - <a>Install extension</a>
-    </span>
   </div>
 </div><div class="sample" id="a942b7626644674b7a56678930d054497b244ee7">
-  <img class="icon" style="display: none; ">
   <img class="icon" src="images/sample-default-icon.png">
   <h2 class="name">
     <a href="#a942b7626644674b7a56678930d054497b244ee7">Speech Recognizer</a>
-    <span style="display: none; ">(packaged app)</span>
   </h2>
   <p class="metadata features">Uses
     <span>
       <strong>background_page</strong><span>, </span>
-      <span style="display: none; "> and</span>
     </span><span>
-      <strong>browser_action</strong><span style="display: none; ">, </span>
+      <strong>browser_action</strong>
       <span> and</span>
     </span><span>
-      <strong>experimental</strong><span style="display: none; ">, </span>
-      <span style="display: none; "> and</span>
+      <strong>experimental</strong>
     </span>
   </p>
   <p>Recognizes your speech and tells you the most likely result.</p>
@@ -3736,33 +3123,24 @@
   <div>
     <a href="examples/api/speechInput/basic.zip">Download source</a>
     <!-- Only show the Install CRX link if a CRX file is provided -->
-    <span style="display: none; ">
-    - <a>Install extension</a>
-    </span>
   </div>
 </div><div class="sample" id="24452253a5f1a93c2e8d63e55042005f8bc33606">
-  <img class="icon" style="display: none; ">
   <img class="icon" src="images/sample-default-icon.png">
   <h2 class="name">
     <a href="#24452253a5f1a93c2e8d63e55042005f8bc33606">Stylizr</a>
-    <span style="display: none; ">(packaged app)</span>
   </h2>
   <p class="metadata features">Uses
     <span>
       <strong>&lt;all_urls&gt;</strong><span>, </span>
-      <span style="display: none; "> and</span>
     </span><span>
       <strong>browser_action</strong><span>, </span>
-      <span style="display: none; "> and</span>
     </span><span>
       <strong>experimental</strong><span>, </span>
-      <span style="display: none; "> and</span>
     </span><span>
-      <strong>options_page</strong><span style="display: none; ">, </span>
+      <strong>options_page</strong>
       <span> and</span>
     </span><span>
-      <strong>tabs</strong><span style="display: none; ">, </span>
-      <span style="display: none; "> and</span>
+      <strong>tabs</strong>
     </span>
   </p>
   <p>Spruce up your pages with custom CSS.</p>
@@ -3793,27 +3171,20 @@
   <div>
     <a href="examples/api/storage/stylizr.zip">Download source</a>
     <!-- Only show the Install CRX link if a CRX file is provided -->
-    <span style="display: none; ">
-    - <a>Install extension</a>
-    </span>
   </div>
 </div><div class="sample" id="230463f2d5c3d4d0ca13c230e1f00f2aae0a8a64">
-  <img class="icon" style="display: none; ">
   <img class="icon" src="images/sample-default-icon.png">
   <h2 class="name">
     <a href="#230463f2d5c3d4d0ca13c230e1f00f2aae0a8a64">Tab Inspector</a>
-    <span style="display: none; ">(packaged app)</span>
   </h2>
   <p class="metadata features">Uses
     <span>
       <strong>background_page</strong><span>, </span>
-      <span style="display: none; "> and</span>
     </span><span>
-      <strong>browser_action</strong><span style="display: none; ">, </span>
+      <strong>browser_action</strong>
       <span> and</span>
     </span><span>
-      <strong>tabs</strong><span style="display: none; ">, </span>
-      <span style="display: none; "> and</span>
+      <strong>tabs</strong>
     </span>
   </p>
   <p>Utility for working with the extension tabs api</p>
@@ -3886,30 +3257,22 @@
   <div>
     <a href="examples/api/tabs/inspector.zip">Download source</a>
     <!-- Only show the Install CRX link if a CRX file is provided -->
-    <span style="display: none; ">
-    - <a>Install extension</a>
-    </span>
   </div>
 </div><div class="sample" id="04f5d2ddea95746b0200be1ea223ccb7a748a771">
   <img class="icon" src="examples/extensions/talking_alarm_clock/clock-128.png">
-  <img class="icon" src="images/sample-default-icon.png" style="display: none; ">
   <h2 class="name">
     <a href="#04f5d2ddea95746b0200be1ea223ccb7a748a771">Talking Alarm Clock</a>
-    <span style="display: none; ">(packaged app)</span>
   </h2>
   <p class="metadata features">Uses
     <span>
       <strong>background</strong><span>, </span>
-      <span style="display: none; "> and</span>
     </span><span>
       <strong>background_page</strong><span>, </span>
-      <span style="display: none; "> and</span>
     </span><span>
-      <strong>browser_action</strong><span style="display: none; ">, </span>
+      <strong>browser_action</strong>
       <span> and</span>
     </span><span>
-      <strong>tts</strong><span style="display: none; ">, </span>
-      <span style="display: none; "> and</span>
+      <strong>tts</strong>
     </span>
   </p>
   <p>A clock with two configurable alarms that will play a sound and speak a phrase of your choice.</p>
@@ -3950,27 +3313,20 @@
   <div>
     <a href="examples/extensions/talking_alarm_clock.zip">Download source</a>
     <!-- Only show the Install CRX link if a CRX file is provided -->
-    <span style="display: none; ">
-    - <a>Install extension</a>
-    </span>
   </div>
 </div><div class="sample" id="e1697cacebad05218798bf3e8a0f724517f0e8c3">
-  <img class="icon" style="display: none; ">
   <img class="icon" src="images/sample-default-icon.png">
   <h2 class="name">
     <a href="#e1697cacebad05218798bf3e8a0f724517f0e8c3">Test Screenshot Extension</a>
-    <span style="display: none; ">(packaged app)</span>
   </h2>
   <p class="metadata features">Uses
     <span>
       <strong>background_page</strong><span>, </span>
-      <span style="display: none; "> and</span>
     </span><span>
-      <strong>browser_action</strong><span style="display: none; ">, </span>
+      <strong>browser_action</strong>
       <span> and</span>
     </span><span>
-      <strong>tabs</strong><span style="display: none; ">, </span>
-      <span style="display: none; "> and</span>
+      <strong>tabs</strong>
     </span>
   </p>
   <p>Demonstrate screenshot functionality in the chrome.tabs api. Note: only works for code.google.com</p>
@@ -4007,27 +3363,20 @@
   <div>
     <a href="examples/api/tabs/screenshot.zip">Download source</a>
     <!-- Only show the Install CRX link if a CRX file is provided -->
-    <span style="display: none; ">
-    - <a>Install extension</a>
-    </span>
   </div>
 </div><div class="sample" id="e8ac89b4015052cf11436985399129c927f972aa">
   <img class="icon" src="examples/api/permissions/extension-questions/images/icon.png">
-  <img class="icon" src="images/sample-default-icon.png" style="display: none; ">
   <h2 class="name">
     <a href="#e8ac89b4015052cf11436985399129c927f972aa">Top Chrome Extension Questions</a>
-    <span style="display: none; ">(packaged app)</span>
   </h2>
   <p class="metadata features">Uses
     <span>
       <strong>browser_action</strong><span>, </span>
-      <span style="display: none; "> and</span>
     </span><span>
-      <strong>experimental</strong><span style="display: none; ">, </span>
+      <strong>experimental</strong>
       <span> and</span>
     </span><span>
-      <strong>options_page</strong><span style="display: none; ">, </span>
-      <span style="display: none; "> and</span>
+      <strong>options_page</strong>
     </span>
   </p>
   <p>Sample demonstration of the optional permissions API.</p>
@@ -4072,15 +3421,13 @@
   </div>
 </div><div class="sample" id="1d192cce77438e1a90383a6a3a6b28f29961ffa4">
   <img class="icon" src="examples/extensions/ttsdebug/128.png">
-  <img class="icon" src="images/sample-default-icon.png" style="display: none; ">
   <h2 class="name">
     <a href="#1d192cce77438e1a90383a6a3a6b28f29961ffa4">TTS Debug</a>
     <span>(packaged app)</span>
   </h2>
   <p class="metadata features">Uses
     <span>
-      <strong>tts</strong><span style="display: none; ">, </span>
-      <span style="display: none; "> and</span>
+      <strong>tts</strong>
     </span>
   </p>
   <p>Tool for developers of Chrome TTS engine extensions to help them test their engines are implementing the API correctly.</p>
@@ -4111,21 +3458,16 @@
   <div>
     <a href="examples/extensions/ttsdebug.zip">Download source</a>
     <!-- Only show the Install CRX link if a CRX file is provided -->
-    <span style="display: none; ">
-    - <a>Install extension</a>
-    </span>
   </div>
 </div><div class="sample" id="3a1baf15462bdae4d886c2da4ff8f35f4e8ce02f">
   <img class="icon" src="examples/extensions/ttsdemo/128.png">
-  <img class="icon" src="images/sample-default-icon.png" style="display: none; ">
   <h2 class="name">
     <a href="#3a1baf15462bdae4d886c2da4ff8f35f4e8ce02f">TTS Demo</a>
     <span>(packaged app)</span>
   </h2>
   <p class="metadata features">Uses
     <span>
-      <strong>tts</strong><span style="display: none; ">, </span>
-      <span style="display: none; "> and</span>
+      <strong>tts</strong>
     </span>
   </p>
   <p>Demo Chrome's synthesized text-to-speech capabilities.</p>
@@ -4156,27 +3498,20 @@
   <div>
     <a href="examples/extensions/ttsdemo.zip">Download source</a>
     <!-- Only show the Install CRX link if a CRX file is provided -->
-    <span style="display: none; ">
-    - <a>Install extension</a>
-    </span>
   </div>
 </div><div class="sample" id="b3de91ab04b7d7a2670ca7ee9d740eb42cead0b6">
-  <img class="icon" style="display: none; ">
   <img class="icon" src="images/sample-default-icon.png">
   <h2 class="name">
     <a href="#b3de91ab04b7d7a2670ca7ee9d740eb42cead0b6">Typed URL History</a>
-    <span style="display: none; ">(packaged app)</span>
   </h2>
   <p class="metadata features">Uses
     <span>
       <strong>browser_action</strong><span>, </span>
-      <span style="display: none; "> and</span>
     </span><span>
-      <strong>history</strong><span style="display: none; ">, </span>
+      <strong>history</strong>
       <span> and</span>
     </span><span>
-      <strong>tabs</strong><span style="display: none; ">, </span>
-      <span style="display: none; "> and</span>
+      <strong>tabs</strong>
     </span>
   </p>
   <p>Reads your history, and shows the top ten pages you go to by typing the URL.</p>
@@ -4205,30 +3540,22 @@
   <div>
     <a href="examples/api/history/showHistory.zip">Download source</a>
     <!-- Only show the Install CRX link if a CRX file is provided -->
-    <span style="display: none; ">
-    - <a>Install extension</a>
-    </span>
   </div>
 </div><div class="sample" id="a3c674f7eb93621c590562ad3fa04de4f03f53a0">
-  <img class="icon" style="display: none; ">
   <img class="icon" src="images/sample-default-icon.png">
   <h2 class="name">
     <a href="#a3c674f7eb93621c590562ad3fa04de4f03f53a0">WebNavigation Tech Demo</a>
-    <span style="display: none; ">(packaged app)</span>
   </h2>
   <p class="metadata features">Uses
     <span>
       <strong>background_page</strong><span>, </span>
-      <span style="display: none; "> and</span>
     </span><span>
       <strong>browser_action</strong><span>, </span>
-      <span style="display: none; "> and</span>
     </span><span>
-      <strong>extension</strong><span style="display: none; ">, </span>
+      <strong>extension</strong>
       <span> and</span>
     </span><span>
-      <strong>webNavigation</strong><span style="display: none; ">, </span>
-      <span style="display: none; "> and</span>
+      <strong>webNavigation</strong>
     </span>
   </p>
   <p>Demonstration of the WebNavigation extension API.</p>
@@ -4277,21 +3604,15 @@
   <div>
     <a href="examples/api/webNavigation/basic.zip">Download source</a>
     <!-- Only show the Install CRX link if a CRX file is provided -->
-    <span style="display: none; ">
-    - <a>Install extension</a>
-    </span>
   </div>
 </div><div class="sample" id="0fa4abe6545f0316fea7cfa07c53aa48c4f3d018">
   <img class="icon" src="examples/api/extension/isAllowedAccess/sample-128.png">
-  <img class="icon" src="images/sample-default-icon.png" style="display: none; ">
   <h2 class="name">
     <a href="#0fa4abe6545f0316fea7cfa07c53aa48c4f3d018">`extension.isAllowedFileSchemeAccess` and `extension.isAllowedIncognitoAccess` Example</a>
-    <span style="display: none; ">(packaged app)</span>
   </h2>
   <p class="metadata features">Uses
     <span>
-      <strong>browser_action</strong><span style="display: none; ">, </span>
-      <span style="display: none; "> and</span>
+      <strong>browser_action</strong>
     </span>
   </p>
   <p>Demonstrates the `extension.isAllowedFileSchemeAccess` and `extesion.isAllowedIncognitoAccess` APIs</p>
@@ -4320,190 +3641,11 @@
   <div>
     <a href="examples/api/extension/isAllowedAccess.zip">Download source</a>
     <!-- Only show the Install CRX link if a CRX file is provided -->
-    <span style="display: none; ">
-    - <a>Install extension</a>
-    </span>
   </div>
 </div>
-
-<div id="noresults" style="display:none">
-  Sorry, no results were found.
 </div>
-</div>
-
         <!-- API PAGE -->
-        <div class="apiPage" style="display: none; ">
-        <a name="apiReference"></a>
-        <h2>API reference: chrome.apiname </h2>
-
-          <!-- PROPERTIES -->
-          <div class="apiGroup">
-            <a name="properties"></a>
-            <h3 id="properties">Properties</h3>
-
-            <div>
-              <a></a>
-              <h4>getLastError</h4>
-              <div class="summary">
-                <!-- Note: intentionally longer 80 columns -->
-                <span>chrome.extension</span><span>lastError</span>
-              </div>
-              <div>
-              </div>
-            </div>
-
-          </div> <!-- /apiGroup -->
-
-          <!-- METHODS -->
-          <div id="methodsTemplate" class="apiGroup">
-            <a></a>
-            <h3>Methods</h3>
-
-            <!-- iterates over all functions -->
-            <div class="apiItem">
-              <a></a> <!-- method-anchor -->
-              <h4>method name</h4>
-
-              <div class="summary"><span>void</span>
-                  <!-- Note: intentionally longer 80 columns -->
-                  <span>chrome.module.methodName</span>(<span><span>, </span><span></span>
-                      <var><span></span></var></span>)</div>
-
-              <div class="description">
-                <p class="todo">Undocumented.</p>
-                <p>
-                  A description from the json schema def of the function goes here.
-                </p>
-
-                <!-- PARAMETERS -->
-                <h4>Parameters</h4>
-                <dl>
-                  <div>
-                    <div>
-                    </div>
-                  </div>
-                </dl>
-
-                <!-- RETURNS -->
-                <h4>Returns</h4>
-                <dl>
-                  <div>
-                    <div>
-                    </div>
-                  </div>
-                </dl>
-
-                <!-- CALLBACK -->
-                <div>
-                  <div>
-                  <h4>Callback function</h4>
-                  <p>
-                    The callback <em>parameter</em> should specify a function
-                    that looks like this:
-                  </p>
-                  <p>
-                    If you specify the <em>callback</em> parameter, it should
-                    specify a function that looks like this:
-                  </p>
-
-                  <!-- Note: intentionally longer 80 columns -->
-                  <pre>function(<span>Type param1, Type param2</span>) <span class="subdued">{...}</span>;</pre>
-                  <dl>
-                    <div>
-                      <div>
-                      </div>
-                    </div>
-                  </dl>
-                  </div>
-                </div>
-
-                <!-- MIN_VERSION -->
-                <p>
-                  This function was added in version <b><span></span></b>.
-                  If you require this function, the manifest key
-                  <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-                  can ensure that your extension won't be run in an earlier browser version.
-                </p>
-              </div> <!-- /description -->
-
-            </div>  <!-- /apiItem -->
-
-          </div>  <!-- /apiGroup -->
-
-          <!-- EVENTS -->
-          <div id="eventsTemplate" class="apiGroup">
-            <a></a>
-            <h3>Events</h3>
-            <!-- iterates over all events -->
-            <div class="apiItem">
-              <a></a>
-              <h4>event name</h4>
-
-              <div class="summary">
-                <!-- Note: intentionally longer 80 columns -->
-                <span class="subdued">chrome.bookmarks</span><span>onEvent</span><span class="subdued">.addListener</span>(function(<span>Type param1, Type param2</span>) <span class="subdued">{...}</span><span>, Type opt_param1, Type opt_param2</span>);
-              </div>
-
-              <div class="description">
-                <p class="todo">Undocumented.</p>
-                <p>
-                  A description from the json schema def of the event goes here.
-                </p>
-
-                <!-- LISTENER PARAMETERS -->
-                <div>
-                  <h4>Listener parameters</h4>
-                  <dl>
-                    <div>
-                      <div>
-                      </div>
-                    </div>
-                  </dl>
-                </div>
-
-                <!-- EXTRA PARAMETERS -->
-                <div>
-                  <h4>Extra parameters to addListener</h4>
-                  <dl>
-                    <div>
-                      <div>
-                      </div>
-                    </div>
-                  </dl>
-                </div>
-
-                <!-- LISTENER RETURN VALUE -->
-                <h4>Listener returns</h4>
-                <dl>
-                  <div>
-                    <div>
-                    </div>
-                  </div>
-                </dl>
-
-              </div> <!-- /description -->
-            </div> <!-- /apiItem -->
-
-          </div> <!-- /apiGroup -->
-
-          <!-- TYPES -->
-          <div class="apiGroup">
-            <a name="types"></a>
-            <h3 id="types">Types</h3>
-
-            <!-- iterates over all types -->
-            <div class="apiItem">
-              <a></a>
-              <h4>type name</h4>
-
-              <div>
-              </div>
-
-            </div> <!-- /apiItem -->
-
-          </div> <!-- /apiGroup -->
-
-        </div> <!-- /apiPage -->
+         <!-- /apiPage -->
       </div> <!-- /gc-pagecontent -->
     </div> <!-- /g-section -->
   </div> <!-- /codesiteContent -->
@@ -4518,18 +3660,15 @@
   <p>
   ©2011 Google
   </p>
-
 <!-- begin analytics -->
 <script src="https://www.google-analytics.com/urchin.js" type="text/javascript"></script>
 <script src="https://www.google-analytics.com/ga.js" type="text/javascript"></script>
-
 <script type="text/javascript">
   // chrome doc tracking
   try {
     var engdocs = _gat._getTracker("YT-10763712-2");
     engdocs._trackPageview();
   } catch(err) {}
-
   // code.google.com site-wide tracking
   try {
     _uacct="UA-18071-1";
