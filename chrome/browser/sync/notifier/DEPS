@@ -6,12 +6,10 @@ include_rules = [
   "+chrome/browser/sync/notifier",
   "+chrome/browser/sync/syncable/model_type.h",
   "+chrome/browser/sync/syncable/model_type_payload_map.h",
-  "+chrome/browser/sync/syncable/model_type_test_util.h",
   "+chrome/browser/sync/protocol/service_constants.h",
   "+chrome/browser/sync/util",
 
   "+chrome/common/chrome_switches.h",
-  "+chrome/common/chrome_notification_types.h",
   "+google/cacheinvalidation",
   "+jingle/notifier",
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,12 +9,10 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/sync/notifier/chrome_sync_notification_bridge.h"
 #include "chrome/browser/sync/notifier/invalidation_version_tracker.h"
 #include "chrome/browser/sync/util/weak_handle.h"
 
 class CommandLine;
-class Profile;
 
 namespace net {
 class URLRequestContextGetter;
@@ -32,7 +30,6 @@ class SyncNotifierFactory {
   // agent string.  |invalidation_version_tracker| may be NULL (for
   // tests).
   SyncNotifierFactory(
-      const Profile* profile,
       const std::string& client_info,
       const scoped_refptr<net::URLRequestContextGetter>&
           request_context_getter,
@@ -47,10 +44,6 @@ class SyncNotifierFactory {
   SyncNotifier* CreateSyncNotifier();
 
  private:
-  // A thread-safe listener for handling notifications triggered by chrome
-  // events.
-  ChromeSyncNotificationBridge chrome_notification_bridge_;
-
   const std::string client_info_;
   const scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
   const InvalidationVersionMap initial_max_invalidation_versions_;

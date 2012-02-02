@@ -233,7 +233,6 @@ SyncBackendHost::SyncBackendHost(const std::string& name,
       initialization_state_(NOT_ATTEMPTED),
       sync_prefs_(sync_prefs),
       sync_notifier_factory_(
-          profile_,
           content::GetUserAgent(GURL()),
           profile_->GetRequestContext(),
           sync_prefs,
@@ -242,15 +241,14 @@ SyncBackendHost::SyncBackendHost(const std::string& name,
       last_auth_error_(AuthError::None()) {
 }
 
-SyncBackendHost::SyncBackendHost(Profile* profile)
+SyncBackendHost::SyncBackendHost()
     : weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
       sync_thread_("Chrome_SyncThread"),
       frontend_loop_(MessageLoop::current()),
-      profile_(profile),
+      profile_(NULL),
       name_("Unknown"),
       initialization_state_(NOT_ATTEMPTED),
       sync_notifier_factory_(
-          profile_,
           content::GetUserAgent(GURL()),
           NULL,
           base::WeakPtr<sync_notifier::InvalidationVersionTracker>(),
@@ -559,7 +557,7 @@ void SyncBackendHost::GetModelSafeRoutingInfo(
 
 void SyncBackendHost::InitCore(const DoInitializeOptions& options) {
   sync_thread_.message_loop()->PostTask(FROM_HERE,
-      base::Bind(&SyncBackendHost::Core::DoInitialize, core_.get(), options));
+      base::Bind(&SyncBackendHost::Core::DoInitialize, core_.get(),options));
 }
 
 void SyncBackendHost::HandleSyncCycleCompletedOnFrontendLoop(

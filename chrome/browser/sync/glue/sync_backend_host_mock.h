@@ -9,7 +9,6 @@
 #include <set>
 
 #include "base/callback_forward.h"
-#include "chrome/test/base/testing_profile.h"
 #include "chrome/browser/sync/glue/sync_backend_host.h"
 #include "chrome/browser/sync/profile_sync_test_util.h"
 #include "content/public/browser/notification_types.h"
@@ -30,8 +29,6 @@ class SyncBackendHostMock : public SyncBackendHost {
                     base::Callback<void()>,
                     bool));
   MOCK_METHOD0(StartSyncingWithServer, void());
- private:
-  TestingProfile profile_;
 };
 
 }  // namespace browser_sync
