@@ -99,11 +99,11 @@ enum weston_visual {
 struct weston_shader {
 	GLuint program;
 	GLuint vertex_shader, fragment_shader;
-	GLuint proj_uniform;
-	GLuint tex_uniform;
-	GLuint alpha_uniform;
-	GLuint color_uniform;
-	GLuint texwidth_uniform;
+	GLint proj_uniform;
+	GLint tex_uniform;
+	GLint alpha_uniform;
+	GLint color_uniform;
+	GLint texwidth_uniform;
 };
 
 struct weston_animation {
@@ -148,7 +148,6 @@ struct weston_compositor {
 	EGLContext context;
 	EGLConfig config;
 	GLuint fbo;
-	uint32_t current_alpha;
 	struct weston_shader texture_shader;
 	struct weston_shader solid_shader;
 	struct weston_shader *current_shader;

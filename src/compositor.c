@@ -704,21 +704,11 @@ weston_surface_draw(struct weston_surface *es, struct weston_output *output)
 
 	glUniformMatrix4fv(es->shader->proj_uniform,
 			   1, GL_FALSE, output->matrix.d);
-
-	if (es->shader->tex_uniform != GL_NONE)
-		glUniform1i(es->shader->tex_uniform, 0);
-
-	if (es->shader->color_uniform != GL_NONE)
-		glUniform4fv(es->shader->color_uniform,1, es->color);
-
-	if (es->shader->alpha_uniform && es->alpha != ec->current_alpha) {
-		glUniform1f(es->shader->alpha_uniform, es->alpha / 255.0);
-		ec->current_alpha = es->alpha;
-	}
-
-	if (es->shader->texwidth_uniform != GL_NONE)
-		glUniform1f(es->shader->texwidth_uniform,
-			    (GLfloat)es->geometry.width / es->pitch);
+	glUniform1i(es->shader->tex_uniform, 0);
+	glUniform4fv(es->shader->color_uniform, 1, es->color);
+	glUniform1f(es->shader->alpha_uniform, es->alpha / 255.0);
+	glUniform1f(es->shader->texwidth_uniform,
+		    (GLfloat)es->geometry.width / es->pitch);
 
 	if (es->transform.enabled)
 		filter = GL_LINEAR;
@@ -1849,39 +1839,9 @@ weston_shader_init(struct weston_shader *shader,
 	shader->proj_uniform = glGetUniformLocation(shader->program, "proj");
 	shader->tex_uniform = glGetUniformLocation(shader->program, "tex");
 	shader->alpha_uniform = glGetUniformLocation(shader->program, "alpha");
+	shader->color_uniform = glGetUniformLocation(shader->program, "color");
 	shader->texwidth_uniform = glGetUniformLocation(shader->program,
 							"texwidth");
-
-	return 0;
-}
-
-static int
-init_solid_shader(struct weston_shader *shader,
-		  GLuint vertex_shader, const char *fragment_source)
-{
-	GLint status;
-	char msg[512];
-
-	shader->vertex_shader = vertex_shader;
-	shader->fragment_shader =
-		compile_shader(GL_FRAGMENT_SHADER, fragment_source);
-
-	shader->program = glCreateProgram();
-	glAttachShader(shader->program, shader->vertex_shader);
-	glAttachShader(shader->program, shader->fragment_shader);
-	glBindAttribLocation(shader->program, 0, "position");
-	glBindAttribLocation(shader->program, 1, "texcoord");
-
-	glLinkProgram(shader->program);
-	glGetProgramiv(shader->program, GL_LINK_STATUS, &status);
-	if (!status) {
-		glGetProgramInfoLog(shader->program, sizeof msg, NULL, msg);
- 		fprintf(stderr, "link info: %s\n", msg);
-		return -1;
- 	}
- 
-	shader->proj_uniform = glGetUniformLocation(shader->program, "proj");
-	shader->color_uniform = glGetUniformLocation(shader->program, "color");
 
 	return 0;
 }
@@ -2060,9 +2020,8 @@ weston_compositor_init(struct weston_compositor *ec, struct wl_display *display)
 	if (weston_shader_init(&ec->texture_shader,
 			     vertex_shader, texture_fragment_shader) < 0)
 		return -1;
-	if (init_solid_shader(&ec->solid_shader,
-			      ec->texture_shader.vertex_shader,
-			      solid_fragment_shader) < 0)
+	if (weston_shader_init(&ec->solid_shader,
+			     vertex_shader, solid_fragment_shader) < 0)
 		return -1;
 
 	loop = wl_display_get_event_loop(ec->wl_display);
