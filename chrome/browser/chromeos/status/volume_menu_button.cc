@@ -6,10 +6,12 @@
 
 #include <algorithm>
 
+#include "base/command_line.h"
 #include "base/string_number_conversions.h"
-#include "chrome/browser/chromeos/audio/audio_handler.h"
 #include "chrome/browser/chromeos/status/status_area_bubble.h"
+#include "chrome/browser/chromeos/system/runtime_environment.h"
 #include "chrome/browser/chromeos/view_ids.h"
+#include "chrome/common/chrome_switches.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -21,12 +23,19 @@
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/controls/menu/submenu_view.h"
 
+namespace chromeos {
+
 namespace {
 
-static const int kMenuItemId = 100;  // arbitrary menu id.
+const int kMenuItemId = 100;  // arbitrary menu id.
 // TODO(achuith): Minimum width of MenuItemView is 27, which is too wide.
-static const int kVolumeMenuWidth = 27;
-static const int kVolumeIconWidth = 20;
+const int kVolumeMenuWidth = 27;
+const int kVolumeIconWidth = 20;
+
+bool ShouldShowStatusAreaVolume() {
+  return CommandLine::ForCurrentProcess()->
+      HasSwitch(switches::kShowVolumeStatus);
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // AudioHandler helpers
@@ -34,22 +43,27 @@ static const int kVolumeIconWidth = 20;
 // Used when not running on a ChromeOS device.
 static int g_volume_percent = 0;
 
-chromeos::AudioHandler* GetAudioHandler() {
-  chromeos::AudioHandler* audio_handler = chromeos::AudioHandler::GetInstance();
-  return audio_handler && audio_handler->IsInitialized() ?
-      audio_handler : NULL;
-}
-
 int GetVolumePercent() {
-  chromeos::AudioHandler* audio_handler = GetAudioHandler();
-  return audio_handler ? audio_handler->GetVolumePercent() : g_volume_percent;
+  AudioHandler* audio_handler = AudioHandler::GetInstanceIfInitialized();
+  if (audio_handler)
+    return audio_handler->IsMuted() ? 0 : audio_handler->GetVolumePercent();
+  return g_volume_percent;
 }
 
 void SetVolumePercent(int percent) {
-  chromeos::AudioHandler* audio_handler = GetAudioHandler();
+  AudioHandler* audio_handler = AudioHandler::GetInstanceIfInitialized();
   if (audio_handler)
     audio_handler->SetVolumePercent(percent);
   g_volume_percent = percent;
+}
+
+void AddVolumeObserver(AudioHandler::VolumeObserver* volume_observer) {
+  AudioHandler::GetInstance()->AddVolumeObserver(volume_observer);
+}
+
+void RemoveVolumeObserver(AudioHandler::VolumeObserver* volume_observer) {
+  if (AudioHandler::GetInstance())
+    AudioHandler::GetInstance()->RemoveVolumeObserver(volume_observer);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -77,9 +91,11 @@ const SkBitmap* GetIcon() {
 ////////////////////////////////////////////////////////////////////////////////
 // VolumeControlView
 
-class VolumeControlView : public views::View {
+class VolumeControlView : public views::View,
+                          public AudioHandler::VolumeObserver {
  public:
-  explicit VolumeControlView(chromeos::VolumeMenuButton* volume_menu_button);
+  explicit VolumeControlView(VolumeMenuButton* volume_menu_button);
+  virtual ~VolumeControlView();
 
  private:
   // views::View overrides:
@@ -88,7 +104,10 @@ class VolumeControlView : public views::View {
   virtual bool OnMousePressed(const views::MouseEvent& event) OVERRIDE;
   virtual bool OnMouseDragged(const views::MouseEvent& event) OVERRIDE;
 
-  chromeos::VolumeMenuButton* volume_menu_button_;
+  // AudioHandler::VolumeObserver overrides:
+  virtual void OnVolumeChanged() OVERRIDE;
+
+  VolumeMenuButton* volume_menu_button_;  // not owned.
 
   const SkBitmap* slider_empty_;
   const SkBitmap* slider_full_;
@@ -102,7 +121,7 @@ class VolumeControlView : public views::View {
 };
 
 VolumeControlView::VolumeControlView(
-    chromeos::VolumeMenuButton* volume_menu_button)
+    VolumeMenuButton* volume_menu_button)
     : volume_menu_button_(volume_menu_button),
       slider_empty_(GetImageNamed(IDR_STATUSBAR_VOLUME_SLIDER_EMPTY)),
       slider_full_(GetImageNamed(IDR_STATUSBAR_VOLUME_SLIDER_FULL)),
@@ -111,6 +130,11 @@ VolumeControlView::VolumeControlView(
       slider_h_(slider_empty_->height()),
       thumb_h_(thumb_->height()) {
   DCHECK_EQ(slider_w_, slider_full_->width());
+  AddVolumeObserver(this);
+}
+
+VolumeControlView::~VolumeControlView() {
+  RemoveVolumeObserver(this);
 }
 
 gfx::Size VolumeControlView::GetPreferredSize() {
@@ -161,9 +185,11 @@ bool VolumeControlView::OnMouseDragged(const views::MouseEvent& event) {
   return true;
 }
 
-}  // namespace
+void VolumeControlView::OnVolumeChanged() {
+  SchedulePaint();
+}
 
-namespace chromeos {
+}  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
 // VolumeMenuButton
@@ -172,12 +198,12 @@ VolumeMenuButton::VolumeMenuButton(StatusAreaButton::Delegate* delegate)
     : StatusAreaButton(delegate, this) {
   set_id(VIEW_ID_STATUS_BUTTON_VOLUME);
   UpdateIcon();
-  // TODO(achuith): Query SystemKeyEventListener to determine when we
-  // can show statusbar volume controls.
-  SetVisible(false);
+  SetVisible(ShouldShowStatusAreaVolume());
+  AddVolumeObserver(this);
 }
 
 VolumeMenuButton::~VolumeMenuButton() {
+  RemoveVolumeObserver(this);
 }
 
 int VolumeMenuButton::icon_width() {
@@ -198,6 +224,10 @@ void VolumeMenuButton::UpdateIcon() {
 }
 
 void VolumeMenuButton::OnLocaleChanged() {
+  UpdateIcon();
+}
+
+void VolumeMenuButton::OnVolumeChanged() {
   UpdateIcon();
 }
 
