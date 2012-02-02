@@ -13,7 +13,6 @@
 #import "chrome/browser/renderer_host/chrome_render_widget_host_view_mac_delegate.h"
 #include "chrome/browser/tab_contents/render_view_context_menu_mac.h"
 #include "chrome/browser/tab_contents/web_drag_bookmark_handler_mac.h"
-#import "chrome/browser/ui/cocoa/focus_tracker.h"
 #import "chrome/browser/ui/cocoa/view_id_util.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_view_host_factory.h"
@@ -27,6 +26,7 @@
 #include "content/public/browser/web_contents_delegate.h"
 #include "skia/ext/skia_utils_mac.h"
 #import "third_party/mozilla/NSPasteboard+Utils.h"
+#import "ui/base/cocoa/focus_tracker.h"
 
 using WebKit::WebDragOperation;
 using WebKit::WebDragOperationsMask;

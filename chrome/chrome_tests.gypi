@@ -1844,7 +1844,6 @@
         'browser/ui/cocoa/find_pasteboard_unittest.mm',
         'browser/ui/cocoa/first_run_bubble_controller_unittest.mm',
         'browser/ui/cocoa/floating_bar_backing_view_unittest.mm',
-        'browser/ui/cocoa/focus_tracker_unittest.mm',
         'browser/ui/cocoa/framed_browser_window_unittest.mm',
         'browser/ui/cocoa/fullscreen_window_unittest.mm',
         'browser/ui/cocoa/fullscreen_exit_bubble_controller_unittest.mm',

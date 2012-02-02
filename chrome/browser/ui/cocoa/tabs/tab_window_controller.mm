@@ -5,9 +5,9 @@
 #import "chrome/browser/ui/cocoa/tabs/tab_window_controller.h"
 
 #include "base/logging.h"
-#import "chrome/browser/ui/cocoa/focus_tracker.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_view.h"
 #import "chrome/browser/ui/cocoa/themed_window.h"
+#import "ui/base/cocoa/focus_tracker.h"
 #include "ui/base/theme_provider.h"
 
 @interface TabWindowController(PRIVATE)

@@ -1,21 +1,21 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import <Cocoa/Cocoa.h>
 
 #include "base/memory/scoped_nsobject.h"
-#import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
-#import "chrome/browser/ui/cocoa/focus_tracker.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
+#import "ui/base/cocoa/focus_tracker.h"
+#import "ui/base/test/ui_cocoa_test_helper.h"
 
 namespace {
 
-class FocusTrackerTest : public CocoaTest {
+class FocusTrackerTest : public ui::CocoaTest {
  public:
   virtual void SetUp() {
-    CocoaTest::SetUp();
+    ui::CocoaTest::SetUp();
     scoped_nsobject<NSView> view([[NSView alloc] initWithFrame:NSZeroRect]);
     viewA_ = view.get();
     [[test_window() contentView] addSubview:viewA_];

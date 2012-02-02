@@ -2735,8 +2735,6 @@
         'browser/ui/cocoa/first_run_dialog.mm',
         'browser/ui/cocoa/floating_bar_backing_view.h',
         'browser/ui/cocoa/floating_bar_backing_view.mm',
-        'browser/ui/cocoa/focus_tracker.h',
-        'browser/ui/cocoa/focus_tracker.mm',
         'browser/ui/cocoa/framed_browser_window.h',
         'browser/ui/cocoa/framed_browser_window.mm',
         'browser/ui/cocoa/fullscreen_exit_bubble_controller.h',

@@ -55,6 +55,7 @@
         'base/clipboard/custom_data_helper_unittest.cc',
         'base/cocoa/base_view_unittest.mm',
         'base/cocoa/events_mac_unittest.mm',
+        'base/cocoa/focus_tracker_unittest.mm',
         'base/gtk/gtk_expanded_container_unittest.cc',
         'base/gtk/gtk_im_context_util_unittest.cc',
         'base/l10n/l10n_util_mac_unittest.mm',
