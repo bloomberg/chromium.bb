@@ -152,7 +152,7 @@ class SyncBackendHost {
                   const base::WeakPtr<SyncPrefs>& sync_prefs);
   // For testing.
   // TODO(skrul): Extract an interface so this is not needed.
-  SyncBackendHost();
+  explicit SyncBackendHost(Profile* profile);
   virtual ~SyncBackendHost();
 
   // Called on |frontend_loop_| to kick off asynchronous initialization.

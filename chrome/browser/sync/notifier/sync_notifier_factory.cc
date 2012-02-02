@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
+#include "chrome/browser/sync/notifier/bridged_sync_notifier.h"
 #include "chrome/browser/sync/notifier/non_blocking_invalidation_notifier.h"
 #include "chrome/browser/sync/notifier/p2p_notifier.h"
 #include "chrome/browser/sync/notifier/sync_notifier.h"
@@ -114,16 +115,19 @@ SyncNotifier* CreateDefaultSyncNotifier(
       notifier_options, initial_max_invalidation_versions,
       invalidation_version_tracker, client_info);
 }
+
 }  // namespace
 
 SyncNotifierFactory::SyncNotifierFactory(
+    const Profile* profile,
     const std::string& client_info,
     const scoped_refptr<net::URLRequestContextGetter>&
         request_context_getter,
     const base::WeakPtr<InvalidationVersionTracker>&
         invalidation_version_tracker,
     const CommandLine& command_line)
-    : client_info_(client_info),
+    : chrome_notification_bridge_(profile),
+      client_info_(client_info),
       request_context_getter_(request_context_getter),
       initial_max_invalidation_versions_(
           invalidation_version_tracker.get() ?
@@ -132,6 +136,7 @@ SyncNotifierFactory::SyncNotifierFactory(
       invalidation_version_tracker_(invalidation_version_tracker),
       command_line_(command_line) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(profile);
 }
 
 SyncNotifierFactory::~SyncNotifierFactory() {
@@ -139,10 +144,12 @@ SyncNotifierFactory::~SyncNotifierFactory() {
 }
 
 SyncNotifier* SyncNotifierFactory::CreateSyncNotifier() {
-  return CreateDefaultSyncNotifier(command_line_,
-                                   request_context_getter_,
-                                   initial_max_invalidation_versions_,
-                                   invalidation_version_tracker_,
-                                   client_info_);
+  return new BridgedSyncNotifier(
+      &chrome_notification_bridge_,
+      CreateDefaultSyncNotifier(command_line_,
+                                request_context_getter_,
+                                initial_max_invalidation_versions_,
+                                invalidation_version_tracker_,
+                                client_info_));
 }
 }  // namespace sync_notifier
