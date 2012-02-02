@@ -613,7 +613,7 @@ void CFUrlRequestUnittestRunner::PreEarlyInitialization() {
   FilterDisabledTests();
 }
 
-void CFUrlRequestUnittestRunner::PreCreateThreads() {
+int CFUrlRequestUnittestRunner::PreCreateThreads() {
   fake_chrome_.reset(new FakeExternalTab());
   fake_chrome_->Initialize();
   fake_chrome_->browser_process()->PreCreateThreads();
@@ -621,6 +621,7 @@ void CFUrlRequestUnittestRunner::PreCreateThreads() {
   pss_subclass_.reset(new ProcessSingletonSubclass(this));
   EXPECT_TRUE(pss_subclass_->Subclass(fake_chrome_->user_data()));
   StartChromeFrameInHostBrowser();
+  return 0;
 }
 
 void CFUrlRequestUnittestRunner::PreMainMessageLoopRun() {

@@ -318,7 +318,10 @@ void BrowserMainLoop::MainMessageLoopStart() {
 void BrowserMainLoop::RunMainMessageLoopParts(
     bool* completed_main_message_loop) {
   if (parts_.get())
-    parts_->PreCreateThreads();
+    result_code_ = parts_->PreCreateThreads();
+
+  if (result_code_ > 0)
+    return;
 
   base::Thread::Options default_options;
   base::Thread::Options io_message_loop_options;

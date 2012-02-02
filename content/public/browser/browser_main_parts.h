@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -69,8 +69,9 @@ class CONTENT_EXPORT BrowserMainParts {
   // framework are created.
   //
   // The main message loop has been started at this point (but has not
-  // been run), and the toolkit has been initialized.
-  virtual void PreCreateThreads() = 0;
+  // been run), and the toolkit has been initialized. Returns the error code
+  // (or 0 if no error).
+  virtual int PreCreateThreads() = 0;
 
   // This is called just before the main message loop is run.  The
   // various browser threads have all been created at this point
