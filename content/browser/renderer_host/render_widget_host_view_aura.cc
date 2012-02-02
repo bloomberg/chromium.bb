@@ -19,6 +19,7 @@
 #include "ui/aura/gestures/gesture_recognizer.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
+#include "ui/aura/window_observer.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ui_base_types.h"
@@ -98,6 +99,31 @@ bool CanRendererHandleEvent(const base::NativeEvent& native_event) {
 
 }  // namespace
 
+// We have to implement the WindowObserver interface on a separate object
+// because clang doesn't like implementing multiple interfaces that have
+// methods with the same name. This object is owned by the
+// RenderWidgetHostViewAura.
+class RenderWidgetHostViewAura::WindowObserver : public aura::WindowObserver {
+ public:
+  WindowObserver(RenderWidgetHostViewAura* view) : view_(view) {}
+  virtual ~WindowObserver() {}
+
+    // Overridden from aura::WindowObserver:
+  virtual void OnWindowRemovingFromRootWindow(aura::Window* window) OVERRIDE {
+#if defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
+    // TODO: It would be better to not use aura::RootWindow here
+    ui::Compositor* compositor = view_->GetCompositor();
+    if (compositor && compositor->HasObserver(view_))
+      compositor->RemoveObserver(view_);
+#endif
+  }
+
+ private:
+  RenderWidgetHostViewAura* view_;
+
+  DISALLOW_COPY_AND_ASSIGN(WindowObserver);
+};
+
 ////////////////////////////////////////////////////////////////////////////////
 // RenderWidgetHostViewAura, public:
 
@@ -117,13 +143,14 @@ RenderWidgetHostViewAura::RenderWidgetHostViewAura(RenderWidgetHost* host)
       paint_canvas_(NULL),
       synthetic_move_sent_(false) {
   host_->SetView(this);
-  window_->AddObserver(this);
+  window_observer_.reset(new WindowObserver(this));
+  window_->AddObserver(window_observer_.get());
   aura::client::SetTooltipText(window_, &tooltip_);
   aura::client::SetActivationDelegate(window_, this);
 }
 
 RenderWidgetHostViewAura::~RenderWidgetHostViewAura() {
-  window_->RemoveObserver(this);
+  window_->RemoveObserver(window_observer_.get());
   UnlockMouse();
   if (popup_type_ != WebKit::WebPopupTypeNone) {
     DCHECK(popup_parent_host_view_);
@@ -931,19 +958,6 @@ void RenderWidgetHostViewAura::OnWindowDestroyed() {
 }
 
 void RenderWidgetHostViewAura::OnWindowVisibilityChanged(bool visible) {
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// RenderWidgetHostViewAura, aura::WindowObserver implementation:
-
-void RenderWidgetHostViewAura::OnWindowRemovingFromRootWindow(
-    aura::Window* window) {
-#if defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
-  // TODO: It would be better to not use aura::RootWindow here
-  ui::Compositor* compositor = GetCompositor();
-  if (compositor && compositor->HasObserver(this))
-    compositor->RemoveObserver(this);
-#endif
 }
 
 ////////////////////////////////////////////////////////////////////////////////
