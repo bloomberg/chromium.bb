@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Chromium Authors. All rights reserved.
+ * Copyright (c) 2012 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -81,9 +81,10 @@
 
 .cr-cb-popup {
   position: absolute;
-  left: 0;
   right: 0;
-  display: none;
+  display: -webkit-box;
+  opacity: 0;
+  pointer-events: none;
   -webkit-box-orient: vertical;
   -webkit-box-align: stretch;
 
@@ -98,7 +99,8 @@
 }
 
 .cr-combobutton[open] .cr-cb-popup {
-  display: -webkit-box;
+  opacity: 1;
+  pointer-events: auto;
 }
 
 .cr-cb-popup > * {

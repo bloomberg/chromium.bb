@@ -8,6 +8,18 @@
 
 cr.define('cr.ui', function() {
   /**
+   * Sets minWidth for the target, so it's visually as large as source.
+   * @param {HTMLElement} target
+   * @param {HTMLElement} source
+   */
+  function enlarge(target, source) {
+    var cs = target.ownerDocument.defaultView.getComputedStyle(target);
+    target.style.minWidth = (source.getBoundingClientRect().width -
+        parseFloat(cs.borderLeftWidth) -
+        parseFloat(cs.borderRightWidth)) + 'px';
+  }
+
+  /**
    * Creates a new combobutton element.
    * @param {Object=} opt_propertyBag Optional properties.
    * @constructor
@@ -28,6 +40,8 @@ cr.define('cr.ui', function() {
       this.popup_.textContent = '';
       this.buttonContainer_.textContent = '';
       this.multiple = false;
+      this.style.minWidth = '0';
+      this.popup_.style.minWidth = '0';
     },
 
     addItem: function(item) {
@@ -37,12 +51,18 @@ cr.define('cr.ui', function() {
       } else {
         this.multiple = true;
         if (this.visible)
-          this.popup_.style.bottom = this.clientHeight + 'px';
+          this.setPopupSize_();
         if (this.popup_.hasChildNodes())
           this.popup_.insertBefore(item, this.popup_.firstChild);
         else
           this.popup_.appendChild(item);
       }
+    },
+
+    setPopupSize_: function() {
+      this.popup_.style.bottom = this.clientHeight + 'px';
+      enlarge(this, this.popup_);
+      enlarge(this.popup_, this);
     },
 
     /**
@@ -125,7 +145,7 @@ cr.define('cr.ui', function() {
     set visible(value) {
       if (value) {
         this.setAttribute('visible', 'visible');
-        this.popup_.style.bottom = this.clientHeight + 'px';
+        this.setPopupSize_();
       } else {
         this.removeAttribute('visible');
       }
