@@ -87,12 +87,13 @@ class RepoRepository(object):
   _INIT_CMD = ['repo', 'init', '--repo-url', constants.REPO_URL]
 
   def __init__(self, repo_url, directory, branch=None, stable_sync=False,
-               referenced_repo=None):
+               referenced_repo=None, manifest=None):
     self.repo_url = repo_url
     self.directory = directory
     self.branch = branch
     self._stable_sync = stable_sync
     self._referenced_repo = referenced_repo
+    self._manifest = manifest
 
   def Initialize(self, extra_args=(), force=False):
     """Initializes a repository."""
@@ -103,6 +104,8 @@ class RepoRepository(object):
     init_cmd = self._INIT_CMD + ['--manifest-url', self.repo_url]
     if self._referenced_repo:
       init_cmd.extend(['--reference', self._referenced_repo])
+    if self._manifest:
+      init_cmd.extend(['--manifest-name', self._manifest])
     init_cmd.extend(extra_args)
 
     # Handle branch / manifest options.

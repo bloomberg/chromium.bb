@@ -12,9 +12,9 @@ import shutil
 import sys
 import tempfile
 import unittest
+import constants
 
 if __name__ == '__main__':
-  import constants
   sys.path.append(constants.SOURCE_ROOT)
 
 from chromite.buildbot import cbuildbot_config
@@ -78,16 +78,13 @@ class HelperMethodsTest(unittest.TestCase):
 
   def testPushGitChanges(self):
     """Tests if we can append to an authors file and push it using dryrun."""
-    init_cmd = ['repo', 'init', '-u', constants.MANIFEST_URL, '--repo-url',
-                constants.REPO_URL, '-m', 'minilayout.xml']
-    cros_lib.RunCommand(init_cmd, cwd=self.tmpdir, input='\n\ny\n')
-    configure_repo.FixBrokenExistingRepos(self.tmpdir)
-    cros_lib.RunCommand(('repo sync --jobs 8').split(), cwd=self.tmpdir)
+
+    repo = repository.RepoRepository(constants.MANIFEST_URL, self.tmpdir,
+                                     referenced_repo=constants.SOURCE_ROOT,
+                                     manifest='minilayout.xml')
+    repo.Sync()
+
     git_dir = os.path.join(self.tmpdir, GIT_TEST_PATH)
-    cros_lib.RunCommand(['git',
-                         'config',
-                         'url.%s.insteadof' % constants.GERRIT_SSH_URL,
-                         constants.GIT_HTTP_URL], cwd=git_dir)
     manifest_version.PrepForChanges(git_dir, dry_run=True)
 
     # Change something.
@@ -105,11 +102,6 @@ class HelperMethodsTest(unittest.TestCase):
         internal_build=False, read_only=True)
     cros_lib.RunCommand(['git', 'clone', manifest_versions_url, git_dir])
     try:
-      cros_lib.RunCommand(['git',
-                           'config',
-                           'url.%s.insteadof' % constants.GERRIT_SSH_URL,
-                           constants.GIT_HTTP_URL], cwd=git_dir)
-
       manifest_version.PrepForChanges(git_dir, dry_run=False)
 
       # This should not error out if we are running with dry_run=False for
