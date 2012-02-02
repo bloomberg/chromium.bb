@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,8 +9,10 @@
 
 void UrlmonUploadDataStream::Initialize(net::UploadData* upload_data) {
   upload_data_ = upload_data;
-  request_body_stream_.reset(net::UploadDataStream::Create(upload_data, NULL));
-  DCHECK(request_body_stream_.get());
+  request_body_stream_.reset(
+      new net::UploadDataStream(upload_data));
+  const int result = request_body_stream_->Init();
+  DCHECK_EQ(net::OK, result);
 }
 
 STDMETHODIMP UrlmonUploadDataStream::Read(void* pv, ULONG cb, ULONG* read) {
@@ -68,9 +70,9 @@ STDMETHODIMP UrlmonUploadDataStream::Seek(LARGE_INTEGER move, DWORD origin,
   // STREAM_SEEK_SETs to work with a 0 offset, but fail on everything else.
   if (origin == STREAM_SEEK_SET && move.QuadPart == 0) {
     if (request_body_stream_->position() != 0) {
-      request_body_stream_.reset(
-          net::UploadDataStream::Create(upload_data_, NULL));
-      DCHECK(request_body_stream_.get());
+      request_body_stream_.reset(new net::UploadDataStream(upload_data_));
+      const int result = request_body_stream_->Init();
+      DCHECK_EQ(net::OK, result);
     }
     if (new_pos) {
       new_pos->QuadPart = 0;
