@@ -131,8 +131,6 @@ bool Cryptographer::GetKeys(sync_pb::EncryptedData* encrypted) const {
 }
 
 bool Cryptographer::AddKey(const KeyParams& params) {
-  DCHECK(NULL == pending_keys_.get());
-
   // Create the new Nigori and make it the default encryptor.
   scoped_ptr<Nigori> nigori(new Nigori);
   if (!nigori->InitByDerivation(params.hostname,
@@ -141,6 +139,15 @@ bool Cryptographer::AddKey(const KeyParams& params) {
     NOTREACHED();  // Invalid username or password.
     return false;
   }
+  return AddKeyImpl(nigori.release());
+}
+
+bool Cryptographer::AddKeyFromBootstrapToken(
+    const std::string restored_bootstrap_token) {
+  // Create the new Nigori and make it the default encryptor.
+  scoped_ptr<Nigori> nigori(UnpackBootstrapToken(restored_bootstrap_token));
+  if (!nigori.get())
+    return false;
   return AddKeyImpl(nigori.release());
 }
 

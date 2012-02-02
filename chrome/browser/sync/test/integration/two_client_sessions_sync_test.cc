@@ -160,7 +160,10 @@ IN_PROC_BROWSER_TEST_F(TwoClientSessionsSyncTest,
       client0_windows.GetMutable()));
 
   ASSERT_TRUE(EnableEncryption(0, syncable::SESSIONS));
-  GetClient(0)->service()->SetPassphrase(kValidPassphrase, true);
+  GetClient(0)->service()->SetPassphrase(
+      kValidPassphrase,
+      ProfileSyncService::EXPLICIT,
+      ProfileSyncService::USER_PROVIDED);
   ASSERT_TRUE(GetClient(0)->AwaitPassphraseAccepted());
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
   ASSERT_TRUE(GetClient(1)->AwaitPassphraseRequired());
@@ -172,7 +175,10 @@ IN_PROC_BROWSER_TEST_F(TwoClientSessionsSyncTest,
       GetClient(1)->GetLastSessionSnapshot()->
       num_conflicting_updates);  // The encrypted nodes.
 
-  GetClient(1)->service()->SetPassphrase(kValidPassphrase, true);
+  GetClient(1)->service()->SetPassphrase(
+      kValidPassphrase,
+      ProfileSyncService::EXPLICIT,
+      ProfileSyncService::USER_PROVIDED);
   ASSERT_TRUE(GetClient(1)->AwaitPassphraseAccepted());
   ASSERT_TRUE(GetClient(1)->WaitForTypeEncryption(syncable::SESSIONS));
 
@@ -204,7 +210,10 @@ IN_PROC_BROWSER_TEST_F(TwoClientSessionsSyncTest,
   ASSERT_TRUE(CheckInitialState(1));
 
   ASSERT_TRUE(EnableEncryption(0, syncable::SESSIONS));
-  GetClient(0)->service()->SetPassphrase(kValidPassphrase, true);
+  GetClient(0)->service()->SetPassphrase(
+      kValidPassphrase,
+      ProfileSyncService::EXPLICIT,
+      ProfileSyncService::USER_PROVIDED);
   ASSERT_TRUE(GetClient(0)->AwaitPassphraseAccepted());
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
   ASSERT_TRUE(GetClient(1)->AwaitPassphraseRequired());
@@ -226,7 +235,10 @@ IN_PROC_BROWSER_TEST_F(TwoClientSessionsSyncTest,
       GetClient(1)->GetLastSessionSnapshot()->
       num_conflicting_updates);  // The encrypted nodes.
 
-  GetClient(1)->service()->SetPassphrase(kValidPassphrase, true);
+  GetClient(1)->service()->SetPassphrase(
+      kValidPassphrase,
+      ProfileSyncService::EXPLICIT,
+      ProfileSyncService::USER_PROVIDED);
   ASSERT_TRUE(GetClient(1)->AwaitPassphraseAccepted());
   ASSERT_TRUE(GetClient(1)->WaitForTypeEncryption(syncable::SESSIONS));
 
@@ -250,7 +262,10 @@ IN_PROC_BROWSER_TEST_F(TwoClientSessionsSyncTest,
   ASSERT_TRUE(CheckInitialState(1));
 
   ASSERT_TRUE(EnableEncryption(0, syncable::SESSIONS));
-  GetClient(0)->service()->SetPassphrase(kValidPassphrase, true);
+  GetClient(0)->service()->SetPassphrase(
+      kValidPassphrase,
+      ProfileSyncService::EXPLICIT,
+      ProfileSyncService::USER_PROVIDED);
   ASSERT_TRUE(GetClient(0)->AwaitPassphraseAccepted());
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
   ASSERT_TRUE(GetClient(1)->AwaitPassphraseRequired());
@@ -270,7 +285,10 @@ IN_PROC_BROWSER_TEST_F(TwoClientSessionsSyncTest,
 
   // At this point we enter the passphrase, triggering a resync, in which the
   // local changes of client 1 get sent to client 0.
-  GetClient(1)->service()->SetPassphrase(kValidPassphrase, true);
+  GetClient(1)->service()->SetPassphrase(
+      kValidPassphrase,
+      ProfileSyncService::EXPLICIT,
+      ProfileSyncService::USER_PROVIDED);
   ASSERT_TRUE(GetClient(1)->AwaitPassphraseAccepted());
   ASSERT_TRUE(GetClient(1)->WaitForTypeEncryption(syncable::SESSIONS));
   ASSERT_TRUE(GetClient(1)->AwaitMutualSyncCycleCompletion(GetClient(0)));
@@ -309,7 +327,10 @@ IN_PROC_BROWSER_TEST_F(TwoClientSessionsSyncTest,
   // Turn encryption on client 0. Client 1's foreign will be encrypted with the
   // new passphrase and synced back. It will be unable to decrypt it yet.
   ASSERT_TRUE(EnableEncryption(0, syncable::SESSIONS));
-  GetClient(0)->service()->SetPassphrase(kValidPassphrase, true);
+  GetClient(0)->service()->SetPassphrase(
+      kValidPassphrase,
+      ProfileSyncService::EXPLICIT,
+      ProfileSyncService::USER_PROVIDED);
   ASSERT_TRUE(GetClient(0)->AwaitPassphraseAccepted());
   ASSERT_TRUE(AwaitQuiescence());
   ASSERT_TRUE(GetClient(1)->AwaitPassphraseRequired());
@@ -323,7 +344,10 @@ IN_PROC_BROWSER_TEST_F(TwoClientSessionsSyncTest,
       num_conflicting_updates);  // The encrypted nodes.
 
   // At this point we enter the passphrase, triggering a resync.
-  GetClient(1)->service()->SetPassphrase(kValidPassphrase, true);
+  GetClient(1)->service()->SetPassphrase(
+      kValidPassphrase,
+      ProfileSyncService::EXPLICIT,
+      ProfileSyncService::USER_PROVIDED);
   ASSERT_TRUE(GetClient(1)->AwaitPassphraseAccepted());
   ASSERT_TRUE(GetClient(1)->WaitForTypeEncryption(syncable::SESSIONS));
 
@@ -354,7 +378,10 @@ IN_PROC_BROWSER_TEST_F(TwoClientSessionsSyncTest,
   ASSERT_TRUE(CheckInitialState(0));
   ASSERT_TRUE(CheckInitialState(1));
 
-  GetClient(0)->service()->SetPassphrase(kValidPassphrase, true);
+  GetClient(0)->service()->SetPassphrase(
+      kValidPassphrase,
+      ProfileSyncService::EXPLICIT,
+      ProfileSyncService::USER_PROVIDED);
   ASSERT_TRUE(GetClient(0)->AwaitPassphraseAccepted());
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
   ASSERT_TRUE(GetClient(1)->AwaitPassphraseRequired());
@@ -375,7 +402,10 @@ IN_PROC_BROWSER_TEST_F(TwoClientSessionsSyncTest,
       GetClient(1)->GetLastSessionSnapshot()->
       num_conflicting_updates);  // The encrypted nodes.
 
-  GetClient(1)->service()->SetPassphrase(kValidPassphrase, true);
+  GetClient(1)->service()->SetPassphrase(
+      kValidPassphrase,
+      ProfileSyncService::EXPLICIT,
+      ProfileSyncService::USER_PROVIDED);
   ASSERT_TRUE(GetClient(1)->AwaitPassphraseAccepted());
   ASSERT_FALSE(GetClient(1)->service()->IsPassphraseRequired());
   ASSERT_TRUE(GetClient(1)->WaitForTypeEncryption(syncable::SESSIONS));

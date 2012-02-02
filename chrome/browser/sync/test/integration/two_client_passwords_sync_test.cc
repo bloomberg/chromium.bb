@@ -243,22 +243,6 @@ IN_PROC_BROWSER_TEST_F(TwoClientPasswordsSyncTest,
   ASSERT_EQ(browser_sync::GROUP_PASSWORD, routes[syncable::PASSWORDS]);
 }
 
-IN_PROC_BROWSER_TEST_F(TwoClientPasswordsSyncTest, SetPassphraseTwice) {
-  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-
-  SetPassphrase(0, kValidPassphrase);
-  ASSERT_TRUE(GetClient(0)->AwaitPassphraseAccepted());
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-
-  SetPassphrase(1, kValidPassphrase);
-  ASSERT_TRUE(GetClient(1)->AwaitPassphraseAccepted());
-  ASSERT_TRUE(GetClient(1)->AwaitFullSyncCompletion("Set passphrase."));
-
-  SetPassphrase(1, kValidPassphrase);
-  ASSERT_TRUE(GetClient(1)->AwaitPassphraseAccepted());
-  ASSERT_TRUE(GetClient(1)->AwaitFullSyncCompletion("Set passphrase again."));
-}
-
 IN_PROC_BROWSER_TEST_F(TwoClientPasswordsSyncTest,
                        SetDifferentPassphraseAndThenSetupSync) {
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";

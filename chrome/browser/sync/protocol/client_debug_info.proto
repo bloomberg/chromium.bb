@@ -38,6 +38,8 @@ message DebugEventInfo {
     ENCRYPTED_TYPES_CHANGED = 9; // Set of encrypted types has changed.
     ENCRYPTION_COMPLETE = 7; // Client has finished encrypting all data.
     ACTIONABLE_ERROR = 8; // Client received an actionable error.
+    BOOTSTRAP_TOKEN_UPDATED = 9;  // A new cryptographer bootstrap token was
+                                  // generated.
   }
   optional EventType type = 1;
   optional SyncCycleCompletedEventInfo sync_cycle_completed_event_info = 2;

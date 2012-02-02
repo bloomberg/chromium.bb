@@ -1804,7 +1804,10 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
 
   // Set a passphrase and enable encryption on Client 0. Client 1 will not
   // understand the bookmark updates.
-  GetClient(0)->service()->SetPassphrase(kValidPassphrase, true);
+  GetClient(0)->service()->SetPassphrase(
+      kValidPassphrase,
+      ProfileSyncService::EXPLICIT,
+      ProfileSyncService::USER_PROVIDED);
   ASSERT_TRUE(GetClient(0)->AwaitPassphraseAccepted());
   ASSERT_TRUE(EnableEncryption(0, syncable::BOOKMARKS));
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
@@ -1821,7 +1824,10 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
   EXPECT_FALSE(AllModelsMatch());
 
   // Set the passphrase. Everything should resolve.
-  GetClient(1)->service()->SetPassphrase(kValidPassphrase, true);
+  GetClient(1)->service()->SetPassphrase(
+      kValidPassphrase,
+      ProfileSyncService::EXPLICIT,
+      ProfileSyncService::USER_PROVIDED);
   ASSERT_TRUE(GetClient(1)->AwaitPassphraseAccepted());
   ASSERT_TRUE(GetClient(1)->AwaitMutualSyncCycleCompletion(GetClient(0)));
   EXPECT_TRUE(AllModelsMatchVerifier());

@@ -178,11 +178,18 @@ class SyncBackendHost {
   virtual void StartSyncingWithServer();
 
   // Called on |frontend_loop_| to asynchronously set the passphrase.
-  // |is_explicit| is true if the call is in response to the user explicitly
-  // setting a passphrase as opposed to implicitly (from the users' perspective)
-  // using their Google Account password.  An implicit SetPassphrase will *not*
-  // *not* override an explicit passphrase set previously.
-  void SetPassphrase(const std::string& passphrase, bool is_explicit);
+  // |is_explicit| is true if the call is in response to the user setting a
+  // custom explicit passphrase as opposed to implicitly (from the users'
+  // perspective) using their Google Account password. An implicit SetPassphrase
+  // will *not* override an explicit passphrase set previously. Note that
+  // if the data is encrypted with an old Google Account password, the user
+  // may still have to provide a "implicit" passphrase.
+  // |user_provided| corresponds to the user having manually provided this
+  // passphrase. It should only be false for passphrases intercepted from the
+  // Google Sign-in Success notification and true otherwise.
+  void SetPassphrase(const std::string& passphrase,
+                     bool is_explicit,
+                     bool user_provided);
 
   // Called on |frontend_loop_| to kick off shutdown procedure. After this,
   // no further sync activity will occur with the sync server and no further
@@ -406,7 +413,7 @@ class SyncBackendHost {
                                 sync_pb::EncryptedData pending_keys);
 
   // Invoked when the passphrase provided by the user has been accepted.
-  void NotifyPassphraseAccepted(const std::string& bootstrap_token);
+  void NotifyPassphraseAccepted();
 
   // Invoked when an updated token is available from the sync server.
   void NotifyUpdatedToken(const std::string& token);

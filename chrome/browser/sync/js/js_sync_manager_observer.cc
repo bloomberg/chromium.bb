@@ -71,14 +71,22 @@ void JsSyncManagerObserver::OnPassphraseRequired(
   HandleJsEvent(FROM_HERE, "onPassphraseRequired", JsEventDetails(&details));
 }
 
-void JsSyncManagerObserver::OnPassphraseAccepted(
-    const std::string& bootstrap_token) {
+void JsSyncManagerObserver::OnPassphraseAccepted() {
+  if (!event_handler_.IsInitialized()) {
+    return;
+  }
+  DictionaryValue details;
+  HandleJsEvent(FROM_HERE, "onPassphraseAccepted", JsEventDetails(&details));
+}
+
+void JsSyncManagerObserver::OnBootstrapTokenUpdated(
+    const std::string& boostrap_token) {
   if (!event_handler_.IsInitialized()) {
     return;
   }
   DictionaryValue details;
   details.SetString("bootstrapToken", "<redacted>");
-  HandleJsEvent(FROM_HERE, "onPassphraseAccepted", JsEventDetails(&details));
+  HandleJsEvent(FROM_HERE, "OnBootstrapTokenUpdated", JsEventDetails(&details));
 }
 
 void JsSyncManagerObserver::OnEncryptedTypesChanged(

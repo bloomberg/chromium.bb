@@ -114,7 +114,8 @@ class ProfileSyncServiceForWizardTest : public ProfileSyncService {
   }
 
   virtual void SetPassphrase(const std::string& passphrase,
-                             bool is_explicit) OVERRIDE {
+                             PassphraseType type,
+                             PassphraseSource source) OVERRIDE {
     passphrase_ = passphrase;
   }
 

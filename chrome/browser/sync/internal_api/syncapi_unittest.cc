@@ -66,6 +66,7 @@ using browser_sync::Cryptographer;
 using browser_sync::HasArgsAsList;
 using browser_sync::HasDetailsAsDictionary;
 using browser_sync::KeyParams;
+using browser_sync::kNigoriTag;
 using browser_sync::JsArgList;
 using browser_sync::JsBackend;
 using browser_sync::JsEventHandler;
@@ -667,7 +668,8 @@ class SyncManagerObserverMock : public SyncManager::Observer {
   MOCK_METHOD2(OnPassphraseRequired,
                void(sync_api::PassphraseRequiredReason,
                     const sync_pb::EncryptedData&));  // NOLINT
-  MOCK_METHOD1(OnPassphraseAccepted, void(const std::string&));  // NOLINT
+  MOCK_METHOD0(OnPassphraseAccepted, void());  // NOLINT
+  MOCK_METHOD1(OnBootstrapTokenUpdated, void(const std::string&));  // NOLINT
   MOCK_METHOD0(OnStopSyncingPermanently, void());  // NOLINT
   MOCK_METHOD1(OnUpdatedToken, void(const std::string&));  // NOLINT
   MOCK_METHOD0(OnClearServerDataFailed, void());  // NOLINT
@@ -707,6 +709,7 @@ class SyncManagerTest : public testing::Test,
   };
 
   enum EncryptionStatus {
+    UNINITIALIZED,
     DEFAULT_ENCRYPTION,
     FULL_ENCRYPTION
   };
@@ -833,8 +836,12 @@ class SyncManagerTest : public testing::Test,
     Cryptographer* cryptographer = trans.GetCryptographer();
     if (!cryptographer)
       return false;
-    KeyParams params = {"localhost", "dummy", "foobar"};
-    cryptographer->AddKey(params);
+    if (encryption_status != UNINITIALIZED) {
+      KeyParams params = {"localhost", "dummy", "foobar"};
+      cryptographer->AddKey(params);
+    } else {
+      DCHECK_NE(nigori_status, WRITE_TO_NIGORI);
+    }
     if (encryption_status == FULL_ENCRYPTION)
       cryptographer->set_encrypt_everything();
     if (nigori_status == WRITE_TO_NIGORI) {
@@ -1448,9 +1455,10 @@ TEST_F(SyncManagerTest, EncryptDataTypesWithData) {
 
   // Trigger's a ReEncryptEverything with new passphrase.
   testing::Mock::VerifyAndClearExpectations(&observer_);
-  EXPECT_CALL(observer_, OnPassphraseAccepted(_));
+  EXPECT_CALL(observer_, OnBootstrapTokenUpdated(_));
+  EXPECT_CALL(observer_, OnPassphraseAccepted());
   EXPECT_CALL(observer_, OnEncryptionComplete());
-  sync_manager_.SetPassphrase("new_passphrase", true);
+  sync_manager_.SetPassphrase("new_passphrase", true, true);
   EXPECT_TRUE(sync_manager_.EncryptEverythingEnabledForTest());
   {
     ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
@@ -1476,15 +1484,76 @@ TEST_F(SyncManagerTest, EncryptDataTypesWithData) {
   // a reencryption and should just notify immediately.
   // TODO(zea): add logic to ensure nothing was written.
   testing::Mock::VerifyAndClearExpectations(&observer_);
-  EXPECT_CALL(observer_, OnPassphraseAccepted(_)).Times(0);
+  EXPECT_CALL(observer_, OnBootstrapTokenUpdated(_)).Times(0);
+  EXPECT_CALL(observer_, OnPassphraseAccepted()).Times(0);
   EXPECT_CALL(observer_, OnEncryptionComplete());
   sync_manager_.EnableEncryptEverything();
 }
 
+// Test that when there are no pending keys and the cryptographer is not
+// initialized, we add a key based on the current GAIA password.
+// (case 1 in SyncManager::SyncInternalSetPassphrase)
+TEST_F(SyncManagerTest, SetInitialGaiaPass) {
+  EXPECT_FALSE(SetUpEncryption(DONT_WRITE_NIGORI, UNINITIALIZED));
+  EXPECT_CALL(observer_, OnBootstrapTokenUpdated(_));
+  EXPECT_CALL(observer_, OnPassphraseAccepted());
+  EXPECT_CALL(observer_, OnEncryptionComplete());
+  sync_manager_.SetPassphrase("new_passphrase", false, false);
+  EXPECT_FALSE(sync_manager_.EncryptEverythingEnabledForTest());
+  {
+    ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
+    ReadNode node(&trans);
+    EXPECT_TRUE(node.InitByTagLookup(kNigoriTag));
+    sync_pb::NigoriSpecifics nigori = node.GetNigoriSpecifics();
+    Cryptographer* cryptographer = trans.GetCryptographer();
+    EXPECT_TRUE(cryptographer->is_ready());
+    EXPECT_TRUE(cryptographer->CanDecrypt(nigori.encrypted()));
+  }
+}
+
+// Test that when there are no pending keys and we have on the old GAIA
+// password, we update and re-encrypt everything with the new GAIA password.
+// (case 1 in SyncManager::SyncInternalSetPassphrase)
+TEST_F(SyncManagerTest, UpdateGaiaPass) {
+  EXPECT_TRUE(SetUpEncryption(WRITE_TO_NIGORI, DEFAULT_ENCRYPTION));
+  Cryptographer verifier;
+  {
+    ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
+    Cryptographer* cryptographer = trans.GetCryptographer();
+    std::string bootstrap_token;
+    cryptographer->GetBootstrapToken(&bootstrap_token);
+    verifier.Bootstrap(bootstrap_token);
+  }
+  EXPECT_CALL(observer_, OnBootstrapTokenUpdated(_));
+  EXPECT_CALL(observer_, OnPassphraseAccepted());
+  EXPECT_CALL(observer_, OnEncryptionComplete());
+  sync_manager_.SetPassphrase("new_passphrase", false, false);
+  EXPECT_FALSE(sync_manager_.EncryptEverythingEnabledForTest());
+  {
+    ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
+    Cryptographer* cryptographer = trans.GetCryptographer();
+    EXPECT_TRUE(cryptographer->is_ready());
+    // Verify the default key has changed.
+    sync_pb::EncryptedData encrypted;
+    cryptographer->GetKeys(&encrypted);
+    EXPECT_FALSE(verifier.CanDecrypt(encrypted));
+  }
+}
+
+// Sets a new explicit passphrase. This should update the bootstrap token
+// and re-encrypt everything.
+// (case 2 in SyncManager::SyncInternalSetPassphrase)
 TEST_F(SyncManagerTest, SetPassphraseWithPassword) {
+  Cryptographer verifier;
   EXPECT_TRUE(SetUpEncryption(WRITE_TO_NIGORI, DEFAULT_ENCRYPTION));
   {
     WriteTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
+    // Store the default (soon to be old) key.
+    Cryptographer* cryptographer = trans.GetCryptographer();
+    std::string bootstrap_token;
+    cryptographer->GetBootstrapToken(&bootstrap_token);
+    verifier.Bootstrap(bootstrap_token);
+
     ReadNode root_node(&trans);
     root_node.InitByRootLookup();
 
@@ -1495,18 +1564,183 @@ TEST_F(SyncManagerTest, SetPassphraseWithPassword) {
     data.set_password_value("secret");
     password_node.SetPasswordSpecifics(data);
   }
-  EXPECT_CALL(observer_, OnPassphraseAccepted(_));
+  EXPECT_CALL(observer_, OnBootstrapTokenUpdated(_));
+  EXPECT_CALL(observer_, OnPassphraseAccepted());
   EXPECT_CALL(observer_, OnEncryptionComplete());
-  sync_manager_.SetPassphrase("new_passphrase", true);
+  sync_manager_.SetPassphrase("new_passphrase", true, true);
   EXPECT_FALSE(sync_manager_.EncryptEverythingEnabledForTest());
   {
     ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
+    Cryptographer* cryptographer = trans.GetCryptographer();
+    EXPECT_TRUE(cryptographer->is_ready());
+    // Verify the default key has changed.
+    sync_pb::EncryptedData encrypted;
+    cryptographer->GetKeys(&encrypted);
+    EXPECT_FALSE(verifier.CanDecrypt(encrypted));
+
     ReadNode password_node(&trans);
     EXPECT_TRUE(password_node.InitByClientTagLookup(syncable::PASSWORDS,
                                                     "foo"));
     const sync_pb::PasswordSpecificsData& data =
         password_node.GetPasswordSpecifics();
     EXPECT_EQ("secret", data.password_value());
+  }
+}
+
+// Manually set the pending keys in the cryptographer/nigori to reflect the data
+// being encrypted with a new (unprovided) GAIA password, then supply the
+// password.
+// (case 3 in SyncManager::SyncInternalSetPassphrase)
+TEST_F(SyncManagerTest, SupplyPendingGAIAPass) {
+  EXPECT_TRUE(SetUpEncryption(WRITE_TO_NIGORI, DEFAULT_ENCRYPTION));
+  Cryptographer other_cryptographer;
+  {
+    WriteTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
+    Cryptographer* cryptographer = trans.GetCryptographer();
+    std::string bootstrap_token;
+    cryptographer->GetBootstrapToken(&bootstrap_token);
+    other_cryptographer.Bootstrap(bootstrap_token);
+
+    // Now update the nigori to reflect the new keys, and update the
+    // cryptographer to have pending keys.
+    KeyParams params = {"localhost", "dummy", "passphrase2"};
+    other_cryptographer.AddKey(params);
+    WriteNode node(&trans);
+    EXPECT_TRUE(node.InitByTagLookup(kNigoriTag));
+    sync_pb::NigoriSpecifics nigori;
+    other_cryptographer.GetKeys(nigori.mutable_encrypted());
+    cryptographer->Update(nigori);
+    EXPECT_TRUE(cryptographer->has_pending_keys());
+    node.SetNigoriSpecifics(nigori);
+  }
+  EXPECT_CALL(observer_, OnBootstrapTokenUpdated(_));
+  EXPECT_CALL(observer_, OnPassphraseAccepted());
+  EXPECT_CALL(observer_, OnEncryptionComplete());
+  sync_manager_.SetPassphrase("passphrase2", false, false);
+  EXPECT_FALSE(sync_manager_.EncryptEverythingEnabledForTest());
+  {
+    ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
+    Cryptographer* cryptographer = trans.GetCryptographer();
+    EXPECT_TRUE(cryptographer->is_ready());
+    // Verify we're encrypting with the new key.
+    sync_pb::EncryptedData encrypted;
+    cryptographer->GetKeys(&encrypted);
+    EXPECT_TRUE(other_cryptographer.CanDecrypt(encrypted));
+  }
+}
+
+// Manually set the pending keys in the cryptographer/nigori to reflect the data
+// being encrypted with an old (unprovided) GAIA password. Attempt to supply
+// the current GAIA password and verify the bootstrap token is updated. Then
+// supply the old GAIA password, and verify we re-encrypt all data with the
+// new GAIA password.
+// (case 4 in SyncManager::SyncInternalSetPassphrase)
+TEST_F(SyncManagerTest, SupplyPendingOldGAIAPass) {
+  EXPECT_TRUE(SetUpEncryption(WRITE_TO_NIGORI, DEFAULT_ENCRYPTION));
+  Cryptographer other_cryptographer;
+  {
+    WriteTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
+    Cryptographer* cryptographer = trans.GetCryptographer();
+    std::string bootstrap_token;
+    cryptographer->GetBootstrapToken(&bootstrap_token);
+    other_cryptographer.Bootstrap(bootstrap_token);
+
+    // Now update the nigori to reflect the new keys, and update the
+    // cryptographer to have pending keys.
+    KeyParams params = {"localhost", "dummy", "old_gaia"};
+    other_cryptographer.AddKey(params);
+    WriteNode node(&trans);
+    EXPECT_TRUE(node.InitByTagLookup(kNigoriTag));
+    sync_pb::NigoriSpecifics nigori;
+    other_cryptographer.GetKeys(nigori.mutable_encrypted());
+    node.SetNigoriSpecifics(nigori);
+    cryptographer->Update(nigori);
+
+    // other_cryptographer now contains all encryption keys, and is encrypting
+    // with the newest gaia.
+    KeyParams new_params = {"localhost", "dummy", "new_gaia"};
+    other_cryptographer.AddKey(new_params);
+  }
+  // The bootstrap token should have been updated. Save it to ensure it's based
+  // on the new GAIA password.
+  std::string bootstrap_token;
+  EXPECT_CALL(observer_, OnBootstrapTokenUpdated(_))
+      .WillOnce(SaveArg<0>(&bootstrap_token));
+  EXPECT_CALL(observer_, OnPassphraseRequired(_,_));
+  sync_manager_.SetPassphrase("new_gaia", false, false);
+  EXPECT_FALSE(sync_manager_.EncryptEverythingEnabledForTest());
+  testing::Mock::VerifyAndClearExpectations(&observer_);
+  {
+    ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
+    Cryptographer* cryptographer = trans.GetCryptographer();
+    EXPECT_TRUE(cryptographer->is_initialized());
+    EXPECT_FALSE(cryptographer->is_ready());
+    // Verify we're encrypting with the new key, even though we have pending
+    // keys.
+    sync_pb::EncryptedData encrypted;
+    other_cryptographer.GetKeys(&encrypted);
+    EXPECT_TRUE(cryptographer->CanDecrypt(encrypted));
+  }
+  EXPECT_CALL(observer_, OnPassphraseAccepted());
+  EXPECT_CALL(observer_, OnEncryptionComplete());
+  sync_manager_.SetPassphrase("old_gaia", false, true);
+  {
+    ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
+    Cryptographer* cryptographer = trans.GetCryptographer();
+    EXPECT_TRUE(cryptographer->is_ready());
+
+    // Verify we're encrypting with the new key.
+    sync_pb::EncryptedData encrypted;
+    other_cryptographer.GetKeys(&encrypted);
+    EXPECT_TRUE(cryptographer->CanDecrypt(encrypted));
+
+    // Verify the saved bootstrap token is based on the new gaia password.
+    Cryptographer temp_cryptographer;
+    temp_cryptographer.Bootstrap(bootstrap_token);
+    EXPECT_TRUE(temp_cryptographer.CanDecrypt(encrypted));
+  }
+}
+
+// Manually set the pending keys in the cryptographer/nigori to reflect the data
+// being encrypted with an explicit (unprovided) passphrase, then supply the
+// passphrase.
+// (case 5 in SyncManager::SyncInternalSetPassphrase)
+TEST_F(SyncManagerTest, SupplyPendingExplicitPass) {
+  EXPECT_TRUE(SetUpEncryption(WRITE_TO_NIGORI, DEFAULT_ENCRYPTION));
+  Cryptographer other_cryptographer;
+  {
+    WriteTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
+    Cryptographer* cryptographer = trans.GetCryptographer();
+    std::string bootstrap_token;
+    cryptographer->GetBootstrapToken(&bootstrap_token);
+    other_cryptographer.Bootstrap(bootstrap_token);
+
+    // Now update the nigori to reflect the new keys, and update the
+    // cryptographer to have pending keys.
+    KeyParams params = {"localhost", "dummy", "explicit"};
+    other_cryptographer.AddKey(params);
+    WriteNode node(&trans);
+    EXPECT_TRUE(node.InitByTagLookup(kNigoriTag));
+    sync_pb::NigoriSpecifics nigori;
+    other_cryptographer.GetKeys(nigori.mutable_encrypted());
+    cryptographer->Update(nigori);
+    EXPECT_TRUE(cryptographer->has_pending_keys());
+    nigori.set_using_explicit_passphrase(true);
+    node.SetNigoriSpecifics(nigori);
+  }
+  EXPECT_CALL(observer_, OnBootstrapTokenUpdated(_));
+  EXPECT_CALL(observer_, OnPassphraseAccepted());
+  EXPECT_CALL(observer_, OnEncryptionComplete());
+  sync_manager_.SetPassphrase("explicit", true, true);
+  EXPECT_FALSE(sync_manager_.EncryptEverythingEnabledForTest());
+  {
+    ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
+    Cryptographer* cryptographer = trans.GetCryptographer();
+    EXPECT_TRUE(cryptographer->is_ready());
+    // Verify we're encrypting with the new key.
+    sync_pb::EncryptedData encrypted;
+    cryptographer->GetKeys(&encrypted);
+    EXPECT_TRUE(other_cryptographer.CanDecrypt(encrypted));
   }
 }
 
@@ -1524,9 +1758,10 @@ TEST_F(SyncManagerTest, SetPassphraseWithEmptyPasswordNode) {
                                                    root_node, tag));
     node_id = password_node.GetId();
   }
-  EXPECT_CALL(observer_, OnPassphraseAccepted(_));
+  EXPECT_CALL(observer_, OnBootstrapTokenUpdated(_));
+  EXPECT_CALL(observer_, OnPassphraseAccepted());
   EXPECT_CALL(observer_, OnEncryptionComplete());
-  sync_manager_.SetPassphrase("new_passphrase", true);
+  sync_manager_.SetPassphrase("new_passphrase", true, true);
   EXPECT_FALSE(sync_manager_.EncryptEverythingEnabledForTest());
   {
     ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
@@ -1715,9 +1950,10 @@ TEST_F(SyncManagerTest, UpdateEntryWithEncryption) {
 
   // Set a new passphrase. Should set is_unsynced.
   testing::Mock::VerifyAndClearExpectations(&observer_);
-  EXPECT_CALL(observer_, OnPassphraseAccepted(_));
+  EXPECT_CALL(observer_, OnBootstrapTokenUpdated(_));
+  EXPECT_CALL(observer_, OnPassphraseAccepted());
   EXPECT_CALL(observer_, OnEncryptionComplete());
-  sync_manager_.SetPassphrase("new_passphrase", true);
+  sync_manager_.SetPassphrase("new_passphrase", true, true);
   {
     ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
     ReadNode node(&trans);
