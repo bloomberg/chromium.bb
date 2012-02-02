@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -58,7 +58,7 @@ class DataTypeManagerMock : public DataTypeManager {
                void(TypeSet, sync_api::ConfigureReason));
   MOCK_METHOD0(Stop, void());
   MOCK_METHOD0(controllers, const DataTypeController::TypeMap&());
-  MOCK_METHOD0(state, State());
+  MOCK_CONST_METHOD0(state, State());
 
  private:
   browser_sync::DataTypeManager::ConfigureResult result_;

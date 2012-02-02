@@ -86,7 +86,7 @@ class DataTypeManager {
                          sync_api::ConfigureReason reason) = 0;
 
   virtual void ConfigureWithoutNigori(TypeSet desired_types,
-      sync_api::ConfigureReason reason) = 0;
+                                      sync_api::ConfigureReason reason) = 0;
 
   // Synchronously stops all registered data types.  If called after
   // Configure() is called but before it finishes, it will abort the
@@ -95,7 +95,7 @@ class DataTypeManager {
   virtual void Stop() = 0;
 
   // The current state of the data type manager.
-  virtual State state() = 0;
+  virtual State state() const = 0;
 };
 
 }  // namespace browser_sync

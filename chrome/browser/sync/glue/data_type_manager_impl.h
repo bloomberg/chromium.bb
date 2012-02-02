@@ -16,15 +16,15 @@
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time.h"
+#include "chrome/browser/sync/glue/backend_data_type_configurer.h"
 
 namespace browser_sync {
 
 class DataTypeController;
-class SyncBackendHost;
 
 class DataTypeManagerImpl : public DataTypeManager {
  public:
-  DataTypeManagerImpl(SyncBackendHost* backend,
+  DataTypeManagerImpl(BackendDataTypeConfigurer* configurer,
                       const DataTypeController::TypeMap* controllers);
   virtual ~DataTypeManagerImpl();
 
@@ -38,7 +38,7 @@ class DataTypeManagerImpl : public DataTypeManager {
       sync_api::ConfigureReason reason) OVERRIDE;
 
   virtual void Stop() OVERRIDE;
-  virtual State state() OVERRIDE;
+  virtual State state() const OVERRIDE;
 
  private:
   // Starts the next data type in the kStartOrder list, indicated by
@@ -64,7 +64,8 @@ class DataTypeManagerImpl : public DataTypeManager {
   // Otherwise, returns false.
   bool ProcessReconfigure();
 
-  void Restart(sync_api::ConfigureReason reason, bool enable_nigori);
+  void Restart(sync_api::ConfigureReason reason,
+               BackendDataTypeConfigurer::NigoriState nigori_state);
   void DownloadReady(syncable::ModelTypeSet failed_configuration_types);
 
   // Notification from the SBH that download failed due to a transient
@@ -78,11 +79,12 @@ class DataTypeManagerImpl : public DataTypeManager {
   // Restart().
   void AddToConfigureTime();
 
-  virtual void ConfigureImpl(TypeSet desired_types,
-                             sync_api::ConfigureReason reason,
-                             bool enable_nigori);
+  void ConfigureImpl(
+      TypeSet desired_types,
+      sync_api::ConfigureReason reason,
+      BackendDataTypeConfigurer::NigoriState nigori_state);
 
-  SyncBackendHost* backend_;
+  BackendDataTypeConfigurer* configurer_;
   // Map of all data type controllers that are available for sync.
   // This list is determined at startup by various command line flags.
   const DataTypeController::TypeMap* controllers_;
@@ -99,10 +101,10 @@ class DataTypeManagerImpl : public DataTypeManager {
   // The reason for the last reconfigure attempt. Not this will be set to a
   // valid value only when |needs_reconfigure_| is set.
   sync_api::ConfigureReason last_configure_reason_;
-  // Whether enable_nigori was set on the last reconfigure attempt.
+  // The value of |nigori_state| on the last reconfigure attempt.
   // Like |last_configure_reason_|, set to a valid value only when
   // |needs_reconfigure_| is set.
-  bool last_enable_nigori_;
+  BackendDataTypeConfigurer::NigoriState last_nigori_state_;
 
   base::WeakPtrFactory<DataTypeManagerImpl> weak_ptr_factory_;
 

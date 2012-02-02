@@ -15,6 +15,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread.h"
 #include "chrome/browser/sync/engine/model_safe_worker.h"
+#include "chrome/browser/sync/glue/backend_data_type_configurer.h"
 #include "chrome/browser/sync/internal_api/includes/unrecoverable_error_handler.h"
 #include "chrome/browser/sync/internal_api/configure_reason.h"
 #include "chrome/browser/sync/internal_api/sync_manager.h"
@@ -138,7 +139,7 @@ class SyncFrontend {
 // syncapi element, the SyncManager, on its own thread. This class handles
 // dispatch of potentially blocking calls to appropriate threads and ensures
 // that the SyncFrontend is only accessed on the UI loop.
-class SyncBackendHost {
+class SyncBackendHost : public BackendDataTypeConfigurer {
  public:
   typedef sync_api::SyncManager::Status::Summary StatusSummary;
   typedef sync_api::SyncManager::Status Status;
@@ -200,12 +201,12 @@ class SyncBackendHost {
   // set of all types that failed configuration (i.e., if its argument
   // is non-empty, then an error was encountered).
   virtual void ConfigureDataTypes(
+      sync_api::ConfigureReason reason,
       syncable::ModelTypeSet types_to_add,
       syncable::ModelTypeSet types_to_remove,
-      sync_api::ConfigureReason reason,
+      NigoriState nigori_state,
       base::Callback<void(syncable::ModelTypeSet)> ready_task,
-      base::Callback<void()> retry_callback,
-      bool enable_nigori);
+      base::Callback<void()> retry_callback) OVERRIDE;
 
   // Makes an asynchronous call to syncer to switch to config mode. When done
   // syncer will call us back on FinishConfigureDataTypes.

@@ -17,7 +17,6 @@
 #include "base/metrics/histogram.h"
 #include "base/stringprintf.h"
 #include "chrome/browser/sync/glue/data_type_controller.h"
-#include "chrome/browser/sync/glue/sync_backend_host.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
@@ -71,16 +70,17 @@ class SortComparator : public std::binary_function<DataTypeController*,
 
 }  // namespace
 
-DataTypeManagerImpl::DataTypeManagerImpl(SyncBackendHost* backend,
+DataTypeManagerImpl::DataTypeManagerImpl(
+    BackendDataTypeConfigurer* configurer,
     const DataTypeController::TypeMap* controllers)
-    : backend_(backend),
+    : configurer_(configurer),
       controllers_(controllers),
       state_(DataTypeManager::STOPPED),
       needs_reconfigure_(false),
       last_configure_reason_(sync_api::CONFIGURE_REASON_UNKNOWN),
-      last_enable_nigori_(false),
+      last_nigori_state_(BackendDataTypeConfigurer::WITHOUT_NIGORI),
       weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
-  DCHECK(backend_);
+  DCHECK(configurer_);
   // Ensure all data type controllers are stopped.
   for (DataTypeController::TypeMap::const_iterator it = controllers_->begin();
        it != controllers_->end(); ++it) {
@@ -120,17 +120,20 @@ bool DataTypeManagerImpl::GetControllersNeedingStart(
 
 void DataTypeManagerImpl::Configure(TypeSet desired_types,
                                     sync_api::ConfigureReason reason) {
-  ConfigureImpl(desired_types, reason, true);
+  ConfigureImpl(desired_types, reason,
+                BackendDataTypeConfigurer::WITH_NIGORI);
 }
 
 void DataTypeManagerImpl::ConfigureWithoutNigori(TypeSet desired_types,
     sync_api::ConfigureReason reason) {
-  ConfigureImpl(desired_types, reason, false);
+  ConfigureImpl(desired_types, reason,
+                BackendDataTypeConfigurer::WITHOUT_NIGORI);
 }
 
-void DataTypeManagerImpl::ConfigureImpl(TypeSet desired_types,
-                                        sync_api::ConfigureReason reason,
-                                        bool enable_nigori) {
+void DataTypeManagerImpl::ConfigureImpl(
+    TypeSet desired_types,
+    sync_api::ConfigureReason reason,
+    BackendDataTypeConfigurer::NigoriState nigori_state) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (state_ == STOPPING) {
     // You can not set a configuration while stopping.
@@ -156,7 +159,7 @@ void DataTypeManagerImpl::ConfigureImpl(TypeSet desired_types,
              << "Postponing until current configuration complete.";
     needs_reconfigure_ = true;
     last_configure_reason_ = reason;
-    last_enable_nigori_ = enable_nigori;
+    last_nigori_state_ = nigori_state;
     return;
   }
 
@@ -192,11 +195,12 @@ void DataTypeManagerImpl::ConfigureImpl(TypeSet desired_types,
   // types to start/stop, because it could be that some types haven't
   // started due to crypto errors but the backend host needs to know that we're
   // disabling them anyway).
-  Restart(reason, enable_nigori);
+  Restart(reason, nigori_state);
 }
 
-void DataTypeManagerImpl::Restart(sync_api::ConfigureReason reason,
-                                  bool enable_nigori) {
+void DataTypeManagerImpl::Restart(
+    sync_api::ConfigureReason reason,
+    BackendDataTypeConfigurer::NigoriState nigori_state) {
   DVLOG(1) << "Restarting...";
   last_restart_time_ = base::Time::Now();
 
@@ -229,15 +233,15 @@ void DataTypeManagerImpl::Restart(sync_api::ConfigureReason reason,
   // Set types_to_remove to all_types \setminus types_to_add.
   const syncable::ModelTypeSet types_to_remove =
       Difference(all_types, types_to_add);
-  backend_->ConfigureDataTypes(
+  configurer_->ConfigureDataTypes(
+      reason,
       types_to_add,
       types_to_remove,
-      reason,
+      nigori_state,
       base::Bind(&DataTypeManagerImpl::DownloadReady,
                  weak_ptr_factory_.GetWeakPtr()),
       base::Bind(&DataTypeManagerImpl::OnDownloadRetry,
-                 weak_ptr_factory_.GetWeakPtr()),
-      enable_nigori);
+                 weak_ptr_factory_.GetWeakPtr()));
 }
 
 bool DataTypeManagerImpl::ProcessReconfigure() {
@@ -262,11 +266,11 @@ bool DataTypeManagerImpl::ProcessReconfigure() {
                  weak_ptr_factory_.GetWeakPtr(),
                  last_requested_types_,
                  last_configure_reason_,
-                 last_enable_nigori_));
+                 last_nigori_state_));
 
   needs_reconfigure_ = false;
   last_configure_reason_ = sync_api::CONFIGURE_REASON_UNKNOWN;
-  last_enable_nigori_ = false;
+  last_nigori_state_ = BackendDataTypeConfigurer::WITHOUT_NIGORI;
   return true;
 }
 
@@ -317,7 +321,7 @@ void DataTypeManagerImpl::StartNextType() {
     TRACE_EVENT_BEGIN1("sync", "ModelAssociation",
                        "DataType", ModelTypeToString(needs_start_[0]->type()));
     needs_start_[0]->Start(base::Bind(&DataTypeManagerImpl::TypeStartCallback,
-                                      base::Unretained(this)));
+                                      weak_ptr_factory_.GetWeakPtr()));
     return;
   }
 
@@ -364,10 +368,11 @@ void DataTypeManagerImpl::TypeStartCallback(
     // stopping the DataTypeManager.  This is considered an ABORT.
     Abort(ABORTED, SyncError());
     return;
-  } else if (state_ == STOPPED) {
-    // If our state_ is STOPPED, we have already stopped all of the data
-    // types.  We should not be getting callbacks from stopped data types.
-    LOG(ERROR) << "Start callback called by stopped data type!";
+  }
+
+  if (state_ == STOPPED) {
+    // We shouldn't be getting called back if we got stopped.
+    NOTREACHED();
     return;
   }
 
@@ -527,7 +532,7 @@ void DataTypeManagerImpl::NotifyDone(const ConfigureResult& result) {
       content::Details<const ConfigureResult>(&result));
 }
 
-DataTypeManager::State DataTypeManagerImpl::state() {
+DataTypeManager::State DataTypeManagerImpl::state() const {
   return state_;
 }
 

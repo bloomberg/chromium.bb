@@ -1716,8 +1716,6 @@
         'browser/sync/glue/session_model_associator_unittest.cc',
         'browser/sync/glue/shared_change_processor_mock.cc',
         'browser/sync/glue/shared_change_processor_mock.h',
-        'browser/sync/glue/sync_backend_host_mock.cc',
-        'browser/sync/glue/sync_backend_host_mock.h',
         'browser/sync/glue/sync_backend_host_unittest.cc',
         'browser/sync/glue/sync_backend_registrar_unittest.cc',
         'browser/sync/glue/synced_session_tracker_unittest.cc',

@@ -418,15 +418,15 @@ void SyncBackendHost::Shutdown(bool sync_disabled) {
 }
 
 void SyncBackendHost::ConfigureDataTypes(
+    sync_api::ConfigureReason reason,
     syncable::ModelTypeSet types_to_add,
     syncable::ModelTypeSet types_to_remove,
-    sync_api::ConfigureReason reason,
+    NigoriState nigori_state,
     base::Callback<void(syncable::ModelTypeSet)> ready_task,
-    base::Callback<void()> retry_callback,
-    bool enable_nigori) {
+    base::Callback<void()> retry_callback) {
   syncable::ModelTypeSet types_to_add_with_nigori = types_to_add;
   syncable::ModelTypeSet types_to_remove_with_nigori = types_to_remove;
-  if (enable_nigori) {
+  if (nigori_state == WITH_NIGORI) {
     types_to_add_with_nigori.Put(syncable::NIGORI);
     types_to_remove_with_nigori.Remove(syncable::NIGORI);
   } else {
@@ -1111,17 +1111,17 @@ void SyncBackendHost::HandleInitializationCompletedOnFrontendLoop(
     case NOT_INITIALIZED:
       initialization_state_ = DOWNLOADING_NIGORI;
       ConfigureDataTypes(
-          syncable::ModelTypeSet(),
-          syncable::ModelTypeSet(),
           sync_api::CONFIGURE_REASON_NEW_CLIENT,
+          syncable::ModelTypeSet(),
+          syncable::ModelTypeSet(),
+          WITH_NIGORI,
           // Calls back into this function.
           base::Bind(
               &SyncBackendHost::
                   HandleNigoriConfigurationCompletedOnFrontendLoop,
               weak_ptr_factory_.GetWeakPtr(), js_backend),
           base::Bind(&SyncBackendHost::OnNigoriDownloadRetry,
-                     weak_ptr_factory_.GetWeakPtr()),
-          true);
+                     weak_ptr_factory_.GetWeakPtr()));
       break;
     case DOWNLOADING_NIGORI:
       initialization_state_ = REFRESHING_NIGORI;

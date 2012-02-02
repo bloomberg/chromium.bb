@@ -22,7 +22,6 @@
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/sync/abstract_profile_sync_service_test.h"
 #include "chrome/browser/sync/glue/sync_backend_host.h"
-#include "chrome/browser/sync/glue/sync_backend_host_mock.h"
 #include "chrome/browser/sync/glue/typed_url_change_processor.h"
 #include "chrome/browser/sync/glue/typed_url_data_type_controller.h"
 #include "chrome/browser/sync/glue/typed_url_model_associator.h"
@@ -49,7 +48,6 @@
 using base::Time;
 using base::Thread;
 using browser_sync::SyncBackendHost;
-using browser_sync::SyncBackendHostMock;
 using browser_sync::TestIdFactory;
 using browser_sync::TypedUrlChangeProcessor;
 using browser_sync::TypedUrlDataTypeController;
