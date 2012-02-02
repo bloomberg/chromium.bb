@@ -172,6 +172,19 @@ def RunCommand(cmd, print_cmd=True, error_ok=False, error_message=None,
     if redirect_stderr or mute_output: stderr = subprocess.PIPE
     if combine_stdout_stderr: stderr = subprocess.STDOUT
 
+    # Work around broken buffering usage in cbuildbot and consumers via
+    # forcing the current buffer to be flushed.  Without this, any leading
+    # info/error/whatever messages describing this invocation may be left
+    # sitting in the buffer, while the invoked program than writes straight
+    # to the duped fd; end result, any header we output can land after the
+    # actual invocation.  As such, just flush to work around broken code
+    # elsewhere.
+    if stdout != subprocess.PIPE:
+      sys.stdout.flush()
+    if stderr != subprocess.PIPE:
+      sys.stderr.flush()
+
+
   # TODO(sosa): gpylint complains about redefining built-in 'input'.
   #   Can we rename this variable?
   if input: stdin = subprocess.PIPE
@@ -261,50 +274,58 @@ def Die(message):
   sys.exit(1)
 
 
-def Error(message):
+def _WriteMessage(message, flush):
+  print >> sys.stderr, message
+  if flush:
+    sys.stderr.flush()
+
+
+def Error(message, flush=False):
   """Emits a red warning message and continues execution."""
   if DebugLevel.GetCurrentDebugLevel() <= DebugLevel.ERROR:
-    print >> sys.stderr, (
-        Color(_STDOUT_IS_TTY).Color(Color.RED, '\nERROR: ' + message))
+    _WriteMessage(
+        Color(_STDOUT_IS_TTY).Color(Color.RED, '\nERROR: ' + message), flush)
 
 
 #TODO(sjg): Remove this in favor of operation.Warning
-def Warning(message):
+def Warning(message, flush=False):
   """Emits a yellow warning message and continues execution."""
   if DebugLevel.GetCurrentDebugLevel() <= DebugLevel.WARNING:
-    print >> sys.stderr, (
-        Color(_STDOUT_IS_TTY).Color(Color.YELLOW, '\nWARNING: ' + message))
+    _WriteMessage(
+        Color(_STDOUT_IS_TTY).Color(Color.YELLOW, '\nWARNING: ' + message),
+        flush)
 
 
 # This command is deprecated in favor of operation.Info()
 # It is left here for the moment so people are aware what happened.
 # The reason is that this is not aware of the terminal output restrictions such
 # as verbose, quiet and subprocess output. You should not be calling this.
-def Info(message):
+def Info(message, flush=False):
   """Emits a blue informational message and continues execution."""
   if DebugLevel.GetCurrentDebugLevel() <= DebugLevel.INFO:
-    print >> sys.stderr, (
-        Color(_STDOUT_IS_TTY).Color(Color.BLUE, '\nINFO: ' + message))
+    _WriteMessage(
+        Color(_STDOUT_IS_TTY).Color(Color.BLUE, '\nINFO: ' + message),
+        flush)
 
 
-def Debug(message):
+def Debug(message, flush=False):
   """Emits a plain-text debug message and continues execution."""
   if DebugLevel.GetCurrentDebugLevel() <= DebugLevel.INFO:
-    print >> sys.stderr, '\nDEBUG: ' + message
+    _WriteMessage('\nDEBUG: ' + message, flush)
 
 
-def Print(message, debug_level=DebugLevel.INFO):
+def Print(message, debug_level=DebugLevel.INFO, flush=False):
   """Print message with a specified debug level to stdout."""
   assert DebugLevel.IsValidDebugLevel(debug_level), 'Invalid debug level'
 
   if debug_level == DebugLevel.DEBUG:
-    Debug(message)
+    Debug(message, flush=flush)
   elif debug_level == DebugLevel.INFO:
-    Info(message)
+    Info(message, flush=flush)
   elif debug_level == DebugLevel.WARNING:
-    Warning(message)
+    Warning(message, flush=flush)
   elif debug_level == DebugLevel.ERROR:
-    Error(message)
+    Error(message, flush=flush)
   else:
     assert False, 'Invalid debug level'
 

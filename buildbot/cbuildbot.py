@@ -606,7 +606,7 @@ def _RunBuildStagesWithSudoProcess(bot_id, options, build_config,
   """Starts sudo process before running build stages, and manages cleanup."""
   # Reset sudo timestamp
   cros_lib.Info('Launching sudo keepalive process. '
-                'This may ask for password twice.')
+                'This may ask for password twice.', flush=True)
 
   sudo_process = _RunSudoNoOp(sudo_interval)
 
