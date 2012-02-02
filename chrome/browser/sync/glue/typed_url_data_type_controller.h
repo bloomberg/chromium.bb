@@ -58,10 +58,11 @@ class TypedUrlDataTypeController : public NonFrontendDataTypeController,
 
  protected:
   // NonFrontendDataTypeController interface.
-  virtual bool StartAssociationAsync() OVERRIDE;
+  virtual bool PostTaskOnBackendThread(
+      const tracked_objects::Location& from_here,
+      const base::Closure& task) OVERRIDE;
   virtual void CreateSyncComponents() OVERRIDE;
   virtual void StopModels() OVERRIDE;
-  virtual bool StopAssociationAsync() OVERRIDE;
   virtual void RecordUnrecoverableError(
       const tracked_objects::Location& from_here,
       const std::string& message) OVERRIDE;
@@ -69,10 +70,9 @@ class TypedUrlDataTypeController : public NonFrontendDataTypeController,
   virtual void RecordStartFailure(StartResult result) OVERRIDE;
 
  private:
-  friend class ControlTask;
-
-  // Helper method to launch Associate() and Destroy() on the history thread.
-  void RunOnHistoryThread(bool start, history::HistoryBackend* backend);
+  // Used by PostTaskOnBackendThread().
+  void RunTaskOnBackendThread(const base::Closure& task,
+                              history::HistoryBackend* backend);
 
   history::HistoryBackend* backend_;
   scoped_refptr<HistoryService> history_service_;

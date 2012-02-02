@@ -227,17 +227,19 @@ void NewNonFrontendDataTypeController::Stop() {
   set_state(NOT_RUNNING);
 }
 
+void NewNonFrontendDataTypeController::StopLocalServiceAsync() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  PostTaskOnBackendThread(
+      FROM_HERE,
+      base::Bind(&NewNonFrontendDataTypeController::StopLocalService, this));
+}
+
 void NewNonFrontendDataTypeController::StopLocalService() {
   DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (local_service_.get())
     local_service_->StopSyncing(type());
   local_service_.reset();
   shared_change_processor_ = NULL;
-}
-
-bool NewNonFrontendDataTypeController::StopAssociationAsync() {
-  NOTIMPLEMENTED();
-  return false;
 }
 
 void NewNonFrontendDataTypeController::CreateSyncComponents() {

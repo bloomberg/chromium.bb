@@ -4,6 +4,8 @@
 
 #include "chrome/browser/sync/glue/typed_url_data_type_controller.h"
 
+#include "base/bind.h"
+#include "base/callback.h"
 #include "base/metrics/histogram.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -15,31 +17,33 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
 
-using content::BrowserThread;
-
 namespace browser_sync {
 
-class ControlTask : public HistoryDBTask {
+using content::BrowserThread;
+
+namespace {
+
+typedef base::Callback<void(history::HistoryBackend*)> HistoryBackendTask;
+
+class RunHistoryBackendTask : public HistoryDBTask {
  public:
-  ControlTask(TypedUrlDataTypeController* controller, bool start)
-    : controller_(controller), start_(start) {}
+  explicit RunHistoryBackendTask(const HistoryBackendTask& task)
+      : task_(task) {}
+  virtual ~RunHistoryBackendTask() {}
 
   virtual bool RunOnDBThread(history::HistoryBackend* backend,
                              history::HistoryDatabase* db) {
-    controller_->RunOnHistoryThread(start_, backend);
-
-    // Release the reference to the controller.  This ensures that
-    // the controller isn't held past its lifetime in unit tests.
-    controller_ = NULL;
+    task_.Run(backend);
     return true;
   }
 
   virtual void DoneRunOnMainThread() {}
 
  protected:
-  scoped_refptr<TypedUrlDataTypeController> controller_;
-  bool start_;
+  HistoryBackendTask task_;
 };
+
+}  // namespace
 
 TypedUrlDataTypeController::TypedUrlDataTypeController(
     ProfileSyncComponentsFactory* profile_sync_factory,
@@ -56,36 +60,33 @@ TypedUrlDataTypeController::TypedUrlDataTypeController(
 TypedUrlDataTypeController::~TypedUrlDataTypeController() {
 }
 
-void TypedUrlDataTypeController::RunOnHistoryThread(bool start,
-    history::HistoryBackend* backend) {
-  DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::UI));
-  // The only variable we can access here is backend_, since it is always
-  // read from the DB thread. Touching anything else could lead to memory
-  // corruption.
-  backend_ = backend;
-  if (start) {
-    StartAssociation();
-  } else {
-    StopAssociation();
-  }
-  backend_ = NULL;
-}
-
-bool TypedUrlDataTypeController::StartAssociationAsync() {
+bool TypedUrlDataTypeController::PostTaskOnBackendThread(
+    const tracked_objects::Location& from_here,
+    const base::Closure& task) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK_EQ(state(), ASSOCIATING);
   HistoryService* history = profile()->GetHistoryService(
       Profile::IMPLICIT_ACCESS);
   if (history) {
     history_service_ = history;
-    history_service_->ScheduleDBTask(new ControlTask(this, true),
-                                     &cancelable_consumer_);
+    history_service_->ScheduleDBTask(
+        new RunHistoryBackendTask(
+            base::Bind(&TypedUrlDataTypeController::RunTaskOnBackendThread,
+                       this, task)),
+        &cancelable_consumer_);
     return true;
   } else {
     // History must be disabled - don't start.
     LOG(WARNING) << "Cannot access history service - disabling typed url sync";
     return false;
   }
+}
+
+void TypedUrlDataTypeController::RunTaskOnBackendThread(
+    const base::Closure& task,
+    history::HistoryBackend* backend) {
+  // Store |backend| so that |task| can use it.
+  backend_ = backend;
+  task.Run();
 }
 
 void TypedUrlDataTypeController::CreateSyncComponents() {
@@ -132,15 +133,6 @@ void TypedUrlDataTypeController::StopModels() {
   DCHECK(state() == STOPPING || state() == NOT_RUNNING || state() == DISABLED);
   DVLOG(1) << "TypedUrlDataTypeController::StopModels(): State = " << state();
   notification_registrar_.RemoveAll();
-}
-
-bool TypedUrlDataTypeController::StopAssociationAsync() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK_EQ(state(), STOPPING);
-  DCHECK(history_service_.get());
-  history_service_->ScheduleDBTask(new ControlTask(this, false),
-                                   &cancelable_consumer_);
-  return true;
 }
 
 syncable::ModelType TypedUrlDataTypeController::type() const {

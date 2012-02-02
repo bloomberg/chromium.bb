@@ -4,6 +4,7 @@
 
 #include "chrome/browser/sync/glue/extension_setting_data_type_controller.h"
 
+#include "base/bind.h"
 #include "base/metrics/histogram.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/settings/settings_frontend.h"
@@ -45,33 +46,24 @@ ExtensionSettingDataTypeController::model_safe_group() const {
   return browser_sync::GROUP_FILE;
 }
 
-bool ExtensionSettingDataTypeController::StartModels() {
+bool ExtensionSettingDataTypeController::PostTaskOnBackendThread(
+    const tracked_objects::Location& from_here,
+    const base::Closure& task) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  profile_->InitExtensions(true);
-  return true;
-}
-
-bool ExtensionSettingDataTypeController::StartAssociationAsync() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK_EQ(state(), ASSOCIATING);
   DCHECK(profile_->GetExtensionService());
   profile_->GetExtensionService()->settings_frontend()->RunWithSyncableService(
       type_,
       base::Bind(
-          &ExtensionSettingDataTypeController::
-              StartAssociationWithExtensionSettingsService,
-          this));
+          &ExtensionSettingDataTypeController::RunTaskOnBackendThread,
+          this,
+          task));
   return true;
 }
 
-void ExtensionSettingDataTypeController::
-    StartAssociationWithExtensionSettingsService(
-        SyncableService* settings_service) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  settings_service_ = settings_service;
-  // Calls CreateSyncComponents, which expects settings_service_ to be
-  // non-NULL.
-  StartAssociation();
+bool ExtensionSettingDataTypeController::StartModels() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  profile_->InitExtensions(true);
+  return true;
 }
 
 void ExtensionSettingDataTypeController::CreateSyncComponents() {
@@ -83,20 +75,6 @@ void ExtensionSettingDataTypeController::CreateSyncComponents() {
           type_, settings_service_, profile_sync_service_, this);
   set_model_associator(sync_components.model_associator);
   set_change_processor(sync_components.change_processor);
-}
-
-bool ExtensionSettingDataTypeController::StopAssociationAsync() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK_EQ(state(), STOPPING);
-  if (!BrowserThread::PostTask(
-          BrowserThread::FILE,
-          FROM_HERE,
-          base::Bind(
-              &ExtensionSettingDataTypeController::StopAssociation,
-              this))) {
-    NOTREACHED();
-  }
-  return true;
 }
 
 void ExtensionSettingDataTypeController::RecordUnrecoverableError(
@@ -114,6 +92,15 @@ void ExtensionSettingDataTypeController::RecordStartFailure(
     StartResult result) {
   UMA_HISTOGRAM_ENUMERATION(
       "Sync.ExtensionSettingStartFailures", result, MAX_START_RESULT);
+}
+
+void ExtensionSettingDataTypeController::RunTaskOnBackendThread(
+    const base::Closure& task,
+    SyncableService* settings_service) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  // Store |settings_service| so that |task| can use it.
+  settings_service_ = settings_service;
+  task.Run();
 }
 
 }  // namespace browser_sync

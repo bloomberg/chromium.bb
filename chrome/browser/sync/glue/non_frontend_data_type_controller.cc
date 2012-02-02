@@ -278,6 +278,23 @@ void NonFrontendDataTypeController::OnUnrecoverableErrorImpl(
   profile_sync_service_->OnUnrecoverableError(from_here, message);
 }
 
+bool NonFrontendDataTypeController::StartAssociationAsync() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_EQ(state(), ASSOCIATING);
+  return PostTaskOnBackendThread(
+      FROM_HERE,
+      base::Bind(&NonFrontendDataTypeController::StartAssociation, this));
+}
+
+bool NonFrontendDataTypeController::StopAssociationAsync() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_EQ(state(), STOPPING);
+  return PostTaskOnBackendThread(
+      FROM_HERE,
+      base::Bind(
+          &NonFrontendDataTypeController::StopAssociation, this));
+}
+
 ProfileSyncComponentsFactory*
     NonFrontendDataTypeController::profile_sync_factory() const {
   return profile_sync_factory_;

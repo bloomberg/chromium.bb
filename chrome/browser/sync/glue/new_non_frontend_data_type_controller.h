@@ -38,20 +38,20 @@ class NewNonFrontendDataTypeController : public NonFrontendDataTypeController {
                              DataTypeController::State new_state,
                              const SyncError& error) OVERRIDE;
 
-  // Calls local_service_->StopSyncing() and releases our references to it and
-  // |shared_change_processor_|.
-  virtual void StopLocalService();
-  // Posts StopLocalService() to the datatype's thread.
-  virtual void StopLocalServiceAsync() = 0;
-
   // Extract/create the syncable service from the profile and return a
   // WeakHandle to it.
   virtual base::WeakPtr<SyncableService> GetWeakPtrToSyncableService()
       const = 0;
 
  private:
+  // Posts StopLocalService() to the datatype's thread.
+  void StopLocalServiceAsync();
+
+  // Calls local_service_->StopSyncing() and releases our references to it and
+  // |shared_change_processor_|.
+  void StopLocalService();
+
   // Deprecated.
-  virtual bool StopAssociationAsync() OVERRIDE;
   virtual void CreateSyncComponents() OVERRIDE;
 
   // A weak pointer to the actual local syncable service, which performs all the

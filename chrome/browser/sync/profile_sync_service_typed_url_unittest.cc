@@ -119,9 +119,12 @@ void RunOnDBThreadCallback(HistoryBackend* backend,
 }
 
 ACTION_P2(RunTaskOnDBThread, thread, backend) {
- thread->message_loop()->PostTask(
-    FROM_HERE, base::Bind(&RunOnDBThreadCallback, base::Unretained(backend),
-                          base::Unretained(arg0)));
+  // ScheduleDBTask takes ownership of its task argument, so we
+  // should, too.
+  scoped_refptr<HistoryDBTask> task(arg0);
+  thread->message_loop()->PostTask(
+      FROM_HERE, base::Bind(&RunOnDBThreadCallback, base::Unretained(backend),
+                            task));
 }
 
 ACTION_P4(MakeTypedUrlSyncComponents, profile, service, hb, dtc) {

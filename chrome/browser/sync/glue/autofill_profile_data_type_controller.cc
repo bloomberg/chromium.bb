@@ -78,6 +78,13 @@ void AutofillProfileDataTypeController::Observe(
   DoStartAssociationAsync();
 }
 
+bool AutofillProfileDataTypeController::PostTaskOnBackendThread(
+    const tracked_objects::Location& from_here,
+    const base::Closure& task) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  return BrowserThread::PostTask(BrowserThread::DB, from_here, task);
+}
+
 void AutofillProfileDataTypeController::DoStartAssociationAsync() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK_EQ(state(), MODEL_STARTING);
@@ -88,14 +95,6 @@ void AutofillProfileDataTypeController::DoStartAssociationAsync() {
                     type());
     StartDoneImpl(ASSOCIATION_FAILED, NOT_RUNNING, error);
   }
-}
-
-bool AutofillProfileDataTypeController::StartAssociationAsync() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK_EQ(state(), ASSOCIATING);
-  return BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
-      base::Bind(&AutofillProfileDataTypeController::StartAssociation,
-                 this));
 }
 
 base::WeakPtr<SyncableService>
@@ -112,11 +111,6 @@ void AutofillProfileDataTypeController::StopModels() {
   personal_data_->RemoveObserver(this);
 }
 
-void AutofillProfileDataTypeController::StopLocalServiceAsync() {
-  BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
-      base::Bind(&AutofillProfileDataTypeController::StopLocalService,
-                 this));
-}
 syncable::ModelType AutofillProfileDataTypeController::type() const {
   return syncable::AUTOFILL_PROFILE;
 }

@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/callback_forward.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/synchronization/waitable_event.h"
@@ -32,9 +33,8 @@ class ChangeProcessor;
 // funtionality is implemented by default. Derived classes must implement:
 //    type()
 //    model_safe_group()
-//    StartAssociationAsync()
+//    PostTaskOnBackendThread()
 //    CreateSyncComponents()
-//    StopAssociationAsync()
 //    RecordUnrecoverableError(...)
 //    RecordAssociationTime(...);
 //    RecordStartFailure(...);
@@ -71,10 +71,12 @@ class NonFrontendDataTypeController : public DataTypeController {
   // Note: this is performed on the frontend (UI) thread.
   virtual bool StartModels();
 
-  // Post the association task to the thread the datatype lives on.
-  // Note: this is performed on the frontend (UI) thread.
-  // Return value: True if task posted successfully, False otherwise.
-  virtual bool StartAssociationAsync() = 0;
+  // Posts the given task to the backend thread, i.e. the thread the
+  // datatype lives on.  Return value: True if task posted successfully,
+  // false otherwise.
+  virtual bool PostTaskOnBackendThread(
+      const tracked_objects::Location& from_here,
+      const base::Closure& task) = 0;
 
   // Build sync components and associate models.
   // Note: this is performed on the datatype's thread.
@@ -105,11 +107,6 @@ class NonFrontendDataTypeController : public DataTypeController {
   // Note: this is performed on the frontend (UI) thread.
   virtual void StopModels();
 
-  // Post the StopAssociation task to the thread the datatype lives on.
-  // Note: this is performed on the frontend (UI) thread.
-  // Return value: True if task posted successfully, False otherwise.
-  virtual bool StopAssociationAsync() = 0;
-
   // Disassociate the models and destroy the sync components.
   // Note: this is performed on the datatype's thread.
   virtual void StopAssociation();
@@ -130,6 +127,16 @@ class NonFrontendDataTypeController : public DataTypeController {
   virtual void RecordAssociationTime(base::TimeDelta time) = 0;
   // Record causes of start failure. Called on UI thread.
   virtual void RecordStartFailure(StartResult result) = 0;
+
+  // Post the association task to the thread the datatype lives on.
+  // Note: this is performed on the frontend (UI) thread.
+  // Return value: True if task posted successfully, False otherwise.
+  bool StartAssociationAsync();
+
+  // Post the StopAssociation task to the thread the datatype lives on.
+  // Note: this is performed on the frontend (UI) thread.
+  // Return value: True if task posted successfully, False otherwise.
+  bool StopAssociationAsync();
 
   // Accessors and mutators used by derived classes.
   ProfileSyncComponentsFactory* profile_sync_factory() const;

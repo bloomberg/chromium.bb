@@ -30,6 +30,15 @@ PasswordDataTypeController::PasswordDataTypeController(
 PasswordDataTypeController::~PasswordDataTypeController() {
 }
 
+bool PasswordDataTypeController::PostTaskOnBackendThread(
+      const tracked_objects::Location& from_here,
+      const base::Closure& task) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(password_store_.get());
+  password_store_->ScheduleTask(task);
+  return true;
+}
+
 bool PasswordDataTypeController::StartModels() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK_EQ(state(), MODEL_STARTING);
@@ -45,15 +54,6 @@ bool PasswordDataTypeController::StartModels() {
   return true;
 }
 
-bool PasswordDataTypeController::StartAssociationAsync() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK_EQ(state(), ASSOCIATING);
-  DCHECK(password_store_.get());
-  password_store_->ScheduleTask(
-      base::Bind(&PasswordDataTypeController::StartAssociation, this));
-  return true;
-}
-
 void PasswordDataTypeController::CreateSyncComponents() {
   DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK_EQ(state(), ASSOCIATING);
@@ -64,15 +64,6 @@ void PasswordDataTypeController::CreateSyncComponents() {
           this);
   set_model_associator(sync_components.model_associator);
   set_change_processor(sync_components.change_processor);
-}
-
-bool PasswordDataTypeController::StopAssociationAsync() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK_EQ(state(), STOPPING);
-  DCHECK(password_store_.get());
-  password_store_->ScheduleTask(
-      base::Bind(&PasswordDataTypeController::StopAssociation, this));
-  return true;
 }
 
 syncable::ModelType PasswordDataTypeController::type() const {

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -30,7 +30,9 @@ class NonFrontendDataTypeControllerMock : public NonFrontendDataTypeController {
 
   // NonFrontendDataTypeController mocks.
   MOCK_METHOD0(StartModels, bool());
-  MOCK_METHOD0(StartAssociationAsync, bool());
+  MOCK_METHOD2(PostTaskOnBackendThread,
+               bool(const tracked_objects::Location&,
+                    const base::Closure&));
   MOCK_METHOD0(StartAssociation, void());
   MOCK_METHOD0(CreateSyncComponents, void());
   MOCK_METHOD2(StartFailed, void(StartResult result,
@@ -42,7 +44,6 @@ class NonFrontendDataTypeControllerMock : public NonFrontendDataTypeController {
                                    DataTypeController::State new_state,
                                    const SyncError& error));
   MOCK_METHOD0(StopModels, void());
-  MOCK_METHOD0(StopAssociationAsync, bool());
   MOCK_METHOD0(StopAssociation, void());
   MOCK_METHOD2(OnUnrecoverableErrorImpl, void(const tracked_objects::Location&,
                                               const std::string&));

@@ -30,6 +30,13 @@ AutofillDataTypeController::~AutofillDataTypeController() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
+bool AutofillDataTypeController::PostTaskOnBackendThread(
+    const tracked_objects::Location& from_here,
+    const base::Closure& task) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  return BrowserThread::PostTask(BrowserThread::DB, from_here, task);
+}
+
 bool AutofillDataTypeController::StartModels() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK_EQ(MODEL_STARTING, state());
@@ -60,13 +67,6 @@ void AutofillDataTypeController::Observe(
   }
 }
 
-bool AutofillDataTypeController::StartAssociationAsync() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK_EQ(ASSOCIATING, state());
-  return BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
-      base::Bind(&AutofillDataTypeController::StartAssociation, this));
-}
-
 base::WeakPtr<SyncableService>
     AutofillDataTypeController::GetWeakPtrToSyncableService() const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
@@ -79,12 +79,6 @@ void AutofillDataTypeController::StopModels() {
   DCHECK(state() == STOPPING || state() == NOT_RUNNING || state() == DISABLED);
   DVLOG(1) << "AutofillDataTypeController::StopModels() : State = " << state();
   notification_registrar_.RemoveAll();
-}
-
-void AutofillDataTypeController::StopLocalServiceAsync() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
-      base::Bind(&AutofillDataTypeController::StopLocalService, this));
 }
 
 syncable::ModelType AutofillDataTypeController::type() const {

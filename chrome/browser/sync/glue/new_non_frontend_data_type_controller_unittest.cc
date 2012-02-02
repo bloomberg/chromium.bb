@@ -88,11 +88,11 @@ class NewNonFrontendDataTypeControllerFake
       GetWeakPtrToSyncableService() const OVERRIDE {
     return profile_sync_factory()->GetAutofillProfileSyncableService(NULL);
   }
-  virtual bool StartAssociationAsync() OVERRIDE {
-    mock_->StartAssociationAsync();
-    return BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
-        base::Bind(&NewNonFrontendDataTypeControllerFake::StartAssociation,
-                   this));
+
+  virtual bool PostTaskOnBackendThread(
+      const tracked_objects::Location& from_here,
+      const base::Closure& task) OVERRIDE {
+    return BrowserThread::PostTask(BrowserThread::DB, from_here, task);
   }
 
   // We mock the following methods because their default implementations do
@@ -102,12 +102,6 @@ class NewNonFrontendDataTypeControllerFake
   }
   virtual void StopModels() OVERRIDE {
     mock_->StopModels();
-  }
-  virtual void StopLocalServiceAsync() OVERRIDE {
-    mock_->StopLocalServiceAsync();
-    BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
-        base::Bind(&NewNonFrontendDataTypeControllerFake::StopLocalService,
-                   this));
   }
   virtual void RecordUnrecoverableError(
       const tracked_objects::Location& from_here,
@@ -178,7 +172,6 @@ class NewNonFrontendDataTypeControllerTest : public testing::Test {
   }
 
   void SetAssociateExpectations() {
-    EXPECT_CALL(*dtc_mock_, StartAssociationAsync());
     EXPECT_CALL(*change_processor_, Connect(_,_,_,_)).WillOnce(Return(true));
     EXPECT_CALL(*change_processor_, CryptoReadyIfNecessary(_)).
         WillOnce(Return(true));
@@ -201,12 +194,10 @@ class NewNonFrontendDataTypeControllerTest : public testing::Test {
     EXPECT_CALL(*dtc_mock_, StopModels());
     EXPECT_CALL(*change_processor_, Disconnect()).WillOnce(Return(true));
     EXPECT_CALL(service_, DeactivateDataType(_));
-    EXPECT_CALL(*dtc_mock_, StopLocalServiceAsync());
     EXPECT_CALL(syncable_service_, StopSyncing(_));
   }
 
   void SetStartFailExpectations(DataTypeController::StartResult result) {
-    EXPECT_CALL(*dtc_mock_, StopLocalServiceAsync());
     EXPECT_CALL(syncable_service_, StopSyncing(_));
     EXPECT_CALL(*dtc_mock_, StopModels());
     EXPECT_CALL(*dtc_mock_, RecordStartFailure(result));
@@ -245,7 +236,6 @@ TEST_F(NewNonFrontendDataTypeControllerTest, StartOk) {
 
 TEST_F(NewNonFrontendDataTypeControllerTest, StartFirstRun) {
   SetStartExpectations();
-  EXPECT_CALL(*dtc_mock_, StartAssociationAsync());
   EXPECT_CALL(*change_processor_, Connect(_,_,_,_)).WillOnce(Return(true));
   EXPECT_CALL(*change_processor_, CryptoReadyIfNecessary(_)).
       WillOnce(Return(true));
@@ -281,7 +271,6 @@ TEST_F(NewNonFrontendDataTypeControllerTest, AbortDuringStartModels) {
 
 TEST_F(NewNonFrontendDataTypeControllerTest, StartAssociationFailed) {
   SetStartExpectations();
-  EXPECT_CALL(*dtc_mock_, StartAssociationAsync());
   EXPECT_CALL(*change_processor_, Connect(_,_,_,_)).WillOnce(Return(true));
   EXPECT_CALL(*change_processor_, CryptoReadyIfNecessary(_)).
       WillOnce(Return(true));
@@ -307,7 +296,6 @@ TEST_F(NewNonFrontendDataTypeControllerTest,
   SetStartExpectations();
   SetStartFailExpectations(DataTypeController::UNRECOVERABLE_ERROR);
   // Set up association to fail with an unrecoverable error.
-  EXPECT_CALL(*dtc_mock_, StartAssociationAsync());
   EXPECT_CALL(*change_processor_, Connect(_,_,_,_)).WillOnce(Return(true));
   EXPECT_CALL(*change_processor_, CryptoReadyIfNecessary(_)).
       WillRepeatedly(Return(true));
@@ -324,7 +312,6 @@ TEST_F(NewNonFrontendDataTypeControllerTest, StartAssociationCryptoNotReady) {
   SetStartExpectations();
   SetStartFailExpectations(DataTypeController::NEEDS_CRYPTO);
   // Set up association to fail with a NEEDS_CRYPTO error.
-  EXPECT_CALL(*dtc_mock_, StartAssociationAsync());
   EXPECT_CALL(*change_processor_, Connect(_,_,_,_)).WillOnce(Return(true));
   EXPECT_CALL(*change_processor_, CryptoReadyIfNecessary(_)).
       WillRepeatedly(Return(false));
@@ -343,7 +330,6 @@ TEST_F(NewNonFrontendDataTypeControllerTest, AbortDuringAssociation) {
 
   SetStartExpectations();
   SetStartFailExpectations(DataTypeController::ABORTED);
-  EXPECT_CALL(*dtc_mock_, StartAssociationAsync());
   EXPECT_CALL(*change_processor_, Connect(_,_,_,_)).WillOnce(Return(true));
   EXPECT_CALL(*change_processor_, CryptoReadyIfNecessary(_)).
       WillOnce(Return(true));

@@ -1726,24 +1726,6 @@
    fun:PeerConnectionHandlerTest_Basic_Test::TestBody
 }
 {
-   bug_105667_a
-   Heapcheck:Leak
-   fun:browser_sync::TypedUrlDataTypeController::StartAssociationAsync
-   fun:browser_sync::NonFrontendDataTypeController::Start
-   fun:browser_sync::DataTypeManagerImpl::StartNextType
-   fun:browser_sync::DataTypeManagerImpl::DownloadReady
-}
-{
-   bug_105667_b
-   Heapcheck:Leak
-   fun:browser_sync::TypedUrlDataTypeController::StopAssociationAsync
-   fun:browser_sync::NonFrontendDataTypeController::Stop
-   fun:browser_sync::DataTypeManagerImpl::FinishStop
-   fun:browser_sync::DataTypeManagerImpl::Stop
-   ...
-   fun:ProfileSyncService::Shutdown
-}
-{
    bug_108398
    Heapcheck:Leak
    ...

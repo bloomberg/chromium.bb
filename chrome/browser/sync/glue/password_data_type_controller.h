@@ -31,10 +31,11 @@ class PasswordDataTypeController : public NonFrontendDataTypeController {
 
  protected:
   // NonFrontendDataTypeController interface.
+  virtual bool PostTaskOnBackendThread(
+      const tracked_objects::Location& from_here,
+      const base::Closure& task) OVERRIDE;
   virtual bool StartModels() OVERRIDE;
-  virtual bool StartAssociationAsync() OVERRIDE;
   virtual void CreateSyncComponents() OVERRIDE;
-  virtual bool StopAssociationAsync() OVERRIDE;
   virtual void RecordUnrecoverableError(
       const tracked_objects::Location& from_here,
       const std::string& message) OVERRIDE;

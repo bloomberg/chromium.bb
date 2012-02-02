@@ -42,27 +42,28 @@ class AutofillProfileDataTypeController
   virtual void OnPersonalDataChanged() OVERRIDE;
 
  protected:
-   // NewNonFrontendDataTypeController implementation.
-   virtual bool StartModels() OVERRIDE;
-   virtual bool StartAssociationAsync() OVERRIDE;
-   virtual base::WeakPtr<SyncableService> GetWeakPtrToSyncableService()
-       const OVERRIDE;
-   virtual void StopModels() OVERRIDE;
-   virtual void StopLocalServiceAsync() OVERRIDE;
-   virtual void RecordUnrecoverableError(
-       const tracked_objects::Location& from_here,
-       const std::string& message) OVERRIDE;
-   virtual void RecordAssociationTime(base::TimeDelta time) OVERRIDE;
-   virtual void RecordStartFailure(StartResult result) OVERRIDE;
+  // NewNonFrontendDataTypeController implementation.
+  virtual bool PostTaskOnBackendThread(
+      const tracked_objects::Location& from_here,
+      const base::Closure& task) OVERRIDE;
+  virtual bool StartModels() OVERRIDE;
+  virtual base::WeakPtr<SyncableService> GetWeakPtrToSyncableService()
+      const OVERRIDE;
+  virtual void StopModels() OVERRIDE;
+  virtual void RecordUnrecoverableError(
+      const tracked_objects::Location& from_here,
+      const std::string& message) OVERRIDE;
+  virtual void RecordAssociationTime(base::TimeDelta time) OVERRIDE;
+  virtual void RecordStartFailure(StartResult result) OVERRIDE;
 
-   void DoStartAssociationAsync();
+  void DoStartAssociationAsync();
 
  private:
-   PersonalDataManager* personal_data_;
-   scoped_refptr<WebDataService> web_data_service_;
-   content::NotificationRegistrar notification_registrar_;
+  PersonalDataManager* personal_data_;
+  scoped_refptr<WebDataService> web_data_service_;
+  content::NotificationRegistrar notification_registrar_;
 
-   DISALLOW_COPY_AND_ASSIGN(AutofillProfileDataTypeController);
+  DISALLOW_COPY_AND_ASSIGN(AutofillProfileDataTypeController);
 };
 
 }  // namespace browser_sync
