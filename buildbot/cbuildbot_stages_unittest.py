@@ -75,8 +75,6 @@ class AbstractStageTest(mox.MoxTestBase):
     bs.BuilderStage.SetTrackingBranch(self.TRACKING_BRANCH)
     portage_utilities._OVERLAY_LIST_CMD = '/bin/true'
 
-    self.mox.StubOutWithMock(os.path, 'isdir')
-
   def RunStage(self):
     """Creates and runs an instance of the stage to be tested.
     Requires ConstructStage() to be implemented.
@@ -295,6 +293,7 @@ class BuildBoardTest(AbstractStageTest):
   def setUp(self):
     mox.MoxTestBase.setUp(self)
     AbstractStageTest.setUp(self)
+    self.mox.StubOutWithMock(os.path, 'isdir')
 
   def ConstructStage(self):
     return stages.BuildBoardStage(self.bot_id, self.options, self.build_config)
@@ -703,6 +702,7 @@ class BuildTargetStageTest(AbstractStageTest):
     self.mox.StubOutWithMock(bs.BuilderStage, '_GetPortageEnvVar')
     self.mox.StubOutWithMock(shutil, 'copyfile')
     self.mox.StubOutWithMock(tempfile, 'mkdtemp')
+    self.mox.StubOutWithMock(os.path, 'isdir')
 
     self.mox.StubOutWithMock(background, 'RunParallelSteps')
     background.RunParallelSteps(mox.IgnoreArg()).WithSideEffects(_DoSteps)

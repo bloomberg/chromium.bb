@@ -930,10 +930,19 @@ def main(argv=None):
     else:
       internal = cbuildbot_config.IsInternalBuild(build_config)
       options.buildroot = _DetermineDefaultBuildRoot(internal)
-      # We use a marker file in the buildroot to indicate the user has consented
-      # to using this directory.
+      # We use a marker file in the buildroot to indicate the user has
+      # consented to using this directory.
       if not os.path.exists(repository.GetTrybotMarkerPath(options.buildroot)):
         _ConfirmBuildRoot(options.buildroot)
+
+  # Sanity check of buildroot- specifically that it's not pointing into the
+  # midst of an existing repo since git-repo doesn't support nesting.
+
+  if (not repository.IsARepoRoot(options.buildroot) and
+      repository.InARepoRepository(options.buildroot, False)):
+    parser.error('Configured buildroot %s points into a repository checkout, '
+                 'rather than the root of it.  This is not supported.'
+                 % options.buildroot)
 
   with cgroup.CGroup(disable=not options.cgroups):
     if options.buildbot:

@@ -30,12 +30,26 @@ class SrcCheckOutException(Exception):
   pass
 
 
-def InARepoRepository(directory):
+def InARepoRepository(directory, exists=True):
   """Returns True if directory is part of a repo checkout."""
+  if not exists:
+    directory = os.path.abspath(directory)
+    while not os.path.isdir(directory):
+      directory = os.path.dirname(directory)
+
   output = cros_lib.RunCommand(
       ['repo'], error_ok=True, redirect_stdout=True, redirect_stderr=True,
       cwd=directory, exit_code=True, print_cmd=False)
   return output.returncode == 0
+
+
+def IsARepoRoot(root):
+  """Returns True if directory is the root of a repo checkout."""
+  # Check for the underlying git-repo checkout.  If it exists, it's
+  # definitely the repo root.  If it doesn't, it may be an aborted
+  # checkout- either way it isn't usable.
+  repo_dir = os.path.join(root, '.repo', 'repo')
+  return os.path.isdir(repo_dir)
 
 
 def CloneGitRepo(working_dir, repo_url):
@@ -94,12 +108,17 @@ class RepoRepository(object):
     self._stable_sync = stable_sync
     self._referenced_repo = referenced_repo
     self._manifest = manifest
+    self._initialized = IsARepoRoot(self.directory)
+
+    if not self._initialized and InARepoRepository(self.directory, False):
+      raise ValueError('Given directory %s is not the root of a repository.'
+                       % self.directory)
 
   def Initialize(self, extra_args=(), force=False):
     """Initializes a repository."""
-    if not force:
-      assert not os.path.exists(os.path.join(self.directory, '.repo')), \
-        'Repo already initialized.'
+    if self._initialized and not force:
+      raise SrcCheckOutException('Repo already initialized.')
+
     # Base command.
     init_cmd = self._INIT_CMD + ['--manifest-url', self.repo_url]
     if self._referenced_repo:
@@ -111,6 +130,7 @@ class RepoRepository(object):
     # Handle branch / manifest options.
     if self.branch: init_cmd.extend(['--manifest-branch', self.branch])
     cros_lib.RunCommand(init_cmd, cwd=self.directory, input='\n\ny\n')
+    self._initialized = True
 
   def _EnsureMirroring(self, post_sync=False):
     """Ensure git is usable from w/in the chroot if --references is enabled
@@ -156,7 +176,6 @@ class RepoRepository(object):
                          'repo.reference', self._referenced_repo],
                          cwd=self.directory)
 
-
   def _ReinitializeIfNecessary(self, local_manifest):
     """Reinitializes the repository if the manifest has changed."""
     def _ShouldReinitialize():
@@ -170,7 +189,7 @@ class RepoRepository(object):
     if not (local_manifest and _ShouldReinitialize()):
       return
 
-    logging.debug('Moving to manifest defined by %s' % local_manifest)
+    logging.debug('Moving to manifest defined by %s', local_manifest)
     # If no manifest passed in, assume default.
     if local_manifest == self.DEFAULT_MANIFEST:
       self.Initialize(['--manifest-name=default.xml'], force=True)
@@ -222,16 +241,16 @@ class RepoRepository(object):
     jobs: An integer representing how many repo jobs to run.
     """
     try:
-      do_self_update = InARepoRepository(self.directory)
-      if not do_self_update:
-        self.Initialize()
+      force_repo_update = self._initialized
+      if not self._initialized:
+        self.Initialize(force=True)
 
       # Fix existing broken mirroring configurations.
       self._EnsureMirroring()
 
       self._ReinitializeIfNecessary(local_manifest)
 
-      if do_self_update:
+      if force_repo_update:
         # selfupdate prior to sync'ing.  Repo's first sync is  the manifest.
         # if we're deploying a new manifest that uses new repo functionality,
         # we have to repo up to date else it would fail.
