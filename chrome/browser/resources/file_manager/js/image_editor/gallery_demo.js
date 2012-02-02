@@ -29,6 +29,7 @@ function loadGallery(items) {
   trace.bindToDOM(document.querySelector('.debug-output'));
 
   contentWindow.ImageUtil.metrics = metrics;
+  contentWindow.FileType = FileType;
 
   chrome.fileBrowserPrivate.getStrings(function(strings) {
     contentWindow.Gallery.open(

@@ -29,6 +29,13 @@ function ImageView(container, viewport) {
   // so we can afford to cache more of them.
   this.screenCache_ = new ImageView.Cache(5);
   this.contentCallbacks_ = [];
+
+  /**
+   * The element displaying the current content.
+   * @type {HTMLCanvasElement|HTMLVideoElement}
+   */
+  this.screenImage_ = null;
+
 }
 
 ImageView.ANIMATION_DURATION = 180;
@@ -46,7 +53,7 @@ ImageView.prototype = {__proto__: ImageBuffer.Overlay.prototype};
 ImageView.prototype.getZIndex = function() { return -1 };
 
 ImageView.prototype.draw = function() {
-  if (!this.screenCanvas_)  // Could be called before the content is set.
+  if (!this.contentCanvas_)  // Do nothing if the image content is not set.
     return;
 
   var forceRepaint = false;
@@ -57,14 +64,14 @@ ImageView.prototype.draw = function() {
       this.viewport_.getCacheGeneration()) {
     this.displayedViewportGeneration_ = this.viewport_.getCacheGeneration();
 
-    if (this.screenCanvas_.width != screenClipped.width)
-      this.screenCanvas_.width = screenClipped.width;
+    if (this.screenImage_.width != screenClipped.width)
+      this.screenImage_.width = screenClipped.width;
 
-    if (this.screenCanvas_.height != screenClipped.height)
-      this.screenCanvas_.height = screenClipped.height;
+    if (this.screenImage_.height != screenClipped.height)
+      this.screenImage_.height = screenClipped.height;
 
-    this.screenCanvas_.style.left = screenClipped.left + 'px';
-    this.screenCanvas_.style.top = screenClipped.top + 'px';
+    this.screenImage_.style.left = screenClipped.left + 'px';
+    this.screenImage_.style.top = screenClipped.top + 'px';
 
     forceRepaint = true;
   }
@@ -109,6 +116,8 @@ ImageView.prototype.invalidateCaches = function() {
 
 ImageView.prototype.getCanvas = function() { return this.contentCanvas_ };
 
+ImageView.prototype.getVideo = function() { return this.videoElement_ };
+
 ImageView.prototype.getThumbnail = function() { return this.thumbnailCanvas_ };
 
 ImageView.prototype.paintScreenRect = function (screenRect, canvas, imageRect) {
@@ -124,15 +133,15 @@ ImageView.prototype.paintScreenRect = function (screenRect, canvas, imageRect) {
   imageRect = new Rect(imageRect.left * scaleX, imageRect.top * scaleY,
                        imageRect.width * scaleX, imageRect.height * scaleY);
   Rect.drawImage(
-      this.screenCanvas_.getContext("2d"), canvas, screenRect, imageRect);
+      this.screenImage_.getContext("2d"), canvas, screenRect, imageRect);
 };
 
 /**
  * @return {ImageData} A new ImageData object with a copy of the content.
  */
 ImageView.prototype.copyScreenImageData = function () {
-  return this.screenCanvas_.getContext("2d").getImageData(
-      0, 0, this.screenCanvas_.width, this.screenCanvas_.height);
+  return this.screenImage_.getContext("2d").getImageData(
+      0, 0, this.screenImage_.width, this.screenImage_.height);
 };
 
 ImageView.prototype.isLoading = function() {
@@ -166,6 +175,13 @@ ImageView.prototype.load = function(
 
   this.contentID_ = id;
 
+  if (FileType.getMediaType(source) == 'video') {
+    var video = this.document_.createElement('video');
+    video.src = source;
+    video.load();
+    displayMainImage(ImageView.LOAD_TYPE_TOTAL, video);
+    return;
+  }
   var readyContent = this.getReadyContent(id, source);
   if (readyContent) {
     displayMainImage(ImageView.LOAD_TYPE_CACHED_FULL, readyContent);
@@ -228,8 +244,8 @@ ImageView.prototype.load = function(
         delay);
   }
 
-  function displayMainImage(loadType, canvas) {
-    self.replace(canvas, slide);
+  function displayMainImage(loadType, content) {
+    self.replace(content, slide);
     ImageUtil.metrics.recordEnum(ImageUtil.getMetricName('LoadMode'),
         loadType, ImageView.LOAD_TYPE_TOTAL);
     if (loadType != ImageView.LOAD_TYPE_CACHED_SCREEN) {
@@ -268,7 +284,7 @@ ImageView.prototype.prefetch = function(id, source, metadata) {
   var cached = this.getReadyContent(id, source);
   if (cached) {
     prefetchDone(cached);
-  } else {
+  } else if (FileType.getMediaType(source) == 'image') {
     // Evict the LRU item before we allocate the new canvas to avoid unneeded
     // strain on memory.
     this.contentCache_.evictLRU();
@@ -282,14 +298,24 @@ ImageView.prototype.prefetch = function(id, source, metadata) {
 };
 
 ImageView.prototype.replaceContent_ = function(
-    canvas, opt_reuseScreenCanvas, opt_width, opt_height) {
-  if (!opt_reuseScreenCanvas || !this.screenCanvas_) {
-    this.screenCanvas_ = this.document_.createElement('canvas');
-    this.screenCanvas_.style.webkitTransitionDuration =
-        ImageView.ANIMATION_DURATION + 'ms';
+    content, opt_reuseScreenCanvas, opt_width, opt_height) {
+
+  if (content.constructor.name == 'HTMLVideoElement') {
+    this.contentCanvas_ = null;
+    this.videoElement_ = content;
+    this.screenImage_ = content;
+    this.screenImage_.className = 'image';
+    return;
   }
 
-  this.contentCanvas_ = canvas;
+  if (!opt_reuseScreenCanvas || !this.screenImage_ ||
+      this.screenImage_.constructor.name == 'HTMLVideoElement') {
+    this.screenImage_ = this.document_.createElement('canvas');
+    this.screenImage_.className = 'image';
+  }
+
+  this.videoElement_ = null;
+  this.contentCanvas_ = content;
   this.invalidateCaches();
   this.viewport_.setImageSize(
       opt_width || this.contentCanvas_.width,
@@ -298,19 +324,19 @@ ImageView.prototype.replaceContent_ = function(
   this.viewport_.update();
   this.draw();
 
-  if (opt_reuseScreenCanvas && !this.screenCanvas_.parentNode) {
-    this.container_.appendChild(this.screenCanvas_);
+  if (opt_reuseScreenCanvas && !this.screenImage_.parentNode) {
+    this.container_.appendChild(this.screenImage_);
   }
 
   // If this is not a thumbnail, cache the content and the screen-scale image.
   if (!opt_width && !opt_height) {
     this.contentCache_.putItem(this.contentID_, this.contentCanvas_, true);
-    this.screenCache_.putItem(this.contentID_, this.screenCanvas_);
+    this.screenCache_.putItem(this.contentID_, this.screenImage_);
 
-    // TODO(kaznacheev): It is better to pass screenCanvas_ as it is usually
+    // TODO(kaznacheev): It is better to pass screenImage_ as it is usually
     // much smaller than contentCanvas_ and still contains the entire image.
     // Once we implement zoom/pan we should pass contentCanvas_ instead.
-    this.updateThumbnail_(this.screenCanvas_);
+    this.updateThumbnail_(this.screenImage_);
 
     for (var i = 0; i != this.contentCallbacks_.length; i++) {
       this.contentCallbacks_[i]();
@@ -338,18 +364,21 @@ ImageView.prototype.updateThumbnail_ = function(canvas) {
 /**
  * Replace the displayed image, possibly with slide-in animation.
  *
- * @param {HTMLCanvasElement} canvas
+ * @param {HTMLCanvasElement|HTMLVideoElement} content
  * @param {number} opt_slide Slide-in animation direction.
  *           <0 for right-to-left, > 0 for left-to-right, 0 for no animation.
  */
 ImageView.prototype.replace = function(
-    canvas, opt_slide, opt_width, opt_height) {
-  var oldScreenCanvas = this.screenCanvas_;
+    content, opt_slide, opt_width, opt_height) {
+  var oldScreenImage = this.screenImage_;
 
-  this.replaceContent_(canvas, !opt_slide, opt_width, opt_height);
-  if (!opt_slide) return;
+  this.replaceContent_(content, !opt_slide, opt_width, opt_height);
 
-  var newScreenCanvas = this.screenCanvas_;
+  // TODO(kaznacheev): The line below is too obscure.
+  // Refactor the whole 'slide' thing for clarity.
+  if (!opt_slide && !this.getVideo()) return;
+
+  var newScreenCanvas = this.screenImage_;
 
   function numToSlideAttr(num) {
     return num < 0 ? 'left' : num > 0 ? 'right' : 'center';
@@ -360,10 +389,10 @@ ImageView.prototype.replace = function(
 
   setTimeout(function() {
     newScreenCanvas.removeAttribute('fade');
-    if (oldScreenCanvas) {
-      oldScreenCanvas.setAttribute('fade', numToSlideAttr(-opt_slide));
+    if (oldScreenImage) {
+      oldScreenImage.setAttribute('fade', numToSlideAttr(-opt_slide));
       setTimeout(function() {
-        oldScreenCanvas.parentNode.removeChild(oldScreenCanvas);
+        oldScreenImage.parentNode.removeChild(oldScreenImage);
       }, ImageView.ANIMATION_WAIT_INTERVAL);
     }
   }, 0);
@@ -387,30 +416,28 @@ ImageView.prototype.replaceAndAnimate = function(canvas, cropRect, rotate90) {
   cropRect  = cropRect || this.viewport_.getScreenClipped();
   var oldScale = this.viewport_.getScale();
 
-  var oldScreenCanvas = this.screenCanvas_;
+  var oldScreenImage = this.screenImage_;
   this.replaceContent_(canvas);
-  var newScreenCanvas = this.screenCanvas_;
+  var newScreenImage = this.screenImage_;
 
   // Display the new canvas, initially transformed.
 
   // Transform instantly.
-  var duration = newScreenCanvas.style.webkitTransitionDuration;
-  newScreenCanvas.style.webkitTransitionDuration = '0ms';
-
-  newScreenCanvas.style.webkitTransform = ImageView.makeTransform(
+  newScreenImage.style.webkitTransitionDuration = '0ms';
+  newScreenImage.style.webkitTransform = ImageView.makeTransform(
       cropRect,
       this.viewport_.getScreenClipped(),
       oldScale / this.viewport_.getScale(),
       -rotate90);
 
-  oldScreenCanvas.parentNode.appendChild(newScreenCanvas);
-  oldScreenCanvas.parentNode.removeChild(oldScreenCanvas);
+  oldScreenImage.parentNode.appendChild(newScreenImage);
+  oldScreenImage.parentNode.removeChild(oldScreenImage);
 
   // Let the layout fire.
   setTimeout(function() {
     // Animated back to non-transformed state.
-    newScreenCanvas.style.webkitTransitionDuration = duration;
-    newScreenCanvas.style.webkitTransform = '';
+    newScreenImage.style.webkitTransitionDuration = '';
+    newScreenImage.style.webkitTransform = '';
   }, 0);
 };
 
@@ -422,25 +449,25 @@ ImageView.prototype.animateAndReplace = function(canvas, cropRect) {
   var fullRect = this.viewport_.getScreenClipped();
   var oldScale = this.viewport_.getScale();
 
-  var oldScreenCanvas = this.screenCanvas_;
+  var oldScreenImage = this.screenImage_;
   this.replaceContent_(canvas);
-  var newCanvas = this.screenCanvas_;
+  var newScreenImage = this.screenImage_;
 
-  newCanvas.setAttribute('fade', 'center');
-  oldScreenCanvas.parentNode.insertBefore(newCanvas, oldScreenCanvas);
+  newScreenImage.setAttribute('fade', 'center');
+  oldScreenImage.parentNode.insertBefore(newScreenImage, oldScreenImage);
 
   // Animate to the transformed state.
 
-  oldScreenCanvas.style.webkitTransform = ImageView.makeTransform(
+  oldScreenImage.style.webkitTransform = ImageView.makeTransform(
       cropRect,
       fullRect,
       this.viewport_.getScale() / oldScale,
       0);
 
-  setTimeout(function() { newCanvas.removeAttribute('fade') }, 0);
+  setTimeout(function() { newScreenImage.removeAttribute('fade') }, 0);
 
   setTimeout(function() {
-    oldScreenCanvas.parentNode.removeChild(oldScreenCanvas);
+    oldScreenImage.parentNode.removeChild(oldScreenImage);
   }, ImageView.ANIMATION_WAIT_INTERVAL);
 };
 

@@ -30,25 +30,12 @@
       "default_title": "__MSG_PLAY_MEDIA__",
       "default_icon": "images/icon_play_16x16.png",
       "file_filters": [
-        "filesystem:*.3gp",
-        "filesystem:*.avi",
-        "filesystem:*.webm",
         "filesystem:*.flac",
-        "filesystem:*.mp4",
-        "filesystem:*.m4v",
-        "filesystem:*.mpg",
-        "filesystem:*.mpeg",
-        "filesystem:*.mpg4",
-        "filesystem:*.mpeg4",
-        "filesystem:*.mov",
-        "filesystem:*.ogg",
-        "filesystem:*.oga",
-        "filesystem:*.ogm",
-        "filesystem:*.ogv",
-        "filesystem:*.ogx",
-        "filesystem:*.wav",
+        "filesystem:*.m4a",
         "filesystem:*.mp3",
-        "filesystem:*.m4a"
+        "filesystem:*.oga",
+        "filesystem:*.ogg",
+        "filesystem:*.wav"
       ]
     },
     {
@@ -56,19 +43,12 @@
       "default_title": "__MSG_ENQUEUE_MEDIA__",
       "default_icon": "images/icon_add_to_queue_16x16.png",
       "file_filters": [
-        "filesystem:*.avi",
-        "filesystem:*.webm",
-        "filesystem:*.mp4",
-        "filesystem:*.m4v",
-        "filesystem:*.mov",
-        "filesystem:*.ogg",
-        "filesystem:*.oga",
-        "filesystem:*.ogm",
-        "filesystem:*.ogv",
-        "filesystem:*.ogx",
-        "filesystem:*.wav",
+        "filesystem:*.flac",
+        "filesystem:*.m4a",
         "filesystem:*.mp3",
-        "filesystem:*.m4a"
+        "filesystem:*.oga",
+        "filesystem:*.ogg",
+        "filesystem:*.wav"
       ]
     },
     {
@@ -84,12 +64,27 @@
       "default_title": "__MSG_GALLERY__",
       "default_icon": "images/icon_preview_16x16.png",
       "file_filters": [
+        // Image formats
         "filesystem:*.bmp",
         "filesystem:*.gif",
         "filesystem:*.jpg",
         "filesystem:*.jpeg",
+        "filesystem:*.png",
         "filesystem:*.webp",
-        "filesystem:*.png"
+        // Video formats
+        "filesystem:*.3gp",
+        "filesystem:*.avi",
+        "filesystem:*.m4v",
+        "filesystem:*.mov",
+        "filesystem:*.mp4",
+        "filesystem:*.mpeg",
+        "filesystem:*.mpeg4",
+        "filesystem:*.mpg",
+        "filesystem:*.mpg4",
+        "filesystem:*.ogm",
+        "filesystem:*.ogv",
+        "filesystem:*.ogx",
+        "filesystem:*.webm"
       ]
     }
   ],

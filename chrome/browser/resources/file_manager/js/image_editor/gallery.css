@@ -98,24 +98,26 @@ body {
   cursor: url(../../images/gallery/cursor_swne.png) 18 18;
 }
 
-.gallery > .image-container > canvas {
+.gallery > .image-container > .image {
   position: absolute;
   pointer-events: none;
 
   -webkit-transition-property: -webkit-transform, opacity;
   -webkit-transition-timing-function: ease-in-out;
-  /* -webkit-transition-duration is set in image_view.js*/
+
+  /* Keep in sync with ImageView.ANIMATION_DURATION in image_view.js*/
+  -webkit-transition-duration: 180ms;
 }
 
-.gallery > .image-container > canvas[fade] {
+.gallery > .image-container > .image[fade] {
   opacity: 0;
 }
 
-.gallery > .image-container > canvas[fade='left'] {
+.gallery > .image-container > .image[fade='left'] {
   -webkit-transform: translate(-40px,0);
 }
 
-.gallery > .image-container > canvas[fade='right'] {
+.gallery > .image-container > .image[fade='right'] {
   -webkit-transform: translate(40px,0);
 }
 
@@ -289,9 +291,11 @@ body {
   position: absolute;
   left: 280px;
   right: 280px;
+  height: 100%;
   display: -webkit-box;
   -webkit-box-orient: horizontal;
   -webkit-box-pack: center;
+  -webkit-box-align: center;
 }
 
 .gallery .toolbar .ribbon {
@@ -480,7 +484,6 @@ body {
 .gallery > .toolbar > .button.edit {
   position: relative;
   z-index: 10;
-  margin-left: 25px;
   background-image: url(../../images/gallery/icon_edit.png);
 }
 
@@ -491,12 +494,15 @@ body {
 .gallery > .toolbar > .button.share {
   position: relative;
   z-index: 10;
-  margin-right: 8px;
   background-image: url(../../images/gallery/icon_share.png);
 }
 
 .gallery > .toolbar > .button.share[pressed] {
   background-image: url(../../images/gallery/icon_share_selected.png);
+}
+
+.gallery > .toolbar > .button:last-child {
+  margin-right: 8px;
 }
 
 /* Secondary toolbar (mode-specific tools) */
@@ -745,30 +751,43 @@ body {
 
 /* Video playback support */
 
-.gallery > video {
+.gallery video {
   position: absolute;
   width: 100%;
   height: 100%;
-  display: none;
 }
 
-.gallery[video] > video {
-  display: block;
-}
-
-.gallery .toolbar .media-controls {
+.gallery .media-spacer {
   position: absolute;
-  left: 280px;
-  right: 280px;
-  top: 12px;
+  left: 0;
+  right: 0;
+  height: 30px;
+  bottom: 60px; /* Just above the toolbar */
+  display: -webkit-box;
+  -webkit-box-orient: horizontal;
+  -webkit-box-align: center;
+  -webkit-box-pack: center;
+  pointer-events: none;
+}
+
+.gallery .media-controls {
+  max-width: 800px;
   display: none;
 }
 
-.gallery[video] .toolbar .media-controls {
+.gallery[video] .media-controls {
+  opacity: 0;
+  -webkit-transition: opacity 0.28s ease;
   display: -webkit-box;
+  -webkit-box-flex: 1;
+  pointer-events: auto;
+}
+
+.gallery[video][tools] .media-controls {
+  opacity: 1;
 }
 
 .gallery[video] > .toolbar .button.edit,
-.gallery[video] > .toolbar .ribbon {
+.gallery[video] > .toolbar .edit-bar {
   display: none;
 }

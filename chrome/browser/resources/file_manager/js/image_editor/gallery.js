@@ -44,8 +44,6 @@ function Gallery(container, closeCallback, metadataProvider, shareActions,
 
 Gallery.prototype = { __proto__: RibbonClient.prototype };
 
-Gallery.getMediaType = function() { return null };
-
 Gallery.open = function(parentDirEntry, items, selectedItem,
    closeCallback, metadataProvider, shareActions, displayStringFunction) {
   var container = document.querySelector('.gallery');
@@ -98,9 +96,6 @@ Gallery.prototype.initDom_ = function(shareActions) {
   }).bind(this));
   this.container_.appendChild(this.imageContainer_);
 
-  this.videoElement_ = doc.createElement('video');
-  this.container_.appendChild(this.videoElement_);
-
   this.toolbar_ = doc.createElement('div');
   this.toolbar_.className = 'toolbar tool dimmable';
   this.container_.appendChild(this.toolbar_);
@@ -130,11 +125,15 @@ Gallery.prototype.initDom_ = function(shareActions) {
   this.ribbonSpacer_.className = 'ribbon-spacer';
   this.toolbar_.appendChild(this.ribbonSpacer_);
 
-  this.mediaToolbar_ = doc.createElement('div');
-  this.mediaToolbar_.className = 'media-controls';
-  this.toolbar_.appendChild(this.mediaToolbar_);
+  this.mediaSpacer_ = doc.createElement('div');
+  this.mediaSpacer_.className = 'media-spacer';
+  this.container_.appendChild(this.mediaSpacer_);
 
-  this.mediaControls_ = new MediaControls(this.videoElement_,
+  this.mediaToolbar_ = doc.createElement('div');
+  this.mediaToolbar_.className = 'media-controls tool';
+  this.mediaSpacer_.appendChild(this.mediaToolbar_);
+
+  this.mediaControls_ = new MediaControls(
       this.mediaToolbar_, this.toggleFullscreen_.bind(this));
 
   this.arrowBox_ = this.document_.createElement('div');
@@ -204,6 +203,16 @@ Gallery.prototype.initDom_ = function(shareActions) {
   }
 };
 
+Gallery.blobToURL_ = function(blob) {
+  // Append a file name after an anchor so that the Gallery
+  // code can find the file extension at the end of the url.
+  // A File instance contains the real file name in the 'name' property.
+  // For a Blob instance we make up a fake file name out of the mime type
+  // (image/jpeg -> image.jpg).
+  return window.webkitURL.createObjectURL(blob) +
+      '#' + (blob.name || (blob.type.replace('/', '.')));
+};
+
 Gallery.prototype.load = function(parentDirEntry, items, selectedItem) {
   this.parentDirEntry_ = parentDirEntry;
 
@@ -221,7 +230,7 @@ Gallery.prototype.load = function(parentDirEntry, items, selectedItem) {
     }
     if (item.constructor.name == 'Blob' ||
         item.constructor.name == 'File') {
-      item = window.webkitURL.createObjectURL(item);
+      item = Gallery.blobToURL_(item);
     }
     if (typeof item == 'string') {
       if (selected) selectedIndex = urls.length;
@@ -239,15 +248,24 @@ Gallery.prototype.load = function(parentDirEntry, items, selectedItem) {
 
   var self = this;
 
+  var selectedURL = urls[selectedIndex];
+
   function initRibbon() {
     self.ribbon_.load(urls, selectedIndex);
-    // Flash the ribbon briefly to let the user know it is there.
+    if (urls.length == 1 && self.isShowingVideo_()) {
+      // We only have one item and it is a video. Move the playback controls
+      // in place of thumbnails and start the playback immediately.
+      self.mediaSpacer_.removeChild(self.mediaToolbar_);
+      self.ribbonSpacer_.appendChild(self.mediaToolbar_);
+      self.mediaControls_.play();
+    }
+    // Flash the toolbar briefly to let the user know it is there.
     self.cancelFading_();
     self.initiateFading_(Gallery.FIRST_FADE_TIMEOUT);
   }
 
-  var selectedURL = urls[selectedIndex];
-  // Initialize the ribbon only after the selected image is fully loaded.
+  // Show the selected item ASAP, then complete the initialization (populating
+  // the ribbon can take especially long time).
   this.metadataProvider_.fetch(selectedURL, function (metadata) {
     self.openImage(selectedIndex, selectedURL, metadata, 0, initRibbon);
   });
@@ -400,9 +418,6 @@ Gallery.prototype.onClose_ = function() {
 };
 
 Gallery.prototype.prefetchImage = function(id, content, metadata) {
-  if (Gallery.isVideoContent(content, metadata))
-    return;
-
   this.editor_.prefetchImage(id, content, metadata);
 };
 
@@ -419,33 +434,37 @@ Gallery.prototype.openImage = function(id, content, metadata, slide, callback) {
     this.filenameText_.textContent = displayName;
   }
 
-  if (Gallery.isVideoContent(content, metadata)) {
-    ImageUtil.setAttribute(this.container_, 'video', true);
-    this.mediaControls_.load(content);
-    callback(ImageView.LOAD_TYPE_TOTAL);
-    return;
-  }
-  ImageUtil.setAttribute(this.container_, 'video', false);
-
   var self = this;
   function loadDone(loadType) {
-    ImageUtil.metrics.recordUserAction(ImageUtil.getMetricName('View'));
+    var video = self.isShowingVideo_();
+    ImageUtil.setAttribute(self.container_, 'video', video);
 
-    function toMillions(number) { return Math.round(number / (1000 * 1000)) }
+    if (video) {
+      if (self.isEditing_()) {
+        // The editor toolbar does not make sense for video, hide it.
+        self.onEdit_();
+      }
+      self.mediaControls_.attachMedia(self.imageView_.getVideo());
+      //TODO(kaznacheev): Add metrics for video playback.
+    } else {
+      ImageUtil.metrics.recordUserAction(ImageUtil.getMetricName('View'));
 
-    ImageUtil.metrics.recordSmallCount(ImageUtil.getMetricName('Size.MB'),
-        toMillions(metadata.fileSize));
+      function toMillions(number) { return Math.round(number / (1000 * 1000)) }
 
-    var canvas = self.imageView_.getCanvas();
-    ImageUtil.metrics.recordSmallCount(ImageUtil.getMetricName('Size.MPix'),
-        toMillions(canvas.width * canvas.height));
+      ImageUtil.metrics.recordSmallCount(ImageUtil.getMetricName('Size.MB'),
+          toMillions(metadata.fileSize));
 
-    var url = item ? item.getUrl() : content;
-    var extIndex = url.lastIndexOf('.');
-    var ext = extIndex < 0 ? '' : url.substr(extIndex + 1).toLowerCase();
-    if (ext == 'jpeg') ext = 'jpg';
-    ImageUtil.metrics.recordEnum(
-        ImageUtil.getMetricName('FileType'), ext, ImageUtil.FILE_TYPES);
+      var canvas = self.imageView_.getCanvas();
+      ImageUtil.metrics.recordSmallCount(ImageUtil.getMetricName('Size.MPix'),
+          toMillions(canvas.width * canvas.height));
+
+      var url = item ? item.getUrl() : content;
+      var extIndex = url.lastIndexOf('.');
+      var ext = extIndex < 0 ? '' : url.substr(extIndex + 1).toLowerCase();
+      if (ext == 'jpeg') ext = 'jpg';
+      ImageUtil.metrics.recordEnum(
+          ImageUtil.getMetricName('FileType'), ext, ImageUtil.FILE_TYPES);
+    }
 
     callback(loadType);
   }
@@ -456,22 +475,13 @@ Gallery.prototype.openImage = function(id, content, metadata, slide, callback) {
 Gallery.prototype.closeImage = function(item) {
   if (this.isShowingVideo_()) {
     this.mediaControls_.pause();
-    return;
+    this.mediaControls_.detachMedia();
   }
   this.editor_.closeSession(this.saveItem_.bind(this, item, null));
 };
 
 Gallery.prototype.isShowingVideo_ = function() {
-  return this.container_.hasAttribute('video');
-};
-
-Gallery.isVideoContent = function(content, metadata) {
-  // Gallery.getMediaType is useless when in the gallery_demo.html.
-  // Rely on metadata.type instead.
-  // TODO(kaznacheev): generalize getMediaType.
-  if (metadata.type == 'mpeg')
-    return true;
-  return Gallery.getMediaType(content) == 'video';
+  return !!this.imageView_.getVideo();
 };
 
 Gallery.prototype.isEditing_ = function() {
@@ -479,9 +489,6 @@ Gallery.prototype.isEditing_ = function() {
 };
 
 Gallery.prototype.onEdit_ = function() {
-  if (this.isShowingVideo_())
-    return;
-
   ImageUtil.setAttribute(this.container_, 'editing', !this.isEditing_());
 
   // The user has just clicked on the Edit button. Dismiss the Share menu.
@@ -493,8 +500,10 @@ Gallery.prototype.onEdit_ = function() {
   if (this.isEditing_()) {
     this.cancelFading_();
   } else {
-    var item = this.ribbon_.getSelectedItem();
-    this.editor_.requestImage(item.updateThumbnail.bind(item));
+    if (!this.isShowingVideo_()) {
+      var item = this.ribbon_.getSelectedItem();
+      this.editor_.requestImage(item.updateThumbnail.bind(item));
+    }
     this.initiateFading_();
   }
 
@@ -530,7 +539,15 @@ Gallery.prototype.onKeyDown_ = function(event) {
       break;
 
     case 'U+0045':  // 'e' toggles the editor
-      this.onEdit_();
+      if (!this.isShowingVideo_()) {
+        this.onEdit_();
+      }
+      break;
+
+    case 'U+0020':  // Space toggles the video playback.
+      if (this.isShowingVideo_()) {
+        this.mediaControls_.togglePlayState();
+      }
       break;
 
     case 'Home':
@@ -748,6 +765,10 @@ Ribbon.prototype.requestPrefetch = function(direction) {
 Ribbon.ITEMS_COUNT = 5;
 
 Ribbon.prototype.redraw = function() {
+  // Never show a single thumbnail.
+  if (this.items_.length == 1)
+    return;
+
   // TODO(dgozman): use margin instead of 2 here.
   var itemWidth = this.bar_.clientHeight - 2;
   var fullItems = Ribbon.ITEMS_COUNT;
@@ -935,8 +956,7 @@ Ribbon.Item.prototype.save = function(
 
   if (!dirEntry) {  // Happens only in gallery_demo.js
     self.onSaveSuccess(
-        window.webkitURL.createObjectURL(
-            ImageEncoder.getBlob(canvas, metadataEncoder)));
+        Gallery.blobToURL_(ImageEncoder.getBlob(canvas, metadataEncoder)));
     if (opt_callback) opt_callback();
     return;
   }
@@ -1082,33 +1102,23 @@ Ribbon.Item.prototype.onSaveError = function(error) {
   ImageUtil.metrics.recordEnum(ImageUtil.getMetricName('SaveResult'), 0, 2);
 };
 
-Ribbon.MAX_THUMBNAIL_PIXEL_COUNT = 1 << 21; // 2 MPix
-Ribbon.MAX_THUMBNAIL_FILE_SIZE = 1 << 20; // 1 Mb
-
-Ribbon.Item.canUseImageForThumbnail = function(url, metadata) {
-  return !Gallery.isVideoContent(url, metadata) &&
-      ((metadata.fileSize &&
-        metadata.fileSize <= Ribbon.MAX_THUMBNAIL_FILE_SIZE)  ||
-      (metadata.width && metadata.height &&
-      (metadata.width * metadata.height <= Ribbon.MAX_THUMBNAIL_PIXEL_COUNT)));
-};
-
-Ribbon.PLACEHOLDER_ICON_URL = '../../images/filetype_large_image.png';
-
 Ribbon.Item.prototype.setMetadata = function(metadata) {
   this.metadata_ = metadata;
 
   var url;
   var transform;
 
+  var mediaType = FileType.getMediaType(this.url_);
+
   if (metadata.thumbnailURL) {
     url = metadata.thumbnailURL;
     transform = metadata.thumbnailTransform;
-  } else if (Ribbon.Item.canUseImageForThumbnail(this.url_, metadata)){
+  } else if (mediaType == 'image' &&
+      FileType.canUseImageUrlForPreview(metadata)) {
     url = this.url_;
     transform = metadata.imageTransform;
   } else {
-    url = Ribbon.PLACEHOLDER_ICON_URL;
+    url = '../../' + FileType.getPreviewArt(mediaType);
   }
 
   function percent(ratio) { return Math.round(ratio * 100) + '%' }

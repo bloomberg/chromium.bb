@@ -8,34 +8,23 @@
  */
 
 /**
- * @param {HTMLMediaElement} mediaElement The media element to control.
  * @param {HTMLElement} containerElement The container for the controls.
  * @param {function} fullScreenToggle Function to toggle the fullscreen mode.
  * @constructor
  */
-function MediaControls(mediaElement, containerElement, fullScreenToggle) {
-  this.media_ = mediaElement;
+function MediaControls(containerElement, fullScreenToggle) {
   this.container_ = containerElement;
   this.document_ = this.container_.ownerDocument;
+  this.media_ = null;
 
   this.setupPlaybackControls_(fullScreenToggle);
 
-  this.setupMediaEvents_();
+  this.onMediaPlayBound_ = this.onMediaPlay_.bind(this, true);
+  this.onMediaPauseBound_ = this.onMediaPlay_.bind(this, false);
+  this.onMediaDurationBound_ = this.onMediaDuration_.bind(this);
+  this.onMediaProgressBound_ = this.onMediaProgress_.bind(this);
+  this.onMediaErrorBound_ = this.onMediaError_.bind(this);
 }
-
-/**
- * Load the given url into the media element.
- *
- * @param {string} url
- */
-MediaControls.prototype.load = function(url) {
-  this.media_.src = url;
-  this.media_.load();
-
-  // Reset the UI as the load call above did not raise any media events.
-  this.playButton_.classList.remove('playing');
-  this.displayProgress_(0, 1);
-};
 
 MediaControls.prototype.play = function() {
   this.media_.play();
@@ -103,7 +92,7 @@ MediaControls.PROGRESS_RANGE = 1000;
  */
 MediaControls.prototype.setupPlaybackControls_ = function(fullScreenToggle) {
   this.playButton_ = this.createButton_(
-      'play', this.onPlayButtonClick_.bind(this));
+      'play', this.togglePlayState.bind(this));
 
   this.progress_ = new MediaControls.Slider(
       this.createControl_('progress'),
@@ -138,16 +127,13 @@ MediaControls.prototype.setupPlaybackControls_ = function(fullScreenToggle) {
 
   this.volume_ = new MediaControls.Slider(
       this.createControl_('volume'),
-      this.media_.volume,
+      1, /* value */
       100 /* range */);
-  this.onVolumeChange_();
 
   this.volume_.getInput_().addEventListener(
       'change', this.onVolumeChange_.bind(this));
   this.volume_.getInput_().addEventListener(
       'mousedown', this.onVolumeMouseDown_.bind(this));
-
-  this.volume_.setValue(this.media_.volume);
 
   if (fullScreenToggle) {
     this.fullscreenButton_ = this.createButton_('fullscreen', fullScreenToggle);
@@ -161,7 +147,7 @@ MediaControls.prototype.displayProgress_ = function(current, duration) {
   this.currentTime_.textContent = MediaControls.formatTime_(current);
 };
 
-MediaControls.prototype.onPlayButtonClick_ = function() {
+MediaControls.prototype.togglePlayState = function() {
   if (this.media_.paused || this.media_.ended) {
     this.media_.play();
   } else {
@@ -282,20 +268,43 @@ MediaControls.prototype.onVolumeMouseDown_ = function () {
   }
 };
 
+MediaControls.prototype.getMedia = function() { return this.media_ };
+
 /**
- * Attach media event handlers.
+ * Attach a media element.
+ *
+ * @param {HTMLMediaElement} mediaElement The media element to control.
  */
-MediaControls.prototype.setupMediaEvents_ = function() {
-  this.media_.addEventListener(
-      'play', this.onMediaPlay_.bind(this, true));
-  this.media_.addEventListener(
-      'pause', this.onMediaPlay_.bind(this, false));
-  this.media_.addEventListener(
-      'durationchange', this.onMediaDuration_.bind(this));
-  this.media_.addEventListener(
-      'timeupdate', this.onMediaProgress_.bind(this));
-  this.media_.addEventListener(
-      'error', this.onMediaError_.bind(this));
+MediaControls.prototype.attachMedia = function(mediaElement) {
+  this.media_ = mediaElement;
+
+  this.media_.addEventListener('play', this.onMediaPlayBound_);
+  this.media_.addEventListener('pause', this.onMediaPauseBound_);
+  this.media_.addEventListener('durationchange', this.onMediaDurationBound_);
+  this.media_.addEventListener('timeupdate', this.onMediaProgressBound_);
+  this.media_.addEventListener('error', this.onMediaErrorBound_);
+
+  // Reset the UI.
+  this.playButton_.classList.remove('playing');
+  this.displayProgress_(0, 1);
+  this.volume_.setValue(this.media_.volume);
+  this.onVolumeChange_();
+};
+
+/**
+ * Detach media event handlers.
+ */
+MediaControls.prototype.detachMedia = function() {
+  if (!this.media_)
+    return;
+
+  this.media_.removeEventListener('play', this.onMediaPlayBound_);
+  this.media_.removeEventListener('pause', this.onMediaPauseBound_);
+  this.media_.removeEventListener('durationchange', this.onMediaDurationBound_);
+  this.media_.removeEventListener('timeupdate', this.onMediaProgressBound_);
+  this.media_.removeEventListener('error', this.onMediaErrorBound_);
+
+  this.media_ = null;
 };
 
 MediaControls.prototype.onMediaPlay_ = function(playing) {

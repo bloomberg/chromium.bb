@@ -95,68 +95,6 @@ FileManager.prototype = {
    */
   var localStrings;
 
-  const fileTypes = {
-    // Images
-    'jpeg': {type: 'image', name: 'IMAGE_FILE_TYPE', subtype: 'JPEG'},
-    'jpg':  {type: 'image', name: 'IMAGE_FILE_TYPE', subtype: 'JPEG'},
-    'bmp':  {type: 'image', name: 'IMAGE_FILE_TYPE', subtype: 'BMP'},
-    'gif':  {type: 'image', name: 'IMAGE_FILE_TYPE', subtype: 'GIF'},
-    'ico':  {type: 'image', name: 'IMAGE_FILE_TYPE', subtype: 'ICO'},
-    'png':  {type: 'image', name: 'IMAGE_FILE_TYPE', subtype: 'PNG'},
-    'webp': {type: 'image', name: 'IMAGE_FILE_TYPE', subtype: 'WebP'},
-
-    // Video
-    '3gp':  {type: 'video', name: 'VIDEO_FILE_TYPE', subtype: '3GP'},
-    'avi':  {type: 'video', name: 'VIDEO_FILE_TYPE', subtype: 'AVI'},
-    'mov':  {type: 'video', name: 'VIDEO_FILE_TYPE', subtype: 'QuickTime'},
-    'mp4':  {type: 'video', name: 'VIDEO_FILE_TYPE', subtype: 'MPEG'},
-    'm4v':  {type: 'video', name: 'VIDEO_FILE_TYPE', subtype: 'MPEG'},
-    'mpg':  {type: 'video', name: 'VIDEO_FILE_TYPE', subtype: 'MPEG'},
-    'mpeg': {type: 'video', name: 'VIDEO_FILE_TYPE', subtype: 'MPEG'},
-    'mpg4': {type: 'video', name: 'VIDEO_FILE_TYPE', subtype: 'MPEG'},
-    'mpeg4': {type: 'video', name: 'VIDEO_FILE_TYPE', subtype: 'MPEG'},
-    'ogm':  {type: 'video', name: 'VIDEO_FILE_TYPE', subtype: 'OGG'},
-    'ogv':  {type: 'video', name: 'VIDEO_FILE_TYPE', subtype: 'OGG'},
-    'ogx':  {type: 'video', name: 'VIDEO_FILE_TYPE', subtype: 'OGG'},
-    'webm': {type: 'video', name: 'VIDEO_FILE_TYPE', subtype: 'WebM'},
-
-    // Audio
-    'flac': {type: 'audio', name: 'AUDIO_FILE_TYPE', subtype: 'FLAC'},
-    'mp3':  {type: 'audio', name: 'AUDIO_FILE_TYPE', subtype: 'MP3'},
-    'm4a':  {type: 'audio', name: 'AUDIO_FILE_TYPE', subtype: 'MPEG'},
-    'oga':  {type: 'audio', name: 'AUDIO_FILE_TYPE', subtype: 'OGG'},
-    'ogg':  {type: 'audio', name: 'AUDIO_FILE_TYPE', subtype: 'OGG'},
-    'wav':  {type: 'audio', name: 'AUDIO_FILE_TYPE', subtype: 'WAV'},
-
-    // Text
-    'pod': {type: 'text', name: 'PLAIN_TEXT_FILE_TYPE', subtype: 'POD'},
-    'rst': {type: 'text', name: 'PLAIN_TEXT_FILE_TYPE', subtype: 'RST'},
-    'txt': {type: 'text', name: 'PLAIN_TEXT_FILE_TYPE', subtype: 'TXT'},
-    'log': {type: 'text', name: 'PLAIN_TEXT_FILE_TYPE', subtype: 'LOG'},
-
-    // Others
-    'zip': {type: 'archive', name: 'ZIP_ARCHIVE_FILE_TYPE'},
-
-    'pdf': {type: 'text', icon: 'pdf', name: 'PDF_DOCUMENT_FILE_TYPE',
-            subtype: 'PDF'},
-    'html': {type: 'text', icon: 'html', name: 'HTML_DOCUMENT_FILE_TYPE',
-             subtype: 'HTML'},
-    'htm': {type: 'text', icon: 'html', name: 'HTML_DOCUMENT_FILE_TYPE',
-            subtype: 'HTML'}
-  };
-
-  const previewArt = {
-    'audio': 'images/filetype_large_audio.png',
-    // TODO(sidor): Find better icon here.
-    'device': 'images/filetype_large_folder.png',
-    'folder': 'images/filetype_large_folder.png',
-    'unknown': 'images/filetype_large_generic.png',
-    // TODO(sidor): Find better icon here.
-    'unreadable': 'images/filetype_large_folder.png',
-    'image': 'images/filetype_large_image.png',
-    'video': 'images/filetype_large_video.png'
-  };
-
   /**
    * Regexp for archive files. Used to show mount-archive task.
    */
@@ -707,7 +645,7 @@ FileManager.prototype = {
 
     var sigleSelection =
         this.dialogType_ == FileManager.DialogType.SELECT_OPEN_FILE ||
-        this.dialogType_ == FileManager.DialogType.SELECT_OPEN_FOLDER ||
+        this.dialogType_ == FileManager.DialogType.SELECT_FOLDER ||
         this.dialogType_ == FileManager.DialogType.SELECT_SAVEAS_FILE;
 
     this.directoryModel_ = new DirectoryModel(this.filesystem_.root,
@@ -783,20 +721,6 @@ FileManager.prototype = {
     return entry.cachedIconType_;
   };
 
-  /**
-   * Extract extension from the file name and cat it to to lower case.
-   *
-   * @param {string} name.
-   * @return {strin}
-   */
-  function getFileExtension(name) {
-    var extIndex = name.lastIndexOf('.');
-    if (extIndex < 0)
-      return '';
-
-    return name.substr(extIndex + 1).toLowerCase();
-  }
-
   FileManager.prototype.computeIconType_ = function(entry) {
     // TODO(dgozman): refactor this to use proper icons in left panel,
     // and do not depend on mountPoints.
@@ -812,18 +736,16 @@ FileManager.prototype = {
     if (entry.isDirectory)
       return 'folder';
 
-    var extension = getFileExtension(entry.name);
-    if (fileTypes[extension])
-      return fileTypes[extension].icon || fileTypes[extension].type;
-    return undefined;
+    var fileType = FileType.getType(entry.name);
+    return fileType.icon || fileType.type;
   };
 
   /**
    * Get the file type for a given Entry.
    *
    * @param {Entry} entry An Entry subclass (FileEntry or DirectoryEntry).
-   * @return {string} One of the values from FileManager.fileTypes, 'FOLDER',
-   *                  or undefined.
+   * @return {string} One of the values from FileType.typeInfo, 'FOLDER',
+   *                  'DEVICE' or undefined.
    */
   FileManager.prototype.getFileType = function(entry) {
     if (!('cachedFileType_' in entry))
@@ -841,25 +763,7 @@ FileManager.prototype = {
       return {name: 'FOLDER', type: '.folder'};
     }
 
-    var extension = getFileExtension(entry.name);
-    if (extension in fileTypes)
-      return fileTypes[extension];
-
-    return {};
-  };
-
-  /**
-   * Get the media type for a given url.
-   *
-   * @param {string} url
-   * @return {string} The value of 'type' property from one of the elements in
-   *   FileManager.fileTypes or null.
-   */
-  FileManager.getMediaType_ = function(url) {
-    var extension = getFileExtension(url);
-    if (extension in fileTypes)
-      return fileTypes[extension].type;
-    return null;
+    return FileType.getType(entry.name);
   };
 
   /**
@@ -2037,7 +1941,6 @@ FileManager.prototype = {
       var task_parts = task.taskId.split('|');
       if (task_parts[0] == this.getExtensionId_()) {
         task.internal = true;
-        task.allTasks = tasksList;
         if (task_parts[1] == 'play') {
           // TODO(serya): This hack needed until task.iconUrl is working
           //             (see GetFileTasksFileBrowserFunction::RunImpl).
@@ -2057,6 +1960,7 @@ FileManager.prototype = {
           task.iconUrl =
               chrome.extension.getURL('images/icon_preview_16x16.png');
           task.title = str('GALLERY');
+          task.allTasks = tasksList;
           this.galleryTask_ = task;
         }
       }
@@ -2261,7 +2165,10 @@ FileManager.prototype = {
    */
   FileManager.prototype.onFileTaskExecute_ = function(id, details) {
     var urls = details.urls;
-    if (id == 'mount-archive') {
+    if (id == 'play' || id == 'enqueue') {
+      // The Media Player popup is now only used to play audio.
+      chrome.fileBrowserPrivate.viewFiles(urls, id);
+    } else if (id == 'mount-archive') {
       for (var index = 0; index < urls.length; ++index) {
         // Url in MountCompleted event won't be escaped, so let's make sure
         // we don't use escaped one in mountRequests_.
@@ -2273,20 +2180,18 @@ FileManager.prototype = {
       this.confirm.show(str('FORMATTING_WARNING'), function() {
         chrome.fileBrowserPrivate.formatDevice(urls[0]);
       });
-    } else if (id == 'gallery' || id == 'play') {
+    } else if (id == 'gallery') {
       // Pass to gallery all possible tasks except the gallery itself.
       var noGallery = [];
       for (var index = 0; index < details.task.allTasks.length; index++) {
         var task = details.task.allTasks[index];
-        if (task.taskId != this.getExtensionId_() + '|gallery' &&
-            task.taskId != this.getExtensionId_() + '|play' &&
-            task.taskId != this.getExtensionId_() + '|enqueue') {
+        if (task.taskId != this.getExtensionId_() + '|gallery') {
           // Add callback, so gallery can execute the task.
           task.execute = this.dispatchFileTask_.bind(this, task);
           noGallery.push(task);
         }
       }
-      this.openGallery_(urls, noGallery, id == 'gallery' ? 'image' : 'video');
+      this.openGallery_(urls, noGallery);
     }
   };
 
@@ -2301,7 +2206,7 @@ FileManager.prototype = {
     return undefined;
   };
 
-  FileManager.prototype.openGallery_ = function(urls, shareActions, type) {
+  FileManager.prototype.openGallery_ = function(urls, shareActions) {
     var self = this;
 
     var galleryFrame = this.document_.createElement('iframe');
@@ -2310,32 +2215,32 @@ FileManager.prototype = {
     galleryFrame.setAttribute('webkitallowfullscreen', true);
 
     var selectedUrl;
-    if (urls.length == 1) {
-      // Single item selected. Pass to the Gallery as a selected.
+    if (urls.length == 1 && FileType.getMediaType(urls[0]) == 'image') {
+      // Single image item selected. Pass to the Gallery as a selected.
       selectedUrl = urls[0];
-      // Pass every image in the directory so that it shows up in the ribbon.
+      // Pass along every image and video in the directory so that it shows up
+      // in the ribbon.
+      // We do not do that if a single video is selected because the UI is
+      // cleaner without the ribbon.
       urls = [];
       var dm = this.directoryModel_.fileList;
       for (var i = 0; i != dm.length; i++) {
         var entry = dm.item(i);
         var url = entry.toURL();
-        if (FileManager.getMediaType_(url) == type) {
+        var type = FileType.getMediaType(url);
+        if (type == 'image' || type == 'video') {
           urls.push(url);
         }
       }
     } else {
-      // Multiple selection. Pass just those items, select the first entry.
+      // Pass just the selected items, select the first entry.
       selectedUrl = urls[0];
     }
 
     galleryFrame.onload = function() {
       self.document_.title = str('GALLERY');
       galleryFrame.contentWindow.ImageUtil.metrics = metrics;
-
-      // TODO(kaznacheev): Extract getMediaType along with other common utility
-      // functions into a separate file.
-      galleryFrame.contentWindow.Gallery.getMediaType =
-          FileManager.getMediaType_;
+      galleryFrame.contentWindow.FileType = FileType;
 
       galleryFrame.contentWindow.Gallery.open(
           self.directoryModel_.currentEntry,
@@ -2541,21 +2446,7 @@ FileManager.prototype = {
     var iconType = this.getIconType(entry);
 
     function returnStockIcon() {
-      callback(iconType, previewArt[iconType] || previewArt['unknown']);
-    }
-
-    var MAX_PIXEL_COUNT = 1 << 21;  // 2 Mpix
-    var MAX_FILE_SIZE = 1 << 20;  // 1 Mb
-
-    // This is a clone of a method in gallery.js which we cannot call because
-    // it is only available when the gallery is loaded in to an iframe.
-    // TODO(kaznacheev): Extract a common js file.
-    // Keep in sync manually until then.
-    function canUseImageForThumbnail(entry, metadata) {
-      var fileSize = metadata.fileSize || entry.cachedSize_;
-      return (fileSize && fileSize <= MAX_FILE_SIZE) ||
-          (metadata.width && metadata.height &&
-          (metadata.width * metadata.height <= MAX_PIXEL_COUNT));
+      callback(iconType, FileType.getPreviewArt(iconType));
     }
 
     this.metadataProvider_.fetch(entry.toURL(), function (metadata) {
@@ -2563,7 +2454,7 @@ FileManager.prototype = {
         callback(iconType, metadata.thumbnailURL, metadata.thumbnailTransform);
       } else if (iconType == 'image') {
         cacheEntrySize(entry, function() {
-          if (canUseImageForThumbnail(entry, metadata)) {
+          if (FileType.canUseImageUrlForPreview(metadata, entry.cachedSize_)) {
             callback(iconType, entry.toURL(), metadata.imageTransform);
           } else {
             returnStockIcon();
