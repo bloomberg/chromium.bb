@@ -52,6 +52,8 @@
         'file_system_util.h',
         'file_writer_delegate.cc',
         'file_writer_delegate.h',
+        'isolated_context.cc',
+        'isolated_context.h',
         'local_file_util.cc',
         'local_file_util.h',
         'native_file_util.cc',

@@ -414,6 +414,7 @@
         '../../fileapi/file_system_test_helper.h',
         '../../fileapi/file_system_usage_cache_unittest.cc',
         '../../fileapi/file_system_util_unittest.cc',
+        '../../fileapi/isolated_context_unittest.cc',
         '../../fileapi/local_file_util_unittest.cc',
         '../../fileapi/mock_file_system_options.cc',
         '../../fileapi/mock_file_system_options.h',

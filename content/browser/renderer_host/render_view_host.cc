@@ -4,6 +4,7 @@
 
 #include "content/browser/renderer_host/render_view_host.h"
 
+#include <set>
 #include <string>
 #include <utility>
 #include <vector>
@@ -49,6 +50,7 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/native_widget_types.h"
+#include "webkit/fileapi/isolated_context.h"
 #include "webkit/glue/context_menu.h"
 #include "webkit/glue/webaccessibility.h"
 #include "webkit/glue/webdropdata.h"
@@ -427,6 +429,7 @@ void RenderViewHost::DragTargetDragEnter(
   ChildProcessSecurityPolicy* policy =
       ChildProcessSecurityPolicy::GetInstance();
   policy->GrantRequestURL(process()->GetID(), drop_data.url);
+  std::set<FilePath> filesets;
   for (std::vector<string16>::const_iterator iter(drop_data.filenames.begin());
        iter != drop_data.filenames.end(); ++iter) {
     FilePath path = FilePath::FromWStringHack(UTF16ToWideHack(*iter));
@@ -437,8 +440,21 @@ void RenderViewHost::DragTargetDragEnter(
     // Allow dragged directories to be enumerated by the child process.
     // Note that we can't tell a file from a directory at this point.
     policy->GrantReadDirectory(process()->GetID(), path);
+
+    filesets.insert(path);
   }
-  Send(new DragMsg_TargetDragEnter(routing_id(), drop_data, client_pt,
+
+  fileapi::IsolatedContext* isolated_context =
+      fileapi::IsolatedContext::GetInstance();
+  DCHECK(isolated_context);
+  std::string filesystem_id = isolated_context->RegisterIsolatedFileSystem(
+      filesets);
+  policy->GrantAccessFileSystem(process()->GetID(), filesystem_id);
+
+  WebDropData drop_data_copy(drop_data);
+  drop_data_copy.filesystem_id = UTF8ToUTF16(filesystem_id);
+
+  Send(new DragMsg_TargetDragEnter(routing_id(), drop_data_copy, client_pt,
                                    screen_pt, operations_allowed));
 }
 

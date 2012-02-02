@@ -41,6 +41,9 @@ struct WEBKIT_GLUE_EXPORT WebDropData {
   // User is dropping one or more files on the webview.
   std::vector<string16> filenames;
 
+  // Isolated filesystem ID for the files being dragged on the webview.
+  string16 filesystem_id;
+
   // User is dragging plain text into the webview.
   string16 plain_text;
 

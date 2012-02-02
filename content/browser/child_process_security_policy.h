@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -99,6 +99,9 @@ class CONTENT_EXPORT ChildProcessSecurityPolicy {
 
   // Revokes all permissions granted to the given file.
   void RevokeAllPermissionsForFile(int child_id, const FilePath& file);
+
+  // Grants access permission to the given filesystem_id.
+  void GrantAccessFileSystem(int child_id, const std::string& filesystem_id);
 
   // Grants the child process the capability to access URLs of the provided
   // scheme.

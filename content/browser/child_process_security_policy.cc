@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,6 +16,7 @@
 #include "content/public/common/url_constants.h"
 #include "googleurl/src/gurl.h"
 #include "net/url_request/url_request.h"
+#include "webkit/fileapi/isolated_context.h"
 
 using content::SiteInstance;
 
@@ -36,8 +37,16 @@ class ChildProcessSecurityPolicy::SecurityState {
   SecurityState()
     : enabled_bindings_(0),
       can_read_raw_cookies_(false) { }
+
   ~SecurityState() {
     scheme_policy_.clear();
+    fileapi::IsolatedContext* isolated_context =
+        fileapi::IsolatedContext::GetInstance();
+    for (FileSystemSet::iterator iter = access_granted_filesystems_.begin();
+         iter != access_granted_filesystems_.end();
+         ++iter) {
+      isolated_context->RevokeIsolatedFileSystem(*iter);
+    }
     UMA_HISTOGRAM_COUNTS("ChildProcessSecurityPolicy.PerChildFilePermissions",
                          file_permissions_.size());
   }
@@ -63,6 +72,11 @@ class ChildProcessSecurityPolicy::SecurityState {
   // Revokes all permissions granted to a file.
   void RevokeAllPermissionsForFile(const FilePath& file) {
     file_permissions_.erase(file.StripTrailingSeparators());
+  }
+
+  // Grant certain permissions to a file.
+  void GrantAccessFileSystem(const std::string& filesystem_id) {
+    access_granted_filesystems_.insert(filesystem_id);
   }
 
   void GrantBindings(int bindings) {
@@ -124,6 +138,7 @@ class ChildProcessSecurityPolicy::SecurityState {
  private:
   typedef std::map<std::string, bool> SchemeMap;
   typedef std::map<FilePath, int> FileMap;  // bit-set of PlatformFileFlags
+  typedef std::set<std::string> FileSystemSet;
 
   // Maps URL schemes to whether permission has been granted or revoked:
   //   |true| means the scheme has been granted.
@@ -140,6 +155,9 @@ class ChildProcessSecurityPolicy::SecurityState {
   bool can_read_raw_cookies_;
 
   GURL origin_lock_;
+
+  // The set of isolated filesystems the child process is permitted to access.
+  FileSystemSet access_granted_filesystems_;
 
   DISALLOW_COPY_AND_ASSIGN(SecurityState);
 };
@@ -302,6 +320,17 @@ void ChildProcessSecurityPolicy::RevokeAllPermissionsForFile(
     return;
 
   state->second->RevokeAllPermissionsForFile(file);
+}
+
+void ChildProcessSecurityPolicy::GrantAccessFileSystem(
+    int child_id, const std::string& filesystem_id) {
+  base::AutoLock lock(lock_);
+
+  SecurityStateMap::iterator state = security_state_.find(child_id);
+  if (state == security_state_.end())
+    return;
+
+  state->second->GrantAccessFileSystem(filesystem_id);
 }
 
 void ChildProcessSecurityPolicy::GrantScheme(int child_id,
@@ -486,4 +515,3 @@ void ChildProcessSecurityPolicy::LockToOrigin(int child_id, const GURL& gurl) {
   DCHECK(state != security_state_.end());
   state->second->LockToOrigin(gurl);
 }
-
