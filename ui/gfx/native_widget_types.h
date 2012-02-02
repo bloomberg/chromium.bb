@@ -264,9 +264,8 @@ const AcceleratedWidget kNullAcceleratedWidget = 0;
 typedef NSView* AcceleratedWidget;
 const AcceleratedWidget kNullAcceleratedWidget = 0;
 #elif defined(OS_ANDROID)
-typedef uint64 PluginWindowHandle;
-const PluginWindowHandle kNullPluginWindow = 0;
-const PluginWindowHandle kDummyPluginWindow = 0xFEEDBEEF;
+typedef uint64 AcceleratedWidget;
+const AcceleratedWidget kNullAcceleratedWidget = 0;
 #else
 #error unknown platform
 #endif
