@@ -89,7 +89,6 @@ class CONTENT_EXPORT RenderWidgetHostViewGtk : public RenderWidgetHostView {
                                 const ui::Range& range) OVERRIDE;
   virtual void SelectionBoundsChanged(const gfx::Rect& start_rect,
                                       const gfx::Rect& end_rect) OVERRIDE;
-  virtual void ShowingContextMenu(bool showing) OVERRIDE;
   virtual BackingStore* AllocBackingStore(const gfx::Size& size) OVERRIDE;
   virtual void OnAcceleratedCompositingStateChange() OVERRIDE;
   virtual void AcceleratedSurfaceBuffersSwapped(
@@ -209,9 +208,6 @@ class CONTENT_EXPORT RenderWidgetHostViewGtk : public RenderWidgetHostView {
 
   // The cursor for the page. This is passed up from the renderer.
   WebCursor current_cursor_;
-
-  // Whether we are showing a context menu.
-  bool is_showing_context_menu_;
 
   // The time at which this view started displaying white pixels as a result of
   // not having anything to paint (empty backing store from renderer). This

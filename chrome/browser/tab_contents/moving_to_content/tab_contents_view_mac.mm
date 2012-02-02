@@ -352,12 +352,8 @@ void TabContentsViewMac::ShowContextMenu(const ContextMenuParams& params) {
   // get called multiple times - if so, don't create another context menu.
   // TODO(asvitkine): Fix the renderer so that it doesn't do this.
   RenderWidgetHostView* widget_view = tab_contents_->GetRenderWidgetHostView();
-  if (widget_view) {
-    RenderWidgetHostViewMac* widget_view_mac =
-        static_cast<RenderWidgetHostViewMac*>(widget_view);
-    if (widget_view_mac->is_showing_context_menu())
-      return;
-  }
+  if (widget_view && widget_view->showing_context_menu())
+    return;
 
   // Allow delegates to handle the context menu operation first.
   if (tab_contents_->GetDelegate() &&

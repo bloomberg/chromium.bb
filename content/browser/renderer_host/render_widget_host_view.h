@@ -201,11 +201,10 @@ class RenderWidgetHostView {
   virtual void SelectionBoundsChanged(const gfx::Rect& start_rect,
                                       const gfx::Rect& end_rect) {}
 
-  // Tells the View whether the context menu is showing. This is used on Linux
-  // to suppress updates to webkit focus for the duration of the show.
-  virtual void ShowingContextMenu(bool showing) {}
+  // Tells the View whether the context menu is showing.
+  CONTENT_EXPORT virtual void SetShowingContextMenu(bool showing);
 
-  // Allocate a backing store for this view
+  // Allocate a backing store for this view.
   virtual BackingStore* AllocBackingStore(const gfx::Size& size) = 0;
 
   // Called when accelerated compositing state changes.
@@ -346,6 +345,7 @@ class RenderWidgetHostView {
   void SetBrowserAccessibilityManager(BrowserAccessibilityManager* manager);
 
   bool mouse_locked() const { return mouse_locked_; }
+  bool showing_context_menu() const { return showing_context_menu_; }
 
  protected:
   // Interface class only, do not construct.
@@ -365,6 +365,9 @@ class RenderWidgetHostView {
   // indicates what the change in position of the mouse would be had it not been
   // locked.
   bool mouse_locked_;
+
+  // Whether we are showing a context menu.
+  bool showing_context_menu_;
 
   // A buffer containing the text inside and around the current selection range.
   string16 selection_text_;

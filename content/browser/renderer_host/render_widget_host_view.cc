@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,6 +18,7 @@
 RenderWidgetHostView::RenderWidgetHostView()
     : popup_type_(WebKit::WebPopupTypeNone),
       mouse_locked_(false),
+      showing_context_menu_(false),
       selection_text_offset_(0),
       selection_range_(ui::Range::InvalidRange()) {
 }
@@ -47,4 +48,9 @@ void RenderWidgetHostView::SelectionChanged(const string16& text,
   selection_text_offset_ = offset;
   selection_range_.set_start(range.start());
   selection_range_.set_end(range.end());
+}
+
+void RenderWidgetHostView::SetShowingContextMenu(bool showing) {
+  DCHECK_NE(showing_context_menu_, showing);
+  showing_context_menu_ = showing;
 }
