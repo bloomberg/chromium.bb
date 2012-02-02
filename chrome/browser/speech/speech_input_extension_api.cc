@@ -1,16 +1,20 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/speech/speech_input_extension_api.h"
 
+#include "base/bind.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/speech/speech_input_extension_manager.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
+
+using content::BrowserThread;
 
 namespace {
 
@@ -163,10 +167,19 @@ bool StopSpeechInputFunction::RunImpl() {
       profile())->Stop(extension_id(), &error_);
 }
 
+void IsRecordingSpeechInputFunction::SetResult(bool result) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  result_.reset(Value::CreateBooleanValue(result));
+  SendResponse(true);
+}
+
+void IsRecordingSpeechInputFunction::Run() {
+  SpeechInputExtensionManager::GetForProfile(profile())->IsRecording(
+      base::Bind(&IsRecordingSpeechInputFunction::SetResult, this));
+}
+
 bool IsRecordingSpeechInputFunction::RunImpl() {
-  // Do not access the AudioManager directly here to ensure the proper
-  // IsRecording behaviour in the API tests.
-  result_.reset(Value::CreateBooleanValue(
-      SpeechInputExtensionManager::GetForProfile(profile())->IsRecording()));
+  // The operation needs to be asynchronous because of thread requirements.
+  // This method does nothing, but it needs to be implemented anyway.
   return true;
 }
