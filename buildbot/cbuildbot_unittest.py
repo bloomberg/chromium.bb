@@ -365,7 +365,6 @@ class FullInterfaceTest(unittest.TestCase):
     self.mox.StubOutWithMock(cros_lib, 'GetInput')
     self.mox.StubOutWithMock(cros_lib, 'FindRepoDir')
     self.mox.StubOutWithMock(cbuildbot, '_RunBuildStagesWrapper')
-    self.mox.StubOutWithMock(cbuildbot, '_RunBuildStagesWithSudoProcess')
     self.mox.StubOutWithMock(cbuildbot.os.path, 'realpath')
 
     cbuildbot.os.path.realpath = fake_real_path
@@ -385,10 +384,6 @@ class FullInterfaceTest(unittest.TestCase):
     sys.exit(mox.IgnoreArg()).InAnyOrder().AndRaise(TestExitedException())
     cros_lib.FindRepoDir().InAnyOrder().AndReturn('/b/test_build1/.repo')
     cbuildbot._RunBuildStagesWrapper(
-        mox.IgnoreArg(),
-        mox.IgnoreArg(),
-        mox.IgnoreArg()).InAnyOrder().AndReturn(True)
-    cbuildbot._RunBuildStagesWithSudoProcess(
         mox.IgnoreArg(),
         mox.IgnoreArg(),
         mox.IgnoreArg()).InAnyOrder().AndReturn(True)

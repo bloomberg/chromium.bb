@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-# Copyright (c) 2011 The Chromium OS Authors. All rights reserved.
+# Copyright (c) 2011-2012 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -17,7 +17,6 @@ import glob
 import optparse
 import os
 import pprint
-import subprocess
 import sys
 
 if __name__ == '__main__':
@@ -32,6 +31,7 @@ from chromite.buildbot import patch as cros_patch
 from chromite.buildbot import repository
 from chromite.buildbot import tee
 from chromite.lib import cros_build_lib as cros_lib
+from chromite.lib import sudo
 
 
 _DEFAULT_LOG_DIR = 'cbuildbot_logs'
@@ -138,44 +138,6 @@ def _IsIncrementalBuild(buildroot, clobber):
   """Returns True if we are reusing an existing buildroot."""
   repo_dir = os.path.join(buildroot, '.repo')
   return not clobber and os.path.isdir(repo_dir)
-
-
-def _RunSudoNoOp(repeat_interval=0):
-  """Run sudo with a noop, to reset the sudo timestamp.
-  Args:
-   repeat_interval: In minutes, the frequency to run the update
-                    if zero, runs once and returns.  Note that if this is
-                    set, it will invoke sudo in the foreground once before
-                    returning so as to ensure that the backgrounded process
-                    will have an auth cookie.
-  Returns:
-   if repeat_interval is 0, None, else a subprocess.Popen instance.
-   invoker is responsible for invoking terminate to shut down the
-   update.
-  """
-
-  # This refreshs the sudo auth cookie; this is implemented this
-  # way to ensure that sudo has access to both invoking tty, and
-  # will update the user's tty-less cookie.
-  # see crosbug/18393.
-
-  # If we're going into the background, ensure we run at least one
-  # sudo in the foreground to get the first ticket.  Failure to do so
-  # can result in multiple sudo instances trying to auth at the same time.
-  if repeat_interval:
-     _RunSudoNoOp(0)
-
-  cmd = 'sudo true;sudo true < /dev/null > /dev/null 2>&1'
-  repeat_interval *= 60
-  if repeat_interval:
-    cmd = 'while sleep %i; do %s; done' % (repeat_interval, cmd)
-
-  proc = subprocess.Popen([cmd], shell=True, close_fds=True)
-  if not repeat_interval:
-    proc.communicate()
-    return
-
-  return proc
 
 
 class Builder(object):
@@ -601,22 +563,6 @@ def _RunBuildStagesWrapper(bot_id, options, build_config):
     cros_lib.Info('Output saved to %s' % log_file)
 
 
-def _RunBuildStagesWithSudoProcess(bot_id, options, build_config,
-  sudo_interval=4):
-  """Starts sudo process before running build stages, and manages cleanup."""
-  # Reset sudo timestamp
-  cros_lib.Info('Launching sudo keepalive process. '
-                'This may ask for password twice.', flush=True)
-
-  sudo_process = _RunSudoNoOp(sudo_interval)
-
-  try:
-    _RunBuildStagesWrapper(bot_id, options, build_config)
-  finally:
-    # Pass the stop message to the sudo process.
-    sudo_process.terminate()
-
-
 # Parser related functions
 
 
@@ -944,12 +890,11 @@ def main(argv=None):
                  'rather than the root of it.  This is not supported.'
                  % options.buildroot)
 
-  with cgroup.CGroup(disable=not options.cgroups):
-    if options.buildbot:
+  with sudo.SudoKeepAlive():
+    with cgroup.CGroup(disable=not options.cgroups):
+      if not options.buildbot:
+        build_config = cbuildbot_config.OverrideConfigForTrybot(build_config)
       _RunBuildStagesWrapper(bot_id, options, build_config)
-    else:
-      build_config = cbuildbot_config.OverrideConfigForTrybot(build_config)
-      _RunBuildStagesWithSudoProcess(bot_id, options, build_config)
 
 
 if __name__ == '__main__':
