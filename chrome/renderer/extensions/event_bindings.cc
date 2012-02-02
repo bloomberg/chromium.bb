@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -91,20 +91,10 @@ class ExtensionImpl : public ChromeV8Extension {
       if (!v8_extension->CheckCurrentContextAccessToExtensionAPI(event_name))
         return v8::Undefined();
 
-      const ::Extension* extension = v8_extension->extension_dispatcher()->
-          extensions()->GetByID(context->extension_id());
-
       if (++listener_counts[event_name] == 1) {
         content::RenderThread::Get()->Send(
             new ExtensionHostMsg_AddListener(context->extension_id(),
                                              event_name));
-        // TODO(mpcomplete): restrict this to the bg page only.
-        // TODO(mpcomplete): figure out proper time to call RemoveLazyListener.
-        if (extension && !extension->background_page_persists()) {
-          content::RenderThread::Get()->Send(
-              new ExtensionHostMsg_AddLazyListener(context->extension_id(),
-                                                   event_name));
-        }
       }
     }
 
@@ -127,7 +117,6 @@ class ExtensionImpl : public ChromeV8Extension {
       EventListenerCounts& listener_counts =
           GetListenerCounts(context->extension_id());
       std::string event_name(*v8::String::AsciiValue(args[0]));
-
       if (--listener_counts[event_name] == 0) {
         content::RenderThread::Get()->Send(
             new ExtensionHostMsg_RemoveListener(context->extension_id(),

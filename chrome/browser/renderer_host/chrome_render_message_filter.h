@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -87,10 +87,6 @@ class ChromeRenderMessageFilter : public content::BrowserMessageFilter {
                               const std::string& event_name);
   void OnExtensionRemoveListener(const std::string& extension_id,
                                  const std::string& event_name);
-  void OnExtensionAddLazyListener(const std::string& extension_id,
-                                  const std::string& event_name);
-  void OnExtensionRemoveLazyListener(const std::string& extension_id,
-                                     const std::string& event_name);
   void OnExtensionIdle(const std::string& extension_id);
   void OnExtensionEventAck(const std::string& extension_id);
   void OnExtensionCloseChannel(int port_id);
