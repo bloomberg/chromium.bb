@@ -12,7 +12,9 @@ input[type='submit']:not(.custom-appearance) {
   background: -webkit-linear-gradient(#fafafa, #f4f4f4 40%, #e5e5e5);
   border: 1px solid #aaa;
   color: #444;
-  font-size: inherit;
+  /* Input elements have -webkit-small-control which can override the body font.
+   * Resolve this by using 'inherit'. */
+  font: inherit;
   margin-bottom: 0;
   min-width: 4em;
   padding: 3px 12px;
@@ -79,9 +81,6 @@ input[type='search']:not(.custom-appearance):focus {
   border: none !important;
   color: rgb(17, 85, 204) !important;
   cursor: pointer;
-  /* Input elements have -webkit-small-control which overrides the body font.
-   * Resolve this by using 'inherit'. */
-  font-family: inherit;
   margin: 0;
   padding: 0 4px !important;
 }

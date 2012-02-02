@@ -1,8 +1,6 @@
-/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
- *
- * This is the generic select css used on various WebUI implementations.
  */
 
 select {
@@ -18,7 +16,7 @@ select {
   background-repeat: no-repeat;
   border: 1px solid #aaa;
   color: #555;
-  font-size: inherit;
+  font: inherit;
   margin: 0;
   overflow: hidden;
   padding-top: 2px;

@@ -100,12 +100,13 @@ html[dir="rtl"] .search-field-container {
   right: auto;
 }
 
+/* TODO(csilv): M19 Move this styling to a shared location for all webui. */
 #search-field {
   -webkit-appearance: none;
   -webkit-margin-end: 18px;
   border: 1px solid rgba(0, 0, 0, 0.25);
   border-radius: 2px;
-  font: normal 12px 'Open Sans';
+  font: inherit;
   margin: 0;
   /* NOTE: Keep a relatively high min-width for this so we don't obscure the end
    * of the default text in relatively spacious languages (i.e. German). */
