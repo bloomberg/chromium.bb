@@ -26,7 +26,7 @@ public:
 
 class CONTENT_EXPORT GpuMemoryManager {
  public:
-  static const size_t kDefaultMaxSurfacesWithFrontbufferSoftLimit;
+  enum { kDefaultMaxSurfacesWithFrontbufferSoftLimit = 8 };
 
   GpuMemoryManager(GpuMemoryManagerClient* client,
                    size_t max_surfaces_with_frontbuffer_soft_limit);

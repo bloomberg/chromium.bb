@@ -14,8 +14,6 @@
 #include "content/common/gpu/gpu_command_buffer_stub.h"
 #include "content/common/gpu/gpu_memory_allocation.h"
 
-const size_t GpuMemoryManager::kDefaultMaxSurfacesWithFrontbufferSoftLimit = 8;
-
 namespace {
 
 // These are predefined values (in bytes) for
