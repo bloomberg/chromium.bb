@@ -72,7 +72,13 @@ class Authentication:
   def __init__(self, config_file):
     self.config_file = config_file
 
-  def refresh_tokens(self):
+  def generate_tokens(self):
+    """Prompt for username/password and use them to generate new authentication
+    tokens.
+
+    Raises:
+      Exception: Failed to get new authentication tokens.
+    """
     print "Email:",
     self.login = raw_input()
     password = getpass.getpass("Password: ")
@@ -138,6 +144,18 @@ class Host:
     self.private_key = None
 
   def register(self, auth):
+    """Generates a private key for the stored |host_id|, and registers it with
+    the Directory service.
+
+    Args:
+      auth: Authentication object with credentials for authenticating with the
+        Directory service.
+
+    Raises:
+      urllib2.HTTPError: An error occurred talking to the Directory server
+        (for example, if the |auth| credentials were rejected).
+    """
+
     logging.info("HostId: " + self.host_id)
     logging.info("HostName: " + self.host_name)
 
@@ -163,13 +181,10 @@ class Host:
     opener.add_handler(urllib2.HTTPDefaultErrorHandler())
 
     logging.info("Registering host with directory service...")
-    try:
-      res = urllib2.urlopen(request)
-      data = res.read()
-    except urllib2.HTTPError, err:
-      logging.error("Directory returned error: " + str(err))
-      logging.error(err.read())
-      sys.exit(1)
+
+    res = urllib2.urlopen(request)
+    data = res.read()
+
     logging.info("Done")
 
   def ask_pin(self):
@@ -514,20 +529,45 @@ def main():
     os.makedirs(CONFIG_DIR, mode=0700)
 
   auth = Authentication(os.path.join(CONFIG_DIR, "auth.json"))
-  if not auth.load_config():
-    try:
-      auth.refresh_tokens()
-    except:
-      logging.error("Authentication failed.")
-      return 1
-    auth.save_config()
+  need_auth_tokens = not auth.load_config()
 
   host = Host(os.path.join(CONFIG_DIR, "host#%s.json" % host_hash))
+  register_host = not host.load_config()
 
-  if not host.load_config():
+  # Outside the loop so user doesn't get asked twice.
+  if register_host:
     host.ask_pin()
-    host.register(auth)
-    host.save_config()
+
+  # The loop is to deal with the case of registering a new Host with
+  # previously-saved auth tokens (from a previous run of this script), which
+  # may require re-prompting for username & password.
+  while True:
+    try:
+      if need_auth_tokens:
+        auth.generate_tokens()
+        auth.save_config()
+        need_auth_tokens = False
+    except Exception:
+      logging.error("Authentication failed")
+      return 1
+
+    try:
+      if register_host:
+        host.register(auth)
+        host.save_config()
+    except urllib2.HTTPError, err:
+      if err.getcode() == 401:
+        # Authentication failed - re-prompt for username & password.
+        need_auth_tokens = True
+        continue
+      else:
+        # Not an authentication error.
+        logging.error("Directory returned error: " + str(err))
+        logging.error(err.read())
+        return 1
+
+    # |auth| and |host| are both set up, so break out of the loop.
+    break
 
   global g_pidfile
   g_pidfile = PidFile(pid_filename)
