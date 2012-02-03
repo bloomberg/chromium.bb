@@ -354,7 +354,7 @@ var keyboardOverlayData = {
           "label": "full screen"
         },
         "3F": {
-          "label": "maximize"
+          "label": "next window"
         },
         "40": {
           "label": "bright down"
@@ -670,7 +670,7 @@ var keyboardOverlayData = {
           "label": "full screen"
         },
         "3F": {
-          "label": "maximize"
+          "label": "next window"
         },
         "40": {
           "label": "bright down"
@@ -947,7 +947,7 @@ var keyboardOverlayData = {
           "label": "full screen"
         },
         "3F": {
-          "label": "maximize"
+          "label": "next window"
         },
         "40": {
           "label": "bright down"
@@ -1255,7 +1255,7 @@ var keyboardOverlayData = {
           "label": "full screen"
         },
         "3F": {
-          "label": "maximize"
+          "label": "next window"
         },
         "40": {
           "label": "bright down"
@@ -1535,7 +1535,7 @@ var keyboardOverlayData = {
           "label": "full screen"
         },
         "3F": {
-          "label": "maximize"
+          "label": "next window"
         },
         "40": {
           "label": "bright down"
@@ -1815,7 +1815,7 @@ var keyboardOverlayData = {
           "label": "full screen"
         },
         "3F": {
-          "label": "maximize"
+          "label": "next window"
         },
         "40": {
           "label": "bright down"
@@ -2118,7 +2118,7 @@ var keyboardOverlayData = {
           "label": "full screen"
         },
         "3F": {
-          "label": "maximize"
+          "label": "next window"
         },
         "40": {
           "label": "bright down"
@@ -2397,7 +2397,7 @@ var keyboardOverlayData = {
           "label": "full screen"
         },
         "3F": {
-          "label": "maximize"
+          "label": "next window"
         },
         "40": {
           "label": "bright down"
@@ -2667,7 +2667,7 @@ var keyboardOverlayData = {
           "label": "full screen"
         },
         "3F": {
-          "label": "maximize"
+          "label": "next window"
         },
         "40": {
           "label": "bright down"
@@ -2932,7 +2932,7 @@ var keyboardOverlayData = {
           "label": "full screen"
         },
         "3F": {
-          "label": "maximize"
+          "label": "next window"
         },
         "40": {
           "label": "bright down"
@@ -3195,7 +3195,7 @@ var keyboardOverlayData = {
           "label": "full screen"
         },
         "3F": {
-          "label": "maximize"
+          "label": "next window"
         },
         "40": {
           "label": "bright down"
@@ -3454,7 +3454,7 @@ var keyboardOverlayData = {
           "label": "full screen"
         },
         "3F": {
-          "label": "maximize"
+          "label": "next window"
         },
         "40": {
           "label": "bright down"
@@ -3714,7 +3714,7 @@ var keyboardOverlayData = {
           "label": "full screen"
         },
         "3F": {
-          "label": "maximize"
+          "label": "next window"
         },
         "40": {
           "label": "bright down"
@@ -3982,7 +3982,7 @@ var keyboardOverlayData = {
           "label": "full screen"
         },
         "3F": {
-          "label": "maximize"
+          "label": "next window"
         },
         "40": {
           "label": "bright down"
@@ -4249,7 +4249,7 @@ var keyboardOverlayData = {
           "label": "full screen"
         },
         "3F": {
-          "label": "maximize"
+          "label": "next window"
         },
         "40": {
           "label": "bright down"
@@ -4518,7 +4518,7 @@ var keyboardOverlayData = {
           "label": "full screen"
         },
         "3F": {
-          "label": "maximize"
+          "label": "next window"
         },
         "40": {
           "label": "bright down"
@@ -4786,7 +4786,7 @@ var keyboardOverlayData = {
           "label": "full screen"
         },
         "3F": {
-          "label": "maximize"
+          "label": "next window"
         },
         "40": {
           "label": "bright down"
@@ -5057,7 +5057,7 @@ var keyboardOverlayData = {
           "label": "full screen"
         },
         "3F": {
-          "label": "maximize"
+          "label": "next window"
         },
         "40": {
           "label": "bright down"
@@ -5336,7 +5336,7 @@ var keyboardOverlayData = {
           "label": "full screen"
         },
         "3F": {
-          "label": "maximize"
+          "label": "next window"
         },
         "40": {
           "label": "bright down"
@@ -5620,7 +5620,7 @@ var keyboardOverlayData = {
           "label": "full screen"
         },
         "3F": {
-          "label": "maximize"
+          "label": "next window"
         },
         "40": {
           "label": "bright down"
@@ -5907,7 +5907,7 @@ var keyboardOverlayData = {
           "label": "full screen"
         },
         "3F": {
-          "label": "maximize"
+          "label": "next window"
         },
         "40": {
           "label": "bright down"
@@ -6265,7 +6265,7 @@ var keyboardOverlayData = {
           "label": "full screen"
         },
         "3F": {
-          "label": "maximize"
+          "label": "next window"
         },
         "40": {
           "label": "bright down"
@@ -6554,7 +6554,7 @@ var keyboardOverlayData = {
           "label": "full screen"
         },
         "3F": {
-          "label": "maximize"
+          "label": "next window"
         },
         "40": {
           "label": "bright down"
@@ -6849,7 +6849,7 @@ var keyboardOverlayData = {
           "label": "full screen"
         },
         "3F": {
-          "label": "maximize"
+          "label": "next window"
         },
         "40": {
           "label": "bright down"
@@ -7124,7 +7124,7 @@ var keyboardOverlayData = {
           "label": "full screen"
         },
         "3F": {
-          "label": "maximize"
+          "label": "next window"
         },
         "40": {
           "label": "bright down"
@@ -7420,7 +7420,7 @@ var keyboardOverlayData = {
           "label": "full screen"
         },
         "3F": {
-          "label": "maximize"
+          "label": "next window"
         },
         "40": {
           "label": "bright down"
@@ -7737,7 +7737,7 @@ var keyboardOverlayData = {
           "label": "full screen"
         },
         "3F": {
-          "label": "maximize"
+          "label": "next window"
         },
         "40": {
           "label": "bright down"
@@ -8049,7 +8049,7 @@ var keyboardOverlayData = {
           "label": "full screen"
         },
         "3F": {
-          "label": "maximize"
+          "label": "next window"
         },
         "40": {
           "label": "bright down"
@@ -8331,7 +8331,7 @@ var keyboardOverlayData = {
           "label": "full screen"
         },
         "3F": {
-          "label": "maximize"
+          "label": "next window"
         },
         "40": {
           "label": "bright down"
@@ -8596,7 +8596,7 @@ var keyboardOverlayData = {
           "label": "full screen"
         },
         "3F": {
-          "label": "maximize"
+          "label": "next window"
         },
         "40": {
           "label": "bright down"
@@ -8868,7 +8868,7 @@ var keyboardOverlayData = {
           "label": "full screen"
         },
         "3F": {
-          "label": "maximize"
+          "label": "next window"
         },
         "40": {
           "label": "bright down"
@@ -9135,7 +9135,7 @@ var keyboardOverlayData = {
           "label": "full screen"
         },
         "3F": {
-          "label": "maximize"
+          "label": "next window"
         },
         "40": {
           "label": "bright down"
@@ -9432,7 +9432,7 @@ var keyboardOverlayData = {
           "label": "full screen"
         },
         "3F": {
-          "label": "maximize"
+          "label": "next window"
         },
         "40": {
           "label": "bright down"
@@ -9704,7 +9704,7 @@ var keyboardOverlayData = {
           "label": "full screen"
         },
         "3F": {
-          "label": "maximize"
+          "label": "next window"
         },
         "40": {
           "label": "bright down"
@@ -9986,7 +9986,7 @@ var keyboardOverlayData = {
           "label": "full screen"
         },
         "3F": {
-          "label": "maximize"
+          "label": "next window"
         },
         "40": {
           "label": "bright down"
@@ -10279,7 +10279,7 @@ var keyboardOverlayData = {
           "label": "full screen"
         },
         "3F": {
-          "label": "maximize"
+          "label": "next window"
         },
         "40": {
           "label": "bright down"
@@ -10594,7 +10594,7 @@ var keyboardOverlayData = {
           "label": "full screen"
         },
         "3F": {
-          "label": "maximize"
+          "label": "next window"
         },
         "40": {
           "label": "bright down"
@@ -10902,7 +10902,7 @@ var keyboardOverlayData = {
           "label": "full screen"
         },
         "3F": {
-          "label": "maximize"
+          "label": "next window"
         },
         "40": {
           "label": "bright down"
@@ -11197,7 +11197,7 @@ var keyboardOverlayData = {
           "label": "full screen"
         },
         "3F": {
-          "label": "maximize"
+          "label": "next window"
         },
         "40": {
           "label": "bright down"
@@ -11481,7 +11481,7 @@ var keyboardOverlayData = {
           "label": "full screen"
         },
         "3F": {
-          "label": "maximize"
+          "label": "next window"
         },
         "40": {
           "label": "bright down"
@@ -11759,7 +11759,7 @@ var keyboardOverlayData = {
           "label": "full screen"
         },
         "3F": {
-          "label": "maximize"
+          "label": "next window"
         },
         "40": {
           "label": "bright down"
@@ -12125,7 +12125,7 @@ var keyboardOverlayData = {
           "label": "full screen"
         },
         "3F": {
-          "label": "maximize"
+          "label": "next window"
         },
         "40": {
           "label": "bright down"
@@ -12391,7 +12391,7 @@ var keyboardOverlayData = {
           "label": "full screen"
         },
         "3F": {
-          "label": "maximize"
+          "label": "next window"
         },
         "40": {
           "label": "bright down"
@@ -12710,7 +12710,7 @@ var keyboardOverlayData = {
           "label": "full screen"
         },
         "3F": {
-          "label": "maximize"
+          "label": "next window"
         },
         "40": {
           "label": "bright down"
@@ -12963,7 +12963,7 @@ var keyboardOverlayData = {
           "label": "full screen"
         },
         "3F": {
-          "label": "maximize"
+          "label": "next window"
         },
         "40": {
           "label": "bright down"
@@ -13233,7 +13233,7 @@ var keyboardOverlayData = {
           "label": "full screen"
         },
         "3F": {
-          "label": "maximize"
+          "label": "next window"
         },
         "40": {
           "label": "bright down"
@@ -13559,7 +13559,7 @@ var keyboardOverlayData = {
           "label": "full screen"
         },
         "3F": {
-          "label": "maximize"
+          "label": "next window"
         },
         "40": {
           "label": "bright down"
@@ -15828,10 +15828,10 @@ var keyboardOverlayData = {
     "left<>CTRL": "keyboardOverlayPreviousWord",
     "left<>CTRL<>SHIFT": "keyboardOverlaySelectWordAtATime",
     "m<>CTRL": "keyboardOverlayOpenFileManager",
-    "maximize<>CTRL": "keyboardOverlayTakeScreenshot",
-    "maximize<>CTRL<>SHIFT": "keyboardOverlayScreenshotRegion",
     "n<>CTRL": "keyboardOverlayNewWindow",
     "n<>CTRL<>SHIFT": "keyboardOverlayNewIncognitoWindow",
+    "next window<>CTRL": "keyboardOverlayTakeScreenshot",
+    "next window<>CTRL<>SHIFT": "keyboardOverlayScreenshotRegion",
     "o<>CTRL": "keyboardOverlayContentBrowser",
     "o<>CTRL<>SHIFT": "keyboardOverlayBookmarkManager",
     "p<>CTRL": "keyboardOverlayPrint",
