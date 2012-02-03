@@ -181,7 +181,8 @@ void FileStream::Close() {
 
   async_context_.reset();
   if (file_ != INVALID_HANDLE_VALUE) {
-    CloseHandle(file_);
+    if (!base::ClosePlatformFile(file_))
+      NOTREACHED();
     file_ = INVALID_HANDLE_VALUE;
 
     bound_net_log_.EndEvent(net::NetLog::TYPE_FILE_STREAM_OPEN, NULL);
