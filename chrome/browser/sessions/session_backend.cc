@@ -9,7 +9,6 @@
 #include "base/file_util.h"
 #include "base/memory/scoped_vector.h"
 #include "base/metrics/histogram.h"
-#include "base/threading/thread_restrictions.h"
 #include "net/base/file_stream.h"
 #include "net/base/net_errors.h"
 
@@ -344,11 +343,6 @@ bool SessionBackend::AppendCommandsToFile(net::FileStream* file,
 }
 
 SessionBackend::~SessionBackend() {
-  if (current_session_file_.get()) {
-    // Close() performs file IO. crbug.com/112512.
-    base::ThreadRestrictions::ScopedAllowIO allow_io;
-    current_session_file_->Close();
-  }
 }
 
 void SessionBackend::ResetFile() {
