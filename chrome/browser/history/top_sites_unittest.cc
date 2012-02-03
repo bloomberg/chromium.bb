@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -804,7 +804,7 @@ TEST_F(TopSitesTest, DeleteNotifications) {
     TopSitesQuerier querier;
     querier.QueryTopSites(top_sites(), false);
 
-    ASSERT_EQ(4u, querier.urls().size());
+    ASSERT_EQ(GetPrepopulatePages().size() + 2, querier.urls().size());
   }
 
   DeleteURL(news_url);
@@ -875,8 +875,8 @@ TEST_F(TopSitesTest, PinnedURLsDeleted) {
     TopSitesQuerier querier;
     querier.QueryTopSites(top_sites(), false);
 
-    // 2 extra prepopulated URLs.
-    ASSERT_EQ(4u, querier.urls().size());
+    // Take into account prepopulated URLs.
+    ASSERT_EQ(GetPrepopulatePages().size() + 2, querier.urls().size());
   }
 
   top_sites()->AddPinnedURL(news_url, 3);
@@ -889,8 +889,8 @@ TEST_F(TopSitesTest, PinnedURLsDeleted) {
     TopSitesQuerier querier;
     querier.QueryTopSites(top_sites(), false);
 
-    // 2 extra prepopulated URLs.
-    ASSERT_EQ(3u, querier.urls().size());
+    // Take into account prepopulated URLs.
+    ASSERT_EQ(GetPrepopulatePages().size() + 1, querier.urls().size());
     EXPECT_FALSE(top_sites()->IsURLPinned(news_url));
   }
 
@@ -904,7 +904,7 @@ TEST_F(TopSitesTest, PinnedURLsDeleted) {
     TopSitesQuerier querier;
     querier.QueryTopSites(top_sites(), false);
 
-    // 2 extra prepopulated URLs.
+    // Take into account prepopulated URLs.
     ASSERT_EQ(GetPrepopulatePages().size(), querier.urls().size());
     EXPECT_FALSE(top_sites()->IsURLPinned(google1_url));
     ASSERT_NO_FATAL_FAILURE(ContainsPrepopulatePages(querier, 0));
