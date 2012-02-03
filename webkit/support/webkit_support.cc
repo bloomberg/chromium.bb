@@ -187,11 +187,20 @@ FilePath GetWebKitRootDirFilePath() {
   FilePath basePath;
   PathService::Get(base::DIR_SOURCE_ROOT, &basePath);
   if (file_util::PathExists(basePath.Append(FILE_PATH_LITERAL("chrome")))) {
+    // We're in a WebKit-in-chrome checkout.
     return basePath.Append(FILE_PATH_LITERAL("third_party/WebKit"));
-  } else {
-    // WebKit/Source/WebKit/chromium/ -> WebKit/
+  } else if (file_util::PathExists(
+                 basePath.Append(FILE_PATH_LITERAL("chromium")))) {
+    // We're in a WebKit-only checkout on Windows.
+    return basePath.Append(FILE_PATH_LITERAL("../.."));
+  } else if (file_util::PathExists(
+                 basePath.Append(FILE_PATH_LITERAL("webkit/support")))) {
+    // We're in a WebKit-only/xcodebuild checkout on Mac
     return basePath.Append(FILE_PATH_LITERAL("../../.."));
   }
+  // We're in a WebKit-only, make-build, so the DIR_SOURCE_ROOT is already the
+  // WebKit root. That, or we have no idea where we are.
+  return basePath;
 }
 
 class WebKitClientMessageLoopImpl
