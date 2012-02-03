@@ -91,7 +91,7 @@ PluginPlaceholder* PluginPlaceholder::CreateMissingPlugin(
       missing_plugin->routing_id(), missing_plugin->CreateRoutingId(),
       params.mimeType.utf8()));
 #else
-  OnDidNotFindMissingPlugin();
+  missing_plugin->OnDidNotFindMissingPlugin();
 #endif
   return missing_plugin;
 }
@@ -193,6 +193,7 @@ void PluginPlaceholder::BindWebFrame(WebFrame* frame) {
 }
 
 bool PluginPlaceholder::OnMessageReceived(const IPC::Message& message) {
+#if defined(ENABLE_PLUGIN_INSTALLATION)
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(PluginPlaceholder, message)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_FoundMissingPlugin,
@@ -210,6 +211,7 @@ bool PluginPlaceholder::OnMessageReceived(const IPC::Message& message) {
 
   if (handled)
     return true;
+#endif
 
   // We don't swallow these messages because multiple blocked plugins have an
   // interest in them.
