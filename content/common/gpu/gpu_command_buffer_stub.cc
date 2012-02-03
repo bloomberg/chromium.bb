@@ -9,16 +9,27 @@
 #include "base/command_line.h"
 #include "base/debug/trace_event.h"
 #include "base/shared_memory.h"
+#include "base/time.h"
 #include "build/build_config.h"
 #include "content/common/gpu/gpu_channel.h"
 #include "content/common/gpu/gpu_channel_manager.h"
 #include "content/common/gpu/gpu_command_buffer_stub.h"
+#include "content/common/gpu/gpu_memory_allocation.h"
+#include "content/common/gpu/gpu_memory_manager.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "content/common/gpu/gpu_watchdog.h"
 #include "content/common/gpu/image_transport_surface.h"
 #include "gpu/command_buffer/common/constants.h"
 #include "ui/gfx/gl/gl_bindings.h"
 #include "ui/gfx/gl/gl_switches.h"
+
+GpuCommandBufferStub::SurfaceState::SurfaceState(int32 surface_id,
+                                                 bool visible,
+                                                 base::TimeTicks last_used_time)
+    : surface_id(surface_id),
+      visible(visible),
+      last_used_time(last_used_time) {
+}
 
 GpuCommandBufferStub::GpuCommandBufferStub(
     GpuChannel* channel,
@@ -43,7 +54,6 @@ GpuCommandBufferStub::GpuCommandBufferStub(
       route_id_(route_id),
       software_(software),
       last_flush_count_(0),
-      surface_id_(surface_id),
       parent_stub_for_initialization_(),
       parent_texture_for_initialization_(0),
       watchdog_(watchdog) {
@@ -54,13 +64,16 @@ GpuCommandBufferStub::GpuCommandBufferStub(
     bool bind_generates_resource = true;
     context_group_ = new gpu::gles2::ContextGroup(bind_generates_resource);
   }
+  if (surface_id != 0)
+    surface_state_.reset(new GpuCommandBufferStubBase::SurfaceState(
+        surface_id, true, base::TimeTicks::Now()));
 }
 
 GpuCommandBufferStub::~GpuCommandBufferStub() {
   Destroy();
 
   GpuChannelManager* gpu_channel_manager = channel_->gpu_channel_manager();
-  gpu_channel_manager->Send(new GpuHostMsg_DestroyCommandBuffer(surface_id_));
+  gpu_channel_manager->Send(new GpuHostMsg_DestroyCommandBuffer(surface_id()));
 }
 
 bool GpuCommandBufferStub::OnMessageReceived(const IPC::Message& message) {
@@ -153,6 +166,8 @@ void GpuCommandBufferStub::Destroy() {
 
   context_ = NULL;
   surface_ = NULL;
+
+  channel_->gpu_channel_manager()->gpu_memory_manager()->ScheduleManage();
 }
 
 void GpuCommandBufferStub::OnInitializeFailed(IPC::Message* reply_message) {
@@ -274,6 +289,8 @@ void GpuCommandBufferStub::OnInitialize(
 
   GpuCommandBufferMsg_Initialize::WriteReplyParams(reply_message, true);
   Send(reply_message);
+
+  channel_->gpu_channel_manager()->gpu_memory_manager()->ScheduleManage();
 }
 
 void GpuCommandBufferStub::OnSetGetBuffer(
@@ -496,6 +513,10 @@ void GpuCommandBufferStub::OnDestroyVideoDecoder(int decoder_route_id) {
 
 void GpuCommandBufferStub::OnSetSurfaceVisible(bool visible) {
   surface_->SetVisible(visible);
+  DCHECK(surface_state_.get());
+  surface_state_->visible = visible;
+  surface_state_->last_used_time = base::TimeTicks::Now();
+  channel_->gpu_channel_manager()->gpu_memory_manager()->ScheduleManage();
 }
 
 void GpuCommandBufferStub::SendConsoleMessage(
@@ -508,6 +529,21 @@ void GpuCommandBufferStub::SendConsoleMessage(
       route_id_, console_message);
   msg->set_unblock(true);
   Send(msg);
+}
+
+bool GpuCommandBufferStub::has_surface_state() {
+  return surface_state_ != NULL;
+}
+
+const GpuCommandBufferStubBase::SurfaceState&
+    GpuCommandBufferStub::surface_state() {
+  DCHECK(has_surface_state());
+  return *surface_state_.get();
+}
+
+void GpuCommandBufferStub::SendMemoryAllocationToProxy(
+    const GpuMemoryAllocation& allocation) {
+  // TODO(mmocny): Send callback once gl extensions are added.
 }
 
 #endif  // defined(ENABLE_GPU)

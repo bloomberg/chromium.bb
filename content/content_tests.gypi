@@ -258,6 +258,7 @@
         'common/mac/font_descriptor_unittest.mm',
         'common/gpu/gpu_feature_flags_unittest.cc',
         'common/gpu/gpu_info_unittest.cc',
+        'common/gpu/gpu_memory_manager_unittest.cc',
         'common/hi_res_timer_manager_unittest.cc',
         'common/inter_process_time_ticks_converter_unittest.cc',
         'common/net/url_fetcher_impl_unittest.cc',

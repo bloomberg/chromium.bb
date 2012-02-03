@@ -13,6 +13,7 @@
 
 #include "base/id_map.h"
 #include "base/memory/weak_ptr.h"
+#include "content/common/content_export.h"
 #include "content/common/gpu/media/gpu_video_decode_accelerator.h"
 #include "gpu/command_buffer/common/constants.h"
 #include "gpu/command_buffer/service/command_buffer_service.h"
@@ -32,11 +33,38 @@
 #endif
 
 class GpuChannel;
+class GpuMemoryAllocation;
 class GpuWatchdog;
+
+// This Base class is used to expose methods of GpuCommandBufferStub used for
+// testability.
+class CONTENT_EXPORT GpuCommandBufferStubBase {
+ public:
+  struct CONTENT_EXPORT SurfaceState {
+    int32 surface_id;
+    bool visible;
+    base::TimeTicks last_used_time;
+
+    SurfaceState(int32 surface_id,
+                 bool visible,
+                 base::TimeTicks last_used_time);
+  };
+
+ public:
+  virtual ~GpuCommandBufferStubBase() {}
+
+  // Will not have surface state if this is an offscreen commandbuffer.
+  virtual bool has_surface_state() = 0;
+  virtual const SurfaceState& surface_state() = 0;
+
+  virtual void SendMemoryAllocationToProxy(
+      const GpuMemoryAllocation& allocation) = 0;
+};
 
 class GpuCommandBufferStub
     : public IPC::Channel::Listener,
       public IPC::Message::Sender,
+      public GpuCommandBufferStubBase,
       public base::SupportsWeakPtr<GpuCommandBufferStub> {
  public:
   GpuCommandBufferStub(
@@ -61,6 +89,15 @@ class GpuCommandBufferStub
   // IPC::Message::Sender implementation:
   virtual bool Send(IPC::Message* msg) OVERRIDE;
 
+  // GpuCommandBufferStubBase implementation:
+  virtual bool has_surface_state() OVERRIDE;
+  virtual const GpuCommandBufferStubBase::SurfaceState& surface_state()
+      OVERRIDE;
+
+  // Sends memory allocation limits to render process.
+  virtual void SendMemoryAllocationToProxy(
+      const GpuMemoryAllocation& allocation) OVERRIDE;
+
   // Whether this command buffer can currently handle IPC messages.
   bool IsScheduled();
 
@@ -74,7 +111,9 @@ class GpuCommandBufferStub
   gpu::GpuScheduler* scheduler() const { return scheduler_.get(); }
 
   // Identifies the target surface.
-  int32 surface_id() const { return surface_id_; }
+  int32 surface_id() const {
+    return (surface_state_.get()) ? surface_state_->surface_id : 0;
+  }
 
   // Identifies the various GpuCommandBufferStubs in the GPU process belonging
   // to the same renderer process.
@@ -141,9 +180,7 @@ class GpuCommandBufferStub
   int32 route_id_;
   bool software_;
   uint32 last_flush_count_;
-
-  // Identifies the window for the rendering results on the browser side.
-  int32 surface_id_;
+  scoped_ptr<GpuCommandBufferStubBase::SurfaceState> surface_state_;
 
   scoped_ptr<gpu::CommandBufferService> command_buffer_;
   scoped_ptr<gpu::gles2::GLES2Decoder> decoder_;

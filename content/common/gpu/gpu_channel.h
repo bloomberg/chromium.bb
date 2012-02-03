@@ -16,6 +16,7 @@
 #include "base/process.h"
 #include "build/build_config.h"
 #include "content/common/gpu/gpu_command_buffer_stub.h"
+#include "content/common/gpu/gpu_memory_manager.h"
 #include "content/common/message_router.h"
 #include "ipc/ipc_sync_channel.h"
 #include "ui/gfx/gl/gl_share_group.h"
@@ -72,6 +73,9 @@ class GpuChannel : public IPC::Channel::Listener,
 
   // IPC::Message::Sender implementation:
   virtual bool Send(IPC::Message* msg) OVERRIDE;
+
+  virtual void AppendAllCommandBufferStubs(
+      std::vector<GpuCommandBufferStubBase*>& stubs);
 
   // Whether this channel is able to handle IPC messages.
   bool IsScheduled();
