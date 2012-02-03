@@ -609,6 +609,13 @@ void TabContents::DidBecomeSelected() {
 #endif
   }
 
+  // The resize rect might have changed while this was inactive -- send the new
+  // one to make sure it's up to date.
+  RenderViewHost* rvh = GetRenderViewHost();
+  if (rvh) {
+    rvh->ResizeRectChanged(GetRootWindowResizerRect());
+  }
+
   last_selected_time_ = base::TimeTicks::Now();
 
   FOR_EACH_OBSERVER(WebContentsObserver, observers_, DidBecomeSelected());

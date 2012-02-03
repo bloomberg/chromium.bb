@@ -62,6 +62,7 @@
 #include "chrome/browser/ui/window_sizer.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
+#include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/generated_resources.h"
@@ -767,11 +768,11 @@ enum {
 }
 
 // Adjusts the window height by the given amount.
-- (void)adjustWindowHeightBy:(CGFloat)deltaH {
+- (BOOL)adjustWindowHeightBy:(CGFloat)deltaH {
   // By not adjusting the window height when initializing, we can ensure that
   // the window opens with the same size that was saved on close.
   if (initializing_ || [self isFullscreen] || deltaH == 0)
-    return;
+    return NO;
 
   NSWindow* window = [self window];
   NSRect windowFrame = [window frame];
@@ -780,7 +781,7 @@ enum {
   // If the window is not already fully in the workarea, do not adjust its frame
   // at all.
   if (!NSContainsRect(workarea, windowFrame))
-    return;
+    return NO;
 
   // Record the position of the top/bottom of the window, so we can easily check
   // whether we grew the window upwards/downwards.
@@ -827,13 +828,13 @@ enum {
     // here. Don't reset |isShrinkingFromZoomed_| since we might get called
     // again for the same shrink.
     if (isShrinkingFromZoomed_ && !didChange)
-      return;
+      return NO;
   } else {
     isShrinkingFromZoomed_ = NO;
 
     // Don't bother with anything else.
     if (isZoomed)
-      return;
+      return NO;
   }
 
   // Shrinking from zoomed is handled above (and is constrained by
@@ -870,6 +871,7 @@ enum {
   [contentView setAutoresizesSubviews:NO];
   [window setFrame:windowFrame display:NO];
   [contentView setAutoresizesSubviews:YES];
+  return YES;
 }
 
 // Main method to resize browser window subviews.  This method should be called
@@ -904,17 +906,34 @@ enum {
   BOOL shouldAdjustBookmarkHeight =
       [bookmarkBarController_ isAnimatingBetweenState:bookmarks::kHiddenState
                                              andState:bookmarks::kShowingState];
+
+  BOOL resizeRectDirty = NO;
   if ((shouldAdjustBookmarkHeight && view == [bookmarkBarController_ view]) ||
       view == [downloadShelfController_ view]) {
     [[self window] disableScreenUpdatesUntilFlush];
     CGFloat deltaH = height - frame.size.height;
-    [self adjustWindowHeightBy:deltaH];
+    if ([self adjustWindowHeightBy:deltaH] &&
+        view == [downloadShelfController_ view]) {
+      // If the window height didn't change, the download shelf will change the
+      // size of the contents. If the contents size doesn't change, send it
+      // an explicit grow box invalidation (else, the resize message does that.)
+      resizeRectDirty = YES;
+    }
   }
 
   frame.size.height = height;
   // TODO(rohitrao): Determine if calling setFrame: twice is bad.
   [view setFrame:frame];
   [self layoutSubviews];
+
+  if (resizeRectDirty) {
+    // Send new resize rect to foreground tab.
+    if (content::WebContents* contents = browser_->GetSelectedWebContents()) {
+      if (RenderViewHost* rvh = contents->GetRenderViewHost()) {
+        rvh->ResizeRectChanged(windowShim_->GetRootWindowResizerRect());
+      }
+    }
+  }
 }
 
 - (void)setAnimationInProgress:(BOOL)inProgress {
