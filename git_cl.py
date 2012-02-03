@@ -147,6 +147,7 @@ class Settings(object):
     self.viewvc_url = None
     self.updated = False
     self.did_migrate_check = False
+    self.is_gerrit = None
 
   def LazyUpdateIfNeeded(self):
     """Updates the settings from a codereview.settings file, if available."""
@@ -263,6 +264,12 @@ class Settings(object):
 
   def GetDefaultCCList(self):
     return self._GetConfig('rietveld.cc', error_ok=True)
+
+  def GetIsGerrit(self):
+    """Return true if this repo is assosiated with gerrit code review system."""
+    if self.is_gerrit is None:
+      self.is_gerrit = self._GetConfig('gerrit.host', error_ok=True)
+    return self.is_gerrit
 
   def _GetConfig(self, param, **kwargs):
     self.LazyUpdateIfNeeded()
@@ -604,6 +611,7 @@ or verify this branch is set up to track another (via the --track argument to
 
 def GetCodereviewSettingsInteractively():
   """Prompt the user for settings."""
+  # TODO(ukai): ask code review system is rietveld or gerrit?
   server = settings.GetDefaultServerUrl(error_ok=True)
   prompt = 'Rietveld server (host[:port])'
   prompt += ' [%s]' % (server or DEFAULT_SERVER)
@@ -666,9 +674,9 @@ class ChangeDescription(object):
     content = re.compile(r'^#.*$', re.MULTILINE).sub('', content).strip()
     if not content:
       DieWithError('No CL description, aborting')
-    self._ParseDescription(content)
+    self.ParseDescription(content)
 
-  def _ParseDescription(self, description):
+  def ParseDescription(self, description):
     """Updates the list of reviewers and subject from the description."""
     if not description:
       self.description = description
@@ -722,6 +730,15 @@ def LoadCodereviewSettingsFromFile(fileobj):
   SetProperty('cc', 'CC_LIST', unset_error_ok=True)
   SetProperty('tree-status-url', 'STATUS', unset_error_ok=True)
   SetProperty('viewvc-url', 'VIEW_VC', unset_error_ok=True)
+
+  if 'GERRIT_HOST' in keyvals and 'GERRIT_PORT' in keyvals:
+    RunGit(['config', 'gerrit.host', keyvals['GERRIT_HOST']])
+    RunGit(['config', 'gerrit.port', keyvals['GERRIT_PORT']])
+    # Install the standard commit-msg hook.
+    RunCommand(['scp', '-p', '-P', keyvals['GERRIT_PORT'],
+                '%s:hooks/commit-msg' % keyvals['GERRIT_HOST'],
+                os.path.join(settings.GetRoot(),
+                             '.git', 'hooks', 'commit-msg')])
 
   if 'PUSH_URL_CONFIG' in keyvals and 'ORIGIN_URL_CONFIG' in keyvals:
     #should be of the form
@@ -863,64 +880,49 @@ def CMDpresubmit(parser, args):
   return 0
 
 
-@usage('[args to "git diff"]')
-def CMDupload(parser, args):
-  """upload the current changelist to codereview"""
-  parser.add_option('--bypass-hooks', action='store_true', dest='bypass_hooks',
-                    help='bypass upload presubmit hook')
-  parser.add_option('-f', action='store_true', dest='force',
-                    help="force yes to questions (don't prompt)")
-  parser.add_option('-m', dest='message', help='message for patch')
-  parser.add_option('-r', '--reviewers',
-                    help='reviewer email addresses')
-  parser.add_option('--cc',
-                    help='cc email addresses')
-  parser.add_option('--send-mail', action='store_true',
-                    help='send email to reviewer immediately')
-  parser.add_option("--emulate_svn_auto_props", action="store_true",
-                    dest="emulate_svn_auto_props",
-                    help="Emulate Subversion's auto properties feature.")
-  parser.add_option("--desc_from_logs", action="store_true",
-                    dest="from_logs",
-                    help="""Squashes git commit logs into change description and
-                            uses message as subject""")
-  parser.add_option('-c', '--use-commit-queue', action='store_true',
-                    help='tell the commit queue to commit this patchset')
-  (options, args) = parser.parse_args(args)
+def GerritUpload(options, args, cl):
+  """upload the current branch to gerrit."""
+  # We assume the remote called "origin" is the one we want.
+  # It is probably not worthwhile to support different workflows.
+  remote = 'origin'
+  branch = 'master'
+  if options.target_branch:
+    branch = options.target_branch
 
-  # Make sure index is up-to-date before running diff-index.
-  RunGit(['update-index', '--refresh', '-q'], error_ok=True)
-  if RunGit(['diff-index', 'HEAD']):
-    print 'Cannot upload with a dirty tree.  You must commit locally first.'
+  log_desc = CreateDescriptionFromLog(args)
+  if options.reviewers:
+    log_desc += '\nR=' + options.reviewers
+  change_desc = ChangeDescription(options.message, log_desc,
+                                  options.reviewers)
+  change_desc.ParseDescription(log_desc)
+  if change_desc.IsEmpty():
+    print "Description is empty; aborting."
     return 1
 
-  cl = Changelist()
-  if args:
-    base_branch = args[0]
-  else:
-    # Default to diffing against the "upstream" branch.
-    base_branch = cl.GetUpstreamBranch()
-    args = [base_branch + "..."]
+  receive_options = []
+  cc = cl.GetCCList().split(',')
+  if options.cc:
+    cc += options.cc.split(',')
+  cc = filter(None, cc)
+  if cc:
+    receive_options += ['--cc=' + email for email in cc]
+  if change_desc.reviewers:
+    reviewers = filter(None, change_desc.reviewers.split(','))
+    if reviewers:
+      receive_options += ['--reviewer=' + email for email in reviewers]
 
-  if not options.bypass_hooks:
-    hook_results = cl.RunHook(committing=False, upstream_branch=base_branch,
-                              may_prompt=not options.force,
-                              verbose=options.verbose,
-                              author=None)
-    if not hook_results.should_continue():
-      return 1
-    if not options.reviewers and hook_results.reviewers:
-      options.reviewers = hook_results.reviewers
+  git_command = ['push']
+  if receive_options:
+    git_command.append('--receive-pack="git receive-pack %s"' %
+                       ' '.join(receive_options))
+  git_command += [remote, 'HEAD:refs/for/' + branch]
+  RunGit(git_command)
+  # TODO(ukai): parse Change-Id: and set issue number?
+  return 0
 
-  # --no-ext-diff is broken in some versions of Git, so try to work around
-  # this by overriding the environment (but there is still a problem if the
-  # git config key "diff.external" is used).
-  env = os.environ.copy()
-  if 'GIT_EXTERNAL_DIFF' in env:
-    del env['GIT_EXTERNAL_DIFF']
-  subprocess2.call(
-      ['git', 'diff', '--no-ext-diff', '--stat', '-M'] + args, env=env)
 
+def RietveldUpload(options, args, cl):
+  """upload the patch to rietveld."""
   upload_args = ['--assume_yes']  # Don't ask about untracked files.
   upload_args.extend(['--server', cl.GetRietveldServer()])
   if options.emulate_svn_auto_props:
@@ -1000,6 +1002,73 @@ def CMDupload(parser, args):
   if options.use_commit_queue:
     cl.SetFlag('commit', '1')
   return 0
+
+
+@usage('[args to "git diff"]')
+def CMDupload(parser, args):
+  """upload the current changelist to codereview"""
+  parser.add_option('--bypass-hooks', action='store_true', dest='bypass_hooks',
+                    help='bypass upload presubmit hook')
+  parser.add_option('-f', action='store_true', dest='force',
+                    help="force yes to questions (don't prompt)")
+  parser.add_option('-m', dest='message', help='message for patch')
+  parser.add_option('-r', '--reviewers',
+                    help='reviewer email addresses')
+  parser.add_option('--cc',
+                    help='cc email addresses')
+  parser.add_option('--send-mail', action='store_true',
+                    help='send email to reviewer immediately')
+  parser.add_option("--emulate_svn_auto_props", action="store_true",
+                    dest="emulate_svn_auto_props",
+                    help="Emulate Subversion's auto properties feature.")
+  parser.add_option("--desc_from_logs", action="store_true",
+                    dest="from_logs",
+                    help="""Squashes git commit logs into change description and
+                            uses message as subject""")
+  parser.add_option('-c', '--use-commit-queue', action='store_true',
+                    help='tell the commit queue to commit this patchset')
+  if settings.GetIsGerrit():
+    parser.add_option('--target_branch', dest='target_branch', default='master',
+                      help='target branch to upload')
+  (options, args) = parser.parse_args(args)
+
+  # Make sure index is up-to-date before running diff-index.
+  RunGit(['update-index', '--refresh', '-q'], error_ok=True)
+  if RunGit(['diff-index', 'HEAD']):
+    print 'Cannot upload with a dirty tree.  You must commit locally first.'
+    return 1
+
+  cl = Changelist()
+  if args:
+    # TODO(ukai): is it ok for gerrit case?
+    base_branch = args[0]
+  else:
+    # Default to diffing against the "upstream" branch.
+    base_branch = cl.GetUpstreamBranch()
+    args = [base_branch + "..."]
+
+  if not options.bypass_hooks:
+    hook_results = cl.RunHook(committing=False, upstream_branch=base_branch,
+                              may_prompt=not options.force,
+                              verbose=options.verbose,
+                              author=None)
+    if not hook_results.should_continue():
+      return 1
+    if not options.reviewers and hook_results.reviewers:
+      options.reviewers = hook_results.reviewers
+
+  # --no-ext-diff is broken in some versions of Git, so try to work around
+  # this by overriding the environment (but there is still a problem if the
+  # git config key "diff.external" is used).
+  env = os.environ.copy()
+  if 'GIT_EXTERNAL_DIFF' in env:
+    del env['GIT_EXTERNAL_DIFF']
+  subprocess2.call(
+      ['git', 'diff', '--no-ext-diff', '--stat', '-M'] + args, env=env)
+
+  if settings.GetIsGerrit():
+    return GerritUpload(options, args, cl)
+  return RietveldUpload(options, args, cl)
 
 
 def SendUpstream(parser, args, cmd):
@@ -1229,6 +1298,7 @@ def CMDpatch(parser, args):
   issue_arg = args[0]
 
   # TODO(maruel): Use apply_issue.py
+  # TODO(ukai): use gerrit-cherry-pick for gerrit repository?
 
   if re.match(r'\d+', issue_arg):
     # Input is an issue id.  Figure out the URL.

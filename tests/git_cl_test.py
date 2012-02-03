@@ -88,6 +88,7 @@ class TestGitCl(TestCase):
   @staticmethod
   def _git_base_calls():
     return [
+      ((['git', 'config', 'gerrit.host'],), ''),
       ((['git', 'update-index', '--refresh', '-q'],), ''),
       ((['git', 'diff-index', 'HEAD'],), ''),
       ((['git', 'config', 'rietveld.server'],), 'codereview.example.com'),
@@ -319,6 +320,77 @@ class TestGitCl(TestCase):
         self._dcommit_calls_bypassed() +
         self._dcommit_calls_3())
     git_cl.main(['dcommit', '--bypass-hooks'])
+
+
+  @staticmethod
+  def _gerrit_base_calls():
+    return [
+        ((['git', 'config', 'gerrit.host'],), 'gerrit.example.com'),
+        ((['git', 'update-index', '--refresh', '-q'],), ''),
+        ((['git', 'diff-index', 'HEAD'],), ''),
+        ((['git', 'config', 'rietveld.server'],), 'codereview.example.com'),
+        ((['git', 'symbolic-ref', 'HEAD'],), 'master'),
+        ((['git', 'config', 'branch.master.merge'],), 'master'),
+        ((['git', 'config', 'branch.master.remote'],), 'origin'),
+        ((['git', 'rev-parse', '--show-cdup'],), ''),
+        ((['git', 'rev-parse', 'HEAD'],), '12345'),
+        ((['git', 'diff', '--name-status', '-r', 'master...', '.'],),
+         'M\t.gitignore\n'),
+        ((['git', 'rev-parse', '--git-dir'],), '.git'),
+        ((['git', 'config', 'branch.master.rietveldissue'],), ''),
+        ((['git', 'config', 'branch.master.rietveldpatchset'],), ''),
+        ((['git', 'log', '--pretty=format:%s%n%n%b', 'master...'],), 'foo'),
+        ((['git', 'config', 'user.email'],), 'me@example.com'),
+        ((['git', 'diff', '--no-ext-diff', '--stat', '-M', 'master...'],),
+         '+dat'),
+        ]
+
+  @staticmethod
+  def _gerrit_upload_calls(description, reviewers):
+    calls = [
+        ((['git', 'log', '--pretty=format:%s\n\n%b', 'master..'],),
+         description),
+        ((['git', 'config', 'rietveld.cc'],), '')
+        ]
+    receive_pack = '--receive-pack="git receive-pack '
+    receive_pack += '--cc=joe@example.com'  # from watch list
+    if reviewers:
+      receive_pack += ' '
+      receive_pack += ' '.join(['--reviewer=' + email for email in reviewers])
+    receive_pack += '"'
+    calls += [
+        ((['git', 'push', receive_pack, 'origin', 'HEAD:refs/for/master'],),
+         '')
+        ]
+    return calls
+
+  def _run_gerrit_reviewer_test(
+      self,
+      upload_args,
+      description,
+      reviewers):
+    """Generic gerrit reviewer test framework."""
+    self.calls = self._gerrit_base_calls()
+    self.calls += self._gerrit_upload_calls(description, reviewers)
+    git_cl.main(['upload'] + upload_args)
+
+  def test_gerrit_no_reviewer(self):
+    self._run_gerrit_reviewer_test(
+        [],
+        'desc\n\nBUG=\nTEST=\n',
+        [])
+
+  def test_gerrit_reviewers_cmd_line(self):
+    self._run_gerrit_reviewer_test(
+        ['-r', 'foo@example.com'],
+        'desc\n\nBUG=\nTEST=\n',
+        ['foo@example.com'])
+
+  def test_gerrit_reviewer_multiple(self):
+    self._run_gerrit_reviewer_test(
+        [],
+        'desc\nTBR=reviewer@example.com\nBUG=\nR=another@example.com\n',
+        ['reviewer@example.com', 'another@example.com'])
 
 
 if __name__ == '__main__':
