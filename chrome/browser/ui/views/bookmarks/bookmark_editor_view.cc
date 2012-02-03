@@ -194,6 +194,11 @@ void BookmarkEditorView::ContentsChanged(views::Textfield* sender,
   UserInputChanged();
 }
 
+bool BookmarkEditorView::HandleKeyEvent(views::Textfield* sender,
+                                        const views::KeyEvent& key_event) {
+    return false;
+}
+
 void BookmarkEditorView::ButtonPressed(views::Button* sender,
                                        const views::Event& event) {
   DCHECK(sender);
@@ -661,4 +666,10 @@ void BookmarkEditorView::UpdateExpandedNodes(
     expanded_nodes->insert(bb_model_->GetNodeByID(editor_node->value));
   for (int i = 0; i < editor_node->child_count(); ++i)
     UpdateExpandedNodes(editor_node->GetChild(i), expanded_nodes);
+}
+
+void BookmarkEditorView::EditorTreeModel::SetTitle(ui::TreeModelNode* node,
+                                                   const string16& title) {
+  if (!title.empty())
+    ui::TreeNodeModel<EditorNode>::SetTitle(node, title);
 }

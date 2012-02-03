@@ -65,10 +65,7 @@ class BookmarkEditorView : public BookmarkEditor,
         : ui::TreeNodeModel<EditorNode>(root) {}
 
     virtual void SetTitle(ui::TreeModelNode* node,
-                          const string16& title) {
-      if (!title.empty())
-        ui::TreeNodeModel<EditorNode>::SetTitle(node, title);
-    }
+                          const string16& title) OVERRIDE;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(EditorTreeModel);
@@ -105,11 +102,9 @@ class BookmarkEditorView : public BookmarkEditor,
 
   // views::TextfieldController:
   virtual void ContentsChanged(views::Textfield* sender,
-                               const string16& new_contents)  OVERRIDE;
+                               const string16& new_contents) OVERRIDE;
   virtual bool HandleKeyEvent(views::Textfield* sender,
-                              const views::KeyEvent& key_event)  OVERRIDE {
-    return false;
-  }
+                              const views::KeyEvent& key_event) OVERRIDE;
 
   // views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender,

@@ -100,11 +100,11 @@ class LauncherIconUpdater : public TabStripModelObserver {
       TabStripModelObserver::TabChangeType change_type) OVERRIDE;
   virtual void TabInsertedAt(TabContentsWrapper* contents,
                              int index,
-                             bool foreground);
+                             bool foreground) OVERRIDE;
   virtual void TabReplacedAt(TabStripModel* tab_strip_model,
                              TabContentsWrapper* old_contents,
                              TabContentsWrapper* new_contents,
-                             int index);
+                             int index) OVERRIDE;
   virtual void TabDetachedAt(TabContentsWrapper* contents, int index) OVERRIDE;
 
  private:
