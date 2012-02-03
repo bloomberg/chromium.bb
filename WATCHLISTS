@@ -335,9 +335,9 @@
 
   'WATCHLISTS': {
     'this_file': ['nirnimesh@chromium.org'],
-    'valgrind': ['timurrrr@chromium.org',
-                 'stuartmorgan+watch@chromium.org',
-                 'glider@chromium.org'],
+    'valgrind': ['bruening+watch@chromium.org',
+                 'glider+watch@chromium.org',
+                 'timurrrr+watch@chromium.org'],
     'base': ['brettw-cc@chromium.org'],
     'browser_main': ['brettw-cc@chromium.org'],
     'browser_resources': ['arv@chromium.org'],
