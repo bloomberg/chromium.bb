@@ -249,6 +249,16 @@ smoke_motion_handler(struct widget *widget, struct input *input,
 	return POINTER_HAND1;
 }
 
+static void
+resize_handler(struct widget *widget,
+	       int32_t width, int32_t height, void *data)
+{
+	struct smoke *smoke = data;
+
+	/* Dont resize me */
+	widget_set_size(smoke->widget, smoke->width, smoke->height);
+}
+
 int main(int argc, char *argv[])
 {
 	struct timespec ts;
@@ -270,6 +280,7 @@ int main(int argc, char *argv[])
 	smoke.window = window_create(d);
 	smoke.widget = window_add_widget(smoke.window, &smoke);
 	window_set_title(smoke.window, "smoke");
+	widget_set_size(smoke.widget, smoke.width, smoke.height);
 
 	window_set_buffer_type(smoke.window, WINDOW_BUFFER_TYPE_SHM);
 	clock_gettime(CLOCK_MONOTONIC, &ts);
@@ -291,6 +302,7 @@ int main(int argc, char *argv[])
 	window_flush(smoke.window);
 
 	widget_set_motion_handler(smoke.widget, smoke_motion_handler);
+	widget_set_resize_handler(smoke.widget, resize_handler);
 
 	window_set_user_data(smoke.window, &smoke);
 	frame_callback(&smoke, NULL, 0);
