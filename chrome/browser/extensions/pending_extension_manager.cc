@@ -61,6 +61,14 @@ bool PendingExtensionManager::AddFromSync(
     return false;
   }
 
+  // Make sure we don't ever try to install the CWS app, because even though
+  // it is listed as a syncable app (because its values need to be synced) it
+  // should already be installed on every instance.
+  if (id == extension_misc::kWebStoreAppId) {
+    NOTREACHED();
+    return false;
+  }
+
   const bool kIsFromSync = true;
   const Extension::Location kSyncLocation = Extension::INTERNAL;
 

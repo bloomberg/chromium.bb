@@ -1573,8 +1573,14 @@ void ExtensionService::SetIsIncognitoEnabled(
     const std::string& extension_id, bool enabled) {
   const Extension* extension = GetInstalledExtension(extension_id);
   if (extension && extension->location() == Extension::COMPONENT) {
-    // This shouldn't be called for component extensions.
-    NOTREACHED();
+    // This shouldn't be called for component extensions other than the
+    // web store (which is considered an app, and may try to set this value).
+    DCHECK_EQ(extension_id, std::string(extension_misc::kWebStoreAppId));
+
+    // If we are here with the CWS, make sure the we aren't trying to
+    // change it.
+    DCHECK_EQ(enabled, IsIncognitoEnabled(extension_id));
+
     return;
   }
 
