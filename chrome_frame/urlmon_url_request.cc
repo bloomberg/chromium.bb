@@ -502,12 +502,12 @@ STDMETHODIMP UrlmonUrlRequest::GetBindInfo(DWORD* bind_flags,
     if (bind_info->dwBindVerb != BINDVERB_CUSTOM)
       bind_info->szCustomVerb = NULL;
 
-    if (post_data_len() &&
+    if ((post_data_len() || is_chunked_upload()) &&
         get_upload_data(&bind_info->stgmedData.pstm) == S_OK) {
       bind_info->stgmedData.tymed = TYMED_ISTREAM;
-#pragma warning(disable:4244)
-      bind_info->cbstgmedData = post_data_len();
-#pragma warning(default:4244)
+      if (!is_chunked_upload()) {
+        bind_info->cbstgmedData = static_cast<DWORD>(post_data_len());
+      }
       DVLOG(1) << __FUNCTION__ << me() << method()
                << " request with " << base::Int64ToString(post_data_len())
                << " bytes. url=" << url();
@@ -602,10 +602,8 @@ STDMETHODIMP UrlmonUrlRequest::BeginningTransaction(const wchar_t* url,
   HRESULT hr = S_OK;
 
   std::string new_headers;
-  if (post_data_len() > 0) {
-    if (is_chunked_upload()) {
-      new_headers = base::StringPrintf("Transfer-Encoding: chunked\r\n");
-    }
+  if (is_chunked_upload()) {
+    new_headers = base::StringPrintf("Transfer-Encoding: chunked\r\n");
   }
 
   if (!extra_headers().empty()) {
