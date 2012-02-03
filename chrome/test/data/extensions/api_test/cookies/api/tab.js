@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -97,122 +97,145 @@ chrome.test.runTests([
   },
   function getBasicCookie() {
     removeTestCookies();
-    chrome.cookies.set(TEST_BASIC_COOKIE);
-    // Domain doesn't match.
-    chrome.cookies.get(
-        {url: TEST_URL2, name: TEST_BASIC_COOKIE.name},
-        pass(expectNullCookie));
-    // URL invalid.
-    chrome.cookies.get(
-        {url: 'invalid url', name: TEST_BASIC_COOKIE.name},
-        fail('Invalid url: "invalid url".'));
-    // URL lacking permissions.
-    chrome.cookies.get(
-        {url: TEST_UNPERMITTED_URL, name: TEST_BASIC_COOKIE.name},
-        fail('No host permissions for cookies at url: "' +
-             TEST_UNPERMITTED_URL + '".'));
-    // Store ID invalid.
-    chrome.cookies.get({
-      url: TEST_BASIC_COOKIE.url,
-      name: TEST_BASIC_COOKIE.name,
-      storeId: 'invalid'
-    }, fail('Invalid cookie store id: "invalid".'));
-    chrome.cookies.get(
-        {url: TEST_BASIC_COOKIE.url, name: TEST_BASIC_COOKIE.name},
-        pass(function(cookie) {
-          expectValidCookie(cookie);
-          chrome.test.assertEq(TEST_BASIC_COOKIE.name, cookie.name);
-          chrome.test.assertEq(TEST_BASIC_COOKIE.value, cookie.value);
-          chrome.test.assertEq(TEST_HOST, cookie.domain);
-          chrome.test.assertEq(true, cookie.hostOnly);
-          chrome.test.assertEq('/', cookie.path);
-          chrome.test.assertEq(false, cookie.secure);
-          chrome.test.assertEq(false, cookie.httpOnly);
-          chrome.test.assertEq(true, cookie.session);
-          chrome.test.assertTrue(typeof cookie.expirationDate === 'undefined',
-              'Session cookie should not have expirationDate property.');
-          chrome.test.assertTrue(typeof cookie.storeId !== 'undefined',
-                                 'Cookie store ID not provided.');
-        }));
+    chrome.cookies.set(TEST_BASIC_COOKIE, pass(function () {
+      // Domain doesn't match.
+      chrome.cookies.get(
+          {url: TEST_URL2, name: TEST_BASIC_COOKIE.name},
+          pass(expectNullCookie));
+      // URL invalid.
+      chrome.cookies.get(
+          {url: 'invalid url', name: TEST_BASIC_COOKIE.name},
+          fail('Invalid url: "invalid url".'));
+      // URL lacking permissions.
+      chrome.cookies.get(
+          {url: TEST_UNPERMITTED_URL, name: TEST_BASIC_COOKIE.name},
+          fail('No host permissions for cookies at url: "' +
+               TEST_UNPERMITTED_URL + '".'));
+      // Store ID invalid.
+      chrome.cookies.get({
+        url: TEST_BASIC_COOKIE.url,
+        name: TEST_BASIC_COOKIE.name,
+        storeId: 'invalid'
+      }, fail('Invalid cookie store id: "invalid".'));
+      chrome.cookies.get(
+          {url: TEST_BASIC_COOKIE.url, name: TEST_BASIC_COOKIE.name},
+          pass(function(cookie) {
+            expectValidCookie(cookie);
+            chrome.test.assertEq(TEST_BASIC_COOKIE.name, cookie.name);
+            chrome.test.assertEq(TEST_BASIC_COOKIE.value, cookie.value);
+            chrome.test.assertEq(TEST_HOST, cookie.domain);
+            chrome.test.assertEq(true, cookie.hostOnly);
+            chrome.test.assertEq('/', cookie.path);
+            chrome.test.assertEq(false, cookie.secure);
+            chrome.test.assertEq(false, cookie.httpOnly);
+            chrome.test.assertEq(true, cookie.session);
+            chrome.test.assertTrue(typeof cookie.expirationDate === 'undefined',
+                'Session cookie should not have expirationDate property.');
+            chrome.test.assertTrue(typeof cookie.storeId !== 'undefined',
+                                   'Cookie store ID not provided.');
+          }));
+    }));
   },
   function getDomainCookie() {
     removeTestCookies();
-    chrome.cookies.set(TEST_DOMAIN_COOKIE);
-    chrome.cookies.get(
-        {url: TEST_URL2, name: TEST_DOMAIN_COOKIE.name},
-        pass(function(cookie) {
-          expectValidCookie(cookie);
-          chrome.test.assertEq(TEST_DOMAIN_COOKIE.name, cookie.name);
-          chrome.test.assertEq(TEST_DOMAIN_COOKIE.value, cookie.value);
-          chrome.test.assertEq('.' + TEST_DOMAIN, cookie.domain);
-          chrome.test.assertEq(false, cookie.hostOnly);
-          chrome.test.assertEq('/', cookie.path);
-          chrome.test.assertEq(false, cookie.secure);
-          chrome.test.assertEq(false, cookie.httpOnly);
-          chrome.test.assertEq(false, cookie.session);
-          chrome.test.assertEq(TEST_EXPIRATION_DATE, cookie.expirationDate);
-        }));
+    chrome.cookies.set(TEST_DOMAIN_COOKIE, pass(function () {
+      chrome.cookies.get(
+          {url: TEST_URL2, name: TEST_DOMAIN_COOKIE.name},
+          pass(function(cookie) {
+            expectValidCookie(cookie);
+            chrome.test.assertEq(TEST_DOMAIN_COOKIE.name, cookie.name);
+            chrome.test.assertEq(TEST_DOMAIN_COOKIE.value, cookie.value);
+            chrome.test.assertEq('.' + TEST_DOMAIN, cookie.domain);
+            chrome.test.assertEq(false, cookie.hostOnly);
+            chrome.test.assertEq('/', cookie.path);
+            chrome.test.assertEq(false, cookie.secure);
+            chrome.test.assertEq(false, cookie.httpOnly);
+            chrome.test.assertEq(false, cookie.session);
+            chrome.test.assertEq(TEST_EXPIRATION_DATE, cookie.expirationDate);
+          }));
+    }));
   },
   function getSecureCookie() {
     removeTestCookies();
-    chrome.cookies.set(TEST_SECURE_COOKIE);
-    // Original URL doesn't work because scheme isn't secure.
-    chrome.cookies.get(
-        {url: TEST_SECURE_COOKIE.url, name: TEST_SECURE_COOKIE.name},
-        pass(expectNullCookie));
-    // Path doesn't match.
-    chrome.cookies.get(
-        {url: TEST_URL3, name: TEST_SECURE_COOKIE.name},
-        pass(expectNullCookie));
-    chrome.cookies.get(
-        {url: TEST_URL4, name: TEST_SECURE_COOKIE.name},
-        pass(function(cookie) {
-          expectValidCookie(cookie);
-          chrome.test.assertEq(TEST_SECURE_COOKIE.name, cookie.name);
-          chrome.test.assertEq(TEST_SECURE_COOKIE.value, cookie.value);
-          chrome.test.assertEq(TEST_HOST, cookie.domain);
-          chrome.test.assertEq(true, cookie.hostOnly);
-          chrome.test.assertEq(TEST_PATH, cookie.path);
-          chrome.test.assertEq(true, cookie.secure);
-          chrome.test.assertEq(true, cookie.httpOnly);
-          chrome.test.assertEq(true, cookie.session);
-        }));
+    chrome.cookies.set(TEST_SECURE_COOKIE, pass(function () {
+      // Original URL doesn't work because scheme isn't secure.
+      chrome.cookies.get(
+          {url: TEST_SECURE_COOKIE.url, name: TEST_SECURE_COOKIE.name},
+          pass(expectNullCookie));
+      // Path doesn't match.
+      chrome.cookies.get(
+          {url: TEST_URL3, name: TEST_SECURE_COOKIE.name},
+          pass(expectNullCookie));
+      chrome.cookies.get(
+          {url: TEST_URL4, name: TEST_SECURE_COOKIE.name},
+          pass(function(cookie) {
+            expectValidCookie(cookie);
+            chrome.test.assertEq(TEST_SECURE_COOKIE.name, cookie.name);
+            chrome.test.assertEq(TEST_SECURE_COOKIE.value, cookie.value);
+            chrome.test.assertEq(TEST_HOST, cookie.domain);
+            chrome.test.assertEq(true, cookie.hostOnly);
+            chrome.test.assertEq(TEST_PATH, cookie.path);
+            chrome.test.assertEq(true, cookie.secure);
+            chrome.test.assertEq(true, cookie.httpOnly);
+            chrome.test.assertEq(true, cookie.session);
+          }));
+    }));
   },
   function setOddCookies() {
     removeTestCookies();
     // URL lacking permissions.
     chrome.cookies.set(
-        {url: TEST_UNPERMITTED_URL, name: 'abcd', domain: TEST_DOMAIN});
-    chrome.cookies.get({url: TEST_URL, name: 'abcd'},
-        pass(expectNullCookie));
+        {url: TEST_UNPERMITTED_URL, name: 'abcd', domain: TEST_DOMAIN},
+        fail('No host permissions for cookies at url: "' +
+            TEST_UNPERMITTED_URL + '".',
+            function () {
+              chrome.cookies.get({url: TEST_URL, name: 'abcd'},
+                pass(expectNullCookie));
+            }));
     // Attribute values containing invalid characters are disallowed.
-    chrome.cookies.set({url: TEST_URL, name: 'abcd=efg'});
-    chrome.cookies.get({url: TEST_URL, name: 'abcd'},
-        pass(expectNullCookie));
+    chrome.cookies.set({url: TEST_URL, name: 'abcd=efg'}, fail(
+        'Failed to parse or set cookie named "abcd=efg".',
+        function() {
+          chrome.cookies.get({url: TEST_URL, name: 'abcd'},
+              pass(expectNullCookie));
+        }));
     chrome.cookies.set(
-        {url: TEST_URL, name: 'abcd', value: 'HI;LO'});
-    chrome.cookies.get({url: TEST_URL, name: 'abcd'},
-        pass(expectNullCookie));
+        {url: TEST_URL, name: 'abcd', value: 'HI;LO'},
+        fail(
+          'Failed to parse or set cookie named "abcd".',
+          function () {
+            chrome.cookies.get({url: TEST_URL, name: 'abcd'},
+                pass(expectNullCookie));
+          }));
     chrome.cookies.set(
-        {url: TEST_URL, name: 'abcd', domain: 'cookies.com\r'});
-    chrome.cookies.get({url: TEST_URL, name: 'abcd'},
-        pass(expectNullCookie));
+        {url: TEST_URL, name: 'abcd', domain: 'cookies.com\r'},
+        fail(
+          'Failed to parse or set cookie named "abcd".',
+          function () {
+            chrome.cookies.get({url: TEST_URL, name: 'abcd'},
+                pass(expectNullCookie));
+          }));
     chrome.cookies.set(
-        {url: TEST_URL, name: 'abcd', domain: 'somedomain.com'});
-    chrome.cookies.get({url: TEST_URL, name: 'abcd'},
-        pass(expectNullCookie));
+        {url: TEST_URL, name: 'abcd', domain: 'somedomain.com'},
+        fail(
+          'Failed to parse or set cookie named "abcd".',
+          function () {
+            chrome.cookies.get({url: TEST_URL, name: 'abcd'},
+                pass(expectNullCookie));
+          }));
     chrome.cookies.set({
       url: TEST_ODD_URL,
       name: 'abcd',
       domain: TEST_ODD_DOMAIN,
       path: TEST_ODD_PATH
-    });
-    chrome.cookies.get({url: TEST_ODD_URL, name: 'abcd'},
-        pass(function(cookie) {
-          expectValidCookie(cookie);
-          chrome.test.assertEq(TEST_ODD_DOMAIN, unescape(cookie.domain));
-          chrome.test.assertEq(TEST_ODD_PATH, unescape(cookie.path));
-        }));
+    }, pass(function () {
+      chrome.cookies.get({url: TEST_ODD_URL, name: 'abcd'},
+          pass(function(cookie) {
+            expectValidCookie(cookie);
+            chrome.test.assertEq(TEST_ODD_DOMAIN, unescape(cookie.domain));
+            chrome.test.assertEq(TEST_ODD_PATH, unescape(cookie.path));
+          }));
+    }));
   },
   function setCookiesWithCallbacks() {
     removeTestCookies();
@@ -273,94 +296,115 @@ chrome.test.runTests([
   },
   function removeCookie() {
     removeTestCookies();
-    chrome.cookies.set(TEST_BASIC_COOKIE);
-    chrome.cookies.get(
-        {url: TEST_URL, name: TEST_BASIC_COOKIE.name},
-        pass(expectValidCookie));
-    // Removal with any domain-matching URL will do.
-    chrome.cookies.remove(
-        {url: TEST_URL4, name: TEST_BASIC_COOKIE.name});
-    chrome.cookies.get(
-        {url: TEST_URL, name: TEST_BASIC_COOKIE.name},
-        pass(expectNullCookie));
+    chrome.cookies.set(TEST_BASIC_COOKIE, pass(function () {
+      chrome.cookies.get(
+          {url: TEST_URL, name: TEST_BASIC_COOKIE.name},
+          pass(function (c) {
+            expectValidCookie(c);
+
+            // Removal with any domain-matching URL will do.
+            chrome.cookies.remove(
+                {url: TEST_URL4, name: TEST_BASIC_COOKIE.name},
+                pass(function () {
+                  chrome.cookies.get(
+                      {url: TEST_URL, name: TEST_BASIC_COOKIE.name},
+                      pass(expectNullCookie));
+                  }));
+          }));
+    }));
     // Set with an expired date should also remove the cookie.
-    chrome.cookies.set(TEST_BASIC_COOKIE);
-    chrome.cookies.get(
-        {url: TEST_URL, name: TEST_BASIC_COOKIE.name},
-        pass(expectValidCookie));
-    chrome.cookies.set(TEST_BASIC_EXPIRED_COOKIE);
-    chrome.cookies.get(
-        {url: TEST_URL, name: TEST_BASIC_COOKIE.name},
-        pass(expectNullCookie));
+    chrome.cookies.set(TEST_BASIC_COOKIE, pass(function () {
+      chrome.cookies.get(
+          {url: TEST_URL, name: TEST_BASIC_COOKIE.name},
+          pass(expectValidCookie));
+      chrome.cookies.set(TEST_BASIC_EXPIRED_COOKIE, pass(function () {
+        chrome.cookies.get(
+            {url: TEST_URL, name: TEST_BASIC_COOKIE.name},
+            pass(expectNullCookie));
+      }));
+    }));
     // Removal with a disallowed URL shouldn't do anything.
-    chrome.cookies.set(TEST_DOMAIN_COOKIE);
-    chrome.cookies.get(
-        {url: TEST_URL2, name: TEST_DOMAIN_COOKIE.name},
-        pass(expectValidCookie));
-    chrome.cookies.remove(
-        {url: TEST_UNPERMITTED_URL, name: TEST_DOMAIN_COOKIE.name});
-    chrome.cookies.get(
-        {url: TEST_URL2, name: TEST_DOMAIN_COOKIE.name},
-        pass(expectValidCookie));
+    chrome.cookies.set(TEST_DOMAIN_COOKIE, pass(function () {
+      chrome.cookies.get(
+          {url: TEST_URL2, name: TEST_DOMAIN_COOKIE.name},
+          pass(function (c) {
+            expectValidCookie(c);
+            chrome.cookies.remove(
+              {url: TEST_UNPERMITTED_URL, name: TEST_DOMAIN_COOKIE.name},
+              fail(
+                  'No host permissions for cookies at url: "'
+                      + TEST_UNPERMITTED_URL + '".',
+                  function () {
+                  chrome.cookies.get(
+                      {url: TEST_URL2, name: TEST_DOMAIN_COOKIE.name},
+                      pass(expectValidCookie));
+                  }));
+              }));
+    }));
   },
   function removeCookiesWithCallbacks() {
     removeTestCookies();
-    chrome.cookies.set(TEST_BASIC_COOKIE);
-    chrome.cookies.get(
-        {url: TEST_URL, name: TEST_BASIC_COOKIE.name},
-        pass(expectValidCookie));
-    // Removal with any domain-matching URL will trigger callback with the
-    // removed cookie's "url" and "name" fields.
-    chrome.cookies.remove(
-        {url: TEST_URL4, name: TEST_BASIC_COOKIE.name}, pass(function(data) {
-          chrome.test.assertEq(TEST_URL4, data.url);
-          chrome.test.assertEq(TEST_BASIC_COOKIE.name, data.name);
-          chrome.test.assertTrue(typeof data.storeId !== 'undefined',
-                                 'Cookie store ID not provided.');
-        }));
+    chrome.cookies.set(TEST_BASIC_COOKIE, pass(function () {
+      chrome.cookies.get(
+          {url: TEST_URL, name: TEST_BASIC_COOKIE.name},
+          pass(expectValidCookie));
+      // Removal with any domain-matching URL will trigger callback with the
+      // removed cookie's "url" and "name" fields.
+      chrome.cookies.remove(
+          {url: TEST_URL4, name: TEST_BASIC_COOKIE.name},
+          pass(function(data) {
+            chrome.test.assertEq(TEST_URL4, data.url);
+            chrome.test.assertEq(TEST_BASIC_COOKIE.name, data.name);
+            chrome.test.assertTrue(typeof data.storeId !== 'undefined',
+                                   'Cookie store ID not provided.');
+          }));
+    }));
     // Removal with a disallowed URL should trigger the callback with no
     // arguments, and a set error message.
-    chrome.cookies.set(TEST_DOMAIN_COOKIE);
-    chrome.cookies.remove(
-        {url: TEST_UNPERMITTED_URL, name: TEST_DOMAIN_COOKIE.name},
-        fail(
-            'No host permissions for cookies at url: "'
-              + TEST_UNPERMITTED_URL + '".',
-            expectUndefinedCookie));
+    chrome.cookies.set(TEST_DOMAIN_COOKIE, pass(function () {
+      chrome.cookies.remove(
+          {url: TEST_UNPERMITTED_URL, name: TEST_DOMAIN_COOKIE.name},
+          fail(
+              'No host permissions for cookies at url: "'
+                + TEST_UNPERMITTED_URL + '".',
+              expectUndefinedCookie));
+    }));
   },
   function getAllCookies() {
     removeTestCookies();
     chrome.cookies.getAll({}, pass(function(cookies) {
       chrome.test.assertEq(0, cookies.length);
     }));
-    chrome.cookies.set(TEST_BASIC_COOKIE);
-    chrome.cookies.set(TEST_SECURE_COOKIE);
-    chrome.cookies.getAll(
-        {domain: TEST_DOMAIN}, pass(function(cookies) {
-      chrome.test.assertEq(2, cookies.length);
-      chrome.test.assertEq(TEST_SECURE_COOKIE.name, cookies[0].name);
-      chrome.test.assertEq(TEST_BASIC_COOKIE.name, cookies[1].name);
-    }));
-    chrome.cookies.getAll({
-      name: TEST_BASIC_COOKIE.name
-    }, pass(function(cookies) {
-      chrome.test.assertEq(1, cookies.length);
-      chrome.test.assertEq(TEST_BASIC_COOKIE.name, cookies[0].name);
-    }));
-    chrome.cookies.getAll({
-      secure: true
-    }, pass(function(cookies) {
-      chrome.test.assertEq(1, cookies.length);
-      chrome.test.assertEq(TEST_SECURE_COOKIE.name, cookies[0].name);
-    }));
-    chrome.cookies.getAll({
-      url: 'invalid url'
-    }, fail('Invalid url: "invalid url".'));
-    chrome.cookies.getAll({
-      url: TEST_URL,
-    }, pass(function(cookies) {
-      chrome.test.assertEq(1, cookies.length);
-      chrome.test.assertEq(TEST_BASIC_COOKIE.name, cookies[0].name);
+    chrome.cookies.set(TEST_BASIC_COOKIE, pass(function () {
+      chrome.cookies.set(TEST_SECURE_COOKIE, pass(function () {
+        chrome.cookies.getAll(
+            {domain: TEST_DOMAIN}, pass(function(cookies) {
+          chrome.test.assertEq(2, cookies.length);
+          chrome.test.assertEq(TEST_SECURE_COOKIE.name, cookies[0].name);
+          chrome.test.assertEq(TEST_BASIC_COOKIE.name, cookies[1].name);
+        }));
+        chrome.cookies.getAll({
+          name: TEST_BASIC_COOKIE.name
+        }, pass(function(cookies) {
+          chrome.test.assertEq(1, cookies.length);
+          chrome.test.assertEq(TEST_BASIC_COOKIE.name, cookies[0].name);
+        }));
+        chrome.cookies.getAll({
+          secure: true
+        }, pass(function(cookies) {
+          chrome.test.assertEq(1, cookies.length);
+          chrome.test.assertEq(TEST_SECURE_COOKIE.name, cookies[0].name);
+        }));
+        chrome.cookies.getAll({
+          url: 'invalid url'
+        }, fail('Invalid url: "invalid url".'));
+        chrome.cookies.getAll({
+          url: TEST_URL,
+        }, pass(function(cookies) {
+          chrome.test.assertEq(1, cookies.length);
+          chrome.test.assertEq(TEST_BASIC_COOKIE.name, cookies[0].name);
+        }));
+      }));
     }));
   },
   function getAllCookieStores() {
@@ -368,18 +412,19 @@ chrome.test.runTests([
     chrome.cookies.getAllCookieStores(
         pass(function(cookieStores) {
           chrome.test.assertEq(1, cookieStores.length);
-          chrome.cookies.set(TEST_BASIC_COOKIE);
-          chrome.cookies.get(
-              {url: TEST_URL, name: TEST_BASIC_COOKIE.name},
-              pass(function(cookie) {
-                chrome.test.assertEq(cookieStores[0].id, cookie.storeId);
-              }));
-          chrome.cookies.getAll(
-              {storeId: cookieStores[0].id},
-              pass(function(cookies) {
-                chrome.test.assertEq(1, cookies.length);
-                chrome.test.assertEq(TEST_BASIC_COOKIE.name, cookies[0].name);
-              }));
+          chrome.cookies.set(TEST_BASIC_COOKIE, pass(function () {
+            chrome.cookies.get(
+                {url: TEST_URL, name: TEST_BASIC_COOKIE.name},
+                pass(function(cookie) {
+                  chrome.test.assertEq(cookieStores[0].id, cookie.storeId);
+                }));
+            chrome.cookies.getAll(
+                {storeId: cookieStores[0].id},
+                pass(function(cookies) {
+                  chrome.test.assertEq(1, cookies.length);
+                  chrome.test.assertEq(TEST_BASIC_COOKIE.name, cookies[0].name);
+                }));
+          }));
         }));
   }
 ]);
