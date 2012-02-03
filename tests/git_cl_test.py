@@ -352,12 +352,12 @@ class TestGitCl(TestCase):
          description),
         ((['git', 'config', 'rietveld.cc'],), '')
         ]
-    receive_pack = '--receive-pack="git receive-pack '
+    receive_pack = '--receive-pack=git receive-pack '
     receive_pack += '--cc=joe@example.com'  # from watch list
     if reviewers:
       receive_pack += ' '
       receive_pack += ' '.join(['--reviewer=' + email for email in reviewers])
-    receive_pack += '"'
+    receive_pack += ''
     calls += [
         ((['git', 'push', receive_pack, 'origin', 'HEAD:refs/for/master'],),
          '')

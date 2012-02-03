@@ -913,7 +913,7 @@ def GerritUpload(options, args, cl):
 
   git_command = ['push']
   if receive_options:
-    git_command.append('--receive-pack="git receive-pack %s"' %
+    git_command.append('--receive-pack=git receive-pack %s' %
                        ' '.join(receive_options))
   git_command += [remote, 'HEAD:refs/for/' + branch]
   RunGit(git_command)
