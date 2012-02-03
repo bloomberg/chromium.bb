@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -60,6 +60,9 @@ WHITELIST_FILES = [
     '/o3d/gypbuild',
     '/o3d/installer/linux/debian.in/rules',
     '/third_party/icu/source/runconfigureicu',
+    '/third_party/gold/gold64',
+    '/third_party/gold/ld',
+    '/third_party/gold/ld.bfd',
     '/third_party/lcov/bin/gendesc',
     '/third_party/lcov/bin/genhtml',
     '/third_party/lcov/bin/geninfo',
