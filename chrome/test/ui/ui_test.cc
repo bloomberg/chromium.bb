@@ -76,11 +76,6 @@ const wchar_t UITestBase::kFailedNoCrashService[] =
     L"NOTE: Crash service not ported to this platform!";
 #endif
 
-// Uncomment this line to have the spawned process wait for the debugger to
-// attach.  This only works on Windows.  On posix systems, you can set the
-// BROWSER_WRAPPER env variable to wrap the browser process.
-// #define WAIT_FOR_DEBUGGER_ON_OPEN 1
-
 UITestBase::UITestBase()
     : launch_arguments_(CommandLine::NO_PROGRAM),
       expected_errors_(0),
@@ -196,6 +191,9 @@ void UITestBase::SetLaunchSwitches() {
   // All flags added here should also be added in ExtraChromeFlags() in
   // chrome/test/pyautolib/pyauto.py as well to take effect for all tests
   // on chromeos.
+
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kWaitForDebugger))
+    launch_arguments_.AppendSwitch(switches::kWaitForDebugger);
 
   // We need cookies on file:// for things like the page cycler.
   if (enable_file_cookies_)
