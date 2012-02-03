@@ -293,7 +293,7 @@
       # No Protector on ChromeOS.
       '-protector',
       # No Web Driver test for ChromeOS.
-      '-aboutplugins_ui',
+      '-about_plugins_ui',
 
       # ==================================================
       # Disabled tests that need to be investigated/fixed.
@@ -564,7 +564,7 @@
       # No NaCl support on ChromeOS.
       '-nacl_sdk',
       # No Web Driver test for ChromeOS.
-      '-aboutplugins_ui',
+      '-about_plugins_ui',
 
       # ==================================================
       # Disabled tests that need to be investigated/fixed.
