@@ -9,4 +9,4 @@ for more details on the presubmit API built into gcl.
 """
 
 def GetPreferredTrySlaves():
-  return ['linux_chromeos_aura:compile']
+  return ['linux_chromeos']
