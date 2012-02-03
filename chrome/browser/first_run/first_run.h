@@ -23,6 +23,10 @@ class Profile;
 class ProcessSingleton;
 class TemplateURLService;
 
+namespace installer {
+class MasterPreferences;
+}
+
 // TODO(jennyz): All FirstRun class code will be refactored to first_run
 // namespace progressively with several changelists to be landed. Therefore,
 // we keep first_run namespace and FirstRun in the same file temporarily.
@@ -136,6 +140,9 @@ class FirstRun {
   // -- Platform-specific functions --
 
 #if defined(OS_WIN)
+  // TODO(jennyz): Move the following functions to anonymous namespace of
+  // first_run_win.cc in the future refactoring.
+
   // Writes the EULA to a temporary file, returned in |*eula_path|, and returns
   // true if successful.
   static bool WriteEULAtoTempFile(FilePath* eula_path);
@@ -150,6 +157,13 @@ class FirstRun {
   // Installs a task to do an extensions update check once the extensions system
   // is running.
   static void DoDelayedInstallExtensions();
+
+  // Shows post installation EULA if needed.
+  static void ShowPostInstallEULAIfNeeded(
+      installer::MasterPreferences* install_prefs);
+
+  static void DoDelayedInstallExtensionsIfNeeded(
+      installer::MasterPreferences* install_prefs);
 
 #endif
 

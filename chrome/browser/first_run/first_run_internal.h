@@ -58,6 +58,11 @@ void SetupMasterPrefsFromInstallPrefs(
     MasterPrefs* out_prefs,
     installer::MasterPreferences* install_prefs);
 
+void SetShowWelcomePagePrefIfNeeded(
+    installer::MasterPreferences* install_prefs);
+
+void SetDefaultBrowser(installer::MasterPreferences* install_prefs);
+
 // -- Platform-specific functions --
 
 // Gives the full path to the sentinel file. The file might not exist.
@@ -80,13 +85,19 @@ bool ImportSettings(Profile* profile,
                     int items_to_import);
 
 #if defined(OS_WIN)
-// TODO(jennyz): This fuction will be moved to first_run_win.cc anonymous
-// namespace once we refactor its calling code in first_run.cc later.
+// TODO(jennyz): The following functions will be moved to first_run_win.cc
+// anonymous namespace once we move ProcessMasterPreferences() to first_run
+// namespace.
+
 bool ImportSettingsWin(Profile* profile,
                        int importer_type,
                        int items_to_import,
                        const FilePath& import_bookmarks_path,
                        bool skip_first_run_ui);
+
+// Sets RLZ preference.
+void SetRLZPref(first_run::MasterPrefs* out_prefs,
+                installer::MasterPreferences* install_prefs);
 #endif  // OS_WIN
 
 #if !defined(USE_AURA)

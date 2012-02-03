@@ -233,6 +233,35 @@ void SetupMasterPrefsFromInstallPrefs(
   }
 }
 
+void SetDefaultBrowser(installer::MasterPreferences* install_prefs){
+  // Even on the first run we only allow for the user choice to take effect if
+  // no policy has been set by the admin.
+  if (!g_browser_process->local_state()->IsManagedPreference(
+          prefs::kDefaultBrowserSettingEnabled)) {
+    bool value = false;
+    if (install_prefs->GetBool(
+            installer::master_preferences::kMakeChromeDefaultForUser,
+            &value) && value) {
+      ShellIntegration::SetAsDefaultBrowser();
+    }
+  } else {
+    if (g_browser_process->local_state()->GetBoolean(
+            prefs::kDefaultBrowserSettingEnabled)) {
+      ShellIntegration::SetAsDefaultBrowser();
+    }
+  }
+}
+
+void SetShowWelcomePagePrefIfNeeded(
+    installer::MasterPreferences* install_prefs) {
+  bool value = false;
+  if (install_prefs->GetBool(
+          installer::master_preferences::kDistroShowWelcomePage, &value)
+          && value) {
+    SetShowWelcomePagePref();
+  }
+}
+
 // -- Platform-specific functions --
 
 #if !defined(OS_LINUX) && !defined(OS_BSD)
@@ -346,6 +375,21 @@ int ImportBookmarkFromFileIfNeeded(Profile* profile,
   return return_code;
 }
 
+// TODO(jennyz): move this fucntion to first_run_win.cc for further refactoring.
+#if defined(OS_WIN)
+void SetRLZPref(first_run::MasterPrefs* out_prefs,
+                installer::MasterPreferences* install_prefs) {
+  // RLZ is currently a Windows-only phenomenon.  When it comes to the Mac/
+  // Linux, enable it here.
+  if (!install_prefs->GetInt(installer::master_preferences::kDistroPingDelay,
+                    &out_prefs->ping_delay)) {
+    // 90 seconds is the default that we want to use in case master
+    // preferences is missing, corrupt or ping_delay is missing.
+    out_prefs->ping_delay = 90;
+  }
+}
+#endif
+
 }  // namespace internal
 }  // namespace first_run
 
@@ -443,53 +487,15 @@ bool FirstRun::ProcessMasterPreferences(const FilePath& user_data_dir,
   bool value = false;
 
 #if defined(OS_WIN)
-  // RLZ is currently a Windows-only phenomenon.  When it comes to the Mac/
-  // Linux, enable it here.
-  if (!install_prefs->GetInt(installer::master_preferences::kDistroPingDelay,
-                    &out_prefs->ping_delay)) {
-    // 90 seconds is the default that we want to use in case master
-    // preferences is missing, corrupt or ping_delay is missing.
-    out_prefs->ping_delay = 90;
-  }
-
-  if (install_prefs->GetBool(installer::master_preferences::kRequireEula,
-          &value) && value) {
-    // Show the post-installation EULA. This is done by setup.exe and the
-    // result determines if we continue or not. We wait here until the user
-    // dismisses the dialog.
-
-    // The actual eula text is in a resource in chrome. We extract it to
-    // a text file so setup.exe can use it as an inner frame.
-    FilePath inner_html;
-    if (WriteEULAtoTempFile(&inner_html)) {
-      int retcode = 0;
-      if (!LaunchSetupWithParam(installer::switches::kShowEula,
-                                inner_html.value(), &retcode) ||
-          (retcode != installer::EULA_ACCEPTED &&
-           retcode != installer::EULA_ACCEPTED_OPT_IN)) {
-        LOG(WARNING) << "EULA rejected. Fast exit.";
-        ::ExitProcess(1);
-      }
-      if (retcode == installer::EULA_ACCEPTED) {
-        VLOG(1) << "EULA : no collection";
-        GoogleUpdateSettings::SetCollectStatsConsent(false);
-      } else if (retcode == installer::EULA_ACCEPTED_OPT_IN) {
-        VLOG(1) << "EULA : collection consent";
-        GoogleUpdateSettings::SetCollectStatsConsent(true);
-      }
-    }
-  }
+  first_run::internal::SetRLZPref(out_prefs, install_prefs.get());
+  ShowPostInstallEULAIfNeeded(install_prefs.get());
 #endif
 
   if (!first_run::internal::CopyPrefFile(user_data_dir, master_prefs_path))
     return true;
 
 #if defined(OS_WIN)
-  DictionaryValue* extensions = 0;
-  if (install_prefs->GetExtensionsBlock(&extensions)) {
-    VLOG(1) << "Extensions block found in master preferences";
-    DoDelayedInstallExtensions();
-  }
+  DoDelayedInstallExtensionsIfNeeded(install_prefs.get());
 #endif
 
   first_run::internal::SetupMasterPrefsFromInstallPrefs(out_prefs,
@@ -517,11 +523,7 @@ bool FirstRun::ProcessMasterPreferences(const FilePath& user_data_dir,
   if (!first_run::CreateSentinel())
     return false;
 
-  if (install_prefs->GetBool(
-          installer::master_preferences::kDistroShowWelcomePage, &value)
-          && value) {
-    first_run::SetShowWelcomePagePref();
-  }
+  first_run::internal::SetShowWelcomePagePrefIfNeeded(install_prefs.get());
 
   std::string import_bookmarks_path;
   install_prefs->GetString(
@@ -570,21 +572,49 @@ bool FirstRun::ProcessMasterPreferences(const FilePath& user_data_dir,
   }
 #endif
 
-  // Even on the first run we only allow for the user choice to take effect if
-  // no policy has been set by the admin.
-  if (!g_browser_process->local_state()->IsManagedPreference(
-          prefs::kDefaultBrowserSettingEnabled)) {
-    if (install_prefs->GetBool(
-            installer::master_preferences::kMakeChromeDefaultForUser,
-            &value) && value) {
-      ShellIntegration::SetAsDefaultBrowser();
-    }
-  } else {
-    if (g_browser_process->local_state()->GetBoolean(
-            prefs::kDefaultBrowserSettingEnabled)) {
-      ShellIntegration::SetAsDefaultBrowser();
-    }
-  }
-
+  first_run::internal::SetDefaultBrowser(install_prefs.get());
   return false;
 }
+
+#if defined(OS_WIN)
+void FirstRun::ShowPostInstallEULAIfNeeded(
+    installer::MasterPreferences* install_prefs) {
+  bool value = false;
+  if (install_prefs->GetBool(installer::master_preferences::kRequireEula,
+          &value) && value) {
+    // Show the post-installation EULA. This is done by setup.exe and the
+    // result determines if we continue or not. We wait here until the user
+    // dismisses the dialog.
+
+    // The actual eula text is in a resource in chrome. We extract it to
+    // a text file so setup.exe can use it as an inner frame.
+    FilePath inner_html;
+    if (WriteEULAtoTempFile(&inner_html)) {
+      int retcode = 0;
+      if (!LaunchSetupWithParam(installer::switches::kShowEula,
+                                inner_html.value(), &retcode) ||
+          (retcode != installer::EULA_ACCEPTED &&
+           retcode != installer::EULA_ACCEPTED_OPT_IN)) {
+        LOG(WARNING) << "EULA rejected. Fast exit.";
+        ::ExitProcess(1);
+      }
+      if (retcode == installer::EULA_ACCEPTED) {
+        VLOG(1) << "EULA : no collection";
+        GoogleUpdateSettings::SetCollectStatsConsent(false);
+      } else if (retcode == installer::EULA_ACCEPTED_OPT_IN) {
+        VLOG(1) << "EULA : collection consent";
+        GoogleUpdateSettings::SetCollectStatsConsent(true);
+      }
+    }
+  }
+}
+
+void FirstRun::DoDelayedInstallExtensionsIfNeeded(
+    installer::MasterPreferences* install_prefs) {
+  DictionaryValue* extensions = 0;
+  if (install_prefs->GetExtensionsBlock(&extensions)) {
+    VLOG(1) << "Extensions block found in master preferences";
+    FirstRun::DoDelayedInstallExtensions();
+  }
+}
+#endif
