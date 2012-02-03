@@ -13,25 +13,19 @@
 #include "skia/ext/platform_canvas.h"
 #include "ui/gfx/canvas.h"
 
-#if defined(TOOLKIT_USES_GTK)
-typedef struct _GdkPixbuf GdkPixbuf;
-#endif
-
 class SkBitmap;
 
 namespace gfx {
 
 class Canvas;
 
-// CanvasSkia is a SkCanvas subclass that provides a number of methods for
-// common operations used throughout an application built using base/gfx and
-// app/gfx.
+// CanvasSkia is a SkCanvas wrapper that provides a number of methods for
+// common operations used throughout an application built using base/gfx.
 //
 // All methods that take integer arguments (as is used throughout views)
-// end with Int. If you need to use methods provided by the superclass
-// you'll need to do a conversion. In particular you'll need to use
-// macro SkIntToScalar(xxx), or if converting from a scalar to an integer
-// SkScalarRound.
+// end with Int. If you need to use methods provided by SkCanvas, you'll
+// need to do a conversion. In particular you'll need to use |SkIntToScalar()|,
+// or if converting from a scalar to an integer |SkScalarRound()|.
 //
 // A handful of methods in this class are overloaded providing an additional
 // argument of type SkXfermode::Mode. SkXfermode::Mode specifies how the
