@@ -56,7 +56,13 @@ class IsolatedContextTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(IsolatedContextTest);
 };
 
-TEST_F(IsolatedContextTest, RegisterAndRevokeTest) {
+#if defined(OS_WIN)
+// See http://crbug.com/112568
+#define MAYBE_RegisterAndRevokeTest FAILS_RegisterAndRevokeTest
+#else
+#define MAYBE_RegisterAndRevokeTest RegisterAndRevokeTest
+#endif
+TEST_F(IsolatedContextTest, MAYBE_RegisterAndRevokeTest) {
   // See if the returned top-level entries match with what we registered.
   std::vector<FilePath> toplevels;
   ASSERT_TRUE(isolated_context()->GetTopLevelPaths(id_, &toplevels));
@@ -91,7 +97,12 @@ TEST_F(IsolatedContextTest, RegisterAndRevokeTest) {
   isolated_context()->RevokeIsolatedFileSystem(id2);
 }
 
-TEST_F(IsolatedContextTest, CrackWithRelativePaths) {
+#if defined(OS_WIN)
+#define MAYBE_CrackWithRelativePaths FAILS_CrackWithRelativePaths
+#else
+#define MAYBE_CrackWithRelativePaths CrackWithRelativePaths
+#endif
+TEST_F(IsolatedContextTest, MAYBE_CrackWithRelativePaths) {
   const struct {
     FilePath::StringType path;
     bool valid;
@@ -132,7 +143,12 @@ TEST_F(IsolatedContextTest, CrackWithRelativePaths) {
   }
 }
 
-TEST_F(IsolatedContextTest, TestWithVirtualRoot) {
+#if defined(OS_WIN)
+#define MAYBE_TestWithVirtualRoot FAILS_TestWithVirtualRoot
+#else
+#define MAYBE_TestWithVirtualRoot TestWithVirtualRoot
+#endif
+TEST_F(IsolatedContextTest, MAYBE_TestWithVirtualRoot) {
   std::string cracked_id;
   FilePath cracked_path;
   const FilePath root(FPL("/"));
