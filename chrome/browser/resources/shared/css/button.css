@@ -49,6 +49,7 @@ input[type='submit'][disabled]:not(.custom-appearance):hover {
   color: #888;
 }
 
+/* TODO(estade): remove this. It's duplicated in chrome_shared2.css */
 button:not(.custom-appearance):focus,
 input[type='submit']:not(.custom-appearance):focus,
 input[type='text']:not(.custom-appearance):focus,
