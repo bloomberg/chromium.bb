@@ -18,6 +18,7 @@ namespace chromeos {
 class BalloonCollectionImplAura : public ::BalloonCollectionImpl {
  public:
   BalloonCollectionImplAura();
+  ~BalloonCollectionImplAura();
 
   // Adds a callback for WebUI message. Returns true if the callback
   // is succssfully registered, or false otherwise. It fails to add if

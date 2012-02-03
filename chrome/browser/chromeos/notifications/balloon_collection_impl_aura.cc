@@ -14,6 +14,9 @@ namespace chromeos {
 BalloonCollectionImplAura::BalloonCollectionImplAura() {
 }
 
+BalloonCollectionImplAura::~BalloonCollectionImplAura() {
+}
+
 bool BalloonCollectionImplAura::AddWebUIMessageCallback(
     const Notification& notification,
     const std::string& message,
