@@ -443,6 +443,9 @@ IPC_STRUCT_BEGIN_WITH_PARENT(ViewHostMsg_FrameNavigate_Params,
   // True if this was a post request.
   IPC_STRUCT_MEMBER(bool, is_post)
 
+  // The POST body identifier. -1 if it doesn't exist.
+  IPC_STRUCT_MEMBER(int64, post_id)
+
   // Whether the frame navigation resulted in no change to the documents within
   // the page. For example, the navigation may have just resulted in scrolling
   // to a named anchor.

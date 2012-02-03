@@ -54,6 +54,8 @@ class CONTENT_EXPORT NavigationEntryImpl
   virtual const GURL& GetUserTypedURL() const OVERRIDE;
   virtual void SetHasPostData(bool has_post_data) OVERRIDE;
   virtual bool GetHasPostData() const OVERRIDE;
+  virtual void SetPostID(int64 post_id) OVERRIDE;
+  virtual int64 GetPostID() const OVERRIDE;
   virtual const FaviconStatus& GetFavicon() const OVERRIDE;
   virtual FaviconStatus& GetFavicon() OVERRIDE;
   virtual const SSLStatus& GetSSL() const OVERRIDE;
@@ -174,6 +176,7 @@ class CONTENT_EXPORT NavigationEntryImpl
   PageTransition transition_type_;
   GURL user_typed_url_;
   bool has_post_data_;
+  int64 post_id_;
   RestoreType restore_type_;
 
   // This member is not persisted with sesssion restore.

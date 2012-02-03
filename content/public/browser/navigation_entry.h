@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -126,6 +126,10 @@ class NavigationEntry {
   // WebKit to actually make the request.
   virtual void SetHasPostData(bool has_post_data) = 0;
   virtual bool GetHasPostData() const = 0;
+
+  // The Post identifier associated with the page.
+  virtual void SetPostID(int64 post_id) = 0;
+  virtual int64 GetPostID() const = 0;
 
   // The favicon data and tracking information. See content::FaviconStatus.
   virtual const FaviconStatus& GetFavicon() const = 0;

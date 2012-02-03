@@ -853,6 +853,7 @@ void NavigationControllerImpl::RendererDidNavigateToNewPage(
   new_entry->set_site_instance(
       static_cast<SiteInstanceImpl*>(tab_contents_->GetSiteInstance()));
   new_entry->SetHasPostData(params.is_post);
+  new_entry->SetPostID(params.post_id);
 
   InsertOrReplaceEntry(new_entry, *did_replace_entry);
 }
@@ -883,6 +884,7 @@ void NavigationControllerImpl::RendererDidNavigateToExistingPage(
       static_cast<SiteInstanceImpl*>(tab_contents_->GetSiteInstance()));
 
   entry->SetHasPostData(params.is_post);
+  entry->SetPostID(params.post_id);
 
   // The entry we found in the list might be pending if the user hit
   // back/forward/reload. This load should commit it (since it's already in the

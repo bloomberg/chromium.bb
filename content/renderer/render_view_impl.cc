@@ -364,6 +364,16 @@ class WebWidgetLockTarget : public MouseLockDispatcher::LockTarget {
   WebKit::WebWidget* webwidget_;
 };
 
+int64 ExtractPostId(const WebHistoryItem& item) {
+  if (item.isNull())
+    return -1;
+
+  if (item.httpBody().isNull())
+    return -1;
+
+  return item.httpBody().identifier();
+}
+
 }  // namespace
 
 RenderViewImpl::RenderViewImpl(
@@ -1103,6 +1113,7 @@ void RenderViewImpl::UpdateURL(WebFrame* frame) {
   ViewHostMsg_FrameNavigate_Params params;
   params.http_status_code = response.httpStatusCode();
   params.is_post = false;
+  params.post_id = -1;
   params.page_id = page_id_;
   params.frame_id = frame->identifier();
   params.socket_address.set_host(response.remoteIPAddress().utf8());
@@ -1221,8 +1232,10 @@ void RenderViewImpl::UpdateURL(WebFrame* frame) {
     }
 
     string16 method = request.httpMethod();
-    if (EqualsASCII(method, "POST"))
+    if (EqualsASCII(method, "POST")) {
       params.is_post = true;
+      params.post_id = ExtractPostId(item);
+    }
 
     // Save some histogram data so we can compute the average memory used per
     // page load of the glyphs.
