@@ -226,6 +226,8 @@
                   <a href="#version">version</a>
                 </li><li>
                   <a href="#manifest_version">manifest_version</a>
+                </li><li>
+                  <a href="#web_accessible_resources">web_accessible_resources</a>
                 </li>
               </ol>
             </li>
@@ -280,7 +282,8 @@ are <b>name</b> and <b>version</b>.
   "<a href="#permissions">permissions</a>": [...],
   "<a href="npapi.html">plugins</a>": [...],
   "<a href="#requirements">requirements</a>": {...},
-  "<a href="autoupdate.html">update_url</a>": "http://<em>path/to/updateInfo</em>.xml"
+  "<a href="autoupdate.html">update_url</a>": "http://<em>path/to/updateInfo</em>.xml",
+  "<a href="#web_accessible_resources">web_accessible_resources</a>": [...]
 }
 </pre>
 <a name="H2-1"></a><h2>Field details</h2>
@@ -824,17 +827,71 @@ For example, 1.1.9.9999 is newer than 1.1.
 For more information, see
 <a href="autoupdate.html">Autoupdating</a>.
 </p>
+<!-- [PENDING: Possibly: point to the store/dashboard and make a big deal of the fact that autoupdating is free if you use them.] -->
 <h3 id="manifest_version">manifest_version</h3>
 <p>
-The version of the manifest format that this extension uses. Currently,
-extensions should use the value <code>2</code> (without quotes):
+One integer specifying the version of the manifest file format your package
+requires. As of Chrome 18, developers <em>should</em> specify <code>2</code>
+(without quotes) to use the format as described by this document:
 </p>
 <pre>"manifest_version": 2</pre>
 <p>
-Future breaking changes to the extension system may require a new version
-number.
+Consider manifest version 1 <em>deprecated</em> as of Chrome 18. Version 2 is
+not yet <em>required</em>, but we will, at some point in the not-too-distant
+future, stop supporting packages using deprecated manifest versions. Extensions,
+applications, and themes that aren't ready to make the jump to the new manifest
+version in Chrome 18 can either explicitly specify version <code>1</code>, or
+leave the key off entirely.
 </p>
-<!-- [PENDING: Possibly: point to the store/dashboard and make a big deal of the fact that autoupdating is free if you use them.] -->
+<p>
+The changes between version 1 and version 2 of the manifest file format are
+described in detail in <a href="manifestVersion.html">the
+<code>manifest_version</code> documentation.</a>
+</p>
+<h3 id="web_accessible_resources">web_accessible_resources</h3>
+<p>
+An array of strings specifying the paths (relative to the package root) of
+packaged resources that are expected to be usable in the context of a web page.
+For example, an extension that injects a content script with the intention of
+building up some custom interface for <code>example.com</code> would whitelist
+any resources that interface requires (images, icons, stylesheets, scripts,
+etc.) as follows:
+</p>
+<pre>{
+  ...
+  "web_accessible_resources": [
+    "images/my-awesome-image1.png",
+    "images/my-amazing-icon1.png",
+    "style/double-rainbow.css",
+    "script/double-rainbow.js"
+  ],
+  ...
+}</pre>
+<p>
+These resources would then be available in a webpage via the URL
+<code>chrome-extension://[PACKAGE ID]/[PATH]</code>, which can be generated with
+the <a href="extension.html#method-getURL">
+  <code>chrome.extension.getURL</code>
+</a> method. Whitelisted resources are served with appropriate
+<a href="http://www.w3.org/TR/cors/">CORS</a> headers, so they're available via
+mechanisms like XHR.
+</p>
+<p>
+Injected content scripts themselves do not need to be whitelisted.
+</p>
+<h4>Default Availablility</h4>
+<p>
+Resources inside of packages using <a href="#manifest_version">
+  <code>manifest_version</code>
+</a> 2 or above are <strong>blocked by default</strong>, and must be whitelisted
+for use via this property.
+</p>
+<p>
+Resources inside of packages using <code>manifest_version</code> 1 are available
+by default, but <em>if</em> you do set this property, then it will be treated as
+a complete list of all whitelisted resources. Resources not listed will be
+blocked.
+</p>
 </div>
         <!-- API PAGE -->
          <!-- /apiPage -->

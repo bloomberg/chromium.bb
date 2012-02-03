@@ -1,0 +1,139 @@
+<div id="pageData-name" class="pageData">Manifest Version</div>
+
+<p>
+  Extensions, themes, and applications are simply bundles of resources, wrapped
+  up with a <a href="manifest.html"><code>manifest.json</code></a> file that
+  describes the package's contents. The format of this file is generally stable,
+  but occasionally breaking changes must be made to address specific issues.
+  Developers should specify which version of the manifest specification their
+  package targets by setting a <code>manifest_version</code> key in their
+  manifests.
+</p>
+
+<h2>Current Version</h2>
+
+<p>
+  When targeting Chrome 18 and above, developers should specify
+  <strong><code>'manifest_version': 2</code></strong>:
+</p>
+
+<pre>{
+  ...,
+  "manifest_version": 2,
+  ...
+}</pre>
+
+<p>
+  Manifest version 1 is <em>deprecated</em> in Chrome 18 and above, but version
+  2 is not yet <em>required</em>. Extensions, applications, and themes that
+  aren't ready to make the jump to the new manifest version in Chrome 18 can
+  either explicitly specify version <code>1</code>, or leave the key off
+  entirely.
+</p>
+
+<p>
+  At some point in the future, support for manifest version 1 will be removed.
+  Ample warning will be provided, beginning with warnings when loading unpacked
+  version 1 extensions, and escalating from there over time.
+</p>
+
+<h2>Changes between version 1 and 2</h2>
+
+<ul>
+  <li>
+    <p>
+      A content security policy is set to <code>`script-src 'self'; object-src
+      'self'</code> by default. This has a variety of impacts on developers,
+      described at length in the <a href="contentSecurityPolicy.html">
+      <code>content_security_policy</code></a> documentation.
+    </p>
+  </li>
+  <li>
+    <p>
+      A package's resources are no longer available by default to external
+      websites (as the <code>src</code> of an image, or a <code>script</code>
+      tag). If you want a website to be able to load a resource contained in
+      your package, you'll need to explicitly whitelist it via the
+      <a href="manifest.html#web_accessible_resources">
+        <code>web_accessible_resources</code>
+      </a> manifest attribute. This is particularly relevant for extensions that
+      build up an interface on a website via injected content scripts.
+    </p>
+  </li>
+  <li>
+    <p>
+      The <code>background_page</code> property has been replaced with a
+      <code>background</code> property that contains <em>either</em> a
+      <code>scripts</code> or <code>page</code> property. Details are available
+      in the <a href="background_pages.html">Background Pages</a> documentation.
+    </p>
+  </li>
+  <li>
+    <p>
+      A variety of previously deprecated features have been removed entirely:
+    </p>
+    <ul>
+      <li>
+        <p>
+          The <code>page_actions</code> key in the manifest, and the
+          <code>chrome.pageActions</code> API are gone. Use the singular
+          <a href="pageAction.html">
+            <code>page_action</code> and <code>chrome.pageAction</code>
+          </a> instead.
+        </p>
+      </li>
+      <li>
+        <p>
+          <code>chrome.extension.getTabContentses</code> (!!!) and
+          <code>chrome.extension.getExtensionTabs</code> are gone. Use
+          <a href="extension.html#method-getViews">
+            <code>chrome.extension.getViews({ "type": "tab" })</code>
+          </a> instead.
+        </p>
+      </li>
+      <li>
+        <p>
+          <code>Port.tab</code> is gone. Use
+          <a href="extension.html#type-Port"><code>Port.sender</code></a>
+          instead.
+        </p>
+      </li>
+      <li>
+        <p>
+          The <code>icons</code> property of <code>page_action</code> has been
+          removed. Use <a href="pageAction.html#manifest">
+            the <code>default_icon</code> property
+          </a> or <a href="pageAction.html#method-setIcon">
+            <code>chrome.pageAction.setIcon</code>
+          </a> instead.
+        </p>
+      </li>
+      <li>
+        <p>
+          The <code>name</code> property of <code>page_action</code> has been
+          removed. Use <a href="pageAction.html#manifest">
+            the <code>default_title</code> property
+          </a> or <a href="pageAction.html#method-setTitle">
+            <code>chrome.pageAction.setTitle</code>
+          </a> instead.
+        </p>
+      </li>
+      <li>
+        <p>
+          The <code>popup</code> property of <code>page_action</code> has been
+          removed. Use <a href="pageAction.html#manifest">
+            the <code>default_popup</code> property
+          </a> or <a href="pageAction.html#method-setPopup">
+            <code>chrome.pageAction.setPopup</code>
+          </a> instead.
+        </p>
+      </li>
+      <li>
+        <p>
+          The <code>default_popup</code> property of <code>page_action</code>
+          can no longer be specified as an object. It must be a string.
+        </p>
+      </li>
+    </ul>
+  </li>
+</ul>

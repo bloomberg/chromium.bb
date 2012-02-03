@@ -45,8 +45,10 @@
 <h2>Default Policy Restrictions</h2>
 
 <p>
-  For packages using <a href="manifest.html#manifest_version">
-  <code>manifest_version</code></a> 2, Chrome defines a content security policy
+  Packages that do not define a <a href="manifestVersion.html">
+    <code>manifest_version</code>
+  </a> have no default content security policy. Those that select
+  <code>manifest_version</code></a> 2, have a default content security policy
   of:
 </p>
 
