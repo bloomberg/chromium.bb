@@ -425,21 +425,27 @@ void RenderViewHost::DragTargetDragEnter(
     const gfx::Point& client_pt,
     const gfx::Point& screen_pt,
     WebDragOperationsMask operations_allowed) {
-  // Grant the renderer the ability to load the drop_data.
+  const int renderer_id = process()->GetID();
   ChildProcessSecurityPolicy* policy =
       ChildProcessSecurityPolicy::GetInstance();
-  policy->GrantRequestURL(process()->GetID(), drop_data.url);
+
+  // The URL could have been cobbled together from any highlighted text string,
+  // and can't be interpreted as a capability.
+  WebDropData filtered_data(drop_data);
+  FilterURL(policy, renderer_id, &filtered_data.url);
+
+  // The filenames vector, on the other hand, does represent a capability to
+  // access the given files.
   std::set<FilePath> filesets;
-  for (std::vector<string16>::const_iterator iter(drop_data.filenames.begin());
-       iter != drop_data.filenames.end(); ++iter) {
+  for (std::vector<string16>::iterator iter(filtered_data.filenames.begin());
+       iter != filtered_data.filenames.end(); ++iter) {
     FilePath path = FilePath::FromWStringHack(UTF16ToWideHack(*iter));
-    policy->GrantRequestURL(process()->GetID(),
-                            net::FilePathToFileURL(path));
-    policy->GrantReadFile(process()->GetID(), path);
+    policy->GrantRequestURL(renderer_id, net::FilePathToFileURL(path));
+    policy->GrantReadFile(renderer_id, path);
 
     // Allow dragged directories to be enumerated by the child process.
     // Note that we can't tell a file from a directory at this point.
-    policy->GrantReadDirectory(process()->GetID(), path);
+    policy->GrantReadDirectory(renderer_id, path);
 
     filesets.insert(path);
   }
@@ -449,12 +455,10 @@ void RenderViewHost::DragTargetDragEnter(
   DCHECK(isolated_context);
   std::string filesystem_id = isolated_context->RegisterIsolatedFileSystem(
       filesets);
-  policy->GrantAccessFileSystem(process()->GetID(), filesystem_id);
+  policy->GrantAccessFileSystem(renderer_id, filesystem_id);
+  filtered_data.filesystem_id = UTF8ToUTF16(filesystem_id);
 
-  WebDropData drop_data_copy(drop_data);
-  drop_data_copy.filesystem_id = UTF8ToUTF16(filesystem_id);
-
-  Send(new DragMsg_TargetDragEnter(routing_id(), drop_data_copy, client_pt,
+  Send(new DragMsg_TargetDragEnter(routing_id(), filtered_data, client_pt,
                                    screen_pt, operations_allowed));
 }
 
@@ -1134,26 +1138,15 @@ void RenderViewHost::OnMsgStartDragging(
   if (!view)
     return;
 
-  GURL drag_url = drop_data.url;
-  GURL html_base_url = drop_data.html_base_url;
-
+  WebDropData filtered_data(drop_data);
   ChildProcessSecurityPolicy* policy =
       ChildProcessSecurityPolicy::GetInstance();
 
   // Allow drag of Javascript URLs to enable bookmarklet drag to bookmark bar.
-  if (!drag_url.SchemeIs(chrome::kJavaScriptScheme))
-    FilterURL(policy, process()->GetID(), &drag_url);
-  FilterURL(policy, process()->GetID(), &html_base_url);
-
-  if (drag_url != drop_data.url || html_base_url != drop_data.html_base_url) {
-    WebDropData drop_data_copy = drop_data;
-    drop_data_copy.url = drag_url;
-    drop_data_copy.html_base_url = html_base_url;
-    view->StartDragging(drop_data_copy, drag_operations_mask, image,
-                        image_offset);
-  } else {
-    view->StartDragging(drop_data, drag_operations_mask, image, image_offset);
-  }
+  if (!filtered_data.url.SchemeIs(chrome::kJavaScriptScheme))
+    FilterURL(policy, process()->GetID(), &filtered_data.url);
+  FilterURL(policy, process()->GetID(), &filtered_data.html_base_url);
+  view->StartDragging(filtered_data, drag_operations_mask, image, image_offset);
 }
 
 void RenderViewHost::OnUpdateDragCursor(WebDragOperation current_op) {

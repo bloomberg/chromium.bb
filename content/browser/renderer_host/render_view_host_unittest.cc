@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "content/browser/child_process_security_policy.h"
 #include "content/browser/renderer_host/test_render_view_host.h"
 #include "content/browser/tab_contents/navigation_controller_impl.h"
 #include "content/browser/tab_contents/test_tab_contents.h"
@@ -141,6 +142,18 @@ TEST_F(RenderViewHostTest, StartDragging) {
   rvh()->TestOnMsgStartDragging(drop_data);
   EXPECT_EQ(javascript_url, view_delegate.drag_url());
   EXPECT_EQ(http_url, view_delegate.html_base_url());
+}
+
+TEST_F(RenderViewHostTest, DragEnteredFileURLsStillBlocked) {
+  WebDropData dropped_data;
+  gfx::Point client_point;
+  gfx::Point screen_point;
+  GURL file_url = GURL("file:///etc/passwd");
+  dropped_data.url = file_url;
+  rvh()->DragTargetDragEnter(dropped_data, client_point, screen_point,
+                             WebKit::WebDragOperationNone);
+  EXPECT_FALSE(ChildProcessSecurityPolicy::GetInstance()->CanRequestURL(
+      process()->GetID(), file_url));
 }
 
 // The test that follow trigger DCHECKS in debug build.
