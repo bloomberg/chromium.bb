@@ -24,10 +24,10 @@
 #ifndef DRM_FOURCC_H
 #define DRM_FOURCC_H
 
-#include <linux/types.h>
+#include <inttypes.h>
 
-#define fourcc_code(a,b,c,d) ((__u32)(a) | ((__u32)(b) << 8) | \
-			      ((__u32)(c) << 16) | ((__u32)(d) << 24))
+#define fourcc_code(a,b,c,d) ((uint32_t)(a) | ((uint32_t)(b) << 8) | \
+			      ((uint32_t)(c) << 16) | ((uint32_t)(d) << 24))
 
 #define DRM_FORMAT_BIG_ENDIAN (1<<31) /* format is big endian instead of little endian */
 
