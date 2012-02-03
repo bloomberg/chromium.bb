@@ -8,8 +8,10 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/common/chrome_utility_messages.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/utility_process_host.h"
 
 using content::BrowserThread;
+using content::UtilityProcessHost;
 
 ImageDecoder::ImageDecoder(Delegate* delegate,
                            const std::string& image_data)
@@ -57,9 +59,8 @@ void ImageDecoder::OnDecodeImageFailed() {
 void ImageDecoder::DecodeImageInSandbox(
     const std::vector<unsigned char>& image_data) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  UtilityProcessHost* utility_process_host =
-      new UtilityProcessHost(this,
-                             target_thread_id_);
-  utility_process_host->set_use_linux_zygote(true);
+  UtilityProcessHost* utility_process_host = UtilityProcessHost::Create(
+      this, target_thread_id_);
+  utility_process_host->EnableZygote();
   utility_process_host->Send(new ChromeUtilityMsg_DecodeImage(image_data));
 }

@@ -19,8 +19,9 @@
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/url_pattern.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/utility_process_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/utility_process_host.h"
+#include "content/public/browser/utility_process_host_client.h"
 #include "content/public/common/url_fetcher.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
@@ -28,6 +29,8 @@
 
 using content::BrowserThread;
 using content::OpenURLParams;
+using content::UtilityProcessHost;
+using content::UtilityProcessHostClient;
 using content::WebContents;
 
 const char kManifestKey[] = "manifest";
@@ -57,13 +60,12 @@ const char kInlineInstallSupportedError[] =
     "Inline installation is not supported for this item. The user will be "
     "redirected to the Chrome Web Store.";
 
-class SafeWebstoreResponseParser : public UtilityProcessHost::Client {
+class SafeWebstoreResponseParser : public UtilityProcessHostClient {
  public:
   SafeWebstoreResponseParser(WebstoreInlineInstaller *client,
                              const std::string& webstore_data)
       : client_(client),
-        webstore_data_(webstore_data),
-        utility_host_(NULL) {}
+        webstore_data_(webstore_data) {}
 
   void Start() {
     CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -75,12 +77,13 @@ class SafeWebstoreResponseParser : public UtilityProcessHost::Client {
 
   void StartWorkOnIOThread() {
     CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-    utility_host_ = new UtilityProcessHost(this, BrowserThread::IO);
-    utility_host_->set_use_linux_zygote(true);
-    utility_host_->Send(new ChromeUtilityMsg_ParseJSON(webstore_data_));
+    UtilityProcessHost* host =
+        UtilityProcessHost::Create(this, BrowserThread::IO);
+    host->EnableZygote();
+    host->Send(new ChromeUtilityMsg_ParseJSON(webstore_data_));
   }
 
-  // Implementing pieces of the UtilityProcessHost::Client interface.
+  // Implementing pieces of the UtilityProcessHostClient interface.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE {
     bool handled = true;
     IPC_BEGIN_MESSAGE_MAP(SafeWebstoreResponseParser, message)
@@ -116,9 +119,6 @@ class SafeWebstoreResponseParser : public UtilityProcessHost::Client {
   void ReportResults() {
     CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
-    // The utility_host_ will take care of deleting itself after this call.
-    utility_host_ = NULL;
-
     BrowserThread::PostTask(
         BrowserThread::UI,
         FROM_HERE,
@@ -140,9 +140,6 @@ class SafeWebstoreResponseParser : public UtilityProcessHost::Client {
   WebstoreInlineInstaller* client_;
 
   std::string webstore_data_;
-
-  UtilityProcessHost* utility_host_;
-
   std::string error_;
   scoped_ptr<DictionaryValue> parsed_webstore_data_;
 };

@@ -121,7 +121,6 @@ include_rules = [
   "+content/browser/tab_contents/web_drag_source_gtk.h",
   "+content/browser/tab_contents/web_drag_source_mac.h",
   "+content/browser/trace_controller.h",
-  "+content/browser/utility_process_host.h",
   "+content/browser/zygote_host_linux.h",
 
   "-content/common",

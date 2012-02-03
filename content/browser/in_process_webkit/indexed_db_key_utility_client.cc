@@ -7,13 +7,15 @@
 #include "base/bind.h"
 #include "base/lazy_instance.h"
 #include "base/synchronization/waitable_event.h"
-#include "content/browser/utility_process_host.h"
+#include "content/browser/utility_process_host_impl.h"
 #include "content/common/indexed_db/indexed_db_key.h"
 #include "content/common/indexed_db/indexed_db_messages.h"
 #include "content/common/utility_messages.h"
+#include "content/public/browser/utility_process_host_client.h"
 #include "content/public/common/serialized_script_value.h"
 
 using content::BrowserThread;
+using content::UtilityProcessHostClient;
 
 // This class is used to obtain IndexedDBKeys from SerializedScriptValues
 // given an IDBKeyPath. It uses UtilityProcess to do this inside a sandbox
@@ -45,11 +47,11 @@ class KeyUtilityClientImpl
       const string16& key_path);
 
  private:
-  class Client : public UtilityProcessHost::Client {
+  class Client : public UtilityProcessHostClient {
    public:
     explicit Client(KeyUtilityClientImpl* parent);
 
-    // UtilityProcessHost::Client
+    // UtilityProcessHostClient
     virtual void OnProcessCrashed(int exit_code);
     virtual bool OnMessageReceived(const IPC::Message& message);
 
@@ -100,7 +102,7 @@ class KeyUtilityClientImpl
   content::SerializedScriptValue value_after_injection_;
 
   // Used in the IO thread.
-  base::WeakPtr<UtilityProcessHost> utility_process_host_;
+  base::WeakPtr<content::UtilityProcessHost> utility_process_host_;
   scoped_refptr<Client> client_;
 
   DISALLOW_COPY_AND_ASSIGN(KeyUtilityClientImpl);
@@ -275,9 +277,9 @@ void KeyUtilityClientImpl::StartUtilityProcessInternal() {
   DCHECK(state_ == STATE_UNINITIALIZED);
 
   client_ = new KeyUtilityClientImpl::Client(this);
-  utility_process_host_ = (new UtilityProcessHost(
+  utility_process_host_ = (new UtilityProcessHostImpl(
       client_.get(), BrowserThread::IO))->AsWeakPtr();
-  utility_process_host_->set_use_linux_zygote(true);
+  utility_process_host_->EnableZygote();
   utility_process_host_->StartBatchMode();
   state_ = STATE_INITIALIZED;
   waitable_event_.Signal();

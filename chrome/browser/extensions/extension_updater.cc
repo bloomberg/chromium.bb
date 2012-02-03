@@ -37,9 +37,9 @@
 #include "chrome/common/extensions/extension_file_util.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
-#include "content/browser/utility_process_host.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
+#include "content/public/browser/utility_process_host.h"
 #include "content/public/common/url_fetcher.h"
 #include "crypto/sha2.h"
 #include "googleurl/src/gurl.h"
@@ -58,6 +58,8 @@ using base::RandInt;
 using base::Time;
 using base::TimeDelta;
 using content::BrowserThread;
+using content::UtilityProcessHost;
+using content::UtilityProcessHostClient;
 using prefs::kExtensionBlacklistUpdateVersion;
 using prefs::kLastExtensionsUpdateCheck;
 using prefs::kNextExtensionsUpdateCheck;
@@ -620,7 +622,7 @@ void ExtensionUpdater::OnURLFetchComplete(const content::URLFetcher* source) {
 }
 
 // Utility class to handle doing xml parsing in a sandboxed utility process.
-class SafeManifestParser : public UtilityProcessHost::Client {
+class SafeManifestParser : public UtilityProcessHostClient {
  public:
   // Takes ownership of |fetch_data|.
   SafeManifestParser(const std::string& xml, ManifestFetchData* fetch_data,
@@ -652,9 +654,9 @@ class SafeManifestParser : public UtilityProcessHost::Client {
     bool use_utility_process = rdh &&
         !CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess);
     if (use_utility_process) {
-      UtilityProcessHost* host = new UtilityProcessHost(
+      UtilityProcessHost* host = UtilityProcessHost::Create(
           this, BrowserThread::UI);
-      host->set_use_linux_zygote(true);
+      host->EnableZygote();
       host->Send(new ChromeUtilityMsg_ParseUpdateManifest(xml_));
     } else {
       UpdateManifest manifest;
@@ -678,7 +680,7 @@ class SafeManifestParser : public UtilityProcessHost::Client {
     }
   }
 
-  // UtilityProcessHost::Client
+  // UtilityProcessHostClient
   virtual bool OnMessageReceived(const IPC::Message& message) {
     bool handled = true;
     IPC_BEGIN_MESSAGE_MAP(SafeManifestParser, message)

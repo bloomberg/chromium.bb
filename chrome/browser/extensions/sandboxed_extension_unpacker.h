@@ -12,7 +12,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/scoped_temp_dir.h"
 #include "chrome/common/extensions/extension.h"
-#include "content/browser/utility_process_host.h"
+#include "content/public/browser/browser_thread.h"
+#include "content/public/browser/utility_process_host_client.h"
 
 class Extension;
 class ResourceDispatcherHost;
@@ -67,7 +68,7 @@ class SandboxedExtensionUnpackerClient
 //
 //
 // NOTE: This class should only be used on the file thread.
-class SandboxedExtensionUnpacker : public UtilityProcessHost::Client {
+class SandboxedExtensionUnpacker : public content::UtilityProcessHostClient {
  public:
   // The size of the magic character sequence at the beginning of each crx
   // file, in bytes. This should be a multiple of 4.
@@ -193,7 +194,7 @@ class SandboxedExtensionUnpacker : public UtilityProcessHost::Client {
   // Starts the utility process that unpacks our extension.
   void StartProcessOnIOThread(const FilePath& temp_crx_path);
 
-  // UtilityProcessHost::Client
+  // UtilityProcessHostClient
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
   virtual void OnProcessCrashed(int exit_code) OVERRIDE;
 

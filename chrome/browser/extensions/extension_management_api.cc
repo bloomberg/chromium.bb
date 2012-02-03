@@ -30,9 +30,13 @@
 #include "chrome/common/extensions/url_pattern.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
+#include "content/public/browser/utility_process_host.h"
+#include "content/public/browser/utility_process_host_client.h"
 
 using base::IntToString;
 using content::BrowserThread;
+using content::UtilityProcessHost;
+using content::UtilityProcessHostClient;
 
 namespace events = extension_event_names;
 namespace keys = extension_management_api_constants;
@@ -193,13 +197,12 @@ namespace {
 
 // This class helps GetPermissionWarningsByManifestFunction manage
 // sending manifest JSON strings to the utility process for parsing.
-class SafeManifestJSONParser : public UtilityProcessHost::Client {
+class SafeManifestJSONParser : public UtilityProcessHostClient {
  public:
   SafeManifestJSONParser(GetPermissionWarningsByManifestFunction* client,
                  const std::string& manifest)
       : client_(client),
-        manifest_(manifest),
-        utility_host_(NULL) {}
+        manifest_(manifest) {}
 
   void Start() {
     CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -211,9 +214,10 @@ class SafeManifestJSONParser : public UtilityProcessHost::Client {
 
   void StartWorkOnIOThread() {
     CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-    utility_host_ = new UtilityProcessHost(this, BrowserThread::IO);
-    utility_host_->set_use_linux_zygote(true);
-    utility_host_->Send(new ChromeUtilityMsg_ParseJSON(manifest_));
+    UtilityProcessHost* host =
+        UtilityProcessHost::Create(this, BrowserThread::IO);
+    host->EnableZygote();
+    host->Send(new ChromeUtilityMsg_ParseJSON(manifest_));
   }
 
   virtual bool OnMessageReceived(const IPC::Message& message) {
@@ -237,7 +241,6 @@ class SafeManifestJSONParser : public UtilityProcessHost::Client {
     else
       error_ = keys::kManifestParseError;
 
-    utility_host_ = NULL; // has already deleted itself
     BrowserThread::PostTask(
         BrowserThread::UI,
         FROM_HERE,
@@ -247,7 +250,6 @@ class SafeManifestJSONParser : public UtilityProcessHost::Client {
   void OnJSONParseFailed(const std::string& error) {
     CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
     error_ = error;
-    utility_host_ = NULL; // has already deleted itself
     BrowserThread::PostTask(
         BrowserThread::UI,
         FROM_HERE,
@@ -275,7 +277,6 @@ class SafeManifestJSONParser : public UtilityProcessHost::Client {
   scoped_ptr<DictionaryValue> parsed_manifest_;
 
   std::string error_;
-  UtilityProcessHost* utility_host_;
 };
 
 }  // namespace

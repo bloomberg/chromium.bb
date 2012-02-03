@@ -16,10 +16,12 @@
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/utility_process_host.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
 using content::BrowserThread;
+using content::UtilityProcessHost;
 
 ExternalProcessImporterClient::ExternalProcessImporterClient(
     ExternalProcessImporterHost* importer_host,
@@ -75,15 +77,15 @@ void ExternalProcessImporterClient::Start() {
 void ExternalProcessImporterClient::StartProcessOnIOThread(
     BrowserThread::ID thread_id) {
   utility_process_host_ =
-      (new UtilityProcessHost(this, thread_id))->AsWeakPtr();
-  utility_process_host_->set_no_sandbox(true);
+      UtilityProcessHost::Create(this, thread_id)->AsWeakPtr();
+  utility_process_host_->DisableSandbox();
 
 #if defined(OS_MACOSX)
   base::environment_vector env;
   std::string dylib_path = GetFirefoxDylibPath().value();
   if (!dylib_path.empty())
     env.push_back(std::make_pair("DYLD_FALLBACK_LIBRARY_PATH", dylib_path));
-  utility_process_host_->set_env(env);
+  utility_process_host_->SetEnv(env);
 #endif
 
   // Dictionary of all localized strings that could be needed by the importer

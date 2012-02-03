@@ -10,6 +10,7 @@
 #include "base/metrics/histogram.h"
 #include "content/common/child_process_host_impl.h"
 #include "content/common/utility_messages.h"
+#include "content/browser/utility_process_host_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "webkit/plugins/npapi/plugin_list.h"
 
@@ -102,11 +103,12 @@ void PluginLoaderPosix::LoadPluginsInternal() {
   if (load_start_time_.is_null())
     load_start_time_ = base::TimeTicks::Now();
 
-  process_host_ =
-      (new UtilityProcessHost(this, BrowserThread::IO))->AsWeakPtr();
-  process_host_->set_no_sandbox(true);
+  UtilityProcessHostImpl* host =
+      new UtilityProcessHostImpl(this, BrowserThread::IO);
+  process_host_ = host->AsWeakPtr();
+  process_host_->DisableSandbox();
 #if defined(OS_MACOSX)
-  process_host_->set_child_flags(ChildProcessHost::CHILD_ALLOW_HEAP_EXECUTION);
+  host->set_child_flags(ChildProcessHost::CHILD_ALLOW_HEAP_EXECUTION);
 #endif
 
   process_host_->Send(new UtilityMsg_LoadPlugins(canonical_list_));

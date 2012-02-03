@@ -11,15 +11,19 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/memory/weak_ptr.h"
 #include "base/string16.h"
 #include "chrome/browser/importer/importer_data_types.h"
 #include "chrome/browser/importer/profile_writer.h"
-#include "content/browser/utility_process_host.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/utility_process_host_client.h"
 
 class ExternalProcessImporterHost;
 class InProcessImporterBridge;
+
+namespace content {
 class UtilityProcessHost;
+}
 
 namespace history {
 class URLRow;
@@ -29,7 +33,7 @@ struct ImportedFaviconUsage;
 // This class is the client for the out of process profile importing.  It
 // collects notifications from this process host and feeds data back to the
 // importer host, who actually does the writing.
-class ExternalProcessImporterClient : public UtilityProcessHost::Client {
+class ExternalProcessImporterClient : public content::UtilityProcessHostClient {
  public:
   ExternalProcessImporterClient(ExternalProcessImporterHost* importer_host,
                                 const importer::SourceProfile& source_profile,
@@ -55,7 +59,7 @@ class ExternalProcessImporterClient : public UtilityProcessHost::Client {
   // Called by the ExternalProcessImporterHost on import cancel.
   virtual void Cancel();
 
-  // UtilityProcessHost::Client implementation:
+  // UtilityProcessHostClient implementation:
   virtual void OnProcessCrashed(int exit_code) OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
@@ -111,7 +115,7 @@ class ExternalProcessImporterClient : public UtilityProcessHost::Client {
   // Handles sending messages to the external process.  Deletes itself when
   // the external process dies (see
   // BrowserChildProcessHost::OnChildDisconnected).
-  base::WeakPtr<UtilityProcessHost> utility_process_host_;
+  base::WeakPtr<content::UtilityProcessHost> utility_process_host_;
 
   // Data to be passed from the importer host to the external importer.
   const importer::SourceProfile& source_profile_;

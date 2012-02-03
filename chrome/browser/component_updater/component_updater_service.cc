@@ -25,8 +25,9 @@
 #include "chrome/common/chrome_utility_messages.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/extensions/extension.h"
-#include "content/browser/utility_process_host.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/utility_process_host.h"
+#include "content/public/browser/utility_process_host_client.h"
 #include "content/public/common/url_fetcher_delegate.h"
 #include "content/public/common/url_fetcher.h"
 #include "googleurl/src/gurl.h"
@@ -34,6 +35,8 @@
 #include "net/base/load_flags.h"
 
 using content::BrowserThread;
+using content::UtilityProcessHost;
+using content::UtilityProcessHostClient;
 
 // The component updater is designed to live until process shutdown, so
 // base::Bind() calls are not refcounted.
@@ -237,9 +240,9 @@ class CrxUpdateService : public ComponentUpdateService {
   virtual Status RegisterComponent(const CrxComponent& component) OVERRIDE;
 
   // The only purpose of this class is to forward the
-  // UtilityProcessHost::Client callbacks so CrxUpdateService does
+  // UtilityProcessHostClient callbacks so CrxUpdateService does
   // not have to derive from it because that is refcounted.
-  class ManifestParserBridge : public UtilityProcessHost::Client {
+  class ManifestParserBridge : public UtilityProcessHostClient {
    public:
     explicit ManifestParserBridge(CrxUpdateService* service)
         : service_(service) {}
@@ -597,10 +600,9 @@ void CrxUpdateService::ParseManifest(const std::string& xml) {
        CrxUpdateService::OnParseUpdateManifestSucceeded(manifest.results());
     }
   } else {
-    UtilityProcessHost* host =
-        new UtilityProcessHost(new ManifestParserBridge(this),
-                               BrowserThread::UI);
-    host->set_use_linux_zygote(true);
+    UtilityProcessHost* host = UtilityProcessHost::Create(
+        new ManifestParserBridge(this), BrowserThread::UI);
+    host->EnableZygote();
     host->Send(new ChromeUtilityMsg_ParseUpdateManifest(xml));
   }
 }

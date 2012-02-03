@@ -7,7 +7,8 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
-#include "content/browser/utility_process_host.h"
+#include "content/browser/utility_process_host_impl.h"
+#include "content/public/browser/utility_process_host_client.h"
 #include "content/common/indexed_db/indexed_db_key.h"
 #include "content/common/utility_messages.h"
 #include "content/common/webkitplatformsupport_impl.h"
@@ -20,6 +21,8 @@
 #include "webkit/glue/web_io_operators.h"
 
 using content::BrowserThread;
+using content::UtilityProcessHost;
+using content::UtilityProcessHostClient;
 using WebKit::WebSerializedScriptValue;
 
 // Enables calling WebKit::shutdown no matter where a "return" happens.
@@ -104,7 +107,7 @@ TEST(IDBKeyPathWithoutSandbox, Value) {
   ASSERT_EQ(WebKit::WebIDBKey::NullType, values[3].type());
 }
 
-class IDBKeyPathHelper : public UtilityProcessHost::Client {
+class IDBKeyPathHelper : public UtilityProcessHostClient {
  public:
   IDBKeyPathHelper()
       : expected_id_(0),
@@ -120,8 +123,8 @@ class IDBKeyPathHelper : public UtilityProcessHost::Client {
     }
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
     utility_process_host_ =
-        (new UtilityProcessHost(this, BrowserThread::IO))->AsWeakPtr();
-    utility_process_host_->set_use_linux_zygote(true);
+        (new UtilityProcessHostImpl(this, BrowserThread::IO))->AsWeakPtr();
+    utility_process_host_->EnableZygote();
     utility_process_host_->StartBatchMode();
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
                             MessageLoop::QuitClosure());
@@ -187,7 +190,7 @@ class IDBKeyPathHelper : public UtilityProcessHost::Client {
     ASSERT_TRUE(ret);
   }
 
-  // UtilityProcessHost::Client
+  // UtilityProcessHostClient
   bool OnMessageReceived(const IPC::Message& message) {
     bool msg_is_ok = true;
     bool handled = true;

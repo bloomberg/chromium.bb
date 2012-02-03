@@ -8,18 +8,20 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/time.h"
 #include "content/browser/plugin_service_impl.h"
-#include "content/browser/utility_process_host.h"
+#include "content/public/browser/utility_process_host_client.h"
 #include "ipc/ipc_message.h"
 #include "webkit/plugins/webplugininfo.h"
 
-class FilePath;
-class UtilityProcessHost;
-
 namespace base {
 class MessageLoopProxy;
+}
+
+namespace content {
+class UtilityProcessHost;
 }
 
 // This class is responsible for managing the out-of-process plugin loading on
@@ -43,8 +45,9 @@ class MessageLoopProxy;
 // 5. This algorithm continues until the canonical list has been walked to the
 //    end, after which the list of loaded plugins is set on the PluginList and
 //    the completion callback is run.
-class CONTENT_EXPORT PluginLoaderPosix : public UtilityProcessHost::Client,
-                                                IPC::Message::Sender {
+class CONTENT_EXPORT PluginLoaderPosix
+    : public NON_EXPORTED_BASE(content::UtilityProcessHostClient),
+      public IPC::Message::Sender {
  public:
   PluginLoaderPosix();
 
@@ -53,7 +56,7 @@ class CONTENT_EXPORT PluginLoaderPosix : public UtilityProcessHost::Client,
       scoped_refptr<base::MessageLoopProxy> target_loop,
       const content::PluginService::GetPluginsCallback& callback);
 
-  // UtilityProcessHost::Client:
+  // UtilityProcessHostClient:
   virtual void OnProcessCrashed(int exit_code) OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
@@ -92,7 +95,7 @@ class CONTENT_EXPORT PluginLoaderPosix : public UtilityProcessHost::Client,
   bool MaybeRunPendingCallbacks();
 
   // The process host for which this is a client.
-  base::WeakPtr<UtilityProcessHost> process_host_;
+  base::WeakPtr<content::UtilityProcessHost> process_host_;
 
   // A list of paths to plugins which will be loaded by the utility process, in
   // the order specified by this vector.

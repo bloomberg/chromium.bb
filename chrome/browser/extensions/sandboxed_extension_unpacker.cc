@@ -26,6 +26,7 @@
 #include "chrome/common/extensions/extension_unpacker.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/utility_process_host.h"
 #include "crypto/signature_verifier.h"
 #include "grit/generated_resources.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -33,6 +34,7 @@
 #include "ui/gfx/codec/png_codec.h"
 
 using content::BrowserThread;
+using content::UtilityProcessHost;
 
 // The following macro makes histograms that record the length of paths
 // in this file much easier to read.
@@ -311,10 +313,11 @@ void SandboxedExtensionUnpacker::OnProcessCrashed(int exit_code) {
 
 void SandboxedExtensionUnpacker::StartProcessOnIOThread(
     const FilePath& temp_crx_path) {
-  UtilityProcessHost* host = new UtilityProcessHost(this, thread_identifier_);
+  UtilityProcessHost* host = UtilityProcessHost::Create(
+      this, thread_identifier_);
   // Grant the subprocess access to the entire subdir the extension file is
   // in, so that it can unpack to that dir.
-  host->set_exposed_dir(temp_crx_path.DirName());
+  host->SetExposedDir(temp_crx_path.DirName());
   host->Send(
       new ChromeUtilityMsg_UnpackExtension(
           temp_crx_path, location_, creation_flags_));

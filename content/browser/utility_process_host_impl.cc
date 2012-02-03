@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/utility_process_host.h"
+#include "content/browser/utility_process_host_impl.h"
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -13,6 +13,7 @@
 #include "content/common/child_process_host_impl.h"
 #include "content/common/utility_messages.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/browser/utility_process_host_client.h"
 #include "content/public/common/content_switches.h"
 #include "ipc/ipc_switches.h"
 #include "ui/base/ui_base_switches.h"
@@ -20,23 +21,21 @@
 
 using content::BrowserThread;
 using content::ChildProcessHost;
+using content::UtilityProcessHostClient;
 
-UtilityProcessHost::Client::Client() {
+namespace content {
+
+UtilityProcessHost* UtilityProcessHost::Create(
+    UtilityProcessHostClient* client,
+    BrowserThread::ID client_thread_id) {
+  return new UtilityProcessHostImpl(client, client_thread_id);
 }
 
-UtilityProcessHost::Client::~Client() {
 }
 
-void UtilityProcessHost::Client::OnProcessCrashed(int exit_code) {
-}
-
-bool UtilityProcessHost::Client::OnMessageReceived(
-    const IPC::Message& message) {
-  return false;
-}
-
-UtilityProcessHost::UtilityProcessHost(Client* client,
-                                       BrowserThread::ID client_thread_id)
+UtilityProcessHostImpl::UtilityProcessHostImpl(
+    UtilityProcessHostClient* client,
+    BrowserThread::ID client_thread_id)
     : client_(client),
       client_thread_id_(client_thread_id),
       is_batch_mode_(false),
@@ -52,36 +51,52 @@ UtilityProcessHost::UtilityProcessHost(Client* client,
       new BrowserChildProcessHostImpl(content::PROCESS_TYPE_UTILITY, this));
 }
 
-UtilityProcessHost::~UtilityProcessHost() {
+UtilityProcessHostImpl::~UtilityProcessHostImpl() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(!is_batch_mode_);
 }
 
-bool UtilityProcessHost::Send(IPC::Message* message) {
+bool UtilityProcessHostImpl::Send(IPC::Message* message) {
   if (!StartProcess())
     return false;
 
   return process_->Send(message);
 }
 
-bool UtilityProcessHost::StartBatchMode()  {
+bool UtilityProcessHostImpl::StartBatchMode()  {
   CHECK(!is_batch_mode_);
   is_batch_mode_ = StartProcess();
   Send(new UtilityMsg_BatchMode_Started());
   return is_batch_mode_;
 }
 
-void UtilityProcessHost::EndBatchMode()  {
+void UtilityProcessHostImpl::EndBatchMode()  {
   CHECK(is_batch_mode_);
   is_batch_mode_ = false;
   Send(new UtilityMsg_BatchMode_Finished());
 }
 
-FilePath UtilityProcessHost::GetUtilityProcessCmd() {
-  return ChildProcessHost::GetChildPath(child_flags_);
+void UtilityProcessHostImpl::SetExposedDir(const FilePath& dir) {
+  exposed_dir_ = dir;
 }
 
-bool UtilityProcessHost::StartProcess() {
+void UtilityProcessHostImpl::DisableSandbox() {
+  no_sandbox_ = true;
+}
+
+void UtilityProcessHostImpl::EnableZygote() {
+  use_linux_zygote_ = true;
+}
+
+#if defined(OS_POSIX)
+
+void UtilityProcessHostImpl::SetEnv(const base::environment_vector& env) {
+  env_ = env;
+}
+
+#endif  // OS_POSIX
+
+bool UtilityProcessHostImpl::StartProcess() {
   if (started_)
     return true;
   started_ = true;
@@ -96,7 +111,7 @@ bool UtilityProcessHost::StartProcess() {
   if (channel_id.empty())
     return false;
 
-  FilePath exe_path = GetUtilityProcessCmd();
+  FilePath exe_path = ChildProcessHost::GetChildPath(child_flags_);
   if (exe_path.empty()) {
     NOTREACHED() << "Unable to get utility process binary name.";
     return false;
@@ -151,16 +166,18 @@ bool UtilityProcessHost::StartProcess() {
   return true;
 }
 
-bool UtilityProcessHost::OnMessageReceived(const IPC::Message& message) {
+bool UtilityProcessHostImpl::OnMessageReceived(const IPC::Message& message) {
   BrowserThread::PostTask(
       client_thread_id_, FROM_HERE,
-      base::Bind(base::IgnoreResult(&Client::OnMessageReceived),
-                 client_.get(), message));
+      base::Bind(base::IgnoreResult(
+          &UtilityProcessHostClient::OnMessageReceived), client_.get(),
+          message));
   return true;
 }
 
-void UtilityProcessHost::OnProcessCrashed(int exit_code) {
+void UtilityProcessHostImpl::OnProcessCrashed(int exit_code) {
   BrowserThread::PostTask(
       client_thread_id_, FROM_HERE,
-      base::Bind(&Client::OnProcessCrashed, client_.get(), exit_code));
+      base::Bind(&UtilityProcessHostClient::OnProcessCrashed, client_.get(),
+            exit_code));
 }
