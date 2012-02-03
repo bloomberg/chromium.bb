@@ -653,6 +653,12 @@ def main():
     if desktop.host_proc is not None and pid == desktop.host_proc.pid:
       logging.info("Host process terminated")
       desktop.host_proc = None
+      if os.WEXITSTATUS(status) == 1:
+        logging.info("Host ID has been deleted - exiting.")
+        # Host config is no longer valid.  Delete it, so the next time this
+        # script is run, a new Host ID will be created and registered.
+        os.remove(host.config_file)
+        return 0
 
 
 if __name__ == "__main__":
