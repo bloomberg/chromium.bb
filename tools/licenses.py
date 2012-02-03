@@ -63,7 +63,6 @@ PRUNE_PATHS = set([
     # Used for development and test, not in the shipping product.
     os.path.join('third_party','bidichecker'),
     os.path.join('third_party','cygwin'),
-    os.path.join('third_party','gold'),
     os.path.join('third_party','lighttpd'),
     os.path.join('third_party','mingw-w64'),
     os.path.join('third_party','pefile'),
