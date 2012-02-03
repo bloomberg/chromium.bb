@@ -868,13 +868,16 @@ TEST_F(ContextMenuTest, CFTxtFieldUndo) {
   server_mock_.ExpectAndServeAnyRequests(CFInvocation::MetaTag());
   AccObjectMatcher txtfield_matcher(L"", L"editable text");
 
-  // Change the value of text field to 'A', then invoke 'Undo' context menu item
-  // of text field.
+  // Change the value of text field to 'A'.
   EXPECT_CALL(acc_observer_,
               OnAccDocLoad(TabContentsTitleEq(context_menu_page_title)))
       .WillOnce(testing::DoAll(
-          AccSendCharMessage(txtfield_matcher, L'A'),
-          AccRightClick(txtfield_matcher)));
+          AccWatchForOneValueChange(&acc_observer_, txtfield_matcher),
+          AccSendCharMessage(txtfield_matcher, L'A')));
+  // Bring up the context menu once the value has changed.
+  EXPECT_CALL(acc_observer_, OnAccValueChange(_, _, StrEq(L"A")))
+      .WillOnce(AccRightClick(txtfield_matcher));
+  // Then select "Undo".
   EXPECT_CALL(acc_observer_, OnMenuPopup(_))
       .WillOnce(testing::DoAll(
           AccWatchForOneValueChange(&acc_observer_, txtfield_matcher),
@@ -893,27 +896,31 @@ TEST_F(ContextMenuTest, CFTxtFieldRedo) {
   AccObjectMatcher txtfield_matcher(L"", L"editable text");
   InSequence expect_in_sequence_for_scope;
 
-  // Change text field value to 'A', then undo it.
+  // Change text field from its initial value to 'A'.
   EXPECT_CALL(acc_observer_,
               OnAccDocLoad(TabContentsTitleEq(context_menu_page_title)))
       .WillOnce(testing::DoAll(
-          AccSendCharMessage(txtfield_matcher, L'A'),
-          AccRightClick(txtfield_matcher)));
+          AccWatchForOneValueChange(&acc_observer_, txtfield_matcher),
+          AccSendCharMessage(txtfield_matcher, L'A')));
+  // Bring up the context menu.
+  EXPECT_CALL(acc_observer_, OnAccValueChange(_, _, StrEq(L"A")))
+      .WillOnce(AccRightClick(txtfield_matcher));
+  // Select "Undo"
   EXPECT_CALL(acc_observer_, OnMenuPopup(_))
       .WillOnce(testing::DoAll(
           AccWatchForOneValueChange(&acc_observer_, txtfield_matcher),
           AccLeftClick(AccObjectMatcher(L"Undo*"))));
 
-  // After undo operation is done, invoke 'Redo' context menu item.
+  // After undo operation is done, bring up the context menu again.
   EXPECT_CALL(acc_observer_, OnAccValueChange(_, _, StrEq(kTextFieldInitValue)))
-      .WillOnce(testing::DoAll(
-          AccRightClick(txtfield_matcher),
-          AccWatchForOneValueChange(&acc_observer_, txtfield_matcher)));
+      .WillOnce(AccRightClick(txtfield_matcher));
+  // Select "Redo"
   EXPECT_CALL(acc_observer_, OnMenuPopup(_))
-      .WillOnce(AccLeftClick(AccObjectMatcher(L"Redo*")));
+      .WillOnce(testing::DoAll(
+          AccWatchForOneValueChange(&acc_observer_, txtfield_matcher),
+          AccLeftClick(AccObjectMatcher(L"Redo*"))));
 
-  // After redo operation is done, verify that text field value is reset to its
-  // changed value 'A'.
+  // Verify that text field value is reset to its changed value 'A' and exit.
   EXPECT_CALL(acc_observer_, OnAccValueChange(_, _, StrEq(L"A")))
       .WillOnce(CloseBrowserMock(&ie_mock_));
 
