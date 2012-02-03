@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -195,15 +195,28 @@ void WriteNode::SetPasswordSpecifics(
 
   Cryptographer* cryptographer = GetTransaction()->GetCryptographer();
 
-  sync_pb::PasswordSpecifics new_value;
-  if (!cryptographer->Encrypt(data, new_value.mutable_encrypted())) {
+  // We have to do the idempotency check here (vs in UpdateEntryWithEncryption)
+  // because Passwords have their encrypted data within the PasswordSpecifics,
+  // vs within the EntitySpecifics like all the other types.
+  const sync_pb::EntitySpecifics& old_specifics = GetEntry()->Get(SPECIFICS);
+  sync_pb::EntitySpecifics entity_specifics;
+  // Copy over the old specifics if they exist.
+  if (syncable::GetModelTypeFromSpecifics(old_specifics) ==
+          syncable::PASSWORDS) {
+    entity_specifics.CopyFrom(old_specifics);
+  } else {
+    syncable::AddDefaultExtensionValue(syncable::PASSWORDS,
+                                       &entity_specifics);
+  }
+  sync_pb::PasswordSpecifics* password_specifics =
+      entity_specifics.MutableExtension(sync_pb::password);
+  // This will only update password_specifics if the underlying unencrypted blob
+  // was different from |data| or was not encrypted with the proper passphrase.
+  if (!cryptographer->Encrypt(data, password_specifics->mutable_encrypted())) {
     NOTREACHED() << "Failed to encrypt password, possibly due to sync node "
                  << "corruption";
     return;
   }
-
-  sync_pb::EntitySpecifics entity_specifics;
-  entity_specifics.MutableExtension(sync_pb::password)->CopyFrom(new_value);
   SetEntitySpecifics(entity_specifics);
 }
 

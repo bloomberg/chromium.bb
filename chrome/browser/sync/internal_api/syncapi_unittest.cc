@@ -2028,4 +2028,157 @@ TEST_F(SyncManagerTest, UpdateEntryWithEncryption) {
   }
 }
 
+// Passwords have their own handling for encryption. Verify it does not result
+// in unnecessary writes via SetEntitySpecifics.
+TEST_F(SyncManagerTest, UpdatePasswordSetEntitySpecificsNoChange) {
+  std::string client_tag = "title";
+  EXPECT_TRUE(SetUpEncryption(WRITE_TO_NIGORI, DEFAULT_ENCRYPTION));
+  sync_pb::EntitySpecifics entity_specifics;
+  {
+    ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
+    Cryptographer* cryptographer = trans.GetCryptographer();
+    sync_pb::PasswordSpecificsData data;
+    data.set_password_value("secret");
+    cryptographer->Encrypt(
+        data,
+        entity_specifics.MutableExtension(sync_pb::password)->
+            mutable_encrypted());
+  }
+  MakeServerNode(sync_manager_.GetUserShare(), syncable::PASSWORDS, client_tag,
+                 BaseNode::GenerateSyncableHash(syncable::PASSWORDS,
+                                                client_tag),
+                 entity_specifics);
+  // New node shouldn't start off unsynced.
+  EXPECT_FALSE(ResetUnsyncedEntry(syncable::PASSWORDS, client_tag));
+
+  // Manually change to the same data via SetEntitySpecifics. Should not set
+  // is_unsynced.
+  {
+    WriteTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
+    WriteNode node(&trans);
+    EXPECT_TRUE(node.InitByClientTagLookup(syncable::PASSWORDS, client_tag));
+    node.SetEntitySpecifics(entity_specifics);
+  }
+  EXPECT_FALSE(ResetUnsyncedEntry(syncable::PASSWORDS, client_tag));
+}
+
+// Passwords have their own handling for encryption. Verify it does not result
+// in unnecessary writes via SetPasswordSpecifics.
+TEST_F(SyncManagerTest, UpdatePasswordSetPasswordSpecifics) {
+  std::string client_tag = "title";
+  EXPECT_TRUE(SetUpEncryption(WRITE_TO_NIGORI, DEFAULT_ENCRYPTION));
+  sync_pb::EntitySpecifics entity_specifics;
+  {
+    ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
+    Cryptographer* cryptographer = trans.GetCryptographer();
+    sync_pb::PasswordSpecificsData data;
+    data.set_password_value("secret");
+    cryptographer->Encrypt(
+        data,
+        entity_specifics.MutableExtension(sync_pb::password)->
+            mutable_encrypted());
+  }
+  MakeServerNode(sync_manager_.GetUserShare(), syncable::PASSWORDS, client_tag,
+                 BaseNode::GenerateSyncableHash(syncable::PASSWORDS,
+                                                client_tag),
+                 entity_specifics);
+  // New node shouldn't start off unsynced.
+  EXPECT_FALSE(ResetUnsyncedEntry(syncable::PASSWORDS, client_tag));
+
+  // Manually change to the same data via SetPasswordSpecifics. Should not set
+  // is_unsynced.
+  {
+    WriteTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
+    WriteNode node(&trans);
+    EXPECT_TRUE(node.InitByClientTagLookup(syncable::PASSWORDS, client_tag));
+    node.SetPasswordSpecifics(node.GetPasswordSpecifics());
+  }
+  EXPECT_FALSE(ResetUnsyncedEntry(syncable::PASSWORDS, client_tag));
+
+  // Manually change to different data. Should set is_unsynced.
+  {
+    WriteTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
+    WriteNode node(&trans);
+    EXPECT_TRUE(node.InitByClientTagLookup(syncable::PASSWORDS, client_tag));
+    Cryptographer* cryptographer = trans.GetCryptographer();
+    sync_pb::PasswordSpecificsData data;
+    data.set_password_value("secret2");
+    cryptographer->Encrypt(
+        data,
+        entity_specifics.MutableExtension(sync_pb::password)->
+            mutable_encrypted());
+    node.SetPasswordSpecifics(data);
+    const syncable::Entry* node_entry = node.GetEntry();
+    EXPECT_TRUE(node_entry->Get(IS_UNSYNCED));
+  }
+}
+
+// Passwords have their own handling for encryption. Verify setting a new
+// passphrase updates the data.
+TEST_F(SyncManagerTest, UpdatePasswordNewPassphrase) {
+  std::string client_tag = "title";
+  EXPECT_TRUE(SetUpEncryption(WRITE_TO_NIGORI, DEFAULT_ENCRYPTION));
+  sync_pb::EntitySpecifics entity_specifics;
+  {
+    ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
+    Cryptographer* cryptographer = trans.GetCryptographer();
+    sync_pb::PasswordSpecificsData data;
+    data.set_password_value("secret");
+    cryptographer->Encrypt(
+        data,
+        entity_specifics.MutableExtension(sync_pb::password)->
+            mutable_encrypted());
+  }
+  MakeServerNode(sync_manager_.GetUserShare(), syncable::PASSWORDS, client_tag,
+                 BaseNode::GenerateSyncableHash(syncable::PASSWORDS,
+                                                client_tag),
+                 entity_specifics);
+  // New node shouldn't start off unsynced.
+  EXPECT_FALSE(ResetUnsyncedEntry(syncable::PASSWORDS, client_tag));
+
+  // Set a new passphrase. Should set is_unsynced.
+  testing::Mock::VerifyAndClearExpectations(&observer_);
+  EXPECT_CALL(observer_, OnBootstrapTokenUpdated(_));
+  EXPECT_CALL(observer_, OnPassphraseAccepted());
+  EXPECT_CALL(observer_, OnEncryptionComplete());
+  sync_manager_.SetPassphrase("new_passphrase", true, true);
+  EXPECT_TRUE(ResetUnsyncedEntry(syncable::PASSWORDS, client_tag));
+}
+
+// Passwords have their own handling for encryption. Verify it does not result
+// in unnecessary writes via ReencryptEverything.
+TEST_F(SyncManagerTest, UpdatePasswordReencryptEverything) {
+  std::string client_tag = "title";
+  EXPECT_TRUE(SetUpEncryption(WRITE_TO_NIGORI, DEFAULT_ENCRYPTION));
+  sync_pb::EntitySpecifics entity_specifics;
+  {
+    ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
+    Cryptographer* cryptographer = trans.GetCryptographer();
+    sync_pb::PasswordSpecificsData data;
+    data.set_password_value("secret");
+    cryptographer->Encrypt(
+        data,
+        entity_specifics.MutableExtension(sync_pb::password)->
+            mutable_encrypted());
+  }
+  MakeServerNode(sync_manager_.GetUserShare(), syncable::PASSWORDS, client_tag,
+                 BaseNode::GenerateSyncableHash(syncable::PASSWORDS,
+                                                client_tag),
+                 entity_specifics);
+  // New node shouldn't start off unsynced.
+  EXPECT_FALSE(ResetUnsyncedEntry(syncable::PASSWORDS, client_tag));
+
+  // Force a re-encrypt everything. Should not set is_unsynced.
+  testing::Mock::VerifyAndClearExpectations(&observer_);
+  EXPECT_CALL(observer_, OnEncryptionComplete());
+  sync_manager_.RefreshNigori(base::Bind(&SyncManagerTest::EmptyClosure,
+                                         base::Unretained(this)));
+  scoped_refptr<base::ThreadTestHelper> helper(
+      new base::ThreadTestHelper(
+          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE)));
+  ASSERT_TRUE(helper->Run());
+  PumpLoop();
+  EXPECT_FALSE(ResetUnsyncedEntry(syncable::PASSWORDS, client_tag));
+}
+
 }  // namespace browser_sync

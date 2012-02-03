@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -213,6 +213,11 @@ class BaseNode {
   friend class SyncManagerTest;
   FRIEND_TEST_ALL_PREFIXES(SyncApiTest, GenerateSyncableHash);
   FRIEND_TEST_ALL_PREFIXES(SyncManagerTest, UpdateEntryWithEncryption);
+  FRIEND_TEST_ALL_PREFIXES(SyncManagerTest,
+                           UpdatePasswordSetEntitySpecificsNoChange);
+  FRIEND_TEST_ALL_PREFIXES(SyncManagerTest, UpdatePasswordSetPasswordSpecifics);
+  FRIEND_TEST_ALL_PREFIXES(SyncManagerTest, UpdatePasswordNewPassphrase);
+  FRIEND_TEST_ALL_PREFIXES(SyncManagerTest, UpdatePasswordReencryptEverything);
 
   void* operator new(size_t size);  // Node is meant for stack use only.
 
