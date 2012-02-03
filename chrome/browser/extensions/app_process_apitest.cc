@@ -387,7 +387,14 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, MAYBE_AppProcessRedirectBack) {
 
 // Ensure that reloading a URL after installing or uninstalling it as an app
 // correctly swaps the process.  (http://crbug.com/80621)
-IN_PROC_BROWSER_TEST_F(AppApiTest, ReloadIntoAppProcess) {
+//
+// Flaky on Mac: http://crbug.com/112597
+#if defined(OS_MAC)
+#define MAYBE_ReloadIntoAppProcess FLAKY_ReloadIntoAppProcess
+#else
+#define MAYBE_ReloadIntoAppProcess ReloadIntoAppProcess
+#endif
+IN_PROC_BROWSER_TEST_F(AppApiTest, MAYBE_ReloadIntoAppProcess) {
   CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kDisablePopupBlocking);
 
