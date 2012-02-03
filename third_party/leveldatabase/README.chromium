@@ -1,7 +1,7 @@
 Name: LevelDB: A Fast Persistent Key-Value Store
 Short Name: leveldb
 URL: http://code.google.com/p/leveldb/
-Version: r55
+Version: r58
 License: New BSD
 Security Critical: yes
 
