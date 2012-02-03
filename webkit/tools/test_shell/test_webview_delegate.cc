@@ -340,12 +340,8 @@ WebGraphicsContext3D* TestWebViewDelegate::createGraphicsContext3D(
     bool direct) {
   if (!shell_->webView())
     return NULL;
-  scoped_ptr<WebGraphicsContext3D> context(
-      new webkit::gpu::WebGraphicsContext3DInProcessImpl(
-          gfx::kNullPluginWindow, NULL));
-  if (!context->initialize(attributes, shell_->webView(), direct))
-    return NULL;
-  return context.release();
+  return webkit::gpu::WebGraphicsContext3DInProcessImpl::CreateForWebView(
+      attributes, shell_->webView(), direct);
 }
 
 void TestWebViewDelegate::didAddMessageToConsole(

@@ -36,7 +36,6 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebBlobRegistry.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebGamepads.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebGraphicsContext3D.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBFactory.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBKey.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBKeyPath.h"
@@ -565,42 +564,21 @@ RendererWebKitPlatformSupportImpl::sharedWorkerRepository() {
 }
 
 WebKit::WebGraphicsContext3D*
-RendererWebKitPlatformSupportImpl::createGraphicsContext3D() {
-  // The WebGraphicsContext3DInProcessImpl code path is used for
-  // layout tests (though not through this code) as well as for
-  // debugging and bringing up new ports.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kInProcessWebGL)) {
-    return new webkit::gpu::WebGraphicsContext3DInProcessImpl(
-        gfx::kNullPluginWindow, NULL);
-  } else {
-#if defined(ENABLE_GPU)
-    return new WebGraphicsContext3DCommandBufferImpl();
-#else
-    return NULL;
-#endif
-  }
-}
-
-WebKit::WebGraphicsContext3D*
 RendererWebKitPlatformSupportImpl::createOffscreenGraphicsContext3D(
     const WebGraphicsContext3D::Attributes& attributes) {
   // The WebGraphicsContext3DInProcessImpl code path is used for
   // layout tests (though not through this code) as well as for
   // debugging and bringing up new ports.
-  scoped_ptr<WebGraphicsContext3D> context;
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kInProcessWebGL)) {
-    context.reset(new webkit::gpu::WebGraphicsContext3DInProcessImpl(
-        gfx::kNullPluginWindow, NULL));
+    return webkit::gpu::WebGraphicsContext3DInProcessImpl::CreateForWebView(
+            attributes, NULL, false);
   } else {
-#if defined(ENABLE_GPU)
+    scoped_ptr<WebGraphicsContext3D> context;
     context.reset(new WebGraphicsContext3DCommandBufferImpl());
-#else
-    return NULL;
-#endif
+    if (!context->initialize(attributes, NULL, false))
+      return NULL;
+    return context.release();
   }
-  if (!context->initialize(attributes, NULL, false))
-    return NULL;
-  return context.release();
 }
 
 double RendererWebKitPlatformSupportImpl::audioHardwareSampleRate() {

@@ -252,15 +252,16 @@ WebKit::WebGraphicsContext3D* Compositor::createContext3D() {
   WebKit::WebGraphicsContext3D* context;
   if (test_compositor_enabled) {
     // Use context that results in no rendering to the screen.
-    context = new TestWebGraphicsContext3D();
+    TestWebGraphicsContext3D* test_context = new TestWebGraphicsContext3D();
+    test_context->Initialize();
+    context = test_context;
   } else {
     gfx::GLShareGroup* share_group =
         SharedResources::GetInstance()->GetShareGroup();
-    context = new webkit::gpu::WebGraphicsContext3DInProcessImpl(
-        widget_, share_group);
+    WebKit::WebGraphicsContext3D::Attributes attrs;
+    context = webkit::gpu::WebGraphicsContext3DInProcessImpl::CreateForWindow(
+        attrs, widget_, share_group);
   }
-  WebKit::WebGraphicsContext3D::Attributes attrs;
-  context->initialize(attrs, 0, true);
 
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   if (!command_line->HasSwitch(switches::kDisableUIVsync)) {

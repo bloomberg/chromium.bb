@@ -374,36 +374,22 @@ TestWebKitPlatformSupport::sharedWorkerRepository() {
 }
 
 WebKit::WebGraphicsContext3D*
-TestWebKitPlatformSupport::createGraphicsContext3D() {
-  switch (webkit_support::GetGraphicsContext3DImplementation()) {
-    case webkit_support::IN_PROCESS:
-      return new webkit::gpu::WebGraphicsContext3DInProcessImpl(
-          gfx::kNullPluginWindow, NULL);
-    case webkit_support::IN_PROCESS_COMMAND_BUFFER:
-      return new webkit::gpu::WebGraphicsContext3DInProcessCommandBufferImpl();
-    default:
-      CHECK(false) << "Unknown GraphicsContext3D Implementation";
-      return NULL;
-  }
-}
-
-WebKit::WebGraphicsContext3D*
 TestWebKitPlatformSupport::createOffscreenGraphicsContext3D(
     const WebKit::WebGraphicsContext3D::Attributes& attributes) {
-  scoped_ptr<WebKit::WebGraphicsContext3D> context;
   switch (webkit_support::GetGraphicsContext3DImplementation()) {
     case webkit_support::IN_PROCESS:
-      context.reset(new webkit::gpu::WebGraphicsContext3DInProcessImpl(
-          gfx::kNullPluginWindow, NULL));
-      break;
-    case webkit_support::IN_PROCESS_COMMAND_BUFFER:
-      context.reset(
+      return webkit::gpu::WebGraphicsContext3DInProcessImpl::CreateForWebView(
+          attributes, NULL, false);
+    case webkit_support::IN_PROCESS_COMMAND_BUFFER: {
+      scoped_ptr<WebKit::WebGraphicsContext3D> context(
           new webkit::gpu::WebGraphicsContext3DInProcessCommandBufferImpl());
-      break;
+      if (!context->initialize(attributes, NULL, false))
+        return NULL;
+      return context.release();
+    }
   }
-  if (!context->initialize(attributes, NULL, false))
-    return NULL;
-  return context.release();
+  NOTREACHED();
+  return NULL;
 }
 
 double TestWebKitPlatformSupport::audioHardwareSampleRate() {

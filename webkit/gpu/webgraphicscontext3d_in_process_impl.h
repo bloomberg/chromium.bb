@@ -57,14 +57,21 @@ class WebGraphicsContext3DInProcessImpl : public WebGraphicsContext3D {
   // is gfx::kNullPluginWindow, then it creates an offscreen context.
   // share_group is the group this context shares namespaces with. It's only
   // used for window-bound countexts.
-  WebGraphicsContext3DInProcessImpl(gfx::AcceleratedWidget window,
-                                    gfx::GLShareGroup* share_group);
+  WebGraphicsContext3DInProcessImpl(gfx::GLSurface* surface,
+                                    gfx::GLContext* context,
+                                    bool render_directly_to_webview);
   virtual ~WebGraphicsContext3DInProcessImpl();
+  static WebGraphicsContext3DInProcessImpl* CreateForWebView(
+      WebGraphicsContext3D::Attributes attributes,
+      WebView* web_view,
+      bool render_directly_to_webview);
+  static WebGraphicsContext3DInProcessImpl* CreateForWindow(
+      WebGraphicsContext3D::Attributes attributes,
+      gfx::AcceleratedWidget window,
+      gfx::GLShareGroup* share_group);
 
   //----------------------------------------------------------------------
   // WebGraphicsContext3D methods
-  virtual bool initialize(
-      WebGraphicsContext3D::Attributes attributes, WebView*, bool);
   virtual bool makeContextCurrent();
 
   virtual int width();
@@ -456,6 +463,8 @@ class WebGraphicsContext3DInProcessImpl : public WebGraphicsContext3D {
 #endif
 
  private:
+  bool Initialize(Attributes attributes);
+
   // ANGLE related.
   struct ShaderSourceEntry;
 
@@ -522,8 +531,6 @@ class WebGraphicsContext3DInProcessImpl : public WebGraphicsContext3D {
 
   ShHandle fragment_compiler_;
   ShHandle vertex_compiler_;
-  gfx::AcceleratedWidget window_;
-  scoped_refptr<gfx::GLShareGroup> share_group_;
 };
 
 }  // namespace gpu

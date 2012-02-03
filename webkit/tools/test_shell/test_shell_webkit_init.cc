@@ -300,20 +300,11 @@ TestShellWebKitInit::sharedWorkerRepository() {
   return NULL;
 }
 
-WebKit::WebGraphicsContext3D* TestShellWebKitInit::createGraphicsContext3D() {
-  return new webkit::gpu::WebGraphicsContext3DInProcessImpl(
-      gfx::kNullPluginWindow, NULL);
-}
-
 WebKit::WebGraphicsContext3D*
 TestShellWebKitInit::createOffscreenGraphicsContext3D(
     const WebKit::WebGraphicsContext3D::Attributes& attributes) {
-  scoped_ptr<WebGraphicsContext3D> context(
-      new webkit::gpu::WebGraphicsContext3DInProcessImpl(
-          gfx::kNullPluginWindow, NULL));
-  if (!context->initialize(attributes, NULL, false))
-    return NULL;
-  return context.release();
+  return webkit::gpu::WebGraphicsContext3DInProcessImpl::CreateForWebView(
+          attributes, NULL, false);
 }
 
 void TestShellWebKitInit::GetPlugins(

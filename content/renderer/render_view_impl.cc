@@ -1493,20 +1493,16 @@ WebGraphicsContext3D* RenderViewImpl::createGraphicsContext3D(
   // The WebGraphicsContext3DInProcessImpl code path is used for
   // layout tests (though not through this code) as well as for
   // debugging and bringing up new ports.
-  scoped_ptr<WebGraphicsContext3D> context;
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kInProcessWebGL)) {
-    context.reset(new webkit::gpu::WebGraphicsContext3DInProcessImpl(
-        gfx::kNullPluginWindow, NULL));
+    return webkit::gpu::WebGraphicsContext3DInProcessImpl::CreateForWebView(
+          attributes, webview(), direct);
   } else {
-#if defined(ENABLE_GPU)
-    context.reset(new WebGraphicsContext3DCommandBufferImpl());
-#else
-    return NULL;
-#endif
+    scoped_ptr<WebGraphicsContext3D> context(
+        new WebGraphicsContext3DCommandBufferImpl());
+    if (!context->initialize(attributes, webview(), direct))
+      return NULL;
+    return context.release();
   }
-  if (!context->initialize(attributes, webview(), direct))
-    return NULL;
-  return context.release();
 }
 
 void RenderViewImpl::didAddMessageToConsole(

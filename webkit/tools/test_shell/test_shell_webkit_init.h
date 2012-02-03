@@ -106,7 +106,6 @@ class TestShellWebKitInit : public webkit_glue::WebKitPlatformSupportImpl {
 #endif
 
   virtual WebKit::WebSharedWorkerRepository* sharedWorkerRepository() OVERRIDE;
-  virtual WebKit::WebGraphicsContext3D* createGraphicsContext3D() OVERRIDE;
   virtual WebKit::WebGraphicsContext3D* createOffscreenGraphicsContext3D(
       const WebKit::WebGraphicsContext3D::Attributes& attributes);
 

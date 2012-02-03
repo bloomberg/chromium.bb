@@ -44,10 +44,11 @@ struct WebGraphicsContext3DInProcessImpl::ShaderSourceEntry {
 };
 
 WebGraphicsContext3DInProcessImpl::WebGraphicsContext3DInProcessImpl(
-    gfx::AcceleratedWidget window,
-    gfx::GLShareGroup* share_group)
+    gfx::GLSurface* surface,
+    gfx::GLContext* context,
+    bool render_directly_to_web_view)
     : initialized_(false),
-      render_directly_to_web_view_(false),
+      render_directly_to_web_view_(render_directly_to_web_view),
       is_gles2_(false),
       have_ext_framebuffer_object_(false),
       have_ext_framebuffer_multisample_(false),
@@ -65,10 +66,10 @@ WebGraphicsContext3DInProcessImpl::WebGraphicsContext3DInProcessImpl(
 #ifdef FLIP_FRAMEBUFFER_VERTICALLY
       scanline_(0),
 #endif
+      gl_context_(context),
+      gl_surface_(surface),
       fragment_compiler_(0),
-      vertex_compiler_(0),
-      window_(window),
-      share_group_(share_group) {
+      vertex_compiler_(0) {
 }
 
 WebGraphicsContext3DInProcessImpl::~WebGraphicsContext3DInProcessImpl() {
@@ -105,50 +106,43 @@ WebGraphicsContext3DInProcessImpl::~WebGraphicsContext3DInProcessImpl() {
   AngleDestroyCompilers();
 }
 
-bool WebGraphicsContext3DInProcessImpl::initialize(
+WebGraphicsContext3DInProcessImpl*
+WebGraphicsContext3DInProcessImpl::CreateForWebView(
     WebGraphicsContext3D::Attributes attributes,
-    WebView* webView,
+    WebView* web_view,
     bool render_directly_to_web_view) {
   if (!gfx::GLSurface::InitializeOneOff())
-    return false;
+    return NULL;
 
-  render_directly_to_web_view_ = render_directly_to_web_view;
+  bool is_gles2 = gfx::GetGLImplementation() == gfx::kGLImplementationEGLGLES2;
   gfx::GLShareGroup* share_group = 0;
-
-  is_gles2_ = gfx::GetGLImplementation() == gfx::kGLImplementationEGLGLES2;
-
-  if (window_ != gfx::kNullPluginWindow) {
-    share_group = share_group_;
-    gl_surface_ = gfx::GLSurface::CreateViewGLSurface(false, window_);
-  } else {
-    if (!render_directly_to_web_view) {
-      // Pick up the compositor's context to share resources with.
-      WebGraphicsContext3D* view_context = webView ?
-                                           webView->graphicsContext3D() : NULL;
-      if (view_context) {
-        WebGraphicsContext3DInProcessImpl* contextImpl =
-            static_cast<WebGraphicsContext3DInProcessImpl*>(view_context);
-        share_group = contextImpl->gl_context_->share_group();
-      } else {
-        // The compositor's context didn't get created
-        // successfully, so conceptually there is no way we can
-        // render successfully to the WebView.
-        render_directly_to_web_view_ = false;
-      }
+  if (!render_directly_to_web_view) {
+    // Pick up the compositor's context to share resources with.
+    WebGraphicsContext3D* view_context = web_view ?
+                                         web_view->graphicsContext3D() : NULL;
+    if (view_context) {
+      WebGraphicsContext3DInProcessImpl* contextImpl =
+          static_cast<WebGraphicsContext3DInProcessImpl*>(view_context);
+      share_group = contextImpl->gl_context_->share_group();
+    } else {
+      // The compositor's context didn't get created
+      // successfully, so conceptually there is no way we can
+      // render successfully to the WebView.
+      render_directly_to_web_view = false;
     }
-    // This implementation always renders offscreen regardless of
-    // whether render_directly_to_web_view is true. Both DumpRenderTree
-    // and test_shell paint first to an intermediate offscreen buffer
-    // and from there to the window, and WebViewImpl::paint already
-    // correctly handles the case where the compositor is active but
-    // the output needs to go to a WebCanvas.
-    gl_surface_ = gfx::GLSurface::CreateOffscreenGLSurface(false,
-        gfx::Size(1, 1));
   }
 
-  if (!gl_surface_.get()) {
-    if (!is_gles2_)
-      return false;
+  // This implementation always renders offscreen regardless of whether
+  // render_directly_to_web_view is true. Both DumpRenderTree and test_shell
+  // paint first to an intermediate offscreen buffer and from there to the
+  // window, and WebViewImpl::paint already correctly handles the case where the
+  // compositor is active but the output needs to go to a WebCanvas.
+  scoped_refptr<gfx::GLSurface> gl_surface =
+      gfx::GLSurface::CreateOffscreenGLSurface(false, gfx::Size(1, 1));
+
+  if (!gl_surface.get()) {
+    if (!is_gles2)
+      return NULL;
 
     // Embedded systems have smaller limit on number of GL contexts. Sometimes
     // failure of GL context creation is because of existing GL contexts
@@ -157,24 +151,26 @@ bool WebGraphicsContext3DInProcessImpl::initialize(
     // a page unload event, iterate down any live WebGraphicsContext3D instances
     // and force them to drop their contexts, sending a context lost event if
     // necessary.
-    if (webView) webView->mainFrame()->collectGarbage();
+    if (web_view) web_view->mainFrame()->collectGarbage();
 
-    gl_surface_ = gfx::GLSurface::CreateOffscreenGLSurface(false,
-                                                           gfx::Size(1, 1));
-    if (!gl_surface_.get())
-      return false;
+    gl_surface = gfx::GLSurface::CreateOffscreenGLSurface(false,
+                                                          gfx::Size(1, 1));
+    if (!gl_surface.get())
+      return NULL;
   }
 
   // TODO(kbr): This implementation doesn't yet support lost contexts
   // and therefore can't yet properly support GPU switching.
   gfx::GpuPreference gpu_preference = gfx::PreferDiscreteGpu;
 
-  gl_context_ = gfx::GLContext::CreateGLContext(share_group,
-                                                gl_surface_.get(),
-                                                gpu_preference);
-  if (!gl_context_.get()) {
-    if (!is_gles2_)
-      return false;
+  scoped_refptr<gfx::GLContext> gl_context = gfx::GLContext::CreateGLContext(
+      share_group,
+      gl_surface.get(),
+      gpu_preference);
+
+  if (!gl_context.get()) {
+    if (!is_gles2)
+      return NULL;
 
     // Embedded systems have smaller limit on number of GL contexts. Sometimes
     // failure of GL context creation is because of existing GL contexts
@@ -183,14 +179,56 @@ bool WebGraphicsContext3DInProcessImpl::initialize(
     // a page unload event, iterate down any live WebGraphicsContext3D instances
     // and force them to drop their contexts, sending a context lost event if
     // necessary.
-    if (webView) webView->mainFrame()->collectGarbage();
+    if (web_view)
+      web_view->mainFrame()->collectGarbage();
 
-    gl_context_ = gfx::GLContext::CreateGLContext(share_group,
-                                                  gl_surface_.get(),
-                                                  gpu_preference);
-    if (!gl_context_.get())
-      return false;
+    gl_context = gfx::GLContext::CreateGLContext(share_group,
+                                                 gl_surface.get(),
+                                                 gpu_preference);
+    if (!gl_context.get())
+      return NULL;
   }
+  scoped_ptr<WebGraphicsContext3DInProcessImpl> context(
+      new WebGraphicsContext3DInProcessImpl(
+        gl_surface.get(), gl_context.get(), render_directly_to_web_view));
+  if (!context->Initialize(attributes))
+    return NULL;
+  return context.release();
+}
+
+WebGraphicsContext3DInProcessImpl*
+WebGraphicsContext3DInProcessImpl::CreateForWindow(
+    WebGraphicsContext3D::Attributes attributes,
+    gfx::AcceleratedWidget window,
+    gfx::GLShareGroup* share_group) {
+  if (!gfx::GLSurface::InitializeOneOff())
+    return NULL;
+
+  scoped_refptr<gfx::GLSurface> gl_surface =
+      gfx::GLSurface::CreateViewGLSurface(false, window);
+  if (!gl_surface.get())
+    return NULL;
+
+  gfx::GpuPreference gpu_preference = gfx::PreferDiscreteGpu;
+
+  scoped_refptr<gfx::GLContext> gl_context = gfx::GLContext::CreateGLContext(
+      share_group,
+      gl_surface.get(),
+      gpu_preference);
+  if (!gl_context.get())
+    return NULL;
+  scoped_ptr<WebGraphicsContext3DInProcessImpl> context(
+      new WebGraphicsContext3DInProcessImpl(
+          gl_surface.get(), gl_context.get(), true));
+  if (!context->Initialize(attributes))
+    return NULL;
+  return context.release();
+}
+
+bool WebGraphicsContext3DInProcessImpl::Initialize(
+    WebGraphicsContext3D::Attributes attributes) {
+  is_gles2_ = gfx::GetGLImplementation() == gfx::kGLImplementationEGLGLES2;
+
 
   attributes_ = attributes;
 
@@ -202,7 +240,7 @@ bool WebGraphicsContext3DInProcessImpl::initialize(
   // edges in some CSS 3D samples. Third, we don't have multisampling
   // support for the compositor in the normal case at the time of this
   // writing.
-  if (render_directly_to_web_view)
+  if (render_directly_to_web_view_)
     attributes_.antialias = false;
 
   if (!gl_context_->MakeCurrent(gl_surface_.get())) {
@@ -324,7 +362,7 @@ WebGLId WebGraphicsContext3DInProcessImpl::getPlatformTextureId() {
 }
 
 void WebGraphicsContext3DInProcessImpl::prepareTexture() {
-  if (window_ != gfx::kNullPluginWindow) {
+  if (!gl_surface_->IsOffscreen()) {
     gl_surface_->SwapBuffers();
   } else if (!render_directly_to_web_view_) {
     // We need to prepare our rendering results for the compositor.
@@ -358,7 +396,7 @@ void WebGraphicsContext3DInProcessImpl::reshape(int width, int height) {
   makeContextCurrent();
 
   bool must_restore_fbo = false;
-  if (window_ == gfx::kNullPluginWindow)
+  if (gl_surface_->IsOffscreen())
     must_restore_fbo = AllocateOffscreenFrameBuffer(width, height);
 
   gl_surface_->Resize(gfx::Size(width, height));

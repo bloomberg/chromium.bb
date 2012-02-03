@@ -74,6 +74,8 @@ using WebKit::WebPlugin;
 using WebKit::WebPluginParams;
 using WebKit::WebString;
 using WebKit::WebURL;
+using webkit::gpu::WebGraphicsContext3DInProcessImpl;
+using webkit::gpu::WebGraphicsContext3DInProcessCommandBufferImpl;
 
 namespace {
 
@@ -381,20 +383,20 @@ WebKit::WebGraphicsContext3D* CreateGraphicsContext3D(
     const WebKit::WebGraphicsContext3D::Attributes& attributes,
     WebKit::WebView* web_view,
     bool direct) {
-  scoped_ptr<WebKit::WebGraphicsContext3D> context;
   switch (webkit_support::GetGraphicsContext3DImplementation()) {
     case webkit_support::IN_PROCESS:
-      context.reset(new webkit::gpu::WebGraphicsContext3DInProcessImpl(
-          gfx::kNullPluginWindow, NULL));
-      break;
-    case webkit_support::IN_PROCESS_COMMAND_BUFFER:
-      context.reset(
-          new webkit::gpu::WebGraphicsContext3DInProcessCommandBufferImpl());
-      break;
+      return WebGraphicsContext3DInProcessImpl::CreateForWebView(
+          attributes, web_view, direct);
+    case webkit_support::IN_PROCESS_COMMAND_BUFFER: {
+      scoped_ptr<WebGraphicsContext3DInProcessCommandBufferImpl> context(
+          new WebGraphicsContext3DInProcessCommandBufferImpl());
+      if (!context->initialize(attributes, web_view, direct))
+        return NULL;
+      return context.release();
+    }
   }
-  if (!context->initialize(attributes, web_view, direct))
-    return NULL;
-  return context.release();
+  NOTREACHED();
+  return NULL;
 }
 
 void RegisterMockedURL(const WebKit::WebURL& url,

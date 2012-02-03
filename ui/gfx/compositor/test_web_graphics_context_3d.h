@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -25,9 +25,7 @@ class TestWebGraphicsContext3D : public WebKit::WebGraphicsContext3D {
   TestWebGraphicsContext3D();
   virtual ~TestWebGraphicsContext3D();
 
-  virtual bool initialize(Attributes attributes,
-                          WebKit::WebView* view,
-                          bool render_directly_to_web_view);
+  void Initialize();
   virtual bool makeContextCurrent();
   virtual int width();
   virtual int height();

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,13 +12,10 @@ namespace ui {
 TestWebGraphicsContext3D::TestWebGraphicsContext3D() {}
 TestWebGraphicsContext3D::~TestWebGraphicsContext3D() {}
 
-bool TestWebGraphicsContext3D::initialize(Attributes attributes,
-                                          WebKit::WebView* view,
-                                          bool render_directly_to_web_view) {
+void TestWebGraphicsContext3D::Initialize() {
   gl_surface_ = new gfx::GLSurfaceStub;
   gl_context_ = new gfx::GLContextStub;
   gl_context_->MakeCurrent(gl_surface_.get());
-  return true;
 }
 
 bool TestWebGraphicsContext3D::makeContextCurrent() {
