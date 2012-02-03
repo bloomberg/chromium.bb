@@ -36,7 +36,7 @@ vars = {
   "lss_revision": "9",
   "ffmpeg_revision": "120156",
   "sfntly_revision": "118",
-  "skia_revision": "3125",
+  "skia_revision": "3127",
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and V8 without interference from each other.
