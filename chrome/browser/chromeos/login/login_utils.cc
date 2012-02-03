@@ -921,8 +921,11 @@ void LoginUtilsImpl::StartSignedInServices(
     // data encrypted with the user's GAIA password.
     ProfileSyncService* sync_service =
         ProfileSyncServiceFactory::GetInstance()->GetForProfile(user_profile);
-    if (sync_service)
-      sync_service->SetPassphrase(password_, false);
+    if (sync_service) {
+      sync_service->SetPassphrase(password_,
+          ProfileSyncService::IMPLICIT,
+          ProfileSyncService::INTERNAL);
+    }
   }
   password_.clear();
   TokenService* token_service = user_profile->GetTokenService();

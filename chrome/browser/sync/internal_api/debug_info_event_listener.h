@@ -40,7 +40,8 @@ class DebugInfoEventListener : public sync_api::SyncManager::Observer,
   virtual void OnPassphraseRequired(
       sync_api::PassphraseRequiredReason reason,
       const sync_pb::EncryptedData& pending_keys) OVERRIDE;
-  virtual void OnPassphraseAccepted(
+  virtual void OnPassphraseAccepted() OVERRIDE;
+  virtual void OnBootstrapTokenUpdated(
       const std::string& bootstrap_token) OVERRIDE;
   virtual void OnStopSyncingPermanently() OVERRIDE;
   virtual void OnUpdatedToken(const std::string& token) OVERRIDE;

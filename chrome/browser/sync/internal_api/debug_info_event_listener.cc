@@ -48,9 +48,13 @@ void DebugInfoEventListener::OnPassphraseRequired(
   CreateAndAddEvent(sync_pb::DebugEventInfo::PASSPHRASE_REQUIRED);
 }
 
-void DebugInfoEventListener::OnPassphraseAccepted(
-    const std::string& bootstrap_token) {
+void DebugInfoEventListener::OnPassphraseAccepted() {
   CreateAndAddEvent(sync_pb::DebugEventInfo::PASSPHRASE_ACCEPTED);
+}
+
+void DebugInfoEventListener::OnBootstrapTokenUpdated(
+    const std::string& bootstrap_token) {
+  CreateAndAddEvent(sync_pb::DebugEventInfo::BOOTSTRAP_TOKEN_UPDATED);
 }
 
 void DebugInfoEventListener::OnStopSyncingPermanently() {

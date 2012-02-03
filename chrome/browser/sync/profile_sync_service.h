@@ -155,6 +155,16 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
     MANUAL_START,
   };
 
+  enum PassphraseType {
+    IMPLICIT,
+    EXPLICIT,
+  };
+
+  enum PassphraseSource {
+    INTERNAL,
+    USER_PROVIDED,
+  };
+
   // Default sync server URL.
   static const char* kSyncServerUrl;
   // Sync server URL for dev channel users
@@ -448,12 +458,19 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   // This will check asynchronously whether the passphrase is valid and notify
   // ProfileSyncServiceObservers via the NotificationService when the outcome
   // is known.
-  // |is_explicit| is true if the call is in response to the user explicitly
-  // setting a passphrase as opposed to implicitly (from the users' perspective)
-  // using their Google Account password.  An implicit SetPassphrase will
-  // *not* override an explicit passphrase set previously.
+  // |type| == EXPLICIT if the call is in response to the user setting a
+  // custom explicit passphrase as opposed to implicitly (from the users'
+  // perspective) using their Google Account password. Once an explicit
+  // passphrase is set, it can never be overwritten (not even by another
+  // explicit passphrase).
+  // |source| == USER_PROVIDED corresponds to the user having manually provided
+  // this passphrase. It should only be INTERNAL for passphrases intercepted
+  // from the Google Sign-in Success notification. Note that if the data is
+  // encrypted with an old Google Account password, the user may still have to
+  // provide an "implicit" passphrase.
   virtual void SetPassphrase(const std::string& passphrase,
-                             bool is_explicit);
+                             PassphraseType type,
+                             PassphraseSource source);
 
   // Turns on encryption for all data. Callers must call OnUserChoseDatatypes()
   // after calling this to force the encryption to occur.
@@ -672,6 +689,9 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   struct CachedPassphrases {
     std::string explicit_passphrase;
     std::string gaia_passphrase;
+    // This distinguishes from GAIA passphrases intercepted by the signin code
+    // (which will always be the most recent GAIA passphrase).
+    bool user_provided_gaia;
   };
   CachedPassphrases cached_passphrases_;
 
