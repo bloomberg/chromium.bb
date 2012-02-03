@@ -296,8 +296,6 @@ bool ProfileSyncServiceHarness::RunStateChangeMachine() {
         // The client is not yet fully synced; keep waiting until we converge.
         break;
       }
-      timestamp_match_partner_->service()->RemoveObserver(this);
-      timestamp_match_partner_ = NULL;
 
       SignalStateCompleteWithNextState(FULLY_SYNCED);
       break;
@@ -726,7 +724,11 @@ bool ProfileSyncServiceHarness::WaitUntilTimestampMatches(
   timestamp_match_partner_ = partner;
   partner->service()->AddObserver(this);
   wait_state_ = WAITING_FOR_UPDATES;
-  return AwaitStatusChangeWithTimeout(kLiveSyncOperationTimeoutMs, reason);
+  bool return_value =
+      AwaitStatusChangeWithTimeout(kLiveSyncOperationTimeoutMs, reason);
+  partner->service()->RemoveObserver(this);
+  timestamp_match_partner_ = NULL;
+  return return_value;
 }
 
 bool ProfileSyncServiceHarness::AwaitStatusChangeWithTimeout(
