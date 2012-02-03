@@ -17,6 +17,7 @@
 #include "base/values.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_url.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/url_constants.h"
@@ -218,22 +219,19 @@ class PrintDialogCloudTest : public InProcessBrowserTest {
 
 net::URLRequestJob* PrintDialogCloudTest::Factory(net::URLRequest* request,
                                                   const std::string& scheme) {
-  if (TestController::GetInstance()->use_delegate())
-    request->set_delegate(TestController::GetInstance()->delegate());
   if (request &&
       (request->url() == TestController::GetInstance()->expected_url())) {
+    if (TestController::GetInstance()->use_delegate())
+      request->set_delegate(TestController::GetInstance()->delegate());
     TestController::GetInstance()->set_result(true);
+    return new SimpleTestJob(request);
   }
-  return new SimpleTestJob(request);
+  return new net::URLRequestTestJob(request,
+                                    net::URLRequestTestJob::test_headers(),
+                                    "", true);
 }
 
-#if defined(OS_WIN)
-// http://crbug.com/94864 for OS_WIN issue
-#define MAYBE_HandlersRegistered DISABLED_HandlersRegistered
-#else
-#define MAYBE_HandlersRegistered HandlersRegistered
-#endif
-IN_PROC_BROWSER_TEST_F(PrintDialogCloudTest, MAYBE_HandlersRegistered) {
+IN_PROC_BROWSER_TEST_F(PrintDialogCloudTest, HandlersRegistered) {
   BrowserList::SetLastActive(browser());
   ASSERT_TRUE(BrowserList::GetLastActive());
 
@@ -246,11 +244,20 @@ IN_PROC_BROWSER_TEST_F(PrintDialogCloudTest, MAYBE_HandlersRegistered) {
   ASSERT_TRUE(TestController::GetInstance()->result());
 
   // Close the dialog before finishing the test.
-  ui_test_utils::WindowedNotificationObserver signal(
+  ui_test_utils::WindowedNotificationObserver tab_closed_observer(
       content::NOTIFICATION_TAB_CLOSED,
       content::NotificationService::AllSources());
-  EXPECT_TRUE(ui_test_utils::SendKeyPressSync(browser(), ui::VKEY_ESCAPE,
-                                              false, false, false, false));
-  signal.Wait();
-}
 
+  // Can't use ui_test_utils::SendKeyPressSync or
+  // ui_test_utils::SendKeyPressAndWait due to a race condition with closing
+  // the window. See http://crbug.com/111269
+  BrowserWindow* window = browser()->window();
+  ASSERT_TRUE(window);
+  gfx::NativeWindow native_window = window->GetNativeHandle();
+  ASSERT_TRUE(native_window);
+  bool key_sent = ui_controls::SendKeyPress(native_window, ui::VKEY_ESCAPE,
+                                            false, false, false, false);
+  EXPECT_TRUE(key_sent);
+  if (key_sent)
+    tab_closed_observer.Wait();
+}
