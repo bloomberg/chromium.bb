@@ -141,11 +141,14 @@ cr.define('options', function() {
       }
 
       // The 'Options' checkbox.
-      var options = node.querySelector('.options-link');
-      options.addEventListener('click', function(e) {
-        chrome.send('extensionSettingsOptions', [extension.id]);
-        e.preventDefault();
-      });
+      if (extension.options_url) {
+        var options = node.querySelector('.options-link');
+        options.addEventListener('click', function(e) {
+          chrome.send('extensionSettingsOptions', [extension.id]);
+          e.preventDefault();
+        });
+        options.hidden = false;
+      }
 
       if (extension.allow_activity) {
         var activity = node.querySelector('.activity-link');
