@@ -40,6 +40,7 @@ const char kDatagramTransport[] = "datagram";
 const char kSrtpTransport[] = "srtp";
 const char kRtpDtlsTransport[] = "rtp-dtls";
 
+const char kVerbatimCodec[] = "verbatim";
 const char kVp8Codec[] = "vp8";
 const char kZipCodec[] = "zip";
 
@@ -60,6 +61,8 @@ const char* GetTransportName(ChannelConfig::TransportType type) {
 
 const char* GetCodecName(ChannelConfig::Codec type) {
   switch (type) {
+    case ChannelConfig::CODEC_VERBATIM:
+      return kVerbatimCodec;
     case ChannelConfig::CODEC_VP8:
       return kVp8Codec;
     case ChannelConfig::CODEC_ZIP:
@@ -111,7 +114,9 @@ bool ParseTransportName(const std::string& value,
 }
 
 bool ParseCodecName(const std::string& value, ChannelConfig::Codec* codec) {
-  if (value == kVp8Codec) {
+  if (value == kVerbatimCodec) {
+    *codec = ChannelConfig::CODEC_VERBATIM;
+  } else if (value == kVp8Codec) {
     *codec = ChannelConfig::CODEC_VP8;
   } else if (value == kZipCodec) {
     *codec = ChannelConfig::CODEC_ZIP;
