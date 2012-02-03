@@ -280,66 +280,63 @@ TEST_F(WorkerTest, FLAKY_WorkerMultiPort) {
 //
 // SharedWorkerFastLayoutTests
 //
-// http://crbug.com/27636 - incorrect URL_MISMATCH exceptions sometimes get
-// generated on the windows try bots. FLAKY on Win.
-// http://crbug.com/28445 - flakiness on mac
-TEST_F(WorkerTest, FLAKY_SharedWorkerFastConstructor) {
+TEST_F(WorkerTest, SharedWorkerFastConstructor) {
   RunWorkerFastLayoutTest("shared-worker-constructor.html");
 }
 
-TEST_F(WorkerTest, FLAKY_SharedWorkerFastContextGC) {
+TEST_F(WorkerTest, SharedWorkerFastContextGC) {
   RunWorkerFastLayoutTest("shared-worker-context-gc.html");
 }
 
-TEST_F(WorkerTest, FLAKY_SharedWorkerFastEventListener) {
+TEST_F(WorkerTest, SharedWorkerFastEventListener) {
   RunWorkerFastLayoutTest("shared-worker-event-listener.html");
 }
 
-TEST_F(WorkerTest, FLAKY_SharedWorkerFastException) {
+TEST_F(WorkerTest, SharedWorkerFastException) {
   RunWorkerFastLayoutTest("shared-worker-exception.html");
 }
 
-TEST_F(WorkerTest, FLAKY_SharedWorkerFastGC) {
+TEST_F(WorkerTest, SharedWorkerFastGC) {
   RunWorkerFastLayoutTest("shared-worker-gc.html");
 }
 
-TEST_F(WorkerTest, FLAKY_SharedWorkerFastInIframe) {
+TEST_F(WorkerTest, SharedWorkerFastInIframe) {
   RunWorkerFastLayoutTest("shared-worker-in-iframe.html");
 }
 
-TEST_F(WorkerTest, FLAKY_SharedWorkerFastLoadError) {
+TEST_F(WorkerTest, SharedWorkerFastLoadError) {
   RunWorkerFastLayoutTest("shared-worker-load-error.html");
 }
 
-TEST_F(WorkerTest, FLAKY_SharedWorkerFastLocation) {
+TEST_F(WorkerTest, SharedWorkerFastLocation) {
   RunWorkerFastLayoutTest("shared-worker-location.html");
 }
 
-TEST_F(WorkerTest, FLAKY_SharedWorkerFastName) {
+TEST_F(WorkerTest, SharedWorkerFastName) {
   RunWorkerFastLayoutTest("shared-worker-name.html");
 }
 
-TEST_F(WorkerTest, FLAKY_SharedWorkerFastNavigator) {
+TEST_F(WorkerTest, SharedWorkerFastNavigator) {
   RunWorkerFastLayoutTest("shared-worker-navigator.html");
 }
 
-TEST_F(WorkerTest, FLAKY_SharedWorkerFastReplaceGlobalConstructor) {
+TEST_F(WorkerTest, SharedWorkerFastReplaceGlobalConstructor) {
   RunWorkerFastLayoutTest("shared-worker-replace-global-constructor.html");
 }
 
-TEST_F(WorkerTest, FLAKY_SharedWorkerFastReplaceSelf) {
+TEST_F(WorkerTest, SharedWorkerFastReplaceSelf) {
   RunWorkerFastLayoutTest("shared-worker-replace-self.html");
 }
 
-TEST_F(WorkerTest, FLAKY_SharedWorkerFastScriptError) {
+TEST_F(WorkerTest, SharedWorkerFastScriptError) {
   RunWorkerFastLayoutTest("shared-worker-script-error.html");
 }
 
-TEST_F(WorkerTest, FLAKY_SharedWorkerFastShared) {
+TEST_F(WorkerTest, SharedWorkerFastShared) {
   RunWorkerFastLayoutTest("shared-worker-shared.html");
 }
 
-TEST_F(WorkerTest, FLAKY_SharedWorkerFastSimple) {
+TEST_F(WorkerTest, SharedWorkerFastSimple) {
   RunWorkerFastLayoutTest("shared-worker-simple.html");
 }
 
