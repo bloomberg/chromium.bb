@@ -11,6 +11,8 @@
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_info_cache.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
@@ -300,8 +302,21 @@ bool SyncPromoUI::UserHasSeenSyncPromoAtStartup(Profile* profile) {
 // static
 SyncPromoUI::Version SyncPromoUI::GetSyncPromoVersion() {
   Version version;
-  if (sync_promo_trial::GetSyncPromoVersionForCurrentTrial(&version))
+  if (sync_promo_trial::GetSyncPromoVersionForCurrentTrial(&version)) {
+    // Currently the sync promo dialog has two problems. First, it's not modal
+    // so the user can interact with other browser windows. Second, it uses
+    // a nested message loop that can cause the sync promo page not to render.
+    // To work around these problems the sync promo dialog is only shown for
+    // the first profile. TODO(sail): Fix these issues if the sync promo dialog
+    // is more widely deployed.
+    ProfileInfoCache& cache =
+        g_browser_process->profile_manager()->GetProfileInfoCache();
+    if (cache.GetNumberOfProfiles() > 1 &&
+        version == SyncPromoUI::VERSION_DIALOG) {
+      return SyncPromoUI::VERSION_SIMPLE;
+    }
     return version;
+  }
 
   return VERSION_DEFAULT;
 }
