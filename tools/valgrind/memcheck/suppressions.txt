@@ -5771,7 +5771,28 @@
    fun:_ZN7WebCore23V8AbstractEventListener18invokeEventHandlerEPNS_22ScriptExecutionContextEPNS_5EventEN2v86HandleINS5_5ValueEEE
    fun:_ZN7WebCore23V8AbstractEventListener11handleEventEPNS_22ScriptExecutionContextEPNS_5EventE
 }
-
+{
+   bug_112573
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN2v88internal2OS15CreateSemaphoreEi
+   fun:_ZN2v88internal8ProfilerC1EPNS0_7IsolateE
+   fun:_ZN2v88internal6Logger5SetUpEv
+   fun:_ZN2v88internal7Isolate4InitEPNS0_12DeserializerE
+   fun:_ZN2v88internal2V810InitializeEPNS0_12DeserializerE
+   fun:_ZN2v88internal8Snapshot11DeserializeEPKhi
+   fun:_ZN2v88internal8Snapshot10InitializeEPKc
+   fun:_ZN2v8L16InitializeHelperEv
+   fun:_ZN2v8L27EnsureInitializedForIsolateEPNS_8internal7IsolateEPKc
+   fun:_ZN2v82V818AddMessageListenerEPFvNS_6HandleINS_7MessageEEENS1_INS_5ValueEEEES5_
+   fun:_ZN7WebCore27WorkerContextExecutionProxy19initContextIfNeededEv
+   fun:_ZN7WebCore27WorkerContextExecutionProxy8evaluateERKN3WTF6StringES4_RKNS1_12TextPositionEPNS_27WorkerContextExecutionStateE
+   fun:_ZN7WebCore22WorkerScriptController8evaluateERKNS_16ScriptSourceCodeEPNS_11ScriptValueE
+   fun:_ZN7WebCore22WorkerScriptController8evaluateERKNS_16ScriptSourceCodeE
+   fun:_ZN7WebCore12WorkerThread12workerThreadEv
+   fun:_ZN7WebCore12WorkerThread17workerThreadStartEPv
+   fun:_ZN3WTFL16threadEntryPointEPv
+}
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations
 
