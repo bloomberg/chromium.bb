@@ -50,7 +50,8 @@ void ConfirmBubbleModel::Show(gfx::NativeView view,
 ConfirmBubbleView::ConfirmBubbleView(gfx::NativeView anchor,
                                      const gfx::Point& anchor_point,
                                      ConfirmBubbleModel* model)
-    : anchor_(anchor),
+    : bubble_(NULL),
+      anchor_(anchor),
       anchor_point_(anchor_point),
       model_(model) {
   DCHECK(model);
