@@ -422,6 +422,12 @@ class SessionRestoreImpl : public content::NotificationObserver {
         browser_shown_(false) {
     if (profiles_getting_restored == NULL)
       profiles_getting_restored = new std::set<const Profile*>();
+
+    // We shouldn't have two operations targetting the same profile
+    // simultaneously.
+    CHECK(profiles_getting_restored->find(profile) ==
+          profiles_getting_restored->end());
+
     profiles_getting_restored->insert(profile);
     // When asynchronous its possible for there to be no windows. To make sure
     // Chrome doesn't prematurely exit AddRef the process. We'll release in the
@@ -496,7 +502,11 @@ class SessionRestoreImpl : public content::NotificationObserver {
 
   ~SessionRestoreImpl() {
     STLDeleteElements(&windows_);
-    DCHECK(profiles_getting_restored);
+
+    CHECK(profiles_getting_restored);
+    CHECK(profiles_getting_restored->find(profile_) !=
+          profiles_getting_restored->end());
+
     profiles_getting_restored->erase(profile_);
     if (profiles_getting_restored->empty()) {
       delete profiles_getting_restored;
