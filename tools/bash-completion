@@ -11,7 +11,7 @@ _chrome_flag() {
     local cur targets
     cur="${COMP_WORDS[COMP_CWORD]}"
     targets=$(cd $chrome_source; \
-        git ls-files | grep switches | \
+        git ls-files '*switches*' | \
         xargs sed -ne 's/^[^/]*"\([^" /]\+\)".*/--\1/p')
     COMPREPLY=($(compgen -W "$targets" -- "$cur"))
     return 0
