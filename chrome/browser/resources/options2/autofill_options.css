@@ -1,3 +1,7 @@
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
+
 .autofill-list-item {
   -webkit-box-flex: 1;
   -webkit-padding-start: 8px;
@@ -26,7 +30,8 @@
 
 .autofill-list-item + button,
 .autofill-list-item + img + button {
-  background: #8aaaed !important;  /* Gets overwritten by raw-button:hover */
+  /* Gets overwritten by raw-button:hover */
+  background: rgb(138, 170, 237) !important;
   color: #fff;
   margin-top: 0;
 }

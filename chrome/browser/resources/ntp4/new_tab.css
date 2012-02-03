@@ -43,7 +43,7 @@ body {
 }
 
 #notification {
-  background-color: #FFF199;
+  background-color: rgb(255, 241, 153);
   border: 1px solid lightGrey;
   border-radius: 6px;
   color: black;
@@ -84,9 +84,9 @@ body {
   background-image: url('../../../../ui/resources/close_bar_p.png');
 }
 
-.linkButton {
+.link-button {
   -webkit-margin-start: 0.5em;
-  color: #06C;
+  color: rgb(0, 102, 204);
   cursor: pointer;
   display: inline-block;
   text-decoration: underline;

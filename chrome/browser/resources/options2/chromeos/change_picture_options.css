@@ -1,3 +1,7 @@
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
+
 #images-grid {
   -webkit-user-drag: none;
   -webkit-user-select: none;
@@ -28,6 +32,6 @@
 }
 
 #images-grid [selected] {
-  border: 2px solid #06c;
+  border: 2px solid rgb(0, 102, 204);
   padding: 2px;
 }

@@ -1,3 +1,7 @@
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
+
 .language-options {
   display: -webkit-box;
   margin: 10px 0;
@@ -21,12 +25,14 @@
   padding-bottom: 10px;
 }
 
-.language-options-header, .language-options-footer {
+.language-options-header,
+.language-options-footer {
   margin: 10px 0;
 }
 
-.language-options-left, .language-options-right {
-  border: 1px solid #cccccc;
+.language-options-left,
+.language-options-right {
+  border: 1px solid #ccc;
   vertical-align: top;
   padding: 0;
   height: 400px;
@@ -35,7 +41,7 @@
 .language-options-left {
   -webkit-box-orient: vertical;
   display: -webkit-box;
-  background-color: #ebeff9;
+  background-color: rgb(235, 239, 249);
   width: 300px;
 }
 
@@ -63,7 +69,7 @@ html[os=mac] .language-options-right {
 
 .language-options-notification {
   display: none;
-  background-color: #fff29e;
+  background-color: rgb(255, 242, 158);
   border-top: 1px solid #ccc;
   border-bottom: 1px solid #ccc;
   padding: 12px 30px 12px 12px;

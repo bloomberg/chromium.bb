@@ -1,8 +1,6 @@
-/*
-Copyright (c) 2011 The Chromium Authors. All rights reserved.
-Use of this source code is governed by a BSD-style license that can be
-found in the LICENSE file.
-*/
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
 
 /* styles for the cookies list elements in cookies_view.html */
 #remove-all-cookies-search-column {
@@ -122,9 +120,9 @@ list.cookie-list > .deletable-item[selected] .cookie-data {
 }
 
 .cookie-items .cookie-item {
-  background: #E0E9F5;
+  background: rgb(224, 233, 245);
   border-radius: 5px;
-  border: 1px solid #8392AE;
+  border: 1px solid rgb(131, 146, 174);
   display: inline-block;
   font-size: 85%;
   height: auto;
@@ -138,24 +136,24 @@ list.cookie-list > .deletable-item[selected] .cookie-data {
 }
 
 .cookie-items .cookie-item:hover {
-  background: #EEF3F9;
-  border-color: #647187;
+  background: rgb(238, 243, 249);
+  border-color: rgb(100, 113, 135);
 }
 
 .cookie-items .cookie-item[selected] {
-  background: #F5F8F8;
+  background: rgb(245, 248, 248);
   border-color: #B2B2B2;
 }
 
 .cookie-items .cookie-item[selected]:hover {
-  background: #F5F8F8;
-  border-color: #647187;
+  background: rgb(245, 248, 248);
+  border-color: rgb(100, 113, 135);
 }
 
 
 /* styles for the cookie details box */
 .cookie-details {
-  background: #F5F8F8;
+  background: rgb(245, 248, 248);
   border-radius: 5px;
   border: 1px solid #B2B2B2;
   margin-top: 2px;

@@ -285,7 +285,7 @@ cr.define('ntp4', function() {
       }
       link.setAttribute('role', 'button');
       link.setAttribute('tabindex', 0);
-      link.className = 'linkButton';
+      link.className = 'link-button';
       linksBin.appendChild(link);
     }
 

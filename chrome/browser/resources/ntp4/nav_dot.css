@@ -73,7 +73,9 @@ html.starting-up #dot-list {
   color: #b2b2b2;
 }
 
-.dot:focus input, .dot:hover input, .dot.selected input {
+.dot:focus input,
+.dot:hover input,
+.dot.selected input {
   color: #7f7f7f;
 }
 

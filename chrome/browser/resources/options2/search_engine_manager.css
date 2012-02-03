@@ -1,3 +1,7 @@
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
+
 .search-engine-list > div {
   display: -webkit-box;
 }
@@ -32,7 +36,7 @@
 
 .search-engine-list .keyword-column,
 .search-engine-list .url-column {
-  color: #666666;
+  color: #666;
 }
 
 .search-engine-list .default .name-column,
@@ -52,7 +56,7 @@
 
 .search-engine-list .url-column button {
   -webkit-margin-start: 3px;
-  background: #8aaaed;
+  background: rgb(138, 170, 237);
   color: #fff;
   margin-top: 0;
 }

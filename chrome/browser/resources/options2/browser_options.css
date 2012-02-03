@@ -1,3 +1,7 @@
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
+
 /* TODO(csilv): Re-order, rename selectors according to style guide. */
 
 /* This is necessary because the fix for correctly wrapping labels
@@ -101,8 +105,8 @@
 }
 
 .sync-error {
-  background: #FFDBDB;
-  border: 1px solid #ce4c4c;
+  background: rgb(255, 219, 219);
+  border: 1px solid rgb(206, 76, 76);
   border-radius: 2px;
   padding: 10px;
 }

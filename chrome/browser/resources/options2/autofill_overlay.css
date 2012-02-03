@@ -1,3 +1,7 @@
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
+
 #autofill-edit-address-overlay {
   min-width: 510px;
 }
@@ -23,7 +27,9 @@ div.input {
 }
 
 /* Size to match large name fields. */
-#company-name, #addr-line-1, #addr-line-2 {
+#company-name,
+#addr-line-1,
+#addr-line-2 {
   width: 206px;
 }
 
@@ -85,11 +91,11 @@ div.input {
   width: 100%;
 }
 
-#full-name-list div[role="listitem"] > div {
+#full-name-list div[role='listitem'] > div {
   -webkit-box-orient: horizontal;
   display: -webkit-box;
 }
 
-#full-name-list div[role="listitem"] > div > div {
+#full-name-list div[role='listitem'] > div > div {
   -webkit-box-flex: 1;
 }

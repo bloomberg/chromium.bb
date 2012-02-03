@@ -1,3 +1,7 @@
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
+
 .bluetooth-device-list {
   margin: 10px;
   padding: 5px 10px;
@@ -92,8 +96,8 @@
   border: 1px solid #d4d4d4;
   border-radius: 4px;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.07),
-              inset 0px 1px 1px 1px #fff,
-              inset 0px -1px 1px 1px #ddd;
+              inset 0 1px 1px 1px #fff,
+              inset 0 -1px 1px 1px #ddd;
   color: #666;
   display: inline-block;
   font-size: 14px;
@@ -130,7 +134,7 @@
 .bluetooth-keyboard-button.key-typed {
   color: #222;
   border: 1px solid #ccc;
-  box-shadow: 0 0 0px 1px #888,
-              inset 0px 1px 1px 1px #fff,
-              inset 0px -1px 1px 1px #eee;
+  box-shadow: 0 0 0 1px #888,
+              inset 0 1px 1px 1px #fff,
+              inset 0 -1px 1px 1px #eee;
 }

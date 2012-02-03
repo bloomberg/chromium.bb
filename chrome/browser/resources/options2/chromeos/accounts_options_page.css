@@ -1,3 +1,7 @@
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
+
 .user-list-table {
   border: 1px solid lightgrey;
   border-collapse: collapse;
@@ -6,7 +10,7 @@
 
 .user-name-edit-row {
   border: 1px solid lightgrey;
-  background-color: #ebeffa;
+  background-color: rgb(235, 239, 250);
   padding: 5px;
 }
 
@@ -83,5 +87,5 @@
 }
 
 input#userNameEdit:invalid {
-  background-color: #ff6666;
+  background-color: rgb(255, 102, 102);
 }

@@ -1,4 +1,4 @@
-/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -54,7 +54,7 @@
 
 #manage-profile-error-bubble {
   -webkit-transition: max-height 200ms, padding 200ms;
-  background-color: #eeb939;
+  background-color: rgb(238, 185, 57);
   border-radius: 4px;
   font-weight: bold;
   margin-left: auto;

@@ -18,7 +18,8 @@ body {
   overflow: auto;
 }
 
-#attribution, a.link-color {
+#attribution,
+a.link-color {
   color: $9;  /* COLOR_NTP_LINK */
 }
 

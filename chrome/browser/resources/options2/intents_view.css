@@ -1,8 +1,6 @@
-/*
-Copyright (c) 2011 The Chromium Authors. All rights reserved.
-Use of this source code is governed by a BSD-style license that can be
-found in the LICENSE file.
-*/
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
 
 /* Styles for the intents list elements in intents_view.html. */
 
@@ -106,8 +104,8 @@ list.intents-list > .deletable-item[selected] .intents-data {
 .intents-items .intents-item {
   -webkit-box-orient: horizontal;
   -webkit-box-pack: start;
-  background: #e0e9f5;
-  border: 1px solid #8392ae;
+  background: rgb(224, 233, 245);
+  border: 1px solid rgb(131, 146, 174);
   display: table-row;
   font-size: 85%;
   height: auto;
@@ -137,24 +135,24 @@ list.intents-list > .deletable-item[selected] .intents-data {
 }
 
 .intents-items .intents-item:hover {
-  background: #eef3f9;
-  border-color: #647187;
+  background: rgb(238, 243, 249);
+  border-color: rgb(100, 113, 135);
 }
 
 .intents-items .intents-item[selected] {
-  background: #f5f8f8;
+  background: rgb(245, 248, 248);
   border-color: #b2b2b2;
 }
 
 .intents-items .intents-item[selected]:hover {
-  background: #f5f8f8;
-  border-color: #647187;
+  background: rgb(245, 248, 248);
+  border-color: rgb(100, 113, 135);
 }
 
 /* Styles for the intents details box. */
 
 .intents-details {
-  background: #f5f8f8;
+  background: rgb(245, 248, 248);
   border-radius: 5px;
   border: 1px solid #b2b2b2;
   margin-top: 2px;

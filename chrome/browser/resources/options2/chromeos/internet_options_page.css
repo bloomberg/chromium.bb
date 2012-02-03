@@ -1,3 +1,7 @@
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
+
 #inetTitle {
   border: none;
 }
@@ -20,7 +24,8 @@
   position: relative;
 }
 
-.network-password > input, .network-password > select {
+.network-password > input,
+.network-password > select {
   width: 200px;
 }
 
@@ -139,9 +144,9 @@ html[dir='rtl'] .network-item-text {
 }
 
 #locked-network-icon {
-  background-image: url("chrome://theme/IDR_WARNING");
+  background-image: url('chrome://theme/IDR_WARNING');
   background-repeat: no-repeat;
-  background-position:center;
+  background-position: center;
   display: inline-block;
   padding: 5px;
   height: 21px;

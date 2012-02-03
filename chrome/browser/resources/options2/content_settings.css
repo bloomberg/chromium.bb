@@ -1,8 +1,6 @@
-/*
-Copyright (c) 2011 The Chromium Authors. All rights reserved.
-Use of this source code is governed by a BSD-style license that can be
-found in the LICENSE file.
-*/
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
 
 .exception-pattern {
   -webkit-box-flex: 1;
@@ -50,25 +48,25 @@ select.exception-setting {
   margin: 7px 0;
 }
 
-div[role="listitem"][managedby] {
+div[role='listitem'][managedby] {
   color: #666;
   font-style: italic;
   position: relative;
 }
 
-.settings-list div[role="listitem"][managedby="policy"],
-.settings-list div[role="listitem"][managedby="extension"] {
-  background: -webkit-linear-gradient(#fff1b5, #fae692);
+.settings-list div[role='listitem'][managedby='policy'],
+.settings-list div[role='listitem'][managedby='extension'] {
+  background: -webkit-linear-gradient(rgb(250, 230, 146), rgb(250, 230, 146));
   border-top: 0;
-  border-bottom: 1px solid #c9bd8d;
+  border-bottom: 1px solid rgb(201, 189, 141);
 }
 
-list div[role="listitem"][managedby="policy"] .close-button {
-  background-image: url("chrome://theme/IDR_MANAGED");
+list div[role='listitem'][managedby='policy'] .close-button {
+  background-image: url('chrome://theme/IDR_MANAGED');
   opacity: 1;
 }
 
-list div[role="listitem"][managedby="extension"] .close-button {
-  background-image: url("chrome://theme/IDR_EXTENSIONS_SECTION_SMALL");
+list div[role='listitem'][managedby='extension'] .close-button {
+  background-image: url('chrome://theme/IDR_EXTENSIONS_SECTION_SMALL');
   opacity: 1;
 }
