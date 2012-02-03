@@ -136,6 +136,8 @@ ExistingUserController::ExistingUserController(LoginDisplayHost* host)
       cros_settings_(CrosSettings::Get()),
       weak_factory_(this),
       is_owner_login_(false),
+      offline_failed_(false),
+      is_login_in_progress_(false),
       do_auto_enrollment_(false) {
   DCHECK(current_controller_ == NULL);
   current_controller_ = this;
@@ -331,6 +333,7 @@ void ExistingUserController::CompleteLoginInternal(std::string username,
   is_owner_login_ = OwnershipService::GetSharedInstance()->GetStatus(true) ==
       OwnershipService::OWNERSHIP_NONE;
 
+  is_login_in_progress_ = true;
   login_performer_->CompleteLogin(username, password);
   accessibility::MaybeSpeak(
       l10n_util::GetStringUTF8(IDS_CHROMEOS_ACC_LOGIN_SIGNING_IN));
@@ -353,6 +356,9 @@ void ExistingUserController::Login(const std::string& username,
   if (last_login_attempt_username_ != username) {
     last_login_attempt_username_ = username;
     num_login_attempts_ = 0;
+    // Also reset state variables, which are used to determine password change.
+    offline_failed_ = false;
+    online_succeeded_for_.clear();
   }
   num_login_attempts_++;
 
@@ -366,6 +372,7 @@ void ExistingUserController::Login(const std::string& username,
     login_performer_.reset(NULL);
     login_performer_.reset(new LoginPerformer(delegate));
   }
+  is_login_in_progress_ = true;
   login_performer_->Login(username, password);
   accessibility::MaybeSpeak(
       l10n_util::GetStringUTF8(IDS_CHROMEOS_ACC_LOGIN_SIGNING_IN));
@@ -398,6 +405,7 @@ void ExistingUserController::LoginAsGuest() {
   // Only one instance of LoginPerformer should exist at a time.
   login_performer_.reset(NULL);
   login_performer_.reset(new LoginPerformer(this));
+  is_login_in_progress_ = true;
   login_performer_->LoginOffTheRecord();
   accessibility::MaybeSpeak(
       l10n_util::GetStringUTF8(IDS_CHROMEOS_ACC_LOGIN_SIGNIN_OFFRECORD));
@@ -443,54 +451,62 @@ void ExistingUserController::ShowEnrollmentScreen(bool is_auto_enrollment,
 //
 
 void ExistingUserController::OnLoginFailure(const LoginFailure& failure) {
+  is_login_in_progress_ = false;
+  offline_failed_ = true;
+
   guest_mode_url_ = GURL::EmptyGURL();
   std::string error = failure.GetErrorString();
 
-  // Check networking after trying to login in case user is
-  // cached locally or the local admin account.
-  bool is_known_user =
-      UserManager::Get()->IsKnownUser(last_login_attempt_username_);
-  NetworkLibrary* network = CrosLibrary::Get()->GetNetworkLibrary();
-  if (!network) {
-    ShowError(IDS_LOGIN_ERROR_NO_NETWORK_LIBRARY, error);
-  } else if (!network->Connected()) {
-    if (is_known_user)
-      ShowError(IDS_LOGIN_ERROR_AUTHENTICATING, error);
-    else
-      ShowError(IDS_LOGIN_ERROR_OFFLINE_FAILED_NETWORK_NOT_CONNECTED, error);
+  if (!online_succeeded_for_.empty()) {
+    ShowGaiaPasswordChanged(online_succeeded_for_);
   } else {
-    // Network is connected.
-    const Network* active_network = network->active_network();
-    // TODO(nkostylev): Cleanup rest of ClientLogin related code.
-    if (failure.reason() == LoginFailure::NETWORK_AUTH_FAILED &&
-        failure.error().state() == GoogleServiceAuthError::HOSTED_NOT_ALLOWED) {
-      ShowError(IDS_LOGIN_ERROR_AUTHENTICATING_HOSTED, error);
-    } else if ((active_network && active_network->restricted_pool()) ||
-               (failure.reason() == LoginFailure::NETWORK_AUTH_FAILED &&
-                failure.error().state() ==
-                    GoogleServiceAuthError::SERVICE_UNAVAILABLE)) {
-      // Use explicit captive portal state (restricted_pool()) or implicit one.
-      // SERVICE_UNAVAILABLE is generated in 2 cases:
-      // 1. ClientLogin returns ServiceUnavailable code.
-      // 2. Internet connectivity may be behind the captive portal.
-      // Suggesting user to try sign in to a portal in Guest mode.
-      bool allow_guest;
-      cros_settings_->GetBoolean(kAccountsPrefAllowGuest, &allow_guest);
-      if (allow_guest)
-        ShowError(IDS_LOGIN_ERROR_CAPTIVE_PORTAL, error);
-      else
-        ShowError(IDS_LOGIN_ERROR_CAPTIVE_PORTAL_NO_GUEST_MODE, error);
-    } else {
-      if (!is_known_user)
-        ShowError(IDS_LOGIN_ERROR_AUTHENTICATING_NEW, error);
-      else
+    // Check networking after trying to login in case user is
+    // cached locally or the local admin account.
+    bool is_known_user =
+        UserManager::Get()->IsKnownUser(last_login_attempt_username_);
+    NetworkLibrary* network = CrosLibrary::Get()->GetNetworkLibrary();
+    if (!network) {
+      ShowError(IDS_LOGIN_ERROR_NO_NETWORK_LIBRARY, error);
+    } else if (!network->Connected()) {
+      if (is_known_user)
         ShowError(IDS_LOGIN_ERROR_AUTHENTICATING, error);
+      else
+        ShowError(IDS_LOGIN_ERROR_OFFLINE_FAILED_NETWORK_NOT_CONNECTED, error);
+    } else {
+      // Network is connected.
+      const Network* active_network = network->active_network();
+      // TODO(nkostylev): Cleanup rest of ClientLogin related code.
+      if (failure.reason() == LoginFailure::NETWORK_AUTH_FAILED &&
+          failure.error().state() ==
+              GoogleServiceAuthError::HOSTED_NOT_ALLOWED) {
+        ShowError(IDS_LOGIN_ERROR_AUTHENTICATING_HOSTED, error);
+      } else if ((active_network && active_network->restricted_pool()) ||
+                 (failure.reason() == LoginFailure::NETWORK_AUTH_FAILED &&
+                  failure.error().state() ==
+                      GoogleServiceAuthError::SERVICE_UNAVAILABLE)) {
+        // Use explicit captive portal state (restricted_pool()) or implicit
+        // one.
+        // SERVICE_UNAVAILABLE is generated in 2 cases:
+        // 1. ClientLogin returns ServiceUnavailable code.
+        // 2. Internet connectivity may be behind the captive portal.
+        // Suggesting user to try sign in to a portal in Guest mode.
+        bool allow_guest;
+        cros_settings_->GetBoolean(kAccountsPrefAllowGuest, &allow_guest);
+        if (allow_guest)
+          ShowError(IDS_LOGIN_ERROR_CAPTIVE_PORTAL, error);
+        else
+          ShowError(IDS_LOGIN_ERROR_CAPTIVE_PORTAL_NO_GUEST_MODE, error);
+      } else {
+        if (!is_known_user)
+          ShowError(IDS_LOGIN_ERROR_AUTHENTICATING_NEW, error);
+        else
+          ShowError(IDS_LOGIN_ERROR_AUTHENTICATING, error);
+      }
     }
+    // Reenable clicking on other windows and status area.
+    login_display_->SetUIEnabled(true);
+    SetStatusAreaEnabled(true);
   }
-
-  // Reenable clicking on other windows and status area.
-  login_display_->SetUIEnabled(true);
-  SetStatusAreaEnabled(true);
 
   if (login_status_consumer_)
     login_status_consumer_->OnLoginFailure(failure);
@@ -505,6 +521,8 @@ void ExistingUserController::OnLoginSuccess(
     const GaiaAuthConsumer::ClientLoginResult& credentials,
     bool pending_requests,
     bool using_oauth) {
+  is_login_in_progress_ = false;
+  offline_failed_ = false;
   bool known_user = UserManager::Get()->IsKnownUser(username);
   bool login_only =
       CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
@@ -573,6 +591,8 @@ void ExistingUserController::OnProfilePrepared(Profile* profile) {
 }
 
 void ExistingUserController::OnOffTheRecordLoginSuccess() {
+  is_login_in_progress_ = false;
+  offline_failed_ = false;
   if (WizardController::IsDeviceRegistered()) {
     LoginUtils::Get()->CompleteOffTheRecordLogin(guest_mode_url_);
   } else {
@@ -629,6 +649,16 @@ void ExistingUserController::WhiteListCheckFailed(const std::string& email) {
   SetStatusAreaEnabled(true);
 
   display_email_.clear();
+}
+
+void ExistingUserController::OnOnlineChecked(const std::string& username,
+                                             bool success) {
+  if (success && last_login_attempt_username_ == username) {
+    online_succeeded_for_ = username;
+    // Wait for login attempt to end, if it hasn't yet.
+    if (offline_failed_ && !is_login_in_progress_)
+      ShowGaiaPasswordChanged(username);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -773,6 +803,18 @@ void ExistingUserController::SetOwnerUserInCryptohome() {
   // Do not invoke AsyncDoAutomaticFreeDiskSpaceControl(NULL) here
   // so it does not delay the following mount. Cleanup will be
   // started in Cryptohomed by timer.
+}
+
+void ExistingUserController::ShowGaiaPasswordChanged(
+    const std::string& username) {
+  // Invalidate OAuth token, since it can't be correct after password is
+  // changed.
+  UserManager::Get()->SaveUserOAuthStatus(username,
+                                          User::OAUTH_TOKEN_STATUS_INVALID);
+
+  login_display_->SetUIEnabled(true);
+  SetStatusAreaEnabled(true);
+  login_display_->ShowGaiaPasswordChanged(username);
 }
 
 }  // namespace chromeos

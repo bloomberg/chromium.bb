@@ -209,6 +209,37 @@ cr.define('login', function() {
     },
 
     /**
+     * Updates the user pod element.
+     */
+    update: function() {
+      this.updateUserImage();
+
+      this.nameElement.textContent = this.user_.displayName;
+      this.removeUserButtonElement.hidden = !this.user_.canRemove;
+      this.signedInIndicatorElement.hidden = !this.user_.signedIn;
+
+      if (this.isGuest) {
+        this.imageElement.title = this.user_.displayName;
+        this.enterButtonElement.hidden = false;
+        this.passwordElement.hidden = true;
+        this.signinButtonElement.hidden = true;
+      } else {
+        var needSignin = this.needGaiaSignin;
+        this.imageElement.title = this.user_.nameTooltip || '';
+        this.enterButtonElement.hidden = true;
+        this.passwordElement.hidden = needSignin;
+        this.removeUserButtonElement.setAttribute(
+            'aria-label', localStrings.getStringF('removeButtonAccessibleName',
+                                                  this.user_.emailAddress));
+        this.passwordElement.setAttribute('aria-label',
+                                          localStrings.getStringF(
+                                              'passwordFieldAccessibleName',
+                                              this.user_.emailAddress));
+        this.signinButtonElement.hidden = !needSignin;
+      }
+    },
+
+    /**
      * The user that this pod represents.
      * @type {!Object}
      */
@@ -218,32 +249,7 @@ cr.define('login', function() {
     },
     set user(userDict) {
       this.user_ = userDict;
-
-      this.updateUserImage();
-
-      this.nameElement.textContent = userDict.displayName;
-      this.removeUserButtonElement.hidden = !userDict.canRemove;
-      this.signedInIndicatorElement.hidden = !userDict.signedIn;
-
-      if (this.isGuest) {
-        this.imageElement.title = userDict.displayName;
-        this.enterButtonElement.hidden = false;
-        this.passwordElement.hidden = true;
-        this.signinButtonElement.hidden = true;
-      } else {
-        var needSignin = this.needGaiaSignin;
-        this.imageElement.title = userDict.nameTooltip || '';
-        this.enterButtonElement.hidden = true;
-        this.passwordElement.hidden = needSignin;
-        this.removeUserButtonElement.setAttribute(
-            'aria-label', localStrings.getStringF('removeButtonAccessibleName',
-                                                  userDict.emailAddress));
-        this.passwordElement.setAttribute('aria-label',
-                                          localStrings.getStringF(
-                                              'passwordFieldAccessibleName',
-                                              userDict.emailAddress));
-        this.signinButtonElement.hidden = !needSignin;
-      }
+      this.update();
     },
 
     /**
@@ -455,6 +461,20 @@ cr.define('login', function() {
     },
 
     /**
+     * Returns pod with the given username (null if there is no such pod).
+     * @param {string} username Username to be matched.
+     * @return {Object} Pod with the given username. null if pod hasn't been
+     *     found.
+     */
+    getPodWithUsername_: function(username) {
+      for (var i = 0, pod; pod = this.pods[i]; ++i) {
+        if (pod.user.username == username)
+          return pod;
+      }
+      return null;
+    },
+
+    /**
      * True if the the pod row is disabled (handles no user interaction).
      * @type {boolean}
      */
@@ -655,11 +675,23 @@ cr.define('login', function() {
      * @public
      */
     updateUserImage: function(username) {
-      for (var i = 0, pod; pod = this.pods[i]; ++i) {
-        if (pod.user.username == username) {
-          pod.updateUserImage();
-          return;
-        }
+      var pod = this.getPodWithUsername_(username);
+      if (pod)
+        pod.updateUserImage();
+    },
+
+    /**
+    * Resets OAuth token status (invalidates it).
+    * @param {string} username User for which to reset the status.
+    * @public
+    */
+    resetUserOAuthTokenStatus: function(username) {
+      var pod = this.getPodWithUsername_(username);
+      if (pod) {
+        pod.user.oauthTokenStatus = OAuthTokenStatus.INVALID;
+        pod.update();
+      } else {
+        console.log('Failed to update Gaia state for: ' + username);
       }
     },
 

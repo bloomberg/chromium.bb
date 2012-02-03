@@ -275,6 +275,8 @@ void SigninScreenHandler::GetLocalizedStrings(
     DictionaryValue* localized_strings) {
   localized_strings->SetString("signinScreenTitle",
       l10n_util::GetStringUTF16(IDS_SIGNIN_SCREEN_TITLE));
+  localized_strings->SetString("signinScreenPasswordChanged",
+      l10n_util::GetStringUTF16(IDS_SIGNIN_SCREEN_PASSWORD_CHANGED));
   localized_strings->SetString("passwordHint",
       l10n_util::GetStringUTF16(IDS_LOGIN_POD_EMPTY_PASSWORD_TEXT));
   localized_strings->SetString("removeButtonAccessibleName",
@@ -477,6 +479,15 @@ void SigninScreenHandler::ShowError(int login_attempts,
                                    help_id);
 }
 
+void SigninScreenHandler::ShowGaiaPasswordChanged(const std::string& username) {
+  email_ = username;
+  password_changed_for_.insert(email_);
+  base::StringValue email_value(email_);
+  web_ui()->CallJavascriptFunction("cr.ui.Oobe.showSigninUI", email_value);
+  web_ui()->CallJavascriptFunction(
+      "login.AccountPickerScreen.updateUserGaiaNeeded", email_value);
+}
+
 void SigninScreenHandler::OnBrowsingDataRemoverDone() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   cookie_remover_ = NULL;
@@ -529,6 +540,8 @@ void SigninScreenHandler::LoadAuthExtension(
   params.SetBoolean("forceReload", force);
   params.SetBoolean("silentLoad", silent_load);
   params.SetBoolean("isLocal", offline);
+  params.SetBoolean("passwordChanged",
+                    !email_.empty() && password_changed_for_.count(email_));
   if (delegate_)
     params.SetBoolean("isShowUsers", delegate_->IsShowUsers());
   params.SetString("startUrl",

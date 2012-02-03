@@ -12,6 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/login/authenticator.h"
 #include "chrome/browser/chromeos/login/login_status_consumer.h"
+#include "chrome/browser/chromeos/login/online_attempt_host.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/net/gaia/google_service_auth_error.h"
 #include "content/public/browser/notification_observer.h"
@@ -51,13 +52,15 @@ namespace chromeos {
 // 2. Pending online auth request.
 // TODO(nkostylev): Cleanup ClientLogin related code, update class description.
 class LoginPerformer : public LoginStatusConsumer,
-                       public content::NotificationObserver {
+                       public content::NotificationObserver,
+                       public OnlineAttemptHost::Delegate {
  public:
   // Delegate class to get notifications from the LoginPerformer.
   class Delegate : public LoginStatusConsumer {
    public:
     virtual ~Delegate() {}
     virtual void WhiteListCheckFailed(const std::string& email) = 0;
+    virtual void OnOnlineChecked(const std::string& email, bool success) = 0;
   };
 
   explicit LoginPerformer(Delegate* delegate);
@@ -118,6 +121,10 @@ class LoginPerformer : public LoginStatusConsumer,
   } AuthorizationMode;
   AuthorizationMode auth_mode() const { return auth_mode_; }
 
+ protected:
+  // Implements OnlineAttemptHost::Delegate.
+  virtual void OnChecked(const std::string& username, bool success) OVERRIDE;
+
  private:
   // content::NotificationObserver implementation:
   virtual void Observe(int type,
@@ -160,6 +167,9 @@ class LoginPerformer : public LoginStatusConsumer,
 
   // Used for logging in.
   scoped_refptr<Authenticator> authenticator_;
+
+  // Used to make auxiliary online check.
+  OnlineAttemptHost online_attempt_host_;
 
   // Represents last login failure that was encountered when communicating to
   // sign-in server. LoginFailure.None() by default.

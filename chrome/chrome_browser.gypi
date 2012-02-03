@@ -615,6 +615,8 @@
         'browser/chromeos/login/network_screen_actor.h',
         'browser/chromeos/login/online_attempt.cc',
         'browser/chromeos/login/online_attempt.h',
+        'browser/chromeos/login/online_attempt_host.cc',
+        'browser/chromeos/login/online_attempt_host.h',
         'browser/chromeos/login/oobe_display.h',
         'browser/chromeos/login/owner_key_utils.cc',
         'browser/chromeos/login/owner_key_utils.h',

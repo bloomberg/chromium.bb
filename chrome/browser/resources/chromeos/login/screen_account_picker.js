@@ -120,6 +120,15 @@ cr.define('login', function() {
   };
 
   /**
+   * Updates user to use gaia login.
+   * @param {string} username User for which to state the state.
+   * @public
+   */
+  AccountPickerScreen.updateUserGaiaNeeded = function(username) {
+    $('pod-row').resetUserOAuthTokenStatus(username);
+  };
+
+  /**
    * Updates Caps Lock state (for Caps Lock hint in password input field).
    * @param {boolean} enabled Whether Caps Lock is on.
    * @public

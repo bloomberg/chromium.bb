@@ -42,6 +42,7 @@ class LoginDisplayWebUIHandler {
                          const std::string& error_text,
                          const std::string& help_link_text,
                          HelpAppLauncher::HelpTopic help_topic_id) = 0;
+  virtual void ShowGaiaPasswordChanged(const std::string& username) = 0;
   // Show siginin screen for the given credentials.
   virtual void ShowSigninScreenForCreds(const std::string& username,
                                         const std::string& password) = 0;
@@ -142,6 +143,7 @@ class SigninScreenHandler : public BaseScreenHandler,
                          HelpAppLauncher::HelpTopic help_topic_id) OVERRIDE;
   virtual void ShowSigninScreenForCreds(const std::string& username,
                                         const std::string& password) OVERRIDE;
+  virtual void ShowGaiaPasswordChanged(const std::string& username) OVERRIDE;
 
   // BrowsingDataRemover::Observer overrides.
   virtual void OnBrowsingDataRemoverDone() OVERRIDE;
@@ -266,6 +268,8 @@ class SigninScreenHandler : public BaseScreenHandler,
 
   // Email to pre-populate with.
   std::string email_;
+  // Emails of the users, whose passwords have recently been changed.
+  std::set<std::string> password_changed_for_;
 
   // Test credentials.
   std::string test_user_;

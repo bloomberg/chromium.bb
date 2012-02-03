@@ -224,6 +224,15 @@ cr.define('login', function() {
      * @private
      */
     updateAuthExtension_: function(data) {
+      var reasonLabel = $('gaia-signin-reason');
+      if (data.passwordChanged) {
+        reasonLabel.textContent =
+            localStrings.getString('signinScreenPasswordChanged');
+        reasonLabel.hidden = false;
+      } else {
+        reasonLabel.hidden = true;
+      }
+
       $('createAccount').hidden = !data.createAccount;
       $('guestSignin').hidden = !data.guestSignin;
     },

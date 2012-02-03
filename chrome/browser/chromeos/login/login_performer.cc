@@ -48,7 +48,8 @@ namespace chromeos {
 LoginPerformer* LoginPerformer::default_performer_ = NULL;
 
 LoginPerformer::LoginPerformer(Delegate* delegate)
-    : last_login_failure_(LoginFailure::None()),
+    : ALLOW_THIS_IN_INITIALIZER_LIST(online_attempt_host_(this)),
+      last_login_failure_(LoginFailure::None()),
       delegate_(delegate),
       password_changed_(false),
       screen_lock_requested_(false),
@@ -57,7 +58,7 @@ LoginPerformer::LoginPerformer(Delegate* delegate)
       using_oauth_(
           !CommandLine::ForCurrentProcess()->HasSwitch(
               switches::kSkipOAuthLogin)),
-      weak_factory_(this) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
   DCHECK(default_performer_ == NULL)
       << "LoginPerformer should have only one instance.";
   default_performer_ = this;
@@ -218,6 +219,14 @@ void LoginPerformer::OnPasswordChangeDetected(
     DVLOG(1) << "Password change detected - locking screen.";
     RequestScreenLock();
   }
+}
+
+void LoginPerformer::OnChecked(const std::string& username, bool success) {
+  if (!delegate_) {
+    NOTREACHED();
+    return;
+  }
+  delegate_->OnOnlineChecked(username, success);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -520,6 +529,9 @@ void LoginPerformer::StartAuthentication() {
                    password_,
                    std::string(),
                    std::string()));
+    // Make unobtrusive online check. It helps to determine password change
+    // state in the case when offline login fails.
+    online_attempt_host_.Check(profile, username_, password_);
   } else {
     DCHECK(authenticator_.get())
         << "Authenticator instance doesn't exist for login attempt retry.";
