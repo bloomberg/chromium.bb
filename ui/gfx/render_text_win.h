@@ -28,6 +28,8 @@ struct TextRun {
   //            See the example at: http://www.catch22.net/tuts/neatpad/12.
   SkColor foreground;
   // A gfx::Font::FontStyle flag to specify bold and italic styles.
+  // Supercedes |font.GetFontStyle()|. Stored separately to avoid calling
+  // |font.DeriveFont()|, which is expensive on Windows.
   int font_style;
   bool strike;
   bool diagonal_strike;

@@ -75,10 +75,7 @@ bool ChooseFallbackFont(HDC hdc,
     log_font.lfFaceName[0] = 0;
     EnumEnhMetaFile(0, meta_file, MetaFileEnumProc, &log_font, NULL);
     if (log_font.lfFaceName[0]) {
-      int font_style = font.GetStyle();
       *result = gfx::Font(UTF16ToUTF8(log_font.lfFaceName), font.GetFontSize());
-      if (result->GetStyle() != font_style)
-        *result = result->DeriveFont(0, font_style);
       found_fallback = true;
     }
   }
@@ -468,6 +465,7 @@ void RenderTextWin::DrawVisualText(Canvas* canvas) {
     }
 
     renderer.SetFont(run->font);
+    renderer.SetFontStyle(run->font_style);
     renderer.SetForegroundColor(run->foreground);
     renderer.DrawPosText(&pos[0], run->glyphs.get(), run->glyph_count);
     // TODO(oshima|msw): Consider refactoring StyleRange into Style
@@ -574,7 +572,8 @@ void RenderTextWin::ItemizeLogicalText() {
   for (int run_break = 0; run_break < text_length;) {
     internal::TextRun* run = new internal::TextRun();
     run->range.set_start(run_break);
-    run->font = GetFont().DeriveFont(0, style->font_style);
+    run->font = GetFont();
+    run->font_style = style->font_style;
     run->foreground = style->foreground;
     run->strike = style->strike;
     run->diagonal_strike = style->diagonal_strike;
@@ -627,21 +626,21 @@ void RenderTextWin::LayoutVisualText() {
       if (hr == E_OUTOFMEMORY) {
         max_glyphs *= 2;
       } else if (hr == USP_E_SCRIPT_NOT_IN_FONT) {
-         // Only try font fallback if it hasn't yet been attempted for this run.
-         if (tried_fallback) {
-           // TODO(msw): Don't use SCRIPT_UNDEFINED. Apparently Uniscribe can
-           //            crash on certain surrogate pairs with SCRIPT_UNDEFINED.
-           //            See https://bugzilla.mozilla.org/show_bug.cgi?id=341500
-           //            And http://maxradi.us/documents/uniscribe/
-           run->script_analysis.eScript = SCRIPT_UNDEFINED;
-           // Reset |hr| to 0 to not trigger the DCHECK() below when a font is
-           // not found that can display the text. This is expected behavior
-           // under Windows XP without additional language packs installed and
-           // may also happen on newer versions when trying to display text in
-           // an obscure script that the system doesn't have the right font for.
-           hr = 0;
-           break;
-         }
+        // Only try font fallback if it hasn't yet been attempted for this run.
+        if (tried_fallback) {
+          // TODO(msw): Don't use SCRIPT_UNDEFINED. Apparently Uniscribe can
+          //            crash on certain surrogate pairs with SCRIPT_UNDEFINED.
+          //            See https://bugzilla.mozilla.org/show_bug.cgi?id=341500
+          //            And http://maxradi.us/documents/uniscribe/
+          run->script_analysis.eScript = SCRIPT_UNDEFINED;
+          // Reset |hr| to 0 to not trigger the DCHECK() below when a font is
+          // not found that can display the text. This is expected behavior
+          // under Windows XP without additional language packs installed and
+          // may also happen on newer versions when trying to display text in
+          // an obscure script that the system doesn't have the right font for.
+          hr = 0;
+          break;
+        }
 
         // The run's font doesn't contain the required glyphs, use an alternate.
         // TODO(msw): support RenderText's font_list().
