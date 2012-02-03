@@ -302,6 +302,7 @@
         '../chrome/chrome.gyp:common',
         '../chrome/chrome.gyp:browser',
         '../chrome/chrome.gyp:debugger',
+        '../chrome/chrome.gyp:image_pre_reader',
         '../chrome/chrome.gyp:test_support_ui',
         '../chrome/chrome.gyp:utility',
         '../content/content.gyp:content_gpu',

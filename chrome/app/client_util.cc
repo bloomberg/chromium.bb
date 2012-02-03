@@ -19,6 +19,7 @@
 #include "base/win/registry.h"
 #include "chrome/app/breakpad_win.h"
 #include "chrome/app/client_util.h"
+#include "chrome/app/image_pre_reader_win.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_result_codes.h"
 #include "chrome/common/chrome_switches.h"
@@ -183,9 +184,26 @@ HMODULE LoadChromeWithDirectory(std::wstring* dir) {
     // TODO(ananta): Investigate this and tune.
     const size_t kStepSize = 4 * 1024;
 
+    // We hypothesize that pre-reading only the bytes actually touched during
+    // startup should improve startup time. The Syzygy toolchain attempts to
+    // optimize the binary layout of chrome.dll, rearranging the code and data
+    // blocks such that temporally related blocks (i.e., code and data used in
+    // startup, browser, renderer, etc) are grouped together, and that blocks
+    // used early in the process lifecycle occur earlier in their sections.
+    // Our most recent results in the lab show that around 20% of code and 30%
+    // of data is touched during startup. The value below is an experiment
+    // to see what happens to startup time when we read just a percentage
+    // of each section of the binary versus reading the entire thing.
+    // TODO(rogerm): Investigate/validate this and (if benefical) automate
+    //     the process of determining how much to read from each section
+    //     and embed that info somewhere.
+    const DWORD kPreReadPercentage = 25;
+
     DWORD pre_read_size = 0;
+    DWORD pre_read_percentage = kPreReadPercentage;
     DWORD pre_read_step_size = kStepSize;
     DWORD pre_read = 1;
+    bool use_registry = false;
 
     // TODO(chrisha): This path should not be ChromeFrame specific, and it
     //     should not be hard-coded with 'Google' in the path. Rather, it should
@@ -193,9 +211,12 @@ HMODULE LoadChromeWithDirectory(std::wstring* dir) {
     base::win::RegKey key(HKEY_CURRENT_USER, L"Software\\Google\\ChromeFrame",
                           KEY_QUERY_VALUE);
     if (key.Valid()) {
-      key.ReadValueDW(L"PreReadSize", &pre_read_size);
-      key.ReadValueDW(L"PreReadStepSize", &pre_read_step_size);
-      key.ReadValueDW(L"PreRead", &pre_read);
+      use_registry = (key.ReadValueDW(L"PreRead", &pre_read) == ERROR_SUCCESS);
+      if (use_registry) {
+        key.ReadValueDW(L"PreReadPercentage", &pre_read_percentage);
+        key.ReadValueDW(L"PreReadSize", &pre_read_size);
+        key.ReadValueDW(L"PreReadStepSize", &pre_read_step_size);
+      }
       key.Close();
     }
 
@@ -210,23 +231,36 @@ HMODULE LoadChromeWithDirectory(std::wstring* dir) {
     // to chrome.dll via an environment variable, which indicates to chrome.dll
     // that the experiment is running, causing it to report sub-histogram
     // results.
-
+    //
+    // If we've read pre-read settings from the registry, then someone has
+    // specifically set their pre-read options and is not participating in
+    // the experiment.
+    //
     // If the experiment is running, indicate it to chrome.dll via an
-    // environment variable.
-    if (GetPreReadExperimentGroup(&pre_read)) {
+    // environment variable. A pre_read value of 1 indicates that a full
+    // (100%, the current default behaviour) pre-read is to be performed,
+    // while a pre_read value of 0 indicates a partial pre-read is to be
+    // performed, up to the configured percentage.
+    if (!use_registry && GetPreReadExperimentGroup(&pre_read)) {
       DCHECK(pre_read == 0 || pre_read == 1);
       scoped_ptr<base::Environment> env(base::Environment::Create());
       env->SetVar(chrome::kPreReadEnvironmentVariable,
                   pre_read ? "1" : "0");
+      pre_read_percentage = kPreReadPercentage;
     }
 #endif  // if defined(GOOGLE_CHROME_BUILD)
 #endif  // if defined(OS_WIN)
 
-    if (pre_read) {
-      TRACE_EVENT_BEGIN_ETW("PreReadImage", 0, "");
-      file_util::PreReadImage(dir->c_str(), pre_read_size, pre_read_step_size);
-      TRACE_EVENT_END_ETW("PreReadImage", 0, "");
-    }
+    // Clamp the DWORD percentage to fit into a uint8 that's <= 100.
+    uint8 percentage_to_read = static_cast<uint8>(
+        std::min<DWORD>(pre_read ? 100 : pre_read_percentage, 100));
+
+    // Perform the full or partial pre-read.
+    TRACE_EVENT_BEGIN_ETW("PreReadImage", 0, "");
+    ImagePreReader::PartialPreReadImage(dir->c_str(),
+                                        percentage_to_read,
+                                        pre_read_step_size);
+    TRACE_EVENT_END_ETW("PreReadImage", 0, "");
   }
 #endif  // NDEBUG
 #endif  // WIN_DISABLE_PREREAD

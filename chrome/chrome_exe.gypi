@@ -454,6 +454,7 @@
             'chrome_version_resources',
             'installer_util',
             'installer_util_strings',
+            'image_pre_reader',
             '../base/base.gyp:base',
             '../breakpad/breakpad.gyp:breakpad_handler',
             '../breakpad/breakpad.gyp:breakpad_sender',
@@ -509,6 +510,17 @@
   'conditions': [
     ['OS=="win"', {
       'targets': [
+        {
+          'target_name': 'image_pre_reader',
+          'type': 'static_library',
+          'sources': [
+            'app/image_pre_reader_win.cc',
+            'app/image_pre_reader_win.h',
+          ],
+          'dependencies': [
+             '../base/base.gyp:base',
+          ],
+        },
         {
           'target_name': 'chrome_nacl_win64',
           'type': 'executable',
