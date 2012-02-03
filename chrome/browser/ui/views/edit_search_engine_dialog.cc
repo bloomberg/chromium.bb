@@ -57,6 +57,9 @@ EditSearchEngineDialog::EditSearchEngineDialog(
   Init();
 }
 
+EditSearchEngineDialog::~EditSearchEngineDialog() {
+}
+
 // static
 void EditSearchEngineDialog::Show(gfx::NativeWindow parent,
                                   const TemplateURL* template_url,

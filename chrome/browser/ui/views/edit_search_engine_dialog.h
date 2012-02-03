@@ -31,7 +31,7 @@ class EditSearchEngineDialog : public views::TextfieldController,
   EditSearchEngineDialog(const TemplateURL* template_url,
                          EditSearchEngineControllerDelegate* delegate,
                          Profile* profile);
-  virtual ~EditSearchEngineDialog() {}
+  virtual ~EditSearchEngineDialog();
 
   // Shows the dialog to the user.
   static void Show(gfx::NativeWindow parent,
