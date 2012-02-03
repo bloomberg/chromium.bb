@@ -617,6 +617,7 @@ void ResourceDispatcherHost::BeginRequest(
   uint64 upload_size = 0;
   if (request_data.upload_data) {
     request->set_upload(request_data.upload_data);
+    // This results in performing file IO. crbug.com/112607.
     upload_size = request_data.upload_data->GetContentLength();
   }
 
