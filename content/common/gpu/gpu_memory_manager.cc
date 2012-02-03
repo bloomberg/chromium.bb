@@ -20,16 +20,10 @@ namespace {
 // GpuMemoryAllocation::gpuResourceSizeInBytes.  Currently, the value is only
 // used to check if it is 0 or non-0.  In the future, these values will not
 // come from constants, but rather will be distributed dynamically.
-const uint32 kResourceSizeNonHibernatedTab = 1;
-const uint32 kResourceSizeHibernatedTab = 0;
-
-// Set up three allocation values for the three possible stub states
-const GpuMemoryAllocation all_buffers_allocation(
-    kResourceSizeNonHibernatedTab, true, true);
-const GpuMemoryAllocation front_buffers_allocation(
-    kResourceSizeNonHibernatedTab, true, false);
-const GpuMemoryAllocation no_buffers_allocation(
-    kResourceSizeHibernatedTab, false, false);
+enum {
+  kResourceSizeNonHibernatedTab = 1,
+  kResourceSizeHibernatedTab = 0
+};
 
 }
 
@@ -85,6 +79,14 @@ void GpuMemoryManager::ScheduleManage() {
 //                 max_surfaces_with_frontbuffer_soft_limit_ limit.
 //                 * Will not have either buffer.
 void GpuMemoryManager::Manage() {
+  // Set up three allocation values for the three possible stub states
+  const GpuMemoryAllocation all_buffers_allocation(
+      kResourceSizeNonHibernatedTab, true, true);
+  const GpuMemoryAllocation front_buffers_allocation(
+      kResourceSizeNonHibernatedTab, true, false);
+  const GpuMemoryAllocation no_buffers_allocation(
+      kResourceSizeHibernatedTab, false, false);
+
   manage_scheduled_ = false;
 
   // Create stub lists by separating out the two types received from client
