@@ -2243,6 +2243,8 @@
         'browser/spellchecker/spellcheck_profile.cc',
         'browser/spellchecker/spellcheck_profile.h',
         'browser/spellchecker/spellcheck_profile_provider.h',
+        'browser/spellchecker/spelling_service_client.cc',
+        'browser/spellchecker/spelling_service_client.h',
         'browser/ssl/ssl_add_cert_handler.cc',
         'browser/ssl/ssl_add_cert_handler.h',
         'browser/ssl/ssl_add_cert_handler_mac.mm',
