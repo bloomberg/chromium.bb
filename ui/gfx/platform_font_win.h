@@ -82,6 +82,7 @@ class UI_EXPORT PlatformFontWin : public PlatformFont {
     int style() const { return style_; }
     int dlu_base_x() const { return dlu_base_x_; }
     const std::string& font_name() const { return font_name_; }
+    int font_size() const { return font_size_; }
 
    private:
     friend class  base::RefCounted<HFontRef>;
@@ -96,6 +97,7 @@ class UI_EXPORT PlatformFontWin : public PlatformFont {
     // Constants used in converting dialog units to pixels.
     const int dlu_base_x_;
     std::string font_name_;
+    int font_size_;
 
     DISALLOW_COPY_AND_ASSIGN(HFontRef);
   };

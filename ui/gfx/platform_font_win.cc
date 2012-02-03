@@ -114,10 +114,7 @@ std::string PlatformFontWin::GetFontName() const {
 }
 
 int PlatformFontWin::GetFontSize() const {
-  LOGFONT font_info;
-  GetObject(font_ref_->hfont(), sizeof(LOGFONT), &font_info);
-  DCHECK_LT(font_info.lfHeight, 0);
-  return -font_info.lfHeight;
+  return font_ref_->font_size();
 }
 
 NativeFont PlatformFontWin::GetNativeFont() const {
@@ -217,6 +214,8 @@ PlatformFontWin::HFontRef::HFontRef(HFONT hfont,
   LOGFONT font_info;
   GetObject(hfont_, sizeof(LOGFONT), &font_info);
   font_name_ = UTF16ToUTF8(string16(font_info.lfFaceName));
+  DCHECK_LT(font_info.lfHeight, 0);
+  font_size_ = -font_info.lfHeight;
 }
 
 PlatformFontWin::HFontRef::~HFontRef() {
