@@ -96,6 +96,7 @@ class HtmlDialogView
                               WindowOpenDisposition disposition,
                               const gfx::Rect& initial_pos,
                               bool user_gesture) OVERRIDE;
+  virtual void LoadingStateChanged(content::WebContents* source) OVERRIDE;
 
  protected:
   // Register accelerators for this dialog.

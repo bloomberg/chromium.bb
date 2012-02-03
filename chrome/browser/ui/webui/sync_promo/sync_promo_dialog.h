@@ -28,6 +28,9 @@ class SyncPromoDialog : public HtmlDialogUIDelegate {
   // Returns true if the sync promo was closed.
   bool sync_promo_was_closed() const { return sync_promo_was_closed_; }
 
+  // Returns the dialog window.
+  gfx::NativeWindow window() const { return window_; }
+
  private:
   // HtmlDialogUIDelegate:
   virtual ui::ModalType GetDialogModalType() const OVERRIDE;

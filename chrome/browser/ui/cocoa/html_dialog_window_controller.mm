@@ -69,6 +69,7 @@ public:
                               WindowOpenDisposition disposition,
                               const gfx::Rect& initial_pos,
                               bool user_gesture) OVERRIDE;
+  virtual void LoadingStateChanged(content::WebContents* source) OVERRIDE;
 
 private:
   HtmlDialogWindowController* controller_;  // weak
@@ -235,6 +236,12 @@ void HtmlDialogWindowDelegateBridge::AddNewContents(
   }
   HtmlDialogTabContentsDelegate::AddNewContents(
       source, new_contents, disposition, initial_pos, user_gesture);
+}
+
+void HtmlDialogWindowDelegateBridge::LoadingStateChanged(
+    content::WebContents* source) {
+  if (delegate_)
+    delegate_->OnLoadingStateChanged(source);
 }
 
 void HtmlDialogWindowDelegateBridge::MoveContents(WebContents* source,

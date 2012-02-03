@@ -2744,6 +2744,7 @@
         'browser/ui/webui/ssl_client_certificate_selector_browsertest.js',
         'browser/ui/webui/ssl_client_certificate_selector_webui_browsertest.cc',
         'browser/ui/webui/ssl_client_certificate_selector_webui_browsertest.h',
+        'browser/ui/webui/sync_promo/sync_promo_dialog_browsertest.cc',
         'browser/ui/webui/sync_setup_browsertest.js',
         'browser/ui/webui/test_html_dialog_ui_delegate.cc',
         'browser/ui/webui/test_html_dialog_ui_delegate.h',

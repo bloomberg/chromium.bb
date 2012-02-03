@@ -39,7 +39,7 @@ gfx::NativeWindow ShowHtmlDialog(gfx::NativeWindow parent,
 }
 
 void CloseHtmlDialog(gfx::NativeWindow window) {
-  gtk_widget_destroy(GTK_WIDGET(window));
+  gtk_dialog_response(GTK_DIALOG(window), GTK_RESPONSE_CLOSE);
 }
 
 } // namespace browser
@@ -177,6 +177,11 @@ void HtmlDialogGtk::AddNewContents(content::WebContents* source,
   }
   HtmlDialogTabContentsDelegate::AddNewContents(
       source, new_contents, disposition, initial_pos, user_gesture);
+}
+
+void HtmlDialogGtk::LoadingStateChanged(content::WebContents* source) {
+  if (delegate_)
+    delegate_->OnLoadingStateChanged(source);
 }
 
 bool HtmlDialogGtk::ShouldShowDialogTitle() const {

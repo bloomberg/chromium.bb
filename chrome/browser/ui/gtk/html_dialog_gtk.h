@@ -63,6 +63,7 @@ class HtmlDialogGtk : public HtmlDialogTabContentsDelegate,
                               WindowOpenDisposition disposition,
                               const gfx::Rect& initial_pos,
                               bool user_gesture) OVERRIDE;
+  virtual void LoadingStateChanged(content::WebContents* source) OVERRIDE;
 
  private:
   CHROMEGTK_CALLBACK_1(HtmlDialogGtk, void, OnResponse, int);

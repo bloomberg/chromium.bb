@@ -280,6 +280,11 @@ void HtmlDialogView::AddNewContents(content::WebContents* source,
       source, new_contents, disposition, initial_pos, user_gesture);
 }
 
+void HtmlDialogView::LoadingStateChanged(content::WebContents* source) {
+  if (delegate_)
+    delegate_->OnLoadingStateChanged(source);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // HtmlDialogView:
 

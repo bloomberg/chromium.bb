@@ -57,6 +57,10 @@ class HtmlDialogUIDelegate {
   // Gets the JSON string input to use when showing the dialog.
   virtual std::string GetDialogArgs() const = 0;
 
+  // A callback to notify the delegate that |source|'s loading state has
+  // changed.
+  virtual void OnLoadingStateChanged(content::WebContents* source) {}
+
   // A callback to notify the delegate that the dialog closed.
   // IMPORTANT: Implementations should delete |this| here (unless they've
   // arranged for the delegate to be deleted in some other way, e.g. by
