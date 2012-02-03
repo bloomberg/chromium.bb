@@ -162,7 +162,8 @@ def _FixPaths(paths):
   return [_FixPath(i) for i in paths]
 
 
-def _ConvertSourcesToFilterHierarchy(sources, prefix=None, excluded=None):
+def _ConvertSourcesToFilterHierarchy(sources, prefix=None, excluded=None,
+                                     list_excluded=True):
   """Converts a list split source file paths into a vcproj folder hierarchy.
 
   Arguments:
@@ -197,14 +198,15 @@ def _ConvertSourcesToFilterHierarchy(sources, prefix=None, excluded=None):
         folders[s[0]] = []
       folders[s[0]].append(s[1:])
   # Add a folder for excluded files.
-  if excluded_result:
+  if excluded_result and list_excluded:
     excluded_folder = MSVSProject.Filter('_excluded_files',
                                          contents=excluded_result)
     result.append(excluded_folder)
   # Populate all the folders.
   for f in folders:
     contents = _ConvertSourcesToFilterHierarchy(folders[f], prefix=prefix + [f],
-                                                excluded=excluded)
+                                                excluded=excluded,
+                                                list_excluded=list_excluded)
     contents = MSVSProject.Filter(f, contents=contents)
     result.append(contents)
 
@@ -831,13 +833,14 @@ def _GetGuidOfProject(proj_path, spec):
   return guid
 
 
-def _GenerateProject(project, options, version):
+def _GenerateProject(project, options, version, generator_flags):
   """Generates a vcproj file.
 
   Arguments:
     project: the MSVSProject object.
     options: global generator options.
     version: the MSVSVersion object.
+    generator_flags: dict of generator-specific flags.
   """
   default_config = _GetDefaultConfiguration(project.spec)
 
@@ -846,18 +849,19 @@ def _GenerateProject(project, options, version):
     return
 
   if version.UsesVcxproj():
-    _GenerateMSBuildProject(project, options, version)
+    _GenerateMSBuildProject(project, options, version, generator_flags)
   else:
-    _GenerateMSVSProject(project, options, version)
+    _GenerateMSVSProject(project, options, version, generator_flags)
 
 
-def _GenerateMSVSProject(project, options, version):
+def _GenerateMSVSProject(project, options, version, generator_flags):
   """Generates a .vcproj file.  It may create .rules and .user files too.
 
   Arguments:
     project: The project object we will generate the file for.
     options: Global options passed to the generator.
     version: The VisualStudioVersion object.
+    generator_flags: dict of generator-specific flags.
   """
   spec = project.spec
   vcproj_dir = os.path.dirname(project.path)
@@ -886,9 +890,10 @@ def _GenerateMSVSProject(project, options, version):
   _GenerateRulesForMSVS(p, project_dir, options, spec,
                         sources, excluded_sources,
                         actions_to_add)
+  list_excluded = generator_flags.get('msvs_list_excluded_files', True)
   sources, excluded_sources, excluded_idl = (
       _AdjustSourcesAndConvertToFilterHierarchy(
-          spec, options, project_dir, sources, excluded_sources))
+          spec, options, project_dir, sources, excluded_sources, list_excluded))
 
   # Add in files.
   _VerifySourcesExist(sources, project_dir)
@@ -904,7 +909,8 @@ def _GenerateMSVSProject(project, options, version):
   # Don't excluded sources with actions attached, or they won't run.
   excluded_sources = _FilterActionsFromExcluded(
       excluded_sources, actions_to_add)
-  _ExcludeFilesFromBeingBuilt(p, spec, excluded_sources, excluded_idl)
+  _ExcludeFilesFromBeingBuilt(p, spec, excluded_sources, excluded_idl,
+                              list_excluded)
   _AddAccumulatedActionsToMSVS(p, spec, actions_to_add)
 
   # Write it out.
@@ -1285,7 +1291,7 @@ def _PrepareListOfSources(spec, gyp_file):
 
 
 def _AdjustSourcesAndConvertToFilterHierarchy(
-    spec, options, gyp_dir, sources, excluded_sources):
+    spec, options, gyp_dir, sources, excluded_sources, list_excluded):
   """Adjusts the list of sources and excluded sources.
 
   Also converts the sets to lists.
@@ -1319,7 +1325,8 @@ def _AdjustSourcesAndConvertToFilterHierarchy(
 
   # Convert to folders and the right slashes.
   sources = [i.split('\\') for i in sources]
-  sources = _ConvertSourcesToFilterHierarchy(sources, excluded=fully_excluded)
+  sources = _ConvertSourcesToFilterHierarchy(sources, excluded=fully_excluded,
+                                             list_excluded=list_excluded)
 
   return sources, excluded_sources, excluded_idl
 
@@ -1350,12 +1357,19 @@ def _GetPrecompileRelatedFiles(spec):
   return precompiled_related
 
 
-def _ExcludeFilesFromBeingBuilt(p, spec, excluded_sources, excluded_idl):
+def _ExcludeFilesFromBeingBuilt(p, spec, excluded_sources, excluded_idl,
+                                list_excluded):
   exclusions = _GetExcludedFilesFromBuild(spec, excluded_sources, excluded_idl)
   for file_name, excluded_configs in exclusions.iteritems():
-    for config_name, config in excluded_configs:
-      p.AddFileConfig(file_name, _ConfigFullName(config_name, config),
-                      {'ExcludedFromBuild': 'true'})
+    if (not list_excluded and
+            len(excluded_configs) == len(spec['configurations'])):
+      # If we're not listing excluded files, then they won't appear in the
+      # project, so don't try to configure them to be excluded.
+      pass
+    else:
+      for config_name, config in excluded_configs:
+        p.AddFileConfig(file_name, _ConfigFullName(config_name, config),
+                        {'ExcludedFromBuild': 'true'})
 
 
 def _GetExcludedFilesFromBuild(spec, excluded_sources, excluded_idl):
@@ -1743,6 +1757,8 @@ def GenerateOutput(target_list, target_dicts, data, params):
   # GeneratorCalculatedVariables.
   msvs_version = params['msvs_version']
 
+  generator_flags = params.get('generator_flags', {})
+
   # Optionally shard targets marked with 'msvs_shard': SHARD_COUNT.
   (target_list, target_dicts) = _ShardTargets(target_list, target_dicts)
 
@@ -1761,7 +1777,7 @@ def GenerateOutput(target_list, target_dicts, data, params):
   # Generate each project.
   for project in project_objects.values():
     fixpath_prefix = project.fixpath_prefix
-    _GenerateProject(project, options, msvs_version)
+    _GenerateProject(project, options, msvs_version, generator_flags)
   fixpath_prefix = None
 
   for build_file in data:
@@ -2655,14 +2671,14 @@ def _VerifySourcesExist(sources, root_dir):
 
 
 def _GetMSBuildSources(spec, sources, exclusions, extension_to_rule_name,
-                       actions_spec, sources_handled_by_action):
+                       actions_spec, sources_handled_by_action, list_excluded):
   groups = ['none', 'midl', 'include', 'compile', 'resource', 'rule']
   grouped_sources = {}
   for g in groups:
     grouped_sources[g] = []
 
   _AddSources2(spec, sources, exclusions, grouped_sources,
-               extension_to_rule_name, sources_handled_by_action)
+               extension_to_rule_name, sources_handled_by_action, list_excluded)
   sources = []
   for g in groups:
     if grouped_sources[g]:
@@ -2673,12 +2689,14 @@ def _GetMSBuildSources(spec, sources, exclusions, extension_to_rule_name,
 
 
 def _AddSources2(spec, sources, exclusions, grouped_sources,
-                 extension_to_rule_name, sources_handled_by_action):
+                 extension_to_rule_name, sources_handled_by_action,
+                 list_excluded):
   extensions_excluded_from_precompile = []
   for source in sources:
     if isinstance(source, MSVSProject.Filter):
       _AddSources2(spec, source.contents, exclusions, grouped_sources,
-                   extension_to_rule_name, sources_handled_by_action)
+                   extension_to_rule_name, sources_handled_by_action,
+                   list_excluded)
     else:
       if not source in sources_handled_by_action:
         detail = []
@@ -2748,7 +2766,7 @@ def _GetMSBuildProjectReferences(project):
   return references
 
 
-def _GenerateMSBuildProject(project, options, version):
+def _GenerateMSBuildProject(project, options, version, generator_flags):
   spec = project.spec
   configurations = spec['configurations']
   project_dir, project_file_name = os.path.split(project.path)
@@ -2766,6 +2784,7 @@ def _GenerateMSBuildProject(project, options, version):
   props_files_of_rules = set()
   targets_files_of_rules = set()
   extension_to_rule_name = {}
+  list_excluded = generator_flags.get('msvs_list_excluded_files', True)
   _GenerateRulesForMSBuild(project_dir, options, spec,
                            sources, excluded_sources,
                            props_files_of_rules, targets_files_of_rules,
@@ -2773,7 +2792,8 @@ def _GenerateMSBuildProject(project, options, version):
   sources, excluded_sources, excluded_idl = (
       _AdjustSourcesAndConvertToFilterHierarchy(spec, options,
                                                 project_dir, sources,
-                                                excluded_sources))
+                                                excluded_sources,
+                                                list_excluded))
   _AddActions(actions_to_add, spec, project.build_file)
   _AddCopies(actions_to_add, spec)
 
@@ -2823,7 +2843,7 @@ def _GenerateMSBuildProject(project, options, version):
   content += _GetMSBuildToolSettingsSections(spec, configurations)
   content += _GetMSBuildSources(
       spec, sources, exclusions, extension_to_rule_name, actions_spec,
-      sources_handled_by_action)
+      sources_handled_by_action, list_excluded)
   content += _GetMSBuildProjectReferences(project)
   content += import_cpp_targets_section
   content += _GetMSBuildExtensionTargets(targets_files_of_rules)
