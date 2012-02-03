@@ -31,6 +31,9 @@ const char kAuraNoShadows[] = "aura-no-shadows";
 // Use Aura-style translucent window frame.
 const char kAuraTranslucentFrames[] = "aura-translucent-frames";
 
+// If present animations are disabled.
+const char kAuraWindowAnimationsDisabled[] = "aura-window-animations-disabled";
+
 // Use a custom window style, e.g. --aura-window-mode=compact.
 // When this flag is not passed we default to "overlapping" mode.
 const char kAuraWindowMode[] = "aura-window-mode";

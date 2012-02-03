@@ -4,6 +4,8 @@
 
 #include "ash/wm/window_animations.h"
 
+#include "ash/ash_switches.h"
+#include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
@@ -273,8 +275,11 @@ bool AnimateHideWindow(aura::Window* window) {
 // WindowAnimation, public:
 
 bool AnimateOnChildWindowVisibilityChanged(aura::Window* window, bool visible) {
-  if (window->GetIntProperty(aura::client::kAnimationsDisabledKey) == 1)
+  if (window->GetIntProperty(aura::client::kAnimationsDisabledKey) == 1 ||
+      CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kAuraWindowAnimationsDisabled)) {
     return false;
+  }
   if (visible) {
     return AnimateShowWindow(window);
   } else {

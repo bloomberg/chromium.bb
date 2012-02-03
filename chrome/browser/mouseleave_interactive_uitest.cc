@@ -26,7 +26,7 @@ class MouseLeaveTest : public UITest {
   DISALLOW_COPY_AND_ASSIGN(MouseLeaveTest);
 };
 
-#if defined(OS_MACOSX) || (defined(OS_CHROMEOS) && defined(USE_AURA))
+#if defined(OS_MACOSX)
 // Missing automation provider support: http://crbug.com/45892
 // Failing on Chrome OS Aura: http://crbug.com/111086
 #define MAYBE_TestOnMouseOut DISABLED_TestOnMouseOut

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,6 +13,10 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "ui/gfx/gl/gl_switches.h"
+
+#if defined(USE_AURA)
+#include "ash/ash_switches.h"
+#endif
 
 namespace test_launcher_utils {
 
@@ -47,6 +51,13 @@ void PrepareBrowserCommandLineForTests(CommandLine* command_line) {
 
   // The tests assume that file:// URIs can freely access other file:// URIs.
   command_line->AppendSwitch(switches::kAllowFileAccessFromFiles);
+
+  // TODO(beng): USE_ASH.
+#if defined(USE_AURA)
+  // Disable window animations under aura as the animations effect the
+  // coordinates returned and result in flake.
+  command_line->AppendSwitch(ash::switches::kAuraWindowAnimationsDisabled);
+#endif
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_CHROMEOS)
   // Don't use the native password stores on Linux since they may
