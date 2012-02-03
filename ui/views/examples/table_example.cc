@@ -22,6 +22,7 @@ TableExample::~TableExample() {
 }
 
 void TableExample::CreateExampleView(View* container) {
+#if defined(OS_WIN) && !defined(USE_AURA)
   column1_visible_checkbox_ = new Checkbox(
       ASCIIToUTF16("Fruit column visible"));
   column1_visible_checkbox_->SetChecked(true);
@@ -38,6 +39,7 @@ void TableExample::CreateExampleView(View* container) {
       ASCIIToUTF16("Price column visible"));
   column4_visible_checkbox_->SetChecked(true);
   column4_visible_checkbox_->set_listener(this);
+#endif
 
   GridLayout* layout = new GridLayout(container);
   container->SetLayoutManager(layout);
@@ -45,7 +47,7 @@ void TableExample::CreateExampleView(View* container) {
   std::vector<ui::TableColumn> columns;
   columns.push_back(ui::TableColumn(0, ASCIIToUTF16("Fruit"),
                                     ui::TableColumn::LEFT, 100));
-#if !defined(USE_AURA)
+#if defined(OS_WIN) && !defined(USE_AURA)
   columns.push_back(ui::TableColumn(1, ASCIIToUTF16("Color"),
                                     ui::TableColumn::LEFT, 100));
   columns.push_back(ui::TableColumn(2, ASCIIToUTF16("Origin"),
@@ -83,10 +85,12 @@ void TableExample::CreateExampleView(View* container) {
 
   layout->StartRow(0 /* no expand */, 1);
 
+#if defined(OS_WIN) && !defined(USE_AURA)
   layout->AddView(column1_visible_checkbox_);
   layout->AddView(column2_visible_checkbox_);
   layout->AddView(column3_visible_checkbox_);
   layout->AddView(column4_visible_checkbox_);
+#endif
 }
 
 int TableExample::RowCount() {
@@ -129,6 +133,7 @@ void TableExample::OnTableViewDelete(TableView* table_view) {}
 void TableExample::OnTableView2Delete(TableView2* table_view) {}
 
 void TableExample::ButtonPressed(Button* sender, const Event& event) {
+#if defined(OS_WIN) && !defined(USE_AURA)
   int index = 0;
   bool show = true;
   if (sender == column1_visible_checkbox_) {
@@ -144,7 +149,6 @@ void TableExample::ButtonPressed(Button* sender, const Event& event) {
     index = 3;
     show = column4_visible_checkbox_->checked();
   }
-#if defined(OS_WIN) && !defined(USE_AURA)
   table_->SetColumnVisibility(index, show);
 #endif
 }
