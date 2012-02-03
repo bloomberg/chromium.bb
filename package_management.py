@@ -472,7 +472,7 @@ def UpdateSiteDirectory():
     return True
 
   try:
-    AddSiteDirectory(SITE_DIR)
+    EnsureSiteDirectory(SITE_DIR)
     import pkg_resources
 
     # Determine if any packages actually need installing.
