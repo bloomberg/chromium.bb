@@ -275,8 +275,9 @@ TEST_F(InMemoryURLIndexTest, Retrieval) {
   EXPECT_FALSE(matches[0].can_inline);
 
   // Search which will match at the end of an URL with encoded characters.
-  matches = url_index_->HistoryItemsForTerms(ASCIIToUTF16("ice"));
+  matches = url_index_->HistoryItemsForTerms(ASCIIToUTF16("Mice"));
   ASSERT_EQ(1U, matches.size());
+  EXPECT_EQ(30, matches[0].url_info.id());
   EXPECT_FALSE(matches[0].can_inline);
 
   // Verify that a single term can appear multiple times in the URL and as long

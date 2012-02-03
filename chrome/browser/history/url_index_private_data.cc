@@ -43,11 +43,16 @@ typedef imui::InMemoryURLIndexCacheItem_HistoryInfoMapItem HistoryInfoMapItem;
 typedef imui::InMemoryURLIndexCacheItem_HistoryInfoMapItem_HistoryInfoMapEntry
     HistoryInfoMapEntry;
 
+// The maximum score any candidate result can achieve.
+const int kMaxTotalScore = 1425;
+
 // Score ranges used to get a 'base' score for each of the scoring factors
 // (such as recency of last visit, times visited, times the URL was typed,
 // and the quality of the string match). There is a matching value range for
-// each of these scores for each factor.
-const int kScoreRank[] = { 1425, 1200, 900, 400 };
+// each of these scores for each factor. Note that the top score is greater
+// than |kMaxTotalScore|. The score for each candidate will be capped in the
+// final calculation.
+const int kScoreRank[] = { 1450, 1200, 900, 400 };
 
 // SearchTermCacheItem ---------------------------------------------------------
 
@@ -562,39 +567,34 @@ ScoredHistoryMatch URLIndexPrivateData::ScoredMatchForURL(
 
   // Determine scoring factors for the recency of visit, visit count and typed
   // count attributes of the URLRow.
-  const int kDaysAgoLevel[] = { 0, 10, 20, 30 };
+  const int kDaysAgoLevel[] = { 1, 10, 20, 30 };
   int days_ago_value = ScoreForValue((base::Time::Now() -
       row.last_visit()).InDays(), kDaysAgoLevel);
   const int kVisitCountLevel[] = { 30, 10, 5, 3 };
   int visit_count_value = ScoreForValue(row.visit_count(), kVisitCountLevel);
-  const int kTypedCountLevel[] = { 10, 5, 3, 1 };
+  const int kTypedCountLevel[] = { 20, 10, 3, 1 };
   int typed_count_value = ScoreForValue(row.typed_count(), kTypedCountLevel);
 
   // The final raw score is calculated by:
-  //   - accumulating each contributing factor, some of which are added more
-  //     than once giving them more 'influence' on the final score (currently,
-  //     visit_count_value is added twice and typed_count_value three times)
-  //   - dropping the lowest scores (|kInsignificantFactors|)
-  //   - dividing by the remaining significant factors
-  // This approach allows emphasis on more relevant factors while reducing the
-  // inordinate impact of low scoring factors.
-  int factor[] = {term_score, days_ago_value, visit_count_value,
-      visit_count_value, typed_count_value, typed_count_value,
-      typed_count_value};
-  const int kInsignificantFactors = 2;
-  const int kSignificantFactors = arraysize(factor) - kInsignificantFactors;
-  std::partial_sort(factor, factor + kSignificantFactors,
-                    factor + arraysize(factor), std::greater<int>());
-  for (int i = 0; i < kSignificantFactors; ++i)
-    match.raw_score += factor[i];
-  match.raw_score /= kSignificantFactors;
+  //   - multiplying each factor by a 'relevance'
+  //   - calculating the average.
+  const int kTermScoreRelevance = 1;
+  const int kDaysAgoRelevance = 2;
+  const int kVisitCountRelevance = 3;
+  const int kTypedCountRelevance = 4;
+  match.raw_score = term_score * kTermScoreRelevance +
+                    days_ago_value * kDaysAgoRelevance +
+                    visit_count_value * kVisitCountRelevance +
+                    typed_count_value * kTypedCountRelevance;
+  match.raw_score /= (kTermScoreRelevance + kDaysAgoRelevance +
+                      kVisitCountRelevance + kTypedCountRelevance);
+  match.raw_score = std::min(kMaxTotalScore, match.raw_score);
 
   return match;
 }
 
 int URLIndexPrivateData::ScoreComponentForMatches(const TermMatches& matches,
                                                   size_t max_length) {
-  // TODO(mrossetti): This is good enough for now but must be fine-tuned.
   if (matches.empty())
     return 0;
 
@@ -602,7 +602,7 @@ int URLIndexPrivateData::ScoreComponentForMatches(const TermMatches& matches,
   // in the same order in the match.  Start with kOrderMaxValue points divided
   // equally among (number of terms - 1); then discount each of those terms that
   // is out-of-order in the match.
-  const int kOrderMaxValue = 250;
+  const int kOrderMaxValue = 1000;
   int order_value = kOrderMaxValue;
   if (matches.size() > 1) {
     int max_possible_out_of_order = matches.size() - 1;
@@ -617,11 +617,11 @@ int URLIndexPrivateData::ScoreComponentForMatches(const TermMatches& matches,
 
   // Score component for how early in the match string the first search term
   // appears.  Start with kStartMaxValue points and discount by
-  // 1/kMaxSignificantStart points for each character later than the first at
-  // which the term begins. No points are earned if the start of the match
-  // occurs at or after kMaxSignificantStart.
-  const size_t kMaxSignificantStart = 20;
-  const int kStartMaxValue = 250;
+  // kStartMaxValue/kMaxSignificantStart points for each character later than
+  // the first at which the term begins. No points are earned if the start of
+  // the match occurs at or after kMaxSignificantStart.
+  const size_t kMaxSignificantStart = 50;
+  const int kStartMaxValue = 1000;
   int start_value = (kMaxSignificantStart -
       std::min(kMaxSignificantStart, matches[0].offset)) * kStartMaxValue /
       kMaxSignificantStart;
@@ -634,15 +634,21 @@ int URLIndexPrivateData::ScoreComponentForMatches(const TermMatches& matches,
   const size_t kMaxSignificantLength = 50;
   size_t max_significant_length =
       std::min(max_length, std::max(term_length_total, kMaxSignificantLength));
-  const int kCompleteMaxValue = 500;
+  const int kCompleteMaxValue = 1000;
   int complete_value =
       term_length_total * kCompleteMaxValue / max_significant_length;
 
-  int raw_score = order_value + start_value + complete_value;
-  const int kTermScoreLevel[] = { 1000, 650, 500, 200 };
+  const int kOrderRelevance = 1;
+  const int kStartRelevance = 6;
+  const int kCompleteRelevance = 3;
+  int raw_score = order_value * kOrderRelevance +
+                  start_value * kStartRelevance +
+                  complete_value * kCompleteRelevance;
+  raw_score /= (kOrderRelevance + kStartRelevance + kCompleteRelevance);
 
-  // Scale the sum of the three components above into a single score component
-  // on the same scale as that used in ScoredMatchForURL().
+  // Scale the raw score into a single score component in the same manner as
+  // used in ScoredMatchForURL().
+  const int kTermScoreLevel[] = { 1000, 750, 500, 200 };
   return ScoreForValue(raw_score, kTermScoreLevel);
 }
 
