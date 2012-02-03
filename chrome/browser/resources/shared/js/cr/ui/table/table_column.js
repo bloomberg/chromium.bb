@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,10 +16,11 @@ cr.define('cr.ui.table', function() {
    * @constructor
    * @extends {EventTarget}
    */
-  function TableColumn(id, name, width) {
+  function TableColumn(id, name, width, endAlign) {
     this.id_ = id;
     this.name_ = name;
     this.width_ = width;
+    this.endAlign_ = endAlign;
   }
 
   TableColumn.prototype = {
@@ -31,12 +32,15 @@ cr.define('cr.ui.table', function() {
 
     width_: null,
 
+    endAlign_ : false,
+
     /**
      * Clones column.
      * @return {cr.ui.table.TableColumn} Clone of the given column.
      */
     clone: function() {
-      var tableColumn = new TableColumn(this.id_, this.name_, this.width_);
+      var tableColumn = new TableColumn(this.id_, this.name_, this.width_,
+                                        this.endAlign_);
       tableColumn.renderFunction = this.renderFunction_;
       tableColumn.headerRenderFunction = this.headerRenderFunction_;
       return tableColumn;
@@ -82,6 +86,12 @@ cr.define('cr.ui.table', function() {
    * @type {number}
    */
   cr.defineProperty(TableColumn, 'width');
+
+  /**
+   * True if the column is aligned to end.
+   * @type {boolean}
+   */
+  cr.defineProperty(TableColumn, 'endAlign');
 
   /**
    * The column render function.

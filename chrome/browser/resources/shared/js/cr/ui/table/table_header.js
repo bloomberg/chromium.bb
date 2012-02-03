@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -123,17 +123,12 @@ cr.define('cr.ui.table', function() {
       var labelDiv = this.ownerDocument.createElement('div');
       labelDiv.className = 'table-header-label';
 
+      if (cm.isEndAlign(index))
+        labelDiv.style.textAlign = 'end';
       var span = this.ownerDocument.createElement('span');
       span.appendChild(cm.renderHeader(index, this.table_));
-      var rtl = this.ownerDocument.defaultView.getComputedStyle(this).
-          direction == 'rtl';
-      if (rtl) {
-        span.style.backgroundPosition = 'left';
-        span.style.paddingRight= '0';
-      } else {
-        span.style.backgroundPosition = 'right';
-        span.style.paddingLeft= '0';
-      }
+      span.style.padding = '0';
+
       if (dm) {
         if (dm.sortStatus.field == cm.getId(index)) {
           if (dm.sortStatus.direction == 'desc')

@@ -408,6 +408,14 @@ FileManager.prototype = {
    */
   FileManager.prototype.initFileSystem_ = function() {
     util.installFileErrorToString();
+    // Replace the default unit in util to translated unit.
+    util.units_ = [str('SIZE_B'),
+                   str('SIZE_KB'),
+                   str('SIZE_MB'),
+                   str('SIZE_GB'),
+                   str('SIZE_TB'),
+                   str('SIZE_PB')];
+
     metrics.startInterval('Load.FileSystem');
 
     var self = this;
@@ -1101,7 +1109,7 @@ FileManager.prototype = {
         new cr.ui.table.TableColumn('name', str('NAME_COLUMN_LABEL'),
                                     64),
         new cr.ui.table.TableColumn('cachedSize_',
-                                    str('SIZE_COLUMN_LABEL'), 15.5),
+                                    str('SIZE_COLUMN_LABEL'), 15.5, true),
         new cr.ui.table.TableColumn('type',
                                     str('TYPE_COLUMN_LABEL'), 15.5),
         new cr.ui.table.TableColumn('cachedMtime_',
@@ -1602,6 +1610,10 @@ FileManager.prototype = {
   FileManager.prototype.renderSize_ = function(entry, columnId, table) {
     var div = this.document_.createElement('div');
 
+    // Unlike other rtl languages, Herbew use MB and writes the unit to the
+    // right of the number. We use css trick to workaround this.
+    if (navigator.language == 'he')
+      div.className = 'align-end-weakrtl';
     div.textContent = '...';
     cacheEntrySize(entry, function(entry) {
       if (entry.cachedSize_ == -1) {

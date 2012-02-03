@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -76,6 +76,15 @@ cr.define('cr.ui.table', function() {
      */
     getWidth: function(index) {
       return this.columns_[index].width;
+    },
+
+    /**
+     * Check if the column at the given index should align to the end.
+     * @param {number} index The index of the column.
+     * @return {boolean} True if the column is aligned to end.
+     */
+    isEndAlign: function(index) {
+      return this.columns_[index].endAlign;
     },
 
     /**

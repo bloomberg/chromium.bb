@@ -1,3 +1,9 @@
+/*
+ * Copyright (c) 2012 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
 html.col-resize * {
   cursor: col-resize !important;
 }
@@ -19,9 +25,9 @@ list > [selected]:hover {
 }
 
 .list > * {
-  padding: 0;
-  border-right: none;
   border-left: none;
+  border-right: none;
+  padding: 0;
 }
 
 .table:focus {
@@ -29,15 +35,15 @@ list > [selected]:hover {
 }
 
 .table {
+  border: 1px solid;
   outline: none;
   overflow: hidden;
-  border: 1px solid;
 }
 
 .table-row {
-  width: 100%;
-  text-align: start;
   display: -webkit-box;
+  text-align: start;
+  width: 100%;
 }
 
 .table-row-cell {
@@ -46,37 +52,36 @@ list > [selected]:hover {
 }
 
 .table-row-cell > * {
-  overflow: hidden;
   margin: 0 7px;
+  overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .table-header {
-  position: relative;
-  overflow: hidden;
   background-color: rgb(220, 220, 220);
+  overflow: hidden;
+  position: relative;
 }
 
 .table-header-inner {
+  display: -webkit-box;
   position: relative;
   text-align: start;
-  float: left;
-  display: -webkit-box;
 }
 
 .table-header-cell {
+  font-weight: normal;
+  overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  overflow: hidden;
-  font-weight: normal;
 }
 
 .table-header-label {
+  margin: 0 7px;
+  overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  overflow: hidden;
-  margin: 0 7px;
 }
 
 .table-header-label > * {
@@ -84,27 +89,27 @@ list > [selected]:hover {
 }
 
 .table-header-sort-image-desc:after {
+  -webkit-padding-start: 5px;
+  color: #888;
+  content: '\25be'; /* BLACK DOWN-POINTING SMALL TRIANGLE */
   position: relative;
   top: -2px;
-  content: '\25be'; /* BLACK DOWN-POINTING SMALL TRIANGLE */
-  -webkit-padding-start: 0.4em;
-  color: #888;
 }
 
 .table-header-sort-image-asc:after {
+  -webkit-padding-start: 5px;
+  color: #888;
+  content: '\25b4'; /* BLACK UP-POINTING SMALL TRIANGLE */
   position: relative;
   top: -2px;
-  content: '\25b4'; /* BLACK UP-POINTING SMALL TRIANGLE */
-  -webkit-padding-start: 0.4em;
-  color: #888;
 }
 
 .table-header-splitter {
+  -webkit-margin-start: -1px;
+  background-color: black;
+  cursor: col-resize;
+  height: 100%;
   position: absolute;
   top: 0;
-  cursor: col-resize;
   width: 5px;
-  -webkit-margin-start: -1px;
-  height: 100%;
-  background-color: black;
 }

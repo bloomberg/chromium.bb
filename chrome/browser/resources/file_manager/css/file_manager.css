@@ -496,6 +496,14 @@ div.img-container > img {
   -webkit-margin-start: -3px;
 }
 
+/* Elements that need to be LTR even in an RTL context, but should align
+ * left. Display size in Hebrew is such a case.
+ */
+html[dir='rtl'] .align-end-weakrtl {
+  direction: ltr;
+  text-align: left;
+}
+
 input.rename {
   font: inherit;
   text-align: inherit;
@@ -629,23 +637,15 @@ input.rename {
 
 /* Text label in a table header. */
 .table-header-label {
-  margin-top: 6px;
+  margin: 6px 18px 0 18px;
 }
 
-/* First column has no label, so we want the sort indicator to take up the
- * whole space.
- */
-.table-header-cell:first-child .table-header-sort-image-desc:after,
-.table-header-cell:first-child .table-header-sort-image-asc:after {
-  -webkit-padding-start: 0;
-}
-
-/* The first child of a list cell. */
 .table-row-cell > * {
-  -webkit-margin-start: 5px;
   -webkit-box-align: center;
-  -webkit-box-orient: horizontal;
   -webkit-box-flex: 1;
+  -webkit-box-orient: horizontal;
+  margin: 0;
+  padding: 0 18px;
 }
 
 .table-row-cell > .detail-name {
@@ -653,10 +653,11 @@ input.rename {
 }
 
 .file-checkbox {
+  -webkit-margin-end: 0;
+  -webkit-margin-start: 0;
+  opacity: 0.1;
   position: relative;
   z-index: 2;
-  -webkit-margin-end: 0;
-  opacity: 0.1;
 }
 
 #select-all-checkbox {
