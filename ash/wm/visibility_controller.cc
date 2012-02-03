@@ -37,6 +37,15 @@ void VisibilityController::UpdateLayerVisibility(aura::Window* window,
                   window->type() != aura::client::WINDOW_TYPE_UNKNOWN;
   animated = animated && AnimateOnChildWindowVisibilityChanged(window, visible);
 
+  if (!visible) {
+    // For window hiding animation, we want to check if the window is already
+    // animating, and not do SetVisible(false) if it is.
+    // TODO(vollick): remove this.
+    animated = animated || (window->layer()->GetAnimator()->
+        IsAnimatingProperty(ui::LayerAnimationElement::OPACITY) &&
+        window->layer()->GetTargetOpacity() == 0.0f);
+  }
+
   // When a window is made visible, we always make its layer visible
   // immediately. When a window is hidden, the layer must be left visible and
   // only made not visible once the animation is complete.
