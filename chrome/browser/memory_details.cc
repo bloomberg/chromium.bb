@@ -13,6 +13,7 @@
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/browser_shutdown.h"
 #include "chrome/common/chrome_view_type.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/url_constants.h"
@@ -155,6 +156,12 @@ void MemoryDetails::CollectChildInfoOnIOThread() {
 
 void MemoryDetails::CollectChildInfoOnUIThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  // As identified in http://crbug.com/112383, we seem to get here after the
+  // profile has been deleted. The only way this can happen is if we get
+  // called during shutdown. If it's the case, just abandon ship.
+  if (browser_shutdown::IsTryingToQuit())
+    return;
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
   const pid_t zygote_pid = ZygoteHost::GetInstance()->pid();
