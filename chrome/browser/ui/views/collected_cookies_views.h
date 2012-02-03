@@ -55,10 +55,10 @@ class CollectedCookiesViews : public views::DialogDelegateView,
                              const views::Event& event) OVERRIDE;
 
   // views::TabbedPaneListener:
-  virtual void TabSelectedAt(int index);
+  virtual void TabSelectedAt(int index) OVERRIDE;
 
   // views::TreeViewController:
-  virtual void OnTreeViewSelectionChanged(views::TreeView* tree_view);
+  virtual void OnTreeViewSelectionChanged(views::TreeView* tree_view) OVERRIDE;
 
   // views::View:
   virtual void ViewHierarchyChanged(bool is_add,
