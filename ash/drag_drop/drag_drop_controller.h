@@ -10,6 +10,7 @@
 #include "ui/aura/client/drag_drop_client.h"
 #include "ui/aura/event.h"
 #include "ui/aura/event_filter.h"
+#include "ui/aura/window_observer.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/events.h"
 #include "ui/gfx/compositor/layer_animation_observer.h"
@@ -36,7 +37,8 @@ class DragImageView;
 class ASH_EXPORT DragDropController
     : public aura::client::DragDropClient,
       public aura::EventFilter,
-      public ui::ImplicitAnimationObserver {
+      public ui::ImplicitAnimationObserver,
+      public aura::WindowObserver {
 public:
   DragDropController();
   virtual ~DragDropController();
@@ -65,6 +67,9 @@ public:
   virtual ui::GestureStatus PreHandleGestureEvent(
       aura::Window* target,
       aura::GestureEvent* event) OVERRIDE;
+
+  // Overridden from aura::WindowObserver.
+  virtual void OnWindowDestroyed(aura::Window* window) OVERRIDE;
 
  private:
   friend class ash::test::DragDropControllerTest;

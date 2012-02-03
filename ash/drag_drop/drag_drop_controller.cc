@@ -90,11 +90,13 @@ void DragDropController::DragUpdate(aura::Window* target,
                                     const aura::MouseEvent& event) {
   aura::client::DragDropDelegate* delegate = NULL;
   if (target != dragged_window_) {
-    if (dragged_window_ &&
-        (delegate = aura::client::GetDragDropDelegate(dragged_window_))) {
-      delegate->OnDragExited();
+    if (dragged_window_) {
+      if ((delegate = aura::client::GetDragDropDelegate(dragged_window_)))
+        delegate->OnDragExited();
+      dragged_window_->RemoveObserver(this);
     }
     dragged_window_ = target;
+    dragged_window_->AddObserver(this);
     if ((delegate = aura::client::GetDragDropDelegate(dragged_window_))) {
       aura::DropTargetEvent e(*drag_data_,
                               event.location(),
@@ -182,7 +184,9 @@ bool DragDropController::PreHandleMouseEvent(aura::Window* target,
       break;
     default:
       // We could reach here if the user drops outside the root window.
-      DragCancel();
+      // We could also reach here because RootWindow may sometimes generate a
+      // bunch of fake mouse events
+      // (aura::RootWindow::PostMouseMoveEventAfterWindowChange).
       break;
   }
   return true;
@@ -198,6 +202,13 @@ ui::GestureStatus DragDropController::PreHandleGestureEvent(
     aura::Window* target,
     aura::GestureEvent* event) {
   return ui::GESTURE_STATUS_UNKNOWN;
+}
+
+void DragDropController::OnWindowDestroyed(aura::Window* window) {
+  if (dragged_window_ == window) {
+    dragged_window_->RemoveObserver(this);
+    dragged_window_ = NULL;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -224,6 +235,9 @@ void DragDropController::StartCanceledAnimation() {
 }
 
 void DragDropController::Cleanup() {
+  if (dragged_window_)
+    dragged_window_->RemoveObserver(this);
+  dragged_window_ = NULL;
   drag_data_ = NULL;
   drag_drop_in_progress_ = false;
 }

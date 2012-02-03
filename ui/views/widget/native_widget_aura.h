@@ -184,6 +184,7 @@ class VIEWS_EXPORT NativeWidgetAura : public internal::NativeWidgetPrivate,
   scoped_ptr<ActiveWindowObserver> active_window_observer_;
 
   scoped_ptr<DropHelper> drop_helper_;
+  int last_drop_operation_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeWidgetAura);
 };

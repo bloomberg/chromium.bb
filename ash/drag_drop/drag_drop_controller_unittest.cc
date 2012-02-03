@@ -197,6 +197,10 @@ class DragDropControllerTest : public AuraShellTestBase {
     drag_drop_controller_->drag_data_ = data;
   }
 
+  aura::Window* GetDraggedWindow() {
+    return drag_drop_controller_->dragged_window_;
+  }
+
  protected:
   scoped_ptr<TestDragDropController> drag_drop_controller_;
   scoped_ptr<views::TestViewsDelegate> views_delegate_;
@@ -426,6 +430,92 @@ TEST_F(DragDropControllerTest, DragCopiesDataToClipboardTest) {
       ui::Clipboard::BUFFER_STANDARD));
   cb->ReadAsciiText(ui::Clipboard::BUFFER_STANDARD, &result);
   EXPECT_EQ(data_str, result);
+}
+
+TEST_F(DragDropControllerTest, WindowDestroyedDuringDragDrop) {
+  views::Widget* widget = CreateNewWidget();
+  DragTestView* drag_view = new DragTestView;
+  AddViewToWidgetAndResize(widget, drag_view);
+  aura::Window* window = widget->GetNativeView();
+
+  ui::OSExchangeData data;
+  data.SetString(UTF8ToUTF16("I am being dragged"));
+  aura::test::EventGenerator generator(widget->GetNativeView());
+  generator.PressLeftButton();
+
+  int num_drags = 17;
+  for (int i = 0; i < num_drags; ++i) {
+    // Because we are not doing a blocking drag and drop, the original
+    // OSDragExchangeData object is lost as soon as we return from the drag
+    // initiation in DragDropController::StartDragAndDrop(). Hence we set the
+    // drag_data_ to a fake drag data object that we created.
+    if (i > 0)
+      UpdateDragData(&data);
+    generator.MoveMouseBy(0, 1);
+    if (i > drag_view->VerticalDragThreshold())
+      EXPECT_EQ(window, GetDraggedWindow());
+  }
+
+  delete window;
+  EXPECT_FALSE(GetDraggedWindow());
+
+  num_drags = 23;
+  for (int i = 0; i < num_drags; ++i) {
+    if (i > 0)
+      UpdateDragData(&data);
+    generator.MoveMouseBy(0, 1);
+    // We should not crash here.
+  }
+
+  generator.ReleaseLeftButton();
+
+  EXPECT_TRUE(drag_drop_controller_->drag_start_received_);
+  EXPECT_TRUE(drag_drop_controller_->drop_received_);
+}
+
+TEST_F(DragDropControllerTest, SyntheticEventsDuringDragDrop) {
+  scoped_ptr<views::Widget> widget(CreateNewWidget());
+  DragTestView* drag_view = new DragTestView;
+  AddViewToWidgetAndResize(widget.get(), drag_view);
+  ui::OSExchangeData data;
+  data.SetString(UTF8ToUTF16("I am being dragged"));
+  aura::test::EventGenerator generator(widget->GetNativeView());
+  generator.PressLeftButton();
+
+  int num_drags = 17;
+  for (int i = 0; i < num_drags; ++i) {
+    // Because we are not doing a blocking drag and drop, the original
+    // OSDragExchangeData object is lost as soon as we return from the drag
+    // initiation in DragDropController::StartDragAndDrop(). Hence we set the
+    // drag_data_ to a fake drag data object that we created.
+    if (i > 0)
+      UpdateDragData(&data);
+    generator.MoveMouseBy(0, 1);
+
+    // We send a unexpected mouse move event. Note that we cannot use
+    // EventGenerator since it implicitly turns these into mouse drag events.
+    // The DragDropController should simply ignore these events.
+    gfx::Point mouse_move_location = drag_view->bounds().CenterPoint();
+    aura::MouseEvent mouse_move(ui::ET_MOUSE_MOVED,
+                                mouse_move_location, mouse_move_location, 0);
+    aura::RootWindow::GetInstance()->DispatchMouseEvent(&mouse_move);
+  }
+
+  generator.ReleaseLeftButton();
+
+  EXPECT_TRUE(drag_drop_controller_->drag_start_received_);
+  EXPECT_EQ(num_drags - 1 - drag_view->VerticalDragThreshold(),
+      drag_drop_controller_->num_drag_updates_);
+  EXPECT_TRUE(drag_drop_controller_->drop_received_);
+  EXPECT_EQ(UTF8ToUTF16("I am being dragged"),
+      drag_drop_controller_->drag_string_);
+
+  EXPECT_EQ(1, drag_view->num_drag_enters_);
+  EXPECT_EQ(num_drags - 1 - drag_view->VerticalDragThreshold(),
+      drag_view->num_drag_updates_);
+  EXPECT_EQ(1, drag_view->num_drops_);
+  EXPECT_EQ(0, drag_view->num_drag_exits_);
+  EXPECT_TRUE(drag_view->drag_done_received_);
 }
 
 }  // namespace test

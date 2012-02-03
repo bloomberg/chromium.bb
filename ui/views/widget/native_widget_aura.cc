@@ -767,14 +767,15 @@ void NativeWidgetAura::OnLostActive() {
 
 void NativeWidgetAura::OnDragEntered(const aura::DropTargetEvent& event) {
   DCHECK(drop_helper_.get() != NULL);
-  drop_helper_->OnDragOver(event.data(), event.location(),
-      event.source_operations());
+  last_drop_operation_ = drop_helper_->OnDragOver(event.data(),
+      event.location(), event.source_operations());
 }
 
 int NativeWidgetAura::OnDragUpdated(const aura::DropTargetEvent& event) {
   DCHECK(drop_helper_.get() != NULL);
-  return drop_helper_->OnDragOver(event.data(), event.location(),
-      event.source_operations());
+  last_drop_operation_ = drop_helper_->OnDragOver(event.data(),
+      event.location(), event.source_operations());
+  return last_drop_operation_;
 }
 
 void NativeWidgetAura::OnDragExited() {
@@ -785,7 +786,7 @@ void NativeWidgetAura::OnDragExited() {
 int NativeWidgetAura::OnPerformDrop(const aura::DropTargetEvent& event) {
   DCHECK(drop_helper_.get() != NULL);
   return drop_helper_->OnDrop(event.data(), event.location(),
-      event.source_operations());
+      last_drop_operation_);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
