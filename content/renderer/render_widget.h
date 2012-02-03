@@ -207,7 +207,6 @@ class CONTENT_EXPORT RenderWidget
   virtual void OnResize(const gfx::Size& new_size,
                         const gfx::Rect& resizer_rect,
                         bool is_fullscreen);
-  void OnChangeResizeRect(const gfx::Rect& resizer_rect);
   virtual void OnWasHidden();
   virtual void OnWasRestored(bool needs_repainting);
   virtual void OnWasSwappedOut();

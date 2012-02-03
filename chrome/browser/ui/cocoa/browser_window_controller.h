@@ -453,8 +453,7 @@ class WebContents;
 // partially offscreen, its height is not adjusted at all.  This function
 // prefers to grow the window down, but will grow up if needed.  Calls to this
 // function should be followed by a call to |layoutSubviews|.
-// Returns if the window height was changed.
-- (BOOL)adjustWindowHeightBy:(CGFloat)deltaH;
+- (void)adjustWindowHeightBy:(CGFloat)deltaH;
 
 // Return an autoreleased NSWindow suitable for fullscreen use.
 - (NSWindow*)createFullscreenWindow;
