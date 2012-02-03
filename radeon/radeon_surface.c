@@ -144,12 +144,12 @@ static void surf_minify(struct radeon_surface *surf,
                         uint32_t xalign, uint32_t yalign, uint32_t zalign,
                         unsigned offset)
 {
-    surf->level[level].nblk_x = mip_minify(surf->nblk_x, level);
-    surf->level[level].nblk_y = mip_minify(surf->nblk_y, level);
-    surf->level[level].nblk_z = mip_minify(surf->nblk_z, level);
     surf->level[level].npix_x = mip_minify(surf->npix_x, level);
     surf->level[level].npix_y = mip_minify(surf->npix_y, level);
     surf->level[level].npix_z = mip_minify(surf->npix_z, level);
+    surf->level[level].nblk_x = (surf->level[level].npix_x + surf->blk_w - 1) / surf->blk_w;
+    surf->level[level].nblk_y = (surf->level[level].npix_y + surf->blk_h - 1) / surf->blk_h;
+    surf->level[level].nblk_z = (surf->level[level].npix_z + surf->blk_d - 1) / surf->blk_d;
     if (surf->level[level].mode == RADEON_SURF_MODE_2D) {
         if (surf->level[level].nblk_x < xalign || surf->level[level].nblk_y < yalign) {
             surf->level[level].mode = RADEON_SURF_MODE_1D;
@@ -499,12 +499,12 @@ static void eg_surf_minify(struct radeon_surface *surf,
 {
     unsigned mtile_pr, mtile_ps;
 
-    surf->level[level].nblk_x = mip_minify(surf->nblk_x, level);
-    surf->level[level].nblk_y = mip_minify(surf->nblk_y, level);
-    surf->level[level].nblk_z = mip_minify(surf->nblk_z, level);
     surf->level[level].npix_x = mip_minify(surf->npix_x, level);
     surf->level[level].npix_y = mip_minify(surf->npix_y, level);
     surf->level[level].npix_z = mip_minify(surf->npix_z, level);
+    surf->level[level].nblk_x = (surf->level[level].npix_x + surf->blk_w - 1) / surf->blk_w;
+    surf->level[level].nblk_y = (surf->level[level].npix_y + surf->blk_h - 1) / surf->blk_h;
+    surf->level[level].nblk_z = (surf->level[level].npix_z + surf->blk_d - 1) / surf->blk_d;
     if (surf->level[level].mode == RADEON_SURF_MODE_2D) {
         if (surf->level[level].nblk_x < mtilew || surf->level[level].nblk_y < mtileh) {
             surf->level[level].mode = RADEON_SURF_MODE_1D;
@@ -595,12 +595,6 @@ static int eg_surface_init_2d(struct radeon_surface_manager *surf_man,
     /* macro tile bytes */
     mtileb = (mtilew / tilew) * (mtileh / tileh) * tileb;
 
-    /* check if surface is big enought */
-    if (surf->nblk_x < mtilew || surf->nblk_y < mtileh) {
-        surf->level[start_level].mode = RADEON_SURF_MODE_1D;
-        return eg_surface_init_1d(surf_man, surf, offset, start_level);
-    }
-
     if (!start_level) {
         surf->bo_alignment = MAX2(256, mtileb);
     }
@@ -610,7 +604,7 @@ static int eg_surface_init_2d(struct radeon_surface_manager *surf_man,
         surf->level[i].mode = RADEON_SURF_MODE_2D;
         eg_surf_minify(surf, i, slice_pt, mtilew, mtileh, mtileb, offset);
         if (surf->level[i].mode == RADEON_SURF_MODE_1D) {
-            return r6_surface_init_1d(surf_man, surf, offset, i);
+            return eg_surface_init_1d(surf_man, surf, offset, i);
         }
         /* level0 and first mipmap need to have alignment */
         offset = surf->bo_size;
@@ -914,10 +908,7 @@ static int radeon_surface_sanity(struct radeon_surface_manager *surf_man,
     if (!surf->npix_x || !surf->npix_y || !surf->npix_z) {
         return -EINVAL;
     }
-    if (!surf->nblk_x || !surf->nblk_y || !surf->nblk_z) {
-        return -EINVAL;
-    }
-    if (surf->npix_x < surf->nblk_x || surf->npix_y < surf->nblk_y || surf->npix_z < surf->nblk_z) {
+    if (!surf->blk_w || !surf->blk_h || !surf->blk_d) {
         return -EINVAL;
     }
     if (!surf->array_size) {

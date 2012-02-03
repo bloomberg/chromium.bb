@@ -79,9 +79,9 @@ struct radeon_surface {
     uint32_t                    npix_x;
     uint32_t                    npix_y;
     uint32_t                    npix_z;
-    uint32_t                    nblk_x;
-    uint32_t                    nblk_y;
-    uint32_t                    nblk_z;
+    uint32_t                    blk_w;
+    uint32_t                    blk_h;
+    uint32_t                    blk_d;
     uint32_t                    array_size;
     uint32_t                    last_level;
     uint32_t                    bpe;
