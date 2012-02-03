@@ -434,8 +434,8 @@ IPC_MESSAGE_ROUTED2(ChromeViewHostMsg_FindMissingPlugin,
                     std::string /* mime_type */)
 
 // Notifies the browser that a missing plug-in placeholder has been removed, so
-// the corresponding MissingPluginHost can be deleted.
-IPC_MESSAGE_ROUTED1(ChromeViewHostMsg_RemoveMissingPluginHost,
+// the corresponding PluginPlaceholderHost can be deleted.
+IPC_MESSAGE_ROUTED1(ChromeViewHostMsg_RemovePluginPlaceholderHost,
                     int /* placeholder_id */)
 
 // Notifies a missing plug-in placeholder that a plug-in with name |plugin_name|
@@ -545,6 +545,11 @@ IPC_MESSAGE_CONTROL1(ChromeViewHostMsg_DnsPrefetch,
 IPC_MESSAGE_ROUTED2(ChromeViewHostMsg_BlockedOutdatedPlugin,
                     string16, /* name */
                     GURL      /* update_url */)
+
+// Notifies when a plugin couldn't be loaded because it requires
+// user authorization.
+IPC_MESSAGE_ROUTED1(ChromeViewHostMsg_BlockedUnauthorizedPlugin,
+                    string16 /* name */)
 
 // Provide the browser process with information about the WebCore resource
 // cache and current renderer framerate.

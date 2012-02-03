@@ -47,8 +47,7 @@
 #include "chrome/renderer/net/renderer_net_predictor.h"
 #include "chrome/renderer/page_click_tracker.h"
 #include "chrome/renderer/page_load_histograms.h"
-#include "chrome/renderer/plugins/blocked_plugin.h"
-#include "chrome/renderer/plugins/missing_plugin.h"
+#include "chrome/renderer/plugins/plugin_placeholder.h"
 #include "chrome/renderer/plugins/plugin_uma.h"
 #include "chrome/renderer/prerender/prerender_helper.h"
 #include "chrome/renderer/prerender/prerender_webmediaplayer.h"
@@ -329,135 +328,162 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
     const ChromeViewHostMsg_GetPluginInfo_Status& status,
     const webkit::WebPluginInfo& plugin,
     const std::string& actual_mime_type) {
-  CommandLine* cmd = CommandLine::ForCurrentProcess();
+  ChromeViewHostMsg_GetPluginInfo_Status::Value status_value = status.value;
   GURL url(original_params.url);
   std::string orig_mime_type = original_params.mimeType.utf8();
-  if (status.value == ChromeViewHostMsg_GetPluginInfo_Status::kNotFound) {
+  PluginPlaceholder* placeholder = NULL;
+  if (status_value == ChromeViewHostMsg_GetPluginInfo_Status::kNotFound) {
     MissingPluginReporter::GetInstance()->ReportPluginMissing(
         orig_mime_type, url);
-    return MissingPlugin::Create(render_view, frame, original_params);
-  }
+    placeholder = PluginPlaceholder::CreateMissingPlugin(
+        render_view, frame, original_params);
+  } else {
+    scoped_ptr<webkit::npapi::PluginGroup> group(
+        webkit::npapi::PluginList::Singleton()->GetPluginGroup(plugin));
+    string16 name = group->GetGroupName();
 
-  scoped_ptr<webkit::npapi::PluginGroup> group(
-      webkit::npapi::PluginList::Singleton()->GetPluginGroup(plugin));
-
-  if (status.value == ChromeViewHostMsg_GetPluginInfo_Status::kDisabled) {
-    return BlockedPlugin::Create(
-        render_view, frame, original_params, plugin, group.get(),
-        IDR_DISABLED_PLUGIN_HTML, IDS_PLUGIN_DISABLED, false, false);
-  }
-
-  WebPluginParams params(original_params);
-  for (size_t i = 0; i < plugin.mime_types.size(); ++i) {
-    if (plugin.mime_types[i].mime_type == actual_mime_type) {
-      AppendParams(plugin.mime_types[i].additional_param_names,
-                   plugin.mime_types[i].additional_param_values,
-                   &params.attributeNames,
-                   &params.attributeValues);
-      break;
-    }
-  }
-
-  if (params.mimeType.isNull() && (actual_mime_type.size() > 0)) {
-    // Webkit might say that mime type is null while we already know the
-    // actual mime type via ChromeViewHostMsg_GetPluginInfo. In that case
-    // we should use what we know since WebpluginDelegateProxy does some
-    // specific initializations based on this information.
-    params.mimeType = WebString::fromUTF8(actual_mime_type.c_str());
-  }
-
-  if (status.value ==
-      ChromeViewHostMsg_GetPluginInfo_Status::kOutdatedBlocked) {
-    render_view->Send(new ChromeViewHostMsg_BlockedOutdatedPlugin(
-        render_view->GetRoutingId(), group->GetGroupName(),
-        GURL(group->GetUpdateURL())));
-  }
-  if (status.value ==
-          ChromeViewHostMsg_GetPluginInfo_Status::kOutdatedBlocked ||
-      status.value ==
-          ChromeViewHostMsg_GetPluginInfo_Status::kOutdatedDisallowed) {
-    return BlockedPlugin::Create(
-        render_view, frame, params, plugin, group.get(),
-        IDR_BLOCKED_PLUGIN_HTML, IDS_PLUGIN_OUTDATED, false,
-        status.value ==
-            ChromeViewHostMsg_GetPluginInfo_Status::kOutdatedBlocked);
-  }
-
-  ContentSettingsObserver* observer = ContentSettingsObserver::Get(render_view);
-
-  if (status.value ==
-      ChromeViewHostMsg_GetPluginInfo_Status::kUnauthorized &&
-      !observer->plugins_temporarily_allowed()) {
-    render_view->Send(new ChromeViewHostMsg_BlockedOutdatedPlugin(
-        render_view->GetRoutingId(), group->GetGroupName(), GURL()));
-    return BlockedPlugin::Create(
-        render_view, frame, params, plugin, group.get(),
-        IDR_BLOCKED_PLUGIN_HTML, IDS_PLUGIN_NOT_AUTHORIZED, false, true);
-  }
-
-  bool is_nacl_plugin = (plugin.name == ASCIIToUTF16(
-      chrome::ChromeContentClient::kNaClPluginName));
-  if (status.value == ChromeViewHostMsg_GetPluginInfo_Status::kAllowed ||
-      observer->plugins_temporarily_allowed()) {
-    // Delay loading plugins if prerendering.
-    if (prerender::PrerenderHelper::IsPrerendering(render_view)) {
-      return BlockedPlugin::Create(
-          render_view, frame, params, plugin, group.get(),
-          IDR_CLICK_TO_PLAY_PLUGIN_HTML, IDS_PLUGIN_LOAD, true, true);
-    }
-
-    // Determine if NaCl is allowed for both the internal plugin and
-    // any external plugin that handles our MIME type. This is so NaCl
-    // tests will still pass.
-    const char* kNaClMimeType = "application/x-nacl";
-    bool is_nacl_mime_type = actual_mime_type == kNaClMimeType;
-    bool is_nacl_enabled;
-    if (is_nacl_plugin) {
-      is_nacl_enabled = cmd->HasSwitch(switches::kEnableNaCl);
-    } else {
-      // If this is an external plugin that handles NaCl mime type,
-      // we want to allow Native Client, because it's how
-      // NaCl tests for the plugin work.
-      is_nacl_enabled = true;
-    }
-    if (is_nacl_plugin || is_nacl_mime_type) {
-      if (!IsNaClAllowed(plugin,
-                         url,
-                         actual_mime_type,
-                         is_nacl_mime_type,
-                         is_nacl_enabled,
-                         params)) {
-        frame->addMessageToConsole(
-            WebConsoleMessage(
-                WebConsoleMessage::LevelError,
-                "Only unpacked extensions and apps installed from the Chrome"
-                " Web Store can load NaCl modules without enabling Native"
-                " Client in about:flags."));
-        return BlockedPlugin::Create(
-            render_view, frame, params, plugin, group.get(),
-            IDR_BLOCKED_PLUGIN_HTML, IDS_PLUGIN_BLOCKED, false, false);
+    // TODO(bauerb): This should be in content/.
+    WebPluginParams params(original_params);
+    for (size_t i = 0; i < plugin.mime_types.size(); ++i) {
+      if (plugin.mime_types[i].mime_type == actual_mime_type) {
+        AppendParams(plugin.mime_types[i].additional_param_names,
+                     plugin.mime_types[i].additional_param_values,
+                     &params.attributeNames,
+                     &params.attributeValues);
+        break;
       }
     }
+    if (params.mimeType.isNull() && (actual_mime_type.size() > 0)) {
+      // Webkit might say that mime type is null while we already know the
+      // actual mime type via ChromeViewHostMsg_GetPluginInfo. In that case
+      // we should use what we know since WebpluginDelegateProxy does some
+      // specific initializations based on this information.
+      params.mimeType = WebString::fromUTF8(actual_mime_type.c_str());
+    }
 
-    return render_view->CreatePlugin(frame, plugin, params);
-  }
+    ContentSettingsObserver* observer =
+        ContentSettingsObserver::Get(render_view);
 
-  observer->DidBlockContentType(
-      is_nacl_plugin ? CONTENT_SETTINGS_TYPE_JAVASCRIPT :
-                       CONTENT_SETTINGS_TYPE_PLUGINS,
-      group->identifier());
-  if (status.value == ChromeViewHostMsg_GetPluginInfo_Status::kClickToPlay) {
-    RenderThread::Get()->RecordUserMetrics("Plugin_ClickToPlay");
-    return BlockedPlugin::Create(
-        render_view, frame, params, plugin, group.get(),
-        IDR_CLICK_TO_PLAY_PLUGIN_HTML, IDS_PLUGIN_LOAD, false, true);
-  } else {
-    DCHECK(status.value == ChromeViewHostMsg_GetPluginInfo_Status::kBlocked);
-    RenderThread::Get()->RecordUserMetrics("Plugin_Blocked");
-    return BlockedPlugin::Create(
-        render_view, frame, params, plugin, group.get(),
-        IDR_BLOCKED_PLUGIN_HTML, IDS_PLUGIN_BLOCKED, false, true);
+    bool is_nacl_plugin =
+        plugin.name ==
+            ASCIIToUTF16(chrome::ChromeContentClient::kNaClPluginName);
+    ContentSettingsType content_type =
+        is_nacl_plugin ? CONTENT_SETTINGS_TYPE_JAVASCRIPT :
+                         CONTENT_SETTINGS_TYPE_PLUGINS;
+
+    if ((status_value ==
+             ChromeViewHostMsg_GetPluginInfo_Status::kUnauthorized ||
+         status_value == ChromeViewHostMsg_GetPluginInfo_Status::kClickToPlay ||
+         status_value == ChromeViewHostMsg_GetPluginInfo_Status::kBlocked) &&
+        observer->plugins_temporarily_allowed()) {
+      status_value = ChromeViewHostMsg_GetPluginInfo_Status::kAllowed;
+    }
+
+    switch (status_value) {
+      case ChromeViewHostMsg_GetPluginInfo_Status::kNotFound: {
+        NOTREACHED();
+        break;
+      }
+      case ChromeViewHostMsg_GetPluginInfo_Status::kAllowed: {
+        // Delay loading plugins if prerendering.
+        if (prerender::PrerenderHelper::IsPrerendering(render_view)) {
+          placeholder = PluginPlaceholder::CreateBlockedPlugin(
+              render_view, frame, params, plugin, name,
+              IDR_CLICK_TO_PLAY_PLUGIN_HTML, IDS_PLUGIN_LOAD);
+          placeholder->set_blocked_for_prerendering(true);
+          placeholder->set_allow_loading(true);
+          break;
+        }
+
+        // Determine if NaCl is allowed for both the internal plugin and
+        // any external plugin that handles our MIME type. This is so NaCl
+        // tests will still pass.
+        const char* kNaClMimeType = "application/x-nacl";
+        bool is_nacl_mime_type = actual_mime_type == kNaClMimeType;
+        bool is_nacl_enabled;
+        if (is_nacl_plugin) {
+          is_nacl_enabled = CommandLine::ForCurrentProcess()->HasSwitch(
+              switches::kEnableNaCl);
+        } else {
+          // If this is an external plugin that handles NaCl mime type,
+          // we want to allow Native Client, because it's how
+          // NaCl tests for the plugin work.
+          is_nacl_enabled = true;
+        }
+        if (is_nacl_plugin || is_nacl_mime_type) {
+          if (!IsNaClAllowed(plugin,
+                             url,
+                             actual_mime_type,
+                             is_nacl_mime_type,
+                             is_nacl_enabled,
+                             params)) {
+            frame->addMessageToConsole(
+                WebConsoleMessage(
+                    WebConsoleMessage::LevelError,
+                    "Only unpacked extensions and apps installed from the "
+                    "Chrome Web Store can load NaCl modules without enabling "
+                    "Native Client in about:flags."));
+            placeholder = PluginPlaceholder::CreateBlockedPlugin(
+                render_view, frame, params, plugin, name,
+                IDR_BLOCKED_PLUGIN_HTML, IDS_PLUGIN_BLOCKED);
+            break;
+          }
+        }
+        return render_view->CreatePlugin(frame, plugin, params);
+      }
+      case ChromeViewHostMsg_GetPluginInfo_Status::kDisabled: {
+        placeholder = PluginPlaceholder::CreateBlockedPlugin(
+            render_view, frame, params, plugin, name,
+            IDR_DISABLED_PLUGIN_HTML, IDS_PLUGIN_DISABLED);
+        break;
+      }
+      case ChromeViewHostMsg_GetPluginInfo_Status::kOutdatedBlocked: {
+        placeholder = PluginPlaceholder::CreateBlockedPlugin(
+            render_view, frame, params, plugin, name,
+            IDR_BLOCKED_PLUGIN_HTML, IDS_PLUGIN_OUTDATED);
+        placeholder->set_allow_loading(true);
+        render_view->Send(new ChromeViewHostMsg_BlockedOutdatedPlugin(
+            render_view->GetRoutingId(), group->GetGroupName(),
+            GURL(group->GetUpdateURL())));
+        break;
+      }
+      case ChromeViewHostMsg_GetPluginInfo_Status::kOutdatedDisallowed: {
+        placeholder = PluginPlaceholder::CreateBlockedPlugin(
+            render_view, frame, params, plugin, name,
+            IDR_BLOCKED_PLUGIN_HTML, IDS_PLUGIN_OUTDATED);
+        break;
+      }
+      case ChromeViewHostMsg_GetPluginInfo_Status::kUnauthorized: {
+        placeholder = PluginPlaceholder::CreateBlockedPlugin(
+            render_view, frame, params, plugin, name,
+            IDR_BLOCKED_PLUGIN_HTML, IDS_PLUGIN_NOT_AUTHORIZED);
+        placeholder->set_allow_loading(true);
+        render_view->Send(new ChromeViewHostMsg_BlockedUnauthorizedPlugin(
+            render_view->GetRoutingId(), group->GetGroupName()));
+        break;
+      }
+      case ChromeViewHostMsg_GetPluginInfo_Status::kClickToPlay: {
+        placeholder = PluginPlaceholder::CreateBlockedPlugin(
+            render_view, frame, params, plugin, name,
+            IDR_CLICK_TO_PLAY_PLUGIN_HTML, IDS_PLUGIN_LOAD);
+        placeholder->set_allow_loading(true);
+        RenderThread::Get()->RecordUserMetrics("Plugin_ClickToPlay");
+        observer->DidBlockContentType(content_type, group->identifier());
+        break;
+      }
+      case ChromeViewHostMsg_GetPluginInfo_Status::kBlocked: {
+        placeholder = PluginPlaceholder::CreateBlockedPlugin(
+            render_view, frame, params, plugin, name,
+            IDR_BLOCKED_PLUGIN_HTML, IDS_PLUGIN_BLOCKED);
+        placeholder->set_allow_loading(true);
+        RenderThread::Get()->RecordUserMetrics("Plugin_Blocked");
+        observer->DidBlockContentType(content_type, group->identifier());
+        break;
+      }
+    }
   }
+  placeholder->SetStatus(status);
+  return placeholder->plugin();
 }
 
 bool ChromeContentRendererClient::IsNaClAllowed(

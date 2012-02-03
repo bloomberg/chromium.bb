@@ -32,10 +32,11 @@ class PluginObserver : public content::WebContentsObserver {
 
  private:
 #if defined(ENABLE_PLUGIN_INSTALLATION)
-  class MissingPluginHost;
+  class PluginPlaceholderHost;
 #endif
 
   void OnBlockedOutdatedPlugin(const string16& name, const GURL& update_url);
+  void OnBlockedUnauthorizedPlugin(const string16& name);
 #if defined(ENABLE_PLUGIN_INSTALLATION)
   void OnFindMissingPlugin(int placeholder_id, const std::string& mime_type);
 
@@ -46,15 +47,15 @@ class PluginObserver : public content::WebContentsObserver {
   void InstallMissingPlugin(PluginInstaller* installer);
 #endif
   void OnOpenAboutPlugins();
-  void OnRemoveMissingPluginHost(int placeholder_id);
+  void OnRemovePluginPlaceholderHost(int placeholder_id);
 
   base::WeakPtrFactory<PluginObserver> weak_ptr_factory_;
 
   TabContentsWrapper* tab_contents_;
 
 #if defined(ENABLE_PLUGIN_INSTALLATION)
-  // Stores all MissingPluginHosts, keyed by their routing ID.ß
-  std::map<int, MissingPluginHost*> missing_plugins_;
+  // Stores all PluginPlaceholderHosts, keyed by their routing ID.
+  std::map<int, PluginPlaceholderHost*> plugin_placeholders_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(PluginObserver);

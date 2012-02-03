@@ -364,11 +364,11 @@ void ConfirmInstallDialogDelegate::OnlyWeakObserversLeft() {
 // PluginObserver -------------------------------------------------------------
 
 #if defined(ENABLE_PLUGIN_INSTALLATION)
-class PluginObserver::MissingPluginHost : public PluginInstallerObserver {
+class PluginObserver::PluginPlaceholderHost : public PluginInstallerObserver {
  public:
-  MissingPluginHost(PluginObserver* observer,
-                    int routing_id,
-                    PluginInstaller* installer)
+  PluginPlaceholderHost(PluginObserver* observer,
+                        int routing_id,
+                        PluginInstaller* installer)
       : PluginInstallerObserver(installer),
         observer_(observer),
         routing_id_(routing_id) {
@@ -414,7 +414,7 @@ PluginObserver::PluginObserver(TabContentsWrapper* tab_contents)
 
 PluginObserver::~PluginObserver() {
 #if defined(ENABLE_PLUGIN_INSTALLATION)
-  STLDeleteValues(&missing_plugins_);
+  STLDeleteValues(&plugin_placeholders_);
 #endif
 }
 
@@ -422,11 +422,13 @@ bool PluginObserver::OnMessageReceived(const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP(PluginObserver, message)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_BlockedOutdatedPlugin,
                         OnBlockedOutdatedPlugin)
+    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_BlockedUnauthorizedPlugin,
+                        OnBlockedUnauthorizedPlugin)
 #if defined(ENABLE_PLUGIN_INSTALLATION)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_FindMissingPlugin,
                         OnFindMissingPlugin)
-    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_RemoveMissingPluginHost,
-                        OnRemoveMissingPluginHost)
+    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_RemovePluginPlaceholderHost,
+                        OnRemovePluginPlaceholderHost)
 #endif
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_OpenAboutPlugins,
                         OnOpenAboutPlugins)
@@ -440,12 +442,16 @@ bool PluginObserver::OnMessageReceived(const IPC::Message& message) {
 void PluginObserver::OnBlockedOutdatedPlugin(const string16& name,
                                              const GURL& update_url) {
   InfoBarTabHelper* infobar_helper = tab_contents_->infobar_tab_helper();
-  infobar_helper->AddInfoBar(update_url.is_empty() ?
-      static_cast<InfoBarDelegate*>(new BlockedPluginInfoBarDelegate(
-          infobar_helper,
-          tab_contents_->profile()->GetHostContentSettingsMap(),
-          name)) :
+  infobar_helper->AddInfoBar(
       new OutdatedPluginInfoBarDelegate(infobar_helper, name, update_url));
+}
+
+void PluginObserver::OnBlockedUnauthorizedPlugin(const string16& name) {
+  InfoBarTabHelper* infobar_helper = tab_contents_->infobar_tab_helper();
+  infobar_helper->AddInfoBar(new BlockedPluginInfoBarDelegate(
+      infobar_helper,
+      tab_contents_->profile()->GetHostContentSettingsMap(),
+      name));
 }
 
 #if defined(ENABLE_PLUGIN_INSTALLATION)
@@ -464,8 +470,8 @@ void PluginObserver::OnFindMissingPlugin(int placeholder_id,
 void PluginObserver::FoundMissingPlugin(int placeholder_id,
                                         const std::string& mime_type,
                                         PluginInstaller* installer) {
-  missing_plugins_[placeholder_id] =
-      new MissingPluginHost(this, placeholder_id, installer);
+  plugin_placeholders_[placeholder_id] =
+      new PluginPlaceholderHost(this, placeholder_id, installer);
   InfoBarTabHelper* infobar_helper = tab_contents_->infobar_tab_helper();
   InfoBarDelegate* delegate = PluginInstallerInfoBarDelegate::Create(
       infobar_helper, installer,
@@ -493,15 +499,15 @@ void PluginObserver::InstallMissingPlugin(PluginInstaller* installer) {
   }
 }
 
-void PluginObserver::OnRemoveMissingPluginHost(int placeholder_id) {
-  std::map<int, MissingPluginHost*>::iterator it =
-      missing_plugins_.find(placeholder_id);
-  if (it == missing_plugins_.end()) {
+void PluginObserver::OnRemovePluginPlaceholderHost(int placeholder_id) {
+  std::map<int, PluginPlaceholderHost*>::iterator it =
+      plugin_placeholders_.find(placeholder_id);
+  if (it == plugin_placeholders_.end()) {
     NOTREACHED();
     return;
   }
   delete it->second;
-  missing_plugins_.erase(it);
+  plugin_placeholders_.erase(it);
 }
 #endif  // defined(ENABLE_PLUGIN_INSTALLATION)
 
