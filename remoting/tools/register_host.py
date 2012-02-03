@@ -52,16 +52,17 @@ def main():
   print "Done"
 
   while 1:
-    pin = getpass.getpass("Host PIN (can be empty): ")
-    if len(pin) > 0 and len(pin) < 4:
+    pin = getpass.getpass("Host PIN: ")
+    if len(pin) < 4:
       print "PIN must be at least 4 characters long."
       continue
+    pin2 = getpass.getpass("Confirm host PIN: ")
+    if pin2 != pin:
+      print "PINs didn't match. Please try again."
+      continue
     break
-  if pin == "":
-    host_secret_hash = None
-  else:
-    host_secret_hash = "hmac:" + base64.b64encode(
-        hmac.new(str(host_id), pin, hashlib.sha256).digest())
+  host_secret_hash = "hmac:" + base64.b64encode(
+      hmac.new(str(host_id), pin, hashlib.sha256).digest())
 
   params = { "data": {
       "hostId": host_id,
@@ -99,11 +100,9 @@ def main():
       "xmpp_auth_token" : auth_token,
       "host_id" : host_id,
       "host_name" : host_name,
+      "host_secret_hash": host_secret_hash,
       "private_key" : private_key,
       }
-
-  if host_secret_hash:
-    config["host_secret_hash"] = host_secret_hash
 
   settings_file.write(json.dumps(config, indent=2))
   settings_file.close()

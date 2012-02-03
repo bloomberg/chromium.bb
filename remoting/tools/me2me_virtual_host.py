@@ -189,16 +189,20 @@ class Host:
 
   def ask_pin(self):
     while 1:
-      pin = getpass.getpass("Host PIN (can be empty): ")
-      if len(pin) > 0 and len(pin) < 4:
+      pin = getpass.getpass("Host PIN: ")
+      if len(pin) < 4:
         print "PIN must be at least 4 characters long."
         continue
+      pin2 = getpass.getpass("Confirm host PIN: ")
+      if pin2 != pin:
+        print "PINs didn't match. Please try again."
+        continue
       break
-    if pin == "":
-      self.host_secret_hash = None
-    else:
-      self.host_secret_hash = "hmac:" + base64.b64encode(
-          hmac.new(str(self.host_id), pin, hashlib.sha256).digest())
+    self.host_secret_hash = "hmac:" + base64.b64encode(
+        hmac.new(str(self.host_id), pin, hashlib.sha256).digest())
+
+  def is_pin_set(self):
+    return self.host_secret_hash
 
   def load_config(self):
     try:
@@ -218,6 +222,7 @@ class Host:
     data = {
         "host_id": self.host_id,
         "host_name": self.host_name,
+        "host_secret_hash": self.host_secret_hash,
         "private_key": self.private_key,
     }
     if self.host_secret_hash:
@@ -490,6 +495,9 @@ def main():
   parser.add_option("-k", "--stop", dest="stop", default=False,
                     action="store_true",
                     help="stop the daemon currently running")
+  parser.add_option("-p", "--new-pin", dest="new_pin", default=False,
+                    action="store_true",
+                    help="set new PIN before starting the host")
   (options, args) = parser.parse_args()
 
   size_components = options.size.split("x")
@@ -537,6 +545,9 @@ def main():
   # Outside the loop so user doesn't get asked twice.
   if register_host:
     host.ask_pin()
+  elif options.new_pin or not host.is_pin_set():
+    host.ask_pin()
+    host.save_config()
 
   # The loop is to deal with the case of registering a new Host with
   # previously-saved auth tokens (from a previous run of this script), which
