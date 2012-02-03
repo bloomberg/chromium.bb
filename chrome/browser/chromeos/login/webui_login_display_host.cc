@@ -142,6 +142,9 @@ void WebUILoginDisplayHost::LoadURL(const GURL& url) {
     params.bounds = background_bounds();
 #if defined(USE_AURA)
     params.show_state = ui::SHOW_STATE_FULLSCREEN;
+    params.parent =
+        ash::Shell::GetInstance()->GetContainer(
+            ash::internal::kShellWindowId_LockScreenContainer);
 #endif
 
     login_window_ = new views::Widget;
@@ -151,9 +154,6 @@ void WebUILoginDisplayHost::LoadURL(const GURL& url) {
     login_view_->Init(login_window_);
 
 #if defined(USE_AURA)
-    ash::Shell::GetInstance()->GetContainer(
-        ash::internal::kShellWindowId_LockScreenContainer)->
-        AddChild(login_window_->GetNativeView());
     ash::SetWindowVisibilityAnimationDuration(
         login_window_->GetNativeView(),
         base::TimeDelta::FromMilliseconds(kLoginFadeoutTransitionDurationMs));

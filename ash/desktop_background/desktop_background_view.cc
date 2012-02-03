@@ -54,10 +54,10 @@ views::Widget* CreateDesktopBackground() {
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
   DesktopBackgroundView* view = new DesktopBackgroundView;
   params.delegate = view;
+  params.parent =
+      Shell::GetInstance()->GetContainer(
+          ash::internal::kShellWindowId_DesktopBackgroundContainer);
   desktop_widget->Init(params);
-  Shell::GetInstance()->GetContainer(
-      ash::internal::kShellWindowId_DesktopBackgroundContainer)->
-      AddChild(desktop_widget->GetNativeView());
   desktop_widget->SetContentsView(view);
   desktop_widget->Show();
   desktop_widget->GetNativeView()->SetName("DesktopBackgroundView");

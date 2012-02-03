@@ -42,12 +42,12 @@ void LockWindowAura::Init() {
   views::Widget::InitParams params(
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
   params.bounds = gfx::Rect(aura::RootWindow::GetInstance()->GetHostSize());
-  views::Widget::Init(params);
   // TODO(flackr): Use a property to specify this container rather than
   // depending on shell implementation.
-  ash::Shell::GetInstance()->GetContainer(
-      ash::internal::kShellWindowId_LockScreenContainer)->
-      AddChild(GetNativeView());
+  params.parent =
+      ash::Shell::GetInstance()->GetContainer(
+          ash::internal::kShellWindowId_LockScreenContainer);
+  views::Widget::Init(params);
   ash::SetWindowVisibilityAnimationTransition(GetNativeView(),
                                               ash::ANIMATE_NONE);
 }

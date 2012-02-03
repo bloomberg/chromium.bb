@@ -25,7 +25,10 @@ Widget* CreateBubbleWidget(BubbleDelegateView* bubble, Widget* parent) {
   Widget::InitParams bubble_params(Widget::InitParams::TYPE_BUBBLE);
   bubble_params.delegate = bubble;
   bubble_params.transparent = true;
-  bubble_params.parent_widget = parent;
+  if (bubble->parent_window())
+    bubble_params.parent = bubble->parent_window();
+  else
+    bubble_params.parent_widget = parent;
   if (bubble->use_focusless())
     bubble_params.can_activate = false;
 #if defined(OS_WIN) && !defined(USE_AURA)
@@ -95,7 +98,8 @@ BubbleDelegateView::BubbleDelegateView()
       margin_(kDefaultMargin),
       original_opacity_(255),
       border_widget_(NULL),
-      use_focusless_(false) {
+      use_focusless_(false),
+      parent_window_(NULL) {
   set_background(views::Background::CreateSolidBackground(color_));
   AddAccelerator(ui::Accelerator(ui::VKEY_ESCAPE, 0));
 }
@@ -111,7 +115,8 @@ BubbleDelegateView::BubbleDelegateView(
       margin_(kDefaultMargin),
       original_opacity_(255),
       border_widget_(NULL),
-      use_focusless_(false) {
+      use_focusless_(false),
+      parent_window_(NULL) {
   set_background(views::Background::CreateSolidBackground(color_));
   AddAccelerator(ui::Accelerator(ui::VKEY_ESCAPE, 0));
 }

@@ -90,13 +90,13 @@ views::Widget* CreateViewsBubble(views::BubbleDelegateView* delegate) {
 
 views::Widget* CreateViewsBubbleAboveLockScreen(
     views::BubbleDelegateView* delegate) {
+#if defined(USE_AURA)
+  delegate->set_parent_window(
+      ash::Shell::GetInstance()->GetContainer(
+          ash::internal::kShellWindowId_SettingBubbleContainer));
+#endif
   views::Widget* bubble_widget =
       views::BubbleDelegateView::CreateBubble(delegate);
-#if defined(USE_AURA)
-  ash::Shell::GetInstance()->GetContainer(
-      ash::internal::kShellWindowId_SettingBubbleContainer)->
-          AddChild(bubble_widget->GetNativeView());
-#endif
 #if defined(OS_CHROMEOS) && defined(TOOLKIT_USES_GTK)
   std::vector<int> params;
   params.push_back(1);  // Show while screen is locked.

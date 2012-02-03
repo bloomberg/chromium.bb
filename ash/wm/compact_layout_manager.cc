@@ -129,10 +129,12 @@ void CompactLayoutManager::OnWindowPropertyChanged(aura::Window* window,
 }
 
 void CompactLayoutManager::OnWindowStackingChanged(aura::Window* window) {
-  if ((!current_window_ || current_window_ != window) &&
-      ShouldAnimateOnEntrance(window)) {
-    LayoutWindows(current_window_);
-    current_window_ = window;
+  if (!current_window_ || ShouldAnimateOnEntrance(window)) {
+    if (current_window_ != window) {
+      LayoutWindows(current_window_);
+      current_window_ = window;
+    }
+    // Always animate to |window| when there is a stacking change.
     AnimateSlideTo(window->bounds().x());
   }
 }
