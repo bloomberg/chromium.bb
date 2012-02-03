@@ -3323,6 +3323,26 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     }
     return self._GetResultFromJSONRequest(cmd_dict, windex=windex)
 
+  def GetV8HeapStats(self, tab_index=0, windex=0):
+    """Returns statistics about the v8 heap in the renderer process for a tab.
+
+    Args:
+      tab_index: The tab index, default is 0.
+      window_index: The window index, default is 0.
+
+    Returns:
+      A dictionary containing v8 heap statistics. Memory values are in bytes.
+      Example:
+        { 'renderer_id': 6223,
+          'v8_memory_allocated': 21803776,
+          'v8_memory_used': 10565392 }
+    """
+    cmd_dict = {  # Prepare command for the json interface.
+      'command': 'GetV8HeapStats',
+      'tab_index': tab_index,
+    }
+    return self._GetResultFromJSONRequest(cmd_dict, windex=windex)
+
   def KillRendererProcess(self, pid):
     """Kills the given renderer process.
 

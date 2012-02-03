@@ -2616,6 +2616,9 @@ void TestingAutomationProvider::SendJSONRequest(int handle,
   browser_handler_map["LaunchApp"] = &TestingAutomationProvider::LaunchApp;
   browser_handler_map["SetAppLaunchType"] =
       &TestingAutomationProvider::SetAppLaunchType;
+
+  browser_handler_map["GetV8HeapStats"] =
+      &TestingAutomationProvider::GetV8HeapStats;
 #if defined(OS_CHROMEOS)
   browser_handler_map["CaptureProfilePhoto"] =
       &TestingAutomationProvider::CaptureProfilePhoto;
@@ -6098,6 +6101,40 @@ void TestingAutomationProvider::SetAppLaunchType(
 
   service->extension_prefs()->SetLaunchType(extension->id(), launch_type);
   reply.SendSuccess(NULL);
+}
+
+// Sample json input: { "command": "GetV8HeapStats",
+//                      "tab_index": 0 }
+// Refer to GetV8HeapStats() in chrome/test/pyautolib/pyauto.py for
+// sample json output.
+void TestingAutomationProvider::GetV8HeapStats(
+    Browser* browser,
+    DictionaryValue* args,
+    IPC::Message* reply_message) {
+  WebContents* web_contents;
+  int tab_index;
+  std::string error;
+
+  if (!args->GetInteger("tab_index", &tab_index)) {
+    AutomationJSONReply(this, reply_message).SendError(
+        "Missing 'tab_index' argument.");
+    return;
+  }
+
+  web_contents = browser->GetWebContentsAt(tab_index);
+  if (!web_contents) {
+    AutomationJSONReply(this, reply_message).SendError(
+        StringPrintf("Could not get WebContents at tab index %d", tab_index));
+    return;
+  }
+
+  RenderViewHost* render_view = web_contents->GetRenderViewHost();
+
+  // This observer will delete itself.
+  new V8HeapStatsObserver(
+      this, reply_message,
+      base::GetProcId(render_view->process()->GetHandle()));
+  render_view->Send(new ChromeViewMsg_GetV8HeapStats);
 }
 
 void TestingAutomationProvider::WaitForAllViewsToStopLoading(

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -49,6 +49,7 @@
 #include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/printing/print_job.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/renderer_host/chrome_render_message_filter.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/sessions/restore_tab_helper.h"
@@ -2925,6 +2926,50 @@ void ProcessInfoObserver::OnDetailsAvailable() {
     AutomationJSONReply(automation_, reply_message_.release())
         .SendSuccess(return_value.get());
   }
+}
+
+V8HeapStatsObserver::V8HeapStatsObserver(
+    AutomationProvider* automation,
+    IPC::Message* reply_message,
+    base::ProcessId renderer_id)
+    : automation_(automation->AsWeakPtr()),
+      reply_message_(reply_message),
+      renderer_id_(renderer_id) {
+  registrar_.Add(
+      this,
+      content::NOTIFICATION_RENDERER_V8_HEAP_STATS_COMPUTED,
+      content::NotificationService::AllSources());
+}
+
+V8HeapStatsObserver::~V8HeapStatsObserver() {}
+
+void V8HeapStatsObserver::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
+  DCHECK(type == content::NOTIFICATION_RENDERER_V8_HEAP_STATS_COMPUTED);
+
+  base::ProcessId updated_renderer_id =
+      *(content::Source<base::ProcessId>(source).ptr());
+  // Only return information for the renderer ID we're interested in.
+  if (renderer_id_ != updated_renderer_id)
+    return;
+
+  ChromeRenderMessageFilter::V8HeapStatsDetails* v8_heap_details =
+      content::Details<ChromeRenderMessageFilter::V8HeapStatsDetails>(details)
+          .ptr();
+  scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
+  return_value->SetInteger("renderer_id", updated_renderer_id);
+  return_value->SetInteger("v8_memory_allocated",
+                           v8_heap_details->v8_memory_allocated());
+  return_value->SetInteger("v8_memory_used",
+                           v8_heap_details->v8_memory_used());
+
+  if (automation_) {
+    AutomationJSONReply(automation_, reply_message_.release())
+        .SendSuccess(return_value.get());
+  }
+  delete this;
 }
 
 BrowserOpenedWithNewProfileNotificationObserver::

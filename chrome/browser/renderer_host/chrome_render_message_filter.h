@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -33,6 +33,20 @@ class ChromeRenderMessageFilter : public content::BrowserMessageFilter {
   ChromeRenderMessageFilter(int render_process_id,
                             Profile* profile,
                             net::URLRequestContextGetter* request_context);
+
+  // Notification detail classes.
+  class V8HeapStatsDetails {
+   public:
+    V8HeapStatsDetails(size_t v8_memory_allocated,
+                       size_t v8_memory_used)
+        : v8_memory_allocated_(v8_memory_allocated),
+          v8_memory_used_(v8_memory_used) {}
+    size_t v8_memory_allocated() const { return v8_memory_allocated_; }
+    size_t v8_memory_used() const { return v8_memory_used_; }
+   private:
+    size_t v8_memory_allocated_;
+    size_t v8_memory_used_;
+  };
 
   // content::BrowserMessageFilter methods:
   virtual bool OnMessageReceived(const IPC::Message& message,

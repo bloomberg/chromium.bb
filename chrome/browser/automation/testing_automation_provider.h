@@ -882,6 +882,11 @@ class TestingAutomationProvider : public AutomationProvider,
                         base::DictionaryValue* args,
                         IPC::Message* reply_message);
 
+  // Gets statistics about the v8 heap in a renderer process.
+  void GetV8HeapStats(Browser* browser,
+                      base::DictionaryValue* args,
+                      IPC::Message* reply_message);
+
   // Waits for all views to stop loading or a modal dialog to become active.
   void WaitForAllViewsToStopLoading(base::DictionaryValue* args,
                                     IPC::Message* reply_message);

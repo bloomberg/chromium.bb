@@ -359,6 +359,11 @@ enum NotificationType {
   // RenderViewHost and may be a Null Value.
   NOTIFICATION_EXECUTE_JAVASCRIPT_RESULT,
 
+  // Sent when a renderer process is notified of new v8 heap statistics. The
+  // source is the ID of the renderer process, and the details are a
+  // V8HeapStatsDetails object.
+  NOTIFICATION_RENDERER_V8_HEAP_STATS_COMPUTED,
+
   // Child Processes ---------------------------------------------------------
 
   // This notification is sent when a child process host has connected to a

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -1780,6 +1780,27 @@ class ProcessInfoObserver : public MemoryDetails {
   scoped_ptr<IPC::Message> reply_message_;
 
   DISALLOW_COPY_AND_ASSIGN(ProcessInfoObserver);
+};
+
+// Observes when the Task Manager has been notified of new v8 heap statistics.
+class V8HeapStatsObserver : public content::NotificationObserver {
+ public:
+  V8HeapStatsObserver(AutomationProvider* automation,
+                      IPC::Message* reply_message,
+                      base::ProcessId renderer_id);
+  virtual ~V8HeapStatsObserver();
+
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details);
+
+ private:
+  content::NotificationRegistrar registrar_;
+  base::WeakPtr<AutomationProvider> automation_;
+  scoped_ptr<IPC::Message> reply_message_;
+  base::ProcessId renderer_id_;
+
+  DISALLOW_COPY_AND_ASSIGN(V8HeapStatsObserver);
 };
 
 // Manages the process of creating a new Profile and opening a new browser with

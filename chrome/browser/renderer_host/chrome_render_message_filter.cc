@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -30,6 +30,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/process_type.h"
 #include "googleurl/src/gurl.h"
@@ -205,11 +206,28 @@ void ChromeRenderMessageFilter::OnFPS(int routing_id, float fps) {
 }
 
 void ChromeRenderMessageFilter::OnV8HeapStats(int v8_memory_allocated,
-                                        int v8_memory_used) {
+                                              int v8_memory_used) {
+  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::Bind(
+            &ChromeRenderMessageFilter::OnV8HeapStats, this,
+            v8_memory_allocated, v8_memory_used));
+    return;
+  }
+
+  base::ProcessId renderer_id = base::GetProcId(peer_handle());
+
   TaskManager::GetInstance()->model()->NotifyV8HeapStats(
-      base::GetProcId(peer_handle()),
+      renderer_id,
       static_cast<size_t>(v8_memory_allocated),
       static_cast<size_t>(v8_memory_used));
+
+  V8HeapStatsDetails details(v8_memory_allocated, v8_memory_used);
+  content::NotificationService::current()->Notify(
+      content::NOTIFICATION_RENDERER_V8_HEAP_STATS_COMPUTED,
+      content::Source<const base::ProcessId>(&renderer_id),
+      content::Details<const V8HeapStatsDetails>(&details));
 }
 
 void ChromeRenderMessageFilter::OnOpenChannelToExtension(
