@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -48,25 +48,29 @@ metrics.recordInterval = function(name) {
 };
 
 metrics.recordEnum = function(name, value, validValues) {
-  var maxValue;
+  var boundaryValue;
   var index;
   if (validValues.constructor.name == 'Array') {
     index = validValues.indexOf(value);
-    maxValue = validValues.length - 1;
+    boundaryValue = validValues.length;
   } else {
     index = value;
-    maxValue = validValues - 1;
+    boundaryValue = validValues;
   }
-  // Collect invalid values in the extra bucket at the end.
-  if (index < 0 || index > maxValue)
-    index = maxValue;
+  // Collect invalid values in the overflow bucket at the end.
+  if (index < 0 || index > boundaryValue)
+    index = boundaryValue;
 
+  // Setting min to 1 looks strange but this is exactly the recommended way
+  // of using histograms for enum-like types. Bucket #0 works as a regular
+  // bucket AND the underflow bucket.
+  // (Source: UMA_HISTOGRAM_ENUMERATION definition in base/metrics/histogram.h)
   var metricDescr = {
     'metricName': metrics.convertName_(name),
     'type': 'histogram-linear',
-    'min': 0,
-    'max': maxValue,
-    'buckets': maxValue + 1
+    'min': 1,
+    'max': boundaryValue,
+    'buckets': boundaryValue + 1
   };
   chrome.metricsPrivate.recordValue(metricDescr, index);
   if (localStorage.logMetrics) {
