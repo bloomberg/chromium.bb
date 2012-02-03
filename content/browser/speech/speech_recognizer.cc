@@ -129,9 +129,7 @@ void SpeechRecognizer::CancelRecognition() {
 
   // Stop recording if required.
   if (audio_controller_.get()) {
-    VLOG(1) << "SpeechRecognizer stopping record.";
-    audio_controller_->Close();
-    audio_controller_ = NULL;  // Releases the ref ptr.
+    CloseAudioControllerSynchronously();
   }
 
   VLOG(1) << "SpeechRecognizer canceling recognition.";
@@ -147,9 +145,7 @@ void SpeechRecognizer::StopRecording() {
   if (!audio_controller_.get())
     return;
 
-  VLOG(1) << "SpeechRecognizer stopping record.";
-  audio_controller_->Close();
-  audio_controller_ = NULL;  // Releases the ref ptr.
+  CloseAudioControllerSynchronously();
 
   delegate_->DidStopReceivingSpeech(caller_id_);
   delegate_->DidCompleteRecording(caller_id_);
@@ -307,6 +303,19 @@ void SpeechRecognizer::InformErrorAndCancelRecognition(
   // Guard against the delegate freeing us until we finish our job.
   scoped_refptr<SpeechRecognizer> me(this);
   delegate_->OnRecognizerError(caller_id_, error);
+}
+
+void SpeechRecognizer::CloseAudioControllerSynchronously() {
+  VLOG(1) << "SpeechRecognizer stopping record.";
+
+  // TODO(satish): investigate the possibility to utilize the closure
+  // and switch to async. version of this method. Compare with how
+  // it's done in e.g. the AudioRendererHost.
+  base::WaitableEvent closed_event(true, false);
+  audio_controller_->Close(base::Bind(&base::WaitableEvent::Signal,
+                           base::Unretained(&closed_event)));
+  closed_event.Wait();
+  audio_controller_ = NULL;  // Releases the ref ptr.
 }
 
 }  // namespace speech_input

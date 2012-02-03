@@ -381,17 +381,19 @@ void AudioInputRendererHost::StopAndDeleteDevice(int session_id) {
 }
 
 void AudioInputRendererHost::CloseAndDeleteStream(AudioEntry* entry) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
   if (!entry->pending_close) {
+    entry->controller->Close(base::Bind(&AudioInputRendererHost::OnStreamClosed,
+                                        this , entry));
     entry->pending_close = true;
-    // TODO(henrika): AudioRendererHost uses an alternative method
-    // to close down the AudioController. Try to refactor and merge
-    // the implementations.
-    entry->controller->Close();
-    OnStreamClosed(entry);
   }
 }
 
 void AudioInputRendererHost::OnStreamClosed(AudioEntry* entry) {
+  // We should be on the the audio-manager thread now.
+  DCHECK(entry->controller->message_loop()->BelongsToCurrentThread());
+
   // Delete the entry after we've closed the stream.
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,

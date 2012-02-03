@@ -137,6 +137,9 @@ class CONTENT_EXPORT SpeechRecognizer
   // Handles OnData in the IO thread. Takes ownership of |data|.
   void HandleOnData(std::string* data);
 
+  // Helper method which closes the audio controller and blocks until done.
+  void CloseAudioControllerSynchronously();
+
   Delegate* delegate_;
   int caller_id_;
   std::string language_;
