@@ -71,11 +71,6 @@ RenderProcessImpl::RenderProcessImpl()
     webkit_glue::SetJavaScriptFlags(
         command_line.GetSwitchValueASCII(switches::kJavaScriptFlags));
   }
-
-  if (command_line.HasSwitch(switches::kDartFlags)) {
-    webkit_glue::SetDartFlags(
-        command_line.GetSwitchValueASCII(switches::kDartFlags));
-  }
 }
 
 RenderProcessImpl::~RenderProcessImpl() {

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -284,11 +284,6 @@ int main(int argc, char* argv[]) {
   if (parsed_command_line.HasSwitch(test_shell::kHeapProfiler)) {
     WebScriptController::registerExtension(
         extensions_v8::HeapProfilerExtension::Get());
-  }
-
-  if (parsed_command_line.HasSwitch(test_shell::kDartFlags)) {
-    webkit_glue::SetDartFlags(
-        parsed_command_line.GetSwitchValueASCII(test_shell::kDartFlags));
   }
 
   // Load and initialize the stats table.  Attempt to construct a somewhat
