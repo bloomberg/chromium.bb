@@ -268,13 +268,6 @@ void RootWindow::OnNativeScreenResized(const gfx::Size& size) {
     SetHostSize(size);
 }
 
-void RootWindow::OnWindowInitialized(Window* window) {
-  FOR_EACH_OBSERVER(RootWindowObserver, observers_,
-                    OnWindowInitialized(window));
-  if (window->IsVisible() && window->ContainsPointInRoot(last_mouse_location_))
-    PostMouseMoveEventAfterWindowChange();
-}
-
 void RootWindow::OnWindowDestroying(Window* window) {
   // Update the focused window state if the window was focused.
   if (focused_window_ == window) {

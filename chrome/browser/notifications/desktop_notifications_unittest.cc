@@ -13,6 +13,7 @@
 
 #if defined(USE_AURA)
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebKit.h"
+#include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
 #endif
 
@@ -111,6 +112,7 @@ void DesktopNotificationsTest::TearDown() {
   profile_.reset(NULL);
 #if defined(USE_AURA)
   aura::RootWindow::DeleteInstance();
+  aura::Env::DeleteInstance();
   WebKit::shutdown();
 #endif
 }

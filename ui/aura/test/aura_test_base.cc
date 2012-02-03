@@ -8,6 +8,7 @@
 #include <ole2.h>
 #endif
 
+#include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
 #include "ui/gfx/compositor/layer_animator.h"
 
@@ -44,6 +45,7 @@ AuraTestBase::~AuraTestBase() {
   // Ensure that we don't use the previously-allocated static RootWindow object
   // later -- on Linux, it holds a reference to our message loop's X connection.
   aura::RootWindow::DeleteInstance();
+  aura::Env::DeleteInstance();
 }
 
 void AuraTestBase::SetUp() {

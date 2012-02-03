@@ -12,6 +12,7 @@
 #include "ash/wm/window_properties.h"
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 
@@ -45,7 +46,7 @@ ShadowType GetShadowTypeFromWindow(aura::Window* window) {
 }  // namespace
 
 ShadowController::ShadowController() {
-  aura::RootWindow::GetInstance()->AddRootWindowObserver(this);
+  aura::Env::GetInstance()->AddObserver(this);
 }
 
 ShadowController::~ShadowController() {
@@ -53,7 +54,7 @@ ShadowController::~ShadowController() {
        it != window_shadows_.end(); ++it) {
     it->first->RemoveObserver(this);
   }
-  aura::RootWindow::GetInstance()->RemoveRootWindowObserver(this);
+  aura::Env::GetInstance()->RemoveObserver(this);
 }
 
 void ShadowController::OnWindowInitialized(aura::Window* window) {

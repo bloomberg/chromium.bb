@@ -11,6 +11,7 @@
 #include "base/auto_reset.h"
 #include "ui/aura/client/activation_delegate.h"
 #include "ui/aura/client/aura_constants.h"
+#include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
@@ -71,11 +72,13 @@ ActivationController::ActivationController()
     : updating_activation_(false),
       default_container_for_test_(NULL) {
   aura::client::SetActivationClient(this);
+  aura::Env::GetInstance()->AddObserver(this);
   aura::RootWindow::GetInstance()->AddRootWindowObserver(this);
 }
 
 ActivationController::~ActivationController() {
   aura::RootWindow::GetInstance()->RemoveRootWindowObserver(this);
+  aura::Env::GetInstance()->RemoveObserver(this);
 }
 
 // static
@@ -186,11 +189,14 @@ void ActivationController::OnWindowDestroying(aura::Window* window) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// ActivationController, aura::RootWindowObserver implementation:
+// ActivationController, aura::EnvObserver implementation:
 
 void ActivationController::OnWindowInitialized(aura::Window* window) {
   window->AddObserver(this);
 }
+
+////////////////////////////////////////////////////////////////////////////////
+// ActivationController, aura::RootWindowObserver implementation:
 
 void ActivationController::OnWindowFocused(aura::Window* window) {
   ActivateWindow(GetActivatableWindow(window));

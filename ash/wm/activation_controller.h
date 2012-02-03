@@ -10,6 +10,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/aura/client/activation_client.h"
+#include "ui/aura/env_observer.h"
 #include "ui/aura/root_window_observer.h"
 #include "ui/aura/window_observer.h"
 #include "ash/ash_export.h"
@@ -21,6 +22,7 @@ namespace internal {
 class ASH_EXPORT ActivationController
     : public aura::client::ActivationClient,
       public aura::WindowObserver,
+      public aura::EnvObserver,
       public aura::RootWindowObserver {
  public:
   ActivationController();
@@ -41,8 +43,10 @@ class ASH_EXPORT ActivationController
                                          bool visible) OVERRIDE;
   virtual void OnWindowDestroying(aura::Window* window) OVERRIDE;
 
-  // Overridden from aura::RootWindowObserver:
+  // Overridden from aura::EnvObserver:
   virtual void OnWindowInitialized(aura::Window* window) OVERRIDE;
+
+  // Overridden from aura::RootWindowObserver:
   virtual void OnWindowFocused(aura::Window* window) OVERRIDE;
 
   void set_default_container_for_test(aura::Window* window) {

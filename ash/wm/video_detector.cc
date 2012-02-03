@@ -4,6 +4,7 @@
 
 #include "ash/wm/video_detector.h"
 
+#include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/gfx/rect.h"
@@ -50,11 +51,11 @@ class VideoDetector::WindowInfo {
 };
 
 VideoDetector::VideoDetector() {
-  aura::RootWindow::GetInstance()->AddRootWindowObserver(this);
+  aura::Env::GetInstance()->AddObserver(this);
 }
 
 VideoDetector::~VideoDetector() {
-  aura::RootWindow::GetInstance()->RemoveRootWindowObserver(this);
+  aura::Env::GetInstance()->RemoveObserver(this);
   for (WindowInfoMap::const_iterator it = window_infos_.begin();
        it != window_infos_.end(); ++it) {
     aura::Window* window = it->first;

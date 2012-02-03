@@ -20,6 +20,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "grit/ui_resources.h"
+#include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window_observer.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -219,6 +220,7 @@ int main(int argc, char** argv) {
   ash::Shell::DeleteInstance();
 
   aura::RootWindow::DeleteInstance();
+  aura::Env::DeleteInstance();
 
   ui::CompositorTestSupport::Terminate();
 

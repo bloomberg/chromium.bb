@@ -11,6 +11,7 @@
 #include "base/string_util.h"
 #include "ui/aura/client/stacking_client.h"
 #include "ui/aura/client/visibility_client.h"
+#include "ui/aura/env.h"
 #include "ui/aura/event.h"
 #include "ui/aura/event_filter.h"
 #include "ui/aura/layout_manager.h"
@@ -118,7 +119,7 @@ void Window::Init(ui::Layer::LayerType layer_type) {
   UpdateLayerName(name_);
   layer_->SetFillsBoundsOpaquely(!transparent_);
 
-  RootWindow::GetInstance()->OnWindowInitialized(this);
+  Env::GetInstance()->NotifyWindowInitialized(this);
 }
 
 void Window::SetType(client::WindowType type) {

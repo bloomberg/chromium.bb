@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/views/aura/chrome_shell_delegate.h"
 #include "chrome/browser/ui/views/aura/screen_orientation_listener.h"
 #include "chrome/browser/ui/views/aura/screenshot_taker.h"
+#include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
 #include "ui/gfx/compositor/compositor_setup.h"
 
@@ -52,4 +53,5 @@ void ChromeBrowserMainExtraPartsAura::PreProfileInit() {
 void ChromeBrowserMainExtraPartsAura::PostMainMessageLoopRun() {
   ash::Shell::DeleteInstance();
   aura::RootWindow::DeleteInstance();
+  aura::Env::DeleteInstance();
 }

@@ -115,9 +115,6 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   // Called when the native screen's resolution changes.
   void OnNativeScreenResized(const gfx::Size& size);
 
-  // Invoked when |window| is initialized.
-  void OnWindowInitialized(Window* window);
-
   // Invoked when |window| is being destroyed.
   void OnWindowDestroying(Window* window);
 

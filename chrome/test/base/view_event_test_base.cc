@@ -21,6 +21,7 @@
 
 #if defined(USE_AURA)
 #include "ash/shell.h"
+#include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
 #endif
 
@@ -105,6 +106,7 @@ void ViewEventTestBase::TearDown() {
 #if defined(USE_AURA)
   ash::Shell::DeleteInstance();
   aura::RootWindow::DeleteInstance();
+  aura::Env::DeleteInstance();
 #endif
   ui::CompositorTestSupport::Terminate();
 #if defined(OS_WIN)

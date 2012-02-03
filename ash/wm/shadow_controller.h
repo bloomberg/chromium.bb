@@ -11,7 +11,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/linked_ptr.h"
-#include "ui/aura/root_window_observer.h"
+#include "ui/aura/env_observer.h"
 #include "ui/aura/window_observer.h"
 #include "ash/ash_export.h"
 
@@ -29,8 +29,8 @@ class Shadow;
 
 // ShadowController observes changes to windows and creates and updates drop
 // shadows as needed.
-class ASH_EXPORT ShadowController : public aura::RootWindowObserver,
-                                           public aura::WindowObserver {
+class ASH_EXPORT ShadowController : public aura::EnvObserver,
+                                    public aura::WindowObserver {
  public:
   class TestApi {
    public:
@@ -50,7 +50,7 @@ class ASH_EXPORT ShadowController : public aura::RootWindowObserver,
   explicit ShadowController();
   virtual ~ShadowController();
 
-  // aura::RootWindowObserver override:
+  // aura::EnvObserver override:
   virtual void OnWindowInitialized(aura::Window* window) OVERRIDE;
 
   // aura::WindowObserver overrides:

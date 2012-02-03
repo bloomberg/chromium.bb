@@ -21,9 +21,6 @@ class AURA_EXPORT RootWindowObserver {
   // Invoked after the RootWindow is resized.
   virtual void OnRootWindowResized(const gfx::Size& new_size) {}
 
-  // Invoked when a new window is initialized.
-  virtual void OnWindowInitialized(Window* window) {}
-
   // Invoked when a window is focused.
   virtual void OnWindowFocused(Window* window) {}
 
