@@ -230,8 +230,10 @@ bool AcceleratorController::AcceleratorPressed(
     case EXIT:
       return HandleExit();
     case TAKE_SCREENSHOT:
-      if (screenshot_delegate_.get())
-        screenshot_delegate_->HandleTakeScreenshot();
+      if (screenshot_delegate_.get()) {
+        aura::RootWindow* root_window = aura::RootWindow::GetInstance();
+        screenshot_delegate_->HandleTakeScreenshot(root_window);
+      }
       // Return true to prevent propagation of the key event.
       return true;
     case TOGGLE_CAPS_LOCK:

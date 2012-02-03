@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,7 +16,7 @@
 #include "chrome/browser/download/download_util.h"
 #include "chrome/browser/ui/window_snapshot/window_snapshot.h"
 #include "content/public/browser/browser_thread.h"
-#include "ui/aura/root_window.h"
+#include "ui/aura/window.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/login/user_manager.h"
@@ -69,10 +69,9 @@ void SaveScreenshot(bool is_logged_in,
 ScreenshotTaker::ScreenshotTaker() {
 }
 
-void ScreenshotTaker::HandleTakeScreenshot() {
+void ScreenshotTaker::HandleTakeScreenshot(aura::Window* window) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
-  aura::RootWindow* root_window = aura::RootWindow::GetInstance();
   scoped_refptr<RefCountedBytes> png_data(new RefCountedBytes);
 
   bool is_logged_in = true;
@@ -81,7 +80,7 @@ void ScreenshotTaker::HandleTakeScreenshot() {
 #endif
 
   if (browser::GrabWindowSnapshot(
-          root_window, &png_data->data(), root_window->bounds())) {
+          window, &png_data->data(), window->bounds())) {
     content::BrowserThread::PostTask(
         content::BrowserThread::FILE, FROM_HERE,
         base::Bind(&SaveScreenshot, is_logged_in, png_data));

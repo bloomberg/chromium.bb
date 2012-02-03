@@ -29,8 +29,9 @@ class DummyScreenshotDelegate : public ScreenshotDelegate {
   virtual ~DummyScreenshotDelegate() {}
 
   // Overridden from ScreenshotDelegate:
-  virtual void HandleTakeScreenshot() OVERRIDE {
-    ++handle_take_screenshot_count_;
+  virtual void HandleTakeScreenshot(aura::Window* window) OVERRIDE {
+    if (window != NULL)
+      ++handle_take_screenshot_count_;
   }
 
   int handle_take_screenshot_count() const {
