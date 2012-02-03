@@ -353,9 +353,8 @@ void FileStream::Close() {
   async_context_.reset();
 
   if (file_ != base::kInvalidPlatformFileValue) {
-    if (close(file_) != 0) {
+    if (!base::ClosePlatformFile(file_))
       NOTREACHED();
-    }
     file_ = base::kInvalidPlatformFileValue;
 
     bound_net_log_.EndEvent(net::NetLog::TYPE_FILE_STREAM_OPEN, NULL);
