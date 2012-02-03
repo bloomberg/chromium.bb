@@ -1994,14 +1994,14 @@ void TabContents::RequestTransferURL(const GURL& url,
     // want web sites to see a referrer of "chrome://blah" (and some
     // chrome: URLs might have search terms or other stuff we don't want to
     // send to the site), so we send no referrer.
-    OpenURLParams params(url, content::Referrer(), disposition,
+    OpenURLParams params(url, content::Referrer(), source_frame_id, disposition,
         render_manager_.web_ui()->GetLinkTransitionType(),
         false /* is_renderer_initiated */);
     params.transferred_global_request_id = old_request_id;
     new_contents = OpenURL(params);
     transition_type = render_manager_.web_ui()->GetLinkTransitionType();
   } else {
-    OpenURLParams params(url, referrer, disposition,
+    OpenURLParams params(url, referrer, source_frame_id, disposition,
         content::PAGE_TRANSITION_LINK, true /* is_renderer_initiated */);
     params.transferred_global_request_id = old_request_id;
     new_contents = OpenURL(params);

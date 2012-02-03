@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,13 +14,30 @@ OpenURLParams::OpenURLParams(
     bool is_renderer_initiated)
     : url(url),
       referrer(referrer),
+      source_frame_id(-1),
+      disposition(disposition),
+      transition(transition),
+      is_renderer_initiated(is_renderer_initiated) {
+}
+
+OpenURLParams::OpenURLParams(
+    const GURL& url,
+    const Referrer& referrer,
+    int64 source_frame_id,
+    WindowOpenDisposition disposition,
+    PageTransition transition,
+    bool is_renderer_initiated)
+    : url(url),
+      referrer(referrer),
+      source_frame_id(source_frame_id),
       disposition(disposition),
       transition(transition),
       is_renderer_initiated(is_renderer_initiated) {
 }
 
 OpenURLParams::OpenURLParams()
-    : disposition(UNKNOWN),
+    : source_frame_id(-1),
+      disposition(UNKNOWN),
       transition(PageTransitionFromInt(0)),
       is_renderer_initiated(false) {
 }
