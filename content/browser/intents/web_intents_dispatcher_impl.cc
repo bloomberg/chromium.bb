@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -38,17 +38,19 @@ void WebIntentsDispatcherImpl::SendReplyMessage(
     const string16& data) {
   intent_injector_ = NULL;
 
-  if (!web_contents())
-    return;
+  if (web_contents()) {
+    Send(new IntentsMsg_WebIntentReply(
+        routing_id(), reply_type, data, intent_id_));
+  }
 
-  Send(new IntentsMsg_WebIntentReply(
-      routing_id(), reply_type, data, intent_id_));
   if (!reply_notifier_.is_null())
-    reply_notifier_.Run();
+    reply_notifier_.Run(reply_type);
+
+  delete this;
 }
 
 void WebIntentsDispatcherImpl::RegisterReplyNotification(
-    const base::Closure& closure) {
+    const base::Callback<void(webkit_glue::WebIntentReplyType)>& closure) {
   reply_notifier_ = closure;
 }
 

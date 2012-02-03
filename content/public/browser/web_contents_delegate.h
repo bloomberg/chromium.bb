@@ -349,8 +349,8 @@ class CONTENT_EXPORT WebContentsDelegate {
                                      const string16& title,
                                      const string16& disposition) {}
 
-  // Web Intents notification handler. Takes ownership of the
-  // |intents_dispatcher|.
+  // Web Intents notification handler. See WebIntentsDispatcher for
+  // documentation of callee responsibility for the dispatcher.
   virtual void WebIntentDispatch(WebContents* tab,
                                  WebIntentsDispatcher* intents_dispatcher);
 

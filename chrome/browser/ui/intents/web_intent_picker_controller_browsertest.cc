@@ -17,6 +17,7 @@
 #include "chrome/browser/ui/intents/web_intent_picker_model_observer.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/webdata/web_data_service.h"
+#include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/web_contents.h"
@@ -94,7 +95,8 @@ class IntentsDispatcherMock : public content::WebIntentsDispatcher {
                                 const string16& data) OVERRIDE {
   }
 
-  virtual void RegisterReplyNotification(const base::Closure&) OVERRIDE {
+  virtual void RegisterReplyNotification(
+      const base::Callback<void(webkit_glue::WebIntentReplyType)>&) OVERRIDE {
   }
 
   webkit_glue::WebIntentData intent_;
@@ -127,8 +129,9 @@ class WebIntentPickerControllerBrowserTest : public InProcessBrowserTest {
     web_data_service_->AddWebIntentService(service);
   }
 
-  void OnSendReturnMessage() {
-    controller_->OnSendReturnMessage();
+  void OnSendReturnMessage(
+    webkit_glue::WebIntentReplyType reply_type) {
+    controller_->OnSendReturnMessage(reply_type);
   }
 
   void OnServiceChosen(size_t index, Disposition disposition) {
@@ -157,17 +160,17 @@ IN_PROC_BROWSER_TEST_F(WebIntentPickerControllerBrowserTest, ChooseService) {
   webkit_glue::WebIntentData intent;
   intent.action = ASCIIToUTF16("a");
   intent.type = ASCIIToUTF16("b");
-  IntentsDispatcherMock* host = new IntentsDispatcherMock(intent);
-  controller_->SetIntentsDispatcher(host);
+  IntentsDispatcherMock dispatcher(intent);
+  controller_->SetIntentsDispatcher(&dispatcher);
 
   OnServiceChosen(1, WebIntentPickerModel::DISPOSITION_WINDOW);
   ASSERT_EQ(2, browser()->tab_count());
   EXPECT_EQ(GURL(kServiceURL2),
             browser()->GetSelectedWebContents()->GetURL());
 
-  EXPECT_TRUE(host->dispatched_);
+  EXPECT_TRUE(dispatcher.dispatched_);
 
-  OnSendReturnMessage();
+  OnSendReturnMessage(webkit_glue::WEB_INTENT_REPLY_SUCCESS);
   ASSERT_EQ(1, browser()->tab_count());
 }
 
@@ -181,4 +184,39 @@ IN_PROC_BROWSER_TEST_F(WebIntentPickerControllerBrowserTest, OpenCancelOpen) {
 
   controller_->ShowDialog(browser(), kAction1, kType);
   OnCancelled();
+}
+
+IN_PROC_BROWSER_TEST_F(WebIntentPickerControllerBrowserTest,
+                       CloseTargetTabReturnToSource) {
+  AddWebIntentService(kAction1, kServiceURL1);
+
+  GURL original = browser()->GetSelectedWebContents()->GetURL();
+
+  // Open a new page, but keep focus on original.
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), GURL(chrome::kChromeUINewTabURL), NEW_BACKGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+  ASSERT_EQ(2, browser()->tab_count());
+  EXPECT_EQ(original, browser()->GetSelectedWebContents()->GetURL());
+
+  controller_->ShowDialog(browser(), kAction1, kType);
+  picker_.WaitForPendingAsync();
+  EXPECT_EQ(1, picker_.num_items_);
+
+  webkit_glue::WebIntentData intent;
+  intent.action = ASCIIToUTF16("a");
+  intent.type = ASCIIToUTF16("b");
+  IntentsDispatcherMock dispatcher(intent);
+  controller_->SetIntentsDispatcher(&dispatcher);
+
+  OnServiceChosen(0, WebIntentPickerModel::DISPOSITION_WINDOW);
+  ASSERT_EQ(3, browser()->tab_count());
+  EXPECT_EQ(GURL(kServiceURL1),
+            browser()->GetSelectedWebContents()->GetURL());
+
+  EXPECT_TRUE(dispatcher.dispatched_);
+
+  OnSendReturnMessage(webkit_glue::WEB_INTENT_REPLY_SUCCESS);
+  ASSERT_EQ(2, browser()->tab_count());
+  EXPECT_EQ(original, browser()->GetSelectedWebContents()->GetURL());
 }

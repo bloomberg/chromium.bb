@@ -15,6 +15,7 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "webkit/glue/web_intent_data.h"
+#include "webkit/glue/web_intent_reply_data.h"
 
 class Browser;
 class GURL;
@@ -70,6 +71,7 @@ class WebIntentPickerController : public content::NotificationObserver,
   virtual void OnClosing() OVERRIDE;
 
  private:
+  friend class WebIntentPickerControllerTest;
   friend class WebIntentPickerControllerBrowserTest;
   friend class InvokingTabObserver;
   class WebIntentDataFetcher;
@@ -77,7 +79,7 @@ class WebIntentPickerController : public content::NotificationObserver,
 
   // Gets a notification when the return message is sent to the source tab,
   // so we can close the picker dialog or service tab.
-  void OnSendReturnMessage();
+  void OnSendReturnMessage(webkit_glue::WebIntentReplyType reply_type);
 
   // Exposed for tests only.
   void set_picker(WebIntentPicker* picker) { picker_ = picker; }
@@ -132,9 +134,10 @@ class WebIntentPickerController : public content::NotificationObserver,
   // case, a picker may be non-NULL before it is shown.
   bool picker_shown_;
 
-  // The routing object for the renderer which launched the intent.
-  // Contains the intent data and a way to signal back to the client page.
-  scoped_ptr<content::WebIntentsDispatcher> intents_dispatcher_;
+  // Weak pointer to the routing object for the renderer which launched the
+  // intent. Contains the intent data and a way to signal back to the
+  // client page.
+  content::WebIntentsDispatcher* intents_dispatcher_;
 
   // Weak pointer to the tab servicing the intent. Remembered in order to
   // close it when a reply is sent.

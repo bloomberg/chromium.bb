@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -35,7 +35,9 @@ class WebIntentsDispatcherImpl : public content::WebIntentsDispatcher,
   virtual void DispatchIntent(content::WebContents* destination_tab) OVERRIDE;
   virtual void SendReplyMessage(webkit_glue::WebIntentReplyType reply_type,
                                 const string16& data) OVERRIDE;
-  virtual void RegisterReplyNotification(const base::Closure& closure) OVERRIDE;
+  virtual void RegisterReplyNotification(
+      const base::Callback<void(webkit_glue::WebIntentReplyType)>&
+          closure) OVERRIDE;
 
   // content::WebContentsObserver implementation.
   virtual void WebContentsDestroyed(content::WebContents* tab) OVERRIDE;
@@ -51,7 +53,7 @@ class WebIntentsDispatcherImpl : public content::WebIntentsDispatcher,
   IntentInjector* intent_injector_;
 
   // A callback to be notified when SendReplyMessage is called.
-  base::Closure reply_notifier_;
+  base::Callback<void(webkit_glue::WebIntentReplyType)> reply_notifier_;
 
   DISALLOW_COPY_AND_ASSIGN(WebIntentsDispatcherImpl);
 };
