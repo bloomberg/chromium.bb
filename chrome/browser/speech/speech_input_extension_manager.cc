@@ -21,6 +21,7 @@
 #include "chrome/common/pref_names.h"
 #include "content/browser/resource_context.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/common/speech_input_result.h"
 
@@ -142,9 +143,10 @@ SpeechInputExtensionInterface::~SpeechInputExtensionInterface() {
 SpeechInputExtensionManager::SpeechInputExtensionManager(Profile* profile)
     : profile_(profile),
       state_(kIdle),
+      registrar_(new content::NotificationRegistrar),
       speech_interface_(NULL) {
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
-                 content::Source<Profile>(profile_));
+  registrar_->Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
+                  content::Source<Profile>(profile_));
 }
 
 SpeechInputExtensionManager::~SpeechInputExtensionManager() {
@@ -188,7 +190,7 @@ void SpeechInputExtensionManager::ShutdownOnUIThread() {
   }
   state_ = kShutdown;
   VLOG(1) << "Entering the shutdown sink state.";
-  registrar_.RemoveAll();
+  registrar_.reset();
   profile_ = NULL;
 }
 

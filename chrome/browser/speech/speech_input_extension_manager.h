@@ -9,7 +9,6 @@
 #include "base/synchronization/lock.h"
 #include "content/browser/speech/speech_recognizer.h"
 #include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 #include <string>
 
 class Extension;
@@ -17,6 +16,7 @@ class Profile;
 class SpeechInputExtensionNotification;
 
 namespace content {
+class NotificationRegistrar;
 class ResourceContext;
 }
 
@@ -203,7 +203,7 @@ class SpeechInputExtensionManager
   std::string extension_id_in_use_;
 
   // Used in the UI thread.
-  content::NotificationRegistrar registrar_;
+  scoped_ptr<content::NotificationRegistrar> registrar_;
   SpeechInputExtensionInterface* speech_interface_;
   scoped_ptr<SpeechInputExtensionNotification> notification_;
 };

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -522,14 +522,15 @@ bool JumpList::AddObserver(Profile* profile) {
     // your profile is empty. Ask TopSites to update itself when jumplist is
     // initialized.
     top_sites->SyncWithHistory();
+    registrar_.reset(new content::NotificationRegistrar);
     // Register for notification when TopSites changes so that we can update
     // ourself.
-    registrar_.Add(this, chrome::NOTIFICATION_TOP_SITES_CHANGED,
-                   content::Source<history::TopSites>(top_sites));
+    registrar_->Add(this, chrome::NOTIFICATION_TOP_SITES_CHANGED,
+                    content::Source<history::TopSites>(top_sites));
     // Register for notification when profile is destroyed to ensure that all
     // observers are detatched at that time.
-    registrar_.Add(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
-                   content::Source<Profile>(profile_));
+    registrar_->Add(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
+                    content::Source<Profile>(profile_));
   }
   tab_restore_service->AddObserver(this);
   return true;
@@ -566,12 +567,7 @@ void JumpList::RemoveObserver() {
         TabRestoreServiceFactory::GetForProfile(profile_);
     if (tab_restore_service)
       tab_restore_service->RemoveObserver(this);
-    registrar_.Remove(
-        this, chrome::NOTIFICATION_TOP_SITES_CHANGED,
-        content::Source<history::TopSites>(profile_->GetTopSites()));
-    registrar_.Remove(
-        this, chrome::NOTIFICATION_PROFILE_DESTROYED,
-        content::Source<Profile>(profile_));
+    registrar_.reset();
   }
   profile_ = NULL;
 }

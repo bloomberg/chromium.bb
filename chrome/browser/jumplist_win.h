@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,6 +19,9 @@
 #include "chrome/browser/sessions/tab_restore_service.h"
 #include "chrome/browser/sessions/tab_restore_service_observer.h"
 
+namespace content {
+class NotificationRegistrar;
+}
 class FilePath;
 class Profile;
 class PageUsageData;
@@ -204,7 +207,8 @@ class JumpList : public TabRestoreServiceObserver,
   // The Profile object is used to listen for events
   Profile* profile_;
 
-  content::NotificationRegistrar registrar_;
+  // Lives on the UI thread.
+  scoped_ptr<content::NotificationRegistrar> registrar_;
 
   // App id to associate with the jump list.
   std::wstring app_id_;

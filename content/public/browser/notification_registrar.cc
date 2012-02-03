@@ -38,11 +38,6 @@ NotificationRegistrar::NotificationRegistrar() {
 }
 
 NotificationRegistrar::~NotificationRegistrar() {
-  // TODO(joth): It is incorrect to detatch here, but not doing so causes
-  // some tests to fail flakily. See http://crbug.com/109000 (sub-issue #2).
-  if (registered_.empty())
-    DetachFromThread();
-
   RemoveAll();
 }
 
