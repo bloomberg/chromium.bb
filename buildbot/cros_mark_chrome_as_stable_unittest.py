@@ -155,7 +155,7 @@ class CrosMarkChromeAsStable(mox.MoxTestBase):
 
   def testGetTipOfTrunkSvnRevision(self):
     """Tests if we can get the latest svn revision from TOT."""
-    A_URL='dorf://mink/delaane/forkat/sertiunu.ortg./desk'
+    A_URL = 'dorf://mink/delaane/forkat/sertiunu.ortg./desk'
     self.mox.StubOutWithMock(cros_mark_chrome_as_stable, 'RunCommand')
     cros_mark_chrome_as_stable.RunCommand(
         ['svn', 'info', cros_mark_chrome_as_stable._GetSvnUrl(A_URL)],
@@ -170,7 +170,7 @@ class CrosMarkChromeAsStable(mox.MoxTestBase):
 
   def testGetTipOfTrunkVersion(self):
     """Tests if we get the latest version from TOT."""
-    ARBITRARY_URL='Pratooey'
+    ARBITRARY_URL = 'Pratooey'
     path = os.path.join(cros_mark_chrome_as_stable._GetSvnUrl(ARBITRARY_URL),
                         'src', 'chrome', 'VERSION')
     self.mox.StubOutWithMock(cros_mark_chrome_as_stable, 'RunCommand')
@@ -242,13 +242,6 @@ class CrosMarkChromeAsStable(mox.MoxTestBase):
     self.mox.VerifyAll()
     self.assertEqual('8.0.224.2', release)
 
-  def testGetRevisionFromEBuild(self):
-    """Tests that we can recover the svn revision from a ToT chrome ebuild."""
-    self.assertEqual(fake_svn_rev,
-                     cros_mark_chrome_as_stable.GetRevisionFromEBuild(
-                         cros_mark_chrome_as_stable.ChromeEBuild(
-                             self.tot_stable)))
-
   def testLatestChromeRevisionListLink(self):
     """Tests that we can generate a link to the revision list between the
     latest Chromium release and the last one we successfully built."""
@@ -259,23 +252,6 @@ class CrosMarkChromeAsStable(mox.MoxTestBase):
         cros_mark_chrome_as_stable.ChromeEBuild(self.latest_stable),
         cros_mark_chrome_as_stable.ChromeEBuild(self.latest_new),
         constants.CHROME_REV_LATEST)
-    self.assertEqual(expected, made)
-
-  def testTotChromeRevisionListLink(self):
-    """Tests that we can generate a link to the revision list between ToT
-    Chromium and the last ToT Chromium we successfully built."""
-    _TouchAndWrite(self.tot_new,
-                   '\n'.join(
-                       (stable_data,
-                        '%s=%s' % (cros_mark_chrome_as_stable._CHROME_SVN_TAG,
-                                   new_fake_svn_rev))))
-
-    expected = cros_mark_chrome_as_stable.GetChromeRevisionLinkFromRevisions(
-        fake_svn_rev, new_fake_svn_rev)
-    made = cros_mark_chrome_as_stable.GetChromeRevisionListLink(
-        cros_mark_chrome_as_stable.ChromeEBuild(self.tot_stable),
-        cros_mark_chrome_as_stable.ChromeEBuild(self.tot_new),
-        constants.CHROME_REV_TOT)
     self.assertEqual(expected, made)
 
   def testStickyEBuild(self):

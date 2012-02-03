@@ -47,9 +47,10 @@ _GIT_COMMIT_MESSAGE = ('Marking %(chrome_rev)s for chrome ebuild with version '
 # URLs that print lists of chrome revisions between two versions of the browser.
 _CHROME_VERSION_URL = ('http://omahaproxy.appspot.com/changelog?'
                        'old_version=%(old)s&new_version=%(new)s')
-_CHROME_REVISION_URL = ('http://build.chromium.org/f/chromium/perf/dashboard/'
-                        'ui/changelog.html?url=&range=%(old)s%%3A%(new)s'
-                        '&mode=html')
+
+# Only print links when we rev these types.
+_REV_TYPES_FOR_LINKS = [constants.CHROME_REV_LATEST,
+                        constants.CHROME_REV_STICKY]
 
 _CHROME_SVN_TAG = 'CROS_SVN_COMMIT'
 
@@ -300,44 +301,6 @@ def GetChromeRevisionLinkFromVersions(old_chrome_version, chrome_version):
   return _CHROME_VERSION_URL % { 'old': old_chrome_version,
                                  'new': chrome_version }
 
-def GetChromeRevisionLinkFromRevisions(old_chrome_rev, chrome_rev):
-  """Return appropriately formatted link to revision info, given SVN revisions
-
-  Given two SVN revisions (e.g. 12345), generate a link to a page that
-  prints the Chromium changes between those two revisions, inclusive.
-
-  Args:
-    old_chrome_rev: rev to diff from
-    chrome_rev: rev to which to diff
-  Returns:
-    The desired URL.
-  """
-  return _CHROME_REVISION_URL % { 'old': old_chrome_rev, 'new': chrome_rev }
-
-def GetRevisionFromEBuild(chrome_ebuild):
-  """Given a ChromeEBuild, find the SVN revision it builds Chrome at, if any.
-
-  Chromium ebuilds for ToT chrome contain an SVN revision, at which the code
-  is checked out and built.  Given a ChromeEBuild, find the file that backs it
-  and parse out said revision number.
-  Args:
-    chrome_ebuild: A ChromeEBuild wrapping a chrome ebuild to parse.
-  Returns:
-    The SVN revision found, if any.  Else, None
-  """
-  try:
-    ebuild = open(chrome_ebuild.ebuild_path)
-  except (OSError, IOError) as e:
-    Warning('%s cannot be read due to %s' % (chrome_ebuild.ebuild_path, e))
-    raise
-  chrome_revision_re = re.compile('^%s="?(\d+)"?$' % _CHROME_SVN_TAG)
-  for line in ebuild:
-    re_match = chrome_revision_re.match(line)
-    if re_match:
-      return re_match.group(1)
-  ebuild.close()
-  return None
-
 def GetChromeRevisionListLink(old_chrome, new_chrome, chrome_rev):
   """Returns a link to the list of revisions between two Chromium versions
 
@@ -352,14 +315,9 @@ def GetChromeRevisionListLink(old_chrome, new_chrome, chrome_rev):
   Returns:
     The desired URL.
   """
-  if chrome_rev in [constants.CHROME_REV_TOT, constants.CHROME_REV_SPEC]:
-    return GetChromeRevisionLinkFromRevisions(GetRevisionFromEBuild(old_chrome),
-                                              GetRevisionFromEBuild(new_chrome))
-  elif chrome_rev == constants.CHROME_REV_LOCAL:
-    return 'data:text/plain;,Sorry%2C+Local+changes%2e'
-  else:
-    return GetChromeRevisionLinkFromVersions(old_chrome.chrome_version,
-                                             new_chrome.chrome_version)
+  assert chrome_rev in _REV_TYPES_FOR_LINKS
+  return GetChromeRevisionLinkFromVersions(old_chrome.chrome_version,
+                                           new_chrome.chrome_version)
 
 def MarkChromeEBuildAsStable(stable_candidate, unstable_ebuild, chrome_rev,
                              chrome_version, commit, overlay_dir,
@@ -439,7 +397,7 @@ def MarkChromeEBuildAsStable(stable_candidate, unstable_ebuild, chrome_rev,
     os.unlink(new_ebuild_path)
     return None
 
-  if stable_candidate and chrome_rev != constants.CHROME_REV_LOCAL:
+  if stable_candidate and chrome_rev in _REV_TYPES_FOR_LINKS:
     _AnnotateAndPrint('Chromium revisions',
                       GetChromeRevisionListLink(stable_candidate,
                                                 new_ebuild,
