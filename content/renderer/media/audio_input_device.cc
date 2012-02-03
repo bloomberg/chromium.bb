@@ -275,7 +275,7 @@ void AudioInputDevice::Run() {
       (audio_parameters_.bits_per_sample / 8) * samples_per_ms;
 
   while (true) {
-    uint32 pending_data = 0;
+    int pending_data = 0;
     size_t received = socket->Receive(&pending_data, sizeof(pending_data));
     if (received != sizeof(pending_data)) {
       DCHECK(received == 0U);

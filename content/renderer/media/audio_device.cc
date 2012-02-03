@@ -278,7 +278,7 @@ void AudioDevice::Run() {
   const int bytes_per_ms = channels_ * (bits_per_sample_ / 8) * samples_per_ms;
 
   while (true) {
-    uint32 pending_data = 0;
+    int pending_data = 0;
     size_t bytes_read = audio_socket->Receive(&pending_data,
                                               sizeof(pending_data));
     if (bytes_read != sizeof(pending_data)) {
@@ -286,8 +286,7 @@ void AudioDevice::Run() {
       break;
     }
 
-    if (pending_data ==
-        static_cast<uint32>(media::AudioOutputController::kPauseMark)) {
+    if (pending_data == media::AudioOutputController::kPauseMark) {
       memset(shared_memory.memory(), 0, memory_length_);
       media::SetActualDataSizeInBytes(&shared_memory, memory_length_, 0);
       continue;
