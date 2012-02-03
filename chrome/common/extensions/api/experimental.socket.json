@@ -18,6 +18,11 @@
             "description": "The result code, if the event type is writeComplete. The result code description matches that of <code>writeInfo.bytesWritten</code>.",
             "optional": true
           },
+          "data": {
+            "type": "string",
+            "description": "The data read, if the event type is dataRead.",
+            "optional": true
+          },
           "isFinalEvent": {
             "type": "boolean",
             "description": "Whether this is the final event that this socket will send.",

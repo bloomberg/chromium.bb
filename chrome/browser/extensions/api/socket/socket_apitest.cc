@@ -94,8 +94,7 @@ IN_PROC_BROWSER_TEST_F(SocketApiTest, SocketCreateBad) {
       browser(), NONE);
 }
 
-// http://crbug.com/111572
-IN_PROC_BROWSER_TEST_F(SocketApiTest, DISABLED_SocketUDPExtension) {
+IN_PROC_BROWSER_TEST_F(SocketApiTest, SocketUDPExtension) {
   scoped_ptr<net::TestServer> test_server(
       new net::TestServer(net::TestServer::TYPE_UDP_ECHO,
                           FilePath(FILE_PATH_LITERAL("net/data"))));
@@ -118,8 +117,7 @@ IN_PROC_BROWSER_TEST_F(SocketApiTest, DISABLED_SocketUDPExtension) {
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 
-// http://crbug.com/111572
-IN_PROC_BROWSER_TEST_F(SocketApiTest, DISABLED_SocketTCPExtension) {
+IN_PROC_BROWSER_TEST_F(SocketApiTest, SocketTCPExtension) {
   scoped_ptr<net::TestServer> test_server(
       new net::TestServer(net::TestServer::TYPE_TCP_ECHO,
                           FilePath(FILE_PATH_LITERAL("net/data"))));

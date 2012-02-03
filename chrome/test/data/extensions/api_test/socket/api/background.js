@@ -92,6 +92,7 @@ function onEvent(socketEvent) {
   if (socketEvent.type == "connectComplete") {
     onConnectComplete(socketEvent.resultCode);
   } else if (socketEvent.type == "dataRead") {
+    // TODO(miket): why one "message" and the other "data"?
     onDataRead({message: socketEvent.data});
   } else if (socketEvent.type == "writeComplete") {
     onWriteComplete(socketEvent.resultCode);
