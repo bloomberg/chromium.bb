@@ -207,11 +207,6 @@ class StatusController {
   // A toolbelt full of methods for updating counters and flags.
   void increment_num_conflicting_commits_by(int value);
   void reset_num_conflicting_commits();
-  void set_num_consecutive_transient_error_commits(int value);
-  void increment_num_consecutive_transient_error_commits_by(int value);
-  void set_num_consecutive_errors(int value);
-  void increment_num_consecutive_errors();
-  void increment_num_consecutive_errors_by(int value);
   void set_num_server_changes_remaining(int64 changes_remaining);
   void set_invalid_store(bool invalid_store);
   void set_num_successful_bookmark_commits(int value);

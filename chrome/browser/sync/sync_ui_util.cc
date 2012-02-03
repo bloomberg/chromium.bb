@@ -543,14 +543,14 @@ void ConstructAboutInformation(ProfileSyncService* service,
                                    "Notifications Received",
                                    full_status.notifications_received);
     sync_ui_util::AddIntSyncDetail(details,
-                                   "Notifiable Commits",
-                                   full_status.notifiable_commits);
-    sync_ui_util::AddIntSyncDetail(details,
                                    "Unsynced Count",
                                    full_status.unsynced_count);
     sync_ui_util::AddIntSyncDetail(details,
                                    "Conflicting Count",
                                    full_status.conflicting_count);
+    sync_ui_util::AddIntSyncDetail(details,
+                                   "Committed Items (this session)",
+                                   full_status.committed_count);
     sync_ui_util::AddIntSyncDetail(details,
                                    "Local Overwrites",
                                    full_status.num_local_overwrites_total);
@@ -571,14 +571,17 @@ void ConstructAboutInformation(ProfileSyncService* service,
                                    "Updates Downloaded (Tombstones)",
                                    full_status.tombstone_updates_received);
     sync_ui_util::AddIntSyncDetail(details,
-                                   "Max Consecutive Errors",
-                                   full_status.max_consecutive_errors);
-    sync_ui_util::AddIntSyncDetail(details,
                                    "Empty GetUpdates",
                                    full_status.empty_get_updates);
     sync_ui_util::AddIntSyncDetail(details,
                                    "Nonempty GetUpdates",
                                    full_status.nonempty_get_updates);
+    sync_ui_util::AddIntSyncDetail(details,
+                                   "Sync Cycles with Successful Commits",
+                                   full_status.sync_cycles_with_commits);
+    sync_ui_util::AddIntSyncDetail(details,
+                                   "Sync Cycles without Successful Commits",
+                                   full_status.sync_cycles_without_commits);
     sync_ui_util::AddIntSyncDetail(details,
                                    "Useless Sync Cycles",
                                    full_status.useless_sync_cycles);

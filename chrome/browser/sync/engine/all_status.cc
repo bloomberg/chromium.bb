@@ -34,8 +34,8 @@ sync_api::SyncManager::Status AllStatus::CreateBlankStatus() const {
   sync_api::SyncManager::Status status = status_;
   status.unsynced_count = 0;
   status.conflicting_count = 0;
+  status.committed_count = 0;
   status.initial_sync_ended = false;
-  status.max_consecutive_errors = 0;
   status.updates_available = 0;
   return status;
 }
@@ -46,6 +46,7 @@ sync_api::SyncManager::Status AllStatus::CalcSyncing(
   const sessions::SyncSessionSnapshot* snapshot = event.snapshot;
   status.unsynced_count += static_cast<int>(snapshot->unsynced_count);
   status.conflicting_count += snapshot->errors.num_conflicting_commits;
+  status.committed_count += snapshot->syncer_status.num_successful_commits;
   // The syncer may not be done yet, which could cause conflicting updates.
   // But this is only used for status, so it is better to have visibility.
   status.conflicting_count += snapshot->num_conflicting_updates;
@@ -57,10 +58,6 @@ sync_api::SyncManager::Status AllStatus::CalcSyncing(
   }
 
   status.initial_sync_ended |= snapshot->is_share_usable;
-
-  const sessions::ErrorCounters& errors(snapshot->errors);
-  if (errors.consecutive_errors > status.max_consecutive_errors)
-    status.max_consecutive_errors = errors.consecutive_errors;
 
   status.updates_available += snapshot->num_server_changes_remaining;
   status.sync_protocol_error = snapshot->errors.sync_protocol_error;
@@ -81,6 +78,11 @@ sync_api::SyncManager::Status AllStatus::CalcSyncing(
       ++status.empty_get_updates;
     } else {
       ++status.nonempty_get_updates;
+    }
+    if (snapshot->syncer_status.num_successful_commits == 0) {
+      ++status.sync_cycles_without_commits;
+    } else {
+      ++status.sync_cycles_with_commits;
     }
     if (snapshot->syncer_status.num_successful_commits == 0 &&
         snapshot->syncer_status.num_updates_downloaded_total == 0) {
@@ -154,11 +156,6 @@ sync_api::SyncManager::Status AllStatus::status() const {
 void AllStatus::SetNotificationsEnabled(bool notifications_enabled) {
   ScopedStatusLock lock(this);
   status_.notifications_enabled = notifications_enabled;
-}
-
-void AllStatus::IncrementNotifiableCommits() {
-  ScopedStatusLock lock(this);
-  ++status_.notifiable_commits;
 }
 
 void AllStatus::IncrementNotificationsReceived() {

@@ -127,26 +127,6 @@ void StatusController::reset_num_conflicting_commits() {
     shared_.error.mutate()->num_conflicting_commits = 0;
 }
 
-void StatusController::set_num_consecutive_transient_error_commits(int value) {
-  if (shared_.error.value().consecutive_transient_error_commits !=
-      value) {
-    shared_.error.mutate()->consecutive_transient_error_commits =
-        value;
-  }
-}
-
-void StatusController::increment_num_consecutive_transient_error_commits_by(
-    int value) {
-  set_num_consecutive_transient_error_commits(
-      shared_.error.value().consecutive_transient_error_commits +
-      value);
-}
-
-void StatusController::set_num_consecutive_errors(int value) {
-  if (shared_.error.value().consecutive_errors != value)
-    shared_.error.mutate()->consecutive_errors = value;
-}
-
 void StatusController::set_num_server_changes_remaining(
     int64 changes_remaining) {
   if (shared_.num_server_changes_remaining.value() != changes_remaining)
@@ -172,16 +152,6 @@ void StatusController::set_unsynced_handles(
   if (!operator==(unsynced_handles, shared_.unsynced_handles.value())) {
     *(shared_.unsynced_handles.mutate()) = unsynced_handles;
   }
-}
-
-void StatusController::increment_num_consecutive_errors() {
-  set_num_consecutive_errors(
-      shared_.error.value().consecutive_errors + 1);
-}
-
-void StatusController::increment_num_consecutive_errors_by(int value) {
-  set_num_consecutive_errors(
-      shared_.error.value().consecutive_errors + value);
 }
 
 void StatusController::increment_num_successful_bookmark_commits() {

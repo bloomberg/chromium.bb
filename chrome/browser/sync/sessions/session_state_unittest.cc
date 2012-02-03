@@ -72,17 +72,11 @@ TEST_F(SessionStateTest, SyncerStatusToValue) {
 TEST_F(SessionStateTest, ErrorCountersToValue) {
   ErrorCounters counters;
   counters.num_conflicting_commits = 1;
-  counters.consecutive_transient_error_commits = 5;
-  counters.consecutive_errors = 3;
 
   scoped_ptr<DictionaryValue> value(counters.ToValue());
-  EXPECT_EQ(3u, value->size());
+  EXPECT_EQ(1u, value->size());
   ExpectDictIntegerValue(counters.num_conflicting_commits,
                          *value, "numConflictingCommits");
-  ExpectDictIntegerValue(counters.consecutive_transient_error_commits,
-                         *value, "consecutiveTransientErrorCommits");
-  ExpectDictIntegerValue(counters.consecutive_errors,
-                         *value, "consecutiveErrors");
 }
 
 TEST_F(SessionStateTest, DownloadProgressMarkersToValue) {

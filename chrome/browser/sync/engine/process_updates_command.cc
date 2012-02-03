@@ -69,7 +69,6 @@ SyncerError ProcessUpdatesCommand::ModelChangingExecuteImpl(
   }
 
   StatusController* status = session->mutable_status_controller();
-  status->set_num_consecutive_errors(0);
   status->mutable_update_progress()->ClearVerifiedUpdates();
   return SYNCER_OK;
 }

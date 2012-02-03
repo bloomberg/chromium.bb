@@ -394,10 +394,6 @@ class SyncManager::SyncInternal
   typedef base::Callback<JsArgList(const JsArgList&)> JsMessageHandler;
   typedef std::map<std::string, JsMessageHandler> JsMessageHandlerMap;
 
-  // Helper to call OnAuthError when no authentication credentials are
-  // available.
-  void RaiseAuthNeededEvent();
-
   // Helpers for SetPassphrase. TODO(rsimha): make these the public methods
   // eventually and have them replace SetPassphrase(..).
   // These correspond to setting a passphrase for decryption (when we have
@@ -690,10 +686,9 @@ SyncManager::Status::Status()
       server_reachable(false),
       notifications_enabled(false),
       notifications_received(0),
-      notifiable_commits(0),
-      max_consecutive_errors(0),
       unsynced_count(0),
       conflicting_count(0),
+      committed_count(0),
       syncing(false),
       initial_sync_ended(false),
       updates_available(0),
@@ -703,6 +698,8 @@ SyncManager::Status::Status()
       num_server_overwrites_total(0),
       nonempty_get_updates(0),
       empty_get_updates(0),
+      sync_cycles_with_commits(0),
+      sync_cycles_without_commits(0),
       useless_sync_cycles(0),
       useful_sync_cycles(0),
       cryptographer_ready(false),
@@ -1192,11 +1189,6 @@ void SyncManager::SyncInternal::MaybeSetSyncTabsInNigoriNode(
     specifics.set_sync_tabs(true);
     node.SetNigoriSpecifics(specifics);
   }
-}
-
-void SyncManager::SyncInternal::RaiseAuthNeededEvent() {
-  FOR_EACH_OBSERVER(SyncManager::Observer, observers_,
-      OnAuthError(AuthError(AuthError::INVALID_GAIA_CREDENTIALS)));
 }
 
 void SyncManager::SyncInternal::SetPassphrase(
@@ -2029,7 +2021,6 @@ void SyncManager::SyncInternal::OnSyncEngineEvent(
     bool is_notifiable_commit =
         (event.snapshot->syncer_status.num_successful_commits > 0);
     if (is_notifiable_commit) {
-      allstatus_.IncrementNotifiableCommits();
       if (sync_notifier_.get()) {
         const ModelTypeSet changed_types =
             syncable::ModelTypePayloadMapToEnumSet(

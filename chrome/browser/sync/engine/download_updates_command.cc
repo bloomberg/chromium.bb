@@ -102,7 +102,6 @@ SyncerError DownloadUpdatesCommand::ExecuteImpl(SyncSession* session) {
   StatusController* status = session->mutable_status_controller();
   status->set_updates_request_types(enabled_types);
   if (result != SYNCER_OK) {
-    status->increment_num_consecutive_errors();
     status->mutable_updates_response()->Clear();
     LOG(ERROR) << "PostClientToServerMessage() failed during GetUpdates";
     return result;

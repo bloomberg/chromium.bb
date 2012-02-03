@@ -50,13 +50,6 @@ using sessions::StatusController;
 using sessions::SyncSession;
 using sessions::ConflictProgress;
 
-void IncrementErrorCounters(StatusController* status) {
-  status->increment_num_consecutive_errors();
-}
-void ResetErrorCounters(StatusController* status) {
-  status->set_num_consecutive_errors(0);
-}
-
 ProcessCommitResponseCommand::ProcessCommitResponseCommand() {}
 ProcessCommitResponseCommand::~ProcessCommitResponseCommand() {}
 
@@ -97,7 +90,6 @@ SyncerError ProcessCommitResponseCommand::ModelNeutralExecuteImpl(
   if (!response.has_commit()) {
     // TODO(sync): What if we didn't try to commit anything?
     LOG(WARNING) << "Commit response has no commit body!";
-    IncrementErrorCounters(session->mutable_status_controller());
     return SERVER_RESPONSE_VALIDATION_FAILED;
   }
 
@@ -112,7 +104,6 @@ SyncerError ProcessCommitResponseCommand::ModelNeutralExecuteImpl(
       if (cr.entryresponse(i).has_error_message())
         LOG(ERROR) << "  " << cr.entryresponse(i).error_message();
     }
-    IncrementErrorCounters(session->mutable_status_controller());
     return SERVER_RESPONSE_VALIDATION_FAILED;
   }
   return SYNCER_OK;
@@ -198,21 +189,9 @@ SyncerError ProcessCommitResponseCommand::ProcessCommitResponse(
 
   // TODO(sync): move status reporting elsewhere.
   status->increment_num_conflicting_commits_by(conflicting_commits);
-  if (0 == successes) {
-    status->increment_num_consecutive_transient_error_commits_by(
-        transient_error_commits);
-    status->increment_num_consecutive_errors_by(transient_error_commits);
-  } else {
-    status->set_num_consecutive_transient_error_commits(0);
-    status->set_num_consecutive_errors(0);
-  }
-  int commit_count = static_cast<int>(proj.size());
-  if (commit_count != (conflicting_commits + error_commits +
-                       transient_error_commits)) {
-    ResetErrorCounters(status);
-  }
   SyncerUtil::MarkDeletedChildrenSynced(dir, &deleted_folders);
 
+  int commit_count = static_cast<int>(proj.size());
   if (commit_count == (successes + conflicting_commits)) {
     // We consider conflicting commits as a success because things will work out
     // on their own when we receive them.  Flags will be set so that

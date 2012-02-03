@@ -123,10 +123,6 @@ class SyncManager {
 
     // Notifications counters updated by the actions in synapi.
     int notifications_received;
-    int notifiable_commits;
-
-    // The max number of consecutive errors from any component.
-    int max_consecutive_errors;
 
     browser_sync::SyncProtocolError sync_protocol_error;
 
@@ -135,6 +131,9 @@ class SyncManager {
 
     // Number of conflicting items counted during most recent sync cycle.
     int conflicting_count;
+
+    // Number of items successfully committed during most recent sync cycle.
+    int committed_count;
 
     bool syncing;
     // True after a client has done a first sync.
@@ -155,6 +154,10 @@ class SyncManager {
     // Count of empty and non empty getupdates;
     int nonempty_get_updates;
     int empty_get_updates;
+
+    // Count of sync cycles that successfully committed items;
+    int sync_cycles_with_commits;
+    int sync_cycles_without_commits;
 
     // Count of useless and useful syncs we perform.
     int useless_sync_cycles;

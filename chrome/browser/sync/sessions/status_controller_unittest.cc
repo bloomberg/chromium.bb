@@ -28,25 +28,6 @@ TEST_F(StatusControllerTest, GetsDirty) {
   status.increment_num_conflicting_commits_by(1);
   EXPECT_TRUE(status.TestAndClearIsDirty());
 
-  status.set_num_consecutive_transient_error_commits(1);
-  EXPECT_TRUE(status.TestAndClearIsDirty());
-
-  status.increment_num_consecutive_transient_error_commits_by(1);
-  EXPECT_TRUE(status.TestAndClearIsDirty());
-  status.increment_num_consecutive_transient_error_commits_by(0);
-  EXPECT_FALSE(status.TestAndClearIsDirty());
-
-  status.set_num_consecutive_errors(10);
-  EXPECT_TRUE(status.TestAndClearIsDirty());
-  status.set_num_consecutive_errors(10);
-  EXPECT_FALSE(status.TestAndClearIsDirty());  // Only dirty if value changed.
-  status.increment_num_consecutive_errors();
-  EXPECT_TRUE(status.TestAndClearIsDirty());
-  status.increment_num_consecutive_errors_by(1);
-  EXPECT_TRUE(status.TestAndClearIsDirty());
-  status.increment_num_consecutive_errors_by(0);
-  EXPECT_FALSE(status.TestAndClearIsDirty());
-
   status.set_num_server_changes_remaining(30);
   EXPECT_TRUE(status.TestAndClearIsDirty());
 
@@ -97,20 +78,6 @@ TEST_F(StatusControllerTest, ReadYourWrites) {
   StatusController status(routes_);
   status.increment_num_conflicting_commits_by(1);
   EXPECT_EQ(1, status.error().num_conflicting_commits);
-
-  status.set_num_consecutive_transient_error_commits(6);
-  EXPECT_EQ(6, status.error().consecutive_transient_error_commits);
-  status.increment_num_consecutive_transient_error_commits_by(1);
-  EXPECT_EQ(7, status.error().consecutive_transient_error_commits);
-  status.increment_num_consecutive_transient_error_commits_by(0);
-  EXPECT_EQ(7, status.error().consecutive_transient_error_commits);
-
-  status.set_num_consecutive_errors(8);
-  EXPECT_EQ(8, status.error().consecutive_errors);
-  status.increment_num_consecutive_errors();
-  EXPECT_EQ(9, status.error().consecutive_errors);
-  status.increment_num_consecutive_errors_by(2);
-  EXPECT_EQ(11, status.error().consecutive_errors);
 
   status.set_num_server_changes_remaining(13);
   EXPECT_EQ(13, status.num_server_changes_remaining());

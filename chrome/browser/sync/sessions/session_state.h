@@ -92,15 +92,6 @@ struct ErrorCounters {
 
   int num_conflicting_commits;
 
-  // Number of commits hitting transient errors since the last successful
-  // commit.
-  int consecutive_transient_error_commits;
-
-  // Incremented when get_updates fails, commit fails, and when hitting
-  // transient errors. When any of these succeed, this counter is reset.
-  // TODO(chron): Reduce number of weird counters we use.
-  int consecutive_errors;
-
   // Any protocol errors that we received during this sync session.
   SyncProtocolError sync_protocol_error;
 

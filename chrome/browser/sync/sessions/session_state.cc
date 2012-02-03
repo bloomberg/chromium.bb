@@ -92,8 +92,6 @@ DictionaryValue* DownloadProgressMarkersToValue(
 
 ErrorCounters::ErrorCounters()
     : num_conflicting_commits(0),
-      consecutive_transient_error_commits(0),
-      consecutive_errors(0),
       last_download_updates_result(UNSET),
       last_post_commit_result(UNSET),
       last_process_commit_response_result(UNSET) {
@@ -102,9 +100,6 @@ ErrorCounters::ErrorCounters()
 DictionaryValue* ErrorCounters::ToValue() const {
   DictionaryValue* value = new DictionaryValue();
   value->SetInteger("numConflictingCommits", num_conflicting_commits);
-  value->SetInteger("consecutiveTransientErrorCommits",
-                consecutive_transient_error_commits);
-  value->SetInteger("consecutiveErrors", consecutive_errors);
   return value;
 }
 
