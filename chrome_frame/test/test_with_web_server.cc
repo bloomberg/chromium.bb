@@ -495,7 +495,14 @@ TEST_F(ChromeFrameTestWithWebServer, WidgetModeChrome_CFInstancePost) {
 
 const wchar_t kCFIRPCPage[] = L"CFInstance_rpc_host.html";
 
-TEST_F(ChromeFrameTestWithWebServer, WidgetModeIE_CFInstanceRPC) {
+// This test consistently times out in debug builds; see http://crbug.com/112599
+#ifndef NDEBUG
+#define MAYBE_WidgetModeIE_CFInstanceRPC DISABLED_WidgetModeIE_CFInstanceRPC
+#else
+#define MAYBE_WidgetModeIE_CFInstanceRPC WidgetModeIE_CFInstanceRPC
+#endif
+
+TEST_F(ChromeFrameTestWithWebServer, MAYBE_WidgetModeIE_CFInstanceRPC) {
   if (chrome_frame_test::GetInstalledIEVersion() == IE_9) {
     LOG(INFO) << "Not running test on Vista/Windows 7 with IE9";
     return;
