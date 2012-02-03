@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -143,6 +143,7 @@ SafeBrowsingBlockingPage::SafeBrowsingBlockingPage(
       malware_details_proceed_delay_ms_(
           kMalwareDetailsProceedDelayMilliSeconds),
       sb_service_(sb_service),
+      report_loop_(NULL),
       is_main_frame_load_blocked_(IsMainPageLoadBlocked(unsafe_resources)),
       unsafe_resources_(unsafe_resources) {
   RecordUserAction(SHOW);
