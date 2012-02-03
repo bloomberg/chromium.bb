@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -52,11 +52,7 @@ class MockAudioRendererHost : public AudioRendererHost {
   }
 
   // A list of mock methods.
-  MOCK_METHOD2(OnRequestPacket,
-               void(int stream_id, AudioBuffersState buffers_state));
   MOCK_METHOD2(OnStreamCreated,
-               void(int stream_id, int length));
-  MOCK_METHOD2(OnLowLatencyStreamCreated,
                void(int stream_id, int length));
   MOCK_METHOD1(OnStreamPlaying, void(int stream_id));
   MOCK_METHOD1(OnStreamPaused, void(int stream_id));
@@ -79,13 +75,10 @@ class MockAudioRendererHost : public AudioRendererHost {
     // we are the renderer.
     bool handled = true;
     IPC_BEGIN_MESSAGE_MAP(MockAudioRendererHost, *message)
-      IPC_MESSAGE_HANDLER(AudioMsg_RequestPacket, OnRequestPacket)
-      IPC_MESSAGE_HANDLER(AudioMsg_NotifyStreamCreated, OnStreamCreated)
-      IPC_MESSAGE_HANDLER(AudioMsg_NotifyLowLatencyStreamCreated,
-                          OnLowLatencyStreamCreated)
+      IPC_MESSAGE_HANDLER(AudioMsg_NotifyStreamCreated,
+                          OnStreamCreated)
       IPC_MESSAGE_HANDLER(AudioMsg_NotifyStreamStateChanged,
                           OnStreamStateChanged)
-      IPC_MESSAGE_HANDLER(AudioMsg_NotifyStreamVolume, OnStreamVolume)
       IPC_MESSAGE_UNHANDLED(handled = false)
     IPC_END_MESSAGE_MAP()
     EXPECT_TRUE(handled);
@@ -94,32 +87,14 @@ class MockAudioRendererHost : public AudioRendererHost {
     return true;
   }
 
-  // These handler methods do minimal things and delegate to the mock methods.
-  void OnRequestPacket(const IPC::Message& msg, int stream_id,
-                       AudioBuffersState buffers_state) {
-    OnRequestPacket(stream_id, buffers_state);
-  }
-
   void OnStreamCreated(const IPC::Message& msg, int stream_id,
-                       base::SharedMemoryHandle handle, uint32 length) {
-    // Maps the shared memory.
-    shared_memory_.reset(new base::SharedMemory(handle, false));
-    ASSERT_TRUE(shared_memory_->Map(length));
-    ASSERT_TRUE(shared_memory_->memory());
-    shared_memory_length_ = length;
-
-    // And then delegate the call to the mock method.
-    OnStreamCreated(stream_id, length);
-  }
-
-  void OnLowLatencyStreamCreated(const IPC::Message& msg, int stream_id,
-                               base::SharedMemoryHandle handle,
+                                 base::SharedMemoryHandle handle,
 #if defined(OS_WIN)
-                               base::SyncSocket::Handle socket_handle,
+                                 base::SyncSocket::Handle socket_handle,
 #else
-                               base::FileDescriptor socket_descriptor,
+                                 base::FileDescriptor socket_descriptor,
 #endif
-                               uint32 length) {
+                                 uint32 length) {
     // Maps the shared memory.
     shared_memory_.reset(new base::SharedMemory(handle, false));
     CHECK(shared_memory_->Map(length));
@@ -136,7 +111,7 @@ class MockAudioRendererHost : public AudioRendererHost {
     sync_socket_.reset(new base::SyncSocket(sync_socket_handle));
 
     // And then delegate the call to the mock method.
-    OnLowLatencyStreamCreated(stream_id, length);
+    OnStreamCreated(stream_id, length);
   }
 
   void OnStreamStateChanged(const IPC::Message& msg, int stream_id,
@@ -224,11 +199,8 @@ class AudioRendererHostTest : public testing::Test {
     EXPECT_CALL(*observer_, OnDeleteAudioStream(_, kStreamId));
 
     InSequence s;
-    // 1. We will first receive a OnStreamCreated() signal.
-    EXPECT_CALL(*host_, OnStreamCreated(kStreamId, _));
-
-    // 2. First packet request will arrive.
-    EXPECT_CALL(*host_, OnRequestPacket(kStreamId, _))
+    // We will first receive an OnStreamCreated() signal.
+    EXPECT_CALL(*host_, OnStreamCreated(kStreamId, _))
         .WillOnce(QuitMessageLoop(message_loop_.get()));
 
     AudioParameters params;
@@ -243,34 +215,7 @@ class AudioRendererHostTest : public testing::Test {
 
     // Send a create stream message to the audio output stream and wait until
     // we receive the created message.
-    host_->OnCreateStream(kStreamId, params, false);
-    message_loop_->Run();
-  }
-
-  void CreateLowLatency() {
-    EXPECT_CALL(*observer_,
-                OnSetAudioStreamStatus(_, kStreamId, "created"));
-    EXPECT_CALL(*observer_, OnDeleteAudioStream(_, kStreamId));
-
-    InSequence s;
-    // We will first receive a OnLowLatencyStreamCreated() signal.
-    EXPECT_CALL(*host_,
-                OnLowLatencyStreamCreated(kStreamId, _))
-        .WillOnce(QuitMessageLoop(message_loop_.get()));
-
-    AudioParameters params;
-    if (mock_stream_)
-      params.format = AudioParameters::AUDIO_MOCK;
-    else
-      params.format = AudioParameters::AUDIO_PCM_LINEAR;
-    params.channels = 2;
-    params.sample_rate = AudioParameters::kAudioCDSampleRate;
-    params.bits_per_sample = 16;
-    params.samples_per_packet = 0;
-
-    // Send a create stream message to the audio output stream and wait until
-    // we receive the created message.
-    host_->OnCreateStream(kStreamId, params, true);
+    host_->OnCreateStream(kStreamId, params);
     message_loop_->Run();
   }
 
@@ -310,15 +255,6 @@ class AudioRendererHostTest : public testing::Test {
 
     host_->OnSetVolume(kStreamId, volume);
     message_loop_->RunAllPending();
-  }
-
-  void NotifyPacketReady() {
-    EXPECT_CALL(*host_, OnRequestPacket(kStreamId, _))
-        .WillOnce(QuitMessageLoop(message_loop_.get()));
-
-    memset(host_->shared_memory()->memory(), 0, host_->shared_memory_length());
-    host_->OnNotifyPacketReady(kStreamId, host_->shared_memory_length());
-    message_loop_->Run();
   }
 
   void SimulateError() {
@@ -392,6 +328,14 @@ TEST_F(AudioRendererHostTest, CreateAndClose) {
   Close();
 }
 
+// Simulate the case where a stream is not properly closed.
+TEST_F(AudioRendererHostTest, CreateAndShutdown) {
+  if (!IsRunningHeadless())
+    EnableRealDevice();
+
+  Create();
+}
+
 TEST_F(AudioRendererHostTest, CreatePlayAndClose) {
   if (!IsRunningHeadless())
     EnableRealDevice();
@@ -428,14 +372,6 @@ TEST_F(AudioRendererHostTest, SetVolume) {
 }
 
 // Simulate the case where a stream is not properly closed.
-TEST_F(AudioRendererHostTest, CreateAndShutdown) {
-  if (!IsRunningHeadless())
-    EnableRealDevice();
-
-  Create();
-}
-
-// Simulate the case where a stream is not properly closed.
 TEST_F(AudioRendererHostTest, CreatePlayAndShutdown) {
   if (!IsRunningHeadless())
     EnableRealDevice();
@@ -452,33 +388,6 @@ TEST_F(AudioRendererHostTest, CreatePlayPauseAndShutdown) {
   Create();
   Play();
   Pause();
-}
-
-TEST_F(AudioRendererHostTest, DataConversationMockStream) {
-  Create();
-
-  // Note that we only do notify three times because the buffer capacity is
-  // triple of one packet size.
-  NotifyPacketReady();
-  NotifyPacketReady();
-  NotifyPacketReady();
-  Close();
-}
-
-TEST_F(AudioRendererHostTest, DataConversationRealStream) {
-  if (IsRunningHeadless())
-    return;
-  EnableRealDevice();
-  Create();
-  Play();
-
-  // If this is a real audio device, the data conversation is not limited
-  // to the buffer capacity of AudioOutputController. So we do 5 exchanges
-  // before we close the device.
-  for (int i = 0; i < 5; ++i) {
-    NotifyPacketReady();
-  }
-  Close();
 }
 
 TEST_F(AudioRendererHostTest, SimulateError) {
@@ -503,20 +412,5 @@ TEST_F(AudioRendererHostTest, SimulateErrorAndClose) {
   Close();
 }
 
-TEST_F(AudioRendererHostTest, CreateLowLatencyAndClose) {
-  if (!IsRunningHeadless())
-    EnableRealDevice();
-
-  CreateLowLatency();
-  Close();
-}
-
-// Simulate the case where a stream is not properly closed.
-TEST_F(AudioRendererHostTest, CreateLowLatencyAndShutdown) {
-  if (!IsRunningHeadless())
-    EnableRealDevice();
-
-  CreateLowLatency();
-}
 
 // TODO(hclam): Add tests for data conversation in low latency mode.

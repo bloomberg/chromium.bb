@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -25,24 +25,13 @@ class CONTENT_EXPORT AudioMessageFilter
  public:
   class CONTENT_EXPORT Delegate {
    public:
-    // Called when an audio packet is requested from the browser process.
-    virtual void OnRequestPacket(AudioBuffersState buffers_state) = 0;
-
     // Called when state of an audio stream has changed in the browser process.
     virtual void OnStateChanged(AudioStreamState state) = 0;
 
     // Called when an audio stream has been created in the browser process.
-    virtual void OnCreated(base::SharedMemoryHandle handle, uint32 length) = 0;
-
-    // Called when a low-latency audio stream has been created in the browser
-    // process.
-    virtual void OnLowLatencyCreated(base::SharedMemoryHandle handle,
-                                     base::SyncSocket::Handle socket_handle,
-                                     uint32 length) = 0;
-
-    // Called when notification of stream volume is received from the browser
-    // process.
-    virtual void OnVolume(double volume) = 0;
+    virtual void OnStreamCreated(base::SharedMemoryHandle handle,
+                                 base::SyncSocket::Handle socket_handle,
+                                 uint32 length) = 0;
 
    protected:
     virtual ~Delegate() {}
@@ -70,22 +59,14 @@ class CONTENT_EXPORT AudioMessageFilter
   virtual void OnFilterRemoved() OVERRIDE;
   virtual void OnChannelClosing() OVERRIDE;
 
-  // Received when browser process wants more audio packet.
-  void OnRequestPacket(int stream_id, AudioBuffersState buffers_state);
-
   // Received when browser process has created an audio output stream.
   void OnStreamCreated(int stream_id, base::SharedMemoryHandle handle,
-                       uint32 length);
-
-  // Received when browser process has created an audio output stream of low
-  // latency.
-  void OnLowLatencyStreamCreated(int stream_id, base::SharedMemoryHandle handle,
 #if defined(OS_WIN)
-                                 base::SyncSocket::Handle socket_handle,
+                       base::SyncSocket::Handle socket_handle,
 #else
-                                 base::FileDescriptor socket_descriptor,
+                       base::FileDescriptor socket_descriptor,
 #endif
-                                 uint32 length);
+                       uint32 length);
 
 
   // Received when internal state of browser process' audio output device has

@@ -17,7 +17,6 @@
 #include "media/filters/ffmpeg_video_decoder.h"
 #include "media/filters/file_data_source.h"
 #include "media/filters/null_audio_renderer.h"
-#include "media/filters/reference_audio_renderer.h"
 #include "media/filters/video_renderer_base.h"
 
 using media::FFmpegAudioDecoder;
@@ -26,13 +25,12 @@ using media::FFmpegVideoDecoder;
 using media::FileDataSource;
 using media::FilterCollection;
 using media::Pipeline;
-using media::ReferenceAudioRenderer;
 
 namespace media {
 
 Movie::Movie()
     : audio_manager_(AudioManager::Create()),
-      enable_audio_(true),
+      enable_audio_(false),
       enable_draw_(true),
       enable_dump_yuv_file_(false),
       enable_pause_(false),
@@ -86,12 +84,8 @@ bool Movie::Open(const wchar_t* url, VideoRendererBase* video_renderer) {
   collection->AddVideoDecoder(new FFmpegVideoDecoder(
       message_loop_factory_->GetMessageLoop("VideoDecoderThread")));
 
-  if (enable_audio_) {
-    collection->AddAudioRenderer(
-        new ReferenceAudioRenderer(audio_manager_));
-  } else {
-    collection->AddAudioRenderer(new media::NullAudioRenderer());
-  }
+  // TODO(vrk): Re-enabled audio. (crbug.com/112159)
+  collection->AddAudioRenderer(new media::NullAudioRenderer());
   collection->AddVideoRenderer(video_renderer);
 
   // Create and start our pipeline.
@@ -162,7 +156,6 @@ bool Movie::GetPause() {
 }
 
 void Movie::SetAudioEnable(bool enable_audio) {
-  enable_audio_ = enable_audio;
 }
 
 bool Movie::GetAudioEnable() {

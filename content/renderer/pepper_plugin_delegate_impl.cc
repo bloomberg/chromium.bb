@@ -196,22 +196,11 @@ class PlatformAudioImpl
   void StopPlaybackOnIOThread();
   void ShutDownOnIOThread();
 
-  virtual void OnRequestPacket(AudioBuffersState buffers_state) OVERRIDE {
-    LOG(FATAL) << "Should never get OnRequestPacket in PlatformAudioImpl";
-  }
-
   virtual void OnStateChanged(AudioStreamState state) OVERRIDE {}
 
-  virtual void OnCreated(base::SharedMemoryHandle handle,
-                         uint32 length) OVERRIDE {
-    LOG(FATAL) << "Should never get OnCreated in PlatformAudioImpl";
-  }
-
-  virtual void OnLowLatencyCreated(base::SharedMemoryHandle handle,
-                                   base::SyncSocket::Handle socket_handle,
-                                   uint32 length) OVERRIDE;
-
-  virtual void OnVolume(double volume) OVERRIDE {}
+  virtual void OnStreamCreated(base::SharedMemoryHandle handle,
+                               base::SyncSocket::Handle socket_handle,
+                               uint32 length) OVERRIDE;
 
   // The client to notify when the stream is created. THIS MUST ONLY BE
   // ACCESSED ON THE MAIN THREAD.
@@ -284,7 +273,7 @@ void PlatformAudioImpl::ShutDown() {
 
 void PlatformAudioImpl::InitializeOnIOThread(const AudioParameters& params) {
   stream_id_ = filter_->AddDelegate(this);
-  filter_->Send(new AudioHostMsg_CreateStream(stream_id_, params, true));
+  filter_->Send(new AudioHostMsg_CreateStream(stream_id_, params));
 }
 
 void PlatformAudioImpl::StartPlaybackOnIOThread() {
@@ -310,7 +299,7 @@ void PlatformAudioImpl::ShutDownOnIOThread() {
               // PepperPluginDelegateImpl::CreateAudio.
 }
 
-void PlatformAudioImpl::OnLowLatencyCreated(
+void PlatformAudioImpl::OnStreamCreated(
     base::SharedMemoryHandle handle, base::SyncSocket::Handle socket_handle,
     uint32 length) {
 #if defined(OS_WIN)
@@ -329,7 +318,7 @@ void PlatformAudioImpl::OnLowLatencyCreated(
       client_->StreamCreated(handle, length, socket_handle);
   } else {
     main_message_loop_proxy_->PostTask(FROM_HERE,
-        base::Bind(&PlatformAudioImpl::OnLowLatencyCreated, this, handle,
+        base::Bind(&PlatformAudioImpl::OnStreamCreated, this, handle,
                    socket_handle, length));
   }
 }

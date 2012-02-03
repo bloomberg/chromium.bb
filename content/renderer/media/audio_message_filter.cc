@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -42,12 +42,8 @@ bool AudioMessageFilter::Send(IPC::Message* message) {
 bool AudioMessageFilter::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(AudioMessageFilter, message)
-    IPC_MESSAGE_HANDLER(AudioMsg_RequestPacket, OnRequestPacket)
     IPC_MESSAGE_HANDLER(AudioMsg_NotifyStreamCreated, OnStreamCreated)
-    IPC_MESSAGE_HANDLER(AudioMsg_NotifyLowLatencyStreamCreated,
-                        OnLowLatencyStreamCreated)
     IPC_MESSAGE_HANDLER(AudioMsg_NotifyStreamStateChanged, OnStreamStateChanged)
-    IPC_MESSAGE_HANDLER(AudioMsg_NotifyStreamVolume, OnStreamVolume)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -67,31 +63,7 @@ void AudioMessageFilter::OnChannelClosing() {
   channel_ = NULL;
 }
 
-void AudioMessageFilter::OnRequestPacket(int stream_id,
-                                         AudioBuffersState buffers_state) {
-  Delegate* delegate = delegates_.Lookup(stream_id);
-  if (!delegate) {
-    DLOG(WARNING) << "Got audio packet request for a non-existent or removed"
-        " audio renderer.";
-    return;
-  }
-
-  delegate->OnRequestPacket(buffers_state);
-}
-
-void AudioMessageFilter::OnStreamCreated(int stream_id,
-                                         base::SharedMemoryHandle handle,
-                                         uint32 length) {
-  Delegate* delegate = delegates_.Lookup(stream_id);
-  if (!delegate) {
-    DLOG(WARNING) << "Got audio stream event for a non-existent or removed"
-        " audio renderer.";
-    return;
-  }
-  delegate->OnCreated(handle, length);
-}
-
-void AudioMessageFilter::OnLowLatencyStreamCreated(
+void AudioMessageFilter::OnStreamCreated(
     int stream_id,
     base::SharedMemoryHandle handle,
 #if defined(OS_WIN)
@@ -111,7 +83,7 @@ void AudioMessageFilter::OnLowLatencyStreamCreated(
     base::SyncSocket socket(socket_handle);
     return;
   }
-  delegate->OnLowLatencyCreated(handle, socket_handle, length);
+  delegate->OnStreamCreated(handle, socket_handle, length);
 }
 
 void AudioMessageFilter::OnStreamStateChanged(
@@ -123,16 +95,6 @@ void AudioMessageFilter::OnStreamStateChanged(
     return;
   }
   delegate->OnStateChanged(state);
-}
-
-void AudioMessageFilter::OnStreamVolume(int stream_id, double volume) {
-  Delegate* delegate = delegates_.Lookup(stream_id);
-  if (!delegate) {
-    DLOG(WARNING) << "Got audio stream event for a non-existent or removed"
-        " audio renderer.";
-    return;
-  }
-  delegate->OnVolume(volume);
 }
 
 int32 AudioMessageFilter::AddDelegate(Delegate* delegate) {

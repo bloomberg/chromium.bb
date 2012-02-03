@@ -28,7 +28,6 @@
 #include "media/filters/ffmpeg_video_decoder.h"
 #include "media/filters/file_data_source.h"
 #include "media/filters/null_audio_renderer.h"
-#include "media/filters/reference_audio_renderer.h"
 #include "media/filters/video_renderer_base.h"
 #include "media/tools/player_x11/gl_video_renderer.h"
 #include "media/tools/player_x11/x11_video_renderer.h"
@@ -96,10 +95,11 @@ void Paint(MessageLoop* message_loop, const PaintCB& paint_cb) {
   g_video_renderer->PutCurrentFrame(video_frame);
 }
 
+// TODO(vrk): Re-enabled audio. (crbug.com/112159)
 bool InitPipeline(MessageLoop* message_loop,
                   const char* filename,
                   const PaintCB& paint_cb,
-                  bool enable_audio,
+                  bool /* enable_audio */,
                   scoped_refptr<media::Pipeline>* pipeline,
                   MessageLoop* paint_message_loop,
                   media::MessageLoopFactory* message_loop_factory) {
@@ -132,12 +132,7 @@ bool InitPipeline(MessageLoop* message_loop,
       base::Bind(&SetOpaque));
   collection->AddVideoRenderer(g_video_renderer);
 
-  if (enable_audio) {
-    collection->AddAudioRenderer(
-        new media::ReferenceAudioRenderer(g_audio_manager));
-  } else {
-    collection->AddAudioRenderer(new media::NullAudioRenderer());
-  }
+  collection->AddAudioRenderer(new media::NullAudioRenderer());
 
   // Create the pipeline and start it.
   *pipeline = new media::Pipeline(message_loop, new media::MediaLog());

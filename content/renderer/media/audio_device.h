@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// Low-latency audio rendering unit utilizing audio output stream provided
-// by browser process through IPC.
+// Audio rendering unit utilizing audio output stream provided by browser
+// process through IPC.
 //
 // Relationship of classes.
 //
@@ -24,16 +24,16 @@
 //            Task [IO thread]                  IPC [IO thread]
 //
 // Start -> InitializeOnIOThread ------> AudioHostMsg_CreateStream -------->
-//       <- OnLowLatencyCreated <- AudioMsg_NotifyLowLatencyStreamCreated <-
+//       <- OnStreamCreated <- AudioMsg_NotifyStreamCreated <-
 //       ---> PlayOnIOThread -----------> AudioHostMsg_PlayStream -------->
 //
 // Optionally Play() / Pause() sequences may occur:
 // Play -> PlayOnIOThread --------------> AudioHostMsg_PlayStream --------->
 // Pause -> PauseOnIOThread ------------> AudioHostMsg_PauseStream -------->
-// (note that Play() / Pause() sequences before OnLowLatencyCreated are
-//  deferred until OnLowLatencyCreated, with the last valid state being used)
+// (note that Play() / Pause() sequences before OnStreamCreated are
+//  deferred until OnStreamCreated, with the last valid state being used)
 //
-// AudioDevice::Render => audio transport on audio thread with low latency =>
+// AudioDevice::Render => audio transport on audio thread =>
 //                               |
 // Stop --> ShutDownOnIOThread -------->  AudioHostMsg_CloseStream -> Close
 //
@@ -132,14 +132,10 @@ class CONTENT_EXPORT AudioDevice
 
   // Methods called on IO thread ----------------------------------------------
   // AudioMessageFilter::Delegate methods, called by AudioMessageFilter.
-  virtual void OnRequestPacket(AudioBuffersState buffers_state) OVERRIDE;
   virtual void OnStateChanged(AudioStreamState state) OVERRIDE;
-  virtual void OnCreated(base::SharedMemoryHandle handle,
-                         uint32 length) OVERRIDE;
-  virtual void OnLowLatencyCreated(base::SharedMemoryHandle handle,
-                                   base::SyncSocket::Handle socket_handle,
-                                   uint32 length) OVERRIDE;
-  virtual void OnVolume(double volume) OVERRIDE;
+  virtual void OnStreamCreated(base::SharedMemoryHandle handle,
+                               base::SyncSocket::Handle socket_handle,
+                               uint32 length) OVERRIDE;
 
  private:
   // Magic required by ref_counted.h to avoid any code deleting the object
@@ -207,10 +203,10 @@ class CONTENT_EXPORT AudioDevice
   // Must only be modified on the IO thread.
   int32 stream_id_;
 
-  // State of Play() / Pause() calls before OnLowLatencyCreated() is called.
+  // State of Play() / Pause() calls before OnStreamCreated() is called.
   bool play_on_start_;
 
-  // Set to |true| when OnLowLatencyCreated() is called.
+  // Set to |true| when OnStreamCreated() is called.
   // Set to |false| when ShutDownOnIOThread() is called.
   // This is for use with play_on_start_ to track Play() / Pause() state.
   // Must only be touched from the IO thread.

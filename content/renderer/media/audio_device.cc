@@ -158,7 +158,7 @@ void AudioDevice::InitializeOnIOThread(const AudioParameters& params) {
     return;
 
   stream_id_ = filter_->AddDelegate(this);
-  Send(new AudioHostMsg_CreateStream(stream_id_, params, true));
+  Send(new AudioHostMsg_CreateStream(stream_id_, params));
 }
 
 void AudioDevice::PlayOnIOThread() {
@@ -205,10 +205,6 @@ void AudioDevice::SetVolumeOnIOThread(double volume) {
     Send(new AudioHostMsg_SetVolume(stream_id_, volume));
 }
 
-void AudioDevice::OnRequestPacket(AudioBuffersState buffers_state) {
-  // This method does not apply to the low-latency system.
-}
-
 void AudioDevice::OnStateChanged(AudioStreamState state) {
   if (state == kAudioStreamError) {
     DLOG(WARNING) << "AudioDevice::OnStateChanged(kError)";
@@ -216,12 +212,7 @@ void AudioDevice::OnStateChanged(AudioStreamState state) {
   }
 }
 
-void AudioDevice::OnCreated(
-    base::SharedMemoryHandle handle, uint32 length) {
-  // Not needed in this simple implementation.
-}
-
-void AudioDevice::OnLowLatencyCreated(
+void AudioDevice::OnStreamCreated(
     base::SharedMemoryHandle handle,
     base::SyncSocket::Handle socket_handle,
     uint32 length) {
@@ -235,7 +226,7 @@ void AudioDevice::OnLowLatencyCreated(
   DCHECK_GE(socket_handle, 0);
 #endif
 
-  // Takes care of the case when Stop() is called before OnLowLatencyCreated().
+  // Takes care of the case when Stop() is called before OnStreamCreated().
   if (!stream_id_) {
     base::SharedMemory::CloseHandle(handle);
     // Close the socket handler.
@@ -252,14 +243,10 @@ void AudioDevice::OnLowLatencyCreated(
   audio_thread_->Start();
 
   // We handle the case where Play() and/or Pause() may have been called
-  // multiple times before OnLowLatencyCreated() gets called.
+  // multiple times before OnStreamCreated() gets called.
   is_started_ = true;
   if (play_on_start_)
     PlayOnIOThread();
-}
-
-void AudioDevice::OnVolume(double volume) {
-  NOTIMPLEMENTED();
 }
 
 void AudioDevice::Send(IPC::Message* message) {

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,7 +21,6 @@ using content::BrowserThread;
 
 AudioRendererHost::AudioEntry::AudioEntry()
     : stream_id(0),
-      pending_buffer_request(false),
       pending_close(false) {
 }
 
@@ -91,16 +90,6 @@ void AudioRendererHost::OnError(media::AudioOutputController* controller,
                  this, make_scoped_refptr(controller), error_code));
 }
 
-void AudioRendererHost::OnMoreData(media::AudioOutputController* controller,
-                                   AudioBuffersState buffers_state) {
-  BrowserThread::PostTask(
-      BrowserThread::IO,
-      FROM_HERE,
-      base::Bind(&AudioRendererHost::DoRequestMoreData,
-                 this, make_scoped_refptr(controller),
-                 buffers_state));
-}
-
 void AudioRendererHost::DoCompleteCreation(
     media::AudioOutputController* controller) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
@@ -126,37 +115,28 @@ void AudioRendererHost::DoCompleteCreation(
     return;
   }
 
-  if (entry->controller->LowLatencyMode()) {
-    AudioSyncReader* reader =
-        static_cast<AudioSyncReader*>(entry->reader.get());
+  AudioSyncReader* reader =
+      static_cast<AudioSyncReader*>(entry->reader.get());
 
 #if defined(OS_WIN)
-    base::SyncSocket::Handle foreign_socket_handle;
+  base::SyncSocket::Handle foreign_socket_handle;
 #else
-    base::FileDescriptor foreign_socket_handle;
+  base::FileDescriptor foreign_socket_handle;
 #endif
 
-    // If we failed to prepare the sync socket for the renderer then we fail
-    // the construction of audio stream.
-    if (!reader->PrepareForeignSocketHandle(peer_handle(),
-                                            &foreign_socket_handle)) {
-      DeleteEntryOnError(entry);
-      return;
-    }
-
-    Send(new AudioMsg_NotifyLowLatencyStreamCreated(
-        entry->stream_id,
-        foreign_memory_handle,
-        foreign_socket_handle,
-        media::PacketSizeSizeInBytes(entry->shared_memory.created_size())));
+  // If we failed to prepare the sync socket for the renderer then we fail
+  // the construction of audio stream.
+  if (!reader->PrepareForeignSocketHandle(peer_handle(),
+                                          &foreign_socket_handle)) {
+    DeleteEntryOnError(entry);
     return;
   }
 
-  // The normal audio stream has created, send a message to the renderer
-  // process.
   Send(new AudioMsg_NotifyStreamCreated(
-      entry->stream_id, foreign_memory_handle,
-      entry->shared_memory.created_size()));
+      entry->stream_id,
+      foreign_memory_handle,
+      foreign_socket_handle,
+      media::PacketSizeSizeInBytes(entry->shared_memory.created_size())));
 }
 
 void AudioRendererHost::DoSendPlayingMessage(
@@ -183,22 +163,6 @@ void AudioRendererHost::DoSendPausedMessage(
       entry->stream_id, kAudioStreamPaused));
 }
 
-void AudioRendererHost::DoRequestMoreData(
-    media::AudioOutputController* controller,
-    AudioBuffersState buffers_state) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-
-  // If we already have a pending request then return.
-  AudioEntry* entry = LookupByController(controller);
-  if (!entry || entry->pending_buffer_request)
-    return;
-
-  DCHECK(!entry->controller->LowLatencyMode());
-  entry->pending_buffer_request = true;
-  Send(new AudioMsg_RequestPacket(
-      entry->stream_id, buffers_state));
-}
-
 void AudioRendererHost::DoHandleError(media::AudioOutputController* controller,
                                       int error_code) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
@@ -221,8 +185,6 @@ bool AudioRendererHost::OnMessageReceived(const IPC::Message& message,
     IPC_MESSAGE_HANDLER(AudioHostMsg_PauseStream, OnPauseStream)
     IPC_MESSAGE_HANDLER(AudioHostMsg_FlushStream, OnFlushStream)
     IPC_MESSAGE_HANDLER(AudioHostMsg_CloseStream, OnCloseStream)
-    IPC_MESSAGE_HANDLER(AudioHostMsg_NotifyPacketReady, OnNotifyPacketReady)
-    IPC_MESSAGE_HANDLER(AudioHostMsg_GetVolume, OnGetVolume)
     IPC_MESSAGE_HANDLER(AudioHostMsg_SetVolume, OnSetVolume)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP_EX()
@@ -231,7 +193,7 @@ bool AudioRendererHost::OnMessageReceived(const IPC::Message& message,
 }
 
 void AudioRendererHost::OnCreateStream(
-    int stream_id, const AudioParameters& params, bool low_latency) {
+    int stream_id, const AudioParameters& params) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(LookupById(stream_id) == NULL);
 
@@ -244,50 +206,38 @@ void AudioRendererHost::OnCreateStream(
   uint32 packet_size = audio_params.GetPacketSize();
 
   scoped_ptr<AudioEntry> entry(new AudioEntry());
+
   // Create the shared memory and share with the renderer process.
-  uint32 shared_memory_size = packet_size;
-  if (low_latency) {
-    shared_memory_size =
-        media::TotalSharedMemorySizeInBytes(shared_memory_size);
-  }
+  uint32 shared_memory_size =
+      media::TotalSharedMemorySizeInBytes(packet_size);
   if (!entry->shared_memory.CreateAndMapAnonymous(shared_memory_size)) {
     // If creation of shared memory failed then send an error message.
     SendErrorMessage(stream_id);
     return;
   }
 
-  if (low_latency) {
-    // If this is the low latency mode, we need to construct a SyncReader first.
-    scoped_ptr<AudioSyncReader> reader(
-        new AudioSyncReader(&entry->shared_memory));
+  // Create sync reader and try to initialize it.
+  scoped_ptr<AudioSyncReader> reader(
+      new AudioSyncReader(&entry->shared_memory));
 
-    // Then try to initialize the sync reader.
-    if (!reader->Init()) {
-      SendErrorMessage(stream_id);
-      return;
-    }
-
-    // If we have successfully created the SyncReader then assign it to the
-    // entry and construct an AudioOutputController.
-    entry->reader.reset(reader.release());
-    entry->controller =
-        media::AudioOutputController::CreateLowLatency(
-            resource_context_->audio_manager(), this, audio_params,
-            entry->reader.get());
-  } else {
-    // The choice of buffer capacity is based on experiment.
-    entry->controller =
-        media::AudioOutputController::Create(
-            resource_context_->audio_manager(), this, audio_params,
-            3 * packet_size);
+  if (!reader->Init()) {
+    SendErrorMessage(stream_id);
+    return;
   }
+
+  // If we have successfully created the SyncReader then assign it to the
+  // entry and construct an AudioOutputController.
+  entry->reader.reset(reader.release());
+  entry->controller = media::AudioOutputController::Create(
+      resource_context_->audio_manager(), this, audio_params,
+      entry->reader.get());
 
   if (!entry->controller) {
     SendErrorMessage(stream_id);
     return;
   }
 
-  // If we have created the controller successfully create a entry and add it
+  // If we have created the controller successfully, create an entry and add it
   // to the map.
   entry->stream_id = stream_id;
   audio_entries_.insert(std::make_pair(stream_id, entry.release()));
@@ -358,34 +308,6 @@ void AudioRendererHost::OnSetVolume(int stream_id, double volume) {
     return;
   entry->controller->SetVolume(volume);
   media_observer()->OnSetAudioStreamVolume(this, stream_id, volume);
-}
-
-void AudioRendererHost::OnGetVolume(int stream_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  NOTREACHED() << "This message shouldn't be received";
-}
-
-void AudioRendererHost::OnNotifyPacketReady(int stream_id, uint32 packet_size) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-
-  AudioEntry* entry = LookupById(stream_id);
-  if (!entry) {
-    SendErrorMessage(stream_id);
-    return;
-  }
-
-  DCHECK(!entry->controller->LowLatencyMode());
-  CHECK(packet_size <= entry->shared_memory.created_size());
-
-  if (!entry->pending_buffer_request) {
-    NOTREACHED() << "Buffer received but no such pending request";
-  }
-  entry->pending_buffer_request = false;
-
-  // Enqueue the data to media::AudioOutputController.
-  entry->controller->EnqueueData(
-      reinterpret_cast<uint8*>(entry->shared_memory.memory()),
-      packet_size);
 }
 
 void AudioRendererHost::SendErrorMessage(int32 stream_id) {

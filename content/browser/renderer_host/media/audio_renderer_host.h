@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -11,43 +11,28 @@
 // singleton and created in IO thread, audio output streams are also created in
 // the IO thread, so we need to destroy them also in IO thread. After this class
 // is created, a task of OnInitialized() is posted on IO thread in which
-// singleton of AudioManager is created and.
+// singleton of AudioManager is created.
 //
 // Here's an example of a typical IPC dialog for audio:
 //
 //   Renderer                     AudioRendererHost
 //      |                               |
 //      |         CreateStream >        |
-//      |          < Created            |
+//      |     < NotifyStreamCreated     |
 //      |                               |
-//      |             Play >            |
-//      |           < Playing           |  time
+//      |          PlayStream >         |
+//      |  < NotifyStreamStateChanged   | kAudioStreamPlaying
 //      |                               |
-//      |     < RequestAudioPacket      |
-//      |      AudioPacketReady >       |
-//      |             ...               |
-//      |     < RequestAudioPacket      |
-//      |      AudioPacketReady >       |
+//      |         PauseStream >         |
+//      |  < NotifyStreamStateChanged   | kAudioStreamPaused
 //      |                               |
+//      |          PlayStream >         |
+//      |  < NotifyStreamStateChanged   | kAudioStreamPlaying
 //      |             ...               |
-//      |     < RequestAudioPacket      |
-//      |      AudioPacketReady >       |
-//      |             ...               |
-//      |           Pause >             |
-//      |          < Paused             |
-//      |            ...                |
-//      |           Start >             |
-//      |          < Started            |
-//      |             ...               |
-//      |            Close >            |
+//      |         CloseStream >         |
 //      v                               v
 
-// The above mode of operation uses relatively big buffers and has latencies
-// of 50 ms or more. There is a second mode of operation which is low latency.
-// For low latency audio, the picture above is modified by not having the
-// RequestAudioPacket and the AudioPacketReady messages, instead a SyncSocket
-// pair is used to signal buffer readiness without having to route messages
-// using the IO thread.
+// A SyncSocket pair is used to signal buffer readiness between processes.
 
 #ifndef CONTENT_BROWSER_RENDERER_HOST_MEDIA_AUDIO_RENDERER_HOST_H_
 #define CONTENT_BROWSER_RENDERER_HOST_MEDIA_AUDIO_RENDERER_HOST_H_
@@ -97,8 +82,6 @@ class CONTENT_EXPORT AudioRendererHost
     // ownership of the reader.
     scoped_ptr<media::AudioOutputController::SyncReader> reader;
 
-    bool pending_buffer_request;
-
     // Set to true after we called Close() for the controller.
     bool pending_close;
   };
@@ -120,8 +103,6 @@ class CONTENT_EXPORT AudioRendererHost
   virtual void OnPaused(media::AudioOutputController* controller) OVERRIDE;
   virtual void OnError(media::AudioOutputController* controller,
                        int error_code) OVERRIDE;
-  virtual void OnMoreData(media::AudioOutputController* controller,
-                          AudioBuffersState buffers_state) OVERRIDE;
 
  private:
   friend class AudioRendererHostTest;
@@ -139,9 +120,7 @@ class CONTENT_EXPORT AudioRendererHost
   // Creates an audio output stream with the specified format. If this call is
   // successful this object would keep an internal entry of the stream for the
   // required properties.
-  void OnCreateStream(int stream_id,
-                      const AudioParameters& params,
-                      bool low_latency);
+  void OnCreateStream(int stream_id, const AudioParameters& params);
 
   // Play the audio stream referenced by |stream_id|.
   void OnPlayStream(int stream_id);
@@ -149,7 +128,7 @@ class CONTENT_EXPORT AudioRendererHost
   // Pause the audio stream referenced by |stream_id|.
   void OnPauseStream(int stream_id);
 
-  // Discard all audio data in  stream referenced by |stream_id|.
+  // Discard all audio data in stream referenced by |stream_id|.
   void OnFlushStream(int stream_id);
 
   // Close the audio stream referenced by |stream_id|.
@@ -158,12 +137,6 @@ class CONTENT_EXPORT AudioRendererHost
   // Set the volume of the audio stream referenced by |stream_id|.
   void OnSetVolume(int stream_id, double volume);
 
-  // Get the volume of the audio stream referenced by |stream_id|.
-  void OnGetVolume(int stream_id);
-
-  // Notify packet has been prepared for the audio stream.
-  void OnNotifyPacketReady(int stream_id, uint32 packet_size);
-
   // Complete the process of creating an audio stream. This will set up the
   // shared memory or shared socket in low latency mode.
   void DoCompleteCreation(media::AudioOutputController* controller);
@@ -171,11 +144,6 @@ class CONTENT_EXPORT AudioRendererHost
   // Send a state change message to the renderer.
   void DoSendPlayingMessage(media::AudioOutputController* controller);
   void DoSendPausedMessage(media::AudioOutputController* controller);
-
-  // Request more data from the renderer. This method is used only in normal
-  // latency mode.
-  void DoRequestMoreData(media::AudioOutputController* controller,
-                         AudioBuffersState buffers_state);
 
   // Handle error coming from audio stream.
   void DoHandleError(media::AudioOutputController* controller, int error_code);
