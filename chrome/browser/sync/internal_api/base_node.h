@@ -218,6 +218,10 @@ class BaseNode {
   FRIEND_TEST_ALL_PREFIXES(SyncManagerTest, UpdatePasswordSetPasswordSpecifics);
   FRIEND_TEST_ALL_PREFIXES(SyncManagerTest, UpdatePasswordNewPassphrase);
   FRIEND_TEST_ALL_PREFIXES(SyncManagerTest, UpdatePasswordReencryptEverything);
+  FRIEND_TEST_ALL_PREFIXES(SyncManagerTest, SetBookmarkTitle);
+  FRIEND_TEST_ALL_PREFIXES(SyncManagerTest, SetBookmarkTitleWithEncryption);
+  FRIEND_TEST_ALL_PREFIXES(SyncManagerTest, SetNonBookmarkTitle);
+  FRIEND_TEST_ALL_PREFIXES(SyncManagerTest, SetNonBookmarkTitleWithEncryption);
 
   void* operator new(size_t size);  // Node is meant for stack use only.
 

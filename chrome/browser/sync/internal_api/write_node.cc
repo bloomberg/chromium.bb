@@ -106,6 +106,9 @@ bool WriteNode::UpdateEntryWithEncryption(
     }
   }
   entry->Put(syncable::SPECIFICS, generated_specifics);
+  DVLOG(1) << "Overwriting specifics of type "
+           << syncable::ModelTypeToString(type)
+           << " and marking for syncing.";
   syncable::MarkForSyncing(entry);
   return true;
 }
@@ -119,31 +122,65 @@ void WriteNode::SetIsFolder(bool folder) {
 }
 
 void WriteNode::SetTitle(const std::wstring& title) {
-  sync_pb::EntitySpecifics specifics = GetEntitySpecifics();
-  std::string server_legal_name;
-  SyncAPINameToServerName(WideToUTF8(title), &server_legal_name);
-
-  string old_name = entry_->Get(syncable::NON_UNIQUE_NAME);
-
-  if (server_legal_name == old_name)
-    return;  // Skip redundant changes.
-
-  // Only set NON_UNIQUE_NAME to the title if we're not encrypted.
+  DCHECK_NE(GetModelType(), syncable::UNSPECIFIED);
+  syncable::ModelType type = GetModelType();
   Cryptographer* cryptographer = GetTransaction()->GetCryptographer();
-  if (cryptographer->GetEncryptedTypes().Has(GetModelType())) {
-    if (old_name != kEncryptedString)
-      entry_->Put(syncable::NON_UNIQUE_NAME, kEncryptedString);
+  bool needs_encryption = cryptographer->GetEncryptedTypes().Has(type);
+
+  // If this datatype is encrypted and is not a bookmark, we disregard the
+  // specified title in favor of kEncryptedString. For encrypted bookmarks the
+  // NON_UNIQUE_NAME will still be kEncryptedString, but we store the real title
+  // into the specifics. All strings compared are server legal strings.
+  std::string new_legal_title;
+  if (type != syncable::BOOKMARKS && needs_encryption) {
+    new_legal_title = kEncryptedString;
   } else {
-    entry_->Put(syncable::NON_UNIQUE_NAME, server_legal_name);
+    SyncAPINameToServerName(WideToUTF8(title), &new_legal_title);
+  }
+
+  std::string current_legal_title;
+  if (syncable::BOOKMARKS == type &&
+      entry_->Get(syncable::SPECIFICS).has_encrypted()) {
+    // Encrypted bookmarks only have their title in the unencrypted specifics.
+    current_legal_title = GetBookmarkSpecifics().title();
+  } else {
+    // Non-bookmarks and legacy bookmarks (those with no title in their
+    // specifics) store their title in NON_UNIQUE_NAME. Non-legacy bookmarks
+    // store their title in specifics as well as NON_UNIQUE_NAME.
+    current_legal_title = entry_->Get(syncable::NON_UNIQUE_NAME);
+  }
+
+  bool title_matches = (current_legal_title == new_legal_title);
+  bool encrypted_without_overwriting_name = (needs_encryption &&
+      entry_->Get(syncable::NON_UNIQUE_NAME) != kEncryptedString);
+
+  // If the title matches and the NON_UNIQUE_NAME is properly overwritten as
+  // necessary, nothing needs to change.
+  if (title_matches && !encrypted_without_overwriting_name) {
+    DVLOG(2) << "Title matches, dropping change.";
+    return;
   }
 
   // For bookmarks, we also set the title field in the specifics.
   // TODO(zea): refactor bookmarks to not need this functionality.
   if (GetModelType() == syncable::BOOKMARKS) {
-    specifics.MutableExtension(sync_pb::bookmark)->set_title(server_legal_name);
+    sync_pb::EntitySpecifics specifics = GetEntitySpecifics();
+    specifics.MutableExtension(sync_pb::bookmark)->set_title(new_legal_title);
     SetEntitySpecifics(specifics);  // Does it's own encryption checking.
   }
 
+  // For bookmarks, this has to happen after we set the title in the specifics,
+  // because the presence of a title in the NON_UNIQUE_NAME is what controls
+  // the logic deciding whether this is an empty node or a legacy bookmark.
+  // See BaseNode::GetUnencryptedSpecific(..).
+  if (needs_encryption)
+    entry_->Put(syncable::NON_UNIQUE_NAME, kEncryptedString);
+  else
+    entry_->Put(syncable::NON_UNIQUE_NAME, new_legal_title);
+
+  DVLOG(1) << "Overwriting title of type "
+           << syncable::ModelTypeToString(type)
+           << " and marking for syncing.";
   MarkForSyncing();
 }
 

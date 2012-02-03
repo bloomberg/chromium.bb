@@ -47,6 +47,7 @@
 #include "chrome/browser/sync/protocol/encryption.pb.h"
 #include "chrome/browser/sync/protocol/extension_specifics.pb.h"
 #include "chrome/browser/sync/protocol/password_specifics.pb.h"
+#include "chrome/browser/sync/protocol/preference_specifics.pb.h"
 #include "chrome/browser/sync/protocol/proto_value_conversions.h"
 #include "chrome/browser/sync/protocol/sync.pb.h"
 #include "chrome/browser/sync/sessions/sync_session.h"
@@ -801,6 +802,7 @@ class SyncManagerTest : public testing::Test,
     (*out)[syncable::THEMES] = browser_sync::GROUP_PASSIVE;
     (*out)[syncable::SESSIONS] = browser_sync::GROUP_PASSIVE;
     (*out)[syncable::PASSWORDS] = browser_sync::GROUP_PASSIVE;
+    (*out)[syncable::PREFERENCES] = browser_sync::GROUP_PASSIVE;
   }
 
   virtual void OnChangesApplied(
@@ -1166,7 +1168,7 @@ TEST_F(SyncManagerTest, GetChildNodeIds) {
   ListValue* nodes = NULL;
   ASSERT_TRUE(return_args.Get().GetList(0, &nodes));
   ASSERT_TRUE(nodes);
-  EXPECT_EQ(5u, nodes->GetSize());
+  EXPECT_EQ(6u, nodes->GetSize());
 }
 
 TEST_F(SyncManagerTest, GetChildNodeIdsFailure) {
@@ -1896,6 +1898,36 @@ TEST_F(SyncManagerTest, EncryptBookmarksWithLegacyData) {
   }
 }
 
+// Create a bookmark and set the title/url, then verify the data was properly
+// set. This replicates the unique way bookmarks have of creating sync nodes.
+// See BookmarkChangeProcessor::PlaceSyncNode(..).
+TEST_F(SyncManagerTest, CreateLocalBookmark) {
+  std::string title = "title";
+  GURL url("url");
+  {
+    WriteTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
+    ReadNode root_node(&trans);
+    root_node.InitByRootLookup();
+    WriteNode node(&trans);
+    ASSERT_TRUE(node.InitByCreation(syncable::BOOKMARKS, root_node, NULL));
+    node.SetIsFolder(false);
+    node.SetTitle(UTF8ToWide(title));
+    node.SetURL(url);
+  }
+  {
+    ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
+    ReadNode root_node(&trans);
+    root_node.InitByRootLookup();
+    int64 child_id = root_node.GetFirstChildId();
+
+    ReadNode node(&trans);
+    ASSERT_TRUE(node.InitByIdLookup(child_id));
+    EXPECT_FALSE(node.GetIsFolder());
+    EXPECT_EQ(title, node.GetTitle());
+    EXPECT_EQ(url, node.GetURL());
+  }
+}
+
 // Verifies WriteNode::UpdateEntryWithEncryption does not make unnecessary
 // changes.
 TEST_F(SyncManagerTest, UpdateEntryWithEncryption) {
@@ -1932,7 +1964,6 @@ TEST_F(SyncManagerTest, UpdateEntryWithEncryption) {
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE)));
   ASSERT_TRUE(helper->Run());
   PumpLoop();
-
   {
     ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
     ReadNode node(&trans);
@@ -2179,6 +2210,194 @@ TEST_F(SyncManagerTest, UpdatePasswordReencryptEverything) {
   ASSERT_TRUE(helper->Run());
   PumpLoop();
   EXPECT_FALSE(ResetUnsyncedEntry(syncable::PASSWORDS, client_tag));
+}
+
+// Verify SetTitle(..) doesn't unnecessarily set IS_UNSYNCED for bookmarks
+// when we write the same data, but does set it when we write new data.
+TEST_F(SyncManagerTest, SetBookmarkTitle) {
+  std::string client_tag = "title";
+  sync_pb::EntitySpecifics entity_specifics;
+  entity_specifics.MutableExtension(sync_pb::bookmark)->set_url("url");
+  entity_specifics.MutableExtension(sync_pb::bookmark)->set_title("title");
+  MakeServerNode(sync_manager_.GetUserShare(), syncable::BOOKMARKS, client_tag,
+                 BaseNode::GenerateSyncableHash(syncable::BOOKMARKS,
+                                                client_tag),
+                 entity_specifics);
+  // New node shouldn't start off unsynced.
+  EXPECT_FALSE(ResetUnsyncedEntry(syncable::BOOKMARKS, client_tag));
+
+  // Manually change to the same title. Should not set is_unsynced.
+  {
+    WriteTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
+    WriteNode node(&trans);
+    EXPECT_TRUE(node.InitByClientTagLookup(syncable::BOOKMARKS, client_tag));
+    node.SetTitle(UTF8ToWide(client_tag));
+  }
+  EXPECT_FALSE(ResetUnsyncedEntry(syncable::BOOKMARKS, client_tag));
+
+  // Manually change to new title. Should set is_unsynced.
+  {
+    WriteTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
+    WriteNode node(&trans);
+    EXPECT_TRUE(node.InitByClientTagLookup(syncable::BOOKMARKS, client_tag));
+    node.SetTitle(UTF8ToWide("title2"));
+  }
+  EXPECT_TRUE(ResetUnsyncedEntry(syncable::BOOKMARKS, client_tag));
+}
+
+// Verify SetTitle(..) doesn't unnecessarily set IS_UNSYNCED for encrypted
+// bookmarks when we write the same data, but does set it when we write new
+// data.
+TEST_F(SyncManagerTest, SetBookmarkTitleWithEncryption) {
+  std::string client_tag = "title";
+  sync_pb::EntitySpecifics entity_specifics;
+  entity_specifics.MutableExtension(sync_pb::bookmark)->set_url("url");
+  entity_specifics.MutableExtension(sync_pb::bookmark)->set_title("title");
+  MakeServerNode(sync_manager_.GetUserShare(), syncable::BOOKMARKS, client_tag,
+                 BaseNode::GenerateSyncableHash(syncable::BOOKMARKS,
+                                                client_tag),
+                 entity_specifics);
+  // New node shouldn't start off unsynced.
+  EXPECT_FALSE(ResetUnsyncedEntry(syncable::BOOKMARKS, client_tag));
+
+  // Encrypt the datatatype, should set is_unsynced.
+  EXPECT_CALL(observer_,
+              OnEncryptedTypesChanged(
+                  HasModelTypes(syncable::ModelTypeSet::All()), true));
+  EXPECT_CALL(observer_, OnEncryptionComplete());
+  EXPECT_TRUE(SetUpEncryption(WRITE_TO_NIGORI, FULL_ENCRYPTION));
+  sync_manager_.RefreshNigori(base::Bind(&SyncManagerTest::EmptyClosure,
+                                         base::Unretained(this)));
+  scoped_refptr<base::ThreadTestHelper> helper(
+      new base::ThreadTestHelper(
+          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE)));
+  ASSERT_TRUE(helper->Run());
+  PumpLoop();
+  EXPECT_TRUE(ResetUnsyncedEntry(syncable::BOOKMARKS, client_tag));
+
+  // Manually change to the same title. Should not set is_unsynced.
+  // NON_UNIQUE_NAME should be kEncryptedString.
+  {
+    WriteTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
+    WriteNode node(&trans);
+    EXPECT_TRUE(node.InitByClientTagLookup(syncable::BOOKMARKS, client_tag));
+    node.SetTitle(UTF8ToWide(client_tag));
+    const syncable::Entry* node_entry = node.GetEntry();
+    const sync_pb::EntitySpecifics& specifics = node_entry->Get(SPECIFICS);
+    EXPECT_TRUE(specifics.has_encrypted());
+    EXPECT_EQ(kEncryptedString, node_entry->Get(NON_UNIQUE_NAME));
+  }
+  EXPECT_FALSE(ResetUnsyncedEntry(syncable::BOOKMARKS, client_tag));
+
+  // Manually change to new title. Should set is_unsynced. NON_UNIQUE_NAME
+  // should still be kEncryptedString.
+  {
+    WriteTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
+    WriteNode node(&trans);
+    EXPECT_TRUE(node.InitByClientTagLookup(syncable::BOOKMARKS, client_tag));
+    node.SetTitle(UTF8ToWide("title2"));
+    const syncable::Entry* node_entry = node.GetEntry();
+    const sync_pb::EntitySpecifics& specifics = node_entry->Get(SPECIFICS);
+    EXPECT_TRUE(specifics.has_encrypted());
+    EXPECT_EQ(kEncryptedString, node_entry->Get(NON_UNIQUE_NAME));
+  }
+  EXPECT_TRUE(ResetUnsyncedEntry(syncable::BOOKMARKS, client_tag));
+}
+
+// Verify SetTitle(..) doesn't unnecessarily set IS_UNSYNCED for non-bookmarks
+// when we write the same data, but does set it when we write new data.
+TEST_F(SyncManagerTest, SetNonBookmarkTitle) {
+  std::string client_tag = "title";
+  sync_pb::EntitySpecifics entity_specifics;
+  entity_specifics.MutableExtension(sync_pb::preference)->set_name("name");
+  entity_specifics.MutableExtension(sync_pb::preference)->set_value("value");
+  MakeServerNode(sync_manager_.GetUserShare(),
+                 syncable::PREFERENCES,
+                 client_tag,
+                 BaseNode::GenerateSyncableHash(syncable::PREFERENCES,
+                                                client_tag),
+                 entity_specifics);
+  // New node shouldn't start off unsynced.
+  EXPECT_FALSE(ResetUnsyncedEntry(syncable::PREFERENCES, client_tag));
+
+  // Manually change to the same title. Should not set is_unsynced.
+  {
+    WriteTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
+    WriteNode node(&trans);
+    EXPECT_TRUE(node.InitByClientTagLookup(syncable::PREFERENCES, client_tag));
+    node.SetTitle(UTF8ToWide(client_tag));
+  }
+  EXPECT_FALSE(ResetUnsyncedEntry(syncable::PREFERENCES, client_tag));
+
+  // Manually change to new title. Should set is_unsynced.
+  {
+    WriteTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
+    WriteNode node(&trans);
+    EXPECT_TRUE(node.InitByClientTagLookup(syncable::PREFERENCES, client_tag));
+    node.SetTitle(UTF8ToWide("title2"));
+  }
+  EXPECT_TRUE(ResetUnsyncedEntry(syncable::PREFERENCES, client_tag));
+}
+
+// Verify SetTitle(..) doesn't unnecessarily set IS_UNSYNCED for encrypted
+// non-bookmarks when we write the same data or when we write new data
+// data (should remained kEncryptedString).
+TEST_F(SyncManagerTest, SetNonBookmarkTitleWithEncryption) {
+  std::string client_tag = "title";
+  sync_pb::EntitySpecifics entity_specifics;
+  entity_specifics.MutableExtension(sync_pb::preference)->set_name("name");
+  entity_specifics.MutableExtension(sync_pb::preference)->set_value("value");
+  MakeServerNode(sync_manager_.GetUserShare(),
+                 syncable::PREFERENCES,
+                 client_tag,
+                 BaseNode::GenerateSyncableHash(syncable::PREFERENCES,
+                                                client_tag),
+                 entity_specifics);
+  // New node shouldn't start off unsynced.
+  EXPECT_FALSE(ResetUnsyncedEntry(syncable::PREFERENCES, client_tag));
+
+  // Encrypt the datatatype, should set is_unsynced.
+  EXPECT_CALL(observer_,
+              OnEncryptedTypesChanged(
+                  HasModelTypes(syncable::ModelTypeSet::All()), true));
+  EXPECT_CALL(observer_, OnEncryptionComplete());
+  EXPECT_TRUE(SetUpEncryption(WRITE_TO_NIGORI, FULL_ENCRYPTION));
+  sync_manager_.RefreshNigori(base::Bind(&SyncManagerTest::EmptyClosure,
+                                         base::Unretained(this)));
+  scoped_refptr<base::ThreadTestHelper> helper(
+      new base::ThreadTestHelper(
+          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE)));
+  ASSERT_TRUE(helper->Run());
+  PumpLoop();
+  EXPECT_TRUE(ResetUnsyncedEntry(syncable::PREFERENCES, client_tag));
+
+  // Manually change to the same title. Should not set is_unsynced.
+  // NON_UNIQUE_NAME should be kEncryptedString.
+  {
+    WriteTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
+    WriteNode node(&trans);
+    EXPECT_TRUE(node.InitByClientTagLookup(syncable::PREFERENCES, client_tag));
+    node.SetTitle(UTF8ToWide(client_tag));
+    const syncable::Entry* node_entry = node.GetEntry();
+    const sync_pb::EntitySpecifics& specifics = node_entry->Get(SPECIFICS);
+    EXPECT_TRUE(specifics.has_encrypted());
+    EXPECT_EQ(kEncryptedString, node_entry->Get(NON_UNIQUE_NAME));
+  }
+  EXPECT_FALSE(ResetUnsyncedEntry(syncable::PREFERENCES, client_tag));
+
+  // Manually change to new title. Should not set is_unsynced because the
+  // NON_UNIQUE_NAME should still be kEncryptedString.
+  {
+    WriteTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
+    WriteNode node(&trans);
+    EXPECT_TRUE(node.InitByClientTagLookup(syncable::PREFERENCES, client_tag));
+    node.SetTitle(UTF8ToWide("title2"));
+    const syncable::Entry* node_entry = node.GetEntry();
+    const sync_pb::EntitySpecifics& specifics = node_entry->Get(SPECIFICS);
+    EXPECT_TRUE(specifics.has_encrypted());
+    EXPECT_EQ(kEncryptedString, node_entry->Get(NON_UNIQUE_NAME));
+    EXPECT_FALSE(node_entry->Get(IS_UNSYNCED));
+  }
 }
 
 }  // namespace browser_sync
