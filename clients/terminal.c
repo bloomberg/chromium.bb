@@ -2372,6 +2372,7 @@ int main(int argc, char *argv[])
 {
 	struct display *d;
 	struct terminal *terminal;
+	const char *shell;
 
 	d = display_create(&argc, &argv, option_entries);
 	if (d == NULL) {
@@ -2379,8 +2380,12 @@ int main(int argc, char *argv[])
 		return -1;
 	}
 
+	shell = getenv("SHELL");
+	if (!shell)
+		shell = "/bin/bash";
+
 	terminal = terminal_create(d, option_fullscreen);
-	if (terminal_run(terminal, "/bin/bash"))
+	if (terminal_run(terminal, shell))
 		exit(EXIT_FAILURE);
 
 	display_run(d);
