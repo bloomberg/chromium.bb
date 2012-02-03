@@ -24,6 +24,7 @@
 #include "content/common/view_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/browser/dom_operation_notification_details.h"
 #include "content/public/browser/invalidate_type.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
@@ -35,6 +36,7 @@
 #include "net/url_request/url_request_context_getter.h"
 
 using content::BrowserThread;
+using content::DomOperationNotificationDetails;
 using content::NavigationController;
 using content::NavigationEntry;
 using content::NavigationEntryImpl;
@@ -219,6 +221,9 @@ void InterstitialPage::Show() {
       content::Source<NavigationController>(&tab_->GetController()));
   notification_registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_PENDING,
       content::Source<NavigationController>(&tab_->GetController()));
+  notification_registrar_.Add(
+      this, content::NOTIFICATION_DOM_OPERATION_RESPONSE,
+      content::Source<RenderViewHost>(render_view_host_));
 }
 
 void InterstitialPage::Hide() {
@@ -300,6 +305,13 @@ void InterstitialPage::Observe(int type,
         // the tab was closed before that.
         Hide();
         // WARNING: we are now deleted!
+      }
+      break;
+    case content::NOTIFICATION_DOM_OPERATION_RESPONSE:
+      if (enabled()) {
+        content::Details<DomOperationNotificationDetails> dom_op_details(
+            details);
+        CommandReceived(dom_op_details->json);
       }
       break;
     default:

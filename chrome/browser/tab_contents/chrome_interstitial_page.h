@@ -25,15 +25,6 @@ class ChromeInterstitialPage : public InterstitialPage {
   // Shows the interstitial page in the tab.
   virtual void Show() OVERRIDE;
 
- protected:
-  // content::NotificationObserver method:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
-
-  // Invoked when the page sent a command through DOMAutomation.
-  virtual void CommandReceived(const std::string& command) {}
-
  private:
   DISALLOW_COPY_AND_ASSIGN(ChromeInterstitialPage);
 };

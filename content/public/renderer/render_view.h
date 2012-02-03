@@ -101,7 +101,6 @@ class CONTENT_EXPORT RenderView : public IPC::Message::Sender {
   // Bitwise-ORed set of extra bindings that have been enabled.  See
   // BindingsPolicy for details.
   virtual int GetEnabledBindings() = 0;
-  virtual void SetEnabledBindings(int enabled_bindings) = 0;
 
   // Whether content state (such as form state, scroll position and page
   // contents) should be sent to the browser immediately. This is normally

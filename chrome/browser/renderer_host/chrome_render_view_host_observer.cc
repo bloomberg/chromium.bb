@@ -5,7 +5,6 @@
 #include "chrome/browser/renderer_host/chrome_render_view_host_observer.h"
 
 #include "base/command_line.h"
-#include "chrome/browser/dom_operation_notification_details.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/net/predictor.h"
 #include "chrome/browser/profiles/profile.h"
@@ -59,8 +58,6 @@ bool ChromeRenderViewHostObserver::OnMessageReceived(
     const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(ChromeRenderViewHostObserver, message)
-    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_DomOperationResponse,
-                        OnDomOperationResponse)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_FocusedEditableNodeTouched,
                         OnFocusedEditableNodeTouched)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -162,15 +159,6 @@ void ChromeRenderViewHostObserver::RemoveRenderViewHostForExtensions(
       profile_->GetExtensionProcessManager();
   if (process_manager)
     process_manager->UnregisterRenderViewHost(rvh);
-}
-
-void ChromeRenderViewHostObserver::OnDomOperationResponse(
-    const std::string& json_string, int automation_id) {
-  DomOperationNotificationDetails details(json_string, automation_id);
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_DOM_OPERATION_RESPONSE,
-      content::Source<RenderViewHost>(render_view_host()),
-      content::Details<DomOperationNotificationDetails>(&details));
 }
 
 void ChromeRenderViewHostObserver::OnFocusedEditableNodeTouched() {

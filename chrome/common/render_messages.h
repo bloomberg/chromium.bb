@@ -476,15 +476,6 @@ IPC_MESSAGE_ROUTED3(ChromeViewHostMsg_Thumbnail,
 IPC_MESSAGE_ROUTED1(ChromeViewHostMsg_Snapshot,
                     SkBitmap /* bitmap */)
 
-// Following message is used to communicate the values received by the
-// callback binding the JS to Cpp.
-// An instance of browser that has an automation host listening to it can
-// have a javascript send a native value (string, number, boolean) to the
-// listener in Cpp. (DomAutomationController)
-IPC_MESSAGE_ROUTED2(ChromeViewHostMsg_DomOperationResponse,
-                    std::string  /* json_string */,
-                    int  /* automation_id */)
-
 // A message for an external host.
 IPC_MESSAGE_ROUTED3(ChromeViewHostMsg_ForwardMessageToExternalHost,
                     std::string  /* message */,

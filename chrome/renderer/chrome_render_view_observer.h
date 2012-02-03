@@ -19,7 +19,6 @@
 
 class ChromeRenderProcessObserver;
 class ContentSettingsObserver;
-class DomAutomationController;
 class ExtensionDispatcher;
 class ExternalHostBindings;
 class SkBitmap;
@@ -161,10 +160,6 @@ class ChromeRenderViewObserver : public content::RenderViewObserver,
   // to get a snapshot of a tab using chrome.tabs.captureVisibleTab().
   bool CaptureSnapshot(WebKit::WebView* view, SkBitmap* snapshot);
 
-  // Exposes the DOMAutomationController object that allows JS to send
-  // information to the browser process.
-  void BindDOMAutomationController(WebKit::WebFrame* webframe);
-
   ExternalHostBindings* GetExternalHostBindings();
 
   // This callback is triggered when DownloadFavicon completes, either
@@ -212,10 +207,6 @@ class ChromeRenderViewObserver : public content::RenderViewObserver,
   bool allow_displaying_insecure_content_;
   bool allow_running_insecure_content_;
   std::set<std::string> strict_security_hosts_;
-
-  // Allows JS to access DOM automation. The JS object is only exposed when the
-  // DOM automation bindings are enabled.
-  scoped_ptr<DomAutomationController> dom_automation_controller_;
 
   // External host exposed through automation controller.
   scoped_ptr<ExternalHostBindings> external_host_bindings_;

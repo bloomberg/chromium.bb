@@ -65,6 +65,7 @@ CONTENT_EXPORT extern const char kDisableSpeechInput[];
 extern const char kDisableSpellcheckAPI[];
 CONTENT_EXPORT extern const char kDisableWebAudio[];
 extern const char kDisableWebSockets[];
+CONTENT_EXPORT extern const char kDomAutomationController[];
 extern const char kEnableAccelerated2dCanvas[];
 CONTENT_EXPORT extern const char kEnableAcceleratedPainting[];
 CONTENT_EXPORT extern const char kEnableAcceleratedFilters[];

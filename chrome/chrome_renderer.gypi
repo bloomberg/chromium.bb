@@ -56,8 +56,6 @@
         'renderer/autofill/password_autofill_manager.h',
         'renderer/automation/automation_renderer_helper.cc',
         'renderer/automation/automation_renderer_helper.h',
-        'renderer/automation/dom_automation_controller.cc',
-        'renderer/automation/dom_automation_controller.h',
         'renderer/benchmarking_extension.cc',
         'renderer/benchmarking_extension.h',
         'renderer/extensions/app_bindings.cc',

@@ -364,6 +364,11 @@ enum NotificationType {
   // V8HeapStatsDetails object.
   NOTIFICATION_RENDERER_V8_HEAP_STATS_COMPUTED,
 
+  // Notification from WebContents that we have received a response from the
+  // renderer in response to a dom automation controller action. The source is
+  // the RenderViewHost, and hte details is a DomOperationNotificationDetails.
+  NOTIFICATION_DOM_OPERATION_RESPONSE,
+
   // Child Processes ---------------------------------------------------------
 
   // This notification is sent when a child process host has connected to a

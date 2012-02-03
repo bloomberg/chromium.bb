@@ -10,7 +10,6 @@
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/dom_operation_notification_details.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
@@ -18,6 +17,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
+#include "content/public/browser/dom_operation_notification_details.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
@@ -25,6 +25,7 @@
 #include "net/test/test_server.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 
+using content::DomOperationNotificationDetails;
 using content::NavigationController;
 
 namespace {
@@ -88,7 +89,7 @@ class TestFinishObserver : public content::NotificationObserver {
  public:
   explicit TestFinishObserver(RenderViewHost* render_view_host)
       : finished_(false), waiting_(false) {
-    registrar_.Add(this, chrome::NOTIFICATION_DOM_OPERATION_RESPONSE,
+    registrar_.Add(this, content::NOTIFICATION_DOM_OPERATION_RESPONSE,
                    content::Source<RenderViewHost>(render_view_host));
   }
 
@@ -104,11 +105,11 @@ class TestFinishObserver : public content::NotificationObserver {
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) {
-    DCHECK(type == chrome::NOTIFICATION_DOM_OPERATION_RESPONSE);
+    DCHECK(type == content::NOTIFICATION_DOM_OPERATION_RESPONSE);
     content::Details<DomOperationNotificationDetails> dom_op_details(details);
     // We might receive responses for other script execution, but we only
     // care about the test finished message.
-    if (dom_op_details->json() == "\"FINISHED\"") {
+    if (dom_op_details->json == "\"FINISHED\"") {
       finished_ = true;
       if (waiting_)
         MessageLoopForUI::current()->Quit();

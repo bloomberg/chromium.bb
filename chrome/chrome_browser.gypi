@@ -915,7 +915,6 @@
         'browser/diagnostics/recon_diagnostics.h',
         'browser/diagnostics/sqlite_diagnostics.cc',
         'browser/diagnostics/sqlite_diagnostics.h',
-        'browser/dom_operation_notification_details.h',
         'browser/download/chrome_download_manager_delegate.cc',
         'browser/download/chrome_download_manager_delegate.h',
         'browser/download/download_crx_util.cc',

@@ -100,6 +100,7 @@
                 '<(SHARED_INTERMEDIATE_DIR)/chrome/renderer_resources.rc',
                 '<(SHARED_INTERMEDIATE_DIR)/chrome/theme_resources.rc',
                 '<(SHARED_INTERMEDIATE_DIR)/chrome/theme_resources_standard.rc',
+                '<(SHARED_INTERMEDIATE_DIR)/content/content_resources.rc',
                 '<(SHARED_INTERMEDIATE_DIR)/net/net_resources.rc',
                 '<(SHARED_INTERMEDIATE_DIR)/ui/gfx/gfx_resources.rc',
                 '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_resources.rc',

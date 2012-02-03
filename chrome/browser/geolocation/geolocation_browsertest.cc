@@ -10,7 +10,6 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
-#include "chrome/browser/dom_operation_notification_details.h"
 #include "chrome/browser/geolocation/geolocation_settings_state.h"
 #include "chrome/browser/infobars/infobar.h"
 #include "chrome/browser/infobars/infobar_tab_helper.h"
@@ -25,6 +24,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/browser/renderer_host/render_view_host.h"
+#include "content/public/browser/dom_operation_notification_details.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_details.h"
@@ -33,6 +33,7 @@
 #include "net/base/net_util.h"
 #include "net/test/test_server.h"
 
+using content::DomOperationNotificationDetails;
 using content::NavigationController;
 using content::WebContents;
 
@@ -51,7 +52,7 @@ class IFrameLoader : public content::NotificationObserver {
         &browser->GetSelectedWebContents()->GetController();
     registrar_.Add(this, content::NOTIFICATION_LOAD_STOP,
                    content::Source<NavigationController>(controller));
-    registrar_.Add(this, chrome::NOTIFICATION_DOM_OPERATION_RESPONSE,
+    registrar_.Add(this, content::NOTIFICATION_DOM_OPERATION_RESPONSE,
                    content::NotificationService::AllSources());
     std::string script = base::StringPrintf(
         "window.domAutomationController.setAutomationId(0);"
@@ -81,9 +82,9 @@ class IFrameLoader : public content::NotificationObserver {
                        const content::NotificationDetails& details) {
     if (type == content::NOTIFICATION_LOAD_STOP) {
       navigation_completed_ = true;
-    } else if (type == chrome::NOTIFICATION_DOM_OPERATION_RESPONSE) {
+    } else if (type == content::NOTIFICATION_DOM_OPERATION_RESPONSE) {
       content::Details<DomOperationNotificationDetails> dom_op_details(details);
-      javascript_response_ = dom_op_details->json();
+      javascript_response_ = dom_op_details->json;
       javascript_completed_ = true;
     }
     if (javascript_completed_ && navigation_completed_)
@@ -117,7 +118,7 @@ class GeolocationNotificationObserver : public content::NotificationObserver {
       infobar_(NULL),
       navigation_started_(false),
       navigation_completed_(false) {
-    registrar_.Add(this, chrome::NOTIFICATION_DOM_OPERATION_RESPONSE,
+    registrar_.Add(this, content::NOTIFICATION_DOM_OPERATION_RESPONSE,
                    content::NotificationService::AllSources());
     if (wait_for_infobar) {
       registrar_.Add(this, chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_ADDED,
@@ -159,9 +160,9 @@ class GeolocationNotificationObserver : public content::NotificationObserver {
       infobar_ = content::Details<InfoBarAddedDetails>(details).ptr();
       ASSERT_TRUE(infobar_->GetIcon());
       ASSERT_TRUE(infobar_->AsConfirmInfoBarDelegate());
-    } else if (type == chrome::NOTIFICATION_DOM_OPERATION_RESPONSE) {
+    } else if (type == content::NOTIFICATION_DOM_OPERATION_RESPONSE) {
       content::Details<DomOperationNotificationDetails> dom_op_details(details);
-      javascript_response_ = dom_op_details->json();
+      javascript_response_ = dom_op_details->json;
       LOG(WARNING) << "javascript_response " << javascript_response_;
     } else if (type == content::NOTIFICATION_NAV_ENTRY_COMMITTED ||
                type == content::NOTIFICATION_LOAD_START) {

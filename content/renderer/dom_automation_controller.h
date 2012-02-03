@@ -1,9 +1,9 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_RENDERER_AUTOMATION_DOM_AUTOMATION_CONTROLLER_H__
-#define CHROME_RENDERER_AUTOMATION_DOM_AUTOMATION_CONTROLLER_H__
+#ifndef CONTENT_RENDERER_DOM_AUTOMATION_CONTROLLER_H_
+#define CONTENT_RENDERER_DOM_AUTOMATION_CONTROLLER_H_
 #pragma once
 
 #include "ipc/ipc_message.h"
@@ -103,11 +103,11 @@ class DomAutomationController : public CppBoundClass {
   }
 
  private:
-   IPC::Message::Sender* sender_;
+  IPC::Message::Sender* sender_;
 
-   // Refer to the comments at the top of the file for more details.
-   int routing_id_;  // routing id to be used by first channel.
-   int automation_id_;  // routing id to be used by the next channel.
+  // Refer to the comments at the top of the file for more details.
+  int routing_id_;  // routing id to be used by first channel.
+  int automation_id_;  // routing id to be used by the next channel.
 };
 
-#endif  // CHROME_RENDERER_AUTOMATION_DOM_AUTOMATION_CONTROLLER_H__
+#endif  // CONTENT_RENDERER_DOM_AUTOMATION_CONTROLLER_H_

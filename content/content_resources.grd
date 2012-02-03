@@ -1,13 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<!--
-This file contains resources required by each embedder of content.
-
-Currently, the resources are only included on Linux and Mac. If you add
-resources that need to be available on windows as well, you'll need to add
-content_resources.rc file to the respective targets.
--->
-
 <grit latest_public_release="0" current_release="1">
   <outputs>
     <output filename="grit/content_resources.h" type="rc_header">
@@ -19,6 +11,7 @@ content_resources.rc file to the respective targets.
   <translations />
   <release seq="1">
     <includes>
+      <include name="IDR_DOM_AUTOMATION_JS" file="renderer/dom_automation.js" type="BINDATA" />
       <if expr="is_macosx">
         <include name="IDR_GPU_SANDBOX_PROFILE" file="browser/gpu.sb" type="BINDATA" />
         <include name="IDR_WORKER_SANDBOX_PROFILE" file="browser/worker.sb" type="BINDATA" />

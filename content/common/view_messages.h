@@ -2003,3 +2003,12 @@ IPC_MESSAGE_ROUTED0(ViewHostMsg_LockMouse)
 // whenever the mouse is unlocked (which may or may not be caused by
 // ViewHostMsg_UnlockMouse).
 IPC_MESSAGE_ROUTED0(ViewHostMsg_UnlockMouse)
+
+// Following message is used to communicate the values received by the
+// callback binding the JS to Cpp.
+// An instance of browser that has an automation host listening to it can
+// have a javascript send a native value (string, number, boolean) to the
+// listener in Cpp. (DomAutomationController)
+IPC_MESSAGE_ROUTED2(ViewHostMsg_DomOperationResponse,
+                    std::string  /* json_string */,
+                    int  /* automation_id */)

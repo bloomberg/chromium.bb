@@ -636,7 +636,6 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
       switches::kAppsGalleryURL,
       switches::kCloudPrintServiceURL,
       switches::kDebugPrint,
-      switches::kDomAutomationController,
       switches::kDumpHistogramsOnExit,
       switches::kEnableBenchmarking,
       switches::kEnableCrxlessWebApps,

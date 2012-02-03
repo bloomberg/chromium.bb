@@ -317,18 +317,6 @@ void ChromeContentClient::AddNPAPIPlugins(
     webkit::npapi::PluginList* plugin_list) {
 }
 
-bool ChromeContentClient::CanSendWhileSwappedOut(const IPC::Message* msg) {
-  // Any Chrome-specific messages that must be allowed to be sent from swapped
-  // out renderers.
-  switch (msg->type()) {
-    case ChromeViewHostMsg_DomOperationResponse::ID:
-      return true;
-    default:
-      break;
-  }
-  return false;
-}
-
 bool ChromeContentClient::CanHandleWhileSwappedOut(
     const IPC::Message& msg) {
   // Any Chrome-specific messages (apart from those listed in

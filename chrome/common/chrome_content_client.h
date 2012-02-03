@@ -23,7 +23,6 @@ class ChromeContentClient : public content::ContentClient {
       std::vector<content::PepperPluginInfo>* plugins) OVERRIDE;
   virtual void AddNPAPIPlugins(
       webkit::npapi::PluginList* plugin_list) OVERRIDE;
-  virtual bool CanSendWhileSwappedOut(const IPC::Message* msg) OVERRIDE;
   virtual bool CanHandleWhileSwappedOut(const IPC::Message& msg) OVERRIDE;
   virtual std::string GetUserAgent(bool* overriding) const OVERRIDE;
   virtual string16 GetLocalizedString(int message_id) const OVERRIDE;

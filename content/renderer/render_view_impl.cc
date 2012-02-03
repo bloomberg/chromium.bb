@@ -50,6 +50,7 @@
 #include "content/public/renderer/render_view_visitor.h"
 #include "content/renderer/device_orientation_dispatcher.h"
 #include "content/renderer/devtools_agent.h"
+#include "content/renderer/dom_automation_controller.h"
 #include "content/renderer/external_popup_menu.h"
 #include "content/renderer/geolocation_dispatcher.h"
 #include "content/renderer/gpu/webgraphicscontext3d_command_buffer_impl.h"
@@ -495,6 +496,10 @@ RenderViewImpl::RenderViewImpl(
   mouse_lock_dispatcher_ = new MouseLockDispatcher(this);
 
   new IdleUserDetector(this);
+
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  if (command_line.HasSwitch(switches::kDomAutomationController))
+    enabled_bindings_ |= content::BINDINGS_POLICY_DOM_AUTOMATION;
 
   content::GetContentClient()->renderer()->RenderViewCreated(this);
 }
@@ -2746,6 +2751,16 @@ void RenderViewImpl::didClearWindowObject(WebFrame* frame) {
       frame_url.SchemeIs(chrome::kDataScheme))) {
     GetWebUIBindings()->BindToJavascript(frame, "chrome");
   }
+
+  if (enabled_bindings_ & content::BINDINGS_POLICY_DOM_AUTOMATION) {
+    if (!dom_automation_controller_.get())
+      dom_automation_controller_.reset(new DomAutomationController());
+    dom_automation_controller_->set_message_sender(
+        static_cast<content::RenderView*>(this));
+    dom_automation_controller_->set_routing_id(routing_id());
+    dom_automation_controller_->BindToJavascript(frame,
+                                                 "domAutomationController");
+  }
 }
 
 void RenderViewImpl::didCreateDocumentElement(WebFrame* frame) {
@@ -3395,10 +3410,6 @@ bool RenderViewImpl::ShouldDisplayScrollbars(int width, int height) const {
 
 int RenderViewImpl::GetEnabledBindings() {
   return enabled_bindings_;
-}
-
-void RenderViewImpl::SetEnabledBindings(int enabled_bindings) {
-  enabled_bindings_ = enabled_bindings;
 }
 
 bool RenderViewImpl::GetContentStateImmediately() {

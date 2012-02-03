@@ -35,11 +35,6 @@ void TestContentClient::AddNPAPIPlugins(
     webkit::npapi::PluginList* plugin_list) {
 }
 
-bool TestContentClient::CanSendWhileSwappedOut(const IPC::Message* msg) {
-  // TestContentClient does not need to send any additional messages.
-  return false;
-}
-
 bool TestContentClient::CanHandleWhileSwappedOut(const IPC::Message& msg) {
   // TestContentClient does not need to handle any additional messages.
   return false;

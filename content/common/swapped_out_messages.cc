@@ -23,14 +23,13 @@ bool SwappedOutMessages::CanSendWhileSwappedOut(const IPC::Message* msg) {
     case ViewHostMsg_ShouldClose_ACK::ID:
     case ViewHostMsg_SwapOut_ACK::ID:
     case ViewHostMsg_ClosePage_ACK::ID:
+    case ViewHostMsg_DomOperationResponse::ID:
       return true;
     default:
       break;
   }
 
-  // Check with the embedder as well.
-  ContentClient* client = GetContentClient();
-  return client->CanSendWhileSwappedOut(msg);
+  return false;
 }
 
 bool SwappedOutMessages::CanHandleWhileSwappedOut(

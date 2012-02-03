@@ -35,6 +35,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/browser/dom_operation_notification_details.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
@@ -58,6 +59,7 @@
 using base::TimeDelta;
 using content::BrowserMessageFilter;
 using content::BrowserThread;
+using content::DomOperationNotificationDetails;
 using content::RenderViewHostDelegate;
 using content::SiteInstance;
 using content::UserMetricsAction;
@@ -782,6 +784,8 @@ bool RenderViewHost::OnMessageReceived(const IPC::Message& msg) {
 #endif
     IPC_MESSAGE_HANDLER(ViewHostMsg_RunFileChooser, OnRunFileChooser)
     IPC_MESSAGE_HANDLER(ViewHostMsg_WebUISend, OnWebUISend)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_DomOperationResponse,
+                        OnDomOperationResponse)
     // Have the super handle all other messages.
     IPC_MESSAGE_UNHANDLED(handled = RenderWidgetHost::OnMessageReceived(msg))
   IPC_END_MESSAGE_MAP_EX()
@@ -1557,6 +1561,15 @@ void RenderViewHost::OnWebUISend(const GURL& source_url,
                                  const std::string& name,
                                  const base::ListValue& args) {
   delegate_->WebUISend(this, source_url, name, args);
+}
+
+void RenderViewHost::OnDomOperationResponse(
+    const std::string& json_string, int automation_id) {
+  DomOperationNotificationDetails details(json_string, automation_id);
+  content::NotificationService::current()->Notify(
+      content::NOTIFICATION_DOM_OPERATION_RESPONSE,
+      content::Source<RenderViewHost>(this),
+      content::Details<DomOperationNotificationDetails>(&details));
 }
 
 void RenderViewHost::ClearPowerSaveBlockers() {

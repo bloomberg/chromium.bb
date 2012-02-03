@@ -69,14 +69,14 @@ class AutomationTabHelperBrowserTest : public InProcessBrowserTest {
       MockTabEventObserver* mock_tab_observer,
       MockNotificationObserver* mock_notification_observer) {
     mock_notification_observer->Register(
-        chrome::NOTIFICATION_DOM_OPERATION_RESPONSE,
+        content::NOTIFICATION_DOM_OPERATION_RESPONSE,
         content::NotificationService::AllSources());
 
     testing::InSequence expect_in_sequence;
     EXPECT_CALL(*mock_tab_observer, OnFirstPendingLoad(_));
     EXPECT_CALL(*mock_notification_observer, Observe(
         testing::Eq(
-            static_cast<int>(chrome::NOTIFICATION_DOM_OPERATION_RESPONSE)),
+            static_cast<int>(content::NOTIFICATION_DOM_OPERATION_RESPONSE)),
             _, _));
     EXPECT_CALL(*mock_tab_observer, OnNoMorePendingLoads(_))
         .WillOnce(testing::InvokeWithoutArgs(
@@ -185,7 +185,7 @@ IN_PROC_BROWSER_TEST_F(AutomationTabHelperBrowserTest,
                        LoadStopComesAfterOnLoad) {
   MockNotificationObserver mock_notification_observer;
   mock_notification_observer.Register(
-      chrome::NOTIFICATION_DOM_OPERATION_RESPONSE,
+      content::NOTIFICATION_DOM_OPERATION_RESPONSE,
       content::NotificationService::AllSources());
   MockTabEventObserver mock_tab_observer(tab_helper());
 
@@ -194,7 +194,7 @@ IN_PROC_BROWSER_TEST_F(AutomationTabHelperBrowserTest,
     testing::InSequence expect_in_sequence;
     EXPECT_CALL(mock_notification_observer, Observe(
         testing::Eq(
-            static_cast<int>(chrome::NOTIFICATION_DOM_OPERATION_RESPONSE)),
+            static_cast<int>(content::NOTIFICATION_DOM_OPERATION_RESPONSE)),
             _, _));
     EXPECT_CALL(mock_tab_observer, OnNoMorePendingLoads(_));
   }

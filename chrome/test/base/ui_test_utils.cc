@@ -26,7 +26,6 @@
 #include "chrome/browser/automation/ui_controls.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/dom_operation_notification_details.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_test_util.h"
@@ -44,6 +43,7 @@
 #include "chrome/test/automation/javascript_execution_controller.h"
 #include "chrome/test/base/bookmark_load_observer.h"
 #include "content/browser/renderer_host/render_view_host.h"
+#include "content/public/browser/dom_operation_notification_details.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/navigation_controller.h"
@@ -69,6 +69,7 @@
 #include "ui/aura/root_window.h"
 #endif
 
+using content::DomOperationNotificationDetails;
 using content::NavigationController;
 using content::NavigationEntry;
 using content::OpenURLParams;
@@ -88,7 +89,7 @@ class DOMOperationObserver : public content::NotificationObserver,
       : content::WebContentsObserver(
             render_view_host->delegate()->GetAsWebContents()),
         did_respond_(false) {
-    registrar_.Add(this, chrome::NOTIFICATION_DOM_OPERATION_RESPONSE,
+    registrar_.Add(this, content::NOTIFICATION_DOM_OPERATION_RESPONSE,
                    content::Source<RenderViewHost>(render_view_host));
     ui_test_utils::RunMessageLoop();
   }
@@ -96,9 +97,9 @@ class DOMOperationObserver : public content::NotificationObserver,
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE {
-    DCHECK(type == chrome::NOTIFICATION_DOM_OPERATION_RESPONSE);
+    DCHECK(type == content::NOTIFICATION_DOM_OPERATION_RESPONSE);
     content::Details<DomOperationNotificationDetails> dom_op_details(details);
-    response_ = dom_op_details->json();
+    response_ = dom_op_details->json;
     did_respond_ = true;
     MessageLoopForUI::current()->Quit();
   }
@@ -998,7 +999,7 @@ void TitleWatcher::Observe(int type,
 }
 
 DOMMessageQueue::DOMMessageQueue() {
-  registrar_.Add(this, chrome::NOTIFICATION_DOM_OPERATION_RESPONSE,
+  registrar_.Add(this, content::NOTIFICATION_DOM_OPERATION_RESPONSE,
                  content::NotificationService::AllSources());
 }
 
@@ -1009,7 +1010,7 @@ void DOMMessageQueue::Observe(int type,
                               const content::NotificationDetails& details) {
   content::Details<DomOperationNotificationDetails> dom_op_details(details);
   content::Source<RenderViewHost> sender(source);
-  message_queue_.push(dom_op_details->json());
+  message_queue_.push(dom_op_details->json);
   if (waiting_for_message_) {
     waiting_for_message_ = false;
     MessageLoopForUI::current()->Quit();

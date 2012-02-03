@@ -29,7 +29,6 @@
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
-#include "chrome/browser/dom_operation_notification_details.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
@@ -76,6 +75,7 @@
 #include "chrome/common/content_settings_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "content/browser/renderer_host/render_view_host.h"
+#include "content/public/browser/dom_operation_notification_details.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
@@ -87,6 +87,7 @@
 #include "ui/gfx/rect.h"
 
 using content::BrowserThread;
+using content::DomOperationNotificationDetails;
 using content::DownloadItem;
 using content::DownloadManager;
 using content::NavigationController;
@@ -1206,7 +1207,7 @@ void FindInPageNotificationObserver::Observe(
 const int FindInPageNotificationObserver::kFindInPageRequestId = -1;
 
 DomOperationObserver::DomOperationObserver() {
-  registrar_.Add(this, chrome::NOTIFICATION_DOM_OPERATION_RESPONSE,
+  registrar_.Add(this, content::NOTIFICATION_DOM_OPERATION_RESPONSE,
                  content::NotificationService::AllSources());
   registrar_.Add(this, chrome::NOTIFICATION_APP_MODAL_DIALOG_SHOWN,
                  content::NotificationService::AllSources());
@@ -1219,9 +1220,9 @@ DomOperationObserver::~DomOperationObserver() {}
 void DomOperationObserver::Observe(
     int type, const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  if (type == chrome::NOTIFICATION_DOM_OPERATION_RESPONSE) {
+  if (type == content::NOTIFICATION_DOM_OPERATION_RESPONSE) {
     content::Details<DomOperationNotificationDetails> dom_op_details(details);
-    OnDomOperationCompleted(dom_op_details->json());
+    OnDomOperationCompleted(dom_op_details->json);
   } else if (type == chrome::NOTIFICATION_APP_MODAL_DIALOG_SHOWN) {
     OnModalDialogShown();
   } else if (type == chrome::NOTIFICATION_WEB_CONTENT_SETTINGS_CHANGED) {

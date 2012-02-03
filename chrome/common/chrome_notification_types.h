@@ -137,10 +137,6 @@ enum NotificationType {
 
   // Stuff inside the tabs ---------------------------------------------------
 
-  // Notification from TabContents that we have received a response from the
-  // renderer in response to a dom automation controller action.
-  NOTIFICATION_DOM_OPERATION_RESPONSE,
-
   // Sent when the bookmark bubble hides. The source is the profile, the
   // details unused.
   NOTIFICATION_BOOKMARK_BUBBLE_HIDDEN,

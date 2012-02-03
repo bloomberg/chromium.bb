@@ -80,6 +80,9 @@ class CONTENT_EXPORT InterstitialPage : public content::NotificationObserver,
   // Sub-classes should return the HTML that should be displayed in the page.
   virtual std::string GetHTMLContents();
 
+  // Invoked when the page sent a command through DOMAutomation.
+  virtual void CommandReceived(const std::string& command) {}
+
   // Reverts to the page showing before the interstitial.
   // Sub-classes should call this method when the user has chosen NOT to proceed
   // to the target URL.

@@ -50,6 +50,8 @@
     'renderer/devtools_agent_filter.h',
     'renderer/devtools_client.cc',
     'renderer/devtools_client.h',
+    'renderer/dom_automation_controller.cc',
+    'renderer/dom_automation_controller.h',
     'renderer/external_popup_menu.cc',
     'renderer/external_popup_menu.h',
     'renderer/gamepad_shared_memory_reader.cc',

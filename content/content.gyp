@@ -106,6 +106,7 @@
         ],
        'dependencies': [
           'content_common',
+          'content_resources.gyp:content_resources',
         ],
       },
       {'target_name': 'content_utility',

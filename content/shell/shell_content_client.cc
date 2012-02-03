@@ -27,10 +27,6 @@ void ShellContentClient::AddNPAPIPlugins(
     webkit::npapi::PluginList* plugin_list) {
 }
 
-bool ShellContentClient::CanSendWhileSwappedOut(const IPC::Message* msg) {
-  return false;
-}
-
 bool ShellContentClient::CanHandleWhileSwappedOut(const IPC::Message& msg) {
   return false;
 }

@@ -596,9 +596,10 @@ class CONTENT_EXPORT RenderViewHost : public RenderWidgetHost {
       const content::ShowDesktopNotificationHostMsgParams& params);
   void OnCancelDesktopNotification(int notification_id);
   void OnRunFileChooser(const content::FileChooserParams& params);
-
   void OnWebUISend(const GURL& source_url, const std::string& name,
                    const base::ListValue& args);
+  void OnDomOperationResponse(const std::string& json_string,
+                              int automation_id);
 
 #if defined(OS_MACOSX)
   void OnMsgShowPopup(const ViewHostMsg_ShowPopup_Params& params);

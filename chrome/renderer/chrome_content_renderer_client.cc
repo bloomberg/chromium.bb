@@ -191,12 +191,6 @@ void ChromeContentRendererClient::RenderThreadStarted() {
     thread->RegisterExtension(search_extension);
 
   if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDomAutomationController)) {
-    thread->RegisterExtension(new ChromeV8Extension(
-        "dom_automation.js", IDR_DOM_AUTOMATION_JS, NULL));
-  }
-
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableBenchmarking))
     thread->RegisterExtension(extensions_v8::BenchmarkingExtension::Get());
 

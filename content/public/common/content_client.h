@@ -94,10 +94,6 @@ class CONTENT_EXPORT ContentClient {
   virtual void AddNPAPIPlugins(
       webkit::npapi::PluginList* plugin_list) = 0;
 
-  // Returns whether the given message should be allowed to be sent from a
-  // swapped out renderer.
-  virtual bool CanSendWhileSwappedOut(const IPC::Message* msg) = 0;
-
   // Returns whether the given message should be processed in the browser on
   // behalf of a swapped out renderer.
   virtual bool CanHandleWhileSwappedOut(const IPC::Message& msg) = 0;

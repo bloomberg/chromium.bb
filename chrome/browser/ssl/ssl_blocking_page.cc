@@ -9,7 +9,6 @@
 #include "base/string_piece.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/dom_operation_notification_details.h"
 #include "chrome/browser/ssl/ssl_error_info.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/common/jstemplate_builder.h"

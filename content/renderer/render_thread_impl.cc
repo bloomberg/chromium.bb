@@ -52,6 +52,7 @@
 #include "content/renderer/render_process_impl.h"
 #include "content/renderer/render_view_impl.h"
 #include "content/renderer/renderer_webkitplatformsupport_impl.h"
+#include "grit/content_resources.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_platform_file.h"
 #include "net/base/net_errors.h"
@@ -473,6 +474,14 @@ void RenderThreadImpl::EnsureWebKitInitialized() {
       command_line.HasSwitch(switches::kRecordMode) ||
       command_line.HasSwitch(switches::kNoJsRandomness)) {
     RegisterExtension(extensions_v8::PlaybackExtension::Get());
+  }
+
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDomAutomationController)) {
+    base::StringPiece extension = content::GetContentClient()->GetDataResource(
+        IDR_DOM_AUTOMATION_JS);
+    RegisterExtension(new v8::Extension(
+        "dom_automation.js", extension.data(), 0, NULL, extension.size()));
   }
 
   web_database_observer_impl_.reset(new WebDatabaseObserverImpl(Get()));

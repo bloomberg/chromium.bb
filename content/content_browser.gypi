@@ -50,6 +50,7 @@
     'public/browser/devtools_http_handler.h',
     'public/browser/devtools_http_handler_delegate.h',
     'public/browser/devtools_manager.h',
+    'public/browser/dom_operation_notification_details.h',
     'public/browser/download_item.h',
     'public/browser/download_manager.h',
     'public/browser/download_manager_delegate.cc',

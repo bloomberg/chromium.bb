@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/renderer/automation/dom_automation_controller.h"
+#include "content/renderer/dom_automation_controller.h"
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/json/json_value_serializer.h"
 #include "base/string_util.h"
-#include "chrome/common/render_messages.h"
+#include "content/common/view_messages.h"
 
 DomAutomationController::DomAutomationController()
     : sender_(NULL),
@@ -84,9 +84,7 @@ void DomAutomationController::Send(const CppArgumentList& args,
   }
 
   bool succeeded = sender_->Send(
-      new ChromeViewHostMsg_DomOperationResponse(routing_id_,
-                                                 json,
-                                                 automation_id_));
+      new ViewHostMsg_DomOperationResponse(routing_id_, json, automation_id_));
   result->Set(succeeded);
 
   automation_id_ = MSG_ROUTING_NONE;
@@ -118,9 +116,7 @@ void DomAutomationController::SendJSON(const CppArgumentList& args,
 
   std::string json = args[0].ToString();
   result->Set(sender_->Send(
-      new ChromeViewHostMsg_DomOperationResponse(routing_id_,
-                                                 json,
-                                                 automation_id_)));
+      new ViewHostMsg_DomOperationResponse(routing_id_, json, automation_id_)));
 
   automation_id_ = MSG_ROUTING_NONE;
 }

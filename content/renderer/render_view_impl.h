@@ -60,6 +60,7 @@
 
 class DeviceOrientationDispatcher;
 class DevToolsAgent;
+class DomAutomationController;
 class ExternalPopupMenu;
 class GeolocationDispatcher;
 class GURL;
@@ -588,7 +589,6 @@ class RenderViewImpl : public RenderWidget,
                               bool notify_result) OVERRIDE;
   virtual bool ShouldDisplayScrollbars(int width, int height) const OVERRIDE;
   virtual int GetEnabledBindings() OVERRIDE;
-  virtual void SetEnabledBindings(int enabled_bindings) OVERRIDE;
   virtual bool GetContentStateImmediately() OVERRIDE;
   virtual float GetFilteredTimePerFrame() OVERRIDE;
   virtual void ShowContextMenu(WebKit::WebFrame* frame,
@@ -1249,6 +1249,10 @@ class RenderViewImpl : public RenderWidget,
   // The ID of the focused NPAPI plug-in.
   int focused_plugin_id_;
 #endif
+
+  // Allows JS to access DOM automation. The JS object is only exposed when the
+  // DOM automation bindings are enabled.
+  scoped_ptr<DomAutomationController> dom_automation_controller_;
 
   // NOTE: pepper_delegate_ should be last member because its constructor calls
   // AddObservers method of RenderViewImpl from c-tor.

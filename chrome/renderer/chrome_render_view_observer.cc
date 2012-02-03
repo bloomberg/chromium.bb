@@ -18,7 +18,6 @@
 #include "chrome/common/thumbnail_score.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/renderer/about_handler.h"
-#include "chrome/renderer/automation/dom_automation_controller.h"
 #include "chrome/renderer/chrome_render_process_observer.h"
 #include "chrome/renderer/content_settings_observer.h"
 #include "chrome/renderer/extensions/extension_dispatcher.h"
@@ -232,11 +231,6 @@ ChromeRenderViewObserver::ChromeRenderViewObserver(
       allow_running_insecure_content_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  if (command_line.HasSwitch(switches::kDomAutomationController)) {
-    int old_bindings = render_view->GetEnabledBindings();
-    render_view->SetEnabledBindings(
-        old_bindings |= content::BINDINGS_POLICY_DOM_AUTOMATION);
-  }
   render_view->GetWebView()->setPermissionClient(this);
   if (!command_line.HasSwitch(switches::kDisableClientSidePhishingDetection))
     OnSetClientSidePhishingDetection(true);
@@ -728,11 +722,6 @@ void ChromeRenderViewObserver::DidCommitProvisionalLoad(
 
 void ChromeRenderViewObserver::DidClearWindowObject(WebFrame* frame) {
   if (render_view()->GetEnabledBindings() &
-          content::BINDINGS_POLICY_DOM_AUTOMATION) {
-    BindDOMAutomationController(frame);
-  }
-
-  if (render_view()->GetEnabledBindings() &
           content::BINDINGS_POLICY_EXTERNAL_HOST) {
     GetExternalHostBindings()->BindToJavascript(frame, "externalHost");
   }
@@ -1009,16 +998,6 @@ bool ChromeRenderViewObserver::CaptureSnapshot(WebView* view,
   HISTOGRAM_TIMES("Renderer4.Snapshot",
                   base::TimeTicks::Now() - beginning_time);
   return true;
-}
-
-void ChromeRenderViewObserver::BindDOMAutomationController(WebFrame* frame) {
-  if (!dom_automation_controller_.get()) {
-    dom_automation_controller_.reset(new DomAutomationController());
-  }
-  dom_automation_controller_->set_message_sender(this);
-  dom_automation_controller_->set_routing_id(routing_id());
-  dom_automation_controller_->BindToJavascript(frame,
-                                               "domAutomationController");
 }
 
 ExternalHostBindings* ChromeRenderViewObserver::GetExternalHostBindings() {
