@@ -6,7 +6,6 @@
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/common/chrome_switches.h"
 
-// TODO(pfeldman): uncomment after the WebKit roll.
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DISABLED_Debugger) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, Debugger) {
   ASSERT_TRUE(RunExtensionTest("debugger")) << message_;
 }
