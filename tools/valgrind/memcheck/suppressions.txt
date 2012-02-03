@@ -4481,7 +4481,7 @@
    fun:_Znw*
    fun:_ZN2v88internal2OS15CreateSemaphoreEi
    fun:_ZN2v88internal8ProfilerC1EPNS0_7IsolateE
-   fun:_ZN2v88internal6Logger5SetupEv
+   fun:_ZN2v88internal6Logger5SetUpEv
    fun:_ZN2v88internal7Isolate4InitEPNS0_12DeserializerE
    ...
    fun:_ZN7WebCore27WorkerContextExecutionProxy8evaluateERKN3WTF6StringES4_RKNS1_12TextPositionEPNS_27WorkerContextExecutionStateE
@@ -5705,6 +5705,71 @@
    fun:_ZN7WebCore18HRTFDatabaseLoader4loadEv
    fun:_ZN7WebCoreL19databaseLoaderEntryEPv
    fun:_ZN3WTFL16threadEntryPointEPv
+}
+{
+   bug_112594_a
+   Memcheck:Leak
+   ...
+   fun:NPP_New
+   fun:_ZN6webkit5npapi14PluginInstance7NPP_NewEtsPPcS3_
+   fun:_ZN6webkit5npapi14PluginInstance5StartERK4GURLPPcS6_ib
+   fun:_ZN6webkit5npapi21WebPluginDelegateImpl10InitializeERK4GURLRKSt6vectorISsSaISsEES9_PNS0_9WebPluginEb
+   fun:_ZN6webkit5npapi13WebPluginImpl10initializeEPN6WebKit18WebPluginContainerE
+   fun:_ZN6WebKit21FrameLoaderClientImpl12createPluginERKN7WebCore7IntSizeEPNS1_17HTMLPlugInElementERKNS1_4KURLERKN3WTF6VectorINSA_6StringELm0EEESF_RKSC_b
+   fun:_ZN7WebCore14SubframeLoader10loadPluginEPNS_22HTMLPlugInImageElementERKNS_4KURLERKN3WTF6StringERKNS6_6VectorIS7_Lm0EEESD_b
+   fun:_ZN7WebCore14SubframeLoader13requestPluginEPNS_22HTMLPlugInImageElementERKNS_4KURLERKN3WTF6StringERKNS6_6VectorIS7_Lm0EEESD_b
+   fun:_ZN7WebCore14SubframeLoader13requestObjectEPNS_22HTMLPlugInImageElementERKN3WTF6StringERKNS3_12AtomicStringES6_RKNS3_6VectorIS4_Lm0EEESD_
+}
+{
+   bug_112594_b
+   Memcheck:Unaddressable
+   fun:_ZN6webkit5npapi13WebPluginImpl24HandleURLRequestInternalEPKcS3_S3_S3_jibNS1_8ReferrerEbb
+   fun:_ZN6webkit5npapi13WebPluginImpl16HandleURLRequestEPKcS3_S3_S3_jibb
+   fun:_ZN6webkit5npapi14PluginInstance10RequestURLEPKcS3_S3_S3_jbPv
+   fun:GetURLNotify
+   fun:NPN_GetURLNotify
+   fun:_ZN10PluginTest16NPN_GetURLNotifyEPKcS1_Pv
+   fun:_ZN34GetURLNotifyWithURLThatFailsToLoad7NPP_NewEPctsPS0_S1_P12_NPSavedData
+   fun:NPP_New
+   fun:_ZN6webkit5npapi14PluginInstance7NPP_NewEtsPPcS3_
+   fun:_ZN6webkit5npapi14PluginInstance5StartERK4GURLPPcS6_ib
+   fun:_ZN6webkit5npapi21WebPluginDelegateImpl10InitializeERK4GURLRKSt6vectorISsSaISsEES9_PNS0_9WebPluginEb
+   fun:_ZN6webkit5npapi13WebPluginImpl10initializeEPN6WebKit18WebPluginContainerE
+   fun:_ZN6WebKit21FrameLoaderClientImpl12createPluginERKN7WebCore7IntSizeEPNS1_17HTMLPlugInElementERKNS1_4KURLERKN3WTF6VectorINSA_6StringELm0EEESF_RKSC_b
+   fun:_ZN7WebCore14SubframeLoader10loadPluginEPNS_22HTMLPlugInImageElementERKNS_4KURLERKN3WTF6StringERKNS6_6VectorIS7_Lm0EEESD_b
+   fun:_ZN7WebCore14SubframeLoader13requestPluginEPNS_22HTMLPlugInImageElementERKNS_4KURLERKN3WTF6StringERKNS6_6VectorIS7_Lm0EEESD_b
+   fun:_ZN7WebCore14SubframeLoader13requestObjectEPNS_22HTMLPlugInImageElementERKN3WTF6StringERKNS3_12AtomicStringES6_RKNS3_6VectorIS4_Lm0EEESD_
+}
+{
+   bug_112594_c
+   Memcheck:Unaddressable
+   fun:_ZN27DocumentOpenInDestroyStream17NPP_DestroyStreamEP9_NPStreams
+   fun:NPP_DestroyStream
+   fun:_ZN6webkit5npapi14PluginInstance17NPP_DestroyStreamEP9_NPStreams
+   fun:_ZN6webkit5npapi12PluginStream5CloseEs
+   fun:_ZN6webkit5npapi15PluginStreamUrl5CloseEs
+   fun:_ZN6webkit5npapi15PluginStreamUrl16DidFinishLoadingEv
+   fun:_ZN6webkit5npapi13WebPluginImpl16didFinishLoadingEPN6WebKit12WebURLLoaderEd
+}
+{
+   bug_112594_d
+   Memcheck:Leak
+   fun:malloc
+   fun:NPN_MemAlloc
+   fun:_ZL13testEnumerateP8NPObjectPPPvPj
+   fun:_ZN7WebCore26npObjectPropertyEnumeratorERKN2v812AccessorInfoEb
+   ...
+   fun:_ZN2v88internal22GetKeysInFixedArrayForENS0_6HandleINS0_10JSReceiverEEENS0_17KeyCollectionTypeEPb
+   fun:_ZN2v88internal28Runtime_GetPropertyNamesFastENS0_9ArgumentsEPNS0_7IsolateE
+   ...
+   fun:_ZN2v88internalL6InvokeEbNS0_6HandleINS0_10JSFunctionEEENS1_INS0_6ObjectEEEiPS5_Pb
+   fun:_ZN2v88internal9Execution4CallENS0_6HandleINS0_6ObjectEEES4_iPS4_Pbb
+   fun:_ZN2v88Function4CallENS_6HandleINS_6ObjectEEEiPNS1_INS_5ValueEEE
+   fun:_ZN7WebCore7V8Proxy24instrumentedCallFunctionEPNS_4PageEN2v86HandleINS3_8FunctionEEENS4_INS3_6ObjectEEEiPNS4_INS3_5ValueEEE
+   fun:_ZN7WebCore7V8Proxy12callFunctionEN2v86HandleINS1_8FunctionEEENS2_INS1_6ObjectEEEiPNS2_INS1_5ValueEEE
+   fun:_ZN7WebCore19V8LazyEventListener20callListenerFunctionEPNS_22ScriptExecutionContextEN2v86HandleINS3_5ValueEEEPNS_5EventE
+   fun:_ZN7WebCore23V8AbstractEventListener18invokeEventHandlerEPNS_22ScriptExecutionContextEPNS_5EventEN2v86HandleINS5_5ValueEEE
+   fun:_ZN7WebCore23V8AbstractEventListener11handleEventEPNS_22ScriptExecutionContextEPNS_5EventE
 }
 
 #-----------------------------------------------------------------------
