@@ -884,10 +884,9 @@ ExtensionDownloadsEventRouter::~ExtensionDownloadsEventRouter() {
     manager_->RemoveObserver(this);
 }
 
-void ExtensionDownloadsEventRouter::ModelChanged() {
+void ExtensionDownloadsEventRouter::ModelChanged(DownloadManager* manager) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (manager_ == NULL)
-    return;
+  DCHECK(manager_ == manager);
   DownloadManager::DownloadVector current_vec;
   manager_->SearchDownloads(string16(), &current_vec);
   DownloadIdSet current_set;
@@ -929,7 +928,8 @@ void ExtensionDownloadsEventRouter::ModelChanged() {
   downloads_.swap(current_set);
 }
 
-void ExtensionDownloadsEventRouter::ManagerGoingDown() {
+void ExtensionDownloadsEventRouter::ManagerGoingDown(
+    DownloadManager* manager) {
   manager_->RemoveObserver(this);
   manager_ = NULL;
 }

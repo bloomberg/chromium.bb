@@ -137,7 +137,7 @@ class CONTENT_EXPORT SavePackage
   // content::WebContentsObserver implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
-  // DownloadItem::Observer implementation.
+  // content::DownloadItem::Observer implementation.
   virtual void OnDownloadUpdated(content::DownloadItem* download) OVERRIDE;
   virtual void OnDownloadOpened(content::DownloadItem* download) OVERRIDE {}
 

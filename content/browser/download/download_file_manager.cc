@@ -29,6 +29,7 @@
 using content::BrowserThread;
 using content::DownloadFile;
 using content::DownloadId;
+using content::DownloadManager;
 
 namespace {
 
@@ -44,14 +45,14 @@ class DownloadFileFactoryImpl
   virtual content::DownloadFile* CreateFile(
       DownloadCreateInfo* info,
       const DownloadRequestHandle& request_handle,
-      content::DownloadManager* download_manager,
+      DownloadManager* download_manager,
       bool calculate_hash) OVERRIDE;
 };
 
 DownloadFile* DownloadFileFactoryImpl::CreateFile(
     DownloadCreateInfo* info,
     const DownloadRequestHandle& request_handle,
-    content::DownloadManager* download_manager,
+    DownloadManager* download_manager,
     bool calculate_hash) {
   return new DownloadFileImpl(info,
                               new DownloadRequestHandle(request_handle),
@@ -86,7 +87,7 @@ void DownloadFileManager::OnShutdown() {
 
 void DownloadFileManager::CreateDownloadFile(
     DownloadCreateInfo* info, const DownloadRequestHandle& request_handle,
-    content::DownloadManager* download_manager, bool get_hash) {
+    DownloadManager* download_manager, bool get_hash) {
   DCHECK(info);
   VLOG(20) << __FUNCTION__ << "()" << " info = " << info->DebugString();
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
@@ -111,7 +112,7 @@ void DownloadFileManager::CreateDownloadFile(
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&content::DownloadManager::StartDownload, download_manager,
+      base::Bind(&DownloadManager::StartDownload, download_manager,
                  info->download_id.local()));
 }
 
@@ -141,10 +142,10 @@ void DownloadFileManager::UpdateInProgressDownloads() {
        i != downloads_.end(); ++i) {
     DownloadId global_id = i->first;
     DownloadFile* download_file = i->second;
-    content::DownloadManager* manager = download_file->GetDownloadManager();
+    DownloadManager* manager = download_file->GetDownloadManager();
     if (manager) {
       BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-          base::Bind(&content::DownloadManager::UpdateDownload,
+          base::Bind(&DownloadManager::UpdateDownload,
                      manager,
                      global_id.local(),
                      download_file->BytesSoFar(),
@@ -159,7 +160,7 @@ void DownloadFileManager::StartDownload(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(info);
 
-  content::DownloadManager* manager = request_handle.GetDownloadManager();
+  DownloadManager* manager = request_handle.GetDownloadManager();
   if (!manager) {
     request_handle.CancelRequest();
     delete info;
@@ -197,7 +198,7 @@ void DownloadFileManager::UpdateDownload(
           download_file->AppendDataToFile(data->data(), data_len);
       if (write_result != net::OK) {
         // Write failed: interrupt the download.
-        content::DownloadManager* download_manager =
+        DownloadManager* download_manager =
             download_file->GetDownloadManager();
         had_error = true;
 
@@ -213,7 +214,7 @@ void DownloadFileManager::UpdateDownload(
         if (download_manager) {
           BrowserThread::PostTask(
               BrowserThread::UI, FROM_HERE,
-              base::Bind(&content::DownloadManager::OnDownloadInterrupted,
+              base::Bind(&DownloadManager::OnDownloadInterrupted,
                          download_manager,
                          global_id.local(),
                          bytes_downloaded,
@@ -242,8 +243,7 @@ void DownloadFileManager::OnResponseCompleted(
 
   download_file->Finish();
 
-  content::DownloadManager* download_manager =
-      download_file->GetDownloadManager();
+  DownloadManager* download_manager = download_file->GetDownloadManager();
   if (!download_manager) {
     CancelDownload(global_id);
     return;
@@ -258,13 +258,13 @@ void DownloadFileManager::OnResponseCompleted(
 
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        base::Bind(&content::DownloadManager::OnResponseCompleted,
+        base::Bind(&DownloadManager::OnResponseCompleted,
                    download_manager, global_id.local(),
                    download_file->BytesSoFar(), hash));
   } else {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        base::Bind(&content::DownloadManager::OnDownloadInterrupted,
+        base::Bind(&DownloadManager::OnDownloadInterrupted,
                    download_manager,
                    global_id.local(),
                    download_file->BytesSoFar(),
@@ -310,8 +310,7 @@ void DownloadFileManager::CompleteDownload(DownloadId global_id) {
   EraseDownload(global_id);
 }
 
-void DownloadFileManager::OnDownloadManagerShutdown(
-    content::DownloadManager* manager) {
+void DownloadFileManager::OnDownloadManagerShutdown(DownloadManager* manager) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   DCHECK(manager);
 
@@ -383,8 +382,7 @@ void DownloadFileManager::RenameCompletingDownloadFile(
     return;
 
   DCHECK(download_file->GetDownloadManager());
-  content::DownloadManager* download_manager =
-      download_file->GetDownloadManager();
+  DownloadManager* download_manager = download_file->GetDownloadManager();
 
   VLOG(20) << __FUNCTION__ << "()"
            << " download_file = " << download_file->DebugString();
@@ -424,7 +422,7 @@ void DownloadFileManager::RenameCompletingDownloadFile(
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&content::DownloadManager::OnDownloadRenamedToFinalName,
+      base::Bind(&DownloadManager::OnDownloadRenamedToFinalName,
                  download_manager, global_id.local(), new_path, uniquifier));
 }
 
@@ -438,8 +436,7 @@ void DownloadFileManager::CancelDownloadOnRename(
   if (!download_file)
     return;
 
-  content::DownloadManager* download_manager =
-      download_file->GetDownloadManager();
+  DownloadManager* download_manager = download_file->GetDownloadManager();
   if (!download_manager) {
     // Without a download manager, we can't cancel the request normally, so we
     // need to do it here.  The normal path will also update the download
@@ -450,7 +447,7 @@ void DownloadFileManager::CancelDownloadOnRename(
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&content::DownloadManager::OnDownloadInterrupted,
+      base::Bind(&DownloadManager::OnDownloadInterrupted,
                  download_manager,
                  global_id.local(),
                  download_file->BytesSoFar(),

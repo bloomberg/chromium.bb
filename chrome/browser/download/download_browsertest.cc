@@ -254,7 +254,7 @@ static DownloadManager* DownloadManagerForBrowser(Browser* browser) {
 
 // While an object of this class exists, it will mock out download
 // opening for all downloads created on the specified download manager.
-class MockDownloadOpeningObserver : public content::DownloadManager::Observer {
+class MockDownloadOpeningObserver : public DownloadManager::Observer {
  public:
   explicit MockDownloadOpeningObserver(DownloadManager* manager)
       : download_manager_(manager) {
@@ -266,7 +266,8 @@ class MockDownloadOpeningObserver : public content::DownloadManager::Observer {
   }
 
   // DownloadManager::Observer
-  virtual void ModelChanged() {
+  virtual void ModelChanged(DownloadManager* manager) OVERRIDE {
+    DCHECK_EQ(manager, download_manager_);
     std::vector<DownloadItem*> downloads;
     download_manager_->SearchDownloads(string16(), &downloads);
 

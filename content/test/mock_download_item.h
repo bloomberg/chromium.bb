@@ -15,6 +15,8 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace content {
+
 class MockDownloadItem : public content::DownloadItem {
  public:
   MockDownloadItem();
@@ -114,4 +116,7 @@ class MockDownloadItem : public content::DownloadItem {
   MOCK_METHOD1(GetExternalData, ExternalData*(const void*));
   MOCK_METHOD2(SetExternalData, void(const void*, ExternalData*));
 };
+
+}  // namespace content
+
 #endif  // CONTENT_TEST_MOCK_DOWNLOAD_ITEM_H_

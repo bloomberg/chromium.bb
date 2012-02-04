@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -82,7 +82,7 @@ bool DownloadTestObserver::IsFinished() const {
   return (finish_on_select_file_ && select_file_dialog_seen_);
 }
 
-void DownloadTestObserver::OnDownloadUpdated(content::DownloadItem* download) {
+void DownloadTestObserver::OnDownloadUpdated(DownloadItem* download) {
   // The REMOVING state indicates that the download is being destroyed.
   // Stop observing.  Do not do anything with it, as it is about to be gone.
   if (download->GetState() == DownloadItem::REMOVING) {
@@ -134,7 +134,9 @@ void DownloadTestObserver::OnDownloadUpdated(content::DownloadItem* download) {
   }
 }
 
-void DownloadTestObserver::ModelChanged() {
+void DownloadTestObserver::ModelChanged(DownloadManager* manager) {
+  DCHECK_EQ(manager, download_manager_);
+
   // Regenerate DownloadItem observers.  If there are any download items
   // in our final state, note them in |finished_downloads_|
   // (done by |OnDownloadUpdated()|).
@@ -169,7 +171,9 @@ void DownloadTestObserver::ModelChanged() {
   }
 }
 
-void DownloadTestObserver::SelectFileDialogDisplayed(int32 /* id */) {
+void DownloadTestObserver::SelectFileDialogDisplayed(
+    DownloadManager* manager, int32 /* id */) {
+  DCHECK_EQ(manager, download_manager_);
   select_file_dialog_seen_ = true;
   SignalIfFinished();
 }
@@ -206,13 +210,12 @@ void DownloadTestFlushObserver::WaitForFlush() {
   ui_test_utils::RunMessageLoop();
 }
 
-void DownloadTestFlushObserver::ModelChanged() {
+void DownloadTestFlushObserver::ModelChanged(DownloadManager* manager) {
   // Model has changed, so there may be more DownloadItems to observe.
   CheckDownloadsInProgress(true);
 }
 
-void DownloadTestFlushObserver::OnDownloadUpdated(
-    content::DownloadItem* download) {
+void DownloadTestFlushObserver::OnDownloadUpdated(DownloadItem* download) {
   // The REMOVING state indicates that the download is being destroyed.
   // Stop observing.  Do not do anything with it, as it is about to be gone.
   if (download->GetState() == DownloadItem::REMOVING) {

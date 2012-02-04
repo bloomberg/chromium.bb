@@ -2,10 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/download/mock_download_manager.h"
+#include "content/test/mock_download_manager.h"
+
+namespace content {
 
 MockDownloadManager::MockDownloadManager() {
 }
 
 MockDownloadManager::~MockDownloadManager() {
+}
+
 }

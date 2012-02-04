@@ -11,7 +11,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "content/browser/browser_thread_impl.h"
-#include "content/browser/download/mock_download_manager.h"
+#include "content/test/mock_download_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using content::BrowserThread;
@@ -24,13 +24,13 @@ class DownloadIdTest : public testing::Test {
   DownloadIdTest()
       : ui_thread_(BrowserThread::UI, &message_loop_) {
     num_managers_ = ARRAYSIZE_UNSAFE(download_managers_);
-    std::vector<MockDownloadManager*> managers;
+    std::vector<content::MockDownloadManager*> managers;
     managers.resize(num_managers_);
     size_t i;
     // Create the download managers.
     for (i = 0; i < num_managers_; ++i) {
       managers[i] =
-          new MockDownloadManager();
+          new content::MockDownloadManager();
     }
     // Sort by pointer value.
     std::sort(managers.begin(), managers.end());
@@ -151,4 +151,3 @@ TEST_F(DownloadIdTest, HashMap) {
   EXPECT_FALSE(id1 == id2);
   EXPECT_LT(id1, id2);
 }
-

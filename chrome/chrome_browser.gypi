@@ -948,6 +948,8 @@
         'browser/download/download_shelf_context_menu.cc',
         'browser/download/download_shelf_context_menu.h',
         'browser/download/download_started_animation.h',
+        'browser/download/download_status_updater.cc',
+        'browser/download/download_status_updater.h',
         'browser/download/download_throttling_resource_handler.cc',
         'browser/download/download_throttling_resource_handler.h',
         'browser/download/download_util.cc',

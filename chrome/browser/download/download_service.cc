@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/download/chrome_download_manager_delegate.h"
 #include "chrome/browser/download/download_service_factory.h"
+#include "chrome/browser/download/download_status_updater.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "content/public/browser/download_manager.h"
@@ -36,10 +37,14 @@ DownloadManager* DownloadService::GetDownloadManager() {
     // SetDownloadManagerDelegateForTesting.
     if (!manager_delegate_.get())
       manager_delegate_ = new ChromeDownloadManagerDelegate(profile_);
-    manager_ = DownloadManager::Create(
-        manager_delegate_.get(), g_browser_process->download_status_updater());
+    manager_ = DownloadManager::Create(manager_delegate_.get());
     manager_->Init(profile_);
     manager_delegate_->SetDownloadManager(manager_);
+
+    // Include this download manager in the set monitored by the
+    // global status updater.
+    g_browser_process->download_status_updater()->AddManager(manager_);
+
     download_manager_created_ = true;
     for (std::vector<OnManagerCreatedCallback>::iterator cb
          = on_manager_created_callbacks_.begin();

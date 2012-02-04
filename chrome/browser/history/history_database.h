@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -92,7 +92,7 @@ class HistoryDatabase : public DownloadDatabase,
   //
   // We don't delete the downloads table, since there may be in progress
   // downloads. We handle the download history clean up separately in:
-  // DownloadManager::RemoveDownloadsFromHistoryBetween.
+  // content::DownloadManager::RemoveDownloadsFromHistoryBetween.
   //
   // Returns true on success. On failure, the caller should assume that the
   // database is invalid. There could have been an error recreating a table.

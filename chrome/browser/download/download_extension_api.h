@@ -307,8 +307,8 @@ class ExtensionDownloadsEventRouter
   explicit ExtensionDownloadsEventRouter(Profile* profile);
   virtual ~ExtensionDownloadsEventRouter();
 
-  virtual void ModelChanged() OVERRIDE;
-  virtual void ManagerGoingDown() OVERRIDE;
+  virtual void ModelChanged(content::DownloadManager* manager) OVERRIDE;
+  virtual void ManagerGoingDown(content::DownloadManager* manager) OVERRIDE;
 
  private:
   void Init(content::DownloadManager* manager);

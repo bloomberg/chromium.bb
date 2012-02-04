@@ -1592,7 +1592,10 @@ AutomationProviderDownloadModelChangedObserver(
 AutomationProviderDownloadModelChangedObserver::
     ~AutomationProviderDownloadModelChangedObserver() {}
 
-void AutomationProviderDownloadModelChangedObserver::ModelChanged() {
+void AutomationProviderDownloadModelChangedObserver::ModelChanged(
+    DownloadManager* manager) {
+  DCHECK_EQ(manager, download_manager_);
+
   download_manager_->RemoveObserver(this);
 
   if (provider_)
@@ -1625,7 +1628,8 @@ AllDownloadsCompleteObserver::AllDownloadsCompleteObserver(
 
 AllDownloadsCompleteObserver::~AllDownloadsCompleteObserver() {}
 
-void AllDownloadsCompleteObserver::ModelChanged() {
+void AllDownloadsCompleteObserver::ModelChanged(DownloadManager* manager) {
+  DCHECK_EQ(manager, download_manager_);
   // The set of downloads in the download manager has changed.  If there are
   // any new downloads that are still in progress, add them to the pending list.
   std::vector<DownloadItem*> downloads;
@@ -1641,8 +1645,7 @@ void AllDownloadsCompleteObserver::ModelChanged() {
   ReplyIfNecessary();
 }
 
-void AllDownloadsCompleteObserver::OnDownloadUpdated(
-    content::DownloadItem* download) {
+void AllDownloadsCompleteObserver::OnDownloadUpdated(DownloadItem* download) {
   // If the current download's status has changed to a final state (not state
   // "in progress"), remove it from the pending list.
   if (download->GetState() != DownloadItem::IN_PROGRESS) {

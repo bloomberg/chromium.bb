@@ -22,7 +22,6 @@
 #include "content/browser/download/download_item_impl.h"
 #include "content/browser/download/download_persistent_store_info.h"
 #include "content/browser/download/download_stats.h"
-#include "content/browser/download/download_status_updater.h"
 #include "content/browser/download/interrupt_reasons.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
@@ -115,28 +114,19 @@ namespace content {
 
 // static
 DownloadManager* DownloadManager::Create(
-      content::DownloadManagerDelegate* delegate,
-      DownloadStatusUpdater* status_updater) {
-  return new DownloadManagerImpl(delegate, status_updater);
+    content::DownloadManagerDelegate* delegate) {
+  return new DownloadManagerImpl(delegate);
 }
 
 }  // namespace content
 
 DownloadManagerImpl::DownloadManagerImpl(
-    content::DownloadManagerDelegate* delegate,
-    DownloadStatusUpdater* status_updater)
+    content::DownloadManagerDelegate* delegate)
         : shutdown_needed_(false),
           browser_context_(NULL),
           file_manager_(NULL),
-          status_updater_((status_updater != NULL)
-                          ? status_updater->AsWeakPtr()
-                          : base::WeakPtr<DownloadStatusUpdater>()),
           delegate_(delegate),
           largest_db_handle_in_history_(DownloadItem::kUninitializedHandle) {
-  // NOTE(benjhayden): status_updater may be NULL when using
-  // TestingBrowserProcess.
-  if (status_updater_.get() != NULL)
-    status_updater_->AddDelegate(this);
 }
 
 DownloadManagerImpl::~DownloadManagerImpl() {
@@ -162,7 +152,7 @@ void DownloadManagerImpl::Shutdown() {
     return;
   shutdown_needed_ = false;
 
-  FOR_EACH_OBSERVER(Observer, observers_, ManagerGoingDown());
+  FOR_EACH_OBSERVER(Observer, observers_, ManagerGoingDown(this));
   // TODO(benjhayden): Consider clearing observers_.
 
   if (file_manager_) {
@@ -221,10 +211,6 @@ void DownloadManagerImpl::Shutdown() {
 
   file_manager_ = NULL;
   delegate_->Shutdown();
-
-  if (status_updater_)
-    status_updater_->RemoveDelegate(this);
-  status_updater_.reset();
 }
 
 void DownloadManagerImpl::GetTemporaryDownloads(
@@ -375,7 +361,7 @@ void DownloadManagerImpl::RestartDownload(int32 download_id) {
     delegate_->ChooseDownloadPath(contents, target_path,
                                   reinterpret_cast<void*>(id_ptr));
     FOR_EACH_OBSERVER(Observer, observers_,
-                      SelectFileDialogDisplayed(download_id));
+                      SelectFileDialogDisplayed(this, download_id));
   } else {
     // No prompting for download, just continue with the suggested name.
     ContinueDownloadWithPath(download, suggested_path);
@@ -851,45 +837,11 @@ void DownloadManagerImpl::DownloadUrl(
 
 void DownloadManagerImpl::AddObserver(Observer* observer) {
   observers_.AddObserver(observer);
-  observer->ModelChanged();
+  observer->ModelChanged(this);
 }
 
 void DownloadManagerImpl::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
-}
-
-bool DownloadManagerImpl::IsDownloadProgressKnown() const {
-  for (DownloadMap::const_iterator i = in_progress_.begin();
-       i != in_progress_.end(); ++i) {
-    if (i->second->GetTotalBytes() <= 0)
-      return false;
-  }
-
-  return true;
-}
-
-int64 DownloadManagerImpl::GetInProgressDownloadCount() const {
-  return in_progress_.size();
-}
-
-int64 DownloadManagerImpl::GetReceivedDownloadBytes() const {
-  DCHECK(IsDownloadProgressKnown());
-  int64 received_bytes = 0;
-  for (DownloadMap::const_iterator i = in_progress_.begin();
-       i != in_progress_.end(); ++i) {
-    received_bytes += i->second->GetReceivedBytes();
-  }
-  return received_bytes;
-}
-
-int64 DownloadManagerImpl::GetTotalDownloadBytes() const {
-  DCHECK(IsDownloadProgressKnown());
-  int64 total_bytes = 0;
-  for (DownloadMap::const_iterator i = in_progress_.begin();
-       i != in_progress_.end(); ++i) {
-    total_bytes += i->second->GetTotalBytes();
-  }
-  return total_bytes;
 }
 
 void DownloadManagerImpl::FileSelected(const FilePath& path, void* params) {
@@ -1071,7 +1023,7 @@ void DownloadManagerImpl::ClearLastDownloadPath() {
 }
 
 void DownloadManagerImpl::NotifyModelChanged() {
-  FOR_EACH_OBSERVER(Observer, observers_, ModelChanged());
+  FOR_EACH_OBSERVER(Observer, observers_, ModelChanged(this));
 }
 
 DownloadItem* DownloadManagerImpl::GetDownloadItem(int download_id) {

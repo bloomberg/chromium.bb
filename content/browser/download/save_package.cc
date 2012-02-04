@@ -1268,7 +1268,7 @@ void SavePackage::StopObservation() {
   download_manager_ = NULL;
 }
 
-void SavePackage::OnDownloadUpdated(content::DownloadItem* download) {
+void SavePackage::OnDownloadUpdated(DownloadItem* download) {
   DCHECK(download_);
   DCHECK(download_ == download);
   DCHECK(download_manager_);

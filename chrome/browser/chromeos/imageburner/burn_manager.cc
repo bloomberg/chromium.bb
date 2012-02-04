@@ -294,7 +294,9 @@ void BurnManager::OnConfigFileDownloaded() {
                             weak_ptr_factory_.GetWeakPtr())));
 }
 
-void BurnManager::ModelChanged() {
+void BurnManager::ModelChanged(DownloadManager* manager) {
+  DCHECK_EQ(download_manager_, manager);
+
   std::vector<DownloadItem*> downloads;
   download_manager_->GetTemporaryDownloads(GetImageDir(), &downloads);
   if (download_item_observer_added_)

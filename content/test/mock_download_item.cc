@@ -4,5 +4,9 @@
 
 #include "content/test/mock_download_item.h"
 
+namespace content {
+
 MockDownloadItem::MockDownloadItem() {}
 MockDownloadItem::~MockDownloadItem() {}
+
+}

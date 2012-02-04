@@ -18,19 +18,14 @@
 #include "base/observer_list.h"
 #include "base/synchronization/lock.h"
 #include "content/browser/download/download_item_impl.h"
-#include "content/browser/download/download_status_updater_delegate.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/download_manager.h"
 
-class DownloadStatusUpdater;
-
 class CONTENT_EXPORT DownloadManagerImpl
     : public content::DownloadManager,
-      public DownloadItemImpl::Delegate,
-      public DownloadStatusUpdaterDelegate {
+      public DownloadItemImpl::Delegate {
  public:
-  DownloadManagerImpl(content::DownloadManagerDelegate* delegate,
-                      DownloadStatusUpdater* status_updater);
+  DownloadManagerImpl(content::DownloadManagerDelegate* delegate);
 
   // content::DownloadManager functions.
   virtual void Shutdown() OVERRIDE;
@@ -115,12 +110,6 @@ class CONTENT_EXPORT DownloadManagerImpl
   virtual void DownloadRemoved(content::DownloadItem* download) OVERRIDE;
   virtual void AssertStateConsistent(
       content::DownloadItem* download) const OVERRIDE;
-
-  // Overridden from DownloadStatusUpdaterDelegate:
-  virtual bool IsDownloadProgressKnown() const OVERRIDE;
-  virtual int64 GetInProgressDownloadCount() const OVERRIDE;
-  virtual int64 GetReceivedDownloadBytes() const OVERRIDE;
-  virtual int64 GetTotalDownloadBytes() const OVERRIDE;
 
  private:
   typedef std::set<content::DownloadItem*> DownloadSet;
@@ -248,9 +237,6 @@ class CONTENT_EXPORT DownloadManagerImpl
 
   // Non-owning pointer for handling file writing on the download_thread_.
   DownloadFileManager* file_manager_;
-
-  // Non-owning pointer for updating the download status.
-  base::WeakPtr<DownloadStatusUpdater> status_updater_;
 
   // The user's last choice for download directory. This is only used when the
   // user wants us to prompt for a save location for each download.

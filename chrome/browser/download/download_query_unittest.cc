@@ -49,11 +49,11 @@ class DownloadQueryTest : public testing::Test {
 
   void CreateMocks(int count) {
     for (int i = 0; i < count; ++i) {
-      mocks_.push_back(new MockDownloadItem());
+      mocks_.push_back(new content::MockDownloadItem());
     }
   }
 
-  MockDownloadItem& mock(int index) { return *mocks_[index]; }
+  content::MockDownloadItem& mock(int index) { return *mocks_[index]; }
 
   DownloadQuery* query() { return &query_; }
 
@@ -67,7 +67,7 @@ class DownloadQueryTest : public testing::Test {
   DownloadVector* results() { return &results_; }
 
  private:
-  std::vector<MockDownloadItem*> mocks_;
+  std::vector<content::MockDownloadItem*> mocks_;
   DownloadQuery query_;
   DownloadVector results_;
 

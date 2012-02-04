@@ -172,8 +172,9 @@ void DragDownloadFile::DownloadCompleted(bool is_successful) {
 #endif
 }
 
-void DragDownloadFile::ModelChanged() {
+void DragDownloadFile::ModelChanged(DownloadManager* manager) {
   AssertCurrentlyOnUIThread();
+  DCHECK_EQ(manager, download_manager_);
 
   if (download_item_)
     return;

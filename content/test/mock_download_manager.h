@@ -8,12 +8,14 @@
 
 #include "content/browser/download/download_request_handle.h"
 #include "content/browser/download/download_types.h"
-#include "content/public/browser/download_id.h"
+#include "content/common/content_export.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+namespace content {
 
 class MockDownloadManager : public content::DownloadManager {
  public:
@@ -89,5 +91,7 @@ class MockDownloadManager : public content::DownloadManager {
   MOCK_METHOD1(GetActiveDownload, content::DownloadItem*(int32 download_id));
   MOCK_METHOD1(SetFileManager, void(DownloadFileManager* file_manager));
 };
+
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_DOWNLOAD_MOCK_DOWNLOAD_MANAGER_H_

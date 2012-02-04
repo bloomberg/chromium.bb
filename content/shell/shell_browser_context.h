@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,7 +13,6 @@
 #include "content/public/browser/browser_context.h"
 
 class DownloadManager;
-class DownloadStatusUpdater;
 class SSLHostState;
 
 namespace content {
@@ -56,7 +55,6 @@ class ShellBrowserContext : public BrowserContext {
   FilePath path_;
   scoped_ptr<ResourceContext> resource_context_;
   scoped_ptr<SSLHostState> ssl_host_state_;
-  scoped_ptr<DownloadStatusUpdater> download_status_updater_;
   scoped_refptr<ShellDownloadManagerDelegate> download_manager_delegate_;
   scoped_refptr<DownloadManager> download_manager_;
   scoped_refptr<net::URLRequestContextGetter> url_request_getter_;

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -252,7 +252,7 @@ void DownloadItemView::OnExtractIconComplete(IconManager::Handle handle,
 
 // Update the progress graphic on the icon and our text status label
 // to reflect our current bytes downloaded, time remaining.
-void DownloadItemView::OnDownloadUpdated(content::DownloadItem* download) {
+void DownloadItemView::OnDownloadUpdated(DownloadItem* download) {
   DCHECK(download == download_);
 
   if (IsShowingWarningDialog() &&
@@ -315,7 +315,7 @@ void DownloadItemView::OnDownloadUpdated(content::DownloadItem* download) {
   parent()->SchedulePaint();
 }
 
-void DownloadItemView::OnDownloadOpened(content::DownloadItem* download) {
+void DownloadItemView::OnDownloadOpened(DownloadItem* download) {
   disabled_while_opening_ = true;
   SetEnabled(false);
   MessageLoop::current()->PostDelayedTask(

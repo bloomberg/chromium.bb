@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -27,8 +27,8 @@ class DownloadFilePicker : public content::DownloadManager::Observer,
 
  private:
   // content::DownloadManager::Observer implementation.
-  virtual void ModelChanged() OVERRIDE;
-  virtual void ManagerGoingDown() OVERRIDE;
+  virtual void ModelChanged(content::DownloadManager* manager) OVERRIDE;
+  virtual void ManagerGoingDown(content::DownloadManager* manager) OVERRIDE;
 
   // SelectFileDialog::Listener implementation.
   virtual void FileSelected(const FilePath& path,

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -66,9 +66,10 @@ class DownloadTestObserver : public content::DownloadManager::Observer,
   virtual void OnDownloadOpened(content::DownloadItem* download) OVERRIDE {}
 
   // content::DownloadManager::Observer
-  virtual void ModelChanged() OVERRIDE;
+  virtual void ModelChanged(content::DownloadManager* manager) OVERRIDE;
 
-  virtual void SelectFileDialogDisplayed(int32 id) OVERRIDE;
+  virtual void SelectFileDialogDisplayed(
+      content::DownloadManager* manager, int32 id) OVERRIDE;
 
   size_t NumDangerousDownloadsSeen() const;
 
@@ -150,7 +151,7 @@ class DownloadTestFlushObserver
   void WaitForFlush();
 
   // DownloadsManager observer methods.
-  virtual void ModelChanged() OVERRIDE;
+  virtual void ModelChanged(content::DownloadManager* manager) OVERRIDE;
 
   // DownloadItem observer methods.
   virtual void OnDownloadUpdated(content::DownloadItem* download) OVERRIDE;

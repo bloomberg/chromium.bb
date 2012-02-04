@@ -13,7 +13,6 @@
 #include "content/browser/appcache/chrome_appcache_service.h"
 #include "content/browser/chrome_blob_storage_context.h"
 #include "content/browser/download/download_manager_impl.h"
-#include "content/browser/download/download_status_updater.h"
 #include "content/browser/file_system/browser_file_system_helper.h"
 #include "content/browser/host_zoom_map_impl.h"
 #include "content/browser/in_process_webkit/webkit_context.h"
@@ -138,11 +137,8 @@ SSLHostState* ShellBrowserContext::GetSSLHostState()  {
 
 DownloadManager* ShellBrowserContext::GetDownloadManager()  {
   if (!download_manager_.get()) {
-    download_status_updater_.reset(new DownloadStatusUpdater());
-
     download_manager_delegate_ = new ShellDownloadManagerDelegate();
-    download_manager_ = new DownloadManagerImpl(download_manager_delegate_,
-                                                download_status_updater_.get());
+    download_manager_ = new DownloadManagerImpl(download_manager_delegate_);
     download_manager_delegate_->SetDownloadManager(download_manager_.get());
     download_manager_->Init(this);
   }

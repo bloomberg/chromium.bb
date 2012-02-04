@@ -1718,7 +1718,9 @@ class DownloadObserver : public content::DownloadManager::Observer {
   }
 
   // DownloadManager::Observer
-  virtual void ModelChanged() {
+  virtual void ModelChanged(DownloadManager* manager) {
+    DCHECK_EQ(download_manager_, manager);
+
     std::vector<DownloadItem*> downloads;
     download_manager_->SearchDownloads(string16(), &downloads);
     if (downloads.empty())

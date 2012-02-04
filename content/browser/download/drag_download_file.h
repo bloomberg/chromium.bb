@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,6 +19,7 @@
 #include "ui/base/ui_export.h"
 
 namespace content {
+class DownloadManager;
 class WebContents;
 }
 
@@ -56,11 +57,11 @@ class CONTENT_EXPORT DragDownloadFile
   virtual IStream* GetStream() { return NULL; }
 #endif
 
-  // DownloadManager::Observer methods.
+  // content::DownloadManager::Observer methods.
   // Called on UI thread.
-  virtual void ModelChanged() OVERRIDE;
+  virtual void ModelChanged(content::DownloadManager* manager) OVERRIDE;
 
-  // DownloadItem::Observer methods.
+  // content::DownloadItem::Observer methods.
   // Called on UI thread.
   virtual void OnDownloadUpdated(content::DownloadItem* download) OVERRIDE;
   virtual void OnDownloadOpened(content::DownloadItem* download) OVERRIDE { }

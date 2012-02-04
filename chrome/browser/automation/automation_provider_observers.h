@@ -1117,7 +1117,7 @@ class AutomationProviderDownloadModelChangedObserver
       content::DownloadManager* download_manager);
   virtual ~AutomationProviderDownloadModelChangedObserver();
 
-  virtual void ModelChanged();
+  virtual void ModelChanged(content::DownloadManager* manager) OVERRIDE;
 
  private:
   base::WeakPtr<AutomationProvider> provider_;
@@ -1139,12 +1139,12 @@ class AllDownloadsCompleteObserver
       ListValue* pre_download_ids);
   virtual ~AllDownloadsCompleteObserver();
 
-  // DownloadManager::Observer.
-  virtual void ModelChanged();
+  // content::DownloadManager::Observer.
+  virtual void ModelChanged(content::DownloadManager* manager) OVERRIDE;
 
-  // DownloadItem::Observer.
-  virtual void OnDownloadUpdated(content::DownloadItem* download);
-  virtual void OnDownloadOpened(content::DownloadItem* download) {}
+  // content::DownloadItem::Observer.
+  virtual void OnDownloadUpdated(content::DownloadItem* download) OVERRIDE;
+  virtual void OnDownloadOpened(content::DownloadItem* download) OVERRIDE {}
 
  private:
   void ReplyIfNecessary();

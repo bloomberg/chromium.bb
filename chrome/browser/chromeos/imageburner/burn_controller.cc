@@ -19,8 +19,6 @@
 #include "grit/generated_resources.h"
 #include "googleurl/src/gurl.h"
 
-using content::DownloadItem;
-
 namespace chromeos {
 namespace imageburner {
 
@@ -46,7 +44,7 @@ class BurnControllerImpl
       public disks::DiskMountManager::Observer,
       public BurnLibrary::Observer,
       public NetworkLibrary::NetworkManagerObserver,
-      public DownloadItem::Observer,
+      public content::DownloadItem::Observer,
       public content::DownloadManager::Observer,
       public Downloader::Listener,
       public StateMachine::Observer,
@@ -143,8 +141,8 @@ class BurnControllerImpl
       ProcessError(IDS_IMAGEBURN_NETWORK_ERROR);
   }
 
-  // DownloadItem::Observer interface.
-  virtual void OnDownloadUpdated(DownloadItem* download) OVERRIDE {
+  // content::DownloadItem::Observer interface.
+  virtual void OnDownloadUpdated(content::DownloadItem* download) OVERRIDE {
     if (download->IsCancelled()) {
       DownloadCompleted(false);
       DCHECK(!active_download_item_);
@@ -162,22 +160,22 @@ class BurnControllerImpl
     }
   }
 
-  virtual void OnDownloadOpened(DownloadItem* download) OVERRIDE {
-    if (download->GetSafetyState() == DownloadItem::DANGEROUS)
+  virtual void OnDownloadOpened(content::DownloadItem* download) OVERRIDE {
+    if (download->GetSafetyState() == content::DownloadItem::DANGEROUS)
       download->DangerousDownloadValidated();
   }
 
-  // DownloadManager::Observer interface.
-  virtual void ModelChanged() OVERRIDE {
+  // content::DownloadManager::Observer interface.
+  virtual void ModelChanged(content::DownloadManager* manager) OVERRIDE {
+    DCHECK_EQ(download_manager_, manager);
     // Find our item and observe it.
-    std::vector<DownloadItem*> downloads;
+    std::vector<content::DownloadItem*> downloads;
     download_manager_->GetTemporaryDownloads(
         burn_manager_->GetImageDir(), &downloads);
     if (active_download_item_)
       return;
-    for (std::vector<DownloadItem*>::const_iterator it = downloads.begin();
-         it != downloads.end();
-         ++it) {
+    for (std::vector<content::DownloadItem*>::const_iterator it =
+             downloads.begin(); it != downloads.end(); ++it) {
       if ((*it)->GetOriginalUrl() == image_download_url_) {
         (*it)->AddObserver(this);
         active_download_item_ = *it;
@@ -379,7 +377,8 @@ class BurnControllerImpl
         active_download_item_->RemoveObserver(this);
         if (active_download_item_->IsPartialDownload())
           active_download_item_->Cancel(true);
-        active_download_item_->Delete(DownloadItem::DELETE_DUE_TO_USER_DISCARD);
+        active_download_item_->Delete(
+            content::DownloadItem::DELETE_DUE_TO_USER_DISCARD);
         active_download_item_ = NULL;
         CleanupDownloadObjects();
       }
@@ -440,7 +439,7 @@ class BurnControllerImpl
   std::string image_file_name_;
   content::WebContents* web_contents_;
   content::DownloadManager* download_manager_;
-  DownloadItem*  active_download_item_;
+  content::DownloadItem*  active_download_item_;
   BurnManager* burn_manager_;
   StateMachine* state_machine_;
   bool observing_burn_lib_;

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,11 +13,12 @@
 
 using content::BrowserThread;
 using content::DownloadId;
+using content::DownloadManager;
 
 DownloadFileImpl::DownloadFileImpl(
     const DownloadCreateInfo* info,
     DownloadRequestHandleInterface* request_handle,
-    content::DownloadManager* download_manager,
+    DownloadManager* download_manager,
     bool calculate_hash)
     : file_(info->save_info.file_path,
             info->url(),
@@ -100,7 +101,7 @@ int DownloadFileImpl::Id() const {
   return id_.local();
 }
 
-content::DownloadManager* DownloadFileImpl::GetDownloadManager() {
+DownloadManager* DownloadFileImpl::GetDownloadManager() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   return download_manager_.get();
 }

@@ -137,7 +137,7 @@ class ActiveDownloadsHandler
   virtual void OnDownloadOpened(DownloadItem* item) OVERRIDE { }
 
   // DownloadManager::Observer interface.
-  virtual void ModelChanged() OVERRIDE;
+  virtual void ModelChanged(DownloadManager* manager) OVERRIDE;
 
   // WebUI Callbacks.
   void HandleGetDownloads(const ListValue* args);
@@ -247,7 +247,7 @@ void ActiveDownloadsHandler::ViewFile(const ListValue* args) {
                               false);
 }
 
-void ActiveDownloadsHandler::ModelChanged() {
+void ActiveDownloadsHandler::ModelChanged(DownloadManager* manager) {
   UpdateDownloadList();
 }
 

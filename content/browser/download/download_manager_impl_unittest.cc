@@ -21,12 +21,11 @@
 #include "content/browser/download/download_file_manager.h"
 #include "content/browser/download/download_manager_impl.h"
 #include "content/browser/download/download_request_handle.h"
-#include "content/browser/download/download_status_updater.h"
 #include "content/browser/download/interrupt_reasons.h"
 #include "content/browser/download/mock_download_file.h"
-#include "content/browser/download/mock_download_manager.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager_delegate.h"
+#include "content/test/mock_download_manager.h"
 #include "content/test/test_browser_context.h"
 #include "content/test/test_browser_thread.h"
 #include "net/base/io_buffer.h"
@@ -212,7 +211,7 @@ class DownloadManagerTest : public testing::Test {
       : browser_context(new TestBrowserContext()),
         download_manager_delegate_(new TestDownloadManagerDelegate()),
         download_manager_(DownloadManager::Create(
-            download_manager_delegate_.get(), &download_status_updater_)),
+            download_manager_delegate_.get())),
         ui_thread_(BrowserThread::UI, &message_loop_),
         file_thread_(BrowserThread::FILE, &message_loop_),
         download_buffer_(new content::DownloadBuffer) {
@@ -284,7 +283,6 @@ class DownloadManagerTest : public testing::Test {
   }
 
  protected:
-  DownloadStatusUpdater download_status_updater_;
   scoped_ptr<TestBrowserContext> browser_context;
   scoped_ptr<TestDownloadManagerDelegate> download_manager_delegate_;
   scoped_refptr<DownloadManager> download_manager_;
@@ -446,7 +444,7 @@ const struct {
 
 // This is an observer that records what download IDs have opened a select
 // file dialog.
-class SelectFileObserver : public content::DownloadManager::Observer {
+class SelectFileObserver : public DownloadManager::Observer {
  public:
   explicit SelectFileObserver(DownloadManager* download_manager)
       : download_manager_(download_manager) {
@@ -459,9 +457,10 @@ class SelectFileObserver : public content::DownloadManager::Observer {
   }
 
   // Downloadmanager::Observer functions.
-  virtual void ModelChanged() {}
-  virtual void ManagerGoingDown() {}
-  virtual void SelectFileDialogDisplayed(int32 id) {
+  virtual void ModelChanged(DownloadManager* manager) OVERRIDE {}
+  virtual void ManagerGoingDown(DownloadManager* manager) OVERRIDE {}
+  virtual void SelectFileDialogDisplayed(
+      DownloadManager* manager, int32 id) OVERRIDE {
     file_dialog_ids_.insert(id);
   }
 

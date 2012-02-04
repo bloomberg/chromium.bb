@@ -9,9 +9,8 @@
 #include "content/browser/download/download_create_info.h"
 #include "content/browser/download/download_file_impl.h"
 #include "content/browser/download/download_request_handle.h"
-#include "content/browser/download/download_status_updater.h"
-#include "content/browser/download/mock_download_manager.h"
 #include "content/public/browser/download_manager.h"
+#include "content/test/mock_download_manager.h"
 #include "net/base/file_stream.h"
 #include "net/base/net_errors.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -48,7 +47,7 @@ class DownloadFileTest : public testing::Test {
   }
 
   virtual void SetUp() {
-    download_manager_ = new MockDownloadManager;
+    download_manager_ = new content::MockDownloadManager;
   }
 
   virtual void TearDown() {

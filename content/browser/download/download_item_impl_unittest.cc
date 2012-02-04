@@ -8,7 +8,6 @@
 #include "content/browser/download/download_create_info.h"
 #include "content/browser/download/download_item_impl.h"
 #include "content/browser/download/download_request_handle.h"
-#include "content/browser/download/download_status_updater.h"
 #include "content/browser/download/interrupt_reasons.h"
 #include "content/public/browser/download_id.h"
 #include "content/test/mock_download_item.h"
@@ -20,6 +19,7 @@ using content::BrowserThread;
 using content::DownloadId;
 using content::DownloadItem;
 using content::DownloadManager;
+using content::MockDownloadItem;
 
 DownloadId::Domain kValidDownloadItemIdDomain = "valid DownloadId::Domain";
 
@@ -52,18 +52,18 @@ class MockRequestHandle : public DownloadRequestHandleInterface {
 
 class DownloadItemTest : public testing::Test {
  public:
-  class MockObserver : public content::DownloadItem::Observer {
+  class MockObserver : public DownloadItem::Observer {
    public:
     explicit MockObserver(DownloadItem* item) : item_(item), updated_(false) {
       item_->AddObserver(this);
     }
     ~MockObserver() { item_->RemoveObserver(this); }
 
-    virtual void OnDownloadUpdated(content::DownloadItem* download) {
+    virtual void OnDownloadUpdated(DownloadItem* download) {
       updated_ = true;
     }
 
-    virtual void OnDownloadOpened(content::DownloadItem* download) { }
+    virtual void OnDownloadOpened(DownloadItem* download) { }
 
     bool CheckUpdated() {
       bool was_updated = updated_;
@@ -123,9 +123,6 @@ class DownloadItemTest : public testing::Test {
     allocated_downloads_.erase(item);
     delete item;
   }
-
- protected:
-  DownloadStatusUpdater download_status_updater_;
 
  private:
   MessageLoopForUI loop_;
@@ -287,7 +284,7 @@ TEST_F(DownloadItemTest, NotificationAfterTogglePause) {
 static char external_data_test_string[] = "External data test";
 static int destructor_called = 0;
 
-class TestExternalData : public content::DownloadItem::ExternalData {
+class TestExternalData : public DownloadItem::ExternalData {
  public:
   int value;
   virtual ~TestExternalData() {

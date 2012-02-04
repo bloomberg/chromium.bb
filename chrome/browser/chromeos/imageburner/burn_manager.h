@@ -32,7 +32,7 @@ class Downloader {
   class Listener : public base::SupportsWeakPtr<Listener> {
    public:
     // After download starts download status updates can be followed through
-    // DownloadItem::Observer interface.
+    // content::DownloadItem::Observer interface.
     virtual void OnBurnDownloadStarted(bool success) = 0;
   };
 
@@ -225,7 +225,7 @@ class BurnManager
   virtual void OnDownloadOpened(content::DownloadItem* download) OVERRIDE {}
 
   // content::DownloadManager::Observer interface.
-  virtual void ModelChanged() OVERRIDE;
+  virtual void ModelChanged(content::DownloadManager* manager) OVERRIDE;
 
   // Downloader::Listener interface.
   virtual void OnBurnDownloadStarted(bool success) OVERRIDE;
@@ -306,5 +306,7 @@ class BurnManager
 };
 
 }  // namespace imageburner
+
 }  // namespace chromeos
+
 #endif  // CHROME_BROWSER_CHROMEOS_IMAGEBURNER_BURN_MANAGER_H_

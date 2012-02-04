@@ -45,7 +45,6 @@
 class DownloadFileManager;
 class DownloadManagerTest;
 class DownloadRequestHandle;
-class DownloadStatusUpdater;
 class GURL;
 class TabContents;
 struct DownloadCreateInfo;
@@ -65,8 +64,7 @@ class CONTENT_EXPORT DownloadManager
   virtual ~DownloadManager() {}
 
   static DownloadManager* Create(
-      DownloadManagerDelegate* delegate,
-      DownloadStatusUpdater* status_updater);
+      DownloadManagerDelegate* delegate);
 
   // Shutdown the download manager. Must be called before destruction.
   virtual void Shutdown() = 0;
@@ -77,16 +75,17 @@ class CONTENT_EXPORT DownloadManager
    public:
     // New or deleted download, observers should query us for the current set
     // of downloads.
-    virtual void ModelChanged() = 0;
+    virtual void ModelChanged(DownloadManager* manager) = 0;
 
     // Called when the DownloadManager is being destroyed to prevent Observers
     // from calling back to a stale pointer.
-    virtual void ManagerGoingDown() {}
+    virtual void ManagerGoingDown(DownloadManager* manager) {}
 
     // Called immediately after the DownloadManager puts up a select file
     // dialog.
     // |id| indicates which download opened the dialog.
-    virtual void SelectFileDialogDisplayed(int32 id) {}
+    virtual void SelectFileDialogDisplayed(
+        DownloadManager* manager, int32 id) {}
 
    protected:
     virtual ~Observer() {}
