@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -23,16 +23,13 @@
 ///////////////////////////////////////////////////////////////////////////////
 // AutocompletePopupModel
 
-const size_t AutocompletePopupModel::kNoMatch = -1;
-
 AutocompletePopupModel::AutocompletePopupModel(
     AutocompletePopupView* popup_view,
     AutocompleteEditModel* edit_model)
     : view_(popup_view),
       edit_model_(edit_model),
       hovered_line_(kNoMatch),
-      selected_line_(kNoMatch),
-      selected_line_state_(NORMAL) {
+      selected_line_(kNoMatch) {
   edit_model->set_popup_model(this);
 }
 
@@ -86,29 +83,24 @@ void AutocompletePopupModel::SetSelectedLine(size_t line,
   if (line == selected_line_ && !force)
     return;  // Nothing else to do.
 
-  // We need to update |selected_line_state_| and |selected_line_| before
-  // calling InvalidateLine(), since it will check them to determine how to
-  // draw.  We also need to update |selected_line_| before calling
-  // OnPopupDataChanged(), so that when the edit notifies its controller that
-  // something has changed, the controller can get the correct updated data.
+  // We need to update |selected_line_| before calling OnPopupDataChanged(), so
+  // that when the edit notifies its controller that something has changed, the
+  // controller can get the correct updated data.
   //
   // NOTE: We should never reach here with no selected line; the same code that
   // opened the popup and made it possible to get here should have also set a
   // selected line.
   CHECK(selected_line_ != kNoMatch);
   GURL current_destination(result.match_at(selected_line_).destination_url);
-  const size_t prev_selected_line = selected_line_;
-  selected_line_state_ = NORMAL;
+  view_->InvalidateLine(selected_line_);
   selected_line_ = line;
-  view_->InvalidateLine(prev_selected_line);
   view_->InvalidateLine(selected_line_);
 
   // Update the edit with the new data for this match.
   // TODO(pkasting): If |selected_line_| moves to the controller, this can be
   // eliminated and just become a call to the observer on the edit.
   string16 keyword;
-  const bool is_keyword_hint = match.GetKeyword(&keyword);
-
+  const bool is_keyword_hint = GetKeywordForMatch(match, &keyword);
   if (reset_to_default) {
     string16 inline_autocomplete_text;
     if ((match.inline_autocomplete_offset != string16::npos) &&
@@ -135,6 +127,59 @@ void AutocompletePopupModel::ResetToDefaultMatch() {
   view_->OnDragCanceled();
 }
 
+bool AutocompletePopupModel::GetKeywordForMatch(const AutocompleteMatch& match,
+                                                string16* keyword) const {
+  // Assume we have no keyword until we find otherwise.
+  keyword->clear();
+
+  if (match.template_url &&
+      TemplateURL::SupportsReplacement(match.template_url) &&
+      match.transition == content::PAGE_TRANSITION_KEYWORD) {
+    // The current match is a keyword, return that as the selected keyword.
+    keyword->assign(match.template_url->keyword());
+    return false;
+  }
+
+  // See if the current match's fill_into_edit corresponds to a keyword.
+  return GetKeywordForText(match.fill_into_edit, keyword);
+}
+
+bool AutocompletePopupModel::GetKeywordForText(const string16& text,
+                                               string16* keyword) const {
+  // Creates keyword_hint first in case |keyword| is a pointer to |text|.
+  const string16 keyword_hint(TemplateURLService::CleanUserInputKeyword(text));
+
+  // Assume we have no keyword until we find otherwise.
+  keyword->clear();
+
+  if (keyword_hint.empty())
+    return false;
+  Profile* profile = edit_model_->profile();
+  TemplateURLService* url_service =
+      TemplateURLServiceFactory::GetForProfile(profile);
+  if (!url_service)
+    return false;
+  url_service->Load();
+
+  // Don't provide a hint if this keyword doesn't support replacement.
+  const TemplateURL* const template_url =
+      url_service->GetTemplateURLForKeyword(keyword_hint);
+  if (!TemplateURL::SupportsReplacement(template_url))
+    return false;
+
+  // Don't provide a hint for inactive/disabled extension keywords.
+  if (template_url->IsExtensionKeyword()) {
+    const Extension* extension = profile->GetExtensionService()->
+        GetExtensionById(template_url->GetExtensionId(), false);
+    if (!extension || (profile->IsOffTheRecord() &&
+        !profile->GetExtensionService()->IsIncognitoEnabled(extension->id())))
+      return false;
+  }
+
+  keyword->assign(keyword_hint);
+  return true;
+}
+
 void AutocompletePopupModel::Move(int count) {
   const AutocompleteResult& result = this->result();
   if (result.empty())
@@ -148,17 +193,6 @@ void AutocompletePopupModel::Move(int count) {
   const size_t new_line = selected_line_ + count;
   SetSelectedLine(((count < 0) && (new_line >= selected_line_)) ? 0 : new_line,
                   false, false);
-}
-
-void AutocompletePopupModel::SetSelectedLineState(LineState state) {
-  DCHECK(!result().empty());
-  DCHECK_NE(kNoMatch, selected_line_);
-
-  const AutocompleteMatch& match = result().match_at(selected_line_);
-  DCHECK(match.associated_keyword.get());
-
-  selected_line_state_ = state;
-  view_->InvalidateLine(selected_line_);
 }
 
 void AutocompletePopupModel::TryDeletingCurrentItem() {
@@ -209,7 +243,6 @@ void AutocompletePopupModel::OnResultChanged() {
   // There had better not be a nonempty result set with no default match.
   CHECK((selected_line_ != kNoMatch) || result.empty());
   manually_selected_match_.Clear();
-  selected_line_state_ = NORMAL;
   // If we're going to trim the window size to no longer include the hovered
   // line, turn hover off.  Practically, this shouldn't happen, but it
   // doesn't hurt to be defensive.

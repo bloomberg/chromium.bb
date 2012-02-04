@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,12 +15,6 @@ class SkBitmap;
 
 class AutocompletePopupModel {
  public:
-  // See selected_line_state_ for details.
-  enum LineState {
-    NORMAL = 0,
-    KEYWORD
-  };
-
   AutocompletePopupModel(AutocompletePopupView* popup_view,
                          AutocompleteEditModel* edit_model);
   ~AutocompletePopupModel();
@@ -51,10 +45,6 @@ class AutocompletePopupModel {
     return selected_line_;
   }
 
-  LineState selected_line_state() const {
-    return selected_line_state_;
-  }
-
   // Call to change the selected line.  This will update all state and repaint
   // the necessary parts of the window, as well as updating the edit with the
   // new temporary text.  |line| will be clamped to the range of valid lines.
@@ -71,17 +61,25 @@ class AutocompletePopupModel {
   // will change the selected line back to the default match and redraw.
   void ResetToDefaultMatch();
 
+  // Gets the selected keyword or keyword hint for the given match. If the match
+  // is already keyword, then the keyword will be returned directly. Otherwise,
+  // it returns GetKeywordForText(match.fill_into_edit, keyword).
+  bool GetKeywordForMatch(const AutocompleteMatch& match,
+                          string16* keyword) const;
+
+  // Gets the selected keyword or keyword hint for the given text. Returns
+  // true if |keyword| represents a keyword hint, or false if |keyword|
+  // represents a selected keyword. (|keyword| will always be set [though
+  // possibly to the empty string], and you cannot have both a selected keyword
+  // and a keyword hint simultaneously.)
+  bool GetKeywordForText(const string16& text, string16* keyword) const;
+
   // Immediately updates and opens the popup if necessary, then moves the
   // current selection down (|count| > 0) or up (|count| < 0), clamping to the
   // first or last result if necessary.  If |count| == 0, the selection will be
   // unchanged, but the popup will still redraw and modify the text in the
   // AutocompleteEditModel.
   void Move(int count);
-
-  // If the selected line has both a normal match and a keyword match, this can
-  // be used to choose which to select. It is an error to call this when the
-  // selected line does not have both matches (or there is no selection).
-  void SetSelectedLineState(LineState state);
 
   // Called when the user hits shift-delete.  This should determine if the item
   // can be removed from history, and if so, remove it and update the popup.
@@ -102,7 +100,7 @@ class AutocompletePopupModel {
 
   // The token value for selected_line_, hover_line_ and functions dealing with
   // a "line number" that indicates "no line".
-  static const size_t kNoMatch;
+  static const size_t kNoMatch = -1;
 
  private:
   AutocompletePopupView* view_;
@@ -116,11 +114,6 @@ class AutocompletePopupModel {
   // The currently selected line.  This is kNoMatch when nothing is selected,
   // which should only be true when the popup is closed.
   size_t selected_line_;
-
-  // If the selected line has both a normal match and a keyword match, this
-  // determines whether the normal match (if NORMAL) or the keyword match
-  // (if KEYWORD) is selected.
-  LineState selected_line_state_;
 
   // The match the user has manually chosen, if any.
   AutocompleteResult::Selection manually_selected_match_;

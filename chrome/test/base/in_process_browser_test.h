@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -141,10 +141,6 @@ class InProcessBrowserTest : public BrowserTestBase {
   // Creates a browser for a popup window with a single tab (about:blank), waits
   // for the tab to finish loading, and shows the browser.
   Browser* CreateBrowserForPopup(Profile* profile);
-
-  // Allows configuration of the browser object before it is shown and the
-  // message pump starts running.
-  virtual void OnBeforeShowBrowser(Browser* browser) {}
 
   // Called from the various CreateBrowser methods to add a blank tab, wait for
   // the navigation to complete, and show the browser's window.

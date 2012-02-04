@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -874,9 +874,7 @@ void SearchProvider::AddMatchToMap(const string16& query_string,
   if (is_keyword) {
     match.fill_into_edit.append(
         providers_.keyword_provider().keyword() + char16(' '));
-
-    match.keyword = providers_.keyword_provider().keyword();
-    search_start += match.keyword.size() + 1;
+    search_start += providers_.keyword_provider().keyword().size() + 1;
   }
   match.fill_into_edit.append(query_string);
   // Not all suggestions start with the original input.

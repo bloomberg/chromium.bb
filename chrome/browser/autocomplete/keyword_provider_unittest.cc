@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -216,13 +216,3 @@ TEST_F(KeywordProviderTest, RemoveKeyword) {
   model_->Remove(model_->GetTemplateURLForKeyword(ASCIIToUTF16("aaaa")));
   ASSERT_TRUE(model_->GetTemplateURLForKeyword(ASCIIToUTF16("aaaa")) == NULL);
 }
-
-TEST_F(KeywordProviderTest, GetKeywordForInput) {
-  EXPECT_EQ(ASCIIToUTF16("aa"),
-      kw_provider_->GetKeywordForText(ASCIIToUTF16("aa")));
-  EXPECT_EQ(string16(),
-      kw_provider_->GetKeywordForText(ASCIIToUTF16("aafoo")));
-  EXPECT_EQ(string16(),
-      kw_provider_->GetKeywordForText(ASCIIToUTF16("aa foo")));
-}
-

@@ -14,7 +14,6 @@
 #include <algorithm>  // NOLINT
 
 #include "base/i18n/bidi_line_iterator.h"
-#include "chrome/browser/autocomplete/autocomplete_popup_model.h"
 #include "chrome/browser/ui/views/autocomplete/autocomplete_result_view_model.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "grit/generated_resources.h"
@@ -113,20 +112,13 @@ AutocompleteResultView::AutocompleteResultView(
       normal_font_(font),
       bold_font_(bold_font),
       ellipsis_width_(font.GetStringWidth(string16(kEllipsis))),
-      mirroring_context_(new MirroringContext()),
-      keyword_icon_(new views::ImageView()),
-      ALLOW_THIS_IN_INITIALIZER_LIST(
-          animation_(new ui::SlideAnimation(this))) {
+      mirroring_context_(new MirroringContext()) {
   CHECK_GE(model_index, 0);
   if (default_icon_size_ == 0) {
     default_icon_size_ = ResourceBundle::GetSharedInstance().GetBitmapNamed(
         AutocompleteMatch::TypeToIcon(AutocompleteMatch::URL_WHAT_YOU_TYPED))->
         width();
   }
-  keyword_icon_->set_parent_owned(false);
-  keyword_icon_->EnableCanvasFlippingForRTLUI(true);
-  keyword_icon_->SetImage(GetKeywordIcon());
-  keyword_icon_->SizeToPreferredSize();
 }
 
 AutocompleteResultView::~AutocompleteResultView() {
@@ -186,36 +178,7 @@ SkColor AutocompleteResultView::GetColor(ResultViewState state,
 
 void AutocompleteResultView::SetMatch(const AutocompleteMatch& match) {
   match_ = match;
-  animation_->Reset();
-
-  if (match.associated_keyword.get()) {
-    keyword_icon_->SetImage(GetKeywordIcon());
-
-    if (!keyword_icon_->parent())
-      AddChildView(keyword_icon_.get());
-  } else if (keyword_icon_->parent()) {
-    RemoveChildView(keyword_icon_.get());
-  }
-
   Layout();
-}
-
-void AutocompleteResultView::ShowKeyword(bool show_keyword) {
-  if (show_keyword)
-    animation_->Show();
-  else
-    animation_->Hide();
-}
-
-void AutocompleteResultView::Invalidate() {
-  keyword_icon_->SetImage(GetKeywordIcon());
-  SchedulePaint();
-}
-
-gfx::Size AutocompleteResultView::GetPreferredSize() {
-  return gfx::Size(0, std::max(
-      default_icon_size_ + (kMinimumIconVerticalPadding * 2),
-      GetTextHeight() + (kMinimumTextVerticalPadding * 2)));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -280,7 +243,7 @@ const SkBitmap* AutocompleteResultView::GetIcon() const {
 
   int icon = match_.starred ?
       IDR_OMNIBOX_STAR : AutocompleteMatch::TypeToIcon(match_.type);
-  if (GetState() == SELECTED) {
+  if (model_->IsSelectedIndex(model_index_)) {
     switch (icon) {
       case IDR_OMNIBOX_EXTENSION_APP:
         icon = IDR_OMNIBOX_EXTENSION_APP_SELECTED;
@@ -303,13 +266,6 @@ const SkBitmap* AutocompleteResultView::GetIcon() const {
     }
   }
   return ResourceBundle::GetSharedInstance().GetBitmapNamed(icon);
-}
-
-const SkBitmap* AutocompleteResultView::GetKeywordIcon() const {
-  // NOTE: If we ever begin returning icons of varying size, then callers need
-  // to ensure that |keyword_icon_| is resized each time its image is reset.
-  return ResourceBundle::GetSharedInstance().GetBitmapNamed(
-      (GetState() == SELECTED) ? IDR_OMNIBOX_TTS_SELECTED : IDR_OMNIBOX_TTS);
 }
 
 int AutocompleteResultView::DrawString(
@@ -542,9 +498,14 @@ void AutocompleteResultView::Elide(Runs* runs, int remaining_width) const {
   runs->clear();
 }
 
+gfx::Size AutocompleteResultView::GetPreferredSize() {
+  return gfx::Size(0, std::max(
+      default_icon_size_ + (kMinimumIconVerticalPadding * 2),
+      GetTextHeight() + (kMinimumTextVerticalPadding * 2)));
+}
+
 void AutocompleteResultView::Layout() {
   const SkBitmap* icon = GetIcon();
-
   icon_bounds_.SetRect(LocationBarView::kEdgeItemPadding +
       ((icon->width() == default_icon_size_) ?
           0 : LocationBarView::kIconInternalPadding),
@@ -553,34 +514,9 @@ void AutocompleteResultView::Layout() {
   int text_x = LocationBarView::kEdgeItemPadding + default_icon_size_ +
       LocationBarView::kItemPadding;
   int text_height = GetTextHeight();
-  int text_width;
-
-  if (match_.associated_keyword.get()) {
-    const int kw_collapsed_size = keyword_icon_->width() +
-        LocationBarView::kEdgeItemPadding;
-    const int max_kw_x = width() - kw_collapsed_size;
-    const int kw_x = animation_->CurrentValueBetween(max_kw_x,
-        LocationBarView::kEdgeItemPadding);
-    const int kw_text_x = kw_x + keyword_icon_->width() +
-        LocationBarView::kItemPadding;
-
-    text_width = kw_x - text_x - LocationBarView::kItemPadding;
-    keyword_text_bounds_.SetRect(kw_text_x, 0, std::max(
-        width() - kw_text_x - LocationBarView::kEdgeItemPadding, 0),
-        text_height);
-    keyword_icon_->SetPosition(gfx::Point(kw_x,
-        (height() - keyword_icon_->height()) / 2));
-  } else {
-    text_width = width() - text_x - LocationBarView::kEdgeItemPadding;
-  }
-
   text_bounds_.SetRect(text_x, std::max(0, (height() - text_height) / 2),
-      std::max(text_width, 0), text_height);
-}
-
-void AutocompleteResultView::OnBoundsChanged(
-    const gfx::Rect& previous_bounds) {
-  animation_->SetSlideDuration(width() / 4);
+      std::max(bounds().width() - text_x - LocationBarView::kEdgeItemPadding,
+      0), text_height);
 }
 
 void AutocompleteResultView::OnPaint(gfx::Canvas* canvas) {
@@ -588,29 +524,12 @@ void AutocompleteResultView::OnPaint(gfx::Canvas* canvas) {
   if (state != NORMAL)
     canvas->GetSkCanvas()->drawColor(GetColor(state, BACKGROUND));
 
-  if (!match_.associated_keyword.get() ||
-      keyword_icon_->x() > icon_bounds_.right()) {
-    // Paint the icon.
-    canvas->DrawBitmapInt(*GetIcon(), GetMirroredXForRect(icon_bounds_),
-        icon_bounds_.y());
+  // Paint the icon.
+  canvas->DrawBitmapInt(*GetIcon(), GetMirroredXForRect(icon_bounds_),
+                        icon_bounds_.y());
 
-    // Paint the text.
-    int x = GetMirroredXForRect(text_bounds_);
-    mirroring_context_->Initialize(x, text_bounds_.width());
-    PaintMatch(canvas, match_, x);
-  }
-
-  if (match_.associated_keyword.get()) {
-    // Paint the keyword text.
-    int x = GetMirroredXForRect(keyword_text_bounds_);
-    mirroring_context_->Initialize(x, keyword_text_bounds_.width());
-    PaintMatch(canvas, *match_.associated_keyword.get(), x);
-  }
+  // Paint the text.
+  int x = GetMirroredXForRect(text_bounds_);
+  mirroring_context_->Initialize(x, text_bounds_.width());
+  PaintMatch(canvas, match_, x);
 }
-
-void AutocompleteResultView::AnimationProgressed(
-    const ui::Animation* animation) {
-  Layout();
-  SchedulePaint();
-}
-
