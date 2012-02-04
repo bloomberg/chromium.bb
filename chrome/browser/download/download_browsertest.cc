@@ -44,9 +44,11 @@
 #include "content/browser/download/download_persistent_store_info.h"
 #include "content/browser/net/url_request_mock_http_job.h"
 #include "content/browser/net/url_request_slow_download_job.h"
+#include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"
+#include "content/public/browser/notification_source.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/page_transition_types.h"
 #include "net/base/net_util.h"
@@ -1701,7 +1703,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadUrl) {
   DownloadSaveInfo save_info;
   save_info.prompt_for_save_location = true;
   DownloadManagerForBrowser(browser())->DownloadUrl(
-      url, GURL(""), "", false, save_info, web_contents);
+      url, GURL(""), "", false, -1, save_info, web_contents);
   observer->WaitForFinished();
   EXPECT_TRUE(observer->select_file_dialog_seen());
 
@@ -1728,7 +1730,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadUrlToPath) {
 
   DownloadTestObserver* observer(CreateWaiter(browser(), 1));
   DownloadManagerForBrowser(browser())->DownloadUrl(
-      url, GURL(""), "", false, save_info, web_contents);
+      url, GURL(""), "", false, -1, save_info, web_contents);
   observer->WaitForFinished();
 
   // Check state.
@@ -1773,4 +1775,56 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, SavePageNonHTMLViaGet) {
   EXPECT_TRUE(waiter->select_file_dialog_seen());
   ASSERT_EQ(1u, download_items.size());
   ASSERT_EQ(url, download_items[0]->GetOriginalUrl());
+}
+
+IN_PROC_BROWSER_TEST_F(DownloadTest, SavePageNonHTMLViaPost) {
+  // Do initial setup.
+  ASSERT_TRUE(InitialSetup(false));
+  ASSERT_TRUE(test_server()->Start());
+  NullSelectFile(browser());
+  std::vector<DownloadItem*> download_items;
+  GetDownloads(browser(), &download_items);
+  ASSERT_TRUE(download_items.empty());
+
+  // Navigate to a form page.
+  GURL form_url = test_server()->GetURL(
+      "files/downloads/form_page_to_post.html");
+  ASSERT_TRUE(form_url.is_valid());
+  ui_test_utils::NavigateToURL(browser(), form_url);
+
+  // Submit the form. This will send a POST reqeuest, and the response is a
+  // JPEG image. The resource also has Cache-Control: no-cache set,
+  // which normally requires revalidation each time.
+  GURL jpeg_url = test_server()->GetURL("files/post/downloads/image.jpg");
+  ASSERT_TRUE(jpeg_url.is_valid());
+  WebContents* web_contents = browser()->GetSelectedWebContents();
+  ASSERT_TRUE(web_contents != NULL);
+  ui_test_utils::WindowedNotificationObserver observer(
+      content::NOTIFICATION_NAV_ENTRY_COMMITTED,
+      content::Source<content::NavigationController>(
+          &web_contents->GetController()));
+  RenderViewHost* render_view_host = web_contents->GetRenderViewHost();
+  ASSERT_TRUE(render_view_host != NULL);
+  render_view_host->ExecuteJavascriptInWebFrame(
+        string16(), ASCIIToUTF16("SubmitForm()"));
+  observer.Wait();
+  EXPECT_EQ(jpeg_url, web_contents->GetURL());
+
+  // Stop the test server, and then try to save the page. If cache validation
+  // is not bypassed then this will fail since the server is no longer
+  // reachable. This will also fail if it tries to be retrieved via "GET"
+  // rather than "POST".
+  ASSERT_TRUE(test_server()->Stop());
+  scoped_ptr<DownloadTestObserver> waiter(
+      new DownloadTestObserver(
+          DownloadManagerForBrowser(browser()), 1, DownloadItem::COMPLETE,
+          false, DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_FAIL));
+  browser()->SavePage();
+  waiter->WaitForFinished();
+
+  // Validate that the correct file was downloaded.
+  GetDownloads(browser(), &download_items);
+  EXPECT_TRUE(waiter->select_file_dialog_seen());
+  ASSERT_EQ(1u, download_items.size());
+  ASSERT_EQ(jpeg_url, download_items[0]->GetOriginalUrl());
 }

@@ -1484,27 +1484,51 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
               content::PAGE_TRANSITION_LINK);
       break;
 
-    case IDC_CONTENT_CONTEXT_SAVEAVAS:
-    case IDC_CONTENT_CONTEXT_SAVEIMAGEAS:
     case IDC_CONTENT_CONTEXT_SAVELINKAS: {
       download_util::RecordDownloadCount(
           download_util::INITIATED_BY_CONTEXT_MENU_COUNT);
       const GURL& referrer =
           params_.frame_url.is_empty() ? params_.page_url : params_.frame_url;
-      const GURL& url =
-          (id == IDC_CONTENT_CONTEXT_SAVELINKAS ? params_.link_url :
-                                                  params_.src_url);
-      DownloadManager* dlm =
-          DownloadServiceFactory::GetForProfile(profile_)->GetDownloadManager();
-      // For images and AV "Save As" context menu commands, save the cached
-      // data even if it is no longer valid. This helps ensure that the content
-      // that is visible on the page is what is saved. For links, this behavior
-      // is not desired since the content being linked to is not visible.
-      bool prefer_cache = (id != IDC_CONTENT_CONTEXT_SAVELINKAS);
+      const GURL& url = params_.link_url;
       DownloadSaveInfo save_info;
       save_info.prompt_for_save_location = true;
-      dlm->DownloadUrl(url, referrer, params_.frame_charset,
-                       prefer_cache, save_info, source_web_contents_);
+      DownloadManager* dlm =
+          DownloadServiceFactory::GetForProfile(profile_)->GetDownloadManager();
+      dlm->DownloadUrl(url,
+                       referrer,
+                       params_.frame_charset,
+                       false,  // Don't prefer_cache
+                       -1,  // No POST id
+                       save_info,
+                       source_web_contents_);
+      break;
+    }
+
+    case IDC_CONTENT_CONTEXT_SAVEAVAS:
+    case IDC_CONTENT_CONTEXT_SAVEIMAGEAS: {
+      download_util::RecordDownloadCount(
+          download_util::INITIATED_BY_CONTEXT_MENU_COUNT);
+      const GURL& referrer =
+          params_.frame_url.is_empty() ? params_.page_url : params_.frame_url;
+      const GURL& url = params_.src_url;
+      DownloadSaveInfo save_info;
+      save_info.prompt_for_save_location = true;
+      int64 post_id = -1;
+      if (url == source_web_contents_->GetURL()) {
+        const NavigationEntry* entry =
+            source_web_contents_->GetController().GetActiveEntry();
+        if (entry)
+          post_id = entry->GetPostID();
+      }
+      DownloadManager* dlm =
+          DownloadServiceFactory::GetForProfile(profile_)->GetDownloadManager();
+      dlm->DownloadUrl(url,
+                       referrer,
+                       "",
+                       true,  // prefer_cache
+                       post_id,
+                       save_info,
+                       source_web_contents_);
       break;
     }
 

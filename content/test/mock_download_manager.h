@@ -51,10 +51,11 @@ class MockDownloadManager : public content::DownloadManager {
                                            base::Time remove_end));
   MOCK_METHOD1(RemoveDownloads, int(base::Time remove_begin));
   MOCK_METHOD0(RemoveAllDownloads, int());
-  MOCK_METHOD6(DownloadUrl, void(const GURL& url,
+  MOCK_METHOD7(DownloadUrl, void(const GURL& url,
                                  const GURL& referrer,
                                  const std::string& referrer_encoding,
                                  bool prefer_cache,
+                                 int64 post_id,
                                  const DownloadSaveInfo& save_info,
                                  content::WebContents* web_contents));
   MOCK_METHOD1(AddObserver, void(Observer* observer));

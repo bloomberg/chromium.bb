@@ -167,7 +167,10 @@ class CONTENT_EXPORT DownloadManager
   // Downloads the content at |url|. |referrer| and |referrer_encoding| are the
   // referrer for the download, and may be empty. If |prefer_cache| is true,
   // then if the response to |url| is in the HTTP cache it will be used without
-  // revalidation. |save_info| specifies where the downloaded file should be
+  // revalidation. If |post_id| is non-negative, then it identifies the post
+  // transaction used to originally retrieve the |url| resource - it also
+  // requires |prefer_cache| to be |true| since re-post'ing is not done.
+  // |save_info| specifies where the downloaded file should be
   // saved, and whether the user should be prompted about the download.
   // |web_contents| is the web page that the download is done in context of,
   // and must be non-NULL.
@@ -175,6 +178,7 @@ class CONTENT_EXPORT DownloadManager
                            const GURL& referrer,
                            const std::string& referrer_encoding,
                            bool prefer_cache,
+                           int64 post_id,
                            const DownloadSaveInfo& save_info,
                            content::WebContents* web_contents) = 0;
 

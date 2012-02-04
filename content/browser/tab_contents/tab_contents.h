@@ -496,6 +496,9 @@ class CONTENT_EXPORT TabContents
 
   void SetEncoding(const std::string& encoding);
 
+  // Save a URL to the local filesystem.
+  void SaveURL(const GURL& url, const GURL& referrer);
+
   // Stores random bits of data for others to associate with this object.
   // WARNING: this needs to be deleted after NavigationController.
   base::PropertyBag property_bag_;

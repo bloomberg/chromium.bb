@@ -432,6 +432,7 @@ void Downloader::OnFileStreamCreated(const GURL& url,
         web_contents->GetURL(),
         web_contents->GetEncoding(),
         false,
+        -1,
         save_info,
         web_contents);
   } else {

@@ -894,7 +894,14 @@ net::Error ResourceDispatcherHost::BeginDownload(
   request->set_context(request_context);
   int extra_load_flags = net::LOAD_IS_DOWNLOAD;
   if (prefer_cache) {
-    extra_load_flags |= net::LOAD_PREFERRING_CACHE;
+    // If there is upload data attached, only retrieve from cache because there
+    // is no current mechanism to prompt the user for their consent for a
+    // re-post. For GETs, try to retrieve data from the cache and skip
+    // validating the entry if present.
+    if (request->get_upload() != NULL)
+      extra_load_flags |= net::LOAD_ONLY_FROM_CACHE;
+    else
+      extra_load_flags |= net::LOAD_PREFERRING_CACHE;
   } else {
     extra_load_flags |= net::LOAD_DISABLE_CACHE;
   }

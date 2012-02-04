@@ -934,21 +934,10 @@ bool TabContents::IsSavable() {
 void TabContents::OnSavePage() {
   // If we can not save the page, try to download it.
   if (!IsSavable()) {
-    DownloadManager* dlm = GetBrowserContext()->GetDownloadManager();
-    const GURL& current_page_url = GetURL();
-    if (dlm && current_page_url.is_valid()) {
-      DownloadSaveInfo save_info;
-      save_info.prompt_for_save_location = true;
-      dlm->DownloadUrl(current_page_url,
-                       GURL(),
-                       "",
-                       true,  // prefer_cache
-                       save_info,
-                       this);
-      download_stats::RecordDownloadCount(
-          download_stats::INITIATED_BY_SAVE_PACKAGE_FAILURE_COUNT);
-      return;
-    }
+    SaveURL(GetURL(), GURL());
+    download_stats::RecordDownloadCount(
+        download_stats::INITIATED_BY_SAVE_PACKAGE_FAILURE_COUNT);
+    return;
   }
 
   Stop();
@@ -1425,10 +1414,7 @@ void TabContents::OnUpdateZoomLimits(int minimum_percent,
 }
 
 void TabContents::OnSaveURL(const GURL& url) {
-  DownloadManager* dlm = GetBrowserContext()->GetDownloadManager();
-  DownloadSaveInfo save_info;
-  save_info.prompt_for_save_location = true;
-  dlm->DownloadUrl(url, GetURL(), "", true, save_info, this);
+  SaveURL(url, GetURL());
 }
 
 void TabContents::OnEnumerateDirectory(int request_id,
@@ -2286,6 +2272,30 @@ void TabContents::OnDialogClosed(RenderViewHost* rvh,
 void TabContents::SetEncoding(const std::string& encoding) {
   encoding_ = content::GetContentClient()->browser()->
       GetCanonicalEncodingNameByAliasName(encoding);
+}
+
+void TabContents::SaveURL(const GURL& url, const GURL& referrer) {
+  DownloadManager* dlm = GetBrowserContext()->GetDownloadManager();
+  if (!dlm)
+    return;
+  int64 post_id = -1;
+  // Check if the URL to save matches the URL of the page itself. One
+  // circumstance where this may not happen is when a Pepper plugin initiates
+  // a save.
+  if (url == GetURL()) {
+    const NavigationEntry* entry = controller_.GetActiveEntry();
+    if (entry)
+      post_id = entry->GetPostID();
+  }
+  DownloadSaveInfo save_info;
+  save_info.prompt_for_save_location = true;
+  dlm->DownloadUrl(url,
+                   referrer,
+                   "",
+                   true,  // prefer_cache
+                   post_id,
+                   save_info,
+                   this);
 }
 
 void TabContents::CreateViewAndSetSizeForRVH(RenderViewHost* rvh) {

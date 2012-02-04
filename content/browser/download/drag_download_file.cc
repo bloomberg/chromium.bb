@@ -137,6 +137,7 @@ void DragDownloadFile::InitiateDownload() {
                                  referrer_,
                                  referrer_encoding_,
                                  false,
+                                 -1,
                                  save_info,
                                  web_contents_);
   download_stats::RecordDownloadCount(

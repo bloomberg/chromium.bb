@@ -34,6 +34,7 @@
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents_delegate.h"
+#include "net/base/upload_data.h"
 
 // TODO(benjhayden): Change this to DCHECK when we have more debugging
 // information from the next dev cycle, before the next stable/beta branch is
@@ -54,10 +55,11 @@ namespace {
 
 // Param structs exist because base::Bind can only handle 6 args.
 struct URLParams {
-  URLParams(const GURL& url, const GURL& referrer)
-    : url_(url), referrer_(referrer) {}
+  URLParams(const GURL& url, const GURL& referrer, int64 post_id)
+    : url_(url), referrer_(referrer), post_id_(post_id) {}
   GURL url_;
   GURL referrer_;
+  int64 post_id_;
 };
 
 struct RenderParams {
@@ -76,6 +78,17 @@ void BeginDownload(const URLParams& url_params,
   scoped_ptr<net::URLRequest> request(
       new net::URLRequest(url_params.url_, resource_dispatcher_host));
   request->set_referrer(url_params.referrer_.spec());
+  if (url_params.post_id_ >= 0) {
+    // The POST in this case does not have an actual body, and only works
+    // when retrieving data from cache. This is done because we don't want
+    // to do a re-POST without user consent, and currently don't have a good
+    // plan on how to display the UI for that.
+    DCHECK(prefer_cache);
+    request->set_method("POST");
+    scoped_refptr<net::UploadData> upload_data = new net::UploadData();
+    upload_data->set_identifier(url_params.post_id_);
+    request->set_upload(upload_data);
+  }
   resource_dispatcher_host->BeginDownload(
       request.Pass(), prefer_cache, save_info,
       DownloadResourceHandler::OnStartedCallback(),
@@ -814,6 +827,7 @@ void DownloadManagerImpl::DownloadUrl(
     const GURL& referrer,
     const std::string& referrer_charset,
     bool prefer_cache,
+    int64 post_id,
     const DownloadSaveInfo& save_info,
     WebContents* web_contents) {
   ResourceDispatcherHost* resource_dispatcher_host =
@@ -826,7 +840,7 @@ void DownloadManagerImpl::DownloadUrl(
       BrowserThread::IO, FROM_HERE,
       base::Bind(
           &BeginDownload,
-          URLParams(url, referrer),
+          URLParams(url, referrer, post_id),
           prefer_cache,
           save_info,
           resource_dispatcher_host,
