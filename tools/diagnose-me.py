@@ -6,6 +6,7 @@
 """Diagnose some common system configuration problems on Linux, and
 suggest fixes."""
 
+import os
 import subprocess
 import sys
 
@@ -41,6 +42,35 @@ def CheckPathLd():
                 "You should delete all of them but your system one.\n"
                 "gold is hooked into your build via gyp.\n")
     return None
+
+
+@Check("/usr/local/gold is cleaned up")
+def CheckLocalGold():
+    # Check /usr/bin/ld* symlinks.
+    for path in ('ld.bfd', 'ld.gold', 'ld'):
+        path = '/usr/bin/' + path
+        try:
+            target = os.readlink(path)
+        except OSError, e:
+            if e.errno == 2:
+                continue  # No such file
+            if e.errno == 22:
+                continue  # Not a symlink
+            raise
+        if '/usr/local/gold' in target:
+            return ("%s is a symlink into /usr/local/gold.\n"
+                    "It's difficult to make a recommendation, because you\n"
+                    "probably set this up yourself.  But you should make\n"
+                    "/usr/bin/ld be the standard linker, which you likely\n"
+                    "renamed /usr/bin/ld.bfd or something like that.\n")
+
+    if os.path.exists('/usr/local/gold'):
+        return ("You have a /usr/local/gold, which is no longer needed.\n"
+                "Check that you don't have any references to it in your\n"
+                "set up and then delete it.\n")
+
+    return None
+
 
 
 def RunChecks():
