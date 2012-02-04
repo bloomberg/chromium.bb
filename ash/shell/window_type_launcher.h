@@ -68,6 +68,7 @@ class WindowTypeLauncher : public views::WidgetDelegateView,
 #endif  // !defined(OS_MACOSX)
 
   views::NativeTextButton* create_button_;
+  views::NativeTextButton* panel_button_;
   views::NativeTextButton* create_nonresizable_button_;
   views::NativeTextButton* bubble_button_;
   views::NativeTextButton* lock_button_;
