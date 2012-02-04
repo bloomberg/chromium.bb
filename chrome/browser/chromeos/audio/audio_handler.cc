@@ -9,7 +9,10 @@
 
 #include "base/logging.h"
 #include "base/memory/singleton.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/audio/audio_mixer_alsa.h"
+#include "chrome/browser/prefs/pref_service.h"
+#include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
 
 using std::max;
@@ -22,6 +25,13 @@ namespace {
 // A value of less than one adjusts quieter volumes in larger steps (giving
 // finer resolution in the higher volumes).
 const double kVolumeBias = 0.5;
+
+// Default value assigned to the pref when it's first created, in decibels.
+const double kDefaultVolumeDb = -10.0;
+
+// Values used for muted preference.
+const int kPrefMuteOff = 0;
+const int kPrefMuteOn = 1;
 
 static AudioHandler* g_audio_handler = NULL;
 
@@ -55,13 +65,28 @@ AudioHandler* AudioHandler::GetInstanceIfInitialized() {
          g_audio_handler : NULL;
 }
 
+// static
+void AudioHandler::RegisterPrefs(PrefService* local_state) {
+  // TODO(derat): Store audio volume percent instead of decibels.
+  if (!local_state->FindPreference(prefs::kAudioVolume))
+    local_state->RegisterDoublePref(prefs::kAudioVolume,
+                                    kDefaultVolumeDb,
+                                    PrefService::UNSYNCABLE_PREF);
+  if (!local_state->FindPreference(prefs::kAudioMute))
+    local_state->RegisterIntegerPref(prefs::kAudioMute,
+                                     kPrefMuteOff,
+                                     PrefService::UNSYNCABLE_PREF);
+}
+
 double AudioHandler::GetVolumePercent() {
   return VolumeDbToPercent(mixer_->GetVolumeDb());
 }
 
 void AudioHandler::SetVolumePercent(double volume_percent) {
   volume_percent = min(max(volume_percent, 0.0), 100.0);
-  mixer_->SetVolumeDb(PercentToVolumeDb(volume_percent));
+  double volume_db = PercentToVolumeDb(volume_percent);
+  mixer_->SetVolumeDb(volume_db);
+  prefs_->SetDouble(prefs::kAudioVolume, volume_db);
   FOR_EACH_OBSERVER(VolumeObserver, volume_observers_, OnVolumeChanged());
 }
 
@@ -77,6 +102,7 @@ bool AudioHandler::IsMuted() {
 
 void AudioHandler::SetMuted(bool mute) {
   mixer_->SetMuted(mute);
+  prefs_->SetInteger(prefs::kAudioMute, mute ? kPrefMuteOn : kPrefMuteOff);
   FOR_EACH_OBSERVER(VolumeObserver, volume_observers_, OnVolumeChanged());
 }
 
@@ -89,7 +115,10 @@ void AudioHandler::RemoveVolumeObserver(VolumeObserver* observer) {
 }
 
 AudioHandler::AudioHandler()
-    : mixer_(new AudioMixerAlsa()) {
+    : mixer_(new AudioMixerAlsa()),
+      prefs_(g_browser_process->local_state()) {
+  mixer_->SetVolumeDb(prefs_->GetDouble(prefs::kAudioVolume));
+  mixer_->SetMuted(prefs_->GetInteger(prefs::kAudioMute) == kPrefMuteOn);
   mixer_->Init();
 }
 

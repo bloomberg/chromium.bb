@@ -13,6 +13,8 @@
 
 template <typename T> struct DefaultSingletonTraits;
 
+class PrefService;
+
 namespace chromeos {
 
 class AudioMixer;
@@ -42,6 +44,9 @@ class AudioHandler {
   // isn't known at that point.  This could be avoided if AudioMixer objects
   // instead took percentages and did their own conversions to decibels.
   static AudioHandler* GetInstanceIfInitialized();
+
+  // Registers volume and mute preferences.
+  static void RegisterPrefs(PrefService* local_state);
 
   // Gets volume level in our internal 0-100% range, 0 being pure silence.
   double GetVolumePercent();
@@ -78,6 +83,8 @@ class AudioHandler {
   scoped_ptr<AudioMixer> mixer_;
 
   ObserverList<VolumeObserver> volume_observers_;
+
+  PrefService* prefs_;  // not owned
 
   DISALLOW_COPY_AND_ASSIGN(AudioHandler);
 };

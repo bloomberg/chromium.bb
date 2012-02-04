@@ -80,7 +80,7 @@
 #endif
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/audio/audio_mixer_alsa.h"
+#include "chrome/browser/chromeos/audio/audio_handler.h"
 #include "chrome/browser/chromeos/customization_document.h"
 #include "chrome/browser/chromeos/login/signed_settings_cache.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
@@ -134,7 +134,7 @@ void RegisterLocalState(PrefService* local_state) {
   ProfileInfoCache::RegisterPrefs(local_state);
   ProfileManager::RegisterPrefs(local_state);
 #if defined(OS_CHROMEOS)
-  chromeos::AudioMixerAlsa::RegisterPrefs(local_state);
+  chromeos::AudioHandler::RegisterPrefs(local_state);
   chromeos::UserManager::RegisterPrefs(local_state);
   chromeos::WizardController::RegisterPrefs(local_state);
   chromeos::InputMethodMenu::RegisterPrefs(local_state);

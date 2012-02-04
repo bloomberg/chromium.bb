@@ -17,11 +17,8 @@
 #include "base/message_loop.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/system/runtime_environment.h"
 #include "chrome/browser/extensions/extension_tts_api_chromeos.h"
-#include "chrome/browser/prefs/pref_service.h"
-#include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
 
 typedef long alsa_long_t;  // 'long' is required for ALSA API calls.
@@ -51,12 +48,8 @@ const char kPCMElementName[] = "PCM";
 const double kDefaultMinVolumeDb = -90.0;
 const double kDefaultMaxVolumeDb = 0.0;
 
-// Default value assigned to the pref when it's first created, in decibels.
+// Default volume, in decibels.
 const double kDefaultVolumeDb = -10.0;
-
-// Values used for muted preference.
-const int kPrefMuteOff = 0;
-const int kPrefMuteOn = 1;
 
 // Number of seconds that we'll sleep between each connection attempt.
 const int kConnectionRetrySleepSec = 1;
@@ -77,7 +70,6 @@ AudioMixerAlsa::AudioMixerAlsa()
       apply_is_pending_(true),
       alsa_mixer_(NULL),
       pcm_element_(NULL),
-      prefs_(NULL),
       disconnected_event_(true, false),
       num_connection_attempts_(0) {
 }
@@ -99,10 +91,6 @@ AudioMixerAlsa::~AudioMixerAlsa() {
 
 void AudioMixerAlsa::Init() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  prefs_ = g_browser_process->local_state();
-  volume_db_ = prefs_->GetDouble(prefs::kAudioVolume);
-  is_muted_ = prefs_->GetInteger(prefs::kAudioMute);
-
   DCHECK(!thread_.get()) << "Init() called twice";
   thread_.reset(new base::Thread("AudioMixerAlsa"));
   CHECK(thread_->Start());
@@ -142,8 +130,6 @@ void AudioMixerAlsa::SetVolumeDb(double volume_db) {
     }
   }
 
-  prefs_->SetDouble(prefs::kAudioVolume, volume_db);
-
   base::AutoLock lock(lock_);
   volume_db_ = volume_db;
   if (!apply_is_pending_)
@@ -158,25 +144,11 @@ bool AudioMixerAlsa::IsMuted() {
 
 void AudioMixerAlsa::SetMuted(bool muted) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  prefs_->SetInteger(prefs::kAudioMute, muted ? kPrefMuteOn : kPrefMuteOff);
   base::AutoLock lock(lock_);
   is_muted_ = muted;
   if (!apply_is_pending_)
     thread_->message_loop()->PostTask(FROM_HERE,
         base::Bind(&AudioMixerAlsa::ApplyState, base::Unretained(this)));
-}
-
-// static
-void AudioMixerAlsa::RegisterPrefs(PrefService* local_state) {
-  // TODO(derat): Store audio volume percent instead of decibels.
-  if (!local_state->FindPreference(prefs::kAudioVolume))
-    local_state->RegisterDoublePref(prefs::kAudioVolume,
-                                    kDefaultVolumeDb,
-                                    PrefService::UNSYNCABLE_PREF);
-  if (!local_state->FindPreference(prefs::kAudioMute))
-    local_state->RegisterIntegerPref(prefs::kAudioMute,
-                                     kPrefMuteOff,
-                                     PrefService::UNSYNCABLE_PREF);
 }
 
 void AudioMixerAlsa::Connect() {

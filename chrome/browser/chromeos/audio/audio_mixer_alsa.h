@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,8 +15,6 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
 #include "chrome/browser/chromeos/audio/audio_mixer.h"
-
-class PrefService;
 
 struct _snd_mixer_elem;
 struct _snd_mixer;
@@ -39,10 +37,6 @@ class AudioMixerAlsa : public AudioMixer {
   virtual void SetVolumeDb(double volume_db) OVERRIDE;
   virtual bool IsMuted() OVERRIDE;
   virtual void SetMuted(bool muted) OVERRIDE;
-
-  // Registers volume and mute preferences.
-  // TODO(derat): Move prefs into AudioHandler.
-  static void RegisterPrefs(PrefService* local_state);
 
  private:
   // Tries to connect to ALSA.  On failure, posts a delayed Connect() task to
@@ -107,8 +101,6 @@ class AudioMixerAlsa : public AudioMixer {
 
   // PCM mixer.  May be NULL if the driver doesn't expose one.
   _snd_mixer_elem* pcm_element_;
-
-  PrefService* prefs_;
 
   // Signalled after Disconnect() finishes (which is itself invoked by the
   // d'tor).
