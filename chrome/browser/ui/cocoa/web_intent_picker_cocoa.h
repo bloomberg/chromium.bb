@@ -13,9 +13,9 @@
 #include "chrome/browser/ui/intents/web_intent_picker_model.h"
 #include "chrome/browser/ui/intents/web_intent_picker_model_observer.h"
 
-class InlineHtmlContentDelegate;
 class TabContentsWrapper;
 @class WebIntentBubbleController;
+class WebIntentInlineDispositionDelegate;
 
 // A bridge class that enables communication between ObjectiveC and C++.
 class WebIntentPickerCocoa : public WebIntentPicker,
@@ -59,7 +59,7 @@ class WebIntentPickerCocoa : public WebIntentPicker,
   scoped_ptr<TabContentsWrapper> inline_disposition_tab_contents_;
 
   // Delegate for inline disposition tab contents.
-  scoped_ptr<InlineHtmlContentDelegate> inline_disposition_delegate_;
+  scoped_ptr<WebIntentInlineDispositionDelegate> inline_disposition_delegate_;
 
   // Default constructor, for testing only.
   WebIntentPickerCocoa();

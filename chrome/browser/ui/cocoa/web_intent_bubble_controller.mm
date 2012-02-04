@@ -265,10 +265,9 @@ const CGFloat kTextWidth = kWindowWidth - (kImageSize + kImageSpacing +
     return 0;
 
   // Determine a good size for the inline disposition window.
-  gfx::Size tab_size = contents_->web_contents()->GetView()->GetContainerSize();
-  CGFloat width = std::max(CGFloat(tab_size.width()/2.0), kWindowWidth);
-  CGFloat height = std::max(CGFloat(tab_size.height()/2.0), kWindowWidth);
-  NSRect frame = NSMakeRect(kFramePadding, offset, width, height);
+  gfx::Size size = WebIntentPicker::GetDefaultInlineDispositionSize(
+      contents_->web_contents());
+  NSRect frame = NSMakeRect(kFramePadding, offset, size.width(), size.height());
 
   [contents_->web_contents()->GetNativeView() setFrame:frame];
   [subviews addObject:contents_->web_contents()->GetNativeView()];

@@ -16,7 +16,7 @@
 #include "chrome/browser/ui/gtk/bubble/bubble_gtk.h"
 #include "chrome/browser/ui/intents/web_intent_picker.h"
 #include "chrome/browser/ui/intents/web_intent_picker_model_observer.h"
-#include "content/public/browser/web_contents_delegate.h"
+#include "chrome/browser/ui/intents/web_intent_inline_disposition_delegate.h"
 #include "ui/base/gtk/gtk_signal.h"
 #include "ui/base/gtk/owned_widget_gtk.h"
 
@@ -59,20 +59,6 @@ class WebIntentPickerGtk : public WebIntentPicker,
   // Callback when close button is clicked.
   CHROMEGTK_CALLBACK_0(WebIntentPickerGtk, void, OnCloseButtonClick);
 
-  // This class is the policy delegate for the rendered page in the intents
-  // inline disposition bubble.
-  // TODO(gbillock): Move up to WebIntentPicker?
-  class InlineDispositionDelegate : public content::WebContentsDelegate {
-   public:
-    InlineDispositionDelegate();
-    virtual ~InlineDispositionDelegate();
-    virtual bool IsPopupOrPanel(
-        const content::WebContents* source) const OVERRIDE;
-    virtual bool ShouldAddNavigationToHistory(
-      const history::HistoryAddPageArgs& add_page_args,
-      content::NavigationType navigation_type) OVERRIDE;
-  };
-
   // Initialize the contents of the bubble. After this call, contents_ will be
   // non-NULL.
   void InitContents();
@@ -114,7 +100,7 @@ class WebIntentPickerGtk : public WebIntentPicker,
   scoped_ptr<TabContentsContainerGtk> tab_contents_container_;
 
   // content::WebContentsDelegate for the inline disposition dialog.
-  scoped_ptr<InlineDispositionDelegate> inline_disposition_delegate_;
+  scoped_ptr<WebIntentInlineDispositionDelegate> inline_disposition_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(WebIntentPickerGtk);
 };

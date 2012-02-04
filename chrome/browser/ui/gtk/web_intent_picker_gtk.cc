@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/i18n/rtl.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/favicon/favicon_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -30,7 +31,6 @@
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_view.h"
 #include "googleurl/src/gurl.h"
 #include "grit/generated_resources.h"
 #include "ui/base/gtk/gtk_hig_constants.h"
@@ -155,7 +155,7 @@ void WebIntentPickerGtk::OnInlineDisposition(WebIntentPickerModel* model) {
   content::WebContents* web_contents = content::WebContents::Create(
       browser_->profile(), NULL, MSG_ROUTING_NONE, NULL, NULL);
   inline_disposition_tab_contents_.reset(new TabContentsWrapper(web_contents));
-  inline_disposition_delegate_.reset(new InlineDispositionDelegate);
+  inline_disposition_delegate_.reset(new WebIntentInlineDispositionDelegate);
   web_contents->SetDelegate(inline_disposition_delegate_.get());
   tab_contents_container_.reset(new TabContentsContainerGtk(NULL));
   tab_contents_container_->SetTab(inline_disposition_tab_contents_.get());
@@ -194,13 +194,9 @@ void WebIntentPickerGtk::OnInlineDisposition(WebIntentPickerModel* model) {
 
   gtk_container_add(GTK_CONTAINER(contents_), vbox);
 
-  // TODO(gbillock): This size calculation needs more thought.
-  // Move up to WebIntentPicker?
-  gfx::Size tab_size = wrapper_->web_contents()->GetView()->GetContainerSize();
-  int width = std::max(tab_size.width()/2, kMainContentWidth);
-  int height = std::max(tab_size.height()/2, kMainContentWidth);
+  gfx::Size size = GetDefaultInlineDispositionSize(web_contents);
   gtk_widget_set_size_request(tab_contents_container_->widget(),
-                              width, height);
+                              size.width(), size.height());
   gtk_widget_show_all(contents_);
 
   delegate_->OnInlineDispositionWebContentsCreated(web_contents);
@@ -291,21 +287,4 @@ GtkWidget* WebIntentPickerGtk::GetServiceButton(size_t index) {
   DCHECK(button != NULL);
 
   return button;
-}
-
-// WebIntentPickerGtk::InlineDispositionDelegate
-
-WebIntentPickerGtk::InlineDispositionDelegate::InlineDispositionDelegate() {}
-WebIntentPickerGtk::InlineDispositionDelegate::~InlineDispositionDelegate() {}
-
-bool WebIntentPickerGtk::InlineDispositionDelegate::IsPopupOrPanel(
-    const WebContents* source) const {
-  return true;
-}
-
-bool WebIntentPickerGtk::InlineDispositionDelegate::
-ShouldAddNavigationToHistory(
-    const history::HistoryAddPageArgs& add_page_args,
-    content::NavigationType navigation_type) {
-  return false;
 }

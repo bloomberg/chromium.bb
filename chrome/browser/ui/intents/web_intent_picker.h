@@ -8,7 +8,7 @@
 
 #include <stddef.h>
 #include <vector>
-#include "base/string16.h"
+#include "ui/gfx/size.h"
 
 class Browser;
 class TabContentsWrapper;
@@ -35,6 +35,10 @@ class WebIntentPicker {
   // Called when the controller has finished all pending asynchronous
   // activities.
   virtual void OnPendingAsyncCompleted() {}
+
+  // Get the default size of the inline disposition tab container.
+  static gfx::Size GetDefaultInlineDispositionSize(
+      content::WebContents* web_contents);
 
  protected:
   virtual ~WebIntentPicker() {}

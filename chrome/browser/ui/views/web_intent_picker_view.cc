@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/intents/web_intent_inline_disposition_delegate.h"
 #include "chrome/browser/ui/intents/web_intent_picker.h"
 #include "chrome/browser/ui/intents/web_intent_picker_delegate.h"
 #include "chrome/browser/ui/intents/web_intent_picker_model.h"
@@ -13,8 +14,11 @@
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/location_bar/location_icon_view.h"
+#include "chrome/browser/ui/views/tab_contents/tab_contents_container.h"
 #include "chrome/browser/ui/views/toolbar_view.h"
 #include "chrome/browser/ui/views/window.h"
+#include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_view.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/canvas.h"
@@ -25,6 +29,7 @@
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
+#include "ui/views/layout/fill_layout.h"
 
 using content::WebContents;
 
@@ -42,6 +47,28 @@ const int kControlSpacing = 6;
 // The size, relative to default, of the Chrome Web store label.
 const int kWebStoreLabelFontDelta = -2;
 
+// A layout manager that asks for a given preferred size, and allocates all of
+// its space to its only child.
+class PreferredSizeFillLayout : public views::FillLayout {
+ public:
+  explicit PreferredSizeFillLayout(const gfx::Size& size) : size_(size) {}
+  virtual ~PreferredSizeFillLayout() {}
+
+  // LayoutManager implementation.
+  virtual void Layout(views::View* host) OVERRIDE {
+    views::FillLayout::Layout(host);
+  }
+
+  virtual gfx::Size GetPreferredSize(views::View* host) OVERRIDE {
+    DCHECK_EQ(1, host->child_count());
+    return size_;
+  }
+
+ private:
+  // The preferred size to allocate for the host of this layout manager.
+  gfx::Size size_;
+};
+
 }  // namespace
 
 // Views implementation of WebIntentPicker.
@@ -50,7 +77,8 @@ class WebIntentPickerView : public views::BubbleDelegateView,
                             public WebIntentPicker,
                             public WebIntentPickerModelObserver {
  public:
-  WebIntentPickerView(views::View* anchor_view,
+  WebIntentPickerView(Browser* browser,
+                      views::View* anchor_view,
                       TabContentsWrapper* tab_contents,
                       WebIntentPickerDelegate* delegate,
                       WebIntentPickerModel* model);
@@ -91,6 +119,15 @@ class WebIntentPickerView : public views::BubbleDelegateView,
   // A vector of weak pointers to each of the service buttons.
   std::vector<views::TextButton*> buttons_;
 
+  // Delegate for inline disposition tab contents.
+  scoped_ptr<WebIntentInlineDispositionDelegate> inline_disposition_delegate_;
+
+  // A weak pointer to the widget containing all main content of the picker.
+  views::View* main_content_;
+
+  // A weak pointer to the browser this picker is in.
+  Browser* browser_;
+
   DISALLOW_COPY_AND_ASSIGN(WebIntentPickerView);
 };
 
@@ -105,20 +142,23 @@ WebIntentPicker* WebIntentPicker::Create(Browser* browser,
   views::View* anchor_view =
       browser_view->toolbar()->location_bar()->location_icon_view();
   WebIntentPickerView* bubble_delegate =
-      new WebIntentPickerView(anchor_view, wrapper, delegate, model);
+      new WebIntentPickerView(browser, anchor_view, wrapper, delegate, model);
   browser::CreateViewsBubble(bubble_delegate);
   bubble_delegate->Show();
   return bubble_delegate;
 }
 
-WebIntentPickerView::WebIntentPickerView(views::View* anchor_view,
+WebIntentPickerView::WebIntentPickerView(Browser* browser,
+                                         views::View* anchor_view,
                                          TabContentsWrapper* wrapper,
                                          WebIntentPickerDelegate* delegate,
                                          WebIntentPickerModel* model)
     : BubbleDelegateView(anchor_view, views::BubbleBorder::TOP_LEFT),
       delegate_(delegate),
       model_(model),
-      button_vbox_(NULL) {
+      button_vbox_(NULL),
+      main_content_(NULL),
+      browser_(browser) {
   model_->set_observer(this);
 }
 
@@ -174,8 +214,37 @@ void WebIntentPickerView::OnFaviconChanged(WebIntentPickerModel* model,
 }
 
 void WebIntentPickerView::OnInlineDisposition(WebIntentPickerModel* model) {
-  // TODO(gbillock): add support here.
-  delegate_->OnInlineDispositionWebContentsCreated(NULL);
+  const WebIntentPickerModel::Item& item =
+      model->GetItemAt(model->inline_disposition_index());
+
+  WebContents* web_contents = WebContents::Create(
+      browser_->profile(), NULL, MSG_ROUTING_NONE, NULL, NULL);
+  inline_disposition_delegate_.reset(new WebIntentInlineDispositionDelegate);
+  web_contents->SetDelegate(inline_disposition_delegate_.get());
+
+  TabContentsContainer* tab_contents_container = new TabContentsContainer;
+
+  web_contents->GetController().LoadURL(
+      item.url,
+      content::Referrer(),
+      content::PAGE_TRANSITION_START_PAGE,
+      std::string());
+
+  // Replace the picker with the inline disposition.
+  main_content_->RemoveAllChildViews(true);
+  main_content_->AddChildView(tab_contents_container);
+
+  // The contents can only be changed after the child is added to view
+  // hierarchy.
+  tab_contents_container->ChangeWebContents(web_contents);
+
+  gfx::Size size = GetDefaultInlineDispositionSize(web_contents);
+  main_content_->SetLayoutManager(new PreferredSizeFillLayout(size));
+
+  Layout();
+  SizeToContents();
+
+  delegate_->OnInlineDispositionWebContentsCreated(web_contents);
 }
 
 void WebIntentPickerView::Init() {
@@ -185,8 +254,8 @@ void WebIntentPickerView::Init() {
       kContentAreaBorder,  // inside border vertical spacing
       kContentAreaSpacing));  // between child spacing
 
-  views::View* main_content = new views::View();
-  main_content->SetLayoutManager(new views::BoxLayout(
+  main_content_ = new views::View();
+  main_content_->SetLayoutManager(new views::BoxLayout(
       views::BoxLayout::kVertical,
       0,  // inside border horizontal spacing
       0,  // inside border vertical spacing
@@ -195,7 +264,7 @@ void WebIntentPickerView::Init() {
   views::Label* top_label = new views::Label(
       l10n_util::GetStringUTF16(IDS_CHOOSE_INTENT_HANDLER_MESSAGE));
   top_label->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
-  main_content->AddChildView(top_label);
+  main_content_->AddChildView(top_label);
 
   button_vbox_ = new views::View();
   button_vbox_->SetLayoutManager(new views::BoxLayout(
@@ -203,7 +272,7 @@ void WebIntentPickerView::Init() {
       0,  // inside border horizontal spacing
       0,  // inside border vertical spacing
       kControlSpacing));  // between child spacing
-  main_content->AddChildView(button_vbox_);
+  main_content_->AddChildView(button_vbox_);
 
   views::Label* bottom_label = new views::Label(
       l10n_util::GetStringUTF16(IDS_FIND_MORE_INTENT_HANDLER_MESSAGE));
@@ -211,7 +280,7 @@ void WebIntentPickerView::Init() {
   bottom_label->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
   bottom_label->SetFont(
       bottom_label->font().DeriveFont(kWebStoreLabelFontDelta));
-  main_content->AddChildView(bottom_label);
+  main_content_->AddChildView(bottom_label);
 
-  AddChildView(main_content);
+  AddChildView(main_content_);
 }

@@ -12,6 +12,7 @@
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
 #import "chrome/browser/ui/cocoa/web_intent_bubble_controller.h"
+#include "chrome/browser/ui/intents/web_intent_inline_disposition_delegate.h"
 #include "chrome/browser/ui/intents/web_intent_picker.h"
 #include "chrome/browser/ui/intents/web_intent_picker_delegate.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
@@ -20,25 +21,6 @@
 #include "ui/gfx/image/image.h"
 
 using content::WebContents;
-
-class InlineHtmlContentDelegate: public content::WebContentsDelegate {
- public:
-  InlineHtmlContentDelegate() {}
-  virtual ~InlineHtmlContentDelegate() {}
-
-  virtual bool IsPopupOrPanel(
-      const content::WebContents* source) const OVERRIDE {
-    return true;
-  }
-  virtual bool ShouldAddNavigationToHistory(
-      const history::HistoryAddPageArgs& add_page_args,
-      content::NavigationType navigation_type) OVERRIDE {
-    return false;
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(InlineHtmlContentDelegate);
-};
 
 // static
 WebIntentPicker* WebIntentPicker::Create(Browser* browser,
@@ -122,7 +104,7 @@ void WebIntentPickerCocoa::OnInlineDisposition(WebIntentPickerModel* model) {
   content::WebContents* web_contents = content::WebContents::Create(
       browser_->profile(), NULL, MSG_ROUTING_NONE, NULL, NULL);
   inline_disposition_tab_contents_.reset(new TabContentsWrapper(web_contents));
-  inline_disposition_delegate_.reset(new InlineHtmlContentDelegate);
+  inline_disposition_delegate_.reset(new WebIntentInlineDispositionDelegate);
   web_contents->SetDelegate(inline_disposition_delegate_.get());
 
   inline_disposition_tab_contents_->web_contents()->GetController().LoadURL(
