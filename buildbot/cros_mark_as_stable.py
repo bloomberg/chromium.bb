@@ -53,14 +53,14 @@ def CleanStalePackages(boards, package_atoms):
       unmerge_board_cmd.extend(package_atoms)
       cros_build_lib.RunCommand(unmerge_board_cmd)
 
-    unmerge_host_cmd = ['sudo', 'emerge', '--unmerge']
+    unmerge_host_cmd = ['emerge', '--unmerge']
     unmerge_host_cmd.extend(package_atoms)
-    cros_build_lib.RunCommand(unmerge_host_cmd)
+    cros_build_lib.SudoRunCommand(unmerge_host_cmd)
 
   for board in boards:
     cros_build_lib.RunCommand(['eclean-%s' % board, '-d', 'packages'],
                               redirect_stderr=True)
-  cros_build_lib.RunCommand(['sudo', 'eclean', '-d', 'packages'],
+  cros_build_lib.SudoRunCommand(['eclean', '-d', 'packages'],
                             redirect_stderr=True)
 
 

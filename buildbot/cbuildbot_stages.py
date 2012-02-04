@@ -86,9 +86,9 @@ class CleanUpStage(bs.BuilderStage):
                                        self._build_root)
     chroot_tmpdir = os.path.join(self._build_root, 'chroot', 'tmp')
     if os.path.exists(chroot_tmpdir):
-      cros_lib.RunCommand(['sudo', 'rm', '-rf', chroot_tmpdir],
+      cros_lib.SudoRunCommand(['rm', '-rf', chroot_tmpdir],
                           print_cmd=False)
-      cros_lib.RunCommand(['sudo', 'mkdir', '--mode', '1777', chroot_tmpdir],
+      cros_lib.SudoRunCommand(['mkdir', '--mode', '1777', chroot_tmpdir],
                           print_cmd=False)
 
   def _DeleteChroot(self):
@@ -815,17 +815,17 @@ class SDKTestStage(bs.BuilderStage):
     board_location = os.path.join(self._build_root, 'chroot/build/amd64-host')
 
     # Create a tarball of the latest SDK.
-    cmd = ['sudo', 'tar', '-jcf', tarball_location]
+    cmd = ['tar', '-jcf', tarball_location]
     excluded_paths = ('usr/lib/debug', 'usr/local/autotest', 'packages',
                       'tmp')
     for path in excluded_paths:
       cmd.append('--exclude=%s/*' % path)
     cmd.append('.')
-    cros_lib.RunCommand(cmd, cwd=board_location)
+    cros_lib.SudoRunCommand(cmd, cwd=board_location)
 
     # Make sure the regular user has the permission to read.
-    cmd = ['sudo', 'chmod', 'a+r', tarball_location]
-    cros_lib.RunCommand(cmd, cwd=board_location)
+    cmd = ['chmod', 'a+r', tarball_location]
+    cros_lib.SudoRunCommand(cmd, cwd=board_location)
 
     # Build a new SDK using the tarball.
     cmd = ['cros_sdk', '--download', '--chroot', 'new-sdk-chroot', '--replace',

@@ -77,7 +77,7 @@ def CreateTrybotMarker(buildroot):
 def ClearBuildRoot(buildroot):
   """Remove and recreate the buildroot while preserving the trybot marker."""
   trybot_root = os.path.exists(GetTrybotMarkerPath(buildroot))
-  cros_lib.RunCommand(['sudo', 'rm', '-rf', buildroot], error_ok=True)
+  cros_lib.SudoRunCommand(['rm', '-rf', buildroot], error_ok=True)
   os.makedirs(buildroot)
   if trybot_root:
     CreateTrybotMarker(buildroot)

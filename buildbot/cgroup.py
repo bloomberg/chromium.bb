@@ -60,7 +60,7 @@ class CGroup(object):
       self.CGROUP_ROOT = '/dev/cgroup'
       # Unlike /sys/fs/cgroup, this path is not autocreated.
       if not os.path.exists(self.CGROUP_ROOT):
-        cros_lib.RunCommand(['sudo', 'mkdir', '-p', '%s' % self.CGROUP_ROOT],
+        cros_lib.SudoRunCommand(['mkdir', '-p', '%s' % self.CGROUP_ROOT],
             print_cmd=False)
 
     return True
@@ -69,19 +69,19 @@ class CGroup(object):
     """Checks/mounts appropriate sysfs entries."""
     if not self.FileContains(self.MOUNTS_PATH, [self.CGROUP_ROOT]):
       # Not all distros mount cgroup_root to sysfs.
-      cros_lib.RunCommand(['sudo', 'mount', '-t', 'tmpfs', 'cgroup_root',
+      cros_lib.SudoRunCommand(['mount', '-t', 'tmpfs', 'cgroup_root',
           self.CGROUP_ROOT], print_cmd=False)
 
     # Mount the root hierarchy.
     opts = ','.join(self.NEEDED_SUBSYSTEMS)
     if not os.path.exists(self.ROOT_PATH):
       # This hierarchy is exclusive to cbuildbot, so it probably doesn't exist.
-      cros_lib.RunCommand(['sudo', 'mkdir', '-p', '%s' % self.ROOT_PATH],
+      cros_lib.SudoRunCommand(['mkdir', '-p', '%s' % self.ROOT_PATH],
           print_cmd=False)
 
     if not self.FileContains(self.MOUNTS_PATH, [self.ROOT_PATH]):
       # Mount using expected set of opts.
-      cros_lib.RunCommand(['sudo', 'mount', '-t', 'cgroup', '-o', opts,
+      cros_lib.SudoRunCommand(['mount', '-t', 'cgroup', '-o', opts,
           'cbuildbot', self.ROOT_PATH], print_cmd=False)
 # TODO(zbehan): We should not accept pre-existing mount structure without
 # checking/fixing it. Not caring for example implies not being able to add
@@ -92,7 +92,7 @@ class CGroup(object):
 #    else:
 #      # The root hierarchy already exists, but could be using a different set
 #      # of subsystems, remount to make sure.
-#      cros_lib.RunCommand(['sudo', 'mount', '-o', 'remount,%s' % opts,
+#      cros_lib.SudoRunCommand(['mount', '-o', 'remount,%s' % opts,
 #          self.ROOT_PATH], print_cmd=False)
     # Create a group for jobs. The root of hierarchy is generally read-only
     # and always contains all processes. With a sub-group, we can for
@@ -108,25 +108,25 @@ class CGroup(object):
 
   def SudoInherit(self, path, name):
     """Set given key to whatever the parent cgroup has."""
-    cros_lib.RunCommand(['sudo', 'sh', '-c', 'cat %s > %s' %
+    cros_lib.SudoRunCommand(['sh', '-c', 'cat %s > %s' %
         (os.path.join(path, '..', name),
         os.path.join(path, name))], print_cmd=False)
 
   def SudoSet(self, path, name, value):
     """Set given key of a given cgroup to value."""
-    cros_lib.RunCommand(['sudo', 'sh', '-c', '/bin/echo %s > %s' %
+    cros_lib.SudoRunCommand(['sh', '-c', '/bin/echo %s > %s' %
         (value, os.path.join(path, name))], print_cmd=False)
 
   def InitNamedCGroup(self, path):
     """Creates a cgroup given by path."""
-    cros_lib.RunCommand(['sudo', 'mkdir', '-p', path], print_cmd=False)
+    cros_lib.SudoRunCommand(['mkdir', '-p', path], print_cmd=False)
     # Inherit some basics (cpus/mems are needed before we can assign tasks).
     self.SudoInherit(path, 'cpuset.cpus')
     self.SudoInherit(path, 'cpuset.mems')
 
   def RemoveNamedCGroup(self, path):
     """Removes a cgroup given by path."""
-    cros_lib.RunCommand(['sudo', 'rmdir', path], print_cmd=False)
+    cros_lib.SudoRunCommand(['rmdir', path], print_cmd=False)
 
   def AssignPidToGroup(self, path, pid):
     """Assigns a given process to the given cgroup."""
@@ -196,7 +196,7 @@ class CGroup(object):
           return
 
         if INTERVALS and steps_passed == INTERVALS[0][0]:
-          cros_lib.RunCommand(['sudo', 'kill', '-%s' % INTERVALS[0][1]] + pids,
+          cros_lib.SudoRunCommand(['kill', '-%s' % INTERVALS[0][1]] + pids,
               print_cmd=False, error_code_ok=True, redirect_stdout=True,
               combine_stdout_stderr=True)
           INTERVALS.pop(0)

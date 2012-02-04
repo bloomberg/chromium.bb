@@ -87,7 +87,7 @@ def _CleanUpMountPoints(buildroot):
 
   for mount_pt_str in mount_pts_in_buildroot.output.splitlines():
     mount_pt = mount_pt_str.rpartition(' type ')[0].partition(' on ')[2]
-    cros_lib.RunCommand(['sudo', 'umount', '-l', mount_pt], error_ok=True,
+    cros_lib.SudoRunCommand(['umount', '-l', mount_pt], error_ok=True,
                         print_cmd=False)
 
 
@@ -138,7 +138,7 @@ def PreFlightRinse(buildroot):
   """Cleans up any leftover state from previous runs."""
   _BuildRootGitCleanup(buildroot)
   _CleanUpMountPoints(buildroot)
-  cros_lib.RunCommand(['sudo', 'killall', 'kvm'], error_ok=True)
+  cros_lib.SudoRunCommand(['killall', 'kvm'], error_ok=True)
 
 
 def MakeChroot(buildroot, replace, use_sdk, chrome_root=None, extra_env=None):
@@ -356,7 +356,7 @@ def ArchiveTestResults(buildroot, test_results_dir, prefix):
   try:
     test_results_dir = test_results_dir.lstrip('/')
     results_path = os.path.join(buildroot, 'chroot', test_results_dir)
-    cros_lib.RunCommand(['sudo', 'chmod', '-R', 'a+rw', results_path],
+    cros_lib.SudoRunCommand(['chmod', '-R', 'a+rw', results_path],
                         print_cmd=False)
 
     test_tarball = os.path.join(buildroot, '%stest_results.tgz' % prefix)
@@ -516,11 +516,11 @@ def MarkChromeAsStable(buildroot,
     chrome_atom = portage_atom_string.splitlines()[-1].split('=')[1]
     for board in boards:
       keywords_file = CHROME_KEYWORDS_FILE % {'board': board}
-      cros_lib.RunCommand(
-          ['sudo', 'mkdir', '-p', os.path.dirname(keywords_file)],
+      cros_lib.SudoRunCommand(
+          ['mkdir', '-p', os.path.dirname(keywords_file)],
           enter_chroot=True, cwd=cwd)
-      cros_lib.RunCommand(
-          ['sudo', 'tee', keywords_file], input='=%s\n' % chrome_atom,
+      cros_lib.SudoRunCommand(
+          ['tee', keywords_file], input='=%s\n' % chrome_atom,
           enter_chroot=True, cwd=cwd)
     return chrome_atom
 
@@ -531,7 +531,7 @@ def CleanupChromeKeywordsFile(boards, buildroot):
     keywords_path_in_chroot = CHROME_KEYWORDS_FILE % {'board': board}
     keywords_file = '%s/chroot%s' % (buildroot, keywords_path_in_chroot)
     if os.path.exists(keywords_file):
-      cros_lib.RunCommand(['sudo', 'rm', '-f', keywords_file])
+      cros_lib.SudoRunCommand(['rm', '-f', keywords_file])
 
 
 def UprevPackages(buildroot, boards, overlays):
@@ -713,7 +713,7 @@ def GenerateDebugTarball(buildroot, board, archive_path, gdb_symbols):
   # symbols are only readable by root.
   board_dir = os.path.join(buildroot, 'chroot', 'build', board, 'usr', 'lib')
   debug_tgz = os.path.join(archive_path, 'debug.tgz')
-  cmd = ['sudo', 'tar', 'czf', debug_tgz, '--checkpoint=10000']
+  cmd = ['tar', 'czf', debug_tgz, '--checkpoint=10000']
   if gdb_symbols:
     cmd.extend(['--exclude', 'debug/usr/local/autotest',
                 '--exclude', 'debug/tests',
@@ -721,7 +721,7 @@ def GenerateDebugTarball(buildroot, board, archive_path, gdb_symbols):
   else:
     cmd.append('debug/breakpad')
 
-  tar_cmd = cros_lib.RunCommand(cmd, cwd=board_dir, error_ok=True,
+  tar_cmd = cros_lib.SudoRunCommand(cmd, cwd=board_dir, error_ok=True,
                                 exit_code=True)
 
   # Emerging the factory kernel while this is running installs different debug
@@ -733,7 +733,7 @@ def GenerateDebugTarball(buildroot, board, archive_path, gdb_symbols):
     raise Exception('%r failed with exit code %s' % (cmd, tar_cmd.returncode))
 
   # Fix permissions and ownership on debug tarball.
-  cros_lib.RunCommand(['sudo', 'chown', str(os.getuid()), debug_tgz])
+  cros_lib.SudoRunCommand(['chown', str(os.getuid()), debug_tgz])
   os.chmod(debug_tgz, 0644)
 
   return os.path.basename(debug_tgz)

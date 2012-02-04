@@ -111,7 +111,7 @@ class CBuildBotTest(mox.MoxTestBase):
     # Convenience variables to make archive easier to understand.
     path_to_results = os.path.join(buildroot, 'chroot', test_results_dir)
 
-    cros_lib.RunCommand(['sudo', 'chmod', '-R', 'a+rw', path_to_results],
+    cros_lib.SudoRunCommand(['chmod', '-R', 'a+rw', path_to_results],
                         print_cmd=False)
     cros_lib.RunCommand(['tar', 'czf', test_tarball,
                          '--directory=%s' % path_to_results, '.'],

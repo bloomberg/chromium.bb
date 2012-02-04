@@ -29,7 +29,7 @@ def SetNiceness(foreground):
   # Note: -c 2 means best effort priority.
   pid_str = str(os.getpid())
   ionice_cmd = ['ionice', '-p', pid_str, '-c', '2']
-  renice_cmd = ['sudo', 'renice']
+  renice_cmd = ['renice']
   if foreground:
     # Set this program to foreground priority. ionice and negative niceness
     # is honored by sudo and passed to subprocesses.
@@ -41,7 +41,7 @@ def SetNiceness(foreground):
     ionice_cmd.extend(['-n', '7'])
     renice_cmd.extend(['-n', '0', '-p', pid_str])
   cros_lib.RunCommand(ionice_cmd, print_cmd=False)
-  cros_lib.RunCommand(renice_cmd, print_cmd=False, redirect_stdout=True)
+  cros_lib.SudoRunCommand(renice_cmd, print_cmd=False, redirect_stdout=True)
 
 
 class BackgroundException(Exception):

@@ -484,13 +484,13 @@ class PrebuiltUploader(object):
     tmpdir = tempfile.mkdtemp()
     try:
       tarfile = os.path.join(tmpdir, '%s.tbz2' % boardname)
-      cmd = ['sudo', 'tar', '-I', 'pbzip2', '-cf', tarfile]
+      cmd = ['tar', '-I', 'pbzip2', '-cf', tarfile]
       excluded_paths = ('usr/lib/debug', 'usr/local/autotest', 'packages',
                         'tmp')
       for path in excluded_paths:
         cmd.append('--exclude=%s/*' % path)
       cmd.append('.')
-      cros_build_lib.RunCommand(cmd, cwd=os.path.join(cwd, boardname))
+      cros_build_lib.SudoRunCommand(cmd, cwd=os.path.join(cwd, boardname))
       remote_tarfile = '%s/%s.tbz2' % (remote_location.rstrip('/'), boardname)
       # FIXME(zbehan): Temporary hack to upload amd64-host chroots to a
       # different gs bucket. The right way is to do the upload in a separate
@@ -502,7 +502,7 @@ class PrebuiltUploader(object):
       if _GsUpload((tarfile, remote_tarfile, self._acl)):
         sys.exit(1)
     finally:
-      cros_build_lib.RunCommand(['sudo', 'rm', '-rf', tmpdir], cwd=cwd)
+      cros_build_lib.SudoRunCommand(['rm', '-rf', tmpdir], cwd=cwd)
 
   def _SyncHostPrebuilts(self, version, key, git_sync, sync_binhost_conf):
     """Synchronize host prebuilt files.
