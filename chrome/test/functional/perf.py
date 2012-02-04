@@ -46,8 +46,8 @@ import pyauto
 import simplejson  # Must be imported after pyauto; located in third_party.
 
 from netflix import NetflixTestHelper
-import perf_snapshot
 import pyauto_utils
+import remote_inspector_client
 import test_utils
 from youtube import YoutubeTestHelper
 
@@ -1413,7 +1413,7 @@ class LiveGamePerfTest(BasePerfTest):
         description + 'CpuBusy',
         fraction_non_idle_time, 'Fraction',
         graph_name='CpuBusy')
-    snapshotter = perf_snapshot.PerformanceSnapshotter()
+    snapshotter = remote_inspector_client.PerformanceSnapshotter()
     snapshot = snapshotter.HeapSnapshot()[0]
     v8_heap_size = snapshot['total_heap_size'] / (1024.0 * 1024.0)
     logging.info('Total v8 heap size: %f MB' % v8_heap_size)

@@ -11,9 +11,9 @@ import os
 import time
 
 import perf
-import perf_snapshot
 import pyauto_functional  # Must be imported before pyauto.
 import pyauto
+import remote_inspector_client
 
 
 class ChromeEndureBaseTest(perf.BasePerfTest):
@@ -33,7 +33,9 @@ class ChromeEndureBaseTest(perf.BasePerfTest):
     if 'TEST_LENGTH_SEC' in os.environ:
       self._test_length_sec = int(os.environ['TEST_LENGTH_SEC'])
 
-    self._snapshotter = perf_snapshot.PerformanceSnapshotter()  # Tab index 0.
+    # Set up a remote inspector client associated with tab 0.
+    self._snapshotter = remote_inspector_client.PerformanceSnapshotter()
+
     self._dom_node_count_results = []
     self._event_listener_count_results = []
     self._process_private_mem_results = []

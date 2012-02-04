@@ -21,8 +21,8 @@ a running browser.
 
 To take v8 heap snapshots from another automated script (e.g., from pyauto):
 
-import perf_snapshot
-snapshotter = perf_snapshot.PerformanceSnapshotter()
+import remote_inspector_client
+snapshotter = remote_inspector_client.PerformanceSnapshotter()
 snapshot_info = snapshotter.HeapSnapshot()
 new_snapshot_info = snapshotter.HeapSnapshot()
 
