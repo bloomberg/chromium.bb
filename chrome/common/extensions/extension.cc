@@ -2971,13 +2971,6 @@ bool Extension::OverlapsWithOrigin(const GURL& origin) const {
 }
 
 Extension::SyncType Extension::GetSyncType() const {
-  // The CWS needs to be treated as syncable app because it appears on the NTP
-  // and we need to make sure its position values are synced.
-  // If another case arises where we need to have a special case like the CWS,
-  // something more systematically should be done.
-  if (id() == extension_misc::kWebStoreAppId)
-    return SYNC_TYPE_APP;
-
   // TODO(akalin): Figure out if we need to allow some other types.
   if (location() != Extension::INTERNAL) {
     // We have a non-standard location.
