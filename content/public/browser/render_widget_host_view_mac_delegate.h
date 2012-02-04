@@ -1,9 +1,9 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_RENDERER_HOST_RENDER_WIDGET_HOST_VIEW_MAC_DELEGATE_H_
-#define CONTENT_BROWSER_RENDERER_HOST_RENDER_WIDGET_HOST_VIEW_MAC_DELEGATE_H_
+#ifndef CONTENT_PUBLIC_BROWSER_RENDER_WIDGET_HOST_VIEW_MAC_DELEGATE_H_
+#define CONTENT_PUBLIC_BROWSER_RENDER_WIDGET_HOST_VIEW_MAC_DELEGATE_H_
 #pragma once
 
 #import <Cocoa/Cocoa.h>
@@ -14,8 +14,8 @@
 // - Implement any method, and if the view is requested to perform that method
 //   and cannot, the delegate's implementation will be used.
 //
-// Like any delegate, it is not retained by the delegator object. The delegator
-// object will call the -viewGone: method when it is going away.
+// Like any Objective-C delegate, it is not retained by the delegator object.
+// The delegator object will call the -viewGone: method when it is going away.
 
 @protocol RenderWidgetHostViewMacDelegate
 @optional
@@ -44,4 +44,4 @@
 
 @end
 
-#endif  // CONTENT_BROWSER_RENDERER_HOST_RENDER_WIDGET_HOST_VIEW_MAC_DELEGATE_H_
+#endif  // CONTENT_PUBLIC_BROWSER_RENDER_WIDGET_HOST_VIEW_MAC_DELEGATE_H_

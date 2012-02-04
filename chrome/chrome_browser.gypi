@@ -2392,6 +2392,8 @@
         'browser/tab_contents/chrome_interstitial_page.h',
         'browser/tab_contents/chrome_tab_contents_view_wrapper_gtk.cc',
         'browser/tab_contents/chrome_tab_contents_view_wrapper_gtk.h',
+        'browser/tab_contents/chrome_web_contents_view_mac_delegate.h',
+        'browser/tab_contents/chrome_web_contents_view_mac_delegate.mm',
         'browser/tab_contents/confirm_infobar_delegate.cc',
         'browser/tab_contents/confirm_infobar_delegate.h',
         'browser/tab_contents/insecure_content_infobar_delegate.cc',

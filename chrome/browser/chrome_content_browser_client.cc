@@ -122,6 +122,7 @@
 #include "chrome/browser/tab_contents/chrome_tab_contents_view_wrapper_gtk.h"
 #include "content/browser/tab_contents/tab_contents_view_gtk.h"
 #elif defined(OS_MACOSX)
+#include "chrome/browser/tab_contents/chrome_web_contents_view_mac_delegate.h"
 #include "chrome/browser/tab_contents/moving_to_content/tab_contents_view_mac.h"
 #endif
 
@@ -312,7 +313,10 @@ content::WebContentsView* ChromeContentBrowserClient::CreateWebContentsView(
   return new content::TabContentsViewGtk(web_contents,
                                          new ChromeTabContentsViewWrapperGtk);
 #elif defined(OS_MACOSX)
-  return tab_contents_view_mac::CreateWebContentsView(web_contents);
+  return tab_contents_view_mac::CreateWebContentsView(
+      web_contents,
+      chrome_web_contents_view_mac_delegate::CreateWebContentsViewMacDelegate(
+          web_contents));
 #else
 #error Need to create your platform WebContentsView here.
 #endif

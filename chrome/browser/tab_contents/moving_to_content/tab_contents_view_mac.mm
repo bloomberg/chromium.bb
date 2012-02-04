@@ -10,10 +10,6 @@
 
 #import "base/mac/scoped_sending_event.h"
 #import "base/message_pump_mac.h"
-#import "chrome/browser/renderer_host/chrome_render_widget_host_view_mac_delegate.h"
-#include "chrome/browser/tab_contents/render_view_context_menu_mac.h"
-#include "chrome/browser/tab_contents/web_drag_bookmark_handler_mac.h"
-#import "chrome/browser/ui/cocoa/view_id_util.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_view_host_factory.h"
 #include "content/browser/renderer_host/render_widget_host.h"
@@ -23,6 +19,7 @@
 #import "content/browser/tab_contents/web_drag_dest_mac.h"
 #import "content/browser/tab_contents/web_drag_source_mac.h"
 #include "content/common/view_messages.h"
+#include "content/public/browser/web_contents_view_mac_delegate.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "skia/ext/skia_utils_mac.h"
 #import "third_party/mozilla/NSPasteboard+Utils.h"
@@ -63,13 +60,18 @@ COMPILE_ASSERT_MATCHING_ENUM(DragOperationEvery);
 @end
 
 namespace tab_contents_view_mac {
-content::WebContentsView* CreateWebContentsView(WebContents* web_contents) {
-  return new TabContentsViewMac(web_contents);
+content::WebContentsView* CreateWebContentsView(
+    WebContents* web_contents,
+    content::WebContentsViewMacDelegate* delegate) {
+  return new TabContentsViewMac(web_contents, delegate);
 }
 }
 
-TabContentsViewMac::TabContentsViewMac(WebContents* web_contents)
+TabContentsViewMac::TabContentsViewMac(
+    WebContents* web_contents,
+    content::WebContentsViewMacDelegate* delegate)
     : tab_contents_(static_cast<TabContents*>(web_contents)),
+      delegate_(delegate),
       overlaid_view_(nil) {
 }
 
@@ -102,12 +104,11 @@ RenderWidgetHostView* TabContentsViewMac::CreateViewForWidget(
 
   RenderWidgetHostViewMac* view =
       new RenderWidgetHostViewMac(render_widget_host);
-
-  // TODO(avi): Find a better place to do this.
-  ChromeRenderWidgetHostViewMacDelegate* rw_delegate =
-      [[ChromeRenderWidgetHostViewMacDelegate alloc]
-          initWithRenderWidgetHost:render_widget_host];
-  view->SetDelegate(rw_delegate);
+  if (delegate()) {
+    NSObject<RenderWidgetHostViewMacDelegate>* rw_delegate =
+        delegate()->CreateRenderWidgetHostViewDelegate(render_widget_host);
+    view->SetDelegate(rw_delegate);
+  }
 
   // Fancy layout comes later; for now just make it our size and resize it
   // with us. In case there are other siblings of the content area, we want
@@ -344,27 +345,16 @@ void TabContentsViewMac::ShowCreatedFullscreenWidget(int route_id) {
 }
 
 void TabContentsViewMac::ShowContextMenu(const ContextMenuParams& params) {
-  // The renderer may send the "show context menu" message multiple times, one
-  // for each right click mouse event it receives. Normally, this doesn't happen
-  // because mouse events are not forwarded once the context menu is showing.
-  // However, there's a race - the context menu may not yet be showing when
-  // the second mouse event arrives. In this case, |ShowContextMenu()| will
-  // get called multiple times - if so, don't create another context menu.
-  // TODO(asvitkine): Fix the renderer so that it doesn't do this.
-  RenderWidgetHostView* widget_view = tab_contents_->GetRenderWidgetHostView();
-  if (widget_view && widget_view->showing_context_menu())
-    return;
-
   // Allow delegates to handle the context menu operation first.
   if (tab_contents_->GetDelegate() &&
       tab_contents_->GetDelegate()->HandleContextMenu(params)) {
     return;
   }
 
-  context_menu_.reset(new RenderViewContextMenuMac(tab_contents(),
-                                                   params,
-                                                   GetContentNativeView()));
-  context_menu_->Init();
+  if (delegate())
+    delegate()->ShowContextMenu(params);
+  else
+    DLOG(ERROR) << "Cannot show context menus without a delegate.";
 }
 
 // Display a popup menu for WebKit using Cocoa widgets.
@@ -426,26 +416,25 @@ void TabContentsViewMac::CloseTab() {
     tabContentsView_ = w;
     dragDest_.reset(
         [[WebDragDest alloc] initWithTabContents:[self tabContents]]);
-    bookmarkHandler_.reset(new WebDragBookmarkHandlerMac);
-    [dragDest_ setDragDelegate:
-        static_cast<content::WebDragDestDelegate*>(bookmarkHandler_.get())];
     [self registerDragTypes];
-    // TabContentsViewCocoa's ViewID may be changed to VIEW_ID_DEV_TOOLS_DOCKED
-    // by TabContentsController, so we can't just override -viewID method to
-    // return it.
-    view_id_util::SetID(self, VIEW_ID_TAB_CONTAINER);
 
     [[NSNotificationCenter defaultCenter]
          addObserver:self
             selector:@selector(viewDidBecomeFirstResponder:)
                 name:kViewDidBecomeFirstResponder
               object:nil];
+
+    if (tabContentsView_->delegate()) {
+      [dragDest_ setDragDelegate:tabContentsView_->delegate()->DragDelegate()];
+      tabContentsView_->delegate()->NativeViewCreated(self);
+    }
   }
   return self;
 }
 
 - (void)dealloc {
-  view_id_util::UnsetID(self);
+  if (tabContentsView_ && tabContentsView_->delegate())
+    tabContentsView_->delegate()->NativeViewDestroyed(self);
 
   // Cancel any deferred tab closes, just in case.
   [self cancelDeferredClose];

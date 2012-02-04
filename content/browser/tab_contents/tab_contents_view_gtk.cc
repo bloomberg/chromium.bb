@@ -387,7 +387,7 @@ void TabContentsViewGtk::ShowContextMenu(const ContextMenuParams& params) {
   if (wrapper())
     wrapper()->ShowContextMenu(params);
   else
-    DLOG(ERROR) << "Implement context menus without chrome/ code";
+    DLOG(ERROR) << "Cannot show context menus without a delegate.";
 }
 
 void TabContentsViewGtk::ShowPopupMenu(const gfx::Rect& bounds,

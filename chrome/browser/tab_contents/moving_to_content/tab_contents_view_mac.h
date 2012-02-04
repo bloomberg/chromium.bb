@@ -21,13 +21,15 @@
 #include "ui/gfx/size.h"
 
 @class FocusTracker;
-class RenderViewContextMenuMac;
-@class SadTabController;
 class SkBitmap;
 class TabContentsViewMac;
-class WebDragBookmarkHandlerMac;
 @class WebDragDest;
 @class WebDragSource;
+
+namespace content {
+class WebContentsViewMacDelegate;
+}
+
 namespace gfx {
 class Point;
 }
@@ -37,7 +39,6 @@ class Point;
   TabContentsViewMac* tabContentsView_;  // WEAK; owns us
   scoped_nsobject<WebDragSource> dragSource_;
   scoped_nsobject<WebDragDest> dragDest_;
-  scoped_ptr<WebDragBookmarkHandlerMac> bookmarkHandler_;
 }
 
 // Expose this, since sometimes one needs both the NSView and the TabContents.
@@ -57,7 +58,8 @@ class TabContentsViewMac : public content::WebContentsView {
   // lifetime. This doesn't need to be the case, but is this way currently
   // because that's what was easiest when they were split.
   // TODO(jam): make this take a WebContents once it's created from content.
-  explicit TabContentsViewMac(content::WebContents* web_contents);
+  TabContentsViewMac(content::WebContents* web_contents,
+                     content::WebContentsViewMacDelegate* delegate);
   virtual ~TabContentsViewMac();
 
   // WebContentsView implementation --------------------------------------------
@@ -120,6 +122,7 @@ class TabContentsViewMac : public content::WebContentsView {
   void CloseTab();
 
   TabContents* tab_contents() { return tab_contents_; }
+  content::WebContentsViewMacDelegate* delegate() { return delegate_.get(); }
 
  private:
   // The TabContents whose contents we display.
@@ -135,8 +138,8 @@ class TabContentsViewMac : public content::WebContentsView {
   // focus returns.
   scoped_nsobject<FocusTracker> focus_tracker_;
 
-  // The context menu. Callbacks are asynchronous so we need to keep it around.
-  scoped_ptr<RenderViewContextMenuMac> context_menu_;
+  // Our optional delegate.
+  scoped_ptr<content::WebContentsViewMacDelegate> delegate_;
 
   // The overlaid view. Owned by the caller of |InstallOverlayView|; this is a
   // weak reference.
@@ -151,11 +154,14 @@ class TabContentsViewMac : public content::WebContentsView {
 namespace content {
 class WebContents;
 class WebContentsView;
+class WebContentsViewMacDelegate;
 }
 
 namespace tab_contents_view_mac {
+// Creates a TabContentsViewMac. Takes ownership of |delegate|.
 content::WebContentsView* CreateWebContentsView(
-    content::WebContents* web_contents);
+    content::WebContents* web_contents,
+    content::WebContentsViewMacDelegate* delegate);
 }
 
 #endif  // CHROME_BROWSER_TAB_CONTENTS_TAB_CONTENTS_VIEW_MAC_H_

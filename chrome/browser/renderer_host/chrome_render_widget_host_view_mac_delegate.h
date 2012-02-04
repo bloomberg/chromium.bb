@@ -8,8 +8,8 @@
 
 #import <Cocoa/Cocoa.h>
 
-#import "base/memory/scoped_ptr.h"
-#import "content/browser/renderer_host/render_widget_host_view_mac_delegate.h"
+#include "base/memory/scoped_ptr.h"
+#import "content/public/browser/render_widget_host_view_mac_delegate.h"
 
 class RenderWidgetHost;
 
