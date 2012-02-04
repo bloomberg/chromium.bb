@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -46,9 +46,9 @@ class PPB_Graphics3D_Impl : public ::ppapi::PPB_Graphics3D_Shared {
   // Returns the id of texture that can be used by the compositor.
   unsigned int GetBackingTextureId();
 
-  // Notifications that the view has rendered the page and that it has been
-  // flushed to the screen. These messages are used to send Flush callbacks to
-  // the plugin.
+  // Notifications about the view's progress painting.  See PluginInstance.
+  // These messages are used to send Flush callbacks to the plugin.
+  void ViewWillInitiatePaint();
   void ViewInitiatedPaint();
   void ViewFlushedPaint();
 

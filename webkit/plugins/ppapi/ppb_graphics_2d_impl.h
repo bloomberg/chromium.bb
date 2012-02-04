@@ -64,9 +64,9 @@ class PPB_Graphics2D_Impl : public ::ppapi::Resource,
              const gfx::Rect& plugin_rect,
              const gfx::Rect& paint_rect);
 
-  // Notifications that the view has rendered the page and that it has been
-  // flushed to the screen. These messages are used to send Flush callbacks to
-  // the plugin. See
+  // Notifications about the view's progress painting.  See PluginInstance.
+  // These messages are used to send Flush callbacks to the plugin.
+  void ViewWillInitiatePaint();
   void ViewInitiatedPaint();
   void ViewFlushedPaint();
 
@@ -161,9 +161,10 @@ class PPB_Graphics2D_Impl : public ::ppapi::Resource,
   // for which the ACK from the browser has not yet been received.
   //
   // When we get updates from a plugin with a callback, it is first added to
-  // the unpainted callbacks. When the renderer has initiated a paint, we'll
-  // move it to the painted callbacks list. When the renderer receives a flush,
-  // we'll execute the callback and remove it from the list.
+  // the unpainted callbacks. When the renderer has initiated the paint, we move
+  // it to the painted callback. When the renderer receives a flush, we execute
+  // and clear the painted callback. This helps avoid the callback being called
+  // prematurely in response to flush notifications for a previous update.
   FlushCallbackData unpainted_flush_callback_;
   FlushCallbackData painted_flush_callback_;
 

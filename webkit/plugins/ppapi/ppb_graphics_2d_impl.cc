@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -347,7 +347,8 @@ int32_t PPB_Graphics2D_Impl::Flush(PP_CompletionCallback callback) {
     // We need the rect to be in terms of the current clip rect of the plugin
     // since that's what will actually be painted. If we issue an invalidate
     // for a clipped-out region, WebKit will do nothing and we won't get any
-    // ViewInitiatedPaint/ViewFlushedPaint calls, leaving our callback stranded.
+    // ViewWillInitiatePaint/ViewFlushedPaint calls, leaving our callback
+    // stranded.
     gfx::Rect visible_changed_rect;
     if (bound_instance_ && !op_rect.IsEmpty())
       visible_changed_rect =PP_ToGfxRect(bound_instance_->view_data().clip_rect).
@@ -560,13 +561,16 @@ void PPB_Graphics2D_Impl::Paint(WebKit::WebCanvas* canvas,
 #endif
 }
 
-void PPB_Graphics2D_Impl::ViewInitiatedPaint() {
+void PPB_Graphics2D_Impl::ViewWillInitiatePaint() {
   // Move any "unpainted" callback to the painted state. See
   // |unpainted_flush_callback_| in the header for more.
   if (!unpainted_flush_callback_.is_null()) {
     DCHECK(painted_flush_callback_.is_null());
     std::swap(painted_flush_callback_, unpainted_flush_callback_);
   }
+}
+
+void PPB_Graphics2D_Impl::ViewInitiatedPaint() {
 }
 
 void PPB_Graphics2D_Impl::ViewFlushedPaint() {

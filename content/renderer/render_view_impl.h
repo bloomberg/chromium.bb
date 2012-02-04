@@ -623,7 +623,6 @@ class RenderViewImpl : public RenderWidget,
   // Please do not add your stuff randomly to the end here. If there is an
   // appropriate section, add it there. If not, there are some random functions
   // nearer to the top you can add it to.
-  virtual void DidFlushPaint() OVERRIDE;
 
   // Cannot use std::set unfortunately since linked_ptr<> does not support
   // operator<.
@@ -636,7 +635,9 @@ class RenderViewImpl : public RenderWidget,
   virtual void OnResize(const gfx::Size& new_size,
                         const gfx::Rect& resizer_rect,
                         bool is_fullscreen) OVERRIDE;
+  virtual void WillInitiatePaint() OVERRIDE;
   virtual void DidInitiatePaint() OVERRIDE;
+  virtual void DidFlushPaint() OVERRIDE;
   virtual webkit::ppapi::PluginInstance* GetBitmapForOptimizedPluginPaint(
       const gfx::Rect& paint_bounds,
       TransportDIB** dib,

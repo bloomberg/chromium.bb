@@ -374,9 +374,8 @@ void RenderWidget::OnUpdateRectAck() {
     return;
   }
 
-  // Notify subclasses.
-  if (!is_accelerated_compositing_active_)
-    DidFlushPaint();
+  // Notify subclasses that software rendering was flushed to the screen.
+  DidFlushPaint();
 
   // Continue painting if necessary...
   DoDeferredUpdateAndSendInputAck();
@@ -421,6 +420,10 @@ void RenderWidget::OnSwapBuffersPosted() {
 
 void RenderWidget::OnSwapBuffersComplete() {
   TRACE_EVENT0("renderer", "RenderWidget::OnSwapBuffersComplete");
+
+  // Notify subclasses that composited rendering got flushed to the screen.
+  DidFlushPaint();
+
   // When compositing deactivates, we reset the swapbuffers pending count.  The
   // swapbuffers acks may still arrive, however.
   if (num_swapbuffers_complete_pending_ == 0) {
@@ -802,6 +805,9 @@ void RenderWidget::DoDeferredUpdate() {
   gfx::Rect scroll_damage = update.GetScrollDamage();
   gfx::Rect bounds = update.GetPaintBounds().Union(scroll_damage);
 
+  // Notify derived classes that we're about to initiate a paint.
+  WillInitiatePaint();
+
   // A plugin may be able to do an optimized paint. First check this, in which
   // case we can skip all of the bitmap generation and regular paint code.
   // This optimization allows PPAPI plugins that declare themselves on top of
@@ -905,8 +911,9 @@ void RenderWidget::DoDeferredUpdate() {
   UpdateTextInputState();
   UpdateSelectionBounds();
 
-  // Let derived classes know we've painted.
-  DidInitiatePaint();
+  // If we're software rendering then we're done initiating the paint.
+  if (!is_accelerated_compositing_active_)
+    DidInitiatePaint();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1032,8 +1039,8 @@ void RenderWidget::didCommitAndDrawCompositorFrame() {
   // Accelerated FPS tick for performance tests. See throughput_tests.cc.
   // NOTE: Tests may break if this event is renamed or moved.
   UNSHIPPED_TRACE_EVENT_INSTANT0("test_fps", "TestFrameTickGPU");
-  // Notify subclasses.
-  DidFlushPaint();
+  // Notify subclasses that we initiated the paint operation.
+  DidInitiatePaint();
 }
 
 void RenderWidget::didCompleteSwapBuffers() {

@@ -233,10 +233,14 @@ class CONTENT_EXPORT RenderWidget
   void OnSetTextDirection(WebKit::WebTextDirection direction);
   void OnGetFPS();
 
-  // Override point to notify derived classes that a paint has happened.
-  // DidInitiatePaint happens when we've generated a new bitmap and sent it to
-  // the browser. DidFlushPaint happens once we've received the ACK that the
-  // screen has actually been updated.
+  // Override points to notify derived classes that a paint has happened.
+  // WillInitiatePaint happens when we're about to generate a new bitmap and
+  // send it to the browser. DidInitiatePaint happens when that has completed,
+  // and subsequent rendering won't affect the painted content. DidFlushPaint
+  // happens once we've received the ACK that the screen has been updated.
+  // For a given paint operation, these overrides will always be called in the
+  // order WillInitiatePaint, DidInitiatePaint, DidFlushPaint.
+  virtual void WillInitiatePaint() {}
   virtual void DidInitiatePaint() {}
   virtual void DidFlushPaint() {}
 

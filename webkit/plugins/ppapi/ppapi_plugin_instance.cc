@@ -809,6 +809,13 @@ void PluginInstance::PageVisibilityChanged(bool is_visible) {
   SendDidChangeView(old_data);
 }
 
+void PluginInstance::ViewWillInitiatePaint() {
+  if (GetBoundGraphics2D())
+    GetBoundGraphics2D()->ViewWillInitiatePaint();
+  else if (GetBoundGraphics3D())
+    GetBoundGraphics3D()->ViewWillInitiatePaint();
+}
+
 void PluginInstance::ViewInitiatedPaint() {
   if (GetBoundGraphics2D())
     GetBoundGraphics2D()->ViewInitiatedPaint();

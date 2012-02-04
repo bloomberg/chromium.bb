@@ -151,7 +151,9 @@ class PepperPluginDelegateImpl
       bool* pepper_plugin_was_registered);
 
   // Called by RenderView to tell us about painting events, these two functions
-  // just correspond to the DidInitiatePaint and DidFlushPaint in R.V..
+  // just correspond to the WillInitiatePaint, DidInitiatePaint and
+  // DidFlushPaint hooks in RenderView.
+  void ViewWillInitiatePaint();
   void ViewInitiatedPaint();
   void ViewFlushedPaint();
 

@@ -4319,8 +4319,13 @@ void RenderViewImpl::OnResize(const gfx::Size& new_size,
   RenderWidget::OnResize(new_size, resizer_rect, is_fullscreen);
 }
 
+void RenderViewImpl::WillInitiatePaint() {
+  // Notify the pepper plugins that we're about to paint.
+  pepper_delegate_.ViewWillInitiatePaint();
+}
+
 void RenderViewImpl::DidInitiatePaint() {
-  // Notify the pepper plugins that we started painting.
+  // Notify the pepper plugins that we've painted, and are waiting to flush.
   pepper_delegate_.ViewInitiatedPaint();
 }
 

@@ -985,18 +985,30 @@ bool PepperPluginDelegateImpl::StopWaitingForPpapiBrokerConnection(
   return false;
 }
 
-void PepperPluginDelegateImpl::ViewInitiatedPaint() {
+void PepperPluginDelegateImpl::ViewWillInitiatePaint() {
   // Notify all of our instances that we started painting. This is used for
   // internal bookkeeping only, so we know that the set can not change under
   // us.
   for (std::set<webkit::ppapi::PluginInstance*>::iterator i =
            active_instances_.begin();
        i != active_instances_.end(); ++i)
-    (*i)->ViewInitiatedPaint();
+    (*i)->ViewWillInitiatePaint();
+}
+
+void PepperPluginDelegateImpl::ViewInitiatedPaint() {
+  // Notify all instances that we painted.  The same caveats apply as for
+  // ViewFlushedPaint regarding instances closing themselves, so we take
+  // similar precautions.
+  std::set<webkit::ppapi::PluginInstance*> plugins = active_instances_;
+  for (std::set<webkit::ppapi::PluginInstance*>::iterator i = plugins.begin();
+       i != plugins.end(); ++i) {
+    if (active_instances_.find(*i) != active_instances_.end())
+      (*i)->ViewInitiatedPaint();
+  }
 }
 
 void PepperPluginDelegateImpl::ViewFlushedPaint() {
-  // Notify all instances that we painted. This will call into the plugin, and
+  // Notify all instances that we flushed. This will call into the plugin, and
   // we it may ask to close itself as a result. This will, in turn, modify our
   // set, possibly invalidating the iterator. So we iterate on a copy that
   // won't change out from under us.
@@ -1017,7 +1029,7 @@ void PepperPluginDelegateImpl::ViewFlushedPaint() {
     // What about the case where a new one is created in a callback at a new
     // address and we don't issue the callback? We're still OK since this
     // callback is used for flush callbacks and we could not have possibly
-    // started a new paint (ViewInitiatedPaint) for the new plugin while
+    // started a new paint (ViewWillInitiatePaint) for the new plugin while
     // processing a previous paint for an existing one.
     if (active_instances_.find(*i) != active_instances_.end())
       (*i)->ViewFlushedPaint();

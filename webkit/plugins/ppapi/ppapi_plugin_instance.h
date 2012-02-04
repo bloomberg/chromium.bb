@@ -192,9 +192,10 @@ class WEBKIT_PLUGINS_EXPORT PluginInstance :
   // Notification about page visibility. The default is "visible".
   void PageVisibilityChanged(bool is_visible);
 
-  // Notifications that the view has rendered the page and that it has been
-  // flushed to the screen. These messages are used to send Flush callbacks to
-  // the plugin for DeviceContext2D.
+  // Notifications that the view is about to paint, has started painting, and
+  // has flushed the painted content to the screen. These messages are used to
+  // send Flush callbacks to the plugin for DeviceContext2D/3D.
+  void ViewWillInitiatePaint();
   void ViewInitiatedPaint();
   void ViewFlushedPaint();
 
