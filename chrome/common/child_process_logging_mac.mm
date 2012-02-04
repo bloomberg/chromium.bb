@@ -182,7 +182,7 @@ void SetCommandLine(const CommandLine* command_line) {
 
   // These should match the corresponding strings in breakpad_win.cc.
   NSString* const kNumSwitchesKey = @"num-switches";
-  NSString* const kSwitchKeyFormat = @"switch-%d";  // 1-based.
+  NSString* const kSwitchKeyFormat = @"switch-%zu";  // 1-based.
 
   // Note the total number of switches, not including the exec path.
   const CommandLine::StringVector& argv = command_line->argv();
