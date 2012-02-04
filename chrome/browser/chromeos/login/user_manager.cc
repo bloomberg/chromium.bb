@@ -222,29 +222,44 @@ class RealTPMTokenInfoDelegate : public crypto::TPMTokenInfoDelegate {
   virtual bool IsTokenReady() const OVERRIDE;
   virtual void GetTokenInfo(std::string* token_name,
                             std::string* user_pin) const OVERRIDE;
+ private:
+  // These are mutable since we need to cache them in IsTokenReady().
+  mutable bool token_ready_;
+  mutable std::string token_name_;
+  mutable std::string user_pin_;
 };
 
-RealTPMTokenInfoDelegate::RealTPMTokenInfoDelegate() {}
+RealTPMTokenInfoDelegate::RealTPMTokenInfoDelegate() : token_ready_(false) {}
 RealTPMTokenInfoDelegate::~RealTPMTokenInfoDelegate() {}
 
 bool RealTPMTokenInfoDelegate::IsTokenAvailable() const {
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   return CrosLibrary::Get()->GetCryptohomeLibrary()->TpmIsEnabled();
 }
 
 bool RealTPMTokenInfoDelegate::IsTokenReady() const {
-  return CrosLibrary::Get()->GetCryptohomeLibrary()->Pkcs11IsTpmTokenReady();
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (!token_ready_) {
+    // Retrieve token_name_ and user_pin_ here since they will never change
+    // and CryptohomeLibrary calls are not thread safe.
+    if (CrosLibrary::Get()->GetCryptohomeLibrary()->Pkcs11IsTpmTokenReady()) {
+      CrosLibrary::Get()->GetCryptohomeLibrary()->Pkcs11GetTpmTokenInfo(
+          &token_name_, &user_pin_);
+      token_ready_ = true;
+    }
+  }
+  return token_ready_;
 }
 
 void RealTPMTokenInfoDelegate::GetTokenInfo(std::string* token_name,
                                             std::string* user_pin) const {
-  std::string local_token_name;
-  std::string local_user_pin;
-  CrosLibrary::Get()->GetCryptohomeLibrary()->Pkcs11GetTpmTokenInfo(
-      &local_token_name, &local_user_pin);
+  // May be called from a non UI thread, but must only be called after
+  // IsTokenReady() returns true.
+  CHECK(token_ready_);
   if (token_name)
-    *token_name = local_token_name;
+    *token_name = token_name_;
   if (user_pin)
-    *user_pin = local_user_pin;
+    *user_pin = user_pin_;
 }
 
 }  // namespace
