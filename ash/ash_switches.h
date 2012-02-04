@@ -22,6 +22,7 @@ ASH_EXPORT extern const char kAuraWindowMode[];
 ASH_EXPORT extern const char kAuraWindowModeCompact[];
 ASH_EXPORT extern const char kAuraWindowModeManaged[];
 ASH_EXPORT extern const char kAuraWindowModeOverlapping[];
+ASH_EXPORT extern const char kAuraPanelManager[];
 
 }  // namespace switches
 }  // namespace ash
