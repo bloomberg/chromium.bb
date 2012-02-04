@@ -6,7 +6,6 @@
 
 #include "ash/shell_window_ids.h"
 #include "ash/shell/example_factory.h"
-#include "ash/shell/panel_window.h"
 #include "ash/shell/toplevel_window.h"
 #include "ash/wm/shadow_types.h"
 #include "ash/wm/toplevel_frame_view.h"
@@ -178,8 +177,6 @@ void InitWindowTypeLauncher() {
 WindowTypeLauncher::WindowTypeLauncher()
     : ALLOW_THIS_IN_INITIALIZER_LIST(create_button_(
           new views::NativeTextButton(this, ASCIIToUTF16("Create Window")))),
-      ALLOW_THIS_IN_INITIALIZER_LIST(panel_button_(
-          new views::NativeTextButton(this, ASCIIToUTF16("Create Panel")))),
       ALLOW_THIS_IN_INITIALIZER_LIST(create_nonresizable_button_(
           new views::NativeTextButton(
               this, ASCIIToUTF16("Create Non-Resizable Window")))),
@@ -207,7 +204,6 @@ WindowTypeLauncher::WindowTypeLauncher()
           new views::NativeTextButton(
               this, ASCIIToUTF16("Show/Hide a Window")))) {
   AddChildView(create_button_);
-  AddChildView(panel_button_);
   AddChildView(create_nonresizable_button_);
   AddChildView(bubble_button_);
   AddChildView(lock_button_);
@@ -236,14 +232,9 @@ void WindowTypeLauncher::Layout() {
       5, local_bounds.bottom() - create_button_ps.height() - 5,
       create_button_ps.width(), create_button_ps.height());
 
-  gfx::Size panel_button_ps = panel_button_->GetPreferredSize();
-  panel_button_->SetBounds(
-      5, create_button_->y() - panel_button_ps.height() - 5,
-      panel_button_ps.width(), panel_button_ps.height());
-
   gfx::Size bubble_button_ps = bubble_button_->GetPreferredSize();
   bubble_button_->SetBounds(
-      5, panel_button_->y() - bubble_button_ps.height() - 5,
+      5, create_button_->y() - bubble_button_ps.height() - 5,
       bubble_button_ps.width(), bubble_button_ps.height());
 
   gfx::Size create_nr_button_ps =
@@ -316,8 +307,6 @@ void WindowTypeLauncher::ButtonPressed(views::Button* sender,
     ToplevelWindow::CreateParams params;
     params.can_resize = true;
     ToplevelWindow::CreateToplevelWindow(params);
-  } else if (sender == panel_button_) {
-    PanelWindow::CreatePanelWindow(gfx::Rect());
   } else if (sender == create_nonresizable_button_) {
     ToplevelWindow::CreateToplevelWindow(ToplevelWindow::CreateParams());
   } else if (sender == bubble_button_) {

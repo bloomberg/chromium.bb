@@ -22,7 +22,6 @@
 #include "ash/wm/compact_layout_manager.h"
 #include "ash/wm/compact_status_area_layout_manager.h"
 #include "ash/wm/dialog_frame_view.h"
-#include "ash/wm/panel_layout_manager.h"
 #include "ash/wm/power_button_controller.h"
 #include "ash/wm/root_window_event_filter.h"
 #include "ash/wm/root_window_layout_manager.h"
@@ -96,13 +95,6 @@ void CreateSpecialContainers(aura::Window::Windows* containers) {
 
   aura::Window* panel_container = new aura::Window(NULL);
   panel_container->set_id(internal::kShellWindowId_PanelContainer);
-  if (CommandLine::ForCurrentProcess()->
-      HasSwitch(switches::kAuraPanelManager)) {
-    panel_container->SetEventFilter(
-        new ToplevelWindowEventFilter(panel_container));
-    panel_container->SetLayoutManager(
-        new internal::PanelLayoutManager(panel_container));
-  }
   containers->push_back(panel_container);
 
   aura::Window* launcher_container = new aura::Window(NULL);
