@@ -234,6 +234,7 @@ add_flag_common --disable-swscale
 add_flag_common --disable-amd3dnow
 add_flag_common --disable-amd3dnowext
 add_flag_common --enable-shared
+add_flag_common --optflags=-O2
 
 # Common codecs.
 add_flag_common --enable-decoder=theora,vorbis,vp8

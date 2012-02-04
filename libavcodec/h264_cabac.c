@@ -26,7 +26,6 @@
  */
 
 #define CABAC 1
-#define UNCHECKED_BITSTREAM_READER 1
 
 #include "config.h"
 #include "cabac.h"

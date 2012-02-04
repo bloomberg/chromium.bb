@@ -451,7 +451,6 @@
           ],
 
           # Copy prebuilt binaries to build directory.
-          'dependencies': ['../../build/win/system.gyp:cygwin'],
           'copies': [{
             'destination': '<(PRODUCT_DIR)/',
             'files': [

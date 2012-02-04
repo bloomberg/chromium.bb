@@ -39,14 +39,24 @@
 
 static const struct ogg_codec * const ogg_codecs[] = {
     &ff_skeleton_codec,
+#if CONFIG_DIRAC_DEMUXER
     &ff_dirac_codec,
+#endif
+#if CONFIG_LIBSPEEX
     &ff_speex_codec,
+#endif
     &ff_vorbis_codec,
     &ff_theora_codec,
+#if CONFIG_FLAC_DECODER
     &ff_flac_codec,
+#endif
     &ff_celt_codec,
+#if CONFIG_DIRAC_DEMUXER
     &ff_old_dirac_codec,
+#endif
+#if CONFIG_FLAC_DECODER
     &ff_old_flac_codec,
+#endif
     &ff_ogm_video_codec,
     &ff_ogm_audio_codec,
     &ff_ogm_text_codec,
@@ -504,24 +514,6 @@ static int ogg_get_length(AVFormatContext *s)
 
     ogg_restore (s, 0);
 
-    ogg_save (s);
-    avio_seek (s->pb, 0, SEEK_SET);
-    while (!ogg_read_page (s, &i)){
-        if (ogg->streams[i].granule != -1 && ogg->streams[i].granule != 0 &&
-            ogg->streams[i].codec) {
-            if(s->streams[i]->duration && s->streams[i]->start_time == AV_NOPTS_VALUE && !ogg->streams[i].got_start){
-                int64_t start= ogg_gptopts (s, i, ogg->streams[i].granule, NULL);
-                if(av_rescale_q(start, s->streams[i]->time_base, AV_TIME_BASE_Q) > AV_TIME_BASE)
-                    s->streams[i]->duration -= start;
-                ogg->streams[i].got_start= 1;
-                streams_left--;
-            }
-            if(streams_left<=0)
-                break;
-        }
-    }
-    ogg_restore (s, 0);
-
     return 0;
 }
 
@@ -652,6 +644,8 @@ static int64_t ogg_read_timestamp(AVFormatContext *s, int stream_index,
     int64_t pts = AV_NOPTS_VALUE;
     int64_t keypos = -1;
     int i = -1;
+    int packet = 0;
+    int64_t start_pos = *pos_arg;
     int pstart, psize;
     avio_seek(bc, *pos_arg, SEEK_SET);
     ogg_reset(ogg);
@@ -671,6 +665,12 @@ static int64_t ogg_read_timestamp(AVFormatContext *s, int stream_index,
                 else
                     pts = AV_NOPTS_VALUE;
             }
+
+            // This is for the special case for the first packet in the stream.
+            if (pts == AV_NOPTS_VALUE && start_pos <= s->data_offset && !packet) {
+                pts = 0;
+            }
+            ++packet;
         }
         if (pts != AV_NOPTS_VALUE)
             break;
@@ -685,6 +685,10 @@ static int ogg_read_seek(AVFormatContext *s, int stream_index,
     struct ogg *ogg = s->priv_data;
     struct ogg_stream *os = ogg->streams + stream_index;
     int ret;
+    int64_t seek_pos;
+    int64_t pos_arg;
+    int64_t seek_pts;
+    int i;
 
     // Ensure everything is reset even when seeking via
     // the generated index.
@@ -700,6 +704,22 @@ static int ogg_read_seek(AVFormatContext *s, int stream_index,
     os = ogg->streams + stream_index;
     if (ret < 0)
         os->keyframe_seek = 0;
+
+    // Save the position seeked to.
+    pos_arg = seek_pos = avio_tell(s->pb);
+    seek_pts = ogg_read_timestamp(s, stream_index, &pos_arg, avio_size(s->pb));
+    os = ogg->streams + stream_index;
+
+    // Since we have seeked to the beginning then reset lastpts and lastdts to 0.
+    if (!seek_pts) {
+        for (i = 0; i < ogg->nstreams; i++){
+            struct ogg_stream *stream = ogg->streams + i;
+            stream->lastpts = 0;
+            stream->lastdts = 0;
+        }
+        os->keyframe_seek = 0;
+    }
+    avio_seek(s->pb, seek_pos, SEEK_SET);
     return ret;
 }
 

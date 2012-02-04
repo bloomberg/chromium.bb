@@ -184,13 +184,13 @@ OBJS-$(CONFIG_NULL_MUXER)                += nullenc.o
 OBJS-$(CONFIG_NUT_DEMUXER)               += nutdec.o nut.o
 OBJS-$(CONFIG_NUT_MUXER)                 += nutenc.o nut.o
 OBJS-$(CONFIG_NUV_DEMUXER)               += nuv.o
+OBJS-$(CONFIG_FLAC_DECODER)              += oggparseflac.o
+OBJS-$(CONFIG_DIRAC_DEMUXER)             += oggparsedirac.o
+OBJS-$(CONFIG_LIBSPEEX)                  += oggparsespeex.o
 OBJS-$(CONFIG_OGG_DEMUXER)               += oggdec.o         \
                                             oggparsecelt.o   \
-                                            oggparsedirac.o  \
-                                            oggparseflac.o   \
                                             oggparseogm.o    \
                                             oggparseskeleton.o \
-                                            oggparsespeex.o  \
                                             oggparsetheora.o \
                                             oggparsevorbis.o \
                                             vorbiscomment.o

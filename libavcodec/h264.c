@@ -25,8 +25,6 @@
  * @author Michael Niedermayer <michaelni@gmx.at>
  */
 
-#define UNCHECKED_BITSTREAM_READER 1
-
 #include "libavutil/imgutils.h"
 #include "libavutil/opt.h"
 #include "internal.h"
@@ -1097,6 +1095,8 @@ int ff_h264_decode_extradata(H264Context *h, const uint8_t *buf, int size)
         cnt = *(p+5) & 0x1f; // Number of sps
         p += 6;
         for (i = 0; i < cnt; i++) {
+            if(size - (p-buf) < 2)
+                return -1;
             nalsize = AV_RB16(p) + 2;
             if(nalsize > size - (p-buf))
                 return -1;
@@ -1106,9 +1106,13 @@ int ff_h264_decode_extradata(H264Context *h, const uint8_t *buf, int size)
             }
             p += nalsize;
         }
+        if(size - (p-buf) <= 0)
+            return -1;
         // Decode pps from avcC
         cnt = *(p++); // Number of pps
         for (i = 0; i < cnt; i++) {
+            if(size - (p-buf) < 2)
+                return -1;
             nalsize = AV_RB16(p) + 2;
             if(nalsize > size - (p-buf))
                 return -1;

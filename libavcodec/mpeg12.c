@@ -25,8 +25,6 @@
  * MPEG-1/2 decoder
  */
 
-#define UNCHECKED_BITSTREAM_READER 1
-
 //#define DEBUG
 #include "internal.h"
 #include "avcodec.h"

@@ -1,0 +1,67 @@
+diff -wurp -N orig/libavcodec/h264.c ffmpeg/libavcodec/h264.c
+--- orig/libavcodec/h264.c	2012-02-06 14:02:09.990431439 -0800
++++ ffmpeg/libavcodec/h264.c	2012-02-06 14:06:11.752827405 -0800
+@@ -988,12 +988,13 @@ int ff_h264_decode_extradata(H264Context
+     AVCodecContext *avctx = h->s.avctx;
+ 
+     if(avctx->extradata[0] == 1){
+-        int i, cnt, nalsize;
++        int i, cnt, nalsize, size_left;
+         unsigned char *p = avctx->extradata;
++        size_left = avctx->extradata_size;
+ 
+         h->is_avc = 1;
+ 
+-        if(avctx->extradata_size < 7) {
++        if(size_left < 7) {
+             av_log(avctx, AV_LOG_ERROR, "avcC too short\n");
+             return -1;
+         }
+@@ -1003,23 +1004,47 @@ int ff_h264_decode_extradata(H264Context
+         // Decode sps from avcC
+         cnt = *(p+5) & 0x1f; // Number of sps
+         p += 6;
++        size_left -= 6;
+         for (i = 0; i < cnt; i++) {
++            if (size_left < 2) {
++                av_log(avctx, AV_LOG_ERROR, "Cannot read sps nalsize\n");
++                return -1;
++            }
+             nalsize = AV_RB16(p) + 2;
++            if (size_left < nalsize) {
++                av_log(avctx, AV_LOG_ERROR, "sps nalsize too big\n");
++                return -1;
++            }
+             if(decode_nal_units(h, p, nalsize) < 0) {
+                 av_log(avctx, AV_LOG_ERROR, "Decoding sps %d from avcC failed\n", i);
+                 return -1;
+             }
+             p += nalsize;
++            size_left -= nalsize;
+         }
+         // Decode pps from avcC
++        if(!size_left) {
++            av_log(avctx, AV_LOG_ERROR, "Cannot read pps count\n");
++            return -1;
++        }
+         cnt = *(p++); // Number of pps
++        --size_left;
+         for (i = 0; i < cnt; i++) {
++            if (size_left < 2) {
++                av_log(avctx, AV_LOG_ERROR, "Cannot read pps nalsize\n");
++                return -1;
++            }
+             nalsize = AV_RB16(p) + 2;
++            if (size_left < nalsize) {
++                av_log(avctx, AV_LOG_ERROR, "pps nalsize too big\n");
++                return -1;
++            }
+             if (decode_nal_units(h, p, nalsize) < 0) {
+                 av_log(avctx, AV_LOG_ERROR, "Decoding pps %d from avcC failed\n", i);
+                 return -1;
+             }
+             p += nalsize;
++            size_left -= nalsize;
+         }
+         // Now store right nal length size, that will be use to parse all other nals
+         h->nal_length_size = (avctx->extradata[4] & 0x03) + 1;
