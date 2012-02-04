@@ -4,7 +4,7 @@
 #
 # Functions from avutil used in chromium code.
 
-int av_get_bits_per_sample_fmt(enum SampleFormat sample_fmt);
+int av_get_bytes_per_sample(enum AVSampleFormat sample_fmt);
 int64_t av_rescale_q(int64_t a, AVRational bq, AVRational cq);
 void *av_malloc(size_t size);
 void av_free(void *ptr);

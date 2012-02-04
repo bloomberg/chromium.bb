@@ -6,6 +6,7 @@ extern "C" {
 #include <libavcodec/avcodec.h>
 #include <libavcodec/avfft.h>
 #include <libavformat/avformat.h>
+#include <libavformat/url.h>
 
 typedef int (*AVLockMgrOperation)(void**, enum AVLockOp);
 

@@ -1,6 +1,6 @@
 #!/bin/bash -e
 
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -49,14 +49,15 @@ if [[ "$TARGET_OS" != "linux" &&
 fi
 
 # Check FFMPEG_PATH to contain this script.
-if [ ! -f "$FFMPEG_PATH/$(basename $0)" ]; then
+if [ ! -f "$FFMPEG_PATH/chromium/scripts/$(basename $0)" ]; then
   echo "$FFMPEG_PATH doesn't appear to contain FFmpeg"
   exit 1
 fi
 
-# If configure & make works but this script doesn't, make sure to grep for these.
-LIBAVCODEC_VERSION_MAJOR=53
-LIBAVFORMAT_VERSION_MAJOR=53
+# If configure & make works but this script doesn't, make sure to grep for
+# these.
+LIBAVCODEC_VERSION_MAJOR=54
+LIBAVFORMAT_VERSION_MAJOR=54
 LIBAVUTIL_VERSION_MAJOR=51
 
 case $(uname -sm) in
@@ -156,8 +157,8 @@ function build {
 
   # Configure and check for exit status.
   echo "Configuring $CONFIG..."
-  echo "$FFMPEG_PATH/source/patched-ffmpeg/configure $*"
-  $FFMPEG_PATH/source/patched-ffmpeg/configure $*
+  echo "$FFMPEG_PATH/configure $*"
+  $FFMPEG_PATH/configure $*
 
   if [ ! -f config.h ]; then
     echo "Configure failed!"
@@ -165,8 +166,8 @@ function build {
   fi
 
   if [ $TARGET_ARCH = "ia32" ]; then
-    echo $FFMPEG_PATH/source/munge_config_optimizations.sh config.h
-    $FFMPEG_PATH/source/munge_config_optimizations.sh config.h
+    echo $FFMPEG_PATH/chromium/scripts/munge_config_optimizations.sh config.h
+    $FFMPEG_PATH/chromium/scripts/munge_config_optimizations.sh config.h
   fi
 
   # TODO(ihf): Remove munge_config_posix_memalign.sh when
@@ -175,8 +176,8 @@ function build {
   # in OSX 10.6 (configure finds it) but we can't use it yet. Just check
   # common.gypi for 'mac_deployment_target%': '10.5'.
   if [ $TARGET_OS = "mac" ]; then
-    echo $FFMPEG_PATH/source/munge_config_posix_memalign.sh config.h
-    $FFMPEG_PATH/source/munge_config_posix_memalign.sh config.h
+    echo $FFMPEG_PATH/chromium/scripts/munge_config_posix_memalign.sh config.h
+    $FFMPEG_PATH/chromium/scripts/munge_config_posix_memalign.sh config.h
   fi
 
   if [ "$HOST_OS" = "$TARGET_OS" ]; then
@@ -392,4 +393,5 @@ if [ "$TARGET_OS" = "linux" ]; then
   build ChromeOS $FLAGS_COMMON $FLAGS_CHROME $FLAGS_CHROMEOS
 fi
 
-echo "Done. If desired you may copy config.h/config.asm into the source/config tree using copy_config.sh."
+echo "Done. If desired you may copy config.h/config.asm into the" \
+     "source/config tree using copy_config.sh."

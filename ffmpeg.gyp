@@ -16,10 +16,6 @@
 #     headers, but not build ffmpegsumo itself.  Users are expected to build
 #     and provide their own version of ffmpegsumo.  Default value is 1.
 #
-# TODO(ihf): Define these variables and use them.
-# LIBAVCODEC_VERSION_MAJOR=53
-# LIBAVFORMAT_VERSION_MAJOR=53
-# LIBAVUTIL_VERSION_MAJOR=51
 
 {
   'target_defaults': {
@@ -80,13 +76,13 @@
           'target_name': 'ffmpegsumo',
           'type': 'loadable_module',
           'sources': [
-            'config/<(ffmpeg_branding)/<(os_config)/<(ffmpeg_config)/config.h',
-            'config/libavutil/avconfig.h',
+            'chromium/config/<(ffmpeg_branding)/<(os_config)/<(ffmpeg_config)/config.h',
+            'chromium/config/libavutil/avconfig.h',
           ],
           'include_dirs': [
-            'config/<(ffmpeg_branding)/<(os_config)/<(ffmpeg_config)',
-            'patched-ffmpeg',
-            'config',
+            'chromium/config/<(ffmpeg_branding)/<(os_config)/<(ffmpeg_config)',
+            '.',
+            'chromium/config',
           ],
           'defines': [
             'HAVE_AV_CONFIG_H',
@@ -235,7 +231,7 @@
                     'yasm_flags': [
                       '-DARCH_X86_32',
                       # The next two lines are needed to enable AVX assembly.
-                      '-Iconfig/<(ffmpeg_branding)/<(os_config)/<(ffmpeg_config)',
+                      '-Ichromium/config/<(ffmpeg_branding)/<(os_config)/<(ffmpeg_config)',
                       '-Pconfig.asm',
                       '-m', 'x86',
                     ],
@@ -245,7 +241,7 @@
                       '-m', 'amd64',
                       '-DPIC',
                       # The next two lines are needed to enable AVX assembly.
-                      '-Iconfig/<(ffmpeg_branding)/<(os_config)/<(ffmpeg_config)',
+                      '-Ichromium/config/<(ffmpeg_branding)/<(os_config)/<(ffmpeg_config)',
                       '-Pconfig.asm',
                     ],
                   }],
@@ -280,19 +276,19 @@
                 'LIBRARY_SEARCH_PATHS': [
                   '<(shared_generated_dir)'
                 ],
-                'OTHER_LDFLAGS': [  
-                  # This is needed because FFmpeg cannot be built as PIC, and   
-                  # thus we need to instruct the linker to allow relocations  
-                  # for read-only segments for this target to be able to  
-                  # generated the shared library on Mac.  
-                  #   
-                  # This makes Mark sad, but he's okay with it since it is  
-                  # isolated to this module. When Mark finds this in the  
-                  # future, and has forgotten this conversation, this comment   
-                  # should remind him that the world is still nice and  
-                  # butterflies still exist...as do rainbows, sunshine,   
-                  # tulips, etc., etc...but not kittens. Those went away  
-                  # with this flag.   
+                'OTHER_LDFLAGS': [
+                  # This is needed because FFmpeg cannot be built as PIC, and
+                  # thus we need to instruct the linker to allow relocations
+                  # for read-only segments for this target to be able to
+                  # generated the shared library on Mac.
+                  #
+                  # This makes Mark sad, but he's okay with it since it is
+                  # isolated to this module. When Mark finds this in the
+                  # future, and has forgotten this conversation, this comment
+                  # should remind him that the world is still nice and
+                  # butterflies still exist...as do rainbows, sunshine,
+                  # tulips, etc., etc...but not kittens. Those went away
+                  # with this flag.
                   '-Wl,-read_only_relocs,suppress',
                 ],
               },
@@ -309,7 +305,7 @@
                     'yasm_flags': [
                       '-DARCH_X86_32',
                       # The next two lines are needed to enable AVX assembly.
-                      '-Iconfig/<(ffmpeg_branding)/<(os_config)/<(ffmpeg_config)',
+                      '-Ichromium/config/<(ffmpeg_branding)/<(os_config)/<(ffmpeg_config)',
                       '-Pconfig.asm',
                       '-m', 'x86',
                     ],
@@ -319,7 +315,7 @@
                       '-m', 'amd64',
                       '-DPIC',
                       # The next two lines are needed to enable AVX assembly.
-                      '-Iconfig/<(ffmpeg_branding)/<(os_config)/<(ffmpeg_config)',
+                      '-Ichromium/config/<(ffmpeg_branding)/<(os_config)/<(ffmpeg_config)',
                       '-Pconfig.asm',
                     ],
                   }],
@@ -339,7 +335,9 @@
                 '<(yasm_path)',
                 '-f', '<(obj_format)',
                 '<@(yasm_flags)',
-                '-I', 'patched-ffmpeg/libavcodec/x86/',
+                '-I', 'libavcodec/x86/',
+                '-I', 'libavutil/x86/',
+                '-I', '.',
                 '-o', '<(shared_generated_dir)/<(RULE_INPUT_ROOT).o',
                 '<(RULE_INPUT_PATH)',
               ],
@@ -355,13 +353,13 @@
     {
       'variables': {
         'generate_stubs_script': '../../tools/generate_stubs/generate_stubs.py',
-        'extra_header': 'ffmpeg_stub_headers.fragment',
+        'extra_header': 'chromium/ffmpeg_stub_headers.fragment',
         'sig_files': [
           # Note that these must be listed in dependency order.
           # (i.e. if A depends on B, then B must be listed before A.)
-          'avutil-51.sigs',
-          'avcodec-53.sigs',
-          'avformat-53.sigs',
+          'chromium/avutil-51.sigs',
+          'chromium/avcodec-54.sigs',
+          'chromium/avformat-54.sigs',
         ],
       },
 
@@ -369,8 +367,8 @@
       'msvs_guid': 'D7A94F58-576A-45D9-A45F-EB87C63ABBB0',
       'sources': [
         # Hacks to introduce C99 types into Visual Studio.
-        'include/win/inttypes.h',
-        'include/win/stdint.h',
+        'chromium/include/win/inttypes.h',
+        'chromium/include/win/stdint.h',
 
         # Files needed for stub generation rules.
         '<@(sig_files)',
@@ -385,7 +383,7 @@
       #   1) Use the Window stub generator on Windows
       #   2) Else, use the POSIX stub generator on non-Windows
       #     a) Use system includes when use_system_ffmpeg != 0
-      #     b) Else, use our local copy in patched-ffmpeg
+      #     b) Else, use our local copy
       'conditions': [
         ['OS == "win"', {
           'variables': {
@@ -408,21 +406,21 @@
           ],
           'direct_dependent_settings': {
             'include_dirs': [
-              'include/win',
-              'config',
-              'patched-ffmpeg',
+              'chromium/include/win',
+              'chromium/config',
+              '.',
             ],
             'link_settings': {
               'libraries': [
-                '<(output_dir)/avcodec-53.lib',
-                '<(output_dir)/avformat-53.lib',
+                '<(output_dir)/avcodec-54.lib',
+                '<(output_dir)/avformat-54.lib',
                 '<(output_dir)/avutil-51.lib',
               ],
               'msvs_settings': {
                 'VCLinkerTool': {
                   'DelayLoadDLLs': [
-                    'avcodec-53.dll',
-                    'avformat-53.dll',
+                    'avcodec-54.dll',
+                    'avformat-54.dll',
                     'avutil-51.dll',
                   ],
                 },
@@ -454,9 +452,9 @@
           'copies': [{
             'destination': '<(PRODUCT_DIR)/',
             'files': [
-              'binaries/<(ffmpeg_bin_dir)/avcodec-53.dll',
-              'binaries/<(ffmpeg_bin_dir)/avformat-53.dll',
-              'binaries/<(ffmpeg_bin_dir)/avutil-51.dll',
+              'chromium/binaries/<(ffmpeg_bin_dir)/avcodec-54.dll',
+              'chromium/binaries/<(ffmpeg_bin_dir)/avformat-54.dll',
+              'chromium/binaries/<(ffmpeg_bin_dir)/avutil-51.dll',
             ],
           }],
         }, {  # else OS != "win", use POSIX stub generator
@@ -534,13 +532,13 @@
               },
             }, {  # else use_system_ffmpeg == 0, add local copy to include path
               'include_dirs': [
-                'config',
-                'patched-ffmpeg',
+                'chromium/config',
+                '.',
               ],
               'direct_dependent_settings': {
                 'include_dirs': [
-                  'config',
-                  'patched-ffmpeg',
+                  'chromium/config',
+                  '.',
                 ],
               },
               'conditions': [

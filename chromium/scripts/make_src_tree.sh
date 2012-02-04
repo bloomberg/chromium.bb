@@ -9,41 +9,28 @@
 # final source tree will reside, and |patches_dir| containing patches
 # to apply to the pristine source.
 #
-# The pristine source is contained in:
-#
-#   ffmpeg-mt.tar.gz
-#
-# After unpacking these files into the |output_dir|, all files inside
-# the directory tree at |patch_dir| matching the pattern *.patch will be
-# applied to the output directory in lexicographic order.
+# All files inside the directory tree at |patch_dir| matching the pattern
+# *.patch will be applied to the output directory in lexicographic order.
 
 set -e
 
-if [ $# -ne 3 ]; then
-  echo "Usage: $0 <tarball> <output directory> <directory with patches>"
+if [ $# -ne 2 ]; then
+  echo "Usage: $0 <output directory> <directory with patches>"
   exit 1
 fi
 
-tarball="${1}"
-output_dir="${2}"
-patches_dir="${3}"
+output_dir="${1}"
+patches_dir="${2}"
 
 if [ ! -d "$patches_dir" ]; then
   echo "$patches_dir is not a directory."
   exit 1
 fi
 
-if [ -e "$output_dir" ]; then
-  echo "$output_dir exists.  Do you want to continue? [y/N]"
-  read confirm
-  if [ "$confirm" != "y" ]; then
-    exit 1;
-  fi
+if [ ! -d "$output_dir" ]; then
+  echo "$output_dir is not a directory."
+  exit 1
 fi
-
-# Unpack the pristine ffmpeg sources into the target directory.
-mkdir -p "$output_dir"
-tar -xzf "$tarball" --strip 1 -C "$output_dir"
 
 # Get a list of all patches in |patches_dir|. Sort them in by the filename
 # regardless of path.
