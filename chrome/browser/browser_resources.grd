@@ -63,6 +63,9 @@
       <include name="IDR_FLAGS_HTML_WARNING" file="resources\flags_warning.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_FLAGS_JS" file="resources\flags.js" type="BINDATA" />
       <include name="IDR_GAIA_LOGIN_HTML" file="sync\resources\gaia_login.html" flattenhtml="true" type="BINDATA" />
+      <include name="IDR_HELP_CSS" file="resources\help\help.css" flattenhtml="true" type="BINDATA" />
+      <include name="IDR_HELP_HTML" file="resources\help\help.html" flattenhtml="true" type="BINDATA" />
+      <include name="IDR_HELP_JS" file="resources\help\help.js" flattenhtml="true" type="BINDATA" />
       <include name="IDR_GPU_BLACKLIST" file="resources\software_rendering_list\software_rendering_list.json" type="BINDATA" />
       <include name="IDR_GPU_INTERNALS_HTML" file="resources\gpu_internals\gpu_internals.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
       <include name="IDR_GPU_INTERNALS_JS" file="resources\gpu_internals\gpu_internals.js" flattenhtml="true" type="BINDATA" />
@@ -144,8 +147,6 @@
         <include name="IDR_SYNC_PROMO_HTML" file="resources\sync_promo\sync_promo.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
       </if>
       <if expr="pp_ifdef('chromeos')">
-        <include name="IDR_ABOUT_PAGE_HTML" file="resources\about_page\about_page.html" flattenhtml="true" type="BINDATA" />
-        <include name="IDR_ABOUT_PAGE_JS" file="resources\about_page\about_page.js" flattenhtml="true" type="BINDATA" />
         <include name="IDR_ABOUT_SYS_HTML" file="resources\chromeos\about_sys.html" flattenhtml="true" type="BINDATA" />
         <include name="IDR_ACTIVE_DOWNLOADS_HTML" file="resources\chromeos\active_downloads.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
         <include name="IDR_ACTIVE_DOWNLOADS_JS" file="resources\chromeos\active_downloads.js" type="BINDATA" />

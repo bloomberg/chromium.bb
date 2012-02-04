@@ -212,7 +212,7 @@ void AboutChromeView::Init() {
   main_text_label_ = new views::Label(string16());
 
   // Figure out what to write in the main label of the About box.
-  string16 text = l10n_util::GetStringUTF16(IDS_ABOUT_VERSION_LICENSE);
+  string16 text = l10n_util::GetStringUTF16(IDS_ABOUT_OLD_VERSION_LICENSE);
 
   chromium_url_appears_first_ =
       text.find(kBeginLinkChr()) < text.find(kBeginLinkOss());

@@ -24,8 +24,6 @@ const char kAboutVersionURL[] = "about:version";
 
 // Add Chrome UI URLs as necessary, in alphabetical order.
 // Be sure to add the corresponding kChromeUI*Host constant below.
-// This is the About Chrome page.
-const char kChromeUIAboutPageFrameURL[] = "chrome://about-page-frame/";
 // This is a WebUI page that lists other WebUI pages.
 const char kChromeUIAboutURL[] = "chrome://about/";
 const char kChromeUIBookmarksURL[] = "chrome://bookmarks/";
@@ -52,6 +50,7 @@ const char kChromeUIGpuCleanURL[] = "chrome://gpuclean";
 const char kChromeUIGpuCrashURL[] = "chrome://gpucrash";
 const char kChromeUIGpuHangURL[] = "chrome://gpuhang";
 const char kChromeUIHangURL[] = "chrome://hang/";
+const char kChromeUIHelpFrameURL[] = "chrome://help-frame/";
 const char kChromeUIHistoryURL[] = "chrome://history/";
 const char kChromeUIHungRendererDialogURL[] = "chrome://hung-renderer/";
 const char kChromeUIInputWindowDialogURL[] = "chrome://input-window-dialog/";
@@ -121,7 +120,6 @@ const char kChromeUITabModalConfirmDialogURL[] =
 // Add hosts to kChromePaths in browser_about_handler.cc to be listed by
 // chrome://chrome-urls (about:about) and the built-in AutocompleteProvider.
 const char kChromeUIAboutHost[] = "about";
-const char kChromeUIAboutPageFrameHost[] = "about-page-frame";
 const char kChromeUIAppCacheInternalsHost[] = "appcache-internals";
 const char kChromeUIBlankHost[] = "blank";
 const char kChromeUIBlobInternalsHost[] = "blob-internals";
@@ -157,6 +155,8 @@ const char kChromeUIGpuHangHost[] = "gpuhang";
 const char kChromeUIGpuHost[] = "gpu";
 const char kChromeUIGpuInternalsHost[] = "gpu-internals";
 const char kChromeUIHangHost[] = "hang";
+const char kChromeUIHelpFrameHost[] = "help-frame";
+const char kChromeUIHelpHost[] = "help";
 const char kChromeUIHistogramsHost[] = "histograms";
 const char kChromeUIHistoryHost[] = "history";
 const char kChromeUIHungRendererDialogHost[] = "hung-renderer";
@@ -252,6 +252,7 @@ const char kChromeUITabModalConfirmDialogHost[] = "tab-modal-confirm-dialog";
 // Option sub pages.
 // Add sub page paths to kChromeSettingsSubPages in builtin_provider.cc to be
 // listed by the built-in AutocompleteProvider.
+const char kAboutOptionsSubPage[] = "about";
 const char kAdvancedOptionsSubPage[] = "advanced";
 const char kAutofillSubPage[] = "autofill";
 const char kBrowserOptionsSubPage[] = "browser";
@@ -269,7 +270,6 @@ const char kPersonalOptionsSubPage[] = "personal";
 const char kSearchEnginesSubPage[] = "searchEngines";
 const char kSyncSetupSubPage[] = "syncSetup";
 #if defined(OS_CHROMEOS)
-const char kAboutOptionsSubPage[] = "about";
 const char kInternetOptionsSubPage[] = "internet";
 const char kSystemOptionsSubPage[] = "system";
 #endif

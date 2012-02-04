@@ -19,7 +19,6 @@ extern const char kAboutVersionURL[];
 
 // chrome: URLs (including schemes). Should be kept in sync with the
 // components below.
-extern const char kChromeUIAboutPageFrameURL[];
 extern const char kChromeUIAboutURL[];
 extern const char kChromeUIBookmarksURL[];
 extern const char kChromeUICertificateViewerURL[];
@@ -45,6 +44,7 @@ extern const char kChromeUIGpuCleanURL[];
 extern const char kChromeUIGpuCrashURL[];
 extern const char kChromeUIGpuHangURL[];
 extern const char kChromeUIHangURL[];
+extern const char kChromeUIHelpFrameURL[];
 extern const char kChromeUIHistoryURL[];
 extern const char kChromeUIHungRendererDialogURL[];
 extern const char kChromeUIInputWindowDialogURL[];
@@ -141,6 +141,8 @@ extern const char kChromeUIFlashHost[];
 extern const char kChromeUIGpuCleanHost[];
 extern const char kChromeUIGpuCrashHost[];
 extern const char kChromeUIGpuHangHost[];
+extern const char kChromeUIHelpFrameHost[];
+extern const char kChromeUIHelpHost[];
 extern const char kChromeUIGpuHost[];
 extern const char kChromeUIGpuInternalsHost[];
 extern const char kChromeUIHangHost[];
@@ -237,6 +239,7 @@ extern const char kChromeUITabModalConfirmDialogHost[];
 #endif
 
 // Options sub-pages.
+extern const char kAboutOptionsSubPage[];
 extern const char kAdvancedOptionsSubPage[];
 extern const char kAutofillSubPage[];
 extern const char kBrowserOptionsSubPage[];
@@ -254,7 +257,6 @@ extern const char kPersonalOptionsSubPage[];
 extern const char kSearchEnginesSubPage[];
 extern const char kSyncSetupSubPage[];
 #if defined(OS_CHROMEOS)
-extern const char kAboutOptionsSubPage[];
 extern const char kInternetOptionsSubPage[];
 extern const char kSystemOptionsSubPage[];
 #endif

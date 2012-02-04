@@ -1,0 +1,87 @@
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
+body {
+  -webkit-user-select: text;
+}
+
+h2 {
+  color: rgb(48, 57, 66);
+  font-size: 16px;
+  font-weight: normal;
+  margin-bottom: 3px;
+}
+
+#about-container {
+  -webkit-box-align: center;
+  display: -webkit-box;
+}
+
+#product-description {
+  -webkit-margin-start: 10px;
+}
+
+#version-container {
+  margin-top: 20px;
+}
+
+#update-status {
+  vertical-align: middle;
+}
+
+#update-percentage {
+  font-size: 90%;
+  position: absolute;
+}
+
+#relaunch {
+  margin-top: 5px;
+  position: absolute;
+}
+
+#help-container {
+  margin-top: 40px;
+}
+
+#update-percentage {
+  -webkit-margin-start: 33px;
+}
+
+#get-help {
+  -webkit-margin-end: 10px;
+}
+
+#version-container,
+#help-container {
+  /* 32px icon + 10px margin-left to match #product-container */
+  -webkit-margin-start: 42px;
+}
+
+#product-container {
+  line-height: 1.8em;
+  margin-top: 200px;
+}
+
+#browser-version {
+  font-size: 90%;
+  margin-bottom: 5px;
+}
+
+#update-status-icon {
+  background-repeat: no-repeat;
+  display: inline-block;
+  height: 17px;
+  margin-right: 13px;
+  vertical-align: middle;
+  width: 17px;
+}
+
+#update-status-icon.available {
+  background-image: url('chrome://theme/IDR_UPDATE_AVAILALBE');
+}
+
+#update-status-icon.up-to-date {
+  background-image: url('chrome://theme/IDR_UPDATE_UPTODATE');
+}

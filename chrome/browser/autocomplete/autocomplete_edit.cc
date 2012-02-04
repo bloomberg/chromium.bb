@@ -527,11 +527,11 @@ void AutocompleteEditModel::OpenMatch(const AutocompleteMatch& match,
     else if (!has_temporary_text_)
       log.inline_autocompleted_length = inline_autocomplete_text_.length();
     if (disposition == CURRENT_TAB) {
-      // If we know the destination is being opened in the curren tab,
+      // If we know the destination is being opened in the current tab,
       // we can easily get the tab ID.  (If it's being opened in a new
       // tab, we don't know the tab ID yet.)
       log.tab_id = controller_->GetTabContentsWrapper()->
-                       restore_tab_helper()->session_id().id();
+          restore_tab_helper()->session_id().id();
     }
     if (user_input_in_progress_) {
       // This case should happen every time except possibly in unit tests.

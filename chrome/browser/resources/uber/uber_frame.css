@@ -13,7 +13,7 @@ h1 {
   color: rgb(92, 97, 102);
 }
 
-ol {
+ul {
   list-style-type: none;
   padding: 0;
 }
@@ -37,6 +37,6 @@ li.selected {
   color: rgb(70, 78, 90);
 }
 
-#aboutPageNavItem {
+#helpNavItem {
   margin-top: 27px;
 }

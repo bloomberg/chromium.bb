@@ -6359,7 +6359,7 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
         Update Now
       </message>
       <message name="IDS_UPGRADE_CHECK_STARTED" desc="Status label: About to start checking for updates">
-        Checking for updates...
+        Checking for updates in the background...
       </message>
       <message name="IDS_UPGRADE_STARTED" desc="Status label: About to start updating Chrome">
         Installing new version...
@@ -6370,6 +6370,16 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
       <message name="IDS_UPGRADE_DISABLED_BY_POLICY" desc="Status label: Upgrades disabled by policy">
         Updates are disabled by the administrator
       </message>
+      <if expr="pp_ifdef('_google_chrome') and pp_ifdef('use_titlecase')">
+        <message name="IDS_REPORT_A_PROBLEM " desc="Text of the button which allows the user to report a problem with Chrome.">
+          Report a Problem
+        </message>
+      </if>
+      <if expr="pp_ifdef('_google_chrome') and not pp_ifdef('use_titlecase')">
+        <message name="IDS_REPORT_A_PROBLEM " desc="Text of the button which allows the user to report a problem with Chrome.">
+          Report a problem
+        </message>
+      </if>
 
       <!-- Print -->
       <message name="IDS_DEFAULT_PRINT_DOCUMENT_TITLE" desc="Default title for a print document">
@@ -8019,9 +8029,45 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
         <ph name="OPTIONS_TITLE">$1<ex>Settings</ex></ph> - <ph name="SUBPAGE_TITLE">$2<ex>Under the Hood</ex></ph>
       </message>
 
+      <!-- chrome://help -->
+      <message name="IDS_HELP_TITLE" desc="Label used for title of the help page.">
+        Help
+      </message>
+
       <!-- The About page is now part of options. -->
       <message name="IDS_ABOUT_TAB_TITLE" desc="Label used for tab of about page.">
         About
+      </message>
+      <if expr="not pp_ifdef('chromeos') and pp_ifdef('use_titlecase')">
+        <message name="IDS_RELAUNCH_BUTTON" desc="Titlecase: The label for the relaunch button that relaunches the browser once update is complete">
+          Relaunch
+        </message>
+      </if>
+      <if expr="not pp_ifdef('chromeos') and not pp_ifdef('use_titlecase')">
+        <message name="IDS_RELAUNCH_BUTTON" desc="The label for the relaunch button that relaunches the browser once update is complete">
+          Relaunch
+        </message>
+      </if>
+      <if expr="pp_ifdef('chromeos')">
+        <message name="IDS_RELAUNCH_BUTTON" desc="The label for the relaunch button that relaunches the browser once update is complete">
+          Restart
+        </message>
+      </if>
+      <if expr="pp_ifdef('chromeos') and pp_ifdef('use_titlecase')">
+        <message name="IDS_RELAUNCH_BUTTON" desc="Titlecase: The label for the relaunch button that relaunches the browser once update is complete">
+          Restart
+        </message>
+      </if>
+      <if expr="pp_ifdef('chromeos') and not pp_ifdef('use_titlecase')">
+        <message name="IDS_RELAUNCH_BUTTON" desc="The label for the relaunch button that relaunches the browser once update is complete">
+          Restart
+        </message>
+      </if>
+      <message name="IDS_ABOUT_PRODUCT_DESCRIPTION" desc="The text label describing the Chrome browser">
+        A web browser built for speed, simplicity, and security
+      </message>
+      <message name="IDS_ABOUT_PRODUCT_VERSION" desc="The text label describing the version of the browser">
+        Version <ph name="PRODUCT_VERSION">$1<ex>15.0.865.0</ex></ph>
       </message>
       <message name="IDS_ABOUT_PAGE_FIRMWARE" desc="Label used for Chrome OS bios firmware version.">
         Firmware

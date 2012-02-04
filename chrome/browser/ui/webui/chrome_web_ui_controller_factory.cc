@@ -13,7 +13,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
-#include "chrome/browser/ui/webui/about_page/about_page_ui.h"
+#include "chrome/browser/ui/webui/help/help_ui.h"
 #include "chrome/browser/ui/webui/about_ui.h"
 #include "chrome/browser/ui/webui/bookmarks_ui.h"
 #include "chrome/browser/ui/webui/constrained_html_ui.h"
@@ -196,6 +196,8 @@ WebUIFactoryFunction GetWebUIFactoryFunction(content::WebUI* web_ui,
     return &NewWebUI<FlashUI>;
   if (url.host() == chrome::kChromeUIGpuInternalsHost)
     return &NewWebUI<GpuInternalsUI>;
+  if (url.host() == chrome::kChromeUIHelpFrameHost)
+    return &NewWebUI<HelpUI>;
   if (url.host() == chrome::kChromeUIHistoryHost)
     return &NewWebUI<HistoryUI>;
   if (url.host() == chrome::kChromeUIHungRendererDialogHost)
@@ -269,8 +271,6 @@ WebUIFactoryFunction GetWebUIFactoryFunction(content::WebUI* web_ui,
     return &NewWebUI<chromeos::SimUnlockUI>;
   if (url.host() == chrome::kChromeUISystemInfoHost)
     return &NewWebUI<SystemInfoUI>;
-  if (url.host() == chrome::kChromeUIAboutPageFrameHost)
-    return &NewWebUI<AboutPageUI>;
 #endif  // defined(OS_CHROMEOS)
 
   /****************************************************************************

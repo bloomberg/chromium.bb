@@ -39,11 +39,9 @@ ChromeWebUIDataSource* CreateUberHTMLSource() {
                     ASCIIToUTF16(chrome::kChromeUISettingsHost));
   source->AddString("extensionsHost",
                     ASCIIToUTF16(chrome::kChromeUIExtensionsHost));
+  source->AddString("helpHost",
+                    ASCIIToUTF16(chrome::kChromeUIHelpHost));
 
-#if defined(OS_CHROMEOS)
-  source->AddString("aboutPageHost",
-                    ASCIIToUTF16(chrome::kAboutOptionsSubPage));
-#endif
   return source;
 }
 
@@ -64,11 +62,9 @@ ChromeWebUIDataSource* CreateUberFrameHTMLSource() {
                     ASCIIToUTF16(chrome::kChromeUIExtensionsHost));
   source->AddLocalizedString("extensionsDisplayName",
                              IDS_MANAGE_EXTENSIONS_SETTING_WINDOWS_TITLE);
-#if defined(OS_CHROMEOS)
-  source->AddString("aboutPageHost",
-                    ASCIIToUTF16(chrome::kAboutOptionsSubPage));
-  source->AddLocalizedString("aboutPageDisplayName", IDS_ABOUT_TAB_TITLE);
-#endif
+  source->AddString("helpHost",
+                    ASCIIToUTF16(chrome::kChromeUIHelpHost));
+  source->AddLocalizedString("helpDisplayName", IDS_HELP_TITLE);
 
   return source;
 }
@@ -82,9 +78,7 @@ UberUI::UberUI(content::WebUI* web_ui) : WebUIController(web_ui) {
   RegisterSubpage(chrome::kChromeUIUberFrameURL);
   RegisterSubpage(chrome::kChromeUISettingsFrameURL);
   RegisterSubpage(chrome::kChromeUIExtensionsFrameURL);
-#if defined(OS_CHROMEOS)
-  RegisterSubpage(chrome::kChromeUIAboutPageFrameURL);
-#endif
+  RegisterSubpage(chrome::kChromeUIHelpFrameURL);
 }
 
 UberUI::~UberUI() {
@@ -133,8 +127,8 @@ bool UberUI::OverrideHandleWebUIMessage(const GURL& source_url,
 
   // The message was sent from a subpage.
   // TODO(jam) fix this to use interface
-  //return subpage->second->GetController()->OverrideHandleWebUIMessage(
-    //  source_url, message, args);
+  // return subpage->second->GetController()->OverrideHandleWebUIMessage(
+  //     source_url, message, args);
   subpage->second->ProcessWebUIMessage(source_url, message, args);
   return true;
 }

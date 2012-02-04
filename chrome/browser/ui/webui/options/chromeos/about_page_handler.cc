@@ -173,7 +173,7 @@ void AboutPageHandler::GetLocalizedValues(DictionaryValue* localized_strings) {
 
   // license
 
-  std::string text = l10n_util::GetStringUTF8(IDS_ABOUT_VERSION_LICENSE);
+  std::string text = l10n_util::GetStringUTF8(IDS_ABOUT_OLD_VERSION_LICENSE);
 
   bool chromium_url_appears_first =
       text.find(kBeginLinkChr) < text.find(kBeginLinkOss);
@@ -346,7 +346,7 @@ void AboutPageHandler::UpdateStatus(
   switch (status.status) {
     case UpdateEngineClient::UPDATE_STATUS_IDLE:
       if (!sticky_) {
-        message = l10n_util::GetStringUTF16(IDS_UPGRADE_ALREADY_UP_TO_DATE);
+        message = l10n_util::GetStringUTF16(IDS_UPGRADE_UP_TO_DATE);
         enabled = true;
       }
       break;

@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html i18n-values="dir:textdirection;">
+<head>
+  <meta charset="utf-8">
+  <title i18n-content="helpTitle"></title>
+  <link rel="stylesheet" href="../shared/css/button.css">
+  <link rel="stylesheet" href="../shared/css/chrome_shared2.css">
+  <link rel="stylesheet" href="../uber/uber_shared.css">
+  <link rel="stylesheet" href="help.css">
+  <script src="chrome://resources/js/cr.js"></script>
+  <script src="chrome://resources/js/local_strings.js"></script>
+  <script src="chrome://resources/js/util.js"></script>
+  <script src="chrome://help-frame/help.js"></script>
+</head>
+<body class="uber-frame">
+  <div class="page">
+    <header>
+      <h1 i18n-content="helpTitle"></h1>
+    </header>
+    <div id="about-container">
+      <img src="chrome://theme/IDR_PRODUCT_LOGO_32">
+      <div id="product-description">
+        <h2 i18n-content="aboutProductTitle"></h2>
+        <span i18n-content="aboutProductDescription"></span>
+      </div>
+    </div>
+    <div id="version-container">
+      <div id="browser-version" i18n-content="browserVersion"></div>
+<if expr="pp_ifdef(is_posix and not is_macosx)">
+      <div id="update-status-container">
+        <img id="update-status-icon" class="up-to-date"></img>
+        <span id="update-status" i18n-content="updateCheckStarted"></span>
+      </div>
+      <div id="update-percentage" hidden></div>
+      <button id="relaunch" i18n-content="relaunch" hidden></button>
+</if>
+    </div>
+<if expr="pp_ifdef('_google_chrome')">
+    <div id="help-container">
+      <button id="get-help" i18n-content="getHelpWithChrome"></button>
+      <button i18n-content="reportAProblem"></button>
+    </div>
+</if>
+    <div id="product-container">
+      <div i18n-content="productName"></div>
+      <div i18n-content="productCopyright"></div>
+      <div id="product-license"></div>
+<if expr="pp_ifdef('_google_chrome')">
+      <div id="product-tos"></div>
+</if>
+    </div>
+  </div>
+</body>
+<script src="chrome://help-frame/strings.js"></script>
+<script src="chrome://resources/js/i18n_template.js"></script>
+<script src="chrome://resources/js/i18n_process.js"></script>
+</html>

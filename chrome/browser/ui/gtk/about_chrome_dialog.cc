@@ -175,7 +175,7 @@ void ShowAboutDialogForProfile(GtkWindow* parent, Profile* profile) {
   gtk_misc_set_alignment(GTK_MISC(copyright_label), 0.0, 0.5);
   gtk_box_pack_start(GTK_BOX(vbox), copyright_label, FALSE, FALSE, 5);
 
-  std::string license = l10n_util::GetStringUTF8(IDS_ABOUT_VERSION_LICENSE);
+  std::string license = l10n_util::GetStringUTF8(IDS_ABOUT_OLD_VERSION_LICENSE);
   bool chromium_url_appears_first =
       license.find(kBeginLinkChr) < license.find(kBeginLinkOss);
   size_t link1 = license.find(kBeginLink);
