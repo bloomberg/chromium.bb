@@ -15,6 +15,8 @@ from terminal import Color
 import xml.sax
 
 
+STRICT_SUDO = False
+
 _STDOUT_IS_TTY = hasattr(sys.stdout, 'isatty') and sys.stdout.isatty()
 YES = 'yes'
 NO = 'no'
@@ -90,6 +92,44 @@ class RunCommandError(Exception):
 
   def __ne__(self, other):
     return not self.__eq__(other)
+
+
+def SudoRunCommand(cmd, **kwds):
+  """
+  Run a command via sudo.
+
+  Client code must use this rather than coming up with their own RunCommand
+  invocation that jams sudo in- this function is used to enforce certain
+  rules in our code about sudo usage, and as a potential auditing point.
+
+  Args:
+    cmd: The command to run.  See RunCommand for rules of this argument-
+         SudoRunCommand purely prefixes it with sudo.
+    kwds: See RunCommand options, it's a direct pass thru to it.
+  Returns:
+    See RunCommand documentation.
+  Raises:
+    This function may immediately raise RunCommandError if we're operating
+    in a strict sudo context and the API is being misused.
+    Barring that, see RunCommand's documentation- it can raise the same things
+    RunCommand does.
+  """
+
+  mode_s, mode_l = '', []
+  if STRICT_SUDO:
+    if 'CROS_SUDO_KEEP_ALIVE' not in os.environ:
+      raise RunCommandError(
+          'We were invoked in a strict sudo non-interactive context, but no '
+          'sudo keep alive daemon is running.  This is a bug in the code.',
+          cmd, 126)
+    mode_s, mode_l = '-n ', ['-n']
+
+  if isinstance(cmd, basestring):
+    cmd = 'sudo %s%s' % (mode_s, cmd)
+  else:
+    cmd = ['sudo'] + mode_l + list(cmd)
+
+  return RunCommand(cmd, **kwds)
 
 
 def RunCommand(cmd, print_cmd=True, error_ok=False, error_message=None,
