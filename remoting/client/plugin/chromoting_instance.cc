@@ -140,6 +140,15 @@ void ChromotingInstance::Connect(const ClientConfig& config) {
                                      view_.get(), rectangle_decoder_.get(),
                                      base::Closure()));
 
+  // Construct the input pipeline
+  mouse_input_filter_.reset(
+      new MouseInputFilter(host_connection_->input_stub()));
+  mouse_input_filter_->set_input_size(view_->get_view_size());
+  key_event_tracker_.reset(
+      new protocol::KeyEventTracker(mouse_input_filter_.get()));
+  input_handler_.reset(
+      new PepperInputHandler(key_event_tracker_.get()));
+
   LOG(INFO) << "Connecting to " << config.host_jid
             << ". Local jid: " << config.local_jid << ".";
 
@@ -202,26 +211,13 @@ void ChromotingInstance::DidChangeView(const pp::Rect& position,
 bool ChromotingInstance::HandleInputEvent(const pp::InputEvent& event) {
   DCHECK(plugin_message_loop_->BelongsToCurrentThread());
 
-  // Never inject events if the end of the input pipeline doesn't exist.
-  // If it does exist but the pipeline doesn't, construct a pipeline.
-  // TODO(wez): This is really ugly.  We should create the pipeline when
-  // the ConnectionToHost's InputStub exists.
-  if (!host_connection_.get()) {
+  if (!input_handler_.get())
     return false;
-  } else if (!input_handler_.get()) {
-    protocol::InputStub* input_stub = host_connection_->input_stub();
-    if (!input_stub)
-      return false;
-    mouse_input_filter_.reset(new MouseInputFilter(input_stub));
-    mouse_input_filter_->set_input_size(view_->get_view_size());
-    key_event_tracker_.reset(
-        new protocol::KeyEventTracker(mouse_input_filter_.get()));
-    input_handler_.reset(
-        new PepperInputHandler(key_event_tracker_.get()));
-  }
 
   // TODO(wez): When we have a good hook into Host dimensions changes, move
   // this there.
+  // If |input_handler_| is valid, then |mouse_input_filter_| must also be
+  // since they are constructed together as part of the input pipeline
   mouse_input_filter_->set_output_size(view_->get_host_size());
 
   return input_handler_->HandleInputEvent(event);

@@ -12,6 +12,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "remoting/jingle_glue/signal_strategy.h"
 #include "remoting/proto/internal.pb.h"
+#include "remoting/protocol/input_filter.h"
 #include "remoting/protocol/message_reader.h"
 #include "remoting/protocol/session.h"
 #include "remoting/protocol/session_manager.h"
@@ -87,8 +88,6 @@ class ConnectionToHost : public SignalStrategy::Listener,
 
   virtual InputStub* input_stub();
 
-  virtual HostStub* host_stub();
-
   // SignalStrategy::StatusObserver interface.
   virtual void OnSignalStrategyStateChange(
       SignalStrategy::State state) OVERRIDE;
@@ -145,6 +144,7 @@ class ConnectionToHost : public SignalStrategy::Listener,
   scoped_ptr<VideoReader> video_reader_;
   scoped_ptr<ClientControlDispatcher> control_dispatcher_;
   scoped_ptr<ClientEventDispatcher> event_dispatcher_;
+  InputFilter event_forwarder_;
 
   // Internal state of the connection.
   State state_;

@@ -43,15 +43,7 @@ ConnectionToHost::~ConnectionToHost() {
 }
 
 InputStub* ConnectionToHost::input_stub() {
-  if (event_dispatcher_.get() && !event_dispatcher_->is_connected())
-    return NULL;
-  return event_dispatcher_.get();
-}
-
-HostStub* ConnectionToHost::host_stub() {
-  if (control_dispatcher_.get() && !control_dispatcher_->is_connected())
-    return NULL;
-  return control_dispatcher_.get();
+  return &event_forwarder_;
 }
 
 void ConnectionToHost::Connect(scoped_refptr<XmppProxy> xmpp_proxy,
@@ -220,6 +212,8 @@ void ConnectionToHost::NotifyIfChannelsReady() {
       event_dispatcher_.get() && event_dispatcher_->is_connected() &&
       video_reader_.get() && video_reader_->is_connected() &&
       state_ == CONNECTING) {
+    // Start forwarding input events to |event_dispatcher_|.
+    event_forwarder_.set_input_stub(event_dispatcher_.get());
     SetState(CONNECTED, OK);
   }
 }
@@ -232,6 +226,7 @@ void ConnectionToHost::CloseOnError(Error error) {
 void ConnectionToHost::CloseChannels() {
   control_dispatcher_.reset();
   event_dispatcher_.reset();
+  event_forwarder_.set_input_stub(NULL);
   video_reader_.reset();
 }
 

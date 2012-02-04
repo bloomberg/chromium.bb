@@ -773,6 +773,8 @@
         'protocol/host_event_dispatcher.cc',
         'protocol/host_event_dispatcher.h',
         'protocol/host_stub.h',
+        'protocol/input_filter.cc',
+        'protocol/input_filter.h',
         'protocol/input_stub.h',
         'protocol/it2me_host_authenticator_factory.cc',
         'protocol/it2me_host_authenticator_factory.h',
