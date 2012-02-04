@@ -199,6 +199,9 @@
       {'target_name': 'content',
        'type': 'shared_library',
        'variables': { 'enable_wexit_time_destructors': 1, },
+        'dependencies': [
+          'content_resources.gyp:content_resources',
+        ],
        'includes': [
         'content_app.gypi',
         'content_browser.gypi',
