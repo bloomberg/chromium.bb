@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
+#include "chrome/browser/chromeos/dbus/bluetooth_manager_client.h"
 #include "chrome/browser/chromeos/system/runtime_environment.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
@@ -176,32 +177,34 @@ bool PopArrayOfDictEntries(dbus::MessageReader* reader,
 namespace chromeos {
 
 // The BluetoothAdapterClient implementation used in production.
-class BluetoothAdapterClientImpl: public BluetoothAdapterClient {
+class BluetoothAdapterClientImpl: public BluetoothAdapterClient,
+                                  private BluetoothManagerClient::Observer {
  public:
-  explicit BluetoothAdapterClientImpl(dbus::Bus* bus)
+  explicit BluetoothAdapterClientImpl(dbus::Bus* bus,
+                                      BluetoothManagerClient* manager_client)
       : weak_ptr_factory_(this),
         bus_(bus) {
     VLOG(1) << "Creating BluetoothAdapterClientImpl";
+
+    DCHECK(manager_client);
+    manager_client->AddObserver(this);
   }
 
   virtual ~BluetoothAdapterClientImpl() {
   }
 
   // BluetoothAdapterClient override.
-  virtual void AddObserver(Observer* observer, const std::string& object_path) {
-    VLOG(1) << "AddObserver: " << object_path;
+  virtual void AddObserver(BluetoothAdapterClient::Observer* observer) {
+    VLOG(1) << "AddObserver";
     DCHECK(observer);
     observers_.AddObserver(observer);
-    AddObjectProxyForPath(object_path);
   }
 
   // BluetoothAdapterClient override.
-  virtual void RemoveObserver(Observer* observer,
-                              const std::string& object_path) {
-    VLOG(1) << "RemoveObserver: " << object_path;
+  virtual void RemoveObserver(BluetoothAdapterClient::Observer* observer) {
+    VLOG(1) << "RemoveObserver";
     DCHECK(observer);
     observers_.RemoveObserver(observer);
-    RemoveObjectProxyForPath(object_path);
   }
 
   // BluetoothAdapterClient override.
@@ -212,12 +215,7 @@ class BluetoothAdapterClientImpl: public BluetoothAdapterClient {
         bluetooth_adapter::kBluetoothAdapterInterface,
         bluetooth_adapter::kStartDiscovery);
 
-    ProxyMap::iterator it = proxy_map_.find(object_path);
-    if (it == proxy_map_.end()) {
-      LOG(ERROR) << "Couldn't find proxy for object path " << object_path;
-      return;
-    }
-    dbus::ObjectProxy* adapter_proxy = it->second;
+    dbus::ObjectProxy* adapter_proxy = GetObjectProxyForPath(object_path);
 
     adapter_proxy->CallMethod(
         &method_call,
@@ -234,12 +232,7 @@ class BluetoothAdapterClientImpl: public BluetoothAdapterClient {
         bluetooth_adapter::kBluetoothAdapterInterface,
         bluetooth_adapter::kStopDiscovery);
 
-    ProxyMap::iterator it = proxy_map_.find(object_path);
-    if (it == proxy_map_.end()) {
-      LOG(ERROR) << "Couldn't find proxy for object path " << object_path;
-      return;
-    }
-    dbus::ObjectProxy* adapter_proxy = it->second;
+    dbus::ObjectProxy* adapter_proxy = GetObjectProxyForPath(object_path);
 
     adapter_proxy->CallMethod(
         &method_call,
@@ -249,10 +242,26 @@ class BluetoothAdapterClientImpl: public BluetoothAdapterClient {
   }
 
  private:
-  // Gets a dbus object proxy for an adapter with dbus object path |object_path|
-  // and stores it in our |proxy_map_| map.
-  void AddObjectProxyForPath(const std::string& object_path) {
-    VLOG(1) << "AddObjectProxyForPath: " << object_path;
+  // BluetoothManagerClient::Observer override.
+  virtual void AdapterAdded(const std::string& object_path) OVERRIDE {
+    VLOG(1) << "AdapterAdded: " << object_path;
+  }
+
+  // BluetoothManagerClient::Observer override.
+  virtual void AdapterRemoved(const std::string& object_path) OVERRIDE {
+    VLOG(1) << "AdapterRemoved: " << object_path;
+    RemoveObjectProxyForPath(object_path);
+  }
+
+  // Ensures that we have a dbus object proxy for an adapter with dbus
+  // object path |object_path|, and if not, creates it and stores it in
+  // our |proxy_map_| map.
+  dbus::ObjectProxy* GetObjectProxyForPath(const std::string& object_path) {
+    VLOG(1) << "GetObjectProxyForPath: " << object_path;
+
+    ProxyMap::iterator it = proxy_map_.find(object_path);
+    if (it != proxy_map_.end())
+      return it->second;
 
     DCHECK(bus_);
     dbus::ObjectProxy* adapter_proxy = bus_->GetObjectProxy(
@@ -283,6 +292,8 @@ class BluetoothAdapterClientImpl: public BluetoothAdapterClient {
                    weak_ptr_factory_.GetWeakPtr(), object_path),
         base::Bind(&BluetoothAdapterClientImpl::DeviceDisappearedConnected,
                    weak_ptr_factory_.GetWeakPtr(), object_path));
+
+    return adapter_proxy;
   }
 
   // Removes the dbus object proxy for the adapter with dbus object path
@@ -321,7 +332,7 @@ class BluetoothAdapterClientImpl: public BluetoothAdapterClient {
     VLOG(1) << object_path << ": PropertyChanged: Discovering = "
         << discovering;
 
-    FOR_EACH_OBSERVER(Observer, observers_,
+    FOR_EACH_OBSERVER(BluetoothAdapterClient::Observer, observers_,
                       DiscoveringPropertyChanged(object_path, discovering));
   }
 
@@ -356,8 +367,8 @@ class BluetoothAdapterClientImpl: public BluetoothAdapterClient {
       return;
     }
 
-    FOR_EACH_OBSERVER(Observer, observers_, DeviceFound(object_path, address,
-                                                        device_properties));
+    FOR_EACH_OBSERVER(BluetoothAdapterClient::Observer, observers_,
+                      DeviceFound(object_path, address, device_properties));
   }
 
   // Called by dbus:: when the DeviceFound signal is initially connected.
@@ -382,8 +393,8 @@ class BluetoothAdapterClientImpl: public BluetoothAdapterClient {
       return;
     }
     VLOG(1) << object_path << ": Device disappeared: " << address;
-    FOR_EACH_OBSERVER(Observer, observers_, DeviceDisappeared(object_path,
-                                                              address));
+    FOR_EACH_OBSERVER(BluetoothAdapterClient::Observer, observers_,
+                      DeviceDisappeared(object_path, address));
   }
 
   // Called by dbus:: when the DeviceDisappeared signal is initially connected.
@@ -420,7 +431,7 @@ class BluetoothAdapterClientImpl: public BluetoothAdapterClient {
   ProxyMap proxy_map_;
 
   // List of observers interested in event notifications from us.
-  ObserverList<Observer> observers_;
+  ObserverList<BluetoothAdapterClient::Observer> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(BluetoothAdapterClientImpl);
 };
@@ -430,14 +441,13 @@ class BluetoothAdapterClientImpl: public BluetoothAdapterClient {
 class BluetoothAdapterClientStubImpl : public BluetoothAdapterClient {
  public:
   // BluetoothAdapterClient override.
-  virtual void AddObserver(Observer* observer, const std::string& object_path) {
-    VLOG(1) << "AddObserver: " << object_path;
+  virtual void AddObserver(Observer* observer) {
+    VLOG(1) << "AddObserver";
   }
 
   // BluetoothAdapterClient override.
-  virtual void RemoveObserver(Observer* observer,
-                              const std::string& object_path) {
-    VLOG(1) << "RemoveObserver: " << object_path;
+  virtual void RemoveObserver(Observer* observer) {
+    VLOG(1) << "RemoveObserver";
   }
 
   // BluetoothAdapterClient override.
@@ -457,9 +467,11 @@ BluetoothAdapterClient::BluetoothAdapterClient() {
 BluetoothAdapterClient::~BluetoothAdapterClient() {
 }
 
-BluetoothAdapterClient* BluetoothAdapterClient::Create(dbus::Bus* bus) {
+BluetoothAdapterClient* BluetoothAdapterClient::Create(
+    dbus::Bus* bus,
+    BluetoothManagerClient* manager_client) {
   if (system::runtime_environment::IsRunningOnChromeOS()) {
-    return new BluetoothAdapterClientImpl(bus);
+    return new BluetoothAdapterClientImpl(bus, manager_client);
   } else {
     return new BluetoothAdapterClientStubImpl();
   }

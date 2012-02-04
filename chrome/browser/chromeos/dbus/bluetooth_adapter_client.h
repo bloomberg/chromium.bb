@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,6 +17,8 @@ class Bus;
 }  // namespace dbus
 
 namespace chromeos {
+
+class BluetoothManagerClient;
 
 // BluetoothAdapterClient is used to communicate with a bluetooth Adapter
 // interface.
@@ -46,10 +48,8 @@ class BluetoothAdapterClient {
 
   // Adds and removes observers for events on the adapter with object path
   // |object_path|.
-  virtual void AddObserver(Observer* observer,
-                           const std::string& object_path) = 0;
-  virtual void RemoveObserver(Observer* observer,
-                              const std::string& object_path) = 0;
+  virtual void AddObserver(Observer* observer) = 0;
+  virtual void RemoveObserver(Observer* observer) = 0;
 
   // Starts a device discovery on the adapter with object path |object_path|.
   virtual void StartDiscovery(const std::string& object_path) = 0;
@@ -59,7 +59,8 @@ class BluetoothAdapterClient {
   virtual void StopDiscovery(const std::string& object_path) = 0;
 
   // Creates the instance.
-  static BluetoothAdapterClient* Create(dbus::Bus* bus);
+  static BluetoothAdapterClient* Create(dbus::Bus* bus,
+                                        BluetoothManagerClient* manager_client);
 
  protected:
   BluetoothAdapterClient();

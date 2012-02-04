@@ -54,7 +54,7 @@ class DBusThreadManagerImpl : public DBusThreadManager {
     bluetooth_manager_client_.reset(BluetoothManagerClient::Create(
         system_bus_.get()));
     bluetooth_adapter_client_.reset(BluetoothAdapterClient::Create(
-        system_bus_.get()));
+        system_bus_.get(), bluetooth_manager_client_.get()));
     // Create the cros-disks client.
     cros_disks_client_.reset(
         CrosDisksClient::Create(system_bus_.get()));
