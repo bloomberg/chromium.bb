@@ -62,7 +62,7 @@ def CheckLocalGold():
                     "It's difficult to make a recommendation, because you\n"
                     "probably set this up yourself.  But you should make\n"
                     "/usr/bin/ld be the standard linker, which you likely\n"
-                    "renamed /usr/bin/ld.bfd or something like that.\n")
+                    "renamed /usr/bin/ld.bfd or something like that.\n" % path)
 
     if os.path.exists('/usr/local/gold'):
         return ("You have a /usr/local/gold, which is no longer needed.\n"
