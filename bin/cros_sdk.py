@@ -17,6 +17,8 @@ from chromite.buildbot import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import sudo
 
+cros_build_lib.STRICT_SUDO = True
+
 
 DEFAULT_CHROOT_DIR = 'chroot'
 DEFAULT_URL = 'https://commondatastorage.googleapis.com/chromiumos-sdk/'
