@@ -96,12 +96,7 @@ void NaClUntrustedThreadsResume(struct NaClApp *nap) {
       continue;
     }
 
-    /*
-     * We do not need to lock the mutex natp->mu at this point
-     * because, since we set NACL_APP_THREAD_SUSPENDING earlier, we
-     * are the only thread that is allowed to change
-     * natp->suspend_state.
-     */
+    NaClMutexLock(&natp->mu);
     old_state = natp->suspend_state;
     DCHECK((old_state & NACL_APP_THREAD_SUSPENDING) != 0);
     if (old_state == (NACL_APP_THREAD_UNTRUSTED | NACL_APP_THREAD_SUSPENDING)) {
@@ -112,6 +107,7 @@ void NaClUntrustedThreadsResume(struct NaClApp *nap) {
     }
     natp->suspend_state = old_state & ~NACL_APP_THREAD_SUSPENDING;
     NaClXCondVarSignal(&natp->cv);
+    NaClMutexUnlock(&natp->mu);
   }
 
   NaClXMutexUnlock(&nap->threads_mu);
