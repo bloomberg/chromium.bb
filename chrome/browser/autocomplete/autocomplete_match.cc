@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -46,7 +46,59 @@ AutocompleteMatch::AutocompleteMatch(AutocompleteProvider* provider,
       from_previous(false) {
 }
 
+AutocompleteMatch::AutocompleteMatch(const AutocompleteMatch& match)
+    : provider(match.provider),
+      relevance(match.relevance),
+      deletable(match.deletable),
+      fill_into_edit(match.fill_into_edit),
+      inline_autocomplete_offset(match.inline_autocomplete_offset),
+      destination_url(match.destination_url),
+      stripped_destination_url(match.stripped_destination_url),
+      contents(match.contents),
+      contents_class(match.contents_class),
+      description(match.description),
+      description_class(match.description_class),
+      transition(match.transition),
+      is_history_what_you_typed_match(match.is_history_what_you_typed_match),
+      type(match.type),
+      keyword(match.keyword),
+      template_url(match.template_url),
+      starred(match.starred),
+      from_previous(match.from_previous) {
+  if (match.associated_keyword.get())
+    associated_keyword.reset(new AutocompleteMatch(*match.associated_keyword));
+}
+
 AutocompleteMatch::~AutocompleteMatch() {
+}
+
+AutocompleteMatch& AutocompleteMatch::operator=(
+    const AutocompleteMatch& match) {
+  if (this == &match)
+    return *this;
+
+  provider = match.provider;
+  relevance = match.relevance;
+  deletable = match.deletable;
+  fill_into_edit = match.fill_into_edit;
+  inline_autocomplete_offset = match.inline_autocomplete_offset;
+  destination_url = match.destination_url;
+  stripped_destination_url = match.stripped_destination_url;
+  contents = match.contents;
+  contents_class = match.contents_class;
+  description = match.description;
+  description_class = match.description_class;
+  transition = match.transition;
+  is_history_what_you_typed_match = match.is_history_what_you_typed_match;
+  type = match.type;
+  associated_keyword.reset(match.associated_keyword.get() ?
+      new AutocompleteMatch(*match.associated_keyword) : NULL);
+  keyword = match.keyword;
+  template_url = match.template_url;
+  starred = match.starred;
+  from_previous = match.from_previous;
+
+  return *this;
 }
 
 // static
@@ -107,15 +159,15 @@ bool AutocompleteMatch::DestinationSortFunc(const AutocompleteMatch& elem1,
   // Sort identical destination_urls together.  Place the most relevant matches
   // first, so that when we call std::unique(), these are the ones that get
   // preserved.
-  return (elem1.destination_url != elem2.destination_url) ?
-      (elem1.destination_url < elem2.destination_url) :
+  return (elem1.stripped_destination_url != elem2.stripped_destination_url) ?
+      (elem1.stripped_destination_url < elem2.stripped_destination_url) :
       MoreRelevant(elem1, elem2);
 }
 
 // static
 bool AutocompleteMatch::DestinationsEqual(const AutocompleteMatch& elem1,
                                           const AutocompleteMatch& elem2) {
-  return elem1.destination_url == elem2.destination_url;
+  return elem1.stripped_destination_url == elem2.stripped_destination_url;
 }
 
 // static
@@ -173,6 +225,28 @@ string16 AutocompleteMatch::SanitizeString(const string16& text) {
   TrimWhitespace(text, TRIM_LEADING, &result);
   RemoveChars(result, kInvalidChars, &result);
   return result;
+}
+
+void AutocompleteMatch::ComputeStrippedDestinationURL() {
+  static const char prefix[] = "www.";
+  static const size_t prefix_len = arraysize(prefix) - 1;
+
+  std::string host = destination_url.host();
+  if (destination_url.is_valid() && host.compare(0, prefix_len, prefix) == 0) {
+    host = host.substr(prefix_len);
+    GURL::Replacements replace_host;
+    replace_host.SetHostStr(host);
+    stripped_destination_url = destination_url.ReplaceComponents(replace_host);
+  } else {
+    stripped_destination_url = destination_url;
+  }
+}
+
+bool AutocompleteMatch::GetKeyword(string16* keyword) const {
+  const bool is_keyword_hint = associated_keyword.get() != NULL;
+  keyword->assign(is_keyword_hint ? associated_keyword->keyword :
+      this->keyword);
+  return is_keyword_hint;
 }
 
 #ifndef NDEBUG

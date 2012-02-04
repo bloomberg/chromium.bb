@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -41,21 +41,6 @@ class KeywordProvider::ScopedEndExtensionKeywordMode {
  private:
   KeywordProvider* provider_;
 };
-
-// static
-string16 KeywordProvider::SplitReplacementStringFromInput(
-    const string16& input,
-    bool trim_leading_whitespace) {
-  // The input may contain leading whitespace, strip it.
-  string16 trimmed_input;
-  TrimWhitespace(input, TRIM_LEADING, &trimmed_input);
-
-  // And extract the replacement string.
-  string16 remaining_input;
-  SplitKeywordFromInput(trimmed_input, trim_leading_whitespace,
-                        &remaining_input);
-  return remaining_input;
-}
 
 KeywordProvider::KeywordProvider(ACProviderListener* listener, Profile* profile)
     : AutocompleteProvider(listener, profile, "Keyword"),
@@ -107,6 +92,45 @@ static int global_input_uid_;
 }  // namespace
 
 // static
+string16 KeywordProvider::SplitKeywordFromInput(
+    const string16& input,
+    bool trim_leading_whitespace,
+    string16* remaining_input) {
+  // Find end of first token.  The AutocompleteController has trimmed leading
+  // whitespace, so we need not skip over that.
+  const size_t first_white(input.find_first_of(kWhitespaceUTF16));
+  DCHECK_NE(0U, first_white);
+  if (first_white == string16::npos)
+    return input;  // Only one token provided.
+
+  // Set |remaining_input| to everything after the first token.
+  DCHECK(remaining_input != NULL);
+  const size_t remaining_start = trim_leading_whitespace ?
+      input.find_first_not_of(kWhitespaceUTF16, first_white) : first_white + 1;
+
+  if (remaining_start < input.length())
+    remaining_input->assign(input.begin() + remaining_start, input.end());
+
+  // Return first token as keyword.
+  return input.substr(0, first_white);
+}
+
+// static
+string16 KeywordProvider::SplitReplacementStringFromInput(
+    const string16& input,
+    bool trim_leading_whitespace) {
+  // The input may contain leading whitespace, strip it.
+  string16 trimmed_input;
+  TrimWhitespace(input, TRIM_LEADING, &trimmed_input);
+
+  // And extract the replacement string.
+  string16 remaining_input;
+  SplitKeywordFromInput(trimmed_input, trim_leading_whitespace,
+      &remaining_input);
+  return remaining_input;
+}
+
+// static
 const TemplateURL* KeywordProvider::GetSubstitutingTemplateURLForInput(
     Profile* profile,
     const AutocompleteInput& input,
@@ -126,6 +150,44 @@ const TemplateURL* KeywordProvider::GetSubstitutingTemplateURLForInput(
 
   const TemplateURL* template_url = model->GetTemplateURLForKeyword(keyword);
   return TemplateURL::SupportsReplacement(template_url) ? template_url : NULL;
+}
+
+string16 KeywordProvider::GetKeywordForText(
+    const string16& text) const {
+  const string16 keyword(TemplateURLService::CleanUserInputKeyword(text));
+
+  if (keyword.empty())
+    return keyword;
+
+  TemplateURLService* url_service = GetTemplateURLService();
+  if (!url_service)
+    return string16();
+
+  // Don't provide a keyword if it doesn't support replacement.
+  const TemplateURL* const template_url =
+      url_service->GetTemplateURLForKeyword(keyword);
+  if (!TemplateURL::SupportsReplacement(template_url))
+    return string16();
+
+  // Don't provide a keyword for inactive/disabled extension keywords.
+  if (template_url->IsExtensionKeyword()) {
+    const Extension* extension = profile_->GetExtensionService()->
+        GetExtensionById(template_url->GetExtensionId(), false);
+    if (!extension ||
+        (profile_->IsOffTheRecord() &&
+        !profile_->GetExtensionService()->IsIncognitoEnabled(extension->id())))
+      return string16();
+  }
+
+  return keyword;
+}
+
+AutocompleteMatch KeywordProvider::CreateAutocompleteMatch(
+    const string16& text,
+    const string16& keyword,
+    const AutocompleteInput& input) {
+  return CreateAutocompleteMatch(GetTemplateURLService(), keyword, input,
+      keyword.size(), SplitReplacementStringFromInput(text, true), 0);
 }
 
 void KeywordProvider::Start(const AutocompleteInput& input,
@@ -161,14 +223,7 @@ void KeywordProvider::Start(const AutocompleteInput& input,
   if (!ExtractKeywordFromInput(input, &keyword, &remaining_input))
     return;
 
-  // Make sure the model is loaded. This is cheap and quickly bails out if
-  // the model is already loaded.
-  TemplateURLService* model =
-      profile_ ?
-      TemplateURLServiceFactory::GetForProfile(profile_) :
-      model_;
-  DCHECK(model);
-  model->Load();
+  TemplateURLService* model = GetTemplateURLService();
 
   // Get the best matches for this keyword.
   //
@@ -185,11 +240,12 @@ void KeywordProvider::Start(const AutocompleteInput& input,
                               !remaining_input.empty(),
                               &keyword_matches);
 
-  // Prune any extension keywords that are disallowed in incognito mode (if
-  // we're incognito), or disabled.
   for (std::vector<string16>::iterator i(keyword_matches.begin());
        i != keyword_matches.end(); ) {
     const TemplateURL* template_url(model->GetTemplateURLForKeyword(*i));
+
+    // Prune any extension keywords that are disallowed in incognito mode (if
+    // we're incognito), or disabled.
     if (profile_ &&
         input.matches_requested() == AutocompleteInput::ALL_MATCHES &&
         template_url->IsExtensionKeyword()) {
@@ -204,6 +260,14 @@ void KeywordProvider::Start(const AutocompleteInput& input,
         continue;
       }
     }
+
+    // Prune any substituting keywords if there is no substitution.
+    if (TemplateURL::SupportsReplacement(template_url) &&
+        remaining_input.empty() && !input.allow_exact_keyword_match()) {
+      i = keyword_matches.erase(i);
+      continue;
+    }
+
     ++i;
   }
   if (keyword_matches.empty())
@@ -291,30 +355,6 @@ bool KeywordProvider::ExtractKeywordFromInput(const AutocompleteInput& input,
   *keyword = TemplateURLService::CleanUserInputKeyword(
       SplitKeywordFromInput(trimmed_input, true, remaining_input));
   return !keyword->empty();
-}
-
-// static
-string16 KeywordProvider::SplitKeywordFromInput(
-    const string16& input,
-    bool trim_leading_whitespace,
-    string16* remaining_input) {
-  // Find end of first token.  The AutocompleteController has trimmed leading
-  // whitespace, so we need not skip over that.
-  const size_t first_white(input.find_first_of(kWhitespaceUTF16));
-  DCHECK_NE(0U, first_white);
-  if (first_white == string16::npos)
-    return input;  // Only one token provided.
-
-  // Set |remaining_input| to everything after the first token.
-  DCHECK(remaining_input != NULL);
-  const size_t remaining_start = trim_leading_whitespace ?
-      input.find_first_not_of(kWhitespaceUTF16, first_white) : first_white + 1;
-
-  if (remaining_start < input.length())
-    remaining_input->assign(input.begin() + remaining_start, input.end());
-
-  // Return first token as keyword.
-  return input.substr(0, first_white);
 }
 
 // static
@@ -415,36 +455,36 @@ AutocompleteMatch KeywordProvider::CreateAutocompleteMatch(
                            supports_replacement, input.prefer_keyword(),
                            input.allow_exact_keyword_match());
   }
-  AutocompleteMatch result(this, relevance, false,
+  AutocompleteMatch match(this, relevance, false,
       supports_replacement ? AutocompleteMatch::SEARCH_OTHER_ENGINE :
                              AutocompleteMatch::HISTORY_KEYWORD);
-  result.fill_into_edit.assign(keyword);
+  match.fill_into_edit.assign(keyword);
   if (!remaining_input.empty() || !keyword_complete || supports_replacement)
-    result.fill_into_edit.push_back(L' ');
-  result.fill_into_edit.append(remaining_input);
+    match.fill_into_edit.push_back(L' ');
+  match.fill_into_edit.append(remaining_input);
   // If we wanted to set |result.inline_autocomplete_offset| correctly, we'd
   // need CleanUserInputKeyword() to return the amount of adjustment it's made
   // to the user's input.  Because right now inexact keyword matches can't score
   // more highly than a "what you typed" match from one of the other providers,
   // we just don't bother to do this, and leave inline autocompletion off.
-  result.inline_autocomplete_offset = string16::npos;
+  match.inline_autocomplete_offset = string16::npos;
 
   // Create destination URL and popup entry content by substituting user input
   // into keyword templates.
-  FillInURLAndContents(profile_, remaining_input, element, &result);
+  FillInURLAndContents(profile_, remaining_input, element, &match);
 
   if (supports_replacement)
-    result.template_url = element;
-  result.transition = content::PAGE_TRANSITION_KEYWORD;
+    match.template_url = element;
+  match.keyword = keyword;
+  match.transition = content::PAGE_TRANSITION_KEYWORD;
 
-  return result;
+  return match;
 }
 
 void KeywordProvider::Observe(int type,
                               const content::NotificationSource& source,
                               const content::NotificationDetails& details) {
-  TemplateURLService* model =
-      profile_ ? TemplateURLServiceFactory::GetForProfile(profile_) : model_;
+  TemplateURLService* model = GetTemplateURLService();
   const AutocompleteInput& input = extension_suggest_last_input_;
 
   switch (type) {
@@ -519,6 +559,16 @@ void KeywordProvider::Observe(int type,
       NOTREACHED();
       return;
   }
+}
+
+TemplateURLService* KeywordProvider::GetTemplateURLService() const {
+  TemplateURLService* service = profile_ ?
+      TemplateURLServiceFactory::GetForProfile(profile_) : model_;
+  // Make sure the model is loaded. This is cheap and quickly bails out if
+  // the model is already loaded.
+  DCHECK(service);
+  service->Load();
+  return service;
 }
 
 void KeywordProvider::EnterExtensionKeywordMode(

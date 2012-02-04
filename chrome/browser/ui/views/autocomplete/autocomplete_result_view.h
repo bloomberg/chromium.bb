@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,16 +8,21 @@
 
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/base/animation/animation_delegate.h"
+#include "ui/base/animation/slide_animation.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/rect.h"
+#include "ui/views/controls/image_view.h"
 #include "ui/views/view.h"
 
 class AutocompleteResultViewModel;
+
 namespace gfx {
 class Canvas;
 }
 
-class AutocompleteResultView : public views::View {
+class AutocompleteResultView : public views::View,
+                               private ui::AnimationDelegate {
  public:
   enum ResultViewState {
     NORMAL = 0,
@@ -46,6 +51,13 @@ class AutocompleteResultView : public views::View {
   // the match so that we can continue to paint the last result even after the
   // model has changed.
   void SetMatch(const AutocompleteMatch& match);
+
+  void ShowKeyword(bool show_keyword);
+
+  void Invalidate();
+
+  // views::View:
+  virtual gfx::Size GetPreferredSize() OVERRIDE;
 
  protected:
   virtual void PaintMatch(gfx::Canvas* canvas,
@@ -82,6 +94,7 @@ class AutocompleteResultView : public views::View {
 
   ResultViewState GetState() const;
   const SkBitmap* GetIcon() const;
+  const SkBitmap* GetKeywordIcon() const;
 
   // Elides |runs| to fit in |remaining_width|.  The runs in |runs| should be in
   // logical order.
@@ -100,9 +113,12 @@ class AutocompleteResultView : public views::View {
   void Elide(Runs* runs, int remaining_width) const;
 
   // views::View:
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual void Layout() OVERRIDE;
+  virtual void OnBoundsChanged(const gfx::Rect& previous_bounds);
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
+
+  // ui::AnimationDelegate:
+  virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE;
 
   static int default_icon_size_;
 
@@ -124,6 +140,11 @@ class AutocompleteResultView : public views::View {
 
   gfx::Rect text_bounds_;
   gfx::Rect icon_bounds_;
+
+  gfx::Rect keyword_text_bounds_;
+  scoped_ptr<views::ImageView> keyword_icon_;
+
+  scoped_ptr<ui::SlideAnimation> animation_;
 
   DISALLOW_COPY_AND_ASSIGN(AutocompleteResultView);
 };
