@@ -258,7 +258,8 @@ void ExtensionSettingsHandler::HandleToggleDeveloperMode(
       profile->GetPrefs()->GetBoolean(prefs::kExtensionsUIDeveloperMode);
   profile->GetPrefs()->SetBoolean(
       prefs::kExtensionsUIDeveloperMode, !developer_mode);
-  HandleRequestExtensionsData(NULL);
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableUberPage))
+    HandleRequestExtensionsData(NULL);
 }
 
 void ExtensionSettingsHandler::HandleInspectMessage(const ListValue* args) {

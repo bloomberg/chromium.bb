@@ -1,47 +1,51 @@
 /* Copyright (c) 2012 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
- * found in the LICENSE file.
- */
+ * found in the LICENSE file. */
 
-/* Dev */
-
-.dev-open {
-  border-bottom: 1px solid rgb(205, 205, 205);
-  height: 32px;
-  padding-bottom: 7px;
-  padding-top: 13px;
-  -webkit-padding-start: 4px;
-  -webkit-padding-end: 3px;
-  -webkit-transition: padding 300ms, height 300ms, opacity 700ms;
+html.loading * {
+  -webkit-transition-duration: 0 !important;
 }
 
-.dev-closed {
+/* Developer mode */
+
+#dev-controls {
+  -webkit-padding-end: 3px;
+  -webkit-padding-start: 4px;
+  -webkit-transition: padding 100ms, height 100ms, opacity 100ms;
+  border-bottom: 1px solid rgb(205, 205, 205);
+  display: -webkit-box;
   height: 0;
   opacity: 0;
-  -webkit-padding-start: 4px;
-  -webkit-padding-end: 3px;
-  -webkit-transition: padding 200ms, height 200ms, opacity 200ms;
+  overflow: hidden;
 }
 
-.dev-button-visible {
-  display: inherit;
+#extension-settings.dev-mode #dev-controls {
+  -webkit-transition-duration: 250ms;
+  height: 32px;
   opacity: 1;
-  -webkit-transition: opacity 200ms;
+  padding-bottom: 7px;
+  padding-top: 13px;
 }
 
-.dev-button-hidden {
-  display: none;
-}
-
-#suggest-gallery {
-  -webkit-padding-start: 10px;
+#dev-controls-spacer {
+  -webkit-box-flex: 1;
 }
 
 #dev-toggle {
+  -webkit-margin-end: 8px;
   display: block;
   text-align: end;
   margin-top: 5px;
-  -webkit-margin-end: 8px;
+}
+
+#extension-settings:not(.dev-mode) .developer-extras {
+  display: none;
+}
+
+/* Contents */
+
+#suggest-gallery {
+  -webkit-padding-start: 10px;
 }
 
 #get-more-extensions-container {
@@ -49,25 +53,15 @@
 }
 
 #get-more-extensions {
+  -webkit-padding-start: 10px;
   padding-top: 5px;
   font-size: 15px;
-  -webkit-padding-start: 10px;
 }
 
-#dev-table tr {
-  white-space: nowrap;
+#extension-settings {
+  max-width: 700px;
+  min-width: 500px;
 }
-
-/* Support full keyboard accessibility without making things ugly
-   for users who click, by hiding some focus outlines when the user
-   clicks anywhere, but showing them when the user presses any key. */
-body.hide-some-focus-outlines .extension-zippy-container {
-  outline: none;
-}
-
-/**************************************************************************/
-/* TODO(estade): rules above this line are old and should probably be
- * retired.*/
 
 .extension-list-item-wrapper {
   margin: 23px 0;

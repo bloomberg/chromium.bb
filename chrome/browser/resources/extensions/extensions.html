@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html i18n-values="dir:textdirection;">
+<html i18n-values="dir:textdirection;" class="loading">
 <head>
 <meta charset="utf-8">
 
@@ -30,42 +30,30 @@
 <div class="page" id="extension-settings">
   <header id="page-header"><h1 i18n-content="extensionSettings"></h1></header>
   <div id="dev-toggle">
-    <input id="toggle-dev-on" type="checkbox" value="off">
-    <label for="toggle-dev-on" i18n-content="extensionSettingsDeveloperMode">
+    <label>
+      <input id="toggle-dev-on" type="checkbox">
+      <span i18n-content="extensionSettingsDeveloperMode">
     </label>
   </div>
-  <div class="displaytable">
-    <div id="dev" class="dev-closed">
-      <table id="dev-table" width="100%">
-        <tr>
-          <td>
-            <button id="load-unpacked"
-                i18n-content="extensionSettingsLoadUnpackedButton"></button>
-            <button id="pack-extension"
-                i18n-content="extensionSettingsPackButton"></button>
-          </td>
-          <td align="right">
-            <button id="update-extensions-now"
-                i18n-content="extensionSettingsUpdateButton"></button>
-          </td>
-        </tr>
-      </table>
-    </div>
-    <section class="extension-settings-content">
-      <div id="extension-settings-list"></div>
-    </section>
+  <div id="dev-controls" hidden>
+    <button id="load-unpacked"
+        i18n-content="extensionSettingsLoadUnpackedButton"></button>
+    <button id="pack-extension"
+        i18n-content="extensionSettingsPackButton"></button>
+    <div id="dev-controls-spacer"></div>
+    <button id="update-extensions-now"
+        i18n-content="extensionSettingsUpdateButton"></button>
   </div>
-  <section>
-    <div>
-      <strong id="no-extensions" i18n-content="extensionSettingsNoExtensions"
-          hidden></strong>
-    </div>
-    <div id="suggest-gallery" hidden></div>
-    <div id="get-more-extensions-container" hidden>
-      <img src="chrome://theme/IDR_WEBSTORE_ICON_32">
-      <div id="get-more-extensions"></div>
-    </div>
-  </section>
+  <div id="extension-settings-list"></div>
+  <div>
+    <strong id="no-extensions" i18n-content="extensionSettingsNoExtensions"
+        hidden></strong>
+  </div>
+  <div id="suggest-gallery" hidden></div>
+  <div id="get-more-extensions-container" hidden>
+    <img src="chrome://theme/IDR_WEBSTORE_ICON_32">
+    <div id="get-more-extensions"></div>
+  </div>
 </div>
 
 <div id="template-collection" hidden>
@@ -78,7 +66,7 @@
           <span class="extension-version"></span>
         </div>
         <p class="extension-description"></p>
-        <div class="developer-extras" hidden>
+        <div class="developer-extras">
           <div>
             <span i18n-content="extensionSettingsExtensionId"></span>
             <span class="extension-id"></span>

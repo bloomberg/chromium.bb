@@ -40,10 +40,10 @@ cr.define('extensions', function() {
       // back in returnExtensionsData.
       chrome.send('extensionSettingsRequestExtensionsData');
 
-      // Set up the developer mode button.
-      var toggleDevMode = $('toggle-dev-on');
-      toggleDevMode.addEventListener('click',
+      $('toggle-dev-on').addEventListener('change',
           this.handleToggleDevMode_.bind(this));
+      $('dev-controls').addEventListener('webkitTransitionEnd',
+          this.handleDevControlsTransitionEnd_.bind(this));
 
       // Setup the gallery related links and text.
       $('suggest-gallery').innerHTML =
@@ -128,32 +128,28 @@ cr.define('extensions', function() {
      * @private
      */
     handleToggleDevMode_: function(e) {
-      var dev = $('dev');
-      if (!dev.classList.contains('dev-open')) {
-        // Make the Dev section visible.
-        dev.classList.add('dev-open');
-        dev.classList.remove('dev-closed');
-
-        $('load-unpacked').classList.add('dev-button-visible');
-        $('load-unpacked').classList.remove('dev-button-hidden');
-        $('pack-extension').classList.add('dev-button-visible');
-        $('pack-extension').classList.remove('dev-button-hidden');
-        $('update-extensions-now').classList.add('dev-button-visible');
-        $('update-extensions-now').classList.remove('dev-button-hidden');
+      if ($('toggle-dev-on').checked) {
+        $('dev-controls').hidden = false;
+        window.setTimeout(function() {
+          $('extension-settings').classList.add('dev-mode');
+        }, 0);
       } else {
-        // Hide the Dev section.
-        dev.classList.add('dev-closed');
-        dev.classList.remove('dev-open');
-
-        $('load-unpacked').classList.add('dev-button-hidden');
-        $('load-unpacked').classList.remove('dev-button-visible');
-        $('pack-extension').classList.add('dev-button-hidden');
-        $('pack-extension').classList.remove('dev-button-visible');
-        $('update-extensions-now').classList.add('dev-button-hidden');
-        $('update-extensions-now').classList.remove('dev-button-visible');
+        $('extension-settings').classList.remove('dev-mode');
       }
 
       chrome.send('extensionSettingsToggleDeveloperMode', []);
+    },
+
+    /**
+     * Called when a transition has ended for #dev-controls.
+     * @param {Event} e webkitTransitionEnd event.
+     * @private
+     */
+    handleDevControlsTransitionEnd_: function(e) {
+      if (e.propertyName == 'height' &&
+          !$('extension-settings').classList.contains('dev-mode')) {
+        $('dev-controls').hidden = true;
+      }
     },
 
     /**
@@ -218,10 +214,22 @@ cr.define('extensions', function() {
       $('suggest-gallery').hidden = false;
     }
 
-    ExtensionsList.prototype.data_ = extensionsData;
+    if (extensionsData.developerMode) {
+      $('toggle-dev-on').checked = true;
+      $('extension-settings').classList.add('dev-mode');
+        $('dev-controls').hidden = false;
+    } else {
+      $('toggle-dev-on').checked = false;
+      $('extension-settings').classList.remove('dev-mode');
+    }
 
+    ExtensionsList.prototype.data_ = extensionsData;
     var extensionList = $('extension-settings-list');
     ExtensionsList.decorate(extensionList);
+
+    window.setTimeout(function() {
+      document.documentElement.classList.remove('loading');
+    }, 0);
   }
 
   // Indicate that warning |message| has occured for pack of |crx_path| and
