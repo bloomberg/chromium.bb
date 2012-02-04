@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,6 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "ppapi/c/pp_var.h"
 #include "ppapi/proxy/ppapi_proxy_export.h"
 
@@ -87,7 +88,6 @@ class PPAPI_PROXY_EXPORT SerializedVar {
    public:
     Inner();
     Inner(VarSerializationRules* serialization_rules);
-    Inner(VarSerializationRules* serialization_rules, const PP_Var& var);
     ~Inner();
 
     VarSerializationRules* serialization_rules() {
@@ -101,8 +101,14 @@ class PPAPI_PROXY_EXPORT SerializedVar {
     PP_Var GetVar() const;
     PP_Var GetIncompleteVar() const;
     void SetVar(PP_Var var);
-    const std::string& GetString() const;
-    std::string* GetStringPtr();
+    void SetString(scoped_ptr<std::string> str);
+    // Return a new string with the contents of the string referenced by Inner.
+    // The string referenced by the Inner will be empty after this.
+    scoped_ptr<std::string> GetStringDestructive();
+    // Return a pointer to our internal string pointer. This is so that the
+    // caller will be able to make this Inner point to a string that's owned
+    // elsewhere (i.e., in the tracker).
+    const std::string** GetStringPtrPtr();
 
     // For the SerializedVarTestConstructor, this writes the Var value as if
     // it was just received off the wire, without any serialization rules.
@@ -137,7 +143,7 @@ class PPAPI_PROXY_EXPORT SerializedVar {
     VarSerializationRules* serialization_rules_;
 
     // If this is set to VARTYPE_STRING and the 'value.id' is 0, then the
-    // string_value_ contains the string. This means that the caller hasn't
+    // string_from_ipc_ holds the string. This means that the caller hasn't
     // called Deserialize with a valid Dispatcher yet, which is how we can
     // convert the serialized string value to a PP_Var string ID.
     //
@@ -146,9 +152,17 @@ class PPAPI_PROXY_EXPORT SerializedVar {
     // a string ID. Before this, the as_id will be 0 for VARTYPE_STRING.
     PP_Var var_;
 
-    // Holds the literal string value to/from IPC. This will be valid if the
-    // var_ is VARTYPE_STRING.
-    std::string string_value_;
+    // If valid, this is a pointer to a string owned by the VarTracker. When our
+    // outer SerializedVar gets serialized, it will write the string directly
+    // from the tracker so we do not need to make any unnecessary copies. This
+    // should only be valid on the sender side.
+    const std::string* tracker_string_ptr_;
+
+    // If valid, this is a string received from IPC which needs to be inserted
+    // in to the var tracker. When we provide it to the tracker, we pass
+    // ownership so that there are no unnecessary copies. This should only ever
+    // be valid on the receiver side.
+    scoped_ptr<std::string> string_from_ipc_;
 
     CleanupMode cleanup_mode_;
 
@@ -167,7 +181,6 @@ class PPAPI_PROXY_EXPORT SerializedVar {
   };
 
   SerializedVar(VarSerializationRules* serialization_rules);
-  SerializedVar(VarSerializationRules* serialization, const PP_Var& var);
 
   mutable scoped_refptr<Inner> inner_;
 };
@@ -453,7 +466,9 @@ class PPAPI_PROXY_EXPORT SerializedVarTestReader : public SerializedVar {
   // actually want to check.
   PP_Var GetIncompleteVar() const { return inner_->GetIncompleteVar(); }
 
-  const std::string& GetString() const { return inner_->GetString(); }
+  const std::string* GetTrackerStringPtr() const {
+    return *inner_->GetStringPtrPtr();
+  }
 };
 
 }  // namespace proxy

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -124,6 +124,11 @@ StringVar::StringVar(const char* str, uint32 len)
 StringVar::~StringVar() {
 }
 
+StringVar::StringVar(scoped_ptr<std::string> str) {
+  // Swap the given string's contents in to value to avoid copying.
+  str->swap(value_);
+}
+
 StringVar* StringVar::AsStringVar() {
   return this;
 }
@@ -143,6 +148,17 @@ PP_Var StringVar::StringToPPVar(const char* data, uint32 len) {
   if (!str || !IsStringUTF8(str->value()))
     return PP_MakeNull();
   return str->GetPPVar();
+}
+
+// static
+PP_Var StringVar::StringToPPVar(scoped_ptr<std::string> str) {
+  DCHECK(str.get());
+  if (!str.get())
+    return PP_MakeNull();
+  scoped_refptr<StringVar> str_var(new StringVar(str.Pass()));
+  if (!str_var || !IsStringUTF8(str_var->value()))
+    return PP_MakeNull();
+  return str_var->GetPPVar();
 }
 
 // static

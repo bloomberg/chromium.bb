@@ -9,6 +9,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "ppapi/c/pp_var.h"
 #include "ppapi/shared_impl/ppapi_shared_export.h"
 
@@ -93,9 +94,16 @@ class PPAPI_SHARED_EXPORT StringVar : public Var {
  public:
   StringVar(const std::string& str);
   StringVar(const char* str, uint32 len);
+  StringVar(scoped_ptr<std::string> str);
   virtual ~StringVar();
 
   const std::string& value() const { return value_; }
+  // Return a pointer to the internal string. This allows other objects to
+  // temporarily store a weak pointer to our internal string. Use with care; the
+  // pointer *will* become invalid if this StringVar is removed from the
+  // tracker. (All of this applies to value(), but this one's even easier to use
+  // dangerously).
+  const std::string* ptr() const { return &value_; }
 
   // Var override.
   virtual StringVar* AsStringVar() OVERRIDE;
@@ -109,6 +117,7 @@ class PPAPI_SHARED_EXPORT StringVar : public Var {
   // create a StringVar and return the reference to it in the var.
   static PP_Var StringToPPVar(const std::string& str);
   static PP_Var StringToPPVar(const char* str, uint32 len);
+  static PP_Var StringToPPVar(scoped_ptr<std::string> str);
 
   // Helper function that converts a PP_Var to a string. This will return NULL
   // if the PP_Var is not of string type or the string is invalid.

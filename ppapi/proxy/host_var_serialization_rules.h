@@ -22,22 +22,24 @@ class HostVarSerializationRules : public VarSerializationRules {
   ~HostVarSerializationRules();
 
   // VarSerialization implementation.
-  virtual PP_Var SendCallerOwned(const PP_Var& var, std::string* str_val);
+  virtual PP_Var SendCallerOwned(const PP_Var& var,
+                                 const std::string** str_ptr_out);
   virtual PP_Var BeginReceiveCallerOwned(const PP_Var& var,
-                                         const std::string* str_val,
+                                         scoped_ptr<std::string> str,
                                          Dispatcher* dispatcher);
   virtual void EndReceiveCallerOwned(const PP_Var& var);
   virtual PP_Var ReceivePassRef(const PP_Var& var,
-                                const std::string& str_val,
+                                scoped_ptr<std::string> str,
                                 Dispatcher* dispatcher);
-  virtual PP_Var BeginSendPassRef(const PP_Var& var, std::string* str_val);
+  virtual PP_Var BeginSendPassRef(const PP_Var& var,
+                                  const std::string** str_ptr_out);
   virtual void EndSendPassRef(const PP_Var& var, Dispatcher* dispatcher);
   virtual void ReleaseObjectRef(const PP_Var& var);
 
  private:
   // Converts the given var (which must be a VARTYPE_STRING) to the given
   // string object.
-  void VarToString(const PP_Var& var, std::string* str);
+  void VarToStringPtr(const PP_Var& var, const std::string** str);
 
   PP_Module pp_module_;
 

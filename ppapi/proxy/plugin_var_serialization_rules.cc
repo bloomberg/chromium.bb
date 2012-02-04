@@ -22,17 +22,19 @@ PluginVarSerializationRules::PluginVarSerializationRules()
 PluginVarSerializationRules::~PluginVarSerializationRules() {
 }
 
-PP_Var PluginVarSerializationRules::SendCallerOwned(const PP_Var& var,
-                                                    std::string* str_val) {
+PP_Var PluginVarSerializationRules::SendCallerOwned(
+    const PP_Var& var,
+    const std::string** str_ptr_out) {
   // Objects need special translations to get the IDs valid in the host.
   if (var.type == PP_VARTYPE_OBJECT)
     return var_tracker_->GetHostObject(var);
 
-  // Retrieve the string to use for IPC.
+  // Retrieve the pointer to the string in the tracker in order to send the
+  // string over IPC without unnecessary copies.
   if (var.type == PP_VARTYPE_STRING) {
     StringVar* string_var = StringVar::FromPPVar(var);
     if (string_var)
-      *str_val = string_var->value();
+      *str_ptr_out = string_var->ptr();
     else
       NOTREACHED() << "Trying to send unknown string over IPC.";
   }
@@ -41,10 +43,10 @@ PP_Var PluginVarSerializationRules::SendCallerOwned(const PP_Var& var,
 
 PP_Var PluginVarSerializationRules::BeginReceiveCallerOwned(
     const PP_Var& var,
-    const std::string* str_val,
+    scoped_ptr<std::string> str,
     Dispatcher* dispatcher) {
   if (var.type == PP_VARTYPE_STRING)
-    return StringVar::StringToPPVar(*str_val);
+    return StringVar::StringToPPVar(str.Pass());
 
   if (var.type == PP_VARTYPE_OBJECT) {
     DCHECK(dispatcher->IsPlugin());
@@ -65,10 +67,10 @@ void PluginVarSerializationRules::EndReceiveCallerOwned(const PP_Var& var) {
 }
 
 PP_Var PluginVarSerializationRules::ReceivePassRef(const PP_Var& var,
-                                                   const std::string& str_val,
+                                                   scoped_ptr<std::string> str,
                                                    Dispatcher* dispatcher) {
   if (var.type == PP_VARTYPE_STRING)
-    return StringVar::StringToPPVar(str_val);
+    return StringVar::StringToPPVar(str.Pass());
 
   // Overview of sending an object with "pass ref" from the browser to the
   // plugin:
@@ -96,8 +98,9 @@ PP_Var PluginVarSerializationRules::ReceivePassRef(const PP_Var& var,
   return var;
 }
 
-PP_Var PluginVarSerializationRules::BeginSendPassRef(const PP_Var& var,
-                                                     std::string* str_val) {
+PP_Var PluginVarSerializationRules::BeginSendPassRef(
+    const PP_Var& var,
+    const std::string** str_ptr_out) {
   // Overview of sending an object with "pass ref" from the plugin to the
   // browser:
   //                                  Example 1             Example 2
@@ -118,9 +121,11 @@ PP_Var PluginVarSerializationRules::BeginSendPassRef(const PP_Var& var,
     return var_tracker_->GetHostObject(var);
 
   if (var.type == PP_VARTYPE_STRING) {
+    // Get the pointer to the string that's in the tracker and return it, so we
+    // can avoid an extra copy of the string when serializing over IPC.
     StringVar* string_var = StringVar::FromPPVar(var);
     if (string_var)
-      *str_val = string_var->value();
+      *str_ptr_out = string_var->ptr();
     else
       NOTREACHED() << "Trying to send unknown string over IPC.";
   }

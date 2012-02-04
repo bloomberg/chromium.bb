@@ -24,19 +24,24 @@ HostVarSerializationRules::HostVarSerializationRules(PP_Module pp_module)
 HostVarSerializationRules::~HostVarSerializationRules() {
 }
 
-PP_Var HostVarSerializationRules::SendCallerOwned(const PP_Var& var,
-                                                  std::string* str_val) {
+PP_Var HostVarSerializationRules::SendCallerOwned(
+    const PP_Var& var,
+    const std::string** str_ptr_out) {
   if (var.type == PP_VARTYPE_STRING)
-    VarToString(var, str_val);
+    VarToStringPtr(var, str_ptr_out);
   return var;
 }
 
 PP_Var HostVarSerializationRules::BeginReceiveCallerOwned(
     const PP_Var& var,
-    const std::string* str_val,
+    scoped_ptr<std::string> str,
     Dispatcher* /* dispatcher */) {
-  if (var.type == PP_VARTYPE_STRING)
-    return StringVar::StringToPPVar(*str_val);
+  if (var.type == PP_VARTYPE_STRING) {
+    // Put the string in to the VarTracker (transferring ownership, since we
+    // would otherwise just delete the one we received from IPC). This allows
+    // us to avoid unnecessary copying of the string.
+    return StringVar::StringToPPVar(str.Pass());
+  }
   return var;
 }
 
@@ -47,12 +52,13 @@ void HostVarSerializationRules::EndReceiveCallerOwned(const PP_Var& var) {
   }
 }
 
-PP_Var HostVarSerializationRules::ReceivePassRef(const PP_Var& var,
-                                                 const std::string& str_val,
-                                                 Dispatcher* /* dispatcher */) {
+PP_Var HostVarSerializationRules::ReceivePassRef(
+    const PP_Var& var,
+    scoped_ptr<std::string> str,
+    Dispatcher* /* dispatcher */) {
   if (var.type == PP_VARTYPE_STRING) {
-    // Convert the string to the context of the current process.
-    return StringVar::StringToPPVar(str_val);
+    // Put the string in to the tracker, transferring ownership.
+    return StringVar::StringToPPVar(str.Pass());
   }
 
   // See PluginVarSerialization::BeginSendPassRef for an example.
@@ -61,12 +67,13 @@ PP_Var HostVarSerializationRules::ReceivePassRef(const PP_Var& var,
   return var;
 }
 
-PP_Var HostVarSerializationRules::BeginSendPassRef(const PP_Var& var,
-                                                   std::string* str_val) {
+PP_Var HostVarSerializationRules::BeginSendPassRef(
+    const PP_Var& var,
+    const std::string** str_ptr_out) {
   // See PluginVarSerialization::ReceivePassRef for an example. We don't need
   // to do anything here other than convert the string.
   if (var.type == PP_VARTYPE_STRING)
-    VarToString(var, str_val);
+    VarToStringPtr(var, str_ptr_out);
   return var;
 }
 
@@ -76,16 +83,14 @@ void HostVarSerializationRules::EndSendPassRef(const PP_Var& /* var */,
   // to do anything here.
 }
 
-void HostVarSerializationRules::VarToString(const PP_Var& var,
-                                            std::string* str) {
+void HostVarSerializationRules::VarToStringPtr(
+    const PP_Var& var,
+    const std::string** str_ptr_out) {
   DCHECK(var.type == PP_VARTYPE_STRING);
-
-  // This could be optimized to avoid an extra string copy by going to a lower
-  // level of the browser's implementation of strings where we already have
-  // a std::string.
+  *str_ptr_out = NULL;
   StringVar* string_var = StringVar::FromPPVar(var);
   if (string_var)
-    *str = string_var->value();
+    *str_ptr_out = string_var->ptr();
 }
 
 void HostVarSerializationRules::ReleaseObjectRef(const PP_Var& var) {

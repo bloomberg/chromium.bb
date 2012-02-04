@@ -105,7 +105,7 @@ TEST_F(SerializedVarTest, PluginSerializedStringVarInOutParam) {
     // the var tracker should have changed yet, and no messages should have been
     // sent.
     SerializedVarTestReader reader(sv);
-    EXPECT_EQ(kTestString, reader.GetString());
+    EXPECT_EQ(kTestString, *reader.GetTrackerStringPtr());
     EXPECT_EQ(2, var_tracker().GetRefCountForObject(plugin_string));
     EXPECT_EQ(0u, sink().message_count());
   }

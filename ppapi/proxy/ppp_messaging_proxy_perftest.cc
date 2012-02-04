@@ -29,6 +29,7 @@ void HandleMessage(PP_Instance /* instance */, PP_Var message_data) {
   // Do something simple with the string so the compiler won't complain.
   if (s.length() > 0)
     s[0] = 'a';
+  PpapiGlobals::Get()->GetVarTracker()->ReleaseVar(message_data);
   handle_message_called.Signal();
 }
 
@@ -53,24 +54,29 @@ TEST_F(PppMessagingPerfTest, StringPerformance) {
       host().host_dispatcher()->GetProxiedInterface(
           PPP_MESSAGING_INTERFACE));
   const PP_Instance kTestInstance = pp_instance();
-  int string_size = 100000;
+  int seed = 123;
   int string_count = 1000;
+  int max_string_size = 1000000;
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   if (command_line) {
-    if (command_line->HasSwitch("string_size")) {
-      base::StringToInt(command_line->GetSwitchValueASCII("string_size"),
-                        &string_size);
+    if (command_line->HasSwitch("seed")) {
+      base::StringToInt(command_line->GetSwitchValueASCII("seed"),
+                        &seed);
     }
     if (command_line->HasSwitch("string_count")) {
       base::StringToInt(command_line->GetSwitchValueASCII("string_count"),
                         &string_count);
     }
+    if (command_line->HasSwitch("max_string_size")) {
+      base::StringToInt(command_line->GetSwitchValueASCII("max_string_size"),
+                        &max_string_size);
+    }
   }
-  // Make a string var of size string_size.
-  const std::string kTestString(string_size, 'a');
+  srand(seed);
   PerfTimeLogger logger("PppMessagingPerfTest.StringPerformance");
   for (int i = 0; i < string_count; ++i) {
-    PP_Var host_string = StringVar::StringToPPVar(kTestString);
+    const std::string test_string(rand() % max_string_size, 'a');
+    PP_Var host_string = StringVar::StringToPPVar(test_string);
     ppp_messaging->HandleMessage(kTestInstance, host_string);
     handle_message_called.Wait();
     PpapiGlobals::Get()->GetVarTracker()->ReleaseVar(host_string);
