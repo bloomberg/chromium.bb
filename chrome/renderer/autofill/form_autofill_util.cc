@@ -535,6 +535,8 @@ void PreviewFormField(WebKit::WebFormControlElement* field,
 
 namespace autofill {
 
+const size_t kMaxParseableFields = 100;
+
 // In HTML5, all text fields except password are text input fields to
 // autocomplete.
 bool IsTextInput(const WebInputElement* element) {
@@ -717,8 +719,9 @@ bool WebFormElementToFormData(
     fields_extracted[i] = true;
   }
 
-  // If we failed to extract any fields, give up.
-  if (form_fields.empty())
+  // If we failed to extract any fields, give up.  Also, to avoid overly
+  // expensive computation, we impose a maximum number of allowable fields.
+  if (form_fields.empty() || form_fields.size() > kMaxParseableFields)
     return false;
 
   // Loop through the label elements inside the form element.  For each label

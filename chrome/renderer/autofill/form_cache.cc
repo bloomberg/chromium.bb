@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -40,13 +40,6 @@ namespace {
 // label for each field is a costly operation and we can't spare the cycles if
 // it's not necessary.
 const size_t kRequiredAutofillFields = 3;
-
-// The maximum number of form fields we are willing to parse, due to
-// computational costs.  Several examples of forms with lots of fields that are
-// not relevant to Autofill: (1) the Netflix queue; (2) the Amazon wishlist;
-// (3) router configuration pages; and (4) other configuration pages, e.g. for
-// Google code project settings.
-const size_t kMaxParseableFields = 100;
 
 }  // namespace
 
@@ -92,15 +85,17 @@ void FormCache::ExtractForms(const WebFrame& frame,
       }
     }
 
-    // To avoid overly expensive computation, we impose both a minimum and a
-    // maximum number of allowable fields.
-    if (control_elements.size() < kRequiredAutofillFields ||
-        control_elements.size() > kMaxParseableFields)
+    // To avoid overly expensive computation, we impose a minimum number of
+    // allowable fields.  The corresponding maximum number of allowable fields
+    // is imposed by WebFormElementToFormData().
+    if (control_elements.size() < kRequiredAutofillFields)
       continue;
 
     FormData form;
-    WebFormElementToFormData(form_element, WebFormControlElement(),
-                             REQUIRE_NONE, EXTRACT_VALUE, &form, NULL);
+    if (!WebFormElementToFormData(form_element, WebFormControlElement(),
+                                  REQUIRE_NONE, EXTRACT_VALUE, &form, NULL)) {
+      continue;
+    }
 
     num_fields_seen += form.fields.size();
     if (num_fields_seen > kMaxParseableFields)

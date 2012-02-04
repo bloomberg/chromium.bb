@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -44,6 +44,13 @@ enum ExtractMask {
                                  // WebFormControlElement.
 };
 
+// The maximum number of form fields we are willing to parse, due to
+// computational costs.  Several examples of forms with lots of fields that are
+// not relevant to Autofill: (1) the Netflix queue; (2) the Amazon wishlist;
+// (3) router configuration pages; and (4) other configuration pages, e.g. for
+// Google code project settings.
+extern const size_t kMaxParseableFields;
+
 // Returns true if |element| is a text input element.
 bool IsTextInput(const WebKit::WebInputElement* element);
 
@@ -73,8 +80,8 @@ void WebFormControlElementToFormField(
 // corresponding to the |form_control_element|.
 // |extract_mask| controls what data is extracted.
 // Returns true if |form| is filled out; it's possible that the |form_element|
-// won't meet the |requirements|.  Also returns false if there are no fields
-// in the |form|.
+// won't meet the |requirements|.  Also returns false if there are no fields or
+// too many fields in the |form|.
 bool WebFormElementToFormData(
     const WebKit::WebFormElement& form_element,
     const WebKit::WebFormControlElement& form_control_element,
@@ -85,7 +92,7 @@ bool WebFormElementToFormData(
 
 // Finds the form that contains |element| and returns it in |form|.  Fills
 // |field| with the |FormField| representation for element.
-// Returns false if the form is not found.
+// Returns false if the form is not found or cannot be serialized.
 bool FindFormAndFieldForInputElement(const WebKit::WebInputElement& element,
                                      webkit::forms::FormData* form,
                                      webkit::forms::FormField* field,

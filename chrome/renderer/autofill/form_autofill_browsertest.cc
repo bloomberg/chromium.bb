@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -494,6 +494,36 @@ TEST_F(FormAutofillTest, WebFormElementToFormData) {
   expected.form_control_type = ASCIIToUTF16("select-one");
   expected.max_length = 0;
   EXPECT_FORM_FIELD_EQUALS(expected, fields[2]);
+}
+
+// We should not be able to serialize a form with too many fillable fields.
+TEST_F(FormAutofillTest, WebFormElementToFormDataTooManyFields) {
+  std::string html =
+      "<FORM name=\"TestForm\" action=\"http://cnn.com\" method=\"post\">";
+  for (size_t i = 0; i < (autofill::kMaxParseableFields + 1); ++i) {
+    html += "<INPUT type=\"text\"/>";
+  }
+  html += "</FORM>";
+  LoadHTML(html.c_str());
+
+  WebFrame* frame = GetMainFrame();
+  ASSERT_NE(static_cast<WebFrame*>(NULL), frame);
+
+  WebVector<WebFormElement> forms;
+  frame->document().forms(forms);
+  ASSERT_EQ(1U, forms.size());
+
+  WebElement element = frame->document().getElementById("firstname");
+  WebInputElement input_element = element.to<WebInputElement>();
+
+  FormData form;
+  FormField field;
+  EXPECT_FALSE(WebFormElementToFormData(forms[0],
+                                        input_element,
+                                        autofill::REQUIRE_NONE,
+                                        autofill::EXTRACT_VALUE,
+                                        &form,
+                                        &field));
 }
 
 TEST_F(FormAutofillTest, ExtractForms) {
