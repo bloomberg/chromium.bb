@@ -33,6 +33,7 @@ from chromite.buildbot import tee
 from chromite.lib import cros_build_lib as cros_lib
 from chromite.lib import sudo
 
+cros_lib.STRICT_SUDO = True
 
 _DEFAULT_LOG_DIR = 'cbuildbot_logs'
 _BUILDBOT_LOG_FILE = 'cbuildbot.log'
