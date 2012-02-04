@@ -209,15 +209,11 @@ bool CocoaPluginWebEventConverter::ConvertKeyboardEvent(
     return true;
   }
 
-  // TODO(thakis): Remove this once clang is smarter, http://crbug.com/111861
-#pragma clang diagnostic push  // clang warns about direct access to isa.
-#pragma clang diagnostic ignored "-Wformat"
   cocoa_event_.data.key.characters = reinterpret_cast<NPNSString*>(
       [NSString stringWithFormat:@"%S", key_event.text]);
   cocoa_event_.data.key.charactersIgnoringModifiers =
       reinterpret_cast<NPNSString*>(
           [NSString stringWithFormat:@"%S", key_event.unmodifiedText]);
-#pragma clang diagnostic pop
 
   if (key_event.modifiers & WebInputEvent::IsAutoRepeat)
     cocoa_event_.data.key.isARepeat = true;
