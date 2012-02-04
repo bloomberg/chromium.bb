@@ -81,7 +81,8 @@ const char kWebStoreLinkExperiment[] = "WebStoreLinkExperiment";
 // NewTabUI
 
 NewTabUI::NewTabUI(content::WebUI* web_ui)
-    : WebUIController(web_ui) {
+    : WebUIController(web_ui),
+      showing_sync_bubble_(false) {
   g_live_new_tabs.Pointer()->insert(this);
   // Override some options on the Web UI.
   web_ui->HideFavicon();

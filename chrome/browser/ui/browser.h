@@ -863,6 +863,9 @@ class Browser : public TabHandlerDelegate,
   // Called each time the browser window is shown.
   void OnWindowDidShow();
 
+  // Show the first run search engine bubble on the location bar.
+  void ShowFirstRunBubble();
+
  protected:
   // Wrapper for the factory method in BrowserWindow. This allows subclasses to
   // set their own window.

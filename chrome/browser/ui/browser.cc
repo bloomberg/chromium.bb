@@ -4457,6 +4457,27 @@ gfx::Rect Browser::GetInstantBounds() {
   return window()->GetInstantBounds();
 }
 
+void Browser::OnWindowDidShow() {
+  if (window_has_shown_)
+    return;
+  window_has_shown_ = true;
+
+  // Nothing to do for non-tabbed windows.
+  if (!is_type_tabbed())
+    return;
+
+  // Show any pending global error bubble.
+  GlobalErrorService* service =
+      GlobalErrorServiceFactory::GetForProfile(profile());
+  GlobalError* error = service->GetFirstGlobalErrorWithBubbleView();
+  if (error)
+    error->ShowBubbleView(this);
+}
+
+void Browser::ShowFirstRunBubble() {
+  window()->GetLocationBar()->ShowFirstRunBubble();
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Browser, protected:
 
@@ -5491,33 +5512,4 @@ void Browser::ShowSyncSetup() {
 
 void Browser::ToggleSpeechInput() {
   GetSelectedWebContents()->GetRenderViewHost()->ToggleSpeechInput();
-}
-
-void Browser::OnWindowDidShow() {
-  if (window_has_shown_)
-    return;
-  window_has_shown_ = true;
-
-  // Nothing to do for non-tabbed windows.
-  if (!is_type_tabbed())
-    return;
-
-  // Suppress the first run bubble if we're showing the sync promo.
-  WebContents* contents = GetSelectedWebContents();
-  bool is_showing_promo = contents &&
-      contents->GetURL().SchemeIs(chrome::kChromeUIScheme) &&
-      contents->GetURL().host() == chrome::kChromeUISyncPromoHost;
-  PrefService* local_state = g_browser_process->local_state();
-  if (!is_showing_promo && local_state &&
-      local_state->GetBoolean(prefs::kShouldShowFirstRunBubble)) {
-    // Reset the preference to avoid showing the bubble for subsequent windows.
-    local_state->SetBoolean(prefs::kShouldShowFirstRunBubble, false);
-    window_->GetLocationBar()->ShowFirstRunBubble();
-  } else {
-    GlobalErrorService* service =
-        GlobalErrorServiceFactory::GetForProfile(profile());
-    GlobalError* error = service->GetFirstGlobalErrorWithBubbleView();
-    if (error)
-      error->ShowBubbleView(this);
-  }
 }

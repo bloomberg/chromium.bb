@@ -58,6 +58,9 @@ class NewTabUI : public content::WebUIController,
   // from the location bar.
   bool CanShowBookmarkBar() const;
 
+  bool showing_sync_bubble() { return showing_sync_bubble_; }
+  void set_showing_sync_bubble(bool showing) { showing_sync_bubble_ = showing; }
+
   class NewTabHTMLSource : public ChromeURLDataManager::DataSource {
    public:
     explicit NewTabHTMLSource(Profile* profile);
@@ -106,6 +109,9 @@ class NewTabUI : public content::WebUIController,
   base::OneShotTimer<NewTabUI> timer_;
   // The preference version. This used for migrating prefs of the NTP.
   static const int current_pref_version_ = 3;
+
+  // If the sync promo NTP bubble is being shown.
+  bool showing_sync_bubble_;
 
   DISALLOW_COPY_AND_ASSIGN(NewTabUI);
 };

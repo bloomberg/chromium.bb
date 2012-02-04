@@ -26,13 +26,21 @@
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/shell_integration.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/global_error_service.h"
+#include "chrome/browser/ui/global_error_service_factory.h"
+#include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/url_constants.h"
 #include "chrome/installer/util/master_preferences.h"
 #include "chrome/installer/util/master_preferences_constants.h"
 #include "chrome/installer/util/util_constants.h"
+#include "content/public/browser/notification_service.h"
+#include "content/public/browser/notification_types.h"
 #include "content/public/browser/user_metrics.h"
+#include "content/public/browser/web_contents.h"
 #include "googleurl/src/gurl.h"
 
 #if defined(OS_WIN)
@@ -358,7 +366,7 @@ void AutoImportPlatformCommon(
   TemplateURLService* template_url =
       TemplateURLServiceFactory::GetForProfile(profile);
   if (template_url && template_url->GetDefaultSearchProvider())
-    SetShowFirstRunBubblePref(true);
+    FirstRunBubbleLauncher::ShowFirstRunBubbleSoon();
   SetShowWelcomePagePref();
   SetPersonalDataManagerFirstRunPref();
 }
@@ -465,6 +473,66 @@ bool SetPersonalDataManagerFirstRunPref() {
     local_state->SetBoolean(prefs::kAutofillPersonalDataManagerFirstRun, true);
   }
   return true;
+}
+
+// static
+void FirstRunBubbleLauncher::ShowFirstRunBubbleSoon() {
+  SetShowFirstRunBubblePref(true);
+  // This FirstRunBubbleLauncher instance will manage its own lifetime.
+  new FirstRunBubbleLauncher();
+}
+
+FirstRunBubbleLauncher::FirstRunBubbleLauncher() {
+  registrar_.Add(this, content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
+                 content::NotificationService::AllSources());
+}
+
+FirstRunBubbleLauncher::~FirstRunBubbleLauncher() {}
+
+void FirstRunBubbleLauncher::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
+  DCHECK_EQ(type, content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME);
+  Browser* browser = BrowserList::FindBrowserWithWebContents(
+      content::Source<content::WebContents>(source).ptr());
+  if (!browser || !browser->is_type_tabbed())
+    return;
+
+  // Check the preference to determine if the bubble should be shown.
+  PrefService* prefs = g_browser_process->local_state();
+  if (!prefs || !prefs->GetBoolean(prefs::kShouldShowFirstRunBubble)) {
+    delete this;
+    return;
+  }
+
+  content::WebContents* contents = browser->GetSelectedWebContents();
+  if (contents && contents->GetURL().SchemeIs(chrome::kChromeUIScheme)) {
+    // Suppress the first run bubble if the sync promo is showing.
+    if (contents->GetURL().host() == chrome::kChromeUISyncPromoHost)
+      return;
+
+    // Suppress the first run bubble if the NTP sync promo bubble is showing.
+    if (contents->GetURL().host() == chrome::kChromeUINewTabHost) {
+      NewTabUI* new_tab_ui =
+          NewTabUI::FromWebUIController(contents->GetWebUI()->GetController());
+      if (new_tab_ui && new_tab_ui->showing_sync_bubble())
+        return;
+    }
+  }
+
+  // Suppress the first run bubble if a global error bubble is pending.
+  GlobalErrorService* global_error_service =
+      GlobalErrorServiceFactory::GetForProfile(browser->profile());
+  if (global_error_service->GetFirstGlobalErrorWithBubbleView() != NULL)
+    return;
+
+  // Reset the preference and notifications to avoid showing the bubble again.
+  prefs->SetBoolean(prefs::kShouldShowFirstRunBubble, false);
+
+  // Show the bubble now and destroy this bubble launcher.
+  browser->ShowFirstRunBubble();
+  delete this;
 }
 
 }  // namespace first_run

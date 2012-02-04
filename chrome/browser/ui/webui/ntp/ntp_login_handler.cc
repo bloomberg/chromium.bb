@@ -25,6 +25,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
 #include "chrome/browser/ui/webui/sync_promo/sync_promo_ui.h"
 #include "chrome/browser/ui/webui/web_ui_util.h"
 #include "chrome/browser/web_resource/promo_resource_service.h"
@@ -171,6 +172,8 @@ void NTPLoginHandler::RecordInHistogram(int type) {
 void NTPLoginHandler::HandleLoginMessageSeen(const ListValue* args) {
   Profile::FromWebUI(web_ui())->GetPrefs()->SetBoolean(
       prefs::kSyncPromoShowNTPBubble, false);
+  NewTabUI* ntp_ui = NewTabUI::FromWebUIController(web_ui()->GetController());
+  ntp_ui->set_showing_sync_bubble(true);
 }
 
 void NTPLoginHandler::HandleShowAdvancedLoginUI(const ListValue* args) {

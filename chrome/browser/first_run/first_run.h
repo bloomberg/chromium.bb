@@ -12,16 +12,15 @@
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "ui/gfx/native_widget_types.h"
 
 class CommandLine;
 class FilePath;
 class GURL;
-class ImporterHost;
-class ImporterList;
 class Profile;
 class ProcessSingleton;
-class TemplateURLService;
 
 namespace installer {
 class MasterPreferences;
@@ -104,6 +103,28 @@ int ImportNow(Profile* profile, const CommandLine& cmdline);
 
 // Returns the path for the master preferences file.
 FilePath MasterPrefsPath();
+
+// Show the first run search engine bubble at the first appropriate opportunity.
+// This bubble may be delayed by other UI, like global errors and sync promos.
+class FirstRunBubbleLauncher : public content::NotificationObserver {
+ public:
+  // Show the bubble at the first appropriate opportunity. This function
+  // instantiates a FirstRunBubbleLauncher, which manages its own lifetime.
+  static void ShowFirstRunBubbleSoon();
+
+ private:
+  FirstRunBubbleLauncher();
+  virtual ~FirstRunBubbleLauncher();
+
+  // content::NotificationObserver override:
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
+
+  content::NotificationRegistrar registrar_;
+
+  DISALLOW_COPY_AND_ASSIGN(FirstRunBubbleLauncher);
+};
 
 }  // namespace first_run
 
