@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -85,7 +85,7 @@ class Instance {
   /// match the indices of the corresponding names in <code>argn</code>.
   ///
   /// @return true on success. Returning false causes the instance to be
-  /// instance to be deleted and no other functions to be called.
+  /// deleted and no other functions to be called.
   virtual bool Init(uint32_t argc, const char* argn[], const char* argv[]);
 
   /// @{
