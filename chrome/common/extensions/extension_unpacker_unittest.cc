@@ -22,7 +22,9 @@ public:
   ~ExtensionUnpackerTest() {
     LOG(WARNING) << "Deleting temp dir: "
                  << temp_dir_.path().LossyDisplayName();
+    file_util::g_bug108724_debug = true;
     LOG(WARNING) << temp_dir_.Delete();
+    file_util::g_bug108724_debug = false;
   }
 
   void SetupUnpacker(const std::string& crx_name) {
