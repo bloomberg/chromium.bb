@@ -18,10 +18,6 @@ VersionUpdater* VersionUpdater::Create() {
   return static_cast<VersionUpdater*>(new VersionUpdaterCros);
 }
 
-bool VersionUpdaterCros::CanBeUpdated() const {
-  return true;
-}
-
 void VersionUpdaterCros::CheckForUpdate(const StatusCallback& callback) {
   callback_ = callback;
 
@@ -41,6 +37,8 @@ void VersionUpdaterCros::RelaunchBrowser() const {
   DBusThreadManager::Get()->GetPowerManagerClient()->RequestRestart();
 }
 
+VersionUpdaterCros::VersionUpdaterCros() {}
+
 VersionUpdaterCros::~VersionUpdaterCros() {
   UpdateEngineClient* update_engine_client =
       DBusThreadManager::Get()->GetUpdateEngineClient();
@@ -48,7 +46,7 @@ VersionUpdaterCros::~VersionUpdaterCros() {
 }
 
 void VersionUpdaterCros::UpdateStatusChanged(
-    const UpdateEngineClient::Status& status) OVERRIDE {
+    const UpdateEngineClient::Status& status) {
   Status my_status = UPDATED;
   int progress = 0;
 

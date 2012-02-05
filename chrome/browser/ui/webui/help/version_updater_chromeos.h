@@ -14,7 +14,6 @@ class VersionUpdaterCros : public VersionUpdater,
                            public chromeos::UpdateEngineClient::Observer {
  public:
   // VersionUpdater implementation.
-  virtual bool CanBeUpdated() const OVERRIDE;
   virtual void CheckForUpdate(const StatusCallback& callback) OVERRIDE;
   virtual void RelaunchBrowser() const OVERRIDE;
 
@@ -22,7 +21,7 @@ class VersionUpdaterCros : public VersionUpdater,
   friend class VersionUpdater;
 
   // Clients must use VersionUpdater::Create().
-  VersionUpdaterCros() {}
+  VersionUpdaterCros();
   virtual ~VersionUpdaterCros();
 
  private:
