@@ -22,7 +22,7 @@ typedef EnterResource<PPB_InputEvent_API> EnterInputEvent;
 int32_t RequestInputEvents(PP_Instance instance, uint32_t event_classes) {
   EnterInstance enter(instance, true);
   if (enter.failed())
-    return PP_ERROR_BADARGUMENT;
+    return enter.retval();
   return enter.functions()->RequestInputEvents(instance, event_classes);
 }
 
@@ -30,7 +30,7 @@ int32_t RequestFilteringInputEvents(PP_Instance instance,
                                     uint32_t event_classes) {
   EnterInstance enter(instance, true);
   if (enter.failed())
-    return PP_ERROR_BADARGUMENT;
+    return enter.retval();
   return enter.functions()->RequestFilteringInputEvents(instance,
                                                         event_classes);
 }

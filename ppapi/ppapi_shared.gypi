@@ -136,8 +136,6 @@
         'shared_impl/private/udp_socket_private_impl.cc',
         'shared_impl/private/udp_socket_private_impl.h',
 
-        'thunk/common.h',
-        'thunk/common.cc',
         'thunk/enter.cc',
         'thunk/enter.h',
         'thunk/ppb_audio_api.h',

@@ -37,7 +37,7 @@ int32_t WritePlainText(PP_Instance instance,
                        PP_Var text) {
   EnterFlashClipboard enter(instance, true);
   if (enter.failed())
-    return PP_ERROR_NOINTERFACE;
+    return enter.retval();
   return enter.functions()->WritePlainText(instance, clipboard_type, text);
 }
 

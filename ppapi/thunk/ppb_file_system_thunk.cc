@@ -5,7 +5,6 @@
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/ppb_file_system.h"
-#include "ppapi/thunk/common.h"
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/thunk.h"
 #include "ppapi/thunk/ppb_file_system_api.h"
@@ -16,30 +15,31 @@ namespace thunk {
 
 namespace {
 
+typedef EnterResource<PPB_FileSystem_API> EnterFileSystem;
+
 PP_Resource Create(PP_Instance instance, PP_FileSystemType type) {
-  EnterFunction<ResourceCreationAPI> enter(instance, true);
+  EnterResourceCreation enter(instance);
   if (enter.failed())
     return 0;
   return enter.functions()->CreateFileSystem(instance, type);
 }
 
 PP_Bool IsFileSystem(PP_Resource resource) {
-  EnterResource<PPB_FileSystem_API> enter(resource, false);
+  EnterFileSystem enter(resource, false);
   return PP_FromBool(enter.succeeded());
 }
 
 int32_t Open(PP_Resource file_system,
              int64 expected_size,
              PP_CompletionCallback callback) {
-  EnterResource<PPB_FileSystem_API> enter(file_system, true);
+  EnterFileSystem enter(file_system, callback, true);
   if (enter.failed())
-    return MayForceCallback(callback, PP_ERROR_BADRESOURCE);
-  int32_t result = enter.object()->Open(expected_size, callback);
-  return MayForceCallback(callback, result);
+    return enter.retval();
+  return enter.SetResult(enter.object()->Open(expected_size, callback));
 }
 
 PP_FileSystemType GetType(PP_Resource file_system) {
-  EnterResource<PPB_FileSystem_API> enter(file_system, true);
+  EnterFileSystem enter(file_system, true);
   if (enter.failed())
     return PP_FILESYSTEMTYPE_INVALID;
   return enter.object()->GetType();

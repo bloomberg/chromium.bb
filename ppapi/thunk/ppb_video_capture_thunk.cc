@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "ppapi/c/pp_errors.h"
-#include "ppapi/thunk/common.h"
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/thunk.h"
 #include "ppapi/thunk/ppb_video_capture_api.h"
@@ -33,8 +32,7 @@ int32_t StartCapture(PP_Resource video_capture,
                      uint32_t buffer_count) {
   EnterVideoCapture enter(video_capture, true);
   if (enter.failed())
-    return PP_ERROR_BADRESOURCE;
-
+    return enter.retval();
   return enter.object()->StartCapture(*requested_info, buffer_count);
 }
 
@@ -42,16 +40,14 @@ int32_t ReuseBuffer(PP_Resource video_capture,
                     uint32_t buffer) {
   EnterVideoCapture enter(video_capture, true);
   if (enter.failed())
-    return PP_ERROR_BADRESOURCE;
-
+    return enter.retval();
   return enter.object()->ReuseBuffer(buffer);
 }
 
 int32_t StopCapture(PP_Resource video_capture) {
   EnterVideoCapture enter(video_capture, true);
   if (enter.failed())
-    return PP_ERROR_BADRESOURCE;
-
+    return enter.retval();
   return enter.object()->StopCapture();
 }
 

@@ -16,7 +16,7 @@ namespace {
 int32_t GetSharedMemory(PP_Resource buffer_id, int* shm_handle) {
   EnterResource<PPB_BufferTrusted_API> enter(buffer_id, true);
   if (enter.failed())
-    return PP_ERROR_BADRESOURCE;
+    return enter.retval();
   return enter.object()->GetSharedMemory(shm_handle);
 }
 

@@ -5,7 +5,6 @@
 #include "ppapi/c/private/ppb_flash_menu.h"
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
-#include "ppapi/thunk/common.h"
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/thunk.h"
 #include "ppapi/thunk/ppb_flash_menu_api.h"
@@ -17,7 +16,7 @@ namespace thunk {
 namespace {
 
 PP_Resource Create(PP_Instance instance, const PP_Flash_Menu* menu_data) {
-  EnterFunction<ResourceCreationAPI> enter(instance, true);
+  EnterResourceCreation enter(instance);
   if (enter.failed())
     return 0;
   return enter.functions()->CreateFlashMenu(instance, menu_data);
@@ -32,11 +31,10 @@ int32_t Show(PP_Resource resource,
              const PP_Point* location,
              int32_t* selected_id,
              PP_CompletionCallback callback) {
-  EnterResource<PPB_Flash_Menu_API> enter(resource, true);
+  EnterResource<PPB_Flash_Menu_API> enter(resource, callback, true);
   if (enter.failed())
-    return MayForceCallback(callback, PP_ERROR_BADRESOURCE);
-  int32_t result = enter.object()->Show(location, selected_id, callback);
-  return MayForceCallback(callback, result);
+    return enter.retval();
+  return enter.SetResult(enter.object()->Show(location, selected_id, callback));
 }
 
 const PPB_Flash_Menu g_ppb_flash_menu_thunk = {

@@ -7,7 +7,6 @@
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/private/ppb_file_ref_private.h"
-#include "ppapi/thunk/common.h"
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/thunk.h"
 #include "ppapi/thunk/ppb_file_ref_api.h"
@@ -18,6 +17,8 @@ namespace thunk {
 
 namespace {
 
+typedef EnterResource<PPB_FileRef_API> EnterFileRef;
+
 PP_Resource Create(PP_Resource file_system, const char* path) {
   EnterFunctionGivenResource<ResourceCreationAPI> enter(file_system, true);
   if (enter.failed())
@@ -26,81 +27,78 @@ PP_Resource Create(PP_Resource file_system, const char* path) {
 }
 
 PP_Bool IsFileRef(PP_Resource resource) {
-  EnterResource<PPB_FileRef_API> enter(resource, false);
+  EnterFileRef enter(resource, false);
   return PP_FromBool(enter.succeeded());
 }
 
 PP_FileSystemType GetFileSystemType(PP_Resource file_ref) {
-  EnterResource<PPB_FileRef_API> enter(file_ref, true);
+  EnterFileRef enter(file_ref, true);
   if (enter.failed())
     return PP_FILESYSTEMTYPE_INVALID;
   return enter.object()->GetFileSystemType();
 }
 
 PP_Var GetName(PP_Resource file_ref) {
-  EnterResource<PPB_FileRef_API> enter(file_ref, true);
+  EnterFileRef enter(file_ref, true);
   if (enter.failed())
     return PP_MakeUndefined();
   return enter.object()->GetName();
 }
 
 PP_Var GetPath(PP_Resource file_ref) {
-  EnterResource<PPB_FileRef_API> enter(file_ref, true);
+  EnterFileRef enter(file_ref, true);
   if (enter.failed())
     return PP_MakeUndefined();
   return enter.object()->GetPath();
 }
 
 PP_Resource GetParent(PP_Resource file_ref) {
-  EnterResource<PPB_FileRef_API> enter(file_ref, true);
+  EnterFileRef enter(file_ref, true);
   if (enter.failed())
-    return PP_ERROR_BADRESOURCE;
+    return 0;
   return enter.object()->GetParent();
 }
 
 int32_t MakeDirectory(PP_Resource directory_ref,
                       PP_Bool make_ancestors,
                       PP_CompletionCallback callback) {
-  EnterResource<PPB_FileRef_API> enter(directory_ref, true);
+  EnterFileRef enter(directory_ref, callback, true);
   if (enter.failed())
-    return MayForceCallback(callback, PP_ERROR_BADRESOURCE);
-  int32_t result = enter.object()->MakeDirectory(make_ancestors, callback);
-  return MayForceCallback(callback, result);
+    return enter.retval();
+  return enter.SetResult(enter.object()->MakeDirectory(make_ancestors,
+                                                       callback));
 }
 
 int32_t Touch(PP_Resource file_ref,
               PP_Time last_access_time,
               PP_Time last_modified_time,
               PP_CompletionCallback callback) {
-  EnterResource<PPB_FileRef_API> enter(file_ref, true);
+  EnterFileRef enter(file_ref, callback, true);
   if (enter.failed())
-    return MayForceCallback(callback, PP_ERROR_BADRESOURCE);
-  int32_t result = enter.object()->Touch(last_access_time, last_modified_time,
-                                         callback);
-  return MayForceCallback(callback, result);
+    return enter.retval();
+  return enter.SetResult(enter.object()->Touch(
+      last_access_time, last_modified_time, callback));
 }
 
 int32_t Delete(PP_Resource file_ref,
                PP_CompletionCallback callback) {
-  EnterResource<PPB_FileRef_API> enter(file_ref, true);
+  EnterFileRef enter(file_ref, callback, true);
   if (enter.failed())
-    return MayForceCallback(callback, PP_ERROR_BADRESOURCE);
-  int32_t result = enter.object()->Delete(callback);
-  return MayForceCallback(callback, result);
+    return enter.retval();
+  return enter.SetResult(enter.object()->Delete(callback));
 }
 
 int32_t Rename(PP_Resource file_ref,
                PP_Resource new_file_ref,
                PP_CompletionCallback callback) {
-  EnterResource<PPB_FileRef_API> enter(file_ref, true);
+  EnterFileRef enter(file_ref, callback, true);
   if (enter.failed())
-    return MayForceCallback(callback, PP_ERROR_BADRESOURCE);
-  int32_t result = enter.object()->Rename(new_file_ref, callback);
-  return MayForceCallback(callback, result);
+    return enter.retval();
+  return enter.SetResult(enter.object()->Rename(new_file_ref, callback));
 }
 
 PP_Var GetAbsolutePath(PP_Resource file_ref) {
-  EnterResource<PPB_FileRef_API> enter(file_ref, true);
+  EnterFileRef enter(file_ref, true);
   if (enter.failed())
     return PP_MakeUndefined();
   return enter.object()->GetAbsolutePath();

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -108,6 +108,11 @@ class PPAPI_THUNK_EXPORT EnterBase {
                                 void* object,
                                 bool report_error);
 
+  // Same as SetStateForResourceError except for function API.
+  void SetStateForFunctionError(PP_Instance pp_instance,
+                                void* object,
+                                bool report_error);
+
  private:
   // Holds the callback. The function will only be non-NULL when the
   // callback is requried. Optional callbacks don't require any special
@@ -119,17 +124,21 @@ class PPAPI_THUNK_EXPORT EnterBase {
 
 }  // namespace subtle
 
+// EnterFunction --------------------------------------------------------------
 
 template<typename FunctionsT, bool lock_on_entry = true>
 class EnterFunction : public subtle::EnterBase,
                       public subtle::LockOnEntry<lock_on_entry> {
  public:
   EnterFunction(PP_Instance instance, bool report_error)
-      : functions_(NULL) {
-    FunctionGroupBase* base = GetFunctions(instance, FunctionsT::kApiID);
-    if (base)
-      functions_ = base->GetAs<FunctionsT>();
-    // TODO(brettw) check error and if report_error is set, do something.
+      : EnterBase() {
+    Init(instance, report_error);
+  }
+  EnterFunction(PP_Instance instance,
+                const PP_CompletionCallback& callback,
+                bool report_error)
+      : EnterBase(callback) {
+    Init(instance, report_error);
   }
 
   ~EnterFunction() {}
@@ -140,6 +149,15 @@ class EnterFunction : public subtle::EnterBase,
   FunctionsT* functions() { return functions_; }
 
  private:
+  void Init(PP_Instance instance, bool report_error) {
+    FunctionGroupBase* base = GetFunctions(instance, FunctionsT::kApiID);
+    if (base)
+      functions_ = base->GetAs<FunctionsT>();
+    else
+      functions_ = NULL;
+    SetStateForFunctionError(instance, functions_, report_error);
+  }
+
   FunctionsT* functions_;
 
   DISALLOW_COPY_AND_ASSIGN(EnterFunction);
@@ -212,6 +230,8 @@ class EnterResource : public subtle::EnterBase,
   DISALLOW_COPY_AND_ASSIGN(EnterResource);
 };
 
+// ----------------------------------------------------------------------------
+
 // Like EnterResource but assumes the lock is already held.
 template<typename ResourceT>
 class EnterResourceNoLock : public EnterResource<ResourceT, false> {
@@ -235,9 +255,10 @@ class PPAPI_THUNK_EXPORT EnterResourceCreation
 // many interfaces so we have this helper function to save template
 // instantiations and typing.
 class PPAPI_THUNK_EXPORT EnterInstance
-    : public EnterFunctionNoLock<PPB_Instance_FunctionAPI> {
+    : public EnterFunction<PPB_Instance_FunctionAPI> {
  public:
   EnterInstance(PP_Instance instance);
+  EnterInstance(PP_Instance instance, const PP_CompletionCallback& callback);
   ~EnterInstance();
 };
 

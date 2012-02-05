@@ -18,7 +18,7 @@ int32_t GetSharedMemory(PP_Resource resource,
                         uint32_t* byte_count) {
   EnterResource<PPB_ImageData_API> enter(resource, true);
   if (enter.failed())
-    return PP_ERROR_BADRESOURCE;
+    return enter.retval();
   return enter.object()->GetSharedMemory(handle, byte_count);
 }
 

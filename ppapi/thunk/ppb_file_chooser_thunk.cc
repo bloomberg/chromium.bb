@@ -7,7 +7,6 @@
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/trusted/ppb_file_chooser_trusted.h"
 #include "ppapi/shared_impl/var.h"
-#include "ppapi/thunk/common.h"
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/thunk.h"
 #include "ppapi/thunk/ppb_file_chooser_api.h"
@@ -21,7 +20,7 @@ namespace {
 PP_Resource Create(PP_Instance instance,
                    PP_FileChooserMode_Dev mode,
                    struct PP_Var accept_mime_types) {
-  EnterFunction<ResourceCreationAPI> enter(instance, true);
+  EnterResourceCreation enter(instance);
   if (enter.failed())
     return 0;
   scoped_refptr<StringVar> string_var =
@@ -36,11 +35,10 @@ PP_Bool IsFileChooser(PP_Resource resource) {
 }
 
 int32_t Show(PP_Resource chooser, PP_CompletionCallback callback) {
-  EnterResource<PPB_FileChooser_API> enter(chooser, true);
+  EnterResource<PPB_FileChooser_API> enter(chooser, callback, true);
   if (enter.failed())
-    return MayForceCallback(callback, PP_ERROR_BADRESOURCE);
-  int32_t result = enter.object()->Show(callback);
-  return MayForceCallback(callback, result);
+    return enter.retval();
+  return enter.SetResult(enter.object()->Show(callback));
 }
 
 PP_Resource GetNextChosenFile(PP_Resource chooser) {
@@ -54,15 +52,14 @@ int32_t ShowWithoutUserGesture(PP_Resource chooser,
                                PP_Bool save_as,
                                PP_Var suggested_file_name,
                                PP_CompletionCallback callback) {
-  EnterResource<PPB_FileChooser_API> enter(chooser, true);
+  EnterResource<PPB_FileChooser_API> enter(chooser, callback, true);
   if (enter.failed())
-    return MayForceCallback(callback, PP_ERROR_BADRESOURCE);
+    return enter.retval();
   scoped_refptr<StringVar> string_var =
       StringVar::FromPPVar(suggested_file_name);
   std::string str = string_var ? string_var->value() : std::string();
-  int32_t result = enter.object()->ShowWithoutUserGesture(
-      save_as == PP_TRUE, str.c_str(), callback);
-  return MayForceCallback(callback, result);
+  return enter.SetResult(enter.object()->ShowWithoutUserGesture(
+      save_as == PP_TRUE, str.c_str(), callback));
 }
 
 const PPB_FileChooser_Dev g_ppb_file_chooser_thunk = {

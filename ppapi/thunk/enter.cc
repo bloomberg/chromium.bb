@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -83,7 +83,16 @@ void EnterBase::SetStateForResourceError(PP_Resource pp_resource,
   if (object)
     return;  // Everything worked.
 
-  retval_ = PP_ERROR_BADRESOURCE;
+  if (callback_.func) {
+    // Required callback, issue the async completion.
+    MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
+        callback_.func, callback_.user_data,
+        static_cast<int32_t>(PP_ERROR_BADRESOURCE)));
+    callback_ = PP_BlockUntilComplete();
+    retval_ = PP_OK_COMPLETIONPENDING;
+  } else {
+    retval_ = PP_ERROR_BADRESOURCE;
+  }
 
   // We choose to silently ignore the error when the pp_resource is null
   // because this is a pretty common case and we don't want to have lots
@@ -104,6 +113,35 @@ void EnterBase::SetStateForResourceError(PP_Resource pp_resource,
   }
 }
 
+void EnterBase::SetStateForFunctionError(PP_Instance pp_instance,
+                                         void* object,
+                                         bool report_error) {
+  if (object)
+    return;  // Everything worked.
+
+  if (callback_.func) {
+    // Required callback, issue the async completion.
+    MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
+        callback_.func, callback_.user_data,
+        static_cast<int32_t>(PP_ERROR_BADARGUMENT)));
+    callback_ = PP_BlockUntilComplete();
+    retval_ = PP_OK_COMPLETIONPENDING;
+  } else {
+    retval_ = PP_ERROR_BADARGUMENT;
+  }
+
+  // We choose to silently ignore the error when the pp_instance is null as
+  // for PP_Resources above.
+  if (report_error && pp_instance) {
+    std::string message;
+    message = base::StringPrintf(
+        "0x%X is not a valid instance ID.",
+        pp_instance);
+    PpapiGlobals::Get()->BroadcastLogWithSource(0, PP_LOGLEVEL_ERROR,
+                                                std::string(), message);
+  }
+}
+
 }  // namespace subtle
 
 EnterResourceCreation::EnterResourceCreation(PP_Instance instance)
@@ -114,7 +152,12 @@ EnterResourceCreation::~EnterResourceCreation() {
 }
 
 EnterInstance::EnterInstance(PP_Instance instance)
-    : EnterFunctionNoLock<PPB_Instance_FunctionAPI>(instance, true) {
+    : EnterFunction<PPB_Instance_FunctionAPI>(instance, true) {
+}
+
+EnterInstance::EnterInstance(PP_Instance instance,
+                             const PP_CompletionCallback& callback)
+    : EnterFunction<PPB_Instance_FunctionAPI>(instance, callback, true) {
 }
 
 EnterInstance::~EnterInstance() {
