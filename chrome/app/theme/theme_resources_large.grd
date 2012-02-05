@@ -14,26 +14,26 @@
       <include name="IDR_APP_NOTIFICATION_NUB" file="nub.png" type="BINDATA" />
       <include name="IDR_APP_NOTIFICATION_NUB_MASK" file="nub_mask.png" type="BINDATA" />
       <include name="IDR_APP_NOTIFICATION_SMALL_BUBBLE" file="small_bubble.png" type="BINDATA" />
-      <include name="IDR_BACK" file="large_back.png" type="BINDATA" />
-      <include name="IDR_BACK_D" file="large_back_d.png" type="BINDATA" />
-      <include name="IDR_BACK_H" file="large_back_h.png" type="BINDATA" />
-      <include name="IDR_BACK_P" file="large_back_p.png" type="BINDATA" />
-      <include name="IDR_BALLOON_WRENCH" file="large_notification_wrench.png" type="BINDATA" />
-      <include name="IDR_BALLOON_WRENCH_H" file="large_notification_wrench_h.png" type="BINDATA" />
-      <include name="IDR_BALLOON_WRENCH_P" file="large_notification_wrench_p.png" type="BINDATA" />
-      <include name="IDR_BLOCKED_COOKIES" file="large_blocked_cookies.png" type="BINDATA" />
-      <include name="IDR_BLOCKED_IMAGES" file="large_blocked_images.png" type="BINDATA" />
-      <include name="IDR_BLOCKED_JAVASCRIPT" file="large_blocked_script.png" type="BINDATA" />
-      <include name="IDR_BLOCKED_PLUGINS" file="large_blocked_plugins.png" type="BINDATA" />
-      <include name="IDR_BLOCKED_POPUPS" file="large_blocked_popups.png" type="BINDATA" />
-      <include name="IDR_BOOKMARKS_FAVICON" file="large_bookmarks_favicon.png" type="BINDATA" />
-      <include name="IDR_BROWSER_ACTION" file="large_browser_action.png" type="BINDATA" />
-      <include name="IDR_BROWSER_ACTION_H" file="large_browser_action_h.png" type="BINDATA" />
-      <include name="IDR_BROWSER_ACTION_P" file="large_browser_action_p.png" type="BINDATA" />
+      <include name="IDR_BACK" file="back_2x.png" type="BINDATA" />
+      <include name="IDR_BACK_D" file="back_d_2x.png" type="BINDATA" />
+      <include name="IDR_BACK_H" file="back_h_2x.png" type="BINDATA" />
+      <include name="IDR_BACK_P" file="back_p_2x.png" type="BINDATA" />
+      <include name="IDR_BALLOON_WRENCH" file="notification_wrench_2x.png" type="BINDATA" />
+      <include name="IDR_BALLOON_WRENCH_H" file="notification_wrench_h_2x.png" type="BINDATA" />
+      <include name="IDR_BALLOON_WRENCH_P" file="notification_wrench_p_2x.png" type="BINDATA" />
+      <include name="IDR_BLOCKED_COOKIES" file="blocked_cookies_2x.png" type="BINDATA" />
+      <include name="IDR_BLOCKED_IMAGES" file="blocked_images_2x.png" type="BINDATA" />
+      <include name="IDR_BLOCKED_JAVASCRIPT" file="blocked_script_2x.png" type="BINDATA" />
+      <include name="IDR_BLOCKED_PLUGINS" file="blocked_plugins_2x.png" type="BINDATA" />
+      <include name="IDR_BLOCKED_POPUPS" file="blocked_popups_2x.png" type="BINDATA" />
+      <include name="IDR_BOOKMARKS_FAVICON" file="bookmarks_favicon_2x.png" type="BINDATA" />
+      <include name="IDR_BROWSER_ACTION" file="browser_action_2x.png" type="BINDATA" />
+      <include name="IDR_BROWSER_ACTION_H" file="browser_action_h_2x.png" type="BINDATA" />
+      <include name="IDR_BROWSER_ACTION_P" file="browser_action_p_2x.png" type="BINDATA" />
       <if expr="not is_win">
-        <include name="IDR_BROWSER_ACTIONS_OVERFLOW" file="large_browser_actions_overflow.png" type="BINDATA" />
-        <include name="IDR_BROWSER_ACTIONS_OVERFLOW_H" file="large_browser_actions_overflow_h.png" type="BINDATA" />
-        <include name="IDR_BROWSER_ACTIONS_OVERFLOW_P" file="large_browser_actions_overflow_p.png" type="BINDATA" />
+        <include name="IDR_BROWSER_ACTIONS_OVERFLOW" file="browser_actions_overflow_2x.png" type="BINDATA" />
+        <include name="IDR_BROWSER_ACTIONS_OVERFLOW_H" file="browser_actions_overflow_h_2x.png" type="BINDATA" />
+        <include name="IDR_BROWSER_ACTIONS_OVERFLOW_P" file="browser_actions_overflow_p_2x.png" type="BINDATA" />
       </if>
       <if expr="is_win">
         <include name="IDR_BROWSER_ACTIONS_OVERFLOW" file="browser_actions_overflow_win.png" type="BINDATA" />
@@ -41,91 +41,91 @@
         <include name="IDR_BROWSER_ACTIONS_OVERFLOW_P" file="browser_actions_overflow_win_p.png" type="BINDATA" />
       </if>
       <if expr="is_win">
-        <include name="IDR_CONFLICT_FAVICON" file="large_about_conflicts_favicon.png" type="BINDATA" />
+        <include name="IDR_CONFLICT_FAVICON" file="about_conflicts_favicon_2x.png" type="BINDATA" />
       </if>
-      <include name="IDR_CONTENT_TOP_CENTER" file="large_content_top_center.png" type="BINDATA" />
-      <include name="IDR_CONTENT_TOP_LEFT_CORNER" file="large_content_top_left_corner.png" type="BINDATA" />
-      <include name="IDR_CONTENT_TOP_LEFT_CORNER_MASK" file="large_content_top_left_corner_mask.png" type="BINDATA" />
-      <include name="IDR_CONTENT_TOP_RIGHT_CORNER" file="large_content_top_right_corner.png" type="BINDATA" />
-      <include name="IDR_CONTENT_TOP_RIGHT_CORNER_MASK" file="large_content_top_right_corner_mask.png" type="BINDATA" />
-      <include name="IDR_DOWNLOADS_FAVICON" file="large_downloads_favicon.png" type="BINDATA" />
-      <include name="IDR_FEEDBACK" file="large_feedback.png" type="BINDATA" />
-      <include name="IDR_FEEDBACK_H" file="large_feedback_h.png" type="BINDATA" />
-      <include name="IDR_FEEDBACK_P" file="large_feedback_p.png" type="BINDATA" />
-      <include name="IDR_FLAGS" file="large_flags.png" type="BINDATA" />
-      <include name="IDR_FORWARD" file="large_forward.png" type="BINDATA" />
-      <include name="IDR_FORWARD_D" file="large_forward_d.png" type="BINDATA" />
-      <include name="IDR_FORWARD_H" file="large_forward_h.png" type="BINDATA" />
-      <include name="IDR_FORWARD_P" file="large_forward_p.png" type="BINDATA" />
-      <include name="IDR_GEOLOCATION_INFOBAR_ICON" file="large_infobar_geolocation.png" type="BINDATA" />
-      <include name="IDR_HISTORY_FAVICON" file="large_history_favicon.png" type="BINDATA" />
-      <include name="IDR_HOME" file="large_home.png" type="BINDATA" />
-      <include name="IDR_HOME_H" file="large_home_h.png" type="BINDATA" />
-      <include name="IDR_HOME_P" file="large_home_p.png" type="BINDATA" />
-      <include name="IDR_INFOBAR_ALT_NAV_URL" file="large_infobar_didyoumean.png" type="BINDATA" />
-      <include name="IDR_INFOBAR_AUTOFILL" file="large_infobar_autofill.png" type="BINDATA" />
-      <include name="IDR_INFOBAR_AUTOLOGIN" file="large_infobar_autologin.png" type="BINDATA" />
-      <include name="IDR_INFOBAR_COOKIE" file="large_infobar_cookie.png" type="BINDATA" />
-      <include name="IDR_INFOBAR_DESKTOP_NOTIFICATIONS" file="large_infobar_desktop_notifications.png" type="BINDATA" />
-      <include name="IDR_INFOBAR_INCOMPLETE" file="large_infobar_incomplete.png" type="BINDATA" />
-      <include name="IDR_INFOBAR_MEDIA_STREAM_CAMERA" file="large_infobar_camera.png" type="BINDATA" />
-      <include name="IDR_INFOBAR_MEDIA_STREAM_MIC" file="large_infobar_microphone.png" type="BINDATA" />
-      <include name="IDR_INFOBAR_MULTIPLE_DOWNLOADS" file="large_infobar_multiple_downloads.png" type="BINDATA" />
-      <include name="IDR_INFOBAR_PLUGIN_CRASHED" file="large_infobar_plugin_crashed.png" type="BINDATA" />
-      <include name="IDR_INFOBAR_PLUGIN_INSTALL" file="large_infobar_plugin.png" type="BINDATA" />
-      <include name="IDR_INFOBAR_QUESTION_MARK" file="large_infobar_questionmark.png" type="BINDATA" />
-      <include name="IDR_INFOBAR_RESTORE_SESSION" file="large_infobar_restore.png" type="BINDATA" />
-      <include name="IDR_INFOBAR_SAVE_PASSWORD" file="large_infobar_savepassword.png" type="BINDATA" />
-      <include name="IDR_INFOBAR_SSL_WARNING" file="large_infobar_insecure.png" type="BINDATA" />
-      <include name="IDR_INFOBAR_THEME" file="large_infobar_theme.png" type="BINDATA" />
-      <include name="IDR_INFOBAR_TRANSLATE" file="large_infobar_translate.png" type="BINDATA" />
-      <include name="IDR_KEYWORD_SEARCH_MAGNIFIER" file="large_keyword_search_magnifier.png" type="BINDATA" />
+      <include name="IDR_CONTENT_TOP_CENTER" file="content_top_center_2x.png" type="BINDATA" />
+      <include name="IDR_CONTENT_TOP_LEFT_CORNER" file="content_top_left_corner_2x.png" type="BINDATA" />
+      <include name="IDR_CONTENT_TOP_LEFT_CORNER_MASK" file="content_top_left_corner_mask_2x.png" type="BINDATA" />
+      <include name="IDR_CONTENT_TOP_RIGHT_CORNER" file="content_top_right_corner_2x.png" type="BINDATA" />
+      <include name="IDR_CONTENT_TOP_RIGHT_CORNER_MASK" file="content_top_right_corner_mask_2x.png" type="BINDATA" />
+      <include name="IDR_DOWNLOADS_FAVICON" file="downloads_favicon_2x.png" type="BINDATA" />
+      <include name="IDR_FEEDBACK" file="feedback_2x.png" type="BINDATA" />
+      <include name="IDR_FEEDBACK_H" file="feedback_h_2x.png" type="BINDATA" />
+      <include name="IDR_FEEDBACK_P" file="feedback_p_2x.png" type="BINDATA" />
+      <include name="IDR_FLAGS" file="flags_2x.png" type="BINDATA" />
+      <include name="IDR_FORWARD" file="forward_2x.png" type="BINDATA" />
+      <include name="IDR_FORWARD_D" file="forward_d_2x.png" type="BINDATA" />
+      <include name="IDR_FORWARD_H" file="forward_h_2x.png" type="BINDATA" />
+      <include name="IDR_FORWARD_P" file="forward_p_2x.png" type="BINDATA" />
+      <include name="IDR_GEOLOCATION_INFOBAR_ICON" file="infobar_geolocation_2x.png" type="BINDATA" />
+      <include name="IDR_HISTORY_FAVICON" file="history_favicon_2x.png" type="BINDATA" />
+      <include name="IDR_HOME" file="home_2x.png" type="BINDATA" />
+      <include name="IDR_HOME_H" file="home_h_2x.png" type="BINDATA" />
+      <include name="IDR_HOME_P" file="home_p_2x.png" type="BINDATA" />
+      <include name="IDR_INFOBAR_ALT_NAV_URL" file="infobar_didyoumean_2x.png" type="BINDATA" />
+      <include name="IDR_INFOBAR_AUTOFILL" file="infobar_autofill_2x.png" type="BINDATA" />
+      <include name="IDR_INFOBAR_AUTOLOGIN" file="infobar_autologin_2x.png" type="BINDATA" />
+      <include name="IDR_INFOBAR_COOKIE" file="infobar_cookie_2x.png" type="BINDATA" />
+      <include name="IDR_INFOBAR_DESKTOP_NOTIFICATIONS" file="infobar_desktop_notifications_2x.png" type="BINDATA" />
+      <include name="IDR_INFOBAR_INCOMPLETE" file="infobar_incomplete_2x.png" type="BINDATA" />
+      <include name="IDR_INFOBAR_MEDIA_STREAM_CAMERA" file="infobar_camera_2x.png" type="BINDATA" />
+      <include name="IDR_INFOBAR_MEDIA_STREAM_MIC" file="infobar_microphone_2x.png" type="BINDATA" />
+      <include name="IDR_INFOBAR_MULTIPLE_DOWNLOADS" file="infobar_multiple_downloads_2x.png" type="BINDATA" />
+      <include name="IDR_INFOBAR_PLUGIN_CRASHED" file="infobar_plugin_crashed_2x.png" type="BINDATA" />
+      <include name="IDR_INFOBAR_PLUGIN_INSTALL" file="infobar_plugin_2x.png" type="BINDATA" />
+      <include name="IDR_INFOBAR_QUESTION_MARK" file="infobar_questionmark_2x.png" type="BINDATA" />
+      <include name="IDR_INFOBAR_RESTORE_SESSION" file="infobar_restore_2x.png" type="BINDATA" />
+      <include name="IDR_INFOBAR_SAVE_PASSWORD" file="infobar_savepassword_2x.png" type="BINDATA" />
+      <include name="IDR_INFOBAR_SSL_WARNING" file="infobar_insecure_2x.png" type="BINDATA" />
+      <include name="IDR_INFOBAR_THEME" file="infobar_theme_2x.png" type="BINDATA" />
+      <include name="IDR_INFOBAR_TRANSLATE" file="infobar_translate_2x.png" type="BINDATA" />
+      <include name="IDR_KEYWORD_SEARCH_MAGNIFIER" file="keyword_search_magnifier_2x.png" type="BINDATA" />
       <include name="IDR_LOCATIONBG_C" file="omnibox_c.png" type="BINDATA" />
       <include name="IDR_LOCATIONBG_L" file="omnibox_l.png" type="BINDATA" />
       <include name="IDR_LOCATIONBG_R" file="omnibox_r.png" type="BINDATA" />
       <include name="IDR_LOCATION_BAR_BORDER" file="omnibox_border.png" type="BINDATA" />
-      <include name="IDR_LOCATION_BAR_SELECTED_KEYWORD_BACKGROUND_C" file="large_keyword_search_bubble_c.png" type="BINDATA" />
-      <include name="IDR_LOCATION_BAR_SELECTED_KEYWORD_BACKGROUND_L" file="large_keyword_search_bubble_l.png" type="BINDATA" />
-      <include name="IDR_LOCATION_BAR_SELECTED_KEYWORD_BACKGROUND_R" file="large_keyword_search_bubble_r.png" type="BINDATA" />
+      <include name="IDR_LOCATION_BAR_SELECTED_KEYWORD_BACKGROUND_C" file="keyword_search_bubble_c_2x.png" type="BINDATA" />
+      <include name="IDR_LOCATION_BAR_SELECTED_KEYWORD_BACKGROUND_L" file="keyword_search_bubble_l_2x.png" type="BINDATA" />
+      <include name="IDR_LOCATION_BAR_SELECTED_KEYWORD_BACKGROUND_R" file="keyword_search_bubble_r_2x.png" type="BINDATA" />
       <if expr="pp_ifdef('toolkit_views')">
-        <include name="IDR_NEWTAB_BUTTON" file="large_newtab_views.png" type="BINDATA" />
-        <include name="IDR_NEWTAB_BUTTON_P" file="large_newtab_p_views.png" type="BINDATA" />
+        <include name="IDR_NEWTAB_BUTTON" file="newtab_views_2x.png" type="BINDATA" />
+        <include name="IDR_NEWTAB_BUTTON_P" file="newtab_p_views_2x.png" type="BINDATA" />
       </if>
       <if expr="not pp_ifdef('toolkit_views')">
-        <include name="IDR_NEWTAB_BUTTON" file="large_newtab.png" type="BINDATA" />
-        <include name="IDR_NEWTAB_BUTTON_H" file="large_newtab_h.png" type="BINDATA" />
-        <include name="IDR_NEWTAB_BUTTON_P" file="large_newtab_p.png" type="BINDATA" />
+        <include name="IDR_NEWTAB_BUTTON" file="newtab_2x.png" type="BINDATA" />
+        <include name="IDR_NEWTAB_BUTTON_H" file="newtab_h_2x.png" type="BINDATA" />
+        <include name="IDR_NEWTAB_BUTTON_P" file="newtab_p_2x.png" type="BINDATA" />
       </if>
-      <include name="IDR_NEWTAB_BUTTON_MASK" file="large_newtab_button_mask.png" type="BINDATA" />
-      <include name="IDR_SETTINGS_FAVICON" file="large_settings_favicon.png" type="BINDATA" />
-      <include name="IDR_OMNIBOX_EV_BUBBLE_BACKGROUND_C" file="large_ev_bubble_c.png" type="BINDATA" />
-      <include name="IDR_OMNIBOX_EV_BUBBLE_BACKGROUND_L" file="large_ev_bubble_l.png" type="BINDATA" />
-      <include name="IDR_OMNIBOX_EV_BUBBLE_BACKGROUND_R" file="large_ev_bubble_r.png" type="BINDATA" />
-      <include name="IDR_PLUGIN" file="large_plugin.png" type="BINDATA" />
-      <include name="IDR_RELOAD" file="large_reload.png" type="BINDATA" />
-      <include name="IDR_RELOAD_H" file="large_reload_h.png" type="BINDATA" />
-      <include name="IDR_RELOAD_P" file="large_reload_p.png" type="BINDATA" />
-      <include name="IDR_SAD_FAVICON" file="large_sadfavicon.png" type="BINDATA" />
-      <include name="IDR_STAR" file="large_star.png" type="BINDATA" />
-      <include name="IDR_STAR_LIT" file="large_star_lit.png" type="BINDATA" />
-      <include name="IDR_STOP" file="large_stop.png" type="BINDATA" />
-      <include name="IDR_STOP_D" file="large_stop_d.png" type="BINDATA" />
-      <include name="IDR_STOP_H" file="large_stop_h.png" type="BINDATA" />
-      <include name="IDR_STOP_P" file="large_stop_p.png" type="BINDATA" />
-      <include name="IDR_TAB_ACTIVE_CENTER" file="large_tab_active_center.png" type="BINDATA" />
-      <include name="IDR_TAB_ACTIVE_LEFT" file="large_tab_active_left.png" type="BINDATA" />
-      <include name="IDR_TAB_ACTIVE_RIGHT" file="large_tab_active_right.png" type="BINDATA" />
-      <include name="IDR_TAB_ALPHA_LEFT" file="large_tab_alpha_left.png" type="BINDATA" />
-      <include name="IDR_TAB_ALPHA_RIGHT" file="large_tab_alpha_right.png" type="BINDATA" />
-      <include name="IDR_TAB_CLOSE" file="large_tab_close.png" type="BINDATA" />
-      <include name="IDR_TAB_CLOSE_H" file="large_tab_close_h.png" type="BINDATA" />
-      <include name="IDR_TAB_CLOSE_MASK" file="large_tab_close_mask.png" type="BINDATA" />
-      <include name="IDR_TAB_CLOSE_P" file="large_tab_close_p.png" type="BINDATA" />
-      <include name="IDR_TAB_DROP_DOWN" file="large_tab_drop_down.png" type="BINDATA" />
-      <include name="IDR_TAB_DROP_UP" file="large_tab_drop_up.png" type="BINDATA" />
-      <include name="IDR_TAB_INACTIVE_CENTER" file="large_tab_inactive_center.png" type="BINDATA" />
-      <include name="IDR_TAB_INACTIVE_LEFT" file="large_tab_inactive_left.png" type="BINDATA" />
-      <include name="IDR_TAB_INACTIVE_RIGHT" file="large_tab_inactive_right.png" type="BINDATA" />
+      <include name="IDR_NEWTAB_BUTTON_MASK" file="newtab_button_mask_2x.png" type="BINDATA" />
+      <include name="IDR_SETTINGS_FAVICON" file="settings_favicon_2x.png" type="BINDATA" />
+      <include name="IDR_OMNIBOX_EV_BUBBLE_BACKGROUND_C" file="ev_bubble_c_2x.png" type="BINDATA" />
+      <include name="IDR_OMNIBOX_EV_BUBBLE_BACKGROUND_L" file="ev_bubble_l_2x.png" type="BINDATA" />
+      <include name="IDR_OMNIBOX_EV_BUBBLE_BACKGROUND_R" file="ev_bubble_r_2x.png" type="BINDATA" />
+      <include name="IDR_PLUGIN" file="plugin_2x.png" type="BINDATA" />
+      <include name="IDR_RELOAD" file="reload_2x.png" type="BINDATA" />
+      <include name="IDR_RELOAD_H" file="reload_h_2x.png" type="BINDATA" />
+      <include name="IDR_RELOAD_P" file="reload_p_2x.png" type="BINDATA" />
+      <include name="IDR_SAD_FAVICON" file="sadfavicon_2x.png" type="BINDATA" />
+      <include name="IDR_STAR" file="star_2x.png" type="BINDATA" />
+      <include name="IDR_STAR_LIT" file="star_lit_2x.png" type="BINDATA" />
+      <include name="IDR_STOP" file="stop_2x.png" type="BINDATA" />
+      <include name="IDR_STOP_D" file="stop_d_2x.png" type="BINDATA" />
+      <include name="IDR_STOP_H" file="stop_h_2x.png" type="BINDATA" />
+      <include name="IDR_STOP_P" file="stop_p_2x.png" type="BINDATA" />
+      <include name="IDR_TAB_ACTIVE_CENTER" file="tab_active_center_2x.png" type="BINDATA" />
+      <include name="IDR_TAB_ACTIVE_LEFT" file="tab_active_left_2x.png" type="BINDATA" />
+      <include name="IDR_TAB_ACTIVE_RIGHT" file="tab_active_right_2x.png" type="BINDATA" />
+      <include name="IDR_TAB_ALPHA_LEFT" file="tab_alpha_left_2x.png" type="BINDATA" />
+      <include name="IDR_TAB_ALPHA_RIGHT" file="tab_alpha_right_2x.png" type="BINDATA" />
+      <include name="IDR_TAB_CLOSE" file="tab_close_2x.png" type="BINDATA" />
+      <include name="IDR_TAB_CLOSE_H" file="tab_close_h_2x.png" type="BINDATA" />
+      <include name="IDR_TAB_CLOSE_MASK" file="tab_close_mask_2x.png" type="BINDATA" />
+      <include name="IDR_TAB_CLOSE_P" file="tab_close_p_2x.png" type="BINDATA" />
+      <include name="IDR_TAB_DROP_DOWN" file="tab_drop_down_2x.png" type="BINDATA" />
+      <include name="IDR_TAB_DROP_UP" file="tab_drop_up_2x.png" type="BINDATA" />
+      <include name="IDR_TAB_INACTIVE_CENTER" file="tab_inactive_center_2x.png" type="BINDATA" />
+      <include name="IDR_TAB_INACTIVE_LEFT" file="tab_inactive_left_2x.png" type="BINDATA" />
+      <include name="IDR_TAB_INACTIVE_RIGHT" file="tab_inactive_right_2x.png" type="BINDATA" />
       <if expr="pp_ifdef('use_aura')">
         <include name="IDR_THEME_FRAME" file="theme_frame_default_aura.png" type="BINDATA" />
         <include name="IDR_THEME_FRAME_INACTIVE" file="theme_frame_default_inactive_aura.png" type="BINDATA" />
@@ -135,10 +135,10 @@
         <include name="IDR_THEME_FRAME_INCOGNITO_COMPACT" file="theme_frame_default2_incognito.png" type="BINDATA" />
       </if>
       <if expr="pp_ifdef('chromeos') and not pp_ifdef('use_aura')">
-        <include name="IDR_THEME_FRAME" file="large_theme_frame_default2.png" type="BINDATA" />
-        <include name="IDR_THEME_FRAME_INACTIVE" file="large_theme_frame_default2.png" type="BINDATA" />
-        <include name="IDR_THEME_FRAME_INCOGNITO" file="large_theme_frame_default2_incognito.png" type="BINDATA" />
-        <include name="IDR_THEME_FRAME_INCOGNITO_INACTIVE" file="large_theme_frame_default2_incognito.png" type="BINDATA" />
+        <include name="IDR_THEME_FRAME" file="theme_frame_default2_2x.png" type="BINDATA" />
+        <include name="IDR_THEME_FRAME_INACTIVE" file="theme_frame_default2_2x.png" type="BINDATA" />
+        <include name="IDR_THEME_FRAME_INCOGNITO" file="theme_frame_default2_incognito_2x.png" type="BINDATA" />
+        <include name="IDR_THEME_FRAME_INCOGNITO_INACTIVE" file="theme_frame_default2_incognito_2x.png" type="BINDATA" />
       </if>
       <if expr="not pp_ifdef('chromeos') and not pp_ifdef('use_aura')">
         <include name="IDR_THEME_FRAME" file="theme_frame_default.png" type="BINDATA" />
@@ -156,24 +156,24 @@
         <include name="IDR_THEME_TAB_BACKGROUND" file="theme_tab_background_aura.png" type="BINDATA" />
       </if>
       <if expr="pp_ifdef('chromeos') and not pp_ifdef('use_aura')">
-        <include name="IDR_THEME_TAB_BACKGROUND" file="large_theme_tab_background2.png" type="BINDATA" />
+        <include name="IDR_THEME_TAB_BACKGROUND" file="theme_tab_background2_2x.png" type="BINDATA" />
       </if>
       <if expr="not pp_ifdef('chromeos') and not pp_ifdef('use_aura')">
         <include name="IDR_THEME_TAB_BACKGROUND" file="theme_tab_background.png" type="BINDATA" />
       </if>
       <if expr="pp_ifdef('chromeos') or is_macosx">
-        <include name="IDR_THEME_TOOLBAR" file="large_theme_toolbar_default2.png" type="BINDATA" />
+        <include name="IDR_THEME_TOOLBAR" file="theme_toolbar_default2_2x.png" type="BINDATA" />
       </if>
       <if expr="not pp_ifdef('chromeos') and not is_macosx">
         <include name="IDR_THEME_TOOLBAR" file="theme_toolbar_default.png" type="BINDATA" />
       </if>
       <if expr="is_macosx">
-        <include name="IDR_THEME_TOOLBAR_INACTIVE" file="large_theme_toolbar_default_inactive2.png" type="BINDATA" />
+        <include name="IDR_THEME_TOOLBAR_INACTIVE" file="theme_toolbar_default_inactive2_2x.png" type="BINDATA" />
       </if>
-      <include name="IDR_THROBBER_WAITING" file="large_throbber_waiting.png" type="BINDATA" />
-      <include name="IDR_TOOLS" file="large_tools.png" type="BINDATA" />
-      <include name="IDR_TOOLS_H" file="large_tools_h.png" type="BINDATA" />
-      <include name="IDR_TOOLS_P" file="large_tools_p.png" type="BINDATA" />
+      <include name="IDR_THROBBER_WAITING" file="throbber_waiting_2x.png" type="BINDATA" />
+      <include name="IDR_TOOLS" file="tools_2x.png" type="BINDATA" />
+      <include name="IDR_TOOLS_H" file="tools_h_2x.png" type="BINDATA" />
+      <include name="IDR_TOOLS_P" file="tools_p_2x.png" type="BINDATA" />
     </includes>
   </release>
 </grit>

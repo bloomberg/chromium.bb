@@ -14,32 +14,32 @@
       <!-- KEEP THESE IN ALPHABETICAL ORDER AND SYNCHRONIZED WITH
            ui_resources_standard.grd. THIS MEANS THAT EACH ICON IN THIS FILE
            MUST HAVE AN EQUIVALENT ICON IN THE OTHER FILE.-->
-      <include name="IDR_BUBBLE_B" file="large_bubble_b.png" type="BINDATA" />
-      <include name="IDR_BUBBLE_BL" file="large_bubble_bl.png" type="BINDATA" />
-      <include name="IDR_BUBBLE_BR" file="large_bubble_br.png" type="BINDATA" />
-      <include name="IDR_BUBBLE_B_ARROW" file="large_bubble_pointer_b.png" type="BINDATA" />
-      <include name="IDR_BUBBLE_L" file="large_bubble_l.png" type="BINDATA" />
-      <include name="IDR_BUBBLE_L_ARROW" file="large_bubble_pointer_l.png" type="BINDATA" />
-      <include name="IDR_BUBBLE_R" file="large_bubble_r.png" type="BINDATA" />
-      <include name="IDR_BUBBLE_R_ARROW" file="large_bubble_pointer_r.png" type="BINDATA" />
-      <include name="IDR_BUBBLE_T" file="large_bubble_t.png" type="BINDATA" />
-      <include name="IDR_BUBBLE_TL" file="large_bubble_tl.png" type="BINDATA" />
-      <include name="IDR_BUBBLE_TR" file="large_bubble_tr.png" type="BINDATA" />
-      <include name="IDR_BUBBLE_T_ARROW" file="large_bubble_pointer_t.png" type="BINDATA" />
+      <include name="IDR_BUBBLE_B" file="bubble_b_2x.png" type="BINDATA" />
+      <include name="IDR_BUBBLE_BL" file="bubble_bl_2x.png" type="BINDATA" />
+      <include name="IDR_BUBBLE_BR" file="bubble_br_2x.png" type="BINDATA" />
+      <include name="IDR_BUBBLE_B_ARROW" file="bubble_pointer_b_2x.png" type="BINDATA" />
+      <include name="IDR_BUBBLE_L" file="bubble_l_2x.png" type="BINDATA" />
+      <include name="IDR_BUBBLE_L_ARROW" file="bubble_pointer_l_2x.png" type="BINDATA" />
+      <include name="IDR_BUBBLE_R" file="bubble_r_2x.png" type="BINDATA" />
+      <include name="IDR_BUBBLE_R_ARROW" file="bubble_pointer_r_2x.png" type="BINDATA" />
+      <include name="IDR_BUBBLE_T" file="bubble_t_2x.png" type="BINDATA" />
+      <include name="IDR_BUBBLE_TL" file="bubble_tl_2x.png" type="BINDATA" />
+      <include name="IDR_BUBBLE_TR" file="bubble_tr_2x.png" type="BINDATA" />
+      <include name="IDR_BUBBLE_T_ARROW" file="bubble_pointer_t_2x.png" type="BINDATA" />
 
-      <include name="IDR_BUBBLE_SHADOW_B" file="large_bubble_shadow_b.png" type="BINDATA" />
-      <include name="IDR_BUBBLE_SHADOW_BL" file="large_bubble_shadow_bl.png" type="BINDATA" />
-      <include name="IDR_BUBBLE_SHADOW_BR" file="large_bubble_shadow_br.png" type="BINDATA" />
-      <include name="IDR_BUBBLE_SHADOW_L" file="large_bubble_shadow_l.png" type="BINDATA" />
-      <include name="IDR_BUBBLE_SHADOW_R" file="large_bubble_shadow_r.png" type="BINDATA" />
-      <include name="IDR_BUBBLE_SHADOW_T" file="large_bubble_shadow_t.png" type="BINDATA" />
-      <include name="IDR_BUBBLE_SHADOW_TL" file="large_bubble_shadow_tl.png" type="BINDATA" />
-      <include name="IDR_BUBBLE_SHADOW_TR" file="large_bubble_shadow_tr.png" type="BINDATA" />
+      <include name="IDR_BUBBLE_SHADOW_B" file="bubble_shadow_b_2x.png" type="BINDATA" />
+      <include name="IDR_BUBBLE_SHADOW_BL" file="bubble_shadow_bl_2x.png" type="BINDATA" />
+      <include name="IDR_BUBBLE_SHADOW_BR" file="bubble_shadow_br_2x.png" type="BINDATA" />
+      <include name="IDR_BUBBLE_SHADOW_L" file="bubble_shadow_l_2x.png" type="BINDATA" />
+      <include name="IDR_BUBBLE_SHADOW_R" file="bubble_shadow_r_2x.png" type="BINDATA" />
+      <include name="IDR_BUBBLE_SHADOW_T" file="bubble_shadow_t_2x.png" type="BINDATA" />
+      <include name="IDR_BUBBLE_SHADOW_TL" file="bubble_shadow_tl_2x.png" type="BINDATA" />
+      <include name="IDR_BUBBLE_SHADOW_TR" file="bubble_shadow_tr_2x.png" type="BINDATA" />
 
-      <include name="IDR_CLOSE_BAR" file="large_close_bar.png" type="BINDATA" />
-      <include name="IDR_CLOSE_BAR_H" file="large_close_bar_h.png" type="BINDATA" />
-      <include name="IDR_CLOSE_BAR_MASK" file="large_close_bar_mask.png" type="BINDATA" />
-      <include name="IDR_CLOSE_BAR_P" file="large_close_bar_p.png" type="BINDATA" />
+      <include name="IDR_CLOSE_BAR" file="close_bar_2x.png" type="BINDATA" />
+      <include name="IDR_CLOSE_BAR_H" file="close_bar_h_2x.png" type="BINDATA" />
+      <include name="IDR_CLOSE_BAR_MASK" file="close_bar_mask_2x.png" type="BINDATA" />
+      <include name="IDR_CLOSE_BAR_P" file="close_bar_p_2x.png" type="BINDATA" />
     </includes>
   </release>
 </grit>
