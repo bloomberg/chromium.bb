@@ -13,7 +13,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebPeerConnectionHandler.h"
 
-TEST(MediaStreamImplTest, Basic) {
+// Disabled due to http://crbug.com/112408 .
+TEST(MediaStreamImplTest, DISABLED_Basic) {
   MessageLoop loop;
 
   // Create our test object.
