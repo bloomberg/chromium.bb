@@ -16,6 +16,7 @@ sys.path.insert(0, os.path.abspath(__file__ + '/../../..'))
 from chromite.buildbot import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import sudo
+from chromite.lib import locking
 
 cros_build_lib.STRICT_SUDO = True
 
@@ -311,29 +312,34 @@ Action taken is the following:
     print "Not doing anything. The chroot you want to remove doesn't exist."
     sys.exit(0)
 
-  with sudo.SudoKeepAlive():
+  lock_path = os.path.join(os.path.dirname(chroot_path), '.chroot_lock')
+  with locking.FileLock(lock_path, 'chroot lock').read_lock() as lock:
+    with sudo.SudoKeepAlive():
 
-    if options.delete:
-      DeleteChroot(chroot_path)
-      sys.exit(0)
+      if options.delete:
+        lock.write_lock()
+        DeleteChroot(chroot_path)
+        sys.exit(0)
 
-    # Print a suggestion for replacement, but not if running just --enter.
-    if os.path.exists(chroot_path) and not options.replace and \
-        (options.bootstrap or options.download):
-      print "Chroot already exists. Run with --replace to re-create."
+      # Print a suggestion for replacement, but not if running just --enter.
+      if os.path.exists(chroot_path) and not options.replace and \
+          (options.bootstrap or options.download):
+        print "Chroot already exists. Run with --replace to re-create."
 
-    # Chroot doesn't exist or we were told to replace it.
-    if not os.path.exists(chroot_path) or options.replace:
-      if options.bootstrap:
-        BootstrapChroot(chroot_path, options.sdk_url,
-                        options.replace)
-      else:
-        CreateChroot(options.sdk_url, sdk_version,
-                     chroot_path, options.replace)
+      # Chroot doesn't exist or asked to replace.
+      if not os.path.exists(chroot_path) or options.replace:
+        lock.write_lock()
+        if options.bootstrap:
+          BootstrapChroot(chroot_path, options.sdk_url,
+                          options.replace)
+        else:
+          CreateChroot(options.sdk_url, sdk_version,
+                       chroot_path, options.replace)
+        lock.read_lock()
 
-    if options.enter:
-      EnterChroot(chroot_path, options.chrome_root, options.chrome_root_mount,
-                  remaining_arguments)
+      if options.enter:
+        EnterChroot(chroot_path, options.chrome_root,
+                    options.chrome_root_mount, remaining_arguments)
 
 
 if __name__ == '__main__':
