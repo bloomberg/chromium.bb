@@ -6,7 +6,9 @@
 #define PPAPI_PROXY_PLUGIN_GLOBALS_H_
 
 #include "base/compiler_specific.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
+#include "base/threading/thread_local_storage.h"
 #include "ppapi/proxy/plugin_resource_tracker.h"
 #include "ppapi/proxy/plugin_var_tracker.h"
 #include "ppapi/proxy/ppapi_proxy_export.h"
@@ -66,6 +68,20 @@ class PPAPI_PROXY_EXPORT PluginGlobals : public PpapiGlobals {
     plugin_proxy_delegate_ = d;
   }
 
+  // Returns the TLS slot that holds the message loop TLS.
+  //
+  // If we end up needing more TLS storage for more stuff, we should probably
+  // have a struct in here for the different items.
+  base::ThreadLocalStorage::Slot* msg_loop_slot() {
+    return msg_loop_slot_.get();
+  }
+
+  // Sets the message loop slot, takes ownership of the given heap-alloated
+  // pointer.
+  void set_msg_loop_slot(base::ThreadLocalStorage::Slot* slot) {
+    msg_loop_slot_.reset(slot);
+  }
+
   // The embedder should call this function when the name of the plugin module
   // is known. This will be used for error logging.
   void set_plugin_name(const std::string& name) { plugin_name_ = name; }
@@ -81,6 +97,8 @@ class PPAPI_PROXY_EXPORT PluginGlobals : public PpapiGlobals {
   PluginVarTracker plugin_var_tracker_;
   scoped_refptr<CallbackTracker> callback_tracker_;
   base::Lock proxy_lock_;
+
+  scoped_ptr<base::ThreadLocalStorage::Slot> msg_loop_slot_;
 
   // Name of the plugin used for error logging. This will be empty until
   // SetPluginName is called.

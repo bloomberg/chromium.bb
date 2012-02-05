@@ -9,10 +9,10 @@
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/message_loop.h"
-#include "base/threading/thread_local_storage.h"
 #include "ppapi/c/dev/ppb_message_loop_dev.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/proxy/plugin_dispatcher.h"
+#include "ppapi/proxy/plugin_globals.h"
 #include "ppapi/shared_impl/resource.h"
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/ppb_message_loop_api.h"
@@ -25,8 +25,6 @@ namespace proxy {
 namespace {
 
 typedef thunk::EnterResource<PPB_MessageLoop_API> EnterMessageLoop;
-
-static base::ThreadLocalStorage::StaticSlot tls_slot = TLS_INITIALIZER;
 
 class MessageLoopResource : public Resource, public PPB_MessageLoop_API {
  public:
@@ -102,16 +100,23 @@ PPB_MessageLoop_API* MessageLoopResource::AsPPB_MessageLoop_API() {
 }
 
 int32_t MessageLoopResource::AttachToCurrentThread() {
-  if (tls_slot.initialized())
-    return PP_ERROR_INPROGRESS;
+  PluginGlobals* globals = PluginGlobals::Get();
+
+  base::ThreadLocalStorage::Slot* slot = globals->msg_loop_slot();
+  if (!slot) {
+    slot = new base::ThreadLocalStorage::Slot(&ReleaseMessageLoop);
+    globals->set_msg_loop_slot(slot);
+  } else {
+    if (slot->Get())
+      return PP_ERROR_INPROGRESS;
+  }
   // TODO(brettw) check that the current thread can support a message loop.
 
   // Take a ref to the MessageLoop on behalf of the TLS. Note that this is an
   // internal ref and not a plugin ref so the plugin can't accidentally
   // release it. This is released by ReleaseMessageLoop().
   AddRef();
-  tls_slot.Initialize(&ReleaseMessageLoop);
-  tls_slot.Set(this);
+  slot->Set(this);
 
   loop_.reset(new MessageLoop(MessageLoop::TYPE_DEFAULT));
 
@@ -180,9 +185,10 @@ void MessageLoopResource::DetachFromThread() {
 }
 
 bool MessageLoopResource::IsCurrent() const {
-  if (!tls_slot.initialized())
+  PluginGlobals* globals = PluginGlobals::Get();
+  if (!globals->msg_loop_slot())
     return false;  // Can't be current if there's nothing in the slot.
-  return static_cast<const void*>(tls_slot.Get()) ==
+  return static_cast<const void*>(globals->msg_loop_slot()->Get()) ==
          static_cast<const void*>(this);
 }
 
@@ -223,10 +229,11 @@ PP_Resource GetForMainThread() {
 }
 
 PP_Resource GetCurrent() {
-  if (!tls_slot.initialized())
+  PluginGlobals* globals = PluginGlobals::Get();
+  if (!globals->msg_loop_slot())
     return 0;
   MessageLoopResource* loop = reinterpret_cast<MessageLoopResource*>(
-      tls_slot.Get());
+      globals->msg_loop_slot()->Get());
   return loop->GetReference();
 }
 
