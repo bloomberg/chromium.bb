@@ -13,6 +13,7 @@
 #include "base/stringprintf.h"
 #include "base/test/test_file_util.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/cancelable_request.h"
 #include "chrome/browser/download/chrome_download_manager_delegate.h"
@@ -30,6 +31,7 @@
 #include "chrome/browser/net/url_request_mock_util.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/tab_contents/render_view_context_menu.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -53,6 +55,7 @@
 #include "content/public/common/page_transition_types.h"
 #include "net/base/net_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "webkit/glue/context_menu.h"
 
 using content::BrowserThread;
 using content::DownloadItem;
@@ -251,6 +254,23 @@ static DownloadManager* DownloadManagerForBrowser(Browser* browser) {
   return DownloadServiceFactory::GetForProfile(browser->profile())
       ->GetDownloadManager();
 }
+
+class TestRenderViewContextMenu : public RenderViewContextMenu {
+ public:
+  TestRenderViewContextMenu(WebContents* web_contents,
+                            const ContextMenuParams& params)
+      : RenderViewContextMenu(web_contents, params) {
+  }
+  virtual ~TestRenderViewContextMenu() {}
+
+ private:
+  virtual void PlatformInit() {}
+  virtual bool GetAcceleratorForCommandId(int, ui::Accelerator*) {
+    return false;
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(TestRenderViewContextMenu);
+};
 
 }  // namespace
 
@@ -1775,6 +1795,29 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, SavePageNonHTMLViaGet) {
   EXPECT_TRUE(waiter->select_file_dialog_seen());
   ASSERT_EQ(1u, download_items.size());
   ASSERT_EQ(url, download_items[0]->GetOriginalUrl());
+
+  // Try to download it via a context menu.
+  scoped_ptr<DownloadTestObserver> waiter_context_menu(
+      new DownloadTestObserver(
+          DownloadManagerForBrowser(browser()), 1, DownloadItem::COMPLETE,
+          false, DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_FAIL));
+  ContextMenuParams context_menu_params;
+  context_menu_params.media_type = WebKit::WebContextMenuData::MediaTypeImage;
+  context_menu_params.src_url = url;
+  context_menu_params.page_url = url;
+  TestRenderViewContextMenu menu(browser()->GetSelectedWebContents(),
+                                 context_menu_params);
+  menu.Init();
+  menu.ExecuteCommand(IDC_CONTENT_CONTEXT_SAVEIMAGEAS);
+  waiter_context_menu->WaitForFinished();
+
+  // Validate that the correct file was downloaded via the context menu.
+  download_items.clear();
+  GetDownloads(browser(), &download_items);
+  EXPECT_TRUE(waiter_context_menu->select_file_dialog_seen());
+  ASSERT_EQ(2u, download_items.size());
+  ASSERT_EQ(url, download_items[0]->GetOriginalUrl());
+  ASSERT_EQ(url, download_items[1]->GetOriginalUrl());
 }
 
 IN_PROC_BROWSER_TEST_F(DownloadTest, SavePageNonHTMLViaPost) {
@@ -1827,4 +1870,26 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, SavePageNonHTMLViaPost) {
   EXPECT_TRUE(waiter->select_file_dialog_seen());
   ASSERT_EQ(1u, download_items.size());
   ASSERT_EQ(jpeg_url, download_items[0]->GetOriginalUrl());
+
+  // Try to download it via a context menu.
+  scoped_ptr<DownloadTestObserver> waiter_context_menu(
+      new DownloadTestObserver(
+          DownloadManagerForBrowser(browser()), 1, DownloadItem::COMPLETE,
+          false, DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_FAIL));
+  ContextMenuParams context_menu_params;
+  context_menu_params.media_type = WebKit::WebContextMenuData::MediaTypeImage;
+  context_menu_params.src_url = jpeg_url;
+  context_menu_params.page_url = jpeg_url;
+  TestRenderViewContextMenu menu(web_contents, context_menu_params);
+  menu.Init();
+  menu.ExecuteCommand(IDC_CONTENT_CONTEXT_SAVEIMAGEAS);
+  waiter_context_menu->WaitForFinished();
+
+  // Validate that the correct file was downloaded via the context menu.
+  download_items.clear();
+  GetDownloads(browser(), &download_items);
+  EXPECT_TRUE(waiter_context_menu->select_file_dialog_seen());
+  ASSERT_EQ(2u, download_items.size());
+  ASSERT_EQ(jpeg_url, download_items[0]->GetOriginalUrl());
+  ASSERT_EQ(jpeg_url, download_items[1]->GetOriginalUrl());
 }
