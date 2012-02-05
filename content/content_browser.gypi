@@ -205,6 +205,8 @@
     'browser/download/download_item_impl.h',
     'browser/download/download_manager_impl.cc',
     'browser/download/download_manager_impl.h',
+    'browser/download/download_net_log_parameters.cc',
+    'browser/download/download_net_log_parameters.h',
     'browser/download/download_persistent_store_info.cc',
     'browser/download/download_persistent_store_info.h',
     'browser/download/download_request_handle.cc',

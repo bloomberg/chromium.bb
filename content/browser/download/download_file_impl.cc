@@ -20,16 +20,17 @@ DownloadFileImpl::DownloadFileImpl(
     DownloadRequestHandleInterface* request_handle,
     DownloadManager* download_manager,
     bool calculate_hash)
-    : file_(info->save_info.file_path,
-            info->url(),
-            info->referrer_url,
-            info->received_bytes,
-            calculate_hash,
-            info->save_info.hash_state,
-            info->save_info.file_stream),
-      id_(info->download_id),
-      request_handle_(request_handle),
-      download_manager_(download_manager) {
+        : file_(info->save_info.file_path,
+                info->url(),
+                info->referrer_url,
+                info->received_bytes,
+                calculate_hash,
+                info->save_info.hash_state,
+                info->save_info.file_stream,
+                net::BoundNetLog()),
+          id_(info->download_id),
+          request_handle_(request_handle),
+          download_manager_(download_manager) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 }
 

@@ -446,6 +446,21 @@ class PassiveLogCollector : public ChromeNetLog::ThreadSafeObserverImpl {
     DISALLOW_COPY_AND_ASSIGN(HttpPipelinedConnectionTracker);
   };
 
+  // Tracks the log entries for the last seen SOURCE_DOWNLOAD.
+  class DownloadTracker : public SourceTracker {
+   public:
+    static const size_t kMaxNumSources;
+    static const size_t kMaxGraveyardSize;
+
+    DownloadTracker();
+
+   private:
+    virtual Action DoAddEntry(const ChromeNetLog::Entry& entry,
+                              SourceInfo* out_info) OVERRIDE;
+
+    DISALLOW_COPY_AND_ASSIGN(DownloadTracker);
+  };
+
   // Tracks the log entries for the last seen SOURCE_FILESTREAM.
   class FileStreamTracker : public SourceTracker {
    public:
@@ -507,6 +522,7 @@ class PassiveLogCollector : public ChromeNetLog::ThreadSafeObserverImpl {
   UDPSocketTracker udp_socket_tracker_;
   CertVerifierJobTracker cert_verifier_job_tracker_;
   HttpPipelinedConnectionTracker http_pipelined_connection_tracker_;
+  DownloadTracker download_tracker_;
   FileStreamTracker file_stream_tracker_;
 
   // This array maps each NetLog::SourceType to one of the tracker instances

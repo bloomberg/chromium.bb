@@ -11,6 +11,7 @@
 #include "base/stringprintf.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/utf_string_conversions.h"
+#include "content/browser/download/download_net_log_parameters.h"
 #include "content/browser/download/download_stats.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
@@ -31,12 +32,17 @@ using content::BrowserThread;
 
 namespace {
 
-#define LOG_ERROR(o, e)  LogError(__FILE__, __LINE__, __FUNCTION__, o, e)
+#define LOG_ERROR(o, e)  \
+  LogError(__FILE__, __LINE__, __FUNCTION__, bound_net_log_, o, e)
 
 // Logs the value and passes error on through, converting to a |net::Error|.
 // Returns |ERR_UNEXPECTED| if the value is not in the enum.
-net::Error LogError(const char* file, int line, const char* func,
-                    const char* operation, int error) {
+net::Error LogError(const char* file,
+                    int line,
+                    const char* func,
+                    const net::BoundNetLog& bound_net_log,
+                    const char* operation,
+                    int error) {
   const char* err_string = "";
   net::Error net_error = net::OK;
 
@@ -62,6 +68,11 @@ net::Error LogError(const char* file, int line, const char* func,
 
   VLOG(1) << " " << func << "(): " << operation
           << "() returned error " << error << " (" << err_string << ")";
+
+  bound_net_log.AddEvent(
+      net::NetLog::TYPE_DOWNLOAD_FILE_ERROR,
+      make_scoped_refptr(
+          new download_net_logs::FileErrorParameters(operation, net_error)));
 
   return net_error;
 }
@@ -196,7 +207,8 @@ BaseFile::BaseFile(const FilePath& full_path,
                    int64 received_bytes,
                    bool calculate_hash,
                    const std::string& hash_state,
-                   const linked_ptr<net::FileStream>& file_stream)
+                   const linked_ptr<net::FileStream>& file_stream,
+                   const net::BoundNetLog& bound_net_log)
     : full_path_(full_path),
       source_url_(source_url),
       referrer_url_(referrer_url),
@@ -205,11 +217,14 @@ BaseFile::BaseFile(const FilePath& full_path,
       start_tick_(base::TimeTicks::Now()),
       power_save_blocker_(PowerSaveBlocker::kPowerSaveBlockPreventSystemSleep),
       calculate_hash_(calculate_hash),
-      detached_(false) {
+      detached_(false),
+      bound_net_log_(bound_net_log) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   memcpy(sha256_hash_, kEmptySha256Hash, kSha256HashLen);
-  if (file_stream_.get())
+  if (file_stream_.get()) {
+    file_stream_->SetBoundNetLogSource(bound_net_log_);
     file_stream_->EnableErrorStatistics();
+  }
 
   if (calculate_hash_) {
     secure_hash_.reset(crypto::SecureHash::Create(crypto::SecureHash::SHA256));
@@ -253,9 +268,17 @@ net::Error BaseFile::AppendDataToFile(const char* data, size_t data_len) {
 
   // NOTE(benwells): The above DCHECK won't be present in release builds,
   // so we log any occurences to see how common this error is in the wild.
-  if (detached_)
+  if (detached_) {
     download_stats::RecordDownloadCount(
         download_stats::APPEND_TO_DETACHED_FILE_COUNT);
+  }
+
+  if (bound_net_log_.IsLoggingAllEvents()) {
+    bound_net_log_.AddEvent(
+        net::NetLog::TYPE_DOWNLOAD_FILE_WRITTEN,
+        make_scoped_refptr(new net::NetLogIntegerParameter(
+            "byte_count", data_len)));
+  }
 
   if (!file_stream_.get())
     return LOG_ERROR("get", net::ERR_INVALID_HANDLE);
@@ -292,9 +315,8 @@ net::Error BaseFile::AppendDataToFile(const char* data, size_t data_len) {
     bytes_so_far_ += write_size;
   }
 
-  // TODO(ahendrickson) -- Uncomment these when the functions are available.
-   download_stats::RecordDownloadWriteSize(data_len);
-   download_stats::RecordDownloadWriteLoopCount(write_count);
+  download_stats::RecordDownloadWriteSize(data_len);
+  download_stats::RecordDownloadWriteLoopCount(write_count);
 
   if (calculate_hash_)
     secure_hash_->Update(data, data_len);
@@ -308,6 +330,12 @@ net::Error BaseFile::Rename(const FilePath& new_path) {
   // Save the information whether the download is in progress because
   // it will be overwritten by closing the file.
   bool saved_in_progress = in_progress();
+
+  bound_net_log_.AddEvent(
+      net::NetLog::TYPE_DOWNLOAD_FILE_RENAMED,
+      make_scoped_refptr(
+          new download_net_logs::FileRenamedParameters(
+              full_path_.AsUTF8Unsafe(), new_path.AsUTF8Unsafe())));
 
   // If the new path is same as the old one, there is no need to perform the
   // following renaming logic.
@@ -376,16 +404,22 @@ net::Error BaseFile::Rename(const FilePath& new_path) {
 
 void BaseFile::Detach() {
   detached_ = true;
+  bound_net_log_.AddEvent(net::NetLog::TYPE_DOWNLOAD_FILE_DETACHED, NULL);
 }
 
 void BaseFile::Cancel() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   DCHECK(!detached_);
 
+  bound_net_log_.AddEvent(net::NetLog::TYPE_CANCELLED, NULL);
+
   Close();
 
-  if (!full_path_.empty())
+  if (!full_path_.empty()) {
+    bound_net_log_.AddEvent(net::NetLog::TYPE_DOWNLOAD_FILE_DELETED, NULL);
+
     file_util::Delete(full_path_, false);
+  }
 }
 
 void BaseFile::Finish() {
@@ -449,13 +483,20 @@ void BaseFile::AnnotateWithSourceInformation() {
 }
 
 void BaseFile::CreateFileStream() {
-  file_stream_.reset(new net::FileStream(NULL));
+  file_stream_.reset(new net::FileStream(bound_net_log_.net_log()));
+  file_stream_->SetBoundNetLogSource(bound_net_log_);
 }
 
 net::Error BaseFile::Open() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   DCHECK(!detached_);
   DCHECK(!full_path_.empty());
+
+  bound_net_log_.BeginEvent(
+      net::NetLog::TYPE_DOWNLOAD_FILE_OPENED,
+      make_scoped_refptr(
+          new download_net_logs::FileOpenedParameters(
+              full_path_.AsUTF8Unsafe(), bytes_so_far_)));
 
   // Create a new file stream if it is not provided.
   if (!file_stream_.get()) {
@@ -464,28 +505,30 @@ net::Error BaseFile::Open() {
     int open_result = file_stream_->Open(
         full_path_,
         base::PLATFORM_FILE_OPEN_ALWAYS | base::PLATFORM_FILE_WRITE);
-    if (open_result != net::OK) {
-      file_stream_.reset();
-      return LOG_ERROR("Open", open_result);
-    }
+    if (open_result != net::OK)
+      return ClearStream(LOG_ERROR("Open", open_result));
 
     // We may be re-opening the file after rename. Always make sure we're
     // writing at the end of the file.
     int64 seek_result = file_stream_->Seek(net::FROM_END, 0);
-    if (seek_result < 0) {
-      file_stream_.reset();
-      return LOG_ERROR("Seek", seek_result);
-    }
+    if (seek_result < 0)
+      return ClearStream(LOG_ERROR("Seek", seek_result));
+  } else {
+    file_stream_->SetBoundNetLogSource(bound_net_log_);
   }
 
 #if defined(OS_WIN)
   AnnotateWithSourceInformation();
 #endif
+
   return net::OK;
 }
 
 void BaseFile::Close() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+
+  bound_net_log_.AddEvent(net::NetLog::TYPE_DOWNLOAD_FILE_CLOSED, NULL);
+
   if (file_stream_.get()) {
 #if defined(OS_CHROMEOS)
     // Currently we don't really care about the return value, since if it fails
@@ -493,8 +536,16 @@ void BaseFile::Close() {
     file_stream_->Flush();
 #endif
     file_stream_->Close();
-    file_stream_.reset();
+    ClearStream(net::OK);
   }
+}
+
+net::Error BaseFile::ClearStream(net::Error net_error) {
+  // This should only be called when we have a stream.
+  DCHECK(file_stream_.get() != NULL);
+  file_stream_.reset();
+  bound_net_log_.EndEvent(net::NetLog::TYPE_DOWNLOAD_FILE_OPENED, NULL);
+  return net_error;
 }
 
 std::string BaseFile::DebugString() const {

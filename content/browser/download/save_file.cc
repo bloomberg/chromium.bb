@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,7 +17,8 @@ SaveFile::SaveFile(const SaveFileCreateInfo* info, bool calculate_hash)
             0,
             calculate_hash,
             "",
-            linked_ptr<net::FileStream>()),
+            linked_ptr<net::FileStream>(),
+            net::BoundNetLog()),
       info_(info) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 

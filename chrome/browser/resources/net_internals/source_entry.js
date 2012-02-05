@@ -132,6 +132,16 @@ var SourceEntry = (function() {
         case LogSourceType.DNS_TRANSACTION:
           this.description_ = e.params.hostname;
           break;
+        case LogSourceType.DOWNLOAD:
+          switch (e.type) {
+            case LogEventType.DOWNLOAD_FILE_RENAMED:
+              this.description_ = e.params.new_filename;
+              break;
+            case LogEventType.DOWNLOAD_FILE_OPENED:
+              this.description_ = e.params.file_name;
+              break;
+          }
+          break;
         case LogSourceType.FILESTREAM:
           this.description_ = e.params.file_name;
           break;
@@ -164,6 +174,17 @@ var SourceEntry = (function() {
         if (e != undefined)
           return e;
       }
+      if (this.entries_[0].source.type == LogSourceType.DOWNLOAD) {
+        // If any rename occurred, use the last name
+        e = this.findLastLogEntryStartByType_(
+            LogEventType.DOWNLOAD_FILE_RENAMED);
+        if (e != undefined)
+          return e;
+        // Otherwise, if the file was opened, use that name
+        e = this.findLogEntryByType_(LogEventType.DOWNLOAD_FILE_OPENED);
+        if (e != undefined)
+          return e;
+      }
       if (this.entries_.length >= 2) {
         if (this.entries_[0].type == LogEventType.REQUEST_ALIVE ||
             this.entries_[0].type == LogEventType.SOCKET_POOL_CONNECT_JOB ||
@@ -182,6 +203,20 @@ var SourceEntry = (function() {
       for (var i = 0; i < this.entries_.length; ++i) {
         if (this.entries_[i].type == type) {
           return this.entries_[i];
+        }
+      }
+      return undefined;
+    },
+
+    /**
+     * Returns the last entry with the specified type, or undefined if not
+     * found.
+     */
+    findLastLogEntryStartByType_: function(type) {
+      for (var i = this.entries_.length - 1; i >= 0; --i) {
+        if (this.entries_[i].type == type) {
+          if (this.entries_[i].phase == LogEventPhase.PHASE_BEGIN)
+            return this.entries_[i];
         }
       }
       return undefined;

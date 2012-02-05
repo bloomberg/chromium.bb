@@ -87,6 +87,8 @@ PassiveLogCollector::PassiveLogCollector()
       &cert_verifier_job_tracker_;
   trackers_[net::NetLog::SOURCE_HTTP_PIPELINED_CONNECTION] =
       &http_pipelined_connection_tracker_;
+  trackers_[net::NetLog::SOURCE_DOWNLOAD] =
+      &download_tracker_;
   trackers_[net::NetLog::SOURCE_FILESTREAM] =
       &file_stream_tracker_;
   // Make sure our mapping is up-to-date.
@@ -848,18 +850,41 @@ PassiveLogCollector::HttpPipelinedConnectionTracker::DoAddEntry(
 }
 
 //----------------------------------------------------------------------------
+// DownloadTracker
+//----------------------------------------------------------------------------
+
+const size_t PassiveLogCollector::DownloadTracker::kMaxNumSources = 200;
+
+const size_t PassiveLogCollector::DownloadTracker::kMaxGraveyardSize = 50;
+
+PassiveLogCollector::DownloadTracker::DownloadTracker()
+    : SourceTracker(kMaxNumSources, kMaxGraveyardSize, NULL) {
+}
+
+PassiveLogCollector::SourceTracker::Action
+PassiveLogCollector::DownloadTracker::DoAddEntry(
+    const ChromeNetLog::Entry& entry,
+    SourceInfo* out_info) {
+  if (entry.type == net::NetLog::TYPE_DOWNLOAD_FILE_WRITTEN)
+    return ACTION_NONE;  // Don't passively log these (too many).
+  AddEntryToSourceInfo(entry, out_info);
+  if (entry.type == net::NetLog::TYPE_DOWNLOAD_FILE_OPENED &&
+      entry.phase == net::NetLog::PHASE_END) {
+    return ACTION_MOVE_TO_GRAVEYARD;
+  }
+  return ACTION_NONE;
+}
+
+//----------------------------------------------------------------------------
 // FileStreamTracker
 //----------------------------------------------------------------------------
 
-const size_t
-PassiveLogCollector::FileStreamTracker::kMaxNumSources = 100;
+const size_t PassiveLogCollector::FileStreamTracker::kMaxNumSources = 100;
 
-const size_t
-PassiveLogCollector::FileStreamTracker::kMaxGraveyardSize = 25;
+const size_t PassiveLogCollector::FileStreamTracker::kMaxGraveyardSize = 25;
 
-PassiveLogCollector::
-    FileStreamTracker::FileStreamTracker()
-        : SourceTracker(kMaxNumSources, kMaxGraveyardSize, NULL) {
+PassiveLogCollector::FileStreamTracker::FileStreamTracker()
+    : SourceTracker(kMaxNumSources, kMaxGraveyardSize, NULL) {
 }
 
 PassiveLogCollector::SourceTracker::Action
