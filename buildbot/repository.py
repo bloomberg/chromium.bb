@@ -101,11 +101,17 @@ class RepoRepository(object):
   _INIT_CMD = ['repo', 'init', '--repo-url', constants.REPO_URL]
 
   def __init__(self, repo_url, directory, branch=None, stable_sync=False,
-               referenced_repo=None, manifest=None):
+               referenced_repo=None, manifest=None, depth=None):
     self.repo_url = repo_url
     self.directory = directory
     self.branch = branch
     self._stable_sync = stable_sync
+
+    # It's perfectly acceptable to pass in a reference pathway that isn't
+    # usable.  Detect it, and suppress the setting so that any depth
+    # settings aren't disabled due to it.
+    if referenced_repo is not None and not IsARepoRoot(referenced_repo):
+      referenced_repo = None
     self._referenced_repo = referenced_repo
     self._manifest = manifest
     self._initialized = IsARepoRoot(self.directory)
@@ -113,6 +119,13 @@ class RepoRepository(object):
     if not self._initialized and InARepoRepository(self.directory, False):
       raise ValueError('Given directory %s is not the root of a repository.'
                        % self.directory)
+
+    if depth is not None:
+      depth = int(depth)
+      if referenced_repo is not None or self._initialized:
+        # Depth can only be enforced during initialization.
+        depth = None
+    self._depth = depth
 
   def Initialize(self, extra_args=(), force=False):
     """Initializes a repository."""
@@ -125,12 +138,18 @@ class RepoRepository(object):
       init_cmd.extend(['--reference', self._referenced_repo])
     if self._manifest:
       init_cmd.extend(['--manifest-name', self._manifest])
+    if self._depth is not None:
+      init_cmd.extend(['--depth', str(self._depth)])
     init_cmd.extend(extra_args)
 
     # Handle branch / manifest options.
     if self.branch: init_cmd.extend(['--manifest-branch', self.branch])
     cros_lib.RunCommand(init_cmd, cwd=self.directory, input='\n\ny\n')
     self._initialized = True
+
+  @property
+  def _ManifestConfig(self):
+    return os.path.join(self.directory, '.repo', 'manifests.git', 'config')
 
   def _EnsureMirroring(self, post_sync=False):
     """Ensure git is usable from w/in the chroot if --references is enabled
@@ -171,10 +190,8 @@ class RepoRepository(object):
     # that it was invoked w/out the reference arg.  Note this must be
     # an absolute path to the source repo- enter_chroot uses that to know
     # what to bind mount into the chroot.
-    cros_lib.RunCommand(['git', 'config', '--file',
-                         '.repo/manifests.git/config',
-                         'repo.reference', self._referenced_repo],
-                         cwd=self.directory)
+    cros_lib.RunCommand(['git', 'config', '--file', self._ManifestConfig,
+                         'repo.reference', self._referenced_repo])
 
   def _ReinitializeIfNecessary(self, local_manifest):
     """Reinitializes the repository if the manifest has changed."""

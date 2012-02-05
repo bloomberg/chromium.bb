@@ -81,7 +81,7 @@ class HelperMethodsTest(unittest.TestCase):
 
     repo = repository.RepoRepository(constants.MANIFEST_URL, self.tmpdir,
                                      referenced_repo=constants.SOURCE_ROOT,
-                                     manifest='minilayout.xml')
+                                     manifest='minilayout.xml', depth=1)
     repo.Sync()
 
     git_dir = os.path.join(self.tmpdir, GIT_TEST_PATH)
@@ -100,7 +100,8 @@ class HelperMethodsTest(unittest.TestCase):
     git_dir = tempfile.mktemp('manifest_dir')
     manifest_versions_url = cbuildbot_config.GetManifestVersionsRepoUrl(
         internal_build=False, read_only=True)
-    cros_lib.RunCommand(['git', 'clone', manifest_versions_url, git_dir])
+    cros_lib.RunCommand(['git', 'clone', manifest_versions_url, git_dir,
+                        '--depth', '1'])
     try:
       manifest_version.PrepForChanges(git_dir, dry_run=False)
 
