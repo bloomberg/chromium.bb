@@ -230,19 +230,19 @@ const char kInvalidIncognitoBehavior[] =
 const char kInvalidInputComponents[] =
     "Invalid value for 'input_components'";
 const char kInvalidInputComponentDescription[] =
-    "Invalid value for 'input_conponents[*].description";
+    "Invalid value for 'input_components[*].description";
 const char kInvalidInputComponentLayoutName[] =
-    "Invalid value for 'input_conponents[*].layouts[*]";
+    "Invalid value for 'input_components[*].layouts[*]";
 const char kInvalidInputComponentLayouts[] =
-    "Invalid value for 'input_conponents[*].layouts";
+    "Invalid value for 'input_components[*].layouts";
 const char kInvalidInputComponentName[] =
-    "Invalid value for 'input_conponents[*].name";
+    "Invalid value for 'input_components[*].name";
 const char kInvalidInputComponentShortcutKey[] =
-    "Invalid value for 'input_conponents[*].shortcutKey";
+    "Invalid value for 'input_components[*].shortcutKey";
 const char kInvalidInputComponentShortcutKeycode[] =
-    "Invalid value for 'input_conponents[*].shortcutKey.keyCode";
+    "Invalid value for 'input_components[*].shortcutKey.keyCode";
 const char kInvalidInputComponentType[] =
-    "Invalid value for 'input_conponents[*].type";
+    "Invalid value for 'input_components[*].type";
 const char kInvalidIntent[] =
     "Invalid value for intents[*]";
 const char kInvalidIntentDisposition[] =
