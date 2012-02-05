@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/views/examples/examples_main.h"
+#include "ui/views/examples/examples_window.h"
 
 #include "base/at_exit.h"
 #include "base/command_line.h"
@@ -40,6 +40,7 @@
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/widget/widget.h"
+#include "ui/views/widget/widget_delegate.h"
 
 #if !defined(USE_AURA)
 #include "ui/views/examples/menu_example.h"
