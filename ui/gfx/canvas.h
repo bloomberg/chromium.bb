@@ -120,13 +120,13 @@ class UI_EXPORT Canvas {
   // Draws a single pixel rect in the specified region with the specified
   // color, using a transfer mode of SkXfermode::kSrcOver_Mode.
   //
-  // NOTE: if you need a single pixel line, use DrawLineInt.
+  // NOTE: if you need a single pixel line, use DrawLine.
   virtual void DrawRect(const gfx::Rect& rect, const SkColor& color) = 0;
 
   // Draws a single pixel rect in the specified region with the specified
   // color and transfer mode.
   //
-  // NOTE: if you need a single pixel line, use DrawLineInt.
+  // NOTE: if you need a single pixel line, use DrawLine.
   virtual void DrawRect(const gfx::Rect& rect,
                         const SkColor& color,
                         SkXfermode::Mode mode) = 0;
@@ -135,9 +135,9 @@ class UI_EXPORT Canvas {
   virtual void DrawRect(const gfx::Rect& rect, const SkPaint& paint) = 0;
 
   // Draws a single pixel line with the specified color.
-  virtual void DrawLineInt(const SkColor& color,
-                           int x1, int y1,
-                           int x2, int y2) = 0;
+  virtual void DrawLine(const gfx::Point& p1,
+                        const gfx::Point& p2,
+                        const SkColor& color) = 0;
 
   // Draws a bitmap with the origin at the specified location. The upper left
   // corner of the bitmap is rendered at the specified location.

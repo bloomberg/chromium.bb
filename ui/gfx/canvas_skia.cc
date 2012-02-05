@@ -183,14 +183,14 @@ void CanvasSkia::DrawRect(const gfx::Rect& rect, const SkPaint& paint) {
   canvas_->drawIRect(RectToSkIRect(rect), paint);
 }
 
-void CanvasSkia::DrawLineInt(const SkColor& color,
-                             int x1, int y1,
-                             int x2, int y2) {
+void CanvasSkia::DrawLine(const gfx::Point& p1,
+                          const gfx::Point& p2,
+                          const SkColor& color) {
   SkPaint paint;
   paint.setColor(color);
   paint.setStrokeWidth(SkIntToScalar(1));
-  canvas_->drawLine(SkIntToScalar(x1), SkIntToScalar(y1), SkIntToScalar(x2),
-                    SkIntToScalar(y2), paint);
+  canvas_->drawLine(SkIntToScalar(p1.x()), SkIntToScalar(p1.y()),
+                    SkIntToScalar(p2.x()), SkIntToScalar(p2.y()), paint);
 }
 
 void CanvasSkia::DrawFocusRect(const gfx::Rect& rect) {

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -78,13 +78,15 @@ gfx::Image GetAvatarIconForTitleBar(const gfx::Image& image,
   SkColor highlight_color = SkColorSetARGB(128, 255, 255, 255);
   SkColor shadow_color = SkColorSetARGB(83, 0, 0, 0);
   // Bottom highlight.
-  canvas.DrawLineInt(highlight_color, x1, y2 - 1, x2, y2 - 1);
+  canvas.DrawLine(gfx::Point(x1, y2 - 1), gfx::Point(x2, y2 - 1),
+                  highlight_color);
   // Top shadow.
-  canvas.DrawLineInt(shadow_color, x1, y1, x2, y1);
+  canvas.DrawLine(gfx::Point(x1, y1), gfx::Point(x2, y1), shadow_color);
   // Left shadow.
-  canvas.DrawLineInt(shadow_color, x1, y1 + 1, x1, y2 - 1);
+  canvas.DrawLine(gfx::Point(x1, y1 + 1), gfx::Point(x1, y2 - 1), shadow_color);
   // Right shadow.
-  canvas.DrawLineInt(shadow_color, x2 - 1, y1 + 1, x2 - 1, y2 - 1);
+  canvas.DrawLine(gfx::Point(x2 - 1, y1 + 1), gfx::Point(x2 - 1, y2 - 1),
+                  shadow_color);
 
   return gfx::Image(new SkBitmap(canvas.ExtractBitmap()));
 }

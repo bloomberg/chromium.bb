@@ -1,6 +1,6 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.  Use of this
-// source code is governed by a BSD-style license that can be found in the
-// LICENSE file.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 #include "chrome/browser/chromeos/panels/panel_scroller_container.h"
 
@@ -26,5 +26,5 @@ void PanelScrollerContainer::Layout() {
 }
 
 void PanelScrollerContainer::OnPaint(gfx::Canvas* canvas) {
-  canvas->DrawLineInt(0xFF000080, 0, 0, size().width(), size().height());
+  canvas->DrawLine(gfx::Point(), gfx::Point(width(), height()), 0xFF000080);
 }

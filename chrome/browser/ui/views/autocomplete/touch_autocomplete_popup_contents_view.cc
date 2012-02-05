@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -95,8 +95,8 @@ void TouchAutocompletePopupContentsView::PaintResultViews(
   gfx::Rect bounds(GetContentsBounds());
   for (std::vector<View*>::const_iterator i(visible_children.begin() + 1);
        i != visible_children.end(); ++i) {
-    canvas->DrawLineInt(color, (*i)->x(), bounds.y(), (*i)->x(),
-                        bounds.bottom());
+    canvas->DrawLine(gfx::Point((*i)->x(), bounds.y()),
+                     gfx::Point((*i)->x(), bounds.bottom()), color);
   }
 }
 

@@ -17,8 +17,6 @@ class SkBitmap;
 
 namespace gfx {
 
-class Canvas;
-
 // CanvasSkia is a SkCanvas wrapper that provides a number of methods for
 // common operations used throughout an application built using base/gfx.
 //
@@ -116,9 +114,9 @@ class UI_EXPORT CanvasSkia : public Canvas {
                         const SkColor& color,
                         SkXfermode::Mode mode) OVERRIDE;
   virtual void DrawRect(const gfx::Rect& rect, const SkPaint& paint) OVERRIDE;
-  virtual void DrawLineInt(const SkColor& color,
-                           int x1, int y1,
-                           int x2, int y2) OVERRIDE;
+  virtual void DrawLine(const gfx::Point& p1,
+                        const gfx::Point& p2,
+                        const SkColor& color) OVERRIDE;
   virtual void DrawBitmapInt(const SkBitmap& bitmap, int x, int y) OVERRIDE;
   virtual void DrawBitmapInt(const SkBitmap& bitmap,
                              int x, int y,

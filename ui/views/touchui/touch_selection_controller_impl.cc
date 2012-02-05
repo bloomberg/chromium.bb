@@ -119,8 +119,9 @@ class TouchSelectionControllerImpl::SelectionHandleView : public View {
                      kSelectionHandleRadius + kSelectionHandleCursorHeight),
                      kSelectionHandleColor};
     PaintCircle(circle, canvas);
-    canvas->DrawLineInt(kSelectionHandleColor, kSelectionHandleRadius, 0,
-                        kSelectionHandleRadius, kSelectionHandleCursorHeight);
+    canvas->DrawLine(gfx::Point(kSelectionHandleRadius, 0),
+        gfx::Point(kSelectionHandleRadius, kSelectionHandleCursorHeight),
+        kSelectionHandleColor);
   }
 
   virtual bool OnMousePressed(const MouseEvent& event) OVERRIDE {

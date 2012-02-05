@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,7 +13,8 @@ namespace views {
 static const SkColor kSeparatorColor = SkColorSetARGB(50, 00, 00, 00);
 
 void MenuSeparator::OnPaint(gfx::Canvas* canvas) {
-  canvas->DrawLineInt(kSeparatorColor, 0, height() / 2, width(), height() / 2);
+  const int y = height() / 2;
+  canvas->DrawLine(gfx::Point(0, y), gfx::Point(width(), y), kSeparatorColor);
 }
 
 gfx::Size MenuSeparator::GetPreferredSize() {
