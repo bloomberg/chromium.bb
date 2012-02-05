@@ -137,6 +137,7 @@ class WEBKIT_GLUE_EXPORT WebKitPlatformSupportImpl :
 
   void SuspendSharedTimer();
   void ResumeSharedTimer();
+  virtual void OnStartSharedTimer(base::TimeDelta delay) {}
 
   virtual void didStartWorkerRunLoop(
       const WebKit::WebWorkerRunLoop& runLoop) OVERRIDE;

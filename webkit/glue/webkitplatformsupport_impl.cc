@@ -561,6 +561,7 @@ void WebKitPlatformSupportImpl::setSharedTimerFireInterval(
   shared_timer_.Stop();
   shared_timer_.Start(FROM_HERE, base::TimeDelta::FromMicroseconds(interval),
                       this, &WebKitPlatformSupportImpl::DoTimeout);
+  OnStartSharedTimer(base::TimeDelta::FromMicroseconds(interval));
 }
 
 void WebKitPlatformSupportImpl::stopSharedTimer() {
@@ -699,7 +700,7 @@ void WebKitPlatformSupportImpl::ResumeSharedTimer() {
   // The shared timer may have fired or been adjusted while we were suspended.
   if (--shared_timer_suspended_ == 0 && !shared_timer_.IsRunning()) {
     setSharedTimerFireInterval(
-        monotonicallyIncreasingTime() - shared_timer_fire_time_);
+        shared_timer_fire_time_ - monotonicallyIncreasingTime());
   }
 }
 
