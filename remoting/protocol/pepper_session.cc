@@ -278,7 +278,7 @@ void PepperSession::ProcessTransportInfo(const JingleMessage& message) {
       LOG(WARNING) << "Received candidate for unknown channel " << it->name();
       continue;
     }
-    channel->second->AddRemoveCandidate(*it);
+    channel->second->AddRemoteCandidate(*it);
   }
 }
 

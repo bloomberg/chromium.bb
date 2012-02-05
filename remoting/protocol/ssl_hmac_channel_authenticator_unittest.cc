@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,6 +18,7 @@
 #include "third_party/libjingle/source/talk/xmllite/xmlelement.h"
 
 using testing::_;
+using testing::NotNull;
 using testing::SaveArg;
 
 namespace remoting {
@@ -71,32 +72,36 @@ class SslHmacChannelAuthenticatorTest : public testing::Test {
     client_fake_socket_->PairWith(host_fake_socket_.get());
 
     client_auth_->SecureAndAuthenticate(
-        client_fake_socket_.release(),
-        base::Bind(&MockChannelDoneCallback::OnDone,
-                   base::Unretained(&client_callback_)));
+        client_fake_socket_.PassAs<net::StreamSocket>(),
+        base::Bind(&SslHmacChannelAuthenticatorTest::OnClientConnected,
+                   base::Unretained(this)));
 
     host_auth_->SecureAndAuthenticate(
-        host_fake_socket_.release(),
-        base::Bind(&MockChannelDoneCallback::OnDone,
-                   base::Unretained(&host_callback_)));
-
-    net::StreamSocket* client_socket = NULL;
-    net::StreamSocket* host_socket = NULL;
+        host_fake_socket_.PassAs<net::StreamSocket>(),
+        base::Bind(&SslHmacChannelAuthenticatorTest::OnHostConnected,
+                   base::Unretained(this)));
 
     if (expected_fail) {
       EXPECT_CALL(client_callback_, OnDone(net::ERR_FAILED, NULL));
       EXPECT_CALL(host_callback_, OnDone(net::ERR_FAILED, NULL));
     } else {
-      EXPECT_CALL(client_callback_, OnDone(net::OK, _))
-          .WillOnce(SaveArg<1>(&client_socket));
-      EXPECT_CALL(host_callback_, OnDone(net::OK, _))
-          .WillOnce(SaveArg<1>(&host_socket));
+      EXPECT_CALL(client_callback_, OnDone(net::OK, NotNull()));
+      EXPECT_CALL(host_callback_, OnDone(net::OK, NotNull()));
     }
 
     message_loop_.RunAllPending();
+  }
 
-    client_socket_.reset(client_socket);
-    host_socket_.reset(host_socket);
+  void OnHostConnected(net::Error error,
+                       scoped_ptr<net::StreamSocket> socket) {
+    host_callback_.OnDone(error, socket.get());
+    host_socket_ = socket.Pass();
+  }
+
+  void OnClientConnected(net::Error error,
+                         scoped_ptr<net::StreamSocket> socket) {
+    client_callback_.OnDone(error, socket.get());
+    client_socket_ = socket.Pass();
   }
 
   MessageLoop message_loop_;

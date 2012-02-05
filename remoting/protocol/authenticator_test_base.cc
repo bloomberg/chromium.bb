@@ -91,14 +91,14 @@ void AuthenticatorTestBase::RunChannelAuth(bool expected_fail) {
   client_fake_socket_->PairWith(host_fake_socket_.get());
 
   client_auth_->SecureAndAuthenticate(
-      client_fake_socket_.release(),
-      base::Bind(&MockChannelDoneCallback::OnDone,
-                 base::Unretained(&client_callback_)));
+      client_fake_socket_.PassAs<net::StreamSocket>(),
+      base::Bind(&AuthenticatorTestBase::OnClientConnected,
+                 base::Unretained(this)));
 
   host_auth_->SecureAndAuthenticate(
-      host_fake_socket_.release(),
-      base::Bind(&MockChannelDoneCallback::OnDone,
-                 base::Unretained(&host_callback_)));
+      host_fake_socket_.PassAs<net::StreamSocket>(),
+      base::Bind(&AuthenticatorTestBase::OnHostConnected,
+                 base::Unretained(this)));
 
   net::StreamSocket* client_socket = NULL;
   net::StreamSocket* host_socket = NULL;
@@ -119,6 +119,20 @@ void AuthenticatorTestBase::RunChannelAuth(bool expected_fail) {
 
   client_socket_.reset(client_socket);
   host_socket_.reset(host_socket);
+}
+
+void AuthenticatorTestBase::OnHostConnected(
+    net::Error error,
+    scoped_ptr<net::StreamSocket> socket) {
+  host_callback_.OnDone(error, socket.get());
+  host_socket_ = socket.Pass();
+}
+
+void AuthenticatorTestBase::OnClientConnected(
+    net::Error error,
+    scoped_ptr<net::StreamSocket> socket) {
+  client_callback_.OnDone(error, socket.get());
+  client_socket_ = socket.Pass();
 }
 
 }  // namespace protocol

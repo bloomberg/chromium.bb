@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -38,7 +38,7 @@ class PepperStreamChannel : public PepperChannel,
   virtual void Connect(pp::Instance* pp_instance,
                        const TransportConfig& transport_config,
                        scoped_ptr<ChannelAuthenticator> authenticator) OVERRIDE;
-  virtual void AddRemoveCandidate(const cricket::Candidate& candidate) OVERRIDE;
+  virtual void AddRemoteCandidate(const cricket::Candidate& candidate) OVERRIDE;
   virtual const std::string& name() const OVERRIDE;
   virtual bool is_connected() const OVERRIDE;
 
@@ -49,9 +49,10 @@ class PepperStreamChannel : public PepperChannel,
 
  private:
   void OnP2PConnect(int result);
-  void OnAuthenticationDone(net::Error error, net::StreamSocket* socket);
+  void OnAuthenticationDone(net::Error error,
+                            scoped_ptr<net::StreamSocket> socket);
 
-  void NotifyConnected(net::StreamSocket* socket);
+  void NotifyConnected(scoped_ptr<net::StreamSocket> socket);
   void NotifyConnectFailed();
 
   PepperSession* session_;

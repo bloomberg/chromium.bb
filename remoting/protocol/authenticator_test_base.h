@@ -44,6 +44,11 @@ class AuthenticatorTestBase : public testing::Test {
   void RunAuthExchange();
   void RunChannelAuth(bool expected_fail);
 
+  void OnHostConnected(net::Error error,
+                       scoped_ptr<net::StreamSocket> socket);
+  void OnClientConnected(net::Error error,
+                         scoped_ptr<net::StreamSocket> socket);
+
   MessageLoop message_loop_;
 
   scoped_ptr<crypto::RSAPrivateKey> private_key_;

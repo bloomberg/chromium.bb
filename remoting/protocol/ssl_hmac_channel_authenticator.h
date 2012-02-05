@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -62,7 +62,8 @@ class SslHmacChannelAuthenticator : public ChannelAuthenticator,
 
   // ChannelAuthenticator interface.
   virtual void SecureAndAuthenticate(
-      net::StreamSocket* socket, const DoneCallback& done_callback) OVERRIDE;
+      scoped_ptr<net::StreamSocket> socket,
+      const DoneCallback& done_callback) OVERRIDE;
 
  private:
   SslHmacChannelAuthenticator(const std::string& auth_key);
@@ -81,6 +82,7 @@ class SslHmacChannelAuthenticator : public ChannelAuthenticator,
   bool VerifyAuthBytes(const std::string& received_auth_bytes);
 
   void CheckDone(bool* callback_called);
+  void NotifyError(int error);
 
   // The mutual secret used for authentication.
   std::string auth_key_;

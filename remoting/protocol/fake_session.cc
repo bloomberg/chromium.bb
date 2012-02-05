@@ -253,16 +253,16 @@ Session::Error FakeSession::error() {
 
 void FakeSession::CreateStreamChannel(
     const std::string& name, const StreamChannelCallback& callback) {
-  FakeSocket* channel = new FakeSocket();
-  stream_channels_[name] = channel;
-  callback.Run(channel);
+  scoped_ptr<FakeSocket> channel(new FakeSocket());
+  stream_channels_[name] = channel.get();
+  callback.Run(channel.PassAs<net::StreamSocket>());
 }
 
 void FakeSession::CreateDatagramChannel(
     const std::string& name, const DatagramChannelCallback& callback) {
-  FakeUdpSocket* channel = new FakeUdpSocket();
-  datagram_channels_[name] = channel;
-  callback.Run(channel);
+  scoped_ptr<FakeUdpSocket> channel(new FakeUdpSocket());
+  datagram_channels_[name] = channel.get();
+  callback.Run(channel.PassAs<net::Socket>());
 }
 
 void FakeSession::CancelChannelCreation(const std::string& name) {

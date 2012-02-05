@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -31,13 +31,14 @@ void ChannelDispatcherBase::Init(Session* session,
       &ChannelDispatcherBase::OnChannelReady, base::Unretained(this)));
 }
 
-void ChannelDispatcherBase::OnChannelReady(net::StreamSocket* socket) {
-  if (!socket) {
+void ChannelDispatcherBase::OnChannelReady(
+    scoped_ptr<net::StreamSocket> socket) {
+  if (!socket.get()) {
     initialized_callback_.Run(false);
     return;
   }
 
-  channel_.reset(socket);
+  channel_ = socket.Pass();
 
   OnInitialized();
 

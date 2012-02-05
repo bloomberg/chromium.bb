@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -60,8 +60,8 @@ bool RtpVideoReader::is_connected() {
   return rtp_channel_.get() && rtcp_channel_.get();
 }
 
-void RtpVideoReader::OnChannelReady(bool rtp, net::Socket* socket) {
-  if (!socket) {
+void RtpVideoReader::OnChannelReady(bool rtp, scoped_ptr<net::Socket> socket) {
+  if (!socket.get()) {
     if (!initialized_) {
       initialized_ = true;
       initialized_callback_.Run(false);
@@ -71,13 +71,14 @@ void RtpVideoReader::OnChannelReady(bool rtp, net::Socket* socket) {
 
   if (rtp) {
     DCHECK(!rtp_channel_.get());
-    rtp_channel_.reset(socket);
-    rtp_reader_.Init(socket, base::Bind(&RtpVideoReader::OnRtpPacket,
-                                        base::Unretained(this)));
+    rtp_channel_ = socket.Pass();
+    rtp_reader_.Init(rtp_channel_.get(),
+                     base::Bind(&RtpVideoReader::OnRtpPacket,
+                                base::Unretained(this)));
   } else {
     DCHECK(!rtcp_channel_.get());
-    rtcp_channel_.reset(socket);
-    rtcp_writer_.Init(socket);
+    rtcp_channel_ = socket.Pass();
+    rtcp_writer_.Init(rtcp_channel_.get());
   }
 
   if (rtp_channel_.get() && rtcp_channel_.get()) {

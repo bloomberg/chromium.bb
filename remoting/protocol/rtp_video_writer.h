@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -35,7 +35,7 @@ class RtpVideoWriter : public VideoWriter {
   virtual int GetPendingPackets() OVERRIDE;
 
  private:
-  void OnChannelReady(bool rtp, net::Socket* socket);
+  void OnChannelReady(bool rtp, scoped_ptr<net::Socket> socket);
 
   Session* session_;
 

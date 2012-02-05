@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -40,16 +40,16 @@ bool ProtobufVideoReader::is_connected() {
   return channel_.get() != NULL;
 }
 
-void ProtobufVideoReader::OnChannelReady(net::StreamSocket* socket) {
-  if (!socket) {
+void ProtobufVideoReader::OnChannelReady(scoped_ptr<net::StreamSocket> socket) {
+  if (!socket.get()) {
     initialized_callback_.Run(false);
     return;
   }
 
   DCHECK(!channel_.get());
-  channel_.reset(socket);
-  reader_.Init(socket, base::Bind(&ProtobufVideoReader::OnNewData,
-                                  base::Unretained(this)));
+  channel_ = socket.Pass();
+  reader_.Init(channel_.get(), base::Bind(&ProtobufVideoReader::OnNewData,
+                                          base::Unretained(this)));
   initialized_callback_.Run(true);
 }
 

@@ -19,13 +19,14 @@ class FakeChannelAuthenticator : public ChannelAuthenticator {
 
   // ChannelAuthenticator interface.
   virtual void SecureAndAuthenticate(
-      net::StreamSocket* socket, const DoneCallback& done_callback) OVERRIDE;
+      scoped_ptr<net::StreamSocket> socket,
+      const DoneCallback& done_callback) OVERRIDE;
 
  private:
   void CallCallback(
       const DoneCallback& done_callback,
       net::Error error,
-      net::StreamSocket* socket);
+      scoped_ptr<net::StreamSocket> socket);
 
   bool accept_;
   bool async_;

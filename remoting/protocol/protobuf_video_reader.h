@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -31,7 +31,7 @@ class ProtobufVideoReader : public VideoReader {
   virtual bool is_connected() OVERRIDE;
 
  private:
-  void OnChannelReady(net::StreamSocket* socket);
+  void OnChannelReady(scoped_ptr<net::StreamSocket> socket);
   void OnNewData(VideoPacket* packet, const base::Closure& done_task);
 
   Session* session_;

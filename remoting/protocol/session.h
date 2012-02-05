@@ -78,8 +78,10 @@ class Session : public base::NonThreadSafe {
 
   // TODO(sergeyu): Specify connection error code when channel
   // connection fails.
-  typedef base::Callback<void(net::StreamSocket*)> StreamChannelCallback;
-  typedef base::Callback<void(net::Socket*)> DatagramChannelCallback;
+  typedef base::Callback<void(scoped_ptr<net::StreamSocket>)>
+      StreamChannelCallback;
+  typedef base::Callback<void(scoped_ptr<net::Socket>)>
+      DatagramChannelCallback;
 
   Session() { }
   virtual ~Session() { }
@@ -98,10 +100,9 @@ class Session : public base::NonThreadSafe {
   // Creates new channels for this connection. The specified callback
   // is called when then new channel is created and connected. The
   // callback is called with NULL if connection failed for any reason.
-  // Ownership of the channel socket is given to the caller when the
-  // callback is called. All channels must be destroyed before the
-  // session is destroyed. Can be called only when in CONNECTING,
-  // CONNECTED or AUTHENTICATED states.
+  // All channels must be destroyed before the session is
+  // destroyed. Can be called only when in CONNECTING, CONNECTED or
+  // AUTHENTICATED states.
   virtual void CreateStreamChannel(
       const std::string& name, const StreamChannelCallback& callback) = 0;
   virtual void CreateDatagramChannel(

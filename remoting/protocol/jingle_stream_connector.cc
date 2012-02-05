@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -104,27 +104,27 @@ void JingleStreamConnector::OnTCPConnect(int result) {
     return;
   }
 
-  authenticator_->SecureAndAuthenticate(tcp_socket_.release(), base::Bind(
+  authenticator_->SecureAndAuthenticate(tcp_socket_.Pass(), base::Bind(
       &JingleStreamConnector::OnAuthenticationDone, base::Unretained(this)));
 }
 
 void JingleStreamConnector::OnAuthenticationDone(
-    net::Error error, net::StreamSocket* socket) {
+    net::Error error, scoped_ptr<net::StreamSocket> socket) {
   if (error != net::OK) {
     NotifyError();
   } else {
-    NotifyDone(socket);
+    NotifyDone(socket.Pass());
   }
 }
 
-void JingleStreamConnector::NotifyDone(net::StreamSocket* socket) {
+void JingleStreamConnector::NotifyDone(scoped_ptr<net::StreamSocket> socket) {
   session_->OnChannelConnectorFinished(name_, this);
-  callback_.Run(socket);
+  callback_.Run(socket.Pass());
   delete this;
 }
 
 void JingleStreamConnector::NotifyError() {
-  NotifyDone(NULL);
+  NotifyDone(scoped_ptr<net::StreamSocket>(NULL));
 }
 
 }  // namespace protocol

@@ -105,6 +105,16 @@ class JingleSessionTest : public testing::Test {
     session->set_config(SessionConfig::GetDefault());
   }
 
+  void OnClientChannelCreated(scoped_ptr<net::StreamSocket> socket) {
+    client_channel_callback_.OnDone(socket.get());
+    client_socket_ = socket.Pass();
+  }
+
+  void OnHostChannelCreated(scoped_ptr<net::StreamSocket> socket) {
+    host_channel_callback_.OnDone(socket.get());
+    host_socket_ = socket.Pass();
+  }
+
  protected:
   virtual void SetUp() {
   }
@@ -236,32 +246,17 @@ class JingleSessionTest : public testing::Test {
   }
 
   void CreateChannel() {
-    MockStreamChannelCallback client_callback;
-    MockStreamChannelCallback host_callback;
-
     client_session_->CreateStreamChannel(kChannelName, base::Bind(
-        &MockStreamChannelCallback::OnDone,
-        base::Unretained(&host_callback)));
+        &JingleSessionTest::OnClientChannelCreated, base::Unretained(this)));
     host_session_->CreateStreamChannel(kChannelName, base::Bind(
-        &MockStreamChannelCallback::OnDone,
-        base::Unretained(&client_callback)));
+        &JingleSessionTest::OnHostChannelCreated, base::Unretained(this)));
 
     int counter = 2;
-    net::StreamSocket* client_socket = NULL;
-    net::StreamSocket* host_socket = NULL;
-    EXPECT_CALL(client_callback, OnDone(_))
-        .WillOnce(DoAll(SaveArg<0>(&client_socket),
-                        QuitThreadOnCounter(&counter)));
-    EXPECT_CALL(host_callback, OnDone(_))
-        .WillOnce(DoAll(SaveArg<0>(&host_socket),
-                        QuitThreadOnCounter(&counter)));
+    EXPECT_CALL(client_channel_callback_, OnDone(_))
+        .WillOnce(QuitThreadOnCounter(&counter));
+    EXPECT_CALL(host_channel_callback_, OnDone(_))
+        .WillOnce(QuitThreadOnCounter(&counter));
     message_loop_.Run();
-
-    ASSERT_TRUE(client_socket != NULL);
-    ASSERT_TRUE(host_socket != NULL);
-
-    client_socket_.reset(client_socket);
-    host_socket_.reset(host_socket);
   }
 
   JingleThreadMessageLoop message_loop_;
@@ -278,6 +273,9 @@ class JingleSessionTest : public testing::Test {
   MockSessionCallback host_connection_callback_;
   scoped_ptr<Session> client_session_;
   MockSessionCallback client_connection_callback_;
+
+  MockStreamChannelCallback client_channel_callback_;
+  MockStreamChannelCallback host_channel_callback_;
 
   scoped_ptr<net::StreamSocket> client_socket_;
   scoped_ptr<net::StreamSocket> host_socket_;
@@ -347,20 +345,14 @@ TEST_F(JingleSessionTest, ConnectWithBadChannelAuth) {
   ASSERT_NO_FATAL_FAILURE(
       InitiateConnection(1, FakeAuthenticator::ACCEPT, false));
 
-  MockStreamChannelCallback client_callback;
-  MockStreamChannelCallback host_callback;
-
   client_session_->CreateStreamChannel(kChannelName, base::Bind(
-      &MockStreamChannelCallback::OnDone,
-      base::Unretained(&client_callback)));
+      &JingleSessionTest::OnClientChannelCreated, base::Unretained(this)));
   host_session_->CreateStreamChannel(kChannelName, base::Bind(
-      &MockStreamChannelCallback::OnDone,
-      base::Unretained(&host_callback)));
+      &JingleSessionTest::OnHostChannelCreated, base::Unretained(this)));
 
-  EXPECT_CALL(client_callback, OnDone(_))
-      .Times(AtMost(1))
-      .WillOnce(DeleteArg<0>());
-  EXPECT_CALL(host_callback, OnDone(NULL))
+  EXPECT_CALL(client_channel_callback_, OnDone(_))
+      .Times(AtMost(1));
+  EXPECT_CALL(host_channel_callback_, OnDone(NULL))
       .WillOnce(QuitThread());
 
   message_loop_.Run();
@@ -394,47 +386,6 @@ TEST_F(JingleSessionTest, TestMultistepAuthTcpChannel) {
 
   StreamConnectionTester tester(host_socket_.get(), client_socket_.get(),
                                 kMessageSize, kMessages);
-  tester.Start();
-  message_loop_.Run();
-  tester.CheckResults();
-}
-
-// Verify that data can be transmitted over the video RTP channel.
-TEST_F(JingleSessionTest, TestUdpChannel) {
-  CreateSessionManagers(1, FakeAuthenticator::ACCEPT);
-  ASSERT_NO_FATAL_FAILURE(
-      InitiateConnection(1, FakeAuthenticator::ACCEPT, false));
-
-  MockDatagramChannelCallback client_callback;
-  MockDatagramChannelCallback host_callback;
-
-  int counter = 2;
-  net::Socket* client_socket = NULL;
-  net::Socket* host_socket = NULL;
-  EXPECT_CALL(client_callback, OnDone(_))
-      .WillOnce(DoAll(SaveArg<0>(&client_socket),
-                      QuitThreadOnCounter(&counter)));
-  EXPECT_CALL(host_callback, OnDone(_))
-      .WillOnce(DoAll(SaveArg<0>(&host_socket),
-                      QuitThreadOnCounter(&counter)));
-
-  client_session_->CreateDatagramChannel(kChannelName, base::Bind(
-      &MockDatagramChannelCallback::OnDone,
-      base::Unretained(&host_callback)));
-  host_session_->CreateDatagramChannel(kChannelName, base::Bind(
-      &MockDatagramChannelCallback::OnDone,
-      base::Unretained(&client_callback)));
-
-  message_loop_.Run();
-
-  scoped_ptr<net::Socket> client_socket_ptr(client_socket);
-  scoped_ptr<net::Socket> host_socket_ptr(host_socket);
-
-  ASSERT_TRUE(client_socket != NULL);
-  ASSERT_TRUE(host_socket != NULL);
-
-  DatagramConnectionTester tester(
-      client_socket, host_socket, kMessageSize, kMessages, kUdpWriteDelayMs);
   tester.Start();
   message_loop_.Run();
   tester.CheckResults();

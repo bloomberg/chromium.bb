@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -48,9 +48,10 @@ class JingleStreamConnector : public JingleChannelConnector {
  private:
   bool EstablishTCPConnection(net::Socket* socket);
   void OnTCPConnect(int result);
-  void OnAuthenticationDone(net::Error error, net::StreamSocket* socket);
+  void OnAuthenticationDone(net::Error error,
+                            scoped_ptr<net::StreamSocket> socket);
 
-  void NotifyDone(net::StreamSocket* socket);
+  void NotifyDone(scoped_ptr<net::StreamSocket> socket);
   void NotifyError();
 
   JingleSession* session_;

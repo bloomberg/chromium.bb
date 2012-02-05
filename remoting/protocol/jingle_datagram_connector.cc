@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -30,13 +30,13 @@ void JingleDatagramConnector::Connect(
 
   authenticator_ = authenticator.Pass();
 
-  net::Socket* socket =
-      new jingle_glue::TransportChannelSocketAdapter(raw_channel);
+  scoped_ptr<net::Socket> socket(
+      new jingle_glue::TransportChannelSocketAdapter(raw_channel));
 
   // TODO(sergeyu): Implement encryption for datagram channels.
 
   session_->OnChannelConnectorFinished(name_, this);
-  callback_.Run(socket);
+  callback_.Run(socket.Pass());
   delete this;
 }
 

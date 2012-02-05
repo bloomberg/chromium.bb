@@ -24,31 +24,31 @@ FakeChannelAuthenticator::~FakeChannelAuthenticator() {
 }
 
 void FakeChannelAuthenticator::SecureAndAuthenticate(
-    net::StreamSocket* socket, const DoneCallback& done_callback) {
+    scoped_ptr<net::StreamSocket> socket,
+    const DoneCallback& done_callback) {
   net::Error error;
 
   if (accept_) {
     error = net::OK;
   } else {
     error = net::ERR_FAILED;
-    delete socket;
-    socket = NULL;
+    socket.reset();
   }
 
   if (async_) {
     MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
         &FakeChannelAuthenticator::CallCallback, weak_factory_.GetWeakPtr(),
-        done_callback, error, socket));
+        done_callback, error, base::Passed(&socket)));
   } else {
-    done_callback.Run(error, socket);
+    done_callback.Run(error, socket.Pass());
   }
 }
 
 void FakeChannelAuthenticator::CallCallback(
     const DoneCallback& done_callback,
     net::Error error,
-    net::StreamSocket* socket) {
-  done_callback.Run(error, socket);
+    scoped_ptr<net::StreamSocket> socket) {
+  done_callback.Run(error, socket.Pass());
 }
 
 FakeAuthenticator::FakeAuthenticator(

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -125,7 +125,7 @@ void PepperStreamChannel::Connect(
     OnP2PConnect(result);
 }
 
-void PepperStreamChannel::AddRemoveCandidate(
+void PepperStreamChannel::AddRemoteCandidate(
     const cricket::Candidate& candidate) {
   DCHECK(CalledOnValidThread());
   if (channel_)
@@ -168,25 +168,28 @@ void PepperStreamChannel::OnP2PConnect(int result) {
   if (result != net::OK)
     NotifyConnectFailed();
 
-  authenticator_->SecureAndAuthenticate(owned_channel_.release(), base::Bind(
-      &PepperStreamChannel::OnAuthenticationDone, base::Unretained(this)));
+  authenticator_->SecureAndAuthenticate(
+      owned_channel_.PassAs<net::StreamSocket>(),
+      base::Bind(&PepperStreamChannel::OnAuthenticationDone,
+                 base::Unretained(this)));
 }
 
 
 void PepperStreamChannel::OnAuthenticationDone(
-    net::Error error, net::StreamSocket* socket) {
+    net::Error error, scoped_ptr<net::StreamSocket> socket) {
   DCHECK(CalledOnValidThread());
   if (error != net::OK) {
     NotifyConnectFailed();
     return;
   }
 
-  NotifyConnected(socket);
+  NotifyConnected(socket.Pass());
 }
 
-void PepperStreamChannel::NotifyConnected(net::StreamSocket* socket) {
+void PepperStreamChannel::NotifyConnected(
+    scoped_ptr<net::StreamSocket> socket) {
   DCHECK(!connected_);
-  callback_.Run(socket);
+  callback_.Run(socket.Pass());
   connected_ = true;
 }
 
@@ -195,7 +198,7 @@ void PepperStreamChannel::NotifyConnectFailed() {
   owned_channel_.reset();
   authenticator_.reset();
 
-  NotifyConnected(NULL);
+  NotifyConnected(scoped_ptr<net::StreamSocket>(NULL));
 }
 
 }  // namespace protocol

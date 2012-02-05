@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -38,7 +38,7 @@ class PepperChannel : public base::NonThreadSafe {
                        scoped_ptr<ChannelAuthenticator> authenticator) = 0;
 
   // Adds |candidate| received from the peer.
-  virtual void AddRemoveCandidate(const cricket::Candidate& candidate) = 0;
+  virtual void AddRemoteCandidate(const cricket::Candidate& candidate) = 0;
 
   // Name of the channel.
   virtual const std::string& name() const = 0;

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -33,16 +33,17 @@ void ProtobufVideoWriter::Init(protocol::Session* session,
       base::Bind(&ProtobufVideoWriter::OnChannelReady, base::Unretained(this)));
 }
 
-void ProtobufVideoWriter::OnChannelReady(net::StreamSocket* socket) {
-  if (!socket) {
+void ProtobufVideoWriter::OnChannelReady(scoped_ptr<net::StreamSocket> socket) {
+  if (!socket.get()) {
     initialized_callback_.Run(false);
     return;
   }
 
   DCHECK(!channel_.get());
-  channel_.reset(socket);
+  channel_ = socket.Pass();
   // TODO(sergeyu): Provide WriteFailedCallback for the buffered writer.
-  buffered_writer_->Init(socket, BufferedSocketWriter::WriteFailedCallback());
+  buffered_writer_->Init(
+      channel_.get(), BufferedSocketWriter::WriteFailedCallback());
 
   initialized_callback_.Run(true);
 }
