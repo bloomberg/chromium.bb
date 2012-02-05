@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -295,7 +295,13 @@ TEST_F(URLFetcherTempFileTest, SmallGet) {
       << temp_file_.value() << " not removed.";
 }
 
-TEST_F(URLFetcherTempFileTest, LargeGet) {
+// http://crbug.com/112740
+#if defined(OS_CHROMEOS)
+#define MAYBE_LargeGet FLAKY_LargeGet
+#else
+#define MAYBE_LargeGet LargeGet
+#endif
+TEST_F(URLFetcherTempFileTest, MAYBE_LargeGet) {
   net::TestServer test_server(net::TestServer::TYPE_HTTP, FilePath(kDocRoot));
   ASSERT_TRUE(test_server.Start());
 
