@@ -54,7 +54,7 @@ public:
 
 // Crashes intermittently on Windows, see http://crbug.com/109238
 #if defined(OS_WIN)
-#define MAYBE_EmptyDefaultLocale DISABLED_EmptyDefaultLocale
+#define MAYBE_EmptyDefaultLocale EmptyDefaultLocale
 #else
 #define MAYBE_EmptyDefaultLocale EmptyDefaultLocale
 #endif
@@ -176,7 +176,8 @@ TEST_F(ExtensionUnpackerTest, MAYBE_GoodL10n) {
 }
 
 // Crashes intermittently on Vista, see http://crbug.com/109238
-#if defined(OS_WIN)
+// Re-enabled temporarily to get more logging.
+#if 0
 #define MAYBE_NoL10n NoL10n
 #else
 #define MAYBE_NoL10n NoL10n

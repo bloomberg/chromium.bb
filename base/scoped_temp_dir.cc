@@ -59,10 +59,13 @@ bool ScopedTempDir::Set(const FilePath& path) {
 }
 
 bool ScopedTempDir::Delete() {
+  LOG(WARNING) << "Deleting " << path_.LossyDisplayName() << " " << this;
   if (path_.empty())
     return false;
 
+  file_util::g_bug108724_debug = true;
   bool ret = file_util::Delete(path_, true);
+  file_util::g_bug108724_debug = false;
   if (ret) {
     // We only clear the path if deleted the directory.
     path_.clear();
