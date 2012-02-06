@@ -733,10 +733,11 @@ static BOOL recentShownUserActionFailedStatus = NO;
   // Following Windows. There is one marker in the string for where the terms
   // link goes, but the text of the link comes from a second string resources.
   std::vector<size_t> url_offsets;
-  NSString* about_terms = l10n_util::GetNSStringF(IDS_ABOUT_TERMS_OF_SERVICE,
-                                                  string16(),
-                                                  string16(),
-                                                  &url_offsets);
+  NSString* about_terms = l10n_util::GetNSStringF(
+      IDS_ABOUT_OLD_TERMS_OF_SERVICE,
+      string16(),
+      string16(),
+      &url_offsets);
   DCHECK_EQ(url_offsets.size(), 1U);
   NSString* terms_link_text =
       l10n_util::GetNSStringWithFixup(IDS_TERMS_OF_SERVICE);

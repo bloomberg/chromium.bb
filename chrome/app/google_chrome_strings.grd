@@ -228,6 +228,9 @@ Chrome supports. -->
       <message name="IDS_ABOUT_TERMS_OF_SERVICE" desc="The terms of service label in the About box.">
         Google Chrome <ph name="TERMS_OF_SERVICE_LINK">&lt;a target="_blank" href="$1"&gt;</ph>Terms of Service<ph name="END_TERMS_OF_SERVICE_LINK">&lt;/a&gt;</ph>
       </message>
+      <message name="IDS_ABOUT_OLD_TERMS_OF_SERVICE" desc="The terms of service label in the About box.">
+        Google Chrome <ph name="TERMS_OF_SERVICE_LINK">$1<ex>Terms of Service</ex></ph>
+      </message>
       <message name="IDS_TERMS_OF_SERVICE" desc="The Terms of Service link text in the About box. Used in IDS_ABOUT_TERMS_OF_SERVICE.">
         Terms of Service
       </message>
