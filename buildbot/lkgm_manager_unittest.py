@@ -109,8 +109,8 @@ class LKGMManagerTest(mox.MoxTestBase):
     repo = repository.RepoRepository(
       self.source_repo, self.tmpdir, self.branch, depth=1)
     self.manager = lkgm_manager.LKGMManager(
-      repo, self.manifest_repo, self.build_name, 'binary', 'branch',
-      dry_run=True)
+      repo, self.manifest_repo, self.build_name, constants.PFQ_TYPE,
+      'branch', dry_run=True)
 
     self.manager.all_specs_dir = '/LKGM/path'
     self.manager.specs_for_builder = os.path.join(self.manager.GetManifestDir(),
