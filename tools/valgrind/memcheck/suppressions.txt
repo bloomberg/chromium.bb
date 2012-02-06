@@ -5482,7 +5482,8 @@
    fun:_ZN22ResourceDispatcherHost*
    ...
    fun:_ZN7content15BrowserMainLoop21BrowserThreadsStartedEv
-   fun:_ZN7content15BrowserMainLoop23RunMainMessageLoopPartsEPb
+   fun:_ZN7content15BrowserMainLoop*
+   ...
    fun:_Z11BrowserMainRKN7content18MainFunctionParamsE
 }
 {
