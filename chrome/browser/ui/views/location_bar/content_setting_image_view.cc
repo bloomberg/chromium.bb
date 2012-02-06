@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,6 +15,8 @@
 #include "chrome/browser/ui/views/window.h"
 #include "content/public/browser/web_contents.h"
 #include "third_party/skia/include/core/SkShader.h"
+#include "ui/base/animation/slide_animation.h"
+#include "ui/base/animation/tween.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
@@ -50,12 +52,10 @@ const double kAnimatingFraction = kOpenTimeMs * 1.0 / kMoveTimeMs;
 ContentSettingImageView::ContentSettingImageView(
     ContentSettingsType content_type,
     LocationBarView* parent)
-    : ui::LinearAnimation(kMoveTimeMs, kFrameRateHz, NULL),
-      content_setting_image_model_(
+    : content_setting_image_model_(
           ContentSettingImageModel::CreateContentSettingImageModel(
               content_type)),
       parent_(parent),
-      animation_in_progress_(false),
       text_size_(0),
       visible_text_size_(0) {
   SetHorizontalAlignment(ImageView::LEADING);
@@ -95,9 +95,13 @@ void ContentSettingImageView::UpdateFromWebContents(WebContents* web_contents) {
   if (!animated_string_id)
     return;
 
+  if (!slide_animator_.get()) {
+    slide_animator_.reset(new ui::SlideAnimation(this));
+    slide_animator_->SetSlideDuration(kMoveTimeMs);
+    slide_animator_->SetTweenType(ui::Tween::LINEAR);
+  }
   // Do not start animation if already in progress.
-  if (!animation_in_progress_) {
-    animation_in_progress_ = true;
+  if (!slide_animator_->is_animating()) {
     // Initialize animated string. It will be cleared when animation is
     // completed.
     animated_text_ = l10n_util::GetStringUTF16(animated_string_id);
@@ -106,7 +110,7 @@ void ContentSettingImageView::UpdateFromWebContents(WebContents* web_contents) {
     text_size_ += 2 * kTextMarginPixels + kIconLeftMargin;
     if (border())
       border()->GetInsets(&saved_insets_);
-    Start();
+    slide_animator_->Show();
   }
 }
 
@@ -115,6 +119,35 @@ gfx::Size ContentSettingImageView::GetPreferredSize() {
   // When view is animated visible_text_size_ > 0, it is 0 otherwise.
   preferred_size.set_width(preferred_size.width() + visible_text_size_);
   return preferred_size;
+}
+
+void ContentSettingImageView::AnimationEnded(const ui::Animation* animation) {
+  visible_text_size_ = 0;
+  slide_animator_->Reset();
+}
+
+void ContentSettingImageView::AnimationProgressed(
+    const ui::Animation* animation) {
+  double state = slide_animator_->GetCurrentValue();
+  if (state >= 1.0) {
+    // Animaton is over, clear the variables.
+    visible_text_size_ = 0;
+  } else if (state < kAnimatingFraction) {
+    visible_text_size_ = static_cast<int>(text_size_ * state /
+                                          kAnimatingFraction);
+  } else if (state > (1.0 - kAnimatingFraction)) {
+    visible_text_size_ = static_cast<int>(text_size_ * (1.0 - state) /
+                                          kAnimatingFraction);
+  } else {
+    visible_text_size_ = text_size_;
+  }
+  parent_->Layout();
+  parent_->SchedulePaint();
+}
+
+void ContentSettingImageView::AnimationCanceled(
+    const ui::Animation* animation) {
+  AnimationEnded(animation);
 }
 
 bool ContentSettingImageView::OnMousePressed(const views::MouseEvent& event) {
@@ -147,29 +180,24 @@ void ContentSettingImageView::OnMouseReleased(const views::MouseEvent& event) {
 }
 
 void ContentSettingImageView::OnPaint(gfx::Canvas* canvas) {
-  gfx::Insets current_insets;
-  if (border())
-    border()->GetInsets(&current_insets);
   // During the animation we draw a border, an icon and the text. The text area
   // is changing in size during the animation, giving the appearance of the text
   // sliding out and then back in. When the text completely slid out the yellow
   // border is no longer painted around the icon. |visible_text_size_| is 0 when
   // animation is stopped.
-  int necessary_left_margin = std::min(kIconLeftMargin, visible_text_size_);
-  if (necessary_left_margin != current_insets.left() - saved_insets_.left()) {
+  if (slide_animator_.get() && slide_animator_->is_animating()) {
     // In the non-animated state borders' left() is 0, in the animated state it
     // is the kIconLeftMargin, so we need to animate border reduction when it
     // starts to disappear.
+    int necessary_left_margin = std::min(kIconLeftMargin, visible_text_size_);
     views::Border* empty_border = views::Border::CreateEmptyBorder(
         saved_insets_.top(),
         saved_insets_.left() + necessary_left_margin,
         saved_insets_.bottom(),
         saved_insets_.right());
     set_border(empty_border);
-  }
-  // Paint an icon with possibly non-empty left border.
-  views::ImageView::OnPaint(canvas);
-  if (animation_in_progress_) {
+    views::ImageView::OnPaint(canvas);
+
     // Paint text to the right of the icon.
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
     canvas->DrawStringInt(animated_text_,
@@ -177,11 +205,13 @@ void ContentSettingImageView::OnPaint(gfx::Canvas* canvas) {
         GetImageBounds().right() + kTextMarginPixels, y(),
         width() - GetImageBounds().width(), height(),
         gfx::Canvas::TEXT_ALIGN_LEFT | gfx::Canvas::TEXT_VALIGN_MIDDLE);
+  } else {
+    views::ImageView::OnPaint(canvas);
   }
 }
 
 void ContentSettingImageView::OnPaintBackground(gfx::Canvas* canvas) {
-  if (!animation_in_progress_) {
+  if (!slide_animator_.get() || !slide_animator_->is_animating()) {
     views::ImageView::OnPaintBackground(canvas);
     return;
   }
@@ -203,22 +233,4 @@ void ContentSettingImageView::OnPaintBackground(gfx::Canvas* canvas) {
                    SkIntToScalar(kEdgeThickness));
   canvas->GetSkCanvas()->drawRoundRect(color_rect, kBoxCornerRadius,
                                        kBoxCornerRadius, outer_paint);
-}
-
-void ContentSettingImageView::AnimateToState(double state) {
-  if (state >= 1.0) {
-    // Animaton is over, clear the variables.
-    animation_in_progress_ = false;
-    visible_text_size_ = 0;
-  } else if (state < kAnimatingFraction) {
-    visible_text_size_ = static_cast<int>(text_size_ * state /
-                                          kAnimatingFraction);
-  } else if (state > (1.0 - kAnimatingFraction)) {
-    visible_text_size_ = static_cast<int>(text_size_ * (1.0 - state) /
-                                          kAnimatingFraction);
-  } else {
-    visible_text_size_ = text_size_;
-  }
-  parent_->Layout();
-  parent_->SchedulePaint();
 }

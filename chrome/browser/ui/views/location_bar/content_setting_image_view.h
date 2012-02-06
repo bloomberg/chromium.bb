@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,7 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
 #include "chrome/common/content_settings_types.h"
-#include "ui/base/animation/linear_animation.h"
+#include "ui/base/animation/animation_delegate.h"
 #include "ui/views/controls/image_view.h"
 
 class ContentSettingImageModel;
@@ -26,10 +26,14 @@ namespace views {
 class MouseEvent;
 }
 
+namespace ui {
+class SlideAnimation;
+}
+
 class ContentSettingsDelegateView;
 
 class ContentSettingImageView : public views::ImageView,
-                                public ui::LinearAnimation {
+                                public ui::AnimationDelegate {
  public:
   ContentSettingImageView(ContentSettingsType content_type,
                           LocationBarView* parent);
@@ -42,6 +46,11 @@ class ContentSettingImageView : public views::ImageView,
   // views::View overrides:
   virtual gfx::Size GetPreferredSize() OVERRIDE;
 
+  // ui::AnimationDelegate overrides:
+  virtual void AnimationEnded(const ui::Animation* animation) OVERRIDE;
+  virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE;
+  virtual void AnimationCanceled(const ui::Animation* animation) OVERRIDE;
+
  private:
   // views::ImageView overrides:
   virtual bool OnMousePressed(const views::MouseEvent& event) OVERRIDE;
@@ -49,16 +58,13 @@ class ContentSettingImageView : public views::ImageView,
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
   virtual void OnPaintBackground(gfx::Canvas* canvas) OVERRIDE;
 
-  // ui::LinearAnimation override:
-  virtual void AnimateToState(double state) OVERRIDE;
-
   scoped_ptr<ContentSettingImageModel> content_setting_image_model_;
 
   // The owning LocationBarView.
   LocationBarView* parent_;
 
+  scoped_ptr<ui::SlideAnimation> slide_animator_;
   string16 animated_text_;
-  bool animation_in_progress_;
   int text_size_;
   int visible_text_size_;
   gfx::Insets saved_insets_;
