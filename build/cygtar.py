@@ -107,7 +107,8 @@ def CreateWin32Hardlink(filepath, targpath, try_mklink):
   if try_mklink:
     dst_src = ToNativePath(filepath) + ' ' + ToNativePath(targpath)
     try:
-      err = subprocess.call(['cmd', '/C', 'mklink /H ' + dst_src])
+      err = subprocess.call(['cmd', '/C', 'mklink /H ' + dst_src],
+                            stdout = open(os.devnull, 'wb'))
     except EnvironmentError:
       try_mklink = False
 
@@ -259,7 +260,22 @@ class CygTar(object):
   def Extract(self):
     """Extract the tarfile to the current directory."""
     try_mklink = True
+    div = float(len(self.tar.getmembers())) / 50.0
+    dots = 0
+    cnt = 0
+
+    if self.verbose:
+      sys.stdout.write('|' + ('-' * 48) + '|\n')
+      sys.stdout.flush()
+
     for m in self.tar:
+      if self.verbose:
+        cnt += 1
+        while float(dots) * div < float(cnt):
+          dots += 1
+          sys.stdout.write('.')
+          sys.stdout.flush()
+
       # For symlinks in Windows we create Cygwin 1.7 style symlinks since the
       # toolchain is Cygwin based.  For hardlinks on Windows, we use mklink if
       # possible to create a hardlink. For all other tar items, or platforms we
@@ -273,6 +289,9 @@ class CygTar(object):
       # Otherwise, extract normally.
       else:
         self.tar.extract(m)
+    if self.verbose:
+      sys.stdout.write('\n')
+      sys.stdout.flush()
 
   def List(self):
     """List the set of objects in the tarball."""
@@ -338,7 +357,7 @@ def Main(args):
     for filepath in args:
       if not tar.Add(filepath):
         return -1
-      tar.Close()
+    tar.Close()
     return 0
 
   parser.error('Missing action c, t, or x.')
