@@ -84,9 +84,6 @@ function load() {
   }
 
   // AdvancedOptions sub-pages.
-  OptionsPage.registerSubPage(AutofillOptions.getInstance(),
-                              AdvancedOptions.getInstance(),
-                              [$('autofill-settings')]);
   OptionsPage.registerSubPage(PasswordManager.getInstance(),
                               AdvancedOptions.getInstance(),
                               [$('manage-passwords')]);
@@ -168,6 +165,9 @@ function load() {
                               AutofillOptions.getInstance());
   OptionsPage.registerOverlay(AutofillEditCreditCardOverlay.getInstance(),
                               AutofillOptions.getInstance());
+  OptionsPage.registerOverlay(AutofillOptions.getInstance(),
+                              AdvancedOptions.getInstance(),
+                              [$('autofill-settings')]);
   OptionsPage.registerOverlay(ClearBrowserDataOverlay.getInstance(),
                               AdvancedOptions.getInstance(),
                               [$('privacyClearDataButton')]);

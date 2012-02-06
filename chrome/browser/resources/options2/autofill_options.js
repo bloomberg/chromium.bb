@@ -1,10 +1,10 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 cr.define('options', function() {
-  const OptionsPage = options.OptionsPage;
-  const ArrayDataModel = cr.ui.ArrayDataModel;
+  var OptionsPage = options.OptionsPage;
+  var ArrayDataModel = cr.ui.ArrayDataModel;
 
   /////////////////////////////////////////////////////////////////////////////
   // AutofillOptions class:
@@ -51,6 +51,9 @@ cr.define('options', function() {
       };
       $('autofill-add-creditcard').onclick = function(event) {
         self.showAddCreditCardOverlay_();
+      };
+      $('autofill-options-confirm').onclick = function(event) {
+        OptionsPage.closeOverlay();
       };
 
       // TODO(jhawkins): What happens when Autofill is disabled whilst on the

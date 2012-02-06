@@ -1,6 +1,17 @@
 /* Copyright (c) 2012 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
- * found in the LICENSE file. */
+ * found in the LICENSE file.
+ */
+
+#address-list,
+#creditcard-list {
+  min-width: 500px;
+}
+
+#autofill-help {
+  position: absolute;
+  bottom: 18px;
+}
 
 .autofill-list-item {
   -webkit-box-flex: 1;
@@ -25,7 +36,7 @@
 
 #autofill-add-address,
 #autofill-add-creditcard {
-  margin: 2px 0;
+  margin: 5px 5px;
 }
 
 .autofill-list-item + button,
