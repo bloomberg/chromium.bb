@@ -43,7 +43,7 @@
 				<int key="NSWindowBacking">2</int>
 				<string key="NSWindowRect">{{196, 260}, {500, 274}}</string>
 				<int key="NSWTFlags">1677722624</int>
-				<string key="NSWindowTitle">^IDS_ABOUT_CHROME_TITLE</string>
+				<string key="NSWindowTitle"/>
 				<string key="NSWindowClass">NSPanel</string>
 				<nil key="NSViewClass"/>
 				<string key="NSWindowContentMaxSize">{1.79769e+308, 1.79769e+308}</string>
