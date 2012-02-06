@@ -487,7 +487,7 @@ void ProfileManager::Observe(
       DCHECK(browser);
       Profile* profile = browser->profile();
       DCHECK(profile);
-      if (++browser_counts_[profile] == 1) {
+      if (!profile->IsOffTheRecord() && ++browser_counts_[profile] == 1) {
         active_profiles_.push_back(profile);
         update_active_profiles = true;
       }
@@ -498,7 +498,7 @@ void ProfileManager::Observe(
       DCHECK(browser);
       Profile* profile = browser->profile();
       DCHECK(profile);
-      if (--browser_counts_[profile] == 0) {
+      if (!profile->IsOffTheRecord() && --browser_counts_[profile] == 0) {
         active_profiles_.erase(
             std::remove(active_profiles_.begin(), active_profiles_.end(),
                         profile),

@@ -1746,10 +1746,14 @@ bool BrowserInit::ProcessCmdLineImpl(
         IS_PROCESS_STARTUP : IS_NOT_PROCESS_STARTUP;
     IsFirstRun is_first_run = first_run::IsChromeFirstRun() ?
         IS_FIRST_RUN : IS_NOT_FIRST_RUN;
-    // If this is the first launch, or the user has exited the browser by
-    // closing all windows for all profiles, there are no last used profiles. In
-    // that case, launch the |last_used_profile|. It will be the initial
-    // profile, or the profile which owned the last window, respectively.
+    // |last_opened_profiles| will be empty in the following circumstances:
+    // - This is the first launch. |last_used_profile| is the initial profile.
+    // - The user exited the browser by closing all windows for all
+    // profiles. |last_used_profile| is the profile which owned the last open
+    // window.
+    // - Only incognito windows were open when the browser exited.
+    // |last_used_profile| is the last used incognito profile. Restoring it will
+    // create a browser window for the corresponding original profile.
     if (last_opened_profiles.empty()) {
       if (!browser_init->LaunchBrowser(command_line, last_used_profile, cur_dir,
               is_process_startup, is_first_run, return_code))

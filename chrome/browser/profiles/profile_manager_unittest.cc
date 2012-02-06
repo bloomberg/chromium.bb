@@ -491,3 +491,60 @@ TEST_F(ProfileManagerTest, LastOpenedProfilesAtShutdown) {
   EXPECT_EQ(profile1, last_opened_profiles[0]);
   EXPECT_EQ(profile2, last_opened_profiles[1]);
 }
+
+TEST_F(ProfileManagerTest, LastOpenedProfilesDoesNotContainIncognito) {
+  FilePath dest_path1 = temp_dir_.path();
+  dest_path1 = dest_path1.Append(FILE_PATH_LITERAL("New Profile 1"));
+  FilePath dest_path2 = temp_dir_.path();
+  dest_path2 = dest_path2.Append(FILE_PATH_LITERAL("New Profile 2"));
+
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+
+  // Successfully create the profiles.
+  Profile* profile1 = profile_manager->GetProfile(dest_path1);
+  ASSERT_TRUE(profile1);
+
+  TestingProfile* profile2 =
+      static_cast<TestingProfile*>(profile_manager->GetProfile(dest_path2));
+  ASSERT_TRUE(profile2);
+  profile2->set_incognito(true);
+
+  std::vector<Profile*> last_opened_profiles =
+      profile_manager->GetLastOpenedProfiles();
+  ASSERT_EQ(0U, last_opened_profiles.size());
+
+  // Create a browser for profile1.
+  scoped_ptr<Browser> browser1(new Browser(Browser::TYPE_TABBED, profile1));
+
+  last_opened_profiles = profile_manager->GetLastOpenedProfiles();
+  ASSERT_EQ(1U, last_opened_profiles.size());
+  EXPECT_EQ(profile1, last_opened_profiles[0]);
+
+  // And for profile2.
+  scoped_ptr<Browser> browser2a(new Browser(Browser::TYPE_TABBED, profile2));
+
+  last_opened_profiles = profile_manager->GetLastOpenedProfiles();
+  ASSERT_EQ(1U, last_opened_profiles.size());
+  EXPECT_EQ(profile1, last_opened_profiles[0]);
+
+  // Adding more browsers doesn't change anything.
+  scoped_ptr<Browser> browser2b(new Browser(Browser::TYPE_TABBED, profile1));
+  last_opened_profiles = profile_manager->GetLastOpenedProfiles();
+  ASSERT_EQ(1U, last_opened_profiles.size());
+  EXPECT_EQ(profile1, last_opened_profiles[0]);
+
+  // Close the browsers.
+  browser2a.reset();
+  last_opened_profiles = profile_manager->GetLastOpenedProfiles();
+  ASSERT_EQ(1U, last_opened_profiles.size());
+  EXPECT_EQ(profile1, last_opened_profiles[0]);
+
+  browser2b.reset();
+  last_opened_profiles = profile_manager->GetLastOpenedProfiles();
+  ASSERT_EQ(1U, last_opened_profiles.size());
+  EXPECT_EQ(profile1, last_opened_profiles[0]);
+
+  browser1.reset();
+  last_opened_profiles = profile_manager->GetLastOpenedProfiles();
+  ASSERT_EQ(0U, last_opened_profiles.size());
+}
