@@ -1889,9 +1889,13 @@ void TabContents::DidNavigate(RenderViewHost* rvh,
   if (content::PageTransitionIsMainFrame(params.transition))
     render_manager_.DidNavigateMainFrame(rvh);
 
-  // Update the site of the SiteInstance if it doesn't have one yet.
-  if (!static_cast<SiteInstanceImpl*>(GetSiteInstance())->HasSite())
+  // Update the site of the SiteInstance if it doesn't have one yet, unless
+  // this is for about:blank.  In that case, the SiteInstance can still be
+  // considered unused until a navigation to a real page.
+  if (!static_cast<SiteInstanceImpl*>(GetSiteInstance())->HasSite() &&
+      params.url != GURL(chrome::kAboutBlankURL)) {
     static_cast<SiteInstanceImpl*>(GetSiteInstance())->SetSite(params.url);
+  }
 
   // Need to update MIME type here because it's referred to in
   // UpdateNavigationCommands() called by RendererDidNavigate() to

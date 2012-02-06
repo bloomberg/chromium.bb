@@ -972,8 +972,9 @@ TEST_F(TabContentsTest, NavigationEntryContentState) {
   EXPECT_FALSE(entry->GetContentState().empty());
 }
 
-// Test that NavigationEntries have the correct content state after opening
-// a new window to about:blank.  Prevents regression for bug 1116137.
+// Test that NavigationEntries have the correct content state and SiteInstance
+// state after opening a new window to about:blank.  Prevents regression for
+// bugs b/1116137 and http://crbug.com/111975.
 TEST_F(TabContentsTest, NavigationEntryContentStateNewWindow) {
   TestRenderViewHost* orig_rvh = rvh();
 
@@ -986,6 +987,25 @@ TEST_F(TabContentsTest, NavigationEntryContentStateNewWindow) {
   // Should have a content state here.
   NavigationEntry* entry = controller().GetLastCommittedEntry();
   EXPECT_FALSE(entry->GetContentState().empty());
+
+  // The SiteInstance should be available for other navigations to use.
+  NavigationEntryImpl* entry_impl =
+      NavigationEntryImpl::FromNavigationEntry(entry);
+  EXPECT_FALSE(entry_impl->site_instance()->HasSite());
+  int32 site_instance_id = entry_impl->site_instance()->GetId();
+
+  // Navigating to a normal page should not cause a process swap.
+  const GURL new_url("http://www.google.com");
+  controller().LoadURL(new_url, content::Referrer(),
+                       content::PAGE_TRANSITION_TYPED, std::string());
+  EXPECT_FALSE(contents()->cross_navigation_pending());
+  EXPECT_EQ(orig_rvh, contents()->GetRenderViewHost());
+  contents()->TestDidNavigate(orig_rvh, 1, new_url,
+                              content::PAGE_TRANSITION_TYPED);
+  NavigationEntryImpl* entry_impl2 = NavigationEntryImpl::FromNavigationEntry(
+      controller().GetLastCommittedEntry());
+  EXPECT_EQ(site_instance_id, entry_impl2->site_instance()->GetId());
+  EXPECT_TRUE(entry_impl2->site_instance()->HasSite());
 }
 
 ////////////////////////////////////////////////////////////////////////////////

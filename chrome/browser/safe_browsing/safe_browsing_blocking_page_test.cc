@@ -428,9 +428,11 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest, MalwareProceed) {
   GURL url = test_server()->GetURL(kEmptyPage);
   AddURLResult(url, SafeBrowsingService::URL_MALWARE);
 
+  // Note: NOTIFICATION_LOAD_STOP may come before or after the DidNavigate
+  // event that clears the interstitial.  We wait for DidNavigate instead.
   ui_test_utils::NavigateToURL(browser(), url);
   ui_test_utils::WindowedNotificationObserver observer(
-      content::NOTIFICATION_LOAD_STOP,
+      content::NOTIFICATION_NAV_ENTRY_COMMITTED,
       content::Source<NavigationController>(
           &browser()->GetSelectedTabContentsWrapper()->web_contents()->
               GetController()));
@@ -461,8 +463,10 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest, PhishingProceed) {
 
   ui_test_utils::NavigateToURL(browser(), url);
 
+  // Note: NOTIFICATION_LOAD_STOP may come before or after the DidNavigate
+  // event that clears the interstitial.  We wait for DidNavigate instead.
   ui_test_utils::WindowedNotificationObserver observer(
-      content::NOTIFICATION_LOAD_STOP,
+      content::NOTIFICATION_NAV_ENTRY_COMMITTED,
       content::Source<NavigationController>(
           &browser()->GetSelectedTabContentsWrapper()->web_contents()->
               GetController()));
@@ -480,8 +484,10 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest, PhishingReportError) {
 
   ui_test_utils::NavigateToURL(browser(), url);
 
+  // Note: NOTIFICATION_LOAD_STOP may come before or after the DidNavigate
+  // event that clears the interstitial.  We wait for DidNavigate instead.
   ui_test_utils::WindowedNotificationObserver observer(
-      content::NOTIFICATION_LOAD_STOP,
+      content::NOTIFICATION_NAV_ENTRY_COMMITTED,
       content::Source<NavigationController>(
           &browser()->GetSelectedTabContentsWrapper()->web_contents()->
               GetController()));
@@ -503,8 +509,10 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest,
 
   ui_test_utils::NavigateToURL(browser(), url);
 
+  // Note: NOTIFICATION_LOAD_STOP may come before or after the DidNavigate
+  // event that clears the interstitial.  We wait for DidNavigate instead.
   ui_test_utils::WindowedNotificationObserver observer(
-      content::NOTIFICATION_LOAD_STOP,
+      content::NOTIFICATION_NAV_ENTRY_COMMITTED,
       content::Source<NavigationController>(
           &browser()->GetSelectedTabContentsWrapper()->web_contents()->
               GetController()));

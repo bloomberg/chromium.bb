@@ -566,7 +566,10 @@ class OmniboxViewTest : public InProcessBrowserTest,
     ASSERT_TRUE(popup_model->IsOpen());
     // ctrl-Enter triggers desired_tld feature, thus www.bar.com shall be
     // opened.
-    ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_RETURN, ui::EF_CONTROL_DOWN));
+    ASSERT_TRUE(SendKeyAndWait(browser(), ui::VKEY_RETURN, ui::EF_CONTROL_DOWN,
+        content::NOTIFICATION_NAV_ENTRY_COMMITTED,
+        content::Source<content::NavigationController>(
+            &browser()->GetSelectedWebContents()->GetController())));
 
     GURL url = browser()->GetSelectedWebContents()->GetURL();
     EXPECT_STREQ(kDesiredTLDHostname, url.host().c_str());
@@ -599,7 +602,10 @@ class OmniboxViewTest : public InProcessBrowserTest,
               popup_model->result().default_match()->type);
 
     // Open the default match.
-    ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_RETURN, 0));
+    ASSERT_TRUE(SendKeyAndWait(browser(), ui::VKEY_RETURN, 0,
+        content::NOTIFICATION_NAV_ENTRY_COMMITTED,
+        content::Source<content::NavigationController>(
+            &browser()->GetSelectedWebContents()->GetController())));
     GURL url = browser()->GetSelectedWebContents()->GetURL();
     EXPECT_STREQ(kSearchTextURL, url.spec().c_str());
 
@@ -616,7 +622,10 @@ class OmniboxViewTest : public InProcessBrowserTest,
               popup_model->result().default_match()->type);
 
     // Open the default match.
-    ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_RETURN, 0));
+    ASSERT_TRUE(SendKeyAndWait(browser(), ui::VKEY_RETURN, 0,
+        content::NOTIFICATION_NAV_ENTRY_COMMITTED,
+        content::Source<content::NavigationController>(
+            &browser()->GetSelectedWebContents()->GetController())));
     url = browser()->GetSelectedWebContents()->GetURL();
     EXPECT_STREQ(kSearchSingleCharURL, url.spec().c_str());
   }
@@ -1157,12 +1166,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, AltEnter) {
   AltEnterTest();
 }
 
-// DISABLED http://crbug.com/80118
-#if defined(OS_LINUX)
-IN_PROC_BROWSER_TEST_F(OmniboxViewTest, DISABLED_EnterToSearch) {
-#else
 IN_PROC_BROWSER_TEST_F(OmniboxViewTest, EnterToSearch) {
-#endif  // OS_LINUX
   EnterToSearchTest();
 }
 
