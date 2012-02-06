@@ -8,6 +8,7 @@
 
 #include "ash/accelerators/accelerator_controller.h"
 #include "ash/accelerators/accelerator_filter.h"
+#include "ash/accelerators/nested_dispatcher_controller.h"
 #include "ash/app_list/app_list.h"
 #include "ash/ash_switches.h"
 #include "ash/drag_drop/drag_drop_controller.h"
@@ -187,6 +188,7 @@ Shell* Shell::instance_ = NULL;
 
 Shell::Shell(ShellDelegate* delegate)
     : ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)),
+      nested_dispatcher_controller_(new NestedDispatcherController),
       accelerator_controller_(new AcceleratorController),
       delegate_(delegate),
       window_mode_(MODE_OVERLAPPING),
