@@ -15,7 +15,7 @@ using chromeos::UpdateEngineClient;
 using chromeos::WizardController;
 
 VersionUpdater* VersionUpdater::Create() {
-  return static_cast<VersionUpdater*>(new VersionUpdaterCros);
+  return new VersionUpdaterCros;
 }
 
 void VersionUpdaterCros::CheckForUpdate(const StatusCallback& callback) {

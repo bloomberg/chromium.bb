@@ -5,5 +5,5 @@
 #include "chrome/browser/ui/webui/help/version_updater_unimplemented.h"
 
 VersionUpdater* VersionUpdater::Create() {
-  return static_cast<VersionUpdater*>(new VersionUpdaterUnimplemented);
+  return new VersionUpdaterUnimplemented;
 }
