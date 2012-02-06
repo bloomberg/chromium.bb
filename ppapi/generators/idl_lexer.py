@@ -70,7 +70,6 @@ class IDLLexer(object):
   # 'keywords' is a map of string to token type.  All SYMBOL tokens are
   # matched against keywords, to determine if the token is actually a keyword.
   keywords = {
-    'attribute' : 'ATTRIBUTE',
     'describe' : 'DESCRIBE',
     'enum'  : 'ENUM',
     'label' : 'LABEL',
