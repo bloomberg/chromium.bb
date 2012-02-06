@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "chrome/browser/tab_contents/moving_to_content/tab_contents_view_mac.h"
+#import "content/browser/tab_contents/web_contents_view_mac.h"
 
 #include "base/memory/scoped_nsobject.h"
 #import "ui/base/test/ui_cocoa_test_helper.h"
@@ -11,12 +11,12 @@
 
 namespace {
 
-class TabContentsViewCocoaTest : public ui::CocoaTest {
+class WebContentsViewCocoaTest : public ui::CocoaTest {
 };
 
-TEST_F(TabContentsViewCocoaTest, NonWebDragSourceTest) {
-  scoped_nsobject<TabContentsViewCocoa>
-      view([[TabContentsViewCocoa alloc] init]);
+TEST_F(WebContentsViewCocoaTest, NonWebDragSourceTest) {
+  scoped_nsobject<WebContentsViewCocoa>
+      view([[WebContentsViewCocoa alloc] init]);
 
   // Tests that |draggingSourceOperationMaskForLocal:| returns the expected mask
   // when dragging without a WebDragSource - i.e. when |startDragWithDropData:|

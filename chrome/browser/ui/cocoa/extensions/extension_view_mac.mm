@@ -5,9 +5,9 @@
 #include "chrome/browser/ui/cocoa/extensions/extension_view_mac.h"
 
 #include "chrome/browser/extensions/extension_host.h"
-#include "chrome/browser/tab_contents/moving_to_content/tab_contents_view_mac.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
+#include "content/browser/tab_contents/web_contents_view_mac.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
 
@@ -74,14 +74,14 @@ void ExtensionViewMac::UpdatePreferredSize(const gfx::Size& new_size) {
   // width after the correct size has been set. Bail if zero is seen, assuming
   // that an extension's view doesn't want any dimensions to ever be zero.
   // TODO(andybons): Verify this assumption and look into WebCore's
-  // |contentesPreferredWidth| to see why this is occurring.
+  // |contentsPreferredWidth| to see why this is occurring.
   if (NSIsEmptyRect(frame))
     return;
 
-  DCHECK([view isKindOfClass:[TabContentsViewCocoa class]]);
-  TabContentsViewCocoa* hostView = (TabContentsViewCocoa*)view;
+  DCHECK([view isKindOfClass:[WebContentsViewCocoa class]]);
+  WebContentsViewCocoa* hostView = (WebContentsViewCocoa*)view;
 
-  // TabContentsViewCocoa overrides setFrame but not setFrameSize.
+  // WebContentsViewCocoa overrides setFrame but not setFrameSize.
   // We need to defer the update back to the RenderWidgetHost so we don't
   // get the flickering effect on 10.5 of http://crbug.com/31970
   [hostView setFrameWithDeferredUpdate:frame];

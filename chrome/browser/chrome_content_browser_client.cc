@@ -120,7 +120,7 @@
 #include "content/browser/tab_contents/tab_contents_view_gtk.h"
 #elif defined(OS_MACOSX)
 #include "chrome/browser/tab_contents/chrome_web_contents_view_mac_delegate.h"
-#include "chrome/browser/tab_contents/moving_to_content/tab_contents_view_mac.h"
+#include "content/browser/tab_contents/web_contents_view_mac.h"
 #endif
 
 #if defined(USE_NSS)
@@ -310,7 +310,7 @@ content::WebContentsView* ChromeContentBrowserClient::CreateWebContentsView(
   return new content::TabContentsViewGtk(web_contents,
                                          new ChromeTabContentsViewWrapperGtk);
 #elif defined(OS_MACOSX)
-  return tab_contents_view_mac::CreateWebContentsView(
+  return web_contents_view_mac::CreateWebContentsView(
       web_contents,
       chrome_web_contents_view_mac_delegate::CreateWebContentsViewMacDelegate(
           web_contents));

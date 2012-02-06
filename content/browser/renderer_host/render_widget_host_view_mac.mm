@@ -637,7 +637,7 @@ void RenderWidgetHostViewMac::Destroy() {
 
   // We get this call just before |render_widget_host_| deletes
   // itself.  But we are owned by |cocoa_view_|, which may be retained
-  // by some other code.  Examples are TabContentsViewMac's
+  // by some other code.  Examples are WebContentsViewMac's
   // |latent_focus_view_| and TabWindowController's
   // |cachedContentView_|.
   render_widget_host_ = NULL;

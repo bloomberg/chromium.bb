@@ -4,7 +4,7 @@
 
 #import <Carbon/Carbon.h>
 
-#include "chrome/browser/tab_contents/moving_to_content/tab_contents_view_mac.h"
+#import "content/browser/tab_contents/web_contents_view_mac.h"
 
 #include <string>
 
@@ -42,8 +42,8 @@ COMPILE_ASSERT_MATCHING_ENUM(DragOperationMove);
 COMPILE_ASSERT_MATCHING_ENUM(DragOperationDelete);
 COMPILE_ASSERT_MATCHING_ENUM(DragOperationEvery);
 
-@interface TabContentsViewCocoa (Private)
-- (id)initWithTabContentsViewMac:(TabContentsViewMac*)w;
+@interface WebContentsViewCocoa (Private)
+- (id)initWithWebContentsViewMac:(WebContentsViewMac*)w;
 - (void)registerDragTypes;
 - (void)setCurrentDragOperation:(NSDragOperation)operation;
 - (void)startDragWithDropData:(const WebDropData&)dropData
@@ -59,15 +59,15 @@ COMPILE_ASSERT_MATCHING_ENUM(DragOperationEvery);
 - (void)renderWidgetHostWasResized;
 @end
 
-namespace tab_contents_view_mac {
+namespace web_contents_view_mac {
 content::WebContentsView* CreateWebContentsView(
     WebContents* web_contents,
     content::WebContentsViewMacDelegate* delegate) {
-  return new TabContentsViewMac(web_contents, delegate);
+  return new WebContentsViewMac(web_contents, delegate);
 }
 }
 
-TabContentsViewMac::TabContentsViewMac(
+WebContentsViewMac::WebContentsViewMac(
     WebContents* web_contents,
     content::WebContentsViewMacDelegate* delegate)
     : tab_contents_(static_cast<TabContents*>(web_contents)),
@@ -75,22 +75,22 @@ TabContentsViewMac::TabContentsViewMac(
       overlaid_view_(nil) {
 }
 
-TabContentsViewMac::~TabContentsViewMac() {
+WebContentsViewMac::~WebContentsViewMac() {
   // This handles the case where a renderer close call was deferred
   // while the user was operating a UI control which resulted in a
   // close.  In that case, the Cocoa view outlives the
-  // TabContentsViewMac instance due to Cocoa retain count.
+  // WebContentsViewMac instance due to Cocoa retain count.
   [cocoa_view_ cancelDeferredClose];
   [cocoa_view_ clearTabContentsView];
 }
 
-void TabContentsViewMac::CreateView(const gfx::Size& initial_size) {
-  TabContentsViewCocoa* view =
-      [[TabContentsViewCocoa alloc] initWithTabContentsViewMac:this];
+void WebContentsViewMac::CreateView(const gfx::Size& initial_size) {
+  WebContentsViewCocoa* view =
+      [[WebContentsViewCocoa alloc] initWithWebContentsViewMac:this];
   cocoa_view_.reset(view);
 }
 
-RenderWidgetHostView* TabContentsViewMac::CreateViewForWidget(
+RenderWidgetHostView* WebContentsViewMac::CreateViewForWidget(
     RenderWidgetHost* render_widget_host) {
   if (render_widget_host->view()) {
     // During testing, the view will already be set up in most cases to the
@@ -132,22 +132,22 @@ RenderWidgetHostView* TabContentsViewMac::CreateViewForWidget(
   return view;
 }
 
-gfx::NativeView TabContentsViewMac::GetNativeView() const {
+gfx::NativeView WebContentsViewMac::GetNativeView() const {
   return cocoa_view_.get();
 }
 
-gfx::NativeView TabContentsViewMac::GetContentNativeView() const {
+gfx::NativeView WebContentsViewMac::GetContentNativeView() const {
   RenderWidgetHostView* rwhv = tab_contents_->GetRenderWidgetHostView();
   if (!rwhv)
     return NULL;
   return rwhv->GetNativeView();
 }
 
-gfx::NativeWindow TabContentsViewMac::GetTopLevelNativeWindow() const {
+gfx::NativeWindow WebContentsViewMac::GetTopLevelNativeWindow() const {
   return [cocoa_view_.get() window];
 }
 
-void TabContentsViewMac::GetContainerBounds(gfx::Rect* out) const {
+void WebContentsViewMac::GetContainerBounds(gfx::Rect* out) const {
   // Convert bounds to window coordinate space.
   NSRect bounds =
       [cocoa_view_.get() convertRect:[cocoa_view_.get() bounds] toView:nil];
@@ -163,7 +163,7 @@ void TabContentsViewMac::GetContainerBounds(gfx::Rect* out) const {
   *out = gfx::Rect(NSRectToCGRect(bounds));
 }
 
-void TabContentsViewMac::StartDragging(
+void WebContentsViewMac::StartDragging(
     const WebDropData& drop_data,
     WebDragOperationsMask allowed_operations,
     const SkBitmap& image,
@@ -186,49 +186,49 @@ void TabContentsViewMac::StartDragging(
                               offset:offset];
 }
 
-void TabContentsViewMac::RenderViewCreated(RenderViewHost* host) {
+void WebContentsViewMac::RenderViewCreated(RenderViewHost* host) {
   // We want updates whenever the intrinsic width of the webpage changes.
   // Put the RenderView into that mode. The preferred width is used for example
   // when the "zoom" button in the browser window is clicked.
   host->EnablePreferredSizeMode();
 }
 
-void TabContentsViewMac::SetPageTitle(const string16& title) {
+void WebContentsViewMac::SetPageTitle(const string16& title) {
   // Meaningless on the Mac; widgets don't have a "title" attribute
 }
 
-void TabContentsViewMac::OnTabCrashed(base::TerminationStatus /* status */,
+void WebContentsViewMac::OnTabCrashed(base::TerminationStatus /* status */,
                                       int /* error_code */) {
 }
 
-void TabContentsViewMac::SizeContents(const gfx::Size& size) {
+void WebContentsViewMac::SizeContents(const gfx::Size& size) {
   // TODO(brettw | japhet) This is a hack and should be removed.
   // See web_contents_view.h.
   gfx::Rect rect(gfx::Point(), size);
-  TabContentsViewCocoa* view = cocoa_view_.get();
+  WebContentsViewCocoa* view = cocoa_view_.get();
   [view setFrame:[view flipRectToNSRect:rect]];
 }
 
-void TabContentsViewMac::Focus() {
+void WebContentsViewMac::Focus() {
   [[cocoa_view_.get() window] makeFirstResponder:GetContentNativeView()];
   [[cocoa_view_.get() window] makeKeyAndOrderFront:GetContentNativeView()];
 }
 
-void TabContentsViewMac::SetInitialFocus() {
+void WebContentsViewMac::SetInitialFocus() {
   if (tab_contents_->FocusLocationBarByDefault())
     tab_contents_->SetFocusToLocationBar(false);
   else
     [[cocoa_view_.get() window] makeFirstResponder:GetContentNativeView()];
 }
 
-void TabContentsViewMac::StoreFocus() {
+void WebContentsViewMac::StoreFocus() {
   // We're explicitly being asked to store focus, so don't worry if there's
   // already a view saved.
   focus_tracker_.reset(
       [[FocusTracker alloc] initWithWindow:[cocoa_view_ window]]);
 }
 
-void TabContentsViewMac::RestoreFocus() {
+void WebContentsViewMac::RestoreFocus() {
   // TODO(avi): Could we be restoring a view that's no longer in the key view
   // chain?
   if (!(focus_tracker_.get() &&
@@ -244,25 +244,25 @@ void TabContentsViewMac::RestoreFocus() {
   focus_tracker_.reset(nil);
 }
 
-bool TabContentsViewMac::IsDoingDrag() const {
+bool WebContentsViewMac::IsDoingDrag() const {
   return false;
 }
 
-void TabContentsViewMac::CancelDragAndCloseTab() {
+void WebContentsViewMac::CancelDragAndCloseTab() {
 }
 
-void TabContentsViewMac::UpdateDragCursor(WebDragOperation operation) {
+void WebContentsViewMac::UpdateDragCursor(WebDragOperation operation) {
   [cocoa_view_ setCurrentDragOperation: operation];
 }
 
-void TabContentsViewMac::GotFocus() {
+void WebContentsViewMac::GotFocus() {
   // This is only used in the views FocusManager stuff but it bleeds through
   // all subclasses. http://crbug.com/21875
 }
 
 // This is called when the renderer asks us to take focus back (i.e., it has
 // iterated past the last focusable element on the page).
-void TabContentsViewMac::TakeFocus(bool reverse) {
+void WebContentsViewMac::TakeFocus(bool reverse) {
   if (reverse) {
     [[cocoa_view_ window] selectPreviousKeyView:cocoa_view_.get()];
   } else {
@@ -270,13 +270,13 @@ void TabContentsViewMac::TakeFocus(bool reverse) {
   }
 }
 
-void TabContentsViewMac::CreateNewWindow(
+void WebContentsViewMac::CreateNewWindow(
     int route_id,
     const ViewHostMsg_CreateWindow_Params& params) {
   tab_contents_view_helper_.CreateNewWindow(tab_contents_, route_id, params);
 }
 
-void TabContentsViewMac::CreateNewWidget(
+void WebContentsViewMac::CreateNewWidget(
     int route_id, WebKit::WebPopupType popup_type) {
   RenderWidgetHostView* widget_view =
       tab_contents_view_helper_.CreateNewWidget(tab_contents_,
@@ -291,7 +291,7 @@ void TabContentsViewMac::CreateNewWidget(
   [widget_view_mac->GetNativeView() retain];
 }
 
-void TabContentsViewMac::CreateNewFullscreenWidget(int route_id) {
+void WebContentsViewMac::CreateNewFullscreenWidget(int route_id) {
   RenderWidgetHostView* widget_view =
       tab_contents_view_helper_.CreateNewWidget(tab_contents_,
                                                 route_id,
@@ -305,7 +305,7 @@ void TabContentsViewMac::CreateNewFullscreenWidget(int route_id) {
   [widget_view_mac->GetNativeView() retain];
 }
 
-void TabContentsViewMac::ShowCreatedWindow(int route_id,
+void WebContentsViewMac::ShowCreatedWindow(int route_id,
                                            WindowOpenDisposition disposition,
                                            const gfx::Rect& initial_pos,
                                            bool user_gesture) {
@@ -313,7 +313,7 @@ void TabContentsViewMac::ShowCreatedWindow(int route_id,
       tab_contents_, route_id, disposition, initial_pos, user_gesture);
 }
 
-void TabContentsViewMac::ShowCreatedWidget(
+void WebContentsViewMac::ShowCreatedWidget(
     int route_id, const gfx::Rect& initial_pos) {
   RenderWidgetHostView* widget_host_view =
       tab_contents_view_helper_.ShowCreatedWidget(tab_contents_,
@@ -329,7 +329,7 @@ void TabContentsViewMac::ShowCreatedWidget(
   [widget_view_mac->GetNativeView() release];
 }
 
-void TabContentsViewMac::ShowCreatedFullscreenWidget(int route_id) {
+void WebContentsViewMac::ShowCreatedFullscreenWidget(int route_id) {
   RenderWidgetHostView* widget_host_view =
       tab_contents_view_helper_.ShowCreatedWidget(tab_contents_,
                                                   route_id,
@@ -344,7 +344,7 @@ void TabContentsViewMac::ShowCreatedFullscreenWidget(int route_id) {
   [widget_view_mac->GetNativeView() release];
 }
 
-void TabContentsViewMac::ShowContextMenu(const ContextMenuParams& params) {
+void WebContentsViewMac::ShowContextMenu(const ContextMenuParams& params) {
   // Allow delegates to handle the context menu operation first.
   if (tab_contents_->GetDelegate() &&
       tab_contents_->GetDelegate()->HandleContextMenu(params)) {
@@ -358,7 +358,7 @@ void TabContentsViewMac::ShowContextMenu(const ContextMenuParams& params) {
 }
 
 // Display a popup menu for WebKit using Cocoa widgets.
-void TabContentsViewMac::ShowPopupMenu(
+void WebContentsViewMac::ShowPopupMenu(
     const gfx::Rect& bounds,
     int item_height,
     double item_font_size,
@@ -370,7 +370,7 @@ void TabContentsViewMac::ShowPopupMenu(
                                   selected_item, items, right_aligned);
 }
 
-bool TabContentsViewMac::IsEventTracking() const {
+bool WebContentsViewMac::IsEventTracking() const {
   return base::MessagePumpMac::IsHandlingSendEvent();
 }
 
@@ -378,19 +378,19 @@ bool TabContentsViewMac::IsEventTracking() const {
 // The obvious way to do this would be PostNonNestableTask(), but that
 // will fire when the event-tracking loop polls for events.  So we
 // need to bounce the message via Cocoa, instead.
-void TabContentsViewMac::CloseTabAfterEventTracking() {
+void WebContentsViewMac::CloseTabAfterEventTracking() {
   [cocoa_view_ cancelDeferredClose];
   [cocoa_view_ performSelector:@selector(closeTabAfterEvent)
                     withObject:nil
                     afterDelay:0.0];
 }
 
-void TabContentsViewMac::GetViewBounds(gfx::Rect* out) const {
+void WebContentsViewMac::GetViewBounds(gfx::Rect* out) const {
   // This method is not currently used on mac.
   NOTIMPLEMENTED();
 }
 
-void TabContentsViewMac::InstallOverlayView(gfx::NativeView view) {
+void WebContentsViewMac::InstallOverlayView(gfx::NativeView view) {
   DCHECK(!overlaid_view_);
   overlaid_view_ = view;
   [view setAutoresizingMask:(NSViewWidthSizable | NSViewHeightSizable)];
@@ -398,22 +398,22 @@ void TabContentsViewMac::InstallOverlayView(gfx::NativeView view) {
   [view setFrame:[cocoa_view_.get() bounds]];
 }
 
-void TabContentsViewMac::RemoveOverlayView() {
+void WebContentsViewMac::RemoveOverlayView() {
   DCHECK(overlaid_view_);
   [overlaid_view_ removeFromSuperview];
   overlaid_view_ = nil;
 }
 
-void TabContentsViewMac::CloseTab() {
+void WebContentsViewMac::CloseTab() {
   tab_contents_->Close(tab_contents_->GetRenderViewHost());
 }
 
-@implementation TabContentsViewCocoa
+@implementation WebContentsViewCocoa
 
-- (id)initWithTabContentsViewMac:(TabContentsViewMac*)w {
+- (id)initWithWebContentsViewMac:(WebContentsViewMac*)w {
   self = [super initWithFrame:NSZeroRect];
   if (self != nil) {
-    tabContentsView_ = w;
+    webContentsView_ = w;
     dragDest_.reset(
         [[WebDragDest alloc] initWithTabContents:[self tabContents]]);
     [self registerDragTypes];
@@ -424,17 +424,17 @@ void TabContentsViewMac::CloseTab() {
                 name:kViewDidBecomeFirstResponder
               object:nil];
 
-    if (tabContentsView_->delegate()) {
-      [dragDest_ setDragDelegate:tabContentsView_->delegate()->DragDelegate()];
-      tabContentsView_->delegate()->NativeViewCreated(self);
+    if (webContentsView_->delegate()) {
+      [dragDest_ setDragDelegate:webContentsView_->delegate()->DragDelegate()];
+      webContentsView_->delegate()->NativeViewCreated(self);
     }
   }
   return self;
 }
 
 - (void)dealloc {
-  if (tabContentsView_ && tabContentsView_->delegate())
-    tabContentsView_->delegate()->NativeViewDestroyed(self);
+  if (webContentsView_ && webContentsView_->delegate())
+    webContentsView_->delegate()->NativeViewDestroyed(self);
 
   // Cancel any deferred tab closes, just in case.
   [self cancelDeferredClose];
@@ -459,9 +459,9 @@ void TabContentsViewMac::CloseTab() {
 }
 
 - (TabContents*)tabContents {
-  if (tabContentsView_ == NULL)
+  if (webContentsView_ == NULL)
     return NULL;
-  return tabContentsView_->tab_contents();
+  return webContentsView_->tab_contents();
 }
 
 - (void)mouseEvent:(NSEvent *)theEvent {
@@ -480,7 +480,7 @@ void TabContentsViewMac::CloseTab() {
 - (BOOL)mouseDownCanMoveWindow {
   // This is needed to prevent mouseDowns from moving the window
   // around.  The default implementation returns YES only for opaque
-  // views.  TabContentsViewCocoa does not draw itself in any way, but
+  // views.  WebContentsViewCocoa does not draw itself in any way, but
   // its subviews do paint their entire frames.  Returning NO here
   // saves us the effort of overriding this method in every possible
   // subview.
@@ -587,11 +587,11 @@ void TabContentsViewMac::CloseTab() {
 }
 
 - (void)clearTabContentsView {
-  tabContentsView_ = NULL;
+  webContentsView_ = NULL;
 }
 
 - (void)closeTabAfterEvent {
-  tabContentsView_->CloseTab();
+  webContentsView_->CloseTab();
 }
 
 - (void)viewDidBecomeFirstResponder:(NSNotification*)notification {

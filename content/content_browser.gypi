@@ -641,6 +641,8 @@
     'browser/tab_contents/tab_contents_view_helper.h',
     'browser/tab_contents/tab_contents_view_wrapper_gtk.h',
     'browser/tab_contents/title_updated_details.h',
+    'browser/tab_contents/web_contents_view_mac.h',
+    'browser/tab_contents/web_contents_view_mac.mm',
     'browser/tab_contents/web_drag_dest_delegate.h',
     'browser/tab_contents/web_drag_dest_gtk.cc',
     'browser/tab_contents/web_drag_dest_gtk.h',

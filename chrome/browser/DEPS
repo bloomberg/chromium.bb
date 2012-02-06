@@ -114,6 +114,7 @@ include_rules = [
   "+content/browser/tab_contents/tab_contents_view_wrapper_gtk.h",
   "+content/browser/tab_contents/test_tab_contents.h",
   "+content/browser/tab_contents/title_updated_details.h",
+  "+content/browser/tab_contents/web_contents_view_mac.h",
   "+content/browser/tab_contents/web_drag_dest_delegate.h",
   "+content/browser/tab_contents/web_drag_dest_gtk.h",
   "+content/browser/tab_contents/web_drag_dest_mac.h",

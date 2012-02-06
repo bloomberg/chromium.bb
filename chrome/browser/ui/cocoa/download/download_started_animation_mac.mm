@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -11,9 +11,10 @@
 
 #import <QuartzCore/QuartzCore.h>
 
-#include "chrome/browser/tab_contents/moving_to_content/tab_contents_view_mac.h"
+#include "base/logging.h"
 #import "chrome/browser/ui/cocoa/animatable_image.h"
 #include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
@@ -23,6 +24,7 @@
 #include "third_party/skia/include/utils/mac/SkCGUtils.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
+#include "ui/gfx/rect.h"
 
 class DownloadAnimationWebObserver;
 

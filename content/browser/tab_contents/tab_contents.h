@@ -362,7 +362,7 @@ class CONTENT_EXPORT TabContents
 #if defined(TOOLKIT_VIEWS)
   friend class TabContentsViewViews;
 #elif defined(OS_MACOSX)
-  friend class TabContentsViewMac;
+  friend class WebContentsViewMac;
 #elif defined(TOOLKIT_USES_GTK)
   friend class TabContentsViewGtk;
 #endif

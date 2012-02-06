@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_TAB_CONTENTS_TAB_CONTENTS_VIEW_MAC_H_
-#define CHROME_BROWSER_TAB_CONTENTS_TAB_CONTENTS_VIEW_MAC_H_
+#ifndef CONTENT_BROWSER_TAB_CONTENTS_WEB_CONTENTS_VIEW_MAC_H_
+#define CONTENT_BROWSER_TAB_CONTENTS_WEB_CONTENTS_VIEW_MAC_H_
 #pragma once
 
 #if defined(__OBJC__)
@@ -22,7 +22,7 @@
 
 @class FocusTracker;
 class SkBitmap;
-class TabContentsViewMac;
+class WebContentsViewMac;
 @class WebDragDest;
 @class WebDragSource;
 
@@ -34,9 +34,9 @@ namespace gfx {
 class Point;
 }
 
-@interface TabContentsViewCocoa : BaseView {
+@interface WebContentsViewCocoa : BaseView {
  @private
-  TabContentsViewMac* tabContentsView_;  // WEAK; owns us
+  WebContentsViewMac* webContentsView_;  // WEAK; owns us
   scoped_nsobject<WebDragSource> dragSource_;
   scoped_nsobject<WebDragDest> dragDest_;
 }
@@ -52,15 +52,15 @@ class Point;
 
 // Mac-specific implementation of the WebContentsView. It owns an NSView that
 // contains all of the contents of the tab and associated child views.
-class TabContentsViewMac : public content::WebContentsView {
+class WebContentsViewMac : public content::WebContentsView {
  public:
   // The corresponding TabContents is passed in the constructor, and manages our
   // lifetime. This doesn't need to be the case, but is this way currently
   // because that's what was easiest when they were split.
   // TODO(jam): make this take a WebContents once it's created from content.
-  TabContentsViewMac(content::WebContents* web_contents,
+  WebContentsViewMac(content::WebContents* web_contents,
                      content::WebContentsViewMacDelegate* delegate);
-  virtual ~TabContentsViewMac();
+  virtual ~WebContentsViewMac();
 
   // WebContentsView implementation --------------------------------------------
 
@@ -132,7 +132,7 @@ class TabContentsViewMac : public content::WebContentsView {
   TabContentsViewHelper tab_contents_view_helper_;
 
   // The Cocoa NSView that lives in the view hierarchy.
-  scoped_nsobject<TabContentsViewCocoa> cocoa_view_;
+  scoped_nsobject<WebContentsViewCocoa> cocoa_view_;
 
   // Keeps track of which NSView has focus so we can restore the focus when
   // focus returns.
@@ -145,7 +145,7 @@ class TabContentsViewMac : public content::WebContentsView {
   // weak reference.
   NSView* overlaid_view_;
 
-  DISALLOW_COPY_AND_ASSIGN(TabContentsViewMac);
+  DISALLOW_COPY_AND_ASSIGN(WebContentsViewMac);
 };
 
 #endif  // __OBJC__
@@ -157,11 +157,11 @@ class WebContentsView;
 class WebContentsViewMacDelegate;
 }
 
-namespace tab_contents_view_mac {
-// Creates a TabContentsViewMac. Takes ownership of |delegate|.
+namespace web_contents_view_mac {
+// Creates a WebContentsViewMac. Takes ownership of |delegate|.
 content::WebContentsView* CreateWebContentsView(
     content::WebContents* web_contents,
     content::WebContentsViewMacDelegate* delegate);
 }
 
-#endif  // CHROME_BROWSER_TAB_CONTENTS_TAB_CONTENTS_VIEW_MAC_H_
+#endif  // CONTENT_BROWSER_TAB_CONTENTS_WEB_CONTENTS_VIEW_MAC_H_
