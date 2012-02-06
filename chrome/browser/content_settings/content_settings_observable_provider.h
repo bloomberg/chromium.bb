@@ -26,7 +26,7 @@ class ObservableProvider : public ProviderInterface {
   void NotifyObservers(const ContentSettingsPattern& primary_pattern,
                        const ContentSettingsPattern& secondary_pattern,
                        ContentSettingsType content_type,
-                       std::string resource_identifier);
+                       const std::string& resource_identifier);
   void RemoveAllObservers();
 
  private:
