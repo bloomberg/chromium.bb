@@ -1831,4 +1831,19 @@
    fun:GetNumObjects
    ...
 }
-
+{
+   bug_112857_a
+   Heapcheck:Leak
+   fun:SpellCheckProvider::RequestTextChecking
+   fun:::SpellCheckProviderTest_UsingHunspell_Test::TestBody
+}
+{
+   bug_112857_b
+   Heapcheck:Leak
+   fun:Pickle::Resize
+   fun:Pickle
+   fun:Message
+   fun:SpellCheckHostMsg_CallSpellingService
+   fun:SpellCheckProvider::RequestTextChecking
+   fun:::SpellCheckProviderTest_UsingHunspell_Test::TestBody
+}
