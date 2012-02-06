@@ -4,17 +4,14 @@
 
 #include "chrome/browser/ui/extensions/shell_window.h"
 
-#include "chrome/browser/chrome_plugin_service_filter.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
-#include "content/browser/renderer_host/render_view_host.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
-#include "content/public/browser/render_process_host.h"
 
 ShellWindow* ShellWindow::Create(Profile* profile,
                                  const Extension* extension,
@@ -65,10 +62,6 @@ void ShellWindow::Observe(int type,
   }
 }
 
-void ShellWindow::RenderViewCreated(RenderViewHost* render_view_host) {
-  DisableNPAPIPlugins();
-}
-
 ShellWindow::ShellWindow(ExtensionHost* host)
     : host_(host) {
   // Close the window in response to window.close() and the like.
@@ -83,27 +76,7 @@ ShellWindow::ShellWindow(ExtensionHost* host)
   // apps are no longer tied to the browser process).
   registrar_.Add(this, content::NOTIFICATION_APP_TERMINATING,
                  content::NotificationService::AllSources());
-  content::WebContentsObserver::Observe(web_contents());
 }
 
 ShellWindow::~ShellWindow() {
-  ClearDisabledNPAPIPlugins();
-}
-
-void ShellWindow::DisableNPAPIPlugins() {
-  int render_process_id = host_->render_process_host()->GetID();
-  int render_view_id = host_->render_view_host()->routing_id();
-  ChromePluginServiceFilter* filter =
-      ChromePluginServiceFilter::GetInstance();
-  filter->DisableNPAPIForRenderView(render_process_id,
-                                    render_view_id);
-}
-
-void ShellWindow::ClearDisabledNPAPIPlugins() {
-  int render_process_id = host_->render_process_host()->GetID();
-  int render_view_id = host_->render_view_host()->routing_id();
-  ChromePluginServiceFilter* filter =
-      ChromePluginServiceFilter::GetInstance();
-  filter->ClearDisabledNPAPIForRenderView(render_process_id,
-                                          render_view_id);
 }

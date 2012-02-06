@@ -15,6 +15,7 @@
 #include "chrome/browser/content_settings/content_settings_details.h"
 #include "chrome/browser/content_settings/content_settings_extension_provider.h"
 #include "chrome/browser/content_settings/content_settings_observable_provider.h"
+#include "chrome/browser/content_settings/content_settings_platform_app_provider.h"
 #include "chrome/browser/content_settings/content_settings_policy_provider.h"
 #include "chrome/browser/content_settings/content_settings_pref_provider.h"
 #include "chrome/browser/content_settings/content_settings_provider.h"
@@ -46,6 +47,7 @@ typedef std::vector<content_settings::Rule> Rules;
 typedef std::pair<std::string, std::string> StringPair;
 
 const char* kProviderNames[] = {
+  "platform_app",
   "policy",
   "extension",
   "preference",
@@ -53,6 +55,7 @@ const char* kProviderNames[] = {
 };
 
 content_settings::SettingSource kProviderSourceMap[] = {
+  content_settings::SETTING_SOURCE_EXTENSION,
   content_settings::SETTING_SOURCE_POLICY,
   content_settings::SETTING_SOURCE_EXTENSION,
   content_settings::SETTING_SOURCE_USER,
@@ -83,6 +86,10 @@ HostContentSettingsMap::HostContentSettingsMap(
     bool incognito)
     : prefs_(prefs),
       is_off_the_record_(incognito) {
+  content_settings::PlatformAppProvider* platform_app_provider =
+      new content_settings::PlatformAppProvider();
+  content_settings_providers_[PLATFORM_APP_PROVIDER] = platform_app_provider;
+
   content_settings::ObservableProvider* policy_provider =
       new content_settings::PolicyProvider(prefs_);
   policy_provider->AddObserver(this);
@@ -402,8 +409,9 @@ bool HostContentSettingsMap::ShouldAllowAllContent(
     return false;
   }
   if (primary_url.SchemeIs(chrome::kExtensionScheme)) {
-    return content_type != CONTENT_SETTINGS_TYPE_COOKIES ||
-        secondary_url.SchemeIs(chrome::kExtensionScheme);
+    return content_type != CONTENT_SETTINGS_TYPE_PLUGINS &&
+        (content_type != CONTENT_SETTINGS_TYPE_COOKIES ||
+            secondary_url.SchemeIs(chrome::kExtensionScheme));
   }
   return primary_url.SchemeIs(chrome::kChromeDevToolsScheme) ||
          primary_url.SchemeIs(chrome::kChromeInternalScheme) ||

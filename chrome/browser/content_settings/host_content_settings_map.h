@@ -40,8 +40,9 @@ class HostContentSettingsMap
       public base::RefCountedThreadSafe<HostContentSettingsMap> {
  public:
   enum ProviderType {
-    POLICY_PROVIDER = 0,
-    EXTENSION_PROVIDER = 1,
+    PLATFORM_APP_PROVIDER = 0,
+    POLICY_PROVIDER,
+    EXTENSION_PROVIDER,
     PREF_PROVIDER,
     DEFAULT_PROVIDER,
     NUM_PROVIDER_TYPES,

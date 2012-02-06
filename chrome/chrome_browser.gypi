@@ -875,6 +875,8 @@
         'browser/content_settings/content_settings_observer.h',
         'browser/content_settings/content_settings_origin_identifier_value_map.cc',
         'browser/content_settings/content_settings_origin_identifier_value_map.h',
+        'browser/content_settings/content_settings_platform_app_provider.cc',
+        'browser/content_settings/content_settings_platform_app_provider.h',
         'browser/content_settings/content_settings_policy_provider.cc',
         'browser/content_settings/content_settings_policy_provider.h',
         'browser/content_settings/content_settings_pref_provider.cc',
