@@ -7,13 +7,13 @@
     '../../../build/common.gypi',
   ],
   'target_defaults': {
+    'dependencies': [
+      'nonnacl_util_launcher.gyp:nonnacl_util_launcher',
+    ],
     'conditions': [
       ['OS=="linux"', {
         'defines': [
           'XP_UNIX',
-        ],
-        'dependencies': [
-          'posix/nonnacl_util_posix.gyp:nonnacl_util_posix',
         ],
       }],
       ['OS=="mac"', {
@@ -24,24 +24,12 @@
           'NO_X11',
           'USE_SYSTEM_CONSOLE',
         ],
-        'sources': [
-          'posix/sel_ldr_launcher_posix.cc',
-          'osx/get_plugin_dirname.mm',
-        ],
-        'link_settings': {
-          'libraries': [
-            '$(SDKROOT)/System/Library/Frameworks/Foundation.framework',
-          ],
-        },
       }],
       ['OS=="win"', {
         'defines': [
           'XP_WIN',
           'WIN32',
           '_WINDOWS'
-        ],
-        'sources': [
-          'win/sel_ldr_launcher_win.cc',
         ],
       }],
     ],
