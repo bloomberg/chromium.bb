@@ -78,8 +78,11 @@ TEST_F(AutomatedUITestBase, RestoreTab) {
   ASSERT_EQ(2, tab_count);
 }
 
-// crbug.com/96049
 #if defined(OS_WIN)
+// crbug.com/96049
+#define MAYBE_CloseTab FLAKY_CloseTab
+#elif defined(OS_MACOSX)
+// crbug.com/112821
 #define MAYBE_CloseTab FLAKY_CloseTab
 #else
 #define MAYBE_CloseTab CloseTab
