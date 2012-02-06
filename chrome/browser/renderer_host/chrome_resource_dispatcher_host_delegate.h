@@ -41,22 +41,22 @@ class ChromeResourceDispatcherHostDelegate
       ResourceType::Type resource_type,
       const content::ResourceContext& resource_context,
       const content::Referrer& referrer) OVERRIDE;
-  virtual ResourceHandler* RequestBeginning(
-      ResourceHandler* handler,
+  virtual void RequestBeginning(
       net::URLRequest* request,
       const content::ResourceContext& resource_context,
-      bool is_subresource,
+      ResourceType::Type resource_type,
       int child_id,
       int route_id,
-      bool is_continuation_of_transferred_request) OVERRIDE;
-  virtual ResourceHandler* DownloadStarting(
-      ResourceHandler* handler,
-      const content::ResourceContext& resource_context,
+      bool is_continuation_of_transferred_request,
+      ScopedVector<content::ResourceThrottle>* throttles) OVERRIDE;
+  virtual void DownloadStarting(
       net::URLRequest* request,
+      const content::ResourceContext& resource_context,
       int child_id,
       int route_id,
       int request_id,
-      bool is_new_request) OVERRIDE;
+      bool is_new_request,
+      ScopedVector<content::ResourceThrottle>* throttles) OVERRIDE;
   virtual bool ShouldDeferStart(
       net::URLRequest* request,
       const content::ResourceContext& resource_context) OVERRIDE;
@@ -81,8 +81,9 @@ class ChromeResourceDispatcherHostDelegate
       content::ResourceResponse* response) OVERRIDE;
 
  private:
-  ResourceHandler* CreateSafeBrowsingResourceHandler(
-      ResourceHandler* handler, int child_id, int route_id, bool subresource);
+  content::ResourceThrottle* CreateSafeBrowsingResourceThrottle(
+      const net::URLRequest* request, int child_id, int route_id,
+      bool subresource);
 
   ResourceDispatcherHost* resource_dispatcher_host_;
   scoped_refptr<DownloadRequestLimiter> download_request_limiter_;

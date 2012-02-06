@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_RENDERER_HOST_SAFE_BROWSING_RESOURCE_HANDLER_H_
-#define CHROME_BROWSER_RENDERER_HOST_SAFE_BROWSING_RESOURCE_HANDLER_H_
+#ifndef CHROME_BROWSER_RENDERER_HOST_SAFE_BROWSING_RESOURCE_THROTTLE_H_
+#define CHROME_BROWSER_RENDERER_HOST_SAFE_BROWSING_RESOURCE_THROTTLE_H_
 #pragma once
 
 #include <string>
@@ -13,11 +13,15 @@
 #include "base/time.h"
 #include "base/timer.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
-#include "content/browser/renderer_host/resource_handler.h"
+#include "content/public/browser/resource_throttle.h"
 
 class ResourceDispatcherHost;
 
-// SafeBrowsingResourceHandler checks that URLs are "safe" before navigating
+namespace net {
+class URLRequest;
+}
+
+// SafeBrowsingResourceThrottle checks that URLs are "safe" before navigating
 // to them. To be considered "safe", a URL must not appear in the
 // malware/phishing blacklists (see SafeBrowsingService for details).
 //
@@ -39,43 +43,28 @@ class ResourceDispatcherHost;
 // dangerous, a warning page is thrown up and the request remains suspended.
 // If on the other hand the URL was decided to be safe, the request is
 // resumed.
-class SafeBrowsingResourceHandler : public ResourceHandler,
-                                    public SafeBrowsingService::Client {
+class SafeBrowsingResourceThrottle
+    : public content::ResourceThrottle,
+      public SafeBrowsingService::Client,
+      public base::SupportsWeakPtr<SafeBrowsingResourceThrottle> {
  public:
-  static SafeBrowsingResourceHandler* Create(
-      ResourceHandler* handler,
+  static SafeBrowsingResourceThrottle* Create(
+      const net::URLRequest* request,
       int render_process_host_id,
       int render_view_id,
       bool is_subresource,
-      SafeBrowsingService* safe_browsing,
-      ResourceDispatcherHost* resource_dispatcher_host);
+      SafeBrowsingService* safe_browsing);
 
-  // ResourceHandler implementation:
-  virtual bool OnUploadProgress(
-      int request_id, uint64 position, uint64 size) OVERRIDE;
-  virtual bool OnRequestRedirected(
-      int request_id, const GURL& new_url, content::ResourceResponse* response,
-      bool* defer) OVERRIDE;
-  virtual bool OnResponseStarted(
-      int request_id, content::ResourceResponse* response) OVERRIDE;
-  virtual bool OnWillStart(
-      int request_id, const GURL& url, bool* defer) OVERRIDE;
-  virtual bool OnWillRead(
-      int request_id, net::IOBuffer** buf, int* buf_size,
-      int min_size) OVERRIDE;
-  virtual bool OnReadCompleted(int request_id, int* bytes_read) OVERRIDE;
-  virtual bool OnResponseCompleted(int request_id,
-                                   const net::URLRequestStatus& status,
-                                   const std::string& security_info) OVERRIDE;
-  virtual void OnRequestClosed() OVERRIDE;
+  // content::ResourceThrottle implementation (called on IO thread):
+  virtual void WillStartRequest(bool* defer) OVERRIDE;
+  virtual void WillRedirectRequest(const GURL& new_url, bool* defer) OVERRIDE;
 
-  // SafeBrowsingService::Client implementation, called on the IO thread once
-  // the URL has been classified.
+  // SafeBrowsingService::Client implementation (called on IO thread):
   virtual void OnBrowseUrlCheckResult(
       const GURL& url, SafeBrowsingService::UrlCheckResult result) OVERRIDE;
 
  private:
-  // Describes what phase of the check a handler is in.
+  // Describes what phase of the check a throttle is in.
   enum State {
     STATE_NONE,
     STATE_CHECKING_URL,
@@ -89,17 +78,16 @@ class SafeBrowsingResourceHandler : public ResourceHandler,
     DEFERRED_REDIRECT,
   };
 
-  SafeBrowsingResourceHandler(ResourceHandler* handler,
-                              int render_process_host_id,
-                              int render_view_id,
-                              bool is_subresource,
-                              SafeBrowsingService* safe_browsing,
-                              ResourceDispatcherHost* resource_dispatcher_host);
+  SafeBrowsingResourceThrottle(const net::URLRequest* request,
+                               int render_process_host_id,
+                               int render_view_id,
+                               bool is_subresource,
+                               SafeBrowsingService* safe_browsing);
 
-  virtual ~SafeBrowsingResourceHandler();
+  virtual ~SafeBrowsingResourceThrottle();
 
-  // Cancels any in progress safe browsing actions.
-  void Shutdown();
+  // SafeBrowsingService::UrlCheckCallback implementation.
+  void OnBlockingPageComplete(bool proceed);
 
   // Starts running |url| through the safe browsing check. Returns true if the
   // URL is safe to visit. Otherwise returns false and will call
@@ -114,23 +102,9 @@ class SafeBrowsingResourceHandler : public ResourceHandler,
   void StartDisplayingBlockingPage(const GURL& url,
                                    SafeBrowsingService::UrlCheckResult result);
 
-  // Called on the IO thread when the user has decided to proceed with the
-  // current request, or go back.
-  void OnBlockingPageComplete(bool proceed);
-
   // Resumes the request, by continuing the deferred action (either starting the
   // request, or following a redirect).
   void ResumeRequest();
-
-  // Resumes the deferred "start".
-  void ResumeStart();
-
-  // Resumes the deferred redirect.
-  void ResumeRedirect();
-
-  // Erases the state associated with a deferred "start" or redirect
-  // (i.e. the deferred URL and request ID).
-  void ClearDeferredRequestInfo();
 
   State state_;
   DeferState defer_state_;
@@ -143,26 +117,21 @@ class SafeBrowsingResourceHandler : public ResourceHandler,
   base::TimeTicks url_check_start_time_;
 
   // Timer to abort the safe browsing check if it takes too long.
-  base::OneShotTimer<SafeBrowsingResourceHandler> timer_;
+  base::OneShotTimer<SafeBrowsingResourceThrottle> timer_;
 
   // The redirect chain for this resource
   std::vector<GURL> redirect_urls_;
 
-  // Details on the deferred request (either a start or redirect). It is only
-  // valid to access these members when defer_state_ != DEFERRED_NONE.
-  GURL deferred_url_;
-  int deferred_request_id_;
-  scoped_refptr<content::ResourceResponse> deferred_redirect_response_;
+  GURL url_being_checked_;
 
-  scoped_refptr<ResourceHandler> next_handler_;
   int render_process_host_id_;
   int render_view_id_;
   scoped_refptr<SafeBrowsingService> safe_browsing_;
-  ResourceDispatcherHost* rdh_;
+  const net::URLRequest* request_;
   bool is_subresource_;
 
-  DISALLOW_COPY_AND_ASSIGN(SafeBrowsingResourceHandler);
+  DISALLOW_COPY_AND_ASSIGN(SafeBrowsingResourceThrottle);
 };
 
 
-#endif  // CHROME_BROWSER_RENDERER_HOST_SAFE_BROWSING_RESOURCE_HANDLER_H_
+#endif  // CHROME_BROWSER_RENDERER_HOST_SAFE_BROWSING_RESOURCE_THROTTLE_H_

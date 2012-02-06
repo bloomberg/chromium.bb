@@ -4,7 +4,6 @@
 
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/offline/offline_load_page.h"
-#include "chrome/browser/renderer_host/offline_resource_handler.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "content/browser/tab_contents/test_tab_contents.h"
 #include "content/test/test_browser_thread.h"

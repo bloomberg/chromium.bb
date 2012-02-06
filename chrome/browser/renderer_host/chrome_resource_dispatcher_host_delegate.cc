@@ -8,7 +8,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/download/download_request_limiter.h"
-#include "chrome/browser/download/download_throttling_resource_handler.h"
+#include "chrome/browser/download/download_resource_throttle.h"
 #include "chrome/browser/download/download_util.h"
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
 #include "chrome/browser/instant/instant_loader.h"
@@ -18,8 +18,8 @@
 #include "chrome/browser/prerender/prerender_tracker.h"
 #include "chrome/browser/profiles/profile_io_data.h"
 #include "chrome/browser/renderer_host/chrome_url_request_user_data.h"
-#include "chrome/browser/renderer_host/safe_browsing_resource_handler.h"
-#include "chrome/browser/renderer_host/transfer_navigation_resource_handler.h"
+#include "chrome/browser/renderer_host/safe_browsing_resource_throttle.h"
+#include "chrome/browser/renderer_host/transfer_navigation_resource_throttle.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/ui/auto_login_prompter.h"
 #include "chrome/browser/ui/login/login_prompt.h"
@@ -37,7 +37,7 @@
 
 // TODO(oshima): Enable this for other platforms.
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/renderer_host/offline_resource_handler.h"
+#include "chrome/browser/renderer_host/offline_resource_throttle.h"
 #endif
 
 using content::BrowserThread;
@@ -130,14 +130,14 @@ bool ChromeResourceDispatcherHostDelegate::ShouldBeginRequest(
   return true;
 }
 
-ResourceHandler* ChromeResourceDispatcherHostDelegate::RequestBeginning(
-    ResourceHandler* handler,
+void ChromeResourceDispatcherHostDelegate::RequestBeginning(
     net::URLRequest* request,
     const content::ResourceContext& resource_context,
-    bool is_subresource,
+    ResourceType::Type resource_type,
     int child_id,
     int route_id,
-    bool is_continuation_of_transferred_request) {
+    bool is_continuation_of_transferred_request,
+    ScopedVector<content::ResourceThrottle>* throttles) {
   if (is_continuation_of_transferred_request)
     ChromeURLRequestUserData::Delete(request);
 
@@ -148,65 +148,59 @@ ResourceHandler* ChromeResourceDispatcherHostDelegate::RequestBeginning(
     request->set_priority(net::IDLE);
   }
 
+  if (resource_type == ResourceType::MAIN_FRAME) {
+    throttles->push_back(new TransferNavigationResourceThrottle(request));
+
+#if defined(OS_CHROMEOS)
+    // We check offline first, then check safe browsing so that we still can
+    // block unsafe site after we remove offline page.
+    throttles->push_back(new OfflineResourceThrottle(
+        child_id, route_id, request, resource_context.appcache_service()));
+#endif
+  }
+
 #if defined(ENABLE_SAFE_BROWSING)
   // Insert safe browsing at the front of the chain, so it gets to decide
   // on policies first.
   ProfileIOData* io_data = reinterpret_cast<ProfileIOData*>(
       resource_context.GetUserData(NULL));
   if (io_data->safe_browsing_enabled()->GetValue()) {
-    handler = CreateSafeBrowsingResourceHandler(
-        handler, child_id, route_id, is_subresource);
+    throttles->push_back(CreateSafeBrowsingResourceThrottle(
+        request, child_id, route_id,
+        resource_type != ResourceType::MAIN_FRAME));
   }
 #endif
-
-#if defined(OS_CHROMEOS)
-  // We check offline first, then check safe browsing so that we still can block
-  // unsafe site after we remove offline page.
-  handler = new OfflineResourceHandler(
-      handler, child_id, route_id, resource_dispatcher_host_, request,
-      resource_context.appcache_service());
-#endif
-
-  handler = new TransferNavigationResourceHandler(
-      handler, resource_dispatcher_host_, request);
-
-  return handler;
 }
 
-ResourceHandler* ChromeResourceDispatcherHostDelegate::DownloadStarting(
-      ResourceHandler* handler,
-      const content::ResourceContext& resource_context,
-      net::URLRequest* request,
-      int child_id,
-      int route_id,
-      int request_id,
-      bool is_new_request) {
-
+void ChromeResourceDispatcherHostDelegate::DownloadStarting(
+    net::URLRequest* request,
+    const content::ResourceContext& resource_context,
+    int child_id,
+    int route_id,
+    int request_id,
+    bool is_new_request,
+    ScopedVector<content::ResourceThrottle>* throttles) {
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&NotifyDownloadInitiatedOnUI, child_id, route_id));
 
   // If this isn't a new request, we've seen this before and added the safe
-  // browsing resource handler already so no need to add it again. This code
+  // browsing resource throttle already so no need to add it again. This code
   // path is only hit for requests initiated through the browser, and not the
-  // web, so no need to add the throttling handler.
+  // web, so no need to add the download throttle.
   if (is_new_request) {
 #if defined(ENABLE_SAFE_BROWSING)
     ProfileIOData* io_data = reinterpret_cast<ProfileIOData*>(
         resource_context.GetUserData(NULL));
-    if (!io_data->safe_browsing_enabled()->GetValue())
-      return handler;
-
-    return CreateSafeBrowsingResourceHandler(
-        handler, child_id, route_id, false);
-#else
-    return handler;
+    if (io_data->safe_browsing_enabled()->GetValue()) {
+      throttles->push_back(CreateSafeBrowsingResourceThrottle(
+          request, child_id, route_id, false));
+    }
 #endif
+  } else {
+    throttles->push_back(new DownloadResourceThrottle(
+        download_request_limiter_, child_id, route_id, request_id));
   }
-
-  return new DownloadThrottlingResourceHandler(
-      handler, resource_dispatcher_host_, download_request_limiter_, request,
-      child_id, route_id, request_id);
 }
 
 bool ChromeResourceDispatcherHostDelegate::ShouldDeferStart(
@@ -286,13 +280,12 @@ void ChromeResourceDispatcherHostDelegate::HandleExternalProtocol(
 }
 
 #if defined(ENABLE_SAFE_BROWSING)
-ResourceHandler*
-    ChromeResourceDispatcherHostDelegate::CreateSafeBrowsingResourceHandler(
-        ResourceHandler* handler, int child_id, int route_id,
+content::ResourceThrottle*
+    ChromeResourceDispatcherHostDelegate::CreateSafeBrowsingResourceThrottle(
+        const net::URLRequest* request, int child_id, int route_id,
         bool subresource) {
-  return SafeBrowsingResourceHandler::Create(
-      handler, child_id, route_id, subresource, safe_browsing_,
-      resource_dispatcher_host_);
+  return SafeBrowsingResourceThrottle::Create(
+      request, child_id, route_id, subresource, safe_browsing_);
 }
 #endif
 

@@ -275,6 +275,15 @@ class CONTENT_EXPORT ResourceDispatcherHost : public net::URLRequest::Delegate {
       const content::GlobalRequestID& transferred_request_id,
       net::URLRequest* transferred_request);
 
+  scoped_refptr<ResourceHandler> CreateResourceHandlerForDownload(
+      net::URLRequest* request,
+      const content::ResourceContext& context,
+      int child_id,
+      int route_id,
+      int request_id,
+      const DownloadSaveInfo& save_info,
+      const DownloadResourceHandler::OnStartedCallback& started_cb);
+
  private:
   FRIEND_TEST_ALL_PREFIXES(ResourceDispatcherHostTest,
                            TestBlockedRequestsProcessDies);

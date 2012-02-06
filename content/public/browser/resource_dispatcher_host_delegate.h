@@ -14,11 +14,12 @@
 #include "webkit/glue/resource_type.h"
 
 class GURL;
-class ResourceHandler;
+template <class T> class ScopedVector;
 
 namespace content {
-struct Referrer;
 class ResourceContext;
+class ResourceThrottle;
+struct Referrer;
 struct ResourceResponse;
 }
 
@@ -50,14 +51,14 @@ class CONTENT_EXPORT ResourceDispatcherHostDelegate {
   // content layer have been added.  To add new handlers to the front, return
   // a new handler that is chained to the given one, otherwise just reutrn the
   // given handler.
-  virtual ResourceHandler* RequestBeginning(
-      ResourceHandler* handler,
+  virtual void RequestBeginning(
       net::URLRequest* request,
       const ResourceContext& resource_context,
-      bool is_subresource,
+      ResourceType::Type resource_type,
       int child_id,
       int route_id,
-      bool is_continuation_of_transferred_request);
+      bool is_continuation_of_transferred_request,
+      ScopedVector<ResourceThrottle>* throttles);
 
   // Allows an embedder to add additional resource handlers for a download.
   // |is_new_request| is true if this is a request that is just starting, i.e.
@@ -65,14 +66,14 @@ class CONTENT_EXPORT ResourceDispatcherHostDelegate {
   // this was originally a non-download request that had some resource handlers
   // applied already and now we found out it's a download.
   // |in_complete| is true if this is invoked from |OnResponseCompleted|.
-  virtual ResourceHandler* DownloadStarting(
-      ResourceHandler* handler,
-      const ResourceContext& resource_context,
+  virtual void DownloadStarting(
       net::URLRequest* request,
+      const ResourceContext& resource_context,
       int child_id,
       int route_id,
       int request_id,
-      bool is_new_request);
+      bool is_new_request,
+      ScopedVector<ResourceThrottle>* throttles);
 
   // Called to determine whether a request's start should be deferred. This
   // is only called if the ResourceHandler associated with the request does

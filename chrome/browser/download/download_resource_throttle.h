@@ -1,0 +1,57 @@
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef CHROME_BROWSER_DOWNLOAD_DOWNLOAD_RESOURCE_THROTTLE_H_
+#define CHROME_BROWSER_DOWNLOAD_DOWNLOAD_RESOURCE_THROTTLE_H_
+#pragma once
+
+#include <string>
+
+#include "base/memory/weak_ptr.h"
+#include "chrome/browser/download/download_request_limiter.h"
+#include "content/public/browser/resource_throttle.h"
+#include "googleurl/src/gurl.h"
+
+class ResourceDispatcherHost;
+
+namespace net {
+class URLRequest;
+}  // namespace net
+
+// DownloadResourceThrottle is used to determine if a download should be
+// allowed. When a DownloadResourceThrottle is created it pauses the download
+// and asks the DownloadRequestLimiter if the download should be allowed. The
+// DownloadRequestLimiter notifies us asynchronously as to whether the download
+// is allowed or not. If the download is allowed the request is resumed.  If
+// the download is not allowed the request is canceled.
+
+class DownloadResourceThrottle
+    : public content::ResourceThrottle,
+      public base::SupportsWeakPtr<DownloadResourceThrottle> {
+ public:
+  DownloadResourceThrottle(DownloadRequestLimiter* limiter,
+                           int render_process_id,
+                           int render_view_id,
+                           int request_id);
+
+  // content::ResourceThrottle implementation:
+  virtual void WillStartRequest(bool* defer) OVERRIDE;
+  virtual void WillRedirectRequest(const GURL& new_url, bool* defer) OVERRIDE;
+  virtual void WillReadRequest(bool* defer) OVERRIDE;
+
+ private:
+  virtual ~DownloadResourceThrottle();
+
+  void ContinueDownload(bool allow);
+
+  // Set to true when we know that the request is allowed to start.
+  bool request_allowed_;
+
+  // Set to true when we have deferred the request.
+  bool request_deferred_;
+
+  DISALLOW_COPY_AND_ASSIGN(DownloadResourceThrottle);
+};
+
+#endif  // CHROME_BROWSER_DOWNLOAD_DOWNLOAD_RESOURCE_THROTTLE_H_

@@ -42,6 +42,7 @@
 #include "content/browser/renderer_host/resource_queue.h"
 #include "content/browser/renderer_host/resource_request_details.h"
 #include "content/browser/renderer_host/sync_resource_handler.h"
+#include "content/browser/renderer_host/throttling_resource_handler.h"
 #include "content/browser/resource_context.h"
 #include "content/browser/ssl/ssl_client_auth_handler.h"
 #include "content/browser/ssl/ssl_manager.h"
@@ -56,6 +57,7 @@
 #include "content/public/browser/render_view_host_delegate.h"
 #include "content/public/browser/resource_dispatcher_host_delegate.h"
 #include "content/public/browser/resource_dispatcher_host_login_delegate.h"
+#include "content/public/browser/resource_throttle.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/process_type.h"
 #include "content/public/common/url_constants.h"
@@ -87,6 +89,8 @@ using base::TimeTicks;
 using content::BrowserThread;
 using content::GlobalRequestID;
 using content::ResourceResponse;
+using content::ResourceThrottle;
+using content::ThrottlingResourceHandler;
 using content::WebContents;
 using content::WorkerServiceImpl;
 using webkit_blob::DeletableFileReference;
@@ -356,6 +360,31 @@ void ResourceDispatcherHost::Shutdown() {
 void ResourceDispatcherHost::AddResourceQueueDelegate(
     ResourceQueueDelegate* delegate) {
   temporarily_delegate_set_->insert(delegate);
+}
+
+scoped_refptr<ResourceHandler>
+ResourceDispatcherHost::CreateResourceHandlerForDownload(
+    net::URLRequest* request,
+    const content::ResourceContext& context,
+    int child_id,
+    int route_id,
+    int request_id,
+    const DownloadSaveInfo& save_info,
+    const DownloadResourceHandler::OnStartedCallback& started_cb) {
+  scoped_refptr<ResourceHandler> handler(
+      new DownloadResourceHandler(this, child_id, route_id, request_id,
+                                  request->url(), download_file_manager_.get(),
+                                  request, started_cb, save_info));
+  if (delegate_) {
+    ScopedVector<ResourceThrottle> throttles;
+    delegate_->DownloadStarting(request, context, child_id, route_id,
+                                request_id, !request->is_pending(), &throttles);
+    if (!throttles.empty()) {
+      handler = new ThrottlingResourceHandler(this, handler, child_id,
+                                              request_id, throttles.Pass());
+    }
+  }
+  return handler;
 }
 
 void ResourceDispatcherHost::SetRequestInfo(
@@ -641,12 +670,18 @@ void ResourceDispatcherHost::BeginRequest(
   handler = new content::BufferedResourceHandler(handler, this, request);
 
   if (delegate_) {
-    bool sub = request_data.resource_type != ResourceType::MAIN_FRAME;
     bool is_continuation_of_transferred_request =
         (deferred_request != NULL);
-    handler = delegate_->RequestBeginning(
-        handler, request, resource_context, sub, child_id, route_id,
-        is_continuation_of_transferred_request);
+
+    ScopedVector<ResourceThrottle> throttles;
+    delegate_->RequestBeginning(request, resource_context,
+                                request_data.resource_type, child_id, route_id,
+                                is_continuation_of_transferred_request,
+                                &throttles);
+    if (!throttles.empty()) {
+      handler = new ThrottlingResourceHandler(this, handler, child_id,
+                                              request_id, throttles.Pass());
+    }
   }
 
   // Make extra info and read footer (contains request ID).
@@ -917,20 +952,9 @@ net::Error ResourceDispatcherHost::BeginDownload(
   request_id_--;
 
   scoped_refptr<ResourceHandler> handler(
-      new DownloadResourceHandler(this,
-                                  child_id,
-                                  route_id,
-                                  request_id_,
-                                  url,
-                                  download_file_manager_.get(),
-                                  request.get(),
-                                  started_cb,
-                                  save_info));
-
-  if (delegate_) {
-    handler = delegate_->DownloadStarting(
-        handler, context, request.get(), child_id, route_id, request_id_, true);
-  }
+      CreateResourceHandlerForDownload(request.get(), context, child_id,
+                                       route_id, request_id_, save_info,
+                                       started_cb));
 
   if (!request_context->job_factory()->IsHandledURL(url)) {
     VLOG(1) << "Download request for unsupported protocol: "

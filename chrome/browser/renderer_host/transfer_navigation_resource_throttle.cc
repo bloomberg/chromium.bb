@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/renderer_host/transfer_navigation_resource_handler.h"
+#include "chrome/browser/renderer_host/transfer_navigation_resource_throttle.h"
 
 #include "base/bind.h"
-#include "chrome/browser/extensions/extension_info_map.h"
 #include "chrome/browser/profiles/profile_io_data.h"
+#include "chrome/browser/extensions/extension_info_map.h"
 #include "chrome/common/extensions/extension_process_policy.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
@@ -15,6 +15,7 @@
 #include "content/public/common/referrer.h"
 
 using content::GlobalRequestID;
+using content::RenderViewHostDelegate;
 
 namespace {
 
@@ -30,7 +31,7 @@ void RequestTransferURLOnUIThread(int render_process_id,
   if (!rvh)
     return;
 
-  content::RenderViewHostDelegate* delegate = rvh->delegate();
+  RenderViewHostDelegate* delegate = rvh->delegate();
   if (!delegate)
     return;
 
@@ -41,29 +42,19 @@ void RequestTransferURLOnUIThread(int render_process_id,
 
 }  // namespace
 
-TransferNavigationResourceHandler::TransferNavigationResourceHandler(
-    ResourceHandler* handler,
-    ResourceDispatcherHost* resource_dispatcher_host,
+TransferNavigationResourceThrottle::TransferNavigationResourceThrottle(
     net::URLRequest* request)
-    : next_handler_(handler),
-      rdh_(resource_dispatcher_host),
-      request_(request) {
+    : request_(request) {
 }
 
-TransferNavigationResourceHandler::~TransferNavigationResourceHandler() {
+TransferNavigationResourceThrottle::~TransferNavigationResourceThrottle() {
 }
 
-bool TransferNavigationResourceHandler::OnUploadProgress(int request_id,
-                                                         uint64 position,
-                                                         uint64 size) {
-  return next_handler_->OnUploadProgress(request_id, position, size);
-}
-
-bool TransferNavigationResourceHandler::OnRequestRedirected(
-    int request_id,
+void TransferNavigationResourceThrottle::WillRedirectRequest(
     const GURL& new_url,
-    content::ResourceResponse* response,
     bool* defer) {
+  // TODO(darin): Move this logic into src/content.
+
   ResourceDispatcherHostRequestInfo* info =
       ResourceDispatcherHost::InfoForRequest(request_);
 
@@ -76,8 +67,7 @@ bool TransferNavigationResourceHandler::OnRequestRedirected(
   ProfileIOData* io_data =
       reinterpret_cast<ProfileIOData*>(resource_context.GetUserData(NULL));
 
-  if (info->resource_type() == ResourceType::MAIN_FRAME &&
-      extensions::CrossesExtensionProcessBoundary(
+  if (extensions::CrossesExtensionProcessBoundary(
           io_data->GetExtensionInfoMap()->extensions(),
           ExtensionURLInfo(request_->url()), ExtensionURLInfo(new_url))) {
     int render_process_id, render_view_id;
@@ -85,7 +75,8 @@ bool TransferNavigationResourceHandler::OnRequestRedirected(
             request_, &render_process_id, &render_view_id)) {
 
       GlobalRequestID global_id(info->child_id(), info->request_id());
-      rdh_->MarkAsTransferredNavigation(global_id, request_);
+      ResourceDispatcherHost::Get()->MarkAsTransferredNavigation(global_id,
+                                                                 request_);
 
       content::BrowserThread::PostTask(
           content::BrowserThread::UI,
@@ -98,44 +89,6 @@ bool TransferNavigationResourceHandler::OnRequestRedirected(
               CURRENT_TAB, info->frame_id(), global_id));
 
       *defer = true;
-      return true;
     }
   }
-
-  return next_handler_->OnRequestRedirected(
-      request_id, new_url, response, defer);
-}
-
-bool TransferNavigationResourceHandler::OnResponseStarted(
-    int request_id, content::ResourceResponse* response) {
-  return next_handler_->OnResponseStarted(request_id, response);
-}
-
-bool TransferNavigationResourceHandler::OnWillStart(int request_id,
-                                                    const GURL& url,
-                                                    bool* defer) {
-  return next_handler_->OnWillStart(request_id, url, defer);
-}
-
-bool TransferNavigationResourceHandler::OnWillRead(int request_id,
-                                                   net::IOBuffer** buf,
-                                                   int* buf_size,
-                                                   int min_size) {
-  return next_handler_->OnWillRead(request_id, buf, buf_size, min_size);
-}
-
-bool TransferNavigationResourceHandler::OnReadCompleted(int request_id,
-                                                        int* bytes_read) {
-  return next_handler_->OnReadCompleted(request_id, bytes_read);
-}
-
-bool TransferNavigationResourceHandler::OnResponseCompleted(
-    int request_id,
-    const net::URLRequestStatus& status,
-    const std::string& security_info) {
-  return next_handler_->OnResponseCompleted(request_id, status, security_info);
-}
-
-void TransferNavigationResourceHandler::OnRequestClosed() {
-  next_handler_->OnRequestClosed();
 }

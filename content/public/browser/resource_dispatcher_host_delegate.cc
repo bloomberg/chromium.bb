@@ -17,26 +17,24 @@ bool ResourceDispatcherHostDelegate::ShouldBeginRequest(
   return true;
 }
 
-ResourceHandler* ResourceDispatcherHostDelegate::RequestBeginning(
-    ResourceHandler* handler,
+void ResourceDispatcherHostDelegate::RequestBeginning(
     net::URLRequest* request,
     const ResourceContext& resource_context,
-    bool is_subresource,
+    ResourceType::Type resource_type,
     int child_id,
     int route_id,
-    bool is_continuation_of_transferred_request) {
-  return handler;
+    bool is_continuation_of_transferred_request,
+    ScopedVector<ResourceThrottle>* throttles) {
 }
 
-ResourceHandler* ResourceDispatcherHostDelegate::DownloadStarting(
-    ResourceHandler* handler,
-    const ResourceContext& resource_context,
+void ResourceDispatcherHostDelegate::DownloadStarting(
     net::URLRequest* request,
+    const ResourceContext& resource_context,
     int child_id,
     int route_id,
     int request_id,
-    bool is_new_request) {
-  return handler;
+    bool is_new_request,
+    ScopedVector<ResourceThrottle>* throttles) {
 }
 
 bool ResourceDispatcherHostDelegate::ShouldDeferStart(

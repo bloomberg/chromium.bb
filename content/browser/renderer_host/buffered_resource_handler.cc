@@ -264,8 +264,9 @@ bool BufferedResourceHandler::CompleteResponseStarted(int request_id) {
   // Check if this is an X.509 certificate, if yes, let it be handled
   // by X509UserCertResourceHandler.
   if (mime_type == "application/x-x509-user-cert") {
-    // This is entirely similar to how DownloadThrottlingResourceHandler
-    // works except we are doing it for an X.509 client certificates.
+    // This is entirely similar to how DownloadResourceThrottle works except we
+    // are doing it for an X.509 client certificates.
+    // TODO(darin): This does not belong here!
 
     if (response_->headers &&  // Can be NULL if FTP.
         response_->headers->response_code() / 100 != 2) {
@@ -304,21 +305,14 @@ bool BufferedResourceHandler::CompleteResponseStarted(int request_id) {
     info->set_is_download(true);
 
     scoped_refptr<ResourceHandler> handler(
-      new DownloadResourceHandler(host_,
-                                  info->child_id(),
-                                  info->route_id(),
-                                  info->request_id(),
-                                  request_->url(),
-                                  host_->download_file_manager(),
-                                  request_,
-                                  DownloadResourceHandler::OnStartedCallback(),
-                                  DownloadSaveInfo()));
-
-    if (host_->delegate()) {
-      handler = host_->delegate()->DownloadStarting(
-          handler, *info->context(), request_, info->child_id(),
-          info->route_id(), info->request_id(), false);
-    }
+        host_->CreateResourceHandlerForDownload(
+            request_,
+            *info->context(),
+            info->child_id(),
+            info->route_id(),
+            info->request_id(),
+            DownloadSaveInfo(),
+            DownloadResourceHandler::OnStartedCallback()));
 
     if (!UseAlternateResourceHandler(request_id, handler))
       return false;

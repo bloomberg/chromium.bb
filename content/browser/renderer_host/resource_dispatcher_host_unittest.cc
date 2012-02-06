@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/file_path.h"
+#include "base/memory/scoped_vector.h"
 #include "base/message_loop.h"
 #include "base/process_util.h"
 #include "content/browser/browser_thread_impl.h"
@@ -17,7 +18,6 @@
 #include "content/browser/renderer_host/layered_resource_handler.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/browser/renderer_host/resource_dispatcher_host_request_info.h"
-#include "content/browser/renderer_host/resource_handler.h"
 #include "content/browser/renderer_host/resource_message_filter.h"
 #include "content/common/child_process_host_impl.h"
 #include "content/common/resource_messages.h"
@@ -269,27 +269,19 @@ class URLRequestTestDelayedStartJob : public net::URLRequestTestJob {
 URLRequestTestDelayedStartJob*
 URLRequestTestDelayedStartJob::list_head_ = NULL;
 
-class TestResourceHandler : public content::LayeredResourceHandler {
+// Associated with an URLRequest to determine if the URLRequest gets deleted.
+class TestUserData : public net::URLRequest::UserData {
  public:
-  TestResourceHandler()
-      : content::LayeredResourceHandler(NULL),
-        request_closed_(false) {
+  explicit TestUserData(bool* was_deleted)
+      : was_deleted_(was_deleted) {
   }
 
-  bool request_closed() const { return request_closed_; }
-
-  void set_next_handler(ResourceHandler* handler) {
-    next_handler_ = handler;
-  }
-
-  // LayeredResourceHandler implementation:
-
-  virtual void OnRequestClosed() {
-    request_closed_ = true;
+  ~TestUserData() {
+    *was_deleted_ = true;
   }
 
  private:
-  bool request_closed_;
+  bool* was_deleted_;
 };
 
 class TestResourceDispatcherHostDelegate
@@ -299,8 +291,8 @@ class TestResourceDispatcherHostDelegate
       : defer_start_(false) {
   }
 
-  void set_resource_handler(TestResourceHandler* handler) {
-    handler_ = handler;
+  void set_url_request_user_data(net::URLRequest::UserData* user_data) {
+    user_data_.reset(user_data);
   }
 
   void set_defer_start(bool value) {
@@ -309,19 +301,16 @@ class TestResourceDispatcherHostDelegate
 
   // ResourceDispatcherHostDelegate implementation:
 
-  virtual ResourceHandler* RequestBeginning(
-      ResourceHandler* current_handler,
+  virtual void RequestBeginning(
       net::URLRequest* request,
       const content::ResourceContext& resource_context,
-      bool is_subresource,
+      ResourceType::Type resource_type,
       int child_id,
       int route_id,
-      bool is_continuation_of_transferred_request) {
-    if (handler_) {
-      handler_->set_next_handler(current_handler);
-      return handler_;
-    }
-    return current_handler;
+      bool is_continuation_of_transferred_request,
+      ScopedVector<content::ResourceThrottle>* throttles) OVERRIDE {
+    const void* key = user_data_.get();
+    request->SetUserData(key, user_data_.release());
   }
 
   virtual bool ShouldDeferStart(
@@ -332,7 +321,7 @@ class TestResourceDispatcherHostDelegate
 
  private:
   bool defer_start_;
-  scoped_refptr<TestResourceHandler> handler_;
+  scoped_ptr<net::URLRequest::UserData> user_data_;
 };
 
 class ResourceDispatcherHostTest : public testing::Test,
@@ -626,27 +615,27 @@ TEST_F(ResourceDispatcherHostTest, Cancel) {
 TEST_F(ResourceDispatcherHostTest, CancelWhileStartIsDeferred) {
   EXPECT_EQ(0, host_.GetOutstandingRequestsMemoryCost(0));
 
-  scoped_refptr<TestResourceHandler> handler(new TestResourceHandler);
+  bool was_deleted = false;
 
   // Arrange to have requests deferred before starting.
   TestResourceDispatcherHostDelegate delegate;
   delegate.set_defer_start(true);
-  delegate.set_resource_handler(handler);
+  delegate.set_url_request_user_data(new TestUserData(&was_deleted));
   host_.set_delegate(&delegate);
 
   MakeTestRequest(0, 1, net::URLRequestTestJob::test_url_1());
   CancelRequest(1);
 
-  // We should not have observed OnRequestClosed yet.  This is to ensure that
-  // destruction of the URLRequest happens asynchronously to calling
-  // CancelRequest.
-  EXPECT_FALSE(handler->request_closed());
+  // Our TestResourceThrottle should not have been deleted yet.  This is to
+  // ensure that destruction of the URLRequest happens asynchronously to
+  // calling CancelRequest.
+  EXPECT_FALSE(was_deleted);
 
   // flush all the pending requests
   while (net::URLRequestTestJob::ProcessOnePendingMessage()) {}
   MessageLoop::current()->RunAllPending();
 
-  EXPECT_TRUE(handler->request_closed());
+  EXPECT_TRUE(was_deleted);
 
   EXPECT_EQ(0, host_.GetOutstandingRequestsMemoryCost(0));
 }
