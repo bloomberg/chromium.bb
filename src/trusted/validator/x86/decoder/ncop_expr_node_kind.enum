@@ -17,3 +17,6 @@ ExprSegmentAddress
 # scale and disp, where the memory offset is:
 #    base + index(or undefined) * scale + disp
 ExprMemOffset
+# The argument isn't translated, but doesn't matter because
+# the instruction is not NaCl legal.
+ExprNaClIllegal

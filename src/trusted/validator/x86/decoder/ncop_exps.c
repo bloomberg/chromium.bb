@@ -69,6 +69,7 @@ g_NaClExpKindDesc[NaClExpKindEnumSize + 1]= {
   {ExprConstant, 0},
   {ExprSegmentAddress, 2},
   {ExprMemOffset, 4},
+  {ExprNaClIllegal, 0},
 };
 
 int NaClExpKindRank(NaClExpKind kind) {
@@ -283,6 +284,9 @@ static int NaClPrintDisassembledExp(struct Gio* file,
       return NaClPrintDisassembledSegmentAddr(file, state, index);
     case ExprMemOffset:
       return NaClPrintDisassembledMemOffset(file, state, index);
+    case ExprNaClIllegal:
+      gprintf(file, "*NaClIllegal*");
+      return index + 1;
   }
 }
 

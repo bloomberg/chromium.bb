@@ -134,6 +134,7 @@ ncdis = test_env.ComponentProgram(
   EXTRA_LIBS=[test_env.NaClTargetArchSuffix('ncdis_util'),
               test_env.NaClTargetArchSuffix('ncfileutils'),
               test_env.NaClTargetArchSuffix('ncdis_decode_tables'),
+              test_env.NaClTargetArchSuffix('nc_opcode_modeling_verbose'),
               'utils',
               ])
 

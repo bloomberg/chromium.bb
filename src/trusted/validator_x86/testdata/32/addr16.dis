@@ -1,2 +1,2 @@
-00000000: 67 66 89 07                                  mov %ds:[%di], %ax
-00000004: 67 66 89 46 00                               mov %ds:[%si], %ax
+00000000: 67 66 89 07                                  mov *NaClIllegal*, %ax
+00000004: 67 66 89 46 00                               mov *NaClIllegal*, %ax

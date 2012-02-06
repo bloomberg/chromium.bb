@@ -1,4 +1,4 @@
- 80000000:	67 8d 1d            	lea %ebx, [0x0]
+ 80000000:	67 8d 1d            	lea %ebx, *NaClIllegal*
  80000003:	22 a0 05 e3 7b 9c   	and %esp, 0x9c7be305[%eax]
  80000009:	db 08               	fisttp
  8000000b:	04 b1               	add %al, 0xffffffffffffffb1
