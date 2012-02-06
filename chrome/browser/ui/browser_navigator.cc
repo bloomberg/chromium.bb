@@ -13,6 +13,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tab_helper.h"
 #include "chrome/browser/google/google_url_tracker.h"
+#include "chrome/browser/google/google_util.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -342,7 +343,7 @@ void InitializeExtraHeaders(browser::NavigateParams* params,
     if (pref_service) {
       if (!pref_service->GetBoolean(prefs::kHomePageChanged)) {
         std::string homepage = pref_service->GetString(prefs::kHomePage);
-        if (homepage == GoogleURLTracker::kDefaultGoogleHomepage) {
+        if (google_util::IsGoogleHomePageUrl(homepage)) {
           std::wstring rlz_string;
           RLZTracker::GetAccessPointRlz(rlz_lib::CHROME_HOME_PAGE, &rlz_string);
           if (!rlz_string.empty()) {
