@@ -340,10 +340,6 @@ void ExtensionHost::DidStopLoading() {
 #endif
   }
   if (notify) {
-    content::NotificationService::current()->Notify(
-        chrome::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING,
-        content::Source<Profile>(profile_),
-        content::Details<ExtensionHost>(this));
     if (extension_host_type_ == chrome::VIEW_TYPE_EXTENSION_BACKGROUND_PAGE) {
       UMA_HISTOGRAM_TIMES("Extensions.BackgroundPageLoadTime",
                           since_created_.Elapsed());
@@ -359,6 +355,13 @@ void ExtensionHost::DidStopLoading() {
     } else if (extension_host_type_ == chrome::VIEW_TYPE_APP_SHELL) {
       UMA_HISTOGRAM_TIMES("Extensions.ShellLoadTime", since_created_.Elapsed());
     }
+
+    // Send the notification last, because it might result in this being
+    // deleted.
+    content::NotificationService::current()->Notify(
+        chrome::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING,
+        content::Source<Profile>(profile_),
+        content::Details<ExtensionHost>(this));
   }
 }
 

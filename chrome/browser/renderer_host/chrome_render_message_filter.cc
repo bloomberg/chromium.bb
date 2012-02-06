@@ -86,6 +86,10 @@ bool ChromeRenderMessageFilter::OnMessageReceived(const IPC::Message& message,
     IPC_MESSAGE_HANDLER(ExtensionHostMsg_AddListener, OnExtensionAddListener)
     IPC_MESSAGE_HANDLER(ExtensionHostMsg_RemoveListener,
                         OnExtensionRemoveListener)
+    IPC_MESSAGE_HANDLER(ExtensionHostMsg_AddLazyListener,
+                        OnExtensionAddLazyListener)
+    IPC_MESSAGE_HANDLER(ExtensionHostMsg_RemoveLazyListener,
+                        OnExtensionRemoveLazyListener)
     IPC_MESSAGE_HANDLER(ExtensionHostMsg_ExtensionIdle, OnExtensionIdle)
     IPC_MESSAGE_HANDLER(ExtensionHostMsg_ExtensionEventAck, OnExtensionEventAck)
     IPC_MESSAGE_HANDLER(ExtensionHostMsg_CloseChannel, OnExtensionCloseChannel)
@@ -133,6 +137,8 @@ void ChromeRenderMessageFilter::OverrideThreadForMessage(
 #endif
     case ExtensionHostMsg_AddListener::ID:
     case ExtensionHostMsg_RemoveListener::ID:
+    case ExtensionHostMsg_AddLazyListener::ID:
+    case ExtensionHostMsg_RemoveLazyListener::ID:
     case ExtensionHostMsg_ExtensionIdle::ID:
     case ExtensionHostMsg_ExtensionEventAck::ID:
     case ExtensionHostMsg_CloseChannel::ID:
@@ -339,6 +345,20 @@ void ChromeRenderMessageFilter::OnExtensionRemoveListener(
 
   profile_->GetExtensionEventRouter()->RemoveEventListener(
       event_name, process, extension_id);
+}
+
+void ChromeRenderMessageFilter::OnExtensionAddLazyListener(
+    const std::string& extension_id, const std::string& event_name) {
+  if (profile_->GetExtensionEventRouter())
+    profile_->GetExtensionEventRouter()->AddLazyEventListener(
+        event_name, extension_id);
+}
+
+void ChromeRenderMessageFilter::OnExtensionRemoveLazyListener(
+    const std::string& extension_id, const std::string& event_name) {
+  if (profile_->GetExtensionEventRouter())
+    profile_->GetExtensionEventRouter()->RemoveLazyEventListener(
+        event_name, extension_id);
 }
 
 void ChromeRenderMessageFilter::OnExtensionIdle(

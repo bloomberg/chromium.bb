@@ -1,0 +1,15 @@
+[
+  {
+    "namespace": "experimental.extension",
+    "events": [
+      {
+        "name": "onInstalled",
+        "type": "function",
+        "description": "Fired when the extension is first installed.",
+        "parameters": [
+        ]
+      }
+    ]
+  }
+]
+
