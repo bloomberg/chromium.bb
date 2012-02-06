@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -205,7 +205,7 @@ class PolicyTestBase(pyauto.PyUITest):
     """Writes the device policy blob while the Session Manager is stopped."""
     assert pyauto.PyUITest.IsChromeOS()
     logging.debug('Stopping session manager')
-    cros_ui.stop()
+    cros_ui.stop(allow_fail=True)
     logging.debug('Writing device policy cache')
     self._WriteDevicePolicy(policy)
 

@@ -211,6 +211,9 @@ class PolicyPrefsUITest(policy_base.PolicyTestBase):
     'DevicePolicyRefreshRate': (300000, [], []),
     'ChromeOsReleaseChannel': ('stable-channel', [], []),
     'DeviceOpenNetworkConfiguration': ('', [], []),
+    'ReportDeviceVersionInfo': (True, [], []),
+    'ReportDeviceActivityTimes': (True, [], []),
+    'ReportDeviceBootMode': (True, [], []),
 
     # Chrome Frame policies:
     'ChromeFrameRendererSettings': (0, [], []),
