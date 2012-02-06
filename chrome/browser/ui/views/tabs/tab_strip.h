@@ -162,7 +162,7 @@ class TabStrip : public AbstractTabStripView,
   virtual void ClickActiveTab(const BaseTab* tab) const OVERRIDE;
 
   // MouseWatcherListener overrides:
-  virtual void MouseMovedOutOfView() OVERRIDE;
+  virtual void MouseMovedOutOfHost() OVERRIDE;
 
   // AbstractTabStripView implementation:
   virtual bool IsTabStripEditable() const OVERRIDE;

@@ -36,6 +36,7 @@
 #include "ui/gfx/skbitmap_operations.h"
 #include "ui/gfx/size.h"
 #include "ui/views/controls/image_view.h"
+#include "ui/views/mouse_watcher_view_host.h"
 #include "ui/views/widget/default_theme_provider.h"
 #include "ui/views/widget/root_view.h"
 #include "ui/views/widget/widget.h"
@@ -729,7 +730,7 @@ void TabStrip::ClickActiveTab(const BaseTab* tab) const {
     controller()->ClickActiveTab(index);
 }
 
-void TabStrip::MouseMovedOutOfView() {
+void TabStrip::MouseMovedOutOfHost() {
   ResizeLayoutTabs();
 }
 
@@ -1401,8 +1402,10 @@ void TabStrip::SetTabBoundsForDrag(const std::vector<gfx::Rect>& tab_bounds) {
 void TabStrip::AddMessageLoopObserver() {
   if (!mouse_watcher_.get()) {
     mouse_watcher_.reset(
-        new views::MouseWatcher(this, this,
-                                gfx::Insets(0, 0, kTabStripAnimationVSlop, 0)));
+        new views::MouseWatcher(
+            new views::MouseWatcherViewHost(
+                this, gfx::Insets(0, 0, kTabStripAnimationVSlop, 0)),
+            this));
   }
   mouse_watcher_->Start();
 }

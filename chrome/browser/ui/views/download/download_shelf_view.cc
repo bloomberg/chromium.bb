@@ -30,6 +30,7 @@
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/link.h"
+#include "ui/views/mouse_watcher_view_host.h"
 
 // Max number of download views we'll contain. Any time a view is added and
 // we already have this many download views, one is removed.
@@ -93,7 +94,8 @@ DownloadShelfView::DownloadShelfView(Browser* browser, BrowserView* parent)
       parent_(parent),
       auto_closed_(true),
       ALLOW_THIS_IN_INITIALIZER_LIST(
-          mouse_watcher_(this, this, gfx::Insets())) {
+          mouse_watcher_(new views::MouseWatcherViewHost(this, gfx::Insets()),
+                         this)) {
   mouse_watcher_.set_notify_on_exit_time_ms(kNotifyOnExitTimeMS);
   set_id(VIEW_ID_DOWNLOAD_SHELF);
   parent->AddChildView(this);
@@ -122,7 +124,7 @@ void DownloadShelfView::DoAddDownload(BaseDownloadItemModel* download_model) {
   AddDownloadView(view);
 }
 
-void DownloadShelfView::MouseMovedOutOfView() {
+void DownloadShelfView::MouseMovedOutOfHost() {
   Close();
 }
 

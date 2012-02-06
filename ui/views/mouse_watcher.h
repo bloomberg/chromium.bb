@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,40 +11,58 @@
 #include "ui/gfx/insets.h"
 #include "ui/views/views_export.h"
 
+namespace gfx {
+class Point;
+}
+
 namespace views {
 
-class View;
-
-// MouseWatcherListener is notified when the mouse moves outside the view.
+// MouseWatcherListener is notified when the mouse moves outside the host.
 class VIEWS_EXPORT MouseWatcherListener {
  public:
-  virtual void MouseMovedOutOfView() = 0;
+  virtual void MouseMovedOutOfHost() = 0;
 
  protected:
   virtual ~MouseWatcherListener();
 };
 
+// The MouseWatcherHost determines what region is to be monitored.
+class VIEWS_EXPORT MouseWatcherHost {
+ public:
+  // The MouseEventType can be used as a hint.
+  enum MouseEventType {
+    // The mouse moved within the window which was current when the MouseWatcher
+    // was created.
+    MOUSE_MOVE,
+    // The mouse moved exited the window which was current when the MouseWatcher
+    // was created.
+    MOUSE_EXIT
+  };
+
+  virtual ~MouseWatcherHost();
+  // Return false when the mouse has moved outside the monitored region.
+  virtual bool Contains(
+      const gfx::Point& screen_point,
+      MouseEventType type) = 0;
+};
+
 // MouseWatcher is used to watch mouse movement and notify its listener when the
-// mouse moves outside the bounds of a view.
+// mouse moves outside the bounds of a MouseWatcherHost.
 class VIEWS_EXPORT MouseWatcher {
  public:
-  // Creates a new MouseWatcher. |hot_zone_insets| is added to the bounds of
-  // the view to determine the active zone. For example, if
-  // |hot_zone_insets.bottom()| is 10, then the listener is not notified if
-  // the y coordinate is between the origin of the view and height of the view
-  // plus 10.
-  MouseWatcher(views::View* host,
-               MouseWatcherListener* listener,
-               const gfx::Insets& hot_zone_insets);
+  // Creates a new MouseWatcher. The |listener| will be notified when the |host|
+  // determines that the mouse has moved outside its monitored region.
+  // |host| will be owned by the watcher and deleted upon completion.
+  MouseWatcher(MouseWatcherHost* host, MouseWatcherListener* listener);
   ~MouseWatcher();
 
   // Sets the amount to delay before notifying the listener when the mouse exits
-  // the view by way of going to another window.
+  // the host by way of going to another window.
   void set_notify_on_exit_time_ms(int time) { notify_on_exit_time_ms_ = time; }
 
   // Starts watching mouse movements. When the mouse moves outside the bounds of
-  // the view the listener is notified. |Start| may be invoked any number of
-  // times. If the mouse moves outside the bounds of the view the listener is
+  // the host the listener is notified. |Start| may be invoked any number of
+  // times. If the mouse moves outside the bounds of the host the listener is
   // notified and watcher stops watching events.
   void Start();
 
@@ -60,14 +78,11 @@ class VIEWS_EXPORT MouseWatcher {
   // Notifies the listener and stops watching events.
   void NotifyListener();
 
-  // View we're listening for events over.
-  View* host_;
+  // Host we're listening for events over.
+  scoped_ptr<MouseWatcherHost> host_;
 
   // Our listener.
   MouseWatcherListener* listener_;
-
-  // Insets added to the bounds of the view.
-  const gfx::Insets hot_zone_insets_;
 
   // Does the actual work of listening for mouse events.
   scoped_ptr<Observer> observer_;

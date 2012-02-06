@@ -306,6 +306,8 @@
         'metrics_win.cc',
         'mouse_watcher.cc',
         'mouse_watcher.h',
+        'mouse_watcher_view_host.cc',
+        'mouse_watcher_view_host.h',
         'native_theme_delegate.h',
         'native_theme_painter.cc',
         'native_theme_painter.h',
