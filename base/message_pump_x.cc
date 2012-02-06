@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -118,14 +118,14 @@ void MessagePumpX::SetDefaultDispatcher(MessagePumpDispatcher* dispatcher) {
 
 void MessagePumpX::InitXSource() {
   DCHECK(!x_source_);
-  GPollFD* x_poll = new GPollFD();
+  x_poll_.reset(new GPollFD());
   Display* display = GetDefaultXDisplay();
   DCHECK(display) << "Unable to get connection to X server";
-  x_poll->fd = ConnectionNumber(display);
-  x_poll->events = G_IO_IN;
+  x_poll_->fd = ConnectionNumber(display);
+  x_poll_->events = G_IO_IN;
 
   x_source_ = g_source_new(&XSourceFuncs, sizeof(GSource));
-  g_source_add_poll(x_source_, x_poll);
+  g_source_add_poll(x_source_, x_poll_.get());
   g_source_set_can_recurse(x_source_, TRUE);
   g_source_set_callback(x_source_, NULL, this, NULL);
   g_source_attach(x_source_, g_main_context_default());
