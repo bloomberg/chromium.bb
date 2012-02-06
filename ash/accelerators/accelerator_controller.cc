@@ -11,6 +11,7 @@
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
 #include "ash/shell_window_ids.h"
+#include "ash/volume_control_delegate.h"
 #include "ash/wm/window_cycle_controller.h"
 #include "ui/aura/event.h"
 #include "ui/aura/root_window.h"
@@ -32,6 +33,9 @@ enum AcceleratorAction {
   EXIT,
   TAKE_SCREENSHOT,
   TOGGLE_CAPS_LOCK,
+  VOLUME_MUTE,
+  VOLUME_DOWN,
+  VOLUME_UP,
 #if !defined(NDEBUG)
   ROTATE_SCREEN,
   PRINT_LAYER_HIERARCHY,
@@ -60,6 +64,9 @@ struct AcceleratorData {
   { ui::VKEY_PRINT, false, false, false, TAKE_SCREENSHOT },
   // On Chrome OS, Search key is mapped to LWIN.
   { ui::VKEY_LWIN, true, false, false, TOGGLE_CAPS_LOCK },
+  { ui::VKEY_F8, false, false, false, VOLUME_MUTE },
+  { ui::VKEY_F9, false, false, false, VOLUME_DOWN },
+  { ui::VKEY_F10, false, false, false, VOLUME_UP },
 #if !defined(NDEBUG)
   { ui::VKEY_HOME, false, true, false, ROTATE_SCREEN },
   { ui::VKEY_A, false, true, true, TOGGLE_COMPACT_WINDOW_MODE },
@@ -208,6 +215,11 @@ void AcceleratorController::SetCapsLockDelegate(
   caps_lock_delegate_.swap(caps_lock_delegate);
 }
 
+void AcceleratorController::SetVolumeControlDelegate(
+    scoped_ptr<VolumeControlDelegate> volume_control_delegate) {
+  volume_control_delegate_.swap(volume_control_delegate);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // AcceleratorController, ui::AcceleratorTarget implementation:
 
@@ -239,6 +251,18 @@ bool AcceleratorController::AcceleratorPressed(
     case TOGGLE_CAPS_LOCK:
       if (caps_lock_delegate_.get())
         return caps_lock_delegate_->HandleToggleCapsLock();
+      break;
+    case VOLUME_MUTE:
+      if (volume_control_delegate_.get())
+        return volume_control_delegate_->HandleVolumeMute(accelerator);
+      break;
+    case VOLUME_DOWN:
+      if (volume_control_delegate_.get())
+        return volume_control_delegate_->HandleVolumeDown(accelerator);
+      break;
+    case VOLUME_UP:
+      if (volume_control_delegate_.get())
+        return volume_control_delegate_->HandleVolumeUp(accelerator);
       break;
 #if !defined(NDEBUG)
     case ROTATE_SCREEN:

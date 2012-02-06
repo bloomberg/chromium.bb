@@ -9,6 +9,7 @@
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/test/aura_shell_test_base.h"
+#include "ash/volume_control_delegate.h"
 #include "ash/wm/window_util.h"
 #include "ui/aura/event.h"
 #include "ui/aura/root_window.h"
@@ -93,6 +94,55 @@ class DummyCapsLockDelegate : public CapsLockDelegate {
   int handle_caps_lock_count_;
 
   DISALLOW_COPY_AND_ASSIGN(DummyCapsLockDelegate);
+};
+
+class DummyVolumeControlDelegate : public VolumeControlDelegate {
+ public:
+  explicit DummyVolumeControlDelegate(bool consume)
+      : consume_(consume),
+        handle_volume_mute_count_(0),
+        handle_volume_down_count_(0),
+        handle_volume_up_count_(0) {
+  }
+  virtual ~DummyVolumeControlDelegate() {}
+
+  virtual bool HandleVolumeMute(const ui::Accelerator& accelerator) OVERRIDE {
+    ++handle_volume_mute_count_;
+    last_accelerator_ = accelerator;
+    return consume_;
+  }
+  virtual bool HandleVolumeDown(const ui::Accelerator& accelerator) OVERRIDE {
+    ++handle_volume_down_count_;
+    last_accelerator_ = accelerator;
+    return consume_;
+  }
+  virtual bool HandleVolumeUp(const ui::Accelerator& accelerator) OVERRIDE {
+    ++handle_volume_up_count_;
+    last_accelerator_ = accelerator;
+    return consume_;
+  }
+
+  int handle_volume_mute_count() const {
+    return handle_volume_mute_count_;
+  }
+  int handle_volume_down_count() const {
+    return handle_volume_down_count_;
+  }
+  int handle_volume_up_count() const {
+    return handle_volume_up_count_;
+  }
+  const ui::Accelerator& last_accelerator() const {
+    return last_accelerator_;
+  }
+
+ private:
+  const bool consume_;
+  int handle_volume_mute_count_;
+  int handle_volume_down_count_;
+  int handle_volume_up_count_;
+  ui::Accelerator last_accelerator_;
+
+  DISALLOW_COPY_AND_ASSIGN(DummyVolumeControlDelegate);
 };
 
 bool TestTarget::AcceleratorPressed(const ui::Accelerator& accelerator) {
@@ -310,6 +360,48 @@ TEST_F(AcceleratorControllerTest, GlobalAccelerators) {
     EXPECT_TRUE(GetController()->Process(
         ui::Accelerator(ui::VKEY_LWIN, true, false, false)));
     EXPECT_EQ(1, delegate->handle_caps_lock_count());
+  }
+  // Volume
+  const ui::Accelerator f8(ui::VKEY_F8, false, false, false);
+  const ui::Accelerator f9(ui::VKEY_F9, false, false, false);
+  const ui::Accelerator f10(ui::VKEY_F10, false, false, false);
+  {
+    EXPECT_FALSE(GetController()->Process(f8));
+    EXPECT_FALSE(GetController()->Process(f9));
+    EXPECT_FALSE(GetController()->Process(f10));
+    DummyVolumeControlDelegate* delegate =
+        new DummyVolumeControlDelegate(false);
+    GetController()->SetVolumeControlDelegate(
+        scoped_ptr<VolumeControlDelegate>(delegate).Pass());
+    EXPECT_EQ(0, delegate->handle_volume_mute_count());
+    EXPECT_FALSE(GetController()->Process(f8));
+    EXPECT_EQ(1, delegate->handle_volume_mute_count());
+    EXPECT_EQ(f8, delegate->last_accelerator());
+    EXPECT_EQ(0, delegate->handle_volume_down_count());
+    EXPECT_FALSE(GetController()->Process(f9));
+    EXPECT_EQ(1, delegate->handle_volume_down_count());
+    EXPECT_EQ(f9, delegate->last_accelerator());
+    EXPECT_EQ(0, delegate->handle_volume_up_count());
+    EXPECT_FALSE(GetController()->Process(f10));
+    EXPECT_EQ(1, delegate->handle_volume_up_count());
+    EXPECT_EQ(f10, delegate->last_accelerator());
+  }
+  {
+    DummyVolumeControlDelegate* delegate = new DummyVolumeControlDelegate(true);
+    GetController()->SetVolumeControlDelegate(
+        scoped_ptr<VolumeControlDelegate>(delegate).Pass());
+    EXPECT_EQ(0, delegate->handle_volume_mute_count());
+    EXPECT_TRUE(GetController()->Process(f8));
+    EXPECT_EQ(1, delegate->handle_volume_mute_count());
+    EXPECT_EQ(f8, delegate->last_accelerator());
+    EXPECT_EQ(0, delegate->handle_volume_down_count());
+    EXPECT_TRUE(GetController()->Process(f9));
+    EXPECT_EQ(1, delegate->handle_volume_down_count());
+    EXPECT_EQ(f9, delegate->last_accelerator());
+    EXPECT_EQ(0, delegate->handle_volume_up_count());
+    EXPECT_TRUE(GetController()->Process(f10));
+    EXPECT_EQ(1, delegate->handle_volume_up_count());
+    EXPECT_EQ(f10, delegate->last_accelerator());
   }
 #if !defined(NDEBUG)
   // RotateScreen

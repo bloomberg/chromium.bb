@@ -101,6 +101,7 @@
         'status_area/status_area_view.h',
         'tooltips/tooltip_controller.cc',
         'tooltips/tooltip_controller.h',
+        'volume_control_delegate.h',
         'wm/activation_controller.cc',
         'wm/activation_controller.h',
         'wm/always_on_top_controller.cc',

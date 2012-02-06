@@ -20,8 +20,9 @@ class AcceleratorManager;
 
 namespace ash {
 
-class ScreenshotDelegate;
 class CapsLockDelegate;
+class ScreenshotDelegate;
+class VolumeControlDelegate;
 
 // AcceleratorController provides functions for registering or unregistering
 // global keyboard accelerators, which are handled earlier than any windows. It
@@ -59,6 +60,8 @@ class ASH_EXPORT AcceleratorController : public ui::AcceleratorTarget {
   void SetScreenshotDelegate(
       scoped_ptr<ScreenshotDelegate> screenshot_delegate);
   void SetCapsLockDelegate(scoped_ptr<CapsLockDelegate> caps_lock_delegate);
+  void SetVolumeControlDelegate(
+      scoped_ptr<VolumeControlDelegate> volume_control_delegate);
 
  private:
   // Initialize the accelerators this class handles as a target.
@@ -68,6 +71,7 @@ class ASH_EXPORT AcceleratorController : public ui::AcceleratorTarget {
 
   scoped_ptr<ScreenshotDelegate> screenshot_delegate_;
   scoped_ptr<CapsLockDelegate> caps_lock_delegate_;
+  scoped_ptr<VolumeControlDelegate> volume_control_delegate_;
 
   // A map from accelerators to the AcceleratorAction values, which are used in
   // the implementation.
