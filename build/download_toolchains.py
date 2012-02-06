@@ -46,8 +46,6 @@ def GetUpdatedDEPS(options):
         if (options.nacl_newlib_only and
             not toolchainbinaries.IsNaClNewlibFlavor(flavor)):
           continue
-        if (options.no_pnacl and toolchainbinaries.IsPnaclFlavor(flavor)):
-          continue
         if (options.no_arm_trusted and
             toolchainbinaries.IsArmTrustedFlavor(flavor)):
           continue
