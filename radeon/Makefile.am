@@ -52,7 +52,8 @@ libdrm_radeoninclude_HEADERS = \
 	radeon_bo_gem.h \
 	radeon_cs_gem.h \
 	radeon_bo_int.h \
-	radeon_cs_int.h
+	radeon_cs_int.h \
+	r600_pci_ids.h
 
 pkgconfigdir = @pkgconfigdir@
 pkgconfig_DATA = libdrm_radeon.pc
