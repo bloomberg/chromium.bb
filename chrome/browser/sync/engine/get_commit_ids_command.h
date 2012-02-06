@@ -31,133 +31,92 @@ class GetCommitIdsCommand : public SyncerCommand {
   virtual SyncerError ExecuteImpl(sessions::SyncSession* session) OVERRIDE;
 
   // Builds a vector of IDs that should be committed.
-  void BuildCommitIds(const vector<int64>& unsynced_handles,
-                      syncable::WriteTransaction* write_transaction,
+  void BuildCommitIds(syncable::WriteTransaction* write_transaction,
                       const ModelSafeRoutingInfo& routes,
-                      syncable::ModelTypeSet throttled_types);
+                      const std::set<int64>& ready_unsynced_set);
 
-  // TODO(chron): Remove writes from this iterator. As a warning, this
-  // iterator causes writes to entries and so isn't a pure iterator.
-  // It will do Put(IS_UNSYNCED). Refactor this out later.
-  class CommitMetahandleIterator {
-   public:
-    // TODO(chron): Cache ValidateCommitEntry responses across iterators to save
-    // UTF8 conversion and filename checking
-    CommitMetahandleIterator(const vector<int64>& unsynced_handles,
-                             syncable::WriteTransaction* write_transaction,
-                             sessions::OrderedCommitSet* commit_set)
-        : write_transaction_(write_transaction),
-          handle_iterator_(unsynced_handles.begin()),
-          unsynced_handles_end_(unsynced_handles.end()),
-          commit_set_(commit_set) {
-
-      // TODO(chron): Remove writes from this iterator.
-      DCHECK(write_transaction_);
-
-      if (Valid() && !ValidateMetahandleForCommit(*handle_iterator_))
-        Increment();
-    }
-    ~CommitMetahandleIterator() {}
-
-    int64 Current() const {
-      DCHECK(Valid());
-      return *handle_iterator_;
-    }
-
-    bool Increment() {
-      if (!Valid())
-        return false;
-
-      for (++handle_iterator_;
-           handle_iterator_ != unsynced_handles_end_;
-           ++handle_iterator_) {
-        if (ValidateMetahandleForCommit(*handle_iterator_))
-          return true;
-      }
-
-      return false;
-    }
-
-    bool Valid() const {
-      return !(handle_iterator_ == unsynced_handles_end_);
-    }
-
-    private:
-     bool ValidateMetahandleForCommit(int64 metahandle) {
-       if (commit_set_->HaveCommitItem(metahandle))
-          return false;
-
-       // We should really not WRITE in this iterator, but we can fix that
-       // later. We should move that somewhere else later.
-       syncable::MutableEntry entry(write_transaction_,
-           syncable::GET_BY_HANDLE, metahandle);
-       VerifyCommitResult verify_result =
-           SyncerUtil::ValidateCommitEntry(&entry);
-       if (verify_result == VERIFY_UNSYNCABLE) {
-         // Drop unsyncable entries.
-         entry.Put(syncable::IS_UNSYNCED, false);
-       }
-       return verify_result == VERIFY_OK;
-     }
-
-     syncable::WriteTransaction* const write_transaction_;
-     vector<int64>::const_iterator handle_iterator_;
-     vector<int64>::const_iterator unsynced_handles_end_;
-     sessions::OrderedCommitSet* commit_set_;
-
-     DISALLOW_COPY_AND_ASSIGN(CommitMetahandleIterator);
-  };
-
- private:
-  // Removes all entries not ready for commit from |unsynced_handles|.
-  // An entry is considered unready for commit if:
-  // 1. It's in conflict or requires (re)encryption. Any datatype requiring
-  //     encryption while the cryptographer is missing a passphrase is
-  //     considered unready for commit.
-  // 2. Its type is currently throttled.
+  // Fill |ready_unsynced_set| with all entries from |unsynced_handles| that
+  // are ready to commit.
+  // An entry is not considered ready for commit if any are true:
+  // 1. It's in conflict.
+  // 2. It requires encryption (either the type is encrypted but a passphrase
+  //    is missing from the cryptographer, or the entry itself wasn't properly
+  //    encrypted).
+  // 3. It's type is currently throttled.
+  // 4. It's a delete but has not been committed.
   void FilterUnreadyEntries(
       syncable::BaseTransaction* trans,
       syncable::ModelTypeSet throttled_types,
-      syncable::Directory::UnsyncedMetaHandles* unsynced_handles);
+      syncable::ModelTypeSet encrypted_types,
+      bool passphrase_missing,
+      const syncable::Directory::UnsyncedMetaHandles& unsynced_handles,
+      std::set<int64>* ready_unsynced_set);
 
-  void AddUncommittedParentsAndTheirPredecessors(
+ private:
+  // Add all the uncommitted parents (and their predecessors) of |item| to
+  // |result| if they are ready to commit. Entries are added in root->child
+  // order and predecessor->successor order.
+  // Returns values:
+  //    False: if a dependent item was in conflict, and hence no child cannot be
+  //           committed.
+  //    True: if all parents and their predecessors were checked for commit
+  //          readiness and were added to |result| as necessary.
+  bool AddUncommittedParentsAndTheirPredecessors(
       syncable::BaseTransaction* trans,
-      syncable::Id parent_id,
       const ModelSafeRoutingInfo& routes,
-      syncable::ModelTypeSet throttled_types);
+      const std::set<int64>& ready_unsynced_set,
+      const syncable::Entry& item,
+      sessions::OrderedCommitSet* result) const;
 
   // OrderedCommitSet helpers for adding predecessors in order.
-  // TODO(ncarter): Refactor these so that the |result| parameter goes away,
-  // and AddItem doesn't need to consider two OrderedCommitSets.
-  bool AddItem(syncable::Entry* item,
-               syncable::ModelTypeSet throttled_types,
-               sessions::OrderedCommitSet* result);
+
+  // Adds |item| to |result| if it's ready for committing and was not already
+  // present.
+  // Prereq: |item| is unsynced.
+  // Returns values:
+  //    False: if |item| was in conflict.
+  //    True: if |item| was checked for commit readiness and added to |result|
+  //          as necessary.
+  bool AddItem(const std::set<int64>& ready_unsynced_set,
+               const syncable::Entry& item,
+               sessions::OrderedCommitSet* result) const;
+
+  // Adds item and all it's unsynced predecessors to |result| as necessary, as
+  // long as no item was in conflict.
+  // Return values:
+  //   False: if there was an entry in conflict.
+  //   True: if all entries were checked for commit readiness and added to
+  //         |result| as necessary.
   bool AddItemThenPredecessors(syncable::BaseTransaction* trans,
-                               syncable::ModelTypeSet throttled_types,
-                               syncable::Entry* item,
-                               syncable::IndexedBitField inclusion_filter,
-                               sessions::OrderedCommitSet* result);
-  void AddPredecessorsThenItem(syncable::BaseTransaction* trans,
-                               syncable::ModelTypeSet throttled_types,
-                               syncable::Entry* item,
-                               syncable::IndexedBitField inclusion_filter,
-                               const ModelSafeRoutingInfo& routes);
+                               const std::set<int64>& ready_unsynced_set,
+                               const syncable::Entry& item,
+                               sessions::OrderedCommitSet* result) const;
 
-  bool IsCommitBatchFull();
+  // Appends all commit ready predecessors of |item|, followed by |item| itself,
+  // to |ordered_commit_set_|, iff item and all its predecessors not in
+  // conflict.
+  // Return values:
+  //   False: if there was an entry in conflict.
+  //   True: if all entries were checked for commit readiness and added to
+  //         |result| as necessary.
+  bool AddPredecessorsThenItem(syncable::BaseTransaction* trans,
+                               const ModelSafeRoutingInfo& routes,
+                               const std::set<int64>& ready_unsynced_set,
+                               const syncable::Entry& item,
+                               sessions::OrderedCommitSet* result) const;
 
-  void AddCreatesAndMoves(const vector<int64>& unsynced_handles,
-                          syncable::WriteTransaction* write_transaction,
+  bool IsCommitBatchFull() const;
+
+  void AddCreatesAndMoves(syncable::WriteTransaction* write_transaction,
                           const ModelSafeRoutingInfo& routes,
-                          syncable::ModelTypeSet throttled_types);
+                          const std::set<int64>& ready_unsynced_set);
 
-  void AddDeletes(const vector<int64>& unsynced_handles,
-                  syncable::WriteTransaction* write_transaction);
+  void AddDeletes(syncable::WriteTransaction* write_transaction,
+                  const std::set<int64>& ready_unsynced_set);
 
   scoped_ptr<sessions::OrderedCommitSet> ordered_commit_set_;
 
   int requested_commit_batch_size_;
-  bool passphrase_missing_;
-  syncable::ModelTypeSet encrypted_types_;
 
   DISALLOW_COPY_AND_ASSIGN(GetCommitIdsCommand);
 };

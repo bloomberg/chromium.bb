@@ -366,25 +366,29 @@ class SyncerTest : public testing::Test,
   void DoTruncationTest(const ScopedDirLookup& dir,
                         const vector<int64>& unsynced_handle_view,
                         const vector<syncable::Id>& expected_id_order) {
-    // The expected order is "x", "b", "c", "e", truncated appropriately.
     for (size_t limit = expected_id_order.size() + 2; limit > 0; --limit) {
       StatusController* status = session_->mutable_status_controller();
       WriteTransaction wtrans(FROM_HERE, UNITTEST, dir);
       ScopedSetSessionWriteTransaction set_trans(session_.get(), &wtrans);
-      status->set_unsynced_handles(unsynced_handle_view);
 
       ModelSafeRoutingInfo routes;
       GetModelSafeRoutingInfo(&routes);
       GetCommitIdsCommand command(limit);
-      command.BuildCommitIds(
-          session_->status_controller().unsynced_handles(),
-          session_->write_transaction(), routes, syncable::ModelTypeSet());
+      std::set<int64> ready_unsynced_set;
+      command.FilterUnreadyEntries(&wtrans, syncable::ModelTypeSet(),
+                                   syncable::ModelTypeSet(), false,
+                                   unsynced_handle_view, &ready_unsynced_set);
+      command.BuildCommitIds(session_->write_transaction(), routes,
+                             ready_unsynced_set);
+      syncable::Directory::UnsyncedMetaHandles ready_unsynced_vector(
+        ready_unsynced_set.begin(), ready_unsynced_set.end());
+      status->set_unsynced_handles(ready_unsynced_vector);
       vector<syncable::Id> output =
           command.ordered_commit_set_->GetAllCommitIds();
       size_t truncated_size = std::min(limit, expected_id_order.size());
-      ASSERT_TRUE(truncated_size == output.size());
+      ASSERT_EQ(truncated_size, output.size());
       for (size_t i = 0; i < truncated_size; ++i) {
-        ASSERT_TRUE(expected_id_order[i] == output[i])
+        ASSERT_EQ(expected_id_order[i], output[i])
             << "At index " << i << " with batch size limited to " << limit;
       }
       sessions::OrderedCommitSet::Projection proj;
@@ -394,9 +398,9 @@ class SyncerTest : public testing::Test,
         SCOPED_TRACE(::testing::Message("Projection mismatch with i = ") << i);
         syncable::Id projected =
             command.ordered_commit_set_->GetCommitIdAt(proj[i]);
-        ASSERT_TRUE(expected_id_order[proj[i]] == projected);
+        ASSERT_EQ(expected_id_order[proj[i]], projected);
         // Since this projection is the identity, the following holds.
-        ASSERT_TRUE(expected_id_order[i] == projected);
+        ASSERT_EQ(expected_id_order[i], projected);
       }
     }
   }
@@ -527,38 +531,55 @@ TEST_F(SyncerTest, TestCallGatherUnsyncedEntries) {
 TEST_F(SyncerTest, GetCommitIdsCommandTruncates) {
   ScopedDirLookup dir(syncdb_.manager(), syncdb_.name());
   ASSERT_TRUE(dir.good());
-  int64 handle_c = CreateUnsyncedDirectory("C", ids_.MakeLocal("c"));
-  int64 handle_x = CreateUnsyncedDirectory("X", ids_.MakeLocal("x"));
-  int64 handle_b = CreateUnsyncedDirectory("B", ids_.MakeLocal("b"));
-  int64 handle_d = CreateUnsyncedDirectory("D", ids_.MakeLocal("d"));
-  int64 handle_e = CreateUnsyncedDirectory("E", ids_.MakeLocal("e"));
+
+  syncable::Id root = ids_.root();
+  // Create two server entries.
+  mock_server_->AddUpdateDirectory(ids_.MakeServer("x"), root, "X", 10, 10);
+  mock_server_->AddUpdateDirectory(ids_.MakeServer("w"), root, "W", 10, 10);
+  SyncShareAsDelegate();
+
+  // Create some new client entries.
+  CreateUnsyncedDirectory("C", ids_.MakeLocal("c"));
+  CreateUnsyncedDirectory("B", ids_.MakeLocal("b"));
+  CreateUnsyncedDirectory("D", ids_.MakeLocal("d"));
+  CreateUnsyncedDirectory("E", ids_.MakeLocal("e"));
+  CreateUnsyncedDirectory("J", ids_.MakeLocal("j"));
+
   {
     WriteTransaction wtrans(FROM_HERE, UNITTEST, dir);
-    MutableEntry entry_x(&wtrans, GET_BY_HANDLE, handle_x);
-    MutableEntry entry_b(&wtrans, GET_BY_HANDLE, handle_b);
-    MutableEntry entry_c(&wtrans, GET_BY_HANDLE, handle_c);
-    MutableEntry entry_d(&wtrans, GET_BY_HANDLE, handle_d);
-    MutableEntry entry_e(&wtrans, GET_BY_HANDLE, handle_e);
-    entry_x.Put(SPECIFICS, DefaultBookmarkSpecifics());
-    entry_b.Put(SPECIFICS, DefaultBookmarkSpecifics());
-    entry_c.Put(SPECIFICS, DefaultBookmarkSpecifics());
-    entry_d.Put(SPECIFICS, DefaultBookmarkSpecifics());
-    entry_e.Put(SPECIFICS, DefaultBookmarkSpecifics());
+    MutableEntry entry_x(&wtrans, GET_BY_ID, ids_.MakeServer("x"));
+    MutableEntry entry_b(&wtrans, GET_BY_ID, ids_.MakeLocal("b"));
+    MutableEntry entry_c(&wtrans, GET_BY_ID, ids_.MakeLocal("c"));
+    MutableEntry entry_d(&wtrans, GET_BY_ID, ids_.MakeLocal("d"));
+    MutableEntry entry_e(&wtrans, GET_BY_ID, ids_.MakeLocal("e"));
+    MutableEntry entry_w(&wtrans, GET_BY_ID, ids_.MakeServer("w"));
+    MutableEntry entry_j(&wtrans, GET_BY_ID, ids_.MakeLocal("j"));
+    entry_x.Put(IS_UNSYNCED, true);
     entry_b.Put(PARENT_ID, entry_x.Get(ID));
+    entry_d.Put(PARENT_ID, entry_b.Get(ID));
     entry_c.Put(PARENT_ID, entry_x.Get(ID));
     entry_c.PutPredecessor(entry_b.Get(ID));
-    entry_d.Put(PARENT_ID, entry_b.Get(ID));
     entry_e.Put(PARENT_ID, entry_c.Get(ID));
+    entry_w.PutPredecessor(entry_x.Get(ID));
+    entry_w.Put(IS_UNSYNCED, true);
+    entry_w.Put(SERVER_VERSION, 20);
+    entry_w.Put(IS_UNAPPLIED_UPDATE, true);  // Fake a conflict.
+    entry_j.PutPredecessor(entry_w.Get(ID));
   }
 
-  // The arrangement is now: x (b (d) c (e)).
+  // The arrangement is now: x (b (d) c (e)) w j
+  // Entry "w" is in conflict, making its sucessors unready to commit.
   vector<int64> unsynced_handle_view;
   vector<syncable::Id> expected_order;
-  // The expected order is "x", "b", "c", "e", truncated appropriately.
-  unsynced_handle_view.push_back(handle_e);
-  expected_order.push_back(ids_.MakeLocal("x"));
+  {
+    ReadTransaction rtrans(FROM_HERE, dir);
+    SyncerUtil::GetUnsyncedEntries(&rtrans, &unsynced_handle_view);
+  }
+  // The expected order is "x", "b", "c", "d", "e", truncated appropriately.
+  expected_order.push_back(ids_.MakeServer("x"));
   expected_order.push_back(ids_.MakeLocal("b"));
   expected_order.push_back(ids_.MakeLocal("c"));
+  expected_order.push_back(ids_.MakeLocal("d"));
   expected_order.push_back(ids_.MakeLocal("e"));
   DoTruncationTest(dir, unsynced_handle_view, expected_order);
 }
@@ -1059,53 +1080,6 @@ TEST_F(SyncerTest, NigoriConflicts) {
         CanDecryptUsingDefaultKey(other_encrypted_specifics.encrypted()));
     EXPECT_TRUE(nigori_entry.Get(SPECIFICS).GetExtension(sync_pb::nigori)
         .sync_tabs());
-  }
-}
-
-// TODO(chron): More corner case unit tests around validation.
-TEST_F(SyncerTest, TestCommitMetahandleIterator) {
-  ScopedDirLookup dir(syncdb_.manager(), syncdb_.name());
-  ASSERT_TRUE(dir.good());
-  StatusController* status = session_->mutable_status_controller();
-  const vector<int64>& unsynced(status->unsynced_handles());
-
-  {
-    WriteTransaction wtrans(FROM_HERE, UNITTEST, dir);
-    ScopedSetSessionWriteTransaction set_trans(session_.get(), &wtrans);
-
-    sessions::OrderedCommitSet commit_set(session_->routing_info());
-    GetCommitIdsCommand::CommitMetahandleIterator iterator(unsynced, &wtrans,
-        &commit_set);
-    EXPECT_FALSE(iterator.Valid());
-    EXPECT_FALSE(iterator.Increment());
-  }
-
-  {
-    vector<int64> session_metahandles;
-    session_metahandles.push_back(CreateUnsyncedDirectory("test1", "testid1"));
-    session_metahandles.push_back(CreateUnsyncedDirectory("test2", "testid2"));
-    session_metahandles.push_back(CreateUnsyncedDirectory("test3", "testid3"));
-    status->set_unsynced_handles(session_metahandles);
-
-    WriteTransaction wtrans(FROM_HERE, UNITTEST, dir);
-    ScopedSetSessionWriteTransaction set_trans(session_.get(), &wtrans);
-    sessions::OrderedCommitSet commit_set(session_->routing_info());
-    GetCommitIdsCommand::CommitMetahandleIterator iterator(unsynced, &wtrans,
-        &commit_set);
-
-    EXPECT_TRUE(iterator.Valid());
-    EXPECT_TRUE(iterator.Current() == session_metahandles[0]);
-    EXPECT_TRUE(iterator.Increment());
-
-    EXPECT_TRUE(iterator.Valid());
-    EXPECT_TRUE(iterator.Current() == session_metahandles[1]);
-    EXPECT_TRUE(iterator.Increment());
-
-    EXPECT_TRUE(iterator.Valid());
-    EXPECT_TRUE(iterator.Current() == session_metahandles[2]);
-    EXPECT_FALSE(iterator.Increment());
-
-    EXPECT_FALSE(iterator.Valid());
   }
 }
 

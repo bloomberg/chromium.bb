@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -28,6 +28,13 @@ void OrderedCommitSet::AddCommitItem(const int64 metahandle,
     projections_[GetGroupForModelType(type, routes_)].push_back(
         commit_ids_.size() - 1);
     types_.push_back(type);
+  }
+}
+
+void OrderedCommitSet::Append(const OrderedCommitSet& other) {
+  for (int i = 0; i < other.Size(); ++i) {
+    CommitItem item = other.GetCommitItemAt(i);
+    AddCommitItem(item.meta, item.id, item.group);
   }
 }
 

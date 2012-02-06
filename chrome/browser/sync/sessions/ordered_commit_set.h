@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -76,6 +76,7 @@ class OrderedCommitSet {
   // BOOKMARKS.
   bool HasBookmarkCommitId() const;
 
+  void Append(const OrderedCommitSet& other);
   void AppendReverse(const OrderedCommitSet& other);
   void Truncate(size_t max_size);
 
