@@ -18,6 +18,7 @@
 #include "gestures/include/prop_registry.h"
 #include "gestures/include/scaling_filter_interpreter.h"
 #include "gestures/include/stuck_button_inhibitor_filter_interpreter.h"
+#include "gestures/include/t5r2_correcting_filter_interpreter.h"
 #include "gestures/include/util.h"
 
 using std::string;
@@ -172,6 +173,7 @@ GestureInterpreter::GestureInterpreter(int version)
   temp = new ScalingFilterInterpreter(prop_reg_.get(), temp);
   temp = new IntegralGestureFilterInterpreter(temp);
   temp = new StuckButtonInhibitorFilterInterpreter(temp);
+  temp = new T5R2CorrectingFilterInterpreter(prop_reg_.get(), temp);
   temp = new LoggingFilterInterpreter(prop_reg_.get(), temp);
   interpreter_.reset(temp);
   temp = NULL;
