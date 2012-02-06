@@ -63,7 +63,6 @@ class ChromeBrowserMainParts : public content::BrowserMainParts {
   virtual void PostEarlyInitialization() OVERRIDE;
   virtual void ToolkitInitialized() OVERRIDE;
   virtual void PreMainMessageLoopStart() OVERRIDE;
-  virtual MessageLoop* GetMainMessageLoop() OVERRIDE;
   virtual void PostMainMessageLoopStart() OVERRIDE;
   virtual int PreCreateThreads() OVERRIDE;
   virtual void PreMainMessageLoopRun() OVERRIDE;

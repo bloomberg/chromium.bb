@@ -121,8 +121,6 @@ using content::ChildProcessHostImpl;
 using content::UserMetricsAction;
 using content::WebUIControllerFactory;
 
-extern bool g_exited_main_message_loop;
-
 // This class creates the IO thread for the renderer when running in
 // single-process mode.  It's not used in multi-process mode.
 class RendererMainThread : public base::Thread {
@@ -317,7 +315,7 @@ RenderProcessHostImpl::RenderProcessHostImpl(
       base::PLATFORM_FILE_CREATE | base::PLATFORM_FILE_CREATE_ALWAYS |
       base::PLATFORM_FILE_WRITE);
 
-  CHECK(!g_exited_main_message_loop);
+  CHECK(!content::ExitedMainMessageLoop());
   RegisterHost(GetID(), this);
   g_all_hosts.Get().set_check_on_null_data(true);
   // Initialize |child_process_activity_time_| to a reasonable value.

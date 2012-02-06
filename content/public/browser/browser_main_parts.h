@@ -10,8 +10,6 @@
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_thread.h"
 
-class MessageLoop;
-
 namespace content {
 
 // This class contains different "stages" to be executed by |BrowserMain()|,
@@ -61,10 +59,6 @@ class CONTENT_EXPORT BrowserMainParts {
   virtual void PostEarlyInitialization() = 0;
 
   virtual void PreMainMessageLoopStart() = 0;
-
-  // Return the main message loop object or NULL to use the default message
-  // loop object.
-  virtual MessageLoop* GetMainMessageLoop() = 0;
 
   virtual void PostMainMessageLoopStart() = 0;
 
