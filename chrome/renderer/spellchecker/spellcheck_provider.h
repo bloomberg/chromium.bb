@@ -54,6 +54,8 @@ class SpellCheckProvider : public content::RenderViewObserver,
   virtual void FocusedNodeChanged(const WebKit::WebNode& node) OVERRIDE;
 
  private:
+  friend class TestingSpellCheckProvider;
+
   // WebKit::WebSpellCheckClient implementation.
   virtual void spellCheck(
       const WebKit::WebString& text,
@@ -75,10 +77,18 @@ class SpellCheckProvider : public content::RenderViewObserver,
       const WebKit::WebString& word) OVERRIDE;
 
   void OnAdvanceToNextMisspelling();
+#if !defined(OS_MACOSX)
+  void OnRespondSpellingService(
+      int identifier,
+      int tag,
+      const std::vector<WebKit::WebTextCheckingResult>& results);
+#endif
+#if defined(OS_MACOSX)
   void OnRespondTextCheck(
       int identifier,
       int tag,
       const std::vector<WebKit::WebTextCheckingResult>& results);
+#endif
   void OnToggleSpellCheck();
   void OnToggleSpellPanel(bool is_currently_visible);
 

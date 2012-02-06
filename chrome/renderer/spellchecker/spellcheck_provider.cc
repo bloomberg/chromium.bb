@@ -62,8 +62,18 @@ void SpellCheckProvider::RequestTextChecking(
       document_tag,
       text));
 #else
-    completion->didFinishCheckingText(
-        std::vector<WebTextCheckingResult>());
+  // Send this text to a browser. A browser checks the user profile and send
+  // this text to the Spelling service only if a user enables this feature.
+  // TODO(hbono) Implement a cache to avoid sending IPC messages.
+  if (text.isEmpty()) {
+    completion->didFinishCheckingText(std::vector<WebTextCheckingResult>());
+    return;
+  }
+  Send(new SpellCheckHostMsg_CallSpellingService(
+      routing_id(),
+      text_check_completions_.Add(completion),
+      document_tag,
+      text));
 #endif  // !OS_MACOSX
 }
 
@@ -72,7 +82,13 @@ bool SpellCheckProvider::OnMessageReceived(const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP(SpellCheckProvider, message)
     IPC_MESSAGE_HANDLER(SpellCheckMsg_AdvanceToNextMisspelling,
                         OnAdvanceToNextMisspelling)
+#if !defined(OS_MACOSX)
+    IPC_MESSAGE_HANDLER(SpellCheckMsg_RespondSpellingService,
+                        OnRespondSpellingService)
+#endif
+#if defined(OS_MACOSX)
     IPC_MESSAGE_HANDLER(SpellCheckMsg_RespondTextCheck, OnRespondTextCheck)
+#endif
     IPC_MESSAGE_HANDLER(SpellCheckMsg_ToggleSpellPanel, OnToggleSpellPanel)
     IPC_MESSAGE_HANDLER(SpellCheckMsg_ToggleSpellCheck, OnToggleSpellCheck)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -194,6 +210,21 @@ void SpellCheckProvider::OnAdvanceToNextMisspelling() {
       WebString::fromUTF8("AdvanceToNextMisspelling"));
 }
 
+#if !defined(OS_MACOSX)
+void SpellCheckProvider::OnRespondSpellingService(
+    int identifier,
+    int tag,
+    const std::vector<WebTextCheckingResult>& results) {
+  WebTextCheckingCompletion* completion =
+      text_check_completions_.Lookup(identifier);
+  if (!completion)
+    return;
+  text_check_completions_.Remove(identifier);
+  completion->didFinishCheckingText(results);
+}
+#endif
+
+#if defined(OS_MACOSX)
 void SpellCheckProvider::OnRespondTextCheck(
     int identifier,
     int tag,
@@ -205,6 +236,7 @@ void SpellCheckProvider::OnRespondTextCheck(
   text_check_completions_.Remove(identifier);
   completion->didFinishCheckingText(results);
 }
+#endif
 
 void SpellCheckProvider::OnToggleSpellPanel(bool is_currently_visible) {
   if (!render_view()->GetWebView())

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,9 +15,6 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebVector.h"
 
 // Tests for Hunspell functionality in SpellcheckingProvider
-
-namespace {
-
 // Faked test target, which stores sent message for verification.
 class TestingSpellCheckProvider : public SpellCheckProvider {
  public:
@@ -30,12 +27,32 @@ class TestingSpellCheckProvider : public SpellCheckProvider {
   }
 
   virtual bool Send(IPC::Message* message) OVERRIDE {
-    messages_.push_back(message);
+    // Call our mock message handlers.
+    IPC_BEGIN_MESSAGE_MAP(TestingSpellCheckProvider, *message)
+      IPC_MESSAGE_HANDLER(SpellCheckHostMsg_CallSpellingService,
+                          OnCallSpellingService)
+    IPC_MESSAGE_UNHANDLED(messages_.push_back(message))
+    IPC_END_MESSAGE_MAP()
     return true;
+  }
+
+  void OnCallSpellingService(int route_id,
+                             int identifier,
+                             int document_tag,
+                             const string16& text) {
+    WebKit::WebTextCheckingCompletion* completion =
+        text_check_completions_.Lookup(identifier);
+    if (!completion)
+      return;
+    text_check_completions_.Remove(identifier);
+    completion->didFinishCheckingText(
+        std::vector<WebKit::WebTextCheckingResult>());
   }
 
   std::vector<IPC::Message*> messages_;
 };
+
+namespace {
 
 // A fake completion object for verification.
 class FakeTextCheckingCompletion : public WebKit::WebTextCheckingCompletion {

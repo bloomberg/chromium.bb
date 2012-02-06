@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -27,10 +27,14 @@ IPC_MESSAGE_ROUTED0(SpellCheckMsg_ToggleSpellCheck)
 IPC_MESSAGE_ROUTED1(SpellCheckMsg_ToggleSpellPanel,
                     bool)
 
+#if defined(OS_MACOSX)
+// Sends when NSSpellChecker finishes checking text received by a preceeding
+// SpellCheckHostMsg_RequestTextCheck message.
 IPC_MESSAGE_ROUTED3(SpellCheckMsg_RespondTextCheck,
                     int        /* request identifier given by WebKit */,
                     int        /* document tag */,
                     std::vector<WebKit::WebTextCheckingResult>)
+#endif
 
 // This message tells the renderer to advance to the next misspelling. It is
 // sent when the user clicks the "Find Next" button on the spelling panel.
@@ -54,6 +58,14 @@ IPC_MESSAGE_CONTROL1(SpellCheckMsg_WordAdded,
 IPC_MESSAGE_CONTROL1(SpellCheckMsg_EnableAutoSpellCorrect,
                      bool /* enable */)
 
+#if !defined(OS_MACOSX)
+// Sends text-check results from the Spelling service when the service finishes
+// checking text reveived by a SpellCheckHostMsg_CallSpellingService message.
+IPC_MESSAGE_ROUTED3(SpellCheckMsg_RespondSpellingService,
+                    int        /* request identifier given by WebKit */,
+                    int        /* document tag */,
+                    std::vector<WebKit::WebTextCheckingResult>)
+#endif
 
 // Messages sent from the renderer to the browser.
 
@@ -66,6 +78,17 @@ IPC_MESSAGE_CONTROL0(SpellCheckHostMsg_RequestDictionary)
 IPC_MESSAGE_ROUTED2(SpellCheckHostMsg_NotifyChecked,
                     string16 /* word */,
                     bool /* true if checked word is misspelled */)
+
+#if !defined(OS_MACOSX)
+// Asks the Spelling service to check text. When the service finishes checking
+// the input text, it sends a SpellingCheckMsg_RespondSpellingService with
+// text-check results.
+IPC_MESSAGE_CONTROL4(SpellCheckHostMsg_CallSpellingService,
+                     int /* route_id for response */,
+                     int /* request identifier given by WebKit */,
+                     int /* document tag */,
+                     string16 /* sentence */)
+#endif
 
 #if defined(OS_MACOSX)
 // Asks the browser for a unique document tag.

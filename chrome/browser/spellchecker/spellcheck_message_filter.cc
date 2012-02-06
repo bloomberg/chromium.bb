@@ -4,18 +4,25 @@
 
 #include "chrome/browser/spellchecker/spellcheck_message_filter.h"
 
+#include "base/bind.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/spellchecker/spellcheck_factory.h"
 #include "chrome/browser/spellchecker/spellcheck_host.h"
 #include "chrome/browser/spellchecker/spellcheck_host_metrics.h"
+#include "chrome/browser/spellchecker/spelling_service_client.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/common/spellcheck_messages.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/common/url_fetcher.h"
 
 using content::BrowserThread;
 
 SpellCheckMessageFilter::SpellCheckMessageFilter(int render_process_id)
-    : render_process_id_(render_process_id) {
+    : render_process_id_(render_process_id),
+      route_id_(0),
+      identifier_(0),
+      document_tag_(0) {
 }
 
 SpellCheckMessageFilter::~SpellCheckMessageFilter() {
@@ -26,6 +33,10 @@ void SpellCheckMessageFilter::OverrideThreadForMessage(
   if (message.type() == SpellCheckHostMsg_RequestDictionary::ID ||
       message.type() == SpellCheckHostMsg_NotifyChecked::ID)
     *thread = BrowserThread::UI;
+#if !defined(OS_MACOSX)
+  if (message.type() == SpellCheckHostMsg_CallSpellingService::ID)
+    *thread = BrowserThread::UI;
+#endif
 }
 
 bool SpellCheckMessageFilter::OnMessageReceived(const IPC::Message& message,
@@ -36,6 +47,10 @@ bool SpellCheckMessageFilter::OnMessageReceived(const IPC::Message& message,
                         OnSpellCheckerRequestDictionary)
     IPC_MESSAGE_HANDLER(SpellCheckHostMsg_NotifyChecked,
                         OnNotifyChecked)
+#if !defined(OS_MACOSX)
+    IPC_MESSAGE_HANDLER(SpellCheckHostMsg_CallSpellingService,
+                        OnCallSpellingService)
+#endif
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -79,3 +94,52 @@ void SpellCheckMessageFilter::OnNotifyChecked(const string16& word,
   if (spellcheck_host && spellcheck_host->GetMetrics())
     spellcheck_host->GetMetrics()->RecordCheckedWordStats(word, misspelled);
 }
+
+#if !defined(OS_MACOSX)
+void SpellCheckMessageFilter::OnCallSpellingService(
+    int route_id,
+    int identifier,
+    int document_tag,
+    const string16& text) {
+  DCHECK(!text.empty());
+  if (!CallSpellingService(route_id, identifier, document_tag, text)) {
+    std::vector<WebKit::WebTextCheckingResult> results;
+    Send(new SpellCheckMsg_RespondSpellingService(route_id,
+                                                  identifier,
+                                                  document_tag,
+                                                  results));
+    return;
+  }
+  route_id_ = route_id;
+  identifier_ = identifier;
+}
+
+void SpellCheckMessageFilter::OnTextCheckComplete(
+    int tag,
+    const std::vector<WebKit::WebTextCheckingResult>& results) {
+  Send(new SpellCheckMsg_RespondSpellingService(route_id_,
+                                                identifier_,
+                                                tag,
+                                                results));
+  client_.reset();
+}
+
+bool SpellCheckMessageFilter::CallSpellingService(
+    int route_id,
+    int identifier,
+    int document_tag,
+    const string16& text) {
+  content::RenderProcessHost* host =
+      content::RenderProcessHost::FromID(render_process_id_);
+  if (!host)
+    return false;
+  Profile* profile = Profile::FromBrowserContext(host->GetBrowserContext());
+  if (!profile->GetPrefs()->GetBoolean(prefs::kSpellCheckUseSpellingService))
+    return false;
+  client_.reset(new SpellingServiceClient);
+  return client_->RequestTextCheck(
+      profile, document_tag, text,
+      base::Bind(&SpellCheckMessageFilter::OnTextCheckComplete,
+                 base::Unretained(this)));
+}
+#endif
