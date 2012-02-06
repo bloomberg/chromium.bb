@@ -65,8 +65,11 @@ struct AcceleratorData {
   // On Chrome OS, Search key is mapped to LWIN.
   { ui::VKEY_LWIN, true, false, false, TOGGLE_CAPS_LOCK },
   { ui::VKEY_F8, false, false, false, VOLUME_MUTE },
+  { ui::VKEY_VOLUME_MUTE, false, false, false, VOLUME_MUTE },
   { ui::VKEY_F9, false, false, false, VOLUME_DOWN },
+  { ui::VKEY_VOLUME_DOWN, false, false, false, VOLUME_DOWN },
   { ui::VKEY_F10, false, false, false, VOLUME_UP },
+  { ui::VKEY_VOLUME_UP, false, false, false, VOLUME_UP },
 #if !defined(NDEBUG)
   { ui::VKEY_HOME, false, true, false, ROTATE_SCREEN },
   { ui::VKEY_A, false, true, true, TOGGLE_COMPACT_WINDOW_MODE },

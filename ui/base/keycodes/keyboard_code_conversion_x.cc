@@ -342,6 +342,14 @@ KeyboardCode KeyboardCodeFromXKeysym(unsigned int keysym) {
       return VKEY_UNKNOWN;
 #endif
 
+    // For supporting multimedia buttons on a USB keyboard.
+    case XF86XK_AudioMute:
+      return VKEY_VOLUME_MUTE;
+    case XF86XK_AudioLowerVolume:
+      return VKEY_VOLUME_DOWN;
+    case XF86XK_AudioRaiseVolume:
+      return VKEY_VOLUME_UP;
+
     // TODO(sad): some keycodes are still missing.
   }
   DLOG(WARNING) << "Unknown keysym: " << StringPrintf("0x%x", keysym);
@@ -644,6 +652,13 @@ int XKeysymForWindowsKeyCode(KeyboardCode keycode, bool shift) {
     case VKEY_F23:
     case VKEY_F24:
       return XK_F1 + (keycode - VKEY_F1);
+
+    case VKEY_VOLUME_MUTE:
+      return XF86XK_AudioMute;
+    case VKEY_VOLUME_DOWN:
+      return XF86XK_AudioLowerVolume;
+    case VKEY_VOLUME_UP:
+      return XF86XK_AudioRaiseVolume;
 
     default:
       LOG(WARNING) << "Unknown keycode:" << keycode;

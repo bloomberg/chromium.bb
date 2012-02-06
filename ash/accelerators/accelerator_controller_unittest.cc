@@ -403,6 +403,47 @@ TEST_F(AcceleratorControllerTest, GlobalAccelerators) {
     EXPECT_EQ(1, delegate->handle_volume_up_count());
     EXPECT_EQ(f10, delegate->last_accelerator());
   }
+  const ui::Accelerator volume_mute(ui::VKEY_VOLUME_MUTE, false, false, false);
+  const ui::Accelerator volume_down(ui::VKEY_VOLUME_DOWN, false, false, false);
+  const ui::Accelerator volume_up(ui::VKEY_VOLUME_UP, false, false, false);
+  {
+    EXPECT_FALSE(GetController()->Process(volume_mute));
+    EXPECT_FALSE(GetController()->Process(volume_down));
+    EXPECT_FALSE(GetController()->Process(volume_up));
+    DummyVolumeControlDelegate* delegate =
+        new DummyVolumeControlDelegate(false);
+    GetController()->SetVolumeControlDelegate(
+        scoped_ptr<VolumeControlDelegate>(delegate).Pass());
+    EXPECT_EQ(0, delegate->handle_volume_mute_count());
+    EXPECT_FALSE(GetController()->Process(volume_mute));
+    EXPECT_EQ(1, delegate->handle_volume_mute_count());
+    EXPECT_EQ(volume_mute, delegate->last_accelerator());
+    EXPECT_EQ(0, delegate->handle_volume_down_count());
+    EXPECT_FALSE(GetController()->Process(volume_down));
+    EXPECT_EQ(1, delegate->handle_volume_down_count());
+    EXPECT_EQ(volume_down, delegate->last_accelerator());
+    EXPECT_EQ(0, delegate->handle_volume_up_count());
+    EXPECT_FALSE(GetController()->Process(volume_up));
+    EXPECT_EQ(1, delegate->handle_volume_up_count());
+    EXPECT_EQ(volume_up, delegate->last_accelerator());
+  }
+  {
+    DummyVolumeControlDelegate* delegate = new DummyVolumeControlDelegate(true);
+    GetController()->SetVolumeControlDelegate(
+        scoped_ptr<VolumeControlDelegate>(delegate).Pass());
+    EXPECT_EQ(0, delegate->handle_volume_mute_count());
+    EXPECT_TRUE(GetController()->Process(volume_mute));
+    EXPECT_EQ(1, delegate->handle_volume_mute_count());
+    EXPECT_EQ(volume_mute, delegate->last_accelerator());
+    EXPECT_EQ(0, delegate->handle_volume_down_count());
+    EXPECT_TRUE(GetController()->Process(volume_down));
+    EXPECT_EQ(1, delegate->handle_volume_down_count());
+    EXPECT_EQ(volume_down, delegate->last_accelerator());
+    EXPECT_EQ(0, delegate->handle_volume_up_count());
+    EXPECT_TRUE(GetController()->Process(volume_up));
+    EXPECT_EQ(1, delegate->handle_volume_up_count());
+    EXPECT_EQ(volume_up, delegate->last_accelerator());
+  }
 #if !defined(NDEBUG)
   // RotateScreen
   EXPECT_TRUE(GetController()->Process(
