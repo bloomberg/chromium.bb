@@ -12,7 +12,6 @@
 #include "googleurl/src/gurl.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/clipboard/clipboard.h"
-#include "webkit/glue/webpreferences.h"
 
 namespace content {
 
@@ -259,8 +258,8 @@ bool MockContentBrowserClient::IsFastShutdownPossible() {
   return true;
 }
 
-WebPreferences MockContentBrowserClient::GetWebkitPrefs(RenderViewHost* rvh) {
-  return WebPreferences();
+void MockContentBrowserClient::OverrideWebkitPrefs(RenderViewHost* rvh,
+                                                   WebPreferences* prefs) {
 }
 
 void MockContentBrowserClient::UpdateInspectorSetting(

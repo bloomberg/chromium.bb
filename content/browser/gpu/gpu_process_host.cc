@@ -533,9 +533,8 @@ void GpuProcessHost::ForceShutdown() {
 }
 
 bool GpuProcessHost::LaunchGpuProcess(const std::string& channel_id) {
-  if (!gpu_enabled_ || g_gpu_crash_count >= kGpuMaxCrashCount) {
+  if (!gpu_enabled_) {
     SendOutstandingReplies();
-    gpu_enabled_ = false;
     return false;
   }
 

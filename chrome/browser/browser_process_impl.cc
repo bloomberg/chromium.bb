@@ -69,7 +69,6 @@
 #include "chrome/installer/util/google_update_constants.h"
 #include "content/browser/child_process_security_policy.h"
 #include "content/browser/download/mhtml_generation_manager.h"
-#include "content/browser/gpu/gpu_process_host_ui_shim.h"
 #include "content/browser/net/browser_online_state_observer.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/public/browser/browser_thread.h"
@@ -207,12 +206,6 @@ void BrowserProcessImpl::StartTearDown() {
   // The policy providers managed by |browser_policy_connector_| need to shut
   // down while the IO and FILE threads are still alive.
   browser_policy_connector_.reset();
-
-  // Destroying the GpuProcessHostUIShims on the UI thread posts a task to
-  // delete related objects on the GPU thread. This must be done before
-  // stopping the GPU thread. The GPU thread will close IPC channels to renderer
-  // processes so this has to happen before stopping the IO thread.
-  GpuProcessHostUIShim::DestroyAll();
 
   // Stop the watchdog thread before stopping other threads.
   watchdog_thread_.reset();

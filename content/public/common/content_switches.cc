@@ -13,6 +13,9 @@ const char kAllowFileAccessFromFiles[]      = "allow-file-access-from-files";
 // Allows debugging of sandboxed processes (see zygote_main_linux.cc).
 const char kAllowSandboxDebugging[]         = "allow-sandbox-debugging";
 
+// Allow compositing on chrome:// pages.
+const char kAllowWebUICompositing[]         = "allow-webui-compositing";
+
 // Enumerates and prints a child process' most dangerous handles when it
 // is terminated.
 const char kAuditHandles[]                  = "enable-handle-auditing";
@@ -118,6 +121,10 @@ const char kDisableHangMonitor[]            = "disable-hang-monitor";
 // will present the rendered page rather than the browser process.
 const char kDisableImageTransportSurface[]  = "disable-image-transport-surface";
 
+// Disables HTML5 Forms interactive validation.
+const char kDisableInteractiveFormValidation[] =
+    "disable-interactive-form-validation";
+
 // Disable the thread that crashes the GPU process if it stops responding to
 // messages.
 const char kDisableGpuWatchdog[]            = "disable-gpu-watchdog";
@@ -144,6 +151,10 @@ const char kDisablePlugins[]                = "disable-plugins";
 // Disable pop-up blocking.
 const char kDisablePopupBlocking[]          = "disable-popup-blocking";
 
+// Disables remote web font support. SVG font should always work whether this
+// option is specified or not.
+const char kDisableRemoteFonts[]            = "disable-remote-fonts";
+
 // Turns off the accessibility in the renderer.
 const char kDisableRendererAccessibility[]  = "disable-renderer-accessibility";
 
@@ -162,6 +173,9 @@ const char kDisableSessionStorage[]         = "disable-session-storage";
 // Enable shared workers. Functionality not yet complete.
 const char kDisableSharedWorkers[]          = "disable-shared-workers";
 
+// Disables site-specific tailoring to compatibility issues in WebKit.
+const char kDisableSiteSpecificQuirks[]     = "disable-site-specific-quirks";
+
 // Disables speech input.
 const char kDisableSpeechInput[]            = "disable-speech-input";
 
@@ -171,8 +185,14 @@ const char kDisableSpellcheckAPI[]          = "disable-spellcheck-api";
 // Disable web audio API.
 const char kDisableWebAudio[]               = "disable-webaudio";
 
+// Don't enforce the same-origin policy. (Used by people testing their sites.)
+const char kDisableWebSecurity[]            = "disable-web-security";
+
 // Disable Web Sockets support.
 const char kDisableWebSockets[]             = "disable-web-sockets";
+
+// Disables WebKit's XSSAuditor. The XSSAuditor mitigates reflective XSS.
+const char kDisableXSSAuditor[]             = "disable-xss-auditor";
 
 // Specifies if the |DOMAutomationController| needs to be bound in the
 // renderer. This binding happens on per-frame basis and hence can potentially
@@ -203,6 +223,9 @@ const char kEnableAccessibilityLogging[]    = "enable-accessibility-logging";
 const char kEnableCompositingForFixedPosition[] =
      "enable-fixed-position-compositing";
 
+// Enables compositing to texture instead of display.
+const char kEnableCompositeToTexture[]      = "enable-composite-to-texture";
+
 // Enable DNS side checking of certificates. Still experimental, should only
 // be used by developers at the current time.
 const char kEnableDNSCertProvenanceChecking[] =
@@ -210,6 +233,9 @@ const char kEnableDNSCertProvenanceChecking[] =
 
 // Enables device motion events.
 const char kEnableDeviceMotion[]            = "enable-device-motion";
+
+// Enables the fastback page cache.
+const char kEnableFastback[]                = "enable-fastback";
 
 // Enable the JavaScript Full Screen API.
 const char kDisableFullScreen[]             = "disable-fullscreen";
@@ -242,6 +268,9 @@ const char kEnableMonitorProfile[]          = "enable-monitor-profile";
 // Enables TLS origin bound certificate extension.
 const char kEnableOriginBoundCerts[]  = "enable-origin-bound-certs";
 
+// Enables partial swaps in the WK compositor on platforms that support it.
+const char kEnablePartialSwap[]             = "enable-partial-swap";
+
 // Enable caching of pre-parsed JS script data.  See http://crbug.com/32407.
 const char kEnablePreparsedJsCaching[]      = "enable-preparsed-js-caching";
 
@@ -262,6 +291,9 @@ const char kEnableSeccompSandbox[]          = "enable-seccomp-sandbox";
 
 // Enable shadow DOM API
 const char kEnableShadowDOM[]          = "enable-shadow-dom";
+
+// On platforms that support it, enables smooth scroll animation.
+const char kEnableSmoothScrolling[]         = "enable-smooth-scrolling";
 
 // Enables StatsTable, logging statistics to a global named shared memory table.
 const char kEnableStatsTable[]              = "enable-stats-table";
@@ -306,6 +338,10 @@ const char kExperimentalLocationFeatures[]  = "experimental-location-features";
 
 // Load NPAPI plugins from the specified directory.
 const char kExtraPluginDir[]                = "extra-plugin-dir";
+
+// If accelerated compositing is supported, always enter compositing mode for
+// the base layer even when compositing is not strictly required.
+const char kForceCompositingMode[]          = "force-compositing-mode";
 
 // Some field tests may rendomized in the browser, and the randomly selected
 // outcome needs to be propagated to the renderer.  For instance, this is used
@@ -473,6 +509,17 @@ const char kRendererStartupDialog[]         = "renderer-startup-dialog";
 
 // Causes the process to run as a service process.
 const char kServiceProcess[]                = "service";
+
+// Renders a border around composited Render Layers to help debug and study
+// layer compositing.
+const char kShowCompositedLayerBorders[]    = "show-composited-layer-borders";
+
+// Draws a textual dump of the compositor layer tree to help debug and study
+// layer compositing.
+const char kShowCompositedLayerTree[]       = "show-composited-layer-tree";
+
+// Draws a FPS indicator
+const char kShowFPSCounter[]                = "show-fps-counter";
 
 // Visibly render a border around paint rects in the web page to help debug
 // and study painting behavior.

@@ -62,6 +62,9 @@ class CONTENT_EXPORT TabContents
               SessionStorageNamespace* session_storage_namespace);
   virtual ~TabContents();
 
+  // Returns the content specific prefs for the given RVH.
+  static WebPreferences GetWebkitPrefs(RenderViewHost* rvh, const GURL& url);
+
   // Returns the SavePackage which manages the page saving job. May be NULL.
   SavePackage* save_package() const { return save_package_.get(); }
 

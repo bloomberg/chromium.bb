@@ -80,7 +80,6 @@ WebPreferences::WebPreferences()
       accelerated_compositing_enabled(false),
       threaded_compositing_enabled(false),
       force_compositing_mode(false),
-      allow_webui_compositing(false),
       composite_to_texture_enabled(false),
       fixed_position_compositing_enabled(false),
       accelerated_layers_enabled(false),

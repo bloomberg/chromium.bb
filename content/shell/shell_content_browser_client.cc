@@ -13,7 +13,6 @@
 #include "content/shell/shell_switches.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "webkit/glue/webpreferences.h"
 
 #if defined(OS_WIN)
 #include "content/browser/tab_contents/tab_contents.h"
@@ -283,8 +282,8 @@ bool ShellContentBrowserClient::IsFastShutdownPossible() {
   return true;
 }
 
-WebPreferences ShellContentBrowserClient::GetWebkitPrefs(RenderViewHost* rvh) {
-  return WebPreferences();
+void ShellContentBrowserClient::OverrideWebkitPrefs(RenderViewHost* rvh,
+                                                    WebPreferences* prefs) {
 }
 
 void ShellContentBrowserClient::UpdateInspectorSetting(

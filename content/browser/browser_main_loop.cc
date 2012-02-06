@@ -15,6 +15,7 @@
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/download/download_file_manager.h"
 #include "content/browser/download/save_file_manager.h"
+#include "content/browser/gpu/gpu_process_host_ui_shim.h"
 #include "content/browser/in_process_webkit/webkit_thread.h"
 #include "content/browser/plugin_service_impl.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
@@ -64,6 +65,11 @@
 
 #if defined(USE_X11)
 #include <X11/Xlib.h>
+#endif
+
+// One of the linux specific headers defines this as a macro.
+#ifdef DestroyAll
+#undef DestroyAll
 #endif
 
 namespace {
@@ -429,6 +435,12 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
 
   if (parts_.get())
     parts_->PostMainMessageLoopRun();
+
+  // Destroying the GpuProcessHostUIShims on the UI thread posts a task to
+  // delete related objects on the GPU thread. This must be done before
+  // stopping the GPU thread. The GPU thread will close IPC channels to renderer
+  // processes so this has to happen before stopping the IO thread.
+  GpuProcessHostUIShim::DestroyAll();
 
   // Cancel pending requests and prevent new requests.
   if (resource_dispatcher_host_.get())

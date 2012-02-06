@@ -54,9 +54,6 @@ const char kAllowScriptingGallery[]         = "allow-scripting-gallery";
 // websocket proxy.
 const char kAllowWebSocketProxy[]           = "allow-websocket-proxy";
 
-// Allow compositing on chrome:// pages.
-const char kAllowWebUICompositing[]         = "allow-webui-compositing";
-
 // Prevents Chrome from requiring authorization to run certain widely installed
 // but less commonly used plug-ins.
 const char kAlwaysAuthorizePlugins[]        = "always-authorize-plugins";
@@ -310,10 +307,6 @@ const char kDisableHistoryURLProvider[]     = "disable-history-url-provider";
 const char kDisableImprovedDownloadProtection[] =
     "disable-improved-download-protection";
 
-// Disables HTML5 Forms interactive validation.
-const char kDisableInteractiveFormValidation[] =
-    "disable-interactive-form-validation";
-
 // Disable the internal Flash Player.
 const char kDisableInternalFlash[]          = "disable-internal-flash";
 
@@ -336,10 +329,6 @@ const char kDisablePreconnect[]             = "disable-preconnect";
 // disable that check. This switch is used during automated testing.
 const char kDisablePromptOnRepost[]         = "disable-prompt-on-repost";
 
-// Disables remote web font support. SVG font should always work whether this
-// option is specified or not.
-const char kDisableRemoteFonts[]            = "disable-remote-fonts";
-
 // Prevents the URLs of BackgroundContents from being remembered and
 // re-launched when the browser restarts.
 const char kDisableRestoreBackgroundContents[] =
@@ -347,9 +336,6 @@ const char kDisableRestoreBackgroundContents[] =
 
 // Disables the ShortcutsProvider for autocomplete results.
 const char kDisableShortcutsProvider[]      = "disable-shortcuts-provider";
-
-// Disables site-specific tailoring to compatibility issues in WebKit.
-const char kDisableSiteSpecificQuirks[]     = "disable-site-specific-quirks";
 
 // Disables SSL v3 (usually for testing purposes).
 const char kDisableSSL3[]                   = "disable-ssl3";
@@ -413,12 +399,6 @@ const char kDisableUberPage[]                = "disable-uber-page";
 // Disables the backend service for web resources.
 const char kDisableWebResources[]           = "disable-web-resources";
 
-// Don't enforce the same-origin policy. (Used by people testing their sites.)
-const char kDisableWebSecurity[]            = "disable-web-security";
-
-// Disables WebKit's XSSAuditor. The XSSAuditor mitigates reflective XSS.
-const char kDisableXSSAuditor[]             = "disable-xss-auditor";
-
 // Use a specific disk cache location, rather than one derived from the
 // UserDatadir.
 const char kDiskCacheDir[]                  = "disk-cache-dir";
@@ -472,9 +452,6 @@ const char kEnableClearServerData[]         = "enable-clear-server-data";
 // Print Proxy component within the service process.
 const char kEnableCloudPrintProxy[]         = "enable-cloud-print-proxy";
 
-// Enables compositing to texture instead of display.
-const char kEnableCompositeToTexture[]      = "enable-composite-to-texture";
-
 // Enables establishing a backup TCP connection if a specified timeout is
 // exceeded.
 const char kEnableConnectBackupJobs[]       = "enable-connect-backup-jobs";
@@ -498,9 +475,6 @@ const char kEnableExtensionActivityUI[]     = "enable-extension-activity-ui";
 
 // Enables experimental timeline API.
 const char kEnableExtensionTimelineApi[]    = "enable-extension-timeline-api";
-
-// Enables the fastback page cache.
-const char kEnableFastback[]                = "enable-fastback";
 
 // By default, cookies are not allowed on file://. They are needed for testing,
 // for example page cycler and layout tests. See bug 1157243.
@@ -551,9 +525,6 @@ const char kEnableNaClExceptionHandling[]   = "enable-nacl-exception-handling";
 // Enables panels (always on-top docked pop-up windows).
 const char kEnablePanels[]                 = "enable-panels";
 
-// Enables partial swaps in the WK compositor on platforms that support it.
-const char kEnablePartialSwap[]             = "enable-partial-swap";
-
 // Enables advanced app capabilities.
 const char kEnablePlatformApps[]            = "enable-platform-apps";
 
@@ -588,9 +559,6 @@ const char kEnableSdch[]                    = "enable-sdch";
 // Enables the IsSearchProviderInstalled and InstallSearchProvider with an
 // extra parameter to indicate if the provider should be the default.
 const char kEnableSearchProviderApiV2[]     = "enable-search-provider-api-v2";
-
-// On platforms that support it, enables smooth scroll animation.
-const char kEnableSmoothScrolling[]         = "enable-smooth-scrolling";
 
 // Enables syncing extension settings.
 const char kEnableSyncExtensionSettings[]   = "enable-sync-extension-settings";
@@ -671,10 +639,6 @@ const char kFirstRun[]                      = "first-run";
 // Forces the apps/webstore promo to be shown, independent of whether it has
 // timed out, etc. Useful for testing.
 const char kForceAppsPromoVisible[]         = "force-apps-promo-visible";
-
-// If accelerated compositing is supported, always enter compositing mode for
-// the base layer even when compositing is not strictly required.
-const char kForceCompositingMode[]          = "force-compositing-mode";
 
 // Specifies the backend server used for gaia authentications, like sync or
 // policies for example. The https:// prefix and the trailing slash should be
@@ -1060,17 +1024,6 @@ const char kShowComponentExtensionOptions[] =
 
 // See kHideIcons.
 const char kShowIcons[]                     = "show-icons";
-
-// Renders a border around composited Render Layers to help debug and study
-// layer compositing.
-const char kShowCompositedLayerBorders[]    = "show-composited-layer-borders";
-
-// Draws a textual dump of the compositor layer tree to help debug and study
-// layer compositing.
-const char kShowCompositedLayerTree[]       = "show-composited-layer-tree";
-
-// Draws a FPS indicator
-const char kShowFPSCounter[]                = "show-fps-counter";
 
 // Changes the DCHECKS to dump memory and continue instead of displaying error
 // dialog. This is valid only in Release mode when --enable-dcheck is

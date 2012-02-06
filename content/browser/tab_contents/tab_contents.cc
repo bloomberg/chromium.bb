@@ -17,6 +17,8 @@
 #include "content/browser/debugger/devtools_manager_impl.h"
 #include "content/browser/download/download_stats.h"
 #include "content/browser/download/save_package.h"
+#include "content/browser/gpu/gpu_data_manager.h"
+#include "content/browser/gpu/gpu_process_host.h"
 #include "content/browser/host_zoom_map_impl.h"
 #include "content/browser/in_process_webkit/session_storage_namespace.h"
 #include "content/browser/intents/web_intents_dispatcher_impl.h"
@@ -51,9 +53,11 @@
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_restriction.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
 #include "net/base/mime_util.h"
 #include "net/base/net_util.h"
+#include "net/base/network_change_notifier.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "ui/gfx/codec/png_codec.h"
@@ -294,6 +298,154 @@ TabContents::~TabContents() {
   FOR_EACH_OBSERVER(WebContentsObserver, observers_, TabContentsDestroyed());
 
   SetDelegate(NULL);
+}
+
+WebPreferences TabContents::GetWebkitPrefs(RenderViewHost* rvh,
+                                           const GURL& url) {
+  WebPreferences prefs;
+
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+
+  prefs.developer_extras_enabled = true;
+  prefs.javascript_enabled =
+      !command_line.HasSwitch(switches::kDisableJavaScript);
+  prefs.web_security_enabled =
+      !command_line.HasSwitch(switches::kDisableWebSecurity);
+  prefs.plugins_enabled =
+      !command_line.HasSwitch(switches::kDisablePlugins);
+  prefs.java_enabled =
+      !command_line.HasSwitch(switches::kDisableJava);
+
+  prefs.uses_page_cache =
+      command_line.HasSwitch(switches::kEnableFastback);
+  prefs.remote_fonts_enabled =
+      !command_line.HasSwitch(switches::kDisableRemoteFonts);
+  prefs.xss_auditor_enabled =
+      !command_line.HasSwitch(switches::kDisableXSSAuditor);
+  prefs.application_cache_enabled =
+      !command_line.HasSwitch(switches::kDisableApplicationCache);
+
+  prefs.local_storage_enabled =
+      !command_line.HasSwitch(switches::kDisableLocalStorage);
+  prefs.databases_enabled =
+      !command_line.HasSwitch(switches::kDisableDatabases);
+  prefs.webaudio_enabled =
+      !command_line.HasSwitch(switches::kDisableWebAudio);
+
+  prefs.experimental_webgl_enabled =
+      GpuProcessHost::gpu_enabled() &&
+      !command_line.HasSwitch(switches::kDisable3DAPIs) &&
+      !command_line.HasSwitch(switches::kDisableExperimentalWebGL);
+
+  prefs.gl_multisampling_enabled =
+      !command_line.HasSwitch(switches::kDisableGLMultisampling);
+  prefs.privileged_webgl_extensions_enabled =
+      command_line.HasSwitch(switches::kEnablePrivilegedWebGLExtensions);
+  prefs.site_specific_quirks_enabled =
+      !command_line.HasSwitch(switches::kDisableSiteSpecificQuirks);
+  prefs.allow_file_access_from_file_urls =
+      command_line.HasSwitch(switches::kAllowFileAccessFromFiles);
+  prefs.show_composited_layer_borders =
+      command_line.HasSwitch(switches::kShowCompositedLayerBorders);
+  prefs.show_composited_layer_tree =
+      command_line.HasSwitch(switches::kShowCompositedLayerTree);
+  prefs.show_fps_counter =
+      command_line.HasSwitch(switches::kShowFPSCounter);
+  prefs.accelerated_compositing_enabled =
+      GpuProcessHost::gpu_enabled() &&
+      !command_line.HasSwitch(switches::kDisableAcceleratedCompositing);
+  prefs.threaded_compositing_enabled =
+      command_line.HasSwitch(switches::kEnableThreadedCompositing);
+  prefs.force_compositing_mode =
+      command_line.HasSwitch(switches::kForceCompositingMode);
+  prefs.fixed_position_compositing_enabled =
+      command_line.HasSwitch(switches::kEnableCompositingForFixedPosition);
+  prefs.accelerated_2d_canvas_enabled =
+      GpuProcessHost::gpu_enabled() &&
+      !command_line.HasSwitch(switches::kDisableAccelerated2dCanvas);
+  prefs.accelerated_painting_enabled =
+      GpuProcessHost::gpu_enabled() &&
+      command_line.HasSwitch(switches::kEnableAcceleratedPainting);
+  prefs.accelerated_filters_enabled =
+      GpuProcessHost::gpu_enabled() &&
+      command_line.HasSwitch(switches::kEnableAcceleratedFilters);
+  prefs.accelerated_layers_enabled =
+      prefs.accelerated_animation_enabled =
+          !command_line.HasSwitch(switches::kDisableAcceleratedLayers);
+  prefs.composite_to_texture_enabled =
+      command_line.HasSwitch(switches::kEnableCompositeToTexture);
+  prefs.accelerated_plugins_enabled =
+      !command_line.HasSwitch(switches::kDisableAcceleratedPlugins);
+  prefs.accelerated_video_enabled =
+      !command_line.HasSwitch(switches::kDisableAcceleratedVideo);
+  prefs.partial_swap_enabled =
+      command_line.HasSwitch(switches::kEnablePartialSwap);
+  prefs.interactive_form_validation_enabled =
+      !command_line.HasSwitch(switches::kDisableInteractiveFormValidation);
+  prefs.fullscreen_enabled =
+      !command_line.HasSwitch(switches::kDisableFullScreen);
+
+#if defined(OS_MACOSX)
+  bool default_enable_scroll_animator = true;
+#else
+  // On CrOS, the launcher always passes in the --enable flag.
+  bool default_enable_scroll_animator = false;
+#endif
+  prefs.enable_scroll_animator = default_enable_scroll_animator;
+  if (command_line.HasSwitch(switches::kEnableSmoothScrolling))
+    prefs.enable_scroll_animator = true;
+  if (command_line.HasSwitch(switches::kDisableSmoothScrolling))
+    prefs.enable_scroll_animator = false;
+
+  prefs.visual_word_movement_enabled =
+      command_line.HasSwitch(switches::kEnableVisualWordMovement);
+  prefs.per_tile_painting_enabled =
+      command_line.HasSwitch(switches::kEnablePerTilePainting);
+
+  {  // Certain GPU features might have been blacklisted.
+    GpuDataManager* gpu_data_manager = GpuDataManager::GetInstance();
+    DCHECK(gpu_data_manager);
+    uint32 blacklist_flags = gpu_data_manager->GetGpuFeatureFlags().flags();
+    if (blacklist_flags & GpuFeatureFlags::kGpuFeatureAcceleratedCompositing)
+      prefs.accelerated_compositing_enabled = false;
+    if (blacklist_flags & GpuFeatureFlags::kGpuFeatureWebgl)
+      prefs.experimental_webgl_enabled = false;
+    if (blacklist_flags & GpuFeatureFlags::kGpuFeatureAccelerated2dCanvas)
+      prefs.accelerated_2d_canvas_enabled = false;
+    if (blacklist_flags & GpuFeatureFlags::kGpuFeatureMultisampling)
+      prefs.gl_multisampling_enabled = false;
+
+    // Accelerated video and animation are slower than regular when using a
+    // software 3d rasterizer.
+    if (gpu_data_manager->software_rendering()) {
+      prefs.accelerated_video_enabled = false;
+      prefs.accelerated_animation_enabled = false;
+    }
+  }
+
+  if (ChildProcessSecurityPolicy::GetInstance()->HasWebUIBindings(
+          rvh->process()->GetID())) {
+    prefs.loads_images_automatically = true;
+    prefs.javascript_enabled = true;
+  }
+
+  prefs.is_online = !net::NetworkChangeNotifier::IsOffline();
+
+  // Force accelerated compositing and 2d canvas off for chrome:, about: and
+  // chrome-devtools: pages (unless it's specifically allowed).
+  if ((url.SchemeIs(chrome::kChromeDevToolsScheme) ||
+      // Allow accelerated compositing for keyboard and log in screen.
+      url.SchemeIs(chrome::kChromeUIScheme) ||
+      (url.SchemeIs(chrome::kAboutScheme) &&
+       url.spec() != chrome::kAboutBlankURL)) &&
+      command_line.HasSwitch(switches::kAllowWebUICompositing)) {
+    prefs.accelerated_compositing_enabled = false;
+    prefs.accelerated_2d_canvas_enabled = false;
+  }
+
+  content::GetContentClient()->browser()->OverrideWebkitPrefs(rvh, &prefs);
+
+  return prefs;
 }
 
 NavigationControllerImpl& TabContents::GetControllerImpl() {
@@ -2080,23 +2232,7 @@ void TabContents::RunBeforeUnloadConfirm(RenderViewHost* rvh,
 }
 
 WebPreferences TabContents::GetWebkitPrefs() {
-  WebPreferences web_prefs =
-      content::GetContentClient()->browser()->GetWebkitPrefs(
-          GetRenderViewHost());
-
-  // Force accelerated compositing and 2d canvas off for chrome:, about: and
-  // chrome-devtools: pages (unless it's specifically allowed).
-  if ((GetURL().SchemeIs(chrome::kChromeDevToolsScheme) ||
-      // Allow accelerated compositing for keyboard and log in screen.
-      GetURL().SchemeIs(chrome::kChromeUIScheme) ||
-      (GetURL().SchemeIs(chrome::kAboutScheme) &&
-       GetURL().spec() != chrome::kAboutBlankURL)) &&
-      !web_prefs.allow_webui_compositing) {
-    web_prefs.accelerated_compositing_enabled = false;
-    web_prefs.accelerated_2d_canvas_enabled = false;
-  }
-
-  return web_prefs;
+  return GetWebkitPrefs(GetRenderViewHost(), GetURL());
 }
 
 void TabContents::OnUserGesture() {

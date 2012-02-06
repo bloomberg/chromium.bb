@@ -23,7 +23,6 @@
 #include "content/common/dom_storage_common.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/dom_operation_notification_details.h"
 #include "content/public/browser/invalidate_type.h"
 #include "content/public/browser/notification_service.h"
@@ -421,8 +420,7 @@ content::RendererPreferences InterstitialPage::GetRendererPrefs(
 }
 
 WebPreferences InterstitialPage::GetWebkitPrefs() {
-  return content::GetContentClient()->browser()->GetWebkitPrefs(
-      render_view_host());
+  return tab_->GetWebkitPrefs(render_view_host(), url_);
 }
 
 bool InterstitialPage::PreHandleKeyboardEvent(
