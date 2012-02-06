@@ -71,9 +71,6 @@ function load() {
   OptionsPage.registerSubPage(AdvancedOptions.getInstance(),
                               BrowserOptions.getInstance(),
                               [$('advancedOptionsButton')]);
-  OptionsPage.registerSubPage(SearchEngineManager.getInstance(),
-                              BrowserOptions.getInstance(),
-                              [$('defaultSearchManageEnginesButton')]);
   if (cr.isChromeOS) {
     OptionsPage.registerSubPage(AccountsOptions.getInstance(),
                                 BrowserOptions.getInstance(),
@@ -183,6 +180,9 @@ function load() {
                               BrowserOptions.getInstance());
   OptionsPage.registerOverlay(ManageProfileOverlay.getInstance(),
                               BrowserOptions.getInstance());
+  OptionsPage.registerOverlay(SearchEngineManager.getInstance(),
+                              BrowserOptions.getInstance(),
+                              [$('defaultSearchManageEnginesButton')]);
   OptionsPage.registerOverlay(SessionRestoreOverlay.getInstance(),
                               BrowserOptions.getInstance());
   OptionsPage.registerOverlay(StartupOverlay.getInstance(),

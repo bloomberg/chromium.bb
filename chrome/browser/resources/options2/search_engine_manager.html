@@ -1,19 +1,28 @@
 <div id="search-engine-manager-page" class="page" hidden>
-  <header><h1 i18n-content="searchEngineManagerPage"></h1></header>
-  <h3 i18n-content="defaultSearchEngineListTitle"></h3>
-  <list id="default-search-engine-list"
-      class="search-engine-list settings-list"></list>
-  <h3 i18n-content="otherSearchEngineListTitle"></h3>
-  <list id="other-search-engine-list"
-      class="search-engine-list settings-list"></list>
-  <div id="extension-keyword-div" hidden>
-    <h3 id="extension-keyword-list-title"
-        i18n-content="extensionKeywordsListTitle"></h3>
-    <list id="extension-keyword-list"
+  <h1 i18n-content="searchEngineManagerPage"></h1>
+  <div class="content-area">
+    <h3 i18n-content="defaultSearchEngineListTitle"></h3>
+    <list id="default-search-engine-list"
         class="search-engine-list settings-list"></list>
-    <div id="manage-extension-link">
-      <a href="chrome://settings/extensions/"
-         i18n-content="manageExtensionsLinkText"></a>
+    <h3 i18n-content="otherSearchEngineListTitle"></h3>
+    <list id="other-search-engine-list"
+        class="search-engine-list settings-list"></list>
+    <div id="extension-keyword-div" hidden>
+      <h3 id="extension-keyword-list-title"
+          i18n-content="extensionKeywordsListTitle"></h3>
+      <list id="extension-keyword-list"
+          class="search-engine-list settings-list"></list>
+      <div id="manage-extension-link">
+        <a href="chrome://settings/extensions/"
+           i18n-content="manageExtensionsLinkText"></a>
+      </div>
+    </div>
+  </div>
+  <div class="action-area">
+    <div class="button-strip">
+      <button id="search-engine-manager-confirm" type="submit"
+          i18n-content="ok">
+      </button>
     </div>
   </div>
 </div>
