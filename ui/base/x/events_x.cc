@@ -354,7 +354,9 @@ ui::EventType GetTouchEventType(const base::NativeEvent& native_event) {
       case XI_ButtonRelease:
         return ui::ET_TOUCH_RELEASED;
       case XI_Motion:
-        return ui::ET_TOUCH_MOVED;
+        if (GetButtonMaskForX2Event(event))
+          return ui::ET_TOUCH_MOVED;
+        return ui::ET_UNKNOWN;
       default:
         NOTREACHED();
     }
