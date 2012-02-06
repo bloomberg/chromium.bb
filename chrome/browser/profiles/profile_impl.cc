@@ -230,6 +230,9 @@ void ProfileImpl::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterStringPref(prefs::kProfileName,
                             "",
                             PrefService::SYNCABLE_PREF);
+  prefs->RegisterBooleanPref(prefs::kRestoreSessionStateDialogShown,
+                             false,
+                             PrefService::SYNCABLE_PREF);
 #if !defined(OS_MACOSX) && !defined(OS_CHROMEOS) && defined(OS_POSIX)
   prefs->RegisterIntegerPref(prefs::kLocalProfileId,
                              kInvalidLocalProfileId,

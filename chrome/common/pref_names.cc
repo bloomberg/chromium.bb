@@ -1747,4 +1747,8 @@ const char kRecoveryComponentVersion[] = "recovery_component.version";
 // troubleshooting.
 const char kComponentUpdaterState[] = "component_updater.state";
 
+// Boolean pref indicating whether the session restore dialog has been shown.
+const char kRestoreSessionStateDialogShown[] =
+    "restore_session_state.dialog_shown";
+
 }  // namespace prefs

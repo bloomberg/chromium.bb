@@ -128,6 +128,12 @@ cr.define('options', function() {
           this.onInstantConfirmDialogShownChanged_.bind(this));
       Preferences.getInstance().addEventListener('instant.enabled',
           this.onInstantEnabledChanged_.bind(this));
+      Preferences.getInstance().addEventListener(
+          "session.restore_on_startup",
+          this.onSessionRestoreSelectedChanged_.bind(this));
+      Preferences.getInstance().addEventListener(
+          "restore_session_state.dialog_shown",
+          this.onSessionRestoreDialogShownChanged_.bind(this));
 
       // Text fields may change widths when the window changes size, so make
       // sure the suggestion list stays in sync.
@@ -221,6 +227,12 @@ cr.define('options', function() {
         chrome.send('coreOptionsUserMetricsAction',
             ['Options_OpenUnderTheHood']);
       });
+
+      this.sessionRestoreEnabled_ = templateData.enable_restore_session_state;
+      if (this.sessionRestoreEnabled_) {
+        $('old-startup-last-text').hidden = true;
+        $('new-startup-last-text').hidden = false;
+      }
     },
 
     /**
@@ -352,6 +364,28 @@ cr.define('options', function() {
       $('instantFieldTrialCheckbox').hidden = !enabled;
       $('instantLabel').htmlFor = enabled ? 'instantFieldTrialCheckbox'
                                           : 'instantEnabledCheckbox';
+    },
+
+    onSessionRestoreSelectedChanged_ : function(event) {
+      this.sessionRestoreSelected_ = event.value['value'] == 1;
+      this.maybeShowSessionRestoreDialog_();
+    },
+
+    onSessionRestoreDialogShownChanged_ : function(event) {
+      this.sessionRestoreDialogShown_ = event.value['value'];
+      this.maybeShowSessionRestoreDialog_();
+    },
+
+    maybeShowSessionRestoreDialog_ : function() {
+      // If either of the needed two preferences hasn't been read yet, the
+      // corresponding member variable will be undefined and we won't display
+      // the dialog yet.
+      if (this.sessionRestoreEnabled_ && this.sessionRestoreSelected_ &&
+          this.sessionRestoreDialogShown_ === false) {
+        this.sessionRestoreDialogShown_ = true;
+        Preferences.setBooleanPref('restore_session_state.dialog_shown', true);
+        OptionsPage.navigateToPage('sessionRestoreOverlay');
+      }
     },
 
     /**

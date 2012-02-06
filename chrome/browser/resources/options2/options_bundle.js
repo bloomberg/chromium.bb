@@ -91,6 +91,7 @@
 <include src="search_engine_manager.js"></include>
 <include src="search_engine_manager_engine_list.js"></include>
 <include src="search_page.js"></include>
+<include src="session_restore_overlay.js"></include>
 <include src="startup_overlay.js"></include>
 <include src="../sync_setup_overlay.js"></include>
 <include src="../uber/uber_utils.js"></include>

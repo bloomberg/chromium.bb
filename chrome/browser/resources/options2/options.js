@@ -28,6 +28,7 @@ var ManageProfileOverlay = options.ManageProfileOverlay;
 var ProxyOptions = options.ProxyOptions;
 var SearchEngineManager = options.SearchEngineManager;
 var SearchPage = options.SearchPage;
+var SessionRestoreOverlay = options.SessionRestoreOverlay;
 var StartupOverlay = options.StartupOverlay;
 var SyncSetupOverlay = options.SyncSetupOverlay;
 var VirtualKeyboardManager = options.VirtualKeyboardManager;
@@ -181,6 +182,8 @@ function load() {
   OptionsPage.registerOverlay(InstantConfirmOverlay.getInstance(),
                               BrowserOptions.getInstance());
   OptionsPage.registerOverlay(ManageProfileOverlay.getInstance(),
+                              BrowserOptions.getInstance());
+  OptionsPage.registerOverlay(SessionRestoreOverlay.getInstance(),
                               BrowserOptions.getInstance());
   OptionsPage.registerOverlay(StartupOverlay.getInstance(),
                               BrowserOptions.getInstance());
