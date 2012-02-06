@@ -196,12 +196,14 @@ NaClErrorCode NaClMakeDynamicTextShared(struct NaClApp *nap) {
    * Windows does not allow this, however: the initial permissions are
    * an upper bound on what the permissions may later be changed to
    * with VirtualProtect().  Given this, using PROT_NONE at this point
-   * does not even make sense.  So we map with read+exec and
+   * does not even make sense.  So we map with read+exec+write and
    * immediately turn down the permissions, so that we can later
-   * re-enable read+exec page by page.
+   * re-enable read+exec page by page.  Write permissions are needed
+   * for gdb to set breakpoints.
    */
 #if NACL_WINDOWS
-  mmap_protections = NACL_ABI_PROT_READ | NACL_ABI_PROT_EXEC;
+  mmap_protections =
+    NACL_ABI_PROT_READ | NACL_ABI_PROT_EXEC | NACL_ABI_PROT_WRITE;
 #else
   mmap_protections = NACL_ABI_PROT_NONE;
 #endif
