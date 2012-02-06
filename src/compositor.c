@@ -474,7 +474,8 @@ weston_surface_configure(struct weston_surface *surface,
 	weston_surface_damage(surface);
 
 	pixman_region32_fini(&surface->opaque);
-	if (surface->visual == WESTON_RGB_VISUAL)
+	if (surface->visual == WESTON_RGB_VISUAL &&
+	    surface->transform.enabled == 0)
 		pixman_region32_init_rect(&surface->opaque,
 					  surface->geometry.x,
 					  surface->geometry.y,
