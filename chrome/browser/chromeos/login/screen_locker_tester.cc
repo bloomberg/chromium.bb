@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -134,7 +134,7 @@ std::string WebUIScreenLockerTester::GetPassword() {
   std::string result;
   base::Value* v = ExecuteJavascriptAndGetValue(
       "$('pod-row').pods[0].passwordElement.value;");
-  DCHECK(v->GetAsString(&result));
+  CHECK(v->GetAsString(&result));
   delete v;
   return result;
 }
@@ -142,8 +142,19 @@ std::string WebUIScreenLockerTester::GetPassword() {
 void WebUIScreenLockerTester::EnterPassword(const std::string& password) {
   bool result;
   SetPassword(password);
-  LoginAttemptObserver login(ScreenLocker::screen_locker_);
+
+  // Verify password is set.
+  ASSERT_EQ(password, GetPassword());
+
+  // Verify that "signin" button is hidden.
   base::Value* v = ExecuteJavascriptAndGetValue(
+      "$('pod-row').pods[0].signinButtonElement.hidden;");
+  ASSERT_TRUE(v->GetAsBoolean(&result));
+  ASSERT_TRUE(result);
+
+  // Attempt to sign in.
+  LoginAttemptObserver login(ScreenLocker::screen_locker_);
+  v = ExecuteJavascriptAndGetValue(
       "$('pod-row').pods[0].activate();");
   ASSERT_TRUE(v->GetAsBoolean(&result));
   ASSERT_TRUE(result);
