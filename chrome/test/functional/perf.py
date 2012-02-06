@@ -804,7 +804,7 @@ class NetflixPerfTest(BasePerfTest, NetflixTestHelper):
         self._GetFractionNonIdleCPUTime(cpu_usage_start, cpu_usage_end)
     # Counting extrapolation for utilization to play the video.
     extrapolation_value = fraction_non_idle_time * \
-        (total_video_frames + total_dropped_frames) / total_video_frames
+        (float(total_video_frames) + total_dropped_frames) / total_video_frames
     logging.info('Netflix CPU extrapolation: %f' % extrapolation_value)
     self._OutputPerfGraphValue(
         'NetflixCPUExtrapolation',
@@ -844,9 +844,11 @@ class YoutubePerfTest(BasePerfTest, YoutubeTestHelper):
     loaded_video_bytes = self.GetVideoLoadedBytes()
     total_video_bytes = self.GetVideoTotalBytes()
     self.PauseVideo()
+    logging.info('total_video_bytes: %f' % total_video_bytes)
     # Wait for the video to finish loading.
     while total_video_bytes > loaded_video_bytes:
       loaded_video_bytes = self.GetVideoLoadedBytes()
+      logging.info('loaded_video_bytes: %f' % loaded_video_bytes)
       time.sleep(1)
     self.PlayVideo()
     # Ignore first 10 seconds of video playing so we get smooth videoplayback.
@@ -889,22 +891,27 @@ class YoutubePerfTest(BasePerfTest, YoutubeTestHelper):
     """
     self.StartVideoForPerformance()
     init_dropped_frames = self.GetVideoDroppedFrames()
+    logging.info('init_dropped_frames: %f' % init_dropped_frames)
     cpu_usage_start = self._GetCPUUsage()
     total_shown_frames = 0
     for sec_num in xrange(60):
       # Play the video for some time.
       time.sleep(1)
       total_shown_frames = total_shown_frames + self.GetVideoFrames()
+      logging.info('total_shown_frames: %f' % total_shown_frames)
     total_dropped_frames = self.GetVideoDroppedFrames() - init_dropped_frames
+    logging.info('total_dropped_frames: %f' % total_dropped_frames)
     cpu_usage_end = self._GetCPUUsage()
-    
     fraction_non_idle_time = self._GetFractionNonIdleCPUTime(
         cpu_usage_start, cpu_usage_end)
+    logging.info('fraction_non_idle_time: %f' % fraction_non_idle_time)
     total_frames = total_shown_frames + total_dropped_frames
     # Counting extrapolation for utilization to play the video.
     extrapolation_value = (fraction_non_idle_time *
-                           (total_frames / total_shown_frames))
+                           (float(total_frames) / total_shown_frames))
     logging.info('Youtube CPU extrapolation: %f' % extrapolation_value)
+    # Video is still running so log some more detailed data.
+    self._LogProcessActivity()
     self._OutputPerfGraphValue(
         'YoutubeCPUExtrapolation',
         extrapolation_value, 'extrapolation',
