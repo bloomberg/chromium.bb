@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
-#include "base/message_loop.h"
+#include "base/message_loop_proxy.h"
 #include "media/base/pipeline_status.h"
 #include "media/filters/chunk_demuxer.h"
 #include "media/filters/video_renderer_base.h"
@@ -22,8 +22,9 @@ namespace webkit_media {
 // queue but gives up a pretty good latency on repaint.
 static const int kMaxOutstandingRepaints = 50;
 
-WebMediaPlayerProxy::WebMediaPlayerProxy(MessageLoop* render_loop,
-                                         WebMediaPlayerImpl* webmediaplayer)
+WebMediaPlayerProxy::WebMediaPlayerProxy(
+    const scoped_refptr<base::MessageLoopProxy>& render_loop,
+    WebMediaPlayerImpl* webmediaplayer)
     : render_loop_(render_loop),
       webmediaplayer_(webmediaplayer),
       outstanding_repaints_(0) {
@@ -51,7 +52,7 @@ void WebMediaPlayerProxy::SetOpaque(bool opaque) {
 }
 
 void WebMediaPlayerProxy::Paint(SkCanvas* canvas, const gfx::Rect& dest_rect) {
-  DCHECK(MessageLoop::current() == render_loop_);
+  DCHECK(render_loop_->BelongsToCurrentThread());
   if (frame_provider_) {
     scoped_refptr<media::VideoFrame> video_frame;
     frame_provider_->GetCurrentFrame(&video_frame);
@@ -61,20 +62,20 @@ void WebMediaPlayerProxy::Paint(SkCanvas* canvas, const gfx::Rect& dest_rect) {
 }
 
 bool WebMediaPlayerProxy::HasSingleOrigin() {
-  DCHECK(MessageLoop::current() == render_loop_);
+  DCHECK(render_loop_->BelongsToCurrentThread());
   if (data_source_)
     return data_source_->HasSingleOrigin();
   return true;
 }
 
 void WebMediaPlayerProxy::AbortDataSource() {
-  DCHECK(MessageLoop::current() == render_loop_);
+  DCHECK(render_loop_->BelongsToCurrentThread());
   if (data_source_)
     data_source_->Abort();
 }
 
 void WebMediaPlayerProxy::Detach() {
-  DCHECK(MessageLoop::current() == render_loop_);
+  DCHECK(render_loop_->BelongsToCurrentThread());
   webmediaplayer_ = NULL;
   data_source_ = NULL;
   frame_provider_ = NULL;
@@ -108,7 +109,7 @@ void WebMediaPlayerProxy::NetworkEventCallback(NetworkEvent type) {
 }
 
 void WebMediaPlayerProxy::RepaintTask() {
-  DCHECK(MessageLoop::current() == render_loop_);
+  DCHECK(render_loop_->BelongsToCurrentThread());
   {
     base::AutoLock auto_lock(lock_);
     --outstanding_repaints_;
@@ -120,37 +121,37 @@ void WebMediaPlayerProxy::RepaintTask() {
 }
 
 void WebMediaPlayerProxy::PipelineInitializationTask(PipelineStatus status) {
-  DCHECK(MessageLoop::current() == render_loop_);
+  DCHECK(render_loop_->BelongsToCurrentThread());
   if (webmediaplayer_)
     webmediaplayer_->OnPipelineInitialize(status);
 }
 
 void WebMediaPlayerProxy::PipelineSeekTask(PipelineStatus status) {
-  DCHECK(MessageLoop::current() == render_loop_);
+  DCHECK(render_loop_->BelongsToCurrentThread());
   if (webmediaplayer_)
     webmediaplayer_->OnPipelineSeek(status);
 }
 
 void WebMediaPlayerProxy::PipelineEndedTask(PipelineStatus status) {
-  DCHECK(MessageLoop::current() == render_loop_);
+  DCHECK(render_loop_->BelongsToCurrentThread());
   if (webmediaplayer_)
     webmediaplayer_->OnPipelineEnded(status);
 }
 
 void WebMediaPlayerProxy::PipelineErrorTask(PipelineStatus error) {
-  DCHECK(MessageLoop::current() == render_loop_);
+  DCHECK(render_loop_->BelongsToCurrentThread());
   if (webmediaplayer_)
     webmediaplayer_->OnPipelineError(error);
 }
 
 void WebMediaPlayerProxy::NetworkEventTask(NetworkEvent type) {
-  DCHECK(MessageLoop::current() == render_loop_);
+  DCHECK(render_loop_->BelongsToCurrentThread());
   if (webmediaplayer_)
     webmediaplayer_->OnNetworkEvent(type);
 }
 
 void WebMediaPlayerProxy::SetOpaqueTask(bool opaque) {
-  DCHECK(MessageLoop::current() == render_loop_);
+  DCHECK(render_loop_->BelongsToCurrentThread());
   if (webmediaplayer_)
     webmediaplayer_->SetOpaque(opaque);
 }
@@ -201,7 +202,7 @@ void WebMediaPlayerProxy::DemuxerShutdown() {
 
 void WebMediaPlayerProxy::DemuxerOpenedTask(
     const scoped_refptr<media::ChunkDemuxer>& demuxer) {
-  DCHECK(MessageLoop::current() == render_loop_);
+  DCHECK(render_loop_->BelongsToCurrentThread());
   chunk_demuxer_ = demuxer;
   if (webmediaplayer_)
     webmediaplayer_->OnDemuxerOpened();

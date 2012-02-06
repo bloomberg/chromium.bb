@@ -14,8 +14,11 @@
 #include "webkit/media/skcanvas_video_renderer.h"
 #include "webkit/media/web_data_source.h"
 
-class MessageLoop;
 class SkCanvas;
+
+namespace base {
+class MessageLoopProxy;
+}
 
 namespace gfx {
 class Rect;
@@ -36,7 +39,7 @@ class WebMediaPlayerProxy
     : public base::RefCountedThreadSafe<WebMediaPlayerProxy>,
       public media::ChunkDemuxerClient {
  public:
-  WebMediaPlayerProxy(MessageLoop* render_loop,
+  WebMediaPlayerProxy(const scoped_refptr<base::MessageLoopProxy>& render_loop,
                       WebMediaPlayerImpl* webmediaplayer);
   const scoped_refptr<WebDataSource>& data_source() {
     return data_source_;
@@ -83,9 +86,6 @@ class WebMediaPlayerProxy
   void DemuxerOpenedTask(const scoped_refptr<media::ChunkDemuxer>& demuxer);
   void DemuxerClosedTask();
 
-  // Returns the message loop used by the proxy.
-  MessageLoop* message_loop() { return render_loop_; }
-
  private:
   friend class base::RefCountedThreadSafe<WebMediaPlayerProxy>;
   virtual ~WebMediaPlayerProxy();
@@ -113,7 +113,7 @@ class WebMediaPlayerProxy
   void SetOpaqueTask(bool opaque);
 
   // The render message loop where WebKit lives.
-  MessageLoop* render_loop_;
+  scoped_refptr<base::MessageLoopProxy> render_loop_;
   WebMediaPlayerImpl* webmediaplayer_;
 
   scoped_refptr<WebDataSource> data_source_;

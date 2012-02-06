@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
+#include "base/message_loop_proxy.h"
 #include "base/metrics/histogram.h"
 #include "media/base/filter_collection.h"
 #include "media/base/limits.h"
@@ -114,7 +115,7 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
       pending_seek_(false),
       pending_seek_seconds_(0.0f),
       client_(client),
-      proxy_(new WebMediaPlayerProxy(main_loop_, this)),
+      proxy_(new WebMediaPlayerProxy(main_loop_->message_loop_proxy(), this)),
       delegate_(delegate),
       media_stream_client_(media_stream_client),
       media_log_(media_log),
