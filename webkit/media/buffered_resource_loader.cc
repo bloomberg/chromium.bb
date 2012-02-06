@@ -513,7 +513,7 @@ void BufferedResourceLoader::didFail(
   // We don't need to continue loading after failure.
   //
   // Keep it alive until we exit this method so that |error| remains valid.
-  scoped_ptr<ActiveLoader> active_loader(active_loader_.release());
+  scoped_ptr<ActiveLoader> active_loader = active_loader_.Pass();
   NotifyNetworkEvent();
 
   // Don't leave start callbacks hanging around.
