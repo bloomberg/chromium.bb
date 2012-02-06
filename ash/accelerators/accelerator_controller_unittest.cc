@@ -407,9 +407,6 @@ TEST_F(AcceleratorControllerTest, GlobalAccelerators) {
   const ui::Accelerator volume_down(ui::VKEY_VOLUME_DOWN, false, false, false);
   const ui::Accelerator volume_up(ui::VKEY_VOLUME_UP, false, false, false);
   {
-    EXPECT_FALSE(GetController()->Process(volume_mute));
-    EXPECT_FALSE(GetController()->Process(volume_down));
-    EXPECT_FALSE(GetController()->Process(volume_up));
     DummyVolumeControlDelegate* delegate =
         new DummyVolumeControlDelegate(false);
     GetController()->SetVolumeControlDelegate(
