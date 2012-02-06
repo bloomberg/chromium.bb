@@ -12,27 +12,40 @@
 
 #define FPL(x) FILE_PATH_LITERAL(x)
 
+#if defined(FILE_PATH_USES_DRIVE_LETTERS)
+#define DRIVE FPL("C:")
+#else
+#define DRIVE
+#endif
+
 namespace fileapi {
 
 namespace {
 
 const FilePath kTestPaths[] = {
-  FilePath(FPL("/a/b")),
-  FilePath(FPL("/c/d/e/f/g")),
-  FilePath(FPL("/h/")),
+  FilePath(DRIVE FPL("/a/b")),
+  FilePath(DRIVE FPL("/c/d/e")),
+  FilePath(DRIVE FPL("/h/")),
 #if defined(FILE_PATH_USES_WIN_SEPARATORS)
-  FilePath(FPL("c:/foo/bar")),
-  FilePath(FPL("x:\\foo\\baz")),
-  FilePath(FPL("\\foo\\boom")),
+  FilePath(DRIVE FPL("\\foo\\bar")),
 #endif
 };
+
+static FilePath NormalizePath(const FilePath& path) {
+#if defined(FILE_PATH_USES_WIN_SEPARATORS)
+  return path.NormalizeWindowsPathSeparators();
+#else
+  return path;
+#endif
+}
 
 }  // namespace
 
 class IsolatedContextTest : public testing::Test {
  public:
-  IsolatedContextTest()
-      : fileset_(kTestPaths, kTestPaths + arraysize(kTestPaths)) {
+  IsolatedContextTest() {
+    for (size_t i = 0; i < arraysize(kTestPaths); ++i)
+      fileset_.insert(NormalizePath(kTestPaths[i]));
   }
 
   void SetUp() {
@@ -56,13 +69,7 @@ class IsolatedContextTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(IsolatedContextTest);
 };
 
-#if defined(OS_WIN)
-// See http://crbug.com/112568
-#define MAYBE_RegisterAndRevokeTest FAILS_RegisterAndRevokeTest
-#else
-#define MAYBE_RegisterAndRevokeTest RegisterAndRevokeTest
-#endif
-TEST_F(IsolatedContextTest, MAYBE_RegisterAndRevokeTest) {
+TEST_F(IsolatedContextTest, RegisterAndRevokeTest) {
   // See if the returned top-level entries match with what we registered.
   std::vector<FilePath> toplevels;
   ASSERT_TRUE(isolated_context()->GetTopLevelPaths(id_, &toplevels));
@@ -81,7 +88,7 @@ TEST_F(IsolatedContextTest, MAYBE_RegisterAndRevokeTest) {
     FilePath cracked_path;
     ASSERT_TRUE(isolated_context()->CrackIsolatedPath(
         virtual_path, &cracked_id, &cracked_path));
-    ASSERT_EQ(kTestPaths[i].value(), cracked_path.value());
+    ASSERT_EQ(NormalizePath(kTestPaths[i]).value(), cracked_path.value());
     ASSERT_EQ(id_, cracked_id);
   }
 
@@ -97,12 +104,7 @@ TEST_F(IsolatedContextTest, MAYBE_RegisterAndRevokeTest) {
   isolated_context()->RevokeIsolatedFileSystem(id2);
 }
 
-#if defined(OS_WIN)
-#define MAYBE_CrackWithRelativePaths FAILS_CrackWithRelativePaths
-#else
-#define MAYBE_CrackWithRelativePaths CrackWithRelativePaths
-#endif
-TEST_F(IsolatedContextTest, MAYBE_CrackWithRelativePaths) {
+TEST_F(IsolatedContextTest, CrackWithRelativePaths) {
   const struct {
     FilePath::StringType path;
     bool valid;
@@ -136,19 +138,14 @@ TEST_F(IsolatedContextTest, MAYBE_CrackWithRelativePaths) {
       }
       ASSERT_TRUE(isolated_context()->CrackIsolatedPath(
           virtual_path, &cracked_id, &cracked_path));
-      ASSERT_EQ(kTestPaths[i].Append(relatives[j].path).value(),
+      ASSERT_EQ(NormalizePath(kTestPaths[i].Append(relatives[j].path)).value(),
                 cracked_path.value());
       ASSERT_EQ(id_, cracked_id);
     }
   }
 }
 
-#if defined(OS_WIN)
-#define MAYBE_TestWithVirtualRoot FAILS_TestWithVirtualRoot
-#else
-#define MAYBE_TestWithVirtualRoot TestWithVirtualRoot
-#endif
-TEST_F(IsolatedContextTest, MAYBE_TestWithVirtualRoot) {
+TEST_F(IsolatedContextTest, TestWithVirtualRoot) {
   std::string cracked_id;
   FilePath cracked_path;
   const FilePath root(FPL("/"));
