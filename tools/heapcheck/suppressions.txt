@@ -1399,6 +1399,49 @@
    Heapcheck:Leak
    fun:DownloadManager::OnPathExistenceAvailable
 }
+{
+   bug_112795
+   Heapcheck:Leak
+   fun:XGetAtomName
+   fun:ui::TouchFactory::UpdateDeviceList
+   fun:TouchFactory
+   fun:DefaultSingletonTraits::New
+   fun:Singleton::get
+   fun:ui::TouchFactory::GetInstance
+}
+{
+   bug_112798_a
+   Heapcheck:Leak
+   ...
+   fun:RenderWidgetHostViewAura::InitAsChild
+   fun:RenderWidgetHostTest_Background_Test::TestBody
+}
+{
+   bug_112798_b
+   Heapcheck:Leak
+   ...
+   fun:RenderWidgetHostViewAura
+   fun:RenderWidgetHostView::CreateViewForWidget
+}
+{
+   bug_112798_c
+   Heapcheck:Leak
+   ...
+   fun:RenderWidgetHostViewAura::InitAsFullscreen
+   fun:RenderWidgetHostViewAuraTest_Fullscreen_Test::TestBody
+}
+{
+   bug_112798_d
+   Heapcheck:Leak
+   ...
+   fun:RenderWidgetHostViewAuraTest::TearDown
+}
+{
+   bug_112803
+   Heapcheck:Leak
+   ...
+   fun:views::ViewLayerTest_OrphanLayerAfterViewRemove_Test::TestBody
+}
 
 # These are temporary suppressions for the CrOS bot to be used until the stacks are fixed.
 {
@@ -1788,3 +1831,4 @@
    fun:GetNumObjects
    ...
 }
+
