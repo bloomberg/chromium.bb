@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,7 +11,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/test/base/chrome_test_suite.h"
-#include "content/app/content_main.h"
+#include "content/public/app/content_main.h"
 
 #if defined(OS_MACOSX)
 #include "chrome/browser/chrome_browser_application_mac.h"

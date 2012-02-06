@@ -29,9 +29,7 @@
 #include "chrome/plugin/chrome_content_plugin_client.h"
 #include "chrome/renderer/chrome_content_renderer_client.h"
 #include "chrome/utility/chrome_content_utility_client.h"
-#include "content/app/content_main.h"
 #include "content/common/content_counters.h"
-#include "content/public/app/content_main_delegate.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_paths.h"
@@ -699,8 +697,7 @@ int ChromeMainDelegate::RunProcess(
       return kMainFunctions[i].function(main_function_params);
   }
 
-  NOTREACHED() << "Unknown process type: " << process_type;
-  return 1;
+  return -1;
 }
 
 void ChromeMainDelegate::ProcessExiting(const std::string& process_type) {

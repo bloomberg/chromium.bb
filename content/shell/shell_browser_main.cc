@@ -46,6 +46,10 @@ ShellBrowserMainParts::ShellBrowserMainParts(
 ShellBrowserMainParts::~ShellBrowserMainParts() {
 }
 
+MessageLoop* ShellBrowserMainParts::GetMainMessageLoop() {
+  return NULL;
+}
+
 int ShellBrowserMainParts::PreCreateThreads() {
   return 0;
 }

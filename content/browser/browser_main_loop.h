@@ -44,8 +44,16 @@ class BrowserMainLoop {
   void EarlyInitialization();
   void InitializeToolkit();
   void MainMessageLoopStart();
-  void RunMainMessageLoopParts(bool* completed_main_message_loop);
-  void MainMessageLoopRun();
+
+  // Create all secondary threads.
+  void CreateThreads();
+
+  // Perform the default message loop run logic.
+  void RunMainMessageLoopParts();
+
+  // Performs the shutdown sequence, starting with PostMainMessageLoopRun
+  // through stopping threads to PostDestroyThreads.
+  void ShutdownThreadsAndCleanUp();
 
   int GetResultCode() const { return result_code_; }
 
@@ -53,14 +61,12 @@ class BrowserMainLoop {
   // For ShutdownThreadsAndCleanUp.
   friend class BrowserShutdownImpl;
 
-  // Performs the shutdown sequence, starting with PostMainMessageLoopRun
-  // through stopping threads to PostDestroyThreads.
-  void ShutdownThreadsAndCleanUp();
-
   void InitializeMainThread();
 
   // Called right after the browser threads have been started.
   void BrowserThreadsStarted();
+
+  void MainMessageLoopRun();
 
   // Members initialized on construction ---------------------------------------
   const content::MainFunctionParams& parameters_;
