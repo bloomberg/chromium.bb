@@ -681,6 +681,9 @@ weston_surface_draw(struct weston_surface *es, struct weston_output *output)
 				  &output->region);
 	pixman_region32_intersect(&repaint, &repaint, &es->damage);
 
+	/* Clear damage, assume outputs do not overlap. */
+	pixman_region32_subtract(&es->damage, &es->damage, &output->region);
+
 	if (!pixman_region32_not_empty(&repaint))
 		goto out;
 
