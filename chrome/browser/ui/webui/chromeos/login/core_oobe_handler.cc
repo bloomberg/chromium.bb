@@ -68,7 +68,7 @@ void CoreOobeHandler::OnInitialized(const base::ListValue* args) {
 }
 
 void CoreOobeHandler::OnToggleAccessibility(const base::ListValue* args) {
-  accessibility::ToggleAccessibility(web_ui());
+  accessibility::ToggleSpokenFeedback(web_ui());
 }
 
 void CoreOobeHandler::ShowOobeUI(bool show) {

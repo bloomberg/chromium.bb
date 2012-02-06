@@ -15,11 +15,11 @@ class WebUI;
 namespace chromeos {
 namespace accessibility {
 
-// Enable or disable accessibility. Enabling accessibility installs the
+// Enable or disable spoken feedback. Enabling spoken feedback installs the
 // ChromeVox component extension.  If this is being called in a login/oobe
 // login screen, pass the WebUI object in login_web_ui so that ChromeVox
 // can be injected directly into that screen, otherwise it should be NULL.
-void EnableAccessibility(bool enabled, content::WebUI* login_web_ui);
+void EnableSpokenFeedback(bool enabled, content::WebUI* login_web_ui);
 
 // Enable or disable the high contrast mode for Chrome.
 void EnableHighContrast(bool enabled);
@@ -30,15 +30,15 @@ void EnableScreenMagnifier(bool enabled);
 // Enable or disable the virtual keyboard.
 void EnableVirtualKeyboard(bool enabled);
 
-// Toggles whether Chrome OS accessibility is on or off. See docs for
-// EnableAccessibility, above.
-void ToggleAccessibility(content::WebUI* login_web_ui);
+// Toggles whether Chrome OS spoken feedback is on or off. See docs for
+// EnableSpokenFeedback, above.
+void ToggleSpokenFeedback(content::WebUI* login_web_ui);
 
 // Speaks the specified string.
 void Speak(const std::string& utterance);
 
-// Returns true if Accessibility is enabled, or false if not.
-bool IsAccessibilityEnabled();
+// Returns true if spoken feedback is enabled, or false if not.
+bool IsSpokenFeedbackEnabled();
 
 // Speak the given text if the accessibility pref is already set.
 void MaybeSpeak(const std::string& utterance);

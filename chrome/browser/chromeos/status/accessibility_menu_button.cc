@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -73,7 +73,7 @@ void AccessibilityMenuButton::RunMenu(views::View* source,
 void AccessibilityMenuButton::ExecuteCommand(int id) {
   switch (id) {
     case MENU_ITEM_DISABLE_SPOKEN_FEEDBACK:
-      accessibility::EnableAccessibility(false, NULL);
+      accessibility::EnableSpokenFeedback(false, NULL);
       break;
     default:
       NOTREACHED();

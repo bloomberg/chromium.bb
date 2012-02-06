@@ -228,7 +228,7 @@ void SystemOptionsHandler::SpokenFeedbackChangeCallback(const ListValue* args) {
   bool enabled = false;
   args->GetBoolean(0, &enabled);
 
-  chromeos::accessibility::EnableAccessibility(enabled, NULL);
+  chromeos::accessibility::EnableSpokenFeedback(enabled, NULL);
 }
 
 void SystemOptionsHandler::HighContrastChangeCallback(const ListValue* args) {

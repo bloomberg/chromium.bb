@@ -641,7 +641,7 @@ void AdvancedOptionsHandler::SpokenFeedbackChangeCallback(
   bool enabled = false;
   args->GetBoolean(0, &enabled);
 
-  chromeos::accessibility::EnableAccessibility(enabled, NULL);
+  chromeos::accessibility::EnableSpokenFeedback(enabled, NULL);
 }
 
 void AdvancedOptionsHandler::HighContrastChangeCallback(const ListValue* args) {

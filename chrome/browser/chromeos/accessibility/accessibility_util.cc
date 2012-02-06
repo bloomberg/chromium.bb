@@ -83,12 +83,12 @@ class ContentScriptLoader {
   std::queue<ExtensionResource> resources_;
 };
 
-void EnableAccessibility(bool enabled, content::WebUI* login_web_ui) {
-  bool accessibility_enabled = g_browser_process &&
+void EnableSpokenFeedback(bool enabled, content::WebUI* login_web_ui) {
+  bool spoken_feedback_enabled = g_browser_process &&
       g_browser_process->local_state()->GetBoolean(
           prefs::kSpokenFeedbackEnabled);
-  if (accessibility_enabled == enabled) {
-    LOG(INFO) << "Accessibility is already " <<
+  if (spoken_feedback_enabled == enabled) {
+    DLOG(INFO) << "Spoken feedback is already " <<
         (enabled ? "enabled" : "disabled") << ".  Going to do nothing.";
     return;
   }
@@ -100,9 +100,9 @@ void EnableAccessibility(bool enabled, content::WebUI* login_web_ui) {
       SetAccessibilityEnabled(enabled);
   BrowserAccessibilityState::GetInstance()->OnAccessibilityEnabledManually();
 
-  Speak(enabled ?
-        l10n_util::GetStringUTF8(IDS_CHROMEOS_ACC_ACCESS_ENABLED).c_str() :
-        l10n_util::GetStringUTF8(IDS_CHROMEOS_ACC_ACCESS_DISABLED).c_str());
+  Speak(l10n_util::GetStringUTF8(
+      enabled ? IDS_CHROMEOS_ACC_SPOKEN_FEEDBACK_ENABLED :
+      IDS_CHROMEOS_ACC_SPOKEN_FEEDBACK_DISABLED).c_str());
 
   // Load/Unload ChromeVox
   Profile* profile = ProfileManager::GetDefaultProfile();
@@ -146,10 +146,10 @@ void EnableAccessibility(bool enabled, content::WebUI* login_web_ui) {
       loader->Run();  // It cleans itself up when done.
     }
 
-    LOG(INFO) << "ChromeVox was Loaded.";
+    DLOG(INFO) << "ChromeVox was Loaded.";
   } else { // Unload ChromeVox
     extension_service->component_loader()->Remove(path);
-    LOG(INFO) << "ChromeVox was Unloaded.";
+    DLOG(INFO) << "ChromeVox was Unloaded.";
   }
 }
 
@@ -171,12 +171,12 @@ void EnableVirtualKeyboard(bool enabled) {
   pref_service->CommitPendingWrite();
 }
 
-void ToggleAccessibility(content::WebUI* login_web_ui) {
-  bool accessibility_enabled = g_browser_process &&
+void ToggleSpokenFeedback(content::WebUI* login_web_ui) {
+  bool spoken_feedback_enabled = g_browser_process &&
       g_browser_process->local_state()->GetBoolean(
           prefs::kSpokenFeedbackEnabled);
-  accessibility_enabled = !accessibility_enabled;
-  EnableAccessibility(accessibility_enabled, login_web_ui);
+  spoken_feedback_enabled = !spoken_feedback_enabled;
+  EnableSpokenFeedback(spoken_feedback_enabled, login_web_ui);
 };
 
 void Speak(const std::string& utterance) {
@@ -188,18 +188,18 @@ void Speak(const std::string& utterance) {
       params);
 }
 
-bool IsAccessibilityEnabled() {
+bool IsSpokenFeedbackEnabled() {
   if (!g_browser_process) {
     return false;
   }
   PrefService* prefs = g_browser_process->local_state();
-  bool accessibility_enabled = prefs &&
+  bool spoken_feedback_enabled = prefs &&
       prefs->GetBoolean(prefs::kSpokenFeedbackEnabled);
-  return accessibility_enabled;
+  return spoken_feedback_enabled;
 }
 
 void MaybeSpeak(const std::string& utterance) {
-  if (IsAccessibilityEnabled())
+  if (IsSpokenFeedbackEnabled())
     Speak(utterance);
 }
 

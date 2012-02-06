@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -40,10 +40,10 @@ IN_PROC_BROWSER_TEST_F(AccessibilityMenuButtonTest,
   const AccessibilityMenuButton* button = GetAccessibilityMenuButton();
   ASSERT_TRUE(button != NULL);
 
-  accessibility::EnableAccessibility(true, NULL);
+  accessibility::EnableSpokenFeedback(true, NULL);
   EXPECT_TRUE(button->visible());
 
-  accessibility::EnableAccessibility(false, NULL);
+  accessibility::EnableSpokenFeedback(false, NULL);
   EXPECT_FALSE(button->visible());
 }
 

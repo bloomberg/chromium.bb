@@ -209,7 +209,7 @@ class NetworkIcon {
     }
     bool dirty = bitmap_.empty();
     bool speak = false;
-    if (accessibility::IsAccessibilityEnabled()) {
+    if (accessibility::IsSpokenFeedbackEnabled()) {
       if ((Network::IsConnectedState(state_) && !network->connected()) ||
           (Network::IsConnectingState(state_) && !network->connecting()) ||
           (Network::IsDisconnectedState(state_) && !network->disconnected())) {
