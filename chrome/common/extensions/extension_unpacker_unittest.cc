@@ -53,9 +53,8 @@ public:
 };
 
 // Crashes intermittently on Windows, see http://crbug.com/109238
-// Re-enabled to test fix.
 #if defined(OS_WIN)
-#define MAYBE_EmptyDefaultLocale EmptyDefaultLocale
+#define MAYBE_EmptyDefaultLocale DISABLED_EmptyDefaultLocale
 #else
 #define MAYBE_EmptyDefaultLocale EmptyDefaultLocale
 #endif
@@ -67,10 +66,9 @@ TEST_F(ExtensionUnpackerTest, MAYBE_EmptyDefaultLocale) {
 }
 
 // Crashes intermittently on Vista, see http://crbug.com/109385
-// Re-enabled to test fix.
 #if defined(OS_WIN)
 #define MAYBE_HasDefaultLocaleMissingLocalesFolder \
-  HasDefaultLocaleMissingLocalesFolder
+  DISABLED_HasDefaultLocaleMissingLocalesFolder
 #else
 #define MAYBE_HasDefaultLocaleMissingLocalesFolder \
   HasDefaultLocaleMissingLocalesFolder
@@ -83,9 +81,8 @@ TEST_F(ExtensionUnpackerTest, MAYBE_HasDefaultLocaleMissingLocalesFolder) {
 }
 
 // Crashes intermittently on Windows, see http://crbug.com/109238
-// Re-enabled to test fix.
 #if defined(OS_WIN)
-#define MAYBE_InvalidDefaultLocale InvalidDefaultLocale
+#define MAYBE_InvalidDefaultLocale DISABLED_InvalidDefaultLocale
 #else
 #define MAYBE_InvalidDefaultLocale InvalidDefaultLocale
 #endif
@@ -97,9 +94,8 @@ TEST_F(ExtensionUnpackerTest, MAYBE_InvalidDefaultLocale) {
 }
 
 // Crashes intermittently on Windows, see http://crbug.com/109738
-// Re-enabled to test fix.
 #if defined(OS_WIN)
-#define MAYBE_InvalidMessagesFile InvalidMessagesFile
+#define MAYBE_InvalidMessagesFile DISABLED_InvalidMessagesFile
 #else
 #define MAYBE_InvalidMessagesFile InvalidMessagesFile
 #endif
@@ -112,9 +108,8 @@ TEST_F(ExtensionUnpackerTest, MAYBE_InvalidMessagesFile) {
 }
 
 // Crashes intermittently on Vista, see http://crbug.com/109238
-// Re-enabled to test fix.
 #if defined(OS_WIN)
-#define MAYBE_MissingDefaultData MissingDefaultData
+#define MAYBE_MissingDefaultData DISABLED_MissingDefaultData
 #else
 #define MAYBE_MissingDefaultData MissingDefaultData
 #endif
@@ -126,10 +121,9 @@ TEST_F(ExtensionUnpackerTest, MAYBE_MissingDefaultData) {
 }
 
 // Crashes intermittently on Vista, see http://crbug.com/109238
-// Re-enabled to test fix.
 #if defined(OS_WIN)
 #define MAYBE_MissingDefaultLocaleHasLocalesFolder \
-  MissingDefaultLocaleHasLocalesFolder
+  DISABLED_MissingDefaultLocaleHasLocalesFolder
 #else
 #define MAYBE_MissingDefaultLocaleHasLocalesFolder \
   MissingDefaultLocaleHasLocalesFolder
@@ -142,9 +136,8 @@ TEST_F(ExtensionUnpackerTest, MAYBE_MissingDefaultLocaleHasLocalesFolder) {
 }
 
 // Crashes intermittently on Vista, see http://crbug.com/109238
-// Re-enabled to test fix.
 #if defined(OS_WIN)
-#define MAYBE_MissingMessagesFile MissingMessagesFile
+#define MAYBE_MissingMessagesFile DISABLED_MissingMessagesFile
 #else
 #define MAYBE_MissingMessagesFile MissingMessagesFile
 #endif
@@ -157,9 +150,8 @@ TEST_F(ExtensionUnpackerTest, MAYBE_MissingMessagesFile) {
 }
 
 // Crashes intermittently on Vista, see http://crbug.com/109238
-// Re-enabled to test fix.
 #if defined(OS_WIN)
-#define MAYBE_NoLocaleData NoLocaleData
+#define MAYBE_NoLocaleData DISABLED_NoLocaleData
 #else
 #define MAYBE_NoLocaleData NoLocaleData
 #endif
@@ -171,9 +163,8 @@ TEST_F(ExtensionUnpackerTest, MAYBE_NoLocaleData) {
 }
 
 // Crashes intermittently on Vista, see http://crbug.com/109238
-// Re-enabled to test fix.
 #if defined(OS_WIN)
-#define MAYBE_GoodL10n GoodL10n
+#define MAYBE_GoodL10n DISABLED_GoodL10n
 #else
 #define MAYBE_GoodL10n GoodL10n
 #endif
@@ -185,9 +176,8 @@ TEST_F(ExtensionUnpackerTest, MAYBE_GoodL10n) {
 }
 
 // Crashes intermittently on Vista, see http://crbug.com/109238
-// Re-enabled to test fix.
 #if defined(OS_WIN)
-#define MAYBE_NoL10n NoL10n
+#define MAYBE_NoL10n DISABLED_NoL10n
 #else
 #define MAYBE_NoL10n NoL10n
 #endif
