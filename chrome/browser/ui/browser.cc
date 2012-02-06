@@ -2215,7 +2215,7 @@ void Browser::ShowDownloadsTab() {
 
 void Browser::ShowExtensionsTab() {
   content::RecordAction(UserMetricsAction("ShowExtensions"));
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableUberPage)) {
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableUberPage)) {
     ShowOptionsTab(chrome::kExtensionsSubPage);
   } else {
     browser::NavigateParams params(GetSingletonTabNavigateParams(
@@ -2247,7 +2247,7 @@ void Browser::ShowBrokenPageTab(WebContents* contents) {
 }
 
 void Browser::ShowOptionsTab(const std::string& sub_page) {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableUberPage)) {
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableUberPage)) {
     browser::NavigateParams params(GetSingletonTabNavigateParams(
         GURL(chrome::kChromeUISettingsURL + sub_page)));
     params.path_behavior = browser::NavigateParams::IGNORE_AND_NAVIGATE;

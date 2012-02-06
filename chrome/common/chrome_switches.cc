@@ -393,9 +393,6 @@ const char kDisableTLS1[]                   = "disable-tls1";
 // disable translate with the preference.
 const char kDisableTranslate[] = "disable-translate";
 
-// Disable uber page command and URL redirection.
-const char kDisableUberPage[]                = "disable-uber-page";
-
 // Disables the backend service for web resources.
 const char kDisableWebResources[]           = "disable-web-resources";
 
@@ -575,6 +572,9 @@ const char kEnableSyncTabsForOtherClients[] =
 
 // Enables context menu for selecting groups of tabs.
 const char kEnableTabGroupsContextMenu[]    = "enable-tab-groups-context-menu";
+
+// Enable uber page command and URL redirection.
+const char kEnableUberPage[]                = "enable-uber-page";
 
 // Spawns threads to watch for excessive delays in specified message loops.
 // User should set breakpoints on Alarm() to examine problematic thread.

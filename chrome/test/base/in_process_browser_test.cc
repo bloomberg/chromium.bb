@@ -167,8 +167,6 @@ void InProcessBrowserTest::PrepareTestCommandLine(CommandLine* command_line) {
   // If neccessary, disable TabCloseableStateWatcher.
   if (!tab_closeable_state_watcher_enabled_)
     command_line->AppendSwitch(switches::kDisableTabCloseableStateWatcher);
-
-  command_line->AppendSwitch(switches::kDisableUberPage);
 }
 
 bool InProcessBrowserTest::CreateUserDataDirectory() {

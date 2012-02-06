@@ -109,7 +109,7 @@ bool WillHandleBrowserAboutURL(GURL* url,
     return false;
 
   CommandLine* cl = CommandLine::ForCurrentProcess();
-  bool enableUberPage = !cl->HasSwitch(switches::kDisableUberPage);
+  bool enableUberPage = cl->HasSwitch(switches::kEnableUberPage);
 
   std::string host(url->host());
   std::string path;

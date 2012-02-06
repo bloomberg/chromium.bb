@@ -549,11 +549,11 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kEnableMediaStream)
   },
   {
-    "disable-uber-page",
-    IDS_FLAGS_DISABLE_UBER_PAGE_NAME,
-    IDS_FLAGS_DISABLE_UBER_PAGE_DESCRIPTION,
+    "enable-uber-page",
+    IDS_FLAGS_ENABLE_UBER_PAGE_NAME,
+    IDS_FLAGS_ENABLE_UBER_PAGE_DESCRIPTION,
     kOsAll,
-    SINGLE_VALUE_TYPE(switches::kDisableUberPage)
+    SINGLE_VALUE_TYPE(switches::kEnableUberPage)
   },
   {
     "enable-shadow-dom",
