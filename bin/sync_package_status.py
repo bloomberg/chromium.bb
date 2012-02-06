@@ -152,6 +152,8 @@ class TrackerComm(object):
 
     self.it_client = gdata.projecthosting.client.ProjectHostingClient()
     self.it_client.source = 'package_status_upgrade'
+    # TODO(mtennant): See if there is an analogous login option that uses
+    # an auth token instead (as with spreadsheet login).
     self.it_client.ClientLogin(creds.user, creds.password,
                                source=self.it_client.source,
                                service='code',
@@ -605,7 +607,12 @@ def main():
     oper.Notice('Assuming your chromium email is %s@chromium.org.'
                 '  Override with --email.' % options.email)
 
-  creds = gdata_lib.Creds(cred_file=options.cred_file, user=options.email)
+  creds = gdata_lib.Creds()
+  if options.email:
+    creds.SetCreds(options.email)
+  elif options.cred_file and os.path.exists(options.cred_file):
+    creds.LoadCreds(options.cred_file)
+
   tcomm = TrackerComm(creds)
   scomm = SpreadsheetComm(creds, SS_KEY, PKGS_WS_NAME)
 

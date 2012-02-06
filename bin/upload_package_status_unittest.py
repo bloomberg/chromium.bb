@@ -22,12 +22,6 @@ import upload_package_status as ups
 # pylint: disable=W0212,R0904,E1120,E1101
 
 
-def _WriteCredsFile(tmpfile_path, email, password):
-  with open(tmpfile_path, 'w') as tmpfile:
-    tmpfile.write(email + '\n')
-    tmpfile.write(password + '\n')
-
-
 class SSEntry(object):
   """Class to simulate one spreadsheet entry."""
   def __init__(self, text):
@@ -356,12 +350,12 @@ class MainTest(test_lib.MoxTestCase):
 
   def _PrepareArgv(self, *args):
     """Prepare command line for calling upload_package_status.main"""
-    sys.argv = [ re.sub("_unittest", "", sys.argv[0]) ]
+    sys.argv = [ re.sub('_unittest', '', sys.argv[0]) ]
     sys.argv.extend(args)
 
   def testHelp(self):
     """Test that --help is functioning"""
-    self._PrepareArgv("--help")
+    self._PrepareArgv('--help')
 
     with self.OutputCapturer() as output:
       # Running with --help should exit with code==0
@@ -372,11 +366,11 @@ class MainTest(test_lib.MoxTestCase):
 
     # Verify that a message beginning with "Usage: " was printed
     stdout = output.GetStdout()
-    self.assertTrue(stdout.startswith("Usage: "))
+    self.assertTrue(stdout.startswith('Usage: '))
 
   def testMissingCSV(self):
     """Test that running without a csv file argument exits with an error."""
-    self._PrepareArgv("")
+    self._PrepareArgv('')
 
     with self.OutputCapturer():
       # Running without a package should exit with code!=0
@@ -387,27 +381,47 @@ class MainTest(test_lib.MoxTestCase):
 
     self.AssertOutputEndsInError(check_stdout=True)
 
+  def testPrepareCredsEmailPassword(self):
+    email = 'foo@g.com'
+    password = 'shh'
+    creds_file = 'bogus'
+    token_file = 'boguser'
+
+    mocked_creds = self.mox.CreateMock(gdata_lib.Creds)
+    self.mox.StubOutWithMock(gdata_lib.Creds, '__new__')
+
+    gdata_lib.Creds.__new__(gdata_lib.Creds).AndReturn(mocked_creds)
+    mocked_creds.SetCreds(email, password)
+    self.mox.ReplayAll()
+
+    ups.PrepareCreds(creds_file, token_file, email, password)
+    self.mox.VerifyAll()
+
   def testMainEmailPassword(self):
     """Verify that running main with email/password follows flow."""
     csv = 'any.csv'
     email = 'foo@g.com'
     password = '123'
 
-    self.mox.StubOutWithMock(gdata_lib.Creds, '__new__')
+    mocked_creds = self.mox.CreateMock(gdata_lib.Creds)
+    creds_file = 'non-existing-file'
+
+    self.mox.StubOutWithMock(ups, 'PrepareCreds')
     self.mox.StubOutWithMock(ups, 'LoadTable')
     self.mox.StubOutWithMock(mps, 'FinalizeTable')
     self.mox.StubOutWithMock(ups.Uploader, 'Upload')
 
-    gdata_lib.Creds.__new__(gdata_lib.Creds, cred_file=None,
-                            user=email, password=password).AndReturn('Creds')
+    ups.PrepareCreds(creds_file, None, email, password).AndReturn(mocked_creds)
     ups.LoadTable(csv).AndReturn('csv_table')
     mps.FinalizeTable('csv_table')
     ups.Uploader.Upload(mox.IgnoreArg(), ws_name='Packages')
     ups.Uploader.Upload(mox.IgnoreArg(), ws_name='Dependencies')
+    mocked_creds.StoreCreds(creds_file)
     self.mox.ReplayAll()
 
-    self._PrepareArgv("--email=%s" % email,
-                      "--password=%s" % password,
+    self._PrepareArgv('--email=%s' % email,
+                      '--password=%s' % password,
+                      '--cred-file=%s' % creds_file,
                       csv)
 
     ups.main()
@@ -417,25 +431,58 @@ class MainTest(test_lib.MoxTestCase):
   def testMainCredsFile(self):
     """Verify that running main with creds file follows flow."""
     csv = 'any.csv'
-    email = 'foo@g.com'
-    password = '123'
     creds_file = self.tempfile
-    _WriteCredsFile(creds_file, email, password)
+    token_file = 'non-existing-file'
 
-    self.mox.StubOutWithMock(gdata_lib.Creds, '__new__')
+    mocked_creds = self.mox.CreateMock(gdata_lib.Creds)
+    mocked_creds.auth_token_loaded = False
+
+    self.mox.StubOutWithMock(ups, 'PrepareCreds')
     self.mox.StubOutWithMock(ups, 'LoadTable')
     self.mox.StubOutWithMock(mps, 'FinalizeTable')
     self.mox.StubOutWithMock(ups.Uploader, 'Upload')
 
-    gdata_lib.Creds.__new__(gdata_lib.Creds, cred_file=creds_file,
-                            user=None, password=None).AndReturn('Creds')
+    ups.PrepareCreds(creds_file, token_file, None, None).AndReturn(mocked_creds)
+    ups.LoadTable(csv).AndReturn('csv_table')
+    mps.FinalizeTable('csv_table')
+    ups.Uploader.Upload(mox.IgnoreArg(), ws_name=ups.PKGS_WS_NAME)
+    ups.Uploader.Upload(mox.IgnoreArg(), ws_name=ups.DEPS_WS_NAME)
+    mocked_creds.StoreAuthToken(token_file)
+    self.mox.ReplayAll()
+
+    self._PrepareArgv('--cred-file=%s' % creds_file,
+                      '--auth-token-file=%s' % token_file,
+                      csv)
+
+    ups.main()
+    self.mox.VerifyAll()
+
+
+  @test_lib.tempfile_decorator
+  def testMainTokenFile(self):
+    """Verify that running main with token file follows flow."""
+    csv = 'any.csv'
+    token_file = self.tempfile
+    creds_file = 'non-existing-file'
+
+    mocked_creds = self.mox.CreateMock(gdata_lib.Creds)
+    mocked_creds.auth_token_loaded = True
+
+    self.mox.StubOutWithMock(ups, 'PrepareCreds')
+    self.mox.StubOutWithMock(ups, 'LoadTable')
+    self.mox.StubOutWithMock(mps, 'FinalizeTable')
+    self.mox.StubOutWithMock(ups.Uploader, 'Upload')
+
+    ups.PrepareCreds(creds_file, token_file, None, None).AndReturn(mocked_creds)
     ups.LoadTable(csv).AndReturn('csv_table')
     mps.FinalizeTable('csv_table')
     ups.Uploader.Upload(mox.IgnoreArg(), ws_name=ups.PKGS_WS_NAME)
     ups.Uploader.Upload(mox.IgnoreArg(), ws_name=ups.DEPS_WS_NAME)
     self.mox.ReplayAll()
 
-    self._PrepareArgv("--cred-file=%s" % creds_file, csv)
+    self._PrepareArgv('--cred-file=%s' % creds_file,
+                      '--auth-token-file=%s' % token_file,
+                      csv)
 
     ups.main()
     self.mox.VerifyAll()

@@ -96,7 +96,7 @@ class CredsTest(test_lib.MoxTestCase):
 
   USER = 'somedude@chromium.org'
   PASSWORD = 'worldsbestpassword'
-  TMPFILE_NAME = 'creds.txt'
+  TOKEN = 'someauthtoken'
 
   def setUp(self):
     mox.MoxTestBase.setUp(self)
@@ -109,10 +109,10 @@ class CredsTest(test_lib.MoxTestCase):
 
     # This is the test verification.
     with self.OutputCapturer():
-      gdata_lib.Creds.__init__(mocked_creds, user=self.USER,
-                               password=self.PASSWORD)
+      gdata_lib.Creds.SetCreds(mocked_creds, self.USER, self.PASSWORD)
       self.assertEquals(self.USER, mocked_creds.user)
       self.assertEquals(self.PASSWORD, mocked_creds.password)
+      self.assertFalse(mocked_creds.creds_loaded)
 
       gdata_lib.Creds.StoreCreds(mocked_creds, self.tempfile)
       self.assertEquals(self.USER, mocked_creds.user)
@@ -127,35 +127,50 @@ class CredsTest(test_lib.MoxTestCase):
       gdata_lib.Creds.LoadCreds(mocked_creds, self.tempfile)
       self.assertEquals(self.USER, mocked_creds.user)
       self.assertEquals(self.PASSWORD, mocked_creds.password)
+      self.assertTrue(mocked_creds.creds_loaded)
 
     self.mox.VerifyAll()
 
   @test_lib.tempfile_decorator
-  def testCredsInitFromFile(self):
-    open(self.tempfile, 'w').close()
-
+  def testStoreLoadToken(self):
     # This is the replay script for the test.
     mocked_creds = self.mox.CreateMock(gdata_lib.Creds)
-    mocked_creds.LoadCreds(self.tempfile)
     self.mox.ReplayAll()
 
     # This is the test verification.
-    gdata_lib.Creds.__init__(mocked_creds, cred_file=self.tempfile)
+    with self.OutputCapturer():
+      gdata_lib.Creds.SetAuthToken(mocked_creds, self.TOKEN)
+      self.assertEquals(self.TOKEN, mocked_creds.auth_token)
+      self.assertFalse(mocked_creds.auth_token_loaded)
+
+      gdata_lib.Creds.StoreAuthToken(mocked_creds, self.tempfile)
+      self.assertEquals(self.TOKEN, mocked_creds.auth_token)
+      self.assertFalse(mocked_creds.auth_token_loaded)
+
+      # Clear auth_token before loading from just-created file.
+      mocked_creds.auth_token = None
+      self.assertEquals(None, mocked_creds.auth_token)
+
+      gdata_lib.Creds.LoadAuthToken(mocked_creds, self.tempfile)
+      self.assertEquals(self.TOKEN, mocked_creds.auth_token)
+      self.assertTrue(mocked_creds.auth_token_loaded)
+
     self.mox.VerifyAll()
 
-  def testCredsInitFromUserPassword(self):
+  def testSetCreds(self):
     # This is the replay script for the test.
     mocked_creds = self.mox.CreateMock(gdata_lib.Creds)
     self.mox.ReplayAll()
 
     # This is the test verification.
-    gdata_lib.Creds.__init__(mocked_creds, user=self.USER,
+    gdata_lib.Creds.SetCreds(mocked_creds, self.USER,
                              password=self.PASSWORD)
     self.mox.VerifyAll()
     self.assertEquals(self.USER, mocked_creds.user)
     self.assertEquals(self.PASSWORD, mocked_creds.password)
+    self.assertFalse(mocked_creds.creds_loaded)
 
-  def testCredsInitFromUser(self):
+  def testSetCredsNoPassword(self):
     # Add test-specific mocks/stubs
     self.mox.StubOutWithMock(getpass, 'getpass')
 
@@ -165,10 +180,22 @@ class CredsTest(test_lib.MoxTestCase):
     self.mox.ReplayAll()
 
     # This is the test verification.
-    gdata_lib.Creds.__init__(mocked_creds, user=self.USER)
+    gdata_lib.Creds.SetCreds(mocked_creds, self.USER)
     self.mox.VerifyAll()
     self.assertEquals(self.USER, mocked_creds.user)
     self.assertEquals(self.PASSWORD, mocked_creds.password)
+    self.assertFalse(mocked_creds.creds_loaded)
+
+  def testSetToken(self):
+    # This is the replay script for the test.
+    mocked_creds = self.mox.CreateMock(gdata_lib.Creds)
+    self.mox.ReplayAll()
+
+    # This is the test verification.
+    gdata_lib.Creds.SetAuthToken(mocked_creds, self.TOKEN)
+    self.mox.VerifyAll()
+    self.assertEquals(self.TOKEN, mocked_creds.auth_token)
+    self.assertFalse(mocked_creds.auth_token_loaded)
 
 
 class SpreadsheetRowTest(test_lib.TestCase):
@@ -215,6 +242,7 @@ class SpreadsheetCommTest(test_lib.MoxTestCase):
 
   USER = 'dude'
   PASSWORD = 'shhh'
+  TOKEN = 'authtoken'
 
   COLUMNS = ('greeting', 'name', 'title')
   ROWS = (
@@ -263,22 +291,29 @@ class SpreadsheetCommTest(test_lib.MoxTestCase):
 
     return scomm
 
-  def GenerateCreds(self):
-    return test_lib.EasyAttr(user=self.USER, password=self.PASSWORD)
+  def GenerateCreds(self, skip_user=False, skip_token=False):
+    creds = gdata_lib.Creds()
+    if not skip_user:
+      creds.user = self.USER
+      creds.password = self.PASSWORD
+
+    if not skip_token:
+      creds.auth_token = self.TOKEN
+
+    return creds
 
   def testConnect(self):
     mocked_scomm = self.MockScomm(connect=False)
     creds = self.GenerateCreds()
 
     # This is the replay script for the test.
-    mocked_scomm._LoginWithUserPassword(creds.user, creds.password,
-                                        'chromiumos')
+    mocked_scomm._Login(creds, 'chromiumos')
     mocked_scomm.SetCurrentWorksheet(self.WS_NAME, ss_key=self.SS_KEY)
     self.mox.ReplayAll()
 
     # This is the test verification.
     gdata_lib.SpreadsheetComm.Connect(mocked_scomm, creds,
-                                       self.SS_KEY, self.WS_NAME)
+                                      self.SS_KEY, self.WS_NAME)
     self.mox.VerifyAll()
 
   def testColumns(self):
@@ -302,6 +337,7 @@ class SpreadsheetCommTest(test_lib.MoxTestCase):
 
     # This is the test verification.
     result = scomm.columns
+    del scomm # Force deletion now before VerifyAll.
     self.mox.VerifyAll()
 
     expected_result = self.COLUMNS
@@ -328,6 +364,7 @@ class SpreadsheetCommTest(test_lib.MoxTestCase):
 
     # This is the test verification.
     result = scomm.rows
+    del scomm # Force deletion now before VerifyAll.
     self.mox.VerifyAll()
     self.assertEquals(tuple(rows), result)
 
@@ -411,6 +448,7 @@ class SpreadsheetCommTest(test_lib.MoxTestCase):
 
   def testLoginWithUserPassword(self):
     mocked_scomm = self.MockScomm(connect=False)
+    creds = self.GenerateCreds(skip_token=True)
     mocked_gdclient = self.mox.CreateMock(gdata_lib.RetrySpreadsheetsService)
 
     self.mox.StubOutWithMock(gdata_lib.RetrySpreadsheetsService, '__new__')
@@ -421,14 +459,40 @@ class SpreadsheetCommTest(test_lib.MoxTestCase):
     gdata_lib.RetrySpreadsheetsService.__new__(
         gdata_lib.RetrySpreadsheetsService).AndReturn(mocked_gdclient)
     mocked_gdclient.ProgrammaticLogin()
+    mocked_gdclient.GetClientLoginToken().AndReturn(self.TOKEN)
     self.mox.ReplayAll()
 
     # This is the test verification.
-    gdata_lib.SpreadsheetComm._LoginWithUserPassword(mocked_scomm, self.USER,
-                                                     self.PASSWORD, source)
+    with self.OutputCapturer():
+      gdata_lib.SpreadsheetComm._Login(mocked_scomm, creds, source)
     self.mox.VerifyAll()
     self.assertEquals(self.USER, mocked_gdclient.email)
     self.assertEquals(self.PASSWORD, mocked_gdclient.password)
+    self.assertEquals(self.TOKEN, creds.auth_token)
+    self.assertEquals(source, mocked_gdclient.source)
+    self.assertEquals(mocked_gdclient, mocked_scomm.gd_client)
+
+  def testLoginWithToken(self):
+    mocked_scomm = self.MockScomm(connect=False)
+    creds = self.GenerateCreds(skip_user=True)
+    mocked_gdclient = self.mox.CreateMock(gdata_lib.RetrySpreadsheetsService)
+
+    self.mox.StubOutWithMock(gdata_lib.RetrySpreadsheetsService, '__new__')
+
+    source = 'SomeSource'
+
+    # This is the replay script for the test.
+    gdata_lib.RetrySpreadsheetsService.__new__(
+        gdata_lib.RetrySpreadsheetsService).AndReturn(mocked_gdclient)
+    mocked_gdclient.SetClientLoginToken(creds.auth_token)
+    self.mox.ReplayAll()
+
+    # This is the test verification.
+    with self.OutputCapturer():
+      gdata_lib.SpreadsheetComm._Login(mocked_scomm, creds, source)
+    self.mox.VerifyAll()
+    self.assertFalse(hasattr(mocked_gdclient, 'email'))
+    self.assertFalse(hasattr(mocked_gdclient, 'password'))
     self.assertEquals(source, mocked_gdclient.source)
     self.assertEquals(mocked_gdclient, mocked_scomm.gd_client)
 

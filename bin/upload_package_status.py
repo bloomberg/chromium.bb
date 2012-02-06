@@ -36,7 +36,7 @@ class Uploader(object):
 
   ID_COL = utable.UpgradeTable.COL_PACKAGE
   SS_ID_COL = gdata_lib.PrepColNameForSS(ID_COL)
-  SOURCE = "Uploaded from CSV"
+  SOURCE = 'Uploaded from CSV'
 
   def __init__(self, creds, table_obj):
     self._creds = creds
@@ -50,7 +50,7 @@ class Uploader(object):
       row = self._ss_row_cache[package]
 
       if isinstance(row, list):
-        raise LookupError("More than one row in spreadsheet with Package=%s" %
+        raise LookupError('More than one row in spreadsheet with Package=%s' %
                           package)
 
       return row
@@ -74,22 +74,22 @@ class Uploader(object):
     oper.Notice('Caching rows for worksheet %r.' % self._scomm.ws_name)
     self._ss_row_cache = self._scomm.GetRowCacheByCol(self.SS_ID_COL)
 
-    oper.Notice("Uploading changes to worksheet '%s' of spreadsheet '%s' now." %
+    oper.Notice('Uploading changes to worksheet "%s" of spreadsheet "%s" now.' %
                 (self._scomm.ws_name, self._scomm.ss_key))
 
-    oper.Info("Details by package: S=Same, C=Changed, A=Added, D=Deleted")
+    oper.Info('Details by package: S=Same, C=Changed, A=Added, D=Deleted')
     rows_unchanged, rows_updated, rows_inserted = self._UploadChangedRows()
     rows_deleted, rows_with_owner_deleted = self._DeleteOldRows()
 
-    oper.Notice("Final row stats for worksheet '%s'"
-                ": %d changed, %d added, %d deleted, %d same." %
+    oper.Notice('Final row stats for worksheet "%s"'
+                ': %d changed, %d added, %d deleted, %d same.' %
                 (self._scomm.ws_name, rows_updated, rows_inserted,
                  rows_deleted, rows_unchanged))
     if rows_with_owner_deleted:
-      oper.Warning("%d rows with owner entry deleted, see above warnings." %
+      oper.Warning('%d rows with owner entry deleted, see above warnings.' %
                    rows_with_owner_deleted)
     else:
-      oper.Notice("No rows with owner entry were deleted.")
+      oper.Notice('No rows with owner entry were deleted.')
 
   def _UploadChangedRows(self):
     """Upload all rows in table that need to be changed in spreadsheet."""
@@ -118,31 +118,31 @@ class Uploader(object):
             ss_val = ss_row[col]
             new_val = new_row[col]
             if (ss_val or new_val) and ss_val != new_val:
-              changed.append("%s='%s'->'%s'" % (col, ss_val, new_val))
+              changed.append('%s="%s"->"%s"' % (col, ss_val, new_val))
               row_delta[col] = new_val
 
         if row_delta:
           self._scomm.UpdateRowCellByCell(ss_row.ss_row_num,
                                           gdata_lib.PrepRowForSS(row_delta))
           rows_updated += 1
-          oper.Info("C %-30s: %s" % (csv_package, ', '.join(changed)))
+          oper.Info('C %-30s: %s' % (csv_package, ', '.join(changed)))
         else:
           rows_unchanged += 1
-          oper.Info("S %-30s:" % csv_package)
+          oper.Info('S %-30s:' % csv_package)
       else:
         self._scomm.InsertRow(gdata_lib.PrepRowForSS(new_row))
         rows_inserted += 1
         row_descr_list = []
         for col in sorted(new_row.keys()):
           if col != self.ID_COL:
-            row_descr_list.append("%s='%s'" % (col, new_row[col]))
-        oper.Info("A %-30s: %s" % (csv_package, ', '.join(row_descr_list)))
+            row_descr_list.append('%s="%s"' % (col, new_row[col]))
+        oper.Info('A %-30s: %s' % (csv_package, ', '.join(row_descr_list)))
 
     return (rows_unchanged, rows_updated, rows_inserted)
 
   def _DeleteOldRows(self):
     """Delete all rows from spreadsheet that not found in table."""
-    oper.Notice("Checking for rows in worksheet that should be deleted now.")
+    oper.Notice('Checking for rows in worksheet that should be deleted now.')
 
     rows_deleted, rows_with_owner_deleted = (0, 0)
 
@@ -167,13 +167,13 @@ class Uploader(object):
           # Don't include ID_COL value in description, it is in prefix already.
           if col != self.SS_ID_COL:
             val = ss_row[col]
-            row_descr_list.append("%s='%s'" % (col, val))
+            row_descr_list.append('%s="%s"' % (col, val))
 
-        oper.Info("D %-30s: %s" % (ss_package, ', '.join(row_descr_list)))
+        oper.Info('D %-30s: %s' % (ss_package, ', '.join(row_descr_list)))
         if owner_val or owner_notes_val:
           rows_with_owner_deleted += 1
-          oper.Notice("WARNING: Deleting spreadsheet row with owner entry:\n" +
-                      "  %-30s: Owner=%s, Owner Notes=%s" %
+          oper.Notice('WARNING: Deleting spreadsheet row with owner entry:\n' +
+                      '  %-30s: Owner=%s, Owner Notes=%s' %
                       (ss_package, owner_val, owner_notes_val))
 
         self._scomm.DeleteRow(ss_row.ss_row_obj)
@@ -184,33 +184,60 @@ class Uploader(object):
 
 def LoadTable(table_file):
   """Load csv |table_file| into a table.  Return table."""
-  oper.Notice("Loading csv table from '%s'." % (table_file))
+  oper.Notice('Loading csv table from "%s".' % (table_file))
   csv_table = table.Table.LoadFromCSV(table_file)
   return csv_table
 
+
+def PrepareCreds(cred_file, token_file, email, password):
+  """Return a Creds object from given credentials.
+
+  If |email| is given, the Creds object will contain that |email|
+  and either the given |password| or one entered at a prompt.
+
+  Otherwise, if |token_file| is given then the Creds object will have
+  the auth_token from that file.
+
+  Otherwise, if |cred_file| is given then the Creds object will have
+  the email/password from that file.
+  """
+
+  creds = gdata_lib.Creds()
+
+  if email:
+    creds.SetCreds(email, password)
+  elif token_file and os.path.exists(token_file):
+    creds.LoadAuthToken(token_file)
+  elif cred_file and os.path.exists(cred_file):
+    creds.LoadCreds(cred_file)
+
+  return creds
 
 def main():
   """Main function."""
   usage = 'Usage: %prog [options] csv_file'
   parser = optparse.OptionParser(usage=usage)
+  parser.add_option('--auth-token-file', dest='token_file', type='string',
+                    action='store', default=None,
+                    help='File for reading/writing Docs auth token.')
   parser.add_option('--cred-file', dest='cred_file', type='string',
                     action='store', default=None,
-                    help="File for reading/writing Docs login email/password.")
+                    help='File for reading/writing Docs login email/password.')
   parser.add_option('--email', dest='email', type='string',
                     action='store', default=None,
-                    help="Email for Google Doc user")
+                    help='Email for Google Doc user')
   parser.add_option('--password', dest='password', type='string',
                     action='store', default=None,
-                    help="Password for Google Doc user")
+                    help='Password for Google Doc user')
   parser.add_option('--ss-key', dest='ss_key', type='string',
                     action='store', default=None,
-                    help="Key of spreadsheet to upload to")
+                    help='Key of spreadsheet to upload to')
   parser.add_option('--test-spreadsheet', dest='test_ss',
                     action='store_true', default=False,
-                    help="Upload to the testing spreadsheet.")
+                    help='Upload to the testing spreadsheet.')
   parser.add_option('--verbose', dest='verbose',
                     action='store_true', default=False,
-                    help="Show details about packages..")
+                    help='Show details about packages.')
 
   (options, args) = parser.parse_args()
 
@@ -218,30 +245,29 @@ def main():
 
   if len(args) < 1:
     parser.print_help()
-    oper.Die("One csv_file is required.")
+    oper.Die('One csv_file is required.')
 
   # If email or password provided, the other is required.  If neither is
-  # provided, then cred_file must be provided and be a real file.
+  # provided, then either token_file or cred_file must be provided and
+  # be a real file.
   if options.email or options.password:
     if not (options.email and options.password):
       parser.print_help()
-      oper.Die("The email/password options must be used together.")
-  elif not options.cred_file:
+      oper.Die('The email/password options must be used together.')
+  elif not ((options.cred_file and os.path.exists(options.cred_file)) or
+            (options.token_file and os.path.exists(options.token_file))):
     parser.print_help()
-    oper.Die("Either email/password or cred-file required.")
-  elif not (options.cred_file and os.path.exists(options.cred_file)):
-    parser.print_help()
-    oper.Die("Without email/password cred-file must exist.")
+    oper.Die('Without email/password, cred-file or auth-token-file'
+             'must exist.')
 
   # --ss-key and --test-spreadsheet are mutually exclusive.
   if options.ss_key and options.test_ss:
     parser.print_help()
-    oper.Die("Cannot specify --ss-key and --test-spreadsheet together.")
+    oper.Die('Cannot specify --ss-key and --test-spreadsheet together.')
 
   # Prepare credentials for spreadsheet access.
-  creds = gdata_lib.Creds(cred_file=options.cred_file,
-                          user=options.email,
-                          password=options.password)
+  creds = PrepareCreds(options.cred_file, options.token_file,
+                       options.email, options.password)
 
   # Load the given csv file.
   csv_table = LoadTable(args[0])
@@ -265,9 +291,13 @@ def main():
 
   # If email/password given, as well as path to cred_file, write
   # credentials out to that location.
-  if options.email and options.password and options.cred_file:
+  if options.email and options.cred_file:
     creds.StoreCreds(options.cred_file)
 
+  # If token_file path given, write auth_token out to that location
+  # if it was not loaded from there in the first place.
+  if options.token_file and not creds.auth_token_loaded:
+    creds.StoreAuthToken(options.token_file)
 
 if __name__ == '__main__':
   main()

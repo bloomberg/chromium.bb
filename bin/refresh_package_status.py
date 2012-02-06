@@ -21,11 +21,13 @@ oper.verbose = True # Without verbose Info messages don't show up.
 TMP_ROOT = '/tmp'
 SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
 GDATA_CRED_FILE = '.gdata_cred.txt'
+GDATA_TOKEN_FILE = '.gdata_token'
 GENTOO_DIR = 'gentoo-portage'
 PRTG_GIT_URL = 'ssh://gerrit.chromium.org:29418/chromiumos/overlays/portage.git'
 FUNTOO_GIT_URL = 'git://github.com/funtoo/portage.git'
 
 def RunGit(cwd, cmd, args=[]):
+  # pylint: disable=W0102
   """Run the git |cmd| with |args| in the |cwd| directory."""
   cmdline = ['git', cmd] + args
   cros_lib.RunCommand(cmdline, cwd=cwd)
@@ -78,14 +80,16 @@ def PrepareCSVRoot():
   return csv_root
 
 
-def RefreshPackageStatus(board, upstream, csv_root, test, cred_file):
+def RefreshPackageStatus(board, upstream, csv_root, test,
+                         token_file, cred_file):
   """Run through steps to refresh package status spreadsheet.
 
   |board| is a colon-separated list of chromeos boards to use.
   |upstream| is a path to origin/gentoo upstream.  Can be None.
   Put all csv files under the |csv_root| directory.
   If |test| is True, upload to test spreadsheet instead of real one.
-  Use |cred_file| as credentials file for spreadsheet upload.
+  Use |token_file| as auth token file for spreadsheet upload if it exists.
+  Otherwise, use |cred_file| as credentials file for spreadsheet upload.
   """
 
   # Run all chromeos targets for all boards.
@@ -145,7 +149,8 @@ def RefreshPackageStatus(board, upstream, csv_root, test, cred_file):
   # Upload the final csv file to the online spreadsheet.
   oper.Info('Uploading package status to online spreadsheet.')
   upload_cmdline = ['upload_package_status', '--verbose',
-                    '--cred-file=%s' % cred_file]
+                    '--cred-file=%s' % cred_file,
+                    '--auth-token-file=%s' % token_file]
   if test:
     upload_cmdline.append('--test-spreadsheet')
 
@@ -164,12 +169,17 @@ def main():
             '\n'
             )
 
+  # pylint: disable=R0904
   class MyOptParser(optparse.OptionParser):
     """Override default epilog formatter, which strips newlines."""
     def format_epilog(self, formatter):
       return self.epilog
 
   parser = MyOptParser(usage=usage, epilog=epilog)
+  parser.add_option('--token-file', dest='token_file', type='string',
+                    action='store',
+                    default='%s/%s' % (os.environ['HOME'], GDATA_TOKEN_FILE),
+                    help='Path to gdata auth token file [default: "%default"]')
   parser.add_option('--board', dest='board', type='string', action='store',
                     default=None, help='Target board(s), colon-separated')
   parser.add_option('--cred-file', dest='cred_file', type='string',
@@ -185,6 +195,10 @@ def main():
 
   (options, args) = parser.parse_args()
 
+  if args:
+    parser.print_help()
+    oper.Die('No extra arguments allowed.')
+
   if not options.board:
     parser.print_help()
     oper.Die('Board is required.')
@@ -198,6 +212,7 @@ def main():
 
   RefreshPackageStatus(board=options.board, upstream=upstream,
                        csv_root=csv_root, test=options.test,
+                       token_file=options.token_file,
                        cred_file=options.cred_file)
 
   if options.update_gentoo:

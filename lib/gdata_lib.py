@@ -9,6 +9,7 @@
 import functools
 import getpass
 import os
+import pickle
 import re
 
 import gdata.spreadsheet.service
@@ -55,27 +56,63 @@ class Creds(object):
   """Class to manage user/password credentials."""
 
   __slots__ = [
-    'password',    # User password
-    'user',        # User account (foo@chromium.org)
-    ]
+      'auth_token',  # Client auth token
+      'auth_token_loaded', # Boolean
+      'creds_loaded', # Boolean
+      'password',    # User password
+      'user',        # User account (foo@chromium.org)
+      ]
 
-  def __init__(self, cred_file=None, user=None, password=None):
-    # Prefer user/password if given.
-    if user:
-      if not user.endswith('@chromium.org'):
-        user = '%s@chromium.org' % user
+  def __init__(self):
+    self.user = None
+    self.password = None
+    self.auth_token = None
 
-      if not password:
-        password = getpass.getpass('Tracker password for %s:' % user)
+    self.auth_token_loaded = False
+    self.creds_loaded = False
 
-      self.user = user
-      self.password = password
+  def SetAuthToken(self, auth_token):
+    """Set the auth_token."""
+    self.auth_token = auth_token
+    self.auth_token_loaded = False
 
-    elif cred_file and os.path.exists(cred_file):
-      self.LoadCreds(cred_file)
+  def LoadAuthToken(self, filepath):
+    """Load previously picked auth token from |filepath|."""
+    self.auth_token = None
+    try:
+      f = open(filepath, 'r')
+      obj = pickle.load(f)
+      f.close()
+      if obj.has_key('auth_token'):
+        self.auth_token = obj['auth_token']
+      oper.Notice('Loaded Docs/Tracker auth token from "%s"' % filepath)
+      self.auth_token_loaded = True
+    except IOError:
+      oper.Error('Unable to load auth token file at "%s"' % filepath)
 
-    else:
-      raise TypeError('Invalid use of Creds - no user or credentials file')
+  def StoreAuthToken(self, filepath):
+    """Store picked auth token to |filepath|."""
+    obj = {}
+    if self.auth_token:
+      obj['auth_token'] = self.auth_token
+    try:
+      oper.Notice('Storing Docs/Tracker auth token to "%s"' % filepath)
+      f = open(filepath, 'w')
+      pickle.dump(obj, f)
+      f.close()
+    except IOError:
+      oper.Error('Unable to store auth token to file at "%s"' % filepath)
+
+  def SetCreds(self, user, password=None):
+    if not user.endswith('@chromium.org'):
+      user = '%s@chromium.org' % user
+
+    if not password:
+      password = getpass.getpass('Tracker password for %s:' % user)
+
+    self.user = user
+    self.password = password
+    self.creds_loaded = False
 
   def LoadCreds(self, filepath):
     """Load email/password credentials from |filepath|."""
@@ -84,6 +121,7 @@ class Creds(object):
     with open(filepath, 'r') as f:
       (self.user, self.password) = (l.strip() for l in f.readlines())
     oper.Notice('Loaded Docs/Tracker login credentials from "%s"' % filepath)
+    self.creds_loaded = True
 
   def StoreCreds(self, filepath):
     """Store email/password credentials to |filepath|."""
@@ -191,12 +229,12 @@ class SpreadsheetComm(object):
   def Connect(self, creds, ss_key, ws_name, source='chromiumos'):
     """Login to spreadsheet service and set current worksheet.
 
-    |creds| Creds object (user/password) for Google Docs
+    |creds| Credentials object for Google Docs
     |ss_key| Spreadsheet key
     |ws_name| Worksheet name
     |source| Name to associate with connecting service
     """
-    self._LoginWithUserPassword(creds.user, creds.password, source)
+    self._Login(creds, source)
     self.SetCurrentWorksheet(ws_name, ss_key=ss_key)
 
   def SetCurrentWorksheet(self, ws_name, ss_key=None):
@@ -218,14 +256,23 @@ class SpreadsheetComm(object):
     if not keep_columns:
       self._columns = None
 
-  def _LoginWithUserPassword(self, user, password, source):
-    """Set up and connect the Google Doc client using email/password."""
+  def _Login(self, creds, source):
+    """Login to Google doc client using given |creds|."""
     gd_client = RetrySpreadsheetsService()
-
     gd_client.source = source
-    gd_client.email = user
-    gd_client.password = password
-    gd_client.ProgrammaticLogin()
+
+    # Login using previous auth token if available, otherwise
+    # use email/password from creds.
+    if creds.auth_token:
+      oper.Notice('Logging into Docs using previous auth token.')
+      gd_client.SetClientLoginToken(creds.auth_token)
+    else:
+      oper.Notice('Logging into Docs as "%s".' % creds.user)
+      gd_client.email = creds.user
+      gd_client.password = creds.password
+      gd_client.ProgrammaticLogin()
+      creds.SetAuthToken(gd_client.GetClientLoginToken())
+
     self.gd_client = gd_client
 
   def _GetWorksheetKey(self, ss_key, ws_name):
