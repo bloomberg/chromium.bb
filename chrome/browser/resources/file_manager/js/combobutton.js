@@ -50,12 +50,12 @@ cr.define('cr.ui', function() {
         this.buttonContainer_.appendChild(item);
       } else {
         this.multiple = true;
-        if (this.visible)
-          this.setPopupSize_();
         if (this.popup_.hasChildNodes())
           this.popup_.insertBefore(item, this.popup_.firstChild);
         else
           this.popup_.appendChild(item);
+        if (this.visible)
+          this.setPopupSize_();
       }
     },
 

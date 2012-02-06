@@ -8,6 +8,7 @@
   border: 1px solid #aaa;
   border-radius: 2px;
   font: -webkit-small-control;
+  cursor: default;
 }
 
 .cr-button:hover {
@@ -25,6 +26,7 @@
   position: relative;
   display: none;
   font: -webkit-small-control;
+  cursor: default;
 }
 
 .cr-combobutton[visible] {
