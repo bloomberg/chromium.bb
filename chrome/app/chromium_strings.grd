@@ -241,7 +241,7 @@ be available for now. -->
         </message>
       </if>
       <message name="IDS_ABOUT_TERMS_OF_SERVICE" desc="The terms of service label in the About box.">
-        Not used in Chromium. Placeholder to keep resource maps in sync.
+        Not used in Chromium. Placeholder to keep resource maps in sync. It expects one argument: $1.
       </message>
       <message name="IDS_ABOUT_OLD_TERMS_OF_SERVICE" desc="The terms of service label in the About box.">
         Not used in Chromium. Placeholder to keep resource maps in sync.
