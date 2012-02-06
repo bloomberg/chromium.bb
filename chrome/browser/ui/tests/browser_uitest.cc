@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -76,9 +76,7 @@ class ShowModalDialogTest : public UITest {
   }
 };
 
-// Flakiness returned. Re-opened crbug.com/17806
-// TODO(estade): remove flaky label if prospective fix works.
-TEST_F(ShowModalDialogTest, FLAKY_BasicTest) {
+TEST_F(ShowModalDialogTest, BasicTest) {
   FilePath test_file(test_data_directory_);
   test_file = test_file.AppendASCII("showmodaldialog.html");
 
