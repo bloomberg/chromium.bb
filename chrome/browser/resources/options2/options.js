@@ -84,9 +84,6 @@ function load() {
   }
 
   // AdvancedOptions sub-pages.
-  OptionsPage.registerSubPage(PasswordManager.getInstance(),
-                              AdvancedOptions.getInstance(),
-                              [$('manage-passwords')]);
   OptionsPage.registerSubPage(ContentSettings.getInstance(),
                               AdvancedOptions.getInstance(),
                               [$('privacyContentSettingsButton')]);
@@ -180,6 +177,9 @@ function load() {
                               BrowserOptions.getInstance());
   OptionsPage.registerOverlay(ManageProfileOverlay.getInstance(),
                               BrowserOptions.getInstance());
+  OptionsPage.registerOverlay(PasswordManager.getInstance(),
+                              AdvancedOptions.getInstance(),
+                              [$('manage-passwords')]);
   OptionsPage.registerOverlay(SearchEngineManager.getInstance(),
                               BrowserOptions.getInstance(),
                               [$('defaultSearchManageEnginesButton')]);

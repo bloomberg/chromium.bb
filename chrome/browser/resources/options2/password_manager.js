@@ -58,6 +58,10 @@ cr.define('options', function() {
     initializePage: function() {
       OptionsPage.prototype.initializePage.call(this);
 
+      $('password-manager-confirm').onclick = function() {
+        OptionsPage.closeOverlay();
+      };
+
       $('password-search-box').addEventListener('search',
           this.handleSearchQueryChange_.bind(this));
 
