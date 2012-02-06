@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+option optimize_for = LITE_RUNTIME;
+
 // This protobuf is intended to be used by powerd to communicate with the
 // browser. Perdiodically the browser requests the current power state of the
 // system by sending a request for all power supply properties. This structure
