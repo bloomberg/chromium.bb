@@ -177,7 +177,7 @@ TEST_F(AutomatedUITestBase, FLAKY_OpenBrowserWindow) {
 }
 
 // Flaky, see http://crbug.com/96039.
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_MACOSX)
 #define MAYBE_CloseBrowserWindow FLAKY_CloseBrowserWindow
 #else
 #define MAYBE_CloseBrowserWindow CloseBrowserWindow
@@ -297,7 +297,14 @@ TEST_F(AutomatedUITestBase, MAYBE_OpenCloseBrowserWindowWithAccelerator) {
   ASSERT_EQ(1, num_browser_windows);
 }
 
-TEST_F(AutomatedUITestBase, Navigate) {
+// Flaky, see http://crbug.com/96039.
+#if defined(OS_MACOSX)
+#define MAYBE_Navigate FLAKY_Navigate
+#else
+#define MAYBE_Navigate Navigate
+#endif
+
+TEST_F(AutomatedUITestBase, MAYBE_Navigate) {
   FilePath path_prefix(test_data_directory_.AppendASCII("session_history"));
   GURL url1(net::FilePathToFileURL(path_prefix.AppendASCII("bot1.html")));
   GURL url2(net::FilePathToFileURL(path_prefix.AppendASCII("bot2.html")));
