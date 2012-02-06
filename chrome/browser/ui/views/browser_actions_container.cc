@@ -457,13 +457,8 @@ void BrowserActionsContainer::CreateBrowserActionViews() {
 }
 
 void BrowserActionsContainer::DeleteBrowserActionViews() {
-  if (!browser_action_views_.empty()) {
-    for (size_t i = 0; i < browser_action_views_.size(); ++i)
-      RemoveChildView(browser_action_views_[i]);
-    STLDeleteContainerPointers(browser_action_views_.begin(),
-                               browser_action_views_.end());
-    browser_action_views_.clear();
-  }
+  HidePopup();
+  STLDeleteElements(&browser_action_views_);
 }
 
 void BrowserActionsContainer::OnBrowserActionVisibilityChanged() {
@@ -795,8 +790,11 @@ void BrowserActionsContainer::OnWidgetClosing(views::Widget* widget) {
   DCHECK_EQ(popup_->GetWidget(), widget);
   popup_->GetWidget()->RemoveObserver(this);
   popup_ = NULL;
-  popup_button_->SetButtonNotPushed();
-  popup_button_ = NULL;
+  // |popup_button_| is NULL if the extension has been removed.
+  if (popup_button_) {
+    popup_button_->SetButtonNotPushed();
+    popup_button_ = NULL;
+  }
 }
 
 void BrowserActionsContainer::MoveBrowserAction(const std::string& extension_id,
@@ -810,8 +808,11 @@ void BrowserActionsContainer::MoveBrowserAction(const std::string& extension_id,
 }
 
 void BrowserActionsContainer::HidePopup() {
-  if (popup_)
+  if (popup_) {
     popup_->GetWidget()->Close();
+    // NULL out popup_button_ in case it's being deleted.
+    popup_button_ = NULL;
+  }
 }
 
 void BrowserActionsContainer::TestExecuteBrowserAction(int index) {
@@ -936,7 +937,6 @@ void BrowserActionsContainer::BrowserActionRemoved(const Extension* extension) {
   for (BrowserActionViews::iterator iter = browser_action_views_.begin();
        iter != browser_action_views_.end(); ++iter) {
     if ((*iter)->button()->extension() == extension) {
-      RemoveChildView(*iter);
       delete *iter;
       browser_action_views_.erase(iter);
 
