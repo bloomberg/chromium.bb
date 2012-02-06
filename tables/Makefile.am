@@ -69,6 +69,7 @@ table_files = \
 	en-us-mathtext.ctb \
 	eo.ctb \
 	es-chardefs.cti \
+	Es-Es-G0.utb \
 	Es-Es-g1.utb \
 	es-g1.ctb \
 	es-new.dis \

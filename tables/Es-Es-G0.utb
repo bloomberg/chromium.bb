@@ -1,0 +1,180 @@
+# liblouis: Computer Spanish 8 dots Braille table
+#
+#  Copyright (C) 2012 by José Enrique Fernández del Campo and Juan Carlos Buño Suárez <quetzatl@eresmas.net>
+#
+#  This file is part of liblouis.
+#
+#  liblouis is free software: you can redistribute it and/or modify it
+#  under the terms of the GNU Lesser General Public License as
+#  published by the Free Software Foundation, either version 3 of the
+#  License, or (at your option) any later version.
+#
+#  liblouis is distributed in the hope that it will be useful, but
+#  WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+#  Lesser General Public License for more details.
+#
+#  You should have received a copy of the GNU Lesser General Public
+#  License along with liblouis. If not, see
+#  <http://www.gnu.org/licenses/>.
+#
+# -----------------------------------------------------------------------------
+
+# Uncontracted Computer Spanish Table
+# Autor José Enrique Fernández del Campo and Juan Carlos Buño Suárez <quetzatl@eresmas.net>
+# -----------------------------------------------------------------------------
+
+
+space \s 0      			# blank 32
+space \t 9              # tab 9
+space \x001B 1b         # escape
+space \x000A 0          # lf
+space \x000D 0          # cr
+space \X00A0 0          # Espacio de no separación
+
+digit 0 34678				cero
+digit 1 16					uno
+digit 2 126					dos
+digit 3 146					tres
+digit 4 1456				cuatro
+digit 5 156					cinco
+digit 6 1246				seis
+digit 7 12456				siete
+digit 8 1256				ocho
+digit 9 246					nueve
+
+uplow Aa 17,1				letra a		x0041 / 0061
+uplow Bb 127,12				letra b		x0042 / 0062
+uplow Cc 147,14				letra c
+uplow Dd 1457,145			letra d
+uplow Ee 157,15				letra e
+uplow Ff 1247,124			letra f
+uplow Gg 12457,1245			letra g
+uplow Hh 1257,125			letra h
+uplow Ii 247,24				letra i
+uplow Jj 2457,245			letra j
+uplow Kk 137,13				letra k
+uplow Ll 1237,123			letra l
+uplow Mm 1347,134			letra m
+uplow Nn 13457,1345			letra n
+uplow Oo 1357,135			letra o
+uplow Pp 12347,1234			letra p
+uplow Qq 123457,12345		letra q
+uplow Rr 12357,1235			letra r
+uplow Ss 2347,234			letra s
+uplow Tt 23457,2345			letra t
+uplow Uu 1367,136			letra u
+uplow Vv 12367,1236			letra v
+uplow Ww 24567,2456				letra w							x0057 / 0077
+uplow Xx 13467,1346			letra x
+uplow Yy 134567,13456		letra y
+uplow Zz 13567,1356			letra z						x005A / 007A
+uplow \x00c7\x00e7 1234678,123468		c cedilla
+uplow \x00c1\x00e1 123567,12356     a con acento
+uplow \x00c9\x00e9 23467,2346		e con acento
+uplow \x00cd\x00ed 347,34     i con acento
+uplow \x00d3\x00f3 3467,346     o con acento
+uplow \x00da\x00fa 234567,23456     u con acento
+uplow \x00c0\x00e0 1235678,123568		a grave
+uplow \x00c8\x00e8 234678,23468			e grave
+uplow \x00cc\x00ec 345,348     i grave
+uplow \x00d2\x00f2 2458,3468     o grave
+uplow \x00d9\x00f9 2345678,234568		u grave
+uplow \x00c2\x00e2 178,18				a con acento circunflejo
+uplow \x00ca\x00ea 1578,158			e con acento circunflejo
+uplow \x00ce\x00ee 2478,248			i con acento circunflejo
+uplow \x00d4\x00f4 13578,1358			o con acento circunflejo
+uplow \x00db\x00fb 13678,1368			u con acento circunflejo
+uplow \x00c4\x00f4 34578,3458       a con diéresis
+uplow \x00cb\x00eb 124678,12468			e con diéresis
+uplow \x00cf\x00ef 1245678,258		i con diéresis
+uplow \x00d6\x00f6 24678,2468         o con diéresis
+uplow \x00dc\x00fc 125678,12568			u con diéresis
+uplow \x009F\x00FF 367,67     y griega con diéresis
+
+uplow \x00B4\x00B8 135678,13568     z avec caron
+uplow \x008C\x009C 1468,1238     oe
+uplow \x00C3\x00E3 3567,168     a con tilde
+uplow \x00D5\x00F5 12458,4567     o con tilde
+
+punctuation , 2			coma
+punctuation ; 23		punto y coma
+punctuation : 25		dos puntos
+punctuation - 36		guión
+punctuation . 3		punto
+punctuation ? 26		cerrar interrogación
+punctuation ! 2357		cerrar admiración
+punctuation " 56 	comillas
+punctuation ( 1268		abre paréntesis
+punctuation ) 3457		cierra paréntesis
+punctuation ' 4			apóstrofo
+punctuation \x00ab 238		comillas angulares izquierda
+punctuation \x00bb 567		comillas angulares derecha
+punctuation [ 2367		abre corchetes
+punctuation ] 3568	 	cierra corchetes
+punctuation { 46			abre llave
+punctuation } 35			cierra llave
+
+sign * 256						asterisco
+sign \\ 123456						barra invertida
+sign @ 5					arroba
+sign % 456					por ciento
+sign _ 6								subrayado
+sign # 3456					signo de número
+sign ^ 45					circunflejo
+sign \X007E   57     #126 ~    tilde
+sign \X007C 4568   # barra vertical
+sign \X007F 7   # borrar
+sign \x00a1 23578   # abrir admiración
+sign \X00A6 478   # barra vertical cortada
+sign \X00A7 167   # sección
+sign \X00A8 268   # diéresis
+sign \X00A9 23567   # copyright
+sign \X00AC 2567   # not sign
+sign \X00AD 2358   # soft hyphen
+sign \X00AE 2368   # registrado
+sign \X00AF 24568   # macron
+sign \X00B1 12467   # más-menos
+sign \X00B5 13468   # mu
+sign \X00B6 14567   # párrafo
+sign \X00B7 14678   # punto centrado
+sign \X00B9 237   # Super uno
+sign \X00BA 5678   # ordinal masculino
+sign \X00BF 267   #*abrir interrogación
+sign \X00C5 12368   #*a mayúscula con círculo superescrito
+
+sign \X00D0 13458   # latin capital letter eth
+sign \X00D7 1678   # multiplicado por
+sign \X00D8 34567   # Alfa
+sign \X00DE 123458   # Thorn
+sign \X00DF 128   # Beta
+sign \X00E5 15678   #*a con círculo superescrito
+sign \X00F0 235678   # eth
+sign \X00F7 2578   # dividido por
+sign \X00F8 457   # latin small letter o with stroke
+sign \X00FE 1568   # thorn
+sign \x00A8 268			diéresis
+
+math + 235				más
+math = 2356				igual
+math \x00d7 1678					multiplicado por
+math < 236				menor que
+math > 356				mayor que
+math / 3478						barra oblicua
+math \x00F7 2578		dividido por
+
+sign \x00a9 23567							copyright
+sign \x00b0 8						grado
+sign & 12346					ampersand
+sign \x00a2 12678						centavo
+sign \x00a4 2567						
+sign \x00a3 2378						libra
+sign \x00a7 167					sección
+sign \x0024 123467						dólar
+sign \x00a5 145678					yen
+sign \x00b9 237						super 1
+sign \x00b2 47					al cuadrado
+sign \x00b3 568					al cubo
+sign \x00bc 1467			un cuarto
+sign \x00bd 468			un medio
+sign \x00be 48		tres cuartos

@@ -1,3 +1,8 @@
+2012-02-06  Christian Egli  <christian.egli@sbs.ch>
+
+	* tables/Es-Es-G0.utb: Added Spanish grade0 table provided by José
+	Enrique Fernández del Campo and Juan Carlos Buño Suárez.
+
 2012-02-01  Christian Egli  <christian.egli@sbs.ch>
 
 	* tables/pt-pt-g1.utb: Added improvements to Portuguese table by

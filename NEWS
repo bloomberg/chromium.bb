@@ -8,6 +8,8 @@ liblouis NEWS -- history of user-visible changes.
 
 ** New features
    - Czech hyphenation table thanks to Jan Hegr
+   - Spanish grade 1 table provided by José Enrique Fernández del
+     Campo and Juan Carlos Buño Suárez 
 
 ** Braille Table Improvements
    - Improvements to the Portuguese grade1 braille tables
