@@ -8,8 +8,8 @@
   height: 30px;
   border-radius: 5px;
 
-  padding-left: 5px;
-  padding-right: 5px;
+  padding-left: 15px;
+  padding-right: 15px;
 
   opacity: 0.8;
 
@@ -19,18 +19,21 @@
   -webkit-box-orient: horizontal;
   -webkit-box-align: center;
   -webkit-box-pack: center;
+
+  font-size: 12pt;
+  pointer-events: auto;
 }
 
 .media-controls .media-button {
-  border-radius: 2px;
   cursor: pointer;
-  width: 24px;
-  height: 24px;
+  width: 28px;
+  height: 28px;
   background-repeat: no-repeat;
+  background-position: center center;
 }
 
-.media-controls .media-button:hover {
-  background-color: #808080;
+.media-controls.disabled {
+  pointer-events: none;
 }
 
 /* Custom sliders for progress and volume. */
@@ -39,6 +42,8 @@
 .media-controls .thumb {
   position: absolute;
   -webkit-appearance: none !important;
+  left: -2px;  /* Required to align the input element with the parent. */
+  top: -2px;
   width: 100%;
   height: 100%;
   background: transparent;
@@ -49,23 +54,25 @@
   position: relative;
   -webkit-appearance: none;
   z-index: 2;
-  width: 22px;
-  height: 30px;
-  background-image: url(../../images/gallery/slider_thumb.png);
-  background-position: 3px -2px;
+  height: 24px;
+  background-position: center center;
   background-repeat: no-repeat;
 }
 
-/* Custom slider bar. */
+/* Custom slider bar (we hide the standard one). */
 .media-controls .bar {
   position: absolute;
-  left: 13px;
-  right: 10px;
+  /* In order to match the horizontal position of the standard slider bar
+     left and right must be equal to 1/2 of the thumb icon width. */
   top: 11px;
   bottom: 11px;
   border-top: 1px solid white;
   border-bottom: 1px solid white;
   pointer-events: none;
+}
+
+.media-controls.disabled .bar {
+  border-color: gray;
 }
 
 /* The filled portion of the slider bar to the left of the thumb. */
@@ -78,31 +85,44 @@
   background-color: white;
 }
 
+.media-controls.disabled .filled {
+  background-color: transparent;
+}
+
 /* Rounded caps to the left and right of the slider bar. */
 .media-controls .cap {
   position: absolute;
-  width: 3px;
+  width: 4px;
   top: -1px;
   bottom: -1px;
 }
 
 /* Left cap is always filled, should be the same color as .filled. */
 .media-controls .cap.left {
-  left: -3px;
-  width: 3px;
-  border-top-left-radius: 3px;
-  border-bottom-left-radius: 3px;
+  right: 100%;
+  border-top-left-radius: 4px;
+  border-bottom-left-radius: 4px;
   background: white;
+}
+
+.media-controls.disabled .cap.left {
+  border: 1px solid gray;
+  border-right-style: none;
+  background: transparent;
 }
 
 /* Right cap is always not filled. */
 .media-controls .cap.right {
-  right: -3px;
+  left: 100%;
   border: 1px solid white;
   border-left-style: none;
-  border-top-right-radius: 3px;
-  border-bottom-right-radius: 3px;
+  border-top-right-radius: 4px;
+  border-bottom-right-radius: 4px;
   background: transparent;
+}
+
+.media-controls.disabled .cap.right {
+  border-color: gray;
 }
 
 /* Progress seek marker (precise time shown on mouse hover. */
@@ -114,7 +134,7 @@
   width: 0;
   top: -1px;
   bottom: -1px;
-  background-color: black;
+  background-color: #202020;
 }
 
 .media-controls .seek-mark.visible {
@@ -131,14 +151,16 @@
   left: 0;
   bottom: 20px;
 
+  padding-left: 0.1em;
+  padding-right: 0.1em;
+
   height: 0;
   -webkit-transition: height 0.15s ease;
 
   color: white;
-  background: black;
+  background: #202020;
   border-top-left-radius: 5px;
   border-top-right-radius: 5px;
-  opacity: 0.8;
 
   display: -webkit-box;
   -webkit-box-orient: horizontal;
@@ -154,55 +176,233 @@
 
 /* Media controls in order of appearance. */
 
+/* Play/pause button. */
+
 .media-controls .play {
-  background-image: url(../../images/mediaplayer_play.png);
-  background-position: 7px 5px;
+  margin-left: -6px;
+  margin-right: -6px;
+  background-image: url(../../images/media/media_play.png);
+}
+
+.media-controls .play:hover {
+  background-image: url(../../images/media/media_play_hover.png);
+}
+
+.media-controls .play:active {
+  background-image: url(../../images/media/media_play_down.png);
+}
+
+.media-controls.disabled .play {
+  background-image: url(../../images/media/media_play_disabled.png);
 }
 
 .media-controls .play.playing {
-  background-image: url(../../images/mediaplayer_pause.png);
-  background-position: 7px 5px;
+  background-image: url(../../images/media/media_pause.png);
 }
+
+.media-controls .play.playing:hover {
+  background-image: url(../../images/media/media_pause_hover.png);
+}
+
+.media-controls .play.playing:active {
+  background-image: url(../../images/media/media_pause_down.png);
+}
+
+.media-controls.disabled .play.playing {
+  background-image: url(../../images/media/media_pause_disabled.png);
+}
+
+/* Progress slider. */
 
 .media-controls .progress {
   position: relative;
   height: 100%;
   display: -webkit-box;
   -webkit-box-flex: 1;
+  /* These margins correspond to 15px effective margins. */
+  margin-left: 6px;
+  margin-right: 6px;
 }
 
-.media-controls .current-time {
+.media-controls .progress.readonly {
+  pointer-events: none;
+}
+
+.media-controls .progress .thumb::-webkit-slider-thumb {
+  width: 28px;
+  background-image: url(../../images/media/media_slider_thumb.png);
+}
+
+.media-controls .progress .thumb::-webkit-slider-thumb:hover {
+  background-image: url(../../images/media/media_slider_thumb_hover.png);
+}
+
+.media-controls .progress .thumb::-webkit-slider-thumb:active {
+  background-image: url(../../images/media/media_slider_thumb_down.png);
+}
+
+.media-controls.disabled .progress .thumb::-webkit-slider-thumb {
+  background-image: url(../../images/media/media_slider_thumb_disabled.png);
+}
+
+.media-controls .progress .bar {
+  left: 14px;  /* Exactly 1/2 of the thumb width */
+  right: 14px;
+}
+
+/* Time display. */
+
+.media-controls .time {
+  position: relative;
+  height: 100%;
+}
+
+/* Invisible div used to compute the width required for the elapsed time. */
+.media-controls .time > .duration {
+  color: transparent;
+}
+
+.media-controls .time > .current {
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
   display: -webkit-box;
   -webkit-box-orient: horizontal;
   -webkit-box-align: center;
   -webkit-box-pack: end;
   color: white;
-  padding-left: 4px;
-  padding-right: 4px;
 }
+
+.media-controls.disabled .time > .current {
+  color: transparent;
+}
+
+/* Sound button */
 
 .media-controls .sound {
-  background-image: url(../../images/mediaplayer_vol_high.png);
-  background-position: 2px 5px;
+  margin-left: 11px;
+  margin-right: -2px;
+  background-position: -2px center;
 }
 
-.media-controls .sound.muted {
-  background-image: url(../../images/mediaplayer_vol_mute.png);
-  background-position: 2px 5px;
+
+.media-controls .sound[level='0'] {
+  background-image: url(../../images/media/media_sound_disabled.png);
 }
+
+.media-controls .sound[level='0']:hover {
+  background-image: url(../../images/media/media_sound_disabled_hover.png);
+}
+
+.media-controls .sound[level='0']:active {
+  background-image: url(../../images/media/media_sound_disabled_down.png);
+}
+
+.media-controls.disabled .sound[level='0'] {
+  background-image: url(../../images/media/media_sound_disabled_disabled.png);
+}
+
+
+.media-controls .sound[level='1'] {
+  background-image: url(../../images/media/media_sound_level1.png);
+}
+
+.media-controls .sound[level='1']:hover {
+  background-image: url(../../images/media/media_sound_level1_hover.png);
+}
+
+.media-controls .sound[level='1']:active {
+  background-image: url(../../images/media/media_sound_level1_down.png);
+}
+
+.media-controls.disabled .sound[level='1'] {
+  background-image: url(../../images/media/media_sound_level1_disabled.png);
+}
+
+
+.media-controls .sound[level='2'] {
+  background-image: url(../../images/media/media_sound_level2.png);
+}
+
+.media-controls .sound[level='2']:hover {
+  background-image: url(../../images/media/media_sound_level2_hover.png);
+}
+
+.media-controls .sound[level='2']:active {
+  background-image: url(../../images/media/media_sound_level2_down.png);
+}
+
+.media-controls.disabled .sound[level='2'] {
+  background-image: url(../../images/media/media_sound_level2_disabled.png);
+}
+
+
+.media-controls .sound[level='3'] {
+  background-image: url(../../images/media/media_sound_full.png);
+}
+
+.media-controls .sound[level='3']:hover {
+  background-image: url(../../images/media/media_sound_full_hover.png);
+}
+
+.media-controls .sound[level='3']:active {
+  background-image: url(../../images/media/media_sound_full_down.png);
+}
+
+.media-controls.disabled .sound[level='3'] {
+  background-image: url(../../images/media/media_sound_full_disabled.png);
+}
+
+/* Volume slider. */
 
 .media-controls .volume {
   position: relative;
   height: 100%;
-  width: 80px;
+  width: 60px;
+  margin-left: -4px;
+  margin-right: -4px;
 }
+
+.media-controls .volume .thumb::-webkit-slider-thumb {
+  width: 20px;
+  background-image: url(../../images/media/media_volume_slider_thumb.png);
+}
+
+.media-controls .volume .thumb::-webkit-slider-thumb:hover {
+  background-image: url(../../images/media/media_volume_slider_thumb_hover.png);
+}
+
+.media-controls .volume .thumb::-webkit-slider-thumb:active {
+  background-image: url(../../images/media/media_volume_slider_thumb_down.png);
+}
+
+.media-controls.disabled .volume .thumb::-webkit-slider-thumb {
+  background-image: url(../../images/media/media_volume_slider_thumb_disabled.png);
+}
+
+.media-controls .volume .bar {
+  left: 10px;  /* Exactly 1/2 of the thumb width */
+  right: 10px;
+}
+
+/* Fullscreen button. */
+/* There is no final decision whether we need a separate icon when toggled. */
 
 .media-controls .fullscreen {
-  background-image: url(../../images/mediaplayer_full_screen.png);
-  background-position: 4px 4px;
+  margin-left: 9px;
+  margin-right: -6px;
+  background-image: url(../../images/media/media_fullscreen.png);
 }
 
-body:-webkit-full-screen .media-controls .fullscreen {
-  background-image: url(../../images/mediaplayer_full_screen_exit.png);
-  background-position: 4px 4px;
+.media-controls .fullscreen:hover {
+  background-image: url(../../images/media/media_fullscreen_hover.png);
+}
+
+.media-controls .fullscreen:active {
+  background-image: url(../../images/media/media_fullscreen_down.png);
+}
+
+.media-controls.disabled .fullscreen {
+  background-image: url(../../images/media/media_fullscreen_disabled.png);
 }

@@ -10,9 +10,10 @@
 /**
  * @param {HTMLElement} containerElement The container for the controls.
  * @param {function} fullScreenToggle Function to toggle the fullscreen mode.
+ * @param {function} onMediaError Function to display an error message.
  * @constructor
  */
-function MediaControls(containerElement, fullScreenToggle) {
+function MediaControls(containerElement, fullScreenToggle, onMediaError) {
   this.container_ = containerElement;
   this.document_ = this.container_.ownerDocument;
   this.media_ = null;
@@ -23,7 +24,7 @@ function MediaControls(containerElement, fullScreenToggle) {
   this.onMediaPauseBound_ = this.onMediaPlay_.bind(this, false);
   this.onMediaDurationBound_ = this.onMediaDuration_.bind(this);
   this.onMediaProgressBound_ = this.onMediaProgress_.bind(this);
-  this.onMediaErrorBound_ = this.onMediaError_.bind(this);
+  this.onMediaError_ = onMediaError || function(){};
 }
 
 MediaControls.prototype.play = function() {
@@ -119,8 +120,17 @@ MediaControls.prototype.setupPlaybackControls_ = function(fullScreenToggle) {
   this.seekLabel_.className = 'seek-label';
   this.seekMark_.appendChild(this.seekLabel_);
 
-  this.currentTime_ = this.createControl_('current-time');
-  this.currentTime_.textContent = MediaControls.formatTime_(0);
+  var timeBox = this.createControl_('time');
+
+  this.duration_ = this.document_.createElement('div');
+  this.duration_.className = 'duration';
+  // Set the initial width to the minimum to reduce the flicker.
+  this.duration_.textContent = MediaControls.formatTime_(0);
+  timeBox.appendChild(this.duration_);
+
+  this.currentTime_ = this.document_.createElement('div');
+  this.currentTime_.className = 'current';
+  timeBox.appendChild(this.currentTime_);
 
   this.soundButton_ = this.createButton_(
       'sound', this.onSoundButtonClick_.bind(this));
@@ -156,12 +166,15 @@ MediaControls.prototype.togglePlayState = function() {
 };
 
 MediaControls.prototype.onProgressChange_ = function () {
-// TODO(kaznacheev): Handle !this.media_.seekable in a meaningful manner.
-  if (this.media_.seekable && this.media_.duration) {
-    var current = this.media_.duration * this.progress_.getValue();
-    this.media_.currentTime = current;
-    this.currentTime_.textContent = MediaControls.formatTime_(current);
+  if (!this.media_.seekable || !this.media_.duration) {
+    console.error("Inconsistent media state");
+    return;
   }
+
+  var current = this.media_.duration * this.progress_.getValue();
+  this.media_.currentTime = current;
+  this.currentTime_.textContent = MediaControls.formatTime_(current);
+
   if (this.progressDragStatus_) {
     this.showSeekMark_(this.progress_.getValue());
   }
@@ -175,7 +188,12 @@ MediaControls.prototype.onProgressMouseDown_ = function () {
   this.showSeekMark_(this.progress_.getValue());
 };
 
-MediaControls.prototype.onProgressMouseUp_ = function () {
+MediaControls.prototype.onProgressMouseUp_ = function (e) {
+  // Just finished dragging.
+  // Show the label for the last time with a shorter timeout.
+  this.showSeekMark_(this.progress_.getProportion(e.clientX), 750);
+  this.latestMouseUpTime_ = Date.now();
+
   var dragStatus = this.progressDragStatus_;
   this.progressDragStatus_ = null;
   if (!dragStatus.paused) {
@@ -192,7 +210,7 @@ MediaControls.prototype.onProgressMouseMove_ = function (e) {
   var self = this;
   function showMark() {
     if (!self.progressDragStatus_) {
-      self.showSeekMark_(self.latestSeekRatio_);
+      self.showSeekMark_(self.latestSeekRatio_, 2500);
     }
   }
 
@@ -216,7 +234,18 @@ MediaControls.prototype.onProgressMouseOut_ = function (e) {
   this.hideSeekMark_();
 };
 
-MediaControls.prototype.showSeekMark_ = function (ratio) {
+/**
+ * Show the time above the slider.
+ *
+ * @param {number} ratio [0..1] The proportion of the duration.
+ * @param {number=} opt_timeout Timeout in ms after which the label
+ *   should be hidden. Do not hide if 0 or undefined.
+ */
+MediaControls.prototype.showSeekMark_ = function (ratio, opt_timeout) {
+  // Do not update the seek mark for the first 500ms after the drag is finished.
+  if (this.latestMouseUpTime_ && (this.latestMouseUpTime_ + 500 > Date.now()))
+    return;
+
   this.seekMark_.style.left = ratio * 100 + '%';
 
   if (ratio < this.media_.currentTime / this.media_.duration) {
@@ -233,7 +262,10 @@ MediaControls.prototype.showSeekMark_ = function (ratio) {
     clearTimeout(this.seekMarkTimer_);
     this.seekMarkTimer_ = null;
   }
-  this.seekMarkTimer_ = setTimeout(this.hideSeekMark_.bind(this), 3000);
+  if (opt_timeout) {
+    this.seekMarkTimer_ =
+        setTimeout(this.hideSeekMark_.bind(this), opt_timeout);
+  }
 };
 
 MediaControls.prototype.hideSeekMark_ = function () {
@@ -251,15 +283,18 @@ MediaControls.prototype.onSoundButtonClick_ = function() {
   this.onVolumeChange_();
 };
 
+MediaControls.getVolumeLevel_ = function (value) {
+  if (value == 0) return 0;
+  if (value <= 1/3) return 1;
+  if (value <= 2/3) return 2;
+  return 3;
+};
+
 MediaControls.prototype.onVolumeChange_ = function () {
   var value = this.volume_.getValue();
   this.media_.volume = value;
   this.volume_.setFilled(value);
-  if (value != 0) {
-    this.soundButton_.classList.remove('muted');
-  } else {
-    this.soundButton_.classList.add('muted');
-  }
+  this.soundButton_.setAttribute('level', MediaControls.getVolumeLevel_(value));
 };
 
 MediaControls.prototype.onVolumeMouseDown_ = function () {
@@ -282,13 +317,15 @@ MediaControls.prototype.attachMedia = function(mediaElement) {
   this.media_.addEventListener('pause', this.onMediaPauseBound_);
   this.media_.addEventListener('durationchange', this.onMediaDurationBound_);
   this.media_.addEventListener('timeupdate', this.onMediaProgressBound_);
-  this.media_.addEventListener('error', this.onMediaErrorBound_);
+  this.media_.addEventListener('error', this.onMediaError_);
 
   // Reset the UI.
   this.playButton_.classList.remove('playing');
   this.displayProgress_(0, 1);
   this.volume_.setValue(this.media_.volume);
   this.onVolumeChange_();
+
+  this.container_.classList.add('disabled');
 };
 
 /**
@@ -302,7 +339,7 @@ MediaControls.prototype.detachMedia = function() {
   this.media_.removeEventListener('pause', this.onMediaPauseBound_);
   this.media_.removeEventListener('durationchange', this.onMediaDurationBound_);
   this.media_.removeEventListener('timeupdate', this.onMediaProgressBound_);
-  this.media_.removeEventListener('error', this.onMediaErrorBound_);
+  this.media_.removeEventListener('error', this.onMediaError_);
 
   this.media_ = null;
 };
@@ -321,11 +358,17 @@ MediaControls.prototype.onMediaDuration_ = function() {
   if (!this.media_.duration)
     return;
 
-  var length = MediaControls.formatTime_(this.media_.duration).length;
-  var width = (length + 1) / 2;
-  this.currentTime_.style.width = width + 'em';
-  this.seekLabel_.style.width = width + 'em';
-  this.seekLabel_.style.marginLeft = -width/2 + 'em';
+  this.container_.classList.remove('disabled');
+
+  if (!this.media_.seekable) {
+    this.progress_.getContainer().classList.add('readonly');
+  }
+
+  this.duration_.textContent = MediaControls.formatTime_(this.media_.duration);
+
+  var labelWidth = this.duration_.textContent.length / 2;
+  this.seekLabel_.style.width = labelWidth + 'em';
+  this.seekLabel_.style.marginLeft = -labelWidth/2 + 'em';
 };
 
 MediaControls.prototype.onMediaProgress_ = function(e) {
@@ -345,10 +388,6 @@ MediaControls.prototype.onMediaProgress_ = function(e) {
   if (current == duration) {
     this.onMediaComplete_();
   }
-};
-
-MediaControls.prototype.onMediaError_ = function(e) {
-// TODO: process the error
 };
 
 MediaControls.prototype.onMediaComplete_ = function(e) {
