@@ -92,6 +92,11 @@ message DeviceReportingProto {
   optional bool report_boot_mode = 3;
 }
 
+message EphemeralUsersProto {
+  // Determines whether users should be treated as ephemeral.
+  optional bool ephemeral_users = 1;
+}
+
 message ChromeDeviceSettingsProto {
   optional DevicePolicyRefreshRateProto device_policy_refresh_rate = 1;
   optional UserWhitelistProto user_whitelist = 2;
@@ -105,4 +110,5 @@ message ChromeDeviceSettingsProto {
   optional ReleaseChannelProto release_channel = 10;
   optional DeviceOpenNetworkConfigurationProto open_network_configuration = 11;
   optional DeviceReportingProto device_reporting = 12;
+  optional EphemeralUsersProto ephemeral_users = 13;
 }
