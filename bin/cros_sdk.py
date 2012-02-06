@@ -28,8 +28,7 @@ SDK_VERSION_FILE = os.path.join(OVERLAY_DIR,
                                 'chromeos/binhost/host/sdk_version.conf')
 
 # TODO(zbehan): Remove the dependency on these, reimplement them in python
-MAKE_CHROOT = [os.path.join(OVERLAY_DIR, 'chromeos/scripts/make_chroot'),
-               '--cros_sdk']
+MAKE_CHROOT = [os.path.join(SRC_ROOT, 'src/scripts/sdk_lib/make_chroot.sh')]
 ENTER_CHROOT = [os.path.join(SRC_ROOT, 'src/scripts/sdk_lib/enter_chroot.sh')]
 
 # We need these tools to run. Very common tools (tar,..) are ommited.
