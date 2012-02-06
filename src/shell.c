@@ -1397,7 +1397,7 @@ map(struct weston_shell *base,
 
 static void
 configure(struct weston_shell *base, struct weston_surface *surface,
-	  int32_t x, int32_t y, int32_t width, int32_t height)
+	  GLfloat x, GLfloat y, int32_t width, int32_t height)
 {
 	struct wl_shell *shell = container_of(base, struct wl_shell, shell);
 	int do_configure = !shell->locked;

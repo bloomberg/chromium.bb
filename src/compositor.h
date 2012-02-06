@@ -128,7 +128,7 @@ struct weston_shell {
 		    int32_t width, int32_t height);
 	void (*configure)(struct weston_shell *shell,
 			  struct weston_surface *surface,
-			  int32_t x, int32_t y, int32_t width, int32_t height);
+			  GLfloat x, GLfloat y, int32_t width, int32_t height);
 	void (*destroy)(struct weston_shell *shell);
 };
 
@@ -228,7 +228,7 @@ struct weston_surface {
 	 * That includes the transformations referenced from the list.
 	 */
 	struct {
-		int32_t x, y; /* surface translation on display */
+		GLfloat x, y; /* surface translation on display */
 		int32_t width, height;
 
 		/* struct weston_transform */
@@ -372,7 +372,7 @@ weston_surface_create(struct weston_compositor *compositor);
 
 void
 weston_surface_configure(struct weston_surface *surface,
-			 int x, int y, int width, int height);
+			 GLfloat x, GLfloat y, int width, int height);
 
 void
 weston_surface_assign_output(struct weston_surface *surface);

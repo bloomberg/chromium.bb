@@ -311,12 +311,10 @@ weston_surface_update_transform(struct weston_surface *surface)
 			     &surface->transform.boundingbox);
 }
 
-WL_EXPORT void
-weston_surface_to_global(struct weston_surface *surface,
-			 int32_t sx, int32_t sy, int32_t *x, int32_t *y)
+static void
+surface_to_global_float(struct weston_surface *surface,
+			int32_t sx, int32_t sy, GLfloat *x, GLfloat *y)
 {
-	weston_surface_update_transform(surface);
-
 	if (surface->transform.enabled) {
 		struct weston_vector v = { { sx, sy, 0.0f, 1.0f } };
 
@@ -331,12 +329,25 @@ weston_surface_to_global(struct weston_surface *surface,
 			return;
 		}
 
-		*x = floorf(v.f[0] / v.f[3]);
-		*y = floorf(v.f[1] / v.f[3]);
+		*x = v.f[0] / v.f[3];
+		*y = v.f[1] / v.f[3];
 	} else {
 		*x = sx + surface->geometry.x;
 		*y = sy + surface->geometry.y;
 	}
+}
+
+WL_EXPORT void
+weston_surface_to_global(struct weston_surface *surface,
+			 int32_t sx, int32_t sy, int32_t *x, int32_t *y)
+{
+	GLfloat xf, yf;
+
+	weston_surface_update_transform(surface);
+
+	surface_to_global_float(surface, sx, sy, &xf, &yf);
+	*x = floorf(xf);
+	*y = floorf(yf);
 }
 
 static void
@@ -449,7 +460,7 @@ weston_surface_flush_damage(struct weston_surface *surface)
 
 WL_EXPORT void
 weston_surface_configure(struct weston_surface *surface,
-			 int x, int y, int width, int height)
+			 GLfloat x, GLfloat y, int width, int height)
 {
 	weston_surface_damage_below(surface);
 
@@ -1100,12 +1111,11 @@ surface_attach(struct wl_client *client,
 	} else if (sx != 0 || sy != 0 ||
 		   es->geometry.width != buffer->width ||
 		   es->geometry.height != buffer->height) {
-		int32_t from_x, from_y;
-		int32_t to_x, to_y;
+		GLfloat from_x, from_y;
+		GLfloat to_x, to_y;
 
-		/* FIXME: this has serious cumulating rounding errors */
-		weston_surface_to_global(es, 0, 0, &from_x, &from_y);
-		weston_surface_to_global(es, sx, sy, &to_x, &to_y);
+		surface_to_global_float(es, 0, 0, &from_x, &from_y);
+		surface_to_global_float(es, sx, sy, &to_x, &to_y);
 		shell->configure(shell, es,
 				 es->geometry.x + to_x - from_x,
 				 es->geometry.y + to_y - from_y,
