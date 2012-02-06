@@ -32,8 +32,6 @@
         'client/activation_delegate.h',
         'client/aura_constants.cc',
         'client/aura_constants.h',
-	'client/dispatcher_client.cc',
-	'client/dispatcher_client.h',
         'client/drag_drop_client.cc',
         'client/drag_drop_client.h',
         'client/drag_drop_delegate.cc',
