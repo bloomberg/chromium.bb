@@ -1,1 +1,0 @@
-@..\..\tools\make.exe %*
