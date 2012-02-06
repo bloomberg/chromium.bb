@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -71,14 +71,7 @@ class FindInPageTest : public InProcessBrowserTest {
 
 }  // namespace
 
-// Flaky, see crbug.com/109906.
-#if defined(TOOLKIT_USES_GTK) || defined(USE_AURA)
-#define MAYBE_CrashEscHandlers FLAKY_CrashEscHandlers
-#else
-#define MAYBE_CrashEscHandlers CrashEscHandlers
-#endif
-
-IN_PROC_BROWSER_TEST_F(FindInPageTest, MAYBE_CrashEscHandlers) {
+IN_PROC_BROWSER_TEST_F(FindInPageTest, CrashEscHandlers) {
   ASSERT_TRUE(test_server()->Start());
 
   // First we navigate to our test page (tab A).
