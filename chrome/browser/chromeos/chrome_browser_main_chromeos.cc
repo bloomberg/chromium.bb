@@ -347,9 +347,6 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
   std::string gtkrc = l10n_util::GetStringUTF8(IDS_LOCALE_GTKRC);
   if (!gtkrc.empty())
     gtk_rc_parse_string(gtkrc.c_str());
-#else
-  // TODO(saintlou): Need to provide an Aura equivalent.
-  NOTIMPLEMENTED();
 #endif
 
   // Trigger prefetching of ownership status.
