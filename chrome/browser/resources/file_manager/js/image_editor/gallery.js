@@ -336,6 +336,10 @@ Gallery.prototype.onFilenameEditKeydown_ = function() {
       break;
 
     case 13:  // Enter
+      if (this.filenameEdit_.value && this.filenameEdit_.value[0] == '.') {
+        this.editor_.getPrompt().show('file_hidden_name', 5000);
+        break;
+      }
       if (this.filenameEdit_.value) {
         this.renameItem_(this.ribbon_.getSelectedItem(),
             this.filenameEdit_.value);
