@@ -44,6 +44,7 @@
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/interstitial_page.h"
 #include "content/public/browser/favicon_status.h"
+#include "content/public/browser/interstitial_page_delegate.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
@@ -153,15 +154,24 @@ void RunCloseWithAppMenuCallback(Browser* browser) {
 // Displays "INTERSTITIAL" while the interstitial is attached.
 // (InterstitialPage can be used in a test directly, but there would be no way
 // to visually tell if it is showing or not.)
-class TestInterstitialPage : public InterstitialPage {
+class TestInterstitialPage : public content::InterstitialPageDelegate {
  public:
-  TestInterstitialPage(WebContents* tab, bool new_navigation, const GURL& url)
-      : InterstitialPage(tab, new_navigation, url) { }
+  TestInterstitialPage(WebContents* tab, bool new_navigation, const GURL& url) {
+    interstitial_page_ = InterstitialPage::Create(
+        tab, new_navigation, url , this);
+    interstitial_page_->Show();
+  }
   virtual ~TestInterstitialPage() { }
+  void Proceed() {
+    interstitial_page_->Proceed();
+  }
 
   virtual std::string GetHTMLContents() OVERRIDE {
     return "<h1>INTERSTITIAL</h1>";
   }
+
+ private:
+  InterstitialPage* interstitial_page_;  // Owns us.
 };
 
 }  // namespace
@@ -1358,7 +1368,6 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, InterstitialCommandDisable) {
   ui_test_utils::WindowedNotificationObserver interstitial_observer(
       content::NOTIFICATION_INTERSTITIAL_ATTACHED,
       content::Source<WebContents>(contents));
-  interstitial->Show();
   interstitial_observer.Wait();
 
   EXPECT_TRUE(contents->ShowingInterstitialPage());

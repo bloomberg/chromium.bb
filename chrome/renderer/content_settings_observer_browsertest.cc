@@ -345,7 +345,7 @@ TEST_F(ChromeRenderViewTest, ContentSettingsInterstitialPages) {
 
   ContentSettingsObserver* observer = ContentSettingsObserver::Get(view_);
   observer->SetContentSettingRules(&content_setting_rules);
-  observer->SetAsInterstitial();
+  observer->OnSetAsInterstitial();
 
   // Load a page which contains a script.
   std::string html = "<html>"

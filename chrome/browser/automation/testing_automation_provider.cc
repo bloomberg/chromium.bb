@@ -125,6 +125,7 @@
 #include "content/public/browser/browser_child_process_host_iterator.h"
 #include "content/public/browser/child_process_data.h"
 #include "content/public/browser/favicon_status.h"
+#include "content/public/browser/interstitial_page_delegate.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/plugin_service.h"
@@ -195,19 +196,21 @@ void SendMouseClick(int flags) {
   ui_controls::SendMouseClick(button);
 }
 
-class AutomationInterstitialPage : public InterstitialPage {
+class AutomationInterstitialPage : public content::InterstitialPageDelegate {
  public:
   AutomationInterstitialPage(WebContents* tab,
                              const GURL& url,
                              const std::string& contents)
-      : InterstitialPage(tab, true, url),
-        contents_(contents) {
+      : contents_(contents) {
+    interstitial_page_ = InterstitialPage::Create(tab, true, url, this);
+    interstitial_page_->Show();
   }
 
-  virtual std::string GetHTMLContents() { return contents_; }
+  virtual std::string GetHTMLContents() OVERRIDE { return contents_; }
 
  private:
   const std::string contents_;
+  InterstitialPage* interstitial_page_;  // Owns us.
 
   DISALLOW_COPY_AND_ASSIGN(AutomationInterstitialPage);
 };
@@ -1586,11 +1589,8 @@ void TestingAutomationProvider::ShowInterstitialPage(
     new NavigationNotificationObserver(controller, this, reply_message, 1,
                                        false, false);
 
-    AutomationInterstitialPage* interstitial =
-        new AutomationInterstitialPage(web_contents,
-                                       GURL("about:interstitial"),
-                                       html_text);
-    interstitial->Show();
+    new AutomationInterstitialPage(
+        web_contents, GURL("about:interstitial"), html_text);
     return;
   }
 

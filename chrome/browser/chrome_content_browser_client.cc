@@ -329,6 +329,12 @@ void ChromeContentBrowserClient::RenderViewHostCreated(
   new ChromeRenderViewHostObserver(render_view_host,
                                    profile->GetNetworkPredictor());
   new ExtensionMessageHandler(render_view_host);
+
+  if (render_view_host->delegate()->GetRenderViewType() ==
+      content::VIEW_TYPE_INTERSTITIAL_PAGE) {
+    render_view_host->Send(new ChromeViewMsg_SetAsInterstitial(
+        render_view_host->routing_id()));
+  }
 }
 
 void ChromeContentBrowserClient::RenderProcessHostCreated(
@@ -878,9 +884,7 @@ void ChromeContentBrowserClient::AllowCertificateError(
   }
 
   // Otherwise, display an SSL blocking page.
-  SSLBlockingPage* blocking_page = new SSLBlockingPage(
-      handler, overridable, callback);
-  blocking_page->Show();
+  new SSLBlockingPage(handler, overridable, callback);
 }
 
 void ChromeContentBrowserClient::SelectClientCertificate(

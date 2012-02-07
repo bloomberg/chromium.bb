@@ -19,6 +19,7 @@
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/browser/renderer_host/resource_dispatcher_host_request_info.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/render_view_host_delegate.h"
 #include "content/public/browser/resource_throttle_controller.h"
 #include "net/base/net_errors.h"
 #include "net/base/network_change_notifier.h"
@@ -50,7 +51,7 @@ void ShowOfflinePage(
     // the offline page on the IO thread and before we actually show the
     // offline page here on the UI thread.
     if (web_contents)
-      (new chromeos::OfflineLoadPage(web_contents, url, callback))->Show();
+      new chromeos::OfflineLoadPage(web_contents, url, callback);
   }
 }
 

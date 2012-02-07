@@ -24,6 +24,7 @@
 #include "content/common/view_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/dom_operation_notification_details.h"
+#include "content/public/browser/interstitial_page_delegate.h"
 #include "content/public/browser/invalidate_type.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
@@ -36,6 +37,7 @@
 
 using content::BrowserThread;
 using content::DomOperationNotificationDetails;
+using content::InterstitialPageDelegate;
 using content::NavigationController;
 using content::NavigationEntry;
 using content::NavigationEntryImpl;
@@ -117,13 +119,21 @@ class InterstitialPage::InterstitialPageRVHViewDelegate
   DISALLOW_COPY_AND_ASSIGN(InterstitialPageRVHViewDelegate);
 };
 
+InterstitialPage* InterstitialPage::Create(WebContents* tab,
+                                           bool new_navigation,
+                                           const GURL& url,
+                                           InterstitialPageDelegate* delegate) {
+  return new InterstitialPage(tab, new_navigation, url, delegate);
+}
+
 // static
 InterstitialPage::InterstitialPageMap*
     InterstitialPage::tab_to_interstitial_page_ =  NULL;
 
 InterstitialPage::InterstitialPage(WebContents* tab,
                                    bool new_navigation,
-                                   const GURL& url)
+                                   const GURL& url,
+                                   InterstitialPageDelegate* delegate)
     : tab_(static_cast<TabContents*>(tab)),
       url_(url),
       new_navigation_(new_navigation),
@@ -138,7 +148,9 @@ InterstitialPage::InterstitialPage(WebContents* tab,
       tab_was_loading_(false),
       resource_dispatcher_host_notified_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(rvh_view_delegate_(
-          new InterstitialPageRVHViewDelegate(this))) {
+          new InterstitialPageRVHViewDelegate(this))),
+      create_view_(true),
+      delegate_(delegate) {
   InitInterstitialPageMap();
   // It would be inconsistent to create an interstitial with no new navigation
   // (which is the case when the interstitial was triggered by a sub-resource on
@@ -148,11 +160,6 @@ InterstitialPage::InterstitialPage(WebContents* tab,
 }
 
 InterstitialPage::~InterstitialPage() {
-  InterstitialPageMap::iterator iter = tab_to_interstitial_page_->find(tab_);
-  DCHECK(iter != tab_to_interstitial_page_->end());
-  if (iter != tab_to_interstitial_page_->end())
-    tab_to_interstitial_page_->erase(iter);
-  DCHECK(!render_view_host_);
 }
 
 void InterstitialPage::Show() {
@@ -165,6 +172,7 @@ void InterstitialPage::Show() {
     InterstitialPage* interstitial = iter->second;
     if (interstitial->action_taken_ != NO_ACTION) {
       interstitial->Hide();
+      delete interstitial;
     } else {
       // If we are currently showing an interstitial page for which we created
       // a transient entry and a new interstitial is shown as the result of a
@@ -199,8 +207,8 @@ void InterstitialPage::Show() {
     entry->SetVirtualURL(url_);
     entry->set_page_type(content::PAGE_TYPE_INTERSTITIAL);
 
-    // Give sub-classes a chance to set some states on the navigation entry.
-    UpdateEntry(entry);
+    // Give delegates a chance to set some states on the navigation entry.
+    delegate_->OverrideEntry(entry);
 
     tab_->GetControllerImpl().AddTransientEntry(entry);
   }
@@ -210,7 +218,7 @@ void InterstitialPage::Show() {
   CreateWebContentsView();
 
   std::string data_url = "data:text/html;charset=utf-8," +
-                         net::EscapePath(GetHTMLContents());
+                         net::EscapePath(delegate_->GetHTMLContents());
   render_view_host_->NavigateToURL(GURL(data_url));
 
   notification_registrar_.Add(this,
@@ -260,7 +268,10 @@ void InterstitialPage::Hide() {
       content::Source<WebContents>(tab_),
       content::NotificationService::NoDetails());
 
-  delete this;
+  InterstitialPageMap::iterator iter = tab_to_interstitial_page_->find(tab_);
+  DCHECK(iter != tab_to_interstitial_page_->end());
+  if (iter != tab_to_interstitial_page_->end())
+    tab_to_interstitial_page_->erase(iter);
 }
 
 void InterstitialPage::Observe(int type,
@@ -303,14 +314,14 @@ void InterstitialPage::Observe(int type,
         // User decided to proceed and either the navigation was committed or
         // the tab was closed before that.
         Hide();
-        // WARNING: we are now deleted!
+        delete this;
       }
       break;
     case content::NOTIFICATION_DOM_OPERATION_RESPONSE:
       if (enabled()) {
         content::Details<DomOperationNotificationDetails> dom_op_details(
             details);
-        CommandReceived(dom_op_details->json);
+        delegate_->CommandReceived(dom_op_details->json);
       }
       break;
     default:
@@ -416,6 +427,7 @@ void InterstitialPage::UpdateTitle(RenderViewHost* render_view_host,
 
 content::RendererPreferences InterstitialPage::GetRendererPrefs(
     content::BrowserContext* browser_context) const {
+  delegate_->OverrideRendererPrefs(&renderer_preferences_);
   return renderer_preferences_;
 }
 
@@ -446,6 +458,8 @@ RenderViewHost* InterstitialPage::CreateRenderViewHost() {
 }
 
 WebContentsView* InterstitialPage::CreateWebContentsView() {
+  if (!create_view_)
+    return NULL;
   WebContentsView* web_contents_view = tab()->GetView();
   RenderWidgetHostView* view =
       web_contents_view->CreateViewForWidget(render_view_host_);
@@ -486,12 +500,12 @@ void InterstitialPage::Proceed() {
   // navigation is committed.
   if (!new_navigation_) {
     Hide();
-    // WARNING: we are now deleted!
+    delegate_->OnProceed();
+    delete this;
+    return;
   }
-}
 
-std::string InterstitialPage::GetHTMLContents() {
-  return std::string();
+  delegate_->OnProceed();
 }
 
 void InterstitialPage::DontProceed() {
@@ -522,7 +536,8 @@ void InterstitialPage::DontProceed() {
     tab_->GetController().Reload(true);
 
   Hide();
-  // WARNING: we are now deleted!
+  delegate_->OnDontProceed();
+  delete this;
 }
 
 void InterstitialPage::CancelForNavigation() {
@@ -558,6 +573,14 @@ void InterstitialPage::Focus() {
 
 void InterstitialPage::FocusThroughTabTraversal(bool reverse) {
   render_view_host_->SetInitialFocus(reverse);
+}
+
+content::InterstitialPageDelegate* InterstitialPage::GetDelegateForTesting() {
+  return delegate_.get();
+}
+
+void InterstitialPage::DontCreateViewForTesting() {
+  create_view_ = false;
 }
 
 content::ViewType InterstitialPage::GetRenderViewType() const {

@@ -2392,8 +2392,6 @@
         'browser/tab_first_render_watcher.h',
         'browser/tab_contents/background_contents.cc',
         'browser/tab_contents/background_contents.h',
-        'browser/tab_contents/chrome_interstitial_page.cc',
-        'browser/tab_contents/chrome_interstitial_page.h',
         'browser/tab_contents/chrome_tab_contents_view_wrapper_gtk.cc',
         'browser/tab_contents/chrome_tab_contents_view_wrapper_gtk.h',
         'browser/tab_contents/chrome_web_contents_view_mac_delegate.h',

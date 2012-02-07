@@ -10,13 +10,19 @@
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
-#include "chrome/browser/tab_contents/chrome_interstitial_page.h"
+#include "content/public/browser/interstitial_page_delegate.h"
+#include "googleurl/src/gurl.h"
 #include "net/base/network_change_notifier.h"
 
 class Extension;
+class InterstitialPage;
 
 namespace base {
 class DictionaryValue;
+}
+
+namespace content {
+class WebContents;
 }
 
 namespace chromeos {
@@ -25,7 +31,7 @@ namespace chromeos {
 // when no network is available and hides when some network (either
 // one of wifi, 3g or ethernet) becomes available.
 // It deletes itself when the interstitial page is closed.
-class OfflineLoadPage : public ChromeInterstitialPage,
+class OfflineLoadPage : public content::InterstitialPageDelegate,
                         public net::NetworkChangeNotifier::OnlineStateObserver {
  public:
   // Passed a boolean indicating whether or not it is OK to proceed with the
@@ -44,11 +50,13 @@ class OfflineLoadPage : public ChromeInterstitialPage,
   virtual void NotifyBlockingPageComplete(bool proceed);
 
  private:
-  // ChromeInterstitialPage implementation.
+  // InterstitialPageDelegate implementation.
   virtual std::string GetHTMLContents() OVERRIDE;
   virtual void CommandReceived(const std::string& command) OVERRIDE;
-  virtual void Proceed() OVERRIDE;
-  virtual void DontProceed() OVERRIDE;
+  virtual void OverrideRendererPrefs(
+      content::RendererPreferences* prefs) OVERRIDE;
+  virtual void OnProceed() OVERRIDE;
+  virtual void OnDontProceed() OVERRIDE;
 
   // net::NetworkChangeNotifier::OnlineStateObserver overrides.
   virtual void OnOnlineStateChanged(bool online) OVERRIDE;
@@ -70,7 +78,9 @@ class OfflineLoadPage : public ChromeInterstitialPage,
   // True if the proceed is chosen.
   bool proceeded_;
 
-  bool in_test_;
+  content::WebContents* web_contents_;
+  GURL url_;
+  InterstitialPage* interstitial_page_;  // Owns us.
 
   DISALLOW_COPY_AND_ASSIGN(OfflineLoadPage);
 };

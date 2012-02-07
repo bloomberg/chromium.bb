@@ -11,18 +11,24 @@
 
 #include "base/callback.h"
 #include "base/string16.h"
-#include "chrome/browser/tab_contents/chrome_interstitial_page.h"
+#include "content/public/browser/interstitial_page_delegate.h"
 
+class GURL;
+class InterstitialPage;
 class SSLCertErrorHandler;
 
 namespace base {
 class DictionaryValue;
 }
 
+namespace content {
+class WebContents;
+}
+
 // This class is responsible for showing/hiding the interstitial page that is
 // shown when a certificate error happens.
 // It deletes itself when the interstitial page is closed.
-class SSLBlockingPage : public ChromeInterstitialPage {
+class SSLBlockingPage : public content::InterstitialPageDelegate {
  public:
   SSLBlockingPage(
       SSLCertErrorHandler* handler,
@@ -38,12 +44,14 @@ class SSLBlockingPage : public ChromeInterstitialPage {
                            const std::vector<string16>& extra_info);
 
  protected:
-  // ChromeInterstitialPage implementation.
+  // InterstitialPageDelegate implementation.
   virtual std::string GetHTMLContents() OVERRIDE;
   virtual void CommandReceived(const std::string& command) OVERRIDE;
-  virtual void UpdateEntry(content::NavigationEntry* entry) OVERRIDE;
-  virtual void Proceed() OVERRIDE;
-  virtual void DontProceed() OVERRIDE;
+  virtual void OverrideEntry(content::NavigationEntry* entry) OVERRIDE;
+  virtual void OverrideRendererPrefs(
+      content::RendererPreferences* prefs) OVERRIDE;
+  virtual void OnProceed() OVERRIDE;
+  virtual void OnDontProceed() OVERRIDE;
 
  private:
   void NotifyDenyCertificate();
@@ -57,6 +65,9 @@ class SSLBlockingPage : public ChromeInterstitialPage {
 
   // Is the certificate error overridable or fatal?
   bool overridable_;
+
+  content::WebContents* web_contents_;
+  InterstitialPage* interstitial_page_;  // Owns us.
 
   DISALLOW_COPY_AND_ASSIGN(SSLBlockingPage);
 };

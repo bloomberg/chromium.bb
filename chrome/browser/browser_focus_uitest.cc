@@ -25,6 +25,7 @@
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
 #include "content/browser/tab_contents/interstitial_page.h"
+#include "content/public/browser/interstitial_page_delegate.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
@@ -182,10 +183,9 @@ class BrowserFocusTest : public InProcessBrowserTest {
   ViewID location_bar_focus_view_id_;
 };
 
-class TestInterstitialPage : public InterstitialPage {
+class TestInterstitialPage : public content::InterstitialPageDelegate {
  public:
-  TestInterstitialPage(WebContents* tab, bool new_navigation, const GURL& url)
-      : InterstitialPage(tab, new_navigation, url) {
+  TestInterstitialPage(WebContents* tab, bool new_navigation, const GURL& url) {
     FilePath file_path;
     bool r = PathService::Get(chrome::DIR_TEST_DATA, &file_path);
     EXPECT_TRUE(r);
@@ -193,20 +193,21 @@ class TestInterstitialPage : public InterstitialPage {
     file_path = file_path.AppendASCII(kTypicalPageName);
     r = file_util::ReadFileToString(file_path, &html_contents_);
     EXPECT_TRUE(r);
+    interstitial_page_ = InterstitialPage::Create(
+        tab, new_navigation, url , this);
+    interstitial_page_->Show();
   }
 
   virtual std::string GetHTMLContents() {
     return html_contents_;
   }
 
-  // Exposing render_view_host() and tab() to be public; they are declared as
-  // protected in the superclass.
-  virtual RenderViewHost* render_view_host() {
-    return InterstitialPage::render_view_host();
+  RenderViewHost* render_view_host() {
+    return interstitial_page_->render_view_host();
   }
 
-  virtual WebContents* tab() {
-    return InterstitialPage::tab();
+  void DontProceed() {
+    interstitial_page_->DontProceed();
   }
 
   bool HasFocus() {
@@ -215,6 +216,7 @@ class TestInterstitialPage : public InterstitialPage {
 
  private:
   std::string html_contents_;
+  InterstitialPage* interstitial_page_;  // Owns us.
 };
 
 IN_PROC_BROWSER_TEST_F(BrowserFocusTest, ClickingMovesFocus) {
@@ -621,7 +623,6 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE_FocusTraversalOnInterstitial) {
   TestInterstitialPage* interstitial_page =
       new TestInterstitialPage(browser()->GetSelectedWebContents(),
                                true, GURL("http://interstitial.com"));
-  interstitial_page->Show();
   // Give some time for the interstitial to show.
   MessageLoop::current()->PostDelayedTask(FROM_HERE,
                                           MessageLoop::QuitClosure(),
@@ -747,7 +748,6 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, InterstitialFocus) {
   TestInterstitialPage* interstitial_page =
       new TestInterstitialPage(browser()->GetSelectedWebContents(),
                                true, GURL("http://interstitial.com"));
-  interstitial_page->Show();
   // Give some time for the interstitial to show.
   MessageLoop::current()->PostDelayedTask(FROM_HERE,
                                           MessageLoop::QuitClosure(),

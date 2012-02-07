@@ -21,6 +21,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
+#include "content/browser/tab_contents/interstitial_page.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
@@ -274,7 +275,8 @@ class SafeBrowsingBlockingPageTest : public InProcessBrowserTest,
     // NavigateToURL returns.
     SafeBrowsingBlockingPage* interstitial_page =
         static_cast<SafeBrowsingBlockingPage*>(
-            InterstitialPage::GetInterstitialPage(contents));
+            InterstitialPage::GetInterstitialPage(contents)->
+                GetDelegateForTesting());
     ASSERT_TRUE(interstitial_page);
     interstitial_page->CommandReceived(command);
   }
@@ -304,7 +306,8 @@ class SafeBrowsingBlockingPageTest : public InProcessBrowserTest,
     if (contents->ShowingInterstitialPage() && wait_for_delete) {
       // We'll get notified when the interstitial is deleted.
       static_cast<TestSafeBrowsingBlockingPage*>(
-          contents->GetInterstitialPage())->set_wait_for_delete();
+          contents->GetInterstitialPage()->GetDelegateForTesting())->
+              set_wait_for_delete();
       ui_test_utils::RunMessageLoop();
     }
 

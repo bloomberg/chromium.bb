@@ -102,6 +102,7 @@ bool ContentSettingsObserver::OnMessageReceived(const IPC::Message& message) {
     // blocked plugin.
     IPC_MESSAGE_HANDLER_GENERIC(ChromeViewMsg_LoadBlockedPlugins,
                                 OnLoadBlockedPlugins(); handled = false)
+    IPC_MESSAGE_HANDLER(ChromeViewMsg_SetAsInterstitial, OnSetAsInterstitial)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -280,12 +281,12 @@ void ContentSettingsObserver::DidNotAllowScript(WebFrame* frame) {
   DidBlockContentType(CONTENT_SETTINGS_TYPE_JAVASCRIPT, std::string());
 }
 
-void ContentSettingsObserver::SetAsInterstitial() {
-  is_interstitial_page_ = true;
-}
-
 void ContentSettingsObserver::OnLoadBlockedPlugins() {
   plugins_temporarily_allowed_ = true;
+}
+
+void ContentSettingsObserver::OnSetAsInterstitial() {
+  is_interstitial_page_ = true;
 }
 
 void ContentSettingsObserver::ClearBlockedContentSettings() {

@@ -22,6 +22,7 @@
 class TabContents;
 
 namespace content {
+class InterstitialPageDelegate;
 class NavigationEntry;
 class WebContents;
 class WebContentsView;
@@ -61,27 +62,28 @@ class CONTENT_EXPORT InterstitialPage : public content::NotificationObserver,
   // added to the navigation controller (so the interstitial page appears as a
   // new navigation entry). |new_navigation| should be false when the
   // interstitial was triggered by a loading a sub-resource in a page.
+  // Takes ownership of |delegate|.
+  static InterstitialPage* Create(content::WebContents* tab,
+                                  bool new_navigation,
+                                  const GURL& url,
+                                  content::InterstitialPageDelegate* delegate);
+
   InterstitialPage(content::WebContents* tab,
                    bool new_navigation,
-                   const GURL& url);
+                   const GURL& url,
+                   content::InterstitialPageDelegate* delegate);
   virtual ~InterstitialPage();
 
   // Shows the interstitial page in the tab.
-  virtual void Show();
+  void Show();
 
-  // Hides the interstitial page. Warning: this deletes the InterstitialPage.
+  // Hides the interstitial page.
   void Hide();
 
   // Retrieves the InterstitialPage if any associated with the specified
   // |web_contents| (used by ui tests).
   static InterstitialPage* GetInterstitialPage(
       content::WebContents* web_contents);
-
-  // Sub-classes should return the HTML that should be displayed in the page.
-  virtual std::string GetHTMLContents();
-
-  // Invoked when the page sent a command through DOMAutomation.
-  virtual void CommandReceived(const std::string& command) {}
 
   // Reverts to the page showing before the interstitial.
   // Sub-classes should call this method when the user has chosen NOT to proceed
@@ -112,15 +114,16 @@ class CONTENT_EXPORT InterstitialPage : public content::NotificationObserver,
   // Called when tab traversing.
   void FocusThroughTabTraversal(bool reverse);
 
-  virtual content::ViewType GetRenderViewType() const OVERRIDE;
-
-  virtual gfx::Rect GetRootWindowResizerRect() const OVERRIDE;
-
   // See description above field.
   void set_reload_on_dont_proceed(bool value) {
     reload_on_dont_proceed_ = value;
   }
   bool reload_on_dont_proceed() const { return reload_on_dont_proceed_; }
+
+  RenderViewHost* render_view_host() const { return render_view_host_; }
+
+  content::InterstitialPageDelegate* GetDelegateForTesting();
+  void DontCreateViewForTesting();
 
  protected:
   // content::NotificationObserver method:
@@ -148,21 +151,12 @@ class CONTENT_EXPORT InterstitialPage : public content::NotificationObserver,
                                       bool* is_keyboard_shortcut) OVERRIDE;
   virtual void HandleKeyboardEvent(
       const NativeWebKeyboardEvent& event) OVERRIDE;
-
-  // Invoked with the NavigationEntry that is going to be added to the
-  // navigation controller.
-  // Gives an opportunity to sub-classes to set states on the |entry|.
-  // Note that this is only called if the InterstitialPage was constructed with
-  // |create_navigation_entry| set to true.
-  virtual void UpdateEntry(content::NavigationEntry* entry) {}
+  virtual content::ViewType GetRenderViewType() const OVERRIDE;
+  virtual gfx::Rect GetRootWindowResizerRect() const OVERRIDE;
 
   bool enabled() const { return enabled_; }
   content::WebContents* tab() const;
   const GURL& url() const { return url_; }
-  RenderViewHost* render_view_host() const { return render_view_host_; }
-  void set_renderer_preferences(const content::RendererPreferences& prefs) {
-    renderer_preferences_ = prefs;
-  }
 
   // Creates the RenderViewHost containing the interstitial content.
   // Overriden in unit tests.
@@ -256,7 +250,11 @@ class CONTENT_EXPORT InterstitialPage : public content::NotificationObserver,
   static InterstitialPageMap* tab_to_interstitial_page_;
 
   // Settings passed to the renderer.
-  content::RendererPreferences renderer_preferences_;
+  mutable content::RendererPreferences renderer_preferences_;
+
+  bool create_view_;
+
+  scoped_ptr<content::InterstitialPageDelegate> delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(InterstitialPage);
 };

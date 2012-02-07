@@ -9,12 +9,15 @@
 #include "base/string_piece.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/renderer_preferences_util.h"
 #include "chrome/browser/ssl/ssl_error_info.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "content/browser/cert_store.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/ssl/ssl_cert_error_handler.h"
+#include "content/browser/tab_contents/interstitial_page.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
@@ -51,15 +54,15 @@ SSLBlockingPage::SSLBlockingPage(
     SSLCertErrorHandler* handler,
     bool overridable,
     const base::Callback<void(SSLCertErrorHandler*, bool)>& callback)
-    : ChromeInterstitialPage(
-          tab_util::GetWebContentsByID(
-              handler->render_process_host_id(), handler->tab_contents_id()),
-          true,
-          handler->request_url()),
-      handler_(handler),
+    : handler_(handler),
       callback_(callback),
       overridable_(overridable) {
   RecordSSLBlockingPageStats(SHOW);
+  web_contents_ = tab_util::GetWebContentsByID(
+      handler->render_process_host_id(), handler->tab_contents_id());
+  interstitial_page_ = InterstitialPage::Create(
+      web_contents_, true, handler->request_url(), this);
+  interstitial_page_->Show();
 }
 
 SSLBlockingPage::~SSLBlockingPage() {
@@ -115,10 +118,10 @@ std::string SSLBlockingPage::GetHTMLContents() {
   return jstemplate_builder::GetI18nTemplateHtml(html, &strings);
 }
 
-void SSLBlockingPage::UpdateEntry(NavigationEntry* entry) {
+void SSLBlockingPage::OverrideEntry(NavigationEntry* entry) {
   const net::SSLInfo& ssl_info = handler_->ssl_info();
   int cert_id = CertStore::GetInstance()->StoreCert(
-      ssl_info.cert, tab()->GetRenderProcessHost()->GetID());
+      ssl_info.cert, web_contents_->GetRenderProcessHost()->GetID());
 
   entry->GetSSL().security_style =
       content::SECURITY_STYLE_AUTHENTICATION_BROKEN;
@@ -127,33 +130,36 @@ void SSLBlockingPage::UpdateEntry(NavigationEntry* entry) {
   entry->GetSSL().security_bits = ssl_info.security_bits;
   content::NotificationService::current()->Notify(
       content::NOTIFICATION_SSL_VISIBLE_STATE_CHANGED,
-      content::Source<NavigationController>(&tab()->GetController()),
+      content::Source<NavigationController>(&web_contents_->GetController()),
       content::NotificationService::NoDetails());
 }
 
 void SSLBlockingPage::CommandReceived(const std::string& command) {
   if (command == "1") {
-    Proceed();
+    interstitial_page_->Proceed();
   } else {
-    DontProceed();
+    interstitial_page_->DontProceed();
   }
 }
 
-void SSLBlockingPage::Proceed() {
+void SSLBlockingPage::OverrideRendererPrefs(
+      content::RendererPreferences* prefs) {
+  Profile* profile = Profile::FromBrowserContext(
+      web_contents_->GetBrowserContext());
+  renderer_preferences_util::UpdateFromSystemSettings(prefs, profile);
+ }
+
+void SSLBlockingPage::OnProceed() {
   RecordSSLBlockingPageStats(PROCEED);
 
   // Accepting the certificate resumes the loading of the page.
   NotifyAllowCertificate();
-
-  // This call hides and deletes the interstitial.
-  InterstitialPage::Proceed();
 }
 
-void SSLBlockingPage::DontProceed() {
+void SSLBlockingPage::OnDontProceed() {
   RecordSSLBlockingPageStats(DONT_PROCEED);
 
   NotifyDenyCertificate();
-  InterstitialPage::DontProceed();
 }
 
 void SSLBlockingPage::NotifyDenyCertificate() {

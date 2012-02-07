@@ -13,6 +13,7 @@
 #include "content/browser/tab_contents/navigation_entry_impl.h"
 #include "content/browser/tab_contents/test_tab_contents.h"
 #include "content/common/view_messages.h"
+#include "content/public/browser/interstitial_page_delegate.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
@@ -88,6 +89,20 @@ class TabContentsTestBrowserClient : public content::MockContentBrowserClient {
   TabContentsTestWebUIControllerFactory factory_;
 };
 
+class TestInterstitialPage;
+
+class TestInterstitialPageDelegate : public content::InterstitialPageDelegate {
+ public:
+  TestInterstitialPageDelegate(TestInterstitialPage* interstitial_page)
+      : interstitial_page_(interstitial_page) {}
+  virtual void CommandReceived(const std::string& command) OVERRIDE;
+  virtual std::string GetHTMLContents() OVERRIDE { return std::string(); }
+  virtual void OnDontProceed() OVERRIDE;
+  virtual void OnProceed() OVERRIDE;
+ private:
+  TestInterstitialPage* interstitial_page_;
+};
+
 class TestInterstitialPage : public InterstitialPage {
  public:
   enum InterstitialState {
@@ -119,7 +134,9 @@ class TestInterstitialPage : public InterstitialPage {
                        const GURL& url,
                        InterstitialState* state,
                        bool* deleted)
-      : InterstitialPage(tab, new_navigation, url),
+      : InterstitialPage(
+            tab, new_navigation, url,
+            new TestInterstitialPageDelegate(this)),
         state_(state),
         deleted_(deleted),
         command_received_count_(0),
@@ -135,15 +152,13 @@ class TestInterstitialPage : public InterstitialPage {
       delegate_->TestInterstitialPageDeleted(this);
   }
 
-  virtual void DontProceed() {
+  void OnDontProceed() {
     if (state_)
       *state_ = CANCELED;
-    InterstitialPage::DontProceed();
   }
-  virtual void Proceed() {
+  void OnProceed() {
     if (state_)
       *state_ = OKED;
-    InterstitialPage::Proceed();
   }
 
   int command_received_count() const {
@@ -152,7 +167,7 @@ class TestInterstitialPage : public InterstitialPage {
 
   void TestDomOperationResponse(const std::string& json_string) {
     if (enabled())
-      CommandReceived(json_string);
+      CommandReceived();
   }
 
   void TestDidNavigate(int page_id, const GURL& url) {
@@ -176,22 +191,23 @@ class TestInterstitialPage : public InterstitialPage {
     delegate_ = NULL;
   }
 
+  void CommandReceived() {
+    command_received_count_++;
+  }
+
   void set_delegate(Delegate* delegate) {
     delegate_ = delegate;
   }
 
  protected:
-  virtual RenderViewHost* CreateRenderViewHost() {
+  virtual RenderViewHost* CreateRenderViewHost() OVERRIDE {
     return new TestRenderViewHost(
         SiteInstance::Create(tab()->GetBrowserContext()),
         this, MSG_ROUTING_NONE);
   }
 
-  virtual content::WebContentsView* CreateWebContentsView() { return NULL; }
-
-
-  virtual void CommandReceived(const std::string& command) {
-    command_received_count_++;
+  virtual content::WebContentsView* CreateWebContentsView() OVERRIDE {
+    return NULL;
   }
 
  private:
@@ -200,6 +216,18 @@ class TestInterstitialPage : public InterstitialPage {
   int command_received_count_;
   Delegate* delegate_;
 };
+
+void TestInterstitialPageDelegate::CommandReceived(const std::string& command) {
+  interstitial_page_->CommandReceived();
+}
+
+void TestInterstitialPageDelegate::OnDontProceed() {
+  interstitial_page_->OnDontProceed();
+}
+
+void TestInterstitialPageDelegate::OnProceed() {
+  interstitial_page_->OnProceed();
+}
 
 class TestInterstitialPageStateGuard : public TestInterstitialPage::Delegate {
  public:

@@ -65,12 +65,10 @@ class ContentSettingsObserver
   void DidNotAllowPlugins(WebKit::WebFrame* frame);
   void DidNotAllowScript(WebKit::WebFrame* frame);
 
-  // Used for allowing scripts and images on views displaying interstitial
-  // pages.
-  void SetAsInterstitial();
-
  private:
   FRIEND_TEST_ALL_PREFIXES(ContentSettingsObserverTest, WhitelistedSchemes);
+  FRIEND_TEST_ALL_PREFIXES(ChromeRenderViewTest,
+                           ContentSettingsInterstitialPages);
 
   // RenderViewObserver implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
@@ -79,6 +77,7 @@ class ContentSettingsObserver
 
   // Message handlers.
   void OnLoadBlockedPlugins();
+  void OnSetAsInterstitial();
 
   // Resets the |content_blocked_| array.
   void ClearBlockedContentSettings();

@@ -8,6 +8,7 @@
 #include "chrome/browser/safe_browsing/safe_browsing_blocking_page.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
+#include "content/browser/tab_contents/interstitial_page.h"
 #include "content/browser/tab_contents/test_tab_contents.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/test/test_browser_thread.h"
@@ -32,12 +33,11 @@ class TestSafeBrowsingBlockingPage :  public SafeBrowsingBlockingPage {
       : SafeBrowsingBlockingPage(service, web_contents, unsafe_resources) {
     // Don't delay details at all for the unittest.
     malware_details_proceed_delay_ms_ = 0;
+
+    // Don't create a view.
+    interstitial_page_->DontCreateViewForTesting();
   }
 
-  // Overriden from InterstitialPage.  Don't create a view.
-  virtual WebContentsView* CreateWebContentsView() {
-    return NULL;
-  }
 };
 
 class TestSafeBrowsingService: public SafeBrowsingService {
@@ -138,7 +138,8 @@ class SafeBrowsingBlockingPageTest : public ChromeRenderViewHostTestHarness {
         InterstitialPage::GetInterstitialPage(contents());
     if (!interstitial)
       return NULL;
-    return  static_cast<SafeBrowsingBlockingPage*>(interstitial);
+    return  static_cast<SafeBrowsingBlockingPage*>(
+        interstitial->GetDelegateForTesting());
   }
 
   UserResponse user_response() const { return user_response_; }
@@ -146,14 +147,14 @@ class SafeBrowsingBlockingPageTest : public ChromeRenderViewHostTestHarness {
 
   static void ProceedThroughInterstitial(
       SafeBrowsingBlockingPage* sb_interstitial) {
-    sb_interstitial->Proceed();
+    sb_interstitial->interstitial_page_->Proceed();
     // Proceed() posts a task to update the SafeBrowsingService::Client.
     MessageLoop::current()->RunAllPending();
   }
 
   static void DontProceedThroughInterstitial(
       SafeBrowsingBlockingPage* sb_interstitial) {
-    sb_interstitial->DontProceed();
+    sb_interstitial->interstitial_page_->DontProceed();
     // DontProceed() posts a task to update the SafeBrowsingService::Client.
     MessageLoop::current()->RunAllPending();
   }
@@ -540,8 +541,8 @@ TEST_F(SafeBrowsingBlockingPageTest, ProceedThenDontProceed) {
 
   // Simulate the user clicking "proceed" then "don't proceed" (before the
   // interstitial is shown).
-  sb_interstitial->Proceed();
-  sb_interstitial->DontProceed();
+  sb_interstitial->interstitial_page_->Proceed();
+  sb_interstitial->interstitial_page_->DontProceed();
   // Proceed() and DontProceed() post a task to update the
   // SafeBrowsingService::Client.
   MessageLoop::current()->RunAllPending();
