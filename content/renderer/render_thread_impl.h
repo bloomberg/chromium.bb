@@ -14,11 +14,13 @@
 #include "base/time.h"
 #include "base/timer.h"
 #include "build/build_config.h"
+#include "content/common/child_process.h"
 #include "content/common/child_thread.h"
 #include "content/common/content_export.h"
 #include "content/common/css_colors.h"
 #include "content/common/gpu/gpu_process_launch_causes.h"
 #include "content/public/renderer/render_thread.h"
+#include "content/renderer/gpu/gpu_channel_host.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -67,7 +69,8 @@ class Extension;
 // routed to the RenderThread according to the routing IDs of the messages.
 // The routing IDs correspond to RenderView instances.
 class CONTENT_EXPORT RenderThreadImpl : public content::RenderThread,
-                                        public ChildThread {
+                                        public ChildThread,
+                                        public GpuChannelHostFactory {
  public:
   static RenderThreadImpl* current();
 
@@ -118,6 +121,26 @@ class CONTENT_EXPORT RenderThreadImpl : public content::RenderThread,
   virtual void ReleaseCachedFonts() OVERRIDE;
 #endif
 
+  // GpuChannelHostFactory implementation:
+  virtual bool IsMainThread() OVERRIDE;
+  virtual bool IsIOThread() OVERRIDE;
+  virtual MessageLoop* GetMainLoop() OVERRIDE;
+  virtual base::MessageLoopProxy* GetIOLoopProxy() OVERRIDE;
+  virtual base::WaitableEvent* GetShutDownEvent() OVERRIDE;
+  virtual scoped_ptr<base::SharedMemory> AllocateSharedMemory(
+      uint32 size) OVERRIDE;
+  virtual int32 CreateViewCommandBuffer(
+      int32 surface_id,
+      const GPUCreateCommandBufferConfig& init_params) OVERRIDE;
+
+  // Synchronously establish a channel to the GPU plugin if not previously
+  // established or if it has been lost (for example if the GPU plugin crashed).
+  // If there is a pending asynchronous request, it will be completed by the
+  // time this routine returns.
+  virtual GpuChannelHost* EstablishGpuChannelSync(
+      content::CauseForGpuLaunch) OVERRIDE;
+
+
   // These methods modify how the next message is sent.  Normally, when sending
   // a synchronous message that runs a nested message loop, we need to suspend
   // callbacks into WebKit.  This involves disabling timers and deferring
@@ -148,12 +171,6 @@ class CONTENT_EXPORT RenderThreadImpl : public content::RenderThread,
   }
 
   bool plugin_refresh_allowed() const { return plugin_refresh_allowed_; }
-
-  // Synchronously establish a channel to the GPU plugin if not previously
-  // established or if it has been lost (for example if the GPU plugin crashed).
-  // If there is a pending asynchronous request, it will be completed by the
-  // time this routine returns.
-  GpuChannelHost* EstablishGpuChannelSync(content::CauseForGpuLaunch);
 
   // Get the GPU channel. Returns NULL if the channel is not established or
   // has been lost.

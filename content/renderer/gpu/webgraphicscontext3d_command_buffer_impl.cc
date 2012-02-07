@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#if defined(ENABLE_GPU)
-
 #include "content/renderer/gpu/webgraphicscontext3d_command_buffer_impl.h"
 
 #include "third_party/khronos/GLES2/gl2.h"
@@ -24,17 +22,12 @@
 #include "base/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/synchronization/lock.h"
-#include "content/common/child_process.h"
 #include "content/public/common/content_switches.h"
 #include "content/renderer/gpu/command_buffer_proxy.h"
 #include "content/renderer/gpu/gpu_channel_host.h"
-#include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_view_impl.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
 #include "gpu/command_buffer/common/constants.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "webkit/glue/gl_bindings_skia_cmd_buffer.h"
 
 static base::LazyInstance<base::Lock>::Leaky
@@ -52,14 +45,17 @@ void ClearSharedContexts() {
 } // namespace anonymous
 
 
-WebGraphicsContext3DCommandBufferImpl::WebGraphicsContext3DCommandBufferImpl()
+WebGraphicsContext3DCommandBufferImpl::WebGraphicsContext3DCommandBufferImpl(
+    int surface_id,
+    const GURL& active_url,
+    const base::WeakPtr<WebGraphicsContext3DSwapBuffersClient>& swap_client)
     : initialize_failed_(false),
       context_(NULL),
       gl_(NULL),
-      web_view_(NULL),
-#if defined(OS_MACOSX)
-      plugin_handle_(NULL),
-#endif  // defined(OS_MACOSX)
+      host_(NULL),
+      surface_id_(surface_id),
+      active_url_(active_url),
+      swap_client_(swap_client),
       context_lost_callback_(0),
       context_lost_reason_(GL_NO_ERROR),
       swapbuffers_complete_callback_(0),
@@ -86,14 +82,12 @@ WebGraphicsContext3DCommandBufferImpl::
   delete context_;
 }
 
-bool WebGraphicsContext3DCommandBufferImpl::initialize(
-    WebGraphicsContext3D::Attributes attributes,
-    WebKit::WebView* web_view,
-    bool render_directly_to_web_view) {
+bool WebGraphicsContext3DCommandBufferImpl::Initialize(
+    const WebGraphicsContext3D::Attributes& attributes) {
   DCHECK(!context_);
   TRACE_EVENT0("gpu", "WebGfxCtx3DCmdBfrImpl::initialize");
-  RenderThreadImpl* render_thread = RenderThreadImpl::current();
-  if (!render_thread)
+  GpuChannelHostFactory* factory = GpuChannelHostFactory::instance();
+  if (!factory)
     return false;
 
   // The noExtensions and canRecoverFromContextLoss flags are
@@ -106,7 +100,7 @@ bool WebGraphicsContext3DCommandBufferImpl::initialize(
 
   // Note similar code in Pepper PlatformContext3DImpl::Init.
   do {
-    host_ = render_thread->EstablishGpuChannelSync(
+    host_ = factory->EstablishGpuChannelSync(
         content::
         CAUSE_FOR_GPU_LAUNCH_WEBGRAPHICSCONTEXT3DCOMMANDBUFFERIMPL_INITIALIZE);
     if (!host_)
@@ -137,18 +131,7 @@ bool WebGraphicsContext3DCommandBufferImpl::initialize(
       return false;
   }
 
-  if (web_view && web_view->mainFrame())
-    active_url_ = GURL(web_view->mainFrame()->document().url());
-
   attributes_ = attributes;
-  render_directly_to_web_view_ = render_directly_to_web_view;
-  if (render_directly_to_web_view_) {
-    RenderViewImpl* render_view = RenderViewImpl::FromWebView(web_view);
-    if (!render_view)
-      return false;
-    surface_id_ = render_view->surface_id();
-    web_view_ = web_view;
-  }
   return true;
 }
 
@@ -161,12 +144,11 @@ bool WebGraphicsContext3DCommandBufferImpl::MaybeInitializeGL() {
   TRACE_EVENT0("gpu", "WebGfxCtx3DCmdBfrImpl::MaybeInitializeGL");
 
   // If the context is being initialized on something other than the main
-  // thread, then drop the web_view_ pointer so we don't accidentally
-  // dereference it.
-  MessageLoop* main_message_loop =
-      ChildProcess::current()->main_thread()->message_loop();
-  if (MessageLoop::current() != main_message_loop)
-    web_view_ = NULL;
+  // thread, then make sure the swap_client_ pointer is NULL so we don't
+  // accidentally dereference it.
+  GpuChannelHostFactory* factory = GpuChannelHostFactory::instance();
+  if (!factory || !factory->IsMainThread())
+    DCHECK(!swap_client_.get());
 
   // Convert WebGL context creation attributes into RendererGLContext / EGL size
   // requests.
@@ -199,7 +181,7 @@ bool WebGraphicsContext3DCommandBufferImpl::MaybeInitializeGL() {
           NULL : (*g_all_shared_contexts.Pointer()->begin())->context_;
     }
 
-    if (render_directly_to_web_view_) {
+    if (surface_id_) {
       context_ = RendererGLContext::CreateViewContext(
           host_,
           surface_id_,
@@ -297,10 +279,8 @@ WebGLId WebGraphicsContext3DCommandBufferImpl::getPlatformTextureId() {
 void WebGraphicsContext3DCommandBufferImpl::prepareTexture() {
   // Copies the contents of the off-screen render target into the texture
   // used by the compositor.
-  RenderViewImpl* renderview =
-      web_view_ ? RenderViewImpl::FromWebView(web_view_) : NULL;
-  if (renderview)
-    renderview->OnViewContextSwapBuffersPosted();
+  if (swap_client_.get())
+    swap_client_->OnViewContextSwapBuffersPosted();
   context_->SwapBuffers();
   context_->Echo(base::Bind(
       &WebGraphicsContext3DCommandBufferImpl::OnSwapBuffersComplete,
@@ -317,10 +297,8 @@ void WebGraphicsContext3DCommandBufferImpl::postSubBufferCHROMIUM(
     int x, int y, int width, int height) {
   // Same flow control as WebGraphicsContext3DCommandBufferImpl::prepareTexture
   // (see above).
-  RenderViewImpl* renderview =
-      web_view_ ? RenderViewImpl::FromWebView(web_view_) : NULL;
-  if (renderview)
-    renderview->OnViewContextSwapBuffersPosted();
+  if (swap_client_.get())
+    swap_client_->OnViewContextSwapBuffersPosted();
   gl_->PostSubBufferCHROMIUM(x, y, width, height);
   context_->Echo(base::Bind(
       &WebGraphicsContext3DCommandBufferImpl::OnSwapBuffersComplete,
@@ -1131,14 +1109,11 @@ void WebGraphicsContext3DCommandBufferImpl::deleteTexture(WebGLId texture) {
 }
 
 void WebGraphicsContext3DCommandBufferImpl::OnSwapBuffersComplete() {
+  typedef WebGraphicsContext3DSwapBuffersClient WGC3DSwapClient;
   // This may be called after tear-down of the RenderView.
-  RenderViewImpl* renderview =
-      web_view_ ? RenderViewImpl::FromWebView(web_view_) : NULL;
-  if (renderview) {
-    MessageLoop::current()->PostTask(
-        FROM_HERE,
-        base::Bind(&RenderViewImpl::OnViewContextSwapBuffersComplete,
-                   renderview));
+  if (swap_client_.get()) {
+    MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
+        &WGC3DSwapClient::OnViewContextSwapBuffersComplete, swap_client_));
   }
 
   if (swapbuffers_complete_callback_)
@@ -1203,10 +1178,6 @@ void WebGraphicsContext3DCommandBufferImpl::OnContextLost(
   }
   if (attributes_.shareResources)
     ClearSharedContexts();
-  RenderViewImpl* renderview =
-      web_view_ ? RenderViewImpl::FromWebView(web_view_) : NULL;
-  if (renderview)
-    renderview->OnViewContextSwapBuffersAborted();
+  if (swap_client_.get())
+    swap_client_->OnViewContextSwapBuffersAborted();
 }
-
-#endif  // defined(ENABLE_GPU)

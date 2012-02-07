@@ -31,6 +31,7 @@
 #include "content/public/common/renderer_preferences.h"
 #include "content/public/common/stop_find_action.h"
 #include "content/public/renderer/render_view.h"
+#include "content/renderer/gpu/webgraphicscontext3d_command_buffer_impl.h"
 #include "content/renderer/pepper_plugin_delegate_impl.h"
 #include "content/renderer/render_widget.h"
 #include "ipc/ipc_platform_file.h"
@@ -164,6 +165,7 @@ class RenderViewImpl : public RenderWidget,
                        public content::RenderView,
                        public webkit::npapi::WebPluginPageDelegate,
                        public webkit_media::WebMediaPlayerDelegate,
+                       public WebGraphicsContext3DSwapBuffersClient,
                        public base::SupportsWeakPtr<RenderViewImpl> {
  public:
   // Creates a new RenderView.  The parent_hwnd specifies a HWND to use as the
@@ -190,11 +192,13 @@ class RenderViewImpl : public RenderWidget,
   // May return NULL when the view is closing.
   CONTENT_EXPORT WebKit::WebView* webview() const;
 
+  // WebGraphicsContext3DSwapBuffersClient implementation.
+
   // Called by a GraphicsContext associated with this view when swapbuffers
   // is posted, completes or is aborted.
-  void OnViewContextSwapBuffersPosted();
-  void OnViewContextSwapBuffersComplete();
-  void OnViewContextSwapBuffersAborted();
+  virtual void OnViewContextSwapBuffersPosted() OVERRIDE;
+  virtual void OnViewContextSwapBuffersComplete() OVERRIDE;
+  virtual void OnViewContextSwapBuffersAborted() OVERRIDE;
 
   int history_list_offset() const { return history_list_offset_; }
 

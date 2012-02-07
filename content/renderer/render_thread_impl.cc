@@ -180,6 +180,8 @@ void RenderThreadImpl::Init() {
 #endif
 
   lazy_tls.Pointer()->Set(this);
+  GpuChannelHostFactory::set_instance(this);
+
 #if defined(OS_WIN)
   // If you are running plugins in this thread you need COM active but in
   // the normal case you don't.
@@ -267,6 +269,7 @@ RenderThreadImpl::~RenderThreadImpl() {
   if (webkit_platform_support_.get())
     WebKit::shutdown();
 
+  GpuChannelHostFactory::set_instance(NULL);
   lazy_tls.Pointer()->Set(NULL);
 
   // TODO(port)
@@ -677,6 +680,50 @@ void RenderThreadImpl::ReleaseCachedFonts() {
 
 #endif  // OS_WIN
 
+bool RenderThreadImpl::IsMainThread() {
+  return !!current();
+}
+
+bool RenderThreadImpl::IsIOThread() {
+  return MessageLoop::current() == ChildProcess::current()->io_message_loop();
+}
+
+MessageLoop* RenderThreadImpl::GetMainLoop() {
+  return message_loop();
+}
+base::MessageLoopProxy* RenderThreadImpl::GetIOLoopProxy() {
+  return ChildProcess::current()->io_message_loop_proxy();
+}
+
+base::WaitableEvent* RenderThreadImpl::GetShutDownEvent() {
+  return ChildProcess::current()->GetShutDownEvent();
+}
+
+scoped_ptr<base::SharedMemory> RenderThreadImpl::AllocateSharedMemory(
+    uint32 size) {
+  if (!IsMainThread())
+    return scoped_ptr<base::SharedMemory>();
+  base::SharedMemoryHandle handle;
+  if (!ChildThread::Send(new ChildProcessHostMsg_SyncAllocateSharedMemory(
+      size,
+      &handle))) {
+    return scoped_ptr<base::SharedMemory>();
+  }
+  if (!base::SharedMemory::IsHandleValid(handle))
+    return scoped_ptr<base::SharedMemory>();
+  return scoped_ptr<base::SharedMemory>(new base::SharedMemory(handle, false));
+}
+
+int32 RenderThreadImpl::CreateViewCommandBuffer(
+      int32 surface_id, const GPUCreateCommandBufferConfig& init_params) {
+  int32 route_id = MSG_ROUTING_NONE;
+  ChildThread::Send(new GpuHostMsg_CreateViewCommandBuffer(
+      surface_id,
+      init_params,
+      &route_id));
+  return route_id;
+}
+
 int32 RenderThreadImpl::RoutingIDForCurrentContext() {
   int32 routing_id = MSG_ROUTING_CONTROL;
   if (v8::Context::InContext()) {
@@ -798,7 +845,7 @@ GpuChannelHost* RenderThreadImpl::EstablishGpuChannelSync(
   }
 
   if (!gpu_channel_.get())
-    gpu_channel_ = new GpuChannelHost;
+    gpu_channel_ = new GpuChannelHost(this);
 
   // Ask the browser for the channel name.
   IPC::ChannelHandle channel_handle;

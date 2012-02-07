@@ -573,9 +573,10 @@ RendererWebKitPlatformSupportImpl::createOffscreenGraphicsContext3D(
     return webkit::gpu::WebGraphicsContext3DInProcessImpl::CreateForWebView(
             attributes, NULL, false);
   } else {
-    scoped_ptr<WebGraphicsContext3D> context;
-    context.reset(new WebGraphicsContext3DCommandBufferImpl());
-    if (!context->initialize(attributes, NULL, false))
+    base::WeakPtr<WebGraphicsContext3DSwapBuffersClient> null_client;
+    scoped_ptr<WebGraphicsContext3DCommandBufferImpl> context(
+        new WebGraphicsContext3DCommandBufferImpl(0, GURL(), null_client));
+    if (!context->Initialize(attributes))
       return NULL;
     return context.release();
   }

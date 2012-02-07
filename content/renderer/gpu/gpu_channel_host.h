@@ -15,6 +15,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/process_util.h"
 #include "base/synchronization/lock.h"
+#include "content/common/gpu/gpu_process_launch_causes.h"
 #include "content/common/message_router.h"
 #include "content/public/common/gpu_info.h"
 #include "content/renderer/gpu/gpu_video_decode_accelerator_host.h"
@@ -26,8 +27,10 @@
 #include "ui/gfx/size.h"
 
 class CommandBufferProxy;
+struct GPUCreateCommandBufferConfig;
 class GURL;
 class TransportTextureService;
+class MessageLoop;
 
 namespace base {
 class MessageLoopProxy;
@@ -43,6 +46,31 @@ struct GpuListenerInfo {
 
   base::WeakPtr<IPC::Channel::Listener> listener;
   scoped_refptr<base::MessageLoopProxy> loop;
+};
+
+class GpuChannelHostFactory {
+ public:
+  virtual ~GpuChannelHostFactory();
+  static GpuChannelHostFactory* instance() { return instance_; }
+
+  virtual bool IsMainThread() = 0;
+  virtual bool IsIOThread() = 0;
+  virtual MessageLoop* GetMainLoop() = 0;
+  virtual base::MessageLoopProxy* GetIOLoopProxy() = 0;
+  virtual base::WaitableEvent* GetShutDownEvent() = 0;
+  virtual scoped_ptr<base::SharedMemory> AllocateSharedMemory(uint32 size) = 0;
+  virtual int32 CreateViewCommandBuffer(
+      int32 surface_id, const GPUCreateCommandBufferConfig& init_params) = 0;
+  virtual GpuChannelHost* EstablishGpuChannelSync(
+      content::CauseForGpuLaunch) = 0;
+
+ protected:
+  static void set_instance(GpuChannelHostFactory* instance) {
+    instance_ = instance;
+  }
+
+ private:
+  static GpuChannelHostFactory* instance_;
 };
 
 // Encapsulates an IPC channel between the renderer and one plugin process.
@@ -61,7 +89,7 @@ class GpuChannelHost : public IPC::Message::Sender,
   };
 
   // Called on the render thread
-  GpuChannelHost();
+  explicit GpuChannelHost(GpuChannelHostFactory* factory);
   virtual ~GpuChannelHost();
 
   // Connect to GPU process channel.
@@ -128,6 +156,8 @@ class GpuChannelHost : public IPC::Message::Sender,
   // the state on this side to lost.
   void ForciblyCloseChannel();
 
+  GpuChannelHostFactory* factory() const { return factory_; }
+
  private:
   // A filter used internally to route incoming messages from the IO thread
   // to the correct message loop.
@@ -151,6 +181,8 @@ class GpuChannelHost : public IPC::Message::Sender,
     typedef base::hash_map<int, GpuListenerInfo> ListenerMap;
     ListenerMap listeners_;
   };
+
+  GpuChannelHostFactory* factory_;
 
   State state_;
 

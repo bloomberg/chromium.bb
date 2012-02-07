@@ -101,8 +101,7 @@ void CommandBufferProxy::SetChannelErrorCallback(
 }
 
 bool CommandBufferProxy::Initialize() {
-  ChildThread* child_thread = ChildThread::current();
-  if (!child_thread)
+  if (!channel_->factory()->IsMainThread())
     return false;
 
   bool result;
@@ -179,30 +178,18 @@ int32 CommandBufferProxy::CreateTransferBuffer(size_t size, int32 id_request) {
   if (last_state_.error != gpu::error::kNoError)
     return -1;
 
-  ChildThread* child_thread = ChildThread::current();
-  if (!child_thread)
-    return -1;
-
-  base::SharedMemoryHandle handle;
-  if (!child_thread->Send(new ChildProcessHostMsg_SyncAllocateSharedMemory(
-      size,
-      &handle))) {
-    return -1;
-  }
-
-  if (!base::SharedMemory::IsHandleValid(handle))
-    return -1;
-
-  // Handle is closed by the SharedMemory object below. This stops
-  // base::FileDescriptor from closing it as well.
-#if defined(OS_POSIX)
-  handle.auto_close = false;
-#endif
-
   // Take ownership of shared memory. This will close the handle if Send below
   // fails. Otherwise, callee takes ownership before this variable
   // goes out of scope by duping the handle.
-  base::SharedMemory shared_memory(handle, false);
+  scoped_ptr<base::SharedMemory> shm(
+      channel_->factory()->AllocateSharedMemory(size));
+  if (!shm.get())
+    return -1;
+
+  base::SharedMemoryHandle handle = shm->handle();
+#if defined(OS_POSIX)
+  DCHECK(!handle.auto_close);
+#endif
 
   int32 id;
   if (!Send(new GpuCommandBufferMsg_RegisterTransferBuffer(route_id_,

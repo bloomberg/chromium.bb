@@ -1502,9 +1502,21 @@ WebGraphicsContext3D* RenderViewImpl::createGraphicsContext3D(
     return webkit::gpu::WebGraphicsContext3DInProcessImpl::CreateForWebView(
           attributes, webview(), direct);
   } else {
-    scoped_ptr<WebGraphicsContext3D> context(
-        new WebGraphicsContext3DCommandBufferImpl());
-    if (!context->initialize(attributes, webview(), direct))
+    int surface = direct ? surface_id() : 0;
+
+    GURL url;
+    if (webview()->mainFrame())
+      url = GURL(webview()->mainFrame()->document().url());
+
+    base::WeakPtr<WebGraphicsContext3DSwapBuffersClient> swap_client;
+    if (direct)
+      swap_client = AsWeakPtr();
+
+    scoped_ptr<WebGraphicsContext3DCommandBufferImpl> context(
+        new WebGraphicsContext3DCommandBufferImpl(
+            surface, url, swap_client));
+
+    if (!context->Initialize(attributes))
       return NULL;
     return context.release();
   }

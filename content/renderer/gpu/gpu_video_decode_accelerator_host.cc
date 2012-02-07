@@ -10,7 +10,6 @@
 #include "content/common/gpu/gpu_messages.h"
 #include "content/common/view_messages.h"
 #include "content/renderer/gpu/gpu_channel_host.h"
-#include "content/renderer/render_thread_impl.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_message_utils.h"
 

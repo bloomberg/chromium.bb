@@ -6,8 +6,6 @@
 #define CONTENT_RENDERER_GPU_WEBGRAPHICSCONTEXT3D_COMMAND_BUFFER_IMPL_H_
 #pragma once
 
-#if defined(ENABLE_GPU)
-
 #include <string>
 #include <vector>
 
@@ -47,17 +45,29 @@ using WebKit::WGC3Dclampf;
 using WebKit::WGC3Dintptr;
 using WebKit::WGC3Dsizeiptr;
 
+// TODO(piman): move this logic to the compositor and remove it from the
+// context...
+class WebGraphicsContext3DSwapBuffersClient {
+ public:
+  virtual ~WebGraphicsContext3DSwapBuffersClient() { }
+  virtual void OnViewContextSwapBuffersPosted() = 0;
+  virtual void OnViewContextSwapBuffersComplete() = 0;
+  virtual void OnViewContextSwapBuffersAborted() = 0;
+};
+
 class WebGraphicsContext3DCommandBufferImpl
     : public WebKit::WebGraphicsContext3D {
  public:
-  WebGraphicsContext3DCommandBufferImpl();
+  WebGraphicsContext3DCommandBufferImpl(
+      int surface_id,
+      const GURL& active_url,
+      const base::WeakPtr<WebGraphicsContext3DSwapBuffersClient>& swap_client);
   virtual ~WebGraphicsContext3DCommandBufferImpl();
+
+  bool Initialize(const Attributes& attributes);
 
   //----------------------------------------------------------------------
   // WebGraphicsContext3D methods
-  virtual bool initialize(WebGraphicsContext3D::Attributes attributes,
-                          WebKit::WebView*,
-                          bool renderDirectlyToWebView);
 
   // Must be called after initialize() and before any of the following methods.
   // Permanently binds to the first calling thread. Returns false if the
@@ -490,19 +500,10 @@ class WebGraphicsContext3DCommandBufferImpl
 
   // State needed by MaybeInitializeGL.
   GpuChannelHost* host_;
-  GURL active_url_;
   int32 surface_id_;
+  GURL active_url_;
+  base::WeakPtr<WebGraphicsContext3DSwapBuffersClient> swap_client_;
 
-  bool render_directly_to_web_view_;
-
-  // If rendering directly to WebView, weak pointer to it.
-  // This is only set when the context is bound to the main thread.
-  WebKit::WebView* web_view_;
-
-#if defined(OS_MACOSX)
-  // "Fake" plugin window handle in browser process for the compositor's output.
-  gfx::PluginWindowHandle plugin_handle_;
-#endif
   WebGraphicsContext3D::WebGraphicsContextLostCallback* context_lost_callback_;
   WGC3Denum context_lost_reason_;
 
@@ -529,5 +530,4 @@ class WebGraphicsContext3DCommandBufferImpl
 #endif
 };
 
-#endif  // defined(ENABLE_GPU)
 #endif  // CONTENT_RENDERER_GPU_WEBGRAPHICSCONTEXT3D_COMMAND_BUFFER_IMPL_H_

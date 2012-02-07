@@ -7,13 +7,17 @@
 #include "base/bind.h"
 #include "base/message_loop.h"
 #include "base/message_loop_proxy.h"
-#include "content/common/child_process.h"
+#include "content/common/child_thread.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "content/renderer/gpu/command_buffer_proxy.h"
-#include "content/renderer/render_process.h"
-#include "content/renderer/render_thread_impl.h"
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_sync_message_filter.h"
+
+GpuChannelHostFactory* GpuChannelHostFactory::instance_ = NULL;
+
+GpuChannelHostFactory::~GpuChannelHostFactory() {
+  DCHECK(!instance_);
+}
 
 using base::AutoLock;
 using base::MessageLoopProxy;
@@ -36,7 +40,7 @@ void GpuChannelHost::MessageFilter::AddRoute(
     int route_id,
     base::WeakPtr<IPC::Channel::Listener> listener,
     scoped_refptr<MessageLoopProxy> loop) {
-  DCHECK(MessageLoop::current() == ChildProcess::current()->io_message_loop());
+  DCHECK(parent_->factory_->IsIOThread());
   DCHECK(listeners_.find(route_id) == listeners_.end());
   GpuListenerInfo info;
   info.listener = listener;
@@ -45,7 +49,7 @@ void GpuChannelHost::MessageFilter::AddRoute(
 }
 
 void GpuChannelHost::MessageFilter::RemoveRoute(int route_id) {
-  DCHECK(MessageLoop::current() == ChildProcess::current()->io_message_loop());
+  DCHECK(parent_->factory_->IsIOThread());
   ListenerMap::iterator it = listeners_.find(route_id);
   if (it != listeners_.end())
     listeners_.erase(it);
@@ -53,7 +57,7 @@ void GpuChannelHost::MessageFilter::RemoveRoute(int route_id) {
 
 bool GpuChannelHost::MessageFilter::OnMessageReceived(
     const IPC::Message& message) {
-  DCHECK(MessageLoop::current() == ChildProcess::current()->io_message_loop());
+  DCHECK(parent_->factory_->IsIOThread());
   // Never handle sync message replies or we will deadlock here.
   if (message.is_reply())
     return false;
@@ -76,7 +80,7 @@ bool GpuChannelHost::MessageFilter::OnMessageReceived(
 }
 
 void GpuChannelHost::MessageFilter::OnChannelError() {
-  DCHECK(MessageLoop::current() == ChildProcess::current()->io_message_loop());
+  DCHECK(parent_->factory_->IsIOThread());
   // Inform all the proxies that an error has occurred. This will be reported
   // via OpenGL as a lost context.
   for (ListenerMap::iterator it = listeners_.begin();
@@ -90,14 +94,14 @@ void GpuChannelHost::MessageFilter::OnChannelError() {
 
   listeners_.clear();
 
-  ChildThread* main_thread = RenderProcess::current()->main_thread();
-  MessageLoop* main_loop = main_thread->message_loop();
+  MessageLoop* main_loop = parent_->factory_->GetMainLoop();
   main_loop->PostTask(FROM_HERE,
                       base::Bind(&GpuChannelHost::OnChannelError, parent_));
 }
 
-GpuChannelHost::GpuChannelHost()
-    : state_(kUnconnected) {
+GpuChannelHost::GpuChannelHost(GpuChannelHostFactory* factory)
+    : factory_(factory),
+      state_(kUnconnected) {
 }
 
 GpuChannelHost::~GpuChannelHost() {
@@ -106,16 +110,16 @@ GpuChannelHost::~GpuChannelHost() {
 void GpuChannelHost::Connect(
     const IPC::ChannelHandle& channel_handle,
     base::ProcessHandle renderer_process_for_gpu) {
-  DCHECK(RenderThreadImpl::current());
+  DCHECK(factory_->IsMainThread());
   // Open a channel to the GPU process. We pass NULL as the main listener here
   // since we need to filter everything to route it to the right thread.
   channel_.reset(new IPC::SyncChannel(
       channel_handle, IPC::Channel::MODE_CLIENT, NULL,
-      ChildProcess::current()->io_message_loop_proxy(), true,
-      ChildProcess::current()->GetShutDownEvent()));
+      factory_->GetIOLoopProxy(), true,
+      factory_->GetShutDownEvent()));
 
   sync_filter_ = new IPC::SyncMessageFilter(
-      ChildProcess::current()->GetShutDownEvent());
+      factory_->GetShutDownEvent());
 
   channel_->AddFilter(sync_filter_.get());
 
@@ -163,12 +167,12 @@ bool GpuChannelHost::Send(IPC::Message* message) {
   // Currently we need to choose between two different mechanisms for sending.
   // On the main thread we use the regular channel Send() method, on another
   // thread we use SyncMessageFilter. We also have to be careful interpreting
-  // RenderThreadImpl::current() since it might return NULL during shutdown,
+  // IsMainThread() since it might return false during shutdown,
   // impl we are actually calling from the main thread (discard message then).
   //
   // TODO: Can we just always use sync_filter_ since we setup the channel
   //       without a main listener?
-  if (RenderThreadImpl::current()) {
+  if (factory_->IsMainThread()) {
     if (channel_.get())
       return channel_->Send(message);
   } else if (MessageLoop::current()) {
@@ -188,7 +192,7 @@ CommandBufferProxy* GpuChannelHost::CreateViewCommandBuffer(
     const std::vector<int32>& attribs,
     const GURL& active_url,
     gfx::GpuPreference gpu_preference) {
-  DCHECK(ChildThread::current());
+  DCHECK(factory_->IsMainThread());
 #if defined(ENABLE_GPU)
   AutoLock lock(context_lock_);
   // An error occurred. Need to get the host again to reinitialize it.
@@ -202,15 +206,7 @@ CommandBufferProxy* GpuChannelHost::CreateViewCommandBuffer(
   init_params.attribs = attribs;
   init_params.active_url = active_url;
   init_params.gpu_preference = gpu_preference;
-  int32 route_id;
-  if (!ChildThread::current()->Send(
-      new GpuHostMsg_CreateViewCommandBuffer(
-          surface_id,
-          init_params,
-          &route_id))) {
-    return NULL;
-  }
-
+  int32 route_id = factory_->CreateViewCommandBuffer(surface_id, init_params);
   if (route_id == MSG_ROUTING_NONE)
     return NULL;
 
@@ -291,7 +287,7 @@ void GpuChannelHost::AddRoute(
     int route_id, base::WeakPtr<IPC::Channel::Listener> listener) {
   DCHECK(MessageLoopProxy::current());
 
-  MessageLoopProxy* io_loop = RenderProcess::current()->io_message_loop_proxy();
+  MessageLoopProxy* io_loop = factory_->GetIOLoopProxy();
   io_loop->PostTask(FROM_HERE,
                     base::Bind(&GpuChannelHost::MessageFilter::AddRoute,
                                channel_filter_.get(), route_id, listener,
@@ -299,7 +295,7 @@ void GpuChannelHost::AddRoute(
 }
 
 void GpuChannelHost::RemoveRoute(int route_id) {
-  MessageLoopProxy* io_loop = RenderProcess::current()->io_message_loop_proxy();
+  MessageLoopProxy* io_loop = factory_->GetIOLoopProxy();
   io_loop->PostTask(FROM_HERE,
                     base::Bind(&GpuChannelHost::MessageFilter::RemoveRoute,
                                channel_filter_.get(), route_id));
