@@ -5210,7 +5210,7 @@ Because search results are requested even while you're typing your query, your d
         http://support.google.com/chrome/bin/answer.py?answer=95440&amp;hl=[GRITLANGCODE]
       </message>
       <message name="IDS_INSTANT_PREF_WITH_WARNING" desc="Preference for enabling instant, along with the warning that used to be displayed beneath it.">
-        Enable Instant for faster searching (omnibox input may be <ph name="BEGIN_LINK">&lt;a target="_blank" href="$1"&gt;</ph>logged<ph name="END_LINK">&lt;/a&gt;</ph>).
+        Enable Instant for faster searching (omnibox input may be <ph name="BEGIN_LINK">&lt;a target="_blank" href="$1"&gt;</ph>logged<ph name="END_LINK">&lt;/a&gt;</ph>)
       </message>
       <message name="IDS_INSTANT_PREF" desc="Preference for enabling instant">
         Enable Instant for faster searching
@@ -9709,7 +9709,7 @@ The following application will be launched if you accept this request:
       </if>
 
       <message name="IDS_OPTIONS_DISABLE_WEB_SERVICES" desc="The text in the options panel describes that we can disable web services.">
-        You may optionally disable these services
+        You may optionally disable these services.
       </message>
       <message name="IDS_OPTIONS_LINKDOCTOR_PREF" desc="The documentation string of the 'Use Link Doctor' preference">
         Use a web service to help resolve navigation errors

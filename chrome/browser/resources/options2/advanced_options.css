@@ -45,3 +45,11 @@
    display: inline-block;
    vertical-align: baseline;
 }
+
+#privacy-explanation {
+  line-height: 1.8em;
+}
+
+#privacy-explanation span:first-child {
+  display: block;
+}
