@@ -392,8 +392,8 @@ int main(int  argc,
     }
   }
 
-#if NACL_WINDOWS
   if (exception_handling_requested) {
+#if NACL_WINDOWS
     int status;
     DWORD exit_code;
     exception_handling = 1;
@@ -407,9 +407,10 @@ int main(int  argc,
               GetLastError());
       return -1;
     }
-  }
+#elif NACL_LINUX
+    handle_signals = 1;
+    exception_handling = 1;
 #elif NACL_OSX
-  if (exception_handling_requested) {
     int status;
     exception_handling = 1;
     status = NaClInterceptMachExceptions();
@@ -417,8 +418,10 @@ int main(int  argc,
       fprintf(stderr, "ERROR setting up Mach exception interception.\n");
       return -1;
     }
-  }
+#else
+# error Unknown host OS
 #endif
+  }
   if (exception_handling_requested && !exception_handling) {
     fprintf(stderr, "WARNING: exception handling is not supported\n");
   }

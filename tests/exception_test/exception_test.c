@@ -24,10 +24,18 @@ extern uintptr_t stack_ptr_at_crash;
 extern char prog_ctr_at_crash[];
 #endif
 
+/*
+ * These variables are set by the assembly code.  We initialise them
+ * to dummy values to avoid false positives in case the assembly code
+ * does not get run.
+ */
 #if defined(__i386__)
-extern uint32_t exception_handler_esp;
-void exception_handler_wrapper(int prog_ctr, int stack_ptr);
+uint32_t exception_handler_esp = -1;
+#elif defined(__x86_64__)
+uint64_t exception_handler_rsp = -1;
+uint64_t exception_handler_rbp = -1;
 #endif
+void exception_handler_wrapper(int prog_ctr, int stack_ptr);
 
 char stack[4096];
 
@@ -113,6 +121,21 @@ void exception_handler(int eip, int esp) {
   /* Check that no more than the stack alignment size is wasted. */
   assert(stack_top - STACK_ALIGNMENT < frame_top);
   assert(frame_top <= stack_top);
+#elif defined(__x86_64__)
+  /* Skip over the 8 byte return address. */
+  uintptr_t frame_base = ((uint32_t) exception_handler_rsp) + 8;
+  assert(frame_base % STACK_ALIGNMENT == 0);
+  /* Nothing else is pushed onto the stack yet. */
+  char *frame_top = (char *) frame_base;
+  /* Check that no more than the stack alignment size is wasted. */
+  assert(stack_top - STACK_ALIGNMENT < frame_top);
+  assert(frame_top <= stack_top);
+
+  /* Check that %rbp has been reset to a safe value. */
+  uint64_t sandbox_base;
+  asm("mov %%r15, %0" : "=m"(sandbox_base));
+  assert(exception_handler_rbp == sandbox_base);
+  assert(exception_handler_rsp >> 32 == sandbox_base >> 32);
 #endif
 
   /*
@@ -128,7 +151,7 @@ void exception_handler(int eip, int esp) {
 
 void test_exception_stack_with_size(char *stack, size_t stack_size) {
   handler_func_t handler;
-#if defined(__i386__)
+#ifndef __pnacl__
   handler = exception_handler_wrapper;
 #else
   handler = exception_handler;

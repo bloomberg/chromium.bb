@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -35,6 +35,7 @@
 EXTERN_C_BEGIN
 
 struct NaClApp;
+struct NaClAppThread;
 
 enum NaClSignalResult {
   NACL_SIGNAL_SEARCH,   /* Try our handler or OS */
@@ -144,6 +145,10 @@ void NaClSignalContextToHandler(void *rawCtx,
  * untrusted environment.
  */
 int NaClSignalContextIsUntrusted(const struct NaClSignalContext *sigCtx);
+
+void NaClSignalContextGetCurrentThread(const struct NaClSignalContext *sigCtx,
+                                       int *is_untrusted,
+                                       struct NaClAppThread **result_thread);
 
 /*
  * A basic handler which will do nothing, passing the

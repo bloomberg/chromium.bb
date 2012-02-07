@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -13,11 +13,35 @@
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/platform/nacl_exit.h"
 #include "native_client/src/shared/platform/nacl_log.h"
+#include "native_client/src/trusted/service_runtime/nacl_app_thread.h"
 #include "native_client/src/trusted/service_runtime/nacl_config.h"
 #include "native_client/src/trusted/service_runtime/nacl_globals.h"
 #include "native_client/src/trusted/service_runtime/nacl_signal.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 #include "native_client/src/trusted/service_runtime/sel_rt.h"
+
+
+struct ExceptionFrame {
+#if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86
+  nacl_reg_t return_addr;
+# if NACL_BUILD_SUBARCH == 32
+  uint32_t prog_ctr; /* Function argument 1 */
+  uint32_t stack_ptr; /* Function argument 2 */
+# endif
+#elif NACL_ARCH(NACL_BUILD_ARCH) == NACL_arm
+  /*
+   * Empty structs are a corner case and can have different sizeof()s
+   * in C and C++, so to avoid potential confusion we have a dummy
+   * entry here.
+   * TODO(mseaborn): Eventually we will push a proper stack frame
+   * containing a full register dump, so this dummy field will go
+   * away.
+   */
+  uint32_t dummy;
+#else
+# error Unknown architecture
+#endif
+};
 
 /*
  * This module is based on the Posix signal model.  See:
@@ -166,20 +190,118 @@ static void FindAndRunHandler(int sig, siginfo_t *info, void *uc) {
   }
 }
 
-/* For x86 32b, we need to restore segment registers */
+/*
+ * This function checks whether we can dispatch the signal to an
+ * untrusted exception handler.  If we can, it modifies the register
+ * state to call the handler and writes a stack frame into into
+ * untrusted address space, and returns true.  Otherwise, it returns
+ * false.
+ */
+static int DispatchToUntrustedHandler(struct NaClAppThread *natp,
+                                      struct NaClSignalContext *regs) {
+  struct NaClApp *nap = natp->nap;
+  uintptr_t frame_addr;
+  volatile struct ExceptionFrame *frame;
+  uint32_t new_stack_ptr;
+  /*
+   * Returning from the exception handler is not possible, so to avoid
+   * any confusion that might arise from jumping to an uninitialised
+   * address, we set the return address to zero.
+   */
+  const uint32_t kReturnAddr = 0;
+
+  if (nap->exception_handler == 0) {
+    return 0;
+  }
+  if (natp->user.exception_flag) {
+    return 0;
+  }
+
+  natp->user.exception_flag = 1;
+
+  if (natp->user.exception_stack == 0) {
+    new_stack_ptr = regs->stack_ptr;
+  } else {
+    new_stack_ptr = natp->user.exception_stack;
+  }
+  /* Allocate space for the stack frame, and ensure its alignment. */
+  new_stack_ptr -= sizeof(struct ExceptionFrame) - NACL_STACK_PAD_BELOW_ALIGN;
+  new_stack_ptr = new_stack_ptr & ~NACL_STACK_ALIGN_MASK;
+  new_stack_ptr -= NACL_STACK_PAD_BELOW_ALIGN;
+  frame_addr = NaClUserToSysAddrRange(nap, new_stack_ptr,
+                                      sizeof(struct ExceptionFrame));
+  if (frame_addr == kNaClBadAddress) {
+    /* We cannot write the stack frame. */
+    return 0;
+  }
+  frame = (struct ExceptionFrame *) frame_addr;
+
+#if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86
+  frame->return_addr = kReturnAddr;
+#endif
+
 #if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && NACL_BUILD_SUBARCH == 32
+  frame->prog_ctr = regs->prog_ctr; /* Argument 1 */
+  frame->stack_ptr = regs->stack_ptr; /* Argument 2 */
+
+  regs->prog_ctr = nap->exception_handler;
+  regs->stack_ptr = new_stack_ptr;
+#elif NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && NACL_BUILD_SUBARCH == 64
+  /* Truncate the saved %rsp and %rbp values for portability. */
+  regs->rdi = (uint32_t) regs->prog_ctr; /* Argument 1 */
+  regs->rsi = (uint32_t) regs->stack_ptr; /* Argument 2 */
+
+  regs->prog_ctr = NaClUserToSys(nap, nap->exception_handler);
+  regs->stack_ptr = NaClUserToSys(nap, new_stack_ptr);
+  /*
+   * We cannot leave %rbp unmodified because the x86-64 sandbox allows
+   * %rbp to point temporarily to the lower 4GB of address space, and
+   * we could have received an asynchronous signal while %rbp is in
+   * this state.  Even SIGSEGV can be asynchronous if sent with
+   * kill().
+   *
+   * For now, reset %rbp to zero in untrusted address space.  In the
+   * future, we might want to allow the stack to be unwound past the
+   * exception frame, and so we might want to treat %rbp differently.
+   */
+  regs->rbp = nap->mem_start;
+#elif NACL_ARCH(NACL_BUILD_ARCH) == NACL_arm
+  regs->lr = kReturnAddr;
+
+  regs->r0 = regs->prog_ctr; /* Argument 1 */
+  regs->r1 = regs->stack_ptr; /* Argument 2 */
+
+  regs->prog_ctr = NaClUserToSys(nap, nap->exception_handler);
+  regs->stack_ptr = NaClUserToSys(nap, new_stack_ptr);
+#else
+# error Unsupported architecture
+#endif
+
+  return 1;
+}
+
 static void SignalCatch(int sig, siginfo_t *info, void *uc) {
   struct NaClSignalContext sigCtx;
+  int is_untrusted;
+  struct NaClAppThread *natp;
 
-  /* Preserve the handler's segment registers just in case. */
-  uint16_t gs = NaClGetGs();
-  uint16_t es = NaClGetEs();
-  uint16_t fs = NaClGetFs();
+#if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86
+  /*
+   * Reset the x86 direction flag.  New versions of gcc and libc
+   * assume that the direction flag is clear on entry to a function,
+   * as the x86 ABI requires.  However, untrusted code can set this
+   * flag, and versions of Linux before 2.6.25 do not clear the flag
+   * before running the signal handler, so we clear it here for safety.
+   * See http://code.google.com/p/nativeclient/issues/detail?id=1495
+   */
+  __asm__("cld");
+#endif
 
   NaClSignalContextFromHandler(&sigCtx, uc);
-  if (NaClSignalContextIsUntrusted(&sigCtx)) {
-    struct NaClThreadContext *nacl_thread;
+  NaClSignalContextGetCurrentThread(&sigCtx, &is_untrusted, &natp);
 
+#if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && NACL_BUILD_SUBARCH == 32
+  if (is_untrusted) {
     /*
      * On Linux, the kernel does not restore %gs when entering the
      * signal handler, so we must do that here.  We need to do this
@@ -201,32 +323,21 @@ static void SignalCatch(int sig, siginfo_t *info, void *uc) {
      * Both systems necessarily restore %cs, %ds, and %ss otherwise
      * we would have a hard time handling signals in untrusted code
      * at all.
-     *
-     * As a precaution we restore %es and %fs as well, since this
-     * may be nessesary with other POSIX implementions or may become
-     * necessary in the future.
      */
-    nacl_thread = nacl_sys[sigCtx.gs >> 3];
-    NaClSetGs(nacl_thread->gs);
-    NaClSetEs(nacl_thread->es);
-    NaClSetFs(nacl_thread->fs);
+    NaClSetGs(natp->sys.gs);
+  }
+#endif
+
+  if (is_untrusted && sig == SIGSEGV) {
+    if (DispatchToUntrustedHandler(natp, &sigCtx)) {
+      NaClSignalContextToHandler(uc, &sigCtx);
+      /* Resume untrusted code using the modified register state. */
+      return;
+    }
   }
 
   FindAndRunHandler(sig, info, uc);
-
-  /*
-   * Restore the handler's segment registers prior to returning from the
-   * signal handler, just in case we are in untrusted code and changed them.
-   */
-  NaClSetGs(gs);
-  NaClSetEs(es);
-  NaClSetFs(fs);
 }
-#else
-static void SignalCatch(int sig, siginfo_t *info, void *uc) {
-  FindAndRunHandler(sig, info, uc);
-}
-#endif
 
 
 void NaClSignalHandlerInitPlatform() {

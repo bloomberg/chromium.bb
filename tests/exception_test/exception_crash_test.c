@@ -6,6 +6,7 @@
 
 #include <assert.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 
@@ -42,8 +43,8 @@ void dummy_handler(int prog_ctr, int stack_ptr) {
  * cannot be set to point outside of the sandbox's address space on
  * x86-64 and ARM.
  */
-#if defined(__i386__)
 void test_bad_stack() {
+#if defined(__i386__)
   int rc = NACL_SYSCALL(exception_handler)(dummy_handler, NULL);
   assert(rc == 0);
   fprintf(stderr, "** intended_exit_status=untrusted_segfault\n");
@@ -54,8 +55,12 @@ void test_bad_stack() {
       "movl $0xffffffff, %esp\n"
       /* Cause crash. */
       "movl $0, 0\n");
-}
+#else
+  fprintf(stderr, "test_bad_stack does not apply on this platform\n");
+  fprintf(stderr, "** intended_exit_status=0\n");
+  exit(0);
 #endif
+}
 
 int main(int argc, char **argv) {
   if (argc != 2) {
@@ -63,14 +68,12 @@ int main(int argc, char **argv) {
     return 1;
   }
 
-  if (strcmp(argv[1], "test_bad_handler") == 0)
+  if (strcmp(argv[1], "test_bad_handler") == 0) {
     test_bad_handler();
-
-#if defined(__i386__)
-  if (strcmp(argv[1], "test_bad_stack") == 0)
+  } else if (strcmp(argv[1], "test_bad_stack") == 0) {
     test_bad_stack();
-#endif
-
-  fprintf(stderr, "Error: Unknown test: \"%s\"\n", argv[1]);
+  } else {
+    fprintf(stderr, "Error: Unknown test: \"%s\"\n", argv[1]);
+  }
   return 1;
 }
