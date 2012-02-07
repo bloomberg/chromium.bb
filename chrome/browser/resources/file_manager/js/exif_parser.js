@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -95,10 +95,8 @@ ExifParser.prototype.parseSlice = function(
 
       if (mark == EXIF_MARK_EXIF) {
         this.parseExifSection(metadata, buf, br);
-      } else if ((mark & ~0xF) == EXIF_MARK_SOF) {
+      } else if (ExifParser.isSOF_(mark)) {
         // The most reliable size information is encoded in the SOF section.
-        // There are 16 variants of the SOF format distinguished by the last
-        // hex digit of the mark, but the part we want is always the same.
         br.seek(1, ByteReader.SEEK_CUR); // Skip the precision byte.
         var height = br.readScalar(2);
         var width = br.readScalar(2);
@@ -112,6 +110,16 @@ ExifParser.prototype.parseSlice = function(
   } catch (e) {
     errorCallback(e.toString());
   }
+};
+
+ExifParser.isSOF_ = function(mark) {
+  // There are 13 variants of SOF fragment format distinguished by the last
+  // hex digit of the mark, but the part we want is always the same.
+  if ((mark & ~0xF) != EXIF_MARK_SOF) return false;
+
+  // If the last digit is 4, 8 or 12 it is not really a SOF.
+  var type = mark & 0xF;
+  return (type != 4 && type != 8 && type != 12);
 };
 
 ExifParser.prototype.parseExifSection = function(metadata, buf, br) {
