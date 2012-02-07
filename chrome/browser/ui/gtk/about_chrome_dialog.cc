@@ -246,7 +246,7 @@ void ShowAboutDialogForProfile(GtkWindow* parent, Profile* profile) {
   gtk_box_pack_start(GTK_BOX(vbox), gtk_label_new(""), FALSE, FALSE, 0);
 
   std::vector<size_t> url_offsets;
-  string16 text = l10n_util::GetStringFUTF16(IDS_ABOUT_TERMS_OF_SERVICE,
+  string16 text = l10n_util::GetStringFUTF16(IDS_ABOUT_OLD_TERMS_OF_SERVICE,
                                              string16(),
                                              string16(),
                                              &url_offsets);

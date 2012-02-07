@@ -282,7 +282,7 @@ void AboutChromeView::Init() {
 
 #if defined(GOOGLE_CHROME_BUILD)
   std::vector<size_t> url_offsets;
-  text = l10n_util::GetStringFUTF16(IDS_ABOUT_TERMS_OF_SERVICE,
+  text = l10n_util::GetStringFUTF16(IDS_ABOUT_OLD_TERMS_OF_SERVICE,
                                     string16(),
                                     string16(),
                                     &url_offsets);
