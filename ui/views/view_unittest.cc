@@ -2828,11 +2828,14 @@ TEST_F(ViewLayerTest, OrphanLayerAfterViewRemove) {
   EXPECT_TRUE(v2->layer()->IsDrawn());
 
   content_view->RemoveChildView(v1);
+
   EXPECT_FALSE(LayerIsAncestor(widget()->GetCompositor()->root_layer(),
                                v2->layer()));
 
   // Reparent |v2|.
   content_view->AddChildView(v2);
+  delete v1;
+  v1 = NULL;
   EXPECT_TRUE(LayerIsAncestor(widget()->GetCompositor()->root_layer(),
                               v2->layer()));
   EXPECT_TRUE(v2->layer()->IsDrawn());

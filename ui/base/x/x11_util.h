@@ -255,6 +255,21 @@ UI_EXPORT void InitXKeyEventForTesting(EventType type,
                                        int flags,
                                        XEvent* event);
 
+// Keeps track of a string returned by an X function (e.g. XGetAtomName) and
+// makes sure it's XFree'd.
+class UI_EXPORT XScopedString {
+ public:
+  explicit XScopedString(char* str) : string_(str) { }
+  ~XScopedString();
+
+  const char* string() const { return string_; }
+
+ private:
+  char* string_;
+
+  DISALLOW_COPY_AND_ASSIGN(XScopedString);
+};
+
 }  // namespace ui
 
 #endif  // UI_BASE_X_X11_UTIL_H_

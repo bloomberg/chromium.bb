@@ -1003,6 +1003,10 @@ void InitXKeyEventForTesting(EventType type,
   event->xkey = key_event;
 }
 
+XScopedString::~XScopedString() {
+  XFree(string_);
+}
+
 // ----------------------------------------------------------------------------
 // These functions are declared in x11_util_internal.h because they require
 // XLib.h to be included, and it conflicts with many other headers.

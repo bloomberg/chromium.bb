@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -64,8 +64,8 @@ XIValuatorClassInfo* FindTPValuator(Display* display,
         reinterpret_cast<XIValuatorClassInfo*>(info->classes[i]);
 
     if (v->label) {
-      const char* atom = XGetAtomName(display, v->label);
-      if (atom && strcmp(atom, atom_tp) == 0)
+      ui::XScopedString atom(XGetAtomName(display, v->label));
+      if (atom.string() && strcmp(atom.string(), atom_tp) == 0)
         return v;
     }
   }
@@ -151,8 +151,8 @@ void TouchFactory::UpdateDeviceList(Display* display) {
   XDeviceInfo* devlist = XListInputDevices(display, &count);
   for (int i = 0; i < count; i++) {
     if (devlist[i].type) {
-      const char* devtype = XGetAtomName(display, devlist[i].type);
-      if (devtype && !strcmp(devtype, XI_TOUCHSCREEN)) {
+      XScopedString devtype(XGetAtomName(display, devlist[i].type));
+      if (devtype.string() && !strcmp(devtype.string(), XI_TOUCHSCREEN)) {
         touch_device_lookup_[devlist[i].id] = true;
         touch_device_list_[devlist[i].id] = true;
         touch_device_available_ = true;
