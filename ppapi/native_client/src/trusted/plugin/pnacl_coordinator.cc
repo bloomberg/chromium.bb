@@ -736,8 +736,6 @@ NaClSubprocess* PnaclCoordinator::StartSubprocess(
 // class for interfacing with the rest of the coordinator.
 void WINAPI PnaclCoordinator::DoTranslateThread(void* arg) {
   PnaclCoordinator* coordinator = reinterpret_cast<PnaclCoordinator*>(arg);
-  Plugin* plugin = coordinator->plugin_;
-  BrowserInterface* browser_interface = plugin->browser_interface();
 
   nacl::scoped_ptr<NaClSubprocess> llc_subprocess(
       coordinator->StartSubprocess(kLlcUrl, coordinator->manifest_.get()));
