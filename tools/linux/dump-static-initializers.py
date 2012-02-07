@@ -147,7 +147,7 @@ def main():
   parser.add_option('-d', '--diffable', dest='diffable',
                     action='store_true', default=False,
                     help='Prints the filename on each line, for more easily '
-                         'diff-able output.')
+                         'diff-able output. (Used by sizes.py)')
   opts, args = parser.parse_args()
   if len(args) != 1:
     parser.error('missing filename argument')
@@ -183,12 +183,14 @@ def main():
         ref_output.append('  ' + ref)
 
     if opts.diffable:
-      print '\n'.join(qualified_filename + r for r in ref_output)
+      print '\n'.join('# ' + qualified_filename + r for r in ref_output)
     else:
       print '%s (initializer offset 0x%x size 0x%x)' % (qualified_filename,
                                                         addr, size)
       print '\n'.join(ref_output) + '\n'
 
+  if opts.diffable:
+    print '#',
   print 'Found %d static initializers in %d files.' % (initializer_count,
                                                        file_count)
 
