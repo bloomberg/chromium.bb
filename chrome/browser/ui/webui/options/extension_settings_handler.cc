@@ -571,6 +571,11 @@ void ExtensionSettingsHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_SHOW_DETAILS));
   localized_strings->SetString("extensionSettingsHideDetails",
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_HIDE_DETAILS));
+
+  // TODO(estade): comb through the above strings to find ones no longer used in
+  // uber extensions.
+  localized_strings->SetString("extensionUninstall",
+    l10n_util::GetStringUTF16(IDS_EXTENSIONS_UNINSTALL));
 }
 
 void ExtensionSettingsHandler::Initialize() {

@@ -177,6 +177,7 @@ cr.define('options', function() {
       // 'Remove' button.
       var trashTemplate = $('template-collection').querySelector('.trash');
       var trash = trashTemplate.cloneNode(true);
+      trash.title = templateData.extensionUninstall;
       trash.addEventListener('click', function(e) {
         chrome.send('extensionSettingsUninstall', [extension.id]);
       });
