@@ -292,6 +292,8 @@
       '-protector',
       # No Web Driver test for ChromeOS.
       '-about_plugins_ui',
+      # You cannot adjust the downloads directory on ChromeOS.
+      '-prefs.PrefsTest.testDownloadDirPref'
 
       # ==================================================
       # Disabled tests that need to be investigated/fixed.
@@ -350,6 +352,7 @@
       '-policy.PolicyTest.testDisable3DAPIs',
       # Chrome driver does not work in Chrome OS.
       '-prefs_ui',
+      '-prefs.PrefsTest.testGeolocationBlockedWhenTrackingDenied'
     ],
   },
 
