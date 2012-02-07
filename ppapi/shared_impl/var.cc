@@ -113,6 +113,9 @@ void Var::AssignVarID(int32 id) {
 
 // StringVar -------------------------------------------------------------------
 
+StringVar::StringVar() {
+}
+
 StringVar::StringVar(const std::string& str)
     : value_(str) {
 }
@@ -122,11 +125,6 @@ StringVar::StringVar(const char* str, uint32 len)
 }
 
 StringVar::~StringVar() {
-}
-
-StringVar::StringVar(scoped_ptr<std::string> str) {
-  // Swap the given string's contents in to value to avoid copying.
-  str->swap(value_);
 }
 
 StringVar* StringVar::AsStringVar() {
@@ -151,17 +149,6 @@ PP_Var StringVar::StringToPPVar(const char* data, uint32 len) {
 }
 
 // static
-PP_Var StringVar::StringToPPVar(scoped_ptr<std::string> str) {
-  DCHECK(str.get());
-  if (!str.get())
-    return PP_MakeNull();
-  scoped_refptr<StringVar> str_var(new StringVar(str.Pass()));
-  if (!str_var || !IsStringUTF8(str_var->value()))
-    return PP_MakeNull();
-  return str_var->GetPPVar();
-}
-
-// static
 StringVar* StringVar::FromPPVar(PP_Var var) {
   if (var.type != PP_VARTYPE_STRING)
     return NULL;
@@ -170,6 +157,13 @@ StringVar* StringVar::FromPPVar(PP_Var var) {
   if (!var_object)
     return NULL;
   return var_object->AsStringVar();
+}
+
+// static
+PP_Var StringVar::SwapValidatedUTF8StringIntoPPVar(std::string* src) {
+  scoped_refptr<StringVar> str(new StringVar);
+  str->value_.swap(*src);
+  return str->GetPPVar();
 }
 
 // ArrayBufferVar --------------------------------------------------------------

@@ -94,7 +94,6 @@ class PPAPI_SHARED_EXPORT StringVar : public Var {
  public:
   StringVar(const std::string& str);
   StringVar(const char* str, uint32 len);
-  StringVar(scoped_ptr<std::string> str);
   virtual ~StringVar();
 
   const std::string& value() const { return value_; }
@@ -117,13 +116,19 @@ class PPAPI_SHARED_EXPORT StringVar : public Var {
   // create a StringVar and return the reference to it in the var.
   static PP_Var StringToPPVar(const std::string& str);
   static PP_Var StringToPPVar(const char* str, uint32 len);
-  static PP_Var StringToPPVar(scoped_ptr<std::string> str);
+
+  // Same as StringToPPVar but avoids a copy by destructively swapping the
+  // given string into the newly created StringVar. The string must already be
+  // valid UTF-8. After the call, *src will be empty.
+  static PP_Var SwapValidatedUTF8StringIntoPPVar(std::string* src);
 
   // Helper function that converts a PP_Var to a string. This will return NULL
   // if the PP_Var is not of string type or the string is invalid.
   static StringVar* FromPPVar(PP_Var var);
 
  private:
+  StringVar();  // Makes an empty string.
+
   std::string value_;
 
   DISALLOW_COPY_AND_ASSIGN(StringVar);

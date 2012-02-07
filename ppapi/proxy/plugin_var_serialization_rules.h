@@ -22,17 +22,12 @@ class PluginVarSerializationRules : public VarSerializationRules {
   ~PluginVarSerializationRules();
 
   // VarSerialization implementation.
-  virtual PP_Var SendCallerOwned(const PP_Var& var,
-                                 const std::string** str_ptr_out);
+  virtual PP_Var SendCallerOwned(const PP_Var& var);
   virtual PP_Var BeginReceiveCallerOwned(const PP_Var& var,
-                                         scoped_ptr<std::string> str,
                                          Dispatcher* dispatcher);
   virtual void EndReceiveCallerOwned(const PP_Var& var);
-  virtual PP_Var ReceivePassRef(const PP_Var& var,
-                                scoped_ptr<std::string> str,
-                                Dispatcher* dispatcher);
-  virtual PP_Var BeginSendPassRef(const PP_Var& var,
-                                  const std::string** str_ptr_out);
+  virtual PP_Var ReceivePassRef(const PP_Var& var, Dispatcher* dispatcher);
+  virtual PP_Var BeginSendPassRef(const PP_Var& var);
   virtual void EndSendPassRef(const PP_Var& var, Dispatcher* dispatcher);
   virtual void ReleaseObjectRef(const PP_Var& var);
 

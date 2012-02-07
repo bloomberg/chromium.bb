@@ -99,21 +99,11 @@ class PPAPI_PROXY_EXPORT SerializedVar {
 
     // See outer class's declarations above.
     PP_Var GetVar() const;
-    PP_Var GetIncompleteVar() const;
     void SetVar(PP_Var var);
-    void SetString(scoped_ptr<std::string> str);
-    // Return a new string with the contents of the string referenced by Inner.
-    // The string referenced by the Inner will be empty after this.
-    scoped_ptr<std::string> GetStringDestructive();
-    // Return a pointer to our internal string pointer. This is so that the
-    // caller will be able to make this Inner point to a string that's owned
-    // elsewhere (i.e., in the tracker).
-    const std::string** GetStringPtrPtr();
 
     // For the SerializedVarTestConstructor, this writes the Var value as if
     // it was just received off the wire, without any serialization rules.
     void ForceSetVarValueForTest(PP_Var value);
-    void ForceSetStringValueForTest(const std::string& str);
 
     void WriteToMessage(IPC::Message* m) const;
     bool ReadFromMessage(const IPC::Message* m, void** iter);
@@ -151,18 +141,6 @@ class PPAPI_PROXY_EXPORT SerializedVar {
     // reading from IPC since we'll need that to convert the string_value to
     // a string ID. Before this, the as_id will be 0 for VARTYPE_STRING.
     PP_Var var_;
-
-    // If valid, this is a pointer to a string owned by the VarTracker. When our
-    // outer SerializedVar gets serialized, it will write the string directly
-    // from the tracker so we do not need to make any unnecessary copies. This
-    // should only be valid on the sender side.
-    const std::string* tracker_string_ptr_;
-
-    // If valid, this is a string received from IPC which needs to be inserted
-    // in to the var tracker. When we provide it to the tracker, we pass
-    // ownership so that there are no unnecessary copies. This should only ever
-    // be valid on the receiver side.
-    scoped_ptr<std::string> string_from_ipc_;
 
     CleanupMode cleanup_mode_;
 
@@ -464,11 +442,7 @@ class PPAPI_PROXY_EXPORT SerializedVarTestReader : public SerializedVar {
   // The "incomplete" var is the one sent over the wire. Strings and object
   // IDs have not yet been converted, so this is the thing that tests will
   // actually want to check.
-  PP_Var GetIncompleteVar() const { return inner_->GetIncompleteVar(); }
-
-  const std::string* GetTrackerStringPtr() const {
-    return *inner_->GetStringPtrPtr();
-  }
+  PP_Var GetVar() const { return inner_->GetVar(); }
 };
 
 }  // namespace proxy
