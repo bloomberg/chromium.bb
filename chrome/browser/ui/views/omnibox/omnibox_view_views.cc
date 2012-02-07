@@ -38,6 +38,7 @@
 #include "ui/views/border.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/events/event.h"
+#include "ui/views/ime/input_method.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/views_delegate.h"
 
@@ -376,13 +377,10 @@ void OmniboxViewViews::SaveStateToTab(WebContents* tab) {
   // We don't want to keep the IME status, so force quit the current
   // session here.  It may affect the selection status, so order is
   // also important.
-  // This actually doesn't notify any events to the input method, but
-  // further call of SetText() will notify the current status, so
-  // that's fine.
-  // TODO(mukai): Add a method to InputMethod class to deal with such
-  // situation.  http://crbug.com/111578
-  if (textfield_->IsIMEComposing())
+  if (textfield_->IsIMEComposing()) {
     textfield_->GetTextInputClient()->ConfirmCompositionText();
+    textfield_->GetInputMethod()->CancelComposition(textfield_);
+  }
 
   // NOTE: GetStateForTabSwitch may affect GetSelection, so order is important.
   AutocompleteEditModel::State model_state = model_->GetStateForTabSwitch();
