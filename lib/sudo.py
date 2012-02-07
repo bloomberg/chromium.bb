@@ -8,7 +8,7 @@ import errno
 import subprocess
 import cros_build_lib
 
-class SudoKeepAlive(object):
+class SudoKeepAlive(cros_build_lib.MasterPidContextManager):
 
   """
   This refreshes the sudo auth cookie; this is implemented this
@@ -22,6 +22,7 @@ class SudoKeepAlive(object):
     Args:
      repeat_interval: In minutes, the frequency to run the update.
     """
+    cros_build_lib.MasterPidContextManager.__init__(self)
     self._repeat_interval = repeat_interval
     self._proc = None
 
@@ -59,7 +60,7 @@ class SudoKeepAlive(object):
     # the original.  This requires a daemon.
     return tty
 
-  def __enter__(self):
+  def _enter(self):
     start_for_tty = self._DaemonNeeded()
     if start_for_tty is None or os.getuid() == 0:
       # We're root; we don't need the sudo keep alive hack.
@@ -95,7 +96,7 @@ class SudoKeepAlive(object):
 
     os.environ["CROS_SUDO_KEEP_ALIVE"] = start_for_tty
 
-  def __exit__(self, exc_type, exc_value, traceback):
+  def _exit(self, exc_type, exc_value, traceback):
     if self._proc is None:
       return
 

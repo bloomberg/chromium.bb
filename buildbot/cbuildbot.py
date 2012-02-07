@@ -546,22 +546,20 @@ def _RunBuildStagesWrapper(bot_id, options, build_config):
 
   cros_lib.SafeMakedirs(dirname)
   _BackupPreviousLog(log_file)
-  tee_proc = tee.Tee(log_file)
-  tee_proc.start()
 
-  cros_lib.Info("cbuildbot executed with args %s"
-                % ' '.join(map(repr, sys.argv)))
   try:
-    if IsDistributedBuilder():
-      buildbot = DistributedBuilder(bot_id, options, build_config)
-    else:
-      buildbot = SimpleBuilder(bot_id, options, build_config)
+    with tee.Tee(log_file) as tee_proc:
+      cros_lib.Info("cbuildbot executed with args %s"
+                    % ' '.join(map(repr, sys.argv)))
+      if IsDistributedBuilder():
+        buildbot = DistributedBuilder(bot_id, options, build_config)
+      else:
+        buildbot = SimpleBuilder(bot_id, options, build_config)
 
-    if not buildbot.Run():
-      sys.exit(1)
+      if not buildbot.Run():
+        sys.exit(1)
   finally:
-    tee_proc.stop()
-    cros_lib.Info('Output saved to %s' % log_file)
+    cros_lib.Info('Output should be saved to %s' % log_file)
 
 
 # Parser related functions

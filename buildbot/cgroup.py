@@ -16,7 +16,7 @@ sys.path.insert(0, constants.SOURCE_ROOT)
 from chromite.lib import cros_build_lib as cros_lib
 
 
-class CGroup(object):
+class CGroup(cros_lib.MasterPidContextManager):
   PROC_PATH = '/proc/cgroups'
   MOUNTS_PATH = '/proc/mounts'
   CGROUP_ROOT = '/sys/fs/cgroup'
@@ -139,6 +139,7 @@ class CGroup(object):
     args:
       parent - The parent CGroup. Root hierarchy if empty.
     """
+    cros_lib.MasterPidContextManager.__init__(self)
     self._disabled = disable
     if disable or not self.cgroup_supported:
       return
@@ -157,7 +158,7 @@ class CGroup(object):
     self.path = os.path.join(parent_path, '%d' % self.pid)
     self._cgroup_supported = None
 
-  def __enter__(self):
+  def _enter(self):
     if self._disabled or not self.cgroup_supported:
       return
 
@@ -168,7 +169,7 @@ class CGroup(object):
     self.InitNamedCGroup(self.path)
     self.AssignPidToGroup(self.path, self.pid)
 
-  def __exit__(self, _type, value, traceback):
+  def _exit(self, _type, value, traceback):
     if self._disabled or not self.cgroup_supported:
       return
 

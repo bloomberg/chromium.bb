@@ -859,3 +859,22 @@ def SafeMakedirs(path, mode=0775):
 if __name__ == '__main__':
   import cros_build_lib_unittest
   cros_build_lib_unittest.unittest.main(cros_build_lib_unittest)
+
+
+class MasterPidContextManager(object):
+
+  """
+  Class for context managers that need to run their exit
+  strictly from within the same PID.
+  """
+
+  def __init__(self):
+    self._invoking_pid = None
+
+  def __enter__(self):
+    self._invoking_pid = os.getpid()
+    return self._enter()
+
+  def __exit__(self, exc_type, exc, traceback):
+    if self._invoking_pid == os.getpid():
+      return self._exit(exc_type, exc, traceback)

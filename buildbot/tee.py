@@ -10,6 +10,7 @@ import os
 import multiprocessing
 import select
 import sys
+from chromite.lib import cros_build_lib
 
 _BUFSIZE = 1024
 
@@ -89,10 +90,11 @@ class _TeeProcess(multiprocessing.Process):
     input_file.close()
 
 
-class Tee(object):
+class Tee(cros_build_lib.MasterPidContextManager):
   """Class that handles tee-ing output to a file."""
   def __init__(self, file):
     """Initializes object with path to log file."""
+    cros_build_lib.MasterPidContextManager.__init__(self)
     self._file = file
     self._old_stdout = None
     self._old_stderr = None
@@ -141,3 +143,9 @@ class Tee(object):
     os.close(self._old_stdout_fd)
     os.close(self._old_stderr_fd)
     self._tee.join()
+
+  def _enter(self):
+    self.start()
+
+  def _exit(self, exc_type, exc, traceback):
+    self.stop()
