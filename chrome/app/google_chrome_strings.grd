@@ -219,7 +219,7 @@ Chrome supports. -->
       </if>
       <if expr="pp_ifdef('chromeos')">
         <message name="IDS_ABOUT_VERSION_LICENSE" desc="The label below the copyright message, containing the URLs.">
-          Chrome OS is made possible by additional <ph name="BEGIN_LINK_OSS">&lt;a target="_blank" href="$2"&gt;</ph>open source software<ph name="END_LINK_OSS">&lt;/a&gt;</ph>.
+          Chrome OS is made possible by additional <ph name="BEGIN_LINK_OSS">&lt;a target="_blank" href="$1"&gt;</ph>open source software<ph name="END_LINK_OSS">&lt;/a&gt;</ph>.
         </message>
         <message name="IDS_ABOUT_CROS_VERSION_LICENSE" desc="Additional text displayed beneath the Chromium open source URLs for Chrome OS.">
           Chrome OS is made possible by additional <ph name="BEGIN_LINK_CROS_OSS">BEGIN_LINK_CROS_OSS</ph>open source software<ph name="END_LINK_CROS_OSS">END_LINK_CROS_OSS</ph>.
