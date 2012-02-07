@@ -4348,6 +4348,11 @@ void RenderViewImpl::DidFlushPaint() {
   // won't change out from under us.
   pepper_delegate_.ViewFlushedPaint();
 
+  // If the RenderWidget is closing down then early-exit, otherwise we'll crash.
+  // See crbug.com/112921.
+  if (!webview())
+    return;
+
   WebFrame* main_frame = webview()->mainFrame();
 
   // If we have a provisional frame we are between the start and commit stages
