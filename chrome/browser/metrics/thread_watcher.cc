@@ -844,8 +844,11 @@ StartupTimeBomb::~StartupTimeBomb() {
 void StartupTimeBomb::Arm(const base::TimeDelta& duration) {
   DCHECK_EQ(thread_id_, base::PlatformThread::CurrentId());
   DCHECK(!startup_watchdog_);
-  startup_watchdog_ = new StartupWatchDogThread(duration);
-  startup_watchdog_->Arm();
+  // TODO(rtenneti): http://crbug.com/112970. Don't arm the startup timebomb
+  // until we fix breakpad code not to crash in logging::DumpWithoutCrashing().
+  // startup_watchdog_ = new StartupWatchDogThread(duration);
+  // startup_watchdog_->Arm();
+  return;
 }
 
 void StartupTimeBomb::Disarm() {
