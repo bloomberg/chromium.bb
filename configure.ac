@@ -96,7 +96,7 @@ if test x$enable_wayland_compositor == xyes; then
   PKG_CHECK_MODULES(WAYLAND_COMPOSITOR, [wayland-client wayland-egl])
 fi
 
-AC_ARG_WITH(cairo-glesv2, AS_HELP_STRING([--with-cairo-gles2],
+AC_ARG_WITH(cairo-glesv2, AS_HELP_STRING([--with-cairo-glesv2],
               [Use GLESv2 cairo instead of full GL]),
               [cairo_modules="cairo-glesv2"],
               [cairo_modules="cairo-gl"])
