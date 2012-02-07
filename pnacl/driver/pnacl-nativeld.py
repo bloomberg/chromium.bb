@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Copyright (c) 2012 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 #
@@ -23,6 +23,9 @@ EXTRA_ENV = {
   'OUTPUT'   : '',
   'SHM_FILE' : '',
 
+  # Capture some metadata passed from pnacl-translate over to here.
+  'SONAME' : '',
+
   'STDLIB': '1',
   'SHARED': '0',
   'STATIC': '0',
@@ -43,6 +46,7 @@ EXTRA_ENV = {
   # http://www.airs.com/blog/archives/462
   'LD_FLAGS'    : '-nostdlib -m ${LD_EMUL} --eh-frame-hdr ' +
                   '${#LD_SCRIPT ? -T ${LD_SCRIPT}} ' +
+                  '${#SONAME ? -soname=${SONAME}} ' +
                   '${STATIC ? -static} ${SHARED ? -shared} ${RELOCATABLE ? -r}',
 
   'EMITMODE'         : '${RELOCATABLE ? relocatable : ' +
@@ -108,10 +112,10 @@ LDPatterns = [
   ( ('-T', '(.*)'),      "env.set('LD_SCRIPT', $0)"),
 
   ( ('(-e)','(.*)'),              PassThrough),
-  ( '(-entry=.*)',                PassThrough),
+  ( '(--entry=.*)',               PassThrough),
   ( ('(--section-start)','(.*)'), PassThrough),
-  ( '(-?-soname=.*)',             PassThrough),
-  ( ('(-?-soname)', '(.*)'),      PassThrough),
+  ( '-?-soname=(.*)',             "env.set('SONAME', $0)"),
+  ( ('(-?-soname)', '(.*)'),      "env.set('SONAME', $1)"),
   ( '(-M)',                       PassThrough),
   ( '(-t)',                       PassThrough),
   ( ('-y','(.*)'),                PassThrough),
@@ -197,8 +201,6 @@ def RunLDSRPC():
   files = LinkerFiles(all_inputs)
   ld_flags = env.get('LD_FLAGS')
 
-  # In this mode, we assume we only use the builtin linker script.
-  assert(env.getone('LD_SCRIPT') == '')
   script = MakeSelUniversalScriptForLD(ld_flags,
                                        main_input,
                                        files,
@@ -219,36 +221,64 @@ def MakeSelUniversalScriptForLD(ld_flags,
 
   # Open the output file.
   script.append('readwrite_file nexefile %s' % outfile)
+
+  # Need to include the linker script file as a linker resource for glibc.
+  files_to_map = list(files)
+  if env.getbool('LIBMODE_GLIBC') and env.getbool('STDLIB'):
+    ld_script = env.getone('LD_SCRIPT')
+    assert(ld_script != '')
+    files_to_map.append(ld_script)
+  else:
+    # Otherwise, use the built-in linker script.
+    assert(env.getone('LD_SCRIPT') == '')
+
   # Create a mapping for each input file and add it to the command line.
-  for f in files:
+  for f in files_to_map:
     basename = pathtools.basename(f)
     script.append('reverse_service_add_manifest_mapping files/%s %s' %
                   (basename, f))
 
   use_default = env.getbool('USE_DEFAULT_CMD_LINE')
   if use_default:
-    basename = pathtools.basename(main_input)
+    # We don't have the bitcode file here anymore, so we assume that
+    # pnacl-translate passed along the relevant information via commandline.
+    soname = env.getone('SONAME')
+    needed = GetNeededLibrariesString()
+    emit_mode = env.getone('EMITMODE')
+    if emit_mode == 'shared':
+      is_shared_library = 1
+    else:
+      is_shared_library = 0
+
     script.append('readonly_file objfile %s' % main_input)
-    script.append('rpc RunWithDefaultCommandLine '
-                  'h(objfile) h(nexefile) i(0) s("") s("") *')
+    script.append(('rpc RunWithDefaultCommandLine ' +
+                   'h(objfile) h(nexefile) i(%d) s("%s") s("%s") *' %
+                   (is_shared_library, soname, needed)))
   else:
     # Join all the arguments.
     # Based on the format of RUN_LD, the order of arguments is:
     # ld_flags, then input files (which are more sensitive to order).
+
+    # For the sandboxed build, we don't want "real" filesystem paths,
+    # because we use the reverse-service to do a lookup -- make sure
+    # everything is a basename first.
+    ld_flags = [ pathtools.basename(flag) for flag in ld_flags ]
     kTerminator = '\0'
-    command_line = kTerminator.join(ld_flags) + kTerminator
+    command_line = kTerminator.join(['ld'] + ld_flags) + kTerminator
     for f in files:
       basename = pathtools.basename(f)
       command_line = command_line + basename + kTerminator
     command_line_escaped = command_line.replace(kTerminator, '\\x00')
-    script.append('rpc Run h(nexefile) i(0) s("") s("") C(%d,%s) *' %
+    # Assume that the commandline captures all necessary metadata for now.
+    script.append('rpc Run h(nexefile) C(%d,%s) *' %
                   (len(command_line), command_line_escaped))
   script.append('echo "ld complete"')
   script.append('')
   return '\n'.join(script)
 
 # Given linker arguments (including -L, -l, and filenames),
-# returns the list of files which are pulled by the linker.
+# returns the list of files which are pulled by the linker,
+# with real path names set set up the real -> flat name mapping.
 def LinkerFiles(args):
   ret = []
   for f in args:
@@ -259,6 +289,19 @@ def LinkerFiles(args):
         Log.Fatal("Unable to open '%s'", pathtools.touser(f))
       ret.append(f)
   return ret
+
+# Pull metadata passed into pnacl-nativeld from pnacl-translate via
+#  commandline options. This can be removed if we have a more direct
+# mechanism for transferring metadata from LLC -> LD.
+def GetNeededLibrariesString():
+  libs = []
+  prefix = '--add-extra-dt-needed='
+  for flag in env.get('LD_FLAGS'):
+    if flag.startswith(prefix):
+      libs.append(flag[len(prefix):])
+  # This delimiter must be the same between LLC, this and LD.
+  delim = '\\n'
+  return delim.join(libs)
 
 def LocateLinkerScript():
   ld_script = env.getone('LD_SCRIPT')

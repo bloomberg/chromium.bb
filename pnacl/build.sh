@@ -254,10 +254,10 @@ if ${PNACL_IN_CROS_CHROOT}; then
 fi
 
 # Current milestones in each repo
-readonly UPSTREAM_REV=${UPSTREAM_REV:-4bc03c0bc818}
+readonly UPSTREAM_REV=${UPSTREAM_REV:-739de5ccf482}
 
 readonly NEWLIB_REV=c6358617f3fd
-readonly BINUTILS_REV=40820037bcd8
+readonly BINUTILS_REV=ae568f8eb6e0
 readonly COMPILER_RT_REV=1a3a6ffb31ea
 
 readonly LLVM_PROJECT_REV=${LLVM_PROJECT_REV:-147864}
@@ -2241,7 +2241,7 @@ llvm-sb-setup() {
   fi
 
   if [ $# -ne 3 ] ; then
-    Fatal "Please specify arch and mode"
+    Fatal "Please specify arch and mode(srpc) and libmode"
   fi
 
   LLVM_SB_SETUP=true
@@ -2563,7 +2563,7 @@ binutils-sb-setup() {
   BINUTILS_SB_LOG_PREFIX="binutils.sb.${BINUTILS_SB_ARCH}"
   BINUTILS_SB_OBJDIR=\
 "${TC_BUILD}/binutils-sb-${BINUTILS_SB_ARCH}-${BINUTILS_SB_LIBMODE}"
-  BINUTILS_SB_INSTALL_DIR="${INSTALL_SB_TOOLS}/${arch}/srpc"
+  BINUTILS_SB_INSTALL_DIR="${INSTALL_SB_TOOLS}/${BINUTILS_SB_ARCH}/srpc"
 
   if [ ${BINUTILS_SB_LIBMODE} == newlib ]; then
     flags+=" -static"

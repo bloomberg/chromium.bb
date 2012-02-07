@@ -1,5 +1,5 @@
 #!/bin/bash
-# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Copyright (c) 2012 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 #
@@ -155,6 +155,13 @@ get-mode-flags() {
   glibc)
     modeflags="--nacl_glibc"
     ;;
+  sbtc-glibc)
+    # Note "sbtc-glibc" just happens to be the order in which the modes
+    # are slapped onto the scons-out name. E.g.,
+    # nacl-x86-32-pnacl-sbtc-glibc-clang
+    # This affects the scons-clean() function.
+    modeflags="--nacl_glibc use_sandboxed_translator=1"
+    ;;
   *)
     echo "Unknown mode" 1>&2
     exit -1
@@ -213,6 +220,10 @@ test-x86-64-sbtc() { scons-tests x86-64 sbtc "$@" ; }
 test-arm-glibc()    { scons-tests arm glibc "$@" ; }
 test-x86-32-glibc() { scons-tests x86-32 glibc "$@" ; }
 test-x86-64-glibc() { scons-tests x86-64 glibc "$@" ; }
+
+test-arm-sbtc-glibc()    { scons-tests arm sbtc-glibc "$@" ; }
+test-x86-32-sbtc-glibc() { scons-tests x86-32 sbtc-glibc "$@" ; }
+test-x86-64-sbtc-glibc() { scons-tests x86-64 sbtc-glibc "$@" ; }
 
 test-arm-browser()    { browser-tests "arm" "" ; }
 test-x86-32-browser() { browser-tests "x86-32" "" ; }

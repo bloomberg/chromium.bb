@@ -36,7 +36,7 @@ EXTRA_ENV = {
   'LD_ARGS' : '${STDLIB ? ${LD_ARGS_normal} : ${LD_ARGS_nostdlib}}',
 
   'LD_ARGS_IRT_SHIM':
-    '-entry=_pnacl_wrapper_start -lpnacl_irt_shim',
+    '--entry=_pnacl_wrapper_start -lpnacl_irt_shim',
 
   'CRTBEGIN' : '${SHARED ? -l:crtbeginS.o : -l:crtbegin.o}',
   'CRTEND'   : '${SHARED ? -l:crtendS.o : -l:crtend.o}',
@@ -265,9 +265,17 @@ def ApplyBitcodeConfig(bcfile, bctype):
 
   # Read the bitcode metadata to extract library
   # dependencies and SOName.
+  # For now, we use LD_FLAGS to convey the information.
+  # However, if the metadata becomes richer we will need another mechanism.
+  # TODO(jvoung): at least grep out the SRPC output from LLC and transmit
+  # that directly to LD to avoid issues with mismatching delimiters.
   metadata = GetBitcodeMetadata(bcfile)
   for needed in metadata['NeedsLibrary']:
     env.append('LD_FLAGS', '--add-extra-dt-needed=' + needed)
+  if bctype == 'pso':
+    soname = metadata['SOName']
+    if soname:
+      env.append('LD_FLAGS', '-soname=' + soname)
 
   # Certain libraries still need to be linked directly.
   # BUG= http://code.google.com/p/nativeclient/issues/detail?id=2451
@@ -284,11 +292,6 @@ def ApplyBitcodeConfig(bcfile, bctype):
         if name == 'libc' or name == 'libpthread':
           env.append('LINKER_HACK', '-l:%s_nonshared.a' % name)
         break
-
-  if bctype == 'pso':
-    soname = metadata['SOName']
-    if soname:
-      env.append('LD_FLAGS', '-soname=' + soname)
 
 # NOTE: this code resembles code from pnacl-driver.py
 # TODO(robertm): see whether this can be unified somehow
@@ -323,10 +326,39 @@ def ListReplace(items, old, new):
       ret.append(k)
   return ret
 
+def RequiresNonStandardLDCommandlines(inputs, infile, outfile):
+  ''' Determine when we must force USE_DEFAULT_CMD_LINE off for running
+  the sandboxed LD (if link line is completely non-standard).
+  '''
+  if len(inputs) > 1:
+    # There must have been some native objects on the link line.
+    # In that case, if we are using the sandboxed translator, we cannot
+    # currently allow that with the default commandline (only one input).
+    return ('Native link with more than one native object: %s' % str(inputs),
+            True)
+  if not infile:
+    return ('No bitcode input: %s' % str(infile), True)
+  if not env.getbool('STDLIB'):
+    # If we are using the sandboxed translator, we cannot
+    # use the default commandline with NOSTDLIB.
+    return ('NOSTDLIB', True)
+  if (GetArch(required=True) == 'X8664' and
+      not env.getbool('SHARED') and
+      not env.getbool('USE_IRT_SHIM')):
+    return ('USE_IRT_SHIM false when normally true', True)
+  return None, False
+
 def RunLD(infile, outfile):
   inputs = env.get('INPUTS')
   if infile:
     inputs = ListReplace(inputs, '__BITCODE__', '--shm=' + infile)
+  # Lots of fun exceptions where we cannot use the default commandline.
+  if env.getbool('USE_DEFAULT_CMD_LINE') and env.getbool('SRPC'):
+    reason, requires = RequiresNonStandardLDCommandlines(inputs,
+                                                         infile, outfile)
+    if requires:
+      Log.Info(reason + ' -- not using default SRPC commandline!!!')
+      inputs.append('--pnacl-driver-set-USE_DEFAULT_CMD_LINE=0')
   env.set('ld_inputs', *inputs)
   args = env.get('LD_ARGS') + ['-o', outfile]
   args += env.get('LD_FLAGS')
