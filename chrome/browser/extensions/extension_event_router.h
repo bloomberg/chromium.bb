@@ -50,15 +50,6 @@ class ExtensionEventRouter : public content::NotificationObserver {
                            content::RenderProcessHost* process,
                            const std::string& extension_id);
 
-  // Add or remove the extension as having a lazy background page that listens
-  // to the event. The difference from the above methods is that these will be
-  // remembered even after the process goes away. We use this list to decide
-  // which extension pages to load when dispatching an event.
-  void AddLazyEventListener(const std::string& event_name,
-                            const std::string& extension_id);
-  void RemoveLazyEventListener(const std::string& event_name,
-                               const std::string& extension_id);
-
   // Returns true if there is at least one listener for the given event.
   bool HasEventListener(const std::string& event_name);
 
@@ -114,25 +105,15 @@ class ExtensionEventRouter : public content::NotificationObserver {
   // Shared by DispatchEvent*. If |extension_id| is empty, the event is
   // broadcast.
   // An event that just came off the pending list may not be delayed again.
-  void DispatchEventImpl(const std::string& extension_id,
-                         const linked_ptr<ExtensionEvent>& event,
+  void DispatchEventImpl(const linked_ptr<ExtensionEvent>& event,
                          bool was_pending);
 
-  // Ensures that all non-persistent background pages that are interested in the
-  // given event are loaded, and queues the event if the page is not ready yet.
-  // If |extension_id| is non-empty, we load only that extension's page
-  // (assuming it is interested in the event).
-  void LoadLazyBackgroundPagesForEvent(
-      const std::string& extension_id,
-      const linked_ptr<ExtensionEvent>& event);
-
   // Dispatch may be delayed if the extension has a lazy background page.
-  bool CanDispatchEventNow(const Extension* extension);
+  bool CanDispatchEventNow(const std::string& extension_id);
 
   // Store the event so that it can be dispatched (in order received)
   // when the background page is done loading.
-  void AppendEvent(const std::string& extension_id,
-                   const linked_ptr<ExtensionEvent>& event);
+  void AppendEvent(const linked_ptr<ExtensionEvent>& event);
   void DispatchPendingEvents(const std::string& extension_id);
 
  private:
@@ -153,11 +134,6 @@ class ExtensionEventRouter : public content::NotificationObserver {
   // to that event.
   typedef std::map<std::string, std::set<EventListener> > ListenerMap;
   ListenerMap listeners_;
-
-  // Keeps track of all the non-persistent background pages that are listening
-  // to events.
-  // TODO(mpcomplete): save to disk.
-  ListenerMap lazy_listeners_;
 
   // A map between an extension id and the queue of events pending
   // the load of it's background page.

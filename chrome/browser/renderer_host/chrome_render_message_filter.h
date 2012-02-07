@@ -101,10 +101,6 @@ class ChromeRenderMessageFilter : public content::BrowserMessageFilter {
                               const std::string& event_name);
   void OnExtensionRemoveListener(const std::string& extension_id,
                                  const std::string& event_name);
-  void OnExtensionAddLazyListener(const std::string& extension_id,
-                                  const std::string& event_name);
-  void OnExtensionRemoveLazyListener(const std::string& extension_id,
-                                     const std::string& event_name);
   void OnExtensionIdle(const std::string& extension_id);
   void OnExtensionEventAck(const std::string& extension_id);
   void OnExtensionCloseChannel(int port_id);

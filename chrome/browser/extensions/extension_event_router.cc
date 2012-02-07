@@ -23,6 +23,7 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/extensions/api/extension_api.h"
+#include "content/browser/child_process_security_policy.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
 
@@ -61,18 +62,21 @@ struct ExtensionEventRouter::EventListener {
 };
 
 struct ExtensionEventRouter::ExtensionEvent {
+  std::string extension_id;
   std::string event_name;
   std::string event_args;
   GURL event_url;
   Profile* restrict_to_profile;
   std::string cross_incognito_args;
 
-  ExtensionEvent(const std::string& event_name,
+  ExtensionEvent(const std::string& extension_id,
+                 const std::string& event_name,
                  const std::string& event_args,
                  const GURL& event_url,
                  Profile* restrict_to_profile,
                  const std::string& cross_incognito_args)
-    : event_name(event_name),
+    : extension_id(extension_id),
+      event_name(event_name),
       event_args(event_args),
       event_url(event_url),
       restrict_to_profile(restrict_to_profile),
@@ -152,21 +156,6 @@ void ExtensionEventRouter::RemoveEventListener(
           profile_, listener.extension_id, event_name));
 }
 
-void ExtensionEventRouter::AddLazyEventListener(
-    const std::string& event_name,
-    const std::string& extension_id) {
-  EventListener lazy_listener(NULL, extension_id);
-  if (lazy_listeners_[event_name].count(lazy_listener) == 0)
-    lazy_listeners_[event_name].insert(lazy_listener);
-}
-
-void ExtensionEventRouter::RemoveLazyEventListener(
-    const std::string& event_name,
-    const std::string& extension_id) {
-  EventListener lazy_listener(NULL, extension_id);
-  lazy_listeners_[event_name].erase(lazy_listener);
-}
-
 bool ExtensionEventRouter::HasEventListener(const std::string& event_name) {
   return (listeners_.find(event_name) != listeners_.end() &&
           !listeners_[event_name].empty());
@@ -193,9 +182,9 @@ void ExtensionEventRouter::DispatchEventToRenderers(
     Profile* restrict_to_profile,
     const GURL& event_url) {
   linked_ptr<ExtensionEvent> event(
-      new ExtensionEvent(event_name, event_args, event_url,
+      new ExtensionEvent("", event_name, event_args, event_url,
                          restrict_to_profile, ""));
-  DispatchEventImpl("", event, false);
+  DispatchEventImpl(event, false);
 }
 
 void ExtensionEventRouter::DispatchEventToExtension(
@@ -206,9 +195,9 @@ void ExtensionEventRouter::DispatchEventToExtension(
     const GURL& event_url) {
   DCHECK(!extension_id.empty());
   linked_ptr<ExtensionEvent> event(
-      new ExtensionEvent(event_name, event_args, event_url,
+      new ExtensionEvent(extension_id, event_name, event_args, event_url,
                          restrict_to_profile, ""));
-  DispatchEventImpl(extension_id, event, false);
+  DispatchEventImpl(event, false);
 }
 
 void ExtensionEventRouter::DispatchEventsToRenderersAcrossIncognito(
@@ -218,21 +207,24 @@ void ExtensionEventRouter::DispatchEventsToRenderersAcrossIncognito(
     const std::string& cross_incognito_args,
     const GURL& event_url) {
   linked_ptr<ExtensionEvent> event(
-      new ExtensionEvent(event_name, event_args, event_url,
+      new ExtensionEvent("", event_name, event_args, event_url,
                          restrict_to_profile, cross_incognito_args));
-  DispatchEventImpl("", event, false);
+  DispatchEventImpl(event, false);
 }
 
-bool ExtensionEventRouter::CanDispatchEventNow(const Extension* extension) {
-  DCHECK(extension);
-  if (extension->has_background_page() &&
+bool ExtensionEventRouter::CanDispatchEventNow(
+    const std::string& extension_id) {
+  if (extension_id.empty())
+    // TODO(mpcomplete): We need to test this per-extension, rather than
+    // globally.
+    return true;
+
+  const Extension* extension = profile_->GetExtensionService()->
+      GetExtensionById(extension_id, false);
+  if (extension && extension->has_background_page() &&
       !extension->background_page_persists()) {
     ExtensionProcessManager* pm = profile_->GetExtensionProcessManager();
-
-    // TODO(mpcomplete): this is incorrect. We need to check whether the page
-    // has finished loading. If not, we can't dispatch the event (because the
-    // listener hasn't been set up yet).
-    if (!pm->GetBackgroundHostForExtension(extension->id())) {
+    if (!pm->GetBackgroundHostForExtension(extension_id)) {
       pm->CreateBackgroundHost(extension, extension->GetBackgroundURL());
       return false;
     }
@@ -242,13 +234,7 @@ bool ExtensionEventRouter::CanDispatchEventNow(const Extension* extension) {
 }
 
 void ExtensionEventRouter::DispatchEventImpl(
-    const std::string& extension_id,
-    const linked_ptr<ExtensionEvent>& event,
-    bool was_pending) {
-  // Ensure we are only dispatching pending events to a particular extension.
-  if (was_pending)
-    CHECK(!extension_id.empty());
-
+    const linked_ptr<ExtensionEvent>& event, bool was_pending) {
   if (!profile_)
     return;
 
@@ -256,8 +242,15 @@ void ExtensionEventRouter::DispatchEventImpl(
   DCHECK(!event->restrict_to_profile ||
          profile_->IsSameProfile(event->restrict_to_profile));
 
-  if (!was_pending)
-    LoadLazyBackgroundPagesForEvent(extension_id, event);
+  if (!CanDispatchEventNow(event->extension_id)) {
+    // Events should not be made pending twice. This may happen if the
+    // background page is shutdown before we finish dispatching pending events.
+    CHECK(!was_pending);
+    // TODO(tessamac): make sure Background Page notification doesn't
+    //                 happen before the event is added to the pending list.
+    AppendEvent(event);
+    return;
+  }
 
   ListenerMap::iterator it = listeners_.find(event->event_name);
   if (it == listeners_.end())
@@ -269,11 +262,12 @@ void ExtensionEventRouter::DispatchEventImpl(
   // Send the event only to renderers that are listening for it.
   for (std::set<EventListener>::iterator listener = listeners.begin();
        listener != listeners.end(); ++listener) {
-    if (!extension_id.empty() && extension_id != listener->extension_id)
+    if (!event->extension_id.empty() &&
+        event->extension_id != listener->extension_id)
       continue;
 
-    const Extension* extension = service->extensions()->GetByID(
-        listener->extension_id);
+    const Extension* extension = service->GetExtensionById(
+        listener->extension_id, false);
 
     // The extension could have been removed, but we do not unregister it until
     // the extension process is unloaded.
@@ -313,32 +307,6 @@ void ExtensionEventRouter::DispatchEventImpl(
   }
 }
 
-void ExtensionEventRouter::LoadLazyBackgroundPagesForEvent(
-    const std::string& extension_id,
-    const linked_ptr<ExtensionEvent>& event) {
-  ExtensionService* service = profile_->GetExtensionService();
-
-  ListenerMap::iterator it = lazy_listeners_.find(event->event_name);
-  if (it == lazy_listeners_.end())
-    return;
-
-  std::set<EventListener>& listeners = it->second;
-  for (std::set<EventListener>::iterator listener = listeners.begin();
-       listener != listeners.end(); ++listener) {
-    if (!extension_id.empty() && extension_id != listener->extension_id)
-      continue;
-
-    const Extension* extension = service->extensions()->GetByID(
-        listener->extension_id);
-
-    if (extension && !CanDispatchEventNow(extension)) {
-      // TODO(mpcomplete): make sure Background Page notification doesn't
-      //                   happen before the event is added to the pending list.
-      AppendEvent(extension->id(), event);
-    }
-  }
-}
-
 void ExtensionEventRouter::IncrementInFlightEvents(const Extension* extension) {
   if (!extension->background_page_persists())
     in_flight_events_[extension->id()]++;
@@ -355,13 +323,14 @@ bool ExtensionEventRouter::HasInFlightEvents(const std::string& extension_id) {
 }
 
 void ExtensionEventRouter::AppendEvent(
-    const std::string& extension_id,
     const linked_ptr<ExtensionEvent>& event) {
   PendingEventsList* events_list = NULL;
-  PendingEventsPerExtMap::iterator it = pending_events_.find(extension_id);
+  PendingEventsPerExtMap::iterator it =
+      pending_events_.find(event->extension_id);
   if (it == pending_events_.end()) {
     events_list = new PendingEventsList();
-    pending_events_[extension_id] = linked_ptr<PendingEventsList>(events_list);
+    pending_events_[event->extension_id] =
+        linked_ptr<PendingEventsList>(events_list);
   } else {
     events_list = it->second.get();
   }
@@ -370,8 +339,8 @@ void ExtensionEventRouter::AppendEvent(
 }
 
 void ExtensionEventRouter::DispatchPendingEvents(
-    const std::string& extension_id) {
-  CHECK(!extension_id.empty());
+    const std::string &extension_id) {
+  // Find the list of pending events for this extension.
   PendingEventsPerExtMap::const_iterator map_it =
       pending_events_.find(extension_id);
   if (map_it == pending_events_.end())
@@ -380,14 +349,11 @@ void ExtensionEventRouter::DispatchPendingEvents(
   PendingEventsList* events_list = map_it->second.get();
   for (PendingEventsList::const_iterator it = events_list->begin();
        it != events_list->end(); ++it)
-    DispatchEventImpl(extension_id, *it, true);
+    DispatchEventImpl(*it, true);
 
+  // Delete list.
   events_list->clear();
   pending_events_.erase(extension_id);
-
-  // Check if the extension is idle, which may be the case if no events were
-  // successfully dispatched.
-  profile_->GetExtensionProcessManager()->OnExtensionIdle(extension_id);
 }
 
 void ExtensionEventRouter::Observe(
@@ -416,14 +382,9 @@ void ExtensionEventRouter::Observe(
       break;
     }
     case chrome::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING: {
-      // If an on-demand background page finished loading, dispatch queued up
-      // events for it.
+      // TODO: dispatch events in queue.  ExtensionHost is in the details.
       ExtensionHost* eh = content::Details<ExtensionHost>(details).ptr();
-      if (eh->extension_host_type() ==
-              chrome::VIEW_TYPE_EXTENSION_BACKGROUND_PAGE &&
-          !eh->extension()->background_page_persists()) {
-        DispatchPendingEvents(eh->extension_id());
-      }
+      DispatchPendingEvents(eh->extension_id());
       break;
     }
     // TODO(tessamac): if background page crashed/failed clear queue.
