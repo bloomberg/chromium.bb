@@ -154,7 +154,6 @@
     'common/gpu/gpu_feature_flags.cc',
     'common/gpu/gpu_feature_flags.h',
     'common/gpu/gpu_memory_allocation.h',
-    'common/gpu/gpu_memory_management.h',
     'common/gpu/gpu_memory_manager.cc',
     'common/gpu/gpu_memory_manager.h',
     'common/gpu/gpu_messages.h',
