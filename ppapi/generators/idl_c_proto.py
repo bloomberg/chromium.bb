@@ -76,7 +76,7 @@ class CGen(object):
   TypeMap = {
     'Array': {
       'in': 'const %s',
-      'inout': '%s*',
+      'inout': '%s',
       'out': '%s*',
       'store': '%s',
       'return': '%s'
