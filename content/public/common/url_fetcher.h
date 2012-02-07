@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -76,6 +76,7 @@ class CONTENT_EXPORT URLFetcher {
     HEAD,
     DELETE_REQUEST,   // DELETE is already taken on Windows.
                       // <winnt.h> defines a DELETE macro.
+    PUT,
   };
 
   // |url| is the URL to send the request to.
@@ -139,8 +140,14 @@ class CONTENT_EXPORT URLFetcher {
 
   // Set extra headers on the request.  Must be called before the request
   // is started.
+  // This replaces the entire extra request headers.
   virtual void SetExtraRequestHeaders(
       const std::string& extra_request_headers) = 0;
+
+  // Add header (with format field-name ":" [ field-value ]) to the request
+  // headers.  Must be called before the request is started.
+  // This appends the header to the current extra request headers.
+  virtual void AddExtraRequestHeader(const std::string& header_line) = 0;
 
   virtual void GetExtraRequestHeaders(net::HttpRequestHeaders* headers) = 0;
 

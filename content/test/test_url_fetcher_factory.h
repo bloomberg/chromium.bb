@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -74,6 +74,7 @@ class TestURLFetcher : public content::URLFetcher {
   virtual void SetReferrer(const std::string& referrer) OVERRIDE;
   virtual void SetExtraRequestHeaders(
       const std::string& extra_request_headers) OVERRIDE;
+  virtual void AddExtraRequestHeader(const std::string& header_line) OVERRIDE;
   virtual void GetExtraRequestHeaders(
       net::HttpRequestHeaders* headers) OVERRIDE;
   virtual void SetRequestContext(

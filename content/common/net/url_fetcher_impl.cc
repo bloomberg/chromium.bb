@@ -798,10 +798,11 @@ void URLFetcherImpl::Core::StartURLRequest() {
       break;
 
     case POST:
+    case PUT:
       DCHECK(!upload_content_.empty() || is_chunked_upload_);
       DCHECK(!upload_content_type_.empty());
 
-      request_->set_method("POST");
+      request_->set_method(request_type_ == POST ? "POST" : "PUT");
       extra_request_headers_.SetHeader(net::HttpRequestHeaders::kContentType,
                                        upload_content_type_);
       if (!upload_content_.empty()) {
@@ -973,6 +974,10 @@ void URLFetcherImpl::SetExtraRequestHeaders(
     const std::string& extra_request_headers) {
   core_->extra_request_headers_.Clear();
   core_->extra_request_headers_.AddHeadersFromString(extra_request_headers);
+}
+
+void URLFetcherImpl::AddExtraRequestHeader(const std::string& header_line) {
+  core_->extra_request_headers_.AddHeaderFromString(header_line);
 }
 
 void URLFetcherImpl::GetExtraRequestHeaders(net::HttpRequestHeaders* headers) {

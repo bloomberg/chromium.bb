@@ -76,6 +76,10 @@ void TestURLFetcher::SetExtraRequestHeaders(
   fake_extra_request_headers_.AddHeadersFromString(extra_request_headers);
 }
 
+void TestURLFetcher::AddExtraRequestHeader(const std::string& header_line) {
+  fake_extra_request_headers_.AddHeaderFromString(header_line);
+}
+
 void TestURLFetcher::GetExtraRequestHeaders(net::HttpRequestHeaders* headers) {
   *headers = fake_extra_request_headers_;
 }
