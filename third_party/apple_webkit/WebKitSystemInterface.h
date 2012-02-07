@@ -3,26 +3,6 @@
     Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011 Apple Inc. All rights reserved.
 
     Public header file.
-
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions
-are met:
-1.  Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-2.  Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-
-THIS SOFTWARE IS PROVIDED BY APPLE INC. AND ITS CONTRIBUTORS ``AS IS'' AND ANY
-EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-DISCLAIMED. IN NO EVENT SHALL APPLE INC. OR ITS CONTRIBUTORS BE LIABLE FOR ANY
-DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
-ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 #import <Cocoa/Cocoa.h>
@@ -63,7 +43,7 @@ NSDate *WKGetNSURLResponseLastModifiedDate(NSURLResponse *response);
 NSTimeInterval WKGetNSURLResponseFreshnessLifetime(NSURLResponse *response);
 NSString *WKCopyNSURLResponseStatusLine(NSURLResponse *response);
 
-#ifndef BUILDING_ON_LEOPARD
+#if MAC_OS_X_VERSION_MIN_REQUIRED >= 1060
 CFArrayRef WKCopyNSURLResponseCertificateChain(NSURLResponse *response);
 #endif
 
@@ -113,7 +93,7 @@ AXUIElementRef WKCreateAXUIElementRef(id element);
 void WKUnregisterUniqueIdForElement(id element);
 
 
-#if !defined(BUILDING_ON_LEOPARD)
+#if MAC_OS_X_VERSION_MIN_REQUIRED >= 1060
 // Remote Accessibility API.
 void WKAXRegisterRemoteApp(void);
 void WKAXInitializeElementWithPresenterPid(id, pid_t);
@@ -176,7 +156,7 @@ void WKGetGlyphsForCharacters(CGFontRef, const UniChar[], CGGlyph[], size_t);
 bool WKGetVerticalGlyphsForCharacters(CTFontRef, const UniChar[], CGGlyph[], size_t);
 
 CTLineRef WKCreateCTLineWithUniCharProvider(const UniChar* (*provide)(CFIndex stringIndex, CFIndex* charCount, CFDictionaryRef* attributes, void*), void (*dispose)(const UniChar* chars, void*), void*);
-#if !defined(BUILDING_ON_LEOPARD) && !defined(BUILDING_ON_SNOW_LEOPARD)
+#if MAC_OS_X_VERSION_MIN_REQUIRED >= 1070
 CTTypesetterRef WKCreateCTTypesetterWithUniCharProviderAndOptions(const UniChar* (*provide)(CFIndex stringIndex, CFIndex* charCount, CFDictionaryRef* attributes, void*), void (*dispose)(const UniChar* chars, void*), void*, CFDictionaryRef options);
 
 CGContextRef WKIOSurfaceContextCreate(IOSurfaceRef, unsigned width, unsigned height, CGColorSpaceRef);
@@ -190,6 +170,7 @@ typedef enum {
 } WKPatternTiling;
 
 CGPatternRef WKCGPatternCreateWithImageAndTransform(CGImageRef image, CGAffineTransform transform, int tiling);
+void WKCGContextResetClip(CGContextRef);
 
 #ifndef __LP64__
 NSEvent *WKCreateNSEventWithCarbonEvent(EventRef eventRef);
@@ -245,7 +226,7 @@ NSURL *WKQTMovieResolvedURL(QTMovie* movie);
 
 CFStringRef WKCopyFoundationCacheDirectory(void);
 
-#if defined(BUILDING_ON_SNOW_LEOPARD) || defined(BUILDING_ON_LEOPARD)
+#if MAC_OS_X_VERSION_MIN_REQUIRED <= 1060
 typedef struct __CFURLStorageSession* CFURLStorageSessionRef;
 #else
 typedef const struct __CFURLStorageSession* CFURLStorageSessionRef;
@@ -331,7 +312,7 @@ NSArray *WKQTGetSitesInMediaDownloadCache();
 void WKQTClearMediaDownloadCacheForSite(NSString *site);
 void WKQTClearMediaDownloadCache();
     
-#ifndef BUILDING_ON_LEOPARD
+#if MAC_OS_X_VERSION_MIN_REQUIRED >= 1060
 mach_port_t WKInitializeRenderServer(void);
     
 @class CALayer;
@@ -370,7 +351,7 @@ CFRunLoopSourceRef WKCreateMIGServerSource(mig_subsystem_t subsystem, mach_port_
 
 NSUInteger WKGetInputPanelWindowStyle(void);
 UInt8 WKGetNSEventKeyChar(NSEvent *);
-#endif // !defined(BUILDING_ON_LEOPARD)
+#endif // MAC_OS_X_VERSION_MIN_REQUIRED >= 1060
 
 @class CAPropertyAnimation;
 void WKSetCAAnimationValueFunction(CAPropertyAnimation*, NSString* function);
@@ -385,7 +366,7 @@ void WKSetCONNECTProxyForStream(CFReadStreamRef, CFStringRef proxyHost, CFNumber
 void WKSetCONNECTProxyAuthorizationForStream(CFReadStreamRef, CFStringRef proxyAuthorizationString);
 CFHTTPMessageRef WKCopyCONNECTProxyResponse(CFReadStreamRef, CFURLRef responseURL);
 
-#if defined(BUILDING_ON_LEOPARD) || defined(BUILDING_ON_SNOW_LEOPARD)
+#if MAC_OS_X_VERSION_MIN_REQUIRED <= 1060
 typedef enum {
     WKEventPhaseNone = 0,
     WKEventPhaseBegan = 1,
@@ -399,7 +380,7 @@ int WKGetNSEventMomentumPhase(NSEvent *);
 void WKWindowSetAlpha(NSWindow *window, float alphaValue);
 void WKWindowSetScaledFrame(NSWindow *window, NSRect scaleFrame, NSRect nonScaledFrame);
 
-#ifndef BUILDING_ON_LEOPARD
+#if MAC_OS_X_VERSION_MIN_REQUIRED >= 1060
 void WKSyncSurfaceToView(NSView *view);
 
 void WKEnableSettingCursorWhenInBackground(void);
@@ -416,7 +397,7 @@ ScriptCode WKGetScriptCodeFromCurrentKeyboardInputSource(void);
 
 #endif
 
-#if defined(BUILDING_ON_LEOPARD) || defined(BUILDING_ON_SNOW_LEOPARD)
+#if MAC_OS_X_VERSION_MIN_REQUIRED <= 1060
 CFIndex WKGetHyphenationLocationBeforeIndex(CFStringRef string, CFIndex index);
 #endif
 
@@ -431,7 +412,7 @@ void WKSetCFURLResponseMIMEType(CFURLResponseRef, CFStringRef mimeType);
 
 CIFormat WKCIGetRGBA8Format(void);
 
-#if !defined(BUILDING_ON_LEOPARD) && !defined(BUILDING_ON_SNOW_LEOPARD)
+#if MAC_OS_X_VERSION_MIN_REQUIRED >= 1070
 
 typedef enum {
     WKSandboxExtensionTypeReadOnly,
@@ -449,6 +430,8 @@ bool WKSandboxExtensionInvalidate(WKSandboxExtensionRef sandboxExtension);
 const char* WKSandboxExtensionGetSerializedFormat(WKSandboxExtensionRef sandboxExtension, size_t* length);
 WKSandboxExtensionRef WKSandboxExtensionCreateFromSerializedFormat(const char* serializationFormat, size_t length);
 
+OSStatus WKEnableSandboxStyleFileQuarantine(void);
+
 int WKRecommendedScrollerStyle(void);
 
 bool WKExecutableWasLinkedOnOrBeforeSnowLeopard(void);
@@ -465,14 +448,19 @@ NSCursor *WKCursor(const char *name);
 
 #endif
 
-#if !defined(BUILDING_ON_LEOPARD) && !defined(BUILDING_ON_SNOW_LEOPARD)
+#if MAC_OS_X_VERSION_MIN_REQUIRED >= 1070
 
 #import <dispatch/dispatch.h>
 
 dispatch_source_t WKCreateVMPressureDispatchOnMainQueue(void);
 
 #endif
-    
+
+#if MAC_OS_X_VERSION_MIN_REQUIRED >= 1080
+NSString *WKGetMacOSXVersionString(void);
+bool WKExecutableWasLinkedOnOrBeforeLion(void);
+#endif
+
 #ifdef __cplusplus
 }
 #endif
