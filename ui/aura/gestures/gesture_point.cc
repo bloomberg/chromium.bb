@@ -4,6 +4,7 @@
 
 #include "ui/aura/gestures/gesture_point.h"
 
+#include "base/basictypes.h"
 #include "ui/aura/event.h"
 #include "ui/base/events.h"
 
@@ -16,8 +17,9 @@ const double kMinimumTouchDownDurationInSecondsForClick = 0.01;
 const double kMaximumSecondsBetweenDoubleClick = 0.7;
 const int kMaximumTouchMoveInPixelsForClick = 20;
 const float kMinFlickSpeedSquared = 550.f * 550.f;
+const int kBufferedPoints = 10;
 
-}  // namespace aura
+}  // namespace
 
 namespace aura {
 
@@ -25,20 +27,21 @@ GesturePoint::GesturePoint()
     : first_touch_time_(0.0),
       last_touch_time_(0.0),
       last_tap_time_(0.0),
-      x_velocity_(0.0),
-      y_velocity_(0.0) {
+      velocity_calculator_(kBufferedPoints) {
 }
 
 void GesturePoint::Reset() {
   first_touch_time_ = last_touch_time_ = 0.0;
-  x_velocity_ = y_velocity_ = 0.0;
+  velocity_calculator_.ClearHistory();
 }
 
 void GesturePoint::UpdateValues(const TouchEvent& event, GestureState state) {
+  const int64 event_timestamp_microseconds =
+    event.time_stamp().InMicroseconds();
   if (state != GS_NO_GESTURE && event.type() == ui::ET_TOUCH_MOVED) {
-    double interval(event.time_stamp().InSecondsF() - last_touch_time_);
-    x_velocity_ = (event.x() - last_touch_position_.x()) / interval;
-    y_velocity_ = (event.y() - last_touch_position_.y()) / interval;
+    velocity_calculator_.PointSeen(event.x(),
+                                   event.y(),
+                                   event_timestamp_microseconds);
   }
 
   last_touch_time_ = event.time_stamp().InSecondsF();
@@ -47,8 +50,10 @@ void GesturePoint::UpdateValues(const TouchEvent& event, GestureState state) {
   if (state == GS_NO_GESTURE) {
     first_touch_time_ = last_touch_time_;
     first_touch_position_ = event.location();
-    x_velocity_ = 0.0;
-    y_velocity_ = 0.0;
+    velocity_calculator_.ClearHistory();
+    velocity_calculator_.PointSeen(event.x(),
+                                   event.y(),
+                                   event_timestamp_microseconds);
   }
 }
 
@@ -81,7 +86,7 @@ bool GesturePoint::IsInScrollWindow(const TouchEvent& event) const {
          !IsInsideManhattanSquare(event);
 }
 
-bool GesturePoint::IsInFlickWindow(const TouchEvent& event) const {
+bool GesturePoint::IsInFlickWindow(const TouchEvent& event) {
   return IsOverMinFlickSpeed() && event.type() != ui::ET_TOUCH_CANCELLED;
 }
 
@@ -114,9 +119,8 @@ bool GesturePoint::IsSecondClickInsideManhattanSquare(
   return manhattanDistance < kMaximumTouchMoveInPixelsForClick;
 }
 
-bool GesturePoint::IsOverMinFlickSpeed() const {
-  return (x_velocity_ * x_velocity_ + y_velocity_ * y_velocity_) >
-          kMinFlickSpeedSquared;
+bool GesturePoint::IsOverMinFlickSpeed() {
+  return velocity_calculator_.VelocitySquared() > kMinFlickSpeedSquared;
 }
 
 }  // namespace aura

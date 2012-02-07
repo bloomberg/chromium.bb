@@ -122,7 +122,7 @@ class GestureSequence {
                  const GesturePoint& point,
                  Gestures* gestures);
   bool ScrollEnd(const TouchEvent& event,
-                 const GesturePoint& point,
+                 GesturePoint& point,
                  Gestures* gestures);
 
   // Current state of gesture recognizer.
