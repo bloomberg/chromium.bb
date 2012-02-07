@@ -35,6 +35,10 @@ using content::OpenURLParams;
 using content::Referrer;
 using content::SiteInstance;
 
+namespace events {
+const char kOnInstalled[] = "experimental.extension.onInstalled";
+};  // namespace events
+
 namespace {
 
 // Incognito profiles use this process manager. It is mostly a shim that decides
@@ -67,9 +71,14 @@ class IncognitoExtensionProcessManager : public ExtensionProcessManager {
 
 static void CreateBackgroundHostForExtensionLoad(
     ExtensionProcessManager* manager, const Extension* extension) {
-  if (extension->has_background_page() &&
-      extension->background_page_persists()) {
-    manager->CreateBackgroundHost(extension, extension->GetBackgroundURL());
+  if (extension->has_background_page()) {
+    if (extension->background_page_persists()) {
+      manager->CreateBackgroundHost(extension, extension->GetBackgroundURL());
+    } else {
+      // TODO(mpcomplete): Only call this on install once we persist event
+      // registration. Also call this for regular background pages.
+      manager->DispatchExtensionInstalledEvent(extension);
+    }
   }
 }
 
@@ -407,6 +416,14 @@ void ExtensionProcessManager::CloseBackgroundHosts() {
     ExtensionHostSet::iterator current = iter++;
     delete *current;
   }
+}
+
+void ExtensionProcessManager::DispatchExtensionInstalledEvent(
+    const Extension* extension) {
+  ExtensionEventRouter* router = GetProfile()->GetExtensionEventRouter();
+  router->AddLazyEventListener(events::kOnInstalled, extension->id());
+  router->DispatchEventToExtension(
+      extension->id(), events::kOnInstalled, "[]", NULL, GURL());
 }
 
 //

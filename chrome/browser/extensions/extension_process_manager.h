@@ -93,6 +93,10 @@ class ExtensionProcessManager : public content::NotificationObserver {
   // lazy background pages are enabled).
   void OnExtensionIdle(const std::string& extension_id);
 
+  // Dispatch an event to the extension to let it know it was just installed.
+  // TODO(mpcomplete): Temporary until we implement persistent event registry.
+  void DispatchExtensionInstalledEvent(const Extension* extension);
+
   typedef std::set<ExtensionHost*> ExtensionHostSet;
   typedef ExtensionHostSet::const_iterator const_iterator;
   const_iterator begin() const { return all_hosts_.begin(); }
