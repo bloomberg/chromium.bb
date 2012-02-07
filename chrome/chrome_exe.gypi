@@ -26,7 +26,6 @@
         'app/hard_error_handler_win.h',
         'app/scoped_ole_initializer.h',
         '../content/app/startup_helper_win.cc',
-        '../content/public/common/content_switches.cc',
       ],
       'mac_bundle_resources': [
         'app/app-Info.plist',
