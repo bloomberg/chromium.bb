@@ -7,6 +7,7 @@ made in recent releases.
 </p>
 
 <ul>
+  <li> <a href="#17">Google Chrome 17</a> </li>
   <li> <a href="#16">Google Chrome 16</a> </li>
   <li> <a href="#15">Google Chrome 15</a> </li>
   <li> <a href="#14">Google Chrome 14</a> </li>
@@ -25,6 +26,44 @@ In addition to the changes listed below,
 check out the
 <a href="experimental.html">experimental APIs</a>.
 </p>
+
+<h2 id="17"> Google Chrome 17 </h2>
+
+<h4> New APIs </h4>
+  <ul>
+    <li> The
+      <a href="webRequest.html">web request API</a>
+      lets you intercept, block, or
+      modify requests in-flight and
+      to observe and analyze traffic.
+      </li>
+  </ul>
+
+<h4> Manifest changes </h4>
+  <ul>
+    <li>
+      Permissions can be
+      <a href="permissions.html">optional</a>
+      for the content setting API, the web navigation API, and
+      the new web request API.
+  </ul>
+
+<h4> Additions to existing APIs </h4>
+  <ul>
+    <li>The management API's
+    <a href="management.html#type-ExtensionInfo">ExtensionInfo</a> object
+    now has a <code>disabledReason</code> property.
+    </li>
+  </ul>
+
+<h4> Changes to existing APIs </h4>
+
+  <ul>
+    <li>The <a href="omnibox.html">omnibox API</a>
+    now works in
+    <a href="manifest.html#incognito">split incognito mode</a>.
+    </li>
+  </ul>
 
 <h2 id="16"> Google Chrome 16 </h2>
 
