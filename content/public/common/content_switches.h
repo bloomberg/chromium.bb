@@ -46,6 +46,7 @@ CONTENT_EXPORT extern const char kDisableGLMultisampling[];
 extern const char kDisableGLSLTranslator[];
 extern const char kDisableGpuDriverBugWorkarounds[];
 extern const char kDisableGpuSandbox[];
+extern const char kReduceGpuSandbox[];
 extern const char kDisableGpuWatchdog[];
 CONTENT_EXPORT extern const char kDisableHangMonitor[];
 extern const char kDisableImageTransportSurface[];

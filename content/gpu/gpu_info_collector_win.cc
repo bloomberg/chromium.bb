@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -153,6 +153,10 @@ bool CollectGraphicsInfoD3D(IDirect3D9* d3d, content::GPUInfo* gpu_info) {
 
 bool CollectVideoCardInfo(content::GPUInfo* gpu_info) {
   DCHECK(gpu_info);
+
+  // nvd3d9wrap.dll is loaded into all processes when Optimus is enabled.
+  HMODULE nvd3d9wrap = GetModuleHandleW(L"nvd3d9wrap.dll");
+  gpu_info->optimus = nvd3d9wrap != NULL;
 
   // Taken from http://developer.nvidia.com/object/device_ids.html
   DISPLAY_DEVICE dd;

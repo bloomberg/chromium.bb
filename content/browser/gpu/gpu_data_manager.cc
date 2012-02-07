@@ -504,6 +504,9 @@ void GpuDataManager::AppendGpuCommandLine(
   } else if (!user_flags_.use_gl().empty()) {
     command_line->AppendSwitchASCII(switches::kUseGL, user_flags_.use_gl());
   }
+
+  if (gpu_info().optimus)
+    command_line->AppendSwitch(switches::kReduceGpuSandbox);
 }
 
 void GpuDataManager::SetGpuBlacklist(GpuBlacklist* gpu_blacklist) {
@@ -535,6 +538,8 @@ DictionaryValue* GpuDataManager::GpuInfoAsDictionaryValue() const {
       "Vendor Id", base::StringPrintf("0x%04x", gpu_info().vendor_id)));
   basic_info->Append(NewDescriptionValuePair(
       "Device Id", base::StringPrintf("0x%04x", gpu_info().device_id)));
+  basic_info->Append(NewDescriptionValuePair(
+      "Optimus", Value::CreateBooleanValue(gpu_info().optimus)));
   basic_info->Append(NewDescriptionValuePair("Driver vendor",
                                              gpu_info().driver_vendor));
   basic_info->Append(NewDescriptionValuePair("Driver version",
@@ -722,6 +727,7 @@ bool GpuDataManager::Merge(content::GPUInfo* object,
   if (!object->finalized) {
     object->finalized = other.finalized;
     object->initialization_time = other.initialization_time;
+    object->optimus |= other.optimus;
 
     if (object->driver_vendor.empty()) {
       changed |= object->driver_vendor != other.driver_vendor;

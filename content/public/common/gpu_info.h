@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -29,6 +29,9 @@ struct CONTENT_EXPORT GPUInfo {
   // The amount of time taken to get from the process starting to the message
   // loop being pumped.
   base::TimeDelta initialization_time;
+
+  // Computer has NVIDIA Optimus
+  bool optimus;
 
   // The DWORD (uint32) representing the graphics card vendor id.
   uint32 vendor_id;

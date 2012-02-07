@@ -316,7 +316,8 @@ bool AddPolicyForGPU(CommandLine* cmd_line, sandbox::TargetPolicy* policy) {
       policy->SetDelayedIntegrityLevel(sandbox::INTEGRITY_LEVEL_LOW);
     } else {
       if (cmd_line->GetSwitchValueASCII(switches::kUseGL) ==
-          gfx::kGLImplementationSwiftShaderName) {
+          gfx::kGLImplementationSwiftShaderName ||
+          cmd_line->HasSwitch(switches::kReduceGpuSandbox)) {
         policy->SetTokenLevel(sandbox::USER_RESTRICTED_SAME_ACCESS,
                               sandbox::USER_LIMITED);
       } else {
