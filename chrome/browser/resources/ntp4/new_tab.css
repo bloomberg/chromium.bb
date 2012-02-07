@@ -12,7 +12,7 @@ html {
 }
 
 body {
-  /* Don't highlight links when they're tapped.  Safari has bugs here that
+  /* Don't highlight links when they're tapped. Safari has bugs here that
      show up as flicker when dragging in some situations */
   -webkit-tap-highlight-color: transparent;
   /* Don't allow selecting text - can occur when dragging */
@@ -27,33 +27,44 @@ body {
 }
 
 #notification-container {
-  -webkit-transition-duration: 100ms;
-  -webkit-transition-property: opacity;
+  -webkit-transition: opacity 200ms, margin-left 200ms;
+  bottom: 31px;
   display: block;
-  margin-top: 2px;
+  float: left;
   position: relative;
-  text-align: center;
+  text-align: start;
   z-index: 15;
 }
 
+html[dir='rtl'] #notification-container {
+  float: right;
+}
+
+#notification-container.card-changed {
+  -webkit-transition: none;
+  opacity: 0;
+}
+
 #notification-container.inactive {
-  -webkit-transition-duration: 200ms;
+  -webkit-transition: opacity 200ms;
   opacity: 0;
 }
 
 #notification {
-  background-color: rgb(255, 241, 153);
-  border: 1px solid lightGrey;
-  border-radius: 6px;
   color: black;
   display: inline-block;
   font-weight: bold;
-  padding: 7px 15px;
 }
 
 #notification > div > div,
 #notification > div {
   display: inline-block;
+}
+
+/* NOTE: This is in the probable case that we start stuffing 16x16 data URI'd
+ * icons in the promo notification responses. */
+#notification > span > img {
+  margin-bottom: -3px;
 }
 
 #notification .close-button {

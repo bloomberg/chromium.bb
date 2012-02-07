@@ -221,6 +221,14 @@ cr.define('cr.ui', function() {
     },
 
     /**
+     * Returns the frame holding the cards.
+     * @return {Element} The frame used to position the cards.
+     */
+    get frame() {
+      return this.frame_;
+    },
+
+    /**
      * Handle horizontal scrolls to flip between pages.
      * @private
      */

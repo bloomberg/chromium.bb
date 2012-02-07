@@ -344,6 +344,8 @@ cr.define('ntp4', function() {
       logEvent('apps.layout: ' + (Date.now() - startTime));
 
       document.documentElement.classList.remove('starting-up');
+
+      cr.dispatchSimpleEvent(document, 'sectionready', true, true);
     },
 
     /**

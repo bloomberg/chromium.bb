@@ -137,7 +137,7 @@ cr.define('ntp4', function() {
           localStrings.getString('login_status_url');
       $('login-status-advanced').onclick = function() {
         chrome.send('showAdvancedLoginUI');
-      }
+      };
       $('login-status-dismiss').onclick = loginBubble.hide.bind(loginBubble);
 
       var bubbleContent = $('login-status-bubble-contents');
@@ -153,7 +153,7 @@ cr.define('ntp4', function() {
       infoBubble.handleCloseEvent = function() {
         this.hide();
         chrome.send('introMessageDismissed');
-      }
+      };
 
       var bubbleContent = $('ntp4-intro-bubble-contents');
       infoBubble.content = bubbleContent;
@@ -166,9 +166,16 @@ cr.define('ntp4', function() {
       chrome.send('introMessageSeen');
     }
 
-    var serverpromo = localStrings.getString('serverpromo');
-    if (serverpromo) {
-      showNotification(parseHtmlSubset(serverpromo), [], function() {
+    var promo = localStrings.getString('serverpromo');
+    if (promo) {
+      var tags = ['IMG'];
+      var attrs = {
+        src: function(node, value) {
+          return node.tagName == 'IMG' &&
+                 /^data\:image\/(?:png|gif|jpe?g)/.test(value);
+        },
+      };
+      showNotification(parseHtmlSubset(promo, tags, attrs), [], function() {
         chrome.send('closeNotificationPromo');
       }, 60000);
       chrome.send('notificationPromoViewed');
@@ -192,6 +199,45 @@ cr.define('ntp4', function() {
     chrome.send('recordAppLaunchByURL',
                 [encodeURIComponent(this.href),
                  ntp4.APP_LAUNCH.NTP_WEBSTORE_FOOTER]);
+  }
+
+  /*
+   * The number of sections to wait on.
+   * @type {number}
+   */
+  var sectionsToWaitFor = 2;
+
+  /**
+   * Queued callbacks which lie in wait for all sections to be ready.
+   * @type {array}
+   */
+  var readyCallbacks = [];
+
+  /**
+   * Fired as each section of pages becomes ready.
+   * @param {Event} e Each page's synthetic DOM event.
+   */
+  document.addEventListener('sectionready', function(e) {
+    if (--sectionsToWaitFor <= 0) {
+      while (readyCallbacks.length) {
+        readyCallbacks.shift()();
+      }
+    }
+  });
+
+  /**
+   * This is used to simulate a fire-once event (i.e. $(document).ready() in
+   * jQuery or Y.on('domready') in YUI. If all sections are ready, the callback
+   * is fired right away. If all pages are not ready yet, the function is queued
+   * for later execution.
+   * @param {function} callback The work to be done when ready.
+   */
+  function doWhenAllSectionsReady(callback) {
+    assert(typeof callback == 'function');
+    if (sectionsToWaitFor > 0)
+      readyCallbacks.push(callback);
+    else
+      window.setTimeout(callback, 0);  // Do soon after, but asynchronously.
   }
 
   /**
@@ -249,7 +295,7 @@ cr.define('ntp4', function() {
    * Timeout ID.
    * @type {number}
    */
-  var notificationTimeout_ = 0;
+  var notificationTimeout = 0;
 
   /**
    * Shows the notification bubble.
@@ -263,7 +309,7 @@ cr.define('ntp4', function() {
    *     manually dismisses the notification.
    */
   function showNotification(message, links, opt_closeHandler, opt_timeout) {
-    window.clearTimeout(notificationTimeout_);
+    window.clearTimeout(notificationTimeout);
 
     var span = document.querySelector('#notification > span');
     if (typeof message == 'string') {
@@ -282,23 +328,30 @@ cr.define('ntp4', function() {
       link.onclick = function() {
         this.action();
         hideNotification();
-      }
+      };
       link.setAttribute('role', 'button');
       link.setAttribute('tabindex', 0);
       link.className = 'link-button';
       linksBin.appendChild(link);
     }
 
-    document.querySelector('#notification button').onclick = function(e) {
+    function closeFunc(e) {
       if (opt_closeHandler)
         opt_closeHandler();
       hideNotification();
-    };
+    }
+
+    document.querySelector('#notification button').onclick = closeFunc;
+    document.addEventListener('dragstart', closeFunc);
+
+    notificationContainer.hidden = false;
+    showNotificationOnCurrentPage();
+
+    newTabView.cardSlider.frame.addEventListener(
+        'cardSlider:card_change_ended', onCardChangeEnded);
 
     var timeout = opt_timeout || 10000;
-    notificationContainer.hidden = false;
-    notificationContainer.classList.remove('inactive');
-    notificationTimeout_ = window.setTimeout(hideNotification, timeout);
+    notificationTimeout = window.setTimeout(hideNotification, timeout);
   }
 
   /**
@@ -306,14 +359,56 @@ cr.define('ntp4', function() {
    */
   function hideNotification() {
     notificationContainer.classList.add('inactive');
+
+    newTabView.cardSlider.frame.removeEventListener(
+        'cardSlider:card_change_ended', onCardChangeEnded);
+  }
+
+  /**
+   * Happens when 1 or more consecutive card changes end.
+   * @param {Event} e The cardSlider:card_change_ended event.
+   */
+  function onCardChangeEnded(e) {
+    // If we ended on the same page as we started, ignore.
+    if (newTabView.cardSlider.currentCardValue.notification)
+      return;
+
+    // Hide the notification the old page.
+    notificationContainer.classList.add('card-changed');
+
+    showNotificationOnCurrentPage();
+  }
+
+  /**
+   * Move and show the notification on the current page.
+   */
+  function showNotificationOnCurrentPage() {
+    var page = newTabView.cardSlider.currentCardValue;
+    doWhenAllSectionsReady(function() {
+      if (page != newTabView.cardSlider.currentCardValue)
+        return;
+
+      // NOTE: This moves the notification to inside of the current page.
+      page.notification = notificationContainer;
+
+      // Reveal the notification and instruct it to hide itself if ignored.
+      notificationContainer.classList.remove('inactive');
+
+      // Gives the browser time to apply this rule before we remove it (causing
+      // a transition).
+      window.setTimeout(function() {
+        notificationContainer.classList.remove('card-changed');
+      }, 0);
+    });
   }
 
   /**
    * When done fading out, set hidden to true so the notification can't be
    * tabbed to or clicked.
+   * @param {Event} e The webkitTransitionEnd event.
    */
   function onNotificationTransitionEnd(e) {
-    if (notificationContainer.classList.contains('inactive'));
+    if (notificationContainer.classList.contains('inactive'))
       notificationContainer.hidden = true;
   }
 
@@ -323,6 +418,7 @@ cr.define('ntp4', function() {
 
   function setMostVisitedPages(data, hasBlacklistedUrls) {
     newTabView.mostVisitedPage.data = data;
+    cr.dispatchSimpleEvent(document, 'sectionready', true, true);
   }
 
   /**

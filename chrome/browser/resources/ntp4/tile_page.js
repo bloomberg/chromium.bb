@@ -503,6 +503,25 @@ cr.define('ntp4', function() {
     },
 
     /**
+     * The notification content of this tile (if any, otherwise null).
+     * @type {!HTMLElement}
+     */
+    get notification() {
+      return this.topMargin_.nextElementSibling.id == 'notification-container' ?
+          this.topMargin_.nextElementSibling : null;
+    },
+    /**
+     * The notification content of this tile (if any, otherwise null).
+     * @param {!HTMLElement}
+     */
+    set notification(node) {
+      assert(node instanceof HTMLElement, '|node| isn\'t an HTMLElement!');
+      // NOTE: Implicitly removes from DOM if |node| is inside it.
+      this.content_.insertBefore(node, this.topMargin_.nextElementSibling);
+      this.positionNotification_();
+    },
+
+    /**
      * Removes the tilePage from the DOM and cleans up event handlers.
      */
     remove: function() {
@@ -910,6 +929,7 @@ cr.define('ntp4', function() {
       this.classList.add('animating-tile-page');
       this.heightChanged_();
 
+      this.positionNotification_();
       this.repositionTiles_();
     },
 
@@ -981,6 +1001,17 @@ cr.define('ntp4', function() {
       this.topMarginPx_ = newMargin;
       this.topMargin_.style.marginTop =
           (this.topMarginPx_ - this.animatedTopMarginPx_) + 'px';
+    },
+
+    /**
+     * Position the notification if there's one showing.
+     */
+    positionNotification_: function() {
+      if (this.notification && !this.notification.hidden) {
+        this.notification.style.margin =
+            -this.notification.offsetHeight + 'px ' +
+            this.layoutValues_.leftMargin + 'px 0';
+      }
     },
 
     /**
