@@ -202,6 +202,7 @@ bool RenderWidget::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_Close, OnClose)
     IPC_MESSAGE_HANDLER(ViewMsg_CreatingNew_ACK, OnCreatingNewAck)
     IPC_MESSAGE_HANDLER(ViewMsg_Resize, OnResize)
+    IPC_MESSAGE_HANDLER(ViewMsg_ChangeResizeRect, OnChangeResizeRect)
     IPC_MESSAGE_HANDLER(ViewMsg_WasHidden, OnWasHidden)
     IPC_MESSAGE_HANDLER(ViewMsg_WasRestored, OnWasRestored)
     IPC_MESSAGE_HANDLER(ViewMsg_WasSwappedOut, OnWasSwappedOut)
@@ -313,6 +314,16 @@ void RenderWidget::OnResize(const gfx::Size& new_size,
 
   if (fullscreen_change)
     DidToggleFullscreen();
+}
+
+void RenderWidget::OnChangeResizeRect(const gfx::Rect& resizer_rect) {
+  if (resizer_rect_ != resizer_rect) {
+    paint_aggregator_.InvalidateRect(resizer_rect_);
+    paint_aggregator_.InvalidateRect(resizer_rect);
+    resizer_rect_ = resizer_rect;
+    if (webwidget_)
+      webwidget_->didChangeWindowResizerRect();
+  }
 }
 
 void RenderWidget::OnWasHidden() {

@@ -739,6 +739,10 @@ IPC_MESSAGE_ROUTED3(ViewMsg_Resize,
                     gfx::Rect /* resizer_rect */,
                     bool /* is_fullscreen */)
 
+// Tells the render view that the resize rect has changed.
+IPC_MESSAGE_ROUTED1(ViewMsg_ChangeResizeRect,
+                    gfx::Rect /* resizer_rect */)
+
 // Sent to inform the view that it was hidden.  This allows it to reduce its
 // resource utilization.
 IPC_MESSAGE_ROUTED0(ViewMsg_WasHidden)

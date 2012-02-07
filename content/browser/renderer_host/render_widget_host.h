@@ -195,6 +195,10 @@ class CONTENT_EXPORT RenderWidgetHost : public IPC::Channel::Listener,
   // Called to notify the RenderWidget that it has been resized.
   void WasResized();
 
+  // Called to notify the RenderWidget that the resize rect has changed without
+  // the size of the RenderWidget itself changing.
+  void ResizeRectChanged(const gfx::Rect& new_rect);
+
   // Called to notify the RenderWidget that its associated native window got
   // focused.
   virtual void GotFocus();
