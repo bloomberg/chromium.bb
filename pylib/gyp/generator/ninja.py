@@ -106,6 +106,12 @@ class Target:
   def __init__(self, type):
     # Gyp type ("static_library", etc.) of this target.
     self.type = type
+    # File representing whether any input dependencies necessary for
+    # dependent actions have completed.
+    self.preaction_stamp = None
+    # File representing whether any input dependencies necessary for
+    # dependent compiles have completed.
+    self.precompile_stamp = None
     # File representing the completion of actions/rules/copies, if any.
     self.actions_stamp = None
     # Path to the output of the link step, if any.
@@ -118,10 +124,15 @@ class Target:
     """Return true if this is a target that can be linked against."""
     return self.type in ('static_library', 'shared_library')
 
-  def PrecompileInput(self):
+  def PreActionInput(self):
+    """Return the path, if any, that should be used as a dependency of
+    any dependent action step."""
+    return self.FinalOutput() or self.preaction_stamp
+
+  def PreCompileInput(self):
     """Return the path, if any, that should be used as a dependency of
     any dependent compile step."""
-    return self.actions_stamp
+    return self.actions_stamp or self.precompile_stamp
 
   def FinalOutput(self):
     """Return the last output of the target, which depends on all prior
@@ -296,17 +307,22 @@ class NinjaWriter:
     # any of its compile steps.
     actions_depends = []
     compile_depends = []
+    # TODO(evan): it is rather confusing which things are lists and which
+    # are strings.  Fix these.
     if 'dependencies' in spec:
-      actions_depends = []
       for dep in spec['dependencies']:
         if dep in self.target_outputs:
           target = self.target_outputs[dep]
-          actions_depends.append(target.FinalOutput())
-          compile_depends.append(target.PrecompileInput())
+          actions_depends.append(target.PreActionInput())
+          compile_depends.append(target.PreCompileInput())
       actions_depends = filter(None, actions_depends)
       compile_depends = filter(None, compile_depends)
       actions_depends = self.WriteCollapsedDependencies('actions_depends',
                                                         actions_depends)
+      compile_depends = self.WriteCollapsedDependencies('compile_depends',
+                                                        compile_depends)
+      self.target.preaction_stamp = actions_depends
+      self.target.precompile_stamp = compile_depends
 
     # Write out actions, rules, and copies.  These must happen before we
     # compile any sources, so compute a list of predependencies for sources
@@ -320,8 +336,7 @@ class NinjaWriter:
     # otherwise we depend on dependent target's actions/rules/copies etc.
     # We never need to explicitly depend on previous target's link steps,
     # because no compile ever depends on them.
-    compile_depends_stamp = (self.target.actions_stamp or
-        self.WriteCollapsedDependencies('compile_depends', compile_depends))
+    compile_depends_stamp = (self.target.actions_stamp or compile_depends)
 
     # Write out the compilation steps, if any.
     link_deps = []
