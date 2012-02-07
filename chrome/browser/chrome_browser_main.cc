@@ -1111,6 +1111,9 @@ void ChromeBrowserMainParts::PostMainMessageLoopStart() {
 
 int ChromeBrowserMainParts::PreCreateThreads() {
   result_code_ = PreCreateThreadsImpl();
+  // These members must be initialized before returning from this function.
+  DCHECK(master_prefs_.get());
+  DCHECK(browser_init_.get());
   return result_code_;
 }
 
@@ -1160,6 +1163,10 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
   local_state_ = InitializeLocalState(parsed_command_line(),
                                       is_first_run_);
 
+  // These members must be initialized before returning from this function.
+  master_prefs_.reset(new first_run::MasterPrefs);
+  browser_init_.reset(new BrowserInit);
+
   // If we're running tests (ui_task is non-null), then the ResourceBundle
   // has already been initialized.
   if (parameters().ui_task) {
@@ -1194,10 +1201,6 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
 #if defined(TOOLKIT_GTK)
   g_set_application_name(l10n_util::GetStringUTF8(IDS_PRODUCT_NAME).c_str());
 #endif
-
-  // These members must be initialized before returning from this function.
-  master_prefs_.reset(new first_run::MasterPrefs);
-  browser_init_.reset(new BrowserInit);
 
   std::string try_chrome =
       parsed_command_line().GetSwitchValueASCII(switches::kTryChromeAgain);
