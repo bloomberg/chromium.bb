@@ -3309,6 +3309,8 @@
         'browser/ui/panels/panel_overflow_indicator_view.h',
         'browser/ui/panels/panel_settings_menu_model.cc',
         'browser/ui/panels/panel_settings_menu_model.h',
+	'browser/ui/panels/panel_strip.cc',
+	'browser/ui/panels/panel_strip.h',
         'browser/ui/panels/panel_titlebar_view_cocoa.h',
         'browser/ui/panels/panel_titlebar_view_cocoa.mm',
         'browser/ui/panels/panel_window_controller_cocoa.h',

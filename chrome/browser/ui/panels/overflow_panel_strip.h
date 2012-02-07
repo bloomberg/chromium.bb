@@ -8,6 +8,7 @@
 
 #include <vector>
 #include "chrome/browser/ui/panels/panel.h"
+#include "chrome/browser/ui/panels/panel_strip.h"
 #include "chrome/browser/ui/panels/panel_mouse_watcher_observer.h"
 #include "ui/base/animation/animation_delegate.h"
 
@@ -19,7 +20,8 @@ class SlideAnimation;
 }
 
 // Manipulates all the panels that are placed on the left-most overflow area.
-class OverflowPanelStrip : public PanelMouseWatcherObserver,
+class OverflowPanelStrip : public PanelStrip,
+                           public PanelMouseWatcherObserver,
                            public ui::AnimationDelegate {
  public:
   typedef std::vector<Panel*> Panels;
@@ -27,25 +29,19 @@ class OverflowPanelStrip : public PanelMouseWatcherObserver,
   explicit OverflowPanelStrip(PanelManager* panel_manager);
   virtual ~OverflowPanelStrip();
 
-  // Sets the display area of the overflow strip.
-  // |display_area| is in screen coordinates.
-  void SetDisplayArea(const gfx::Rect& display_area);
-
-  // Adds a panel to the strip.
-  void AddPanel(Panel* panel);
-
-  // Returns |false| if the panel is not in the strip.
-  bool Remove(Panel* panel);
-  void RemoveAll();
+  // PanelStrip OVERRIDES:
+  virtual void SetDisplayArea(const gfx::Rect& display_area) OVERRIDE;
+  virtual void RefreshLayout() OVERRIDE;
+  virtual void AddPanel(Panel* panel) OVERRIDE;
+  virtual bool RemovePanel(Panel* panel) OVERRIDE;
+  virtual void CloseAll() OVERRIDE;
+  virtual void ResizePanelWindow(
+      Panel* panel,
+      const gfx::Size& preferred_window_size) OVERRIDE;
+  virtual void OnPanelAttentionStateChanged(Panel* panel) OVERRIDE;
 
   // Called when a panel's expansion state changes.
   void OnPanelExpansionStateChanged(Panel* panel);
-
-  // Called when a panel is starting/stopping drawing an attention.
-  void OnPanelAttentionStateChanged(Panel* panel);
-
-  // Refreshes the layouts for all panels to reflect any possible changes.
-  void Refresh();
 
   void OnFullScreenModeChanged(bool is_full_screen);
 

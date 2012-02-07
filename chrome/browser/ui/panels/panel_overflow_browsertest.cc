@@ -271,7 +271,7 @@ IN_PROC_BROWSER_TEST_F(PanelOverflowBrowserTest, MAYBE_CheckPanelProperties) {
   EXPECT_FALSE(panel4->has_temporary_layout());
   EXPECT_FALSE(panel4->draggable());
 
-  PanelManager::GetInstance()->RemoveAll();
+  PanelManager::GetInstance()->CloseAll();
 }
 
 IN_PROC_BROWSER_TEST_F(PanelOverflowBrowserTest, MAYBE_UpdateDraggableStatus) {
@@ -333,7 +333,7 @@ IN_PROC_BROWSER_TEST_F(PanelOverflowBrowserTest, MAYBE_CreateOverflowPanels) {
   EXPECT_FALSE(overflow_strip->overflow_indicator());
   EXPECT_TRUE(IsPanelVisible(panel4));
 
-  PanelManager::GetInstance()->RemoveAll();
+  PanelManager::GetInstance()->CloseAll();
 }
 
 IN_PROC_BROWSER_TEST_F(PanelOverflowBrowserTest,
@@ -366,7 +366,7 @@ IN_PROC_BROWSER_TEST_F(PanelOverflowBrowserTest,
   EXPECT_EQ(Panel::IN_OVERFLOW, panels[7]->expansion_state());
   EXPECT_FALSE(IsPanelVisible(panels[7]));
 
-  PanelManager::GetInstance()->RemoveAll();
+  PanelManager::GetInstance()->CloseAll();
 }
 
 IN_PROC_BROWSER_TEST_F(PanelOverflowBrowserTest,
@@ -393,7 +393,7 @@ IN_PROC_BROWSER_TEST_F(PanelOverflowBrowserTest,
 
   WaitForExpansionStateChanged(overflow_panel, Panel::IN_OVERFLOW);
   EXPECT_FALSE(overflow_panel->has_temporary_layout());
-  PanelManager::GetInstance()->RemoveAll();
+  PanelManager::GetInstance()->CloseAll();
 }
 
 IN_PROC_BROWSER_TEST_F(PanelOverflowBrowserTest, MAYBE_CloseOverflowPanels) {
@@ -486,7 +486,7 @@ IN_PROC_BROWSER_TEST_F(PanelOverflowBrowserTest, MAYBE_CloseOverflowPanels) {
   expected_overflow_list.Add(panels[7], Panel::IN_OVERFLOW, true, false);
   EXPECT_EQ(expected_overflow_list, GetAllOverflowPanelData());
 
-  panel_manager->RemoveAll();
+  panel_manager->CloseAll();
 }
 
 IN_PROC_BROWSER_TEST_F(PanelOverflowBrowserTest, MAYBE_CloseDockedPanels) {
@@ -614,7 +614,7 @@ IN_PROC_BROWSER_TEST_F(PanelOverflowBrowserTest, MAYBE_CloseDockedPanels) {
   expected_overflow_list.Add(panels[8], Panel::IN_OVERFLOW, true, false);
   EXPECT_EQ(expected_overflow_list, GetAllOverflowPanelData());
 
-  panel_manager->RemoveAll();
+  panel_manager->CloseAll();
 }
 
 IN_PROC_BROWSER_TEST_F(PanelOverflowBrowserTest,
@@ -652,7 +652,7 @@ IN_PROC_BROWSER_TEST_F(PanelOverflowBrowserTest,
   // Hack. Pretend to close panel by removing it directly. Cannot use
   // CloseWindowAndWait() here because it will allow the delayed overflow
   // to complete.
-  docked_strip->Remove(panel1);
+  docked_strip->RemovePanel(panel1);
   EXPECT_EQ(1, docked_strip->num_panels());
   EXPECT_EQ(1, docked_strip->num_temporary_layout_panels());
   EXPECT_TRUE(overflow_panel->has_temporary_layout());
@@ -791,7 +791,7 @@ IN_PROC_BROWSER_TEST_F(PanelOverflowBrowserTest, MAYBE_ActivateOverflowPanels) {
   expected_overflow_list.Add(panels[5], Panel::IN_OVERFLOW, false, false);
   EXPECT_EQ(expected_overflow_list, GetAllOverflowPanelData());
 
-  PanelManager::GetInstance()->RemoveAll();
+  PanelManager::GetInstance()->CloseAll();
 }
 
 IN_PROC_BROWSER_TEST_F(
@@ -893,7 +893,7 @@ IN_PROC_BROWSER_TEST_F(
   expected_overflow_list.Add(panels[4], Panel::IN_OVERFLOW, true, false);
   EXPECT_EQ(expected_overflow_list, GetAllOverflowPanelData());
 
-  PanelManager::GetInstance()->RemoveAll();
+  PanelManager::GetInstance()->CloseAll();
 }
 
 IN_PROC_BROWSER_TEST_F(
@@ -1089,7 +1089,7 @@ IN_PROC_BROWSER_TEST_F(
     EXPECT_EQ(expected_overflow_list, GetAllOverflowPanelData());
   }
 
-  PanelManager::GetInstance()->RemoveAll();
+  PanelManager::GetInstance()->CloseAll();
 }
 
 IN_PROC_BROWSER_TEST_F(PanelOverflowBrowserTest,
@@ -1160,7 +1160,7 @@ IN_PROC_BROWSER_TEST_F(PanelOverflowBrowserTest,
   EXPECT_EQ(iconified_width, panels[3]->GetBounds().width());
   EXPECT_EQ(iconified_width, panels[4]->GetBounds().width());
 
-  panel_manager->RemoveAll();
+  panel_manager->CloseAll();
 }
 
 IN_PROC_BROWSER_TEST_F(PanelOverflowBrowserTest,
@@ -1266,7 +1266,7 @@ IN_PROC_BROWSER_TEST_F(PanelOverflowBrowserTest,
   EXPECT_EQ(0, panels[6]->GetBounds().width());
   EXPECT_EQ(0, panels[7]->GetBounds().width());
 
-  panel_manager->RemoveAll();
+  panel_manager->CloseAll();
 }
 
 IN_PROC_BROWSER_TEST_F(PanelOverflowBrowserTest, MAYBE_ResizePanel) {
@@ -1478,7 +1478,7 @@ IN_PROC_BROWSER_TEST_F(PanelOverflowBrowserTest, MAYBE_OverflowIndicatorCount) {
   EXPECT_FALSE(IsPanelVisible(panels[10]));
   EXPECT_EQ(4, overflow_strip->overflow_indicator()->GetCount());
 
-  panel_manager->RemoveAll();
+  panel_manager->CloseAll();
 }
 
 IN_PROC_BROWSER_TEST_F(PanelOverflowBrowserTest, MAYBE_DrawOverflowAttention) {
@@ -1591,5 +1591,5 @@ IN_PROC_BROWSER_TEST_F(PanelOverflowBrowserTest, MAYBE_DrawOverflowAttention) {
   EXPECT_TRUE(panels[3]->IsDrawingAttention());
   EXPECT_FALSE(overflow_indicator->IsDrawingAttention());
 
-  panel_manager->RemoveAll();
+  panel_manager->CloseAll();
 }

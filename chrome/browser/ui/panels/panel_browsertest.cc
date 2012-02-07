@@ -968,7 +968,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, MinimizeRestore) {
   CreatePanelWithBounds("PanelTest1", gfx::Rect(0, 0, 100, 100));
   TestMinimizeRestore();
 
-  PanelManager::GetInstance()->RemoveAll();
+  PanelManager::GetInstance()->CloseAll();
 }
 
 IN_PROC_BROWSER_TEST_F(PanelBrowserTest, MinimizeRestoreTwoPanels) {
@@ -981,7 +981,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, MinimizeRestoreTwoPanels) {
   CreatePanelWithBounds("PanelTest2", gfx::Rect(0, 0, 110, 110));
   TestMinimizeRestore();
 
-  PanelManager::GetInstance()->RemoveAll();
+  PanelManager::GetInstance()->CloseAll();
 }
 
 IN_PROC_BROWSER_TEST_F(PanelBrowserTest, MinimizeRestoreThreePanels) {
@@ -995,7 +995,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, MinimizeRestoreThreePanels) {
   CreatePanelWithBounds("PanelTest3", gfx::Rect(0, 0, 120, 120));
   TestMinimizeRestore();
 
-  PanelManager::GetInstance()->RemoveAll();
+  PanelManager::GetInstance()->CloseAll();
 }
 
 IN_PROC_BROWSER_TEST_F(PanelBrowserTest, ActivatePanelOrTabbedWindow) {

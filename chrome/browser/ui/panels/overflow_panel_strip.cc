@@ -32,7 +32,8 @@ const int kOverflowHoverAnimationMs = 180;
 }
 
 OverflowPanelStrip::OverflowPanelStrip(PanelManager* panel_manager)
-    : panel_manager_(panel_manager),
+    : PanelStrip(PanelStrip::IN_OVERFLOW),
+      panel_manager_(panel_manager),
       current_display_width_(0),
       max_visible_panels_(kMaxVisibleOverflowPanels),
       max_visible_panels_on_hover_(0),
@@ -59,7 +60,7 @@ void OverflowPanelStrip::SetDisplayArea(const gfx::Rect& display_area) {
   if (overflow_indicator_.get())
     UpdateOverflowIndicatorCount();
 
-  Refresh();
+  RefreshLayout();
 }
 
 void OverflowPanelStrip::UpdateMaxVisiblePanelsOnHover() {
@@ -92,7 +93,7 @@ void OverflowPanelStrip::AddPanel(Panel* panel) {
     DoRefresh(panels_.size() - 1, panels_.size() - 1);
   } else {
     panels_.insert(panels_.begin(), panel);
-    Refresh();
+    RefreshLayout();
   }
 
   panel->ApplyVisualStyleForStrip(OVERFLOW_STRIP);
@@ -112,7 +113,7 @@ void OverflowPanelStrip::AddPanel(Panel* panel) {
   }
 }
 
-bool OverflowPanelStrip::Remove(Panel* panel) {
+bool OverflowPanelStrip::RemovePanel(Panel* panel) {
   size_t index = 0;
   Panels::iterator iter = panels_.begin();
   for (; iter != panels_.end(); ++iter, ++index)
@@ -138,7 +139,7 @@ bool OverflowPanelStrip::Remove(Panel* panel) {
   return true;
 }
 
-void OverflowPanelStrip::RemoveAll() {
+void OverflowPanelStrip::CloseAll() {
   // Make a copy of the iterator as closing panels can modify the vector.
   Panels panels_copy = panels_;
 
@@ -148,12 +149,17 @@ void OverflowPanelStrip::RemoveAll() {
     (*iter)->Close();
 }
 
+void OverflowPanelStrip::ResizePanelWindow(
+    Panel* panel, const gfx::Size& preferred_window_size) {
+  // Overflow uses its own panel window sizes.
+}
+
 void OverflowPanelStrip::OnPanelExpansionStateChanged(Panel* panel) {
   // Only care about new state being overflow.
   if (panel->expansion_state() != Panel::IN_OVERFLOW)
     return;
 
-  panel_manager_->docked_strip()->Remove(panel);
+  panel_manager_->docked_strip()->RemovePanel(panel);
   AddPanel(panel);
   panel->SetAppIconVisibility(false);
   panel->set_draggable(false);
@@ -164,7 +170,7 @@ void OverflowPanelStrip::OnPanelAttentionStateChanged(Panel* panel) {
   UpdateOverflowIndicatorAttention();
 }
 
-void OverflowPanelStrip::Refresh() {
+void OverflowPanelStrip::RefreshLayout() {
   if (panels_.empty())
     return;
   DoRefresh(0, panels_.size() - 1);

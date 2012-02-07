@@ -57,7 +57,8 @@ const int DockedPanelStrip::kPanelMinWidth = 100;
 const int DockedPanelStrip::kPanelMinHeight = 20;
 
 DockedPanelStrip::DockedPanelStrip(PanelManager* panel_manager)
-    : panel_manager_(panel_manager),
+    : PanelStrip(PanelStrip::DOCKED),
+      panel_manager_(panel_manager),
       minimized_panel_count_(0),
       are_titlebars_up_(false),
       dragging_panel_index_(kInvalidPanelIndex),
@@ -73,17 +74,17 @@ DockedPanelStrip::~DockedPanelStrip() {
   DCHECK_EQ(0, minimized_panel_count_);
 }
 
-void DockedPanelStrip::SetDisplayArea(const gfx::Rect& new_area) {
-  if (display_area_ == new_area)
+void DockedPanelStrip::SetDisplayArea(const gfx::Rect& display_area) {
+  if (display_area_ == display_area)
     return;
 
   gfx::Rect old_area = display_area_;
-  display_area_ = new_area;
+  display_area_ = display_area;
 
   if (panels_.empty())
     return;
 
-  Rearrange();
+  RefreshLayout();
 }
 
 void DockedPanelStrip::AddPanel(Panel* panel) {
@@ -182,7 +183,7 @@ int DockedPanelStrip::GetRightMostAvailablePosition() const {
       (panels_.back()->GetBounds().x() - kPanelsHorizontalSpacing);
 }
 
-bool DockedPanelStrip::Remove(Panel* panel) {
+bool DockedPanelStrip::RemovePanel(Panel* panel) {
   if (panel->has_temporary_layout()) {
     panels_in_temporary_layout_.erase(panel);
     return true;
@@ -202,7 +203,7 @@ bool DockedPanelStrip::Remove(Panel* panel) {
   // Don't rearrange the strip if a panel is being moved from the panel strip
   // to the overflow strip.
   if (panel->expansion_state() != Panel::IN_OVERFLOW)
-    Rearrange();
+    RefreshLayout();
 
   return true;
 }
@@ -211,7 +212,7 @@ void DockedPanelStrip::DelayedRemove() {
   for (size_t i = 0; i < panels_pending_to_remove_.size(); ++i)
     DoRemove(panels_pending_to_remove_[i]);
   panels_pending_to_remove_.clear();
-  Rearrange();
+  RefreshLayout();
 }
 
 bool DockedPanelStrip::DoRemove(Panel* panel) {
@@ -364,7 +365,7 @@ void DockedPanelStrip::OnPanelExpansionStateChanged(Panel* panel) {
   Panel::ExpansionState expansion_state = panel->expansion_state();
   Panel::ExpansionState old_state = panel->old_expansion_state();
   if (old_state == Panel::IN_OVERFLOW) {
-    panel_manager_->overflow_strip()->Remove(panel);
+    panel_manager_->overflow_strip()->RemovePanel(panel);
     AddPanel(panel);
     panel->SetAppIconVisibility(true);
     panel->set_draggable(true);
@@ -428,7 +429,7 @@ void DockedPanelStrip::DecrementMinimizedPanels() {
     panel_manager_->mouse_watcher()->RemoveObserver(this);
 }
 
-void DockedPanelStrip::OnWindowSizeChanged(
+void DockedPanelStrip::ResizePanelWindow(
     Panel* panel, const gfx::Size& preferred_window_size) {
   // The panel width:
   // * cannot grow or shrink to go beyond [min_width, max_width]
@@ -472,7 +473,7 @@ void DockedPanelStrip::OnWindowSizeChanged(
 
   // Only need to rearrange if panel's width changed.
   if (delta_x != 0)
-    Rearrange();
+    RefreshLayout();
 }
 
 bool DockedPanelStrip::ShouldBringUpTitlebars(int mouse_x, int mouse_y) const {
@@ -644,7 +645,7 @@ void DockedPanelStrip::OnFullScreenModeChanged(bool is_full_screen) {
     panels_[i]->FullScreenModeChanged(is_full_screen);
 }
 
-void DockedPanelStrip::Rearrange() {
+void DockedPanelStrip::RefreshLayout() {
   int rightmost_position = StartingRightPosition();
 
   size_t panel_index = 0;
@@ -707,7 +708,7 @@ void DockedPanelStrip::DelayedMovePanelToOverflow(Panel* panel) {
   }
 }
 
-void DockedPanelStrip::RemoveAll() {
+void DockedPanelStrip::CloseAll() {
   // This should only be called at the end of tests to clean up.
   DCHECK(dragging_panel_index_ == kInvalidPanelIndex);
   DCHECK(panels_in_temporary_layout_.empty());

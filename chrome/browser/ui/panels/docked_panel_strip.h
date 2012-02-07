@@ -12,6 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/panels/auto_hiding_desktop_bar.h"
 #include "chrome/browser/ui/panels/panel.h"
+#include "chrome/browser/ui/panels/panel_strip.h"
 #include "chrome/browser/ui/panels/panel_mouse_watcher_observer.h"
 #include "ui/gfx/rect.h"
 
@@ -22,24 +23,38 @@ class PanelManager;
 // positioning the panels and controlling how they are displayed.
 // Panels in the strip appear minimized, showing title-only or expanded.
 // All panels in the strip are contained within the bounds of the strip.
-class DockedPanelStrip : public PanelMouseWatcherObserver {
+class DockedPanelStrip : public PanelStrip,
+                         public PanelMouseWatcherObserver {
  public:
   typedef std::vector<Panel*> Panels;
 
   explicit DockedPanelStrip(PanelManager* panel_manager);
   virtual ~DockedPanelStrip();
 
-  // Sets the bounds of the panel strip.
-  // |area| is in screen coordinates.
-  void SetDisplayArea(const gfx::Rect& area);
+  // PanelStrip OVERRIDES:
+  virtual void SetDisplayArea(const gfx::Rect& display_area) OVERRIDE;
+
+  // Rearranges the positions of the panels in the strip.
+  // Handles moving panels to/from overflow area as needed.
+  // This is called when the display space has been changed, i.e. working
+  // area being changed or a panel being closed.
+  virtual void RefreshLayout() OVERRIDE;
 
   // Adds a panel to the strip. The panel may be a newly created panel or one
   // that is transitioning from another grouping of panels.
-  void AddPanel(Panel* panel);
+  virtual void AddPanel(Panel* panel) OVERRIDE;
 
   // Returns |false| if the panel is not in the strip.
-  bool Remove(Panel* panel);
-  void RemoveAll();
+  virtual bool RemovePanel(Panel* panel) OVERRIDE;
+  virtual void CloseAll() OVERRIDE;
+
+  // Invoked when the window size of the given panel needs to be changed.
+  virtual void ResizePanelWindow(
+      Panel* panel,
+      const gfx::Size& preferred_window_size) OVERRIDE;
+
+  // Invoked when a panel's attention state changes.
+  virtual void OnPanelAttentionStateChanged(Panel* panel) OVERRIDE;
 
   // Drags the given panel.
   void StartDragging(Panel* panel);
@@ -48,13 +63,6 @@ class DockedPanelStrip : public PanelMouseWatcherObserver {
 
   // Invoked when a panel's expansion state changes.
   void OnPanelExpansionStateChanged(Panel* panel);
-
-  // Invoked when a panel's attention state changes.
-  void OnPanelAttentionStateChanged(Panel* panel);
-
-  // Invoked when the window size of the given panel is changed.
-  void OnWindowSizeChanged(
-      Panel* panel, const gfx::Size& preferred_window_size);
 
   // Returns true if we should bring up the titlebars, given the current mouse
   // point.
@@ -114,12 +122,6 @@ class DockedPanelStrip : public PanelMouseWatcherObserver {
   // the panel strip if necessary.
   // Returns |false| if panel is not in the strip.
   bool DoRemove(Panel* panel);
-
-  // Rearranges the positions of the panels in the strip.
-  // Handles moving panels to/from overflow area as needed.
-  // This is called when the display space has been changed, i.e. working
-  // area being changed or a panel being closed.
-  void Rearrange();
 
   // Help functions to drag the given panel.
   void DragLeft();

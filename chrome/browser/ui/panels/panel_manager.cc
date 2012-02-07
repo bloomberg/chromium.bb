@@ -153,9 +153,9 @@ void PanelManager::Remove(Panel* panel) {
     full_screen_mode_timer_.Stop();
 #endif
 
-  if (docked_strip_->Remove(panel))
+  if (docked_strip_->RemovePanel(panel))
     return;
-  bool removed = overflow_strip_->Remove(panel);
+  bool removed = overflow_strip_->RemovePanel(panel);
   DCHECK(removed);
 }
 
@@ -194,7 +194,7 @@ void PanelManager::OnPreferredWindowSizeChanged(
     Panel* panel, const gfx::Size& preferred_window_size) {
   if (!auto_sizing_enabled_)
     return;
-  docked_strip_->OnWindowSizeChanged(panel, preferred_window_size);
+  docked_strip_->ResizePanelWindow(panel, preferred_window_size);
 }
 
 void PanelManager::ResizePanel(Panel* panel, const gfx::Size& new_size) {
@@ -204,7 +204,7 @@ void PanelManager::ResizePanel(Panel* panel, const gfx::Size& new_size) {
     LOG(INFO) << "Resizing auto-resizable Panels is not supported yet.";
     return;
   }
-  docked_strip_->OnWindowSizeChanged(panel, new_size);
+  docked_strip_->ResizePanelWindow(panel, new_size);
 }
 
 bool PanelManager::ShouldBringUpTitlebars(int mouse_x, int mouse_y) const {
@@ -257,9 +257,9 @@ void PanelManager::OnAutoHidingDesktopBarVisibilityChanged(
   docked_strip_->OnAutoHidingDesktopBarVisibilityChanged(alignment, visibility);
 }
 
-void PanelManager::RemoveAll() {
-  docked_strip_->RemoveAll();
-  overflow_strip_->RemoveAll();
+void PanelManager::CloseAll() {
+  docked_strip_->CloseAll();
+  overflow_strip_->CloseAll();
 }
 
 int PanelManager::num_panels() const {
