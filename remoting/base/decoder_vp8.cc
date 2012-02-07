@@ -142,17 +142,71 @@ void DecoderVp8::RefreshRegion(const SkRegion& region) {
   if (output_size_.height() > static_cast<int>(frame_->height()))
     output_size_.set(output_size_.width(), frame_->height());
 
+  if (!DoScaling()) {
+    ConvertRegion(region, &updated_region_);
+  } else {
+    ScaleAndConvertRegion(region, &updated_region_);
+  }
+}
+
+bool DecoderVp8::DoScaling() const {
+  DCHECK(last_image_);
+  return !output_size_.equals(last_image_->d_w, last_image_->d_h);
+}
+
+void DecoderVp8::ConvertRegion(const SkRegion& input_region,
+                               SkRegion* output_region) {
   if (!last_image_)
     return;
 
-  updated_region_.setEmpty();
+  output_region->setEmpty();
 
   // Clip based on both the output dimensions and Pepper clip rect.
-  // ConvertAndScaleYUVToRGB32Rect() requires even X and Y coordinates, so we
-  // align |clip_rect| to prevent clipping from breaking alignment.  We then
-  // clamp it to the image dimensions, which may lead to odd width & height,
-  // which we can cope with.
+  // ConvertYUVToRGB32WithRect() requires even X and Y coordinates, so we align
+  // |clip_rect| to prevent clipping from breaking alignment.  We then clamp it
+  // to the image dimensions, which may lead to odd width & height, which we
+  // can cope with.
   SkIRect clip_rect = AlignRect(clip_rect_);
+  if (!clip_rect.intersect(SkIRect::MakeWH(last_image_->d_w, last_image_->d_h)))
+    return;
+
+  uint8* output_rgb_buf = frame_->data(media::VideoFrame::kRGBPlane);
+  const int output_stride = frame_->stride(media::VideoFrame::kRGBPlane);
+
+  for (SkRegion::Iterator i(input_region); !i.done(); i.next()) {
+    // Align the rectangle so the top-left coordinates are even, for
+    // ConvertYUVToRGB32WithRect().
+    SkIRect dest_rect(AlignRect(i.rect()));
+
+    // Clip the rectangle, preserving alignment since |clip_rect| is aligned.
+    if (!dest_rect.intersect(clip_rect))
+      continue;
+
+    ConvertYUVToRGB32WithRect(last_image_->planes[0],
+                              last_image_->planes[1],
+                              last_image_->planes[2],
+                              output_rgb_buf,
+                              dest_rect,
+                              last_image_->stride[0],
+                              last_image_->stride[1],
+                              output_stride);
+
+    output_region->op(dest_rect, SkRegion::kUnion_Op);
+  }
+}
+
+void DecoderVp8::ScaleAndConvertRegion(const SkRegion& input_region,
+                                       SkRegion* output_region) {
+  if (!last_image_)
+    return;
+
+  DCHECK(output_size_.width() <= static_cast<int>(frame_->width()));
+  DCHECK(output_size_.height() <= static_cast<int>(frame_->height()));
+
+  output_region->setEmpty();
+
+  // Clip based on both the output dimensions and Pepper clip rect.
+  SkIRect clip_rect = clip_rect_;
   if (!clip_rect.intersect(SkIRect::MakeSize(output_size_)))
     return;
 
@@ -160,30 +214,30 @@ void DecoderVp8::RefreshRegion(const SkRegion& region) {
   uint8* output_rgb_buf = frame_->data(media::VideoFrame::kRGBPlane);
   const int output_stride = frame_->stride(media::VideoFrame::kRGBPlane);
 
-  for (SkRegion::Iterator i(region); !i.done(); i.next()) {
+  for (SkRegion::Iterator i(input_region); !i.done(); i.next()) {
     // Determine the scaled area affected by this rectangle changing.
-    // Align the rectangle so the top-left coordinates are even, for
-    // ConvertAndScaleYUVToRGB32Rect().
-    SkIRect output_rect = ScaleRect(AlignRect(i.rect()),
-                                    image_size, output_size_);
+    SkIRect output_rect = ScaleRect(i.rect(), image_size, output_size_);
     if (!output_rect.intersect(clip_rect))
       continue;
 
     // The scaler will not to read outside the input dimensions.
-    ConvertAndScaleYUVToRGB32Rect(last_image_->planes[0],
-                                  last_image_->planes[1],
-                                  last_image_->planes[2],
-                                  last_image_->stride[0],
-                                  last_image_->stride[1],
-                                  image_size,
-                                  SkIRect::MakeSize(image_size),
-                                  output_rgb_buf,
-                                  output_stride,
-                                  output_size_,
-                                  SkIRect::MakeSize(output_size_),
-                                  output_rect);
+    media::ScaleYUVToRGB32WithRect(last_image_->planes[0],
+                                   last_image_->planes[1],
+                                   last_image_->planes[2],
+                                   output_rgb_buf,
+                                   image_size.width(),
+                                   image_size.height(),
+                                   output_size_.width(),
+                                   output_size_.height(),
+                                   output_rect.x(),
+                                   output_rect.y(),
+                                   output_rect.right(),
+                                   output_rect.bottom(),
+                                   last_image_->stride[0],
+                                   last_image_->stride[1],
+                                   output_stride);
 
-    updated_region_.op(output_rect, SkRegion::kUnion_Op);
+    output_region->op(output_rect, SkRegion::kUnion_Op);
   }
 }
 
