@@ -15,7 +15,7 @@ namespace {
 
 // Colors for different text styles.
 const SkColor kWhitePlainTextColor = 0x99ffffff;
-const SkColor kGrayPlainTextColor = 0x99666666;
+const SkColor kGrayPlainTextColor = 0xff666666;
 const SkColor kWhiteHaloedTextColor = 0xb3ffffff;
 const SkColor kWhiteHaloedHaloColor = 0xb3000000;
 const SkColor kGrayEmbossedTextColor = 0xff4c4c4c;
@@ -39,11 +39,10 @@ StatusAreaButton::StatusAreaButton(Delegate* button_delegate,
       delegate_(button_delegate) {
   set_border(NULL);
 
-  gfx::Font font =
-      ResourceBundle::GetSharedInstance().GetFont(ResourceBundle::BaseFont);
-  font = font.DeriveFont(kFontSizeDelta);
-  font = delegate_->GetStatusAreaFont(font);
-  SetFont(font);
+  light_font_ =
+      ResourceBundle::GetSharedInstance().GetFont(ResourceBundle::BaseFont).
+      DeriveFont(kFontSizeDelta);
+  bold_font_ = light_font_.DeriveFont(0, gfx::Font::BOLD);
 
   SetShowMultipleIconStates(false);
   set_alignment(TextButton::ALIGN_CENTER);
@@ -136,17 +135,21 @@ void StatusAreaButton::SetMenuActive(bool active) {
 void StatusAreaButton::UpdateTextStyle() {
   ClearEmbellishing();
   switch (delegate_->GetStatusAreaTextStyle()) {
-    case WHITE_PLAIN:
+    case WHITE_PLAIN_BOLD:
+      SetFont(bold_font_);
       SetEnabledColor(kWhitePlainTextColor);
       break;
-    case GRAY_PLAIN:
+    case GRAY_PLAIN_LIGHT:
+      SetFont(light_font_);
       SetEnabledColor(kGrayPlainTextColor);
       break;
-    case WHITE_HALOED:
+    case WHITE_HALOED_BOLD:
+      SetFont(bold_font_);
       SetEnabledColor(kWhiteHaloedTextColor);
       SetTextHaloColor(kWhiteHaloedHaloColor);
       break;
-    case GRAY_EMBOSSED:
+    case GRAY_EMBOSSED_BOLD:
+      SetFont(bold_font_);
       SetEnabledColor(kGrayEmbossedTextColor);
       SetTextShadowColors(kGrayEmbossedShadowColor, kGrayEmbossedShadowColor);
       SetTextShadowOffset(0, 1);

@@ -184,36 +184,32 @@ void StatusAreaHostAura::ExecuteStatusAreaCommand(
 #endif
 }
 
-gfx::Font StatusAreaHostAura::GetStatusAreaFont(const gfx::Font& font) const {
-  return font.DeriveFont(0, gfx::Font::BOLD);
-}
-
 StatusAreaButton::TextStyle StatusAreaHostAura::GetStatusAreaTextStyle() const {
 #if defined(OS_CHROMEOS)
   if (!chromeos::UserManager::Get()->user_is_logged_in())
-    return StatusAreaButton::GRAY_PLAIN;
+    return StatusAreaButton::GRAY_PLAIN_LIGHT;
 
   const chromeos::ScreenLocker* locker =
       chromeos::ScreenLocker::default_screen_locker();
   if (locker && locker->locked())
-    return StatusAreaButton::GRAY_PLAIN;
+    return StatusAreaButton::GRAY_PLAIN_LIGHT;
 #endif
 
   if (ash::Shell::GetInstance()->IsWindowModeCompact()) {
     Browser* browser = BrowserList::GetLastActive();
     if (!browser)
-      return StatusAreaButton::WHITE_HALOED;
+      return StatusAreaButton::WHITE_HALOED_BOLD;
 
     ThemeService* theme_service =
         ThemeServiceFactory::GetForProfile(browser->profile());
     if (!theme_service->UsingDefaultTheme())
-      return StatusAreaButton::WHITE_HALOED;
+      return StatusAreaButton::WHITE_HALOED_BOLD;
 
     return browser->profile()->IsOffTheRecord() ?
-        StatusAreaButton::WHITE_PLAIN :
-        StatusAreaButton::GRAY_EMBOSSED;
+        StatusAreaButton::WHITE_PLAIN_BOLD :
+        StatusAreaButton::GRAY_EMBOSSED_BOLD;
   } else {
-    return StatusAreaButton::WHITE_HALOED;
+    return StatusAreaButton::WHITE_HALOED_BOLD;
   }
 }
 

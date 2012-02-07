@@ -269,12 +269,8 @@ void WebUILoginView::ExecuteStatusAreaCommand(
   }
 }
 
-gfx::Font WebUILoginView::GetStatusAreaFont(const gfx::Font& font) const {
-  return font;
-}
-
 StatusAreaButton::TextStyle WebUILoginView::GetStatusAreaTextStyle() const {
-  return StatusAreaButton::GRAY_PLAIN;
+  return StatusAreaButton::GRAY_PLAIN_LIGHT;
 }
 
 void WebUILoginView::ButtonVisibilityChanged(views::View* button_view) {

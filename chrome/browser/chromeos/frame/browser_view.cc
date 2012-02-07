@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -527,19 +527,15 @@ void BrowserView::ExecuteStatusAreaCommand(
   }
 }
 
-gfx::Font BrowserView::GetStatusAreaFont(const gfx::Font& font) const {
-  return font.DeriveFont(0, gfx::Font::BOLD);
-}
-
 StatusAreaButton::TextStyle BrowserView::GetStatusAreaTextStyle() const {
   ThemeService* theme_service =
       ThemeServiceFactory::GetForProfile(browser()->profile());
 
   if (!theme_service->UsingDefaultTheme())
-    return StatusAreaButton::WHITE_HALOED;
+    return StatusAreaButton::WHITE_HALOED_BOLD;
 
   return IsOffTheRecord() ?
-      StatusAreaButton::WHITE_PLAIN : StatusAreaButton::GRAY_EMBOSSED;
+      StatusAreaButton::WHITE_PLAIN_BOLD : StatusAreaButton::GRAY_EMBOSSED_BOLD;
 }
 
 void BrowserView::ButtonVisibilityChanged(views::View* button_view) {

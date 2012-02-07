@@ -45,7 +45,6 @@ class StatusAreaHostAura : public StatusAreaButton::Delegate,
       const views::View* button_view, int command_id) const OVERRIDE;
   virtual void ExecuteStatusAreaCommand(
       const views::View* button_view, int command_id) OVERRIDE;
-  virtual gfx::Font GetStatusAreaFont(const gfx::Font& font) const OVERRIDE;
   virtual StatusAreaButton::TextStyle GetStatusAreaTextStyle() const OVERRIDE;
   virtual void ButtonVisibilityChanged(views::View* button_view) OVERRIDE;
 

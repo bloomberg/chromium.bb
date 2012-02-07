@@ -31,7 +31,7 @@ IN_PROC_BROWSER_TEST_F(StatusAreaHostAuraTest, TextStyle) {
 
 #if defined(OS_CHROMEOS)
   ASSERT_FALSE(chromeos::UserManager::Get()->user_is_logged_in());
-  EXPECT_EQ(StatusAreaButton::GRAY_PLAIN, host->GetStatusAreaTextStyle());
+  EXPECT_EQ(StatusAreaButton::GRAY_PLAIN_LIGHT, host->GetStatusAreaTextStyle());
 
   // ProfileManager expects a profile dir to be set on Chrome OS.
   CommandLine::ForCurrentProcess()->AppendSwitchNative(
@@ -41,15 +41,19 @@ IN_PROC_BROWSER_TEST_F(StatusAreaHostAuraTest, TextStyle) {
 #endif
 
   if (ash::Shell::GetInstance()->IsWindowModeCompact()) {
-    EXPECT_EQ(StatusAreaButton::GRAY_EMBOSSED, host->GetStatusAreaTextStyle());
+    EXPECT_EQ(StatusAreaButton::GRAY_EMBOSSED_BOLD,
+              host->GetStatusAreaTextStyle());
 
     Browser* incognito_browser = CreateIncognitoBrowser();
-    EXPECT_EQ(StatusAreaButton::WHITE_PLAIN, host->GetStatusAreaTextStyle());
+    EXPECT_EQ(StatusAreaButton::WHITE_PLAIN_BOLD,
+              host->GetStatusAreaTextStyle());
 
     incognito_browser->CloseWindow();
-    EXPECT_EQ(StatusAreaButton::GRAY_EMBOSSED, host->GetStatusAreaTextStyle());
+    EXPECT_EQ(StatusAreaButton::GRAY_EMBOSSED_BOLD,
+              host->GetStatusAreaTextStyle());
   } else {
-    EXPECT_EQ(StatusAreaButton::WHITE_HALOED, host->GetStatusAreaTextStyle());
+    EXPECT_EQ(StatusAreaButton::WHITE_HALOED_BOLD,
+              host->GetStatusAreaTextStyle());
   }
 
 #if defined(OS_CHROMEOS)
@@ -64,7 +68,7 @@ IN_PROC_BROWSER_TEST_F(StatusAreaHostAuraTest, TextStyle) {
   if (!tester->IsLocked())
     lock_state_observer.Wait();
   ASSERT_TRUE(tester->IsLocked());
-  EXPECT_EQ(StatusAreaButton::GRAY_PLAIN, host->GetStatusAreaTextStyle());
+  EXPECT_EQ(StatusAreaButton::GRAY_PLAIN_LIGHT, host->GetStatusAreaTextStyle());
 
   chromeos::ScreenLocker::Hide();
   ui_test_utils::RunAllPendingInMessageLoop();
