@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -89,6 +89,10 @@ class GaiaAuthFetcher : public content::URLFetcherDelegate {
   // existing accounts.
   void StartMergeSession(const std::string& auth_token);
 
+  // Start a request to get an uber-auth token.  The given |access_token| must
+  // be an OAuth2 valid access token.
+  void StartUberAuthTokenFetch(const std::string& access_token);
+
   // Implementation of content::URLFetcherDelegate
   virtual void OnURLFetchComplete(const content::URLFetcher* source) OVERRIDE;
 
@@ -127,6 +131,8 @@ class GaiaAuthFetcher : public content::URLFetcherDelegate {
   static const char kTokenAuthFormat[];
   // The format of the POST body for MergeSession.
   static const char kMergeSessionFormat[];
+  // The format of the URL for UberAuthToken.
+  static const char kUberAuthTokenURLFormat[];
 
   // Constants for parsing ClientLogin errors.
   static const char kAccountDeletedError[];
@@ -146,6 +152,7 @@ class GaiaAuthFetcher : public content::URLFetcherDelegate {
 
   // Constants for request/response for OAuth2 requests.
   static const char kAuthHeaderFormat[];
+  static const char kOAuthHeaderFormat[];
   static const char kClientLoginToOAuth2CookiePartSecure[];
   static const char kClientLoginToOAuth2CookiePartHttpOnly[];
   static const char kClientLoginToOAuth2CookiePartCodePrefix[];
@@ -183,6 +190,10 @@ class GaiaAuthFetcher : public content::URLFetcherDelegate {
   void OnMergeSessionFetched(const std::string& data,
                              const net::URLRequestStatus& status,
                              int response_code);
+
+  void OnUberAuthTokenFetch(const std::string& data,
+                            const net::URLRequestStatus& status,
+                            int response_code);
 
   // Tokenize the results of a ClientLogin fetch.
   static void ParseClientLoginResponse(const std::string& data,
@@ -276,6 +287,7 @@ class GaiaAuthFetcher : public content::URLFetcherDelegate {
   const GURL get_user_info_gurl_;
   const GURL token_auth_gurl_;
   const GURL merge_session_gurl_;
+  const GURL uberauth_token_gurl_;
 
   // While a fetch is going on:
   scoped_ptr<content::URLFetcher> fetcher_;

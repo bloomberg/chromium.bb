@@ -1679,6 +1679,7 @@
         'browser/signin/signin_manager_fake.h',
         'browser/signin/token_service_unittest.cc',
         'browser/signin/token_service_unittest.h',
+        'browser/signin/ubertoken_fetcher_unittest.cc',
         'browser/speech/speech_input_bubble_controller_unittest.cc',
         'browser/spellchecker/spellcheck_platform_mac_unittest.cc',
         'browser/spellchecker/spellcheck_profile_unittest.cc',

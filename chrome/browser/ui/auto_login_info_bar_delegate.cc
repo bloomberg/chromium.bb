@@ -4,7 +4,9 @@
 
 #include "chrome/browser/ui/auto_login_info_bar_delegate.h"
 
+#include "base/bind.h"
 #include "base/logging.h"
+#include "base/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
@@ -12,7 +14,7 @@
 #include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/signin/token_service.h"
+#include "chrome/browser/signin/ubertoken_fetcher.h"
 #include "chrome/browser/tab_contents/confirm_infobar_delegate.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/webui/sync_promo/sync_promo_ui.h"
@@ -73,18 +75,16 @@ enum {
 // auto-login.  It holds context information needed while re-issuing service
 // tokens using the TokenService, gets the browser cookies with the TokenAuth
 // API, and finally redirects the user to the correct page.
-class AutoLoginRedirector : public content::NotificationObserver {
+class AutoLoginRedirector : public UbertokenConsumer {
  public:
-  AutoLoginRedirector(TokenService* token_service,
-                      NavigationController* navigation_controller,
+  AutoLoginRedirector(NavigationController* navigation_controller,
                       const std::string& args);
   virtual ~AutoLoginRedirector();
 
  private:
-  // content::NotificationObserver override.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+  // Overriden from UbertokenConsumer:
+  virtual void OnUbertokenSuccess(const std::string& token) OVERRIDE;
+  virtual void OnUbertokenFailure(const GoogleServiceAuthError& error) OVERRIDE;
 
   // Redirect tab to MergeSession URL, logging the user in and navigating
   // to the desired page.
@@ -92,56 +92,34 @@ class AutoLoginRedirector : public content::NotificationObserver {
 
   NavigationController* navigation_controller_;
   const std::string args_;
-  content::NotificationRegistrar registrar_;
+  scoped_ptr<UbertokenFetcher> ubertoken_fetcher_;
 
   DISALLOW_COPY_AND_ASSIGN(AutoLoginRedirector);
 };
 
 AutoLoginRedirector::AutoLoginRedirector(
-    TokenService* token_service,
     NavigationController* navigation_controller,
     const std::string& args)
     : navigation_controller_(navigation_controller),
       args_(args) {
-  // Register to receive notification for new tokens and then force the tokens
-  // to be re-issued.  The token service guarantees to fire either
-  // TOKEN_AVAILABLE or TOKEN_REQUEST_FAILED, so we will get at least one or
-  // the other, allow AutoLoginRedirector to delete itself correctly.
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_TOKEN_AVAILABLE,
-                 content::Source<TokenService>(token_service));
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_TOKEN_REQUEST_FAILED,
-                 content::Source<TokenService>(token_service));
-  token_service->StartFetchingTokens();
+  ubertoken_fetcher_.reset(new UbertokenFetcher(
+      Profile::FromBrowserContext(navigation_controller_->GetBrowserContext()),
+      this));
+  ubertoken_fetcher_->StartFetchingToken();
 }
 
 AutoLoginRedirector::~AutoLoginRedirector() {
 }
 
-void AutoLoginRedirector::Observe(int type,
-                                  const content::NotificationSource& source,
-                                  const content::NotificationDetails& details) {
-  DCHECK(type == chrome::NOTIFICATION_TOKEN_AVAILABLE ||
-         type == chrome::NOTIFICATION_TOKEN_REQUEST_FAILED);
+void AutoLoginRedirector::OnUbertokenSuccess(const std::string& token) {
+  RedirectToMergeSession(token);
+  MessageLoop::current()->DeleteSoon(FROM_HERE, this);
+}
 
-  // We are only interested in GAIA tokens.
-  if (type == chrome::NOTIFICATION_TOKEN_AVAILABLE) {
-    TokenService::TokenAvailableDetails* tok_details =
-        content::Details<TokenService::TokenAvailableDetails>(details).ptr();
-    if (tok_details->service() == GaiaConstants::kGaiaService) {
-      RedirectToMergeSession(tok_details->token());
-      delete this;
-    }
-  } else {
-    TokenService::TokenRequestFailedDetails* tok_details =
-        content::Details<TokenService::TokenRequestFailedDetails>(details).
-            ptr();
-    if (tok_details->service() == GaiaConstants::kGaiaService) {
-      LOG(WARNING) << "AutoLoginRedirector: token request failed";
-      delete this;
-    }
-  }
+void AutoLoginRedirector::OnUbertokenFailure(
+    const GoogleServiceAuthError& error) {
+  LOG(WARNING) << "AutoLoginRedirector: token request failed";
+  MessageLoop::current()->DeleteSoon(FROM_HERE, this);
 }
 
 void AutoLoginRedirector::RedirectToMergeSession(const std::string& token) {
@@ -203,12 +181,8 @@ string16 AutoLoginInfoBarDelegate::GetButtonLabel(
 }
 
 bool AutoLoginInfoBarDelegate::Accept() {
-  TokenService* token_service =
-      TabContentsWrapper::GetCurrentWrapperForContents(
-          owner()->web_contents())->profile()->GetTokenService();
   // AutoLoginRedirector deletes itself.
-  new AutoLoginRedirector(token_service,
-                          &owner()->web_contents()->GetController(), args_);
+  new AutoLoginRedirector(&owner()->web_contents()->GetController(), args_);
   RecordHistogramAction(HISTOGRAM_ACCEPTED);
   button_pressed_ = true;
   return true;

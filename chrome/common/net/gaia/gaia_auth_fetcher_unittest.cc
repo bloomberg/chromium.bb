@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -116,7 +116,10 @@ class GaiaAuthFetcherTest : public testing::Test {
             GaiaUrls::GetInstance()->client_login_to_oauth2_url()),
         oauth2_token_source_(GaiaUrls::GetInstance()->oauth2_token_url()),
         token_auth_source_(GaiaUrls::GetInstance()->token_auth_url()),
-        merge_session_source_(GaiaUrls::GetInstance()->merge_session_url()) {}
+        merge_session_source_(GaiaUrls::GetInstance()->merge_session_url()),
+        uberauth_token_source_(base::StringPrintf(
+            "%s?source=&issueuberauth=1",
+            GaiaUrls::GetInstance()->oauth1_login_url().c_str())) {}
 
   void RunParsingTest(const std::string& data,
                       const std::string& sid,
@@ -163,6 +166,7 @@ class GaiaAuthFetcherTest : public testing::Test {
   GURL oauth2_token_source_;
   GURL token_auth_source_;
   GURL merge_session_source_;
+  GURL uberauth_token_source_;
   TestingProfile profile_;
  protected:
   MessageLoop message_loop_;
@@ -182,6 +186,7 @@ class MockGaiaConsumer : public GaiaAuthConsumer {
            int expires_in_secs));
   MOCK_METHOD1(OnTokenAuthSuccess, void(const std::string& data));
   MOCK_METHOD1(OnMergeSessionSuccess, void(const std::string& data));
+  MOCK_METHOD1(OnUberAuthTokenSuccess, void(const std::string& data));
   MOCK_METHOD1(OnClientLoginFailure,
       void(const GoogleServiceAuthError& error));
   MOCK_METHOD2(OnIssueAuthTokenFailure, void(const std::string& service,
@@ -190,6 +195,8 @@ class MockGaiaConsumer : public GaiaAuthConsumer {
       void(const GoogleServiceAuthError& error));
   MOCK_METHOD1(OnTokenAuthFailure, void(const GoogleServiceAuthError& error));
   MOCK_METHOD1(OnMergeSessionFailure, void(
+      const GoogleServiceAuthError& error));
+  MOCK_METHOD1(OnUberAuthTokenFailure, void(
       const GoogleServiceAuthError& error));
 };
 
@@ -769,6 +776,28 @@ TEST_F(GaiaAuthFetcherTest, MergeSessionSuccessRedirect) {
   test_fetcher->SetResponseString("<html></html>");
 
   auth.OnURLFetchComplete(test_fetcher);
+  EXPECT_FALSE(auth.HasPendingFetch());
+}
+
+TEST_F(GaiaAuthFetcherTest, UberAuthTokenSuccess) {
+  MockGaiaConsumer consumer;
+  EXPECT_CALL(consumer, OnUberAuthTokenSuccess("uberToken"))
+      .Times(1);
+
+  TestingProfile profile;
+  TestURLFetcherFactory factory;
+
+  GaiaAuthFetcher auth(&consumer, std::string(),
+      profile_.GetRequestContext());
+  auth.StartUberAuthTokenFetch("myAccessToken");
+
+  EXPECT_TRUE(auth.HasPendingFetch());
+  MockFetcher mock_fetcher(
+      uberauth_token_source_,
+      net::URLRequestStatus(net::URLRequestStatus::SUCCESS, 0),
+      RC_REQUEST_OK, cookies_, "uberToken", content::URLFetcher::POST,
+      &auth);
+  auth.OnURLFetchComplete(&mock_fetcher);
   EXPECT_FALSE(auth.HasPendingFetch());
 }
 

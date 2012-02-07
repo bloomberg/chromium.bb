@@ -72,7 +72,7 @@ class TokenServiceTestHarness : public testing::Test {
   content::TestBrowserThread ui_thread_;  // Mostly so DCHECKS pass.
   content::TestBrowserThread db_thread_;  // WDS on here
 
-  TokenService service_;
+  TokenService* service_;
   TokenAvailableTracker success_tracker_;
   TokenFailedTracker failure_tracker_;
   GaiaAuthConsumer::ClientLoginResult credentials_;

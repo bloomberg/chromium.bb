@@ -2211,6 +2211,8 @@
         'browser/signin/signin_manager_factory.h',
         'browser/signin/token_service.cc',
         'browser/signin/token_service.h',
+        'browser/signin/ubertoken_fetcher.cc',
+        'browser/signin/ubertoken_fetcher.h',
         'browser/simple_message_box.h',
         'browser/speech/chrome_speech_input_manager.cc',
         'browser/speech/chrome_speech_input_manager.h',

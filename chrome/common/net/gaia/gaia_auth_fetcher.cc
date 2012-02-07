@@ -80,6 +80,10 @@ const char GaiaAuthFetcher::kMergeSessionFormat[] =
     "uberauth=%s&"
     "continue=%s&"
     "source=%s";
+// static
+const char GaiaAuthFetcher::kUberAuthTokenURLFormat[] =
+    "%s?source=%s&"
+    "issueuberauth=1";
 
 // static
 const char GaiaAuthFetcher::kAccountDeletedError[] = "AccountDeleted";
@@ -124,6 +128,8 @@ const char GaiaAuthFetcher::kSecondFactor[] = "Info=InvalidSecondFactor";
 const char GaiaAuthFetcher::kAuthHeaderFormat[] =
     "Authorization: GoogleLogin auth=%s";
 // static
+const char GaiaAuthFetcher::kOAuthHeaderFormat[] = "Authorization: OAuth %s";
+// static
 const char GaiaAuthFetcher::kClientLoginToOAuth2CookiePartSecure[] = "Secure";
 // static
 const char GaiaAuthFetcher::kClientLoginToOAuth2CookiePartHttpOnly[] =
@@ -155,6 +161,8 @@ GaiaAuthFetcher::GaiaAuthFetcher(GaiaAuthConsumer* consumer,
       get_user_info_gurl_(GaiaUrls::GetInstance()->get_user_info_url()),
       token_auth_gurl_(GaiaUrls::GetInstance()->token_auth_url()),
       merge_session_gurl_(GaiaUrls::GetInstance()->merge_session_url()),
+      uberauth_token_gurl_(base::StringPrintf(kUberAuthTokenURLFormat,
+          GaiaUrls::GetInstance()->oauth1_login_url().c_str(), source.c_str())),
       fetch_pending_(false) {}
 
 GaiaAuthFetcher::~GaiaAuthFetcher() {}
@@ -177,7 +185,9 @@ content::URLFetcher* GaiaAuthFetcher::CreateGaiaFetcher(
     bool use_cookies,
     content::URLFetcherDelegate* delegate) {
   content::URLFetcher* to_return = content::URLFetcher::Create(
-      0, gaia_gurl, content::URLFetcher::POST, delegate);
+      0, gaia_gurl,
+      body == "" ? content::URLFetcher::GET : content::URLFetcher::POST,
+      delegate);
   to_return->SetRequestContext(getter);
   to_return->SetUploadData("application/x-www-form-urlencoded", body);
 
@@ -571,6 +581,24 @@ void GaiaAuthFetcher::StartMergeSession(const std::string& auth_token) {
 }
 
 // static
+void GaiaAuthFetcher::StartUberAuthTokenFetch(const std::string& access_token) {
+  DCHECK(!fetch_pending_) << "Tried to fetch two things at once!";
+
+  DVLOG(1) << "Starting StartUberAuthTokenFetch with access_token="
+           << access_token;
+  std::string authentication_header =
+      base::StringPrintf(kOAuthHeaderFormat, access_token.c_str());
+  fetcher_.reset(CreateGaiaFetcher(getter_,
+                                   "",
+                                   authentication_header,
+                                   uberauth_token_gurl_,
+                                   false,
+                                   this));
+  fetch_pending_ = true;
+  fetcher_->Start();
+}
+
+// static
 GoogleServiceAuthError GaiaAuthFetcher::GenerateAuthError(
     const std::string& data,
     const net::URLRequestStatus& status) {
@@ -797,6 +825,16 @@ void GaiaAuthFetcher::OnMergeSessionFetched(const std::string& data,
   }
 }
 
+void GaiaAuthFetcher::OnUberAuthTokenFetch(const std::string& data,
+                                           const net::URLRequestStatus& status,
+                                           int response_code) {
+  if (status.is_success() && response_code == RC_REQUEST_OK) {
+    consumer_->OnUberAuthTokenSuccess(data);
+  } else {
+    consumer_->OnUberAuthTokenFailure(GenerateAuthError(data, status));
+  }
+}
+
 void GaiaAuthFetcher::OnURLFetchComplete(const content::URLFetcher* source) {
   fetch_pending_ = false;
   const GURL& url = source->GetURL();
@@ -821,6 +859,8 @@ void GaiaAuthFetcher::OnURLFetchComplete(const content::URLFetcher* source) {
       (source && source->GetOriginalURL() == merge_session_gurl_)) {
     // MergeSession may redirect, so check the original URL of the fetcher.
     OnMergeSessionFetched(data, status, response_code);
+  } else if (url == uberauth_token_gurl_) {
+    OnUberAuthTokenFetch(data, status, response_code);
   } else {
     NOTREACHED();
   }
