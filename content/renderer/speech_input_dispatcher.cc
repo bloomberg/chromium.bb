@@ -89,7 +89,7 @@ void SpeechInputDispatcher::OnSpeechRecognitionResult(
   VLOG(1) << "SpeechInputDispatcher::OnSpeechRecognitionResult enter";
   WebKit::WebSpeechInputResultArray webkit_result(result.hypotheses.size());
   for (size_t i = 0; i < result.hypotheses.size(); ++i) {
-    webkit_result[i].set(result.hypotheses[i].utterance,
+    webkit_result[i].assign(result.hypotheses[i].utterance,
         result.hypotheses[i].confidence);
   }
   listener_->setRecognitionResult(request_id, webkit_result);
