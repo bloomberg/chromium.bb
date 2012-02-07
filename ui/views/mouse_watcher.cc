@@ -101,10 +101,10 @@ class MouseWatcher::Observer : public MessageLoopForUI::Observer {
   virtual void DidProcessEvent(GdkEvent* event) OVERRIDE {
     switch (event->type) {
       case GDK_MOTION_NOTIFY:
-        HandleGlobalMouseMoveEvent(MOUSE_MOVE);
+        HandleGlobalMouseMoveEvent(MouseWatcherHost::MOUSE_MOVE);
         break;
       case GDK_LEAVE_NOTIFY:
-        HandleGlobalMouseMoveEvent(MOUSE_EXIT);
+        HandleGlobalMouseMoveEvent(MouseWatcherHost::MOUSE_EXIT);
         break;
       default:
         break;
