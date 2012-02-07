@@ -909,9 +909,8 @@ void RenderProcessHostImpl::OnChannelConnected(int32 peer_pid) {
       IPC::Logging::GetInstance()->Enabled()));
 #endif
 
-  tracked_objects::ThreadData::Status status =
-      tracked_objects::ThreadData::status();
-  Send(new ChildProcessMsg_SetProfilerStatus(status));
+  bool enable = tracked_objects::ThreadData::tracking_status();
+  Send(new ChildProcessMsg_SetProfilerStatus(enable));
 }
 
 void RenderProcessHostImpl::OnChannelError() {

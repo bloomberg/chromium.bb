@@ -1147,19 +1147,13 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
     browser_process_.reset(new BrowserProcessImpl(parsed_command_line()));
   }
 
-  // Default to basic profiling (no parent child support).
-  tracked_objects::ThreadData::Status status =
-        tracked_objects::ThreadData::PROFILING_ACTIVE;
   if (parsed_command_line().HasSwitch(switches::kEnableProfiling)) {
     // User wants to override default tracking status.
     std::string flag =
       parsed_command_line().GetSwitchValueASCII(switches::kEnableProfiling);
-    if (flag.compare("0") != 0)
-      status = tracked_objects::ThreadData::DEACTIVATED;
-    else if (flag.compare("child") != 0)
-      status = tracked_objects::ThreadData::PROFILING_CHILDREN_ACTIVE;
+    bool enabled = flag.compare("0") != 0;
+    tracked_objects::ThreadData::InitializeAndSetTrackingStatus(enabled);
   }
-  tracked_objects::ThreadData::InitializeAndSetTrackingStatus(status);
 
   // This forces the TabCloseableStateWatcher to be created and, on chromeos,
   // register for the notifications it needs to track the closeable state of

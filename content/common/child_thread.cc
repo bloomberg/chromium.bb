@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -218,9 +218,8 @@ void ChildThread::OnSetIPCLoggingEnabled(bool enable) {
 }
 #endif  //  IPC_MESSAGE_LOG_ENABLED
 
-void ChildThread::OnSetProfilerStatus(
-    tracked_objects::ThreadData::Status status) {
-  tracked_objects::ThreadData::InitializeAndSetTrackingStatus(status);
+void ChildThread::OnSetProfilerStatus(bool enable) {
+  tracked_objects::ThreadData::InitializeAndSetTrackingStatus(enable);
 }
 
 void ChildThread::OnGetChildProfilerData(
