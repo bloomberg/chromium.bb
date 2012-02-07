@@ -7,22 +7,22 @@ body {
 }
 
 #main-content {
+  bottom: 0;
   display: -webkit-box;
-  position: absolute;
   left: 0;
+  position: absolute;
   right: 0;
   top: 0;
-  bottom: 0;
 }
 
 #mainview {
   -webkit-box-align: stretch;
+  bottom: 0;
+  left: 0;
   margin: 0;
   position: absolute;
-  left: 0;
   right: 0;
   top: 0;
-  bottom: 0;
   z-index: 1;
 }
 
@@ -71,13 +71,13 @@ input[type='text']:disabled {
 }
 
 .hbox {
-  display: -webkit-box;
   -webkit-box-orient: horizontal;
+  display: -webkit-box;
 }
 
 .vbox {
-  display: -webkit-box;
   -webkit-box-orient: vertical;
+  display: -webkit-box;
 }
 
 .stretch {
@@ -196,11 +196,11 @@ html.hide-menu .close-subpage {
 }
 
 .bottom-strip {
+  border-top: none;
+  bottom: 0;
   padding: 12px;
   position: absolute;
   right: 0;
-  bottom: 0;
-  border-top: none;
 }
 
 #mainview-content .page {
@@ -220,9 +220,9 @@ html.hide-menu .close-subpage {
 .subpage-sheet-container {
   -webkit-transition: 250ms opacity, 100ms padding-left, 100ms padding-right;
   box-sizing: border-box;
+  left: 0;
   min-height: 100%;
   position: absolute;
-  left: 0;
   right: 0;
   top: 0;
 }
@@ -280,8 +280,8 @@ html.hide-menu .close-subpage {
 
 .subpage-sheet-contents {
   box-sizing: border-box;
-  min-height: 100%;
   max-width: 900px;
+  min-height: 100%;
   min-width: 650px;
   padding: 0 20px;
   width: 95%;
@@ -296,11 +296,11 @@ html.hide-menu .close-subpage {
                                       rgb(250, 230, 145) 97%,
                                       rgb(135, 135, 135));
   height: 31px;
-  width: 100%;
   margin: 0;
   padding: 0;
   position: relative;
   vertical-align: middle;
+  width: 100%;
   z-index: 9;
 }
 
@@ -312,11 +312,11 @@ html.hide-menu .close-subpage {
 
 .managed-prefs-icon {
   background-image: url('chrome://theme/IDR_WARNING');
-  background-repeat: no-repeat;
   background-position: center;
+  background-repeat: no-repeat;
   display: inline-block;
-  padding: 5px;
   height: 21px;
+  padding: 5px;
   vertical-align: middle;
   width: 24px;
 }
@@ -340,8 +340,8 @@ html.hide-menu .close-subpage {
 
 section {
   -webkit-padding-start: 18px;
-  margin-top: 8px;
   margin-bottom: 24px;
+  margin-top: 8px;
   max-width: 600px;
 }
 
@@ -394,11 +394,11 @@ section > div:only-of-type {
 list > * {
   -webkit-box-align: center;
   -webkit-transition: 150ms background-color;
+  border: none;
+  border-radius: 0;  /* TODO(dbeam): Is this necessary? */
   box-sizing: border-box;
-  border-radius: 0;
   display: -webkit-box;
   height: 32px;
-  border: none;
   margin: 0;
 }
 
@@ -433,8 +433,8 @@ list:not([hasElementFocus]) > [selected][lead]:hover {
 
 list[hasElementFocus] > [lead],
 list[hasElementFocus] > [lead][selected] {
-  border-top: 1px solid rgb(120, 146, 180);
   border-bottom: 1px solid rgb(120, 146, 180);
+  border-top: 1px solid rgb(120, 146, 180);
 }
 
 list[hasElementFocus] > [lead]:nth-child(2),
@@ -560,8 +560,8 @@ list .favicon-cell {
   -webkit-margin-start: 7px;
   -webkit-padding-start: 26px;
   display: block;
-  text-overflow: ellipsis;
   overflow: hidden;
+  text-overflow: ellipsis;
   white-space: nowrap;
 }
 
@@ -677,8 +677,8 @@ html[flashPluginSupportsClearSiteData] .clear-plugin-lso-data-disabled {
 .controlled-setting-bubble {
   -webkit-margin-start: -20px;
   background-color: white;
-  border-radius: 4px;
   border: 1px solid #ccc;
+  border-radius: 4px;
   box-shadow: 0 2px 2px #ddd;
   margin-top: 10px;
   padding: 10px;

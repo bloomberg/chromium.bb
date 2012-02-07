@@ -123,14 +123,14 @@ list.intents-list > .deletable-item[selected] .intents-data {
 
 .intents-item .intents-item-types {
   display: table-cell;
-  padding: 2px 5px;
   overflow: hidden;
+  padding: 2px 5px;
 }
 
 .intents-item .intents-item-url {
   display: table-cell;
-  padding: 2px 5px;
   overflow: hidden;
+  padding: 2px 5px;
   text-overflow: ellipsis;
 }
 
@@ -153,8 +153,8 @@ list.intents-list > .deletable-item[selected] .intents-data {
 
 .intents-details {
   background: rgb(245, 248, 248);
-  border-radius: 5px;
   border: 1px solid #b2b2b2;
+  border-radius: 5px;
   margin-top: 2px;
   padding: 5px;
 }

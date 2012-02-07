@@ -20,8 +20,8 @@
 }
 
 .language-options-contents  {
-  -webkit-padding-start: 12px;
   -webkit-padding-end: 12px;
+  -webkit-padding-start: 12px;
   padding-bottom: 10px;
 }
 
@@ -33,15 +33,15 @@
 .language-options-left,
 .language-options-right {
   border: 1px solid #ccc;
-  vertical-align: top;
-  padding: 0;
   height: 400px;
+  padding: 0;
+  vertical-align: top;
 }
 
 .language-options-left {
   -webkit-box-orient: vertical;
-  display: -webkit-box;
   background-color: rgb(235, 239, 249);
+  display: -webkit-box;
   width: 300px;
 }
 
@@ -68,26 +68,26 @@ html[os=mac] .language-options-right {
 }
 
 .language-options-notification {
-  display: none;
   background-color: rgb(255, 242, 158);
-  border-top: 1px solid #ccc;
   border-bottom: 1px solid #ccc;
+  border-top: 1px solid #ccc;
+  display: none;
   padding: 12px 30px 12px 12px;
 }
 
 #language-options-input-method-list button {
-  display: block;
   -webkit-margin-start: 20px;
+  display: block;
 }
 
 #language-options-ui-language-button {
-  width: 95%;
   -webkit-margin-start: 10px;
+  width: 95%;
 }
 
 #language-options-spell-check-language-button {
-  width: 95%;
   -webkit-margin-start: 10px;
+  width: 95%;
 }
 
 #language-options-input-method-list label {
@@ -110,17 +110,17 @@ html[os=mac] .language-options-right {
 
 #language-options-list li {
   -webkit-padding-start: 12px;
-  padding-top: 2px;
   padding-bottom: 2px;
+  padding-top: 2px;
 }
 
 #language-options-list-dropmarker {
-  background-color: hsl(214, 91%, 65%);
   background-clip: padding-box;
+  background-color: hsl(214, 91%, 65%);
   border: 3px solid hsl(214, 91%, 65%);
   border-bottom-color: transparent;
-  border-top-color: transparent;
   border-radius: 0;
+  border-top-color: transparent;
   box-sizing: border-box;
   display: none;
   height: 8px;
@@ -151,8 +151,8 @@ html[os=chromeos] #add-language-overlay-cancel-button {
 }
 
 html[os=chromeos] #add-language-overlay-page {
-  width: 800px;
   padding: 20px;
+  width: 800px;
 }
 
 html[os=chromeos] #add-language-overlay-page button.link-button {
@@ -161,31 +161,31 @@ html[os=chromeos] #add-language-overlay-page button.link-button {
 }
 
 html[os=chromeos] #add-language-overlay-page ul {
-  padding: 0;
   margin: 0;
+  padding: 0;
 }
 
 /* TODO(kochi): This is temporary copy from new_tab.css */
 /* Notification */
 
 #notification {
-  position: relative;
+  -webkit-transition: opacity 150ms;
   background-color: hsl(52, 100%, 80%);
   border: 1px solid rgb(211, 211, 211);
   border-radius: 6px;
-  padding: 7px 15px;
-  white-space: nowrap;
+  color: black;
   display: table;
+  font-weight: bold;
   /* Set the height and margin so that the element does not use any vertical
-    space */
+    space. */
   height: 16px;
   margin: -44px auto 12px auto;
-  font-weight: bold;
   opacity: 0;
+  padding: 7px 15px;
   pointer-events: none;
-  -webkit-transition: opacity 150ms;
+  position: relative;
+  white-space: nowrap;
   z-index: 1;
-  color: black;
 }
 
 #notification > * {
@@ -196,19 +196,19 @@ html[os=chromeos] #add-language-overlay-page ul {
 }
 
 #notification.show {
+  -webkit-transition: opacity 1s;
   opacity: 1;
   pointer-events: all;
-  -webkit-transition: opacity 1s;
 }
 
 #notification .link {
+  -webkit-appearance: none;
+  -webkit-padding-start: 20px;
+  background: none;
+  border: 0;
+  color: rgba(0, 102, 204, 0.3);
   cursor: pointer;
   text-decoration: underline;
-  -webkit-appearance: none;
-  border: 0;
-  background: none;
-  color: rgba(0, 102, 204, 0.3);
-  -webkit-padding-start: 20px;
 }
 
 #notification .link-color {
@@ -216,8 +216,8 @@ html[os=chromeos] #add-language-overlay-page ul {
 }
 
 #chewing-max-chi-symbol-len {
-  width: 100px;
   height: 30%;
+  width: 100px;
 }
 
 #add-language-overlay-page .content-area {

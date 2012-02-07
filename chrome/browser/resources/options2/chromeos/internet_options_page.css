@@ -39,14 +39,14 @@
 }
 
 .network-item:not([connecting]):hover {
-  border-color: hsl(214, 91%, 85%);
   background-color: hsl(214, 91%, 97%);
+  border-color: hsl(214, 91%, 85%);
 }
 
 .network-item[connected] {
+  background-color: hsl(214,91%,89%);
   background-image: -webkit-linear-gradient(rgba(255, 255, 255, 0.8),
                                             rgba(255, 255, 255, 0));
-  background-color: hsl(214,91%,89%);
   border-color: hsl(214, 91%, 65%);
 }
 
@@ -94,9 +94,9 @@ html[dir='rtl'] .network-item-text {
 }
 
 .network-item > * > button {
+  margin-right: 5px;
   min-width: 100px;
   visibility: hidden;
-  margin-right: 5px;
 }
 
 .network-item:hover > * > button,
@@ -109,13 +109,13 @@ html[dir='rtl'] .network-item-text {
 }
 
 .displaytable > section > .network-title {
-  vertical-align: top;
   padding-top: 20px;
+  vertical-align: top;
 }
 
 #detailsInternetPage {
-  min-width: 440px;
   min-height: 420px;
+  min-width: 440px;
   padding-bottom: 40px;
   position: relative;
 }
@@ -125,31 +125,31 @@ html[dir='rtl'] .network-item-text {
 }
 
 #planSummary {
-  width: 350px;
   padding-bottom: 5px;
+  width: 350px;
 }
 
 #planWarning {
-  width: 350px;
-  padding-top: 5px;
   font-weight: bold;
+  padding-top: 5px;
+  width: 350px;
 }
 
 #locked-network-banner {
   height: 31px;
-  width: 100%;
   margin: 0;
   padding-top: 10px;
   vertical-align: middle;
+  width: 100%;
 }
 
 #locked-network-icon {
   background-image: url('chrome://theme/IDR_WARNING');
-  background-repeat: no-repeat;
   background-position: center;
+  background-repeat: no-repeat;
   display: inline-block;
-  padding: 5px;
   height: 21px;
+  padding: 5px;
   vertical-align: middle;
   width: 24px;
 }
@@ -159,11 +159,11 @@ html[dir='rtl'] .network-item-text {
 }
 
 #internet-owner-only-warning {
+  -webkit-padding-start: 20px;
+  background-image: url('warning.png');
+  background-repeat: no-repeat;
   margin: 10px 0;
   padding-bottom: 1px;
-  -webkit-padding-start: 20px;
-  background-repeat: no-repeat;
-  background-image: url('warning.png');
 }
 
 #ipConfigList .name {

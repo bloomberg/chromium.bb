@@ -1,14 +1,10 @@
 /* Copyright (c) 2012 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
- * found in the LICENSE file.
- */
-
-/* TODO(csilv): Re-order, rename selectors according to style guide. */
+ * found in the LICENSE file. */
 
 /* This is necessary because the fix for correctly wrapping labels
  * (crbug.com/109334) requires labels to be display: block; however, this label
- * has a button inline after it.
- */
+ * has a button inline after it. */
 #home-page-label {
   display: inline;
 }

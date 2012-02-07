@@ -44,10 +44,10 @@ div.input {
 }
 
 #autofill-edit-address-overlay list div.static-text {
-  -webkit-box-flex: 1;
   -webkit-border-radius: 2px;
-  -webkit-padding-start: 4px;
+  -webkit-box-flex: 1;
   -webkit-padding-end: 4px;
+  -webkit-padding-start: 4px;
   border: 1px solid darkGray;
   /* Set the line-height and min-height to match the height of an input element,
    * so that even empty cells renderer with the correct height.

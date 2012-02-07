@@ -34,10 +34,10 @@
 }
 
 .font-sample-div {
+  direction: ltr;
   height: 70px;
   overflow: hidden;
   width: 270px;
-  direction: ltr;
 }
 
 .font-settings-huge {

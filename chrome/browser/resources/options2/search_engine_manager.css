@@ -11,8 +11,8 @@
 }
 
 .search-engine-list .favicon {
-  padding: 1px 7px 0 7px;
   height: 16px;
+  padding: 1px 7px 0 7px;
 }
 
 .search-engine-list .name-column {
@@ -50,8 +50,8 @@
 
 /* For temporary Make Default button */
 .search-engine-list .url-column {
-  display: -webkit-box;
   -webkit-box-align: center;
+  display: -webkit-box;
 }
 
 .search-engine-list .url-column :first-child {

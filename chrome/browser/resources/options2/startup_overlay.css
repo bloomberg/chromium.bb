@@ -1,3 +1,7 @@
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
+
 #startup-overlay {
   min-width: 600px;
 }
@@ -24,10 +28,10 @@
 #startupPagesListDropmarker {
   background-clip: padding-box;
   background-color: hsl(214, 91%, 65%);
+  border: 2px solid hsl(214, 91%, 65%);
   border-bottom-color: transparent;
   border-radius: 0;
   border-top-color: transparent;
-  border: 2px solid hsl(214, 91%, 65%);
   box-sizing: border-box;
   display: none;
   height: 6px;

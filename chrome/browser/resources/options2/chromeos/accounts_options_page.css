@@ -9,8 +9,8 @@
 }
 
 .user-name-edit-row {
-  border: 1px solid lightgrey;
   background-color: rgb(235, 239, 250);
+  border: 1px solid lightgrey;
   padding: 5px;
 }
 
@@ -20,8 +20,8 @@
 
 .user-icon {
   border: 1px solid black;
-  width: 26px;
   height: 26px;
+  width: 26px;
 }
 
 .user-email-label {
@@ -29,8 +29,8 @@
 }
 
 .user-name-label {
-  color: darkgray;
   -webkit-margin-start: 10px;
+  color: darkgray;
 }
 
 .user-email-name-block {
@@ -43,8 +43,8 @@
 
 .remove-user-button {
   background-image: url('../../../../../ui/resources/close_bar.png');
-  width: 16px;
   height: 16px;
+  width: 16px;
 }
 
 .remove-user-button:hover {
@@ -52,9 +52,9 @@
 }
 
 #userList {
+  height: 166px;
   padding: 5px;
   width: 366px;
-  height: 166px;
 }
 
 #userList[disabled],
@@ -78,12 +78,12 @@
 }
 
 #ownerOnlyWarning {
-  margin-top: 10px;
-  margin-bottom: 10px;
-  padding-bottom: 1px;
   -webkit-padding-start: 20px;
-  background-repeat: no-repeat;
   background-image: url('warning.png');
+  background-repeat: no-repeat;
+  margin-bottom: 10px;
+  margin-top: 10px;
+  padding-bottom: 1px;
 }
 
 input#userNameEdit:invalid {

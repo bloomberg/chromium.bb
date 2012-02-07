@@ -121,8 +121,8 @@ list.cookie-list > .deletable-item[selected] .cookie-data {
 
 .cookie-items .cookie-item {
   background: rgb(224, 233, 245);
-  border-radius: 5px;
   border: 1px solid rgb(131, 146, 174);
+  border-radius: 5px;
   display: inline-block;
   font-size: 85%;
   height: auto;
@@ -154,8 +154,8 @@ list.cookie-list > .deletable-item[selected] .cookie-data {
 /* styles for the cookie details box */
 .cookie-details {
   background: rgb(245, 248, 248);
-  border-radius: 5px;
   border: 1px solid #B2B2B2;
+  border-radius: 5px;
   margin-top: 2px;
   padding: 5px;
 }

@@ -57,8 +57,8 @@ div[role='listitem'][managedby] {
 .settings-list div[role='listitem'][managedby='policy'],
 .settings-list div[role='listitem'][managedby='extension'] {
   background: -webkit-linear-gradient(rgb(250, 230, 146), rgb(250, 230, 146));
-  border-top: 0;
   border-bottom: 1px solid rgb(201, 189, 141);
+  border-top: 0;
 }
 
 list div[role='listitem'][managedby='policy'] .close-button {

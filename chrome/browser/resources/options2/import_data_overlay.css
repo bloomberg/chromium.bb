@@ -1,3 +1,7 @@
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
+
 #import-from-div {
   margin-bottom: 20px;
 }
@@ -18,6 +22,6 @@
 }
 
 #import-success-image {
-  text-align: center;
   margin: 20px;
+  text-align: center;
 }
