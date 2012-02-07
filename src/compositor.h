@@ -208,6 +208,31 @@ enum weston_output_flags {
 	WL_OUTPUT_FLIPPED = 0x01
 };
 
+/* Using weston_surface transformations
+ *
+ * To add a transformation to a surface, create a struct weston_transform, and
+ * add it to the list surface->geometry.transformation_list. Whenever you
+ * change the list, anything under surface->geometry, or anything in the
+ * weston_transforms linked into the list, you must set
+ * surface->geometry.dirty = 1.
+ *
+ * The order in the list defines the order of transformations. Let the list
+ * contain the transformation matrices M1, ..., Mn as head to tail. The
+ * transformation is applied to surface-local coordinate vector p as
+ *    P = Mn * ... * M2 * M1 * p
+ * to produce the global coordinate vector P. The total transform
+ *    Mn * ... * M2 * M1
+ * is cached in surface->transform.matrix, and the inverse of it in
+ * surface->transform.inverse.
+ *
+ * The list always contains surface->transform.position transformation, which
+ * is the translation by surface->geometry.x and y.
+ *
+ * If you want to apply a transformation in local coordinates, add your
+ * weston_transform to the head of the list. If you want to apply a
+ * transformation in global coordinates, add it to the tail of the list.
+ */
+
 struct weston_surface {
 	struct wl_surface surface;
 	struct weston_compositor *compositor;
