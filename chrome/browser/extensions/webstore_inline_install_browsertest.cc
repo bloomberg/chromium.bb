@@ -28,6 +28,13 @@ const char kWebstoreDomain[] = "cws.com";
 const char kAppDomain[] = "app.com";
 const char kNonAppDomain[] = "nonapp.com";
 
+// http://crbug.com/113024
+#if !defined(NDEBUG) && (defined(OS_WIN) || defined(OS_MACOSX))
+  #define MAYBE(TestName) DISABLED_ ## TestName
+#else
+  #define MAYBE(TestName) TestName
+#endif
+
 class WebstoreInlineInstallTest : public InProcessBrowserTest {
  public:
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
@@ -81,7 +88,7 @@ class WebstoreInlineInstallTest : public InProcessBrowserTest {
   std::string test_gallery_url_;
 };
 
-IN_PROC_BROWSER_TEST_F(WebstoreInlineInstallTest, Install) {
+IN_PROC_BROWSER_TEST_F(WebstoreInlineInstallTest, MAYBE(Install)) {
   CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kAppsGalleryInstallAutoConfirmForTests, "accept");
 
@@ -95,8 +102,8 @@ IN_PROC_BROWSER_TEST_F(WebstoreInlineInstallTest, Install) {
   EXPECT_TRUE(extension);
 }
 
-IN_PROC_BROWSER_TEST_F(
-    WebstoreInlineInstallTest, InstallNotAllowedFromNonVerifiedDomains) {
+IN_PROC_BROWSER_TEST_F(WebstoreInlineInstallTest,
+    MAYBE(InstallNotAllowedFromNonVerifiedDomains)) {
   CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kAppsGalleryInstallAutoConfirmForTests, "cancel");
   ui_test_utils::NavigateToURL(
@@ -123,7 +130,8 @@ IN_PROC_BROWSER_TEST_F(WebstoreInlineInstallTest, ArgumentValidation) {
   RunInlineInstallTest("runTest");
 }
 
-IN_PROC_BROWSER_TEST_F(WebstoreInlineInstallTest, InstallNotSupported) {
+IN_PROC_BROWSER_TEST_F(WebstoreInlineInstallTest,
+    MAYBE(InstallNotSupported)) {
   CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kAppsGalleryInstallAutoConfirmForTests, "cancel");
   ui_test_utils::NavigateToURL(
@@ -161,7 +169,8 @@ class WebstoreInlineInstallUnpackFailureTest
   }
 };
 
-IN_PROC_BROWSER_TEST_F(WebstoreInlineInstallUnpackFailureTest, Test) {
+IN_PROC_BROWSER_TEST_F(WebstoreInlineInstallUnpackFailureTest,
+    MAYBE(WebstoreInlineInstallUnpackFailureTest)) {
   CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kAppsGalleryInstallAutoConfirmForTests, "accept");
 
