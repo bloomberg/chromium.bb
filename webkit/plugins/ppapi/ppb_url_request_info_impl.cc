@@ -76,7 +76,7 @@ bool PPB_URLRequestInfo_Impl::ToWebURLRequest(WebFrame* frame,
 
   const std::string& headers = data().headers;
   if (!headers.empty()) {
-    net::HttpUtil::HeadersIterator it(headers.begin(), headers.end(), "\n");
+    net::HttpUtil::HeadersIterator it(headers.begin(), headers.end(), "\n\r");
     while (it.GetNext()) {
       dest->addHTTPHeaderField(
           WebString::fromUTF8(it.name()),
