@@ -676,7 +676,6 @@ internal_pfq.add_config('lumpy-private-bin',
 internal_pfq.add_config('lumpy64-private-bin',
   boards=['lumpy64'],
   description='Lumpy64 PFQ',
-  important=False,
 )
 
 internal_pfq.add_config('link-private-bin',
