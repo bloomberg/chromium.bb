@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/gpu/renderer_gl_context.h"
+#include "content/common/gpu/client/content_gl_context.h"
 
 #include "base/bind.h"
 #include "base/debug/trace_event.h"
@@ -12,10 +12,8 @@
 #include "base/memory/singleton.h"
 #include "base/memory/weak_ptr.h"
 #include "base/shared_memory.h"
-#include "content/common/view_messages.h"
-#include "content/renderer/gpu/command_buffer_proxy.h"
-#include "content/renderer/gpu/gpu_channel_host.h"
-#include "content/renderer/render_widget.h"
+#include "content/common/gpu/client/command_buffer_proxy.h"
+#include "content/common/gpu/client/gpu_channel_host.h"
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_channel_handle.h"
 
@@ -59,37 +57,37 @@ base::LazyInstance<GLES2Initializer> g_gles2_initializer =
 ////////////////////////////////////////////////////////////////////////////////
 
 #if defined(ENABLE_GPU)
-RendererGLContext::ContextLostReason ConvertReason(
+ContentGLContext::ContextLostReason ConvertReason(
     gpu::error::ContextLostReason reason) {
   switch (reason) {
   case gpu::error::kGuilty:
-    return RendererGLContext::kGuilty;
+    return ContentGLContext::kGuilty;
   case gpu::error::kInnocent:
-    return RendererGLContext::kInnocent;
+    return ContentGLContext::kInnocent;
   case gpu::error::kUnknown:
-    return RendererGLContext::kUnknown;
+    return ContentGLContext::kUnknown;
   }
   NOTREACHED();
-  return RendererGLContext::kUnknown;
+  return ContentGLContext::kUnknown;
 }
 #endif
 
 }  // namespace
 
-RendererGLContext::~RendererGLContext() {
+ContentGLContext::~ContentGLContext() {
   Destroy();
 }
 
-RendererGLContext* RendererGLContext::CreateViewContext(
+ContentGLContext* ContentGLContext::CreateViewContext(
     GpuChannelHost* channel,
     int32 surface_id,
-    RendererGLContext* share_group,
+    ContentGLContext* share_group,
     const char* allowed_extensions,
     const int32* attrib_list,
     const GURL& active_url,
     gfx::GpuPreference gpu_preference) {
 #if defined(ENABLE_GPU)
-  scoped_ptr<RendererGLContext> context(new RendererGLContext(channel));
+  scoped_ptr<ContentGLContext> context(new ContentGLContext(channel));
   if (!context->Initialize(
       true,
       surface_id,
@@ -107,16 +105,16 @@ RendererGLContext* RendererGLContext::CreateViewContext(
 #endif
 }
 
-RendererGLContext* RendererGLContext::CreateOffscreenContext(
+ContentGLContext* ContentGLContext::CreateOffscreenContext(
     GpuChannelHost* channel,
     const gfx::Size& size,
-    RendererGLContext* share_group,
+    ContentGLContext* share_group,
     const char* allowed_extensions,
     const int32* attrib_list,
     const GURL& active_url,
     gfx::GpuPreference gpu_preference) {
 #if defined(ENABLE_GPU)
-  scoped_ptr<RendererGLContext> context(new RendererGLContext(channel));
+  scoped_ptr<ContentGLContext> context(new ContentGLContext(channel));
   if (!context->Initialize(
       false,
       0,
@@ -134,7 +132,7 @@ RendererGLContext* RendererGLContext::CreateOffscreenContext(
 #endif
 }
 
-bool RendererGLContext::SetParent(RendererGLContext* new_parent) {
+bool ContentGLContext::SetParent(ContentGLContext* new_parent) {
   if (parent_.get() == new_parent)
     return true;
 
@@ -142,7 +140,7 @@ bool RendererGLContext::SetParent(RendererGLContext* new_parent) {
   uint32 new_parent_texture_id = 0;
   if (command_buffer_) {
     if (new_parent) {
-      TRACE_EVENT0("gpu", "RendererGLContext::SetParent::flushParent");
+      TRACE_EVENT0("gpu", "ContentGLContext::SetParent::flushParent");
       // Flush any remaining commands in the parent context to make sure the
       // texture id accounting stays consistent.
       int32 token = new_parent->gles2_helper_->InsertToken();
@@ -182,27 +180,27 @@ bool RendererGLContext::SetParent(RendererGLContext* new_parent) {
   return true;
 }
 
-uint32 RendererGLContext::GetParentTextureId() {
+uint32 ContentGLContext::GetParentTextureId() {
   return parent_texture_id_;
 }
 
-uint32 RendererGLContext::CreateParentTexture(const gfx::Size& size) {
+uint32 ContentGLContext::CreateParentTexture(const gfx::Size& size) {
   uint32 texture_id = 0;
   gles2_implementation_->GenTextures(1, &texture_id);
   gles2_implementation_->Flush();
   return texture_id;
 }
 
-void RendererGLContext::DeleteParentTexture(uint32 texture) {
+void ContentGLContext::DeleteParentTexture(uint32 texture) {
   gles2_implementation_->DeleteTextures(1, &texture);
 }
 
-void RendererGLContext::SetContextLostCallback(
+void ContentGLContext::SetContextLostCallback(
     const base::Callback<void (ContextLostReason)>& callback) {
   context_lost_callback_ = callback;
 }
 
-bool RendererGLContext::MakeCurrent(RendererGLContext* context) {
+bool ContentGLContext::MakeCurrent(ContentGLContext* context) {
   if (context) {
     DCHECK(context->CalledOnValidThread());
     gles2::SetGLContext(context->gles2_implementation_);
@@ -221,8 +219,8 @@ bool RendererGLContext::MakeCurrent(RendererGLContext* context) {
   return true;
 }
 
-bool RendererGLContext::SwapBuffers() {
-  TRACE_EVENT1("gpu", "RendererGLContext::SwapBuffers", "frame", frame_number_);
+bool ContentGLContext::SwapBuffers() {
+  TRACE_EVENT1("gpu", "ContentGLContext::SwapBuffers", "frame", frame_number_);
   frame_number_++;
 
   // Don't request latest error status from service. Just use the locally cached
@@ -235,11 +233,11 @@ bool RendererGLContext::SwapBuffers() {
   return true;
 }
 
-bool RendererGLContext::Echo(const base::Closure& task) {
+bool ContentGLContext::Echo(const base::Closure& task) {
   return command_buffer_->Echo(task);
 }
 
-RendererGLContext::Error RendererGLContext::GetError() {
+ContentGLContext::Error ContentGLContext::GetError() {
   gpu::CommandBuffer::State state = command_buffer_->GetState();
   if (state.error == gpu::error::kNoError) {
     Error old_error = last_error_;
@@ -252,7 +250,7 @@ RendererGLContext::Error RendererGLContext::GetError() {
   }
 }
 
-bool RendererGLContext::IsCommandBufferContextLost() {
+bool ContentGLContext::IsCommandBufferContextLost() {
   // If the channel shut down unexpectedly, let that supersede the
   // command buffer's state.
   if (channel_->state() == GpuChannelHost::kLost)
@@ -261,26 +259,26 @@ bool RendererGLContext::IsCommandBufferContextLost() {
   return state.error == gpu::error::kLostContext;
 }
 
-CommandBufferProxy* RendererGLContext::GetCommandBufferProxy() {
+CommandBufferProxy* ContentGLContext::GetCommandBufferProxy() {
   return command_buffer_;
 }
 
-bool RendererGLContext::SetSurfaceVisible(bool visible) {
+bool ContentGLContext::SetSurfaceVisible(bool visible) {
   return GetCommandBufferProxy()->SetSurfaceVisible(visible);
 }
 
 // TODO(gman): Remove This
-void RendererGLContext::DisableShaderTranslation() {
+void ContentGLContext::DisableShaderTranslation() {
   NOTREACHED();
 }
 
-gpu::gles2::GLES2Implementation* RendererGLContext::GetImplementation() {
+gpu::gles2::GLES2Implementation* ContentGLContext::GetImplementation() {
   return gles2_implementation_;
 }
 
-RendererGLContext::RendererGLContext(GpuChannelHost* channel)
+ContentGLContext::ContentGLContext(GpuChannelHost* channel)
     : channel_(channel),
-      parent_(base::WeakPtr<RendererGLContext>()),
+      parent_(base::WeakPtr<ContentGLContext>()),
       parent_texture_id_(0),
       command_buffer_(NULL),
       gles2_helper_(NULL),
@@ -291,17 +289,17 @@ RendererGLContext::RendererGLContext(GpuChannelHost* channel)
   DCHECK(channel);
 }
 
-bool RendererGLContext::Initialize(bool onscreen,
-                                   int32 surface_id,
-                                   const gfx::Size& size,
-                                   RendererGLContext* share_group,
-                                   const char* allowed_extensions,
-                                   const int32* attrib_list,
-                                   const GURL& active_url,
-                                   gfx::GpuPreference gpu_preference) {
+bool ContentGLContext::Initialize(bool onscreen,
+                                  int32 surface_id,
+                                  const gfx::Size& size,
+                                  ContentGLContext* share_group,
+                                  const char* allowed_extensions,
+                                  const int32* attrib_list,
+                                  const GURL& active_url,
+                                  gfx::GpuPreference gpu_preference) {
   DCHECK(CalledOnValidThread());
   DCHECK(size.width() >= 0 && size.height() >= 0);
-  TRACE_EVENT2("gpu", "RendererGLContext::Initialize",
+  TRACE_EVENT2("gpu", "ContentGLContext::Initialize",
                    "on_screen", onscreen, "num_pixels", size.GetArea());
 
   if (channel_->state() != GpuChannelHost::kConnected)
@@ -349,7 +347,7 @@ bool RendererGLContext::Initialize(bool onscreen,
   // Create a proxy to a command buffer in the GPU process.
   if (onscreen) {
     TRACE_EVENT0("gpu",
-                 "RendererGLContext::Initialize::CreateViewCommandBuffer");
+                 "ContentGLContext::Initialize::CreateViewCommandBuffer");
     command_buffer_ = channel_->CreateViewCommandBuffer(
         surface_id,
         share_group ? share_group->command_buffer_ : NULL,
@@ -373,7 +371,7 @@ bool RendererGLContext::Initialize(bool onscreen,
 
   {
     TRACE_EVENT0("gpu",
-                 "RendererGLContext::Initialize::InitializeCommandBuffer");
+                 "ContentGLContext::Initialize::InitializeCommandBuffer");
     // Initiaize the command buffer.
     if (!command_buffer_->Initialize()) {
       Destroy();
@@ -382,7 +380,7 @@ bool RendererGLContext::Initialize(bool onscreen,
   }
 
   command_buffer_->SetChannelErrorCallback(
-      base::Bind(&RendererGLContext::OnContextLost, base::Unretained(this)));
+      base::Bind(&ContentGLContext::OnContextLost, base::Unretained(this)));
 
   // Create the GLES2 helper, which writes the command buffer protocol.
   gles2_helper_ = new gpu::gles2::GLES2CmdHelper(command_buffer_);
@@ -392,7 +390,7 @@ bool RendererGLContext::Initialize(bool onscreen,
   }
 
   {
-    TRACE_EVENT0("gpu", "RendererGLContext::Initialize::CreateTransferBuffer");
+    TRACE_EVENT0("gpu", "ContentGLContext::Initialize::CreateTransferBuffer");
     // Create a transfer buffer used to copy resources between the renderer
     // process and the GPU process.
     transfer_buffer_ = new gpu::TransferBuffer(gles2_helper_);
@@ -416,8 +414,8 @@ bool RendererGLContext::Initialize(bool onscreen,
   return true;
 }
 
-void RendererGLContext::Destroy() {
-  TRACE_EVENT0("gpu", "RendererGLContext::Destroy");
+void ContentGLContext::Destroy() {
+  TRACE_EVENT0("gpu", "ContentGLContext::Destroy");
   DCHECK(CalledOnValidThread());
   SetParent(NULL);
 
@@ -449,9 +447,9 @@ void RendererGLContext::Destroy() {
   channel_ = NULL;
 }
 
-void RendererGLContext::OnContextLost() {
+void ContentGLContext::OnContextLost() {
   if (!context_lost_callback_.is_null()) {
-    RendererGLContext::ContextLostReason reason = kUnknown;
+    ContentGLContext::ContextLostReason reason = kUnknown;
     if (command_buffer_) {
       reason = ConvertReason(
           command_buffer_->GetLastState().context_lost_reason);

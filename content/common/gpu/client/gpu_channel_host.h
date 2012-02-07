@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_GPU_GPU_CHANNEL_HOST_H_
-#define CONTENT_RENDERER_GPU_GPU_CHANNEL_HOST_H_
+#ifndef CONTENT_COMMON_GPU_CLIENT_GPU_CHANNEL_HOST_H_
+#define CONTENT_COMMON_GPU_CLIENT_GPU_CHANNEL_HOST_H_
 #pragma once
 
 #include <string>
@@ -19,7 +19,7 @@
 #include "content/common/gpu/gpu_process_launch_causes.h"
 #include "content/common/message_router.h"
 #include "content/public/common/gpu_info.h"
-#include "content/renderer/gpu/gpu_video_decode_accelerator_host.h"
+#include "content/common/gpu/client/gpu_video_decode_accelerator_host.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_sync_channel.h"
@@ -74,8 +74,8 @@ class CONTENT_EXPORT GpuChannelHostFactory {
   static GpuChannelHostFactory* instance_;
 };
 
-// Encapsulates an IPC channel between the renderer and one plugin process.
-// On the plugin side there's a corresponding GpuChannel.
+// Encapsulates an IPC channel between the client and one GPU process.
+// On the GPU process side there's a corresponding GpuChannel.
 class GpuChannelHost : public IPC::Message::Sender,
                        public base::RefCountedThreadSafe<GpuChannelHost> {
  public:
@@ -95,7 +95,7 @@ class GpuChannelHost : public IPC::Message::Sender,
 
   // Connect to GPU process channel.
   void Connect(const IPC::ChannelHandle& channel_handle,
-               base::ProcessHandle renderer_process_for_gpu);
+               base::ProcessHandle client_process_for_gpu);
 
   State state() const { return state_; }
 
@@ -206,4 +206,4 @@ class GpuChannelHost : public IPC::Message::Sender,
   DISALLOW_COPY_AND_ASSIGN(GpuChannelHost);
 };
 
-#endif  // CONTENT_RENDERER_GPU_GPU_CHANNEL_HOST_H_
+#endif  // CONTENT_COMMON_GPU_CLIENT_GPU_CHANNEL_HOST_H_

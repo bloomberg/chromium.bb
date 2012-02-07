@@ -7,14 +7,14 @@
 #include "base/bind.h"
 #include "base/synchronization/waitable_event.h"
 #include "content/common/child_thread.h"
-#include "content/renderer/gpu/command_buffer_proxy.h"
-#include "content/renderer/gpu/gpu_channel_host.h"
-#include "content/renderer/gpu/renderer_gl_context.h"
+#include "content/common/gpu/client/command_buffer_proxy.h"
+#include "content/common/gpu/client/gpu_channel_host.h"
+#include "content/common/gpu/client/content_gl_context.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
 
 RendererGpuVideoDecoderFactories::~RendererGpuVideoDecoderFactories() {}
 RendererGpuVideoDecoderFactories::RendererGpuVideoDecoderFactories(
-    GpuChannelHost* gpu_channel_host, base::WeakPtr<RendererGLContext> context)
+    GpuChannelHost* gpu_channel_host, base::WeakPtr<ContentGLContext> context)
     : message_loop_(MessageLoop::current()),
       gpu_channel_host_(gpu_channel_host),
       context_(context) {

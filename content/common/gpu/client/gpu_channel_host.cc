@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/gpu/gpu_channel_host.h"
+#include "content/common/gpu/client/gpu_channel_host.h"
 
 #include "base/bind.h"
 #include "base/message_loop.h"
 #include "base/message_loop_proxy.h"
 #include "content/common/child_thread.h"
+#include "content/common/gpu/client/command_buffer_proxy.h"
 #include "content/common/gpu/gpu_messages.h"
-#include "content/renderer/gpu/command_buffer_proxy.h"
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_sync_message_filter.h"
 
@@ -109,7 +109,7 @@ GpuChannelHost::~GpuChannelHost() {
 
 void GpuChannelHost::Connect(
     const IPC::ChannelHandle& channel_handle,
-    base::ProcessHandle renderer_process_for_gpu) {
+    base::ProcessHandle client_process_for_gpu) {
   DCHECK(factory_->IsMainThread());
   // Open a channel to the GPU process. We pass NULL as the main listener here
   // since we need to filter everything to route it to the right thread.
@@ -135,8 +135,8 @@ void GpuChannelHost::Connect(
   state_ = kConnected;
 
   // Notify the GPU process of our process handle. This gives it the ability
-  // to map renderer handles into the GPU process.
-  Send(new GpuChannelMsg_Initialize(renderer_process_for_gpu));
+  // to map client handles into the GPU process.
+  Send(new GpuChannelMsg_Initialize(client_process_for_gpu));
 }
 
 void GpuChannelHost::set_gpu_info(const content::GPUInfo& gpu_info) {

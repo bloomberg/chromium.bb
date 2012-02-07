@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/gpu/command_buffer_proxy.h"
+#include "content/common/gpu/client/command_buffer_proxy.h"
 
 #include "base/callback.h"
 #include "base/debug/trace_event.h"
@@ -12,11 +12,10 @@
 #include "base/stl_util.h"
 #include "content/common/child_process_messages.h"
 #include "content/common/child_thread.h"
+#include "content/common/gpu/client/gpu_channel_host.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "content/common/plugin_messages.h"
 #include "content/common/view_messages.h"
-#include "content/renderer/gpu/gpu_channel_host.h"
-#include "content/renderer/plugin_channel_host.h"
 #include "gpu/command_buffer/common/cmd_buffer_common.h"
 #include "ui/gfx/size.h"
 

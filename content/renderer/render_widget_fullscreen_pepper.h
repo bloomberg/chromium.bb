@@ -6,9 +6,9 @@
 #define CONTENT_RENDERER_RENDER_WIDGET_FULLSCREEN_PEPPER_H_
 
 #include "base/memory/weak_ptr.h"
+#include "content/common/gpu/client/content_gl_context.h"
 #include "content/renderer/pepper_parent_context_provider.h"
 #include "content/renderer/render_widget_fullscreen.h"
-#include "content/renderer/gpu/renderer_gl_context.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebWidget.h"
 #include "webkit/plugins/ppapi/fullscreen_container.h"
 
@@ -41,7 +41,7 @@ class RenderWidgetFullscreenPepper : public RenderWidgetFullscreen,
   virtual webkit::ppapi::PluginDelegate::PlatformContext3D*
       CreateContext3D() OVERRIDE;
 
-  RendererGLContext* context() const { return context_; }
+  ContentGLContext* context() const { return context_; }
   void SwapBuffers();
 
   // Could be NULL when this widget is closing.
@@ -83,14 +83,14 @@ class RenderWidgetFullscreenPepper : public RenderWidgetFullscreen,
   bool CheckCompositing();
 
   // Called when the compositing context gets lost.
-  void OnLostContext(RendererGLContext::ContextLostReason);
+  void OnLostContext(ContentGLContext::ContextLostReason);
 
-  // Binding of RendererGLContext swapbuffers callback to
+  // Binding of ContentGLContext swapbuffers callback to
   // RenderWidget::OnSwapBuffersCompleted.
-  void OnSwapBuffersCompleteByRendererGLContext();
+  void OnSwapBuffersCompleteByContentGLContext();
 
   // Implementation of PepperParentContextProvider.
-  virtual RendererGLContext* GetParentContextForPlatformContext3D() OVERRIDE;
+  virtual ContentGLContext* GetParentContextForPlatformContext3D() OVERRIDE;
 
   // URL that is responsible for this widget, passed to ggl::CreateViewContext.
   GURL active_url_;
@@ -99,7 +99,7 @@ class RenderWidgetFullscreenPepper : public RenderWidgetFullscreen,
   webkit::ppapi::PluginInstance* plugin_;
 
   // GL context for compositing.
-  RendererGLContext* context_;
+  ContentGLContext* context_;
   unsigned int buffer_;
   unsigned int program_;
 

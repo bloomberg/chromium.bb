@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,14 +8,14 @@
 
 #include "base/basictypes.h"
 
-class RendererGLContext;
+class ContentGLContext;
 
 // Defines the mechanism by which a Pepper 3D context fetches its
 // parent context for display to the screen.
 class PepperParentContextProvider {
  public:
   virtual ~PepperParentContextProvider();
-  virtual RendererGLContext* GetParentContextForPlatformContext3D() = 0;
+  virtual ContentGLContext* GetParentContextForPlatformContext3D() = 0;
 
  protected:
   PepperParentContextProvider();

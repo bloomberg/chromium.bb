@@ -431,7 +431,7 @@ class PepperPluginDelegateImpl
       webkit::ppapi::PluginModule* plugin_module);
 
   // Implementation of PepperParentContextProvider.
-  virtual RendererGLContext* GetParentContextForPlatformContext3D() OVERRIDE;
+  virtual ContentGLContext* GetParentContextForPlatformContext3D() OVERRIDE;
 
   // Helper function to check that TCP/UDP private APIs are allowed for current
   // page. This check actually allows socket usage for NativeClient code only.

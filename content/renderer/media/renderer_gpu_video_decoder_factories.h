@@ -14,7 +14,7 @@
 #include "ui/gfx/size.h"
 
 class GpuChannelHost;
-class RendererGLContext;
+class ContentGLContext;
 namespace base {
 class WaitableEvent;
 }
@@ -33,7 +33,7 @@ class CONTENT_EXPORT RendererGpuVideoDecoderFactories
   // Takes a ref on |gpu_channel_host| and tests |context| for NULL before each
   // use.
   RendererGpuVideoDecoderFactories(GpuChannelHost* gpu_channel_host,
-                                   base::WeakPtr<RendererGLContext> context);
+                                   base::WeakPtr<ContentGLContext> context);
 
   virtual media::VideoDecodeAccelerator* CreateVideoDecodeAccelerator(
       media::VideoDecodeAccelerator::Profile profile,
@@ -69,7 +69,7 @@ class CONTENT_EXPORT RendererGpuVideoDecoderFactories
 
   MessageLoop* message_loop_;
   scoped_refptr<GpuChannelHost> gpu_channel_host_;
-  base::WeakPtr<RendererGLContext> context_;
+  base::WeakPtr<ContentGLContext> context_;
   DISALLOW_IMPLICIT_CONSTRUCTORS(RendererGpuVideoDecoderFactories);
 };
 

@@ -23,6 +23,8 @@
 #include "content/common/child_thread.h"
 #include "content/common/file_system/file_system_dispatcher.h"
 #include "content/common/file_system_messages.h"
+#include "content/common/gpu/client/content_gl_context.h"
+#include "content/common/gpu/client/webgraphicscontext3d_command_buffer_impl.h"
 #include "content/common/media/audio_messages.h"
 #include "content/common/pepper_file_messages.h"
 #include "content/common/pepper_plugin_registry.h"
@@ -32,10 +34,6 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/renderer/gamepad_shared_memory_reader.h"
-#include "content/renderer/gpu/command_buffer_proxy.h"
-#include "content/renderer/gpu/gpu_channel_host.h"
-#include "content/renderer/gpu/renderer_gl_context.h"
-#include "content/renderer/gpu/webgraphicscontext3d_command_buffer_impl.h"
 #include "content/renderer/media/audio_input_message_filter.h"
 #include "content/renderer/media/audio_message_filter.h"
 #include "content/renderer/media/pepper_platform_video_decoder_impl.h"
@@ -2069,7 +2067,7 @@ int PepperPluginDelegateImpl::GetRoutingId() const {
   return render_view_->routing_id();
 }
 
-RendererGLContext*
+ContentGLContext*
 PepperPluginDelegateImpl::GetParentContextForPlatformContext3D() {
   WebGraphicsContext3DCommandBufferImpl* context =
       static_cast<WebGraphicsContext3DCommandBufferImpl*>(
@@ -2079,7 +2077,7 @@ PepperPluginDelegateImpl::GetParentContextForPlatformContext3D() {
   if (!context->makeContextCurrent() || context->isContextLost())
     return NULL;
 
-  RendererGLContext* parent_context = context->context();
+  ContentGLContext* parent_context = context->context();
   if (!parent_context)
     return NULL;
   return parent_context;

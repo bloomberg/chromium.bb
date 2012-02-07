@@ -6,8 +6,8 @@
 
 #include "base/bind.h"
 #include "base/message_loop.h"
+#include "content/common/gpu/client/gpu_channel_host.h"
 #include "content/common/view_messages.h"
-#include "content/renderer/gpu/gpu_channel_host.h"
 #include "content/renderer/pepper_platform_context_3d_impl.h"
 #include "content/renderer/render_thread_impl.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
@@ -86,7 +86,7 @@ class PepperWidget : public WebWidget {
     if (!widget_->plugin())
       return;
 
-    RendererGLContext* context = widget_->context();
+    ContentGLContext* context = widget_->context();
     DCHECK(context);
     gpu::gles2::GLES2Implementation* gl = context->GetImplementation();
     unsigned int texture = widget_->plugin()->GetBackingTextureId();
@@ -201,7 +201,7 @@ class PepperWidget : public WebWidget {
   DISALLOW_COPY_AND_ASSIGN(PepperWidget);
 };
 
-void DestroyContext(RendererGLContext* context, GLuint program, GLuint buffer) {
+void DestroyContext(ContentGLContext* context, GLuint program, GLuint buffer) {
   DCHECK(context);
   gpu::gles2::GLES2Implementation* gl = context->GetImplementation();
   if (program)
@@ -344,16 +344,16 @@ void RenderWidgetFullscreenPepper::CreateContext() {
   if (!host)
     return;
   const int32 attribs[] = {
-    RendererGLContext::ALPHA_SIZE, 8,
-    RendererGLContext::DEPTH_SIZE, 0,
-    RendererGLContext::STENCIL_SIZE, 0,
-    RendererGLContext::SAMPLES, 0,
-    RendererGLContext::SAMPLE_BUFFERS, 0,
-    RendererGLContext::SHARE_RESOURCES, 0,
-    RendererGLContext::BIND_GENERATES_RESOURCES, 1,
-    RendererGLContext::NONE,
+    ContentGLContext::ALPHA_SIZE, 8,
+    ContentGLContext::DEPTH_SIZE, 0,
+    ContentGLContext::STENCIL_SIZE, 0,
+    ContentGLContext::SAMPLES, 0,
+    ContentGLContext::SAMPLE_BUFFERS, 0,
+    ContentGLContext::SHARE_RESOURCES, 0,
+    ContentGLContext::BIND_GENERATES_RESOURCES, 1,
+    ContentGLContext::NONE,
   };
-  context_ = RendererGLContext::CreateViewContext(
+  context_ = ContentGLContext::CreateViewContext(
       host,
       surface_id(),
       NULL,
@@ -487,7 +487,7 @@ void RenderWidgetFullscreenPepper::SwapBuffers() {
   OnSwapBuffersPosted();
   context_->SwapBuffers();
   context_->Echo(base::Bind(
-      &RenderWidgetFullscreenPepper::OnSwapBuffersCompleteByRendererGLContext,
+      &RenderWidgetFullscreenPepper::OnSwapBuffersCompleteByContentGLContext,
       weak_ptr_factory_.GetWeakPtr()));
 
   // The compositor isn't actually active in this path, but pretend it is for
@@ -496,7 +496,7 @@ void RenderWidgetFullscreenPepper::SwapBuffers() {
 }
 
 void RenderWidgetFullscreenPepper::OnLostContext(
-    RendererGLContext::ContextLostReason) {
+    ContentGLContext::ContextLostReason) {
   if (!context_)
     return;
   // Destroy the context later, in case we got called from InitContext for
@@ -512,11 +512,11 @@ void RenderWidgetFullscreenPepper::OnLostContext(
   CheckCompositing();
 }
 
-void RenderWidgetFullscreenPepper::OnSwapBuffersCompleteByRendererGLContext() {
+void RenderWidgetFullscreenPepper::OnSwapBuffersCompleteByContentGLContext() {
   OnSwapBuffersComplete();
 }
 
-RendererGLContext*
+ContentGLContext*
 RenderWidgetFullscreenPepper::GetParentContextForPlatformContext3D() {
   if (!context_) {
     CreateContext();

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_GPU_GPU_VIDEO_DECODE_ACCELERATOR_HOST_H_
-#define CONTENT_RENDERER_GPU_GPU_VIDEO_DECODE_ACCELERATOR_HOST_H_
+#ifndef CONTENT_COMMON_GPU_CLIENT_GPU_VIDEO_DECODE_ACCELERATOR_HOST_H_
+#define CONTENT_COMMON_GPU_CLIENT_GPU_VIDEO_DECODE_ACCELERATOR_HOST_H_
 
 #include <vector>
 
@@ -58,7 +58,7 @@ class GpuVideoDecodeAcceleratorHost
   GpuChannelHost* channel_;
 
   // Route ID for the associated decoder in the GPU process.
-  // TODO(fischman): storing route_id's for GPU process entities in the renderer
+  // TODO(fischman): storing route_id's for GPU process entities in the client
   // process is vulnerable to GPU process crashing & being respawned, and
   // attempting to use an outdated or reused route id.
   int32 decoder_route_id_;
@@ -69,4 +69,4 @@ class GpuVideoDecodeAcceleratorHost
   DISALLOW_COPY_AND_ASSIGN(GpuVideoDecodeAcceleratorHost);
 };
 
-#endif  // CONTENT_RENDERER_GPU_GPU_VIDEO_DECODE_ACCELERATOR_HOST_H_
+#endif  // CONTENT_COMMON_GPU_CLIENT_GPU_VIDEO_DECODE_ACCELERATOR_HOST_H_

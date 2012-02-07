@@ -18,9 +18,9 @@
 #include "content/common/child_thread.h"
 #include "content/common/content_export.h"
 #include "content/common/css_colors.h"
+#include "content/common/gpu/client/gpu_channel_host.h"
 #include "content/common/gpu/gpu_process_launch_causes.h"
 #include "content/public/renderer/render_thread.h"
-#include "content/renderer/gpu/gpu_channel_host.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "ui/gfx/native_widget_types.h"
 

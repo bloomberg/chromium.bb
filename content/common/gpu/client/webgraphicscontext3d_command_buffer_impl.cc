@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/gpu/webgraphicscontext3d_command_buffer_impl.h"
+#include "content/common/gpu/client/webgraphicscontext3d_command_buffer_impl.h"
 
 #include "third_party/khronos/GLES2/gl2.h"
 #ifndef GL_GLEXT_PROTOTYPES
@@ -22,10 +22,9 @@
 #include "base/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/synchronization/lock.h"
+#include "content/common/gpu/client/command_buffer_proxy.h"
+#include "content/common/gpu/client/gpu_channel_host.h"
 #include "content/public/common/content_switches.h"
-#include "content/renderer/gpu/command_buffer_proxy.h"
-#include "content/renderer/gpu/gpu_channel_host.h"
-#include "content/renderer/render_view_impl.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
 #include "gpu/command_buffer/common/constants.h"
 #include "webkit/glue/gl_bindings_skia_cmd_buffer.h"
@@ -109,7 +108,7 @@ bool WebGraphicsContext3DCommandBufferImpl::Initialize(
 
     if (!retry) {
       // If the creation of this context requires all contexts for this
-      // renderer to be destroyed on the GPU process side, then drop the
+      // client to be destroyed on the GPU process side, then drop the
       // channel and recreate it.
       if (host_->WillGpuSwitchOccur(true, gpu_preference_)) {
         host_->ForciblyCloseChannel();
@@ -150,7 +149,7 @@ bool WebGraphicsContext3DCommandBufferImpl::MaybeInitializeGL() {
   if (!factory || !factory->IsMainThread())
     DCHECK(!swap_client_.get());
 
-  // Convert WebGL context creation attributes into RendererGLContext / EGL size
+  // Convert WebGL context creation attributes into ContentGLContext / EGL size
   // requests.
   const int alpha_size = attributes_.alpha ? 8 : 0;
   const int depth_size = attributes_.depth ? 24 : 0;
@@ -158,31 +157,31 @@ bool WebGraphicsContext3DCommandBufferImpl::MaybeInitializeGL() {
   const int samples = attributes_.antialias ? 4 : 0;
   const int sample_buffers = attributes_.antialias ? 1 : 0;
   const int32 attribs[] = {
-    RendererGLContext::ALPHA_SIZE, alpha_size,
-    RendererGLContext::DEPTH_SIZE, depth_size,
-    RendererGLContext::STENCIL_SIZE, stencil_size,
-    RendererGLContext::SAMPLES, samples,
-    RendererGLContext::SAMPLE_BUFFERS, sample_buffers,
-    RendererGLContext::SHARE_RESOURCES, attributes_.shareResources ? 1 : 0,
-    RendererGLContext::BIND_GENERATES_RESOURCES, 0,
-    RendererGLContext::NONE,
+    ContentGLContext::ALPHA_SIZE, alpha_size,
+    ContentGLContext::DEPTH_SIZE, depth_size,
+    ContentGLContext::STENCIL_SIZE, stencil_size,
+    ContentGLContext::SAMPLES, samples,
+    ContentGLContext::SAMPLE_BUFFERS, sample_buffers,
+    ContentGLContext::SHARE_RESOURCES, attributes_.shareResources ? 1 : 0,
+    ContentGLContext::BIND_GENERATES_RESOURCES, 0,
+    ContentGLContext::NONE,
   };
 
   const char* preferred_extensions = "*";
 
-  // We need to lock g_all_shared_contexts until after RendererGLContext::Create
+  // We need to lock g_all_shared_contexts until after ContentGLContext::Create
   // to ensure that the context we picked for our share group isn't deleted.
   // (There's also a lock in our destructor.)
   {
     base::AutoLock lock(g_all_shared_contexts_lock.Get());
-    RendererGLContext* share_group = NULL;
+    ContentGLContext* share_group = NULL;
     if (attributes_.shareResources) {
       share_group = g_all_shared_contexts.Pointer()->empty() ?
           NULL : (*g_all_shared_contexts.Pointer()->begin())->context_;
     }
 
     if (surface_id_) {
-      context_ = RendererGLContext::CreateViewContext(
+      context_ = ContentGLContext::CreateViewContext(
           host_,
           surface_id_,
           share_group,
@@ -191,7 +190,7 @@ bool WebGraphicsContext3DCommandBufferImpl::MaybeInitializeGL() {
           active_url_,
           gpu_preference_);
     } else {
-      context_ = RendererGLContext::CreateOffscreenContext(
+      context_ = ContentGLContext::CreateOffscreenContext(
           host_,
           gfx::Size(1, 1),
           share_group,
@@ -249,7 +248,7 @@ bool WebGraphicsContext3DCommandBufferImpl::MaybeInitializeGL() {
 bool WebGraphicsContext3DCommandBufferImpl::makeContextCurrent() {
   if (!MaybeInitializeGL())
     return false;
-  return RendererGLContext::MakeCurrent(context_);
+  return ContentGLContext::MakeCurrent(context_);
 }
 
 int WebGraphicsContext3DCommandBufferImpl::width() {
@@ -1154,13 +1153,13 @@ GrGLInterface* WebGraphicsContext3DCommandBufferImpl::onCreateGrGLInterface() {
 
 namespace {
 
-WGC3Denum convertReason(RendererGLContext::ContextLostReason reason) {
+WGC3Denum convertReason(ContentGLContext::ContextLostReason reason) {
   switch (reason) {
-  case RendererGLContext::kGuilty:
+  case ContentGLContext::kGuilty:
     return GL_GUILTY_CONTEXT_RESET_ARB;
-  case RendererGLContext::kInnocent:
+  case ContentGLContext::kInnocent:
     return GL_INNOCENT_CONTEXT_RESET_ARB;
-  case RendererGLContext::kUnknown:
+  case ContentGLContext::kUnknown:
     return GL_UNKNOWN_CONTEXT_RESET_ARB;
   }
 
@@ -1171,7 +1170,7 @@ WGC3Denum convertReason(RendererGLContext::ContextLostReason reason) {
 }  // anonymous namespace
 
 void WebGraphicsContext3DCommandBufferImpl::OnContextLost(
-    RendererGLContext::ContextLostReason reason) {
+    ContentGLContext::ContextLostReason reason) {
   context_lost_reason_ = convertReason(reason);
   if (context_lost_callback_) {
     context_lost_callback_->onContextLost();

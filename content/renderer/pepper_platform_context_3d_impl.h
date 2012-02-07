@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 #ifndef CONTENT_RENDERER_PEPPER_PLATFORM_CONTEXT_3D_IMPL_H_
@@ -20,7 +20,7 @@ class CommandBuffer;
 class CommandBufferProxy;
 class GpuChannelHost;
 class PepperParentContextProvider;
-class RendererGLContext;
+class ContentGLContext;
 
 class PlatformContext3DImpl
     : public webkit::ppapi::PluginDelegate::PlatformContext3D {
@@ -42,7 +42,7 @@ class PlatformContext3DImpl
 
   // Implicitly weak pointer; must outlive this instance.
   PepperParentContextProvider* parent_context_provider_;
-  base::WeakPtr<RendererGLContext> parent_context_;
+  base::WeakPtr<ContentGLContext> parent_context_;
   scoped_refptr<GpuChannelHost> channel_;
   unsigned int parent_texture_id_;
   CommandBufferProxy* command_buffer_;

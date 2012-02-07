@@ -60,16 +60,8 @@
     'renderer/geolocation_dispatcher.h',
     'renderer/gpu/compositor_thread.cc',
     'renderer/gpu/compositor_thread.h',
-    'renderer/gpu/gpu_channel_host.cc',
-    'renderer/gpu/gpu_channel_host.h',
-    'renderer/gpu/gpu_video_decode_accelerator_host.cc',
-    'renderer/gpu/gpu_video_decode_accelerator_host.h',
     'renderer/gpu/input_event_filter.cc',
     'renderer/gpu/input_event_filter.h',
-    'renderer/gpu/renderer_gl_context.cc',
-    'renderer/gpu/renderer_gl_context.h',
-    'renderer/gpu/webgraphicscontext3d_command_buffer_impl.cc',
-    'renderer/gpu/webgraphicscontext3d_command_buffer_impl.h',
     'renderer/idle_user_detector.cc',
     'renderer/idle_user_detector.h',
     'renderer/indexed_db/indexed_db_dispatcher.cc',
@@ -216,15 +208,6 @@
         'renderer/p2p/socket_client.h',
         'renderer/p2p/socket_dispatcher.cc',
         'renderer/p2p/socket_dispatcher.h',
-      ],
-    }],
-    ['enable_gpu==1', {
-      'dependencies': [
-        '../gpu/gpu.gyp:gles2_c_lib',
-      ],
-      'sources': [
-        'renderer/gpu/command_buffer_proxy.cc',
-        'renderer/gpu/command_buffer_proxy.h',
       ],
     }],
     ['toolkit_uses_gtk == 1', {

@@ -9,7 +9,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "content/common/child_process.h"
-#include "content/renderer/gpu/gpu_channel_host.h"
+#include "content/common/gpu/client/gpu_channel_host.h"
 #include "content/renderer/render_thread_impl.h"
 
 using media::BitstreamBuffer;

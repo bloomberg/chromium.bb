@@ -1,15 +1,15 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "content/renderer/pepper_platform_context_3d_impl.h"
 
 #include "base/bind.h"
+#include "content/common/gpu/client/content_gl_context.h"
+#include "content/common/gpu/client/gpu_channel_host.h"
+#include "content/common/gpu/client/command_buffer_proxy.h"
 #include "content/renderer/pepper_parent_context_provider.h"
 #include "content/renderer/render_thread_impl.h"
-#include "content/renderer/gpu/renderer_gl_context.h"
-#include "content/renderer/gpu/gpu_channel_host.h"
-#include "content/renderer/gpu/command_buffer_proxy.h"
 #include "googleurl/src/gurl.h"
 #include "gpu/command_buffer/client/gles2_cmd_helper.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
@@ -89,13 +89,13 @@ bool PlatformContext3DImpl::Init(const int32* attrib_list) {
   // we do not need to filter for width and height here.
   if (attrib_list) {
     for (const int32_t* attr = attrib_list;
-         attr[0] != RendererGLContext::NONE;
+         attr[0] != ContentGLContext::NONE;
          attr += 2) {
       switch (attr[0]) {
-        case RendererGLContext::WIDTH:
+        case ContentGLContext::WIDTH:
           surface_size.set_width(attr[1]);
           break;
-        case RendererGLContext::HEIGHT:
+        case ContentGLContext::HEIGHT:
           surface_size.set_height(attr[1]);
           break;
         default:
@@ -104,7 +104,7 @@ bool PlatformContext3DImpl::Init(const int32* attrib_list) {
           break;
       }
     }
-    attribs.push_back(RendererGLContext::NONE);
+    attribs.push_back(ContentGLContext::NONE);
   }
 
   command_buffer_ = channel_->CreateOffscreenCommandBuffer(
@@ -124,7 +124,7 @@ bool PlatformContext3DImpl::Init(const int32* attrib_list) {
   // Fetch the parent context now, after any potential shutdown of the
   // channel due to GPU switching, and creation of the Pepper 3D
   // context with the discrete GPU preference.
-  RendererGLContext* parent_context =
+  ContentGLContext* parent_context =
       parent_context_provider_->GetParentContextForPlatformContext3D();
   if (!parent_context)
     return false;

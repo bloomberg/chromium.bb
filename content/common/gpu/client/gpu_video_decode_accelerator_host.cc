@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/gpu/gpu_video_decode_accelerator_host.h"
+#include "content/common/gpu/client/gpu_video_decode_accelerator_host.h"
 
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
+#include "content/common/gpu/client/gpu_channel_host.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "content/common/view_messages.h"
-#include "content/renderer/gpu/gpu_channel_host.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_message_utils.h"
 

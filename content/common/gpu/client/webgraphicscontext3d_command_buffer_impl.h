@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_GPU_WEBGRAPHICSCONTEXT3D_COMMAND_BUFFER_IMPL_H_
-#define CONTENT_RENDERER_GPU_WEBGRAPHICSCONTEXT3D_COMMAND_BUFFER_IMPL_H_
+#ifndef CONTENT_COMMON_GPU_CLIENT_WEBGRAPHICSCONTEXT3D_COMMAND_BUFFER_IMPL_H_
+#define CONTENT_COMMON_GPU_CLIENT_WEBGRAPHICSCONTEXT3D_COMMAND_BUFFER_IMPL_H_
 #pragma once
 
 #include <string>
@@ -11,7 +11,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "content/renderer/gpu/renderer_gl_context.h"
+#include "content/common/gpu/client/content_gl_context.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebGraphicsContext3D.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
@@ -457,7 +457,7 @@ class WebGraphicsContext3DCommandBufferImpl
 
   virtual WebKit::WebString getTranslatedShaderSourceANGLE(WebGLId shader);
 
-  RendererGLContext* context() { return context_; }
+  ContentGLContext* context() { return context_; }
 
   virtual void setContextLostCallback(
       WebGraphicsContext3D::WebGraphicsContextLostCallback* callback);
@@ -489,12 +489,12 @@ class WebGraphicsContext3DCommandBufferImpl
 
   // SwapBuffers callback.
   void OnSwapBuffersComplete();
-  virtual void OnContextLost(RendererGLContext::ContextLostReason reason);
+  virtual void OnContextLost(ContentGLContext::ContextLostReason reason);
 
   bool initialize_failed_;
 
   // The context we use for OpenGL rendering.
-  RendererGLContext* context_;
+  ContentGLContext* context_;
   // The GLES2Implementation we use for OpenGL rendering.
   gpu::gles2::GLES2Implementation* gl_;
 
@@ -530,4 +530,4 @@ class WebGraphicsContext3DCommandBufferImpl
 #endif
 };
 
-#endif  // CONTENT_RENDERER_GPU_WEBGRAPHICSCONTEXT3D_COMMAND_BUFFER_IMPL_H_
+#endif  // CONTENT_COMMON_GPU_CLIENT_WEBGRAPHICSCONTEXT3D_COMMAND_BUFFER_IMPL_H_

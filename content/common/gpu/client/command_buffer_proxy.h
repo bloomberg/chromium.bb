@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_GPU_COMMAND_BUFFER_PROXY_H_
-#define CONTENT_RENDERER_GPU_COMMAND_BUFFER_PROXY_H_
+#ifndef CONTENT_COMMON_GPU_CLIENT_COMMAND_BUFFER_PROXY_H_
+#define CONTENT_COMMON_GPU_CLIENT_COMMAND_BUFFER_PROXY_H_
 #pragma once
 
 #if defined(ENABLE_GPU)
@@ -15,7 +15,7 @@
 #include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "content/renderer/gpu/gpu_video_decode_accelerator_host.h"
+#include "content/common/gpu/client/gpu_video_decode_accelerator_host.h"
 #include "gpu/command_buffer/common/command_buffer.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_message.h"
@@ -92,7 +92,7 @@ class CommandBufferProxy : public gpu::CommandBuffer,
       media::VideoDecodeAccelerator::Client* client);
 
   // TODO(apatrick): this is a temporary optimization while skia is calling
-  // RendererGLContext::MakeCurrent prior to every GL call. It saves returning 6
+  // ContentGLContext::MakeCurrent prior to every GL call. It saves returning 6
   // ints redundantly when only the error is needed for the CommandBufferProxy
   // implementation.
   virtual gpu::error::Error GetLastError() OVERRIDE;
@@ -140,4 +140,4 @@ class CommandBufferProxy : public gpu::CommandBuffer,
 
 #endif  // ENABLE_GPU
 
-#endif  // CONTENT_RENDERER_GPU_COMMAND_BUFFER_PROXY_H_
+#endif  // CONTENT_COMMON_GPU_CLIENT_COMMAND_BUFFER_PROXY_H_
