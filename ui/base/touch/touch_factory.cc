@@ -437,13 +437,14 @@ void TouchFactory::SetupValuator() {
     // In order to support multi-touch with XI2.0, we need both a slot_id and
     // tracking_id valuator.  Without these we'll treat the device as a
     // single-touch device (like a mouse).
-    if (valuator_lookup_[info->deviceid][TP_SLOT_ID] == -1 ||
-        valuator_lookup_[info->deviceid][TP_TRACKING_ID] == -1) {
+    // TODO(rbyers): Multi-touch is disabled: http://crbug.com/112329
+    //if (valuator_lookup_[info->deviceid][TP_SLOT_ID] == -1 ||
+    //    valuator_lookup_[info->deviceid][TP_TRACKING_ID] == -1) {
       DVLOG(1) << "Touch device " << info->deviceid <<
         " does not provide enough information for multi-touch, treating as "
         "a single-touch device.";
       touch_device_list_[info->deviceid] = false;
-    }
+    //}
 #endif
   }
 
