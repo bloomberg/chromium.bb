@@ -13,19 +13,19 @@
   color: #7F7F7F;
   cursor: pointer;
   display: block;
-  margin: 0;
   font-size: 9pt;
   font-weight: bold;
   height: 100%;
+  margin: 0;
   /* The padding increases the clickable area. */
   padding-bottom: 0;
   padding-top: 0;
 }
 
 .enable-cws-experiment #recently-closed-menu-button {
-  position: relative;
   -webkit-margin-end: 0;
   -webkit-padding-end: 16px;
+  position: relative;
 }
 
 #recently-closed-menu-button:hover:not([menu-shown]) {
@@ -51,8 +51,8 @@
 }
 
 #footer.showing-trash-mode #recently-closed-menu-button {
-  opacity: 0;
   -webkit-transition-delay: 0;
+  opacity: 0;
 }
 
 #recently-closed-menu-button > * {
@@ -66,6 +66,10 @@
 }
 
 .recent-menu-item {
+  -webkit-margin-end: 8px;
+  -webkit-margin-start: 0;
+  -webkit-padding-end: 0;
+  -webkit-padding-start: 22px;
   background: no-repeat 0 50%;
   background-color: transparent !important;
   background-size: 16px 16px;
@@ -73,14 +77,12 @@
   display: block;
   font-size: 100%;
   line-height: 20px;
-  margin: 8px;
+  margin-bottom: 8px;
+  margin-top: 8px;
   max-width: 450px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  -webkit-margin-start: 0;
-  -webkit-padding-end: 0;
-  -webkit-padding-start: 22px;
 }
 
 .recent-menu-item:not(:hover) {
@@ -111,12 +113,12 @@ html[dir='rtl'] .recent-menu-item {
 }
 
 .disclosure-triangle {
+  -webkit-margin-start: 2px;
+  -webkit-mask-image: url('images/disclosure_triangle_mask.png');
   background-color: #7F7F7F;
   display: inline-block;
   height: 9px;
   width: 9px;
-  -webkit-margin-start: 2px;
-  -webkit-mask-image: url('images/disclosure_triangle_mask.png');
 }
 
 #vertical-separator {

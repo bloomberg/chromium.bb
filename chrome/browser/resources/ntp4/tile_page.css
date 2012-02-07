@@ -1,33 +1,29 @@
-/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
- * found in the LICENSE file.
- */
+ * found in the LICENSE file. */
 
 .tile-page {
+  -webkit-box-orient: vertical;
   display: -webkit-box;
   height: 100%;
   position: relative;
   width: 100%;
-  -webkit-box-orient: vertical;
 }
 
 .tile-page-scrollbar {
+  -webkit-box-sizing: border-box;
   margin: 0 4px;
   pointer-events: none;
   position: absolute;
   right: 0;
   width: 5px;
   z-index: 5;
-  -webkit-box-sizing: border-box;
 }
 
 .tile-page-content {
-  overflow-y: scroll;
-  /* This value is mirrored in TilePage.updateTopMargin_ */
-  padding-top: 60px;
-  position: relative;
-  text-align: center;
-  width: 100%;
+  -webkit-box-flex: 1;
+  /* Don't apply clip mask to padding. */
+  -webkit-mask-clip: content-box;
   /* TODO(estade): this mask is disabled for technical reasons. It negatively
    * impacts performance of page switching, also it causes problems with Mac
    * text: http://crbug.com/86955
@@ -36,12 +32,15 @@
   /* The following four properties are necessary so that the mask won't clip
    * the scrollbar. */
   box-sizing: border-box;
+  overflow-y: scroll;
   /* Scrollbar width(13px) + balance right padding.  */
   padding-left: 93px;
   padding-right: 80px;
-  -webkit-box-flex: 1;
-  /* Don't apply clip mask to padding. */
-  -webkit-mask-clip: content-box;
+  /* This value is mirrored in TilePage.updateTopMargin_ */
+  padding-top: 60px;
+  position: relative;
+  text-align: center;
+  width: 100%;
 }
 
 .tile-grid {
@@ -50,12 +49,12 @@
 }
 
 .tile {
-  display: inline-block;
-  position: absolute;
   -webkit-print-color-adjust: exact;
   /* Don't offer the context menu on long-press. */
   -webkit-touch-callout: none;
   -webkit-user-drag: element;
+  display: inline-block;
+  position: absolute;
 }
 
 /* I don't know why this is necessary. -webkit-user-drag: element on .tile
@@ -76,10 +75,10 @@
 }
 
 .tile.drag-representation {
+  -webkit-transition: opacity 200ms;
   pointer-events: none;
   position: fixed;
   z-index: 3;
-  -webkit-transition: opacity 200ms;
 }
 
 .tile.drag-representation.placing > * {
@@ -134,27 +133,27 @@
   }
 
   60% {
-    opacity: 1;
     -webkit-animation-timing-function: ease-in;
     -webkit-transform: scale(1.3, 0.02);
+    opacity: 1;
   }
 
   90% {
-    opacity: 0.7;
     -webkit-animation-timing-function: default;
     -webkit-transform: scale(0.3, 0.02);
+    opacity: 0.7;
   }
 
   100% {
-    opacity: 0;
     -webkit-animation-timing-function: linear;
     -webkit-transform: scale(0.3, 0.02);
+    opacity: 0;
   }
 }
 
 .tile > .removing-tile-contents {
-  pointer-events: none;
   -webkit-animation: blipout 300ms;
+  pointer-events: none;
 }
 
 .tile-page:not(.selected-card) * {
