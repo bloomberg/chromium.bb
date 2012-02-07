@@ -7,6 +7,8 @@
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_PLATFORM_QUALIFY_NACL_CPUWHITELIST
 #define NATIVE_CLIENT_SRC_TRUSTED_PLATFORM_QUALIFY_NACL_CPUWHITELIST
 
+#include "native_client/src/include/nacl_base.h"
+
 /* NOTES:
  * The blacklist/whitelist go in an array which must be kept SORTED
  * as it is passed to bsearch.
@@ -14,13 +16,22 @@
  */
 #define NACL_BLACKLIST_TEST_ENTRY "NaClBlacklistTest123"
 
-extern Bool NaCl_ThisCPUIsWhitelisted();
-extern Bool NaCl_ThisCPUIsBlacklisted();
+EXTERN_C_BEGIN
 
-extern Bool NaCl_VerifyBlacklist();
-extern Bool NaCl_VerifyWhitelist();
+/* Return 1 if CPU is whitelisted */
+int NaCl_ThisCPUIsWhitelisted();
+/* Return 1 if CPU is blacklisted */
+int NaCl_ThisCPUIsBlacklisted();
 
-extern Bool NaCl_CPUIsWhitelisted(const char *myid);
-extern Bool NaCl_CPUIsBlacklisted(const char *myid);
+/* Return 1 if list is well-structured. */
+int NaCl_VerifyBlacklist();
+int NaCl_VerifyWhitelist();
+
+/* Return 1 if named CPU is whitelisted */
+int NaCl_CPUIsWhitelisted(const char *myid);
+/* Return 1 if named CPU is blacklisted */
+int NaCl_CPUIsBlacklisted(const char *myid);
+
+EXTERN_C_END
 
 #endif  /* NATIVE_CLIENT_SRC_TRUSTED_PLATFORM_QUALIFY_NACL_CPUWHITELIST */

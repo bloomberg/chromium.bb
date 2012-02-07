@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -140,6 +140,8 @@ char const  *NaClErrorString(NaClErrorCode errcode) {
       return "ELFCLASS64 file header has fields that overflow 32 bits";
     case LOAD_PHDR_OVERFLOW:
       return "ELFCLASS64 program header has fields that overflow 32 bits";
+    case LOAD_UNSUPPORTED_CPU:
+      return "CPU model is not supported";
   }
 
   /*

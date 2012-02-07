@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -89,7 +89,9 @@ typedef enum NaClErrorCode {
 
   LOAD_BAD_EHSIZE = 60,
   LOAD_EHDR_OVERFLOW = 61,
-  LOAD_PHDR_OVERFLOW = 62
+  LOAD_PHDR_OVERFLOW = 62,
+  /* CPU blacklist or whitelist error */
+  LOAD_UNSUPPORTED_CPU = 63
 } NaClErrorCode;
 
 #define NACL_ERROR_CODE_MAX (LOAD_PHDR_OVERFLOW + 1)
