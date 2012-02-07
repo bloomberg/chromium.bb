@@ -45,9 +45,6 @@ readonly PNACL_CONCURRENCY=${PNACL_CONCURRENCY:-8}
 # If true, we are in the middle of a merge.  Do not update the llvm branch
 # (except for clang, which has no local mods).
 readonly PNACL_MERGE_TESTING=${PNACL_MERGE_TESTING:-false}
-# If true, we are using the experimental merge branch, so do not
-# complain if we are not on "pnacl-sfi".
-readonly PNACL_TESTING_BRANCH=${PNACL_TESTING_BRANCH:-false}
 PNACL_PRUNE=${PNACL_PRUNE:-false}
 PNACL_BUILD_ARM=true
 
@@ -257,13 +254,13 @@ if ${PNACL_IN_CROS_CHROOT}; then
 fi
 
 # Current milestones in each repo
-readonly UPSTREAM_REV=${UPSTREAM_REV:-bdf6da423a6b}
+readonly UPSTREAM_REV=${UPSTREAM_REV:-4bc03c0bc818}
 
 readonly NEWLIB_REV=c6358617f3fd
 readonly BINUTILS_REV=40820037bcd8
 readonly COMPILER_RT_REV=1a3a6ffb31ea
 
-readonly LLVM_PROJECT_REV=${LLVM_PROJECT_REV:-146722}
+readonly LLVM_PROJECT_REV=${LLVM_PROJECT_REV:-147864}
 readonly LLVM_MASTER_REV=${LLVM_PROJECT_REV}
 readonly CLANG_REV=${LLVM_PROJECT_REV}
 readonly DRAGONEGG_REV=${LLVM_PROJECT_REV}
@@ -586,9 +583,7 @@ hg-update-common() {
   hg-bot-sanity "${name}" "${dir}"
 
   # Make sure it is safe to update
-  if ! ${PNACL_TESTING_BRANCH} ; then
-    hg-assert-branch "${dir}" pnacl-sfi
-  fi
+  hg-assert-branch "${dir}" pnacl-sfi
   hg-assert-safe-to-update "${name}" "${dir}" "${rev}"
 
   if hg-at-revision "${dir}" "${rev}" ; then

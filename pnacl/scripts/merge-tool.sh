@@ -38,11 +38,7 @@ readonly TC_SRC_LLVM_MASTER="${TC_SRC}/llvm-master"
 readonly PREDIFF="${TC_SRC}/prediff"
 readonly POSTDIFF="${TC_SRC}/postdiff"
 
-# Temporarily run merges and tests against pnacl-sfi-test-merge...
-# This is currently broken for the ARM sandboxed tools. Perhaps an upstream
-# change may trigger a fix, so let the bot do the searching.
-# Revert this to "pnacl-sfi" if you are doing a manual merge.
-readonly UPSTREAM_BRANCH=pnacl-sfi-test-merge
+readonly UPSTREAM_BRANCH=pnacl-sfi
 
 readonly HG_CONFIG_AUTO=(--config ui.merge=internal:merge
                          --config ui.username=chromebot1@gmail.com)
@@ -91,7 +87,6 @@ set-master-revision() {
 get-upstream() {
   echo "@@@BUILD_STEP Get mercurial source@@@"
   export UPSTREAM_REV=${UPSTREAM_BRANCH}
-  export PNACL_TESTING_BRANCH=true
   pnacl-build hg-checkout-upstream
   pnacl-build hg-pull-upstream
   pnacl-build hg-update-upstream
