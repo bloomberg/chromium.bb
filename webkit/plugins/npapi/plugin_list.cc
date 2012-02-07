@@ -144,6 +144,9 @@ static const VersionRangeDefinition kRealPlayerVersionRange[] = {
 static const VersionRangeDefinition kWindowsMediaPlayerVersionRange[] = {
     { "", "", "", true }
 };
+static const VersionRangeDefinition kNvidia3DVersionRange[] = {
+    { "", "", "", true }
+};
 static const PluginGroupDefinition kGroupDefinitions[] = {
   kFlashDefinition,
   { "apple-quicktime", PluginGroup::kQuickTimeGroupName, "QuickTime Plug-in",
@@ -170,6 +173,8 @@ static const PluginGroupDefinition kGroupDefinitions[] = {
     arraysize(kWindowsMediaPlayerVersionRange), "" },
   { "microsoft-office", "Microsoft Office", "Microsoft Office",
     NULL, 0, "" },
+  { "nvidia-3d", "NVIDIA 3D", "NVIDIA 3D", kNvidia3DVersionRange,
+    arraysize(kNvidia3DVersionRange), "" },
 };
 
 #elif defined(OS_CHROMEOS)
