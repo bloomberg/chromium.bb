@@ -162,6 +162,19 @@ class CookieStoreTest : public testing::Test {
     EXPECT_TRUE(callback.did_run());
   }
 
+  int DeleteCreatedBetween(CookieStore* cs,
+                            const base::Time& delete_begin,
+                            const base::Time& delete_end) {
+    DCHECK(cs);
+    DeleteCallback callback;
+    cs->DeleteAllCreatedBetweenAsync(
+        delete_begin, delete_end,
+        base::Bind(&DeleteCallback::Run, base::Unretained(&callback)));
+    RunFor(kTimeout);
+    EXPECT_TRUE(callback.did_run());
+    return callback.num_deleted();
+  }
+
   void RunFor(int ms) {
     // Runs the test thread message loop for up to |ms| milliseconds.
     MessageLoop::current()->PostDelayedTask(
@@ -678,6 +691,44 @@ TYPED_TEST_P(CookieStoreTest, TestCookieDeletion) {
   this->MatchCookieLines("", this->GetCookies(cs, this->url_google_));
 }
 
+TYPED_TEST_P(CookieStoreTest, TestDeleteAllCreatedBetween) {
+  scoped_refptr<CookieStore> cs(this->GetCookieStore());
+  const base::Time last_month = base::Time::Now() -
+                                base::TimeDelta::FromDays(30);
+  const base::Time last_minute = base::Time::Now() -
+                                 base::TimeDelta::FromMinutes(1);
+  const base::Time next_minute = base::Time::Now() +
+                                 base::TimeDelta::FromMinutes(1);
+  const base::Time next_month = base::Time::Now() +
+                                base::TimeDelta::FromDays(30);
+
+  // Add a cookie.
+  EXPECT_TRUE(this->SetCookie(cs, this->url_google_, "A=B"));
+   // Check that the cookie is in the store.
+  this->MatchCookieLines("A=B", this->GetCookies(cs, this->url_google_));
+
+  // Remove cookies in empty intervals.
+  EXPECT_EQ(0, this->DeleteCreatedBetween(cs, last_month, last_minute));
+  EXPECT_EQ(0, this->DeleteCreatedBetween(cs, next_minute, next_month));
+  // Check that the cookie is still there.
+  this->MatchCookieLines("A=B", this->GetCookies(cs, this->url_google_));
+
+  // Remove the cookie with an interval defined by two dates.
+  EXPECT_EQ(1, this->DeleteCreatedBetween(cs, last_minute, next_minute));
+  // Check that the cookie disappeared.
+  this->MatchCookieLines("", this->GetCookies(cs, this->url_google_));
+
+  // Add another cookie.
+  EXPECT_TRUE(this->SetCookie(cs, this->url_google_, "C=D"));
+  // Check that the cookie is in the store.
+  this->MatchCookieLines("C=D", this->GetCookies(cs, this->url_google_));
+
+  // Remove the cookie with a null ending time.
+  EXPECT_EQ(1, this->DeleteCreatedBetween(cs, last_minute, base::Time()));
+  // Check that the cookie disappeared.
+  this->MatchCookieLines("", this->GetCookies(cs, this->url_google_));
+}
+
 TYPED_TEST_P(CookieStoreTest, TestSecure) {
     scoped_refptr<CookieStore> cs(this->GetCookieStore());
 
@@ -810,8 +861,8 @@ REGISTER_TYPED_TEST_CASE_P(CookieStoreTest,
     InvalidDomainTest, DomainWithoutLeadingDotTest, CaseInsensitiveDomainTest,
     TestIpAddress, TestNonDottedAndTLD, TestHostEndsWithDot, InvalidScheme,
     InvalidScheme_Read, PathTest, HttpOnlyTest, TestGetCookiesWithInfo,
-    TestCookieDeletion, TestSecure, NetUtilCookieTest,
-    OverwritePersistentCookie, CookieOrdering);
+    TestCookieDeletion, TestDeleteAllCreatedBetween, TestSecure,
+    NetUtilCookieTest, OverwritePersistentCookie, CookieOrdering);
 
 template<class CookieStoreTestTraits>
 class MultiThreadedCookieStoreTest :
