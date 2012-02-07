@@ -451,6 +451,19 @@
       <arg name="flags" type="uint"/>
     </request>
 
+    <request name="set_maximized">
+      <description summary="make the surface a maximized surface">
+	A request from the client to notify the compositor the maximized
+	operation. The compositor will reply with a configure event telling
+        the expected new surface size. The operation is completed on the
+        next buffer attach to this surface.
+        A maximized client will fill the fullscreen of the output it is bound
+        to, except the panel area. This is the main difference between
+        a maximized shell surface and a fullscreen shell surface.
+      </description>
+      <arg name="output" type="object" interface="wl_output"/>
+    </request>
+
     <event name="configure">
       <description summary="suggest resize">
 	The configure event asks the client to resize its surface.
