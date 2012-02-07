@@ -15,7 +15,7 @@ fi
 tools_dir=$(dirname "$0")
 release_dir="$1"
 
-files=$(cat "$tools_dir/FILES")
+files=$(sed -n "s/^ *'filename': '\(.*\)',$/\1/ p" "$tools_dir/FILES.cfg")
 
 output=${2:-chrome-win32}
 rm -fr $output $output.zip
