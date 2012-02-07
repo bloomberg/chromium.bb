@@ -17,6 +17,7 @@
 #include "chrome/browser/ui/views/aura/launcher_icon_updater.h"
 #include "chrome/browser/ui/views/aura/status_area_host_aura.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/common/chrome_switches.h"
 #include "grit/theme_resources.h"
 #include "ui/aura/window.h"
 
@@ -68,8 +69,10 @@ views::Widget* ChromeShellDelegate::CreateStatusArea() {
 
 #if defined(OS_CHROMEOS)
 void ChromeShellDelegate::LockScreen() {
-  chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->
-      NotifyScreenLockRequested();
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kGuestSession)) {
+    chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->
+        NotifyScreenLockRequested();
+  }
 }
 #endif
 
