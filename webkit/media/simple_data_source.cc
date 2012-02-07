@@ -270,13 +270,19 @@ void SimpleDataSource::Abort() {
   base::AutoLock auto_lock(lock_);
   state_ = STOPPED;
   initialize_cb_.Reset();
-  CancelTask();
+  CancelTask_Locked();
   frame_ = NULL;
 }
 
 void SimpleDataSource::CancelTask() {
   DCHECK(MessageLoop::current() == render_loop_);
   base::AutoLock auto_lock(lock_);
+  CancelTask_Locked();
+}
+
+void SimpleDataSource::CancelTask_Locked() {
+  DCHECK(MessageLoop::current() == render_loop_);
+  lock_.AssertAcquired();
   DCHECK_EQ(state_, STOPPED);
 
   // Cancel any pending requests.

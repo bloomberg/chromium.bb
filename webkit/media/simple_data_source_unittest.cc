@@ -127,10 +127,15 @@ class SimpleDataSourceTest : public testing::Test {
     MessageLoop::current()->RunAllPending();
   }
 
-  void DestroyDataSource() {
+  void StopAndDestroyDataSource() {
     data_source_->Stop(media::NewExpectedClosure());
     MessageLoop::current()->RunAllPending();
+    data_source_ = NULL;
+  }
 
+  void AbortAndDestroyDataSource() {
+    data_source_->Abort();
+    MessageLoop::current()->RunAllPending();
     data_source_ = NULL;
   }
 
@@ -168,21 +173,21 @@ TEST_F(SimpleDataSourceTest, InitializeHTTP) {
   InitializeDataSource(kHttpUrl,
                        media::NewExpectedStatusCB(media::PIPELINE_OK));
   RequestSucceeded();
-  DestroyDataSource();
+  StopAndDestroyDataSource();
 }
 
 TEST_F(SimpleDataSourceTest, InitializeHTTPS) {
   InitializeDataSource(kHttpsUrl,
                        media::NewExpectedStatusCB(media::PIPELINE_OK));
   RequestSucceeded();
-  DestroyDataSource();
+  StopAndDestroyDataSource();
 }
 
 TEST_F(SimpleDataSourceTest, InitializeFile) {
   InitializeDataSource(kFileUrl,
                        media::NewExpectedStatusCB(media::PIPELINE_OK));
   RequestSucceeded();
-  DestroyDataSource();
+  StopAndDestroyDataSource();
 }
 
 TEST_F(SimpleDataSourceTest, InitializeData) {
@@ -201,14 +206,14 @@ TEST_F(SimpleDataSourceTest, InitializeData) {
       media::NewExpectedStatusCB(media::PIPELINE_OK));
   MessageLoop::current()->RunAllPending();
 
-  DestroyDataSource();
+  StopAndDestroyDataSource();
 }
 
 TEST_F(SimpleDataSourceTest, RequestFailed) {
   InitializeDataSource(kHttpUrl,
       media::NewExpectedStatusCB(media::PIPELINE_ERROR_NETWORK));
   RequestFailed();
-  DestroyDataSource();
+  StopAndDestroyDataSource();
 }
 
 static void OnStatusCB(bool* called, media::PipelineStatus status) {
@@ -222,7 +227,18 @@ TEST_F(SimpleDataSourceTest, StopWhenDownloading) {
   InitializeDataSource(kHttpUrl, base::Bind(&OnStatusCB, &was_called));
 
   EXPECT_CALL(*url_loader_, cancel());
-  DestroyDataSource();
+  StopAndDestroyDataSource();
+  EXPECT_FALSE(was_called);
+}
+
+TEST_F(SimpleDataSourceTest, AbortWhenDownloading) {
+  // The callback should be deleted, but not executed.
+  // TODO(scherkus): should this really be the behaviour?  Seems strange...
+  bool was_called = false;
+  InitializeDataSource(kHttpUrl, base::Bind(&OnStatusCB, &was_called));
+
+  EXPECT_CALL(*url_loader_, cancel());
+  AbortAndDestroyDataSource();
   EXPECT_FALSE(was_called);
 }
 
@@ -231,7 +247,7 @@ TEST_F(SimpleDataSourceTest, AsyncRead) {
                        media::NewExpectedStatusCB(media::PIPELINE_OK));
   RequestSucceeded();
   AsyncRead();
-  DestroyDataSource();
+  StopAndDestroyDataSource();
 }
 
 // NOTE: This test will need to be reworked a little once
@@ -243,7 +259,7 @@ TEST_F(SimpleDataSourceTest, HasSingleOrigin) {
                        media::NewExpectedStatusCB(media::PIPELINE_OK));
   RequestSucceeded();
   EXPECT_TRUE(data_source_->HasSingleOrigin());
-  DestroyDataSource();
+  StopAndDestroyDataSource();
 
   // Test redirect to the same domain.
   InitializeDataSource(kHttpUrl,
@@ -251,7 +267,7 @@ TEST_F(SimpleDataSourceTest, HasSingleOrigin) {
   Redirect(kHttpRedirectToSameDomainUrl1);
   RequestSucceeded();
   EXPECT_TRUE(data_source_->HasSingleOrigin());
-  DestroyDataSource();
+  StopAndDestroyDataSource();
 
   // Test redirect twice to the same domain.
   InitializeDataSource(kHttpUrl,
@@ -260,7 +276,7 @@ TEST_F(SimpleDataSourceTest, HasSingleOrigin) {
   Redirect(kHttpRedirectToSameDomainUrl2);
   RequestSucceeded();
   EXPECT_TRUE(data_source_->HasSingleOrigin());
-  DestroyDataSource();
+  StopAndDestroyDataSource();
 
   // Test redirect to a different domain.
   InitializeDataSource(kHttpUrl,
@@ -268,7 +284,7 @@ TEST_F(SimpleDataSourceTest, HasSingleOrigin) {
   Redirect(kHttpRedirectToDifferentDomainUrl1);
   RequestSucceeded();
   EXPECT_FALSE(data_source_->HasSingleOrigin());
-  DestroyDataSource();
+  StopAndDestroyDataSource();
 
   // Test redirect to the same domain and then to a different domain.
   InitializeDataSource(kHttpUrl,
@@ -277,7 +293,7 @@ TEST_F(SimpleDataSourceTest, HasSingleOrigin) {
   Redirect(kHttpRedirectToDifferentDomainUrl1);
   RequestSucceeded();
   EXPECT_FALSE(data_source_->HasSingleOrigin());
-  DestroyDataSource();
+  StopAndDestroyDataSource();
 }
 
 }  // namespace webkit_media

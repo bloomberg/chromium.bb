@@ -93,6 +93,7 @@ class SimpleDataSource
  private:
   // Cancels and deletes the resource loading on the render thread.
   void CancelTask();
+  void CancelTask_Locked();
 
   // Perform initialization completion tasks under a lock.
   void DoneInitialization_Locked(bool success);
