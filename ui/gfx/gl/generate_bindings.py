@@ -18,7 +18,7 @@ GL_FUNCTIONS = [
   'names': ['glAttachShader'],
   'arguments': 'GLuint program, GLuint shader', },
 { 'return_type': 'void',
-  'names': ['glBeginQuery'],
+  'names': ['glBeginQuery', 'glBeginQueryEXT', 'glBeginQueryARB'],
   'arguments': 'GLenum target, GLuint id', },
 { 'return_type': 'void',
   'names': ['glBindAttribLocation'],
@@ -134,7 +134,7 @@ GL_FUNCTIONS = [
   'names': ['glCullFace'],
   'arguments': 'GLenum mode', },
 { 'return_type': 'void',
-  'names': ['glDeleteBuffersARB', 'glDeleteBuffers'],
+  'names': ['glDeleteBuffersARB', 'glDeleteBuffers', 'glDeleteQueriesEXT'],
   'arguments': 'GLsizei n, const GLuint* buffers', },
 { 'return_type': 'void',
   'names': ['glDeleteFramebuffersEXT', 'glDeleteFramebuffers'],
@@ -201,7 +201,7 @@ GL_FUNCTIONS = [
   'names': ['glEnableVertexAttribArray'],
   'arguments': 'GLuint index', },
 { 'return_type': 'void',
-  'names': ['glEndQuery'],
+  'names': ['glEndQuery', 'glEndQueryARB', 'glEndQueryEXT'],
   'arguments': 'GLenum target', },
 { 'return_type': 'void',
   'names': ['glFinish'],
@@ -226,7 +226,7 @@ GL_FUNCTIONS = [
   'names': ['glGenBuffersARB', 'glGenBuffers'],
   'arguments': 'GLsizei n, GLuint* buffers', },
 { 'return_type': 'void',
-  'names': ['glGenQueries'],
+  'names': ['glGenQueries', 'glGenQueriesARB', 'glGenQueriesEXT'],
   'arguments': 'GLsizei n, GLuint* ids', },
 { 'return_type': 'void',
   'names': ['glGenerateMipmapEXT', 'glGenerateMipmap'],
@@ -291,7 +291,7 @@ GL_FUNCTIONS = [
   'arguments':
       'GLuint program, GLsizei bufsize, GLsizei* length, char* infolog', },
 { 'return_type': 'void',
-  'names': ['glGetQueryiv'],
+  'names': ['glGetQueryiv', 'glGetQueryivARB', 'glGetQueryivEXT'],
   'arguments': 'GLenum target, GLenum pname, GLint* params', },
 { 'return_type': 'void',
   'names': ['glGetQueryObjecti64v'],
@@ -303,7 +303,8 @@ GL_FUNCTIONS = [
   'names': ['glGetQueryObjectui64v'],
   'arguments': 'GLuint id, GLenum pname, GLuint64* params', },
 { 'return_type': 'void',
-  'names': ['glGetQueryObjectuiv'],
+  'names': ['glGetQueryObjectuiv', 'glGetQueryObjectuivARB',
+            'glGetQueryObjectuivEXT'],
   'arguments': 'GLuint id, GLenum pname, GLuint* params', },
 { 'return_type': 'void',
   'names': ['glGetRenderbufferParameterivEXT', 'glGetRenderbufferParameteriv'],
@@ -1398,13 +1399,13 @@ def GetFunctionToExtensionMap(extensions):
   Returns:
     Map of function name => extension name.
   """
-  function_to_extension = {}
+  function_to_extensions = {}
   for extension, functions in extensions.items():
     for function in functions:
-      assert function not in function_to_extension, \
-          "Duplicate function: " + function
-      function_to_extension[function] = extension
-  return function_to_extension
+      if not function in function_to_extensions:
+        function_to_extensions[function] = []
+      function_to_extensions[function].append(extension)
+  return function_to_extensions
 
 
 def LooksLikeExtensionFunction(function):
@@ -1426,7 +1427,7 @@ def GetUsedExtensionFunctions(functions, extension_headers, extra_extensions):
   """
   # Parse known extensions.
   extensions = GetExtensionFunctions(extension_headers)
-  functions_to_extension = GetFunctionToExtensionMap(extensions)
+  functions_to_extensions = GetFunctionToExtensionMap(extensions)
 
   # Collect all used extension functions.
   used_extension_functions = collections.defaultdict(lambda: [])
@@ -1434,11 +1435,11 @@ def GetUsedExtensionFunctions(functions, extension_headers, extra_extensions):
     for name in func['names']:
       # Make sure we know about all extension functions.
       if (LooksLikeExtensionFunction(name) and
-          not name in functions_to_extension):
+          not name in functions_to_extensions):
         raise RuntimeError('%s looks like an extension function but does not '
             'belong to any of the known extensions.' % name)
-      if name in functions_to_extension:
-        extensions = [functions_to_extension[name]]
+      if name in functions_to_extensions:
+        extensions = functions_to_extensions[name][:]
         if 'other_extensions' in func:
           extensions.extend(func['other_extensions'])
         for extension in extensions:
