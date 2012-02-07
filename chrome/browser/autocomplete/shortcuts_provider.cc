@@ -40,7 +40,7 @@ class RemoveMatchPredicate {
   explicit RemoveMatchPredicate(const std::set<GURL>& urls)
       : urls_(urls) {
   }
-  bool operator()(AutocompleteMatch match) {
+  bool operator()(const AutocompleteMatch& match) {
     return urls_.find(match.destination_url) != urls_.end();
   }
  private:
