@@ -73,8 +73,7 @@ cr.define('ntp4', function() {
     },
 
     /**
-     * Gets the associated TilePage.
-     * @return {TilePage}
+     * @return {TilePage} The associated TilePage.
      */
     get page() {
       return this.page_;

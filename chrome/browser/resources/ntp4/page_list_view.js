@@ -218,8 +218,8 @@ cr.define('ntp4', function() {
       // Make a deep copy of the dot template to add a new one.
       var newDot = new ntp4.NavDot(page, title, titleIsEditable, animate);
       page.navigationDot = newDot;
-      this.dotList.insertBefore(newDot, opt_refNode ? opt_refNode.navigationDot
-                                                    : null);
+      this.dotList.insertBefore(newDot,
+                                opt_refNode ? opt_refNode.navigationDot : null);
       // Set a tab index on the first dot.
       if (this.dotList.dots.length == 1)
         newDot.tabIndex = 3;
@@ -482,10 +482,10 @@ cr.define('ntp4', function() {
       if (!page)
         return;
 
-      var pageSwitcherLeft = isRTL() ? this.pageSwitcherEnd
-                                     : this.pageSwitcherStart;
-      var pageSwitcherRight = isRTL() ? this.pageSwitcherStart
-                                      : this.pageSwitcherEnd;
+      var pageSwitcherLeft = isRTL() ? this.pageSwitcherEnd :
+                                       this.pageSwitcherStart;
+      var pageSwitcherRight = isRTL() ? this.pageSwitcherStart :
+                                        this.pageSwitcherEnd;
       var scrollbarWidth = page.scrollbarWidth;
       pageSwitcherLeft.style.width =
           (page.sideMargin + 13) + 'px';

@@ -168,7 +168,7 @@ cr.define('ntp4', function() {
     showUndoNotification_: function() {
       var data = this.data_;
       var self = this;
-      var doUndo = function () {
+      var doUndo = function() {
         chrome.send('removeURLsFromMostVisitedBlacklist', [data.url]);
         self.updateForData(data);
       }
@@ -176,14 +176,14 @@ cr.define('ntp4', function() {
       var undo = {
         action: doUndo,
         text: templateData.undothumbnailremove,
-      }
+      };
 
       var undoAll = {
         action: function() {
           chrome.send('clearMostVisitedURLsBlacklist', []);
         },
         text: templateData.restoreThumbnailsShort,
-      }
+      };
 
       ntp4.showNotification(templateData.thumbnailremovednotification,
                             [undo, undoAll]);
@@ -351,9 +351,10 @@ cr.define('ntp4', function() {
    * We've gotten additional Most Visited data. Update our old data with the
    * new data. The ordering of the new data is not important, except when a
    * page is pinned. Thus we try to minimize re-ordering.
-   * @param {Object} oldData The current Most Visited page list.
-   * @param {Object} newData The new Most Visited page list.
-   * @return The merged page list that should replace the current page list.
+   * @param {Array} oldData The current Most Visited page list.
+   * @param {Array} newData The new Most Visited page list.
+   * @return {Array} The merged page list that should replace the current page
+   *     list.
    */
   function refreshData(oldData, newData) {
     oldData = oldData.slice(0, THUMBNAIL_COUNT);

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -26,7 +26,7 @@ cr.define('ntp4', function() {
     /**
      * Determines whether we are interested in the drag data for |e|.
      * @param {Event} e The event from drag enter.
-     * @return {bool}
+     * @return {boolean} True if we are interested in the drag data for |e|.
      */
     shouldAcceptDrag: function(e) {
       var tile = ntp4.getCurrentlyDraggingTile();

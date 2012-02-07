@@ -706,7 +706,7 @@ cr.define('ntp4', function() {
           var currentIndex =
               Array.prototype.indexOf.call(this.focusableElements_,
                                            this.currentFocusElement_);
-          var newFocusIdx = wrap(currentIndex + direction)
+          var newFocusIdx = wrap(currentIndex + direction);
           var tile = this.currentFocusElement_.parentNode;
           for (;; newFocusIdx = wrap(newFocusIdx + direction)) {
             var newTile = this.focusableElements_[newFocusIdx].parentNode;

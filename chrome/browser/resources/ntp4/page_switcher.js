@@ -116,5 +116,5 @@ cr.define('ntp4', function() {
 
   return {
     initializePageSwitcher: PageSwitcher.template.decorate
-  }
+  };
 });
