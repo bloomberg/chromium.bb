@@ -89,13 +89,8 @@ EXTRA_ENV = {
   'TRIPLE_X8632': 'i686-none-nacl-gnu',
   'TRIPLE_X8664': 'x86_64-none-nacl-gnu',
 
-  # Override llc opt level to trade code quality for translation speed.
-  # Blank is default opt level.
-  'LLC_FAST_FLAGS' : '',
-
   'LLC_FLAGS_COMMON': '-asm-verbose=false ' +
                       '-tail-merge-threshold=50 ' +
-                      '${LLC_FAST_FLAGS} ' +
                       '${PIC ? -relocation-model=pic} ' +
                       '${PIC && ARCH==X8664 && LIBMODE_NEWLIB ? ' +
                       '  -force-tls-non-pic }',
@@ -116,7 +111,10 @@ EXTRA_ENV = {
   # These are handled separately by libLTO.
   'LLC_FLAGS_TARGET' : '-march=${LLC_MARCH} -mcpu=${LLC_MCPU_%ARCH%} ' +
                        '-mtriple=${TRIPLE} -filetype=${filetype}',
-  'LLC_FLAGS_BASE': '${LLC_FLAGS_COMMON} ${LLC_FLAGS_%ARCH%}',
+  # Additional non-default flags go here.
+  'LLC_FLAGS_EXTRA' : '',
+  'LLC_FLAGS_BASE': '${LLC_FLAGS_COMMON} ${LLC_FLAGS_%ARCH%} '
+                    '${LLC_FLAGS_EXTRA}',
   'LLC_FLAGS'     : '${LLC_FLAGS_TARGET} ${LLC_FLAGS_BASE}',
 
   'LLC_MARCH'       : '${LLC_MARCH_%ARCH%}',
@@ -144,11 +142,9 @@ TranslatorPatterns = [
 
   # Expose a very limited set of llc flags. Used primarily for
   # the shared lib ad-hoc tests, c.f. tests/pnacl_ld_example
-  ( '(-sfi-.+)',       "env.append('LLC_FLAGS', $0)"),
-  ( '(-mtls-use-call)',  "env.append('LLC_FLAGS', $0)"),
-  # We may want to expose all O0-3, but nobody should really be changing this
-  # value in the browser, and O0 vs the default makes the biggest difference.
-  ( '-translate-fast',       "env.set('LLC_FAST_FLAGS', '-O0')"),
+  ( '(-sfi-.+)',        "env.append('LLC_FLAGS_EXTRA', $0)"),
+  ( '(-mtls-use-call)', "env.append('LLC_FLAGS_EXTRA', $0)"),
+  ( '-translate-fast',  "env.append('LLC_FLAGS_EXTRA', '-O0')"),
 
   # If translating a .pexe which was linked statically against
   # glibc, then you must do pnacl-translate -static. This will
@@ -326,7 +322,7 @@ def ListReplace(items, old, new):
       ret.append(k)
   return ret
 
-def RequiresNonStandardLDCommandlines(inputs, infile, outfile):
+def RequiresNonStandardLDCommandline(inputs, infile):
   ''' Determine when we must force USE_DEFAULT_CMD_LINE off for running
   the sandboxed LD (if link line is completely non-standard).
   '''
@@ -339,31 +335,47 @@ def RequiresNonStandardLDCommandlines(inputs, infile, outfile):
   if not infile:
     return ('No bitcode input: %s' % str(infile), True)
   if not env.getbool('STDLIB'):
-    # If we are using the sandboxed translator, we cannot
-    # use the default commandline with NOSTDLIB.
     return ('NOSTDLIB', True)
   if (GetArch(required=True) == 'X8664' and
       not env.getbool('SHARED') and
       not env.getbool('USE_IRT_SHIM')):
     return ('USE_IRT_SHIM false when normally true', True)
-  return None, False
+  return (None, False)
+
+def ToggleDefaultCommandlineLD(inputs, infile):
+  if env.getbool('USE_DEFAULT_CMD_LINE'):
+    reason, non_standard = RequiresNonStandardLDCommandline(inputs, infile)
+    if non_standard:
+      Log.Info(reason + ' -- not using default SRPC commandline for LD!')
+      inputs.append('--pnacl-driver-set-USE_DEFAULT_CMD_LINE=0')
+
+def RequiresNonStandardLLCCommandline():
+  extra_flags = env.get('LLC_FLAGS_EXTRA')
+  if extra_flags != []:
+    reason = 'Has additional llc flags: %s' % extra_flags
+    return (reason, True)
+  else:
+    return (None, False)
+
+def UseDefaultCommandlineLLC():
+  if not env.getbool('USE_DEFAULT_CMD_LINE'):
+    return False
+  else:
+    reason, non_standard = RequiresNonStandardLLCCommandline()
+    if non_standard:
+      Log.Info(reason + ' -- not using default SRPC commandline for LLC!')
+      return False
+    return True
 
 def RunLD(infile, outfile):
   inputs = env.get('INPUTS')
   if infile:
     inputs = ListReplace(inputs, '__BITCODE__', '--shm=' + infile)
-  # Lots of fun exceptions where we cannot use the default commandline.
-  if env.getbool('USE_DEFAULT_CMD_LINE') and env.getbool('SRPC'):
-    reason, requires = RequiresNonStandardLDCommandlines(inputs,
-                                                         infile, outfile)
-    if requires:
-      Log.Info(reason + ' -- not using default SRPC commandline!!!')
-      inputs.append('--pnacl-driver-set-USE_DEFAULT_CMD_LINE=0')
+  ToggleDefaultCommandlineLD(inputs, infile)
   env.set('ld_inputs', *inputs)
   args = env.get('LD_ARGS') + ['-o', outfile]
   args += env.get('LD_FLAGS')
   RunDriver('pnacl-nativeld', args)
-
 
 def RunLLC(infile, outfile, filetype):
   UseSRPC = env.getbool('SANDBOXED') and env.getbool('SRPC')
@@ -382,23 +394,21 @@ def RunLLC(infile, outfile, filetype):
 
 def RunLLCSRPC():
   CheckTranslatorPrerequisites()
-  infile = env.getone("input")
-  outfile = env.getone("output")
-  flags = env.get("LLC_FLAGS")
-  use_default = env.getbool("USE_DEFAULT_CMD_LINE")
-  script = MakeSelUniversalScriptForLLC(infile, outfile, flags, use_default)
-
+  infile = env.getone('input')
+  outfile = env.getone('output')
+  flags = env.get('LLC_FLAGS')
+  script = MakeSelUniversalScriptForLLC(infile, outfile, flags)
   RunWithLog('${SEL_UNIVERSAL_PREFIX} ${SEL_UNIVERSAL} ' +
              '${SEL_UNIVERSAL_FLAGS} -- ${LLC_SRPC}',
              stdin=script, echo_stdout = False, echo_stderr = False)
 
-def MakeSelUniversalScriptForLLC(infile, outfile, flags, use_default):
+def MakeSelUniversalScriptForLLC(infile, outfile, flags):
   script = []
   script.append('readwrite_file objfile %s' % outfile)
   stream_bitcode = int(env.getraw('STREAM_BITCODE'))
   if stream_bitcode == 0:
     script.append('readonly_file myfile %s' % infile)
-    if use_default:
+    if UseDefaultCommandlineLLC():
       script.append('rpc RunWithDefaultCommandLine  h(myfile) h(objfile) *'
                     ' i() s() s()');
     else:
