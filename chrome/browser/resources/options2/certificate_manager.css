@@ -1,8 +1,11 @@
-/*
-Copyright (c) 2012 The Chromium Authors. All rights reserved.
-Use of this source code is governed by a BSD-style license that can be
-found in the LICENSE file.
-*/
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
+#certificateManagerPage {
+  min-width: 700px;
+}
 
 .certificate-tree-table {
   width: 100%;
@@ -11,10 +14,4 @@ found in the LICENSE file.
 .certificate-tree {
   /* TODO(mattm): BLAH.  Make this not statically sized. */
   height: 300px;
-}
-
-#certificateManagerPage.page {
-  /* This page needs a little bit of extra padding because of the tabs at the
-   * top of it. */
-  padding-top: 67px;
 }

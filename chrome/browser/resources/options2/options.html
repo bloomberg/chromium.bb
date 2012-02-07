@@ -108,6 +108,7 @@
     <include src="certificate_backup_overlay.html">
     <include src="certificate_edit_ca_trust_overlay.html">
     <include src="certificate_import_error_overlay.html">
+    <include src="certificate_manager.html">
   </if>
 </div>
 <div id="main-content">
@@ -146,9 +147,6 @@
              <include src="content_settings.html">
              <if expr="pp_ifdef('chromeos')">
                <include src="chromeos/proxy.html">
-             </if>
-             <if expr="not pp_ifdef('win32') and not pp_ifdef('darwin')">
-               <include src="certificate_manager.html">
              </if>
            </div>
          </div>

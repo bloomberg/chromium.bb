@@ -87,11 +87,6 @@ function load() {
   OptionsPage.registerSubPage(ContentSettings.getInstance(),
                               AdvancedOptions.getInstance(),
                               [$('privacyContentSettingsButton')]);
-  if (!cr.isWindows && !cr.isMac) {
-    OptionsPage.registerSubPage(CertificateManager.getInstance(),
-                                AdvancedOptions.getInstance(),
-                                [$('certificatesManageButton')]);
-  }
 
   // LanguageOptions sub-pages.
   if (cr.isChromeOS) {
@@ -213,6 +208,9 @@ function load() {
                                 CertificateManager.getInstance());
     OptionsPage.registerOverlay(CertificateImportErrorOverlay.getInstance(),
                                 CertificateManager.getInstance());
+    OptionsPage.registerOverlay(CertificateManager.getInstance(),
+                                AdvancedOptions.getInstance(),
+                                [$('certificatesManageButton')]);
     OptionsPage.registerOverlay(CertificateRestoreOverlay.getInstance(),
                                 CertificateManager.getInstance());
   }
