@@ -11,10 +11,12 @@
 #include "ash/test/aura_shell_test_base.h"
 #include "ash/wm/root_window_event_filter.h"
 #include "ash/wm/window_util.h"
+#include "base/memory/scoped_ptr.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/test/event_generator.h"
 #include "ui/aura/test/test_windows.h"
+#include "ui/aura/window.h"
 #include "ui/gfx/rect.h"
 
 namespace ash {
@@ -72,12 +74,13 @@ TEST_F(AcceleratorFilterTest, TestFilterWithoutFocus) {
 TEST_F(AcceleratorFilterTest, TestFilterWithFocus) {
   aura::Window* default_container = Shell::GetInstance()->GetContainer(
       internal::kShellWindowId_DefaultContainer);
-  aura::Window* window = aura::test::CreateTestWindowWithDelegate(
-      new aura::test::TestWindowDelegate,
+  aura::test::TestWindowDelegate test_delegate;
+  scoped_ptr<aura::Window> window(aura::test::CreateTestWindowWithDelegate(
+      &test_delegate,
       -1,
       gfx::Rect(),
-      default_container);
-  ActivateWindow(window);
+      default_container));
+  ActivateWindow(window.get());
 
   DummyScreenshotDelegate* delegate = new DummyScreenshotDelegate;
   GetController()->SetScreenshotDelegate(
@@ -89,18 +92,22 @@ TEST_F(AcceleratorFilterTest, TestFilterWithFocus) {
   EXPECT_EQ(1, delegate->handle_take_screenshot_count());
   generator_.ReleaseKey(ui::VKEY_PRINT, 0);
   EXPECT_EQ(1, delegate->handle_take_screenshot_count());
+
+  // Reset window before |test_delegate| gets deleted.
+  window.reset();
 }
 
 // Tests if AcceleratorFilter ignores the flag for Caps Lock.
 TEST_F(AcceleratorFilterTest, TestCapsLockMask) {
   aura::Window* default_container = Shell::GetInstance()->GetContainer(
       internal::kShellWindowId_DefaultContainer);
-  aura::Window* window = aura::test::CreateTestWindowWithDelegate(
-      new aura::test::TestWindowDelegate,
+  aura::test::TestWindowDelegate test_delegate;
+  scoped_ptr<aura::Window> window(aura::test::CreateTestWindowWithDelegate(
+      &test_delegate,
       -1,
       gfx::Rect(),
-      default_container);
-  ActivateWindow(window);
+      default_container));
+  ActivateWindow(window.get());
 
   DummyScreenshotDelegate* delegate = new DummyScreenshotDelegate;
   GetController()->SetScreenshotDelegate(
@@ -119,6 +126,9 @@ TEST_F(AcceleratorFilterTest, TestCapsLockMask) {
   EXPECT_EQ(2, delegate->handle_take_screenshot_count());
   generator_.ReleaseKey(ui::VKEY_PRINT, ui::EF_CAPS_LOCK_DOWN);
   EXPECT_EQ(2, delegate->handle_take_screenshot_count());
+
+  // Reset window before |test_delegate| gets deleted.
+  window.reset();
 }
 
 }  // namespace test

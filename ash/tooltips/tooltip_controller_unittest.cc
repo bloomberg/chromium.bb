@@ -105,9 +105,9 @@ TEST_F(TooltipControllerTest, NonNullTooltipClient) {
 }
 
 TEST_F(TooltipControllerTest, ViewTooltip) {
-  views::Widget* widget = CreateNewWidget();
+  scoped_ptr<views::Widget> widget(CreateNewWidget());
   TooltipTestView* view = new TooltipTestView;
-  AddViewToWidgetAndResize(widget, view);
+  AddViewToWidgetAndResize(widget.get(), view);
   view->set_tooltip_text(ASCIIToUTF16("Tooltip Text"));
   EXPECT_EQ(ASCIIToUTF16(""), GetTooltipText());
   EXPECT_EQ(NULL, GetTooltipWindow());
@@ -137,15 +137,15 @@ TEST_F(TooltipControllerTest, ViewTooltip) {
 }
 
 TEST_F(TooltipControllerTest, TooltipsInMultipleViews) {
-  views::Widget* widget = CreateNewWidget();
+  scoped_ptr<views::Widget> widget(CreateNewWidget());
   TooltipTestView* view1 = new TooltipTestView;
-  AddViewToWidgetAndResize(widget, view1);
+  AddViewToWidgetAndResize(widget.get(), view1);
   view1->set_tooltip_text(ASCIIToUTF16("Tooltip Text"));
   EXPECT_EQ(ASCIIToUTF16(""), GetTooltipText());
   EXPECT_EQ(NULL, GetTooltipWindow());
 
   TooltipTestView* view2 = new TooltipTestView;
-  AddViewToWidgetAndResize(widget, view2);
+  AddViewToWidgetAndResize(widget.get(), view2);
 
   aura::Window* window = widget->GetNativeView();
 
@@ -182,9 +182,9 @@ TEST_F(TooltipControllerTest, TooltipsInMultipleViews) {
 }
 
 TEST_F(TooltipControllerTest, EnableOrDisableTooltips) {
-  views::Widget* widget = CreateNewWidget();
+  scoped_ptr<views::Widget> widget(CreateNewWidget());
   TooltipTestView* view = new TooltipTestView;
-  AddViewToWidgetAndResize(widget, view);
+  AddViewToWidgetAndResize(widget.get(), view);
   view->set_tooltip_text(ASCIIToUTF16("Tooltip Text"));
   EXPECT_EQ(ASCIIToUTF16(""), GetTooltipText());
   EXPECT_EQ(NULL, GetTooltipWindow());

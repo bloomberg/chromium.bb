@@ -294,12 +294,13 @@ TEST_F(AcceleratorControllerTest, ProcessOnce) {
   aura::Window* default_container =
       ash::Shell::GetInstance()->GetContainer(
           internal::kShellWindowId_DefaultContainer);
-  aura::Window* window = aura::test::CreateTestWindowWithDelegate(
-      new aura::test::TestWindowDelegate,
+  aura::test::TestWindowDelegate test_delegate;
+  scoped_ptr<aura::Window> window(aura::test::CreateTestWindowWithDelegate(
+      &test_delegate,
       -1,
       gfx::Rect(),
-      default_container);
-  ActivateWindow(window);
+      default_container));
+  ActivateWindow(window.get());
 
   const ui::Accelerator accelerator_a(ui::VKEY_A, false, false, false);
   TestTarget target;
@@ -338,6 +339,9 @@ TEST_F(AcceleratorControllerTest, ProcessOnce) {
   EXPECT_FALSE(aura::RootWindow::GetInstance()->DispatchKeyEvent(&key_event3));
 #endif
   EXPECT_EQ(1, target.accelerator_pressed_count());
+
+  // Reset window before |test_delegate| gets deleted.
+  window.reset();
 }
 #endif
 
@@ -346,12 +350,13 @@ TEST_F(AcceleratorControllerTest, GlobalAccelerators) {
   aura::Window* default_container =
       ash::Shell::GetInstance()->GetContainer(
           internal::kShellWindowId_DefaultContainer);
-  aura::Window* window = aura::test::CreateTestWindowWithDelegate(
-      new aura::test::TestWindowDelegate,
+  aura::test::TestWindowDelegate test_delegate;
+  scoped_ptr<aura::Window> window(aura::test::CreateTestWindowWithDelegate(
+      &test_delegate,
       -1,
       gfx::Rect(),
-      default_container);
-  ActivateWindow(window);
+      default_container));
+  ActivateWindow(window.get());
 
   // CycleBackward
   EXPECT_TRUE(GetController()->Process(
@@ -537,6 +542,9 @@ TEST_F(AcceleratorControllerTest, GlobalAccelerators) {
   EXPECT_TRUE(GetController()->Process(
       ui::Accelerator(ui::VKEY_L, true, true, false)));
 #endif
+
+  // Reset window before |test_delegate| gets deleted.
+  window.reset();
 }
 
 }  // namespace test

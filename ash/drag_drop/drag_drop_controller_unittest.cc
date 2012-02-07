@@ -355,8 +355,8 @@ TEST_F(DragDropControllerTest, DragDropInMultipleViewsMultipleWidgetsTest) {
 
 TEST_F(DragDropControllerTest, ViewRemovedWhileInDragDropTest) {
   scoped_ptr<views::Widget> widget(CreateNewWidget());
-  DragTestView* drag_view = new DragTestView;
-  AddViewToWidgetAndResize(widget.get(), drag_view);
+  scoped_ptr<DragTestView> drag_view(new DragTestView);
+  AddViewToWidgetAndResize(widget.get(), drag_view.get());
   gfx::Point point = gfx::Rect(drag_view->bounds()).CenterPoint();
   ui::OSExchangeData data;
   data.SetString(UTF8ToUTF16("I am being dragged"));
@@ -376,7 +376,7 @@ TEST_F(DragDropControllerTest, ViewRemovedWhileInDragDropTest) {
     generator.MoveMouseBy(0, 1);
   }
 
-  drag_view->parent()->RemoveChildView(drag_view);
+  drag_view->parent()->RemoveChildView(drag_view.get());
   // View has been removed. We will not get any of the following drag updates.
   int num_drags_2 = 23;
   for (int i = 0; i < num_drags_2; ++i) {
@@ -433,9 +433,9 @@ TEST_F(DragDropControllerTest, DragCopiesDataToClipboardTest) {
 }
 
 TEST_F(DragDropControllerTest, WindowDestroyedDuringDragDrop) {
-  views::Widget* widget = CreateNewWidget();
+  scoped_ptr<views::Widget> widget(CreateNewWidget());
   DragTestView* drag_view = new DragTestView;
-  AddViewToWidgetAndResize(widget, drag_view);
+  AddViewToWidgetAndResize(widget.get(), drag_view);
   aura::Window* window = widget->GetNativeView();
 
   ui::OSExchangeData data;
@@ -456,7 +456,7 @@ TEST_F(DragDropControllerTest, WindowDestroyedDuringDragDrop) {
       EXPECT_EQ(window, GetDraggedWindow());
   }
 
-  delete window;
+  widget->CloseNow();
   EXPECT_FALSE(GetDraggedWindow());
 
   num_drags = 23;

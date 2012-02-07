@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -34,8 +34,8 @@ typedef AuraShellTestBase InputMethodEventFilterTest;
 // Tests if InputMethodEventFilter adds a window property on its construction.
 TEST_F(InputMethodEventFilterTestWithoutShell, TestInputMethodProperty) {
   aura::RootWindow* root_window = aura::RootWindow::GetInstance();
-  internal::RootWindowEventFilter* root_filter =
-      new internal::RootWindowEventFilter;
+  scoped_ptr<internal::RootWindowEventFilter> root_filter(
+      new internal::RootWindowEventFilter);
   EXPECT_FALSE(root_window->GetProperty(aura::client::kRootWindowInputMethod));
   internal::InputMethodEventFilter ime_filter;
   root_filter->AddFilter(&ime_filter);
@@ -60,12 +60,13 @@ TEST_F(InputMethodEventFilterTest, TestInputMethodKeyEventPropagation) {
   // event to event filters.
   aura::Window* default_container = Shell::GetInstance()->GetContainer(
       internal::kShellWindowId_DefaultContainer);
-  aura::Window* window = aura::test::CreateTestWindowWithDelegate(
-      new aura::test::TestWindowDelegate,
+  aura::test::TestWindowDelegate test_delegate;
+  scoped_ptr<aura::Window> window(aura::test::CreateTestWindowWithDelegate(
+      &test_delegate,
       -1,
       gfx::Rect(),
-      default_container);
-  ActivateWindow(window);
+      default_container));
+  ActivateWindow(window.get());
 
   // Send a fake key event to the root window. InputMethodEventFilter, which is
   // automatically set up by AuraShellTestBase, consumes it and sends a new
@@ -79,6 +80,9 @@ TEST_F(InputMethodEventFilterTest, TestInputMethodKeyEventPropagation) {
   EXPECT_EQ(2, test_filter.key_event_count());
 
   root_filter->RemoveFilter(&test_filter);
+
+  // Reset window before |test_delegate| gets deleted.
+  window.reset();
 }
 
 }  // namespace test
