@@ -517,9 +517,7 @@ class HostDispatcherWrapper
       return false;
 
 #if defined(OS_POSIX)
-    // Check the validity of fd for bug investigation. Remove after fixed.
-    // See for details: crbug.com/103957.
-    CHECK_NE(-1, channel_handle.socket.fd);
+    DCHECK_NE(-1, channel_handle.socket.fd);
     if (channel_handle.socket.fd == -1)
       return false;
 #endif
@@ -669,6 +667,7 @@ bool BrokerDispatcherWrapper::Init(
     return false;
 
 #if defined(OS_POSIX)
+  DCHECK_NE(-1, channel_handle.socket.fd);
   if (channel_handle.socket.fd == -1)
     return false;
 #endif

@@ -238,9 +238,6 @@ void PpapiThread::OnMsgCreateChannel(base::ProcessHandle host_process_handle,
   if (!library_.is_valid() ||  // Plugin couldn't be loaded.
       !SetupRendererChannel(host_process_handle, renderer_id,
                             &channel_handle)) {
-    // TODO(xhwang): Add CHECK to investigate the root cause of
-    // crbug.com/103957.  Will remove after the bug is fixed.
-    CHECK(!is_broker_ || library_.is_valid());
     Send(new PpapiHostMsg_ChannelCreated(IPC::ChannelHandle()));
     return;
   }
@@ -310,9 +307,6 @@ bool PpapiThread::SetupRendererChannel(base::ProcessHandle host_process_handle,
   // This ensures this process will be notified when it is closed even if a
   // connection is not established.
   handle->socket = base::FileDescriptor(dispatcher->TakeRendererFD(), true);
-  // Check the validity of fd for bug investigation. Remove after fixed.
-  // See for details: crbug.com/103957.
-  CHECK_NE(-1, handle->socket.fd);
   if (handle->socket.fd == -1)
     return false;
 #endif
