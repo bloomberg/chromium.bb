@@ -293,7 +293,7 @@
       # No Web Driver test for ChromeOS.
       '-about_plugins_ui',
       # You cannot adjust the downloads directory on ChromeOS.
-      '-prefs.PrefsTest.testDownloadDirPref'
+      '-prefs.PrefsTest.testDownloadDirPref',
 
       # ==================================================
       # Disabled tests that need to be investigated/fixed.
