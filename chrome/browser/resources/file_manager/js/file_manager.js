@@ -496,6 +496,10 @@ FileManager.prototype = {
 
     this.directoryModel_.addEventListener('directory-changed',
                                           this.onDirectoryChanged_.bind(this));
+    this.directoryModel_.addEventListener('scan-started',
+                                          this.showSpinner_.bind(this, true));
+    this.directoryModel_.addEventListener('scan-completed',
+                                          this.showSpinner_.bind(this, false));
     this.addEventListener('selection-summarized',
                           this.onSelectionSummarized_.bind(this));
 
@@ -519,7 +523,17 @@ FileManager.prototype = {
 
     this.summarizeSelection_();
 
-    this.directoryModel_.fileList.sort('cachedMtime_', 'desc');
+    var sortField = 'cachedMtime_';
+    var sortDirection = 'desc';
+    if (FileManager.DialogType.isModal(this.dialogType_)) {
+      sortField =
+          window.localStorage['sort-field-' + this.dialogType_] ||
+          sortField;
+      sortDirection =
+          window.localStorage['sort-direction-' + this.dialogType_] ||
+          sortDirection;
+    }
+    this.directoryModel_.fileList.sort(sortField, sortDirection);
 
     this.refocus();
 
@@ -580,6 +594,8 @@ FileManager.prototype = {
     this.deleteButton_ = this.dialogDom_.querySelector('.delete-button');
     this.table_ = this.dialogDom_.querySelector('.detail-table');
     this.grid_ = this.dialogDom_.querySelector('.thumbnail-grid');
+    this.spinner_ = this.dialogDom_.querySelector('.spinner');
+    this.showSpinner_(false);
 
     cr.ui.Table.decorate(this.table_);
     cr.ui.Grid.decorate(this.grid_);
@@ -673,6 +689,8 @@ FileManager.prototype = {
 
     dataModel.addEventListener('splice',
                                this.onDataModelSplice_.bind(this));
+    dataModel.addEventListener('permuted',
+                               this.onDataModelPermuted_.bind(this));
 
     this.directoryModel_.fileListSelection.addEventListener(
         'change', this.onSelectionChanged_.bind(this));
@@ -795,6 +813,15 @@ FileManager.prototype = {
     var checkbox = this.document_.querySelector('#select-all-checkbox');
     if (checkbox)
       this.updateSelectAllCheckboxState_(checkbox);
+  };
+
+  FileManager.prototype.onDataModelPermuted_ = function(event) {
+    if (FileManager.DialogType.isModal(this.dialogType_)) {
+      var sortStatus = this.directoryModel_.fileList.sortStatus;
+      window.localStorage['sort-field-' + this.dialogType_] = sortStatus.field;
+      window.localStorage['sort-direction-' + this.dialogType_] =
+          sortStatus.direction;
+    }
   };
 
   /**
@@ -3135,6 +3162,10 @@ FileManager.prototype = {
     }
     // TODO(dgozman): make table header css-resizable.
     setTimeout(this.onResize_.bind(this), 300);
+  };
+
+  FileManager.prototype.showSpinner_ = function(on) {
+    this.spinner_.style.display = on ? '' : 'none';
   };
 
   FileManager.prototype.onNewFolderCommand_ = function(event) {

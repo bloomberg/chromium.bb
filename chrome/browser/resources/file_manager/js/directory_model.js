@@ -338,9 +338,15 @@ DirectoryModel.prototype = {
       this.runningScan_.cancel();
     this.pendingScan_ = null;
 
+    var onDone = function() {
+      cr.dispatchSimpleEvent(this, 'scan-completed');
+      callback();
+    }.bind(this);
+
     // Clear the table first.
     this.fileList_.splice(0, this.fileList_.length);
-    this.runningScan_ = this.createScanner_(this.fileList_, callback);
+    cr.dispatchSimpleEvent(this, 'scan-started');
+    this.runningScan_ = this.createScanner_(this.fileList_, onDone);
     this.runningScan_.run();
   },
 

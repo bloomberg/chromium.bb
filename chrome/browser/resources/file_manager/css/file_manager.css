@@ -417,6 +417,19 @@ button.thumbnail-view[disabled] {
   position: relative;
 }
 
+.spinner {
+  width: 22px;
+  height: 22px;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  margin-left: -11px;
+  margin-top: -11px;
+  background-image: url(../images/spinner.svg);
+  background-size: 100%;
+  opacity: 0.5;
+}
+
 .downloads-warning {
   display: -webkit-box;
   -webkit-box-orient: horizontal;
