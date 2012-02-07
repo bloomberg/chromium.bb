@@ -59,6 +59,10 @@ cr.define('options', function() {
         el.appendChild(new Option(placeholder));
         el.setDisabled('noFontsAvailable', true);
       });
+
+      $('font-settings-confirm').onclick = function() {
+        OptionsPage.closeOverlay();
+      };
     },
 
     /**

@@ -87,9 +87,6 @@ function load() {
   OptionsPage.registerSubPage(ContentSettings.getInstance(),
                               AdvancedOptions.getInstance(),
                               [$('privacyContentSettingsButton')]);
-  OptionsPage.registerSubPage(FontSettings.getInstance(),
-                              AdvancedOptions.getInstance(),
-                              [$('fontSettingsCustomizeFontsButton')]);
   OptionsPage.registerSubPage(LanguageOptions.getInstance(),
                               AdvancedOptions.getInstance(),
                               [$('language-button')]);
@@ -168,6 +165,9 @@ function load() {
   OptionsPage.registerOverlay(ClearBrowserDataOverlay.getInstance(),
                               AdvancedOptions.getInstance(),
                               [$('privacyClearDataButton')]);
+  OptionsPage.registerOverlay(FontSettings.getInstance(),
+                              AdvancedOptions.getInstance(),
+                              [$('fontSettingsCustomizeFontsButton')]);
   OptionsPage.registerOverlay(HomePageOverlay.getInstance(),
                               BrowserOptions.getInstance(),
                               [$('toolbarShowHomeButton')]);
