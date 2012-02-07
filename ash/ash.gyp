@@ -61,6 +61,7 @@
         'app_list/drop_shadow_label.h',
         'ash_switches.cc',
         'ash_switches.h',
+        'brightness_control_delegate.h',
         'caps_lock_delegate.h',
         'desktop_background/desktop_background_view.cc',
         'desktop_background/desktop_background_view.h',

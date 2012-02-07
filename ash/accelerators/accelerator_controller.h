@@ -20,6 +20,7 @@ class AcceleratorManager;
 
 namespace ash {
 
+class BrightnessControlDelegate;
 class CapsLockDelegate;
 class ScreenshotDelegate;
 class VolumeControlDelegate;
@@ -57,9 +58,11 @@ class ASH_EXPORT AcceleratorController : public ui::AcceleratorTarget {
   virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) OVERRIDE;
   virtual bool CanHandleAccelerators() const OVERRIDE;
 
+  void SetBrightnessControlDelegate(
+      scoped_ptr<BrightnessControlDelegate> brightness_control_delegate);
+  void SetCapsLockDelegate(scoped_ptr<CapsLockDelegate> caps_lock_delegate);
   void SetScreenshotDelegate(
       scoped_ptr<ScreenshotDelegate> screenshot_delegate);
-  void SetCapsLockDelegate(scoped_ptr<CapsLockDelegate> caps_lock_delegate);
   void SetVolumeControlDelegate(
       scoped_ptr<VolumeControlDelegate> volume_control_delegate);
 
@@ -69,8 +72,9 @@ class ASH_EXPORT AcceleratorController : public ui::AcceleratorTarget {
 
   scoped_ptr<ui::AcceleratorManager> accelerator_manager_;
 
-  scoped_ptr<ScreenshotDelegate> screenshot_delegate_;
+  scoped_ptr<BrightnessControlDelegate> brightness_control_delegate_;
   scoped_ptr<CapsLockDelegate> caps_lock_delegate_;
+  scoped_ptr<ScreenshotDelegate> screenshot_delegate_;
   scoped_ptr<VolumeControlDelegate> volume_control_delegate_;
 
   // A map from accelerators to the AcceleratorAction values, which are used in

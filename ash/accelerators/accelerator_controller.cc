@@ -4,6 +4,7 @@
 
 #include "ash/accelerators/accelerator_controller.h"
 
+#include "ash/brightness_control_delegate.h"
 #include "ash/caps_lock_delegate.h"
 #include "ash/launcher/launcher.h"
 #include "ash/launcher/launcher_model.h"
@@ -25,20 +26,22 @@
 namespace {
 
 enum AcceleratorAction {
+  BRIGHTNESS_DOWN,
+  BRIGHTNESS_UP,
   CYCLE_BACKWARD,
   CYCLE_FORWARD,
-#if defined(OS_CHROMEOS)
-  LOCK_SCREEN,
-#endif
   EXIT,
   TAKE_SCREENSHOT,
   TOGGLE_CAPS_LOCK,
-  VOLUME_MUTE,
   VOLUME_DOWN,
+  VOLUME_MUTE,
   VOLUME_UP,
+#if defined(OS_CHROMEOS)
+  LOCK_SCREEN,
+#endif
 #if !defined(NDEBUG)
-  ROTATE_SCREEN,
   PRINT_LAYER_HIERARCHY,
+  ROTATE_SCREEN,
   TOGGLE_COMPACT_WINDOW_MODE,
   TOGGLE_ROOT_WINDOW_FULL_SCREEN,
 #endif
@@ -64,6 +67,10 @@ struct AcceleratorData {
   { ui::VKEY_PRINT, false, false, false, TAKE_SCREENSHOT },
   // On Chrome OS, Search key is mapped to LWIN.
   { ui::VKEY_LWIN, true, false, false, TOGGLE_CAPS_LOCK },
+  // TODO(yusukes): Support multimedia keys for controlling brightness on an
+  // external USB keyboard.
+  { ui::VKEY_F6, false, false, false, BRIGHTNESS_DOWN },
+  { ui::VKEY_F7, false, false, false, BRIGHTNESS_UP },
   { ui::VKEY_F8, false, false, false, VOLUME_MUTE },
   { ui::VKEY_VOLUME_MUTE, false, false, false, VOLUME_MUTE },
   { ui::VKEY_F9, false, false, false, VOLUME_DOWN },
@@ -208,14 +215,19 @@ bool AcceleratorController::Process(const ui::Accelerator& accelerator) {
   return accelerator_manager_->Process(accelerator);
 }
 
-void AcceleratorController::SetScreenshotDelegate(
-    scoped_ptr<ScreenshotDelegate> screenshot_delegate) {
-  screenshot_delegate_.swap(screenshot_delegate);
+void AcceleratorController::SetBrightnessControlDelegate(
+    scoped_ptr<BrightnessControlDelegate> brightness_control_delegate) {
+  brightness_control_delegate_.swap(brightness_control_delegate);
 }
 
 void AcceleratorController::SetCapsLockDelegate(
     scoped_ptr<CapsLockDelegate> caps_lock_delegate) {
   caps_lock_delegate_.swap(caps_lock_delegate);
+}
+
+void AcceleratorController::SetScreenshotDelegate(
+    scoped_ptr<ScreenshotDelegate> screenshot_delegate) {
+  screenshot_delegate_.swap(screenshot_delegate);
 }
 
 void AcceleratorController::SetVolumeControlDelegate(
@@ -254,6 +266,14 @@ bool AcceleratorController::AcceleratorPressed(
     case TOGGLE_CAPS_LOCK:
       if (caps_lock_delegate_.get())
         return caps_lock_delegate_->HandleToggleCapsLock();
+      break;
+    case BRIGHTNESS_DOWN:
+      if (brightness_control_delegate_.get())
+        return brightness_control_delegate_->HandleBrightnessDown(accelerator);
+      break;
+    case BRIGHTNESS_UP:
+      if (brightness_control_delegate_.get())
+        return brightness_control_delegate_->HandleBrightnessUp(accelerator);
       break;
     case VOLUME_MUTE:
       if (volume_control_delegate_.get())

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "ash/accelerators/accelerator_controller.h"
+#include "ash/brightness_control_delegate.h"
 #include "ash/caps_lock_delegate.h"
 #include "ash/ime/event.h"
 #include "ash/screenshot_delegate.h"
@@ -143,6 +144,46 @@ class DummyVolumeControlDelegate : public VolumeControlDelegate {
   ui::Accelerator last_accelerator_;
 
   DISALLOW_COPY_AND_ASSIGN(DummyVolumeControlDelegate);
+};
+
+class DummyBrightnessControlDelegate : public BrightnessControlDelegate {
+ public:
+  explicit DummyBrightnessControlDelegate(bool consume)
+      : consume_(consume),
+        handle_brightness_down_count_(0),
+        handle_brightness_up_count_(0) {
+  }
+  virtual ~DummyBrightnessControlDelegate() {}
+
+  virtual bool HandleBrightnessDown(
+      const ui::Accelerator& accelerator) OVERRIDE {
+    ++handle_brightness_down_count_;
+    last_accelerator_ = accelerator;
+    return consume_;
+  }
+  virtual bool HandleBrightnessUp(const ui::Accelerator& accelerator) OVERRIDE {
+    ++handle_brightness_up_count_;
+    last_accelerator_ = accelerator;
+    return consume_;
+  }
+
+  int handle_brightness_down_count() const {
+    return handle_brightness_down_count_;
+  }
+  int handle_brightness_up_count() const {
+    return handle_brightness_up_count_;
+  }
+  const ui::Accelerator& last_accelerator() const {
+    return last_accelerator_;
+  }
+
+ private:
+  const bool consume_;
+  int handle_brightness_down_count_;
+  int handle_brightness_up_count_;
+  ui::Accelerator last_accelerator_;
+
+  DISALLOW_COPY_AND_ASSIGN(DummyBrightnessControlDelegate);
 };
 
 bool TestTarget::AcceleratorPressed(const ui::Accelerator& accelerator) {
@@ -440,6 +481,39 @@ TEST_F(AcceleratorControllerTest, GlobalAccelerators) {
     EXPECT_TRUE(GetController()->Process(volume_up));
     EXPECT_EQ(1, delegate->handle_volume_up_count());
     EXPECT_EQ(volume_up, delegate->last_accelerator());
+  }
+  // Brightness
+  const ui::Accelerator f6(ui::VKEY_F6, false, false, false);
+  const ui::Accelerator f7(ui::VKEY_F7, false, false, false);
+  {
+    EXPECT_FALSE(GetController()->Process(f6));
+    EXPECT_FALSE(GetController()->Process(f7));
+    DummyBrightnessControlDelegate* delegate =
+        new DummyBrightnessControlDelegate(false);
+    GetController()->SetBrightnessControlDelegate(
+        scoped_ptr<BrightnessControlDelegate>(delegate).Pass());
+    EXPECT_EQ(0, delegate->handle_brightness_down_count());
+    EXPECT_FALSE(GetController()->Process(f6));
+    EXPECT_EQ(1, delegate->handle_brightness_down_count());
+    EXPECT_EQ(f6, delegate->last_accelerator());
+    EXPECT_EQ(0, delegate->handle_brightness_up_count());
+    EXPECT_FALSE(GetController()->Process(f7));
+    EXPECT_EQ(1, delegate->handle_brightness_up_count());
+    EXPECT_EQ(f7, delegate->last_accelerator());
+  }
+  {
+    DummyBrightnessControlDelegate* delegate =
+        new DummyBrightnessControlDelegate(true);
+    GetController()->SetBrightnessControlDelegate(
+        scoped_ptr<BrightnessControlDelegate>(delegate).Pass());
+    EXPECT_EQ(0, delegate->handle_brightness_down_count());
+    EXPECT_TRUE(GetController()->Process(f6));
+    EXPECT_EQ(1, delegate->handle_brightness_down_count());
+    EXPECT_EQ(f6, delegate->last_accelerator());
+    EXPECT_EQ(0, delegate->handle_brightness_up_count());
+    EXPECT_TRUE(GetController()->Process(f7));
+    EXPECT_EQ(1, delegate->handle_brightness_up_count());
+    EXPECT_EQ(f7, delegate->last_accelerator());
   }
 #if !defined(NDEBUG)
   // RotateScreen
