@@ -37,7 +37,6 @@ using syncable::AUTOFILL_PROFILE;
 using testing::_;
 using testing::DoAll;
 using testing::InvokeWithoutArgs;
-using testing::Mock;
 using testing::Return;
 using testing::SetArgumentPointee;
 using testing::StrictMock;
@@ -75,7 +74,6 @@ class NewNonFrontendDataTypeControllerFake
       : NewNonFrontendDataTypeController(profile_sync_factory,
                                          profile,
                                          sync_service),
-        blocked_(false),
         mock_(mock) {}
 
   virtual syncable::ModelType type() const OVERRIDE {
@@ -83,23 +81,6 @@ class NewNonFrontendDataTypeControllerFake
   }
   virtual ModelSafeGroup model_safe_group() const OVERRIDE {
     return GROUP_DB;
-  }
-
-  // Prevent tasks from being posted on the backend thread until
-  // UnblockBackendTasks() is called.
-  void BlockBackendTasks() {
-    blocked_ = true;
-  }
-
-  // Post pending tasks on the backend thread and start allowing tasks
-  // to be posted on the backend thread again.
-  void UnblockBackendTasks() {
-    blocked_ = false;
-    for (std::vector<PendingTask>::const_iterator it = pending_tasks_.begin();
-         it != pending_tasks_.end(); ++it) {
-      PostTaskOnBackendThread(it->from_here, it->task);
-    }
-    pending_tasks_.clear();
   }
 
  protected:
@@ -111,12 +92,7 @@ class NewNonFrontendDataTypeControllerFake
   virtual bool PostTaskOnBackendThread(
       const tracked_objects::Location& from_here,
       const base::Closure& task) OVERRIDE {
-    if (blocked_) {
-      pending_tasks_.push_back(PendingTask(from_here, task));
-      return true;
-    } else {
-      return BrowserThread::PostTask(BrowserThread::DB, from_here, task);
-    }
+    return BrowserThread::PostTask(BrowserThread::DB, from_here, task);
   }
 
   // We mock the following methods because their default implementations do
@@ -139,21 +115,7 @@ class NewNonFrontendDataTypeControllerFake
       OVERRIDE {
     mock_->RecordStartFailure(result);
   }
-
  private:
-  DISALLOW_COPY_AND_ASSIGN(NewNonFrontendDataTypeControllerFake);
-
-  struct PendingTask {
-    PendingTask(const tracked_objects::Location& from_here,
-                const base::Closure& task)
-        : from_here(from_here), task(task) {}
-
-    tracked_objects::Location from_here;
-    base::Closure task;
-  };
-
-  bool blocked_;
-  std::vector<PendingTask> pending_tasks_;
   NewNonFrontendDataTypeControllerMock* mock_;
 };
 
@@ -293,12 +255,7 @@ TEST_F(NewNonFrontendDataTypeControllerTest, StartFirstRun) {
   EXPECT_EQ(DataTypeController::RUNNING, new_non_frontend_dtc_->state());
 }
 
-// Start the DTC and have StartModels() return false.  Then, stop the
-// DTC without finishing model startup.  It should stop cleanly.
 TEST_F(NewNonFrontendDataTypeControllerTest, AbortDuringStartModels) {
-  EXPECT_CALL(*profile_sync_factory_,
-              CreateSharedChangeProcessor()).
-      WillOnce(Return(change_processor_.get()));
   EXPECT_CALL(*dtc_mock_, StartModels()).WillOnce(Return(false));
   EXPECT_CALL(*dtc_mock_, StopModels());
   EXPECT_CALL(*dtc_mock_, RecordStartFailure(DataTypeController::ABORTED));
@@ -408,36 +365,6 @@ TEST_F(NewNonFrontendDataTypeControllerTest, Stop) {
   EXPECT_EQ(DataTypeController::RUNNING, new_non_frontend_dtc_->state());
   new_non_frontend_dtc_->Stop();
   EXPECT_EQ(DataTypeController::NOT_RUNNING, new_non_frontend_dtc_->state());
-}
-
-// Start the DTC then block its backend tasks.  While its backend
-// tasks are blocked, stop and start it again, then unblock its
-// backend tasks.  The (delayed) running of the backend tasks from the
-// stop after the restart shouldn't cause any problems.
-TEST_F(NewNonFrontendDataTypeControllerTest, StopStart) {
-  SetStartExpectations();
-  SetAssociateExpectations();
-  SetActivateExpectations(DataTypeController::OK);
-  SetStopExpectations();
-  EXPECT_EQ(DataTypeController::NOT_RUNNING, new_non_frontend_dtc_->state());
-  new_non_frontend_dtc_->Start(
-      base::Bind(&StartCallbackMock::Run, base::Unretained(&start_callback_)));
-  WaitForDTC();
-  EXPECT_EQ(DataTypeController::RUNNING, new_non_frontend_dtc_->state());
-
-  new_non_frontend_dtc_->BlockBackendTasks();
-  new_non_frontend_dtc_->Stop();
-  Mock::VerifyAndClearExpectations(&profile_sync_factory_);
-  SetStartExpectations();
-  SetAssociateExpectations();
-  SetActivateExpectations(DataTypeController::OK);
-  EXPECT_EQ(DataTypeController::NOT_RUNNING, new_non_frontend_dtc_->state());
-  new_non_frontend_dtc_->Start(
-      base::Bind(&StartCallbackMock::Run, base::Unretained(&start_callback_)));
-  new_non_frontend_dtc_->UnblockBackendTasks();
-
-  WaitForDTC();
-  EXPECT_EQ(DataTypeController::RUNNING, new_non_frontend_dtc_->state());
 }
 
 TEST_F(NewNonFrontendDataTypeControllerTest, OnUnrecoverableError) {

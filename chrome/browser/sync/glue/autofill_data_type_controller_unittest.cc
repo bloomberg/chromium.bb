@@ -2,165 +2,180 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "testing/gtest/include/gtest/gtest.h"
+
 #include "base/callback.h"
-#include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/weak_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
-#include "chrome/browser/sync/api/sync_error.h"
+#include "base/synchronization/waitable_event.h"
+#include "base/test/test_timeouts.h"
+#include "chrome/browser/autofill/personal_data_manager.h"
 #include "chrome/browser/sync/glue/autofill_data_type_controller.h"
 #include "chrome/browser/sync/glue/data_type_controller_mock.h"
-#include "chrome/browser/sync/glue/shared_change_processor_mock.h"
 #include "chrome/browser/sync/profile_sync_components_factory_mock.h"
 #include "chrome/browser/sync/profile_sync_service_mock.h"
+#include "chrome/browser/sync/profile_sync_test_util.h"
 #include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/test/base/profile_mock.h"
-#include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
 #include "content/test/test_browser_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
-#include "testing/gtest/include/gtest/gtest.h"
 
-namespace browser_sync {
+using base::WaitableEvent;
+using browser_sync::AutofillDataTypeController;
+using browser_sync::DataTypeController;
+using content::BrowserThread;
+using testing::_;
+using testing::DoAll;
+using testing::Invoke;
+using testing::Return;
+using testing::SetArgumentPointee;
 
 namespace {
 
-using content::BrowserThread;
-using testing::_;
-using testing::NiceMock;
-using testing::Return;
+ACTION_P(WaitOnEvent, event) {
+  event->Wait();
+}
 
-// Fake WebDataService implementation that stubs out the database
-// loading.
-class FakeWebDataService : public WebDataService {
+ACTION_P(SignalEvent, event) {
+  event->Signal();
+}
+
+ACTION_P(GetAutocompleteSyncComponents, wds) {
+  return base::WeakPtr<SyncableService>();
+}
+
+ACTION_P(RaiseSignal, data_controller_mock) {
+  data_controller_mock->RaiseStartSignal();
+}
+
+// This class mocks PersonalDataManager and provides a factory method to
+// serve back the mocked object to callers of
+// |PersonalDataManagerFactory::GetForProfile()|.
+class PersonalDataManagerMock : public PersonalDataManager {
  public:
-  FakeWebDataService() : is_database_loaded_(false) {}
-  virtual ~FakeWebDataService() {}
+  PersonalDataManagerMock() : PersonalDataManager() {}
+  virtual ~PersonalDataManagerMock() {}
 
-  // Mark the database as loaded and send out the appropriate
-  // notification.
-  void LoadDatabase() {
-    is_database_loaded_ = true;
-    // TODO(akalin): Expose WDS::NotifyDatabaseLoadedOnUIThread() and
-    // use that instead of sending this notification manually.
-    content::NotificationService::current()->Notify(
-        chrome::NOTIFICATION_WEB_DATABASE_LOADED,
-        content::Source<WebDataService>(this),
-        content::NotificationService::NoDetails());
+  static ProfileKeyedService* Build(Profile* profile) {
+    return new PersonalDataManagerMock;
   }
 
-  virtual bool IsDatabaseLoaded() OVERRIDE {
-    return is_database_loaded_;
+  MOCK_CONST_METHOD0(IsDataLoaded, bool());
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(PersonalDataManagerMock);
+};
+
+class WebDataServiceFake : public WebDataService {
+ public:
+  explicit WebDataServiceFake() {}
+
+  MOCK_METHOD0(IsDatabaseLoaded, bool());
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(WebDataServiceFake);
+};
+
+class AutofillDataTypeControllerMock : public AutofillDataTypeController {
+ public:
+  AutofillDataTypeControllerMock(
+      ProfileSyncComponentsFactory* profile_sync_factory,
+      Profile* profile,
+      ProfileSyncService* sync_service)
+      : AutofillDataTypeController(profile_sync_factory,
+                                   profile,
+                                   sync_service),
+        start_called_(false, false) {}
+
+  MOCK_METHOD0(StartAssociation, void());
+
+  void RaiseStartSignal() {
+    start_called_.Signal();
+  }
+
+  void WaitUntilStartCalled() {
+    start_called_.Wait();
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(FakeWebDataService);
+  friend class AutofillDataTypeControllerTest;
+  FRIEND_TEST_ALL_PREFIXES(AutofillDataTypeControllerTest, StartWDSReady);
+  FRIEND_TEST_ALL_PREFIXES(AutofillDataTypeControllerTest, StartWDSNotReady);
 
-  bool is_database_loaded_;
+  WaitableEvent start_called_;
+
+  DISALLOW_COPY_AND_ASSIGN(AutofillDataTypeControllerMock);
 };
 
-class SyncAutofillDataTypeControllerTest : public testing::Test {
+class AutofillDataTypeControllerTest : public testing::Test {
  public:
-  SyncAutofillDataTypeControllerTest()
-      : weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
-        ui_thread_(BrowserThread::UI, &message_loop_),
-        last_start_result_(DataTypeController::OK) {}
-
-  virtual ~SyncAutofillDataTypeControllerTest() {}
-
-  // We deliberately do not set up a DB thread so that we always stop
-  // with an association failure.
+  AutofillDataTypeControllerTest()
+      : ui_thread_(BrowserThread::UI, &message_loop_),
+        db_thread_(BrowserThread::DB) {}
 
   virtual void SetUp() {
-    change_processor_ = new NiceMock<SharedChangeProcessorMock>();
-
-    EXPECT_CALL(profile_sync_factory_,
-                CreateSharedChangeProcessor()).
-        WillRepeatedly(Return(change_processor_.get()));
-
+    db_thread_.Start();
+    db_notification_service_ = new ThreadNotificationService(
+        db_thread_.DeprecatedGetThreadObject());
+    db_notification_service_->Init();
+    web_data_service_ = new WebDataServiceFake();
     EXPECT_CALL(profile_, GetProfileSyncService()).WillRepeatedly(
         Return(&service_));
-
-    web_data_service_ = new FakeWebDataService();
-
+    autofill_dtc_ =
+        new AutofillDataTypeControllerMock(&profile_sync_factory_,
+                                           &profile_,
+                                           &service_);
     EXPECT_CALL(profile_, GetWebDataService(_)).
         WillRepeatedly(Return(web_data_service_.get()));
-
-    autofill_dtc_ =
-        new AutofillDataTypeController(&profile_sync_factory_,
-                                       &profile_,
-                                       &service_);
-  }
-
-  // Passed to AutofillDTC::Start().
-  void OnStartFinished(DataTypeController::StartResult result,
-                       const SyncError& error) {
-    last_start_result_ = result;
-    last_start_error_ = error;
   }
 
   virtual void TearDown() {
-    autofill_dtc_ = NULL;
-    web_data_service_ = NULL;
-    change_processor_ = NULL;
+    db_notification_service_->TearDown();
+    db_thread_.Stop();
   }
 
  protected:
-  base::WeakPtrFactory<SyncAutofillDataTypeControllerTest> weak_ptr_factory_;
   MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
-
-  scoped_refptr<NiceMock<SharedChangeProcessorMock> > change_processor_;
+  content::TestBrowserThread db_thread_;
+  scoped_refptr<ThreadNotificationService> db_notification_service_;
+  scoped_refptr<AutofillDataTypeControllerMock> autofill_dtc_;
   ProfileSyncComponentsFactoryMock profile_sync_factory_;
-  ProfileSyncServiceMock service_;
   ProfileMock profile_;
-  scoped_refptr<FakeWebDataService> web_data_service_;
-  scoped_refptr<AutofillDataTypeController> autofill_dtc_;
-
-  // Stores arguments of most recent call of OnStartFinished().
-  DataTypeController::StartResult last_start_result_;
-  SyncError last_start_error_;
+  ProfileSyncServiceMock service_;
+  scoped_refptr<WebDataServiceFake> web_data_service_;
 };
 
-// Load the WDS's database, then start the Autofill DTC.  It should
-// immediately try to start association and fail (due to missing DB
-// thread).
-TEST_F(SyncAutofillDataTypeControllerTest, StartWDSReady) {
-  web_data_service_->LoadDatabase();
-  autofill_dtc_->Start(
-      base::Bind(&SyncAutofillDataTypeControllerTest::OnStartFinished,
-                 weak_ptr_factory_.GetWeakPtr()));
+TEST_F(AutofillDataTypeControllerTest, StartWDSReady) {
+  EXPECT_CALL(*(web_data_service_.get()), IsDatabaseLoaded()).
+      WillOnce(Return(true));
+  EXPECT_CALL(*(autofill_dtc_.get()), StartAssociation()).Times(0);
 
-  EXPECT_EQ(DataTypeController::ASSOCIATION_FAILED, last_start_result_);
-  EXPECT_TRUE(last_start_error_.IsSet());
-  EXPECT_EQ(DataTypeController::NOT_RUNNING, autofill_dtc_->state());
+  autofill_dtc_->set_state(DataTypeController::MODEL_STARTING);
+  EXPECT_TRUE(autofill_dtc_->StartModels());
 }
 
-// Start the autofill DTC without the WDS's database loaded, then
-// start the DB.  The Autofill DTC should be in the MODEL_STARTING
-// state until the database in loaded, when it should try to start
-// association and fail (due to missing DB thread).
-TEST_F(SyncAutofillDataTypeControllerTest, StartWDSNotReady) {
-  autofill_dtc_->Start(
-      base::Bind(&SyncAutofillDataTypeControllerTest::OnStartFinished,
-                 weak_ptr_factory_.GetWeakPtr()));
+TEST_F(AutofillDataTypeControllerTest, StartWDSNotReady) {
+  EXPECT_CALL(*(web_data_service_.get()), IsDatabaseLoaded()).
+      WillOnce(Return(false));
+  EXPECT_CALL(*(autofill_dtc_.get()), StartAssociation()).
+      WillOnce(RaiseSignal(autofill_dtc_.get()));
 
-  EXPECT_EQ(DataTypeController::OK, last_start_result_);
-  EXPECT_FALSE(last_start_error_.IsSet());
-  EXPECT_EQ(DataTypeController::MODEL_STARTING, autofill_dtc_->state());
+  autofill_dtc_->set_state(DataTypeController::MODEL_STARTING);
+  EXPECT_FALSE(autofill_dtc_->StartModels());
 
-  web_data_service_->LoadDatabase();
-
-  EXPECT_EQ(DataTypeController::ASSOCIATION_FAILED, last_start_result_);
-  EXPECT_TRUE(last_start_error_.IsSet());
-  // There's a TODO for
-  // NonFrontendDataTypeController::StartAssociationAsync() that, when
-  // done, will make this consistent with the previous test.
-  EXPECT_EQ(DataTypeController::DISABLED, autofill_dtc_->state());
+  scoped_refptr<ThreadNotifier> notifier(new ThreadNotifier(
+      ui_thread_.DeprecatedGetThreadObject()));
+  autofill_dtc_->Observe(
+      chrome::NOTIFICATION_WEB_DATABASE_LOADED,
+      content::Source<WebDataService>(web_data_service_.get()),
+      content::NotificationService::NoDetails());
+  autofill_dtc_->WaitUntilStartCalled();
+  EXPECT_EQ(DataTypeController::ASSOCIATING, autofill_dtc_->state());
 }
 
 }  // namespace
-
-}  // namespace browser_sync

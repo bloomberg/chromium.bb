@@ -66,8 +66,8 @@ class NonFrontendDataTypeController : public DataTypeController {
   // associate models. The default implementation is a no-op.
   // Return value:
   //   True - if models are ready and association can proceed.
-  //   False - if models are not ready. StartAssociationAsync should be called
-  //           when the models are ready.
+  //   False - if models are not ready. KickOffAssociation should be called
+  //           when the models are ready. Refer to Start(_) implementation.
   // Note: this is performed on the frontend (UI) thread.
   virtual bool StartModels();
 
@@ -77,6 +77,10 @@ class NonFrontendDataTypeController : public DataTypeController {
   virtual bool PostTaskOnBackendThread(
       const tracked_objects::Location& from_here,
       const base::Closure& task) = 0;
+
+  // Build sync components and associate models.
+  // Note: this is performed on the datatype's thread.
+  virtual void StartAssociation();
 
   // Datatype specific creation of sync components.
   // Note: this is performed on the datatype's thread.
@@ -103,6 +107,10 @@ class NonFrontendDataTypeController : public DataTypeController {
   // Note: this is performed on the frontend (UI) thread.
   virtual void StopModels();
 
+  // Disassociate the models and destroy the sync components.
+  // Note: this is performed on the datatype's thread.
+  virtual void StopAssociation();
+
   // Implementation of OnUnrecoverableError that lives on UI thread.
   virtual void OnUnrecoverableErrorImpl(
       const tracked_objects::Location& from_here,
@@ -123,12 +131,12 @@ class NonFrontendDataTypeController : public DataTypeController {
   // Post the association task to the thread the datatype lives on.
   // Note: this is performed on the frontend (UI) thread.
   // Return value: True if task posted successfully, False otherwise.
-  //
-  // TODO(akalin): Callers handle false return values inconsistently;
-  // some set the state to NOT_RUNNING, and some set the state to
-  // DISABLED.  Move the error handling inside this function to be
-  // consistent.
-  virtual bool StartAssociationAsync();
+  bool StartAssociationAsync();
+
+  // Post the StopAssociation task to the thread the datatype lives on.
+  // Note: this is performed on the frontend (UI) thread.
+  // Return value: True if task posted successfully, False otherwise.
+  bool StopAssociationAsync();
 
   // Accessors and mutators used by derived classes.
   ProfileSyncComponentsFactory* profile_sync_factory() const;
@@ -143,19 +151,6 @@ class NonFrontendDataTypeController : public DataTypeController {
   virtual void set_change_processor(ChangeProcessor* change_processor);
 
  private:
-  // Build sync components and associate models.
-  // Note: this is performed on the datatype's thread.
-  void StartAssociation();
-
-  // Post the StopAssociation task to the thread the datatype lives on.
-  // Note: this is performed on the frontend (UI) thread.
-  // Return value: True if task posted successfully, False otherwise.
-  bool StopAssociationAsync();
-
-  // Disassociate the models and destroy the sync components.
-  // Note: this is performed on the datatype's thread.
-  void StopAssociation();
-
   ProfileSyncComponentsFactory* const profile_sync_factory_;
   Profile* const profile_;
   ProfileSyncService* const profile_sync_service_;
