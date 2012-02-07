@@ -34,6 +34,10 @@ NOTES = {
   'std::__ioinit': '#includes <iostream>, use <ostream> instead',
 }
 
+# Determine whether this is a git checkout (as opposed to e.g. svn).
+IS_GIT_WORKSPACE = (subprocess.Popen(
+    ['git', 'rev-parse'], stderr=subprocess.PIPE).wait() == 0)
+
 class Demangler(object):
   """A wrapper around c++filt to provide a function to demangle symbols."""
   def __init__(self):
@@ -52,6 +56,8 @@ def QualifyFilenameAsProto(filename):
   """Attempt to qualify a bare |filename| with a src-relative path, assuming it
   is a protoc-generated file.  If a single match is found, it is returned.
   Otherwise the original filename is returned."""
+  if not IS_GIT_WORKSPACE:
+    return filename
   match = protobuf_filename_re.match(filename)
   if not match:
     return filename
@@ -77,6 +83,8 @@ def QualifyFilename(filename, symbol):
   """Given a bare filename and a symbol that occurs in it, attempt to qualify
   it with a src-relative path.  If more than one file matches, return the
   original filename."""
+  if not IS_GIT_WORKSPACE:
+    return filename
   match = symbol_code_name_re.match(symbol)
   if not match:
     return filename
