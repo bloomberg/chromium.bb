@@ -492,7 +492,8 @@ wayland_destroy(struct weston_compositor *ec)
 }
 
 static struct weston_compositor *
-wayland_compositor_create(struct wl_display *display, int width, int height)
+wayland_compositor_create(struct wl_display *display,
+			  int width, int height, const char *display_name)
 {
 	struct wayland_compositor *c;
 	struct wl_event_loop *loop;
@@ -504,7 +505,7 @@ wayland_compositor_create(struct wl_display *display, int width, int height)
 
 	memset(c, 0, sizeof *c);
 
-	c->parent.display = wl_display_connect(NULL);
+	c->parent.display = wl_display_connect(display_name);
 
 	if (c->parent.display == NULL) {
 		fprintf(stderr, "failed to create display: %m\n");
@@ -552,9 +553,9 @@ WL_EXPORT struct weston_compositor *
 backend_init(struct wl_display *display, char *options)
 {
 	int width = 1024, height = 640, i;
-	char *p, *value;
+	char *p, *value, *display_name = NULL;
 
-	static char * const tokens[] = { "width", "height", NULL };
+	static char * const tokens[] = { "width", "height", "display", NULL };
 	
 	p = options;
 	while (i = getsubopt(&p, tokens, &value), i != -1) {
@@ -565,8 +566,11 @@ backend_init(struct wl_display *display, char *options)
 		case 1:
 			height = strtol(value, NULL, 0);
 			break;
+		case 2:
+			display_name = strdup(value);
+			break;
 		}
 	}
 
-	return wayland_compositor_create(display, width, height);
+	return wayland_compositor_create(display, width, height, display_name);
 }
