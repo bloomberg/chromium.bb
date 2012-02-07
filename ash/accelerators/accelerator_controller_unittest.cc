@@ -391,6 +391,12 @@ TEST_F(AcceleratorControllerTest, GlobalAccelerators) {
         ui::Accelerator(ui::VKEY_PRINT, false, false, false)));
     EXPECT_EQ(2, delegate->handle_take_screenshot_count());
   }
+  // TakePartialScreenshot
+  // So far, we just want to make sure the keybind is trapped here.
+  {
+    EXPECT_TRUE(GetController()->Process(
+        ui::Accelerator(ui::VKEY_F5, true, true, false)));
+  }
   // ToggleCapsLock
   {
     EXPECT_FALSE(GetController()->Process(

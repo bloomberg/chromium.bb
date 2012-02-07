@@ -32,6 +32,7 @@ enum AcceleratorAction {
   CYCLE_FORWARD,
   EXIT,
   TAKE_SCREENSHOT,
+  TAKE_PARTIAL_SCREENSHOT,
   TOGGLE_CAPS_LOCK,
   VOLUME_DOWN,
   VOLUME_MUTE,
@@ -64,6 +65,7 @@ struct AcceleratorData {
   { ui::VKEY_Q, true, true, false, EXIT },
   { ui::VKEY_F5, true, false, false, CYCLE_BACKWARD },
   { ui::VKEY_F5, false, true, false, TAKE_SCREENSHOT },
+  { ui::VKEY_F5, true, true, false, TAKE_PARTIAL_SCREENSHOT },
   { ui::VKEY_PRINT, false, false, false, TAKE_SCREENSHOT },
   // On Chrome OS, Search key is mapped to LWIN.
   { ui::VKEY_LWIN, true, false, false, TOGGLE_CAPS_LOCK },
@@ -262,6 +264,12 @@ bool AcceleratorController::AcceleratorPressed(
         screenshot_delegate_->HandleTakeScreenshot(root_window);
       }
       // Return true to prevent propagation of the key event.
+      return true;
+    case TAKE_PARTIAL_SCREENSHOT:
+      // TODO(mukai): implement this.  http://crbug.com/108763
+      NOTIMPLEMENTED();
+      // Return true to prevent propagation of the key event because
+      // this key combination is reserved for partial screenshot.
       return true;
     case TOGGLE_CAPS_LOCK:
       if (caps_lock_delegate_.get())
