@@ -15,6 +15,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/process_util.h"
 #include "base/synchronization/lock.h"
+#include "content/common/content_export.h"
 #include "content/common/gpu/gpu_process_launch_causes.h"
 #include "content/common/message_router.h"
 #include "content/public/common/gpu_info.h"
@@ -48,7 +49,7 @@ struct GpuListenerInfo {
   scoped_refptr<base::MessageLoopProxy> loop;
 };
 
-class GpuChannelHostFactory {
+class CONTENT_EXPORT GpuChannelHostFactory {
  public:
   virtual ~GpuChannelHostFactory();
   static GpuChannelHostFactory* instance() { return instance_; }
