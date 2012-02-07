@@ -18,6 +18,8 @@ class Bus;
 
 namespace chromeos {
 
+class BluetoothManagerClient;
+
 // BluetoothAdapterClient is used to communicate with a bluetooth Adapter
 // interface.
 class BluetoothAdapterClient {
@@ -54,10 +56,8 @@ class BluetoothAdapterClient {
 
   // Adds and removes observers for events on the adapter with object path
   // |object_path|.
-  virtual void AddObserver(Observer* observer,
-                           const std::string& object_path) = 0;
-  virtual void RemoveObserver(Observer* observer,
-                              const std::string& object_path) = 0;
+  virtual void AddObserver(Observer* observer) = 0;
+  virtual void RemoveObserver(Observer* observer) = 0;
 
   // Starts a device discovery on the adapter with object path |object_path|.
   virtual void StartDiscovery(const std::string& object_path) = 0;
@@ -67,7 +67,8 @@ class BluetoothAdapterClient {
   virtual void StopDiscovery(const std::string& object_path) = 0;
 
   // Creates the instance.
-  static BluetoothAdapterClient* Create(dbus::Bus* bus);
+  static BluetoothAdapterClient* Create(dbus::Bus* bus,
+                                        BluetoothManagerClient* manager_client);
 
  protected:
   BluetoothAdapterClient();

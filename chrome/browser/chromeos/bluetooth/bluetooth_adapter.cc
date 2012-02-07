@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -22,12 +22,12 @@ class BluetoothAdapterImpl : public BluetoothAdapter,
     bluetooth_adapter_client_ =
         dbus_thread_manager->GetBluetoothAdapterClient();
     DCHECK(bluetooth_adapter_client_);
-    bluetooth_adapter_client_->AddObserver(this, id_);
+    bluetooth_adapter_client_->AddObserver(this);
   }
 
   virtual ~BluetoothAdapterImpl() {
     DCHECK(bluetooth_adapter_client_);
-    bluetooth_adapter_client_->RemoveObserver(this, id_);
+    bluetooth_adapter_client_->RemoveObserver(this);
   }
 
   virtual void AddObserver(BluetoothAdapter::Observer* observer) {
