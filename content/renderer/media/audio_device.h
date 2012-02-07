@@ -82,7 +82,7 @@ class CONTENT_EXPORT AudioDevice
     : NON_EXPORTED_BASE(public media::AudioRendererSink),
       public AudioMessageFilter::Delegate,
       public base::DelegateSimpleThread::Delegate,
-      public ScopedLoopObserver {
+      NON_EXPORTED_BASE(public ScopedLoopObserver) {
  public:
   // Methods called on main render thread -------------------------------------
 

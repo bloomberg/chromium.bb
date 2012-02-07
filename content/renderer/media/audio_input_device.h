@@ -89,7 +89,7 @@
 class CONTENT_EXPORT AudioInputDevice
     : public AudioInputMessageFilter::Delegate,
       public base::DelegateSimpleThread::Delegate,
-      public ScopedLoopObserver,
+      NON_EXPORTED_BASE(public ScopedLoopObserver),
       public base::RefCountedThreadSafe<AudioInputDevice> {
  public:
   class CONTENT_EXPORT CaptureCallback {
