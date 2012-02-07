@@ -611,6 +611,29 @@ cr.define('options', function() {
     // Set up the prototype chain
     __proto__: HTMLInputElement.prototype,
 
+    prefValue_: null,
+
+    savePrefState: function() {
+      switch(this.dataType) {
+        case 'number':
+          Preferences.setIntegerPref(this.pref, this.value, this.metric);
+          break;
+        case 'double':
+          Preferences.setDoublePref(this.pref, this.value, this.metric);
+          break;
+        case 'url':
+          Preferences.setURLPref(this.pref, this.value, this.metric);
+          break;
+        default:
+          Preferences.setStringPref(this.pref, this.value, this.metric);
+          break;
+      }
+    },
+
+    resetPrefState: function() {
+      this.value = this.prefValue_;
+    },
+
     /**
      * Initialization function for the cr.ui framework.
      */
@@ -624,26 +647,16 @@ cr.define('options', function() {
                 event.value['value'] : event.value;
 
             updateElementState_(self, event);
+
+            self.prefValue_ = self.value;
           });
 
       // Listen to user events.
-      this.addEventListener('change',
-          function(e) {
-            switch(self.dataType) {
-              case 'number':
-                Preferences.setIntegerPref(self.pref, self.value, self.metric);
-                break;
-              case 'double':
-                Preferences.setDoublePref(self.pref, self.value, self.metric);
-                break;
-              case 'url':
-                Preferences.setURLPref(self.pref, self.value, self.metric);
-                break;
-              default:
-                Preferences.setStringPref(self.pref, self.value, self.metric);
-                break;
-            }
-          });
+      if (!self.dialogPref) {
+        this.addEventListener('change', function(e) {
+          self.savePrefState.bind(self);
+        });
+      }
 
       window.addEventListener('unload',
           function() {

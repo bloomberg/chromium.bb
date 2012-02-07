@@ -117,8 +117,14 @@ void BrowserOptionsHandler::GetLocalizedValues(
     { "changeHomePage", IDS_OPTIONS_CHANGE_HOME_PAGE },
     { "customizeSync", IDS_OPTIONS2_CUSTOMIZE_SYNC_BUTTON_LABEL },
     { "defaultSearchManageEngines", IDS_OPTIONS_DEFAULTSEARCH_MANAGE_ENGINES },
-    { "homepageUseNewTab", IDS_OPTIONS_HOMEPAGE_USE_NEWTAB },
-    { "homepageUseURL", IDS_OPTIONS_HOMEPAGE_USE_URL },
+    { "homePage", IDS_OPTIONS2_HOMEPAGE },
+    { "homePageChoose", IDS_OPTIONS2_HOMEPAGE_CHOOSE },
+    { "homePageDialogLabel", IDS_OPTIONS2_HOMEPAGE_DIALOG_LABEL },
+    { "homePageTitle", IDS_OPTIONS2_HOMEPAGE_TITLE },
+    { "homePageNone", IDS_OPTIONS2_HOMEPAGE_NONE },
+    { "homePageNtp", IDS_OPTIONS2_HOMEPAGE_NTP },
+    { "homePageUseNewTab", IDS_OPTIONS_HOMEPAGE_USE_NEWTAB },
+    { "homePageUseURL", IDS_OPTIONS_HOMEPAGE_USE_URL },
     { "instantConfirmMessage", IDS_INSTANT_OPT_IN_MESSAGE },
     { "instantConfirmTitle", IDS_INSTANT_OPT_IN_TITLE },
     { "importData", IDS_OPTIONS_IMPORT_DATA_BUTTON },
@@ -141,7 +147,7 @@ void BrowserOptionsHandler::GetLocalizedValues(
     { "settingsTitle", IDS_SETTINGS_TITLE },
     { "startupSetPages", IDS_OPTIONS2_STARTUP_SET_PAGES },
     { "startupShowDefaultAndNewTab",
-      IDS_OPTIONS_STARTUP_SHOW_DEFAULT_AND_NEWTAB},
+      IDS_OPTIONS2_STARTUP_SHOW_DEFAULT_AND_NEWTAB},
     { "startupShowLastSession", IDS_OPTIONS_STARTUP_SHOW_LAST_SESSION },
     { "startupShowPages", IDS_OPTIONS2_STARTUP_SHOW_PAGES },
     { "themesGallery", IDS_THEMES_GALLERY_BUTTON },
@@ -390,10 +396,6 @@ void BrowserOptionsHandler::Initialize() {
                                this);
   UpdateDefaultBrowserState();
 
-  pref_change_registrar_.Init(profile->GetPrefs());
-  pref_change_registrar_.Add(prefs::kHomePageIsNewTabPage, this);
-  pref_change_registrar_.Add(prefs::kHomePage, this);
-
   registrar_.Add(this, chrome::NOTIFICATION_PROFILE_CACHED_INFO_CHANGED,
                  content::NotificationService::AllSources());
 #if defined(OS_CHROMEOS)
@@ -405,7 +407,6 @@ void BrowserOptionsHandler::Initialize() {
                      ThemeServiceFactory::GetForProfile(profile)));
 
   UpdateSearchEngines();
-  UpdateHomePageLabel();
   ObserveThemeChanged();
 
   autocomplete_controller_.reset(new AutocompleteController(profile, this));
@@ -597,25 +598,6 @@ void BrowserOptionsHandler::UpdateSearchEngines() {
   }
 }
 
-void BrowserOptionsHandler::UpdateHomePageLabel() const {
-  Profile* profile = Profile::FromWebUI(web_ui());
-  PrefService* prefs = profile->GetPrefs();
-  scoped_ptr<Value> label;
-  string16 str;
-
-  if (prefs->GetBoolean(prefs::kHomePageIsNewTabPage)) {
-    str = l10n_util::GetStringUTF16(IDS_OPTIONS_SHOW_HOME_BUTTON_FOR_NTP);
-  } else {
-    str = l10n_util::GetStringFUTF16(
-        IDS_OPTIONS_SHOW_HOME_BUTTON_FOR_URL,
-        UTF8ToUTF16(prefs->GetString(prefs::kHomePage)));
-  }
-
-  label.reset(Value::CreateStringValue(str));
-  web_ui()->CallJavascriptFunction("BrowserOptions.updateHomePageLabel",
-                                   *label);
-}
-
 void BrowserOptionsHandler::Observe(
     int type,
     const content::NotificationSource& source,
@@ -630,9 +612,6 @@ void BrowserOptionsHandler::Observe(
     std::string* pref = content::Details<std::string>(details).ptr();
     if (*pref == prefs::kDefaultBrowserSettingEnabled) {
       UpdateDefaultBrowserState();
-    } else if (*pref == prefs::kHomePageIsNewTabPage ||
-               *pref == prefs::kHomePage) {
-      UpdateHomePageLabel();
     } else {
       NOTREACHED();
     }

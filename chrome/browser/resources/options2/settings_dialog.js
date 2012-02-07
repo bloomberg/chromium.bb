@@ -42,6 +42,7 @@ cr.define('options', function() {
      * @private
      */
     handleConfirm_: function() {
+      this.willConfirm();
       OptionsPage.closeOverlay();
 
       var els = this.pageDiv.querySelectorAll('[dialog-pref]');
@@ -56,6 +57,7 @@ cr.define('options', function() {
      * @private
      */
     handleCancel_: function() {
+      this.willCancel();
       OptionsPage.closeOverlay();
 
       var els = this.pageDiv.querySelectorAll('[dialog-pref]');
@@ -64,6 +66,18 @@ cr.define('options', function() {
           els[i].resetPrefState();
       }
     },
+
+    /**
+     * Called when the user clicks the confirm button, just before the
+     * preferences are saved. This is a no-op, but subclasses can override it.
+     */
+    willConfirm: function() {},
+
+    /**
+     * Called when the user cancels the dialog, just before the
+     * dialog is closed. This is a no-op, but subclasses can override it.
+     */
+    willCancel: function() {},
   };
 
   return {

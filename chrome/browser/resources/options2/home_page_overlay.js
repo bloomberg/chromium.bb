@@ -31,9 +31,6 @@ cr.define('options', function() {
       SettingsDialog.prototype.initializePage.call(this);
 
       var self = this;
-      $('homepage-use-ntp').onchange = this.updateHomePageInput_.bind(this);
-      $('homepage-use-url').onchange = this.updateHomePageInput_.bind(this);
-
       $('homepageURL').addEventListener('keydown', function(event) {
         // Focus the 'OK' button when the user hits enter since people expect
         // feedback indicating that they are done editing.
@@ -46,22 +43,21 @@ cr.define('options', function() {
     },
 
     /**
-     * @inheritDoc
+     * Sets the 'show home button' and 'home page is new tab page' preferences.
+     * (The home page url preference is set automatically by the SettingsDialog
+     * code.)
      */
-    didShowPage: function() {
-      // Set initial state.
-      this.updateHomePageInput_();
+    willConfirm: function() {
+      Preferences.setBooleanPref('browser.show_home_button', true);
+      Preferences.setBooleanPref('homepage_is_newtabpage', false);
     },
 
     /**
-     * Updates the state of the homepage text input. The input is enabled only
-     * if the |homepageUseURLBUtton| radio is checked.
-     * @private
+     * Resets the <select> on the browser options page to the appropriate value,
+     * based on the current preferences.
      */
-    updateHomePageInput_: function() {
-      var homepageInput = $('homepageURL');
-      var homepageUseURL = $('homepage-use-url');
-      homepageInput.setDisabled('radio-choice', !homepageUseURL.checked);
+    willCancel: function() {
+      BrowserOptions.getInstance().updateHomePageSelector();
     },
   };
 
