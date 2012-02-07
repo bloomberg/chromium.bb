@@ -978,8 +978,10 @@ void OpaqueBrowserFrameView::LayoutWindowControls() {
       }
       return;
     }
-    close_button_->SetVisible(true);
   }
+  // Aura can transition in and out of single-window mode, so be sure the
+  // close button is visible after the change.
+  close_button_->SetVisible(true);
 
   // When the window is restored, we show a maximized button; otherwise, we show
   // a restore button.

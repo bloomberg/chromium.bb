@@ -17,6 +17,8 @@
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 
+using aura::RootWindow;
+
 namespace ash {
 
 namespace {
@@ -282,7 +284,7 @@ TEST_F(ShellTest, IsScreenLocked) {
   EXPECT_FALSE(Shell::GetInstance()->IsScreenLocked());
 
   // A modal window with a lock window as parent does not lock the screen. The
-  // screen is locked only when a lock windown is visible.
+  // screen is locked only when a lock window is visible.
   views::Widget* lock_modal_widget = views::Widget::CreateWindowWithParent(
       new ModalWindow(), lock_widget->GetNativeView());
   lock_modal_widget->Show();
@@ -340,8 +342,13 @@ TEST_F(ShellTest, ChangeWindowMode) {
   EXPECT_FALSE(shell->IsWindowModeCompact());
   // We have a default container event filter (for window drags).
   EXPECT_TRUE(GetDefaultContainer()->event_filter());
-  // We have a launcher.
-  EXPECT_TRUE(shell->launcher()->widget()->IsVisible());
+  // Launcher is visible.
+  views::Widget* launcher_widget = shell->launcher()->widget();
+  EXPECT_TRUE(launcher_widget->IsVisible());
+  // Launcher is at bottom-left of screen.
+  EXPECT_EQ(0, launcher_widget->GetWindowScreenBounds().x());
+  EXPECT_EQ(RootWindow::GetInstance()->GetHostSize().height(),
+            launcher_widget->GetWindowScreenBounds().bottom());
   // We have a desktop background.
   EXPECT_TRUE(shell->root_window_layout_->background_widget());
 
@@ -367,7 +374,7 @@ TEST_F(ShellTest, ChangeWindowMode) {
   EXPECT_EQ(widget->GetWorkAreaBoundsInScreen(),
             widget->GetWindowScreenBounds());
   // Launcher is hidden.
-  EXPECT_FALSE(shell->launcher()->widget()->IsVisible());
+  EXPECT_FALSE(launcher_widget->IsVisible());
   // Desktop background is gone.
   EXPECT_FALSE(shell->root_window_layout_->background_widget());
 
@@ -377,12 +384,41 @@ TEST_F(ShellTest, ChangeWindowMode) {
   // Event filter came back.
   EXPECT_TRUE(GetDefaultContainer()->event_filter());
   // Launcher is visible again.
-  EXPECT_TRUE(shell->launcher()->widget()->IsVisible());
+  EXPECT_TRUE(launcher_widget->IsVisible());
+  // Launcher is at bottom-left of screen.
+  EXPECT_EQ(0, launcher_widget->GetWindowScreenBounds().x());
+  EXPECT_EQ(RootWindow::GetInstance()->GetHostSize().height(),
+            launcher_widget->GetWindowScreenBounds().bottom());
   // Desktop background is back.
   EXPECT_TRUE(shell->root_window_layout_->background_widget());
 
   // Clean up.
   widget->Close();
 }
+
+// Windows bots won't let us create large root windows, and this behavior is
+// only relevant on Chrome OS devices.
+#if defined(OS_CHROMEOS)
+TEST_F(ShellTest, ResizeRootWindow) {
+  // We dynamically change window mode only with full-screen host windows.
+  AutoResetUseFullscreenHostWindow use_fullscreen_host_window(true);
+
+  // Switching to a small screen enables compact window mode.
+  RootWindow::GetInstance()->SetHostSize(gfx::Size(1024, 768));
+  EXPECT_TRUE(Shell::GetInstance()->IsWindowModeCompact());
+
+  // Launcher is hidden.
+  views::Widget* launcher_widget = Shell::GetInstance()->launcher()->widget();
+  EXPECT_FALSE(launcher_widget->IsVisible());
+
+  // Switching to a large screen disables compact window mode.
+  RootWindow::GetInstance()->SetHostSize(gfx::Size(1920, 1080));
+  EXPECT_FALSE(Shell::GetInstance()->IsWindowModeCompact());
+
+  // Launcher is in the bottom-left corner of window.
+  EXPECT_EQ(0, launcher_widget->GetWindowScreenBounds().x());
+  EXPECT_EQ(1080, launcher_widget->GetWindowScreenBounds().bottom());
+}
+#endif  // defined(OS_CHROMEOS)
 
 }  // namespace ash

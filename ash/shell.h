@@ -101,6 +101,9 @@ class ASH_EXPORT Shell {
   // installed or removed.
   void ChangeWindowMode(WindowMode mode);
 
+  // Sets an appropriate window mode for the given screen resolution.
+  void SetWindowModeForMonitorSize(const gfx::Size& monitor_size);
+
   // Returns true if the screen is locked.
   bool IsScreenLocked() const;
 

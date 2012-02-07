@@ -4,6 +4,7 @@
 
 #include "ash/wm/root_window_layout_manager.h"
 
+#include "ash/shell.h"
 #include "ui/aura/window.h"
 #include "ui/views/widget/widget.h"
 
@@ -35,6 +36,10 @@ void RootWindowLayoutManager::SetBackgroundWidget(views::Widget* widget) {
 void RootWindowLayoutManager::OnWindowResized() {
   gfx::Rect fullscreen_bounds =
       gfx::Rect(owner_->bounds().width(), owner_->bounds().height());
+
+  // Change window mode before setting bounds on children so the children will
+  // resize to fit the new workspace area.
+  Shell::GetInstance()->SetWindowModeForMonitorSize(fullscreen_bounds.size());
 
   aura::Window::Windows::const_iterator i;
   for (i = owner_->children().begin(); i != owner_->children().end(); ++i)

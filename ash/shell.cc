@@ -58,12 +58,29 @@ namespace ash {
 
 namespace {
 
+using aura::Window;
 using views::Widget;
 
 // Screen width at or below which we automatically start in compact window mode,
 // in pixels. Should be at least 1366 pixels, the resolution of ChromeOS ZGB
 // device displays, as we traditionally used a single window on those devices.
 const int kCompactWindowModeWidthThreshold = 1366;
+
+// Returns suggested window mode for a given monitor size.
+Shell::WindowMode SuggestedWindowMode(const gfx::Size& monitor_size) {
+  // Developers often run the Aura shell in small windows on their desktop.
+  // Prefer overlapping mode for them.
+  if (!aura::RootWindow::use_fullscreen_host_window())
+    return Shell::MODE_OVERLAPPING;
+
+  // If the screen is narrow we prefer a single compact window display.
+  // We explicitly don't care about height, since users don't generally stack
+  // browser windows vertically.
+  if (monitor_size.width() <= kCompactWindowModeWidthThreshold)
+    return Shell::MODE_COMPACT;
+
+  return Shell::MODE_OVERLAPPING;
+}
 
 // Creates each of the special window containers that holds windows of various
 // types in the shell UI. They are added to |containers| from back to front in
@@ -350,18 +367,8 @@ Shell::WindowMode Shell::ComputeWindowMode(const gfx::Size& monitor_size,
       return MODE_OVERLAPPING;
   }
 
-  // Developers often run the Aura shell in small windows on their desktop.
-  // Prefer overlapping mode for them.
-  if (!aura::RootWindow::use_fullscreen_host_window())
-    return MODE_OVERLAPPING;
-
-  // If the screen is narrow we prefer a single compact window display.
-  // We explicitly don't care about height, since users don't generally stack
-  // browser windows vertically.
-  if (monitor_size.width() <= kCompactWindowModeWidthThreshold)
-    return MODE_COMPACT;
-
-  return MODE_OVERLAPPING;
+  // Without an explicit command line flag, guess based on the monitor size.
+  return SuggestedWindowMode(monitor_size);
 }
 
 aura::Window* Shell::GetContainer(int container_id) {
@@ -409,8 +416,19 @@ void Shell::ChangeWindowMode(WindowMode mode) {
     SetupCompactWindowMode();
   else
     SetupNonCompactWindowMode();
-  // Force a layout.
-  aura::RootWindow::GetInstance()->layout_manager()->OnWindowResized();
+}
+
+void Shell::SetWindowModeForMonitorSize(const gfx::Size& monitor_size) {
+  // Don't allow changes if we're locked in compact mode.
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kAuraForceCompactWindowMode))
+    return;
+
+  // If we're running on a device, a resolution change means the user plugged in
+  // or unplugged an external monitor. Change window mode to be appropriate for
+  // the new screen resolution.
+  WindowMode new_mode = SuggestedWindowMode(monitor_size);
+  ChangeWindowMode(new_mode);
 }
 
 bool Shell::IsScreenLocked() const {
