@@ -1,4 +1,4 @@
-/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -60,4 +60,13 @@ html[dir=rtl] #signin-right {
   position: absolute;
   right: 0;
   top: 0;
+}
+
+/* Position to be aligned with the login box in iframe  */
+#login-box {
+  height: 31px;
+  position: absolute;
+  top: 77px;
+  visibility: hidden;
+  z-index: -1;
 }

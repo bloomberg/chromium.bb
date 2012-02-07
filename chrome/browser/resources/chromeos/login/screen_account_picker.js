@@ -8,6 +8,11 @@
 
 cr.define('login', function() {
   /**
+   * Maximum number of offline login failures before online login.
+   */
+  const MAX_LOGIN_ATTEMPTS_IN_POD = 3;
+
+  /**
    * Creates a new account picker screen div.
    * @constructor
    * @extends {HTMLDivElement}
@@ -64,7 +69,7 @@ cr.define('login', function() {
       if (lockedPod) {
         var focusPod = function() {
           podRow.focusPod(lockedPod);
-        }
+        };
         // TODO(altimofeev): empirically I investigated that focus isn't
         // set correctly if following CSS rules are present:
         //
@@ -97,6 +102,23 @@ cr.define('login', function() {
       */
     onBeforeHide: function(data) {
       $('pod-row').handleHide();
+    },
+
+    /**
+     * Shows sign-in error bubble.
+     * @param {number} loginAttempts Number of login attemps tried.
+     * @param {HTMLElement} content Content to show in bubble.
+     */
+    showErrorBubble: function(loginAttempts, error) {
+      var activatedPod = $('pod-row').activatedPod;
+      if (!activatedPod)
+        return;
+      if (loginAttempts > MAX_LOGIN_ATTEMPTS_IN_POD) {
+        activatedPod.showSigninUI();
+      } else {
+        $('bubble').showContentForElement(activatedPod.mainInput, error,
+                                          cr.ui.Bubble.Attachment.BOTTOM);
+      }
     }
   };
 

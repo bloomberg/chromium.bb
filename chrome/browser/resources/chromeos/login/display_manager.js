@@ -7,7 +7,6 @@
  */
 
 // TODO(xiyuan): Find a better to share those constants.
-const SCREEN_SIGNIN = 'signin';
 const SCREEN_GAIA_SIGNIN = 'gaia-signin';
 const SCREEN_ACCOUNT_PICKER = 'account-picker';
 
@@ -19,6 +18,8 @@ const ACCELERATOR_EXIT = 'exit';
 const ACCELERATOR_VERSION = 'version';
 
 cr.define('cr.ui.login', function() {
+  var Bubble = cr.ui.Bubble;
+
   /**
    * Constructor a display manager that manages initialization of screens,
    * transitions, error messages display.
@@ -85,10 +86,8 @@ cr.define('cr.ui.login', function() {
         }
       } else if (name == ACCELERATOR_ENROLLMENT) {
         var currentStepId = this.screens_[this.currentStep_];
-        if (currentStepId == SCREEN_SIGNIN ||
-            currentStepId == SCREEN_GAIA_SIGNIN) {
+        if (currentStepId == SCREEN_GAIA_SIGNIN)
           chrome.send('toggleEnrollmentScreen', []);
-        }
       } else if (name == ACCELERATOR_EXIT) {
         if (this.currentScreen.exit) {
           this.currentScreen.exit();
@@ -310,6 +309,19 @@ cr.define('cr.ui.login', function() {
   };
 
   /**
+   * Returns position (top, left, right, bottom) of the element.
+   * @param {!Element} element HTML element.
+   * @return {!Object} Element position (top, left, right, bottom).
+   */
+  DisplayManager.getPosition = function(element) {
+    var offset = DisplayManager.getOffset(element);
+    return { top: offset.top,
+             right: window.innerWidth - element.offsetWidth - offset.left,
+             bottom: window.innerHeight - element.offsetHeight - offset.top,
+             left: offset.left };
+  };
+
+  /**
    * Disables signin UI.
    */
   DisplayManager.disableSigninUI = function() {
@@ -350,52 +362,6 @@ cr.define('cr.ui.login', function() {
    */
   DisplayManager.showSignInError = function(loginAttempts, message, link,
                                             helpId) {
-    var currentScreenId = Oobe.getInstance().currentScreen.id;
-    var anchor = undefined;
-    var anchorPos = undefined;
-    if (currentScreenId == SCREEN_SIGNIN) {
-      anchor = $('email');
-
-      // Show email field so that bubble shows up at the right location.
-      $(SCREEN_SIGNIN).reset(true);
-    } else if (currentScreenId == SCREEN_GAIA_SIGNIN) {
-      if ($(SCREEN_GAIA_SIGNIN).isLocal) {
-        $('add-user-button').hidden = true;
-        $('cancel-add-user-button').hidden = false;
-        // Reload offline version of the sign-in extension, which will show
-        // error itself.
-        chrome.send('offlineLogin', [$(SCREEN_GAIA_SIGNIN).email]);
-        return;
-      }
-      // Use anchorPos since we won't be able to get the input fields of Gaia.
-      anchorPos = DisplayManager.getOffset(Oobe.getInstance().currentScreen);
-
-      // Ideally, we should just use
-      //   anchorPos = DisplayManager.getOffset($('signin-frame'));
-      // to get a good anchor point. However, this always gives (0,0) on
-      // the device.
-      // TODO(xiyuan): Figure out why the above fails and get rid of this.
-      anchorPos.left += 150;  // (640 - 340) / 2
-
-      // TODO(xiyuan): Find a reliable way to align with Gaia UI.
-      anchorPos.left += 60;
-      anchorPos.top += 105;
-    } else if (currentScreenId == SCREEN_ACCOUNT_PICKER &&
-               $('pod-row').activatedPod) {
-      const MAX_LOGIN_ATTEMMPTS_IN_POD = 3;
-      if (loginAttempts > MAX_LOGIN_ATTEMMPTS_IN_POD) {
-        $('pod-row').activatedPod.showSigninUI();
-        return;
-      }
-
-      anchor = $('pod-row').activatedPod.mainInput;
-    }
-    if (!anchor && !anchorPos) {
-      console.log('Warning: Failed to find anchor for error :' +
-                  message);
-      return;
-    }
-
     var error = document.createElement('div');
 
     var messageDiv = document.createElement('div');
@@ -409,16 +375,15 @@ cr.define('cr.ui.login', function() {
       var helpLink = document.createElement('a');
       helpLink.href = '#';
       helpLink.textContent = link;
-      helpLink.onclick = function(e) {
+      helpLink.addEventListener('click', function(e) {
         chrome.send('launchHelpApp', [helpId]);
-      };
+        e.preventDefault();
+      });
       error.appendChild(helpLink);
     }
 
-    if (anchor)
-      $('bubble').showContentForElement(anchor, error);
-    else if (anchorPos)
-      $('bubble').showContentAt(anchorPos.left, anchorPos.top, error);
+    var currentScreenId = Oobe.getInstance().currentScreen.id;
+    $(currentScreenId).showErrorBubble(loginAttempts, error);
   };
 
   /**

@@ -269,6 +269,11 @@ cr.define('login', function() {
         }
         $('error-message').update();
         this.loading = false;
+        // Show deferred error bubble.
+        if (this.errorBubble_) {
+          this.showErrorBubble(this.errorBubble_[0], this.errorBubble_[1]);
+          this.errorBubble_ = undefined;
+        }
         this.clearRetry_();
         chrome.send('loginWebuiReady');
       } else if (msg.method =='offlineLogin' && this.isAuthExtMessage_(e)) {
@@ -369,6 +374,27 @@ cr.define('login', function() {
       $('guestSigninLink').onclick = function() {
         chrome.send('launchIncognito');
       };
+    },
+
+    /**
+     * Shows sign-in error bubble.
+     * @param {number} loginAttempts Number of login attemps tried.
+     * @param {HTMLElement} content Content to show in bubble.
+     */
+    showErrorBubble: function(loginAttempts, error) {
+      if (this.isLocal) {
+        $('add-user-button').hidden = true;
+        $('cancel-add-user-button').hidden = false;
+        // Reload offline version of the sign-in extension, which will show
+        // error itself.
+        chrome.send('offlineLogin', [this.email]);
+      } else if (!this.loading) {
+        $('bubble').showContentForElement($('login-box'), error,
+                                          cr.ui.Bubble.Attachment.LEFT);
+      } else {
+        // Defer the bubble until the frame has been loaded.
+        this.errorBubble_ = [loginAttempts, error];
+      }
     }
   };
 
