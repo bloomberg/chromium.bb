@@ -381,6 +381,8 @@ input_handle_pointer_focus(void *data,
 		output = wl_surface_get_user_data(surface);
 		notify_pointer_focus(c->base.input_device,
 				     time, &output->base, sx, sy);
+
+		wl_input_device_attach(input->input_device, time, NULL, 0, 0);
 	} else {
 		notify_pointer_focus(c->base.input_device, time, NULL, 0, 0);
 	}
