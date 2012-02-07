@@ -87,7 +87,7 @@ void AppList::SetWidget(views::Widget* widget) {
 
   if (is_visible_) {
     widget_ = widget;
-    GetLayer(widget_)->GetAnimator()->AddObserver(this);
+    widget_->AddObserver(this);
     Shell::GetInstance()->AddRootWindowEventFilter(this);
 
     widget_->SetBounds(GetPreferredBounds(false));
