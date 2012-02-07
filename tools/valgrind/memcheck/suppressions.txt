@@ -2791,28 +2791,28 @@
    fun:_ZN16ExtensionInfoMap12AddExtensionEPK9Extension
 }
 {
-   bug_68069a
-   Memcheck:Leak
-   ...
-   fun:_ZN3gfx15PixmapGLContext11MakeCurrentEv
-   fun:_ZN3gfx15PixmapGLContext10InitializeEPNS_9GLContextE
-   fun:_ZN3gfx9GLContext24CreateOffscreenGLContextEPS0_
-   fun:*19InitializeGLContextEv
-   fun:_ZN18gpu_info_collector19CollectGraphicsInfoEP7GPUInfo
-   fun:_ZN9GpuThread4InitERKN4base4TimeE
-   fun:_Z7GpuMainRK18MainFunctionParams
-   fun:*23RunNamedProcessTypeMainERKSsRK18MainFunctionParams
-}
-{
-   bug_68069b
+   bug_68069_a
    Memcheck:Leak
    fun:malloc
-   ...
-   fun:_ZN3gfx9GLContext16InitializeOneOffEv
-   fun:_Z7GpuMainRK18MainFunctionParams
-   fun:*23RunNamedProcessTypeMainERKSsRK18MainFunctionParams
-   fun:ChromeMain
-   fun:main
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   fun:_ZN3gfx20GetGLCoreProcAddressEPKc
+   fun:_ZN3gfx22InitializeGLBindingsGLEv
+   fun:_ZN3gfx20InitializeGLBindingsENS_16GLImplementationE
+   fun:_ZN3gfx9GLSurface16InitializeOneOffEv
+}
+{
+   bug_68069_b
+   Memcheck:Leak
+   fun:malloc
+   fun:XextCreateExtension
+   obj:*
+   obj:*
+   fun:_ZN3gfx12GLSurfaceGLX16InitializeOneOffEv
+   fun:_ZN3gfx9GLSurface24InitializeOneOffInternalEv
+   fun:_ZN3gfx9GLSurface16InitializeOneOffEv
 }
 {
    bug_68553
