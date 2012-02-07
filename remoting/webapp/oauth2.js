@@ -34,12 +34,6 @@ remoting.OAuth2.prototype.KEY_EMAIL_ = 'remoting-email';
 
 // Constants for parameters used in retrieving the OAuth2 credentials.
 /** @private */
-remoting.OAuth2.prototype.CLIENT_ID_ =
-      '440925447803-2pi3v45bff6tp1rde2f7q6lgbor3o5uj.' +
-      'apps.googleusercontent.com';
-/** @private */
-remoting.OAuth2.prototype.CLIENT_SECRET_ = 'W2ieEsG-R1gIA4MMurGrgMc_';
-/** @private */
 remoting.OAuth2.prototype.SCOPE_ =
       'https://www.googleapis.com/auth/chromoting ' +
       'https://www.googleapis.com/auth/googletalk ' +

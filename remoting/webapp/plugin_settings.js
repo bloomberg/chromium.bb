@@ -19,3 +19,9 @@ remoting.PLUGIN_MIMETYPE = 'HOST_PLUGIN_MIMETYPE';
  * @private
  */
 remoting.OAuth2.prototype.REDIRECT_URI_ = 'OAUTH2_REDIRECT_URL';
+
+// Constants for parameters used in retrieving the OAuth2 credentials.
+/** @private */
+remoting.OAuth2.prototype.CLIENT_ID_ = 'API_CLIENT_ID';
+/** @private */
+remoting.OAuth2.prototype.CLIENT_SECRET_ = 'API_CLIENT_SECRET';
