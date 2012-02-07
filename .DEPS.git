@@ -11,7 +11,7 @@ vars = {
 
 deps = {
     'src/breakpad/src':
-        Var('git_url') + '/external/google-breakpad/src.git@2564b32f350dfe10ebd591df977d8542021a2877',
+        Var('git_url') + '/external/google-breakpad/src.git@8054ebe751a66f060e6fe2778c03a7722aa1ee9f',
     'src/build/util/support':
         Var('git_url') + '/chromium/support.git@9306628dc48b26b6264fc32a09bd5f926fec7218',
     'src/chrome/browser/resources/software_rendering_list':
