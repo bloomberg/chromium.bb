@@ -235,33 +235,33 @@ html.hide-menu .close-subpage {
 }
 
 #subpage-sheet-container-1 {
-  -webkit-padding-start: 40px;
+  -webkit-padding-start: 52px;
   z-index: 5;
 }
 
 #subpage-sheet-container-2 {
-  -webkit-padding-start: 80px;
+  -webkit-padding-start: 104px;
   z-index: 7;
 }
 
 #subpage-sheet-container-3 {
-  -webkit-padding-start: 120px;
+  -webkit-padding-start: 156px;
   z-index: 9;
 }
 
 #subpage-sheet-container-1 header {
-  left: 60px;
-  right: 60px;
+  left: 72px;
+  right: 72px;
 }
 
 #subpage-sheet-container-2 header {
-  left: 100px;
-  right: 100px;
+  left: 124px;
+  right: 124px;
 }
 
 #subpage-sheet-container-3 header {
-  left: 140px;
-  right: 140px;
+  left: 176px;
+  right: 176px;
 }
 
 .subpage-sheet {
