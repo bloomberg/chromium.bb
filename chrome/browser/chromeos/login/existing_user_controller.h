@@ -168,10 +168,6 @@ class ExistingUserController : public LoginDisplay::Delegate,
     login_performer_delegate_.reset(d);
   }
 
-  // Passes owner user to cryptohomed. Called right before mounting a user.
-  // Subsequent disk space control checks are invoked by cryptohomed timer.
-  void SetOwnerUserInCryptohome();
-
   // Prepares and updates/initializes depending on |init| the |login_display_|
   // attached to this controller.
   void UpdateLoginDisplay(const UserList& users, bool init);

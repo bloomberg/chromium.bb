@@ -194,7 +194,6 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerTest, AutoEnrollAfterSignIn) {
   EXPECT_CALL(*mock_login_display_host_,
               StartWizard(WizardController::kEnterpriseEnrollmentScreenName, _))
       .Times(1);
-  EXPECT_CALL(*mock_cryptohome_library_, AsyncSetOwnerUser(_, _)).Times(0);
   existing_user_controller()->DoAutoEnrollment();
   existing_user_controller()->CompleteLogin(kUsername, kPassword);
 }
@@ -206,7 +205,6 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerTest, DontAutoEnrollAfterSignIn) {
   EXPECT_CALL(*mock_login_display_host_,
               StartWizard(WizardController::kUserImageScreenName, _))
       .Times(1);
-  EXPECT_CALL(*mock_cryptohome_library_, AsyncSetOwnerUser(_, _)).Times(1);
   existing_user_controller()->CompleteLogin(kUsername, kPassword);
 }
 

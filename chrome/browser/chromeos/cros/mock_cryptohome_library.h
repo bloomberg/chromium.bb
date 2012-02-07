@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -41,7 +41,6 @@ class MockCryptohomeLibrary : public CryptohomeLibrary {
   MOCK_METHOD0(IsMounted, bool(void));
   MOCK_METHOD1(HashPassword, std::string(const std::string& password));
   MOCK_METHOD0(GetSystemSalt, std::string(void));
-  MOCK_METHOD2(AsyncSetOwnerUser, bool(const std::string&, Delegate* callback));
 
   MOCK_METHOD0(TpmIsReady, bool(void));
   MOCK_METHOD0(TpmIsEnabled, bool(void));

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -74,11 +74,6 @@ class CryptohomeLibrary {
 
   // Asks cryptohomed if a drive is currently mounted.
   virtual bool IsMounted() = 0;
-
-  // Passes cryptohomed the owner user. It is used to prevent
-  // deletion of the owner in low disk space cleanup (see above).
-  virtual bool AsyncSetOwnerUser(const std::string& username,
-                                 Delegate* callback) = 0;
 
   // Wrappers of the functions for working with Tpm.
 

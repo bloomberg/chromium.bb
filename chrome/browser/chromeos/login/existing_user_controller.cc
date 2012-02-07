@@ -21,7 +21,6 @@
 #include "chrome/browser/chromeos/boot_times_loader.h"
 #include "chrome/browser/chromeos/cros_settings.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
-#include "chrome/browser/chromeos/cros/cryptohome_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/customization_document.h"
 #include "chrome/browser/chromeos/dbus/dbus_thread_manager.h"
@@ -318,8 +317,6 @@ void ExistingUserController::CompleteLoginInternal(std::string username,
                                                    std::string password) {
   resume_login_callback_.Reset();
 
-  SetOwnerUserInCryptohome();
-
   GaiaAuthConsumer::ClientLoginResult credentials;
   if (!login_performer_.get()) {
     LoginPerformer::Delegate* delegate = this;
@@ -382,7 +379,6 @@ void ExistingUserController::LoginAsGuest() {
   SetStatusAreaEnabled(false);
   // Disable clicking on other windows.
   login_display_->SetUIEnabled(false);
-  SetOwnerUserInCryptohome();
 
   // Check allow_guest in case this call is fired from key accelerator.
   // Must not proceed without signature verification.
@@ -783,26 +779,6 @@ void ExistingUserController::ShowError(int error_id,
   }
 
   login_display_->ShowError(error_id, num_login_attempts_, help_topic_id);
-}
-
-void ExistingUserController::SetOwnerUserInCryptohome() {
-  bool trusted_owner_available = cros_settings_->GetTrusted(
-      kDeviceOwner,
-      base::Bind(&ExistingUserController::SetOwnerUserInCryptohome,
-                 weak_factory_.GetWeakPtr()));
-  if (!trusted_owner_available) {
-    // Value of owner email is still not verified.
-    // Another attempt will be invoked after verification completion.
-    return;
-  }
-  CryptohomeLibrary* cryptohomed = CrosLibrary::Get()->GetCryptohomeLibrary();
-  std::string owner;
-  cros_settings_->GetString(kDeviceOwner, &owner);
-  cryptohomed->AsyncSetOwnerUser(owner, NULL);
-
-  // Do not invoke AsyncDoAutomaticFreeDiskSpaceControl(NULL) here
-  // so it does not delay the following mount. Cleanup will be
-  // started in Cryptohomed by timer.
 }
 
 void ExistingUserController::ShowGaiaPasswordChanged(

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -89,14 +89,6 @@ class CryptohomeLibraryImpl : public CryptohomeLibrary {
 
   virtual bool IsMounted() OVERRIDE {
     return chromeos::CryptohomeIsMounted();
-  }
-
-  virtual bool AsyncSetOwnerUser(
-      const std::string& username, Delegate* d) OVERRIDE {
-    return CacheCallback(
-        chromeos::CryptohomeAsyncSetOwnerUser(username.c_str()),
-        d,
-        "Couldn't do set owner user in Cryptohomed.");
   }
 
   virtual bool TpmIsReady() OVERRIDE {
@@ -306,14 +298,6 @@ class CryptohomeLibraryStubImpl : public CryptohomeLibrary {
   }
 
   virtual bool IsMounted() OVERRIDE {
-    return true;
-  }
-
-  virtual bool AsyncSetOwnerUser(
-      const std::string& username, Delegate* callback) OVERRIDE {
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::Bind(&DoStubCallback, callback));
     return true;
   }
 

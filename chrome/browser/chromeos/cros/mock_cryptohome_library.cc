@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -28,9 +28,6 @@ void MockCryptohomeLibrary::SetUp(bool outcome, int code) {
       .WillByDefault(
           WithArgs<0>(Invoke(this, &MockCryptohomeLibrary::DoCallback)));
   ON_CALL(*this, AsyncRemove(_, _))
-      .WillByDefault(
-          WithArgs<1>(Invoke(this, &MockCryptohomeLibrary::DoCallback)));
-  ON_CALL(*this, AsyncSetOwnerUser(_, _))
       .WillByDefault(
           WithArgs<1>(Invoke(this, &MockCryptohomeLibrary::DoCallback)));
 }
