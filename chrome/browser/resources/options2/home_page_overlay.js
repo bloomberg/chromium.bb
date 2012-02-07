@@ -12,7 +12,9 @@ cr.define('options', function() {
    * @extends {SettingsDialog}
    */
   function HomePageOverlay() {
-    SettingsDialog.call(this, 'homePageOverlay', '', 'home-page-overlay',
+    SettingsDialog.call(this, 'homePageOverlay',
+                        templateData.homePageOverlayTabTitle,
+                        'home-page-overlay',
                         $('home-page-confirm'), $('home-page-cancel'));
   }
 

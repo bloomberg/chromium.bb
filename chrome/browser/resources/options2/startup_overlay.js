@@ -14,9 +14,11 @@ cr.define('options', function() {
    * @class
    */
   function StartupOverlay() {
-    SettingsDialog.call(this, 'startup', templateData.startupPagesDialogTitle,
-      'startup-overlay',
-      $('startup-overlay-confirm'), $('startup-overlay-cancel'));
+    SettingsDialog.call(this, 'startup',
+                        templateData.startupPagesOverlayTabTitle,
+                        'startup-overlay',
+                        $('startup-overlay-confirm'),
+                        $('startup-overlay-cancel'));
   };
 
   cr.addSingletonGetter(StartupOverlay);

@@ -117,7 +117,6 @@ void BrowserOptionsHandler::GetLocalizedValues(
     { "changeHomePage", IDS_OPTIONS_CHANGE_HOME_PAGE },
     { "customizeSync", IDS_OPTIONS2_CUSTOMIZE_SYNC_BUTTON_LABEL },
     { "defaultSearchManageEngines", IDS_OPTIONS_DEFAULTSEARCH_MANAGE_ENGINES },
-    { "homePageTitle", IDS_OPTIONS2_HOMEPAGE_TITLE },
     { "homepageUseNewTab", IDS_OPTIONS_HOMEPAGE_USE_NEWTAB },
     { "homepageUseURL", IDS_OPTIONS_HOMEPAGE_USE_URL },
     { "instantConfirmMessage", IDS_INSTANT_OPT_IN_MESSAGE },
@@ -182,6 +181,8 @@ void BrowserOptionsHandler::GetLocalizedValues(
   };
 
   RegisterStrings(localized_strings, resources, arraysize(resources));
+  RegisterTitle(localized_strings, "homePageOverlay",
+                IDS_OPTIONS2_HOMEPAGE_TITLE);
 
   localized_strings->SetString(
       "syncOverview",
