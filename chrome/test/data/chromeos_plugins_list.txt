@@ -4,13 +4,6 @@
     u'name': u'Shockwave Flash',
     u'path': '/opt/google/chrome/pepper/libpepflashplayer.so',
     u'unique_key': 'path',
-    u'version': u'11.2.31.103'
-  }, {
-    u'boards': ['x86-mario', 'x86-alex', 'x86-zgb', 'stumpy'],
-    u'enabled': 1,
-    u'name': u'Shockwave Flash',
-    u'path': '/opt/google/chrome/plugins/libgcflashplayer.so',
-    u'unique_key': 'path'
   }, {
     u'boards': ['x86-mario', 'x86-alex', 'x86-zgb', 'stumpy', 'lumpy'],
     u'enabled': 1,
@@ -34,7 +27,7 @@
   }, {
     u'boards': ['x86-mario', 'x86-alex', 'x86-zgb', 'stumpy', 'lumpy'],
     u'enabled': 1,
-    u'name': 'O3D Plugin',
+    u'name': 'Google Talk Plugin Video Accelerator',
     u'version': u''
   }, {
     u'boards': ['x86-mario', 'x86-alex', 'x86-zgb', 'stumpy', 'lumpy'],
