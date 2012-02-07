@@ -1,5 +1,5 @@
 #!/bin/sh
-# Copyright (c) 2010 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -22,7 +22,7 @@ CHROME_SRC="$(dirname "$(dirname "$(dirname "$(readlink -f "$0")")")")"
 PLUGIN_LIB="$CHROME_SRC/out/Debug/lib${1}_ppapi.so"
 PLUGIN_MIME="pepper-application/x-gpu-demo"
 cd "$CHROME_SRC"
-make "${1}_ppapi" && out/Debug/chrome --use-gl=osmesa --enable-gpu-plugin \
+make "${1}_ppapi" && out/Debug/chrome --use-gl=osmesa \
     "${CHROME_DEBUG}" \
     --register-pepper-plugins="$PLUGIN_LIB;$PLUGIN_MIME" \
     "file://$CHROME_SRC/gpu/demos/pepper_gpu_demo.html"

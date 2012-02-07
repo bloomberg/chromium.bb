@@ -182,9 +182,6 @@ const char kDisableSiteSpecificQuirks[]     = "disable-site-specific-quirks";
 // Disables speech input.
 const char kDisableSpeechInput[]            = "disable-speech-input";
 
-// Disable Spellcheck API.
-const char kDisableSpellcheckAPI[]          = "disable-spellcheck-api";
-
 // Disable web audio API.
 const char kDisableWebAudio[]               = "disable-webaudio";
 
@@ -248,9 +245,6 @@ const char kEnablePointerLock[]             = "enable-pointer-lock";
 
 // Enable the Gamepad API
 const char kEnableGamepad[]                 = "enable-gamepad";
-
-// Enable the GPU plugin and Pepper 3D rendering.
-const char kEnableGPUPlugin[]               = "enable-gpu-plugin";
 
 // Force logging to be enabled.  Logging is disabled by default in release
 // builds.

@@ -67,7 +67,6 @@ extern const char kDisableSessionStorage[];
 extern const char kDisableSharedWorkers[];
 extern const char kDisableSiteSpecificQuirks[];
 CONTENT_EXPORT extern const char kDisableSpeechInput[];
-extern const char kDisableSpellcheckAPI[];
 CONTENT_EXPORT extern const char kDisableWebAudio[];
 extern const char kDisableWebSecurity[];
 extern const char kDisableWebSockets[];
@@ -86,7 +85,6 @@ extern const char kEnableFastback[];
 CONTENT_EXPORT extern const char kDisableFullScreen[];
 extern const char kEnablePointerLock[];
 extern const char kEnableGamepad[];
-extern const char kEnableGPUPlugin[];
 CONTENT_EXPORT extern const char kEnableLogging[];
 extern const char kEnableMediaSource[];
 extern const char kEnableMediaStream[];
@@ -128,10 +126,6 @@ extern const char kHighLatencyAudio[];
 // TODO(jam): this doesn't belong in content.
 CONTENT_EXPORT extern const char kNaClBrokerProcess[];
 CONTENT_EXPORT extern const char kNaClLoaderProcess[];
-// TODO(bradchen): remove kNaClLinuxHelper switch.
-// This switch enables the experimental lightweight nacl_helper for Linux.
-// It will be going away soon, when the helper is enabled permanently.
-extern const char kNaClLinuxHelper[];
 extern const char kNoJsRandomness[];
 CONTENT_EXPORT extern const char kNoReferrers[];
 CONTENT_EXPORT extern const char kNoSandbox[];
@@ -172,7 +166,6 @@ extern const char kTouchOptimizedUI[];
 extern const char kTraceStartup[];
 extern const char kTraceStartupFile[];
 extern const char kTraceStartupDuration[];
-extern const char kUnlimitedQuotaForFiles[];
 CONTENT_EXPORT extern const char kUserAgent[];
 extern const char kUtilityCmdPrefix[];
 CONTENT_EXPORT extern const char kUtilityProcess[];
