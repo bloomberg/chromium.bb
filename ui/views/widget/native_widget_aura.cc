@@ -727,6 +727,9 @@ void NativeWidgetAura::OnWindowDestroying() {
 
   // If the aura::Window is destroyed, we can no longer show tooltips.
   tooltip_manager_.reset();
+
+  // Cleanup properties associated with the window here.
+  delete GetRestoreBounds(window_);
 }
 
 void NativeWidgetAura::OnWindowDestroyed() {
