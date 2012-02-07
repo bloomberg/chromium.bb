@@ -16,19 +16,17 @@
 
 body {
   cursor: default;
-  font-family: 'Open Sans', sans-serif;
-  font-size: 12px;
   margin: 0;
 }
 
 p {
-  line-height: 22px;
+  line-height: 1.8em;
 }
 
 h1 {
   -webkit-user-select: none;
   color: rgb(48, 57, 66);
-  font-size: 18px;
+  font-size: 1.2em;
   font-weight: normal;
   margin-top: 1em;
 }

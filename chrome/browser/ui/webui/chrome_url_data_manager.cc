@@ -155,19 +155,21 @@ bool ChromeURLDataManager::DataSource::ShouldReplaceExistingSource() const {
 // static
 void ChromeURLDataManager::DataSource::SetFontAndTextDirection(
     DictionaryValue* localized_strings) {
-  localized_strings->SetString("fontfamily",
-      l10n_util::GetStringUTF16(IDS_WEB_FONT_FAMILY));
-
+  int web_font_family_id = IDS_WEB_FONT_FAMILY;
   int web_font_size_id = IDS_WEB_FONT_SIZE;
 #if defined(OS_WIN)
-  // Some fonts used for some languages changed a lot in terms of the font
-  // metric in Vista. So, we need to use different size before Vista.
-  if (base::win::GetVersion() < base::win::VERSION_VISTA)
+  // Vary font settings for Windows Vista and/or Windows XP.
+  if (base::win::GetVersion() == base::win::VERSION_VISTA) {
+    web_font_family_id = IDS_WEB_FONT_FAMILY_VISTA;
+  } else if (base::win::GetVersion() < base::win::VERSION_VISTA) {
+    web_font_family_id = IDS_WEB_FONT_FAMILY_XP;
     web_font_size_id = IDS_WEB_FONT_SIZE_XP;
+  }
 #endif
+  localized_strings->SetString("fontfamily",
+      l10n_util::GetStringUTF16(web_font_family_id));
   localized_strings->SetString("fontsize",
       l10n_util::GetStringUTF16(web_font_size_id));
-
   localized_strings->SetString("textdirection",
       base::i18n::IsRTL() ? "rtl" : "ltr");
 }
