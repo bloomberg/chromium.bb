@@ -87,9 +87,6 @@ function load() {
   OptionsPage.registerSubPage(ContentSettings.getInstance(),
                               AdvancedOptions.getInstance(),
                               [$('privacyContentSettingsButton')]);
-  OptionsPage.registerSubPage(LanguageOptions.getInstance(),
-                              AdvancedOptions.getInstance(),
-                              [$('language-button')]);
   if (!cr.isWindows && !cr.isMac) {
     OptionsPage.registerSubPage(CertificateManager.getInstance(),
                                 AdvancedOptions.getInstance(),
@@ -175,6 +172,9 @@ function load() {
                               BrowserOptions.getInstance());
   OptionsPage.registerOverlay(InstantConfirmOverlay.getInstance(),
                               BrowserOptions.getInstance());
+  OptionsPage.registerOverlay(LanguageOptions.getInstance(),
+                              AdvancedOptions.getInstance(),
+                              [$('language-button')]);
   OptionsPage.registerOverlay(ManageProfileOverlay.getInstance(),
                               BrowserOptions.getInstance());
   OptionsPage.registerOverlay(PasswordManager.getInstance(),
