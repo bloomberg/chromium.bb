@@ -143,7 +143,7 @@
   "chrome/app/theme/theme_resources_standard.grd": {
     "includes": [21000],
   },
-  "chrome/app/theme/theme_resources_large.grd": {
+  "chrome/app/theme/theme_resources_2x.grd": {
     "includes": [21000],
   },
   # This file is generated during the build.
@@ -169,7 +169,7 @@
   "ui/resources/ui_resources_standard.grd": {
     "includes": [24000],
   },
-  "ui/resources/ui_resources_large.grd": {
+  "ui/resources/ui_resources_2x.grd": {
     "includes": [24000],
   },
   "content/content_resources.grd": {

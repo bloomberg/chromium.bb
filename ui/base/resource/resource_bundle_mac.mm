@@ -50,7 +50,7 @@ FilePath ResourceBundle::GetResourcesFilePath() {
 FilePath ResourceBundle::GetLargeIconResourcesFilePath() {
   // Only load the large resource pak when running on 10.7 or later.
   if (base::mac::IsOSLionOrLater())
-    return GetResourcesPakFilePath(@"theme_resources_large", nil);
+    return GetResourcesPakFilePath(@"theme_resources_2x", nil);
   else
     return FilePath();
 }

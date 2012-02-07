@@ -53,7 +53,7 @@
         '../ui/gfx/surface/surface.gyp:surface',
         '../ui/ui.gyp:ui',
         '../ui/ui.gyp:ui_resources',
-        '../ui/ui.gyp:ui_resources_large',
+        '../ui/ui.gyp:ui_resources_2x',
         '../ui/ui.gyp:ui_resources_standard',
         '../v8/tools/gyp/v8.gyp:v8',
         '../webkit/support/webkit_support.gyp:appcache',

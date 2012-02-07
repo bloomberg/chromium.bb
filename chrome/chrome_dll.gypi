@@ -347,7 +347,7 @@
               },
               'actions': [
                 {
-                  'includes': ['chrome_repack_theme_resources_large.gypi']
+                  'includes': ['chrome_repack_theme_resources_2x.gypi']
                 },
               ],
               'postbuilds': [

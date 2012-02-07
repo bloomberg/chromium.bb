@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -60,7 +60,7 @@ void ResourceBundle::LoadCommonResources() {
     large_icon_resources_data_ =
         LoadResourcesDataPak(large_icon_resources_file_path);
     CHECK(large_icon_resources_data_) <<
-        "failed to load theme_resources_large.pak";
+        "failed to load theme_resources_2x.pak";
   }
 }
 

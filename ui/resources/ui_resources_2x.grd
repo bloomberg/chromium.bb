@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <grit latest_public_release="0" current_release="1">
   <outputs>
-    <output filename="grit/ui_resources_large.h" type="rc_header">
+    <output filename="grit/ui_resources_2x.h" type="rc_header">
       <emit emit_type='prepend'></emit>
     </output>
-    <output filename="grit/ui_resources_large_map.cc" type="resource_map_source" />
-    <output filename="grit/ui_resources_large_map.h" type="resource_map_header" />
-    <output filename="ui_resources_large.pak" type="data_package" />
-    <output filename="ui_resources_large.rc" type="rc_all" />
+    <output filename="grit/ui_resources_2x_map.cc" type="resource_map_source" />
+    <output filename="grit/ui_resources_2x_map.h" type="resource_map_header" />
+    <output filename="ui_resources_2x.pak" type="data_package" />
+    <output filename="ui_resources_2x.rc" type="rc_all" />
   </outputs>
   <release seq="1">
     <includes>

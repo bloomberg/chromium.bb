@@ -12,7 +12,7 @@
   <release seq="1">
     <includes>
       <!-- KEEP THESE IN ALPHABETICAL ORDER AND SYNCHRONIZED WITH
-           ui_resources_large.grd. THIS MEANS THAT EACH ICON IN THIS FILE
+           ui_resources_2x.grd. THIS MEANS THAT EACH ICON IN THIS FILE
            MUST HAVE AN EQUIVALENT ICON IN THE OTHER FILE.-->
       <include name="IDR_BUBBLE_B" file="bubble_b.png" type="BINDATA" />
       <include name="IDR_BUBBLE_BL" file="bubble_bl.png" type="BINDATA" />

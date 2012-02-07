@@ -211,9 +211,9 @@
           'includes': [ '../build/grit_action.gypi' ],
         },
         {
-          'action_name': 'theme_resources_large',
+          'action_name': 'theme_resources_2x',
           'variables': {
-            'grit_grd_file': 'app/theme/theme_resources_large.grd',
+            'grit_grd_file': 'app/theme/theme_resources_2x.grd',
           },
           'includes': [ '../build/grit_action.gypi' ],
         },
@@ -274,7 +274,7 @@
         '<(DEPTH)/ui/base/strings/ui_strings.gyp:ui_strings',
         '<(DEPTH)/ui/ui.gyp:gfx_resources',
         '<(DEPTH)/ui/ui.gyp:ui_resources',
-        '<(DEPTH)/ui/ui.gyp:ui_resources_large',
+        '<(DEPTH)/ui/ui.gyp:ui_resources_2x',
         '<(DEPTH)/ui/ui.gyp:ui_resources_standard',
         '<(DEPTH)/webkit/support/webkit_support.gyp:webkit_resources',
         '<(DEPTH)/webkit/support/webkit_support.gyp:webkit_strings',
