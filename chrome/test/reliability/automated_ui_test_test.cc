@@ -222,7 +222,14 @@ TEST_F(AutomatedUITestBase, MAYBE_CloseBrowserWindow) {
   ASSERT_FALSE(CloseActiveWindow());
 }
 
-TEST_F(AutomatedUITestBase, IncognitoWindow) {
+// Flaky, see http://crbug.com/113046.
+#if defined(OS_MACOSX)
+#define MAYBE_IncognitoWindow FLAKY_IncognitoWindow
+#else
+#define MAYBE_IncognitoWindow IncognitoWindow
+#endif
+
+TEST_F(AutomatedUITestBase, MAYBE_IncognitoWindow) {
   int num_browser_windows;
   int num_normal_browser_windows;
   ASSERT_TRUE(automation()->GetBrowserWindowCount(&num_browser_windows));
