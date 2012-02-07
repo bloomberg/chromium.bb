@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -25,6 +25,7 @@
 #include "chrome/browser/history/history.h"
 
 #include "base/callback.h"
+#include "base/command_line.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
@@ -37,6 +38,7 @@
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/history/in_memory_database.h"
 #include "chrome/browser/history/in_memory_history_backend.h"
+#include "chrome/browser/history/in_memory_url_index.h"
 #include "chrome/browser/history/top_sites.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -44,6 +46,7 @@
 #include "chrome/browser/visitedlink/visitedlink_master.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/thumbnail_score.h"
 #include "chrome/common/url_constants.h"
@@ -181,6 +184,10 @@ void HistoryService::UnloadBackend() {
   // Get rid of the in-memory backend.
   in_memory_backend_.reset();
 
+  // Give the InMemoryURLIndex a chance to shutdown.
+  if (in_memory_url_index_.get())
+    in_memory_url_index_->ShutDown();
+
   // The backend's destructor must run on the history thread since it is not
   // threadsafe. So this thread must not be the last thread holding a reference
   // to the backend, or a crash could happen.
@@ -240,16 +247,6 @@ history::URLDatabase* HistoryService::InMemoryDatabase() {
   LoadBackendIfNecessary();
   if (in_memory_backend_.get())
     return in_memory_backend_->db();
-  return NULL;
-}
-
-history::InMemoryURLIndex* HistoryService::InMemoryIndex() {
-  // NOTE: See comments in BackendLoaded() as to why we call
-  // LoadBackendIfNecessary() here even though it won't affect the return value
-  // for this call.
-  LoadBackendIfNecessary();
-  if (in_memory_backend_.get())
-    return in_memory_backend_->InMemoryIndex();
   return NULL;
 }
 
@@ -689,6 +686,15 @@ bool HistoryService::Init(const FilePath& history_dir,
   history_dir_ = history_dir;
   bookmark_service_ = bookmark_service;
   no_db_ = no_db;
+
+  if (profile_ && !CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableHistoryQuickProvider)) {
+    std::string languages =
+        profile_->GetPrefs()->GetString(prefs::kAcceptLanguages);
+    in_memory_url_index_.reset(
+        new history::InMemoryURLIndex(profile_, history_dir_, languages));
+    in_memory_url_index_->Init();
+  }
 
   // Create the history backend.
   LoadBackendIfNecessary();

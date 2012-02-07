@@ -20,11 +20,17 @@
 #include "base/string16.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/autocomplete/history_provider_util.h"
+#include "chrome/browser/cancelable_request.h"
+#include "chrome/browser/history/history.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/history/in_memory_url_index_types.h"
 #include "chrome/browser/history/in_memory_url_index_cache.pb.h"
-#include "chrome/browser/history/url_index_private_data.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "sql/connection.h"
+
+class HistoryQuickProviderTest;
+class Profile;
 
 namespace base {
 class Time;
@@ -38,7 +44,11 @@ namespace history {
 
 namespace imui = in_memory_url_index;
 
-class URLDatabase;
+class HistoryDatabase;
+class URLIndexPrivateData;
+struct URLVisitedDetails;
+struct URLsModifiedDetails;
+struct URLsDeletedDetails;
 
 // The URL history source.
 // Holds portions of the URL database in memory in an indexed form.  Used to
@@ -59,27 +69,26 @@ class URLDatabase;
 // will eliminate such words except in the case where a single character
 // is being searched on and which character occurs as the second char16 of a
 // multi-char16 instance.
-class InMemoryURLIndex {
+class InMemoryURLIndex : public content::NotificationObserver {
  public:
-  // |history_dir| is a path to the directory containing the history database
-  // within the profile wherein the cache and transaction journals will be
-  // stored.
-  explicit InMemoryURLIndex(const FilePath& history_dir);
+  // |profile|, which may be NULL during unit testing, is used to register for
+  // history changes. |history_dir| is a path to the directory containing the
+  // history database within the profile wherein the cache and transaction
+  // journals will be stored. |languages| gives a list of language encodings by
+  // which URLs and omnibox searches are broken down into words and characters.
+  InMemoryURLIndex(Profile* profile,
+                   const FilePath& history_dir,
+                   const std::string& languages);
   virtual ~InMemoryURLIndex();
 
-  // Opens and indexes the URL history database. If the index private data
-  // cannot be restored from its cache file then it is rebuilt from the
-  // |history_db|. |languages| gives a list of language encodings by which URLs
-  // and omnibox searches are broken down into words and characters.
-  bool Init(URLDatabase* history_db, const std::string& languages);
+  // Opens and prepares the index of historical URL visits. If the index private
+  // data cannot be restored from its cache file then it is rebuilt from the
+  // history database.
+  void Init();
 
   // Signals that any outstanding initialization should be canceled and
   // flushes the cache to disk.
   void ShutDown();
-
-  // Reloads the history index from |history_db| ignoring any cache file that
-  // may be available, clears the cache and saves the cache after reloading.
-  bool ReloadFromHistory(history::URLDatabase* history_db);
 
   // Scans the history index and returns a vector with all scored, matching
   // history items. This entry point simply forwards the call on to the
@@ -87,37 +96,88 @@ class InMemoryURLIndex {
   // refer to that class.
   ScoredHistoryMatches HistoryItemsForTerms(const string16& term_string);
 
-  // Updates or adds an history item to the index if it meets the minimum
-  // 'quick' criteria.
-  void UpdateURL(URLID row_id, const URLRow& row);
-
-  // Deletes indexing data for an history item. The item may not have actually
-  // been indexed (which is the case if it did not previously meet minimum
-  // 'quick' criteria).
-  void DeleteURL(URLID row_id);
-
  private:
+  friend class ::HistoryQuickProviderTest;
   friend class InMemoryURLIndexTest;
-  FRIEND_TEST_ALL_PREFIXES(InMemoryURLIndexTest, CacheFilePath);
-  FRIEND_TEST_ALL_PREFIXES(InMemoryURLIndexTest, CacheSaveRestore);
-  FRIEND_TEST_ALL_PREFIXES(InMemoryURLIndexTest, HugeResultSet);
-  FRIEND_TEST_ALL_PREFIXES(InMemoryURLIndexTest, TitleSearch);
-  FRIEND_TEST_ALL_PREFIXES(InMemoryURLIndexTest, TypedCharacterCaching);
-  FRIEND_TEST_ALL_PREFIXES(InMemoryURLIndexTest, WhitelistedURLs);
   FRIEND_TEST_ALL_PREFIXES(LimitedInMemoryURLIndexTest, Initialization);
+  FRIEND_TEST_ALL_PREFIXES(InMemoryURLIndexCacheTest, CacheFilePath);
 
   // Creating one of me without a history path is not allowed (tests excepted).
   InMemoryURLIndex();
+
+  // HistoryDBTask used to rebuild our private data from the history database.
+  class RebuildPrivateDataFromHistoryDBTask : public HistoryDBTask {
+   public:
+    explicit RebuildPrivateDataFromHistoryDBTask(InMemoryURLIndex* index);
+    virtual ~RebuildPrivateDataFromHistoryDBTask();
+
+    virtual bool RunOnDBThread(HistoryBackend* backend,
+                               history::HistoryDatabase* db) OVERRIDE;
+    virtual void DoneRunOnMainThread() OVERRIDE;
+
+   private:
+    InMemoryURLIndex* index_;  // Call back to this index at completion.
+    bool succeeded_;  // Indicates if the rebuild was successful.
+    scoped_ptr<URLIndexPrivateData> data_;  // The rebuilt private data.
+
+    DISALLOW_COPY_AND_ASSIGN(RebuildPrivateDataFromHistoryDBTask);
+  };
 
   // Initializes all index data members in preparation for restoring the index
   // from the cache or a complete rebuild from the history database.
   void ClearPrivateData();
 
-  // Construct a file path for the cache file within the same directory where
+  // Constructs a file path for the cache file within the same directory where
   // the history database is kept and saves that path to |file_path|. Returns
   // true if |file_path| can be successfully constructed. (This function
   // provided as a hook for unit testing.)
   bool GetCacheFilePath(FilePath* file_path);
+
+  // Restores the index's private data from the cache file stored in the
+  // profile directory.
+  void RestoreFromCacheFile();
+
+  // Restores private_data_ from the given |path|. Runs on the UI thread.
+  // Provided for unit testing so that a test cache file can be used.
+  void DoRestoreFromCacheFile(const FilePath& path);
+
+  // Schedules a history task to rebuild our private data from the history
+  // database.
+  void ScheduleRebuildFromHistory();
+
+  // Callback used by RebuildPrivateDataFromHistoryDBTask to signal completion
+  // or rebuilding our private data from the history database. |data| points to
+  // a new instance of the private data just rebuilt. This callback is only
+  // called upon a successful restore from the history database.
+  void DoneRebuidingPrivateDataFromHistoryDB(URLIndexPrivateData* data);
+
+  // Rebuilds the history index from the history database in |history_db|.
+  // Used for unit testing only.
+  void RebuildFromHistory(HistoryDatabase* history_db);
+
+  // Caches the index private data and writes the cache file to the profile
+  // directory.
+  void SaveToCacheFile();
+
+  // Saves private_data_ to the given |path|. Runs on the UI thread.
+  // Provided for unit testing so that a test cache file can be used.
+  void DoSaveToCacheFile(const FilePath& path);
+
+  // Handles notifications of history changes.
+  virtual void Observe(int notification_type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
+
+  // Notification handlers.
+  void OnURLVisited(const URLVisitedDetails* details);
+  void OnURLsModified(const URLsModifiedDetails* details);
+  void OnURLsDeleted(const URLsDeletedDetails* details);
+
+  // Returns a pointer to our private data. For unit testing only.
+  URLIndexPrivateData* private_data() { return private_data_.get(); }
+
+  // The profile, may be null when testing.
+  Profile* profile_;
 
   // Directory where cache file resides. This is, except when unit testing,
   // the same directory in which the profile's history database is found. It
@@ -127,12 +187,19 @@ class InMemoryURLIndex {
   // The index's durable private data.
   scoped_ptr<URLIndexPrivateData> private_data_;
 
-  // Set to true at shutdown when the cache has been written to disk. Used
-  // as a temporary safety check to insure that the cache is saved before
-  // the index has been destructed.
+  // Set to true once the shutdown process has begun.
+  bool shutdown_;
+
+  CancelableRequestConsumer cache_reader_consumer_;
+  content::NotificationRegistrar registrar_;
+
+  // Set to true when changes to the index have been made and the index needs
+  // to be cached. Set to false when the index has been cached. Used as a
+  // temporary safety check to insure that the cache is saved before the
+  // index has been destructed.
   // TODO(mrossetti): Eliminate once the transition to SQLite has been done.
   // http://crbug.com/83659
-  bool cached_at_shutdown_;
+  bool needs_to_be_cached_;
 
   DISALLOW_COPY_AND_ASSIGN(InMemoryURLIndex);
 };

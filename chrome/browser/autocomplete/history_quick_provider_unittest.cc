@@ -18,6 +18,7 @@
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/history/in_memory_url_index.h"
 #include "chrome/browser/history/url_database.h"
+#include "chrome/browser/history/url_index_private_data.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
@@ -99,10 +100,7 @@ class HistoryQuickProviderTest : public testing::Test,
   };
 
   void SetUp();
-
-  void TearDown() {
-    provider_ = NULL;
-  }
+  void TearDown();
 
   virtual void GetTestData(size_t* data_count, TestURLInfo** test_data);
 
@@ -116,6 +114,9 @@ class HistoryQuickProviderTest : public testing::Test,
                std::vector<std::string> expected_urls,
                bool can_inline_top_result,
                string16 expected_fill_into_edit);
+
+  // Pass-through functions to simplify our friendship with URLIndexPrivateData.
+  bool UpdateURL(const history::URLRow& row);
 
   MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
@@ -141,6 +142,18 @@ void HistoryQuickProviderTest::SetUp() {
   FillData();
 }
 
+void HistoryQuickProviderTest::TearDown() {
+  provider_ = NULL;
+}
+
+bool HistoryQuickProviderTest::UpdateURL(const history::URLRow& row) {
+  history::InMemoryURLIndex* index = provider_->GetIndex();
+  DCHECK(index);
+  history::URLIndexPrivateData* private_data = index->private_data();
+  DCHECK(private_data);
+  return private_data->UpdateURL(row);
+}
+
 void HistoryQuickProviderTest::OnProviderUpdate(bool updated_matches) {
   MessageLoop::current()->Quit();
 }
@@ -156,12 +169,6 @@ void HistoryQuickProviderTest::GetTestData(size_t* data_count,
 void HistoryQuickProviderTest::FillData() {
   history::URLDatabase* db = history_service_->InMemoryDatabase();
   ASSERT_TRUE(db != NULL);
-
-  history::InMemoryURLIndex* index =
-      new history::InMemoryURLIndex(FilePath());
-  PrefService* prefs = profile_->GetPrefs();
-  std::string languages(prefs->GetString(prefs::kAcceptLanguages));
-  index->Init(db, languages);
   size_t data_count = 0;
   TestURLInfo* test_data = NULL;
   GetTestData(&data_count, &test_data);
@@ -171,15 +178,14 @@ void HistoryQuickProviderTest::FillData() {
     Time visit_time = Time::Now() - TimeDelta::FromDays(cur.days_from_now);
 
     history::URLRow url_info(current_url);
+    url_info.set_id(i + 5000);
     url_info.set_title(UTF8ToUTF16(cur.title));
     url_info.set_visit_count(cur.visit_count);
     url_info.set_typed_count(cur.typed_count);
     url_info.set_last_visit(visit_time);
     url_info.set_hidden(false);
-    index->UpdateURL(i, url_info);
+    UpdateURL(url_info);
   }
-
-  provider_->set_index(index);
 }
 
 HistoryQuickProviderTest::SetShouldContain::SetShouldContain(

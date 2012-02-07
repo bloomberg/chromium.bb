@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -43,6 +43,7 @@ class Time;
 namespace history {
 class InMemoryHistoryBackend;
 class InMemoryURLIndex;
+class InMemoryURLIndexTest;
 class HistoryAddPageArgs;
 class HistoryBackend;
 class HistoryDatabase;
@@ -67,7 +68,7 @@ class HistoryDBTask : public base::RefCountedThreadSafe<HistoryDBTask> {
   virtual bool RunOnDBThread(history::HistoryBackend* backend,
                              history::HistoryDatabase* db) = 0;
 
-  // Invoked on the main thread once RunOnDBThread has returned false. This is
+  // Invoked on the main thread once RunOnDBThread has returned true. This is
   // only invoked if the request was not canceled and returned true from
   // RunOnDBThread.
   virtual void DoneRunOnMainThread() = 0;
@@ -143,7 +144,9 @@ class HistoryService : public CancelableRequestProvider,
   history::URLDatabase* InMemoryDatabase();
 
   // Return the quick history index.
-  history::InMemoryURLIndex* InMemoryIndex();
+  history::InMemoryURLIndex* InMemoryIndex() const {
+    return in_memory_url_index_.get();
+  }
 
   // Navigation ----------------------------------------------------------------
 
@@ -590,6 +593,7 @@ class HistoryService : public CancelableRequestProvider,
   friend class HistoryOperation;
   friend class HistoryURLProvider;
   friend class HistoryURLProviderTest;
+  friend class history::InMemoryURLIndexTest;
   template<typename Info, typename Callback> friend class DownloadRequest;
   friend class PageUsageRequest;
   friend class RedirectRequest;
@@ -864,6 +868,9 @@ class HistoryService : public CancelableRequestProvider,
 
   // True if needs top site migration.
   bool needs_top_sites_migration_;
+
+  // The index used for quick history lookups.
+  scoped_ptr<history::InMemoryURLIndex> in_memory_url_index_;
 
   DISALLOW_COPY_AND_ASSIGN(HistoryService);
 };

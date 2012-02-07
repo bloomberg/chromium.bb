@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/file_util.h"
 #include "base/memory/scoped_ptr.h"
@@ -580,7 +579,7 @@ void HistoryBackend::InitImpl(const std::string& languages) {
   // Fill the in-memory database and send it back to the history service on the
   // main thread.
   InMemoryHistoryBackend* mem_backend = new InMemoryHistoryBackend;
-  if (mem_backend->Init(history_name, history_dir_, db_.get(), languages))
+  if (mem_backend->Init(history_name, db_.get()))
     delegate_->SetInMemoryBackend(id_, mem_backend);  // Takes ownership of
                                                       // pointer.
   else

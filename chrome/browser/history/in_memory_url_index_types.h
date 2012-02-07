@@ -139,9 +139,6 @@ typedef std::map<HistoryID, WordIDSet> HistoryIDWordMap;
 // A map from history_id to the history's URL and title.
 typedef std::map<HistoryID, URLRow> HistoryInfoMap;
 
-// TODO(rohitrao): Probably replace this with QueryResults.
-typedef std::vector<history::URLRow> URLRowVector;
-
 }  // namespace history
 
 #endif  // CHROME_BROWSER_HISTORY_IN_MEMORY_URL_INDEX_TYPES_H_

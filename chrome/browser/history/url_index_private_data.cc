@@ -17,7 +17,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete.h"
-#include "chrome/browser/history/url_database.h"
+#include "chrome/browser/history/history_database.h"
 #include "chrome/common/url_constants.h"
 #include "net/base/net_util.h"
 #include "third_party/protobuf/src/google/protobuf/repeated_field.h"
@@ -135,12 +135,12 @@ void URLIndexPrivateData::Clear() {
 
 // Cache Updating --------------------------------------------------------------
 
-void URLIndexPrivateData::IndexRow(const URLRow& row) {
+bool URLIndexPrivateData::IndexRow(const URLRow& row) {
   const GURL& gurl(row.url());
 
   // Index only URLs with a whitelisted scheme.
   if (!URLIndexPrivateData::URLSchemeIsWhitelisted(gurl))
-    return;
+    return false;
 
   URLID row_id = row.id();
   // Strip out username and password before saving and indexing.
@@ -162,7 +162,7 @@ void URLIndexPrivateData::IndexRow(const URLRow& row) {
 
   // Index the words contained in the URL and title of the row.
   AddRowWordsToIndex(new_row);
-  return;
+  return true;
 }
 
 void URLIndexPrivateData::AddRowWordsToIndex(const URLRow& row) {
@@ -295,53 +295,78 @@ void URLIndexPrivateData::AddToHistoryIDWordMap(HistoryID history_id,
   }
 }
 
-void URLIndexPrivateData::UpdateURL(URLID row_id, const URLRow& row) {
+bool URLIndexPrivateData::UpdateURL(const URLRow& row) {
   // The row may or may not already be in our index. If it is not already
   // indexed and it qualifies then it gets indexed. If it is already
   // indexed and still qualifies then it gets updated, otherwise it
   // is deleted from the index.
+  bool row_was_updated = false;
+  URLID row_id = row.id();
   HistoryInfoMap::iterator row_pos = history_info_map_.find(row_id);
   if (row_pos == history_info_map_.end()) {
     // This new row should be indexed if it qualifies.
     URLRow new_row(row);
     new_row.set_id(row_id);
-    if (RowQualifiesAsSignificant(new_row, base::Time()))
-      IndexRow(new_row);
+    row_was_updated =
+        RowQualifiesAsSignificant(new_row, base::Time()) && IndexRow(new_row);
   } else if (RowQualifiesAsSignificant(row, base::Time())) {
     // This indexed row still qualifies and will be re-indexed.
     // The url won't have changed but the title, visit count, etc.
     // might have changed.
-    URLRow& updated_row = row_pos->second;
-    updated_row.set_visit_count(row.visit_count());
-    updated_row.set_typed_count(row.typed_count());
-    updated_row.set_last_visit(row.last_visit());
-    // While the URL is guaranteed to remain stable, the title may have changed.
-    // If so, then we need to update the index with the changed words.
-    if (updated_row.title() != row.title()) {
-      // Clear all words associated with this row and re-index both the
-      // URL and title.
-      RemoveRowWordsFromIndex(updated_row);
-      updated_row.set_title(row.title());
-      AddRowWordsToIndex(updated_row);
+    URLRow& row_to_update = row_pos->second;
+    bool title_updated = row_to_update.title() != row.title();
+    if (row_to_update.visit_count() != row.visit_count() ||
+        row_to_update.typed_count() != row.typed_count() ||
+        row_to_update.last_visit() != row.last_visit() || title_updated) {
+      row_to_update.set_visit_count(row.visit_count());
+      row_to_update.set_typed_count(row.typed_count());
+      row_to_update.set_last_visit(row.last_visit());
+      // While the URL is guaranteed to remain stable, the title may have
+      // changed. If so, then update the index with the changed words.
+      if (title_updated) {
+        // Clear all words associated with this row and re-index both the
+        // URL and title.
+        RemoveRowWordsFromIndex(row_to_update);
+        row_to_update.set_title(row.title());
+        AddRowWordsToIndex(row_to_update);
+      }
+      row_was_updated = true;
     }
   } else {
     // This indexed row no longer qualifies and will be de-indexed by
     // clearing all words associated with this row.
-    URLRow& removed_row = row_pos->second;
-    RemoveRowFromIndex(removed_row);
+    RemoveRowFromIndex(row);
+    row_was_updated = true;
   }
-  // This invalidates the cache.
-  search_term_cache_.clear();
+  if (row_was_updated)
+    search_term_cache_.clear();  // This invalidates the cache.
+  return row_was_updated;
 }
 
-void URLIndexPrivateData::DeleteURL(URLID row_id) {
-  // Note that this does not remove any reference to this row from the
-  // word_id_history_map_. That map will continue to contain (and return)
-  // hits against this row until that map is rebuilt, but since the
-  // history_info_map_ no longer references the row no erroneous results
-  // will propagate to the user.
-  history_info_map_.erase(row_id);
-  search_term_cache_.clear();  // This invalidates the word cache.
+// Helper functor for DeleteURL.
+class HistoryInfoMapItemHasURL {
+ public:
+  explicit HistoryInfoMapItemHasURL(const GURL& url): url_(url) {}
+
+  bool operator()(const std::pair<const HistoryID, URLRow>& item) {
+    return item.second.url() == url_;
+  }
+
+ private:
+  const GURL& url_;
+};
+
+bool URLIndexPrivateData::DeleteURL(const GURL& url) {
+  // Find the matching entry in the history_info_map_.
+  HistoryInfoMap::iterator pos = std::find_if(
+      history_info_map_.begin(),
+      history_info_map_.end(),
+      HistoryInfoMapItemHasURL(url));
+  if (pos == history_info_map_.end())
+    return false;
+  RemoveRowFromIndex(pos->second);
+  search_term_cache_.clear();  // This invalidates the cache.
+  return true;
 }
 
 bool URLIndexPrivateData::URLSchemeIsWhitelisted(const GURL& gurl) const {
@@ -975,32 +1000,18 @@ void URLIndexPrivateData::SaveHistoryInfoMap(
 
 // Cache Restoring -------------------------------------------------------------
 
-bool URLIndexPrivateData::ReloadFromHistory(history::URLDatabase* history_db) {
-  Clear();
-
-  if (!history_db)
-    return false;
-
-  base::TimeTicks beginning_time = base::TimeTicks::Now();
-  URLDatabase::URLEnumerator history_enum;
-  if (!history_db->InitURLEnumeratorForSignificant(&history_enum))
-    return false;
-  URLRow row;
-  while (history_enum.GetNextURL(&row))
-    IndexRow(row);
-  UMA_HISTOGRAM_TIMES("History.InMemoryURLIndexingTime",
-                      base::TimeTicks::Now() - beginning_time);
-  return true;
-}
-
 bool URLIndexPrivateData::RestoreFromFile(const FilePath& file_path) {
   // TODO(mrossetti): Figure out how to determine if the cache is up-to-date.
   // That is: ensure that the database has not been modified since the cache
   // was last saved. DB file modification date is inadequate. There are no
   // SQLite table checksums automatically stored.
+  Clear();  // Start with a clean slate.
+
   // FIXME(mrossetti): Move File IO to another thread.
   base::ThreadRestrictions::ScopedAllowIO allow_io;
   base::TimeTicks beginning_time = base::TimeTicks::Now();
+  if (!file_util::PathExists(file_path))
+    return false;
   std::string data;
   // If there is no cache file then simply give up. This will cause us to
   // attempt to rebuild from the history database.
@@ -1027,6 +1038,32 @@ bool URLIndexPrivateData::RestoreFromFile(const FilePath& file_path) {
   UMA_HISTOGRAM_COUNTS_10000("History.InMemoryURLWords", word_map_.size());
   UMA_HISTOGRAM_COUNTS_10000("History.InMemoryURLChars", char_word_map_.size());
   return true;
+}
+
+// static
+URLIndexPrivateData* URLIndexPrivateData::RebuildFromHistory(
+    HistoryDatabase* history_db) {
+  if (!history_db)
+    return NULL;
+
+  base::TimeTicks beginning_time = base::TimeTicks::Now();
+
+  scoped_ptr<URLIndexPrivateData> rebuilt_data(new URLIndexPrivateData);
+  URLDatabase::URLEnumerator history_enum;
+  if (!history_db->InitURLEnumeratorForSignificant(&history_enum))
+    return NULL;
+  for (URLRow row; history_enum.GetNextURL(&row); )
+    rebuilt_data->IndexRow(row);
+
+  UMA_HISTOGRAM_TIMES("History.InMemoryURLIndexingTime",
+                      base::TimeTicks::Now() - beginning_time);
+  UMA_HISTOGRAM_COUNTS("History.InMemoryURLHistoryItems",
+                       rebuilt_data->history_id_word_map_.size());
+  UMA_HISTOGRAM_COUNTS_10000("History.InMemoryURLWords",
+                             rebuilt_data->word_map_.size());
+  UMA_HISTOGRAM_COUNTS_10000("History.InMemoryURLChars",
+                             rebuilt_data->char_word_map_.size());
+  return rebuilt_data.release();
 }
 
 bool URLIndexPrivateData::RestorePrivateData(

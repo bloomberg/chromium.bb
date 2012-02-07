@@ -6,15 +6,21 @@
 
 #include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/message_loop.h"
 #include "base/path_service.h"
-#include "base/string16.h"
 #include "base/string_util.h"
+#include "base/string16.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete.h"
-#include "chrome/browser/history/in_memory_database.h"
-#include "chrome/browser/history/in_memory_url_index.h"
+#include "chrome/browser/history/history.h"
+#include "chrome/browser/history/history_backend.h"
+#include "chrome/browser/history/history_database.h"
 #include "chrome/browser/history/in_memory_url_index_types.h"
+#include "chrome/browser/history/in_memory_url_index.h"
+#include "chrome/browser/history/url_index_private_data.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/test/base/testing_profile.h"
+#include "content/test/test_browser_thread.h"
 #include "sql/transaction.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -31,10 +37,9 @@
 
 namespace history {
 
-class InMemoryURLIndexTest : public testing::Test,
-                             public InMemoryDatabase {
+class InMemoryURLIndexTest : public testing::Test {
  public:
-  InMemoryURLIndexTest() { InitFromScratch(); }
+  InMemoryURLIndexTest();
 
  protected:
   // Test setup.
@@ -62,10 +67,70 @@ class InMemoryURLIndexTest : public testing::Test,
   void CheckTerm(const URLIndexPrivateData::SearchTermCacheMap& cache,
                  string16 term) const;
 
+  // Pass-through function to simplify our friendship with HistoryService.
+  sql::Connection& GetDB();
+
+  // Pass-through functions to simplify our friendship with InMemoryURLIndex.
+  URLIndexPrivateData* GetPrivateData() const;
+  bool GetCacheFilePath(FilePath* file_path) const;
+  void ClearHistoryDir() const;
+
+  // Pass-through functions to simplify our friendship with URLIndexPrivateData.
+  bool UpdateURL(const URLRow& row);
+  bool DeleteURL(const GURL& url);
+
+  MessageLoopForUI message_loop_;
+  content::TestBrowserThread ui_thread_;
+  content::TestBrowserThread file_thread_;
+  TestingProfile profile_;
+
   scoped_ptr<InMemoryURLIndex> url_index_;
+  HistoryDatabase* history_database_;
 };
 
+InMemoryURLIndexTest::InMemoryURLIndexTest()
+    : ui_thread_(content::BrowserThread::UI, &message_loop_),
+      file_thread_(content::BrowserThread::FILE, &message_loop_) {
+}
+
+sql::Connection& InMemoryURLIndexTest::GetDB() {
+  return history_database_->GetDB();
+}
+
+URLIndexPrivateData* InMemoryURLIndexTest::GetPrivateData() const {
+  DCHECK(url_index_->private_data_.get());
+  return url_index_->private_data_.get();
+}
+
+bool InMemoryURLIndexTest::GetCacheFilePath(FilePath* file_path) const {
+  DCHECK(file_path);
+  return url_index_->GetCacheFilePath(file_path);
+}
+
+void InMemoryURLIndexTest::ClearHistoryDir() const {
+  url_index_->history_dir_.clear();
+}
+
+bool InMemoryURLIndexTest::UpdateURL(const URLRow& row) {
+  return url_index_->private_data_->UpdateURL(row);
+}
+
+bool InMemoryURLIndexTest::DeleteURL(const GURL& url) {
+  return url_index_->private_data_->DeleteURL(url);
+}
+
 void InMemoryURLIndexTest::SetUp() {
+  // We cannot access the database until the backend has been loaded.
+  profile_.CreateHistoryService(true, false);
+  profile_.CreateBookmarkModel(true);
+  profile_.BlockUntilBookmarkModelLoaded();
+  profile_.BlockUntilHistoryProcessesPendingRequests();
+  HistoryService* history_service =
+      profile_.GetHistoryService(Profile::EXPLICIT_ACCESS);
+  ASSERT_TRUE(history_service);
+  HistoryBackend* backend = history_service->history_backend_.get();
+  history_database_ = backend->db();
+
   // Create and populate a working copy of the URL history database.
   FilePath history_proto_path;
   PathService::Get(chrome::DIR_TEST_DATA, &history_proto_path);
@@ -79,6 +144,7 @@ void InMemoryURLIndexTest::SetUp() {
   char sql_cmd_line[kCommandBufferMaxSize];
 
   sql::Connection& db(GetDB());
+  ASSERT_TRUE(db.is_open());
   {
     sql::Transaction transaction(&db);
     transaction.Begin();
@@ -110,15 +176,20 @@ void InMemoryURLIndexTest::SetUp() {
     transaction.Begin();
     while (statement.Step()) {
       URLRow row;
-      FillURLRow(statement, &row);
+      history_database_->FillURLRow(statement, &row);
       base::Time last_visit = time_right_now;
       for (int64 i = row.last_visit().ToInternalValue(); i > 0; --i)
         last_visit -= day_delta;
       row.set_last_visit(last_visit);
-      UpdateURLRow(row.id(), row);
+      history_database_->UpdateURLRow(row.id(), row);
     }
     transaction.Commit();
   }
+
+  url_index_.reset(
+      new InMemoryURLIndex(&profile_, FilePath(), "en,ja,hi,zh"));
+  url_index_->Init();
+  url_index_->RebuildFromHistory(history_database_);
 }
 
 FilePath::StringType InMemoryURLIndexTest::TestDBName() const {
@@ -195,21 +266,19 @@ FilePath::StringType LimitedInMemoryURLIndexTest::TestDBName() const {
   return FILE_PATH_LITERAL("url_history_provider_test_limited.db.txt");
 }
 
-TEST_F(InMemoryURLIndexTest, Construction) {
-  url_index_.reset(new InMemoryURLIndex(FilePath()));
-  EXPECT_TRUE(url_index_.get());
-}
-
 TEST_F(LimitedInMemoryURLIndexTest, Initialization) {
   // Verify that the database contains the expected number of items, which
   // is the pre-filtered count, i.e. all of the items.
-  sql::Statement statement(GetDB().GetUniqueStatement("SELECT * FROM urls;"));
+  sql::Connection& db(GetDB());
+  sql::Statement statement(db.GetUniqueStatement("SELECT * FROM urls;"));
   ASSERT_TRUE(statement.is_valid());
   uint64 row_count = 0;
   while (statement.Step()) ++row_count;
   EXPECT_EQ(1U, row_count);
-  url_index_.reset(new InMemoryURLIndex(FilePath()));
-  url_index_->Init(this, "en,ja,hi,zh");
+  url_index_.reset(
+      new InMemoryURLIndex(&profile_, FilePath(), "en,ja,hi,zh"));
+  url_index_->Init();
+  url_index_->RebuildFromHistory(history_database_);
   URLIndexPrivateData& private_data(*(url_index_->private_data_));
 
   // history_info_map_ should have the same number of items as were filtered.
@@ -219,10 +288,6 @@ TEST_F(LimitedInMemoryURLIndexTest, Initialization) {
 }
 
 TEST_F(InMemoryURLIndexTest, Retrieval) {
-  url_index_.reset(new InMemoryURLIndex(FilePath()));
-  url_index_->Init(this, "en,ja,hi,zh");
-  // The term will be lowercased by the search.
-
   // See if a very specific term gives a single result.
   ScoredHistoryMatches matches =
       url_index_->HistoryItemsForTerms(ASCIIToUTF16("DrudgeReport"));
@@ -292,9 +357,6 @@ TEST_F(InMemoryURLIndexTest, Retrieval) {
 }
 
 TEST_F(InMemoryURLIndexTest, URLPrefixMatching) {
-  url_index_.reset(new InMemoryURLIndex(FilePath()));
-  url_index_->Init(this, "en,ja,hi,zh");
-
   // "drudgere" - found, can inline
   ScoredHistoryMatches matches =
       url_index_->HistoryItemsForTerms(ASCIIToUTF16("drudgere"));
@@ -355,9 +417,6 @@ TEST_F(InMemoryURLIndexTest, URLPrefixMatching) {
 }
 
 TEST_F(InMemoryURLIndexTest, ProperStringMatching) {
-  url_index_.reset(new InMemoryURLIndex(FilePath()));
-  url_index_->Init(this, "en,ja,hi,zh");
-
   // Search for the following with the expected results:
   // "atdmt view" - found
   // "atdmt.view" - not found
@@ -372,21 +431,18 @@ TEST_F(InMemoryURLIndexTest, ProperStringMatching) {
 }
 
 TEST_F(InMemoryURLIndexTest, HugeResultSet) {
-  url_index_.reset(new InMemoryURLIndex(FilePath()));
-  url_index_->Init(this, "en,ja,hi,zh");
-
   // Create a huge set of qualifying history items.
   for (URLID row_id = 5000; row_id < 6000; ++row_id) {
     URLRow new_row(GURL("http://www.brokeandaloneinmanitoba.com/"), row_id);
     new_row.set_last_visit(base::Time::Now());
-    url_index_->UpdateURL(row_id, new_row);
+    EXPECT_TRUE(UpdateURL(new_row));
   }
 
   ScoredHistoryMatches matches =
       url_index_->HistoryItemsForTerms(ASCIIToUTF16("b"));
+  URLIndexPrivateData& private_data(*GetPrivateData());
   ASSERT_EQ(AutocompleteProvider::kMaxMatches, matches.size());
   // There are 7 matches already in the database.
-  URLIndexPrivateData& private_data(*(url_index_->private_data_.get()));
   ASSERT_EQ(1008U, private_data.pre_filter_item_count_);
   ASSERT_EQ(500U, private_data.post_filter_item_count_);
   ASSERT_EQ(AutocompleteProvider::kMaxMatches,
@@ -394,10 +450,8 @@ TEST_F(InMemoryURLIndexTest, HugeResultSet) {
 }
 
 TEST_F(InMemoryURLIndexTest, TitleSearch) {
-  url_index_.reset(new InMemoryURLIndex(FilePath()));
-  url_index_->Init(this, "en,ja,hi,zh");
   // Signal if someone has changed the test DB.
-  EXPECT_EQ(28U, url_index_->private_data_->history_info_map_.size());
+  EXPECT_EQ(28U, GetPrivateData()->history_info_map_.size());
 
   // Ensure title is being searched.
   ScoredHistoryMatches matches =
@@ -414,9 +468,6 @@ TEST_F(InMemoryURLIndexTest, TitleSearch) {
 }
 
 TEST_F(InMemoryURLIndexTest, TitleChange) {
-  url_index_.reset(new InMemoryURLIndex(FilePath()));
-  url_index_->Init(this, "en,ja,hi,zh");
-
   // Verify current title terms retrieves desired item.
   string16 original_terms =
       ASCIIToUTF16("lebronomics could high taxes influence");
@@ -441,7 +492,7 @@ TEST_F(InMemoryURLIndexTest, TitleChange) {
 
   // Update the row.
   old_row.set_title(ASCIIToUTF16("Does eat oats and little lambs eat ivy"));
-  url_index_->UpdateURL(expected_id, old_row);
+  EXPECT_TRUE(UpdateURL(old_row));
 
   // Verify we get the row using the new terms but not the original terms.
   matches = url_index_->HistoryItemsForTerms(new_terms);
@@ -452,9 +503,6 @@ TEST_F(InMemoryURLIndexTest, TitleChange) {
 }
 
 TEST_F(InMemoryURLIndexTest, NonUniqueTermCharacterSets) {
-  url_index_.reset(new InMemoryURLIndex(FilePath()));
-  url_index_->Init(this, "en,ja,hi,zh");
-
   // The presence of duplicate characters should succeed. Exercise by cycling
   // through a string with several duplicate characters.
   ScoredHistoryMatches matches =
@@ -488,11 +536,8 @@ TEST_F(InMemoryURLIndexTest, TypedCharacterCaching) {
   typedef URLIndexPrivateData::SearchTermCacheMap::iterator CacheIter;
   typedef URLIndexPrivateData::SearchTermCacheItem CacheItem;
 
-  url_index_.reset(new InMemoryURLIndex(FilePath()));
-  url_index_->Init(this, "en,ja,hi,zh");
-
   URLIndexPrivateData::SearchTermCacheMap& cache(
-      url_index_->private_data_->search_term_cache_);
+      GetPrivateData()->search_term_cache_);
 
   // The cache should be empty at this point.
   EXPECT_EQ(0U, cache.size());
@@ -582,9 +627,6 @@ TEST_F(InMemoryURLIndexTest, Scoring) {
 }
 
 TEST_F(InMemoryURLIndexTest, AddNewRows) {
-  url_index_.reset(new InMemoryURLIndex(FilePath()));
-  url_index_->Init(this, "en,ja,hi,zh");
-
   // Verify that the row we're going to add does not already exist.
   URLID new_row_id = 87654321;
   // Newly created URLRows get a last_visit time of 'right now' so it should
@@ -593,32 +635,39 @@ TEST_F(InMemoryURLIndexTest, AddNewRows) {
       ASCIIToUTF16("brokeandalone")).empty());
 
   // Add a new row.
-  URLRow new_row(GURL("http://www.brokeandaloneinmanitoba.com/"), new_row_id);
+  URLRow new_row(GURL("http://www.brokeandaloneinmanitoba.com/"), new_row_id++);
   new_row.set_last_visit(base::Time::Now());
-  url_index_->UpdateURL(new_row_id, new_row);
+  EXPECT_TRUE(UpdateURL(new_row));
 
   // Verify that we can retrieve it.
   EXPECT_EQ(1U, url_index_->HistoryItemsForTerms(
       ASCIIToUTF16("brokeandalone")).size());
 
-  // Add it again just to be sure that is harmless.
-  url_index_->UpdateURL(new_row_id, new_row);
+  // Add it again just to be sure that is harmless and that it does not update
+  // the index.
+  EXPECT_FALSE(UpdateURL(new_row));
   EXPECT_EQ(1U, url_index_->HistoryItemsForTerms(
       ASCIIToUTF16("brokeandalone")).size());
+
+  // Make up an URL that does not qualify and try to add it.
+  URLRow unqualified_row(GURL("http://www.brokeandaloneinmanitoba.com/"),
+                         new_row_id++);
+  EXPECT_FALSE(UpdateURL(new_row));
 }
 
 TEST_F(InMemoryURLIndexTest, DeleteRows) {
-  url_index_.reset(new InMemoryURLIndex(FilePath()));
-  url_index_->Init(this, "en,ja,hi,zh");
-
   ScoredHistoryMatches matches =
       url_index_->HistoryItemsForTerms(ASCIIToUTF16("DrudgeReport"));
   ASSERT_EQ(1U, matches.size());
 
   // Determine the row id for that result, delete that id, then search again.
-  url_index_->DeleteURL(matches[0].url_info.id());
+  EXPECT_TRUE(DeleteURL(matches[0].url_info.url()));
   EXPECT_TRUE(url_index_->HistoryItemsForTerms(
       ASCIIToUTF16("DrudgeReport")).empty());
+
+  // Make up an URL that does not exist in the database and delete it.
+  GURL url("http://www.hokeypokey.com/putyourrightfootin.html");
+  EXPECT_FALSE(DeleteURL(url));
 }
 
 TEST_F(InMemoryURLIndexTest, WhitelistedURLs) {
@@ -694,8 +743,8 @@ TEST_F(InMemoryURLIndexTest, WhitelistedURLs) {
     { "xmpp:node@example.com", false },
     { "xmpp://guest@example.com", false },
   };
-  url_index_.reset(new InMemoryURLIndex(FilePath()));
-  URLIndexPrivateData& private_data(*(url_index_->private_data_.get()));
+
+  URLIndexPrivateData& private_data(*GetPrivateData());
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(data); ++i) {
     GURL url(data[i].url_spec);
     EXPECT_EQ(data[i].expected_is_whitelisted,
@@ -703,31 +752,10 @@ TEST_F(InMemoryURLIndexTest, WhitelistedURLs) {
   }
 }
 
-TEST_F(InMemoryURLIndexTest, CacheFilePath) {
-  url_index_.reset(new InMemoryURLIndex(FilePath(FILE_PATH_LITERAL(
-      "/flammmy/frammy/"))));
-  FilePath full_file_path;
-  url_index_->GetCacheFilePath(&full_file_path);
-  std::vector<FilePath::StringType> expected_parts;
-  FilePath(FILE_PATH_LITERAL("/flammmy/frammy/History Provider Cache")).
-      GetComponents(&expected_parts);
-  std::vector<FilePath::StringType> actual_parts;
-  full_file_path.GetComponents(&actual_parts);
-  ASSERT_EQ(expected_parts.size(), actual_parts.size());
-  size_t count = expected_parts.size();
-  for (size_t i = 0; i < count; ++i)
-    EXPECT_EQ(expected_parts[i], actual_parts[i]);
-  // Must clear the history_dir_ to satisfy the dtor's DCHECK.
-  url_index_->history_dir_.clear();
-}
-
 TEST_F(InMemoryURLIndexTest, CacheSaveRestore) {
   // Save the cache to a protobuf, restore it, and compare the results.
-  url_index_.reset(new InMemoryURLIndex(FilePath()));
-  InMemoryURLIndex& url_index(*(url_index_.get()));
-  url_index.Init(this, "en,ja,hi,zh");
   in_memory_url_index::InMemoryURLIndexCacheItem index_cache;
-  URLIndexPrivateData& private_data(*(url_index_->private_data_.get()));
+  URLIndexPrivateData& private_data(*GetPrivateData());
   private_data.SavePrivateData(&index_cache);
 
   // Capture our private data so we can later compare for equality.
@@ -795,6 +823,41 @@ TEST_F(InMemoryURLIndexTest, CacheSaveRestore) {
     EXPECT_EQ(expected_row.last_visit(), actual_row.last_visit());
     EXPECT_EQ(expected_row.url(), actual_row.url());
   }
+}
+
+class InMemoryURLIndexCacheTest : public testing::Test {
+ public:
+  InMemoryURLIndexCacheTest() {}
+
+ protected:
+  virtual void SetUp() OVERRIDE;
+
+  ScopedTempDir temp_dir_;
+  scoped_ptr<InMemoryURLIndex> url_index_;
+};
+
+void InMemoryURLIndexCacheTest::SetUp() {
+  ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+  FilePath path(temp_dir_.path());
+  url_index_.reset(
+      new InMemoryURLIndex(NULL, path, "en,ja,hi,zh"));
+}
+
+TEST_F(InMemoryURLIndexCacheTest, CacheFilePath) {
+  FilePath expectedPath =
+      temp_dir_.path().Append(FILE_PATH_LITERAL("History Provider Cache"));
+  std::vector<FilePath::StringType> expected_parts;
+  expectedPath.GetComponents(&expected_parts);
+  FilePath full_file_path;
+  ASSERT_TRUE(url_index_->GetCacheFilePath(&full_file_path));
+  std::vector<FilePath::StringType> actual_parts;
+  full_file_path.GetComponents(&actual_parts);
+  ASSERT_EQ(expected_parts.size(), actual_parts.size());
+  size_t count = expected_parts.size();
+  for (size_t i = 0; i < count; ++i)
+    EXPECT_EQ(expected_parts[i], actual_parts[i]);
+  // Must clear the history_dir_ to satisfy the dtor's DCHECK.
+  url_index_->history_dir_.clear();
 }
 
 }  // namespace history
