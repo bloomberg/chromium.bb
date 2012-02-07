@@ -1224,6 +1224,14 @@ Browser* BrowserInit::LaunchWithProfile::OpenTabsInBrowser(
 
     first_tab = false;
   }
+  if (!browser->GetSelectedWebContents()) {
+    // TODO: this is a work around for 110909. Figure out why it's needed.
+    if (!browser->tab_count())
+      browser->AddBlankTab(true);
+    else
+      browser->ActivateTabAt(0, false);
+  }
+
   browser->window()->Show();
   // TODO(jcampan): http://crbug.com/8123 we should not need to set the initial
   //                focus explicitly.
