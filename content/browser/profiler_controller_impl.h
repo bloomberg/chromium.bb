@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_PROFILER_CONTROLLER_IMPL_H_
 
 #include "base/memory/singleton.h"
+#include "base/tracked_objects.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/profiler_controller.h"
 
@@ -34,7 +35,8 @@ class CONTENT_EXPORT ProfilerControllerImpl : public ProfilerController {
   virtual void Register(ProfilerSubscriber* subscriber) OVERRIDE;
   virtual void Unregister(ProfilerSubscriber* subscriber) OVERRIDE;
   virtual void GetProfilerData(int sequence_number) OVERRIDE;
-  virtual void SetProfilerStatus(bool enable) OVERRIDE;
+  virtual void SetProfilerStatus(
+      tracked_objects::ThreadData::Status status) OVERRIDE;
 
  private:
   friend struct DefaultSingletonTraits<ProfilerControllerImpl>;
@@ -43,7 +45,8 @@ class CONTENT_EXPORT ProfilerControllerImpl : public ProfilerController {
   void GetProfilerDataFromChildProcesses(int sequence_number);
 
   // Contact child processes and set profiler status to |enable|.
-  void SetProfilerStatusInChildProcesses(bool enable);
+  void SetProfilerStatusInChildProcesses(
+      tracked_objects::ThreadData::Status status);
 
   ProfilerSubscriber* subscriber_;
 
