@@ -162,10 +162,11 @@ wayland_compositor_init_egl(struct wayland_compositor *c)
 }
 
 static void
-frame_done(void *data, struct wl_callback *wl_callback, uint32_t time)
+frame_done(void *data, struct wl_callback *callback, uint32_t time)
 {
 	struct weston_output *output = data;
 
+	wl_callback_destroy(callback);
 	weston_output_finish_frame(output, time);
 }
 
