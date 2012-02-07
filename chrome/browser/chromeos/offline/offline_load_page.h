@@ -50,6 +50,8 @@ class OfflineLoadPage : public content::InterstitialPageDelegate,
   virtual void NotifyBlockingPageComplete(bool proceed);
 
  private:
+  friend class TestOfflineLoadPage;
+
   // InterstitialPageDelegate implementation.
   virtual std::string GetHTMLContents() OVERRIDE;
   virtual void CommandReceived(const std::string& command) OVERRIDE;

@@ -28,11 +28,7 @@ class TestOfflineLoadPage :  public chromeos::OfflineLoadPage {
                       OfflineLoadPageTest* test_page)
     : chromeos::OfflineLoadPage(tab_contents, url, CompletionCallback()),
       test_page_(test_page) {
-  }
-
-  // Overriden from InterstitialPage.  Don't create a view.
-  virtual content::WebContentsView* CreateWebContentsView() OVERRIDE {
-    return NULL;
+    interstitial_page_->DontCreateViewForTesting();
   }
 
   // chromeos::OfflineLoadPage override.
