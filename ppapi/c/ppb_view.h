@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From ppb_view.idl modified Wed Jan  4 04:40:12 2012. */
+/* From ppb_view.idl modified Mon Feb  6 14:05:16 2012. */
 
 #ifndef PPAPI_C_PPB_VIEW_H_
 #define PPAPI_C_PPB_VIEW_H_
@@ -32,9 +32,7 @@
  */
 /**
  * <code>PPB_View</code> represents the state of the view of an instance.
- * You can get a View object with the <code>PPB_Instance.GetView()</code>
- * function. Additionally, all </code>PPB_ViewChanged</code> objects are also
- * <code>PPB_View</code> objects so you will receive new view information via
+ * You will receive new view information via
  * <code>PPP_Instance.DidChangeView</code>.
  */
 struct PPB_View_1_0 {
@@ -111,12 +109,11 @@ struct PPB_View_1_0 {
    * the instance are scrolled into view.
    *
    * If the instance is scrolled off the view, the return value will be
-   * (0, 0, 0, 0). this state. This clip rect does <i>not</i> take into account
-   * page visibility. This means if the instance is scrolled into view but the
-   * page itself is in an invisible tab, the return rect will contain the
-   * visible rect assuming the page was visible. See
-   * <code>IsPageVisible()</code> and <code>IsVisible()</code> if you want to
-   * handle this case.
+   * (0, 0, 0, 0). This clip rect does <i>not</i> take into account page
+   * visibility. This means if the instance is scrolled into view but the page
+   * itself is in an invisible tab, the return rect will contain the visible
+   * rect assuming the page was visible. See <code>IsPageVisible()</code> and
+   * <code>IsVisible()</code> if you want to handle this case.
    *
    * Most applications will not need to worry about the clip. The recommended
    * behavior is to do full updates if the instance is visible as determined by

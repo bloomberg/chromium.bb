@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From ppp_instance.idl modified Wed Jan  4 06:11:56 2012. */
+/* From ppp_instance.idl modified Mon Feb  6 14:04:52 2012. */
 
 #ifndef PPAPI_C_PPP_INSTANCE_H_
 #define PPAPI_C_PPP_INSTANCE_H_
@@ -115,7 +115,7 @@ struct PPP_Instance_1_1 {
    * <code>DidChangeView() is called when the position, size, or other view
    * attributes of the instance has changed.
    */
-  void (*DidChangeView)(PP_Instance instance, PP_Resource view_resource);
+  void (*DidChangeView)(PP_Instance instance, PP_Resource view);
   /**
    * DidChangeFocus() is called when an instance has gained or lost focus.
    * Having focus means that keyboard events will be sent to the instance.

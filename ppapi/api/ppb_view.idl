@@ -14,9 +14,7 @@ label Chrome {
 
 /**
  * <code>PPB_View</code> represents the state of the view of an instance.
- * You can get a View object with the <code>PPB_Instance.GetView()</code>
- * function. Additionally, all </code>PPB_ViewChanged</code> objects are also
- * <code>PPB_View</code> objects so you will receive new view information via
+ * You will receive new view information via
  * <code>PPP_Instance.DidChangeView</code>.
  */
 [macro="PPB_VIEW_INTERFACE"]
@@ -100,12 +98,11 @@ interface PPB_View {
    * the instance are scrolled into view.
    *
    * If the instance is scrolled off the view, the return value will be
-   * (0, 0, 0, 0). this state. This clip rect does <i>not</i> take into account
-   * page visibility. This means if the instance is scrolled into view but the
-   * page itself is in an invisible tab, the return rect will contain the
-   * visible rect assuming the page was visible. See
-   * <code>IsPageVisible()</code> and <code>IsVisible()</code> if you want to
-   * handle this case.
+   * (0, 0, 0, 0). This clip rect does <i>not</i> take into account page
+   * visibility. This means if the instance is scrolled into view but the page
+   * itself is in an invisible tab, the return rect will contain the visible
+   * rect assuming the page was visible. See <code>IsPageVisible()</code> and
+   * <code>IsVisible()</code> if you want to handle this case.
    *
    * Most applications will not need to worry about the clip. The recommended
    * behavior is to do full updates if the instance is visible as determined by

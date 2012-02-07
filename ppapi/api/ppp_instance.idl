@@ -170,7 +170,7 @@ interface PPP_Instance {
       /**
        * A handle to a <code>PPB_View</code> resource identifying the new view.
        */
-      [in] PP_Resource view_resource);
+      [in] PP_Resource view);
 
   /**
    * DidChangeFocus() is called when an instance has gained or lost focus.
