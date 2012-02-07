@@ -22,11 +22,7 @@ FFmpegDemuxerFactory::~FFmpegDemuxerFactory() {}
 static void DemuxerInitDone(const DemuxerFactory::BuildCallback& cb,
                             const scoped_refptr<FFmpegDemuxer>& demuxer,
                             PipelineStatus status) {
-  if (status != PIPELINE_OK) {
-    cb.Run(status, NULL);
-    return;
-  }
-  cb.Run(PIPELINE_OK, demuxer);
+  cb.Run(status, demuxer);
 }
 
 void FFmpegDemuxerFactory::Build(const std::string& url,

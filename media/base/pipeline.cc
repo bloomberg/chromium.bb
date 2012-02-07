@@ -1139,17 +1139,13 @@ void Pipeline::OnDemuxerBuilt(PipelineStatus status, Demuxer* demuxer) {
     return;
   }
 
+  demuxer_ = demuxer;
   if (status != PIPELINE_OK) {
     SetError(status);
     return;
   }
 
-  if (!demuxer) {
-    SetError(PIPELINE_ERROR_REQUIRED_FILTER_MISSING);
-    return;
-  }
-
-  demuxer_ = demuxer;
+  CHECK(demuxer_) << "Null demuxer encountered despite PIPELINE_OK.";
   demuxer_->set_host(this);
 
   {
