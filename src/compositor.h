@@ -104,11 +104,11 @@ enum weston_visual {
 struct weston_shader {
 	GLuint program;
 	GLuint vertex_shader, fragment_shader;
-	GLuint proj_uniform;
-	GLuint tex_uniform;
-	GLuint alpha_uniform;
-	GLuint color_uniform;
-	GLuint texwidth_uniform;
+	GLint proj_uniform;
+	GLint tex_uniform;
+	GLint alpha_uniform;
+	GLint color_uniform;
+	GLint texwidth_uniform;
 };
 
 struct weston_animation {
@@ -133,7 +133,7 @@ struct weston_shell {
 		    int32_t width, int32_t height);
 	void (*configure)(struct weston_shell *shell,
 			  struct weston_surface *surface,
-			  int32_t x, int32_t y, int32_t width, int32_t height);
+			  GLfloat x, GLfloat y, int32_t width, int32_t height);
 	void (*destroy)(struct weston_shell *shell);
 };
 
@@ -153,7 +153,6 @@ struct weston_compositor {
 	EGLContext context;
 	EGLConfig config;
 	GLuint fbo;
-	uint32_t current_alpha;
 	struct weston_shader texture_shader;
 	struct weston_shader solid_shader;
 	struct weston_shader *current_shader;
@@ -214,6 +213,31 @@ enum weston_output_flags {
 	WL_OUTPUT_FLIPPED = 0x01
 };
 
+/* Using weston_surface transformations
+ *
+ * To add a transformation to a surface, create a struct weston_transform, and
+ * add it to the list surface->geometry.transformation_list. Whenever you
+ * change the list, anything under surface->geometry, or anything in the
+ * weston_transforms linked into the list, you must set
+ * surface->geometry.dirty = 1.
+ *
+ * The order in the list defines the order of transformations. Let the list
+ * contain the transformation matrices M1, ..., Mn as head to tail. The
+ * transformation is applied to surface-local coordinate vector p as
+ *    P = Mn * ... * M2 * M1 * p
+ * to produce the global coordinate vector P. The total transform
+ *    Mn * ... * M2 * M1
+ * is cached in surface->transform.matrix, and the inverse of it in
+ * surface->transform.inverse.
+ *
+ * The list always contains surface->transform.position transformation, which
+ * is the translation by surface->geometry.x and y.
+ *
+ * If you want to apply a transformation in local coordinates, add your
+ * weston_transform to the head of the list. If you want to apply a
+ * transformation in global coordinates, add it to the tail of the list.
+ */
+
 struct weston_surface {
 	struct wl_surface surface;
 	struct weston_compositor *compositor;
@@ -234,7 +258,7 @@ struct weston_surface {
 	 * That includes the transformations referenced from the list.
 	 */
 	struct {
-		int32_t x, y; /* surface translation on display */
+		GLfloat x, y; /* surface translation on display */
 		int32_t width, height;
 
 		/* struct weston_transform */
@@ -378,7 +402,7 @@ weston_surface_create(struct weston_compositor *compositor);
 
 void
 weston_surface_configure(struct weston_surface *surface,
-			 int x, int y, int width, int height);
+			 GLfloat x, GLfloat y, int width, int height);
 
 void
 weston_surface_assign_output(struct weston_surface *surface);

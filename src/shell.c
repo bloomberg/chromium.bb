@@ -103,6 +103,7 @@ struct shell_surface {
 		struct wl_grab grab;
 		uint32_t time;
 		int32_t x, y;
+		struct weston_transform parent_transform;
 		int32_t initial_up;
 	} popup;
 
@@ -521,8 +522,22 @@ shell_map_popup(struct shell_surface *shsurf, uint32_t time)
 	shsurf->popup.grab.interface = &popup_grab_interface;
 	device = es->compositor->input_device;
 
-	es->geometry.x = shsurf->parent->surface->geometry.x + shsurf->popup.x;
-	es->geometry.y = shsurf->parent->surface->geometry.y + shsurf->popup.y;
+	weston_surface_update_transform(parent);
+	if (parent->transform.enabled) {
+		shsurf->popup.parent_transform.matrix =
+			parent->transform.matrix;
+	} else {
+		/* construct x, y translation matrix */
+		weston_matrix_init(&shsurf->popup.parent_transform.matrix);
+		shsurf->popup.parent_transform.matrix.d[12] =
+			parent->geometry.x;
+		shsurf->popup.parent_transform.matrix.d[13] =
+			parent->geometry.y;
+	}
+	wl_list_insert(es->geometry.transformation_list.prev,
+		       &shsurf->popup.parent_transform.link);
+	es->geometry.x = shsurf->popup.x;
+	es->geometry.y = shsurf->popup.y;
 	es->geometry.dirty = 1;
 
 	shsurf->popup.grab.input_device = device;
@@ -1397,7 +1412,7 @@ map(struct weston_shell *base,
 
 static void
 configure(struct weston_shell *base, struct weston_surface *surface,
-	  int32_t x, int32_t y, int32_t width, int32_t height)
+	  GLfloat x, GLfloat y, int32_t width, int32_t height)
 {
 	struct wl_shell *shell = container_of(base, struct wl_shell, shell);
 	int do_configure = !shell->locked;

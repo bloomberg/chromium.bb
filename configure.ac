@@ -117,7 +117,7 @@ AM_CONDITIONAL(BUILD_CLIENTS, test x$enable_clients == xyes)
 if test x$enable_clients == xyes; then
   AC_DEFINE([BUILD_CLIENTS], [1], [Build the Wayland clients])
 
-  PKG_CHECK_MODULES(CLIENT, [wayland-client wayland-egl egl >= 7.10 cairo >= 1.10.0 gdk-pixbuf-2.0 glib-2.0 gobject-2.0 gio-2.0 xkbcommon])
+  PKG_CHECK_MODULES(CLIENT, [wayland-client wayland-egl egl >= 7.10 cairo >= 1.10.0 gdk-pixbuf-2.0 glib-2.0 gobject-2.0 gio-2.0 xkbcommon libpng])
 
   PKG_CHECK_MODULES(POPPLER, [poppler-glib],
 			     [have_poppler=yes], [have_poppler=no])

@@ -181,7 +181,6 @@ draw_border(struct wayland_output *output)
 
 	glUniform1i(shader->tex_uniform, 0);
 	glUniform1f(shader->alpha_uniform, 1);
-	c->base.current_alpha = 255;
 	glUniform1f(shader->texwidth_uniform, 1);
 
 	n = texture_border(output);

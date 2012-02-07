@@ -314,12 +314,10 @@ weston_surface_update_transform(struct weston_surface *surface)
 			     &surface->transform.boundingbox);
 }
 
-WL_EXPORT void
-weston_surface_to_global(struct weston_surface *surface,
-			 int32_t sx, int32_t sy, int32_t *x, int32_t *y)
+static void
+surface_to_global_float(struct weston_surface *surface,
+			int32_t sx, int32_t sy, GLfloat *x, GLfloat *y)
 {
-	weston_surface_update_transform(surface);
-
 	if (surface->transform.enabled) {
 		struct weston_vector v = { { sx, sy, 0.0f, 1.0f } };
 
@@ -334,12 +332,25 @@ weston_surface_to_global(struct weston_surface *surface,
 			return;
 		}
 
-		*x = floorf(v.f[0] / v.f[3]);
-		*y = floorf(v.f[1] / v.f[3]);
+		*x = v.f[0] / v.f[3];
+		*y = v.f[1] / v.f[3];
 	} else {
 		*x = sx + surface->geometry.x;
 		*y = sy + surface->geometry.y;
 	}
+}
+
+WL_EXPORT void
+weston_surface_to_global(struct weston_surface *surface,
+			 int32_t sx, int32_t sy, int32_t *x, int32_t *y)
+{
+	GLfloat xf, yf;
+
+	weston_surface_update_transform(surface);
+
+	surface_to_global_float(surface, sx, sy, &xf, &yf);
+	*x = floorf(xf);
+	*y = floorf(yf);
 }
 
 static void
@@ -452,7 +463,7 @@ weston_surface_flush_damage(struct weston_surface *surface)
 
 WL_EXPORT void
 weston_surface_configure(struct weston_surface *surface,
-			 int x, int y, int width, int height)
+			 GLfloat x, GLfloat y, int width, int height)
 {
 	weston_surface_damage_below(surface);
 
@@ -466,7 +477,8 @@ weston_surface_configure(struct weston_surface *surface,
 	weston_surface_damage(surface);
 
 	pixman_region32_fini(&surface->opaque);
-	if (surface->visual == WESTON_RGB_VISUAL)
+	if (surface->visual == WESTON_RGB_VISUAL &&
+	    surface->transform.enabled == 0)
 		pixman_region32_init_rect(&surface->opaque,
 					  surface->geometry.x,
 					  surface->geometry.y,
@@ -684,6 +696,9 @@ weston_surface_draw(struct weston_surface *es, struct weston_output *output)
 				  &output->region);
 	pixman_region32_intersect(&repaint, &repaint, &es->damage);
 
+	/* Clear damage, assume outputs do not overlap. */
+	pixman_region32_subtract(&es->damage, &es->damage, &output->region);
+
 	if (!pixman_region32_not_empty(&repaint))
 		goto out;
 
@@ -707,21 +722,11 @@ weston_surface_draw(struct weston_surface *es, struct weston_output *output)
 
 	glUniformMatrix4fv(es->shader->proj_uniform,
 			   1, GL_FALSE, output->matrix.d);
-
-	if (es->shader->tex_uniform != GL_NONE)
-		glUniform1i(es->shader->tex_uniform, 0);
-
-	if (es->shader->color_uniform != GL_NONE)
-		glUniform4fv(es->shader->color_uniform,1, es->color);
-
-	if (es->shader->alpha_uniform && es->alpha != ec->current_alpha) {
-		glUniform1f(es->shader->alpha_uniform, es->alpha / 255.0);
-		ec->current_alpha = es->alpha;
-	}
-
-	if (es->shader->texwidth_uniform != GL_NONE)
-		glUniform1f(es->shader->texwidth_uniform,
-			    (GLfloat)es->geometry.width / es->pitch);
+	glUniform1i(es->shader->tex_uniform, 0);
+	glUniform4fv(es->shader->color_uniform, 1, es->color);
+	glUniform1f(es->shader->alpha_uniform, es->alpha / 255.0);
+	glUniform1f(es->shader->texwidth_uniform,
+		    (GLfloat)es->geometry.width / es->pitch);
 
 	if (es->transform.enabled)
 		filter = GL_LINEAR;
@@ -1115,12 +1120,11 @@ surface_attach(struct wl_client *client,
 	} else if (sx != 0 || sy != 0 ||
 		   es->geometry.width != buffer->width ||
 		   es->geometry.height != buffer->height) {
-		int32_t from_x, from_y;
-		int32_t to_x, to_y;
+		GLfloat from_x, from_y;
+		GLfloat to_x, to_y;
 
-		/* FIXME: this has serious cumulating rounding errors */
-		weston_surface_to_global(es, 0, 0, &from_x, &from_y);
-		weston_surface_to_global(es, sx, sy, &to_x, &to_y);
+		surface_to_global_float(es, 0, 0, &from_x, &from_y);
+		surface_to_global_float(es, sx, sy, &to_x, &to_y);
 		shell->configure(shell, es,
 				 es->geometry.x + to_x - from_x,
 				 es->geometry.y + to_y - from_y,
@@ -1857,39 +1861,9 @@ weston_shader_init(struct weston_shader *shader,
 	shader->proj_uniform = glGetUniformLocation(shader->program, "proj");
 	shader->tex_uniform = glGetUniformLocation(shader->program, "tex");
 	shader->alpha_uniform = glGetUniformLocation(shader->program, "alpha");
+	shader->color_uniform = glGetUniformLocation(shader->program, "color");
 	shader->texwidth_uniform = glGetUniformLocation(shader->program,
 							"texwidth");
-
-	return 0;
-}
-
-static int
-init_solid_shader(struct weston_shader *shader,
-		  GLuint vertex_shader, const char *fragment_source)
-{
-	GLint status;
-	char msg[512];
-
-	shader->vertex_shader = vertex_shader;
-	shader->fragment_shader =
-		compile_shader(GL_FRAGMENT_SHADER, fragment_source);
-
-	shader->program = glCreateProgram();
-	glAttachShader(shader->program, shader->vertex_shader);
-	glAttachShader(shader->program, shader->fragment_shader);
-	glBindAttribLocation(shader->program, 0, "position");
-	glBindAttribLocation(shader->program, 1, "texcoord");
-
-	glLinkProgram(shader->program);
-	glGetProgramiv(shader->program, GL_LINK_STATUS, &status);
-	if (!status) {
-		glGetProgramInfoLog(shader->program, sizeof msg, NULL, msg);
- 		fprintf(stderr, "link info: %s\n", msg);
-		return -1;
- 	}
- 
-	shader->proj_uniform = glGetUniformLocation(shader->program, "proj");
-	shader->color_uniform = glGetUniformLocation(shader->program, "color");
 
 	return 0;
 }
@@ -2072,9 +2046,8 @@ weston_compositor_init(struct weston_compositor *ec, struct wl_display *display)
 	if (weston_shader_init(&ec->texture_shader,
 			     vertex_shader, texture_fragment_shader) < 0)
 		return -1;
-	if (init_solid_shader(&ec->solid_shader,
-			      ec->texture_shader.vertex_shader,
-			      solid_fragment_shader) < 0)
+	if (weston_shader_init(&ec->solid_shader,
+			     vertex_shader, solid_fragment_shader) < 0)
 		return -1;
 
 	loop = wl_display_get_event_loop(ec->wl_display);

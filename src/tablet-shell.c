@@ -141,7 +141,7 @@ tablet_shell_map(struct weston_shell *base, struct weston_surface *surface,
 static void
 tablet_shell_configure(struct weston_shell *base,
 			     struct weston_surface *surface,
-			     int32_t x, int32_t y,
+			     GLfloat x, GLfloat y,
 			     int32_t width, int32_t height)
 {
 	weston_surface_configure(surface, x, y, width, height);
