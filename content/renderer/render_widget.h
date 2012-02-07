@@ -365,6 +365,7 @@ class CONTENT_EXPORT RenderWidget
 
   // The window we are embedded within.  TODO(darin): kill this.
   gfx::NativeViewId host_window_;
+  bool host_window_set_;
 
   // We store the current cursor object so we can avoid spamming SetCursor
   // messages.

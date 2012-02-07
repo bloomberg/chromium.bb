@@ -74,6 +74,7 @@ RenderWidget::RenderWidget(WebKit::WebPopupType popup_type)
       webwidget_(NULL),
       opener_id_(MSG_ROUTING_NONE),
       host_window_(0),
+      host_window_set_(false),
       current_paint_buf_(NULL),
       next_paint_flags_(0),
       filtered_time_per_frame_(0.0f),
@@ -174,6 +175,9 @@ void RenderWidget::CompleteInit(gfx::NativeViewId parent_hwnd) {
   DCHECK(routing_id_ != MSG_ROUTING_NONE);
 
   host_window_ = parent_hwnd;
+  host_window_set_ = true;
+
+  DoDeferredUpdate();
 
   Send(new ViewHostMsg_RenderViewReady(routing_id_));
 }
@@ -740,6 +744,11 @@ void RenderWidget::DoDeferredUpdate() {
 
   if (!webwidget_)
     return;
+
+  if (!host_window_set_) {
+    TRACE_EVENT0("renderer", "EarlyOut_NoHostWindow");
+    return;
+  }
   if (update_reply_pending_) {
     TRACE_EVENT0("renderer", "EarlyOut_UpdateReplyPending");
     return;
@@ -757,6 +766,9 @@ void RenderWidget::DoDeferredUpdate() {
     TRACE_EVENT0("renderer", "EarlyOut_NotVisible");
     return;
   }
+
+  if (is_accelerated_compositing_active_)
+    using_asynchronous_swapbuffers_ = SupportsAsynchronousSwapBuffers();
 
   // Tracking of frame rate jitter
   base::TimeTicks frame_begin_ticks = base::TimeTicks::Now();
@@ -1017,10 +1029,6 @@ void RenderWidget::didActivateCompositor(int compositor_identifier) {
   is_accelerated_compositing_active_ = true;
   Send(new ViewHostMsg_DidActivateAcceleratedCompositing(
       routing_id_, is_accelerated_compositing_active_));
-
-  // Note: asynchronous swapbuffer support currently only matters if
-  // compositing scheduling happens on the RenderWidget.
-  using_asynchronous_swapbuffers_ = SupportsAsynchronousSwapBuffers();
 }
 
 void RenderWidget::didDeactivateCompositor() {
@@ -1511,7 +1519,7 @@ bool RenderWidget::CanComposeInline() {
 
 WebScreenInfo RenderWidget::screenInfo() {
   WebScreenInfo results;
-  if (host_window_)
+  if (host_window_set_)
     Send(new ViewHostMsg_GetScreenInfo(routing_id_, host_window_, &results));
   else {
     DLOG(WARNING) << "Unable to retrieve screen information, no host window";
