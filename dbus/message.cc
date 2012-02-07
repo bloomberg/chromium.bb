@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -429,7 +429,8 @@ ErrorResponse* ErrorResponse::FromMethodCall(
 MessageWriter::MessageWriter(Message* message) :
     message_(message),
     container_is_open_(false) {
-  dbus_message_iter_init_append(message_->raw_message(), &raw_message_iter_);
+  if (message)
+    dbus_message_iter_init_append(message_->raw_message(), &raw_message_iter_);
 }
 
 MessageWriter::~MessageWriter() {
@@ -665,7 +666,8 @@ void MessageWriter::AppendVariantOfBasic(int dbus_type, const void* value) {
 
 MessageReader::MessageReader(Message* message)
     : message_(message) {
-  dbus_message_iter_init(message_->raw_message(), &raw_message_iter_);
+  if (message)
+    dbus_message_iter_init(message_->raw_message(), &raw_message_iter_);
 }
 
 

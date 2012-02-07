@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -240,8 +240,9 @@ class ErrorResponse: public Message {
 //
 class MessageWriter {
  public:
-  // Data added with Append* will be written to |message|.
-  MessageWriter(Message* message);
+  // Data added with Append* will be written to |message|, which may be NULL
+  // to create a sub-writer for passing to OpenArray, etc.
+  explicit MessageWriter(Message* message);
   ~MessageWriter();
 
   // Appends a byte to the message.
@@ -331,8 +332,9 @@ class MessageWriter {
 // starting with Pop advance the iterator on success.
 class MessageReader {
  public:
-  // The data will be read from the given message.
-  MessageReader(Message* message);
+  // The data will be read from the given |message|, which may be NULL to
+  // create a sub-reader for passing to PopArray, etc.
+  explicit MessageReader(Message* message);
   ~MessageReader();
 
   // Returns true if the reader has more data to read. The function is

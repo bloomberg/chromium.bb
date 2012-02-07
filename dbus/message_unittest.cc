@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -232,7 +232,7 @@ TEST(MessageTest, ArrayOfObjectPaths) {
 TEST(MessageTest, OpenArrayAndPopArray) {
   scoped_ptr<dbus::Response> message(dbus::Response::CreateEmpty());
   dbus::MessageWriter writer(message.get());
-  dbus::MessageWriter array_writer(message.get());
+  dbus::MessageWriter array_writer(NULL);
   writer.OpenArray("s", &array_writer);  // Open an array of strings.
   array_writer.AppendString("foo");
   array_writer.AppendString("bar");
@@ -241,7 +241,7 @@ TEST(MessageTest, OpenArrayAndPopArray) {
 
   dbus::MessageReader reader(message.get());
   ASSERT_EQ(dbus::Message::ARRAY, reader.GetDataType());
-  dbus::MessageReader array_reader(message.get());
+  dbus::MessageReader array_reader(NULL);
   ASSERT_TRUE(reader.PopArray(&array_reader));
   ASSERT_FALSE(reader.HasMoreData());  // Should not have more data to read.
 
@@ -262,13 +262,13 @@ TEST(MessageTest, CreateComplexMessageAndReadIt) {
   scoped_ptr<dbus::Response> message(dbus::Response::CreateEmpty());
   dbus::MessageWriter writer(message.get());
   {
-    dbus::MessageWriter array_writer(message.get());
+    dbus::MessageWriter array_writer(NULL);
     // Open an array of variants.
     writer.OpenArray("v", &array_writer);
     {
       // The first value in the array.
       {
-        dbus::MessageWriter variant_writer(message.get());
+        dbus::MessageWriter variant_writer(NULL);
         // Open a variant of a boolean.
         array_writer.OpenVariant("b", &variant_writer);
         variant_writer.AppendBool(true);
@@ -277,11 +277,11 @@ TEST(MessageTest, CreateComplexMessageAndReadIt) {
 
       // The second value in the array.
       {
-        dbus::MessageWriter variant_writer(message.get());
+        dbus::MessageWriter variant_writer(NULL);
         // Open a variant of a struct that contains a string and an int32.
         array_writer.OpenVariant("(si)", &variant_writer);
         {
-          dbus::MessageWriter struct_writer(message.get());
+          dbus::MessageWriter struct_writer(NULL);
           variant_writer.OpenStruct(&struct_writer);
           struct_writer.AppendString("string");
           struct_writer.AppendInt32(123);
@@ -292,16 +292,16 @@ TEST(MessageTest, CreateComplexMessageAndReadIt) {
 
       // The third value in the array.
       {
-        dbus::MessageWriter variant_writer(message.get());
+        dbus::MessageWriter variant_writer(NULL);
         // Open a variant of an array of string-to-int64 dict entries.
         array_writer.OpenVariant("a{sx}", &variant_writer);
         {
           // Opens an array of string-to-int64 dict entries.
-          dbus::MessageWriter dict_array_writer(message.get());
+          dbus::MessageWriter dict_array_writer(NULL);
           variant_writer.OpenArray("{sx}", &dict_array_writer);
           {
             // Opens a string-to-int64 dict entries.
-            dbus::MessageWriter dict_entry_writer(message.get());
+            dbus::MessageWriter dict_entry_writer(NULL);
             dict_array_writer.OpenDictEntry(&dict_entry_writer);
             dict_entry_writer.AppendString("foo");
             dict_entry_writer.AppendInt64(GG_INT64_C(1234567890123456789));
@@ -334,7 +334,7 @@ TEST(MessageTest, CreateComplexMessageAndReadIt) {
             message->ToString());
 
   dbus::MessageReader reader(message.get());
-  dbus::MessageReader array_reader(message.get());
+  dbus::MessageReader array_reader(NULL);
   ASSERT_TRUE(reader.PopArray(&array_reader));
 
   // The first value in the array.
@@ -344,10 +344,10 @@ TEST(MessageTest, CreateComplexMessageAndReadIt) {
 
   // The second value in the array.
   {
-    dbus::MessageReader variant_reader(message.get());
+    dbus::MessageReader variant_reader(NULL);
     ASSERT_TRUE(array_reader.PopVariant(&variant_reader));
     {
-      dbus::MessageReader struct_reader(message.get());
+      dbus::MessageReader struct_reader(NULL);
       ASSERT_TRUE(variant_reader.PopStruct(&struct_reader));
       std::string string_value;
       ASSERT_TRUE(struct_reader.PopString(&string_value));
@@ -362,13 +362,13 @@ TEST(MessageTest, CreateComplexMessageAndReadIt) {
 
   // The third value in the array.
   {
-    dbus::MessageReader variant_reader(message.get());
+    dbus::MessageReader variant_reader(NULL);
     ASSERT_TRUE(array_reader.PopVariant(&variant_reader));
     {
-      dbus::MessageReader dict_array_reader(message.get());
+      dbus::MessageReader dict_array_reader(NULL);
       ASSERT_TRUE(variant_reader.PopArray(&dict_array_reader));
       {
-        dbus::MessageReader dict_entry_reader(message.get());
+        dbus::MessageReader dict_entry_reader(NULL);
         ASSERT_TRUE(dict_array_reader.PopDictEntry(&dict_entry_reader));
         std::string string_value;
         ASSERT_TRUE(dict_entry_reader.PopString(&string_value));
