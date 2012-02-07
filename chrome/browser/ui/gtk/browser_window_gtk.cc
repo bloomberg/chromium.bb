@@ -1263,9 +1263,6 @@ void BrowserWindowGtk::Observe(int type,
       }
       break;
     }
-
-    default:
-      NOTREACHED() << "Got a notification we didn't register for!";
   }
 }
 

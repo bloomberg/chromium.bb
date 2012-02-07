@@ -41,6 +41,11 @@ class PanelBrowserWindowGtk : public BrowserWindowGtk,
   // ui::WorkAreaWatcherXObserver override
   virtual void WorkAreaChanged() OVERRIDE;
 
+  // Overrides BrowserWindowGtk::NotificationObserver::Observe
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
+
  protected:
   // BrowserWindowGtk overrides
   virtual bool GetWindowEdge(int x, int y, GdkWindowEdge* edge) OVERRIDE;
@@ -196,6 +201,8 @@ class PanelBrowserWindowGtk : public BrowserWindowGtk,
   // current one completes. In this case, we want to start the new animation
   // from where the last one left.
   gfx::Rect last_animation_progressed_bounds_;
+
+  content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(PanelBrowserWindowGtk);
 };

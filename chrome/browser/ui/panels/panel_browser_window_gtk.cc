@@ -95,6 +95,10 @@ void PanelBrowserWindowGtk::Init() {
                    G_CALLBACK(OnTitlebarButtonReleaseEventThunk), this);
 
   ui::WorkAreaWatcherX::AddObserver(this);
+  registrar_.Add(
+      this,
+      chrome::NOTIFICATION_PANEL_CHANGED_EXPANSION_STATE,
+      content::Source<Panel>(panel_.get()));
 }
 
 bool PanelBrowserWindowGtk::GetWindowEdge(int x, int y, GdkWindowEdge* edge) {
@@ -231,6 +235,19 @@ void PanelBrowserWindowGtk::WorkAreaChanged() {
   panel_->manager()->OnDisplayChanged();
 }
 
+void PanelBrowserWindowGtk::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
+  if (type == chrome::NOTIFICATION_PANEL_CHANGED_EXPANSION_STATE) {
+    bool accept_focus = (panel_->expansion_state() == Panel::EXPANDED);
+    gdk_window_set_accept_focus(
+        gtk_widget_get_window(GTK_WIDGET(window())), accept_focus);
+  }
+
+  BrowserWindowGtk::Observe(type, source, details);
+}
+
 void PanelBrowserWindowGtk::ShowPanel() {
   Show();
 }
@@ -279,8 +296,6 @@ void PanelBrowserWindowGtk::ClosePanel() {
 }
 
 void PanelBrowserWindowGtk::ActivatePanel() {
-  gdk_window_set_accept_focus(
-      gtk_widget_get_window(GTK_WIDGET(window())), TRUE);
   Activate();
 }
 
@@ -291,11 +306,6 @@ void PanelBrowserWindowGtk::DeactivatePanel() {
     browser_window->Activate();
   } else {
     Deactivate();
-  }
-
-  if (panel_->expansion_state() == Panel::MINIMIZED) {
-    gdk_window_set_accept_focus(
-        gtk_widget_get_window(GTK_WIDGET(window())), FALSE);
   }
 }
 
