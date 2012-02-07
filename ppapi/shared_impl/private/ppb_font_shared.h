@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -59,7 +59,21 @@ class PPAPI_SHARED_EXPORT PPB_Font_Shared
                                           uint32_t char_offset) OVERRIDE;
 
  private:
-  PPB_Font_Shared(PP_Instance instance, const PP_FontDescription_Dev& desc,
+  struct InitAsImpl {};
+  struct InitAsProxy {};
+
+  // The dummy arguments control which version of Resource's constructor is
+  // called for this base class.
+  PPB_Font_Shared(const InitAsImpl&,
+                  PP_Instance instance,
+                  const PP_FontDescription_Dev& desc,
+                  const ::ppapi::Preferences& prefs);
+  PPB_Font_Shared(const InitAsProxy&,
+                  PP_Instance instance,
+                  const PP_FontDescription_Dev& desc,
+                  const ::ppapi::Preferences& prefs);
+
+  void Initialize(const PP_FontDescription_Dev& desc,
                   const ::ppapi::Preferences& prefs);
 
   scoped_ptr< ::ppapi::WebKitForwarding::Font> font_impl_;

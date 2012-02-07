@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -308,7 +308,8 @@ PP_Resource PPB_Font_Shared::CreateAsImpl(
     const ::ppapi::Preferences& prefs) {
   if (!::ppapi::PPB_Font_Shared::IsPPFontDescriptionValid(description))
     return 0;
-  return (new PPB_Font_Shared(instance, description, prefs))->GetReference();
+  return (new PPB_Font_Shared(InitAsImpl(), instance, description,
+                              prefs))->GetReference();
 }
 
 // static
@@ -316,17 +317,26 @@ PP_Resource PPB_Font_Shared::CreateAsProxy(
     PP_Instance instance,
     const PP_FontDescription_Dev& description,
     const ::ppapi::Preferences& prefs) {
-  return CreateAsImpl(instance, description, prefs);
+  if (!::ppapi::PPB_Font_Shared::IsPPFontDescriptionValid(description))
+    return 0;
+  return (new PPB_Font_Shared(InitAsProxy(), instance, description,
+                              prefs))->GetReference();
 }
 
-PPB_Font_Shared::PPB_Font_Shared(PP_Instance pp_instance,
+PPB_Font_Shared::PPB_Font_Shared(const InitAsImpl&,
+                                 PP_Instance pp_instance,
                                  const PP_FontDescription_Dev& desc,
                                  const ::ppapi::Preferences& prefs)
     : Resource(pp_instance) {
-  StringVar* face_name = StringVar::FromPPVar(desc.face);
+  Initialize(desc, prefs);
+}
 
-  font_impl_.reset(new FontImpl(
-      desc, face_name ? face_name->value() : std::string(), prefs));
+PPB_Font_Shared::PPB_Font_Shared(const InitAsProxy&,
+                                 PP_Instance pp_instance,
+                                 const PP_FontDescription_Dev& desc,
+                                 const ::ppapi::Preferences& prefs)
+    : Resource(HostResource::MakeInstanceOnly(pp_instance)) {
+  Initialize(desc, prefs);
 }
 
 PPB_Font_Shared::~PPB_Font_Shared() {
@@ -413,6 +423,14 @@ int32_t PPB_Font_Shared::PixelOffsetForCharacter(const PP_TextRun_Dev* text,
     font_impl_->PixelOffsetForCharacter(run, char_offset, &result);
   }
   return result;
+}
+
+void PPB_Font_Shared::Initialize(const PP_FontDescription_Dev& desc,
+                                 const ::ppapi::Preferences& prefs) {
+  StringVar* face_name = StringVar::FromPPVar(desc.face);
+
+  font_impl_.reset(new FontImpl(
+      desc, face_name ? face_name->value() : std::string(), prefs));
 }
 
 }  // namespace ppapi
