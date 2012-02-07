@@ -47,8 +47,10 @@ using content::WebContents;
 
 namespace {
 
+class SessionRestoreImpl;
+
 // Pointers to profiles for which the session restore is in progress.
-std::set<const Profile*>* profiles_getting_restored = NULL;
+std::set<SessionRestoreImpl*>* active_session_restorers = NULL;
 
 // TabLoader ------------------------------------------------------------------
 
@@ -420,15 +422,23 @@ class SessionRestoreImpl : public content::NotificationObserver {
         urls_to_open_(urls_to_open),
         restore_started_(base::TimeTicks::Now()),
         browser_shown_(false) {
-    if (profiles_getting_restored == NULL)
-      profiles_getting_restored = new std::set<const Profile*>();
 
-    // We shouldn't have two operations targetting the same profile
-    // simultaneously.
-    CHECK(profiles_getting_restored->find(profile) ==
-          profiles_getting_restored->end());
+    // Iterate the active session restorers to find if there is a
+    // SessionRestoreImpl referring the same profile. This should not happen but
+    // for some reason it happens still. TODO(marja): figure out why.
+    if (active_session_restorers == NULL)
+      active_session_restorers = new std::set<SessionRestoreImpl*>();
 
-    profiles_getting_restored->insert(profile);
+    std::set<SessionRestoreImpl*>::const_iterator it;
+    for (it = active_session_restorers->begin();
+         it != active_session_restorers->end(); ++it) {
+      if ((*it)->profile_ == profile)
+        break;
+    }
+    DCHECK(it == active_session_restorers->end());
+
+    active_session_restorers->insert(this);
+
     // When asynchronous its possible for there to be no windows. To make sure
     // Chrome doesn't prematurely exit AddRef the process. We'll release in the
     // destructor when restore is done.
@@ -503,15 +513,12 @@ class SessionRestoreImpl : public content::NotificationObserver {
   ~SessionRestoreImpl() {
     STLDeleteElements(&windows_);
 
-    CHECK(profiles_getting_restored);
-    CHECK(profiles_getting_restored->find(profile_) !=
-          profiles_getting_restored->end());
-
-    profiles_getting_restored->erase(profile_);
-    if (profiles_getting_restored->empty()) {
-      delete profiles_getting_restored;
-      profiles_getting_restored = NULL;
+    active_session_restorers->erase(this);
+    if (active_session_restorers->empty()) {
+      delete active_session_restorers;
+      active_session_restorers = NULL;
     }
+
     g_browser_process->ReleaseModule();
   }
 
@@ -528,6 +535,8 @@ class SessionRestoreImpl : public content::NotificationObserver {
         break;
     }
   }
+
+  Profile* profile() { return profile_; }
 
  private:
   // Invoked when beginning to create new tabs. Resets the tab_loader_.
@@ -922,7 +931,13 @@ void SessionRestore::RestoreForeignSessionTab(Profile* profile,
 
 // static
 bool SessionRestore::IsRestoring(const Profile* profile) {
-  return (profiles_getting_restored &&
-          profiles_getting_restored->find(profile) !=
-          profiles_getting_restored->end());
+  if (active_session_restorers == NULL)
+    return false;
+  for (std::set<SessionRestoreImpl*>::const_iterator it =
+           active_session_restorers->begin();
+       it != active_session_restorers->end(); ++it) {
+    if ((*it)->profile() == profile)
+      return true;
+  }
+  return false;
 }
