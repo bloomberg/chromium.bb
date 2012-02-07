@@ -100,6 +100,7 @@ struct WEBKIT_GLUE_EXPORT WebPreferences {
   bool accelerated_animation_enabled;
   bool accelerated_video_enabled;
   bool accelerated_2d_canvas_enabled;
+  bool deferred_2d_canvas_enabled;
   bool accelerated_painting_enabled;
   bool accelerated_filters_enabled;
   bool accelerated_plugins_enabled;

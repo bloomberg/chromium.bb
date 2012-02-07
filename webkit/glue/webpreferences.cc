@@ -86,6 +86,7 @@ WebPreferences::WebPreferences()
       accelerated_animation_enabled(false),
       accelerated_video_enabled(false),
       accelerated_2d_canvas_enabled(false),
+      deferred_2d_canvas_enabled(false),
       accelerated_painting_enabled(false),
       accelerated_filters_enabled(false),
       accelerated_plugins_enabled(false),
@@ -281,6 +282,9 @@ void WebPreferences::Apply(WebView* web_view) const {
 
   // Enable gpu-accelerated 2d canvas if requested on the command line.
   settings->setAccelerated2dCanvasEnabled(accelerated_2d_canvas_enabled);
+
+  // Enable deferred 2d canvas if requested on the command line.
+  settings->setDeferred2dCanvasEnabled(deferred_2d_canvas_enabled);
 
   // Enable gpu-accelerated painting if requested on the command line.
   settings->setAcceleratedPaintingEnabled(accelerated_painting_enabled);

@@ -223,6 +223,9 @@ const char kEnableAccessibilityLogging[]    = "enable-accessibility-logging";
 const char kEnableCompositingForFixedPosition[] =
      "enable-fixed-position-compositing";
 
+// Enable deferred 2d canvas rendering.
+const char kEnableDeferred2dCanvas[]        = "enable-deferred-2d-canvas";
+
 // Enables compositing to texture instead of display.
 const char kEnableCompositeToTexture[]      = "enable-composite-to-texture";
 
