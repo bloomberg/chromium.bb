@@ -17,8 +17,7 @@ using content::BrowserThread;
 
 namespace browser_sync {
 
-NewNonFrontendDataTypeController::NewNonFrontendDataTypeController()
-    : shared_change_processor_(NULL) {}
+NewNonFrontendDataTypeController::NewNonFrontendDataTypeController() {}
 
 NewNonFrontendDataTypeController::NewNonFrontendDataTypeController(
     ProfileSyncComponentsFactory* profile_sync_factory,
@@ -26,9 +25,7 @@ NewNonFrontendDataTypeController::NewNonFrontendDataTypeController(
     ProfileSyncService* sync_service)
     : NonFrontendDataTypeController(profile_sync_factory,
                                     profile,
-                                    sync_service),
-      shared_change_processor_(NULL) {
-}
+                                    sync_service) {}
 
 NewNonFrontendDataTypeController::~NewNonFrontendDataTypeController() {}
 
@@ -43,8 +40,12 @@ void NewNonFrontendDataTypeController::Start(
 
   set_start_callback(start_callback);
 
+  // Since we can't be called multiple times before Stop() is called,
+  // |shared_change_processor_| must be NULL here.
+  DCHECK(!shared_change_processor_.get());
   shared_change_processor_ =
       profile_sync_factory()->CreateSharedChangeProcessor();
+  DCHECK(shared_change_processor_.get());
 
   set_state(MODEL_STARTING);
   if (!StartModels()) {
@@ -57,20 +58,34 @@ void NewNonFrontendDataTypeController::Start(
   // Kick off association on the thread the datatype resides on.
   set_state(ASSOCIATING);
   if (!StartAssociationAsync()) {
-    // Releasing the shared_change_processor_ here is safe since it was never
-    // connected.
-    shared_change_processor_ = NULL;
     SyncError error(FROM_HERE, "Failed to post StartAssociation", type());
     StartDoneImpl(ASSOCIATION_FAILED, NOT_RUNNING, error);
+    // StartDoneImpl should have called ClearSharedChangeProcessor();
+    DCHECK(!shared_change_processor_.get());
+    return;
   }
+}
+
+bool NewNonFrontendDataTypeController::StartAssociationAsync() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_EQ(state(), ASSOCIATING);
+  return PostTaskOnBackendThread(
+      FROM_HERE,
+      base::Bind(
+          &NewNonFrontendDataTypeController::
+              StartAssociationWithSharedChangeProcessor,
+          this,
+          shared_change_processor_));
 }
 
 // This method can execute after we've already stopped (and possibly even
 // destroyed) both the Syncer and the SyncableService. As a result, all actions
 // must either have no side effects outside of the DTC or must be protected
-// by |shared_change_processor_|, which is guaranteed to have been Disconnected
+// by |shared_change_processor|, which is guaranteed to have been Disconnected
 // if the syncer shut down.
-void NewNonFrontendDataTypeController::StartAssociation() {
+void NewNonFrontendDataTypeController::
+    StartAssociationWithSharedChangeProcessor(
+        const scoped_refptr<SharedChangeProcessor>& shared_change_processor) {
   DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK_EQ(state(), ASSOCIATING);
 
@@ -88,25 +103,27 @@ void NewNonFrontendDataTypeController::StartAssociation() {
     return;
   }
 
-  // Connect |shared_change_processor_| to the syncer and |local_service_|.
-  // Note that it's possible the shared_change_processor_ has already been
+  DCHECK(shared_change_processor.get());
+
+  // Connect |shared_change_processor| to the syncer and |local_service_|.
+  // Note that it's possible the shared_change_processor has already been
   // disconnected at this point, so all our accesses to the syncer from this
   // point on are through it.
-  if (!shared_change_processor_->Connect(profile_sync_factory(),
-                                         profile_sync_service(),
-                                         this,
-                                         local_service_)) {
+  if (!shared_change_processor->Connect(profile_sync_factory(),
+                                        profile_sync_service(),
+                                        this,
+                                        local_service_)) {
     SyncError error(FROM_HERE, "Failed to connect to syncer.", type());
     StartFailed(UNRECOVERABLE_ERROR, error);
   }
 
-  if (!shared_change_processor_->CryptoReadyIfNecessary(type())) {
+  if (!shared_change_processor->CryptoReadyIfNecessary(type())) {
     StartFailed(NEEDS_CRYPTO, SyncError());
     return;
   }
 
   bool sync_has_nodes = false;
-  if (!shared_change_processor_->SyncModelHasUserCreatedNodes(
+  if (!shared_change_processor->SyncModelHasUserCreatedNodes(
           type(), &sync_has_nodes)) {
     SyncError error(FROM_HERE, "Failed to load sync nodes", type());
     StartFailed(UNRECOVERABLE_ERROR, error);
@@ -116,17 +133,17 @@ void NewNonFrontendDataTypeController::StartAssociation() {
   base::TimeTicks start_time = base::TimeTicks::Now();
   SyncError error;
   SyncDataList initial_sync_data;
-  error = shared_change_processor_->GetSyncDataForType(type(),
-                                                       &initial_sync_data);
+  error = shared_change_processor->GetSyncDataForType(type(),
+                                                      &initial_sync_data);
   if (error.IsSet()) {
     StartFailed(ASSOCIATION_FAILED, error);
     return;
   }
-  // Passes a reference to the shared_change_processor_;
+  // Passes a reference to |shared_change_processor|.
   error = local_service_->MergeDataAndStartSyncing(
       type(),
       initial_sync_data,
-      new SharedChangeProcessorRef(shared_change_processor_));
+      new SharedChangeProcessorRef(shared_change_processor));
   RecordAssociationTime(base::TimeTicks::Now() - start_time);
   if (error.IsSet()) {
     StartFailed(ASSOCIATION_FAILED, error);
@@ -134,13 +151,13 @@ void NewNonFrontendDataTypeController::StartAssociation() {
   }
 
   // If we've been disconnected, profile_sync_service() may return an invalid
-  // pointer, but the shared_change_processor_ protects us from attempting to
+  // pointer, but |shared_change_processor| protects us from attempting to
   // access it.
   // Note: This must be done on the datatype's thread to ensure local_service_
   // doesn't start trying to push changes from it's thread before we activate
   // the datatype.
-  shared_change_processor_->ActivateDataType(profile_sync_service(),
-                                             type(), model_safe_group());
+  shared_change_processor->ActivateDataType(profile_sync_service(),
+                                            type(), model_safe_group());
   StartDone(!sync_has_nodes ? OK_FIRST_RUN : OK, RUNNING, SyncError());
 }
 
@@ -162,13 +179,11 @@ void NewNonFrontendDataTypeController::StartDoneImpl(
     DataTypeController::StartResult result,
     DataTypeController::State new_state,
     const SyncError& error) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   // If we failed to start up, and we haven't been stopped yet, we need to
   // ensure we clean up the local service and shared change processor properly.
-  if (new_state != RUNNING && state() != NOT_RUNNING && state() != STOPPING &&
-      shared_change_processor_.get()) {
-    shared_change_processor_->Disconnect();
-    // We release our reference to shared_change_processor on the datatype's
-    // thread.
+  if (new_state != RUNNING && state() != NOT_RUNNING && state() != STOPPING) {
+    ClearSharedChangeProcessor();
     StopLocalServiceAsync();
   }
   NonFrontendDataTypeController::StartDoneImpl(result, new_state, error);
@@ -182,12 +197,10 @@ void NewNonFrontendDataTypeController::Stop() {
     return;
   }
 
-  // Disconnect the change processor. At this point, the SyncableService
-  // can no longer interact with the Syncer, even if it hasn't finished
-  // MergeDataAndStartSyncing. It may still have ownership of the shared
-  // change processor though.
-  if (shared_change_processor_.get())
-    shared_change_processor_->Disconnect();
+  // Disconnect the change processor. At this point, the
+  // SyncableService can no longer interact with the Syncer, even if
+  // it hasn't finished MergeDataAndStartSyncing.
+  ClearSharedChangeProcessor();
 
   // If we haven't finished starting, we need to abort the start.
   switch (state()) {
@@ -227,6 +240,16 @@ void NewNonFrontendDataTypeController::Stop() {
   set_state(NOT_RUNNING);
 }
 
+void NewNonFrontendDataTypeController::ClearSharedChangeProcessor() {
+  // We are called only from StartDoneImpl() or Stop(), both of which
+  // can be called only after a call to Start().  Therefore,
+  // |shared_change_processor_| should not be NULL.
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(shared_change_processor_.get());
+  shared_change_processor_->Disconnect();
+  shared_change_processor_ = NULL;
+}
+
 void NewNonFrontendDataTypeController::StopLocalServiceAsync() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   PostTaskOnBackendThread(
@@ -239,7 +262,6 @@ void NewNonFrontendDataTypeController::StopLocalService() {
   if (local_service_.get())
     local_service_->StopSyncing(type());
   local_service_.reset();
-  shared_change_processor_ = NULL;
 }
 
 void NewNonFrontendDataTypeController::CreateSyncComponents() {
