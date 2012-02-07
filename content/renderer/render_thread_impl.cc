@@ -647,8 +647,11 @@ void RenderThreadImpl::IdleHandlerInForegroundTab() {
   } else  {
     int cpu_usage = 0;
     Send(new ViewHostMsg_GetCPUUsage(&cpu_usage));
+    // Idle notification hint roughly specifies the expected duration of the
+    // idle pause. We set it proportional to the idle timer delay.
+    int idle_hint = static_cast<int>(new_delay_ms / 10);
     if (cpu_usage < kIdleCPUUsageThresholdInPercents &&
-        v8::V8::IdleNotification()) {
+        v8::V8::IdleNotification(idle_hint)) {
       // V8 finished collecting garbage.
       new_delay_ms = kLongIdleHandlerDelayMs;
     }
