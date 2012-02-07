@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -262,6 +262,22 @@ class BluetoothAdapterClientImpl: public BluetoothAdapterClient {
 
     adapter_proxy->ConnectToSignal(
         bluetooth_adapter::kBluetoothAdapterInterface,
+        bluetooth_adapter::kDeviceCreatedSignal,
+        base::Bind(&BluetoothAdapterClientImpl::DeviceCreatedReceived,
+                   weak_ptr_factory_.GetWeakPtr(), object_path),
+        base::Bind(&BluetoothAdapterClientImpl::DeviceCreatedConnected,
+                   weak_ptr_factory_.GetWeakPtr(), object_path));
+
+    adapter_proxy->ConnectToSignal(
+        bluetooth_adapter::kBluetoothAdapterInterface,
+        bluetooth_adapter::kDeviceRemovedSignal,
+        base::Bind(&BluetoothAdapterClientImpl::DeviceRemovedReceived,
+                   weak_ptr_factory_.GetWeakPtr(), object_path),
+        base::Bind(&BluetoothAdapterClientImpl::DeviceRemovedConnected,
+                   weak_ptr_factory_.GetWeakPtr(), object_path));
+
+    adapter_proxy->ConnectToSignal(
+        bluetooth_adapter::kBluetoothAdapterInterface,
         bluetooth_adapter::kPropertyChangedSignal,
         base::Bind(&BluetoothAdapterClientImpl::PropertyChangedReceived,
                    weak_ptr_factory_.GetWeakPtr(), object_path),
@@ -290,6 +306,60 @@ class BluetoothAdapterClientImpl: public BluetoothAdapterClient {
   void RemoveObjectProxyForPath(const std::string& object_path) {
     VLOG(1) << "RemoveObjectProxyForPath: " << object_path;
     proxy_map_.erase(object_path);
+  }
+
+  // Called by dbus:: when a DeviceCreated signal is received.
+  void DeviceCreatedReceived(const std::string& object_path,
+                             dbus::Signal* signal) {
+    DCHECK(signal);
+    dbus::MessageReader reader(signal);
+    std::string device_path;
+    if (!reader.PopString(&device_path)) {
+      LOG(ERROR) << object_path
+          << ": DeviceCreated signal has incorrect parameters: "
+          << signal->ToString();
+      return;
+    }
+    VLOG(1) << object_path << ": Device created: " << device_path;
+
+    FOR_EACH_OBSERVER(BluetoothAdapterClient::Observer, observers_,
+                      DeviceCreated(object_path, device_path));
+  }
+
+  // Called by dbus:: when the DeviceCreated signal is initially connected.
+  void DeviceCreatedConnected(const std::string& object_path,
+                              const std::string& interface_name,
+                              const std::string& signal_name,
+                              bool success) {
+    LOG_IF(WARNING, !success) << object_path
+        << ": Failed to connect to DeviceCreated signal.";
+  }
+
+  // Called by dbus:: when a DeviceRemoved signal is received.
+  void DeviceRemovedReceived(const std::string& object_path,
+                             dbus::Signal* signal) {
+    DCHECK(signal);
+    dbus::MessageReader reader(signal);
+    std::string device_path;
+    if (!reader.PopString(&device_path)) {
+      LOG(ERROR) << object_path
+          << ": DeviceRemoved signal has incorrect parameters: "
+          << signal->ToString();
+      return;
+    }
+    VLOG(1) << object_path << ": Device created: " << device_path;
+
+    FOR_EACH_OBSERVER(BluetoothAdapterClient::Observer, observers_,
+                      DeviceRemoved(object_path, device_path));
+  }
+
+  // Called by dbus:: when the DeviceRemoved signal is initially connected.
+  void DeviceRemovedConnected(const std::string& object_path,
+                              const std::string& interface_name,
+                              const std::string& signal_name,
+                              bool success) {
+    LOG_IF(WARNING, !success) << object_path
+        << ": Failed to connect to DeviceRemoved signal.";
   }
 
   // Called by dbus:: when a PropertyChanged signal is received.
