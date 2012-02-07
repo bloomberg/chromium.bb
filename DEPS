@@ -31,7 +31,7 @@ vars = {
   "nacl_toolchain_revision": "7712",
 
   "libjingle_revision": "114",
-  "libphonenumber_revision": "407",
+  "libphonenumber_revision": "425",
   "libvpx_revision": "119942",
   "lss_revision": "9",
   "ffmpeg_revision": "120671",

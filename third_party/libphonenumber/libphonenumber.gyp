@@ -42,9 +42,8 @@
       #'src/phonenumbers/metadata.cc',
       'src/phonenumbers/logger.cc',
       'src/phonenumbers/phonenumber.cc',
-      # The following two files should be added on 'as needed' basis.
-      #'src/phonenumbers/phonenumbermatch.cc',
-      #'src/phonenumbers/phonenumbermatcher.cc',
+      'src/phonenumbers/phonenumbermatch.cc',
+      'src/phonenumbers/phonenumbermatcher.cc',
       'src/phonenumbers/phonenumberutil.cc',
       'src/phonenumbers/regexp_adapter_icu.cc',
       'src/phonenumbers/regexp_cache.cc',
@@ -81,9 +80,8 @@
       '../../base/test/run_all_unittests.cc',
       'src/phonenumbers/test_metadata.cc',
       'src/test/phonenumbers/asyoutypeformatter_test.cc',
-      # The following two files should be added on 'as needed' basis.
-      #'src/test/phonenumbers/phonenumbermatch_test.cc',
-      #'src/test/phonenumbers/phonenumbermatcher_test.cc',
+      'src/test/phonenumbers/phonenumbermatch_test.cc',
+      'src/test/phonenumbers/phonenumbermatcher_test.cc',
       'src/test/phonenumbers/phonenumberutil_test.cc',
       'src/test/phonenumbers/regexp_adapter_test.cc',
       'src/test/phonenumbers/stringutil_test.cc',
