@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -278,6 +278,11 @@ class GLES2DecoderTestBase : public testing::Test {
   void DoDeleteTexture(GLuint client_id, GLuint service_id);
 
   void DoTexImage2D(
+      GLenum target, GLint level, GLenum internal_format,
+      GLsizei width, GLsizei height, GLint border,
+      GLenum format, GLenum type,
+      uint32 shared_memory_id, uint32 shared_memory_offset);
+  void DoTexImage2DSameSize(
       GLenum target, GLint level, GLenum internal_format,
       GLsizei width, GLsizei height, GLint border,
       GLenum format, GLenum type,

@@ -145,12 +145,18 @@ class GLES2Decoder : public CommonDecoder {
   // A callback for messages from the decoder.
   virtual void SetMsgCallback(const MsgCallback& callback) = 0;
 
+  static bool IsAngle();
+
+  // Used for testing only
+  static void set_testing_force_is_angle(bool force);
+
  protected:
   GLES2Decoder();
 
  private:
   bool debug_;
   bool log_commands_;
+  static bool testing_force_is_angle_;
 
   DISALLOW_COPY_AND_ASSIGN(GLES2Decoder);
 };

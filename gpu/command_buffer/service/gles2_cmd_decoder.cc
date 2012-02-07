@@ -131,14 +131,6 @@ const CommandInfo g_command_info[] = {
   #undef GLES2_CMD_OP
 };
 
-static bool IsAngle() {
-#if defined(OS_WIN)
-  return gfx::GetGLImplementation() == gfx::kGLImplementationEGLGLES2;
-#else
-  return false;
-#endif
-}
-
 // Return true if a character belongs to the ASCII subset as defined in
 // GLSL ES 1.0 spec section 3.1.
 static bool CharacterIsValidForGLES(unsigned char c) {
@@ -506,6 +498,21 @@ GLES2Decoder::GLES2Decoder()
 }
 
 GLES2Decoder::~GLES2Decoder() {
+}
+
+bool GLES2Decoder::testing_force_is_angle_;
+
+void GLES2Decoder::set_testing_force_is_angle(bool force) {
+  testing_force_is_angle_ = force;
+}
+
+bool GLES2Decoder::IsAngle() {
+#if defined(OS_WIN)
+  return testing_force_is_angle_ ||
+         gfx::GetGLImplementation() == gfx::kGLImplementationEGLGLES2;
+#else
+  return testing_force_is_angle_;
+#endif
 }
 
 // This class implements GLES2Decoder so we don't have to expose all the GLES2
@@ -1606,7 +1613,7 @@ ScopedResolvedFrameBufferBinder::ScopedResolvedFrameBufferBinder(
   const int width = decoder_->offscreen_size_.width();
   const int height = decoder_->offscreen_size_.height();
   glDisable(GL_SCISSOR_TEST);
-  if (IsAngle()) {
+  if (GLES2Decoder::IsAngle()) {
     glBlitFramebufferANGLE(0, 0, width, height, 0, 0, width, height,
                            GL_COLOR_BUFFER_BIT, GL_NEAREST);
   } else {
@@ -1746,7 +1753,7 @@ bool RenderBuffer::AllocateStorage(const gfx::Size& size, GLenum format,
                              size.width(),
                              size.height());
   } else {
-    if (IsAngle()) {
+    if (GLES2Decoder::IsAngle()) {
       glRenderbufferStorageMultisampleANGLE(GL_RENDERBUFFER,
                                             samples,
                                             format,
@@ -6559,6 +6566,7 @@ error::Error GLES2DecoderImpl::DoTexImage2D(
 
   if (!teximage2d_faster_than_texsubimage2d_ && level_is_same && pixels) {
     glTexSubImage2D(target, level, 0, 0, width, height, format, type, pixels);
+    texture_manager()->SetLevelCleared(info, target, level);
     tex_image_2d_failed_ = false;
     return error::kNoError;
   }
