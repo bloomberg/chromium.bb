@@ -424,6 +424,8 @@
       '-autofill.AutofillTest.testNoDuplicatePhoneNumsInPrefs',
       # Media files test uses internal media files
       '-chromeos_file_browser.ChromeosFileBrowserTest.testOpenMediaFiles',
+      # No flash plugin in non-branded OS images.  crosbug.com/25905
+      '-youtube',
     ],
   },
 
