@@ -22,6 +22,7 @@
 #include <deque>
 
 #include "base/synchronization/lock.h"
+#include "media/base/audio_decoder.h"
 #include "media/base/buffers.h"
 #include "media/base/filters.h"
 #include "media/filters/audio_renderer_algorithm_base.h"
@@ -36,12 +37,12 @@ class MEDIA_EXPORT AudioRendererBase : public AudioRenderer {
   // Filter implementation.
   virtual void Play(const base::Closure& callback) OVERRIDE;
   virtual void Pause(const base::Closure& callback) OVERRIDE;
+  virtual void Flush(const base::Closure& callback) OVERRIDE;
   virtual void Stop(const base::Closure& callback) OVERRIDE;
-
   virtual void Seek(base::TimeDelta time, const FilterStatusCB& cb) OVERRIDE;
 
   // AudioRenderer implementation.
-  virtual void Initialize(AudioDecoder* decoder,
+  virtual void Initialize(const scoped_refptr<AudioDecoder>& decoder,
                           const PipelineStatusCB& init_callback,
                           const base::Closure& underflow_callback,
                           const AudioTimeCB& audio_time_cb) OVERRIDE;

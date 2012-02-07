@@ -81,8 +81,4 @@ bool VideoDecoder::HasAlpha() const {
 
 void VideoDecoder::PrepareForShutdownHack() {}
 
-AudioDecoder::AudioDecoder() {}
-
-AudioDecoder::~AudioDecoder() {}
-
 }  // namespace media

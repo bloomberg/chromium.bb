@@ -38,6 +38,7 @@
 
 namespace media {
 
+class AudioDecoder;
 class Buffer;
 class Decoder;
 class DemuxerStream;
@@ -54,9 +55,6 @@ typedef base::Callback<void(PipelineStatus)> FilterStatusCB;
 // a callback member variable before running the callback.
 MEDIA_EXPORT void ResetAndRunCB(FilterStatusCB* cb, PipelineStatus status);
 MEDIA_EXPORT void ResetAndRunCB(base::Closure* cb);
-
-// Used for updating pipeline statistics.
-typedef base::Callback<void(const PipelineStatistics&)> StatisticsCallback;
 
 class MEDIA_EXPORT Filter : public base::RefCountedThreadSafe<Filter> {
  public:
@@ -169,39 +167,6 @@ class MEDIA_EXPORT VideoDecoder : public Filter {
 };
 
 
-class MEDIA_EXPORT AudioDecoder : public Filter {
- public:
-  // Initialize a AudioDecoder with the given DemuxerStream, executing the
-  // callback upon completion.
-  // stats_callback is used to update global pipeline statistics.
-  virtual void Initialize(DemuxerStream* stream,
-                          const PipelineStatusCB& callback,
-                          const StatisticsCallback& stats_callback) = 0;
-
-  // Request samples to be decoded and returned via the provided callback.
-  // Only one read may be in flight at any given time.
-  //
-  // Implementations guarantee that the callback will not be called from within
-  // this method.
-  //
-  // Non-NULL sample buffer pointers will contain decoded audio data or may
-  // indicate the end of the stream. A NULL buffer pointer indicates an aborted
-  // Read(). This can happen if the DemuxerStream gets flushed and doesn't have
-  // any more data to return.
-  typedef base::Callback<void(scoped_refptr<Buffer>)> ReadCB;
-  virtual void Read(const ReadCB& callback) = 0;
-
-  // Returns various information about the decoded audio format.
-  virtual int bits_per_channel() = 0;
-  virtual ChannelLayout channel_layout() = 0;
-  virtual int samples_per_second() = 0;
-
- protected:
-  AudioDecoder();
-  virtual ~AudioDecoder();
-};
-
-
 class MEDIA_EXPORT VideoRenderer : public Filter {
  public:
   // Used to update the pipeline's clock time. The parameter is the time that
@@ -234,7 +199,7 @@ class MEDIA_EXPORT AudioRenderer : public Filter {
   // If the |underflow_callback| is called ResumeAfterUnderflow() must be called
   // to resume playback. Pause(), Seek(), or Stop() cancels the underflow
   // condition.
-  virtual void Initialize(AudioDecoder* decoder,
+  virtual void Initialize(const scoped_refptr<AudioDecoder>& decoder,
                           const PipelineStatusCB& init_callback,
                           const base::Closure& underflow_callback,
                           const AudioTimeCB& time_cb) = 0;

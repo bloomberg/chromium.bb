@@ -14,9 +14,12 @@
 #include "base/stl_util.h"
 #include "base/string_util.h"
 #include "base/synchronization/condition_variable.h"
+#include "media/base/audio_decoder.h"
 #include "media/base/clock.h"
 #include "media/base/composite_filter.h"
+#include "media/base/composite_filter.h"
 #include "media/base/filter_collection.h"
+#include "media/base/filters.h"
 #include "media/base/media_log.h"
 
 namespace media {
@@ -54,11 +57,10 @@ media::PipelineStatus PipelineStatusNotification::status() {
   return status_;
 }
 
-class Pipeline::PipelineInitState {
- public:
-  scoped_refptr<AudioDecoder> audio_decoder_;
-  scoped_refptr<VideoDecoder> video_decoder_;
-  scoped_refptr<CompositeFilter> composite_;
+struct Pipeline::PipelineInitState {
+  scoped_refptr<AudioDecoder> audio_decoder;
+  scoped_refptr<VideoDecoder> video_decoder;
+  scoped_refptr<CompositeFilter> composite;
 };
 
 Pipeline::Pipeline(MessageLoop* message_loop, MediaLog* media_log)
@@ -621,8 +623,8 @@ void Pipeline::StartTask(scoped_ptr<FilterCollection> filter_collection,
 
   // Kick off initialization.
   pipeline_init_state_.reset(new PipelineInitState());
-  pipeline_init_state_->composite_ = new CompositeFilter(message_loop_);
-  pipeline_init_state_->composite_->set_host(this);
+  pipeline_init_state_->composite = new CompositeFilter(message_loop_);
+  pipeline_init_state_->composite->set_host(this);
 
   SetState(kInitDemuxer);
   InitializeDemuxer();
@@ -652,8 +654,8 @@ void Pipeline::InitializeTask(PipelineStatus last_stage_status) {
     // Currently only VideoDecoders have a recoverable error code.
     if (state_ == kInitVideoDecoder &&
         last_stage_status == DECODER_ERROR_NOT_SUPPORTED) {
-      pipeline_init_state_->composite_->RemoveFilter(
-          pipeline_init_state_->video_decoder_.get());
+      pipeline_init_state_->composite->RemoveFilter(
+          pipeline_init_state_->video_decoder.get());
       state_ = kInitAudioRenderer;
     } else {
       SetError(last_stage_status);
@@ -683,7 +685,7 @@ void Pipeline::InitializeTask(PipelineStatus last_stage_status) {
     SetState(kInitAudioRenderer);
 
     // Returns false if there's no audio stream.
-    if (InitializeAudioRenderer(pipeline_init_state_->audio_decoder_)) {
+    if (InitializeAudioRenderer(pipeline_init_state_->audio_decoder)) {
       base::AutoLock auto_lock(lock_);
       has_audio_ = true;
       return;
@@ -701,7 +703,7 @@ void Pipeline::InitializeTask(PipelineStatus last_stage_status) {
   // Assuming video decoder was created, create video renderer.
   if (state_ == kInitVideoDecoder) {
     SetState(kInitVideoRenderer);
-    if (InitializeVideoRenderer(pipeline_init_state_->video_decoder_)) {
+    if (InitializeVideoRenderer(pipeline_init_state_->video_decoder)) {
       base::AutoLock auto_lock(lock_);
       has_video_ = true;
       return;
@@ -717,7 +719,7 @@ void Pipeline::InitializeTask(PipelineStatus last_stage_status) {
     // Clear the collection of filters.
     filter_collection_->Clear();
 
-    pipeline_filter_ = pipeline_init_state_->composite_;
+    pipeline_filter_ = pipeline_init_state_->composite;
 
     // Clear init state since we're done initializing.
     pipeline_init_state_.reset();
@@ -1029,7 +1031,7 @@ void Pipeline::FilterStateTransitionTask() {
 
     // Start monitoring rate of downloading.
     int bitrate = 0;
-    if (demuxer_.get()) {
+    if (demuxer_) {
       bitrate = demuxer_->GetBitrate();
       local_source_ = demuxer_->IsLocalSource();
       streaming_ = !demuxer_->IsSeekable();
@@ -1116,7 +1118,7 @@ void Pipeline::FinishDestroyingFiltersTask() {
 }
 
 bool Pipeline::PrepareFilter(scoped_refptr<Filter> filter) {
-  bool ret = pipeline_init_state_->composite_->AddFilter(filter.get());
+  bool ret = pipeline_init_state_->composite->AddFilter(filter.get());
   if (!ret)
     SetError(PIPELINE_ERROR_INITIALIZATION_FAILED);
   return ret;
@@ -1171,19 +1173,14 @@ bool Pipeline::InitializeAudioDecoder(
   if (!stream)
     return false;
 
-  scoped_refptr<AudioDecoder> audio_decoder;
-  filter_collection_->SelectAudioDecoder(&audio_decoder);
+  filter_collection_->SelectAudioDecoder(&pipeline_init_state_->audio_decoder);
 
-  if (!audio_decoder) {
+  if (!pipeline_init_state_->audio_decoder) {
     SetError(PIPELINE_ERROR_REQUIRED_FILTER_MISSING);
     return false;
   }
 
-  if (!PrepareFilter(audio_decoder))
-    return false;
-
-  pipeline_init_state_->audio_decoder_ = audio_decoder;
-  audio_decoder->Initialize(
+  pipeline_init_state_->audio_decoder->Initialize(
       stream,
       base::Bind(&Pipeline::OnFilterInitialize, this),
       base::Bind(&Pipeline::OnUpdateStatistics, this));
@@ -1214,7 +1211,7 @@ bool Pipeline::InitializeVideoDecoder(
   if (!PrepareFilter(video_decoder_))
     return false;
 
-  pipeline_init_state_->video_decoder_ = video_decoder_;
+  pipeline_init_state_->video_decoder = video_decoder_;
   video_decoder_->Initialize(
       stream,
       base::Bind(&Pipeline::OnFilterInitialize, this),
@@ -1300,7 +1297,7 @@ void Pipeline::TearDownPipeline() {
     case kInitVideoDecoder:
     case kInitVideoRenderer:
       // Make it look like initialization was successful.
-      pipeline_filter_ = pipeline_init_state_->composite_;
+      pipeline_filter_ = pipeline_init_state_->composite;
       pipeline_init_state_.reset();
       filter_collection_.reset();
 

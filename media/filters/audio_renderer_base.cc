@@ -51,6 +51,10 @@ void AudioRendererBase::Pause(const base::Closure& callback) {
   }
 }
 
+void AudioRendererBase::Flush(const base::Closure& callback) {
+  decoder_->Reset(callback);
+}
+
 void AudioRendererBase::Stop(const base::Closure& callback) {
   OnStop();
   {
@@ -84,7 +88,7 @@ void AudioRendererBase::Seek(base::TimeDelta time, const FilterStatusCB& cb) {
   algorithm_->FlushBuffers();
 }
 
-void AudioRendererBase::Initialize(AudioDecoder* decoder,
+void AudioRendererBase::Initialize(const scoped_refptr<AudioDecoder>& decoder,
                                    const PipelineStatusCB& init_callback,
                                    const base::Closure& underflow_callback,
                                    const AudioTimeCB& audio_time_cb) {
