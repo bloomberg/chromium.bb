@@ -18,8 +18,6 @@ namespace chromeos {
 
 class OfflineLoadPageTest;
 
-namespace {
-
 // An OfflineLoadPage class that does not create windows.
 class TestOfflineLoadPage :  public chromeos::OfflineLoadPage {
  public:
@@ -39,8 +37,6 @@ class TestOfflineLoadPage :  public chromeos::OfflineLoadPage {
 
   DISALLOW_COPY_AND_ASSIGN(TestOfflineLoadPage);
 };
-
-}  // namespace
 
 class OfflineLoadPageTest : public ChromeRenderViewHostTestHarness {
  public:
