@@ -407,6 +407,9 @@ void PanelBrowserView::EnsurePanelFullyVisible() {
 #endif
 }
 
+void PanelBrowserView::ApplyVisualStyleForStrip(PanelStripType newPanelStrip) {
+}
+
 PanelBrowserFrameView* PanelBrowserView::GetFrameView() const {
   return static_cast<PanelBrowserFrameView*>(frame()->GetFrameView());
 }

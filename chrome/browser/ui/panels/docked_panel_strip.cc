@@ -140,7 +140,7 @@ void DockedPanelStrip::AddPanel(Panel* panel) {
     // Panel is moved to overflow from the strip after a delay.
     // TODO(jianli): remove the guard when overflow support is enabled on other
     // platforms. http://crbug.com/105073
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_MACOSX)
     if (x < display_area_.x()) {
       x = display_area_.x();
       panel->set_has_temporary_layout(true);
@@ -156,6 +156,8 @@ void DockedPanelStrip::AddPanel(Panel* panel) {
 #endif
     panel->Initialize(gfx::Rect(x, y, width, height));
   }
+
+  panel->ApplyVisualStyleForStrip(DOCKED_STRIP);
 
   if (panel->has_temporary_layout())
     panels_in_temporary_layout_.insert(panel);
@@ -653,7 +655,7 @@ void DockedPanelStrip::Rearrange() {
 
   // TODO(jianli): remove the guard when overflow support is enabled on other
   // platforms. http://crbug.com/105073
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_MACOSX)
     if (x < display_area_.x())
       break;
 #endif
@@ -669,7 +671,7 @@ void DockedPanelStrip::Rearrange() {
 
   // TODO(jianli): remove the guard when overflow support is enabled on other
   // platforms. http://crbug.com/105073
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_MACOSX)
   // Add/remove panels from/to overflow. A change in work area or the
   // resize/removal of a panel may affect how many panels fit in the strip.
   if (panel_index < panels_.size()) {

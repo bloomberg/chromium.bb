@@ -254,12 +254,18 @@ void PanelBrowserWindowCocoa::DestroyPanelBrowser() {
 }
 
 gfx::Size PanelBrowserWindowCocoa::IconOnlySize() const {
-  // TODO(dimich): to be implemented.
-  return gfx::Size();
+  return gfx::Size([controller_ titlebarIconOnlyWidthInScreenCoordinates],
+                   [controller_ titlebarHeightInScreenCoordinates]);
 }
 
 void PanelBrowserWindowCocoa::EnsurePanelFullyVisible() {
-  // TODO(dimich): to be implemented.
+}
+
+void PanelBrowserWindowCocoa::ApplyVisualStyleForStrip(
+    PanelStripType newPanelStrip) {
+  if (!is_shown_)
+    return;
+  [controller_ applyVisualStyleForStrip:newPanelStrip];
 }
 
 void PanelBrowserWindowCocoa::SetPanelAppIconVisibility(bool visible) {

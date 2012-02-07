@@ -20,6 +20,7 @@
 #import "chrome/browser/ui/cocoa/tab_contents/tab_contents_controller.h"
 #import "chrome/browser/ui/cocoa/themed_window.h"
 #import "chrome/browser/ui/cocoa/tracking_area.h"
+#include "chrome/browser/ui/panels/panel.h"
 
 @class FindBarCocoaController;
 class PanelBrowserWindowCocoa;
@@ -136,6 +137,11 @@ class PanelBrowserWindowCocoa;
 // Helper for NSWindow, returns NO for minimized panels in some cases, so they
 // are not un-minimized when another panel is minimized.
 - (BOOL)canBecomeKeyWindow;
+
+// Returns width of titlebar when shown in "icon only" mode.
+- (int)titlebarIconOnlyWidthInScreenCoordinates;
+
+- (void)applyVisualStyleForStrip:(PanelStripType)newPanelStrip;
 
 @end  // @interface PanelWindowController
 

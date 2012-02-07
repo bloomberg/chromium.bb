@@ -26,7 +26,6 @@
 #import "chrome/browser/ui/cocoa/tab_contents/favicon_util.h"
 #import "chrome/browser/ui/cocoa/tab_contents/tab_contents_controller.h"
 #import "chrome/browser/ui/cocoa/tabs/throbber_view.h"
-#include "chrome/browser/ui/panels/panel.h"
 #include "chrome/browser/ui/panels/panel_bounds_animation.h"
 #include "chrome/browser/ui/panels/panel_browser_window_cocoa.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
@@ -535,6 +534,17 @@ enum {
 - (int)titlebarHeightInScreenCoordinates {
   NSView* titlebar = [self titlebarView];
   return NSHeight([titlebar convertRect:[titlebar bounds] toView:nil]);
+}
+
+- (int)titlebarIconOnlyWidthInScreenCoordinates {
+  return [[self titlebarView] iconOnlyWidthInScreenCoordinates];
+}
+
+- (void)applyVisualStyleForStrip:(PanelStripType)newPanelStrip {
+  if (windowShim_->panel()->manager()->is_full_screen())
+    return;
+  [[self window] setLevel:(newPanelStrip == OVERFLOW_STRIP ?
+      NSStatusWindowLevel + 1 : NSStatusWindowLevel)];
 }
 
 // TODO(dcheng): These two selectors are almost copy-and-paste from

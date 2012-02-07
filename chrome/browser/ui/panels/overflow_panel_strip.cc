@@ -95,6 +95,8 @@ void OverflowPanelStrip::AddPanel(Panel* panel) {
     Refresh();
   }
 
+  panel->ApplyVisualStyleForStrip(OVERFLOW_STRIP);
+
   if (num_panels() == 1) {
     panel_manager_->mouse_watcher()->AddObserver(this);
     UpdateMaxVisiblePanelsOnHover();

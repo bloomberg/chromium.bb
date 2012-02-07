@@ -187,11 +187,10 @@ class PanelOverflowBrowserTest : public BasePanelBrowserTest {
 
 // TODO(jianli): remove the guard when overflow support is enabled on other
 // platforms. http://crbug.com/105073
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_MACOSX)
 #define MAYBE_CheckPanelProperties CheckPanelProperties
 #define MAYBE_UpdateDraggableStatus UpdateDraggableStatus
 #define MAYBE_CreateOverflowPanels CreateOverflowPanels
-#define MAYBE_CreateMoreOverflowPanels CreateMoreOverflowPanels
 // http://crbug.com/107230
 #define MAYBE_CreatePanelOnDelayedOverflow CreatePanelOnDelayedOverflow
 #define MAYBE_CloseOverflowPanels CloseOverflowPanels
@@ -207,13 +206,10 @@ class PanelOverflowBrowserTest : public BasePanelBrowserTest {
 #define MAYBE_HoverOverOverflowAreaWithOverflowOfOverflow \
     HoverOverOverflowAreaWithOverflowOfOverflow
 #define MAYBE_ResizePanel ResizePanel
-#define MAYBE_OverflowIndicatorCount OverflowIndicatorCount
-#define MAYBE_DrawOverflowAttention DrawOverflowAttention
 #else
 #define MAYBE_CheckPanelProperties DISABLED_CheckPanelProperties
 #define MAYBE_UpdateDraggableStatus DISABLED_UpdateDraggableStatus
 #define MAYBE_CreateOverflowPanels DISABLED_CreateOverflowPanels
-#define MAYBE_CreateMoreOverflowPanels DISABLED_CreateMoreOverflowPanels
 #define MAYBE_CreatePanelOnDelayedOverflow DISABLED_CreatePanelOnDelayedOverflow
 #define MAYBE_CloseOverflowPanels DISABLED_CloseOverflowPanels
 #define MAYBE_CloseDockedPanels DISABLED_CloseDockedPanels
@@ -228,6 +224,16 @@ class PanelOverflowBrowserTest : public BasePanelBrowserTest {
 #define MAYBE_HoverOverOverflowAreaWithOverflowOfOverflow \
     DISABLED_HoverOverOverflowAreaWithOverflowOfOverflow
 #define MAYBE_ResizePanel DISABLED_ResizePanel
+#endif
+
+// TODO(dimich): remove the guard when overflow indicator is implemented on
+// other platforms.
+#if defined(OS_WIN)
+#define MAYBE_CreateMoreOverflowPanels CreateMoreOverflowPanels
+#define MAYBE_OverflowIndicatorCount OverflowIndicatorCount
+#define MAYBE_DrawOverflowAttention DrawOverflowAttention
+#else
+#define MAYBE_CreateMoreOverflowPanels DISABLED_CreateMoreOverflowPanels
 #define MAYBE_OverflowIndicatorCount DISABLED_OverflowIndicatorCount
 #define MAYBE_DrawOverflowAttention DISABLED_DrawOverflowAttention
 #endif
