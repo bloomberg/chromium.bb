@@ -81,6 +81,7 @@ enum shell_surface_type {
 	SHELL_SURFACE_TOPLEVEL,
 	SHELL_SURFACE_TRANSIENT,
 	SHELL_SURFACE_FULLSCREEN,
+	SHELL_SURFACE_MAXIMIZED,
 	SHELL_SURFACE_POPUP
 };
 
@@ -341,6 +342,13 @@ shell_surface_resize(struct wl_client *client, struct wl_resource *resource,
 		wl_resource_post_no_memory(resource);
 }
 
+static struct weston_output *
+get_default_output(struct weston_compositor *compositor)
+{
+	return container_of(compositor->output_list.next,
+			    struct weston_output, link);
+}
+
 static int
 reset_shell_surface_type(struct shell_surface *surface)
 {
@@ -350,6 +358,12 @@ reset_shell_surface_type(struct shell_surface *surface)
 					    surface->saved_x,
 					    surface->saved_y);
 		surface->surface->fullscreen_output = NULL;
+		break;
+	case SHELL_SURFACE_MAXIMIZED:
+		surface->output = get_default_output(surface->surface->compositor);
+		weston_surface_set_position(surface->surface,
+					    surface->saved_x,
+					    surface->saved_y);
 		break;
 	case SHELL_SURFACE_PANEL:
 	case SHELL_SURFACE_BACKGROUND:
@@ -408,17 +422,71 @@ shell_surface_set_transient(struct wl_client *client,
 	shsurf->type = SHELL_SURFACE_TRANSIENT;
 }
 
-static struct weston_output *
-get_default_output(struct weston_compositor *compositor)
+static struct wl_shell *
+shell_surface_get_shell(struct shell_surface *shsurf)
 {
-	return container_of(compositor->output_list.next,
-			    struct weston_output, link);
+	struct weston_surface *es = shsurf->surface;
+	struct weston_shell *shell = es->compositor->shell;
+
+	return (struct wl_shell *)container_of(shell, struct wl_shell, shell);
+}
+
+static int
+get_output_panel_height(struct wl_shell *wlshell,struct weston_output *output)
+{
+	struct shell_surface *priv;
+	int panel_height = 0;
+
+	if (!output)
+		return 0;
+
+	wl_list_for_each(priv, &wlshell->panels, link) {
+		if (priv->output == output) {
+			panel_height = priv->surface->geometry.height;
+			break;
+		}
+	}
+	return panel_height;
+}
+
+static void
+shell_surface_set_maximized(struct wl_client *client,
+			    struct wl_resource *resource,
+			    struct wl_resource *output_resource )
+{
+	struct shell_surface *shsurf = resource->data;
+	struct weston_surface *es = shsurf->surface;
+	struct wl_shell *wlshell = NULL;
+	uint32_t edges = 0, panel_height = 0;
+
+	/* get the default output, if the client set it as NULL
+	   check whether the ouput is available */
+	if (output_resource)
+		shsurf->output = output_resource->data;
+	else
+		shsurf->output = get_default_output(es->compositor);
+
+	if (reset_shell_surface_type(shsurf))
+		return;
+
+	shsurf->saved_x = es->geometry.x;
+	shsurf->saved_y = es->geometry.y;
+
+	wlshell = shell_surface_get_shell(shsurf);
+	panel_height = get_output_panel_height(wlshell, es->output);
+	edges = WL_SHELL_SURFACE_RESIZE_TOP|WL_SHELL_SURFACE_RESIZE_LEFT;
+	wl_resource_post_event(&shsurf->resource,
+			       WL_SHELL_SURFACE_CONFIGURE,
+			       weston_compositor_get_time(), edges,
+			       es->output->current->width,
+			       es->output->current->height - panel_height);
+
+	shsurf->type = SHELL_SURFACE_MAXIMIZED;
 }
 
 static void
 shell_surface_set_fullscreen(struct wl_client *client,
 			     struct wl_resource *resource)
-
 {
 	struct shell_surface *shsurf = resource->data;
 	struct weston_surface *es = shsurf->surface;
@@ -563,7 +631,8 @@ static const struct wl_shell_surface_interface shell_surface_implementation = {
 	shell_surface_set_toplevel,
 	shell_surface_set_transient,
 	shell_surface_set_fullscreen,
-	shell_surface_set_popup
+	shell_surface_set_popup,
+	shell_surface_set_maximized
 };
 
 static void
@@ -1276,6 +1345,7 @@ map(struct weston_shell *base,
 	struct shell_surface *shsurf;
 	enum shell_surface_type surface_type = SHELL_SURFACE_NONE;
 	int do_configure;
+	int panel_height = 0;
 
 	shsurf = get_shell_surface(surface);
 	if (shsurf)
@@ -1302,6 +1372,12 @@ map(struct weston_shell *base,
 	case SHELL_SURFACE_SCREENSAVER:
 	case SHELL_SURFACE_FULLSCREEN:
 		center_on_output(surface, surface->fullscreen_output);
+		break;
+	case SHELL_SURFACE_MAXIMIZED:
+		/*use surface configure to set the geometry*/
+		panel_height = get_output_panel_height(shell,surface->output);
+		weston_surface_set_position(surface, surface->output->x,
+					    surface->output->y + panel_height);
 		break;
 	case SHELL_SURFACE_LOCK:
 		center_on_output(surface, get_default_output(compositor));
@@ -1357,12 +1433,15 @@ map(struct weston_shell *base,
 	if (do_configure) {
 		weston_surface_assign_output(surface);
 		weston_compositor_repick(compositor);
+		if (surface_type == SHELL_SURFACE_MAXIMIZED)
+			surface->output = shsurf->output;
 	}
 
 	switch (surface_type) {
 	case SHELL_SURFACE_TOPLEVEL:
 	case SHELL_SURFACE_TRANSIENT:
 	case SHELL_SURFACE_FULLSCREEN:
+	case SHELL_SURFACE_MAXIMIZED:
 		if (!shell->locked)
 			activate(base, surface,
 				 (struct weston_input_device *)
@@ -1401,6 +1480,11 @@ configure(struct weston_shell *base, struct weston_surface *surface,
 	case SHELL_SURFACE_FULLSCREEN:
 		center_on_output(surface, surface->fullscreen_output);
 		break;
+	case SHELL_SURFACE_MAXIMIZED:
+		/*setting x, y and using configure to change that geometry*/
+		x = surface->output->x;
+		y = surface->output->y + get_output_panel_height(shell,surface->output);
+		break;
 	default:
 		break;
 	}
@@ -1411,6 +1495,8 @@ configure(struct weston_shell *base, struct weston_surface *surface,
 		weston_surface_assign_output(surface);
 
 		if (surface_type == SHELL_SURFACE_SCREENSAVER)
+			surface->output = shsurf->output;
+		else if (surface_type == SHELL_SURFACE_MAXIMIZED)
 			surface->output = shsurf->output;
 	}
 }
