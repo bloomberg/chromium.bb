@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -41,10 +41,10 @@ int64 DatabasesTable::GetDatabaseID(const string16& origin_identifier,
                                     const string16& database_name) {
   sql::Statement select_statement(db_->GetCachedStatement(
       SQL_FROM_HERE, "SELECT id FROM Databases WHERE origin = ? AND name = ?"));
-  if (select_statement.is_valid() &&
-      select_statement.BindString(0, UTF16ToUTF8(origin_identifier)) &&
-      select_statement.BindString(1, UTF16ToUTF8(database_name)) &&
-      select_statement.Step()) {
+  select_statement.BindString16(0, origin_identifier);
+  select_statement.BindString16(1, database_name);
+
+  if (select_statement.Step()) {
     return select_statement.ColumnInt64(0);
   }
 
@@ -58,13 +58,13 @@ bool DatabasesTable::GetDatabaseDetails(const string16& origin_identifier,
   sql::Statement select_statement(db_->GetCachedStatement(
       SQL_FROM_HERE, "SELECT description, estimated_size FROM Databases "
                      "WHERE origin = ? AND name = ?"));
-  if (select_statement.is_valid() &&
-      select_statement.BindString(0, UTF16ToUTF8(origin_identifier)) &&
-      select_statement.BindString(1, UTF16ToUTF8(database_name)) &&
-      select_statement.Step()) {
+  select_statement.BindString16(0, origin_identifier);
+  select_statement.BindString16(1, database_name);
+
+  if (select_statement.Step()) {
     details->origin_identifier = origin_identifier;
     details->database_name = database_name;
-    details->description = UTF8ToUTF16(select_statement.ColumnString(0));
+    details->description = select_statement.ColumnString16(0);
     details->estimated_size = select_statement.ColumnInt64(1);
     return true;
   }
@@ -76,55 +76,41 @@ bool DatabasesTable::InsertDatabaseDetails(const DatabaseDetails& details) {
   sql::Statement insert_statement(db_->GetCachedStatement(
       SQL_FROM_HERE, "INSERT INTO Databases (origin, name, description, "
                      "estimated_size) VALUES (?, ?, ?, ?)"));
-  if (insert_statement.is_valid() &&
-      insert_statement.BindString(0, UTF16ToUTF8(details.origin_identifier)) &&
-      insert_statement.BindString(1, UTF16ToUTF8(details.database_name)) &&
-      insert_statement.BindString(2, UTF16ToUTF8(details.description)) &&
-      insert_statement.BindInt64(3, details.estimated_size)) {
-    return insert_statement.Run();
-  }
-
-  return false;
+  insert_statement.BindString16(0, details.origin_identifier);
+  insert_statement.BindString16(1, details.database_name);
+  insert_statement.BindString16(2, details.description);
+  insert_statement.BindInt64(3, details.estimated_size);
+  return insert_statement.Run();
 }
 
 bool DatabasesTable::UpdateDatabaseDetails(const DatabaseDetails& details) {
   sql::Statement update_statement(db_->GetCachedStatement(
       SQL_FROM_HERE, "UPDATE Databases SET description = ?, "
                      "estimated_size = ? WHERE origin = ? AND name = ?"));
-  if (update_statement.is_valid() &&
-      update_statement.BindString(0, UTF16ToUTF8(details.description)) &&
-      update_statement.BindInt64(1, details.estimated_size) &&
-      update_statement.BindString(2, UTF16ToUTF8(details.origin_identifier)) &&
-      update_statement.BindString(3, UTF16ToUTF8(details.database_name))) {
-    return (update_statement.Run() && db_->GetLastChangeCount());
-  }
-
-  return false;
+  update_statement.BindString16(0, details.description);
+  update_statement.BindInt64(1, details.estimated_size);
+  update_statement.BindString16(2, details.origin_identifier);
+  update_statement.BindString16(3, details.database_name);
+  return (update_statement.Run() && db_->GetLastChangeCount());
 }
 
 bool DatabasesTable::DeleteDatabaseDetails(const string16& origin_identifier,
                                            const string16& database_name) {
   sql::Statement delete_statement(db_->GetCachedStatement(
       SQL_FROM_HERE, "DELETE FROM Databases WHERE origin = ? AND name = ?"));
-  if (delete_statement.is_valid() &&
-      delete_statement.BindString(0, UTF16ToUTF8(origin_identifier)) &&
-      delete_statement.BindString(1, UTF16ToUTF8(database_name))) {
-    return (delete_statement.Run() && db_->GetLastChangeCount());
-  }
-
-  return false;
+  delete_statement.BindString16(0, origin_identifier);
+  delete_statement.BindString16(1, database_name);
+  return (delete_statement.Run() && db_->GetLastChangeCount());
 }
 
 bool DatabasesTable::GetAllOrigins(std::vector<string16>* origins) {
   sql::Statement statement(db_->GetCachedStatement(
       SQL_FROM_HERE, "SELECT DISTINCT origin FROM Databases ORDER BY origin"));
-  if (statement.is_valid()) {
-    while (statement.Step())
-      origins->push_back(UTF8ToUTF16(statement.ColumnString(0)));
-    return statement.Succeeded();
-  }
 
-  return false;
+  while (statement.Step())
+    origins->push_back(statement.ColumnString16(0));
+
+  return statement.Succeeded();
 }
 
 bool DatabasesTable::GetAllDatabaseDetailsForOrigin(
@@ -133,31 +119,25 @@ bool DatabasesTable::GetAllDatabaseDetailsForOrigin(
   sql::Statement statement(db_->GetCachedStatement(
       SQL_FROM_HERE, "SELECT name, description, estimated_size "
                      "FROM Databases WHERE origin = ? ORDER BY name"));
-  if (statement.is_valid() &&
-      statement.BindString(0, UTF16ToUTF8(origin_identifier))) {
-    while (statement.Step()) {
-      DatabaseDetails details;
-      details.origin_identifier = origin_identifier;
-      details.database_name = UTF8ToUTF16(statement.ColumnString(0));
-      details.description = UTF8ToUTF16(statement.ColumnString(1));
-      details.estimated_size = statement.ColumnInt64(2);
-      details_vector->push_back(details);
-    }
-    return statement.Succeeded();
+  statement.BindString16(0, origin_identifier);
+
+  while (statement.Step()) {
+    DatabaseDetails details;
+    details.origin_identifier = origin_identifier;
+    details.database_name = statement.ColumnString16(0);
+    details.description = statement.ColumnString16(1);
+    details.estimated_size = statement.ColumnInt64(2);
+    details_vector->push_back(details);
   }
 
-  return false;
+  return statement.Succeeded();
 }
 
 bool DatabasesTable::DeleteOrigin(const string16& origin_identifier) {
   sql::Statement delete_statement(db_->GetCachedStatement(
       SQL_FROM_HERE, "DELETE FROM Databases WHERE origin = ?"));
-  if (delete_statement.is_valid() &&
-      delete_statement.BindString(0, UTF16ToUTF8(origin_identifier))) {
-    return (delete_statement.Run() && db_->GetLastChangeCount());
-  }
-
-  return false;
+  delete_statement.BindString16(0, origin_identifier);
+  return (delete_statement.Run() && db_->GetLastChangeCount());
 }
 
 }  // namespace webkit_database

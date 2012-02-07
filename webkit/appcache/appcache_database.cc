@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -240,9 +240,7 @@ bool AppCacheDatabase::FindOriginsWithGroups(std::set<GURL>* origins) {
   const char* kSql =
       "SELECT DISTINCT(origin) FROM Groups";
 
-  sql::Statement statement;
-  if (!PrepareUniqueStatement(kSql, &statement))
-    return false;
+  sql::Statement statement(db_->GetUniqueStatement(kSql));
 
   while (statement.Step())
     origins->insert(GURL(statement.ColumnString(0)));
@@ -306,12 +304,10 @@ bool AppCacheDatabase::FindGroup(int64 group_id, GroupRecord* record) {
       "       creation_time, last_access_time"
       "  FROM Groups WHERE group_id = ?";
 
-  sql::Statement statement;
-  if (!PrepareCachedStatement(SQL_FROM_HERE, kSql, &statement))
-    return false;
+  sql::Statement statement(db_->GetCachedStatement(SQL_FROM_HERE, kSql));
 
   statement.BindInt64(0, group_id);
-  if (!statement.Step() || !statement.Succeeded())
+  if (!statement.Step())
     return false;
 
   ReadGroupRecord(statement, record);
@@ -330,12 +326,10 @@ bool AppCacheDatabase::FindGroupForManifestUrl(
       "       creation_time, last_access_time"
       "  FROM Groups WHERE manifest_url = ?";
 
-  sql::Statement statement;
-  if (!PrepareCachedStatement(SQL_FROM_HERE, kSql, &statement))
-    return false;
-
+  sql::Statement statement(db_->GetCachedStatement(SQL_FROM_HERE, kSql));
   statement.BindString(0, manifest_url.spec());
-  if (!statement.Step() || !statement.Succeeded())
+
+  if (!statement.Step())
     return false;
 
   ReadGroupRecord(statement, record);
@@ -354,11 +348,9 @@ bool AppCacheDatabase::FindGroupsForOrigin(
       "       creation_time, last_access_time"
       "   FROM Groups WHERE origin = ?";
 
-  sql::Statement statement;
-  if (!PrepareCachedStatement(SQL_FROM_HERE, kSql, &statement))
-    return false;
-
+  sql::Statement statement(db_->GetCachedStatement(SQL_FROM_HERE, kSql));
   statement.BindString(0, origin.spec());
+
   while (statement.Step()) {
     records->push_back(GroupRecord());
     ReadGroupRecord(statement, &records->back());
@@ -379,12 +371,10 @@ bool AppCacheDatabase::FindGroupForCache(int64 cache_id, GroupRecord* record) {
       "  FROM Groups g, Caches c"
       "  WHERE c.cache_id = ? AND c.group_id = g.group_id";
 
-  sql::Statement statement;
-  if (!PrepareCachedStatement(SQL_FROM_HERE, kSql, &statement))
-    return false;
-
+  sql::Statement statement(db_->GetCachedStatement(SQL_FROM_HERE, kSql));
   statement.BindInt64(0, cache_id);
-  if (!statement.Step() || !statement.Succeeded())
+
+  if (!statement.Step())
     return false;
 
   ReadGroupRecord(statement, record);
@@ -399,12 +389,10 @@ bool AppCacheDatabase::UpdateGroupLastAccessTime(
   const char* kSql =
       "UPDATE Groups SET last_access_time = ? WHERE group_id = ?";
 
-  sql::Statement statement;
-  if (!PrepareCachedStatement(SQL_FROM_HERE, kSql, &statement))
-    return false;
-
+  sql::Statement statement(db_->GetCachedStatement(SQL_FROM_HERE, kSql));
   statement.BindInt64(0, time.ToInternalValue());
   statement.BindInt64(1, group_id);
+
   return statement.Run() && db_->GetLastChangeCount();
 }
 
@@ -417,15 +405,13 @@ bool AppCacheDatabase::InsertGroup(const GroupRecord* record) {
       "  (group_id, origin, manifest_url, creation_time, last_access_time)"
       "  VALUES(?, ?, ?, ?, ?)";
 
-  sql::Statement statement;
-  if (!PrepareCachedStatement(SQL_FROM_HERE, kSql, &statement))
-    return false;
-
+  sql::Statement statement(db_->GetCachedStatement(SQL_FROM_HERE, kSql));
   statement.BindInt64(0, record->group_id);
   statement.BindString(1, record->origin.spec());
   statement.BindString(2, record->manifest_url.spec());
   statement.BindInt64(3, record->creation_time.ToInternalValue());
   statement.BindInt64(4, record->last_access_time.ToInternalValue());
+
   return statement.Run();
 }
 
@@ -436,11 +422,9 @@ bool AppCacheDatabase::DeleteGroup(int64 group_id) {
   const char* kSql =
       "DELETE FROM Groups WHERE group_id = ?";
 
-  sql::Statement statement;
-  if (!PrepareCachedStatement(SQL_FROM_HERE, kSql, &statement))
-    return false;
-
+  sql::Statement statement(db_->GetCachedStatement(SQL_FROM_HERE, kSql));
   statement.BindInt64(0, group_id);
+
   return statement.Run();
 }
 
@@ -453,12 +437,10 @@ bool AppCacheDatabase::FindCache(int64 cache_id, CacheRecord* record) {
       "SELECT cache_id, group_id, online_wildcard, update_time, cache_size"
       " FROM Caches WHERE cache_id = ?";
 
-  sql::Statement statement;
-  if (!PrepareCachedStatement(SQL_FROM_HERE, kSql, &statement))
-    return false;
-
+  sql::Statement statement(db_->GetCachedStatement(SQL_FROM_HERE, kSql));
   statement.BindInt64(0, cache_id);
-  if (!statement.Step() || !statement.Succeeded())
+
+  if (!statement.Step())
     return false;
 
   ReadCacheRecord(statement, record);
@@ -474,12 +456,10 @@ bool AppCacheDatabase::FindCacheForGroup(int64 group_id, CacheRecord* record) {
       "SELECT cache_id, group_id, online_wildcard, update_time, cache_size"
       "  FROM Caches WHERE group_id = ?";
 
-  sql::Statement statement;
-  if (!PrepareCachedStatement(SQL_FROM_HERE, kSql, &statement))
-    return false;
-
+  sql::Statement statement(db_->GetCachedStatement(SQL_FROM_HERE, kSql));
   statement.BindInt64(0, group_id);
-  if (!statement.Step() || !statement.Succeeded())
+
+  if (!statement.Step())
     return false;
 
   ReadCacheRecord(statement, record);
@@ -512,15 +492,13 @@ bool AppCacheDatabase::InsertCache(const CacheRecord* record) {
       "                    update_time, cache_size)"
       "  VALUES(?, ?, ?, ?, ?)";
 
-  sql::Statement statement;
-  if (!PrepareCachedStatement(SQL_FROM_HERE, kSql, &statement))
-    return false;
-
+  sql::Statement statement(db_->GetCachedStatement(SQL_FROM_HERE, kSql));
   statement.BindInt64(0, record->cache_id);
   statement.BindInt64(1, record->group_id);
   statement.BindBool(2, record->online_wildcard);
   statement.BindInt64(3, record->update_time.ToInternalValue());
   statement.BindInt64(4, record->cache_size);
+
   return statement.Run();
 }
 
@@ -531,11 +509,9 @@ bool AppCacheDatabase::DeleteCache(int64 cache_id) {
   const char* kSql =
       "DELETE FROM Caches WHERE cache_id = ?";
 
-  sql::Statement statement;
-  if (!PrepareCachedStatement(SQL_FROM_HERE, kSql, &statement))
-    return false;
-
+  sql::Statement statement(db_->GetCachedStatement(SQL_FROM_HERE, kSql));
   statement.BindInt64(0, cache_id);
+
   return statement.Run();
 }
 
@@ -549,11 +525,9 @@ bool AppCacheDatabase::FindEntriesForCache(
       "SELECT cache_id, url, flags, response_id, response_size FROM Entries"
       "  WHERE cache_id = ?";
 
-  sql::Statement statement;
-  if (!PrepareCachedStatement(SQL_FROM_HERE, kSql, &statement))
-    return false;
-
+  sql::Statement statement(db_->GetCachedStatement(SQL_FROM_HERE, kSql));
   statement.BindInt64(0, cache_id);
+
   while (statement.Step()) {
     records->push_back(EntryRecord());
     ReadEntryRecord(statement, &records->back());
@@ -573,11 +547,9 @@ bool AppCacheDatabase::FindEntriesForUrl(
       "SELECT cache_id, url, flags, response_id, response_size FROM Entries"
       "  WHERE url = ?";
 
-  sql::Statement statement;
-  if (!PrepareCachedStatement(SQL_FROM_HERE, kSql, &statement))
-    return false;
-
+  sql::Statement statement(db_->GetCachedStatement(SQL_FROM_HERE, kSql));
   statement.BindString(0, url.spec());
+
   while (statement.Step()) {
     records->push_back(EntryRecord());
     ReadEntryRecord(statement, &records->back());
@@ -597,13 +569,11 @@ bool AppCacheDatabase::FindEntry(
       "SELECT cache_id, url, flags, response_id, response_size FROM Entries"
       "  WHERE cache_id = ? AND url = ?";
 
-  sql::Statement statement;
-  if (!PrepareCachedStatement(SQL_FROM_HERE, kSql, &statement))
-    return false;
-
+  sql::Statement statement(db_->GetCachedStatement(SQL_FROM_HERE, kSql));
   statement.BindInt64(0, cache_id);
   statement.BindString(1, url.spec());
-  if (!statement.Step() || !statement.Succeeded())
+
+  if (!statement.Step())
     return false;
 
   ReadEntryRecord(statement, record);
@@ -620,15 +590,13 @@ bool AppCacheDatabase::InsertEntry(const EntryRecord* record) {
       "INSERT INTO Entries (cache_id, url, flags, response_id, response_size)"
       "  VALUES(?, ?, ?, ?, ?)";
 
-  sql::Statement statement;
-  if (!PrepareCachedStatement(SQL_FROM_HERE, kSql, &statement))
-    return false;
-
+  sql::Statement statement(db_->GetCachedStatement(SQL_FROM_HERE, kSql));
   statement.BindInt64(0, record->cache_id);
   statement.BindString(1, record->url.spec());
   statement.BindInt(2, record->flags);
   statement.BindInt64(3, record->response_id);
   statement.BindInt64(4, record->response_size);
+
   return statement.Run();
 }
 
@@ -655,11 +623,9 @@ bool AppCacheDatabase::DeleteEntriesForCache(int64 cache_id) {
   const char* kSql =
       "DELETE FROM Entries WHERE cache_id = ?";
 
-  sql::Statement statement;
-  if (!PrepareCachedStatement(SQL_FROM_HERE, kSql, &statement))
-    return false;
-
+  sql::Statement statement(db_->GetCachedStatement(SQL_FROM_HERE, kSql));
   statement.BindInt64(0, cache_id);
+
   return statement.Run();
 }
 
@@ -671,13 +637,11 @@ bool AppCacheDatabase::AddEntryFlags(
   const char* kSql =
       "UPDATE Entries SET flags = flags | ? WHERE cache_id = ? AND url = ?";
 
-  sql::Statement statement;
-  if (!PrepareCachedStatement(SQL_FROM_HERE, kSql, &statement))
-    return false;
-
+  sql::Statement statement(db_->GetCachedStatement(SQL_FROM_HERE, kSql));
   statement.BindInt(0, additional_flags);
   statement.BindInt64(1, cache_id);
   statement.BindString(2, entry_url.spec());
+
   return statement.Run() && db_->GetLastChangeCount();
 }
 
@@ -694,12 +658,11 @@ bool AppCacheDatabase::FindNamespacesForOrigin(
       "SELECT cache_id, origin, type, namespace_url, target_url"
       "  FROM Namespaces WHERE origin = ?";
 
-  sql::Statement statement;
-  if (!PrepareCachedStatement(SQL_FROM_HERE, kSql, &statement))
-    return false;
-
+  sql::Statement statement(db_->GetCachedStatement(SQL_FROM_HERE, kSql));
   statement.BindString(0, origin.spec());
+
   ReadNamespaceRecords(&statement, intercepts, fallbacks);
+
   return statement.Succeeded();
 }
 
@@ -716,12 +679,11 @@ bool AppCacheDatabase::FindNamespacesForCache(
       "SELECT cache_id, origin, type, namespace_url, target_url"
       "  FROM Namespaces WHERE cache_id = ?";
 
-  sql::Statement statement;
-  if (!PrepareCachedStatement(SQL_FROM_HERE, kSql, &statement))
-    return false;
-
+  sql::Statement statement(db_->GetCachedStatement(SQL_FROM_HERE, kSql));
   statement.BindInt64(0, cache_id);
+
   ReadNamespaceRecords(&statement, intercepts, fallbacks);
+
   return statement.Succeeded();
 }
 
@@ -735,15 +697,13 @@ bool AppCacheDatabase::InsertNamespace(
       "  (cache_id, origin, type, namespace_url, target_url)"
       "  VALUES (?, ?, ?, ?, ?)";
 
-  sql::Statement statement;
-  if (!PrepareCachedStatement(SQL_FROM_HERE, kSql, &statement))
-    return false;
-
+  sql::Statement statement(db_->GetCachedStatement(SQL_FROM_HERE, kSql));
   statement.BindInt64(0, record->cache_id);
   statement.BindString(1, record->origin.spec());
   statement.BindInt(2, record->type);
   statement.BindString(3, record->namespace_url.spec());
   statement.BindString(4, record->target_url.spec());
+
   return statement.Run();
 }
 
@@ -770,11 +730,9 @@ bool AppCacheDatabase::DeleteNamespacesForCache(int64 cache_id) {
   const char* kSql =
       "DELETE FROM Namespaces WHERE cache_id = ?";
 
-  sql::Statement statement;
-  if (!PrepareCachedStatement(SQL_FROM_HERE, kSql, &statement))
-    return false;
-
+  sql::Statement statement(db_->GetCachedStatement(SQL_FROM_HERE, kSql));
   statement.BindInt64(0, cache_id);
+
   return statement.Run();
 }
 
@@ -788,11 +746,9 @@ bool AppCacheDatabase::FindOnlineWhiteListForCache(
       "SELECT cache_id, namespace_url FROM OnlineWhiteLists"
       "  WHERE cache_id = ?";
 
-  sql::Statement statement;
-  if (!PrepareCachedStatement(SQL_FROM_HERE, kSql, &statement))
-    return false;
-
+  sql::Statement statement(db_->GetCachedStatement(SQL_FROM_HERE, kSql));
   statement.BindInt64(0, cache_id);
+
   while (statement.Step()) {
     records->push_back(OnlineWhiteListRecord());
     this->ReadOnlineWhiteListRecord(statement, &records->back());
@@ -809,12 +765,10 @@ bool AppCacheDatabase::InsertOnlineWhiteList(
   const char* kSql =
       "INSERT INTO OnlineWhiteLists (cache_id, namespace_url) VALUES (?, ?)";
 
-  sql::Statement statement;
-  if (!PrepareCachedStatement(SQL_FROM_HERE, kSql, &statement))
-    return false;
-
+  sql::Statement statement(db_->GetCachedStatement(SQL_FROM_HERE, kSql));
   statement.BindInt64(0, record->cache_id);
   statement.BindString(1, record->namespace_url.spec());
+
   return statement.Run();
 }
 
@@ -841,11 +795,9 @@ bool AppCacheDatabase::DeleteOnlineWhiteListForCache(int64 cache_id) {
   const char* kSql =
       "DELETE FROM OnlineWhiteLists WHERE cache_id = ?";
 
-  sql::Statement statement;
-  if (!PrepareCachedStatement(SQL_FROM_HERE, kSql, &statement))
-    return false;
-
+  sql::Statement statement(db_->GetCachedStatement(SQL_FROM_HERE, kSql));
   statement.BindInt64(0, cache_id);
+
   return statement.Run();
 }
 
@@ -858,12 +810,11 @@ bool AppCacheDatabase::GetDeletableResponseIds(
       "SELECT response_id FROM DeletableResponseIds "
       "  WHERE rowid <= ?"
       "  LIMIT ?";
-  sql::Statement statement;
-  if (!PrepareCachedStatement(SQL_FROM_HERE, kSql, &statement))
-    return false;
 
+  sql::Statement statement(db_->GetCachedStatement(SQL_FROM_HERE, kSql));
   statement.BindInt64(0, max_rowid);
   statement.BindInt64(1, limit);
+
   while (statement.Step())
     response_ids->push_back(statement.ColumnInt64(0));
   return statement.Succeeded();
@@ -886,6 +837,7 @@ bool AppCacheDatabase::DeleteDeletableResponseIds(
 bool AppCacheDatabase::RunCachedStatementWithIds(
     const sql::StatementID& statement_id, const char* sql,
     const std::vector<int64>& ids) {
+  DCHECK(sql);
   if (!LazyOpen(true))
     return false;
 
@@ -893,9 +845,7 @@ bool AppCacheDatabase::RunCachedStatementWithIds(
   if (!transaction.Begin())
     return false;
 
-  sql::Statement statement;
-  if (!PrepareCachedStatement(statement_id, sql, &statement))
-    return false;
+  sql::Statement statement(db_->GetCachedStatement(statement_id, sql));
 
   std::vector<int64>::const_iterator iter = ids.begin();
   while (iter != ids.end()) {
@@ -911,34 +861,12 @@ bool AppCacheDatabase::RunCachedStatementWithIds(
 
 bool AppCacheDatabase::RunUniqueStatementWithInt64Result(
     const char* sql, int64* result) {
-  sql::Statement statement;
-  if (!PrepareUniqueStatement(sql, &statement) ||
-      !statement.Step()) {
+  DCHECK(sql);
+  sql::Statement statement(db_->GetUniqueStatement(sql));
+  if (!statement.Step()) {
     return false;
   }
   *result = statement.ColumnInt64(0);
-  return true;
-}
-
-bool AppCacheDatabase::PrepareUniqueStatement(
-    const char* sql, sql::Statement* statement) {
-  DCHECK(sql && statement);
-  statement->Assign(db_->GetUniqueStatement(sql));
-  if (!statement->is_valid()) {
-    NOTREACHED() << db_->GetErrorMessage();
-    return false;
-  }
-  return true;
-}
-
-bool AppCacheDatabase::PrepareCachedStatement(
-    const sql::StatementID& id, const char* sql, sql::Statement* statement) {
-  DCHECK(sql && statement);
-  statement->Assign(db_->GetCachedStatement(id, sql));
-  if (!statement->is_valid()) {
-    NOTREACHED() << db_->GetErrorMessage();
-    return false;
-  }
   return true;
 }
 
@@ -953,9 +881,7 @@ bool AppCacheDatabase::FindResponseIdsForCacheHelper(
   const char* kSql =
       "SELECT response_id FROM Entries WHERE cache_id = ?";
 
-  sql::Statement statement;
-  if (!PrepareCachedStatement(SQL_FROM_HERE, kSql, &statement))
-    return false;
+  sql::Statement statement(db_->GetCachedStatement(SQL_FROM_HERE, kSql));
 
   statement.BindInt64(0, cache_id);
   while (statement.Step()) {

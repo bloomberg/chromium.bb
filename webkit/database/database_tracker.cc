@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,7 +18,6 @@
 #include "sql/connection.h"
 #include "sql/diagnostic_error_delegate.h"
 #include "sql/meta_table.h"
-#include "sql/statement.h"
 #include "sql/transaction.h"
 #include "webkit/database/database_quota_client.h"
 #include "webkit/database/database_util.h"

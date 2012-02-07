@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -169,10 +169,6 @@ class APPCACHE_EXPORT AppCacheDatabase {
       const sql::StatementID& statement_id, const char* sql,
       const std::vector<int64>& ids);
   bool RunUniqueStatementWithInt64Result(const char* sql, int64* result);
-
-  bool PrepareUniqueStatement(const char* sql, sql::Statement* statement);
-  bool PrepareCachedStatement(
-      const sql::StatementID& id, const char* sql, sql::Statement* statement);
 
   bool FindResponseIdsForCacheHelper(
       int64 cache_id, std::vector<int64>* ids_vector,

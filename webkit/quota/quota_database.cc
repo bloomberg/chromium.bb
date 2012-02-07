@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -37,18 +37,6 @@ class HistogramUniquifier {
 
 sql::ErrorDelegate* GetErrorHandlerForQuotaDb() {
   return new sql::DiagnosticErrorDelegate<HistogramUniquifier>();
-}
-
-bool PrepareCachedStatement(
-    sql::Connection* db, const sql::StatementID& id,
-    const char* sql, sql::Statement* statement) {
-  DCHECK(db && sql && statement);
-  statement->Assign(db->GetCachedStatement(id, sql));
-  if (!statement->is_valid()) {
-    NOTREACHED() << db->GetErrorMessage();
-    return false;
-  }
-  return true;
 }
 
 bool VerifyValidQuotaConfig(const char* key) {
@@ -171,13 +159,11 @@ bool QuotaDatabase::GetHostQuota(
       " FROM HostQuotaTable"
       " WHERE host = ? AND type = ?";
 
-  sql::Statement statement;
-  if (!PrepareCachedStatement(db_.get(), SQL_FROM_HERE, kSql, &statement))
-    return false;
-
+  sql::Statement statement(db_->GetCachedStatement(SQL_FROM_HERE, kSql));
   statement.BindString(0, host);
   statement.BindInt(1, static_cast<int>(type));
-  if (!statement.Step() || !statement.Succeeded())
+
+  if (!statement.Step())
     return false;
 
   *quota = statement.ColumnInt64(0);
@@ -190,17 +176,15 @@ bool QuotaDatabase::SetHostQuota(
   if (!LazyOpen(true))
     return false;
 
-  sql::Statement statement;
   const char* kSql =
       "INSERT OR REPLACE INTO HostQuotaTable"
       " (quota, host, type)"
       " VALUES (?, ?, ?)";
-  if (!PrepareCachedStatement(db_.get(), SQL_FROM_HERE, kSql, &statement))
-    return false;
-
+  sql::Statement statement(db_->GetCachedStatement(SQL_FROM_HERE, kSql));
   statement.BindInt64(0, quota);
   statement.BindString(1, host);
   statement.BindInt(2, static_cast<int>(type));
+
   if (!statement.Run())
     return false;
 
@@ -222,21 +206,19 @@ bool QuotaDatabase::SetOriginLastAccessTime(
         "UPDATE OriginInfoTable"
         " SET used_count = ?, last_access_time = ?"
         " WHERE origin = ? AND type = ?";
-    if (!PrepareCachedStatement(db_.get(), SQL_FROM_HERE, kSql, &statement))
-      return false;
+    statement.Assign(db_->GetCachedStatement(SQL_FROM_HERE, kSql));
   } else  {
     const char* kSql =
         "INSERT INTO OriginInfoTable"
         " (used_count, last_access_time, origin, type)"
         " VALUES (?, ?, ?, ?)";
-    if (!PrepareCachedStatement(db_.get(), SQL_FROM_HERE, kSql, &statement))
-      return false;
+    statement.Assign(db_->GetCachedStatement(SQL_FROM_HERE, kSql));
   }
-
   statement.BindInt(0, used_count);
   statement.BindInt64(1, last_access_time.ToInternalValue());
   statement.BindString(2, origin.spec());
   statement.BindInt(3, static_cast<int>(type));
+
   if (!statement.Run())
     return false;
 
@@ -257,19 +239,17 @@ bool QuotaDatabase::SetOriginLastModifiedTime(
         "UPDATE OriginInfoTable"
         " SET last_modified_time = ?"
         " WHERE origin = ? AND type = ?";
-    if (!PrepareCachedStatement(db_.get(), SQL_FROM_HERE, kSql, &statement))
-      return false;
+    statement.Assign(db_->GetCachedStatement(SQL_FROM_HERE, kSql));
   } else {
     const char* kSql =
         "INSERT INTO OriginInfoTable"
         " (last_modified_time, origin, type)  VALUES (?, ?, ?)";
-    if (!PrepareCachedStatement(db_.get(), SQL_FROM_HERE, kSql, &statement))
-      return false;
+    statement.Assign(db_->GetCachedStatement(SQL_FROM_HERE, kSql));
   }
-
   statement.BindInt64(0, last_modified_time.ToInternalValue());
   statement.BindString(1, origin.spec());
   statement.BindInt(2, static_cast<int>(type));
+
   if (!statement.Run())
     return false;
 
@@ -288,12 +268,10 @@ bool QuotaDatabase::RegisterInitialOriginInfo(
     const char* kSql =
         "INSERT OR IGNORE INTO OriginInfoTable"
         " (origin, type) VALUES (?, ?)";
-    sql::Statement statement;
-    if (!PrepareCachedStatement(db_.get(), SQL_FROM_HERE, kSql, &statement))
-      return false;
-
+    sql::Statement statement(db_->GetCachedStatement(SQL_FROM_HERE, kSql));
     statement.BindString(0, itr->spec());
     statement.BindInt(1, static_cast<int>(type));
+
     if (!statement.Run())
       return false;
   }
@@ -311,12 +289,10 @@ bool QuotaDatabase::DeleteHostQuota(
       "DELETE FROM HostQuotaTable"
       " WHERE host = ? AND type = ?";
 
-  sql::Statement statement;
-  if (!PrepareCachedStatement(db_.get(), SQL_FROM_HERE, kSql, &statement))
-    return false;
-
+  sql::Statement statement(db_->GetCachedStatement(SQL_FROM_HERE, kSql));
   statement.BindString(0, host);
   statement.BindInt(1, static_cast<int>(type));
+
   if (!statement.Run())
     return false;
 
@@ -333,12 +309,10 @@ bool QuotaDatabase::DeleteOriginInfo(
       "DELETE FROM OriginInfoTable"
       " WHERE origin = ? AND type = ?";
 
-  sql::Statement statement;
-  if (!PrepareCachedStatement(db_.get(), SQL_FROM_HERE, kSql, &statement))
-    return false;
-
+  sql::Statement statement(db_->GetCachedStatement(SQL_FROM_HERE, kSql));
   statement.BindString(0, origin.spec());
   statement.BindInt(1, static_cast<int>(type));
+
   if (!statement.Run())
     return false;
 
@@ -373,9 +347,7 @@ bool QuotaDatabase::GetLRUOrigin(
                      " WHERE type = ?"
                      " ORDER BY last_access_time ASC";
 
-  sql::Statement statement;
-  if (!PrepareCachedStatement(db_.get(), SQL_FROM_HERE, kSql, &statement))
-    return false;
+  sql::Statement statement(db_->GetCachedStatement(SQL_FROM_HERE, kSql));
   statement.BindInt(0, static_cast<int>(type));
 
   while (statement.Step()) {
@@ -402,9 +374,7 @@ bool QuotaDatabase::GetOriginsModifiedSince(
   const char* kSql = "SELECT origin FROM OriginInfoTable"
                      " WHERE type = ? AND last_modified_time > ?";
 
-  sql::Statement statement;
-  if (!PrepareCachedStatement(db_.get(), SQL_FROM_HERE, kSql, &statement))
-    return false;
+  sql::Statement statement(db_->GetCachedStatement(SQL_FROM_HERE, kSql));
   statement.BindInt(0, static_cast<int>(type));
   statement.BindInt64(1, modified_since.ToInternalValue());
 
@@ -458,13 +428,11 @@ bool QuotaDatabase::FindOriginUsedCount(
       "SELECT used_count FROM OriginInfoTable"
       " WHERE origin = ? AND type = ?";
 
-  sql::Statement statement;
-  if (!PrepareCachedStatement(db_.get(), SQL_FROM_HERE, kSql, &statement))
-    return false;
-
+  sql::Statement statement(db_->GetCachedStatement(SQL_FROM_HERE, kSql));
   statement.BindString(0, origin.spec());
   statement.BindInt(1, static_cast<int>(type));
-  if (!statement.Step() || !statement.Succeeded())
+
+  if (!statement.Step())
     return false;
 
   *used_count = statement.ColumnInt(0);
@@ -640,9 +608,7 @@ bool QuotaDatabase::DumpQuotaTable(QuotaTableCallback* callback) {
     return false;
 
   const char* kSql = "SELECT * FROM HostQuotaTable";
-  sql::Statement statement;
-  if (!PrepareCachedStatement(db_.get(), SQL_FROM_HERE, kSql, &statement))
-    return false;
+  sql::Statement statement(db_->GetCachedStatement(SQL_FROM_HERE, kSql));
 
   while (statement.Step()) {
     QuotaTableEntry entry = QuotaTableEntry(
@@ -665,9 +631,7 @@ bool QuotaDatabase::DumpOriginInfoTable(
     return false;
 
   const char* kSql = "SELECT * FROM OriginInfoTable";
-  sql::Statement statement;
-  if (!PrepareCachedStatement(db_.get(), SQL_FROM_HERE, kSql, &statement))
-    return false;
+  sql::Statement statement(db_->GetCachedStatement(SQL_FROM_HERE, kSql));
 
   while (statement.Step()) {
     OriginInfoTableEntry entry(
