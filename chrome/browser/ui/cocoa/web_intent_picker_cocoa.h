@@ -9,6 +9,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/intents/web_intent_picker.h"
 #include "chrome/browser/ui/intents/web_intent_picker_model.h"
 #include "chrome/browser/ui/intents/web_intent_picker_model_observer.h"
@@ -55,11 +56,20 @@ class WebIntentPickerCocoa : public WebIntentPicker,
 
   WebIntentBubbleController* controller_;  // Weak reference.
 
+  // Factory for weak ptrs, used for delayed callbacks.
+  base::WeakPtrFactory<WebIntentPickerCocoa> weak_ptr_factory_;
+
   // Tab contents wrapper to hold intent page if inline disposition is used.
   scoped_ptr<TabContentsWrapper> inline_disposition_tab_contents_;
 
   // Delegate for inline disposition tab contents.
   scoped_ptr<WebIntentInlineDispositionDelegate> inline_disposition_delegate_;
+
+  // Post a delayed task to do layout, if it isn't already pending.
+  void PerformDelayedLayout();
+
+  // Re-layout the intent picker.
+  void PerformLayout();
 
   // Default constructor, for testing only.
   WebIntentPickerCocoa();

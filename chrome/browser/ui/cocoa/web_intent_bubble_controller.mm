@@ -5,12 +5,14 @@
 #import "chrome/browser/ui/cocoa/web_intent_bubble_controller.h"
 
 #include "base/memory/scoped_nsobject.h"
+#include "base/sys_string_conversions.h"
 #include "chrome/browser/ui/browser_list.h"
 #import "chrome/browser/ui/cocoa/hyperlink_button_cell.h"
 #import "chrome/browser/ui/cocoa/info_bubble_view.h"
 #import "chrome/browser/ui/cocoa/info_bubble_window.h"
 #include "chrome/browser/ui/cocoa/web_intent_picker_cocoa.h"
 #include "chrome/browser/ui/intents/web_intent_picker_delegate.h"
+#include "chrome/browser/ui/intents/web_intent_picker_model.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "content/public/browser/web_contents_view.h"
 #include "content/public/browser/web_contents.h"
@@ -33,6 +35,9 @@ namespace {
 // determined by the content.
 const CGFloat kWindowWidth = 380;
 
+// The width of a service button, in view coordinates.
+const CGFloat kServiceButtonWidth = 300;
+
 // Padding along on the X-axis between the window frame and content.
 const CGFloat kFramePadding = 10;
 
@@ -54,6 +59,18 @@ const CGFloat kTextWidth = kWindowWidth - (kImageSize + kImageSpacing +
 
 }  // namespace
 
+// This simple NSView subclass is used as the single subview of the page info
+// bubble's window's contentView. Drawing is flipped so that layout of the
+// sections is easier. Apple recommends flipping the coordinate origin when
+// doing a lot of text layout because it's more natural.
+@interface WebIntentsContentView : NSView
+@end
+@implementation WebIntentsContentView
+- (BOOL)isFlipped {
+  return YES;
+}
+@end
+
 @implementation WebIntentBubbleController;
 
 - (id)initWithPicker:(WebIntentPickerCocoa*)picker
@@ -71,12 +88,9 @@ const CGFloat kTextWidth = kWindowWidth - (kImageSize + kImageSpacing +
                        parentWindow:parent
                          anchoredAt:point])) {
     picker_ = picker;
-    iconImages_.reset([[NSPointerArray alloc] initWithOptions:
-        NSPointerFunctionsStrongMemory |
-        NSPointerFunctionsObjectPersonality]);
 
     [[self bubble] setArrowLocation:info_bubble::kTopLeft];
-    [self performLayout];
+    [self performLayoutWithModel:NULL];
     [self showWindow:nil];
     picker_->set_controller(self);
   }
@@ -84,26 +98,8 @@ const CGFloat kTextWidth = kWindowWidth - (kImageSize + kImageSpacing +
   return self;
 }
 
-- (void)setServiceURLs:(NSArray*)urls {
-  serviceURLs_.reset([urls retain]);
-
-  if ([iconImages_ count] < [serviceURLs_ count])
-    [iconImages_ setCount:[serviceURLs_ count]];
-
-  [self performLayout];
-}
-
 - (void)setInlineDispositionTabContents:(TabContentsWrapper*)wrapper {
   contents_ = wrapper;
-  [self performLayout];
-}
-
-- (void)replaceImageAtIndex:(size_t)index withImage:(NSImage*)image {
-  if ([iconImages_ count] <= index)
-    [iconImages_ setCount:index + 1];
-
-  [iconImages_ replacePointerAtIndex:index withPointer:image];
-  [self performLayout];
 }
 
 // We need to watch for window closing so we can notify up via |picker_|.
@@ -131,7 +127,7 @@ const CGFloat kTextWidth = kWindowWidth - (kImageSize + kImageSpacing +
   if (picker_) {
     WebIntentPickerCocoa* temp = picker_;
     picker_ = NULL;  // Abandon picker, we are done with it.
-    temp->OnServiceChosen([[sender selectedCell] tag]);
+    temp->OnServiceChosen([sender tag]);
   }
 }
 
@@ -209,56 +205,6 @@ const CGFloat kTextWidth = kWindowWidth - (kImageSize + kImageSpacing +
   return NSHeight([imageView frame]);
 }
 
-// Add all service icons to picker UI.
-// Returns the y position delta for the next offset.
-- (CGFloat)addIcons:(NSPointerArray*)icons
-          toSubviews:(NSMutableArray*)subviews
-            atOffset:(CGFloat)offset {
-  CGFloat matrixOffset = kFramePadding + kImageSize + kImagePadding;
-  CGFloat matrixWidth = kWindowWidth - matrixOffset - kFramePadding;
-
-  CGFloat iconWidth = kImageSize + kImagePadding;
-  NSInteger iconsPerRow = matrixWidth / iconWidth;
-  NSInteger numRows = ([icons count] / iconsPerRow) + 1;
-
-  NSRect frame = NSMakeRect(matrixOffset, offset, matrixWidth,
-                            (kImageSize + kImagePadding) * numRows);
-
-  scoped_nsobject<NSMatrix> matrix(
-      [[NSMatrix alloc] initWithFrame:frame
-                                 mode:NSHighlightModeMatrix
-                            cellClass:[NSImageCell class]
-                         numberOfRows:numRows
-                      numberOfColumns:iconsPerRow]);
-
-  [matrix setCellSize:NSMakeSize(kImageSize,kImageSize)];
-  [matrix setIntercellSpacing:NSMakeSize(kImagePadding,kImagePadding)];
-
-  for (NSUInteger i = 0; i < [iconImages_ count]; ++i) {
-    scoped_nsobject<NSButtonCell> cell([[NSButtonCell alloc] init]);
-    NSImage* image = static_cast<NSImage*>([iconImages_ pointerAtIndex:i]);
-    if (!image)
-      continue;
-
-    // Set cell styles so it acts as image button.
-    [cell setBordered:NO];
-    [cell setImage:image];
-    [cell setImagePosition:NSImageOnly];
-    [cell setButtonType:NSMomentaryChangeButton];
-    [cell setTarget:self];
-    [cell setAction:@selector(invokeService:)];
-    [cell setTag:i];
-    [cell setEnabled:YES];
-
-    [matrix putCell:cell atRow:(i / iconsPerRow) column:(i % iconsPerRow)];
-    if (serviceURLs_ && i < [serviceURLs_ count])
-      [matrix setToolTip:[serviceURLs_ objectAtIndex:i] forCell:cell];
-  }
-
-  [subviews addObject:matrix];
-  return NSHeight([matrix frame]);
-}
-
 - (CGFloat)addInlineHtmlToSubviews:(NSMutableArray*)subviews
                           atOffset:(CGFloat)offset {
   if (!contents_)
@@ -275,8 +221,40 @@ const CGFloat kTextWidth = kWindowWidth - (kImageSize + kImageSpacing +
   return NSHeight(frame);
 }
 
+// Add a single button for a specific service
+-(CGFloat)addServiceButton:(NSString*)title
+                 withImage:(NSImage*)image
+                     index:(NSUInteger)index
+                toSubviews:(NSMutableArray*)subviews
+                  atOffset:(CGFloat)offset {
+  NSRect frame = NSMakeRect(kFramePadding, offset, kServiceButtonWidth, 45);
+  scoped_nsobject<NSButton> button([[NSButton alloc] initWithFrame:frame]);
+
+  if (image) {
+    [button setImage:image];
+    [button setImagePosition:NSImageLeft];
+  }
+  [button setButtonType:NSMomentaryPushInButton];
+  [button setBezelStyle:NSRegularSquareBezelStyle];
+  [button setTarget:self];
+  [button setTitle:title];
+  [button setTag:index];
+  [button setAction:@selector(invokeService:)];
+  [subviews addObject:button.get()];
+
+  // Call size-to-fit to fixup size.
+  [GTMUILocalizerAndLayoutTweaker sizeToFitView:button.get()];
+
+  // But make sure we're limited to a fixed size.
+  frame = [button frame];
+  frame.size.width = kServiceButtonWidth;
+  [button setFrame:frame];
+
+  return NSHeight([button frame]);
+}
+
 // Layout the contents of the picker bubble.
-- (void)performLayout {
+- (void)performLayoutWithModel:(WebIntentPickerModel*)model {
   // |offset| is the Y position that should be drawn at next.
   CGFloat offset = kFramePadding + info_bubble::kBubbleArrowHeight;
 
@@ -286,13 +264,29 @@ const CGFloat kTextWidth = kWindowWidth - (kImageSize + kImageSpacing +
   if (contents_) {
     offset += [self addInlineHtmlToSubviews:subviews atOffset:offset];
   } else {
-    offset += [self addCwsButtonToSubviews:subviews atOffset:offset];
-    offset += [self addIcons:iconImages_ toSubviews:subviews atOffset:offset];
     offset += [self addHeaderToSubviews:subviews atOffset:offset];
+    if (model) {
+      for (NSUInteger i = 0; i < model->GetItemCount(); ++i) {
+        const WebIntentPickerModel::Item& item = model->GetItemAt(i);
+        offset += [self addServiceButton:base::SysUTF16ToNSString(item.title)
+                               withImage:item.favicon.ToNSImage()
+                                   index:i
+                              toSubviews:subviews
+                                atOffset:offset];
+      }
+    }
+    offset += [self addCwsButtonToSubviews:subviews atOffset:offset];
   }
 
   // Add the bottom padding.
   offset += kVerticalSpacing;
+
+  // Create the dummy view that uses flipped coordinates.
+  NSRect contentFrame = NSMakeRect(0, 0, kWindowWidth, offset);
+  scoped_nsobject<WebIntentsContentView> contentView(
+      [[WebIntentsContentView alloc] initWithFrame:contentFrame]);
+  [contentView setSubviews:subviews];
+  [contentView setAutoresizingMask:NSViewMinYMargin];
 
   // Adjust frame to fit all elements.
   NSRect windowFrame = NSMakeRect(0, 0, kWindowWidth, offset);
@@ -306,7 +300,8 @@ const CGFloat kTextWidth = kWindowWidth - (kImageSize + kImageSpacing +
   [[self window] setFrame:windowFrame display:YES animate:YES];
 
   // Replace the window's content.
-  [[[self window] contentView] setSubviews:subviews];
+  [[[self window] contentView] setSubviews:
+      [NSArray arrayWithObject:contentView]];
 }
 
 @end  // WebIntentBubbleController

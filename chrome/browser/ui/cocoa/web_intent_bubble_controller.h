@@ -13,18 +13,13 @@
 #include "chrome/browser/ui/intents/web_intent_picker.h"
 
 class WebIntentPickerCocoa;
+class WebIntentPickerModel;
 
 // Controller for intent picker bubble. This bubble pops up whenever a web
 // page invokes ActivateIntent and lets the user choose which service should
 // be used to handle this action.
 @interface WebIntentBubbleController : BaseBubbleController {
  @private
-  // Images for all icons shown in bubble.
-  scoped_nsobject<NSPointerArray> iconImages_;
-
-  // URLs associated with the individual services.
-  scoped_nsobject<NSArray> serviceURLs_;
-
   // C++ <-> ObjectiveC bridge. Weak reference.
   WebIntentPickerCocoa* picker_;
 
@@ -37,14 +32,10 @@ class WebIntentPickerCocoa;
         parentWindow:(NSWindow*)parent
           anchoredAt:(NSPoint)point;
 
-// Replaces the |image| for service at |index|.
-- (void)replaceImageAtIndex:(size_t)index withImage:(NSImage*)image;
-
-// Set the service |urls| for all services.
-- (void)setServiceURLs:(NSArray*)urls;
-
 // Set the contents for inline disposition intents.
 - (void)setInlineDispositionTabContents:(TabContentsWrapper*)wrapper;
+
+- (void)performLayoutWithModel:(WebIntentPickerModel*)model;
 
 @end  // WebIntentBubbleController
 

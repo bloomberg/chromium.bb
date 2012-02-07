@@ -6,6 +6,8 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include "base/bind.h"
+#include "base/message_loop.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -34,7 +36,8 @@ WebIntentPickerCocoa::WebIntentPickerCocoa()
     : delegate_(NULL),
       model_(NULL),
       browser_(NULL),
-      controller_(NULL) {
+      controller_(nil),
+      weak_ptr_factory_(this) {
 }
 
 
@@ -45,7 +48,8 @@ WebIntentPickerCocoa::WebIntentPickerCocoa(Browser* browser,
    : delegate_(delegate),
      model_(model),
      browser_(browser),
-     controller_(NULL) {
+     controller_(nil),
+     ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
   model_->set_observer(this);
 
   DCHECK(browser);
@@ -73,28 +77,43 @@ WebIntentPickerCocoa::~WebIntentPickerCocoa() {
 void WebIntentPickerCocoa::Close() {
 }
 
-void WebIntentPickerCocoa::OnModelChanged(WebIntentPickerModel* model) {
+void WebIntentPickerCocoa::PerformDelayedLayout() {
+  // Check to see if a layout has already been scheduled.
+  if (weak_ptr_factory_.HasWeakPtrs())
+    return;
+
+  // Delay performing layout by a second so that all the animations from
+  // InfoBubbleWindow and origin updates from BaseBubbleController finish, so
+  // that we don't all race trying to change the frame's origin.
+  //
+  // Using MessageLoop is superior here to |-performSelector:| because it will
+  // not retain its target; if the child outlives its parent, zombies get left
+  // behind (http://crbug.com/59619). This will cancel the scheduled task if
+  // the controller get destroyed before the message
+  // can be delivered.
+  MessageLoop::current()->PostDelayedTask(FROM_HERE,
+      base::Bind(&WebIntentPickerCocoa::PerformLayout,
+                 weak_ptr_factory_.GetWeakPtr()),
+      100 /* milliseconds */);
+}
+
+void WebIntentPickerCocoa::PerformLayout() {
   DCHECK(controller_);
-  scoped_nsobject<NSMutableArray> urlArray(
-      [[NSMutableArray alloc] initWithCapacity:model->GetItemCount()]);
+  // If the window is animating closed when this is called, the
+  // animation could be holding the last reference to |controller_|
+  // (and thus |this|).  Pin it until the task is completed.
+  scoped_nsobject<WebIntentBubbleController> keep_alive([controller_ retain]);
+  [controller_ performLayoutWithModel:model_];
+}
 
-  for (size_t i = 0; i < model->GetItemCount(); ++i) {
-    const WebIntentPickerModel::Item& item = model->GetItemAt(i);
-
-    [urlArray addObject:
-        [NSString stringWithUTF8String:item.url.spec().c_str()]];
-    [controller_ replaceImageAtIndex:i withImage:item.favicon.ToNSImage()];
-  }
-
-  [controller_ setServiceURLs:urlArray];
+void WebIntentPickerCocoa::OnModelChanged(WebIntentPickerModel* model) {
+  PerformDelayedLayout();
 }
 
 void WebIntentPickerCocoa::OnFaviconChanged(WebIntentPickerModel* model,
                                             size_t index) {
-  DCHECK(controller_);
-
-  const WebIntentPickerModel::Item& item = model->GetItemAt(index);
-  [controller_ replaceImageAtIndex:index withImage:item.favicon.ToNSImage()];
+  // We don't handle individual icon changes - just redo the whole model.
+  PerformDelayedLayout();
 }
 
 void WebIntentPickerCocoa::OnInlineDisposition(WebIntentPickerModel* model) {
@@ -115,6 +134,7 @@ void WebIntentPickerCocoa::OnInlineDisposition(WebIntentPickerModel* model) {
 
   [controller_ setInlineDispositionTabContents:
       inline_disposition_tab_contents_.get()];
+  PerformDelayedLayout();
 
   delegate_->OnInlineDispositionWebContentsCreated(web_contents);
 }

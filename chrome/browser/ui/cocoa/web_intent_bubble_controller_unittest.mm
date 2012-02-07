@@ -50,39 +50,43 @@ class WebIntentBubbleControllerTest : public CocoaTest {
 
   // Checks the controller's window for the requisite subviews and icons.
   void CheckWindow(size_t icon_count) {
-    NSArray* views = [[window_ contentView] subviews];
+    NSArray* flip_views = [[window_ contentView] subviews];
 
-    // 4 subviews - Icon, Header text, NSMatrix, CWS link.
-    EXPECT_EQ(4U, [views count]);
-    EXPECT_TRUE([[views objectAtIndex:0] isKindOfClass:[NSButton class]]);
-    EXPECT_TRUE([[views objectAtIndex:1] isKindOfClass:[NSMatrix class]]);
-    EXPECT_TRUE([[views objectAtIndex:2] isKindOfClass:[NSTextField class]]);
-    EXPECT_TRUE([[views objectAtIndex:3] isKindOfClass:[NSImageView class]]);
+    // Expect 1 subview - the flip view.
+    ASSERT_EQ(1U, [flip_views count]);
+
+    NSArray* views = [[flip_views objectAtIndex:0] subviews];
+
+    // 3 + |icon_count| subviews - Icon, Header text, |icon_count| buttons,
+    // and a CWS link.
+    ASSERT_EQ(3U + icon_count, [views count]);
+
+    ASSERT_TRUE([[views objectAtIndex:0] isKindOfClass:[NSTextField class]]);
+    ASSERT_TRUE([[views objectAtIndex:1] isKindOfClass:[NSImageView class]]);
+    for(NSUInteger i = 0; i < icon_count; ++i) {
+      ASSERT_TRUE([[views objectAtIndex:2 + i] isKindOfClass:[NSButton class]]);
+    }
 
     // Verify the Chrome Web Store button.
-    NSButton* button = static_cast<NSButton*>([views objectAtIndex:0]);
+    NSButton* button = static_cast<NSButton*>([views lastObject]);
+    ASSERT_TRUE([button isKindOfClass:[NSButton class]]);
     EXPECT_TRUE([[button cell] isKindOfClass:[HyperlinkButtonCell class]]);
     CheckButton(button, @selector(showChromeWebStore:));
 
-    // Verify icons/buttons pointing to services.
-    NSMatrix* icon_matrix = static_cast<NSMatrix*>([views objectAtIndex:1]);
-    NSArray* cells = [icon_matrix cells];
-    size_t cell_count = 0;
-    for (NSButtonCell* cell in cells) {
-      // Skip not populated cells
-      if ([cell isKindOfClass:[NSImageCell class]])
-        continue;
-
-      ++cell_count;
-      CheckButton(cell, @selector(invokeService:));
+    // Verify buttons pointing to services.
+    for(NSUInteger i = 0; i < icon_count; ++i) {
+      NSButton* button = [views objectAtIndex:2 + i];
+      CheckServiceButton(button, i);
     }
-    // TODO(binji): This check needs to be disabled until the bubble controller
-    // is fixed to use the WebIntentPickerModel directly.
-    // EXPECT_EQ(icon_count, cell_count);
 
     EXPECT_EQ([window_ delegate], controller_);
   }
 
+  // Checks that a service button is hooked up correctly.
+  void CheckServiceButton(NSButton* button, NSUInteger service_index) {
+    CheckButton(button, @selector(invokeService:));
+    EXPECT_EQ(NSInteger(service_index), [button tag]);
+  }
   // Checks that a button is hooked up correctly.
   void CheckButton(id button, SEL action) {
     EXPECT_TRUE([button isKindOfClass:[NSButton class]] ||
@@ -106,7 +110,12 @@ TEST_F(WebIntentBubbleControllerTest, EmptyBubble) {
 
 TEST_F(WebIntentBubbleControllerTest, PopulatedBubble) {
   CreateBubble();
-  [controller_ replaceImageAtIndex:2 withImage:nil];
 
-  CheckWindow(/*icon_count=*/3);
+  WebIntentPickerModel model;
+  model.AddItem(string16(),GURL(),WebIntentPickerModel::DISPOSITION_WINDOW);
+  model.AddItem(string16(),GURL(),WebIntentPickerModel::DISPOSITION_WINDOW);
+
+  [controller_ performLayoutWithModel:&model];
+
+  CheckWindow(/*icon_count=*/2);
 }
