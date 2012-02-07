@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -123,6 +123,17 @@ TEST_F(ProgramManagerTest, ProgramInfo) {
   EXPECT_FALSE(info1->IsDeleted());
   EXPECT_FALSE(info1->CanLink());
   EXPECT_TRUE(info1->log_info() == NULL);
+}
+
+TEST_F(ProgramManagerTest, SwizzleLocation) {
+  GLint power = 1;
+  for (GLint p = 0; p < 5; ++p, power *= 10) {
+    GLint limit = power * 20 + 1;
+    for (GLint ii = -limit; ii < limit; ii += power) {
+      GLint s = manager_.SwizzleLocation(ii);
+      EXPECT_EQ(ii, manager_.UnswizzleLocation(s));
+    }
+  }
 }
 
 class ProgramManagerWithShaderTest : public testing::Test {
@@ -848,7 +859,7 @@ TEST_F(ProgramManagerWithShaderTest, ProgramInfoGetProgramInfo) {
   const ProgramManager::ProgramInfo* program_info =
       manager_.GetProgramInfo(kClientProgramId);
   ASSERT_TRUE(program_info != NULL);
-  program_info->GetProgramInfo(&bucket);
+  program_info->GetProgramInfo(&manager_, &bucket);
   ProgramInfoHeader* header =
       bucket.GetDataAs<ProgramInfoHeader*>(0, sizeof(ProgramInfoHeader));
   ASSERT_TRUE(header != NULL);
@@ -885,7 +896,8 @@ TEST_F(ProgramManagerWithShaderTest, ProgramInfoGetProgramInfo) {
         input->location_offset, sizeof(int32) * input->size);
     ASSERT_TRUE(locations != NULL);
     for (int32 jj = 0; jj < input->size; ++jj) {
-      EXPECT_EQ(expected.location + jj * 2, locations[jj]);
+      EXPECT_EQ(manager_.SwizzleLocation(expected.location + jj * 2),
+                locations[jj]);
     }
     const char* name_buf = bucket.GetDataAs<const char*>(
         input->name_offset, input->name_length);

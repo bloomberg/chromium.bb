@@ -6098,7 +6098,8 @@ error::Error GLES2DecoderImpl::GetUniformLocationHelper(
   if (*location != -1) {
     return error::kGenericError;
   }
-  *location = info->GetUniformLocation(name_str);
+  *location = program_manager()->SwizzleLocation(
+      info->GetUniformLocation(name_str));
   return error::kNoError;
 }
 
@@ -7137,7 +7138,7 @@ bool GLES2DecoderImpl::GetUniformSetup(
 error::Error GLES2DecoderImpl::HandleGetUniformiv(
     uint32 immediate_data_size, const gles2::GetUniformiv& c) {
   GLuint program = c.program;
-  GLint location = c.location;
+  GLint location = program_manager()->UnswizzleLocation(c.location);
   GLuint service_id;
   GLenum result_type;
   Error error;
@@ -7155,7 +7156,7 @@ error::Error GLES2DecoderImpl::HandleGetUniformiv(
 error::Error GLES2DecoderImpl::HandleGetUniformfv(
     uint32 immediate_data_size, const gles2::GetUniformfv& c) {
   GLuint program = c.program;
-  GLint location = c.location;
+  GLint location = program_manager()->UnswizzleLocation(c.location);
   GLuint service_id;
   Error error;
   typedef gles2::GetUniformfv::Result Result;
@@ -7659,7 +7660,7 @@ error::Error GLES2DecoderImpl::HandleGetProgramInfoCHROMIUM(
   if (!info || !info->IsValid()) {
     return error::kNoError;
   }
-  info->GetProgramInfo(bucket);
+  info->GetProgramInfo(program_manager(), bucket);
   return error::kNoError;
 }
 

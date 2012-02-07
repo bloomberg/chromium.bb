@@ -1749,7 +1749,8 @@ error::Error GLES2DecoderImpl::HandleTexParameterivImmediate(
 
 error::Error GLES2DecoderImpl::HandleUniform1f(
     uint32 immediate_data_size, const gles2::Uniform1f& c) {
-  GLint location = static_cast<GLint>(c.location);
+  GLint location = program_manager()->UnswizzleLocation(
+      static_cast<GLint>(c.location));
   GLfloat x = static_cast<GLfloat>(c.x);
   GLfloat temp[1] = { x, };
   DoUniform1fv(location, 1, &temp[0]);
@@ -1758,7 +1759,8 @@ error::Error GLES2DecoderImpl::HandleUniform1f(
 
 error::Error GLES2DecoderImpl::HandleUniform1fv(
     uint32 immediate_data_size, const gles2::Uniform1fv& c) {
-  GLint location = static_cast<GLint>(c.location);
+  GLint location = program_manager()->UnswizzleLocation(
+      static_cast<GLint>(c.location));
   GLsizei count = static_cast<GLsizei>(c.count);
   uint32 data_size;
   if (!ComputeDataSize(count, sizeof(GLfloat), 1, &data_size)) {
@@ -1775,7 +1777,8 @@ error::Error GLES2DecoderImpl::HandleUniform1fv(
 
 error::Error GLES2DecoderImpl::HandleUniform1fvImmediate(
     uint32 immediate_data_size, const gles2::Uniform1fvImmediate& c) {
-  GLint location = static_cast<GLint>(c.location);
+  GLint location = program_manager()->UnswizzleLocation(
+      static_cast<GLint>(c.location));
   GLsizei count = static_cast<GLsizei>(c.count);
   uint32 data_size;
   if (!ComputeDataSize(count, sizeof(GLfloat), 1, &data_size)) {
@@ -1795,7 +1798,8 @@ error::Error GLES2DecoderImpl::HandleUniform1fvImmediate(
 
 error::Error GLES2DecoderImpl::HandleUniform1i(
     uint32 immediate_data_size, const gles2::Uniform1i& c) {
-  GLint location = static_cast<GLint>(c.location);
+  GLint location = program_manager()->UnswizzleLocation(
+      static_cast<GLint>(c.location));
   GLint x = static_cast<GLint>(c.x);
   DoUniform1i(location, x);
   return error::kNoError;
@@ -1803,7 +1807,8 @@ error::Error GLES2DecoderImpl::HandleUniform1i(
 
 error::Error GLES2DecoderImpl::HandleUniform1iv(
     uint32 immediate_data_size, const gles2::Uniform1iv& c) {
-  GLint location = static_cast<GLint>(c.location);
+  GLint location = program_manager()->UnswizzleLocation(
+      static_cast<GLint>(c.location));
   GLsizei count = static_cast<GLsizei>(c.count);
   uint32 data_size;
   if (!ComputeDataSize(count, sizeof(GLint), 1, &data_size)) {
@@ -1820,7 +1825,8 @@ error::Error GLES2DecoderImpl::HandleUniform1iv(
 
 error::Error GLES2DecoderImpl::HandleUniform1ivImmediate(
     uint32 immediate_data_size, const gles2::Uniform1ivImmediate& c) {
-  GLint location = static_cast<GLint>(c.location);
+  GLint location = program_manager()->UnswizzleLocation(
+      static_cast<GLint>(c.location));
   GLsizei count = static_cast<GLsizei>(c.count);
   uint32 data_size;
   if (!ComputeDataSize(count, sizeof(GLint), 1, &data_size)) {
@@ -1840,7 +1846,8 @@ error::Error GLES2DecoderImpl::HandleUniform1ivImmediate(
 
 error::Error GLES2DecoderImpl::HandleUniform2f(
     uint32 immediate_data_size, const gles2::Uniform2f& c) {
-  GLint location = static_cast<GLint>(c.location);
+  GLint location = program_manager()->UnswizzleLocation(
+      static_cast<GLint>(c.location));
   GLfloat x = static_cast<GLfloat>(c.x);
   GLfloat y = static_cast<GLfloat>(c.y);
   GLfloat temp[2] = { x, y, };
@@ -1850,7 +1857,8 @@ error::Error GLES2DecoderImpl::HandleUniform2f(
 
 error::Error GLES2DecoderImpl::HandleUniform2fv(
     uint32 immediate_data_size, const gles2::Uniform2fv& c) {
-  GLint location = static_cast<GLint>(c.location);
+  GLint location = program_manager()->UnswizzleLocation(
+      static_cast<GLint>(c.location));
   GLsizei count = static_cast<GLsizei>(c.count);
   uint32 data_size;
   if (!ComputeDataSize(count, sizeof(GLfloat), 2, &data_size)) {
@@ -1867,7 +1875,8 @@ error::Error GLES2DecoderImpl::HandleUniform2fv(
 
 error::Error GLES2DecoderImpl::HandleUniform2fvImmediate(
     uint32 immediate_data_size, const gles2::Uniform2fvImmediate& c) {
-  GLint location = static_cast<GLint>(c.location);
+  GLint location = program_manager()->UnswizzleLocation(
+      static_cast<GLint>(c.location));
   GLsizei count = static_cast<GLsizei>(c.count);
   uint32 data_size;
   if (!ComputeDataSize(count, sizeof(GLfloat), 2, &data_size)) {
@@ -1887,7 +1896,8 @@ error::Error GLES2DecoderImpl::HandleUniform2fvImmediate(
 
 error::Error GLES2DecoderImpl::HandleUniform2i(
     uint32 immediate_data_size, const gles2::Uniform2i& c) {
-  GLint location = static_cast<GLint>(c.location);
+  GLint location = program_manager()->UnswizzleLocation(
+      static_cast<GLint>(c.location));
   GLint x = static_cast<GLint>(c.x);
   GLint y = static_cast<GLint>(c.y);
   glUniform2i(location, x, y);
@@ -1896,7 +1906,8 @@ error::Error GLES2DecoderImpl::HandleUniform2i(
 
 error::Error GLES2DecoderImpl::HandleUniform2iv(
     uint32 immediate_data_size, const gles2::Uniform2iv& c) {
-  GLint location = static_cast<GLint>(c.location);
+  GLint location = program_manager()->UnswizzleLocation(
+      static_cast<GLint>(c.location));
   GLsizei count = static_cast<GLsizei>(c.count);
   uint32 data_size;
   if (!ComputeDataSize(count, sizeof(GLint), 2, &data_size)) {
@@ -1913,7 +1924,8 @@ error::Error GLES2DecoderImpl::HandleUniform2iv(
 
 error::Error GLES2DecoderImpl::HandleUniform2ivImmediate(
     uint32 immediate_data_size, const gles2::Uniform2ivImmediate& c) {
-  GLint location = static_cast<GLint>(c.location);
+  GLint location = program_manager()->UnswizzleLocation(
+      static_cast<GLint>(c.location));
   GLsizei count = static_cast<GLsizei>(c.count);
   uint32 data_size;
   if (!ComputeDataSize(count, sizeof(GLint), 2, &data_size)) {
@@ -1933,7 +1945,8 @@ error::Error GLES2DecoderImpl::HandleUniform2ivImmediate(
 
 error::Error GLES2DecoderImpl::HandleUniform3f(
     uint32 immediate_data_size, const gles2::Uniform3f& c) {
-  GLint location = static_cast<GLint>(c.location);
+  GLint location = program_manager()->UnswizzleLocation(
+      static_cast<GLint>(c.location));
   GLfloat x = static_cast<GLfloat>(c.x);
   GLfloat y = static_cast<GLfloat>(c.y);
   GLfloat z = static_cast<GLfloat>(c.z);
@@ -1944,7 +1957,8 @@ error::Error GLES2DecoderImpl::HandleUniform3f(
 
 error::Error GLES2DecoderImpl::HandleUniform3fv(
     uint32 immediate_data_size, const gles2::Uniform3fv& c) {
-  GLint location = static_cast<GLint>(c.location);
+  GLint location = program_manager()->UnswizzleLocation(
+      static_cast<GLint>(c.location));
   GLsizei count = static_cast<GLsizei>(c.count);
   uint32 data_size;
   if (!ComputeDataSize(count, sizeof(GLfloat), 3, &data_size)) {
@@ -1961,7 +1975,8 @@ error::Error GLES2DecoderImpl::HandleUniform3fv(
 
 error::Error GLES2DecoderImpl::HandleUniform3fvImmediate(
     uint32 immediate_data_size, const gles2::Uniform3fvImmediate& c) {
-  GLint location = static_cast<GLint>(c.location);
+  GLint location = program_manager()->UnswizzleLocation(
+      static_cast<GLint>(c.location));
   GLsizei count = static_cast<GLsizei>(c.count);
   uint32 data_size;
   if (!ComputeDataSize(count, sizeof(GLfloat), 3, &data_size)) {
@@ -1981,7 +1996,8 @@ error::Error GLES2DecoderImpl::HandleUniform3fvImmediate(
 
 error::Error GLES2DecoderImpl::HandleUniform3i(
     uint32 immediate_data_size, const gles2::Uniform3i& c) {
-  GLint location = static_cast<GLint>(c.location);
+  GLint location = program_manager()->UnswizzleLocation(
+      static_cast<GLint>(c.location));
   GLint x = static_cast<GLint>(c.x);
   GLint y = static_cast<GLint>(c.y);
   GLint z = static_cast<GLint>(c.z);
@@ -1991,7 +2007,8 @@ error::Error GLES2DecoderImpl::HandleUniform3i(
 
 error::Error GLES2DecoderImpl::HandleUniform3iv(
     uint32 immediate_data_size, const gles2::Uniform3iv& c) {
-  GLint location = static_cast<GLint>(c.location);
+  GLint location = program_manager()->UnswizzleLocation(
+      static_cast<GLint>(c.location));
   GLsizei count = static_cast<GLsizei>(c.count);
   uint32 data_size;
   if (!ComputeDataSize(count, sizeof(GLint), 3, &data_size)) {
@@ -2008,7 +2025,8 @@ error::Error GLES2DecoderImpl::HandleUniform3iv(
 
 error::Error GLES2DecoderImpl::HandleUniform3ivImmediate(
     uint32 immediate_data_size, const gles2::Uniform3ivImmediate& c) {
-  GLint location = static_cast<GLint>(c.location);
+  GLint location = program_manager()->UnswizzleLocation(
+      static_cast<GLint>(c.location));
   GLsizei count = static_cast<GLsizei>(c.count);
   uint32 data_size;
   if (!ComputeDataSize(count, sizeof(GLint), 3, &data_size)) {
@@ -2028,7 +2046,8 @@ error::Error GLES2DecoderImpl::HandleUniform3ivImmediate(
 
 error::Error GLES2DecoderImpl::HandleUniform4f(
     uint32 immediate_data_size, const gles2::Uniform4f& c) {
-  GLint location = static_cast<GLint>(c.location);
+  GLint location = program_manager()->UnswizzleLocation(
+      static_cast<GLint>(c.location));
   GLfloat x = static_cast<GLfloat>(c.x);
   GLfloat y = static_cast<GLfloat>(c.y);
   GLfloat z = static_cast<GLfloat>(c.z);
@@ -2040,7 +2059,8 @@ error::Error GLES2DecoderImpl::HandleUniform4f(
 
 error::Error GLES2DecoderImpl::HandleUniform4fv(
     uint32 immediate_data_size, const gles2::Uniform4fv& c) {
-  GLint location = static_cast<GLint>(c.location);
+  GLint location = program_manager()->UnswizzleLocation(
+      static_cast<GLint>(c.location));
   GLsizei count = static_cast<GLsizei>(c.count);
   uint32 data_size;
   if (!ComputeDataSize(count, sizeof(GLfloat), 4, &data_size)) {
@@ -2057,7 +2077,8 @@ error::Error GLES2DecoderImpl::HandleUniform4fv(
 
 error::Error GLES2DecoderImpl::HandleUniform4fvImmediate(
     uint32 immediate_data_size, const gles2::Uniform4fvImmediate& c) {
-  GLint location = static_cast<GLint>(c.location);
+  GLint location = program_manager()->UnswizzleLocation(
+      static_cast<GLint>(c.location));
   GLsizei count = static_cast<GLsizei>(c.count);
   uint32 data_size;
   if (!ComputeDataSize(count, sizeof(GLfloat), 4, &data_size)) {
@@ -2077,7 +2098,8 @@ error::Error GLES2DecoderImpl::HandleUniform4fvImmediate(
 
 error::Error GLES2DecoderImpl::HandleUniform4i(
     uint32 immediate_data_size, const gles2::Uniform4i& c) {
-  GLint location = static_cast<GLint>(c.location);
+  GLint location = program_manager()->UnswizzleLocation(
+      static_cast<GLint>(c.location));
   GLint x = static_cast<GLint>(c.x);
   GLint y = static_cast<GLint>(c.y);
   GLint z = static_cast<GLint>(c.z);
@@ -2088,7 +2110,8 @@ error::Error GLES2DecoderImpl::HandleUniform4i(
 
 error::Error GLES2DecoderImpl::HandleUniform4iv(
     uint32 immediate_data_size, const gles2::Uniform4iv& c) {
-  GLint location = static_cast<GLint>(c.location);
+  GLint location = program_manager()->UnswizzleLocation(
+      static_cast<GLint>(c.location));
   GLsizei count = static_cast<GLsizei>(c.count);
   uint32 data_size;
   if (!ComputeDataSize(count, sizeof(GLint), 4, &data_size)) {
@@ -2105,7 +2128,8 @@ error::Error GLES2DecoderImpl::HandleUniform4iv(
 
 error::Error GLES2DecoderImpl::HandleUniform4ivImmediate(
     uint32 immediate_data_size, const gles2::Uniform4ivImmediate& c) {
-  GLint location = static_cast<GLint>(c.location);
+  GLint location = program_manager()->UnswizzleLocation(
+      static_cast<GLint>(c.location));
   GLsizei count = static_cast<GLsizei>(c.count);
   uint32 data_size;
   if (!ComputeDataSize(count, sizeof(GLint), 4, &data_size)) {
@@ -2125,7 +2149,8 @@ error::Error GLES2DecoderImpl::HandleUniform4ivImmediate(
 
 error::Error GLES2DecoderImpl::HandleUniformMatrix2fv(
     uint32 immediate_data_size, const gles2::UniformMatrix2fv& c) {
-  GLint location = static_cast<GLint>(c.location);
+  GLint location = program_manager()->UnswizzleLocation(
+      static_cast<GLint>(c.location));
   GLsizei count = static_cast<GLsizei>(c.count);
   GLboolean transpose = static_cast<GLboolean>(c.transpose);
   uint32 data_size;
@@ -2148,7 +2173,8 @@ error::Error GLES2DecoderImpl::HandleUniformMatrix2fv(
 
 error::Error GLES2DecoderImpl::HandleUniformMatrix2fvImmediate(
     uint32 immediate_data_size, const gles2::UniformMatrix2fvImmediate& c) {
-  GLint location = static_cast<GLint>(c.location);
+  GLint location = program_manager()->UnswizzleLocation(
+      static_cast<GLint>(c.location));
   GLsizei count = static_cast<GLsizei>(c.count);
   GLboolean transpose = static_cast<GLboolean>(c.transpose);
   uint32 data_size;
@@ -2174,7 +2200,8 @@ error::Error GLES2DecoderImpl::HandleUniformMatrix2fvImmediate(
 
 error::Error GLES2DecoderImpl::HandleUniformMatrix3fv(
     uint32 immediate_data_size, const gles2::UniformMatrix3fv& c) {
-  GLint location = static_cast<GLint>(c.location);
+  GLint location = program_manager()->UnswizzleLocation(
+      static_cast<GLint>(c.location));
   GLsizei count = static_cast<GLsizei>(c.count);
   GLboolean transpose = static_cast<GLboolean>(c.transpose);
   uint32 data_size;
@@ -2197,7 +2224,8 @@ error::Error GLES2DecoderImpl::HandleUniformMatrix3fv(
 
 error::Error GLES2DecoderImpl::HandleUniformMatrix3fvImmediate(
     uint32 immediate_data_size, const gles2::UniformMatrix3fvImmediate& c) {
-  GLint location = static_cast<GLint>(c.location);
+  GLint location = program_manager()->UnswizzleLocation(
+      static_cast<GLint>(c.location));
   GLsizei count = static_cast<GLsizei>(c.count);
   GLboolean transpose = static_cast<GLboolean>(c.transpose);
   uint32 data_size;
@@ -2223,7 +2251,8 @@ error::Error GLES2DecoderImpl::HandleUniformMatrix3fvImmediate(
 
 error::Error GLES2DecoderImpl::HandleUniformMatrix4fv(
     uint32 immediate_data_size, const gles2::UniformMatrix4fv& c) {
-  GLint location = static_cast<GLint>(c.location);
+  GLint location = program_manager()->UnswizzleLocation(
+      static_cast<GLint>(c.location));
   GLsizei count = static_cast<GLsizei>(c.count);
   GLboolean transpose = static_cast<GLboolean>(c.transpose);
   uint32 data_size;
@@ -2246,7 +2275,8 @@ error::Error GLES2DecoderImpl::HandleUniformMatrix4fv(
 
 error::Error GLES2DecoderImpl::HandleUniformMatrix4fvImmediate(
     uint32 immediate_data_size, const gles2::UniformMatrix4fvImmediate& c) {
-  GLint location = static_cast<GLint>(c.location);
+  GLint location = program_manager()->UnswizzleLocation(
+      static_cast<GLint>(c.location));
   GLsizei count = static_cast<GLsizei>(c.count);
   GLboolean transpose = static_cast<GLboolean>(c.transpose);
   uint32 data_size;

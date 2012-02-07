@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -112,7 +112,8 @@ class ProgramManager {
         GLint location, GLint* array_index) const;
 
     // Gets all the program info.
-    void GetProgramInfo(CommonDecoder::Bucket* bucket) const;
+    void GetProgramInfo(
+        ProgramManager* manager, CommonDecoder::Bucket* bucket) const;
 
     // Sets the sampler values for a uniform.
     // This is safe to call for any location. If the location is not
@@ -277,11 +278,16 @@ class ProgramManager {
   // Check if a ProgramInfo is owned by this ProgramManager.
   bool IsOwned(ProgramInfo* info);
 
+  GLint SwizzleLocation(GLint unswizzled_location) const;
+  GLint UnswizzleLocation(GLint swizzled_location) const;
+
  private:
   // Info for each "successfully linked" program by service side program Id.
   // TODO(gman): Choose a faster container.
   typedef std::map<GLuint, ProgramInfo::Ref> ProgramInfoMap;
   ProgramInfoMap program_infos_;
+
+  int uniform_swizzle_;
 
   void RemoveProgramInfoIfUnused(
       ShaderManager* shader_manager, ProgramInfo* info);

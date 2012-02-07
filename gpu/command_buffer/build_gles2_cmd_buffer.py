@@ -3581,8 +3581,8 @@ TEST_F(%(test_name)s, %(name)sValidArgsCountTooLarge) {
       # hardcoded to match unit tests.
       if count == 0:
         # the location of the second element of the first uniform.
-        gl_arg_strings.append("3")
-        arg_strings.append("3")
+        gl_arg_strings.append(arg.GetValidGLArg(func, 2, 2))
+        arg_strings.append(arg.GetValidArg(func, 2, 2))
       elif count == 1:
         # the number of elements that gl will be called with.
         gl_arg_strings.append("2")
@@ -3609,7 +3609,7 @@ TEST_F(%(test_name)s, %(name)sValidArgs) {
           reinterpret_cast<%(data_type)s*>(ImmediateDataAddress(&cmd))));
   SpecializedSetup<%(name)s, 0>(true);
   %(data_type)s temp[%(data_count)s * 2] = { 0, };
-  cmd.Init(%(gl_args)s, &temp[0]);
+  cmd.Init(%(args)s, &temp[0]);
   EXPECT_EQ(error::kNoError,
             ExecuteImmediateCmd(cmd, sizeof(temp)));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
@@ -3617,14 +3617,17 @@ TEST_F(%(test_name)s, %(name)sValidArgs) {
 """
     gl_arg_strings = []
     gl_any_strings = []
+    arg_strings = []
     count = 0
     for arg in func.GetOriginalArgs()[0:-1]:
       gl_arg_strings.append(arg.GetValidGLArg(func, count, 0))
       gl_any_strings.append("_")
+      arg_strings.append(arg.GetValidArg(func, count, 0))
       count += 1
     extra = {
       'data_type': func.GetInfo('data_type'),
       'data_count': func.GetInfo('count'),
+      'args': ", ".join(arg_strings),
       'gl_args': ", ".join(gl_arg_strings),
       'gl_any_args': ", ".join(gl_any_strings),
     }
@@ -3866,7 +3869,7 @@ TEST_F(%(test_name)s, %(name)sValidArgs) {
 }
 """
     args = func.GetOriginalArgs()
-    local_args = "%s, 1, _" % args[0].GetValidArg(func, 0, 0)
+    local_args = "%s, 1, _" % args[0].GetValidGLArg(func, 0, 0)
     self.WriteValidUnitTest(func, file, valid_test, {
         'count': func.GetInfo('count'),
         'local_args': local_args,
@@ -4421,6 +4424,24 @@ class BoolArgument(Argument):
   def GetValidGLArg(self, func, offset, index):
     """Gets a valid GL value for this argument."""
     return 'true'
+
+
+class UniformLocationArgument(Argument):
+  """class for uniform locations."""
+
+  def __init__(self, name):
+    Argument.__init__(self, name, "GLint")
+
+  def WriteGetCode(self, file):
+    """Writes the code to get an argument from a command structure."""
+    code = """  %s %s = program_manager()->UnswizzleLocation(
+      static_cast<%s>(c.%s));
+"""
+    file.Write(code % (self.type, self.name, self.type, self.name))
+
+  def GetValidArg(self, func, offset, index):
+    """Gets a valid value for this argument."""
+    return "program_manager()->SwizzleLocation(%d)" % (offset + 1)
 
 
 class DataSizeArgument(Argument):
@@ -5257,6 +5278,8 @@ def CreateArg(arg_string):
     return ValidatedBoolArgument(arg_parts[-1], " ".join(arg_parts[0:-1]))
   elif arg_parts[0].startswith('GLboolean'):
     return BoolArgument(arg_parts[-1], " ".join(arg_parts[0:-1]))
+  elif arg_parts[0].startswith('GLintUniformLocation'):
+    return UniformLocationArgument(arg_parts[-1])
   elif (arg_parts[0].startswith('GLint') and len(arg_parts[0]) > 5 and
         not arg_parts[0].startswith('GLintptr')):
     return IntArgument(arg_parts[-1], " ".join(arg_parts[0:-1]))

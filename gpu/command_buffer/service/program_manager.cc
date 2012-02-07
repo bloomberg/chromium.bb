@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,6 +9,7 @@
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/rand_util.h"
 #include "base/string_number_conversions.h"
 #include "gpu/command_buffer/common/gles2_cmd_format.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
@@ -450,7 +451,7 @@ static uint32 ComputeOffset(const void* start, const void* position) {
 }
 
 void ProgramManager::ProgramInfo::GetProgramInfo(
-    CommonDecoder::Bucket* bucket) const {
+    ProgramManager* manager, CommonDecoder::Bucket* bucket) const {
   // NOTE: It seems to me the math in here does not need check for overflow
   // because the data being calucated from has various small limits. The max
   // number of attribs + uniforms is somewhere well under 1024. The maximum size
@@ -516,7 +517,7 @@ void ProgramManager::ProgramInfo::GetProgramInfo(
     inputs->name_length = info.name.size();
     DCHECK(static_cast<size_t>(info.size) == info.element_locations.size());
     for (size_t jj = 0; jj < info.element_locations.size(); ++jj) {
-      *locations++ = info.element_locations[jj];
+      *locations++ = manager->SwizzleLocation(info.element_locations[jj]);
     }
     memcpy(strings, info.name.c_str(), info.name.size());
     strings += info.name.size();
@@ -528,7 +529,9 @@ void ProgramManager::ProgramInfo::GetProgramInfo(
 
 ProgramManager::ProgramInfo::~ProgramInfo() {}
 
-ProgramManager::ProgramManager() {}
+ProgramManager::ProgramManager()
+    : uniform_swizzle_(base::RandInt(0, 15)) {
+}
 
 ProgramManager::~ProgramManager() {
   DCHECK(program_infos_.empty());
@@ -626,6 +629,25 @@ void ProgramManager::UnuseProgram(
   DCHECK(IsOwned(info));
   info->DecUseCount();
   RemoveProgramInfoIfUnused(shader_manager, info);
+}
+
+// Swizzles the locations to prevent developers from assuming they
+// can do math on uniforms. According to the OpenGL ES 2.0 spec
+// the location of "someuniform[1]" is not 1 more than "someuniform[0]".
+static GLint Swizzle(GLint location) {
+  return (location & 0xFFFF0000U) |
+         ((location & 0x0000AAAAU) >> 1) |
+         ((location & 0x00005555U) << 1);
+}
+
+// Adds uniform_swizzle_ to prevent developers from assuming that locations are
+// always the same across GPUs and drivers.
+GLint ProgramManager::SwizzleLocation(GLint v) const {
+  return v < 0 ? v : (Swizzle(v) + uniform_swizzle_);
+}
+
+GLint ProgramManager::UnswizzleLocation(GLint v) const {
+  return v < 0 ? v : Swizzle(v - uniform_swizzle_);
 }
 
 }  // namespace gles2

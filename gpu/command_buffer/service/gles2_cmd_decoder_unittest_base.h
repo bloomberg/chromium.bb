@@ -201,6 +201,10 @@ class GLES2DecoderTestBase : public testing::Test {
     return group_->program_manager()->GetProgramInfo(service_id);
   }
 
+  ProgramManager* program_manager() {
+    return group_->program_manager();
+  }
+
   void DoCreateProgram(GLuint client_id, GLuint service_id);
   void DoCreateShader(GLenum shader_type, GLuint client_id, GLuint service_id);
 
