@@ -160,12 +160,8 @@ ToolsMenuModel::ToolsMenuModel(ui::SimpleMenuModel::Delegate* delegate,
 ToolsMenuModel::~ToolsMenuModel() {}
 
 void ToolsMenuModel::Build(Browser* browser) {
-#if !defined(OS_CHROMEOS)
-#if defined(OS_MACOSX)
-  AddItemWithStringId(IDC_CREATE_SHORTCUTS, IDS_CREATE_APPLICATION_MAC);
-#else
+#if !defined(OS_CHROMEOS) && !defined(OS_MACOSX)
   AddItemWithStringId(IDC_CREATE_SHORTCUTS, IDS_CREATE_SHORTCUTS);
-#endif
   AddSeparator();
 #endif
 

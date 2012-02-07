@@ -11331,9 +11331,6 @@ Some features may be unavailable.  Please check that the profile exists and you 
         <message name="IDS_OPEN_LOCATION_MAC" desc="The Mac menu item to open a location in the file menu (puts cursor in the url bar).">
           Open Location...
         </message>
-        <message name="IDS_CREATE_APPLICATION_MAC" desc="The Mac menu item to create an application shortcut in the file menu.">
-          Create Application Shortcut...
-        </message>
         <message name="IDS_CLOSE_WINDOW_MAC" desc="The Mac menu item to close a window in the file menu.">
           Close Window
         </message>
