@@ -70,7 +70,7 @@ function load() {
   // BrowserOptions sub-pages.
   OptionsPage.registerSubPage(AdvancedOptions.getInstance(),
                               BrowserOptions.getInstance(),
-                              [$('advancedOptionsButton')]);
+                              [$('advanced-settings')]);
   if (cr.isChromeOS) {
     OptionsPage.registerSubPage(AccountsOptions.getInstance(),
                                 BrowserOptions.getInstance(),
@@ -162,7 +162,7 @@ function load() {
                               [$('fontSettingsCustomizeFontsButton')]);
   OptionsPage.registerOverlay(HomePageOverlay.getInstance(),
                               BrowserOptions.getInstance(),
-                              [$('toolbarShowHomeButton')]);
+                              [$('change-home-page')]);
   OptionsPage.registerOverlay(ImportDataOverlay.getInstance(),
                               BrowserOptions.getInstance());
   OptionsPage.registerOverlay(InstantConfirmOverlay.getInstance(),
@@ -177,7 +177,7 @@ function load() {
                               [$('manage-passwords')]);
   OptionsPage.registerOverlay(SearchEngineManager.getInstance(),
                               BrowserOptions.getInstance(),
-                              [$('defaultSearchManageEnginesButton')]);
+                              [$('manage-default-search-engines')]);
   OptionsPage.registerOverlay(SessionRestoreOverlay.getInstance(),
                               BrowserOptions.getInstance());
   OptionsPage.registerOverlay(StartupOverlay.getInstance(),

@@ -3,24 +3,22 @@
 // found in the LICENSE file.
 
 cr.define('options', function() {
-  const OptionsPage = options.OptionsPage;
-  const ArrayDataModel = cr.ui.ArrayDataModel;
-  const RepeatingButton = cr.ui.RepeatingButton;
+  var OptionsPage = options.OptionsPage;
+  var ArrayDataModel = cr.ui.ArrayDataModel;
+  var RepeatingButton = cr.ui.RepeatingButton;
 
   //
   // BrowserOptions class
   // Encapsulated handling of browser options page.
   //
   function BrowserOptions() {
-    OptionsPage.call(this, 'browser',
-                     templateData.browserPageTabTitle,
-                     'browserPage');
+    OptionsPage.call(this, 'settings', templateData.settingsTitle,
+                     'settings');
   }
 
   cr.addSingletonGetter(BrowserOptions);
 
   BrowserOptions.prototype = {
-    // Inherit BrowserOptions from OptionsPage.
     __proto__: options.OptionsPage.prototype,
 
     // State variables.
@@ -35,65 +33,66 @@ cr.define('options', function() {
      */
     autocompleteList_: null,
 
-    // The cached value of the instant.confirm_dialog_shown preference.
+    /**
+     * The cached value of the instant.confirm_dialog_shown preference.
+     * @type {bool}
+     * @private
+     */
     instantConfirmDialogShown_: false,
 
     /**
-     * Initialize BrowserOptions page.
+     * @inheritDoc
      */
     initializePage: function() {
-      // Call base class implementation to start preference initialization.
       OptionsPage.prototype.initializePage.call(this);
 
-      var self = this;
-
       // Sync (Sign in) section.
-      $('sync-action-link').addEventListener('click', function(event) {
+      $('sync-action-link').onclick = function(event) {
         SyncSetupOverlay.showErrorUI();
-      });
-      $('start-stop-sync').addEventListener('click', function(event) {
+      };
+      $('start-stop-sync').onclick = function(event) {
         if (self.syncSetupCompleted)
           SyncSetupOverlay.showStopSyncingUI();
         else
           SyncSetupOverlay.showSetupUI();
-      });
-      $('customize-sync').addEventListener('click', function(event) {
+      };
+      $('customize-sync').onclick = function(event) {
         SyncSetupOverlay.showSetupUI();
-      });
+      };
 
       // Internet connection section (ChromeOS only).
       if (cr.isChromeOS) {
-        $('internet-options-button').addEventListener('click', function(event) {
+        $('internet-options-button').onclick = function(event) {
           OptionsPage.navigateToPage('internet');
           chrome.send('coreOptionsUserMetricsAction',
               ['Options_InternetOptions']);
-        });
+        };
       }
 
       // On Startup section.
-      $('startupSetPages').addEventListener('click', function() {
+      $('startup-set-pages').onclick = function() {
         OptionsPage.navigateToPage('startup');
-      });
+      };
 
       // Appearance section.
-      $('change-home-page').addEventListener('click', function(event) {
+      $('change-home-page').onclick = function(event) {
         OptionsPage.navigateToPage('homePageOverlay');
-      });
-      $('themes-gallery').addEventListener('click', function(event) {
+      };
+      $('themes-gallery').onclick = function(event) {
         window.open(localStrings.getString('themesGalleryURL'));
-      });
-      $('themes-reset').addEventListener('click', function(event) {
+      };
+      $('themes-reset').onclick = function(event) {
         chrome.send('themesReset');
-      });
+      };
 
       // Device section (ChromeOS only).
       if (cr.isChromeOS) {
-        $('keyboard-settings-button').addEventListener('click', function(evt) {
+        $('keyboard-settings-button').onclick = function(evt) {
           OptionsPage.navigateToPage('keyboard-overlay');
-        });
-        $('pointer-settings-button').addEventListener('click', function(evt) {
+        };
+        $('pointer-settings-button').onclick = function(evt) {
           OptionsPage.navigateToPage('pointer-overlay');
-        });
+        };
         this.initBrightnessButton_('brightness-decrease-button',
             'decreaseScreenBrightness');
         this.initBrightnessButton_('brightness-increase-button',
@@ -101,15 +100,14 @@ cr.define('options', function() {
       }
 
       // Search section.
-      $('defaultSearchManageEnginesButton').addEventListener('click',
-          function(event) {
-            OptionsPage.navigateToPage('searchEngines');
-            chrome.send('coreOptionsUserMetricsAction',
-                        ['Options_ManageSearchEngines']);
-          });
-      $('defaultSearchEngine').addEventListener('change',
+      $('manage-default-search-engines').onclick = function(event) {
+        OptionsPage.navigateToPage('searchEngines');
+        chrome.send('coreOptionsUserMetricsAction',
+                    ['Options_ManageSearchEngines']);
+      };
+      $('default-search-engine').addEventListener('change',
           this.setDefaultSearchEngine_);
-      $('instantEnabledCheckbox').customChangeHandler = function(event) {
+      $('instant-enabled-control').customChangeHandler = function(event) {
         if (this.checked) {
           if (self.instantConfirmDialogShown_)
             chrome.send('enableInstant');
@@ -120,10 +118,10 @@ cr.define('options', function() {
         }
         return true;
       };
-      $('instantFieldTrialCheckbox').addEventListener('change', function(evt) {
+      $('instant-field-trial-control').onchange = function(evt) {
         this.checked = true;
         chrome.send('disableInstant');
-      });
+      };
       Preferences.getInstance().addEventListener('instant.confirm_dialog_shown',
           this.onInstantConfirmDialogShownChanged_.bind(this));
       Preferences.getInstance().addEventListener('instant.enabled',
@@ -137,14 +135,10 @@ cr.define('options', function() {
 
       // Text fields may change widths when the window changes size, so make
       // sure the suggestion list stays in sync.
+      var self = this;
       window.addEventListener('resize', function() {
         self.autocompleteList_.syncWidthToInput();
       });
-
-      if (cr.commandLine && cr.commandLine.options['--bwsi']) {
-        // Hide the startup section in Guest mode.
-        $('startupSection').hidden = true;
-      }
 
       var suggestionList = new cr.ui.AutocompleteList();
       suggestionList.autoExpands = true;
@@ -159,29 +153,29 @@ cr.define('options', function() {
       profilesList.autoExpands = true;
 
       profilesList.addEventListener('change',
-          self.setProfileViewButtonsStatus_);
-      $('profiles-create').addEventListener('click', function(event) {
+          this.setProfileViewButtonsStatus_);
+      $('profiles-create').onclick = function(event) {
         chrome.send('createProfile');
-      });
-      $('profiles-manage').addEventListener('click', function(event) {
+      };
+      $('profiles-manage').onclick = function(event) {
         var selectedProfile = self.getSelectedProfileItem_();
         if (selectedProfile)
           ManageProfileOverlay.showManageDialog(selectedProfile);
-      });
-      $('profiles-delete').addEventListener('click', function(event) {
+      };
+      $('profiles-delete').onclick = function(event) {
         var selectedProfile = self.getSelectedProfileItem_();
         if (selectedProfile)
           ManageProfileOverlay.showDeleteDialog(selectedProfile);
-      });
+      };
 
       if (cr.isChromeOS) {
         // Username (canonical email) of the currently logged in user or
         // |kGuestUser| if a guest session is active.
         this.username_ = localStrings.getString('username');
 
-        $('change-picture-button').addEventListener('click', function(event) {
+        $('change-picture-button').onclick = function(event) {
           OptionsPage.navigateToPage('changePicture');
-        });
+        };
         this.updateAccountPicture_();
 
         if (cr.commandLine && cr.commandLine.options['--bwsi']) {
@@ -189,44 +183,46 @@ cr.define('options', function() {
           // guest mode.
           $('enable-screen-lock').disabled = true;
           $('change-picture-button').disabled = true;
+
+          // Hide the startup section in Guest mode.
+          $('startup-section').hidden = true;
         }
 
-        $('manage-accounts-button').addEventListener('click', function(event) {
+        $('manage-accounts-button').onclick, function(event) {
           OptionsPage.navigateToPage('accounts');
           chrome.send('coreOptionsUserMetricsAction',
               ['Options_ManageAccounts']);
-        });
+        };
       } else {
-        $('import-data').addEventListener('click', function(event) {
+        $('import-data').onclick = function(event) {
           // Make sure that any previous import success message is hidden, and
           // we're showing the UI to import further data.
           $('import-data-configure').hidden = false;
           $('import-data-success').hidden = true;
           OptionsPage.navigateToPage('importData');
           chrome.send('coreOptionsUserMetricsAction', ['Import_ShowDlg']);
-        });
+        };
 
         if ($('themes-GTK-button')) {
-          $('themes-GTK-button').addEventListener('click', function(event) {
+          $('themes-GTK-button').onclick = function(event) {
             chrome.send('themesSetGTK');
-          });
+          };
         }
       }
 
       // Default browser section.
       if (!cr.isChromeOS) {
-        $('defaultBrowserUseAsDefaultButton').addEventListener('click',
-            function(event) {
-              chrome.send('becomeDefaultBrowser');
-            });
+        $('set-as-default-browser').onclick = function(event) {
+          chrome.send('becomeDefaultBrowser');
+        };
       }
 
       // Under the hood section.
-      $('advancedOptionsButton').addEventListener('click', function(event) {
+      $('advanced-settings').onclick = function(event) {
         OptionsPage.navigateToPage('advanced');
         chrome.send('coreOptionsUserMetricsAction',
-            ['Options_OpenUnderTheHood']);
-      });
+                    ['Options_OpenUnderTheHood']);
+      };
 
       this.sessionRestoreEnabled_ = templateData.enable_restore_session_state;
       if (this.sessionRestoreEnabled_) {
@@ -360,10 +356,10 @@ cr.define('options', function() {
      * @private
      */
     setInstantFieldTrialStatus_: function(enabled) {
-      $('instantEnabledCheckbox').hidden = enabled;
-      $('instantFieldTrialCheckbox').hidden = !enabled;
-      $('instantLabel').htmlFor = enabled ? 'instantFieldTrialCheckbox'
-                                          : 'instantEnabledCheckbox';
+      $('instant-enabled-control').hidden = enabled;
+      $('instant-field-trial-control').hidden = !enabled;
+      $('instant-label').htmlFor = enabled ? 'instant-field-trial-control'
+                                           : 'instant-enabled-control';
     },
 
     onSessionRestoreSelectedChanged_ : function(event) {
@@ -398,10 +394,10 @@ cr.define('options', function() {
      */
     updateDefaultBrowserState_: function(statusString, isDefault,
                                          canBeDefault) {
-      var label = $('defaultBrowserState');
+      var label = $('default-browser-state');
       label.textContent = statusString;
 
-      $('defaultBrowserUseAsDefaultButton').hidden = !canBeDefault || isDefault;
+      $('set-as-default-browser').hidden = !canBeDefault || isDefault;
     },
 
     /**
@@ -409,7 +405,7 @@ cr.define('options', function() {
      * @private
      */
     clearSearchEngines_: function() {
-      $('defaultSearchEngine').textContent = '';
+      $('default-search-engine').textContent = '';
     },
 
     /**
@@ -422,7 +418,7 @@ cr.define('options', function() {
      */
     updateSearchEngines_: function(engines, defaultValue, defaultManaged) {
       this.clearSearchEngines_();
-      engineSelect = $('defaultSearchEngine');
+      engineSelect = $('default-search-engine');
       engineSelect.disabled = defaultManaged;
       engineCount = engines.length;
       var defaultIndex = -1;
@@ -444,7 +440,7 @@ cr.define('options', function() {
      *     enabled.
      */
     shouldEnableCustomStartupPageControls: function(pages) {
-      return $('startupShowPagesButton').checked &&
+      return $('startup-show-pages').checked &&
           !this.startup_pages_pref_.disabled;
     },
 
@@ -470,7 +466,7 @@ cr.define('options', function() {
      * @private
      */
     setDefaultSearchEngine_: function() {
-      var engineSelect = $('defaultSearchEngine');
+      var engineSelect = $('default-search-engine');
       var selectedIndex = engineSelect.selectedIndex;
       if (selectedIndex >= 0) {
         var selection = engineSelect.options[selectedIndex];
@@ -578,9 +574,8 @@ cr.define('options', function() {
     },
 
     setGtkThemeButtonEnabled_: function(enabled) {
-      if (!cr.isChromeOS && navigator.platform.match(/linux|BSD/i)) {
+      if (!cr.isChromeOS && navigator.platform.match(/linux|BSD/i))
         $('themes-GTK-button').disabled = !enabled;
-      }
     },
 
     setThemesResetButtonEnabled_: function(enabled) {
@@ -589,6 +584,7 @@ cr.define('options', function() {
 
     /**
      * (Re)loads IMG element with current user account picture.
+     * @private
      */
     updateAccountPicture_: function() {
       var picture = $('account-picture');
@@ -655,5 +651,4 @@ cr.define('options', function() {
   return {
     BrowserOptions: BrowserOptions
   };
-
 });

@@ -1,6 +1,6 @@
-<div id="browserPage" class="page" hidden>
+<div id="settings" class="page" hidden>
   <header>
-    <h1 i18n-content="browserPage"></h1>
+    <h1 i18n-content="settingsTitle"></h1>
     <span id="browser-options-search-field-container"
         class="search-field-container">
       <input id="search-field" type="search"
@@ -14,7 +14,8 @@
     <div id="sync-overview" class="section-description" hidden>
       <p i18n-content="syncOverview"></p>
       <a i18n-values="href:syncLearnMoreURL" i18n-content="learnMore"
-          target="_blank"></a>
+          target="_blank">
+      </a>
     </div>
     <div id="sync-status" hidden>
       <span id="sync-status-text"></span>
@@ -39,13 +40,14 @@
     <h3 i18n-content="sectionTitleInternet"></h3>
     <div>
       <button id="internet-options-button"
-          i18n-content="internetOptionsButtonTitle"></button>
+          i18n-content="internetOptionsButtonTitle">
+      </button>
     </div>
   </section>
 </if>
 <if expr="not pp_ifdef('chromeos')">
   <!-- This section is temporarily duplicated down below for ChromeOS. -->
-  <section id="startupSection">
+  <section id="startup-section">
     <h3 i18n-content="sectionTitleStartup"></h3>
     <div>
       <div class="radio">
@@ -70,13 +72,12 @@
       </div>
       <div class="radio">
         <label>
-          <input id="startupShowPagesButton" type="radio" name="startup"
+          <input id="startup-show-pages" type="radio" name="startup"
               pref="session.restore_on_startup"
               value="4" metric="Options_Startup_Custom">
           <span>
-            <span id="startupShowPagesLabel"
-                i18n-content="startupShowPages"></span>
-            <button id="startupSetPages" class="link-button"
+            <span i18n-content="startupShowPages"></span>
+            <button id="startup-set-pages" class="link-button"
                 i18n-content="startupSetPages"></button>
           </span>
         </label>
@@ -88,13 +89,11 @@
     <h3 i18n-content="sectionTitleAppearance"></h3>
 <if expr="not pp_ifdef('toolkit_views') and is_posix and not is_macosx">
     <div>
-      <div>
-        <button id="themes-gallery" i18n-content="themesGallery"></button>
-        <button id="themes-GTK-button"
-            i18n-content="themesGTKButton"></button>
-        <button id="themes-reset"
-            i18n-content="themesSetClassic"></button>
-      </div>
+      <button id="themes-gallery" i18n-content="themesGallery"></button>
+      <button id="themes-GTK-button"
+          i18n-content="themesGTKButton"></button>
+      <button id="themes-reset"
+          i18n-content="themesSetClassic"></button>
     </div>
 </if>
 <if expr="pp_ifdef('toolkit_views') or os == 'win32' or os == 'darwin'">
@@ -105,19 +104,19 @@
 </if>
     <div>
       <div class="checkbox">
-        <input id="toolbarShowHomeButton" pref="browser.show_home_button"
+        <input id="toolbar-show-home-button" pref="browser.show_home_button"
             metric="Options_Homepage_HomeButton" type="checkbox">
-        <label id="home-page-label" for="toolbarShowHomeButton"
+        <label id="home-page-label" for="toolbar-show-home-button"
             i18n-content="toolbarShowHomeButton">
         </label>
         <button id="change-home-page" i18n-content="changeHomePage"
-            class="link-button"></button>
+            class="link-button">
+        </button>
       </div>
       <div class="checkbox">
         <label>
-          <input id="toolbarShowBookmarksBar"
-              pref="bookmark_bar.show_on_all_tabs"
-              metric="Options_ShowBookmarksBar" type="checkbox">
+          <input type="checkbox" pref="bookmark_bar.show_on_all_tabs"
+              metric="Options_ShowBookmarksBar">
           <span i18n-content="toolbarShowBookmarksBar"></span>
         </label>
       </div>
@@ -150,38 +149,44 @@
         </div>
       </div>
       <button id="pointer-settings-button"
-          i18n-content="pointerSettingsButtonTitle" hidden></button>
+          i18n-content="pointerSettingsButtonTitle" hidden>
+      </button>
     </div>
     <div>
       <span i18n-content="deviceGroupKeyboard"></span>
       <button id="keyboard-settings-button"
-          i18n-content="keyboardSettingsButtonTitle"></button>
+          i18n-content="keyboardSettingsButtonTitle">
+      </button>
     </div>
     <div id="brightness-value">
       <span i18n-content="deviceGroupBrightness"></span>
       <button id="brightness-decrease-button"
-          i18n-content="brightnessDecrease"></button>
+          i18n-content="brightnessDecrease">
+      </button>
       <button id="brightness-increase-button"
-          i18n-content="brightnessIncrease"></button>
+          i18n-content="brightnessIncrease">
+      </button>
     </div>
   </section>
 </if>
   <section>
     <h3 i18n-content="sectionTitleSearch"></h3>
-      <div id="defaultSearchEngineGroup">
-        <div id="defaultSearchGroupLabel"
-             i18n-values=".innerHTML:defaultSearchGroupLabel"></div>
-        <div>
-          <select id="defaultSearchEngine" class="weakrtl"></select>
-          <button id="defaultSearchManageEnginesButton"
-              i18n-content="defaultSearchManageEngines"></button>
+      <div id="default-search-engine-group">
+        <div id="default-search-group-label"
+            i18n-values=".innerHTML:defaultSearchGroupLabel">
         </div>
-        <div id="instantOption" class="checkbox">
-          <label id="instantLabel">
+        <div>
+          <select id="default-search-engine" class="weakrtl"></select>
+          <button id="manage-default-search-engines"
+              i18n-content="defaultSearchManageEngines">
+          </button>
+        </div>
+        <div id="instant-setting" class="checkbox">
+          <label id="instant-label">
             <!-- TODO(estade): metric? -->
-            <input id="instantFieldTrialCheckbox" type="checkbox"
+            <input id="instant-field-trial-control" type="checkbox"
                 checked="checked" hidden>
-            <input id="instantEnabledCheckbox" type="checkbox"
+            <input id="instant-enabled-control" type="checkbox"
                 pref="instant.enabled">
             <span i18n-values=".innerHTML:instantPrefAndWarning"></span>
           </label>
@@ -219,8 +224,9 @@
         </button>
         <button id="start-stop-sync" hidden></button>
         <button id="customize-sync" i18n-content="customizeSync" hidden>
+        </button>
         <button id="manage-accounts-button"
-            i18n-content="manageAccountsButtonTitle"></button>
+            i18n-content="manageAccountsButtonTitle">
         </button>
       </div>
     </div>
@@ -250,10 +256,11 @@
   <section>
     <h3 i18n-content="sectionTitleDefaultBrowser"></h3>
     <div>
-      <button id="defaultBrowserUseAsDefaultButton"
-          i18n-content="defaultBrowserUseAsDefault" hidden></button>
-      <div id="defaultBrowserState"
-          i18n-content="defaultBrowserUnknown"></div>
+      <button id="set-as-default-browser"
+          i18n-content="defaultBrowserUseAsDefault" hidden>
+      </button>
+      <div id="default-browser-state" i18n-content="defaultBrowserUnknown">
+      </div>
     </div>
   </section>
 </if>
@@ -261,7 +268,7 @@
   <!-- This section is temporarily duplicated here for ChromeOS. -->
   <!-- TODO(csilv): Move to 'Under the Hood' for ChromeOS only. -->
   <!-- http://crbug.com/110527 -->
-  <section id="startupSection">
+  <section id="startup-section">
     <h3 i18n-content="sectionTitleStartup"></h3>
     <div>
       <div class="radio">
@@ -282,14 +289,16 @@
       </div>
       <div class="radio">
         <label>
-          <input id="startupShowPagesButton" type="radio" name="startup"
+          <input id="startup-show-pages" type="radio" name="startup"
               pref="session.restore_on_startup"
               value="4" metric="Options_Startup_Custom">
           <span>
             <span id="startupShowPagesLabel"
-                i18n-content="startupShowPages"></span>
-            <button id="startupSetPages" class="link-button"
-                i18n-content="startupSetPages"></button>
+                i18n-content="startupShowPages">
+            </span>
+            <button id="startup-set-pages" class="link-button"
+                i18n-content="startupSetPages">
+            </button>
           </span>
         </label>
       </div>
@@ -299,8 +308,9 @@
   <section>
     <h3 i18n-content="sectionTitleAdvanced"></h3>
     <div>
-      <button id="advancedOptionsButton"
-          i18n-content="advancedOptionsButtonTitle"></button>
+      <button id="advanced-settings"
+          i18n-content="advancedSettings">
+      </button>
     </div>
   </section>
 </div>

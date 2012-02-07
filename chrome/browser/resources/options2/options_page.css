@@ -227,9 +227,10 @@ html.hide-menu .close-subpage {
   top: 0;
 }
 
-/* Omit top padding (currently only on #browserPage) whenever the search page is
- * showing. */
-#searchPage:not([hidden]) + #browserPage {
+/* Omit top padding (currently only on #settings) whenever the search page is
+ * showing.
+ */
+#searchPage:not([hidden]) + #settings {
   padding-top: 0;
 }
 

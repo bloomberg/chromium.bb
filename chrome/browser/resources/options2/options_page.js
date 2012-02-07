@@ -9,9 +9,7 @@ cr.define('options', function() {
   /**
    * Base class for options page.
    * @constructor
-   * @param {string} name Options page name, also defines id of the div element
-   *     containing the options view and the name of options page navigation bar
-   *     item as name+'PageNav'.
+   * @param {string} name Options page name.
    * @param {string} title Options page title, used for navigation bar
    * @extends {EventTarget}
    */

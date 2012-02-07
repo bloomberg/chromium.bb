@@ -111,7 +111,7 @@ void BrowserOptionsHandler::GetLocalizedValues(
   DCHECK(localized_strings);
 
   static OptionsStringResource resources[] = {
-    { "advancedOptionsButtonTitle", IDS_OPTIONS_ADVANCED_BUTTON_TITLE },
+    { "advancedSettings", IDS_OPTIONS_ADVANCED_BUTTON_TITLE },
     { "autologinEnabled", IDS_OPTIONS_PASSWORDS_AUTOLOGIN },
     { "browsingData", IDS_OPTIONS_BROWSING_DATA_GROUP_NAME },  // needed?
     { "changeHomePage", IDS_OPTIONS_CHANGE_HOME_PAGE },
@@ -139,6 +139,7 @@ void BrowserOptionsHandler::GetLocalizedValues(
     { "sessionRestoreOverlayMessage", IDS_SESSION_RESTORE_OVERLAY_MESSAGE },
     { "sessionRestoreOverlayTitle", IDS_SESSION_RESTORE_OVERLAY_TITLE },
     { "startupRestoreLastSession", IDS_OPTIONS_STARTUP_RESTORE_LAST_SESSION },
+    { "settingsTitle", IDS_SETTINGS_TITLE },
     { "startupSetPages", IDS_OPTIONS2_STARTUP_SET_PAGES },
     { "startupShowDefaultAndNewTab",
       IDS_OPTIONS_STARTUP_SHOW_DEFAULT_AND_NEWTAB},
@@ -181,7 +182,6 @@ void BrowserOptionsHandler::GetLocalizedValues(
   };
 
   RegisterStrings(localized_strings, resources, arraysize(resources));
-  RegisterTitle(localized_strings, "browserPage", IDS_SETTINGS_TITLE);
 
   localized_strings->SetString(
       "syncOverview",
