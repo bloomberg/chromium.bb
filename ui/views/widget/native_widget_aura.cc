@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/string_util.h"
+#include "third_party/skia/include/core/SkRegion.h"
 #include "ui/aura/client/activation_client.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/drag_drop_client.h"
@@ -413,7 +414,8 @@ void NativeWidgetAura::StackAtTop() {
 }
 
 void NativeWidgetAura::SetShape(gfx::NativeRegion region) {
-  // No need for this.
+  // No need for this. Just delete and ignore.
+  delete region;
 }
 
 void NativeWidgetAura::Close() {
@@ -727,9 +729,6 @@ void NativeWidgetAura::OnWindowDestroying() {
 
   // If the aura::Window is destroyed, we can no longer show tooltips.
   tooltip_manager_.reset();
-
-  // Cleanup properties associated with the window here.
-  delete GetRestoreBounds(window_);
 }
 
 void NativeWidgetAura::OnWindowDestroyed() {

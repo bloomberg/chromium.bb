@@ -153,7 +153,7 @@ TEST_F(NativeWidgetAuraTest, GetClientAreaScreenBounds) {
   Widget::InitParams params(Widget::InitParams::TYPE_WINDOW);
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.bounds.SetRect(10, 20, 300, 400);
-  scoped_ptr<Widget> widget(new Widget());
+  Widget* widget = new Widget();
   widget->Init(params);
 
   // For Aura, client area bounds match window bounds.
