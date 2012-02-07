@@ -572,6 +572,9 @@ ProfileImpl::~ProfileImpl() {
     default_request_context_ = NULL;
   }
 
+  // Destroy OTR profile and its profile services first.
+  DestroyOffTheRecordProfile();
+
   ProfileDependencyManager::GetInstance()->DestroyProfileServices(this);
 
   if (db_tracker_) {

@@ -121,7 +121,8 @@ ProfileKeyedService* ProfileKeyedServiceFactory::GetServiceForProfile(
     std::map<Profile*, FactoryFunction>::iterator jt = factories_.find(profile);
     if (jt != factories_.end()) {
       if (jt->second) {
-        RegisterUserPrefsOnProfile(profile);
+        if (!profile->IsOffTheRecord())
+          RegisterUserPrefsOnProfile(profile);
         service = jt->second(profile);
       } else {
         service = NULL;
