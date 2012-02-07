@@ -5838,6 +5838,17 @@
    fun:_Znw*
    fun:_ZN5views45ViewLayerTest_OrphanLayerAfterViewRemove_Test8TestBodyEv
 }
+{
+   bug_112835
+   Memcheck:Unaddressable
+   ...
+   fun:_ZN6WebKit31WorkerFileSystemCallbacksBridge4stopEv
+   fun:_ZN6WebKit31WorkerFileSystemContextObserver10notifyStopEv
+   fun:_ZN7WebCore13WorkerContext21notifyObserversOfStopEv
+   fun:_ZN7WebCore29WorkerThreadShutdownStartTask11performTaskEPNS_22ScriptExecutionContextE
+   fun:_ZN7WebCore13WorkerRunLoop4Task11performTaskERKS0_PNS_22ScriptExecutionContextE
+   fun:_ZN7WebCore13WorkerRunLoop15runCleanupTasksEPNS_13WorkerContextE
+}
 
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations
