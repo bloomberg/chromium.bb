@@ -658,6 +658,30 @@ cr.define('options', function() {
     // Trigger the resize and scroll handlers manually to set the initial state.
     this.handleResize_(null);
     this.handleScroll_();
+
+    // Shake the dialog if the user clicks outside the dialog bounds.
+    $('overlay').onclick = this.shakeDialog_;
+  };
+
+  /**
+   * Sets and resets the shake class to perform the shake animation.
+   * @private
+   */
+  OptionsPage.shakeDialog_ = function(e) {
+    // Only shake if the non-page part of the overlay is clicked.
+    if (e.target != this)
+      return;
+
+    // Query the visible overlay page.
+    var page = this.querySelector('.page:not([hidden])');
+
+    // Shake it.
+    page.classList.add('shake');
+
+    // Bake it.
+    page.addEventListener('webkitAnimationEnd', function() {
+      page.classList.remove('shake');
+    });
   };
 
   /**

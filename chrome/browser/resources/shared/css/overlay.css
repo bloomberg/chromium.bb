@@ -20,13 +20,34 @@
   top: 0;
 }
 
-/* The foregrounded dialog. */
+/* The foreground dialog. */
 .overlay .page {
   background: white;
   box-shadow: 0 3px 15px rgba(0, 0, 0, 0.3), 0 3px 57px rgba(0, 0, 0, 0.3);
   min-width: 400px;
   padding: 0;
   position: relative;
+}
+
+/* keyframes used to shake the overlay */
+@-webkit-keyframes shake {
+  0% {
+    -webkit-transform: translateX(-5px) rotateZ(-0.5deg) translateY(-2px);
+  }
+  50% {
+    -webkit-transform: translateX(0px) rotateZ(0deg) translateY(0px);
+  }
+  100% {
+    -webkit-transform: translateX(5px) rotateZ(0.5deg) translateY(-2px);
+  }
+}
+
+.overlay .page.shake {
+  -webkit-animation-direction: alternate;
+  -webkit-animation-duration: 60ms;
+  -webkit-animation-iteration-count: 7;
+  -webkit-animation-name: shake;
+  -webkit-animation-timing-function: ease-in-out;
 }
 
 .overlay .page h1 {
