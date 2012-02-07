@@ -4125,13 +4125,6 @@
    fun:_ZN3net21HttpStreamFactoryImpl3Job26OnSpdySessionReadyCallbackEv
 }
 {
-   bug_96295
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN20ComponentUpdaterTest17RegisterComponentEP12CrxComponentNS_14TestComponentsERK7Version
-   fun:_ZN42ComponentUpdaterTest_ProdVersionCheck_Test8TestBodyEv
-}
-{
    bug_96365
    Memcheck:Leak
    fun:_Znw*

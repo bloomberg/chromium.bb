@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,6 +7,7 @@
 #include "base/compiler_specific.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/memory/scoped_vector.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/values.h"
@@ -164,6 +165,10 @@ class ComponentUpdaterTest : public testing::Test {
     content::URLFetcher::SetEnableInterceptionForTests(false);
   }
 
+  void TearDown() {
+    xmlCleanupGlobals();
+  }
+
   ComponentUpdateService* component_updater() {
     return component_updater_.get();
   }
@@ -193,6 +198,7 @@ class ComponentUpdaterTest : public testing::Test {
     }
     com->version = version;
     com->installer = new TestInstaller;
+    test_installers_.push_back(com->installer);
     component_updater_->RegisterComponent(*com);
   }
 
@@ -201,6 +207,8 @@ class ComponentUpdaterTest : public testing::Test {
   FilePath test_data_dir_;
   TestNotificationTracker notification_tracker_;
   TestConfigurator* test_config_;
+  // ComponentInstaller objects to delete after each test.
+  ScopedVector<ComponentInstaller> test_installers_;
 };
 
 // Verify that our test fixture work and the component updater can
@@ -298,9 +306,6 @@ TEST_F(ComponentUpdaterTest, CheckCrxSleep) {
   EXPECT_EQ(0, static_cast<TestInstaller*>(com.installer)->install_count());
 
   component_updater()->Stop();
-
-  delete com.installer;
-  xmlCleanupGlobals();
 }
 
 // Verify that we can check for updates and install one component. Besides
@@ -369,9 +374,6 @@ TEST_F(ComponentUpdaterTest, InstallCrx) {
   EXPECT_EQ(chrome::NOTIFICATION_COMPONENT_UPDATER_SLEEPING, ev3.type);
 
   component_updater()->Stop();
-  delete com1.installer;
-  delete com2.installer;
-  xmlCleanupGlobals();
 }
 
 // This test checks that the "prodversionmin" value is handled correctly. In
