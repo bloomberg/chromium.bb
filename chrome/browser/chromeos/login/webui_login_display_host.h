@@ -44,11 +44,11 @@ class WebUILoginDisplayHost : public BaseLoginDisplayHost {
   virtual WizardController* CreateWizardController() OVERRIDE;
   virtual void OnBrowserCreated() OVERRIDE;
 
-  OobeUI* GetOobeUI() const;
-
  private:
   // Loads given URL. Creates WebUILoginView if needed.
   void LoadURL(const GURL& url);
+
+  OobeUI* GetOobeUI() const;
 
   // Container of the screen we are displaying.
   views::Widget* login_window_;

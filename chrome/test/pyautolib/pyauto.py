@@ -4225,34 +4225,6 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     cmd_dict = { 'command': 'GetEnterprisePolicyInfo' }
     return self._GetResultFromJSONRequest(cmd_dict, windex=None)
 
-  def EnableSpokenFeedback(self, enabled):
-    """Enables or disables spoken feedback accessibility mode.
-
-    Args:
-      enabled: Boolean value indicating the desired state of spoken feedback.
-
-    Raises:
-      pyauto_errors.JSONInterfaceError if the automation call returns an error.
-    """
-    cmd_dict = {
-        'command': 'EnableSpokenFeedback',
-        'enabled': enabled,
-    }
-    return self._GetResultFromJSONRequest(cmd_dict, windex=None)
-
-  def IsSpokenFeedbackEnabled(self):
-    """Check whether spoken feedback accessibility mode is enabled.
-
-    Returns:
-      True if spoken feedback is enabled, False otherwise.
-
-    Raises:
-      pyauto_errors.JSONInterfaceError if the automation call returns an error.
-    """
-    cmd_dict = { 'command': 'IsSpokenFeedbackEnabled', }
-    result = self._GetResultFromJSONRequest(cmd_dict, windex=None)
-    return result.get('spoken_feedback')
-
   def GetTimeInfo(self, windex=0):
     """Gets info about the ChromeOS status bar clock.
 
