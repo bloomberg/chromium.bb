@@ -25,6 +25,7 @@
 #include "ui/views/widget/widget.h"
 
 #if defined(USE_AURA)
+#include "ui/aura/client/dispatcher_client.h"
 #include "ui/aura/root_window.h"
 #elif defined(TOOLKIT_USES_GTK)
 #include "ui/base/keycodes/keyboard_code_conversion_gtk.h"
@@ -318,11 +319,15 @@ MenuItemView* MenuController::Run(Widget* parent,
   // one) the menus are run from a task. If we don't do this and are invoked
   // from a task none of the tasks we schedule are processed and the menu
   // appears totally broken.
+#if defined(USE_AURA)
+  aura::client::GetDispatcherClient()->RunWithDispatcher(this, true);
+#else
   MessageLoopForUI* loop = MessageLoopForUI::current();
   bool did_allow_task_nesting = loop->NestableTasksAllowed();
   loop->SetNestableTasksAllowed(true);
   loop->RunWithDispatcher(this);
   loop->SetNestableTasksAllowed(did_allow_task_nesting);
+#endif
 
   if (ViewsDelegate::views_delegate)
     ViewsDelegate::views_delegate->ReleaseRef();

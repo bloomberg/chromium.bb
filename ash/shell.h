@@ -37,6 +37,7 @@ namespace ash {
 
 class AcceleratorController;
 class Launcher;
+class NestedDispatcherController;
 class PowerButtonController;
 class ShellDelegate;
 class VideoDetector;
@@ -182,6 +183,8 @@ class ASH_EXPORT Shell {
   std::vector<WindowAndBoundsPair> to_restore_;
 
   base::WeakPtrFactory<Shell> method_factory_;
+
+  scoped_ptr<NestedDispatcherController> nested_dispatcher_controller_;
 
   scoped_ptr<AcceleratorController> accelerator_controller_;
 
