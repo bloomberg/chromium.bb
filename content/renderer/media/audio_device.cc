@@ -4,7 +4,6 @@
 
 #include "content/renderer/media/audio_device.h"
 
-#include "base/bind.h"
 #include "base/debug/trace_event.h"
 #include "base/message_loop.h"
 #include "base/threading/thread_restrictions.h"
@@ -17,7 +16,8 @@
 #include "media/audio/audio_util.h"
 
 AudioDevice::AudioDevice()
-    : buffer_size_(0),
+    : ScopedLoopObserver(ChildProcess::current()->io_message_loop()),
+      buffer_size_(0),
       channels_(0),
       bits_per_sample_(16),
       sample_rate_(0),
@@ -38,7 +38,8 @@ AudioDevice::AudioDevice(size_t buffer_size,
                          int channels,
                          double sample_rate,
                          RenderCallback* callback)
-    : bits_per_sample_(16),
+    : ScopedLoopObserver(ChildProcess::current()->io_message_loop()),
+      bits_per_sample_(16),
       is_initialized_(false),
       audio_delay_milliseconds_(0),
       volume_(1.0),
@@ -100,13 +101,12 @@ void AudioDevice::Start() {
   params.bits_per_sample = bits_per_sample_;
   params.samples_per_packet = buffer_size_;
 
-  ChildProcess::current()->io_message_loop()->PostTask(
-      FROM_HERE,
+  message_loop()->PostTask(FROM_HERE,
       base::Bind(&AudioDevice::InitializeOnIOThread, this, params));
 }
 
 void AudioDevice::Stop() {
-  DCHECK(MessageLoop::current() != ChildProcess::current()->io_message_loop());
+  DCHECK(!message_loop()->BelongsToCurrentThread());
 
   // Stop and shutdown the audio thread from the IO thread.
   // This operation must be synchronous for now since the |callback_| pointer
@@ -114,21 +114,19 @@ void AudioDevice::Stop() {
   // returns (and FireRenderCallback might dereference a bogus pointer).
   // TODO(tommi): Add an Uninitialize() method to AudioRendererSink?
   base::WaitableEvent done(true, false);
-  ChildProcess::current()->io_message_loop()->PostTask(
-      FROM_HERE,
-      base::Bind(&AudioDevice::ShutDownOnIOThread, this, &done));
-  done.Wait();
+  if (message_loop()->PostTask(FROM_HERE,
+          base::Bind(&AudioDevice::ShutDownOnIOThread, this, &done))) {
+    done.Wait();
+  }
 }
 
 void AudioDevice::Play() {
-  ChildProcess::current()->io_message_loop()->PostTask(
-      FROM_HERE,
+  message_loop()->PostTask(FROM_HERE,
       base::Bind(&AudioDevice::PlayOnIOThread, this));
 }
 
 void AudioDevice::Pause(bool flush) {
-  ChildProcess::current()->io_message_loop()->PostTask(
-      FROM_HERE,
+  message_loop()->PostTask(FROM_HERE,
       base::Bind(&AudioDevice::PauseOnIOThread, this, flush));
 }
 
@@ -136,9 +134,10 @@ bool AudioDevice::SetVolume(double volume) {
   if (volume < 0 || volume > 1.0)
     return false;
 
-  ChildProcess::current()->io_message_loop()->PostTask(
-      FROM_HERE,
-      base::Bind(&AudioDevice::SetVolumeOnIOThread, this, volume));
+  if (!message_loop()->PostTask(FROM_HERE,
+          base::Bind(&AudioDevice::SetVolumeOnIOThread, this, volume))) {
+    return false;
+  }
 
   volume_ = volume;
 
@@ -151,7 +150,7 @@ void AudioDevice::GetVolume(double* volume) {
 }
 
 void AudioDevice::InitializeOnIOThread(const AudioParameters& params) {
-  DCHECK_EQ(MessageLoop::current(), ChildProcess::current()->io_message_loop());
+  DCHECK(message_loop()->BelongsToCurrentThread());
   // Make sure we don't create the stream more than once.
   DCHECK_EQ(0, stream_id_);
   if (stream_id_)
@@ -162,7 +161,7 @@ void AudioDevice::InitializeOnIOThread(const AudioParameters& params) {
 }
 
 void AudioDevice::PlayOnIOThread() {
-  DCHECK_EQ(MessageLoop::current(), ChildProcess::current()->io_message_loop());
+  DCHECK(message_loop()->BelongsToCurrentThread());
   if (stream_id_ && is_started_)
     Send(new AudioHostMsg_PlayStream(stream_id_));
   else
@@ -170,7 +169,7 @@ void AudioDevice::PlayOnIOThread() {
 }
 
 void AudioDevice::PauseOnIOThread(bool flush) {
-  DCHECK_EQ(MessageLoop::current(), ChildProcess::current()->io_message_loop());
+  DCHECK(message_loop()->BelongsToCurrentThread());
   if (stream_id_ && is_started_) {
     Send(new AudioHostMsg_PauseStream(stream_id_));
     if (flush)
@@ -183,7 +182,8 @@ void AudioDevice::PauseOnIOThread(bool flush) {
 }
 
 void AudioDevice::ShutDownOnIOThread(base::WaitableEvent* signal) {
-  DCHECK_EQ(MessageLoop::current(), ChildProcess::current()->io_message_loop());
+  DCHECK(message_loop()->BelongsToCurrentThread());
+  // NOTE: |signal| may be NULL.
 
   // Make sure we don't call shutdown more than once.
   if (stream_id_) {
@@ -196,11 +196,12 @@ void AudioDevice::ShutDownOnIOThread(base::WaitableEvent* signal) {
     ShutDownAudioThread();
   }
 
-  signal->Signal();
+  if (signal)
+    signal->Signal();
 }
 
 void AudioDevice::SetVolumeOnIOThread(double volume) {
-  DCHECK_EQ(MessageLoop::current(), ChildProcess::current()->io_message_loop());
+  DCHECK(message_loop()->BelongsToCurrentThread());
   if (stream_id_)
     Send(new AudioHostMsg_SetVolume(stream_id_, volume));
 }
@@ -216,7 +217,7 @@ void AudioDevice::OnStreamCreated(
     base::SharedMemoryHandle handle,
     base::SyncSocket::Handle socket_handle,
     uint32 length) {
-  DCHECK_EQ(MessageLoop::current(), ChildProcess::current()->io_message_loop());
+  DCHECK(message_loop()->BelongsToCurrentThread());
   DCHECK_GE(length, buffer_size_ * sizeof(int16) * channels_);
 #if defined(OS_WIN)
   DCHECK(handle);
@@ -314,7 +315,7 @@ size_t AudioDevice::FireRenderCallback(int16* data) {
 }
 
 void AudioDevice::ShutDownAudioThread() {
-  DCHECK_EQ(MessageLoop::current(), ChildProcess::current()->io_message_loop());
+  DCHECK(message_loop()->BelongsToCurrentThread());
 
   if (audio_thread_.get()) {
     // Close the socket to terminate the main thread function in the
@@ -326,4 +327,8 @@ void AudioDevice::ShutDownAudioThread() {
     audio_thread_.reset(NULL);
     audio_socket_.reset();
   }
+}
+
+void AudioDevice::WillDestroyCurrentMessageLoop() {
+  ShutDownOnIOThread(NULL);
 }

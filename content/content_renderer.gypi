@@ -117,6 +117,8 @@
     'renderer/media/renderer_webaudiodevice_impl.h',
     'renderer/media/rtc_video_decoder.cc',
     'renderer/media/rtc_video_decoder.h',
+    'renderer/media/scoped_loop_observer.cc',
+    'renderer/media/scoped_loop_observer.h',
     'renderer/media/video_capture_impl.cc',
     'renderer/media/video_capture_impl.h',
     'renderer/media/video_capture_impl_manager.cc',

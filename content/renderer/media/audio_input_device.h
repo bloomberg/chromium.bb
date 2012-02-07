@@ -78,6 +78,7 @@
 #include "base/threading/simple_thread.h"
 #include "content/common/content_export.h"
 #include "content/renderer/media/audio_input_message_filter.h"
+#include "content/renderer/media/scoped_loop_observer.h"
 #include "media/audio/audio_parameters.h"
 
 // TODO(henrika): This class is based on the AudioDevice class and it has
@@ -88,6 +89,7 @@
 class CONTENT_EXPORT AudioInputDevice
     : public AudioInputMessageFilter::Delegate,
       public base::DelegateSimpleThread::Delegate,
+      public ScopedLoopObserver,
       public base::RefCountedThreadSafe<AudioInputDevice> {
  public:
   class CONTENT_EXPORT CaptureCallback {
@@ -175,6 +177,10 @@ class CONTENT_EXPORT AudioInputDevice
 
   // DelegateSimpleThread::Delegate implementation.
   virtual void Run() OVERRIDE;
+
+  // MessageLoop::DestructionObserver implementation for the IO loop.
+  // If the IO loop dies before we do, we shut down the audio thread from here.
+  virtual void WillDestroyCurrentMessageLoop() OVERRIDE;
 
   // Format
   AudioParameters audio_parameters_;

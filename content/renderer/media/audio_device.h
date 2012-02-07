@@ -66,23 +66,23 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/message_loop.h"
 #include "base/shared_memory.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/simple_thread.h"
 #include "content/common/content_export.h"
 #include "content/renderer/media/audio_message_filter.h"
+#include "content/renderer/media/scoped_loop_observer.h"
 #include "media/audio/audio_parameters.h"
 #include "media/base/audio_renderer_sink.h"
-
-namespace base {
-class WaitableEvent;
-}
 
 class CONTENT_EXPORT AudioDevice
     : NON_EXPORTED_BASE(public media::AudioRendererSink),
       public AudioMessageFilter::Delegate,
-      public base::DelegateSimpleThread::Delegate {
+      public base::DelegateSimpleThread::Delegate,
+      public ScopedLoopObserver {
  public:
   // Methods called on main render thread -------------------------------------
 
@@ -168,6 +168,10 @@ class CONTENT_EXPORT AudioDevice
 
   // Closes socket and joins with the audio thread.
   void ShutDownAudioThread();
+
+  // MessageLoop::DestructionObserver implementation for the IO loop.
+  // If the IO loop dies before we do, we shut down the audio thread from here.
+  virtual void WillDestroyCurrentMessageLoop() OVERRIDE;
 
   // Format
   size_t buffer_size_;  // in sample-frames
