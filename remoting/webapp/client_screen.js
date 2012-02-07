@@ -404,6 +404,21 @@ function updateStatistics_() {
   window.setTimeout(updateStatistics_, 1000);
 }
 
+/**
+ * @return {boolean} true if the client plugin supports PIN auth.
+ */
+remoting.isPinAuthSupported = function () {
+  var plugin = /** @type {remoting.ViewerPlugin} */
+      document.createElement('embed');
+  plugin.src = 'about://none';
+  plugin.type = 'pepper-application/x-chromoting';
+  plugin.width = 0;
+  plugin.height = 0;
+  document.body.appendChild(plugin);
+  var version = plugin.apiVersion;
+  document.body.removeChild(plugin);
+  return version && version >= 4;
+};
 
 /**
  * Shows PIN entry screen.
@@ -419,7 +434,11 @@ remoting.connectMe2Me = function(hostId, retryIfOffline) {
   remoting.hostId = hostId;
   remoting.retryIfOffline = retryIfOffline;
 
-  // TODO(sergeyu): Ask pin only when it is necessary: crbug.com/111290 .
+  if (!remoting.isPinAuthSupported()) {
+    showConnectError_(remoting.Error.BAD_PLUGIN_VERSION);
+    return;
+  }
+
   remoting.setMode(remoting.AppMode.CLIENT_PIN_PROMPT);
 };
 
