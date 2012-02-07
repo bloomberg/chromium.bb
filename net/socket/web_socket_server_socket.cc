@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -726,7 +726,7 @@ class WebSocketServerSocketImpl : public net::WebSocketServerSocket {
       }
 
       operator net::DrainableIOBuffer*() {
-        return new net::DrainableIOBuffer(io_buf_.release(), bytes_written_);
+        return new net::DrainableIOBuffer(io_buf_.get(), bytes_written_);
       }
 
       bool is_ok() { return is_ok_; }
