@@ -587,7 +587,7 @@ def SetupChain(chain, input_type, output_type):
     return
 
   # source file -> po (we also force native output to go through this phase
-  if IsSourceType(cur_type) and (output_type == 'po' or output_type == 'o'):
+  if IsSourceType(cur_type) and output_type in ('po', 'o', 's'):
     chain.add(RunCC, 'po', mode='-c')
     cur_type = 'po'
   if cur_type == output_type:
