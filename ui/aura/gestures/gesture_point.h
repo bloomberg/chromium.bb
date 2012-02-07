@@ -7,7 +7,6 @@
 #pragma once
 
 #include "base/basictypes.h"
-#include "ui/aura/gestures/velocity_calculator.h"
 #include "ui/gfx/point.h"
 
 namespace aura {
@@ -45,7 +44,7 @@ class GesturePoint {
   bool IsInClickWindow(const TouchEvent& event) const;
   bool IsInDoubleClickWindow(const TouchEvent& event) const;
   bool IsInScrollWindow(const TouchEvent& event) const;
-  bool IsInFlickWindow(const TouchEvent& event);
+  bool IsInFlickWindow(const TouchEvent& event) const;
   bool DidScroll(const TouchEvent& event) const;
 
   const gfx::Point& first_touch_position() const {
@@ -63,8 +62,8 @@ class GesturePoint {
     return last_touch_position_.y() - first_touch_position_.y();
   }
 
-  float XVelocity() { return velocity_calculator_.XVelocity(); }
-  float YVelocity() { return velocity_calculator_.YVelocity(); }
+  float x_velocity() const { return x_velocity_; }
+  float y_velocity() const { return y_velocity_; }
 
  private:
   // Various statistical functions to manipulate gestures.
@@ -72,7 +71,7 @@ class GesturePoint {
   bool IsInSecondClickTimeWindow() const;
   bool IsInsideManhattanSquare(const TouchEvent& event) const;
   bool IsSecondClickInsideManhattanSquare(const TouchEvent& event) const;
-  bool IsOverMinFlickSpeed();
+  bool IsOverMinFlickSpeed() const;
 
   gfx::Point first_touch_position_;
   double first_touch_time_;
@@ -82,7 +81,8 @@ class GesturePoint {
   double last_tap_time_;
   gfx::Point last_tap_position_;
 
-  VelocityCalculator velocity_calculator_;
+  float x_velocity_;
+  float y_velocity_;
 
   DISALLOW_COPY_AND_ASSIGN(GesturePoint);
 };
