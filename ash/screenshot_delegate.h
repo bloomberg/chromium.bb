@@ -10,6 +10,10 @@ namespace aura {
 class Window;
 }  // namespace aura
 
+namespace gfx {
+class Rect;
+}  // namespace gfx
+
 namespace ash {
 
 // Delegate for taking screenshots.
@@ -21,6 +25,11 @@ class ScreenshotDelegate {
   // This method is called when the user wants to take a screenshot
   // manually.
   virtual void HandleTakeScreenshot(aura::Window* window) = 0;
+
+  // The actual task of taking a partial screenshot for the given
+  // window.
+  virtual void HandleTakePartialScreenshot(
+      aura::Window* window, const gfx::Rect& rect) = 0;
 };
 }  // namespace ash
 

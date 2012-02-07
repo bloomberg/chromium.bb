@@ -69,7 +69,8 @@ void SaveScreenshot(bool is_logged_in,
 ScreenshotTaker::ScreenshotTaker() {
 }
 
-void ScreenshotTaker::HandleTakeScreenshot(aura::Window* window) {
+void ScreenshotTaker::HandleTakePartialScreenshot(
+    aura::Window* window, const gfx::Rect& rect) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
   scoped_refptr<RefCountedBytes> png_data(new RefCountedBytes);
@@ -79,12 +80,15 @@ void ScreenshotTaker::HandleTakeScreenshot(aura::Window* window) {
   is_logged_in = chromeos::UserManager::Get()->user_is_logged_in();
 #endif
 
-  if (browser::GrabWindowSnapshot(
-          window, &png_data->data(), window->bounds())) {
+  if (browser::GrabWindowSnapshot(window, &png_data->data(), rect)) {
     content::BrowserThread::PostTask(
         content::BrowserThread::FILE, FROM_HERE,
         base::Bind(&SaveScreenshot, is_logged_in, png_data));
   } else {
     LOG(ERROR) << "Failed to grab the window screenshot";
   }
+}
+
+void ScreenshotTaker::HandleTakeScreenshot(aura::Window* window) {
+  HandleTakePartialScreenshot(window, window->bounds());
 }
