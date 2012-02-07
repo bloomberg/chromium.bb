@@ -286,6 +286,10 @@
       'sources': [
         'host/it2me_host_user_interface.cc',
         'host/it2me_host_user_interface.h',
+        'host/plugin/daemon_controller.h',
+        'host/plugin/daemon_controller_linux.cc',
+        'host/plugin/daemon_controller_mac.cc',
+        'host/plugin/daemon_controller_win.cc',
         'host/plugin/host_log_handler.cc',
         'host/plugin/host_log_handler.h',
         'host/plugin/host_plugin.cc',

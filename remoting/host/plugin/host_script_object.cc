@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "remoting/host/plugin/host_script_object.h"
+#include "remoting/host/plugin/daemon_controller.h"
 
 #include "base/bind.h"
 #include "base/message_loop.h"
@@ -25,37 +26,12 @@
 
 namespace remoting {
 
-// Supported Javascript interface:
-// readonly attribute string accessCode;
-// readonly attribute int accessCodeLifetime;
-// readonly attribute string client;
-// readonly attribute int state;
-//
-// state: {
-//     DISCONNECTED,
-//     STARTING,
-//     REQUESTED_ACCESS_CODE,
-//     RECEIVED_ACCESS_CODE,
-//     CONNECTED,
-//     DISCONNECTING,
-//     ERROR,
-// }
-//
-// attribute Function void logDebugInfo(string);
-// attribute Function void onNatTraversalPolicyChanged(boolean);
-// attribute Function void onStateChanged(state);
-//
-// // The |auth_service_with_token| parameter should be in the format
-// // "auth_service:auth_token".  An example would be "oauth2:1/2a3912vd".
-// void connect(string uid, string auth_service_with_token);
-// void disconnect();
-// void localize(string (*localize_func)(string,...));
-
 namespace {
 
 const char* kAttrNameAccessCode = "accessCode";
 const char* kAttrNameAccessCodeLifetime = "accessCodeLifetime";
 const char* kAttrNameClient = "client";
+const char* kAttrNameDaemonState = "daemonState";
 const char* kAttrNameState = "state";
 const char* kAttrNameLogDebugInfo = "logDebugInfo";
 const char* kAttrNameOnNatTraversalPolicyChanged =
@@ -64,6 +40,9 @@ const char* kAttrNameOnStateChanged = "onStateChanged";
 const char* kFuncNameConnect = "connect";
 const char* kFuncNameDisconnect = "disconnect";
 const char* kFuncNameLocalize = "localize";
+const char* kFuncNameSetDaemonPin = "setDaemonPin";
+const char* kFuncNameStartDaemon = "startDaemon";
+const char* kFuncNameStopDaemon = "stopDaemon";
 
 // States.
 const char* kAttrNameDisconnected = "DISCONNECTED";
@@ -90,6 +69,7 @@ HostNPScriptObject::HostNPScriptObject(
           new PluginMessageLoopProxy(plugin_thread_delegate)),
       host_context_(plugin_message_loop_proxy_),
       failed_login_attempts_(0),
+      daemon_controller_(DaemonController::Create()),
       disconnected_event_(true, false),
       am_currently_logging_(false),
       nat_traversal_enabled_(false),
@@ -147,7 +127,10 @@ bool HostNPScriptObject::HasMethod(const std::string& method_name) {
   CHECK_EQ(base::PlatformThread::CurrentId(), np_thread_id_);
   return (method_name == kFuncNameConnect ||
           method_name == kFuncNameDisconnect ||
-          method_name == kFuncNameLocalize);
+          method_name == kFuncNameLocalize ||
+          method_name == kFuncNameSetDaemonPin ||
+          method_name == kFuncNameStartDaemon ||
+          method_name == kFuncNameStopDaemon);
 }
 
 bool HostNPScriptObject::InvokeDefault(const NPVariant* args,
@@ -171,6 +154,12 @@ bool HostNPScriptObject::Invoke(const std::string& method_name,
     return Disconnect(args, argCount, result);
   } else if (method_name == kFuncNameLocalize) {
     return Localize(args, argCount, result);
+  } else if (method_name == kFuncNameSetDaemonPin) {
+    return SetDaemonPin(args, argCount, result);
+  } else if (method_name == kFuncNameStartDaemon) {
+    return StartDaemon(args, argCount, result);
+  } else if (method_name == kFuncNameStopDaemon) {
+    return StopDaemon(args, argCount, result);
   } else {
     SetException("Invoke: unknown method " + method_name);
     return false;
@@ -183,6 +172,7 @@ bool HostNPScriptObject::HasProperty(const std::string& property_name) {
   return (property_name == kAttrNameAccessCode ||
           property_name == kAttrNameAccessCodeLifetime ||
           property_name == kAttrNameClient ||
+          property_name == kAttrNameDaemonState ||
           property_name == kAttrNameState ||
           property_name == kAttrNameLogDebugInfo ||
           property_name == kAttrNameOnNatTraversalPolicyChanged ||
@@ -227,6 +217,9 @@ bool HostNPScriptObject::GetProperty(const std::string& property_name,
     return true;
   } else if (property_name == kAttrNameClient) {
     *result = NPVariantFromString(client_username_);
+    return true;
+  } else if (property_name == kAttrNameDaemonState) {
+    INT32_TO_NPVARIANT(daemon_controller_->GetState(), *result);
     return true;
   } else if (property_name == kAttrNameDisconnected) {
     INT32_TO_NPVARIANT(kDisconnected, *result);
@@ -320,16 +313,19 @@ bool HostNPScriptObject::Enumerate(std::vector<std::string>* values) {
     kAttrNameState,
     kAttrNameLogDebugInfo,
     kAttrNameOnStateChanged,
-    kFuncNameConnect,
-    kFuncNameDisconnect,
-    kFuncNameLocalize,
     kAttrNameDisconnected,
     kAttrNameStarting,
     kAttrNameRequestedAccessCode,
     kAttrNameReceivedAccessCode,
     kAttrNameConnected,
     kAttrNameDisconnecting,
-    kAttrNameError
+    kAttrNameError,
+    kFuncNameConnect,
+    kFuncNameDisconnect,
+    kFuncNameLocalize,
+    kFuncNameSetDaemonPin,
+    kFuncNameStartDaemon,
+    kFuncNameStopDaemon
   };
   for (size_t i = 0; i < arraysize(entries); ++i) {
     values->push_back(entries[i]);
@@ -564,6 +560,48 @@ bool HostNPScriptObject::Localize(const NPVariant* args,
     SetException("localize: unexpected type for argument 1");
     return false;
   }
+}
+
+bool HostNPScriptObject::SetDaemonPin(const NPVariant* args,
+                                      uint32_t arg_count,
+                                      NPVariant* result) {
+  if (arg_count != 1) {
+    SetException("startDaemon: bad number of arguments");
+    return false;
+  }
+  if (NPVARIANT_IS_STRING(args[0])) {
+    bool set_pin_result =
+        daemon_controller_->SetPin(StringFromNPVariant(args[0]));
+    BOOLEAN_TO_NPVARIANT(set_pin_result, *result);
+    return true;
+  } else {
+    SetException("startDaemon: unexpected type for argument 1");
+    return false;
+  }
+}
+
+bool HostNPScriptObject::StartDaemon(const NPVariant* args,
+                                     uint32_t arg_count,
+                                     NPVariant* result) {
+  if (arg_count != 0) {
+    SetException("startDaemon: bad number of arguments");
+    return false;
+  }
+  bool start_result = daemon_controller_->Start();
+  BOOLEAN_TO_NPVARIANT(start_result, *result);
+  return true;
+}
+
+bool HostNPScriptObject::StopDaemon(const NPVariant* args,
+                                    uint32_t arg_count,
+                                    NPVariant* result) {
+  if (arg_count != 0) {
+    SetException("startDaemon: bad number of arguments");
+    return false;
+  }
+  bool stop_result = daemon_controller_->Stop();
+  BOOLEAN_TO_NPVARIANT(stop_result, *result);
+  return true;
 }
 
 void HostNPScriptObject::DisconnectInternal() {

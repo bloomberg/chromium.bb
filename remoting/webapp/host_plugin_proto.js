@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -25,6 +25,16 @@ remoting.HostPlugin.prototype.disconnect = function() {};
  *  @return {void} Nothing. */
 remoting.HostPlugin.prototype.localize = function(callback) {};
 
+/** @param {string} pin The new PIN.
+ *  @return {boolean} True if the PIN was changed successfully. */
+remoting.HostPlugin.prototype.setDaemonPin = function(pin) {};
+
+/** @return {boolean} True if successful (poll daemonState for completion). */
+remoting.HostPlugin.prototype.startDaemon = function() {};
+
+/** @return {void} Nothing. */
+remoting.HostPlugin.prototype.stopDaemon = function() {};
+
 /** @type {number} */ remoting.HostPlugin.prototype.state;
 
 /** @type {number} */ remoting.HostPlugin.prototype.STARTING;
@@ -39,6 +49,9 @@ remoting.HostPlugin.prototype.localize = function(callback) {};
 /** @type {number} */ remoting.HostPlugin.prototype.accessCodeLifetime;
 
 /** @type {string} */ remoting.HostPlugin.prototype.client;
+
+/** @type {number} The install/running state of the daemon process. */
+remoting.HostPlugin.prototype.daemonState;
 
 /** @type {function(boolean):void} */
 remoting.HostPlugin.prototype.onNatTraversalPolicyChanged;
