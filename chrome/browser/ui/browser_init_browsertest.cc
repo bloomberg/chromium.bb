@@ -474,3 +474,98 @@ IN_PROC_BROWSER_TEST_F(BrowserInitTest, UpdateWithTwoProfiles) {
   EXPECT_EQ(GURL(chrome::kChromeUINewTabURL),
             new_browser->GetWebContentsAt(0)->GetURL());
 }
+
+IN_PROC_BROWSER_TEST_F(BrowserInitTest, ProfilesWithoutPagesNotLaunched) {
+  Profile* default_profile = browser()->profile();
+
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+
+  // Create 4 more profiles.
+  FilePath dest_path1 = profile_manager->user_data_dir().Append(
+      FILE_PATH_LITERAL("New Profile 1"));
+  FilePath dest_path2 = profile_manager->user_data_dir().Append(
+      FILE_PATH_LITERAL("New Profile 2"));
+  FilePath dest_path3 = profile_manager->user_data_dir().Append(
+      FILE_PATH_LITERAL("New Profile 3"));
+  FilePath dest_path4 = profile_manager->user_data_dir().Append(
+      FILE_PATH_LITERAL("New Profile 4"));
+
+  Profile* profile_home1 = profile_manager->GetProfile(dest_path1);
+  ASSERT_TRUE(profile_home1);
+  Profile* profile_home2 = profile_manager->GetProfile(dest_path2);
+  ASSERT_TRUE(profile_home2);
+  Profile* profile_last = profile_manager->GetProfile(dest_path3);
+  ASSERT_TRUE(profile_last);
+  Profile* profile_urls = profile_manager->GetProfile(dest_path4);
+  ASSERT_TRUE(profile_urls);
+
+  // Set the profiles to open urls, open last visited pages or display the home
+  // page.
+  SessionStartupPref pref_home(SessionStartupPref::DEFAULT);
+  SessionStartupPref::SetStartupPref(profile_home1, pref_home);
+  SessionStartupPref::SetStartupPref(profile_home2, pref_home);
+
+  SessionStartupPref pref_last(SessionStartupPref::LAST);
+  SessionStartupPref::SetStartupPref(profile_last, pref_last);
+
+  std::vector<GURL> urls;
+  urls.push_back(ui_test_utils::GetTestUrl(
+      FilePath(FilePath::kCurrentDirectory),
+      FilePath(FILE_PATH_LITERAL("title1.html"))));
+
+  SessionStartupPref pref_urls(SessionStartupPref::URLS);
+  pref_urls.urls = urls;
+  SessionStartupPref::SetStartupPref(profile_urls, pref_urls);
+
+  // Close the browser.
+  browser()->window()->Close();
+
+  // Do a simple non-process-startup browser launch.
+  CommandLine dummy(CommandLine::NO_PROGRAM);
+
+  int return_code;
+  BrowserInit browser_init;
+  std::vector<Profile*> last_opened_profiles;
+  last_opened_profiles.push_back(profile_home1);
+  last_opened_profiles.push_back(profile_home2);
+  last_opened_profiles.push_back(profile_last);
+  last_opened_profiles.push_back(profile_urls);
+  browser_init.Start(dummy, profile_manager->user_data_dir(), profile_home1,
+                     last_opened_profiles, &return_code);
+
+
+  while (SessionRestore::IsRestoring(default_profile) ||
+         SessionRestore::IsRestoring(profile_home1) ||
+         SessionRestore::IsRestoring(profile_home2) ||
+         SessionRestore::IsRestoring(profile_last) ||
+         SessionRestore::IsRestoring(profile_urls))
+    MessageLoop::current()->RunAllPending();
+
+  Browser* new_browser = NULL;
+  // The last open profile (the profile_home1 in this case) will always be
+  // launched, even if it will open just the home page.
+  ASSERT_EQ(1u, BrowserList::GetBrowserCount(profile_home1));
+  new_browser = FindOneOtherBrowserForProfile(profile_home1, NULL);
+  ASSERT_TRUE(new_browser);
+  ASSERT_EQ(1, new_browser->tab_count());
+  EXPECT_EQ(GURL(chrome::kChromeUINewTabURL),
+            new_browser->GetWebContentsAt(0)->GetURL());
+
+  // profile_urls opened the urls.
+  ASSERT_EQ(1u, BrowserList::GetBrowserCount(profile_urls));
+  new_browser = FindOneOtherBrowserForProfile(profile_urls, NULL);
+  ASSERT_TRUE(new_browser);
+  ASSERT_EQ(1, new_browser->tab_count());
+  EXPECT_EQ(urls[0], new_browser->GetWebContentsAt(0)->GetURL());
+
+  // profile_last opened the last open pages.
+  ASSERT_EQ(1u, BrowserList::GetBrowserCount(profile_last));
+  new_browser = FindOneOtherBrowserForProfile(profile_last, NULL);
+  ASSERT_TRUE(new_browser);
+  ASSERT_EQ(1, new_browser->tab_count());
+  EXPECT_EQ(GURL(chrome::kChromeUINewTabURL),
+            new_browser->GetWebContentsAt(0)->GetURL());
+
+  // profile_home2 was not launched since it would've only opened the home page.
+  ASSERT_EQ(0u, BrowserList::GetBrowserCount(profile_home2));
+}
