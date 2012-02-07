@@ -3035,7 +3035,7 @@
    fun:_ZN20InProcessBrowserTest5SetUpEv
 }
 {
-   bug_75023
+   bug_75023a
    Memcheck:Leak
    fun:_Znw*
    fun:_ZN5views6Widget21OnNativeWidgetCreatedEv
@@ -3046,6 +3046,14 @@
    fun:_ZN25RenderViewHostTestHarness21CreateTestTabContentsEv
    fun:_ZN25RenderViewHostTestHarness5SetUpEv
    fun:_ZN19PasswordManagerTest5SetUpEv
+}
+{
+   bug_75023b
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN12_GLOBAL__N_126DefaultFocusManagerFactory18CreateFocusManagerEPN5views6WidgetE
+   fun:_ZN5views19FocusManagerFactory6CreateEPNS_6WidgetE
+   fun:_ZN5views6Widget21OnNativeWidgetCreatedEv
 }
 {
    bug_75051
