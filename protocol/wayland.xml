@@ -418,15 +418,39 @@
 
     <request name="set_fullscreen">
       <description summary="make the surface a fullscreen surface">
-	Map the surface as a fullscreen surface.  There are a number
-	of options here: on which output? if the surface size doesn't
-	match the output size, do we scale, change resolution, or add
-	black borders? is that something the client controls?  what
-	about transient surfaces, do they float on top of the
-	fullscreen? what if there's already a fullscreen surface on
-	the output, maybe you can only go fullscreen if you're active?
+	Map the surface as a fullscreen surface. On the output the
+	surface is assigned to. The client can use different fulllscreen
+	method to fix the size mismatch issue: default, scale, driver
+	and fill. And the framerate parameter is used for "driver" method,
+	to indicate the preferred framerate. framerate=0 means that the
+	app does not care about framerate
       </description>
+      <arg name="method" type="uint"/>
+      <arg name="framerate" type="uint"/>
+      <arg name="output" type="object" interface="wl_output"/>
     </request>
+
+    <enum name="fullscreen_method">
+      <description summary="different method to set the surface fullscreen">
+	Hints to indicate compositor how to deal with this fullscreen surface.
+	"default" means the client has no preference on fullscreen
+	          behavior, policies are determined by compositor.
+	"scale"   means the client prefers scaling by the compositor.
+	          Scaling would always preserve surface's aspect ratio.
+	          And the surface is centered.
+	"driver"  means the client wants to switch video mode to the
+	          smallest mode that can fit the client buffer. If the
+	          sizes do not match, black borders are added.
+	"fill"    means the client wants to add blackborders to the
+	          surface. This would be preferring 1:1 pixel mapping
+	          in the monitor native video mode. The surface is
+	          centered.
+      </description>
+      <entry name="default" value="0"/>
+      <entry name="scale" value="1"/>
+      <entry name="driver" value="2"/>
+      <entry name="fill" value="3"/>
+    </enum>
 
     <request name="set_popup">
       <description summary="make the surface a popup surface">
