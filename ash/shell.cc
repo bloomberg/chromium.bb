@@ -11,6 +11,7 @@
 #include "ash/app_list/app_list.h"
 #include "ash/ash_switches.h"
 #include "ash/drag_drop/drag_drop_controller.h"
+#include "ash/focus_cycler.h"
 #include "ash/ime/input_method_event_filter.h"
 #include "ash/launcher/launcher.h"
 #include "ash/shell_delegate.h"
@@ -328,6 +329,10 @@ void Shell::Init() {
   if (!command_line->HasSwitch(switches::kAuraNoShadows))
     shadow_controller_.reset(new internal::ShadowController());
 
+  focus_cycler_.reset(new internal::FocusCycler());
+  focus_cycler_->AddWidget(status_widget_);
+  focus_cycler_->AddWidget(launcher_->widget());
+
   // Force a layout.
   root_window->layout_manager()->OnWindowResized();
 
@@ -451,6 +456,12 @@ views::NonClientFrameView* Shell::CreateDefaultNonClientFrameView(
     return new internal::DialogFrameView;
   }
   return NULL;
+}
+
+void Shell::RotateFocus(Direction direction) {
+  focus_cycler_->RotateFocus(
+      direction == FORWARD ? internal::FocusCycler::FORWARD :
+                             internal::FocusCycler::BACKWARD);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

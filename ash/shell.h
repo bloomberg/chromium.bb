@@ -47,6 +47,7 @@ class ActivationController;
 class AcceleratorFilter;
 class AppList;
 class DragDropController;
+class FocusCycler;
 class InputMethodEventFilter;
 class RootWindowLayoutManager;
 class ShadowController;
@@ -71,6 +72,11 @@ class ASH_EXPORT Shell {
     MODE_COMPACT,
     MODE_MANAGED,
     MODE_OVERLAPPING,
+  };
+
+  enum Direction {
+    FORWARD,
+    BACKWARD
   };
 
   // A shell must be explicitly created so that it can call |Init()| with the
@@ -117,6 +123,9 @@ class ASH_EXPORT Shell {
   // Ash environment.
   views::NonClientFrameView* CreateDefaultNonClientFrameView(
       views::Widget* widget);
+
+  // Rotate focus through containers that can recieve focus.
+  void RotateFocus(Direction direction);
 
   AcceleratorController* accelerator_controller() {
     return accelerator_controller_.get();
@@ -193,6 +202,7 @@ class ASH_EXPORT Shell {
   scoped_ptr<PowerButtonController> power_button_controller_;
   scoped_ptr<VideoDetector> video_detector_;
   scoped_ptr<WindowCycleController> window_cycle_controller_;
+  scoped_ptr<internal::FocusCycler> focus_cycler_;
 
   // An event filter that pre-handles all key events to send them to an IME.
   scoped_ptr<internal::InputMethodEventFilter> input_method_filter_;

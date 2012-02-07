@@ -961,6 +961,7 @@ void BrowserView::RotatePaneFocus(bool forwards) {
   std::vector<views::AccessiblePaneView*> accessible_panes;
   GetAccessiblePanes(&accessible_panes);
   int pane_count = static_cast<int>(accessible_panes.size());
+  int special_index = -1;
 
   std::vector<views::View*> accessible_views(
       accessible_panes.begin(), accessible_panes.end());
@@ -987,6 +988,12 @@ void BrowserView::RotatePaneFocus(bool forwards) {
   if (focused_view && index >= pane_count)
     GetFocusManager()->StoreFocusedView();
 
+#if defined(OS_CHROMEOS) && defined(USE_AURA)
+  // Add the special panes to the rotation.
+  special_index = count;
+  ++count;
+#endif
+
   // Try to focus the next pane; if SetPaneFocusAndFocusDefault returns
   // false it means the pane didn't have any focusable controls, so skip
   // it and try the next one.
@@ -996,7 +1003,13 @@ void BrowserView::RotatePaneFocus(bool forwards) {
     else
       index = ((index - 1) + count) % count;
 
-    if (index < pane_count) {
+    if (index == special_index) {
+#if defined(OS_CHROMEOS) && defined(USE_AURA)
+      ash::Shell::GetInstance()->RotateFocus(
+          forwards ? ash::Shell::FORWARD : ash::Shell::BACKWARD);
+      break;
+#endif
+    } else if (index < pane_count) {
       if (accessible_panes[index]->SetPaneFocusAndFocusDefault())
         break;
     } else {
