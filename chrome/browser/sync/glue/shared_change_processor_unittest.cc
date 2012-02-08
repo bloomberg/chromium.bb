@@ -53,8 +53,14 @@ class SyncSharedChangeProcessorTest : public testing::Test {
         FROM_HERE,
         base::Bind(&SyncSharedChangeProcessorTest::TearDownDBSyncableService,
                    base::Unretained(this))));
-    db_thread_.Stop();
+    // This must happen before the DB thread is stopped since
+    // |shared_change_processor_| may post tasks to delete its members
+    // on the correct thread.
+    //
+    // TODO(akalin): Write deterministic tests for the destruction of
+    // |shared_change_processor_| on the UI and DB threads.
     shared_change_processor_ = NULL;
+    db_thread_.Stop();
   }
 
   // Connect |shared_change_processor_| on the DB thread.
@@ -63,7 +69,8 @@ class SyncSharedChangeProcessorTest : public testing::Test {
         BrowserThread::DB,
         FROM_HERE,
         base::Bind(&SyncSharedChangeProcessorTest::ConnectOnDBThread,
-                   base::Unretained(this))));
+                   base::Unretained(this),
+                   shared_change_processor_)));
   }
 
  private:
@@ -82,14 +89,17 @@ class SyncSharedChangeProcessorTest : public testing::Test {
     db_syncable_service_ = NULL;
   }
 
-  // Used by Connect().
-  void ConnectOnDBThread() {
+  // Used by Connect().  The SharedChangeProcessor is passed in
+  // because we modify |shared_change_processor_| on the main thread
+  // (in TearDown()).
+  void ConnectOnDBThread(
+      const scoped_refptr<SharedChangeProcessor>& shared_change_processor) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
     EXPECT_TRUE(
-        shared_change_processor_->Connect(&sync_factory_,
-                                          &sync_service_,
-                                          &sync_service_,
-                                          db_syncable_service_->AsWeakPtr()));
+        shared_change_processor->Connect(&sync_factory_,
+                                         &sync_service_,
+                                         &sync_service_,
+                                         db_syncable_service_->AsWeakPtr()));
   }
 
   MessageLoopForUI ui_loop_;

@@ -29,7 +29,9 @@ SharedChangeProcessor::~SharedChangeProcessor() {
   // deleted on |backend_loop_|.
   if (BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     if (backend_loop_.get()) {
-      backend_loop_->DeleteSoon(FROM_HERE, generic_change_processor_);
+      if (!backend_loop_->DeleteSoon(FROM_HERE, generic_change_processor_)) {
+        NOTREACHED();
+      }
     } else {
       DCHECK(!generic_change_processor_);
     }
