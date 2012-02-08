@@ -143,13 +143,6 @@ bool WebGraphicsContext3DCommandBufferImpl::MaybeInitializeGL() {
 
   TRACE_EVENT0("gpu", "WebGfxCtx3DCmdBfrImpl::MaybeInitializeGL");
 
-  // If the context is being initialized on something other than the main
-  // thread, then make sure the swap_client_ pointer is NULL so we don't
-  // accidentally dereference it.
-  GpuChannelHostFactory* factory = GpuChannelHostFactory::instance();
-  if (!factory || !factory->IsMainThread())
-    DCHECK(!swap_client_.get());
-
   // Convert WebGL context creation attributes into ContentGLContext / EGL size
   // requests.
   const int alpha_size = attributes_.alpha ? 8 : 0;
@@ -283,7 +276,7 @@ WebGLId WebGraphicsContext3DCommandBufferImpl::getPlatformTextureId() {
 void WebGraphicsContext3DCommandBufferImpl::prepareTexture() {
   // Copies the contents of the off-screen render target into the texture
   // used by the compositor.
-  if (swap_client_.get())
+  if (ShouldUseSwapClient())
     swap_client_->OnViewContextSwapBuffersPosted();
   context_->SwapBuffers();
   context_->Echo(base::Bind(
@@ -301,7 +294,7 @@ void WebGraphicsContext3DCommandBufferImpl::postSubBufferCHROMIUM(
     int x, int y, int width, int height) {
   // Same flow control as WebGraphicsContext3DCommandBufferImpl::prepareTexture
   // (see above).
-  if (swap_client_.get())
+  if (ShouldUseSwapClient())
     swap_client_->OnViewContextSwapBuffersPosted();
   gl_->PostSubBufferCHROMIUM(x, y, width, height);
   context_->Echo(base::Bind(
@@ -1112,10 +1105,15 @@ void WebGraphicsContext3DCommandBufferImpl::deleteTexture(WebGLId texture) {
   gl_->DeleteTextures(1, &texture);
 }
 
+bool WebGraphicsContext3DCommandBufferImpl::ShouldUseSwapClient() {
+  GpuChannelHostFactory* factory = GpuChannelHostFactory::instance();
+  return factory && factory->IsMainThread() && swap_client_.get();
+}
+
 void WebGraphicsContext3DCommandBufferImpl::OnSwapBuffersComplete() {
   typedef WebGraphicsContext3DSwapBuffersClient WGC3DSwapClient;
   // This may be called after tear-down of the RenderView.
-  if (swap_client_.get()) {
+  if (ShouldUseSwapClient()) {
     MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
         &WGC3DSwapClient::OnViewContextSwapBuffersComplete, swap_client_));
   }
@@ -1187,7 +1185,7 @@ void WebGraphicsContext3DCommandBufferImpl::OnContextLost(
   }
   if (attributes_.shareResources)
     ClearSharedContexts();
-  if (swap_client_.get())
+  if (ShouldUseSwapClient())
     swap_client_->OnViewContextSwapBuffersAborted();
 }
 

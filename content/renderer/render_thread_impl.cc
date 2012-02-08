@@ -704,8 +704,6 @@ base::WaitableEvent* RenderThreadImpl::GetShutDownEvent() {
 
 scoped_ptr<base::SharedMemory> RenderThreadImpl::AllocateSharedMemory(
     uint32 size) {
-  if (!IsMainThread())
-    return scoped_ptr<base::SharedMemory>();
   base::SharedMemoryHandle handle;
   if (!ChildThread::Send(new ChildProcessHostMsg_SyncAllocateSharedMemory(
       size,

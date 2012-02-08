@@ -192,7 +192,6 @@ CommandBufferProxy* GpuChannelHost::CreateViewCommandBuffer(
     const std::vector<int32>& attribs,
     const GURL& active_url,
     gfx::GpuPreference gpu_preference) {
-  DCHECK(factory_->IsMainThread());
 #if defined(ENABLE_GPU)
   AutoLock lock(context_lock_);
   // An error occurred. Need to get the host again to reinitialize it.

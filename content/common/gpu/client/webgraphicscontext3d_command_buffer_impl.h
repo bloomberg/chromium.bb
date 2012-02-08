@@ -495,6 +495,10 @@ class WebGraphicsContext3DCommandBufferImpl
   virtual void OnContextLost(ContentGLContext::ContextLostReason reason);
   virtual void OnErrorMessage(const std::string& message, int id);
 
+  // Check if we should call into the swap client. We can only do that on the
+  // main thread.
+  bool ShouldUseSwapClient();
+
   bool initialize_failed_;
 
   // The context we use for OpenGL rendering.

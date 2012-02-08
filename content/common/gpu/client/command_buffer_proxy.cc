@@ -100,9 +100,6 @@ void CommandBufferProxy::SetChannelErrorCallback(
 }
 
 bool CommandBufferProxy::Initialize() {
-  if (!channel_->factory()->IsMainThread())
-    return false;
-
   bool result;
   if (!Send(new GpuCommandBufferMsg_Initialize(route_id_, &result))) {
     LOG(ERROR) << "Could not send GpuCommandBufferMsg_Initialize.";
