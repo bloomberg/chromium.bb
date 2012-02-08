@@ -261,12 +261,11 @@ class AuraClipboard {
   void ReadCustomData(const string16& type, string16* result) const {
     result->clear();
     const ClipboardData* data = GetData();
-    if (!HasFormat(CUSTOM) ||
-        type != UTF8ToUTF16(data->custom_data_format()))
+    if (!HasFormat(CUSTOM))
       return;
 
-    *result = UTF8ToUTF16(std::string(data->custom_data_data(),
-        data->custom_data_len()));
+    ui::ReadCustomDataForType(data->custom_data_data(), data->custom_data_len(),
+        type, result);
   }
 
   // Reads bookmark from the data at the top of clipboard stack.
@@ -505,6 +504,12 @@ void Clipboard::ReadAvailableTypes(Buffer buffer, std::vector<string16>* types,
   }
   if (IsFormatAvailable(GetBitmapFormatType(), buffer))
     types->push_back(UTF8ToUTF16(GetBitmapFormatType().ToString()));
+
+  AuraClipboard* clipboard = GetClipboard();
+  if (clipboard->IsFormatAvailable(CUSTOM) && clipboard->GetData()) {
+    ui::ReadCustomDataTypes(clipboard->GetData()->custom_data_data(),
+        clipboard->GetData()->custom_data_len(), types);
+  }
 }
 
 void Clipboard::ReadText(Buffer buffer, string16* result) const {
