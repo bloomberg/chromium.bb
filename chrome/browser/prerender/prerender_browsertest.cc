@@ -194,7 +194,7 @@ class TestPrerenderContents : public PrerenderContents {
   virtual bool AddAliasURL(const GURL& url) OVERRIDE {
     // Prevent FINAL_STATUS_UNSUPPORTED_SCHEME when navigating to about:crash in
     // the PrerenderRendererCrash test.
-    if (url.spec() != chrome::kAboutCrashURL)
+    if (url.spec() != chrome::kChromeUICrashURL)
       return PrerenderContents::AddAliasURL(url);
     return true;
   }
@@ -1373,7 +1373,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderRendererCrash) {
   ASSERT_TRUE(GetPrerenderContents()->prerender_contents());
   GetPrerenderContents()->prerender_contents()->web_contents()->GetController().
       LoadURL(
-          GURL(chrome::kAboutCrashURL),
+          GURL(chrome::kChromeUICrashURL),
           content::Referrer(),
           content::PAGE_TRANSITION_TYPED,
           std::string());

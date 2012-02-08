@@ -27,8 +27,10 @@ static bool IsURLSameAsAnySiteInstance(const GURL& url) {
   if (url.SchemeIs(chrome::kJavaScriptScheme))
     return true;
 
-  return
-      content::GetContentClient()->browser()->IsURLSameAsAnySiteInstance(url);
+  return url == GURL(chrome::kChromeUICrashURL) ||
+         url == GURL(chrome::kChromeUIKillURL) ||
+         url == GURL(chrome::kChromeUIHangURL) ||
+         url == GURL(chrome::kChromeUIShorthangURL);
 }
 
 int32 SiteInstanceImpl::next_site_instance_id_ = 1;

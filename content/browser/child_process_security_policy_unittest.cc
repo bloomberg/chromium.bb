@@ -163,18 +163,9 @@ TEST_F(ChildProcessSecurityPolicyTest, AboutTest) {
   EXPECT_FALSE(p->CanRequestURL(kRendererID, GURL("about:CrASh")));
   EXPECT_FALSE(p->CanRequestURL(kRendererID, GURL("abOuT:cAChe")));
 
-  // These requests for about: pages should be denied.
-  p->GrantRequestURL(kRendererID, GURL(chrome::kTestGpuCleanURL));
-  EXPECT_FALSE(p->CanRequestURL(kRendererID, GURL(chrome::kTestGpuCleanURL)));
-
-  p->GrantRequestURL(kRendererID, GURL(chrome::kAboutCrashURL));
-  EXPECT_FALSE(p->CanRequestURL(kRendererID, GURL(chrome::kAboutCrashURL)));
-
-  p->GrantRequestURL(kRendererID, GURL(chrome::kTestCacheURL));
-  EXPECT_FALSE(p->CanRequestURL(kRendererID, GURL(chrome::kTestCacheURL)));
-
-  p->GrantRequestURL(kRendererID, GURL(chrome::kTestHangURL));
-  EXPECT_FALSE(p->CanRequestURL(kRendererID, GURL(chrome::kTestHangURL)));
+  // Requests for about: pages should be denied.
+  p->GrantRequestURL(kRendererID, GURL("about:crash"));
+  EXPECT_FALSE(p->CanRequestURL(kRendererID, GURL("about:crash")));
 
   // These requests for chrome:// pages should be granted.
   p->GrantRequestURL(kRendererID, GURL(chrome::kTestNewTabURL));

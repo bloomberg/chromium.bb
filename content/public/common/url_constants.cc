@@ -44,7 +44,14 @@ const char kViewSourceScheme[] = "view-source";
 const char kStandardSchemeSeparator[] = "://";
 
 const char kAboutBlankURL[] = "about:blank";
-const char kAboutCrashURL[] = "about:crash";
+const char kChromeUIBrowserCrashHost[] = "inducebrowsercrashforrealz";
+const char kChromeUICrashURL[] = "chrome://crash/";
+const char kChromeUIGpuCleanURL[] = "chrome://gpuclean";
+const char kChromeUIGpuCrashURL[] = "chrome://gpucrash";
+const char kChromeUIGpuHangURL[] = "chrome://gpuhang";
+const char kChromeUIHangURL[] = "chrome://hang/";
+const char kChromeUIKillURL[] = "chrome://kill/";
+const char kChromeUIShorthangURL[] = "chrome://shorthang/";
 
 const char kUnreachableWebDataURL[] = "chrome://chromewebdata/";
 

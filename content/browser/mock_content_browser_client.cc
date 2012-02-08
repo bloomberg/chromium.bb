@@ -53,10 +53,6 @@ bool MockContentBrowserClient::ShouldUseProcessPerSite(
   return false;
 }
 
-bool MockContentBrowserClient::IsURLSameAsAnySiteInstance(const GURL& url) {
-  return false;
-}
-
 bool MockContentBrowserClient::IsHandledURL(const GURL& url) {
   return false;
 }

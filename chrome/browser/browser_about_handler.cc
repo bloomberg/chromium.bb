@@ -12,10 +12,8 @@
 #include "base/string_util.h"
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/ui/browser_dialogs.h"
-#include "chrome/common/about_handler.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/gpu/gpu_process_host_ui_shim.h"
 #include "content/browser/sensors/sensors_provider.h"
 
 #if defined(USE_TCMALLOC)
@@ -104,10 +102,6 @@ bool WillHandleBrowserAboutURL(GURL* url,
   if (!url->SchemeIs(chrome::kChromeUIScheme))
     return false;
 
-  // Circumvent processing URLs that the renderer process will handle.
-  if (chrome_about_handler::WillHandle(*url))
-    return false;
-
   CommandLine* cl = CommandLine::ForCurrentProcess();
   bool enableUberPage = !cl->HasSwitch(switches::kDisableUberPage);
 
@@ -171,33 +165,6 @@ bool HandleNonNavigationAboutURL(const GURL& url) {
 #endif
 
 #endif  // OFFICIAL_BUILD
-
-  // Handle URLs to crash the browser or wreck the gpu process.
-  if (host == chrome::kChromeUIBrowserCrashHost) {
-    // Induce an intentional crash in the browser process.
-    CHECK(false);
-  }
-
-  if (host == chrome::kChromeUIGpuCleanHost) {
-    GpuProcessHostUIShim* shim = GpuProcessHostUIShim::GetOneInstance();
-    if (shim)
-      shim->SimulateRemoveAllContext();
-    return true;
-  }
-
-  if (host == chrome::kChromeUIGpuCrashHost) {
-    GpuProcessHostUIShim* shim = GpuProcessHostUIShim::GetOneInstance();
-    if (shim)
-      shim->SimulateCrash();
-    return true;
-  }
-
-  if (host == chrome::kChromeUIGpuHangHost) {
-    GpuProcessHostUIShim* shim = GpuProcessHostUIShim::GetOneInstance();
-    if (shim)
-      shim->SimulateHang();
-    return true;
-  }
 
 #if defined(OS_CHROMEOS)
   if (host == chrome::kChromeUIRotateHost) {

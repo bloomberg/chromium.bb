@@ -15,6 +15,7 @@
 #include "content/browser/in_process_webkit/session_storage_namespace.h"
 #include "content/browser/renderer_host/render_view_host.h"  // Temporary
 #include "content/browser/site_instance_impl.h"
+#include "content/browser/tab_contents/debug_urls.h"
 #include "content/browser/tab_contents/interstitial_page.h"
 #include "content/browser/tab_contents/navigation_entry_impl.h"
 #include "content/browser/tab_contents/tab_contents.h"
@@ -565,6 +566,9 @@ void NavigationControllerImpl::LoadURL(
     const content::Referrer& referrer,
     content::PageTransition transition,
     const std::string& extra_headers) {
+  if (content::HandleDebugURL(url, transition))
+    return;
+
   // The user initiated a load, we don't need to reload anymore.
   needs_reload_ = false;
 

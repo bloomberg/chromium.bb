@@ -18,10 +18,6 @@ namespace chrome {
 
 // Various URLs used in security policy testing.
 extern const char kTestCacheURL[];
-extern const char kTestHangURL[];
-
-// One of the few about pages that is not a WebUI page.
-extern const char kTestGpuCleanURL[];
 
 // The NTP is assumed in several tests to have the property that it is WebUI.
 extern const char kTestNewTabURL[];

@@ -325,6 +325,29 @@ static WebReferrerPolicy getReferrerPolicyFromRequest(
       WebKit::WebReferrerPolicyDefault;
 }
 
+static void MaybeHandleDebugURL(const GURL& url) {
+  if (!url.SchemeIs(chrome::kChromeUIScheme))
+    return;
+  if (url == GURL(chrome::kChromeUICrashURL)) {
+    // NOTE(shess): Crash directly rather than using NOTREACHED() so
+    // that the signature is easier to triage in crash reports.
+    volatile int* zero = NULL;
+    *zero = 0;
+
+    // Just in case the compiler decides the above is undefined and
+    // optimizes it away.
+    NOTREACHED();
+  } else if (url == GURL(chrome::kChromeUIKillURL)) {
+    base::KillProcess(base::GetCurrentProcessHandle(), 1, false);
+  } else if (url == GURL(chrome::kChromeUIHangURL)) {
+    for (;;) {
+      base::PlatformThread::Sleep(base::TimeDelta::FromSeconds(1));
+    }
+  } else if (url == GURL(chrome::kChromeUIShorthangURL)) {
+    base::PlatformThread::Sleep(base::TimeDelta::FromSeconds(20));
+  }
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 
 struct RenderViewImpl::PendingFileChooser {
@@ -791,6 +814,7 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
 }
 
 void RenderViewImpl::OnNavigate(const ViewMsg_Navigate_Params& params) {
+  MaybeHandleDebugURL(params.url);
   if (!webview())
     return;
 

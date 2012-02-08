@@ -75,10 +75,6 @@ bool ShellContentBrowserClient::ShouldUseProcessPerSite(
   return false;
 }
 
-bool ShellContentBrowserClient::IsURLSameAsAnySiteInstance(const GURL& url) {
-  return false;
-}
-
 bool ShellContentBrowserClient::IsHandledURL(const GURL& url) {
   return false;
 }

@@ -110,10 +110,6 @@ class ContentBrowserClient {
   virtual bool ShouldUseProcessPerSite(BrowserContext* browser_context,
                                        const GURL& effective_url) = 0;
 
-  // Returns whether a specified URL is to be considered the same as any
-  // SiteInstance.
-  virtual bool IsURLSameAsAnySiteInstance(const GURL& url) = 0;
-
   // Returns whether a specified URL is handled by the embedder's internal
   // protocol handlers.
   virtual bool IsHandledURL(const GURL& url) = 0;

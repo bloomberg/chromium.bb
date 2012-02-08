@@ -505,7 +505,7 @@ class PageLoadTest : public UITest {
       EXPECT_EQ(0, metrics.plugin_crash_count);
 
       // Go to "about:crash"
-      NavigateToURLLogResult(chrome::kAboutCrashURL,
+      NavigateToURLLogResult(chrome::kChromeUICrashURL,
                              log_file,
                              &metrics,
                              g_continuous_load,

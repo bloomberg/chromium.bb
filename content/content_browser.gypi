@@ -621,6 +621,8 @@
     'browser/system_message_window_win.h',
     'browser/tab_contents/drag_utils_gtk.cc',
     'browser/tab_contents/drag_utils_gtk.h',
+    'browser/tab_contents/debug_urls.cc',
+    'browser/tab_contents/debug_urls.h',
     'browser/tab_contents/interstitial_page.cc',
     'browser/tab_contents/interstitial_page.h',
     'browser/tab_contents/navigation_controller_impl.cc',

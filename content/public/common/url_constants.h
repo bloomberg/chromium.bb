@@ -10,6 +10,7 @@
 
 #include "content/common/content_export.h"
 
+// TODO(jam): rename this to content.
 namespace chrome {
 
 // Null terminated list of schemes that are savable. This function can be
@@ -41,7 +42,14 @@ CONTENT_EXPORT extern const char kStandardSchemeSeparator[];
 
 // About URLs (including schemes).
 CONTENT_EXPORT extern const char kAboutBlankURL[];
-CONTENT_EXPORT extern const char kAboutCrashURL[];
+CONTENT_EXPORT extern const char kChromeUIBrowserCrashHost[];
+CONTENT_EXPORT extern const char kChromeUICrashURL[];
+CONTENT_EXPORT extern const char kChromeUIGpuCleanURL[];
+CONTENT_EXPORT extern const char kChromeUIGpuCrashURL[];
+CONTENT_EXPORT extern const char kChromeUIGpuHangURL[];
+CONTENT_EXPORT extern const char kChromeUIHangURL[];
+CONTENT_EXPORT extern const char kChromeUIKillURL[];
+CONTENT_EXPORT extern const char kChromeUIShorthangURL[];
 
 // Special URL used to start a navigation to an error page.
 extern const char kUnreachableWebDataURL[];

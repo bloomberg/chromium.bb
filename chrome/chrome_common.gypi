@@ -53,8 +53,6 @@
         '<(DEPTH)/webkit/support/webkit_support.gyp:glue',
       ],
       'sources': [
-        'common/about_handler.cc',
-        'common/about_handler.h',
         'common/all_messages.h',
         'common/attrition_experiments.h',
         'common/auto_start_linux.cc',

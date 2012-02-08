@@ -285,7 +285,7 @@ TEST_F(ResourceDispatcherTest, FAILS_CrossSiteAfterCrash) {
 #if defined(OS_WIN) || defined(USE_LINUX_BREAKPAD)
   expected_crashes_ = 1;
 #endif
-  ASSERT_TRUE(tab->NavigateToURLAsync(GURL(chrome::kAboutCrashURL)));
+  ASSERT_TRUE(tab->NavigateToURLAsync(GURL(chrome::kChromeUICrashURL)));
   // Wait for browser to notice the renderer crash.
   base::PlatformThread::Sleep(TestTimeouts::action_timeout());
 

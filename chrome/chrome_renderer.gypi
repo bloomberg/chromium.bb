@@ -144,8 +144,6 @@
         'renderer/resources/extensions/types_custom_bindings.js',
         'renderer/resources/extensions/web_request_custom_bindings.js',
         'renderer/resources/extensions/windows_custom_bindings.js',
-        'renderer/about_handler.cc',
-        'renderer/about_handler.h',
         'renderer/chrome_content_renderer_client.cc',
         'renderer/chrome_content_renderer_client.h',
         'renderer/chrome_ppapi_interfaces.cc',

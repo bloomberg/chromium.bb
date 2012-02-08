@@ -71,7 +71,7 @@ IN_PROC_BROWSER_TEST_F(InProcessBrowserTest,
       GURL(chrome::kAboutBlankURL), content::Referrer(),
       CURRENT_TAB, content::PAGE_TRANSITION_TYPED, false));
   browser()->OpenURL(content::OpenURLParams(
-      GURL(chrome::kAboutCrashURL), content::Referrer(),
+      GURL(chrome::kChromeUICrashURL), content::Referrer(),
       CURRENT_TAB, content::PAGE_TRANSITION_TYPED, false));
   observer.Wait();
 

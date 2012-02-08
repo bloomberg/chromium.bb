@@ -17,7 +17,6 @@
 #include "chrome/common/render_messages.h"
 #include "chrome/common/thumbnail_score.h"
 #include "chrome/common/url_constants.h"
-#include "chrome/renderer/about_handler.h"
 #include "chrome/renderer/chrome_render_process_observer.h"
 #include "chrome/renderer/content_settings_observer.h"
 #include "chrome/renderer/extensions/extension_dispatcher.h"
@@ -365,7 +364,6 @@ void ChromeRenderViewObserver::Navigate(const GURL& url) {
   // event (including tab reload).
   if (chrome_render_process_observer_)
     chrome_render_process_observer_->ExecutePendingClearCache();
-  AboutHandler::MaybeHandle(url);
 }
 
 void ChromeRenderViewObserver::OnSetClientSidePhishingDetection(

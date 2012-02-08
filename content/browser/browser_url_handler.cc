@@ -59,6 +59,15 @@ static bool ReverseViewSource(GURL* url,
   return true;
 }
 
+static bool HandleDebugUrl(GURL* url,
+                           content::BrowserContext* browser_context) {
+  // Circumvent processing URLs that the renderer process will handle.
+  return *url == GURL(chrome::kChromeUICrashURL) ||
+         *url == GURL(chrome::kChromeUIHangURL) ||
+         *url == GURL(chrome::kChromeUIKillURL) ||
+         *url == GURL(chrome::kChromeUIShorthangURL);
+}
+
 // static
 BrowserURLHandler* BrowserURLHandler::GetInstance() {
   return Singleton<BrowserURLHandler>::get();
@@ -77,6 +86,8 @@ BrowserURLHandler::URLHandler BrowserURLHandler::null_handler() {
 }
 
 BrowserURLHandler::BrowserURLHandler() {
+  AddHandlerPair(&HandleDebugUrl, BrowserURLHandler::null_handler());
+
   content::GetContentClient()->browser()->BrowserURLHandlerCreated(this);
 
   // view-source:

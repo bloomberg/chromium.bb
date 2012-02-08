@@ -98,7 +98,7 @@ TEST_F(MetricsServiceTest, DISABLED_CrashRenderers) {
     defined(GOOGLE_CHROME_BUILD)
     expected_crashes_ = 1;
 #endif
-    ASSERT_TRUE(tab->NavigateToURLAsync(GURL(chrome::kAboutCrashURL)));
+    ASSERT_TRUE(tab->NavigateToURLAsync(GURL(chrome::kChromeUICrashURL)));
   }
 
   // Give the browser a chance to notice the crashed tab.

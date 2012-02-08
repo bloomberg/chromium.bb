@@ -27,7 +27,6 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
                                        const GURL& effective_url) OVERRIDE;
   virtual GURL GetEffectiveURL(content::BrowserContext* browser_context,
                                const GURL& url) OVERRIDE;
-  virtual bool IsURLSameAsAnySiteInstance(const GURL& url) OVERRIDE;
   virtual bool IsHandledURL(const GURL& url) OVERRIDE;
   virtual bool IsSuitableHost(content::RenderProcessHost* process_host,
                               const GURL& url) OVERRIDE;

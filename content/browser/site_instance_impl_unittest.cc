@@ -82,11 +82,6 @@ class SiteInstanceTestBrowserClient : public content::MockContentBrowserClient {
     return false;
   }
 
-  virtual bool IsURLSameAsAnySiteInstance(const GURL& url) OVERRIDE {
-    return url == GURL(kSameAsAnyInstanceURL) ||
-           url == GURL(chrome::kAboutCrashURL);
-  }
-
   virtual bool IsSuitableHost(content::RenderProcessHost* process_host,
                               const GURL& site_url) OVERRIDE {
     return (privileged_process_id_ == process_host->GetID()) ==
@@ -366,8 +361,6 @@ TEST_F(SiteInstanceTest, IsSameWebSite) {
   GURL url_foo_https = GURL("https://foo/a.html");
   GURL url_foo_port = GURL("http://foo:8080/a.html");
   GURL url_javascript = GURL("javascript:alert(1);");
-  GURL url_crash = GURL(chrome::kAboutCrashURL);
-  GURL url_browser_specified = GURL(kSameAsAnyInstanceURL);
 
   // Same scheme and port -> same site.
   EXPECT_TRUE(SiteInstance::IsSameWebSite(NULL, url_foo, url_foo2));
@@ -383,12 +376,6 @@ TEST_F(SiteInstanceTest, IsSameWebSite) {
   EXPECT_TRUE(SiteInstance::IsSameWebSite(NULL, url_javascript, url_foo));
   EXPECT_TRUE(SiteInstance::IsSameWebSite(NULL, url_javascript, url_foo_https));
   EXPECT_TRUE(SiteInstance::IsSameWebSite(NULL, url_javascript, url_foo_port));
-
-  // The URLs specified by the ContentBrowserClient should also be treated as
-  // same site.
-  EXPECT_TRUE(SiteInstance::IsSameWebSite(NULL, url_crash, url_foo));
-  EXPECT_TRUE(SiteInstance::IsSameWebSite(NULL, url_browser_specified,
-                                          url_foo));
 }
 
 // Test to ensure that there is only one SiteInstance per site in a given
