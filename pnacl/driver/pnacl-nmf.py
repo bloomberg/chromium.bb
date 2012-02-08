@@ -164,6 +164,13 @@ def main(argv):
   if len(needed) == 0:
     GenerateStaticNMF(pexe_file, output_file)
   else:
+    # runnable_ld.so is going to ask for libgcc_s.so.1 even though it does
+    # not show up in the pexe's NEEDED metadata, so it won't show up
+    # in the NMF and on the App's webserver.
+    #
+    # For now, hack in libgcc_s.so.1.
+    # http://code.google.com/p/nativeclient/issues/detail?id=2582
+    needed.append('libgcc_s.so.1')
     GenerateDynamicNMF(pexe_file, needed, output_file)
   DriverClose(output_file)
   return 0
