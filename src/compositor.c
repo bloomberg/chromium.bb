@@ -1668,19 +1668,16 @@ input_device_attach(struct wl_client *client,
 	if (device->sprite)
 		weston_surface_damage_below(device->sprite);
 
-	if (!buffer_resource) {
-		if (device->sprite) {
-			destroy_surface(&device->sprite->surface.resource);
-			device->sprite = NULL;
-		}
+	if (!buffer_resource && device->sprite->output) {
+		wl_list_remove(&device->sprite->link);
+		device->sprite->visual = WESTON_NONE_VISUAL;
+		device->sprite->output = NULL;
 		return;
 	}
 
-	if (!device->sprite) {
-		device->sprite = weston_surface_create(compositor);
+	if (!device->sprite->output)
 		wl_list_insert(&compositor->surface_list,
 			       &device->sprite->link);
-	}
 
 	buffer = buffer_resource->data;
 	device->hotspot_x = x;
@@ -1725,7 +1722,7 @@ weston_input_device_init(struct weston_input_device *device,
 	wl_display_add_global(ec->wl_display, &wl_input_device_interface,
 			      device, bind_input_device);
 
-	device->sprite = NULL;
+	device->sprite = weston_surface_create(ec);
 
 	device->compositor = ec;
 	device->hotspot_x = 16;
