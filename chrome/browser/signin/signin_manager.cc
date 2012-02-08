@@ -252,19 +252,21 @@ void SigninManager::OnTokenAuthFailure(const GoogleServiceAuthError& error) {
 
 void SigninManager::OnClientLoginFailure(const GoogleServiceAuthError& error) {
   DCHECK(!browser_sync::IsUsingOAuth());
-  last_login_auth_error_ = error;
+  // If we got a bad ASP, prompt for an ASP again by forcing another TWO_FACTOR
+  // error.
+  bool invalid_gaia = error.state() ==
+      GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS;
+  last_login_auth_error_ = (invalid_gaia && had_two_factor_error_) ?
+      GoogleServiceAuthError(GoogleServiceAuthError::TWO_FACTOR) : error;
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_GOOGLE_SIGNIN_FAILED,
       content::Source<Profile>(profile_),
-      content::Details<const GoogleServiceAuthError>(&error));
+      content::Details<const GoogleServiceAuthError>(&last_login_auth_error_));
 
   // We don't sign-out if the password was valid and we're just dealing with
   // a second factor error, and we don't sign out if we're dealing with
   // an invalid access code (again, because the password was valid).
-  bool invalid_gaia = error.state() ==
-      GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS;
-  if (error.state() == GoogleServiceAuthError::TWO_FACTOR ||
-      (had_two_factor_error_ && invalid_gaia)) {
+  if (last_login_auth_error_.state() == GoogleServiceAuthError::TWO_FACTOR) {
     had_two_factor_error_ = true;
     return;
   }
