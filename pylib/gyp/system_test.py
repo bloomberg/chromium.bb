@@ -58,13 +58,6 @@ def TestLinkerSupportsThreads(cc_command='cc'):
                       env={'cc': cc_command})
 
 
-def TestLinkerSupportsICF(cc_command='cc'):
-  """Test whether the linker supports identical code folding."""
-  return TestCommands(['%(cc)s -Wl,--icf=safe test.c'],
-                      files={'test.c': 'int main(){}'},
-                      env={'cc': cc_command})
-
-
 def main():
   # Run the various test functions and print the results.
   def RunTest(description, function, **kwargs):
