@@ -140,7 +140,7 @@ deps_os = {
         'src/third_party/lighttpd':
             Var('git_url') + '/chromium/deps/lighttpd.git@9dfa55d15937a688a92cbf2b7a8621b0927d06eb',
         'src/third_party/nss':
-            Var('git_url') + '/chromium/deps/nss.git@501780b2ee93463696b5684304ae9d76116dd15b',
+            Var('git_url') + '/chromium/deps/nss.git@2437d7e50c5654025e0d04ae0b8aa6bb009988b9',
         'src/third_party/pdfsqueeze':
             Var('git_url') + '/external/pdfsqueeze.git@a2470ff9fcc9d399a1c0ac58e8b1df6f46143801',
         'src/third_party/swig/mac':
