@@ -1,8 +1,8 @@
 AC_PREREQ([2.64])
-AC_INIT([wayland-demos],
-        [0.1],
-        [https://bugs.freedesktop.org/enter_bug.cgi?product=wayland],
-        [wayland-demos],
+AC_INIT([weston],
+        [0.89],
+        [https://bugs.freedesktop.org/enter_bug.cgi?product=weston],
+        [weston],
         [http://wayland.freedesktop.org/])
 
 AC_CONFIG_HEADERS([config.h])
