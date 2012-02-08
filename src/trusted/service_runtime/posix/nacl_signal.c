@@ -220,7 +220,7 @@ static int DispatchToUntrustedHandler(struct NaClAppThread *natp,
   natp->user.exception_flag = 1;
 
   if (natp->user.exception_stack == 0) {
-    new_stack_ptr = regs->stack_ptr;
+    new_stack_ptr = regs->stack_ptr - NACL_STACK_RED_ZONE;
   } else {
     new_stack_ptr = natp->user.exception_stack;
   }

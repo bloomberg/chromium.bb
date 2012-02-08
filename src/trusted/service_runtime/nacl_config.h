@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -180,6 +180,7 @@
 #  define NACL_STACK_ALIGN_MASK   (0xf)
 #  define NACL_STACK_GETS_ARG     (1)
 #  define NACL_STACK_PAD_BELOW_ALIGN (4)
+#  define NACL_STACK_RED_ZONE     (0)
 
 # elif NACL_BUILD_SUBARCH == 64
 #  define NACL_USERRET_FIX        (0x8)
@@ -193,6 +194,7 @@
 #  define NACL_STACK_ALIGN_MASK   (0xf)
 #  define NACL_STACK_GETS_ARG     (0)
 #  define NACL_STACK_PAD_BELOW_ALIGN (8)
+#  define NACL_STACK_RED_ZONE     (128)
 # else /* NACL_BUILD_SUBARCH */
 #  error Unknown platform!
 # endif /* NACL_BUILD_SUBARCH */
@@ -223,6 +225,7 @@
 # define NACL_STACK_ALIGN_MASK    (0x7)
 # define NACL_STACK_GETS_ARG      (0)
 # define NACL_STACK_PAD_BELOW_ALIGN (0)
+# define NACL_STACK_RED_ZONE      (0)
 
 /*
  * NOTE: Used by various assembler files, needs to be

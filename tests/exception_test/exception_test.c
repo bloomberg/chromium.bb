@@ -49,6 +49,20 @@ char *main_stack;
 
 #define STACK_ALIGNMENT 16
 
+/*
+ * The x86-64 ABI's red zone is 128 bytes of scratch space below %rsp
+ * which a function may use without it being clobbered by a signal
+ * handler.
+ *
+ * Note that if we are running the pure-bitcode version of the test on
+ * x86-64, the exact value of kRedZoneSize does not matter.
+ */
+#if defined(__x86_64__)
+const int kRedZoneSize = 128;
+#else
+const int kRedZoneSize = 0;
+#endif
+
 struct AlignedType {
   int blah;
 } __attribute__((aligned(16)));
@@ -98,7 +112,7 @@ void exception_handler(int eip, int esp) {
   char local_var;
   if (g_registered_stack == NULL) {
     /* Check that our current stack is just below the saved stack pointer. */
-    stack_top = (char *) esp;
+    stack_top = (char *) esp - kRedZoneSize;
     assert(stack_top - kMaxStackFrameSize < &local_var);
     assert(&local_var < stack_top);
   } else {
