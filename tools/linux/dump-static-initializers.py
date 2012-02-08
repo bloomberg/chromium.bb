@@ -162,32 +162,34 @@ def main():
   if opts.diffable:
     files = sorted(files)
   for filename, addr, size in files:
-    if size == 2:
-      # gcc generates a two-byte 'repz retq' initializer when there is nothing
-      # to do.  jyasskin tells me this is fixed in gcc 4.6.
-      continue
-
     file_count += 1
-
     ref_output = []
-    qualified_filename = QualifyFilenameAsProto(filename)
-    for ref in ExtractSymbolReferences(binary, addr, addr+size):
-      initializer_count += 1
 
-      ref = demangler.Demangle(ref)
-      if qualified_filename == filename:
-        qualified_filename = QualifyFilename(filename, ref)
-      if ref in NOTES:
-        ref_output.append('  %s [%s]' % (ref, NOTES[ref]))
-      else:
-        ref_output.append('  ' + ref)
+    qualified_filename = QualifyFilenameAsProto(filename)
+
+    if size == 2:
+      # gcc generates a two-byte 'repz retq' initializer when there is a
+      # ctor even when the ctor is empty.  This is fixed in gcc 4.6, but
+      # Android uses gcc 4.4.
+      ref_output.append('[empty ctor, but it still has cost on gcc <4.6]')
+    else:
+      for ref in ExtractSymbolReferences(binary, addr, addr+size):
+        initializer_count += 1
+
+        ref = demangler.Demangle(ref)
+        if qualified_filename == filename:
+          qualified_filename = QualifyFilename(filename, ref)
+        if ref in NOTES:
+          ref_output.append('%s [%s]' % (ref, NOTES[ref]))
+        else:
+          ref_output.append(ref)
 
     if opts.diffable:
       print '\n'.join('# ' + qualified_filename + r for r in ref_output)
     else:
       print '%s (initializer offset 0x%x size 0x%x)' % (qualified_filename,
                                                         addr, size)
-      print '\n'.join(ref_output) + '\n'
+      print ''.join('  %s\n' % r for r in ref_output)
 
   if opts.diffable:
     print '#',
