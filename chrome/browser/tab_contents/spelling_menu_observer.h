@@ -101,6 +101,11 @@ class SpellingMenuObserver : public RenderViewContextMenuObserver {
   // A timer used for loading animation.
   base::RepeatingTimer<SpellingMenuObserver> animation_timer_;
 
+  // Flag indicating whether online spelling correction service is enabled. When
+  // this variable is true and we right-click a misspelled word, we send a
+  // JSON-RPC request to the service and retrieve suggestions.
+  bool integrate_spelling_service_;
+
   DISALLOW_COPY_AND_ASSIGN(SpellingMenuObserver);
 };
 

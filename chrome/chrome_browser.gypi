@@ -5268,6 +5268,8 @@
                 ['include', '^browser/ui/gtk/omnibox/omnibox_view_gtk.cc'],
                 ['include', '^browser/ui/gtk/omnibox/omnibox_view_gtk.h'],
                 ['include', '^browser/ui/gtk/simple_message_box_gtk.cc'],
+                ['include', '^browser/ui/views/confirm_bubble_view.cc'],
+                ['include', '^browser/ui/views/confirm_bubble_view.h'],
                 ['include', '^browser/ui/views/omnibox/omnibox_view_views.cc'],
                 ['include', '^browser/ui/views/omnibox/omnibox_view_views.h'],
                 ['exclude', '^browser/extensions/extension_tts_api_linux.cc'],

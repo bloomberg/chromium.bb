@@ -5,7 +5,6 @@
 #include "chrome/browser/tab_contents/spelling_menu_observer.h"
 
 #include "base/bind.h"
-#include "base/command_line.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -16,9 +15,11 @@
 #include "chrome/browser/spellchecker/spellcheck_platform_mac.h"
 #include "chrome/browser/spellchecker/spelling_service_client.h"
 #include "chrome/browser/tab_contents/render_view_context_menu.h"
+#include "chrome/browser/tab_contents/spelling_bubble_model.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/renderer_host/render_view_host.h"
+#include "content/browser/renderer_host/render_widget_host_view.h"
 #include "grit/generated_resources.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebTextCheckingResult.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -29,7 +30,8 @@ using content::BrowserThread;
 SpellingMenuObserver::SpellingMenuObserver(RenderViewContextMenuProxy* proxy)
     : proxy_(proxy),
       loading_frame_(0),
-      succeeded_(false) {
+      succeeded_(false),
+      integrate_spelling_service_(false) {
 }
 
 SpellingMenuObserver::~SpellingMenuObserver() {
@@ -118,20 +120,13 @@ void SpellingMenuObserver::InitMenu(const ContextMenuParams& params) {
     proxy_->AddMenuItem(IDC_SPELLCHECK_ADD_TO_DICTIONARY,
         l10n_util::GetStringUTF16(IDS_CONTENT_CONTEXT_ADD_TO_DICTIONARY));
 
-#if defined(OS_WIN)
-    const CommandLine* command_line = CommandLine::ForCurrentProcess();
-    bool experimental_spell_check_features =
-        command_line->HasSwitch(switches::kExperimentalSpellcheckerFeatures);
-    if (experimental_spell_check_features) {
-      bool integrate_spelling_service =
-          profile->GetPrefs()->GetBoolean(prefs::kSpellCheckUseSpellingService);
-      int spelling_message = integrate_spelling_service ?
-          IDS_CONTENT_CONTEXT_SPELLING_STOP_ASKING_GOOGLE :
-          IDS_CONTENT_CONTEXT_SPELLING_ASK_GOOGLE;
-      proxy_->AddMenuItem(IDC_CONTENT_CONTEXT_SPELLING_TOGGLE,
-                          l10n_util::GetStringUTF16(spelling_message));
-    }
-#endif
+    integrate_spelling_service_ =
+        profile->GetPrefs()->GetBoolean(prefs::kSpellCheckUseSpellingService);
+    int spelling_message = integrate_spelling_service_ ?
+        IDS_CONTENT_CONTEXT_SPELLING_STOP_ASKING_GOOGLE :
+        IDS_CONTENT_CONTEXT_SPELLING_ASK_GOOGLE;
+    proxy_->AddMenuItem(IDC_CONTENT_CONTEXT_SPELLING_TOGGLE,
+                        l10n_util::GetStringUTF16(spelling_message));
 
     proxy_->AddSeparator();
   }
@@ -146,6 +141,7 @@ bool SpellingMenuObserver::IsCommandIdSupported(int command_id) {
     case IDC_SPELLCHECK_ADD_TO_DICTIONARY:
     case IDC_CONTENT_CONTEXT_NO_SPELLING_SUGGESTIONS:
     case IDC_CONTENT_CONTEXT_SPELLING_SUGGESTION:
+    case IDC_CONTENT_CONTEXT_SPELLING_TOGGLE:
       return true;
 
     default:
@@ -170,6 +166,9 @@ bool SpellingMenuObserver::IsCommandIdEnabled(int command_id) {
 
     case IDC_CONTENT_CONTEXT_SPELLING_SUGGESTION:
       return succeeded_;
+
+    case IDC_CONTENT_CONTEXT_SPELLING_TOGGLE:
+      return true;
 
     default:
       return false;
@@ -217,6 +216,25 @@ void SpellingMenuObserver::ExecuteCommand(int command_id) {
 #if defined(OS_MACOSX)
     spellcheck_mac::AddWord(misspelled_word_);
 #endif
+  }
+
+  if (command_id == IDC_CONTENT_CONTEXT_SPELLING_TOGGLE) {
+    // When a user chooses the "Ask Google for spelling suggestions" item, we
+    // show a bubble to confirm it. On the other hand, when a user chooses the
+    // "Stop asking Google for spelling suggestions" item, we directly update
+    // the profile and stop integrating the spelling service immediately.
+    if (!integrate_spelling_service_) {
+      RenderViewHost* rvh = proxy_->GetRenderViewHost();
+      gfx::Rect rect = rvh->view()->GetViewBounds();
+      ConfirmBubbleModel::Show(rvh->view()->GetNativeView(),
+                               gfx::Point(rect.CenterPoint().x(), rect.y()),
+                               new SpellingBubbleModel(proxy_->GetProfile()));
+    } else {
+      Profile* profile = proxy_->GetProfile();
+      if (profile)
+        profile->GetPrefs()->SetBoolean(prefs::kSpellCheckUseSpellingService,
+                                        false);
+    }
   }
 }
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -50,9 +50,6 @@ class SpellCheckerSubMenuObserver : public RenderViewContextMenuObserver {
 
   // Whether spellchecking is enabled in the focused element or not.
   bool spellcheck_enabled_;
-
-  // Whether we integrate the spelling service to Chrome.
-  bool integrate_spelling_service_;
 
   // The radio items representing languages available for spellchecking.
   int language_group_;
