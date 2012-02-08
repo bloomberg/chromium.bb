@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,10 +8,9 @@
 
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/message_loop_proxy.h"
 #include "base/synchronization/lock.h"
-#include "base/threading/thread_checker.h"
 #include "chrome/browser/sync/api/sync_change_processor.h"
 #include "chrome/browser/sync/api/sync_error.h"
 #include "chrome/browser/sync/engine/model_safe_worker.h"
@@ -46,8 +45,7 @@ class UnrecoverableErrorHandler;
 //
 // We use virtual methods so that we can use mock's in testing.
 class SharedChangeProcessor
-    : public base::RefCountedThreadSafe<SharedChangeProcessor>,
-      public base::ThreadChecker {
+    : public base::RefCountedThreadSafe<SharedChangeProcessor> {
  public:
   // Create an uninitialized SharedChangeProcessor (to be later connected).
   SharedChangeProcessor();
@@ -103,7 +101,12 @@ class SharedChangeProcessor
   mutable base::Lock monitor_lock_;
   bool disconnected_;
 
-  scoped_ptr<GenericChangeProcessor> generic_change_processor_;
+  // The loop that all methods except the constructor, destructor, and
+  // Disconnect() should be called on.  Set in Connect().
+  scoped_refptr<base::MessageLoopProxy> backend_loop_;
+
+  // Used only on |backend_loop_|.
+  GenericChangeProcessor* generic_change_processor_;
 
   DISALLOW_COPY_AND_ASSIGN(SharedChangeProcessor);
 };

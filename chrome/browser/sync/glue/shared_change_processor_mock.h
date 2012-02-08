@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,21 +18,24 @@ class SharedChangeProcessorMock : public SharedChangeProcessor {
   SharedChangeProcessorMock();
 
   MOCK_METHOD4(Connect, bool(
-      ProfileSyncComponentsFactory* sync_factory,
-      ProfileSyncService* sync_service,
-      UnrecoverableErrorHandler* error_handler,
-      const base::WeakPtr<SyncableService>& local_service));
+      ProfileSyncComponentsFactory*,
+      ProfileSyncService*,
+      UnrecoverableErrorHandler*,
+      const base::WeakPtr<SyncableService>&));
   MOCK_METHOD0(Disconnect, bool());
   MOCK_METHOD2(ProcessSyncChanges,
-               SyncError(const tracked_objects::Location& from_here,
-                         const SyncChangeList& change_list));
+               SyncError(const tracked_objects::Location&,
+                         const SyncChangeList&));
   MOCK_METHOD2(GetSyncDataForType,
-               SyncError(syncable::ModelType type,
-                         SyncDataList* current_sync_data));
+               SyncError(syncable::ModelType,
+                         SyncDataList*));
   MOCK_METHOD2(SyncModelHasUserCreatedNodes,
-               bool(syncable::ModelType type,
-                    bool* has_nodes));
-  MOCK_METHOD1(CryptoReadyIfNecessary, bool(syncable::ModelType type));
+               bool(syncable::ModelType,
+                    bool*));
+  MOCK_METHOD1(CryptoReadyIfNecessary, bool(syncable::ModelType));
+  MOCK_METHOD3(ActivateDataType,
+               void(ProfileSyncService*, syncable::ModelType,
+                    browser_sync::ModelSafeGroup));
 
  protected:
   virtual ~SharedChangeProcessorMock();
