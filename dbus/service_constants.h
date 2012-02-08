@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium OS Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium OS Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -62,6 +62,17 @@ const char kCryptohomeInstallAttributesIsFirstInstall[] =
 const char kSignalAsyncCallStatus[] = "AsyncCallStatus";
 const char kSignalTpmInitStatus[] = "TpmInitStatus";
 const char kSignalCleanupUsersRemoved[] = "CleanupUsersRemoved";
+// Error code
+enum MountError {
+  MOUNT_ERROR_NONE = 0,
+  MOUNT_ERROR_FATAL = 1 << 0,
+  MOUNT_ERROR_KEY_FAILURE = 1 << 1,
+  MOUNT_ERROR_MOUNT_POINT_BUSY = 1 << 2,
+  MOUNT_ERROR_TPM_COMM_ERROR = 1 << 3,
+  MOUNT_ERROR_TPM_DEFEND_LOCK = 1 << 4,
+  MOUNT_ERROR_USER_DOES_NOT_EXIST = 1 << 5,
+  MOUNT_ERROR_RECREATED = 1 << 31,
+};
 }  // namespace cryptohome
 
 namespace imageburn {
