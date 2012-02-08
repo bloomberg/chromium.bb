@@ -231,6 +231,32 @@ weston_surface_set_color(struct weston_surface *surface,
 }
 
 static void
+surface_to_global_float(struct weston_surface *surface,
+			int32_t sx, int32_t sy, GLfloat *x, GLfloat *y)
+{
+	if (surface->transform.enabled) {
+		struct weston_vector v = { { sx, sy, 0.0f, 1.0f } };
+
+		weston_matrix_transform(&surface->transform.matrix, &v);
+
+		if (fabsf(v.f[3]) < 1e-6) {
+			fprintf(stderr, "warning: numerical instability in "
+				"weston_surface_to_global(), divisor = %g\n",
+				v.f[3]);
+			*x = 0;
+			*y = 0;
+			return;
+		}
+
+		*x = v.f[0] / v.f[3];
+		*y = v.f[1] / v.f[3];
+	} else {
+		*x = sx + surface->geometry.x;
+		*y = sy + surface->geometry.y;
+	}
+}
+
+static void
 weston_surface_damage_below_noupdate(struct weston_surface *surface)
 {
 	struct weston_surface *below;
@@ -341,32 +367,6 @@ weston_surface_update_transform(struct weston_surface *surface)
 	} else {
 		if (weston_surface_update_transform_enable(surface) < 0)
 			weston_surface_update_transform_disable(surface);
-	}
-}
-
-static void
-surface_to_global_float(struct weston_surface *surface,
-			int32_t sx, int32_t sy, GLfloat *x, GLfloat *y)
-{
-	if (surface->transform.enabled) {
-		struct weston_vector v = { { sx, sy, 0.0f, 1.0f } };
-
-		weston_matrix_transform(&surface->transform.matrix, &v);
-
-		if (fabsf(v.f[3]) < 1e-6) {
-			fprintf(stderr, "warning: numerical instability in "
-				"weston_surface_to_global(), divisor = %g\n",
-				v.f[3]);
-			*x = 0;
-			*y = 0;
-			return;
-		}
-
-		*x = v.f[0] / v.f[3];
-		*y = v.f[1] / v.f[3];
-	} else {
-		*x = sx + surface->geometry.x;
-		*y = sy + surface->geometry.y;
 	}
 }
 
