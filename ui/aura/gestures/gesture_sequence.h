@@ -14,6 +14,14 @@ namespace aura {
 class TouchEvent;
 class GestureEvent;
 
+// Gesture state.
+enum GestureState {
+  GS_NO_GESTURE,
+  GS_PENDING_SYNTHETIC_CLICK,
+  GS_SCROLL,
+  GS_PINCH,
+};
+
 // A GestureSequence recognizes gestures from touch sequences.
 class GestureSequence {
  public:

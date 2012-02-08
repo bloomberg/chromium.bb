@@ -166,8 +166,6 @@ GestureSequence::~GestureSequence() {
 GestureSequence::Gestures* GestureSequence::ProcessTouchEventForGesture(
     const TouchEvent& event,
     ui::TouchStatus status) {
-  // TODO(sad): All the state transitions should happen in this function.
-  // http://crbug.com/113146
   if (status != ui::TOUCH_STATUS_UNKNOWN)
     return NULL;  // The event was consumed by a touch sequence.
 
@@ -188,15 +186,19 @@ GestureSequence::Gestures* GestureSequence::ProcessTouchEventForGesture(
   switch (Signature(state_, event.touch_id(), event.type(), false)) {
     case GST_NO_GESTURE_FIRST_PRESSED:
       TouchDown(event, point, gestures.get());
+      set_state(GS_PENDING_SYNTHETIC_CLICK);
       break;
     case GST_PENDING_SYNTHETIC_CLICK_FIRST_RELEASED:
       if (Click(event, point, gestures.get()))
         point.UpdateForTap();
+      set_state(GS_NO_GESTURE);
       break;
     case GST_PENDING_SYNTHETIC_CLICK_FIRST_MOVED:
     case GST_PENDING_SYNTHETIC_CLICK_FIRST_STATIONARY:
-      if (InClickOrScroll(event, point, gestures.get()))
+      if (InClickOrScroll(event, point, gestures.get())) {
         point.UpdateForScroll();
+        set_state(GS_SCROLL);
+      }
       break;
     case GST_PENDING_SYNTHETIC_CLICK_FIRST_CANCELLED:
       NoGesture(event, point, gestures.get());
@@ -211,12 +213,14 @@ GestureSequence::Gestures* GestureSequence::ProcessTouchEventForGesture(
     case GST_SCROLL_SECOND_RELEASED:
     case GST_SCROLL_SECOND_CANCELLED:
       ScrollEnd(event, point, gestures.get());
+      set_state(GS_NO_GESTURE);
       break;
 
     case GST_PENDING_SYNTHETIC_CLICK_SECOND_PRESSED:
     case GST_SCROLL_FIRST_PRESSED:
     case GST_SCROLL_SECOND_PRESSED:
       PinchStart(event, point, gestures.get());
+      set_state(GS_PINCH);
       break;
     case GST_PINCH_FIRST_MOVED:
     case GST_PINCH_SECOND_MOVED:
@@ -230,6 +234,10 @@ GestureSequence::Gestures* GestureSequence::ProcessTouchEventForGesture(
     case GST_PINCH_FIRST_CANCELLED:
     case GST_PINCH_SECOND_CANCELLED:
       PinchEnd(event, point, gestures.get());
+
+      // Once pinch ends, it should still be possible to scroll with the
+      // remaining finger on the screen.
+      set_state(GS_SCROLL);
       break;
   }
 
@@ -373,23 +381,16 @@ bool GestureSequence::Click(const TouchEvent& event,
     AppendClickGestureEvent(point, gestures);
     if (point.IsInDoubleClickWindow(event))
       AppendDoubleClickGestureEvent(point, gestures);
-    set_state(GS_NO_GESTURE);
     return true;
   }
-  set_state(GS_NO_GESTURE);
   return false;
 }
 
 bool GestureSequence::InClickOrScroll(const TouchEvent& event,
     const GesturePoint& point, Gestures* gestures) {
-  if (point.IsInClickWindow(event)) {
-    set_state(GS_PENDING_SYNTHETIC_CLICK);
-    return false;
-  }
   if (point.IsInScrollWindow(event)) {
     AppendScrollGestureBegin(point, point.last_touch_position(), gestures);
     AppendScrollGestureUpdate(point, point.last_touch_position(), gestures);
-    set_state(GS_SCROLL);
     return true;
   }
   return false;
@@ -412,8 +413,7 @@ bool GestureSequence::NoGesture(const TouchEvent&,
 bool GestureSequence::TouchDown(const TouchEvent& event,
     const GesturePoint& point, Gestures* gestures) {
   AppendTapDownGestureEvent(point, gestures);
-  set_state(GS_PENDING_SYNTHETIC_CLICK);
-  return false;
+  return true;
 }
 
 bool GestureSequence::ScrollEnd(const TouchEvent& event,
@@ -425,8 +425,7 @@ bool GestureSequence::ScrollEnd(const TouchEvent& event,
     AppendScrollGestureEnd(point, point.last_touch_position(), gestures,
         0.f, 0.f);
   }
-  Reset();
-  return false;
+  return true;
 }
 
 bool GestureSequence::PinchStart(const TouchEvent& event,
@@ -443,7 +442,6 @@ bool GestureSequence::PinchStart(const TouchEvent& event,
     AppendScrollGestureBegin(point, center, gestures);
   }
 
-  set_state(GS_PINCH);
   return true;
 }
 
@@ -475,13 +473,9 @@ bool GestureSequence::PinchEnd(const TouchEvent& event,
   AppendPinchGestureEnd(points_[0], points_[1],
       distance / pinch_distance_start_, gestures);
 
-  // Once pinch ends, it should still be possible to scroll with the remaining
-  // finger on the screen.
-  set_state(GS_SCROLL);
-
   pinch_distance_start_ = 0;
   pinch_distance_current_ = 0;
-  return false;
+  return true;
 }
 
 }  // namespace aura

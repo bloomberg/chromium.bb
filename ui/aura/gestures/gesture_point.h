@@ -12,14 +12,6 @@
 namespace aura {
 class TouchEvent;
 
-// Gesture state.
-enum GestureState {
-  GS_NO_GESTURE,
-  GS_PENDING_SYNTHETIC_CLICK,
-  GS_SCROLL,
-  GS_PINCH,
-};
-
 // A GesturePoint represents a single touch-point/finger during a gesture
 // recognition process.
 class GesturePoint {
