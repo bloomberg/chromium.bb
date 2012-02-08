@@ -16,7 +16,6 @@ bool HandleDebugURL(const GURL& url, content::PageTransition transition) {
   if (base_transition != content::PAGE_TRANSITION_TYPED)
     return false;
 
-  // Handle URLs to crash the browser or wreck the gpu process.
   if (url.host() == chrome::kChromeUIBrowserCrashHost) {
     // Induce an intentional crash in the browser process.
     CHECK(false);
