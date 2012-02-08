@@ -1,5 +1,6 @@
 /*
  * Copyright © 2008 Kristian Høgsberg
+ * Copyright © 2012 Intel Corporation
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -518,7 +519,7 @@ load_image(const char *filename)
 {
 	cairo_surface_t *surface;
 	static const unsigned char png_header[] = { 0x89, 'P', 'N', 'G' };
-	static const unsigned char jpeg_header[] = { 0xff, 0xd8, 0xff, 0xe0 };
+	static const unsigned char jpeg_header[] = { 0xff, 0xd8 };
 	unsigned char header[4];
 	FILE *fp;
 
@@ -528,9 +529,9 @@ load_image(const char *filename)
 
 	fread(header, sizeof header, 1, fp);
 	rewind(fp);
-	if (memcmp(header, png_header, sizeof header) == 0)
+	if (memcmp(header, png_header, sizeof png_header) == 0)
 		surface = load_png(fp);
-	else if (memcmp(header, jpeg_header, sizeof header) == 0)
+	else if (memcmp(header, jpeg_header, sizeof jpeg_header) == 0)
 		surface = load_jpeg(fp);
 	else {
 		fprintf(stderr, "unrecognized file header for %s: "
