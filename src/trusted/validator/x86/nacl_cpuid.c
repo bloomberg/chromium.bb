@@ -450,7 +450,6 @@ void GetCPUFeatures(NaClCPUData* data, CPUFeatures *cpuf) {
 void NaClCPUDataGet(NaClCPUData* data) {
   data->_has_CPUID = asm_HasCPUID();
   CacheCPUVersionID(data);
-  CacheCPUVersionID(data);
   CacheCPUFeatureVector(data);
   CacheCPUXCRVector(data);
   CacheGetCPUIDString(data);
