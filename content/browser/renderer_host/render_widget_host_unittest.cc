@@ -428,13 +428,10 @@ TEST_F(RenderWidgetHostTest, ResizeThenCrash) {
 // Tests setting custom background
 TEST_F(RenderWidgetHostTest, Background) {
 #if !defined(OS_MACOSX)
-  scoped_ptr<RenderWidgetHostView> view(
-      RenderWidgetHostView::CreateViewForWidget(host_.get()));
-#if defined(USE_AURA)
-  // TODO(derat): Call this on all platforms: http://crbug.com/102450.
-  static_cast<RenderWidgetHostViewAura*>(view.get())->InitAsChild(NULL);
-#endif
-  host_->SetView(view.get());
+  RenderWidgetHostView* view =
+      RenderWidgetHostView::CreateViewForWidget(host_.get());
+  view->InitAsChild(NULL);
+  host_->SetView(view);
 
   // Create a checkerboard background to test with.
   gfx::CanvasSkia canvas(gfx::Size(4, 4), true);
@@ -472,6 +469,7 @@ TEST_F(RenderWidgetHostTest, Background) {
   // renderer -- if not, then maybe the test doesn't apply?).
 #endif
 
+  view->Destroy();
 #else
   // TODO(port): Mac does not have gfx::Canvas. Maybe we can just change this
   // test to use SkCanvas directly?

@@ -341,6 +341,7 @@ void RenderWidgetHostViewAura::RenderViewGone(base::TerminationStatus status,
 
 void RenderWidgetHostViewAura::Destroy() {
   delete window_;
+  window_ = NULL;
 }
 
 void RenderWidgetHostViewAura::SetTooltipText(const string16& tooltip_text) {
