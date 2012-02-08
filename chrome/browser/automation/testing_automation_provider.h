@@ -1454,6 +1454,12 @@ class TestingAutomationProvider : public AutomationProvider,
   void GetEnterprisePolicyInfo(DictionaryValue* args,
                                IPC::Message* reply_message);
 
+  // Accessibility.
+  void EnableSpokenFeedback(DictionaryValue* args, IPC::Message* reply_message);
+
+  void IsSpokenFeedbackEnabled(DictionaryValue* args,
+                               IPC::Message* reply_message);
+
   // Time.
   void GetTimeInfo(Browser* browser, base::DictionaryValue* args,
                    IPC::Message* reply_message);

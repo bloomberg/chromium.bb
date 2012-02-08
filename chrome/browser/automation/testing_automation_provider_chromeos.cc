@@ -12,6 +12,7 @@
 #include "chrome/browser/automation/automation_provider_json.h"
 #include "chrome/browser/automation/automation_provider_observers.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/accessibility/accessibility_util.h"
 #include "chrome/browser/chromeos/audio/audio_handler.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
@@ -24,6 +25,7 @@
 #include "chrome/browser/chromeos/login/login_display_host.h"
 #include "chrome/browser/chromeos/login/screen_locker.h"
 #include "chrome/browser/chromeos/login/webui_login_display.h"
+#include "chrome/browser/chromeos/login/webui_login_display_host.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/options/take_photo_dialog.h"
 #include "chrome/browser/chromeos/proxy_cros_settings_parser.h"
@@ -37,6 +39,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/dialog_style.h"
 #include "chrome/browser/ui/views/window.h"
+#include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/common/pref_names.h"
 #include "net/base/network_change_notifier.h"
 #include "policy/policy_constants.h"
@@ -997,6 +1000,45 @@ void TestingAutomationProvider::GetEnterprisePolicyInfo(
   return_value->Set("user_recommended_policies",
       CreateDictionaryWithPolicies(user_cloud_policy,
           policy::POLICY_LEVEL_RECOMMENDED));
+  reply.SendSuccess(return_value.get());
+}
+
+void TestingAutomationProvider::EnableSpokenFeedback(
+    DictionaryValue* args, IPC::Message* reply_message) {
+  AutomationJSONReply reply(this, reply_message);
+  scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
+  bool enabled;
+  if (!args->GetBoolean("enabled", &enabled)) {
+    reply.SendError("Invalid or missing args.");
+    return;
+  }
+  const UserManager* user_manager = UserManager::Get();
+  if (!user_manager) {
+    reply.SendError("No user manager!");
+    return;
+  }
+
+  if (user_manager->user_is_logged_in()) {
+    chromeos::accessibility::EnableSpokenFeedback(enabled, NULL);
+  } else {
+    chromeos::ExistingUserController* controller =
+        chromeos::ExistingUserController::current_controller();
+    chromeos::WebUILoginDisplayHost* webui_login_display_host =
+        static_cast<chromeos::WebUILoginDisplayHost*>(
+            controller->login_display_host());
+    chromeos::accessibility::EnableSpokenFeedback(
+        enabled, webui_login_display_host->GetOobeUI()->web_ui());
+  }
+
+  reply.SendSuccess(return_value.get());
+}
+
+void TestingAutomationProvider::IsSpokenFeedbackEnabled(
+    DictionaryValue* args, IPC::Message* reply_message) {
+  AutomationJSONReply reply(this, reply_message);
+  scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
+  return_value->SetBoolean("spoken_feedback",
+                           chromeos::accessibility::IsSpokenFeedbackEnabled());
   reply.SendSuccess(return_value.get());
 }
 

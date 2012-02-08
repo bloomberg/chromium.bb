@@ -2465,6 +2465,11 @@ void TestingAutomationProvider::SendJSONRequest(int handle,
   handler_map["EnrollEnterpriseDevice"] =
       &TestingAutomationProvider::EnrollEnterpriseDevice;
 
+  handler_map["EnableSpokenFeedback"] =
+      &TestingAutomationProvider::EnableSpokenFeedback;
+  handler_map["IsSpokenFeedbackEnabled"] =
+      &TestingAutomationProvider::IsSpokenFeedbackEnabled;
+
   handler_map["GetTimeInfo"] = &TestingAutomationProvider::GetTimeInfo;
   handler_map["SetTimezone"] = &TestingAutomationProvider::SetTimezone;
 
