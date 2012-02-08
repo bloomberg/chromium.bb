@@ -440,7 +440,7 @@ WebPreferences TabContents::GetWebkitPrefs(RenderViewHost* rvh,
       url.SchemeIs(chrome::kChromeUIScheme) ||
       (url.SchemeIs(chrome::kAboutScheme) &&
        url.spec() != chrome::kAboutBlankURL)) &&
-      command_line.HasSwitch(switches::kAllowWebUICompositing)) {
+      !command_line.HasSwitch(switches::kAllowWebUICompositing)) {
     prefs.accelerated_compositing_enabled = false;
     prefs.accelerated_2d_canvas_enabled = false;
   }
