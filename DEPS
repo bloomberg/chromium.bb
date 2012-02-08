@@ -34,7 +34,7 @@ vars = {
   "libphonenumber_revision": "425",
   "libvpx_revision": "119942",
   "lss_revision": "9",
-  "ffmpeg_revision": "120671",
+  "ffmpeg_revision": "120865",
   "sfntly_revision": "118",
   "skia_revision": "3138",
   # Three lines of non-changing comments so that
