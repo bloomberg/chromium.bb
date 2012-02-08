@@ -220,11 +220,6 @@ class BrowserInit {
     // politely nag the user about it.
     void AddBadFlagsInfoBarIfNecessary(TabContentsWrapper* tab);
 
-    // If DNS based certificate checking has been enabled then we show a
-    // warning infobar.
-    void AddDNSCertProvenanceCheckingWarningInfoBarIfNecessary(
-        TabContentsWrapper* tab);
-
     // If the user is using an operating system that we have deprecated
     // support for and will no longer provide updates, warn the user
     // about it.

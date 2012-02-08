@@ -5338,11 +5338,6 @@ Because search results are requested even while you're typing your query, your d
         You are using an unsupported command-line flag: <ph name="BAD_FLAG">$1<ex>--no-sandbox</ex></ph>. Stability and security will suffer.
       </message>
 
-      <!-- Monoscope warning info bar -->
-      <message name="IDS_DNS_CERT_PROVENANCE_CHECKING_WARNING_MESSAGE" desc="Message shown when the user has DNS certificate provenance checking enabled. This message is followed by a 'Learn more' link.">
-        You have DNS certificate provenance checking enabled. This may result in private information being sent to Google.
-      </message>
-
       <!-- Pepper Broker Info bar -->
       <message name="IDS_PEPPER_BROKER_MESSAGE" desc="Message shown when a pepper plugin wants to launch its broker. This message is followed by a 'Learn more' link.">
         The <ph name="PEPPER_PLUGIN_NAME">$1<ex>Shockwave Flash</ex></ph> plugin on <ph name="PEPPER_PLUGIN_DOMAIN">$2<ex>example.com</ex></ph> wants to access your computer."

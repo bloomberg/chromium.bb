@@ -80,7 +80,6 @@ extern const char kEnableAccessibilityLogging[];
 CONTENT_EXPORT extern const char kEnableCompositingForFixedPosition[];
 CONTENT_EXPORT extern const char kEnableDeferred2dCanvas[];
 extern const char kEnableCompositeToTexture[];
-CONTENT_EXPORT extern const char kEnableDNSCertProvenanceChecking[];
 CONTENT_EXPORT extern const char kEnableDeviceMotion[];
 extern const char kEnableFastback[];
 CONTENT_EXPORT extern const char kDisableFullScreen[];

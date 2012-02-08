@@ -229,11 +229,6 @@ const char kEnableDeferred2dCanvas[]        = "enable-deferred-2d-canvas";
 // Enables compositing to texture instead of display.
 const char kEnableCompositeToTexture[]      = "enable-composite-to-texture";
 
-// Enable DNS side checking of certificates. Still experimental, should only
-// be used by developers at the current time.
-const char kEnableDNSCertProvenanceChecking[] =
-     "enable-dns-cert-provenance-checking";
-
 // Enables device motion events.
 const char kEnableDeviceMotion[]            = "enable-device-motion";
 

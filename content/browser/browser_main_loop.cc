@@ -264,10 +264,6 @@ void BrowserMainLoop::EarlyInitialization() {
 
   if (parsed_command_line_.HasSwitch(switches::kEnableSSLCachedInfo))
     net::SSLConfigService::EnableCachedInfo();
-  if (parsed_command_line_.HasSwitch(
-          switches::kEnableDNSCertProvenanceChecking)) {
-    net::SSLConfigService::EnableDNSCertProvenanceChecking();
-  }
 
   // TODO(abarth): Should this move to InitializeNetworkOptions?  This doesn't
   // seem dependent on SSL initialization().

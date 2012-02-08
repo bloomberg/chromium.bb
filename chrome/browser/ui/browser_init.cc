@@ -1247,7 +1247,6 @@ void BrowserInit::LaunchWithProfile::AddInfoBarsIfNecessary(Browser* browser) {
   TabContentsWrapper* tab_contents = browser->GetSelectedTabContentsWrapper();
   AddCrashedInfoBarIfNecessary(browser, tab_contents);
   AddBadFlagsInfoBarIfNecessary(tab_contents);
-  AddDNSCertProvenanceCheckingWarningInfoBarIfNecessary(tab_contents);
   AddObsoleteSystemInfoBarIfNecessary(tab_contents);
 }
 
@@ -1346,24 +1345,6 @@ bool LearnMoreInfoBar::LinkClicked(WindowOpenDisposition disposition) {
       false);
   owner()->web_contents()->OpenURL(params);
   return false;
-}
-
-// This is the page which provides information on DNS certificate provenance
-// checking.
-void BrowserInit::LaunchWithProfile::
-    AddDNSCertProvenanceCheckingWarningInfoBarIfNecessary(
-        TabContentsWrapper* tab) {
-  if (!command_line_.HasSwitch(switches::kEnableDNSCertProvenanceChecking))
-    return;
-
-  const char* kLearnMoreURL =
-      "http://dev.chromium.org/dnscertprovenancechecking";
-  string16 message = l10n_util::GetStringUTF16(
-      IDS_DNS_CERT_PROVENANCE_CHECKING_WARNING_MESSAGE);
-  tab->infobar_tab_helper()->AddInfoBar(
-      new LearnMoreInfoBar(tab->infobar_tab_helper(),
-                           message,
-                           GURL(kLearnMoreURL)));
 }
 
 void BrowserInit::LaunchWithProfile::AddObsoleteSystemInfoBarIfNecessary(
