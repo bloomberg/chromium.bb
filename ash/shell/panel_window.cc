@@ -4,6 +4,7 @@
 
 #include "ash/shell/panel_window.h"
 
+#include "ash/wm/panel_frame_view.h"
 #include "ash/wm/toplevel_frame_view.h"
 #include "base/utf_string_conversions.h"
 #include "ui/aura/window.h"
@@ -75,10 +76,7 @@ bool PanelWindow::CanMaximize() const {
 }
 
 views::NonClientFrameView* PanelWindow::CreateNonClientFrameView() {
-  // TODO(stevenjb): Implement a custom frame view for panels.
-  // For now, use the default frame view (views::CustomFrameView)
-  // which implements close and resize for us.
-  return NULL;
+  return new PanelFrameView();
 }
 
 }  // namespace ash
