@@ -359,11 +359,6 @@ enum NotificationType {
   // RenderViewHost and may be a Null Value.
   NOTIFICATION_EXECUTE_JAVASCRIPT_RESULT,
 
-  // Sent when a renderer process is notified of new v8 heap statistics. The
-  // source is the ID of the renderer process, and the details are a
-  // V8HeapStatsDetails object.
-  NOTIFICATION_RENDERER_V8_HEAP_STATS_COMPUTED,
-
   // Notification from WebContents that we have received a response from the
   // renderer in response to a dom automation controller action. The source is
   // the RenderViewHost, and hte details is a DomOperationNotificationDetails.

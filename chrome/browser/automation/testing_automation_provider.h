@@ -887,6 +887,11 @@ class TestingAutomationProvider : public AutomationProvider,
                       base::DictionaryValue* args,
                       IPC::Message* reply_message);
 
+  // Gets the current FPS associated with a renderer process view.
+  void GetFPS(Browser* browser,
+              base::DictionaryValue* args,
+              IPC::Message* reply_message);
+
   // Waits for all views to stop loading or a modal dialog to become active.
   void WaitForAllViewsToStopLoading(base::DictionaryValue* args,
                                     IPC::Message* reply_message);

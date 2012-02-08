@@ -2941,7 +2941,7 @@ V8HeapStatsObserver::V8HeapStatsObserver(
       renderer_id_(renderer_id) {
   registrar_.Add(
       this,
-      content::NOTIFICATION_RENDERER_V8_HEAP_STATS_COMPUTED,
+      chrome::NOTIFICATION_RENDERER_V8_HEAP_STATS_COMPUTED,
       content::NotificationService::AllSources());
 }
 
@@ -2951,7 +2951,7 @@ void V8HeapStatsObserver::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  DCHECK(type == content::NOTIFICATION_RENDERER_V8_HEAP_STATS_COMPUTED);
+  DCHECK(type == chrome::NOTIFICATION_RENDERER_V8_HEAP_STATS_COMPUTED);
 
   base::ProcessId updated_renderer_id =
       *(content::Source<base::ProcessId>(source).ptr());
@@ -2969,6 +2969,53 @@ void V8HeapStatsObserver::Observe(
   return_value->SetInteger("v8_memory_used",
                            v8_heap_details->v8_memory_used());
 
+  if (automation_) {
+    AutomationJSONReply(automation_, reply_message_.release())
+        .SendSuccess(return_value.get());
+  }
+  delete this;
+}
+
+FPSObserver::FPSObserver(
+    AutomationProvider* automation,
+    IPC::Message* reply_message,
+    base::ProcessId renderer_id,
+    int routing_id)
+    : automation_(automation->AsWeakPtr()),
+      reply_message_(reply_message),
+      renderer_id_(renderer_id),
+      routing_id_(routing_id) {
+  registrar_.Add(
+      this,
+      chrome::NOTIFICATION_RENDERER_FPS_COMPUTED,
+      content::NotificationService::AllSources());
+}
+
+FPSObserver::~FPSObserver() {}
+
+void FPSObserver::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
+  DCHECK(type == chrome::NOTIFICATION_RENDERER_FPS_COMPUTED);
+
+  base::ProcessId updated_renderer_id =
+      *(content::Source<base::ProcessId>(source).ptr());
+  // Only return information for the renderer ID we're interested in.
+  if (renderer_id_ != updated_renderer_id)
+    return;
+
+  ChromeRenderMessageFilter::FPSDetails* fps_details =
+      content::Details<ChromeRenderMessageFilter::FPSDetails>(details).ptr();
+  // Only return information for the routing id of the host render view we're
+  // interested in.
+  if (routing_id_ != fps_details->routing_id())
+    return;
+
+  scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
+  return_value->SetInteger("renderer_id", updated_renderer_id);
+  return_value->SetInteger("routing_id", fps_details->routing_id());
+  return_value->SetDouble("fps", fps_details->fps());
   if (automation_) {
     AutomationJSONReply(automation_, reply_message_.release())
         .SendSuccess(return_value.get());

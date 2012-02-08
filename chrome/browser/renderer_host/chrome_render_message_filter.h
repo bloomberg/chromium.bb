@@ -35,6 +35,18 @@ class ChromeRenderMessageFilter : public content::BrowserMessageFilter {
                             net::URLRequestContextGetter* request_context);
 
   // Notification detail classes.
+  class FPSDetails {
+   public:
+    FPSDetails(int routing_id, float fps)
+        : routing_id_(routing_id),
+          fps_(fps) {}
+    int routing_id() const { return routing_id_; }
+    float fps() const { return fps_; }
+   private:
+    int routing_id_;
+    float fps_;
+  };
+
   class V8HeapStatsDetails {
    public:
     V8HeapStatsDetails(size_t v8_memory_allocated,

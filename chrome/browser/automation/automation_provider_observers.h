@@ -1782,7 +1782,7 @@ class ProcessInfoObserver : public MemoryDetails {
   DISALLOW_COPY_AND_ASSIGN(ProcessInfoObserver);
 };
 
-// Observes when the Task Manager has been notified of new v8 heap statistics.
+// Observes when new v8 heap statistics are computed for a renderer process.
 class V8HeapStatsObserver : public content::NotificationObserver {
  public:
   V8HeapStatsObserver(AutomationProvider* automation,
@@ -1801,6 +1801,29 @@ class V8HeapStatsObserver : public content::NotificationObserver {
   base::ProcessId renderer_id_;
 
   DISALLOW_COPY_AND_ASSIGN(V8HeapStatsObserver);
+};
+
+// Observes when a new FPS value is computed for a renderer process.
+class FPSObserver : public content::NotificationObserver {
+ public:
+  FPSObserver(AutomationProvider* automation,
+              IPC::Message* reply_message,
+              base::ProcessId renderer_id,
+              int routing_id);
+  virtual ~FPSObserver();
+
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details);
+
+ private:
+  content::NotificationRegistrar registrar_;
+  base::WeakPtr<AutomationProvider> automation_;
+  scoped_ptr<IPC::Message> reply_message_;
+  base::ProcessId renderer_id_;
+  int routing_id_;
+
+  DISALLOW_COPY_AND_ASSIGN(FPSObserver);
 };
 
 // Manages the process of creating a new Profile and opening a new browser with

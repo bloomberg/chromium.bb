@@ -3343,6 +3343,28 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     }
     return self._GetResultFromJSONRequest(cmd_dict, windex=windex)
 
+  def GetFPS(self, tab_index=0, windex=0):
+    """Returns the current FPS associated with the renderer process for a tab.
+
+    FPS is the rendered frames per second.
+
+    Args:
+      tab_index: The tab index, default is 0.
+      window_index: The window index, default is 0.
+
+    Returns:
+      A dictionary containing FPS info.
+      Example:
+        { 'renderer_id': 23567,
+          'routing_id': 1,
+          'fps': 29.404298782348633 }
+    """
+    cmd_dict = {  # Prepare command for the json interface.
+      'command': 'GetFPS',
+      'tab_index': tab_index,
+    }
+    return self._GetResultFromJSONRequest(cmd_dict, windex=windex)
+
   def KillRendererProcess(self, pid):
     """Kills the given renderer process.
 

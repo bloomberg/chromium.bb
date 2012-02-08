@@ -2619,6 +2619,8 @@ void TestingAutomationProvider::SendJSONRequest(int handle,
 
   browser_handler_map["GetV8HeapStats"] =
       &TestingAutomationProvider::GetV8HeapStats;
+  browser_handler_map["GetFPS"] =
+      &TestingAutomationProvider::GetFPS;
 #if defined(OS_CHROMEOS)
   browser_handler_map["CaptureProfilePhoto"] =
       &TestingAutomationProvider::CaptureProfilePhoto;
@@ -6135,6 +6137,42 @@ void TestingAutomationProvider::GetV8HeapStats(
       this, reply_message,
       base::GetProcId(render_view->process()->GetHandle()));
   render_view->Send(new ChromeViewMsg_GetV8HeapStats);
+}
+
+// Sample json input: { "command": "GetFPS",
+//                      "tab_index": 0 }
+// Refer to GetFPS() in chrome/test/pyautolib/pyauto.py for
+// sample json output.
+void TestingAutomationProvider::GetFPS(
+    Browser* browser,
+    DictionaryValue* args,
+    IPC::Message* reply_message) {
+  WebContents* web_contents;
+  int tab_index;
+  std::string error;
+
+  if (!args->GetInteger("tab_index", &tab_index)) {
+    AutomationJSONReply(this, reply_message).SendError(
+        "Missing 'tab_index' argument.");
+    return;
+  }
+
+  web_contents = browser->GetWebContentsAt(tab_index);
+  if (!web_contents) {
+    AutomationJSONReply(this, reply_message).SendError(
+        StringPrintf("Could not get WebContents at tab index %d", tab_index));
+    return;
+  }
+
+  RenderViewHost* render_view = web_contents->GetRenderViewHost();
+  int routing_id = render_view->routing_id();
+
+  // This observer will delete itself.
+  new FPSObserver(
+      this, reply_message,
+      base::GetProcId(render_view->process()->GetHandle()),
+      routing_id);
+  render_view->Send(new ChromeViewMsg_GetFPS(routing_id));
 }
 
 void TestingAutomationProvider::WaitForAllViewsToStopLoading(

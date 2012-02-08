@@ -23,11 +23,12 @@
 #include "chrome/browser/net/predictor.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/task_manager/task_manager.h"
+#include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_file_util.h"
 #include "chrome/common/extensions/extension_message_bundle.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/render_messages.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/public/browser/notification_service.h"
@@ -207,8 +208,17 @@ void ChromeRenderMessageFilter::OnFPS(int routing_id, float fps) {
             routing_id, fps));
     return;
   }
+
+  base::ProcessId renderer_id = base::GetProcId(peer_handle());
+
   TaskManager::GetInstance()->model()->NotifyFPS(
-      base::GetProcId(peer_handle()), routing_id, fps);
+      renderer_id, routing_id, fps);
+
+  FPSDetails details(routing_id, fps);
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_RENDERER_FPS_COMPUTED,
+      content::Source<const base::ProcessId>(&renderer_id),
+      content::Details<const FPSDetails>(&details));
 }
 
 void ChromeRenderMessageFilter::OnV8HeapStats(int v8_memory_allocated,
@@ -231,7 +241,7 @@ void ChromeRenderMessageFilter::OnV8HeapStats(int v8_memory_allocated,
 
   V8HeapStatsDetails details(v8_memory_allocated, v8_memory_used);
   content::NotificationService::current()->Notify(
-      content::NOTIFICATION_RENDERER_V8_HEAP_STATS_COMPUTED,
+      chrome::NOTIFICATION_RENDERER_V8_HEAP_STATS_COMPUTED,
       content::Source<const base::ProcessId>(&renderer_id),
       content::Details<const V8HeapStatsDetails>(&details));
 }

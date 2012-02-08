@@ -289,6 +289,16 @@ enum NotificationType {
   // Sent when WebUI TaskManager opens and is ready for showing tasks.
   NOTIFICATION_TASK_MANAGER_WINDOW_READY,
 
+  // Sent when a renderer process is notified of new v8 heap statistics. The
+  // source is the ID of the renderer process, and the details are a
+  // V8HeapStatsDetails object.
+  NOTIFICATION_RENDERER_V8_HEAP_STATS_COMPUTED,
+
+  // Sent when a renderer process is notified of a new FPS value. The source
+  // is the ID of the renderer process, and the details are an FPSDetails
+  // object.
+  NOTIFICATION_RENDERER_FPS_COMPUTED,
+
   // Non-history storage services --------------------------------------------
 
   // Notification that the TemplateURLService has finished loading from the
