@@ -210,7 +210,7 @@ bool ContentGLContext::MakeCurrent(ContentGLContext* context) {
     // TODO(apatrick): I'm not sure if this should actually change the
     // current context if it fails. For now it gets changed even if it fails
     // because making GL calls with a NULL context crashes.
-    if (context->command_buffer_->GetLastState().error != gpu::error::kNoError)
+    if (context->command_buffer_->GetLastError() != gpu::error::kNoError)
       return false;
   } else {
     gles2::SetGLContext(NULL);
