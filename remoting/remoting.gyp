@@ -227,6 +227,21 @@
 
       ],  # end of 'targets'
     }],  # 'OS=="linux"'
+    ['OS=="win"', {
+      'targets': [
+        {
+          'target_name': 'remoting_service',
+          'type': 'executable',
+          'variables': { 'enable_wexit_time_destructors': 1, },
+          'dependencies': [
+            '../base/base.gyp:base_i18n',
+          ],
+          'sources': [
+            'host/remoting_host_service_win.cc',
+          ],
+        },  # end of target 'remoting_service'
+      ],
+    }],  # 'OS=="win"'
   ],  # end of 'conditions'
 
   'targets': [
