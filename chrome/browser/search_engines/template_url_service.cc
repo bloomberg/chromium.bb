@@ -402,7 +402,7 @@ std::vector<const TemplateURL*> TemplateURLService::GetTemplateURLs() const {
 }
 
 void TemplateURLService::IncrementUsageCount(const TemplateURL* url) {
-  DCHECK(url && find(template_urls_.begin(), template_urls_.end(), url) !=
+  DCHECK(url && std::find(template_urls_.begin(), template_urls_.end(), url) !=
          template_urls_.end());
   const_cast<TemplateURL*>(url)->set_usage_count(url->usage_count() + 1);
   if (service_.get())
@@ -1296,8 +1296,8 @@ void TemplateURLService::UpdateNoNotify(const TemplateURL* existing_turl,
                                         const TemplateURL& new_values) {
   DCHECK(loaded_);
   DCHECK(existing_turl);
-  DCHECK(find(template_urls_.begin(), template_urls_.end(), existing_turl) !=
-         template_urls_.end());
+  DCHECK(std::find(template_urls_.begin(), template_urls_.end(), existing_turl)
+         != template_urls_.end());
 
   if (!existing_turl->keyword().empty())
     keyword_to_template_map_.erase(existing_turl->keyword());
@@ -1563,8 +1563,8 @@ void TemplateURLService::UpdateDefaultSearch() {
 
 void TemplateURLService::SetDefaultSearchProviderNoNotify(
     const TemplateURL* url) {
-  DCHECK(!url || find(template_urls_.begin(), template_urls_.end(), url) !=
-         template_urls_.end());
+  DCHECK(!url || std::find(template_urls_.begin(), template_urls_.end(), url)
+         != template_urls_.end());
   default_search_provider_ = url;
 
   if (url) {
@@ -1610,8 +1610,8 @@ void TemplateURLService::SetDefaultSearchProviderNoNotify(
 void TemplateURLService::AddNoNotify(TemplateURL* template_url) {
   DCHECK(template_url);
   DCHECK(template_url->id() == 0);
-  DCHECK(find(template_urls_.begin(), template_urls_.end(), template_url) ==
-         template_urls_.end());
+  DCHECK(std::find(template_urls_.begin(), template_urls_.end(), template_url)
+         == template_urls_.end());
   template_url->set_id(++next_id_);
   template_urls_.push_back(template_url);
   AddToMaps(template_url);
@@ -1625,9 +1625,9 @@ void TemplateURLService::AddNoNotify(TemplateURL* template_url) {
 }
 
 void TemplateURLService::RemoveNoNotify(const TemplateURL* template_url) {
-  TemplateURLVector::iterator i = find(template_urls_.begin(),
-                                       template_urls_.end(),
-                                       template_url);
+  TemplateURLVector::iterator i = std::find(template_urls_.begin(),
+                                            template_urls_.end(),
+                                            template_url);
   if (i == template_urls_.end())
     return;
 
