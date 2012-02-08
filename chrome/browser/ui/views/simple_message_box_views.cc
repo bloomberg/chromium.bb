@@ -15,7 +15,8 @@
 #include "ui/views/widget/widget.h"
 
 #if defined(USE_AURA)
-#include "ui/views/focus/accelerator_handler.h"
+#include "ui/aura/client/dispatcher_client.h"
+#include "ui/aura/root_window.h"
 #endif
 
 namespace browser {
@@ -58,10 +59,14 @@ bool SimpleMessageBoxViews::ShowYesNoBox(gfx::NativeWindow parent_window,
   // Make sure Chrome doesn't attempt to shut down with the dialog up.
   g_browser_process->AddRefModule();
 
+#if defined(USE_AURA)
+  aura::client::GetDispatcherClient()->RunWithDispatcher(dialog, true);
+#else
   bool old_state = MessageLoopForUI::current()->NestableTasksAllowed();
   MessageLoopForUI::current()->SetNestableTasksAllowed(true);
   MessageLoopForUI::current()->RunWithDispatcher(dialog);
   MessageLoopForUI::current()->SetNestableTasksAllowed(old_state);
+#endif
 
   g_browser_process->ReleaseModule();
 
@@ -150,7 +155,7 @@ bool SimpleMessageBoxViews::Dispatch(const MSG& msg) {
 #elif defined(USE_AURA)
 base::MessagePumpDispatcher::DispatchStatus
     SimpleMessageBoxViews::Dispatch(XEvent* xev) {
-  if (!views::DispatchXEvent(xev))
+  if (!aura::RootWindow::GetInstance()->GetDispatcher()->Dispatch(xev))
     return EVENT_IGNORED;
 
   if (disposition_ == DISPOSITION_UNKNOWN)
