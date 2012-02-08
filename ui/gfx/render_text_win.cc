@@ -455,6 +455,9 @@ void RenderTextWin::DrawVisualText(Canvas* canvas) {
     // Get the run specified by the visual-to-logical map.
     internal::TextRun* run = runs_[visual_to_logical_[i]];
 
+    if (run->glyph_count == 0)
+      continue;
+
     // Based on WebCore::skiaDrawText.
     pos.resize(run->glyph_count);
     SkScalar glyph_x = x;
