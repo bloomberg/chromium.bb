@@ -279,11 +279,7 @@ chrome.fileBrowserPrivate = {
       COPY_BUTTON_LABEL: 'Copy',
       CUT_BUTTON_LABEL: 'Cut',
 
-      SELECTION_COPIED: 'Selection copied to clipboard.',
-      SELECTION_CUT: 'Selection cut to clipboard.',
-      PASTE_STARTED: 'Pasting...',
-      PASTE_SOME_PROGRESS: 'Pasting $1 of $2 items...',
-      PASTE_COMPLETE: 'Paste complete.',
+      PASTE_ITEMS_REMAINING: 'Pasting $1 items',
       PASTE_CANCELLED: 'Paste cancelled.',
       PASTE_TARGET_EXISTS_ERROR: 'Paste failed, item exists: $1',
       PASTE_FILESYSTEM_ERROR: 'Paste failed, filesystem error: $1',

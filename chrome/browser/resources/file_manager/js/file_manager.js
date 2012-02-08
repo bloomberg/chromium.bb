@@ -895,9 +895,27 @@ FileManager.prototype = {
   };
 
   FileManager.prototype.showButter = function(message, opt_options) {
-    var butter = this.document_.createElement('div');
-    butter.className = 'butter-bar';
-    butter.style.top = '-30px';
+    var butter =
+        this.dialogDom_.querySelector('.butter-bar').cloneNode(true);
+    if (opt_options) {
+      if ('actions' in opt_options) {
+        var actions = butter.querySelector('.actions');
+        for (var label in opt_options.actions) {
+          var link = this.document_.createElement('a');
+          link.setAttribute('href', 'javascript://' + label);
+          link.addEventListener('click', function () {
+              opt_options.actions[label]();
+              return false;
+          });
+          actions.appendChild(link);
+        }
+        actions.classList.remove('hide-in-butter');
+      }
+      if ('progress' in opt_options) {
+        butter.querySelector('.progress-bar')
+            .classList.remove('hide-in-butter');
+      }
+    }
     this.dialogDom_.appendChild(butter);
 
     var self = this;
@@ -907,7 +925,7 @@ FileManager.prototype = {
         self.hideButter();
 
       self.currentButter_ = butter;
-      self.currentButter_.style.top = '15px';
+      self.currentButter_.classList.remove('before-show');
 
       self.updateButter(message, opt_options);
     });
@@ -917,7 +935,7 @@ FileManager.prototype = {
 
   FileManager.prototype.showButterError = function(message, opt_options) {
     var butter = this.showButter(message, opt_options);
-    butter.classList.add('butter-error');
+    butter.classList.add('error');
     return butter;
   };
 
@@ -944,19 +962,11 @@ FileManager.prototype = {
     }
 
     var butter = this.currentButter_;
-    butter.textContent = message;
+    butter.querySelector('.butter-message').textContent = message;
 
-    if ('actions' in opt_options) {
-      for (var label in opt_options.actions) {
-        var link = this.document_.createElement('a');
-        link.textContent = label;
-        link.setAttribute('href', 'javascript://' + label);
-        link.addEventListener('click', function () {
-            opt_options.actions[label]();
-            return false;
-        });
-        butter.appendChild(link);
-      }
+    if (opt_options && 'progress' in opt_options) {
+      butter.querySelector('.progress-track').style.width =
+          (opt_options.progress*100) + '%';
     }
 
     butter.style.left = ((this.dialogDom_.clientWidth -
@@ -1170,23 +1180,48 @@ FileManager.prototype = {
   FileManager.prototype.onCopyProgress_ = function(event) {
     var status = this.copyManager_.getStatus();
 
-    if (event.reason == 'PROGRESS') {
-      if (status.totalItems > 1 && status.completedItems < status.totalItems) {
-        // If we're copying more than one file, and we're not done, update
-        // the user on the current status, and give an option to cancel.
-        var self = this;
-        var options = {timeout:0, actions:{}};
+    // TODO(bshe): Need to figure out a way to get completed bytes in real
+    // time. We currently use completedItems and totalItems to estimate the
+    // progress. There are completeBytes and totalBytes ready to use.
+    // However, the completedBytes is not in real time. It only updates
+    // itself after each item finished. So if there is a large item to
+    // copy, the progress bar will stop moving until it finishes and jump
+    // a large portion of the bar.
+    // There is case that when user copy a large file, we want to show an
+    // 100% animated progress bar. So we use completedItems + 1 here.
+    var progress = (status.completedItems + 1) / status.totalItems;
+
+    // If the files we're copying is larger than 100MB or more than 25,
+    // update the user on the current status with a progress bar and give
+    // an option to cancel. The rule of thumb here is if the pasting
+    // process is less than 500ms. We dont want to show progress bar.
+    var shouldShow = status.totalItems > 0 &&
+                     status.completedItems < status.totalItems &&
+                     (status.totalBytes > 100000000 || status.totalItems > 25);
+
+    if (event.reason == 'BEGIN' && shouldShow) {
+      var self = this;
+      var options = {timeout:0, progress: progress, actions:{}};
+      // We can't cancel the operation when pasting one file.
+      if (status.totalItems > 1) {
         options.actions[str('CANCEL_LABEL')] = function cancelPaste() {
           self.copyManager_.requestCancel();
         };
-        this.updateButter(strf('PASTE_SOME_PROGRESS', status.completedItems + 1,
-                               status.totalItems), options);
       }
+      this.showButter(strf('PASTE_ITEMS_REMAINING', status.pendingItems),
+                           options);
       return;
     }
-
+    if (event.reason == 'PROGRESS' && shouldShow) {
+      var options = {timeout:0, progress: progress};
+      this.updateButter(strf('PASTE_ITEMS_REMAINING', status.pendingItems),
+                             options);
+      return;
+    }
     if (event.reason == 'SUCCESS') {
-      this.showButter(str('PASTE_COMPLETE'));
+      if (this.currentButter_)
+        this.hideButter();
+
       if (this.clipboard_.isCut)
         this.clipboard_ = null;
       this.updateCommands_();
@@ -2555,6 +2590,29 @@ FileManager.prototype = {
     this.directoryModel_.deleteEntries(entries, opt_callback);
   };
 
+  FileManager.prototype.blinkSelection = function() {
+    if (!this.selection || this.selection.totalCount == 0)
+      return;
+
+    for (var i = 0; i < this.selection.entries.length; i++) {
+      var selectedIndex = this.selection.indexes[i];
+      var listItem = this.currentList_.getListItemByIndex(selectedIndex);
+      if (listItem)
+        listItem.classList.add('blink');
+    }
+
+    var self = this;
+
+    setTimeout(function() {
+        for (var i = 0; i < self.selection.entries.length; i++) {
+          var selectedIndex = self.selection.indexes[i];
+          var listItem = self.currentList_.getListItemByIndex(selectedIndex);
+          if (listItem)
+            listItem.classList.remove('blink');
+        }
+    }, 100);
+  };
+
   /**
    * Create the clipboard object from the current selection.
    *
@@ -2571,7 +2629,7 @@ FileManager.prototype = {
     };
 
     this.updateCommands_();
-    this.showButter(str('SELECTION_COPIED'));
+    this.blinkSelection();
   };
 
   /**
@@ -2591,7 +2649,7 @@ FileManager.prototype = {
     };
 
     this.updateCommands_();
-    this.showButter(str('SELECTION_CUT'));
+    this.blinkSelection();
   };
 
   /**
@@ -2600,8 +2658,6 @@ FileManager.prototype = {
   FileManager.prototype.pasteFromClipboard = function(successCallback) {
     if (!this.clipboard_)
       return null;
-
-    this.showButter(str('PASTE_STARTED'), {timeout: 0});
 
     this.pasteSuccessCallbacks_.push(successCallback);
     this.copyManager_.queueCopy(this.clipboard_.sourceDirEntry,
