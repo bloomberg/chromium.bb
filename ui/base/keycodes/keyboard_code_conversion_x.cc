@@ -91,6 +91,12 @@ KeyboardCode KeyboardCodeFromXKeysym(unsigned int keysym) {
       return VKEY_HANJA;
     case XK_Kanji:
       return VKEY_KANJI;
+    case XK_Henkan:
+      return VKEY_CONVERT;
+    case XK_Muhenkan:
+      return VKEY_NONCONVERT;
+    case XK_Zenkaku_Hankaku:
+      return VKEY_DBE_DBCSCHAR;
     case XK_A:
     case XK_a:
       return VKEY_A;
@@ -512,6 +518,14 @@ int XKeysymForWindowsKeyCode(KeyboardCode keycode, bool shift) {
       return XK_Kana_Lock;
     case VKEY_HANJA:
       return XK_Hangul_Hanja;
+    case VKEY_CONVERT:
+      return XK_Henkan;
+    case VKEY_NONCONVERT:
+      return XK_Muhenkan;
+    case VKEY_DBE_SBCSCHAR:
+      return XK_Zenkaku_Hankaku;
+    case VKEY_DBE_DBCSCHAR:
+      return XK_Zenkaku_Hankaku;
     case VKEY_ESCAPE:
       return XK_Escape;
     case VKEY_SPACE:

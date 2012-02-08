@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,6 +7,7 @@
 #pragma once
 
 #include <windows.h>
+#include <ime.h>
 
 namespace ui {
 
@@ -169,6 +170,8 @@ typedef enum {
   VKEY_OEM_102 = VK_OEM_102,
   VKEY_PROCESSKEY = VK_PROCESSKEY,
   VKEY_PACKET = VK_PACKET,
+  VKEY_DBE_SBCSCHAR = VK_DBE_SBCSCHAR,
+  VKEY_DBE_DBCSCHAR = VK_DBE_DBCSCHAR,
   VKEY_ATTN = VK_ATTN,
   VKEY_CRSEL = VK_CRSEL,
   VKEY_EXSEL = VK_EXSEL,

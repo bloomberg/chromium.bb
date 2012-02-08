@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -193,6 +193,8 @@ typedef enum {
   VKEY_OEM_102 = 0xE2,
   VKEY_PROCESSKEY = 0xE5,
   VKEY_PACKET = 0xE7,
+  VKEY_DBE_SBCSCHAR = 0xF3,
+  VKEY_DBE_DBCSCHAR = 0xF4,
   VKEY_ATTN = 0xF6,
   VKEY_CRSEL = 0xF7,
   VKEY_EXSEL = 0xF8,
