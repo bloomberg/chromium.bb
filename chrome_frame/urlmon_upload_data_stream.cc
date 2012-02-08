@@ -22,43 +22,42 @@ STDMETHODIMP UrlmonUploadDataStream::Read(void* pv, ULONG cb, ULONG* read) {
   }
 
   // Have we already read past the end of the stream?
-  if (request_body_stream_->eof()) {
+  if (request_body_stream_->IsEOF()) {
     if (read) {
       *read = 0;
     }
     return S_FALSE;
   }
 
-  uint64 total_bytes_to_copy = std::min(static_cast<uint64>(cb),
-      static_cast<uint64>(request_body_stream_->buf_len()));
+  // The data in request_body_stream_ can be smaller than 'cb' so it's not
+  // guaranteed that we'll be able to read total_bytes_to_copy bytes.
+  uint64 total_bytes_to_copy = cb;
 
   uint64 bytes_copied = 0;
 
   char* write_pointer = reinterpret_cast<char*>(pv);
   while (bytes_copied < total_bytes_to_copy) {
-    net::IOBuffer* buf = request_body_stream_->buf();
+    size_t bytes_to_copy_now = total_bytes_to_copy - bytes_copied;
 
-    // Make sure our length doesn't run past the end of the available data.
-    size_t bytes_to_copy_now = static_cast<size_t>(
-        std::min(static_cast<uint64>(request_body_stream_->buf_len()),
-                 total_bytes_to_copy - bytes_copied));
+    scoped_refptr<net::IOBufferWithSize> buf(
+        new net::IOBufferWithSize(bytes_to_copy_now));
+    int bytes_read = request_body_stream_->Read(buf, buf->size());
+    if (bytes_read == 0)  // Reached the end of the stream.
+      break;
 
-    memcpy(write_pointer, buf->data(), bytes_to_copy_now);
+    memcpy(write_pointer, buf->data(), bytes_read);
 
     // Advance our copy tally
-    bytes_copied += bytes_to_copy_now;
+    bytes_copied += bytes_read;
 
     // Advance our write pointer
-    write_pointer += bytes_to_copy_now;
-
-    // Advance the UploadDataStream read pointer:
-    request_body_stream_->MarkConsumedAndFillBuffer(bytes_to_copy_now);
+    write_pointer += bytes_read;
   }
 
-  DCHECK(bytes_copied == total_bytes_to_copy);
+  DCHECK_LE(bytes_copied, total_bytes_to_copy);
 
   if (read) {
-    *read = static_cast<ULONG>(total_bytes_to_copy);
+    *read = static_cast<ULONG>(bytes_copied);
   }
 
   return S_OK;
