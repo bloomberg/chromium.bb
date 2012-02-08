@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -75,12 +75,6 @@ bool CanImportURL(const GURL& url);
 // with the resulting TemplateURLs.
 void ParseSearchEnginesFromXMLFiles(const std::vector<FilePath>& xml_files,
                                     std::vector<TemplateURL*>* search_engines);
-
-// Returns the index of the default search engine in the |search_engines| list.
-// If none is found, -1 is returned.
-int GetFirefoxDefaultSearchEngineIndex(
-    const std::vector<TemplateURL*>& search_engines,
-    const FilePath& profile_path);
 
 // Returns the home page set in Firefox in a particular profile.
 GURL GetHomepage(const FilePath& profile_path);

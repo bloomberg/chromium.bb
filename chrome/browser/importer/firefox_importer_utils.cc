@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -288,42 +288,6 @@ std::string ReadPrefsJsValue(const FilePath& profile_path,
     return "";
 
   return GetPrefsJsValue(content, pref_key);
-}
-
-int GetFirefoxDefaultSearchEngineIndex(
-    const std::vector<TemplateURL*>& search_engines,
-    const FilePath& profile_path) {
-  // The default search engine is contained in the file prefs.js found in the
-  // profile directory.
-  // It is the "browser.search.selectedEngine" property.
-  if (search_engines.empty())
-    return -1;
-
-  std::string default_se_name =
-      ReadPrefsJsValue(profile_path, "browser.search.selectedEngine");
-
-  if (default_se_name.empty()) {
-    // browser.search.selectedEngine does not exist if the user has not changed
-    // from the default (or has selected the default).
-    // TODO: should fallback to 'browser.search.defaultengine' if selectedEngine
-    // is empty.
-    return -1;
-  }
-
-  int default_se_index = -1;
-  for (std::vector<TemplateURL*>::const_iterator iter = search_engines.begin();
-       iter != search_engines.end(); ++iter) {
-    if (default_se_name == UTF16ToUTF8((*iter)->short_name())) {
-      default_se_index = static_cast<int>(iter - search_engines.begin());
-      break;
-    }
-  }
-  if (default_se_index == -1) {
-    LOG(WARNING) <<
-        "Firefox default search engine not found in search engine list";
-  }
-
-  return default_se_index;
 }
 
 GURL GetHomepage(const FilePath& profile_path) {

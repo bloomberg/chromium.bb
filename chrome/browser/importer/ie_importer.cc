@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -550,12 +550,7 @@ void IEImporter::ImportSearchEngines() {
   // Software\Microsoft\Internet Explorer\SearchScopes
   // Each key represents a search engine. The URL value contains the URL and
   // the DisplayName the name.
-  // The default key's name is contained under DefaultScope.
-  base::win::RegKey key(HKEY_CURRENT_USER, kSearchScopePath, KEY_READ);
-  string16 default_search_engine_name;
-  const TemplateURL* default_search_engine = NULL;
   std::map<std::string, TemplateURL*> search_engines_map;
-  key.ReadValue(L"DefaultScope", &default_search_engine_name);
   base::win::RegistryKeyIterator key_iterator(HKEY_CURRENT_USER,
                                               kSearchScopePath);
   while (key_iterator.Valid()) {
@@ -603,26 +598,17 @@ void IEImporter::ImportSearchEngines() {
       template_url->set_show_in_default_list(true);
       search_engines_map[url] = template_url;
     }
-    if (template_url && key_iterator.Name() == default_search_engine_name) {
-      DCHECK(!default_search_engine);
-      default_search_engine = template_url;
-    }
     ++key_iterator;
   }
 
   // ProfileWriter::AddKeywords() requires a vector and we have a map.
-  std::map<std::string, TemplateURL*>::iterator t_iter;
+  std::map<std::string, TemplateURL*>::iterator i;
   std::vector<TemplateURL*> search_engines;
-  int default_search_engine_index = -1;
-  for (t_iter = search_engines_map.begin(); t_iter != search_engines_map.end();
-       ++t_iter) {
-    search_engines.push_back(t_iter->second);
-    if (default_search_engine == t_iter->second) {
-      default_search_engine_index =
-          static_cast<int>(search_engines.size()) - 1;
-    }
-  }
-  bridge_->SetKeywords(search_engines, default_search_engine_index, true);
+  for (i = search_engines_map.begin(); i != search_engines_map.end(); ++i)
+    search_engines.push_back(i->second);
+
+  // Import the list of search engines, but do not override the default.
+  bridge_->SetKeywords(search_engines, -1 /*default_keyword_index*/, true);
 }
 
 void IEImporter::ImportHomepage() {

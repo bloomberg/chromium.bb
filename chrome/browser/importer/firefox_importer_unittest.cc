@@ -138,10 +138,6 @@ class FirefoxObserver : public ProfileWriter,
     EXPECT_EQ(1U, history_count_);
     EXPECT_EQ(arraysize(kFirefox2Passwords), password_count_);
     EXPECT_EQ(arraysize(kFirefox2Keywords), keyword_count_);
-    EXPECT_EQ(kFirefox2Keywords[kDefaultFirefox2KeywordIndex].keyword,
-              UTF16ToWideHack(default_keyword_));
-    EXPECT_EQ(kFirefox2Keywords[kDefaultFirefox2KeywordIndex].url,
-              default_keyword_url_);
   }
 
   virtual bool BookmarkModelIsLoaded() const {
@@ -204,13 +200,7 @@ class FirefoxObserver : public ProfileWriter,
       ++keyword_count_;
     }
 
-    if (default_keyword_index != -1) {
-      EXPECT_LT(default_keyword_index, static_cast<int>(template_urls.size()));
-      TemplateURL* default_turl = template_urls[default_keyword_index];
-      default_keyword_ = default_turl->keyword();
-      default_keyword_url_ = default_turl->url()->url();
-    }
-
+    EXPECT_EQ(-1, default_keyword_index);
     STLDeleteContainerPointers(template_urls.begin(), template_urls.end());
   }
 
@@ -224,8 +214,6 @@ class FirefoxObserver : public ProfileWriter,
   size_t history_count_;
   size_t password_count_;
   size_t keyword_count_;
-  string16 default_keyword_;
-  std::string default_keyword_url_;
 };
 
 const BookmarkInfo kFirefox3Bookmarks[] = {
@@ -297,13 +285,8 @@ class Firefox3Observer : public ProfileWriter,
     EXPECT_EQ(arraysize(kFirefox3Bookmarks), bookmark_count_);
     EXPECT_EQ(1U, history_count_);
     EXPECT_EQ(arraysize(kFirefox3Passwords), password_count_);
-    if (import_search_engines_) {
+    if (import_search_engines_)
       EXPECT_EQ(arraysize(kFirefox3Keywords), keyword_count_);
-      EXPECT_EQ(kFirefox3Keywords[kDefaultFirefox3KeywordIndex].keyword,
-                UTF16ToWideHack(default_keyword_));
-      EXPECT_EQ(kFirefox3Keywords[kDefaultFirefox3KeywordIndex].url,
-                default_keyword_url_);
-    }
   }
 
   virtual bool BookmarkModelIsLoaded() const {
@@ -371,13 +354,7 @@ class Firefox3Observer : public ProfileWriter,
       ++keyword_count_;
     }
 
-    if (default_keyword_index != -1) {
-      EXPECT_LT(default_keyword_index, static_cast<int>(template_urls.size()));
-      TemplateURL* default_turl = template_urls[default_keyword_index];
-      default_keyword_ = default_turl->keyword();
-      default_keyword_url_ = default_turl->url()->url();
-    }
-
+    EXPECT_EQ(-1, default_keyword_index);
     STLDeleteContainerPointers(template_urls.begin(), template_urls.end());
   }
 
@@ -392,8 +369,6 @@ class Firefox3Observer : public ProfileWriter,
   size_t password_count_;
   size_t keyword_count_;
   bool import_search_engines_;
-  string16 default_keyword_;
-  std::string default_keyword_url_;
 };
 
 }  // namespace

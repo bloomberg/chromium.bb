@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -364,9 +364,8 @@ void Firefox2Importer::ImportSearchEngines() {
   std::vector<TemplateURL*> search_engines;
   ParseSearchEnginesFromXMLFiles(files, &search_engines);
 
-  int default_index =
-      GetFirefoxDefaultSearchEngineIndex(search_engines, source_path_);
-  bridge_->SetKeywords(search_engines, default_index, true);
+  // Import the list of search engines, but do not override the default.
+  bridge_->SetKeywords(search_engines, -1 /*default_keyword_index*/, true);
 }
 
 void Firefox2Importer::ImportHomepage() {
