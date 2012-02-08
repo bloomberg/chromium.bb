@@ -41,6 +41,8 @@ const char kExpectedSequenceIdTag[] = "expected-sequence-id";
 const int64 kDefaultHeartbeatIntervalMs = 5 * 60 * 1000;  // 5 minutes.
 const int64 kResendDelayMs = 10 * 1000;  // 10 seconds.
 
+const int kExitCodeHostIdInvalid = 100;
+
 }  // namespace
 
 HeartbeatSender::HeartbeatSender(
@@ -115,7 +117,7 @@ void HeartbeatSender::ProcessResponse(const XmlElement* response) {
         // shut down the host properly, instead of just exiting here
         // (http://crbug.com/112160).
         LOG(ERROR) << "Received error: Host ID invalid";
-        exit(1);
+        exit(kExitCodeHostIdInvalid);
       }
     }
 
