@@ -233,7 +233,6 @@ class CONTENT_EXPORT RenderWidget
   void OnMsgRepaint(const gfx::Size& size_to_paint);
   void OnSetTextDirection(WebKit::WebTextDirection direction);
   void OnGetFPS();
-  void OnInvertWebContent(bool invert);
 
   // Override points to notify derived classes that a paint has happened.
   // WillInitiatePaint happens when we're about to generate a new bitmap and
@@ -495,12 +494,6 @@ class CONTENT_EXPORT RenderWidget
   // queue. Note: some SwapBuffers may not correspond to an update, in which
   // case NULL is added to the queue.
   std::deque<ViewHostMsg_UpdateRect*> updates_pending_swap_;
-
-  // Set to true if we should invert all pixels.
-  bool invert_;
-
-  // The Skia paint object for inverting.
-  scoped_ptr<SkPaint> invert_paint_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidget);
 };
