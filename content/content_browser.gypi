@@ -763,6 +763,9 @@
         # A main loop would be handled in Java.
         'browser/browser_main_loop.cc',
         'browser/browser_main_loop.h',
+      ],
+      'dependencies!': [
+        '../third_party/flac/flac.gyp:libflac',
       ]}],
     ['OS=="mac"', {
       'sources': [
