@@ -6,7 +6,7 @@
 
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
-#include "ash/test/test_shell_delegate.h"
+#include "ash/test/aura_shell_test_base.h"
 #include "ash/wm/shelf_layout_manager.h"
 #include "ash/wm/window_util.h"
 #include "base/basictypes.h"
@@ -14,79 +14,12 @@
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/screen_aura.h"
-#include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/test/test_windows.h"
 #include "ui/aura/window.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/views/widget/widget.h"
 
 namespace ash {
-
-namespace {
-
-class CompactLayoutManagerTest : public aura::test::AuraTestBase {
- public:
-  CompactLayoutManagerTest() : layout_manager_(NULL) {}
-  virtual ~CompactLayoutManagerTest() {}
-
-  internal::CompactLayoutManager* layout_manager() {
-    return layout_manager_;
-  }
-
-  virtual void SetUp() OVERRIDE {
-    aura::test::AuraTestBase::SetUp();
-    aura::RootWindow::GetInstance()->screen()->set_work_area_insets(
-        gfx::Insets(1, 2, 3, 4));
-    aura::RootWindow::GetInstance()->SetHostSize(gfx::Size(800, 600));
-    container_.reset(new aura::Window(NULL));
-    container_->Init(ui::Layer::LAYER_NOT_DRAWN);
-    container_->SetBounds(gfx::Rect(0, 0, 500, 500));
-    layout_manager_ = new internal::CompactLayoutManager();
-    container_->SetLayoutManager(layout_manager_);
-  }
-
-  aura::Window* CreateTestWindow(const gfx::Rect& bounds) {
-    return aura::test::CreateTestWindowWithBounds(bounds, container_.get());
-  }
-
-  // Returns widget owned by its parent, so doesn't need scoped_ptr<>.
-  views::Widget* CreateTestWidget() {
-    views::Widget* widget = new views::Widget;
-    views::Widget::InitParams params(views::Widget::InitParams::TYPE_CONTROL);
-    params.bounds = gfx::Rect(11, 22, 33, 44);
-    widget->Init(params);
-    widget->Show();
-    return widget;
-  }
-
- private:
-  // Owned by |container_|.
-  internal::CompactLayoutManager* layout_manager_;
-
-  scoped_ptr<aura::Window> container_;
-
-  DISALLOW_COPY_AND_ASSIGN(CompactLayoutManagerTest);
-};
-
-}  // namespace
-
-// Tests status area visibility during window maximize and fullscreen.
-TEST_F(CompactLayoutManagerTest, StatusAreaVisibility) {
-  gfx::Rect bounds(100, 100, 200, 200);
-  scoped_ptr<aura::Window> window(CreateTestWindow(bounds));
-  views::Widget* widget = CreateTestWidget();
-  layout_manager()->set_status_area_widget(widget);
-  EXPECT_TRUE(widget->IsVisible());
-  window->SetIntProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MAXIMIZED);
-  EXPECT_TRUE(widget->IsVisible());
-  window->SetIntProperty(aura::client::kShowStateKey, ui::SHOW_STATE_NORMAL);
-  EXPECT_TRUE(widget->IsVisible());
-  window->SetIntProperty(aura::client::kShowStateKey,
-                         ui::SHOW_STATE_FULLSCREEN);
-  EXPECT_FALSE(widget->IsVisible());
-  window->SetIntProperty(aura::client::kShowStateKey, ui::SHOW_STATE_NORMAL);
-  EXPECT_TRUE(widget->IsVisible());
-}
 
 namespace {
 
@@ -97,15 +30,14 @@ const int kMaxHeight = 600;
 
 namespace internal {
 
-class CompactLayoutManagerTransitionTest : public aura::test::AuraTestBase {
+class CompactLayoutManagerTest : public ash::test::AuraShellTestBase {
  public:
-  CompactLayoutManagerTransitionTest() : layout_manager_(NULL) {
+  CompactLayoutManagerTest() : layout_manager_(NULL) {
   }
-  virtual ~CompactLayoutManagerTransitionTest() {}
+  virtual ~CompactLayoutManagerTest() {}
 
   virtual void SetUp() OVERRIDE {
-    aura::test::AuraTestBase::SetUp();
-    ash::Shell::CreateInstance(new ash::test::TestShellDelegate);
+    ash::test::AuraShellTestBase::SetUp();
     aura::RootWindow::GetInstance()->Show();
     aura::RootWindow::GetInstance()->SetHostSize(
         gfx::Size(kMaxWidth, kMaxHeight));
@@ -116,11 +48,7 @@ class CompactLayoutManagerTransitionTest : public aura::test::AuraTestBase {
     // Control layer animation stepping.
     default_container()->layer()->GetAnimator()->
         set_disable_timer_for_test(true);
-  }
-
-  virtual void TearDown() OVERRIDE {
-    ash::Shell::DeleteInstance();
-    aura::test::AuraTestBase::TearDown();
+    RunAllPendingInMessageLoop();
   }
 
   aura::Window* CreateNormalWindow(int id) {
@@ -134,6 +62,25 @@ class CompactLayoutManagerTransitionTest : public aura::test::AuraTestBase {
     window->Show();
     RunAllPendingInMessageLoop();
     return window;
+  }
+
+  aura::Window* CreateTestWindow(const gfx::Rect& bounds) {
+    return aura::test::CreateTestWindowWithBounds(bounds, default_container());
+  }
+
+  // Returns widget owned by its parent, so doesn't need scoped_ptr<>.
+  views::Widget* CreateTestWidget() {
+    views::Widget* widget = new views::Widget;
+    views::Widget::InitParams params(
+        views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
+    params.bounds = gfx::Rect(11, 22, 33, 44);
+    widget->Init(params);
+    widget->Show();
+    return widget;
+  }
+
+  internal::CompactLayoutManager* layout_manager() {
+    return layout_manager_;
   }
 
   aura::Window* default_container() const {
@@ -157,19 +104,37 @@ class CompactLayoutManagerTransitionTest : public aura::test::AuraTestBase {
   internal::CompactLayoutManager* layout_manager_;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(CompactLayoutManagerTransitionTest);
+  DISALLOW_COPY_AND_ASSIGN(CompactLayoutManagerTest);
 };
 
-TEST_F(CompactLayoutManagerTransitionTest, TransitionTest) {
+// Tests status area visibility during window maximize and fullscreen.
+TEST_F(CompactLayoutManagerTest, StatusAreaVisibility) {
+  gfx::Rect bounds(100, 100, 200, 200);
+  scoped_ptr<aura::Window> window(CreateTestWindow(bounds));
+  views::Widget* widget = CreateTestWidget();
+  layout_manager()->set_status_area_widget(widget);
+  EXPECT_TRUE(widget->IsVisible());
+  window->SetIntProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MAXIMIZED);
+  EXPECT_TRUE(widget->IsVisible());
+  window->SetIntProperty(aura::client::kShowStateKey, ui::SHOW_STATE_NORMAL);
+  EXPECT_TRUE(widget->IsVisible());
+  window->SetIntProperty(aura::client::kShowStateKey,
+                         ui::SHOW_STATE_FULLSCREEN);
+  EXPECT_FALSE(widget->IsVisible());
+  window->SetIntProperty(aura::client::kShowStateKey, ui::SHOW_STATE_NORMAL);
+  EXPECT_TRUE(widget->IsVisible());
+}
+
+TEST_F(CompactLayoutManagerTest, TransitionTest) {
   // Assert on viewport size to be the host size.
   ASSERT_EQ(kMaxWidth, default_container_layer_width());
   // Create 3 windows, check that the layer grow as each one is added
   // to the layout.
   aura::Window* window1 = CreateNormalWindow(0);
   EXPECT_EQ(kMaxWidth, default_container_layer_width());
-  aura::Window* window2 =  CreateNormalWindow(1);
+  aura::Window* window2 = CreateNormalWindow(1);
   EXPECT_EQ(kMaxWidth * 2, default_container_layer_width());
-  aura::Window* window3 =  CreateNormalWindow(2);
+  aura::Window* window3 = CreateNormalWindow(2);
   EXPECT_EQ(kMaxWidth * 3, default_container_layer_width());
   animation_element()->Step(base::TimeTicks::Now() +
                             base::TimeDelta::FromSeconds(1));
@@ -204,6 +169,60 @@ TEST_F(CompactLayoutManagerTransitionTest, TransitionTest) {
   EXPECT_FALSE(window2->IsVisible());
   EXPECT_FALSE(window3->IsVisible());
   EXPECT_EQ(window1, layout_manager_->current_window_);
+}
+
+TEST_F(CompactLayoutManagerTest, SwitchToNextVisibleWindow) {
+  // Create 3 windows
+  aura::Window* window1 = CreateNormalWindow(0);
+  window1->Hide();  // Hide window1 before its layer marked invisible.
+  aura::Window* window2 = CreateNormalWindow(1);
+  aura::Window* window3 = CreateNormalWindow(2);
+
+  // Check that only window3 is visible.
+  EXPECT_FALSE(window1->IsVisible());
+  EXPECT_FALSE(window2->IsVisible());
+  EXPECT_TRUE(window3->IsVisible());
+
+  // Hide the current active window.
+  window3->Hide();
+
+  // And window2 becomes the current window because window1 is hidden.
+  EXPECT_FALSE(window1->IsVisible());
+  EXPECT_TRUE(window2->IsVisible());
+  EXPECT_FALSE(window3->IsVisible());
+
+  // Show window3 and it becomes the current window.
+  window3->Show();
+  EXPECT_FALSE(window1->IsVisible());
+  EXPECT_FALSE(window2->IsVisible());
+  EXPECT_TRUE(window3->IsVisible());
+
+  // Close the current active window.
+  delete window3;
+
+  // And window2 becomes active again.
+  EXPECT_FALSE(window1->IsVisible());
+  EXPECT_TRUE(window2->IsVisible());
+}
+
+TEST_F(CompactLayoutManagerTest, CloseAllWindows) {
+  // Create 3 windows
+  aura::Window* window1 = CreateNormalWindow(0);
+  aura::Window* window2 = CreateNormalWindow(1);
+  aura::Window* window3 = CreateNormalWindow(2);
+
+  // Check that only window3 is visible.
+  EXPECT_FALSE(window1->IsVisible());
+  EXPECT_FALSE(window2->IsVisible());
+  EXPECT_TRUE(window3->IsVisible());
+
+  // Close all windows. Note they should not be accessed after here.
+  delete window1;
+  delete window2;
+  delete window3;
+
+  // No current window now.
+  EXPECT_EQ(NULL, layout_manager_->current_window_);
 }
 
 }  // namespace internal

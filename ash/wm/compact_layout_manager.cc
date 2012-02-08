@@ -79,6 +79,11 @@ void CompactLayoutManager::OnWillRemoveWindowFromLayout(aura::Window* child) {
   if (windows().size() > 1 && ShouldAnimateOnEntrance(child)) {
     AdjustContainerLayerWidth(-child->bounds().width());
   }
+
+  if (child == current_window_) {
+    LayoutWindows(current_window_);
+    SwitchToReplacementWindow();
+  }
 }
 
 void CompactLayoutManager::OnChildWindowVisibilityChanged(aura::Window* child,
@@ -91,11 +96,7 @@ void CompactLayoutManager::OnChildWindowVisibilityChanged(aura::Window* child,
       current_window_ = child;
       AnimateSlideTo(child->bounds().x());
     } else if (child == current_window_) {
-      current_window_ = FindReplacementWindow(child);
-      if (current_window_) {
-        ActivateWindow(current_window_);
-        AnimateSlideTo(current_window_->bounds().x());
-      }
+      SwitchToReplacementWindow();
     }
   }
 }
@@ -222,11 +223,23 @@ aura::Window* CompactLayoutManager::FindReplacementWindow(
                                            windows_list.end(),
                                            window);
   if (windows_list.size() > 1 && const_it != windows_list.end()) {
-    if (++const_it != windows_list.end())
+    do {
+      ++const_it;
+      if (const_it == windows_list.end())
+        const_it = windows_list.begin();
+    } while (*const_it != window && !(*const_it)->IsVisible());
+    if (*const_it != window)
       return *const_it;
-    return *windows_list.begin();
   }
   return NULL;
+}
+
+void CompactLayoutManager::SwitchToReplacementWindow() {
+  current_window_ = FindReplacementWindow(current_window_);
+  if (current_window_) {
+    ActivateWindow(current_window_);
+    AnimateSlideTo(current_window_->bounds().x());
+  }
 }
 
 }  // namespace internal

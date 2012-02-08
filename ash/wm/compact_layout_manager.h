@@ -52,8 +52,8 @@ class ASH_EXPORT CompactLayoutManager : public BaseLayoutManager,
   virtual void OnImplicitAnimationsCompleted() OVERRIDE;
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(CompactLayoutManagerTransitionTest,
-                           TransitionTest);
+  FRIEND_TEST_ALL_PREFIXES(CompactLayoutManagerTest, TransitionTest);
+  FRIEND_TEST_ALL_PREFIXES(CompactLayoutManagerTest, CloseAllWindows);
 
   // Hides the status area if we are managing it and full screen windows are
   // visible.
@@ -74,6 +74,9 @@ class ASH_EXPORT CompactLayoutManager : public BaseLayoutManager,
   // Returns the next window after |window| in the window cycle list.
   // This could return NULL if we cannot find a next window.
   aura::Window* FindReplacementWindow(aura::Window* window);
+
+  // Switches to a replacement window of |current_window_|.
+  void SwitchToReplacementWindow();
 
   // Status area with clock, network, battery, etc. icons. May be NULL if the
   // shelf is managing the status area.
