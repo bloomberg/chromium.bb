@@ -65,13 +65,16 @@ static inline int radeon_cs_setup_bo(struct radeon_cs_space_check *sc, struct ra
     }
 
     if (bo->space_accounted == 0) {
-        if (write_domain == RADEON_GEM_DOMAIN_VRAM)
-            sizes->op_vram_write += bo->size;
-        else if (write_domain == RADEON_GEM_DOMAIN_GTT)
-            sizes->op_gart_write += bo->size;
-        else
+        if (write_domain) {
+            if (write_domain == RADEON_GEM_DOMAIN_VRAM)
+                sizes->op_vram_write += bo->size;
+            else if (write_domain == RADEON_GEM_DOMAIN_GTT)
+                sizes->op_gart_write += bo->size;
+            sc->new_accounted = write_domain;
+        } else {
             sizes->op_read += bo->size;
-        sc->new_accounted = (read_domains << 16) | write_domain;
+            sc->new_accounted = read_domains << 16;
+        }
     } else {
         uint16_t old_read, old_write;
 
