@@ -67,7 +67,8 @@ const FilePath::CharType kRemotingViewerPluginPath[] =
 // Use a consistent MIME-type regardless of branding.
 const char kRemotingViewerPluginMimeType[] =
     "application/vnd.chromium.remoting-viewer";
-// TODO(wez): Remove the old MIME-type once client code no longer needs it.
+// TODO(garykac): Remove the old MIME-type once client code no longer needs it.
+// Tracked in crbug.com/112532.
 const char kRemotingViewerPluginOldMimeType[] =
     "pepper-application/x-chromoting";
 #endif

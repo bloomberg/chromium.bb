@@ -162,7 +162,7 @@ remoting.ClientSession.prototype.createPluginAndConnect =
       document.createElement('embed');
   this.plugin.id = this.PLUGIN_ID;
   this.plugin.src = 'about://none';
-  this.plugin.type = 'pepper-application/x-chromoting';
+  this.plugin.type = 'application/vnd.chromium.remoting-viewer';
   this.plugin.width = 0;
   this.plugin.height = 0;
   this.plugin.tabIndex = 0;  // Required, otherwise focus() doesn't work.
