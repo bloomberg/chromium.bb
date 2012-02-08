@@ -412,10 +412,10 @@ ScoredHistoryMatches URLIndexPrivateData::HistoryItemsForTerms(
   pre_filter_item_count_ = 0;
   post_filter_item_count_ = 0;
   post_scoring_item_count_ = 0;
-  // The search string we receive may contain encoded characters. For reducing
-  // the index we need individual, lower-cased words, ignoring encodings. For
+  // The search string we receive may contain escaped characters. For reducing
+  // the index we need individual, lower-cased words, ignoring escapings. For
   // the final filtering we need whitespace separated substrings possibly
-  // containing encodings.
+  // containing escaped characters.
   string16 lower_raw_string(base::i18n::ToLower(search_string));
   string16 lower_unescaped_string =
       net::UnescapeURLComponent(lower_raw_string,
@@ -477,7 +477,7 @@ ScoredHistoryMatches URLIndexPrivateData::HistoryItemsForTerms(
 
   // We call these 'terms' (as opposed to 'words'; see above) as in this case
   // we only want to break up the search string on 'true' whitespace rather than
-  // encoded whitespace. When the user types "colspec=ID%20Mstone Release" we
+  // escaped whitespace. When the user types "colspec=ID%20Mstone Release" we
   // get two 'terms': "colspec=id%20mstone" and "release".
   history::String16Vector lower_raw_terms;
   Tokenize(lower_raw_string, kWhitespaceUTF16, &lower_raw_terms);
