@@ -63,87 +63,27 @@ input[type='submit'][disabled]:hover {
   color: #888;
 }
 
-/* Drop opacity of selected rows to give a visual feedback on copy/cut
- * operation.*/
-.blink{
-  opacity: 0.8;
-}
-
 .butter-bar {
-  -webkit-box-align: end;
-  -webkit-box-orient: horizontal;
   -webkit-transition-property: opacity, top;
   -webkit-transition-duration: 300ms;
-  background-color: rgba(95, 95, 95, 0.17);
-  color: #222;
-  display: -webkit-box;
+  padding-top: 2px;
+  padding-bottom: 2px;
   padding-left: 1em;
   padding-right: 1em;
-  padding-top: 2px;
   position: absolute;
-  top: 1px;
+  background-color: rgba(255, 249, 149, 0.5);
+  border-radius: 3px;
+  border: 1px gold solid;
 }
 
-.butter-bar.before-show {
-  top: -30px;
+.butter-bar a {
+  -webkit-margin-start: 1em;
 }
 
-.butter-bar .content {
-  padding-bottom: 8px;
-  padding-right: 5px;
-}
-
-.hide-in-butter {
-  display: none;
-}
-
-.butter-bar .actions {
-  -webkit-box-orient: horizontal;
-  -webkit-box-pack: end;
-  display: -webkit-box;
-}
-
-.butter-bar .actions a {
-  background: center center no-repeat;
-  background-image: url('../images/close_bar.png');
-  display: inline-block;
-  height: 12px;
-  padding: 4px;
-  width: 12px;
-}
-
-.butter-bar.error {
-  background-color: rgba(221, 75, 57, 0.2);
-  border: 1px solid rgba(221, 75, 57, 0.5);
-  border-radius: 2px;
-  padding: 2px 1em;
-}
-
-.progress-bar {
-  border: 1px solid #999;
-  margin-top: 3px;
-  padding: 1px;
-  width: 320px;
-}
-
-.progress-track {
-  -webkit-animation-name: bg;
-  -webkit-animation-duration: 0.8s;
-  -webkit-animation-iteration-count: infinite;
-  -webkit-animation-timing-function: linear;
-  background-color:#ccc;
-  background-image: -webkit-linear-gradient(315deg, transparent,
-      transparent 33%, rgba(0,0,0,0.12) 33%, rgba(0,0,0,0.12) 66%,
-      transparent 66%, transparent);
-  background-position: 0 0;
-  background-repeat: repeat-x;
-  background-size: 16px 8px;
-  height: 5px;
-}
-
-@-webkit-keyframes bg {
-  0% { background-position:0 0; }
-  100% { background-position:-16px 0; }
+.butter-error {
+  color: rgb(100, 0, 0);
+  background-color: rgba(255, 100, 100, 0.5);
+  border: 1px red solid;
 }
 
 /* The top title of the dialog. */
