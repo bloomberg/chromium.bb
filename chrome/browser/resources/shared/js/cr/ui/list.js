@@ -982,9 +982,12 @@ cr.define('cr.ui', function() {
      */
     ensureAllItemSizesInCache: function() {
       var measuringIndexes = [];
+      var isElementAppended = [];
       for (var y = 0; y < this.dataModel.length; y++) {
-        if (!this.cachedItemHeights_[y])
+        if (!this.cachedItemHeights_[y]) {
           measuringIndexes.push(y);
+          isElementAppended.push(false);
+        }
       }
 
       var measuringItems = [];
@@ -994,7 +997,14 @@ cr.define('cr.ui', function() {
         var dataItem = this.dataModel.item(index);
         var listItem = this.cachedItems_[index] || this.createItem(dataItem);
         listItem.listIndex = index;
-        this.appendChild(listItem);
+
+        // If |listItems| is not on the list, apppends it to the list and sets
+        // the flag.
+        if (!listItem.parentNode) {
+          this.appendChild(listItem);
+          isElementAppended[y] = true;
+        }
+
         this.cachedItems_[index] = listItem;
         measuringItems.push(listItem);
       }
@@ -1009,7 +1019,9 @@ cr.define('cr.ui', function() {
 
       // Removes all the temprary elements.
       for (var y = 0; y < measuringIndexes.length; y++) {
-        this.removeChild(measuringItems[y]);
+        // If the list item has been appended above, removes it.
+        if (isElementAppended[y])
+          this.removeChild(measuringItems[y]);
       }
     },
 
