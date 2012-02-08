@@ -135,6 +135,7 @@
     'common/font_config_ipc_linux.cc',
     'common/font_config_ipc_linux.h',
     'common/font_list.h',
+    'common/font_list_android.cc',
     'common/font_list_mac.mm',
     'common/font_list_win.cc',
     'common/font_list_x11.cc',

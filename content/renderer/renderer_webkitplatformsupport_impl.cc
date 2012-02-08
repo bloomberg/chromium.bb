@@ -63,7 +63,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/mac/WebSandboxSupport.h"
 #endif
 
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
+#if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
 #include <string>
 #include <map>
 
@@ -116,6 +116,12 @@ class RendererWebKitPlatformSupportImpl::FileUtilities
                                       int mode);
 };
 
+#if defined(OS_ANDROID)
+// WebKit doesn't use WebSandboxSupport on android so we don't need to
+// implement anything here.
+class RendererWebKitPlatformSupportImpl::SandboxSupport {
+};
+#else
 class RendererWebKitPlatformSupportImpl::SandboxSupport
     : public WebKit::WebSandboxSupport {
  public:
@@ -146,6 +152,7 @@ class RendererWebKitPlatformSupportImpl::SandboxSupport
   std::map<string16, WebKit::WebFontFamily> unicode_font_families_;
 #endif
 };
+#endif  // defined(OS_ANDROID)
 
 //------------------------------------------------------------------------------
 
@@ -181,7 +188,12 @@ RendererWebKitPlatformSupportImpl::fileUtilities() {
 }
 
 WebKit::WebSandboxSupport* RendererWebKitPlatformSupportImpl::sandboxSupport() {
+#if defined(OS_ANDROID)
+  // WebKit doesn't use WebSandboxSupport on android.
+  return NULL;
+#else
   return sandbox_support_.get();
+#endif
 }
 
 WebKit::WebCookieJar* RendererWebKitPlatformSupportImpl::cookieJar() {
@@ -489,6 +501,12 @@ bool RendererWebKitPlatformSupportImpl::SandboxSupport::loadFont(
 
   return FontLoader::CGFontRefFromBuffer(font_data, font_data_size, out);
 }
+
+#elif defined(OS_ANDROID)
+
+// WebKit doesn't use WebSandboxSupport on android so we don't need to
+// implement anything here. This is cleaner to support than excluding the
+// whole class for android.
 
 #elif defined(OS_POSIX)
 

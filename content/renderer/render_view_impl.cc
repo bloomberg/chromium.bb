@@ -2124,11 +2124,16 @@ WebMediaPlayer* RenderViewImpl::createMediaPlayer(
       content::GetContentClient()->renderer()->OverrideCreateWebMediaPlayer(
           this, frame, client, AsWeakPtr(), collection, audio_source_provider,
           message_loop_factory, media_stream_impl_.get(), render_media_log);
+#if defined(OS_ANDROID)
+  // TODO(qinmin): Implement for android.
+  // http://crbug.com/113218
+#else
   if (!media_player) {
     media_player = new webkit_media::WebMediaPlayerImpl(
         frame, client, AsWeakPtr(), collection, audio_source_provider,
         message_loop_factory, media_stream_impl_.get(), render_media_log);
   }
+#endif
   return media_player;
 }
 
