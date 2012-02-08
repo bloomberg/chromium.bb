@@ -166,20 +166,20 @@ void SystemModalContainerLayoutManager::RemoveModalWindow(
 }
 
 void SystemModalContainerLayoutManager::CreateModalScreen() {
-  if (modal_screen_)
-    return;
-  modal_screen_ = new views::Widget;
-  views::Widget::InitParams params(views::Widget::InitParams::TYPE_CONTROL);
-  params.parent = container_;
-  params.bounds = gfx::Rect(0, 0, container_->bounds().width(),
-                            container_->bounds().height());
-  modal_screen_->Init(params);
-  modal_screen_->GetNativeView()->SetName(
-      "SystemModalContainerLayoutManager.ModalScreen");
-  modal_screen_->SetContentsView(new ScreenView);
-  modal_screen_->GetNativeView()->layer()->SetOpacity(0.0f);
+  if (!modal_screen_) {
+    modal_screen_ = new views::Widget;
+    views::Widget::InitParams params(views::Widget::InitParams::TYPE_CONTROL);
+    params.parent = container_;
+    params.bounds = gfx::Rect(0, 0, container_->bounds().width(),
+        container_->bounds().height());
+    modal_screen_->Init(params);
+    modal_screen_->GetNativeView()->SetName(
+        "SystemModalContainerLayoutManager.ModalScreen");
+    modal_screen_->SetContentsView(new ScreenView);
+    modal_screen_->GetNativeView()->layer()->SetOpacity(0.0f);
 
-  Shell::GetInstance()->AddRootWindowEventFilter(modality_filter_.get());
+    Shell::GetInstance()->AddRootWindowEventFilter(modality_filter_.get());
+  }
 
   StopObservingImplicitAnimations();
 
