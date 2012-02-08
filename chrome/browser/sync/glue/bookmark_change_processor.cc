@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -414,6 +414,11 @@ void BookmarkChangeProcessor::ApplyChangesFromSyncModel(
           foster_parent = model->AddFolder(model->other_node(),
                                            model->other_node()->child_count(),
                                            string16());
+          if (!foster_parent) {
+            error_handler()->OnUnrecoverableError(FROM_HERE,
+                "Failed to create foster parent.");
+            return;
+          }
         }
         for (int i = dst->child_count() - 1; i >= 0; --i) {
           model->Move(dst->GetChild(i), foster_parent,
@@ -439,7 +444,13 @@ void BookmarkChangeProcessor::ApplyChangesFromSyncModel(
         return;
       }
 
-      CreateOrUpdateBookmarkNode(&src, model);
+      if (!CreateOrUpdateBookmarkNode(&src, model)) {
+        error_handler()->OnUnrecoverableError(FROM_HERE,
+            "Failed to create bookmark node with title " +
+            src.GetTitle() + " and url " +
+            src.GetURL().possibly_invalid_spec());
+        return;
+      }
     }
   }
   // Clean up the temporary node.
@@ -477,7 +488,8 @@ const BookmarkNode* BookmarkChangeProcessor::CreateOrUpdateBookmarkNode(
       src->GetId());
   if (!dst) {
     dst = CreateBookmarkNode(src, parent, model, index);
-    model_associator_->Associate(dst, src->GetId());
+    if (dst)
+      model_associator_->Associate(dst, src->GetId());
   } else {
     // URL and is_folder are not expected to change.
     // TODO(ncarter): Determine if such changes should be legal or not.
@@ -515,7 +527,8 @@ const BookmarkNode* BookmarkChangeProcessor::CreateBookmarkNode(
     node = model->AddURL(parent, index,
                          UTF8ToUTF16(sync_node->GetTitle()),
                          sync_node->GetURL());
-    SetBookmarkFavicon(sync_node, node, model);
+    if (node)
+      SetBookmarkFavicon(sync_node, node, model);
   }
   return node;
 }

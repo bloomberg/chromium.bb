@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -448,6 +448,14 @@ bool BookmarkModelAssociator::BuildAssociations(SyncError* error) {
         // Create a new bookmark node for the sync node.
         child_node = BookmarkChangeProcessor::CreateBookmarkNode(
             &sync_child_node, parent_node, bookmark_model_, index);
+        if (!child_node) {
+          error->Reset(FROM_HERE,
+                       "Failed to create bookmark node with title " +
+                        sync_child_node.GetTitle() + " and url " +
+                        sync_child_node.GetURL().possibly_invalid_spec(),
+                       model_type());
+          return false;
+        }
       }
       Associate(child_node, sync_child_id);
       if (sync_child_node.GetIsFolder())
