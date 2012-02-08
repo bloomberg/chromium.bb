@@ -325,7 +325,7 @@ class BluetoothAdapterClientImpl: public BluetoothAdapterClient,
     DCHECK(signal);
     dbus::MessageReader reader(signal);
     std::string device_path;
-    if (!reader.PopString(&device_path)) {
+    if (!reader.PopObjectPath(&device_path)) {
       LOG(ERROR) << object_path
           << ": DeviceCreated signal has incorrect parameters: "
           << signal->ToString();
@@ -352,13 +352,13 @@ class BluetoothAdapterClientImpl: public BluetoothAdapterClient,
     DCHECK(signal);
     dbus::MessageReader reader(signal);
     std::string device_path;
-    if (!reader.PopString(&device_path)) {
+    if (!reader.PopObjectPath(&device_path)) {
       LOG(ERROR) << object_path
           << ": DeviceRemoved signal has incorrect parameters: "
           << signal->ToString();
       return;
     }
-    VLOG(1) << object_path << ": Device created: " << device_path;
+    VLOG(1) << object_path << ": Device removed: " << device_path;
 
     FOR_EACH_OBSERVER(BluetoothAdapterClient::Observer, observers_,
                       DeviceRemoved(object_path, device_path));
