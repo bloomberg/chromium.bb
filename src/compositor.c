@@ -280,13 +280,51 @@ surface_compute_bbox(struct weston_surface *surface, int32_t sx, int32_t sy,
 				  max_x - min_x + 1, max_y - min_y + 1);
 }
 
-WL_EXPORT void
-weston_surface_update_transform(struct weston_surface *surface)
+static void
+weston_surface_update_transform_disable(struct weston_surface *surface)
+{
+	surface->transform.enabled = 0;
+
+	pixman_region32_init_rect(&surface->transform.boundingbox,
+				  surface->geometry.x,
+				  surface->geometry.y,
+				  surface->geometry.width,
+				  surface->geometry.height);
+}
+
+static int
+weston_surface_update_transform_enable(struct weston_surface *surface)
 {
 	struct weston_matrix *matrix = &surface->transform.matrix;
 	struct weston_matrix *inverse = &surface->transform.inverse;
 	struct weston_transform *tform;
 
+	surface->transform.enabled = 1;
+
+	/* Otherwise identity matrix, but with x and y translation. */
+	surface->transform.position.matrix.d[12] = surface->geometry.x;
+	surface->transform.position.matrix.d[13] = surface->geometry.y;
+
+	weston_matrix_init(matrix);
+	wl_list_for_each(tform, &surface->geometry.transformation_list, link)
+		weston_matrix_multiply(matrix, &tform->matrix);
+
+	if (weston_matrix_invert(inverse, matrix) < 0) {
+		/* Oops, bad total transformation, not invertible */
+		fprintf(stderr, "error: weston_surface %p"
+			" transformation not invertible.\n", surface);
+		return -1;
+	}
+
+	surface_compute_bbox(surface, 0, 0, surface->geometry.width,
+			     surface->geometry.height,
+			     &surface->transform.boundingbox);
+	return 0;
+}
+
+WL_EXPORT void
+weston_surface_update_transform(struct weston_surface *surface)
+{
 	if (!surface->geometry.dirty)
 		return;
 
@@ -299,35 +337,11 @@ weston_surface_update_transform(struct weston_surface *surface)
 	    &surface->transform.position.link &&
 	    surface->geometry.transformation_list.prev ==
 	    &surface->transform.position.link) {
-		surface->transform.enabled = 0;
-
-		pixman_region32_init_rect(&surface->transform.boundingbox,
-					  surface->geometry.x,
-					  surface->geometry.y,
-					  surface->geometry.width,
-					  surface->geometry.height);
-		return;
+		weston_surface_update_transform_disable(surface);
+	} else {
+		if (weston_surface_update_transform_enable(surface) < 0)
+			weston_surface_update_transform_disable(surface);
 	}
-
-	surface->transform.enabled = 1;
-
-	surface->transform.position.matrix.d[12] = surface->geometry.x;
-	surface->transform.position.matrix.d[13] = surface->geometry.y;
-
-	weston_matrix_init(matrix);
-	wl_list_for_each(tform, &surface->geometry.transformation_list, link)
-		weston_matrix_multiply(matrix, &tform->matrix);
-
-	if (weston_matrix_invert(inverse, matrix) < 0) {
-		/* Oops, bad total transformation, not invertible */
-		surface->transform.enabled = 0;
-		fprintf(stderr, "error: weston_surface %p"
-			" transformation not invertible.\n", surface);
-	}
-
-	surface_compute_bbox(surface, 0, 0, surface->geometry.width,
-			     surface->geometry.height,
-			     &surface->transform.boundingbox);
 }
 
 static void
