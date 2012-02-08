@@ -2311,7 +2311,7 @@ bool RenderWidgetHostViewWin::Send(IPC::Message* message) {
 void RenderWidgetHostViewWin::EnsureTooltip() {
   UINT message = TTM_NEWTOOLRECT;
 
-  TOOLINFO ti;
+  TOOLINFO ti = {0};
   ti.cbSize = sizeof(ti);
   ti.hwnd = m_hWnd;
   ti.uId = 0;
