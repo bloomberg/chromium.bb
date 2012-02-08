@@ -1683,24 +1683,36 @@ void NaClVmHoleThreadStackIsSafe(struct NaClApp *nap) {
   NaClXMutexUnlock(&nap->mu);
 }
 
-#ifdef __GNUC__
-
 /*
  * GDB's canonical overlay managment routine.
  * We need its symbol in the symbol table so don't inline it.
  * TODO(dje): add some explanation for the non-GDB person.
  */
-
-static void __attribute__ ((noinline)) _ovly_debug_event (void) {
+#if NACL_WINDOWS
+__declspec(dllexport,noinline)
+#endif
+#ifdef __GNUC__
+__attribute__((noinline))
+#endif
+void _ovly_debug_event (void) {
+#ifdef __GNUC__
   /*
    * The asm volatile is here as instructed by the GCC docs.
    * It's not enough to declare a function noinline.
    * GCC will still look inside the function to see if it's worth calling.
    */
   __asm__ volatile ("");
-}
-
+#elif NACL_WINDOWS
+  /*
+   * Visual Studio inlines empty functions even with noinline attribute,
+   * so we need a compile memory barrier to make this function not to be
+   * inlined. Also, it guarantees that nacl_global_xlate_base initialization
+   * is not reordered. This is important for gdb since it sets breakpoint on
+   * this function and reads nacl_global_xlate_base value.
+   */
+  _ReadWriteBarrier();
 #endif
+}
 
 static void StopForDebuggerInit (uintptr_t mem_start) {
   /* Put xlate_base in a place where gdb can find it.  */
@@ -1708,9 +1720,7 @@ static void StopForDebuggerInit (uintptr_t mem_start) {
 
   NaClSandboxMemoryStartForValgrind(mem_start);
 
-#ifdef __GNUC__
-  _ovly_debug_event ();
-#endif
+  _ovly_debug_event();
 }
 
 void NaClGdbHook(struct NaClApp const *nap) {

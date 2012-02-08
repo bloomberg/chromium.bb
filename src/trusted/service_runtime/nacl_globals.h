@@ -52,6 +52,9 @@ void NaClInitGlobals(void);
 
 
 /* hack for gdb */
+#if NACL_WINDOWS
+__declspec(dllexport)
+#endif
 extern uintptr_t nacl_global_xlate_base;
 
 EXTERN_C_END
