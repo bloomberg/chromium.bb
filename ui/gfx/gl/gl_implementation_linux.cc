@@ -141,10 +141,10 @@ bool InitializeGLBindings(GLImplementation implementation) {
     }
 #endif  // !defined(USE_WAYLAND)
     case kGLImplementationEGLGLES2: {
-      base::NativeLibrary gles_library = LoadLibrary("libGLESv2.so");
+      base::NativeLibrary gles_library = LoadLibrary("libGLESv2.so.2");
       if (!gles_library)
         return false;
-      base::NativeLibrary egl_library = LoadLibrary("libEGL.so");
+      base::NativeLibrary egl_library = LoadLibrary("libEGL.so.1");
       if (!egl_library) {
         base::UnloadNativeLibrary(gles_library);
         return false;
