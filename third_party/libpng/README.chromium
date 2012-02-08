@@ -10,3 +10,5 @@ the wk_* names).
 
 Updated to 1.2.45, no changes to the source files but all unneeded files
 stripped.
+
+- One custom patch for bug 112822, to be sent upstream.
