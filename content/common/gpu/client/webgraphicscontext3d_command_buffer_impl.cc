@@ -57,6 +57,7 @@ WebGraphicsContext3DCommandBufferImpl::WebGraphicsContext3DCommandBufferImpl(
       swap_client_(swap_client),
       context_lost_callback_(0),
       context_lost_reason_(GL_NO_ERROR),
+      error_message_callback_(0),
       swapbuffers_complete_callback_(0),
       gpu_preference_(gfx::PreferIntegratedGpu),
       cached_width_(0),
@@ -213,6 +214,10 @@ bool WebGraphicsContext3DCommandBufferImpl::MaybeInitializeGL() {
 
   context_->SetContextLostCallback(
       base::Bind(&WebGraphicsContext3DCommandBufferImpl::OnContextLost,
+                 weak_ptr_factory_.GetWeakPtr()));
+
+  context_->GetCommandBufferProxy()->SetOnConsoleMessageCallback(
+      base::Bind(&WebGraphicsContext3DCommandBufferImpl::OnErrorMessage,
                  weak_ptr_factory_.GetWeakPtr()));
 
   // TODO(gman): Remove this.
@@ -1119,6 +1124,11 @@ void WebGraphicsContext3DCommandBufferImpl::OnSwapBuffersComplete() {
     swapbuffers_complete_callback_->onSwapBuffersComplete();
 }
 
+void WebGraphicsContext3DCommandBufferImpl::setErrorMessageCallback(
+    WebGraphicsContext3D::WebGraphicsErrorMessageCallback* cb) {
+  error_message_callback_ = cb;
+}
+
 void WebGraphicsContext3DCommandBufferImpl::setContextLostCallback(
     WebGraphicsContext3D::WebGraphicsContextLostCallback* cb) {
   context_lost_callback_ = cb;
@@ -1180,3 +1190,12 @@ void WebGraphicsContext3DCommandBufferImpl::OnContextLost(
   if (swap_client_.get())
     swap_client_->OnViewContextSwapBuffersAborted();
 }
+
+void WebGraphicsContext3DCommandBufferImpl::OnErrorMessage(
+    const std::string& message, int id) {
+  if (error_message_callback_) {
+    WebKit::WebString str = WebKit::WebString::fromUTF8(message.c_str());
+    error_message_callback_->onErrorMessage(str, id);
+  }
+}
+

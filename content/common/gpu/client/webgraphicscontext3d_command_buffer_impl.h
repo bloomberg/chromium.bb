@@ -463,6 +463,9 @@ class WebGraphicsContext3DCommandBufferImpl
       WebGraphicsContext3D::WebGraphicsContextLostCallback* callback);
   virtual WGC3Denum getGraphicsResetStatusARB();
 
+  virtual void setErrorMessageCallback(
+      WebGraphicsContext3D::WebGraphicsErrorMessageCallback* callback);
+
   virtual void setSwapBuffersCompleteCallbackCHROMIUM(
       WebGraphicsContext3D::
           WebGraphicsSwapBuffersCompleteCallbackCHROMIUM* callback);
@@ -490,6 +493,7 @@ class WebGraphicsContext3DCommandBufferImpl
   // SwapBuffers callback.
   void OnSwapBuffersComplete();
   virtual void OnContextLost(ContentGLContext::ContextLostReason reason);
+  virtual void OnErrorMessage(const std::string& message, int id);
 
   bool initialize_failed_;
 
@@ -506,6 +510,9 @@ class WebGraphicsContext3DCommandBufferImpl
 
   WebGraphicsContext3D::WebGraphicsContextLostCallback* context_lost_callback_;
   WGC3Denum context_lost_reason_;
+
+  WebGraphicsContext3D::WebGraphicsErrorMessageCallback*
+      error_message_callback_;
 
   WebGraphicsContext3D::WebGraphicsSwapBuffersCompleteCallbackCHROMIUM*
       swapbuffers_complete_callback_;

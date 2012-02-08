@@ -89,9 +89,9 @@ void CommandBufferProxy::OnEchoAck() {
 
 void CommandBufferProxy::OnConsoleMessage(
     const GPUCommandBufferConsoleMessage& message) {
-  // TODO(gman): Pass this on to the console.
-  DLOG(INFO) << "CONSOLE_MESSAGE: "
-             << message.id << " : " << message.message;
+  if (!console_message_callback_.is_null()) {
+    console_message_callback_.Run(message.message, message.id);
+  }
 }
 
 void CommandBufferProxy::SetChannelErrorCallback(
@@ -410,3 +410,9 @@ void CommandBufferProxy::OnUpdateState(const gpu::CommandBuffer::State& state) {
   if (state.generation - last_state_.generation < 0x80000000U)
     last_state_ = state;
 }
+
+void CommandBufferProxy::SetOnConsoleMessageCallback(
+    const GpuConsoleMessageCallback& callback) {
+  console_message_callback_ = callback;
+}
+

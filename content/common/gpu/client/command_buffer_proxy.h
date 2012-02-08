@@ -10,6 +10,7 @@
 
 #include <map>
 #include <queue>
+#include <string>
 
 #include "base/callback.h"
 #include "base/memory/linked_ptr.h"
@@ -33,6 +34,9 @@ class CommandBufferProxy : public gpu::CommandBuffer,
                            public IPC::Channel::Listener,
                            public base::SupportsWeakPtr<CommandBufferProxy> {
  public:
+  typedef base::Callback<void(
+      const std::string& msg, int id)> GpuConsoleMessageCallback;
+
   CommandBufferProxy(GpuChannelHost* channel, int route_id);
   virtual ~CommandBufferProxy();
 
@@ -97,6 +101,8 @@ class CommandBufferProxy : public gpu::CommandBuffer,
   // implementation.
   virtual gpu::error::Error GetLastError() OVERRIDE;
 
+  void SetOnConsoleMessageCallback(const GpuConsoleMessageCallback& callback);
+
  private:
   // Send an IPC message over the GPU channel. This is private to fully
   // encapsulate the channel; all callers of this function must explicitly
@@ -134,6 +140,8 @@ class CommandBufferProxy : public gpu::CommandBuffer,
   base::Closure notify_repaint_task_;
 
   base::Closure channel_error_callback_;
+
+  GpuConsoleMessageCallback console_message_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(CommandBufferProxy);
 };
