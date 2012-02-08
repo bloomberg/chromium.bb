@@ -277,18 +277,20 @@ surface_compute_bbox(struct weston_surface *surface, int32_t sx, int32_t sy,
 		     int32_t width, int32_t height,
 		     pixman_region32_t *bbox)
 {
-	int min_x = INT_MAX, min_y = INT_MAX, max_x = INT_MIN, max_y = INT_MIN;
+	GLfloat min_x = HUGE_VALF,  min_y = HUGE_VALF;
+	GLfloat max_x = -HUGE_VALF, max_y = -HUGE_VALF;
 	int32_t s[4][2] = {
 		{ sx,         sy },
 		{ sx,         sy + height },
 		{ sx + width, sy },
 		{ sx + width, sy + height }
 	};
+	GLfloat int_x, int_y;
 	int i;
 
 	for (i = 0; i < 4; ++i) {
-		int32_t x, y;
-		weston_surface_to_global(surface, s[i][0], s[i][1], &x, &y);
+		GLfloat x, y;
+		surface_to_global_float(surface, s[i][0], s[i][1], &x, &y);
 		if (x < min_x)
 			min_x = x;
 		if (x > max_x)
@@ -299,11 +301,10 @@ surface_compute_bbox(struct weston_surface *surface, int32_t sx, int32_t sy,
 			max_y = y;
 	}
 
-	/* weston_surface_to_global rounds with floor(), add the
-	 * minimum required safety margin.
-	 */
-	pixman_region32_init_rect(bbox, min_x, min_y,
-				  max_x - min_x + 1, max_y - min_y + 1);
+	int_x = floorf(min_x);
+	int_y = floorf(min_y);
+	pixman_region32_init_rect(bbox, int_x, int_y,
+				  ceilf(max_x) - int_x, ceilf(max_y) - int_y);
 }
 
 static void
