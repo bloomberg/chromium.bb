@@ -130,5 +130,8 @@ bitcode_env.AddNodeToTestSuite(node,
                                    # pnacl_bad_browser_test started failing on
                                    # X86-64 after Chrome deps roll.
                                    # TODO(sehr): Re-enable this test.
-                                   env.Bit('target_x86_64')))
+                                   env.Bit('target_x86_64') or
+                                   # TODO(jvoung) reenable
+                                   # http://code.google.com/p/nativeclient/issues/detail?id=2583
+                                   True))
 
