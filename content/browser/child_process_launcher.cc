@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -50,7 +50,7 @@ class ChildProcessLauncher::Context
         exit_code_(content::RESULT_CODE_NORMAL_EXIT),
         starting_(true),
         terminate_child_on_shutdown_(true)
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
+#if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
         , zygote_(false)
 #endif
         {
@@ -127,7 +127,7 @@ class ChildProcessLauncher::Context
     // to reliably detect child termination.
     file_util::ScopedFD ipcfd_closer(&ipcfd);
 
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
+#if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
     // On Linux, we need to add some extra file descriptors for crash handling.
     std::string process_type =
         cmd_line->GetSwitchValueASCII(switches::kProcessType);
@@ -152,7 +152,7 @@ class ChildProcessLauncher::Context
           ipcfd,
           kPrimaryIPCChannel + base::GlobalDescriptors::kBaseDescriptor));
 
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
+#if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
       if (crash_signal_fd >= 0) {
         fds_to_map.push_back(std::make_pair(
             crash_signal_fd,
@@ -209,14 +209,14 @@ class ChildProcessLauncher::Context
         base::Bind(
             &Context::Notify,
             this_object.get(),
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
+#if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
             use_zygote,
 #endif
             handle));
   }
 
   void Notify(
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
+#if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
       bool zygote,
 #endif
       base::ProcessHandle handle) {
@@ -225,7 +225,7 @@ class ChildProcessLauncher::Context
     if (!handle)
       LOG(ERROR) << "Failed to launch child process";
 
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
+#if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
     zygote_ = zygote;
 #endif
     if (client_) {
@@ -248,7 +248,7 @@ class ChildProcessLauncher::Context
         BrowserThread::PROCESS_LAUNCHER, FROM_HERE,
         base::Bind(
             &Context::TerminateInternal,
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
+#if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
             zygote_,
 #endif
             process_.handle()));
@@ -262,7 +262,7 @@ class ChildProcessLauncher::Context
   }
 
   static void TerminateInternal(
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
+#if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
       bool zygote,
 #endif
       base::ProcessHandle handle) {
@@ -272,7 +272,7 @@ class ChildProcessLauncher::Context
     process.Terminate(content::RESULT_CODE_NORMAL_EXIT);
     // On POSIX, we must additionally reap the child.
 #if defined(OS_POSIX)
-#if !defined(OS_MACOSX)
+#if !defined(OS_MACOSX) && !defined(OS_ANDROID)
     if (zygote) {
       // If the renderer was created via a zygote, we have to proxy the reaping
       // through the zygote process.
@@ -296,7 +296,7 @@ class ChildProcessLauncher::Context
   // shutdown. Default behavior is to terminate the child.
   bool terminate_child_on_shutdown_;
 
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
+#if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
   bool zygote_;
 #endif
 };
@@ -347,7 +347,7 @@ base::TerminationStatus ChildProcessLauncher::GetChildTerminationStatus(
       *exit_code = context_->exit_code_;
     return context_->termination_status_;
   }
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
+#if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
   if (context_->zygote_) {
     context_->termination_status_ = ZygoteHost::GetInstance()->
         GetTerminationStatus(handle, &context_->exit_code_);
