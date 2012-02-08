@@ -91,18 +91,6 @@ cr.define('options', function() {
         chrome.send('spokenFeedbackChange',
                     [$('accessibility-spoken-feedback-check').checked]);
       };
-      $('accessibility-high-contrast-check').onchange = function(event) {
-        chrome.send('highContrastChange',
-                    [$('accessibility-high-contrast-check').checked]);
-      };
-      $('accessibility-screen-magnifier-check').onchange = function(event) {
-        chrome.send('screenMagnifierChange',
-                    [$('accessibility-screen-magnifier-check').checked]);
-      };
-      $('accessibility-virtual-keyboard-check').onchange = function(event) {
-        chrome.send('virtualKeyboardChange',
-                    [$('accessibility-virtual-keyboard-check').checked]);
-      };
       initializeBrightnessButton_('brightness-decrease-button',
           'decreaseScreenBrightness');
       initializeBrightnessButton_('brightness-increase-button',
@@ -152,21 +140,21 @@ cr.define('options', function() {
    * Set the initial state of the high contrast checkbox.
    */
   SystemOptions.setHighContrastCheckboxState = function(checked) {
-    $('accessibility-high-contrast-check').checked = checked;
+    // TODO(zork): Update UI
   };
 
   /**
    * Set the initial state of the screen magnifier checkbox.
    */
   SystemOptions.setScreenMagnifierCheckboxState = function(checked) {
-    $('accessibility-screen-magnifier-check').checked = checked;
+    // TODO(zork): Update UI
   };
 
   /**
    * Set the initial state of the virtual keyboard checkbox.
    */
   SystemOptions.setVirtualKeyboardCheckboxState = function(checked) {
-    $('accessibility-virtual-keyboard-check').checked = checked;
+    // TODO(zork): Update UI
   };
 
   /**

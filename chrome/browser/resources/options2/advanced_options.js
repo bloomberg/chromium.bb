@@ -210,18 +210,6 @@ cr.define('options', function() {
           chrome.send('spokenFeedbackChange',
           [$('accessibility-spoken-feedback-check').checked]);
         };
-        $('accessibility-high-contrast-check').onchange = function(event) {
-          chrome.send('highContrastChange',
-          [$('accessibility-high-contrast-check').checked]);
-        };
-        $('accessibility-screen-magnifier-check').onchange = function(event) {
-          chrome.send('screenMagnifierChange',
-          [$('accessibility-screen-magnifier-check').checked]);
-        };
-        $('accessibility-virtual-keyboard-check').onchange = function(event) {
-          chrome.send('virtualKeyboardChange',
-          [$('accessibility-virtual-keyboard-check').checked]);
-        };
       }
 
       // Background mode section.
@@ -390,21 +378,21 @@ cr.define('options', function() {
    * Set the initial state of the high contrast checkbox.
    */
   AdvancedOptions.setHighContrastCheckboxState = function(checked) {
-    $('accessibility-high-contrast-check').checked = checked;
+    // TODO(zork): Update UI
   };
 
   /**
    * Set the initial state of the screen magnifier checkbox.
    */
   AdvancedOptions.setScreenMagnifierCheckboxState = function(checked) {
-    $('accessibility-screen-magnifier-check').checked = checked;
+    // TODO(zork): Update UI
   };
 
   /**
    * Set the initial state of the virtual keyboard checkbox.
    */
   AdvancedOptions.setVirtualKeyboardCheckboxState = function(checked) {
-    $('accessibility-virtual-keyboard-check').checked = checked;
+    // TODO(zork): Update UI
   };
 
   /**
