@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -63,7 +63,7 @@ IN_PROC_BROWSER_TEST_F(SyncErrorTest, ActionableErrorTest) {
   protocol_error.action = browser_sync::UPGRADE_CLIENT;
   protocol_error.error_description = "Not My Fault";
   protocol_error.url = "www.google.com";
-  TriggerSyncError(protocol_error);
+  TriggerSyncError(protocol_error, SyncTest::ERROR_FREQUENCY_ALWAYS);
 
   // Now make one more change so we will do another sync.
   const BookmarkNode* node2 = AddFolder(0, 0, L"title2");
@@ -78,6 +78,37 @@ IN_PROC_BROWSER_TEST_F(SyncErrorTest, ActionableErrorTest) {
       protocol_error.error_description);
 }
 
+IN_PROC_BROWSER_TEST_F(SyncErrorTest, ErrorWhileSettingUp) {
+  ASSERT_TRUE(SetupClients());
+
+  browser_sync::SyncProtocolError protocol_error;
+  protocol_error.error_type = browser_sync::TRANSIENT_ERROR;
+  protocol_error.error_description = "Not My Fault";
+  protocol_error.url = "www.google.com";
+
+  if (clients()[0]->AutoStartEnabled()) {
+    // In auto start enabled platforms like chrome os we should be
+    // able to set up even if the first sync while setting up fails.
+    // Trigger error on every 2 out of 3 requests.
+    TriggerSyncError(protocol_error, SyncTest::ERROR_FREQUENCY_TWO_THIRDS);
+    // Now setup sync and it should succeed.
+    ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+  } else {
+    // In Non auto start enabled environments if the setup sync fails then
+    // the setup would fail. So setup sync normally.
+    ASSERT_TRUE(SetupSync()) << "Setup sync failed";
+    ASSERT_TRUE(clients()[0]->DisableSyncForDatatype(syncable::AUTOFILL));
+
+    // Trigger error on every 2 out of 3 requests.
+    TriggerSyncError(protocol_error, SyncTest::ERROR_FREQUENCY_TWO_THIRDS);
+
+    // Now enable a datatype, whose first 2 syncs would fail, but we should
+    // recover and setup succesfully on the third attempt.
+    ASSERT_TRUE(clients()[0]->EnableSyncForDatatype(syncable::AUTOFILL));
+  }
+}
+
+
 IN_PROC_BROWSER_TEST_F(SyncErrorTest,
     BirthdayErrorUsingActionableErrorTest) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
@@ -91,7 +122,7 @@ IN_PROC_BROWSER_TEST_F(SyncErrorTest,
   protocol_error.action = browser_sync::DISABLE_SYNC_ON_CLIENT;
   protocol_error.error_description = "Not My Fault";
   protocol_error.url = "www.google.com";
-  TriggerSyncError(protocol_error);
+  TriggerSyncError(protocol_error, SyncTest::ERROR_FREQUENCY_ALWAYS);
 
   // Now make one more change so we will do another sync.
   const BookmarkNode* node2 = AddFolder(0, 0, L"title2");

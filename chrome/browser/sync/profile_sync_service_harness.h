@@ -194,6 +194,9 @@ class ProfileSyncServiceHarness
   // they're in).
   size_t GetNumDatatypes() const;
 
+  // Gets the |auto_start_enabled_| variable from the |service_|.
+  bool AutoStartEnabled();
+
  private:
   friend class StateChangeTimeoutEvent;
 

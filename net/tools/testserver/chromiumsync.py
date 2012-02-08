@@ -57,6 +57,14 @@ ALL_TYPES = (
     TYPED_URL,
     EXTENSION_SETTINGS) = range(16)
 
+# An eumeration on the frequency at which the server should send errors
+# to the client. This would be specified by the url that triggers the error.
+# Note: This enum should be kept in the same order as the enum in sync_test.h.
+SYNC_ERROR_FREQUENCY = (
+    ERROR_FREQUENCY_NONE,
+    ERROR_FREQUENCY_ALWAYS,
+    ERROR_FREQUENCY_TWO_THIRDS) = range(3)
+
 # Well-known server tag of the top level 'Google Chrome' folder.
 TOP_LEVEL_FOLDER_TAG = 'google_chrome'
 
@@ -120,6 +128,10 @@ class TransientError(Error):
 
 class SyncInducedError(Error):
   """The client would be sent an error."""
+
+
+class InducedErrorFrequencyNotDefined(Error):
+  """The error frequency defined is not handled."""
 
 
 def GetEntryType(entry):
@@ -441,6 +453,8 @@ class SyncDataModel(object):
     self.migration_history = MigrationHistory()
 
     self.induced_error = sync_pb2.ClientToServerResponse.Error()
+    self.induced_error_frequency = 0
+    self.sync_count_before_errors = 0
 
   def _SaveEntry(self, entry):
     """Insert or update an entry in the change log, and give it a new version.
@@ -910,8 +924,11 @@ class SyncDataModel(object):
         True)
     self._SaveEntry(nigori_new)
 
-  def SetInducedError(self, error):
+  def SetInducedError(self, error, error_frequency,
+                      sync_count_before_errors):
     self.induced_error = error
+    self.induced_error_frequency = error_frequency
+    self.sync_count_before_errors = sync_count_before_errors
 
   def GetInducedError(self):
     return self.induced_error
@@ -935,6 +952,7 @@ class TestServer(object):
     self.client_name_generator = ('+' * times + chr(c)
         for times in xrange(0, sys.maxint) for c in xrange(ord('A'), ord('Z')))
     self.transient_error = False
+    self.sync_count = 0
 
   def GetShortClientName(self, query):
     parsed = cgi.parse_qs(query[query.find('?')+1:])
@@ -962,7 +980,20 @@ class TestServer(object):
      """Raises SyncInducedError if needed."""
      if (self.account.induced_error.error_type !=
          sync_enums_pb2.SyncEnums.UNKNOWN):
-       raise SyncInducedError
+       # Always means return the given error for all requests.
+       if self.account.induced_error_frequency == ERROR_FREQUENCY_ALWAYS:
+         raise SyncInducedError
+       # This means the FIRST 2 requests of every 3 requests
+       # return an error. Don't switch the order of failures. There are
+       # test cases that rely on the first 2 being the failure rather than
+       # the last 2.
+       elif (self.account.induced_error_frequency ==
+             ERROR_FREQUENCY_TWO_THIRDS):
+         if (((self.sync_count -
+               self.account.sync_count_before_errors) % 3) != 0):
+           raise SyncInducedError
+       else:
+         raise InducedErrorFrequencyNotDefined
 
   def HandleMigrate(self, path):
     query = urlparse.urlparse(path)[4]
@@ -1006,7 +1037,11 @@ class TestServer(object):
          (urlparse.parse_qs(query)['error_description'])[0])
        except KeyError:
          error.error_description = ''
-       self.account.SetInducedError(error)
+       try:
+         error_frequency = int((urlparse.parse_qs(query)['frequency'])[0])
+       except KeyError:
+         error_frequency = ERROR_FREQUENCY_ALWAYS
+       self.account.SetInducedError(error, error_frequency, self.sync_count)
        response = ('Error = %d, action = %d, url = %s, description = %s' %
                    (error.error_type, error.action,
                     error.url,
@@ -1053,6 +1088,7 @@ class TestServer(object):
       serialized reply to the command.
     """
     self.account_lock.acquire()
+    self.sync_count += 1
     def print_context(direction):
       print '[Client %s %s %s.py]' % (self.GetShortClientName(query), direction,
                                       __name__),

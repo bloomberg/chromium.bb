@@ -68,6 +68,21 @@ class SyncTest : public InProcessBrowserTest {
                            // account state is initially clean.
   };
 
+  // NOTE: IMPORTANT the enum here should match with
+  // the enum defined on the chromiumsync.py test server impl.
+  enum SyncErrorFrequency {
+    // Uninitialized state.
+    ERROR_FREQUENCY_NONE,
+
+    // Server sends the error on all requests.
+    ERROR_FREQUENCY_ALWAYS,
+
+    // Server sends the error on two thirds of the request.
+    // Note this is not random. The server would send the
+    // error on the first 2 requests of every 3 requests.
+    ERROR_FREQUENCY_TWO_THIRDS
+  };
+
   // A SyncTest must be associated with a particular test type.
   explicit SyncTest(TestType test_type);
 
@@ -177,7 +192,10 @@ class SyncTest : public InProcessBrowserTest {
   void TriggerAuthError();
 
   // Triggers a sync error on the server.
-  void TriggerSyncError(const browser_sync::SyncProtocolError& error);
+  //   error: The error the server is expected to return.
+  //   frequency: Frequency with which the error is returned.
+  void TriggerSyncError(const browser_sync::SyncProtocolError& error,
+                        SyncErrorFrequency frequency);
 
   // Triggers setting the sync_tabs field of the nigori node.
   void TriggerSetSyncTabs();

@@ -814,6 +814,10 @@ bool ProfileSyncServiceHarness::HasPendingBackendMigration() {
   return migrator && migrator->state() != browser_sync::BackendMigrator::IDLE;
 }
 
+bool ProfileSyncServiceHarness::AutoStartEnabled() {
+  return service_->auto_start_enabled();
+}
+
 bool ProfileSyncServiceHarness::MatchesOtherClient(
     ProfileSyncServiceHarness* partner) {
   // TODO(akalin): Shouldn't this belong with the intersection check?
