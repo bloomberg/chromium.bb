@@ -12,6 +12,7 @@
 #include "base/i18n/case_conversion.h"
 #include "base/metrics/histogram.h"
 #include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
@@ -234,8 +235,10 @@ void NetworkActionPredictor::OnOmniboxOpenedUrl(const AutocompleteLog& log) {
 
   const AutocompleteMatch& match = log.result.match_at(log.selected_index);
 
-  UMA_HISTOGRAM_BOOLEAN("Prerender.OmniboxNavigationsCouldPrerender",
-                        prerender::IsOmniboxEnabled(profile_));
+  UMA_HISTOGRAM_BOOLEAN(
+      StringPrintf("Prerender.OmniboxNavigationsCouldPrerender_%.1f",
+                   get_hit_weight()).c_str(),
+      prerender::IsOmniboxEnabled(profile_));
 
   const GURL& opened_url = match.destination_url;
 

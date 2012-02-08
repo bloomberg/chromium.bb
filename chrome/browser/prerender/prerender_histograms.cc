@@ -149,13 +149,19 @@ void PrerenderHistograms::RecordPrerender(Origin origin, const GURL& url) {
 }
 
 void PrerenderHistograms::RecordPrerenderStarted(Origin origin) const {
-  if (OriginIsOmnibox(origin))
-    UMA_HISTOGRAM_COUNTS("Prerender.OmniboxPrerenderCount", 1);
+  if (OriginIsOmnibox(origin)) {
+    UMA_HISTOGRAM_COUNTS(
+        StringPrintf("Prerender.OmniboxPrerenderCount_%.1f",
+                     NetworkActionPredictor::get_hit_weight()).c_str(), 1);
+  }
 }
 
 void PrerenderHistograms::RecordUsedPrerender(Origin origin) const {
-  if (OriginIsOmnibox(origin))
-    UMA_HISTOGRAM_COUNTS("Prerender.OmniboxNavigationsUsedPrerenderCount", 1);
+  if (OriginIsOmnibox(origin)) {
+    UMA_HISTOGRAM_COUNTS(
+        StringPrintf("Prerender.OmniboxNavigationsUsedPrerenderCount_%.1f",
+                     NetworkActionPredictor::get_hit_weight()).c_str(), 1);
+  }
 }
 
 base::TimeTicks PrerenderHistograms::GetCurrentTimeTicks() const {
