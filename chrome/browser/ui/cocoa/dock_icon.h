@@ -1,13 +1,24 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import <Cocoa/Cocoa.h>
 
+#include "base/time.h"
+
 // A class representing the dock icon of the Chromium app. It's its own class
 // since several parts of the app want to manipulate the display of the dock
 // icon.
+//
+// Like all UI, it must only be messaged from the UI thread.
 @interface DockIcon : NSObject {
+ @private
+  // The time that the icon was last updated.
+  base::TimeTicks lastUpdate_;
+
+  // If true, the state has changed in a significant way since the last icon
+  // update and throttling should not prevent icon redraw.
+  BOOL forceUpdate_;
 }
 
 + (DockIcon*)sharedDockIcon;

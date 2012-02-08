@@ -6,13 +6,23 @@
 
 #include "base/mac/bundle_locations.h"
 #include "base/memory/scoped_nsobject.h"
+#include "content/public/browser/browser_thread.h"
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
 
+using content::BrowserThread;
+
+namespace {
+
 // The fraction of the size of the dock icon that the badge is.
-static const float kBadgeFraction = 0.4f;
+const float kBadgeFraction = 0.4f;
 
 // The indentation of the badge.
-static const float kBadgeIndent = 5.0f;
+const float kBadgeIndent = 5.0f;
+
+// The maximum update rate for the dock icon. 200ms = 5fps.
+const int64 kUpdateFrequencyMs = 200;
+
+}  // namespace
 
 // A view that draws our dock tile.
 @interface DockTileView : NSView {
@@ -207,30 +217,54 @@ static const float kBadgeIndent = 5.0f;
 }
 
 - (void)updateIcon {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  static base::TimeDelta updateFrequency =
+      base::TimeDelta::FromMilliseconds(kUpdateFrequencyMs);
+
+  base::TimeTicks now = base::TimeTicks::Now();
+  base::TimeDelta timeSinceLastUpdate = now - lastUpdate_;
+  if (!forceUpdate_ && timeSinceLastUpdate < updateFrequency)
+    return;
+
+  lastUpdate_ = now;
+  forceUpdate_ = NO;
+
   NSDockTile* dockTile = [[NSApplication sharedApplication] dockTile];
 
   [dockTile display];
 }
 
 - (void)setDownloads:(int)downloads {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   NSDockTile* dockTile = [[NSApplication sharedApplication] dockTile];
   DockTileView* dockTileView = (DockTileView*)([dockTile contentView]);
 
-  [dockTileView setDownloads:downloads];
+  if (downloads != [dockTileView downloads]) {
+    [dockTileView setDownloads:downloads];
+    forceUpdate_ = YES;
+  }
 }
 
 - (void)setIndeterminate:(BOOL)indeterminate {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   NSDockTile* dockTile = [[NSApplication sharedApplication] dockTile];
   DockTileView* dockTileView = (DockTileView*)([dockTile contentView]);
 
-  [dockTileView setIndeterminate:indeterminate];
+  if (indeterminate != [dockTileView indeterminate]) {
+    [dockTileView setIndeterminate:indeterminate];
+    forceUpdate_ = YES;
+  }
 }
 
 - (void)setProgress:(float)progress {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   NSDockTile* dockTile = [[NSApplication sharedApplication] dockTile];
   DockTileView* dockTileView = (DockTileView*)([dockTile contentView]);
 
-  [dockTileView setProgress:progress];
+  if (progress != [dockTileView progress]) {
+    [dockTileView setProgress:progress];
+    forceUpdate_ = NO;
+  }
 }
 
 @end
