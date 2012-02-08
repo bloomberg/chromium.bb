@@ -14,6 +14,8 @@
 
 namespace ash {
 
+namespace {
+
 // Filter to watch for the termination of a keyboard gesture to cycle through
 // multiple windows.
 class WindowCycleEventFilter : public aura::EventFilter {
@@ -71,6 +73,8 @@ ui::GestureStatus WindowCycleEventFilter::PreHandleGestureEvent(
     aura::GestureEvent* event) {
   return ui::GESTURE_STATUS_UNKNOWN;  // Not handled.
 }
+
+}  // namespace
 
 //////////////////////////////////////////////////////////////////////////////
 // WindowCycleController, public:
@@ -132,9 +136,9 @@ void WindowCycleController::StartCycling() {
 }
 
 void WindowCycleController::Step(Direction direction) {
-    DCHECK(windows_.get());
-    windows_->Step(direction == FORWARD ? WindowCycleList::FORWARD :
-                   WindowCycleList::BACKWARD);
+  DCHECK(windows_.get());
+  windows_->Step(direction == FORWARD ? WindowCycleList::FORWARD :
+                 WindowCycleList::BACKWARD);
 }
 
 void WindowCycleController::StopCycling() {

@@ -18,6 +18,8 @@
 
 namespace ash {
 
+namespace {
+
 using aura::test::CreateTestWindowWithId;
 using aura::test::TestWindowDelegate;
 using aura::Window;
@@ -172,5 +174,7 @@ TEST_F(WindowCycleControllerTest, HandleCycleWindow) {
   EXPECT_FALSE(IsActiveWindow(window1.get()));
   EXPECT_FALSE(IsActiveWindow(window2.get()));
 }
+
+}  // namespace
 
 }  // namespace ash

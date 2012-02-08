@@ -20,7 +20,7 @@ namespace {
 
 class BaseLayoutManagerTest : public aura::test::AuraTestBase {
  public:
-  BaseLayoutManagerTest() : layout_manager_(NULL) {}
+  BaseLayoutManagerTest() {}
   virtual ~BaseLayoutManagerTest() {}
 
   virtual void SetUp() OVERRIDE {
@@ -31,8 +31,7 @@ class BaseLayoutManagerTest : public aura::test::AuraTestBase {
     container_.reset(new aura::Window(NULL));
     container_->Init(ui::Layer::LAYER_NOT_DRAWN);
     container_->SetBounds(gfx::Rect(0, 0, 500, 500));
-    layout_manager_ = new internal::BaseLayoutManager();
-    container_->SetLayoutManager(layout_manager_);
+    container_->SetLayoutManager(new internal::BaseLayoutManager());
   }
 
   aura::Window* CreateTestWindow(const gfx::Rect& bounds) {
@@ -40,15 +39,10 @@ class BaseLayoutManagerTest : public aura::test::AuraTestBase {
   }
 
  private:
-  // Owned by |container_|.
-  internal::BaseLayoutManager* layout_manager_;
-
   scoped_ptr<aura::Window> container_;
 
   DISALLOW_COPY_AND_ASSIGN(BaseLayoutManagerTest);
 };
-
-}  // namespace
 
 // Tests normal->maximize->normal.
 TEST_F(BaseLayoutManagerTest, Maximize) {
@@ -138,5 +132,7 @@ TEST_F(BaseLayoutManagerTest, MAYBE_RootWindowResizeShrinksWindows) {
   EXPECT_EQ(old_bounds.width(), window->bounds().width());
   EXPECT_EQ(old_bounds.height(), window->bounds().height());
 }
+
+}  // namespace
 
 }  // namespace ash

@@ -8,12 +8,12 @@
 
 #include <set>
 
+#include "ash/ash_export.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "ui/aura/layout_manager.h"
 #include "ui/aura/root_window_observer.h"
 #include "ui/aura/window_observer.h"
-#include "ash/ash_export.h"
 
 namespace aura {
 class Window;
@@ -43,7 +43,7 @@ class ASH_EXPORT BaseLayoutManager : public aura::LayoutManager,
   virtual void OnWindowAddedToLayout(aura::Window* child) OVERRIDE;
   virtual void OnWillRemoveWindowFromLayout(aura::Window* child) OVERRIDE;
   virtual void OnChildWindowVisibilityChanged(aura::Window* child,
-                                              bool visibile) OVERRIDE;
+                                              bool visible) OVERRIDE;
   virtual void SetChildBounds(aura::Window* child,
                               const gfx::Rect& requested_bounds) OVERRIDE;
 
@@ -65,7 +65,7 @@ class ASH_EXPORT BaseLayoutManager : public aura::LayoutManager,
   DISALLOW_COPY_AND_ASSIGN(BaseLayoutManager);
 };
 
-}  // namespace ash
 }  // namespace internal
+}  // namespace ash
 
 #endif  // ASH_WM_BASE_LAYOUT_MANAGER_H_

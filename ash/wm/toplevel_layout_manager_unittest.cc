@@ -64,8 +64,6 @@ class ToplevelLayoutManagerTest : public aura::test::AuraTestBase {
   DISALLOW_COPY_AND_ASSIGN(ToplevelLayoutManagerTest);
 };
 
-}  // namespace
-
 // Tests normal->maximize->normal.
 TEST_F(ToplevelLayoutManagerTest, Maximize) {
   gfx::Rect bounds(100, 100, 200, 200);
@@ -211,5 +209,7 @@ TEST_F(ToplevelLayoutManagerTest, ShelfVisibility) {
   status->GetNativeView()->layer()->GetAnimator()->StopAnimating();
   shelf_layout_manager.reset();
 }
+
+}  // namespace
 
 }  // namespace ash

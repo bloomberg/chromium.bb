@@ -11,12 +11,12 @@
 #include "base/memory/scoped_ptr.h"
 
 namespace aura {
+class EventFilter;
 class Window;
 }
 
 namespace ash {
 
-class WindowCycleEventFilter;
 class WindowCycleList;
 
 // Controls cycling through windows with the keyboard, for example, via alt-tab.
@@ -65,7 +65,7 @@ class ASH_EXPORT WindowCycleController {
   scoped_ptr<WindowCycleList> windows_;
 
   // Event filter to watch for release of alt key.
-  scoped_ptr<WindowCycleEventFilter> event_filter_;
+  scoped_ptr<aura::EventFilter> event_filter_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowCycleController);
 };
