@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_TAB_CONTENTS_INTERSTITIAL_PAGE_IMPL_H_
 #pragma once
 
+#include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/process_util.h"
 #include "content/public/browser/interstitial_page.h"
@@ -29,7 +30,7 @@ enum ResourceRequestAction {
 };
 
 class CONTENT_EXPORT InterstitialPageImpl
-    : public content::InterstitialPage,
+    : public NON_EXPORTED_BASE(content::InterstitialPage),
       public content::NotificationObserver,
       public content::RenderViewHostDelegate {
  public:
