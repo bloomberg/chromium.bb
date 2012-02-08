@@ -332,7 +332,7 @@ class RequestProxy : public net::URLRequest::Delegate,
       if (file_util::CreateTemporaryFile(&path)) {
         downloaded_file_ = DeletableFileReference::GetOrCreate(
             path, base::MessageLoopProxy::current());
-        file_stream_.Open(
+        file_stream_.OpenSync(
             path, base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_WRITE);
       }
     }
@@ -426,7 +426,7 @@ class RequestProxy : public net::URLRequest::Delegate,
                                   const std::string& security_info,
                                   const base::TimeTicks& complete_time) {
     if (download_to_file_)
-      file_stream_.Close();
+      file_stream_.CloseSync();
     owner_loop_->PostTask(
         FROM_HERE,
         base::Bind(&RequestProxy::NotifyCompletedRequest, this, status,
@@ -732,7 +732,7 @@ class SyncRequestProxy : public RequestProxy {
                                   const std::string& security_info,
                                   const base::TimeTicks& complete_time) {
     if (download_to_file_)
-      file_stream_.Close();
+      file_stream_.CloseSync();
     result_->status = status;
     event_.Signal();
   }

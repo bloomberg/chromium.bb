@@ -123,7 +123,7 @@ FileSystemURLRequestJob::~FileSystemURLRequestJob() {
   // Since we use the two-arg constructor of FileStream, we need to call Close()
   // manually: ~FileStream won't call it for us.
   if (stream_ != NULL)
-    stream_->Close();
+    stream_->CloseSync();
 }
 
 void FileSystemURLRequestJob::Start() {
@@ -135,7 +135,7 @@ void FileSystemURLRequestJob::Start() {
 
 void FileSystemURLRequestJob::Kill() {
   if (stream_ != NULL) {
-    stream_->Close();
+    stream_->CloseSync();
     stream_.reset(NULL);
   }
   URLRequestJob::Kill();
