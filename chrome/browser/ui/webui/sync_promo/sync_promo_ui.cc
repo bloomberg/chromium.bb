@@ -14,6 +14,7 @@
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/sync/profile_sync_service.h"
+#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
 #include "chrome/browser/ui/webui/options/core_options_handler.h"
@@ -151,7 +152,8 @@ bool SyncPromoUI::ShouldShowSyncPromo(Profile* profile) {
 
   // If the user is already signed into sync then don't show the promo.
   ProfileSyncService* service =
-      profile->GetOriginalProfile()->GetProfileSyncService();
+      ProfileSyncServiceFactory::GetInstance()->GetForProfile(
+          profile->GetOriginalProfile());
   if (!service || service->HasSyncSetupCompleted())
     return false;
 

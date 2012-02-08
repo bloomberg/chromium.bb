@@ -102,7 +102,8 @@ void AppNotifyChannelUIImpl::PromptSyncSetup(
   CHECK(delegate_ == NULL);
   delegate_ = delegate;
 
-  if (!browser_->profile()->HasProfileSyncService()) {
+  if (!ProfileSyncServiceFactory::GetInstance()->HasProfileSyncService(
+          browser_->profile()->GetOriginalProfile())) {
     delegate_->OnSyncSetupResult(false);
     return;
   }

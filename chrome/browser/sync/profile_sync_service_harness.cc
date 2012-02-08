@@ -22,6 +22,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/sync/glue/data_type_controller.h"
+#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/sessions/session_state.h"
 #include "chrome/browser/sync/sync_ui_util.h"
 
@@ -107,7 +108,8 @@ ProfileSyncServiceHarness::ProfileSyncServiceHarness(
       password_(password),
       profile_debug_name_(profile->GetDebugName()) {
   if (IsSyncAlreadySetup()) {
-    service_ = profile_->GetProfileSyncService();
+    service_ = ProfileSyncServiceFactory::GetInstance()->GetForProfile(
+        profile_);
     service_->AddObserver(this);
     ignore_result(TryListeningToMigrationEvents());
     wait_state_ = FULLY_SYNCED;
@@ -119,7 +121,8 @@ ProfileSyncServiceHarness::~ProfileSyncServiceHarness() {}
 // static
 ProfileSyncServiceHarness* ProfileSyncServiceHarness::CreateAndAttach(
     Profile* profile) {
-  if (!profile->HasProfileSyncService()) {
+  if (ProfileSyncServiceFactory::GetInstance()->HasProfileSyncService(
+          profile)) {
     NOTREACHED() << "Profile has never signed into sync.";
     return NULL;
   }
@@ -133,7 +136,8 @@ void ProfileSyncServiceHarness::SetCredentials(const std::string& username,
 }
 
 bool ProfileSyncServiceHarness::IsSyncAlreadySetup() {
-  return profile_->HasProfileSyncService();
+  return ProfileSyncServiceFactory::GetInstance()->HasProfileSyncService(
+      profile_);
 }
 
 bool ProfileSyncServiceHarness::SetupSync() {
@@ -151,7 +155,8 @@ bool ProfileSyncServiceHarness::SetupSync() {
 bool ProfileSyncServiceHarness::SetupSync(
     syncable::ModelTypeSet synced_datatypes) {
   // Initialize the sync client's profile sync service object.
-  service_ = profile_->GetProfileSyncService();
+  service_ =
+      ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile_);
   if (service_ == NULL) {
     LOG(ERROR) << "SetupSync(): service_ is null.";
     return false;

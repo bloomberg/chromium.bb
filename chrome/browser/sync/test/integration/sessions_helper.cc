@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,6 +12,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/glue/session_model_associator.h"
 #include "chrome/browser/sync/profile_sync_service.h"
+#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/profile_sync_service_harness.h"
 #include "chrome/browser/sync/test/integration/sync_datatype_helper.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
@@ -50,8 +51,9 @@ void ScopedWindowMap::Reset(SessionWindowMap* windows) {
 }
 
 bool GetLocalSession(int index, const browser_sync::SyncedSession** session) {
-  return test()->GetProfile(index)->GetProfileSyncService()->
-      GetSessionModelAssociator()->GetLocalSession(session);
+  return ProfileSyncServiceFactory::GetInstance()->GetForProfile(
+      test()->GetProfile(index))->GetSessionModelAssociator()->GetLocalSession(
+          session);
 }
 
 bool ModelAssociatorHasTabWithUrl(int index, const GURL& url) {
@@ -134,8 +136,8 @@ bool WaitForTabsToLoad(int index, const std::vector<GURL>& urls) {
         return false;
       }
       if (!found) {
-        test()->GetProfile(index)->GetProfileSyncService()->
-            GetSessionModelAssociator()->
+        ProfileSyncServiceFactory::GetInstance()->GetForProfile(
+            test()->GetProfile(index))->GetSessionModelAssociator()->
             BlockUntilLocalChangeForTest(timeout_milli);
         ui_test_utils::RunMessageLoop();
       }
@@ -197,14 +199,16 @@ int GetNumWindows(int index) {
 
 int GetNumForeignSessions(int index) {
   SyncedSessionVector sessions;
-  if (!test()->GetProfile(index)->GetProfileSyncService()->
+  if (!ProfileSyncServiceFactory::GetInstance()->GetForProfile(
+          test()->GetProfile(index))->
           GetSessionModelAssociator()->GetAllForeignSessions(&sessions))
     return 0;
   return sessions.size();
 }
 
 bool GetSessionData(int index, SyncedSessionVector* sessions) {
-  if (!test()->GetProfile(index)->GetProfileSyncService()->
+  if (!ProfileSyncServiceFactory::GetInstance()->GetForProfile(
+          test()->GetProfile(index))->
           GetSessionModelAssociator()->GetAllForeignSessions(sessions))
     return false;
   SortSyncedSessions(sessions);
@@ -304,7 +308,8 @@ bool CheckForeignSessionsAgainst(
 }
 
 void DeleteForeignSession(int index, std::string session_tag) {
-  test()->GetProfile(index)->GetProfileSyncService()->
+  ProfileSyncServiceFactory::GetInstance()->GetForProfile(
+      test()->GetProfile(index))->
       GetSessionModelAssociator()->DeleteForeignSession(session_tag);
 }
 

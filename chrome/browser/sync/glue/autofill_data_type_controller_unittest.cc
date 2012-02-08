@@ -123,8 +123,6 @@ class AutofillDataTypeControllerTest : public testing::Test {
         db_thread_.DeprecatedGetThreadObject());
     db_notification_service_->Init();
     web_data_service_ = new WebDataServiceFake();
-    EXPECT_CALL(profile_, GetProfileSyncService()).WillRepeatedly(
-        Return(&service_));
     autofill_dtc_ =
         new AutofillDataTypeControllerMock(&profile_sync_factory_,
                                            &profile_,

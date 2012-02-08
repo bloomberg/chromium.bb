@@ -126,8 +126,6 @@ class NewNonFrontendDataTypeControllerTest : public testing::Test {
         db_thread_(BrowserThread::DB) {}
 
   virtual void SetUp() OVERRIDE {
-    EXPECT_CALL(profile_, GetProfileSyncService()).WillRepeatedly(
-        Return(&service_));
     EXPECT_CALL(service_, GetUserShare()).WillRepeatedly(
         Return((sync_api::UserShare*)NULL));
     db_thread_.Start();

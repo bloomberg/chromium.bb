@@ -17,6 +17,7 @@
 #include "chrome/browser/profiles/profile_metrics.h"
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/sync/profile_sync_service.h"
+#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/protocol/service_constants.h"
 #include "chrome/browser/sync/sync_setup_flow.h"
 #include "chrome/browser/sync/util/oauth.h"
@@ -446,7 +447,9 @@ void SyncSetupHandler::ShowSetupDone(const string16& user) {
   SyncPromoUI::SetUserSkippedSyncPromo(Profile::FromWebUI(web_ui()));
 
   Profile* profile = Profile::FromWebUI(web_ui());
-  ProfileSyncService* service = profile->GetProfileSyncService();
+  ProfileSyncService* service =
+      ProfileSyncServiceFactory::GetInstance()->GetForProfile(
+          profile);
   if (!service->HasSyncSetupCompleted()) {
     FilePath profile_file_path = profile->GetPath();
     ProfileMetrics::LogProfileSyncSignIn(profile_file_path);
@@ -561,7 +564,8 @@ void SyncSetupHandler::HandleShowErrorUI(const ListValue* args) {
   DCHECK(!flow_);
 
   Profile* profile = Profile::FromWebUI(web_ui());
-  ProfileSyncService* service = profile->GetProfileSyncService();
+  ProfileSyncService* service = ProfileSyncServiceFactory::GetInstance()->
+      GetForProfile(profile);
   DCHECK(service);
 
   service->ShowErrorUI();
@@ -589,7 +593,8 @@ void SyncSetupHandler::OpenSyncSetup() {
   DCHECK(!flow_);
 
   Profile* profile = Profile::FromWebUI(web_ui());
-  ProfileSyncService* service = profile->GetProfileSyncService();
+  ProfileSyncService* service = ProfileSyncServiceFactory::GetInstance()->
+      GetForProfile(profile);
   if (!service) {
     // If there's no sync service, the user tried to manually invoke a syncSetup
     // URL, but sync features are disabled.  We need to close the overlay for
@@ -623,7 +628,8 @@ void SyncSetupHandler::OpenSyncSetup() {
 
 bool SyncSetupHandler::FocusExistingWizard() {
   Profile* profile = Profile::FromWebUI(web_ui());
-  ProfileSyncService* service = profile->GetProfileSyncService();
+  ProfileSyncService* service = ProfileSyncServiceFactory::GetInstance()->
+      GetForProfile(profile);
   if (!service)
     return false;
 

@@ -411,8 +411,6 @@ class ProfileSyncServiceAutofillTest : public AbstractProfileSyncServiceTest {
                                    ProfileSyncService::AUTO_START,
                                    false,
                                    callback));
-    EXPECT_CALL(profile_, GetProfileSyncService()).WillRepeatedly(
-        Return(service_.get()));
     DataTypeController* data_type_controller =
         factory->CreateDataTypeController(components_factory,
             &profile_,

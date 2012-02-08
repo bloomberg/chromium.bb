@@ -712,10 +712,6 @@ HostZoomMap* TestingProfile::GetHostZoomMap() {
   return NULL;
 }
 
-bool TestingProfile::HasProfileSyncService() {
-  return (profile_sync_service_.get() != NULL);
-}
-
 std::wstring TestingProfile::GetName() {
   return std::wstring();
 }
@@ -792,17 +788,6 @@ TokenService* TestingProfile::GetTokenService() {
     token_service_.reset(new TokenService());
   }
   return token_service_.get();
-}
-
-ProfileSyncService* TestingProfile::GetProfileSyncService() {
-  if (!profile_sync_service_.get()) {
-    // Use a NiceMock here since we are really using the mock as a
-    // fake.  Test cases that want to set expectations on a
-    // ProfileSyncService should use the ProfileMock and have this
-    // method return their own mock instance.
-    profile_sync_service_.reset(new NiceMock<ProfileSyncServiceMock>());
-  }
-  return profile_sync_service_.get();
 }
 
 ChromeBlobStorageContext* TestingProfile::GetBlobStorageContext() {

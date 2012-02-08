@@ -25,7 +25,6 @@ class ExtensionPrefs;
 class ExtensionPrefValueMap;
 class NetPrefObserver;
 class PrefService;
-class ProfileSyncService;
 class PromoResourceService;
 class SpeechInputPreferences;
 class SSLConfigServiceManager;
@@ -109,7 +108,6 @@ class ProfileImpl : public Profile,
   virtual net::SSLConfigService* GetSSLConfigService() OVERRIDE;
   virtual HostContentSettingsMap* GetHostContentSettingsMap() OVERRIDE;
   virtual UserStyleSheetWatcher* GetUserStyleSheetWatcher() OVERRIDE;
-  virtual bool HasProfileSyncService() OVERRIDE;
   virtual bool DidLastSessionExitCleanly() OVERRIDE;
   virtual BookmarkModel* GetBookmarkModel() OVERRIDE;
   virtual ProtocolHandlerRegistry* GetProtocolHandlerRegistry() OVERRIDE;
@@ -121,7 +119,6 @@ class ProfileImpl : public Profile,
   virtual void InitRegisteredProtocolHandlers() OVERRIDE;
   virtual FilePath last_selected_directory() OVERRIDE;
   virtual void set_last_selected_directory(const FilePath& path) OVERRIDE;
-  virtual ProfileSyncService* GetProfileSyncService() OVERRIDE;
   virtual TokenService* GetTokenService() OVERRIDE;
   virtual ExtensionInfoMap* GetExtensionInfoMap() OVERRIDE;
   virtual PromoCounter* GetInstantPromoCounter() OVERRIDE;

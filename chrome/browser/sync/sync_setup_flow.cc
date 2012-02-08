@@ -17,6 +17,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/sync/profile_sync_service.h"
+#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/sync_setup_flow_handler.h"
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/browser/sync/user_selectable_sync_type.h"
@@ -79,7 +80,8 @@ bool HasConfigurationChanged(const SyncConfiguration& configuration,
                  UpdateCustomConfigHistogram);
 
   // If service is null or if this is a first time configuration, return true.
-  ProfileSyncService* service = profile->GetProfileSyncService();
+  ProfileSyncService* service =
+      ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile);
   if (!service || !service->HasSyncSetupCompleted())
     return true;
 

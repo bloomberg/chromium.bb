@@ -227,8 +227,6 @@ class ProfileSyncServicePasswordTest : public AbstractProfileSyncServiceTest {
           service_->GetPreferredDataTypes();
       preferred_types.Put(syncable::PASSWORDS);
       service_->ChangePreferredDataTypes(preferred_types);
-      EXPECT_CALL(profile_, GetProfileSyncService()).WillRepeatedly(
-          Return(service_.get()));
       PasswordDataTypeController* data_type_controller =
           new PasswordDataTypeController(factory,
                                          &profile_,

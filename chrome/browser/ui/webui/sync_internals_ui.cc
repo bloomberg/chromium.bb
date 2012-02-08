@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,6 +16,7 @@
 #include "chrome/browser/sync/js/js_controller.h"
 #include "chrome/browser/sync/js/js_event_details.h"
 #include "chrome/browser/sync/profile_sync_service.h"
+#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/sync_ui_util.h"
 #include "chrome/browser/sync/util/weak_handle.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
@@ -68,7 +69,8 @@ namespace {
 // Gets the ProfileSyncService of the underlying original profile.
 // May return NULL (e.g., if sync is disabled on the command line).
 ProfileSyncService* GetProfileSyncService(Profile* profile) {
-  return profile->GetOriginalProfile()->GetProfileSyncService();
+  return ProfileSyncServiceFactory::GetInstance()->GetForProfile(
+      profile->GetOriginalProfile());
 }
 
 }  // namespace

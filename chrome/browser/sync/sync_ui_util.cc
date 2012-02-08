@@ -12,6 +12,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/sync/profile_sync_service.h"
+#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/protocol/proto_enum_conversions.h"
 #include "chrome/browser/sync/protocol/sync_protocol_error.h"
 #include "chrome/browser/sync/syncable/model_type.h"
@@ -427,7 +428,8 @@ void OpenSyncMyBookmarksDialog(Profile* profile,
                                Browser* browser,
                                ProfileSyncService::SyncEventCodes code) {
   ProfileSyncService* service =
-    profile->GetOriginalProfile()->GetProfileSyncService();
+    ProfileSyncServiceFactory::GetInstance()->GetForProfile(
+        profile->GetOriginalProfile());
   if (!service || !service->IsSyncEnabled()) {
     LOG(DFATAL) << "OpenSyncMyBookmarksDialog called with sync disabled";
     return;

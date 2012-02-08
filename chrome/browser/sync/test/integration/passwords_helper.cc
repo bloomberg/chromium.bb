@@ -11,6 +11,8 @@
 #include "chrome/browser/password_manager/password_form_data.h"
 #include "chrome/browser/password_manager/password_store.h"
 #include "chrome/browser/password_manager/password_store_consumer.h"
+#include "chrome/browser/sync/profile_sync_service.h"
+#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/profile_sync_service_harness.h"
 #include "chrome/browser/sync/test/integration/sync_datatype_helper.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -106,7 +108,8 @@ void RemoveLogins(PasswordStore* store) {
 }
 
 void SetPassphrase(int index, const std::string& passphrase) {
-  test()->GetProfile(index)->GetProfileSyncService()->SetPassphrase(
+  ProfileSyncServiceFactory::GetInstance()->GetForProfile(
+      test()->GetProfile(index))->SetPassphrase(
       passphrase,
       ProfileSyncService::EXPLICIT,
       ProfileSyncService::USER_PROVIDED);

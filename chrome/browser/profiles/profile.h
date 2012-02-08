@@ -36,7 +36,6 @@ class HistoryService;
 class HostContentSettingsMap;
 class PasswordStore;
 class PrefService;
-class ProfileSyncService;
 class PromoCounter;
 class ProtocolHandlerRegistry;
 class SpeechInputPreferences;
@@ -381,10 +380,6 @@ class Profile : public content::BrowserContext {
   // Returns the user style sheet watcher.
   virtual UserStyleSheetWatcher* GetUserStyleSheetWatcher() = 0;
 
-  // Returns true if this profile has a profile sync service.
-  // TODO(tim): Bug 93922 - remove this.
-  virtual bool HasProfileSyncService() = 0;
-
   // Returns true if the last time this profile was open it was exited cleanly.
   virtual bool DidLastSessionExitCleanly() = 0;
 
@@ -396,10 +391,6 @@ class Profile : public content::BrowserContext {
 
   // Returns the Gaia Token Service, creating if not yet created.
   virtual TokenService* GetTokenService() = 0;
-
-  // Returns the ProfileSyncService, creating if not yet created.
-  // TODO(tim): Bug 93922 - remove this.
-  virtual ProfileSyncService* GetProfileSyncService() = 0;
 
   // Return whether 2 profiles are the same. 2 profiles are the same if they
   // represent the same profile. This can happen if there is pointer equality

@@ -11,6 +11,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service.h"
+#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/sync_setup_flow.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/browser.h"
@@ -182,7 +183,8 @@ void SyncPromoHandler2::Observe(int type,
 
 void SyncPromoHandler2::StepWizardForShowSetupUI() {
   ProfileSyncService* service =
-      Profile::FromWebUI(web_ui_)->GetProfileSyncService();
+      ProfileSyncServiceFactory::GetInstance()->GetForProfile(
+          Profile::FromWebUI(web_ui_));
   service->get_wizard().Step(SyncSetupWizard::GetLoginState());
 }
 

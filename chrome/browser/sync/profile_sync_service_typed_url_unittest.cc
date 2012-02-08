@@ -193,8 +193,6 @@ class ProfileSyncServiceTypedUrlTest : public AbstractProfileSyncServiceTest {
                                      ProfileSyncService::AUTO_START,
                                      false,
                                      callback));
-      EXPECT_CALL(profile_, GetProfileSyncService()).WillRepeatedly(
-          Return(service_.get()));
       TypedUrlDataTypeController* data_type_controller =
           new TypedUrlDataTypeController(factory,
                                          &profile_,

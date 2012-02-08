@@ -112,8 +112,6 @@ class NonFrontendDataTypeControllerTest : public testing::Test {
         change_processor_(NULL) {}
 
   virtual void SetUp() {
-    EXPECT_CALL(profile_, GetProfileSyncService()).WillRepeatedly(
-        Return(&service_));
     db_thread_.Start();
     profile_sync_factory_.reset(
         new StrictMock<ProfileSyncComponentsFactoryMock>());

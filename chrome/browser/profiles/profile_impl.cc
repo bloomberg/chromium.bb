@@ -1155,10 +1155,6 @@ quota::QuotaManager* ProfileImpl::GetQuotaManager() {
   return quota_manager_.get();
 }
 
-bool ProfileImpl::HasProfileSyncService() {
-  return ProfileSyncServiceFactory::GetInstance()->HasProfileSyncService(this);
-}
-
 bool ProfileImpl::DidLastSessionExitCleanly() {
   // last_session_exited_cleanly_ is set when the preferences are loaded. Force
   // it to be set by asking for the prefs.
@@ -1314,7 +1310,8 @@ void ProfileImpl::Observe(int type,
       break;
     }
     case chrome::NOTIFICATION_BOOKMARK_MODEL_LOADED:
-      GetProfileSyncService();  // Causes lazy-load if sync is enabled.
+      // Causes lazy-load if sync is enabled.
+      ProfileSyncServiceFactory::GetInstance()->GetForProfile(this);
       registrar_.Remove(this, chrome::NOTIFICATION_BOOKMARK_MODEL_LOADED,
                         content::Source<Profile>(this));
       break;
@@ -1352,10 +1349,6 @@ TokenService* ProfileImpl::GetTokenService() {
     token_service_.reset(new TokenService());
   }
   return token_service_.get();
-}
-
-ProfileSyncService* ProfileImpl::GetProfileSyncService() {
-  return ProfileSyncServiceFactory::GetInstance()->GetForProfile(this);
 }
 
 ChromeBlobStorageContext* ProfileImpl::GetBlobStorageContext() {

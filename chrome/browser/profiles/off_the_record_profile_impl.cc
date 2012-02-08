@@ -32,7 +32,6 @@
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
-#include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/transport_security_persister.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
@@ -415,11 +414,6 @@ UserStyleSheetWatcher* OffTheRecordProfileImpl::GetUserStyleSheetWatcher() {
   return profile_->GetUserStyleSheetWatcher();
 }
 
-bool OffTheRecordProfileImpl::HasProfileSyncService() {
-  // We never have a profile sync service.
-  return false;
-}
-
 bool OffTheRecordProfileImpl::DidLastSessionExitCleanly() {
   return profile_->DidLastSessionExitCleanly();
 }
@@ -433,10 +427,6 @@ ProtocolHandlerRegistry* OffTheRecordProfileImpl::GetProtocolHandlerRegistry() {
 }
 
 TokenService* OffTheRecordProfileImpl::GetTokenService() {
-  return NULL;
-}
-
-ProfileSyncService* OffTheRecordProfileImpl::GetProfileSyncService() {
   return NULL;
 }
 
