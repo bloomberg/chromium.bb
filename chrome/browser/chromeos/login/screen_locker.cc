@@ -59,7 +59,10 @@ namespace {
 class ScreenLockObserver : public chromeos::PowerManagerClient::Observer,
                            public content::NotificationObserver {
  public:
-  ScreenLockObserver() {
+  ScreenLockObserver() : session_started_(false) {
+    registrar_.Add(this,
+                   chrome::NOTIFICATION_LOGIN_USER_CHANGED,
+                   content::NotificationService::AllSources());
     registrar_.Add(this,
                    chrome::NOTIFICATION_SESSION_STARTED,
                    content::NotificationService::AllSources());
@@ -69,21 +72,39 @@ class ScreenLockObserver : public chromeos::PowerManagerClient::Observer,
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE {
-    if (type == chrome::NOTIFICATION_SESSION_STARTED) {
-      // Register Screen Lock after login screen to make sure
-      // we don't show the screen lock on top of the login screen by accident.
-      // See issue crbug.com/110933.
-      chromeos::PowerManagerClient* power_manager =
-          chromeos::DBusThreadManager::Get()->GetPowerManagerClient();
-      if (!power_manager->HasObserver(this))
-        power_manager->AddObserver(this);
+    switch (type) {
+      case chrome::NOTIFICATION_LOGIN_USER_CHANGED: {
+        // Register Screen Lock only after a user has logged in.
+        chromeos::PowerManagerClient* power_manager =
+            chromeos::DBusThreadManager::Get()->GetPowerManagerClient();
+        if (!power_manager->HasObserver(this))
+          power_manager->AddObserver(this);
+        break;
+      }
+
+      case chrome::NOTIFICATION_SESSION_STARTED: {
+        session_started_ = true;
+        break;
+      }
+
+      default:
+        NOTREACHED();
     }
   }
 
   virtual void LockScreen() OVERRIDE {
     VLOG(1) << "In: ScreenLockObserver::LockScreen";
-    SetupInputMethodsForScreenLocker();
-    chromeos::ScreenLocker::Show();
+    if (session_started_) {
+      SetupInputMethodsForScreenLocker();
+      chromeos::ScreenLocker::Show();
+    } else {
+      // If the user has not completed the sign in we will log them out. This
+      // avoids complications with displaying the lock screen over the login
+      // screen while remaining secure in the case that they walk away during
+      // the signin steps. See crbug.com/112225 and crbug.com/110933.
+      chromeos::DBusThreadManager::Get()->
+          GetSessionManagerClient()->StopSession();
+    }
   }
 
   virtual void UnlockScreen() OVERRIDE {
@@ -172,6 +193,7 @@ class ScreenLockObserver : public chromeos::PowerManagerClient::Observer,
     }
   }
 
+  bool session_started_;
   content::NotificationRegistrar registrar_;
   std::string saved_previous_input_method_id_;
   std::string saved_current_input_method_id_;
@@ -299,9 +321,6 @@ void ScreenLocker::EnableInput() {
 void ScreenLocker::Signout() {
   delegate_->ClearErrors();
   content::RecordAction(UserMetricsAction("ScreenLocker_Signout"));
-#if defined(TOOLKIT_USES_GTK)
-  WmIpc::instance()->NotifyAboutSignout();
-#endif
   DBusThreadManager::Get()->GetSessionManagerClient()->StopSession();
 
   // Don't hide yet the locker because the chrome screen may become visible
