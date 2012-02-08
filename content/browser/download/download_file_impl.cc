@@ -19,7 +19,8 @@ DownloadFileImpl::DownloadFileImpl(
     const DownloadCreateInfo* info,
     DownloadRequestHandleInterface* request_handle,
     DownloadManager* download_manager,
-    bool calculate_hash)
+    bool calculate_hash,
+    const net::BoundNetLog& bound_net_log)
         : file_(info->save_info.file_path,
                 info->url(),
                 info->referrer_url,
@@ -27,7 +28,7 @@ DownloadFileImpl::DownloadFileImpl(
                 calculate_hash,
                 info->save_info.hash_state,
                 info->save_info.file_stream,
-                net::BoundNetLog()),
+                bound_net_log),
           id_(info->download_id),
           request_handle_(request_handle),
           download_manager_(download_manager) {

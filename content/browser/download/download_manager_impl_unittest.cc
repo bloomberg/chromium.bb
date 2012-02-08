@@ -74,17 +74,20 @@ class MockDownloadFileFactory
  public:
   MockDownloadFileFactory() {}
 
-  virtual DownloadFile* CreateFile(DownloadCreateInfo* info,
-                                   const DownloadRequestHandle& request_handle,
-                                   DownloadManager* download_manager,
-                                   bool calculate_hash) OVERRIDE;
+  virtual DownloadFile* CreateFile(
+      DownloadCreateInfo* info,
+      const DownloadRequestHandle& request_handle,
+      DownloadManager* download_manager,
+      bool calculate_hash,
+      const net::BoundNetLog& bound_net_log) OVERRIDE;
 };
 
 DownloadFile* MockDownloadFileFactory::CreateFile(
     DownloadCreateInfo* info,
     const DownloadRequestHandle& request_handle,
     DownloadManager* download_manager,
-    bool calculate_hash) {
+    bool calculate_hash,
+    const net::BoundNetLog& bound_net_log) {
   NOTREACHED();
   return NULL;
 }
@@ -211,7 +214,7 @@ class DownloadManagerTest : public testing::Test {
       : browser_context(new TestBrowserContext()),
         download_manager_delegate_(new TestDownloadManagerDelegate()),
         download_manager_(DownloadManager::Create(
-            download_manager_delegate_.get())),
+            download_manager_delegate_.get(), NULL)),
         ui_thread_(BrowserThread::UI, &message_loop_),
         file_thread_(BrowserThread::FILE, &message_loop_),
         download_buffer_(new content::DownloadBuffer) {
@@ -345,7 +348,8 @@ DownloadFileWithErrors::DownloadFileWithErrors(DownloadCreateInfo* info,
     : DownloadFileImpl(info,
                        new DownloadRequestHandle(),
                        manager,
-                       calculate_hash),
+                       calculate_hash,
+                       net::BoundNetLog()),
       forced_error_(net::OK) {
 }
 
@@ -535,7 +539,7 @@ TEST_F(DownloadManagerTest, MAYBE_StartDownload) {
 
     DownloadFile* download_file(
         new DownloadFileImpl(info.get(), new DownloadRequestHandle(),
-                             download_manager_, false));
+                             download_manager_, false, net::BoundNetLog()));
     AddDownloadToFileManager(info->download_id.local(), download_file);
     download_file->Initialize();
     download_manager_->StartDownload(info->download_id.local());
@@ -1186,7 +1190,7 @@ TEST_F(DownloadManagerTest, MAYBE_DownloadOverwriteTest) {
   // properly.
   DownloadFile* download_file(
       new DownloadFileImpl(info.get(), new DownloadRequestHandle(),
-                           download_manager_, false));
+                           download_manager_, false, net::BoundNetLog()));
   download_file->Rename(cr_path);
   // This creates the .temp version of the file.
   download_file->Initialize();
@@ -1260,7 +1264,7 @@ TEST_F(DownloadManagerTest, MAYBE_DownloadRemoveTest) {
   // properly.
   DownloadFile* download_file(
       new DownloadFileImpl(info.get(), new DownloadRequestHandle(),
-                           download_manager_, false));
+                           download_manager_, false, net::BoundNetLog()));
   download_file->Rename(cr_path);
   // This creates the .temp version of the file.
   download_file->Initialize();

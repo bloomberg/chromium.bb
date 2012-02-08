@@ -46,17 +46,20 @@ class DownloadFileFactoryImpl
       DownloadCreateInfo* info,
       const DownloadRequestHandle& request_handle,
       DownloadManager* download_manager,
-      bool calculate_hash) OVERRIDE;
+      bool calculate_hash,
+      const net::BoundNetLog& bound_net_log) OVERRIDE;
 };
 
 DownloadFile* DownloadFileFactoryImpl::CreateFile(
     DownloadCreateInfo* info,
     const DownloadRequestHandle& request_handle,
     DownloadManager* download_manager,
-    bool calculate_hash) {
+    bool calculate_hash,
+    const net::BoundNetLog& bound_net_log) {
   return new DownloadFileImpl(info,
                               new DownloadRequestHandle(request_handle),
-                              download_manager, calculate_hash);
+                              download_manager, calculate_hash,
+                              bound_net_log);
 }
 
 }  // namespace
@@ -87,7 +90,8 @@ void DownloadFileManager::OnShutdown() {
 
 void DownloadFileManager::CreateDownloadFile(
     DownloadCreateInfo* info, const DownloadRequestHandle& request_handle,
-    DownloadManager* download_manager, bool get_hash) {
+    DownloadManager* download_manager, bool get_hash,
+    const net::BoundNetLog& bound_net_log) {
   DCHECK(info);
   VLOG(20) << __FUNCTION__ << "()" << " info = " << info->DebugString();
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
@@ -96,7 +100,7 @@ void DownloadFileManager::CreateDownloadFile(
   scoped_ptr<DownloadCreateInfo> infop(info);
 
   scoped_ptr<DownloadFile> download_file(download_file_factory_->CreateFile(
-      info, request_handle, download_manager, get_hash));
+      info, request_handle, download_manager, get_hash, bound_net_log));
   if (net::OK != download_file->Initialize()) {
     request_handle.CancelRequest();
     return;
@@ -167,13 +171,16 @@ void DownloadFileManager::StartDownload(
     return;
   }
 
-  manager->CreateDownloadItem(info, request_handle);
+  // |bound_net_log| will be used for logging the both the download item's and
+  // the download file's events.
+  net::BoundNetLog bound_net_log =
+      manager->CreateDownloadItem(info, request_handle);
   bool hash_needed = manager->GenerateFileHash();
 
   BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
       base::Bind(&DownloadFileManager::CreateDownloadFile, this,
                  info, request_handle, make_scoped_refptr(manager),
-                 hash_needed));
+                 hash_needed, bound_net_log));
 }
 
 // We don't forward an update to the UI thread here, since we want to throttle

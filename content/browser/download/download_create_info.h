@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,6 +18,7 @@
 #include "content/public/browser/download_id.h"
 #include "content/public/common/page_transition_types.h"
 #include "googleurl/src/gurl.h"
+#include "net/base/net_log.h"
 
 // Used for informing the download manager of a new download, since we don't
 // want to pass |DownloadItem|s between threads.
@@ -28,6 +29,7 @@ struct CONTENT_EXPORT DownloadCreateInfo {
                      int64 received_bytes,
                      int64 total_bytes,
                      int32 state,
+                     const net::BoundNetLog& bound_net_log,
                      bool has_user_gesture,
                      content::PageTransition transition_type);
   DownloadCreateInfo();
@@ -110,6 +112,10 @@ struct CONTENT_EXPORT DownloadCreateInfo {
   // The remote IP address where the download was fetched from.  Copied from
   // UrlRequest::GetSocketAddress().
   std::string remote_address;
+
+  // The request's |BoundNetLog|, for "source_dependency" linking with the
+  // download item's.
+  const net::BoundNetLog request_bound_net_log;
 };
 
 #endif  // CONTENT_BROWSER_DOWNLOAD_DOWNLOAD_CREATE_INFO_H_

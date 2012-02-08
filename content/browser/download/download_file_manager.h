@@ -66,6 +66,10 @@ class DownloadFile;
 class DownloadManager;
 }
 
+namespace net {
+class BoundNetLog;
+}
+
 // Manages all in progress downloads.
 class CONTENT_EXPORT DownloadFileManager
     : public base::RefCountedThreadSafe<DownloadFileManager> {
@@ -78,7 +82,8 @@ class CONTENT_EXPORT DownloadFileManager
         DownloadCreateInfo* info,
         const DownloadRequestHandle& request_handle,
         content::DownloadManager* download_manager,
-        bool calculate_hash) = 0;
+        bool calculate_hash,
+        const net::BoundNetLog& bound_net_log) = 0;
   };
 
   // Takes ownership of the factory.
@@ -160,7 +165,8 @@ class CONTENT_EXPORT DownloadFileManager
   void CreateDownloadFile(DownloadCreateInfo* info,
                           const DownloadRequestHandle& request_handle,
                           content::DownloadManager* download_manager,
-                          bool hash_needed);
+                          bool hash_needed,
+                          const net::BoundNetLog& bound_net_log);
 
   // Called only on the download thread.
   content::DownloadFile* GetDownloadFile(content::DownloadId global_id);
