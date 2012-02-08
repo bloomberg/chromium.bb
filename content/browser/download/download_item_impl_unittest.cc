@@ -113,7 +113,7 @@ class DownloadItemTest : public testing::Test {
         new testing::NiceMock<MockRequestHandle>;
     DownloadItem* download =
         new DownloadItemImpl(&delegate_, *(info_.get()),
-                             request_handle, false);
+                             request_handle, false, net::BoundNetLog());
     allocated_downloads_.insert(download);
     return download;
   }

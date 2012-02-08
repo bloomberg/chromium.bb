@@ -865,10 +865,12 @@ PassiveLogCollector::SourceTracker::Action
 PassiveLogCollector::DownloadTracker::DoAddEntry(
     const ChromeNetLog::Entry& entry,
     SourceInfo* out_info) {
-  if (entry.type == net::NetLog::TYPE_DOWNLOAD_FILE_WRITTEN)
+  if ((entry.type == net::NetLog::TYPE_DOWNLOAD_FILE_WRITTEN) ||
+      (entry.type == net::NetLog::TYPE_DOWNLOAD_ITEM_UPDATED)) {
     return ACTION_NONE;  // Don't passively log these (too many).
+  }
   AddEntryToSourceInfo(entry, out_info);
-  if (entry.type == net::NetLog::TYPE_DOWNLOAD_FILE_OPENED &&
+  if (entry.type == net::NetLog::TYPE_DOWNLOAD_ITEM_ACTIVE &&
       entry.phase == net::NetLog::PHASE_END) {
     return ACTION_MOVE_TO_GRAVEYARD;
   }

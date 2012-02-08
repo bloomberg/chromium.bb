@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,12 +14,14 @@
 #include "base/observer_list.h"
 #include "base/time.h"
 #include "base/timer.h"
+#include "content/browser/download/download_net_log_parameters.h"
 #include "content/browser/download/download_request_handle.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/download_id.h"
 #include "content/public/browser/download_item.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/net_errors.h"
+#include "net/base/net_log.h"
 
 
 // See download_item.h for usage.
@@ -81,23 +83,29 @@ class CONTENT_EXPORT DownloadItemImpl : public content::DownloadItem {
   // outlives the DownloadItemImpl.
 
   // Constructing from persistent store:
+  // |bound_net_log| is constructed externally for our use.
   DownloadItemImpl(Delegate* delegate,
                    content::DownloadId download_id,
-                   const DownloadPersistentStoreInfo& info);
+                   const DownloadPersistentStoreInfo& info,
+                   const net::BoundNetLog& bound_net_log);
 
   // Constructing for a regular download.
   // Takes ownership of the object pointed to by |request_handle|.
+  // |bound_net_log| is constructed externally for our use.
   DownloadItemImpl(Delegate* delegate,
                    const DownloadCreateInfo& info,
                    DownloadRequestHandleInterface* request_handle,
-                   bool is_otr);
+                   bool is_otr,
+                   const net::BoundNetLog& bound_net_log);
 
   // Constructing for the "Save Page As..." feature:
+  // |bound_net_log| is constructed externally for our use.
   DownloadItemImpl(Delegate* delegate,
                    const FilePath& path,
                    const GURL& url,
                    bool is_otr,
-                   content::DownloadId download_id);
+                   content::DownloadId download_id,
+                   const net::BoundNetLog& bound_net_log);
 
   virtual ~DownloadItemImpl();
 
@@ -204,7 +212,9 @@ class CONTENT_EXPORT DownloadItemImpl : public content::DownloadItem {
  private:
   // Construction common to all constructors. |active| should be true for new
   // downloads and false for downloads from the history.
-  void Init(bool active);
+  // |download_type| indicates to the net log system what kind of download
+  // this is.
+  void Init(bool active, download_net_logs::DownloadType download_type);
 
   // Internal helper for maintaining consistent received and total sizes, and
   // hash state.
@@ -370,6 +380,9 @@ class CONTENT_EXPORT DownloadItemImpl : public content::DownloadItem {
   // External Data storage.  All objects in the store
   // are owned by the DownloadItemImpl.
   std::map<const void*, ExternalData*> external_data_map_;
+
+  // Net log to use for this download.
+  const net::BoundNetLog bound_net_log_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadItemImpl);
 };

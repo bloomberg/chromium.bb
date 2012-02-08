@@ -395,7 +395,7 @@ void DownloadManagerImpl::CreateDownloadItem(
 
   DownloadItem* download = new DownloadItemImpl(
       this, *info, new DownloadRequestHandle(request_handle),
-      browser_context_->IsOffTheRecord());
+      browser_context_->IsOffTheRecord(), net::BoundNetLog());
   int32 download_id = info->download_id.local();
   DCHECK(!ContainsKey(in_progress_, download_id));
 
@@ -410,7 +410,7 @@ DownloadItem* DownloadManagerImpl::CreateSavePackageDownloadItem(
     bool is_otr,
     DownloadItem::Observer* observer) {
   DownloadItem* download = new DownloadItemImpl(
-      this, main_file_path, page_url, is_otr, GetNextId());
+      this, main_file_path, page_url, is_otr, GetNextId(), net::BoundNetLog());
 
   download->AddObserver(observer);
 
@@ -915,7 +915,7 @@ void DownloadManagerImpl::OnPersistentStoreQueryComplete(
 
   for (size_t i = 0; i < entries->size(); ++i) {
     DownloadItem* download = new DownloadItemImpl(
-        this, GetNextId(), entries->at(i));
+        this, GetNextId(), entries->at(i), net::BoundNetLog());
     CHECK_96627(!ContainsKey(history_downloads_, download->GetDbHandle()));
     downloads_.insert(download);
     history_downloads_[download->GetDbHandle()] = download;

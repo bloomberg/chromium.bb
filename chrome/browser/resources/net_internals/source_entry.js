@@ -140,6 +140,9 @@ var SourceEntry = (function() {
             case LogEventType.DOWNLOAD_FILE_OPENED:
               this.description_ = e.params.file_name;
               break;
+            case LogEventType.DOWNLOAD_ITEM_ACTIVE:
+              this.description_ = e.params.file_name;
+              break;
           }
           break;
         case LogSourceType.FILESTREAM:
@@ -184,6 +187,10 @@ var SourceEntry = (function() {
         e = this.findLogEntryByType_(LogEventType.DOWNLOAD_FILE_OPENED);
         if (e != undefined)
           return e;
+        // History items are never opened, so use the activation info
+        e = this.findLogEntryByType_(LogEventType.DOWNLOAD_ITEM_ACTIVE);
+        if (e != undefined)
+          return e;
       }
       if (this.entries_.length >= 2) {
         if (this.entries_[0].type == LogEventType.REQUEST_ALIVE ||
@@ -209,8 +216,8 @@ var SourceEntry = (function() {
     },
 
     /**
-     * Returns the last entry with the specified type, or undefined if not
-     * found.
+     * Returns the beginning of the last entry with the specified type, or
+     * undefined if not found.
      */
     findLastLogEntryStartByType_: function(type) {
       for (var i = this.entries_.length - 1; i >= 0; --i) {
