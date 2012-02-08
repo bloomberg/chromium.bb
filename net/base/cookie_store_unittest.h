@@ -11,6 +11,7 @@
 #include "base/string_tokenizer.h"
 #include "base/threading/thread.h"
 #include "googleurl/src/gurl.h"
+#include "net/base/cookie_monster.h"
 #include "net/base/cookie_store.h"
 #include "net/base/cookie_store_test_callbacks.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -236,7 +237,8 @@ TYPED_TEST_CASE_P(CookieStoreTest);
 TYPED_TEST_P(CookieStoreTest, TypeTest) {
   scoped_refptr<CookieStore> cs(this->GetCookieStore());
   EXPECT_EQ(cs->GetCookieMonster(),
-            (TypeParam::is_cookie_monster) ? cs.get() : NULL);
+            (TypeParam::is_cookie_monster) ?
+                static_cast<CookieMonster*>(cs.get()) : NULL);
 }
 
 TYPED_TEST_P(CookieStoreTest, DomainTest) {
