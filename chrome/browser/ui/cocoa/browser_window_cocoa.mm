@@ -366,6 +366,8 @@ bool BrowserWindowCocoa::IsToolbarVisible() const {
 }
 
 gfx::Rect BrowserWindowCocoa::GetRootWindowResizerRect() const {
+  if (IsDownloadShelfVisible())
+    return gfx::Rect();
   NSRect tabRect = [controller_ selectedTabGrowBoxRect];
   return gfx::Rect(NSRectToCGRect(tabRect));
 }
