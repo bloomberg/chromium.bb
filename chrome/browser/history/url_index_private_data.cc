@@ -408,20 +408,28 @@ bool URLIndexPrivateData::HistoryItemFactorGreater::operator()(
 
 // NOTE: This is the main public search function.
 ScoredHistoryMatches URLIndexPrivateData::HistoryItemsForTerms(
-    const string16& term_string) {
+    const string16& search_string) {
   pre_filter_item_count_ = 0;
   post_filter_item_count_ = 0;
   post_scoring_item_count_ = 0;
-  string16 clean_string = net::UnescapeURLComponent(term_string,
-      net::UnescapeRule::SPACES | net::UnescapeRule::URL_SPECIAL_CHARS);
-  string16 lower_string(base::i18n::ToLower(clean_string));
-  String16Vector terms(
-      history::String16VectorFromString16(lower_string, false));
+  // The search string we receive may contain encoded characters. For reducing
+  // the index we need individual, lower-cased words, ignoring encodings. For
+  // the final filtering we need whitespace separated substrings possibly
+  // containing encodings.
+  string16 lower_raw_string(base::i18n::ToLower(search_string));
+  string16 lower_unescaped_string =
+      net::UnescapeURLComponent(lower_raw_string,
+          net::UnescapeRule::SPACES | net::UnescapeRule::URL_SPECIAL_CHARS);
+  // Extract individual 'words' (as opposed to 'terms'; see below) from the
+  // search string. When the user types "colspec=ID%20Mstone Release" we get
+  // four 'words': "colspec", "id", "mstone" and "release".
+  String16Vector lower_words(
+      history::String16VectorFromString16(lower_unescaped_string, false));
   ScoredHistoryMatches scored_items;
 
   // Do nothing if we have indexed no words (probably because we've not been
   // initialized yet) or the search string has no words.
-  if (word_list_.empty() || terms.empty()) {
+  if (word_list_.empty() || lower_words.empty()) {
     search_term_cache_.clear();  // Invalidate the term cache.
     return scored_items;
   }
@@ -430,7 +438,7 @@ ScoredHistoryMatches URLIndexPrivateData::HistoryItemsForTerms(
   // approach.
   ResetSearchTermCache();
 
-  HistoryIDSet history_id_set = HistoryIDSetFromWords(terms);
+  HistoryIDSet history_id_set = HistoryIDSetFromWords(lower_words);
 
   // Trim the candidate pool if it is large. Note that we do not filter out
   // items that do not contain the search terms as proper substrings -- doing
@@ -461,11 +469,21 @@ ScoredHistoryMatches URLIndexPrivateData::HistoryItemsForTerms(
   }
 
   // Pass over all of the candidates filtering out any without a proper
-  // substring match, inserting those which pass in order by score.
-  history::String16Vector lower_words;
-  Tokenize(lower_string, kWhitespaceUTF16, &lower_words);
+  // substring match, inserting those which pass in order by score. Note that
+  // in this step we are using the raw search string complete with escaped
+  // URL elements. When the user has specifically typed something akin to
+  // "sort=pri&colspec=ID%20Mstone%20Release" we want to make sure that that
+  // specific substring appears in the URL or page title.
+
+  // We call these 'terms' (as opposed to 'words'; see above) as in this case
+  // we only want to break up the search string on 'true' whitespace rather than
+  // encoded whitespace. When the user types "colspec=ID%20Mstone Release" we
+  // get two 'terms': "colspec=id%20mstone" and "release".
+  history::String16Vector lower_raw_terms;
+  Tokenize(lower_raw_string, kWhitespaceUTF16, &lower_raw_terms);
   scored_items = std::for_each(history_id_set.begin(), history_id_set.end(),
-      AddHistoryMatch(*this, lower_string, lower_words)).ScoredMatches();
+      AddHistoryMatch(*this, lower_raw_string,
+                      lower_raw_terms)).ScoredMatches();
 
   // Select and sort only the top kMaxMatches results.
   if (scored_items.size() > AutocompleteProvider::kMaxMatches) {

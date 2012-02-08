@@ -312,6 +312,13 @@ TEST_F(HistoryQuickProviderTest, PrefixOnlyMatch) {
           ASCIIToUTF16("http://foo.com"));
 }
 
+TEST_F(HistoryQuickProviderTest, EncodingMatch) {
+  std::vector<std::string> expected_urls;
+  expected_urls.push_back("http://spaces.com/path%20with%20spaces/foo.html");
+  RunTest(ASCIIToUTF16("path%20with%20spaces"), expected_urls, false,
+          ASCIIToUTF16("CANNOT AUTOCOMPLETE"));
+}
+
 TEST_F(HistoryQuickProviderTest, VisitCountMatches) {
   std::vector<std::string> expected_urls;
   expected_urls.push_back("http://visitedest.com/y/a");
