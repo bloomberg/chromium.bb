@@ -20,6 +20,24 @@ struct ExceptionFrame {
   uint32_t stack_ptr;
 };
 
+
+static BOOL ReadProcessMemoryChecked(HANDLE process_handle,
+                                     const void *remote_addr,
+                                     void *local_addr, size_t size) {
+  size_t bytes_copied;
+  return (ReadProcessMemory(process_handle, remote_addr, local_addr,
+                            size, &bytes_copied)
+          && bytes_copied == size);
+}
+
+static BOOL WriteProcessMemoryChecked(HANDLE process_handle, void *remote_addr,
+                                      const void *local_addr, size_t size) {
+  size_t bytes_copied;
+  return (WriteProcessMemory(process_handle, remote_addr, local_addr,
+                             size, &bytes_copied)
+          && bytes_copied == size);
+}
+
 /*
  * DebugLoop below handles debug events in NaCl program.
  * CREATE_PROCESS, CREATE_THREAD and EXIT_THREAD events are used
@@ -151,37 +169,27 @@ static BOOL GetExceptionHandlingInfo(HANDLE process_handle,
   void* nacl_user;
   void* nap_exception_handler;
   DWORD handler_data[2];
-  SIZE_T bytes_read;
   int nacl_thread_id = context->SegGs / 8;
 
-  if (!ReadProcessMemory(
+  if (!ReadProcessMemoryChecked(
            process_handle,
            (LPCVOID)(base + NACL_TRAMPOLINE_END -
                      NACL_SYSCALL_BLOCK_SIZE - sizeof(nacl_user)),
-           &nacl_user, sizeof(nacl_user), &bytes_read)) {
+           &nacl_user, sizeof(nacl_user))) {
     return FALSE;
   }
-  if (bytes_read != sizeof(nacl_user)) {
-    return FALSE;
-  }
-  if (!ReadProcessMemory(
+  if (!ReadProcessMemoryChecked(
            process_handle,
            (LPCVOID)((DWORD_PTR)nacl_user +
                      sizeof(*nacl_context) * nacl_thread_id),
-           nacl_context, sizeof(*nacl_context), &bytes_read)) {
+           nacl_context, sizeof(*nacl_context))) {
     return FALSE;
   }
-  if (bytes_read != sizeof(nacl_user)) {
-    return FALSE;
-  }
-  if (!ReadProcessMemory(
+  if (!ReadProcessMemoryChecked(
            process_handle,
            (LPCVOID)((DWORD_PTR)*nacl_context +
                      NACL_THREAD_CONTEXT_EXCEPTION_HANDLER_OFFSET),
-           &handler_data, sizeof(handler_data), &bytes_read)) {
-    return FALSE;
-  }
-  if (bytes_read != sizeof(handler_data)) {
+           &handler_data, sizeof(handler_data))) {
     return FALSE;
   }
   *exception_stack = handler_data[0];
@@ -189,24 +197,17 @@ static BOOL GetExceptionHandlingInfo(HANDLE process_handle,
   if (*exception_stack == 0) {
     *exception_stack = context->Esp;
   }
-  if (!ReadProcessMemory(
+  if (!ReadProcessMemoryChecked(
            process_handle,
            (LPCVOID)(base + NACL_TRAMPOLINE_END - 1 - sizeof(nacl_user) -
                      NACL_SYSCALL_BLOCK_SIZE - sizeof(nap_exception_handler)),
-           &nap_exception_handler, sizeof(nap_exception_handler), &bytes_read))
-           {
+           &nap_exception_handler, sizeof(nap_exception_handler))) {
     return FALSE;
   }
-  if (bytes_read != sizeof(nap_exception_handler)) {
-    return FALSE;
-  }
-  if (!ReadProcessMemory(
+  if (!ReadProcessMemoryChecked(
            process_handle,
            (LPCVOID)nap_exception_handler,
-           exception_handler, sizeof(*exception_handler), &bytes_read)) {
-    return FALSE;
-  }
-  if (bytes_read != sizeof(*exception_handler)) {
+           exception_handler, sizeof(*exception_handler))) {
     return FALSE;
   }
   return TRUE;
@@ -214,15 +215,11 @@ static BOOL GetExceptionHandlingInfo(HANDLE process_handle,
 
 static BOOL SetExceptionFlag(HANDLE process_handle, void* nacl_context) {
   DWORD exception_flag = 1;
-  SIZE_T bytes_written;
-  if (!WriteProcessMemory(
+  if (!WriteProcessMemoryChecked(
             process_handle,
             (LPVOID)((DWORD_PTR)nacl_context + 2 * sizeof(DWORD) +
                      NACL_THREAD_CONTEXT_EXCEPTION_HANDLER_OFFSET),
-            &exception_flag, sizeof(exception_flag), &bytes_written)) {
-    return FALSE;
-  }
-  if (bytes_written != sizeof(exception_flag)) {
+            &exception_flag, sizeof(exception_flag))) {
     return FALSE;
   }
   return TRUE;
@@ -262,20 +259,15 @@ static BOOL TransferControlToHandler(HANDLE process_handle,
                                      DWORD exception_handler,
                                      DWORD exception_stack) {
   struct ExceptionFrame new_stack;
-  SIZE_T bytes_written;
 
   new_stack.return_addr = 0;
   new_stack.prog_ctr = context->Eip;
   new_stack.stack_ptr = context->Esp;
-  if (!WriteProcessMemory(
+  if (!WriteProcessMemoryChecked(
            process_handle,
            (LPVOID) (base + exception_stack),
            &new_stack,
-           sizeof(new_stack),
-           &bytes_written)) {
-    return FALSE;
-  }
-  if (bytes_written != sizeof(new_stack)) {
+           sizeof(new_stack))) {
     return FALSE;
   }
 
