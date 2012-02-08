@@ -407,6 +407,22 @@ std::string MetricsService::GetClientId() {
   return client_id_;
 }
 
+void MetricsService::ForceClientIdCreation() {
+  if (!client_id_.empty())
+    return;
+  PrefService* pref = g_browser_process->local_state();
+  client_id_ = pref->GetString(prefs::kMetricsClientID);
+  if (!client_id_.empty())
+    return;
+
+  client_id_ = GenerateClientID();
+  pref->SetString(prefs::kMetricsClientID, client_id_);
+
+  // Might as well make a note of how long this ID has existed
+  pref->SetString(prefs::kMetricsClientIDTimestamp,
+                  base::Int64ToString(Time::Now().ToTimeT()));
+}
+
 void MetricsService::SetRecording(bool enabled) {
   DCHECK(IsSingleThreaded());
 
@@ -414,19 +430,7 @@ void MetricsService::SetRecording(bool enabled) {
     return;
 
   if (enabled) {
-    if (client_id_.empty()) {
-      PrefService* pref = g_browser_process->local_state();
-      DCHECK(pref);
-      client_id_ = pref->GetString(prefs::kMetricsClientID);
-      if (client_id_.empty()) {
-        client_id_ = GenerateClientID();
-        pref->SetString(prefs::kMetricsClientID, client_id_);
-
-        // Might as well make a note of how long this ID has existed
-        pref->SetString(prefs::kMetricsClientIDTimestamp,
-                        base::Int64ToString(Time::Now().ToTimeT()));
-      }
-    }
+    ForceClientIdCreation();
     child_process_logging::SetClientId(client_id_);
     StartRecording();
 

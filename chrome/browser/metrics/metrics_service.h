@@ -74,6 +74,10 @@ class MetricsService : public content::NotificationObserver,
   // recording is not currently running.
   std::string GetClientId();
 
+  // Force the client ID to be generated. This is useful in case it's needed
+  // before recording.
+  void ForceClientIdCreation();
+
   // At startup, prefs needs to be called with a list of all the pref names and
   // types we'll be using.
   static void RegisterPrefs(PrefService* local_state);

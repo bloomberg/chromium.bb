@@ -138,6 +138,9 @@ class ChromeBrowserMainParts : public content::BrowserMainParts {
   // thread.
   void StartMetricsRecording();
 
+  // Returns true if the user opted in to sending metric reports.
+  bool IsMetricsReportingEnabled();
+
   // Methods for Main Message Loop -------------------------------------------
 
   int PreCreateThreadsImpl();

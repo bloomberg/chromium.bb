@@ -617,6 +617,8 @@ void ChromeBrowserMainParts::SetupMetricsAndFieldTrials() {
   // randomization. The client ID will be empty if the user has not opted
   // to send metrics.
   MetricsService* metrics = browser_process_->metrics_service();
+  if (IsMetricsReportingEnabled())
+    metrics->ForceClientIdCreation();  // Needed below.
   field_trial_list_.reset(new base::FieldTrialList(metrics->GetClientId()));
 
   SetupFieldTrials(metrics->recording_active(),
@@ -1045,21 +1047,24 @@ void ChromeBrowserMainParts::StartMetricsRecording() {
     return;
   }
 
+  if (IsMetricsReportingEnabled())
+    metrics->Start();
+}
+
+bool ChromeBrowserMainParts::IsMetricsReportingEnabled() {
   // If the user permits metrics reporting with the checkbox in the
   // prefs, we turn on recording.  We disable metrics completely for
   // non-official builds.
+  bool enabled = false;
 #if defined(GOOGLE_CHROME_BUILD)
 #if defined(OS_CHROMEOS)
-  bool enabled;
   chromeos::CrosSettings::Get()->GetBoolean(chromeos::kStatsReportingPref,
                                             &enabled);
 #else
-  bool enabled = local_state_->GetBoolean(prefs::kMetricsReportingEnabled);
+  enabled = local_state_->GetBoolean(prefs::kMetricsReportingEnabled);
 #endif  // #if defined(OS_CHROMEOS)
-  if (enabled) {
-    metrics->Start();
-  }
 #endif  // defined(GOOGLE_CHROME_BUILD)
+  return enabled;
 }
 
 // -----------------------------------------------------------------------------
