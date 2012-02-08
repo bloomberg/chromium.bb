@@ -20,7 +20,7 @@ namespace {
 bool AddFileToZip(zipFile zip_file, const FilePath& src_dir) {
   net::FileStream stream(NULL);
   int flags = base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_READ;
-  if (stream.OpenSync(src_dir, flags) != 0) {
+  if (stream.Open(src_dir, flags) != 0) {
     DLOG(ERROR) << "Could not open stream for path "
                 << src_dir.value();
     return false;

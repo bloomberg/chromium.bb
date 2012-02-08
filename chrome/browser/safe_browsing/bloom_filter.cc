@@ -90,9 +90,9 @@ bool BloomFilter::Exists(SBPrefix hash) const {
 BloomFilter* BloomFilter::LoadFile(const FilePath& filter_name) {
   net::FileStream filter(NULL);
 
-  if (filter.OpenSync(filter_name,
-                      base::PLATFORM_FILE_OPEN |
-                      base::PLATFORM_FILE_READ) != net::OK) {
+  if (filter.Open(filter_name,
+                  base::PLATFORM_FILE_OPEN |
+                  base::PLATFORM_FILE_READ) != net::OK) {
     RecordFailure(FAILURE_FILTER_READ_OPEN);
     return NULL;
   }
@@ -156,9 +156,9 @@ BloomFilter* BloomFilter::LoadFile(const FilePath& filter_name) {
 bool BloomFilter::WriteFile(const FilePath& filter_name) const {
   net::FileStream filter(NULL);
 
-  if (filter.OpenSync(filter_name,
-                      base::PLATFORM_FILE_WRITE |
-                      base::PLATFORM_FILE_CREATE_ALWAYS) != net::OK)
+  if (filter.Open(filter_name,
+                  base::PLATFORM_FILE_WRITE |
+                  base::PLATFORM_FILE_CREATE_ALWAYS) != net::OK)
     return false;
 
   // Write the version information.

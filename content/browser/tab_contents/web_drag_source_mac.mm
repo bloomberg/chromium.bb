@@ -81,7 +81,7 @@ void PromiseWriterHelper(const WebDropData& drop_data,
                      net::CompletionCallback());
 
   if (file_stream)
-    file_stream->CloseSync();
+    file_stream->Close();
 }
 
 }  // namespace

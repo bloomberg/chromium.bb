@@ -193,7 +193,7 @@ bool ZipReader::ExtractCurrentEntryToFilePath(
   net::FileStream stream(NULL);
   const int flags = (base::PLATFORM_FILE_CREATE_ALWAYS |
                      base::PLATFORM_FILE_WRITE);
-  if (stream.OpenSync(output_file_path, flags) != 0)
+  if (stream.Open(output_file_path, flags) != 0)
     return false;
 
   bool success = true;  // This becomes false when something bad happens.
@@ -218,7 +218,7 @@ bool ZipReader::ExtractCurrentEntryToFilePath(
     }
   }
 
-  stream.CloseSync();
+  stream.Close();
   unzCloseCurrentFile(zip_file_);
   return success;
 }

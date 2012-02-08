@@ -288,7 +288,7 @@ RefCountedMemory* ReadFileData(const FilePath& path) {
   if (!path.empty()) {
     net::FileStream file(NULL);
     int flags = base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_READ;
-    if (file.OpenSync(path, flags) == net::OK) {
+    if (file.Open(path, flags) == net::OK) {
       int64 avail = file.Available();
       if (avail > 0 && avail < INT_MAX) {
         size_t size = static_cast<size_t>(avail);

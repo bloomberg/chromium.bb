@@ -1010,7 +1010,7 @@ TEST_F(DownloadManagerTest, MAYBE_DownloadFileErrorTest) {
 
   // This file stream will be used, until the first rename occurs.
   net::FileStream* stream = new net::FileStream(NULL);
-  ASSERT_EQ(0, stream->OpenSync(
+  ASSERT_EQ(0, stream->Open(
       path,
       base::PLATFORM_FILE_OPEN_ALWAYS | base::PLATFORM_FILE_WRITE));
 

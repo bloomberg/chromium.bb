@@ -145,7 +145,7 @@ class Writer : public base::RefCountedThreadSafe<Writer> {
     Write(kFolderChildrenEnd);
     Write(kNewline);
     // File stream close is forced so that unit test could read it.
-    file_stream_.CloseSync();
+    file_stream_.Close();
 
     NotifyOnFinish();
   }
@@ -165,7 +165,7 @@ class Writer : public base::RefCountedThreadSafe<Writer> {
   // Opens the file, returning true on success.
   bool OpenFile() {
     int flags = base::PLATFORM_FILE_CREATE_ALWAYS | base::PLATFORM_FILE_WRITE;
-    return (file_stream_.OpenSync(path_, flags) == net::OK);
+    return (file_stream_.Open(path_, flags) == net::OK);
   }
 
   // Increments the indent.

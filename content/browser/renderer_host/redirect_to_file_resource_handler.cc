@@ -141,7 +141,7 @@ void RedirectToFileResourceHandler::OnRequestClosed() {
     // directly from a PlatformFile.
     // Close() performs file IO. crbug.com/112474.
     base::ThreadRestrictions::ScopedAllowIO allow_io;
-    file_stream_->CloseSync();
+    file_stream_->Close();
     file_stream_.reset();
   }
   deletable_file_ = NULL;

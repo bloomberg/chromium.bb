@@ -341,12 +341,12 @@ FileStream::FileStream(base::PlatformFile file, int flags, net::NetLog* net_log)
 
 FileStream::~FileStream() {
   if (auto_closed_)
-    CloseSync();
+    Close();
 
   bound_net_log_.EndEvent(net::NetLog::TYPE_FILE_STREAM_ALIVE, NULL);
 }
 
-void FileStream::CloseSync() {
+void FileStream::Close() {
   bound_net_log_.AddEvent(net::NetLog::TYPE_FILE_STREAM_CLOSE, NULL);
 
   // Abort any existing asynchronous operations.
@@ -361,7 +361,7 @@ void FileStream::CloseSync() {
   }
 }
 
-int FileStream::OpenSync(const FilePath& path, int open_flags) {
+int FileStream::Open(const FilePath& path, int open_flags) {
   if (IsOpen()) {
     DLOG(FATAL) << "File is already open!";
     return ERR_UNEXPECTED;

@@ -502,7 +502,7 @@ net::Error BaseFile::Open() {
   if (!file_stream_.get()) {
     CreateFileStream();
     file_stream_->EnableErrorStatistics();
-    int open_result = file_stream_->OpenSync(
+    int open_result = file_stream_->Open(
         full_path_,
         base::PLATFORM_FILE_OPEN_ALWAYS | base::PLATFORM_FILE_WRITE);
     if (open_result != net::OK)
@@ -535,7 +535,7 @@ void BaseFile::Close() {
     // theres not much we can do.  But we might in the future.
     file_stream_->Flush();
 #endif
-    file_stream_->CloseSync();
+    file_stream_->Close();
     ClearStream(net::OK);
   }
 }
