@@ -381,7 +381,7 @@ SkPoint GetHeaderFooterPosition(
 // Given a text, the positions, and the paint object, this method gets the
 // coordinates and prints the text at those coordinates on the canvas.
 void PrintHeaderFooterText(
-    string16 text,
+    const string16& text,
     WebKit::WebCanvas* canvas,
     HeaderFooterPaint paint,
     float webkit_scale_factor,
