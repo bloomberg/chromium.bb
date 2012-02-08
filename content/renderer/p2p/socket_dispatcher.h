@@ -21,7 +21,6 @@
 
 #include <vector>
 
-#include "base/atomic_ref_count.h"
 #include "base/callback_forward.h"
 #include "base/compiler_specific.h"
 #include "base/id_map.h"
@@ -116,7 +115,6 @@ class CONTENT_EXPORT P2PSocketDispatcher : public content::RenderViewObserver {
   bool network_notifications_started_;
   scoped_refptr<ObserverListThreadSafe<NetworkListObserver> >
       network_list_observers_;
-  base::AtomicRefCount network_list_observers_count_;
 
   scoped_refptr<AsyncMessageSender> async_message_sender_;
 

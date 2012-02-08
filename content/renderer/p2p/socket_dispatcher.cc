@@ -51,12 +51,11 @@ P2PSocketDispatcher::P2PSocketDispatcher(RenderViewImpl* render_view)
       network_notifications_started_(false),
       network_list_observers_(
           new ObserverListThreadSafe<NetworkListObserver>()),
-      network_list_observers_count_(0),
       async_message_sender_(new AsyncMessageSender(this)) {
 }
 
 P2PSocketDispatcher::~P2PSocketDispatcher() {
-  DCHECK(base::AtomicRefCountIsZero(&network_list_observers_count_));
+  network_list_observers_->AssertEmpty();
   if (network_notifications_started_)
     Send(new P2PHostMsg_StopNetworkNotifications(routing_id()));
   for (IDMap<P2PSocketClient>::iterator i(&clients_); !i.IsAtEnd();
@@ -69,7 +68,6 @@ P2PSocketDispatcher::~P2PSocketDispatcher() {
 void P2PSocketDispatcher::AddNetworkListObserver(
     NetworkListObserver* network_list_observer) {
   network_list_observers_->AddObserver(network_list_observer);
-  base::AtomicRefCountInc(&network_list_observers_count_);
   network_notifications_started_ = true;
   async_message_sender_->Send(
       new P2PHostMsg_StartNetworkNotifications(routing_id()));
@@ -78,7 +76,6 @@ void P2PSocketDispatcher::AddNetworkListObserver(
 void P2PSocketDispatcher::RemoveNetworkListObserver(
     NetworkListObserver* network_list_observer) {
   network_list_observers_->RemoveObserver(network_list_observer);
-  base::AtomicRefCountDec(&network_list_observers_count_);
 }
 
 bool P2PSocketDispatcher::OnMessageReceived(const IPC::Message& message) {
