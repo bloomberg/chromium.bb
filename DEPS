@@ -24,11 +24,18 @@ vars = {
       "85e8e983a1c71f16e2f2502d8836f3a8321bc9b3",
   "nacl_toolchain_mac_x86_newlib_hash":
       "0f251d82517afaf61e2ad1f4b4ee0448cf23a581",
+  "nacl_toolchain_pnacl_darwin_i386_hash":
+      "68ce47b94a4df3abac9e7f066d830c04a767714e",
+  "nacl_toolchain_pnacl_linux_i686_hash":
+      "3c802b75bdc773d9ea7938783264e5e7d5bb6121",
+  "nacl_toolchain_pnacl_linux_x86_64_hash":
+      "61da7fe1684b1248f6a3a5104b1da8eac3f7c98f",
   "nacl_toolchain_win_x86_hash":
       "8dbc9546ece247a90bbaeab58450854be1289252",
   "nacl_toolchain_win_x86_newlib_hash":
       "408f8c946802a0acd6f9004b73fce74ca60ac1db",
   "nacl_toolchain_revision": "7712",
+  "pnacl_toolchain_revision": "7700",
 
   "libjingle_revision": "114",
   "libphonenumber_revision": "425",
@@ -458,8 +465,11 @@ hooks = [
     "pattern": ".",
     "action": [
         "python", "src/build/download_nacl_toolchains.py",
-         "--no-pnacl",
          "--no-arm-trusted",
+         "--optional-pnacl",
+         "--pnacl-version", Var("pnacl_toolchain_revision"),
+         "--file-hash", "pnacl_linux_i686",
+             Var("nacl_toolchain_pnacl_linux_x86_64_hash"),
          "--x86-version", Var("nacl_toolchain_revision"),
          "--file-hash", "mac_x86_newlib",
              Var("nacl_toolchain_mac_x86_newlib_hash"),
