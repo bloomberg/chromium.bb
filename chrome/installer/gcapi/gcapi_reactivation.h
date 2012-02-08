@@ -6,8 +6,6 @@
 #define CHROME_INSTALLER_GCAPI_GCAPI_REACTIVATION_H_
 #pragma once
 
-#include <windows.h>
-
 #include <string>
 #include <vector>
 

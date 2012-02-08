@@ -13,6 +13,7 @@
 #include "base/win/registry.h"
 #include "chrome/common/guid.h"
 #include "chrome/installer/gcapi/gcapi.h"
+#include "chrome/installer/gcapi/gcapi_omaha_experiment.h"
 #include "chrome/installer/gcapi/gcapi_reactivation.h"
 #include "chrome/installer/util/google_update_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -21,6 +22,16 @@ using base::Time;
 using base::TimeDelta;
 using base::win::RegKey;
 
+namespace {
+
+const wchar_t kExperimentLabels[] = L"experiment_labels";
+
+const wchar_t* kExperimentAppGuids[] = {
+    L"{4DC8B4CA-1BDA-483e-B5FA-D3C12E15B62D}",
+    L"{8A69D345-D564-463C-AFF1-A69D9E530F96}",
+};
+
+}
 
 class GCAPIReactivationTest : public ::testing::Test {
  protected:
@@ -29,6 +40,9 @@ class GCAPIReactivationTest : public ::testing::Test {
     std::wstring hkcu_override = base::StringPrintf(
         L"hkcu_override\\%ls", ASCIIToWide(guid::GenerateGUID()));
     override_manager_.OverrideRegistry(HKEY_CURRENT_USER, hkcu_override);
+    std::wstring hklm_override = base::StringPrintf(
+        L"hklm_override\\%ls", ASCIIToWide(guid::GenerateGUID()));
+    override_manager_.OverrideRegistry(HKEY_LOCAL_MACHINE, hklm_override);
   }
 
   bool SetChromeInstallMarker(HKEY hive) {
@@ -62,6 +76,24 @@ class GCAPIReactivationTest : public ::testing::Test {
             client_state.WriteValue(
                 google_update::kRegLastRunTimeField,
                 last_run_time_string.c_str()) == ERROR_SUCCESS);
+  }
+
+  bool HasExperimentLabels() {
+    int label_count = 0;
+    for (int i = 0; i < arraysize(kExperimentAppGuids); ++i) {
+      string16 client_state_path(google_update::kRegPathClientState);
+      client_state_path += L"\\";
+      client_state_path += kExperimentAppGuids[i];
+
+      RegKey client_state_key(HKEY_LOCAL_MACHINE,
+                              client_state_path.c_str(),
+                              KEY_QUERY_VALUE);
+      if (client_state_key.Valid() &&
+          client_state_key.HasValue(kExperimentLabels)) {
+        label_count++;
+      }
+    }
+    return label_count == arraysize(kExperimentAppGuids);
   }
 
   std::wstring GetReactivationString(HKEY hive) {
@@ -183,4 +215,23 @@ TEST_F(GCAPIReactivationTest, Reactivation_Flow) {
                                 previous_brands, &error));
   EXPECT_EQ(REACTIVATE_ERROR_ALREADY_REACTIVATED, error);
   EXPECT_EQ(L"MAMA", GetReactivationString(HKEY_CURRENT_USER));
+}
+
+TEST_F(GCAPIReactivationTest, ExperimentLabelCheck) {
+  const wchar_t* previous_brands[] = {L"GOOGOO", L"MAMA", L"DADA"};
+  DWORD error;
+
+  // Set us up as a candidate for reactivation.
+  EXPECT_TRUE(SetChromeInstallMarker(HKEY_CURRENT_USER));
+
+  Time hkcu_last_run = Time::NowFromSystemTime() -
+      TimeDelta::FromDays(kReactivationMinDaysDormant);
+  EXPECT_TRUE(SetLastRunTime(HKEY_CURRENT_USER,
+                             hkcu_last_run.ToInternalValue()));
+
+  EXPECT_TRUE(ReactivateChrome(L"GAGA", arraysize(previous_brands),
+                               previous_brands, &error));
+  EXPECT_EQ(L"GAGA", GetReactivationString(HKEY_CURRENT_USER));
+
+  EXPECT_TRUE(HasExperimentLabels());
 }

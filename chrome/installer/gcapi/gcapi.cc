@@ -29,6 +29,7 @@
 #include "base/win/scoped_com_initializer.h"
 #include "base/win/scoped_comptr.h"
 #include "base/win/scoped_handle.h"
+#include "chrome/installer/gcapi/gcapi_omaha_experiment.h"
 #include "chrome/installer/gcapi/gcapi_reactivation.h"
 #include "chrome/installer/util/google_update_constants.h"
 #include "chrome/installer/util/util_constants.h"
@@ -564,7 +565,7 @@ BOOL __stdcall CanOfferReactivation(const wchar_t* brand_code,
   }
 
   int days_since_last_run = GoogleChromeDaysSinceLastRun();
-  if (days_since_last_run > 0 &&
+  if (days_since_last_run >= 0 &&
       days_since_last_run < kReactivationMinDaysDormant) {
     if (error_code)
       *error_code = REACTIVATE_ERROR_NOTDORMANT;
@@ -599,8 +600,10 @@ BOOL __stdcall ReactivateChrome(wchar_t* brand_code,
                            previous_brand_codes,
                            error_code)) {
     if (SetReactivationBrandCode(brand_code)) {
-      // TODO(robertshield): Set Omaha reg key to add experiment label for
-      // tracking 7DA.
+      // Currently set this as a best-effort thing. We return TRUE if
+      // reactivation succeeded regardless of the experiment label result.
+      SetOmahaExperimentLabel(brand_code);
+
       result = TRUE;
     } else {
       if (error_code)
