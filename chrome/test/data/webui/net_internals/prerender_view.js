@@ -176,9 +176,10 @@ TEST_F('NetInternalsTest', 'netInternalsPrerenderViewSucceed', function() {
 
 /**
  * Prerender a page that is expected to fail.
- * Flaky: http://code.google.com/p/chromium/issues/detail?id=112829.
+ * Disabled: crbug.com/99083.
  */
-TEST_F('NetInternalsTest', 'FLAKY_netInternalsPrerenderViewFail', function() {
+TEST_F('NetInternalsTest', 'DISABLED_netInternalsPrerenderViewFail',
+       function() {
   var taskQueue = new NetInternalsTest.TaskQueue(true);
   taskQueue.addTask(
       new NetInternalsTest.GetTestServerURLTask('files/download-test1.lib'));
