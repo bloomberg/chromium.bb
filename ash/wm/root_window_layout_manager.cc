@@ -25,8 +25,9 @@ RootWindowLayoutManager::~RootWindowLayoutManager() {
 void RootWindowLayoutManager::SetBackgroundWidget(views::Widget* widget) {
   if (widget == background_widget_)
     return;
+  // Close now so that the focus manager will be deleted before shutdown.
   if (background_widget_)
-    background_widget_->Close();
+    background_widget_->CloseNow();
   background_widget_ = widget;
 }
 

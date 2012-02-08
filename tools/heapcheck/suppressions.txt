@@ -998,17 +998,6 @@
    fun:GpuProcessHostUIShim::GetForRenderer
 }
 {
-   bug_75023
-   Heapcheck:Leak
-   ...
-   fun:::DefaultFocusManagerFactory::CreateFocusManager
-   fun:views::FocusManagerFactory::Create
-   fun:views::Widget::OnNativeWidgetCreated
-   fun:views::NativeWidgetAura::InitNativeWidget
-   fun:views::Widget::Init
-   fun:views::::NativeWidgetAuraTest_GetClientAreaScreenBounds_Test::TestBody
-}
-{
    bug_76354
    Heapcheck:Leak
    fun:*ViewHostMsg_ResolveProxy

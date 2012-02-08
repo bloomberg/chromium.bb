@@ -216,6 +216,10 @@ Shell::~Shell() {
   RemoveRootWindowEventFilter(window_modality_controller_.get());
   RemoveRootWindowEventFilter(accelerator_filter_.get());
 
+  // Close background widget now so that the focus manager of the
+  // widget gets deleted in the final message loop run.
+  root_window_layout_->SetBackgroundWidget(NULL);
+
   // TooltipController needs a valid shell instance. We delete it before
   // deleting the shell |instance_|.
   RemoveRootWindowEventFilter(tooltip_controller_.get());
