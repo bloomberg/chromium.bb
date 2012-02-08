@@ -4896,7 +4896,7 @@
    fun:_ZN24NavigationControllerImpl9LoadEntryEPN7content19NavigationEntryImplE
    fun:_ZN24NavigationControllerImpl7LoadURLERK4GURLRKN7content8ReferrerENS3_14PageTransitionERKSs
    fun:_ZN11BalloonHost4InitEv
-   fun:_ZN15BalloonViewHost4InitEP10_GtkWidget
+   fun:_ZN15BalloonViewHost4InitEP*
    fun:_ZN19BalloonViewHostView20ViewHierarchyChangedEbPN5views4ViewES2_
 }
 {
@@ -5791,6 +5791,27 @@
    fun:_Znw*
    fun:_ZN18SpellCheckProvider19RequestTextCheckingERKN6WebKit9WebStringEiPNS0_25WebTextCheckingCompletionE
    fun:_ZN12_GLOBAL__N_141SpellCheckProviderTest_UsingHunspell_Test8TestBodyEv
+}
+{
+   bug_113276
+   Memcheck:Leak
+   fun:_Znw*
+   ...
+   fun:_ZN2ui13LayerAnimator9SetBoundsERKN3gfx4RectE
+   fun:_ZN2ui5Layer9SetBoundsERKN3gfx4RectE
+   fun:_ZN4aura6Window17SetBoundsInternalERKN3gfx4RectE
+   fun:_ZN4aura13LayoutManager20SetChildBoundsDirectEPNS_6WindowERKN3gfx4RectE
+   fun:_ZN3ash8internal23StatusAreaLayoutManager14SetChildBoundsEPN4aura6WindowERKN3gfx4RectE
+   fun:_ZN4aura6Window9SetBoundsERKN3gfx4RectE
+   fun:_ZN5views16NativeWidgetAura7SetSizeERKN3gfx4SizeE
+   fun:_ZN5views6Widget7SetSizeERKN3gfx4SizeE
+   fun:_ZN14StatusAreaView20PreferredSizeChangedEv
+   fun:_ZN14StatusAreaView25ChildPreferredSizeChangedEPN5views4ViewE
+   fun:_ZN5views4View20PreferredSizeChangedEv
+   fun:_ZN5views14TextButtonBase14UpdateTextSizeEv
+   fun:_ZN5views14TextButtonBase7SetFontERKN3gfx4FontE
+   fun:_ZN16StatusAreaButton15UpdateTextStyleEv
+   fun:_ZN14StatusAreaView21UpdateButtonTextStyleEv
 }
 
 #-----------------------------------------------------------------------
