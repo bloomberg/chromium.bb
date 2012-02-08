@@ -232,20 +232,24 @@ bool DownloadResourceHandler::OnResponseCompleted(
     int request_id,
     const net::URLRequestStatus& status,
     const std::string& security_info) {
-  if (!download_id_.IsValid()) {
+  if (download_id_.IsValid()) {
+    OnResponseCompletedInternal(request_id, status, security_info);
+  } else {
     // We got cancelled before the task which sets the id ran on the IO thread.
     // Wait for it.
-    BrowserThread::PostTask(
+    BrowserThread::PostTaskAndReply(
         BrowserThread::UI, FROM_HERE,
-        base::Bind(base::IgnoreResult(&BrowserThread::PostTask),
-            BrowserThread::IO, FROM_HERE,
-            base::Bind(base::IgnoreResult(
-                &DownloadResourceHandler::OnResponseCompleted), this,
-                request_id, status, security_info)));
-                                  
-    return true;
+        base::Bind(&base::DoNothing),
+        base::Bind(&DownloadResourceHandler::OnResponseCompletedInternal, this,
+                   request_id, status, security_info));
   }
+  return true;
+}
 
+void DownloadResourceHandler::OnResponseCompletedInternal(
+    int request_id,
+    const net::URLRequestStatus& status,
+    const std::string& security_info) {
   VLOG(20) << __FUNCTION__ << "()" << DebugString()
            << " request_id = " << request_id
            << " status.status() = " << status.status()
@@ -287,7 +291,6 @@ bool DownloadResourceHandler::OnResponseCompleted(
                  download_file_manager_, download_id_, reason, security_info));
   buffer_ = NULL;  // The buffer is longer needed by |DownloadResourceHandler|.
   read_buffer_ = NULL;
-  return true;
 }
 
 void DownloadResourceHandler::OnRequestClosed() {

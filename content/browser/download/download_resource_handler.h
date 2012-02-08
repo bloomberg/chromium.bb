@@ -96,6 +96,10 @@ class DownloadResourceHandler : public ResourceHandler {
  private:
   virtual ~DownloadResourceHandler();
 
+  void OnResponseCompletedInternal(int request_id,
+                                   const net::URLRequestStatus& status,
+                                   const std::string& security_info);
+
   void StartPauseTimer();
   void CallStartedCB(content::DownloadId id, net::Error error);
 
