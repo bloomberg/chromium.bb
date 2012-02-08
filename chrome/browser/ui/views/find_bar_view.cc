@@ -234,17 +234,17 @@ void FindBarView::OnPaint(gfx::Canvas* canvas) {
   gfx::Point back_button_origin = find_previous_button_->bounds().origin();
 
   // Draw the image to the left that creates a curved left edge for the box.
-  canvas->TileImage(*text_box_background_left_,
-      gfx::Rect(find_text_x - text_box_background_left_->width(),
-                back_button_origin.y(), text_box_background_left_->width(),
-                text_box_background_left_->height()));
+  canvas->TileImageInt(*text_box_background_left_,
+      find_text_x - text_box_background_left_->width(),
+      back_button_origin.y(), text_box_background_left_->width(),
+      text_box_background_left_->height());
 
   // Draw the top and bottom border for whole text box (encompasses both the
   // find_text_ edit box and the match_count_text_ label).
-  canvas->TileImage(*text_box_background_, gfx::Rect(find_text_x,
-      back_button_origin.y(),
-      back_button_origin.x() - find_text_x,
-      text_box_background_->height()));
+  canvas->TileImageInt(*text_box_background_, find_text_x,
+                       back_button_origin.y(),
+                       back_button_origin.x() - find_text_x,
+                       text_box_background_->height());
 }
 
 void FindBarView::Layout() {

@@ -157,8 +157,8 @@ class UI_EXPORT CanvasSkia : public Canvas {
       const gfx::Rect& display_rect);
 #endif
   virtual void DrawFocusRect(const gfx::Rect& rect) OVERRIDE;
-  virtual void TileImage(const SkBitmap& bitmap,
-                         const gfx::Rect& rect) OVERRIDE;
+  virtual void TileImageInt(const SkBitmap& bitmap,
+                            int x, int y, int w, int h) OVERRIDE;
   virtual void TileImageInt(const SkBitmap& bitmap,
                             int src_x, int src_y,
                             int dest_x, int dest_y, int w, int h) OVERRIDE;

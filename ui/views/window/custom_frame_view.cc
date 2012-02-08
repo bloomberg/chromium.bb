@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -371,8 +371,8 @@ void CustomFrameView::PaintMaximizedFrameBorder(gfx::Canvas* canvas) {
   SkBitmap* titlebar_bottom = rb.GetBitmapNamed(IDR_APP_TOP_CENTER);
   int edge_height = titlebar_bottom->height() -
                     (ShouldShowClientEdge() ? kClientEdgeThickness : 0);
-  canvas->TileImage(*titlebar_bottom, gfx::Rect(0,
-      frame_->client_view()->y() - edge_height, width(), edge_height));
+  canvas->TileImageInt(*titlebar_bottom, 0,
+      frame_->client_view()->y() - edge_height, width(), edge_height);
 }
 
 void CustomFrameView::PaintTitleBar(gfx::Canvas* canvas) {
@@ -410,28 +410,28 @@ void CustomFrameView::PaintRestoredClientEdge(gfx::Canvas* canvas) {
   int top_edge_y = client_area_top - top->height();
   canvas->DrawBitmapInt(*top_left, client_area_bounds.x() - top_left->width(),
                         top_edge_y);
-  canvas->TileImage(*top, gfx::Rect(client_area_bounds.x(), top_edge_y,
-                                    client_area_bounds.width(), top->height()));
+  canvas->TileImageInt(*top, client_area_bounds.x(), top_edge_y,
+                       client_area_bounds.width(), top->height());
   canvas->DrawBitmapInt(*top_right, client_area_bounds.right(), top_edge_y);
 
   // Right.
   int client_area_bottom =
       std::max(client_area_top, client_area_bounds.bottom());
   int client_area_height = client_area_bottom - client_area_top;
-  canvas->TileImage(*right, gfx::Rect(client_area_bounds.right(),
-      client_area_top, right->width(), client_area_height));
+  canvas->TileImageInt(*right, client_area_bounds.right(), client_area_top,
+                       right->width(), client_area_height);
 
   // Bottom.
   canvas->DrawBitmapInt(*bottom_right, client_area_bounds.right(),
                         client_area_bottom);
-  canvas->TileImage(*bottom, gfx::Rect(client_area_bounds.x(),
-      client_area_bottom, client_area_bounds.width(), bottom_right->height()));
+  canvas->TileImageInt(*bottom, client_area_bounds.x(), client_area_bottom,
+                       client_area_bounds.width(), bottom_right->height());
   canvas->DrawBitmapInt(*bottom_left,
       client_area_bounds.x() - bottom_left->width(), client_area_bottom);
 
   // Left.
-  canvas->TileImage(*left, gfx::Rect(client_area_bounds.x() - left->width(),
-      client_area_top, left->width(), client_area_height));
+  canvas->TileImageInt(*left, client_area_bounds.x() - left->width(),
+      client_area_top, left->width(), client_area_height);
 
   // Draw the toolbar color to fill in the edges.
   canvas->DrawRect(gfx::Rect(client_area_bounds.x() - 1, client_area_top - 1,

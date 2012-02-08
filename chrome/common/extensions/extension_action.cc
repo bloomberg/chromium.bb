@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,7 +15,6 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/rect.h"
-#include "ui/gfx/skia_util.h"
 
 namespace {
 
@@ -146,9 +145,10 @@ void ExtensionAction::PaintBadge(gfx::Canvas* canvas,
   rect.fBottom = SkIntToScalar(bounds.bottom() - kBottomMargin);
   rect.fTop = rect.fBottom - SkIntToScalar(kBadgeHeight);
   if (badge_width >= kCenterAlignThreshold) {
-    rect.fLeft = SkScalarFloorToScalar(SkIntToScalar(bounds.x()) +
-                                       SkIntToScalar(bounds.width()) / 2 -
-                                       SkIntToScalar(badge_width) / 2);
+    rect.fLeft = SkIntToScalar(
+                     SkScalarFloor(SkIntToScalar(bounds.x()) +
+                                   SkIntToScalar(bounds.width()) / 2 -
+                                   SkIntToScalar(badge_width) / 2));
     rect.fRight = rect.fLeft + SkIntToScalar(badge_width);
   } else {
     rect.fRight = SkIntToScalar(bounds.right());
@@ -172,9 +172,12 @@ void ExtensionAction::PaintBadge(gfx::Canvas* canvas,
       IDR_BROWSER_ACTION_BADGE_CENTER);
 
   canvas->GetSkCanvas()->drawBitmap(*gradient_left, rect.fLeft, rect.fTop);
-  gfx::Rect tile_rect(gfx::SkRectToRect(rect));
-  tile_rect.Inset(gradient_left->width(), 0, gradient_right->width(), 0);
-  canvas->TileImage(*gradient_center, tile_rect);
+  canvas->TileImageInt(*gradient_center,
+      SkScalarFloor(rect.fLeft) + gradient_left->width(),
+      SkScalarFloor(rect.fTop),
+      SkScalarFloor(rect.width()) - gradient_left->width() -
+                    gradient_right->width(),
+      SkScalarFloor(rect.height()));
   canvas->GetSkCanvas()->drawBitmap(*gradient_right,
       rect.fRight - SkIntToScalar(gradient_right->width()), rect.fTop);
 

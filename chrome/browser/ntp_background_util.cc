@@ -50,7 +50,7 @@ void PaintThemeBackground(
   x_pos += area.x();
   y_pos += area.y();
 
-  canvas->TileImage(*ntp_background, gfx::Rect(x_pos, y_pos, width, height));
+  canvas->TileImageInt(*ntp_background, x_pos, y_pos, width, height);
 }
 
 }  // namespace

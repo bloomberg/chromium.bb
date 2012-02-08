@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -486,11 +486,13 @@ void Tab::PaintInactiveTabBackground(gfx::Canvas* canvas) {
 
   // Now draw the highlights/shadows around the tab edge.
   canvas->DrawBitmapInt(*tab_inactive_image->image_l, 0, 0);
-  gfx::Rect tile_rect(GetLocalBounds());
-  tile_rect.Inset(tab_inactive_image->l_width, 0,
-                  tab_inactive_image->r_width, 0);
-  canvas->TileImage(*tab_inactive_image->image_c, tile_rect);
-  canvas->DrawBitmapInt(*tab_inactive_image->image_r, tile_rect.right(), 0);
+  canvas->TileImageInt(*tab_inactive_image->image_c,
+                       tab_inactive_image->l_width, 0,
+                       width() - tab_inactive_image->l_width -
+                           tab_inactive_image->r_width,
+                       height());
+  canvas->DrawBitmapInt(*tab_inactive_image->image_r,
+                        width() - tab_inactive_image->r_width, 0);
 }
 
 void Tab::PaintActiveTabBackground(gfx::Canvas* canvas) {
@@ -529,10 +531,9 @@ void Tab::PaintActiveTabBackground(gfx::Canvas* canvas) {
 
   // Now draw the highlights/shadows around the tab edge.
   canvas->DrawBitmapInt(*tab_image->image_l, 0, 0);
-  gfx::Rect tile_rect(GetLocalBounds());
-  tile_rect.Inset(tab_image->l_width, 0, tab_image->r_width, 0);
-  canvas->TileImage(*tab_image->image_c, tile_rect);
-  canvas->DrawBitmapInt(*tab_image->image_r, tile_rect.right(), 0);
+  canvas->TileImageInt(*tab_image->image_c, tab_image->l_width, 0,
+      width() - tab_image->l_width - tab_image->r_width, height());
+  canvas->DrawBitmapInt(*tab_image->image_r, width() - tab_image->r_width, 0);
 }
 
 int Tab::IconCapacity() const {

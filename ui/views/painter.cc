@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,7 +12,6 @@
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/insets.h"
 #include "ui/gfx/point.h"
-#include "ui/gfx/rect.h"
 
 namespace views {
 
@@ -190,8 +189,11 @@ void HorizontalPainter::Paint(int w, int h, gfx::Canvas* canvas) {
   }
   canvas->DrawBitmapInt(*images_[LEFT], 0, 0);
   canvas->DrawBitmapInt(*images_[RIGHT], w - images_[RIGHT]->width(), 0);
-  canvas->TileImage(*images_[CENTER], gfx::Rect(images_[LEFT]->width(),
-      0, w - images_[LEFT]->width() - images_[RIGHT]->width(), height_));
+  canvas->TileImageInt(*images_[CENTER],
+                       images_[LEFT]->width(),
+                       0,
+                       w - images_[LEFT]->width() - images_[RIGHT]->width(),
+                       height_);
 }
 
 }  // namespace views
