@@ -1034,8 +1034,6 @@ rotate_grab_motion(struct wl_grab *grab,
 		weston_matrix_init(&surface->rotation.rotation);
 		weston_matrix_init(&rotate->rotation);
 	}
-
-	weston_compositor_damage_all(surface->surface->compositor);
 }
 
 static void
