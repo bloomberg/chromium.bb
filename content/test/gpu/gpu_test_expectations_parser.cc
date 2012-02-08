@@ -4,8 +4,10 @@
 
 #include "content/test/gpu/gpu_test_expectations_parser.h"
 
+#include "base/base_paths.h"
 #include "base/file_util.h"
 #include "base/logging.h"
+#include "base/path_service.h"
 #include "base/string_number_conversions.h"
 #include "base/string_split.h"
 #include "base/string_util.h"
@@ -169,6 +171,14 @@ bool GPUTestExpectationsParser::LoadTestExpectations(const FilePath& path) {
     return false;
   }
   return LoadTestExpectations(data);
+}
+
+bool GPUTestExpectationsParser::LoadTestExpectations(
+    GPUTestProfile profile) {
+  FilePath path;
+  if (!GetExpectationsPath(profile, &path))
+    return false;
+  return LoadTestExpectations(path);
 }
 
 int32 GPUTestExpectationsParser::GetTestExpectation(
@@ -412,6 +422,30 @@ void GPUTestExpectationsParser::PushErrorMessage(
                          static_cast<int>(entry1_line_number),
                          static_cast<int>(entry2_line_number),
                          message.c_str()));
+}
+
+// static
+bool GPUTestExpectationsParser::GetExpectationsPath(
+    GPUTestProfile profile, FilePath* path) {
+  DCHECK(path);
+
+  bool rt = true;
+  switch (profile) {
+    case kWebGLConformanceTest:
+      rt = PathService::Get(base::DIR_SOURCE_ROOT, path);
+      if (rt) {
+        *path = path->Append(FILE_PATH_LITERAL("chrome"))
+            .Append(FILE_PATH_LITERAL("test"))
+            .Append(FILE_PATH_LITERAL("gpu"))
+            .Append(FILE_PATH_LITERAL(
+                "webgl_conformance_test_expectations.txt"));
+        rt = file_util::PathExists(*path);
+      }
+      break;
+    default:
+      DCHECK(false);
+  }
+  return rt;
 }
 
 GPUTestExpectationsParser:: GPUTestExpectationEntry::GPUTestExpectationEntry()

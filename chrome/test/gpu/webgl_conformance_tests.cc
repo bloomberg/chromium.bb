@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,6 +10,8 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/common/content_switches.h"
+#include "content/test/gpu/gpu_test_config.h"
+#include "content/test/gpu/gpu_test_expectations_parser.h"
 #include "net/base/net_util.h"
 
 namespace {
@@ -39,9 +41,26 @@ class WebGLConformanceTests : public InProcessBrowserTest {
     PathService::Get(chrome::DIR_TEST_DATA, &test_path_);
     test_path_ = test_path_.Append(FILE_PATH_LITERAL("gpu"));
     test_path_ = test_path_.Append(FILE_PATH_LITERAL("webgl_conformance.html"));
+
+    ASSERT_TRUE(bot_config_.LoadCurrentConfig(NULL))
+        << "Fail to load bot configuration";
+    ASSERT_TRUE(bot_config_.IsValid())
+        << "Invalid bot configuration";
+
+    ASSERT_TRUE(test_expectations_.LoadTestExpectations(
+        GPUTestExpectationsParser::kWebGLConformanceTest));
   }
 
   void RunTest(const std::string& url) {
+    std::string test_name =
+        testing::UnitTest::GetInstance()->current_test_info()->name();
+    int32 expectation =
+        test_expectations_.GetTestExpectation(test_name, bot_config_);
+    if (expectation != GPUTestExpectationsParser::kGpuTestPass) {
+      LOG(WARNING) << "Test " << test_name << " is bypassed";
+      return;
+    }
+
     ui_test_utils::DOMMessageQueue message_queue;
     ui_test_utils::NavigateToURL(browser(), net::FilePathToFileURL(test_path_));
     ui_test_utils::NavigateToURL(
@@ -55,6 +74,8 @@ class WebGLConformanceTests : public InProcessBrowserTest {
 
  private:
   FilePath test_path_;
+  GPUTestBotConfig bot_config_;
+  GPUTestExpectationsParser test_expectations_;
 };
 
 #define CONFORMANCE_TEST(name, url) \

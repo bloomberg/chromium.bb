@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,31 +9,6 @@
 #ifndef CHROME_TEST_GPU_WEBGL_CONFORMANCE_TEST_LIST_AUTOGEN_H_
 #define CHROME_TEST_GPU_WEBGL_CONFORMANCE_TEST_LIST_AUTOGEN_H_
 
-#if (defined(OS_LINUX)) && !defined(NDEBUG)
-#define MAYBE_conformance_more_conformance_quickCheckAPI_B1 DISABLED_conformance_more_conformance_quickCheckAPI_B1
-#elif !defined(MAYBE_conformance_more_conformance_quickCheckAPI_B1)
-#define MAYBE_conformance_more_conformance_quickCheckAPI_B1 conformance_more_conformance_quickCheckAPI_B1
-#endif
-#if (defined(OS_LINUX)) && !defined(NDEBUG)
-#define MAYBE_conformance_more_conformance_quickCheckAPI_G_I DISABLED_conformance_more_conformance_quickCheckAPI_G_I
-#elif !defined(MAYBE_conformance_more_conformance_quickCheckAPI_G_I)
-#define MAYBE_conformance_more_conformance_quickCheckAPI_G_I conformance_more_conformance_quickCheckAPI_G_I
-#endif
-#if defined(OS_MACOSX) || defined(OS_WIN) || defined(OS_LINUX)
-#define MAYBE_conformance_more_functions_readPixelsBadArgs FAILS_conformance_more_functions_readPixelsBadArgs
-#elif !defined(MAYBE_conformance_more_functions_readPixelsBadArgs)
-#define MAYBE_conformance_more_functions_readPixelsBadArgs conformance_more_functions_readPixelsBadArgs
-#endif
-#if defined(OS_MACOSX) || defined(OS_WIN) || defined(OS_LINUX)
-#define MAYBE_conformance_more_functions_texImage2DHTML FAILS_conformance_more_functions_texImage2DHTML
-#elif !defined(MAYBE_conformance_more_functions_texImage2DHTML)
-#define MAYBE_conformance_more_functions_texImage2DHTML conformance_more_functions_texImage2DHTML
-#endif
-#if defined(OS_MACOSX) || defined(OS_WIN) || defined(OS_LINUX)
-#define MAYBE_conformance_more_functions_texSubImage2DHTML FAILS_conformance_more_functions_texSubImage2DHTML
-#elif !defined(MAYBE_conformance_more_functions_texSubImage2DHTML)
-#define MAYBE_conformance_more_functions_texSubImage2DHTML conformance_more_functions_texSubImage2DHTML
-#endif
 CONFORMANCE_TEST(conformance_more_conformance_constants,
   "conformance/more/conformance/constants.html");
 CONFORMANCE_TEST(conformance_more_conformance_getContext,
@@ -42,7 +17,7 @@ CONFORMANCE_TEST(conformance_more_conformance_methods,
   "conformance/more/conformance/methods.html");
 CONFORMANCE_TEST(conformance_more_conformance_quickCheckAPI_A,
   "conformance/more/conformance/quickCheckAPI-A.html");
-CONFORMANCE_TEST(MAYBE_conformance_more_conformance_quickCheckAPI_B1,
+CONFORMANCE_TEST(conformance_more_conformance_quickCheckAPI_B1,
   "conformance/more/conformance/quickCheckAPI-B1.html");
 CONFORMANCE_TEST(conformance_more_conformance_quickCheckAPI_B2,
   "conformance/more/conformance/quickCheckAPI-B2.html");
@@ -54,7 +29,7 @@ CONFORMANCE_TEST(conformance_more_conformance_quickCheckAPI_C,
   "conformance/more/conformance/quickCheckAPI-C.html");
 CONFORMANCE_TEST(conformance_more_conformance_quickCheckAPI_D_G,
   "conformance/more/conformance/quickCheckAPI-D_G.html");
-CONFORMANCE_TEST(MAYBE_conformance_more_conformance_quickCheckAPI_G_I,
+CONFORMANCE_TEST(conformance_more_conformance_quickCheckAPI_G_I,
   "conformance/more/conformance/quickCheckAPI-G_I.html");
 CONFORMANCE_TEST(conformance_more_conformance_quickCheckAPI_L_S,
   "conformance/more/conformance/quickCheckAPI-L_S.html");
@@ -98,13 +73,13 @@ CONFORMANCE_TEST(conformance_more_functions_isTests,
   "conformance/more/functions/isTests.html");
 CONFORMANCE_TEST(conformance_more_functions_readPixels,
   "conformance/more/functions/readPixels.html");
-CONFORMANCE_TEST(MAYBE_conformance_more_functions_readPixelsBadArgs,
+CONFORMANCE_TEST(conformance_more_functions_readPixelsBadArgs,
   "conformance/more/functions/readPixelsBadArgs.html");
 CONFORMANCE_TEST(conformance_more_functions_texImage2D,
   "conformance/more/functions/texImage2D.html");
 CONFORMANCE_TEST(conformance_more_functions_texImage2DBadArgs,
   "conformance/more/functions/texImage2DBadArgs.html");
-CONFORMANCE_TEST(MAYBE_conformance_more_functions_texImage2DHTML,
+CONFORMANCE_TEST(conformance_more_functions_texImage2DHTML,
   "conformance/more/functions/texImage2DHTML.html");
 CONFORMANCE_TEST(conformance_more_functions_texImage2DHTMLBadArgs,
   "conformance/more/functions/texImage2DHTMLBadArgs.html");
@@ -112,7 +87,7 @@ CONFORMANCE_TEST(conformance_more_functions_texSubImage2D,
   "conformance/more/functions/texSubImage2D.html");
 CONFORMANCE_TEST(conformance_more_functions_texSubImage2DBadArgs,
   "conformance/more/functions/texSubImage2DBadArgs.html");
-CONFORMANCE_TEST(MAYBE_conformance_more_functions_texSubImage2DHTML,
+CONFORMANCE_TEST(conformance_more_functions_texSubImage2DHTML,
   "conformance/more/functions/texSubImage2DHTML.html");
 CONFORMANCE_TEST(conformance_more_functions_texSubImage2DHTMLBadArgs,
   "conformance/more/functions/texSubImage2DHTMLBadArgs.html");

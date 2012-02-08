@@ -22,6 +22,10 @@ class GPUTestExpectationsParser {
     kGpuTestTimeout = 1 << 3,
   };
 
+  enum GPUTestProfile {
+    kWebGLConformanceTest,
+  };
+
   GPUTestExpectationsParser();
   ~GPUTestExpectationsParser();
 
@@ -30,6 +34,7 @@ class GPUTestExpectationsParser {
   // Return true if parsing succeeds.
   bool LoadTestExpectations(const std::string& data);
   bool LoadTestExpectations(const FilePath& path);
+  bool LoadTestExpectations(GPUTestProfile profile);
 
   // Query error messages from the last LoadTestExpectations() call.
   const std::vector<std::string>& GetErrorMessages() const;
@@ -70,6 +75,10 @@ class GPUTestExpectationsParser {
   void PushErrorMessage(const std::string& message,
                         size_t entry1_line_number,
                         size_t entry2_line_number);
+
+  // Return false if an error occurs or the path does not exist.
+  static bool GetExpectationsPath(GPUTestProfile profile,
+                                  FilePath* path);
 
   std::vector<GPUTestExpectationEntry> entries_;
   std::vector<std::string> error_messages_;

@@ -2,10 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/base_paths.h"
-#include "base/file_util.h"
 #include "base/logging.h"
-#include "base/path_service.h"
 #include "content/test/gpu/gpu_test_expectations_parser.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -225,17 +222,9 @@ TEST_F(GPUTestExpectationsParserTest, ValidMultipleEntries) {
 }
 
 TEST_F(GPUTestExpectationsParserTest, WebGLTestExpectationsValidation) {
-  FilePath path;
-  ASSERT_TRUE(PathService::Get(base::DIR_SOURCE_ROOT, &path));
-  path = path.Append(FILE_PATH_LITERAL("chrome"))
-             .Append(FILE_PATH_LITERAL("test"))
-             .Append(FILE_PATH_LITERAL("gpu"))
-             .Append(FILE_PATH_LITERAL(
-                 "webgl_conformance_test_expectations.txt"));
-  ASSERT_TRUE(file_util::PathExists(path));
-
   GPUTestExpectationsParser parser;
-  EXPECT_TRUE(parser.LoadTestExpectations(path));
+  EXPECT_TRUE(parser.LoadTestExpectations(
+      GPUTestExpectationsParser::kWebGLConformanceTest));
   EXPECT_EQ(0u, parser.GetErrorMessages().size());
   for (size_t i = 0; i < parser.GetErrorMessages().size(); ++i)
     LOG(ERROR) << parser.GetErrorMessages()[i];

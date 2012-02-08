@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -17,7 +17,7 @@ import re
 import sys
 
 COPYRIGHT = """\
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -42,59 +42,12 @@ HEADER_GUARD_END = """
 INPUT_DIR = "../../../third_party/webgl_conformance"
 INPUT_FILE = "00_test_list.txt"
 OUTPUT_FILE = "webgl_conformance_test_list_autogen.h"
-EXPECTATION_FILE = "webgl_conformance_test_expectations.txt"
-EXPECTATION_REGEXP = re.compile(
-    r'^(?P<BUG>\S+)\s+'
-     '(?P<MODIFIER>(\s*(WIN|MAC|LINUX|RELEASE|DEBUG)\s*)+):'
-     '(?P<TEST>[^=]+)='
-     '(?P<OUTCOME>(\s*(PASS|FAIL|TIMEOUT)\s*)+)')
-
-def map_to_macro_conditions(modifier_list):
-  """Returns a string containing macro conditions wrapped in '(*)'.
-
-  Given a list containing 'WIN', 'MAC', 'LINUX', 'RELEASE', or 'DEBUG',
-  return the corresponding macro conditions.
-  """
-  rt = ''
-  release = False
-  debug = False
-  for modifier in modifier_list:
-    if modifier == 'RELEASE':
-      release = True
-    elif modifier == 'DEBUG':
-      debug = True
-    else:
-      if rt:
-        rt += ' || '
-      if modifier == 'WIN':
-        rt = rt + 'defined(OS_WIN)'
-      elif modifier == 'MAC':
-        rt = rt + 'defined(OS_MACOSX)'
-      elif modifier == 'LINUX':
-        rt = rt + 'defined(OS_LINUX)'
-
-  if release == debug:
-    return rt
-
-  if rt:
-    rt = '(' + rt + ') && '
-
-  if debug:
-    rt = rt + '!defined(NDEBUG)'
-  if release:
-    rt = rt + 'defined(NDEBUG)'
-
-  return rt
 
 def main(argv):
   """Main function for the WebGL conformance test list generator.
   """
   if not os.path.exists(os.path.join(INPUT_DIR, INPUT_FILE)):
     print >> sys.stderr, "ERROR: WebGL conformance tests do not exist."
-    print >> sys.stderr, "Run the script from the directory containing it."
-    return 1
-  if not os.path.exists(EXPECTATION_FILE):
-    print >> sys.stderr, "ERROR: test expectations file does not exist."
     print >> sys.stderr, "Run the script from the directory containing it."
     return 1
 
@@ -104,32 +57,6 @@ def main(argv):
   output.write(HEADER_GUARD)
 
   test_prefix = {}
-  test_expectations = open(EXPECTATION_FILE)
-  for line in test_expectations:
-    line_match = EXPECTATION_REGEXP.match(line)
-    if line_match:
-      match_dict = line_match.groupdict()
-      modifier_list = match_dict['MODIFIER'].strip().split()
-      macro_conditions = map_to_macro_conditions(modifier_list)
-      test = match_dict['TEST'].strip()
-      outcome_list = match_dict['OUTCOME'].strip().split()
-      if 'TIMEOUT' in outcome_list:
-        prefix = "DISABLED_"
-      elif 'FAIL' in outcome_list:
-        if 'PASS' in outcome_list:
-          prefix = "FLAKY_"
-        else:
-          prefix = "FAILS_"
-      if macro_conditions:
-        output.write('#if %s\n' % macro_conditions)
-        output.write('#define MAYBE_%s %s%s\n' % (test, prefix, test))
-        output.write('#elif !defined(MAYBE_%s)\n' % test)
-        output.write('#define MAYBE_%s %s\n' % (test, test))
-        output.write('#endif\n')
-        test_prefix[test] = 'MAYBE_'
-      else:
-        test_prefix[test] = prefix
-  test_expectations.close()
 
   unparsed_files = [INPUT_FILE]
   while unparsed_files:
@@ -163,9 +90,6 @@ def main(argv):
         name = os.path.splitext(url)[0]
         name = re.sub("\W+", "_", name)
         if os.path.exists(os.path.join(INPUT_DIR, url)):
-          # Append "DISABLED_" or "FAILS_" if needed.
-          if name in test_prefix:
-            name = test_prefix[name] + name
           output.write('CONFORMANCE_TEST(%s,\n  "%s");\n' % (name, url))
         else:
           print >> sys.stderr, "WARNING: %s does not exist (skipped)." % url
