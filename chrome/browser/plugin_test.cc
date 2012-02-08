@@ -169,7 +169,14 @@ TEST_F(ClickToPlayPluginTest, Flash) {
   WaitForFinish(TestTimeouts::action_max_timeout_ms(), true);
 }
 
-TEST_F(ClickToPlayPluginTest, FlashDocument) {
+#if defined(OS_WIN)
+// Flaky on Windows, see http://crbug.com/113057
+#define MAYBE_FlashDocument FLAKY_FlashDocument
+#else
+#define MAYBE_FlashDocument FlashDocument
+#endif
+
+TEST_F(ClickToPlayPluginTest, MAYBE_FlashDocument) {
   scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
   ASSERT_TRUE(browser.get());
   ASSERT_TRUE(browser->SetDefaultContentSetting(CONTENT_SETTINGS_TYPE_PLUGINS,
