@@ -247,6 +247,7 @@
       ],
     }],
     # TODO(jrg): remove the OS=="android" section?
+    # http://crbug.com/113172
     # Understand better how media_stream_ is tied into Chromium.
     ['enable_webrtc==0 and OS=="android"', {
       'sources/': [

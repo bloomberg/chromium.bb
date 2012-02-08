@@ -302,6 +302,14 @@
             '../third_party/webrtc/voice_engine/voice_engine.gyp:voice_engine_core',
           ]
         }],
+        # TODO(jrg): remove the OS=="android" section?
+        # http://crbug.com/113172
+        # Understand better how media_stream_ is tied into Chromium.
+        ['enable_webrtc==0 and OS=="android"', {
+          'sources/': [
+            ['exclude', '^renderer/media/media_stream_'],
+          ],
+        }],
         ['input_speech==0', {
           'sources/': [
             ['exclude', '^browser/speech/'],
