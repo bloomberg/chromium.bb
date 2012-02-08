@@ -20,7 +20,6 @@
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/content_browser_client.h"
-#include "content/public/common/content_client.h"
 #include "content/public/common/url_constants.h"
 #include "net/base/file_stream.h"
 #include "net/base/net_util.h"
@@ -324,8 +323,7 @@ void PromiseWriterHelper(const WebDropData& drop_data,
   // UI thread on OSX, it should be reasonable to let it happen.
   base::ThreadRestrictions::ScopedAllowIO allowIO;
   FileStream* fileStream =
-      drag_download_util::CreateFileStreamForDrop(
-          &filePath, content::GetContentClient()->browser()->GetNetLog());
+      drag_download_util::CreateFileStreamForDrop(&filePath);
   if (!fileStream)
     return nil;
 

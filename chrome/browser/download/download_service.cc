@@ -9,7 +9,6 @@
 #include "chrome/browser/download/chrome_download_manager_delegate.h"
 #include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/download/download_status_updater.h"
-#include "chrome/browser/net/chrome_net_log.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "content/public/browser/download_manager.h"
@@ -38,8 +37,7 @@ DownloadManager* DownloadService::GetDownloadManager() {
     // SetDownloadManagerDelegateForTesting.
     if (!manager_delegate_.get())
       manager_delegate_ = new ChromeDownloadManagerDelegate(profile_);
-    manager_ = DownloadManager::Create(manager_delegate_.get(),
-                                       g_browser_process->net_log());
+    manager_ = DownloadManager::Create(manager_delegate_.get());
     manager_->Init(profile_);
     manager_delegate_->SetDownloadManager(manager_);
 

@@ -56,10 +56,10 @@ bool ParseDownloadMetadata(const string16& metadata,
   return true;
 }
 
-FileStream* CreateFileStreamForDrop(FilePath* file_path, net::NetLog* net_log) {
+FileStream* CreateFileStreamForDrop(FilePath* file_path) {
   DCHECK(file_path && !file_path->empty());
 
-  scoped_ptr<FileStream> file_stream(new FileStream(net_log));
+  scoped_ptr<FileStream> file_stream(new FileStream(NULL));
   const int kMaxSeq = 99;
   for (int seq = 0; seq <= kMaxSeq; seq++) {
     FilePath new_file_path;

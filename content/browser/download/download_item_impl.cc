@@ -242,19 +242,6 @@ DownloadItemImpl::DownloadItemImpl(
   delegate_->Attach();
   Init(true /* actively downloading */,
        download_net_logs::SRC_NEW_DOWNLOAD);
-
-  // Link the event sources.
-  bound_net_log_.AddEvent(
-      net::NetLog::TYPE_DOWNLOAD_URL_REQUEST,
-      make_scoped_refptr(new net::NetLogSourceParameter(
-          "source_dependency",
-          info.request_bound_net_log.source())));
-
-  info.request_bound_net_log.AddEvent(
-      net::NetLog::TYPE_DOWNLOAD_STARTED,
-      make_scoped_refptr(new net::NetLogSourceParameter(
-          "source_dependency",
-          bound_net_log_.source())));
 }
 
 // Constructing for the "Save Page As..." feature:

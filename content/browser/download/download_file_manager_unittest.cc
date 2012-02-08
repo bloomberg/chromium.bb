@@ -44,8 +44,7 @@ class MockDownloadFileFactory :
       DownloadCreateInfo* info,
       const DownloadRequestHandle& request_handle,
       content::DownloadManager* download_manager,
-      bool calculate_hash,
-      const net::BoundNetLog& bound_net_log) OVERRIDE;
+      bool calculate_hash) OVERRIDE;
 
   MockDownloadFile* GetExistingFile(const DownloadId& id);
 
@@ -57,8 +56,7 @@ content::DownloadFile* MockDownloadFileFactory::CreateFile(
     DownloadCreateInfo* info,
     const DownloadRequestHandle& request_handle,
     content::DownloadManager* download_manager,
-    bool calculate_hash,
-    const net::BoundNetLog& bound_net_log) {
+    bool calculate_hash) {
   DCHECK(files_.end() == files_.find(info->download_id));
   MockDownloadFile* created_file = new MockDownloadFile();
   files_[info->download_id] = created_file;
@@ -169,8 +167,7 @@ class DownloadFileManagerTest : public testing::Test {
 
     // Set expectations and return values.
     EXPECT_CALL(*download_manager_, CreateDownloadItem(info, _))
-        .Times(1)
-        .WillOnce(Return(net::BoundNetLog()));
+        .Times(1);
     EXPECT_CALL(*download_manager_, GenerateFileHash())
         .Times(AtLeast(1))
         .WillRepeatedly(Return(false));

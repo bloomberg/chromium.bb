@@ -18,7 +18,6 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/render_view_host_delegate.h"
 #include "content/public/browser/web_contents_view.h"
-#include "content/public/common/content_client.h"
 #include "net/base/file_stream.h"
 #include "net/base/net_util.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -244,9 +243,7 @@ void WebDragSourceGtk::OnDragDataGet(GtkWidget* sender,
         if (net::FileURLToFilePath(file_url, &file_path)) {
           // Open the file as a stream.
           net::FileStream* file_stream =
-              drag_download_util::CreateFileStreamForDrop(
-                  &file_path,
-                  content::GetContentClient()->browser()->GetNetLog());
+              drag_download_util::CreateFileStreamForDrop(&file_path);
           if (file_stream) {
             // Start downloading the file to the stream.
             scoped_refptr<DragDownloadFile> drag_file_downloader =

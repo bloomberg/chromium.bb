@@ -69,8 +69,7 @@ class DownloadFileTest : public testing::Test {
     info.save_info.file_stream = file_stream_;
     file->reset(
         new DownloadFileImpl(&info, new DownloadRequestHandle(),
-                             download_manager_, calculate_hash,
-                             net::BoundNetLog()));
+                             download_manager_, calculate_hash));
   }
 
   virtual void DestroyDownloadFile(scoped_ptr<DownloadFile>* file, int offset) {

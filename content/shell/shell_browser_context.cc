@@ -138,8 +138,7 @@ SSLHostState* ShellBrowserContext::GetSSLHostState()  {
 DownloadManager* ShellBrowserContext::GetDownloadManager()  {
   if (!download_manager_.get()) {
     download_manager_delegate_ = new ShellDownloadManagerDelegate();
-    download_manager_ = new DownloadManagerImpl(download_manager_delegate_,
-                                                NULL);
+    download_manager_ = new DownloadManagerImpl(download_manager_delegate_);
     download_manager_delegate_->SetDownloadManager(download_manager_.get());
     download_manager_->Init(this);
   }

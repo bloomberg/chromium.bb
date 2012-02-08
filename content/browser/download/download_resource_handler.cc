@@ -98,8 +98,7 @@ bool DownloadResourceHandler::OnResponseStarted(
   // Deleted in DownloadManager.
   scoped_ptr<DownloadCreateInfo> info(new DownloadCreateInfo(FilePath(), GURL(),
       base::Time::Now(), 0, content_length_, DownloadItem::IN_PROGRESS,
-      request_->net_log(), request_info->has_user_gesture(),
-      request_info->transition_type()));
+      request_info->has_user_gesture(), request_info->transition_type()));
   info->url_chain = request_->url_chain();
   info->referrer_url = GURL(request_->referrer());
   info->start_time = base::Time::Now();

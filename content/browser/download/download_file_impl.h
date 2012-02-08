@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,12 +21,10 @@ class DownloadManager;
 class CONTENT_EXPORT DownloadFileImpl : virtual public content::DownloadFile {
  public:
   // Takes ownership of the object pointed to by |request_handle|.
-  // |bound_net_log| will be used for logging the download file's events.
   DownloadFileImpl(const DownloadCreateInfo* info,
                    DownloadRequestHandleInterface* request_handle,
                    content::DownloadManager* download_manager,
-                   bool calculate_hash,
-                   const net::BoundNetLog& bound_net_log);
+                   bool calculate_hash);
   virtual ~DownloadFileImpl();
 
   // DownloadFile functions.

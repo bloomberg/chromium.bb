@@ -222,7 +222,7 @@ var SourceEntry = (function() {
     findLastLogEntryStartByType_: function(type) {
       for (var i = this.entries_.length - 1; i >= 0; --i) {
         if (this.entries_[i].type == type) {
-          if (this.entries_[i].phase != LogEventPhase.PHASE_END)
+          if (this.entries_[i].phase == LogEventPhase.PHASE_BEGIN)
             return this.entries_[i];
         }
       }

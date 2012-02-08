@@ -127,22 +127,19 @@ namespace content {
 
 // static
 DownloadManager* DownloadManager::Create(
-    content::DownloadManagerDelegate* delegate,
-    net::NetLog* net_log) {
-  return new DownloadManagerImpl(delegate, net_log);
+    content::DownloadManagerDelegate* delegate) {
+  return new DownloadManagerImpl(delegate);
 }
 
 }  // namespace content
 
 DownloadManagerImpl::DownloadManagerImpl(
-    content::DownloadManagerDelegate* delegate,
-    net::NetLog* net_log)
+    content::DownloadManagerDelegate* delegate)
         : shutdown_needed_(false),
           browser_context_(NULL),
           file_manager_(NULL),
           delegate_(delegate),
-          largest_db_handle_in_history_(DownloadItem::kUninitializedHandle),
-          net_log_(net_log) {
+          largest_db_handle_in_history_(DownloadItem::kUninitializedHandle) {
 }
 
 DownloadManagerImpl::~DownloadManagerImpl() {
@@ -392,23 +389,19 @@ FilePath DownloadManagerImpl::LastDownloadPath() {
   return last_download_path_;
 }
 
-net::BoundNetLog DownloadManagerImpl::CreateDownloadItem(
+void DownloadManagerImpl::CreateDownloadItem(
     DownloadCreateInfo* info, const DownloadRequestHandle& request_handle) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  net::BoundNetLog bound_net_log =
-      net::BoundNetLog::Make(net_log_, net::NetLog::SOURCE_DOWNLOAD);
   DownloadItem* download = new DownloadItemImpl(
       this, *info, new DownloadRequestHandle(request_handle),
-      browser_context_->IsOffTheRecord(), bound_net_log);
+      browser_context_->IsOffTheRecord(), net::BoundNetLog());
   int32 download_id = info->download_id.local();
   DCHECK(!ContainsKey(in_progress_, download_id));
 
   CHECK_96627(!ContainsKey(active_downloads_, download_id));
   downloads_.insert(download);
   active_downloads_[download_id] = download;
-
-  return bound_net_log;
 }
 
 DownloadItem* DownloadManagerImpl::CreateSavePackageDownloadItem(
@@ -416,10 +409,8 @@ DownloadItem* DownloadManagerImpl::CreateSavePackageDownloadItem(
     const GURL& page_url,
     bool is_otr,
     DownloadItem::Observer* observer) {
-  net::BoundNetLog bound_net_log =
-      net::BoundNetLog::Make(net_log_, net::NetLog::SOURCE_DOWNLOAD);
   DownloadItem* download = new DownloadItemImpl(
-      this, main_file_path, page_url, is_otr, GetNextId(), bound_net_log);
+      this, main_file_path, page_url, is_otr, GetNextId(), net::BoundNetLog());
 
   download->AddObserver(observer);
 
@@ -923,10 +914,8 @@ void DownloadManagerImpl::OnPersistentStoreQueryComplete(
   largest_db_handle_in_history_ = 0;
 
   for (size_t i = 0; i < entries->size(); ++i) {
-    net::BoundNetLog bound_net_log =
-        net::BoundNetLog::Make(net_log_, net::NetLog::SOURCE_DOWNLOAD);
     DownloadItem* download = new DownloadItemImpl(
-        this, GetNextId(), entries->at(i), bound_net_log);
+        this, GetNextId(), entries->at(i), net::BoundNetLog());
     CHECK_96627(!ContainsKey(history_downloads_, download->GetDbHandle()));
     downloads_.insert(download);
     history_downloads_[download->GetDbHandle()] = download;

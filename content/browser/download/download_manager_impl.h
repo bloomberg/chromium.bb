@@ -25,8 +25,7 @@ class CONTENT_EXPORT DownloadManagerImpl
     : public content::DownloadManager,
       public DownloadItemImpl::Delegate {
  public:
-  DownloadManagerImpl(content::DownloadManagerDelegate* delegate,
-                      net::NetLog* net_log);
+  DownloadManagerImpl(content::DownloadManagerDelegate* delegate);
 
   // content::DownloadManager functions.
   virtual void Shutdown() OVERRIDE;
@@ -72,7 +71,7 @@ class CONTENT_EXPORT DownloadManagerImpl
   virtual int InProgressCount() const OVERRIDE;
   virtual content::BrowserContext* GetBrowserContext() const OVERRIDE;
   virtual FilePath LastDownloadPath() OVERRIDE;
-  virtual net::BoundNetLog CreateDownloadItem(
+  virtual void CreateDownloadItem(
       DownloadCreateInfo* info,
       const DownloadRequestHandle& request_handle) OVERRIDE;
   virtual content::DownloadItem* CreateSavePackageDownloadItem(
@@ -250,8 +249,6 @@ class CONTENT_EXPORT DownloadManagerImpl
   // TODO(rdsmith): Remove when http://crbug.com/85408 is fixed.
   // For debugging only.
   int64 largest_db_handle_in_history_;
-
-  net::NetLog* net_log_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadManagerImpl);
 };

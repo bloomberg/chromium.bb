@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -38,9 +38,7 @@ CONTENT_EXPORT bool ParseDownloadMetadata(const string16& metadata,
 // Create a new file at the specified path. If the file already exists, try to
 // insert the sequential unifier to produce a new file, like foo-01.txt.
 // Return a FileStream if successful.
-// |net_log| is a NetLog for the stream.
-CONTENT_EXPORT net::FileStream* CreateFileStreamForDrop(
-    FilePath* file_path, net::NetLog* net_log);
+CONTENT_EXPORT net::FileStream* CreateFileStreamForDrop(FilePath* file_path);
 
 // Implementation of DownloadFileObserver to finalize the download process.
 class CONTENT_EXPORT PromiseFileFinalizer : public ui::DownloadFileObserver {
