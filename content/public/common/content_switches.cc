@@ -318,10 +318,6 @@ const char kEnableTcpFastOpen[]             = "enable-tcp-fastopen";
 // Enable support for JavaScript touch events.
 const char kEnableTouchEvents[]             = "enable-touch-events";
 
-// Enables support for fullscreen video. Current implementation is
-// incomplete and this flag is used for development and testing.
-const char kEnableVideoFullscreen[]         = "enable-video-fullscreen";
-
 // Enables support for video tracks. Current implementation is
 // incomplete and this flag is used for development and testing.
 const char kEnableVideoTrack[]              = "enable-video-track";
@@ -394,10 +390,6 @@ const char kLoggingLevel[]                  = "log-level";
 
 // Make plugin processes log their sent and received messages to VLOG(1).
 const char kLogPluginMessages[]             = "log-plugin-messages";
-
-// Uses high-latency IPC for audio.
-// That is temporary until we are sure low latency works and remove old code.
-const char kHighLatencyAudio[]              = "disable-low-latency-audio";
 
 // Causes the process to run as a NativeClient broker
 // (used for launching NaCl loader processes on 64-bit Windows).

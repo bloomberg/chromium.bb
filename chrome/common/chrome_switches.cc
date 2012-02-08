@@ -549,10 +549,6 @@ const char kEnableRestoreSessionState[]   = "enable-restore-session-state";
 // supported server-side for searches on google.com.
 const char kEnableSdch[]                    = "enable-sdch";
 
-// Enables the IsSearchProviderInstalled and InstallSearchProvider with an
-// extra parameter to indicate if the provider should be the default.
-const char kEnableSearchProviderApiV2[]     = "enable-search-provider-api-v2";
-
 // Enables syncing extension settings.
 const char kEnableSyncExtensionSettings[]   = "enable-sync-extension-settings";
 
@@ -769,12 +765,6 @@ const char kMetricsRecordingOnly[]          = "metrics-recording-only";
 
 // Enables multiprofile Chrome.
 const char kMultiProfiles[]                 = "multi-profiles";
-
-// Sets the default IP address (interface) for the stub (normally 127.0.0.1).
-const char kNaClDebugIP[]                   = "nacl-debug-ip";
-
-// Sets the default port range for debugging.
-const char kNaClDebugPorts[]                = "nacl-debug-ports";
 
 // On POSIX only: the contents of this flag are prepended to the nacl-loader
 // command line. Useful values might be "valgrind" or "xterm -e gdb --args".

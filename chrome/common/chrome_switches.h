@@ -155,7 +155,6 @@ extern const char kEnableProfiling[];
 extern const char kEnableRestoreSessionState[];
 extern const char kEnableResourceContentSettings[];
 extern const char kEnableSdch[];
-extern const char kEnableSearchProviderApiV2[];
 // TODO(kalman): Add to about:flags when UI for syncing extension settings has
 // been figured out.
 extern const char kEnableSyncExtensionSettings[];
@@ -211,8 +210,6 @@ extern const char kMemoryProfiling[];
 extern const char kMessageLoopHistogrammer[];
 extern const char kMetricsRecordingOnly[];
 extern const char kMultiProfiles[];
-extern const char kNaClDebugIP[];
-extern const char kNaClDebugPorts[];
 extern const char kNaClLoaderCmdPrefix[];
 extern const char kNetLogLevel[];
 extern const char kNoDefaultBrowserCheck[];

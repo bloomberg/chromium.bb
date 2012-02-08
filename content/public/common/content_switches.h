@@ -104,7 +104,6 @@ extern const char kEnableStrictSiteIsolation[];
 CONTENT_EXPORT extern const char kEnableThreadedCompositing[];
 CONTENT_EXPORT extern const char kEnableTcpFastOpen[];
 CONTENT_EXPORT extern const char kEnableTouchEvents[];
-extern const char kEnableVideoFullscreen[];
 CONTENT_EXPORT extern const char kEnableVideoTrack[];
 CONTENT_EXPORT extern const char kDisableWebIntents[];
 CONTENT_EXPORT extern const char kExperimentalLocationFeatures[];
@@ -123,7 +122,6 @@ CONTENT_EXPORT extern const char kJavaScriptFlags[];
 extern const char kLoadPlugin[];
 CONTENT_EXPORT extern const char kLoggingLevel[];
 extern const char kLogPluginMessages[];
-extern const char kHighLatencyAudio[];
 // TODO(jam): this doesn't belong in content.
 CONTENT_EXPORT extern const char kNaClBrokerProcess[];
 CONTENT_EXPORT extern const char kNaClLoaderProcess[];

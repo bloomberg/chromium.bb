@@ -86,7 +86,6 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/notification_service.h"
-#include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_view_host_delegate.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_ui_controller_factory.h"
@@ -674,7 +673,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kEnableSeccompSandbox,
     switches::kEnableStatsTable,
     switches::kEnableThreadedCompositing,
-    switches::kEnableVideoFullscreen,
     switches::kEnableVideoTrack,
     switches::kFullMemoryCrashReport,
 #if !defined (GOOGLE_CHROME_BUILD)
@@ -685,7 +683,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kInProcessWebGL,
     switches::kJavaScriptFlags,
     switches::kLoggingLevel,
-    switches::kHighLatencyAudio,
     switches::kNoJsRandomness,
     switches::kNoReferrers,
     switches::kNoSandbox,

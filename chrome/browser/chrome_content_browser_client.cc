@@ -5,6 +5,7 @@
 #include "chrome/browser/chrome_content_browser_client.h"
 
 #include <set>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -644,7 +645,6 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
       switches::kEnableIPCFuzzing,
       switches::kEnableNaCl,
       switches::kEnablePlatformApps,
-      switches::kEnableSearchProviderApiV2,
       switches::kEnableWatchdog,
       switches::kExperimentalSpellcheckerFeatures,
       switches::kMemoryProfiling,
