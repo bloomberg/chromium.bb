@@ -14,7 +14,7 @@ from chromite.lib import cros_build_lib
 
 class FileLock(cros_build_lib.MasterPidContextManager):
 
-  def __init__(self, path, description=None):
+  def __init__(self, path, description=None, verbose=True):
     """
     Args:
       path: On disk pathway to lock.  Can be a directory or a file.
@@ -23,6 +23,7 @@ class FileLock(cros_build_lib.MasterPidContextManager):
     cros_build_lib.MasterPidContextManager.__init__(self)
     self.path = os.path.abspath(path)
     self._fd = None
+    self._verbose = verbose
     if description is None:
       description = "lock %s" % (self.path,)
     self.description = description
@@ -47,7 +48,8 @@ class FileLock(cros_build_lib.MasterPidContextManager):
         raise
     if self.description:
       message = '%s: blocking while %s' % (self.description, message)
-    cros_build_lib.Info(message)
+    if self._verbose:
+      cros_build_lib.Info(message)
     fcntl.flock(self.fd, flags)
 
   def read_lock(self, message="taking read lock"):

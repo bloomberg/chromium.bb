@@ -14,6 +14,7 @@ import tempfile
 from chromite.buildbot import cbuildbot_background as background
 from chromite.buildbot import cbuildbot_config
 from chromite.lib import cros_build_lib as cros_lib
+from chromite.lib import locking
 
 _DEFAULT_RETRIES = 3
 _PACKAGE_FILE = '%(buildroot)s/src/scripts/cbuildbot_package.list'
@@ -49,19 +50,24 @@ def _BuildRootGitCleanup(buildroot):
              ['git', 'clean', '-f', '-d']]),
     (False, [['git', 'branch', '-D', b] for b in constants.CREATED_BRANCHES])
   ]
+  lock_path = os.path.join(buildroot, '.clean_lock')
 
   def RunCleanupCommands(cwd):
-    for check_returncode, cmds in tasks:
-      for cmd in cmds:
-        result = cros_lib.RunCommand(
-            cmd, cwd=cwd, print_cmd=False, redirect_stdout=True,
-            combine_stdout_stderr=True, error_code_ok=True)
-        if check_returncode and result.returncode != 0:
-          logging.info(result.output)
-          logging.warn('Deleting %s because %s failed', cwd, cmd)
-          shutil.rmtree(cwd)
-          print '@@@STEP_WARNINGS@@@'
-          return
+    with locking.FileLock(lock_path, verbose=False).read_lock() as lock:
+      if not os.path.isdir(cwd): return
+      for check_returncode, cmds in tasks:
+        for cmd in cmds:
+          result = cros_lib.RunCommand(
+              cmd, cwd=cwd, print_cmd=False, redirect_stdout=True,
+              combine_stdout_stderr=True, error_code_ok=True)
+          if check_returncode and result.returncode != 0:
+            logging.info(result.output)
+            logging.warn('Deleting %s because %s failed', cwd, cmd)
+            lock.write_lock()
+            if os.path.isdir(cwd):
+              shutil.rmtree(cwd)
+            print '@@@STEP_WARNINGS@@@'
+            return
 
   # Build list of directories to cleanup.
   result = cros_lib.RunCommand(['repo', 'list'], print_cmd=False,
@@ -70,8 +76,7 @@ def _BuildRootGitCleanup(buildroot):
   for line in result.output.splitlines():
     subdir, _ = line.split(' ', 1)
     cwd = os.path.join(buildroot, subdir)
-    if os.path.isdir(cwd):
-      dirs.append([cwd])
+    dirs.append([cwd])
 
   # Cleanup all of the directories.
   background.RunTasksInProcessPool(RunCleanupCommands, dirs)
