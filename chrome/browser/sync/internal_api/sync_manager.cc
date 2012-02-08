@@ -99,10 +99,6 @@ namespace {
 static const int kSyncRefreshDelayMsec = 500;
 static const int kSyncSchedulerDelayMsec = 250;
 
-#if defined(OS_CHROMEOS)
-static const int kChromeOSNetworkChangeReactionDelayHackMsec = 5000;
-#endif  // OS_CHROMEOS
-
 GetUpdatesCallerInfo::GetUpdatesSource GetSourceFromReason(
     sync_api::ConfigureReason reason) {
   switch (reason) {
@@ -1705,18 +1701,7 @@ void SyncManager::SyncInternal::OnIPAddressChanged() {
     return;
   }
 
-#if defined (OS_CHROMEOS)
-  // TODO(tim): This is a hack to intentionally lose a race with flimflam at
-  // shutdown, so we don't cause shutdown to wait for our http request.
-  // http://crosbug.com/8429
-  MessageLoop::current()->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(&SyncInternal::OnIPAddressChangedImpl,
-                 weak_ptr_factory_.GetWeakPtr()),
-      kChromeOSNetworkChangeReactionDelayHackMsec);
-#else
   OnIPAddressChangedImpl();
-#endif  // defined(OS_CHROMEOS)
 }
 
 void SyncManager::SyncInternal::OnIPAddressChangedImpl() {
