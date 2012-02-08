@@ -97,8 +97,8 @@ void TestOfflineLoadPage::NotifyBlockingPageComplete(bool proceed) {
   test_page_->OnBlockingPageComplete(proceed);
 }
 
-
-TEST_F(OfflineLoadPageTest, OfflinePageProceed) {
+// Tests are disabled due to crash. see crbug.com/113219.
+TEST_F(OfflineLoadPageTest, DISABLED_OfflinePageProceed) {
   // Start a load.
   Navigate(kURL1, 1);
   // Load next page.
@@ -127,7 +127,7 @@ TEST_F(OfflineLoadPageTest, OfflinePageProceed) {
 }
 
 // Tests showing an offline page and not proceeding.
-TEST_F(OfflineLoadPageTest, OfflinePageDontProceed) {
+TEST_F(OfflineLoadPageTest, DISABLED_OfflinePageDontProceed) {
   // Start a load.
   Navigate(kURL1, 1);
   controller().LoadURL(GURL(kURL2), content::Referrer(),
