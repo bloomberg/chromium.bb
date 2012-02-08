@@ -181,8 +181,8 @@ EGLContext Display::CreateContext(EGLConfig config,
       true));
 
   if (!context_->Initialize(
-      kTransferBufferSize / 2,
       kTransferBufferSize,
+      kTransferBufferSize / 2,
       kTransferBufferSize * 2)) {
     return EGL_NO_CONTEXT;
   }
@@ -196,6 +196,7 @@ EGLContext Display::CreateContext(EGLConfig config,
 void Display::DestroyContext(EGLContext ctx) {
   DCHECK(IsValidContext(ctx));
   context_.reset();
+  transfer_buffer_.reset();
 }
 
 bool Display::MakeCurrent(EGLSurface draw, EGLSurface read, EGLContext ctx) {
