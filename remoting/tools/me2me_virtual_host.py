@@ -188,8 +188,17 @@ class Host:
     logging.info("Done")
 
   def ask_pin(self):
+    print \
+"""Chromoting host supports PIN-based authentication, but it doesn't
+work with Chrome 16 and Chrome 17 clients. Leave the PIN empty if you
+need to use Chrome 16 or Chrome 17 clients. If you only use Chrome 18
+or above, please set a non-empty PIN. You can change PIN later using
+-p flag."""
     while 1:
       pin = getpass.getpass("Host PIN: ")
+      if len(pin) == 0:
+        print "Using empty PIN"
+        break
       if len(pin) < 4:
         print "PIN must be at least 4 characters long."
         continue
@@ -198,8 +207,11 @@ class Host:
         print "PINs didn't match. Please try again."
         continue
       break
-    self.host_secret_hash = "hmac:" + base64.b64encode(
-        hmac.new(str(self.host_id), pin, hashlib.sha256).digest())
+    if pin == "":
+      self.host_secret_hash = "plain:"
+    else:
+      self.host_secret_hash = "hmac:" + base64.b64encode(
+          hmac.new(str(self.host_id), pin, hashlib.sha256).digest())
 
   def is_pin_set(self):
     return self.host_secret_hash

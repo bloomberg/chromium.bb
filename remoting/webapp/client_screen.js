@@ -435,11 +435,11 @@ remoting.connectMe2Me = function(hostId, retryIfOffline) {
   remoting.retryIfOffline = retryIfOffline;
 
   if (!remoting.isPinAuthSupported()) {
-    showConnectError_(remoting.Error.BAD_PLUGIN_VERSION);
-    return;
+    // Skip PIN prompt if it is not supported.
+    connectMe2MeWithPin();
+  } else {
+    remoting.setMode(remoting.AppMode.CLIENT_PIN_PROMPT);
   }
-
-  remoting.setMode(remoting.AppMode.CLIENT_PIN_PROMPT);
 };
 
 /**
