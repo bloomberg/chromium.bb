@@ -9,7 +9,7 @@
 #include "content/browser/renderer_host/render_widget_host_view.h"
 #include "content/browser/renderer_host/test_render_view_host.h"
 #include "content/browser/site_instance_impl.h"
-#include "content/browser/tab_contents/interstitial_page.h"
+#include "content/browser/tab_contents/interstitial_page_impl.h"
 #include "content/browser/tab_contents/navigation_entry_impl.h"
 #include "content/browser/tab_contents/test_tab_contents.h"
 #include "content/common/view_messages.h"
@@ -29,6 +29,7 @@
 
 using content::BrowserContext;
 using content::BrowserThread;
+using content::InterstitialPage;
 using content::NavigationEntry;
 using content::NavigationEntryImpl;
 using content::SiteInstance;
@@ -103,7 +104,7 @@ class TestInterstitialPageDelegate : public content::InterstitialPageDelegate {
   TestInterstitialPage* interstitial_page_;
 };
 
-class TestInterstitialPage : public InterstitialPage {
+class TestInterstitialPage : public InterstitialPageImpl {
  public:
   enum InterstitialState {
     UNDECIDED = 0,  // No decision taken yet.
@@ -134,7 +135,7 @@ class TestInterstitialPage : public InterstitialPage {
                        const GURL& url,
                        InterstitialState* state,
                        bool* deleted)
-      : InterstitialPage(
+      : InterstitialPageImpl(
             tab, new_navigation, url,
             new TestInterstitialPageDelegate(this)),
         state_(state),
@@ -173,16 +174,16 @@ class TestInterstitialPage : public InterstitialPage {
   void TestDidNavigate(int page_id, const GURL& url) {
     ViewHostMsg_FrameNavigate_Params params;
     InitNavigateParams(&params, page_id, url, content::PAGE_TRANSITION_TYPED);
-    DidNavigate(render_view_host(), params);
+    DidNavigate(GetRenderViewHostForTesting(), params);
   }
 
   void TestRenderViewGone(base::TerminationStatus status, int error_code) {
-    RenderViewGone(render_view_host(), status, error_code);
+    RenderViewGone(GetRenderViewHostForTesting(), status, error_code);
   }
 
   bool is_showing() const {
-    return static_cast<TestRenderWidgetHostView*>(render_view_host()->view())->
-        is_showing();
+    return static_cast<TestRenderWidgetHostView*>(
+        GetRenderViewHostForTesting()->view())->is_showing();
   }
 
   void ClearStates() {
@@ -1891,5 +1892,6 @@ TEST_F(TabContentsTest, CopyStateFromAndPruneTargetInterstitial) {
   EXPECT_TRUE(other_contents->ShowingInterstitialPage());
 
   // And the interstitial should do a reload on don't proceed.
-  EXPECT_TRUE(other_contents->GetInterstitialPage()->reload_on_dont_proceed());
+  EXPECT_TRUE(static_cast<InterstitialPageImpl*>(
+      other_contents->GetInterstitialPage())->reload_on_dont_proceed());
 }

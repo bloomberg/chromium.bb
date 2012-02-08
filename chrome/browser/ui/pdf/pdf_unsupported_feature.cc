@@ -21,7 +21,7 @@
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/renderer_host/render_view_host.h"
-#include "content/browser/tab_contents/interstitial_page.h"
+#include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/interstitial_page_delegate.h"
 #include "content/public/browser/plugin_service.h"
 #include "content/public/browser/render_process_host.h"
@@ -35,6 +35,7 @@
 #include "ui/gfx/image/image.h"
 #include "webkit/plugins/npapi/plugin_group.h"
 
+using content::InterstitialPage;
 using content::OpenURLParams;
 using content::PluginService;
 using content::Referrer;

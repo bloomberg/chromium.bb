@@ -32,7 +32,7 @@ class UtilityProcessHost : public IPC::Message::Sender,
                            public base::SupportsWeakPtr<UtilityProcessHost> {
  public:
   // Used to create a utility process.
-  static CONTENT_EXPORT UtilityProcessHost* Create(
+  CONTENT_EXPORT static UtilityProcessHost* Create(
       UtilityProcessHostClient* client,
       BrowserThread::ID client_thread_id);
 

@@ -36,7 +36,6 @@
 #include "content/public/browser/interstitial_page_delegate.h"
 #include "googleurl/src/gurl.h"
 
-class InterstitialPage;
 class MalwareDetails;
 class MessageLoop;
 class SafeBrowsingBlockingPageFactory;
@@ -46,6 +45,7 @@ class DictionaryValue;
 }
 
 namespace content {
+class InterstitialPage;
 class WebContents;
 }
 
@@ -180,7 +180,7 @@ class SafeBrowsingBlockingPage : public content::InterstitialPageDelegate {
 
   content::WebContents* web_contents_;
   GURL url_;
-  InterstitialPage* interstitial_page_;  // Owns us
+  content::InterstitialPage* interstitial_page_;  // Owns us
 
   // The factory used to instanciate SafeBrowsingBlockingPage objects.
   // Usefull for tests, so they can provide their own implementation of

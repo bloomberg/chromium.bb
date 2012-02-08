@@ -15,7 +15,7 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/render_view_host_delegate.h"
 
-class InterstitialPage;
+class InterstitialPageImpl;
 class NavigationControllerImpl;
 class RenderViewHost;
 class RenderWidgetHostView;
@@ -163,7 +163,7 @@ class CONTENT_EXPORT RenderViewHostManager
   // |interstitial_page| should be non NULL (use the remove_interstitial_page
   // method to unset the interstitial) and no interstitial page should be set
   // when there is already a non NULL interstitial page set.
-  void set_interstitial_page(InterstitialPage* interstitial_page) {
+  void set_interstitial_page(InterstitialPageImpl* interstitial_page) {
     DCHECK(!interstitial_page_ && interstitial_page);
     interstitial_page_ = interstitial_page;
   }
@@ -176,7 +176,7 @@ class CONTENT_EXPORT RenderViewHostManager
 
   // Returns the currently showing interstitial, NULL if no interstitial is
   // showing.
-  InterstitialPage* interstitial_page() const {
+  InterstitialPageImpl* interstitial_page() const {
     return interstitial_page_;
   }
 
@@ -285,7 +285,7 @@ class CONTENT_EXPORT RenderViewHostManager
 
   // The intersitial page currently shown if any, not own by this class
   // (the InterstitialPage is self-owned, it deletes itself when hidden).
-  InterstitialPage* interstitial_page_;
+  InterstitialPageImpl* interstitial_page_;
 
   content::NotificationRegistrar registrar_;
 

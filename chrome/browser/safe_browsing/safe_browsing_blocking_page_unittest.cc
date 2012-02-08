@@ -8,12 +8,13 @@
 #include "chrome/browser/safe_browsing/safe_browsing_blocking_page.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
-#include "content/browser/tab_contents/interstitial_page.h"
 #include "content/browser/tab_contents/test_tab_contents.h"
+#include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/test/test_browser_thread.h"
 
 using content::BrowserThread;
+using content::InterstitialPage;
 using content::NavigationEntry;
 using content::WebContents;
 using content::WebContentsView;

@@ -105,7 +105,6 @@ include_rules = [
   "+content/browser/ssl/ssl_client_auth_handler_mock.h",
   "+content/browser/ssl/ssl_host_state.h",
   "+content/browser/ssl/ssl_manager.h",
-  "+content/browser/tab_contents/interstitial_page.h",
   "+content/browser/tab_contents/popup_menu_helper_mac.h",
   "+content/browser/tab_contents/provisional_load_details.h",
   "+content/browser/tab_contents/tab_contents_view_gtk.h",

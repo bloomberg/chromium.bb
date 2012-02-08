@@ -16,7 +16,7 @@
 #include "content/browser/renderer_host/render_view_host.h"  // Temporary
 #include "content/browser/site_instance_impl.h"
 #include "content/browser/tab_contents/debug_urls.h"
-#include "content/browser/tab_contents/interstitial_page.h"
+#include "content/browser/tab_contents/interstitial_page_impl.h"
 #include "content/browser/tab_contents/navigation_entry_impl.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/view_messages.h"
@@ -1142,7 +1142,8 @@ void NavigationControllerImpl::PruneAllButActive() {
     // Normally the interstitial page hides itself if the user doesn't proceeed.
     // This would result in showing a NavigationEntry we just removed. Set this
     // so the interstitial triggers a reload if the user doesn't proceed.
-    tab_contents_->GetInterstitialPage()->set_reload_on_dont_proceed(true);
+    static_cast<InterstitialPageImpl*>(tab_contents_->GetInterstitialPage())->
+        set_reload_on_dont_proceed(true);
   }
 }
 
@@ -1275,8 +1276,10 @@ void NavigationControllerImpl::NavigateToPendingEntry(ReloadType reload_type) {
   // cannot make new requests.  Unblock (and disable) it to allow this
   // navigation to succeed.  The interstitial will stay visible until the
   // resulting DidNavigate.
-  if (tab_contents_->GetInterstitialPage())
-    tab_contents_->GetInterstitialPage()->CancelForNavigation();
+  if (tab_contents_->GetInterstitialPage()) {
+    static_cast<InterstitialPageImpl*>(tab_contents_->GetInterstitialPage())->
+        CancelForNavigation();
+  }
 
   // For session history navigations only the pending_entry_index_ is set.
   if (!pending_entry_) {

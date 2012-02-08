@@ -30,6 +30,7 @@
 #include "base/win/scoped_handle.h"
 #endif
 
+class InterstitialPageImpl;
 class LoadNotificationDetails;
 class RenderViewHost;
 class SavePackage;
@@ -99,7 +100,7 @@ class CONTENT_EXPORT TabContents
   // |interstitial_page| should be non NULL (use the remove_interstitial_page
   // method to unset the interstitial) and no interstitial page should be set
   // when there is already a non NULL interstitial page set.
-  void set_interstitial_page(InterstitialPage* interstitial_page) {
+  void set_interstitial_page(InterstitialPageImpl* interstitial_page) {
     render_manager_.set_interstitial_page(interstitial_page);
   }
 
@@ -181,7 +182,7 @@ class CONTENT_EXPORT TabContents
   virtual void Focus() OVERRIDE;
   virtual void FocusThroughTabTraversal(bool reverse) OVERRIDE;
   virtual bool ShowingInterstitialPage() const OVERRIDE;
-  virtual InterstitialPage* GetInterstitialPage() const OVERRIDE;
+  virtual content::InterstitialPage* GetInterstitialPage() const OVERRIDE;
   virtual bool IsSavable() OVERRIDE;
   virtual void OnSavePage() OVERRIDE;
   virtual bool SavePage(const FilePath& main_file,
@@ -367,8 +368,8 @@ class CONTENT_EXPORT TabContents
   friend class TabContentsViewGtk;
 #endif
 
-  // So InterstitialPage can access SetIsLoading.
-  friend class InterstitialPage;
+  // So InterstitialPageImpl can access SetIsLoading.
+  friend class InterstitialPageImpl;
 
   // TODO(brettw) TestTabContents shouldn't exist!
   friend class TestTabContents;

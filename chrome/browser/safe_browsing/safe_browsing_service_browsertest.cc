@@ -35,6 +35,7 @@
 using base::Histogram;
 using base::StatisticsRecorder;
 using content::BrowserThread;
+using content::InterstitialPage;
 using content::WebContents;
 using ::testing::_;
 using ::testing::Mock;

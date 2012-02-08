@@ -14,7 +14,6 @@
 #include "content/public/browser/interstitial_page_delegate.h"
 
 class GURL;
-class InterstitialPage;
 class SSLCertErrorHandler;
 
 namespace base {
@@ -22,6 +21,7 @@ class DictionaryValue;
 }
 
 namespace content {
+class InterstitialPage;
 class WebContents;
 }
 
@@ -67,7 +67,7 @@ class SSLBlockingPage : public content::InterstitialPageDelegate {
   bool overridable_;
 
   content::WebContents* web_contents_;
-  InterstitialPage* interstitial_page_;  // Owns us.
+  content::InterstitialPage* interstitial_page_;  // Owns us.
 
   DISALLOW_COPY_AND_ASSIGN(SSLBlockingPage);
 };

@@ -17,7 +17,6 @@
 #include "ui/gfx/native_widget_types.h"
 #include "webkit/glue/window_open_disposition.h"
 
-class InterstitialPage;
 class RenderViewHost;
 class RenderWidgetHostView;
 class SessionStorageNamespace;
@@ -39,6 +38,7 @@ struct LoadStateWithParam;
 namespace content {
 
 class BrowserContext;
+class InterstitialPage;
 class NavigationController;
 class RenderProcessHost;
 class WebContentsDelegate;

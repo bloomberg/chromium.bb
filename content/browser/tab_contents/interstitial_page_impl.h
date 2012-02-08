@@ -2,43 +2,25 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_TAB_CONTENTS_INTERSTITIAL_PAGE_H_
-#define CONTENT_BROWSER_TAB_CONTENTS_INTERSTITIAL_PAGE_H_
+#ifndef CONTENT_BROWSER_TAB_CONTENTS_INTERSTITIAL_PAGE_IMPL_H_
+#define CONTENT_BROWSER_TAB_CONTENTS_INTERSTITIAL_PAGE_IMPL_H_
 #pragma once
-
-#include <map>
-#include <string>
 
 #include "base/memory/scoped_ptr.h"
 #include "base/process_util.h"
-#include "content/common/content_export.h"
+#include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/render_view_host_delegate.h"
 #include "content/public/common/renderer_preferences.h"
 #include "googleurl/src/gurl.h"
-#include "ui/gfx/size.h"
 
 class TabContents;
 
 namespace content {
-class InterstitialPageDelegate;
 class NavigationEntry;
-class WebContents;
 class WebContentsView;
 }
-
-// This class is a base class for interstitial pages, pages that show some
-// informative message asking for user validation before reaching the target
-// page. (Navigating to a page served over bad HTTPS or a page containing
-// malware are typical cases where an interstitial is required.)
-//
-// If specified in its constructor, this class creates a navigation entry so
-// that when the interstitial shows, the current entry is the target URL.
-//
-// InterstitialPage instances take care of deleting themselves when closed
-// through a navigation, the TabContents closing them or the tab containing them
-// being closed.
 
 enum ResourceRequestAction {
   BLOCK,
@@ -46,8 +28,10 @@ enum ResourceRequestAction {
   CANCEL
 };
 
-class CONTENT_EXPORT InterstitialPage : public content::NotificationObserver,
-                                        public content::RenderViewHostDelegate {
+class CONTENT_EXPORT InterstitialPageImpl
+    : public content::InterstitialPage,
+      public content::NotificationObserver,
+      public content::RenderViewHostDelegate {
  public:
   // The different state of actions the user can take in an interstitial.
   enum ActionState {
@@ -56,59 +40,27 @@ class CONTENT_EXPORT InterstitialPage : public content::NotificationObserver,
     DONT_PROCEED_ACTION  // "Don't proceed" was selected.
   };
 
-  // Creates an interstitial page to show in |tab|. |new_navigation| should be
-  // set to true when the interstitial is caused by loading a new page, in which
-  // case a temporary navigation entry is created with the URL |url| and
-  // added to the navigation controller (so the interstitial page appears as a
-  // new navigation entry). |new_navigation| should be false when the
-  // interstitial was triggered by a loading a sub-resource in a page.
-  // Takes ownership of |delegate|.
-  static InterstitialPage* Create(content::WebContents* tab,
-                                  bool new_navigation,
-                                  const GURL& url,
-                                  content::InterstitialPageDelegate* delegate);
+  InterstitialPageImpl(content::WebContents* tab,
+                       bool new_navigation,
+                       const GURL& url,
+                       content::InterstitialPageDelegate* delegate);
+  virtual ~InterstitialPageImpl();
 
-  InterstitialPage(content::WebContents* tab,
-                   bool new_navigation,
-                   const GURL& url,
-                   content::InterstitialPageDelegate* delegate);
-  virtual ~InterstitialPage();
-
-  // Shows the interstitial page in the tab.
-  void Show();
-
-  // Hides the interstitial page.
-  void Hide();
-
-  // Retrieves the InterstitialPage if any associated with the specified
-  // |web_contents| (used by ui tests).
-  static InterstitialPage* GetInterstitialPage(
-      content::WebContents* web_contents);
-
-  // Reverts to the page showing before the interstitial.
-  // Sub-classes should call this method when the user has chosen NOT to proceed
-  // to the target URL.
-  // Warning: if |new_navigation| was set to true in the constructor, 'this'
-  //          will be deleted when this method returns.
-  virtual void DontProceed();
-
-  // Sub-classes should call this method when the user has chosen to proceed to
-  // the target URL.
-  // Warning: 'this' has been deleted when this method returns.
-  virtual void Proceed();
+  // InterstitialPage implementation:
+  virtual void Show() OVERRIDE;
+  virtual void Hide() OVERRIDE;
+  virtual void DontProceed() OVERRIDE;
+  virtual void Proceed() OVERRIDE;
+  virtual RenderViewHost* GetRenderViewHostForTesting() const OVERRIDE;
+  virtual content::InterstitialPageDelegate* GetDelegateForTesting() OVERRIDE;
+  virtual void DontCreateViewForTesting() OVERRIDE;
+  virtual void SetSize(const gfx::Size& size) OVERRIDE;
+  virtual void Focus() OVERRIDE;
 
   // Allows the user to navigate away by disabling the interstitial, canceling
   // the pending request, and unblocking the hidden renderer.  The interstitial
   // will stay visible until the navigation completes.
   void CancelForNavigation();
-
-  // Sizes the RenderViewHost showing the actual interstitial page contents.
-  void SetSize(const gfx::Size& size);
-
-  ActionState action_taken() const { return action_taken_; }
-
-  // Sets the focus to the interstitial.
-  void Focus();
 
   // Focus the first (last if reverse is true) element in the interstitial page.
   // Called when tab traversing.
@@ -119,11 +71,6 @@ class CONTENT_EXPORT InterstitialPage : public content::NotificationObserver,
     reload_on_dont_proceed_ = value;
   }
   bool reload_on_dont_proceed() const { return reload_on_dont_proceed_; }
-
-  RenderViewHost* render_view_host() const { return render_view_host_; }
-
-  content::InterstitialPageDelegate* GetDelegateForTesting();
-  void DontCreateViewForTesting();
 
  protected:
   // content::NotificationObserver method:
@@ -170,15 +117,7 @@ class CONTENT_EXPORT InterstitialPage : public content::NotificationObserver,
   content::NotificationRegistrar notification_registrar_;
 
  private:
-  // AutomationProvider needs access to Proceed and DontProceed to simulate
-  // user actions.
-  friend class AutomationProvider;
-
   class InterstitialPageRVHViewDelegate;
-
-  // Initializes tab_to_interstitial_page_ in a thread-safe manner.
-  // Should be called before accessing tab_to_interstitial_page_.
-  static void InitInterstitialPageMap();
 
   // Disable the interstitial:
   // - if it is not yet showing, then it won't be shown.
@@ -244,11 +183,6 @@ class CONTENT_EXPORT InterstitialPage : public content::NotificationObserver,
   // Our RenderViewHostViewDelegate, necessary for accelerators to work.
   scoped_ptr<InterstitialPageRVHViewDelegate> rvh_view_delegate_;
 
-  // We keep a map of the various blocking pages shown as the UI tests need to
-  // be able to retrieve them.
-  typedef std::map<TabContents*, InterstitialPage*> InterstitialPageMap;
-  static InterstitialPageMap* tab_to_interstitial_page_;
-
   // Settings passed to the renderer.
   mutable content::RendererPreferences renderer_preferences_;
 
@@ -256,7 +190,7 @@ class CONTENT_EXPORT InterstitialPage : public content::NotificationObserver,
 
   scoped_ptr<content::InterstitialPageDelegate> delegate_;
 
-  DISALLOW_COPY_AND_ASSIGN(InterstitialPage);
+  DISALLOW_COPY_AND_ASSIGN(InterstitialPageImpl);
 };
 
-#endif  // CONTENT_BROWSER_TAB_CONTENTS_INTERSTITIAL_PAGE_H_
+#endif  // CONTENT_BROWSER_TAB_CONTENTS_INTERSTITIAL_PAGE_IMPL_H_

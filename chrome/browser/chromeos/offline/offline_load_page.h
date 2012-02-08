@@ -15,13 +15,13 @@
 #include "net/base/network_change_notifier.h"
 
 class Extension;
-class InterstitialPage;
 
 namespace base {
 class DictionaryValue;
 }
 
 namespace content {
+class InterstitialPage;
 class WebContents;
 }
 
@@ -82,7 +82,7 @@ class OfflineLoadPage : public content::InterstitialPageDelegate,
 
   content::WebContents* web_contents_;
   GURL url_;
-  InterstitialPage* interstitial_page_;  // Owns us.
+  content::InterstitialPage* interstitial_page_;  // Owns us.
 
   DISALLOW_COPY_AND_ASSIGN(OfflineLoadPage);
 };

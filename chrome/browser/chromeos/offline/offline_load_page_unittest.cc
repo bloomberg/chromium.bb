@@ -5,11 +5,12 @@
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/offline/offline_load_page.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
-#include "content/browser/tab_contents/interstitial_page.h"
 #include "content/browser/tab_contents/test_tab_contents.h"
+#include "content/public/browser/interstitial_page.h"
 #include "content/test/test_browser_thread.h"
 
 using content::BrowserThread;
+using content::InterstitialPage;
 
 static const char* kURL1 = "http://www.google.com/";
 static const char* kURL2 = "http://www.gmail.com/";

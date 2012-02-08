@@ -10,7 +10,6 @@
 #include "chrome/browser/ui/gtk/constrained_window_gtk.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_widget_host_view_gtk.h"
-#include "content/browser/tab_contents/interstitial_page.h"
 #include "content/browser/tab_contents/tab_contents_view_gtk.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
