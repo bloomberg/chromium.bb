@@ -68,7 +68,6 @@
     "chrome.experimental.devtools.console.addMessage": "experimental.devtools.console.html#method-addMessage",
     "chrome.experimental.devtools.console.getMessages": "experimental.devtools.console.html#method-getMessages",
     "chrome.experimental.devtools.console.onMessageAdded": "experimental.devtools.console.html#event-onMessageAdded",
-    "chrome.experimental.extension.onInstalled": "experimental.extension.html#event-onInstalled",
     "chrome.experimental.infobars.show": "experimental.infobars.html#method-show",
     "chrome.experimental.speechInput.isRecording": "experimental.speechInput.html#method-isRecording",
     "chrome.experimental.speechInput.onError": "experimental.speechInput.html#event-onError",

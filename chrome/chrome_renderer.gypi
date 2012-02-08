@@ -126,6 +126,7 @@
         'renderer/resources/extensions/context_menus_custom_bindings.js',
         'renderer/resources/extensions/devtools_custom_bindings.js',
         'renderer/resources/extensions/event.js',
+        'renderer/resources/extensions/experimental.declarative_custom_bindings.js',
         'renderer/resources/extensions/experimental.socket_custom_bindings.js',
         'renderer/resources/extensions/extension_custom_bindings.js',
         'renderer/resources/extensions/file_browser_handler_custom_bindings.js',

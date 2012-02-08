@@ -1,0 +1,128 @@
+[
+  {
+    "namespace": "experimental.declarative",
+    "nodoc": true,
+    "types": [
+      {
+        "id": "Rule",
+        "type": "object",
+        "description": "Description of a declarative rule for handling events.",
+        "properties": {
+          "id": {
+            "type": "string",
+            "optional": true,
+            "description": "Optional identifier that allows referencing this rule."
+          },
+          "conditions": {
+            "type": "array",
+            "items": {"type": "any"},
+            "description": "List of conditions that can trigger the actions."
+          },
+          "actions": {
+            "type": "array",
+            "items": {"type": "any"},
+            "description": "List of actions that are triggered if one of the condtions is fulfilled."
+          },
+          "priority": {
+            "type": "integer",
+            "optional": true,
+            "description": "Optional priority of this rule. Defaults to 100."
+          }
+        }
+      }
+    ],
+    "functions": [
+      {
+        "name": "addRules",
+        "type": "function",
+        "description": "Registers rules to handle events.",
+        "parameters": [
+          {
+            "name": "event",
+            "type": "string",
+            "description": "Name of the event this function affects."
+          },
+          {
+            "name": "rules",
+            "type": "array",
+            "items": {"$ref": "Rule"},
+            "description": "Rules to be registered. These do not replace previously registered rules."
+          },
+          {
+            "name": "callback",
+            "optional": true,
+            "type": "function",
+            "parameters": [
+              {
+                "name": "rules",
+                "type": "array",
+                "items": {"$ref": "Rule"},
+                "description": "Rules that were registered, the optional parameters are filled with values."
+              }
+            ],
+            "description": "Called with registered rules."
+          }
+        ]
+      },
+      {
+        "name": "getRules",
+        "type": "function",
+        "description": "Returns currently registered rules.",
+        "parameters": [
+          {
+            "name": "event",
+            "type": "string",
+            "description": "Name of the event this function affects."
+          },
+          {
+            "name": "ruleIdentifiers",
+            "optional": "true",
+            "type": "array",
+            "items": {"type": "string"},
+            "description": "If an array is passed, only rules with identifiers contained in this array are returned."
+          },
+          {
+            "name": "callback",
+            "type": "function",
+            "parameters": [
+              {
+                "name": "rules",
+                "type": "array",
+                "items": {"$ref": "Rule"},
+                "description": "Rules that were registered, the optional parameters are filled with values."
+              }
+            ],
+            "description": "Called with registered rules."
+          }
+        ]
+      },
+      {
+        "name": "removeRules",
+        "type": "function",
+        "description": "Unregisters currently registered rules.",
+        "parameters": [
+          {
+            "name": "event",
+            "type": "string",
+            "description": "Name of the event this function affects."
+          },
+          {
+            "name": "ruleIdentifiers",
+            "optional": "true",
+            "type": "array",
+            "items": {"type": "string"},
+            "description": "If an array is passed, only rules with identifiers contained in this array are unregistered."
+          },
+          {
+            "name": "callback",
+            "optional": true,
+            "type": "function",
+            "parameters": [],
+            "description": "Called when rules were unregistered."
+          }
+        ]
+      }
+    ]
+  }
+]
+

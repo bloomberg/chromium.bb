@@ -483,10 +483,11 @@ var chrome = chrome || {};
           var customEvent = customEvents[apiDef.namespace];
           if (customEvent) {
             module[eventDef.name] = new customEvent(
-                eventName, eventDef.parameters, eventDef.extraParameters);
+                eventName, eventDef.parameters, eventDef.extraParameters,
+                eventDef.options);
           } else {
             module[eventDef.name] = new chrome.Event(
-                eventName, eventDef.parameters);
+                eventName, eventDef.parameters, eventDef.options);
           }
         });
       }
@@ -566,6 +567,7 @@ var chrome = chrome || {};
         apiFunctions: apiFunctions,
         sendRequest: sendRequest,
         setIcon: setIcon,
+        apiDefinitions: apiDefinitions,
       }, extensionId);
     });
 

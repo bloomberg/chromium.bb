@@ -21,7 +21,8 @@ var chromeHidden = GetChromeHidden();
 //   chrome.webRequest.onBeforeRequest.addListener(
 //       callback, {urls: "http://*.google.com/*"});
 //   ^ callback will only be called for onBeforeRequests matching the filter.
-function WebRequestEvent(eventName, opt_argSchemas, opt_extraArgSchemas) {
+function WebRequestEvent(eventName, opt_argSchemas, opt_extraArgSchemas,
+                         opt_eventOptions) {
   if (typeof eventName != "string")
     throw new Error("chrome.WebRequestEvent requires an event name.");
 
@@ -29,15 +30,25 @@ function WebRequestEvent(eventName, opt_argSchemas, opt_extraArgSchemas) {
   this.argSchemas_ = opt_argSchemas;
   this.extraArgSchemas_ = opt_extraArgSchemas;
   this.subEvents_ = [];
+  this.eventOptions_ = opt_eventOptions ||
+      {"supportsListeners": true, "supportsRules": false};
+
+  if (this.eventOptions_.supportsRules)
+    this.eventForRules_ =
+        new chrome.Event(eventName, opt_argSchemas, opt_eventOptions);
 };
 
 // Test if the given callback is registered for this event.
 WebRequestEvent.prototype.hasListener = function(cb) {
+  if (!this.eventOptions_.supportsListeners)
+    throw new Error("This event does not support listeners.");
   return this.findListener_(cb) > -1;
 };
 
 // Test if any callbacks are registered fur thus event.
 WebRequestEvent.prototype.hasListeners = function() {
+  if (!this.eventOptions_.supportsListeners)
+    throw new Error("This event does not support listeners.");
   return this.subEvents_.length > 0;
 };
 
@@ -47,6 +58,8 @@ WebRequestEvent.prototype.hasListeners = function() {
 // info is sent to the callback.
 WebRequestEvent.prototype.addListener =
     function(cb, opt_filter, opt_extraInfo) {
+  if (!this.eventOptions_.supportsListeners)
+    throw new Error("This event does not support listeners.");
   var subEventName = GetUniqueSubEventName(this.eventName_);
   // Note: this could fail to validate, in which case we would not add the
   // subEvent listener.
@@ -90,6 +103,8 @@ WebRequestEvent.prototype.addListener =
 
 // Unregisters a callback.
 WebRequestEvent.prototype.removeListener = function(cb) {
+  if (!this.eventOptions_.supportsListeners)
+    throw new Error("This event does not support listeners.");
   var idx;
   while ((idx = this.findListener_(cb)) >= 0) {
     var e = this.subEvents_[idx];
@@ -115,9 +130,27 @@ WebRequestEvent.prototype.findListener_ = function(cb) {
   return -1;
 };
 
-chromeHidden.registerCustomEvent('webRequest', WebRequestEvent);
+WebRequestEvent.prototype.addRules = function(rules, opt_cb) {
+  if (!this.eventOptions_.supportsRules)
+    throw new Error("This event does not support rules.");
+  this.eventForRules_.addRules(rules, opt_cb);
+}
 
-chromeHidden.registerCustomHook('webRequest', function(api) {
+WebRequestEvent.prototype.removeRules = function(ruleIdentifiers, opt_cb) {
+  if (!this.eventOptions_.supportsRules)
+    throw new Error("This event does not support rules.");
+  this.eventForRules_.removeRules(ruleIdentifiers, opt_cb);
+}
+
+WebRequestEvent.prototype.getRules = function(ruleIdentifiers, cb) {
+  if (!this.eventOptions_.supportsRules)
+    throw new Error("This event does not support rules.");
+  this.eventForRules_.getRules(ruleIdentifiers, cb);
+}
+
+chromeHidden.registerCustomEvent("webRequest", WebRequestEvent);
+
+chromeHidden.registerCustomHook("webRequest", function(api) {
   var apiFunctions = api.apiFunctions;
   var sendRequest = api.sendRequest;
 

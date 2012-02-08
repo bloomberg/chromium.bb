@@ -149,7 +149,8 @@
           <li id="typesTocTemplate" jsdisplay="types && types.length > 0">
             <a href="#types">Types</a>
             <ol>
-              <li jsselect="types.sort(sortByName)">
+              <li jsselect="types.sort(sortByName)"
+                  jsdisplay="!($this.nodoc)">
                 <a jscontent="id"
                    jsvalues=".href:'#type-' + id"
                    href="#id-anchor">id</a>
@@ -514,7 +515,8 @@
             <h3 id="types">Types</h3>
 
             <!-- iterates over all types -->
-            <div jsselect="types.sort(sortByName)" class="apiItem">
+            <div jsselect="types.sort(sortByName)" jsdisplay="!($this.nodoc)"
+                 class="apiItem">
               <a jsvalues=".name:'type-' + id"></a>
               <h4 jscontent="id">type name</h4>
 

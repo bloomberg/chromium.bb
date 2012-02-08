@@ -964,6 +964,8 @@
         'browser/event_disposition.h',
         'browser/extensions/api/app/app_api.cc',
         'browser/extensions/api/app/app_api.h',
+        'browser/extensions/api/declarative/declarative_api.cc',
+        'browser/extensions/api/declarative/declarative_api.h',
         'browser/extensions/api/dns/dns_api.cc',
         'browser/extensions/api/dns/dns_api.h',
         'browser/extensions/api/permissions/permissions_api.cc',

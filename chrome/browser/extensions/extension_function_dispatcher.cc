@@ -17,6 +17,7 @@
 #include "chrome/browser/bookmarks/bookmark_manager_extension_api.h"
 #include "chrome/browser/download/download_extension_api.h"
 #include "chrome/browser/extensions/api/app/app_api.h"
+#include "chrome/browser/extensions/api/declarative/declarative_api.h"
 #include "chrome/browser/extensions/api/dns/dns_api.h"
 #include "chrome/browser/extensions/api/permissions/permissions_api.h"
 #include "chrome/browser/extensions/api/serial/serial_api.h"
@@ -501,6 +502,11 @@ void FactoryRegistry::ResetFunctions() {
   // System
   RegisterFunction<extensions::GetIncognitoModeAvailabilityFunction>();
   RegisterFunction<extensions::GetUpdateStatusFunction>();
+
+  // Net
+  RegisterFunction<extensions::AddRulesFunction>();
+  RegisterFunction<extensions::RemoveRulesFunction>();
+  RegisterFunction<extensions::GetRulesFunction>();
 }
 
 void FactoryRegistry::GetAllNames(std::vector<std::string>* names) {
