@@ -50,6 +50,7 @@ vars = {
   "v8_revision": "10621",
   "webrtc_revision": "1538",
   "jsoncpp_revision": "248",
+  "nss_revision": "117974",
 }
 
 deps = {
@@ -355,7 +356,7 @@ deps_os = {
 
     # NSS, for SSLClientSocketNSS.
     "src/third_party/nss":
-      "/trunk/deps/third_party/nss@117974",
+      "/trunk/deps/third_party/nss@" + Var("nss_revision"),
 
     "src/third_party/swig/win":
       "/trunk/deps/third_party/swig/win@" + Var("swig_revision"),
@@ -396,7 +397,7 @@ deps_os = {
 
     # NSS, for SSLClientSocketNSS.
     "src/third_party/nss":
-      "/trunk/deps/third_party/nss@115445",
+      "/trunk/deps/third_party/nss@" + Var("nss_revision"),
 
     "src/chrome/installer/mac/third_party/xz/xz":
       "/trunk/deps/third_party/xz@87706",
