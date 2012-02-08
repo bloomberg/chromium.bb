@@ -4594,6 +4594,12 @@
             }],
           ],
         }],
+        ['OS=="android"', {
+          'sources/': [
+            ['exclude', '^browser/background/'],
+            ['exclude', '^browser/extensions/'],
+          ],
+        }],
         ['OS=="mac"', {
           'sources!': [
             'browser/automation/automation_provider_list_generic.cc',
