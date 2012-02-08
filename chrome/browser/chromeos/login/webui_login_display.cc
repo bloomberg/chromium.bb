@@ -122,6 +122,11 @@ void WebUILoginDisplay::ShowError(int error_msg_id,
         l10n_util::GetStringUTF8(IDS_LOGIN_ERROR_CAPS_LOCK_HINT);
   }
 
+  // Display a hint to switch keyboards if there are other active input methods.
+  if (ime_manager->GetNumActiveInputMethods() > 1)
+    error_text += "\n" +
+        l10n_util::GetStringUTF8(IDS_LOGIN_ERROR_KEYBOARD_SWITCH_HINT);
+
   std::string help_link;
   switch (error_msg_id) {
     case IDS_LOGIN_ERROR_CAPTIVE_PORTAL:
@@ -167,6 +172,10 @@ void WebUILoginDisplay::LoginAsGuest() {
   DCHECK(delegate_);
   if (delegate_)
     delegate_->LoginAsGuest();
+}
+
+void WebUILoginDisplay::Signout() {
+  delegate_->Signout();
 }
 
 void WebUILoginDisplay::FixCaptivePortal() {

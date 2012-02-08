@@ -66,6 +66,9 @@ class SigninScreenHandlerDelegate {
   // Sign in into Guest session.
   virtual void LoginAsGuest() = 0;
 
+  // Signs out if the screen is currently locked.
+  virtual void Signout() = 0;
+
   // Sign in into Guest session for fixing captive portal issues.
   virtual void FixCaptivePortal() = 0;
 

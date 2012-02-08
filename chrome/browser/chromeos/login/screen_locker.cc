@@ -226,24 +226,8 @@ void ScreenLocker::OnLoginFailure(const LoginFailure& error) {
   // Don't enable signout button here as we're showing
   // MessageBubble.
 
-  string16 msg = l10n_util::GetStringUTF16(IDS_LOGIN_ERROR_AUTHENTICATING);
-
-  // TODO(ivankr): use a format string instead of concatenation.
-  // Display a warning if Caps Lock is on.
-  input_method::InputMethodManager* ime_manager =
-      input_method::InputMethodManager::GetInstance();
-  if (ime_manager->GetXKeyboard()->CapsLockIsEnabled()) {
-    msg += ASCIIToUTF16("\n") +
-        l10n_util::GetStringUTF16(IDS_LOGIN_ERROR_CAPS_LOCK_HINT);
-  }
-
-  input_method::InputMethodManager* input_method_manager =
-      input_method::InputMethodManager::GetInstance();
-  if (input_method_manager->GetNumActiveInputMethods() > 1)
-    msg += ASCIIToUTF16("\n") +
-        l10n_util::GetStringUTF16(IDS_LOGIN_ERROR_KEYBOARD_SWITCH_HINT);
-
-  delegate_->ShowErrorMessage(msg, false);
+  delegate_->ShowErrorMessage(IDS_LOGIN_ERROR_AUTHENTICATING,
+                              HelpAppLauncher::HELP_CANT_ACCESS_ACCOUNT);
 
   if (login_status_consumer_)
     login_status_consumer_->OnLoginFailure(error);
@@ -288,7 +272,6 @@ void ScreenLocker::OnLoginSuccess(
 void ScreenLocker::Authenticate(const string16& password) {
   authentication_start_time_ = base::Time::Now();
   delegate_->SetInputEnabled(false);
-  delegate_->SetSignoutEnabled(false);
   delegate_->OnAuthenticate();
 
   // If LoginPerformer instance exists,
@@ -305,11 +288,6 @@ void ScreenLocker::Authenticate(const string16& password) {
   }
 }
 
-void ScreenLocker::ShowCaptchaAndErrorMessage(const GURL& captcha_url,
-                                              const string16& message) {
-  delegate_->ShowCaptchaAndErrorMessage(captcha_url, message);
-}
-
 void ScreenLocker::ClearErrors() {
   delegate_->ClearErrors();
 }
@@ -319,8 +297,6 @@ void ScreenLocker::EnableInput() {
 }
 
 void ScreenLocker::Signout() {
-  // TODO(flackr): For proper functionality, check if (error_info) is NULL
-  // (crbug.com/105267).
   delegate_->ClearErrors();
   content::RecordAction(UserMetricsAction("ScreenLocker_Signout"));
 #if defined(TOOLKIT_USES_GTK)
@@ -332,11 +308,11 @@ void ScreenLocker::Signout() {
   // briefly.
 }
 
-void ScreenLocker::ShowErrorMessage(const string16& message,
+void ScreenLocker::ShowErrorMessage(int error_msg_id,
+                                    HelpAppLauncher::HelpTopic help_topic_id,
                                     bool sign_out_only) {
   delegate_->SetInputEnabled(!sign_out_only);
-  delegate_->SetSignoutEnabled(sign_out_only);
-  delegate_->ShowErrorMessage(message, sign_out_only);
+  delegate_->ShowErrorMessage(error_msg_id, help_topic_id);
 }
 
 void ScreenLocker::SetLoginStatusConsumer(

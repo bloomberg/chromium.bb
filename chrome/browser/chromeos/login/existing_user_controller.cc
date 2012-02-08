@@ -407,6 +407,10 @@ void ExistingUserController::LoginAsGuest() {
       l10n_util::GetStringUTF8(IDS_CHROMEOS_ACC_LOGIN_SIGNIN_OFFRECORD));
 }
 
+void ExistingUserController::Signout() {
+  NOTREACHED();
+}
+
 void ExistingUserController::OnUserSelected(const std::string& username) {
   login_performer_.reset(NULL);
   num_login_attempts_ = 0;

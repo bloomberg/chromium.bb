@@ -42,11 +42,9 @@ class WebUIScreenLocker : public WebUILoginView,
   virtual void ScreenLockReady() OVERRIDE;
   virtual void OnAuthenticate() OVERRIDE;
   virtual void SetInputEnabled(bool enabled) OVERRIDE;
-  virtual void SetSignoutEnabled(bool enabled) OVERRIDE;
-  virtual void ShowErrorMessage(const string16& message,
-                                bool sign_out_only) OVERRIDE;
-  virtual void ShowCaptchaAndErrorMessage(const GURL& captcha_url,
-                                          const string16& message) OVERRIDE;
+  virtual void ShowErrorMessage(
+      int error_msg_id,
+      HelpAppLauncher::HelpTopic help_topic_id) OVERRIDE;
   virtual void ClearErrors() OVERRIDE;
   virtual gfx::NativeWindow GetNativeWindow() const OVERRIDE;
 
@@ -60,6 +58,7 @@ class WebUIScreenLocker : public WebUILoginView,
   virtual void Login(const std::string& username,
                      const std::string& password) OVERRIDE;
   virtual void LoginAsGuest() OVERRIDE;
+  virtual void Signout() OVERRIDE;
   virtual void OnUserSelected(const std::string& username) OVERRIDE;
   virtual void OnStartEnterpriseEnrollment() OVERRIDE;
 

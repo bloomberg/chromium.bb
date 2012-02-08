@@ -441,7 +441,9 @@ void LoginPerformer::ResolveLockNetworkAuthFailure() {
       << "ScreenLocker instance doesn't exist.";
   DCHECK(last_login_failure_.reason() == LoginFailure::NETWORK_AUTH_FAILED);
 
-  string16 msg;
+  int msg_id = IDS_LOGIN_ERROR_AUTHENTICATING;
+  HelpAppLauncher::HelpTopic help_topic =
+      HelpAppLauncher::HELP_CANT_ACCESS_ACCOUNT;
   bool sign_out_only = false;
 
   DVLOG(1) << "auth_error: " << last_login_failure_.error().state();
@@ -460,14 +462,15 @@ void LoginPerformer::ResolveLockNetworkAuthFailure() {
       return;
     case GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS:
       // Password change detected.
-      msg = l10n_util::GetStringUTF16(IDS_LOGIN_ERROR_PASSWORD_CHANGED);
+      msg_id = IDS_LOGIN_ERROR_PASSWORD_CHANGED;
       break;
     case GoogleServiceAuthError::USER_NOT_SIGNED_UP:
     case GoogleServiceAuthError::ACCOUNT_DELETED:
     case GoogleServiceAuthError::ACCOUNT_DISABLED:
       // Access not granted. User has to sign out.
       // Show error message using existing screen lock.
-      msg = l10n_util::GetStringUTF16(IDS_LOGIN_ERROR_RESTRICTED);
+      msg_id = IDS_LOGIN_ERROR_RESTRICTED;
+      help_topic = HelpAppLauncher::HELP_ACCOUNT_DISABLED;
       sign_out_only = true;
       break;
     case GoogleServiceAuthError::CAPTCHA_REQUIRED:
@@ -477,7 +480,9 @@ void LoginPerformer::ResolveLockNetworkAuthFailure() {
       break;
   }
 
-  ScreenLocker::default_screen_locker()->ShowErrorMessage(msg, sign_out_only);
+  ScreenLocker::default_screen_locker()->ShowErrorMessage(msg_id,
+                                                          help_topic,
+                                                          sign_out_only);
 }
 
 void LoginPerformer::ResolveScreenLocked() {
