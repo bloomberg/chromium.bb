@@ -11,10 +11,10 @@
 #include "remoting/base/constants.h"
 #include "remoting/jingle_glue/iq_sender.h"
 #include "remoting/protocol/authenticator.h"
+#include "remoting/protocol/channel_authenticator.h"
 #include "remoting/protocol/content_description.h"
 #include "remoting/protocol/jingle_messages.h"
 #include "remoting/protocol/pepper_session_manager.h"
-#include "remoting/protocol/pepper_stream_channel.h"
 #include "third_party/libjingle/source/talk/p2p/base/candidate.h"
 #include "third_party/libjingle/source/talk/xmllite/xmlelement.h"
 
@@ -121,19 +121,27 @@ void PepperSession::CreateStreamChannel(
 
   scoped_ptr<ChannelAuthenticator> channel_authenticator =
       authenticator_->CreateChannelAuthenticator();
-  PepperStreamChannel* channel = new PepperStreamChannel(
-      this, name, callback);
-  channels_[name] = channel;
-  channel->Connect(session_manager_->pp_instance_,
-                   session_manager_->transport_config_,
-                   channel_authenticator.Pass());
+  scoped_ptr<StreamTransport> channel =
+      session_manager_->transport_factory_->CreateStreamTransport();
+  channel->Initialize(name, session_manager_->transport_config_,
+                      this, channel_authenticator.Pass());
+  channel->Connect(callback);
+  channels_[name] = channel.release();
 }
 
 void PepperSession::CreateDatagramChannel(
     const std::string& name,
     const DatagramChannelCallback& callback) {
-  // TODO(sergeyu): Implement datagram channel support.
-  NOTREACHED();
+  DCHECK(!channels_[name]);
+
+  scoped_ptr<ChannelAuthenticator> channel_authenticator =
+      authenticator_->CreateChannelAuthenticator();
+  scoped_ptr<DatagramTransport> channel =
+      session_manager_->transport_factory_->CreateDatagramTransport();
+  channel->Initialize(name, session_manager_->transport_config_,
+                      this, channel_authenticator.Pass());
+  channel->Connect(callback);
+  channels_[name] = channel.release();
 }
 
 void PepperSession::CancelChannelCreation(const std::string& name) {
@@ -178,6 +186,25 @@ void PepperSession::Close() {
   }
 
   CloseInternal(false);
+}
+
+void PepperSession::OnTransportCandidate(Transport* transport,
+                                         const cricket::Candidate& candidate) {
+  pending_candidates_.push_back(candidate);
+
+  if (!transport_infos_timer_.IsRunning()) {
+    // Delay sending the new candidates in case we get more candidates
+    // that we can send in one message.
+    transport_infos_timer_.Start(
+        FROM_HERE, base::TimeDelta::FromMilliseconds(kTransportInfoSendDelayMs),
+        this, &PepperSession::SendTransportInfo);
+  }
+}
+
+void PepperSession::OnTransportDeleted(Transport* transport) {
+  ChannelsMap::iterator it = channels_.find(transport->name());
+  DCHECK_EQ(it->second, transport);
+  channels_.erase(it);
 }
 
 void PepperSession::OnIncomingMessage(const JingleMessage& message,
@@ -374,18 +401,6 @@ void PepperSession::OnSessionInfoResponse(const buzz::XmlElement* response) {
   }
 }
 
-void PepperSession::AddLocalCandidate(const cricket::Candidate& candidate) {
-  pending_candidates_.push_back(candidate);
-
-  if (!transport_infos_timer_.IsRunning()) {
-    // Delay sending the new candidates in case we get more candidates
-    // that we can send in one message.
-    transport_infos_timer_.Start(
-        FROM_HERE, base::TimeDelta::FromMilliseconds(kTransportInfoSendDelayMs),
-        this, &PepperSession::SendTransportInfo);
-  }
-}
-
 void PepperSession::OnTransportInfoResponse(const buzz::XmlElement* response) {
   const std::string& type = response->Attr(buzz::QName("", "type"));
   if (type != "result") {
@@ -400,12 +415,6 @@ void PepperSession::OnTransportInfoResponse(const buzz::XmlElement* response) {
       CloseInternal(false);
     }
   }
-}
-
-void PepperSession::OnDeleteChannel(PepperChannel* channel) {
-  ChannelsMap::iterator it = channels_.find(channel->name());
-  DCHECK_EQ(it->second, channel);
-  channels_.erase(it);
 }
 
 void PepperSession::SendTransportInfo() {

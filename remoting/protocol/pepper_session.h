@@ -16,6 +16,7 @@
 #include "remoting/protocol/jingle_messages.h"
 #include "remoting/protocol/session.h"
 #include "remoting/protocol/session_config.h"
+#include "remoting/protocol/transport.h"
 
 namespace net {
 class Socket;
@@ -29,13 +30,13 @@ class IqRequest;
 namespace protocol {
 
 class Authenticator;
-class PepperChannel;
 class PepperSessionManager;
 
 // Implements the protocol::Session interface using the Pepper P2P
 // Transport API. Created by PepperSessionManager for incoming and
 // outgoing connections.
-class PepperSession : public Session {
+class PepperSession : public Session,
+                      public Transport::EventHandler {
  public:
   virtual ~PepperSession();
 
@@ -58,11 +59,17 @@ class PepperSession : public Session {
   virtual void set_config(const SessionConfig& config) OVERRIDE;
   virtual void Close() OVERRIDE;
 
+  // Transport::EventHandler interface.
+  virtual void OnTransportCandidate(
+      Transport* transport,
+      const cricket::Candidate& candidate) OVERRIDE;
+  virtual void OnTransportDeleted(Transport* transport) OVERRIDE;
+
  private:
   friend class PepperSessionManager;
   friend class PepperStreamChannel;
 
-  typedef std::map<std::string, PepperChannel*> ChannelsMap;
+  typedef std::map<std::string, Transport*> ChannelsMap;
 
   explicit PepperSession(PepperSessionManager* session_manager);
 
@@ -94,10 +101,6 @@ class PepperSession : public Session {
 
   void ProcessAuthenticationStep();
   void OnSessionInfoResponse(const buzz::XmlElement* response);
-
-  // Called by PepperChannel.
-  void AddLocalCandidate(const cricket::Candidate& candidate);
-  void OnDeleteChannel(PepperChannel* channel);
 
   void SendTransportInfo();
   void OnTransportInfoResponse(const buzz::XmlElement* response);

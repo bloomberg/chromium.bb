@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/protocol/pepper_stream_channel.h"
+#include "remoting/protocol/pepper_transport_factory.h"
 
 #include "base/bind.h"
 #include "crypto/hmac.h"
@@ -17,7 +17,7 @@
 #include "ppapi/cpp/dev/transport_dev.h"
 #include "ppapi/cpp/var.h"
 #include "remoting/protocol/channel_authenticator.h"
-#include "remoting/protocol/pepper_session.h"
+#include "remoting/protocol/pepper_transport_socket_adapter.h"
 #include "remoting/protocol/transport_config.h"
 #include "third_party/libjingle/source/talk/p2p/base/candidate.h"
 
@@ -35,35 +35,97 @@ const int kTcpAckDelayMilliseconds = 10;
 const int kTcpReceiveBufferSize = 256 * 1024;
 const int kTcpSendBufferSize = kTcpReceiveBufferSize + 30 * 1024;
 
-}  // namespace
+class PepperStreamTransport : public StreamTransport,
+                              public PepperTransportSocketAdapter::Observer {
+ public:
+  PepperStreamTransport(pp::Instance* pp_instance);
+  virtual ~PepperStreamTransport();
 
-PepperStreamChannel::PepperStreamChannel(
-    PepperSession* session,
-    const std::string& name,
-    const Session::StreamChannelCallback& callback)
-    : session_(session),
-      name_(name),
-      callback_(callback),
+  // StreamTransport interface.
+  virtual void Initialize(
+      const std::string& name,
+      const TransportConfig& config,
+      Transport::EventHandler* event_handler,
+      scoped_ptr<ChannelAuthenticator> authenticator) OVERRIDE;
+  virtual void Connect(
+      const StreamTransport::ConnectedCallback& callback) OVERRIDE;
+  virtual void AddRemoteCandidate(const cricket::Candidate& candidate) OVERRIDE;
+  virtual const std::string& name() const OVERRIDE;
+  virtual bool is_connected() const OVERRIDE;
+
+  // PepperTransportSocketAdapter::Observer interface.
+  virtual void OnChannelDeleted() OVERRIDE;
+  virtual void OnChannelNewLocalCandidate(
+      const std::string& candidate) OVERRIDE;
+
+ private:
+  void OnP2PConnect(int result);
+  void OnAuthenticationDone(net::Error error,
+                            scoped_ptr<net::StreamSocket> socket);
+
+  void NotifyConnected(scoped_ptr<net::StreamSocket> socket);
+  void NotifyConnectFailed();
+
+  pp::Instance* pp_instance_;
+  std::string name_;
+  TransportConfig config_;
+  EventHandler* event_handler_;
+  StreamTransport::ConnectedCallback callback_;
+  scoped_ptr<ChannelAuthenticator> authenticator_;
+
+  // We own |channel_| until it is connected. After that
+  // |authenticator_| owns it.
+  scoped_ptr<PepperTransportSocketAdapter> owned_channel_;
+  PepperTransportSocketAdapter* channel_;
+
+  // Indicates that we've finished connecting.
+  bool connected_;
+
+  DISALLOW_COPY_AND_ASSIGN(PepperStreamTransport);
+};
+
+PepperStreamTransport::PepperStreamTransport(pp::Instance* pp_instance)
+    : pp_instance_(pp_instance),
+      event_handler_(NULL),
       channel_(NULL),
       connected_(false) {
 }
 
-PepperStreamChannel::~PepperStreamChannel() {
-  session_->OnDeleteChannel(this);
+PepperStreamTransport::~PepperStreamTransport() {
+  DCHECK(event_handler_);
+  event_handler_->OnTransportDeleted(this);
   // Channel should be already destroyed if we were connected.
   DCHECK(!connected_ || channel_ == NULL);
 }
 
-void PepperStreamChannel::Connect(
-    pp::Instance* pp_instance,
-    const TransportConfig& transport_config,
+void PepperStreamTransport::Initialize(
+    const std::string& name,
+    const TransportConfig& config,
+    Transport::EventHandler* event_handler,
     scoped_ptr<ChannelAuthenticator> authenticator) {
   DCHECK(CalledOnValidThread());
 
+  DCHECK(!name.empty());
+  DCHECK(event_handler);
+
+  // Can be initialized only once.
+  DCHECK(name_.empty());
+
+  name_ = name;
+  config_ = config;
+  event_handler_ = event_handler;
   authenticator_ = authenticator.Pass();
+}
+
+void PepperStreamTransport::Connect(
+    const StreamTransport::ConnectedCallback& callback) {
+  DCHECK(CalledOnValidThread());
+
+  // Initialize() must be called first.
+  DCHECK(!name_.empty());
 
   pp::Transport_Dev* transport =
-      new pp::Transport_Dev(pp_instance, name_.c_str(),
+      new pp::Transport_Dev(pp_instance_, name_.c_str(),
                             PP_TRANSPORTTYPE_STREAM);
 
   if (transport->SetProperty(PP_TRANSPORTPROPERTY_TCP_RECEIVE_WINDOW,
@@ -85,22 +147,22 @@ void PepperStreamChannel::Connect(
     LOG(ERROR) << "Failed to set TCP ACK delay.";
   }
 
-  if (transport_config.nat_traversal) {
+  if (config_.nat_traversal) {
     if (transport->SetProperty(
             PP_TRANSPORTPROPERTY_STUN_SERVER,
-            pp::Var(transport_config.stun_server)) != PP_OK) {
+            pp::Var(config_.stun_server)) != PP_OK) {
       LOG(ERROR) << "Failed to set STUN server.";
     }
 
     if (transport->SetProperty(
             PP_TRANSPORTPROPERTY_RELAY_SERVER,
-            pp::Var(transport_config.relay_server)) != PP_OK) {
+            pp::Var(config_.relay_server)) != PP_OK) {
       LOG(ERROR) << "Failed to set relay server.";
     }
 
     if (transport->SetProperty(
             PP_TRANSPORTPROPERTY_RELAY_PASSWORD,
-            pp::Var(transport_config.relay_token)) != PP_OK) {
+            pp::Var(config_.relay_token)) != PP_OK) {
       LOG(ERROR) << "Failed to set relay token.";
     }
 
@@ -119,30 +181,30 @@ void PepperStreamChannel::Connect(
   channel_ = new PepperTransportSocketAdapter(transport, name_, this);
   owned_channel_.reset(channel_);
 
-  int result = channel_->Connect(base::Bind(&PepperStreamChannel::OnP2PConnect,
-                                            base::Unretained(this)));
+  int result = channel_->Connect(
+      base::Bind(&PepperStreamTransport::OnP2PConnect, base::Unretained(this)));
   if (result != net::ERR_IO_PENDING)
     OnP2PConnect(result);
 }
 
-void PepperStreamChannel::AddRemoteCandidate(
+void PepperStreamTransport::AddRemoteCandidate(
     const cricket::Candidate& candidate) {
   DCHECK(CalledOnValidThread());
   if (channel_)
     channel_->AddRemoteCandidate(jingle_glue::SerializeP2PCandidate(candidate));
 }
 
-const std::string& PepperStreamChannel::name() const {
+const std::string& PepperStreamTransport::name() const {
   DCHECK(CalledOnValidThread());
   return name_;
 }
 
-bool PepperStreamChannel::is_connected() const {
+bool PepperStreamTransport::is_connected() const {
   DCHECK(CalledOnValidThread());
   return connected_;
 }
 
-void PepperStreamChannel::OnChannelDeleted() {
+void PepperStreamTransport::OnChannelDeleted() {
   if (connected_) {
     channel_ = NULL;
     // The PepperTransportSocketAdapter is being deleted, so delete
@@ -151,7 +213,7 @@ void PepperStreamChannel::OnChannelDeleted() {
   }
 }
 
-void PepperStreamChannel::OnChannelNewLocalCandidate(
+void PepperStreamTransport::OnChannelNewLocalCandidate(
     const std::string& candidate) {
   DCHECK(CalledOnValidThread());
 
@@ -159,23 +221,25 @@ void PepperStreamChannel::OnChannelNewLocalCandidate(
   if (!jingle_glue::DeserializeP2PCandidate(candidate, &candidate_value)) {
     LOG(ERROR) << "Failed to parse candidate " << candidate;
   }
-  session_->AddLocalCandidate(candidate_value);
+  event_handler_->OnTransportCandidate(this, candidate_value);
 }
 
-void PepperStreamChannel::OnP2PConnect(int result) {
+void PepperStreamTransport::OnP2PConnect(int result) {
   DCHECK(CalledOnValidThread());
 
-  if (result != net::OK)
+  if (result != net::OK) {
     NotifyConnectFailed();
+    return;
+  }
 
   authenticator_->SecureAndAuthenticate(
       owned_channel_.PassAs<net::StreamSocket>(),
-      base::Bind(&PepperStreamChannel::OnAuthenticationDone,
+      base::Bind(&PepperStreamTransport::OnAuthenticationDone,
                  base::Unretained(this)));
 }
 
 
-void PepperStreamChannel::OnAuthenticationDone(
+void PepperStreamTransport::OnAuthenticationDone(
     net::Error error, scoped_ptr<net::StreamSocket> socket) {
   DCHECK(CalledOnValidThread());
   if (error != net::OK) {
@@ -186,19 +250,39 @@ void PepperStreamChannel::OnAuthenticationDone(
   NotifyConnected(socket.Pass());
 }
 
-void PepperStreamChannel::NotifyConnected(
+void PepperStreamTransport::NotifyConnected(
     scoped_ptr<net::StreamSocket> socket) {
   DCHECK(!connected_);
   callback_.Run(socket.Pass());
   connected_ = true;
 }
 
-void PepperStreamChannel::NotifyConnectFailed() {
+void PepperStreamTransport::NotifyConnectFailed() {
   channel_ = NULL;
   owned_channel_.reset();
   authenticator_.reset();
 
   NotifyConnected(scoped_ptr<net::StreamSocket>(NULL));
+}
+
+}  // namespace
+
+PepperTransportFactory::PepperTransportFactory(
+    pp::Instance* pp_instance)
+    : pp_instance_(pp_instance) {
+}
+
+PepperTransportFactory::~PepperTransportFactory() {
+}
+
+scoped_ptr<StreamTransport> PepperTransportFactory::CreateStreamTransport() {
+  return scoped_ptr<StreamTransport>(new PepperStreamTransport(pp_instance_));
+}
+
+scoped_ptr<DatagramTransport>
+PepperTransportFactory::CreateDatagramTransport() {
+  NOTIMPLEMENTED();
+  return scoped_ptr<DatagramTransport>(NULL);
 }
 
 }  // namespace protocol
