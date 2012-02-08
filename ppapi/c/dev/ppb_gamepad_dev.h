@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From dev/ppb_gamepad_dev.idl modified Mon Jan  9 13:16:43 2012. */
+/* From dev/ppb_gamepad_dev.idl modified Tue Feb  7 12:49:02 2012. */
 
 #ifndef PPAPI_C_DEV_PPB_GAMEPAD_DEV_H_
 #define PPAPI_C_DEV_PPB_GAMEPAD_DEV_H_
@@ -21,6 +21,8 @@
  * provides access to gamepad devices.
  */
 
+
+#pragma pack(push, 1)
 
 /**
  * @addtogroup Structs
@@ -80,6 +82,8 @@ struct PP_GamepadsData_Dev {
 /**
  * @}
  */
+
+#pragma pack(pop)
 
 /**
  * @addtogroup Interfaces

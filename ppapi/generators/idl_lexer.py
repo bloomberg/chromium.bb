@@ -122,7 +122,7 @@ class IDLLexer(object):
 
   # Return a "preprocessor" inline block
   def t_INLINE(self, t):
-    r'\#inline (.|\n)*\#endinl.*'
+    r'\#inline (.|\n)*?\#endinl.*'
     self.AddLines(t.value.count('\n'))
     return t
 

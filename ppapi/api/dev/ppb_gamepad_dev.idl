@@ -12,6 +12,10 @@ label Chrome {
   M18 = 0.1
 };
 
+#inline c
+#pragma pack(push, 1)
+#endinl
+
 /**
  * The data for one gamepad device.
  */
@@ -70,6 +74,10 @@ struct PP_GamepadsData_Dev {
      */
     PP_GamepadData_Dev[4] items;
 };
+
+#inline c
+#pragma pack(pop)
+#endinl
 
 /**
  * The <code>PPB_Gamepad_Dev</code> interface allows retrieving data from

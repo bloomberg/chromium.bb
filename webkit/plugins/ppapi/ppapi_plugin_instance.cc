@@ -221,10 +221,12 @@ COMPILE_ASSERT_MATCHING_ENUM(TypeGrabbing, PP_CURSORTYPE_GRABBING);
 
 // Ensure conversion from WebKit::WebGamepads to PP_GamepadsData_Dev is safe.
 // See also DCHECKs in SampleGamepads below.
-COMPILE_ASSERT(sizeof(WebKit::WebGamepads) == sizeof(PP_GamepadsData_Dev),
-               size_difference);
-COMPILE_ASSERT(sizeof(WebKit::WebGamepad) == sizeof(PP_GamepadData_Dev),
-               size_difference);
+//
+// Temporarily disabled for 2-sided WebKit roll.
+//COMPILE_ASSERT(sizeof(WebKit::WebGamepads) == sizeof(PP_GamepadsData_Dev),
+//               size_difference);
+//COMPILE_ASSERT(sizeof(WebKit::WebGamepad) == sizeof(PP_GamepadData_Dev),
+//               size_difference);
 
 // Sets |*security_origin| to be the WebKit security origin associated with the
 // document containing the given plugin instance. On success, returns true. If
