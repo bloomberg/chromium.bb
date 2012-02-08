@@ -428,13 +428,10 @@ TEST_F(RenderWidgetHostTest, ResizeThenCrash) {
 // Tests setting custom background
 TEST_F(RenderWidgetHostTest, Background) {
 #if !defined(OS_MACOSX)
-  scoped_ptr<RenderWidgetHostView> view(
-      RenderWidgetHostView::CreateViewForWidget(host_.get()));
-#if defined(USE_AURA)
-  // TODO(derat): Call this on all platforms: http://crbug.com/102450.
-  static_cast<RenderWidgetHostViewAura*>(view.get())->InitAsChild(NULL);
-#endif
-  host_->SetView(view.get());
+  RenderWidgetHostView* view =
+      RenderWidgetHostView::CreateViewForWidget(host_.get());
+  view->InitAsChild(NULL);
+  host_->SetView(view);
 
   // Create a checkerboard background to test with.
   gfx::CanvasSkia canvas(gfx::Size(4, 4), true);
@@ -480,6 +477,8 @@ TEST_F(RenderWidgetHostTest, Background) {
   // TODO(aa): It would be nice to factor out the painting logic so that we
   // could test that, but it appears that would mean painting everything twice
   // since windows HDC structures are opaque.
+
+  view->Destroy();
 }
 
 // Tests getting the backing store with the renderer not setting repaint ack
