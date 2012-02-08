@@ -355,6 +355,10 @@ extern const char kKioskMode[];
 extern const char kKioskModePrinting[];
 #endif
 
+#if defined(OS_WIN)
+extern const char kDisableDesktopShortcuts[];
+#endif
+
 #if defined(TOOLKIT_VIEWS)
 extern const char kDebugViewsPaint[];
 extern const char kTouchDevices[];

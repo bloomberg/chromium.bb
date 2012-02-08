@@ -1246,6 +1246,12 @@ const char kKioskMode[]                     = "kiosk";
 const char kKioskModePrinting[]             = "kiosk-printing";
 #endif
 
+#if defined(OS_WIN)
+// Disables profile desktop shortcuts handling, preventing their creation,
+// modification or removal.
+const char kDisableDesktopShortcuts[]       = "disable-desktop-shortcuts";
+#endif
+
 #if defined(TOOLKIT_VIEWS)
 // Enables debug paint in views framework. Enabling this causes the damaged
 // region being painted to flash in red.

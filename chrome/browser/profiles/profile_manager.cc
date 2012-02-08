@@ -699,7 +699,9 @@ ProfileInfoCache& ProfileManager::GetProfileInfoCache() {
 #if defined(OS_WIN)
     BrowserDistribution* dist = BrowserDistribution::GetDistribution();
     ProfileShortcutManagerWin* shortcut_manager = CreateShortcutManager();
-    if (dist && dist->CanCreateDesktopShortcuts() && shortcut_manager) {
+    const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+    if (dist && dist->CanCreateDesktopShortcuts() && shortcut_manager &&
+        !command_line.HasSwitch(switches::kDisableDesktopShortcuts)) {
       profile_shortcut_manager_.reset(shortcut_manager);
       profile_info_cache_->AddObserver(profile_shortcut_manager_.get());
     }
