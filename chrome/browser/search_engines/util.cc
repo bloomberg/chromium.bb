@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -154,9 +154,9 @@ void MergeEnginesFromPrepopulateData(
     const TemplateURL* template_url = i->second;
     if ((template_url->safe_for_autoreplace()) &&
         (template_url != *default_search_provider)) {
-      std::vector<TemplateURL*>::iterator i = find(template_urls->begin(),
-                                                   template_urls->end(),
-                                                   template_url);
+      std::vector<TemplateURL*>::iterator i = std::find(template_urls->begin(),
+                                                        template_urls->end(),
+                                                        template_url);
       DCHECK(i != template_urls->end());
       template_urls->erase(i);
        if (service)

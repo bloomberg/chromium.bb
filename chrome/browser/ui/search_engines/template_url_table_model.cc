@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -365,7 +365,7 @@ void TemplateURLTableModel::NotifyChanged(int index) {
 
 void TemplateURLTableModel::FaviconAvailable(ModelEntry* entry) {
   std::vector<ModelEntry*>::iterator i =
-      find(entries_.begin(), entries_.end(), entry);
+      std::find(entries_.begin(), entries_.end(), entry);
   DCHECK(i != entries_.end());
   NotifyChanged(static_cast<int>(i - entries_.begin()));
 }

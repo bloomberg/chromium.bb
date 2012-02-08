@@ -4,6 +4,8 @@
 
 #include "chrome/browser/diagnostics/diagnostics_main.h"
 
+#include "build/build_config.h"
+
 #if defined(OS_POSIX)
 #include <stdio.h>
 #include <unistd.h>

@@ -275,7 +275,7 @@ void VisitSegmentDatabase::QuerySegmentUsage(
   }
 
   // Limit to the top kResultCount results.
-  sort(results->begin(), results->end(), PageUsageData::Predicate);
+  std::sort(results->begin(), results->end(), PageUsageData::Predicate);
   if (static_cast<int>(results->size()) > max_result_count) {
     STLDeleteContainerPointers(results->begin() + max_result_count,
                                results->end());

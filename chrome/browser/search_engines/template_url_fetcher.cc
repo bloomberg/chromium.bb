@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -321,8 +321,8 @@ void TemplateURLFetcher::ScheduleDownload(
 }
 
 void TemplateURLFetcher::RequestCompleted(RequestDelegate* request) {
-  DCHECK(find(requests_->begin(), requests_->end(), request) !=
+  DCHECK(std::find(requests_->begin(), requests_->end(), request) !=
          requests_->end());
-  requests_->erase(find(requests_->begin(), requests_->end(), request));
+  requests_->erase(std::find(requests_->begin(), requests_->end(), request));
   delete request;
 }
