@@ -123,10 +123,15 @@ if test x$enable_clients == xyes; then
 			     [have_poppler=yes], [have_poppler=no])
   PKG_CHECK_MODULES(CAIRO_EGL, [cairo-egl >= 1.11.3 $cairo_modules],
 		    [have_cairo_egl=yes], [have_cairo_egl=no])
-
   AS_IF([test "x$have_cairo_egl" = "xyes"],
         [AC_DEFINE([HAVE_CAIRO_EGL], [1], [Have cairo-egl])],
         [AC_MSG_WARN([Cairo-EGL not found - clients will use cairo image])])
+
+  PKG_CHECK_MODULES(WEBP, [libwebp], [have_webp=yes], [have_webp=no])
+  AS_IF([test "x$have_webp" = "xyes"],
+        [AC_DEFINE([HAVE_WEBP], [1], [Have webp])])
+  CLIENT_LIBS="$CLIENT_LIBS $WEBP_LIBS"
+  CLIENT_CFLAGS="$CLIENT_CFLAGS $WEBP_CFLAGS"
 
   AC_CHECK_LIB([jpeg], [jpeg_CreateDecompress], have_jpeglib=yes)
   if test x$have_jpeglib == xyes; then

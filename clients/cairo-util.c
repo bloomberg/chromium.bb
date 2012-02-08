@@ -21,6 +21,8 @@
  * OF THIS SOFTWARE.
  */
 
+#include "../config.h"
+
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
@@ -31,6 +33,10 @@
 
 #include <jpeglib.h>
 #include <png.h>
+
+#ifdef HAVE_WEBP
+#include <webp/decode.h>
+#endif
 
 #define ARRAY_LENGTH(a) (sizeof (a) / sizeof (a)[0])
 
@@ -514,14 +520,98 @@ load_png(FILE *fp)
 						    width, height, stride);
 }
 
+#ifdef HAVE_WEBP
+
+static cairo_surface_t *
+load_webp(FILE *fp)
+{
+	WebPDecoderConfig config;
+	uint8_t buffer[16 * 1024];
+	int len;
+	VP8StatusCode status;
+	WebPIDecoder *idec;
+
+	if (!WebPInitDecoderConfig(&config)) {
+		fprintf(stderr, "Library version mismatch!\n");
+		return NULL;
+	}
+
+	/* webp decoding api doesn't seem to specify a min size that's
+	   usable for GetFeatures, but 256 works... */
+	len = fread(buffer, 1, 256, fp);
+	status = WebPGetFeatures(buffer, len, &config.input);
+	if (status != VP8_STATUS_OK) {
+		fprintf(stderr, "failed to parse webp header\n");
+		WebPFreeDecBuffer(&config.output);
+		return NULL;
+	}
+
+	config.output.colorspace = MODE_BGRA;
+	config.output.u.RGBA.stride =
+		cairo_format_stride_for_width(CAIRO_FORMAT_RGB24,
+					      config.input.width);
+	config.output.u.RGBA.size =
+		config.output.u.RGBA.stride * config.input.height;
+	config.output.u.RGBA.rgba =
+		malloc(config.output.u.RGBA.stride * config.input.height);
+	config.output.is_external_memory = 1;
+	if (!config.output.u.RGBA.rgba) {
+		WebPFreeDecBuffer(&config.output);
+		return NULL;
+	}
+
+	rewind(fp);
+	idec = WebPINewDecoder(&config.output);
+	if (!idec) {
+		WebPFreeDecBuffer(&config.output);
+		return NULL;
+	}
+
+	while (!feof(fp)) {
+		len = fread(buffer, 1, sizeof buffer, fp);
+		status = WebPIAppend(idec, buffer, len);
+		if (status != VP8_STATUS_OK) {
+			fprintf(stderr, "webp decode status %d\n", status);
+			WebPIDelete(idec);
+			WebPFreeDecBuffer(&config.output);
+			return NULL;
+		}
+	}
+
+	WebPIDelete(idec);
+	WebPFreeDecBuffer(&config.output);
+
+	return cairo_image_surface_create_for_data (config.output.u.RGBA.rgba,
+						    CAIRO_FORMAT_RGB24,
+						    config.input.width,
+						    config.input.height,
+						    config.output.u.RGBA.stride);
+}
+
+#endif
+
+
+struct image_loader {
+	char header[4];
+	int header_size;
+	cairo_surface_t *(*load)(FILE *fp);
+};
+
+static const struct image_loader loaders[] = {
+	{ { 0x89, 'P', 'N', 'G' }, 4, load_png },
+	{ { 0xff, 0xd8 }, 2, load_jpeg },
+#ifdef HAVE_WEBP
+	{ { 'R', 'I', 'F', 'F' }, 4, load_webp }
+#endif
+};
+
 cairo_surface_t *
 load_image(const char *filename)
 {
 	cairo_surface_t *surface;
-	static const unsigned char png_header[] = { 0x89, 'P', 'N', 'G' };
-	static const unsigned char jpeg_header[] = { 0xff, 0xd8 };
 	unsigned char header[4];
 	FILE *fp;
+	int i;
 
 	fp = fopen(filename, "rb");
 	if (fp == NULL)
@@ -529,18 +619,22 @@ load_image(const char *filename)
 
 	fread(header, sizeof header, 1, fp);
 	rewind(fp);
-	if (memcmp(header, png_header, sizeof png_header) == 0)
-		surface = load_png(fp);
-	else if (memcmp(header, jpeg_header, sizeof jpeg_header) == 0)
-		surface = load_jpeg(fp);
-	else {
+	for (i = 0; i < ARRAY_LENGTH(loaders); i++) {
+		if (memcmp(header, loaders[i].header,
+			   loaders[i].header_size) == 0) {
+			surface = loaders[i].load(fp);
+			break;
+		}
+	}
+
+	fclose(fp);
+
+	if (i == ARRAY_LENGTH(loaders)) {
 		fprintf(stderr, "unrecognized file header for %s: "
 			"0x%02x 0x%02x 0x%02x 0x%02x\n",
 			filename, header[0], header[1], header[2], header[3]);
 		surface = NULL;
 	}
-
-	fclose(fp);
 
 	return surface;
 }
