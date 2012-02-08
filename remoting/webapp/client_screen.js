@@ -436,7 +436,7 @@ remoting.connectMe2Me = function(hostId, retryIfOffline) {
 
   if (!remoting.isPinAuthSupported()) {
     // Skip PIN prompt if it is not supported.
-    connectMe2MeWithPin();
+    remoting.connectMe2MeWithPin();
   } else {
     remoting.setMode(remoting.AppMode.CLIENT_PIN_PROMPT);
   }
