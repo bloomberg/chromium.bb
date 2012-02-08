@@ -88,7 +88,7 @@ class GestureSequence {
                  const GesturePoint& point,
                  Gestures* gestures);
   bool ScrollEnd(const TouchEvent& event,
-                 GesturePoint& point,
+                 const GesturePoint& point,
                  Gestures* gestures);
   bool PinchStart(const TouchEvent& event,
                   const GesturePoint& point,
