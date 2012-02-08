@@ -41,6 +41,7 @@ using content::BrowserThread;
 using content::ChildProcessHost;
 
 bool GpuProcessHost::gpu_enabled_ = true;
+bool GpuProcessHost::hardware_gpu_enabled_ = true;
 
 namespace {
 
@@ -59,6 +60,7 @@ static base::LazyInstance<IDMap<GpuProcessHost> > g_hosts_by_id =
 
 // Number of times the gpu process has crashed in the current browser session.
 static int g_gpu_crash_count = 0;
+static int g_gpu_software_crash_count = 0;
 
 // Maximum number of times the gpu process is allowed to crash in a session.
 // Once this limit is reached, any request to launch the gpu process will fail.
@@ -254,7 +256,8 @@ GpuProcessHost::GpuProcessHost(int host_id, bool sandboxed)
       gpu_process_(base::kNullProcessHandle),
       in_process_(false),
       software_rendering_(false),
-      sandboxed_(sandboxed) {
+      sandboxed_(sandboxed),
+      process_launched_(false) {
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess) ||
       CommandLine::ForCurrentProcess()->HasSwitch(switches::kInProcessGPU))
     in_process_ = true;
@@ -283,6 +286,25 @@ GpuProcessHost::~GpuProcessHost() {
   DCHECK(CalledOnValidThread());
 
   SendOutstandingReplies();
+  // Ending only acts as a failure if the GPU process was actually started and
+  // was intended for actual rendering (and not just checking caps or other
+  // options).
+  if (process_launched_ && sandboxed_) {
+    if (software_rendering_) {
+      if (++g_gpu_software_crash_count >= kGpuMaxCrashCount) {
+        // The software renderer is too unstable to use. Disable it for current
+        // session.
+        gpu_enabled_ = false;
+      }
+    } else {
+      if (++g_gpu_crash_count >= kGpuMaxCrashCount) {
+        // The gpu process is too unstable to use. Disable it for current
+        // session.
+        hardware_gpu_enabled_ = false;
+        GpuDataManager::GetInstance()->BlacklistCard();
+      }
+    }
+  }
   UMA_HISTOGRAM_ENUMERATION("GPU.GPUProcessLifetimeEvents",
                             DIED_FIRST_TIME + g_gpu_crash_count,
                             GPU_PROCESS_LIFETIME_EVENT_MAX);
@@ -513,10 +535,6 @@ void GpuProcessHost::OnProcessLaunched() {
 
 void GpuProcessHost::OnProcessCrashed(int exit_code) {
   SendOutstandingReplies();
-  if (++g_gpu_crash_count >= kGpuMaxCrashCount) {
-    // The gpu process is too unstable to use. Disable it for current session.
-    gpu_enabled_ = false;
-  }
 }
 
 bool GpuProcessHost::software_rendering() {
@@ -533,7 +551,8 @@ void GpuProcessHost::ForceShutdown() {
 }
 
 bool GpuProcessHost::LaunchGpuProcess(const std::string& channel_id) {
-  if (!gpu_enabled_) {
+  if (!(gpu_enabled_ && GpuDataManager::GetInstance()->software_rendering()) &&
+      !hardware_gpu_enabled_) {
     SendOutstandingReplies();
     return false;
   }
@@ -612,6 +631,7 @@ bool GpuProcessHost::LaunchGpuProcess(const std::string& channel_id) {
       base::environment_vector(),
 #endif
       cmd_line);
+  process_launched_ = true;
 
   UMA_HISTOGRAM_ENUMERATION("GPU.GPUProcessLifetimeEvents",
                             LAUNCHED, GPU_PROCESS_LIFETIME_EVENT_MAX);

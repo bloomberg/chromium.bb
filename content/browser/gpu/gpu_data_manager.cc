@@ -208,7 +208,8 @@ GpuDataManager::GpuDataManager()
     : complete_gpu_info_already_requested_(false),
       complete_gpu_info_available_(false),
       observer_list_(new GpuDataManagerObserverList),
-      software_rendering_(false) {
+      software_rendering_(false),
+      card_blacklisted_(false) {
   Initialize();
 }
 
@@ -598,10 +599,10 @@ void GpuDataManager::UpdateGpuFeatureFlags() {
 
     // Force disable using the GPU for these features, even if they would
     // otherwise be allowed.
-    if (user_flags_.blacklist_accelerated_compositing())
+    if (card_blacklisted_ || user_flags_.blacklist_accelerated_compositing())
       flags.set_flags(flags.flags() |
           GpuFeatureFlags::kGpuFeatureAcceleratedCompositing);
-    if (user_flags_.blacklist_webgl())
+    if (card_blacklisted_ || user_flags_.blacklist_webgl())
       flags.set_flags(flags.flags() | GpuFeatureFlags::kGpuFeatureWebgl);
     gpu_feature_flags_ = flags;
   }
@@ -703,6 +704,22 @@ void GpuDataManager::EnableSoftwareRenderingIfNecessary() {
 
 bool GpuDataManager::software_rendering() {
   return software_rendering_;
+}
+
+void GpuDataManager::BlacklistCard() {
+  card_blacklisted_ = true;
+
+  {
+    base::AutoLock auto_lock(gpu_info_lock_);
+    GpuFeatureFlags flags = gpu_feature_flags_;
+    flags.set_flags(flags.flags() |
+          GpuFeatureFlags::kGpuFeatureAcceleratedCompositing |
+          GpuFeatureFlags::kGpuFeatureWebgl);
+    gpu_feature_flags_ = flags;
+  }
+
+  EnableSoftwareRenderingIfNecessary();
+  NotifyGpuInfoUpdate();
 }
 
 GpuBlacklist* GpuDataManager::GetGpuBlacklist() const {

@@ -156,10 +156,15 @@ class GpuProcessHost : public content::BrowserChildProcessHostDelegate,
 
   scoped_ptr<GpuMainThread> in_process_gpu_thread_;
 
+  // Whether we actually launched a GPU process.
+  bool process_launched_;
+
   // Master switch for enabling/disabling GPU acceleration for the current
   // browser session. It does not change the acceleration settings for
   // existing tabs, just the future ones.
   static bool gpu_enabled_;
+
+  static bool hardware_gpu_enabled_;
 
   scoped_ptr<BrowserChildProcessHostImpl> process_;
 

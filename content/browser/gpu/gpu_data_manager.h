@@ -134,6 +134,10 @@ class CONTENT_EXPORT GpuDataManager {
   // Register a path to the SwiftShader software renderer.
   void RegisterSwiftShaderPath(FilePath path);
 
+  // Force the current card to be blacklisted (usually due to GPU process
+  // crashes).
+  void BlacklistCard();
+
  private:
   class UserFlags {
    public:
@@ -257,6 +261,9 @@ class CONTENT_EXPORT GpuDataManager {
   bool software_rendering_;
 
   FilePath swiftshader_path_;
+
+  // Current card force-blacklisted due to GPU crashes.
+  bool card_blacklisted_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuDataManager);
 };
