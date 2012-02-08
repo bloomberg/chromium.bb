@@ -96,6 +96,8 @@ bool IsTrustedForSilentInstall(const std::string& id) {
       id == "cpembckmhnjipbgbnfiocbgnkpjdokdd" ||  // +1 Extension - dev
       id == "boemmnepglcoinjcdlfcpcbmhiecichi" ||  // Notifications
       id == "flibmgiapaohcbondaoopaalfejliklp" ||  // Notifications - dev
+      id == "nckgahadagoaajjgafhacjanaoiihapd" ||  // Talk
+      id == "eggnbpckecmjlblplehfpjjdhhidfdoj" ||  // Talk Beta
       id == "dlppkpafhbajpcmmoheippocdidnckmm" ||  // Remaining are placeholders
       id == "hmglfmpefabcafaimbpldpambdfomanl" ||
       id == "idfijlieiecpfcjckpkliefekpokhhnd" ||
