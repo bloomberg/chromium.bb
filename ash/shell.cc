@@ -70,11 +70,6 @@ const int kCompactWindowModeWidthThreshold = 1366;
 
 // Returns suggested window mode for a given monitor size.
 Shell::WindowMode SuggestedWindowMode(const gfx::Size& monitor_size) {
-  // Developers often run the Aura shell in small windows on their desktop.
-  // Prefer overlapping mode for them.
-  if (!aura::RootWindow::use_fullscreen_host_window())
-    return Shell::MODE_OVERLAPPING;
-
   // If the screen is narrow we prefer a single compact window display.
   // We explicitly don't care about height, since users don't generally stack
   // browser windows vertically.
@@ -374,6 +369,11 @@ Shell::WindowMode Shell::ComputeWindowMode(const gfx::Size& monitor_size,
       return MODE_OVERLAPPING;
   }
 
+  // Developers often run the Aura shell in small windows on their desktop.
+  // Prefer overlapping mode for them.
+  if (!aura::RootWindow::use_fullscreen_host_window())
+    return Shell::MODE_OVERLAPPING;
+
   // Without an explicit command line flag, guess based on the monitor size.
   return SuggestedWindowMode(monitor_size);
 }
@@ -429,6 +429,11 @@ void Shell::SetWindowModeForMonitorSize(const gfx::Size& monitor_size) {
   // Don't allow changes if we're locked in compact mode.
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kAuraForceCompactWindowMode))
+    return;
+
+  // Developers often run the Aura shell in small windows on their desktop.
+  // Don't change modes if they resize the host window.
+  if (!aura::RootWindow::use_fullscreen_host_window())
     return;
 
   // If we're running on a device, a resolution change means the user plugged in
