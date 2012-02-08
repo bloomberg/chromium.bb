@@ -72,12 +72,16 @@ void NaClUntrustedThreadsSuspend(struct NaClApp *nap) {
        * able to return a snapshot of the register state once the
        * thread has actually suspended.
        *
+       * The set of registers we request via ContextFlags is
+       * unimportant as long as it is non-empty.
+       *
        * TODO(mseaborn): A possible refinement here would be to do
        * SuspendThread() and GetThreadContext() in separate loops
        * across the threads.  This might be faster, since we would not
        * be waiting for each thread to suspend one by one.  It would
        * take advantage of SuspendThread()'s asynchronous nature.
        */
+      context.ContextFlags = CONTEXT_CONTROL;
       if (!GetThreadContext(natp->thread.tid, &context)) {
         NaClLog(LOG_FATAL, "NaClUntrustedThreadsSuspend: "
                 "GetThreadContext() failed\n");
