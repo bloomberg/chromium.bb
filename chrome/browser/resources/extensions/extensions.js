@@ -31,6 +31,7 @@ cr.define('extensions', function() {
      */
     initialize: function() {
       cr.enablePlatformSpecificCSSRules();
+      uber.onContentFrameLoaded();
 
       // Set the title.
       var title = localStrings.getString('extensionSettings');
@@ -62,7 +63,6 @@ cr.define('extensions', function() {
       this.pageHeader_ = $('page-header');
 
       document.addEventListener('scroll', this.handleScroll_.bind(this));
-      window.addEventListener('message', this.handleWindowMessage_.bind(this));
 
       var packExtensionOverlay = extensions.PackExtensionOverlay.getInstance();
       packExtensionOverlay.initializePage();
@@ -161,26 +161,6 @@ cr.define('extensions', function() {
       var offset = document.body.scrollLeft * -1;
       this.pageHeader_.style.webkitTransform = 'translateX(' + offset + 'px)';
       uber.invokeMethodOnParent('adjustToScroll', document.body.scrollLeft);
-    },
-
-    /**
-     * Handles postMessage from chrome://chrome.
-     * @param {Event} e The post data.
-     */
-    handleWindowMessage_: function(e) {
-      if (e.data.method === 'frameSelected')
-        this.handleFrameSelected_();
-      else
-        console.error('Received unexpected message', e.data);
-    },
-
-    /**
-     * This is called when a user selects this frame via the navigation bar
-     * frame (and is triggered via postMessage() from the uber page).
-     * @private
-     */
-    handleFrameSelected_: function() {
-      document.body.scrollLeft = 0;
     },
   };
 

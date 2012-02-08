@@ -23,6 +23,8 @@ cr.define('uber_frame', function() {
 
     window.addEventListener('message', handleWindowMessage);
     uber.invokeMethodOnParent('navigationControlsLoaded');
+
+    document.documentElement.addEventListener('mousewheel', onMouseWheel);
   }
 
   /**
@@ -69,6 +71,15 @@ cr.define('uber_frame', function() {
       if (lastSelectedNavItem)
         lastSelectedNavItem.classList.remove('selected');
     }
+  }
+
+  /**
+   * Handles mouse wheels on the top level element. Forwards them to uber.js.
+   * @param {Event} e The mouse wheel event.
+   */
+  function onMouseWheel(e) {
+    uber.invokeMethodOnParent('mouseWheel',
+        {deltaX: e.wheelDeltaX, deltaY: e.wheelDeltaY});
   }
 
   /**

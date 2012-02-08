@@ -620,12 +620,12 @@ cr.define('options', function() {
   OptionsPage.initialize = function() {
     chrome.send('coreOptionsInitialize');
     this.initialized_ = true;
+    uber.onContentFrameLoaded();
 
     this.fixedHeaders_ = document.querySelectorAll('header');
 
     document.addEventListener('scroll', this.handleScroll_.bind(this));
     window.addEventListener('resize', this.handleResize_.bind(this));
-    window.addEventListener('message', this.handleWindowMessage_.bind(this));
 
     if (!document.documentElement.classList.contains('hide-menu')) {
       // Close subpages if the user clicks on the html body. Listen in the
@@ -789,27 +789,6 @@ cr.define('options', function() {
       else
         subpageContainers[i].style.height = viewportHeight + 'px';
     }
-  };
-
-  /**
-   * Handles postMessage from chrome://chrome.
-   * @param {Event} e The post data.
-   * @private
-   */
-  OptionsPage.handleWindowMessage_ = function(e) {
-    if (e.data.method === 'frameSelected')
-      this.handleFrameSelected_();
-    else
-      console.error('Received unexpected message', e.data);
-  };
-
-  /**
-   * We receive this event via postMessage() when this page is selected via the
-   * navigation.
-   * @private
-   */
-  OptionsPage.handleFrameSelected_ = function() {
-    document.body.scrollLeft = 0;
   };
 
   /**

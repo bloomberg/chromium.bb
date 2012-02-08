@@ -125,6 +125,8 @@ cr.define('uber', function() {
       onNavigationControlsLoaded();
     else if (e.data.method === 'adjustToScroll')
       adjustToScroll(e.data.params);
+    else if (e.data.method === 'mouseWheel')
+      forwardMouseWheel(e.data.params);
     else
       console.error('Received unexpected message',  e.data);
   }
@@ -246,6 +248,15 @@ cr.define('uber', function() {
       disableScrollEasing();
     navFrame.style.webkitTransform =
         'translateX(' + (scrollOffset * -1) + 'px)';
+  }
+
+  /**
+   * Forward scroll wheel events to subpages.
+   * @param {Object} params Relevant parameters of wheel event.
+   */
+  function forwardMouseWheel(params) {
+    var iframe = getSelectedIframe().querySelector('iframe');
+    uber.invokeMethodOnWindow(iframe.contentWindow, 'mouseWheel', params);
   }
 
   return {

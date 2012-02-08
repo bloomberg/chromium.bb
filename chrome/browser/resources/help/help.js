@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+<include src="../uber/uber_utils.js">
+
 cr.define('help_page', function() {
   var localStrings = new LocalStrings();
 
@@ -19,6 +21,8 @@ cr.define('help_page', function() {
      * Perform initial setup.
      */
     initialize: function() {
+      uber.onContentFrameLoaded();
+
       $('product-license').innerHTML = localStrings.getString('productLicense');
 
       var productTOS = $('product-tos');
