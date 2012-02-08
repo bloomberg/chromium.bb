@@ -417,7 +417,7 @@ remoting.isPinAuthSupported = function () {
   document.body.appendChild(plugin);
   var version = plugin.apiVersion;
   document.body.removeChild(plugin);
-  return version && version >= 4;
+  return version >= 4;
 };
 
 /**
