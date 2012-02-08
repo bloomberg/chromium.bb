@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -179,16 +179,7 @@ void InitAndroidTestStub() {
   MessageLoop::InitMessagePumpForUIFactory(&CreateMessagePumpForUIStub);
 }
 
-// TODO(michaelbai): The below DetachFromVM was added because we excluded the
-// jni_android.{h|cc} which require JNI to compile. Remove them when those 2
-// files added.
 namespace base {
-
-namespace android {
-
-void DetachFromVM() {}
-
-}  // namespace android
 
 // TODO(michaelbai): The below MessagePumpForUI were added because we excluded
 // message_pump_android.{h|cc} which require JNI to compile. Remove them when
