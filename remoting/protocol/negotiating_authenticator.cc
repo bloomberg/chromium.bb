@@ -72,7 +72,8 @@ scoped_ptr<Authenticator> NegotiatingAuthenticator::CreateForHost(
 
 NegotiatingAuthenticator::NegotiatingAuthenticator(
     Authenticator::State initial_state)
-    : current_method_(AuthenticationMethod::Invalid()),
+    : certificate_sent_(false),
+      current_method_(AuthenticationMethod::Invalid()),
       state_(initial_state),
       rejection_reason_(INVALID_CREDENTIALS) {
 }

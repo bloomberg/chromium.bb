@@ -17,6 +17,7 @@ using content::NavigationEntry;
 TabNavigation::TabNavigation()
     : transition_(content::PAGE_TRANSITION_TYPED),
       type_mask_(0),
+      post_id_(-1),
       index_(-1) {
 }
 

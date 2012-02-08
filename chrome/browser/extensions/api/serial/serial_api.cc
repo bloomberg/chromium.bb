@@ -50,7 +50,7 @@ void SerialOpenFunction::RespondOnUIThread() {
   SendResponse(true);
 }
 
-SerialCloseFunction::SerialCloseFunction() {
+SerialCloseFunction::SerialCloseFunction() : connection_id_(0) {
 }
 
 SerialCloseFunction::~SerialCloseFunction() {

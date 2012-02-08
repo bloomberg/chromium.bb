@@ -1,16 +1,18 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "ppapi/native_client/src/shared/ppapi_proxy/ppp_instance_combined.h"
 
 #include <stdlib.h>
+#include <string.h>
 
 namespace ppapi_proxy {
 
 PPP_Instance_Combined::PPP_Instance_Combined()
     : initialized_(false),
       did_change_view_1_0_(NULL) {
+  memset(&instance_1_1_, 0, sizeof(instance_1_1_));
 }
 
 void PPP_Instance_Combined::Init1_0(const PPP_Instance_1_0* instance_if) {

@@ -31,6 +31,7 @@ JingleSessionManager::JingleSessionManager(
     base::MessageLoopProxy* message_loop)
     : message_loop_(message_loop),
       signal_strategy_(NULL),
+      listener_(NULL),
       allow_nat_traversal_(false),
       ready_(false),
       http_port_allocator_(NULL),
