@@ -13,6 +13,7 @@
       'target_name': 'ash',
       'type': '<(component)',
       'dependencies': [
+        'ash_strings.gyp:ash_strings',
         '../base/base.gyp:base',
         '../base/base.gyp:base_i18n',
         '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',

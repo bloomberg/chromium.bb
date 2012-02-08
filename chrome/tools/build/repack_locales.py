@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -71,6 +71,10 @@ def calc_inputs(locale):
   #e.g. '<(SHARED_INTERMEDIATE_DIR)/ui/ui_strings_da.pak',
   inputs.append(os.path.join(SHARE_INT_DIR, 'ui', 'ui_strings',
                 'ui_strings_%s.pak' % locale))
+
+  #e.g. '<(SHARED_INTERMEDIATE_DIR)/ash_strings/ash_strings_da.pak',
+  inputs.append(os.path.join(SHARE_INT_DIR, 'ash_strings',
+                'ash_strings_%s.pak' % locale))
 
   #e.g. '<(SHARED_INTERMEDIATE_DIR)/ui/app_locale_settings_da.pak',
   inputs.append(os.path.join(SHARE_INT_DIR, 'ui', 'app_locale_settings',

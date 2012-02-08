@@ -44,6 +44,7 @@ class TabbedLauncherButton : public views::ImageButton {
   virtual void OnMouseEntered(const views::MouseEvent& event) OVERRIDE;
   virtual void OnMouseMoved(const views::MouseEvent& event) OVERRIDE;
   virtual void OnMouseExited(const views::MouseEvent& event) OVERRIDE;
+  virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
 
  private:
   // Used as the delegate for |animation_|. TabbedLauncherButton doesn't

@@ -178,4 +178,7 @@
   "content/shell/shell_resources.grd": {
     "includes": [25000],
   },
+  "ash/ash_strings.grd": {
+    "messages": [25500],
+  },
 }

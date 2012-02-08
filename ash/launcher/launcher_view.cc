@@ -13,10 +13,12 @@
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
 #include "base/utf_string_conversions.h"
+#include "grit/ash_strings.h"
 #include "grit/ui_resources.h"
 #include "ui/aura/window.h"
 #include "ui/base/animation/animation.h"
 #include "ui/base/animation/throb_animation.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/compositor/layer.h"
@@ -641,6 +643,29 @@ void LauncherView::ButtonPressed(views::Button* sender,
     default:
       NOTREACHED();
   }
+}
+
+string16 LauncherView::GetAccessibleName(views::View* view) {
+  ShellDelegate* delegate = Shell::GetInstance()->delegate();
+  if (!delegate)
+    return string16();
+  int view_index = view_model_->GetIndexOfView(view);
+  // May be -1 while in the process of animating closed.
+  if (view_index == -1)
+    return string16();
+
+  switch (model_->items()[view_index].type) {
+    case TYPE_TABBED:
+    case TYPE_APP:
+      return delegate->GetLauncherItemTitle(model_->items()[view_index]);
+
+    case TYPE_APP_LIST:
+      return l10n_util::GetStringUTF16(IDS_AURA_APP_LIST_TITLE);
+
+    case TYPE_BROWSER_SHORTCUT:
+      return l10n_util::GetStringUTF16(IDS_AURA_CYCLER_TITLE);
+  }
+  return string16();
 }
 
 }  // namespace internal

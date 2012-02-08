@@ -6,6 +6,8 @@
 #define ASH_LAUNCHER_LAUNCHER_BUTTON_HOST_H_
 #pragma once
 
+#include "base/string16.h"
+
 namespace views {
 class MouseEvent;
 class View;
@@ -32,6 +34,9 @@ class LauncherButtonHost {
 
   // Invoked when the mouse exits the item.
   virtual void MouseExitedButton(views::View* view) = 0;
+
+  // Invoked to get the accessible name of the item.
+  virtual string16 GetAccessibleName(views::View* view) = 0;
 
  protected:
   virtual ~LauncherButtonHost() {}

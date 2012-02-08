@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -126,11 +126,13 @@ def main():
 
   # If no GRD files were given, default them:
   if len(grd_files) == 0:
+    ash_base_dir = os.path.join(src_dir, 'ash')
     chrome_dir = os.path.join(src_dir, 'chrome')
     chrome_app_dir = os.path.join(chrome_dir, 'app')
     chrome_app_res_dir = os.path.join(chrome_app_dir, 'resources')
     ui_base_dir = os.path.join(src_dir, 'ui', 'base', 'strings')
     grd_files = [
+      os.path.join(ash_base_dir, 'ash_strings.grd'),
       os.path.join(chrome_app_dir, 'chromium_strings.grd'),
       os.path.join(chrome_app_dir, 'generated_resources.grd'),
       os.path.join(chrome_app_dir, 'google_chrome_strings.grd'),
