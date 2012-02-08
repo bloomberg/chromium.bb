@@ -45,6 +45,7 @@
 #include "content/public/browser/user_metrics.h"
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/content_constants.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/common/result_codes.h"
 #include "content/public/common/url_constants.h"
 #include "net/base/net_util.h"
@@ -208,6 +209,10 @@ bool RenderViewHost::CreateRenderView(const string16& frame_name,
   Send(new ViewMsg_AllowBindings(routing_id(), enabled_bindings_));
   // Let our delegate know that we created a RenderView.
   delegate_->RenderViewCreated(this);
+
+  // Invert the color scheme if a flag was set.
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kInvertWebContent))
+    Send(new ViewMsg_InvertWebContent(routing_id(), true));
 
   FOR_EACH_OBSERVER(
       content::RenderViewHostObserver, observers_, RenderViewHostInitialized());
