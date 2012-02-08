@@ -50,6 +50,9 @@ enum EventType {
   ET_GESTURE_TAP,
   ET_GESTURE_TAP_DOWN,
   ET_GESTURE_DOUBLE_TAP,
+  ET_GESTURE_PINCH_BEGIN,
+  ET_GESTURE_PINCH_END,
+  ET_GESTURE_PINCH_UPDATE,
 };
 
 // Event flags currently supported

@@ -321,6 +321,10 @@ WebKit::WebGestureEvent MakeWebGestureEventFromAuraEvent(
     case ui::ET_GESTURE_SCROLL_END:
       gesture_event.type = WebKit::WebInputEvent::GestureScrollEnd;
       break;
+    case ui::ET_GESTURE_PINCH_BEGIN:
+    case ui::ET_GESTURE_PINCH_UPDATE:
+    case ui::ET_GESTURE_PINCH_END:
+      break;
     default:
       NOTREACHED() << "Unknown gesture type: " << event->type();
   }

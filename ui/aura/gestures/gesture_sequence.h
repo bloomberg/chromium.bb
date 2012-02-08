@@ -17,17 +17,6 @@ class GestureEvent;
 // A GestureSequence recognizes gestures from touch sequences.
 class GestureSequence {
  public:
-  // ui::EventType is mapped to TouchState so it can fit into 3 bits of
-  // Signature.
-  enum TouchState {
-    TS_RELEASED,
-    TS_PRESSED,
-    TS_MOVED,
-    TS_STATIONARY,
-    TS_CANCELLED,
-    TS_UNKNOWN,
-  };
-
   GestureSequence();
   virtual ~GestureSequence();
 
@@ -41,48 +30,6 @@ class GestureSequence {
                                                 ui::TouchStatus status);
 
  private:
-  // Gesture signature types for different values of combination (GestureState,
-  // touch_id, ui::EventType, touch_handled), see GestureSequence::Signature()
-  // for more info.
-  //
-  // Note: New addition of types should be placed as per their Signature value.
-  enum GestureSignatureType {
-    // For input combination (GS_NO_GESTURE, 0, ui::ET_TOUCH_PRESSED, false).
-    GST_NO_GESTURE_FIRST_PRESSED = 0x00000003,
-
-    // (GS_PENDING_SYNTHETIC_CLICK, 0, ui::ET_TOUCH_RELEASED, false).
-    GST_PENDING_SYNTHETIC_CLICK_FIRST_RELEASED = 0x00020001,
-
-    // (GS_PENDING_SYNTHETIC_CLICK, 0, ui::ET_TOUCH_MOVED, false).
-    GST_PENDING_SYNTHETIC_CLICK_FIRST_MOVED = 0x00020005,
-
-    // (GS_PENDING_SYNTHETIC_CLICK, 0, ui::ET_TOUCH_STATIONARY, false).
-    GST_PENDING_SYNTHETIC_CLICK_FIRST_STATIONARY = 0x00020007,
-
-    // (GS_PENDING_SYNTHETIC_CLICK, 0, ui::ET_TOUCH_CANCELLED, false).
-    GST_PENDING_SYNTHETIC_CLICK_FIRST_CANCELLED = 0x00020009,
-
-    // (GS_SCROLL, 0, ui::ET_TOUCH_RELEASED, false).
-    GST_SCROLL_FIRST_RELEASED = 0x00040001,
-
-    // (GS_SCROLL, 0, ui::ET_TOUCH_MOVED, false).
-    GST_SCROLL_FIRST_MOVED = 0x00040005,
-
-    // (GS_SCROLL, 0, ui::ET_TOUCH_CANCELLED, false).
-    GST_SCROLL_FIRST_CANCELLED = 0x00040009,
-  };
-
-  // Builds a signature. Signatures are assembled by joining together
-  // multiple bits.
-  // 1 LSB bit so that the computed signature is always greater than 0
-  // 3 bits for the |type|.
-  // 1 bit for |touch_handled|
-  // 12 bits for |touch_id|
-  // 15 bits for the |gesture_state|.
-  static unsigned int Signature(GestureState state,
-                                unsigned int touch_id, ui::EventType type,
-                                bool touch_handled);
-
   void Reset();
 
   GesturePoint& GesturePointForEvent(const TouchEvent& event);
@@ -95,11 +42,30 @@ class GestureSequence {
   void AppendDoubleClickGestureEvent(const GesturePoint& point,
                                      Gestures* gestures);
   // Scroll gestures.
-  void AppendScrollGestureBegin(const GesturePoint& point, Gestures* gestures);
+  void AppendScrollGestureBegin(const GesturePoint& point,
+                                const gfx::Point& location,
+                                Gestures* gestures);
   void AppendScrollGestureEnd(const GesturePoint& point,
+                              const gfx::Point& location,
                               Gestures* gestures,
-                              float x_velocity, float y_velocity);
-  void AppendScrollGestureUpdate(const GesturePoint& point, Gestures* gestures);
+                              float x_velocity,
+                              float y_velocity);
+  void AppendScrollGestureUpdate(const GesturePoint& point,
+                                 const gfx::Point& location,
+                                 Gestures* gestures);
+
+  // Pinch gestures.
+  void AppendPinchGestureBegin(const GesturePoint& p1,
+                               const GesturePoint& p2,
+                               Gestures* gestures);
+  void AppendPinchGestureEnd(const GesturePoint& p1,
+                             const GesturePoint& p2,
+                             float scale,
+                             Gestures* gestures);
+  void AppendPinchGestureUpdate(const GesturePoint& p1,
+                                const GesturePoint& p2,
+                                float scale,
+                                Gestures* gestures);
 
   void set_state(const GestureState state ) { state_ = state; }
 
@@ -124,15 +90,27 @@ class GestureSequence {
   bool ScrollEnd(const TouchEvent& event,
                  const GesturePoint& point,
                  Gestures* gestures);
+  bool PinchStart(const TouchEvent& event,
+                  const GesturePoint& point,
+                  Gestures* gestures);
+  bool PinchUpdate(const TouchEvent& event,
+                   const GesturePoint& point,
+                   Gestures* gestures);
+  bool PinchEnd(const TouchEvent& event,
+                const GesturePoint& point,
+                Gestures* gestures);
 
   // Current state of gesture recognizer.
   GestureState state_;
 
-  // Location of click gesture.
-  gfx::Point last_click_position_;
-
   // ui::EventFlags.
   int flags_;
+
+  // The distance between the two points at PINCH_START.
+  float pinch_distance_start_;
+
+  // This distance is updated after each PINCH_UPDATE.
+  float pinch_distance_current_;
 
   // Maximum points in a single gesture.
   static const int kMaxGesturePoints = 12;

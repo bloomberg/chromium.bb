@@ -4,6 +4,8 @@
 
 #include "ui/aura/gestures/gesture_point.h"
 
+#include <cmath>
+
 #include "ui/aura/event.h"
 #include "ui/base/events.h"
 
@@ -34,8 +36,8 @@ void GesturePoint::Reset() {
   x_velocity_ = y_velocity_ = 0.0;
 }
 
-void GesturePoint::UpdateValues(const TouchEvent& event, GestureState state) {
-  if (state != GS_NO_GESTURE && event.type() == ui::ET_TOUCH_MOVED) {
+void GesturePoint::UpdateValues(const TouchEvent& event) {
+  if (event.type() == ui::ET_TOUCH_MOVED) {
     double interval(event.time_stamp().InSecondsF() - last_touch_time_);
     x_velocity_ = (event.x() - last_touch_position_.x()) / interval;
     y_velocity_ = (event.y() - last_touch_position_.y()) / interval;
@@ -44,7 +46,7 @@ void GesturePoint::UpdateValues(const TouchEvent& event, GestureState state) {
   last_touch_time_ = event.time_stamp().InSecondsF();
   last_touch_position_ = event.location();
 
-  if (state == GS_NO_GESTURE) {
+  if (event.type() == ui::ET_TOUCH_PRESSED) {
     first_touch_time_ = last_touch_time_;
     first_touch_position_ = event.location();
     x_velocity_ = 0.0;
@@ -85,9 +87,15 @@ bool GesturePoint::IsInFlickWindow(const TouchEvent& event) const {
   return IsOverMinFlickSpeed() && event.type() != ui::ET_TOUCH_CANCELLED;
 }
 
-bool GesturePoint::DidScroll(const TouchEvent& event) const {
-  return abs(last_touch_position_.x() - first_touch_position_.x()) > 0 ||
-         abs(last_touch_position_.y() - first_touch_position_.y()) > 0;
+bool GesturePoint::DidScroll(const TouchEvent& event, int dist) const {
+  return abs(last_touch_position_.x() - first_touch_position_.x()) > dist ||
+         abs(last_touch_position_.y() - first_touch_position_.y()) > dist;
+}
+
+float GesturePoint::Distance(const GesturePoint& point) const {
+  float x_diff = point.last_touch_position_.x() - last_touch_position_.x();
+  float y_diff = point.last_touch_position_.y() - last_touch_position_.y();
+  return sqrt(x_diff * x_diff + y_diff * y_diff);
 }
 
 bool GesturePoint::IsInClickTimeWindow() const {

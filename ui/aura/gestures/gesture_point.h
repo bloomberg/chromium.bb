@@ -17,6 +17,7 @@ enum GestureState {
   GS_NO_GESTURE,
   GS_PENDING_SYNTHETIC_CLICK,
   GS_SCROLL,
+  GS_PINCH,
 };
 
 // A GesturePoint represents a single touch-point/finger during a gesture
@@ -37,7 +38,7 @@ class GesturePoint {
   void UpdateForScroll();
 
   // Updates states depending on the event and the gesture-state.
-  void UpdateValues(const TouchEvent& event, GestureState state);
+  void UpdateValues(const TouchEvent& event);
 
   // Responds according to the state of the gesture point (i.e. the point can
   // represent a click or scroll etc.)
@@ -45,7 +46,7 @@ class GesturePoint {
   bool IsInDoubleClickWindow(const TouchEvent& event) const;
   bool IsInScrollWindow(const TouchEvent& event) const;
   bool IsInFlickWindow(const TouchEvent& event) const;
-  bool DidScroll(const TouchEvent& event) const;
+  bool DidScroll(const TouchEvent& event, int distance) const;
 
   const gfx::Point& first_touch_position() const {
     return first_touch_position_;
@@ -64,6 +65,8 @@ class GesturePoint {
 
   float x_velocity() const { return x_velocity_; }
   float y_velocity() const { return y_velocity_; }
+
+  float Distance(const GesturePoint& point) const;
 
  private:
   // Various statistical functions to manipulate gestures.

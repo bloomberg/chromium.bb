@@ -27,6 +27,9 @@ class GestureEventConsumeDelegate : public TestWindowDelegate {
         scroll_begin_(false),
         scroll_update_(false),
         scroll_end_(false),
+        pinch_begin_(false),
+        pinch_update_(false),
+        pinch_end_(false),
         scroll_x_(0),
         scroll_y_(0) {
   }
@@ -40,6 +43,9 @@ class GestureEventConsumeDelegate : public TestWindowDelegate {
     scroll_begin_ = false;
     scroll_update_ = false;
     scroll_end_ = false;
+    pinch_begin_ = false;
+    pinch_update_ = false;
+    pinch_end_ = false;
 
     scroll_x_ = 0;
     scroll_y_ = 0;
@@ -51,6 +57,9 @@ class GestureEventConsumeDelegate : public TestWindowDelegate {
   bool scroll_begin() const { return scroll_begin_; }
   bool scroll_update() const { return scroll_update_; }
   bool scroll_end() const { return scroll_end_; }
+  bool pinch_begin() const { return pinch_begin_; }
+  bool pinch_update() const { return pinch_update_; }
+  bool pinch_end() const { return pinch_end_; }
 
   float scroll_x() const { return scroll_x_; }
   float scroll_y() const { return scroll_y_; }
@@ -77,6 +86,15 @@ class GestureEventConsumeDelegate : public TestWindowDelegate {
       case ui::ET_GESTURE_SCROLL_END:
         scroll_end_ = true;
         break;
+      case ui::ET_GESTURE_PINCH_BEGIN:
+        pinch_begin_ = true;
+        break;
+      case ui::ET_GESTURE_PINCH_UPDATE:
+        pinch_update_ = true;
+        break;
+      case ui::ET_GESTURE_PINCH_END:
+        pinch_end_ = true;
+        break;
       default:
         NOTREACHED();
     }
@@ -90,6 +108,9 @@ class GestureEventConsumeDelegate : public TestWindowDelegate {
   bool scroll_begin_;
   bool scroll_update_;
   bool scroll_end_;
+  bool pinch_begin_;
+  bool pinch_update_;
+  bool pinch_end_;
 
   float scroll_x_;
   float scroll_y_;
@@ -481,6 +502,196 @@ TEST_F(GestureRecognizerTest, AsynchronousGestureRecognition) {
   EXPECT_FALSE(queued_delegate->scroll_begin());
   EXPECT_FALSE(queued_delegate->scroll_update());
   EXPECT_FALSE(queued_delegate->scroll_end());
+}
+
+// Check that appropriate touch events generate pinch gesture events.
+TEST_F(GestureRecognizerTest, GestureEventPinchFromScroll) {
+  scoped_ptr<GestureEventConsumeDelegate> delegate(
+      new GestureEventConsumeDelegate());
+  const int kWindowWidth = 300;
+  const int kWindowHeight = 400;
+  gfx::Rect bounds(5, 5, kWindowWidth, kWindowHeight);
+  scoped_ptr<aura::Window> window(CreateTestWindowWithDelegate(
+      delegate.get(), -1234, bounds, NULL));
+
+  aura::RootWindow* root = RootWindow::GetInstance();
+
+  delegate->Reset();
+  TouchEvent press(ui::ET_TOUCH_PRESSED, gfx::Point(101, 201), 0);
+  root->DispatchTouchEvent(&press);
+  EXPECT_FALSE(delegate->tap());
+  EXPECT_TRUE(delegate->tap_down());
+  EXPECT_FALSE(delegate->double_tap());
+  EXPECT_FALSE(delegate->scroll_begin());
+  EXPECT_FALSE(delegate->scroll_update());
+  EXPECT_FALSE(delegate->scroll_end());
+
+  // Move the touch-point enough so that it is considered as a scroll. This
+  // should generate both SCROLL_BEGIN and SCROLL_UPDATE gestures.
+  delegate->Reset();
+  TouchEvent move(ui::ET_TOUCH_MOVED, gfx::Point(130, 201), 0);
+  root->DispatchTouchEvent(&move);
+  EXPECT_FALSE(delegate->tap());
+  EXPECT_FALSE(delegate->tap_down());
+  EXPECT_FALSE(delegate->double_tap());
+  EXPECT_TRUE(delegate->scroll_begin());
+  EXPECT_TRUE(delegate->scroll_update());
+  EXPECT_FALSE(delegate->scroll_end());
+
+  // Press the second finger. It should cause both a tap-down and pinch-begin.
+  delegate->Reset();
+  TouchEvent press2(ui::ET_TOUCH_PRESSED, gfx::Point(10, 10), 1);
+  root->DispatchTouchEvent(&press2);
+  EXPECT_FALSE(delegate->tap());
+  EXPECT_TRUE(delegate->tap_down());
+  EXPECT_FALSE(delegate->double_tap());
+  EXPECT_FALSE(delegate->scroll_begin());
+  EXPECT_FALSE(delegate->scroll_update());
+  EXPECT_FALSE(delegate->scroll_end());
+  EXPECT_TRUE(delegate->pinch_begin());
+
+  // Move the first finger.
+  delegate->Reset();
+  TouchEvent move3(ui::ET_TOUCH_MOVED, gfx::Point(95, 201), 0);
+  root->DispatchTouchEvent(&move3);
+  EXPECT_FALSE(delegate->tap());
+  EXPECT_FALSE(delegate->tap_down());
+  EXPECT_FALSE(delegate->double_tap());
+  EXPECT_FALSE(delegate->scroll_begin());
+  EXPECT_FALSE(delegate->scroll_update());
+  EXPECT_FALSE(delegate->scroll_end());
+  EXPECT_FALSE(delegate->pinch_begin());
+  EXPECT_TRUE(delegate->pinch_update());
+
+  // Now move the second finger.
+  delegate->Reset();
+  TouchEvent move4(ui::ET_TOUCH_MOVED, gfx::Point(55, 15), 1);
+  root->DispatchTouchEvent(&move4);
+  EXPECT_FALSE(delegate->tap());
+  EXPECT_FALSE(delegate->tap_down());
+  EXPECT_FALSE(delegate->double_tap());
+  EXPECT_FALSE(delegate->scroll_begin());
+  EXPECT_FALSE(delegate->scroll_update());
+  EXPECT_FALSE(delegate->scroll_end());
+  EXPECT_FALSE(delegate->pinch_begin());
+  EXPECT_TRUE(delegate->pinch_update());
+
+  // Release the first finger. This should end pinch.
+  delegate->Reset();
+  TouchEvent release(ui::ET_TOUCH_RELEASED, gfx::Point(101, 201), 0);
+  Event::TestApi test_release(&release);
+  test_release.set_time_stamp(press.time_stamp() +
+                              base::TimeDelta::FromMilliseconds(50));
+  root->DispatchTouchEvent(&release);
+  EXPECT_FALSE(delegate->tap());
+  EXPECT_FALSE(delegate->tap_down());
+  EXPECT_FALSE(delegate->double_tap());
+  EXPECT_FALSE(delegate->scroll_begin());
+  EXPECT_FALSE(delegate->scroll_update());
+  EXPECT_FALSE(delegate->scroll_end());
+  EXPECT_TRUE(delegate->pinch_end());
+
+  // Move the second finger. This should still generate a scroll.
+  delegate->Reset();
+  TouchEvent move5(ui::ET_TOUCH_MOVED, gfx::Point(25, 10), 1);
+  root->DispatchTouchEvent(&move5);
+  EXPECT_FALSE(delegate->tap());
+  EXPECT_FALSE(delegate->tap_down());
+  EXPECT_FALSE(delegate->double_tap());
+  EXPECT_FALSE(delegate->scroll_begin());
+  EXPECT_TRUE(delegate->scroll_update());
+  EXPECT_FALSE(delegate->scroll_end());
+  EXPECT_FALSE(delegate->pinch_begin());
+  EXPECT_FALSE(delegate->pinch_update());
+}
+
+TEST_F(GestureRecognizerTest, GestureEventPinchFromTap) {
+  scoped_ptr<GestureEventConsumeDelegate> delegate(
+      new GestureEventConsumeDelegate());
+  const int kWindowWidth = 300;
+  const int kWindowHeight = 400;
+  gfx::Rect bounds(5, 5, kWindowWidth, kWindowHeight);
+  scoped_ptr<aura::Window> window(CreateTestWindowWithDelegate(
+      delegate.get(), -1234, bounds, NULL));
+
+  aura::RootWindow* root = RootWindow::GetInstance();
+
+  delegate->Reset();
+  TouchEvent press(ui::ET_TOUCH_PRESSED, gfx::Point(101, 201), 0);
+  root->DispatchTouchEvent(&press);
+  EXPECT_FALSE(delegate->tap());
+  EXPECT_TRUE(delegate->tap_down());
+  EXPECT_FALSE(delegate->double_tap());
+  EXPECT_FALSE(delegate->scroll_begin());
+  EXPECT_FALSE(delegate->scroll_update());
+  EXPECT_FALSE(delegate->scroll_end());
+
+  // Press the second finger. It should cause a tap-down, scroll-begin and
+  // pinch-begin.
+  delegate->Reset();
+  TouchEvent press2(ui::ET_TOUCH_PRESSED, gfx::Point(10, 10), 1);
+  root->DispatchTouchEvent(&press2);
+  EXPECT_FALSE(delegate->tap());
+  EXPECT_TRUE(delegate->tap_down());
+  EXPECT_FALSE(delegate->double_tap());
+  EXPECT_TRUE(delegate->scroll_begin());
+  EXPECT_FALSE(delegate->scroll_update());
+  EXPECT_FALSE(delegate->scroll_end());
+  EXPECT_TRUE(delegate->pinch_begin());
+
+  // Move the first finger.
+  delegate->Reset();
+  TouchEvent move3(ui::ET_TOUCH_MOVED, gfx::Point(65, 201), 0);
+  root->DispatchTouchEvent(&move3);
+  EXPECT_FALSE(delegate->tap());
+  EXPECT_FALSE(delegate->tap_down());
+  EXPECT_FALSE(delegate->double_tap());
+  EXPECT_FALSE(delegate->scroll_begin());
+  EXPECT_FALSE(delegate->scroll_update());
+  EXPECT_FALSE(delegate->scroll_end());
+  EXPECT_FALSE(delegate->pinch_begin());
+  EXPECT_TRUE(delegate->pinch_update());
+
+  // Now move the second finger.
+  delegate->Reset();
+  TouchEvent move4(ui::ET_TOUCH_MOVED, gfx::Point(55, 15), 1);
+  root->DispatchTouchEvent(&move4);
+  EXPECT_FALSE(delegate->tap());
+  EXPECT_FALSE(delegate->tap_down());
+  EXPECT_FALSE(delegate->double_tap());
+  EXPECT_FALSE(delegate->scroll_begin());
+  EXPECT_FALSE(delegate->scroll_update());
+  EXPECT_FALSE(delegate->scroll_end());
+  EXPECT_FALSE(delegate->pinch_begin());
+  EXPECT_TRUE(delegate->pinch_update());
+
+  // Release the first finger. This should end pinch.
+  delegate->Reset();
+  TouchEvent release(ui::ET_TOUCH_RELEASED, gfx::Point(101, 201), 0);
+  Event::TestApi test_release(&release);
+  test_release.set_time_stamp(press.time_stamp() +
+                              base::TimeDelta::FromMilliseconds(50));
+  root->DispatchTouchEvent(&release);
+  EXPECT_FALSE(delegate->tap());
+  EXPECT_FALSE(delegate->tap_down());
+  EXPECT_FALSE(delegate->double_tap());
+  EXPECT_FALSE(delegate->scroll_begin());
+  EXPECT_FALSE(delegate->scroll_update());
+  EXPECT_FALSE(delegate->scroll_end());
+  EXPECT_TRUE(delegate->pinch_end());
+
+  // Move the second finger. This should still generate a scroll.
+  delegate->Reset();
+  TouchEvent move5(ui::ET_TOUCH_MOVED, gfx::Point(25, 10), 1);
+  root->DispatchTouchEvent(&move5);
+  EXPECT_FALSE(delegate->tap());
+  EXPECT_FALSE(delegate->tap_down());
+  EXPECT_FALSE(delegate->double_tap());
+  EXPECT_FALSE(delegate->scroll_begin());
+  EXPECT_TRUE(delegate->scroll_update());
+  EXPECT_FALSE(delegate->scroll_end());
+  EXPECT_FALSE(delegate->pinch_begin());
+  EXPECT_FALSE(delegate->pinch_update());
 }
 
 }  // namespace test
