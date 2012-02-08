@@ -7,6 +7,8 @@ cr.define('options.network', function() {
   var ArrayDataModel = cr.ui.ArrayDataModel;
   var List = cr.ui.List;
   var ListItem = cr.ui.ListItem;
+  var Menu = cr.ui.Menu;
+  var MenuItem = cr.ui.MenuItem;
 
   /**
    * Network settings constants. These enums usually match their C++
@@ -22,6 +24,13 @@ cr.define('options.network', function() {
   Constants.TYPE_BLUETOOTH = 4;
   Constants.TYPE_CELLULAR  = 5;
   Constants.TYPE_VPN       = 6;
+
+  /**
+   * ID of the menu that is currently visible.
+   * @type {?string}
+   * @private
+   */
+  var activeMenu_ = null;
 
   /**
    * Create an element in the network list for controlling network
@@ -75,6 +84,7 @@ cr.define('options.network', function() {
       selector.className = 'network-selector';
       textContent.appendChild(selector);
       if (this.data_.networkList) {
+        this.createMenu_();
         // TODO(kevers): Generalize method of setting default label.
         var defaultMessage = this.data_.key == 'wifi' ?
             'networkOffline' : 'joinNetwork';
@@ -89,14 +99,131 @@ cr.define('options.network', function() {
           }
         }
       }
-      // TODO(kevers): Create popup menu for network lists.
       // TODO(kevers): Add default icon when no network is connected or
       // connecting.
       // TODO(kevers): Add support for other types of list items including a
       // toggle control for airplane mode, and a control for a new conenction
       // dialog.
+
+      this.addEventListener('click', function() {
+        this.showMenu();
+      });
     },
 
+    /**
+     * Creates a menu for selecting, configuring or disconnecting from a
+     * network.
+     * @private
+     */
+    createMenu_: function() {
+      var menu = this.ownerDocument.createElement('div');
+      menu.id = this.getMenuName_();
+      menu.className = 'network-menu';
+      menu.hidden = true;
+      Menu.decorate(menu);
+      var addendum = [];
+      var list = this.data_.networkList;
+      if (list) {
+        for (var i = 0; i < list.length; i++) {
+          var data = list[i];
+          if (!data.connected && !data.connecting) {
+            // TODO(kevers): Check for a non-activated Cellular network.
+            // If found, the menu item should trigger 'activate' instead
+            // of 'connect'.
+            if (data.networkType != Constants.ETHERNET)
+              this.createConnectCallback_(menu, data);
+          } else if (data.connected) {
+            addendum.push({label: localStrings.getString('networkOptions'),
+                           command: 'options',
+                           data: data});
+            if (data.networkType == Constants.TYPE_WIFI) {
+              // TODO(kevers): Add support for disconnecting from other
+              // networks types.
+              addendum.push({label: localStrings.getString('disconnectWifi'),
+                             command: 'disconnect',
+                             data: data});
+            }
+          }
+        }
+      }
+      if (addendum.length > 0) {
+        menu.appendChild(MenuItem.createSeparator());
+        for (var i = 0; i < addendum.length; i++) {
+          this.createCallback_(menu,
+                               addendum[i].data,
+                               addendum[i].label,
+                               addendum[i].command);
+        }
+      }
+      var parent = $('network-menus');
+      var existing = $(menu.id);
+      if (existing)
+        parent.replaceChild(menu, existing);
+      else
+        parent.appendChild(menu);
+    },
+
+    /**
+     * Adds a command to a menu, which calls back into chrome
+     * for modifying network settings.
+     * @param {!Element} menu Parent menu.
+     * @param {Object} data Description of the network.
+     * @param {string} label Display name for the menu item.
+     * @param {string} command Name of the command for the
+     *    callback.
+     * @private
+     */
+    createCallback_: function(menu, data, label, command) {
+      var button = this.ownerDocument.createElement('div');
+      button.textContent = label;
+      // TODO(kevers): Add icons as requireds.
+      var type = String(data.networkType);
+      var path = data.servicePath;
+      button.addEventListener('click', function() {
+        chrome.send('buttonClickCallback',
+                    [type, path, command]);
+        closeMenu_();
+      });
+      MenuItem.decorate(button);
+      menu.appendChild(button);
+    },
+
+    /**
+     * Adds a menu item for connecting to a network.
+     * @param {!Element} menu Parent menu.
+     * @param {Object} data Description of the network.
+     * @privte
+     */
+    createConnectCallback_: function(menu, data) {
+      this.createCallback_(menu, data, data.networkName, 'connect');
+    },
+
+    /**
+     * Retrieves the ID for the menu.
+     * @param{string} The menu ID.
+     * @private
+     */
+    getMenuName_: function() {
+      return this.data_.key + '-netowrk-menu';
+    },
+
+    /**
+     * Displays a popup menu.
+     */
+    showMenu: function() {
+      var top = this.offsetTop + this.clientHeight;
+      var menuId = this.getMenuName_();
+      if (menuId != activeMenu_) {
+        closeMenu_();
+        activeMenu_ = menuId;
+        var menu = $(menuId);
+        menu.style.setProperty('top', top + 'px');
+        menu.hidden = false;
+        setTimeout(function() {
+          $('settings').addEventListener('click', closeMenu_);
+        }, 0);
+      }
+    },
   };
 
   /**
@@ -199,9 +326,20 @@ cr.define('options.network', function() {
     $('network-list').update(data);
   }
 
+  /**
+   * Hides the currently visible menu.
+   * @private
+   */
+  function closeMenu_() {
+    if (activeMenu_) {
+      $(activeMenu_).hidden = true;
+      activeMenu_ = null;
+      $('settings').removeEventListener('click', closeMenu_);
+    }
+  }
+
   // Export
   return {
     NetworkList: NetworkList
   };
-
 });
