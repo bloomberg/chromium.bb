@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,6 +18,7 @@
 class Browser;
 class DevtoolsNotificationBridge;
 class ExtensionHost;
+class ExtensionPopupContainer;
 @class InfoBubbleWindow;
 
 namespace content {
@@ -52,9 +53,13 @@ class NotificationRegistrar;
 
   scoped_ptr<content::NotificationRegistrar> registrar_;
   scoped_ptr<DevtoolsNotificationBridge> notificationBridge_;
+  scoped_ptr<ExtensionPopupContainer> container_;
 
   // Whether the popup has a devtools window attached to it.
   BOOL beingInspected_;
+
+  // The preferred size once the ExtensionView has loaded.
+  NSSize pendingPreferredSize_;
 }
 
 // Returns the ExtensionHost object associated with this popup.

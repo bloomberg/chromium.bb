@@ -18,23 +18,10 @@ ShellWindow* ShellWindow::Create(Profile* profile,
                                  const GURL& url) {
   ExtensionProcessManager* manager = profile->GetExtensionProcessManager();
   DCHECK(manager);
-  if (!manager)
-    return NULL;
 
-  ExtensionHost* host = manager->CreateShellHost(extension, url);
-  // CHECK host so that non-GTK platform compilers don't complain about unused
-  // variables.
-  // TODO(mihaip): remove when ShellWindow has been implemented everywhere.
-  CHECK(host);
-
-#if defined(TOOLKIT_GTK) || defined(TOOLKIT_VIEWS)
   // This object will delete itself when the window is closed.
-  // TODO(mihaip): remove the #if block when ShellWindow has been implemented
-  // everywhere.
-  return ShellWindow::CreateShellWindow(host);
-#endif
-
-  return NULL;
+  return ShellWindow::CreateShellWindow(
+      manager->CreateShellHost(extension, url));
 }
 
 void ShellWindow::Observe(int type,

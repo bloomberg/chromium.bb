@@ -116,13 +116,7 @@ class PlatformAppBrowserTest : public ExtensionApiTest {
   }
 };
 
-// Disabled until shell windows are implemented for non-GTK, non-Views toolkits.
-#if defined(TOOLKIT_GTK) || defined(TOOLKIT_VIEWS)
-#define MAYBE_OpenAppInShellContainer OpenAppInShellContainer
-#else
-#define MAYBE_OpenAppInShellContainer DISABLED_OpenAppInShellContainer
-#endif
-IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, MAYBE_OpenAppInShellContainer) {
+IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, OpenAppInShellContainer) {
   ASSERT_EQ(0u, GetPlatformAppCount());
   LoadAndLaunchPlatformApp("empty");
   ASSERT_EQ(1u, GetPlatformAppCount());
@@ -131,13 +125,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, MAYBE_OpenAppInShellContainer) {
   ASSERT_EQ(0u, GetPlatformAppCount());
 }
 
-// Disabled until shell windows are implemented for non-GTK, non-Views toolkits.
-#if defined(TOOLKIT_GTK) || defined(TOOLKIT_VIEWS)
-#define MAYBE_EmptyContextMenu EmptyContextMenu
-#else
-#define MAYBE_EmptyContextMenu DISABLED_EmptyContextMenu
-#endif
-IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, MAYBE_EmptyContextMenu) {
+IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, EmptyContextMenu) {
   LoadAndLaunchPlatformApp("empty");
 
   // The empty app doesn't add any context menu items, so its menu should
@@ -152,13 +140,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, MAYBE_EmptyContextMenu) {
   ASSERT_FALSE(menu->menu_model().GetItemCount());
 }
 
-// Disabled until shell windows are implemented for non-GTK, non-Views toolkits.
-#if defined(TOOLKIT_GTK) || defined(TOOLKIT_VIEWS)
-#define MAYBE_AppWithContextMenu AppWithContextMenu
-#else
-#define MAYBE_AppWithContextMenu DISABLED_AppWithContextMenu
-#endif
-IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, MAYBE_AppWithContextMenu) {
+IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, AppWithContextMenu) {
   ExtensionTestMessageListener listener1("created item", false);
   LoadAndLaunchPlatformApp("context_menu");
 
@@ -177,13 +159,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, MAYBE_AppWithContextMenu) {
   ASSERT_EQ(1, menu->menu_model().GetItemCount());
 }
 
-// Disabled until shell windows are implemented for non-GTK, non-Views toolkits.
-#if defined(TOOLKIT_GTK) || defined(TOOLKIT_VIEWS)
-#define MAYBE_DisallowNavigation DisallowNavigation
-#else
-#define MAYBE_DisallowNavigation DISABLED_DisallowNavigation
-#endif
-IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, MAYBE_DisallowNavigation) {
+IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, DisallowNavigation) {
   ASSERT_TRUE(test_server()->Start());
 
   LoadAndLaunchPlatformApp("navigation");
@@ -201,23 +177,11 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, MAYBE_DisallowNavigation) {
   EXPECT_TRUE(result);
 }
 
-// Disabled until shell windows are implemented for non-GTK, non-Views toolkits.
-#if defined(TOOLKIT_GTK) || defined(TOOLKIT_VIEWS)
-#define MAYBE_DisallowModalDialogs DisallowModalDialogs
-#else
-#define MAYBE_DisallowModalDialogs DISABLED_DisallowModalDialogs
-#endif
-IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, MAYBE_DisallowModalDialogs) {
+IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, DisallowModalDialogs) {
   ASSERT_TRUE(RunPlatformAppTest("platform_apps/modal_dialogs")) << message_;
 }
 
 // Tests that localStorage and WebSQL are disabled for platform apps.
-// Disabled until shell windows are implemented for non-GTK, non-Views toolkits.
-#if defined(TOOLKIT_GTK) || defined(TOOLKIT_VIEWS)
-#define MAYBE_DisallowStorage DisallowStorage
-#else
-#define MAYBE_DisallowStorage DISABLED_DisallowStorage
-#endif
-IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, MAYBE_DisallowStorage) {
+IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, DisallowStorage) {
   ASSERT_TRUE(RunPlatformAppTest("platform_apps/storage")) << message_;
 }

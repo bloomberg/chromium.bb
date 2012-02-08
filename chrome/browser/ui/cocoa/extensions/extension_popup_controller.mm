@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,6 +15,7 @@
 #import "chrome/browser/ui/cocoa/extensions/extension_view_mac.h"
 #import "chrome/browser/ui/cocoa/info_bubble_window.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "content/browser/tab_contents/web_contents_view_mac.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_source.h"
@@ -33,6 +34,46 @@ CGFloat Clamp(CGFloat value, CGFloat min, CGFloat max) {
 }
 
 }  // namespace
+
+@interface ExtensionPopupController (Private)
+// Callers should be using the public static method for initialization.
+// NOTE: This takes ownership of |host|.
+- (id)initWithHost:(ExtensionHost*)host
+      parentWindow:(NSWindow*)parentWindow
+        anchoredAt:(NSPoint)anchoredAt
+     arrowLocation:(info_bubble::BubbleArrowLocation)arrowLocation
+           devMode:(BOOL)devMode;
+
+// Called when the extension's hosted NSView has been resized.
+- (void)extensionViewFrameChanged;
+
+// Called when the extension's preferred size changes.
+- (void)onPreferredSizeChanged:(NSSize)newSize;
+
+// Called when the extension view is shown.
+- (void)onViewDidShow;
+@end
+
+class ExtensionPopupContainer : public ExtensionViewMac::Container {
+ public:
+  explicit ExtensionPopupContainer(ExtensionPopupController* controller)
+      : controller_(controller) {
+  }
+
+  virtual void OnExtensionPreferredSizeChanged(
+      ExtensionViewMac* view,
+      const gfx::Size& new_size) OVERRIDE {
+    [controller_ onPreferredSizeChanged:
+        NSMakeSize(new_size.width(), new_size.height())];
+  }
+
+  virtual void OnExtensionViewDidShow(ExtensionViewMac* view) OVERRIDE {
+    [controller_ onViewDidShow];
+  }
+
+ private:
+  ExtensionPopupController* controller_; // Weak; owns this.
+};
 
 class DevtoolsNotificationBridge : public content::NotificationObserver {
  public:
@@ -70,19 +111,6 @@ class DevtoolsNotificationBridge : public content::NotificationObserver {
   ExtensionPopupController* controller_;
 };
 
-@interface ExtensionPopupController(Private)
-// Callers should be using the public static method for initialization.
-// NOTE: This takes ownership of |host|.
-- (id)initWithHost:(ExtensionHost*)host
-      parentWindow:(NSWindow*)parentWindow
-        anchoredAt:(NSPoint)anchoredAt
-     arrowLocation:(info_bubble::BubbleArrowLocation)arrowLocation
-           devMode:(BOOL)devMode;
-
-// Called when the extension's hosted NSView has been resized.
-- (void)extensionViewFrameChanged;
-@end
-
 @implementation ExtensionPopupController
 
 - (id)initWithHost:(ExtensionHost*)host
@@ -102,6 +130,9 @@ class DevtoolsNotificationBridge : public content::NotificationObserver {
   [view setArrowLocation:arrowLocation];
 
   extensionView_ = host->view()->native_view();
+  container_.reset(new ExtensionPopupContainer(self));
+  host->view()->set_container(container_.get());
+
   NSNotificationCenter* center = [NSNotificationCenter defaultCenter];
   [center addObserver:self
              selector:@selector(extensionViewFrameChanged)
@@ -158,6 +189,8 @@ class DevtoolsNotificationBridge : public content::NotificationObserver {
   [[NSNotificationCenter defaultCenter] removeObserver:self];
   [gPopup autorelease];
   gPopup = nil;
+  if (host_->view())
+    host_->view()->set_container(NULL);
 }
 
 - (void)windowDidResignKey:(NSNotification *)notification {
@@ -287,6 +320,43 @@ class DevtoolsNotificationBridge : public content::NotificationObserver {
   if (![window isVisible]) {
     [self showWindow:self];
   }
+}
+
+- (void)onPreferredSizeChanged:(NSSize)newSize {
+  // When we update the size, the window will become visible. Stay hidden until
+  // the host is loaded.
+  pendingPreferredSize_ = newSize;
+  if (!host_->did_stop_loading())
+    return;
+
+  // No need to use CA here, our caller calls us repeatedly to animate the
+  // resizing.
+  NSRect frame = [extensionView_ frame];
+  frame.size = newSize;
+
+  // |new_size| is in pixels. Convert to view units.
+  frame.size = [extensionView_ convertSize:frame.size fromView:nil];
+
+  // On first display of some extensions, this function is called with zero
+  // width after the correct size has been set. Bail if zero is seen, assuming
+  // that an extension's view doesn't want any dimensions to ever be zero.
+  // http://crbug.com/112810 - Verify this assumption and look into WebCore's
+  // |contentsPreferredWidth| to see why this is occurring.
+  if (NSIsEmptyRect(frame))
+    return;
+
+  DCHECK([extensionView_ isKindOfClass:[WebContentsViewCocoa class]]);
+  WebContentsViewCocoa* hostView = (WebContentsViewCocoa*)extensionView_;
+
+  // WebContentsViewCocoa overrides setFrame but not setFrameSize.
+  // We need to defer the update back to the RenderWidgetHost so we don't
+  // get the flickering effect on 10.5 of http://crbug.com/31970
+  [hostView setFrameWithDeferredUpdate:frame];
+  [hostView setNeedsDisplay:YES];
+}
+
+- (void)onViewDidShow {
+  [self onPreferredSizeChanged:pendingPreferredSize_];
 }
 
 // We want this to be a child of a browser window. addChildWindow: (called from
