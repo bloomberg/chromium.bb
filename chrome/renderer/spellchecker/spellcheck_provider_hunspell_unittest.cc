@@ -28,11 +28,17 @@ class TestingSpellCheckProvider : public SpellCheckProvider {
 
   virtual bool Send(IPC::Message* message) OVERRIDE {
     // Call our mock message handlers.
+    bool handled = true;
     IPC_BEGIN_MESSAGE_MAP(TestingSpellCheckProvider, *message)
       IPC_MESSAGE_HANDLER(SpellCheckHostMsg_CallSpellingService,
                           OnCallSpellingService)
-    IPC_MESSAGE_UNHANDLED(messages_.push_back(message))
+    IPC_MESSAGE_UNHANDLED(handled = false)
     IPC_END_MESSAGE_MAP()
+    if (handled) {
+      delete message;
+      return true;
+    }
+    messages_.push_back(message);
     return true;
   }
 
