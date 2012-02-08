@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -28,7 +28,8 @@ bool AutomationProviderList::AddProvider(AutomationProvider* provider) {
 
 bool AutomationProviderList::RemoveProvider(AutomationProvider* provider) {
   const iterator remove_provider =
-    find(automation_providers_.begin(), automation_providers_.end(), provider);
+    std::find(automation_providers_.begin(), automation_providers_.end(),
+              provider);
   if (remove_provider != automation_providers_.end()) {
     (*remove_provider)->Release();
     automation_providers_.erase(remove_provider);

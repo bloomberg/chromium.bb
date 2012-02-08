@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -328,10 +328,10 @@ CookieTreeOriginNode* CookieTreeRootNode::GetOrCreateOriginNode(
 
   // First see if there is an existing match.
   std::vector<CookieTreeNode*>::iterator origin_node_iterator =
-      lower_bound(children().begin(),
-                  children().end(),
-                  &origin_node,
-                  OriginNodeComparator());
+      std::lower_bound(children().begin(),
+                       children().end(),
+                       &origin_node,
+                       OriginNodeComparator());
 
   if (origin_node_iterator != children().end() &&
       WideToUTF16Hack(CookieTreeOriginNode::TitleForUrl(url)) ==
@@ -596,10 +596,10 @@ bool CookieTreeNode::NodeTitleComparator::operator() (
 void CookieTreeNode::AddChildSortedByTitle(CookieTreeNode* new_child) {
   DCHECK(new_child);
   std::vector<CookieTreeNode*>::iterator iter =
-      lower_bound(children().begin(),
-                  children().end(),
-                  new_child,
-                  NodeTitleComparator());
+      std::lower_bound(children().begin(),
+                       children().end(),
+                       new_child,
+                       NodeTitleComparator());
   GetModel()->Add(this, new_child, iter - children().begin());
 }
 
