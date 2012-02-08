@@ -3326,7 +3326,7 @@ driver-install() {
   spopd
 
   # Tell the driver the library mode
-  touch "${destdir}"/${libmode}.cfg
+  echo "LIBMODE=${libmode}" > "${destdir}"/driver.conf
 
   # Install readelf and size
   cp -a "${BINUTILS_INSTALL_DIR}/bin/${BINUTILS_TARGET}-readelf" \

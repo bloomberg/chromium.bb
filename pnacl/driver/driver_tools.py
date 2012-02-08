@@ -169,24 +169,28 @@ def FindBaseDriver():
 def GetDriverExt():
   return pathtools.splitext(DriverPath())[1]
 
-@env.register
-@memoize
-def DetectLibMode():
-  """ Determine if this is glibc or newlib """
-  dir = pathtools.dirname(DriverPath())
+def ReadConfig():
+  driver_dir = pathtools.dirname(DriverPath())
+  driver_conf = pathtools.join(driver_dir, 'driver.conf')
+  fp = DriverOpen(driver_conf, 'r')
+  linecount = 0
+  for line in fp:
+    linecount += 1
+    line = line.strip()
+    if line == '' or line.startswith('#'):
+      continue
+    sep = line.find('=')
+    if sep < 0:
+      Log.Fatal("%s: Parse error, missing '=' on line %d",
+                pathtools.touser(driver_conf), linecount)
+    keyname = line[:sep].strip()
+    value = line[sep+1:].strip()
+    env.setraw(keyname, value)
+  DriverClose(fp)
 
-  is_newlib = pathtools.exists(pathtools.join(dir, 'newlib.cfg'))
-  is_glibc = pathtools.exists(pathtools.join(dir, 'glibc.cfg'))
+  if env.getone('LIBMODE') not in ('newlib', 'glibc'):
+    Log.Fatal('Invalid LIBMODE in %s', pathtools.touser(driver_conf))
 
-  assert(not (is_newlib and is_glibc))
-
-  if is_newlib:
-    return "newlib"
-
-  if is_glibc:
-    return "glibc"
-
-  Log.Fatal("Cannot determine library mode!")
 
 @env.register
 def AddPrefix(prefix, varname):
@@ -925,9 +929,19 @@ def GCCTypeToFileType(gcctype):
     Log.Fatal('language "%s" not recognized' % gcctype)
   return FILE_TYPE_MAP[gcctype]
 
+def InitLog():
+  Log.reset()
+  Log.SetScriptName(os.path.basename(sys.argv[0]))
+  if env.getbool('LOG_TO_FILE'):
+    log_filename = env.getone('LOG_FILENAME')
+    log_size_limit = int(env.getone('LOG_FILE_SIZE_LIMIT'))
+    Log.AddFile(log_filename, log_size_limit)
+
 def DriverMain(main):
   SetupSignalHandlers()
   env.reset()
+  InitLog()
+  ReadConfig()
 
   if IsWindowsPython():
     SetupCygwinLibs()
@@ -938,10 +952,9 @@ def DriverMain(main):
                                         must_match = False)
   env.append('DRIVER_FLAGS', *driver_flags)
 
-  # Start the Log
-  Log.reset(env.getbool('LOG_TO_FILE'), env.getone('LOG_FILENAME'),
-            env.getone('LOG_FILE_SIZE_LIMIT'))
-  Log.SetScriptName(os.path.basename(sys.argv[0]))
+  # Reinitialize the log, in case log settings were changed by
+  # command-line arguments.
+  InitLog()
   if not env.getbool('RECURSE'):
     Log.Banner(sys.argv)
 

@@ -64,7 +64,7 @@ INITIAL_ENV = {
   'USE_EMULATOR'        : '0',
   'USE_BOOTSTRAP'       : '${BUILD_OS==linux ? 1 : 0}',
   'DRIVER_FLAGS'        : '', # Flags passed to the driver
-  'LIBMODE'             : '${@DetectLibMode}',  # glibc or newlib
+  'LIBMODE'             : '', # glibc or newlib (set by ReadConfig)
   'LIBMODE_GLIBC'       : '${LIBMODE==glibc ? 1 : 0}',
   'LIBMODE_NEWLIB'      : '${LIBMODE==newlib ? 1 : 0}',
 
@@ -134,16 +134,6 @@ INITIAL_ENV = {
   'SEL_LDR'       : '${SCONS_STAGING}/sel_ldr${EXEC_EXT}',
   'BOOTSTRAP_LDR' : '${SCONS_STAGING}/nacl_helper_bootstrap${EXEC_EXT}',
 
-  # c.f. http://code.google.com/p/nativeclient/issues/detail?id=1968
-  # LLVM_AS is used to compile a .ll file to a bitcode file (".po")
-  'LLVM_AS'       : '${BASE_LLVM_BIN}/llvm-as${EXEC_EXT}',
-  # LLVM_MC is llvm's replacement for bintutil's as
-  'LLVM_MC'       : '${BASE_LLVM_BIN}/llvm-mc${EXEC_EXT}',
-
-  'AS_ARM'        : '${LLVM_MC}',
-  'AS_X8632'      : '${LLVM_MC}',
-  'AS_X8664'      : '${LLVM_MC}',
-
   # Note: -a enables sel_ldr debug mode allowing us to access to local files
   #       this is only needed if we compile/run the translators in non-srpc mode
   'SB_PREFIX'     : '${USE_BOOTSTRAP ? ${BOOTSTRAP_LDR}} ${SEL_LDR} '
@@ -158,29 +148,34 @@ INITIAL_ENV = {
   'RUNNABLE_LD'   : '${SB_DYNAMIC ? ${NNACL_LIBDIR}/runnable-ld.so ' +
                     '--library-path ${NNACL_LIBDIR}}',
 
-
   'LLC_SRPC'      : '${BASE_SB}/srpc/bin/llc',
   'LD_SRPC'       : '${BASE_SB}/srpc/bin/ld',
 
+  # Bitcode LLVM tools
   'CLANG'         : '${BASE_LLVM_BIN}/clang${EXEC_EXT}',
   'CLANGXX'       : '${BASE_LLVM_BIN}/clang++${EXEC_EXT}',
+  'LLVM_OPT'      : '${BASE_LLVM_BIN}/opt${EXEC_EXT}',
+  'LLVM_DIS'      : '${BASE_LLVM_BIN}/llvm-dis${EXEC_EXT}',
+  # llvm-as compiles llvm assembly (.ll) to bitcode (.bc/.po)
+  'LLVM_AS'       : '${BASE_LLVM_BIN}/llvm-as${EXEC_EXT}',
 
+  # Native LLVM tools
+  'LLVM_LLC'      : '${BASE_LLVM_BIN}/llc${EXEC_EXT}',
+  # llvm-mc is llvm's native assembler
+  'LLVM_MC'       : '${BASE_LLVM_BIN}/llvm-mc${EXEC_EXT}',
+
+
+  # DragonEgg (not yet supported)
   'DRAGONEGG_GCC' : '${BASE_GCC}/bin/i686-unknown-linux-gnu-gcc',
   'DRAGONEGG_GXX' : '${BASE_GCC}/bin/i686-unknown-linux-gnu-g++',
 
-  'LLVM_OPT'      : '${BASE_LLVM_BIN}/opt${EXEC_EXT}',
-  'LLVM_LLC'      : '${BASE_LLVM_BIN}/llc${EXEC_EXT}',
-  'LLVM_LD'       : '${BASE_LLVM_BIN}/llvm-ld${EXEC_EXT}',
-  'LLVM_DIS'      : '${BASE_LLVM_BIN}/llvm-dis${EXEC_EXT}',
-  'LLVM_LINK'     : '${BASE_LLVM_BIN}/llvm-link${EXEC_EXT}',
-
+  # Binutils
   'BINUTILS_BASE'  : '${BASE_BINUTILS}/bin/arm-pc-nacl-',
   'OBJDUMP'        : '${BINUTILS_BASE}objdump${EXEC_EXT}',
   'NM'             : '${BINUTILS_BASE}nm${EXEC_EXT}',
   'AR'             : '${BINUTILS_BASE}ar${EXEC_EXT}',
   'RANLIB'         : '${BINUTILS_BASE}ranlib${EXEC_EXT}',
   'STRIP'          : '${BINUTILS_BASE}strip${EXEC_EXT}',
-
   'LD_BFD'         : '${BINUTILS_BASE}ld.bfd${EXEC_EXT}',
   'LD_GOLD'        : '${BINUTILS_BASE}ld.gold${EXEC_EXT}',
 

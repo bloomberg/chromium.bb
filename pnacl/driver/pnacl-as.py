@@ -12,34 +12,42 @@
 import driver_tools
 from driver_env import env
 from driver_log import Log, TempFiles
+import sys
 
 EXTRA_ENV = {
   'INPUTS'      : '',
   'OUTPUT'      : '',
 
-  # Options
-  'DIAGNOSTIC'  : '0',
-  'ASPP_FLAGS': '-DNACL_LINUX=1',
-
+  'MC_FLAGS'       : '-assemble -filetype=obj ${MC_FLAGS_%ARCH%}',
   # maybe add the equivalent of -mfpu=vfp
-  'AS_FLAGS_ARM'   : '-assemble -filetype=obj -arch=arm -triple=armv7a-nacl' +
-                     ' -mcpu=cortex-a8',
-  'AS_FLAGS_X8632' : '-assemble -filetype=obj -arch=x86 -triple=i686-nacl',
-  'AS_FLAGS_X8664' : '-assemble -filetype=obj -arch=x86-64 -triple=x86_64-nacl',
+  'MC_FLAGS_ARM'   : '-arch=arm -triple=armv7a-nacl -mcpu=cortex-a8',
+  'MC_FLAGS_X8632' : '-arch=x86 -triple=i686-nacl',
+  'MC_FLAGS_X8664' : '-arch=x86-64 -triple=x86_64-nacl',
 
-  'RUN_BITCODE_AS' : '${LLVM_AS} ${input} -o ${output}',
-  'RUN_NATIVE_AS' : '${AS_%ARCH%} ${AS_FLAGS_%ARCH%} ${input} -o ${output}',
-
-  # NOTE: should we run the vanilla preprocessor instead?
-  'RUN_PP' : '${CLANG} -E ${ASPP_FLAGS} ${input} -o ${output}'
+  'RUN_LLVM_AS'    : '${LLVM_AS} ${input} -o ${output}',
+  'RUN_LLVM_MC'    : '${LLVM_MC} ${MC_FLAGS} ${input} -o ${output}',
 }
 env.update(EXTRA_ENV)
+
+VERSION_STR = """Portable Native Client assembler
+Compatibility:
+GNU assembler version 2.21.51 (pnacl-pc-nacl) using BFD version (GNU Binutils) 2.21.51.20110525
+Low Level Virtual Machine (http://llvm.org/)
+"""
+
+def DumpVersionDebug():
+  sys.stderr.write(VERSION_STR)
+
+def DumpVersionAndExit():
+  sys.stdout.write(VERSION_STR)
+  driver_tools.DriverExit(0)
 
 ASPatterns = [
   ( '-o(.+)',          "env.set('OUTPUT', pathtools.normalize($0))"),
   ( ('-o', '(.+)'),    "env.set('OUTPUT', pathtools.normalize($0))"),
 
-  ( '(-v|--version)',  "env.set('DIAGNOSTIC', '1')"),
+  ( '-v',              DumpVersionDebug),
+  ( '--version',       DumpVersionAndExit),
 
   # Ignore these assembler flags
   ( '(-Qy)',                  ""),
@@ -53,18 +61,11 @@ ASPatterns = [
   ( '(-mfpu=.*)',             ""),
   ( '(-march=.*)',            ""),
 
-  ( '-c',                     ""),
-
-  ( ('-I', '(.+)'),    "env.append('ASPP_FLAGS', '-I'+pathtools.normalize($0))"),
-  ( '-I(.+)',          "env.append('ASPP_FLAGS', '-I'+pathtools.normalize($0))"),
-
-  ( ('(-D)','(.*)'),          "env.append('ASPP_FLAGS', $0, $1)"),
-  ( '(-D.+)',                 "env.append('ASPP_FLAGS', $0)"),
-
-  ( '(-.*)',  driver_tools.UnrecognizedOption),
+  ( '(-.+)',  driver_tools.UnrecognizedOption),
 
   # Unmatched parameters should be treated as
   # assembly inputs by the "as" incarnation.
+  ( '(-)',   "env.append('INPUTS', $0)"),
   ( '(.*)',  "env.append('INPUTS', pathtools.normalize($0))"),
 ]
 
@@ -72,19 +73,17 @@ def main(argv):
   driver_tools.ParseArgs(argv, ASPatterns)
   arch = driver_tools.GetArch()
 
-  if env.getbool('DIAGNOSTIC'):
-    driver_tools.GetArch(required=True)
-    env.set('ARGV', *argv)
-    # NOTE: we could probably just print a canned string out instead.
-    driver_tools.RunWithLog('${AS_%ARCH%} ${ARGV}')
-    return 0
-
   inputs = env.get('INPUTS')
   output = env.getone('OUTPUT')
 
-  if len(inputs) != 1:
+  num_inputs = len(inputs)
+  if num_inputs > 1:
     Log.Fatal('Expecting exactly one input file')
-  the_input = inputs[0]
+  elif num_inputs == 1:
+    the_input = inputs[0]
+  else:
+    # stdin
+    the_input = '-'
 
 
   if arch:
@@ -95,26 +94,16 @@ def main(argv):
   if output == '':
     output = 'a.out'
 
-  if the_input.endswith('.S'):
-    tmp_output = output + ".s"
-    driver_tools.TempFiles.add(tmp_output)
-    env.push()
-    env.set('input', the_input)
-    env.set('output', tmp_output)
-    driver_tools.RunWithLog("${RUN_PP}")
-    env.pop()
-    the_input = tmp_output
-
   env.push()
   env.set('input', the_input)
   env.set('output', output)
 
   if output_type == 'po':
     # .ll to .po
-    driver_tools.RunWithLog("${RUN_BITCODE_AS}")
+    driver_tools.RunWithLog("${RUN_LLVM_AS}")
   else:
     # .s to .o
-    driver_tools.RunWithLog("${RUN_NATIVE_AS}")
+    driver_tools.RunWithLog("${RUN_LLVM_MC}")
   env.pop()
   return 0
 

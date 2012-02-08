@@ -67,16 +67,12 @@ def DriverExit(code):
 ######################################################################
 
 class Log(object):
-  # Lists of streams
-  prefix = ''
-  LOG_OUT = []
-  ERROR_OUT = [sys.stderr]
-
   @classmethod
-  def reset(cls, log_to_file, log_filename, log_sizelimit):
-    if log_to_file:
-      cls.AddFile(log_filename, int(log_sizelimit))
-    cls.script_name = ""
+  def reset(cls):
+    # Lists of streams
+    cls.LOG_OUT = []
+    cls.ERROR_OUT = [sys.stderr]
+    cls.script_name = ''
 
   @classmethod
   def SetScriptName(cls, script_name):
