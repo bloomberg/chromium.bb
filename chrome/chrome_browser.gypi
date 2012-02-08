@@ -1894,13 +1894,6 @@
         'browser/policy/user_policy_disk_cache.h',
         'browser/policy/user_policy_token_cache.cc',
         'browser/policy/user_policy_token_cache.h',
-        # TODO(danno): Find a better way to include these files
-        '<(protoc_out_dir)/chrome/browser/policy/proto/chrome_device_policy.pb.cc',
-        '<(protoc_out_dir)/chrome/browser/policy/proto/chrome_device_policy.pb.h',
-        '<(protoc_out_dir)/chrome/browser/policy/proto/device_management_backend.pb.cc',
-        '<(protoc_out_dir)/chrome/browser/policy/proto/device_management_backend.pb.h',
-        '<(protoc_out_dir)/chrome/browser/policy/proto/device_management_local.pb.cc',
-        '<(protoc_out_dir)/chrome/browser/policy/proto/device_management_local.pb.h',
         'browser/preferences_mac.cc',
         'browser/preferences_mac.h',
         'browser/prefs/browser_prefs.cc',
