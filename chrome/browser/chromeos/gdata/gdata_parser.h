@@ -51,6 +51,8 @@ class Link {
     TABLES_FEED,
     WORKSHEET_FEED,
     THUMBNAIL,
+    EMBED,
+    ICON,
   };
   Link();
 

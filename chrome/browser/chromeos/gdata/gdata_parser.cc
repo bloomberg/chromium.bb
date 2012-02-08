@@ -82,6 +82,10 @@ const LinkTypeMap kLinkTypeMap[] = {
       "http://schemas.google.com/spreadsheets/2006#tablesfeed"},
     { Link::WORKSHEET_FEED,
       "http://schemas.google.com/spreadsheets/2006#worksheetsfeed"},
+    { Link::EMBED,
+      "http://schemas.google.com/docs/2007#embed"},
+    { Link::ICON,
+      "http://schemas.google.com/docs/2007#icon"},
 };
 
 struct FeedLinkTypeMap {
@@ -147,8 +151,11 @@ bool Link::GetLinkType(const base::StringPiece& rel, Link::LinkType* result) {
       return true;
     }
   }
-  DVLOG(1) << "Unknown link type for rel " << rel;
-  return false;
+  // Let unknown link types through, just report it; if the link type is needed
+  // in the future, add it into LinkType and kLinkTypeMap.
+  DVLOG(1) << "Ignoring unknown link type for rel " << rel;
+  *result = UNKNOWN;
+  return true;
 }
 
 // static
