@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,7 @@
 
 #include "base/environment.h"
 #include "build/build_config.h"
+#include "ui/base/ui_base_switches.h"
 
 class LocaleTestsBase : public UITest {
  public:
@@ -32,7 +33,7 @@ class LocaleTestsBase : public UITest {
 class LocaleTestsDa : public LocaleTestsBase {
  public:
   LocaleTestsDa() : LocaleTestsBase() {
-    launch_arguments_.AppendSwitchASCII("lang", "da");
+    launch_arguments_.AppendSwitchASCII(switches::kLang, "da");
 
     // Linux doesn't use --lang, it only uses environment variables to set the
     // language.
@@ -46,7 +47,7 @@ class LocaleTestsDa : public LocaleTestsBase {
 class LocaleTestsHe : public LocaleTestsBase {
  public:
   LocaleTestsHe() : LocaleTestsBase() {
-    launch_arguments_.AppendSwitchASCII("lang", "he");
+    launch_arguments_.AppendSwitchASCII(switches::kLang, "he");
 #if defined(OS_LINUX)
     old_lc_all_ = getenv("LC_ALL");
     setenv("LC_ALL", "he_IL.UTF-8", 1);
@@ -57,7 +58,7 @@ class LocaleTestsHe : public LocaleTestsBase {
 class LocaleTestsZhTw : public LocaleTestsBase {
  public:
   LocaleTestsZhTw() : LocaleTestsBase() {
-    launch_arguments_.AppendSwitchASCII("lang", "zh-TW");
+    launch_arguments_.AppendSwitchASCII(switches::kLang, "zh-TW");
 #if defined(OS_LINUX)
     old_lc_all_ = getenv("LC_ALL");
     setenv("LC_ALL", "zh_TW.UTF-8", 1);

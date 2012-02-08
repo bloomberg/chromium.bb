@@ -444,10 +444,6 @@ const char kEnableAutologin[]               = "enable-autologin";
 // Enables the benchmarking extensions.
 const char kEnableBenchmarking[]            = "enable-benchmarking";
 
-// This flag enables UI for clearing server data. Temporarily in place until
-// there's a server endpoint deployed.
-const char kEnableClearServerData[]         = "enable-clear-server-data";
-
 // This applies only when the process type is "service". Enables the Cloud
 // Print Proxy component within the service process.
 const char kEnableCloudPrintProxy[]         = "enable-cloud-print-proxy";
@@ -535,9 +531,6 @@ const char kEnableResourceContentSettings[] =
 
 // Enables the installation and usage of Portable Native Client.
 const char kEnablePnacl[]                    = "enable-pnacl";
-
-// Enables speculative TCP/IP preconnection.
-const char kEnablePreconnect[]              = "enable-preconnect";
 
 // Enables tracking of tasks in profiler for viewing via about:profiler.
 // To predominantly disable tracking (profiling), use the command line switch:
@@ -1050,12 +1043,6 @@ const char kSyncAllowInsecureXmppConnection[] =
 // Invalidates any login info passed into sync's XMPP connection.
 const char kSyncInvalidateXmppLogin[]       = "sync-invalidate-xmpp-login";
 
-// Uses the SyncerThread implementation that matches up with the old pthread
-// impl semantics, but using Chrome synchronization primitives. The only
-// difference between this and the default is that we now have no timeout on
-// Stop(). Should only use if you experience problems with the default.
-const char kSyncerThreadTimedStop[]         = "syncer-thread-timed-stop";
-
 // Overrides the default notification method for sync.
 const char kSyncNotificationMethod[]        = "sync-notification-method";
 
@@ -1108,10 +1095,6 @@ const char kUninstall[]                     = "uninstall";
 // implementations).
 const char kUseMoreWebUI[]                  = "use-more-webui";
 
-// Uses a pure Views implementation when available (rather than platform-native
-// implementation such as GTK).
-const char kUsePureViews[]                  = "use-pure-views";
-
 // Uses Spdy for the transport protocol instead of HTTP. This is a temporary
 // testing flag.
 const char kUseSpdy[]                       = "use-spdy";
@@ -1156,9 +1139,6 @@ const char kEnableDevicePolicy[]            = "enable-device-policy";
 // Viewer.
 const char kEnableGView[]                   = "enable-gview";
 
-// Whether to show the image-based login.
-const char kEnableLoginImages[]             = "enable-login-images";
-
 // Enables mobile setup in a dialog.
 const char kEnableMobileSetupDialog[]       = "enable-mobile-dialog";
 
@@ -1199,15 +1179,6 @@ const char kLoginUser[]                     = "login-user";
 // Specifies a password to be used to login (along with login-user).
 const char kLoginPassword[]                 = "login-password";
 
-// Emulates situation when user logins with new password.
-const char kLoginUserWithNewPassword[]      = "login-user-with-new-password";
-
-// Attempts to perform Chrome OS offline and online login in parallel.
-const char kParallelAuth[]                  = "parallel-auth";
-
-// Uses the given language for UI in the input method candidate window.
-const char kCandidateWindowLang[]           = "lang";
-
 // Indicates that the browser is in "browse without sign-in" (Guest session)
 // mode. Should completely disable extensions, sync and bookmarks.
 const char kGuestSession[]                  = "bwsi";
@@ -1223,9 +1194,6 @@ const char kStubCros[]                      = "stub-cros";
 // memory without signing should be used, treating current user as the owner.
 // This option is for testing the chromeos build of chrome on the desktop only.
 const char kStubCrosSettings[]              = "stub-cros-settings";
-
-// URL of the html page for Screen Saver.
-const char kScreenSaverUrl[]                = "screen-saver-url";
 
 // Triggers ChromeOS system log compression during feedback submit.
 const char kCompressSystemFeedback[]        = "compress-sys-feedback";
@@ -1300,14 +1268,6 @@ const char kTouchDevices[]                  = "touch-devices";
 #endif
 
 #ifndef NDEBUG
-// URL of the OAuth server host
-const char kOAuthHostUrl[]                  = "oauth-host-url";
-
-// Debug-only switch to specify which websocket live experiment host to be
-// used. If host is specified, it also makes initial delay shorter (5 min to 5
-// sec) to make it faster to test websocket live experiment code.
-const char kWebSocketLiveExperimentHost[]   = "websocket-live-experiment-host";
-
 // Enables overriding the path of file manager extension.
 const char kFileManagerExtensionPath[]      = "filemgr-ext-path";
 
