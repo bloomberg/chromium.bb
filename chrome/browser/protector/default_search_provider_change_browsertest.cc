@@ -31,13 +31,13 @@ namespace {
 
 // Keyword names and URLs used for testing.
 
-const string16 example_info = ASCIIToUTF16("Info");
-const string16 example_info_long = ASCIIToUTF16("Example.info");
+const string16 example_info = ASCIIToUTF16("Example.info");
+const string16 example_info_long = ASCIIToUTF16("ExampleSearchEngine.info");
 const std::string http_example_info = "http://example.info/%s";
-const string16 example_com = ASCIIToUTF16("Com");
-const string16 example_com_long = ASCIIToUTF16("Example.com");
+const string16 example_com = ASCIIToUTF16("Example.com");
+const string16 example_com_long = ASCIIToUTF16("ExampleSearchEngine.com");
 const std::string http_example_com = "http://example.com/%s";
-const string16 example_net = ASCIIToUTF16("Net");
+const string16 example_net = ASCIIToUTF16("Example.net");
 const std::string http_example_net = "http://example.net/%s";
 
 };

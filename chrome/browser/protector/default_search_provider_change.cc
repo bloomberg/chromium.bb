@@ -36,7 +36,7 @@ namespace protector {
 namespace {
 
 // Maximum length of the search engine name to be displayed.
-const size_t kMaxDisplayedNameLength = 10;
+const size_t kMaxDisplayedNameLength = 16;
 
 // Matches TemplateURL with all fields set from the prepopulated data equal
 // to fields in another TemplateURL.
