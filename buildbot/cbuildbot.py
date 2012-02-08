@@ -275,7 +275,7 @@ class Builder(object):
 
     # Re-run the command in the buildroot.
     return_obj = cros_lib.RunCommand(
-        [_PATH_TO_CBUILDBOT] + sys.argv + args_to_append,
+        [_PATH_TO_CBUILDBOT] + sys.argv[1:] + args_to_append,
         cwd=self.options.buildroot, error_code_ok=True)
     return return_obj.returncode == 0
 
