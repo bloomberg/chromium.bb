@@ -77,7 +77,7 @@ TEST_F(VelocityCalculatorTest, IsAccurateWithLargeTimes) {
   EXPECT_GT(velocity_calculator.YVelocity(), -1270000);
   EXPECT_LT(velocity_calculator.YVelocity(), -1240000);
 
-  start_time = 1223372036800000000;
+  start_time = 1223372036800000000L;
   velocity_calculator.PointSeen(9, -11, start_time);
   velocity_calculator.PointSeen(21, -19, start_time + 8);
   velocity_calculator.PointSeen(30, -32, start_time + 16);
