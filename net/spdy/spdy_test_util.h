@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -157,7 +157,14 @@ int ConstructSpdyReplyString(const char* const extra_headers[],
 // Construct an expected SPDY SETTINGS frame.
 // |settings| are the settings to set.
 // Returns the constructed frame.  The caller takes ownership of the frame.
-spdy::SpdyFrame* ConstructSpdySettings(spdy::SpdySettings settings);
+spdy::SpdyFrame* ConstructSpdySettings(
+    const spdy::SpdySettings& settings);
+
+// Construct an expected SPDY CREDENTIAL frame.
+// |credential| is the credential to send.
+// Returns the constructed frame.  The caller takes ownership of the frame.
+spdy::SpdyFrame* ConstructSpdyCredential(
+    const spdy::SpdyCredential& credential);
 
 // Construct a SPDY PING frame.
 // Returns the constructed frame.  The caller takes ownership of the frame.

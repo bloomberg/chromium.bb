@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -191,9 +191,19 @@ spdy::SpdyFrame* ConstructSpdyPacket(const SpdyHeaderInfo& header_info,
 // Construct an expected SPDY SETTINGS frame.
 // |settings| are the settings to set.
 // Returns the constructed frame.  The caller takes ownership of the frame.
-spdy::SpdyFrame* ConstructSpdySettings(spdy::SpdySettings settings) {
+spdy::SpdyFrame* ConstructSpdySettings(
+    const spdy::SpdySettings& settings) {
   spdy::SpdyFramer framer;
   return framer.CreateSettings(settings);
+}
+
+// Construct an expected SPDY CREDENTIAL frame.
+// |credential| is the credential to sen.
+// Returns the constructed frame.  The caller takes ownership of the frame.
+spdy::SpdyFrame* ConstructSpdyCredential(
+    const spdy::SpdyCredential& credential) {
+  spdy::SpdyFramer framer;
+  return framer.CreateCredentialFrame(credential);
 }
 
 // Construct a SPDY PING frame.
