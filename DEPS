@@ -423,7 +423,7 @@ deps_os = {
       Var("webkit_trunk") + "/Tools/gdb@" + Var("webkit_revision"),
 
     "src/third_party/gold":
-      "/trunk/deps/third_party/gold@120423",
+      "/trunk/deps/third_party/gold@120645",
   },
 }
 
