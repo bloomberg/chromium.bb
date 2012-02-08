@@ -1061,11 +1061,27 @@ void RenderWidgetHostViewWin::OnPaint(HDC unused_dc) {
 
     // Blit only the damaged regions from the backing store.
     DWORD data_size = GetRegionData(damage_region, 0, NULL);
-    scoped_array<char> region_data_buf(new char[data_size]);
-    RGNDATA* region_data = reinterpret_cast<RGNDATA*>(region_data_buf.get());
-    GetRegionData(damage_region, data_size, region_data);
+    scoped_array<char> region_data_buf;
+    RGNDATA* region_data = NULL;
+    RECT* region_rects = NULL;
 
-    RECT* region_rects = reinterpret_cast<RECT*>(region_data->Buffer);
+    if (data_size) {
+      region_data_buf.reset(new char[data_size]);
+      region_data = reinterpret_cast<RGNDATA*>(region_data_buf.get());
+      region_rects = reinterpret_cast<RECT*>(region_data->Buffer);
+      data_size = GetRegionData(damage_region, data_size, region_data);
+    }
+
+    if (!data_size) {
+      // Grabbing the damaged regions failed, fake with the whole rect.
+      data_size = sizeof(RGNDATAHEADER) + sizeof(RECT);
+      region_data_buf.reset(new char[data_size]);
+      region_data = reinterpret_cast<RGNDATA*>(region_data_buf.get());
+      region_rects = reinterpret_cast<RECT*>(region_data->Buffer);
+      region_data->rdh.nCount = 1;
+      region_rects[0] = damaged_rect.ToRECT();
+    }
+
     for (DWORD i = 0; i < region_data->rdh.nCount; ++i) {
       gfx::Rect paint_rect = bitmap_rect.Intersect(gfx::Rect(region_rects[i]));
       if (!paint_rect.IsEmpty()) {
