@@ -933,16 +933,18 @@ size_t HistoryURLProvider::RemoveSubsequentMatchesOf(
   // Find the first occurrence of any URL in the redirect chain. We want to
   // keep this one since it is rated the highest.
   history::HistoryMatches::iterator first(std::find_first_of(
-      matches->begin(), matches->end(), remove.begin(), remove.end()));
+      matches->begin(), matches->end(), remove.begin(), remove.end(),
+      history::HistoryMatch::EqualsGURL));
   DCHECK(first != matches->end()) << "We should have always found at least the "
       "original URL.";
 
   // Find any following occurrences of any URL in the redirect chain, these
   // should be deleted.
   for (history::HistoryMatches::iterator next(std::find_first_of(first + 1,
-           matches->end(), remove.begin(), remove.end()));
+           matches->end(), remove.begin(), remove.end(),
+           history::HistoryMatch::EqualsGURL));
        next != matches->end(); next = std::find_first_of(next, matches->end(),
-           remove.begin(), remove.end())) {
+           remove.begin(), remove.end(), history::HistoryMatch::EqualsGURL)) {
     // Remove this item. When we remove an item before the source index, we
     // need to shift it to the right and remember that so we can return it.
     next = matches->erase(next);
