@@ -43,9 +43,6 @@ class DownloadStatusUpdater
   virtual void OnDownloadOpened(content::DownloadItem* download) OVERRIDE;
 
  private:
-  // Update the app icon.
-  void UpdateAppIconDownloadProgress();
-
   // Update the internal state tracking an item.
   void UpdateItem(content::DownloadItem* download);
 

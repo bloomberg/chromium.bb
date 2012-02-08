@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -86,6 +86,7 @@ class ChromeDownloadManagerDelegate
       const FilePath::StringType& default_extension,
       bool can_save_as_complete,
       content::SaveFilePathPickedCallback callback) OVERRIDE;
+  virtual void DownloadProgressUpdated() OVERRIDE;
 
   DownloadPrefs* download_prefs() { return download_prefs_.get(); }
   DownloadHistory* download_history() { return download_history_.get(); }

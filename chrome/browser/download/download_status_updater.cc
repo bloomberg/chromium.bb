@@ -8,7 +8,6 @@
 
 #include "base/logging.h"
 #include "base/stl_util.h"
-#include "chrome/browser/download/download_util.h"
 
 DownloadStatusUpdater::DownloadStatusUpdater() {
 }
@@ -59,8 +58,6 @@ void DownloadStatusUpdater::ModelChanged(content::DownloadManager* manager) {
        it != downloads.end(); ++it) {
     UpdateItem(*it);
   }
-
-  UpdateAppIconDownloadProgress();
 }
 
 void DownloadStatusUpdater::ManagerGoingDown(
@@ -80,19 +77,9 @@ void DownloadStatusUpdater::SelectFileDialogDisplayed(
 void DownloadStatusUpdater::OnDownloadUpdated(
     content::DownloadItem* download) {
   UpdateItem(download);
-  UpdateAppIconDownloadProgress();
 }
 
 void DownloadStatusUpdater::OnDownloadOpened(content::DownloadItem* download) {
-}
-
-void DownloadStatusUpdater::UpdateAppIconDownloadProgress() {
-  float progress = 0;
-  int download_count = 0;
-  bool progress_known = GetProgress(&progress, &download_count);
-  download_util::UpdateAppIconDownloadProgress(download_count,
-                                               progress_known,
-                                               progress);
 }
 
 // React to a transition that a download associated with one of our
