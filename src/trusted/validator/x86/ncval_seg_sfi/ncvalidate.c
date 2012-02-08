@@ -506,11 +506,13 @@ static int ValidateSFenceClFlush(const NCDecoderInst *dinst) {
 
   if (modrm_modInline(mrm) == 3) {
     /* this is an sfence */
-    if (vstate->cpufeatures.f_FXSR) return 0;
+    if (NaClGetCPUFeature(&vstate->cpufeatures, NaClCPUFeature_FXSR))
+      return 0;
     return 1;
   } else {
     /* this is an clflush */
-    if (vstate->cpufeatures.f_CLFLUSH) return 0;
+    if (NaClGetCPUFeature(&vstate->cpufeatures, NaClCPUFeature_CLFLUSH))
+      return 0;
     return 1;
   }
 }
@@ -752,7 +754,7 @@ static Bool ValidateInst(const NCDecoderInst *dinst) {
       ValidateIndirect5(dinst);
       break;
     case NACLi_X87:
-      squashme = (!cpufeatures->f_x87);
+      squashme = !NaClGetCPUFeature(cpufeatures, NaClCPUFeature_x87);
       break;
     case NACLi_SFENCE_CLFLUSH:
       squashme = ValidateSFenceClFlush(dinst);
@@ -767,60 +769,62 @@ static Bool ValidateInst(const NCDecoderInst *dinst) {
         NCBadInstructionError(dinst, "Illegal instruction");
         NCStatsIllegalInst(vstate);
       }
-      squashme = (!cpufeatures->f_CX8);
+      squashme = !NaClGetCPUFeature(cpufeatures, NaClCPUFeature_CX8);
       break;
     case NACLi_CMOV:
-      squashme = (!cpufeatures->f_CMOV);
+      squashme = !NaClGetCPUFeature(cpufeatures, NaClCPUFeature_CMOV);
       break;
     case NACLi_FCMOV:
-      squashme = (!(cpufeatures->f_CMOV && cpufeatures->f_x87));
+      squashme = !(NaClGetCPUFeature(cpufeatures, NaClCPUFeature_CMOV) &&
+                   NaClGetCPUFeature(cpufeatures, NaClCPUFeature_x87));
       break;
     case NACLi_RDTSC:
-      squashme = (!cpufeatures->f_TSC);
+      squashme = !NaClGetCPUFeature(cpufeatures, NaClCPUFeature_TSC);
       break;
     case NACLi_MMX:
-      squashme = (!cpufeatures->f_MMX);
+      squashme = !NaClGetCPUFeature(cpufeatures, NaClCPUFeature_MMX);
       break;
     case NACLi_MMXSSE2:
       /* Note: We accept these instructions if either MMX or SSE2 bits */
       /* are set, in case MMX instructions go away someday...          */
-      squashme = (!(cpufeatures->f_MMX || cpufeatures->f_SSE2));
+      squashme = !(NaClGetCPUFeature(cpufeatures, NaClCPUFeature_MMX) ||
+                   NaClGetCPUFeature(cpufeatures, NaClCPUFeature_SSE2));
       break;
     case NACLi_SSE:
-      squashme = (!cpufeatures->f_SSE);
+      squashme = !NaClGetCPUFeature(cpufeatures, NaClCPUFeature_SSE);
       break;
     case NACLi_SSE2:
-      squashme = (!cpufeatures->f_SSE2);
+      squashme = !NaClGetCPUFeature(cpufeatures, NaClCPUFeature_SSE2);
       break;
     case NACLi_SSE3:
-      squashme = (!cpufeatures->f_SSE3);
+      squashme = !NaClGetCPUFeature(cpufeatures, NaClCPUFeature_SSE3);
       break;
     case NACLi_SSE4A:
-      squashme = (!cpufeatures->f_SSE4A);
+      squashme = !NaClGetCPUFeature(cpufeatures, NaClCPUFeature_SSE4A);
       break;
     case NACLi_SSE41:
-      squashme = (!cpufeatures->f_SSE41);
+      squashme = !NaClGetCPUFeature(cpufeatures, NaClCPUFeature_SSE41);
       break;
     case NACLi_SSE42:
-      squashme = (!cpufeatures->f_SSE42);
+      squashme = !NaClGetCPUFeature(cpufeatures, NaClCPUFeature_SSE42);
       break;
     case NACLi_MOVBE:
-      squashme = (!cpufeatures->f_MOVBE);
+      squashme = !NaClGetCPUFeature(cpufeatures, NaClCPUFeature_MOVBE);
       break;
     case NACLi_POPCNT:
-      squashme = (!cpufeatures->f_POPCNT);
+      squashme = !NaClGetCPUFeature(cpufeatures, NaClCPUFeature_POPCNT);
       break;
     case NACLi_LZCNT:
-      squashme = (!cpufeatures->f_LZCNT);
+      squashme = !NaClGetCPUFeature(cpufeatures, NaClCPUFeature_LZCNT);
       break;
     case NACLi_SSSE3:
-      squashme = (!cpufeatures->f_SSSE3);
+      squashme = !NaClGetCPUFeature(cpufeatures, NaClCPUFeature_SSSE3);
       break;
     case NACLi_3DNOW:
-      squashme = (!cpufeatures->f_3DNOW);
+      squashme = !NaClGetCPUFeature(cpufeatures, NaClCPUFeature_3DNOW);
       break;
     case NACLi_E3DNOW:
-      squashme = (!cpufeatures->f_E3DNOW);
+      squashme = !NaClGetCPUFeature(cpufeatures, NaClCPUFeature_E3DNOW);
       break;
     case NACLi_SSE2x:
       /* This case requires CPUID checking code */
@@ -835,7 +839,7 @@ static Bool ValidateInst(const NCDecoderInst *dinst) {
         NCBadInstructionError(dinst, "Bad prefix usage");
         NCStatsBadPrefix(vstate);
       }
-      squashme = (!cpufeatures->f_SSE2);
+      squashme = !NaClGetCPUFeature(cpufeatures, NaClCPUFeature_SSE2);
       break;
 
     case NACLi_RETURN:

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -16,6 +16,44 @@
 #include "native_client/src/include/portability.h"
 #include "native_client/src/shared/utils/types.h"
 
+/* The list of features we can get from the CPUID instruction.
+ * Do not modify this enum without making similar modifications to
+ * CPUFeatureDescriptions in nacl_cpuid.c.
+ */
+typedef enum {
+  NaClCPUFeature_x87 = 0,
+  NaClCPUFeature_MMX,
+  NaClCPUFeature_SSE,
+  NaClCPUFeature_SSE2,
+  NaClCPUFeature_SSE3,
+  NaClCPUFeature_SSSE3,
+  NaClCPUFeature_SSE41,
+  NaClCPUFeature_SSE42,
+  NaClCPUFeature_MOVBE,
+  NaClCPUFeature_POPCNT,
+  NaClCPUFeature_CX8,
+  NaClCPUFeature_CX16,
+  NaClCPUFeature_CMOV,
+  NaClCPUFeature_MON,
+  NaClCPUFeature_FXSR,
+  NaClCPUFeature_CLFLUSH,
+  NaClCPUFeature_MSR,
+  NaClCPUFeature_TSC,
+  NaClCPUFeature_VME,
+  NaClCPUFeature_PSN,
+  NaClCPUFeature_VMX,
+  NaClCPUFeature_OSXSAVE,
+  NaClCPUFeature_AVX,
+  NaClCPUFeature_3DNOW, /* AMD-specific */
+  NaClCPUFeature_EMMX, /* AMD-specific */
+  NaClCPUFeature_E3DNOW, /* AMD-specific */
+  NaClCPUFeature_LZCNT, /* AMD-specific */
+  NaClCPUFeature_SSE4A, /* AMD-specific */
+  NaClCPUFeature_LM,
+  NaClCPUFeature_SVM, /* AMD-specific */
+  NaClCPUFeature_Max
+} NaClCPUFeatureID;
+
 /* Features needed to show that the architecture is supported. */
 typedef struct nacl_arch_features {
   Bool f_cpuid_supported;  /* CPUID is defined for the hardward. */
@@ -25,38 +63,7 @@ typedef struct nacl_arch_features {
 /* Features we can get about the x86 hardware. */
 typedef struct cpu_feature_struct {
   nacl_arch_features arch_features;
-  Bool f_x87;
-  Bool f_MMX;
-  Bool f_SSE;
-  Bool f_SSE2;
-  Bool f_SSE3;
-  Bool f_SSSE3;
-  Bool f_SSE41;
-  Bool f_SSE42;
-  Bool f_MOVBE;
-  Bool f_POPCNT;
-  Bool f_CX8;
-  Bool f_CX16;
-  Bool f_CMOV;
-  Bool f_MON;
-  Bool f_FXSR;
-  Bool f_CLFLUSH;
-  Bool f_TSC;
-  Bool f_OSXSAVE;
-  /* These instructions are illegal but included for completeness */
-  Bool f_MSR;
-  Bool f_VME;
-  Bool f_PSN;
-  Bool f_VMX;
-  Bool f_AVX;
-  /* AMD-specific features */
-  Bool f_3DNOW;
-  Bool f_EMMX;
-  Bool f_E3DNOW;
-  Bool f_LZCNT;
-  Bool f_SSE4A;
-  Bool f_LM;
-  Bool f_SVM;
+  Bool data[NaClCPUFeature_Max];
 } CPUFeatures;
 
 /* Define the maximum length of a CPUID string.
@@ -109,6 +116,15 @@ void NaClSetAllCPUFeatures(CPUFeatures *features);
 
 /* Clear cpu check state fields (i.e. set all fields to false). */
 void NaClClearCPUFeatures(CPUFeatures *features);
+
+/* Set a feature. */
+void NaClSetCPUFeature(CPUFeatures *features, NaClCPUFeatureID id, Bool state);
+
+/* Query whether a feature is supported. */
+static INLINE Bool NaClGetCPUFeature(CPUFeatures *features,
+                                     NaClCPUFeatureID id) {
+  return features->data[id];
+}
 
 /* Copy a set of cpu features. */
 void NaClCopyCPUFeatures(CPUFeatures* target, const CPUFeatures* source);

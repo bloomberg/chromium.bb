@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -37,7 +37,7 @@ void NaClInitSwitchToApp(struct NaClApp *nap) {
   NaClCPUDataGet(&cpu_data);
   GetCPUFeatures(&cpu_data, &cpu_features);
 
-  if (cpu_features.f_AVX) {
+  if (NaClGetCPUFeature(&cpu_features, NaClCPUFeature_AVX)) {
     NaClSwitch = NaClSwitchAVX;
   } else {
     NaClSwitch = NaClSwitchSSE;

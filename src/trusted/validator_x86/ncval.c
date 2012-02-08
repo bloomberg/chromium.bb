@@ -776,34 +776,6 @@ static Bool GrokABoolFlag(const char *arg) {
     { "--stats", &NACL_FLAGS_stats_print },
 #endif
     { "--annotate", &NACL_FLAGS_ncval_annotate },
-    { "--x87"    , &ncval_cpu_features.f_x87 },
-    { "--MMX"    , &ncval_cpu_features.f_MMX },
-    { "--SSE"    , &ncval_cpu_features.f_SSE },
-    { "--SSE2"   , &ncval_cpu_features.f_SSE2 },
-    { "--SSE3"   , &ncval_cpu_features.f_SSE3 },
-    { "--SSSE3"  , &ncval_cpu_features.f_SSSE3 },
-    { "--SSE41"  , &ncval_cpu_features.f_SSE41 },
-    { "--SSE42"  , &ncval_cpu_features.f_SSE42 },
-    { "--MOVBE"  , &ncval_cpu_features.f_MOVBE },
-    { "--POPCNT" , &ncval_cpu_features.f_POPCNT },
-    { "--CX8"    , &ncval_cpu_features.f_CX8 },
-    { "--CX16"   , &ncval_cpu_features.f_CX16 },
-    { "--CMOV"   , &ncval_cpu_features.f_CMOV },
-    { "--MON"    , &ncval_cpu_features.f_MON },
-    { "--FXSR"   , &ncval_cpu_features.f_FXSR },
-    { "--CLFLUSH", &ncval_cpu_features.f_CLFLUSH },
-    { "--TSC"    , &ncval_cpu_features.f_TSC },
-    { "--MSR"    , &ncval_cpu_features.f_MSR },
-    { "--VME"    , &ncval_cpu_features.f_VME },
-    { "--PSN"    , &ncval_cpu_features.f_PSN },
-    { "--VMX"    , &ncval_cpu_features.f_VMX },
-    { "--3DNOW"  , &ncval_cpu_features.f_3DNOW },
-    { "--EMMX"   , &ncval_cpu_features.f_EMMX },
-    { "--E3DNOW" , &ncval_cpu_features.f_E3DNOW },
-    { "--LZCNT"  , &ncval_cpu_features.f_LZCNT },
-    { "--SSE4A"  , &ncval_cpu_features.f_SSE4A },
-    { "--LM"     , &ncval_cpu_features.f_LM },
-    { "--SVM"    , &ncval_cpu_features.f_SVM },
 #if NACL_TARGET_SUBARCH == 64
     { "--histogram", &NACL_FLAGS_opcode_histogram },
 #endif
@@ -816,12 +788,56 @@ static Bool GrokABoolFlag(const char *arg) {
 #endif
     { "--identity_mask", &NACL_FLAGS_identity_mask },
   };
+
+  /* A set of CPU features to check. */
+  static struct {
+    const char *feature_name;
+    NaClCPUFeatureID feature;
+  } features[] = {
+    { "--x87"    , NaClCPUFeature_x87 },
+    { "--MMX"    , NaClCPUFeature_MMX },
+    { "--SSE"    , NaClCPUFeature_SSE },
+    { "--SSE2"   , NaClCPUFeature_SSE2 },
+    { "--SSE3"   , NaClCPUFeature_SSE3 },
+    { "--SSSE3"  , NaClCPUFeature_SSSE3 },
+    { "--SSE41"  , NaClCPUFeature_SSE41 },
+    { "--SSE42"  , NaClCPUFeature_SSE42 },
+    { "--MOVBE"  , NaClCPUFeature_MOVBE },
+    { "--POPCNT" , NaClCPUFeature_POPCNT },
+    { "--CX8"    , NaClCPUFeature_CX8 },
+    { "--CX16"   , NaClCPUFeature_CX16 },
+    { "--CMOV"   , NaClCPUFeature_CMOV },
+    { "--MON"    , NaClCPUFeature_MON },
+    { "--FXSR"   , NaClCPUFeature_FXSR },
+    { "--CLFLUSH", NaClCPUFeature_CLFLUSH },
+    { "--TSC"    , NaClCPUFeature_TSC },
+    { "--MSR"    , NaClCPUFeature_MSR },
+    { "--VME"    , NaClCPUFeature_VME },
+    { "--PSN"    , NaClCPUFeature_PSN },
+    { "--VMX"    , NaClCPUFeature_VMX },
+    { "--3DNOW"  , NaClCPUFeature_3DNOW },
+    { "--EMMX"   , NaClCPUFeature_EMMX },
+    { "--E3DNOW" , NaClCPUFeature_E3DNOW },
+    { "--LZCNT"  , NaClCPUFeature_LZCNT },
+    { "--SSE4A"  , NaClCPUFeature_SSE4A },
+    { "--LM"     , NaClCPUFeature_LM },
+    { "--SVM"    , NaClCPUFeature_SVM },
+  };
+
   int i;
+  Bool flag_state;
   for (i = 0; i < NACL_ARRAY_SIZE(flags); ++i) {
     if (GrokBoolFlag(flags[i].flag_name, arg, flags[i].flag_ptr)) {
       return TRUE;
     }
   }
+  for (i = 0; i < NACL_ARRAY_SIZE(features); ++i) {
+    if (GrokBoolFlag(features[i].feature_name, arg, &flag_state)) {
+      NaClSetCPUFeature(&ncval_cpu_features, features[i].feature, flag_state);
+      return TRUE;
+    }
+  }
+
   return FALSE;
 }
 

@@ -1207,9 +1207,9 @@ void test_stubout() {
   };
 
   /* If MMX instructions are not allowed, stubout will occur. */
-  g_ncval_cpu_features.f_MMX = FALSE;
+  NaClSetCPUFeature(&g_ncval_cpu_features, NaClCPUFeature_MMX, FALSE);
   TestValidator(&test, TRUE);
-  g_ncval_cpu_features.f_MMX = TRUE;
+  NaClSetCPUFeature(&g_ncval_cpu_features, NaClCPUFeature_MMX, TRUE);
 }
 
 void ncvalidate_unittests() {

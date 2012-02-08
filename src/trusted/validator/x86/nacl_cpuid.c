@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -24,43 +24,6 @@
 /*
  * TODO(bradchen): consolidate to use one debug print mechanism.
  */
-
-/*  The list of features we can get from the CPUID. */
-typedef enum {
-  CPUFeature_x87 = 0,
-  CPUFeature_MMX,
-  CPUFeature_SSE,
-  CPUFeature_SSE2,
-  CPUFeature_SSE3,
-  CPUFeature_SSSE3,
-  CPUFeature_SSE41,
-  CPUFeature_SSE42,
-  CPUFeature_MOVBE,
-  CPUFeature_POPCNT,
-  CPUFeature_CX8,
-  CPUFeature_CX16,
-  CPUFeature_CMOV,
-  CPUFeature_MON,
-  CPUFeature_FXSR,
-  CPUFeature_CLFLUSH,
-  /* These instructions are illegal but included for completeness */
-  CPUFeature_MSR,
-  CPUFeature_TSC,
-  CPUFeature_VME,
-  CPUFeature_PSN,
-  CPUFeature_VMX,
-  CPUFeature_OSXSAVE,
-  CPUFeature_AVX,
-  /* AMD-specific features */
-  CPUFeature_3DNOW,
-  CPUFeature_EMMX,
-  CPUFeature_E3DNOW,
-  CPUFeature_LZCNT,
-  CPUFeature_SSE4A,
-  CPUFeature_LM,
-  CPUFeature_SVM,
-  CPUFeature_Last
-} CPUFeatureID;
 
 #define CPUID_EDX_x87        0x00000001  /* x87 FPU support */
 #define CPUID_EDX_VME        0x00000002  /* Virtual 8086 Mode Enhancement */
@@ -156,7 +119,7 @@ typedef struct cpufeature {
   const char *name;
 } CPUFeature;
 
-static const CPUFeature CPUFeatureDescriptions[(int)CPUFeature_Last] = {
+static const CPUFeature CPUFeatureDescriptions[(int)NaClCPUFeature_Max] = {
   {CFReg_EDX_I, CPUID_EDX_x87, "x87 FPU"},
   {CFReg_EDX_I, CPUID_EDX_MMX, "MMX"},
   {CFReg_EDX_I, CPUID_EDX_SSE, "SSE"},
@@ -326,7 +289,7 @@ char *GetCPUIDString(NaClCPUData* data) {
 }
 
 /* Returns true if the given feature is defined by the CPUID. */
-static Bool CheckCPUFeature(NaClCPUData* data, CPUFeatureID fid) {
+static Bool CheckCPUFeature(NaClCPUData* data, NaClCPUFeatureID fid) {
   const CPUFeature *f = &CPUFeatureDescriptions[fid];
   uint32_t *fv = data->_featurev;
 #if 0
@@ -344,7 +307,7 @@ uint64_t NaClXGETBV(uint32_t);
 
 /* Cache XCR vector */
 static void CacheCPUXCRVector(NaClCPUData* data) {
-  if (CheckCPUFeature(data, CPUFeature_OSXSAVE)) {
+  if (CheckCPUFeature(data, NaClCPUFeature_OSXSAVE)) {
     int i;
     for (i = 0; i < kMaxCPUXCRReg; ++i) {
       data->_xcrv[i] = NaClXGETBV(i);
@@ -381,19 +344,32 @@ Bool NaClArchSupported(NaClCPUData* data) {
   return (Bool) (features.f_cpuid_supported && features.f_cpu_supported);
 }
 
-void NaClSetAllCPUFeatures(CPUFeatures *features) {
-  /* Since CPUFeatures is a struct that contains only Bools, we could
-   * use any non-zero value here, but 0xff seems safest.
-   */
-  memset(features, 0xff, sizeof(*features));
-}
-
 void NaClClearCPUFeatures(CPUFeatures *features) {
   memset(features, 0, sizeof(*features));
 }
 
+void NaClSetAllCPUFeatures(CPUFeatures *features) {
+  /* Be a little more pedantic than using memset because we don't know exactly
+   * how the structure is laid out.  If we use memset, Bools may be initialized
+   * to 0xff instead of TRUE... this isn't the end of the world but it can
+   * create a skew if the structure is hashed, etc.
+   */
+  int id;
+  /* Ensure any padding is zeroed. */
+  NaClClearCPUFeatures(features);
+  features->arch_features.f_cpuid_supported = TRUE;
+  features->arch_features.f_cpu_supported = TRUE;
+  for (id = 0; id < NaClCPUFeature_Max; ++id) {
+    NaClSetCPUFeature(features, id, TRUE);
+  }
+}
+
 void NaClCopyCPUFeatures(CPUFeatures* target, const CPUFeatures* source) {
   memcpy(target, source, sizeof(CPUFeatures));
+}
+
+void NaClSetCPUFeature(CPUFeatures *features, NaClCPUFeatureID id, Bool state) {
+  features->data[id] = state;
 }
 
 /* WARNING: This routine and subroutines it uses are not threadsafe.
@@ -403,48 +379,23 @@ void NaClCopyCPUFeatures(CPUFeatures* target, const CPUFeatures* source) {
  * some features that should not be rejected.
  */
 void GetCPUFeatures(NaClCPUData* data, CPUFeatures *cpuf) {
+  int id;
   NaClClearCPUFeatures(cpuf);
   CheckNaClArchFeatures(data, &cpuf->arch_features);
   if (!cpuf->arch_features.f_cpuid_supported) return;
-  cpuf->f_x87 = CheckCPUFeature(data, CPUFeature_x87);
-  cpuf->f_MMX = CheckCPUFeature(data, CPUFeature_MMX);
-  cpuf->f_SSE = CheckCPUFeature(data, CPUFeature_SSE);
-  cpuf->f_SSE2 = CheckCPUFeature(data, CPUFeature_SSE2);
-  cpuf->f_SSE3 = CheckCPUFeature(data, CPUFeature_SSE3);
-  cpuf->f_SSSE3 = CheckCPUFeature(data, CPUFeature_SSSE3);
-  cpuf->f_SSE41 = CheckCPUFeature(data, CPUFeature_SSE41);
-  cpuf->f_SSE42 = CheckCPUFeature(data, CPUFeature_SSE42);
-  cpuf->f_MOVBE = CheckCPUFeature(data, CPUFeature_MOVBE);
-  cpuf->f_POPCNT = CheckCPUFeature(data, CPUFeature_POPCNT);
-  cpuf->f_CX8 = CheckCPUFeature(data, CPUFeature_CX8);
-  cpuf->f_CX16 = CheckCPUFeature(data, CPUFeature_CX16);
-  cpuf->f_CMOV = CheckCPUFeature(data, CPUFeature_CMOV);
-  cpuf->f_MON = CheckCPUFeature(data, CPUFeature_MON);
-  cpuf->f_FXSR = CheckCPUFeature(data, CPUFeature_FXSR);
-  cpuf->f_CLFLUSH = CheckCPUFeature(data, CPUFeature_CLFLUSH);
-  /* These instructions are illegal but included for completeness */
-  cpuf->f_MSR = CheckCPUFeature(data, CPUFeature_MSR);
-  cpuf->f_TSC = CheckCPUFeature(data, CPUFeature_TSC);
-  cpuf->f_VME = CheckCPUFeature(data, CPUFeature_VME);
-  cpuf->f_PSN = CheckCPUFeature(data, CPUFeature_PSN);
-  cpuf->f_VMX = CheckCPUFeature(data, CPUFeature_VMX);
-  cpuf->f_OSXSAVE = CheckCPUFeature(data, CPUFeature_OSXSAVE);
-  /* AMD-specific features */
-  cpuf->f_3DNOW = CheckCPUFeature(data, CPUFeature_3DNOW);
-  cpuf->f_EMMX = CheckCPUFeature(data, CPUFeature_EMMX);
-  cpuf->f_E3DNOW = CheckCPUFeature(data, CPUFeature_E3DNOW);
-  cpuf->f_LZCNT = CheckCPUFeature(data, CPUFeature_LZCNT);
-  cpuf->f_SSE4A = CheckCPUFeature(data, CPUFeature_SSE4A);
-  cpuf->f_LM = CheckCPUFeature(data, CPUFeature_LM);
-  cpuf->f_SVM = CheckCPUFeature(data, CPUFeature_SVM);
+
+  for (id = 0; id < NaClCPUFeature_Max; ++id) {
+    NaClSetCPUFeature(cpuf, id, CheckCPUFeature(data, id));
+  }
 
   /*
    * If the operating system doesn't maintain the AVX state,
    * pretend we don't have the instructions available at all.
    */
-  cpuf->f_AVX = (CheckCPUFeature(data, CPUFeature_AVX) &&
-                 cpuf->f_OSXSAVE &&
-                 (data->_xcrv[0] & 6) == 6);
+  if (!(NaClGetCPUFeature(cpuf, NaClCPUFeature_OSXSAVE)
+        && (data->_xcrv[0] & 6) == 6)) {
+    NaClSetCPUFeature(cpuf, NaClCPUFeature_AVX, FALSE);
+  }
 }
 
 void NaClCPUDataGet(NaClCPUData* data) {

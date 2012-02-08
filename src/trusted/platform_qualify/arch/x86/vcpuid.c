@@ -562,18 +562,30 @@ int CPUIDImplIsValid() {
     return 0;
   }
 
-  if (cpuf.f_x87)    rcode |= DoTest(asm_HasX87, "x87");
-  if (cpuf.f_MMX)    rcode |= DoTest(asm_HasMMX, "MMX");
-  if (cpuf.f_SSE)    rcode |= DoTest(asm_HasSSE, "SSE");
-  if (cpuf.f_SSE2)   rcode |= DoTest(asm_HasSSE2, "SSE2");
-  if (cpuf.f_3DNOW)  rcode |= DoTest(asm_Has3DNow, "3DNow");
-  if (cpuf.f_SSE3)   rcode |= DoTest(asm_HasSSE3, "SSE3");
-  if (cpuf.f_SSSE3)  rcode |= DoTest(asm_HasSSSE3, "SSSE3");
-  if (cpuf.f_SSE41)  rcode |= DoTest(asm_HasSSE41, "SSE41");
-  if (cpuf.f_SSE42)  rcode |= DoTest(asm_HasSSE42, "SSE42");
-  if (cpuf.f_POPCNT) rcode |= DoTest(asm_HasPOPCNT, "POPCNT");
-  if (cpuf.f_CMOV)   rcode |= DoTest(asm_HasCMOV, "CMOV");
-  if (cpuf.f_TSC)    rcode |= DoTest(asm_HasTSC, "TSC");
+  if (NaClGetCPUFeature(&cpuf, NaClCPUFeature_x87))
+    rcode |= DoTest(asm_HasX87, "x87");
+  if (NaClGetCPUFeature(&cpuf, NaClCPUFeature_MMX))
+    rcode |= DoTest(asm_HasMMX, "MMX");
+  if (NaClGetCPUFeature(&cpuf, NaClCPUFeature_SSE))
+    rcode |= DoTest(asm_HasSSE, "SSE");
+  if (NaClGetCPUFeature(&cpuf, NaClCPUFeature_SSE2))
+    rcode |= DoTest(asm_HasSSE2, "SSE2");
+  if (NaClGetCPUFeature(&cpuf, NaClCPUFeature_3DNOW))
+    rcode |= DoTest(asm_Has3DNow, "3DNow");
+  if (NaClGetCPUFeature(&cpuf, NaClCPUFeature_SSE3))
+    rcode |= DoTest(asm_HasSSE3, "SSE3");
+  if (NaClGetCPUFeature(&cpuf, NaClCPUFeature_SSSE3))
+    rcode |= DoTest(asm_HasSSSE3, "SSSE3");
+  if (NaClGetCPUFeature(&cpuf, NaClCPUFeature_SSE41))
+    rcode |= DoTest(asm_HasSSE41, "SSE41");
+  if (NaClGetCPUFeature(&cpuf, NaClCPUFeature_SSE42))
+    rcode |= DoTest(asm_HasSSE42, "SSE42");
+  if (NaClGetCPUFeature(&cpuf, NaClCPUFeature_POPCNT))
+    rcode |= DoTest(asm_HasPOPCNT, "POPCNT");
+  if (NaClGetCPUFeature(&cpuf, NaClCPUFeature_CMOV))
+    rcode |= DoTest(asm_HasCMOV, "CMOV");
+  if (NaClGetCPUFeature(&cpuf, NaClCPUFeature_TSC))
+    rcode |= DoTest(asm_HasTSC, "TSC");
 
 #if TEST_NEGATIVE_CASE
   printf("TESTING: simulating invalid CPUID implementation\n");
@@ -586,8 +598,10 @@ int CPUIDImplIsValid() {
 #endif  /* 64-bit Windows */
   /*
    * TODO(brad): implement the rest of these tests
-   * if (cpuf.f_CX8)   rcode |= DoTest(asm_HasCX8, "CMPXCHG8B");
-   * if (cpuf.f_CX16)  rcode |= DoTest(asm_HasCX16, "CMPXCHG16B");
+   * if (NaClGetCPUFeature(&cpuf, NaClCPUFeature_CX8))
+   *   rcode |= DoTest(asm_HasCX8, "CMPXCHG8B");
+   * if (NaClGetCPUFeature(&cpuf, NaClCPUFeature_CX16))
+   *   rcode |= DoTest(asm_HasCX16, "CMPXCHG16B");
    * DoTest(asm_HasSSE4a, "SSE4a");
    * DoTest(asm_HasEMMX, "EMMX");
    * DoTest(asm_HasE3DNow, "E3DNow");
