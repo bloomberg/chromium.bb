@@ -233,9 +233,10 @@ class ContentBrowserClient {
       int render_view_id,
       SSLClientAuthHandler* handler) = 0;
 
-  // Adds a newly-generated client cert. The embedder should ensure that there's
+  // Adds a downloaded client cert. The embedder should ensure that there's
   // a private key for the cert, displays the cert to the user, and adds it upon
-  // user approval.
+  // user approval. If the downloaded data could not be interpreted as a valid
+  // certificate, |cert| will be NULL.
   virtual void AddNewCertificate(
       net::URLRequest* request,
       net::X509Certificate* cert,

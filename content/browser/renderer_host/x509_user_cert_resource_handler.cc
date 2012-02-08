@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -61,6 +61,8 @@ bool X509UserCertResourceHandler::OnWillRead(int request_id,
                                              net::IOBuffer** buf,
                                              int* buf_size,
                                              int min_size) {
+  static const int kReadBufSize = 32768;
+
   // TODO(gauravsh): Should we use 'min_size' here?
   DCHECK(buf && buf_size);
   if (!read_buffer_) {
@@ -98,12 +100,12 @@ bool X509UserCertResourceHandler::OnResponseCompleted(
   if (urs.status() != net::URLRequestStatus::SUCCESS)
     return false;
 
-  // TODO(gauravsh): Verify that 'request_id' was actually a keygen form post
-  // and only then import the certificate.
   AssembleResource();
-  scoped_refptr<net::X509Certificate> cert(
-      net::X509Certificate::CreateFromBytes(resource_buffer_->data(),
-                                            content_length_));
+  scoped_refptr<net::X509Certificate> cert;
+  if (resource_buffer_) {
+      cert = net::X509Certificate::CreateFromBytes(resource_buffer_->data(),
+                                                   content_length_);
+  }
   content::GetContentClient()->browser()->AddNewCertificate(
       request_, cert, render_process_host_id_, render_view_id_);
   return true;
