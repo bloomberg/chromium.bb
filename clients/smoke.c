@@ -39,9 +39,9 @@ struct smoke {
 	struct display *display;
 	struct window *window;
 	struct widget *widget;
-	cairo_surface_t *surface;
-	int x, y, width, height;
+	int width, height;
 	int offset, current;
+	uint32_t time;
 	struct { float *d, *u, *v; } b[2];
 };
 
@@ -145,17 +145,17 @@ static void project(struct smoke *smoke, uint32_t time,
 	}
 }
 
-static void render(struct smoke *smoke)
+static void render(struct smoke *smoke, cairo_surface_t *surface)
 {
 	unsigned char *dest;
 	int x, y, width, height, stride;
 	float *s;
 	uint32_t *d, c, a;
 
-	dest = cairo_image_surface_get_data (smoke->surface);
-	width = cairo_image_surface_get_width (smoke->surface);
-	height = cairo_image_surface_get_height (smoke->surface);
-	stride = cairo_image_surface_get_stride (smoke->surface);
+	dest = cairo_image_surface_get_data(surface);
+	width = cairo_image_surface_get_width(surface);
+	height = cairo_image_surface_get_height(surface);
+	stride = cairo_image_surface_get_stride(surface);
 
 	for (y = 1; y < height - 1; y++) {
 		s = smoke->b[smoke->current].d + y * smoke->height;
@@ -175,10 +175,26 @@ static void render(struct smoke *smoke)
 static void
 frame_callback(void *data, struct wl_callback *callback, uint32_t time)
 {
-	static const struct wl_callback_listener listener = {
-		frame_callback,
-	};
 	struct smoke *smoke = data;
+
+	window_schedule_redraw(smoke->window);
+	smoke->time = time;
+
+	if (callback)
+		wl_callback_destroy(callback);
+}
+
+static const struct wl_callback_listener listener = {
+	frame_callback,
+};
+
+static void
+redraw_handler(struct widget *widget, void *data)
+{
+	struct smoke *smoke = data;
+	uint32_t time = smoke->time;
+	struct wl_callback *callback;
+	cairo_surface_t *surface;
 
 	diffuse(smoke, time / 30, smoke->b[0].u, smoke->b[1].u);
 	diffuse(smoke, time / 30, smoke->b[0].v, smoke->b[1].v);
@@ -200,14 +216,15 @@ frame_callback(void *data, struct wl_callback *callback, uint32_t time)
 	       smoke->b[0].u, smoke->b[0].v,
 	       smoke->b[1].d, smoke->b[0].d);
 
-	render(smoke);
+	surface = window_get_surface(smoke->window);
 
-	if (callback)
-		wl_callback_destroy(callback);
+	render(smoke, surface);
 
-	display_surface_damage(smoke->display, smoke->surface,
+	display_surface_damage(smoke->display, surface,
 			       0, 0, smoke->width, smoke->height);
 	window_damage(smoke->window, 0, 0, smoke->width, smoke->height);
+
+	cairo_surface_destroy(surface);
 
 	callback = wl_surface_frame(window_get_wl_surface(smoke->window));
 	wl_callback_add_listener(callback, &listener, smoke);
@@ -272,15 +289,12 @@ int main(int argc, char *argv[])
 		return -1;
 	}
 
-	smoke.x = 200;
-	smoke.y = 200;
 	smoke.width = 200;
 	smoke.height = 200;
 	smoke.display = d;
 	smoke.window = window_create(d);
 	smoke.widget = window_add_widget(smoke.window, &smoke);
 	window_set_title(smoke.window, "smoke");
-	widget_set_size(smoke.widget, smoke.width, smoke.height);
 
 	window_set_buffer_type(smoke.window, WINDOW_BUFFER_TYPE_SHM);
 	clock_gettime(CLOCK_MONOTONIC, &ts);
@@ -296,16 +310,14 @@ int main(int argc, char *argv[])
 	smoke.b[1].u = calloc(size, sizeof(float));
 	smoke.b[1].v = calloc(size, sizeof(float));
 
-	window_create_surface(smoke.window);
-	smoke.surface = window_get_surface(smoke.window);
-
-	window_flush(smoke.window);
-
 	widget_set_motion_handler(smoke.widget, smoke_motion_handler);
 	widget_set_resize_handler(smoke.widget, resize_handler);
+	widget_set_redraw_handler(smoke.widget, redraw_handler);
 
 	window_set_user_data(smoke.window, &smoke);
-	frame_callback(&smoke, NULL, 0);
+
+	widget_schedule_resize(smoke.widget, smoke.width, smoke.height);
+
 	display_run(d);
 
 	return 0;
