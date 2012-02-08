@@ -4,9 +4,12 @@
 
 #include "remoting/host/heartbeat_sender.h"
 
+#include <math.h>
+
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/message_loop_proxy.h"
+#include "base/rand_util.h"
 #include "base/string_number_conversions.h"
 #include "base/time.h"
 #include "remoting/base/constants.h"
@@ -26,15 +29,17 @@ namespace {
 const char kHeartbeatQueryTag[] = "heartbeat";
 const char kHostIdAttr[] = "hostid";
 const char kHeartbeatSignatureTag[] = "signature";
-const char kSignatureTimeAttr[] = "time";
+const char kSequenceIdAttr[] = "sequence-id";
 
 const char kErrorTag[] = "error";
 const char kNotFoundTag[] = "item-not-found";
 
 const char kHeartbeatResultTag[] = "heartbeat-result";
 const char kSetIntervalTag[] = "set-interval";
+const char kExpectedSequenceIdTag[] = "expected-sequence-id";
 
 const int64 kDefaultHeartbeatIntervalMs = 5 * 60 * 1000;  // 5 minutes.
+const int64 kResendDelayMs = 10 * 1000;  // 10 seconds.
 
 }  // namespace
 
@@ -45,7 +50,10 @@ HeartbeatSender::HeartbeatSender(
     : host_id_(host_id),
       signal_strategy_(signal_strategy),
       key_pair_(key_pair),
-      interval_ms_(kDefaultHeartbeatIntervalMs) {
+      interval_ms_(kDefaultHeartbeatIntervalMs),
+      sequence_id_(0),
+      sequence_id_was_set_(false),
+      sequence_id_recent_set_num_(0) {
   DCHECK(signal_strategy_);
   DCHECK(key_pair_);
 
@@ -62,14 +70,29 @@ HeartbeatSender::~HeartbeatSender() {
 void HeartbeatSender::OnSignalStrategyStateChange(SignalStrategy::State state) {
   if (state == SignalStrategy::CONNECTED) {
     iq_sender_.reset(new IqSender(signal_strategy_));
-    DoSendStanza();
+    SendStanza();
     timer_.Start(FROM_HERE, base::TimeDelta::FromMilliseconds(interval_ms_),
-                 this, &HeartbeatSender::DoSendStanza);
+                 this, &HeartbeatSender::SendStanza);
   } else if (state == SignalStrategy::DISCONNECTED) {
     request_.reset();
     iq_sender_.reset();
     timer_.Stop();
+    timer_resend_.Stop();
   }
+}
+
+void HeartbeatSender::SendStanza() {
+  DoSendStanza();
+  // Make sure we don't send another heartbeat before the heartbeat interval
+  // has expired.
+  timer_resend_.Stop();
+}
+
+void HeartbeatSender::ResendStanza() {
+  DoSendStanza();
+  // Make sure we don't send another heartbeat before the heartbeat interval
+  // has expired.
+  timer_.Reset();
 }
 
 void HeartbeatSender::DoSendStanza() {
@@ -78,6 +101,7 @@ void HeartbeatSender::DoSendStanza() {
       buzz::STR_SET, kChromotingBotJid, CreateHeartbeatMessage(),
       base::Bind(&HeartbeatSender::ProcessResponse,
                  base::Unretained(this))));
+  ++sequence_id_;
 }
 
 void HeartbeatSender::ProcessResponse(const XmlElement* response) {
@@ -119,6 +143,29 @@ void HeartbeatSender::ProcessResponse(const XmlElement* response) {
         SetInterval(interval * base::Time::kMillisecondsPerSecond);
       }
     }
+
+    bool did_set_sequence_id = false;
+    const XmlElement* expected_sequence_id_element =
+        result_element->FirstNamed(QName(kChromotingXmlNamespace,
+                                         kExpectedSequenceIdTag));
+    if (expected_sequence_id_element) {
+      // The sequence ID sent in the previous heartbeat was not what the server
+      // expected, so send another heartbeat with the expected sequence ID.
+      const std::string& expected_sequence_id_str =
+          expected_sequence_id_element->BodyText();
+      int expected_sequence_id;
+      if (!base::StringToInt(expected_sequence_id_str, &expected_sequence_id)) {
+        LOG(ERROR) << "Received invalid " << kExpectedSequenceIdTag << ": " <<
+            expected_sequence_id_element->Str();
+      } else {
+        SetSequenceId(expected_sequence_id);
+        sequence_id_recent_set_num_++;
+        did_set_sequence_id = true;
+      }
+    }
+    if (!did_set_sequence_id) {
+      sequence_id_recent_set_num_ = 0;
+    }
   }
 }
 
@@ -130,15 +177,40 @@ void HeartbeatSender::SetInterval(int interval) {
     if (timer_.IsRunning()) {
       timer_.Stop();
       timer_.Start(FROM_HERE, base::TimeDelta::FromMilliseconds(interval_ms_),
-                   this, &HeartbeatSender::DoSendStanza);
+                   this, &HeartbeatSender::SendStanza);
     }
   }
+}
+
+void HeartbeatSender::SetSequenceId(int sequence_id) {
+  sequence_id_ = sequence_id;
+  // Setting the sequence ID may be a symptom of a temporary server-side
+  // problem, which would affect many hosts, so don't send a new heartbeat
+  // immediately, as many hosts doing so may overload the server.
+  // But the server will usually set the sequence ID when it receives the first
+  // heartbeat from a host. In that case, we can send a new heartbeat
+  // immediately, as that only happens once per host instance.
+  if (!sequence_id_was_set_) {
+    ResendStanza();
+  } else {
+    LOG(INFO) << "The heartbeat sequence ID has been set more than once: "
+              << "the new value is " << sequence_id;
+    double delay = pow(2.0, sequence_id_recent_set_num_) *
+        (1 + base::RandDouble()) * kResendDelayMs;
+    if (delay <= interval_ms_) {
+      timer_resend_.Start(FROM_HERE, base::TimeDelta::FromMilliseconds(delay),
+                          this, &HeartbeatSender::ResendStanza);
+    }
+  }
+  sequence_id_was_set_ = true;
 }
 
 XmlElement* HeartbeatSender::CreateHeartbeatMessage() {
   XmlElement* query = new XmlElement(
       QName(kChromotingXmlNamespace, kHeartbeatQueryTag));
   query->AddAttr(QName(kChromotingXmlNamespace, kHostIdAttr), host_id_);
+  query->AddAttr(QName(kChromotingXmlNamespace, kSequenceIdAttr),
+                 base::IntToString(sequence_id_));
   query->AddElement(CreateSignature());
   return query;
 }
@@ -147,12 +219,8 @@ XmlElement* HeartbeatSender::CreateSignature() {
   XmlElement* signature_tag = new XmlElement(
       QName(kChromotingXmlNamespace, kHeartbeatSignatureTag));
 
-  int64 time = static_cast<int64>(base::Time::Now().ToDoubleT());
-  std::string time_str(base::Int64ToString(time));
-  signature_tag->AddAttr(
-      QName(kChromotingXmlNamespace, kSignatureTimeAttr), time_str);
-
-  std::string message = signal_strategy_->GetLocalJid() + ' ' + time_str;
+  std::string message = signal_strategy_->GetLocalJid() + ' ' +
+      base::IntToString(sequence_id_);
   std::string signature(key_pair_->GetSignature(message));
   signature_tag->AddText(signature);
 
