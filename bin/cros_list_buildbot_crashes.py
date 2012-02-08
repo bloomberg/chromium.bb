@@ -17,7 +17,8 @@ import re
 import sys
 
 if __name__ == '__main__':
-  sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
+  sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)),
+                                  '..', '..'))
 
 from chromite.buildbot import cbuildbot_config
 from chromite.buildbot import constants

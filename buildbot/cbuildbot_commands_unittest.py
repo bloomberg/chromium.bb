@@ -14,7 +14,7 @@ import tempfile
 import unittest
 
 import constants
-sys.path.append(constants.SOURCE_ROOT)
+sys.path.insert(0, constants.SOURCE_ROOT)
 import chromite.buildbot.cbuildbot_commands as commands
 import chromite.buildbot.configure_repo as configure_repo
 import chromite.lib.cros_build_lib as cros_lib

@@ -25,7 +25,8 @@ import os
 import re
 import sys
 import unittest
-sys.path.append(os.path.join(os.path.dirname(__file__), '../lib'))
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)),
+                                '../lib'))
 from cros_build_lib import (RunCommand, IsInsideChroot, GetChromeosVersion,
                             GetOutputImageDir)
 

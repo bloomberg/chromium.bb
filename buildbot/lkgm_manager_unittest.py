@@ -18,7 +18,7 @@ from xml.dom import minidom
 
 if __name__ == '__main__':
   import constants
-  sys.path.append(constants.SOURCE_ROOT)
+  sys.path.insert(0, constants.SOURCE_ROOT)
 
 from chromite.buildbot import lkgm_manager
 from chromite.buildbot import manifest_version

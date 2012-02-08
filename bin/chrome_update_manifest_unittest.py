@@ -15,8 +15,8 @@ import sys
 import tempfile
 import unittest
 
-sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                             '..', '..'))
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)),
+                                '..', '..'))
 import chromite.lib.cros_build_lib as cros_lib
 import chromite.bin.chrome_update_manifest as chrome_update_manifest
 import chromite.buildbot.manifest_version as manifest_version
@@ -31,8 +31,8 @@ class DEPSFileTest(mox.MoxTestBase):
     print ('temp manifest dir: %s' % self.temp_manifest_dir)
     self.manifest_path = os.path.join(self.temp_manifest_dir, 'oldlayout.xml')
     self.tempdir = tempfile.mkdtemp()
-    self.test_base = os.path.join(os.path.realpath(os.path.dirname(__file__)),
-                             'testdata/chrome_update_manifest_unittest')
+    self.test_base = os.path.join(os.path.dirname(os.path.realpath(__file__)),
+                                  'testdata/chrome_update_manifest_unittest')
     self.repo_root = os.path.join(self.tempdir, 'repo_root')
     self.repo_root_zip = os.path.join(self.test_base,
                                           'repo_root.tar.gz')

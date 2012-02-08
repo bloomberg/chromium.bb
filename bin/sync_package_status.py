@@ -14,7 +14,8 @@ import xml.dom.minidom
 import gdata.projecthosting.client
 import gdata.spreadsheet.service
 
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)),
+                                '..', '..'))
 import chromite.lib.cros_build_lib as cros_lib
 import chromite.lib.gdata_lib as gdata_lib
 import chromite.lib.operation as operation

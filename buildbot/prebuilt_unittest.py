@@ -12,7 +12,7 @@ import tempfile
 import unittest
 
 import constants
-sys.path.append(constants.SOURCE_ROOT)
+sys.path.insert(0, constants.SOURCE_ROOT)
 import prebuilt
 from chromite.lib import cros_build_lib
 from chromite.lib import binpkg

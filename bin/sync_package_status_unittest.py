@@ -14,7 +14,8 @@ import gdata.projecthosting.client as gd_client
 import gdata.spreadsheet.service as gd_service
 import mox
 
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)),
+                                '..', '..'))
 import chromite.lib.cros_test_lib as test_lib
 import chromite.lib.gdata_lib as gdata_lib
 import chromite.lib.upgrade_table as utable

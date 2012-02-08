@@ -11,7 +11,7 @@ import sys
 import unittest
 
 import constants
-sys.path.append(constants.SOURCE_ROOT)
+sys.path.insert(0, constants.SOURCE_ROOT)
 from chromite.buildbot import cbuildbot_config
 
 # pylint: disable=W0212,R0904

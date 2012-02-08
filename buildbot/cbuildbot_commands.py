@@ -631,7 +631,7 @@ def UploadPrebuilts(buildroot, board, overlay_config, category,
   if extra_args is None:
     extra_args = []
 
-  cwd = os.path.dirname(__file__)
+  cwd = os.path.dirname(os.path.realpath(__file__))
   cmd = ['./prebuilt.py',
          '--build-path', buildroot,
          '--prepend-version', category]

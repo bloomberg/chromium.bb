@@ -16,7 +16,7 @@ import unittest
 
 import constants
 if __name__ == '__main__':
-  sys.path.append(constants.SOURCE_ROOT)
+  sys.path.insert(0, constants.SOURCE_ROOT)
 
 from chromite.lib import cros_build_lib
 from chromite.buildbot import cros_mark_as_stable

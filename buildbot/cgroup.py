@@ -6,12 +6,12 @@
 
 """A class for managing the Linux cgroup subsystem."""
 
-import constants
 import os
 import sys
 import time
 
-sys.path.append(constants.SOURCE_ROOT)
+import constants
+sys.path.insert(0, constants.SOURCE_ROOT)
 
 from chromite.lib import cros_build_lib as cros_lib
 

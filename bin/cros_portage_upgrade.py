@@ -16,7 +16,8 @@ import shutil
 import sys
 import tempfile
 
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)),
+                                '..', '..'))
 import chromite.lib.cros_build_lib as cros_lib
 import chromite.lib.operation as operation
 import chromite.lib.upgrade_table as utable

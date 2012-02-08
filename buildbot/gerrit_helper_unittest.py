@@ -11,7 +11,7 @@ import sys
 import unittest
 
 import constants
-sys.path.append(constants.SOURCE_ROOT)
+sys.path.insert(0, constants.SOURCE_ROOT)
 from chromite.buildbot import gerrit_helper
 from chromite.buildbot import validation_pool
 from chromite.lib import cros_build_lib as cros_lib

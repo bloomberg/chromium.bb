@@ -11,7 +11,6 @@ full and pre-flight-queue builds.
 """
 
 import cgroup
-import constants
 import distutils.version
 import glob
 import optparse
@@ -19,8 +18,9 @@ import os
 import pprint
 import sys
 
+import constants
 if __name__ == '__main__':
-  sys.path.append(constants.SOURCE_ROOT)
+  sys.path.insert(0, constants.SOURCE_ROOT)
 
 from chromite.buildbot import builderstage as bs
 from chromite.buildbot import cbuildbot_background as background

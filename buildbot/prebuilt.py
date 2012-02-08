@@ -12,7 +12,7 @@ import tempfile
 
 if __name__ == '__main__':
   import constants
-  sys.path.append(constants.SOURCE_ROOT)
+  sys.path.insert(0, constants.SOURCE_ROOT)
 
 from chromite.lib import cros_build_lib
 from chromite.lib.binpkg import (GrabLocalPackageIndex, GrabRemotePackageIndex)
@@ -420,7 +420,7 @@ class PrebuiltUploader(object):
     if not self._packages:
       return False
     pym_path = os.path.abspath(os.path.join(self._build_path, _PYM_PATH))
-    sys.path.append(pym_path)
+    sys.path.insert(0, pym_path)
     import portage.versions
     cat, pkgname = portage.versions.catpkgsplit(pkg['CPV'])[0:2]
     cp = '%s/%s' % (cat, pkgname)

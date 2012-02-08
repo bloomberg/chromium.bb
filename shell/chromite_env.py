@@ -49,7 +49,8 @@ class ChromiteEnv:
     self._oper = operation.Operation('operation')
 
     # Figure out where chromite sub-commands are located.
-    self._subcmd_dir = os.path.join(os.path.dirname(__file__), 'subcmds')
+    self._subcmd_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)),
+                                    'subcmds')
 
     if not os.path.exists(self._subcmd_dir):
       raise ChromiteError('Cannot find sub-command directory')

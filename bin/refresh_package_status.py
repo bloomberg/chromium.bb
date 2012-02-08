@@ -10,7 +10,8 @@ import os
 import shutil
 import sys
 
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)),
+                                '..', '..'))
 import chromite.lib.cros_build_lib as cros_lib
 import chromite.lib.operation as operation
 
@@ -18,7 +19,7 @@ oper = operation.Operation('refresh_package_status')
 oper.verbose = True # Without verbose Info messages don't show up.
 
 TMP_ROOT = '/tmp'
-SCRIPT_DIR = os.path.dirname(__file__)
+SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
 GDATA_CRED_FILE = '.gdata_cred.txt'
 GENTOO_DIR = 'gentoo-portage'
 PRTG_GIT_URL = 'ssh://gerrit.chromium.org:29418/chromiumos/overlays/portage.git'

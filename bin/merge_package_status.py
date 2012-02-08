@@ -12,7 +12,8 @@ import os
 import re
 import sys
 
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)),
+                                '..', '..'))
 import chromite.lib.operation as operation
 import chromite.lib.table as table
 import chromite.lib.upgrade_table as utable

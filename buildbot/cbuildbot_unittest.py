@@ -15,7 +15,7 @@ import tempfile
 import unittest
 
 import constants
-sys.path.append(constants.SOURCE_ROOT)
+sys.path.insert(0, constants.SOURCE_ROOT)
 import chromite.buildbot.cbuildbot as cbuildbot
 import chromite.buildbot.cbuildbot_commands as commands
 import chromite.buildbot.cbuildbot_config as config

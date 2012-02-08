@@ -12,10 +12,10 @@ import shutil
 import sys
 import tempfile
 import unittest
-import constants
 
+import constants
 if __name__ == '__main__':
-  sys.path.append(constants.SOURCE_ROOT)
+  sys.path.insert(0, constants.SOURCE_ROOT)
 
 from chromite.buildbot import cbuildbot_config
 from chromite.buildbot import configure_repo

@@ -13,7 +13,7 @@ import unittest
 import urllib
 
 import constants
-sys.path.append(constants.SOURCE_ROOT)
+sys.path.insert(0, constants.SOURCE_ROOT)
 
 from chromite.buildbot import gerrit_helper
 from chromite.buildbot import patch as cros_patch

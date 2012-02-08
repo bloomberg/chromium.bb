@@ -13,7 +13,8 @@ import sys
 import tempfile
 import unittest
 
-sys.path.append('../..')
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)),
+                                '..', '..'))
 import chromite.lib.cros_build_lib as cros_lib
 import chromite.bin.chrome_set_ver as chrome_set_ver
 
@@ -30,8 +31,8 @@ class DEPSFileTest(mox.MoxTestBase):
     mox.MoxTestBase.setUp(self)
 
     self.tempdir = tempfile.mkdtemp()
-    self.test_base = os.path.join(os.path.realpath(os.path.dirname(__file__)),
-                             'testdata/chrome_set_ver_unittest')
+    self.test_base = os.path.join(os.path.dirname(os.path.realpath(__file__)),
+                                  'testdata/chrome_set_ver_unittest')
     self.repo_root = os.path.join(self.tempdir, 'repo_root')
     self.repo_root_zip = os.path.join(self.test_base,
                                           'repo_root.tar.gz')

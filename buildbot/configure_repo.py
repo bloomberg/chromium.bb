@@ -8,7 +8,7 @@ import os
 import constants
 if __name__ == '__main__':
   import sys
-  sys.path.append(constants.SOURCE_ROOT)
+  sys.path.insert(0, constants.SOURCE_ROOT)
 
 from chromite.lib import cros_build_lib
 

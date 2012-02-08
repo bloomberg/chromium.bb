@@ -16,8 +16,8 @@ import StringIO
 import tempfile
 
 # Want to use correct version of libraries even when executed through symlink.
-sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                             '..', '..'))
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)),
+                                '..', '..'))
 import chromite.bin.chrome_set_ver as chrome_set_ver
 import chromite.lib.cros_build_lib as cros_lib
 import chromite.buildbot.constants as constants
