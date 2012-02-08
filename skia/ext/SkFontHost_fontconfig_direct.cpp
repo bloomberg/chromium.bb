@@ -88,7 +88,6 @@ FontEquivClass GetFontEquivClass(const char* fontname)
         { PGOTHIC, "\xef\xbc\xad\xef\xbc\xb3 \xef\xbc\xb0"
                    "\xe3\x82\xb4\xe3\x82\xb7\xe3\x83\x83\xe3\x82\xaf" },
         { PGOTHIC, "IPAPGothic" },
-        { PGOTHIC, "MotoyaG04Gothic" },
 
         // 宋体
         { SIMSUN, "Simsun" },
@@ -100,20 +99,17 @@ FontEquivClass GetFontEquivClass(const char* fontname)
         { PMINCHO, "\xef\xbc\xad\xef\xbc\xb3 \xef\xbc\xb0"
                    "\xe6\x98\x8e\xe6\x9c\x9d"},
         { PMINCHO, "IPAPMincho" },
-        { PMINCHO, "MotoyaG04Mincho" },
 
         // ＭＳ ゴシック
         { GOTHIC, "MS Gothic" },
         { GOTHIC, "\xef\xbc\xad\xef\xbc\xb3 "
                   "\xe3\x82\xb4\xe3\x82\xb7\xe3\x83\x83\xe3\x82\xaf" },
         { GOTHIC, "IPAGothic" },
-        { GOTHIC, "MotoyaG04GothicMono" },
 
         // ＭＳ 明朝
         { MINCHO, "MS Mincho" },
         { MINCHO, "\xef\xbc\xad\xef\xbc\xb3 \xe6\x98\x8e\xe6\x9c\x9d" },
         { MINCHO, "IPAMincho" },
-        { MINCHO, "MotoyaG04MinchoMono" },
 
         // 新宋体
         { NSIMSUN, "NSimsun" },
