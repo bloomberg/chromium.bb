@@ -786,7 +786,7 @@ void PanelBrowserFrameView::PaintFrameBorder(gfx::Canvas* canvas) {
     canvas->DrawRect(gfx::Rect(0, 0, width(), kTitlebarHeight), paint);
   } else {
     SkBitmap* bitmap = GetFrameTheme(paint_state_);
-    canvas->TileImageInt(*bitmap, 0, 0, width(), kTitlebarHeight);
+    canvas->TileImage(*bitmap, gfx::Rect(0, 0, width(), kTitlebarHeight));
   }
 
 #if defined(USE_AURA)
@@ -802,41 +802,42 @@ void PanelBrowserFrameView::PaintFrameBorder(gfx::Canvas* canvas) {
   // Draw the top border.
   const EdgeResources& frame_edges = GetFrameEdges();
   canvas->DrawBitmapInt(*(frame_edges.top_left), 0, 0);
-  canvas->TileImageInt(
-      *(frame_edges.top), frame_edges.top_left->width(), 0,
-      width() - frame_edges.top_right->width(), frame_edges.top->height());
+  canvas->TileImage(*(frame_edges.top), gfx::Rect(frame_edges.top_left->width(),
+      0,
+      width() - frame_edges.top_left->width() - frame_edges.top_right->width(),
+      frame_edges.top->height()));
   canvas->DrawBitmapInt(
       *(frame_edges.top_right),
       width() - frame_edges.top_right->width(), 0);
 
   // Draw the right border.
-  canvas->TileImageInt(
-      *(frame_edges.right), width() - frame_edges.right->width(),
-      frame_edges.top_right->height(), frame_edges.right->width(),
-      height() - frame_edges.top_right->height() -
-          frame_edges.bottom_right->height());
+  canvas->TileImage(*(frame_edges.right),
+      gfx::Rect(width() - frame_edges.right->width(),
+                frame_edges.top_right->height(), frame_edges.right->width(),
+                height() - frame_edges.top_right->height() -
+                    frame_edges.bottom_right->height()));
 
   // Draw the bottom border.
   canvas->DrawBitmapInt(
       *(frame_edges.bottom_right),
       width() - frame_edges.bottom_right->width(),
       height() - frame_edges.bottom_right->height());
-  canvas->TileImageInt(
-      *(frame_edges.bottom), frame_edges.bottom_left->width(),
-      height() - frame_edges.bottom->height(),
-      width() - frame_edges.bottom_left->width() -
-          frame_edges.bottom_right->width(),
-      frame_edges.bottom->height());
+  canvas->TileImage(*(frame_edges.bottom),
+      gfx::Rect(frame_edges.bottom_left->width(),
+                height() - frame_edges.bottom->height(),
+                width() - frame_edges.bottom_left->width() -
+                    frame_edges.bottom_right->width(),
+                frame_edges.bottom->height()));
   canvas->DrawBitmapInt(
       *(frame_edges.bottom_left), 0,
       height() - frame_edges.bottom_left->height());
 
   // Draw the left border.
-  canvas->TileImageInt(
-      *(frame_edges.left), 0, frame_edges.top_left->height(),
+  canvas->TileImage(*(frame_edges.left), gfx::Rect(0,
+      frame_edges.top_left->height(),
       frame_edges.left->width(),
       height() - frame_edges.top_left->height() -
-          frame_edges.bottom_left->height());
+          frame_edges.bottom_left->height()));
 
   // Draw the divider between the titlebar and the client area.
   if (height() > kTitlebarHeight) {

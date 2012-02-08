@@ -32,7 +32,7 @@ class ShelfPainter : public views::Painter {
   }
 
   virtual void Paint(int w, int h, gfx::Canvas* canvas) OVERRIDE {
-    canvas->TileImageInt(image_, 0, 0, w, h);
+    canvas->TileImage(image_, gfx::Rect(0, 0, w, h));
   }
 
  private:

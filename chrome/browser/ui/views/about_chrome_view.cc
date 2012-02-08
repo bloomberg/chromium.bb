@@ -430,11 +430,11 @@ void AboutChromeView::OnPaint(gfx::Canvas* canvas) {
   // dialog.
   SkBitmap* background = ResourceBundle::GetSharedInstance().GetBitmapNamed(
       IDR_ABOUT_BACKGROUND_COLOR);
-  canvas->TileImageInt(*background, 0, 0, dialog_dimensions_.width(),
-                       background->height());
+  canvas->TileImage(*background, gfx::Rect(0, 0, dialog_dimensions_.width(),
+      background->height()));
 
   gfx::Font font =
-      ResourceBundle::GetSharedInstance().GetFont(ResourceBundle::BaseFont);
+      ui::ResourceBundle::GetSharedInstance().GetFont(ResourceBundle::BaseFont);
 
   const gfx::Rect label_bounds = main_text_label_->bounds();
 

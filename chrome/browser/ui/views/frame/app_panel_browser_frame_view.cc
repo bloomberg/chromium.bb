@@ -356,51 +356,52 @@ void AppPanelBrowserFrameView::PaintRestoredFrameBorder(gfx::Canvas* canvas) {
   }
 
   // Draw the theme frame.
-  canvas->TileImageInt(*theme_frame, 0, 0, width(), theme_frame->height());
+  canvas->TileImage(*theme_frame,
+                    gfx::Rect(0, 0, width(), theme_frame->height()));
 
   // Top.
   canvas->DrawBitmapInt(*top_left_corner, 0, 0);
-  canvas->TileImageInt(*top_edge, top_left_corner->width(), 0,
-                       width() - top_right_corner->width(), top_edge->height());
+  canvas->TileImage(*top_edge, gfx::Rect(top_left_corner->width(), 0,
+      width() - top_left_corner->width() - top_right_corner->width(),
+      top_edge->height()));
   canvas->DrawBitmapInt(*top_right_corner,
                         width() - top_right_corner->width(), 0);
 
   // Right.
-  canvas->TileImageInt(*right_edge, width() - right_edge->width(),
+  canvas->TileImage(*right_edge, gfx::Rect(width() - right_edge->width(),
       top_right_corner->height(), right_edge->width(),
-      height() - top_right_corner->height() - bottom_right_corner->height());
+      height() - top_right_corner->height() - bottom_right_corner->height()));
 
   // Bottom.
   canvas->DrawBitmapInt(*bottom_right_corner,
                         width() - bottom_right_corner->width(),
                         height() - bottom_right_corner->height());
-  canvas->TileImageInt(*bottom_edge, bottom_left_corner->width(),
+  canvas->TileImage(*bottom_edge, gfx::Rect(bottom_left_corner->width(),
       height() - bottom_edge->height(),
       width() - bottom_left_corner->width() - bottom_right_corner->width(),
-      bottom_edge->height());
+      bottom_edge->height()));
   canvas->DrawBitmapInt(*bottom_left_corner, 0,
                         height() - bottom_left_corner->height());
 
   // Left.
-  canvas->TileImageInt(*left_edge, 0, top_left_corner->height(),
+  canvas->TileImage(*left_edge, gfx::Rect(0, top_left_corner->height(),
       left_edge->width(),
-      height() - top_left_corner->height() - bottom_left_corner->height());
+      height() - top_left_corner->height() - bottom_left_corner->height()));
 }
 
 void AppPanelBrowserFrameView::PaintMaximizedFrameBorder(gfx::Canvas* canvas) {
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
 
   SkBitmap* frame_image = rb.GetBitmapNamed(IDR_FRAME_APP_PANEL);
-  canvas->TileImageInt(*frame_image, 0, FrameBorderThickness(), width(),
-                       frame_image->height());
+  canvas->TileImage(*frame_image, gfx::Rect(0, FrameBorderThickness(), width(),
+      frame_image->height()));
 
   // The bottom of the titlebar actually comes from the top of the Client Edge
   // graphic, with the actual client edge clipped off the bottom.
   SkBitmap* titlebar_bottom = rb.GetBitmapNamed(IDR_APP_TOP_CENTER);
   int edge_height = titlebar_bottom->height() - kClientEdgeThickness;
-  canvas->TileImageInt(*titlebar_bottom, 0,
-                       frame()->client_view()->y() - edge_height,
-                       width(), edge_height);
+  canvas->TileImage(*titlebar_bottom, gfx::Rect(0,
+      frame()->client_view()->y() - edge_height, width(), edge_height));
 }
 
 void AppPanelBrowserFrameView::PaintTitleBar(gfx::Canvas* canvas) {
@@ -431,28 +432,28 @@ void AppPanelBrowserFrameView::PaintRestoredClientEdge(gfx::Canvas* canvas) {
   int top_edge_y = client_area_top - top->height();
   canvas->DrawBitmapInt(*top_left, client_area_bounds.x() - top_left->width(),
                         top_edge_y);
-  canvas->TileImageInt(*top, client_area_bounds.x(), top_edge_y,
-                       client_area_bounds.width(), top->height());
+  canvas->TileImage(*top, gfx::Rect(client_area_bounds.x(), top_edge_y,
+      client_area_bounds.width(), top->height()));
   canvas->DrawBitmapInt(*top_right, client_area_bounds.right(), top_edge_y);
 
   // Right.
   int client_area_bottom =
       std::max(client_area_top, client_area_bounds.bottom());
   int client_area_height = client_area_bottom - client_area_top;
-  canvas->TileImageInt(*right, client_area_bounds.right(), client_area_top,
-                       right->width(), client_area_height);
+  canvas->TileImage(*right, gfx::Rect(client_area_bounds.right(),
+      client_area_top, right->width(), client_area_height));
 
   // Bottom.
   canvas->DrawBitmapInt(*bottom_right, client_area_bounds.right(),
                         client_area_bottom);
-  canvas->TileImageInt(*bottom, client_area_bounds.x(), client_area_bottom,
-                       client_area_bounds.width(), bottom_right->height());
+  canvas->TileImage(*bottom, gfx::Rect(client_area_bounds.x(),
+      client_area_bottom, client_area_bounds.width(), bottom_right->height()));
   canvas->DrawBitmapInt(*bottom_left,
       client_area_bounds.x() - bottom_left->width(), client_area_bottom);
 
   // Left.
-  canvas->TileImageInt(*left, client_area_bounds.x() - left->width(),
-      client_area_top, left->width(), client_area_height);
+  canvas->TileImage(*left, gfx::Rect(client_area_bounds.x() - left->width(),
+      client_area_top, left->width(), client_area_height));
 
   // Draw the toolbar color to fill in the edges.
   canvas->DrawRect(gfx::Rect(

@@ -654,8 +654,8 @@ void OpaqueBrowserFrameView::PaintMaximizedFrameBorder(gfx::Canvas* canvas) {
     SkBitmap* top_center =
         GetThemeProvider()->GetBitmapNamed(IDR_APP_TOP_CENTER);
     int edge_height = top_center->height() - kClientEdgeThickness;
-    canvas->TileImageInt(*top_center, 0,
-        frame()->client_view()->y() - edge_height, width(), edge_height);
+    canvas->TileImage(*top_center, gfx::Rect(0,
+        frame()->client_view()->y() - edge_height, width(), edge_height));
   }
 }
 
@@ -832,22 +832,20 @@ void OpaqueBrowserFrameView::PaintRestoredClientEdge(gfx::Canvas* canvas) {
   // Draw the client edge images.
   // Draw the client edge images.
   SkBitmap* right = tp->GetBitmapNamed(IDR_CONTENT_RIGHT_SIDE);
-  canvas->TileImageInt(*right, client_area_bounds.right(), image_top,
-                       right->width(), image_height);
+  canvas->TileImage(*right, gfx::Rect(client_area_bounds.right(), image_top,
+                                      right->width(), image_height));
   canvas->DrawBitmapInt(
       *tp->GetBitmapNamed(IDR_CONTENT_BOTTOM_RIGHT_CORNER),
       client_area_bounds.right(), client_area_bottom);
   SkBitmap* bottom = tp->GetBitmapNamed(IDR_CONTENT_BOTTOM_CENTER);
-  canvas->TileImageInt(*bottom, client_area_bounds.x(),
-      client_area_bottom, client_area_bounds.width(),
-      bottom->height());
-  SkBitmap* bottom_left =
-      tp->GetBitmapNamed(IDR_CONTENT_BOTTOM_LEFT_CORNER);
+  canvas->TileImage(*bottom, gfx::Rect(client_area_bounds.x(),
+      client_area_bottom, client_area_bounds.width(), bottom->height()));
+  SkBitmap* bottom_left = tp->GetBitmapNamed(IDR_CONTENT_BOTTOM_LEFT_CORNER);
   canvas->DrawBitmapInt(*bottom_left,
       client_area_bounds.x() - bottom_left->width(), client_area_bottom);
   SkBitmap* left = tp->GetBitmapNamed(IDR_CONTENT_LEFT_SIDE);
-  canvas->TileImageInt(*left, client_area_bounds.x() - left->width(),
-                       image_top, left->width(), image_height);
+  canvas->TileImage(*left, gfx::Rect(client_area_bounds.x() - left->width(),
+                                     image_top, left->width(), image_height));
 
   // Draw the toolbar color so that the client edges show the right color even
   // where not covered by the toolbar image.  NOTE: We do this after drawing the

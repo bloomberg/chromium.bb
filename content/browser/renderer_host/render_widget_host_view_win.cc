@@ -1133,7 +1133,8 @@ void RenderWidgetHostViewWin::DrawBackground(const RECT& dirty_rect,
     canvas.Translate(gfx::Point().Subtract(dirty_area.origin()));
 
     gfx::Rect dc_rect(dc->m_ps.rcPaint);
-    canvas.TileImageInt(background_, 0, 0, dc_rect.width(), dc_rect.height());
+    dc_rect.set_origin(gfx::Point());
+    canvas.TileImage(background_, dc_rect);
 
     skia::DrawToNativeContext(canvas.sk_canvas(), *dc, dirty_area.x(),
                               dirty_area.y(), NULL);

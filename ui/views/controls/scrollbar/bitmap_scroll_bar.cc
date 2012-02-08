@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -124,8 +124,8 @@ class BitmapScrollBarThumb : public BaseScrollBarThumb {
     int top_cap_height = start_cap_bitmap()->height();
     int bottom_cap_height = end_cap_bitmap()->height();
     int thumb_body_height = height() - top_cap_height - bottom_cap_height;
-    canvas->TileImageInt(*background_bitmap(), 0, top_cap_height,
-                         background_bitmap()->width(), thumb_body_height);
+    canvas->TileImage(*background_bitmap(), gfx::Rect(0, top_cap_height,
+        background_bitmap()->width(), thumb_body_height));
     canvas->DrawBitmapInt(*end_cap_bitmap(), 0,
                           height() - bottom_cap_height);
 
@@ -292,10 +292,8 @@ void BitmapScrollBar::Layout() {
 
 void BitmapScrollBar::OnPaint(gfx::Canvas* canvas) {
   // Paint the track.
-  gfx::Rect track_bounds = GetTrackBounds();
-  canvas->TileImageInt(*images_[THUMB_TRACK][GetThumbTrackState()],
-                       track_bounds.x(), track_bounds.y(),
-                       track_bounds.width(), track_bounds.height());
+  canvas->TileImage(*images_[THUMB_TRACK][GetThumbTrackState()],
+                    GetTrackBounds());
 }
 
 ///////////////////////////////////////////////////////////////////////////////

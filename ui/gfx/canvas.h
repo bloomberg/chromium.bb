@@ -197,8 +197,7 @@ class UI_EXPORT Canvas {
   virtual void DrawFocusRect(const gfx::Rect& rect) = 0;
 
   // Tiles the image in the specified region.
-  virtual void TileImageInt(const SkBitmap& bitmap,
-                            int x, int y, int w, int h) = 0;
+  virtual void TileImage(const SkBitmap& bitmap, const gfx::Rect& rect) = 0;
   virtual void TileImageInt(const SkBitmap& bitmap,
                             int src_x, int src_y,
                             int dest_x, int dest_y, int w, int h) = 0;

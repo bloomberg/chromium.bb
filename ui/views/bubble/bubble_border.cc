@@ -319,8 +319,8 @@ void BubbleBorder::Paint(const views::View& view, gfx::Canvas* canvas) const {
                       after_arrow,
                       images_->left->width() - images_->left_arrow->width());
   } else {
-    canvas->TileImageInt(*images_->left, left, top + tl_height, l_width,
-                         height - tl_height - bl_height);
+    canvas->TileImage(*images_->left, gfx::Rect(left, top + tl_height, l_width,
+        height - tl_height - bl_height));
   }
 
   // Top left corner.
@@ -348,8 +348,8 @@ void BubbleBorder::Paint(const views::View& view, gfx::Canvas* canvas) const {
                       after_arrow,
                       images_->top->height() - images_->top_arrow->height());
   } else {
-    canvas->TileImageInt(*images_->top, left + tl_width, top,
-                         width - tl_width - tr_width, t_height);
+    canvas->TileImage(*images_->top, gfx::Rect(left + tl_width, top,
+        width - tl_width - tr_width, t_height));
   }
 
   // Top right corner.
@@ -379,8 +379,8 @@ void BubbleBorder::Paint(const views::View& view, gfx::Canvas* canvas) const {
                       after_arrow,
                       0);
   } else {
-    canvas->TileImageInt(*images_->right, right - r_width, top + tr_height,
-                         r_width, height - tr_height - br_height);
+    canvas->TileImage(*images_->right, gfx::Rect(right - r_width,
+        top + tr_height, r_width, height - tr_height - br_height));
   }
 
   // Bottom right corner.
@@ -412,8 +412,8 @@ void BubbleBorder::Paint(const views::View& view, gfx::Canvas* canvas) const {
                       after_arrow,
                       0);
   } else {
-    canvas->TileImageInt(*images_->bottom, left + bl_width, bottom - b_height,
-                         width - bl_width - br_width, b_height);
+    canvas->TileImage(*images_->bottom, gfx::Rect(left + bl_width,
+        bottom - b_height, width - bl_width - br_width, b_height));
   }
 
   // Bottom left corner.
@@ -441,9 +441,9 @@ void BubbleBorder::DrawEdgeWithArrow(gfx::Canvas* canvas,
    *             before_arrow ─┘            └─ after_arrow
    */
   if (before_arrow) {
-    canvas->TileImageInt(*edge, start_x, start_y,
+    canvas->TileImage(*edge, gfx::Rect(start_x, start_y,
         is_horizontal ? before_arrow : edge->width(),
-        is_horizontal ? edge->height() : before_arrow);
+        is_horizontal ? edge->height() : before_arrow));
   }
 
   canvas->DrawBitmapInt(*arrow,
@@ -453,9 +453,9 @@ void BubbleBorder::DrawEdgeWithArrow(gfx::Canvas* canvas,
   if (after_arrow) {
     start_x += (is_horizontal ? before_arrow + arrow->width() : 0);
     start_y += (is_horizontal ? 0 : before_arrow + arrow->height());
-    canvas->TileImageInt(*edge, start_x, start_y,
+    canvas->TileImage(*edge, gfx::Rect(start_x, start_y,
         is_horizontal ? after_arrow : edge->width(),
-        is_horizontal ? edge->height() : after_arrow);
+        is_horizontal ? edge->height() : after_arrow));
   }
 }
 

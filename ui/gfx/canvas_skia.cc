@@ -325,9 +325,8 @@ void CanvasSkia::DrawStringInt(const string16& text,
                 display_rect.width(), display_rect.height());
 }
 
-void CanvasSkia::TileImageInt(const SkBitmap& bitmap,
-                              int x, int y, int w, int h) {
-  TileImageInt(bitmap, 0, 0, x, y, w, h);
+void CanvasSkia::TileImage(const SkBitmap& bitmap, const gfx::Rect& rect) {
+  TileImageInt(bitmap, 0, 0, rect.x(), rect.y(), rect.width(), rect.height());
 }
 
 void CanvasSkia::TileImageInt(const SkBitmap& bitmap,
