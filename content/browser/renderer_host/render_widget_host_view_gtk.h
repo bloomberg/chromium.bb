@@ -110,7 +110,7 @@ class CONTENT_EXPORT RenderWidgetHostViewGtk : public RenderWidgetHostView {
       bool is_pinned_to_left, bool is_pinned_to_right) OVERRIDE;
   virtual void GetScreenInfo(WebKit::WebScreenInfo* results) OVERRIDE;
   virtual gfx::Rect GetRootWindowBounds() OVERRIDE;
-  virtual gfx::PluginWindowHandle GetCompositingSurface() OVERRIDE;
+  virtual gfx::GLSurfaceHandle GetCompositingSurface() OVERRIDE;
   virtual bool LockMouse() OVERRIDE;
   virtual void UnlockMouse() OVERRIDE;
 

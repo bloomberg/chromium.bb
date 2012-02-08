@@ -431,7 +431,7 @@ void GpuProcessHost::EstablishGpuChannel(
 }
 
 void GpuProcessHost::CreateViewCommandBuffer(
-    gfx::PluginWindowHandle compositing_surface,
+    gfx::GLSurfaceHandle compositing_surface,
     int surface_id,
     int client_id,
     const GPUCreateCommandBufferConfig& init_params,
@@ -448,10 +448,10 @@ void GpuProcessHost::CreateViewCommandBuffer(
   if (it != surface_refs_.end())
     surface_ref = (*it).second;
   else
-    surface_ref.reset(new SurfaceRef(compositing_surface));
+    surface_ref.reset(new SurfaceRef(compositing_surface.handle));
 #endif  // defined(TOOLKIT_USES_GTK)
 
-  if (compositing_surface != gfx::kNullPluginWindow &&
+  if (!compositing_surface.is_null() &&
       Send(new GpuMsg_CreateViewCommandBuffer(
           compositing_surface, surface_id, client_id, init_params))) {
     create_command_buffer_requests_.push(callback);

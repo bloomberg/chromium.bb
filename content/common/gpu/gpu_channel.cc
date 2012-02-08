@@ -184,7 +184,7 @@ void GpuChannel::OnDestroy() {
 }
 
 void GpuChannel::CreateViewCommandBuffer(
-    gfx::PluginWindowHandle window,
+    gfx::GLSurfaceHandle window,
     int32 surface_id,
     const GPUCreateCommandBufferConfig& init_params,
     int32* route_id) {
@@ -329,7 +329,7 @@ void GpuChannel::OnCreateOffscreenCommandBuffer(
   scoped_ptr<GpuCommandBufferStub> stub(new GpuCommandBufferStub(
       this,
       share_group,
-      gfx::kNullPluginWindow,
+      gfx::GLSurfaceHandle(),
       size,
       disallowed_features_,
       init_params.allowed_extensions,

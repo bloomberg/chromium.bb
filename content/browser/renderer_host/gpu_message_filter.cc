@@ -82,7 +82,7 @@ void GpuMessageFilter::OnCreateViewCommandBuffer(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   GpuSurfaceTracker* surface_tracker = GpuSurfaceTracker::Get();
-  gfx::PluginWindowHandle compositing_surface = gfx::kNullPluginWindow;
+  gfx::GLSurfaceHandle compositing_surface;
 
   int renderer_id = 0;
   int render_widget_id = 0;
@@ -96,7 +96,7 @@ void GpuMessageFilter::OnCreateViewCommandBuffer(
   }
 
   GpuProcessHost* host = GpuProcessHost::FromID(gpu_host_id_);
-  if (!host || compositing_surface == gfx::kNullPluginWindow) {
+  if (!host || compositing_surface.is_null()) {
     // TODO(apatrick): Eventually, this IPC message will be routed to a
     // GpuProcessStub with a particular routing ID. The error will be set if
     // the GpuProcessStub with that routing ID is not in the MessageRouter.

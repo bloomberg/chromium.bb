@@ -155,7 +155,7 @@ void RenderWidgetHost::SetView(RenderWidgetHostView* view) {
 
   if (!view_) {
     GpuSurfaceTracker::Get()->SetSurfaceHandle(
-        surface_id_, gfx::kNullPluginWindow);
+        surface_id_, gfx::GLSurfaceHandle());
   }
 }
 
@@ -165,10 +165,10 @@ gfx::NativeViewId RenderWidgetHost::GetNativeViewId() const {
   return 0;
 }
 
-gfx::PluginWindowHandle RenderWidgetHost::GetCompositingSurface() {
+gfx::GLSurfaceHandle RenderWidgetHost::GetCompositingSurface() {
   if (view_)
     return view_->GetCompositingSurface();
-  return gfx::kNullPluginWindow;
+  return gfx::GLSurfaceHandle();
 }
 
 bool RenderWidgetHost::PreHandleKeyboardEvent(

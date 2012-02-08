@@ -71,7 +71,7 @@ class GpuProcessHost : public content::BrowserChildProcessHostDelegate,
   // Tells the GPU process to create a new command buffer that draws into the
   // window associated with the given renderer.
   void CreateViewCommandBuffer(
-      gfx::PluginWindowHandle compositing_surface,
+      gfx::GLSurfaceHandle compositing_surface,
       int surface_id,
       int client_id,
       const GPUCreateCommandBufferConfig& init_params,

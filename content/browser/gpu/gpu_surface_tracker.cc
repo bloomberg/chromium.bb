@@ -20,7 +20,7 @@ GpuSurfaceTracker* GpuSurfaceTracker::GetInstance() {
 int GpuSurfaceTracker::AddSurfaceForRenderer(int renderer_id,
                                              int render_widget_id) {
   base::AutoLock lock(lock_);
-  SurfaceInfo info = { renderer_id, render_widget_id, gfx::kNullPluginWindow };
+  SurfaceInfo info = { renderer_id, render_widget_id };
   int surface_id = next_surface_id_++;
   surface_map_[surface_id] = info;
   return surface_id;
@@ -60,14 +60,14 @@ bool GpuSurfaceTracker::GetRenderWidgetIDForSurface(int surface_id,
 }
 
 void GpuSurfaceTracker::SetSurfaceHandle(int surface_id,
-                                         gfx::PluginWindowHandle handle) {
+                                         gfx::GLSurfaceHandle handle) {
   base::AutoLock lock(lock_);
   DCHECK(surface_map_.find(surface_id) != surface_map_.end());
   SurfaceInfo& info = surface_map_[surface_id];
   info.handle = handle;
 }
 
-gfx::PluginWindowHandle GpuSurfaceTracker::GetSurfaceHandle(int surface_id) {
+gfx::GLSurfaceHandle GpuSurfaceTracker::GetSurfaceHandle(int surface_id) {
   base::AutoLock lock(lock_);
   DCHECK(surface_map_.find(surface_id) != surface_map_.end());
   return surface_map_[surface_id].handle;

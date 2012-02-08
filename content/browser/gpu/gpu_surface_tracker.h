@@ -48,11 +48,11 @@ class GpuSurfaceTracker {
 
   // Sets the native handle for the given surface.
   // Note: This is an O(log N) lookup.
-  void SetSurfaceHandle(int surface_id, gfx::PluginWindowHandle handle);
+  void SetSurfaceHandle(int surface_id, gfx::GLSurfaceHandle handle);
 
   // Gets the native handle for the given surface.
   // Note: This is an O(log N) lookup.
-  gfx::PluginWindowHandle GetSurfaceHandle(int surface_id);
+  gfx::GLSurfaceHandle GetSurfaceHandle(int surface_id);
 
   // Gets the global instance of the surface tracker. Identical to Get(), but
   // named that way for the implementation of Singleton.
@@ -62,7 +62,7 @@ class GpuSurfaceTracker {
   struct SurfaceInfo {
     int renderer_id;
     int render_widget_id;
-    gfx::PluginWindowHandle handle;
+    gfx::GLSurfaceHandle handle;
   };
   typedef std::map<int, SurfaceInfo> SurfaceMap;
 

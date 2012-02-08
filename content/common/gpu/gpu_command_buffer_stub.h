@@ -70,7 +70,7 @@ class GpuCommandBufferStub
   GpuCommandBufferStub(
       GpuChannel* channel,
       GpuCommandBufferStub* share_group,
-      gfx::PluginWindowHandle handle,
+      gfx::GLSurfaceHandle handle,
       const gfx::Size& size,
       const gpu::gles2::DisallowedFeatures& disallowed_features,
       const std::string& allowed_extensions,
@@ -171,7 +171,7 @@ class GpuCommandBufferStub
   // The group of contexts that share namespaces with this context.
   scoped_refptr<gpu::gles2::ContextGroup> context_group_;
 
-  gfx::PluginWindowHandle handle_;
+  gfx::GLSurfaceHandle handle_;
   gfx::Size initial_size_;
   gpu::gles2::DisallowedFeatures disallowed_features_;
   std::string allowed_extensions_;

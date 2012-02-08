@@ -1003,11 +1003,11 @@ gfx::Rect RenderWidgetHostViewMac::GetRootWindowBounds() {
   return FlipNSRectToRectScreen(bounds);
 }
 
-gfx::PluginWindowHandle RenderWidgetHostViewMac::GetCompositingSurface() {
+gfx::GLSurfaceHandle RenderWidgetHostViewMac::GetCompositingSurface() {
   if (compositing_surface_ == gfx::kNullPluginWindow)
     compositing_surface_ = AllocateFakePluginWindowHandle(
         /*opaque=*/true, /*root=*/true);
-  return compositing_surface_;
+  return gfx::GLSurfaceHandle(compositing_surface_, true);
 }
 
 void RenderWidgetHostViewMac::DrawAcceleratedSurfaceInstance(

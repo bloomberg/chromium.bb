@@ -180,10 +180,11 @@ void PbufferImageTransportSurface::OnResize(gfx::Size size) {
 scoped_refptr<gfx::GLSurface> ImageTransportSurface::CreateSurface(
     GpuChannelManager* manager,
     GpuCommandBufferStub* stub,
-    gfx::PluginWindowHandle handle) {
+    gfx::GLSurfaceHandle handle) {
   scoped_refptr<gfx::GLSurface> surface;
 
-  if (gfx::GetGLImplementation() == gfx::kGLImplementationEGLGLES2 &&
+  if (handle.transport &&
+      gfx::GetGLImplementation() == gfx::kGLImplementationEGLGLES2 &&
       !CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableImageTransportSurface)) {
     const char* extensions = eglQueryString(eglGetDisplay(EGL_DEFAULT_DISPLAY),
@@ -195,13 +196,14 @@ scoped_refptr<gfx::GLSurface> ImageTransportSurface::CreateSurface(
   }
 
   if (!surface.get()) {
-    surface = gfx::GLSurface::CreateViewGLSurface(false, handle);
+    surface = gfx::GLSurface::CreateViewGLSurface(false, handle.handle);
     if (!surface.get())
       return NULL;
 
     surface = new PassThroughImageTransportSurface(manager,
                                                    stub,
-                                                   surface.get());
+                                                   surface.get(),
+                                                   handle.transport);
   }
 
   if (surface->Initialize())

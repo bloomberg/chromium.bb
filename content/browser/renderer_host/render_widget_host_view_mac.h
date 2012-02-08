@@ -267,7 +267,7 @@ class RenderWidgetHostViewMac : public RenderWidgetHostView {
   virtual void AcceleratedSurfaceSuspend() OVERRIDE;
   virtual void GetScreenInfo(WebKit::WebScreenInfo* results) OVERRIDE;
   virtual gfx::Rect GetRootWindowBounds() OVERRIDE;
-  virtual gfx::PluginWindowHandle GetCompositingSurface() OVERRIDE;
+  virtual gfx::GLSurfaceHandle GetCompositingSurface() OVERRIDE;
 
   void DrawAcceleratedSurfaceInstance(
       CGLContextObj context,

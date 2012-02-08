@@ -1221,7 +1221,7 @@ gfx::Rect RenderWidgetHostViewGtk::GetRootWindowBounds() {
                    frame_extents.width, frame_extents.height);
 }
 
-gfx::PluginWindowHandle RenderWidgetHostViewGtk::GetCompositingSurface() {
+gfx::GLSurfaceHandle RenderWidgetHostViewGtk::GetCompositingSurface() {
   if (compositing_surface_ == gfx::kNullPluginWindow) {
     GtkNativeViewManager* manager = GtkNativeViewManager::GetInstance();
     gfx::NativeViewId view_id = GetNativeViewId();
@@ -1230,7 +1230,7 @@ gfx::PluginWindowHandle RenderWidgetHostViewGtk::GetCompositingSurface() {
       DLOG(ERROR) << "Can't find XID for view id " << view_id;
     }
   }
-  return compositing_surface_;
+  return gfx::GLSurfaceHandle(compositing_surface_, true);
 }
 
 bool RenderWidgetHostViewGtk::LockMouse() {

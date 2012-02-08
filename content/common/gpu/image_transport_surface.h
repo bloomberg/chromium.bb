@@ -69,7 +69,7 @@ class ImageTransportSurface {
   static scoped_refptr<gfx::GLSurface>
       CreateSurface(GpuChannelManager* manager,
                     GpuCommandBufferStub* stub,
-                    gfx::PluginWindowHandle handle);
+                    gfx::GLSurfaceHandle handle);
  private:
   DISALLOW_COPY_AND_ASSIGN(ImageTransportSurface);
 };
@@ -146,7 +146,8 @@ class PassThroughImageTransportSurface
  public:
   PassThroughImageTransportSurface(GpuChannelManager* manager,
                                    GpuCommandBufferStub* stub,
-                                   gfx::GLSurface* surface);
+                                   gfx::GLSurface* surface,
+                                   bool transport);
   virtual ~PassThroughImageTransportSurface();
 
   // GLSurface implementation.
@@ -166,6 +167,7 @@ class PassThroughImageTransportSurface
  private:
   scoped_ptr<ImageTransportHelper> helper_;
   gfx::Size new_size_;
+  bool transport_;
 
   DISALLOW_COPY_AND_ASSIGN(PassThroughImageTransportSurface);
 };

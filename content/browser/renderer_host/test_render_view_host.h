@@ -154,7 +154,7 @@ class TestRenderWidgetHostView : public RenderWidgetHostView {
   virtual void DestroyPluginContainer(gfx::PluginWindowHandle id) OVERRIDE { }
 #endif
 
-  virtual gfx::PluginWindowHandle GetCompositingSurface() OVERRIDE;
+  virtual gfx::GLSurfaceHandle GetCompositingSurface() OVERRIDE;
 
   virtual bool LockMouse() OVERRIDE;
   virtual void UnlockMouse() OVERRIDE;

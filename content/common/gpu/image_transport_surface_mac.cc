@@ -564,7 +564,7 @@ void TransportDIBImageTransportSurface::OnResize(gfx::Size size) {
 scoped_refptr<gfx::GLSurface> ImageTransportSurface::CreateSurface(
     GpuChannelManager* manager,
     GpuCommandBufferStub* stub,
-    gfx::PluginWindowHandle handle) {
+    gfx::GLSurfaceHandle surface_handle) {
   scoped_refptr<gfx::GLSurface> surface;
   IOSurfaceSupport* io_surface_support = IOSurfaceSupport::Initialize();
 
@@ -572,9 +572,11 @@ scoped_refptr<gfx::GLSurface> ImageTransportSurface::CreateSurface(
     case gfx::kGLImplementationDesktopGL:
     case gfx::kGLImplementationAppleGL:
       if (!io_surface_support) {
-        surface = new TransportDIBImageTransportSurface(manager, stub, handle);
+        surface = new TransportDIBImageTransportSurface(
+            manager, stub, surface_handle.handle);
       } else {
-        surface = new IOSurfaceImageTransportSurface(manager, stub, handle);
+        surface = new IOSurfaceImageTransportSurface(
+            manager, stub, surface_handle.handle);
       }
       break;
     default:

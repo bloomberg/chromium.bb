@@ -34,7 +34,7 @@ GpuCommandBufferStub::SurfaceState::SurfaceState(int32 surface_id,
 GpuCommandBufferStub::GpuCommandBufferStub(
     GpuChannel* channel,
     GpuCommandBufferStub* share_group,
-    gfx::PluginWindowHandle handle,
+    gfx::GLSurfaceHandle handle,
     const gfx::Size& size,
     const gpu::gles2::DisallowedFeatures& disallowed_features,
     const std::string& allowed_extensions,
@@ -196,7 +196,7 @@ void GpuCommandBufferStub::OnInitialize(
 
   decoder_->set_engine(scheduler_.get());
 
-  if (handle_) {
+  if (!handle_.is_null()) {
 #if defined(OS_MACOSX) || defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
     if (software_) {
       DLOG(ERROR) << "No software support.\n";

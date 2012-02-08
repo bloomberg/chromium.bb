@@ -309,7 +309,7 @@ class RenderWidgetHostView {
   virtual gfx::Rect GetRootWindowBounds() = 0;
 #endif
 
-  virtual gfx::PluginWindowHandle GetCompositingSurface() = 0;
+  virtual gfx::GLSurfaceHandle GetCompositingSurface() = 0;
 
   virtual void UnhandledWheelEvent(const WebKit::WebMouseWheelEvent& event) = 0;
 

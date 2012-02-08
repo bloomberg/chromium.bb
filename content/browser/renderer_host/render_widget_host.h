@@ -486,7 +486,7 @@ class CONTENT_EXPORT RenderWidgetHost : public IPC::Channel::Listener,
 
   // Retrieves an id for the surface that the renderer can draw to
   // when accelerated compositing is enabled.
-  gfx::PluginWindowHandle GetCompositingSurface();
+  gfx::GLSurfaceHandle GetCompositingSurface();
 
   // Called to handled a keyboard event before sending it to the renderer.
   // This is overridden by RenderViewHost to send upwards to its delegate.

@@ -191,7 +191,10 @@ gpu::gles2::GLES2Decoder* ImageTransportHelper::Decoder() {
 PassThroughImageTransportSurface::PassThroughImageTransportSurface(
     GpuChannelManager* manager,
     GpuCommandBufferStub* stub,
-    gfx::GLSurface* surface) : GLSurfaceAdapter(surface) {
+    gfx::GLSurface* surface,
+    bool transport)
+    : GLSurfaceAdapter(surface),
+      transport_(transport) {
   helper_.reset(new ImageTransportHelper(this,
                                          manager,
                                          stub,
@@ -218,16 +221,18 @@ void PassThroughImageTransportSurface::OnNewSurfaceACK(
 bool PassThroughImageTransportSurface::SwapBuffers() {
   bool result = gfx::GLSurfaceAdapter::SwapBuffers();
 
-  // Round trip to the browser UI thread, for throttling, by sending a dummy
-  // SwapBuffers message.
-  GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params params;
-  params.surface_handle = 0;
+  if (transport_) {
+    // Round trip to the browser UI thread, for throttling, by sending a dummy
+    // SwapBuffers message.
+    GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params params;
+    params.surface_handle = 0;
 #if defined(OS_WIN)
-  params.size = GetSize();
+    params.size = GetSize();
 #endif
-  helper_->SendAcceleratedSurfaceBuffersSwapped(params);
+    helper_->SendAcceleratedSurfaceBuffersSwapped(params);
 
-  helper_->SetScheduled(false);
+    helper_->SetScheduled(false);
+  }
   return result;
 }
 
@@ -235,29 +240,34 @@ bool PassThroughImageTransportSurface::PostSubBuffer(
     int x, int y, int width, int height) {
   bool result = gfx::GLSurfaceAdapter::PostSubBuffer(x, y, width, height);
 
-  // Round trip to the browser UI thread, for throttling, by sending a dummy
-  // PostSubBuffer message.
-  GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params params;
-  params.surface_handle = 0;
-  params.x = x;
-  params.y = y;
-  params.width = width;
-  params.height = height;
-  helper_->SendAcceleratedSurfacePostSubBuffer(params);
+  if (transport_) {
+    // Round trip to the browser UI thread, for throttling, by sending a dummy
+    // PostSubBuffer message.
+    GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params params;
+    params.surface_handle = 0;
+    params.x = x;
+    params.y = y;
+    params.width = width;
+    params.height = height;
+    helper_->SendAcceleratedSurfacePostSubBuffer(params);
 
-  helper_->SetScheduled(false);
+    helper_->SetScheduled(false);
+  }
   return result;
 }
 
 void PassThroughImageTransportSurface::OnBuffersSwappedACK() {
+  DCHECK(transport_);
   helper_->SetScheduled(true);
 }
 
 void PassThroughImageTransportSurface::OnPostSubBufferACK() {
+  DCHECK(transport_);
   helper_->SetScheduled(true);
 }
 
 void PassThroughImageTransportSurface::OnResizeViewACK() {
+  DCHECK(transport_);
   Resize(new_size_);
 
   helper_->SetScheduled(true);
@@ -266,8 +276,12 @@ void PassThroughImageTransportSurface::OnResizeViewACK() {
 void PassThroughImageTransportSurface::OnResize(gfx::Size size) {
   new_size_ = size;
 
-  helper_->SendResizeView(size);
-  helper_->SetScheduled(false);
+  if (transport_) {
+    helper_->SendResizeView(size);
+    helper_->SetScheduled(false);
+  } else {
+    Resize(new_size_);
+  }
 }
 
 #endif  // defined(ENABLE_GPU)

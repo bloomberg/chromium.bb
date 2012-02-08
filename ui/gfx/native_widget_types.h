@@ -250,6 +250,20 @@ static inline NativeView NativeViewFromIdInBrowser(NativeViewId id) {
   const PluginWindowHandle kNullPluginWindow = 0;
 #endif
 
+struct GLSurfaceHandle {
+  GLSurfaceHandle()
+      : handle(kNullPluginWindow),
+        transport(false) {
+  }
+  GLSurfaceHandle(PluginWindowHandle handle_, bool transport_)
+      : handle(handle_),
+        transport(transport_) {
+  }
+  bool is_null() const { return handle == kNullPluginWindow && !transport; }
+  PluginWindowHandle handle;
+  bool transport;
+};
+
 // AcceleratedWidget provides a surface to compositors to paint pixels.
 #if defined(OS_WIN)
 typedef HWND AcceleratedWidget;

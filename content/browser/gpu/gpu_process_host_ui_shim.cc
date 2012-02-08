@@ -248,14 +248,14 @@ void GpuProcessHostUIShim::OnResizeView(int32 surface_id,
   if (!view)
     return;
 
-  gfx::PluginWindowHandle handle = view->GetCompositingSurface();
+  gfx::GLSurfaceHandle surface = view->GetCompositingSurface();
 
   // Resize the window synchronously. The GPU process must not issue GL
   // calls on the command buffer until the window is the size it expects it
   // to be.
 #if defined(TOOLKIT_USES_GTK)
   GdkWindow* window = reinterpret_cast<GdkWindow*>(
-      gdk_xid_table_lookup(handle));
+      gdk_xid_table_lookup(surface.handle));
   if (window) {
     Display* display = GDK_WINDOW_XDISPLAY(window);
     gdk_window_resize(window, size.width(), size.height());
@@ -264,7 +264,7 @@ void GpuProcessHostUIShim::OnResizeView(int32 surface_id,
 #elif defined(OS_WIN)
   // Ensure window does not have zero area because D3D cannot create a zero
   // area swap chain.
-  SetWindowPos(handle,
+  SetWindowPos(surface.handle,
       NULL,
       0, 0,
       std::max(1, size.width()),

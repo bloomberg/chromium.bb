@@ -529,20 +529,17 @@ void RenderWidgetHostViewAura::SetScrollOffsetPinning(
 }
 
 #if defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
-gfx::PluginWindowHandle RenderWidgetHostViewAura::GetCompositingSurface() {
-  // The GPU process renders to an offscreen surface (created by the GPU
-  // process), which is later displayed by the browser. As the GPU process
-  // creates this surface, we can return any non-zero value.
-  return 1;
+gfx::GLSurfaceHandle RenderWidgetHostViewAura::GetCompositingSurface() {
+  return gfx::GLSurfaceHandle(gfx::kNullPluginWindow, true);
 }
 #else
-gfx::PluginWindowHandle RenderWidgetHostViewAura::GetCompositingSurface() {
+gfx::GLSurfaceHandle RenderWidgetHostViewAura::GetCompositingSurface() {
   // TODO(oshima): The original implementation was broken as
   // GtkNativeViewManager doesn't know about NativeWidgetGtk. Figure
   // out if this makes sense without compositor. If it does, then find
   // out the right way to handle.
   NOTIMPLEMENTED();
-  return gfx::kNullPluginWindow;
+  return gfx::GLSurfaceHandle();
 }
 #endif
 

@@ -895,30 +895,33 @@ gfx::Size OSMesaImageTransportSurface::GetSize() {
 scoped_refptr<gfx::GLSurface> ImageTransportSurface::CreateSurface(
     GpuChannelManager* manager,
     GpuCommandBufferStub* stub,
-    gfx::PluginWindowHandle handle) {
+    gfx::GLSurfaceHandle handle) {
   scoped_refptr<gfx::GLSurface> surface;
-#if defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
-  switch (gfx::GetGLImplementation()) {
-    case gfx::kGLImplementationDesktopGL:
-      surface = new GLXImageTransportSurface(manager, stub);
-      break;
-    case gfx::kGLImplementationEGLGLES2:
-      surface = new EGLImageTransportSurface(manager, stub);
-      break;
-    case gfx::kGLImplementationOSMesaGL:
-      surface = new OSMesaImageTransportSurface(manager, stub);
-      break;
-    default:
-      NOTREACHED();
+  if (!handle.handle) {
+    switch (gfx::GetGLImplementation()) {
+      case gfx::kGLImplementationDesktopGL:
+        surface = new GLXImageTransportSurface(manager, stub);
+        break;
+      case gfx::kGLImplementationEGLGLES2:
+        surface = new EGLImageTransportSurface(manager, stub);
+        break;
+      case gfx::kGLImplementationOSMesaGL:
+        surface = new OSMesaImageTransportSurface(manager, stub);
+        break;
+      default:
+        NOTREACHED();
+        return NULL;
+    }
+  } else {
+    surface = gfx::GLSurface::CreateViewGLSurface(false, handle.handle);
+    if (!surface.get())
       return NULL;
+    surface = new PassThroughImageTransportSurface(manager,
+                                                   stub,
+                                                   surface.get(),
+                                                   handle.transport);
   }
-#else
-  surface = gfx::GLSurface::CreateViewGLSurface(false, handle);
-  if (!surface.get())
-    return NULL;
 
-  surface = new PassThroughImageTransportSurface(manager, stub, surface.get());
-#endif
   if (surface->Initialize())
     return surface;
   else

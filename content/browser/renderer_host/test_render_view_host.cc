@@ -284,8 +284,8 @@ gfx::Rect TestRenderWidgetHostView::GetRootWindowBounds() {
 }
 #endif
 
-gfx::PluginWindowHandle TestRenderWidgetHostView::GetCompositingSurface() {
-  return gfx::kNullPluginWindow;
+gfx::GLSurfaceHandle TestRenderWidgetHostView::GetCompositingSurface() {
+  return gfx::GLSurfaceHandle();
 }
 
 bool TestRenderWidgetHostView::LockMouse() {

@@ -110,6 +110,11 @@ IPC_STRUCT_TRAITS_BEGIN(content::GPUInfo)
 #endif
 IPC_STRUCT_TRAITS_END()
 
+IPC_STRUCT_TRAITS_BEGIN(gfx::GLSurfaceHandle)
+  IPC_STRUCT_TRAITS_MEMBER(handle)
+  IPC_STRUCT_TRAITS_MEMBER(transport)
+IPC_STRUCT_TRAITS_END()
+
 IPC_ENUM_TRAITS(content::CauseForGpuLaunch)
 IPC_ENUM_TRAITS(gfx::GpuPreference)
 IPC_ENUM_TRAITS(gpu::error::ContextLostReason)
@@ -144,7 +149,7 @@ IPC_MESSAGE_CONTROL1(GpuMsg_CloseChannel,
 // Tells the GPU process to create a new command buffer that renders directly
 // to a native view. A corresponding GpuCommandBufferStub is created.
 IPC_MESSAGE_CONTROL4(GpuMsg_CreateViewCommandBuffer,
-                     gfx::PluginWindowHandle, /* compositing_surface */
+                     gfx::GLSurfaceHandle, /* compositing_surface */
                      int32, /* surface_id */
                      int32, /* client_id */
                      GPUCreateCommandBufferConfig /* init_params */)
