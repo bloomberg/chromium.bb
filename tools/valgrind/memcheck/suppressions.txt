@@ -5766,6 +5766,25 @@
    fun:_ZN3WTFL16threadEntryPointEPv
 }
 {
+   bug_112798_a
+   Memcheck:Leak
+   ...
+   fun:_ZN2ui5Layer3AddEPS0_
+   fun:_ZN4aura6Window8AddChildEPS0_
+   fun:_ZN4aura6Window9SetParentEPS0_
+   fun:_ZN24RenderWidgetHostViewAura16InitAsFullscreenEP20RenderWidgetHostView
+   fun:_ZN44RenderWidgetHostViewAuraTest_Fullscreen_Test8TestBodyEv
+}
+{
+   bug_112798_b
+   Memcheck:Leak
+   ...
+   fun:_ZN4aura6Window11SetPropertyEPKcPv
+   fun:_ZN4aura6client21SetActivationDelegateEPNS_6WindowEPNS0_18ActivationDelegateE
+   fun:_ZN24RenderWidgetHostViewAuraC1EP16RenderWidgetHost
+   fun:_ZN20RenderWidgetHostView19CreateViewForWidgetEP16RenderWidgetHost
+}
+{
    bug_112835
    Memcheck:Unaddressable
    ...
