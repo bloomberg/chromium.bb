@@ -231,6 +231,22 @@ weston_surface_set_color(struct weston_surface *surface,
 }
 
 static void
+weston_surface_damage_below_noupdate(struct weston_surface *surface)
+{
+	struct weston_surface *below;
+
+	if (surface->output == NULL)
+		return;
+
+	if (surface->link.next == &surface->compositor->surface_list)
+		return;
+
+	below = container_of(surface->link.next, struct weston_surface, link);
+	pixman_region32_union(&below->damage, &below->damage,
+			      &surface->transform.boundingbox);
+}
+
+static void
 surface_compute_bbox(struct weston_surface *surface, int32_t sx, int32_t sy,
 		     int32_t width, int32_t height,
 		     pixman_region32_t *bbox)
@@ -429,20 +445,8 @@ weston_surface_damage(struct weston_surface *surface)
 WL_EXPORT void
 weston_surface_damage_below(struct weston_surface *surface)
 {
-	struct weston_surface *below;
-
-	if (surface->output == NULL)
-		return;
-
-	if (surface->link.next == &surface->compositor->surface_list)
-		return;
-
-	below = container_of(surface->link.next, struct weston_surface, link);
-
 	weston_surface_update_transform(surface);
-	pixman_region32_union(&below->damage, &below->damage,
-			      &surface->transform.boundingbox);
-
+	weston_surface_damage_below_noupdate(surface);
 	weston_compositor_schedule_repaint(surface->compositor);
 }
 
