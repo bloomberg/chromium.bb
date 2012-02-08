@@ -9,6 +9,7 @@
       "matches": [
           "https://www.google.com/accounts/*",
           "https://accounts.google.com/*",
+          "https://gaiastaging.corp.google.com/*",
           "https://insecure.com/*"
       ],
       "js": ["test/content.js"],
@@ -18,6 +19,7 @@
   "permissions": [
       "https://insecure.com/*",
       "https://www.google.com/accounts/*",
+      "https://gaiastaging.corp.google.com/*",
       "chrome://oobe/"
   ]
 }
