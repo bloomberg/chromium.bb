@@ -20,7 +20,6 @@ class TabContentsWrapper;
 
 #if defined(ENABLE_PLUGIN_INSTALLATION)
 class PluginInstaller;
-class PluginPlaceholderHost;
 #endif
 
 class PluginObserver : public content::WebContentsObserver {
@@ -31,26 +30,21 @@ class PluginObserver : public content::WebContentsObserver {
   // content::WebContentsObserver implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
+ private:
 #if defined(ENABLE_PLUGIN_INSTALLATION)
-  void InstallMissingPlugin(PluginInstaller* installer);
+  class PluginPlaceholderHost;
 #endif
 
-  TabContentsWrapper* tab_contents_wrapper() { return tab_contents_; }
-
- private:
-  class PluginPlaceholderHost;
-
+  void OnBlockedOutdatedPlugin(const string16& name, const GURL& update_url);
   void OnBlockedUnauthorizedPlugin(const string16& name);
-  void OnBlockedOutdatedPlugin(int placeholder_id,
-                               const std::string& identifier);
 #if defined(ENABLE_PLUGIN_INSTALLATION)
   void OnFindMissingPlugin(int placeholder_id, const std::string& mime_type);
 
   void FoundMissingPlugin(int placeholder_id,
                           const std::string& mime_type,
                           PluginInstaller* installer);
-  void FoundPluginToUpdate(int placeholder_id,
-                           PluginInstaller* installer);
+  void DidNotFindMissingPlugin(int placeholder_id);
+  void InstallMissingPlugin(PluginInstaller* installer);
 #endif
   void OnOpenAboutPlugins();
   void OnRemovePluginPlaceholderHost(int placeholder_id);

@@ -36,7 +36,7 @@ scoped_ptr<base::ListValue> PluginFinder::LoadPluginList() {
 }
 
 base::ListValue* PluginFinder::LoadPluginListInternal() {
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
+#if defined(OS_WIN) || defined(OS_MACOSX)
   base::StringPiece json_resource(
       ResourceBundle::GetSharedInstance().GetRawDataResource(
           IDR_PLUGIN_DB_JSON));
@@ -70,100 +70,60 @@ PluginFinder::~PluginFinder() {
 void PluginFinder::FindPlugin(
     const std::string& mime_type,
     const std::string& language,
-    const FindPluginCallback& callback) {
-  PluginInstaller* installer = FindPluginInternal(mime_type, language);
-  MessageLoop::current()->PostTask(FROM_HERE, base::Bind(callback, installer));
-}
-
-void PluginFinder::FindPluginWithIdentifier(
-    const std::string& identifier,
-    const FindPluginCallback& found_callback) {
-  PluginInstaller* installer = NULL;
-  std::map<std::string, PluginInstaller*>::const_iterator it =
-      installers_.find(identifier);
-  if (it != installers_.end()) {
-    installer = it->second;
-  } else {
-    for (ListValue::const_iterator plugin_it = plugin_list_->begin();
-         plugin_it != plugin_list_->end(); ++plugin_it) {
-      const base::DictionaryValue* plugin = NULL;
-      if (!(*plugin_it)->GetAsDictionary(&plugin)) {
-        NOTREACHED();
-        continue;
-      }
-      std::string id;
-      bool success = plugin->GetString("identifier", &id);
-      DCHECK(success);
-      if (id == identifier) {
-        installer = CreateInstaller(identifier, plugin);
-        break;
-      }
-    }
-  }
-  MessageLoop::current()->PostTask(FROM_HERE,
-                                   base::Bind(found_callback, installer));
-}
-
-PluginInstaller* PluginFinder::CreateInstaller(
-    const std::string& identifier,
-    const base::DictionaryValue* plugin_dict) {
-  DCHECK(!installers_[identifier]);
-  std::string url;
-  bool success = plugin_dict->GetString("url", &url);
-  DCHECK(success);
-  std::string help_url;
-  plugin_dict->GetString("help_url", &help_url);
-  string16 name;
-  success = plugin_dict->GetString("name", &name);
-  DCHECK(success);
-  bool display_url = false;
-  plugin_dict->GetBoolean("displayurl", &display_url);
-  PluginInstaller*installer = new PluginInstaller(identifier,
-                                                  GURL(url),
-                                                  GURL(help_url),
-                                                  name,
-                                                  display_url);
-  installers_[identifier] = installer;
-  return installer;
-}
-
-PluginInstaller* PluginFinder::FindPluginInternal(
-    const std::string& mime_type,
-    const std::string& language) {
-  if (!g_browser_process->local_state()->GetBoolean(
+    const FindPluginCallback& found_callback,
+    const base::Closure& not_found_callback) {
+  if (g_browser_process->local_state()->GetBoolean(
           prefs::kDisablePluginFinder)) {
-    for (ListValue::const_iterator plugin_it = plugin_list_->begin();
-         plugin_it != plugin_list_->end(); ++plugin_it) {
-      const base::DictionaryValue* plugin = NULL;
-      if (!(*plugin_it)->GetAsDictionary(&plugin)) {
-        NOTREACHED();
-        continue;
-      }
-      std::string language_str;
-      bool success = plugin->GetString("lang", &language_str);
+    MessageLoop::current()->PostTask(FROM_HERE, not_found_callback);
+    return;
+  }
+  for (ListValue::const_iterator plugin_it = plugin_list_->begin();
+       plugin_it != plugin_list_->end(); ++plugin_it) {
+    const base::DictionaryValue* plugin = NULL;
+    if (!(*plugin_it)->GetAsDictionary(&plugin)) {
+      NOTREACHED();
+      continue;
+    }
+    std::string language_str;
+    bool success = plugin->GetString("lang", &language_str);
+    DCHECK(success);
+    if (language_str != language)
+      continue;
+    ListValue* mime_types = NULL;
+    success = plugin->GetList("mime_types", &mime_types);
+    DCHECK(success);
+    for (ListValue::const_iterator mime_type_it = mime_types->begin();
+         mime_type_it != mime_types->end(); ++mime_type_it) {
+      std::string mime_type_str;
+      success = (*mime_type_it)->GetAsString(&mime_type_str);
       DCHECK(success);
-      if (language_str != language)
-        continue;
-      ListValue* mime_types = NULL;
-      success = plugin->GetList("mime_types", &mime_types);
-      DCHECK(success);
-      for (ListValue::const_iterator mime_type_it = mime_types->begin();
-           mime_type_it != mime_types->end(); ++mime_type_it) {
-        std::string mime_type_str;
-        success = (*mime_type_it)->GetAsString(&mime_type_str);
+      if (mime_type_str == mime_type) {
+        std::string identifier;
+        success = plugin->GetString("identifier", &identifier);
         DCHECK(success);
-        if (mime_type_str == mime_type) {
-          std::string identifier;
-          bool success = plugin->GetString("identifier", &identifier);
+        PluginInstaller* installer = installers_[identifier];
+        if (!installer) {
+          std::string url;
+          success = plugin->GetString("url", &url);
           DCHECK(success);
-          std::map<std::string, PluginInstaller*>::const_iterator it =
-              installers_.find(identifier);
-          if (it != installers_.end())
-            return it->second;
-          return CreateInstaller(identifier, plugin);
+          std::string help_url;
+          plugin->GetString("help_url", &help_url);
+          string16 name;
+          success = plugin->GetString("name", &name);
+          DCHECK(success);
+          bool display_url = false;
+          plugin->GetBoolean("displayurl", &display_url);
+          installer = new PluginInstaller(identifier,
+                                          GURL(url), GURL(help_url), name,
+                                          display_url);
+          installers_[identifier] = installer;
         }
+        MessageLoop::current()->PostTask(
+            FROM_HERE,
+            base::Bind(found_callback, installer));
+        return;
       }
     }
   }
-  return NULL;
+  MessageLoop::current()->PostTask(FROM_HERE, not_found_callback);
 }

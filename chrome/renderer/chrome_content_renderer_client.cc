@@ -432,17 +432,13 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
         break;
       }
       case ChromeViewHostMsg_GetPluginInfo_Status::kOutdatedBlocked: {
-#if defined(ENABLE_PLUGIN_INSTALLATION)
         placeholder = PluginPlaceholder::CreateBlockedPlugin(
             render_view, frame, params, plugin, name,
             IDR_BLOCKED_PLUGIN_HTML, IDS_PLUGIN_OUTDATED);
         placeholder->set_allow_loading(true);
         render_view->Send(new ChromeViewHostMsg_BlockedOutdatedPlugin(
-            render_view->GetRoutingId(), placeholder->CreateRoutingId(),
-            group->identifier()));
-#else
-        NOTREACHED();
-#endif
+            render_view->GetRoutingId(), group->GetGroupName(),
+            GURL(group->GetUpdateURL())));
         break;
       }
       case ChromeViewHostMsg_GetPluginInfo_Status::kOutdatedDisallowed: {

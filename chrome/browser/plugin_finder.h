@@ -15,7 +15,6 @@
 #include "base/string16.h"
 
 namespace base {
-class DictionaryValue;
 class ListValue;
 }
 
@@ -33,15 +32,12 @@ class PluginFinder {
   static scoped_ptr<base::ListValue> LoadPluginList();
 
   // Finds a plug-in for the given MIME type and language (specified as an IETF
-  // language tag, i.e. en-US) and calls the callback with the PluginInstaller
-  // for the plug-in, or NULL if no plug-in is found.
+  // language tag, i.e. en-US) and calls one of the two passed in callbacks,
+  // depending on whether a plug-in is found.
   void FindPlugin(const std::string& mime_type,
                   const std::string& language,
-                  const FindPluginCallback& callback);
-
-  // Finds the plug-in with the given identifier and calls the callback.
-  void FindPluginWithIdentifier(const std::string& identifier,
-                                const FindPluginCallback& callback);
+                  const FindPluginCallback& found_callback,
+                  const base::Closure& not_found_callback);
 
  private:
   friend struct DefaultSingletonTraits<PluginFinder>;
@@ -50,11 +46,6 @@ class PluginFinder {
   ~PluginFinder();
 
   static base::ListValue* LoadPluginListInternal();
-
-  PluginInstaller* CreateInstaller(const std::string& identifier,
-                                   const base::DictionaryValue* plugin_dict);
-  PluginInstaller* FindPluginInternal(const std::string& mime_type,
-                                      const std::string& language);
 
   scoped_ptr<base::ListValue> plugin_list_;
   std::map<std::string, PluginInstaller*> installers_;

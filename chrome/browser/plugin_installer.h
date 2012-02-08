@@ -14,8 +14,8 @@ class FilePath;
 class PluginInstallerObserver;
 class WeakPluginInstallerObserver;
 
-namespace content {
-class WebContents;
+namespace net {
+class URLRequestContextGetter;
 }
 
 class PluginInstaller {
@@ -57,14 +57,11 @@ class PluginInstaller {
   // URL to open when the user clicks on the "Problems installing?" link.
   const GURL& help_url() const { return help_url_; }
 
-  // Opens the download URL in a new tab. This method should only be called if
-  // |url_for_display| returns true.
-  void OpenDownloadURL(content::WebContents* web_contents);
+  void StartInstalling(net::URLRequestContextGetter* request_context);
 
-  // Starts downloading the download URL and opens the downloaded file
-  // when finished. This method should only be called if |url_for_display|
-  // returns false.
-  void StartInstalling(content::WebContents* web_contents);
+  // Called when the browser opened the download URL in a new tab, to notify
+  // observers.
+  void DidOpenDownloadURL();
 
  private:
   void DidFinishDownload(const FilePath& downloaded_file);

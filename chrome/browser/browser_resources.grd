@@ -98,9 +98,6 @@
       <if expr="is_macosx">
         <include name="IDR_PLUGIN_DB_JSON" file="resources\plugins_mac.json" type="BINDATA" />
       </if>
-      <if expr="is_linux">
-        <include name="IDR_PLUGIN_DB_JSON" file="resources\plugins_linux.json" type="BINDATA" />
-      </if>
       <include name="IDR_POLICY_CSS" file="resources\policy.css" type="BINDATA"/>
       <include name="IDR_POLICY_HTML" file="resources\policy.html" flattenhtml="true" allowexternalscript="true" type="BINDATA"/>
       <include name="IDR_POLICY_JS" file="resources\policy.js" type="BINDATA"/>

@@ -310,10 +310,7 @@ void PluginPlaceholder::OnStartedDownloadingPlugin() {
 }
 
 void PluginPlaceholder::OnFinishedDownloadingPlugin() {
-  bool is_installing =
-      status_->value == ChromeViewHostMsg_GetPluginInfo_Status::kNotFound;
-  SetMessage(l10n_util::GetStringUTF16(
-      is_installing ? IDS_PLUGIN_INSTALLING : IDS_PLUGIN_UPDATING));
+  SetMessage(l10n_util::GetStringUTF16(IDS_PLUGIN_INSTALLING));
 }
 
 void PluginPlaceholder::OnErrorDownloadingPlugin(const std::string& error) {

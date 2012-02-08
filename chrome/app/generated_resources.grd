@@ -5312,9 +5312,6 @@ Because search results are requested even while you're typing your query, your d
       <message name="IDS_PLUGIN_INSTALLING" desc="The placeholder text when installing a missing plug-in.">
         After installing the plug-in, reload the page.
       </message>
-      <message name="IDS_PLUGIN_UPDATING" desc="The placeholder text when updating an out-of-date plug-in.">
-        After updating the plug-in, reload the page.
-      </message>
       <message name="IDS_PLUGIN_FOUND" desc="The placeholder text for a known plug-in that is not installed.">
         The <ph name="PLUGIN_NAME">$1<ex>Quicktime</ex></ph> plug-in is required to display this content.
       </message>
@@ -9572,9 +9569,6 @@ experiment id: "<ph name="EXPERIMENT_ID">$5<ex>ar1</ex></ph>"
       </message>
       <message name="IDS_PLUGININSTALLER_PROBLEMSINSTALLING" desc="Infobar text for link to help center">
         Problems installing?
-      </message>
-      <message name="IDS_PLUGININSTALLER_PROBLEMSUPDATING" desc="Infobar text for link to help center">
-        Problems updating?
       </message>
       <message name="IDS_PLUGIN_OUTDATED_PROMPT" desc="Info Bar message when an outdated plugin was disabled">
         The <ph name="PLUGIN_NAME">$1<ex>Flash</ex></ph> plug-in was blocked because it is out of date.
