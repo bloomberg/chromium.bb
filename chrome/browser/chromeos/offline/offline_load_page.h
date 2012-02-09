@@ -43,6 +43,8 @@ class OfflineLoadPage : public content::InterstitialPageDelegate,
   OfflineLoadPage(content::WebContents* web_contents, const GURL& url,
                   const CompletionCallback& callback);
 
+  void Show();
+
  protected:
   virtual ~OfflineLoadPage();
 

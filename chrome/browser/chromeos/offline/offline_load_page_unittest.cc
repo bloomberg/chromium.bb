@@ -72,7 +72,7 @@ class OfflineLoadPageTest : public ChromeRenderViewHostTestHarness {
   }
 
   void ShowInterstitial(const char* url) {
-    new TestOfflineLoadPage(contents(), GURL(url), this);
+    (new TestOfflineLoadPage(contents(), GURL(url), this))->Show();
   }
 
   // Returns the OfflineLoadPage currently showing or NULL if none is
@@ -98,8 +98,7 @@ void TestOfflineLoadPage::NotifyBlockingPageComplete(bool proceed) {
   test_page_->OnBlockingPageComplete(proceed);
 }
 
-// Tests are disabled due to crash. see crbug.com/113219.
-TEST_F(OfflineLoadPageTest, DISABLED_OfflinePageProceed) {
+TEST_F(OfflineLoadPageTest, OfflinePageProceed) {
   // Start a load.
   Navigate(kURL1, 1);
   // Load next page.
@@ -128,7 +127,7 @@ TEST_F(OfflineLoadPageTest, DISABLED_OfflinePageProceed) {
 }
 
 // Tests showing an offline page and not proceeding.
-TEST_F(OfflineLoadPageTest, DISABLED_OfflinePageDontProceed) {
+TEST_F(OfflineLoadPageTest, OfflinePageDontProceed) {
   // Start a load.
   Navigate(kURL1, 1);
   controller().LoadURL(GURL(kURL2), content::Referrer(),

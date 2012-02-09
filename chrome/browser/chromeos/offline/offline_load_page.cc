@@ -58,12 +58,15 @@ OfflineLoadPage::OfflineLoadPage(WebContents* web_contents,
       url_(url) {
   net::NetworkChangeNotifier::AddOnlineStateObserver(this);
   interstitial_page_ = InterstitialPage::Create(web_contents, true, url, this);
-  interstitial_page_->Show();
 }
 
 OfflineLoadPage::~OfflineLoadPage() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   net::NetworkChangeNotifier::RemoveOnlineStateObserver(this);
+}
+
+void OfflineLoadPage::Show() {
+  interstitial_page_->Show();
 }
 
 std::string OfflineLoadPage::GetHTMLContents() {

@@ -51,7 +51,7 @@ void ShowOfflinePage(
     // the offline page on the IO thread and before we actually show the
     // offline page here on the UI thread.
     if (web_contents)
-      new chromeos::OfflineLoadPage(web_contents, url, callback);
+      (new chromeos::OfflineLoadPage(web_contents, url, callback))->Show();
   }
 }
 
