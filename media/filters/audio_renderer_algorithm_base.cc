@@ -47,21 +47,39 @@ AudioRendererAlgorithmBase::AudioRendererAlgorithmBase()
 
 AudioRendererAlgorithmBase::~AudioRendererAlgorithmBase() {}
 
+bool AudioRendererAlgorithmBase::ValidateConfig(
+    int channels,
+    int samples_per_second,
+    int bits_per_channel) {
+  bool status = true;
+
+  if (channels <= 0 || channels > 8) {
+    DVLOG(1) << "We only support audio with between 1 and 8 channels.";
+    status = false;
+  }
+
+  if (samples_per_second <= 0 || samples_per_second > 256000) {
+    DVLOG(1) << "We only support sample rates between 1 and 256000Hz.";
+    status = false;
+  }
+
+  if (bits_per_channel != 8 && bits_per_channel != 16 &&
+      bits_per_channel != 32) {
+    DVLOG(1) << "We only support 8, 16, 32 bit audio.";
+    status = false;
+  }
+
+  return status;
+}
+
 void AudioRendererAlgorithmBase::Initialize(
     int channels,
     int samples_per_second,
     int bits_per_channel,
     float initial_playback_rate,
     const base::Closure& callback) {
-  DCHECK_GT(channels, 0);
-  DCHECK_LE(channels, 8) << "We only support <= 8 channel audio.";
-  DCHECK_GT(samples_per_second, 0);
-  DCHECK_LE(samples_per_second, 256000)
-      << "We only support sample rates at or below 256000Hz.";
-  DCHECK_GT(bits_per_channel, 0);
-  DCHECK_LE(bits_per_channel, 32) << "We only support 8, 16, 32 bit audio.";
-  DCHECK_EQ(bits_per_channel % 8, 0) << "We only support 8, 16, 32 bit audio.";
   DCHECK(!callback.is_null());
+  DCHECK(ValidateConfig(channels, samples_per_second, bits_per_channel));
 
   channels_ = channels;
   samples_per_second_ = samples_per_second;

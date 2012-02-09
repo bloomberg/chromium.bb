@@ -113,10 +113,15 @@ void AudioRendererBase::Initialize(const scoped_refptr<AudioDecoder>& decoder,
   int channels = ChannelLayoutToChannelCount(channel_layout);
   int bits_per_channel = decoder_->bits_per_channel();
   int sample_rate = decoder_->samples_per_second();
-  algorithm_->Initialize(channels, sample_rate, bits_per_channel, 0.0f, cb);
+
+  bool config_ok = algorithm_->ValidateConfig(channels, sample_rate,
+                                              bits_per_channel);
+  if (config_ok)
+    algorithm_->Initialize(channels, sample_rate, bits_per_channel, 0.0f, cb);
 
   // Give the subclass an opportunity to initialize itself.
-  if (!OnInitialize(bits_per_channel, channel_layout, sample_rate)) {
+  if (!config_ok || !OnInitialize(bits_per_channel, channel_layout,
+                                  sample_rate)) {
     init_callback.Run(PIPELINE_ERROR_INITIALIZATION_FAILED);
     return;
   }

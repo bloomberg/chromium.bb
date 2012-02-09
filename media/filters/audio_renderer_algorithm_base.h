@@ -35,6 +35,12 @@ class MEDIA_EXPORT AudioRendererAlgorithmBase {
   AudioRendererAlgorithmBase();
   ~AudioRendererAlgorithmBase();
 
+  // Call prior to Initialize() to validate configuration.  Returns false if the
+  // configuration is invalid.  Detailed error information will be DVLOG'd.
+  static bool ValidateConfig(int channels,
+                             int samples_per_second,
+                             int bits_per_channel);
+
   // Initializes this object with information about the audio stream.
   // |samples_per_second| is in Hz. |read_request_callback| is called to
   // request more data from the client, requests that are fulfilled through
