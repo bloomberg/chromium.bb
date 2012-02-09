@@ -7,7 +7,7 @@ AC_INIT([weston],
 
 AC_CONFIG_HEADERS([config.h])
 
-AM_INIT_AUTOMAKE([1.11 foreign dist-bzip2])
+AM_INIT_AUTOMAKE([1.11 foreign no-dist-gzip dist-xz])
 
 AM_SILENT_RULES([yes])
 
