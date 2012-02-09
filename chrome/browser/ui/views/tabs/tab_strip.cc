@@ -12,6 +12,7 @@
 #include <windowsx.h>
 #endif
 
+#include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/stl_util.h"
 #include "base/utf_string_conversions.h"
@@ -22,6 +23,7 @@
 #include "chrome/browser/ui/views/tabs/tab.h"
 #include "chrome/browser/ui/views/tabs/tab_drag_controller.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_controller.h"
+#include "chrome/common/chrome_switches.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "grit/theme_resources_standard.h"
@@ -796,11 +798,15 @@ void TabStrip::Layout() {
 }
 
 void TabStrip::PaintChildren(gfx::Canvas* canvas) {
-  // Tabs are painted in reverse order, so they stack to the left.
+  // Normally, tabs are painted in reverse order, so they stack to the left.
+  // When in "touch optimized mode", tabs stack up towards the active tab from
+  // the left and the right.
   Tab* active_tab = NULL;
   std::vector<Tab*> tabs_dragging;
   std::vector<Tab*> selected_tabs;
   bool is_dragging = false;
+  int active_tab_index = -1;
+  bool is_touch_optimized = IsTouchOptimized();
 
   for (int i = tab_count() - 1; i >= 0; --i) {
     // We must ask the _Tab's_ model, not ourselves, because in some situations
@@ -809,17 +815,40 @@ void TabStrip::PaintChildren(gfx::Canvas* canvas) {
     Tab* tab = GetTabAtTabDataIndex(i);
     if (tab->dragging()) {
       is_dragging = true;
-      if (tab->IsActive())
+      if (tab->IsActive()) {
         active_tab = tab;
-      else
+        active_tab_index = i;
+      } else {
         tabs_dragging.push_back(tab);
+      }
     } else if (!tab->IsActive()) {
-      if (!tab->IsSelected())
-        tab->Paint(canvas);
-      else
+      if (!tab->IsSelected()) {
+        if (!is_touch_optimized)
+          tab->Paint(canvas);
+      } else {
+        // TODO(scottmg): Multiple selection may be incorrect in touch mode.
         selected_tabs.push_back(tab);
+      }
     } else {
       active_tab = tab;
+      active_tab_index = i;
+    }
+  }
+
+  // Draw from the left and then the right if we're in touch mode.
+  if (is_touch_optimized && active_tab_index >= 0) {
+    for (int i = 0; i < active_tab_index; ++i) {
+      Tab* tab = GetTabAtTabDataIndex(i);
+      if (tab->dragging())
+        continue;
+      tab->Paint(canvas);
+    }
+
+    for (int i = tab_count() - 1; i > active_tab_index; --i) {
+      Tab* tab = GetTabAtTabDataIndex(i);
+      if (tab->dragging())
+        continue;
+      tab->Paint(canvas);
     }
   }
 
@@ -1707,4 +1736,19 @@ bool TabStrip::IsPointInTab(Tab* tab,
   gfx::Point point_in_tab_coords(point_in_tabstrip_coords);
   View::ConvertPointToView(this, tab, &point_in_tab_coords);
   return tab->HitTest(point_in_tab_coords);
+}
+
+// static
+bool TabStrip::IsTouchOptimized() {
+#if !defined(OS_WIN)
+  // TODO(port): there is code in src/ui/base/touch for linux but it is not
+  // suitable for consumption here.
+  return false;
+#else
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kTouchOptimizedUI))
+    return true;
+  // Asking for SM_DIGITIZER always returns 0 in Windows Vista and Windows XP.
+  int sm = ::GetSystemMetrics(SM_DIGITIZER);
+  return (sm & NID_READY) && (sm & NID_INTEGRATED_TOUCH);
+#endif
 }
