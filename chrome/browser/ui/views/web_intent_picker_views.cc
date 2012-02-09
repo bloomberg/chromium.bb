@@ -7,11 +7,12 @@
 
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/intents/web_intent_inline_disposition_delegate.h"
-#include "chrome/browser/ui/intents/web_intent_picker.h"
 #include "chrome/browser/ui/intents/web_intent_picker_delegate.h"
+#include "chrome/browser/ui/intents/web_intent_picker.h"
 #include "chrome/browser/ui/intents/web_intent_picker_model.h"
 #include "chrome/browser/ui/intents/web_intent_picker_model_observer.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/views/constrained_window_views.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/location_bar/location_icon_view.h"
 #include "chrome/browser/ui/views/tab_contents/tab_contents_container.h"
@@ -24,12 +25,15 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/image/image.h"
-#include "ui/views/bubble/bubble_delegate.h"
 #include "ui/views/controls/button/text_button.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
+#include "ui/views/view.h"
+#include "ui/views/widget/widget.h"
+#include "ui/views/window/dialog_delegate.h"
+#include "ui/views/window/non_client_view.h"
 
 using content::WebContents;
 
@@ -72,24 +76,28 @@ class PreferredSizeFillLayout : public views::FillLayout {
 }  // namespace
 
 // Views implementation of WebIntentPicker.
-class WebIntentPickerView : public views::BubbleDelegateView,
-                            public views::ButtonListener,
-                            public WebIntentPicker,
-                            public WebIntentPickerModelObserver {
+class WebIntentPickerViews : public views::ButtonListener,
+                             public views::DialogDelegate,
+                             public WebIntentPicker,
+                             public WebIntentPickerModelObserver {
  public:
-  WebIntentPickerView(Browser* browser,
-                      views::View* anchor_view,
-                      TabContentsWrapper* tab_contents,
-                      WebIntentPickerDelegate* delegate,
-                      WebIntentPickerModel* model);
-  virtual ~WebIntentPickerView();
+  WebIntentPickerViews(Browser* browser,
+                       TabContentsWrapper* tab_contents,
+                       WebIntentPickerDelegate* delegate,
+                       WebIntentPickerModel* model);
+  virtual ~WebIntentPickerViews();
 
   // views::ButtonListener implementation.
   virtual void ButtonPressed(views::Button* sender,
                              const views::Event& event) OVERRIDE;
 
-  // views::WidgetDelegate implementation.
+  // views::DialogDelegate implementation.
   virtual void WindowClosing() OVERRIDE;
+  virtual void DeleteDelegate() OVERRIDE;
+  virtual views::Widget* GetWidget() OVERRIDE;
+  virtual const views::Widget* GetWidget() const OVERRIDE;
+  virtual views::View* GetContentsView() OVERRIDE;
+  virtual int GetDialogButtons() const OVERRIDE;
 
   // WebIntentPicker implementation.
   virtual void Close() OVERRIDE;
@@ -100,11 +108,14 @@ class WebIntentPickerView : public views::BubbleDelegateView,
                                 size_t index) OVERRIDE;
   virtual void OnInlineDisposition(WebIntentPickerModel* model) OVERRIDE;
 
- protected:
-  // views::BubbleDelegateView overrides:
-  void Init() OVERRIDE;
-
  private:
+  // Initialize the contents of the picker. After this call, contents_ will be
+  // non-NULL.
+  void InitContents();
+
+  // Resize the constrained window to the size of its contents.
+  void SizeToContents();
+
   // A weak pointer to the WebIntentPickerDelegate to notify when the user
   // chooses a service or cancels.
   WebIntentPickerDelegate* delegate_;
@@ -122,13 +133,16 @@ class WebIntentPickerView : public views::BubbleDelegateView,
   // Delegate for inline disposition tab contents.
   scoped_ptr<WebIntentInlineDispositionDelegate> inline_disposition_delegate_;
 
-  // A weak pointer to the widget containing all main content of the picker.
-  views::View* main_content_;
-
   // A weak pointer to the browser this picker is in.
   Browser* browser_;
 
-  DISALLOW_COPY_AND_ASSIGN(WebIntentPickerView);
+  // A weak pointer to the view that contains all other views in the picker.
+  views::View* contents_;
+
+  // A weak pointer to the constrained window.
+  ConstrainedWindowViews* window_;
+
+  DISALLOW_COPY_AND_ASSIGN(WebIntentPickerViews);
 };
 
 // static
@@ -136,38 +150,35 @@ WebIntentPicker* WebIntentPicker::Create(Browser* browser,
                                          TabContentsWrapper* wrapper,
                                          WebIntentPickerDelegate* delegate,
                                          WebIntentPickerModel* model) {
-  // Find where to point the bubble at.
-  BrowserView* browser_view =
-      BrowserView::GetBrowserViewForBrowser(browser);
-  views::View* anchor_view =
-      browser_view->toolbar()->location_bar()->location_icon_view();
-  WebIntentPickerView* bubble_delegate =
-      new WebIntentPickerView(browser, anchor_view, wrapper, delegate, model);
-  browser::CreateViewsBubble(bubble_delegate);
-  bubble_delegate->Show();
-  return bubble_delegate;
+  WebIntentPickerViews* picker =
+      new WebIntentPickerViews(browser, wrapper, delegate, model);
+
+  return picker;
 }
 
-WebIntentPickerView::WebIntentPickerView(Browser* browser,
-                                         views::View* anchor_view,
-                                         TabContentsWrapper* wrapper,
-                                         WebIntentPickerDelegate* delegate,
-                                         WebIntentPickerModel* model)
-    : BubbleDelegateView(anchor_view, views::BubbleBorder::TOP_LEFT),
-      delegate_(delegate),
+WebIntentPickerViews::WebIntentPickerViews(Browser* browser,
+                                           TabContentsWrapper* wrapper,
+                                           WebIntentPickerDelegate* delegate,
+                                           WebIntentPickerModel* model)
+    : delegate_(delegate),
       model_(model),
       button_vbox_(NULL),
-      main_content_(NULL),
-      browser_(browser) {
+      browser_(browser),
+      contents_(NULL),
+      window_(NULL) {
   model_->set_observer(this);
+  InitContents();
+
+  // Show the dialog.
+  window_ = new ConstrainedWindowViews(wrapper, this);
 }
 
-WebIntentPickerView::~WebIntentPickerView() {
+WebIntentPickerViews::~WebIntentPickerViews() {
   model_->set_observer(NULL);
 }
 
-void WebIntentPickerView::ButtonPressed(views::Button* sender,
-                                        const views::Event& event) {
+void WebIntentPickerViews::ButtonPressed(views::Button* sender,
+                                         const views::Event& event) {
   std::vector<views::TextButton*>::iterator iter =
       std::find(buttons_.begin(), buttons_.end(), sender);
   DCHECK(iter != buttons_.end());
@@ -178,15 +189,35 @@ void WebIntentPickerView::ButtonPressed(views::Button* sender,
   delegate_->OnServiceChosen(index, item.disposition);
 }
 
-void WebIntentPickerView::WindowClosing() {
+void WebIntentPickerViews::WindowClosing() {
   delegate_->OnClosing();
 }
 
-void WebIntentPickerView::Close() {
-  GetWidget()->Close();
+void WebIntentPickerViews::DeleteDelegate() {
+  delete this;
 }
 
-void WebIntentPickerView::OnModelChanged(WebIntentPickerModel* model) {
+views::Widget* WebIntentPickerViews::GetWidget() {
+  return contents_->GetWidget();
+}
+
+const views::Widget* WebIntentPickerViews::GetWidget() const {
+  return contents_->GetWidget();
+}
+
+views::View* WebIntentPickerViews::GetContentsView() {
+  return contents_;
+}
+
+int WebIntentPickerViews::GetDialogButtons() const {
+  return ui::DIALOG_BUTTON_NONE;
+}
+
+void WebIntentPickerViews::Close() {
+  window_->CloseConstrainedWindow();
+}
+
+void WebIntentPickerViews::OnModelChanged(WebIntentPickerModel* model) {
   button_vbox_->RemoveAllChildViews(true);
   buttons_.clear();
 
@@ -200,20 +231,22 @@ void WebIntentPickerView::OnModelChanged(WebIntentPickerModel* model) {
 
     buttons_.push_back(button);
   }
-}
 
-void WebIntentPickerView::OnFaviconChanged(WebIntentPickerModel* model,
-                                           size_t index) {
-  const WebIntentPickerModel::Item& item = model_->GetItemAt(index);
-  views::TextButton* button = buttons_[index];
-
-  button->SetIcon(*item.favicon.ToSkBitmap());
-
-  Layout();
+  contents_->Layout();
   SizeToContents();
 }
 
-void WebIntentPickerView::OnInlineDisposition(WebIntentPickerModel* model) {
+void WebIntentPickerViews::OnFaviconChanged(WebIntentPickerModel* model,
+                                            size_t index) {
+  const WebIntentPickerModel::Item& item = model_->GetItemAt(index);
+  views::TextButton* button = buttons_[index];
+  button->SetIcon(*item.favicon.ToSkBitmap());
+  contents_->Layout();
+  SizeToContents();
+}
+
+void WebIntentPickerViews::OnInlineDisposition(
+    WebIntentPickerModel* model) {
   const WebIntentPickerModel::Item& item =
       model->GetItemAt(model->inline_disposition_index());
 
@@ -231,31 +264,25 @@ void WebIntentPickerView::OnInlineDisposition(WebIntentPickerModel* model) {
       std::string());
 
   // Replace the picker with the inline disposition.
-  main_content_->RemoveAllChildViews(true);
-  main_content_->AddChildView(tab_contents_container);
+  contents_->RemoveAllChildViews(true);
+  contents_->AddChildView(tab_contents_container);
 
   // The contents can only be changed after the child is added to view
   // hierarchy.
   tab_contents_container->ChangeWebContents(web_contents);
 
   gfx::Size size = GetDefaultInlineDispositionSize(web_contents);
-  main_content_->SetLayoutManager(new PreferredSizeFillLayout(size));
+  contents_->SetLayoutManager(new PreferredSizeFillLayout(size));
 
-  Layout();
+  contents_->Layout();
   SizeToContents();
 
   delegate_->OnInlineDispositionWebContentsCreated(web_contents);
 }
 
-void WebIntentPickerView::Init() {
-  SetLayoutManager(new views::BoxLayout(
-      views::BoxLayout::kHorizontal,
-      kContentAreaBorder,  // inside border horizontal spacing
-      kContentAreaBorder,  // inside border vertical spacing
-      kContentAreaSpacing));  // between child spacing
-
-  main_content_ = new views::View();
-  main_content_->SetLayoutManager(new views::BoxLayout(
+void WebIntentPickerViews::InitContents() {
+  contents_ = new views::View();
+  contents_->SetLayoutManager(new views::BoxLayout(
       views::BoxLayout::kVertical,
       0,  // inside border horizontal spacing
       0,  // inside border vertical spacing
@@ -264,7 +291,7 @@ void WebIntentPickerView::Init() {
   views::Label* top_label = new views::Label(
       l10n_util::GetStringUTF16(IDS_CHOOSE_INTENT_HANDLER_MESSAGE));
   top_label->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
-  main_content_->AddChildView(top_label);
+  contents_->AddChildView(top_label);
 
   button_vbox_ = new views::View();
   button_vbox_->SetLayoutManager(new views::BoxLayout(
@@ -272,7 +299,7 @@ void WebIntentPickerView::Init() {
       0,  // inside border horizontal spacing
       0,  // inside border vertical spacing
       kControlSpacing));  // between child spacing
-  main_content_->AddChildView(button_vbox_);
+  contents_->AddChildView(button_vbox_);
 
   views::Label* bottom_label = new views::Label(
       l10n_util::GetStringUTF16(IDS_FIND_MORE_INTENT_HANDLER_MESSAGE));
@@ -280,7 +307,14 @@ void WebIntentPickerView::Init() {
   bottom_label->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
   bottom_label->SetFont(
       bottom_label->font().DeriveFont(kWebStoreLabelFontDelta));
-  main_content_->AddChildView(bottom_label);
+  contents_->AddChildView(bottom_label);
+}
 
-  AddChildView(main_content_);
+void WebIntentPickerViews::SizeToContents() {
+  gfx::Size client_size = contents_->GetPreferredSize();
+  gfx::Rect client_bounds(client_size);
+  gfx::Rect new_window_bounds = window_->non_client_view()->frame_view()->
+      GetWindowBoundsForClientBounds(client_bounds);
+  // TODO(binji): figure out how to get the constrained dialog centered...
+  window_->SetSize(new_window_bounds.size());
 }
