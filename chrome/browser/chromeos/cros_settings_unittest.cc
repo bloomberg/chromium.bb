@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -223,6 +223,14 @@ TEST_F(CrosSettingsTest, SetOwner) {
   AddExpectation(kDeviceOwner, base::Value::CreateStringValue("h@xxor"));
   SetPref(kDeviceOwner, &hacky_owner);
   FetchPref(kDeviceOwner);
+}
+
+TEST_F(CrosSettingsTest, SetEphemeralUsers) {
+  base::FundamentalValue ephemeral_users(true);
+  AddExpectation(kAccountsPrefEphemeralUsers,
+                 base::Value::CreateBooleanValue(true));
+  SetPref(kAccountsPrefEphemeralUsers, &ephemeral_users);
+  FetchPref(kAccountsPrefEphemeralUsers);
 }
 
 }  // namespace chromeos

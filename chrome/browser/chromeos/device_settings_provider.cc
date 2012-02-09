@@ -40,6 +40,7 @@ const char* kBooleanSettings[] = {
   kAccountsPrefAllowNewUser,
   kAccountsPrefAllowGuest,
   kAccountsPrefShowUserNamesOnSignIn,
+  kAccountsPrefEphemeralUsers,
   kSignedDataRoamingEnabled,
   kStatsReportingPref,
   kReportDeviceVersionInfo,
@@ -283,6 +284,13 @@ void DeviceSettingsProvider::SetInPolicy() {
       if ((*i)->GetAsString(&email))
         whitelist_proto->add_user_whitelist(email.c_str());
     }
+  } else if (prop == kAccountsPrefEphemeralUsers) {
+    em::EphemeralUsersProto* ephemeral_users = pol.mutable_ephemeral_users();
+    bool ephemeral_users_value = false;
+    if (value->GetAsBoolean(&ephemeral_users_value))
+      ephemeral_users->set_ephemeral_users(ephemeral_users_value);
+    else
+      NOTREACHED();
   } else {
     // kReportDeviceVersionInfo, kReportDeviceActivityTimes, and
     // kReportDeviceBootMode do not support being set in the policy, since
@@ -341,7 +349,9 @@ void DeviceSettingsProvider::UpdateValuesCache() {
 
   // For all our boolean settings the following is applicable:
   // true is default permissive value and false is safe prohibitive value.
-  // Exception: kSignedDataRoamingEnabled which has default value of false.
+  // Exceptions:
+  //   kSignedDataRoamingEnabled has a default value of false.
+  //   kAccountsPrefEphemeralUsers has a default value of false.
   if (pol.has_allow_new_users() &&
       pol.allow_new_users().has_allow_new_users() &&
       pol.allow_new_users().allow_new_users()) {
@@ -375,6 +385,12 @@ void DeviceSettingsProvider::UpdateValuesCache() {
       pol.has_data_roaming_enabled() &&
       pol.data_roaming_enabled().has_data_roaming_enabled() &&
       pol.data_roaming_enabled().data_roaming_enabled());
+
+  new_values_cache.SetBoolean(
+      kAccountsPrefEphemeralUsers,
+      pol.has_ephemeral_users() &&
+      pol.ephemeral_users().has_ephemeral_users() &&
+      pol.ephemeral_users().ephemeral_users());
 
   // TODO(cmasone): NOTIMPLEMENTED() once http://crosbug.com/13052 is fixed.
   std::string serialized;

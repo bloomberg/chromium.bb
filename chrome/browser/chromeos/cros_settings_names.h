@@ -14,6 +14,7 @@ extern const char kAccountsPrefAllowGuest[];
 extern const char kAccountsPrefAllowNewUser[];
 extern const char kAccountsPrefShowUserNamesOnSignIn[];
 extern const char kAccountsPrefUsers[];
+extern const char kAccountsPrefEphemeralUsers[];
 
 extern const char kSettingProxyEverywhere[];
 

@@ -19,6 +19,7 @@ const char* kHandledSettings[] = {
   kAccountsPrefAllowNewUser,
   kAccountsPrefShowUserNamesOnSignIn,
   kAccountsPrefUsers,
+  kAccountsPrefEphemeralUsers,
   kDeviceOwner,
   kReleaseChannel,
   kReportDeviceVersionInfo,
