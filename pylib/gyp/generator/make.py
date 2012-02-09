@@ -258,7 +258,7 @@ CFLAGS.target ?= $(CFLAGS)
 CXX.target ?= $(CXX)
 CXXFLAGS.target ?= $(CXXFLAGS)
 LINK.target ?= $(LINK)
-LDFLAGS.target ?= $(LDFLAGS) %(LINK_flags)s
+LDFLAGS.target ?= $(LDFLAGS)
 AR.target ?= $(AR)
 ARFLAGS.target ?= %(ARFLAGS.target)s
 
@@ -1910,21 +1910,8 @@ def RunSystemTests(flavor):
                                                          cc_command=cc_host):
     arflags_host = 'crsT'
 
-  link_flags = ''
-  if gyp.system_test.TestLinkerSupportsThreads(cc_command=cc_target):
-    # N.B. we don't test for cross-compilation; as currently written, we
-    # don't even use flock when linking in the cross-compile setup!
-    # TODO(evan): refactor cross-compilation such that this code can
-    # be reused.
-    link_flags = '-Wl,--threads -Wl,--thread-count=4'
-
-  # TODO(evan): cache this output.  (But then we'll need to add extra
-  # flags to gyp to flush the cache, yuk!  It's fast enough for now to
-  # just run it every time.)
-
   return { 'ARFLAGS.target': arflags_target,
-           'ARFLAGS.host': arflags_host,
-           'LINK_flags': link_flags }
+           'ARFLAGS.host': arflags_host }
 
 
 def GenerateOutput(target_list, target_dicts, data, params):

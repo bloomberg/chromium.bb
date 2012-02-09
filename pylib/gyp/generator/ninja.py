@@ -1012,16 +1012,10 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
     if key == 'CC': cc = os.path.join(build_to_root, value)
     if key == 'CXX': cxx = os.path.join(build_to_root, value)
 
-  # TODO: compute cc/cxx/ld/etc. by command-line arguments and system tests.
   master_ninja.variable('cc', os.environ.get('CC', cc))
   master_ninja.variable('cxx', os.environ.get('CXX', cxx))
-  # TODO(bradnelson): remove NOGOLD when this is resolved:
-  #     http://code.google.com/p/chromium/issues/detail?id=108251
-  if flavor != 'mac' and not os.environ.get('NOGOLD'):
-    master_ninja.variable('ld', '$cxx -Wl,--threads -Wl,--thread-count=4')
-  else:
-    # TODO(jeremya/thakis): flock
-    master_ninja.variable('ld', '$cxx')
+  # TODO(jeremya/thakis): flock
+  master_ninja.variable('ld', '$cxx')
   master_ninja.variable('cc_host', '$cc')
   master_ninja.variable('cxx_host', '$cxx')
   if flavor == 'mac':
