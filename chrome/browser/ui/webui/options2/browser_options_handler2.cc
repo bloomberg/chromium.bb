@@ -561,9 +561,9 @@ void BrowserOptionsHandler::Observe(
     } else {
       NOTREACHED();
     }
-  } else if (multiprofile_ &&
-             type == chrome::NOTIFICATION_PROFILE_CACHED_INFO_CHANGED) {
-    SendProfilesInfo();
+  } else if (type == chrome::NOTIFICATION_PROFILE_CACHED_INFO_CHANGED) {
+    if (multiprofile_)
+      SendProfilesInfo();
   } else {
     NOTREACHED();
   }
