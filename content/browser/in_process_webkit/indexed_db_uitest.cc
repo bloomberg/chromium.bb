@@ -14,6 +14,14 @@
 static const char* kLayoutTestFileNames[] = {
   // TODO(dgrogan): Put the other IDB layout tests here.
   "prefetch-bugfix-108071.html",
+  "basics.html",
+//  "objectstore-basics.html", // Too big: crbug.com/33472
+//  "index-basics.html", // Too big.
+};
+
+static const char* kWorkerTestFileNames[] = {
+  "basics-workers.html",
+//  "objectstore-basics-workers.html",  // Too big.
 };
 
 class IndexedDBUILayoutTest : public UILayoutTest {
@@ -28,9 +36,12 @@ class IndexedDBUILayoutTest : public UILayoutTest {
 
   void AddJSTestResources() {
     // Add other paths our tests require.
-    FilePath js_dir = FilePath().
-                      AppendASCII("fast").AppendASCII("js");
-    AddResourceForLayoutTest(js_dir, FilePath().AppendASCII("resources"));
+    AddResourceForLayoutTest(
+        FilePath().AppendASCII("fast").AppendASCII("js"),
+        FilePath().AppendASCII("resources"));
+    AddResourceForLayoutTest(
+        FilePath().AppendASCII("fast").AppendASCII("filesystem"),
+        FilePath().AppendASCII("resources"));
   }
 
   FilePath test_dir_;
@@ -42,4 +53,12 @@ TEST_F(IndexedDBUILayoutTest, LayoutTests) {
   AddJSTestResources();
   for (size_t i = 0; i < arraysize(kLayoutTestFileNames); ++i)
     RunLayoutTest(kLayoutTestFileNames[i], port);
+}
+
+TEST_F(IndexedDBUILayoutTest, WorkerLayoutTests) {
+  const int port = kNoHttpPort;
+  InitializeForLayoutTest(test_dir_, FilePath(), port);
+  AddJSTestResources();
+  for (size_t i = 0; i < arraysize(kWorkerTestFileNames); ++i)
+    RunLayoutTest(kWorkerTestFileNames[i], port);
 }
