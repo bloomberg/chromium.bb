@@ -78,7 +78,15 @@ class OmniboxApiTest : public ExtensionApiTest {
   }
 };
 
-IN_PROC_BROWSER_TEST_F(OmniboxApiTest, Basic) {
+#if defined(OS_CHROMEOS) && !defined(USE_AURA)
+// The test fails on chromeos gtk bot, although it passes locally.
+// crbug.com/113455.
+#define MAYBE_Basic DISABLED_Basic
+#else
+#define MAYBE_Basic Basic
+#endif
+
+IN_PROC_BROWSER_TEST_F(OmniboxApiTest, MAYBE_Basic) {
 #if defined(TOOLKIT_GTK)
   // Disable the timer because, on Lucid at least, it triggers resize/move
   // behavior in the browser window, which dismisses the autocomplete popup
@@ -199,10 +207,18 @@ IN_PROC_BROWSER_TEST_F(OmniboxApiTest, Basic) {
   }
 }
 
+#if defined(OS_CHROMEOS) && !defined(USE_AURA)
+// The test fails on chromeos gtk bot, although it passes locally.
+// crbug.com/113455.
+#define MAYBE_PopupStaysClosed DISABLED_PopupStaysClosed
+#else
+#define MAYBE_PopupStaysClosed PopupStaysClosed
+#endif
+
 // Tests that the autocomplete popup doesn't reopen after accepting input for
 // a given query.
 // http://crbug.com/88552
-IN_PROC_BROWSER_TEST_F(OmniboxApiTest, PopupStaysClosed) {
+IN_PROC_BROWSER_TEST_F(OmniboxApiTest, MAYBE_PopupStaysClosed) {
 #if defined(TOOLKIT_GTK)
   // Disable the timer because, on Lucid at least, it triggers resize/move
   // behavior in the browser window, which dismisses the autocomplete popup
