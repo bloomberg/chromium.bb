@@ -13,7 +13,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/ui/gtk/constrained_window_gtk.h"
+#include "chrome/browser/ui/gtk/bubble/bubble_gtk.h"
 #include "chrome/browser/ui/intents/web_intent_picker.h"
 #include "chrome/browser/ui/intents/web_intent_picker_model_observer.h"
 #include "chrome/browser/ui/intents/web_intent_inline_disposition_delegate.h"
@@ -31,7 +31,7 @@ class WebIntentPickerDelegate;
 // Gtk implementation of WebIntentPicker.
 class WebIntentPickerGtk : public WebIntentPicker,
                            public WebIntentPickerModelObserver,
-                           public ConstrainedWindowGtkDelegate {
+                           public BubbleDelegateGtk {
  public:
   WebIntentPickerGtk(Browser* browser,
                      TabContentsWrapper* tab_contents,
@@ -48,10 +48,8 @@ class WebIntentPickerGtk : public WebIntentPicker,
                                 size_t index) OVERRIDE;
   virtual void OnInlineDisposition(WebIntentPickerModel* model) OVERRIDE;
 
-  // ConstrainedWindowGtkDelegate implementation.
-  virtual GtkWidget* GetWidgetRoot() OVERRIDE;
-  virtual GtkWidget* GetFocusWidget() OVERRIDE;
-  virtual void DeleteDelegate() OVERRIDE;
+  // BubbleDelegateGtk implementation.
+  virtual void BubbleClosing(BubbleGtk* bubble, bool closed_by_escape) OVERRIDE;
 
  private:
   // Callback when picker is destroyed.
@@ -61,7 +59,7 @@ class WebIntentPickerGtk : public WebIntentPicker,
   // Callback when close button is clicked.
   CHROMEGTK_CALLBACK_0(WebIntentPickerGtk, void, OnCloseButtonClick);
 
-  // Initialize the contents of the picker. After this call, contents_ will be
+  // Initialize the contents of the bubble. After this call, contents_ will be
   // non-NULL.
   void InitContents();
 
@@ -79,18 +77,18 @@ class WebIntentPickerGtk : public WebIntentPicker,
   WebIntentPickerModel* model_;
 
   // A weak pointer to the widget that contains all other widgets in
-  // the picker.
+  // the bubble.
   GtkWidget* contents_;
 
   // A weak pointer to the vbox that contains the buttons used to choose the
   // service.
   GtkWidget* button_vbox_;
 
-  // A button to close the picker.
+  // A button to close the bubble.
   scoped_ptr<CustomDrawButton> close_button_;
 
-  // A weak pointer to the constrained window.
-  ConstrainedWindowGtk* window_;
+  // A weak pointer to the bubble widget.
+  BubbleGtk* bubble_;
 
   // The browser we're in.
   Browser* browser_;

@@ -83,23 +83,38 @@ WebIntentPickerGtk::WebIntentPickerGtk(Browser* browser,
       model_(model),
       contents_(NULL),
       button_vbox_(NULL),
-      window_(NULL),
+      bubble_(NULL),
       browser_(browser) {
   DCHECK(delegate_ != NULL);
   DCHECK(browser);
+  DCHECK(browser->window());
 
   model_->set_observer(this);
+
+  BrowserWindowGtk* browser_window =
+      BrowserWindowGtk::GetBrowserWindowForNativeWindow(
+          browser->window()->GetNativeHandle());
+
+  GtkWidget* anchor = browser_window->
+      GetToolbar()->GetLocationBarView()->location_icon_widget();
+
   InitContents();
-  window_ = new ConstrainedWindowGtk(wrapper, this);
+
+  BubbleGtk::ArrowLocationGtk arrow_location = base::i18n::IsRTL() ?
+      BubbleGtk::ARROW_LOCATION_TOP_RIGHT :
+      BubbleGtk::ARROW_LOCATION_TOP_LEFT;
+  bubble_ = BubbleGtk::Show(anchor,
+                            NULL,  // |rect|
+                            contents_,
+                            arrow_location,
+                            true,  // |match_system_theme|
+                            true,  // |grab_input|
+                            GetThemeService(wrapper),
+                            this);  // |delegate|
 }
 
 WebIntentPickerGtk::~WebIntentPickerGtk() {
-}
-
-void WebIntentPickerGtk::Close() {
-  window_->CloseConstrainedWindow();
-  if (inline_disposition_tab_contents_.get())
-    inline_disposition_tab_contents_->web_contents()->OnCloseStarted();
+  DCHECK(bubble_ == NULL) << "Should have closed window before destroying.";
 }
 
 void WebIntentPickerGtk::OnModelChanged(WebIntentPickerModel* model) {
@@ -149,7 +164,7 @@ void WebIntentPickerGtk::OnInlineDisposition(WebIntentPickerModel* model) {
       url, content::Referrer(), content::PAGE_TRANSITION_START_PAGE,
       std::string());
 
-  // Replace the picker contents with the inline disposition.
+  // Replace the bubble picker contents with the inline disposition.
 
   gtk_util::RemoveAllChildren(contents_);
 
@@ -187,30 +202,28 @@ void WebIntentPickerGtk::OnInlineDisposition(WebIntentPickerModel* model) {
   delegate_->OnInlineDispositionWebContentsCreated(web_contents);
 }
 
-GtkWidget* WebIntentPickerGtk::GetWidgetRoot() {
-  return contents_;
+void WebIntentPickerGtk::Close() {
+  bubble_->Close();
+  if (inline_disposition_tab_contents_.get())
+    inline_disposition_tab_contents_->web_contents()->OnCloseStarted();
 }
 
-GtkWidget* WebIntentPickerGtk::GetFocusWidget() {
-  return contents_;
-}
-
-void WebIntentPickerGtk::DeleteDelegate() {
-  // The delegate is deleted when the contents widget is destroyed. See
-  // OnDestroy.
+void WebIntentPickerGtk::BubbleClosing(BubbleGtk* bubble,
+                                       bool closed_by_escape) {
   delegate_->OnClosing();
 }
 
 void WebIntentPickerGtk::OnCloseButtonClick(GtkWidget* button) {
   delegate_->OnCancelled();
+  delegate_->OnClosing();
 }
 
 void WebIntentPickerGtk::OnDestroy(GtkWidget* button) {
-  // Destroy this object when the contents widget is destroyed. It can't be
-  // "delete this" because this function happens in a callback.
+  // Destroy this object when the BubbleGtk is destroyed. It can't be "delete
+  // this" because this function happens in a callback.
   MessageLoop::current()->DeleteSoon(FROM_HERE, this);
   model_->set_observer(NULL);
-  window_ = NULL;
+  bubble_ = NULL;
 }
 
 void WebIntentPickerGtk::OnServiceButtonClick(GtkWidget* button) {
