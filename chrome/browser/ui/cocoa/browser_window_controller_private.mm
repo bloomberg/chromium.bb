@@ -122,6 +122,19 @@ const CGFloat kLocBarBottomInset = 1;
   NSRect monitorFrame = [[[NSScreen screens] objectAtIndex:0] frame];
   NSScreen* windowScreen = [window screen];
 
+  // Start with the window's frame, which is in virtual coordinates.
+  // Do some y twiddling to flip the coordinate system.
+  gfx::Rect bounds(NSRectToCGRect([window frame]));
+  bounds.set_y(monitorFrame.size.height - bounds.y() - bounds.height());
+
+  // Browser::SaveWindowPlacement saves information for session restore.
+  ui::WindowShowState show_state = ui::SHOW_STATE_NORMAL;
+  if ([window isMiniaturized])
+    show_state = ui::SHOW_STATE_MINIMIZED;
+  else if ([self isFullscreen])
+    show_state = ui::SHOW_STATE_FULLSCREEN;
+  browser_->SaveWindowPlacement(bounds, show_state);
+
   // |windowScreen| can be nil (for example, if the monitor arrangement was
   // changed while in fullscreen mode).  If we see a nil screen, return without
   // saving.
@@ -129,16 +142,6 @@ const CGFloat kLocBarBottomInset = 1;
   // http://crbug.com/36479.
   if (!windowScreen)
     return;
-
-  // Start with the window's frame, which is in virtual coordinates.
-  // Do some y twiddling to flip the coordinate system.
-  gfx::Rect bounds(NSRectToCGRect([window frame]));
-  bounds.set_y(monitorFrame.size.height - bounds.y() - bounds.height());
-
-  // Browser::SaveWindowPlacement saves information for session restore.
-  ui::WindowShowState show_state = [window isMiniaturized] ?
-      ui::SHOW_STATE_MINIMIZED : ui::SHOW_STATE_NORMAL;
-  browser_->SaveWindowPlacement(bounds, show_state);
 
   // Only save main window information to preferences.
   PrefService* prefs = browser_->profile()->GetPrefs();
@@ -874,6 +877,9 @@ willPositionSheet:(NSWindow*)sheet
   [self deregisterForContentViewResizeNotifications];
   enteringFullscreen_ = NO;
   [self setPresentationModeInternal:NO forceDropdown:NO];
+
+  // Force a relayout to try and get the window back into a reasonable state.
+  [self layoutSubviews];
 }
 
 - (void)windowDidFailToExitFullScreen:(NSWindow*)window {
