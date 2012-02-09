@@ -2281,6 +2281,7 @@ window_create_internal(struct display *display, struct window *parent)
 	window->allocation.height = 0;
 	window->saved_allocation = window->allocation;
 	window->transparent = 1;
+	window->type = TYPE_TOPLEVEL;
 
 	if (display->dpy)
 #ifdef HAVE_CAIRO_EGL
