@@ -1619,6 +1619,49 @@ static void PPB_NetAddress_Private_GetAnyAddressDispatcher(
   );
 }
 
+static void PPB_NetAddress_Private_GetFamilyDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  PpbNetAddressPrivateRpcServer::PPB_NetAddress_Private_GetFamily(
+      rpc,
+      done,
+      inputs[0]->u.count, inputs[0]->arrays.carr,
+      &(outputs[0]->u.ival)
+  );
+}
+
+static void PPB_NetAddress_Private_GetPortDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  PpbNetAddressPrivateRpcServer::PPB_NetAddress_Private_GetPort(
+      rpc,
+      done,
+      inputs[0]->u.count, inputs[0]->arrays.carr,
+      &(outputs[0]->u.ival)
+  );
+}
+
+static void PPB_NetAddress_Private_GetAddressDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  PpbNetAddressPrivateRpcServer::PPB_NetAddress_Private_GetAddress(
+      rpc,
+      done,
+      inputs[0]->u.count, inputs[0]->arrays.carr,
+      &(outputs[0]->u.count), outputs[0]->arrays.carr,
+      &(outputs[1]->u.ival)
+  );
+}
+
 static void PPB_PDF_GetLocalizedStringDispatcher(
     NaClSrpcRpc* rpc,
     NaClSrpcArg** inputs,
@@ -2973,6 +3016,9 @@ NaClSrpcHandlerDesc PpbRpcs::srpc_methods[] = {
   { "PPB_NetAddress_Private_Describe:iCi:C", PPB_NetAddress_Private_DescribeDispatcher },
   { "PPB_NetAddress_Private_ReplacePort:Ci:Ci", PPB_NetAddress_Private_ReplacePortDispatcher },
   { "PPB_NetAddress_Private_GetAnyAddress:i:C", PPB_NetAddress_Private_GetAnyAddressDispatcher },
+  { "PPB_NetAddress_Private_GetFamily:C:i", PPB_NetAddress_Private_GetFamilyDispatcher },
+  { "PPB_NetAddress_Private_GetPort:C:i", PPB_NetAddress_Private_GetPortDispatcher },
+  { "PPB_NetAddress_Private_GetAddress:C:Ci", PPB_NetAddress_Private_GetAddressDispatcher },
   { "PPB_PDF_GetLocalizedString:ii:C", PPB_PDF_GetLocalizedStringDispatcher },
   { "PPB_PDF_GetResourceImage:ii:i", PPB_PDF_GetResourceImageDispatcher },
   { "PPB_PDF_GetFontFileWithFallback:iCCi:i", PPB_PDF_GetFontFileWithFallbackDispatcher },

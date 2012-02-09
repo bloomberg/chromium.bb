@@ -4,7 +4,7 @@
  */
 
 /* From private/ppb_net_address_private.idl,
- *   modified Wed Jan  4 11:09:00 2012.
+ *   modified Sun Feb  5 10:36:30 2012.
  */
 
 #ifndef PPAPI_C_PRIVATE_PPB_NET_ADDRESS_PRIVATE_H_
@@ -17,7 +17,8 @@
 #include "ppapi/c/pp_var.h"
 
 #define PPB_NETADDRESS_PRIVATE_INTERFACE_0_1 "PPB_NetAddress_Private;0.1"
-#define PPB_NETADDRESS_PRIVATE_INTERFACE PPB_NETADDRESS_PRIVATE_INTERFACE_0_1
+#define PPB_NETADDRESS_PRIVATE_INTERFACE_1_0 "PPB_NetAddress_Private;1.0"
+#define PPB_NETADDRESS_PRIVATE_INTERFACE PPB_NETADDRESS_PRIVATE_INTERFACE_1_0
 
 /**
  * @file
@@ -49,7 +50,7 @@ PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(PP_NetAddress_Private, 132);
  * The <code>PPB_NetAddress_Private</code> interface provides operations on
  * network addresses.
  */
-struct PPB_NetAddress_Private_0_1 {
+struct PPB_NetAddress_Private_1_0 {
   /**
    * Returns PP_TRUE if the two addresses are equal (host and port).
    */
@@ -78,9 +79,41 @@ struct PPB_NetAddress_Private_0_1 {
    * Gets the "any" address (for IPv4 or IPv6); for use with UDP Bind.
    */
   void (*GetAnyAddress)(PP_Bool is_ipv6, struct PP_NetAddress_Private* addr);
+  /**
+   * Gets the address family.
+   */
+  uint16_t (*GetFamily)(const struct PP_NetAddress_Private* addr);
+  /**
+   * Gets the port. The port is returned in host byte order.
+   */
+  uint16_t (*GetPort)(const struct PP_NetAddress_Private* addr);
+  /**
+   * Gets the address. The output, address, must be large enough for the
+   * current socket family. The output will be the binary representation of an
+   * address for the current socket family. For IPv4 and IPv6 the address is in
+   * network byte order. PP_TRUE is returned if the address was successfully
+   * retrieved.
+   */
+  PP_Bool (*GetAddress)(const struct PP_NetAddress_Private* addr,
+                        void* address,
+                        uint16_t address_size);
 };
 
-typedef struct PPB_NetAddress_Private_0_1 PPB_NetAddress_Private;
+typedef struct PPB_NetAddress_Private_1_0 PPB_NetAddress_Private;
+
+struct PPB_NetAddress_Private_0_1 {
+  PP_Bool (*AreEqual)(const struct PP_NetAddress_Private* addr1,
+                      const struct PP_NetAddress_Private* addr2);
+  PP_Bool (*AreHostsEqual)(const struct PP_NetAddress_Private* addr1,
+                           const struct PP_NetAddress_Private* addr2);
+  struct PP_Var (*Describe)(PP_Module module,
+                            const struct PP_NetAddress_Private* addr,
+                            PP_Bool include_port);
+  PP_Bool (*ReplacePort)(const struct PP_NetAddress_Private* src_addr,
+                         uint16_t port,
+                         struct PP_NetAddress_Private* dest_addr);
+  void (*GetAnyAddress)(PP_Bool is_ipv6, struct PP_NetAddress_Private* addr);
+};
 /**
  * @}
  */

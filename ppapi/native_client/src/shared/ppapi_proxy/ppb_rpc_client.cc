@@ -2026,6 +2026,59 @@ NaClSrpcError PpbNetAddressPrivateRpcClient::PPB_NetAddress_Private_GetAnyAddres
   return retval;
 }
 
+NaClSrpcError PpbNetAddressPrivateRpcClient::PPB_NetAddress_Private_GetFamily(
+    NaClSrpcChannel* channel,
+    nacl_abi_size_t addr_bytes, char* addr,
+    int32_t* addr_family)  {
+  VCHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread(),
+         ("%s: PPAPI calls are not supported off the main thread\n",
+          __FUNCTION__));
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_NetAddress_Private_GetFamily:C:i",
+      addr_bytes, addr,
+      addr_family
+  );
+  return retval;
+}
+
+NaClSrpcError PpbNetAddressPrivateRpcClient::PPB_NetAddress_Private_GetPort(
+    NaClSrpcChannel* channel,
+    nacl_abi_size_t addr_bytes, char* addr,
+    int32_t* port)  {
+  VCHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread(),
+         ("%s: PPAPI calls are not supported off the main thread\n",
+          __FUNCTION__));
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_NetAddress_Private_GetPort:C:i",
+      addr_bytes, addr,
+      port
+  );
+  return retval;
+}
+
+NaClSrpcError PpbNetAddressPrivateRpcClient::PPB_NetAddress_Private_GetAddress(
+    NaClSrpcChannel* channel,
+    nacl_abi_size_t addr_bytes, char* addr,
+    nacl_abi_size_t* address_bytes, char* address,
+    int32_t* success)  {
+  VCHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread(),
+         ("%s: PPAPI calls are not supported off the main thread\n",
+          __FUNCTION__));
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_NetAddress_Private_GetAddress:C:Ci",
+      addr_bytes, addr,
+      address_bytes, address,
+      success
+  );
+  return retval;
+}
+
 NaClSrpcError PpbPdfRpcClient::PPB_PDF_GetLocalizedString(
     NaClSrpcChannel* channel,
     PP_Instance instance,

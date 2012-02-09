@@ -1,8 +1,10 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "ppapi/tests/test_net_address_private.h"
+
+#include <string.h>
 
 #include "ppapi/cpp/private/net_address_private.h"
 #include "ppapi/c/private/ppb_net_address_private.h"
@@ -80,6 +82,9 @@ void TestNetAddressPrivate::RunTests(const std::string& filter) {
   RUN_TEST(ReplacePort, filter);
   RUN_TEST(GetAnyAddress, filter);
   RUN_TEST(DescribeIPv6, filter);
+  RUN_TEST(GetFamily, filter);
+  RUN_TEST(GetPort, filter);
+  RUN_TEST(GetAddress, filter);
 }
 
 std::string TestNetAddressPrivate::TestAreEqual() {
@@ -241,6 +246,77 @@ std::string TestNetAddressPrivate::TestDescribeIPv6() {
     ASSERT_EQ(test_cases[i].expected_with_port,
               NetAddressPrivate::Describe(addr, true));
   }
+
+  PASS();
+}
+
+std::string TestNetAddressPrivate::TestGetFamily() {
+  PP_NetAddress_Private ipv4 = MakeIPv4NetAddress("127.0.0.1", 80);
+  ASSERT_EQ(NetAddressPrivate::GetFamily(ipv4), AF_INET);
+
+  uint16_t ipv6_address[8] = { 0x1234, 0xabcd, 0, 0, 0xff, 0, 0, 0xcdef };
+  PP_NetAddress_Private ipv6 = MakeIPv6NetAddress(ipv6_address,
+                                                  123,
+                                                  0);
+  ASSERT_EQ(NetAddressPrivate::GetFamily(ipv6), AF_INET6);
+
+  PASS();
+}
+
+std::string TestNetAddressPrivate::TestGetPort() {
+  PP_NetAddress_Private localhost_80 = MakeIPv4NetAddress("127.0.0.1", 80);
+  ASSERT_EQ(NetAddressPrivate::GetPort(localhost_80), 80);
+
+  uint16_t ipv6_address[8] = { 0x1234, 0xabcd, 0, 0, 0xff, 0, 0, 0xcdef };
+
+  PP_NetAddress_Private port_123 = MakeIPv6NetAddress(ipv6_address, 123, 0);
+  ASSERT_EQ(NetAddressPrivate::GetPort(port_123), 123);
+
+  PP_NetAddress_Private port_FFFF = MakeIPv6NetAddress(ipv6_address,
+                                                       0xFFFF,
+                                                       0);
+  ASSERT_EQ(NetAddressPrivate::GetPort(port_FFFF), 0xFFFF);
+
+  PASS();
+}
+
+std::string TestNetAddressPrivate::TestGetAddress() {
+  const int addr_storage_len = 16;
+  unsigned char addr_storage[addr_storage_len];
+
+  const char* ipv4_addr = "127.0.0.1";
+  uint32_t ipv4_addr_long = inet_addr(ipv4_addr);
+  PP_NetAddress_Private localhost_80 = MakeIPv4NetAddress(ipv4_addr, 80);
+  memset(addr_storage, 0, addr_storage_len);
+  ASSERT_TRUE(NetAddressPrivate::GetAddress(localhost_80,
+                                            addr_storage,
+                                            addr_storage_len));
+  ASSERT_EQ(memcmp(addr_storage, &ipv4_addr_long, 4), 0);
+
+  // Insufficient storage for address.
+  ASSERT_FALSE(NetAddressPrivate::GetAddress(localhost_80,
+                                             addr_storage,
+                                             1));
+
+  uint16_t ipv6_address[8] = { 0x1234, 0xabcd, 0, 0, 0xff, 0, 0, 0xcdef };
+  PP_NetAddress_Private ipv6_addr = MakeIPv6NetAddress(ipv6_address,
+                                                       123,
+                                                       0);
+
+  // Ensure the ipv6 address is transformed properly into network order.
+  for (int i = 0; i < 8; i++)
+    ipv6_address[i] = htons(ipv6_address[i]);
+
+  memset(addr_storage, 0, addr_storage_len);
+  ASSERT_TRUE(NetAddressPrivate::GetAddress(ipv6_addr,
+                                            addr_storage,
+                                            addr_storage_len));
+  ASSERT_EQ(memcmp(addr_storage, ipv6_address, 16), 0);
+
+  // Insufficient storage for address.
+  ASSERT_FALSE(NetAddressPrivate::GetAddress(ipv6_addr,
+                                             addr_storage,
+                                             1));
 
   PASS();
 }

@@ -47,6 +47,9 @@ void TestNetAddressPrivateUntrusted::RunTests(const std::string& filter) {
   RUN_TEST(Describe, filter);
   RUN_TEST(ReplacePort, filter);
   RUN_TEST(GetAnyAddress, filter);
+  RUN_TEST(GetFamily, filter);
+  RUN_TEST(GetPort, filter);
+  RUN_TEST(GetAddress, filter);
 }
 
 int32_t TestNetAddressPrivateUntrusted::Connect(TCPSocketPrivate* socket,
@@ -149,5 +152,54 @@ std::string TestNetAddressPrivateUntrusted::TestGetAnyAddress() {
   NetAddressPrivate::GetAnyAddress(true, &address);
   ASSERT_TRUE(NetAddressPrivate::AreEqual(address, address));
 
+  PASS();
+}
+
+std::string TestNetAddressPrivateUntrusted::TestGetFamily() {
+  pp::TCPSocketPrivate socket(instance_);
+  int32_t rv = Connect(&socket, host_, port_);
+  if (rv != PP_OK)
+    return ReportError("pp::TCPSocketPrivate::Connect", rv);
+
+  PP_NetAddress_Private remote_address;
+  ASSERT_TRUE(socket.GetRemoteAddress(&remote_address));
+
+  ASSERT_EQ(NetAddressPrivate::GetFamily(remote_address),
+            NetAddressPrivate::GetFamily(remote_address));
+
+  socket.Disconnect();
+  PASS();
+}
+
+std::string TestNetAddressPrivateUntrusted::TestGetPort() {
+  pp::TCPSocketPrivate socket(instance_);
+  int32_t rv = Connect(&socket, host_, port_);
+  if (rv != PP_OK)
+    return ReportError("pp::TCPSocketPrivate::Connect", rv);
+
+  PP_NetAddress_Private remote_address;
+  ASSERT_TRUE(socket.GetRemoteAddress(&remote_address));
+
+  ASSERT_EQ(NetAddressPrivate::GetPort(remote_address), port_);
+
+  socket.Disconnect();
+  PASS();
+}
+
+std::string TestNetAddressPrivateUntrusted::TestGetAddress() {
+  pp::TCPSocketPrivate socket(instance_);
+  int32_t rv = Connect(&socket, host_, port_);
+  if (rv != PP_OK)
+    return ReportError("pp::TCPSocketPrivate::Connect", rv);
+
+  PP_NetAddress_Private remote_address;
+  ASSERT_TRUE(socket.GetRemoteAddress(&remote_address));
+
+  static const uint16_t buffer_size = sizeof(remote_address.data);
+  char buffer[buffer_size];
+  ASSERT_TRUE(NetAddressPrivate::GetAddress(remote_address, buffer,
+                                            buffer_size));
+
+  socket.Disconnect();
   PASS();
 }

@@ -841,6 +841,22 @@ class PpbNetAddressPrivateRpcServer {
       NaClSrpcClosure* done,
       int32_t is_ipv6,
       nacl_abi_size_t* addr_bytes, char* addr);
+  static void PPB_NetAddress_Private_GetFamily(
+      NaClSrpcRpc* rpc,
+      NaClSrpcClosure* done,
+      nacl_abi_size_t addr_bytes, char* addr,
+      int32_t* addr_family);
+  static void PPB_NetAddress_Private_GetPort(
+      NaClSrpcRpc* rpc,
+      NaClSrpcClosure* done,
+      nacl_abi_size_t addr_bytes, char* addr,
+      int32_t* port);
+  static void PPB_NetAddress_Private_GetAddress(
+      NaClSrpcRpc* rpc,
+      NaClSrpcClosure* done,
+      nacl_abi_size_t addr_bytes, char* addr,
+      nacl_abi_size_t* address_bytes, char* address,
+      int32_t* success);
 
  private:
   PpbNetAddressPrivateRpcServer();

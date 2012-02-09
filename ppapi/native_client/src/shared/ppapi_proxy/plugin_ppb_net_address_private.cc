@@ -159,15 +159,97 @@ void GetAnyAddress(PP_Bool is_ipv6, PP_NetAddress_Private* addr) {
               NaClSrpcErrorString(srpc_result));
 }
 
+uint16_t GetFamily(const PP_NetAddress_Private* addr) {
+  DebugPrintf("PPB_NetAddress_Private::GetFamily\n");
+
+  nacl_abi_size_t addr_bytes =
+      static_cast<nacl_abi_size_t>(sizeof(PP_NetAddress_Private));
+  char* const raw_addr =
+      reinterpret_cast<char*>(const_cast<PP_NetAddress_Private*>(addr));
+  int32_t addr_family;
+
+  NaClSrpcError srpc_result =
+      PpbNetAddressPrivateRpcClient::PPB_NetAddress_Private_GetFamily(
+          GetMainSrpcChannel(),
+          addr_bytes, raw_addr,
+          &addr_family);
+
+  DebugPrintf("PPB_NetAddress_Private::GetFamily: %s\n",
+              NaClSrpcErrorString(srpc_result));
+
+  return static_cast<uint16_t>(static_cast<uint32_t>(addr_family));
+}
+
+uint16_t GetPort(const PP_NetAddress_Private* addr) {
+  DebugPrintf("PPB_NetAddress_Private::GetPort\n");
+
+  nacl_abi_size_t addr_bytes =
+      static_cast<nacl_abi_size_t>(sizeof(PP_NetAddress_Private));
+  char* const raw_addr =
+      reinterpret_cast<char*>(const_cast<PP_NetAddress_Private*>(addr));
+  int32_t port;
+
+  NaClSrpcError srpc_result =
+      PpbNetAddressPrivateRpcClient::PPB_NetAddress_Private_GetPort(
+          GetMainSrpcChannel(),
+          addr_bytes, raw_addr,
+          &port);
+
+  DebugPrintf("PPB_NetAddress_Private::GetPort: %s\n",
+              NaClSrpcErrorString(srpc_result));
+
+  return static_cast<uint16_t>(static_cast<uint32_t>(port));
+}
+
+PP_Bool GetAddress(const PP_NetAddress_Private* addr,
+                   void* address,
+                   uint16_t address_size) {
+  DebugPrintf("PP_NetAddress_Private::GetAddress");
+
+  int32_t success = 0;
+  char* const raw_addr =
+      reinterpret_cast<char*>(const_cast<PP_NetAddress_Private*>(addr));
+  nacl_abi_size_t address_bytes_size = address_size;
+  NaClSrpcError srpc_result =
+      PpbNetAddressPrivateRpcClient::PPB_NetAddress_Private_GetAddress(
+          GetMainSrpcChannel(),
+          static_cast<nacl_abi_size_t>(sizeof(PP_NetAddress_Private)), raw_addr,
+          &address_bytes_size, static_cast<char*>(address),
+          &success);
+
+  DebugPrintf("PPB_NetAddressPrivate::GetAddress: %s\n",
+              NaClSrpcErrorString(srpc_result));
+
+  if (srpc_result == NACL_SRPC_RESULT_OK && success)
+    return PP_TRUE;
+  return PP_FALSE;
+}
+
 }  // namespace
 
-const PPB_NetAddress_Private* PluginNetAddressPrivate::GetInterface() {
-  static const PPB_NetAddress_Private netaddress_private_interface = {
+// static
+const PPB_NetAddress_Private_0_1* PluginNetAddressPrivate::GetInterface0_1() {
+  static const PPB_NetAddress_Private_0_1 netaddress_private_interface = {
+    AreEqual,
+    AreHostsEqual,
+    Describe,
+    ReplacePort,
+    GetAnyAddress
+  };
+  return &netaddress_private_interface;
+}
+
+// static
+const PPB_NetAddress_Private_1_0* PluginNetAddressPrivate::GetInterface1_0() {
+  static const PPB_NetAddress_Private_1_0 netaddress_private_interface = {
     AreEqual,
     AreHostsEqual,
     Describe,
     ReplacePort,
     GetAnyAddress,
+    GetFamily,
+    GetPort,
+    GetAddress
   };
   return &netaddress_private_interface;
 }

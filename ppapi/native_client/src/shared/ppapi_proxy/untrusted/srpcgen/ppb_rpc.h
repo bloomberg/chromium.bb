@@ -737,6 +737,19 @@ class PpbNetAddressPrivateRpcClient {
       NaClSrpcChannel* channel,
       int32_t is_ipv6,
       nacl_abi_size_t* addr_bytes, char* addr);
+  static NaClSrpcError PPB_NetAddress_Private_GetFamily(
+      NaClSrpcChannel* channel,
+      nacl_abi_size_t addr_bytes, char* addr,
+      int32_t* addr_family);
+  static NaClSrpcError PPB_NetAddress_Private_GetPort(
+      NaClSrpcChannel* channel,
+      nacl_abi_size_t addr_bytes, char* addr,
+      int32_t* port);
+  static NaClSrpcError PPB_NetAddress_Private_GetAddress(
+      NaClSrpcChannel* channel,
+      nacl_abi_size_t addr_bytes, char* addr,
+      nacl_abi_size_t* address_bytes, char* address,
+      int32_t* success);
 
  private:
   PpbNetAddressPrivateRpcClient();

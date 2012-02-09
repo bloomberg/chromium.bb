@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -76,8 +76,35 @@ void NetAddressPrivate::GetAnyAddress(bool is_ipv6,
                                       PP_NetAddress_Private* addr) {
   if (!has_interface<PPB_NetAddress_Private>())
     return;
-  get_interface<PPB_NetAddress_Private>()->GetAnyAddress(PP_FromBool(is_ipv6),
-                                                         addr);
+  get_interface<PPB_NetAddress_Private>()->GetAnyAddress(
+      PP_FromBool(is_ipv6),
+      addr);
+}
+
+// static
+uint16_t NetAddressPrivate::GetFamily(const PP_NetAddress_Private& addr) {
+  if (!has_interface<PPB_NetAddress_Private>())
+    return 0;
+  return get_interface<PPB_NetAddress_Private>()->GetFamily(&addr);
+}
+
+// static
+uint16_t NetAddressPrivate::GetPort(const PP_NetAddress_Private& addr) {
+  if (!has_interface<PPB_NetAddress_Private>())
+    return 0;
+  return get_interface<PPB_NetAddress_Private>()->GetPort(&addr);
+}
+
+// static
+bool NetAddressPrivate::GetAddress(const PP_NetAddress_Private& addr,
+                                   void* address,
+                                   uint16_t address_size) {
+  if (!has_interface<PPB_NetAddress_Private>())
+    return false;
+  return PP_ToBool(get_interface<PPB_NetAddress_Private>()->GetAddress(
+      &addr,
+      address,
+      address_size));
 }
 
 }  // namespace pp

@@ -8,7 +8,8 @@
  */
 
 label Chrome {
-  M17 = 0.1
+    M17 = 0.1,
+    M18 = 1.0
 };
 
 /**
@@ -58,4 +59,28 @@ interface PPB_NetAddress_Private {
     */
   void GetAnyAddress([in] PP_Bool is_ipv6,
                      [out] PP_NetAddress_Private addr);
+
+  /**
+    * Gets the address family.
+    */
+  [version=1.0]
+  uint16_t GetFamily([in] PP_NetAddress_Private addr);
+  
+  /**
+    * Gets the port. The port is returned in host byte order.
+    */
+  [version=1.0]
+  uint16_t GetPort([in] PP_NetAddress_Private addr);
+
+  /**
+    * Gets the address. The output, address, must be large enough for the
+    * current socket family. The output will be the binary representation of an
+    * address for the current socket family. For IPv4 and IPv6 the address is in
+    * network byte order. PP_TRUE is returned if the address was successfully
+    * retrieved.
+    */
+  [version=1.0]
+  PP_Bool GetAddress([in] PP_NetAddress_Private addr,
+                     [out] mem_t address,
+                     [in] uint16_t address_size);
 };

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -28,6 +28,10 @@ class NetAddressPrivate {
                           uint16_t port,
                           PP_NetAddress_Private* addr_out);
   static void GetAnyAddress(bool is_ipv6, PP_NetAddress_Private* addr);
+  static uint16_t GetFamily(const PP_NetAddress_Private& addr);
+  static uint16_t GetPort(const PP_NetAddress_Private& addr);
+  static bool GetAddress(const PP_NetAddress_Private& addr,
+                         void* address, uint16_t address_size);
 };
 
 }  // namespace pp

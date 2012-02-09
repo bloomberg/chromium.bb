@@ -33,6 +33,9 @@ class TestNetAddressPrivateUntrusted : public TestCase {
   std::string TestDescribe();
   std::string TestReplacePort();
   std::string TestGetAnyAddress();
+  std::string TestGetFamily();
+  std::string TestGetPort();
+  std::string TestGetAddress();
 
   std::string host_;
   uint16_t port_;

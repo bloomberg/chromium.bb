@@ -177,3 +177,77 @@ void PpbNetAddressPrivateRpcServer::PPB_NetAddress_Private_GetAnyAddress(
 
   rpc->result = NACL_SRPC_RESULT_OK;
 }
+
+void PpbNetAddressPrivateRpcServer::PPB_NetAddress_Private_GetFamily(
+    NaClSrpcRpc* rpc,
+    NaClSrpcClosure* done,
+    // input
+    nacl_abi_size_t addr_bytes, char* addr,
+    // output
+    int32_t* addr_family) {
+  NaClSrpcClosureRunner runner(done);
+  rpc->result = NACL_SRPC_RESULT_APP_ERROR;
+
+  if (addr_bytes !=
+      static_cast<nacl_abi_size_t>(sizeof(PP_NetAddress_Private))) {
+    return;
+  }
+
+  *addr_family = PPBNetAddressPrivateInterface()->GetFamily(
+      reinterpret_cast<PP_NetAddress_Private*>(addr));
+
+  DebugPrintf("PPB_NetAddress_Private::GetFamily\n");
+
+  rpc->result = NACL_SRPC_RESULT_OK;
+}
+
+void PpbNetAddressPrivateRpcServer::PPB_NetAddress_Private_GetPort(
+    NaClSrpcRpc* rpc,
+    NaClSrpcClosure* done,
+    // input
+    nacl_abi_size_t addr_bytes, char* addr,
+    // output
+    int32_t* port) {
+  NaClSrpcClosureRunner runner(done);
+  rpc->result = NACL_SRPC_RESULT_APP_ERROR;
+
+  if (addr_bytes !=
+      static_cast<nacl_abi_size_t>(sizeof(PP_NetAddress_Private))) {
+    return;
+  }
+
+  *port = PPBNetAddressPrivateInterface()->GetPort(
+      reinterpret_cast<PP_NetAddress_Private*>(addr));
+
+  DebugPrintf("PPB_NetAddress_Private::GetPort\n");
+
+  rpc->result = NACL_SRPC_RESULT_OK;
+}
+
+void PpbNetAddressPrivateRpcServer::PPB_NetAddress_Private_GetAddress(
+    NaClSrpcRpc* rpc,
+    NaClSrpcClosure* done,
+    // input
+    nacl_abi_size_t addr_bytes, char* addr,
+    // output
+    nacl_abi_size_t* address_bytes, char* address,
+    int32_t* success) {
+  NaClSrpcClosureRunner runner(done);
+  rpc->result = NACL_SRPC_RESULT_APP_ERROR;
+
+  if (addr_bytes !=
+      static_cast<nacl_abi_size_t>(sizeof(PP_NetAddress_Private))) {
+    return;
+  }
+
+  PP_Bool pp_success = PPBNetAddressPrivateInterface()->GetAddress(
+      reinterpret_cast<PP_NetAddress_Private*>(addr),
+      address, static_cast<uint16_t>(*address_bytes));
+
+  DebugPrintf("PPB_NetAddress_Private::GetAddress: pp_success=%d\n",
+              pp_success);
+
+  *success = (pp_success == PP_TRUE);
+  rpc->result = NACL_SRPC_RESULT_OK;
+}
+
