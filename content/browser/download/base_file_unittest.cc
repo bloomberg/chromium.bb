@@ -121,7 +121,7 @@ class BaseFileTest : public testing::Test {
 
     // Create a new file stream.
     mock_file_stream_.reset(new net::testing::MockFileStream(NULL));
-    if (mock_file_stream_->Open(
+    if (mock_file_stream_->OpenSync(
         path,
         base::PLATFORM_FILE_OPEN_ALWAYS | base::PLATFORM_FILE_WRITE) != 0) {
       mock_file_stream_.reset();

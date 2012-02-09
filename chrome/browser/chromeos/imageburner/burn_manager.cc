@@ -60,8 +60,8 @@ void CreateFileStream(
   scoped_ptr<net::FileStream> file_stream(new net::FileStream(NULL));
   // TODO(tbarzic): Save temp image file to temp folder instead of Downloads
   // once extracting image directly to removalbe device is implemented
-  if (file_stream->Open(file_path, base::PLATFORM_FILE_OPEN_ALWAYS |
-                        base::PLATFORM_FILE_WRITE))
+  if (file_stream->OpenSync(file_path, base::PLATFORM_FILE_OPEN_ALWAYS |
+                            base::PLATFORM_FILE_WRITE))
     file_stream.reset();
 
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,

@@ -102,7 +102,7 @@ void BlobURLRequestJob::CloseStream() {
   if (stream_ != NULL) {
     // stream_.Close() blocks the IO thread, see http://crbug.com/75548.
     base::ThreadRestrictions::ScopedAllowIO allow_io;
-    stream_->Close();
+    stream_->CloseSync();
     stream_.reset(NULL);
   }
 }

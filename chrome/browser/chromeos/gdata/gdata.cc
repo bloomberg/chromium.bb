@@ -1213,8 +1213,9 @@ void DocumentsService::TestUpload() {
 
   // Create a FileStream to make sure the file can be opened successfully.
   scoped_ptr<net::FileStream> file(new net::FileStream(NULL));
-  int rv = file->Open(file_path,
-                      base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_READ);
+  int rv = file->OpenSync(
+      file_path,
+      base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_READ);
   if (rv != net::OK) {
     // If the file can't be opened, we'll just upload an empty file.
     DLOG(WARNING) << "Error opening \"" << file_path.value()

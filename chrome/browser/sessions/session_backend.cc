@@ -48,7 +48,8 @@ class SessionFileReader {
         available_count_(0) {
     file_.reset(new net::FileStream(NULL));
     if (file_util::PathExists(path))
-      file_->Open(path, base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_READ);
+      file_->OpenSync(path,
+                      base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_READ);
   }
   // Reads the contents of the file specified in the constructor, returning
   // true on success. It is up to the caller to free all SessionCommands
@@ -347,7 +348,7 @@ SessionBackend::~SessionBackend() {
   if (current_session_file_.get()) {
     // Close() performs file IO. crbug.com/112512.
     base::ThreadRestrictions::ScopedAllowIO allow_io;
-    current_session_file_->Close();
+    current_session_file_->CloseSync();
   }
 }
 
@@ -370,7 +371,7 @@ void SessionBackend::ResetFile() {
 net::FileStream* SessionBackend::OpenAndWriteHeader(const FilePath& path) {
   DCHECK(!path.empty());
   scoped_ptr<net::FileStream> file(new net::FileStream(NULL));
-  if (file->Open(path, base::PLATFORM_FILE_CREATE_ALWAYS |
+  if (file->OpenSync(path, base::PLATFORM_FILE_CREATE_ALWAYS |
       base::PLATFORM_FILE_WRITE | base::PLATFORM_FILE_EXCLUSIVE_WRITE |
       base::PLATFORM_FILE_EXCLUSIVE_READ) != net::OK)
     return NULL;

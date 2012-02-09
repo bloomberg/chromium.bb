@@ -125,7 +125,7 @@ FileSystemURLRequestJob::~FileSystemURLRequestJob() {
   if (stream_ != NULL) {
     // Close() performs file IO: crbug.com/113300.
     base::ThreadRestrictions::ScopedAllowIO allow_io;
-    stream_->Close();
+    stream_->CloseSync();
   }
 }
 
@@ -140,7 +140,7 @@ void FileSystemURLRequestJob::Kill() {
   if (stream_ != NULL) {
     // Close() performs file IO: crbug.com/113300.
     base::ThreadRestrictions::ScopedAllowIO allow_io;
-    stream_->Close();
+    stream_->CloseSync();
     stream_.reset(NULL);
   }
   URLRequestJob::Kill();
