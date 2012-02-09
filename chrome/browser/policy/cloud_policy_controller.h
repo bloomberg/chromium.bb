@@ -47,8 +47,11 @@ class CloudPolicyController : public CloudPolicyDataStore::Observer {
   void Reset();
 
   // Attempts to fetch policies again, if possible. The cache is notified that
-  // a fetch was attempted.
-  void RefreshPolicies();
+  // a fetch was attempted. If there is no DMToken yet and no material to fetch
+  // it, the cache is immediately notified that a fetch was attempted unless
+  // |wait_for_auth_token| is true. In that case, an asynchronous auth token
+  // fetch should be in progress that will eventually make the controller retry.
+  void RefreshPolicies(bool wait_for_auth_token);
 
   // Policy request response handler.
   void OnPolicyFetchCompleted(

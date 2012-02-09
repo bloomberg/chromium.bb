@@ -213,9 +213,9 @@ void BrowserPolicyConnector::ResetDevicePolicy() {
 void BrowserPolicyConnector::FetchCloudPolicy() {
 #if defined(OS_CHROMEOS)
   if (device_cloud_policy_subsystem_.get())
-    device_cloud_policy_subsystem_->RefreshPolicies();
+    device_cloud_policy_subsystem_->RefreshPolicies(false);
   if (user_cloud_policy_subsystem_.get())
-    user_cloud_policy_subsystem_->RefreshPolicies();
+    user_cloud_policy_subsystem_->RefreshPolicies(true);  // wait_for_auth_token
 #endif
 }
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -92,7 +92,11 @@ class CloudPolicySubsystem
 
   // Refreshes the policies retrieved by this subsystem. This triggers new
   // policy fetches if possible, otherwise it keeps the current set of policies.
-  void RefreshPolicies();
+  // If |wait_for_auth_token| is true, then this call will make the policy
+  // refresh wait for a pending auth token fetch, in case it hasn't finished
+  // yet. Otherwise the refresh completes immediately if the auth token isn't
+  // available.
+  void RefreshPolicies(bool wait_for_auth_token);
 
   // Registers cloud policy related prefs.
   static void RegisterPrefs(PrefService* pref_service);

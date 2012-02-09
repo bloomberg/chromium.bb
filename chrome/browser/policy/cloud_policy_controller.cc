@@ -145,13 +145,13 @@ void CloudPolicyController::Reset() {
   SetState(STATE_TOKEN_UNAVAILABLE);
 }
 
-void CloudPolicyController::RefreshPolicies() {
+void CloudPolicyController::RefreshPolicies(bool wait_for_auth_token) {
   // This call must eventually trigger a notification to the cache.
   if (data_store_->device_token().empty()) {
     // The DMToken has to be fetched.
     if (ReadyToFetchToken()) {
       SetState(STATE_TOKEN_UNAVAILABLE);
-    } else {
+    } else if (!wait_for_auth_token) {
       // The controller doesn't have enough material to start a token fetch,
       // but observers of the cache are waiting for the refresh.
       SetState(STATE_TOKEN_UNMANAGED);

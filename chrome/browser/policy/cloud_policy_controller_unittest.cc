@@ -290,7 +290,7 @@ TEST_F(CloudPolicyControllerTest, RefreshPoliciesWithoutMaterial) {
 
   // Same scenario as the last test, but the RefreshPolicies call must always
   // notify the cache.
-  controller_->RefreshPolicies();
+  controller_->RefreshPolicies(false);
   loop_.RunAllPending();
   EXPECT_TRUE(cache_->IsReady());
 }

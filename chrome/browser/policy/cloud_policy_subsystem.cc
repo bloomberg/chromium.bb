@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -136,9 +136,11 @@ void CloudPolicySubsystem::Reset() {
   device_token_fetcher_->Reset();
 }
 
-void CloudPolicySubsystem::RefreshPolicies() {
+void CloudPolicySubsystem::RefreshPolicies(bool wait_for_auth_token) {
   if (cloud_policy_controller_.get())
-    cloud_policy_controller_->RefreshPolicies();
+    cloud_policy_controller_->RefreshPolicies(wait_for_auth_token);
+  // Make sure the |device_management_service_| is rolling.
+  device_management_service_->ScheduleInitialization(0);
 }
 
 // static
