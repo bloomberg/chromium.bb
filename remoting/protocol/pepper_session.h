@@ -13,6 +13,7 @@
 #include "base/timer.h"
 #include "crypto/rsa_private_key.h"
 #include "net/base/completion_callback.h"
+#include "remoting/protocol/authenticator.h"
 #include "remoting/protocol/jingle_messages.h"
 #include "remoting/protocol/session.h"
 #include "remoting/protocol/session_config.h"
@@ -29,7 +30,6 @@ class IqRequest;
 
 namespace protocol {
 
-class Authenticator;
 class PepperSessionManager;
 
 // Implements the protocol::Session interface using the Pepper P2P
@@ -67,23 +67,24 @@ class PepperSession : public Session,
 
  private:
   friend class PepperSessionManager;
-  friend class PepperStreamChannel;
 
   typedef std::map<std::string, Transport*> ChannelsMap;
 
   explicit PepperSession(PepperSessionManager* session_manager);
 
-  // Start cs connection by sending session-initiate message.
+  // Start connection by sending session-initiate message.
   void StartConnection(const std::string& peer_jid,
                        scoped_ptr<Authenticator> authenticator,
                        scoped_ptr<CandidateSessionConfig> config,
                        const StateChangeCallback& state_change_callback);
 
+  // Called by PepperSessionManager for incoming connections.
+  void InitializeIncomingConnection(const JingleMessage& initiate_message,
+                                    scoped_ptr<Authenticator> authenticator);
+  void AcceptIncomingConnection(const JingleMessage& initiate_message);
+
   // Handler for session-initiate response.
   void OnSessionInitiateResponse(const buzz::XmlElement* response);
-
-  // Called when an error occurs. Sets |error_| and closes the session.
-  void OnError(Error error);
 
   // Called by PepperSessionManager on incoming |message|. Must fill
   // in |reply|.
@@ -105,8 +106,10 @@ class PepperSession : public Session,
   void SendTransportInfo();
   void OnTransportInfoResponse(const buzz::XmlElement* response);
 
-  // Close all the channels and terminate the session.
-  void CloseInternal(bool failed);
+  // Terminates the session and sends session-terminate if it is
+  // necessary. |error| specifies the error code in case when the
+  // session is being closed due to an error.
+  void CloseInternal(Error error);
 
   // Sets |state_| to |new_state| and calls state change callback.
   void SetState(State new_state);
@@ -115,12 +118,14 @@ class PepperSession : public Session,
   std::string peer_jid_;
   scoped_ptr<CandidateSessionConfig> candidate_config_;
   StateChangeCallback state_change_callback_;
+  RouteChangeCallback route_change_callback_;
 
   std::string session_id_;
   State state_;
   Error error_;
 
   SessionConfig config_;
+  bool config_is_set_;
 
   scoped_ptr<Authenticator> authenticator_;
 

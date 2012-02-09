@@ -9,6 +9,7 @@
 #include "remoting/jingle_glue/jingle_info_request.h"
 #include "remoting/jingle_glue/signal_strategy.h"
 #include "remoting/protocol/authenticator.h"
+#include "remoting/protocol/content_description.h"
 #include "remoting/protocol/jingle_messages.h"
 #include "remoting/protocol/pepper_session.h"
 #include "third_party/libjingle/source/talk/base/socketaddress.h"
@@ -131,9 +132,28 @@ bool PepperSessionManager::OnSignalStrategyIncomingStanza(
   }
 
   if (message.action == JingleMessage::SESSION_INITIATE) {
-    SendReply(stanza, JingleMessageReply(
-        JingleMessageReply::NOT_IMPLEMENTED,
-        "Can't accept sessions on the client"));
+    // Description must be present in session-initiate messages.
+    DCHECK(message.description.get());
+
+    scoped_ptr<Authenticator> authenticator =
+        authenticator_factory_->CreateAuthenticator(
+            message.from, message.description->authenticator_message());
+
+    PepperSession* session = new PepperSession(this);
+    session->InitializeIncomingConnection(message, authenticator.Pass());
+    sessions_[session->session_id_] = session;
+
+    IncomingSessionResponse response = SessionManager::DECLINE;
+    listener_->OnIncomingSession(session, &response);
+
+    if (response == SessionManager::ACCEPT) {
+      session->AcceptIncomingConnection(message);
+    } else {
+      session->Close();
+      delete session;
+      DCHECK(sessions_.find(message.sid) == sessions_.end());
+    }
+
     return true;
   }
 

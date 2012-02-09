@@ -13,8 +13,6 @@
 #include "remoting/protocol/channel_authenticator.h"
 #include "remoting/protocol/connection_tester.h"
 #include "remoting/protocol/fake_authenticator.h"
-#include "remoting/protocol/jingle_session.h"
-#include "remoting/protocol/jingle_session_manager.h"
 #include "remoting/protocol/pepper_session_manager.h"
 #include "remoting/jingle_glue/jingle_thread.h"
 #include "remoting/jingle_glue/fake_signal_strategy.h"
@@ -58,8 +56,7 @@ class MockSessionCallback {
 
 class PepperSessionTest : public testing::Test {
  public:
-  PepperSessionTest()
-      : message_loop_(talk_base::Thread::Current()) {
+  PepperSessionTest() {
   }
 
   // Helper method that handles OnIncomingSession().
@@ -96,8 +93,8 @@ class PepperSessionTest : public testing::Test {
 
     EXPECT_CALL(host_server_listener_, OnSessionManagerReady())
         .Times(1);
-    host_server_.reset(new JingleSessionManager(
-        base::MessageLoopProxy::current()));
+    host_server_.reset(new PepperSessionManager(
+        scoped_ptr<TransportFactory>(NULL)));
     host_server_->Init(host_signal_strategy_.get(), &host_server_listener_,
                        NetworkSettings(false));
 
@@ -191,12 +188,12 @@ class PepperSessionTest : public testing::Test {
     message_loop_.RunAllPending();
   }
 
-  JingleThreadMessageLoop message_loop_;
+  MessageLoop message_loop_;
 
   scoped_ptr<FakeSignalStrategy> host_signal_strategy_;
   scoped_ptr<FakeSignalStrategy> client_signal_strategy_;
 
-  scoped_ptr<JingleSessionManager> host_server_;
+  scoped_ptr<PepperSessionManager> host_server_;
   MockSessionManagerListener host_server_listener_;
   scoped_ptr<PepperSessionManager> client_server_;
   MockSessionManagerListener client_server_listener_;

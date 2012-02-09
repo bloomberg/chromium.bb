@@ -15,6 +15,7 @@
 #include "remoting/protocol/content_description.h"
 #include "remoting/protocol/jingle_messages.h"
 #include "remoting/protocol/pepper_session_manager.h"
+#include "remoting/protocol/session_config.h"
 #include "third_party/libjingle/source/talk/p2p/base/candidate.h"
 #include "third_party/libjingle/source/talk/xmllite/xmlelement.h"
 
@@ -30,12 +31,26 @@ namespace {
 // than zero because ports are opened asynchronously in the browser
 // process.
 const int kTransportInfoSendDelayMs = 2;
+
+Session::Error AuthRejectionReasonToError(
+    Authenticator::RejectionReason reason) {
+  switch (reason) {
+    case Authenticator::INVALID_CREDENTIALS:
+      return Session::AUTHENTICATION_FAILED;
+    case Authenticator::PROTOCOL_ERROR:
+      return Session::INCOMPATIBLE_PROTOCOL;
+  }
+  NOTREACHED();
+  return Session::UNKNOWN_ERROR;
+}
+
 }  // namespace
 
 PepperSession::PepperSession(PepperSessionManager* session_manager)
     : session_manager_(session_manager),
       state_(INITIALIZING),
-      error_(OK) {
+      error_(OK),
+      config_is_set_(false) {
 }
 
 PepperSession::~PepperSession() {
@@ -46,13 +61,14 @@ PepperSession::~PepperSession() {
 void PepperSession::SetStateChangeCallback(
     const StateChangeCallback& callback) {
   DCHECK(CalledOnValidThread());
+  DCHECK(!callback.is_null());
   state_change_callback_ = callback;
 }
 
 void PepperSession::SetRouteChangeCallback(
     const RouteChangeCallback& callback) {
-  // This callback is not used on the client side yet.
-  NOTREACHED();
+  DCHECK(CalledOnValidThread());
+  route_change_callback_ = callback;
 }
 
 Session::Error PepperSession::error() {
@@ -83,7 +99,6 @@ void PepperSession::StartConnection(
   // Send session-initiate message.
   JingleMessage message(peer_jid_, JingleMessage::SESSION_INITIATE,
                         session_id_);
-  message.from = session_manager_->signal_strategy_->GetLocalJid();
   message.description.reset(
       new ContentDescription(candidate_config_->Clone(),
                              authenticator_->GetNextMessage()));
@@ -93,6 +108,71 @@ void PepperSession::StartConnection(
                  base::Unretained(this))));
 
   SetState(CONNECTING);
+}
+
+void PepperSession::InitializeIncomingConnection(
+    const JingleMessage& initiate_message,
+    scoped_ptr<Authenticator> authenticator) {
+  DCHECK(CalledOnValidThread());
+  DCHECK(initiate_message.description.get());
+  DCHECK(authenticator.get());
+  DCHECK_EQ(authenticator->state(), Authenticator::WAITING_MESSAGE);
+
+  peer_jid_ = initiate_message.from;
+  authenticator_ = authenticator.Pass();
+  session_id_ = initiate_message.sid;
+  candidate_config_ = initiate_message.description->config()->Clone();
+
+  SetState(CONNECTING);
+}
+
+void PepperSession::AcceptIncomingConnection(
+    const JingleMessage& initiate_message) {
+  DCHECK(config_is_set_);
+
+  // Process the first authentication message.
+  const buzz::XmlElement* first_auth_message =
+      initiate_message.description->authenticator_message();
+
+  if (!first_auth_message) {
+    CloseInternal(INCOMPATIBLE_PROTOCOL);
+    return;
+  }
+
+  DCHECK_EQ(authenticator_->state(), Authenticator::WAITING_MESSAGE);
+  authenticator_->ProcessMessage(first_auth_message);
+  if (authenticator_->state() == Authenticator::REJECTED) {
+    CloseInternal(AuthRejectionReasonToError(
+        authenticator_->rejection_reason()));
+    return;
+  }
+
+  // Send the session-accept message.
+  JingleMessage message(peer_jid_, JingleMessage::SESSION_ACCEPT,
+                        session_id_);
+
+  scoped_ptr<buzz::XmlElement> auth_message;
+  if (authenticator_->state() == Authenticator::MESSAGE_READY)
+    auth_message = authenticator_->GetNextMessage();
+
+  message.description.reset(
+      new ContentDescription(CandidateSessionConfig::CreateFrom(config_),
+                             auth_message.Pass()));
+  initiate_request_.reset(session_manager_->iq_sender()->SendIq(
+      message.ToXml(),
+      base::Bind(&PepperSession::OnSessionInitiateResponse,
+                 base::Unretained(this))));
+
+  // Update state.
+  SetState(CONNECTED);
+
+  if (authenticator_->state() == Authenticator::ACCEPTED) {
+    SetState(AUTHENTICATED);
+  } else {
+    DCHECK_EQ(authenticator_->state(), Authenticator::WAITING_MESSAGE);
+  }
+
+  return;
 }
 
 void PepperSession::OnSessionInitiateResponse(
@@ -105,13 +185,8 @@ void PepperSession::OnSessionInitiateResponse(
 
     // TODO(sergeyu): There may be different reasons for error
     // here. Parse the response stanza to find failure reason.
-    OnError(PEER_IS_OFFLINE);
+    CloseInternal(PEER_IS_OFFLINE);
   }
-}
-
-void PepperSession::OnError(Error error) {
-  error_ = error;
-  CloseInternal(true);
 }
 
 void PepperSession::CreateStreamChannel(
@@ -169,23 +244,15 @@ const SessionConfig& PepperSession::config() {
 
 void PepperSession::set_config(const SessionConfig& config) {
   DCHECK(CalledOnValidThread());
-  // set_config() should never be called on the client.
-  NOTREACHED();
+  DCHECK(!config_is_set_);
+  config_ = config;
+  config_is_set_ = true;
 }
 
 void PepperSession::Close() {
   DCHECK(CalledOnValidThread());
 
-  if (state_ == CONNECTING || state_ == CONNECTED || state_ == AUTHENTICATED) {
-    // Send session-terminate message.
-    JingleMessage message(peer_jid_, JingleMessage::SESSION_TERMINATE,
-                          session_id_);
-    scoped_ptr<IqRequest> terminate_request(
-        session_manager_->iq_sender()->SendIq(
-            message.ToXml(), IqSender::ReplyCallback()));
-  }
-
-  CloseInternal(false);
+  CloseInternal(OK);
 }
 
 void PepperSession::OnTransportCandidate(Transport* transport,
@@ -251,7 +318,7 @@ void PepperSession::OnAccept(const JingleMessage& message,
   if (!auth_message) {
     DLOG(WARNING) << "Received session-accept without authentication message "
                   << auth_message->Str();
-    OnError(INCOMPATIBLE_PROTOCOL);
+    CloseInternal(INCOMPATIBLE_PROTOCOL);
     return;
   }
 
@@ -259,7 +326,7 @@ void PepperSession::OnAccept(const JingleMessage& message,
   authenticator_->ProcessMessage(auth_message);
 
   if (!InitializeConfigFromDescription(message.description.get())) {
-    OnError(INCOMPATIBLE_PROTOCOL);
+    CloseInternal(INCOMPATIBLE_PROTOCOL);
     return;
   }
 
@@ -285,7 +352,7 @@ void PepperSession::OnSessionInfo(const JingleMessage& message,
       LOG(WARNING) << "Received unexpected authenticator message "
                    << message.info->Str();
       *reply = JingleMessageReply(JingleMessageReply::UNEXPECTED_REQUEST);
-      OnError(INCOMPATIBLE_PROTOCOL);
+      CloseInternal(INCOMPATIBLE_PROTOCOL);
       return;
     }
 
@@ -311,38 +378,37 @@ void PepperSession::ProcessTransportInfo(const JingleMessage& message) {
 
 void PepperSession::OnTerminate(const JingleMessage& message,
                                 JingleMessageReply* reply) {
-  if (state_ == CONNECTING) {
-    switch (message.reason) {
-      case JingleMessage::DECLINE:
-        OnError(SESSION_REJECTED);
-        break;
-
-      case JingleMessage::INCOMPATIBLE_PARAMETERS:
-        OnError(INCOMPATIBLE_PROTOCOL);
-        break;
-
-      default:
-        LOG(WARNING) << "Received session-terminate message "
-            "with an unexpected reason.";
-        OnError(SESSION_REJECTED);
-    }
+  if (state_ != CONNECTING && state_ != CONNECTED && state_ != AUTHENTICATED) {
+    LOG(WARNING) << "Received unexpected session-terminate message.";
+    CloseInternal(INCOMPATIBLE_PROTOCOL);
     return;
   }
 
-  if (state_ != CONNECTED && state_ != AUTHENTICATED) {
-    LOG(WARNING) << "Received unexpected session-terminate message.";
+  switch (message.reason) {
+    case JingleMessage::SUCCESS:
+      if (state_ == CONNECTING) {
+        error_ = SESSION_REJECTED;
+      } else {
+        error_ = OK;
+      }
+      break;
+    case JingleMessage::DECLINE:
+      error_ = AUTHENTICATION_FAILED;
+      break;
+    case JingleMessage::GENERAL_ERROR:
+      error_ = CHANNEL_CONNECTION_ERROR;
+      break;
+    case JingleMessage::INCOMPATIBLE_PARAMETERS:
+      error_ = INCOMPATIBLE_PROTOCOL;
+      break;
+    default:
+      error_ = UNKNOWN_ERROR;
   }
 
-  if (message.reason == JingleMessage::SUCCESS) {
-    CloseInternal(false);
-  } else if (message.reason == JingleMessage::DECLINE) {
-    OnError(AUTHENTICATION_FAILED);
-  } else if (message.reason == JingleMessage::GENERAL_ERROR) {
-    OnError(CHANNEL_CONNECTION_ERROR);
-  } else if (message.reason == JingleMessage::INCOMPATIBLE_PARAMETERS) {
-    OnError(INCOMPATIBLE_PROTOCOL);
+  if (error_ != OK) {
+    SetState(FAILED);
   } else {
-    OnError(UNKNOWN_ERROR);
+    SetState(CLOSED);
   }
 }
 
@@ -380,14 +446,8 @@ void PepperSession::ProcessAuthenticationStep() {
   if (authenticator_->state() == Authenticator::ACCEPTED) {
     SetState(AUTHENTICATED);
   } else if (authenticator_->state() == Authenticator::REJECTED) {
-    switch (authenticator_->rejection_reason()) {
-      case Authenticator::INVALID_CREDENTIALS:
-        OnError(AUTHENTICATION_FAILED);
-        break;
-      case Authenticator::PROTOCOL_ERROR:
-        OnError(INCOMPATIBLE_PROTOCOL);
-        break;
-    }
+    CloseInternal(AuthRejectionReasonToError(
+        authenticator_->rejection_reason()));
   }
 }
 
@@ -397,7 +457,7 @@ void PepperSession::OnSessionInfoResponse(const buzz::XmlElement* response) {
     LOG(ERROR) << "Received error in response to session-info message: \""
                << response->Str()
                << "\". Terminating the session.";
-    OnError(INCOMPATIBLE_PROTOCOL);
+    CloseInternal(INCOMPATIBLE_PROTOCOL);
   }
 }
 
@@ -409,10 +469,10 @@ void PepperSession::OnTransportInfoResponse(const buzz::XmlElement* response) {
                << "\". Terminating the session.";
 
     if (state_ == CONNECTING) {
-      OnError(PEER_IS_OFFLINE);
+      CloseInternal(PEER_IS_OFFLINE);
     } else {
       // Host has disconnected without sending session-terminate message.
-      CloseInternal(false);
+      CloseInternal(OK);
     }
   }
 }
@@ -427,14 +487,43 @@ void PepperSession::SendTransportInfo() {
 }
 
 
-void PepperSession::CloseInternal(bool failed) {
+void PepperSession::CloseInternal(Error error) {
   DCHECK(CalledOnValidThread());
 
+  if (state_ == CONNECTING || state_ == CONNECTED || state_ == AUTHENTICATED) {
+    // Send session-terminate message with the appropriate error code.
+    JingleMessage::Reason reason;
+    switch (error) {
+      case OK:
+        reason = JingleMessage::SUCCESS;
+        break;
+      case SESSION_REJECTED:
+      case AUTHENTICATION_FAILED:
+        reason = JingleMessage::DECLINE;
+        break;
+      case INCOMPATIBLE_PROTOCOL:
+        reason = JingleMessage::INCOMPATIBLE_PARAMETERS;
+        break;
+      default:
+        reason = JingleMessage::GENERAL_ERROR;
+    }
+
+    JingleMessage message(peer_jid_, JingleMessage::SESSION_TERMINATE,
+                          session_id_);
+    message.reason = reason;
+    scoped_ptr<IqRequest> terminate_request(
+        session_manager_->iq_sender()->SendIq(
+            message.ToXml(), IqSender::ReplyCallback()));
+  }
+
+  error_ = error;
+
   if (state_ != FAILED && state_ != CLOSED) {
-    if (failed)
+    if (error != OK) {
       SetState(FAILED);
-    else
+    } else {
       SetState(CLOSED);
+    }
   }
 }
 
