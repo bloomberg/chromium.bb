@@ -704,7 +704,8 @@ TEST_F(WorkerFileSystemTest, SyncPersistent) {
   RunWorkerFileSystemLayoutTest("simple-persistent-sync.html");
 }
 
-TEST_F(WorkerFileSystemTest, AsyncOperations) {
+// http://crbug.com/113510
+TEST_F(WorkerFileSystemTest, FLAKY_AsyncOperations) {
   RunWorkerFileSystemLayoutTest("async-operations.html");
 }
 
