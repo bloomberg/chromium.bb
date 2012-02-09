@@ -448,6 +448,8 @@
         'browser/chromeos/customization_document.h',
         'browser/chromeos/dbus/bluetooth_adapter_client.cc',
         'browser/chromeos/dbus/bluetooth_adapter_client.h',
+        'browser/chromeos/dbus/bluetooth_device_client.cc',
+        'browser/chromeos/dbus/bluetooth_device_client.h',
         'browser/chromeos/dbus/bluetooth_manager_client.cc',
         'browser/chromeos/dbus/bluetooth_manager_client.h',
         'browser/chromeos/dbus/cros_disks_client.cc',

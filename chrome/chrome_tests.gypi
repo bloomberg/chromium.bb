@@ -93,6 +93,8 @@
         'browser/chromeos/cros/mock_network_library.h',
         'browser/chromeos/dbus/mock_bluetooth_adapter_client.cc',
         'browser/chromeos/dbus/mock_bluetooth_adapter_client.h',
+        'browser/chromeos/dbus/mock_bluetooth_device_client.cc',
+        'browser/chromeos/dbus/mock_bluetooth_device_client.h',
         'browser/chromeos/dbus/mock_bluetooth_manager_client.cc',
         'browser/chromeos/dbus/mock_bluetooth_manager_client.h',
         'browser/chromeos/dbus/mock_cros_disks_client.cc',
