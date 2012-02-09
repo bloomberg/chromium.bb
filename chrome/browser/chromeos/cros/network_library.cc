@@ -3294,7 +3294,7 @@ void NetworkLibraryImplBase::DeleteRememberedNetwork(
 
   // Remove the ONC blob for the network, if present.
   NetworkOncMap::iterator onc_map_entry =
-      network_onc_map_.find(network->unique_id());
+      network_onc_map_.find(remembered_network->unique_id());
   if (onc_map_entry != network_onc_map_.end()) {
     delete onc_map_entry->second;
     network_onc_map_.erase(onc_map_entry);
