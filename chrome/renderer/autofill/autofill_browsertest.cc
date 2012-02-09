@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -83,6 +83,9 @@ TEST_F(ChromeRenderViewTest, SendForms) {
   WebInputElement firstname =
       document.getElementById("firstname").to<WebInputElement>();
 
+  // Make sure to query for Autofill suggestions before selecting one.
+  autofill_agent_->QueryAutofillSuggestions(firstname, false);
+
   // Accept suggestion that contains a label.  Labeled items indicate Autofill
   // as opposed to Autocomplete.  We're testing this distinction below with
   // the |AutofillHostMsg_FillAutofillFormData::ID| message.
@@ -148,6 +151,9 @@ TEST_F(ChromeRenderViewTest, FillFormElement) {
   WebInputElement middlename =
       document.getElementById("middlename").to<WebInputElement>();
   middlename.setAutofilled(true);
+
+  // Make sure to query for Autofill suggestions before selecting one.
+  autofill_agent_->QueryAutofillSuggestions(firstname, false);
 
   // Accept a suggestion in a form that has been auto-filled.  This triggers
   // the direct filling of the firstname element with value parameter.

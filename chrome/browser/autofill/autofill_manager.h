@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -71,12 +71,14 @@ class AutofillManager : public content::WebContentsObserver,
   }
 
   // Called from our external delegate so they cannot be private.
-  void OnFillAutofillFormData(int query_id,
-                              const webkit::forms::FormData& form,
-                              const webkit::forms::FormField& field,
-                              int unique_id);
+  virtual void OnFillAutofillFormData(int query_id,
+                                      const webkit::forms::FormData& form,
+                                      const webkit::forms::FormField& field,
+                                      int unique_id);
   void OnDidShowAutofillSuggestions(bool is_new_popup);
   void OnDidFillAutofillFormData(const base::TimeTicks& timestamp);
+  void OnShowAutofillDialog();
+  void OnDidPreviewAutofillFormData();
 
  protected:
   // Only test code should subclass AutofillManager.
@@ -158,8 +160,6 @@ class AutofillManager : public content::WebContentsObserver,
                                 const webkit::forms::FormField& field,
                                 const gfx::Rect& bounding_box,
                                 bool display_warning);
-  void OnShowAutofillDialog();
-  void OnDidPreviewAutofillFormData();
   void OnDidEndTextFieldEditing();
   void OnHideAutofillPopup();
 

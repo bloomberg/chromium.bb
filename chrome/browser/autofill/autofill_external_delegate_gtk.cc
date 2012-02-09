@@ -28,6 +28,17 @@ AutofillExternalDelegateGtk::AutofillExternalDelegateGtk(
 AutofillExternalDelegateGtk::~AutofillExternalDelegateGtk() {
 }
 
+void AutofillExternalDelegateGtk::HideAutofillPopupInternal() {
+  if (!view_.get())
+    return;
+
+  view_->Hide();
+  view_.reset();
+
+  GtkWidget* toplevel = gtk_widget_get_toplevel(tab_native_view_);
+  g_signal_handler_disconnect(toplevel, event_handler_id_);
+}
+
 void AutofillExternalDelegateGtk::OnQueryPlatformSpecific(
     int query_id,
     const webkit::forms::FormData& form,
@@ -50,22 +61,12 @@ void AutofillExternalDelegateGtk::ApplyAutofillSuggestions(
               separator_index);
 }
 
-void AutofillExternalDelegateGtk::HideAutofillPopup() {
-  if (!view_.get())
-    return;
-
-  view_->Hide();
-  view_.reset();
-
-  GtkWidget* toplevel = gtk_widget_get_toplevel(tab_native_view_);
-  g_signal_handler_disconnect(toplevel, event_handler_id_);
-}
-
 void AutofillExternalDelegateGtk::CreateViewIfNeeded() {
   if (view_.get())
     return;
 
   view_.reset(new AutofillPopupViewGtk(web_contents_,
+                                       this,
                                        tab_native_view_));
 
   GtkWidget* toplevel = gtk_widget_get_toplevel(tab_native_view_);

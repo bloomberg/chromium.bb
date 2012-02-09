@@ -24,15 +24,19 @@ AutofillExternalDelegate::AutofillExternalDelegate(
       autofill_manager_(autofill_manager),
       autofill_query_id_(0),
       display_warning_if_disabled_(false),
-      has_shown_autofill_popup_for_current_edit_(false) {
+      has_shown_autofill_popup_for_current_edit_(false),
+      suggestions_clear_index_(-1),
+      suggestions_options_index_(-1) {
 }
 
-void AutofillExternalDelegate::SelectAutofillSuggestionAtIndex(int listIndex) {
-  RenderViewHost* host =
-      tab_contents_wrapper_->web_contents()->GetRenderViewHost();
-  host->Send(new AutofillMsg_SelectAutofillSuggestionAtIndex(
-                 host->routing_id(),
-                 listIndex));
+void AutofillExternalDelegate::SelectAutofillSuggestionAtIndex(int unique_id,
+                                                               int list_index) {
+  if (list_index == suggestions_options_index_ ||
+      list_index == suggestions_clear_index_ ||
+      unique_id == -1)
+    return;
+
+  FillAutofillFormData(unique_id, true);
 }
 
 void AutofillExternalDelegate::OnQuery(int query_id,
@@ -40,15 +44,12 @@ void AutofillExternalDelegate::OnQuery(int query_id,
                                        const webkit::forms::FormField& field,
                                        const gfx::Rect& bounds,
                                        bool display_warning_if_disabled) {
+  autofill_query_form_ = form;
   autofill_query_field_ = field;
   display_warning_if_disabled_ = display_warning_if_disabled;
   autofill_query_id_ = query_id;
 
   OnQueryPlatformSpecific(query_id, form, field, bounds);
-}
-
-void AutofillExternalDelegate::DidEndTextFieldEditing() {
-  has_shown_autofill_popup_for_current_edit_ = false;
 }
 
 void AutofillExternalDelegate::OnSuggestionsReturned(
@@ -110,6 +111,7 @@ void AutofillExternalDelegate::OnSuggestionsReturned(
     l.push_back(string16());
     i.push_back(string16());
     ids.push_back(0);
+    suggestions_clear_index_ = v.size() - 1;
     separator_index = v.size() - 1;
   }
 
@@ -119,6 +121,7 @@ void AutofillExternalDelegate::OnSuggestionsReturned(
     l.push_back(string16());
     i.push_back(string16());
     ids.push_back(0);
+    suggestions_options_index_ = v.size() - 1;
     separator_index = values.size();
   }
 
@@ -131,6 +134,77 @@ void AutofillExternalDelegate::OnSuggestionsReturned(
   has_shown_autofill_popup_for_current_edit_ |= has_autofill_item;
 }
 
+void AutofillExternalDelegate::DidEndTextFieldEditing() {
+  has_shown_autofill_popup_for_current_edit_ = false;
+}
+
+void AutofillExternalDelegate::DidAcceptAutofillSuggestions(string16 value,
+                                                            int unique_id,
+                                                            unsigned index) {
+  // If the selected element is a warning we don't want to do anything.
+  if (unique_id < 0)
+    return;
+
+  // TODO(csharp): Add the password autofill manager.
+  // if (password_autofill_manager_->DidAcceptAutofillSuggestion(node, value))
+  //   return;
+
+  if (suggestions_options_index_ != -1 &&
+      index == static_cast<unsigned>(suggestions_options_index_)) {
+    // User selected 'Autofill Options'.
+    autofill_manager_->OnShowAutofillDialog();
+  } else if (suggestions_clear_index_ != -1 &&
+             index == static_cast<unsigned>(suggestions_clear_index_)) {
+    // User selected 'Clear form'.
+    RenderViewHost* host =
+        tab_contents_wrapper_->web_contents()->GetRenderViewHost();
+    host->Send(new AutofillMsg_ClearForm(host->routing_id()));
+  } else if (!unique_id) {
+    // User selected an Autocomplete entry, so we fill directly.
+    RenderViewHost* host =
+        tab_contents_wrapper_->web_contents()->GetRenderViewHost();
+    host->Send(new AutofillMsg_SetNodeText(
+        host->routing_id(),
+        value));
+  } else {
+    FillAutofillFormData(unique_id, false);
+  }
+
+  HideAutofillPopup();
+}
+
+void AutofillExternalDelegate::ClearPreviewedForm() {
+  RenderViewHost* host =
+      tab_contents_wrapper_->web_contents()->GetRenderViewHost();
+  host->Send(new AutofillMsg_ClearPreviewedForm(host->routing_id()));
+}
+
+void AutofillExternalDelegate::HideAutofillPopup() {
+  suggestions_clear_index_ = -1;
+  suggestions_options_index_ = -1;
+
+  HideAutofillPopupInternal();
+}
+
+void AutofillExternalDelegate::FillAutofillFormData(int unique_id,
+                                                    bool is_preview) {
+  RenderViewHost* host =
+      tab_contents_wrapper_->web_contents()->GetRenderViewHost();
+
+  if (is_preview) {
+    host->Send(new AutofillMsg_SetAutofillActionPreview(
+        host->routing_id()));
+  } else {
+    host->Send(new AutofillMsg_SetAutofillActionFill(
+        host->routing_id()));
+  }
+
+  // Fill the values for the whole form.
+  autofill_manager_->OnFillAutofillFormData(autofill_query_id_,
+                                            autofill_query_form_,
+                                            autofill_query_field_,
+                                            unique_id);
+}
 
 // Add a "!defined(OS_YOUROS) for each platform that implements this
 // in an autofill_external_delegate_YOUROS.cc.  Currently there are

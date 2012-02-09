@@ -83,6 +83,8 @@
         'browser/autofill/autofill_common_test.h',
         'browser/autofill/data_driven_test.cc',
         'browser/autofill/data_driven_test.h',
+        'browser/autofill/test_autofill_external_delegate.cc',
+        'browser/autofill/test_autofill_external_delegate.h',
         'browser/automation/mock_tab_event_observer.cc',
         'browser/automation/mock_tab_event_observer.h',
         'browser/chromeos/cros/mock_cryptohome_library.cc',

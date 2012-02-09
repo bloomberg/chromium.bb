@@ -8,7 +8,9 @@
 
 #include <vector>
 
+#include "base/compiler_specific.h"
 #include "base/string16.h"
+#include "webkit/forms/form_data.h"
 #include "webkit/forms/form_field.h"
 
 class AutofillManager;
@@ -16,12 +18,6 @@ class TabContentsWrapper;
 
 namespace gfx {
 class Rect;
-}
-
-namespace webkit {
-namespace forms {
-struct FormData;
-}
 }
 
 // TODO(csharp): A lot of the logic in this class is copied from autofillagent.
@@ -37,7 +33,7 @@ class AutofillExternalDelegate {
   // When using an external Autofill delegate.  Allows Chrome to tell
   // WebKit which Autofill selection has been chosen.
   // TODO(jrg): add feedback mechanism for hover on relevant platforms.
-  void SelectAutofillSuggestionAtIndex(int listIndex);
+  virtual void SelectAutofillSuggestionAtIndex(int unique_id, int list_index);
 
   // Records and associates a query_id with web form data.  Called
   // when the renderer posts an Autofill query to the browser. |bounds|
@@ -61,8 +57,20 @@ class AutofillExternalDelegate {
       const std::vector<string16>& autofill_icons,
       const std::vector<int>& autofill_unique_ids);
 
+  // Inform the delegate that the text field editing has ended, this is
+  // used to help record the metrics of when a new popup is shown.
+  void DidEndTextFieldEditing();
+
+  // Inform the delegate that an autofill suggestion have been chosen.
+  void DidAcceptAutofillSuggestions(string16 value,
+                                    int unique_id,
+                                    unsigned index);
+
+  // Informs the delegate that the Autofill previewed form should be cleared.
+  virtual void ClearPreviewedForm();
+
   // Hide the Autofill poup.
-  virtual void HideAutofillPopup() = 0;
+  virtual void HideAutofillPopup();
 
   // Platforms that wish to implement an external Autofill delegate
   // MUST implement this.  The 1st arg is the tab contents that owns
@@ -70,11 +78,6 @@ class AutofillExternalDelegate {
   // tab contents.
   static AutofillExternalDelegate* Create(TabContentsWrapper*,
                                           AutofillManager*);
-
-  // Inform the delegate that the text field editing has ended, this is
-  // used to help record the metrics of when a new popup is shown.
-  void DidEndTextFieldEditing();
-
  protected:
   explicit AutofillExternalDelegate(TabContentsWrapper* tab_contents_wrapper,
                                     AutofillManager* autofill_manager);
@@ -95,7 +98,16 @@ class AutofillExternalDelegate {
                                        const webkit::forms::FormField& field,
                                        const gfx::Rect& bounds) = 0;
 
+  // Handle platform-dependent hiding.
+  virtual void HideAutofillPopupInternal() = 0;
+
  private:
+  // Fills the form with the Autofill data corresponding to |unique_id|.
+  // If |is_preview| is true then this is just a preview to show the user what
+  // would be selected and if |is_preview| is false then the user has selected
+  // this data.
+  void FillAutofillFormData(int unique_id, bool is_preview);
+
   TabContentsWrapper* tab_contents_wrapper_;  // weak; owns me.
   AutofillManager* autofill_manager_;  // weak.
 
@@ -103,7 +115,8 @@ class AutofillExternalDelegate {
   // out of date responses.
   int autofill_query_id_;
 
-  // The current field selected by Autofill.
+  // The current form and field selected by Autofill.
+  webkit::forms::FormData autofill_query_form_;
   webkit::forms::FormField autofill_query_field_;
 
   // Should we display a warning if Autofill is disabled?
@@ -112,6 +125,12 @@ class AutofillExternalDelegate {
   // Have we already shown Autofill suggestions for the field the user is
   // currently editing?  Used to keep track of state for metrics logging.
   bool has_shown_autofill_popup_for_current_edit_;
+
+  // The menu index of the "Clear" menu item.
+  int suggestions_clear_index_;
+
+  // The menu index of the "Autofill options..." menu item.
+  int suggestions_options_index_;
 
   DISALLOW_COPY_AND_ASSIGN(AutofillExternalDelegate);
 };

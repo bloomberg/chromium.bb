@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/autofill/autofill_external_delegate.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "ui/base/gtk/gtk_compat.h"
 #include "ui/base/gtk/gtk_hig_constants.h"
@@ -15,6 +16,7 @@
 
 namespace {
 const GdkColor kBorderColor = GDK_COLOR_RGB(0xc7, 0xca, 0xce);
+const GdkColor kHoveredBackgroundColor = GDK_COLOR_RGB(0x0CD, 0xCD, 0xCD);
 const GdkColor kTextColor = GDK_COLOR_RGB(0x00, 0x00, 0x00);
 
 // The amount of minimum padding between the Autofill value and label in pixels.
@@ -35,9 +37,11 @@ gfx::Rect GetRectForRow(size_t index, int width, int height) {
 
 }  // namespace
 
-AutofillPopupViewGtk::AutofillPopupViewGtk(content::WebContents* web_contents,
-                                           GtkWidget* parent)
-    : AutofillPopupView(web_contents),
+AutofillPopupViewGtk::AutofillPopupViewGtk(
+    content::WebContents* web_contents,
+    AutofillExternalDelegate* external_delegate,
+    GtkWidget* parent)
+    : AutofillPopupView(web_contents, external_delegate),
       parent_(parent),
       window_(gtk_window_new(GTK_WINDOW_POPUP)) {
   CHECK(parent != NULL);
@@ -45,10 +49,18 @@ AutofillPopupViewGtk::AutofillPopupViewGtk(content::WebContents* web_contents,
   gtk_widget_set_app_paintable(window_, TRUE);
   gtk_widget_set_double_buffered(window_, TRUE);
 
-  // Setup the window to ensure it recieves the expose event.
-  gtk_widget_add_events(window_, GDK_EXPOSURE_MASK);
+  // Setup the window to ensure it receives the expose event.
+  gtk_widget_add_events(window_, GDK_BUTTON_MOTION_MASK |
+                                 GDK_BUTTON_RELEASE_MASK |
+                                 GDK_EXPOSURE_MASK |
+                                 GDK_POINTER_MOTION_MASK);
   g_signal_connect(window_, "expose-event",
                    G_CALLBACK(HandleExposeThunk), this);
+
+  g_signal_connect(window_, "motion-notify-event",
+                   G_CALLBACK(HandleMotionThunk), this);
+  g_signal_connect(window_, "button-release-event",
+                   G_CALLBACK(HandleButtonReleaseThunk), this);
 
   // Cache the layout so we don't have to create it for every expose.
   layout_ = gtk_widget_create_pango_layout(window_, NULL);
@@ -61,19 +73,7 @@ AutofillPopupViewGtk::~AutofillPopupViewGtk() {
   gtk_widget_destroy(window_);
 }
 
-void AutofillPopupViewGtk::Hide() {
-  gtk_widget_hide(window_);
-}
-
 void AutofillPopupViewGtk::ShowInternal() {
-  gint origin_x, origin_y;
-  gdk_window_get_origin(gtk_widget_get_window(parent_), &origin_x, &origin_y);
-
-  // Move the popup to appear right below the text field it is using.
-  gtk_window_move(GTK_WINDOW(window_),
-                  origin_x + element_bounds().x(),
-                  origin_y + element_bounds().y() + element_bounds().height());
-
   // Find out the maximum bounds required by the popup.
   // TODO(csharp): Once the icon is also displayed it will affect the required
   // size so it will need to be included in the calculation.
@@ -86,6 +86,18 @@ void AutofillPopupViewGtk::ShowInternal() {
                            font_.GetStringWidth(autofill_labels()[i]));
   }
 
+  gint origin_x, origin_y;
+  gdk_window_get_origin(gtk_widget_get_window(parent_), &origin_x, &origin_y);
+
+  // Move the popup to appear right below the text field it is using.
+  bounds_.SetRect(
+      origin_x + element_bounds().x(),
+      origin_y + element_bounds().y() + element_bounds().height(),
+      popup_width,
+      row_height_ * autofill_values().size());
+
+  gtk_window_move(GTK_WINDOW(window_), bounds_.x(), bounds_.y());
+
   gtk_widget_set_size_request(
       window_,
       popup_width,
@@ -96,6 +108,33 @@ void AutofillPopupViewGtk::ShowInternal() {
   GtkWidget* toplevel = gtk_widget_get_toplevel(parent_);
   CHECK(gtk_widget_is_toplevel(toplevel));
   ui::StackPopupWindow(window_, toplevel);
+}
+
+void AutofillPopupViewGtk::HideInternal() {
+  gtk_widget_hide(window_);
+}
+
+void AutofillPopupViewGtk::InvalidateRow(size_t row) {
+  GdkRectangle row_rect = GetRectForRow(
+      row, bounds_.width(), row_height_).ToGdkRectangle();
+  gdk_window_invalidate_rect(window_->window, &row_rect, FALSE);
+}
+
+gboolean AutofillPopupViewGtk::HandleButtonRelease(GtkWidget* widget,
+                                                   GdkEventButton* event) {
+  // We only care about the left click.
+  if (event->button != 1)
+    return FALSE;
+
+  size_t line = LineFromY(event->y);
+  DCHECK_LT(line, autofill_values().size());
+
+  external_delegate()->DidAcceptAutofillSuggestions(
+      autofill_values()[line],
+      autofill_unique_ids()[line],
+      line);
+
+  return TRUE;
 }
 
 gboolean AutofillPopupViewGtk::HandleExpose(GtkWidget* widget,
@@ -139,6 +178,13 @@ gboolean AutofillPopupViewGtk::HandleExpose(GtkWidget* widget,
       cairo_restore(cr);
     }
 
+    if (selected_line() == static_cast<int>(i)) {
+      gdk_cairo_set_source_color(cr, &kHoveredBackgroundColor);
+      cairo_rectangle(cr, line_rect.x(), line_rect.y(),
+                      line_rect.width(), line_rect.height());
+      cairo_fill(cr);
+    }
+
     // Center the text within the line.
     int content_y = std::max(
         line_rect.y(),
@@ -168,6 +214,15 @@ gboolean AutofillPopupViewGtk::HandleExpose(GtkWidget* widget,
   return TRUE;
 }
 
+gboolean AutofillPopupViewGtk::HandleMotion(GtkWidget* widget,
+                                            GdkEventMotion* event) {
+  int line = LineFromY(event->y);
+
+  SetSelectedLine(line);
+
+  return TRUE;
+}
+
 void AutofillPopupViewGtk::SetupLayout(const gfx::Rect& window_rect,
                                        const GdkColor& text_color) {
   int allocated_content_width = window_rect.width();
@@ -184,4 +239,8 @@ void AutofillPopupViewGtk::SetupLayout(const gfx::Rect& window_rect,
 
   pango_layout_set_attributes(layout_, attrs);  // Ref taken.
   pango_attr_list_unref(attrs);
+}
+
+int AutofillPopupViewGtk::LineFromY(int y) {
+  return y / row_height_;
 }

@@ -26,11 +26,9 @@ class AutofillExternalDelegateGtk : public AutofillExternalDelegate {
 
   virtual ~AutofillExternalDelegateGtk();
 
-  // AutofillExternalDelegate implementation.
-  virtual void HideAutofillPopup() OVERRIDE;
-
  protected:
   // AutofillExternalDelegate implementations.
+  virtual void HideAutofillPopupInternal() OVERRIDE;
   virtual void OnQueryPlatformSpecific(
       int query_id,
       const webkit::forms::FormData& form,

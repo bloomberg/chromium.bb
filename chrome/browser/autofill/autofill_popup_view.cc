@@ -4,13 +4,19 @@
 
 #include "chrome/browser/autofill/autofill_popup_view.h"
 
+#include "base/logging.h"
+#include "chrome/browser/autofill/autofill_external_delegate.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
 
-AutofillPopupView::AutofillPopupView(content::WebContents* web_contents) {
+AutofillPopupView::AutofillPopupView(
+    content::WebContents* web_contents,
+    AutofillExternalDelegate* external_delegate)
+    : external_delegate_(external_delegate),
+      selected_line_(-1) {
   registrar_.Add(this,
                  content::NOTIFICATION_WEB_CONTENTS_HIDDEN,
                  content::Source<content::WebContents>(web_contents));
@@ -22,6 +28,12 @@ AutofillPopupView::AutofillPopupView(content::WebContents* web_contents) {
 }
 
 AutofillPopupView::~AutofillPopupView() {}
+
+void AutofillPopupView::Hide() {
+  HideInternal();
+
+  external_delegate_->ClearPreviewedForm();
+}
 
 void AutofillPopupView::Show(const std::vector<string16>& autofill_values,
                              const std::vector<string16>& autofill_labels,
@@ -36,6 +48,25 @@ void AutofillPopupView::Show(const std::vector<string16>& autofill_values,
   separator_index_ = separator_index;
 
   ShowInternal();
+}
+
+void AutofillPopupView::SetSelectedLine(int selected_line) {
+  if (selected_line_ == selected_line)
+    return;
+
+  if (selected_line_ != -1)
+    InvalidateRow(selected_line_);
+
+  if (selected_line != -1)
+    InvalidateRow(selected_line);
+
+  selected_line_ = selected_line;
+
+  if (selected_line_ != -1) {
+    external_delegate_->SelectAutofillSuggestionAtIndex(
+        autofill_unique_ids_[selected_line_],
+        selected_line);
+  }
 }
 
 void AutofillPopupView::Observe(int type,

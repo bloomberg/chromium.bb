@@ -18,13 +18,16 @@ namespace content {
 class WebContents;
 }
 
+class AutofillExternalDelegate;
+
 class AutofillPopupView : public content::NotificationObserver {
  public:
-  explicit AutofillPopupView(content::WebContents* web_contents);
+  explicit AutofillPopupView(content::WebContents* web_contents,
+                             AutofillExternalDelegate* external_delegate_);
   virtual ~AutofillPopupView();
 
-  // Hide the popup from view.
-  virtual void Hide() = 0;
+  // Hide the popup from view. Platform-indepent work.
+  virtual void Hide();
 
   // Display the autofill popup and fill it in with the values passed in.
   // Platform-independent work.
@@ -33,7 +36,6 @@ class AutofillPopupView : public content::NotificationObserver {
             const std::vector<string16>& autofill_icons,
             const std::vector<int>& autofill_unique_ids,
             int separator_index);
-
 
   void set_element_bounds(const gfx::Rect& bounds) {
     element_bounds_ = bounds;
@@ -46,6 +48,14 @@ class AutofillPopupView : public content::NotificationObserver {
   // Platform-dependent work.
   virtual void ShowInternal() = 0;
 
+  // Hide the popup from view. Platform-dependent work.
+  virtual void HideInternal() = 0;
+
+  // Invalide the given row and redraw it.
+  virtual void InvalidateRow(size_t row) = 0;
+
+  AutofillExternalDelegate* external_delegate() { return external_delegate_; }
+
   const std::vector<string16>& autofill_values() const {
     return autofill_values_;
   }
@@ -55,7 +65,15 @@ class AutofillPopupView : public content::NotificationObserver {
   const std::vector<string16>& autofill_icons() const {
     return autofill_icons_;
   }
+  const std::vector<int>& autofill_unique_ids() const {
+    return autofill_unique_ids_;
+  }
   int separator_index() const { return separator_index_; }
+
+  int selected_line() const { return selected_line_; }
+
+  // Change which line is currently selected by the user.
+  void SetSelectedLine(int selected_line);
 
  private:
   // content::NotificationObserver method override.
@@ -65,6 +83,8 @@ class AutofillPopupView : public content::NotificationObserver {
 
   // A scoped container for notification registries.
   content::NotificationRegistrar registrar_;
+
+  AutofillExternalDelegate* external_delegate_;
 
   // The bounds of the text element that is the focus of the Autofill.
   gfx::Rect element_bounds_;
@@ -78,6 +98,10 @@ class AutofillPopupView : public content::NotificationObserver {
   // The location of the separator index (which separates the returned values
   // from the Autofill options).
   int separator_index_;
+
+  // The line that is currently selected by the user.
+  // -1 indicates that no line is currently selected.
+  int selected_line_;
 };
 
 #endif  // CHROME_BROWSER_AUTOFILL_AUTOFILL_POPUP_VIEW_H_

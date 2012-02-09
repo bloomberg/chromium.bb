@@ -76,6 +76,16 @@ bool AutofillAgent::OnMessageReceived(const IPC::Message& message) {
                         OnFieldTypePredictionsAvailable)
     IPC_MESSAGE_HANDLER(AutofillMsg_SelectAutofillSuggestionAtIndex,
                         OnSelectAutofillSuggestionAtIndex)
+    IPC_MESSAGE_HANDLER(AutofillMsg_SetAutofillActionFill,
+                        OnSetAutofillActionFill)
+    IPC_MESSAGE_HANDLER(AutofillMsg_ClearForm,
+                        OnClearForm)
+    IPC_MESSAGE_HANDLER(AutofillMsg_SetAutofillActionPreview,
+                        OnSetAutofillActionPreview)
+    IPC_MESSAGE_HANDLER(AutofillMsg_ClearPreviewedForm,
+                        OnClearPreviewedForm)
+    IPC_MESSAGE_HANDLER(AutofillMsg_SetNodeText,
+                        OnSetNodeText)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -139,6 +149,8 @@ void AutofillAgent::didAcceptAutofillSuggestion(const WebNode& node,
   if (password_autofill_manager_->DidAcceptAutofillSuggestion(node, value))
     return;
 
+  DCHECK(node == autofill_query_element_);
+
   if (suggestions_options_index_ != -1 &&
       index == static_cast<unsigned>(suggestions_options_index_)) {
     // User selected 'Autofill Options'.
@@ -146,15 +158,11 @@ void AutofillAgent::didAcceptAutofillSuggestion(const WebNode& node,
   } else if (suggestions_clear_index_ != -1 &&
              index == static_cast<unsigned>(suggestions_clear_index_)) {
     // User selected 'Clear form'.
-    DCHECK(node == autofill_query_element_);
     form_cache_.ClearFormWithElement(autofill_query_element_);
   } else if (!unique_id) {
     // User selected an Autocomplete entry, so we fill directly.
     WebInputElement element = node.toConst<WebInputElement>();
-
-    string16 substring = value;
-    substring = substring.substr(0, element.maxLength());
-    element.setValue(substring, true);
+    SetNodeText(value, &element);
   } else {
     // Fill the values for the whole form.
     FillAutofillFormData(node, unique_id, AUTOFILL_FILL);
@@ -337,6 +345,8 @@ void AutofillAgent::OnFormDataFilled(int query_id,
   if (!render_view()->GetWebView() || query_id != autofill_query_id_)
     return;
 
+  was_query_node_autofilled_ = autofill_query_element_.isAutofilled();
+
   switch (autofill_action_) {
     case AUTOFILL_FILL:
       FillForm(form, autofill_query_element_);
@@ -344,6 +354,8 @@ void AutofillAgent::OnFormDataFilled(int query_id,
                                                        base::TimeTicks::Now()));
       break;
     case AUTOFILL_PREVIEW:
+      didClearAutofillSelection(autofill_query_element_);
+
       PreviewForm(form, autofill_query_element_);
       Send(new AutofillHostMsg_DidPreviewAutofillFormData(routing_id()));
       break;
@@ -364,6 +376,26 @@ void AutofillAgent::OnSelectAutofillSuggestionAtIndex(int listIndex) {
   NOTIMPLEMENTED();
   // TODO(jrg): enable once changes land in WebKit
   // render_view()->webview()->selectAutofillSuggestionAtIndex(listIndex);
+}
+
+void AutofillAgent::OnSetAutofillActionFill() {
+  autofill_action_ = AUTOFILL_FILL;
+}
+
+void AutofillAgent::OnClearForm() {
+  form_cache_.ClearFormWithElement(autofill_query_element_);
+}
+
+void AutofillAgent::OnSetAutofillActionPreview() {
+  autofill_action_ = AUTOFILL_PREVIEW;
+}
+
+void AutofillAgent::OnClearPreviewedForm() {
+  didClearAutofillSelection(autofill_query_element_);
+}
+
+void AutofillAgent::OnSetNodeText(const string16& value) {
+  SetNodeText(value, &autofill_query_element_);
 }
 
 void AutofillAgent::ShowSuggestions(const WebInputElement& element,
@@ -442,9 +474,16 @@ void AutofillAgent::FillAutofillFormData(const WebNode& node,
   }
 
   autofill_action_ = action;
-  was_query_node_autofilled_ = field.is_autofilled;
   Send(new AutofillHostMsg_FillAutofillFormData(
       routing_id(), autofill_query_id_, form, field, unique_id));
+}
+
+void AutofillAgent::SetNodeText(const string16& value,
+                                WebKit::WebInputElement* node) {
+  string16 substring = value;
+  substring = substring.substr(0, node->maxLength());
+
+  node->setValue(substring, true);
 }
 
 }  // namespace autofill

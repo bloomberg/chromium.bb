@@ -8,7 +8,7 @@
 #include "base/string16.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autocomplete_history_manager.h"
-#include "chrome/browser/autofill/autofill_external_delegate.h"
+#include "chrome/browser/autofill/test_autofill_external_delegate.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
@@ -139,17 +139,18 @@ TEST_F(AutocompleteHistoryManagerTest, SearchField) {
 
 namespace {
 
-class MockAutofillExternalDelegate : public AutofillExternalDelegate {
+class MockAutofillExternalDelegate : public TestAutofillExternalDelegate {
  public:
   explicit MockAutofillExternalDelegate(TabContentsWrapper* wrapper)
-      : AutofillExternalDelegate(wrapper, NULL) {}
+      : TestAutofillExternalDelegate(wrapper, NULL) {}
   virtual ~MockAutofillExternalDelegate() {}
 
-  virtual void OnQuery(int query_id,
-                       const webkit::forms::FormData& form,
-                       const webkit::forms::FormField& field,
-                       const gfx::Rect& bounds,
-                       bool display_warning) OVERRIDE {}
+  virtual void ApplyAutofillSuggestions(
+      const std::vector<string16>& autofill_values,
+      const std::vector<string16>& autofill_labels,
+      const std::vector<string16>& autofill_icons,
+      const std::vector<int>& autofill_unique_ids,
+      int separator_index) OVERRIDE {};
 
   MOCK_METHOD5(OnSuggestionsReturned,
                void(int query_id,
@@ -157,22 +158,6 @@ class MockAutofillExternalDelegate : public AutofillExternalDelegate {
                     const std::vector<string16>& autofill_labels,
                     const std::vector<string16>& autofill_icons,
                     const std::vector<int>& autofill_unique_ids));
-
-  virtual void HideAutofillPopup() OVERRIDE {}
-
-
-  virtual void ApplyAutofillSuggestions(
-      const std::vector<string16>& autofill_values,
-      const std::vector<string16>& autofill_labels,
-      const std::vector<string16>& autofill_icons,
-      const std::vector<int>& autofill_unique_ids,
-      int separator_index) OVERRIDE {}
-
-  virtual void OnQueryPlatformSpecific(
-      int query_id,
-      const webkit::forms::FormData& form,
-      const webkit::forms::FormField& field,
-      const gfx::Rect& bounds) OVERRIDE {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockAutofillExternalDelegate);

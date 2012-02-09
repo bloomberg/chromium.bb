@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -105,6 +105,11 @@ class AutofillAgent : public content::RenderViewObserver,
 
   // For external Autofill selection.
   void OnSelectAutofillSuggestionAtIndex(int listIndex);
+  void OnSetAutofillActionFill();
+  void OnClearForm();
+  void OnSetAutofillActionPreview();
+  void OnClearPreviewedForm();
+  void OnSetNodeText(const string16& value);
 
   // Called in a posted task by textFieldDidChange() to work-around a WebKit bug
   // http://bugs.webkit.org/show_bug.cgi?id=16976
@@ -145,6 +150,9 @@ class AutofillAgent : public content::RenderViewObserver,
       const WebKit::WebNode& node,
       webkit::forms::FormData* form,
       webkit::forms::FormField* field) WARN_UNUSED_RESULT;
+
+  // Set |node| to display the given |value|.
+  void SetNodeText(const string16& value, WebKit::WebInputElement* node);
 
   FormCache form_cache_;
 
