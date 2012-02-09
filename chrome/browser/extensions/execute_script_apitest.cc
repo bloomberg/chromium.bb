@@ -15,27 +15,15 @@ class ExecuteScriptApiTest : public ExtensionApiTest {
   }
 };
 
-// DISABLED http://crbug.com/92105
-#if defined(OS_CHROMEOS)
-#define MAYBE_ExecuteScriptBasic DISABLED_ExecuteScriptBasic
-#else
-#define MAYBE_ExecuteScriptBasic ExecuteScriptBasic
-#endif  // defined(OS_CHROMEOS)
-
-IN_PROC_BROWSER_TEST_F(ExecuteScriptApiTest, MAYBE_ExecuteScriptBasic) {
+// If failing, mark disabled and update http://crbug.com/92105.
+IN_PROC_BROWSER_TEST_F(ExecuteScriptApiTest, ExecuteScriptBasic) {
   SetupDelayedHostResolver();
   ASSERT_TRUE(StartTestServer());
   ASSERT_TRUE(RunExtensionTest("executescript/basic")) << message_;
 }
 
-// DISABLED http://crbug.com/92105
-#if defined(OS_CHROMEOS)
-#define MAYBE_ExecuteScriptInFrame DISABLED_ExecuteScriptInFrame
-#else
-#define MAYBE_ExecuteScriptInFrame ExecuteScriptInFrame
-#endif  // defined(OS_CHROMEOS)
-
-IN_PROC_BROWSER_TEST_F(ExecuteScriptApiTest, MAYBE_ExecuteScriptInFrame) {
+// If failing, mark disabled and update http://crbug.com/92105.
+IN_PROC_BROWSER_TEST_F(ExecuteScriptApiTest, ExecuteScriptInFrame) {
   SetupDelayedHostResolver();
   ASSERT_TRUE(StartTestServer());
   ASSERT_TRUE(RunExtensionTest("executescript/in_frame")) << message_;
@@ -47,23 +35,16 @@ IN_PROC_BROWSER_TEST_F(ExecuteScriptApiTest, ExecuteScriptPermissions) {
   ASSERT_TRUE(RunExtensionTest("executescript/permissions")) << message_;
 }
 
-// http://crbug.com/84760
-#if defined(OS_CHROMEOS)
-#define MAYBE_ExecuteScriptFileAfterClose DISABLED_ExecuteScriptFileAfterClose
-#else
-#define MAYBE_ExecuteScriptFileAfterClose ExecuteScriptFileAfterClose
-#endif  // defined(OS_CHROMEOS)
-
+// If failing, mark disabled and update http://crbug.com/84760.
 IN_PROC_BROWSER_TEST_F(ExecuteScriptApiTest,
-                       MAYBE_ExecuteScriptFileAfterClose) {
+                       ExecuteScriptFileAfterClose) {
   host_resolver()->AddRule("b.com", "127.0.0.1");
   ASSERT_TRUE(StartTestServer());
   ASSERT_TRUE(RunExtensionTest("executescript/file_after_close")) << message_;
 }
 
-// Crashy, http://crbug.com/67774.
-IN_PROC_BROWSER_TEST_F(ExecuteScriptApiTest,
-                       DISABLED_ExecuteScriptFragmentNavigation) {
+// If crashing, mark disabled and update http://crbug.com/67774.
+IN_PROC_BROWSER_TEST_F(ExecuteScriptApiTest, ExecuteScriptFragmentNavigation) {
   ASSERT_TRUE(StartTestServer());
   const char* extension_name = "executescript/fragment";
   ASSERT_TRUE(RunExtensionTest(extension_name)) << message_;
@@ -85,15 +66,8 @@ IN_PROC_BROWSER_TEST_F(ExecuteScriptApiTest, NavigationRaceJavaScriptURL) {
                                   "javascript_url.html")) << message_;
 }
 
-// DISABLED http://crbug.com/92105
-#if defined(OS_CHROMEOS)
-#define MAYBE_ExecuteScriptFrameAfterLoad DISABLED_ExecuteScriptFrameAfterLoad
-#else
-#define MAYBE_ExecuteScriptFrameAfterLoad ExecuteScriptFrameAfterLoad
-#endif  // defined(OS_CHROMEOS)
-
-IN_PROC_BROWSER_TEST_F(ExecuteScriptApiTest,
-                       MAYBE_ExecuteScriptFrameAfterLoad) {
+// If failing, mark disabled and update http://crbug.com/92105.
+IN_PROC_BROWSER_TEST_F(ExecuteScriptApiTest, ExecuteScriptFrameAfterLoad) {
   SetupDelayedHostResolver();
   ASSERT_TRUE(StartTestServer());
   ASSERT_TRUE(RunExtensionTest("executescript/frame_after_load")) << message_;
