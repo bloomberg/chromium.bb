@@ -1089,7 +1089,7 @@ bool TabContents::IsSavable() {
 void TabContents::OnSavePage() {
   // If we can not save the page, try to download it.
   if (!IsSavable()) {
-    SaveURL(GetURL(), GURL());
+    SaveURL(GetURL(), GURL(), true);
     download_stats::RecordDownloadCount(
         download_stats::INITIATED_BY_SAVE_PACKAGE_FAILURE_COUNT);
     return;
@@ -1569,7 +1569,14 @@ void TabContents::OnUpdateZoomLimits(int minimum_percent,
 }
 
 void TabContents::OnSaveURL(const GURL& url) {
-  SaveURL(url, GetURL());
+  // Check if the URL to save matches the URL of the main frame. Since this
+  // message originates from Pepper plugins, it may not be the case if the
+  // plugin is an embedded element.
+  GURL main_frame_url = GetURL();
+  if (!main_frame_url.is_valid())
+    return;
+  bool is_main_frame = (url == main_frame_url);
+  SaveURL(url, main_frame_url, is_main_frame);
 }
 
 void TabContents::OnEnumerateDirectory(int request_id,
@@ -2417,15 +2424,14 @@ void TabContents::SetEncoding(const std::string& encoding) {
       GetCanonicalEncodingNameByAliasName(encoding);
 }
 
-void TabContents::SaveURL(const GURL& url, const GURL& referrer) {
+void TabContents::SaveURL(const GURL& url,
+                          const GURL& referrer,
+                          bool is_main_frame) {
   DownloadManager* dlm = GetBrowserContext()->GetDownloadManager();
   if (!dlm)
     return;
   int64 post_id = -1;
-  // Check if the URL to save matches the URL of the page itself. One
-  // circumstance where this may not happen is when a Pepper plugin initiates
-  // a save.
-  if (url == GetURL()) {
+  if (is_main_frame) {
     const NavigationEntry* entry = controller_.GetActiveEntry();
     if (entry)
       post_id = entry->GetPostID();
