@@ -201,8 +201,15 @@ def main():
         ref = demangler.Demangle(ref)
         if qualified_filename == filename:
           qualified_filename = QualifyFilename(filename, ref)
+
+        note = ''
         if ref in NOTES:
-          ref_output.append('%s [%s]' % (ref, NOTES[ref]))
+          note = NOTES[ref]
+        elif ref.endswith('_2eproto()'):
+          note = 'protocol compiler bug: crbug.com/105626'
+
+        if note:
+          ref_output.append('%s [%s]' % (ref, note))
         else:
           ref_output.append(ref)
 
