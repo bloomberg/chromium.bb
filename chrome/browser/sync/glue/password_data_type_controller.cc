@@ -48,7 +48,7 @@ bool PasswordDataTypeController::StartModels() {
         FROM_HERE,
         "PasswordStore not initialized, password datatype controller aborting.",
         type());
-    StartDoneImpl(ABORTED, NOT_RUNNING, error);
+    StartDoneImpl(ASSOCIATION_FAILED, DISABLED, error);
     return false;
   }
   return true;

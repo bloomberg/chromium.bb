@@ -65,7 +65,8 @@ void NonFrontendDataTypeController::Start(const StartCallback& start_callback) {
   if (!StartModels()) {
     // If we are waiting for some external service to load before associating
     // or we failed to start the models, we exit early.
-    DCHECK(state_ == NOT_RUNNING || state_ == MODEL_STARTING);
+    DCHECK(state_ == NOT_RUNNING || state_ == MODEL_STARTING
+           || state_ == DISABLED);
     return;
   }
 
