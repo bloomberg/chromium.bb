@@ -4602,6 +4602,15 @@
           'sources/': [
             ['exclude', '^browser/background/'],
             ['exclude', '^browser/extensions/'],
+            ['exclude', '^browser/notifications/'],
+            ['exclude', '^browser/task_manager/'],
+            ['exclude', '^browser/themes/'],
+            ['exclude', '^browser/ui/panels/'],
+            ['exclude', '^browser/ui/tabs/'],
+            ['exclude', '^browser/ui/toolbar/'],
+            ['exclude', '^browser/ui/webui/extensions'],
+            ['exclude', '^browser/ui/webui/options'],
+            ['exclude', '^browser/ui/webui/options2'],
           ],
         }],
         ['OS=="mac"', {
