@@ -347,15 +347,16 @@
       '-chromeos_wifi_sanity.ChromeosWifiSanity.testConnectToHiddenWiFiNonExistent',
       # crosbug.com/20025
       '-chromeos_browser.ChromeosBrowserTest.testFullScreen',
-      # crosbug.com/19556
-      '-pyauto_webdriver',
       # crbug.com/102549
       '-notifications.NotificationsTest.testOriginPrefsNotSavedInIncognito',
       # crbug.com/103379
       '-policy.PolicyTest.testDisable3DAPIs',
       # Chrome driver does not work in Chrome OS.
+      # crosbug.com/19556
       '-prefs_ui',
-      '-prefs.PrefsTest.testGeolocationBlockedWhenTrackingDenied'
+      '-prefs.PrefsTest.testGeolocationBlockedWhenTrackingDenied',
+      '-prefs.PrefsTest.testGeolocationPref',
+      '-pyauto_webdriver',
     ],
   },
 
