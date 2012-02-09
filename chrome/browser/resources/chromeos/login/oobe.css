@@ -36,7 +36,7 @@ button {
 }
 
 #oobe {
-  margin-bottom: 140px;  /* Make content higher than absolute vertical center */
+  margin-bottom: 60px;  /* Compensate top header to center content. */
 }
 
 #inner-container {
@@ -60,7 +60,6 @@ button {
 hr.shadow {
   -webkit-mask: -webkit-linear-gradient(left, rgba(0,0,0,0),
                                         black 50%, rgba(0,0,0,0));
-  -webkit-mask-clip: padding-box;
   border: none;
   opacity: 0.3
 }
@@ -72,10 +71,10 @@ hr.top {
 }
 
 hr.bottom {
-  background: -webkit-linear-gradient(bottom, top,
-                                      rgba(0,0,0,0.2)), rgba(0,0,0,0.0));
+  background: -webkit-linear-gradient(bottom,
+                                      rgba(0,0,0,0.2), rgba(0,0,0,0.0));
   border-bottom: 1px solid rgba(0,0,0,0.5);
-  height: 2px;
+  height: 4px;
   z-index: 0;
 }
 
