@@ -34,9 +34,9 @@ class YoutubeTestHelper():
   def WaitUntilPlayerReady(self):
     """Verify that player is ready."""
     return self._pyauto.WaitUntil(lambda: self._pyauto.ExecuteJavascript("""
-        player_status = document.getElementById("player_status");
-        window.domAutomationController.send(player_status.innerHTML);
-    """), expect_retval='player ready')
+        playerState = document.getElementById("playerState");
+        window.domAutomationController.send(playerState.innerHTML);
+        """), expect_retval='-1')
 
   def GetPlayerState(self):
     """Returns a player state."""
@@ -87,8 +87,8 @@ class YoutubeTestHelper():
     """
     total_bytes = 0
     total_bytes = self._pyauto.ExecuteJavascript("""
-        bytes = ytplayer.getVideoBytesTotal();
-        window.domAutomationController.send(bytes + '');
+        bytesTotal = document.getElementById("bytesTotal");
+        window.domAutomationController.send(bytesTotal.innerHTML);
     """)
     return int(total_bytes)
 
@@ -96,10 +96,19 @@ class YoutubeTestHelper():
     """Returns video size in bytes."""
     loaded_bytes = 0
     loaded_bytes = self.ExecuteJavascript("""
-        bytes = ytplayer.getVideoBytesLoaded();
-        window.domAutomationController.send(bytes + '');
+        bytesLoaded = document.getElementById("bytesLoaded");
+        window.domAutomationController.send(bytesLoaded.innerHTML);
     """)
     return int(loaded_bytes)
+
+  def GetCurrentVideoTime(self):
+    """Returns the current time of the video in seconds."""
+    current_time = 0
+    current_time = self.ExecuteJavascript("""
+        videoCurrentTime = document.getElementById("videoCurrentTime");
+        window.domAutomationController.send(videoCurrentTime.innerHTML);
+    """)
+    return int(current_time)
 
   def PlayVideo(self):
     """Plays the loaded video."""
@@ -136,6 +145,15 @@ class YoutubeTestHelper():
     self._pyauto.NavigateToURL(url)
     self._pyauto.assertTrue(self._pyauto.WaitUntilPlayerReady(),
                             msg='Failed to load YouTube player')
+    i = 0
+    # The YouTube player will get in a state where it does not return the
+    # number of loaded bytes.  When this happens we need to reload the page
+    # before starting the test.
+    while self.GetVideoLoadedBytes() == 1 and i < 30:
+      self._pyauto.NavigateToURL(url)
+      self._pyauto.assertTrue(self._pyauto.WaitUntilPlayerReady(),
+                              msg='Failed to load YouTube player')
+      i = i + 1
     self._pyauto.PlayVideo()
     self._pyauto.AssertPlayingState()
 
