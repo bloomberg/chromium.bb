@@ -221,7 +221,12 @@ void BufferedResourceLoader::Read(
   read_size_ = read_size;
   read_buffer_ = buffer;
 
-  // If read position is beyond the instance size, we cannot read there.
+  // If we're attempting to read past the end of the file, return a zero
+  // indicating EOF.
+  //
+  // This can happen with callees that read in fixed-sized amounts for parsing
+  // or at the end of chunked 200 responses when we discover the actual length
+  // of the file.
   if (instance_size_ != kPositionNotSpecified &&
       instance_size_ <= read_position_) {
     DoneRead(0);
@@ -354,7 +359,7 @@ void BufferedResourceLoader::didSendData(
 void BufferedResourceLoader::didReceiveResponse(
     WebURLLoader* loader,
     const WebURLResponse& response) {
-  VLOG(1) << "didReceiveResponse: " << response.httpStatusCode();
+  DVLOG(1) << "didReceiveResponse: " << response.httpStatusCode();
   DCHECK(active_loader_.get());
 
   // The loader may have been stopped and |start_callback| is destroyed.
@@ -419,7 +424,7 @@ void BufferedResourceLoader::didReceiveData(
     const char* data,
     int data_length,
     int encoded_data_length) {
-  VLOG(1) << "didReceiveData: " << data_length << " bytes";
+  DVLOG(1) << "didReceiveData: " << data_length << " bytes";
   DCHECK(active_loader_.get());
   DCHECK_GT(data_length, 0);
 
@@ -467,7 +472,7 @@ void BufferedResourceLoader::didReceiveCachedMetadata(
 void BufferedResourceLoader::didFinishLoading(
     WebURLLoader* loader,
     double finishTime) {
-  VLOG(1) << "didFinishLoading";
+  DVLOG(1) << "didFinishLoading";
   DCHECK(active_loader_.get());
 
   // We're done with the loader.
@@ -507,7 +512,8 @@ void BufferedResourceLoader::didFinishLoading(
 void BufferedResourceLoader::didFail(
     WebURLLoader* loader,
     const WebURLError& error) {
-  VLOG(1) << "didFail: " << error.reason;
+  DVLOG(1) << "didFail: reason=" << error.reason
+           << " isCancellation=" << error.isCancellation;
   DCHECK(active_loader_.get());
 
   // We don't need to continue loading after failure.
@@ -520,13 +526,13 @@ void BufferedResourceLoader::didFail(
   if (!start_callback_.is_null()) {
     DCHECK(read_callback_.is_null())
         << "Shouldn't have a read callback during start";
-    DoneStart(error.reason);
+    DoneStart(net::ERR_FAILED);
     return;
   }
 
   // Don't leave read callbacks hanging around.
   if (HasPendingRead()) {
-    DoneRead(error.reason);
+    DoneRead(net::ERR_FAILED);
   }
 }
 

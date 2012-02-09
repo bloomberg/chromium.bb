@@ -527,11 +527,31 @@ TEST_F(BufferedResourceLoaderTest, RequestFailedWhenRead) {
   uint8 buffer[10];
   InSequence s;
 
+  // We should convert any error we receive to net::ERR_FAILED.
   ReadLoader(10, 10, buffer);
   EXPECT_CALL(*this, NetworkCallback());
   EXPECT_CALL(*this, ReadCallback(net::ERR_FAILED));
   WebURLError error;
-  error.reason = net::ERR_FAILED;
+  error.reason = net::ERR_TIMED_OUT;
+  error.isCancellation = false;
+  loader_->didFail(url_loader_, error);
+}
+
+TEST_F(BufferedResourceLoaderTest, RequestCancelledWhenRead) {
+  Initialize(kHttpUrl, 10, 29);
+  Start();
+  PartialResponse(10, 29, 30);
+
+  uint8 buffer[10];
+  InSequence s;
+
+  // We should convert any error we receive to net::ERR_FAILED.
+  ReadLoader(10, 10, buffer);
+  EXPECT_CALL(*this, NetworkCallback());
+  EXPECT_CALL(*this, ReadCallback(net::ERR_FAILED));
+  WebURLError error;
+  error.reason = 0;
+  error.isCancellation = true;
   loader_->didFail(url_loader_, error);
 }
 
