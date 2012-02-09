@@ -1883,7 +1883,7 @@ ProtocolHandlerRegistry::ProtocolHandlerList
 RenderViewContextMenu::GetHandlersForLinkUrl() {
   ProtocolHandlerRegistry::ProtocolHandlerList handlers =
       protocol_handler_registry_->GetHandlersFor(params_.link_url.scheme());
-  sort(handlers.begin(), handlers.end());
+  std::sort(handlers.begin(), handlers.end());
   return handlers;
 }
 
