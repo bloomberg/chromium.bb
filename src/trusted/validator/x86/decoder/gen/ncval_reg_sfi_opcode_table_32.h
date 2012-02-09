@@ -155,9 +155,9 @@ static const NaClOp g_Operands[305] = {
   /* 146 */ { J_Operand, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OperandNear) | NACL_OPFLAG(OperandRelative), "$Jb" },
   /* 147 */ { RegEIP, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpImplicit), "{%eip}" },
   /* 148 */ { RegESP, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpImplicit), "{%esp}" },
-  /* 149 */ { J_Operand, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OperandNear) | NACL_OPFLAG(OperandRelative), "$Jz" },
+  /* 149 */ { J_Operand, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OperandNear) | NACL_OPFLAG(OperandRelative), "$Jzd" },
   /* 150 */ { RegEIP, NACL_OPFLAG(OpSet), "%eip" },
-  /* 151 */ { J_Operand, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OperandNear) | NACL_OPFLAG(OperandRelative), "$Jz" },
+  /* 151 */ { J_Operand, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OperandNear) | NACL_OPFLAG(OperandRelative), "$Jzd" },
   /* 152 */ { RegAX, NACL_OPFLAG(OpSet), "%ax" },
   /* 153 */ { RegAL, NACL_OPFLAG(OpUse), "%al" },
   /* 154 */ { E_Operand, NACL_OPFLAG(OpUse), "$Eb" },
@@ -1448,11 +1448,11 @@ static const NaClInst g_Opcodes[574] = {
     InstDontCare, 0x00, 0, 0, NACL_OPCODE_NULL_OFFSET  },
   /* 283 */
   { NACLi_386,
-    NACL_IFLAG(OpcodeHasImmed_z) | NACL_IFLAG(OpcodeAllowsData16) | NACL_IFLAG(OperandSize_w) | NACL_IFLAG(OperandSize_v) | NACL_IFLAG(JumpInstruction),
+    NACL_IFLAG(OpcodeHasImmed_v) | NACL_IFLAG(OperandSize_v) | NACL_IFLAG(JumpInstruction),
     InstCall, 0x00, 3, 147, NACL_OPCODE_NULL_OFFSET  },
   /* 284 */
   { NACLi_386,
-    NACL_IFLAG(OpcodeHasImmed_z) | NACL_IFLAG(OpcodeAllowsData16) | NACL_IFLAG(OperandSize_w) | NACL_IFLAG(OperandSize_v) | NACL_IFLAG(JumpInstruction) | NACL_IFLAG(PartialInstruction),
+    NACL_IFLAG(OpcodeHasImmed_v) | NACL_IFLAG(OperandSize_v) | NACL_IFLAG(JumpInstruction) | NACL_IFLAG(PartialInstruction),
     InstDontCareJump, 0x00, 2, 150, NACL_OPCODE_NULL_OFFSET  },
   /* 285 */
   { NACLi_386,
@@ -1916,7 +1916,7 @@ static const NaClInst g_Opcodes[574] = {
     InstDontCare, 0x00, 1, 189, NACL_OPCODE_NULL_OFFSET  },
   /* 400 */
   { NACLi_386,
-    NACL_IFLAG(OpcodeHasImmed_z) | NACL_IFLAG(OpcodeAllowsData16) | NACL_IFLAG(OperandSize_w) | NACL_IFLAG(OperandSize_v) | NACL_IFLAG(ConditionalJump) | NACL_IFLAG(PartialInstruction),
+    NACL_IFLAG(OpcodeHasImmed_v) | NACL_IFLAG(OperandSize_v) | NACL_IFLAG(ConditionalJump) | NACL_IFLAG(PartialInstruction),
     InstDontCareCondJump, 0x00, 2, 150, NACL_OPCODE_NULL_OFFSET  },
   /* 401 */
   { NACLi_386,

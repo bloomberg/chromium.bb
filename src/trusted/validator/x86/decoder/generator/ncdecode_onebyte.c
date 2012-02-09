@@ -490,17 +490,13 @@ void NaClDefOneByteInsts(struct NaClSymbolTable* st) {
   NaClDefine("e5: In $rAXv, $Ib", NACLi_386, st, Move);
   NaClDefine("e6: Out $Ib, %al", NACLi_386, st, Move);
   NaClDefine("e7: Out $Ib, $rAXv", NACLi_386, st, Move);
-  /* Note: special case 64-bit with 66 prefix, which is not suppported on some
-   * Intel Chips. (For word size, first rule will hide second).
-   * See Call instruction in Intel document 253666-030US - March 2009,
-   * "Intel 654 and IA-32 Architectures Software Developer's Manual, Volume2A".
+  /* Note: We special case the 66 prefix on direct jumps and calls, by
+   * explicitly disallowing 16-bit direct branches. This is done partly because
+   * some versions (within x86-64) are not supported in such cases. However,
+   * NaCl also doesn't want to allow 16-bit direct branches.
    */
-  NaClDefPrefixInstChoices_32_64(NoPrefix, 0xe8, 1, 2);
-  NaClBegD64("e8: Call {%@ip}, {%@sp}, $Jzw", NACLi_386, st);
-  NaClAddIFlags(NACL_IFLAG(NaClIllegal));
-  NaClEndDef(Call);
-  NaClDefine("e8: Call {%@ip}, {%@sp}, $Jz", NACLi_386, st, Call);
-  NaClDefine("e9: Jmp {%@ip}, $Jz", NACLi_386, st, Jump);
+  NaClDefine("e8: Call {%@ip}, {%@sp}, $Jzd", NACLi_386, st, Call);
+  NaClDefine("e9: Jmp {%@ip}, $Jzd", NACLi_386, st, Jump);
   NaClDef_32("ea: Jmp {%@ip}, $Ap", NACLi_386, st, Jump);
   NaClDefine("eb: Jmp {%@ip}, $Jb", NACLi_386, st, Jump);
   NaClDefine("ec: In %al, %dx", NACLi_386, st, Move);

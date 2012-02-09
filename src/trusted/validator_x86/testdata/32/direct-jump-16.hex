@@ -1,0 +1,10 @@
+# This file tests how we handle a 16-bit direct jump. In particular, it tests
+# whether we actually disallow prefix 66 on the direct jump.
+#
+# Define direct (16-bit) jump, which NaCl doesn't allow
+66 e9 01 00
+
+# Padding in case the parser of the previous instruction recognizes
+# the wrong byte length for the jump constant.
+90 90
+

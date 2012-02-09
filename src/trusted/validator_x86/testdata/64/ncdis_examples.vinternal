@@ -110,8 +110,8 @@ NaClExpVector[4] = {
   { ExprConstant[0] , 0x8, ExprUsed | ExprSize8 | ExprUnsignedHex },
 };
 00000000004003d4: e8 83 00 00 00                               call 0x40045c
-  e8                          386 OpcodeHasImmed_v OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o OperandSizeDefaultIs64 JumpInstruction
-    Call {%rip}, {%rsp}, $Jz
+  e8                          386 OpcodeHasImmed_v OperandSize_v OperandSize_o OperandSizeDefaultIs64 JumpInstruction
+    Call {%rip}, {%rsp}, $Jzd
       RegRIP                  OpUse OpSet OpImplicit
       RegRSP                  OpUse OpSet OpImplicit
       J_Operand               OpUse OperandNear OperandRelative
@@ -124,8 +124,8 @@ NaClExpVector[6] = {
   { ExprConstant[0] , 0x40045c, ExprUsed | ExprSize32 | ExprSignedHex | ExprJumpTarget },
 };
 00000000004003de: e8 7d 05 00 00                               call 0x400960
-  e8                          386 OpcodeHasImmed_v OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o OperandSizeDefaultIs64 JumpInstruction
-    Call {%rip}, {%rsp}, $Jz
+  e8                          386 OpcodeHasImmed_v OperandSize_v OperandSize_o OperandSizeDefaultIs64 JumpInstruction
+    Call {%rip}, {%rsp}, $Jzd
       RegRIP                  OpUse OpSet OpImplicit
       RegRSP                  OpUse OpSet OpImplicit
       J_Operand               OpUse OperandNear OperandRelative
@@ -189,8 +189,8 @@ NaClExpVector[4] = {
   { ExprConstant[0] , 0x0, ExprUsed | ExprSize32 | ExprUnsignedHex },
 };
 0000000000400403: e9 e0 ff ff ff                               [P] dontcarejump %rip (s), 0x4003e8 (u)
-  e9                          386 OpcodeHasImmed_v OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o OperandSizeDefaultIs64 JumpInstruction PartialInstruction
-    DontCareJump %rip, $Jz
+  e9                          386 OpcodeHasImmed_v OperandSize_v OperandSize_o OperandSizeDefaultIs64 JumpInstruction PartialInstruction
+    DontCareJump %rip, $Jzd
       RegRIP                  OpSet
       J_Operand               OpUse OperandNear OperandRelative
 NaClExpVector[4] = {
@@ -2312,16 +2312,16 @@ NaClExpVector[2] = {
   { OperandReference[1] , 0, ExprSize8 | ExprUnsignedInt },
   { ExprRegister[0] , %xmm2, ExprUsed },
 };
-0000000000000000: 66 e9 00 00 01 02                            [P] dontcarejump %rip (s), 0x2010006 (u)
-  e9                          386 OpcodeHasImmed_v OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o OperandSizeDefaultIs64 JumpInstruction PartialInstruction
-    DontCareJump %rip, $Jz
+0000000000000000: e9 00 00 01 02                               [P] dontcarejump %rip (s), 0x2010005 (u)
+  e9                          386 OpcodeHasImmed_v OperandSize_v OperandSize_o OperandSizeDefaultIs64 JumpInstruction PartialInstruction
+    DontCareJump %rip, $Jzd
       RegRIP                  OpSet
       J_Operand               OpUse OperandNear OperandRelative
 NaClExpVector[4] = {
   { OperandReference[1] , 0, ExprSize8 | ExprUnsignedInt },
   { ExprRegister[0] , %rip, ExprSet | ExprSize64 },
   { OperandReference[1] , 1, ExprSize8 | ExprUnsignedInt },
-  { ExprConstant[0] , 0x2010006, ExprUsed | ExprSize32 | ExprSignedHex | ExprJumpTarget },
+  { ExprConstant[0] , 0x2010005, ExprUsed | ExprSize32 | ExprSignedHex | ExprJumpTarget },
 };
 0000000000000000: 67 40 a0 00 01 02 03                         mov %al, [0x3020100]
   a0                          386 OpcodeHasImmed_Addr OperandSize_b
@@ -2714,10 +2714,19 @@ NaClExpVector[0] = {
     DontCare
 NaClExpVector[0] = {
 };
-0000000000000000: 26 66 e8 00 01 02 03                         [P] dontcare(illegal)
-  e8                          386 OpcodeHasImmed_v OpcodeAllowsData16 OperandSize_w NaClIllegal JumpInstruction PartialInstruction
-    DontCare
-NaClExpVector[0] = {
+0000000000000000: 26 e8 00 01 02 03                            call 0x3020106
+  e8                          386 OpcodeHasImmed_v OperandSize_v OperandSize_o OperandSizeDefaultIs64 JumpInstruction
+    Call {%rip}, {%rsp}, $Jzd
+      RegRIP                  OpUse OpSet OpImplicit
+      RegRSP                  OpUse OpSet OpImplicit
+      J_Operand               OpUse OperandNear OperandRelative
+NaClExpVector[6] = {
+  { OperandReference[1] , 0, ExprSize8 | ExprUnsignedInt | ExprImplicit },
+  { ExprRegister[0] , %rip, ExprSet | ExprUsed | ExprSize64 },
+  { OperandReference[1] , 1, ExprSize8 | ExprUnsignedInt | ExprImplicit },
+  { ExprRegister[0] , %rsp, ExprSet | ExprUsed | ExprSize64 },
+  { OperandReference[1] , 2, ExprSize8 | ExprUnsignedInt },
+  { ExprConstant[0] , 0x3020106, ExprUsed | ExprSize32 | ExprSignedHex | ExprJumpTarget },
 };
 0000000000000000: 0f a4 c6 01                                  [P] dontcare %esi (s), %eax (u), 0x1 (u)
   0f a4                       386 OpcodeUsesModRm OpcodeHasImmed_b OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o PartialInstruction

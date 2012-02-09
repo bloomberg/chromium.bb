@@ -194,22 +194,27 @@ void NaClDef0FInsts(struct NaClSymbolTable* st) {
   NaClDefine("     0f4d:     Cmovnl $Gv, $Ev",     NACLi_CMOV,    st, Move);
   NaClDefine("     0f4e:     Cmovle $Gv, $Ev",     NACLi_CMOV,    st, Move);
   NaClDefine("     0f4f:     Cmovnle $Gv, $Ev",    NACLi_CMOV,    st, Move);
-  NaClDefine("     0f80:     Jo {%@ip}, $Jz",      NACLi_386,     st, Jump);
-  NaClDefine("     0f81:     Jno {%@ip}, $Jz",     NACLi_386,     st, Jump);
-  NaClDefine("     0f82:     Jb {%@ip}, $Jz",      NACLi_386,     st, Jump);
-  NaClDefine("     0f83:     Jnb {%@ip}, $Jz",     NACLi_386,     st, Jump);
-  NaClDefine("     0f84:     Jz {%@ip}, $Jz",      NACLi_386,     st, Jump);
-  NaClDefine("     0f85:     Jnz {%@ip}, $Jz",     NACLi_386,     st, Jump);
-  NaClDefine("     0f86:     Jbe {%@ip}, $Jz",     NACLi_386,     st, Jump);
-  NaClDefine("     0f87:     Jnbe {%@ip}, $Jz",    NACLi_386,     st, Jump);
-  NaClDefine("     0f88:     Js {%@ip}, $Jz",      NACLi_386,     st, Jump);
-  NaClDefine("     0f89:     Jns {%@ip}, $Jz",     NACLi_386,     st, Jump);
-  NaClDefine("     0f8a:     Jp {%@ip}, $Jz",      NACLi_386,     st, Jump);
-  NaClDefine("     0f8b:     Jnp {%@ip}, $Jz",     NACLi_386,     st, Jump);
-  NaClDefine("     0f8c:     Jl {%@ip}, $Jz",      NACLi_386,     st, Jump);
-  NaClDefine("     0f8d:     Jnl {%@ip}, $Jz",     NACLi_386,     st, Jump);
-  NaClDefine("     0f8e:     Jle {%@ip}, $Jz",     NACLi_386,     st, Jump);
-  NaClDefine("     0f8f:     Jnle {%@ip}, $Jz",    NACLi_386,     st, Jump);
+  /* Note: We special case the 66 prefix on direct conditional jumps, by
+   * explicitly disallowing 16-bit direct jumps. This is done partly because
+   * some versions (within x86-64) are not supported in such cases. However,
+   * NaCl also doesn't want to allow 16-bit direct jumps.
+   */
+  NaClDefine("     0f80:     Jo {%@ip}, $Jzd",     NACLi_386,     st, Jump);
+  NaClDefine("     0f81:     Jno {%@ip}, $Jzd",    NACLi_386,     st, Jump);
+  NaClDefine("     0f82:     Jb {%@ip}, $Jzd",     NACLi_386,     st, Jump);
+  NaClDefine("     0f83:     Jnb {%@ip}, $Jzd",    NACLi_386,     st, Jump);
+  NaClDefine("     0f84:     Jz {%@ip}, $Jzd",     NACLi_386,     st, Jump);
+  NaClDefine("     0f85:     Jnz {%@ip}, $Jzd",    NACLi_386,     st, Jump);
+  NaClDefine("     0f86:     Jbe {%@ip}, $Jzd",    NACLi_386,     st, Jump);
+  NaClDefine("     0f87:     Jnbe {%@ip}, $Jzd",   NACLi_386,     st, Jump);
+  NaClDefine("     0f88:     Js {%@ip}, $Jzd",     NACLi_386,     st, Jump);
+  NaClDefine("     0f89:     Jns {%@ip}, $Jzd",    NACLi_386,     st, Jump);
+  NaClDefine("     0f8a:     Jp {%@ip}, $Jzd",     NACLi_386,     st, Jump);
+  NaClDefine("     0f8b:     Jnp {%@ip}, $Jzd",    NACLi_386,     st, Jump);
+  NaClDefine("     0f8c:     Jl {%@ip}, $Jzd",     NACLi_386,     st, Jump);
+  NaClDefine("     0f8d:     Jnl {%@ip}, $Jzd",    NACLi_386,     st, Jump);
+  NaClDefine("     0f8e:     Jle {%@ip}, $Jzd",    NACLi_386,     st, Jump);
+  NaClDefine("     0f8f:     Jnle {%@ip}, $Jzd",   NACLi_386,     st, Jump);
   NaClDefine("     0f90:     Seto $Eb",            NACLi_386,     st, Sets);
   NaClDefine("     0f91:     Setno $Eb",           NACLi_386,     st, Sets);
   NaClDefine("     0f92:     Setb $Eb",            NACLi_386,     st, Sets);

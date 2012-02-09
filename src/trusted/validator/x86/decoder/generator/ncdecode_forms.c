@@ -612,10 +612,22 @@ static void NaClOperandForm_Jb() {
   NaClAddIFlags(NACL_IFLAG(OpcodeHasImmed) | NACL_IFLAG(OperandSize_b));
 }
 
-/* Installs Jz, except for size constraints. */
-static void DefOperandJzBase() {
+/* Installs Jz, except for size constraints. Assumes immediate value
+ * follows z (size) conventions, unless the argument implies to define
+ * immediate sizes based on v.
+ */
+static void DefOperandJzBaseUseImmedV(Bool use_immed_v) {
   NaClDefOp(J_Operand,
             NACL_OPFLAG(OperandRelative) | NACL_OPFLAG(OperandNear));
+  if (use_immed_v) {
+    NaClAddIFlags(NACL_IFLAG(OpcodeHasImmed_v));
+  } else {
+    NaClAddIFlags(NACL_IFLAG(OpcodeHasImmed_z));
+  }
+}
+
+/* Installs Jz where immediate value is based on z size. */
+static void DefOperandJzBase() {
   /* Note: when in 32-bit mode, the relative offset can be a 16 or 32 bit
    * immediate offset, depending on the operand size. When in 64-bit mode,
    * the relative offset is ALWAYS a 32-bit immediate value (see page
@@ -623,11 +635,7 @@ static void DefOperandJzBase() {
    * "AMD64 Architecture Programmer's manual Volume 3: General-Purpose
    * and System Instructions").
    */
-  if (X86_32 == NACL_FLAGS_run_mode) {
-    NaClAddIFlags(NACL_IFLAG(OpcodeHasImmed_z));
-  } else {
-    NaClAddIFlags(NACL_IFLAG(OpcodeHasImmed_v));
-  }
+  DefOperandJzBaseUseImmedV(X86_64 == NACL_FLAGS_run_mode);
 }
 
 static void NaClOperandForm_Jz() {
@@ -637,7 +645,7 @@ static void NaClOperandForm_Jz() {
 }
 
 static void NaClOperandForm_Jzd() {
-  DefOperandJzBase();
+  DefOperandJzBaseUseImmedV(TRUE);
   NaClAddIFlags(NACL_IFLAG(OperandSize_v) | NACL_IFLAG(OperandSize_o));
 }
 

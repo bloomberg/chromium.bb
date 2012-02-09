@@ -2120,6 +2120,8 @@ static void NaClPrintHardCodedInstructions(struct Gio* f) {
 static void NaClPrintInstructionSet(struct Gio* f) {
   NaClInstPrefix prefix;
   int i;
+  gprintf(f, "*** Automatically generated file, do not edit! ***\n");
+  gprintf(f, "\n");
   gprintf(f, "Target: %s\n", NaClRunModeName(NACL_FLAGS_run_mode));
   gprintf(f, "\n");
   gprintf(f, "*** Hard coded instructions ***\n");
