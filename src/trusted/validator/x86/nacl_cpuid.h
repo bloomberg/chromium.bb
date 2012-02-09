@@ -126,6 +126,9 @@ static INLINE Bool NaClGetCPUFeature(CPUFeatures *features,
   return features->data[id];
 }
 
+/* Get a short, printable name for the feature. */
+const char* NaClGetCPUFeatureName(NaClCPUFeatureID id);
+
 /* Copy a set of cpu features. */
 void NaClCopyCPUFeatures(CPUFeatures* target, const CPUFeatures* source);
 

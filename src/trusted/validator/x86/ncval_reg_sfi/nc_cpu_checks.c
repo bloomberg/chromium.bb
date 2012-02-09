@@ -28,38 +28,42 @@ void NaClCpuCheckMemoryInitialize(NaClValidatorState* state) {
   state->cpu_checks.f_MMX_or_SSE2 = FALSE;
 }
 
-/* Helper macro to report unsupported features */
-#define NACL_CHECK_FEATURE(feature, feature_name, vstate, squash_me) \
-  if (!NaClGetCPUFeature(&vstate->cpu_features, feature)) { \
-    if (!NaClGetCPUFeature(&vstate->cpu_checks.cpu_features, feature)) { \
-      NaClValidatorInstMessage( \
-          LOG_WARNING, vstate, vstate->cur_inst_state, \
-          "Does not support " feature_name " feature, removing usage(s).\n"); \
-      NaClSetCPUFeature(&vstate->cpu_checks.cpu_features, feature, TRUE); \
-    } \
-    squash_me = TRUE; \
+/* Helper function to report unsupported features */
+static INLINE void NaClCheckFeature(NaClCPUFeatureID feature,
+                                    struct NaClValidatorState* vstate,
+                                    Bool* squash_me) {
+  if (!NaClGetCPUFeature(&vstate->cpu_features, feature)) {
+    if (!NaClGetCPUFeature(&vstate->cpu_checks.cpu_features, feature)) {
+      NaClValidatorInstMessage(
+          LOG_WARNING, vstate, vstate->cur_inst_state,
+          "Does not support %s feature, removing usage(s).\n",
+          NaClGetCPUFeatureName(feature));
+      NaClSetCPUFeature(&vstate->cpu_checks.cpu_features, feature, TRUE);
+    }
+    *squash_me = TRUE;
   }
+}
 
 void NaClCpuCheck(struct NaClValidatorState* state,
                   struct NaClInstIter* iter) {
   Bool squash_me = FALSE;
   switch (state->cur_inst->insttype) {
     case NACLi_X87:
-      NACL_CHECK_FEATURE(NaClCPUFeature_x87, "x87", state, squash_me);
+      NaClCheckFeature(NaClCPUFeature_x87, state, &squash_me);
       break;
     case NACLi_SFENCE_CLFLUSH:
       /* TODO(bradchen): distinguish between SFENCE and CLFLUSH */
-      NACL_CHECK_FEATURE(NaClCPUFeature_CLFLUSH, "CLFLUSH", state, squash_me);
-      NACL_CHECK_FEATURE(NaClCPUFeature_FXSR, "SFENCE", state, squash_me);
+      NaClCheckFeature(NaClCPUFeature_CLFLUSH, state, &squash_me);
+      NaClCheckFeature(NaClCPUFeature_FXSR, state, &squash_me);
       break;
     case NACLi_CMPXCHG8B:
-      NACL_CHECK_FEATURE(NaClCPUFeature_CX8, "CX8", state, squash_me);
+      NaClCheckFeature(NaClCPUFeature_CX8, state, &squash_me);
       break;
     case NACLi_CMPXCHG16B:
-      NACL_CHECK_FEATURE(NaClCPUFeature_CX16, "CX16", state, squash_me);
+      NaClCheckFeature(NaClCPUFeature_CX16, state, &squash_me);
       break;
     case NACLi_CMOV:
-      NACL_CHECK_FEATURE(NaClCPUFeature_CMOV, "CMOV", state, squash_me);
+      NaClCheckFeature(NaClCPUFeature_CMOV, state, &squash_me);
       break;
     case NACLi_FCMOV:
       if (!(NaClGetCPUFeature(&state->cpu_features, NaClCPUFeature_CMOV) &&
@@ -75,10 +79,10 @@ void NaClCpuCheck(struct NaClValidatorState* state,
       }
       break;
     case NACLi_RDTSC:
-      NACL_CHECK_FEATURE(NaClCPUFeature_TSC, "TSC", state, squash_me);
+      NaClCheckFeature(NaClCPUFeature_TSC, state, &squash_me);
       break;
     case NACLi_MMX:
-      NACL_CHECK_FEATURE(NaClCPUFeature_MMX, "MMX", state, squash_me);
+      NaClCheckFeature(NaClCPUFeature_MMX, state, &squash_me);
       break;
     case NACLi_MMXSSE2:
       /* Note: We accept these instructions if either MMX or SSE2 bits */
@@ -96,44 +100,44 @@ void NaClCpuCheck(struct NaClValidatorState* state,
       squash_me = TRUE;
       break;
     case NACLi_SSE:
-      NACL_CHECK_FEATURE(NaClCPUFeature_SSE, "SSE", state, squash_me);
+      NaClCheckFeature(NaClCPUFeature_SSE, state, &squash_me);
       break;
     case NACLi_SSE2:
-      NACL_CHECK_FEATURE(NaClCPUFeature_SSE2, "SSE2", state, squash_me);
+      NaClCheckFeature(NaClCPUFeature_SSE2, state, &squash_me);
       break;
     case NACLi_SSE3:
-      NACL_CHECK_FEATURE(NaClCPUFeature_SSE3, "SSE3", state, squash_me);
+      NaClCheckFeature(NaClCPUFeature_SSE3, state, &squash_me);
       break;
     case NACLi_SSE4A:
-      NACL_CHECK_FEATURE(NaClCPUFeature_SSE4A, "SSE4A", state, squash_me);
+      NaClCheckFeature(NaClCPUFeature_SSE4A, state, &squash_me);
       break;
     case NACLi_SSE41:
-      NACL_CHECK_FEATURE(NaClCPUFeature_SSE41, "SSE41", state, squash_me);
+      NaClCheckFeature(NaClCPUFeature_SSE41, state, &squash_me);
       break;
     case NACLi_SSE42:
-      NACL_CHECK_FEATURE(NaClCPUFeature_SSE42, "SSE42", state, squash_me);
+      NaClCheckFeature(NaClCPUFeature_SSE42, state, &squash_me);
       break;
     case NACLi_MOVBE:
-      NACL_CHECK_FEATURE(NaClCPUFeature_MOVBE, "MOVBE", state, squash_me);
+      NaClCheckFeature(NaClCPUFeature_MOVBE, state, &squash_me);
       break;
     case NACLi_POPCNT:
-      NACL_CHECK_FEATURE(NaClCPUFeature_POPCNT, "POPCNT", state, squash_me);
+      NaClCheckFeature(NaClCPUFeature_POPCNT, state, &squash_me);
       break;
     case NACLi_LZCNT:
-      NACL_CHECK_FEATURE(NaClCPUFeature_LZCNT, "LZCNT", state, squash_me);
+      NaClCheckFeature(NaClCPUFeature_LZCNT, state, &squash_me);
       break;
     case NACLi_SSSE3:
-      NACL_CHECK_FEATURE(NaClCPUFeature_SSSE3, "SSSE3", state, squash_me);
+      NaClCheckFeature(NaClCPUFeature_SSSE3, state, &squash_me);
       break;
     case NACLi_3DNOW:
-      NACL_CHECK_FEATURE(NaClCPUFeature_3DNOW, "3DNOW", state, squash_me);
+      NaClCheckFeature(NaClCPUFeature_3DNOW, state, &squash_me);
       break;
     case NACLi_E3DNOW:
-      NACL_CHECK_FEATURE(NaClCPUFeature_E3DNOW, "E3DNOW", state, squash_me);
+      NaClCheckFeature(NaClCPUFeature_E3DNOW, state, &squash_me);
       break;
     case NACLi_LONGMODE:
       /* TODO(karl): Remove this when NACLi_LONGMODE is no longer needed */
-      NACL_CHECK_FEATURE(NaClCPUFeature_LM, "LM", state, squash_me);
+      NaClCheckFeature(NaClCPUFeature_LM, state, &squash_me);
       break;
     case NACLi_SSE2x:
       /* This case requires CPUID checking code */
@@ -143,13 +147,13 @@ void NaClCpuCheck(struct NaClValidatorState* state,
             LOG_ERROR, state, state->cur_inst_state,
             "SSEx instruction must use prefix 0x66.\n");
       }
-      NACL_CHECK_FEATURE(NaClCPUFeature_SSE2, "SSE2", state, squash_me);
+      NaClCheckFeature(NaClCPUFeature_SSE2, state, &squash_me);
       break;
     default:
       break;
   }
   if (state->cur_inst->flags & NACL_IFLAG(LongMode)) {
-    NACL_CHECK_FEATURE(NaClCPUFeature_LM, "LM", state, squash_me);
+    NaClCheckFeature(NaClCPUFeature_LM, state, &squash_me);
   }
   if (squash_me) {
     /* Replace all bytes with the HLT instruction. */

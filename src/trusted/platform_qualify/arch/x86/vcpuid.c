@@ -481,7 +481,7 @@ static int SawBadInst() {
  * DoTest tests for a particular CPU feature using thetest().
  * It returns 0 if the feature is present, 1 if it is not.
  */
-static int DoTest(int (*thetest)(), char *s) {
+static int DoTest(int (*thetest)(), const char *s) {
   SignalInit();
   if (0 != (signum = sigsetjmp(crash_load, 1))) {
     SetSawBadInst();
@@ -507,7 +507,7 @@ static int DoTest(int (*thetest)(), char *s) {
  * DoTest tests for a particular CPU feature using thetest().
  * It returns 0 if the feature is present, 1 if it is not.
  */
-static int DoTest(int (*thetest)(), char *s) {
+static int DoTest(int (*thetest)(), const char *s) {
   int hasfeature = 0;
 
   __try {
@@ -528,6 +528,14 @@ static int DoTest(int (*thetest)(), char *s) {
 #else
 # error Please specify platform as NACL_LINUX, NACL_OSX or NACL_WINDOWS
 #endif
+
+static int DoCPUFeatureTest(CPUFeatures *features, NaClCPUFeatureID id,
+                            int (*thetest)()) {
+  if (NaClGetCPUFeature(features, id))
+    return DoTest(thetest, NaClGetCPUFeatureName(id));
+  else
+    return 0;
+}
 
 static void PrintFail(const char *why) {
   fprintf(stderr, "ERROR: %s.\n", why);
@@ -562,30 +570,18 @@ int CPUIDImplIsValid() {
     return 0;
   }
 
-  if (NaClGetCPUFeature(&cpuf, NaClCPUFeature_x87))
-    rcode |= DoTest(asm_HasX87, "x87");
-  if (NaClGetCPUFeature(&cpuf, NaClCPUFeature_MMX))
-    rcode |= DoTest(asm_HasMMX, "MMX");
-  if (NaClGetCPUFeature(&cpuf, NaClCPUFeature_SSE))
-    rcode |= DoTest(asm_HasSSE, "SSE");
-  if (NaClGetCPUFeature(&cpuf, NaClCPUFeature_SSE2))
-    rcode |= DoTest(asm_HasSSE2, "SSE2");
-  if (NaClGetCPUFeature(&cpuf, NaClCPUFeature_3DNOW))
-    rcode |= DoTest(asm_Has3DNow, "3DNow");
-  if (NaClGetCPUFeature(&cpuf, NaClCPUFeature_SSE3))
-    rcode |= DoTest(asm_HasSSE3, "SSE3");
-  if (NaClGetCPUFeature(&cpuf, NaClCPUFeature_SSSE3))
-    rcode |= DoTest(asm_HasSSSE3, "SSSE3");
-  if (NaClGetCPUFeature(&cpuf, NaClCPUFeature_SSE41))
-    rcode |= DoTest(asm_HasSSE41, "SSE41");
-  if (NaClGetCPUFeature(&cpuf, NaClCPUFeature_SSE42))
-    rcode |= DoTest(asm_HasSSE42, "SSE42");
-  if (NaClGetCPUFeature(&cpuf, NaClCPUFeature_POPCNT))
-    rcode |= DoTest(asm_HasPOPCNT, "POPCNT");
-  if (NaClGetCPUFeature(&cpuf, NaClCPUFeature_CMOV))
-    rcode |= DoTest(asm_HasCMOV, "CMOV");
-  if (NaClGetCPUFeature(&cpuf, NaClCPUFeature_TSC))
-    rcode |= DoTest(asm_HasTSC, "TSC");
+  rcode |= DoCPUFeatureTest(&cpuf, NaClCPUFeature_x87, asm_HasX87);
+  rcode |= DoCPUFeatureTest(&cpuf, NaClCPUFeature_MMX, asm_HasMMX);
+  rcode |= DoCPUFeatureTest(&cpuf, NaClCPUFeature_SSE, asm_HasSSE);
+  rcode |= DoCPUFeatureTest(&cpuf, NaClCPUFeature_SSE2, asm_HasSSE2);
+  rcode |= DoCPUFeatureTest(&cpuf, NaClCPUFeature_3DNOW, asm_Has3DNow);
+  rcode |= DoCPUFeatureTest(&cpuf, NaClCPUFeature_SSE3, asm_HasSSE3);
+  rcode |= DoCPUFeatureTest(&cpuf, NaClCPUFeature_SSSE3, asm_HasSSSE3);
+  rcode |= DoCPUFeatureTest(&cpuf, NaClCPUFeature_SSE41, asm_HasSSE41);
+  rcode |= DoCPUFeatureTest(&cpuf, NaClCPUFeature_SSE42, asm_HasSSE42);
+  rcode |= DoCPUFeatureTest(&cpuf, NaClCPUFeature_POPCNT, asm_HasPOPCNT);
+  rcode |= DoCPUFeatureTest(&cpuf, NaClCPUFeature_CMOV, asm_HasCMOV);
+  rcode |= DoCPUFeatureTest(&cpuf, NaClCPUFeature_TSC, asm_HasTSC);
 
 #if TEST_NEGATIVE_CASE
   printf("TESTING: simulating invalid CPUID implementation\n");
@@ -598,10 +594,8 @@ int CPUIDImplIsValid() {
 #endif  /* 64-bit Windows */
   /*
    * TODO(brad): implement the rest of these tests
-   * if (NaClGetCPUFeature(&cpuf, NaClCPUFeature_CX8))
-   *   rcode |= DoTest(asm_HasCX8, "CMPXCHG8B");
-   * if (NaClGetCPUFeature(&cpuf, NaClCPUFeature_CX16))
-   *   rcode |= DoTest(asm_HasCX16, "CMPXCHG16B");
+   * rcode |= DoCPUFeatureTest(&cpuf, NaClCPUFeature_CX8, asm_HasCX8);
+   * rcode |= DoCPUFeatureTest(&cpuf, NaClCPUFeature_CX16, asm_HasCX16);
    * DoTest(asm_HasSSE4a, "SSE4a");
    * DoTest(asm_HasEMMX, "EMMX");
    * DoTest(asm_HasE3DNow, "E3DNow");

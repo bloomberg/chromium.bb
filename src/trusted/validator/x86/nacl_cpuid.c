@@ -120,7 +120,7 @@ typedef struct cpufeature {
 } CPUFeature;
 
 static const CPUFeature CPUFeatureDescriptions[(int)NaClCPUFeature_Max] = {
-  {CFReg_EDX_I, CPUID_EDX_x87, "x87 FPU"},
+  {CFReg_EDX_I, CPUID_EDX_x87, "x87"},
   {CFReg_EDX_I, CPUID_EDX_MMX, "MMX"},
   {CFReg_EDX_I, CPUID_EDX_SSE, "SSE"},
   {CFReg_EDX_I, CPUID_EDX_SSE2, "SSE2"},
@@ -370,6 +370,10 @@ void NaClCopyCPUFeatures(CPUFeatures* target, const CPUFeatures* source) {
 
 void NaClSetCPUFeature(CPUFeatures *features, NaClCPUFeatureID id, Bool state) {
   features->data[id] = state;
+}
+
+const char* NaClGetCPUFeatureName(NaClCPUFeatureID id) {
+  return CPUFeatureDescriptions[id].name;
 }
 
 /* WARNING: This routine and subroutines it uses are not threadsafe.
