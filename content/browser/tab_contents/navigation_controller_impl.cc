@@ -284,6 +284,10 @@ void NavigationControllerImpl::ReloadInternal(bool check_for_repost,
               entry->GetURL(), entry->GetReferrer(), entry->GetTransitionType(),
               false, entry->extra_headers(), browser_context_));
 
+      // Mark the reload type as NO_RELOAD, so navigation will not be considered
+      // a reload in the renderer.
+      reload_type = NavigationController::NO_RELOAD;
+
       nav_entry->set_is_cross_site_reload(true);
       pending_entry_ = nav_entry;
     } else {
