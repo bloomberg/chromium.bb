@@ -44,27 +44,9 @@ void IntentInjector::SetIntent(
     const webkit_glue::WebIntentData& intent) {
   intents_dispatcher_ = intents_dispatcher;
   source_intent_.reset(new webkit_glue::WebIntentData(intent));
-
-  SendIntent();
 }
 
-void IntentInjector::RenderViewCreated(RenderViewHost* host) {
-  SendIntent();
-}
-
-void IntentInjector::DidNavigateMainFrame(
-    const content::LoadCommittedDetails& details,
-    const content::FrameNavigateParams& params) {
-  SendIntent();
-}
-
-// TODO(gbillock): The "correct" thing here is for this to be a
-// RenderViewHostObserver, and do this on RenderViewHostInitialized. There's no
-// good hooks for attaching the intent to such an object, though. All RVHOs get
-// made deep inside tab contents initialization. Idea: propagate out
-// RenderViewHostInitialized to a WebContentsObserver latch? That still looks
-// like it might be racy, though.
-void IntentInjector::SendIntent() {
+void IntentInjector::RenderViewCreated(RenderViewHost* render_view_host) {
   if (source_intent_.get() == NULL ||
       CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableWebIntents) ||
@@ -72,11 +54,8 @@ void IntentInjector::SendIntent() {
     return;
   }
 
-  // Send intent data through to renderer.
-  web_contents()->GetRenderViewHost()->Send(new IntentsMsg_SetWebIntentData(
-      web_contents()->GetRenderViewHost()->routing_id(),
-      *(source_intent_.get())));
-  source_intent_.reset(NULL);
+  render_view_host->Send(new IntentsMsg_SetWebIntentData(
+      render_view_host->routing_id(), *(source_intent_.get())));
 }
 
 bool IntentInjector::OnMessageReceived(const IPC::Message& message) {

@@ -157,6 +157,9 @@ void WebIntentPickerGtk::OnInlineDisposition(WebIntentPickerModel* model) {
   inline_disposition_tab_contents_.reset(new TabContentsWrapper(web_contents));
   inline_disposition_delegate_.reset(new WebIntentInlineDispositionDelegate);
   web_contents->SetDelegate(inline_disposition_delegate_.get());
+
+  delegate_->OnInlineDispositionWebContentsCreated(web_contents);
+
   tab_contents_container_.reset(new TabContentsContainerGtk(NULL));
   tab_contents_container_->SetTab(inline_disposition_tab_contents_.get());
 
@@ -198,8 +201,6 @@ void WebIntentPickerGtk::OnInlineDisposition(WebIntentPickerModel* model) {
   gtk_widget_set_size_request(tab_contents_container_->widget(),
                               size.width(), size.height());
   gtk_widget_show_all(contents_);
-
-  delegate_->OnInlineDispositionWebContentsCreated(web_contents);
 }
 
 void WebIntentPickerGtk::Close() {

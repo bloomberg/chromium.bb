@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -26,6 +26,11 @@ struct WebIntentData;
 // the context of the service, which will be running in the TabContents on which
 // this class is an observer. Attaches to the service tab and deletes itself
 // when that TabContents is closed.
+//
+// This object should be attached to the new WebContents very early: before the
+// RenderView is created. It will then send the intent data down to the renderer
+// on the RenderViewCreated call, so that the intent data is available
+// throughout the parsing of the loaded document.
 class CONTENT_EXPORT IntentInjector : public content::WebContentsObserver {
  public:
   // |web_contents| must not be NULL.
@@ -33,10 +38,7 @@ class CONTENT_EXPORT IntentInjector : public content::WebContentsObserver {
   virtual ~IntentInjector();
 
   // content::WebContentsObserver implementation.
-  virtual void RenderViewCreated(RenderViewHost* host) OVERRIDE;
-  virtual void DidNavigateMainFrame(
-      const content::LoadCommittedDetails& details,
-      const content::FrameNavigateParams& params) OVERRIDE;
+  virtual void RenderViewCreated(RenderViewHost* render_view_host) OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
   virtual void WebContentsDestroyed(content::WebContents* tab) OVERRIDE;
 
@@ -53,9 +55,6 @@ class CONTENT_EXPORT IntentInjector : public content::WebContentsObserver {
                  const webkit_glue::WebIntentData& intent);
 
  private:
-  // Delivers the intent data to the renderer.
-  void SendIntent();
-
   // Handles receiving a reply from the intent delivery page.
   void OnReply(webkit_glue::WebIntentReplyType reply_type,
                const string16& data);

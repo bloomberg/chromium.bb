@@ -474,8 +474,6 @@ RenderViewImpl::RenderViewImpl(
     decrement_shared_popup_at_destruction_ = false;
   }
 
-  intents_host_ = new WebIntentsHost(this);
-
   RenderThread::Get()->AddRoute(routing_id_, this);
   // Take a reference on behalf of the RenderThread.  This will be balanced
   // when we receive ViewMsg_ClosePage.
@@ -519,6 +517,7 @@ RenderViewImpl::RenderViewImpl(
   devtools_agent_ = new DevToolsAgent(this);
   renderer_accessibility_ = new RendererAccessibility(this);
   mouse_lock_dispatcher_ = new MouseLockDispatcher(this);
+  intents_host_ = new WebIntentsHost(this);
 
   new IdleUserDetector(this);
 

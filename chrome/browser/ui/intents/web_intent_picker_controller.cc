@@ -13,6 +13,7 @@
 #include "chrome/browser/intents/web_intents_registry.h"
 #include "chrome/browser/intents/web_intents_registry_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_navigator.h"
@@ -196,18 +197,33 @@ void WebIntentPickerController::OnServiceChosen(size_t index,
       // again and close it.
       const WebIntentPickerModel::Item& item = picker_model_->GetItemAt(index);
 
-      browser::NavigateParams params(NULL, item.url,
-                                     content::PAGE_TRANSITION_AUTO_BOOKMARK);
+      int index = TabStripModel::kNoTab;
+      Browser* browser = Browser::GetBrowserForController(
+          &wrapper_->web_contents()->GetController(), &index);
+      TabContentsWrapper* contents = Browser::TabContentsFactory(
+          browser->profile(),
+          tab_util::GetSiteInstanceForNewTab(
+              NULL, browser->profile(), item.url),
+          MSG_ROUTING_NONE, NULL, NULL);
+
+      intents_dispatcher_->DispatchIntent(contents->web_contents());
+      service_tab_ = contents->web_contents();
+
+      // This call performs all the tab strip manipulation, notifications, etc.
+      // Since we're passing in a target_contents, it assumes that we will
+      // navigate the page ourselves, though.
+      browser::NavigateParams params(
+          browser, item.url, content::PAGE_TRANSITION_AUTO_BOOKMARK);
+      params.target_contents = contents;
       params.disposition = NEW_FOREGROUND_TAB;
       params.profile = wrapper_->profile();
       browser::Navigate(&params);
-      content::WebContents* web_contents =
-          params.target_contents->web_contents();
-      service_tab_ = web_contents;
+
+      service_tab_->GetController().LoadURL(
+          item.url, content::Referrer(),
+          content::PAGE_TRANSITION_AUTO_BOOKMARK, std::string());
 
       ClosePicker();
-
-      intents_dispatcher_->DispatchIntent(web_contents);
       break;
     }
 
