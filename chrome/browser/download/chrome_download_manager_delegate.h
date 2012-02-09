@@ -28,16 +28,14 @@ class DownloadManager;
 }
 
 #if defined(COMPILER_GCC)
-namespace __gnu_cxx {
-
+namespace BASE_HASH_NAMESPACE {
 template<>
 struct hash<CrxInstaller*> {
   std::size_t operator()(CrxInstaller* const& p) const {
     return reinterpret_cast<std::size_t>(p);
   }
 };
-
-}  // namespace __gnu_cxx
+}  // namespace BASE_HASH_NAMESPACE
 #endif
 
 // This is the Chrome side helper for the download system.
