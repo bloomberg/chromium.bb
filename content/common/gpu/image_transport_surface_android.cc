@@ -9,7 +9,7 @@
 scoped_refptr<gfx::GLSurface> ImageTransportSurface::CreateSurface(
     GpuChannelManager* manager,
     GpuCommandBufferStub* stub,
-    gfx::PluginWindowHandle handle) {
+    gfx::GLSurfaceHandle handle) {
   NOTIMPLEMENTED();
   return NULL;
 }
