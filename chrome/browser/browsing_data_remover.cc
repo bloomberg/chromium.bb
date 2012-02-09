@@ -141,6 +141,21 @@ void BrowsingDataRemover::set_removing(bool removing) {
   removing_ = removing;
 }
 
+// Static.
+int BrowsingDataRemover::GenerateQuotaClientMask(int remove_mask) {
+  int quota_client_mask = 0;
+  if (remove_mask & BrowsingDataRemover::REMOVE_FILE_SYSTEMS)
+    quota_client_mask |= quota::QuotaClient::kFileSystem;
+  if (remove_mask & BrowsingDataRemover::REMOVE_WEBSQL)
+    quota_client_mask |= quota::QuotaClient::kDatabase;
+  if (remove_mask & BrowsingDataRemover::REMOVE_APPCACHE)
+    quota_client_mask |= quota::QuotaClient::kAppcache;
+  if (remove_mask & BrowsingDataRemover::REMOVE_INDEXEDDB)
+    quota_client_mask |= quota::QuotaClient::kIndexedDatabase;
+
+  return quota_client_mask;
+}
+
 void BrowsingDataRemover::Remove(int remove_mask) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   set_removing(true);
@@ -570,6 +585,7 @@ void BrowsingDataRemover::OnGotQuotaManagedOrigins(
     ++quota_managed_origins_to_delete_count_;
     quota_manager_->DeleteOriginData(
         origin->GetOrigin(), type,
+        BrowsingDataRemover::GenerateQuotaClientMask(remove_mask_),
         base::Bind(&BrowsingDataRemover::OnQuotaManagedOriginDeletion,
                    base::Unretained(this)));
   }

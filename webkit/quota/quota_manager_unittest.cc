@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -30,6 +30,8 @@ namespace quota {
 // For shorter names.
 const StorageType kTemp = kStorageTypeTemporary;
 const StorageType kPerm = kStorageTypePersistent;
+
+const int kAllClients = QuotaClient::kAllClientsMask;
 
 class QuotaManagerTest : public testing::Test {
  protected:
@@ -68,6 +70,13 @@ class QuotaManagerTest : public testing::Test {
       const MockOriginData* mock_data, size_t mock_data_size) {
     return new MockStorageClient(quota_manager_->proxy(),
                                  mock_data, mock_data_size);
+  }
+  MockStorageClient* CreateClient(
+      const MockOriginData* mock_data,
+      size_t mock_data_size,
+      QuotaClient::ID id) {
+    return new MockStorageClient(quota_manager_->proxy(),
+                                 mock_data, id, mock_data_size);
   }
 
   void RegisterClient(MockStorageClient* client) {
@@ -178,19 +187,21 @@ class QuotaManagerTest : public testing::Test {
   }
 
   void DeleteOriginData(const GURL& origin,
-                        StorageType type) {
+                        StorageType type,
+                        int quota_client_mask) {
     quota_status_ = kQuotaStatusUnknown;
     quota_manager_->DeleteOriginData(
-        origin, type,
+        origin, type, quota_client_mask,
         base::Bind(&QuotaManagerTest::StatusCallback,
                    weak_factory_.GetWeakPtr()));
   }
 
   void DeleteHostData(const std::string& host,
-                      StorageType type) {
+                      StorageType type,
+                      int quota_client_mask) {
     quota_status_ = kQuotaStatusUnknown;
     quota_manager_->DeleteHostData(
-        host, type,
+        host, type, quota_client_mask,
         base::Bind(&QuotaManagerTest::StatusCallback,
                    weak_factory_.GetWeakPtr()));
   }
@@ -724,8 +735,8 @@ TEST_F(QuotaManagerTest, GetTemporaryUsageAndQuota_NukeManager) {
   RunAdditionalUsageAndQuotaTask(GURL("http://bar.com/"),
                                  kTemp);
 
-  DeleteOriginData(GURL("http://foo.com/"), kTemp);
-  DeleteOriginData(GURL("http://bar.com/"), kTemp);
+  DeleteOriginData(GURL("http://foo.com/"), kTemp, kAllClients);
+  DeleteOriginData(GURL("http://bar.com/"), kTemp, kAllClients);
 
   // Nuke before waiting for callbacks.
   set_quota_manager(NULL);
@@ -1319,7 +1330,7 @@ TEST_F(QuotaManagerTest, DeleteHostDataSimple) {
   MessageLoop::current()->RunAllPending();
   int64 predelete_host_pers = usage();
 
-  DeleteHostData("", kTemp);
+  DeleteHostData("", kTemp, kAllClients);
   MessageLoop::current()->RunAllPending();
   EXPECT_EQ(kQuotaStatusOk, status());
 
@@ -1335,7 +1346,7 @@ TEST_F(QuotaManagerTest, DeleteHostDataSimple) {
   MessageLoop::current()->RunAllPending();
   EXPECT_EQ(predelete_host_pers, usage());
 
-  DeleteHostData("foo.com", kTemp);
+  DeleteHostData("foo.com", kTemp, kAllClients);
   MessageLoop::current()->RunAllPending();
   EXPECT_EQ(kQuotaStatusOk, status());
 
@@ -1392,9 +1403,9 @@ TEST_F(QuotaManagerTest, DeleteHostDataMultiple) {
   const int64 predelete_bar_pers = usage();
 
   reset_status_callback_count();
-  DeleteHostData("foo.com", kTemp);
-  DeleteHostData("bar.com", kTemp);
-  DeleteHostData("foo.com", kTemp);
+  DeleteHostData("foo.com", kTemp, kAllClients);
+  DeleteHostData("bar.com", kTemp, kAllClients);
+  DeleteHostData("foo.com", kTemp, kAllClients);
   MessageLoop::current()->RunAllPending();
 
   EXPECT_EQ(3, status_callback_count());
@@ -1486,9 +1497,9 @@ TEST_F(QuotaManagerTest, DeleteOriginDataMultiple) {
   MessageLoop::current()->RunAllPending();
 
   reset_status_callback_count();
-  DeleteOriginData(GURL("http://foo.com/"), kTemp);
-  DeleteOriginData(GURL("http://bar.com/"), kTemp);
-  DeleteOriginData(GURL("http://foo.com/"), kTemp);
+  DeleteOriginData(GURL("http://foo.com/"), kTemp, kAllClients);
+  DeleteOriginData(GURL("http://bar.com/"), kTemp, kAllClients);
+  DeleteOriginData(GURL("http://foo.com/"), kTemp, kAllClients);
   MessageLoop::current()->RunAllPending();
 
   EXPECT_EQ(3, status_callback_count());
@@ -1795,5 +1806,206 @@ TEST_F(QuotaManagerTest, QuotaForEmptyHost) {
   SetPersistentHostQuota(std::string(), 10);
   MessageLoop::current()->RunAllPending();
   EXPECT_EQ(kQuotaErrorNotSupported, status());
+}
+
+TEST_F(QuotaManagerTest, DeleteSpecificClientTypeSingleOrigin) {
+  static const MockOriginData kData1[] = {
+    { "http://foo.com/",   kTemp, 1 },
+  };
+  static const MockOriginData kData2[] = {
+    { "http://foo.com/",   kTemp, 2 },
+  };
+  static const MockOriginData kData3[] = {
+    { "http://foo.com/",   kTemp, 4 },
+  };
+  static const MockOriginData kData4[] = {
+    { "http://foo.com/",   kTemp, 8 },
+  };
+  MockStorageClient* client1 = CreateClient(kData1, ARRAYSIZE_UNSAFE(kData1),
+      QuotaClient::kFileSystem);
+  MockStorageClient* client2 = CreateClient(kData2, ARRAYSIZE_UNSAFE(kData2),
+      QuotaClient::kAppcache);
+  MockStorageClient* client3 = CreateClient(kData3, ARRAYSIZE_UNSAFE(kData3),
+      QuotaClient::kDatabase);
+  MockStorageClient* client4 = CreateClient(kData4, ARRAYSIZE_UNSAFE(kData4),
+      QuotaClient::kIndexedDatabase);
+  RegisterClient(client1);
+  RegisterClient(client2);
+  RegisterClient(client3);
+  RegisterClient(client4);
+
+  GetHostUsage("foo.com", kTemp);
+  MessageLoop::current()->RunAllPending();
+  const int64 predelete_foo_tmp = usage();
+
+  DeleteOriginData(GURL("http://foo.com/"), kTemp, QuotaClient::kFileSystem);
+  MessageLoop::current()->RunAllPending();
+  GetHostUsage("foo.com", kTemp);
+  MessageLoop::current()->RunAllPending();
+  EXPECT_EQ(predelete_foo_tmp - 1, usage());
+
+  DeleteOriginData(GURL("http://foo.com/"), kTemp, QuotaClient::kAppcache);
+  MessageLoop::current()->RunAllPending();
+  GetHostUsage("foo.com", kTemp);
+  MessageLoop::current()->RunAllPending();
+  EXPECT_EQ(predelete_foo_tmp - 2 - 1, usage());
+
+  DeleteOriginData(GURL("http://foo.com/"), kTemp, QuotaClient::kDatabase);
+  MessageLoop::current()->RunAllPending();
+  GetHostUsage("foo.com", kTemp);
+  MessageLoop::current()->RunAllPending();
+  EXPECT_EQ(predelete_foo_tmp - 4 - 2 - 1, usage());
+
+  DeleteOriginData(GURL("http://foo.com/"), kTemp,
+      QuotaClient::kIndexedDatabase);
+  MessageLoop::current()->RunAllPending();
+  GetHostUsage("foo.com", kTemp);
+  MessageLoop::current()->RunAllPending();
+  EXPECT_EQ(predelete_foo_tmp - 8 - 4 - 2 - 1, usage());
+}
+
+TEST_F(QuotaManagerTest, DeleteSpecificClientTypeSingleHost) {
+  static const MockOriginData kData1[] = {
+    { "http://foo.com:1111/",   kTemp, 1 },
+  };
+  static const MockOriginData kData2[] = {
+    { "http://foo.com:2222/",   kTemp, 2 },
+  };
+  static const MockOriginData kData3[] = {
+    { "http://foo.com:3333/",   kTemp, 4 },
+  };
+  static const MockOriginData kData4[] = {
+    { "http://foo.com:4444/",   kTemp, 8 },
+  };
+  MockStorageClient* client1 = CreateClient(kData1, ARRAYSIZE_UNSAFE(kData1),
+      QuotaClient::kFileSystem);
+  MockStorageClient* client2 = CreateClient(kData2, ARRAYSIZE_UNSAFE(kData2),
+      QuotaClient::kAppcache);
+  MockStorageClient* client3 = CreateClient(kData3, ARRAYSIZE_UNSAFE(kData3),
+      QuotaClient::kDatabase);
+  MockStorageClient* client4 = CreateClient(kData4, ARRAYSIZE_UNSAFE(kData4),
+      QuotaClient::kIndexedDatabase);
+  RegisterClient(client1);
+  RegisterClient(client2);
+  RegisterClient(client3);
+  RegisterClient(client4);
+
+  GetHostUsage("foo.com", kTemp);
+  MessageLoop::current()->RunAllPending();
+  const int64 predelete_foo_tmp = usage();
+
+  DeleteHostData("foo.com", kTemp, QuotaClient::kFileSystem);
+  MessageLoop::current()->RunAllPending();
+  GetHostUsage("foo.com", kTemp);
+  MessageLoop::current()->RunAllPending();
+  EXPECT_EQ(predelete_foo_tmp - 1, usage());
+
+  DeleteHostData("foo.com", kTemp, QuotaClient::kAppcache);
+  MessageLoop::current()->RunAllPending();
+  GetHostUsage("foo.com", kTemp);
+  MessageLoop::current()->RunAllPending();
+  EXPECT_EQ(predelete_foo_tmp - 2 - 1, usage());
+
+  DeleteHostData("foo.com", kTemp, QuotaClient::kDatabase);
+  MessageLoop::current()->RunAllPending();
+  GetHostUsage("foo.com", kTemp);
+  MessageLoop::current()->RunAllPending();
+  EXPECT_EQ(predelete_foo_tmp - 4 - 2 - 1, usage());
+
+  DeleteHostData("foo.com", kTemp, QuotaClient::kIndexedDatabase);
+  MessageLoop::current()->RunAllPending();
+  GetHostUsage("foo.com", kTemp);
+  MessageLoop::current()->RunAllPending();
+  EXPECT_EQ(predelete_foo_tmp - 8 - 4 - 2 - 1, usage());
+}
+
+TEST_F(QuotaManagerTest, DeleteMultipleClientTypesSingleOrigin) {
+  static const MockOriginData kData1[] = {
+    { "http://foo.com/",   kTemp, 1 },
+  };
+  static const MockOriginData kData2[] = {
+    { "http://foo.com/",   kTemp, 2 },
+  };
+  static const MockOriginData kData3[] = {
+    { "http://foo.com/",   kTemp, 4 },
+  };
+  static const MockOriginData kData4[] = {
+    { "http://foo.com/",   kTemp, 8 },
+  };
+  MockStorageClient* client1 = CreateClient(kData1, ARRAYSIZE_UNSAFE(kData1),
+      QuotaClient::kFileSystem);
+  MockStorageClient* client2 = CreateClient(kData2, ARRAYSIZE_UNSAFE(kData2),
+      QuotaClient::kAppcache);
+  MockStorageClient* client3 = CreateClient(kData3, ARRAYSIZE_UNSAFE(kData3),
+      QuotaClient::kDatabase);
+  MockStorageClient* client4 = CreateClient(kData4, ARRAYSIZE_UNSAFE(kData4),
+      QuotaClient::kIndexedDatabase);
+  RegisterClient(client1);
+  RegisterClient(client2);
+  RegisterClient(client3);
+  RegisterClient(client4);
+
+  GetHostUsage("foo.com", kTemp);
+  MessageLoop::current()->RunAllPending();
+  const int64 predelete_foo_tmp = usage();
+
+  DeleteOriginData(GURL("http://foo.com/"), kTemp,
+      QuotaClient::kFileSystem | QuotaClient::kDatabase);
+  MessageLoop::current()->RunAllPending();
+  GetHostUsage("foo.com", kTemp);
+  MessageLoop::current()->RunAllPending();
+  EXPECT_EQ(predelete_foo_tmp - 4 - 1, usage());
+
+  DeleteOriginData(GURL("http://foo.com/"), kTemp,
+      QuotaClient::kAppcache | QuotaClient::kIndexedDatabase);
+  MessageLoop::current()->RunAllPending();
+  GetHostUsage("foo.com", kTemp);
+  MessageLoop::current()->RunAllPending();
+  EXPECT_EQ(predelete_foo_tmp - 8 - 4 - 2 - 1, usage());
+}
+
+TEST_F(QuotaManagerTest, DeleteMultipleClientTypesSingleHost) {
+  static const MockOriginData kData1[] = {
+    { "http://foo.com:1111/",   kTemp, 1 },
+  };
+  static const MockOriginData kData2[] = {
+    { "http://foo.com:2222/",   kTemp, 2 },
+  };
+  static const MockOriginData kData3[] = {
+    { "http://foo.com:3333/",   kTemp, 4 },
+  };
+  static const MockOriginData kData4[] = {
+    { "http://foo.com:4444/",   kTemp, 8 },
+  };
+  MockStorageClient* client1 = CreateClient(kData1, ARRAYSIZE_UNSAFE(kData1),
+      QuotaClient::kFileSystem);
+  MockStorageClient* client2 = CreateClient(kData2, ARRAYSIZE_UNSAFE(kData2),
+      QuotaClient::kAppcache);
+  MockStorageClient* client3 = CreateClient(kData3, ARRAYSIZE_UNSAFE(kData3),
+      QuotaClient::kDatabase);
+  MockStorageClient* client4 = CreateClient(kData4, ARRAYSIZE_UNSAFE(kData4),
+      QuotaClient::kIndexedDatabase);
+  RegisterClient(client1);
+  RegisterClient(client2);
+  RegisterClient(client3);
+  RegisterClient(client4);
+
+  GetHostUsage("foo.com", kTemp);
+  MessageLoop::current()->RunAllPending();
+  const int64 predelete_foo_tmp = usage();
+
+  DeleteHostData("foo.com", kTemp,
+      QuotaClient::kFileSystem | QuotaClient::kAppcache);
+  MessageLoop::current()->RunAllPending();
+  GetHostUsage("foo.com", kTemp);
+  MessageLoop::current()->RunAllPending();
+  EXPECT_EQ(predelete_foo_tmp - 2 - 1, usage());
+
+  DeleteHostData("foo.com", kTemp,
+      QuotaClient::kDatabase | QuotaClient::kIndexedDatabase);
+  MessageLoop::current()->RunAllPending();
+  GetHostUsage("foo.com", kTemp);
+  MessageLoop::current()->RunAllPending();
+  EXPECT_EQ(predelete_foo_tmp - 8 - 4 - 2 - 1, usage());
 }
 }  // namespace quota

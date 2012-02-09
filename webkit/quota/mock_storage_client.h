@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -30,7 +30,12 @@ struct MockOriginData {
 class MockStorageClient : public QuotaClient {
  public:
   MockStorageClient(QuotaManagerProxy* quota_manager_proxy,
-                    const MockOriginData* mock_data, size_t mock_data_size);
+                    const MockOriginData* mock_data,
+                    size_t mock_data_size);
+  MockStorageClient(QuotaManagerProxy* quota_manager_proxy,
+                    const MockOriginData* mock_data,
+                    QuotaClient::ID id,
+                    size_t mock_data_size);
   virtual ~MockStorageClient();
 
   // To add or modify mock data in this client.
@@ -70,6 +75,8 @@ class MockStorageClient : public QuotaClient {
   void RunDeleteOriginData(const GURL& origin_url,
                            StorageType type,
                            const DeletionCallback& callback);
+
+  void Populate(const MockOriginData* mock_data, size_t mock_data_size);
 
   scoped_refptr<QuotaManagerProxy> quota_manager_proxy_;
   const ID id_;

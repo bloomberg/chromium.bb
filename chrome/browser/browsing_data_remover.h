@@ -126,6 +126,10 @@ class BrowsingDataRemover : public content::NotificationObserver,
   // Called when history deletion is done.
   void OnHistoryDeletionDone();
 
+  // Quota managed data uses a different bitmask for types than
+  // BrowsingDataRemover uses. This method generates that mask.
+  static int GenerateQuotaClientMask(int remove_mask);
+
   static bool is_removing() { return removing_; }
 
  private:

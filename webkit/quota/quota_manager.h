@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -148,12 +148,22 @@ class QuotaManager : public QuotaTaskObserver,
     return origins_in_use_.find(origin) != origins_in_use_.end();
   }
 
-  // Called by UI.
+  // DeleteOriginData and DeleteHostData (surprisingly enough) delete data of a
+  // particular StorageType associated with either a specific origin or set of
+  // origins. Each method additionally requires a |quota_client_mask| which
+  // specifies the types of QuotaClients to delete from the origin. This is
+  // specified by the caller as a bitmask built from QuotaClient::IDs. Setting
+  // the mask to QuotaClient::kAllClientsMask will remove all clients from the
+  // origin, regardless of type.
+  //
+  // Both methods must be called on the UI thread.
   virtual void DeleteOriginData(const GURL& origin,
                                 StorageType type,
+                                int quota_client_mask,
                                 const StatusCallback& callback);
   void DeleteHostData(const std::string& host,
                       StorageType type,
+                      int quota_client_mask,
                       const StatusCallback& callback);
 
   // Called by UI and internal modules.

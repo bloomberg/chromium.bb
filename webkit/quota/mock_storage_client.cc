@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -50,6 +50,22 @@ MockStorageClient::MockStorageClient(
       id_(MockStorageClientIDSequencer::GetInstance()->NextMockID()),
       mock_time_counter_(0),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
+  Populate(mock_data, mock_data_size);
+}
+
+MockStorageClient::MockStorageClient(
+    QuotaManagerProxy* quota_manager_proxy,
+    const MockOriginData* mock_data, QuotaClient::ID id, size_t mock_data_size)
+    : quota_manager_proxy_(quota_manager_proxy),
+      id_(id),
+      mock_time_counter_(0),
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
+  Populate(mock_data, mock_data_size);
+}
+
+void MockStorageClient::Populate(
+    const MockOriginData* mock_data,
+    size_t mock_data_size) {
   for (size_t i = 0; i < mock_data_size; ++i) {
     origin_data_[make_pair(GURL(mock_data[i].origin), mock_data[i].type)] =
         mock_data[i].usage;

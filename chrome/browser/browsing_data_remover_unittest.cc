@@ -46,6 +46,12 @@ const GURL kOrigin1(kTestkOrigin1);
 const GURL kOrigin2(kTestkOrigin2);
 const GURL kOrigin3(kTestkOrigin3);
 
+const quota::StorageType kTemporary = quota::kStorageTypeTemporary;
+const quota::StorageType kPersistent = quota::kStorageTypePersistent;
+
+const quota::QuotaClient::ID kClientFile = quota::QuotaClient::kFileSystem;
+const quota::QuotaClient::ID kClientDB = quota::QuotaClient::kIndexedDatabase;
+
 class BrowsingDataRemoverTester : public BrowsingDataRemover::Observer {
  public:
   BrowsingDataRemoverTester()
@@ -251,31 +257,23 @@ class RemoveQuotaManagedDataTester : public BrowsingDataRemoverTester {
 
   void PopulateTestQuotaManagedPersistentData(
       quota::MockQuotaManager* manager) {
-    manager->AddOrigin(kOrigin2, quota::kStorageTypePersistent,
-        base::Time());
-    manager->AddOrigin(kOrigin3, quota::kStorageTypePersistent,
+    manager->AddOrigin(kOrigin2, kPersistent, kClientFile, base::Time());
+    manager->AddOrigin(kOrigin3, kPersistent, kClientFile,
         base::Time::Now() - base::TimeDelta::FromDays(1));
 
-    EXPECT_FALSE(manager->OriginHasData(kOrigin1,
-        quota::kStorageTypePersistent));
-    EXPECT_TRUE(manager->OriginHasData(kOrigin2,
-        quota::kStorageTypePersistent));
-    EXPECT_TRUE(manager->OriginHasData(kOrigin3,
-        quota::kStorageTypePersistent));
+    EXPECT_FALSE(manager->OriginHasData(kOrigin1, kPersistent, kClientFile));
+    EXPECT_TRUE(manager->OriginHasData(kOrigin2, kPersistent, kClientFile));
+    EXPECT_TRUE(manager->OriginHasData(kOrigin3, kPersistent, kClientFile));
   }
 
   void PopulateTestQuotaManagedTemporaryData(quota::MockQuotaManager* manager) {
-    manager->AddOrigin(kOrigin1, quota::kStorageTypeTemporary,
-        base::Time::Now());
-    manager->AddOrigin(kOrigin3, quota::kStorageTypeTemporary,
+    manager->AddOrigin(kOrigin1, kTemporary, kClientFile, base::Time::Now());
+    manager->AddOrigin(kOrigin3, kTemporary, kClientFile,
         base::Time::Now() - base::TimeDelta::FromDays(1));
 
-    EXPECT_TRUE(manager->OriginHasData(kOrigin1,
-        quota::kStorageTypeTemporary));
-    EXPECT_FALSE(manager->OriginHasData(kOrigin2,
-        quota::kStorageTypeTemporary));
-    EXPECT_TRUE(manager->OriginHasData(kOrigin3,
-        quota::kStorageTypeTemporary));
+    EXPECT_TRUE(manager->OriginHasData(kOrigin1, kTemporary, kClientFile));
+    EXPECT_FALSE(manager->OriginHasData(kOrigin2, kTemporary, kClientFile));
+    EXPECT_TRUE(manager->OriginHasData(kOrigin3, kTemporary, kClientFile));
   }
 
  private:
@@ -466,6 +464,30 @@ TEST_F(BrowsingDataRemoverTest, RemoveHistoryForLastHour) {
   EXPECT_TRUE(tester->HistoryContainsURL(kOrigin2));
 }
 
+TEST_F(BrowsingDataRemoverTest, QuotaClientMaskGeneration) {
+  EXPECT_EQ(quota::QuotaClient::kFileSystem,
+            BrowsingDataRemover::GenerateQuotaClientMask(
+                BrowsingDataRemover::REMOVE_FILE_SYSTEMS));
+  EXPECT_EQ(quota::QuotaClient::kDatabase,
+            BrowsingDataRemover::GenerateQuotaClientMask(
+                BrowsingDataRemover::REMOVE_WEBSQL));
+  EXPECT_EQ(quota::QuotaClient::kAppcache,
+            BrowsingDataRemover::GenerateQuotaClientMask(
+                BrowsingDataRemover::REMOVE_APPCACHE));
+  EXPECT_EQ(quota::QuotaClient::kIndexedDatabase,
+            BrowsingDataRemover::GenerateQuotaClientMask(
+                BrowsingDataRemover::REMOVE_INDEXEDDB));
+  EXPECT_EQ(quota::QuotaClient::kFileSystem |
+            quota::QuotaClient::kDatabase |
+            quota::QuotaClient::kAppcache |
+            quota::QuotaClient::kIndexedDatabase,
+            BrowsingDataRemover::GenerateQuotaClientMask(
+                BrowsingDataRemover::REMOVE_FILE_SYSTEMS |
+                BrowsingDataRemover::REMOVE_WEBSQL |
+                BrowsingDataRemover::REMOVE_APPCACHE |
+                BrowsingDataRemover::REMOVE_INDEXEDDB));
+}
+
 TEST_F(BrowsingDataRemoverTest, RemoveQuotaManagedDataForeverBoth) {
   scoped_ptr<RemoveQuotaManagedDataTester> tester(
       new RemoveQuotaManagedDataTester());
@@ -477,18 +499,18 @@ TEST_F(BrowsingDataRemoverTest, RemoveQuotaManagedDataForeverBoth) {
 
   EXPECT_EQ(BrowsingDataRemover::REMOVE_SITE_DATA &
       ~BrowsingDataRemover::REMOVE_PLUGIN_DATA, GetRemovalMask());
-  EXPECT_FALSE(GetMockManager()->OriginHasData(kOrigin1,
-      quota::kStorageTypeTemporary));
-  EXPECT_FALSE(GetMockManager()->OriginHasData(kOrigin2,
-      quota::kStorageTypeTemporary));
-  EXPECT_FALSE(GetMockManager()->OriginHasData(kOrigin3,
-      quota::kStorageTypeTemporary));
-  EXPECT_FALSE(GetMockManager()->OriginHasData(kOrigin1,
-      quota::kStorageTypePersistent));
-  EXPECT_FALSE(GetMockManager()->OriginHasData(kOrigin2,
-      quota::kStorageTypePersistent));
-  EXPECT_FALSE(GetMockManager()->OriginHasData(kOrigin3,
-      quota::kStorageTypePersistent));
+  EXPECT_FALSE(GetMockManager()->OriginHasData(kOrigin1, kTemporary,
+      kClientFile));
+  EXPECT_FALSE(GetMockManager()->OriginHasData(kOrigin2, kTemporary,
+      kClientFile));
+  EXPECT_FALSE(GetMockManager()->OriginHasData(kOrigin3, kTemporary,
+      kClientFile));
+  EXPECT_FALSE(GetMockManager()->OriginHasData(kOrigin1, kPersistent,
+      kClientFile));
+  EXPECT_FALSE(GetMockManager()->OriginHasData(kOrigin2, kPersistent,
+      kClientFile));
+  EXPECT_FALSE(GetMockManager()->OriginHasData(kOrigin3, kPersistent,
+      kClientFile));
 }
 
 TEST_F(BrowsingDataRemoverTest, RemoveQuotaManagedDataForeverOnlyTemporary) {
@@ -502,18 +524,18 @@ TEST_F(BrowsingDataRemoverTest, RemoveQuotaManagedDataForeverOnlyTemporary) {
 
   EXPECT_EQ(BrowsingDataRemover::REMOVE_SITE_DATA &
       ~BrowsingDataRemover::REMOVE_PLUGIN_DATA, GetRemovalMask());
-  EXPECT_FALSE(GetMockManager()->OriginHasData(kOrigin1,
-      quota::kStorageTypeTemporary));
-  EXPECT_FALSE(GetMockManager()->OriginHasData(kOrigin2,
-      quota::kStorageTypeTemporary));
-  EXPECT_FALSE(GetMockManager()->OriginHasData(kOrigin3,
-      quota::kStorageTypeTemporary));
-  EXPECT_FALSE(GetMockManager()->OriginHasData(kOrigin1,
-      quota::kStorageTypePersistent));
-  EXPECT_FALSE(GetMockManager()->OriginHasData(kOrigin2,
-      quota::kStorageTypePersistent));
-  EXPECT_FALSE(GetMockManager()->OriginHasData(kOrigin3,
-      quota::kStorageTypePersistent));
+  EXPECT_FALSE(GetMockManager()->OriginHasData(kOrigin1, kTemporary,
+      kClientFile));
+  EXPECT_FALSE(GetMockManager()->OriginHasData(kOrigin2, kTemporary,
+      kClientFile));
+  EXPECT_FALSE(GetMockManager()->OriginHasData(kOrigin3, kTemporary,
+      kClientFile));
+  EXPECT_FALSE(GetMockManager()->OriginHasData(kOrigin1, kPersistent,
+      kClientFile));
+  EXPECT_FALSE(GetMockManager()->OriginHasData(kOrigin2, kPersistent,
+      kClientFile));
+  EXPECT_FALSE(GetMockManager()->OriginHasData(kOrigin3, kPersistent,
+      kClientFile));
 }
 
 TEST_F(BrowsingDataRemoverTest, RemoveQuotaManagedDataForeverOnlyPersistent) {
@@ -527,18 +549,18 @@ TEST_F(BrowsingDataRemoverTest, RemoveQuotaManagedDataForeverOnlyPersistent) {
 
   EXPECT_EQ(BrowsingDataRemover::REMOVE_SITE_DATA &
       ~BrowsingDataRemover::REMOVE_PLUGIN_DATA, GetRemovalMask());
-  EXPECT_FALSE(GetMockManager()->OriginHasData(kOrigin1,
-      quota::kStorageTypeTemporary));
-  EXPECT_FALSE(GetMockManager()->OriginHasData(kOrigin2,
-      quota::kStorageTypeTemporary));
-  EXPECT_FALSE(GetMockManager()->OriginHasData(kOrigin3,
-      quota::kStorageTypeTemporary));
-  EXPECT_FALSE(GetMockManager()->OriginHasData(kOrigin1,
-      quota::kStorageTypePersistent));
-  EXPECT_FALSE(GetMockManager()->OriginHasData(kOrigin2,
-      quota::kStorageTypePersistent));
-  EXPECT_FALSE(GetMockManager()->OriginHasData(kOrigin3,
-      quota::kStorageTypePersistent));
+  EXPECT_FALSE(GetMockManager()->OriginHasData(kOrigin1, kTemporary,
+      kClientFile));
+  EXPECT_FALSE(GetMockManager()->OriginHasData(kOrigin2, kTemporary,
+      kClientFile));
+  EXPECT_FALSE(GetMockManager()->OriginHasData(kOrigin3, kTemporary,
+      kClientFile));
+  EXPECT_FALSE(GetMockManager()->OriginHasData(kOrigin1, kPersistent,
+      kClientFile));
+  EXPECT_FALSE(GetMockManager()->OriginHasData(kOrigin2, kPersistent,
+      kClientFile));
+  EXPECT_FALSE(GetMockManager()->OriginHasData(kOrigin3, kPersistent,
+      kClientFile));
 }
 
 TEST_F(BrowsingDataRemoverTest, RemoveQuotaManagedDataForeverNeither) {
@@ -552,18 +574,18 @@ TEST_F(BrowsingDataRemoverTest, RemoveQuotaManagedDataForeverNeither) {
 
   EXPECT_EQ(BrowsingDataRemover::REMOVE_SITE_DATA &
       ~BrowsingDataRemover::REMOVE_PLUGIN_DATA, GetRemovalMask());
-  EXPECT_FALSE(GetMockManager()->OriginHasData(kOrigin1,
-      quota::kStorageTypeTemporary));
-  EXPECT_FALSE(GetMockManager()->OriginHasData(kOrigin2,
-      quota::kStorageTypeTemporary));
-  EXPECT_FALSE(GetMockManager()->OriginHasData(kOrigin3,
-      quota::kStorageTypeTemporary));
-  EXPECT_FALSE(GetMockManager()->OriginHasData(kOrigin1,
-      quota::kStorageTypePersistent));
-  EXPECT_FALSE(GetMockManager()->OriginHasData(kOrigin2,
-      quota::kStorageTypePersistent));
-  EXPECT_FALSE(GetMockManager()->OriginHasData(kOrigin3,
-      quota::kStorageTypePersistent));
+  EXPECT_FALSE(GetMockManager()->OriginHasData(kOrigin1, kTemporary,
+      kClientFile));
+  EXPECT_FALSE(GetMockManager()->OriginHasData(kOrigin2, kTemporary,
+      kClientFile));
+  EXPECT_FALSE(GetMockManager()->OriginHasData(kOrigin3, kTemporary,
+      kClientFile));
+  EXPECT_FALSE(GetMockManager()->OriginHasData(kOrigin1, kPersistent,
+      kClientFile));
+  EXPECT_FALSE(GetMockManager()->OriginHasData(kOrigin2, kPersistent,
+      kClientFile));
+  EXPECT_FALSE(GetMockManager()->OriginHasData(kOrigin3, kPersistent,
+      kClientFile));
 }
 
 TEST_F(BrowsingDataRemoverTest, RemoveQuotaManagedDataForLastHour) {
@@ -577,18 +599,18 @@ TEST_F(BrowsingDataRemoverTest, RemoveQuotaManagedDataForLastHour) {
 
   EXPECT_EQ(BrowsingDataRemover::REMOVE_SITE_DATA &
       ~BrowsingDataRemover::REMOVE_PLUGIN_DATA, GetRemovalMask());
-  EXPECT_FALSE(GetMockManager()->OriginHasData(kOrigin1,
-      quota::kStorageTypeTemporary));
-  EXPECT_FALSE(GetMockManager()->OriginHasData(kOrigin2,
-      quota::kStorageTypeTemporary));
-  EXPECT_TRUE(GetMockManager()->OriginHasData(kOrigin3,
-      quota::kStorageTypeTemporary));
-  EXPECT_FALSE(GetMockManager()->OriginHasData(kOrigin1,
-      quota::kStorageTypePersistent));
-  EXPECT_TRUE(GetMockManager()->OriginHasData(kOrigin2,
-      quota::kStorageTypePersistent));
-  EXPECT_TRUE(GetMockManager()->OriginHasData(kOrigin3,
-      quota::kStorageTypePersistent));
+  EXPECT_FALSE(GetMockManager()->OriginHasData(kOrigin1, kTemporary,
+      kClientFile));
+  EXPECT_FALSE(GetMockManager()->OriginHasData(kOrigin2, kTemporary,
+      kClientFile));
+  EXPECT_TRUE(GetMockManager()->OriginHasData(kOrigin3, kTemporary,
+      kClientFile));
+  EXPECT_FALSE(GetMockManager()->OriginHasData(kOrigin1, kPersistent,
+      kClientFile));
+  EXPECT_TRUE(GetMockManager()->OriginHasData(kOrigin2, kPersistent,
+      kClientFile));
+  EXPECT_TRUE(GetMockManager()->OriginHasData(kOrigin3, kPersistent,
+      kClientFile));
 }
 
 TEST_F(BrowsingDataRemoverTest, RemoveQuotaManagedDataForLastWeek) {
@@ -602,18 +624,18 @@ TEST_F(BrowsingDataRemoverTest, RemoveQuotaManagedDataForLastWeek) {
 
   EXPECT_EQ(BrowsingDataRemover::REMOVE_SITE_DATA &
       ~BrowsingDataRemover::REMOVE_PLUGIN_DATA, GetRemovalMask());
-  EXPECT_FALSE(GetMockManager()->OriginHasData(kOrigin1,
-      quota::kStorageTypeTemporary));
-  EXPECT_FALSE(GetMockManager()->OriginHasData(kOrigin2,
-      quota::kStorageTypeTemporary));
-  EXPECT_FALSE(GetMockManager()->OriginHasData(kOrigin3,
-      quota::kStorageTypeTemporary));
-  EXPECT_FALSE(GetMockManager()->OriginHasData(kOrigin1,
-      quota::kStorageTypePersistent));
-  EXPECT_TRUE(GetMockManager()->OriginHasData(kOrigin2,
-      quota::kStorageTypePersistent));
-  EXPECT_TRUE(GetMockManager()->OriginHasData(kOrigin3,
-      quota::kStorageTypePersistent));
+  EXPECT_FALSE(GetMockManager()->OriginHasData(kOrigin1, kTemporary,
+      kClientFile));
+  EXPECT_FALSE(GetMockManager()->OriginHasData(kOrigin2, kTemporary,
+      kClientFile));
+  EXPECT_FALSE(GetMockManager()->OriginHasData(kOrigin3, kTemporary,
+      kClientFile));
+  EXPECT_FALSE(GetMockManager()->OriginHasData(kOrigin1, kPersistent,
+      kClientFile));
+  EXPECT_TRUE(GetMockManager()->OriginHasData(kOrigin2, kPersistent,
+      kClientFile));
+  EXPECT_TRUE(GetMockManager()->OriginHasData(kOrigin3, kPersistent,
+      kClientFile));
 }
 
 TEST_F(BrowsingDataRemoverTest, RemoveQuotaManagedUnprotectedOrigins) {
@@ -633,18 +655,18 @@ TEST_F(BrowsingDataRemoverTest, RemoveQuotaManagedUnprotectedOrigins) {
 
   EXPECT_EQ(BrowsingDataRemover::REMOVE_SITE_DATA &
       ~BrowsingDataRemover::REMOVE_PLUGIN_DATA, GetRemovalMask());
-  EXPECT_TRUE(GetMockManager()->OriginHasData(kOrigin1,
-      quota::kStorageTypeTemporary));
-  EXPECT_FALSE(GetMockManager()->OriginHasData(kOrigin2,
-      quota::kStorageTypeTemporary));
-  EXPECT_FALSE(GetMockManager()->OriginHasData(kOrigin3,
-      quota::kStorageTypeTemporary));
-  EXPECT_FALSE(GetMockManager()->OriginHasData(kOrigin1,
-      quota::kStorageTypePersistent));
-  EXPECT_FALSE(GetMockManager()->OriginHasData(kOrigin2,
-      quota::kStorageTypePersistent));
-  EXPECT_FALSE(GetMockManager()->OriginHasData(kOrigin3,
-      quota::kStorageTypePersistent));
+  EXPECT_TRUE(GetMockManager()->OriginHasData(kOrigin1, kTemporary,
+      kClientFile));
+  EXPECT_FALSE(GetMockManager()->OriginHasData(kOrigin2, kTemporary,
+      kClientFile));
+  EXPECT_FALSE(GetMockManager()->OriginHasData(kOrigin3, kTemporary,
+      kClientFile));
+  EXPECT_FALSE(GetMockManager()->OriginHasData(kOrigin1, kPersistent,
+      kClientFile));
+  EXPECT_FALSE(GetMockManager()->OriginHasData(kOrigin2, kPersistent,
+      kClientFile));
+  EXPECT_FALSE(GetMockManager()->OriginHasData(kOrigin3, kPersistent,
+      kClientFile));
 }
 
 }  // namespace

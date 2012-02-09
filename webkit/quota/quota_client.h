@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -30,13 +30,15 @@ class QuotaClient {
   virtual ~QuotaClient() {}
 
   enum ID {
-    kUnknown,
-    kFileSystem,
-    kDatabase,
-    kAppcache,
-    kIndexedDatabase,
-    kMockStart,  // This needs to be the end of the enum.
+    kUnknown = 1 << 0,
+    kFileSystem = 1 << 1,
+    kDatabase = 1 << 2,
+    kAppcache = 1 << 3,
+    kIndexedDatabase = 1 << 4,
+    kMockStart = 1 << 5,  // This needs to be the end of the enum.
   };
+
+  static const int kAllClientsMask = -1;
 
   virtual ID id() const = 0;
 
