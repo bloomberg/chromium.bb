@@ -1,13 +1,16 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include <algorithm>
+#include <string>
+#include <vector>
 
 #include "base/file_util.h"
 #include "base/scoped_temp_dir.h"
 #include "base/string16.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/intents/default_web_intent_service.h"
 #include "chrome/browser/webdata/web_database.h"
 #include "chrome/browser/webdata/web_intents_table.h"
 #include "chrome/common/chrome_paths.h"
@@ -180,6 +183,55 @@ TEST_F(WebIntentsTableTest, GetByURL) {
   EXPECT_TRUE(IntentsTable()->GetWebIntentServicesForURL(
       UTF8ToUTF16(test_url.spec()), &intents));
   ASSERT_EQ(2U, intents.size());
+}
+
+TEST_F(WebIntentsTableTest, DefaultServices) {
+  DefaultWebIntentService default_service;
+  default_service.action = test_action;
+  default_service.type = mime_image;
+  default_service.url_pattern.Parse(test_url.spec());
+  default_service.user_date = 1;
+  default_service.suppression = 4;
+  default_service.service_url = "service_url";
+  ASSERT_TRUE(IntentsTable()->SetDefaultService(default_service));
+
+  default_service.action = test_action_2;
+  ASSERT_TRUE(IntentsTable()->SetDefaultService(default_service));
+
+  std::vector<DefaultWebIntentService> defaults;
+  ASSERT_TRUE(IntentsTable()->GetDefaultServices(ASCIIToUTF16("no_action"),
+                                                 &defaults));
+  EXPECT_EQ(0U, defaults.size());
+
+  ASSERT_TRUE(IntentsTable()->GetDefaultServices(test_action, &defaults));
+  ASSERT_EQ(1U, defaults.size());
+
+  EXPECT_EQ(test_action, defaults[0].action);
+  EXPECT_EQ(mime_image, defaults[0].type);
+  URLPattern test_pattern(URLPattern::SCHEME_HTTP, test_url.spec());
+  EXPECT_EQ(test_pattern, defaults[0].url_pattern);
+  EXPECT_EQ(1, defaults[0].user_date);
+  EXPECT_EQ(4, defaults[0].suppression);
+  EXPECT_EQ("service_url", defaults[0].service_url);
+
+  defaults.clear();
+  ASSERT_TRUE(IntentsTable()->GetAllDefaultServices(&defaults));
+  ASSERT_EQ(2U, defaults.size());
+
+  default_service.action = test_action;
+  IntentsTable()->RemoveDefaultService(default_service);
+
+  defaults.clear();
+  ASSERT_TRUE(IntentsTable()->GetDefaultServices(test_action, &defaults));
+  ASSERT_EQ(0U, defaults.size());
+
+  defaults.clear();
+  ASSERT_TRUE(IntentsTable()->GetDefaultServices(test_action_2, &defaults));
+  ASSERT_EQ(1U, defaults.size());
+
+  defaults.clear();
+  ASSERT_TRUE(IntentsTable()->GetAllDefaultServices(&defaults));
+  ASSERT_EQ(1U, defaults.size());
 }
 
 } // namespace

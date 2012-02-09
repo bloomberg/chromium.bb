@@ -1570,6 +1570,8 @@
         'browser/intents/cws_intents_registry.h',
         'browser/intents/cws_intents_registry_factory.cc',
         'browser/intents/cws_intents_registry_factory.h',
+        'browser/intents/default_web_intent_service.cc',
+        'browser/intents/default_web_intent_service.h',
         'browser/intents/register_intent_handler_infobar_delegate.cc',
         'browser/intents/register_intent_handler_infobar_delegate.h',
         'browser/intents/web_intents_registry.cc',
