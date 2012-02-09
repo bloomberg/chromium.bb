@@ -32,6 +32,10 @@ StartupOverride GetStartupOverrideForCurrentTrial();
 // promo trials. |web_ui| is the web UI where the promo was shown.
 void RecordUserShownPromo(content::WebUI* web_ui);
 
+// Records that the sync promo was not shown to the user (when it normally
+// would have been shown) because of the current trial.
+void RecordSyncPromoSuppressedForCurrentTrial();
+
 // Records that the user signed into sync for any currently running sync promo
 // trials. |web_ui| is the web UI where the user signed into sync.
 void RecordUserSignedIn(content::WebUI* web_ui);

@@ -153,6 +153,16 @@ void RecordUserShownPromo(content::WebUI* web_ui) {
   }
 }
 
+void RecordSyncPromoSuppressedForCurrentTrial() {
+  DCHECK(sync_promo_trial_initialized);
+  LayoutExperimentType type = LAYOUT_EXPERIMENT_DEFAULT;
+  DCHECK(GetActiveLayoutExperiment(&type) && type == LAYOUT_EXPERIMENT_NONE);
+  // Avoid warning about unused variable in release builds.
+  (void)type;
+  UMA_HISTOGRAM_ENUMERATION("SyncPromo.ShownPromoWithLayoutExpAtStartup",
+                            LAYOUT_EXPERIMENT_NONE, LAYOUT_EXPERIMENT_BOUNDARY);
+}
+
 void RecordUserSignedIn(content::WebUI* web_ui) {
   DCHECK(sync_promo_trial_initialized);
 

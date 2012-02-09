@@ -70,6 +70,7 @@
 #include "chrome/browser/ui/dialog_style.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/webui/sync_promo/sync_promo_dialog.h"
+#include "chrome/browser/ui/webui/sync_promo/sync_promo_trial.h"
 #include "chrome/browser/ui/webui/sync_promo/sync_promo_ui.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -1440,6 +1441,9 @@ void BrowserInit::LaunchWithProfile::AddStartupURLs(
       if (it != startup_urls->end())
         startup_urls->erase(it);
     }
+  } else if (sync_promo_trial::GetStartupOverrideForCurrentTrial() ==
+             sync_promo_trial::STARTUP_OVERRIDE_HIDE) {
+    sync_promo_trial::RecordSyncPromoSuppressedForCurrentTrial();
   }
 }
 
