@@ -22,7 +22,6 @@ cr.define('options', function() {
     __proto__: options.OptionsPage.prototype,
 
     // State variables.
-    syncEnabled: false,
     syncSetupCompleted: false,
 
     /**
@@ -47,6 +46,8 @@ cr.define('options', function() {
       OptionsPage.prototype.initializePage.call(this);
 
       // Sync (Sign in) section.
+      this.updateSyncState_(templateData.syncData);
+
       $('sync-action-link').onclick = function(event) {
         SyncSetupOverlay.showErrorUI();
       };
@@ -245,29 +246,43 @@ cr.define('options', function() {
       });
     },
 
-    setSyncEnabled_: function(enabled) {
-      this.syncEnabled = enabled;
-    },
+    /**
+     * Updates the sync section with the given state.
+     * @param {Object} syncData A bunch of data records that describe the status
+     *     of the sync system.
+     * @private
+     */
+    updateSyncState_: function(syncData) {
+      var startStopButton = $('start-stop-sync');
+      startStopButton.disabled = syncData.managed ||
+          syncData.setupInProgress;
+      startStopButton.hidden =
+          syncData.setupCompleted && cr.isChromeOs;
+      startStopButton.textContent =
+          syncData.setupCompleted ?
+              localStrings.getString('syncButtonTextStop') :
+          syncData.setupInProgress ?
+              localStrings.getString('syncButtonTextInProgress') :
+              localStrings.getString('syncButtonTextStart');
 
-    setAutoLoginVisible_: function(visible) {
-      $('enable-auto-login-checkbox').hidden = !visible;
-    },
 
-    setSyncSetupCompleted_: function(completed) {
-      this.syncSetupCompleted = completed;
-      $('customize-sync').hidden = !completed;
-    },
-
-    setSyncStatus_: function(status) {
-      var statusSet = status != '';
+      // TODO(estade): can this just be textContent?
+      $('sync-status-text').innerHTML = syncData.statusText;
+      var statusSet = syncData.statusText.length != 0;
       $('sync-overview').hidden = statusSet;
       $('sync-status').hidden = !statusSet;
-      $('sync-status-text').innerHTML = status;
-    },
 
-    setSyncStatusErrorVisible_: function(visible) {
-      visible ? $('sync-status').classList.add('sync-error') :
-                $('sync-status').classList.remove('sync-error');
+      $('sync-action-link').textContent = syncData.actionLinkText;
+      $('sync-action-link').hidden = syncData.actionLinkText.length == 0;
+      $('sync-action-link').disabled = syncData.managed;
+
+      if (syncData.syncHasError)
+        $('sync-status').classList.add('sync-error');
+      else
+        $('sync-status').classList.remove('sync-error');
+
+      $('customize-sync').disabled = syncData.hasUnrecoverableError;
+      $('enable-auto-login-checkbox').hidden = !syncData.autoLoginVisible;
     },
 
     /**
@@ -280,40 +295,12 @@ cr.define('options', function() {
       $('profiles-section').hidden = !visible;
     },
 
-    setCustomizeSyncButtonEnabled_: function(enabled) {
-      $('customize-sync').disabled = !enabled;
-    },
-
-    setSyncActionLinkEnabled_: function(enabled) {
-      $('sync-action-link').disabled = !enabled;
-    },
-
-    setSyncActionLinkLabel_: function(status) {
-      $('sync-action-link').textContent = status;
-
-      // link-button does is not zero-area when the contents of the button are
-      // empty, so explicitly hide the element.
-      $('sync-action-link').hidden = !status.length;
-    },
-
-    setStartStopButtonVisible_: function(visible) {
-      $('start-stop-sync').hidden = !visible;
-    },
-
-    setStartStopButtonEnabled_: function(enabled) {
-      $('start-stop-sync').disabled = !enabled;
-    },
-
-    setStartStopButtonLabel_: function(label) {
-      $('start-stop-sync').textContent = label;
-    },
-
     hideSyncSection_: function() {
       $('sync-section').hidden = true;
     },
 
     /**
-     * Get the start/stop sync button DOM element.
+     * Get the start/stop sync button DOM element. Used for testing.
      * @return {DOMElement} The start/stop sync button.
      * @private
      */
@@ -610,7 +597,6 @@ cr.define('options', function() {
     'setStartStopButtonVisible',
     'setSyncActionLinkEnabled',
     'setSyncActionLinkLabel',
-    'setSyncEnabled',
     'setSyncSetupCompleted',
     'setSyncStatus',
     'setSyncStatusErrorVisible',
@@ -619,6 +605,7 @@ cr.define('options', function() {
     'updateAutocompleteSuggestions',
     'updateHomePageLabel',
     'updateSearchEngines',
+    'updateSyncState',
     'updateStartupPages',
   ].forEach(function(name) {
     BrowserOptions[name] = function() {

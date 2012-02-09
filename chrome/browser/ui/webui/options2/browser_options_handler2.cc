@@ -144,6 +144,8 @@ void BrowserOptionsHandler::GetLocalizedValues(
       IDS_OPTIONS_STARTUP_SHOW_DEFAULT_AND_NEWTAB},
     { "startupShowLastSession", IDS_OPTIONS_STARTUP_SHOW_LAST_SESSION },
     { "startupShowPages", IDS_OPTIONS2_STARTUP_SHOW_PAGES },
+    { "syncButtonTextInProgress", IDS_SYNC_NTP_SETUP_IN_PROGRESS },
+    { "syncButtonTextStop", IDS_SYNC_STOP_SYNCING_BUTTON_LABEL },
     { "themesGallery", IDS_THEMES_GALLERY_BUTTON },
     { "themesGalleryURL", IDS_THEMES_GALLERY_URL },
     { "toolbarGroupName", IDS_OPTIONS2_TOOLBAR_GROUP_NAME },
@@ -188,6 +190,10 @@ void BrowserOptionsHandler::GetLocalizedValues(
       "syncOverview",
       l10n_util::GetStringFUTF16(IDS_SYNC_OVERVIEW,
                                  l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
+  localized_strings->SetString(
+      "syncButtonTextStart",
+      l10n_util::GetStringFUTF16(IDS_SYNC_START_SYNC_BUTTON_LABEL,
+          l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME)));
 
   localized_strings->SetString("syncLearnMoreURL", chrome::kSyncLearnMoreURL);
   localized_strings->SetString(
@@ -224,6 +230,9 @@ void BrowserOptionsHandler::GetLocalizedValues(
         chromeos::UserManager::Get()->logged_in_user().email());
   }
 #endif
+
+  // Pass along sync status early so it will be available during page init.
+  localized_strings->Set("syncData", GetSyncStateDictionary());
 }
 
 void BrowserOptionsHandler::RegisterMessages() {
@@ -278,94 +287,10 @@ void BrowserOptionsHandler::RegisterMessages() {
 }
 
 void BrowserOptionsHandler::OnStateChanged() {
-  string16 status_label;
-  string16 link_label;
-  ProfileSyncService* service(ProfileSyncServiceFactory::
-      GetInstance()->GetForProfile(Profile::FromWebUI(web_ui())));
-  DCHECK(service);
-  bool managed = service->IsManaged();
-  bool sync_setup_completed = service->HasSyncSetupCompleted();
-  bool status_has_error = sync_ui_util::GetStatusLabels(
-      service, sync_ui_util::WITH_HTML, &status_label, &link_label) ==
-          sync_ui_util::SYNC_ERROR;
+  scoped_ptr<DictionaryValue> value(GetSyncStateDictionary());
+  web_ui()->CallJavascriptFunction("BrowserOptions.updateSyncState", *value);
 
-  string16 start_stop_button_label;
-  bool is_start_stop_button_visible = false;
-  bool is_start_stop_button_enabled = false;
-  if (sync_setup_completed) {
-    start_stop_button_label =
-        l10n_util::GetStringUTF16(IDS_SYNC_STOP_SYNCING_BUTTON_LABEL);
-#if defined(OS_CHROMEOS)
-    is_start_stop_button_visible = false;
-#else
-    is_start_stop_button_visible = true;
-#endif  // defined(OS_CHROMEOS)
-    is_start_stop_button_enabled = !managed;
-  } else if (service->SetupInProgress()) {
-    start_stop_button_label =
-        l10n_util::GetStringUTF16(IDS_SYNC_NTP_SETUP_IN_PROGRESS);
-    is_start_stop_button_visible = true;
-    is_start_stop_button_enabled = false;
-  } else {
-    start_stop_button_label =
-        l10n_util::GetStringFUTF16(IDS_SYNC_START_SYNC_BUTTON_LABEL,
-            l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME));
-    is_start_stop_button_visible = true;
-    is_start_stop_button_enabled = !managed;
-  }
-
-  scoped_ptr<Value> completed(Value::CreateBooleanValue(sync_setup_completed));
-  web_ui()->CallJavascriptFunction("BrowserOptions.setSyncSetupCompleted",
-                                   *completed);
-
-  scoped_ptr<Value> label(Value::CreateStringValue(status_label));
-  web_ui()->CallJavascriptFunction("BrowserOptions.setSyncStatus", *label);
-
-  scoped_ptr<Value> enabled(
-      Value::CreateBooleanValue(is_start_stop_button_enabled));
-  web_ui()->CallJavascriptFunction("BrowserOptions.setStartStopButtonEnabled",
-                                   *enabled);
-
-  scoped_ptr<Value> visible(
-      Value::CreateBooleanValue(is_start_stop_button_visible));
-  web_ui()->CallJavascriptFunction("BrowserOptions.setStartStopButtonVisible",
-                                   *visible);
-
-  label.reset(Value::CreateStringValue(start_stop_button_label));
-  web_ui()->CallJavascriptFunction("BrowserOptions.setStartStopButtonLabel",
-                                   *label);
-
-  label.reset(Value::CreateStringValue(link_label));
-  web_ui()->CallJavascriptFunction("BrowserOptions.setSyncActionLinkLabel",
-                                   *label);
-
-  enabled.reset(Value::CreateBooleanValue(!managed));
-  web_ui()->CallJavascriptFunction("BrowserOptions.setSyncActionLinkEnabled",
-                                   *enabled);
-
-  visible.reset(Value::CreateBooleanValue(status_has_error));
-  web_ui()->CallJavascriptFunction("BrowserOptions.setSyncStatusErrorVisible",
-                                   *visible);
-
-  enabled.reset(Value::CreateBooleanValue(
-      !service->unrecoverable_error_detected()));
-  web_ui()->CallJavascriptFunction(
-      "BrowserOptions.setCustomizeSyncButtonEnabled",
-      *enabled);
-
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableAutologin)) {
-    visible.reset(Value::CreateBooleanValue(
-        service->AreCredentialsAvailable()));
-    web_ui()->CallJavascriptFunction("BrowserOptions.setAutoLoginVisible",
-                                     *visible);
-  }
-
-  // Set profile creation text and button if multi-profiles switch is on.
-  visible.reset(Value::CreateBooleanValue(multiprofile_));
-  web_ui()->CallJavascriptFunction("BrowserOptions.setProfilesSectionVisible",
-                                   *visible);
-  if (multiprofile_)
-    SendProfilesInfo();
+  SendProfilesInfo();
 }
 
 void BrowserOptionsHandler::Initialize() {
@@ -712,6 +637,14 @@ void BrowserOptionsHandler::OnResultChanged(bool default_match_changed) {
 }
 
 void BrowserOptionsHandler::SendProfilesInfo() {
+  // Set profile creation text and button if multi-profiles switch is on.
+  scoped_ptr<Value> visible(Value::CreateBooleanValue(multiprofile_));
+  web_ui()->CallJavascriptFunction("BrowserOptions.setProfilesSectionVisible",
+                                   *visible);
+
+  if (!multiprofile_)
+    return;
+
   ProfileInfoCache& cache =
       g_browser_process->profile_manager()->GetProfileInfoCache();
   ListValue profile_info_list;
@@ -807,5 +740,35 @@ void BrowserOptionsHandler::IncreaseScreenBrightnessCallback(
       IncreaseScreenBrightness();
 }
 #endif
+
+DictionaryValue* BrowserOptionsHandler::GetSyncStateDictionary() {
+  ProfileSyncService* service(ProfileSyncServiceFactory::
+      GetInstance()->GetForProfile(Profile::FromWebUI(web_ui())));
+  if (!service)
+    return NULL;
+
+  DictionaryValue* sync_status = new DictionaryValue;
+  sync_status->SetBoolean("setupCompleted",
+                          service->HasSyncSetupCompleted());
+  sync_status->SetBoolean("setupInProgress", service->SetupInProgress());
+
+  string16 status_label;
+  string16 link_label;
+  bool status_has_error = sync_ui_util::GetStatusLabels(
+      service, sync_ui_util::WITH_HTML, &status_label, &link_label) ==
+          sync_ui_util::SYNC_ERROR;
+  sync_status->SetString("statusText", status_label);
+  sync_status->SetString("actionLinkText", link_label);
+  sync_status->SetBoolean("hasError", status_has_error);
+
+  sync_status->SetBoolean("managed", service->IsManaged());
+  sync_status->SetBoolean("hasUnrecoverableError",
+                          service->unrecoverable_error_detected());
+  sync_status->SetBoolean("autoLoginVisible",
+      CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableAutologin) &&
+      service->AreCredentialsAvailable());
+
+  return sync_status;
+}
 
 }  // namespace options2
