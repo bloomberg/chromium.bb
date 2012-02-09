@@ -65,7 +65,6 @@ class ChromeURLContentSecurityPolicyExceptionSet
     // TODO(tsepez) whittle this list down to nothing.
     insert(chrome::kChromeUICloudPrintResourcesHost);
     insert(chrome::kChromeUICloudPrintSetupHost);
-    insert(chrome::kChromeUICreditsHost);
     insert(chrome::kChromeUIDevToolsHost);
     insert(chrome::kChromeUIDialogHost);
     insert(chrome::kChromeUIInputWindowDialogHost);
