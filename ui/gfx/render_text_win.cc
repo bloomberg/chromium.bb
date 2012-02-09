@@ -109,22 +109,10 @@ TextRun::~TextRun() {
 
 RenderTextWin::RenderTextWin()
     : RenderText(),
-      script_control_(),
-      script_state_(),
       string_width_(0),
       needs_layout_(false) {
-  // Omitting default constructors for script_* would leave POD uninitialized.
-  HRESULT hr = 0;
-
-  // TODO(msw): Call ScriptRecordDigitSubstitution on WM_SETTINGCHANGE message.
-  // TODO(msw): Use Chrome/profile locale/language settings?
-  hr = ScriptRecordDigitSubstitution(LOCALE_USER_DEFAULT, &digit_substitute_);
-  DCHECK(SUCCEEDED(hr));
-
-  hr = ScriptApplyDigitSubstitution(&digit_substitute_,
-                                    &script_control_,
-                                    &script_state_);
-  DCHECK(SUCCEEDED(hr));
+  memset(&script_control_, 0, sizeof(script_control_));
+  memset(&script_state_, 0, sizeof(script_state_));
   script_control_.fMergeNeutralItems = true;
 
   MoveCursorTo(EdgeSelectionModel(CURSOR_LEFT));

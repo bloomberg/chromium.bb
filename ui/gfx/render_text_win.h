@@ -106,9 +106,6 @@ class RenderTextWin : public RenderText {
   SelectionModel FirstSelectionModelInsideRun(internal::TextRun* run);
   SelectionModel LastSelectionModelInsideRun(internal::TextRun* run);
 
-  // National Language Support native digit and digit substitution settings.
-  SCRIPT_DIGITSUBSTITUTE digit_substitute_;
-
   SCRIPT_CONTROL script_control_;
   SCRIPT_STATE script_state_;
 
