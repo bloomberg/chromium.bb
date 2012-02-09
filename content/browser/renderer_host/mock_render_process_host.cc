@@ -7,7 +7,7 @@
 #include "base/lazy_instance.h"
 #include "base/message_loop.h"
 #include "base/time.h"
-#include "content/browser/child_process_security_policy.h"
+#include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/common/child_process_host_impl.h"
 #include "content/public/browser/notification_service.h"
@@ -25,13 +25,13 @@ MockRenderProcessHost::MockRenderProcessHost(
           fast_shutdown_started_(false) {
   // Child process security operations can't be unit tested unless we add
   // ourselves as an existing child process.
-  ChildProcessSecurityPolicy::GetInstance()->Add(GetID());
+  ChildProcessSecurityPolicyImpl::GetInstance()->Add(GetID());
 
   RenderProcessHostImpl::RegisterHost(GetID(), this);
 }
 
 MockRenderProcessHost::~MockRenderProcessHost() {
-  ChildProcessSecurityPolicy::GetInstance()->Remove(GetID());
+  ChildProcessSecurityPolicyImpl::GetInstance()->Remove(GetID());
   delete transport_dib_;
   if (factory_)
     factory_->Remove(this);

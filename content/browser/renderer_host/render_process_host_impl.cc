@@ -40,7 +40,7 @@
 #include "base/tracked_objects.h"
 #include "content/browser/appcache/appcache_dispatcher_host.h"
 #include "content/browser/browser_main.h"
-#include "content/browser/child_process_security_policy.h"
+#include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/device_orientation/message_filter.h"
 #include "content/browser/download/mhtml_generation_manager.h"
 #include "content/browser/file_system/file_system_dispatcher_host.h"
@@ -277,14 +277,14 @@ RenderProcessHostImpl::RenderProcessHostImpl(
           ignore_input_events_(false) {
   widget_helper_ = new RenderWidgetHelper();
 
-  ChildProcessSecurityPolicy::GetInstance()->Add(GetID());
+  ChildProcessSecurityPolicyImpl::GetInstance()->Add(GetID());
 
   // Grant most file permissions to this renderer.
   // PLATFORM_FILE_TEMPORARY, PLATFORM_FILE_HIDDEN and
   // PLATFORM_FILE_DELETE_ON_CLOSE are not granted, because no existing API
   // requests them.
   // This is for the filesystem sandbox.
-  ChildProcessSecurityPolicy::GetInstance()->GrantPermissionsForFile(
+  ChildProcessSecurityPolicyImpl::GetInstance()->GrantPermissionsForFile(
       GetID(), browser_context->GetPath().Append(
           fileapi::SandboxMountPointProvider::kNewFileSystemDirectory),
       base::PLATFORM_FILE_OPEN |
@@ -301,14 +301,14 @@ RenderProcessHostImpl::RenderProcessHostImpl(
       base::PLATFORM_FILE_ENUMERATE);
   // This is so that we can read and move stuff out of the old filesystem
   // sandbox.
-  ChildProcessSecurityPolicy::GetInstance()->GrantPermissionsForFile(
+  ChildProcessSecurityPolicyImpl::GetInstance()->GrantPermissionsForFile(
       GetID(), browser_context->GetPath().Append(
           fileapi::SandboxMountPointProvider::kOldFileSystemDirectory),
       base::PLATFORM_FILE_READ | base::PLATFORM_FILE_WRITE |
       base::PLATFORM_FILE_WRITE_ATTRIBUTES | base::PLATFORM_FILE_ENUMERATE);
   // This is so that we can rename the old sandbox out of the way so that we
   // know we've taken care of it.
-  ChildProcessSecurityPolicy::GetInstance()->GrantPermissionsForFile(
+  ChildProcessSecurityPolicyImpl::GetInstance()->GrantPermissionsForFile(
       GetID(), browser_context->GetPath().Append(
           fileapi::SandboxMountPointProvider::kRenamedOldFileSystemDirectory),
       base::PLATFORM_FILE_CREATE | base::PLATFORM_FILE_CREATE_ALWAYS |
@@ -326,7 +326,7 @@ RenderProcessHostImpl::RenderProcessHostImpl(
 }
 
 RenderProcessHostImpl::~RenderProcessHostImpl() {
-  ChildProcessSecurityPolicy::GetInstance()->Remove(GetID());
+  ChildProcessSecurityPolicyImpl::GetInstance()->Remove(GetID());
 
   // We may have some unsent messages at this point, but that's OK.
   channel_.reset();
@@ -1096,7 +1096,7 @@ bool RenderProcessHostImpl::IsSuitableHost(
   WebUIControllerFactory* factory =
       content::GetContentClient()->browser()->GetWebUIControllerFactory();
   if (factory &&
-      ChildProcessSecurityPolicy::GetInstance()->HasWebUIBindings(
+      ChildProcessSecurityPolicyImpl::GetInstance()->HasWebUIBindings(
           host->GetID()) !=
       factory->UseWebUIBindingsForURL(browser_context, site_url)) {
     return false;
@@ -1291,7 +1291,8 @@ void RenderProcessHostImpl::OnUserMetricsRecordAction(
 
 void RenderProcessHostImpl::OnRevealFolderInOS(const FilePath& path) {
   // Only honor the request if appropriate persmissions are granted.
-  if (ChildProcessSecurityPolicy::GetInstance()->CanReadFile(GetID(), path))
+  if (ChildProcessSecurityPolicyImpl::GetInstance()->CanReadFile(GetID(),
+                                                                 path))
     content::GetContentClient()->browser()->OpenItem(path);
 }
 

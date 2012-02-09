@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/child_process_security_policy.h"
+#include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/renderer_host/test_render_view_host.h"
 #include "content/browser/tab_contents/navigation_controller_impl.h"
 #include "content/browser/tab_contents/test_tab_contents.h"
@@ -152,7 +152,7 @@ TEST_F(RenderViewHostTest, DragEnteredFileURLsStillBlocked) {
   dropped_data.url = file_url;
   rvh()->DragTargetDragEnter(dropped_data, client_point, screen_point,
                              WebKit::WebDragOperationNone);
-  EXPECT_FALSE(ChildProcessSecurityPolicy::GetInstance()->CanRequestURL(
+  EXPECT_FALSE(ChildProcessSecurityPolicyImpl::GetInstance()->CanRequestURL(
       process()->GetID(), file_url));
 }
 

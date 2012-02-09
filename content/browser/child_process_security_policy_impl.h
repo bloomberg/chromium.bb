@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_CHILD_PROCESS_SECURITY_POLICY_H_
-#define CONTENT_BROWSER_CHILD_PROCESS_SECURITY_POLICY_H_
+#ifndef CONTENT_BROWSER_CHILD_PROCESS_SECURITY_POLICY_IMPL_H_
+#define CONTENT_BROWSER_CHILD_PROCESS_SECURITY_POLICY_IMPL_H_
 
 #pragma once
 
@@ -11,40 +11,34 @@
 #include <set>
 #include <string>
 
-#include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/singleton.h"
 #include "base/synchronization/lock.h"
-#include "content/common/content_export.h"
+#include "content/public/browser/child_process_security_policy.h"
 
 class FilePath;
 class GURL;
 
-// The ChildProcessSecurityPolicy class is used to grant and revoke security
-// capabilities for child processes.  For example, it restricts whether a child
-// process is permitted to load file:// URLs based on whether the process
-// has ever been commanded to load file:// URLs by the browser.
-//
-// ChildProcessSecurityPolicy is a singleton that may be used on any thread.
-//
-class CONTENT_EXPORT ChildProcessSecurityPolicy {
+class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
+    : NON_EXPORTED_BASE(public content::ChildProcessSecurityPolicy) {
  public:
   // Object can only be created through GetInstance() so the constructor is
   // private.
-  ~ChildProcessSecurityPolicy();
+  virtual ~ChildProcessSecurityPolicyImpl();
 
-  // There is one global ChildProcessSecurityPolicy object for the entire
-  // browser process.  The object returned by this method may be accessed on
-  // any thread.
-  static ChildProcessSecurityPolicy* GetInstance();
+  static ChildProcessSecurityPolicyImpl* GetInstance();
 
-  // Web-safe schemes can be requested by any child process.  Once a web-safe
-  // scheme has been registered, any child process can request URLs with
-  // that scheme.  There is no mechanism for revoking web-safe schemes.
-  void RegisterWebSafeScheme(const std::string& scheme);
-
-  // Returns true iff |scheme| has been registered as a web-safe scheme.
-  bool IsWebSafeScheme(const std::string& scheme);
+  // ChildProcessSecurityPolicy implementation.
+  virtual void RegisterWebSafeScheme(const std::string& scheme) OVERRIDE;
+  virtual bool IsWebSafeScheme(const std::string& scheme) OVERRIDE;
+  virtual void RegisterDisabledSchemes(const std::set<std::string>& schemes)
+      OVERRIDE;
+  virtual void GrantPermissionsForFile(int child_id,
+                                       const FilePath& file,
+                                       int permissions) OVERRIDE;
+  virtual void GrantReadFile(int child_id, const FilePath& file) OVERRIDE;
+  virtual void GrantScheme(int child_id, const std::string& scheme) OVERRIDE;
 
   // Pseudo schemes are treated differently than other schemes because they
   // cannot be requested like normal URLs.  There is no mechanism for revoking
@@ -53,12 +47,6 @@ class CONTENT_EXPORT ChildProcessSecurityPolicy {
 
   // Returns true iff |scheme| has been registered as pseudo scheme.
   bool IsPseudoScheme(const std::string& scheme);
-
-  // Sets the list of disabled schemes.
-  // URLs using these schemes won't be loaded at all. The previous list of
-  // schemes is overwritten. An empty |schemes| disables this feature.
-  // Schemes listed as disabled take precedence over Web-safe schemes.
-  void RegisterDisabledSchemes(const std::set<std::string>& schemes);
 
   // Returns true iff |scheme| is listed as a disabled scheme.
   bool IsDisabledScheme(const std::string& scheme);
@@ -82,30 +70,15 @@ class CONTENT_EXPORT ChildProcessSecurityPolicy {
   // request the URL.
   void GrantRequestURL(int child_id, const GURL& url);
 
-  // Whenever the user picks a file from a <input type="file"> element, the
-  // browser should call this function to grant the child process the capability
-  // to upload the file to the web.
-  void GrantReadFile(int child_id, const FilePath& file);
-
   // Grants the child process permission to enumerate all the files in
   // this directory and read those files.
   void GrantReadDirectory(int child_id, const FilePath& directory);
-
-  // Grants certain permissions to a file. |permissions| must be a bit-set of
-  // base::PlatformFileFlags.
-  void GrantPermissionsForFile(int child_id,
-                               const FilePath& file,
-                               int permissions);
 
   // Revokes all permissions granted to the given file.
   void RevokeAllPermissionsForFile(int child_id, const FilePath& file);
 
   // Grants access permission to the given filesystem_id.
   void GrantAccessFileSystem(int child_id, const std::string& filesystem_id);
-
-  // Grants the child process the capability to access URLs of the provided
-  // scheme.
-  void GrantScheme(int child_id, const std::string& scheme);
 
   // Grant the child process the ability to use Web UI Bindings.
   void GrantWebUIBindings(int child_id);
@@ -166,9 +139,9 @@ class CONTENT_EXPORT ChildProcessSecurityPolicy {
   typedef std::map<int, SecurityState*> SecurityStateMap;
   typedef std::map<int, int> WorkerToMainProcessMap;
 
-  // Obtain an instance of ChildProcessSecurityPolicy via GetInstance().
-  ChildProcessSecurityPolicy();
-  friend struct DefaultSingletonTraits<ChildProcessSecurityPolicy>;
+  // Obtain an instance of ChildProcessSecurityPolicyImpl via GetInstance().
+  ChildProcessSecurityPolicyImpl();
+  friend struct DefaultSingletonTraits<ChildProcessSecurityPolicyImpl>;
 
   // Adds child process during registration.
   void AddChild(int child_id);
@@ -207,7 +180,7 @@ class CONTENT_EXPORT ChildProcessSecurityPolicy {
   // corresponds to which main js thread child process.
   WorkerToMainProcessMap worker_map_;
 
-  DISALLOW_COPY_AND_ASSIGN(ChildProcessSecurityPolicy);
+  DISALLOW_COPY_AND_ASSIGN(ChildProcessSecurityPolicyImpl);
 };
 
-#endif  // CONTENT_BROWSER_CHILD_PROCESS_SECURITY_POLICY_H_
+#endif  // CONTENT_BROWSER_CHILD_PROCESS_SECURITY_POLICY_IMPL_H_

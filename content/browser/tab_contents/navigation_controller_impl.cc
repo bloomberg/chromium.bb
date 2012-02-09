@@ -11,7 +11,7 @@
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "content/browser/browser_url_handler.h"
-#include "content/browser/child_process_security_policy.h"
+#include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/in_process_webkit/session_storage_namespace.h"
 #include "content/browser/renderer_host/render_view_host.h"  // Temporary
 #include "content/browser/site_instance_impl.h"
@@ -331,8 +331,8 @@ void NavigationControllerImpl::LoadEntry(NavigationEntryImpl* entry) {
   // Don't navigate to URLs disabled by policy. This prevents showing the URL
   // on the Omnibar when it is also going to be blocked by
   // ChildProcessSecurityPolicy::CanRequestURL.
-  ChildProcessSecurityPolicy *policy =
-      ChildProcessSecurityPolicy::GetInstance();
+  ChildProcessSecurityPolicyImpl* policy =
+      ChildProcessSecurityPolicyImpl::GetInstance();
   if (policy->IsDisabledScheme(entry->GetURL().scheme()) ||
       policy->IsDisabledScheme(entry->GetVirtualURL().scheme())) {
     VLOG(1) << "URL not loaded because the scheme is blocked by policy: "

@@ -145,7 +145,6 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/common/web_apps.h"
 #include "content/browser/browser_url_handler.h"
-#include "content/browser/child_process_security_policy.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/public/browser/devtools_manager.h"
 #include "content/public/browser/download_item.h"
@@ -2634,11 +2633,6 @@ void Browser::RunFileChooserHelper(
 // static
 void Browser::EnumerateDirectoryHelper(WebContents* tab, int request_id,
                                        const FilePath& path) {
-  ChildProcessSecurityPolicy* policy =
-      ChildProcessSecurityPolicy::GetInstance();
-  if (!policy->CanReadDirectory(tab->GetRenderProcessHost()->GetID(), path))
-    return;
-
   Profile* profile =
       Profile::FromBrowserContext(tab->GetBrowserContext());
   // FileSelectHelper adds a reference to itself and only releases it after
@@ -2674,11 +2668,6 @@ void Browser::RegisterProtocolHandlerHelper(WebContents* tab,
   TabContentsWrapper* tcw = TabContentsWrapper::GetCurrentWrapperForContents(
       tab);
   if (!tcw || tcw->profile()->IsOffTheRecord())
-    return;
-
-  ChildProcessSecurityPolicy* policy =
-      ChildProcessSecurityPolicy::GetInstance();
-  if (policy->IsPseudoScheme(protocol) || policy->IsDisabledScheme(protocol))
     return;
 
   ProtocolHandler handler =

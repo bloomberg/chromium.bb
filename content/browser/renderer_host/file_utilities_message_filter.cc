@@ -1,11 +1,11 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "content/browser/renderer_host/file_utilities_message_filter.h"
 
 #include "base/file_util.h"
-#include "content/browser/child_process_security_policy.h"
+#include "content/browser/child_process_security_policy_impl.h"
 #include "content/common/file_utilities_messages.h"
 
 using content::BrowserThread;
@@ -43,7 +43,7 @@ void FileUtilitiesMessageFilter::OnGetFileSize(const FilePath& path,
 
   // Get file size only when the child process has been granted permission to
   // upload the file.
-  if (!ChildProcessSecurityPolicy::GetInstance()->CanReadFile(
+  if (!ChildProcessSecurityPolicyImpl::GetInstance()->CanReadFile(
       process_id_, path)) {
     return;
   }
@@ -60,7 +60,7 @@ void FileUtilitiesMessageFilter::OnGetFileModificationTime(
 
   // Get file modification time only when the child process has been granted
   // permission to upload the file.
-  if (!ChildProcessSecurityPolicy::GetInstance()->CanReadFile(
+  if (!ChildProcessSecurityPolicyImpl::GetInstance()->CanReadFile(
       process_id_, path)) {
     return;
   }
@@ -78,7 +78,7 @@ void FileUtilitiesMessageFilter::OnOpenFile(
   // Open the file only when the child process has been granted permission to
   // upload the file.
   // TODO(jianli): Do we need separate permission to control opening the file?
-  if (!ChildProcessSecurityPolicy::GetInstance()->CanReadFile(
+  if (!ChildProcessSecurityPolicyImpl::GetInstance()->CanReadFile(
           process_id_, path)) {
 #if defined(OS_WIN)
     *result = base::kInvalidPlatformFileValue;

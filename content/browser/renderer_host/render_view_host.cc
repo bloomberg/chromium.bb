@@ -18,7 +18,7 @@
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-#include "content/browser/child_process_security_policy.h"
+#include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/cross_site_request_manager.h"
 #include "content/browser/gpu/gpu_surface_tracker.h"
 #include "content/browser/host_zoom_map_impl.h"
@@ -226,7 +226,7 @@ void RenderViewHost::SyncRendererPrefs() {
 }
 
 void RenderViewHost::Navigate(const ViewMsg_Navigate_Params& params) {
-  ChildProcessSecurityPolicy::GetInstance()->GrantRequestURL(
+  ChildProcessSecurityPolicyImpl::GetInstance()->GrantRequestURL(
       process()->GetID(), params.url);
 
   ViewMsg_Navigate* nav_message = new ViewMsg_Navigate(routing_id(), params);
@@ -428,8 +428,8 @@ void RenderViewHost::DragTargetDragEnter(
     const gfx::Point& screen_pt,
     WebDragOperationsMask operations_allowed) {
   const int renderer_id = process()->GetID();
-  ChildProcessSecurityPolicy* policy =
-      ChildProcessSecurityPolicy::GetInstance();
+  ChildProcessSecurityPolicyImpl* policy =
+      ChildProcessSecurityPolicyImpl::GetInstance();
 
   // The URL could have been cobbled together from any highlighted text string,
   // and can't be interpreted as a capability.
@@ -606,7 +606,7 @@ void RenderViewHost::DragSourceSystemDragEnded() {
 
 void RenderViewHost::AllowBindings(int bindings_flags) {
   if (bindings_flags & content::BINDINGS_POLICY_WEB_UI) {
-    ChildProcessSecurityPolicy::GetInstance()->GrantWebUIBindings(
+    ChildProcessSecurityPolicyImpl::GetInstance()->GrantWebUIBindings(
         process()->GetID());
   }
 
@@ -649,7 +649,7 @@ void RenderViewHost::FilesSelectedInChooser(
   // Grant the security access requested to the given files.
   for (std::vector<FilePath>::const_iterator file = files.begin();
        file != files.end(); ++file) {
-    ChildProcessSecurityPolicy::GetInstance()->GrantPermissionsForFile(
+    ChildProcessSecurityPolicyImpl::GetInstance()->GrantPermissionsForFile(
         process()->GetID(), *file, permissions);
   }
   Send(new ViewMsg_RunFileChooserResponse(routing_id(), files));
@@ -661,7 +661,7 @@ void RenderViewHost::DirectoryEnumerationFinished(
   // Grant the security access requested to the given files.
   for (std::vector<FilePath>::const_iterator file = files.begin();
        file != files.end(); ++file) {
-    ChildProcessSecurityPolicy::GetInstance()->GrantReadFile(
+    ChildProcessSecurityPolicyImpl::GetInstance()->GrantReadFile(
         process()->GetID(), *file);
   }
   Send(new ViewMsg_EnumerateDirectoryResponse(routing_id(),
@@ -938,8 +938,8 @@ void RenderViewHost::OnMsgNavigate(const IPC::Message& msg) {
     return;
 
   const int renderer_id = process()->GetID();
-  ChildProcessSecurityPolicy* policy =
-      ChildProcessSecurityPolicy::GetInstance();
+  ChildProcessSecurityPolicyImpl* policy =
+      ChildProcessSecurityPolicyImpl::GetInstance();
   // Without this check, an evil renderer can trick the browser into creating
   // a navigation entry for a banned URL.  If the user clicks the back button
   // followed by the forward button (or clicks reload, or round-trips through
@@ -1040,8 +1040,8 @@ void RenderViewHost::OnMsgContextMenu(const ContextMenuParams& params) {
   // directly, don't show them in the context menu.
   ContextMenuParams validated_params(params);
   int renderer_id = process()->GetID();
-  ChildProcessSecurityPolicy* policy =
-      ChildProcessSecurityPolicy::GetInstance();
+  ChildProcessSecurityPolicyImpl* policy =
+      ChildProcessSecurityPolicyImpl::GetInstance();
 
   // We don't validate |unfiltered_link_url| so that this field can be used
   // when users want to copy the original link URL.
@@ -1063,7 +1063,7 @@ void RenderViewHost::OnMsgOpenURL(const GURL& url,
                                   WindowOpenDisposition disposition,
                                   int64 source_frame_id) {
   GURL validated_url(url);
-  FilterURL(ChildProcessSecurityPolicy::GetInstance(),
+  FilterURL(ChildProcessSecurityPolicyImpl::GetInstance(),
             process()->GetID(), &validated_url);
 
   delegate_->RequestOpenURL(
@@ -1143,8 +1143,8 @@ void RenderViewHost::OnMsgStartDragging(
     return;
 
   WebDropData filtered_data(drop_data);
-  ChildProcessSecurityPolicy* policy =
-      ChildProcessSecurityPolicy::GetInstance();
+  ChildProcessSecurityPolicyImpl* policy =
+      ChildProcessSecurityPolicyImpl::GetInstance();
 
   // Allow drag of Javascript URLs to enable bookmarklet drag to bookmark bar.
   if (!filtered_data.url.SchemeIs(chrome::kJavaScriptScheme))
@@ -1326,7 +1326,7 @@ void RenderViewHost::ToggleSpeechInput() {
   Send(new SpeechInputMsg_ToggleSpeechInput(routing_id()));
 }
 
-void RenderViewHost::FilterURL(ChildProcessSecurityPolicy* policy,
+void RenderViewHost::FilterURL(ChildProcessSecurityPolicyImpl* policy,
                                int renderer_id,
                                GURL* url) {
   if (!url->is_valid())

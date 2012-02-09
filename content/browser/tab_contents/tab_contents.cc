@@ -13,7 +13,7 @@
 #include "base/string_util.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
-#include "content/browser/child_process_security_policy.h"
+#include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/debugger/devtools_manager_impl.h"
 #include "content/browser/download/download_stats.h"
 #include "content/browser/download/save_package.h"
@@ -426,7 +426,7 @@ WebPreferences TabContents::GetWebkitPrefs(RenderViewHost* rvh,
     }
   }
 
-  if (ChildProcessSecurityPolicy::GetInstance()->HasWebUIBindings(
+  if (ChildProcessSecurityPolicyImpl::GetInstance()->HasWebUIBindings(
           rvh->process()->GetID())) {
     prefs.loads_images_automatically = true;
     prefs.javascript_enabled = true;
@@ -1346,7 +1346,7 @@ void TabContents::OnDidStartProvisionalLoadForFrame(int64 frame_id,
                                                     const GURL& url) {
   bool is_error_page = (url.spec() == chrome::kUnreachableWebDataURL);
   GURL validated_url(url);
-  GetRenderViewHost()->FilterURL(ChildProcessSecurityPolicy::GetInstance(),
+  GetRenderViewHost()->FilterURL(ChildProcessSecurityPolicyImpl::GetInstance(),
       GetRenderProcessHost()->GetID(), &validated_url);
 
   RenderViewHost* rvh =
@@ -1395,7 +1395,7 @@ void TabContents::OnDidFailProvisionalLoadWithError(
             params.showing_repost_interstitial
           << ", frame_id: " << params.frame_id;
   GURL validated_url(params.url);
-  GetRenderViewHost()->FilterURL(ChildProcessSecurityPolicy::GetInstance(),
+  GetRenderViewHost()->FilterURL(ChildProcessSecurityPolicyImpl::GetInstance(),
       GetRenderProcessHost()->GetID(), &validated_url);
 
   if (net::ERR_ABORTED == params.error_code) {
@@ -1581,7 +1581,10 @@ void TabContents::OnSaveURL(const GURL& url) {
 
 void TabContents::OnEnumerateDirectory(int request_id,
                                        const FilePath& path) {
-  delegate_->EnumerateDirectory(this, request_id, path);
+  ChildProcessSecurityPolicyImpl* policy =
+      ChildProcessSecurityPolicyImpl::GetInstance();
+  if (policy->CanReadDirectory(GetRenderProcessHost()->GetID(), path))
+    delegate_->EnumerateDirectory(this, request_id, path);
 }
 
 void TabContents::OnJSOutOfMemory() {
@@ -1591,6 +1594,10 @@ void TabContents::OnJSOutOfMemory() {
 void TabContents::OnRegisterProtocolHandler(const std::string& protocol,
                                             const GURL& url,
                                             const string16& title) {
+  ChildProcessSecurityPolicyImpl* policy =
+      ChildProcessSecurityPolicyImpl::GetInstance();
+  if (policy->IsPseudoScheme(protocol) || policy->IsDisabledScheme(protocol))
+    return;
   delegate_->RegisterProtocolHandler(this, protocol, url, title);
 }
 

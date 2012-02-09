@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,7 +9,7 @@
 #include "base/file_util.h"
 #include "base/platform_file.h"
 #include "base/process_util.h"
-#include "content/browser/child_process_security_policy.h"
+#include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/common/pepper_file_messages.h"
 #include "content/public/browser/browser_context.h"
@@ -224,7 +224,7 @@ FilePath PepperFileMessageFilter::ValidateAndConvertPepperFilePath(
   switch(pepper_path.domain()) {
     case webkit::ppapi::PepperFilePath::DOMAIN_ABSOLUTE:
       if (pepper_path.path().IsAbsolute() &&
-          ChildProcessSecurityPolicy::GetInstance()->HasPermissionsForFile(
+          ChildProcessSecurityPolicyImpl::GetInstance()->HasPermissionsForFile(
               child_id(), pepper_path.path(), flags))
         file_path = pepper_path.path();
       break;

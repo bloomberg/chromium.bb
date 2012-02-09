@@ -17,7 +17,7 @@
 #include "base/utf_string_conversions.h"
 #include "content/browser/appcache/appcache_dispatcher_host.h"
 #include "content/browser/browser_child_process_host_impl.h"
-#include "content/browser/child_process_security_policy.h"
+#include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/debugger/worker_devtools_manager.h"
 #include "content/browser/debugger/worker_devtools_message_filter.h"
 #include "content/browser/file_system/file_system_dispatcher_host.h"
@@ -113,7 +113,8 @@ WorkerProcessHost::~WorkerProcessHost() {
         this, i->worker_route_id());
   }
 
-  ChildProcessSecurityPolicy::GetInstance()->Remove(process_->GetData().id);
+  ChildProcessSecurityPolicyImpl::GetInstance()->Remove(
+      process_->GetData().id);
 }
 
 bool WorkerProcessHost::Send(IPC::Message* message) {
@@ -193,7 +194,7 @@ bool WorkerProcessHost::Init(int render_process_id) {
 #endif
       cmd_line);
 
-  ChildProcessSecurityPolicy::GetInstance()->AddWorker(
+  ChildProcessSecurityPolicyImpl::GetInstance()->AddWorker(
       process_->GetData().id, render_process_id);
   if (!CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableFileSystem)) {
@@ -202,7 +203,7 @@ bool WorkerProcessHost::Init(int render_process_id) {
     // PLATFORM_FILE_DELETE_ON_CLOSE are not granted, because no existing API
     // requests them.
     // This is for the filesystem sandbox.
-    ChildProcessSecurityPolicy::GetInstance()->GrantPermissionsForFile(
+    ChildProcessSecurityPolicyImpl::GetInstance()->GrantPermissionsForFile(
         process_->GetData().id, resource_context_->file_system_context()->
           sandbox_provider()->new_base_path(),
         base::PLATFORM_FILE_OPEN |
@@ -219,7 +220,7 @@ bool WorkerProcessHost::Init(int render_process_id) {
         base::PLATFORM_FILE_ENUMERATE);
     // This is so that we can read and move stuff out of the old filesystem
     // sandbox.
-    ChildProcessSecurityPolicy::GetInstance()->GrantPermissionsForFile(
+    ChildProcessSecurityPolicyImpl::GetInstance()->GrantPermissionsForFile(
         process_->GetData().id, resource_context_->file_system_context()->
           sandbox_provider()->old_base_path(),
         base::PLATFORM_FILE_READ | base::PLATFORM_FILE_WRITE |
@@ -227,7 +228,7 @@ bool WorkerProcessHost::Init(int render_process_id) {
             base::PLATFORM_FILE_ENUMERATE);
     // This is so that we can rename the old sandbox out of the way so that
     // we know we've taken care of it.
-    ChildProcessSecurityPolicy::GetInstance()->GrantPermissionsForFile(
+    ChildProcessSecurityPolicyImpl::GetInstance()->GrantPermissionsForFile(
         process_->GetData().id, resource_context_->file_system_context()->
           sandbox_provider()->renamed_old_base_path(),
         base::PLATFORM_FILE_CREATE | base::PLATFORM_FILE_CREATE_ALWAYS |
@@ -275,7 +276,7 @@ void WorkerProcessHost::CreateMessageFilters(int render_process_id) {
 }
 
 void WorkerProcessHost::CreateWorker(const WorkerInstance& instance) {
-  ChildProcessSecurityPolicy::GetInstance()->GrantRequestURL(
+  ChildProcessSecurityPolicyImpl::GetInstance()->GrantRequestURL(
       process_->GetData().id, instance.url());
 
   instances_.push_back(instance);

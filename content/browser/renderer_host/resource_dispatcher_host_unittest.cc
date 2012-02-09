@@ -12,7 +12,7 @@
 #include "base/message_loop.h"
 #include "base/process_util.h"
 #include "content/browser/browser_thread_impl.h"
-#include "content/browser/child_process_security_policy.h"
+#include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/mock_resource_context.h"
 #include "content/browser/renderer_host/dummy_resource_handler.h"
 #include "content/browser/renderer_host/layered_resource_handler.h"
@@ -346,7 +346,7 @@ class ResourceDispatcherHostTest : public testing::Test,
   virtual void SetUp() {
     DCHECK(!test_fixture_);
     test_fixture_ = this;
-    ChildProcessSecurityPolicy::GetInstance()->Add(0);
+    ChildProcessSecurityPolicyImpl::GetInstance()->Add(0);
     net::URLRequest::Deprecated::RegisterProtocolFactory(
         "test",
         &ResourceDispatcherHostTest::Factory);
@@ -368,7 +368,7 @@ class ResourceDispatcherHostTest : public testing::Test,
 
     host_.Shutdown();
 
-    ChildProcessSecurityPolicy::GetInstance()->Remove(0);
+    ChildProcessSecurityPolicyImpl::GetInstance()->Remove(0);
 
     // Flush the message loop to make application verifiers happy.
     message_loop_.RunAllPending();
@@ -395,8 +395,8 @@ class ResourceDispatcherHostTest : public testing::Test,
   void CompleteStartRequest(int request_id);
 
   void EnsureTestSchemeIsAllowed() {
-    ChildProcessSecurityPolicy* policy =
-        ChildProcessSecurityPolicy::GetInstance();
+    ChildProcessSecurityPolicyImpl* policy =
+        ChildProcessSecurityPolicyImpl::GetInstance();
     if (!policy->IsWebSafeScheme("test"))
       policy->RegisterWebSafeScheme("test");
   }

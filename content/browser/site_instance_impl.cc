@@ -6,7 +6,7 @@
 
 #include "base/command_line.h"
 #include "content/browser/browsing_instance.h"
-#include "content/browser/child_process_security_policy.h"
+#include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/notification_service.h"
@@ -263,8 +263,8 @@ void SiteInstanceImpl::Observe(int type,
 void SiteInstanceImpl::LockToOrigin() {
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   if (command_line.HasSwitch(switches::kEnableStrictSiteIsolation)) {
-    ChildProcessSecurityPolicy* policy =
-        ChildProcessSecurityPolicy::GetInstance();
+    ChildProcessSecurityPolicyImpl* policy =
+        ChildProcessSecurityPolicyImpl::GetInstance();
     policy->LockToOrigin(process_->GetID(), site_);
   }
 }

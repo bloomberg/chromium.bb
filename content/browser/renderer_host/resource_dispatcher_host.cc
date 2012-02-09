@@ -23,7 +23,7 @@
 #include "base/third_party/dynamic_annotations/dynamic_annotations.h"
 #include "content/browser/appcache/chrome_appcache_service.h"
 #include "content/browser/cert_store.h"
-#include "content/browser/child_process_security_policy.h"
+#include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/chrome_blob_storage_context.h"
 #include "content/browser/cross_site_request_manager.h"
 #include "content/browser/download/download_file_manager.h"
@@ -168,8 +168,8 @@ bool ShouldServiceRequest(content::ProcessType process_type,
   if (process_type == content::PROCESS_TYPE_PLUGIN)
     return true;
 
-  ChildProcessSecurityPolicy* policy =
-      ChildProcessSecurityPolicy::GetInstance();
+  ChildProcessSecurityPolicyImpl* policy =
+      ChildProcessSecurityPolicyImpl::GetInstance();
 
   // Check if the renderer is permitted to request the requested URL.
   if (!policy->CanRequestURL(child_id, request_data.url)) {
@@ -218,7 +218,7 @@ void PopulateResourceResponse(net::URLRequest* request,
 
 void RemoveDownloadFileFromChildSecurityPolicy(int child_id,
                                                const FilePath& path) {
-  ChildProcessSecurityPolicy::GetInstance()->RevokeAllPermissionsForFile(
+  ChildProcessSecurityPolicyImpl::GetInstance()->RevokeAllPermissionsForFile(
       child_id, path);
 }
 
@@ -620,8 +620,8 @@ void ResourceDispatcherHost::BeginRequest(
   if (sync_result)
     load_flags |= net::LOAD_IGNORE_LIMITS;
 
-  ChildProcessSecurityPolicy* policy =
-      ChildProcessSecurityPolicy::GetInstance();
+  ChildProcessSecurityPolicyImpl* policy =
+      ChildProcessSecurityPolicyImpl::GetInstance();
   if (!policy->CanUseCookiesForOrigin(child_id, request_data.url)) {
     load_flags |= (net::LOAD_DO_NOT_SEND_COOKIES |
                    net::LOAD_DO_NOT_SEND_AUTH_DATA |
@@ -774,7 +774,7 @@ void ResourceDispatcherHost::OnDataDownloadedACK(int request_id) {
 void ResourceDispatcherHost::RegisterDownloadedTempFile(
     int child_id, int request_id, DeletableFileReference* reference) {
   registered_temp_files_[child_id][request_id] = reference;
-  ChildProcessSecurityPolicy::GetInstance()->GrantReadFile(
+  ChildProcessSecurityPolicyImpl::GetInstance()->GrantReadFile(
       child_id, reference->path());
 
   // When the temp file is deleted, revoke permissions that the renderer has
@@ -942,7 +942,7 @@ net::Error ResourceDispatcherHost::BeginDownload(
   }
   request->set_load_flags(request->load_flags() | extra_load_flags);
   // Check if the renderer is permitted to request the requested URL.
-  if (!ChildProcessSecurityPolicy::GetInstance()->
+  if (!ChildProcessSecurityPolicyImpl::GetInstance()->
           CanRequestURL(child_id, url)) {
     VLOG(1) << "Denied unauthorized download request for "
             << url.possibly_invalid_spec();
@@ -1322,7 +1322,7 @@ void ResourceDispatcherHost::OnReceivedRedirect(net::URLRequest* request,
   DCHECK(request->status().is_success());
 
   if (info->process_type() != content::PROCESS_TYPE_PLUGIN &&
-      !ChildProcessSecurityPolicy::GetInstance()->
+      !ChildProcessSecurityPolicyImpl::GetInstance()->
           CanRequestURL(info->child_id(), new_url)) {
     VLOG(1) << "Denied unauthorized request for "
             << new_url.possibly_invalid_spec();

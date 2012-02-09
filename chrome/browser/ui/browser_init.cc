@@ -81,8 +81,8 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/installer/util/browser_distribution.h"
-#include "content/browser/child_process_security_policy.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
@@ -128,6 +128,7 @@
 #endif
 
 using content::BrowserThread;
+using content::ChildProcessSecurityPolicy;
 using content::OpenURLParams;
 using content::Referrer;
 using content::WebContents;

@@ -60,12 +60,12 @@
 #include "chrome/common/print_messages.h"
 #include "chrome/common/spellcheck_messages.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/child_process_security_policy.h"
 #include "content/browser/download/download_types.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
 #include "content/browser/speech/speech_input_preferences.h"
 #include "content/browser/ssl/ssl_manager.h"
+#include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
@@ -89,6 +89,7 @@
 #include "chrome/browser/extensions/file_manager_util.h"
 #endif
 
+using content::ChildProcessSecurityPolicy;
 using content::DownloadManager;
 using content::NavigationEntry;
 using content::OpenURLParams;

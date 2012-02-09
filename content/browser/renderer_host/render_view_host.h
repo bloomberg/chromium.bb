@@ -30,7 +30,7 @@
 #include "webkit/glue/webaccessibility.h"
 #include "webkit/glue/window_open_disposition.h"
 
-class ChildProcessSecurityPolicy;
+class ChildProcessSecurityPolicyImpl;
 class FilePath;
 class GURL;
 class PowerSaveBlocker;
@@ -407,7 +407,7 @@ class CONTENT_EXPORT RenderViewHost : public RenderWidgetHost {
 
   // Checks that the given renderer can request |url|, if not it sets it to an
   // empty url.
-  static void FilterURL(ChildProcessSecurityPolicy* policy,
+  static void FilterURL(ChildProcessSecurityPolicyImpl* policy,
                         int renderer_id,
                         GURL* url);
 

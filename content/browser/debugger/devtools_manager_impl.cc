@@ -8,7 +8,7 @@
 
 #include "base/bind.h"
 #include "base/message_loop.h"
-#include "content/browser/child_process_security_policy.h"
+#include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/debugger/devtools_netlog_observer.h"
 #include "content/browser/debugger/render_view_devtools_agent_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
@@ -240,7 +240,8 @@ void DevToolsManagerImpl::BindClientHost(
 
   int process_id = agent_host->GetRenderProcessId();
   if (process_id != -1)
-    ChildProcessSecurityPolicy::GetInstance()->GrantReadRawCookies(process_id);
+    ChildProcessSecurityPolicyImpl::GetInstance()->GrantReadRawCookies(
+        process_id);
 }
 
 void DevToolsManagerImpl::UnbindClientHost(DevToolsAgentHost* agent_host,
@@ -274,7 +275,8 @@ void DevToolsManagerImpl::UnbindClientHost(DevToolsAgentHost* agent_host,
       return;
   }
   // We've disconnected from the last renderer -> revoke cookie permissions.
-  ChildProcessSecurityPolicy::GetInstance()->RevokeReadRawCookies(process_id);
+  ChildProcessSecurityPolicyImpl::GetInstance()->RevokeReadRawCookies(
+      process_id);
 }
 
 void DevToolsManagerImpl::CloseAllClientHosts() {

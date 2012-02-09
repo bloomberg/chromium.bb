@@ -1,10 +1,10 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "content/browser/renderer_host/blob_message_filter.h"
 
-#include "content/browser/child_process_security_policy.h"
+#include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/chrome_blob_storage_context.h"
 #include "content/common/webblob_messages.h"
 #include "googleurl/src/gurl.h"
@@ -64,7 +64,7 @@ void BlobMessageFilter::OnAppendBlobDataItem(
     const GURL& url, const BlobData::Item& item) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (item.type == BlobData::TYPE_FILE &&
-      !ChildProcessSecurityPolicy::GetInstance()->CanReadFile(
+      !ChildProcessSecurityPolicyImpl::GetInstance()->CanReadFile(
           process_id_, item.file_path)) {
     OnRemoveBlob(url);
     return;

@@ -66,12 +66,12 @@
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/browser_url_handler.h"
-#include "content/browser/child_process_security_policy.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/resource_context.h"
 #include "content/browser/ssl/ssl_cert_error_handler.h"
 #include "content/browser/ssl/ssl_client_auth_handler.h"
 #include "content/public/browser/browser_main_parts.h"
+#include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
@@ -130,6 +130,7 @@
 
 using content::AccessTokenStore;
 using content::BrowserThread;
+using content::ChildProcessSecurityPolicy;
 using content::SiteInstance;
 using content::WebContents;
 

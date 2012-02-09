@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,7 +8,7 @@
 #include "base/basictypes.h"
 #include "base/file_path.h"
 #include "base/platform_file.h"
-#include "content/browser/child_process_security_policy.h"
+#include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/mock_content_browser_client.h"
 #include "content/common/test_url_constants.h"
 #include "content/public/common/url_constants.h"
@@ -73,7 +73,8 @@ class ChildProcessSecurityPolicyTest : public testing::Test {
 };
 
 TEST_F(ChildProcessSecurityPolicyTest, IsWebSafeSchemeTest) {
-  ChildProcessSecurityPolicy* p = ChildProcessSecurityPolicy::GetInstance();
+  ChildProcessSecurityPolicyImpl* p =
+      ChildProcessSecurityPolicyImpl::GetInstance();
 
   EXPECT_TRUE(p->IsWebSafeScheme(chrome::kHttpScheme));
   EXPECT_TRUE(p->IsWebSafeScheme(chrome::kHttpsScheme));
@@ -91,7 +92,8 @@ TEST_F(ChildProcessSecurityPolicyTest, IsWebSafeSchemeTest) {
 }
 
 TEST_F(ChildProcessSecurityPolicyTest, IsPseudoSchemeTest) {
-  ChildProcessSecurityPolicy* p = ChildProcessSecurityPolicy::GetInstance();
+  ChildProcessSecurityPolicyImpl* p =
+      ChildProcessSecurityPolicyImpl::GetInstance();
 
   EXPECT_TRUE(p->IsPseudoScheme(chrome::kAboutScheme));
   EXPECT_TRUE(p->IsPseudoScheme(chrome::kJavaScriptScheme));
@@ -105,7 +107,8 @@ TEST_F(ChildProcessSecurityPolicyTest, IsPseudoSchemeTest) {
 }
 
 TEST_F(ChildProcessSecurityPolicyTest, IsDisabledSchemeTest) {
-  ChildProcessSecurityPolicy* p = ChildProcessSecurityPolicy::GetInstance();
+  ChildProcessSecurityPolicyImpl* p =
+      ChildProcessSecurityPolicyImpl::GetInstance();
 
   EXPECT_FALSE(p->IsDisabledScheme("evil-scheme"));
   std::set<std::string> disabled_set;
@@ -121,7 +124,8 @@ TEST_F(ChildProcessSecurityPolicyTest, IsDisabledSchemeTest) {
 }
 
 TEST_F(ChildProcessSecurityPolicyTest, StandardSchemesTest) {
-  ChildProcessSecurityPolicy* p = ChildProcessSecurityPolicy::GetInstance();
+  ChildProcessSecurityPolicyImpl* p =
+      ChildProcessSecurityPolicyImpl::GetInstance();
 
   p->Add(kRendererID);
 
@@ -145,7 +149,8 @@ TEST_F(ChildProcessSecurityPolicyTest, StandardSchemesTest) {
 }
 
 TEST_F(ChildProcessSecurityPolicyTest, AboutTest) {
-  ChildProcessSecurityPolicy* p = ChildProcessSecurityPolicy::GetInstance();
+  ChildProcessSecurityPolicyImpl* p =
+      ChildProcessSecurityPolicyImpl::GetInstance();
 
   p->Add(kRendererID);
 
@@ -181,7 +186,8 @@ TEST_F(ChildProcessSecurityPolicyTest, AboutTest) {
 }
 
 TEST_F(ChildProcessSecurityPolicyTest, JavaScriptTest) {
-  ChildProcessSecurityPolicy* p = ChildProcessSecurityPolicy::GetInstance();
+  ChildProcessSecurityPolicyImpl* p =
+      ChildProcessSecurityPolicyImpl::GetInstance();
 
   p->Add(kRendererID);
 
@@ -193,7 +199,8 @@ TEST_F(ChildProcessSecurityPolicyTest, JavaScriptTest) {
 }
 
 TEST_F(ChildProcessSecurityPolicyTest, RegisterWebSafeSchemeTest) {
-  ChildProcessSecurityPolicy* p = ChildProcessSecurityPolicy::GetInstance();
+  ChildProcessSecurityPolicyImpl* p =
+      ChildProcessSecurityPolicyImpl::GetInstance();
 
   p->Add(kRendererID);
 
@@ -213,7 +220,8 @@ TEST_F(ChildProcessSecurityPolicyTest, RegisterWebSafeSchemeTest) {
 }
 
 TEST_F(ChildProcessSecurityPolicyTest, CanServiceCommandsTest) {
-  ChildProcessSecurityPolicy* p = ChildProcessSecurityPolicy::GetInstance();
+  ChildProcessSecurityPolicyImpl* p =
+      ChildProcessSecurityPolicyImpl::GetInstance();
 
   p->Add(kRendererID);
 
@@ -240,7 +248,8 @@ TEST_F(ChildProcessSecurityPolicyTest, CanServiceCommandsTest) {
 }
 
 TEST_F(ChildProcessSecurityPolicyTest, ViewSource) {
-  ChildProcessSecurityPolicy* p = ChildProcessSecurityPolicy::GetInstance();
+  ChildProcessSecurityPolicyImpl* p =
+      ChildProcessSecurityPolicyImpl::GetInstance();
 
   p->Add(kRendererID);
 
@@ -263,7 +272,8 @@ TEST_F(ChildProcessSecurityPolicyTest, ViewSource) {
 }
 
 TEST_F(ChildProcessSecurityPolicyTest, CanReadFiles) {
-  ChildProcessSecurityPolicy* p = ChildProcessSecurityPolicy::GetInstance();
+  ChildProcessSecurityPolicyImpl* p =
+      ChildProcessSecurityPolicyImpl::GetInstance();
 
   p->Add(kRendererID);
 
@@ -287,7 +297,8 @@ TEST_F(ChildProcessSecurityPolicyTest, CanReadFiles) {
 }
 
 TEST_F(ChildProcessSecurityPolicyTest, CanReadDirectories) {
-  ChildProcessSecurityPolicy* p = ChildProcessSecurityPolicy::GetInstance();
+  ChildProcessSecurityPolicyImpl* p =
+      ChildProcessSecurityPolicyImpl::GetInstance();
 
   p->Add(kRendererID);
 
@@ -319,7 +330,8 @@ TEST_F(ChildProcessSecurityPolicyTest, CanReadDirectories) {
 }
 
 TEST_F(ChildProcessSecurityPolicyTest, FilePermissions) {
-  ChildProcessSecurityPolicy* p = ChildProcessSecurityPolicy::GetInstance();
+  ChildProcessSecurityPolicyImpl* p =
+      ChildProcessSecurityPolicyImpl::GetInstance();
 
   // Grant permissions for a file.
   p->Add(kRendererID);
@@ -418,7 +430,8 @@ TEST_F(ChildProcessSecurityPolicyTest, FilePermissions) {
 }
 
 TEST_F(ChildProcessSecurityPolicyTest, CanServiceWebUIBindings) {
-  ChildProcessSecurityPolicy* p = ChildProcessSecurityPolicy::GetInstance();
+  ChildProcessSecurityPolicyImpl* p =
+      ChildProcessSecurityPolicyImpl::GetInstance();
 
   GURL url("chrome://thumb/http://www.google.com/");
 
@@ -434,7 +447,8 @@ TEST_F(ChildProcessSecurityPolicyTest, CanServiceWebUIBindings) {
 }
 
 TEST_F(ChildProcessSecurityPolicyTest, RemoveRace) {
-  ChildProcessSecurityPolicy* p = ChildProcessSecurityPolicy::GetInstance();
+  ChildProcessSecurityPolicyImpl* p =
+      ChildProcessSecurityPolicyImpl::GetInstance();
 
   GURL url("file:///etc/passwd");
   FilePath file(FILE_PATH_LITERAL("/etc/passwd"));

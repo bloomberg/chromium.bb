@@ -7,7 +7,7 @@
 #include "base/string16.h"
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/browsing_instance.h"
-#include "content/browser/child_process_security_policy.h"
+#include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/mock_content_browser_client.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host.h"
@@ -527,8 +527,8 @@ static SiteInstanceImpl* CreateSiteInstance(
 // in processes with similar pages.
 TEST_F(SiteInstanceTest, ProcessSharingByType) {
   MockRenderProcessHostFactory rph_factory;
-  ChildProcessSecurityPolicy* policy =
-      ChildProcessSecurityPolicy::GetInstance();
+  ChildProcessSecurityPolicyImpl* policy =
+      ChildProcessSecurityPolicyImpl::GetInstance();
 
   // Make a bunch of mock renderers so that we hit the limit.
   std::vector<MockRenderProcessHost*> hosts;

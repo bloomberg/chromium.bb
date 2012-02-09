@@ -67,11 +67,11 @@
 #include "chrome/common/switch_utils.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/installer/util/google_update_constants.h"
-#include "content/browser/child_process_security_policy.h"
 #include "content/browser/download/mhtml_generation_manager.h"
 #include "content/browser/net/browser_online_state_observer.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/plugin_service.h"
 #include "content/public/browser/render_process_host.h"
@@ -113,6 +113,7 @@ static const int kEndSessionTimeoutSeconds = 10;
 #endif
 
 using content::BrowserThread;
+using content::ChildProcessSecurityPolicy;
 using content::PluginService;
 
 BrowserProcessImpl::BrowserProcessImpl(const CommandLine& command_line)

@@ -36,7 +36,6 @@ include_rules = [
   "+content/browser/appcache/chrome_appcache_service.h",
   "+content/browser/browser_url_handler.h",
   "+content/browser/cert_store.h",
-  "+content/browser/child_process_security_policy.h",
   "+content/browser/chrome_blob_storage_context.h",
   "+content/browser/disposition_utils.h",
   "+content/browser/download/download_buffer.h",
