@@ -538,7 +538,7 @@ cpfq_arm.add_config('arm-tegra2-tot-chrome-pfq-informational',
 
 chrome_pfq_info.add_config('amd64-corei7-tot-chrome-pfq-informational',
   amd64,
-  boards=['arm-generic'],
+  boards=['amd64-corei7'],
 )
 
 # TODO(ferringb): Remove this builder config -- it isn't used anymore.
