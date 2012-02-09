@@ -1,12 +1,8 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "ui/base/l10n/l10n_util.h"
-
-#if defined(USE_X11)
-#include <glib/gutils.h>
-#endif
 
 #include <algorithm>
 #include <cstdlib>
@@ -29,6 +25,10 @@
 #include "ui/base/ui_base_paths.h"
 #include "unicode/rbbi.h"
 #include "unicode/uloc.h"
+
+#if defined(TOOLKIT_GTK)
+#include <glib.h>
+#endif
 
 #if defined(OS_WIN)
 #include "ui/base/l10n/l10n_util_win.h"
@@ -410,7 +410,7 @@ std::string GetApplicationLocale(const std::string& pref_locale) {
   if (!pref_locale.empty())
     candidates.push_back(pref_locale);
 
-#elif !defined(OS_MACOSX)
+#elif defined(TOOLKIT_GTK)
 
   // GLib implements correct environment variable parsing with
   // the precedence order: LANGUAGE, LC_ALL, LC_MESSAGES and LANG.
