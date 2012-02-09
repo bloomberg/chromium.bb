@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -240,7 +240,7 @@ void FaviconHandler::OnDidDownloadFavicon(int id,
     } else if (GetEntry() && ++current_url_index_ < urls_.size()) {
       // Copies all candidate except first one and notifies the FaviconHandler,
       // so the next candidate can be processed.
-      std::vector<FaviconURL> new_candidates(++urls_.begin(), urls_.end());
+      std::vector<FaviconURL> new_candidates(urls_.begin() + 1, urls_.end());
       OnUpdateFaviconURL(0, new_candidates);
     }
   }
