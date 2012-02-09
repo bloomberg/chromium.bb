@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -30,6 +30,13 @@ void HostControlDispatcher::OnInitialized() {
   reader_.Init(channel(), base::Bind(
       &HostControlDispatcher::OnMessageReceived, base::Unretained(this)));
   writer_->Init(channel(), BufferedSocketWriter::WriteFailedCallback());
+
+  // Write legacy BeginSession message.
+  // TODO(sergeyu): Remove it. See http://crbug.com/104670 .
+  protocol::ControlMessage message;
+  message.mutable_begin_session_deprecated()->mutable_login_status()->
+      set_success(true);
+  writer_->Write(SerializeAndFrameMessage(message), base::Closure());
 }
 
 void HostControlDispatcher::OnMessageReceived(

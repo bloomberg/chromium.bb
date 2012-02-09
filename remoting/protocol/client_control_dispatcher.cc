@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -37,8 +37,15 @@ void ClientControlDispatcher::OnInitialized() {
 void ClientControlDispatcher::OnMessageReceived(
     ControlMessage* message, const base::Closure& done_task) {
   DCHECK(client_stub_);
+
   base::ScopedClosureRunner done_runner(done_task);
-  LOG(WARNING) << "Unknown control message received.";
+
+  if (message->has_begin_session_deprecated()) {
+    // Host sends legacy BeginSession message for compatibility with
+    // older clients. Ignore it without warning.
+  } else {
+    LOG(WARNING) << "Unknown control message received.";
+  }
 }
 
 }  // namespace protocol
