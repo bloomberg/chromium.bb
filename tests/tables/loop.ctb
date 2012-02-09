@@ -11,6 +11,7 @@ uplow       \x004A\x006A  245,245             Jj                  LATIN CAPITAL 
 uplow       \x004C\x006C  123,123             Ll                  LATIN CAPITAL LETTER L - LATIN SMALL LETTER L
 uplow       \x0052\x0072  1235,1235           Rr                  LATIN CAPITAL LETTER R - LATIN SMALL LETTER R
 uplow       \x0054\x0074  2345,2345           Tt                  LATIN CAPITAL LETTER T - LATIN SMALL LETTER T
+sign % 146
 
 class    digitletter           abcdefghij
 context  $d[]%digitletter      @6

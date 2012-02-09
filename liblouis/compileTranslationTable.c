@@ -1475,6 +1475,11 @@ parseChars (FileInfo * nested, CharsString * result, CharsString * token)
 		  character = ENDSEGMENT;
 		  ok = 1;
 		  break;
+		case 34:
+		  result->chars[count++] = '\\';
+		  character = 34;
+		  ok = 1;
+		  break;
 		case 'X':
 		case 'x':
 		  if (token->length - index > 4)
@@ -2092,12 +2097,27 @@ passGetNumber ()
 static int
 passGetName ()
 {
+  TranslationTableCharacterAttributes attr;
   passHoldString.length = 0;
-  for (; (definedCharOrDots (passNested, passLine.chars[passLinepos],
-			     0)->attributes
-	  & (CTC_Letter | CTC_Digit)); passLinepos++)
-    passHoldString.chars[passHoldString.length++] =
-      passLine.chars[passLinepos];
+  do
+    {
+      attr = definedCharOrDots (passNested, passLine.chars[passLinepos],
+				0)->attributes;
+      if (passHoldString.length == 0)
+	{
+	  if (!(attr & CTC_Letter))
+	    {
+	      passLinepos++;
+	      continue;
+	    }
+	}
+      if (!(attr & CTC_Letter))
+	break;
+      passHoldString.chars[passHoldString.length++] =
+	passLine.chars[passLinepos];
+      passLinepos++;
+    }
+  while (passLinepos < passLine.length);
   return 1;
 }
 
