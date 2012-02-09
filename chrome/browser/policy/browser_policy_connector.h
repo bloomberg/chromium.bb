@@ -26,6 +26,8 @@ class CloudPolicyProvider;
 class CloudPolicySubsystem;
 class ConfigurationPolicyProvider;
 class NetworkConfigurationUpdater;
+class PolicyService;
+class PolicyServiceImpl;
 class UserPolicyTokenCache;
 
 // Manages the lifecycle of browser-global policy infrastructure, such as the
@@ -48,6 +50,8 @@ class BrowserPolicyConnector : public content::NotificationObserver {
   ConfigurationPolicyProvider* GetManagedCloudProvider() const;
   ConfigurationPolicyProvider* GetRecommendedPlatformProvider() const;
   ConfigurationPolicyProvider* GetRecommendedCloudProvider() const;
+
+  PolicyService* GetPolicyService() const;
 
   // Returns a weak pointer to the CloudPolicySubsystem corresponding to the
   // device policy managed by this policy connector, or NULL if no such
@@ -150,6 +154,8 @@ class BrowserPolicyConnector : public content::NotificationObserver {
 
   scoped_ptr<CloudPolicyProvider> managed_cloud_provider_;
   scoped_ptr<CloudPolicyProvider> recommended_cloud_provider_;
+
+  scoped_ptr<PolicyServiceImpl> policy_service_;
 
 #if defined(OS_CHROMEOS)
   scoped_ptr<CloudPolicyDataStore> device_data_store_;

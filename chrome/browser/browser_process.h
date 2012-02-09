@@ -66,6 +66,7 @@ class PrintPreviewTabController;
 
 namespace policy {
 class BrowserPolicyConnector;
+class PolicyService;
 }
 
 namespace safe_browsing {
@@ -123,7 +124,12 @@ class BrowserProcess {
   // Returns the thread that is used for health check of all browser threads.
   virtual WatchDogThread* watchdog_thread() = 0;
 
+  // Starts and manages the policy system.
   virtual policy::BrowserPolicyConnector* browser_policy_connector() = 0;
+
+  // This is the main interface for chromium components to retrieve policy
+  // information from the policy system.
+  virtual policy::PolicyService* policy_service() = 0;
 
   virtual IconManager* icon_manager() = 0;
 

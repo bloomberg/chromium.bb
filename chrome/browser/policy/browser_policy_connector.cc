@@ -14,6 +14,7 @@
 #include "chrome/browser/policy/cloud_policy_subsystem.h"
 #include "chrome/browser/policy/configuration_policy_provider.h"
 #include "chrome/browser/policy/network_configuration_updater.h"
+#include "chrome/browser/policy/policy_service_impl.h"
 #include "chrome/browser/policy/user_policy_cache.h"
 #include "chrome/browser/policy/user_policy_token_cache.h"
 #include "chrome/browser/signin/token_service.h"
@@ -114,6 +115,14 @@ void BrowserPolicyConnector::Init() {
       GetChromePolicyDefinitionList(),
       POLICY_LEVEL_RECOMMENDED));
 
+  // |providers| in decreasing order of priority.
+  PolicyServiceImpl::Providers providers;
+  providers.push_back(managed_platform_provider_.get());
+  providers.push_back(managed_cloud_provider_.get());
+  providers.push_back(recommended_platform_provider_.get());
+  providers.push_back(recommended_cloud_provider_.get());
+  policy_service_.reset(new PolicyServiceImpl(providers));
+
 #if defined(OS_CHROMEOS)
   InitializeDevicePolicy();
 
@@ -144,6 +153,10 @@ ConfigurationPolicyProvider*
 ConfigurationPolicyProvider*
     BrowserPolicyConnector::GetRecommendedCloudProvider() const {
   return recommended_cloud_provider_.get();
+}
+
+PolicyService* BrowserPolicyConnector::GetPolicyService() const {
+  return policy_service_.get();
 }
 
 void BrowserPolicyConnector::RegisterForDevicePolicy(

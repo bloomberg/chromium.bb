@@ -32,6 +32,7 @@ class NotificationService;
 
 namespace policy {
 class BrowserPolicyConnector;
+class PolicyService;
 }
 
 namespace prerender {
@@ -55,6 +56,7 @@ class TestingBrowserProcess : public BrowserProcess {
   virtual ProfileManager* profile_manager() OVERRIDE;
   virtual PrefService* local_state() OVERRIDE;
   virtual policy::BrowserPolicyConnector* browser_policy_connector() OVERRIDE;
+  virtual policy::PolicyService* policy_service() OVERRIDE;
   virtual IconManager* icon_manager() OVERRIDE;
   virtual ThumbnailGenerator* GetThumbnailGenerator() OVERRIDE;
   virtual TabCloseableStateWatcher* tab_closeable_state_watcher() OVERRIDE;
@@ -123,6 +125,7 @@ class TestingBrowserProcess : public BrowserProcess {
   // Weak pointer.
   PrefService* local_state_;
   scoped_ptr<policy::BrowserPolicyConnector> browser_policy_connector_;
+  scoped_ptr<policy::PolicyService> policy_service_;
   scoped_ptr<GoogleURLTracker> google_url_tracker_;
   scoped_ptr<ProfileManager> profile_manager_;
   scoped_ptr<NotificationUIManager> notification_ui_manager_;

@@ -35,6 +35,7 @@ class TabCloseableStateWatcher;
 
 namespace policy {
 class BrowserPolicyConnector;
+class PolicyService;
 };
 
 // Real implementation of BrowserProcess that creates and returns the services.
@@ -77,6 +78,7 @@ class BrowserProcessImpl : public BrowserProcess,
         extension_event_router_forwarder() OVERRIDE;
   virtual NotificationUIManager* notification_ui_manager() OVERRIDE;
   virtual policy::BrowserPolicyConnector* browser_policy_connector() OVERRIDE;
+  virtual policy::PolicyService* policy_service() OVERRIDE;
   virtual IconManager* icon_manager() OVERRIDE;
   virtual ThumbnailGenerator* GetThumbnailGenerator() OVERRIDE;
   virtual AutomationProviderList* GetAutomationProviderList() OVERRIDE;
@@ -175,6 +177,7 @@ class BrowserProcessImpl : public BrowserProcess,
 
   bool created_browser_policy_connector_;
   scoped_ptr<policy::BrowserPolicyConnector> browser_policy_connector_;
+  scoped_ptr<policy::PolicyService> policy_service_;
 
   scoped_refptr<printing::PrintPreviewTabController>
       print_preview_tab_controller_;
