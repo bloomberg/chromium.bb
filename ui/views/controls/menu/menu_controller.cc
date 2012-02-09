@@ -913,13 +913,6 @@ base::MessagePumpDispatcher::DispatchStatus
       if (!OnKeyDown(ui::KeyboardCodeFromNative(xev)))
         return base::MessagePumpDispatcher::EVENT_QUIT;
 
-      // OnKeyDown may have set exit_type_.
-      // TODO(sky): This shouldn't be necessary if OnKeyDown returns correct
-      // value for space key on edit menu. Fix OnKeyDown and remove this.
-      // See crbug.com/107919.
-      if (exit_type_ != EXIT_NONE)
-        return base::MessagePumpDispatcher::EVENT_QUIT;
-
       return SelectByChar(ui::KeyboardCodeFromNative(xev)) ?
           base::MessagePumpDispatcher::EVENT_QUIT :
           base::MessagePumpDispatcher::EVENT_PROCESSED;
@@ -948,11 +941,6 @@ bool MenuController::Dispatch(GdkEvent* event) {
   switch (event->type) {
     case GDK_KEY_PRESS: {
       if (!OnKeyDown(ui::WindowsKeyCodeForGdkKeyCode(event->key.keyval)))
-        return false;
-
-      // OnKeyDown may have set exit_type_.
-      // TODO(sky): Eliminate this. See crbug.com/107919.
-      if (exit_type_ != EXIT_NONE)
         return false;
 
       guint32 keycode = gdk_keyval_to_unicode(event->key.keyval);
@@ -1005,17 +993,23 @@ bool MenuController::OnKeyDown(ui::KeyboardCode key_code) {
       break;
 
     case ui::VKEY_SPACE:
-      SendAcceleratorToHotTrackedView();
+      if (SendAcceleratorToHotTrackedView() == ACCELERATOR_PROCESSED_EXIT)
+        return false;
       break;
 
     case ui::VKEY_RETURN:
       if (pending_state_.item) {
         if (pending_state_.item->HasSubmenu()) {
           OpenSubmenuChangeSelectionIfCan();
-        } else if (!SendAcceleratorToHotTrackedView() &&
-                   pending_state_.item->enabled()) {
-          Accept(pending_state_.item, 0);
-          return false;
+        } else {
+          SendAcceleratorResultType result = SendAcceleratorToHotTrackedView();
+          if (result == ACCELERATOR_NOT_PROCESSED &&
+              pending_state_.item->enabled()) {
+            Accept(pending_state_.item, 0);
+            return false;
+          } else if (result == ACCELERATOR_PROCESSED_EXIT) {
+            return false;
+          }
         }
       }
       break;
@@ -1074,15 +1068,17 @@ MenuController::~MenuController() {
   StopCancelAllTimer();
 }
 
-bool MenuController::SendAcceleratorToHotTrackedView() {
+MenuController::SendAcceleratorResultType
+    MenuController::SendAcceleratorToHotTrackedView() {
   View* hot_view = GetFirstHotTrackedView(pending_state_.item);
   if (!hot_view)
-    return false;
+    return ACCELERATOR_NOT_PROCESSED;
 
   ui::Accelerator accelerator(ui::VKEY_RETURN, false, false, false);
   hot_view->AcceleratorPressed(accelerator);
   hot_view->SetHotTracked(true);
-  return true;
+  return (exit_type_ == EXIT_NONE) ?
+      ACCELERATOR_PROCESSED : ACCELERATOR_PROCESSED_EXIT;
 }
 
 void MenuController::UpdateInitialLocation(

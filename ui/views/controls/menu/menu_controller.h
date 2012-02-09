@@ -155,6 +155,18 @@ class VIEWS_EXPORT MenuController : public MessageLoop::Dispatcher {
     SELECTION_EXIT                  = 1 << 2,
   };
 
+  // Result type for SendAcceleratorToHotTrackedView
+  enum SendAcceleratorResultType {
+    // Accelerator is not sent because of no hot tracked views.
+    ACCELERATOR_NOT_PROCESSED,
+
+    // Accelerator is sent to the hot tracked views.
+    ACCELERATOR_PROCESSED,
+
+    // Same as above and the accelerator causes the exit of the menu.
+    ACCELERATOR_PROCESSED_EXIT
+  };
+
   // Tracks selection information.
   struct State {
     State();
@@ -247,9 +259,8 @@ class VIEWS_EXPORT MenuController : public MessageLoop::Dispatcher {
 
   virtual ~MenuController();
 
-  // If there is a hot tracked view AcceleratorPressed is invoked on it and
-  // true is returned.
-  bool SendAcceleratorToHotTrackedView();
+  // AcceleratorPressed is invoked on the hot tracked view if it exists.
+  SendAcceleratorResultType SendAcceleratorToHotTrackedView();
 
   void UpdateInitialLocation(const gfx::Rect& bounds,
                              MenuItemView::AnchorPosition position);
