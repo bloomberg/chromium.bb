@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,6 +7,7 @@
 #pragma once
 
 #include <string>
+#include <vector>
 
 #include "base/string16.h"
 #include "ui/views/view.h"
@@ -25,7 +26,14 @@ class VIEWS_EXPORT MessageBoxView : public View {
  public:
   enum Options {
     NO_OPTIONS = 0,
-    DETECT_ALIGNMENT = 1 << 0,
+    // For a message from a web page (not from Chrome's UI), such as script
+    // dialog text, each paragraph's directionality is auto-detected using the
+    // directionality of the paragraph's first strong character's. Please refer
+    // to HTML5 spec for details.
+    // http://dev.w3.org/html5/spec/Overview.html#text-rendered-in-native-user-interfaces:
+    // The spec does not say anything about alignment. And we choose to
+    // align all paragraphs according to the direction of the first paragraph.
+    DETECT_DIRECTIONALITY = 1 << 0,
     HAS_PROMPT_FIELD = 1 << 1,
   };
 
@@ -74,16 +82,16 @@ class VIEWS_EXPORT MessageBoxView : public View {
   virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) OVERRIDE;
 
  private:
-  // Sets up the layout manager and initializes the prompt field. This should
-  // only be called once, from the constructor.
-  void Init(int options, const string16& default_prompt);
+  // Sets up the layout manager and initializes the message labels and prompt
+  // field. This should only be called once, from the constructor.
+  void Init(int options, const string16& message, const string16& prompt);
 
   // Sets up the layout manager based on currently initialized views. Should be
   // called when a view is initialized or changed.
   void ResetLayoutManager();
 
   // Message for the message box.
-  Label* message_label_;
+  std::vector<Label*> message_labels_;
 
   // Input text field for the message box.
   Textfield* prompt_field_;

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,7 @@
 
 #include "base/i18n/rtl.h"
 #include "base/message_loop.h"
+#include "base/string_split.h"
 #include "base/utf_string_conversions.h"
 #include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/clipboard/clipboard.h"
@@ -22,6 +23,44 @@
 
 const int kDefaultMessageWidth = 320;
 
+namespace {
+
+// Paragraph separators are defined in
+// http://www.unicode.org/Public/6.0.0/ucd/extracted/DerivedBidiClass.txt
+//
+// # Bidi_Class=Paragraph_Separator
+//
+// 000A          ; B # Cc       <control-000A>
+// 000D          ; B # Cc       <control-000D>
+// 001C..001E    ; B # Cc   [3] <control-001C>..<control-001E>
+// 0085          ; B # Cc       <control-0085>
+// 2029          ; B # Zp       PARAGRAPH SEPARATOR
+bool IsParagraphSeparator(char16 c) {
+  return ( c == 0x000A || c == 0x000D || c == 0x001C || c == 0x001D ||
+           c == 0x001E || c == 0x0085 || c == 0x2029);
+}
+
+// Splits |str| into a vector of paragraphs. Append the results into |r|. Each
+// paragraph separator is not included in the split result. If several
+// paragraph separators are contiguous, or if |str| begins with or ends with
+// paragraph separator, then an empty string is inserted.
+void SplitStringIntoParagraphs(const string16& str,
+                               std::vector<string16>* r) {
+  size_t str_len = str.length();
+  for (size_t i = 0, start = 0; i < str_len; ++i) {
+    bool paragraph_separator = IsParagraphSeparator(str[i]);
+    if (paragraph_separator || i == str_len - 1) {
+      size_t len = i - start;
+      if (!paragraph_separator)
+        ++len;
+      r->push_back(str.substr(start, len));
+      start = i + 1;
+    }
+  }
+}
+
+}  // namespace
+
 namespace views {
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -31,23 +70,21 @@ MessageBoxView::MessageBoxView(int options,
                                const string16& message,
                                const string16& default_prompt,
                                int message_width)
-    : message_label_(new Label(message)),
-      prompt_field_(NULL),
+    : prompt_field_(NULL),
       icon_(NULL),
       checkbox_(NULL),
       message_width_(message_width) {
-  Init(options, default_prompt);
+  Init(options, message, default_prompt);
 }
 
 MessageBoxView::MessageBoxView(int options,
                                const string16& message,
                                const string16& default_prompt)
-    : message_label_(new Label(message)),
-      prompt_field_(NULL),
+    : prompt_field_(NULL),
       icon_(NULL),
       checkbox_(NULL),
       message_width_(kDefaultMessageWidth) {
-  Init(options, default_prompt);
+  Init(options, message, default_prompt);
 }
 
 MessageBoxView::~MessageBoxView() {}
@@ -117,7 +154,10 @@ bool MessageBoxView::AcceleratorPressed(const ui::Accelerator& accelerator) {
     return false;
 
   ui::ScopedClipboardWriter scw(clipboard);
-  scw.WriteText(message_label_->GetText());
+  string16 text = message_labels_[0]->GetText();
+  for (size_t i = 1; i < message_labels_.size(); ++i)
+    text += message_labels_[i]->GetText();
+  scw.WriteText(text);
   return true;
 }
 
@@ -125,32 +165,37 @@ bool MessageBoxView::AcceleratorPressed(const ui::Accelerator& accelerator) {
 // MessageBoxView, private:
 
 void MessageBoxView::Init(int options,
-                          const string16& default_prompt) {
-  message_label_->SetMultiLine(true);
-  message_label_->SetAllowCharacterBreak(true);
-  if (options & DETECT_ALIGNMENT) {
-    // Determine the alignment and directionality based on the first character
-    // with strong directionality.
-    base::i18n::TextDirection direction =
-        base::i18n::GetFirstStrongCharacterDirection(
-            message_label_->GetText());
-    Label::Alignment alignment;
-    if (direction == base::i18n::RIGHT_TO_LEFT)
-      alignment = Label::ALIGN_RIGHT;
-    else
-      alignment = Label::ALIGN_LEFT;
-    // In addition, we should set the RTL alignment mode as
-    // AUTO_DETECT_ALIGNMENT so that the alignment will not be flipped around
-    // in RTL locales.
-    message_label_->set_rtl_alignment_mode(Label::AUTO_DETECT_ALIGNMENT);
-    message_label_->SetHorizontalAlignment(alignment);
+                          const string16& message,
+                          const string16& prompt) {
+  if (options & DETECT_DIRECTIONALITY) {
+    std::vector<string16> texts;
+    SplitStringIntoParagraphs(message, &texts);
+    // If the text originates from a web page, its alignment is based on its
+    // first character with strong directionality.
+    base::i18n::TextDirection message_direction =
+        base::i18n::GetFirstStrongCharacterDirection(message);
+    Label::Alignment alignment =
+        (message_direction == base::i18n::RIGHT_TO_LEFT) ?
+        Label::ALIGN_RIGHT : Label::ALIGN_LEFT;
+    for (size_t i = 0; i < texts.size(); ++i) {
+      Label* message_label = new Label(texts[i]);
+      message_label->SetMultiLine(true);
+      message_label->SetAllowCharacterBreak(true);
+      message_label->set_directionality_mode(Label::AUTO_DETECT_DIRECTIONALITY);
+      message_label->SetHorizontalAlignment(alignment);
+      message_labels_.push_back(message_label);
+    }
   } else {
-    message_label_->SetHorizontalAlignment(Label::ALIGN_LEFT);
+    Label* message_label = new Label(message);
+    message_label->SetMultiLine(true);
+    message_label->SetAllowCharacterBreak(true);
+    message_label->SetHorizontalAlignment(Label::ALIGN_LEFT);
+    message_labels_.push_back(message_label);
   }
 
   if (options & HAS_PROMPT_FIELD) {
     prompt_field_ = new Textfield;
-    prompt_field_->SetText(default_prompt);
+    prompt_field_->SetText(prompt);
   }
 
   ResetLayoutManager();
@@ -202,11 +247,16 @@ void MessageBoxView::ResetLayoutManager() {
                           GridLayout::USE_PREF, 0, 0);
   }
 
-  layout->StartRow(0, message_column_view_set_id);
-  if (icon_)
-    layout->AddView(icon_);
-
-  layout->AddView(message_label_);
+  for (size_t i = 0; i < message_labels_.size(); ++i) {
+    layout->StartRow(i, message_column_view_set_id);
+    if (icon_) {
+      if (i == 0)
+        layout->AddView(icon_);
+      else
+        layout->SkipColumns(1);
+    }
+    layout->AddView(message_labels_[i]);
+  }
 
   if (prompt_field_) {
     layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);

@@ -20,7 +20,7 @@
 
 JSModalDialogViews::JSModalDialogViews(JavaScriptAppModalDialog* parent)
     : parent_(parent) {
-  int options = views::MessageBoxView::DETECT_ALIGNMENT;
+  int options = views::MessageBoxView::DETECT_DIRECTIONALITY;
   if (parent->javascript_message_type() == ui::JAVASCRIPT_MESSAGE_TYPE_PROMPT)
     options |= views::MessageBoxView::HAS_PROMPT_FIELD;
 

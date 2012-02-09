@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -98,10 +98,10 @@ void Label::SetBackgroundColor(const SkColor& color) {
 }
 
 void Label::SetHorizontalAlignment(Alignment alignment) {
-  // If the View's UI layout is right-to-left and rtl_alignment_mode_ is
-  // USE_UI_ALIGNMENT, we need to flip the alignment so that the alignment
+  // If the View's UI layout is right-to-left and directionality_mode_ is
+  // USE_UI_DIRECTIONALITY, we need to flip the alignment so that the alignment
   // settings take into account the text directionality.
-  if (base::i18n::IsRTL() && (rtl_alignment_mode_ == USE_UI_ALIGNMENT) &&
+  if (base::i18n::IsRTL() && (directionality_mode_ == USE_UI_DIRECTIONALITY) &&
       (alignment != ALIGN_CENTER))
     alignment = (alignment == ALIGN_LEFT) ? ALIGN_RIGHT : ALIGN_LEFT;
   if (horiz_alignment_ != alignment) {
@@ -366,7 +366,7 @@ void Label::Init(const string16& text, const gfx::Font& font) {
   allow_character_break_ = false;
   elide_in_middle_ = false;
   collapse_when_hidden_ = false;
-  rtl_alignment_mode_ = USE_UI_ALIGNMENT;
+  directionality_mode_ = USE_UI_DIRECTIONALITY;
   paint_as_focused_ = false;
   has_focus_border_ = false;
 
@@ -493,11 +493,11 @@ void Label::CalculateDrawStringParams(string16* paint_text,
 
   *text_bounds = GetTextBounds();
   *flags = ComputeMultiLineFlags();
-  // If rtl_alignment_mode_ is AUTO_DETECT_ALIGNMENT (such as for text from
-  // webpage, not from chrome's UI), its directionality is forced to be RTL if
-  // it is right aligned. Otherwise, its directionality is forced to be LTR.
-  if (rtl_alignment_mode_ == AUTO_DETECT_ALIGNMENT) {
-    if (horiz_alignment_ == ALIGN_RIGHT)
+
+  if (directionality_mode_ == AUTO_DETECT_DIRECTIONALITY) {
+    base::i18n::TextDirection direction =
+        base::i18n::GetFirstStrongCharacterDirection(GetText());
+    if (direction == base::i18n::RIGHT_TO_LEFT)
       *flags |= gfx::Canvas::FORCE_RTL_DIRECTIONALITY;
     else
       *flags |= gfx::Canvas::FORCE_LTR_DIRECTIONALITY;

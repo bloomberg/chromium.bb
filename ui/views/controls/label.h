@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -32,19 +32,18 @@ class VIEWS_EXPORT Label : public View {
                    ALIGN_RIGHT };
 
   // The following enum is used to indicate whether using the Chrome UI's
-  // alignment as the label's alignment, or autodetecting the label's
-  // alignment.
+  // directionality as the label's directionality, or auto-detecting the label's
+  // directionality.
   //
   // If the label text originates from the Chrome UI, we should use the Chrome
-  // UI's alignment as the label's alignment.
+  // UI's directionality as the label's directionality.
   //
-  // If the text originates from a web page, the text's alignment is determined
-  // based on the first character with strong directionality, disregarding what
-  // directionality the Chrome UI is. And its alignment will not be flipped
-  // around in RTL locales.
-  enum RTLAlignmentMode {
-    USE_UI_ALIGNMENT = 0,
-    AUTO_DETECT_ALIGNMENT
+  // If the text originates from a web page, its directionality is determined
+  // based on its first character with strong directionality, disregarding what
+  // directionality the Chrome UI is.
+  enum DirectionalityMode {
+    USE_UI_DIRECTIONALITY = 0,
+    AUTO_DETECT_DIRECTIONALITY
   };
 
   // The view class name.
@@ -93,29 +92,28 @@ class VIEWS_EXPORT Label : public View {
   // will force the text color to be readable over it.
   void SetBackgroundColor(const SkColor& color);
 
-  // Set horizontal alignment. If the locale is RTL, and the RTL alignment
-  // setting is set as USE_UI_ALIGNMENT, the alignment is flipped around.
+  // Set horizontal alignment. If the locale is RTL, and the directionality
+  // mode is USE_UI_DIRECTIONALITY, the alignment is flipped around.
   //
-  // Caveat: for labels originating from a web page, the RTL alignment mode
-  // should be reset to AUTO_DETECT_ALIGNMENT before the horizontal alignment
-  // is set. Otherwise, the label's alignment specified as a parameter will be
-  // flipped in RTL locales. Please see the comments in SetRTLAlignmentMode for
-  // more information.
+  // Caveat: for labels originating from a web page, the directionality mode
+  // should be reset to AUTO_DETECT_DIRECTIONALITY before the horizontal
+  // alignment is set. Otherwise, the label's alignment specified as a parameter
+  // will be flipped in RTL locales.
   void SetHorizontalAlignment(Alignment alignment);
 
   Alignment horizontal_alignment() const { return horiz_alignment_; }
 
-  // Set the RTL alignment mode. The RTL alignment mode is initialized to
-  // USE_UI_ALIGNMENT when the label is constructed. USE_UI_ALIGNMENT applies
-  // to every label that originates from the Chrome UI. However, if the label
-  // originates from a web page, its alignment should not be flipped around for
-  // RTL locales. For such labels, we need to set the RTL alignment mode to
-  // AUTO_DETECT_ALIGNMENT so that subsequent SetHorizontalAlignment() calls
-  // will not flip the label's alignment around.
-  void set_rtl_alignment_mode(RTLAlignmentMode mode) {
-    rtl_alignment_mode_ = mode;
+  // Set the directionality mode. The directionality mode is initialized to
+  // USE_UI_DIRECTIONALITY when the label is constructed. USE_UI_DIRECTIONALITY
+  // applies to every label that originates from the Chrome UI. However, if the
+  // label originates from a web page, its directionality is auto-detected.
+  void set_directionality_mode(DirectionalityMode mode) {
+    directionality_mode_ = mode;
   }
-  RTLAlignmentMode rtl_alignment_mode() const { return rtl_alignment_mode_; }
+
+  DirectionalityMode directionality_mode() const {
+    return directionality_mode_;
+  }
 
   // Set whether the label text can wrap on multiple lines.
   // Default is false.
@@ -219,6 +217,7 @@ class VIEWS_EXPORT Label : public View {
   FRIEND_TEST_ALL_PREFIXES(LabelTest, DrawMultiLineString);
   FRIEND_TEST_ALL_PREFIXES(LabelTest, DrawSingleLineStringInRTL);
   FRIEND_TEST_ALL_PREFIXES(LabelTest, DrawMultiLineStringInRTL);
+  FRIEND_TEST_ALL_PREFIXES(LabelTest, AutoDetectDirectionality);
 
   static gfx::Font GetDefaultFont();
 
@@ -269,10 +268,10 @@ class VIEWS_EXPORT Label : public View {
   scoped_ptr<Background> mouse_over_background_;
   // Whether to collapse the label when it's not visible.
   bool collapse_when_hidden_;
-  // The following member variable is used to control whether the alignment
-  // needs to be flipped around for RTL locales. Please refer to the definition
-  // of RTLAlignmentMode for more information.
-  RTLAlignmentMode rtl_alignment_mode_;
+  // The following member variable is used to control whether the
+  // directionality is auto-detected based on first strong directionality
+  // character or is determined by chrome UI's locale.
+  DirectionalityMode directionality_mode_;
   // When embedded in a larger control that is focusable, setting this flag
   // allows this view to be painted as focused even when it is itself not.
   bool paint_as_focused_;
