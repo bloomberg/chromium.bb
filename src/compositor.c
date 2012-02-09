@@ -716,8 +716,6 @@ weston_surface_draw(struct weston_surface *es, struct weston_output *output)
 	GLint filter;
 	int n;
 
-	weston_surface_update_transform(es);
-
 	pixman_region32_init(&repaint);
 	pixman_region32_intersect(&repaint, &es->transform.boundingbox,
 				  &output->region);
@@ -892,8 +890,6 @@ weston_output_set_cursor(struct weston_output *output,
 	if (device->sprite == NULL)
 		return;
 
-	weston_surface_update_transform(device->sprite);
-
 	pixman_region32_init(&cursor_region);
 	pixman_region32_intersect(&cursor_region,
 				  &device->sprite->transform.boundingbox,
@@ -951,6 +947,8 @@ weston_output_repaint(struct weston_output *output, int msecs)
 	pixman_region32_init(&overlap);
 
 	wl_list_for_each(es, &ec->surface_list, link) {
+		/* Update surface transform now to avoid calling it ever
+		 * again from the repaint sub-functions. */
 		weston_surface_update_transform(es);
 
 		pixman_region32_init(&surface_overlap);

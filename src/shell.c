@@ -1034,6 +1034,11 @@ rotate_grab_motion(struct wl_grab *grab,
 		weston_matrix_init(&surface->rotation.rotation);
 		weston_matrix_init(&rotate->rotation);
 	}
+
+	/* Repaint implies weston_surface_update_transform(), which
+	 * lazily applies the damage due to rotation update.
+	 */
+	weston_compositor_schedule_repaint(surface->surface->compositor);
 }
 
 static void
