@@ -4605,6 +4605,11 @@
           ],
         }],
         ['OS=="android"', {
+          'sources!': [
+            'browser/bookmarks/bookmark_context_menu_controller.cc',
+            'browser/jankometer.cc',
+            'browser/ui/sad_tab_observer.cc',
+          ],
           'sources/': [
             ['exclude', '^browser/background/'],
             ['exclude', '^browser/extensions/'],
