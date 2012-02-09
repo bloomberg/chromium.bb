@@ -103,7 +103,6 @@ bool NeedMatchCompleteDummyForFinalStatus(FinalStatus final_status) {
       final_status != FINAL_STATUS_EVICTED &&
       final_status != FINAL_STATUS_MANAGER_SHUTDOWN &&
       final_status != FINAL_STATUS_APP_TERMINATING &&
-      final_status != FINAL_STATUS_RENDERER_CRASHED &&
       final_status != FINAL_STATUS_WINDOW_OPENER &&
       final_status != FINAL_STATUS_FRAGMENT_MISMATCH &&
       final_status != FINAL_STATUS_CACHE_OR_HISTORY_CLEARED &&
@@ -875,8 +874,9 @@ bool PrerenderManager::AddPrerender(
 
   prerender_list_.push_back(data);
 
+  last_prerender_start_time_ = GetCurrentTimeTicks();
+
   if (!IsControlGroup()) {
-    last_prerender_start_time_ = GetCurrentTimeTicks();
     data.contents_->StartPrerendering(source_render_view_host,
                                       session_storage_namespace);
   }
