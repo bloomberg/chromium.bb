@@ -249,6 +249,9 @@ const char kInvalidIntentDisposition[] =
     "Invalid value for intents[*].disposition";
 const char kInvalidIntentPath[] =
   "Invalid value for intents[*].path";
+const char kInvalidIntentPageInHostedApp[] =
+    "Invalid value for intents[*].path. Hosted apps must specify an "
+    "absolute URL within app.urls[].";
 const char kInvalidIntents[] =
     "Invalid value for intents";
 const char kInvalidIntentType[] =

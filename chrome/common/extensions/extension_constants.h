@@ -193,6 +193,7 @@ namespace extension_manifest_errors {
   extern const char kInvalidIntent[];
   extern const char kInvalidIntentDisposition[];
   extern const char kInvalidIntentPath[];
+  extern const char kInvalidIntentPageInHostedApp[];
   extern const char kInvalidIntents[];
   extern const char kInvalidIntentType[];
   extern const char kInvalidIntentTypeElement[];

@@ -1,0 +1,21 @@
+{
+  // Test for invalid intent URL - URL local to extension.
+  "name": "Cloud File Picker",
+  "version": "1.0.0.1",
+  "icons" : {
+    "128" : "128.png"
+  },
+  "app" : {
+    "urls" : ["http://www.cloudfilepicker.com/"],
+    "launch" : {
+      "web_url" : "http://www.cloudfilepicker.com/"
+    }
+  },
+  "intents": {
+    "http://webintents.org/pick" : {
+      "type" : ["image/*"],
+      "path" : "/share",
+      "title" : "Pick file from Google.com"
+    }
+  }
+}

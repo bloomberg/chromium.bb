@@ -1170,7 +1170,25 @@ bool Extension::LoadWebIntentServices(const extensions::Manifest* manifest,
         *error = ASCIIToUTF16(errors::kInvalidIntentPath);
         return false;
       }
-      service.service_url = GetResourceURL(value);
+      if (is_hosted_app()) {
+        // Hosted apps require an absolute URL for intents.
+        GURL service_url(value);
+        if (!service_url.is_valid() ||
+            !(web_extent().MatchesURL(service_url))) {
+          *error = ExtensionErrorUtils::FormatErrorMessageUTF16(
+              errors::kInvalidIntentPageInHostedApp,*iter);
+          return false;
+        }
+        service.service_url = service_url;
+      } else {
+        // We do not allow absolute intent URLs in non-hosted apps.
+        if (GURL(value).is_valid()) {
+          *error =ExtensionErrorUtils::FormatErrorMessageUTF16(
+              errors::kCannotAccessPage,value.c_str());
+          return false;
+        }
+        service.service_url = GetResourceURL(value);
+      }
     }
 
     if (one_service->HasKey(keys::kIntentTitle) &&
