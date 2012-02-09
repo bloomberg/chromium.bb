@@ -92,7 +92,6 @@
         'browser/aeropeek_manager.h',
         'browser/alternate_nav_url_fetcher.cc',
         'browser/alternate_nav_url_fetcher.h',
-        'browser/app_controller_cppsafe_mac.h',
         'browser/app_controller_mac.h',
         'browser/app_controller_mac.mm',
         'browser/app_icon_win.cc',

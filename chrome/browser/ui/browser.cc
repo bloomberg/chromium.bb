@@ -602,6 +602,37 @@ bool Browser::is_devtools() const {
 // Browser, Creation Helpers:
 
 // static
+void Browser::NewEmptyWindow(Profile* profile) {
+  bool incognito = profile->IsOffTheRecord();
+  PrefService* prefs = profile->GetPrefs();
+  if (incognito) {
+    if (IncognitoModePrefs::GetAvailability(prefs) ==
+          IncognitoModePrefs::DISABLED) {
+      incognito = false;
+    }
+  } else {
+    if (browser_defaults::kAlwaysOpenIncognitoWindow &&
+        IncognitoModePrefs::ShouldLaunchIncognito(
+            *CommandLine::ForCurrentProcess(), prefs)) {
+      incognito = true;
+    }
+  }
+
+  if (incognito) {
+    content::RecordAction(UserMetricsAction("NewIncognitoWindow"));
+    OpenEmptyWindow(profile->GetOffTheRecordProfile());
+  } else {
+    content::RecordAction(UserMetricsAction("NewWindow"));
+    SessionService* session_service =
+        SessionServiceFactory::GetForProfile(profile->GetOriginalProfile());
+    if (!session_service ||
+        !session_service->RestoreIfNecessary(std::vector<GURL>())) {
+      OpenEmptyWindow(profile->GetOriginalProfile());
+    }
+  }
+}
+
+// static
 void Browser::OpenEmptyWindow(Profile* profile) {
   Browser* browser = Browser::Create(profile);
   browser->AddBlankTab(true);
@@ -1619,30 +1650,11 @@ void Browser::Stop() {
 }
 
 void Browser::NewWindow() {
-  if (browser_defaults::kAlwaysOpenIncognitoWindow &&
-      IncognitoModePrefs::ShouldLaunchIncognito(
-          *CommandLine::ForCurrentProcess(), profile_->GetPrefs())) {
-    NewIncognitoWindow();
-    return;
-  }
-  content::RecordAction(UserMetricsAction("NewWindow"));
-  SessionService* session_service =
-      SessionServiceFactory::GetForProfile(profile_->GetOriginalProfile());
-  if (!session_service ||
-      !session_service->RestoreIfNecessary(std::vector<GURL>())) {
-    Browser::OpenEmptyWindow(profile_->GetOriginalProfile());
-  }
+  NewEmptyWindow(profile_->GetOriginalProfile());
 }
 
 void Browser::NewIncognitoWindow() {
-  if (IncognitoModePrefs::GetAvailability(profile_->GetPrefs()) ==
-          IncognitoModePrefs::DISABLED) {
-    NewWindow();
-    return;
-  }
-
-  content::RecordAction(UserMetricsAction("NewIncognitoWindow"));
-  Browser::OpenEmptyWindow(profile_->GetOffTheRecordProfile());
+  NewEmptyWindow(profile_->GetOffTheRecordProfile());
 }
 
 void Browser::CloseWindow() {

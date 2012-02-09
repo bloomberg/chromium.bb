@@ -6,6 +6,8 @@
 #define CHROME_BROWSER_APP_CONTROLLER_MAC_H_
 #pragma once
 
+#if defined(__OBJC__)
+
 #import <Cocoa/Cocoa.h>
 #include <vector>
 
@@ -109,5 +111,18 @@ class Profile;
 - (BookmarkMenuBridge*)bookmarkMenuBridge;
 
 @end
+
+#endif  // __OBJC__
+
+// Functions that may be accessed from non-Objective-C C/C++ code.
+
+namespace app_controller_mac {
+
+// True if we are currently handling an IDC_NEW_{TAB,WINDOW} command. Used in
+// SessionService::Observe() to get around windows/linux and mac having
+// different models of application lifetime.
+bool IsOpeningNewWindow();
+
+}  // namespace app_controller_mac
 
 #endif

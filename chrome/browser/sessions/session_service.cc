@@ -40,7 +40,7 @@
 #include "content/public/browser/web_contents.h"
 
 #if defined(OS_MACOSX)
-#include "chrome/browser/app_controller_cppsafe_mac.h"
+#include "chrome/browser/app_controller_mac.h"
 #endif
 
 using base::Time;

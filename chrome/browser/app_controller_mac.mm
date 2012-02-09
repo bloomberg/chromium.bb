@@ -96,7 +96,7 @@ NSString* NSPopoverDidShowNotification = @"NSPopoverDidShowNotification";
 NSString* NSPopoverDidCloseNotification = @"NSPopoverDidCloseNotification";
 #endif
 
-// True while AppController is calling Browser::OpenEmptyWindow(). We need a
+// True while AppController is calling Browser::NewEmptyWindow(). We need a
 // global flag here, analogue to BrowserInit::InProcessStartup() because
 // otherwise the SessionService will try to restore sessions when we make a new
 // window while there are no other active windows.
@@ -118,7 +118,7 @@ Browser* ActivateBrowser(Profile* profile) {
 Browser* CreateBrowser(Profile* profile) {
   {
     AutoReset<bool> auto_reset_in_run(&g_is_opening_new_window, true);
-    Browser::OpenEmptyWindow(profile);
+    Browser::NewEmptyWindow(profile);
   }
 
   Browser* browser = BrowserList::GetLastActive();
@@ -388,7 +388,7 @@ const AEEventClass kAECloudPrintUninstallClass = 'GCPu';
 
 // If the window has a tab controller, make "close window" be cmd-shift-w,
 // otherwise leave it as the normal cmd-w. Capitalization of the key equivalent
-// affects whether the shift modifer is used.
+// affects whether the shift modifier is used.
 - (void)adjustCloseWindowMenuItemKeyEquivalent:(BOOL)enableCloseTabShortcut {
   [closeWindowMenuItem_ setKeyEquivalent:(enableCloseTabShortcut ? @"W" :
                                                                    @"w")];
@@ -846,7 +846,7 @@ const AEEventClass kAECloudPrintUninstallClass = 'GCPu';
       ActivateOrCreateBrowser(lastProfile)->ExecuteCommand(IDC_FOCUS_SEARCH);
       break;
     case IDC_NEW_INCOGNITO_WINDOW:
-      Browser::OpenEmptyWindow(lastProfile->GetOffTheRecordProfile());
+      CreateBrowser(lastProfile->GetOffTheRecordProfile());
       break;
     case IDC_RESTORE_TAB:
       Browser::OpenWindowWithRestoredTabs(lastProfile);
@@ -989,21 +989,21 @@ const AEEventClass kAECloudPrintUninstallClass = 'GCPu';
   }
 
   // If launched as a hidden login item (due to installation of a persistent app
-  // or by the user, for example in System Preferenecs->Accounts->Login Items),
+  // or by the user, for example in System Preferences->Accounts->Login Items),
   // allow session to be restored first time the user clicks on a Dock icon.
   // Normally, it'd just open a new empty page.
   {
-      static BOOL doneOnce = NO;
-      if (!doneOnce) {
-        doneOnce = YES;
-        if (base::mac::WasLaunchedAsHiddenLoginItem()) {
-          SessionService* sessionService =
-              SessionServiceFactory::GetForProfile([self lastProfile]);
-          if (sessionService &&
-              sessionService->RestoreIfNecessary(std::vector<GURL>()))
-            return NO;
-        }
+    static BOOL doneOnce = NO;
+    if (!doneOnce) {
+      doneOnce = YES;
+      if (base::mac::WasLaunchedAsHiddenLoginItem()) {
+        SessionService* sessionService =
+            SessionServiceFactory::GetForProfile([self lastProfile]);
+        if (sessionService &&
+            sessionService->RestoreIfNecessary(std::vector<GURL>()))
+          return NO;
       }
+    }
   }
   // Otherwise open a new window.
   {
