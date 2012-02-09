@@ -494,6 +494,18 @@ bool AnotherUserHasDefaultBrowser(BrowserDistribution* dist,
   return true;
 }
 
+// Launches the Windows 7 and Windows 8 application association dialog, which
+// is the only documented way to make a browser the default browser on
+// Windows 8.
+bool LaunchApplicationAssociationDialog(const std::wstring& app_id) {
+  base::win::ScopedComPtr<IApplicationAssociationRegistrationUI> aarui;
+  HRESULT hr = aarui.CreateInstance(CLSID_ApplicationAssociationRegistrationUI);
+  if (FAILED(hr))
+    return false;
+  hr = aarui->LaunchAdvancedAssociationUI(app_id.c_str());
+  return SUCCEEDED(hr);
+}
+
 }  // namespace
 
 const wchar_t* ShellUtil::kRegDefaultIcon = L"\\DefaultIcon";
@@ -755,6 +767,7 @@ bool ShellUtil::MakeChromeDefault(BrowserDistribution* dist,
                                   int shell_change,
                                   const std::wstring& chrome_exe,
                                   bool elevate_if_not_admin) {
+
   if (!dist->CanSetAsDefault())
     return false;
 
@@ -763,17 +776,29 @@ bool ShellUtil::MakeChromeDefault(BrowserDistribution* dist,
   bool ret = true;
   // First use the new "recommended" way on Vista to make Chrome default
   // browser.
-  if (base::win::GetVersion() >= base::win::VERSION_VISTA) {
+  std::wstring app_name = dist->GetApplicationName();
+  std::wstring app_suffix;
+  if (ShellUtil::GetUserSpecificDefaultBrowserSuffix(dist, &app_suffix))
+    app_name += app_suffix;
+
+  if (base::win::GetVersion() >= base::win::VERSION_WIN8) {
+    // On Windows 8, you can't set yourself as the default handler
+    // programatically. In other words IApplicationAssociationRegistration
+    // has been rendered useless. What you can do is to launch
+    // "Set Program Associations" section of the "Default Programs"
+    // control panel. This action does not require elevation and we
+    // don't get to control window activation. More info at:
+    // http://msdn.microsoft.com/en-us/library/cc144154(VS.85).aspx
+    return LaunchApplicationAssociationDialog(app_name.c_str());
+
+  } else if (base::win::GetVersion() >= base::win::VERSION_VISTA) {
+    // On Windows Vista and Win7 we still can set ourselves via the
+    // the IApplicationAssociationRegistration interface.
     VLOG(1) << "Registering Chrome as default browser on Vista.";
     base::win::ScopedComPtr<IApplicationAssociationRegistration> pAAR;
     HRESULT hr = pAAR.CreateInstance(CLSID_ApplicationAssociationRegistration,
         NULL, CLSCTX_INPROC);
     if (SUCCEEDED(hr)) {
-      std::wstring app_name = dist->GetApplicationName();
-      std::wstring suffix;
-      if (ShellUtil::GetUserSpecificDefaultBrowserSuffix(dist, &suffix))
-        app_name += suffix;
-
       for (int i = 0; ShellUtil::kBrowserProtocolAssociations[i] != NULL; i++) {
         hr = pAAR->SetAppAsDefault(app_name.c_str(),
             ShellUtil::kBrowserProtocolAssociations[i], AT_URLPROTOCOL);
