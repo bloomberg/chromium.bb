@@ -10,7 +10,6 @@
 #include "base/process_util.h"
 #include "base/stl_util.h"
 #include "base/utf_string_conversions.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
 #include "ui/base/models/combobox_model.h"
 #include "ui/views/controls/button/text_button.h"
@@ -49,42 +48,40 @@
 namespace views {
 namespace examples {
 
-class ExampleBase;
-
-// Model for the examples that are being added via AddExample()
+// Model for the examples that are being added via AddExample().
 class ComboboxModelExampleList : public ui::ComboboxModel {
  public:
   ComboboxModelExampleList() {}
   virtual ~ComboboxModelExampleList() {}
 
   // Overridden from ui::ComboboxModel:
-  virtual int GetItemCount() OVERRIDE { return example_list.size(); }
+  virtual int GetItemCount() OVERRIDE { return example_list_.size(); }
   virtual string16 GetItemAt(int index) OVERRIDE {
-    return UTF8ToUTF16(example_list[index]->example_title());
+    return UTF8ToUTF16(example_list_[index]->example_title());
   }
 
-  views::View* GetItemViewAt(int index) {
-    return example_list[index]->example_view();
+  View* GetItemViewAt(int index) {
+    return example_list_[index]->example_view();
   }
 
   void AddExample(ExampleBase* example) {
-    example_list.push_back(example);
+    example_list_.push_back(example);
   }
 
  private:
-  std::vector<ExampleBase*> example_list;
+  std::vector<ExampleBase*> example_list_;
 
   DISALLOW_COPY_AND_ASSIGN(ComboboxModelExampleList);
 };
 
-class ExamplesWindowContents : public views::WidgetDelegateView,
-                               public views::ComboboxListener {
+class ExamplesWindowContents : public WidgetDelegateView,
+                               public ComboboxListener {
  public:
   explicit ExamplesWindowContents(bool quit_on_close)
       : combobox_model_(new ComboboxModelExampleList),
-        combobox_(new views::Combobox(combobox_model_)),
-        example_shown_(new views::View),
-        status_label_(new views::Label),
+        combobox_(new Combobox(combobox_model_)),
+        example_shown_(new View),
+        status_label_(new Label),
         quit_on_close_(quit_on_close) {
     instance_ = this;
     combobox_->set_listener(this);
@@ -107,7 +104,7 @@ class ExamplesWindowContents : public views::WidgetDelegateView,
   virtual string16 GetWindowTitle() const OVERRIDE {
     return ASCIIToUTF16("Views Examples");
   }
-  virtual views::View* GetContentsView() OVERRIDE { return this; }
+  virtual View* GetContentsView() OVERRIDE { return this; }
   virtual void WindowClosing() OVERRIDE {
     instance_ = NULL;
     if (quit_on_close_)
@@ -136,13 +133,13 @@ class ExamplesWindowContents : public views::WidgetDelegateView,
   void InitExamplesWindow() {
     AddExamples();
 
-    set_background(views::Background::CreateStandardPanelBackground());
-    views::GridLayout* layout = new views::GridLayout(this);
+    set_background(Background::CreateStandardPanelBackground());
+    GridLayout* layout = new GridLayout(this);
     SetLayoutManager(layout);
-    views::ColumnSet* column_set = layout->AddColumnSet(0);
+    ColumnSet* column_set = layout->AddColumnSet(0);
     column_set->AddPaddingColumn(0, 5);
-    column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 1,
-                          views::GridLayout::USE_PREF, 0, 0);
+    column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 1,
+                          GridLayout::USE_PREF, 0, 0);
     column_set->AddPaddingColumn(0, 5);
     layout->AddPaddingRow(0, 5);
     layout->StartRow(0 /* no expand */, 0);
@@ -150,7 +147,7 @@ class ExamplesWindowContents : public views::WidgetDelegateView,
 
     if (combobox_model_->GetItemCount() > 0) {
       layout->StartRow(1, 0);
-      example_shown_->SetLayoutManager(new views::FillLayout());
+      example_shown_->SetLayoutManager(new FillLayout());
       example_shown_->AddChildView(combobox_model_->GetItemViewAt(0));
       layout->AddView(example_shown_);
     }
@@ -188,9 +185,9 @@ class ExamplesWindowContents : public views::WidgetDelegateView,
 
   static ExamplesWindowContents* instance_;
   ComboboxModelExampleList* combobox_model_;
-  views::Combobox* combobox_;
-  views::View* example_shown_;
-  views::Label* status_label_;
+  Combobox* combobox_;
+  View* example_shown_;
+  Label* status_label_;
   bool quit_on_close_;
 
   DISALLOW_COPY_AND_ASSIGN(ExamplesWindowContents);
