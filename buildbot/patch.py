@@ -244,8 +244,10 @@ class GerritPatch(Patch):
   def RemoveCommitReady(self, helper, dryrun=False):
     """Remove any commit ready bits associated with CL."""
     query = ['-c',
-             '"delete from patch_set_approvals where change_id=%s'
-             ' AND category_id=\'COMR\';"' % self.gerrit_number
+             '"DELETE FROM patch_set_approvals WHERE change_id=%s'
+             " AND patch_set_id=%s "
+             " AND category_id='COMR';\""
+             % (self.gerrit_number, self.patch_number)
             ]
     cmd = helper.GetGerritSqlCommand(query)
     _RunCommand(cmd, dryrun)
