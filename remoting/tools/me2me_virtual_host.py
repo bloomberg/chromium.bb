@@ -11,6 +11,7 @@
 
 import atexit
 import base64
+import errno
 import getpass
 import hashlib
 import hmac
@@ -491,7 +492,19 @@ def cleanup():
       desktop.x_proc.terminate()
 
 
+def reload_config():
+  for desktop in g_desktops:
+    if desktop.host_proc:
+      # Terminating the Host will cause the main loop to spawn another
+      # instance, which will read any changes made to the Host config file.
+      desktop.host_proc.terminate()
+
+
 def signal_handler(signum, stackframe):
+  if signum == signal.SIGUSR1:
+    logging.info("SIGUSR1 caught, reloading configuration.")
+    reload_config()
+  else:
     # Exit cleanly so the atexit handler, cleanup(), gets called.
     raise SystemExit
 
@@ -541,7 +554,7 @@ def main():
 
   atexit.register(cleanup)
 
-  for s in [signal.SIGHUP, signal.SIGINT, signal.SIGTERM]:
+  for s in [signal.SIGHUP, signal.SIGINT, signal.SIGTERM, signal.SIGUSR1]:
     signal.signal(s, signal_handler)
 
   # Ensure full path to config directory exists.
@@ -560,6 +573,11 @@ def main():
   elif options.new_pin or not host.is_pin_set():
     host.ask_pin()
     host.save_config()
+    running, pid = PidFile(pid_filename).check()
+    if running:
+      os.kill(pid, signal.SIGUSR1)
+      print "The running instance has been updated with the new PIN."
+      return 0
 
   # The loop is to deal with the case of registering a new Host with
   # previously-saved auth tokens (from a previous run of this script), which
@@ -659,7 +677,17 @@ def main():
       logging.info("Launching host process")
       desktop.launch_host(host)
 
-    pid, status = os.wait()
+    try:
+      pid, status = os.wait()
+    except OSError, e:
+      if e.errno == errno.EINTR:
+        # Retry on EINTR, which can happen if a signal such as SIGUSR1 is
+        # received.
+        continue
+      else:
+        # Anything else is an unexpected error.
+        raise
+
     logging.info("wait() returned (%s,%s)" % (pid, status))
 
     # When os.wait() notifies that a process has terminated, any Popen instance
