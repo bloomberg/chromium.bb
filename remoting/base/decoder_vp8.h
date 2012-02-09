@@ -35,19 +35,6 @@ class DecoderVp8 : public Decoder {
     kError,
   };
 
-  // Return true if scaling is enabled
-  bool DoScaling() const;
-
-  // Perform color space conversion on the specified region.
-  // Writes the updated region to |output_region|.
-  void ConvertRegion(const SkRegion& region,
-                     SkRegion* output_region);
-
-  // Perform scaling and color space conversion on the specified
-  // region.  Writes the updated rectangles to |output_region|.
-  void ScaleAndConvertRegion(const SkRegion& region,
-                             SkRegion* output_region);
-
   // The internal state of the decoder.
   State state_;
 

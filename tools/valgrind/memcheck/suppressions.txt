@@ -5793,6 +5793,15 @@
    fun:_ZN12_GLOBAL__N_141SpellCheckProviderTest_UsingHunspell_Test8TestBodyEv
 }
 {
+   bug_113076
+   Memcheck:Uninitialized
+   fun:_ZL19ConvertYUVToRGB32_ChhhPh
+   fun:LinearScaleYUVToRGB32RowWithRange_C
+   fun:_ZN5media23ScaleYUVToRGB32WithRectEPKhS1_S1_Phiiiiiiiiiii
+   fun:_ZN8remoting29ConvertAndScaleYUVToRGB32RectEPKhS1_S1_iiRK7SkTSizeIiERK7SkIRectPhiS5_S8_S8_
+   fun:_ZN8remoting14YuvToRgbTester7RunTestE7SkTSizeIiERK7SkIRect
+}
+{
    bug_113276
    Memcheck:Leak
    fun:_Znw*

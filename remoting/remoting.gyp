@@ -937,6 +937,7 @@
         'base/encoder_row_based_unittest.cc',
         'base/base_mock_objects.cc',
         'base/base_mock_objects.h',
+        'base/util_unittest.cc',
         'client/mouse_input_filter_unittest.cc',
         'host/capturer_linux_unittest.cc',
         'host/capturer_mac_unittest.cc',
