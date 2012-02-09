@@ -67,7 +67,7 @@ bool GetConfiguration(const std::string& json, SyncConfiguration* config) {
     return false;
 
   // These values need to be kept in sync with where they are written in
-  // choose_datatypes.html.
+  // sync_setup_overlay.html.
   bool sync_bookmarks;
   if (!result->GetBoolean("syncBookmarks", &sync_bookmarks))
     return false;

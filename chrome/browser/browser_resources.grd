@@ -118,11 +118,6 @@
       <include name="IDR_SSL_CLIENT_CERTIFICATE_SELECTOR_JS" file="resources\ssl_client_certificate_selector.js" type="BINDATA" />
       <include name="IDR_SSL_ERROR_HTML" file="resources\ssl_error.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_SSL_ROAD_BLOCK_HTML" file="resources\ssl_roadblock.html" flattenhtml="true" type="BINDATA" />
-      <include name="IDR_SYNC_CONFIGURE_HTML" file="sync\resources\configure.html" flattenhtml="true" type="BINDATA" />
-      <include name="IDR_SYNC_PASSPHRASE_HTML" file="sync\resources\passphrase.html" flattenhtml="true" type="BINDATA" />
-      <include name="IDR_SYNC_SETTING_UP_HTML" file="sync\resources\setting_up.html" flattenhtml="true" type="BINDATA" />
-      <include name="IDR_SYNC_SETUP_DONE_HTML" file="sync\resources\setup_done.html" flattenhtml="true" type="BINDATA" />
-      <include name="IDR_SYNC_SETUP_FLOW_HTML" file="sync\resources\setup_flow.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_TASK_MANAGER_HTML" file="resources\task_manager\main.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
       <include name="IDR_TASK_MANAGER_INCLUDES_JS" file="resources\task_manager\includes.js" type="BINDATA" />
       <!-- The following main.js uses flattenhtml feature to remove the platform-dependent code at complie-time. -->
