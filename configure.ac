@@ -1,6 +1,6 @@
 AC_PREREQ([2.64])
 AC_INIT([wayland],
-        [0.1],
+        [master],
         [https://bugs.freedesktop.org/enter_bug.cgi?product=wayland],
         [wayland],
         [http://wayland.freedesktop.org/])
