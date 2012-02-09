@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -277,7 +277,6 @@ IN_PROC_BROWSER_TEST_F(AutocompleteBrowserTest, ExtensionAppProvider) {
   // loaded so that the autocomplete results are consistent.
   ui_test_utils::WaitForHistoryToLoad(browser());
 
-  LocationBar* location_bar = GetLocationBar();
   AutocompleteController* autocomplete_controller = GetAutocompleteController();
 
   // Try out the packaged app.
@@ -287,16 +286,12 @@ IN_PROC_BROWSER_TEST_F(AutocompleteBrowserTest, ExtensionAppProvider) {
         AutocompleteInput::SYNCHRONOUS_MATCHES);
 
     EXPECT_TRUE(autocomplete_controller->done());
-    EXPECT_TRUE(location_bar->GetInputString().empty());
-    EXPECT_TRUE(location_bar->location_entry()->GetText().empty());
-    EXPECT_TRUE(location_bar->location_entry()->IsSelectAll());
     const AutocompleteResult& result = autocomplete_controller->result();
     EXPECT_GT(result.size(), 1U) << AutocompleteResultAsString(result);
     AutocompleteMatch match = result.match_at(0);
     EXPECT_EQ(ASCIIToUTF16("Packaged App Test"), match.contents);
     EXPECT_EQ(AutocompleteMatch::EXTENSION_APP, match.type);
     EXPECT_FALSE(match.deletable);
-    location_bar->AcceptInput();
   }
 
   browser()->NewTab();
@@ -308,9 +303,6 @@ IN_PROC_BROWSER_TEST_F(AutocompleteBrowserTest, ExtensionAppProvider) {
         AutocompleteInput::SYNCHRONOUS_MATCHES);
 
     EXPECT_TRUE(autocomplete_controller->done());
-    EXPECT_TRUE(location_bar->GetInputString().empty());
-    EXPECT_TRUE(location_bar->location_entry()->GetText().empty());
-    EXPECT_TRUE(location_bar->location_entry()->IsSelectAll());
     const AutocompleteResult& result = autocomplete_controller->result();
     // 'App test' is also a substring of extension 'Packaged App Test'.
     EXPECT_GT(result.size(), 2U) << AutocompleteResultAsString(result);
@@ -318,6 +310,5 @@ IN_PROC_BROWSER_TEST_F(AutocompleteBrowserTest, ExtensionAppProvider) {
     EXPECT_EQ(ASCIIToUTF16("App Test"), match.contents);
     EXPECT_EQ(AutocompleteMatch::EXTENSION_APP, match.type);
     EXPECT_FALSE(match.deletable);
-    location_bar->AcceptInput();
   }
 }

@@ -518,10 +518,12 @@ void AutocompleteEditModel::OpenMatch(const AutocompleteMatch& match,
         autocomplete_controller_->input().type(),
         popup_->selected_line(),
         -1,  // don't yet know tab ID; set later if appropriate
-        base::TimeDelta::FromMilliseconds(-1),  // typing duration; usually
-                                                // over-written later
+        base::TimeTicks::Now() - time_user_first_modified_omnibox_,
         0,  // inline autocomplete length; possibly set later
         result());
+    DCHECK(user_input_in_progress_) << "We didn't get here through the "
+        "expected series of calls.  time_user_first_modified_omnibox_ is "
+        "not set correctly and other things may be wrong.";
     if (index != AutocompletePopupModel::kNoMatch)
       log.selected_index = index;
     else if (!has_temporary_text_)
@@ -532,17 +534,6 @@ void AutocompleteEditModel::OpenMatch(const AutocompleteMatch& match,
       // tab, we don't know the tab ID yet.)
       log.tab_id = controller_->GetTabContentsWrapper()->
           restore_tab_helper()->session_id().id();
-    }
-    if (user_input_in_progress_) {
-      // This case should happen every time except possibly in unit tests.
-      // If we somehow got into OpenMatch() by selecting an autocomplete
-      // match without going through user_input_in_progress_, that
-      // means we never properly set time_user_first_modified_omnibox_
-      // (because we didn't know the user started typing!).  In that
-      // case, leave the elapsed_time_since_user_first_modified_omnibox
-      // set to -1 ms.
-      log.elapsed_time_since_user_first_modified_omnibox =
-          base::TimeTicks::Now() - time_user_first_modified_omnibox_;
     }
     content::NotificationService::current()->Notify(
         chrome::NOTIFICATION_OMNIBOX_OPENED_URL,
