@@ -2718,6 +2718,9 @@ int32_t NaClCommonSysException_Handler(struct NaClAppThread *natp,
                                        uint32_t             handler_addr,
                                        uint32_t             old_handler) {
   uintptr_t safe_old_handler;
+  if (!natp->nap->enable_exception_handling) {
+    return -NACL_ABI_ENOSYS;
+  }
   if (!NaClIsValidJumpTarget(natp->nap, handler_addr)) {
     return -NACL_ABI_EFAULT;
   }
@@ -2737,6 +2740,9 @@ int32_t NaClCommonSysException_Handler(struct NaClAppThread *natp,
 int32_t NaClCommonSysException_Stack(struct NaClAppThread *natp,
                                      uint32_t             stack_addr,
                                      uint32_t             stack_size) {
+  if (!natp->nap->enable_exception_handling) {
+    return -NACL_ABI_ENOSYS;
+  }
   if (kNaClBadAddress == NaClUserToSysAddrNullOkay(natp->nap,
                                                    stack_addr + stack_size)) {
     return -NACL_ABI_EINVAL;
@@ -2746,6 +2752,9 @@ int32_t NaClCommonSysException_Stack(struct NaClAppThread *natp,
 }
 
 int32_t NaClCommonSysException_Clear_Flag(struct NaClAppThread *natp) {
+  if (!natp->nap->enable_exception_handling) {
+    return -NACL_ABI_ENOSYS;
+  }
   natp->user.exception_flag = 0;
   return 0;
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -321,6 +321,7 @@ struct NaClApp {
   struct NaClDebugCallbacks *debug_stub_callbacks;
   struct NaClMutex          exception_mu;
   uint32_t                  exception_handler;
+  int                       enable_exception_handling;
 };
 
 

@@ -52,3 +52,16 @@ node = env.CommandSelLdrTestNacl(
 env.AddNodeToTestSuite(
     node, ['small_tests', 'exception_tests'],
     'run_exception_bad_stack_test', is_broken=is_broken)
+
+
+exceptions_disabled_test = env.ComponentProgram(
+    'exceptions_disabled_test',
+    ['exceptions_disabled_test.c'],
+    EXTRA_LIBS=['${NONIRT_LIBS}'])
+node = env.CommandSelLdrTestNacl(
+    'exceptions_disabled_test.out',
+    exceptions_disabled_test, [],
+    declares_exit_status=True)
+env.AddNodeToTestSuite(
+    node, ['small_tests', 'exception_tests'],
+    'run_exceptions_disabled_test')

@@ -217,6 +217,7 @@ int NaClAppWithSyscallTableCtor(struct NaClApp               *nap,
   if (!NaClMutexCtor(&nap->exception_mu)) {
     goto cleanup_desc_mu;
   }
+  nap->enable_exception_handling = 0;
 
   return 1;
 

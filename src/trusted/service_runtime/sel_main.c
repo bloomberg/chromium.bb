@@ -201,7 +201,7 @@ int main(int  argc,
   int                           enable_debug_stub = 0;
   int                           handle_signals = 0;
   int                           exception_handling_requested = 0;
-  int                           exception_handling = 0;
+  int                           enable_exception_handling = 0;
   struct NaClPerfCounter        time_all_main;
   const char                    **envp;
   struct NaClEnvCleanser        env_cleanser;
@@ -396,10 +396,10 @@ int main(int  argc,
 #if NACL_WINDOWS
     int status;
     DWORD exit_code;
-    exception_handling = 1;
+    enable_exception_handling = 1;
     status = NaClLaunchAndDebugItself(argv[0], &exit_code);
     if (status == DEBUG_EXCEPTION_HANDLER_NOT_SUPPORTED) {
-      exception_handling = 0;
+      enable_exception_handling = 0;
     } else if (status == DEBUG_EXCEPTION_HANDLER_SUCCESS) {
       return exit_code;
     } else if (status == DEBUG_EXCEPTION_HANDLER_ERROR) {
@@ -409,10 +409,10 @@ int main(int  argc,
     }
 #elif NACL_LINUX
     handle_signals = 1;
-    exception_handling = 1;
+    enable_exception_handling = 1;
 #elif NACL_OSX
     int status;
-    exception_handling = 1;
+    enable_exception_handling = 1;
     status = NaClInterceptMachExceptions();
     if (!status) {
       fprintf(stderr, "ERROR setting up Mach exception interception.\n");
@@ -422,7 +422,7 @@ int main(int  argc,
 # error Unknown host OS
 #endif
   }
-  if (exception_handling_requested && !exception_handling) {
+  if (exception_handling_requested && !enable_exception_handling) {
     fprintf(stderr, "WARNING: exception handling is not supported\n");
   }
 
@@ -527,6 +527,7 @@ int main(int  argc,
   state.skip_validator = (debug_mode_ignore_validator > 1);
   state.validator_stub_out_mode = stub_out_mode;
   state.enable_debug_stub = enable_debug_stub;
+  state.enable_exception_handling = enable_exception_handling;
 
   nap = &state;
   errcode = LOAD_OK;
