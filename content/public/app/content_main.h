@@ -1,9 +1,9 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_APP_CONTENT_MAIN_H_
-#define CONTENT_APP_CONTENT_MAIN_H_
+#ifndef CONTENT_PUBLIC_APP_CONTENT_MAIN_H_
+#define CONTENT_PUBLIC_APP_CONTENT_MAIN_H_
 #pragma once
 
 #include "build/build_config.h"
@@ -40,4 +40,4 @@ CONTENT_EXPORT int ContentMain(int argc,
 
 }  // namespace content
 
-#endif  // CONTENT_APP_CONTENT_MAIN_H_
+#endif  // CONTENT_PUBLIC_APP_CONTENT_MAIN_H_

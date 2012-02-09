@@ -290,7 +290,9 @@ void BrowserMainLoop::MainMessageLoopStart() {
   // Must first NULL pointer or we hit a DCHECK that the newly constructed
   // message loop is the current one.
   main_message_loop_.reset();
-  main_message_loop_.reset(new MessageLoop(MessageLoop::TYPE_UI));
+  main_message_loop_.reset(parts_->GetMainMessageLoop());
+  if (!main_message_loop_.get())
+    main_message_loop_.reset(new MessageLoop(MessageLoop::TYPE_UI));
 
   InitializeMainThread();
 
@@ -317,8 +319,7 @@ void BrowserMainLoop::MainMessageLoopStart() {
     parts_->PostMainMessageLoopStart();
 }
 
-void BrowserMainLoop::RunMainMessageLoopParts(
-    bool* completed_main_message_loop) {
+void BrowserMainLoop::CreateThreads() {
   if (parts_.get())
     result_code_ = parts_->PreCreateThreads();
 
@@ -400,10 +401,13 @@ void BrowserMainLoop::RunMainMessageLoopParts(
   if (parts_.get())
     parts_->PreMainMessageLoopRun();
 
-  TRACE_EVENT_BEGIN_ETW("BrowserMain:MESSAGE_LOOP", 0, "");
   // If the UI thread blocks, the whole UI is unresponsive.
   // Do not allow disk IO from the UI thread.
   base::ThreadRestrictions::SetIOAllowed(false);
+}
+
+void BrowserMainLoop::RunMainMessageLoopParts() {
+  TRACE_EVENT_BEGIN_ETW("BrowserMain:MESSAGE_LOOP", 0, "");
 
   bool ran_main_loop = false;
   if (parts_.get())
@@ -413,11 +417,6 @@ void BrowserMainLoop::RunMainMessageLoopParts(
     MainMessageLoopRun();
 
   TRACE_EVENT_END_ETW("BrowserMain:MESSAGE_LOOP", 0, "");
-
-  if (completed_main_message_loop)
-    *completed_main_message_loop = true;
-
-  ShutdownThreadsAndCleanUp();
 }
 
 void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
