@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -355,7 +355,7 @@ void VideoCaptureManager::GetAvailableDevices(
   DCHECK(IsOnCaptureDeviceThread());
 
   if (!use_fake_device_) {
-     media::VideoCaptureDevice::GetDeviceNames(device_names);
+    media::VideoCaptureDevice::GetDeviceNames(device_names);
   } else {
     media::FakeVideoCaptureDevice::GetDeviceNames(device_names);
   }
