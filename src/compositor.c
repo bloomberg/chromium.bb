@@ -986,6 +986,15 @@ weston_output_repaint(struct weston_output *output, int msecs)
 				      &es->transform.boundingbox);
 	}
 
+	if (output->assign_planes)
+		/*
+		 * This will queue flips for the fbs and sprites where
+		 * applicable and clear the damage for those surfaces.
+		 * The repaint loop below will repaint everything
+		 * else.
+		 */
+		output->assign_planes(output);
+
 	weston_output_set_cursor(output, ec->input_device);
 
 	wl_list_for_each(es, &ec->surface_list, link) {

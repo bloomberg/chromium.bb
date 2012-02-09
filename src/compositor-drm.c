@@ -621,6 +621,7 @@ create_output_for_connector(struct drm_compositor *ec,
 	output->base.repaint = drm_output_repaint;
 	output->base.set_hardware_cursor = drm_output_set_cursor;
 	output->base.destroy = drm_output_destroy;
+	output->base.assign_planes = NULL;
 
 	return 0;
 

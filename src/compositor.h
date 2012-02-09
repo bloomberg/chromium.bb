@@ -87,6 +87,7 @@ struct weston_output {
 	int (*set_hardware_cursor)(struct weston_output *output,
 				   struct weston_input_device *input);
 	void (*destroy)(struct weston_output *output);
+	void (*assign_planes)(struct weston_output *output);
 };
 
 struct weston_input_device {
