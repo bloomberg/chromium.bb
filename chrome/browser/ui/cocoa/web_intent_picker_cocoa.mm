@@ -75,6 +75,10 @@ WebIntentPickerCocoa::~WebIntentPickerCocoa() {
 }
 
 void WebIntentPickerCocoa::Close() {
+  DCHECK(controller_);
+  [controller_ close];
+  if (inline_disposition_tab_contents_.get())
+    inline_disposition_tab_contents_->web_contents()->OnCloseStarted();
 }
 
 void WebIntentPickerCocoa::PerformDelayedLayout() {
@@ -142,7 +146,8 @@ void WebIntentPickerCocoa::OnInlineDisposition(WebIntentPickerModel* model) {
 void WebIntentPickerCocoa::OnCancelled() {
   DCHECK(delegate_);
   delegate_->OnCancelled();
-  controller_ = NULL;  // Controller will be unusable soon, abandon.
+  delegate_->OnClosing();
+  MessageLoop::current()->DeleteSoon(FROM_HERE, this);
 }
 
 void WebIntentPickerCocoa::OnServiceChosen(size_t index) {

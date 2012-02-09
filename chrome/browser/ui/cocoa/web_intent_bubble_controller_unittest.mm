@@ -2,43 +2,62 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/basictypes.h"
+#include "base/message_loop.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #import "chrome/browser/ui/cocoa/hyperlink_button_cell.h"
 #import "chrome/browser/ui/cocoa/info_bubble_window.h"
 #import "chrome/browser/ui/cocoa/web_intent_bubble_controller.h"
 #include "chrome/browser/ui/cocoa/web_intent_picker_cocoa.h"
 #include "chrome/browser/ui/intents/web_intent_picker_delegate.h"
+#include "testing/gmock/include/gmock/gmock.h"
 
 namespace {
 
-class FakeIntentPickerDelegate : public WebIntentPickerDelegate {
+class MockIntentPickerDelegate : public WebIntentPickerDelegate {
  public:
-  virtual ~FakeIntentPickerDelegate() {}
-  virtual void OnServiceChosen(
-      size_t index, Disposition disposition) OVERRIDE {};
-  virtual void OnInlineDispositionWebContentsCreated(
-      content::WebContents* web_contents) OVERRIDE {}
+  virtual ~MockIntentPickerDelegate() {}
 
-  // Callback called when the user cancels out of the dialog.
-  virtual void OnCancelled() OVERRIDE {};
-  virtual void OnClosing() OVERRIDE {};
+  MOCK_METHOD2(OnServiceChosen, void(size_t index, Disposition disposition));
+  MOCK_METHOD1(OnInlineDispositionWebContentsCreated,
+      void(content::WebContents* web_contents));
+  MOCK_METHOD0(OnCancelled, void());
+  MOCK_METHOD0(OnClosing, void());
 };
 
 }  // namespace
 
 class WebIntentBubbleControllerTest : public CocoaTest {
  public:
+  virtual ~WebIntentBubbleControllerTest() {
+    message_loop_.RunAllPending();
+  }
   virtual void TearDown() {
     // Do not animate out because that is hard to test around.
-    [window_ setDelayOnClose:NO];
-    [controller_ close];
+    if (window_)
+      [window_ setDelayOnClose:NO];
+
+    if (picker_.get()) {
+      EXPECT_CALL(delegate_, OnCancelled());
+      EXPECT_CALL(delegate_, OnClosing());
+
+      [controller_ close];
+      // Closing |controller_| destroys |picker_|.
+      ignore_result(picker_.release());
+    }
     CocoaTest::TearDown();
   }
 
-  void CreateBubble() {
+  void CreatePicker() {
     picker_.reset(new WebIntentPickerCocoa());
     picker_->delegate_ = &delegate_;
-    NSPoint anchor=NSMakePoint(0,0);
+    window_ = nil;
+    controller_ = nil;
+  }
+
+  void CreateBubble() {
+    CreatePicker();
+    NSPoint anchor=NSMakePoint(0, 0);
 
     controller_ =
         [[WebIntentBubbleController alloc] initWithPicker:picker_.get()
@@ -99,7 +118,8 @@ class WebIntentBubbleControllerTest : public CocoaTest {
   WebIntentBubbleController* controller_;  // Weak, owns self.
   InfoBubbleWindow* window_;  // Weak, owned by controller.
   scoped_ptr<WebIntentPickerCocoa> picker_;
-  FakeIntentPickerDelegate delegate_;
+  MockIntentPickerDelegate delegate_;
+  MessageLoopForUI message_loop_;
 };
 
 TEST_F(WebIntentBubbleControllerTest, EmptyBubble) {
@@ -112,10 +132,30 @@ TEST_F(WebIntentBubbleControllerTest, PopulatedBubble) {
   CreateBubble();
 
   WebIntentPickerModel model;
-  model.AddItem(string16(),GURL(),WebIntentPickerModel::DISPOSITION_WINDOW);
-  model.AddItem(string16(),GURL(),WebIntentPickerModel::DISPOSITION_WINDOW);
+  model.AddItem(string16(), GURL(), WebIntentPickerModel::DISPOSITION_WINDOW);
+  model.AddItem(string16(), GURL(), WebIntentPickerModel::DISPOSITION_WINDOW);
 
   [controller_ performLayoutWithModel:&model];
 
   CheckWindow(/*icon_count=*/2);
+}
+
+TEST_F(WebIntentBubbleControllerTest, OnCancelledWillSignalClose) {
+  CreatePicker();
+
+  EXPECT_CALL(delegate_, OnCancelled());
+  EXPECT_CALL(delegate_, OnClosing());
+  picker_->OnCancelled();
+
+  ignore_result(picker_.release());  // Closing |picker_| will self-destruct it.
+}
+
+TEST_F(WebIntentBubbleControllerTest, CloseWillClose) {
+  CreateBubble();
+
+  EXPECT_CALL(delegate_, OnCancelled());
+  EXPECT_CALL(delegate_, OnClosing());
+  picker_->Close();
+
+  ignore_result(picker_.release());  // Closing |picker_| will self-destruct it.
 }

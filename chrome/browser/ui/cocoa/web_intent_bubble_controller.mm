@@ -124,11 +124,8 @@ const CGFloat kTextWidth = kWindowWidth - (kImageSize + kImageSpacing +
 
 // A picker button has been pressed - invoke corresponding service.
 - (IBAction)invokeService:(id)sender {
-  if (picker_) {
-    WebIntentPickerCocoa* temp = picker_;
-    picker_ = NULL;  // Abandon picker, we are done with it.
-    temp->OnServiceChosen([sender tag]);
-  }
+  if (picker_)
+    picker_->OnServiceChosen([sender tag]);
 }
 
 // Sets proprties on the given |field| to act as the title or description labels
