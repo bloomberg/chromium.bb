@@ -357,6 +357,8 @@ weston_surface_update_transform(struct weston_surface *surface)
 
 	surface->geometry.dirty = 0;
 
+	weston_surface_damage_below_noupdate(surface);
+
 	pixman_region32_fini(&surface->transform.boundingbox);
 
 	/* transform.position is always in transformation_list */
@@ -369,6 +371,12 @@ weston_surface_update_transform(struct weston_surface *surface)
 		if (weston_surface_update_transform_enable(surface) < 0)
 			weston_surface_update_transform_disable(surface);
 	}
+
+	/* weston_surface_damage() without update */
+	pixman_region32_union(&surface->damage, &surface->damage,
+			      &surface->transform.boundingbox);
+
+	weston_compositor_schedule_repaint(surface->compositor);
 }
 
 WL_EXPORT void
