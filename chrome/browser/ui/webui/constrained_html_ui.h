@@ -22,6 +22,7 @@ template<class T> class PropertyAccessor;
 
 class ConstrainedHtmlUIDelegate {
  public:
+  virtual const HtmlDialogUIDelegate* GetHtmlDialogUIDelegate() const = 0;
   virtual HtmlDialogUIDelegate* GetHtmlDialogUIDelegate() = 0;
 
   // Called when the dialog is being closed in response to a "DialogClose"

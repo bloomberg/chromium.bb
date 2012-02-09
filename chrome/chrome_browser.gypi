@@ -3825,6 +3825,8 @@
         'browser/ui/webui/collected_cookies_ui_delegate.h',
         'browser/ui/webui/constrained_html_ui.cc',
         'browser/ui/webui/constrained_html_ui.h',
+        'browser/ui/webui/constrained_html_ui_delegate_impl.cc',
+        'browser/ui/webui/constrained_html_ui_delegate_impl.h',
         'browser/ui/webui/cookies_tree_model_adapter.cc',
         'browser/ui/webui/cookies_tree_model_adapter.h',
         'browser/ui/webui/cookies_tree_model_util.cc',
