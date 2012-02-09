@@ -465,7 +465,6 @@ handle_event(struct wl_display *display,
 	proxy = wl_map_lookup(&display->objects, id);
 
 	if (proxy == WL_ZOMBIE_OBJECT) {
-		fprintf(stderr, "Message to zombie object\n");
 		wl_connection_consume(display->connection, size);
 		return;
 	} else if (proxy == NULL || proxy->object.implementation == NULL) {
