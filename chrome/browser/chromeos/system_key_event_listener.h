@@ -17,7 +17,11 @@ typedef union _XEvent XEvent;
 
 namespace chromeos {
 
+// TODO(yusukes): Remove code for non-Aura version of Chrome OS in this file
+// once Aura version of the OS is released.
+#if !defined(USE_AURA)
 class AudioHandler;
+#endif
 
 // SystemKeyEventListener listens for volume related key presses from GDK, then
 // tells the AudioHandler to adjust volume accordingly.  Start by just calling
@@ -77,14 +81,18 @@ class SystemKeyEventListener : public MessageLoopForUI::Observer {
 
   void OnBrightnessDown();
   void OnBrightnessUp();
+#if !defined(USE_AURA)
   void OnVolumeMute();
   void OnVolumeDown();
   void OnVolumeUp();
+#endif
   void OnCapsLock(bool enabled);
 
+#if !defined(USE_AURA)
   // Displays the volume bubble for the current volume and muting status.
   // Also hides the brightness bubble if it's being shown.
   void ShowVolumeBubble();
+#endif
 
   // Returns true if the event was processed, false otherwise.
   virtual bool ProcessedXEvent(XEvent* xevent);

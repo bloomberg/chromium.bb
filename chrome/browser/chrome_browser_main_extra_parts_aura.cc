@@ -17,6 +17,7 @@
 #include "ui/gfx/compositor/compositor_setup.h"
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/ui/views/aura/volume_controller_chromeos.h"
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"
 #include "chrome/browser/chromeos/system/runtime_environment.h"
 #endif
@@ -44,6 +45,8 @@ void ChromeBrowserMainExtraPartsAura::PreProfileInit() {
       chromeos::input_method::InputMethodManager::GetInstance()->GetXKeyboard();
   shell->accelerator_controller()->SetCapsLockDelegate(
       scoped_ptr<ash::CapsLockDelegate>(new CapsLockHandler(xkeyboard)).Pass());
+  shell->accelerator_controller()->SetVolumeControlDelegate(
+      scoped_ptr<ash::VolumeControlDelegate>(new VolumeController).Pass());
 #endif
 
   // Make sure the singleton ScreenOrientationListener object is created.

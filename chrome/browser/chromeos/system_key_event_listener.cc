@@ -35,6 +35,9 @@ namespace chromeos {
 
 namespace {
 
+// TODO(yusukes): Remove code for non-Aura version of Chrome OS in this file
+// once Aura version of the OS is released.
+#if !defined(USE_AURA)
 // Percent by which the volume should be changed when a volume key is pressed.
 const double kStepPercentage = 4.0;
 
@@ -42,6 +45,7 @@ const double kStepPercentage = 4.0;
 // while we're muted and have the volume set to 0.  See
 // http://crosbug.com/13618.
 const double kVolumePercentOnVolumeUpWhileMuted = 25.0;
+#endif
 
 // In ProcessedXEvent(), we should check only Alt, Shift, Control, and Caps Lock
 // modifiers, and should ignore Num Lock, Super, Hyper etc. See
@@ -97,6 +101,9 @@ SystemKeyEventListener::SystemKeyEventListener()
   key_f9_ = XKeysymToKeycode(display, XK_F9);
   key_f10_ = XKeysymToKeycode(display, XK_F10);
 
+  // TODO(yusukes): For Aura, the X11 API calls for grabbing keys should be
+  // moved to the aura::RootWindowHostLinux class or volume_controller.cc in
+  // chrome/browser/ui/views/aura/.
   if (key_brightness_down_)
     GrabKey(key_brightness_down_, 0);
   if (key_brightness_up_)
@@ -205,6 +212,7 @@ void SystemKeyEventListener::OnBrightnessUp() {
       IncreaseScreenBrightness();
 }
 
+#if !defined(USE_AURA)
 void SystemKeyEventListener::OnVolumeMute() {
   AudioHandler* audio_handler = AudioHandler::GetInstanceIfInitialized();
   if (!audio_handler)
@@ -251,6 +259,7 @@ void SystemKeyEventListener::OnVolumeUp() {
                                          audio_handler->IsMuted());
   ShowVolumeBubble();
 }
+#endif
 
 void SystemKeyEventListener::OnCapsLock(bool enabled) {
   FOR_EACH_OBSERVER(CapsLockObserver,
@@ -258,6 +267,7 @@ void SystemKeyEventListener::OnCapsLock(bool enabled) {
                     OnCapsLockChange(enabled));
 }
 
+#if !defined(USE_AURA)
 void SystemKeyEventListener::ShowVolumeBubble() {
   AudioHandler* audio_handler = AudioHandler::GetInstanceIfInitialized();
   if (audio_handler) {
@@ -267,6 +277,7 @@ void SystemKeyEventListener::ShowVolumeBubble() {
   }
   BrightnessBubble::GetInstance()->HideBubble();
 }
+#endif
 
 bool SystemKeyEventListener::ProcessedXEvent(XEvent* xevent) {
   input_method::InputMethodManager* input_method_manager =
@@ -356,6 +367,7 @@ bool SystemKeyEventListener::ProcessedXEvent(XEvent* xevent) {
                 UserMetricsAction("Accel_BrightnessUp_F7"));
           OnBrightnessUp();
           return true;
+#if !defined(USE_AURA)
         } else if (keycode == key_f8_ || keycode == key_volume_mute_) {
           if (keycode == key_f8_)
             content::RecordAction(UserMetricsAction("Accel_VolumeMute_F8"));
@@ -371,6 +383,7 @@ bool SystemKeyEventListener::ProcessedXEvent(XEvent* xevent) {
             content::RecordAction(UserMetricsAction("Accel_VolumeUp_F10"));
           OnVolumeUp();
           return true;
+#endif
         }
       }
     }

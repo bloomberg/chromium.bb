@@ -3419,6 +3419,8 @@
         'browser/ui/views/aura/multiple_window_indicator_button.h',
         'browser/ui/views/aura/status_area_host_aura.cc',
         'browser/ui/views/aura/status_area_host_aura.h',
+        'browser/ui/views/aura/volume_controller_chromeos.cc',
+        'browser/ui/views/aura/volume_controller_chromeos.h',
         'browser/ui/views/autocomplete/autocomplete_popup_contents_view.cc',
         'browser/ui/views/autocomplete/autocomplete_popup_contents_view.h',
         'browser/ui/views/autocomplete/autocomplete_result_view.cc',
