@@ -1012,10 +1012,12 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
     if key == 'CC': cc = os.path.join(build_to_root, value)
     if key == 'CXX': cxx = os.path.join(build_to_root, value)
 
+  flock = 'flock'
+  if flavor == 'mac':
+    flock = './gyp-mac-tool flock'
   master_ninja.variable('cc', os.environ.get('CC', cc))
   master_ninja.variable('cxx', os.environ.get('CXX', cxx))
-  # TODO(jeremya/thakis): flock
-  master_ninja.variable('ld', '$cxx')
+  master_ninja.variable('ld', flock + ' linker.lock $cxx')
   master_ninja.variable('cc_host', '$cc')
   master_ninja.variable('cxx_host', '$cxx')
   if flavor == 'mac':
