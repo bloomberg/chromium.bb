@@ -4,11 +4,11 @@
 
 #include "content/browser/worker_host/worker_message_filter.h"
 
-#include "content/browser/resource_context.h"
 #include "content/browser/worker_host/message_port_service.h"
 #include "content/browser/worker_host/worker_service_impl.h"
 #include "content/common/view_messages.h"
 #include "content/common/worker_messages.h"
+#include "content/public/browser/resource_context.h"
 
 using content::BrowserMessageFilter;
 using content::BrowserThread;

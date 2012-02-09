@@ -6,10 +6,10 @@
 
 #include "base/bind.h"
 #include "content/browser/renderer_host/render_view_host.h"
-#include "content/browser/resource_context.h"
 #include "content/browser/speech/speech_input_preferences.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_view_host_delegate.h"
+#include "content/public/browser/resource_context.h"
 #include "content/public/common/view_type.h"
 #include "media/audio/audio_manager.h"
 

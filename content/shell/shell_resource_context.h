@@ -8,7 +8,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
-#include "content/browser/resource_context.h"
+#include "content/public/browser/resource_context.h"
 
 class ChromeBlobStorageContext;
 

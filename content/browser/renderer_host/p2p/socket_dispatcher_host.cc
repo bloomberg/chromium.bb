@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/stl_util.h"
 #include "content/browser/renderer_host/p2p/socket_host.h"
-#include "content/browser/resource_context.h"
+#include "content/public/browser/resource_context.h"
 #include "content/common/p2p_messages.h"
 #include "net/base/address_list.h"
 #include "net/base/completion_callback.h"

@@ -5,8 +5,8 @@
 #include "content/browser/renderer_host/resource_message_filter.h"
 
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
-#include "content/browser/resource_context.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/resource_context.h"
 
 using content::BrowserMessageFilter;
 

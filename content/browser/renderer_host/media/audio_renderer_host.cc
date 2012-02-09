@@ -11,10 +11,9 @@
 #include "content/browser/renderer_host/media/audio_common.h"
 #include "content/browser/renderer_host/media/audio_sync_reader.h"
 #include "content/browser/renderer_host/media/media_observer.h"
-#include "content/browser/resource_context.h"
 #include "content/common/media/audio_messages.h"
+#include "content/public/browser/resource_context.h"
 #include "media/audio/audio_util.h"
-#include "ipc/ipc_logging.h"
 
 using content::BrowserMessageFilter;
 using content::BrowserThread;

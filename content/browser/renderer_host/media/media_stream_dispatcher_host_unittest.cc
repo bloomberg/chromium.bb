@@ -11,7 +11,6 @@
 #include "content/browser/renderer_host/media/media_stream_dispatcher_host.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
 #include "content/browser/renderer_host/media/video_capture_manager.h"
-#include "content/browser/resource_context.h"
 #include "content/common/media/media_stream_messages.h"
 #include "content/common/media/media_stream_options.h"
 #include "ipc/ipc_message_macros.h"

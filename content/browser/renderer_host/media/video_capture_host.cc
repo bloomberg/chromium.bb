@@ -9,8 +9,8 @@
 #include "base/stl_util.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
 #include "content/browser/renderer_host/media/video_capture_manager.h"
-#include "content/browser/resource_context.h"
 #include "content/common/media/video_capture_messages.h"
+#include "content/public/browser/resource_context.h"
 
 using content::BrowserMessageFilter;
 using content::BrowserThread;

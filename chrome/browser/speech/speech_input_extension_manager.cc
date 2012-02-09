@@ -19,10 +19,10 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/pref_names.h"
-#include "content/browser/resource_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/resource_context.h"
 #include "content/public/common/speech_input_result.h"
 
 using content::BrowserThread;

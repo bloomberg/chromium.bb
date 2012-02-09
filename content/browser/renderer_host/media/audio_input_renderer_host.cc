@@ -12,9 +12,8 @@
 #include "content/browser/renderer_host/media/audio_input_device_manager.h"
 #include "content/browser/renderer_host/media/audio_input_sync_writer.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
-#include "content/browser/resource_context.h"
 #include "content/common/media/audio_messages.h"
-#include "ipc/ipc_logging.h"
+#include "content/public/browser/resource_context.h"
 
 using content::BrowserMessageFilter;
 using content::BrowserThread;

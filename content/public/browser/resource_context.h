@@ -2,15 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_RESOURCE_CONTEXT_H_
-#define CONTENT_BROWSER_RESOURCE_CONTEXT_H_
-
-#include <map>
+#ifndef CONTENT_PUBLIC_BROWSER_RESOURCE_CONTEXT_H_
+#define CONTENT_PUBLIC_BROWSER_RESOURCE_CONTEXT_H_
 
 #include "base/basictypes.h"
-#include "base/callback_forward.h"
-#include "base/memory/ref_counted.h"
-#include "content/common/content_export.h"
 
 class AudioManager;
 class ChromeAppCacheService;
@@ -40,9 +35,9 @@ class HostZoomMap;
 // ResourceContext contains the relevant context information required for
 // resource loading. It lives on the IO thread, although it is constructed on
 // the UI thread.
-class CONTENT_EXPORT ResourceContext {
+class ResourceContext {
  public:
-   virtual ~ResourceContext();
+  virtual ~ResourceContext() {}
 
   virtual net::HostResolver* GetHostResolver() = 0;
   virtual net::URLRequestContext* GetRequestContext() = 0;
@@ -59,4 +54,4 @@ class CONTENT_EXPORT ResourceContext {
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_RESOURCE_CONTEXT_H_
+#endif  // CONTENT_PUBLIC_BROWSER_RESOURCE_CONTEXT_H_

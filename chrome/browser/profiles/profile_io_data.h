@@ -17,7 +17,7 @@
 #include "base/synchronization/lock.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/prefs/pref_member.h"
-#include "content/browser/resource_context.h"
+#include "content/public/browser/resource_context.h"
 #include "net/base/cookie_monster.h"
 
 class AudioManager;

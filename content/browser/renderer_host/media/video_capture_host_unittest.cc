@@ -17,11 +17,9 @@
 #include "content/browser/renderer_host/media/media_stream_manager.h"
 #include "content/browser/renderer_host/media/video_capture_host.h"
 #include "content/browser/renderer_host/media/video_capture_manager.h"
-#include "content/browser/resource_context.h"
 #include "content/common/media/video_capture_messages.h"
 #include "media/audio/audio_manager.h"
 #include "media/video/capture/video_capture_types.h"
-
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
