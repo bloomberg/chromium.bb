@@ -15,6 +15,13 @@
 #include "net/base/net_errors.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if defined(OS_LINUX)
+// http://crbug.com/110886 for Linux
+#define MAYBE_RenameFileFinal DISABLED_RenameFileFinal
+#else
+#define MAYBE_RenameFileFinal RenameFileFinal
+#endif
+
 using content::BrowserThread;
 using content::BrowserThreadImpl;
 using content::DownloadFile;
@@ -132,7 +139,7 @@ const int DownloadFileTest::kDummyRequestId = 67;
 
 // Rename the file before any data is downloaded, after some has, after it all
 // has, and after it's closed.
-TEST_F(DownloadFileTest, RenameFileFinal) {
+TEST_F(DownloadFileTest, MAYBE_RenameFileFinal) {
   CreateDownloadFile(&download_file_, 0, true);
   ASSERT_EQ(net::OK, download_file_->Initialize());
   FilePath initial_path(download_file_->FullPath());
