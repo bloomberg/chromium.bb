@@ -136,7 +136,7 @@ class IDLNode(IDLRelease):
         out.write('%s%s\n' % (tab, line))
     else:
       out.write('%s%s\n' % (tab, self))
-    properties = self.property_node.GetProperyList()
+    properties = self.property_node.GetPropertyList()
     if properties:
       out.write('%s  Properties\n' % tab)
       for p in properties:
@@ -389,4 +389,3 @@ def Main():
 
 if __name__ == '__main__':
   sys.exit(Main())
-
