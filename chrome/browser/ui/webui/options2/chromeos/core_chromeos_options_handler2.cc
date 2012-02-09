@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -30,6 +30,17 @@ namespace chromeos {
 namespace options2 {
 
 namespace {
+
+// List of settings that should be changeable by all users.
+const char* kNonOwnerSettings[] = {
+    kSystemTimezone
+};
+
+// Returns true if |pref| should be only available to the owner.
+bool IsSettingOwnerOnly(const std::string& pref) {
+  const char** end = kNonOwnerSettings + arraysize(kNonOwnerSettings);
+  return std::find(kNonOwnerSettings, end, pref) == end;
+}
 
 // Create a settings value with "managed" and "disabled" property.
 // "managed" property is true if the setting is managed by administrator.
@@ -150,10 +161,12 @@ base::Value* CoreChromeOSOptionsHandler::FetchPref(
     return pref_value->DeepCopy();
   }
   // All other prefs are decorated the same way.
+  bool enabled = (UserManager::Get()->current_user_is_owner() ||
+                  !IsSettingOwnerOnly(pref_name));
   return CreateSettingsValue(
       pref_value->DeepCopy(),  // The copy will be owned by the dictionary.
       g_browser_process->browser_policy_connector()->IsEnterpriseManaged(),
-      !UserManager::Get()->current_user_is_owner());
+      !enabled);
 }
 
 void CoreChromeOSOptionsHandler::ObservePref(const std::string& pref_name) {
