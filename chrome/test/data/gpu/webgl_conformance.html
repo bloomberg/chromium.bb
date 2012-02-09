@@ -4,6 +4,14 @@
         src="../../../../third_party/webgl_conformance/resources/webgl-test-harness.js">
 </script>
 <script>
+// We parse the test list offline and run the harness multiple times with each
+// test. Therefore, the version and options do not matter for the browsertests.
+// However, we still need to pass in a valid options for the harness to run.
+var CONFORMANCE_TEST_VERSION = "1.0.1 (beta)";
+var OPTIONS = {
+  version: CONFORMANCE_TEST_VERSION
+};
+
 var BASE_URL = "../../../../third_party/webgl_conformance/";
 var gl = null;
 var message;
@@ -72,7 +80,9 @@ function start(start_url) {
   var testHarness = new WebGLTestHarnessModule.TestHarness(
       iframe,
       BASE_URL + start_url,
-      report);
+      report,
+      OPTIONS);
+
   window.webglTestHarness = testHarness;
   window.webglTestHarness.runTests();
 }
