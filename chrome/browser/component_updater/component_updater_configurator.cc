@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -54,6 +54,14 @@ const char kExtraInfo[] =
     "os=win&arch=x86&prod=chrome&prodversion=";
   #else
     #error "unknown windows architecture"
+  #endif
+#elif defined(OS_ANDROID)
+  #if defined(__i386__)
+    "os=android&arch=x86&prod=chrome&prodversion=";
+  #elif defined(__arm__)
+    "os=android&arch=arm&prod=chrome&prodversion=";
+  #else
+    "os=android&arch=unknown&prod=chrome&prodversion=";
   #endif
 #elif defined(OS_CHROMEOS)
   #if defined(__i386__)
