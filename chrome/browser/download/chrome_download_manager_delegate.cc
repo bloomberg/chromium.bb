@@ -296,19 +296,6 @@ void ChromeDownloadManagerDelegate::ChooseSavePath(
       download_prefs_.get(), callback);
 }
 
-void ChromeDownloadManagerDelegate::DownloadProgressUpdated() {
-  if (!g_browser_process->download_status_updater())
-    return;
-
-  float progress = 0;
-  int download_count = 0;
-  bool progress_known =
-      g_browser_process->download_status_updater()->GetProgress(
-          &progress, &download_count);
-  download_util::UpdateAppIconDownloadProgress(
-      download_count, progress_known, progress);
-}
-
 #if defined(ENABLE_SAFE_BROWSING)
 DownloadProtectionService*
     ChromeDownloadManagerDelegate::GetDownloadProtectionService() {

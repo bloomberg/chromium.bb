@@ -450,7 +450,6 @@ void DownloadManagerImpl::ContinueDownloadWithPath(
            << " download = " << download->DebugString(true);
 
   in_progress_[download_id] = download;
-  UpdateDownloadProgress();  // Reflect entry into in_progress_.
 
   // Rename to intermediate name.
   FilePath download_path;
@@ -497,7 +496,6 @@ void DownloadManagerImpl::UpdateDownload(int32 download_id,
     DownloadItem* download = it->second;
     if (download->IsInProgress()) {
       download->UpdateProgress(bytes_so_far, bytes_per_sec, hash_state);
-      UpdateDownloadProgress();  // Reflect size updates.
       delegate_->UpdateItemInPersistentStore(download);
     }
   }
@@ -611,7 +609,6 @@ void DownloadManagerImpl::MaybeCompleteDownload(DownloadItem* download) {
 
   // Remove the id from in_progress
   in_progress_.erase(download->GetId());
-  UpdateDownloadProgress();  // Reflect removal from in_progress_.
 
   delegate_->UpdateItemInPersistentStore(download);
 
@@ -728,7 +725,6 @@ void DownloadManagerImpl::RemoveFromActiveList(DownloadItem* download) {
   if (download->GetDbHandle() != DownloadItem::kUninitializedHandle) {
     in_progress_.erase(download->GetId());
     active_downloads_.erase(download->GetId());
-    UpdateDownloadProgress();  // Reflect removal from in_progress_.
     delegate_->UpdateItemInPersistentStore(download);
   }
 }
@@ -744,10 +740,6 @@ content::DownloadManagerDelegate* DownloadManagerImpl::delegate() const {
 void DownloadManagerImpl::SetDownloadManagerDelegate(
     content::DownloadManagerDelegate* delegate) {
   delegate_ = delegate;
-}
-
-void DownloadManagerImpl::UpdateDownloadProgress() {
-  delegate_->DownloadProgressUpdated();
 }
 
 int DownloadManagerImpl::RemoveDownloadItems(

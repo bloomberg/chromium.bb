@@ -42,6 +42,10 @@ class DownloadStatusUpdater
   virtual void OnDownloadUpdated(content::DownloadItem* download) OVERRIDE;
   virtual void OnDownloadOpened(content::DownloadItem* download) OVERRIDE;
 
+ protected:
+  // Update the app icon. Virtual to be overridable for testing.
+  virtual void UpdateAppIconDownloadProgress();
+
  private:
   // Update the internal state tracking an item.
   void UpdateItem(content::DownloadItem* download);

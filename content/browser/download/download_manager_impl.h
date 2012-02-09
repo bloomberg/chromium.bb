@@ -158,9 +158,6 @@ class CONTENT_EXPORT DownloadManagerImpl
   // Does nothing if the download is not in the history DB.
   void RemoveFromActiveList(content::DownloadItem* download);
 
-  // Updates the delegate about the overall download progress.
-  void UpdateDownloadProgress();
-
   // Inform observers that the model has changed.
   void NotifyModelChanged();
 

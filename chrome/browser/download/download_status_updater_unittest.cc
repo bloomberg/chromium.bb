@@ -23,10 +23,17 @@ using ::testing::SetArgPointee;
 using ::testing::StrictMock;
 using ::testing::_;
 
+class TestDownloadStatusUpdater : public DownloadStatusUpdater {
+ protected:
+  virtual void UpdateAppIconDownloadProgress() OVERRIDE {
+    return;
+  }
+};
+
 class DownloadStatusUpdaterTest : public testing::Test {
  public:
   DownloadStatusUpdaterTest()
-      : updater_(new DownloadStatusUpdater()),
+      : updater_(new TestDownloadStatusUpdater()),
         ui_thread_(content::BrowserThread::UI, &loop_) {}
 
   virtual ~DownloadStatusUpdaterTest() {
