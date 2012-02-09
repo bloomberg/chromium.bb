@@ -589,56 +589,18 @@ void PnaclCoordinator::FileSystemDidOpen(int32_t pp_error) {
   }
   dir_ref_.reset(new pp::FileRef(*file_system_, kPnaclTempDir));
   dir_io_.reset(new pp::FileIO(plugin_));
-  // Attempt to open the directory.
+  // Attempt to create the directory.
   pp::CompletionCallback cb =
-      callback_factory_.NewCallback(&PnaclCoordinator::DirectoryWasOpened);
-  dir_io_->Open(*dir_ref_, PP_FILEOPENFLAG_READ, cb);
-}
-
-void PnaclCoordinator::DirectoryWasOpened(int32_t pp_error) {
-  PLUGIN_PRINTF(("PnaclCoordinator::DirectoryWasOpened (pp_error=%"
-                 NACL_PRId32")\n", pp_error));
-  if (pp_error == PP_ERROR_FILENOTFOUND) {
-    // Pathname did not exist, create it.
-    pp::CompletionCallback cb =
-        callback_factory_.NewCallback(&PnaclCoordinator::DirectoryWasCreated);
-    dir_ref_->MakeDirectory(cb);
-    return;
-  }
-  if (pp_error != PP_OK) {
-    ReportPpapiError(pp_error, "directory couldn't be opened.");
-    return;
-  }
-  // Query for information on the directory.
-  pp::CompletionCallback cb =
-      callback_factory_.NewCallback(&PnaclCoordinator::DirectoryWasQueried);
-  dir_io_->Query(&dir_info_, cb);
-}
-
-void PnaclCoordinator::DirectoryWasQueried(int32_t pp_error) {
-  PLUGIN_PRINTF(("PnaclCoordinator::DirectoryWasQueried (pp_error=%"
-                 NACL_PRId32")\n", pp_error));
-  if (pp_error != PP_OK) {
-    ReportPpapiError(pp_error, "directory query failed.");
-    return;
-  }
-  dir_io_->Close();
-  dir_io_.reset(NULL);
-  // Ensure directory has the right properties.
-  if (dir_info_.type != PP_FILETYPE_DIRECTORY ||
-      dir_info_.system_type != PP_FILESYSTEMTYPE_LOCALTEMPORARY) {
-    ReportPpapiError(pp_error, "bad temporary directory.");
-    return;
-  }
-  // A valid directory existed, use it.
-  DirectoryWasCreated(PP_OK);
+      callback_factory_.NewCallback(&PnaclCoordinator::DirectoryWasCreated);
+  dir_ref_->MakeDirectory(cb);
 }
 
 void PnaclCoordinator::DirectoryWasCreated(int32_t pp_error) {
   PLUGIN_PRINTF(("PnaclCoordinator::DirectoryWasCreated (pp_error=%"
                  NACL_PRId32")\n", pp_error));
-  if (pp_error != PP_OK) {
-    ReportPpapiError(pp_error, "directory creation failed.");
+  if (pp_error != PP_ERROR_FILEEXISTS && pp_error != PP_OK) {
+    // Directory did not exist and could not be created.
+    ReportPpapiError(pp_error, "directory creation/check failed.");
     return;
   }
   // Create the object file pair for connecting llc and ld.

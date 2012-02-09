@@ -162,10 +162,6 @@ class PnaclRefCount {
 //     Complete when ResourcesDidLoad is invoked.
 // OPEN_LOCAL_FILE_SYSTEM
 //     Complete when FileSystemDidOpen is invoked.
-// OPENED_PNACL_TEMP_DIRECTORY
-//     Complete when DirectoryWasOpened is invoked.
-// QUERIED_PNACL_TEMP_DIRECTORY
-//     Complete when DirectoryWasQueried is invoked.
 // CREATED_PNACL_TEMP_DIRECTORY
 //     Complete when DirectoryWasCreated is invoked.
 // OPEN_TMP_WRITE_FOR_LLC_TO_LD_COMMUNICATION
@@ -236,10 +232,6 @@ class PnaclCoordinator {
   // They are invoked from ResourcesDidLoad and proceed in declaration order.
   // Invoked when the temporary file system is successfully opened in PPAPI.
   void FileSystemDidOpen(int32_t pp_error);
-  // Invoked after the PNaCl temporary directory was opened for querying.
-  void DirectoryWasOpened(int32_t pp_error);
-  // Invoked after the PNaCl temporary directory was queried.
-  void DirectoryWasQueried(int32_t pp_error);
   // Invoked after we are sure the PNaCl temporary directory exists.
   void DirectoryWasCreated(int32_t pp_error);
   // Invoked when the write descriptor for obj_file_ is created.
