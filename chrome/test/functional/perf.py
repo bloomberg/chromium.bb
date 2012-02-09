@@ -47,7 +47,6 @@ import simplejson  # Must be imported after pyauto; located in third_party.
 
 from netflix import NetflixTestHelper
 import pyauto_utils
-import remote_inspector_client
 import test_utils
 from youtube import YoutubeTestHelper
 
@@ -102,7 +101,7 @@ class BasePerfTest(pyauto.PyUITest):
     """
     time_passed = 0.0
     fraction_non_idle_time = 1.0
-    logging.info('Starting to wait up to %fs for idle CPU...' % timeout)
+    logging.info('Starting to wait up to %fs for idle CPU...', timeout)
     while fraction_non_idle_time >= utilization:
       cpu_usage_start = self._GetCPUUsage()
       time.sleep(2)
@@ -110,13 +109,13 @@ class BasePerfTest(pyauto.PyUITest):
       cpu_usage_end = self._GetCPUUsage()
       fraction_non_idle_time = \
           self._GetFractionNonIdleCPUTime(cpu_usage_start, cpu_usage_end)
-      logging.info('Current CPU utilization = %f.' % fraction_non_idle_time)
+      logging.info('Current CPU utilization = %f.', fraction_non_idle_time)
       if time_passed > timeout:
         self._LogProcessActivity()
-        self.fail('CPU did not idle after %fs wait (utilization = %f).'
-                  % (time_passed, fraction_non_idle_time))
-    logging.info('Wait for idle CPU took %fs (utilization = %f).'
-                 % (time_passed, fraction_non_idle_time))
+        self.fail('CPU did not idle after %fs wait (utilization = %f).',
+                  time_passed, fraction_non_idle_time)
+    logging.info('Wait for idle CPU took %fs (utilization = %f).',
+                 time_passed, fraction_non_idle_time)
 
   def _LogProcessActivity(self):
     """Logs the output of top on Linux/Mac/CrOS.
@@ -387,8 +386,8 @@ class BasePerfTest(pyauto.PyUITest):
         # Ignore the first iteration.
         if iteration:
           timings.append(elapsed_time)
-          logging.info('Iteration %d of %d: %f milliseconds' %
-                       (iteration, self._num_iterations, elapsed_time))
+          logging.info('Iteration %d of %d: %f milliseconds', iteration,
+                       self._num_iterations, elapsed_time)
       self.assertTrue(self._timeout_count <= self._max_timeout_count,
                       msg='Test exceeded automation timeout threshold.')
       self.assertEqual(1 + num_tabs, self.GetTabCount(),
@@ -528,9 +527,8 @@ class BenchmarkPerfTest(BasePerfTest):
       if iteration:
         for key, val in result_dict.items():
           timings.setdefault(key, []).append(val)
-        logging.info(
-            'Iteration %d of %d:\n%s' %
-            (iteration, self._num_iterations, self.pformat(result_dict)))
+        logging.info('Iteration %d of %d:\n%s', iteration, self._num_iterations,
+                     self.pformat(result_dict))
 
     for key, val in timings.items():
       if key == 'final_score':
@@ -565,7 +563,7 @@ class BenchmarkPerfTest(BasePerfTest):
     # Append '<br>' to the result to simplify regular expression matching.
     results = self.ExecuteJavascript(js_get_results, tab_index=1) + '<br>'
     total = re.search('Total:\s*([\d.]+)ms', results).group(1)
-    logging.info('Total: %f ms' % float(total))
+    logging.info('Total: %f ms', float(total))
     self._OutputPerfGraphValue('SunSpider-total', float(total), 'ms',
                                graph_name='SunSpider-total')
 
@@ -779,8 +777,8 @@ class NetflixPerfTest(BasePerfTest, NetflixTestHelper):
       total_dropped_frames = self._GetVideoDroppedFrames() - init_dropped_frames
       dropped_frames_last_sec = total_dropped_frames - prev_dropped_frames
       dropped_frames.append(dropped_frames_last_sec)
-      logging.info('Iteration %d of %d: %f dropped frames in the last second' %
-                   (iteration + 1, 60, dropped_frames_last_sec))
+      logging.info('Iteration %d of %d: %f dropped frames in the last second',
+                   iteration + 1, 60, dropped_frames_last_sec)
       prev_dropped_frames = total_dropped_frames
       # Play the video for some time.
       time.sleep(1)
@@ -805,7 +803,7 @@ class NetflixPerfTest(BasePerfTest, NetflixTestHelper):
     # Counting extrapolation for utilization to play the video.
     extrapolation_value = fraction_non_idle_time * \
         (float(total_video_frames) + total_dropped_frames) / total_video_frames
-    logging.info('Netflix CPU extrapolation: %f' % extrapolation_value)
+    logging.info('Netflix CPU extrapolation: %f', extrapolation_value)
     self._OutputPerfGraphValue(
         'NetflixCPUExtrapolation',
         extrapolation_value, 'extrapolation',
@@ -844,11 +842,11 @@ class YoutubePerfTest(BasePerfTest, YoutubeTestHelper):
     loaded_video_bytes = self.GetVideoLoadedBytes()
     total_video_bytes = self.GetVideoTotalBytes()
     self.PauseVideo()
-    logging.info('total_video_bytes: %f' % total_video_bytes)
+    logging.info('total_video_bytes: %f', total_video_bytes)
     # Wait for the video to finish loading.
     while total_video_bytes > loaded_video_bytes:
       loaded_video_bytes = self.GetVideoLoadedBytes()
-      logging.info('loaded_video_bytes: %f' % loaded_video_bytes)
+      logging.info('loaded_video_bytes: %f', loaded_video_bytes)
       time.sleep(1)
     self.PlayVideo()
     # Ignore first 10 seconds of video playing so we get smooth videoplayback.
@@ -865,7 +863,7 @@ class YoutubePerfTest(BasePerfTest, YoutubeTestHelper):
                      'Fast': '8ETDE0VGJY4',
                     }
     for video_type in youtube_video:
-      logging.info('Running %s video.' % video_type)
+      logging.info('Running %s video.', video_type)
       self.StartVideoForPerformance(youtube_video[video_type])
       init_dropped_frames = self.GetVideoDroppedFrames()
       total_dropped_frames = 0
@@ -875,7 +873,7 @@ class YoutubePerfTest(BasePerfTest, YoutubeTestHelper):
         current_dropped_frames = frames - total_dropped_frames 
         dropped_fps.append(current_dropped_frames)
         logging.info('Iteration %d of %d: %f dropped frames in the last '
-                     'second' % (iteration + 1, 60, current_dropped_frames))
+                     'second', iteration + 1, 60, current_dropped_frames)
         total_dropped_frames = frames
         # Play the video for some time
         time.sleep(1)
@@ -891,25 +889,25 @@ class YoutubePerfTest(BasePerfTest, YoutubeTestHelper):
     """
     self.StartVideoForPerformance()
     init_dropped_frames = self.GetVideoDroppedFrames()
-    logging.info('init_dropped_frames: %f' % init_dropped_frames)
+    logging.info('init_dropped_frames: %f', init_dropped_frames)
     cpu_usage_start = self._GetCPUUsage()
     total_shown_frames = 0
     for sec_num in xrange(60):
       # Play the video for some time.
       time.sleep(1)
       total_shown_frames = total_shown_frames + self.GetVideoFrames()
-      logging.info('total_shown_frames: %f' % total_shown_frames)
+      logging.info('total_shown_frames: %f', total_shown_frames)
     total_dropped_frames = self.GetVideoDroppedFrames() - init_dropped_frames
-    logging.info('total_dropped_frames: %f' % total_dropped_frames)
+    logging.info('total_dropped_frames: %f', total_dropped_frames)
     cpu_usage_end = self._GetCPUUsage()
     fraction_non_idle_time = self._GetFractionNonIdleCPUTime(
         cpu_usage_start, cpu_usage_end)
-    logging.info('fraction_non_idle_time: %f' % fraction_non_idle_time)
+    logging.info('fraction_non_idle_time: %f', fraction_non_idle_time)
     total_frames = total_shown_frames + total_dropped_frames
     # Counting extrapolation for utilization to play the video.
     extrapolation_value = (fraction_non_idle_time *
                            (float(total_frames) / total_shown_frames))
-    logging.info('Youtube CPU extrapolation: %f' % extrapolation_value)
+    logging.info('Youtube CPU extrapolation: %f', extrapolation_value)
     # Video is still running so log some more detailed data.
     self._LogProcessActivity()
     self._OutputPerfGraphValue(
@@ -1003,7 +1001,7 @@ class WebGLTest(BasePerfTest):
       fps = self.ExecuteJavascript(get_fps_js, tab_index=1)
       fps = float(fps.replace('"', ''))
       fps_vals.append(fps)
-      logging.info('Iteration %d of %d: %f FPS' % (iteration + 1, 30, fps))
+      logging.info('Iteration %d of %d: %f FPS', iteration + 1, 30, fps)
       time.sleep(1)
     self._PrintSummaryResults(description, fps_vals, 'fps')
 
@@ -1058,7 +1056,7 @@ class HTML5BenchmarkTest(BasePerfTest):
         msg='Timed out when waiting for final score to be available.')
 
     score = self.ExecuteJavascript(js_final_score)
-    logging.info('HTML5 Benchmark final score: %f' % float(score))
+    logging.info('HTML5 Benchmark final score: %f', float(score))
     self._OutputPerfGraphValue('HTML5Benchmark', float(score), 'score',
                                graph_name='HTML5Benchmark')
 
@@ -1149,8 +1147,8 @@ class FileUploadDownloadTest(BasePerfTest):
       # Ignore the first iteration.
       if iteration:
         timings.append(elapsed_time)
-        logging.info('Iteration %d of %d: %f milliseconds' %
-                     (iteration, self._num_iterations, elapsed_time))
+        logging.info('Iteration %d of %d: %f milliseconds', iteration,
+                     self._num_iterations, elapsed_time)
       self.SetDownloadShelfVisible(False)
       _CleanupAdditionalFilesInDir(download_dir, orig_downloads)
 
@@ -1192,8 +1190,8 @@ class FileUploadDownloadTest(BasePerfTest):
       # Ignore the first iteration.
       if iteration:
         timings.append(elapsed_time)
-        logging.info('Iteration %d of %d: %f milliseconds' %
-                     (iteration, self._num_iterations, elapsed_time))
+        logging.info('Iteration %d of %d: %f milliseconds', iteration,
+                     self._num_iterations, elapsed_time)
 
     self._PrintSummaryResults('Upload50MBFile', timings, 'milliseconds')
 
@@ -1262,8 +1260,8 @@ class ScrollTest(BasePerfTest):
       # Ignore the first iteration.
       if iteration:
         fps_vals.append(fps)
-        logging.info('Iteration %d of %d: %f fps' %
-                     (iteration, self._num_iterations, fps))
+        logging.info('Iteration %d of %d: %f fps', iteration,
+                     self._num_iterations, fps)
 
     self._PrintSummaryResults(description, fps_vals, 'FPS')
 
@@ -1357,7 +1355,7 @@ class FlashTest(BasePerfTest):
       mem = float(result[benchmark][1])
       if benchmark.endswith('_mflops'):
         benchmark = benchmark[:benchmark.find('_mflops')]
-      logging.info('Results for ScimarkGui_' + benchmark + ':')
+      logging.info('Results for ScimarkGui_%s:', benchmark)
       logging.info('  %f MFLOPS', mflops)
       logging.info('  %f MB', mem)
       self._OutputPerfGraphValue(
@@ -1372,17 +1370,6 @@ class FlashTest(BasePerfTest):
 
 class LiveGamePerfTest(BasePerfTest):
   """Tests to measure performance of live gaming webapps."""
-
-  def ExtraChromeFlags(self):
-    """Ensures Chrome is launched with custom flags.
-
-    Returns:
-      A list of extra flags to pass to Chrome when it is launched.
-    """
-    # Ensure Chrome enables remote debugging on port 9222.  This is required to
-    # take v8 heap snapshots of tabs in Chrome.
-    return (super(LiveGamePerfTest, self).ExtraChromeFlags() +
-            ['--remote-debugging-port=9222'])
 
   def _RunLiveGamePerfTest(self, url, url_title_substring,
                            description):
@@ -1414,16 +1401,15 @@ class LiveGamePerfTest(BasePerfTest):
     fraction_non_idle_time = self._GetFractionNonIdleCPUTime(
         cpu_usage_start, cpu_usage_end)
 
-    logging.info('Fraction of CPU time spent non-idle: %f' %
+    logging.info('Fraction of CPU time spent non-idle: %f',
                  fraction_non_idle_time)
     self._OutputPerfGraphValue(
         description + 'CpuBusy',
         fraction_non_idle_time, 'Fraction',
         graph_name='CpuBusy')
-    snapshotter = remote_inspector_client.PerformanceSnapshotter()
-    snapshot = snapshotter.HeapSnapshot()[0]
-    v8_heap_size = snapshot['total_heap_size'] / (1024.0 * 1024.0)
-    logging.info('Total v8 heap size: %f MB' % v8_heap_size)
+    v8_heap_stats = self.GetV8HeapStats()
+    v8_heap_size = v8_heap_stats['v8_memory_used'] / (1024.0 * 1024.0)
+    logging.info('Total v8 heap size: %f MB', v8_heap_size)
     self._OutputPerfGraphValue(
         description + 'V8HeapSize',
         v8_heap_size, 'MB',
