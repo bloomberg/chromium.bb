@@ -89,7 +89,13 @@ enum TouchStatus {
                              // synthetic mouse event generated from the
                              // unused touch event was handled.
   TOUCH_STATUS_QUEUED,       // The touch event has not been processed yet, but
-                             // may be processed asynchronously later.
+                             // may be processed asynchronously later. This also
+                             // places a lock on touch-events (i.e. all
+                             // subsequent touch-events should be sent to the
+                             // current handler).
+  TOUCH_STATUS_QUEUED_END,   // Similar to TOUCH_STATUS_QUEUED, except that
+                             // subsequent touch-events can be sent to any
+                             // handler.
 };
 
 // Updates the list of devices for cached properties.

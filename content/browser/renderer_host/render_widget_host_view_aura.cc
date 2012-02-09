@@ -50,21 +50,11 @@ const int kMouseLockBorderPercentage = 15;
 
 ui::TouchStatus DecideTouchStatus(const WebKit::WebTouchEvent& event,
                                   WebKit::WebTouchPoint* point) {
-  if (event.type == WebKit::WebInputEvent::TouchStart &&
-      event.touchesLength == 1)
-    return ui::TOUCH_STATUS_START;
-
-  if (event.type == WebKit::WebInputEvent::TouchMove && point == NULL)
-    return ui::TOUCH_STATUS_CONTINUE;
-
   if (event.type == WebKit::WebInputEvent::TouchEnd &&
       event.touchesLength == 0)
-    return ui::TOUCH_STATUS_END;
+    return ui::TOUCH_STATUS_QUEUED_END;
 
-  if (event.type == WebKit::WebInputEvent::TouchCancel)
-    return ui::TOUCH_STATUS_CANCEL;
-
-  return point ? ui::TOUCH_STATUS_CONTINUE : ui::TOUCH_STATUS_UNKNOWN;
+  return ui::TOUCH_STATUS_QUEUED;
 }
 
 void UpdateWebTouchEventAfterDispatch(WebKit::WebTouchEvent* event,
@@ -908,7 +898,7 @@ ui::TouchStatus RenderWidgetHostViewAura::OnTouchEvent(
   if (point) {
     host_->ForwardTouchEvent(touch_event_);
     UpdateWebTouchEventAfterDispatch(&touch_event_, point);
-    return ui::TOUCH_STATUS_QUEUED;
+    return DecideTouchStatus(touch_event_, point);
   }
 
   return ui::TOUCH_STATUS_UNKNOWN;

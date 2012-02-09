@@ -124,7 +124,8 @@ class QueueTouchEventDelegate : public GestureEventConsumeDelegate {
   virtual ~QueueTouchEventDelegate() {}
 
   virtual ui::TouchStatus OnTouchEvent(TouchEvent* event) OVERRIDE {
-    return ui::TOUCH_STATUS_QUEUED;
+    return event->type() == ui::ET_TOUCH_RELEASED ?
+        ui::TOUCH_STATUS_QUEUED_END : ui::TOUCH_STATUS_QUEUED;
   }
 
   void ReceivedAck() {
@@ -452,6 +453,21 @@ TEST_F(GestureRecognizerTest, AsynchronousGestureRecognition) {
   EXPECT_FALSE(queued_delegate->scroll_update());
   EXPECT_FALSE(queued_delegate->scroll_end());
 
+  // Introduce some delay before the touch is released so that it is recognized
+  // as a tap. However, this still should not create any gesture events.
+  queued_delegate->Reset();
+  TouchEvent release(ui::ET_TOUCH_RELEASED, gfx::Point(101, 201), 0);
+  Event::TestApi test_release(&release);
+  test_release.set_time_stamp(press.time_stamp() +
+                              base::TimeDelta::FromMilliseconds(50));
+  RootWindow::GetInstance()->DispatchTouchEvent(&release);
+  EXPECT_FALSE(queued_delegate->tap());
+  EXPECT_FALSE(queued_delegate->tap_down());
+  EXPECT_FALSE(queued_delegate->double_tap());
+  EXPECT_FALSE(queued_delegate->scroll_begin());
+  EXPECT_FALSE(queued_delegate->scroll_update());
+  EXPECT_FALSE(queued_delegate->scroll_end());
+
   // Create another window, and place a touch-down on it. This should create a
   // tap-down gesture.
   scoped_ptr<GestureEventConsumeDelegate> delegate(
@@ -468,20 +484,8 @@ TEST_F(GestureRecognizerTest, AsynchronousGestureRecognition) {
   EXPECT_FALSE(delegate->scroll_update());
   EXPECT_FALSE(delegate->scroll_end());
 
-  // Introduce some delay before the touch is released so that it is recognized
-  // as a tap. However, this still should not create any gesture events.
-  queued_delegate->Reset();
-  TouchEvent release(ui::ET_TOUCH_RELEASED, gfx::Point(101, 201), 0);
-  Event::TestApi test_release(&release);
-  test_release.set_time_stamp(press.time_stamp() +
-                              base::TimeDelta::FromMilliseconds(50));
-  RootWindow::GetInstance()->DispatchTouchEvent(&release);
-  EXPECT_FALSE(queued_delegate->tap());
-  EXPECT_FALSE(queued_delegate->tap_down());
-  EXPECT_FALSE(queued_delegate->double_tap());
-  EXPECT_FALSE(queued_delegate->scroll_begin());
-  EXPECT_FALSE(queued_delegate->scroll_update());
-  EXPECT_FALSE(queued_delegate->scroll_end());
+  TouchEvent release2(ui::ET_TOUCH_RELEASED, gfx::Point(10, 20), 0);
+  RootWindow::GetInstance()->DispatchTouchEvent(&release2);
 
   // Process the first queued event.
   queued_delegate->Reset();
@@ -502,6 +506,56 @@ TEST_F(GestureRecognizerTest, AsynchronousGestureRecognition) {
   EXPECT_FALSE(queued_delegate->scroll_begin());
   EXPECT_FALSE(queued_delegate->scroll_update());
   EXPECT_FALSE(queued_delegate->scroll_end());
+
+  // Start all over. Press on the first window, then press again on the second
+  // window. The second press should still go to the first window.
+  queued_delegate->Reset();
+  TouchEvent press3(ui::ET_TOUCH_PRESSED, gfx::Point(101, 201), 0);
+  RootWindow::GetInstance()->DispatchTouchEvent(&press3);
+  EXPECT_FALSE(queued_delegate->tap());
+  EXPECT_FALSE(queued_delegate->tap_down());
+  EXPECT_FALSE(queued_delegate->double_tap());
+  EXPECT_FALSE(queued_delegate->scroll_begin());
+  EXPECT_FALSE(queued_delegate->scroll_update());
+  EXPECT_FALSE(queued_delegate->scroll_end());
+
+  queued_delegate->Reset();
+  delegate->Reset();
+  TouchEvent press4(ui::ET_TOUCH_PRESSED, gfx::Point(10, 20), 1);
+  RootWindow::GetInstance()->DispatchTouchEvent(&press4);
+  EXPECT_FALSE(delegate->tap());
+  EXPECT_FALSE(delegate->tap_down());
+  EXPECT_FALSE(delegate->double_tap());
+  EXPECT_FALSE(delegate->scroll_begin());
+  EXPECT_FALSE(delegate->scroll_update());
+  EXPECT_FALSE(delegate->scroll_end());
+  EXPECT_FALSE(queued_delegate->tap());
+  EXPECT_FALSE(queued_delegate->tap_down());
+  EXPECT_FALSE(queued_delegate->double_tap());
+  EXPECT_FALSE(queued_delegate->scroll_begin());
+  EXPECT_FALSE(queued_delegate->scroll_update());
+  EXPECT_FALSE(queued_delegate->scroll_end());
+
+  queued_delegate->Reset();
+  queued_delegate->ReceivedAck();
+  EXPECT_FALSE(queued_delegate->tap());
+  EXPECT_TRUE(queued_delegate->tap_down());
+  EXPECT_FALSE(queued_delegate->double_tap());
+  EXPECT_FALSE(queued_delegate->scroll_begin());
+  EXPECT_FALSE(queued_delegate->scroll_update());
+  EXPECT_FALSE(queued_delegate->scroll_end());
+
+  queued_delegate->Reset();
+  queued_delegate->ReceivedAck();
+  EXPECT_FALSE(queued_delegate->tap());
+  EXPECT_TRUE(queued_delegate->tap_down());
+  EXPECT_FALSE(queued_delegate->double_tap());
+  EXPECT_TRUE(queued_delegate->scroll_begin());
+  EXPECT_FALSE(queued_delegate->scroll_update());
+  EXPECT_FALSE(queued_delegate->scroll_end());
+  EXPECT_TRUE(queued_delegate->pinch_begin());
+  EXPECT_FALSE(queued_delegate->pinch_update());
+  EXPECT_FALSE(queued_delegate->pinch_end());
 }
 
 // Check that appropriate touch events generate pinch gesture events.

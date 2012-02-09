@@ -216,14 +216,17 @@ bool RootWindow::DispatchTouchEvent(TouchEvent* event) {
   if (target) {
     TouchEvent translated_event(*event, this, target);
     status = ProcessTouchEvent(target, &translated_event);
-    if (status == ui::TOUCH_STATUS_START)
+    if (status == ui::TOUCH_STATUS_START ||
+        status == ui::TOUCH_STATUS_QUEUED)
       touch_event_handler_ = target;
     else if (status == ui::TOUCH_STATUS_END ||
-             status == ui::TOUCH_STATUS_CANCEL)
+             status == ui::TOUCH_STATUS_CANCEL ||
+             status == ui::TOUCH_STATUS_QUEUED_END)
       touch_event_handler_ = NULL;
     handled = status != ui::TOUCH_STATUS_UNKNOWN;
 
-    if (status == ui::TOUCH_STATUS_QUEUED)
+    if (status == ui::TOUCH_STATUS_QUEUED ||
+        status == ui::TOUCH_STATUS_QUEUED_END)
       gesture_recognizer_->QueueTouchEventForGesture(target, *event);
   }
 
@@ -394,9 +397,12 @@ void RootWindow::ReleaseCapture(Window* window) {
 }
 
 void RootWindow::AdvanceQueuedTouchEvent(Window* window, bool processed) {
+  aura::Window* old_gesture_handler = gesture_handler_;
   scoped_ptr<GestureRecognizer::Gestures> gestures;
+  gesture_handler_ = window;
   gestures.reset(gesture_recognizer_->AdvanceTouchQueue(window, processed));
   ProcessGestures(gestures.get());
+  gesture_handler_ = old_gesture_handler;
 }
 
 void RootWindow::SetGestureRecognizerForTesting(GestureRecognizer* gr) {
