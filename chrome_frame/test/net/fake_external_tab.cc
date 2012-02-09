@@ -49,7 +49,7 @@
 #include "chrome_frame/test/simulate_input.h"
 #include "chrome_frame/test/win_event_receiver.h"
 #include "chrome_frame/utils.h"
-#include "content/public/app/content_main.h"
+#include "content/app/content_main.h"
 #include "content/public/app/startup_helper_win.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
@@ -611,10 +611,6 @@ void CFUrlRequestUnittestRunner::InitializeLogging() {
 void CFUrlRequestUnittestRunner::PreEarlyInitialization() {
   testing::InitGoogleTest(&g_argc, g_argv);
   FilterDisabledTests();
-}
-
-MessageLoop* CFUrlRequestUnittestRunner::GetMainMessageLoop() {
-  return NULL;
 }
 
 int CFUrlRequestUnittestRunner::PreCreateThreads() {

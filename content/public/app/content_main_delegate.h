@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -34,7 +34,7 @@ class ContentMainDelegate {
   // has been initialized.
   virtual void SandboxInitialized(const std::string& process_type) = 0;
 
-  // Asks the embedder to start a process. Return -1 for the default behavior.
+  // Asks the embedder to start a process that content doesn't know about.
   virtual int RunProcess(
       const std::string& process_type,
       const content::MainFunctionParams& main_function_params) = 0;
