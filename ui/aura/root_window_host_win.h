@@ -28,6 +28,8 @@ class RootWindowHostWin : public RootWindowHost, public ui::WindowImpl {
   virtual gfx::Size GetSize() const OVERRIDE;
   virtual void SetSize(const gfx::Size& size) OVERRIDE;
   virtual gfx::Point GetLocationOnNativeScreen() const OVERRIDE;
+  virtual void SetCapture() OVERRIDE;
+  virtual void ReleaseCapture() OVERRIDE;
   virtual void SetCursor(gfx::NativeCursor cursor) OVERRIDE;
   virtual void ShowCursor(bool show) OVERRIDE;
   virtual gfx::Point QueryMouseLocation() OVERRIDE;
@@ -41,6 +43,9 @@ class RootWindowHostWin : public RootWindowHost, public ui::WindowImpl {
     // Range handlers must go first!
     MESSAGE_RANGE_HANDLER_EX(WM_MOUSEFIRST, WM_MOUSELAST, OnMouseRange)
     MESSAGE_RANGE_HANDLER_EX(WM_NCMOUSEMOVE, WM_NCXBUTTONDBLCLK, OnMouseRange)
+
+    // Mouse capture events.
+    MESSAGE_HANDLER_EX(WM_CAPTURECHANGED, OnCaptureChanged)
 
     // Key events.
     MESSAGE_HANDLER_EX(WM_KEYDOWN, OnKeyEvent)
@@ -59,12 +64,14 @@ class RootWindowHostWin : public RootWindowHost, public ui::WindowImpl {
   void OnClose();
   LRESULT OnKeyEvent(UINT message, WPARAM w_param, LPARAM l_param);
   LRESULT OnMouseRange(UINT message, WPARAM w_param, LPARAM l_param);
+  LRESULT OnCaptureChanged(UINT message, WPARAM w_param, LPARAM l_param);
   void OnPaint(HDC dc);
   void OnSize(UINT param, const CSize& size);
 
   RootWindow* root_window_;
 
   bool fullscreen_;
+  bool has_capture_;
   RECT saved_window_rect_;
   DWORD saved_window_style_;
   DWORD saved_window_ex_style_;

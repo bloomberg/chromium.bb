@@ -189,6 +189,7 @@ bool ToplevelWindowEventFilter::PreHandleMouseEvent(aura::Window* target,
           kBoundsChange_None;
     case ui::ET_MOUSE_DRAGGED:
       return HandleDrag(target, event);
+    case ui::ET_MOUSE_CAPTURE_CHANGED:
     case ui::ET_MOUSE_RELEASED:
       CompleteDrag(target);
       if (in_move_loop_) {
