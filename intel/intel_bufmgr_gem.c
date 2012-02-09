@@ -62,6 +62,16 @@
 
 #include "i915_drm.h"
 
+#ifdef HAVE_VALGRIND
+#include <valgrind.h>
+#include <memcheck.h>
+#define VG(x) x
+#else
+#define VG(x)
+#endif
+
+#define VG_CLEAR(s) VG(memset(&s, 0, sizeof(s)))
+
 #define DBG(...) do {					\
 	if (bufmgr_gem->bufmgr.debug)			\
 		fprintf(stderr, __VA_ARGS__);		\
@@ -539,7 +549,7 @@ drm_intel_gem_bo_busy(drm_intel_bo *bo)
 	struct drm_i915_gem_busy busy;
 	int ret;
 
-	memset(&busy, 0, sizeof(busy));
+	VG_CLEAR(busy);
 	busy.handle = bo_gem->gem_handle;
 
 	ret = drmIoctl(bufmgr_gem->fd, DRM_IOCTL_I915_GEM_BUSY, &busy);
@@ -553,6 +563,7 @@ drm_intel_gem_bo_madvise_internal(drm_intel_bufmgr_gem *bufmgr_gem,
 {
 	struct drm_i915_gem_madvise madv;
 
+	VG_CLEAR(madv);
 	madv.handle = bo_gem->gem_handle;
 	madv.madv = state;
 	madv.retained = 1;
@@ -680,7 +691,8 @@ retry:
 			return NULL;
 
 		bo_gem->bo.size = bo_size;
-		memset(&create, 0, sizeof(create));
+
+		VG_CLEAR(create);
 		create.size = bo_size;
 
 		ret = drmIoctl(bufmgr_gem->fd,
@@ -836,7 +848,7 @@ drm_intel_bo_gem_create_from_name(drm_intel_bufmgr *bufmgr,
 	if (!bo_gem)
 		return NULL;
 
-	memset(&open_arg, 0, sizeof(open_arg));
+	VG_CLEAR(open_arg);
 	open_arg.name = handle;
 	ret = drmIoctl(bufmgr_gem->fd,
 		       DRM_IOCTL_GEM_OPEN,
@@ -859,7 +871,7 @@ drm_intel_bo_gem_create_from_name(drm_intel_bufmgr *bufmgr,
 	bo_gem->global_name = handle;
 	bo_gem->reusable = false;
 
-	memset(&get_tiling, 0, sizeof(get_tiling));
+	VG_CLEAR(get_tiling);
 	get_tiling.handle = bo_gem->gem_handle;
 	ret = drmIoctl(bufmgr_gem->fd,
 		       DRM_IOCTL_I915_GEM_GET_TILING,
@@ -890,6 +902,7 @@ drm_intel_gem_bo_free(drm_intel_bo *bo)
 
 	DRMLISTDEL(&bo_gem->vma_list);
 	if (bo_gem->mem_virtual) {
+		VG(VALGRIND_FREELIKE_BLOCK(bo_gem->mem_virtual, 0));
 		munmap(bo_gem->mem_virtual, bo_gem->bo.size);
 		bufmgr_gem->vma_count--;
 	}
@@ -899,7 +912,7 @@ drm_intel_gem_bo_free(drm_intel_bo *bo)
 	}
 
 	/* Close this object */
-	memset(&close, 0, sizeof(close));
+	VG_CLEAR(close);
 	close.handle = bo_gem->gem_handle;
 	ret = drmIoctl(bufmgr_gem->fd, DRM_IOCTL_GEM_CLOSE, &close);
 	if (ret != 0) {
@@ -1104,7 +1117,7 @@ static int drm_intel_gem_bo_map(drm_intel_bo *bo, int write_enable)
 		DBG("bo_map: %d (%s), map_count=%d\n",
 		    bo_gem->gem_handle, bo_gem->name, bo_gem->map_count);
 
-		memset(&mmap_arg, 0, sizeof(mmap_arg));
+		VG_CLEAR(mmap_arg);
 		mmap_arg.handle = bo_gem->gem_handle;
 		mmap_arg.offset = 0;
 		mmap_arg.size = bo->size;
@@ -1121,12 +1134,14 @@ static int drm_intel_gem_bo_map(drm_intel_bo *bo, int write_enable)
 			pthread_mutex_unlock(&bufmgr_gem->lock);
 			return ret;
 		}
+		VG(VALGRIND_MALLOCLIKE_BLOCK(mmap_arg.addr_ptr, mmap_arg.size, 0, 1));
 		bo_gem->mem_virtual = (void *)(uintptr_t) mmap_arg.addr_ptr;
 	}
 	DBG("bo_map: %d (%s) -> %p\n", bo_gem->gem_handle, bo_gem->name,
 	    bo_gem->mem_virtual);
 	bo->virtual = bo_gem->mem_virtual;
 
+	VG_CLEAR(set_domain);
 	set_domain.handle = bo_gem->gem_handle;
 	set_domain.read_domains = I915_GEM_DOMAIN_CPU;
 	if (write_enable)
@@ -1169,7 +1184,7 @@ int drm_intel_gem_bo_map_gtt(drm_intel_bo *bo)
 		DBG("bo_map_gtt: mmap %d (%s), map_count=%d\n",
 		    bo_gem->gem_handle, bo_gem->name, bo_gem->map_count);
 
-		memset(&mmap_arg, 0, sizeof(mmap_arg));
+		VG_CLEAR(mmap_arg);
 		mmap_arg.handle = bo_gem->gem_handle;
 
 		/* Get the fake offset back... */
@@ -1212,6 +1227,7 @@ int drm_intel_gem_bo_map_gtt(drm_intel_bo *bo)
 	    bo_gem->gtt_virtual);
 
 	/* Now move it to the GTT domain so that the CPU caches are flushed */
+	VG_CLEAR(set_domain);
 	set_domain.handle = bo_gem->gem_handle;
 	set_domain.read_domains = I915_GEM_DOMAIN_GTT;
 	set_domain.write_domain = I915_GEM_DOMAIN_GTT;
@@ -1233,7 +1249,6 @@ static int drm_intel_gem_bo_unmap(drm_intel_bo *bo)
 {
 	drm_intel_bufmgr_gem *bufmgr_gem = (drm_intel_bufmgr_gem *) bo->bufmgr;
 	drm_intel_bo_gem *bo_gem = (drm_intel_bo_gem *) bo;
-	struct drm_i915_gem_sw_finish sw_finish;
 	int ret = 0;
 
 	if (bo == NULL)
@@ -1251,11 +1266,14 @@ static int drm_intel_gem_bo_unmap(drm_intel_bo *bo)
 	}
 
 	if (bo_gem->mapped_cpu_write) {
+		struct drm_i915_gem_sw_finish sw_finish;
+
 		/* Cause a flush to happen if the buffer's pinned for
 		 * scanout, so the results show up in a timely manner.
 		 * Unlike GTT set domains, this only does work if the
 		 * buffer should be scanout-related.
 		 */
+		VG_CLEAR(sw_finish);
 		sw_finish.handle = bo_gem->gem_handle;
 		ret = drmIoctl(bufmgr_gem->fd,
 			       DRM_IOCTL_I915_GEM_SW_FINISH,
@@ -1292,7 +1310,7 @@ drm_intel_gem_bo_subdata(drm_intel_bo *bo, unsigned long offset,
 	struct drm_i915_gem_pwrite pwrite;
 	int ret;
 
-	memset(&pwrite, 0, sizeof(pwrite));
+	VG_CLEAR(pwrite);
 	pwrite.handle = bo_gem->gem_handle;
 	pwrite.offset = offset;
 	pwrite.size = size;
@@ -1317,6 +1335,7 @@ drm_intel_gem_get_pipe_from_crtc_id(drm_intel_bufmgr *bufmgr, int crtc_id)
 	struct drm_i915_get_pipe_from_crtc_id get_pipe_from_crtc_id;
 	int ret;
 
+	VG_CLEAR(get_pipe_from_crtc_id);
 	get_pipe_from_crtc_id.crtc_id = crtc_id;
 	ret = drmIoctl(bufmgr_gem->fd,
 		       DRM_IOCTL_I915_GET_PIPE_FROM_CRTC_ID,
@@ -1343,7 +1362,7 @@ drm_intel_gem_bo_get_subdata(drm_intel_bo *bo, unsigned long offset,
 	struct drm_i915_gem_pread pread;
 	int ret;
 
-	memset(&pread, 0, sizeof(pread));
+	VG_CLEAR(pread);
 	pread.handle = bo_gem->gem_handle;
 	pread.offset = offset;
 	pread.size = size;
@@ -1383,6 +1402,7 @@ drm_intel_gem_bo_start_gtt_access(drm_intel_bo *bo, int write_enable)
 	struct drm_i915_gem_set_domain set_domain;
 	int ret;
 
+	VG_CLEAR(set_domain);
 	set_domain.handle = bo_gem->gem_handle;
 	set_domain.read_domains = I915_GEM_DOMAIN_GTT;
 	set_domain.write_domain = write_enable ? I915_GEM_DOMAIN_GTT : 0;
@@ -1691,6 +1711,7 @@ drm_intel_gem_bo_exec(drm_intel_bo *bo, int used,
 	 */
 	drm_intel_add_validate_buffer(bo);
 
+	VG_CLEAR(execbuf);
 	execbuf.buffers_ptr = (uintptr_t) bufmgr_gem->exec_objects;
 	execbuf.buffer_count = bufmgr_gem->exec_count;
 	execbuf.batch_start_offset = 0;
@@ -1770,6 +1791,7 @@ drm_intel_gem_bo_mrb_exec2(drm_intel_bo *bo, int used,
 	 */
 	drm_intel_add_validate_buffer2(bo, 0);
 
+	VG_CLEAR(execbuf);
 	execbuf.buffers_ptr = (uintptr_t)bufmgr_gem->exec2_objects;
 	execbuf.buffer_count = bufmgr_gem->exec_count;
 	execbuf.batch_start_offset = 0;
@@ -1834,7 +1856,7 @@ drm_intel_gem_bo_pin(drm_intel_bo *bo, uint32_t alignment)
 	struct drm_i915_gem_pin pin;
 	int ret;
 
-	memset(&pin, 0, sizeof(pin));
+	VG_CLEAR(pin);
 	pin.handle = bo_gem->gem_handle;
 	pin.alignment = alignment;
 
@@ -1856,7 +1878,7 @@ drm_intel_gem_bo_unpin(drm_intel_bo *bo)
 	struct drm_i915_gem_unpin unpin;
 	int ret;
 
-	memset(&unpin, 0, sizeof(unpin));
+	VG_CLEAR(unpin);
 	unpin.handle = bo_gem->gem_handle;
 
 	ret = drmIoctl(bufmgr_gem->fd, DRM_IOCTL_I915_GEM_UNPIN, &unpin);
@@ -1942,16 +1964,18 @@ drm_intel_gem_bo_flink(drm_intel_bo *bo, uint32_t * name)
 {
 	drm_intel_bufmgr_gem *bufmgr_gem = (drm_intel_bufmgr_gem *) bo->bufmgr;
 	drm_intel_bo_gem *bo_gem = (drm_intel_bo_gem *) bo;
-	struct drm_gem_flink flink;
 	int ret;
 
 	if (!bo_gem->global_name) {
-		memset(&flink, 0, sizeof(flink));
+		struct drm_gem_flink flink;
+
+		VG_CLEAR(flink);
 		flink.handle = bo_gem->gem_handle;
 
 		ret = drmIoctl(bufmgr_gem->fd, DRM_IOCTL_GEM_FLINK, &flink);
 		if (ret != 0)
 			return -errno;
+
 		bo_gem->global_name = flink.name;
 		bo_gem->reusable = false;
 
@@ -2308,6 +2332,7 @@ drm_intel_bufmgr_gem_init(int fd, int batch_size)
 			(int)bufmgr_gem->gtt_size / 1024);
 	}
 
+	VG_CLEAR(gp);
 	gp.param = I915_PARAM_CHIPSET_ID;
 	gp.value = &bufmgr_gem->pci_device;
 	ret = drmIoctl(bufmgr_gem->fd, DRM_IOCTL_I915_GETPARAM, &gp);

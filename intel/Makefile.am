@@ -28,6 +28,7 @@ AM_CFLAGS = \
 	-I$(top_srcdir)/intel \
 	$(PTHREADSTUBS_CFLAGS) \
 	$(PCIACCESS_CFLAGS) \
+	$(VALGRIND_CFLAGS) \
 	-I$(top_srcdir)/include/drm
 
 libdrm_intel_la_LTLIBRARIES = libdrm_intel.la

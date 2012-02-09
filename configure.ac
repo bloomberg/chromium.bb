@@ -261,6 +261,9 @@ if test "x$INTEL" != "xno" -o "x$RADEON" != "xno"; then
     fi
 fi
 
+PKG_CHECK_MODULES(VALGRIND, [valgrind],
+		  AC_DEFINE([HAVE_VALGRIND], 1, [Use valgrind intrinsics to suppress false warings]),)
+
 AM_CONDITIONAL(HAVE_INTEL, [test "x$INTEL" != "xno"])
 AM_CONDITIONAL(HAVE_RADEON, [test "x$RADEON" != "xno"])
 if test "x$RADEON" = xyes; then
