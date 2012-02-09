@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -25,8 +25,10 @@ void SetTooltipText(Window* window, string16* tooltip_text) {
   window->SetProperty(kTooltipTextKey, tooltip_text);
 }
 
-string16* GetTooltipText(Window* window) {
-  return reinterpret_cast<string16*>(window->GetProperty(kTooltipTextKey));
+const string16 GetTooltipText(Window* window) {
+  string16* string_ptr = reinterpret_cast<string16*>(
+      window->GetProperty(kTooltipTextKey));
+  return string_ptr ? *string_ptr : string16();
 }
 
 }  // namespace client

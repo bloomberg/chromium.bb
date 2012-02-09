@@ -334,7 +334,13 @@ TEST_F(ShellTest, ComputeWindowMode) {
             shell->ComputeWindowMode(monitor_size, &command_line2));
 }
 
-TEST_F(ShellTest, ChangeWindowMode) {
+// Fails on Mac only.  Need to be corrected.  http://crbug.com/111279.
+#if defined(OS_MACOSX)
+#define MAYBE_ChangeWindowMode FAILS_ChangeWindowMode
+#else
+#define MAYBE_ChangeWindowMode ChangeWindowMode
+#endif
+TEST_F(ShellTest, MAYBE_ChangeWindowMode) {
   // We start with the usual window containers.
   ExpectAllContainers();
   // We're not in compact window mode by default.

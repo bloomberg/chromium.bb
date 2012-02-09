@@ -32,8 +32,8 @@
         'client/activation_delegate.h',
         'client/aura_constants.cc',
         'client/aura_constants.h',
-	'client/dispatcher_client.cc',
-	'client/dispatcher_client.h',
+        'client/dispatcher_client.cc',
+        'client/dispatcher_client.h',
         'client/drag_drop_client.cc',
         'client/drag_drop_client.h',
         'client/drag_drop_delegate.cc',
@@ -56,7 +56,7 @@
         'event_filter.h',
         'event_mac.mm',
         'event_mac.h',
-        'focus_manager.h',        
+        'focus_manager.h',
         'gestures/gesture_recognizer.h',
         'gestures/gesture_recognizer_aura.cc',
         'gestures/gesture_recognizer_aura.h',
@@ -65,7 +65,7 @@
         'gestures/gesture_sequence.cc',
         'gestures/gesture_sequence.h',
         'layout_manager.cc',
-        'layout_manager.h',        
+        'layout_manager.h',
         'root_window_host.h',
         'root_window_host_linux.cc',
         'root_window_host_mac.h',
@@ -84,6 +84,14 @@
         'window.h',
         'window_delegate.h',
         'window_observer.h',
+      ],
+      'conditions': [
+        ['OS=="mac"', {
+          'sources/': [
+            ['exclude', 'client/dispatcher_client.cc'],
+            ['exclude', 'client/dispatcher_client.h'],
+          ],
+        }],
       ],
     },
     {

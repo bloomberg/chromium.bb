@@ -128,9 +128,12 @@ class ASH_EXPORT Shell {
   // Rotate focus through containers that can recieve focus.
   void RotateFocus(Direction direction);
 
+#if !defined(OS_MACOSX)
   AcceleratorController* accelerator_controller() {
     return accelerator_controller_.get();
   }
+#endif  // !defined(OS_MACOSX)
+
   internal::TooltipController* tooltip_controller() {
     return tooltip_controller_.get();
   }
@@ -184,9 +187,11 @@ class ASH_EXPORT Shell {
 
   base::WeakPtrFactory<Shell> method_factory_;
 
+#if !defined(OS_MACOSX)
   scoped_ptr<NestedDispatcherController> nested_dispatcher_controller_;
 
   scoped_ptr<AcceleratorController> accelerator_controller_;
+#endif  // !defined(OS_MACOSX)
 
   scoped_ptr<ShellDelegate> delegate_;
 
@@ -209,8 +214,11 @@ class ASH_EXPORT Shell {
 
   // An event filter that pre-handles all key events to send them to an IME.
   scoped_ptr<internal::InputMethodEventFilter> input_method_filter_;
+
+#if !defined(OS_MACOSX)
   // An event filter that pre-handles global accelerators.
   scoped_ptr<internal::AcceleratorFilter> accelerator_filter_;
+#endif
 
   // Can change at runtime.
   WindowMode window_mode_;

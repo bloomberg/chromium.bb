@@ -37,14 +37,14 @@
         # All .cc, .h under ash, except unittests
         'accelerators/accelerator_controller.cc',
         'accelerators/accelerator_controller.h',
-	'accelerators/accelerator_dispatcher.cc',
-	'accelerators/accelerator_dispatcher.h',
-	'accelerators/accelerator_dispatcher_linux.cc',
-	'accelerators/accelerator_dispatcher_win.cc',
+        'accelerators/accelerator_dispatcher.cc',
+        'accelerators/accelerator_dispatcher.h',
+        'accelerators/accelerator_dispatcher_linux.cc',
+        'accelerators/accelerator_dispatcher_win.cc',
         'accelerators/accelerator_filter.cc',
         'accelerators/accelerator_filter.h',
-	'accelerators/nested_dispatcher_controller.cc',
-	'accelerators/nested_dispatcher_controller.h',
+        'accelerators/nested_dispatcher_controller.cc',
+        'accelerators/nested_dispatcher_controller.h',
         'app_list/app_list.cc',
         'app_list/app_list.h',
         'app_list/app_list_groups_view.cc',
@@ -190,6 +190,20 @@
         'wm/workspace/workspace_manager.cc',
         'wm/workspace/workspace_manager.h',
       ],
+      'conditions': [
+        ['OS=="mac"', {
+          'sources/': [
+            ['exclude', 'accelerators/accelerator_controller.cc'],
+            ['exclude', 'accelerators/accelerator_controller.h'],
+            ['exclude', 'accelerators/accelerator_dispatcher.cc'],
+            ['exclude', 'accelerators/accelerator_dispatcher.h'],
+            ['exclude', 'accelerators/accelerator_filter.cc'],
+            ['exclude', 'accelerators/accelerator_filter.h'],
+            ['exclude', 'accelerators/nested_dispatcher_controller.cc'],
+            ['exclude', 'accelerators/nested_dispatcher_controller.h'],
+          ],
+        }],
+      ],
     },
     {
       'target_name': 'aura_shell_unittests',
@@ -269,6 +283,7 @@
         }],
         ['OS=="mac"', {
           'sources/': [
+            ['exclude', 'accelerators/accelerator_controller_unittest.cc'],
             ['exclude', 'accelerators/accelerator_filter_unittest.cc'],
             ['exclude', 'drag_drop/drag_drop_controller_unittest.cc'],
             ['exclude', 'tooltips/tooltip_controller_unittest.cc'],

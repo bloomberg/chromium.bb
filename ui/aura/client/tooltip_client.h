@@ -34,7 +34,7 @@ class AURA_EXPORT TooltipClient {
 AURA_EXPORT void SetTooltipClient(TooltipClient* client);
 AURA_EXPORT TooltipClient* GetTooltipClient();
 AURA_EXPORT void SetTooltipText(Window* window, string16* tooltip_text);
-AURA_EXPORT string16* GetTooltipText(Window* window);
+AURA_EXPORT const string16 GetTooltipText(Window* window);
 
 }  // namespace client
 }  // namespace aura

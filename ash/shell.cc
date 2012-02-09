@@ -6,9 +6,6 @@
 
 #include <algorithm>
 
-#include "ash/accelerators/accelerator_controller.h"
-#include "ash/accelerators/accelerator_filter.h"
-#include "ash/accelerators/nested_dispatcher_controller.h"
 #include "ash/app_list/app_list.h"
 #include "ash/ash_switches.h"
 #include "ash/drag_drop/drag_drop_controller.h"
@@ -55,6 +52,12 @@
 #include "ui/gfx/size.h"
 #include "ui/views/widget/native_widget_aura.h"
 #include "ui/views/widget/widget.h"
+
+#if !defined(OS_MACOSX)
+#include "ash/accelerators/accelerator_controller.h"
+#include "ash/accelerators/accelerator_filter.h"
+#include "ash/accelerators/nested_dispatcher_controller.h"
+#endif
 
 namespace ash {
 
@@ -201,8 +204,10 @@ Shell* Shell::instance_ = NULL;
 
 Shell::Shell(ShellDelegate* delegate)
     : ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)),
+#if !defined(OS_MACOSX)
       nested_dispatcher_controller_(new NestedDispatcherController),
       accelerator_controller_(new AcceleratorController),
+#endif
       delegate_(delegate),
       window_mode_(MODE_OVERLAPPING),
       root_window_layout_(NULL),
@@ -214,7 +219,9 @@ Shell::Shell(ShellDelegate* delegate)
 Shell::~Shell() {
   RemoveRootWindowEventFilter(input_method_filter_.get());
   RemoveRootWindowEventFilter(window_modality_controller_.get());
+#if !defined(OS_MACOSX)
   RemoveRootWindowEventFilter(accelerator_filter_.get());
+#endif
 
   // Close background widget now so that the focus manager of the
   // widget gets deleted in the final message loop run.
@@ -343,8 +350,10 @@ void Shell::Init() {
   visibility_controller_.reset(new internal::VisibilityController);
   aura::client::SetVisibilityClient(visibility_controller_.get());
 
+#if !defined(OS_MACOSX)
   accelerator_filter_.reset(new internal::AcceleratorFilter);
   AddRootWindowEventFilter(accelerator_filter_.get());
+#endif
 
   tooltip_controller_.reset(new internal::TooltipController);
   AddRootWindowEventFilter(tooltip_controller_.get());

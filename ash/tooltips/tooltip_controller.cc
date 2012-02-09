@@ -313,7 +313,7 @@ void TooltipController::UpdateIfRequired() {
   }
   string16 tooltip_text;
   if (tooltip_window_)
-    tooltip_text = *aura::client::GetTooltipText(tooltip_window_);
+    tooltip_text = aura::client::GetTooltipText(tooltip_window_);
 
   // We add the !tooltip_->IsVisible() below because when we come here from
   // TooltipTimerFired(), the tooltip_text may not have changed but we still

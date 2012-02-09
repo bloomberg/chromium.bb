@@ -117,9 +117,8 @@ TEST_F(TooltipControllerTest, ViewTooltip) {
   aura::Window* window = widget->GetNativeView();
   EXPECT_EQ(window, aura::RootWindow::GetInstance()->GetEventHandlerForPoint(
       generator.current_location()));
-  EXPECT_TRUE(aura::client::GetTooltipText(window) != NULL);
   string16 expected_tooltip = ASCIIToUTF16("Tooltip Text");
-  EXPECT_EQ(expected_tooltip, *aura::client::GetTooltipText(window));
+  EXPECT_EQ(expected_tooltip, aura::client::GetTooltipText(window));
   EXPECT_EQ(ASCIIToUTF16(""), GetTooltipText());
   EXPECT_EQ(window, GetTooltipWindow());
 
@@ -130,8 +129,7 @@ TEST_F(TooltipControllerTest, ViewTooltip) {
   generator.MoveMouseBy(1, 0);
 
   EXPECT_TRUE(IsTooltipVisible());
-  EXPECT_TRUE(aura::client::GetTooltipText(window) != NULL);
-  EXPECT_EQ(expected_tooltip, *aura::client::GetTooltipText(window));
+  EXPECT_EQ(expected_tooltip, aura::client::GetTooltipText(window));
   EXPECT_EQ(expected_tooltip, GetTooltipText());
   EXPECT_EQ(window, GetTooltipWindow());
 }
@@ -161,9 +159,8 @@ TEST_F(TooltipControllerTest, TooltipsInMultipleViews) {
     EXPECT_EQ(window,
         aura::RootWindow::GetInstance()->GetEventHandlerForPoint(
             generator.current_location()));
-    EXPECT_TRUE(aura::client::GetTooltipText(window) != NULL);
     string16 expected_tooltip = ASCIIToUTF16("Tooltip Text");
-    EXPECT_EQ(expected_tooltip, *aura::client::GetTooltipText(window));
+    EXPECT_EQ(expected_tooltip, aura::client::GetTooltipText(window));
     EXPECT_EQ(expected_tooltip, GetTooltipText());
     EXPECT_EQ(window, GetTooltipWindow());
   }
@@ -173,9 +170,8 @@ TEST_F(TooltipControllerTest, TooltipsInMultipleViews) {
     EXPECT_EQ(window,
         aura::RootWindow::GetInstance()->GetEventHandlerForPoint(
             generator.current_location()));
-    EXPECT_TRUE(aura::client::GetTooltipText(window) != NULL);
-    string16 expected_tooltip = ASCIIToUTF16("");
-    EXPECT_EQ(expected_tooltip, *aura::client::GetTooltipText(window));
+    string16 expected_tooltip;  // = ""
+    EXPECT_EQ(expected_tooltip, aura::client::GetTooltipText(window));
     EXPECT_EQ(expected_tooltip, GetTooltipText());
     EXPECT_EQ(window, GetTooltipWindow());
   }
