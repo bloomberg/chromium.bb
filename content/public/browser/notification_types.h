@@ -191,6 +191,10 @@ enum NotificationType {
   //  The source and details are unspecified.
   NOTIFICATION_APP_EXITING,
 
+  // Indicates that a devtools window is opening. The source is the
+  // content::BrowserContext* and the details is the inspected RenderViewHost*.
+  NOTIFICATION_DEVTOOLS_WINDOW_OPENING,
+
   // Indicates that a devtools window is closing. The source is the
   // content::BrowserContext* and the details is the inspected RenderViewHost*.
   NOTIFICATION_DEVTOOLS_WINDOW_CLOSING,

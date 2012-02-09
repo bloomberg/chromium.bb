@@ -127,7 +127,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, EmptyContextMenu) {
   LoadAndLaunchPlatformApp("empty");
 
   // The empty app doesn't add any context menu items, so its menu should
-  // be empty.
+  // only include the developer tools.
   WebContents* web_contents = GetFirstPlatformAppWebContents();
   ASSERT_TRUE(web_contents);
   WebKit::WebContextMenuData data;
@@ -135,7 +135,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, EmptyContextMenu) {
   PlatformAppContextMenu* menu = new PlatformAppContextMenu(web_contents,
       params);
   menu->Init();
-  ASSERT_FALSE(menu->menu_model().GetItemCount());
+  ASSERT_EQ(1, menu->menu_model().GetItemCount());
 }
 
 IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, AppWithContextMenu) {
@@ -145,8 +145,8 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, AppWithContextMenu) {
   // Wait for the extension to tell us it's created an item.
   ASSERT_TRUE(listener1.WaitUntilSatisfied());
 
-  // The context_menu app has one context menu item. This is all that should
-  // be in the menu, there should be no seperator.
+  // The context_menu app has one context menu item. This, along with a
+  // separator and the developer tools, is all that should be in the menu.
   WebContents* web_contents = GetFirstPlatformAppWebContents();
   ASSERT_TRUE(web_contents);
   WebKit::WebContextMenuData data;
@@ -154,7 +154,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, AppWithContextMenu) {
   PlatformAppContextMenu* menu = new PlatformAppContextMenu(web_contents,
       params);
   menu->Init();
-  ASSERT_EQ(1, menu->menu_model().GetItemCount());
+  ASSERT_EQ(3, menu->menu_model().GetItemCount());
 }
 
 IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, DisallowNavigation) {

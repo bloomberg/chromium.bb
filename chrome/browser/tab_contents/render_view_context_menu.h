@@ -195,10 +195,10 @@ class RenderViewContextMenu : public ui::SimpleMenuModel::Delegate,
       Profile* profile,
       bool can_cross_incognito);
 
-  // Gets the platform app (if any) associated with the TabContents that we're
-  // in.
-  const Extension* GetPlatformApp() const;
-  void AppendPlatformAppItems();
+  // Gets the extension (if any) associated with the TabContents that we're in.
+  const Extension* GetExtension() const;
+  void AppendPlatformAppItems(const Extension* platform_app);
+  void AppendPopupExtensionItems();
   bool AppendCustomItems();
   void AppendDeveloperItems();
   void AppendLinkItems();
@@ -213,6 +213,7 @@ class RenderViewContextMenu : public ui::SimpleMenuModel::Delegate,
   void AppendEditableItems();
   void AppendSearchProvider();
   void AppendAllExtensionItems();
+  void AppendSpellingSuggestionsSubMenu();
   void AppendSpellcheckOptionsSubMenu();
   void AppendSpeechInputOptionsSubMenu();
   // Add writing direction sub menu (only used on Mac).

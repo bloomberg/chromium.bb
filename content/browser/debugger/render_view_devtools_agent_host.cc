@@ -75,6 +75,15 @@ RenderViewDevToolsAgentHost::RenderViewDevToolsAgentHost(RenderViewHost* rvh)
     : content::RenderViewHostObserver(rvh),
       render_view_host_(rvh) {
   g_instances.Get()[rvh] = this;
+
+  // Notify that the view is being opened. This allows any views being debugged
+  // to do anything special they need to do to support debugging.
+  content::NotificationService::current()->Notify(
+      content::NOTIFICATION_DEVTOOLS_WINDOW_OPENING,
+      content::Source<content::BrowserContext>(
+          render_view_host_->site_instance()->GetProcess()->
+              GetBrowserContext()),
+      content::Details<RenderViewHost>(render_view_host_));
 }
 
 void RenderViewDevToolsAgentHost::SendMessageToAgent(IPC::Message* msg) {

@@ -57,6 +57,18 @@ ExtensionPopup::ExtensionPopup(
   // Listen for the containing view calling window.close();
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_HOST_VIEW_SHOULD_CLOSE,
                  content::Source<Profile>(host->profile()));
+
+  // Listen for the dev tools closing, so we can close this window if it is
+  // being inspected and the inspector is closed.
+  registrar_.Add(this, content::NOTIFICATION_DEVTOOLS_WINDOW_CLOSING,
+      content::Source<content::BrowserContext>(host->profile()));
+
+  if (!inspect_with_devtools_) {
+    // Listen for the dev tools opening on this popup, so we can stop it going
+    // away when the dev tools get focus.
+    registrar_.Add(this, content::NOTIFICATION_DEVTOOLS_WINDOW_OPENING,
+                   content::Source<Profile>(host->profile()));
+  }
 }
 
 ExtensionPopup::~ExtensionPopup() {
@@ -78,12 +90,23 @@ void ExtensionPopup::Observe(int type,
         GetWidget()->Close();
       break;
     case content::NOTIFICATION_DEVTOOLS_WINDOW_CLOSING:
-      // Make sure its the devtools window that inspecting our popup.
+      // Make sure it's the devtools window that inspecting our popup.
       // Widget::Close posts a task, which should give the devtools window a
       // chance to finish detaching from the inspected RenderViewHost.
-      if (content::Details<RenderViewHost>(
-              host()->render_view_host()) == details)
+      if (content::Details<RenderViewHost>(host()->render_view_host()) ==
+          details) {
         GetWidget()->Close();
+      }
+      break;
+    case content::NOTIFICATION_DEVTOOLS_WINDOW_OPENING:
+      // First check that the devtools are being opened on this popup.
+      if (content::Details<RenderViewHost>(host()->render_view_host()) ==
+          details) {
+        // Set inspect_with_devtools_ so the popup will be kept open while
+        // the devtools are open.
+        inspect_with_devtools_ = true;
+        set_close_on_deactivate(false);
+      }
       break;
     default:
       NOTREACHED() << L"Received unexpected notification";
@@ -153,9 +176,6 @@ void ExtensionPopup::ShowBubble() {
   views::WidgetFocusManager::GetInstance()->AddFocusChangeListener(this);
 
   if (inspect_with_devtools_) {
-    // Listen for the the devtools window closing.
-    registrar_.Add(this, content::NOTIFICATION_DEVTOOLS_WINDOW_CLOSING,
-        content::Source<content::BrowserContext>(host()->profile()));
     DevToolsWindow::ToggleDevToolsWindow(host()->render_view_host(),
         DEVTOOLS_TOGGLE_ACTION_SHOW_CONSOLE);
   }

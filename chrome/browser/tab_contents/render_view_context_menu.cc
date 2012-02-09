@@ -526,8 +526,12 @@ void RenderViewContextMenu::AppendAllExtensionItems() {
 }
 
 void RenderViewContextMenu::InitMenu() {
-  if (GetPlatformApp()) {
-    AppendPlatformAppItems();
+  const Extension* extension = GetExtension();
+  if (extension) {
+    if (extension->is_platform_app())
+      AppendPlatformAppItems(extension);
+    else
+      AppendPopupExtensionItems();
     return;
   }
 
@@ -598,17 +602,6 @@ void RenderViewContextMenu::InitMenu() {
 #endif
   }
 
-  if (params_.is_editable) {
-    // Add a menu item that shows suggestions.
-    if (!spelling_menu_observer_.get()) {
-      spelling_menu_observer_.reset(new SpellingMenuObserver(this));
-    }
-    if (spelling_menu_observer_.get()) {
-      observers_.AddObserver(spelling_menu_observer_.get());
-      spelling_menu_observer_->InitMenu(params_);
-    }
-  }
-
   if (params_.is_editable)
     AppendEditableItems();
   else if (has_selection)
@@ -631,7 +624,7 @@ void RenderViewContextMenu::InitMenu() {
   observers_.AddObserver(print_preview_menu_observer_.get());
 }
 
-const Extension* RenderViewContextMenu::GetPlatformApp() const {
+const Extension* RenderViewContextMenu::GetExtension() const {
   ExtensionProcessManager* process_manager =
       profile_->GetExtensionProcessManager();
   // There is no process manager in some tests.
@@ -643,21 +636,37 @@ const Extension* RenderViewContextMenu::GetPlatformApp() const {
   for (iter = process_manager->begin(); iter != process_manager->end();
        ++iter) {
     ExtensionHost* host = *iter;
-    if (host->host_contents() == source_web_contents_) {
-      if (host->extension() && host->extension()->is_platform_app()) {
-        return host->extension();
-      }
-    }
+    if (host->host_contents() == source_web_contents_)
+      return host->extension();
   }
 
   return NULL;
 }
 
-void RenderViewContextMenu::AppendPlatformAppItems() {
-  const Extension* platform_app = GetPlatformApp();
+void RenderViewContextMenu::AppendPlatformAppItems(
+    const Extension* platform_app) {
   DCHECK(platform_app);
   int index = 0;
   AppendExtensionItems(platform_app->id(), &index);
+
+  // Add dev tools for unpacked extensions.
+  if (platform_app->location() == Extension::LOAD)
+    AppendDeveloperItems();
+}
+
+void RenderViewContextMenu::AppendPopupExtensionItems() {
+  bool has_selection = !params_.selection_text.empty();
+
+  if (params_.is_editable)
+    AppendEditableItems();
+  else if (has_selection)
+    AppendCopyItem();
+
+  if (has_selection)
+    AppendSearchProvider();
+
+  AppendAllExtensionItems();
+  AppendDeveloperItems();
 }
 
 void RenderViewContextMenu::LookUpInDictionary() {
@@ -916,6 +925,8 @@ void RenderViewContextMenu::AppendSearchProvider() {
 }
 
 void RenderViewContextMenu::AppendEditableItems() {
+  AppendSpellingSuggestionsSubMenu();
+
   menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_UNDO,
                                   IDS_CONTENT_CONTEXT_UNDO);
   menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_REDO,
@@ -954,15 +965,20 @@ void RenderViewContextMenu::AppendEditableItems() {
                                   IDS_CONTENT_CONTEXT_SELECTALL);
 }
 
+void RenderViewContextMenu::AppendSpellingSuggestionsSubMenu() {
+  if (!spelling_menu_observer_.get())
+    spelling_menu_observer_.reset(new SpellingMenuObserver(this));
+  observers_.AddObserver(spelling_menu_observer_.get());
+  spelling_menu_observer_->InitMenu(params_);
+}
+
 void RenderViewContextMenu::AppendSpellcheckOptionsSubMenu() {
   if (!spellchecker_submenu_observer_.get()) {
     spellchecker_submenu_observer_.reset(new SpellCheckerSubMenuObserver(
         this, this, kSpellcheckRadioGroup));
   }
-  if (spellchecker_submenu_observer_.get()) {
-    spellchecker_submenu_observer_->InitMenu(params_);
-    observers_.AddObserver(spellchecker_submenu_observer_.get());
-  }
+  spellchecker_submenu_observer_->InitMenu(params_);
+  observers_.AddObserver(spellchecker_submenu_observer_.get());
 }
 
 void RenderViewContextMenu::AppendSpeechInputOptionsSubMenu() {
@@ -1897,17 +1913,33 @@ void RenderViewContextMenu::MenuClosed(ui::SimpleMenuModel* source) {
 
 bool RenderViewContextMenu::IsDevCommandEnabled(int id) const {
   if (id == IDC_CONTENT_CONTEXT_INSPECTELEMENT) {
-    const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-    TabContentsWrapper* tab_contents_wrapper =
-        TabContentsWrapper::GetCurrentWrapperForContents(
-            source_web_contents_);
-    if (!tab_contents_wrapper)
-      return false;
-    // Don't enable the web inspector if JavaScript is disabled.
-    if (!tab_contents_wrapper->prefs_tab_helper()->per_tab_prefs()->GetBoolean(
-            prefs::kWebKitJavascriptEnabled) ||
-        command_line.HasSwitch(switches::kDisableJavaScript))
-      return false;
+    // Don't enable the web inspector if JavaScript is disabled. We don't
+    // check this when this is the web contents of an extension (e.g.
+    // for a popup extension or a platform app) as they have JavaScript
+    // always enabled.
+    const Extension* extension = GetExtension();
+    if (!extension) {
+      TabContentsWrapper* contents_wrapper =
+          TabContentsWrapper::GetCurrentWrapperForContents(
+              source_web_contents_);
+      if (!contents_wrapper)
+        return false;
+      const CommandLine* command_line = CommandLine::ForCurrentProcess();
+      if (!contents_wrapper->prefs_tab_helper()->per_tab_prefs()->GetBoolean(
+              prefs::kWebKitJavascriptEnabled) ||
+          command_line->HasSwitch(switches::kDisableJavaScript))
+        return false;
+#if !defined(TOOLKIT_VIEWS)
+    } else {
+      // Disable dev tools for popup extensions for non-views builds, as the
+      // extension popups for these builds do not support dynamically inspecting
+      // the popups.
+      // TODO(benwells): Add support for these builds and remove this #if.
+      if (!extension->is_platform_app())
+        return false;
+#endif
+    }
+
     // Don't enable the web inspector if the developer tools are disabled via
     // the preference dev-tools-disabled.
     if (profile_->GetPrefs()->GetBoolean(prefs::kDevToolsDisabled))
