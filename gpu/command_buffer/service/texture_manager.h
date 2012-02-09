@@ -60,6 +60,8 @@ class TextureManager {
           stream_texture_(false),
           immutable_(false),
           estimated_size_(0) {
+      if (manager_)
+        ++manager_->texture_info_count_;
     }
 
     GLenum min_filter() const {
@@ -532,6 +534,10 @@ class TextureManager {
   int num_unrenderable_textures_;
   int num_unsafe_textures_;
   int num_uncleared_mips_;
+
+  // Counts the number of TextureInfo allocated with 'this' as its manager.
+  // Allows to check no TextureInfo will outlive this.
+  unsigned int texture_info_count_;
 
   uint32 mem_represented_;
   uint32 last_reported_mem_represented_;

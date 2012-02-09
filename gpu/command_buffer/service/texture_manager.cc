@@ -58,6 +58,10 @@ static size_t FaceIndexToGLTarget(size_t index) {
 
 TextureManager::~TextureManager() {
   DCHECK(texture_infos_.empty());
+
+  // If this triggers, that means something is keeping a reference to
+  // a TextureInfo belonging to this.
+  CHECK_EQ(texture_info_count_, 0u);
 }
 
 void TextureManager::Destroy(bool have_context) {
@@ -91,6 +95,7 @@ void TextureManager::Destroy(bool have_context) {
 TextureManager::TextureInfo::~TextureInfo() {
   if (manager_) {
     manager_->StopTracking(this);
+    --manager_->texture_info_count_;
     manager_ = NULL;
   }
 }
@@ -565,6 +570,7 @@ TextureManager::TextureManager(
       num_unrenderable_textures_(0),
       num_unsafe_textures_(0),
       num_uncleared_mips_(0),
+      texture_info_count_(0),
       mem_represented_(0),
       last_reported_mem_represented_(1) {
   for (int ii = 0; ii < kNumDefaultTextures; ++ii) {

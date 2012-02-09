@@ -1519,6 +1519,9 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   TextureToIOSurfaceMap texture_to_io_surface_map_;
 #endif
 
+  typedef std::vector<GLES2DecoderImpl*> ChildList;
+  ChildList children_;
+
   DISALLOW_COPY_AND_ASSIGN(GLES2DecoderImpl);
 };
 
@@ -2699,6 +2702,10 @@ bool GLES2DecoderImpl::GetServiceTextureId(uint32 client_texture_id,
 void GLES2DecoderImpl::Destroy() {
   bool have_context = context_.get() && MakeCurrent();
 
+  ChildList children = children_;
+  for (ChildList::iterator it = children.begin(); it != children.end(); ++it)
+    (*it)->SetParent(NULL, 0);
+  DCHECK(children_.empty());
   SetParent(NULL, 0);
 
   // Unbind everything.
@@ -2801,6 +2808,12 @@ bool GLES2DecoderImpl::SetParent(GLES2Decoder* new_parent,
   // parent pointer is a weak pointer so it will be null if the parent has
   // already been destroyed.
   if (parent_) {
+    ChildList::iterator it = std::find(
+        parent_->children_.begin(),
+        parent_->children_.end(),
+        this);
+    DCHECK(it != parent_->children_.end());
+    parent_->children_.erase(it);
     // First check the texture has been mapped into the parent. This might not
     // be the case if initialization failed midway through.
     GLuint service_id = offscreen_saved_color_texture_->id();
@@ -2813,6 +2826,14 @@ bool GLES2DecoderImpl::SetParent(GLES2Decoder* new_parent,
   GLES2DecoderImpl* new_parent_impl = static_cast<GLES2DecoderImpl*>(
       new_parent);
   if (new_parent_impl) {
+#ifndef NDEBUG
+    ChildList::iterator it = std::find(
+        new_parent_impl->children_.begin(),
+        new_parent_impl->children_.end(),
+        this);
+    DCHECK(it == new_parent_impl->children_.end());
+#endif
+    new_parent_impl->children_.push_back(this);
     // Map the ID of the saved offscreen texture into the parent so that
     // it can reference it.
     GLuint service_id = offscreen_saved_color_texture_->id();
