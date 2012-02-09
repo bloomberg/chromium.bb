@@ -671,7 +671,7 @@ void NativeWidgetWin::CenterWindow(const gfx::Size& size) {
   HWND parent = GetParent();
   if (!IsWindow())
     parent = ::GetWindow(GetNativeView(), GW_OWNER);
-  ui::CenterAndSizeWindow(parent, GetNativeView(), size, false);
+  ui::CenterAndSizeWindow(parent, GetNativeView(), size);
 }
 
 void NativeWidgetWin::GetWindowPlacement(

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -33,13 +33,11 @@ UI_EXPORT void* GetWindowUserData(HWND hwnd);
 // of its children.
 UI_EXPORT bool DoesWindowBelongToActiveWindow(HWND window);
 
-// Sizes the window to have a client or window size (depending on the value of
-// |pref_is_client|) of pref, then centers the window over parent, ensuring the
-// window fits on screen.
+// Sizes the window to have a window size of |pref|, then centers the window
+// over |parent|, ensuring the window fits on screen.
 UI_EXPORT void CenterAndSizeWindow(HWND parent,
                                    HWND window,
-                                   const gfx::Size& pref,
-                                   bool pref_is_client);
+                                   const gfx::Size& pref);
 
 // If |hwnd| is NULL logs various thing and CHECKs. Invoke right after calling
 // CreateWindow.

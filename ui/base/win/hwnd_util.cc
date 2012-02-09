@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,30 +14,36 @@ namespace ui {
 namespace {
 
 // Adjust the window to fit, returning true if the window was resized or moved.
-bool AdjustWindowToFit(HWND hwnd, const RECT& bounds) {
-  // Get the monitor.
-  HMONITOR hmon = MonitorFromRect(&bounds, MONITOR_DEFAULTTONEAREST);
-  if (!hmon) {
-    NOTREACHED() << "Unable to find default monitor";
-    // No monitor available.
-    return false;
-  }
+void AdjustWindowToFit(HWND hwnd, const RECT& bounds, bool fit_to_monitor) {
+  if (fit_to_monitor) {
+    // Get the monitor.
+    HMONITOR hmon = MonitorFromRect(&bounds, MONITOR_DEFAULTTONEAREST);
+    if (hmon) {
+      MONITORINFO mi;
+      mi.cbSize = sizeof(mi);
+      GetMonitorInfo(hmon, &mi);
+      gfx::Rect window_rect(bounds);
+      gfx::Rect monitor_rect(mi.rcWork);
+      gfx::Rect new_window_rect = window_rect.AdjustToFit(monitor_rect);
+      if (!new_window_rect.Equals(window_rect)) {
+        // Window doesn't fit on monitor, move and possibly resize.
+        SetWindowPos(hwnd, 0, new_window_rect.x(), new_window_rect.y(),
+                     new_window_rect.width(), new_window_rect.height(),
+                     SWP_NOACTIVATE | SWP_NOZORDER);
+        return;
+      }
+      // Else fall through.
+    } else {
+      NOTREACHED() << "Unable to find default monitor";
+      // Fall through.
+    }
+  } // Else fall through.
 
-  MONITORINFO mi;
-  mi.cbSize = sizeof(mi);
-  GetMonitorInfo(hmon, &mi);
-  gfx::Rect window_rect(bounds);
-  gfx::Rect monitor_rect(mi.rcWork);
-  gfx::Rect new_window_rect = window_rect.AdjustToFit(monitor_rect);
-  if (!new_window_rect.Equals(window_rect)) {
-    // Window doesn't fit on monitor, move and possibly resize.
-    SetWindowPos(hwnd, 0, new_window_rect.x(), new_window_rect.y(),
-                 new_window_rect.width(), new_window_rect.height(),
+  // The window is not being fit to monitor, or the window fits on the monitor
+  // as is, or we have no monitor info; reset the bounds.
+  ::SetWindowPos(hwnd, 0, bounds.left, bounds.top,
+                 bounds.right - bounds.left, bounds.bottom - bounds.top,
                  SWP_NOACTIVATE | SWP_NOZORDER);
-    return true;
-  } else {
-    return false;
-  }
 }
 
 }  // namespace
@@ -105,8 +111,7 @@ bool DoesWindowBelongToActiveWindow(HWND window) {
 
 void CenterAndSizeWindow(HWND parent,
                          HWND window,
-                         const gfx::Size& pref,
-                         bool pref_is_client) {
+                         const gfx::Size& pref) {
   DCHECK(window && pref.width() > 0 && pref.height() > 0);
 
   // Calculate the ideal bounds.
@@ -147,27 +152,7 @@ void CenterAndSizeWindow(HWND parent,
     window_bounds.bottom = window_bounds.top + pref.height();
   }
 
-  // Get the WINDOWINFO for window. We need the style to calculate the size
-  // for the window.
-  WINDOWINFO win_info = {0};
-  win_info.cbSize = sizeof(WINDOWINFO);
-  GetWindowInfo(window, &win_info);
-
-  // Calculate the window size needed for the content size.
-
-  if (!pref_is_client ||
-      AdjustWindowRectEx(&window_bounds, win_info.dwStyle, FALSE,
-                         win_info.dwExStyle)) {
-    if (!AdjustWindowToFit(window, window_bounds)) {
-      // The window fits, reset the bounds.
-      SetWindowPos(window, 0, window_bounds.left, window_bounds.top,
-                   window_bounds.right - window_bounds.left,
-                   window_bounds.bottom - window_bounds.top,
-                   SWP_NOACTIVATE | SWP_NOZORDER);
-    }  // else case, AdjustWindowToFit set the bounds for us.
-  } else {
-    NOTREACHED() << "Unable to adjust window to fit";
-  }
+  AdjustWindowToFit(window, window_bounds, !parent);
 }
 
 void CheckWindowCreated(HWND hwnd) {
