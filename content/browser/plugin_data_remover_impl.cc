@@ -32,7 +32,7 @@ namespace content {
 
 // static
 PluginDataRemover* PluginDataRemover::Create(
-    const content::ResourceContext& resource_context) {
+    content::ResourceContext* resource_context) {
   return new PluginDataRemoverImpl(resource_context);
 }
 
@@ -64,7 +64,7 @@ class PluginDataRemoverImpl::Context
                                         BrowserThread::DeleteOnIOThread> {
  public:
   Context(base::Time begin_time,
-          const content::ResourceContext& resource_context)
+          content::ResourceContext* resource_context)
       : event_(new base::WaitableEvent(true, false)),
         begin_time_(begin_time),
         is_removing_(false),
@@ -116,7 +116,7 @@ class PluginDataRemoverImpl::Context
     return false;
   }
 
-  virtual const content::ResourceContext& GetResourceContext() OVERRIDE {
+  virtual content::ResourceContext* GetResourceContext() OVERRIDE {
     return resource_context_;
   }
 
@@ -214,7 +214,7 @@ class PluginDataRemoverImpl::Context
   bool is_removing_;
 
   // The resource context for the profile.
-  const content::ResourceContext& resource_context_;
+  content::ResourceContext* resource_context_;
 
   // The channel is NULL until we have opened a connection to the plug-in
   // process.
@@ -223,7 +223,7 @@ class PluginDataRemoverImpl::Context
 
 
 PluginDataRemoverImpl::PluginDataRemoverImpl(
-    const content::ResourceContext& resource_context)
+    content::ResourceContext* resource_context)
     : mime_type_(kFlashMimeType),
       resource_context_(resource_context) {
 }

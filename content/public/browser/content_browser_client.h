@@ -156,14 +156,14 @@ class ContentBrowserClient {
   // This is called on the IO thread.
   virtual bool AllowAppCache(const GURL& manifest_url,
                              const GURL& first_party,
-                             const content::ResourceContext& context) = 0;
+                             content::ResourceContext* context) = 0;
 
   // Allow the embedder to control if the given cookie can be read.
   // This is called on the IO thread.
   virtual bool AllowGetCookie(const GURL& url,
                               const GURL& first_party,
                               const net::CookieList& cookie_list,
-                              const content::ResourceContext& context,
+                              content::ResourceContext* context,
                               int render_process_id,
                               int render_view_id) = 0;
 
@@ -172,14 +172,13 @@ class ContentBrowserClient {
   virtual bool AllowSetCookie(const GURL& url,
                               const GURL& first_party,
                               const std::string& cookie_line,
-                              const content::ResourceContext& context,
+                              content::ResourceContext* context,
                               int render_process_id,
                               int render_view_id,
                               net::CookieOptions* options) = 0;
 
   // This is called on the IO thread.
-  virtual bool AllowSaveLocalState(
-      const content::ResourceContext& context) = 0;
+  virtual bool AllowSaveLocalState(content::ResourceContext* context) = 0;
 
   // Allow the embedder to control if access to web database by a shared worker
   // is allowed. |render_views| is a vector of pairs of
@@ -190,7 +189,7 @@ class ContentBrowserClient {
       const string16& name,
       const string16& display_name,
       unsigned long estimated_size,
-      const content::ResourceContext& context,
+      content::ResourceContext* context,
       const std::vector<std::pair<int, int> >& render_views) = 0;
 
   // Allow the embedder to control if access to file system by a shared worker
@@ -198,7 +197,7 @@ class ContentBrowserClient {
   // This is called on the IO thread.
   virtual bool AllowWorkerFileSystem(
       const GURL& url,
-      const content::ResourceContext& context,
+      content::ResourceContext* context,
       const std::vector<std::pair<int, int> >& render_views) = 0;
 
   // Allows the embedder to override the request context based on the URL for
@@ -206,7 +205,7 @@ class ContentBrowserClient {
   // regular request context should be used.
   // This is called on the IO thread.
   virtual net::URLRequestContext* OverrideRequestContextForURL(
-      const GURL& url, const content::ResourceContext& context) = 0;
+      const GURL& url, content::ResourceContext* context) = 0;
 
   // Create and return a new quota permission context.
   virtual QuotaPermissionContext* CreateQuotaPermissionContext() = 0;
@@ -255,7 +254,7 @@ class ContentBrowserClient {
   virtual WebKit::WebNotificationPresenter::Permission
       CheckDesktopNotificationPermission(
           const GURL& source_url,
-          const content::ResourceContext& context,
+          content::ResourceContext* context,
           int render_process_id) = 0;
 
   // Show a desktop notification.  If |worker| is true, the request came from an
@@ -278,14 +277,14 @@ class ContentBrowserClient {
   virtual bool CanCreateWindow(
       const GURL& source_origin,
       WindowContainerType container_type,
-      const content::ResourceContext& context,
+      content::ResourceContext* context,
       int render_process_id) = 0;
 
   // Returns a title string to use in the task manager for a process host with
   // the given URL, or the empty string to fall back to the default logic.
   // This is called on the IO thread.
   virtual std::string GetWorkerProcessTitle(
-      const GURL& url, const content::ResourceContext& context) = 0;
+      const GURL& url, content::ResourceContext* context) = 0;
 
   // Notifies the embedder that the ResourceDispatcherHost has been created.
   // This is when it can optionally add a delegate or ResourceQueueDelegates.

@@ -447,8 +447,8 @@ void RenderProcessHostImpl::CreateMessageFilters() {
           widget_helper_));
   channel_->AddFilter(render_message_filter);
   content::BrowserContext* browser_context = GetBrowserContext();
-  const content::ResourceContext* resource_context =
-      &browser_context->GetResourceContext();
+  content::ResourceContext* resource_context =
+      browser_context->GetResourceContext();
 
   ResourceMessageFilter* resource_message_filter = new ResourceMessageFilter(
       GetID(), content::PROCESS_TYPE_RENDERER, resource_context,

@@ -112,7 +112,7 @@ void SpeechInputBubbleGtk::OnTryAgainClicked(GtkWidget* widget) {
 
 void SpeechInputBubbleGtk::OnMicSettingsClicked(GtkWidget* widget) {
   speech_input::SpeechInputManager::ShowAudioInputSettingsFromUI(
-      &web_contents()->GetBrowserContext()->GetResourceContext());
+      web_contents()->GetBrowserContext()->GetResourceContext());
   Hide();
 }
 

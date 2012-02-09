@@ -91,7 +91,7 @@ class CONTENT_EXPORT ResourceDispatcherHost : public net::URLRequest::Delegate {
       const DownloadResourceHandler::OnStartedCallback& started_cb,
       int child_id,
       int route_id,
-      const content::ResourceContext& context);
+      content::ResourceContext* context);
 
   // Initiates a save file from the browser process (as opposed to a resource
   // request from the renderer or another child process).
@@ -99,7 +99,7 @@ class CONTENT_EXPORT ResourceDispatcherHost : public net::URLRequest::Delegate {
                      const GURL& referrer,
                      int child_id,
                      int route_id,
-                     const content::ResourceContext& context);
+                     content::ResourceContext* context);
 
   // Cancels the given request if it still exists. We ignore cancels from the
   // renderer in the event of a download.
@@ -175,7 +175,7 @@ class CONTENT_EXPORT ResourceDispatcherHost : public net::URLRequest::Delegate {
   // Force cancels any pending requests for the given |context|. This is
   // necessary to ensure that before |context| goes away, all requests
   // for it are dead.
-  void CancelRequestsForContext(const content::ResourceContext* context);
+  void CancelRequestsForContext(content::ResourceContext* context);
 
   // net::URLRequest::Delegate
   virtual void OnReceivedRedirect(net::URLRequest* request,
@@ -277,7 +277,7 @@ class CONTENT_EXPORT ResourceDispatcherHost : public net::URLRequest::Delegate {
 
   scoped_refptr<ResourceHandler> CreateResourceHandlerForDownload(
       net::URLRequest* request,
-      const content::ResourceContext& context,
+      content::ResourceContext* context,
       int child_id,
       int route_id,
       int request_id,
@@ -428,7 +428,7 @@ class CONTENT_EXPORT ResourceDispatcherHost : public net::URLRequest::Delegate {
       int child_id,
       int route_id,
       bool download,
-      const content::ResourceContext& context);
+      content::ResourceContext* context);
 
   // Returns true if |request| is in |pending_requests_|.
   bool IsValidRequest(net::URLRequest* request);

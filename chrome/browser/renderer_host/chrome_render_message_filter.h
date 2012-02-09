@@ -168,8 +168,6 @@ class ChromeRenderMessageFilter : public content::BrowserMessageFilter {
   // Used to look up permissions at database creation time.
   scoped_refptr<CookieSettings> cookie_settings_;
 
-  const content::ResourceContext& resource_context_;
-
   base::WeakPtrFactory<ChromeRenderMessageFilter> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeRenderMessageFilter);

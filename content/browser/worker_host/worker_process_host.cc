@@ -88,8 +88,7 @@ void WorkerCrashCallback(int render_process_unique_id, int render_view_id) {
     host->delegate()->WorkerCrashed();
 }
 
-WorkerProcessHost::WorkerProcessHost(
-    const content::ResourceContext* resource_context)
+WorkerProcessHost::WorkerProcessHost(content::ResourceContext* resource_context)
     : resource_context_(resource_context) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(resource_context);
@@ -204,7 +203,7 @@ bool WorkerProcessHost::Init(int render_process_id) {
     // requests them.
     // This is for the filesystem sandbox.
     ChildProcessSecurityPolicyImpl::GetInstance()->GrantPermissionsForFile(
-        process_->GetData().id, resource_context_->file_system_context()->
+        process_->GetData().id, resource_context_->GetFileSystemContext()->
           sandbox_provider()->new_base_path(),
         base::PLATFORM_FILE_OPEN |
         base::PLATFORM_FILE_CREATE |
@@ -221,7 +220,7 @@ bool WorkerProcessHost::Init(int render_process_id) {
     // This is so that we can read and move stuff out of the old filesystem
     // sandbox.
     ChildProcessSecurityPolicyImpl::GetInstance()->GrantPermissionsForFile(
-        process_->GetData().id, resource_context_->file_system_context()->
+        process_->GetData().id, resource_context_->GetFileSystemContext()->
           sandbox_provider()->old_base_path(),
         base::PLATFORM_FILE_READ | base::PLATFORM_FILE_WRITE |
             base::PLATFORM_FILE_WRITE_ATTRIBUTES |
@@ -229,7 +228,7 @@ bool WorkerProcessHost::Init(int render_process_id) {
     // This is so that we can rename the old sandbox out of the way so that
     // we know we've taken care of it.
     ChildProcessSecurityPolicyImpl::GetInstance()->GrantPermissionsForFile(
-        process_->GetData().id, resource_context_->file_system_context()->
+        process_->GetData().id, resource_context_->GetFileSystemContext()->
           sandbox_provider()->renamed_old_base_path(),
         base::PLATFORM_FILE_CREATE | base::PLATFORM_FILE_CREATE_ALWAYS |
             base::PLATFORM_FILE_WRITE);
@@ -241,9 +240,8 @@ bool WorkerProcessHost::Init(int render_process_id) {
 }
 
 void WorkerProcessHost::CreateMessageFilters(int render_process_id) {
-  DCHECK(resource_context_);
   net::URLRequestContext* request_context =
-      resource_context_->request_context();
+      resource_context_->GetRequestContext();
 
   ResourceMessageFilter* resource_message_filter = new ResourceMessageFilter(
       process_->GetData().id, content::PROCESS_TYPE_WORKER, resource_context_,
@@ -256,16 +254,16 @@ void WorkerProcessHost::CreateMessageFilters(int render_process_id) {
                  base::Unretained(WorkerServiceImpl::GetInstance())));
   process_->GetHost()->AddFilter(worker_message_filter_);
   process_->GetHost()->AddFilter(new AppCacheDispatcherHost(
-      resource_context_->appcache_service(), process_->GetData().id));
+      resource_context_->GetAppCacheService(), process_->GetData().id));
   process_->GetHost()->AddFilter(new FileSystemDispatcherHost(
-      request_context, resource_context_->file_system_context()));
+      request_context, resource_context_->GetFileSystemContext()));
   process_->GetHost()->AddFilter(new FileUtilitiesMessageFilter(
       process_->GetData().id));
   process_->GetHost()->AddFilter(new BlobMessageFilter(
-      process_->GetData().id, resource_context_->blob_storage_context()));
+      process_->GetData().id, resource_context_->GetBlobStorageContext()));
   process_->GetHost()->AddFilter(new MimeRegistryMessageFilter());
   process_->GetHost()->AddFilter(new DatabaseMessageFilter(
-      resource_context_->database_tracker()));
+      resource_context_->GetDatabaseTracker()));
 
   SocketStreamDispatcherHost* socket_stream_dispatcher_host =
       new SocketStreamDispatcherHost(
@@ -376,7 +374,7 @@ void WorkerProcessHost::OnAllowDatabase(int worker_route_id,
                                         unsigned long estimated_size,
                                         bool* result) {
   *result = content::GetContentClient()->browser()->AllowWorkerDatabase(
-      url, name, display_name, estimated_size, *resource_context_,
+      url, name, display_name, estimated_size, resource_context_,
       GetRenderViewIDsForWorker(worker_route_id));
 }
 
@@ -384,8 +382,7 @@ void WorkerProcessHost::OnAllowFileSystem(int worker_route_id,
                                           const GURL& url,
                                           bool* result) {
   *result = content::GetContentClient()->browser()->AllowWorkerFileSystem(
-      url, *resource_context_,
-      GetRenderViewIDsForWorker(worker_route_id));
+      url, resource_context_, GetRenderViewIDsForWorker(worker_route_id));
 }
 
 void WorkerProcessHost::RelayMessage(
@@ -479,7 +476,7 @@ void WorkerProcessHost::UpdateTitle() {
   for (Instances::iterator i = instances_.begin(); i != instances_.end(); ++i) {
     // Allow the embedder first crack at special casing the title.
     std::string title = content::GetContentClient()->browser()->
-        GetWorkerProcessTitle(i->url(), *resource_context_);
+        GetWorkerProcessTitle(i->url(), resource_context_);
 
     if (title.empty()) {
       title = net::RegistryControlledDomainService::GetDomainAndRegistry(
@@ -555,7 +552,7 @@ WorkerProcessHost::WorkerInstance::WorkerInstance(
     int worker_route_id,
     int parent_process_id,
     int64 main_resource_appcache_id,
-    const content::ResourceContext* resource_context)
+    content::ResourceContext* resource_context)
     : url_(url),
       closed_(false),
       name_(name),
@@ -571,7 +568,7 @@ WorkerProcessHost::WorkerInstance::WorkerInstance(
     const GURL& url,
     bool shared,
     const string16& name,
-    const content::ResourceContext* resource_context)
+    content::ResourceContext* resource_context)
     : url_(url),
       closed_(false),
       name_(name),
@@ -594,7 +591,7 @@ WorkerProcessHost::WorkerInstance::~WorkerInstance() {
 bool WorkerProcessHost::WorkerInstance::Matches(
     const GURL& match_url,
     const string16& match_name,
-    const content::ResourceContext* resource_context) const {
+    content::ResourceContext* resource_context) const {
   // Only match open shared workers.
   if (closed_)
     return false;

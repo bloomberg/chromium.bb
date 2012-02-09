@@ -293,7 +293,7 @@ PpapiPluginProcessHost* PluginServiceImpl::FindOrStartPpapiPluginProcess(
   // This plugin isn't loaded by any plugin process, so create a new process.
   return PpapiPluginProcessHost::CreatePluginHost(
       *info,
-      client->GetResourceContext()->host_resolver());
+      client->GetResourceContext()->GetHostResolver());
 }
 
 PpapiPluginProcessHost* PluginServiceImpl::FindOrStartPpapiBrokerProcess(
@@ -332,7 +332,7 @@ void PluginServiceImpl::OpenChannelToNpapiPlugin(
     render_process_id,
     render_view_id,
     page_url,
-    &client->GetResourceContext()
+    client->GetResourceContext()
   };
   GetPlugins(base::Bind(
       &PluginServiceImpl::ForwardGetAllowedPluginForOpenChannelToPlugin,
@@ -385,11 +385,11 @@ void PluginServiceImpl::GetAllowedPluginForOpenChannelToPlugin(
     const GURL& page_url,
     const std::string& mime_type,
     PluginProcessHost::Client* client,
-    const content::ResourceContext* resource_context) {
+    content::ResourceContext* resource_context) {
   webkit::WebPluginInfo info;
   bool allow_wildcard = true;
   bool found = GetPluginInfo(
-      render_process_id, render_view_id, *resource_context,
+      render_process_id, render_view_id, resource_context,
       url, page_url, mime_type, allow_wildcard,
       NULL, &info, NULL);
   FilePath plugin_path;
@@ -436,7 +436,7 @@ bool PluginServiceImpl::GetPluginInfoArray(
 
 bool PluginServiceImpl::GetPluginInfo(int render_process_id,
                                       int render_view_id,
-                                      const content::ResourceContext& context,
+                                      content::ResourceContext* context,
                                       const GURL& url,
                                       const GURL& page_url,
                                       const std::string& mime_type,
@@ -454,7 +454,7 @@ bool PluginServiceImpl::GetPluginInfo(int render_process_id,
   for (size_t i = 0; i < plugins.size(); ++i) {
     if (!filter_ || filter_->ShouldUsePlugin(render_process_id,
                                              render_view_id,
-                                             &context,
+                                             context,
                                              url,
                                              page_url,
                                              &plugins[i])) {

@@ -174,7 +174,7 @@ class ForwardingFilter : public ResourceMessageFilter {
         content::PROCESS_TYPE_RENDERER,
         content::MockResourceContext::GetInstance(),
         new MockURLRequestContextSelector(
-            content::MockResourceContext::GetInstance()->request_context())),
+            content::MockResourceContext::GetInstance()->GetRequestContext())),
       dest_(dest) {
     OnChannelConnected(base::GetCurrentProcId());
   }
@@ -303,7 +303,7 @@ class TestResourceDispatcherHostDelegate
 
   virtual void RequestBeginning(
       net::URLRequest* request,
-      const content::ResourceContext& resource_context,
+      content::ResourceContext* resource_context,
       ResourceType::Type resource_type,
       int child_id,
       int route_id,
@@ -315,7 +315,7 @@ class TestResourceDispatcherHostDelegate
 
   virtual bool ShouldDeferStart(
       net::URLRequest* request,
-      const content::ResourceContext& resource_context) OVERRIDE {
+      content::ResourceContext* resource_context) OVERRIDE {
     return defer_start_;
   }
 
@@ -1299,7 +1299,7 @@ TEST_F(ResourceDispatcherHostTest, CancelRequestsForContext) {
   EXPECT_EQ(1, host_.pending_requests());
 
   // Cancelling by context should work.
-  host_.CancelRequestsForContext(&filter_->resource_context());
+  host_.CancelRequestsForContext(filter_->resource_context());
   EXPECT_EQ(0, host_.pending_requests());
 }
 
@@ -1342,7 +1342,7 @@ TEST_F(ResourceDispatcherHostTest, CancelRequestsForContextTransferred) {
   EXPECT_EQ(1, host_.pending_requests());
 
   // Cancelling by context should work.
-  host_.CancelRequestsForContext(&filter_->resource_context());
+  host_.CancelRequestsForContext(filter_->resource_context());
   EXPECT_EQ(0, host_.pending_requests());
 }
 

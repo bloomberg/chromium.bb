@@ -39,11 +39,11 @@ class ChromeResourceDispatcherHostDelegate
       const std::string& method,
       const GURL& url,
       ResourceType::Type resource_type,
-      const content::ResourceContext& resource_context,
+      content::ResourceContext* resource_context,
       const content::Referrer& referrer) OVERRIDE;
   virtual void RequestBeginning(
       net::URLRequest* request,
-      const content::ResourceContext& resource_context,
+      content::ResourceContext* resource_context,
       ResourceType::Type resource_type,
       int child_id,
       int route_id,
@@ -51,7 +51,7 @@ class ChromeResourceDispatcherHostDelegate
       ScopedVector<content::ResourceThrottle>* throttles) OVERRIDE;
   virtual void DownloadStarting(
       net::URLRequest* request,
-      const content::ResourceContext& resource_context,
+      content::ResourceContext* resource_context,
       int child_id,
       int route_id,
       int request_id,
@@ -59,7 +59,7 @@ class ChromeResourceDispatcherHostDelegate
       ScopedVector<content::ResourceThrottle>* throttles) OVERRIDE;
   virtual bool ShouldDeferStart(
       net::URLRequest* request,
-      const content::ResourceContext& resource_context) OVERRIDE;
+      content::ResourceContext* resource_context) OVERRIDE;
   virtual bool AcceptSSLClientCertificateRequest(
         net::URLRequest* request,
         net::SSLCertRequestInfo* cert_request_info) OVERRIDE;

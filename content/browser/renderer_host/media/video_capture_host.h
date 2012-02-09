@@ -53,7 +53,7 @@ class CONTENT_EXPORT VideoCaptureHost
     : public content::BrowserMessageFilter,
       public VideoCaptureControllerEventHandler {
  public:
-  explicit VideoCaptureHost(const content::ResourceContext* resource_context);
+  explicit VideoCaptureHost(content::ResourceContext* resource_context);
 
   // content::BrowserMessageFilter implementation.
   virtual void OnChannelClosing() OVERRIDE;
@@ -141,7 +141,7 @@ class CONTENT_EXPORT VideoCaptureHost
   EntryMap entries_;
 
   // Used to get a pointer to VideoCaptureManager to start/stop capture devices.
-  const content::ResourceContext* resource_context_;
+  content::ResourceContext* resource_context_;
 
   DISALLOW_COPY_AND_ASSIGN(VideoCaptureHost);
 };

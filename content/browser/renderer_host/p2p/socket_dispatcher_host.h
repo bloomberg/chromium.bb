@@ -21,7 +21,7 @@ class P2PSocketDispatcherHost
     : public content::BrowserMessageFilter,
       public net::NetworkChangeNotifier::IPAddressObserver {
  public:
-  P2PSocketDispatcherHost(const content::ResourceContext* resource_context);
+  P2PSocketDispatcherHost(content::ResourceContext* resource_context);
   virtual ~P2PSocketDispatcherHost();
 
   // content::BrowserMessageFilter overrides.
@@ -69,7 +69,7 @@ class P2PSocketDispatcherHost
   void OnAddressResolved(DnsRequest* request,
                          const net::IPAddressNumber& result);
 
-  const content::ResourceContext* resource_context_;
+  content::ResourceContext* resource_context_;
 
   SocketsMap sockets_;
 

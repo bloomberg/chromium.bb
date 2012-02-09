@@ -13,7 +13,7 @@ using content::BrowserMessageFilter;
 ResourceMessageFilter::ResourceMessageFilter(
     int child_id,
     content::ProcessType process_type,
-    const content::ResourceContext* resource_context,
+    content::ResourceContext* resource_context,
     URLRequestContextSelector* url_request_context_selector)
     : child_id_(child_id),
       process_type_(process_type),

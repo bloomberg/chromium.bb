@@ -40,8 +40,7 @@ class HostResolver;
 // handle requests that out-of-process plugins send directly to the browser.
 class PepperMessageFilter : public content::BrowserMessageFilter {
  public:
-  explicit PepperMessageFilter(
-      const content::ResourceContext* resource_context);
+  explicit PepperMessageFilter(content::ResourceContext* resource_context);
   explicit PepperMessageFilter(net::HostResolver* host_resolver);
   virtual ~PepperMessageFilter();
 
@@ -123,7 +122,7 @@ class PepperMessageFilter : public content::BrowserMessageFilter {
   uint32 GenerateSocketID();
 
   // When non-NULL, this should be used instead of the host_resolver_.
-  const content::ResourceContext* const resource_context_;
+  content::ResourceContext* const resource_context_;
 
   // When non-NULL, this should be used instead of the resource_context_. Use
   // GetHostResolver instead of accessing directly.

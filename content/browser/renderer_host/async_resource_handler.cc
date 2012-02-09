@@ -133,9 +133,8 @@ bool AsyncResourceHandler::OnResponseStarted(
 
   DevToolsNetLogObserver::PopulateResponseInfo(request, response);
 
-  const content::ResourceContext& resource_context =
-      filter_->resource_context();
-  content::HostZoomMap* host_zoom_map = resource_context.host_zoom_map();
+  content::ResourceContext* resource_context = filter_->resource_context();
+  content::HostZoomMap* host_zoom_map = resource_context->GetHostZoomMap();
 
   ResourceDispatcherHostRequestInfo* info = rdh_->InfoForRequest(request);
   if (info->resource_type() == ResourceType::MAIN_FRAME && host_zoom_map) {

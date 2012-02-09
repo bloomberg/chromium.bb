@@ -28,7 +28,7 @@ class SocketStreamDispatcherHost : public content::BrowserMessageFilter,
  public:
   SocketStreamDispatcherHost(
       ResourceMessageFilter::URLRequestContextSelector* selector,
-      const content::ResourceContext* resource_context);
+      content::ResourceContext* resource_context);
   virtual ~SocketStreamDispatcherHost();
 
   // content::BrowserMessageFilter methods.
@@ -65,7 +65,7 @@ class SocketStreamDispatcherHost : public content::BrowserMessageFilter,
   IDMap<SocketStreamHost> hosts_;
   const scoped_ptr<ResourceMessageFilter::URLRequestContextSelector>
       url_request_context_selector_;
-  const content::ResourceContext* resource_context_;
+  content::ResourceContext* resource_context_;
 
   DISALLOW_COPY_AND_ASSIGN(SocketStreamDispatcherHost);
 };

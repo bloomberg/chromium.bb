@@ -307,7 +307,7 @@ bool BufferedResourceHandler::CompleteResponseStarted(int request_id) {
     scoped_refptr<ResourceHandler> handler(
         host_->CreateResourceHandlerForDownload(
             request_,
-            *info->context(),
+            info->context(),
             info->child_id(),
             info->route_id(),
             info->request_id(),
@@ -371,7 +371,7 @@ bool BufferedResourceHandler::ShouldDownload(bool* need_plugin_list) {
   bool stale = false;
   webkit::WebPluginInfo plugin;
   bool found = PluginServiceImpl::GetInstance()->GetPluginInfo(
-      info->child_id(), info->route_id(), *info->context(),
+      info->child_id(), info->route_id(), info->context(),
       request_->url(), GURL(), type, allow_wildcard,
       &stale, &plugin, NULL);
 

@@ -14,8 +14,7 @@
 
 class CONTENT_EXPORT PluginDataRemoverImpl : public content::PluginDataRemover {
  public:
-  explicit PluginDataRemoverImpl(
-      const content::ResourceContext& resource_context);
+  explicit PluginDataRemoverImpl(content::ResourceContext* resource_context);
   virtual ~PluginDataRemoverImpl();
 
   // content::PluginDataRemover implementation:
@@ -31,7 +30,7 @@ class CONTENT_EXPORT PluginDataRemoverImpl : public content::PluginDataRemover {
 
   std::string mime_type_;
   // The resource context for the profile.
-  const content::ResourceContext& resource_context_;
+  content::ResourceContext* resource_context_;
 
   // This allows this object to be deleted on the UI thread while it's still
   // being used on the IO thread.

@@ -243,7 +243,7 @@ class RenderMessageFilter : public content::BrowserMessageFilter {
   scoped_refptr<net::URLRequestContextGetter> request_context_;
 
   // The ResourceContext which is to be used on the IO thread.
-  const content::ResourceContext& resource_context_;
+  content::ResourceContext* resource_context_;
 
   scoped_refptr<RenderWidgetHelper> render_widget_helper_;
 

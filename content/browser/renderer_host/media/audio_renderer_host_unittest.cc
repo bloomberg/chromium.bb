@@ -43,7 +43,7 @@ static bool IsRunningHeadless() {
 class MockAudioRendererHost : public AudioRendererHost {
  public:
   explicit MockAudioRendererHost(
-      const content::ResourceContext* resource_context)
+      content::ResourceContext* resource_context)
       : AudioRendererHost(resource_context),
         shared_memory_length_(0) {
   }

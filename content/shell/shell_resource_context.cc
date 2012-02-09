@@ -19,14 +19,49 @@ ShellResourceContext::ShellResourceContext(
 ShellResourceContext::~ShellResourceContext() {
 }
 
-void ShellResourceContext::EnsureInitialized() const {
-  const_cast<ShellResourceContext*>(this)->InitializeInternal();
+net::HostResolver* ShellResourceContext::GetHostResolver() {
+  return getter_->host_resolver();
 }
 
-void ShellResourceContext::InitializeInternal() {
-  set_request_context(getter_->GetURLRequestContext());
-  set_host_resolver(getter_->host_resolver());
-  set_blob_storage_context(blob_storage_context_);
+net::URLRequestContext* ShellResourceContext::GetRequestContext() {
+  return getter_->GetURLRequestContext();
+}
+
+ChromeAppCacheService* ShellResourceContext::GetAppCacheService() {
+  return NULL;
+}
+
+webkit_database::DatabaseTracker* ShellResourceContext::GetDatabaseTracker() {
+  return NULL;
+}
+
+fileapi::FileSystemContext* ShellResourceContext::GetFileSystemContext() {
+  return NULL;
+}
+
+ChromeBlobStorageContext* ShellResourceContext::GetBlobStorageContext() {
+  return blob_storage_context_;
+}
+
+quota::QuotaManager* ShellResourceContext::GetQuotaManager() {
+  return NULL;
+}
+
+HostZoomMap* ShellResourceContext::GetHostZoomMap() {
+  return NULL;
+}
+
+MediaObserver* ShellResourceContext::GetMediaObserver() {
+  return NULL;
+}
+
+media_stream::MediaStreamManager*
+    ShellResourceContext::GetMediaStreamManager() {
+  return NULL;
+}
+
+AudioManager* ShellResourceContext::GetAudioManager() {
+  return NULL;
 }
 
 }  // namespace content

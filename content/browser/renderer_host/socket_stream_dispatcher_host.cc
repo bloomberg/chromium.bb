@@ -17,7 +17,7 @@
 
 SocketStreamDispatcherHost::SocketStreamDispatcherHost(
     ResourceMessageFilter::URLRequestContextSelector* selector,
-    const content::ResourceContext* resource_context)
+    content::ResourceContext* resource_context)
     : url_request_context_selector_(selector),
       resource_context_(resource_context) {
   DCHECK(selector);
@@ -109,7 +109,7 @@ void SocketStreamDispatcherHost::OnClose(net::SocketStream* socket) {
 bool SocketStreamDispatcherHost::CanGetCookies(net::SocketStream* socket,
                                                const GURL& url) {
   return content::GetContentClient()->browser()->AllowGetCookie(
-      url, url, net::CookieList(), *resource_context_, 0, MSG_ROUTING_NONE);
+      url, url, net::CookieList(), resource_context_, 0, MSG_ROUTING_NONE);
 }
 
 bool SocketStreamDispatcherHost::CanSetCookie(net::SocketStream* request,
@@ -117,7 +117,7 @@ bool SocketStreamDispatcherHost::CanSetCookie(net::SocketStream* request,
                                               const std::string& cookie_line,
                                               net::CookieOptions* options) {
   return content::GetContentClient()->browser()->AllowSetCookie(
-      url, url, cookie_line, *resource_context_, 0, MSG_ROUTING_NONE, options);
+      url, url, cookie_line, resource_context_, 0, MSG_ROUTING_NONE, options);
 }
 
 // Message handlers called by OnMessageReceived.

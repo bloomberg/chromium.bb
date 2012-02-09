@@ -418,7 +418,7 @@ bool DownloadsDownloadFunction::ParseArgs() {
     }
   }
   iodata_->rdh = ResourceDispatcherHost::Get();
-  iodata_->resource_context = &profile()->GetResourceContext();
+  iodata_->resource_context = profile()->GetResourceContext();
   iodata_->render_process_host_id = render_view_host()->process()->GetID();
   iodata_->render_view_host_routing_id = render_view_host()->routing_id();
   return true;
@@ -467,7 +467,7 @@ void DownloadsDownloadFunction::BeginDownloadOnIOThread() {
       base::Bind(&DownloadsDownloadFunction::OnStarted, this),
       iodata_->render_process_host_id,
       iodata_->render_view_host_routing_id,
-      *(iodata_->resource_context));
+      iodata_->resource_context);
   iodata_.reset();
 
   if (error != net::OK) {

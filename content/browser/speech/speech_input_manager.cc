@@ -93,7 +93,7 @@ void SpeechInputManager::ShowAudioInputSettings(AudioManager* audio_manager) {
 
 // static
 void SpeechInputManager::ShowAudioInputSettingsFromUI(
-    const content::ResourceContext* resource_context) {
+    content::ResourceContext* resource_context) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
@@ -101,7 +101,7 @@ void SpeechInputManager::ShowAudioInputSettingsFromUI(
                    base::Unretained(resource_context)));
     return;
   }
-  ShowAudioInputSettings(resource_context->audio_manager());
+  ShowAudioInputSettings(resource_context->GetAudioManager());
 }
 
 void SpeechInputManager::StartRecognition(

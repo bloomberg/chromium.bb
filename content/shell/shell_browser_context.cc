@@ -167,13 +167,13 @@ net::URLRequestContextGetter*
   return GetRequestContext();
 }
 
-const ResourceContext& ShellBrowserContext::GetResourceContext()  {
+ResourceContext* ShellBrowserContext::GetResourceContext()  {
   if (!resource_context_.get()) {
     resource_context_.reset(new ShellResourceContext(
         static_cast<ShellURLRequestContextGetter*>(GetRequestContext()),
         GetBlobStorageContext()));
   }
-  return *resource_context_.get();
+  return resource_context_.get();
 }
 
 HostZoomMap* ShellBrowserContext::GetHostZoomMap()  {
@@ -266,7 +266,7 @@ void ShellBrowserContext::CreateQuotaManagerAndClients() {
         appcache_service_.get(),
         IsOffTheRecord()
             ? FilePath() : GetPath().Append(FILE_PATH_LITERAL("AppCache")),
-        &GetResourceContext(),
+        GetResourceContext(),
         special_storage_policy));
 }
 

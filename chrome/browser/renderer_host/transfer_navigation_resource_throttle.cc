@@ -63,10 +63,8 @@ void TransferNavigationResourceThrottle::WillRedirectRequest(
   // request once the navigation controller properly assigns the right process
   // to host the new URL.
   // TODO(mpcomplete): handle for cases other than extensions (e.g. WebUI).
-  const content::ResourceContext& resource_context = *info->context();
-  ProfileIOData* io_data =
-      reinterpret_cast<ProfileIOData*>(resource_context.GetUserData(NULL));
-
+  content::ResourceContext* resource_context = info->context();
+  ProfileIOData* io_data = ProfileIOData::FromResourceContext(resource_context);
   if (extensions::CrossesExtensionProcessBoundary(
           io_data->GetExtensionInfoMap()->extensions(),
           ExtensionURLInfo(request_->url()), ExtensionURLInfo(new_url))) {

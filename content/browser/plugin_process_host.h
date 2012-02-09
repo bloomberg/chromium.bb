@@ -55,7 +55,7 @@ class CONTENT_EXPORT PluginProcessHost
     // the channel.
     virtual int ID() = 0;
     // Returns the resource context for the renderer requesting the channel.
-    virtual const content::ResourceContext& GetResourceContext() = 0;
+    virtual content::ResourceContext* GetResourceContext() = 0;
     virtual bool OffTheRecord() = 0;
     virtual void SetPluginInfo(const webkit::WebPluginInfo& info) = 0;
     virtual void OnFoundPluginProcessHost(PluginProcessHost* host) = 0;
@@ -92,7 +92,7 @@ class CONTENT_EXPORT PluginProcessHost
 
   // Cancels all pending channel requests for the given resource context.
   static void CancelPendingRequestsForResourceContext(
-      const content::ResourceContext* context);
+      content::ResourceContext* context);
 
   // This function is called to cancel pending requests to open new channels.
   void CancelPendingRequest(Client* client);

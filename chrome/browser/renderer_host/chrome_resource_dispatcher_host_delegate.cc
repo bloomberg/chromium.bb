@@ -92,7 +92,7 @@ bool ChromeResourceDispatcherHostDelegate::ShouldBeginRequest(
     const std::string& method,
     const GURL& url,
     ResourceType::Type resource_type,
-    const content::ResourceContext& resource_context,
+    content::ResourceContext* resource_context,
     const content::Referrer& referrer) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
@@ -132,7 +132,7 @@ bool ChromeResourceDispatcherHostDelegate::ShouldBeginRequest(
 
 void ChromeResourceDispatcherHostDelegate::RequestBeginning(
     net::URLRequest* request,
-    const content::ResourceContext& resource_context,
+    content::ResourceContext* resource_context,
     ResourceType::Type resource_type,
     int child_id,
     int route_id,
@@ -155,15 +155,14 @@ void ChromeResourceDispatcherHostDelegate::RequestBeginning(
     // We check offline first, then check safe browsing so that we still can
     // block unsafe site after we remove offline page.
     throttles->push_back(new OfflineResourceThrottle(
-        child_id, route_id, request, resource_context.appcache_service()));
+        child_id, route_id, request, resource_context->GetAppCacheService()));
 #endif
   }
 
 #if defined(ENABLE_SAFE_BROWSING)
   // Insert safe browsing at the front of the chain, so it gets to decide
   // on policies first.
-  ProfileIOData* io_data = reinterpret_cast<ProfileIOData*>(
-      resource_context.GetUserData(NULL));
+  ProfileIOData* io_data = ProfileIOData::FromResourceContext(resource_context);
   if (io_data->safe_browsing_enabled()->GetValue()) {
     throttles->push_back(CreateSafeBrowsingResourceThrottle(
         request, child_id, route_id,
@@ -174,7 +173,7 @@ void ChromeResourceDispatcherHostDelegate::RequestBeginning(
 
 void ChromeResourceDispatcherHostDelegate::DownloadStarting(
     net::URLRequest* request,
-    const content::ResourceContext& resource_context,
+    content::ResourceContext* resource_context,
     int child_id,
     int route_id,
     int request_id,
@@ -190,8 +189,8 @@ void ChromeResourceDispatcherHostDelegate::DownloadStarting(
   // web, so no need to add the download throttle.
   if (is_new_request) {
 #if defined(ENABLE_SAFE_BROWSING)
-    ProfileIOData* io_data = reinterpret_cast<ProfileIOData*>(
-        resource_context.GetUserData(NULL));
+    ProfileIOData* io_data =
+        ProfileIOData::FromResourceContext(resource_context);
     if (io_data->safe_browsing_enabled()->GetValue()) {
       throttles->push_back(CreateSafeBrowsingResourceThrottle(
           request, child_id, route_id, false));
@@ -205,7 +204,7 @@ void ChromeResourceDispatcherHostDelegate::DownloadStarting(
 
 bool ChromeResourceDispatcherHostDelegate::ShouldDeferStart(
     net::URLRequest* request,
-    const content::ResourceContext& resource_context) {
+    content::ResourceContext* resource_context) {
   ResourceDispatcherHostRequestInfo* info =
       resource_dispatcher_host_->InfoForRequest(request);
   return prerender_tracker_->PotentiallyDelayRequestOnIOThread(

@@ -190,7 +190,7 @@ class Profile : public content::BrowserContext {
   virtual net::URLRequestContextGetter* GetRequestContextForRenderProcess(
       int renderer_child_id) = 0;
   virtual net::URLRequestContextGetter* GetRequestContextForMedia() = 0;
-  virtual const content::ResourceContext& GetResourceContext() = 0;
+  virtual content::ResourceContext* GetResourceContext() = 0;
   virtual content::HostZoomMap* GetHostZoomMap() = 0;
   virtual content::GeolocationPermissionContext*
       GetGeolocationPermissionContext() = 0;

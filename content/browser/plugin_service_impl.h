@@ -76,7 +76,7 @@ class CONTENT_EXPORT PluginServiceImpl
       std::vector<std::string>* actual_mime_types) OVERRIDE;
   virtual bool GetPluginInfo(int render_process_id,
                              int render_view_id,
-                             const content::ResourceContext& context,
+                             content::ResourceContext* context,
                              const GURL& url,
                              const GURL& page_url,
                              const std::string& mime_type,
@@ -181,7 +181,7 @@ class CONTENT_EXPORT PluginServiceImpl
       const GURL& page_url,
       const std::string& mime_type,
       PluginProcessHost::Client* client,
-      const content::ResourceContext* resource_context);
+      content::ResourceContext* resource_context);
 
   // Helper so we can finish opening the channel after looking up the
   // plugin.

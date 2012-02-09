@@ -45,7 +45,7 @@ class CONTENT_EXPORT ChromeAppCacheService
 
   void InitializeOnIOThread(
       const FilePath& cache_path,  // may be empty to use in-memory structures
-      const content::ResourceContext* resource_context,
+      content::ResourceContext* resource_context,
       scoped_refptr<quota::SpecialStoragePolicy> special_storage_policy);
 
  private:
@@ -68,7 +68,7 @@ class CONTENT_EXPORT ChromeAppCacheService
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
-  const content::ResourceContext* resource_context_;
+  content::ResourceContext* resource_context_;
   content::NotificationRegistrar registrar_;
   FilePath cache_path_;
 

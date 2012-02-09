@@ -119,7 +119,7 @@ void SaveFileManager::SaveURL(
     int render_view_id,
     SaveFileCreateInfo::SaveFileSource save_source,
     const FilePath& file_full_path,
-    const content::ResourceContext& context,
+    content::ResourceContext* context,
     SavePackage* save_package) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -131,7 +131,7 @@ void SaveFileManager::SaveURL(
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         base::Bind(&SaveFileManager::OnSaveURL, this, url, referrer,
-            render_process_host_id, render_view_id, &context));
+            render_process_host_id, render_view_id, context));
   } else {
     // We manually start the save job.
     SaveFileCreateInfo* info = new SaveFileCreateInfo(file_full_path,
@@ -356,13 +356,13 @@ void SaveFileManager::OnSaveURL(
     const GURL& referrer,
     int render_process_host_id,
     int render_view_id,
-    const content::ResourceContext* context) {
+    content::ResourceContext* context) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   resource_dispatcher_host_->BeginSaveFile(url,
                                            referrer,
                                            render_process_host_id,
                                            render_view_id,
-                                           *context);
+                                           context);
 }
 
 void SaveFileManager::OnRequireSaveJobFromOtherSource(

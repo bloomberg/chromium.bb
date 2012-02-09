@@ -91,7 +91,7 @@ class InProcessBrowserTest : public BrowserTestBase {
 
   // Returns the ResourceContext from browser_. Needed because tests in content
   // don't have access to Profile.
-  const content::ResourceContext& GetResourceContext();
+  content::ResourceContext* GetResourceContext();
 
   // Convenience methods for adding tabs to a Browser.
   void AddTabAtIndexToBrowser(Browser* browser,

@@ -56,35 +56,35 @@ class ShellContentBrowserClient : public ContentBrowserClient {
   virtual SkBitmap* GetDefaultFavicon() OVERRIDE;
   virtual bool AllowAppCache(const GURL& manifest_url,
                              const GURL& first_party,
-                             const content::ResourceContext& context) OVERRIDE;
+                             content::ResourceContext* context) OVERRIDE;
   virtual bool AllowGetCookie(const GURL& url,
                               const GURL& first_party,
                               const net::CookieList& cookie_list,
-                              const content::ResourceContext& context,
+                              content::ResourceContext* context,
                               int render_process_id,
                               int render_view_id) OVERRIDE;
   virtual bool AllowSetCookie(const GURL& url,
                               const GURL& first_party,
                               const std::string& cookie_line,
-                              const content::ResourceContext& context,
+                              content::ResourceContext* context,
                               int render_process_id,
                               int render_view_id,
                               net::CookieOptions* options) OVERRIDE;
   virtual bool AllowSaveLocalState(
-      const content::ResourceContext& context) OVERRIDE;
+      content::ResourceContext* context) OVERRIDE;
   virtual bool AllowWorkerDatabase(
       const GURL& url,
       const string16& name,
       const string16& display_name,
       unsigned long estimated_size,
-      const content::ResourceContext& context,
+      content::ResourceContext* context,
       const std::vector<std::pair<int, int> >& render_views) OVERRIDE;
   virtual bool AllowWorkerFileSystem(
       const GURL& url,
-      const content::ResourceContext& context,
+      content::ResourceContext* context,
       const std::vector<std::pair<int, int> >& render_views) OVERRIDE;
   virtual net::URLRequestContext* OverrideRequestContextForURL(
-      const GURL& url, const content::ResourceContext& context) OVERRIDE;
+      const GURL& url, content::ResourceContext* context) OVERRIDE;
   virtual QuotaPermissionContext* CreateQuotaPermissionContext() OVERRIDE;
   virtual void OpenItem(const FilePath& path) OVERRIDE;
   virtual void ShowItemInFolder(const FilePath& path) OVERRIDE;
@@ -110,7 +110,7 @@ class ShellContentBrowserClient : public ContentBrowserClient {
   virtual WebKit::WebNotificationPresenter::Permission
       CheckDesktopNotificationPermission(
           const GURL& origin,
-          const content::ResourceContext& context,
+          content::ResourceContext* context,
           int render_process_id) OVERRIDE;
   virtual void ShowDesktopNotification(
       const content::ShowDesktopNotificationHostMsgParams& params,
@@ -124,10 +124,10 @@ class ShellContentBrowserClient : public ContentBrowserClient {
   virtual bool CanCreateWindow(
       const GURL& origin,
       WindowContainerType container_type,
-      const content::ResourceContext& context,
+      content::ResourceContext* context,
       int render_process_id) OVERRIDE;
   virtual std::string GetWorkerProcessTitle(
-      const GURL& url, const content::ResourceContext& context) OVERRIDE;
+      const GURL& url, content::ResourceContext* context) OVERRIDE;
   virtual void ResourceDispatcherHostCreated() OVERRIDE;
   virtual ui::Clipboard* GetClipboard() OVERRIDE;
   virtual MHTMLGenerationManager* GetMHTMLGenerationManager() OVERRIDE;

@@ -722,10 +722,9 @@ SkBitmap* ChromeContentBrowserClient::GetDefaultFavicon() {
 bool ChromeContentBrowserClient::AllowAppCache(
     const GURL& manifest_url,
     const GURL& first_party,
-    const content::ResourceContext& context) {
+    content::ResourceContext* context) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  ProfileIOData* io_data =
-      reinterpret_cast<ProfileIOData*>(context.GetUserData(NULL));
+  ProfileIOData* io_data = ProfileIOData::FromResourceContext(context);
   return io_data->GetCookieSettings()->
       IsSettingCookieAllowed(manifest_url, first_party);
 }
@@ -734,12 +733,11 @@ bool ChromeContentBrowserClient::AllowGetCookie(
     const GURL& url,
     const GURL& first_party,
     const net::CookieList& cookie_list,
-    const content::ResourceContext& context,
+    content::ResourceContext* context,
     int render_process_id,
     int render_view_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  ProfileIOData* io_data =
-      reinterpret_cast<ProfileIOData*>(context.GetUserData(NULL));
+  ProfileIOData* io_data = ProfileIOData::FromResourceContext(context);
   bool allow = io_data->GetCookieSettings()->
       IsReadingCookieAllowed(url, first_party);
 
@@ -754,14 +752,12 @@ bool ChromeContentBrowserClient::AllowSetCookie(
     const GURL& url,
     const GURL& first_party,
     const std::string& cookie_line,
-    const content::ResourceContext& context,
+    content::ResourceContext* context,
     int render_process_id,
     int render_view_id,
     net::CookieOptions* options) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  ProfileIOData* io_data =
-      reinterpret_cast<ProfileIOData*>(context.GetUserData(NULL));
-
+  ProfileIOData* io_data = ProfileIOData::FromResourceContext(context);
   CookieSettings* cookie_settings = io_data->GetCookieSettings();
   bool allow = cookie_settings->IsSettingCookieAllowed(url, first_party);
 
@@ -776,10 +772,9 @@ bool ChromeContentBrowserClient::AllowSetCookie(
 }
 
 bool ChromeContentBrowserClient::AllowSaveLocalState(
-    const content::ResourceContext& context) {
+    content::ResourceContext* context) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  ProfileIOData* io_data =
-      reinterpret_cast<ProfileIOData*>(context.GetUserData(NULL));
+  ProfileIOData* io_data = ProfileIOData::FromResourceContext(context);
   return !io_data->clear_local_state_on_exit()->GetValue();
 }
 
@@ -788,11 +783,10 @@ bool ChromeContentBrowserClient::AllowWorkerDatabase(
     const string16& name,
     const string16& display_name,
     unsigned long estimated_size,
-    const content::ResourceContext& context,
+    content::ResourceContext* context,
     const std::vector<std::pair<int, int> >& render_views) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  ProfileIOData* io_data = reinterpret_cast<ProfileIOData*>(
-      context.GetUserData(NULL));
+  ProfileIOData* io_data = ProfileIOData::FromResourceContext(context);
   CookieSettings* cookie_settings = io_data->GetCookieSettings();
   bool allow = cookie_settings->IsSettingCookieAllowed(url, url);
 
@@ -810,11 +804,10 @@ bool ChromeContentBrowserClient::AllowWorkerDatabase(
 
 bool ChromeContentBrowserClient::AllowWorkerFileSystem(
     const GURL& url,
-    const content::ResourceContext& context,
+    content::ResourceContext* context,
     const std::vector<std::pair<int, int> >& render_views) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  ProfileIOData* io_data = reinterpret_cast<ProfileIOData*>(
-      context.GetUserData(NULL));
+  ProfileIOData* io_data = ProfileIOData::FromResourceContext(context);
   CookieSettings* cookie_settings = io_data->GetCookieSettings();
   bool allow = cookie_settings->IsSettingCookieAllowed(url, url);
 
@@ -832,11 +825,10 @@ bool ChromeContentBrowserClient::AllowWorkerFileSystem(
 
 net::URLRequestContext*
 ChromeContentBrowserClient::OverrideRequestContextForURL(
-    const GURL& url, const content::ResourceContext& context) {
+    const GURL& url, content::ResourceContext* context) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (url.SchemeIs(chrome::kExtensionScheme)) {
-    ProfileIOData* io_data =
-        reinterpret_cast<ProfileIOData*>(context.GetUserData(NULL));
+    ProfileIOData* io_data = ProfileIOData::FromResourceContext(context);
     return io_data->extensions_request_context();
   }
 
@@ -975,12 +967,10 @@ void ChromeContentBrowserClient::RequestDesktopNotificationPermission(
 WebKit::WebNotificationPresenter::Permission
     ChromeContentBrowserClient::CheckDesktopNotificationPermission(
         const GURL& source_origin,
-        const content::ResourceContext& context,
+        content::ResourceContext* context,
         int render_process_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  ProfileIOData* io_data =
-      reinterpret_cast<ProfileIOData*>(context.GetUserData(NULL));
-
+  ProfileIOData* io_data = ProfileIOData::FromResourceContext(context);
   if (io_data->GetExtensionInfoMap()->SecurityOriginHasAPIPermission(
         source_origin, render_process_id,
         ExtensionAPIPermission::kNotification))
@@ -1037,14 +1027,13 @@ void ChromeContentBrowserClient::CancelDesktopNotification(
 bool ChromeContentBrowserClient::CanCreateWindow(
     const GURL& source_origin,
     WindowContainerType container_type,
-    const content::ResourceContext& context,
+    content::ResourceContext* context,
     int render_process_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   // If the opener is trying to create a background window but doesn't have
   // the appropriate permission, fail the attempt.
   if (container_type == WINDOW_CONTAINER_TYPE_BACKGROUND) {
-    ProfileIOData* io_data =
-        reinterpret_cast<ProfileIOData*>(context.GetUserData(NULL));
+    ProfileIOData* io_data = ProfileIOData::FromResourceContext(context);
     return io_data->GetExtensionInfoMap()->SecurityOriginHasAPIPermission(
         source_origin, render_process_id, ExtensionAPIPermission::kBackground);
   }
@@ -1052,12 +1041,11 @@ bool ChromeContentBrowserClient::CanCreateWindow(
 }
 
 std::string ChromeContentBrowserClient::GetWorkerProcessTitle(
-    const GURL& url, const content::ResourceContext& context) {
+    const GURL& url, content::ResourceContext* context) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   // Check if it's an extension-created worker, in which case we want to use
   // the name of the extension.
-  ProfileIOData* io_data =
-      reinterpret_cast<ProfileIOData*>(context.GetUserData(NULL));
+  ProfileIOData* io_data = ProfileIOData::FromResourceContext(context);
   const Extension* extension =
       io_data->GetExtensionInfoMap()->extensions().GetByID(url.host());
   return extension ? extension->name() : std::string();

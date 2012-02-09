@@ -61,7 +61,7 @@ class PluginInfoMessageFilter : public content::BrowserMessageFilter {
 
    private:
     int render_process_id_;
-    const content::ResourceContext* resource_context_;
+    content::ResourceContext* resource_context_;
     const HostContentSettingsMap* host_content_settings_map_;
 
     BooleanPrefMember allow_outdated_plugins_;

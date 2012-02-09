@@ -55,7 +55,7 @@ class ResourceDispatcherHostRequestInfo : public net::URLRequest::UserData {
       bool allow_download,
       bool has_user_gesture,
       WebKit::WebReferrerPolicy referrer_policy,
-      const content::ResourceContext* context);
+      content::ResourceContext* context);
   virtual ~ResourceDispatcherHostRequestInfo();
 
   // Top-level ResourceHandler servicing this request.
@@ -188,7 +188,7 @@ class ResourceDispatcherHostRequestInfo : public net::URLRequest::UserData {
 
   WebKit::WebReferrerPolicy referrer_policy() const { return referrer_policy_; }
 
-  const content::ResourceContext* context() const { return context_; }
+  content::ResourceContext* context() const { return context_; }
 
  private:
   friend class ResourceDispatcherHost;
@@ -252,7 +252,7 @@ class ResourceDispatcherHostRequestInfo : public net::URLRequest::UserData {
   int memory_cost_;
   scoped_refptr<webkit_blob::BlobData> requested_blob_data_;
   WebKit::WebReferrerPolicy referrer_policy_;
-  const content::ResourceContext* context_;
+  content::ResourceContext* context_;
 
   // "Private" data accessible only to ResourceDispatcherHost (use the
   // accessors above for consistency).

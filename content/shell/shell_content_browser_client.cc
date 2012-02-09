@@ -127,7 +127,7 @@ SkBitmap* ShellContentBrowserClient::GetDefaultFavicon() {
 bool ShellContentBrowserClient::AllowAppCache(
     const GURL& manifest_url,
     const GURL& first_party,
-    const content::ResourceContext& context) {
+    content::ResourceContext* context) {
   return true;
 }
 
@@ -135,7 +135,7 @@ bool ShellContentBrowserClient::AllowGetCookie(
     const GURL& url,
     const GURL& first_party,
     const net::CookieList& cookie_list,
-    const content::ResourceContext& context,
+    content::ResourceContext* context,
     int render_process_id,
     int render_view_id) {
   return true;
@@ -145,7 +145,7 @@ bool ShellContentBrowserClient::AllowSetCookie(
     const GURL& url,
     const GURL& first_party,
     const std::string& cookie_line,
-    const content::ResourceContext& context,
+    content::ResourceContext* context,
     int render_process_id,
     int render_view_id,
     net::CookieOptions* options) {
@@ -153,7 +153,7 @@ bool ShellContentBrowserClient::AllowSetCookie(
 }
 
 bool ShellContentBrowserClient::AllowSaveLocalState(
-    const content::ResourceContext& context) {
+    content::ResourceContext* context) {
   return true;
 }
 
@@ -162,14 +162,14 @@ bool ShellContentBrowserClient::AllowWorkerDatabase(
     const string16& name,
     const string16& display_name,
     unsigned long estimated_size,
-    const content::ResourceContext& context,
+    content::ResourceContext* context,
     const std::vector<std::pair<int, int> >& render_views) {
   return true;
 }
 
 bool ShellContentBrowserClient::AllowWorkerFileSystem(
     const GURL& url,
-    const content::ResourceContext& context,
+    content::ResourceContext* context,
     const std::vector<std::pair<int, int> >& render_views) {
   return true;
 }
@@ -180,7 +180,7 @@ QuotaPermissionContext*
 }
 
 net::URLRequestContext* ShellContentBrowserClient::OverrideRequestContextForURL(
-    const GURL& url, const content::ResourceContext& context) {
+    const GURL& url, content::ResourceContext* context) {
   return NULL;
 }
 
@@ -219,7 +219,7 @@ void ShellContentBrowserClient::RequestDesktopNotificationPermission(
 WebKit::WebNotificationPresenter::Permission
     ShellContentBrowserClient::CheckDesktopNotificationPermission(
         const GURL& source_origin,
-        const content::ResourceContext& context,
+        content::ResourceContext* context,
         int render_process_id) {
   return WebKit::WebNotificationPresenter::PermissionAllowed;
 }
@@ -240,13 +240,13 @@ void ShellContentBrowserClient::CancelDesktopNotification(
 bool ShellContentBrowserClient::CanCreateWindow(
     const GURL& origin,
     WindowContainerType container_type,
-    const content::ResourceContext& context,
+    content::ResourceContext* context,
     int render_process_id) {
   return true;
 }
 
 std::string ShellContentBrowserClient::GetWorkerProcessTitle(
-    const GURL& url, const content::ResourceContext& context) {
+    const GURL& url, content::ResourceContext* context) {
   return std::string();
 }
 

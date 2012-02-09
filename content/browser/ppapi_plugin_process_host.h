@@ -50,7 +50,7 @@ class PpapiPluginProcessHost : public content::BrowserChildProcessHostDelegate,
   class PluginClient : public Client {
    public:
     // Returns the resource context for the renderer requesting the channel.
-    virtual const content::ResourceContext* GetResourceContext() = 0;
+    virtual content::ResourceContext* GetResourceContext() = 0;
   };
 
   class BrokerClient : public Client {

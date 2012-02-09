@@ -38,8 +38,7 @@ struct VideoCaptureHost::Entry {
   video_capture::State state;
 };
 
-VideoCaptureHost::VideoCaptureHost(
-    const content::ResourceContext* resource_context)
+VideoCaptureHost::VideoCaptureHost(content::ResourceContext* resource_context)
     : resource_context_(resource_context) {
 }
 
@@ -286,5 +285,5 @@ void VideoCaptureHost::DoDeleteVideoCaptureController(
 
 media_stream::VideoCaptureManager* VideoCaptureHost::GetVideoCaptureManager() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  return resource_context_->media_stream_manager()->video_capture_manager();
+  return resource_context_->GetMediaStreamManager()->video_capture_manager();
 }

@@ -135,7 +135,7 @@ class DownloadsDownloadFunction : public AsyncDownloadsFunction {
     std::string method;
     std::string post_body;
     ResourceDispatcherHost* rdh;
-    const content::ResourceContext* resource_context;
+    content::ResourceContext* resource_context;
     int render_process_host_id;
     int render_view_host_routing_id;
   };

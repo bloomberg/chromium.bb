@@ -56,7 +56,6 @@ ChromeRenderMessageFilter::ChromeRenderMessageFilter(
       request_context_(request_context),
       extension_info_map_(profile->GetExtensionInfoMap()),
       cookie_settings_(CookieSettings::GetForProfile(profile)),
-      resource_context_(profile->GetResourceContext()),
       weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
 }
 

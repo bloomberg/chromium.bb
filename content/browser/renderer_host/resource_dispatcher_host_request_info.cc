@@ -27,7 +27,7 @@ ResourceDispatcherHostRequestInfo::ResourceDispatcherHostRequestInfo(
     bool allow_download,
     bool has_user_gesture,
     WebKit::WebReferrerPolicy referrer_policy,
-    const content::ResourceContext* context)
+    content::ResourceContext* context)
     : resource_handler_(handler),
       cross_site_handler_(NULL),
       process_type_(process_type),

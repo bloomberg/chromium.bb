@@ -12,14 +12,14 @@ bool ResourceDispatcherHostDelegate::ShouldBeginRequest(
     const std::string& method,
     const GURL& url,
     ResourceType::Type resource_type,
-    const ResourceContext& resource_context,
+    ResourceContext* resource_context,
     const Referrer& referrer) {
   return true;
 }
 
 void ResourceDispatcherHostDelegate::RequestBeginning(
     net::URLRequest* request,
-    const ResourceContext& resource_context,
+    ResourceContext* resource_context,
     ResourceType::Type resource_type,
     int child_id,
     int route_id,
@@ -29,7 +29,7 @@ void ResourceDispatcherHostDelegate::RequestBeginning(
 
 void ResourceDispatcherHostDelegate::DownloadStarting(
     net::URLRequest* request,
-    const ResourceContext& resource_context,
+    ResourceContext* resource_context,
     int child_id,
     int route_id,
     int request_id,
@@ -39,7 +39,7 @@ void ResourceDispatcherHostDelegate::DownloadStarting(
 
 bool ResourceDispatcherHostDelegate::ShouldDeferStart(
     net::URLRequest* request,
-    const ResourceContext& resource_context) {
+    ResourceContext* resource_context) {
   return false;
 }
 

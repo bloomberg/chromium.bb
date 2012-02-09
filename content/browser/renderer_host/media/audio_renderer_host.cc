@@ -29,7 +29,7 @@ AudioRendererHost::AudioEntry::~AudioEntry() {}
 ///////////////////////////////////////////////////////////////////////////////
 // AudioRendererHost implementations.
 AudioRendererHost::AudioRendererHost(
-    const content::ResourceContext* resource_context)
+    content::ResourceContext* resource_context)
     : resource_context_(resource_context),
       media_observer_(NULL) {
 }
@@ -229,7 +229,7 @@ void AudioRendererHost::OnCreateStream(
   // entry and construct an AudioOutputController.
   entry->reader.reset(reader.release());
   entry->controller = media::AudioOutputController::Create(
-      resource_context_->audio_manager(), this, audio_params,
+      resource_context_->GetAudioManager(), this, audio_params,
       entry->reader.get());
 
   if (!entry->controller) {
@@ -391,6 +391,6 @@ AudioRendererHost::AudioEntry* AudioRendererHost::LookupByController(
 MediaObserver* AudioRendererHost::media_observer() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (!media_observer_)
-    media_observer_ = resource_context_->media_observer();
+    media_observer_ = resource_context_->GetMediaObserver();
   return media_observer_;
 }

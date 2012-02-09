@@ -17,11 +17,64 @@ MockResourceContext* MockResourceContext::GetInstance() {
 }
 
 MockResourceContext::MockResourceContext()
-    : test_request_context_(new TestURLRequestContext) {
-  set_request_context(test_request_context_);
+    : test_request_context_(new TestURLRequestContext),
+      media_observer_(NULL),
+      media_stream_manager_(NULL),
+      audio_manager_(NULL) {
 }
+
+MockResourceContext::MockResourceContext(net::URLRequestContext* context)
+    : test_request_context_(context),
+      media_observer_(NULL),
+      media_stream_manager_(NULL),
+      audio_manager_(NULL) {
+}
+
 MockResourceContext::~MockResourceContext() {}
 
-void MockResourceContext::EnsureInitialized() const {}
+net::HostResolver* MockResourceContext::GetHostResolver()  {
+  return NULL;
+}
+
+net::URLRequestContext* MockResourceContext::GetRequestContext()  {
+  return test_request_context_;
+}
+
+ChromeAppCacheService* MockResourceContext::GetAppCacheService()  {
+  return NULL;
+}
+
+webkit_database::DatabaseTracker* MockResourceContext::GetDatabaseTracker()  {
+  return NULL;
+}
+
+fileapi::FileSystemContext* MockResourceContext::GetFileSystemContext()  {
+  return NULL;
+}
+
+ChromeBlobStorageContext* MockResourceContext::GetBlobStorageContext()  {
+  return NULL;
+}
+
+quota::QuotaManager* MockResourceContext::GetQuotaManager()  {
+  return NULL;
+}
+
+HostZoomMap* MockResourceContext::GetHostZoomMap()  {
+  return NULL;
+}
+
+MediaObserver* MockResourceContext::GetMediaObserver()  {
+  return media_observer_;
+}
+
+media_stream::MediaStreamManager*
+    MockResourceContext::GetMediaStreamManager() {
+  return media_stream_manager_;
+}
+
+AudioManager* MockResourceContext::GetAudioManager() {
+  return audio_manager_;
+}
 
 }  // namespace content

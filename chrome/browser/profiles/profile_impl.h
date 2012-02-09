@@ -54,7 +54,7 @@ class ProfileImpl : public Profile,
   virtual net::URLRequestContextGetter* GetRequestContextForRenderProcess(
       int renderer_child_id) OVERRIDE;
   virtual net::URLRequestContextGetter* GetRequestContextForMedia() OVERRIDE;
-  virtual const content::ResourceContext& GetResourceContext() OVERRIDE;
+  virtual content::ResourceContext* GetResourceContext() OVERRIDE;
   virtual content::HostZoomMap* GetHostZoomMap() OVERRIDE;
   virtual content::GeolocationPermissionContext*
       GetGeolocationPermissionContext() OVERRIDE;

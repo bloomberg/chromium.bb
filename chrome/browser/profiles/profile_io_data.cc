@@ -296,6 +296,12 @@ ProfileIOData::~ProfileIOData() {
 }
 
 // static
+ProfileIOData* ProfileIOData::FromResourceContext(
+    content::ResourceContext* rc) {
+  return (static_cast<ResourceContext*>(rc))->io_data_;
+}
+
+// static
 bool ProfileIOData::IsHandledProtocol(const std::string& scheme) {
   DCHECK_EQ(scheme, StringToLowerASCII(scheme));
   static const char* const kProtocolList[] = {
@@ -324,8 +330,8 @@ bool ProfileIOData::IsHandledURL(const GURL& url) {
   return IsHandledProtocol(url.scheme());
 }
 
-const content::ResourceContext& ProfileIOData::GetResourceContext() const {
-  return resource_context_;
+content::ResourceContext* ProfileIOData::GetResourceContext() const {
+  return &resource_context_;
 }
 
 ChromeURLDataManagerBackend*
@@ -387,15 +393,84 @@ DesktopNotificationService* ProfileIOData::GetNotificationService() const {
   return notification_service_;
 }
 
-ProfileIOData::ResourceContext::ResourceContext(const ProfileIOData* io_data)
+ProfileIOData::ResourceContext::ResourceContext(ProfileIOData* io_data)
     : io_data_(io_data) {
   DCHECK(io_data);
 }
 
 ProfileIOData::ResourceContext::~ResourceContext() {}
 
-void ProfileIOData::ResourceContext::EnsureInitialized() const {
+void ProfileIOData::ResourceContext::EnsureInitialized() {
   io_data_->LazyInitialize();
+}
+
+net::HostResolver* ProfileIOData::ResourceContext::GetHostResolver()  {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  EnsureInitialized();
+  return host_resolver_;
+}
+
+net::URLRequestContext* ProfileIOData::ResourceContext::GetRequestContext()  {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  EnsureInitialized();
+  return request_context_;
+}
+
+ChromeAppCacheService* ProfileIOData::ResourceContext::GetAppCacheService()  {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  EnsureInitialized();
+  return appcache_service_;
+}
+
+webkit_database::DatabaseTracker*
+    ProfileIOData::ResourceContext::GetDatabaseTracker()  {
+  EnsureInitialized();
+  return database_tracker_;
+}
+
+fileapi::FileSystemContext*
+    ProfileIOData::ResourceContext::GetFileSystemContext()  {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  EnsureInitialized();
+  return file_system_context_;
+}
+
+ChromeBlobStorageContext*
+    ProfileIOData::ResourceContext::GetBlobStorageContext()  {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  EnsureInitialized();
+  return blob_storage_context_;
+}
+
+quota::QuotaManager* ProfileIOData::ResourceContext::GetQuotaManager()  {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  EnsureInitialized();
+  return quota_manager_;
+}
+
+content::HostZoomMap* ProfileIOData::ResourceContext::GetHostZoomMap()  {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  EnsureInitialized();
+  return host_zoom_map_;
+}
+
+MediaObserver* ProfileIOData::ResourceContext::GetMediaObserver()  {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  EnsureInitialized();
+  return media_observer_;
+}
+
+media_stream::MediaStreamManager*
+    ProfileIOData::ResourceContext::GetMediaStreamManager() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  EnsureInitialized();
+  return media_stream_manager_;
+}
+
+AudioManager* ProfileIOData::ResourceContext::GetAudioManager() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  EnsureInitialized();
+  return audio_manager_;
 }
 
 void ProfileIOData::LazyInitialize() const {
@@ -505,19 +580,18 @@ void ProfileIOData::LazyInitialize() const {
   notification_service_ = profile_params_->notification_service;
   extension_info_map_ = profile_params_->extension_info_map;
 
-  resource_context_.set_host_resolver(io_thread_globals->host_resolver.get());
-  resource_context_.set_request_context(main_request_context_);
-  resource_context_.set_database_tracker(database_tracker_);
-  resource_context_.set_appcache_service(appcache_service_);
-  resource_context_.set_blob_storage_context(blob_storage_context_);
-  resource_context_.set_file_system_context(file_system_context_);
-  resource_context_.set_quota_manager(quota_manager_);
-  resource_context_.set_host_zoom_map(host_zoom_map_);
-  resource_context_.SetUserData(NULL, const_cast<ProfileIOData*>(this));
-  resource_context_.set_media_observer(
-      io_thread_globals->media.media_internals.get());
-  resource_context_.set_media_stream_manager(media_stream_manager_.get());
-  resource_context_.set_audio_manager(profile_params_->audio_manager);
+  resource_context_.host_resolver_ = io_thread_globals->host_resolver.get();
+  resource_context_.request_context_ = main_request_context_;
+  resource_context_.database_tracker_ = database_tracker_;
+  resource_context_.appcache_service_ = appcache_service_;
+  resource_context_.blob_storage_context_ = blob_storage_context_;
+  resource_context_.file_system_context_ = file_system_context_;
+  resource_context_.quota_manager_ = quota_manager_;
+  resource_context_.host_zoom_map_ = host_zoom_map_;
+  resource_context_.media_observer_ =
+      io_thread_globals->media.media_internals.get();
+  resource_context_.media_stream_manager_ = media_stream_manager_.get();
+  resource_context_.audio_manager_ = profile_params_->audio_manager;
 
   LazyInitializeInternal(profile_params_.get());
 

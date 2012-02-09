@@ -409,7 +409,7 @@ void ProfileImpl::DoFinalInit() {
 
   ChromePluginServiceFilter::GetInstance()->RegisterResourceContext(
       PluginPrefs::GetForProfile(this),
-      &io_data_.GetResourceContextNoInit());
+      io_data_.GetResourceContextNoInit());
 
   // Creation has been finished.
   if (delegate_)
@@ -565,7 +565,7 @@ ProfileImpl::~ProfileImpl() {
   pref_change_registrar_.RemoveAll();
 
   ChromePluginServiceFilter::GetInstance()->UnregisterResourceContext(
-      &io_data_.GetResourceContextNoInit());
+      io_data_.GetResourceContextNoInit());
 
   if (io_data_.HasMainRequestContext() &&
       default_request_context_ == GetRequestContext()) {
@@ -842,7 +842,7 @@ net::URLRequestContextGetter* ProfileImpl::GetRequestContextForMedia() {
   return io_data_.GetMediaRequestContextGetter();
 }
 
-const content::ResourceContext& ProfileImpl::GetResourceContext() {
+content::ResourceContext* ProfileImpl::GetResourceContext() {
   return io_data_.GetResourceContext();
 }
 
@@ -1245,7 +1245,7 @@ void ProfileImpl::CreateQuotaManagerAndClients() {
                  appcache_service_.get(),
                  IsOffTheRecord()
                      ? FilePath() : GetPath().Append(chrome::kAppCacheDirname),
-                 &io_data_.GetResourceContextNoInit(),
+                 io_data_.GetResourceContextNoInit(),
                  make_scoped_refptr(GetExtensionSpecialStoragePolicy())));
 }
 

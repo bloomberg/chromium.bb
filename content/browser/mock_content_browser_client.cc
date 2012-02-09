@@ -102,7 +102,7 @@ SkBitmap* MockContentBrowserClient::GetDefaultFavicon() {
 
 bool MockContentBrowserClient::AllowAppCache(
     const GURL& manifest_url, const GURL& first_party,
-    const content::ResourceContext& context) {
+    content::ResourceContext* context) {
   return true;
 }
 
@@ -110,7 +110,7 @@ bool MockContentBrowserClient::AllowGetCookie(
     const GURL& url,
     const GURL& first_party,
     const net::CookieList& cookie_list,
-    const content::ResourceContext& context,
+    content::ResourceContext* context,
     int render_process_id,
     int render_view_id) {
   return true;
@@ -120,7 +120,7 @@ bool MockContentBrowserClient::AllowSetCookie(
     const GURL& url,
     const GURL& first_party,
     const std::string& cookie_line,
-    const content::ResourceContext& context,
+    content::ResourceContext* context,
     int render_process_id,
     int render_view_id,
     net::CookieOptions* options) {
@@ -128,7 +128,7 @@ bool MockContentBrowserClient::AllowSetCookie(
 }
 
 bool MockContentBrowserClient::AllowSaveLocalState(
-    const content::ResourceContext& context) {
+    content::ResourceContext* context) {
   return true;
 }
 
@@ -137,14 +137,14 @@ bool MockContentBrowserClient::AllowWorkerDatabase(
     const string16& name,
     const string16& display_name,
     unsigned long estimated_size,
-    const content::ResourceContext& context,
+    content::ResourceContext* context,
     const std::vector<std::pair<int, int> >& render_views) {
   return true;
 }
 
 bool MockContentBrowserClient::AllowWorkerFileSystem(
     const GURL& url,
-    const content::ResourceContext& context,
+    content::ResourceContext* context,
     const std::vector<std::pair<int, int> >& render_views) {
   return true;
 }
@@ -155,7 +155,7 @@ QuotaPermissionContext*
 }
 
 net::URLRequestContext* MockContentBrowserClient::OverrideRequestContextForURL(
-    const GURL& url, const content::ResourceContext& context) {
+    const GURL& url, content::ResourceContext* context) {
   return NULL;
 }
 
@@ -194,7 +194,7 @@ void MockContentBrowserClient::RequestDesktopNotificationPermission(
 WebKit::WebNotificationPresenter::Permission
     MockContentBrowserClient::CheckDesktopNotificationPermission(
         const GURL& source_origin,
-        const content::ResourceContext& context,
+        content::ResourceContext* context,
         int render_process_id) {
   return WebKit::WebNotificationPresenter::PermissionAllowed;
 }
@@ -215,13 +215,13 @@ void MockContentBrowserClient::CancelDesktopNotification(
 bool MockContentBrowserClient::CanCreateWindow(
     const GURL& source_origin,
     WindowContainerType container_type,
-    const content::ResourceContext& context,
+    content::ResourceContext* context,
     int render_process_id) {
   return true;
 }
 
 std::string MockContentBrowserClient::GetWorkerProcessTitle(
-    const GURL& url, const content::ResourceContext& context) {
+    const GURL& url, content::ResourceContext* context) {
   return std::string();
 }
 

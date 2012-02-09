@@ -25,8 +25,7 @@ namespace content {
 
 class CONTENT_EXPORT PluginDataRemover {
  public:
-  static PluginDataRemover* Create(
-      const content::ResourceContext& resource_context);
+  static PluginDataRemover* Create(content::ResourceContext* resource_context);
   virtual ~PluginDataRemover() {}
 
   // Starts removing plug-in data stored since |begin_time|.

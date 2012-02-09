@@ -12,6 +12,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/test/test_timeouts.h"
 #include "base/win/scoped_com_initializer.h"
+#include "content/browser/mock_resource_context.h"
 #include "content/browser/renderer_host/media/audio_input_renderer_host.h"
 #include "content/browser/renderer_host/media/audio_renderer_host.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
@@ -79,16 +80,6 @@ class ReplaceContentClientRenderer {
 
 namespace {
 
-class WebRTCMockResourceContext : public content::ResourceContext {
- public:
-  WebRTCMockResourceContext() {}
-  virtual ~WebRTCMockResourceContext() {}
-  virtual void EnsureInitialized() const OVERRIDE {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(WebRTCMockResourceContext);
-};
-
 ACTION_P(QuitMessageLoop, loop_or_proxy) {
   loop_or_proxy->PostTask(FROM_HERE, MessageLoop::QuitClosure());
 }
@@ -113,7 +104,7 @@ void WebRTCAudioDeviceTest::SetUp() {
                                                   MessageLoop::current()));
 
   // Construct the resource context on the UI thread.
-  resource_context_.reset(new WebRTCMockResourceContext());
+  resource_context_.reset(new content::MockResourceContext(NULL));
 
   static const char kThreadName[] = "RenderThread";
   ChildProcess::current()->io_message_loop()->PostTask(FROM_HERE,

@@ -34,7 +34,7 @@ class SpeechInputExtensionInterface {
   virtual void StartRecording(
       speech_input::SpeechRecognizerDelegate* delegate,
       net::URLRequestContextGetter* context_getter,
-      const content::ResourceContext* resource_context,
+      content::ResourceContext* resource_context,
       int caller_id,
       const std::string& language,
       const std::string& grammar,
@@ -42,9 +42,9 @@ class SpeechInputExtensionInterface {
 
   virtual void StopRecording(bool recognition_failed) = 0;
   virtual bool HasAudioInputDevices(
-      const content::ResourceContext* resource_context) = 0;
+      content::ResourceContext* resource_context) = 0;
   virtual bool IsRecordingInProcess(
-      const content::ResourceContext* resource_context) = 0;
+      content::ResourceContext* resource_context) = 0;
 
   // Called from the UI thread.
   virtual bool HasValidRecognizer() = 0;
@@ -141,15 +141,15 @@ class SpeechInputExtensionManager
  private:
   // SpeechInputExtensionInterface methods:
   virtual bool IsRecordingInProcess(
-      const content::ResourceContext* resource_context) OVERRIDE;
+      content::ResourceContext* resource_context) OVERRIDE;
   virtual bool HasAudioInputDevices(
-      const content::ResourceContext* resource_context) OVERRIDE;
+      content::ResourceContext* resource_context) OVERRIDE;
   virtual bool HasValidRecognizer() OVERRIDE;
 
   virtual void StartRecording(
       speech_input::SpeechRecognizerDelegate* delegate,
       net::URLRequestContextGetter* context_getter,
-      const content::ResourceContext* resource_context,
+      content::ResourceContext* resource_context,
       int caller_id,
       const std::string& language,
       const std::string& grammar,
@@ -160,13 +160,13 @@ class SpeechInputExtensionManager
   // Internal methods.
   void StartOnIOThread(
       net::URLRequestContextGetter* context_getter,
-      const content::ResourceContext* resource_context,
+      content::ResourceContext* resource_context,
       const std::string& language,
       const std::string& grammar,
       bool filter_profanities);
   void ForceStopOnIOThread();
   void IsRecordingOnIOThread(const IsRecordingCallback& callback,
-                             const content::ResourceContext* resource_context);
+                             content::ResourceContext* resource_context);
 
   void SetRecognitionResultOnUIThread(
       const content::SpeechInputResult& result,

@@ -49,7 +49,7 @@ const uint32 kInvalidSocketID = 0;
 }  // namespace
 
 PepperMessageFilter::PepperMessageFilter(
-    const content::ResourceContext* resource_context)
+    content::ResourceContext* resource_context)
     : resource_context_(resource_context),
       host_resolver_(NULL),
       next_socket_id_(1) {
@@ -102,7 +102,7 @@ bool PepperMessageFilter::OnMessageReceived(const IPC::Message& msg,
 
 net::HostResolver* PepperMessageFilter::GetHostResolver() {
   return resource_context_ ?
-      resource_context_->host_resolver() : host_resolver_;
+      resource_context_->GetHostResolver() : host_resolver_;
 }
 
 net::CertVerifier* PepperMessageFilter::GetCertVerifier() {

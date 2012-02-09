@@ -365,7 +365,7 @@ void ResourceDispatcherHost::AddResourceQueueDelegate(
 scoped_refptr<ResourceHandler>
 ResourceDispatcherHost::CreateResourceHandlerForDownload(
     net::URLRequest* request,
-    const content::ResourceContext& context,
+    content::ResourceContext* context,
     int child_id,
     int route_id,
     int request_id,
@@ -535,12 +535,11 @@ void ResourceDispatcherHost::BeginRequest(
     transferred_navigations_.erase(iter);
   }
 
-  const content::ResourceContext& resource_context =
-      filter_->resource_context();
+  content::ResourceContext* resource_context = filter_->resource_context();
 
   // Might need to resolve the blob references in the upload data.
   if (request_data.upload_data) {
-    resource_context.blob_storage_context()->controller()->
+    resource_context->GetBlobStorageContext()->controller()->
         ResolveBlobReferencesInUploadData(request_data.upload_data.get());
   }
 
@@ -580,10 +579,10 @@ void ResourceDispatcherHost::BeginRequest(
     handler = new content::RedirectToFileResourceHandler(handler, child_id,
                                                          this);
 
-  if (HandleExternalProtocol(request_id, child_id, route_id,
-                             request_data.url, request_data.resource_type,
-                             *resource_context.request_context()->job_factory(),
-                             handler)) {
+  if (HandleExternalProtocol(
+      request_id, child_id, route_id, request_data.url,
+      request_data.resource_type,
+      *resource_context->GetRequestContext()->job_factory(), handler)) {
     return;
   }
 
@@ -704,21 +703,21 @@ void ResourceDispatcherHost::BeginRequest(
           ResourceType::IsFrame(request_data.resource_type),  // allow_download
           request_data.has_user_gesture,
           request_data.referrer_policy,
-          &resource_context);
+          resource_context);
   SetRequestInfo(request, extra_info);  // Request takes ownership.
 
   if (request->url().SchemeIs(chrome::kBlobScheme)) {
     // Hang on to a reference to ensure the blob is not released prior
     // to the job being started.
     webkit_blob::BlobStorageController* controller =
-        resource_context.blob_storage_context()->controller();
+        resource_context->GetBlobStorageContext()->controller();
     extra_info->set_requested_blob_data(
         controller->GetBlobDataFromUrl(request->url()));
   }
 
   // Have the appcache associate its extra info with the request.
   appcache::AppCacheInterceptor::SetExtraRequestInfo(
-      request, resource_context.appcache_service(), child_id,
+      request, resource_context->GetAppCacheService(), child_id,
       request_data.appcache_host_id, request_data.resource_type);
 
   if (deferred_request) {
@@ -855,7 +854,7 @@ ResourceDispatcherHostRequestInfo* ResourceDispatcherHost::CreateRequestInfo(
     int child_id,
     int route_id,
     bool download,
-    const content::ResourceContext& context) {
+    content::ResourceContext* context) {
   return new ResourceDispatcherHostRequestInfo(
       handler,
       content::PROCESS_TYPE_RENDERER,
@@ -874,7 +873,7 @@ ResourceDispatcherHostRequestInfo* ResourceDispatcherHost::CreateRequestInfo(
       download,  // allow_download
       false,     // has_user_gesture
       WebKit::WebReferrerPolicyDefault,
-      &context);
+      context);
 }
 
 void ResourceDispatcherHost::OnSwapOutACK(
@@ -919,12 +918,12 @@ net::Error ResourceDispatcherHost::BeginDownload(
     const DownloadResourceHandler::OnStartedCallback& started_cb,
     int child_id,
     int route_id,
-    const content::ResourceContext& context) {
+    content::ResourceContext* context) {
   if (is_shutdown_)
     return net::ERR_INSUFFICIENT_RESOURCES;
 
   const GURL& url = request->original_url();
-  const net::URLRequestContext* request_context = context.request_context();
+  const net::URLRequestContext* request_context = context->GetRequestContext();
   request->set_referrer(MaybeStripReferrer(GURL(request->referrer())).spec());
   request->set_context(request_context);
   int extra_load_flags = net::LOAD_IS_DOWNLOAD;
@@ -977,7 +976,7 @@ void ResourceDispatcherHost::BeginSaveFile(
     const GURL& referrer,
     int child_id,
     int route_id,
-    const content::ResourceContext& context) {
+    content::ResourceContext* context) {
   if (is_shutdown_)
     return;
 
@@ -988,7 +987,7 @@ void ResourceDispatcherHost::BeginSaveFile(
                                   save_file_manager_.get()));
   request_id_--;
 
-  const net::URLRequestContext* request_context = context.request_context();
+  const net::URLRequestContext* request_context = context->GetRequestContext();
   bool known_proto =
       request_context->job_factory()->IsHandledURL(url);
   if (!known_proto) {
@@ -1005,7 +1004,7 @@ void ResourceDispatcherHost::BeginSaveFile(
   // So far, for saving page, we need fetch content from cache, in the
   // future, maybe we can use a configuration to configure this behavior.
   request->set_load_flags(net::LOAD_PREFERRING_CACHE);
-  request->set_context(context.request_context());
+  request->set_context(context->GetRequestContext());
 
   // Since we're just saving some resources we need, disallow downloading.
   ResourceDispatcherHostRequestInfo* extra_info =
@@ -1188,7 +1187,7 @@ void ResourceDispatcherHost::CancelRequestsForRoute(int child_id,
 }
 
 void ResourceDispatcherHost::CancelRequestsForContext(
-    const content::ResourceContext* context) {
+    content::ResourceContext* context) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(context);
 
@@ -1442,7 +1441,7 @@ bool ResourceDispatcherHost::CanGetCookies(
 
   return content::GetContentClient()->browser()->AllowGetCookie(
       request->url(), request->first_party_for_cookies(), cookie_list,
-      *info->context(), render_process_id, render_view_id);
+      info->context(), render_process_id, render_view_id);
 }
 
 bool ResourceDispatcherHost::CanSetCookie(const net::URLRequest* request,
@@ -1457,7 +1456,7 @@ bool ResourceDispatcherHost::CanSetCookie(const net::URLRequest* request,
   const ResourceDispatcherHostRequestInfo* info = InfoForRequest(request);
   return content::GetContentClient()->browser()->AllowSetCookie(
       request->url(), request->first_party_for_cookies(), cookie_line,
-      *info->context(), render_process_id, render_view_id, options);
+      info->context(), render_process_id, render_view_id, options);
 }
 
 void ResourceDispatcherHost::OnResponseStarted(net::URLRequest* request) {

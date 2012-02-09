@@ -115,7 +115,7 @@ class OpenChannelToPpapiPluginCallback
       public PpapiPluginProcessHost::PluginClient {
  public:
   OpenChannelToPpapiPluginCallback(RenderMessageFilter* filter,
-                                   const content::ResourceContext* context,
+                                   content::ResourceContext* context,
                                    IPC::Message* reply_msg)
       : RenderMessageCompletionCallback(filter, reply_msg),
         context_(context) {
@@ -134,12 +134,12 @@ class OpenChannelToPpapiPluginCallback
     SendReplyAndDeleteThis();
   }
 
-  virtual const content::ResourceContext* GetResourceContext() {
+  virtual content::ResourceContext* GetResourceContext() {
     return context_;
   }
 
  private:
-  const content::ResourceContext* context_;
+  content::ResourceContext* context_;
 };
 
 class OpenChannelToPpapiBrokerCallback
@@ -183,7 +183,7 @@ class RenderMessageFilter::OpenChannelToNpapiPluginCallback
       public PluginProcessHost::Client {
  public:
   OpenChannelToNpapiPluginCallback(RenderMessageFilter* filter,
-                                   const content::ResourceContext& context,
+                                   content::ResourceContext* context,
                                    IPC::Message* reply_msg)
       : RenderMessageCompletionCallback(filter, reply_msg),
         context_(context),
@@ -195,7 +195,7 @@ class RenderMessageFilter::OpenChannelToNpapiPluginCallback
     return filter()->render_process_id();
   }
 
-  virtual const content::ResourceContext& GetResourceContext() OVERRIDE {
+  virtual content::ResourceContext* GetResourceContext() OVERRIDE {
     return context_;
   }
 
@@ -254,7 +254,7 @@ class RenderMessageFilter::OpenChannelToNpapiPluginCallback
     SendReplyAndDeleteThis();
   }
 
-  const content::ResourceContext& context_;
+  content::ResourceContext* context_;
   webkit::WebPluginInfo info_;
   PluginProcessHost* host_;
   bool sent_plugin_channel_request_;
@@ -587,7 +587,7 @@ void RenderMessageFilter::GetPluginsCallback(
     webkit::WebPluginInfo plugin(all_plugins[i]);
     if (!filter || filter->ShouldUsePlugin(child_process_id,
                                            routing_id,
-                                           &resource_context_,
+                                           resource_context_,
                                            GURL(),
                                            GURL(),
                                            &plugin)) {
@@ -634,7 +634,7 @@ void RenderMessageFilter::OnOpenChannelToPepperPlugin(
   plugin_service_->OpenChannelToPpapiPlugin(
       path,
       new OpenChannelToPpapiPluginCallback(
-          this, &resource_context_, reply_msg));
+          this, resource_context_, reply_msg));
 }
 
 void RenderMessageFilter::OnOpenChannelToPpapiBroker(int routing_id,
@@ -861,7 +861,8 @@ void RenderMessageFilter::AsyncOpenFileOnFileThread(const FilePath& path,
 }
 
 void RenderMessageFilter::OnMediaLogEvent(const media::MediaLogEvent& event) {
-  resource_context_.media_observer()->OnMediaEvent(render_process_id_, event);
+  resource_context_->GetMediaObserver()->OnMediaEvent(
+      render_process_id_, event);
 }
 
 void RenderMessageFilter::CheckPolicyForCookies(

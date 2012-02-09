@@ -303,7 +303,7 @@ TEST_F(MediaStreamDispatcherHostTest, FailDevice) {
 
   EXPECT_CALL(*host_, OnVideoDeviceFailed(kRenderId, 0));
   int session_id = host_->video_devices_[0].session_id;
-  content::MockResourceContext::GetInstance()->media_stream_manager()->
+  content::MockResourceContext::GetInstance()->GetMediaStreamManager()->
       video_capture_manager()->Error(session_id);
   WaitForResult();
   EXPECT_EQ(host_->video_devices_.size(), 0u);

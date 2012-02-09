@@ -22,7 +22,7 @@ struct PluginServiceFilterParams {
   int render_process_id;
   int render_view_id;
   GURL page_url;
-  const ResourceContext* resource_context;
+  ResourceContext* resource_context;
 };
 
 // Callback class to let the client filter the list of all installed plug-ins.

@@ -72,6 +72,8 @@ class ProfileIOData {
  public:
   virtual ~ProfileIOData();
 
+  static ProfileIOData* FromResourceContext(content::ResourceContext* rc);
+
   // Returns true if |scheme| is handled in Chrome, or by default handlers in
   // net::URLRequest.
   static bool IsHandledProtocol(const std::string& scheme);
@@ -81,7 +83,7 @@ class ProfileIOData {
   static bool IsHandledURL(const GURL& url);
 
   // Called by Profile.
-  const content::ResourceContext& GetResourceContext() const;
+  content::ResourceContext* GetResourceContext() const;
   ChromeURLDataManagerBackend* GetChromeURLDataManagerBackend() const;
 
   // These should only be called at most once each. Ownership is reversed when
@@ -221,13 +223,40 @@ class ProfileIOData {
  private:
   class ResourceContext : public content::ResourceContext {
    public:
-    explicit ResourceContext(const ProfileIOData* io_data);
+    explicit ResourceContext(ProfileIOData* io_data);
     virtual ~ResourceContext();
 
    private:
-    virtual void EnsureInitialized() const OVERRIDE;
+    friend class ProfileIOData;
 
-    const ProfileIOData* const io_data_;
+    // ResourceContext implementation:
+    virtual net::HostResolver* GetHostResolver() OVERRIDE;
+    virtual net::URLRequestContext* GetRequestContext() OVERRIDE;
+    virtual ChromeAppCacheService* GetAppCacheService() OVERRIDE;
+    virtual webkit_database::DatabaseTracker* GetDatabaseTracker() OVERRIDE;
+    virtual fileapi::FileSystemContext* GetFileSystemContext() OVERRIDE;
+    virtual ChromeBlobStorageContext* GetBlobStorageContext() OVERRIDE;
+    virtual quota::QuotaManager* GetQuotaManager() OVERRIDE;
+    virtual content::HostZoomMap* GetHostZoomMap() OVERRIDE;
+    virtual MediaObserver* GetMediaObserver() OVERRIDE;
+    virtual media_stream::MediaStreamManager* GetMediaStreamManager() OVERRIDE;
+    virtual AudioManager* GetAudioManager() OVERRIDE;
+
+    void EnsureInitialized();
+
+    ProfileIOData* const io_data_;
+
+    net::HostResolver* host_resolver_;
+    net::URLRequestContext* request_context_;
+    ChromeAppCacheService* appcache_service_;
+    webkit_database::DatabaseTracker* database_tracker_;
+    fileapi::FileSystemContext* file_system_context_;
+    ChromeBlobStorageContext* blob_storage_context_;
+    quota::QuotaManager* quota_manager_;
+    content::HostZoomMap* host_zoom_map_;
+    MediaObserver* media_observer_;
+    media_stream::MediaStreamManager* media_stream_manager_;
+    AudioManager* audio_manager_;
   };
 
   typedef base::hash_map<std::string, scoped_refptr<ChromeURLRequestContext> >

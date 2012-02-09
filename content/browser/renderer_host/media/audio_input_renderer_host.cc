@@ -27,7 +27,7 @@ AudioInputRendererHost::AudioEntry::AudioEntry()
 AudioInputRendererHost::AudioEntry::~AudioEntry() {}
 
 AudioInputRendererHost::AudioInputRendererHost(
-    const content::ResourceContext* resource_context)
+    content::ResourceContext* resource_context)
     : resource_context_(resource_context) {
 }
 
@@ -189,7 +189,7 @@ void AudioInputRendererHost::OnStartDevice(int stream_id, int session_id) {
 
   // Get access to the AudioInputDeviceManager to start the device.
   media_stream::AudioInputDeviceManager* audio_input_man =
-      resource_context_->media_stream_manager()->audio_input_device_manager();
+      resource_context_->GetMediaStreamManager()->audio_input_device_manager();
 
   // Add the session entry to the map.
   session_entries_[session_id] = stream_id;
@@ -241,7 +241,7 @@ void AudioInputRendererHost::OnCreateStream(int stream_id,
   // latency path. See crbug.com/112472 for details.
   entry->writer.reset(writer.release());
   entry->controller = media::AudioInputController::CreateLowLatency(
-      resource_context_->audio_manager(),
+      resource_context_->GetAudioManager(),
       this,
       audio_params,
       device_id,
@@ -367,7 +367,7 @@ void AudioInputRendererHost::StopAndDeleteDevice(int session_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   media_stream::AudioInputDeviceManager* audio_input_man =
-      resource_context_->media_stream_manager()->audio_input_device_manager();
+      resource_context_->GetMediaStreamManager()->audio_input_device_manager();
   audio_input_man->Stop(session_id);
 
   // Delete the session entry.

@@ -44,12 +44,12 @@ class WorkerProcessHost : public content::BrowserChildProcessHostDelegate,
                    int worker_route_id,
                    int parent_process_id,
                    int64 main_resource_appcache_id,
-                   const content::ResourceContext* resource_context);
+                   content::ResourceContext* resource_context);
     // Used for pending instances. Rest of the parameters are ignored.
     WorkerInstance(const GURL& url,
                    bool shared,
                    const string16& name,
-                   const content::ResourceContext* resource_context);
+                   content::ResourceContext* resource_context);
     ~WorkerInstance();
 
     // Unique identifier for a worker client.
@@ -74,7 +74,7 @@ class WorkerProcessHost : public content::BrowserChildProcessHostDelegate,
     bool Matches(
         const GURL& url,
         const string16& name,
-        const content::ResourceContext* resource_context) const;
+        content::ResourceContext* resource_context) const;
 
     // Shares the passed instance's WorkerDocumentSet with this instance. This
     // instance's current WorkerDocumentSet is dereferenced (and freed if this
@@ -96,7 +96,7 @@ class WorkerProcessHost : public content::BrowserChildProcessHostDelegate,
     WorkerDocumentSet* worker_document_set() const {
       return worker_document_set_;
     }
-    const content::ResourceContext* resource_context() const {
+    content::ResourceContext* resource_context() const {
       return resource_context_;
     }
 
@@ -110,10 +110,10 @@ class WorkerProcessHost : public content::BrowserChildProcessHostDelegate,
     int64 main_resource_appcache_id_;
     FilterList filters_;
     scoped_refptr<WorkerDocumentSet> worker_document_set_;
-    const content::ResourceContext* const resource_context_;
+    content::ResourceContext* const resource_context_;
   };
 
-  explicit WorkerProcessHost(const content::ResourceContext* resource_context);
+  explicit WorkerProcessHost(content::ResourceContext* resource_context);
   virtual ~WorkerProcessHost();
 
   // IPC::Message::Sender implementation:
@@ -146,7 +146,7 @@ class WorkerProcessHost : public content::BrowserChildProcessHostDelegate,
   typedef std::list<WorkerInstance> Instances;
   const Instances& instances() const { return instances_; }
 
-  const content::ResourceContext* resource_context() const {
+  content::ResourceContext* resource_context() const {
     return resource_context_;
   }
 
@@ -191,7 +191,7 @@ class WorkerProcessHost : public content::BrowserChildProcessHostDelegate,
 
   Instances instances_;
 
-  const content::ResourceContext* const resource_context_;
+  content::ResourceContext* const resource_context_;
 
   // A reference to the filter associated with this worker process.  We need to
   // keep this around since we'll use it when forward messages to the worker

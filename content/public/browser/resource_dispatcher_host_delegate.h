@@ -44,7 +44,7 @@ class CONTENT_EXPORT ResourceDispatcherHostDelegate {
       const std::string& method,
       const GURL& url,
       ResourceType::Type resource_type,
-      const ResourceContext& resource_context,
+      ResourceContext* resource_context,
       const Referrer& referrer);
 
   // Called after ShouldBeginRequest when all the resource handlers from the
@@ -53,7 +53,7 @@ class CONTENT_EXPORT ResourceDispatcherHostDelegate {
   // given handler.
   virtual void RequestBeginning(
       net::URLRequest* request,
-      const ResourceContext& resource_context,
+      ResourceContext* resource_context,
       ResourceType::Type resource_type,
       int child_id,
       int route_id,
@@ -68,7 +68,7 @@ class CONTENT_EXPORT ResourceDispatcherHostDelegate {
   // |in_complete| is true if this is invoked from |OnResponseCompleted|.
   virtual void DownloadStarting(
       net::URLRequest* request,
-      const ResourceContext& resource_context,
+      ResourceContext* resource_context,
       int child_id,
       int route_id,
       int request_id,
@@ -81,7 +81,7 @@ class CONTENT_EXPORT ResourceDispatcherHostDelegate {
   // the request, false will continue the request.
   virtual bool ShouldDeferStart(
       net::URLRequest* request,
-      const ResourceContext& resource_context);
+      ResourceContext* resource_context);
 
   // Called when an SSL Client Certificate is requested. If false is returned,
   // the request is canceled. Otherwise, the certificate is chosen.

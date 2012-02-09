@@ -57,7 +57,7 @@ class CONTENT_EXPORT SpeechInputManager : public SpeechRecognizerDelegate {
   // where the caller has a pointer to a resource context, but due to not
   // running on the IO thread, cannot access its properties.
   static void ShowAudioInputSettingsFromUI(
-      const content::ResourceContext* resource_context);
+      content::ResourceContext* resource_context);
 
   virtual ~SpeechInputManager();
 

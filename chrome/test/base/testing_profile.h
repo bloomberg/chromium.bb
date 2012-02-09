@@ -222,7 +222,7 @@ class TestingProfile : public Profile {
   virtual net::URLRequestContextGetter* GetRequestContextForIsolatedApp(
       const std::string& app_id) OVERRIDE;
 
-  virtual const content::ResourceContext& GetResourceContext() OVERRIDE;
+  virtual content::ResourceContext* GetResourceContext() OVERRIDE;
 
   virtual net::SSLConfigService* GetSSLConfigService() OVERRIDE;
   virtual UserStyleSheetWatcher* GetUserStyleSheetWatcher() OVERRIDE;

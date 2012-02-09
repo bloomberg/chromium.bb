@@ -25,7 +25,7 @@ struct MediaStreamDispatcherHost::StreamRequest {
 };
 
 MediaStreamDispatcherHost::MediaStreamDispatcherHost(
-    const content::ResourceContext* resource_context, int render_process_id)
+    content::ResourceContext* resource_context, int render_process_id)
     : resource_context_(resource_context),
       render_process_id_(render_process_id) {
 }
@@ -34,7 +34,7 @@ MediaStreamDispatcherHost::~MediaStreamDispatcherHost() {
 }
 
 MediaStreamManager* MediaStreamDispatcherHost::manager() {
-  return resource_context_->media_stream_manager();
+  return resource_context_->GetMediaStreamManager();
 }
 
 bool MediaStreamDispatcherHost::OnMessageReceived(

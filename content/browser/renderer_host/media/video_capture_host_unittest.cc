@@ -256,7 +256,7 @@ class VideoCaptureHostTest : public testing::Test {
   // Called on the main thread.
   static void PostQuitOnVideoCaptureManagerThread(
       MessageLoop* message_loop, content::ResourceContext* resource_context) {
-    resource_context->media_stream_manager()->video_capture_manager()->
+    resource_context->GetMediaStreamManager()->video_capture_manager()->
         GetMessageLoop()->PostTask(FROM_HERE,
                                    base::Bind(&PostQuitMessageLoop,
                                               message_loop));

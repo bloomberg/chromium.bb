@@ -134,14 +134,14 @@ ProfileImplIOData::Handle::GetChromeURLDataManagerBackendGetter() const {
                     base::Unretained(io_data_));
 }
 
-const content::ResourceContext&
-ProfileImplIOData::Handle::GetResourceContext() const {
+content::ResourceContext*
+    ProfileImplIOData::Handle::GetResourceContext() const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   LazyInitialize();
   return GetResourceContextNoInit();
 }
 
-const content::ResourceContext&
+content::ResourceContext*
 ProfileImplIOData::Handle::GetResourceContextNoInit() const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   // Don't call LazyInitialize here, since the resource context is created at

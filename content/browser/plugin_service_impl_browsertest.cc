@@ -36,7 +36,7 @@ void OpenChannel(PluginProcessHost::Client* client) {
 class MockPluginProcessHostClient : public PluginProcessHost::Client,
                                     public IPC::Channel::Listener {
  public:
-  MockPluginProcessHostClient(const content::ResourceContext& context)
+  MockPluginProcessHostClient(content::ResourceContext* context)
       : context_(context),
         channel_(NULL),
         set_plugin_info_called_(false) {
@@ -50,7 +50,7 @@ class MockPluginProcessHostClient : public PluginProcessHost::Client,
   // Client implementation.
   virtual int ID() OVERRIDE { return 42; }
   virtual bool OffTheRecord() OVERRIDE { return false; }
-  virtual const content::ResourceContext& GetResourceContext() OVERRIDE {
+  virtual content::ResourceContext* GetResourceContext() OVERRIDE {
     return context_;
   }
   virtual void OnFoundPluginProcessHost(PluginProcessHost* host) OVERRIDE {}
@@ -83,7 +83,7 @@ class MockPluginProcessHostClient : public PluginProcessHost::Client,
   MOCK_METHOD0(OnChannelListenError, void());
 
  private:
-  const content::ResourceContext& context_;
+  content::ResourceContext* context_;
   IPC::Channel* channel_;
   bool set_plugin_info_called_;
   DISALLOW_COPY_AND_ASSIGN(MockPluginProcessHostClient);
@@ -118,7 +118,7 @@ IN_PROC_BROWSER_TEST_F(PluginServiceTest, OpenChannelToPlugin) {
 // called since the request should get canceled before then.
 class MockCanceledPluginServiceClient : public PluginProcessHost::Client {
  public:
-  MockCanceledPluginServiceClient(const content::ResourceContext& context)
+  MockCanceledPluginServiceClient(content::ResourceContext* context)
       : context_(context),
         get_resource_context_called_(false) {
   }
@@ -127,7 +127,7 @@ class MockCanceledPluginServiceClient : public PluginProcessHost::Client {
 
   // Client implementation.
   MOCK_METHOD0(ID, int());
-  virtual const content::ResourceContext& GetResourceContext() OVERRIDE {
+  virtual content::ResourceContext* GetResourceContext() OVERRIDE {
     get_resource_context_called_ = true;
     return context_;
   }
@@ -143,7 +143,7 @@ class MockCanceledPluginServiceClient : public PluginProcessHost::Client {
   }
 
  private:
-  const content::ResourceContext& context_;
+  content::ResourceContext* context_;
   bool get_resource_context_called_;
 
   DISALLOW_COPY_AND_ASSIGN(MockCanceledPluginServiceClient);
@@ -185,7 +185,7 @@ class MockCanceledBeforeSentPluginProcessHostClient
     : public MockCanceledPluginServiceClient {
  public:
   MockCanceledBeforeSentPluginProcessHostClient(
-      const content::ResourceContext& context)
+      content::ResourceContext* context)
       : MockCanceledPluginServiceClient(context),
         set_plugin_info_called_(false),
         on_found_plugin_process_host_called_(false),
@@ -258,7 +258,7 @@ class MockCanceledAfterSentPluginProcessHostClient
     : public MockCanceledBeforeSentPluginProcessHostClient {
  public:
   MockCanceledAfterSentPluginProcessHostClient(
-      const content::ResourceContext& context)
+      content::ResourceContext* context)
       : MockCanceledBeforeSentPluginProcessHostClient(context),
         on_sent_plugin_channel_request_called_(false) {}
   virtual ~MockCanceledAfterSentPluginProcessHostClient() {}

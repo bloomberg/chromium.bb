@@ -98,7 +98,7 @@ class GViewRequestInterceptorTest : public testing::Test {
     content::ResourceContext* resource_context =
         content::MockResourceContext::GetInstance();
     net::URLRequestContext* request_context =
-        resource_context->request_context();
+        resource_context->GetRequestContext();
     old_factory_ = request_context->job_factory();
     job_factory_.SetProtocolHandler("http", new GViewRequestProtocolFactory);
     job_factory_.AddInterceptor(new GViewRequestInterceptor);
@@ -124,7 +124,7 @@ class GViewRequestInterceptorTest : public testing::Test {
     content::ResourceContext* resource_context =
         content::MockResourceContext::GetInstance();
     net::URLRequestContext* request_context =
-        resource_context->request_context();
+        resource_context->GetRequestContext();
     request_context->set_job_factory(old_factory_);
     ChromePluginServiceFilter* filter =
         ChromePluginServiceFilter::GetInstance();
@@ -185,7 +185,7 @@ class GViewRequestInterceptorTest : public testing::Test {
             WebKit::WebReferrerPolicyDefault,
             context);
     request->SetUserData(NULL, info);
-    request->set_context(context->request_context());
+    request->set_context(context->GetRequestContext());
   }
 
  protected:

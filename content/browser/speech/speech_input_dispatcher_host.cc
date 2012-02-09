@@ -116,7 +116,7 @@ SpeechInputDispatcherHost::SpeechInputDispatcherHost(
     int render_process_id,
     net::URLRequestContextGetter* context_getter,
     SpeechInputPreferences* speech_input_preferences,
-    const content::ResourceContext* resource_context)
+    content::ResourceContext* resource_context)
     : render_process_id_(render_process_id),
       may_have_pending_requests_(false),
       context_getter_(context_getter),
@@ -174,7 +174,7 @@ void SpeechInputDispatcherHost::OnStartRecognition(
                               params.origin_url,
                               context_getter_.get(),
                               speech_input_preferences_.get(),
-                              resource_context_->audio_manager());
+                              resource_context_->GetAudioManager());
 }
 
 void SpeechInputDispatcherHost::OnCancelRecognition(int render_view_id,

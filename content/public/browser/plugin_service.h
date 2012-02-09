@@ -78,7 +78,7 @@ class PluginService {
   // via |is_stale| and returns whether or not the plugin can be found.
   virtual bool GetPluginInfo(int render_process_id,
                              int render_view_id,
-                             const ResourceContext& context,
+                             ResourceContext* context,
                              const GURL& url,
                              const GURL& page_url,
                              const std::string& mime_type,

@@ -43,7 +43,7 @@ class CONTENT_EXPORT ResourceMessageFilter
   ResourceMessageFilter(
       int child_id,
       content::ProcessType process_type,
-      const content::ResourceContext* resource_context,
+      content::ResourceContext* resource_context,
       URLRequestContextSelector* url_request_context_selector);
 
   // content::BrowserMessageFilter implementation.
@@ -51,8 +51,8 @@ class CONTENT_EXPORT ResourceMessageFilter
   virtual bool OnMessageReceived(const IPC::Message& message,
                                  bool* message_was_ok) OVERRIDE;
 
-  const content::ResourceContext& resource_context() const {
-    return *resource_context_;
+  content::ResourceContext* resource_context() const {
+    return resource_context_;
   }
 
   // Returns the net::URLRequestContext for the given request.
@@ -73,7 +73,7 @@ class CONTENT_EXPORT ResourceMessageFilter
   content::ProcessType process_type_;
 
   // Owned by ProfileIOData* which is guaranteed to outlive us.
-  const content::ResourceContext* const resource_context_;
+  content::ResourceContext* resource_context_;
 
   const scoped_ptr<URLRequestContextSelector> url_request_context_selector_;
 

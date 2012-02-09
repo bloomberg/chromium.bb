@@ -384,7 +384,7 @@ class ExtensionTestingProfile : public TestingProfile {
                   appcache_service_.get(),
                   IsOffTheRecord()
                   ? FilePath() : GetPath().Append(chrome::kAppCacheDirname),
-                  &GetResourceContext(),
+                  GetResourceContext(),
                   make_scoped_refptr(GetExtensionSpecialStoragePolicy()))))
         NOTREACHED();
     }

@@ -55,12 +55,12 @@ class SpeechInputExtensionApiTest : public ExtensionApiTest,
 
   // SpeechInputExtensionInterface methods.
   virtual bool HasAudioInputDevices(
-      const content::ResourceContext* resource_context) OVERRIDE {
+      content::ResourceContext* resource_context) OVERRIDE {
     return recording_devices_available_;
   }
 
   virtual bool IsRecordingInProcess(
-      const content::ResourceContext* resource_context) OVERRIDE {
+      content::ResourceContext* resource_context) OVERRIDE {
     // Only the mock recognizer is supposed to be recording during testing.
     return HasValidRecognizer();
   }
@@ -72,7 +72,7 @@ class SpeechInputExtensionApiTest : public ExtensionApiTest,
   virtual void StartRecording(
       speech_input::SpeechRecognizerDelegate* delegate,
       net::URLRequestContextGetter* context_getter,
-      const content::ResourceContext* resource_context,
+      content::ResourceContext* resource_context,
       int caller_id,
       const std::string& language,
       const std::string& grammar,
@@ -125,7 +125,7 @@ SpeechInputExtensionApiTest::~SpeechInputExtensionApiTest() {
 void SpeechInputExtensionApiTest::StartRecording(
       speech_input::SpeechRecognizerDelegate* delegate,
       net::URLRequestContextGetter* context_getter,
-      const content::ResourceContext* resource_context,
+      content::ResourceContext* resource_context,
       int caller_id,
       const std::string& language,
       const std::string& grammar,

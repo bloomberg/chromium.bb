@@ -36,7 +36,7 @@ class ShellBrowserContext : public BrowserContext {
   virtual net::URLRequestContextGetter* GetRequestContextForRenderProcess(
       int renderer_child_id) OVERRIDE;
   virtual net::URLRequestContextGetter* GetRequestContextForMedia() OVERRIDE;
-  virtual const ResourceContext& GetResourceContext() OVERRIDE;
+  virtual ResourceContext* GetResourceContext() OVERRIDE;
   virtual HostZoomMap* GetHostZoomMap() OVERRIDE;
   virtual GeolocationPermissionContext*
       GetGeolocationPermissionContext() OVERRIDE;

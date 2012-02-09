@@ -355,11 +355,11 @@ void PluginProcessHost::CancelRequests() {
 
 // static
 void PluginProcessHost::CancelPendingRequestsForResourceContext(
-    const content::ResourceContext* context) {
+    content::ResourceContext* context) {
   for (PluginProcessHostIterator host_it; !host_it.Done(); ++host_it) {
     PluginProcessHost* host = *host_it;
     for (size_t i = 0; i < host->pending_requests_.size(); ++i) {
-      if (&host->pending_requests_[i]->GetResourceContext() == context) {
+      if (host->pending_requests_[i]->GetResourceContext() == context) {
         host->pending_requests_[i]->OnError();
         host->pending_requests_.erase(host->pending_requests_.begin() + i);
         --i;

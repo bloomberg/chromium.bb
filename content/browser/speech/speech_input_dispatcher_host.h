@@ -31,7 +31,7 @@ class SpeechInputDispatcherHost : public content::BrowserMessageFilter,
       int render_process_id,
       net::URLRequestContextGetter* context_getter,
       SpeechInputPreferences* speech_input_preferences,
-      const content::ResourceContext* resource_context);
+      content::ResourceContext* resource_context);
 
   // SpeechInputManager::Delegate methods.
   virtual void SetRecognitionResult(
@@ -64,7 +64,7 @@ class SpeechInputDispatcherHost : public content::BrowserMessageFilter,
 
   scoped_refptr<net::URLRequestContextGetter> context_getter_;
   scoped_refptr<SpeechInputPreferences> speech_input_preferences_;
-  const content::ResourceContext* resource_context_;
+  content::ResourceContext* resource_context_;
 
   static SpeechInputManager* manager_;
 

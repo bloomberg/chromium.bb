@@ -101,7 +101,7 @@ class P2PSocketDispatcherHost::DnsRequest {
 };
 
 P2PSocketDispatcherHost::P2PSocketDispatcherHost(
-    const content::ResourceContext* resource_context)
+    content::ResourceContext* resource_context)
     : resource_context_(resource_context),
       monitoring_networks_(false) {
 }
@@ -204,7 +204,7 @@ void P2PSocketDispatcherHost::OnGetHostAddress(const IPC::Message& msg,
                                                const std::string& host_name,
                                                int32 request_id) {
   DnsRequest* request = new DnsRequest(
-      msg.routing_id(), request_id, resource_context_->host_resolver());
+      msg.routing_id(), request_id, resource_context_->GetHostResolver());
   dns_requests_.insert(request);
   request->Resolve(host_name, base::Bind(
       &P2PSocketDispatcherHost::OnAddressResolved,

@@ -78,7 +78,7 @@ class BrowserContext {
   virtual net::URLRequestContextGetter* GetRequestContextForMedia() = 0;
 
   // Returns the resource context.
-  virtual const ResourceContext& GetResourceContext() = 0;
+  virtual ResourceContext* GetResourceContext() = 0;
 
   // Returns the Hostname <-> Zoom Level map for this context.
   virtual HostZoomMap* GetHostZoomMap() = 0;

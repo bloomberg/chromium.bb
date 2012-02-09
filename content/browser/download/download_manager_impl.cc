@@ -74,7 +74,7 @@ void BeginDownload(const URLParams& url_params,
                    const DownloadSaveInfo& save_info,
                    ResourceDispatcherHost* resource_dispatcher_host,
                    const RenderParams& render_params,
-                   const content::ResourceContext* context) {
+                   content::ResourceContext* context) {
   scoped_ptr<net::URLRequest> request(
       new net::URLRequest(url_params.url_, resource_dispatcher_host));
   request->set_referrer(url_params.referrer_.spec());
@@ -94,7 +94,7 @@ void BeginDownload(const URLParams& url_params,
       DownloadResourceHandler::OnStartedCallback(),
       render_params.render_process_id_,
       render_params.render_view_id_,
-      *context);
+      context);
 }
 
 class MapValueIteratorAdapter {
@@ -847,7 +847,7 @@ void DownloadManagerImpl::DownloadUrl(
           resource_dispatcher_host,
           RenderParams(web_contents->GetRenderProcessHost()->GetID(),
                        web_contents->GetRenderViewHost()->routing_id()),
-          &web_contents->GetBrowserContext()->GetResourceContext()));
+          web_contents->GetBrowserContext()->GetResourceContext()));
 }
 
 void DownloadManagerImpl::AddObserver(Observer* observer) {

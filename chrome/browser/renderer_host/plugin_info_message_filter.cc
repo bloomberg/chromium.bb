@@ -63,7 +63,7 @@ void PluginInfobarExperiment(bool* allow_outdated,
 PluginInfoMessageFilter::Context::Context(int render_process_id,
                                           Profile* profile)
     : render_process_id_(render_process_id),
-      resource_context_(&profile->GetResourceContext()),
+      resource_context_(profile->GetResourceContext()),
       host_content_settings_map_(profile->GetHostContentSettingsMap()) {
   allow_outdated_plugins_.Init(prefs::kPluginsAllowOutdated,
                                profile->GetPrefs(), NULL);

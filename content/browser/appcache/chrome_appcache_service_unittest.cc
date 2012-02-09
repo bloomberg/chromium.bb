@@ -73,7 +73,7 @@ ChromeAppCacheServiceTest::CreateAppCacheService(
     bool init_storage) {
   scoped_refptr<ChromeAppCacheService> appcache_service =
       new ChromeAppCacheService(NULL);
-  const content::ResourceContext* resource_context = NULL;
+  content::ResourceContext* resource_context = NULL;
   scoped_refptr<quota::MockSpecialStoragePolicy> mock_policy =
       new quota::MockSpecialStoragePolicy;
   mock_policy->AddProtected(kProtectedManifestURL.GetOrigin());

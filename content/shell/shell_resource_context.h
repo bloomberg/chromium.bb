@@ -24,9 +24,18 @@ class ShellResourceContext : public content::ResourceContext {
   virtual ~ShellResourceContext();
 
  private:
-  virtual void EnsureInitialized() const OVERRIDE;
-
-  void InitializeInternal();
+  // ResourceContext implementation:
+  virtual net::HostResolver* GetHostResolver() OVERRIDE;
+  virtual net::URLRequestContext* GetRequestContext() OVERRIDE;
+  virtual ChromeAppCacheService* GetAppCacheService() OVERRIDE;
+  virtual webkit_database::DatabaseTracker* GetDatabaseTracker() OVERRIDE;
+  virtual fileapi::FileSystemContext* GetFileSystemContext() OVERRIDE;
+  virtual ChromeBlobStorageContext* GetBlobStorageContext() OVERRIDE;
+  virtual quota::QuotaManager* GetQuotaManager() OVERRIDE;
+  virtual HostZoomMap* GetHostZoomMap() OVERRIDE;
+  virtual MediaObserver* GetMediaObserver() OVERRIDE;
+  virtual media_stream::MediaStreamManager* GetMediaStreamManager() OVERRIDE;
+  virtual AudioManager* GetAudioManager() OVERRIDE;
 
   scoped_refptr<ShellURLRequestContextGetter> getter_;
   scoped_refptr<ChromeBlobStorageContext> blob_storage_context_;

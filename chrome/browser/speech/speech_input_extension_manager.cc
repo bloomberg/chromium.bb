@@ -513,14 +513,14 @@ bool SpeechInputExtensionManager::Start(const std::string& extension_id,
 
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
       base::Bind(&SpeechInputExtensionManager::StartOnIOThread, this,
-      profile_->GetRequestContext(), &profile_->GetResourceContext(),
+      profile_->GetRequestContext(), profile_->GetResourceContext(),
       language, grammar, filter_profanities));
   return true;
 }
 
 void SpeechInputExtensionManager::StartOnIOThread(
     net::URLRequestContextGetter* context_getter,
-    const content::ResourceContext* resource_context,
+    content::ResourceContext* resource_context,
     const std::string& language,
     const std::string& grammar,
     bool filter_profanities) {
@@ -555,17 +555,17 @@ void SpeechInputExtensionManager::StartOnIOThread(
 }
 
 bool SpeechInputExtensionManager::HasAudioInputDevices(
-    const content::ResourceContext* resource_context) {
+    content::ResourceContext* resource_context) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(resource_context);
-  return resource_context->audio_manager()->HasAudioInputDevices();
+  return resource_context->GetAudioManager()->HasAudioInputDevices();
 }
 
 bool SpeechInputExtensionManager::IsRecordingInProcess(
-    const content::ResourceContext* resource_context) {
+    content::ResourceContext* resource_context) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(resource_context);
-  return resource_context->audio_manager()->IsRecordingInProcess();
+  return resource_context->GetAudioManager()->IsRecordingInProcess();
 }
 
 void SpeechInputExtensionManager::IsRecording(
@@ -573,12 +573,12 @@ void SpeechInputExtensionManager::IsRecording(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
       base::Bind(&SpeechInputExtensionManager::IsRecordingOnIOThread,
-      this, callback, &profile_->GetResourceContext()));
+      this, callback, profile_->GetResourceContext()));
 }
 
 void SpeechInputExtensionManager::IsRecordingOnIOThread(
     const IsRecordingCallback& callback,
-    const content::ResourceContext* resource_context) {
+    content::ResourceContext* resource_context) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(resource_context);
 
@@ -599,7 +599,7 @@ void SpeechInputExtensionManager::IsRecordingOnUIThread(
 void SpeechInputExtensionManager::StartRecording(
     speech_input::SpeechRecognizerDelegate* delegate,
     net::URLRequestContextGetter* context_getter,
-    const content::ResourceContext* resource_context,
+    content::ResourceContext* resource_context,
     int caller_id,
     const std::string& language,
     const std::string& grammar,
@@ -608,7 +608,7 @@ void SpeechInputExtensionManager::StartRecording(
   DCHECK(resource_context);
   DCHECK(!recognizer_);
   recognizer_ = new SpeechRecognizer(delegate, caller_id, language, grammar,
-      context_getter, resource_context->audio_manager(),
+      context_getter, resource_context->GetAudioManager(),
       filter_profanities, "", "");
   recognizer_->StartRecording();
 }

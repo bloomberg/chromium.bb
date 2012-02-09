@@ -76,7 +76,7 @@ class OffTheRecordProfileImpl : public Profile,
       GetRequestContextForExtensions() OVERRIDE;
   virtual net::URLRequestContextGetter* GetRequestContextForIsolatedApp(
       const std::string& app_id) OVERRIDE;
-  virtual const content::ResourceContext& GetResourceContext() OVERRIDE;
+  virtual content::ResourceContext* GetResourceContext() OVERRIDE;
   virtual net::SSLConfigService* GetSSLConfigService() OVERRIDE;
   virtual HostContentSettingsMap* GetHostContentSettingsMap() OVERRIDE;
   virtual content::HostZoomMap* GetHostZoomMap() OVERRIDE;

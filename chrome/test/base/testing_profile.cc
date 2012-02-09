@@ -681,8 +681,8 @@ net::URLRequestContextGetter* TestingProfile::GetRequestContextForIsolatedApp(
   return GetRequestContext();
 }
 
-const content::ResourceContext& TestingProfile::GetResourceContext() {
-  return *content::MockResourceContext::GetInstance();
+content::ResourceContext* TestingProfile::GetResourceContext() {
+  return content::MockResourceContext::GetInstance();
 }
 
 HostContentSettingsMap* TestingProfile::GetHostContentSettingsMap() {
