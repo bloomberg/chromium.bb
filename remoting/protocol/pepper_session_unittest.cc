@@ -107,8 +107,7 @@ class PepperSessionTest : public testing::Test {
 
     EXPECT_CALL(client_server_listener_, OnSessionManagerReady())
         .Times(1);
-    client_server_.reset(new PepperSessionManager(
-        scoped_ptr<TransportFactory>(NULL)));
+    client_server_.reset(new PepperSessionManager(NULL));
     client_server_->Init(client_signal_strategy_.get(),
                          &client_server_listener_, NetworkSettings());
   }

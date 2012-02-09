@@ -19,9 +19,8 @@ using buzz::QName;
 namespace remoting {
 namespace protocol {
 
-PepperSessionManager::PepperSessionManager(
-    scoped_ptr<TransportFactory> transport_factory)
-    : transport_factory_(transport_factory.Pass()),
+PepperSessionManager::PepperSessionManager(pp::Instance* pp_instance)
+    : pp_instance_(pp_instance),
       signal_strategy_(NULL),
       listener_(NULL),
       ready_(false) {

@@ -12,8 +12,8 @@
 #include "base/memory/ref_counted.h"
 #include "net/base/x509_certificate.h"
 #include "remoting/jingle_glue/signal_strategy.h"
+#include "remoting/protocol/pepper_channel.h"
 #include "remoting/protocol/session_manager.h"
-#include "remoting/protocol/transport.h"
 #include "remoting/protocol/transport_config.h"
 
 namespace pp {
@@ -44,8 +44,7 @@ class PepperSession;
 class PepperSessionManager : public SessionManager,
                              public SignalStrategy::Listener {
  public:
-  explicit PepperSessionManager(
-      scoped_ptr<TransportFactory> transport_factory);
+  explicit PepperSessionManager(pp::Instance* pp_instance);
   virtual ~PepperSessionManager();
 
   // SessionManager interface.
@@ -84,7 +83,7 @@ class PepperSessionManager : public SessionManager,
   // Called by PepperSession when it is being destroyed.
   void SessionDestroyed(PepperSession* session);
 
-  scoped_ptr<TransportFactory> transport_factory_;
+  pp::Instance* pp_instance_;
 
   SignalStrategy* signal_strategy_;
   scoped_ptr<AuthenticatorFactory> authenticator_factory_;
