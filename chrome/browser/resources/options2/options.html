@@ -100,11 +100,12 @@
   <include src="startup_overlay.html">
   <include src="../sync_setup_overlay.html">
   <if expr="pp_ifdef('chromeos')">
-     <include src="chromeos/bluetooth_add_device_overlay.html">
-     <include src="chromeos/bluetooth_pair_device_overlay.html">
-     <include src="chromeos/internet_detail.html">
-     <include src="chromeos/keyboard_overlay.html">
-     <include src="chromeos/pointer_overlay.html">
+    <include src="chromeos/bluetooth_add_device_overlay.html">
+    <include src="chromeos/bluetooth_pair_device_overlay.html">
+    <include src="chromeos/internet_detail.html">
+    <include src="chromeos/keyboard_overlay.html">
+    <include src="chromeos/pointer_overlay.html">
+    <include src="chromeos/proxy.html">
   </if>
   <if expr="not pp_ifdef('win32') and not pp_ifdef('darwin')">
     <include src="certificate_restore_overlay.html">
@@ -148,9 +149,6 @@
            <button class="raw-button close-subpage custom-appearance"></button>
            <div class="subpage-sheet-contents">
              <include src="content_settings.html">
-             <if expr="pp_ifdef('chromeos')">
-               <include src="chromeos/proxy.html">
-             </if>
            </div>
          </div>
        </div>

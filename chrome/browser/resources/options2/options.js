@@ -198,7 +198,7 @@ function load() {
     OptionsPage.registerOverlay(PointerOverlay.getInstance(),
                                 BrowserOptions.getInstance(),
                                 [$('pointer-settings-button')]);
-    OptionsPage.registerSubPage(ProxyOptions.getInstance(),
+    OptionsPage.registerOverlay(ProxyOptions.getInstance(),
                                 InternetOptions.getInstance());
   }
   if (!cr.isWindows && !cr.isMac) {
