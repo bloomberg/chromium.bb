@@ -29,8 +29,16 @@ const char kTestString[] = "Hello world!";
 const bool kTestBool = true;
 const int32_t kTestInt = 42;
 const double kTestDouble = 42.0;
+
+// On Windows XP bots, the NonMainThread test can run very slowly. So we dial
+// back the number of threads & messages when running on Windows.
+#ifdef PPAPI_OS_WIN
+const int32_t kThreadsToRun = 2;
+const int32_t kMessagesToSendPerThread = 5;
+#else
 const int32_t kThreadsToRun = 4;
 const int32_t kMessagesToSendPerThread = 10;
+#endif
 
 // The struct that invoke_post_message_thread_func expects for its argument.
 // It includes the instance on which to invoke PostMessage, and the value to
