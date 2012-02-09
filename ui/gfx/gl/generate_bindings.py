@@ -636,6 +636,30 @@ GL_FUNCTIONS = [
   'arguments':
     'GLsync sync, GLenum pname, GLsizei bufSize, GLsizei* length,'
     'GLint* values', },
+{ 'return_type': 'void',
+  'names': ['glDrawArraysInstancedANGLE'],
+  'arguments': 'GLenum mode, GLint first, GLsizei count, GLsizei primcount', },
+{ 'return_type': 'void',
+  'names': ['glDrawArraysInstancedARB'],
+  'arguments': 'GLenum mode, GLint first, GLsizei count, GLsizei primcount', },
+{ 'return_type': 'void',
+  'names': ['glDrawElementsInstancedANGLE'],
+  'arguments':
+      'GLenum mode, GLsizei count, GLenum type, const void* indices, '
+      'GLsizei primcount', },
+{ 'return_type': 'void',
+  'names': ['glDrawElementsInstancedARB'],
+  'arguments':
+      'GLenum mode, GLsizei count, GLenum type, const void* indices, '
+      'GLsizei primcount', },
+{ 'return_type': 'void',
+  'names': ['glVertexAttribDivisorANGLE'],
+  'arguments':
+      'GLuint index, GLuint divisor', },
+{ 'return_type': 'void',
+  'names': ['glVertexAttribDivisorARB'],
+  'arguments':
+      'GLuint index, GLuint divisor', },
 ]
 
 OSMESA_FUNCTIONS = [
