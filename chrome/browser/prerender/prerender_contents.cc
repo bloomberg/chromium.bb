@@ -253,7 +253,7 @@ void PrerenderContents::StartPrerendering(
   prerender_contents_.reset(new TabContentsWrapper(new_contents));
   content::WebContentsObserver::Observe(new_contents);
 
-  gfx::Rect tab_bounds;
+  gfx::Rect tab_bounds(640, 480);
   if (source_render_view_host) {
     DCHECK(source_render_view_host->view() != NULL);
     WebContents* source_wc =
@@ -270,7 +270,8 @@ void PrerenderContents::StartPrerendering(
     if (active_browser) {
       WebContents* active_web_contents = active_browser->GetWebContentsAt(
           active_browser->active_index());
-      active_web_contents->GetView()->GetContainerBounds(&tab_bounds);
+      if (active_web_contents)
+        active_web_contents->GetView()->GetContainerBounds(&tab_bounds);
     }
   }
 
