@@ -1337,8 +1337,13 @@ bool SyncManager::SyncInternal::SetEncryptionPassphrase(
       return false;
     }
   } else {  // nigori_has_explicit_passphrase == true
-    NOTREACHED() << "Attempting to change explicit passphrase when one has "
-                 << "already been set.";
+    if (is_explicit) {
+      NOTREACHED() << "Attempting to change explicit passphrase when one has "
+                   << "already been set.";
+    } else {
+      DVLOG(1) << "Ignoring implicit passphrase for encryption, explicit "
+               << " passphrase already set.";
+    }
     return false;
   }  // nigori_has_explicit_passphrase
   NOTREACHED();
@@ -1428,6 +1433,9 @@ bool SyncManager::SyncInternal::SetDecryptionPassphrase(
                   bootstrap_token_from_current_key);
               return true;
             }
+          } else {  // !temp_cryptographer.DecryptPendingKeys(..)
+            DVLOG(1) << "Implicit user provided passphrase failed to decrypt.";
+            return false;
           }
         } else if (cryptographer->DecryptPendingKeys(key_params)) {
           // This can happpen if this is a client that has lost the credentials
