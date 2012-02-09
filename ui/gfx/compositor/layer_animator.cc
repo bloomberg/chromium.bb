@@ -393,9 +393,12 @@ void LayerAnimator::RemoveAllAnimationsWithACommonProperty(
 }
 
 void LayerAnimator::ImmediatelySetNewTarget(LayerAnimationSequence* sequence) {
+  // Ensure that sequence is disposed of when this function completes.
+  scoped_ptr<LayerAnimationSequence> to_dispose(sequence);
   const bool abort = false;
   RemoveAllAnimationsWithACommonProperty(sequence, abort);
-  scoped_ptr<LayerAnimationSequence> removed(RemoveAnimation(sequence));
+  LayerAnimationSequence* removed = RemoveAnimation(sequence);
+  DCHECK(removed == NULL || removed == sequence);
   sequence->Progress(sequence->duration(), delegate());
 }
 

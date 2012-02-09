@@ -43,6 +43,27 @@ class TestImplicitAnimationObserver : public ImplicitAnimationObserver {
   DISALLOW_COPY_AND_ASSIGN(TestImplicitAnimationObserver);
 };
 
+// The test layer animation sequence updates a live instances count when it is
+// created and destroyed.
+class TestLayerAnimationSequence : public LayerAnimationSequence {
+ public:
+  TestLayerAnimationSequence(LayerAnimationElement* element,
+                             int* num_live_instances)
+      : LayerAnimationSequence(element),
+        num_live_instances_(num_live_instances) {
+    (*num_live_instances_)++;
+  }
+
+  virtual ~TestLayerAnimationSequence() {
+    (*num_live_instances_)--;
+  }
+
+ private:
+  int* num_live_instances_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestLayerAnimationSequence);
+};
+
 } // namespace
 
 // Checks that setting a property on an implicit animator causes an animation to
@@ -910,4 +931,45 @@ TEST(LayerAnimatorTest, SettingPropertyDuringAnAnimation) {
   EXPECT_EQ(0.5, animator->GetTargetOpacity());
 }
 
-} // namespace ui
+// Tests that the preemption mode IMMEDIATELY_SET_NEW_TARGET, doesn't cause the
+// second sequence to be leaked.
+TEST(LayerAnimatorTest, ImmediatelySettingNewTargetDoesNotLeak) {
+  scoped_ptr<LayerAnimator> animator(LayerAnimator::CreateDefaultAnimator());
+  animator->set_preemption_strategy(LayerAnimator::IMMEDIATELY_SET_NEW_TARGET);
+  animator->set_disable_timer_for_test(true);
+  TestLayerAnimationDelegate delegate;
+  animator->SetDelegate(&delegate);
+
+  gfx::Rect start_bounds(0, 0, 50, 50);
+  gfx::Rect middle_bounds(10, 10, 100, 100);
+  gfx::Rect target_bounds(5, 5, 5, 5);
+
+  delegate.SetBoundsFromAnimation(start_bounds);
+
+  {
+    // start an implicit bounds animation.
+    ScopedLayerAnimationSettings settings(animator.get());
+    animator->SetBounds(middle_bounds);
+  }
+
+  EXPECT_TRUE(animator->IsAnimatingProperty(LayerAnimationElement::BOUNDS));
+
+  int num_live_instances = 0;
+  base::TimeDelta delta = base::TimeDelta::FromSeconds(1);
+  scoped_ptr<TestLayerAnimationSequence> sequence(
+      new TestLayerAnimationSequence(
+          LayerAnimationElement::CreateBoundsElement(target_bounds, delta),
+          &num_live_instances));
+
+  EXPECT_EQ(1, num_live_instances);
+
+  // This should interrupt the running sequence causing us to immediately set
+  // the target value. The sequence should alse be destructed.
+  animator->StartAnimation(sequence.release());
+
+  EXPECT_FALSE(animator->IsAnimatingProperty(LayerAnimationElement::BOUNDS));
+  EXPECT_EQ(0, num_live_instances);
+  CheckApproximatelyEqual(delegate.GetBoundsForAnimation(), target_bounds);
+}
+
+}  // namespace ui
