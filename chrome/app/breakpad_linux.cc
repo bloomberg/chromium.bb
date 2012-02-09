@@ -36,6 +36,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info_posix.h"
 #include "chrome/common/env_vars.h"
+#include "chrome/common/logging_chrome.h"
 #include "content/common/chrome_descriptors.h"
 #include "seccompsandbox/linux_syscall_support.h"
 
@@ -52,9 +53,10 @@
 static const char kUploadURL[] =
     "https://clients2.google.com/cr/report";
 
-static bool is_crash_reporter_enabled = false;
-static uint64_t process_start_time = 0;
-static char* crash_log_path = NULL;
+static bool g_is_crash_reporter_enabled = false;
+static uint64_t g_process_start_time = 0;
+static char* g_crash_log_path = NULL;
+static google_breakpad::ExceptionHandler* g_breakpad = NULL;
 
 // Writes the value |v| as 16 hex characters to the memory pointed at by
 // |output|.
@@ -289,6 +291,11 @@ void MimeWriter::AddItemWithoutTrailingSpaces(const void* base, size_t size) {
     size--;
   }
   AddItem(base, size);
+}
+
+void DumpProcess() {
+  if (g_breakpad)
+    g_breakpad->WriteMinidump();
 }
 
 }  // namespace
@@ -664,13 +671,13 @@ pid_t HandleCrashDump(const BreakpadInfo& info) {
 
         // Write crash dump id to crash log as: seconds_since_epoch,crash_id
         struct kernel_timeval tv;
-        if (crash_log_path && !sys_gettimeofday(&tv, NULL)) {
+        if (g_crash_log_path && !sys_gettimeofday(&tv, NULL)) {
           uint64_t time = kernel_timeval_to_ms(&tv) / 1000;
           char time_str[21];
           const unsigned time_len = my_uint64_len(time);
           my_uint64tos(time_str, time, time_len);
 
-          int log_fd = sys_open(crash_log_path, O_CREAT | O_WRONLY | O_APPEND,
+          int log_fd = sys_open(g_crash_log_path, O_CREAT | O_WRONLY | O_APPEND,
                                 0600);
           if (log_fd > 0) {
             sys_write(log_fd, time_str, time_len);
@@ -744,7 +751,7 @@ static bool CrashDone(const char* dump_path,
   info.distro = base::g_linux_distro;
   info.distro_length = my_strlen(base::g_linux_distro);
   info.upload = upload;
-  info.process_start_time = process_start_time;
+  info.process_start_time = g_process_start_time;
   HandleCrashDump(info);
 
   return true;
@@ -767,7 +774,7 @@ static bool CrashDoneUpload(const char* dump_path,
 }
 
 void EnableCrashDumping(const bool unattended) {
-  is_crash_reporter_enabled = true;
+  g_is_crash_reporter_enabled = true;
 
   FilePath tmp_path("/tmp");
   PathService::Get(base::DIR_TEMP, &tmp_path);
@@ -777,18 +784,25 @@ void EnableCrashDumping(const bool unattended) {
     FilePath logfile = dumps_path.AppendASCII("uploads.log");
     std::string logfile_str = logfile.value();
     const size_t crash_log_path_len = logfile_str.size() + 1;
-    crash_log_path = new char[crash_log_path_len];
-    strncpy(crash_log_path, logfile_str.c_str(), crash_log_path_len);
+    g_crash_log_path = new char[crash_log_path_len];
+    strncpy(g_crash_log_path, logfile_str.c_str(), crash_log_path_len);
   }
 
+  DCHECK(!g_breakpad);
   if (unattended) {
-    new google_breakpad::ExceptionHandler(dumps_path.value().c_str(), NULL,
-                                          CrashDoneNoUpload, NULL,
-                                          true /* install handlers */);
+    g_breakpad = new google_breakpad::ExceptionHandler(
+        dumps_path.value().c_str(),
+        NULL,
+        CrashDoneNoUpload,
+        NULL,
+        true /* install handlers */);
   } else {
-    new google_breakpad::ExceptionHandler(tmp_path.value().c_str(), NULL,
-                                          CrashDoneUpload, NULL,
-                                          true /* install handlers */);
+    g_breakpad = new google_breakpad::ExceptionHandler(
+        tmp_path.value().c_str(),
+        NULL,
+        CrashDoneUpload,
+        NULL,
+        true /* install handlers */);
   }
 }
 
@@ -856,8 +870,8 @@ static bool NonBrowserCrashHandler(const void* crash_context,
   iov[4].iov_len = sizeof(b_addr);
   iov[5].iov_base = &fds[0];
   iov[5].iov_len = sizeof(fds[0]);
-  iov[6].iov_base = &process_start_time;
-  iov[6].iov_len = sizeof(process_start_time);
+  iov[6].iov_base = &g_process_start_time;
+  iov[6].iov_len = sizeof(g_process_start_time);
 
   msg.msg_iov = iov;
   msg.msg_iovlen = kIovSize;
@@ -891,12 +905,12 @@ static bool NonBrowserCrashHandler(const void* crash_context,
 
 void EnableNonBrowserCrashDumping() {
   const int fd = base::GlobalDescriptors::GetInstance()->Get(kCrashDumpSignal);
-  is_crash_reporter_enabled = true;
+  g_is_crash_reporter_enabled = true;
   // We deliberately leak this object.
-  google_breakpad::ExceptionHandler* handler =
-      new google_breakpad::ExceptionHandler("" /* unused */, NULL, NULL,
-                                            reinterpret_cast<void*>(fd), true);
-  handler->set_crash_handler(NonBrowserCrashHandler);
+  DCHECK(!g_breakpad);
+  g_breakpad = new google_breakpad::ExceptionHandler(
+      "" /* unused */, NULL, NULL, reinterpret_cast<void*>(fd), true);
+  g_breakpad->set_crash_handler(NonBrowserCrashHandler);
 }
 
 void InitCrashReporter() {
@@ -937,11 +951,13 @@ void InitCrashReporter() {
   // Set the base process start time value.
   struct timeval tv;
   if (!gettimeofday(&tv, NULL))
-    process_start_time = timeval_to_ms(&tv);
+    g_process_start_time = timeval_to_ms(&tv);
   else
-    process_start_time = 0;
+    g_process_start_time = 0;
+
+  logging::SetDumpWithoutCrashingFunction(&DumpProcess);
 }
 
 bool IsCrashReporterEnabled() {
-  return is_crash_reporter_enabled;
+  return g_is_crash_reporter_enabled;
 }

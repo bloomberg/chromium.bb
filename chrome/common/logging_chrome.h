@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -64,6 +64,12 @@ size_t GetFatalAssertions(AssertionList* assertions);
 
 // Handler to silently dump the current process without crashing.
 void DumpWithoutCrashing();
+
+#if defined(USE_LINUX_BREAKPAD)
+// Sets a function that'll be invoked to dump the current process when
+// DumpWithoutCrashing() is called.
+void SetDumpWithoutCrashingFunction(void (*function)());
+#endif
 
 }  // namespace logging
 
