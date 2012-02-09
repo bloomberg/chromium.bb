@@ -662,6 +662,14 @@
   fun:WebRTCAudioDeviceTest_Construct_Test::TestBody
 }
 {
+  bug_103711i
+  ThreadSanitizer:Race
+  fun:webrtc::ProcessThreadImpl::Process
+  fun:webrtc::ProcessThreadImpl::Run
+  fun:webrtc::ThreadPosix::Run
+  fun:StartThread
+}
+{
    bug_104769
    ThreadSanitizer:Race
    fun:timeout_correct
