@@ -40,6 +40,7 @@
 #include "content/public/browser/download_id.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/browser_thread.h"
+#include "net/base/net_log.h"
 #include "net/base/net_errors.h"
 
 class DownloadFileManager;
@@ -64,7 +65,8 @@ class CONTENT_EXPORT DownloadManager
   virtual ~DownloadManager() {}
 
   static DownloadManager* Create(
-      DownloadManagerDelegate* delegate);
+      DownloadManagerDelegate* delegate,
+      net::NetLog* net_log);
 
   // Shutdown the download manager. Must be called before destruction.
   virtual void Shutdown() = 0;
@@ -206,7 +208,8 @@ class CONTENT_EXPORT DownloadManager
   virtual FilePath LastDownloadPath() = 0;
 
   // Creates the download item.  Must be called on the UI thread.
-  virtual void CreateDownloadItem(
+  // Returns the |BoundNetLog| used by the |DownloadItem|.
+  virtual net::BoundNetLog CreateDownloadItem(
       DownloadCreateInfo* info,
       const DownloadRequestHandle& request_handle) = 0;
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,6 +18,7 @@ DownloadCreateInfo::DownloadCreateInfo(
     int64 received_bytes,
     int64 total_bytes,
     int32 state,
+    const net::BoundNetLog& bound_net_log,
     bool has_user_gesture,
     content::PageTransition transition_type)
     : path(path),
@@ -30,7 +31,8 @@ DownloadCreateInfo::DownloadCreateInfo(
       has_user_gesture(has_user_gesture),
       transition_type(transition_type),
       db_handle(0),
-      prompt_user_for_save_location(false) {
+      prompt_user_for_save_location(false),
+      request_bound_net_log(bound_net_log) {
 }
 
 DownloadCreateInfo::DownloadCreateInfo()

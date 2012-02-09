@@ -67,7 +67,7 @@ class MockDownloadManager : public content::DownloadManager {
   MOCK_CONST_METHOD0(InProgressCount, int());
   MOCK_CONST_METHOD0(GetBrowserContext, content::BrowserContext*());
   MOCK_METHOD0(LastDownloadPath, FilePath());
-  MOCK_METHOD2(CreateDownloadItem, void(
+  MOCK_METHOD2(CreateDownloadItem, net::BoundNetLog(
       DownloadCreateInfo* info,
       const DownloadRequestHandle& request_handle));
   MOCK_METHOD4(CreateSavePackageDownloadItem, content::DownloadItem*(
