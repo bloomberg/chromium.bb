@@ -101,7 +101,6 @@
     'renderer/media/capture_video_decoder.cc',
     'renderer/media/capture_video_decoder.h',
     'renderer/media/media_stream_dependency_factory.h',
-    'renderer/media/media_stream_dispatcher.cc',
     'renderer/media/media_stream_dispatcher.h',
     'renderer/media/media_stream_dispatcher_eventhandler.h',
     'renderer/media/media_stream_impl.h',
@@ -264,6 +263,7 @@
       ],
       'sources': [
         'renderer/media/media_stream_dependency_factory.cc',
+        'renderer/media/media_stream_dispatcher.cc',
         'renderer/media/media_stream_impl.cc',
         'renderer/media/peer_connection_handler.cc',
         'renderer/media/peer_connection_handler.h',
@@ -271,11 +271,6 @@
         'renderer/media/video_capture_module_impl.h',
         'renderer/media/webrtc_audio_device_impl.cc',
         'renderer/media/webrtc_audio_device_impl.h',
-      ],
-    }, {
-      'sources': [
-        'renderer/media/media_stream_dependency_factory_stub.cc',
-        'renderer/media/media_stream_impl_stub.cc',
       ],
     }],
     ['java_bridge==1', {

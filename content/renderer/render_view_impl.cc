@@ -504,8 +504,10 @@ RenderViewImpl::RenderViewImpl(
     p2p_socket_dispatcher_ = new content::P2PSocketDispatcher(this);
 #endif
 
+#if defined(ENABLE_WEBRTC)
   if (!media_stream_dispatcher_)
     media_stream_dispatcher_ = new MediaStreamDispatcher(this);
+#endif
 
   new MHTMLGenerator(this);
 #if defined(OS_MACOSX)
@@ -622,6 +624,8 @@ WebKit::WebPeerConnectionHandler* RenderViewImpl::CreatePeerConnectionHandler(
   if (!cmd_line->HasSwitch(switches::kEnableMediaStream))
     return NULL;
   EnsureMediaStreamImpl();
+  if (!media_stream_impl_.get())
+    return NULL;
   return media_stream_impl_->CreatePeerConnectionHandler(client);
 }
 
@@ -3146,6 +3150,7 @@ void RenderViewImpl::EnsureMediaStreamImpl() {
     p2p_socket_dispatcher_ = new content::P2PSocketDispatcher(this);
 #endif
 
+#if defined(ENABLE_WEBRTC)
   if (!media_stream_dispatcher_)
     media_stream_dispatcher_ = new MediaStreamDispatcher(this);
 
@@ -3157,6 +3162,7 @@ void RenderViewImpl::EnsureMediaStreamImpl() {
         RenderThreadImpl::current()->video_capture_impl_manager(),
         factory);
   }
+#endif
 }
 
 void RenderViewImpl::didChangeContentsSize(WebFrame* frame,
