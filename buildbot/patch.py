@@ -36,6 +36,10 @@ class PatchException(GerritException):
   """Exception thrown by GetGerritPatchInfo."""
 
 
+class FailedToReachGerrit(GerritException):
+  """Exception thrown if we failed to contact the Gerrit server."""
+
+
 class ApplyPatchException(Exception):
   """Exception thrown if we fail to apply a patch."""
   # Types used to denote what we failed to apply against.
@@ -94,6 +98,10 @@ class Patch(object):
     """
     self.project = project
     self.tracking_branch = tracking_branch
+
+  def ProjectDir(self, buildroot):
+    """Returns the local directory where this patch will be applied."""
+    return cros_lib.GetProjectDir(buildroot, self.project)
 
   def Apply(self, buildroot, trivial):
     """Applies the patch to specified buildroot. Implement in subclasses.
@@ -224,6 +232,33 @@ class GerritPatch(Patch):
       cros_lib.RunCommand(['git', 'checkout', constants.PATCH_BRANCH],
                           cwd=project_dir, print_cmd=False)
 
+  def GetLatestSHA1ForProject(self):
+    """Finds the latest commit hash for this patch's repository/branch.
+
+    Returns:
+      The latest commit hash for this patch's repo/branch.
+
+    Raises:
+      FailedToReachGerrit if we fail to contact gerrit.
+    """
+    ssh_url = constants.GERRIT_SSH_URL
+    if self.internal:
+      ssh_url = constants.GERRIT_INT_SSH_URL
+
+    ssh_url_project = '/'.join([ssh_url, self.project])
+    try:
+      result = cros_lib.RunCommandWithRetries(3,
+          ['git', 'ls-remote', ssh_url_project, self.tracking_branch],
+          redirect_stdout=True, print_cmd=True)
+      if result:
+        latest_commit_hash = result.output.split()[0]
+        return latest_commit_hash
+    except cros_lib.RunCommandError as e:
+      # Fall out to Gerrit error.
+      logging.error('Failed to contact git server with %s', e)
+
+    raise FailedToReachGerrit('Could not contact gerrit to get latest sha1')
+
   def Apply(self, buildroot, trivial=False):
     """Implementation of Patch.Apply().
 
@@ -231,7 +266,7 @@ class GerritPatch(Patch):
       ApplyPatchException: If the patch failed to apply.
     """
     logging.info('Attempting to apply change %s', self)
-    project_dir = cros_lib.GetProjectDir(buildroot, self.project)
+    project_dir = self.ProjectDir(buildroot)
     if not cros_lib.DoesLocalBranchExist(project_dir, constants.PATCH_BRANCH):
       upstream = cros_lib.GetManifestDefaultBranch(buildroot)
       cros_lib.RunCommand(['git', 'checkout', '-b', constants.PATCH_BRANCH,
@@ -327,7 +362,7 @@ class GerritPatch(Patch):
   def CommitMessage(self, buildroot):
     """Returns the commit message for the patch as a string."""
     url = self._GetProjectUrl()
-    project_dir = cros_lib.GetProjectDir(buildroot, self.project)
+    project_dir = self.ProjectDir(buildroot)
     cros_lib.RunCommand(['git', 'fetch', url, self.ref], cwd=project_dir,
                         print_cmd=False)
     return_obj = cros_lib.RunCommand(['git', 'show', '-s', 'FETCH_HEAD'],
@@ -350,7 +385,7 @@ class GerritPatch(Patch):
     dependencies = []
     url = self._GetProjectUrl()
     logging.info('Checking for Gerrit dependencies for change %s', self)
-    project_dir = cros_lib.GetProjectDir(buildroot, self.project)
+    project_dir = self.ProjectDir(buildroot)
     cros_lib.RunCommand(['git', 'fetch', url, self.ref], cwd=project_dir,
                         print_cmd=False)
     return_obj = cros_lib.RunCommand(
@@ -463,7 +498,7 @@ class LocalPatch(Patch):
                            % (self.local_branch, self.project,
                               manifest_branch))
 
-    project_dir = cros_lib.GetProjectDir(buildroot, self.project)
+    project_dir = self.ProjectDir(buildroot)
     try:
       cros_lib.RunCommand(['repo', 'start', constants.PATCH_BRANCH, '.'],
                           cwd=project_dir)

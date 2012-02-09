@@ -6,6 +6,7 @@
 
 import filecmp
 import fileinput
+import logging
 import os
 import re
 import shutil
@@ -121,28 +122,20 @@ class EBuild(object):
     return command_result.output
 
   @classmethod
-  def MarkAsStable(cls, unstable_ebuild_path, new_stable_ebuild_path,
-                   commit_keyword, commit_value, redirect_file=None,
-                   make_stable=True):
-    """Static function that creates a revved stable ebuild.
+  def UpdateEBuild(cls, ebuild_path, commit_keyword, commit_value,
+                   redirect_file=None, make_stable=True):
+    """Static function that updates WORKON information in the ebuild.
 
-    This function assumes you have already figured out the name of the new
-    stable ebuild path and then creates that file from the given unstable
-    ebuild and marks it as stable.  If the commit_value is set, it also
-    set the commit_keyword=commit_value pair in the ebuild.
+    This function takes an ebuild_path and updates WORKON information.
 
     Args:
-      unstable_ebuild_path: The path to the unstable ebuild.
-      new_stable_ebuild_path:  The path you want to use for the new stable
-        ebuild.
-      commit_keyword: Optional keyword to set in the ebuild to mark it as
-        stable.
+      ebuild_path:  The path of the ebuild.
+      commit_keyword: Keyword to update with a commit hash.
       commit_value: Value to set the above keyword to.
       redirect_file:  Optionally redirect output of new ebuild somewhere else.
       make_stable:  Actually make the ebuild stable.
     """
-    shutil.copyfile(unstable_ebuild_path, new_stable_ebuild_path)
-    for line in fileinput.input(new_stable_ebuild_path, inplace=1):
+    for line in fileinput.input(ebuild_path, inplace=1):
       # Has to be done here to get changes to sys.stdout from fileinput.input.
       if not redirect_file:
         redirect_file = sys.stdout
@@ -163,18 +156,45 @@ class EBuild(object):
     fileinput.close()
 
   @classmethod
-  def CommitChange(cls, message):
+  def MarkAsStable(cls, unstable_ebuild_path, new_stable_ebuild_path,
+                   commit_keyword, commit_value, redirect_file=None,
+                   make_stable=True):
+    """Static function that creates a revved stable ebuild.
+
+    This function assumes you have already figured out the name of the new
+    stable ebuild path and then creates that file from the given unstable
+    ebuild and marks it as stable.  If the commit_value is set, it also
+    set the commit_keyword=commit_value pair in the ebuild.
+
+    Args:
+      unstable_ebuild_path: The path to the unstable ebuild.
+      new_stable_ebuild_path:  The path you want to use for the new stable
+        ebuild.
+      commit_keyword: Keyword to update with a commit hash.
+      commit_value: Value to set the above keyword to.
+      redirect_file:  Optionally redirect output of new ebuild somewhere else.
+      make_stable:  Actually make the ebuild stable.
+    """
+    shutil.copyfile(unstable_ebuild_path, new_stable_ebuild_path)
+    EBuild.UpdateEBuild(new_stable_ebuild_path, commit_keyword, commit_value,
+                        redirect_file, make_stable)
+
+  # TODO: Modify cros_mark_as_stable to no longer require chdir's and remove the
+  # default '.' behavior from this method.
+  @classmethod
+  def CommitChange(cls, message, overlay='.'):
     """Commits current changes in git locally with given commit message.
 
     Args:
         message: the commit string to write when committing to git.
-
+        overlay: directory in which to commit the changes.
     Raises:
-        OSError: Error occurred while committing.
+        RunCommandError: Error occurred while committing.
     """
-    cros_build_lib.Info('Committing changes with commit message: %s' % message)
-    git_commit_cmd = 'git commit -am "%s"' % message
-    cls._RunCommand(git_commit_cmd)
+    logging.info('Committing changes with commit message: %s', message)
+    git_commit_cmd = ['git', 'commit', '-a', '-m', message]
+    cros_build_lib.RunCommand(git_commit_cmd, cwd=overlay,
+                              print_cmd=cls.VERBOSE)
 
   def __init__(self, path):
     """Sets up data about an ebuild from its path."""
@@ -331,6 +351,45 @@ class EBuild(object):
       message = _GIT_COMMIT_MESSAGE % (self.package, commit_id)
       self.CommitChange(message)
       return '%s-%s' % (self.package, new_version)
+
+  @classmethod
+  def UpdateCommitHashesForChanges(cls, changes, buildroot):
+    """Updates the commit hashes for the EBuilds uprevved in changes."""
+    overlay_list = FindOverlays(buildroot, 'both')
+    directory_src = os.path.join(buildroot, 'src')
+    overlay_dict = dict((o, []) for o in overlay_list)
+    BuildEBuildDictionary(overlay_dict, True, None)
+
+    # Generate a project->ebuild map for only projects affected by given
+    # changes.
+    project_ebuild_map = dict((c.project, []) for c in changes)
+    modified_overlays = set()
+    for overlay, ebuilds in overlay_dict.items():
+      for ebuild in ebuilds:
+        project = ebuild.GetSourcePath(directory_src)[0]
+        project_ebuilds = project_ebuild_map.get(project)
+        # This is not None if there already is an entry in project_ebuilds
+        # for the given project.
+        if project_ebuilds is not None:
+          project_ebuilds.append(ebuild)
+          modified_overlays.add(overlay)
+
+    # Now go through each change and update the ebuilds they affect.
+    for change in changes:
+      ebuilds_for_change = project_ebuild_map[change.project]
+      if len(ebuilds_for_change) == 0:
+        continue
+
+      latest_sha1 = change.GetLatestSHA1ForProject()
+      for ebuild in ebuilds_for_change:
+        logging.info('Updating ebuild for project %s with commit hash %s',
+                     ebuild.package, latest_sha1)
+        EBuild.UpdateEBuild(ebuild.ebuild_path, 'CROS_WORKON_COMMIT',
+                            latest_sha1)
+
+    for overlay in modified_overlays:
+      EBuild.CommitChange('Updating commit hashes in ebuilds '
+                          'to match remote repository.', overlay=overlay)
 
 
 def BestEBuild(ebuilds):

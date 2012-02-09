@@ -359,13 +359,13 @@ class TestValidationPool(mox.MoxTestBase):
     pool.dryrun = False
 
     patch1.Submit(helper, dryrun=False)
-    helper.IsChangeCommitted(patch1.id).AndReturn(False)
+    helper.IsChangeCommitted(patch1.id, False).AndReturn(False)
     patch1.HandleCouldNotSubmit(helper, pool.build_log, dryrun=False)
     patch2.Submit(helper, dryrun=False).AndRaise(
         cros_build_lib.RunCommandError('Failed to submit', 'cmd', 1))
     patch2.HandleCouldNotSubmit(helper, pool.build_log, dryrun=False)
     patch3.Submit(helper, dryrun=False)
-    helper.IsChangeCommitted(patch3.id).AndReturn(True)
+    helper.IsChangeCommitted(patch3.id, False).AndReturn(True)
 
     self.mox.ReplayAll()
     self.assertRaises(validation_pool.FailedToSubmitAllChangesException,
@@ -390,9 +390,9 @@ class TestValidationPool(mox.MoxTestBase):
     pool.dryrun = False
 
     patch1.Submit(helper, dryrun=False)
-    helper.IsChangeCommitted(patch1.id).AndReturn(True)
+    helper.IsChangeCommitted(patch1.id, False).AndReturn(True)
     patch2.Submit(helper, dryrun=False)
-    helper.IsChangeCommitted(patch2.id).AndReturn(True)
+    helper.IsChangeCommitted(patch2.id, False).AndReturn(True)
 
     self.mox.ReplayAll()
     pool.SubmitPool()
@@ -416,9 +416,9 @@ class TestValidationPool(mox.MoxTestBase):
     pool.dryrun = False
 
     patch1.Submit(helper, dryrun=False)
-    helper.IsChangeCommitted(patch1.id).AndReturn(True)
+    helper.IsChangeCommitted(patch1.id, False).AndReturn(True)
     patch2.Submit(helper, dryrun=False)
-    helper.IsChangeCommitted(patch2.id).AndReturn(True)
+    helper.IsChangeCommitted(patch2.id, False).AndReturn(True)
 
     self.mox.ReplayAll()
     pool.SubmitNonManifestChanges()

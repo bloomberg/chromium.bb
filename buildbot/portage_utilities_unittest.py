@@ -19,6 +19,7 @@ if __name__ == '__main__':
   sys.path.insert(0, constants.SOURCE_ROOT)
 
 from chromite.lib import cros_build_lib
+from chromite.buildbot import patch as cros_patch
 from chromite.buildbot import portage_utilities
 
 
@@ -187,6 +188,7 @@ class EBuildRevWorkonTest(mox.MoxTestBase):
     self.mox.StubOutWithMock(portage_utilities.shutil, 'copyfile')
     self.mox.StubOutWithMock(portage_utilities.os, 'unlink')
     self.mox.StubOutWithMock(portage_utilities.EBuild, '_RunCommand')
+    self.mox.StubOutWithMock(cros_build_lib, 'RunCommand')
     self.mox.StubOutWithMock(portage_utilities.filecmp, 'cmp')
     self.mox.StubOutWithMock(portage_utilities.fileinput, 'input')
 
@@ -202,7 +204,7 @@ class EBuildRevWorkonTest(mox.MoxTestBase):
     m_file.write('EAPI=2\n')
     m_file.write('CROS_WORKON_COMMIT="my_id"\n')
     m_file.write('KEYWORDS=\"x86 arm\"\n')
-    m_file.write( 'src_unpack(){}\n')
+    m_file.write('src_unpack(){}\n')
     # MarkAsStable() returns here
 
     return m_file
@@ -218,7 +220,8 @@ class EBuildRevWorkonTest(mox.MoxTestBase):
       'git rm ' + self.m_ebuild.ebuild_path)
     message = portage_utilities._GIT_COMMIT_MESSAGE % (
       self.m_ebuild.package, 'my_id')
-    portage_utilities.EBuild._RunCommand('git commit -am "%s"' % message)
+    cros_build_lib.RunCommand(
+        ['git', 'commit', '-a', '-m', message], cwd='.', print_cmd=False)
 
     self.mox.ReplayAll()
     result = self.m_ebuild.RevWorkOnEBuild('/sources', redirect_file=m_file)
@@ -252,7 +255,9 @@ class EBuildRevWorkonTest(mox.MoxTestBase):
       'git add ' + self.revved_ebuild_path)
     message = portage_utilities._GIT_COMMIT_MESSAGE % (
       self.m_ebuild.package, 'my_id')
-    portage_utilities.EBuild._RunCommand('git commit -am "%s"' % message)
+
+    cros_build_lib.RunCommand(
+        ['git', 'commit', '-a', '-m', message], cwd='.', print_cmd=False)
 
     self.mox.ReplayAll()
     result = self.m_ebuild.RevWorkOnEBuild('/sources', redirect_file=m_file)
@@ -260,12 +265,61 @@ class EBuildRevWorkonTest(mox.MoxTestBase):
     self.assertEqual(result, 'category/test_package-0.0.1-r1')
 
   def testCommitChange(self):
-    self.mox.StubOutWithMock(portage_utilities.EBuild, '_RunCommand')
-    mock_message = 'Commit me'
-    portage_utilities.EBuild._RunCommand(
-      'git commit -am "%s"' % mock_message)
+    self.mox.StubOutWithMock(cros_build_lib, 'RunCommand')
+    mock_message = 'Commitme'
+    cros_build_lib.RunCommand(
+        ['git', 'commit', '-a', '-m', mock_message], cwd='.', print_cmd=False)
     self.mox.ReplayAll()
     self.m_ebuild.CommitChange(mock_message)
+    self.mox.VerifyAll()
+
+  def testUpdateCommitHashesForChanges(self):
+    """Tests that we can update the commit hashes for changes correctly."""
+    ebuild1 = self.mox.CreateMock(portage_utilities.EBuild)
+    ebuild1.ebuild_path = 'public_overlay/ebuild.ebuild'
+    ebuild1.package = 'test/project'
+
+    # Mimics the behavior of BuildEBuildDictionary.
+    def addEBuild(overlay_dict, *other_args):
+      overlay_dict['public_overlay'] = [ebuild1]
+
+    self.mox.StubOutWithMock(portage_utilities, 'BuildEBuildDictionary')
+    self.mox.StubOutWithMock(portage_utilities, 'FindOverlays')
+    self.mox.StubOutWithMock(portage_utilities.EBuild, 'UpdateEBuild')
+    self.mox.StubOutWithMock(portage_utilities.EBuild, 'CommitChange')
+    self.mox.StubOutWithMock(cros_build_lib, 'RunCommand')
+
+    patch1 = self.mox.CreateMock(cros_patch.GerritPatch)
+    patch2 = self.mox.CreateMock(cros_patch.GerritPatch)
+
+    patch1.id = 'ChangeId1'
+    patch2.id = 'ChangeId2'
+    patch1.internal = False
+    patch2.internal = False
+    patch1.project = 'fake_project1'
+    patch2.project = 'fake_project2'
+    patch1.tracking_branch = 'chromiumos/chromite'
+    patch2.tracking_branch = 'not/a/real/project'
+
+    build_root = 'fakebuildroot'
+    overlays = ['public_overlay']
+    portage_utilities.FindOverlays(build_root, 'both').AndReturn(overlays)
+    overlay_dict = dict(public_overlay=[])
+    portage_utilities.BuildEBuildDictionary(overlay_dict,
+                                            True, None).WithSideEffects(
+                                                addEBuild)
+
+    ebuild1.GetSourcePath(os.path.join(build_root, 'src')).AndReturn(
+        ('fake_project1', 'p1_path'))
+
+    patch1.GetLatestSHA1ForProject().AndReturn('sha1')
+    portage_utilities.EBuild.UpdateEBuild(ebuild1.ebuild_path,
+                                          'CROS_WORKON_COMMIT', 'sha1')
+    portage_utilities.EBuild.CommitChange(mox.IgnoreArg(),
+                                          overlay='public_overlay')
+    self.mox.ReplayAll()
+    portage_utilities.EBuild.UpdateCommitHashesForChanges([patch1, patch2],
+                                                          build_root)
     self.mox.VerifyAll()
 
 

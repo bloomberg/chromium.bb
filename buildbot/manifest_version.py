@@ -127,7 +127,17 @@ def _PushGitChanges(git_repo, message, dry_run=True):
   try:
     remote, push_branch = cros_lib.GetPushBranch(PUSH_BRANCH, cwd=git_repo)
     cros_lib.RunCommand(['git', 'add', '-A'], cwd=git_repo)
-    cros_lib.RunCommand(['git', 'commit', '-am', message], cwd=git_repo)
+
+    # It's possible that while we are running on dry_run, someone has already
+    # committed our change.
+    try:
+      cros_lib.RunCommand(['git', 'commit', '-am', message], cwd=git_repo)
+    except cros_lib.RunCommandError:
+      if dry_run:
+        return
+      else:
+        raise
+
     push_cmd = ['git', 'push', remote, '%s:%s' % (PUSH_BRANCH, push_branch)]
     if dry_run: push_cmd.append('--dry-run')
     cros_lib.RunCommand(push_cmd, cwd=git_repo)

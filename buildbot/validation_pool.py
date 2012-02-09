@@ -177,7 +177,7 @@ class ValidationPool(object):
     """
     # We choose a longer wait here as we haven't committed to anything yet. By
     # doing this here we can reduce the number of builder cycles.
-    if cls._IsTreeOpen(max_timeout=3600) or dryrun:
+    if dryrun or cls._IsTreeOpen(max_timeout=3600):
       # Only master configurations should call this method.
       pool = ValidationPool(internal, build_number, builder_name, True, dryrun)
       pool.gerrit_helper = gerrit_helper.GerritHelper(internal)
@@ -390,14 +390,14 @@ class ValidationPool(object):
     # We use the default timeout here as while we want some robustness against
     # the tree status being red i.e. flakiness, we don't want to wait too long
     # as validation can become stale.
-    if ValidationPool._IsTreeOpen() or self.dryrun:
+    if self.dryrun or ValidationPool._IsTreeOpen():
       for change in changes:
         was_change_submitted = False
         logging.info('Change %s will be submitted', change)
         try:
           change.Submit(self.gerrit_helper, dryrun=self.dryrun)
           was_change_submitted = self.gerrit_helper.IsChangeCommitted(
-              change.id)
+                change.id, self.dryrun)
         except cros_build_lib.RunCommandError:
           logging.error('gerrit review --submit failed for change.')
         finally:

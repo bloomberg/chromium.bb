@@ -23,6 +23,7 @@ from chromite.buildbot import constants
 from chromite.buildbot import lkgm_manager
 from chromite.buildbot import manifest_version
 from chromite.buildbot import patch as cros_patch
+from chromite.buildbot import portage_utilities
 from chromite.buildbot import repository
 from chromite.buildbot import validation_pool
 from chromite.lib import cros_build_lib as cros_lib
@@ -486,6 +487,10 @@ class CommitQueueCompletionStage(LKGMCandidateSyncCompletionStage):
   def HandleSuccess(self):
     if self._build_config['master']:
       CommitQueueSyncStage.pool.SubmitPool()
+      # After submitting the pool, update the commit hashes for uprevved
+      # ebuilds.
+      portage_utilities.EBuild.UpdateCommitHashesForChanges(
+          CommitQueueSyncStage.pool.changes, self._build_root)
       if cbuildbot_config.IsPFQType(self._build_config['build_type']):
         super(CommitQueueCompletionStage, self).HandleSuccess()
 

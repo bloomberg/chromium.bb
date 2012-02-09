@@ -310,6 +310,34 @@ class GerritPatchTest(mox.MoxTestBase):
     self.PaladinDepenedenciesHelper(commit_msg, ['12345', '12356', '12357',
                                                  '123457a'])
 
+  def testGetLatestSHA1ForProject(self):
+    """Verifies we can return the correct sha1 from mock data."""
+    self.mox.StubOutWithMock(cros_lib, 'RunCommandWithRetries')
+    my_hash = 'sadfjaslfkj2135'
+    my_branch = 'refs/heads/master'
+    result = self.mox.CreateMock(cros_lib.CommandResult)
+    result.returncode = 0
+    result.output = '   '.join([my_hash, my_branch])
+    my_patch = cros_patch.GerritPatch(self.FAKE_PATCH_JSON, False)
+    cros_lib.RunCommandWithRetries(
+        3, ['git', 'ls-remote',
+            'ssh://gerrit.chromium.org:29418/tacos/chromite',
+            my_patch.tracking_branch],
+        redirect_stdout=True, print_cmd=True).AndReturn(result)
+    self.mox.ReplayAll()
+    self.assertEqual(my_patch.GetLatestSHA1ForProject(), my_hash)
+    self.mox.VerifyAll()
+
+  def testGetLatestSHA1ForProject4Realz(self):
+    """Verify we can check the latest hash from chromite."""
+    my_patch = cros_patch.GerritPatch(self.FAKE_PATCH_JSON, False)
+    # Put some real info in there.
+    my_patch.internal = False
+    my_patch.project = 'chromiumos/chromite'
+    my_patch.tracking_branch = 'master'
+    cros_lib.Info('The current sha1 on master for chromite is: %s' %
+                  my_patch.GetLatestSHA1ForProject())
+
   def NotestMockRemoveCommitReady(self):
     """Tests against sosa's test patch to remove Commit Ready bit on failure."""
     my_patch = cros_patch.GerritPatch(self.FAKE_PATCH_JSON, False)

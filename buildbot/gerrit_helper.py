@@ -110,9 +110,13 @@ class GerritHelper():
     assert result_dict.get('id'), 'Code Review json missing change-id!'
     return cros_patch.GerritPatch(result_dict, self.internal)
 
-  def IsChangeCommitted(self, changeid):
+  def IsChangeCommitted(self, changeid, dryrun=False):
     """Checks to see whether a change is already committed."""
     rev_cmd = self.GetGerritQueryCommand(['change:%s' % changeid])
-    raw_results = cros_build_lib.RunCommand(rev_cmd, redirect_stdout=True)
-    result_dict = json.loads(raw_results.output.splitlines()[0])
-    return result_dict.get('status') not in ['NEW', 'ABANDONED', None]
+    if not dryrun:
+      raw_results = cros_build_lib.RunCommand(rev_cmd, redirect_stdout=True)
+      result_dict = json.loads(raw_results.output.splitlines()[0])
+      return result_dict.get('status') not in ['NEW', 'ABANDONED', None]
+    else:
+      logging.info('Would have run %s', ' '.join(rev_cmd))
+      return True
