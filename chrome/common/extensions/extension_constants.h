@@ -349,6 +349,24 @@ namespace extension_misc {
   // The extension id of the bookmark manager.
   extern const char kBookmarkManagerId[];
 
+  // The extension id of the Citrix Receiver application.
+  extern const char kCitrixReceiverAppId[];
+
+  // The extension id of the beta Citrix Receiver application.
+  extern const char kCitrixReceiverAppBetaId[];
+
+  // The extension id of the dev Citrix Receiver application.
+  extern const char kCitrixReceiverAppDevId[];
+
+  // The extension id of the Enterprise Web Store component application.
+  extern const char kEnterpriseWebStoreAppId[];
+
+  // The extension id of the HTerm app for ChromeOS.
+  extern const char kHTermAppId[];
+
+  // The extension id of the HTerm dev app for ChromeOS.
+  extern const char kHTermDevAppId[];
+
   // The extension id of the Web Store component application.
   extern const char kWebStoreAppId[];
 

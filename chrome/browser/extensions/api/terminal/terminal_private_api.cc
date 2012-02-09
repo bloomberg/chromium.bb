@@ -23,9 +23,6 @@ const char kCroshCommand[] = "/usr/bin/crosh";
 // We make stubbed crosh just echo back input.
 const char kStubbedCroshCommand[] = "cat";
 
-const char kPermissionError[] =
-    "Extension does not have the permission to use this API";
-
 const char* GetCroshPath() {
   if (chromeos::system::runtime_environment::IsRunningOnChromeOS())
     return kCroshCommand;
@@ -53,8 +50,6 @@ void NotifyProcessOutput(Profile* profile,
     return;
   }
 
-  CHECK(TerminalExtensionHelper::AllowAccessToExtension(profile, extension_id));
-
   base::ListValue args;
   args.Append(new base::FundamentalValue(pid));
   args.Append(new base::StringValue(output_type));
@@ -79,12 +74,6 @@ TerminalPrivateFunction::~TerminalPrivateFunction() {
 }
 
 bool TerminalPrivateFunction::RunImpl() {
-  if (!TerminalExtensionHelper::AllowAccessToExtension(profile_,
-                                                       extension_id())) {
-    error_ = kPermissionError;
-    return false;
-  }
-
   return RunTerminalFunction();
 }
 

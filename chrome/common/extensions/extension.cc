@@ -2835,12 +2835,23 @@ bool Extension::ImplicitlyDelaysNetworkStartup() const {
 bool Extension::CanSpecifyAPIPermission(
     const ExtensionAPIPermission* permission,
     string16* error) const {
-  if (permission->is_component_only()) {
-    if (!CanSpecifyComponentOnlyPermission()) {
-      *error = ExtensionErrorUtils::FormatErrorMessageUTF16(
-          errors::kPermissionNotAllowed, permission->name());
-      return false;
-    }
+  if (location_ == Extension::COMPONENT)
+    return true;
+
+  bool access_denied = false;
+  if (permission->HasWhitelist()) {
+    if (permission->IsWhitelisted(id_))
+      return true;
+    else
+      access_denied = true;
+  } else if (permission->is_component_only()) {
+    access_denied = true;
+  }
+
+  if (access_denied) {
+    *error = ExtensionErrorUtils::FormatErrorMessageUTF16(
+        errors::kPermissionNotAllowed, permission->name());
+    return false;
   }
 
   if (permission->id() == ExtensionAPIPermission::kExperimental) {
@@ -2849,9 +2860,6 @@ bool Extension::CanSpecifyAPIPermission(
       return false;
     }
   }
-
-  if (location_ == Extension::COMPONENT)
-    return true;
 
   bool supports_type = false;
   switch (GetType()) {
@@ -2890,13 +2898,6 @@ bool Extension::CanSpecifyAPIPermission(
   }
 
   return true;
-}
-
-bool Extension::CanSpecifyComponentOnlyPermission() const {
-  // Only COMPONENT extensions can use private APIs.
-  // TODO(asargent) - We want a more general purpose mechanism for this,
-  // and better error messages. (http://crbug.com/54013)
-  return location_ == Extension::COMPONENT;
 }
 
 bool Extension::CanSpecifyExperimentalPermission() const {

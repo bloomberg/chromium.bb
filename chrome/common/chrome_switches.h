@@ -31,7 +31,6 @@ extern const char kAllowNaClSocketAPI[];
 extern const char kAllowOutdatedPlugins[];
 extern const char kAllowRunningInsecureContent[];
 extern const char kAllowScriptingGallery[];
-extern const char kAllowWebSocketProxy[];
 extern const char kAlwaysAuthorizePlugins[];
 extern const char kAppId[];
 extern const char kApp[];
@@ -301,6 +300,7 @@ extern const char kMaxSpdySessionsPerDomain[];
 extern const char kMaxSpdyConcurrentStreams[];
 extern const char kUserDataDir[];
 extern const char kVersion[];
+extern const char kWhitelistedExtensionID[];
 extern const char kWinHttpProxyResolver[];
 extern const char kMemoryWidget[];
 

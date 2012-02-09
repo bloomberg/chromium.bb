@@ -658,15 +658,19 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
       switches::kProfilingFile,
       switches::kProfilingFlush,
       switches::kSilentDumpOnDCHECK,
+      switches::kWhitelistedExtensionID,
     };
 
     command_line->CopySwitchesFrom(browser_command_line, kSwitchNames,
                                    arraysize(kSwitchNames));
   } else if (process_type == switches::kUtilityProcess) {
-    if (browser_command_line.HasSwitch(
-            switches::kEnableExperimentalExtensionApis)) {
-      command_line->AppendSwitch(switches::kEnableExperimentalExtensionApis);
-    }
+    static const char* const kSwitchNames[] = {
+      switches::kEnableExperimentalExtensionApis,
+      switches::kWhitelistedExtensionID,
+    };
+
+    command_line->CopySwitchesFrom(browser_command_line, kSwitchNames,
+                                   arraysize(kSwitchNames));
   } else if (process_type == switches::kPluginProcess) {
     static const char* const kSwitchNames[] = {
   #if defined(OS_CHROMEOS)

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -33,9 +33,6 @@ class ExtensionInputMethodEventRouter
   // Returns input method name for the given XKB (X keyboard extensions in X
   // Window System) id.
   std::string GetInputMethodForXkb(const std::string& xkb_id);
-
-  // Returns whether the extension is allowed to use input method API.
-  bool IsExtensionWhitelisted(const std::string& extension_id);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ExtensionInputMethodEventRouter);

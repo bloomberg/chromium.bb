@@ -31,25 +31,12 @@ ChromePrivateCustomBindings::ChromePrivateCustomBindings(
 // static
 v8::Handle<v8::Value> ChromePrivateCustomBindings::DecodeJPEG(
     const v8::Arguments& args) {
-  static const char* kAllowedIds[] = {
-      "haiffjcadagjlijoggckpgfnoeiflnem",
-      "gnedhmakppccajfpfiihfcdlnpgomkcf",
-      "fjcibdnjlbfnbfdjneajpipnlcppleek",
-      "oflbaaikkabfdfkimeclgkackhdkpnip"  // Testing extension.
-  };
-  const std::vector<std::string> allowed_ids(
-      kAllowedIds, kAllowedIds + arraysize(kAllowedIds));
-
   ChromePrivateCustomBindings* v8_extension =
       GetFromArguments<ChromePrivateCustomBindings>(args);
   const ::Extension* extension =
       v8_extension->GetExtensionForCurrentRenderView();
   if (!extension)
     return v8::Undefined();
-  if (allowed_ids.end() == std::find(
-        allowed_ids.begin(), allowed_ids.end(), extension->id())) {
-    return v8::Undefined();
-  }
 
   DCHECK(args.Length() == 1);
   DCHECK(args[0]->IsArray());

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,10 +10,6 @@
 #include <vector>
 
 namespace chromeos {
-
-// Fills vector with extensions IDs which are allowed to use private
-// extension API (WebSocketProxyPrivate, InputMethodPrivate, etc.)
-void FillWithExtensionsIdsWithPrivateAccess(std::vector<std::string>* ids);
 
 // Controls webproxy to TCP service.
 class WebSocketProxyController {
@@ -30,12 +26,6 @@ class WebSocketProxyController {
   static void Shutdown();
   static bool IsInitiated();
   static int GetPort();  // Returns port listening websocket connections.
-
-  static bool CheckCredentials(
-      const std::string& extension_id,
-      const std::string& hostname,
-      unsigned short port,
-      ConnectionFlags);
 };
 
 }  // namespace chromeos

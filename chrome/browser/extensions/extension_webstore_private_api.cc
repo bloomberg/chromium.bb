@@ -53,8 +53,6 @@ const char kInvalidManifestError[] = "Invalid manifest";
 const char kNoPreviousBeginInstallWithManifestError[] =
     "* does not match a previous call to beginInstallWithManifest3";
 const char kUserCancelledError[] = "User cancelled install";
-const char kPermissionDeniedError[] =
-    "You do not have permission to use this method.";
 
 ProfileSyncService* test_sync_service = NULL;
 
@@ -66,17 +64,6 @@ ProfileSyncService* GetSyncService(Profile* profile) {
     return test_sync_service;
   else
     return ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile);
-}
-
-bool IsWebStoreURL(Profile* profile, const GURL& url) {
-  ExtensionService* service = profile->GetExtensionService();
-  const Extension* store = service->GetWebStoreApp();
-  if (!store) {
-    NOTREACHED();
-    return false;
-  }
-  return (service->extensions()->GetHostedAppByURL(ExtensionURLInfo(url)) ==
-          store);
 }
 
 // Whitelists extension IDs for use by webstorePrivate.silentlyInstall.
@@ -153,11 +140,6 @@ BeginInstallWithManifestFunction::BeginInstallWithManifestFunction()
 BeginInstallWithManifestFunction::~BeginInstallWithManifestFunction() {}
 
 bool BeginInstallWithManifestFunction::RunImpl() {
-  if (!IsWebStoreURL(profile_, source_url())) {
-    SetResult(PERMISSION_DENIED);
-    return false;
-  }
-
   DictionaryValue* details = NULL;
   EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &details));
   CHECK(details);
@@ -354,9 +336,6 @@ void BeginInstallWithManifestFunction::InstallUIAbort(bool user_initiated) {
 }
 
 bool CompleteInstallFunction::RunImpl() {
-  if (!IsWebStoreURL(profile_, source_url()))
-    return false;
-
   std::string id;
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &id));
   if (!Extension::IdIsValid(id)) {
@@ -387,11 +366,6 @@ SilentlyInstallFunction::SilentlyInstallFunction() {}
 SilentlyInstallFunction::~SilentlyInstallFunction() {}
 
 bool SilentlyInstallFunction::RunImpl() {
-  if (!IsWebStoreURL(profile_, source_url())) {
-    error_ = kPermissionDeniedError;
-    return false;
-  }
-
   DictionaryValue* details = NULL;
   EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &details));
   CHECK(details);
@@ -467,15 +441,11 @@ void SilentlyInstallFunction::OnExtensionInstallFailure(
 }
 
 bool GetBrowserLoginFunction::RunImpl() {
-  if (!IsWebStoreURL(profile_, source_url()))
-    return false;
   result_.reset(CreateLoginResult(profile_->GetOriginalProfile()));
   return true;
 }
 
 bool GetStoreLoginFunction::RunImpl() {
-  if (!IsWebStoreURL(profile_, source_url()))
-    return false;
   ExtensionService* service = profile_->GetExtensionService();
   ExtensionPrefs* prefs = service->extension_prefs();
   std::string login;
@@ -488,8 +458,6 @@ bool GetStoreLoginFunction::RunImpl() {
 }
 
 bool SetStoreLoginFunction::RunImpl() {
-  if (!IsWebStoreURL(profile_, source_url()))
-    return false;
   std::string login;
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &login));
   ExtensionService* service = profile_->GetExtensionService();

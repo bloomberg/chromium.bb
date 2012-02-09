@@ -707,7 +707,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   // Returns true if this extension can specify |api|.
   bool CanSpecifyAPIPermission(const ExtensionAPIPermission* api,
                                string16* error) const;
-  bool CanSpecifyComponentOnlyPermission() const;
   bool CanSpecifyExperimentalPermission() const;
 
   // Checks whether the host |pattern| is allowed for this extension, given API

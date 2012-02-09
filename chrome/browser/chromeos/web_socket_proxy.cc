@@ -177,7 +177,7 @@ class Conn;
 // Websocket to TCP proxy server.
 class Serv {
  public:
-  explicit Serv(const std::vector<std::string>& allowed_origins);
+  Serv();
   ~Serv();
 
   // Do not call it twice.
@@ -192,17 +192,12 @@ class Serv {
   void MarkConnImportance(Conn*, bool important);
   Conn* GetFreshConn();
   bool IsConnSane(Conn*);
-  bool IsOriginAllowed(const std::string& origin);
   void CloseAll();
 
   static void OnConnect(int listening_sock, short event, void*);
   static void OnControlRequest(int fd, short event, void*);
 
   struct event_base* evbase() { return evbase_; }
-
-  // Checked against value of Origin field specified
-  // in a client websocket handshake.
-  std::vector<std::string> allowed_origins_;
 
   // Libevent base.
   struct event_base* evbase_;
@@ -803,13 +798,11 @@ class SSLChan : public MessageLoopForIO::Watcher {
   DISALLOW_COPY_AND_ASSIGN(SSLChan);
 };
 
-Serv::Serv(const std::vector<std::string>& allowed_origins)
-    : allowed_origins_(allowed_origins),
-      evbase_(NULL),
+Serv::Serv()
+    : evbase_(NULL),
       listening_sock_(-1),
       extra_listening_sock_(-1),
       shutdown_requested_(false) {
-  std::sort(allowed_origins_.begin(), allowed_origins_.end());
   control_descriptor_[0] = -1;
   control_descriptor_[1] = -1;
 }
@@ -1052,11 +1045,6 @@ bool Serv::IsConnSane(Conn* cs) {
   return rev_map_.find(cs) != rev_map_.end();
 }
 
-bool Serv::IsOriginAllowed(const std::string& origin) {
-  return allowed_origins_.empty() || std::binary_search(
-      allowed_origins_.begin(), allowed_origins_.end(), origin);
-}
-
 // static
 void Serv::OnConnect(int listening_sock, short event, void* ctx) {
   Serv* self = static_cast<Serv*>(ctx);
@@ -1264,8 +1252,6 @@ Conn::Status Conn::ConsumeHeader(struct evbuffer* evb) {
   // Normalize origin (e.g. leading slash).
   GURL origin = GURL(GetOrigin()).GetOrigin();
   if (!origin.is_valid())
-    return STATUS_ABORT;
-  if (!master_->IsOriginAllowed(origin.spec()))
     return STATUS_ABORT;
 
   if (!requested_parameters_.empty()) {
@@ -1898,8 +1884,7 @@ base::LazyInstance<Conn::EventKeyMap>::Leaky
 
 }  // namespace
 
-WebSocketProxy::WebSocketProxy(const std::vector<std::string>& allowed_origins)
-    : impl_(new Serv(allowed_origins)) {
+WebSocketProxy::WebSocketProxy() : impl_(new Serv()) {
 }
 
 WebSocketProxy::~WebSocketProxy() {

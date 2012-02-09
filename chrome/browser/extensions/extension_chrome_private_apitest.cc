@@ -6,15 +6,14 @@
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/common/chrome_switches.h"
 
-class ExtensionTerminalPrivateApiTest : public ExtensionApiTest {
+class ExtensionChromePrivateApiTest : public ExtensionApiTest {
   virtual void SetUpCommandLine(CommandLine* command_line) {
     ExtensionApiTest::SetUpCommandLine(command_line);
     command_line->AppendSwitchASCII(
-        switches::kWhitelistedExtensionID, "kidcpjlbjdmcnmccjhjdckhbngnhnepk");
+        switches::kWhitelistedExtensionID, "oflbaaikkabfdfkimeclgkackhdkpnip");
   }
 };
 
-IN_PROC_BROWSER_TEST_F(ExtensionTerminalPrivateApiTest, TerminalTest) {
-  EXPECT_TRUE(RunExtensionSubtest("terminal/component_extension", "test.html"))
-      << message_;
-};
+IN_PROC_BROWSER_TEST_F(ExtensionChromePrivateApiTest, DecodeJPEG) {
+  ASSERT_TRUE(RunExtensionTest("decode_jpeg")) << message_;
+}

@@ -1,14 +1,16 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/extensions/extension_apitest.h"
 
+#include "base/command_line.h"
 #include "base/stringprintf.h"
 #include "chrome/browser/chromeos/extensions/input_method_event_router.h"
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"
 #include "chrome/browser/extensions/extension_test_api.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/chrome_switches.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
@@ -59,9 +61,17 @@ class SetInputMethodListener : public content::NotificationObserver {
   int count_;
 };
 
+class ExtensionInputMethodApiTest : public ExtensionApiTest {
+  virtual void SetUpCommandLine(CommandLine* command_line) {
+    ExtensionApiTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitchASCII(
+        switches::kWhitelistedExtensionID, "ilanclmaeigfpnmdlgelmhkpkegdioip");
+  }
+};
+
 }  // namespace
 
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, InputMethodApiBasic) {
+IN_PROC_BROWSER_TEST_F(ExtensionInputMethodApiTest, Basic) {
   // Two test, two calls. See JS code for more info.
   SetInputMethodListener listener(2);
 

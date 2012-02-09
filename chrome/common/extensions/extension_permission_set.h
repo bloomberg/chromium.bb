@@ -18,6 +18,8 @@
 #include "base/string16.h"
 #include "chrome/common/extensions/url_pattern_set.h"
 
+// TODO(jstritar): Move each class to its own file in extensions/permissions.
+
 class Extension;
 class ExtensionPermissionsInfo;
 
@@ -147,10 +149,11 @@ class ExtensionAPIPermission {
     kFlagImpliesFullURLAccess = 1 << 1,
 
     // Indicates that the permission is private to COMPONENT extensions.
-    kFlagComponentOnly = 1 << 2,
+    // Depcrecated: please use the whitelist.
+    kFlagComponentOnly_Deprecated = 1 << 2,
 
     // Indicates that extensions cannot specify the permission as optional.
-    kFlagCannotBeOptional = 1 << 3,
+    kFlagCannotBeOptional = 1 << 3
   };
 
   // Flags for specifying what extension types can use the permission.
@@ -210,8 +213,15 @@ class ExtensionAPIPermission {
   // Returns true if this permission can only be acquired by COMPONENT
   // extensions.
   bool is_component_only() const {
-    return (flags_ & kFlagComponentOnly) != 0;
+    return (flags_ & kFlagComponentOnly_Deprecated) != 0;
   }
+
+  // Returns true if access to this permission is restricted by a whitelist.
+  bool HasWhitelist() const;
+
+  // Returns true if |extension_id| is whitelisted. The return value is only
+  // relevant if this permission has a whitelist.
+  bool IsWhitelisted(const std::string& extension_id) const;
 
   // Returns true if regular extensions can specify this permission.
   bool supports_extensions() const {
@@ -251,6 +261,8 @@ class ExtensionAPIPermission {
   // Register ALL the permissions!
   static void RegisterAllPermissions(ExtensionPermissionsInfo* info);
 
+  typedef std::set<std::string> ExtensionWhitelist;
+
   explicit ExtensionAPIPermission(
       ID id,
       const char* name,
@@ -259,12 +271,16 @@ class ExtensionAPIPermission {
       int flags,
       int type_restrictions);
 
+  // Adds |extension_id| to the whitelist for this permission.
+  void AddToWhitelist(const std::string& extension_id);
+
   ID id_;
   const char* name_;
   int flags_;
   int type_restrictions_;
   int l10n_message_id_;
   ExtensionPermissionMessage::ID message_id_;
+  ExtensionWhitelist whitelist_;
 };
 
 typedef std::set<ExtensionAPIPermission::ID> ExtensionAPIPermissionSet;
@@ -303,7 +319,7 @@ class ExtensionPermissionsInfo {
   void RegisterAlias(const char* name, const char* alias);
 
   // Registers a permission with the specified attributes and flags.
-  void RegisterPermission(
+  ExtensionAPIPermission* RegisterPermission(
       ExtensionAPIPermission::ID id,
       const char* name,
       int l10n_message_id,
@@ -436,7 +452,7 @@ class ExtensionPermissionSet
   const URLPatternSet& scriptable_hosts() const { return scriptable_hosts_; }
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(ExtensionPermissionSetTest,
+  FRIEND_TEST_ALL_PREFIXES(ExtensionPermissionsTest,
                            HasLessHostPrivilegesThan);
 
   friend class base::RefCountedThreadSafe<ExtensionPermissionSet>;

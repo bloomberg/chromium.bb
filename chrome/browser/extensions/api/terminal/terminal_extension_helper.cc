@@ -6,56 +6,38 @@
 
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/extensions/extension.h"
 
 namespace {
 
-const char* kAllowedExtensionIds[] = {
-    // Keep official app first, so GetTerminalExtensionID checks it first.
-    "pnhechapfaindjhompbnflcldabbghjo",  // HTerm App
-    "okddffdblfhhnmhodogpojmfkjmhinfp",  // test SSH/Crosh Client
-};
-
-const char kExtensionSchema[] = "chrome-extension://";
 const char kCroshExtensionEntryPoint[] = "/html/crosh.html";
+
+const Extension* GetTerminalExtension(Profile* profile) {
+  static const char* kPossibleAppIds[] = {
+    extension_misc::kHTermAppId,
+    extension_misc::kHTermDevAppId
+  };
+
+  // The production app should be first in the list.
+  DCHECK_EQ(kPossibleAppIds[0], extension_misc::kHTermAppId);
+
+  ExtensionService* service = profile->GetExtensionService();
+  for (size_t x = 0; x < arraysize(kPossibleAppIds); ++x) {
+    const Extension* extension = service->GetExtensionById(
+        kPossibleAppIds[x], false);
+    if (extension)
+      return extension;
+  }
+
+  return NULL;
+}
 
 }  // namespace
 
-// Allow component and whitelisted extensions.
-bool TerminalExtensionHelper::AllowAccessToExtension(
-    Profile* profile,
-    const std::string& extension_id) {
-  ExtensionService* service = profile->GetExtensionService();
-  const Extension* extension = service->GetExtensionById(extension_id, false);
-
-  if (!extension)
-    return false;
-
-  if (extension->location() == Extension::COMPONENT)
-    return true;
-
-  for (size_t i = 0; i < arraysize(kAllowedExtensionIds); i++) {
-    if (extension->id() == kAllowedExtensionIds[i])
-      return true;
-  }
-  return false;
-}
-
 GURL TerminalExtensionHelper::GetCroshExtensionURL(Profile* profile) {
-  const char* extension_id = GetTerminalExtensionId(profile);
-  if (!extension_id)
+  const Extension* extension = GetTerminalExtension(profile);
+  if (!extension)
     return GURL();
 
-  std::string crosh_url_str(kExtensionSchema);
-  crosh_url_str.append(extension_id);
-  crosh_url_str.append(kCroshExtensionEntryPoint);
-  return GURL(crosh_url_str);
-}
-
-const char* TerminalExtensionHelper::GetTerminalExtensionId(Profile* profile) {
-  ExtensionService* service = profile->GetExtensionService();
-  for (size_t i = 0; i < arraysize(kAllowedExtensionIds); i++) {
-    if (service->GetExtensionById(kAllowedExtensionIds[i], false) != 0)
-      return kAllowedExtensionIds[i];
-  }
-  return NULL;
+  return extension->GetResourceURL(kCroshExtensionEntryPoint);
 }

@@ -32,72 +32,6 @@
 
 namespace {
 
-const char* kAllowedIds[] = {
-    "haiffjcadagjlijoggckpgfnoeiflnem",
-    "gnedhmakppccajfpfiihfcdlnpgomkcf",
-    "fjcibdnjlbfnbfdjneajpipnlcppleek",
-    "okddffdblfhhnmhodogpojmfkjmhinfp",
-    "pnhechapfaindjhompbnflcldabbghjo"  // HTerm App (SSH Client)
-};
-
-class OriginValidator {
- public:
-  OriginValidator() {
-    chromeos::FillWithExtensionsIdsWithPrivateAccess(&allowed_ids_);
-    CommandLine* command_line = CommandLine::ForCurrentProcess();
-    DCHECK(command_line);
-    std::string allowed_list =
-        command_line->GetSwitchValueASCII(switches::kAllowWebSocketProxy);
-    if (!allowed_list.empty()) {
-      StringTokenizer t(allowed_list, ",");
-      while (t.GetNext()) {
-        // It must be either extension id or origin.
-        if (Extension::IdIsValid(t.token())) {
-          allowed_ids_.push_back(t.token());
-        } else {
-          // It is not extension id, check if it is an origin.
-          GURL origin = GURL(t.token()).GetOrigin();
-          if (!origin.is_valid()) {
-            LOG(ERROR) << "Invalid extension id or origin specified via "
-                       << switches::kAllowWebSocketProxy << " switch";
-            break;
-          }
-          allowed_origins_.push_back(origin.spec());
-          if (origin.SchemeIs(chrome::kExtensionScheme))
-            allowed_ids_.push_back(origin.host());
-        }
-      }
-    }
-    for (size_t i = 0; i < allowed_ids_.size(); ++i) {
-      allowed_origins_.push_back(Extension::GetBaseURLFromExtensionId(
-          allowed_ids_[i]).GetOrigin().spec());
-    }
-    std::sort(allowed_ids_.begin(), allowed_ids_.end());
-    allowed_ids_.resize(std::unique(
-        allowed_ids_.begin(), allowed_ids_.end()) - allowed_ids_.begin());
-    std::sort(allowed_origins_.begin(), allowed_origins_.end());
-    allowed_origins_.resize(std::unique(allowed_origins_.begin(),
-        allowed_origins_.end()) - allowed_origins_.begin());
-  }
-
-  bool CheckCredentials(
-      const std::string& extension_id,
-      const std::string& hostname,
-      unsigned short port,
-      chromeos::WebSocketProxyController::ConnectionFlags flags) {
-    return std::binary_search(
-        allowed_ids_.begin(), allowed_ids_.end(), extension_id);
-  }
-
-  const std::vector<std::string>& allowed_origins() { return allowed_origins_; }
-
- private:
-  std::vector<std::string> allowed_ids_;
-  std::vector<std::string> allowed_origins_;
-};
-
-base::LazyInstance<OriginValidator> g_validator = LAZY_INSTANCE_INITIALIZER;
-
 class ProxyLifetime
     : public net::NetworkChangeNotifier::OnlineStateObserver,
       public content::NotificationObserver {
@@ -145,8 +79,7 @@ class ProxyLifetime
 
   void ProxyCallback() {
     LOG(INFO) << "Attempt to run web socket proxy task";
-    chromeos::WebSocketProxy* server = new chromeos::WebSocketProxy(
-        g_validator.Get().allowed_origins());
+    chromeos::WebSocketProxy* server = new chromeos::WebSocketProxy();
     {
       base::AutoLock alk(lock_);
       if (shutdown_requested_)
@@ -193,12 +126,6 @@ base::LazyInstance<ProxyLifetime> g_proxy_lifetime = LAZY_INSTANCE_INITIALIZER;
 
 namespace chromeos {
 
-void FillWithExtensionsIdsWithPrivateAccess(std::vector<std::string>* ids) {
-  ids->clear();
-  for (size_t i = 0; i < arraysize(kAllowedIds); ++i)
-    ids->push_back(kAllowedIds[i]);
-}
-
 // static
 void WebSocketProxyController::Initiate() {
   g_proxy_lifetime.Get();
@@ -229,16 +156,6 @@ void WebSocketProxyController::Shutdown() {
       g_proxy_lifetime.Get().server_->Shutdown();
   }
   g_proxy_lifetime.Get().web_socket_proxy_thread_.Stop();
-}
-
-// static
-bool WebSocketProxyController::CheckCredentials(
-    const std::string& extension_id,
-    const std::string& hostname,
-    unsigned short port,
-    ConnectionFlags flags) {
-  return g_validator.Get().CheckCredentials(
-      extension_id, hostname, port, flags);
 }
 
 }  // namespace chromeos

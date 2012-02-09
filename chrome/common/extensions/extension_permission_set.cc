@@ -7,10 +7,12 @@
 #include <algorithm>
 #include <string>
 
+#include "base/command_line.h"
 #include "base/memory/singleton.h"
 #include "base/values.h"
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_l10n_util.h"
@@ -21,6 +23,7 @@
 #include "net/base/registry_controlled_domain.h"
 #include "ui/base/l10n/l10n_util.h"
 
+namespace ids = extension_misc;
 namespace {
 
 // Helper for GetDistinctHosts(): com > net > org > everything else.
@@ -196,19 +199,6 @@ void ExtensionAPIPermission::RegisterAllPermissions(
       kUnlimitedStorage, "unlimitedStorage", 0,
       ExtensionPermissionMessage::kNone, kFlagCannotBeOptional, kTypeAll);
 
-  // Register hosted app permissions that are also private.
-  info->RegisterPermission(
-      kChromePrivate, "chromePrivate", 0,
-      ExtensionPermissionMessage::kNone, kFlagCannotBeOptional,
-      kTypeAll - kTypePlatformApp);
-  info->RegisterPermission(
-      kChromeAuthPrivate, "chromeAuthPrivate", 0,
-      ExtensionPermissionMessage::kNone,
-      kFlagComponentOnly | kFlagCannotBeOptional, kTypeAll - kTypePlatformApp);
-  info->RegisterPermission(
-      kWebstorePrivate, "webstorePrivate", 0,
-      ExtensionPermissionMessage::kNone,
-      kFlagComponentOnly | kFlagCannotBeOptional, kTypeAll - kTypePlatformApp);
 
   // Register hosted and packaged app permissions.
   info->RegisterPermission(
@@ -245,9 +235,6 @@ void ExtensionAPIPermission::RegisterAllPermissions(
       kInput, "input", 0, ExtensionPermissionMessage::kNone,
       kFlagImpliesFullURLAccess, kTypeDefault);
   info->RegisterPermission(
-      kInputMethodPrivate, "inputMethodPrivate", 0,
-      ExtensionPermissionMessage::kNone, kFlagCannotBeOptional, kTypeDefault);
-  info->RegisterPermission(
       kManagement, "management", IDS_EXTENSION_PROMPT_WARNING_MANAGEMENT,
       ExtensionPermissionMessage::kManagement, kFlagNone, kTypeDefault);
   info->RegisterPermission(
@@ -264,9 +251,6 @@ void ExtensionAPIPermission::RegisterAllPermissions(
       kTab, "tabs", IDS_EXTENSION_PROMPT_WARNING_TABS,
       ExtensionPermissionMessage::kTabs, kFlagNone,
       kTypeDefault - kTypePlatformApp);
-  info->RegisterPermission(
-      kTerminalPrivate, "terminalPrivate", 0,
-      ExtensionPermissionMessage::kNone, kFlagCannotBeOptional, kTypeDefault);
   info->RegisterPermission(
       kTts, "tts", 0,
       ExtensionPermissionMessage::kNone, kFlagCannotBeOptional, kTypeDefault);
@@ -285,32 +269,73 @@ void ExtensionAPIPermission::RegisterAllPermissions(
       kWebRequestBlocking, "webRequestBlocking", 0,
       ExtensionPermissionMessage::kNone, kFlagNone,
       kTypeDefault - kTypePlatformApp);
-  info->RegisterPermission(
-      kWebSocketProxyPrivate, "webSocketProxyPrivate", 0,
-      ExtensionPermissionMessage::kNone, kFlagCannotBeOptional,
-      kTypeDefault - kTypePlatformApp);
 
   // Register private permissions.
   info->RegisterPermission(
       kChromeosInfoPrivate, "chromeosInfoPrivate", 0,
       ExtensionPermissionMessage::kNone,
-      kFlagComponentOnly | kFlagCannotBeOptional, kTypeDefault);
+      kFlagComponentOnly_Deprecated | kFlagCannotBeOptional, kTypeDefault);
   info->RegisterPermission(
       kFileBrowserPrivate, "fileBrowserPrivate", 0,
       ExtensionPermissionMessage::kNone,
-      kFlagComponentOnly | kFlagCannotBeOptional, kTypeDefault);
+      kFlagComponentOnly_Deprecated | kFlagCannotBeOptional, kTypeDefault);
   info->RegisterPermission(
       kMediaPlayerPrivate, "mediaPlayerPrivate", 0,
       ExtensionPermissionMessage::kNone,
-      kFlagComponentOnly | kFlagCannotBeOptional, kTypeDefault);
+      kFlagComponentOnly_Deprecated | kFlagCannotBeOptional, kTypeDefault);
   info->RegisterPermission(
       kMetricsPrivate, "metricsPrivate", 0,
       ExtensionPermissionMessage::kNone,
-      kFlagComponentOnly | kFlagCannotBeOptional, kTypeDefault);
+      kFlagComponentOnly_Deprecated | kFlagCannotBeOptional, kTypeDefault);
   info->RegisterPermission(
       kSystemPrivate, "systemPrivate", 0,
       ExtensionPermissionMessage::kNone,
-      kFlagComponentOnly | kFlagCannotBeOptional, kTypeDefault);
+      kFlagComponentOnly_Deprecated | kFlagCannotBeOptional, kTypeDefault);
+
+  ExtensionAPIPermission* chromeAuthPrivate = info->RegisterPermission(
+      kChromeAuthPrivate, "chromeAuthPrivate", 0,
+      ExtensionPermissionMessage::kNone,
+      kFlagCannotBeOptional, kTypeAll - kTypePlatformApp);
+  chromeAuthPrivate->AddToWhitelist(ids::kCloudPrintAppId);
+
+  ExtensionAPIPermission* chromePrivate = info->RegisterPermission(
+      kChromePrivate, "chromePrivate", 0, ExtensionPermissionMessage::kNone,
+      kFlagCannotBeOptional, kTypeAll - kTypePlatformApp);
+  chromePrivate->AddToWhitelist(ids::kCitrixReceiverAppId);
+  chromePrivate->AddToWhitelist(ids::kCitrixReceiverAppBetaId);
+  chromePrivate->AddToWhitelist(ids::kCitrixReceiverAppDevId);
+
+  ExtensionAPIPermission* inputMethodPrivate = info->RegisterPermission(
+      kInputMethodPrivate, "inputMethodPrivate", 0,
+      ExtensionPermissionMessage::kNone, kFlagCannotBeOptional, kTypeDefault);
+  inputMethodPrivate->AddToWhitelist(ids::kCitrixReceiverAppId);
+  inputMethodPrivate->AddToWhitelist(ids::kCitrixReceiverAppBetaId);
+  inputMethodPrivate->AddToWhitelist(ids::kCitrixReceiverAppDevId);
+  inputMethodPrivate->AddToWhitelist(ids::kHTermAppId);
+  inputMethodPrivate->AddToWhitelist(ids::kHTermDevAppId);
+
+  ExtensionAPIPermission* terminalPrivate = info->RegisterPermission(
+      kTerminalPrivate, "terminalPrivate", 0, ExtensionPermissionMessage::kNone,
+      kFlagCannotBeOptional, kTypeDefault);
+  terminalPrivate->AddToWhitelist(ids::kHTermAppId);
+  terminalPrivate->AddToWhitelist(ids::kHTermDevAppId);
+
+  ExtensionAPIPermission* webSocketProxyPrivate = info->RegisterPermission(
+      kWebSocketProxyPrivate, "webSocketProxyPrivate", 0,
+      ExtensionPermissionMessage::kNone,
+      kFlagCannotBeOptional, kTypeDefault - kTypePlatformApp);
+  webSocketProxyPrivate->AddToWhitelist(ids::kCitrixReceiverAppId);
+  webSocketProxyPrivate->AddToWhitelist(ids::kCitrixReceiverAppBetaId);
+  webSocketProxyPrivate->AddToWhitelist(ids::kCitrixReceiverAppDevId);
+  webSocketProxyPrivate->AddToWhitelist(ids::kHTermAppId);
+  webSocketProxyPrivate->AddToWhitelist(ids::kHTermDevAppId);
+
+  ExtensionAPIPermission* webstorePrivate = info->RegisterPermission(
+      kWebstorePrivate, "webstorePrivate", 0,
+      ExtensionPermissionMessage::kNone,
+      kFlagCannotBeOptional, kTypeAll - kTypePlatformApp);
+  webstorePrivate->AddToWhitelist(ids::kEnterpriseWebStoreAppId);
+  webstorePrivate->AddToWhitelist(ids::kWebStoreAppId);
 
   // Full url access permissions.
   info->RegisterPermission(
@@ -339,6 +364,25 @@ void ExtensionAPIPermission::RegisterAllPermissions(
   // Register aliases.
   info->RegisterAlias("unlimitedStorage", kOldUnlimitedStoragePermission);
   info->RegisterAlias("tabs", kWindowsPermission);
+}
+
+bool ExtensionAPIPermission::HasWhitelist() const {
+  return !whitelist_.empty();
+}
+
+bool ExtensionAPIPermission::IsWhitelisted(
+    const std::string& extension_id) const {
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kWhitelistedExtensionID)) {
+    if (extension_id == command_line->GetSwitchValueASCII(
+            switches::kWhitelistedExtensionID))
+      return true;
+  }
+  return whitelist_.find(extension_id) != whitelist_.end();
+}
+
+void ExtensionAPIPermission::AddToWhitelist(const std::string& extension_id) {
+  whitelist_.insert(extension_id);
 }
 
 //
@@ -398,7 +442,7 @@ void ExtensionPermissionsInfo::RegisterAlias(
   name_map_[alias] = name_map_[name];
 }
 
-void ExtensionPermissionsInfo::RegisterPermission(
+ExtensionAPIPermission* ExtensionPermissionsInfo::RegisterPermission(
     ExtensionAPIPermission::ID id,
     const char* name,
     int l10n_message_id,
@@ -415,6 +459,8 @@ void ExtensionPermissionsInfo::RegisterPermission(
   name_map_[name] = permission;
 
   permission_count_++;
+
+  return permission;
 }
 
 //

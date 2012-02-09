@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,24 +13,8 @@
 
 namespace {
 
-bool IsCloudPrintEnableURL(Profile* profile, const GURL& url) {
-  ExtensionService* service = profile->GetExtensionService();
-  const Extension* cloud_print_app = service->GetExtensionById(
-      extension_misc::kCloudPrintAppId, false);
-  if (!cloud_print_app) {
-#if !defined(OS_CHROMEOS)
-    NOTREACHED();
-#endif  // !defined(OS_CHROMEOS)
-    return false;
-  }
-  return (service->extensions()->GetHostedAppByURL(ExtensionURLInfo(url)) ==
-          cloud_print_app);
-}
-
 bool test_mode = false;
 
-const char kAccessDeniedError[] =
-    "Cannot call this API from a non-cloudprint URL.";
 }  // namespace
 
 SetCloudPrintCredentialsFunction::SetCloudPrintCredentialsFunction() {
@@ -40,12 +24,6 @@ SetCloudPrintCredentialsFunction::~SetCloudPrintCredentialsFunction() {
 }
 
 bool SetCloudPrintCredentialsFunction::RunImpl() {
-  // This has to be called from the specific cloud print app.
-  if (!IsCloudPrintEnableURL(profile_, source_url())) {
-    error_ = kAccessDeniedError;
-    return false;
-  }
-
   std::string user_email;
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &user_email));
   std::string robot_email;

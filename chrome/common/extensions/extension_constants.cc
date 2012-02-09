@@ -510,6 +510,12 @@ const char kGeneratedBackgroundPageFilename[] =
 
 namespace extension_misc {
 const char kBookmarkManagerId[] = "eemcgdkfndhakfknompkggombfjjjeno";
+const char kCitrixReceiverAppId[] = "haiffjcadagjlijoggckpgfnoeiflnem";
+const char kCitrixReceiverAppBetaId[] = "gnedhmakppccajfpfiihfcdlnpgomkcf";
+const char kCitrixReceiverAppDevId[] = "fjcibdnjlbfnbfdjneajpipnlcppleek";
+const char kEnterpriseWebStoreAppId[] = "afchcafgojfnemjkcbhfekplkmjaldaa";
+const char kHTermAppId[] = "pnhechapfaindjhompbnflcldabbghjo";
+const char kHTermDevAppId[] = "okddffdblfhhnmhodogpojmfkjmhinfp";
 const char kWebStoreAppId[] = "ahfgeienlihckogmohjhadlkjgocpleb";
 const char kCloudPrintAppId[] = "mfehgcgbbipciphmccgaenjidiccnmng";
 const char kAppsPromoHistogram[] = "Extensions.AppsPromo";

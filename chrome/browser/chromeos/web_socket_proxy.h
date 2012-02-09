@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -22,8 +22,7 @@ class WebSocketProxy {
   // Limits number of simultaneously open connections.
   static const size_t kConnPoolLimit = 40;
 
-  // Empty |allowed_origins| vector disables check for origin.
-  explicit WebSocketProxy(const std::vector<std::string>& allowed_origins);
+  WebSocketProxy();
   ~WebSocketProxy();
 
   // Do not call it twice.

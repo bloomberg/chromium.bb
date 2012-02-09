@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -25,11 +25,6 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/web_socket_proxy_controller.h"
 #endif
-
-namespace {
-const char kPermissionDeniedError[] =
-    "Extension does not have permission to use this method.";
-}
 
 WebSocketProxyPrivate::WebSocketProxyPrivate()
     : port_(-1),
@@ -106,24 +101,16 @@ bool WebSocketProxyPrivate::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &hostname_));
   EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(1, &port_));
 
-  if (chromeos::WebSocketProxyController::CheckCredentials(
-          extension_id(), hostname_, port_,
-          do_tls_ ? chromeos::WebSocketProxyController::TLS_OVER_TCP :
-              chromeos::WebSocketProxyController::PLAIN_TCP)) {
-    listening_port_ = chromeos::WebSocketProxyController::GetPort();
-    if (listening_port_ < 1) {
-      delay_response = true;
-      registrar_.Add(
-          this, chrome::NOTIFICATION_WEB_SOCKET_PROXY_STARTED,
-          content::NotificationService::AllSources());
-    }
-    map_["hostname"] = hostname_;
-    map_["port"] = base::IntToString(port_);
-    map_["extension_id"] = extension_id();
-  } else {
-    error_ = kPermissionDeniedError;
-    return false;
+  listening_port_ = chromeos::WebSocketProxyController::GetPort();
+  if (listening_port_ < 1) {
+    delay_response = true;
+    registrar_.Add(
+        this, chrome::NOTIFICATION_WEB_SOCKET_PROXY_STARTED,
+        content::NotificationService::AllSources());
   }
+  map_["hostname"] = hostname_;
+  map_["port"] = base::IntToString(port_);
+  map_["extension_id"] = extension_id();
 
   if (delay_response) {
     const int kTimeout = 12;

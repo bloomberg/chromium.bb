@@ -10,8 +10,14 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/extension_constants.h"
+#include "chrome/common/extensions/extension_error_utils.h"
+#include "chrome/common/extensions/extension_permission_set.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace errors = extension_manifest_errors;
+namespace keys = extension_manifest_keys;
+namespace values = extension_manifest_values;
 namespace {
 
 static scoped_refptr<Extension> LoadManifest(const std::string& dir,
@@ -44,6 +50,27 @@ static scoped_refptr<Extension> LoadManifest(const std::string& dir,
   return LoadManifest(dir, test_file, Extension::NO_FLAGS);
 }
 
+static scoped_refptr<Extension> LoadManifestFromValue(
+    DictionaryValue* manifest,
+    Extension::Location location,
+    std::string* error) {
+  return Extension::Create(FilePath(), location, *manifest,
+                           Extension::STRICT_ERROR_CHECKS, error);
+}
+
+static void LoadManifestAndExpectError(DictionaryValue* manifest,
+                                       Extension::Location location,
+                                       const std::string& permission) {
+  std::string error;
+  scoped_refptr<Extension> extension =
+      LoadManifestFromValue(manifest, location, &error);
+
+  std::string expected_error = ExtensionErrorUtils::FormatErrorMessage(
+      errors::kPermissionNotAllowed, permission);
+  EXPECT_FALSE(extension);
+  EXPECT_EQ(expected_error, error);
+}
+
 void CompareLists(const std::vector<std::string>& expected,
                   const std::vector<std::string>& actual) {
   ASSERT_EQ(expected.size(), actual.size());
@@ -60,15 +87,11 @@ static void AddPattern(URLPatternSet* extent, const std::string& pattern) {
 
 } // namespace
 
-class ExtensionAPIPermissionTest : public testing::Test {
+class ExtensionPermissionsTest : public testing::Test {
 };
-
-class ExtensionPermissionSetTest : public testing::Test {
-};
-
 
 // Tests GetByID.
-TEST(ExtensionPermissionsInfoTest, GetByID) {
+TEST(ExtensionPermissionsTest, GetByID) {
   ExtensionPermissionsInfo* info = ExtensionPermissionsInfo::GetInstance();
   ExtensionAPIPermissionSet ids = info->GetAll();
   for (ExtensionAPIPermissionSet::iterator i = ids.begin();
@@ -78,7 +101,7 @@ TEST(ExtensionPermissionsInfoTest, GetByID) {
 }
 
 // Tests that GetByName works with normal permission names and aliases.
-TEST(ExtensionPermissionsInfoTest, GetByName) {
+TEST(ExtensionPermissionsTest, GetByName) {
   ExtensionPermissionsInfo* info = ExtensionPermissionsInfo::GetInstance();
   EXPECT_EQ(ExtensionAPIPermission::kTab, info->GetByName("tabs")->id());
   EXPECT_EQ(ExtensionAPIPermission::kManagement,
@@ -86,7 +109,7 @@ TEST(ExtensionPermissionsInfoTest, GetByName) {
   EXPECT_FALSE(info->GetByName("alsdkfjasldkfj"));
 }
 
-TEST(ExtensionPermissionsInfoTest, GetAll) {
+TEST(ExtensionPermissionsTest, GetAll) {
   size_t count = 0;
   ExtensionPermissionsInfo* info = ExtensionPermissionsInfo::GetInstance();
   ExtensionAPIPermissionSet apis = info->GetAll();
@@ -100,7 +123,7 @@ TEST(ExtensionPermissionsInfoTest, GetAll) {
   EXPECT_EQ(count, info->get_permission_count());
 }
 
-TEST(ExtensionPermissionInfoTest, GetAllByName) {
+TEST(ExtensionPermissionsTest, GetAllByName) {
   std::set<std::string> names;
   names.insert("background");
   names.insert("management");
@@ -121,7 +144,7 @@ TEST(ExtensionPermissionInfoTest, GetAllByName) {
 }
 
 // Tests that the aliases are properly mapped.
-TEST(ExtensionAPIPermissionTest, Aliases) {
+TEST(ExtensionPermissionsTest, Aliases) {
   ExtensionPermissionsInfo* info = ExtensionPermissionsInfo::GetInstance();
   // tabs: tabs, windows
   std::string tabs_name = "tabs";
@@ -139,7 +162,7 @@ TEST(ExtensionAPIPermissionTest, Aliases) {
             info->GetByName("unlimited_storage")->id());
 }
 
-TEST(ExtensionAPIPermissionTest, HostedAppPermissions) {
+TEST(ExtensionPermissionsTest, HostedAppPermissions) {
   ExtensionPermissionsInfo* info = ExtensionPermissionsInfo::GetInstance();
   ExtensionAPIPermissionSet hosted_perms;
   hosted_perms.insert(ExtensionAPIPermission::kAppNotifications);
@@ -154,19 +177,41 @@ TEST(ExtensionAPIPermissionTest, HostedAppPermissions) {
   hosted_perms.insert(ExtensionAPIPermission::kUnlimitedStorage);
   hosted_perms.insert(ExtensionAPIPermission::kWebstorePrivate);
 
+  DictionaryValue source;
+  source.SetString(keys::kName, "permission hosted app test");
+  source.SetString(keys::kVersion, "1");
+  source.SetInteger(keys::kManifestVersion, 2);
+  ListValue* urls = new ListValue();
+  urls->Append(Value::CreateStringValue("http://localhost/test.html"));
+  source.Set(keys::kWebURLs, urls);
+  source.SetString(keys::kLaunchWebURL, "http://localhost/test.html");
+
   ExtensionAPIPermissionSet perms = info->GetAll();
   size_t count = 0;
   for (ExtensionAPIPermissionSet::iterator i = perms.begin();
        i != perms.end(); ++i) {
-    count += hosted_perms.count(*i);
-    EXPECT_EQ(hosted_perms.count(*i) > 0,
-              info->GetByID(*i)->supports_hosted_apps());
+    ExtensionAPIPermission* permission = info->GetByID(*i);
+    if (permission->supports_hosted_apps()) {
+      count++;
+      EXPECT_TRUE(hosted_perms.count(*i));
+      continue;
+    }
+
+    scoped_ptr<DictionaryValue> manifest(source.DeepCopy());
+    ListValue* permissions = new ListValue();
+    permissions->Append(Value::CreateStringValue(permission->name()));
+    manifest->Set(keys::kPermissions, permissions);
+
+    // This error may be generated for other reasons too, like if the permission
+    // has a whitelist.
+    LoadManifestAndExpectError(
+        manifest.get(), Extension::INTERNAL, permission->name());
   }
 
   EXPECT_EQ(hosted_perms.size(), count);
 }
 
-TEST(ExtensionAPIPermissionTest, PlatformAppPermissions) {
+TEST(ExtensionPermissionsTest, PlatformAppPermissions) {
   ExtensionPermissionsInfo* info = ExtensionPermissionsInfo::GetInstance();
   ExtensionAPIPermissionSet blacklist;
   blacklist.insert(ExtensionAPIPermission::kAppNotifications);
@@ -180,42 +225,125 @@ TEST(ExtensionAPIPermissionTest, PlatformAppPermissions) {
   blacklist.insert(ExtensionAPIPermission::kWebSocketProxyPrivate);
   blacklist.insert(ExtensionAPIPermission::kWebstorePrivate);
 
+  DictionaryValue source;
+  source.SetString(keys::kName, "permission platform app test");
+  source.SetString(keys::kVersion, "1");
+  source.SetInteger(keys::kManifestVersion, 2);
+  source.SetBoolean(keys::kPlatformApp, true);
+  source.SetString(keys::kLaunchLocalPath, "test.html");
+  source.SetString(keys::kLaunchContainer, values::kLaunchContainerShell);
+
   ExtensionAPIPermissionSet perms = info->GetAll();
   size_t count = 0;
   for (ExtensionAPIPermissionSet::iterator i = perms.begin();
        i != perms.end(); ++i) {
-    count += blacklist.count(*i);
-    EXPECT_EQ(blacklist.count(*i) > 0,
-              !info->GetByID(*i)->supports_platform_apps());
+    ExtensionAPIPermission* permission = info->GetByID(*i);
+    if (permission->supports_platform_apps())
+      continue;
+
+    count++;
+    EXPECT_TRUE(blacklist.count(*i));
+
+    scoped_ptr<DictionaryValue> manifest(source.DeepCopy());
+    ListValue* permissions = new ListValue();
+    permissions->Append(Value::CreateStringValue(permission->name()));
+    manifest->Set(keys::kPermissions, permissions);
+
+    // This error may be generated for other reasons too, like if the permission
+    // has a whitelist.
+    LoadManifestAndExpectError(
+        manifest.get(), Extension::INTERNAL, permission->name());
   }
 
   EXPECT_EQ(blacklist.size(), count);
 }
 
-TEST(ExtensionAPIPermissionTest, ComponentOnlyPermissions) {
+TEST(ExtensionPermissionsTest, ComponentOnlyPermissions) {
   ExtensionPermissionsInfo* info = ExtensionPermissionsInfo::GetInstance();
   ExtensionAPIPermissionSet private_perms;
-  private_perms.insert(ExtensionAPIPermission::kChromeAuthPrivate);
   private_perms.insert(ExtensionAPIPermission::kChromeosInfoPrivate);
   private_perms.insert(ExtensionAPIPermission::kFileBrowserPrivate);
   private_perms.insert(ExtensionAPIPermission::kMediaPlayerPrivate);
   private_perms.insert(ExtensionAPIPermission::kMetricsPrivate);
   private_perms.insert(ExtensionAPIPermission::kSystemPrivate);
-  private_perms.insert(ExtensionAPIPermission::kWebstorePrivate);
+
+  DictionaryValue source;
+  source.SetString(keys::kName, "component only permission test");
+  source.SetString(keys::kVersion, "1");
+  source.SetInteger(keys::kManifestVersion, 2);
 
   ExtensionAPIPermissionSet perms = info->GetAll();
-  int count = 0;
+  size_t count = 0;
   for (ExtensionAPIPermissionSet::iterator i = perms.begin();
        i != perms.end(); ++i) {
-    count += private_perms.count(*i);
-    EXPECT_EQ(private_perms.count(*i) > 0,
-              info->GetByID(*i)->is_component_only());
+    ExtensionAPIPermission* permission = info->GetByID(*i);
+
+    scoped_ptr<DictionaryValue> manifest(source.DeepCopy());
+    ListValue* permissions = new ListValue();
+    permissions->Append(Value::CreateStringValue(permission->name()));
+    manifest->Set(keys::kPermissions, permissions);
+
+    // COMPONENT extensions can access any permission.
+    std::string error;
+    scoped_refptr<Extension> extension = LoadManifestFromValue(
+        manifest.get(), Extension::COMPONENT, &error);
+    EXPECT_TRUE(extension);
+
+    if (!permission->is_component_only())
+      continue;
+
+    count++;
+    EXPECT_TRUE(private_perms.count(*i));
+
+    // But INTERNAL extensions can't access component only permissions.
+    LoadManifestAndExpectError(
+        manifest.get(), Extension::INTERNAL, permission->name());
   }
 
-  EXPECT_EQ(7, count);
+  EXPECT_EQ(private_perms.size(), count);
 }
 
-TEST(ExtensionPermissionSetTest, EffectiveHostPermissions) {
+// Tests that permission whitelists are enforced.
+TEST(ExtensionPermissionsTest, Whitelists) {
+  ExtensionPermissionsInfo* info = ExtensionPermissionsInfo::GetInstance();
+  ExtensionAPIPermissionSet ids = info->GetAll();
+
+  ExtensionAPIPermissionSet expected_whitelists;
+  expected_whitelists.insert(ExtensionAPIPermission::kChromeAuthPrivate);
+  expected_whitelists.insert(ExtensionAPIPermission::kChromePrivate);
+  expected_whitelists.insert(ExtensionAPIPermission::kInputMethodPrivate);
+  expected_whitelists.insert(ExtensionAPIPermission::kTerminalPrivate);
+  expected_whitelists.insert(ExtensionAPIPermission::kWebSocketProxyPrivate);
+  expected_whitelists.insert(ExtensionAPIPermission::kWebstorePrivate);
+
+  DictionaryValue source;
+  source.SetString(keys::kName, "permission whitelist test");
+  source.SetString(keys::kVersion, "1");
+  source.SetInteger(keys::kManifestVersion, 2);
+
+  size_t whitelists = 0;
+  for (ExtensionAPIPermissionSet::iterator i = ids.begin();
+       i != ids.end(); ++i) {
+    ExtensionAPIPermission* permission = info->GetByID(*i);
+    if (!permission->HasWhitelist())
+      continue;
+
+    whitelists++;
+    EXPECT_TRUE(expected_whitelists.count(*i));
+
+    scoped_ptr<DictionaryValue> manifest(source.DeepCopy());
+    ListValue* permissions = new ListValue();
+    permissions->Append(Value::CreateStringValue(permission->name()));
+    manifest->Set(keys::kPermissions, permissions);
+
+    LoadManifestAndExpectError(
+        manifest.get(), Extension::INTERNAL, permission->name());
+  }
+
+  EXPECT_EQ(expected_whitelists.size(), whitelists);
+}
+
+TEST(ExtensionPermissionsTest, EffectiveHostPermissions) {
   scoped_refptr<Extension> extension;
   scoped_refptr<const ExtensionPermissionSet> permissions;
 
@@ -291,7 +419,7 @@ TEST(ExtensionPermissionSetTest, EffectiveHostPermissions) {
   EXPECT_TRUE(permissions->HasEffectiveAccessToAllHosts());
 }
 
-TEST(ExtensionPermissionSetTest, ExplicitAccessToOrigin) {
+TEST(ExtensionPermissionsTest, ExplicitAccessToOrigin) {
   ExtensionAPIPermissionSet apis;
   URLPatternSet explicit_hosts;
   URLPatternSet scriptable_hosts;
@@ -314,7 +442,7 @@ TEST(ExtensionPermissionSetTest, ExplicitAccessToOrigin) {
       GURL("http://test.example.com")));
 }
 
-TEST(ExtensionPermissionSetTest, CreateUnion) {
+TEST(ExtensionPermissionsTest, CreateUnion) {
   ExtensionAPIPermissionSet apis1;
   ExtensionAPIPermissionSet apis2;
   ExtensionAPIPermissionSet expected_apis;
@@ -395,7 +523,7 @@ TEST(ExtensionPermissionSetTest, CreateUnion) {
   EXPECT_EQ(effective_hosts, union_set->effective_hosts());
 }
 
-TEST(ExtensionPermissionSetTest, CreateIntersection) {
+TEST(ExtensionPermissionsTest, CreateIntersection) {
   ExtensionAPIPermissionSet apis1;
   ExtensionAPIPermissionSet apis2;
   ExtensionAPIPermissionSet expected_apis;
@@ -471,7 +599,7 @@ TEST(ExtensionPermissionSetTest, CreateIntersection) {
   EXPECT_EQ(effective_hosts, new_set->effective_hosts());
 }
 
-TEST(ExtensionPermissionSetTest, CreateDifference) {
+TEST(ExtensionPermissionsTest, CreateDifference) {
   ExtensionAPIPermissionSet apis1;
   ExtensionAPIPermissionSet apis2;
   ExtensionAPIPermissionSet expected_apis;
@@ -535,7 +663,7 @@ TEST(ExtensionPermissionSetTest, CreateDifference) {
   EXPECT_TRUE(set1->IsEmpty());
 }
 
-TEST(ExtensionPermissionSetTest, HasLessPrivilegesThan) {
+TEST(ExtensionPermissionsTest, HasLessPrivilegesThan) {
   const struct {
     const char* base_name;
     // Increase these sizes if you have more than 10.
@@ -628,7 +756,7 @@ TEST(ExtensionPermissionSetTest, HasLessPrivilegesThan) {
   }
 }
 
-TEST(ExtensionPermissionSetTest, PermissionMessages) {
+TEST(ExtensionPermissionsTest, PermissionMessages) {
   // Ensure that all permissions that needs to show install UI actually have
   // strings associated with them.
   ExtensionAPIPermissionSet skip;
@@ -703,7 +831,7 @@ TEST(ExtensionPermissionSetTest, PermissionMessages) {
 }
 
 // Tests the default permissions (empty API permission set).
-TEST(ExtensionPermissionSetTest, DefaultFunctionAccess) {
+TEST(ExtensionPermissionsTest, DefaultFunctionAccess) {
   const struct {
     const char* permission_name;
     bool expect_success;
@@ -771,7 +899,7 @@ TEST(ExtensionPermissionSetTest, DefaultAnyAPIAccess) {
   }
 }
 
-TEST(ExtensionPermissionSetTest, GetWarningMessages_ManyHosts) {
+TEST(ExtensionPermissionsTest, GetWarningMessages_ManyHosts) {
   scoped_refptr<Extension> extension;
 
   extension = LoadManifest("permissions", "many-hosts.json");
@@ -782,7 +910,7 @@ TEST(ExtensionPermissionSetTest, GetWarningMessages_ManyHosts) {
             UTF16ToUTF8(warnings[0]));
 }
 
-TEST(ExtensionPermissionSetTest, GetWarningMessages_Plugins) {
+TEST(ExtensionPermissionsTest, GetWarningMessages_Plugins) {
   scoped_refptr<Extension> extension;
   scoped_refptr<ExtensionPermissionSet> permissions;
 
@@ -800,7 +928,7 @@ TEST(ExtensionPermissionSetTest, GetWarningMessages_Plugins) {
 #endif
 }
 
-TEST(ExtensionPermissionSetTest, GetDistinctHostsForDisplay) {
+TEST(ExtensionPermissionsTest, GetDistinctHostsForDisplay) {
   scoped_refptr<ExtensionPermissionSet> perm_set;
   ExtensionAPIPermissionSet empty_perms;
   std::set<std::string> expected;
@@ -956,7 +1084,7 @@ TEST(ExtensionPermissionSetTest, GetDistinctHostsForDisplay) {
   }
 }
 
-TEST(ExtensionPermissionSetTest, GetDistinctHostsForDisplay_ComIsBestRcd) {
+TEST(ExtensionPermissionsTest, GetDistinctHostsForDisplay_ComIsBestRcd) {
   scoped_refptr<ExtensionPermissionSet> perm_set;
   ExtensionAPIPermissionSet empty_perms;
   URLPatternSet explicit_hosts;
@@ -981,7 +1109,7 @@ TEST(ExtensionPermissionSetTest, GetDistinctHostsForDisplay_ComIsBestRcd) {
   EXPECT_EQ(expected, perm_set->GetDistinctHostsForDisplay());
 }
 
-TEST(ExtensionPermissionSetTest, GetDistinctHostsForDisplay_NetIs2ndBestRcd) {
+TEST(ExtensionPermissionsTest, GetDistinctHostsForDisplay_NetIs2ndBestRcd) {
   scoped_refptr<ExtensionPermissionSet> perm_set;
   ExtensionAPIPermissionSet empty_perms;
   URLPatternSet explicit_hosts;
@@ -1005,7 +1133,7 @@ TEST(ExtensionPermissionSetTest, GetDistinctHostsForDisplay_NetIs2ndBestRcd) {
   EXPECT_EQ(expected, perm_set->GetDistinctHostsForDisplay());
 }
 
-TEST(ExtensionPermissionSetTest,
+TEST(ExtensionPermissionsTest,
      GetDistinctHostsForDisplay_OrgIs3rdBestRcd) {
   scoped_refptr<ExtensionPermissionSet> perm_set;
   ExtensionAPIPermissionSet empty_perms;
@@ -1029,7 +1157,7 @@ TEST(ExtensionPermissionSetTest,
   EXPECT_EQ(expected, perm_set->GetDistinctHostsForDisplay());
 }
 
-TEST(ExtensionPermissionSetTest,
+TEST(ExtensionPermissionsTest,
      GetDistinctHostsForDisplay_FirstInListIs4thBestRcd) {
   scoped_refptr<ExtensionPermissionSet> perm_set;
   ExtensionAPIPermissionSet empty_perms;
@@ -1052,7 +1180,7 @@ TEST(ExtensionPermissionSetTest,
   EXPECT_EQ(expected, perm_set->GetDistinctHostsForDisplay());
 }
 
-TEST(ExtensionPermissionSetTest, HasLessHostPrivilegesThan) {
+TEST(ExtensionPermissionsTest, HasLessHostPrivilegesThan) {
   URLPatternSet elist1;
   URLPatternSet elist2;
   URLPatternSet slist1;
@@ -1121,7 +1249,7 @@ TEST(ExtensionPermissionSetTest, HasLessHostPrivilegesThan) {
   EXPECT_TRUE(set2->HasLessHostPrivilegesThan(set1.get()));
 }
 
-TEST(ExtensionPermissionSetTest, GetAPIsAsStrings) {
+TEST(ExtensionPermissionsTest, GetAPIsAsStrings) {
   ExtensionAPIPermissionSet apis;
   URLPatternSet empty_set;
 
@@ -1141,7 +1269,7 @@ TEST(ExtensionPermissionSetTest, GetAPIsAsStrings) {
             ExtensionPermissionsInfo::GetInstance()->GetAllByName(api_names));
 }
 
-TEST(ExtensionPermissionSetTest, IsEmpty) {
+TEST(ExtensionPermissionsTest, IsEmpty) {
   ExtensionAPIPermissionSet empty_apis;
   URLPatternSet empty_extent;
 
