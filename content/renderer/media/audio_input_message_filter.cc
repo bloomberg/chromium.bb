@@ -42,8 +42,8 @@ bool AudioInputMessageFilter::Send(IPC::Message* message) {
 bool AudioInputMessageFilter::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(AudioInputMessageFilter, message)
-    IPC_MESSAGE_HANDLER(AudioInputMsg_NotifyLowLatencyStreamCreated,
-                        OnLowLatencyStreamCreated)
+    IPC_MESSAGE_HANDLER(AudioInputMsg_NotifyStreamCreated,
+                        OnStreamCreated)
     IPC_MESSAGE_HANDLER(AudioInputMsg_NotifyStreamVolume, OnStreamVolume)
     IPC_MESSAGE_HANDLER(AudioInputMsg_NotifyStreamStateChanged,
                         OnStreamStateChanged)
@@ -68,7 +68,7 @@ void AudioInputMessageFilter::OnChannelClosing() {
   channel_ = NULL;
 }
 
-void AudioInputMessageFilter::OnLowLatencyStreamCreated(
+void AudioInputMessageFilter::OnStreamCreated(
     int stream_id,
     base::SharedMemoryHandle handle,
 #if defined(OS_WIN)
@@ -89,7 +89,7 @@ void AudioInputMessageFilter::OnLowLatencyStreamCreated(
     return;
   }
   // Forward message to the stream delegate.
-  delegate->OnLowLatencyCreated(handle, socket_handle, length);
+  delegate->OnStreamCreated(handle, socket_handle, length);
 }
 
 void AudioInputMessageFilter::OnStreamVolume(int stream_id, double volume) {

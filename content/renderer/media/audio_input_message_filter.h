@@ -6,8 +6,6 @@
 // audio capturers. Created on render thread, AudioMessageFilter is operated on
 // IO thread (secondary thread of render process), it intercepts audio messages
 // and process them on IO thread since these messages are time critical.
-// This implementation only supports low-latency (based on SyncSocket)
-// messaging.
 
 #ifndef CONTENT_RENDERER_MEDIA_AUDIO_INPUT_MESSAGE_FILTER_H_
 #define CONTENT_RENDERER_MEDIA_AUDIO_INPUT_MESSAGE_FILTER_H_
@@ -26,11 +24,11 @@ class CONTENT_EXPORT AudioInputMessageFilter
  public:
   class CONTENT_EXPORT Delegate {
    public:
-    // Called when a low-latency audio input stream has been created in the
-    // browser process.
-    virtual void OnLowLatencyCreated(base::SharedMemoryHandle handle,
-                                     base::SyncSocket::Handle socket_handle,
-                                     uint32 length) = 0;
+    // Called when an audio input stream has been created in the browser
+    // process.
+    virtual void OnStreamCreated(base::SharedMemoryHandle handle,
+                                 base::SyncSocket::Handle socket_handle,
+                                 uint32 length) = 0;
 
     // Called when notification of input stream volume is received from the
     // browser process.
@@ -66,15 +64,14 @@ class CONTENT_EXPORT AudioInputMessageFilter
   virtual void OnFilterRemoved() OVERRIDE;
   virtual void OnChannelClosing() OVERRIDE;
 
-  // Received when browser process has created an audio input stream of low
-  // latency.
-  void OnLowLatencyStreamCreated(int stream_id, base::SharedMemoryHandle handle,
+  // Received when browser process has created an audio input stream.
+  void OnStreamCreated(int stream_id, base::SharedMemoryHandle handle,
 #if defined(OS_WIN)
-                                 base::SyncSocket::Handle socket_handle,
+                       base::SyncSocket::Handle socket_handle,
 #else
-                                 base::FileDescriptor socket_descriptor,
+                       base::FileDescriptor socket_descriptor,
 #endif
-                                 uint32 length);
+                       uint32 length);
 
   // Notification of volume property of an audio input stream.
   void OnStreamVolume(int stream_id, double volume);

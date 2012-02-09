@@ -55,17 +55,17 @@ IPC_MESSAGE_CONTROL4(AudioMsg_NotifyStreamCreated,
                      uint32 /* length */)
 #endif
 
-// Tell the renderer process that a low latency audio input stream has been
-// created, renderer process would be given a SyncSocket that it should read
+// Tell the renderer process that an audio input stream has been created.
+// The renderer process would be given a SyncSocket that it should read
 // from from then on.
 #if defined(OS_WIN)
-IPC_MESSAGE_CONTROL4(AudioInputMsg_NotifyLowLatencyStreamCreated,
+IPC_MESSAGE_CONTROL4(AudioInputMsg_NotifyStreamCreated,
                      int /* stream id */,
                      base::SharedMemoryHandle /* handle */,
                      base::SyncSocket::Handle /* socket handle */,
                      uint32 /* length */)
 #else
-IPC_MESSAGE_CONTROL4(AudioInputMsg_NotifyLowLatencyStreamCreated,
+IPC_MESSAGE_CONTROL4(AudioInputMsg_NotifyStreamCreated,
                      int /* stream id */,
                      base::SharedMemoryHandle /* handle */,
                      base::FileDescriptor /* socket handle */,
@@ -99,10 +99,9 @@ IPC_MESSAGE_CONTROL2(AudioHostMsg_CreateStream,
                      AudioParameters /* params */)
 
 // Request that got sent to browser for creating an audio input stream
-IPC_MESSAGE_CONTROL4(AudioInputHostMsg_CreateStream,
+IPC_MESSAGE_CONTROL3(AudioInputHostMsg_CreateStream,
                      int /* stream_id */,
                      AudioParameters /* params */,
-                     bool /* low-latency */,
                      std::string /* device_id */)
 
 // Start buffering and play the audio stream specified by stream_id.

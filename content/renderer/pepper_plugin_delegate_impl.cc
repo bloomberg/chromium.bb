@@ -357,9 +357,9 @@ class PlatformAudioInputImpl
   void StopCaptureOnIOThread();
   void ShutDownOnIOThread();
 
-  virtual void OnLowLatencyCreated(base::SharedMemoryHandle handle,
-                                   base::SyncSocket::Handle socket_handle,
-                                   uint32 length) OVERRIDE;
+  virtual void OnStreamCreated(base::SharedMemoryHandle handle,
+                               base::SyncSocket::Handle socket_handle,
+                               uint32 length) OVERRIDE;
 
   virtual void OnVolume(double volume) OVERRIDE {}
 
@@ -433,7 +433,7 @@ void PlatformAudioInputImpl::InitializeOnIOThread(
     const AudioParameters& params) {
   stream_id_ = filter_->AddDelegate(this);
   filter_->Send(new AudioInputHostMsg_CreateStream(
-      stream_id_, params, true, AudioManagerBase::kDefaultDeviceId));
+      stream_id_, params, AudioManagerBase::kDefaultDeviceId));
 }
 
 void PlatformAudioInputImpl::StartCaptureOnIOThread() {
@@ -459,7 +459,7 @@ void PlatformAudioInputImpl::ShutDownOnIOThread() {
               // PepperPluginDelegateImpl::CreateAudioInput.
 }
 
-void PlatformAudioInputImpl::OnLowLatencyCreated(
+void PlatformAudioInputImpl::OnStreamCreated(
     base::SharedMemoryHandle handle,
     base::SyncSocket::Handle socket_handle,
     uint32 length) {
@@ -481,7 +481,7 @@ void PlatformAudioInputImpl::OnLowLatencyCreated(
   } else {
     main_message_loop_proxy_->PostTask(
         FROM_HERE,
-        base::Bind(&PlatformAudioInputImpl::OnLowLatencyCreated, this,
+        base::Bind(&PlatformAudioInputImpl::OnStreamCreated, this,
                    handle, socket_handle, length));
   }
 }

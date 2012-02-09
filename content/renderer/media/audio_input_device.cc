@@ -110,8 +110,7 @@ void AudioInputDevice::InitializeOnIOThread() {
   // and create the stream when getting a OnDeviceReady() callback.
   if (!session_id_) {
     Send(new AudioInputHostMsg_CreateStream(
-        stream_id_, audio_parameters_, true,
-        AudioManagerBase::kDefaultDeviceId));
+        stream_id_, audio_parameters_, AudioManagerBase::kDefaultDeviceId));
   } else {
     Send(new AudioInputHostMsg_StartDevice(stream_id_, session_id_));
     pending_device_ready_ = true;
@@ -154,7 +153,7 @@ void AudioInputDevice::SetVolumeOnIOThread(double volume) {
     Send(new AudioInputHostMsg_SetVolume(stream_id_, volume));
 }
 
-void AudioInputDevice::OnLowLatencyCreated(
+void AudioInputDevice::OnStreamCreated(
     base::SharedMemoryHandle handle,
     base::SyncSocket::Handle socket_handle,
     uint32 length) {
@@ -168,9 +167,9 @@ void AudioInputDevice::OnLowLatencyCreated(
 #endif
   DCHECK(length);
   DCHECK(!audio_thread_.get());
+  DVLOG(1) << "OnStreamCreated (stream_id=" << stream_id_ << ")";
 
-  DVLOG(1) << "OnLowLatencyCreated (stream_id=" << stream_id_ << ")";
-  // Takes care of the case when Stop() is called before OnLowLatencyCreated().
+  // Takes care of the case when Stop() is called before OnStreamCreated().
   if (!stream_id_) {
     base::SharedMemory::CloseHandle(handle);
     // Close the socket handler.
@@ -242,7 +241,7 @@ void AudioInputDevice::OnDeviceReady(const std::string& device_id) {
     stream_id_ = 0;
   } else {
     Send(new AudioInputHostMsg_CreateStream(stream_id_, audio_parameters_,
-                                            true, device_id));
+                                            device_id));
   }
 
   pending_device_ready_ = false;

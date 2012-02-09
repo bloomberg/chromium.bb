@@ -116,29 +116,26 @@ void AudioInputRendererHost::DoCompleteCreation(
     return;
   }
 
-  if (entry->controller->LowLatencyMode()) {
-    AudioInputSyncWriter* writer =
-        static_cast<AudioInputSyncWriter*>(entry->writer.get());
+  AudioInputSyncWriter* writer =
+      static_cast<AudioInputSyncWriter*>(entry->writer.get());
 
 #if defined(OS_WIN)
-    base::SyncSocket::Handle foreign_socket_handle;
+  base::SyncSocket::Handle foreign_socket_handle;
 #else
-    base::FileDescriptor foreign_socket_handle;
+  base::FileDescriptor foreign_socket_handle;
 #endif
 
-    // If we failed to prepare the sync socket for the renderer then we fail
-    // the construction of audio input stream.
-    if (!writer->PrepareForeignSocketHandle(peer_handle(),
-                                            &foreign_socket_handle)) {
-      DeleteEntryOnError(entry);
-      return;
-    }
-
-    Send(new AudioInputMsg_NotifyLowLatencyStreamCreated(
-             entry->stream_id, foreign_memory_handle,
-             foreign_socket_handle, entry->shared_memory.created_size()));
+  // If we failed to prepare the sync socket for the renderer then we fail
+  // the construction of audio input stream.
+  if (!writer->PrepareForeignSocketHandle(peer_handle(),
+                                          &foreign_socket_handle)) {
+    DeleteEntryOnError(entry);
     return;
   }
+
+  Send(new AudioInputMsg_NotifyStreamCreated(entry->stream_id,
+      foreign_memory_handle, foreign_socket_handle,
+      entry->shared_memory.created_size()));
 }
 
 void AudioInputRendererHost::DoSendRecordingMessage(
@@ -202,20 +199,13 @@ void AudioInputRendererHost::OnStartDevice(int stream_id, int session_id) {
   audio_input_man->Start(session_id, this);
 }
 
-void AudioInputRendererHost::OnCreateStream(
-    int stream_id, const AudioParameters& params, bool low_latency,
-    const std::string& device_id) {
+void AudioInputRendererHost::OnCreateStream(int stream_id,
+                                            const AudioParameters& params,
+                                            const std::string& device_id) {
   VLOG(1) << "AudioInputRendererHost::OnCreateStream(stream_id="
           << stream_id << ")";
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(LookupById(stream_id) == NULL);
-
-  // Prevent the renderer process from asking for a normal-latency
-  // input stream.
-  if (!low_latency) {
-    NOTREACHED() << "Current implementation only supports low-latency mode.";
-    return;
-  }
 
   AudioParameters audio_params(params);
 
@@ -225,19 +215,20 @@ void AudioInputRendererHost::OnCreateStream(
   }
   uint32 packet_size = audio_params.GetPacketSize();
 
+  // Create a new AudioEntry structure.
   scoped_ptr<AudioEntry> entry(new AudioEntry());
-  // Create the shared memory and share with the renderer process.
+
+  // Create the shared memory and share it with the renderer process
+  // using a new SyncWriter object.
   if (!entry->shared_memory.CreateAndMapAnonymous(packet_size)) {
     // If creation of shared memory failed then send an error message.
     SendErrorMessage(stream_id);
     return;
   }
 
-  // This is a low latency mode, hence we need to construct a SyncWriter first.
   scoped_ptr<AudioInputSyncWriter> writer(
       new AudioInputSyncWriter(&entry->shared_memory));
 
-  // Then try to initialize the sync writer.
   if (!writer->Init()) {
     SendErrorMessage(stream_id);
     return;
@@ -245,6 +236,9 @@ void AudioInputRendererHost::OnCreateStream(
 
   // If we have successfully created the SyncWriter then assign it to the
   // entry and construct an AudioInputController.
+  // TODO(henrika): replace CreateLowLatency() with Create() as soon
+  // as satish has ensured that Speech Input also uses the default low-
+  // latency path. See crbug.com/112472 for details.
   entry->writer.reset(writer.release());
   entry->controller = media::AudioInputController::CreateLowLatency(
       resource_context_->audio_manager(),
@@ -385,7 +379,7 @@ void AudioInputRendererHost::CloseAndDeleteStream(AudioEntry* entry) {
 
   if (!entry->pending_close) {
     entry->controller->Close(base::Bind(&AudioInputRendererHost::OnStreamClosed,
-                                        this , entry));
+                                        this, entry));
     entry->pending_close = true;
   }
 }

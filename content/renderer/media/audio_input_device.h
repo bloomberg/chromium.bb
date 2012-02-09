@@ -149,9 +149,9 @@ class CONTENT_EXPORT AudioInputDevice
 
   // Methods called on IO thread ----------------------------------------------
   // AudioInputMessageFilter::Delegate impl., called by AudioInputMessageFilter
-  virtual void OnLowLatencyCreated(base::SharedMemoryHandle handle,
-                                   base::SyncSocket::Handle socket_handle,
-                                   uint32 length) OVERRIDE;
+  virtual void OnStreamCreated(base::SharedMemoryHandle handle,
+                               base::SyncSocket::Handle socket_handle,
+                               uint32 length) OVERRIDE;
   virtual void OnVolume(double volume) OVERRIDE;
   virtual void OnStateChanged(AudioStreamState state) OVERRIDE;
   virtual void OnDeviceReady(const std::string& device_id) OVERRIDE;

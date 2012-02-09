@@ -5,19 +5,14 @@
 // AudioInputRendererHost serves audio related requests from audio capturer
 // which lives inside the render process and provide access to audio hardware.
 //
-// OnCreateStream() request is only available in the low latency mode. It will
-// creates a shared memory, a SyncWriter and a AudioInputController for the
-// input stream.
-
-// OnCloseStream() will close the input stream.
+// Create stream sequence (AudioInputController = AIC):
 //
-// Create stream sequence:
-//
-// OnCreateStream -> AudioInputController::CreateLowLatency() ->
-// DoCompleteCreation -> AudioInputMsg_NotifyLowLatencyStreamCreated
+// AudioInputHostMsg_CreateStream -> OnCreateStream -> AIC::CreateLowLatency ->
+//   <- AudioInputMsg_NotifyStreamCreated <- DoCompleteCreation <- OnCreated <-
 //
 // Close stream sequence:
-// OnCloseStream -> AudioInputController::Close
+//
+// AudioInputHostMsg_CloseStream -> OnCloseStream -> AIC::Close ->
 //
 // For the OnStartDevice() request, AudioInputRendererHost starts the device
 // referenced by the session id, and an OnDeviceStarted() callback with the
@@ -43,19 +38,17 @@
 //
 // This class is owned by BrowserRenderProcessHost and instantiated on UI
 // thread. All other operations and method calls happen on IO thread, so we
-// need to be extra careful about the lifetime of this object. AudioManager is a
-// singleton and created in IO thread, audio input streams are also created in
-// the IO thread, so we need to destroy them also in IO thread.
+// need to be extra careful about the lifetime of this object.
 //
-// This implementation supports low latency audio only.
-// For low latency audio, a SyncSocket pair is used to signal buffer readiness
-// without having to route messages using the IO thread.
+// To ensure low latency audio, a SyncSocket pair is used to signal buffer
+// readiness without having to route messages using the IO thread.
 
 #ifndef CONTENT_BROWSER_RENDERER_HOST_MEDIA_AUDIO_INPUT_RENDERER_HOST_H_
 #define CONTENT_BROWSER_RENDERER_HOST_MEDIA_AUDIO_INPUT_RENDERER_HOST_H_
 #pragma once
 
 #include <map>
+#include <string>
 
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
@@ -147,7 +140,6 @@ class CONTENT_EXPORT AudioInputRendererHost
   // required properties.
   void OnCreateStream(int stream_id,
                       const AudioParameters& params,
-                      bool low_latency,
                       const std::string& device_id);
 
   // Record the audio input stream referenced by |stream_id|.
