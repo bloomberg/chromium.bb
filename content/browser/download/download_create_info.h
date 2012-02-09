@@ -23,9 +23,7 @@
 // Used for informing the download manager of a new download, since we don't
 // want to pass |DownloadItem|s between threads.
 struct CONTENT_EXPORT DownloadCreateInfo {
-  DownloadCreateInfo(const FilePath& path,
-                     const GURL& url,
-                     const base::Time& start_time,
+  DownloadCreateInfo(const base::Time& start_time,
                      int64 received_bytes,
                      int64 total_bytes,
                      int32 state,
@@ -40,10 +38,6 @@ struct CONTENT_EXPORT DownloadCreateInfo {
   // The URL from which we are downloading. This is the final URL after any
   // redirection by the server for |url_chain|.
   const GURL& url() const;
-
-  // DownloadItem fields
-  // The path where we want to save the download file.
-  FilePath path;
 
   // The chain of redirects that leading up to and including the final URL.
   std::vector<GURL> url_chain;
@@ -98,9 +92,6 @@ struct CONTENT_EXPORT DownloadCreateInfo {
   // False if the UI should be suppressed and the download performed to the
   // default location.
   bool prompt_user_for_save_location;
-
-  // The original name for a dangerous download.
-  FilePath original_name;
 
   // The charset of the referring page where the download request comes from.
   // It's used to construct a suggested filename.

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,10 +15,7 @@
 // the download.
 struct DownloadStateInfo {
   DownloadStateInfo();
-  DownloadStateInfo(bool has_user_gesture,
-                    bool prompt_user_for_save_location);
-  DownloadStateInfo(const FilePath& target,
-                    const FilePath& forced_name,
+  DownloadStateInfo(const FilePath& forced_name,
                     bool has_user_gesture,
                     content::PageTransition transition_type,
                     bool prompt_user_for_save_location);
@@ -50,7 +47,8 @@ struct DownloadStateInfo {
 
   content::DownloadDangerType danger;
 
-  // True if this download's file name was specified initially.
+  // If non-empty, contains an externally supplied filename that should be used
+  // as the target path.
   FilePath force_file_name;
 };
 

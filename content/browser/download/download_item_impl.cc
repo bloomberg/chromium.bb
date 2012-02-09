@@ -204,12 +204,11 @@ DownloadItemImpl::DownloadItemImpl(
     DownloadRequestHandleInterface* request_handle,
     bool is_otr,
     const net::BoundNetLog& bound_net_log)
-    : state_info_(info.original_name, info.save_info.file_path,
+    : state_info_(info.save_info.file_path,
                   info.has_user_gesture, info.transition_type,
                   info.prompt_user_for_save_location),
       request_handle_(request_handle),
       download_id_(info.download_id),
-      full_path_(info.path),
       url_chain_(info.url_chain),
       referrer_url_(info.referrer_url),
       suggested_filename_(UTF16ToUTF8(info.save_info.suggested_name)),

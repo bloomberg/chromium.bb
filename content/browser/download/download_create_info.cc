@@ -12,8 +12,6 @@
 using content::DownloadId;
 
 DownloadCreateInfo::DownloadCreateInfo(
-    const FilePath& path,
-    const GURL& url,
     const base::Time& start_time,
     int64 received_bytes,
     int64 total_bytes,
@@ -21,9 +19,7 @@ DownloadCreateInfo::DownloadCreateInfo(
     const net::BoundNetLog& bound_net_log,
     bool has_user_gesture,
     content::PageTransition transition_type)
-    : path(path),
-      url_chain(1, url),
-      start_time(start_time),
+    : start_time(start_time),
       received_bytes(received_bytes),
       total_bytes(total_bytes),
       state(state),
@@ -53,14 +49,14 @@ std::string DownloadCreateInfo::DebugString() const {
   return base::StringPrintf("{"
                             " download_id = %s"
                             " url = \"%s\""
-                            " path = \"%" PRFilePath "\""
+                            " save_info.file_path = \"%" PRFilePath "\""
                             " received_bytes = %" PRId64
                             " total_bytes = %" PRId64
                             " prompt_user_for_save_location = %c"
                             " }",
                             download_id.DebugString().c_str(),
                             url().spec().c_str(),
-                            path.value().c_str(),
+                            save_info.file_path.value().c_str(),
                             received_bytes,
                             total_bytes,
                             prompt_user_for_save_location ? 'T' : 'F');

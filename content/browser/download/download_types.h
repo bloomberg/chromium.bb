@@ -19,13 +19,17 @@ struct CONTENT_EXPORT DownloadSaveInfo {
   DownloadSaveInfo();
   ~DownloadSaveInfo();
 
-  // This is usually the tentative final name, but not during resumption
-  // where it will be the intermediate file name.
+  // If non-empty, contains the full target path of the download that has been
+  // determined prior to download initiation. This is considered to be a trusted
+  // path.
   FilePath file_path;
 
-  linked_ptr<net::FileStream> file_stream;
-
+  // If non-empty, contains an untrusted filename suggestion. This can't contain
+  // a path (only a filename), and is only effective if |file_path| is empty.
   string16 suggested_name;
+
+  // If non-NULL, contains the source data stream for the file contents.
+  linked_ptr<net::FileStream> file_stream;
 
   // The file offset at which to start the download.  May be 0.
   int64 offset;

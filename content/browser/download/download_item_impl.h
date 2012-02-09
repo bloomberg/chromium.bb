@@ -255,17 +255,14 @@ class CONTENT_EXPORT DownloadItemImpl : public content::DownloadItem {
   // Full path to the downloaded or downloading file.
   FilePath full_path_;
 
-  // A number that should be appended to the path to make it unique, or 0 if the
-  // path should be used as is.
-  int path_uniquifier_;
-
   // The chain of redirects that leading up to and including the final URL.
   std::vector<GURL> url_chain_;
 
   // The URL of the page that initiated the download.
   GURL referrer_url_;
 
-  // Suggested filename in 'download' attribute of an anchor. Details:
+  // Filename suggestion from DownloadSaveInfo. It could, among others, be the
+  // suggested filename in 'download' attribute of an anchor. Details:
   // http://www.whatwg.org/specs/web-apps/current-work/#downloading-hyperlinks
   std::string suggested_filename_;
 
@@ -370,8 +367,7 @@ class CONTENT_EXPORT DownloadItemImpl : public content::DownloadItem {
   // be treated as though the user opened it.
   bool opened_;
 
-  // Do we actual open downloads when requested?  For testing purposes
-  // only.
+  // Do we actually open downloads when requested?  For testing purposes only.
   bool open_enabled_;
 
   // Did the delegate delay calling Complete on this download?

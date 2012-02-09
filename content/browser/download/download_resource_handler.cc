@@ -96,7 +96,7 @@ bool DownloadResourceHandler::OnResponseStarted(
     ResourceDispatcherHost::InfoForRequest(request_);
 
   // Deleted in DownloadManager.
-  scoped_ptr<DownloadCreateInfo> info(new DownloadCreateInfo(FilePath(), GURL(),
+  scoped_ptr<DownloadCreateInfo> info(new DownloadCreateInfo(
       base::Time::Now(), 0, content_length_, DownloadItem::IN_PROGRESS,
       request_->net_log(), request_info->has_user_gesture(),
       request_info->transition_type()));
