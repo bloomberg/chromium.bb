@@ -9,8 +9,8 @@ cr.define('options', function() {
   // true, it stays that way until we are told about successful login from
   // the browser.  This means subsequent errors (like invalid password) are
   // rendered in the captcha state, which is basically identical except we
-  // don't show the top error blurb "Error Signing in" or the "Create
-  // account" link.
+  // don't show the top error blurb 'Error Signing in' or the 'Create
+  // account' link.
   var captchaChallengeActive_ = false;
 
   // True if the synced account uses a custom passphrase.
@@ -111,31 +111,24 @@ cr.define('options', function() {
     },
 
     onPassphraseRadioChanged_: function() {
-      var visible = this.getPassphraseRadioCheckedValue_() == "explicit";
+      var visible = this.getPassphraseRadioCheckedValue_() == 'explicit';
       $('sync-custom-passphrase').hidden = !visible;
     },
 
     checkAllDataTypeCheckboxes_: function() {
-      var checkboxes = document.getElementsByName("dataTypeCheckbox");
+      // Only check the visible ones (since there's no way to uncheck
+      // the invisible ones).
+      var checkboxes = $('choose-data-types-body').querySelectorAll(
+          '.sync-type-checkbox:not([hidden]) input');
       for (var i = 0; i < checkboxes.length; i++) {
-        // Only check the visible ones (since there's no way to uncheck
-        // the invisible ones).
-        if (checkboxes[i].parentElement.className == "sync-item-show") {
-          checkboxes[i].checked = true;
-        }
+        checkboxes[i].checked = true;
       }
     },
 
     setDataTypeCheckboxesEnabled_: function(enabled) {
-      var checkboxes = document.getElementsByName("dataTypeCheckbox");
-      var labels = document.getElementsByName("dataTypeLabel");
+      var checkboxes = $('choose-data-types-body').querySelectorAll('input');
       for (var i = 0; i < checkboxes.length; i++) {
         checkboxes[i].disabled = !enabled;
-        if (checkboxes[i].disabled) {
-          labels[i].className = "sync-label-inactive";
-        } else {
-          labels[i].className = "sync-label-active";
-        }
       }
     },
 
@@ -146,23 +139,12 @@ cr.define('options', function() {
     },
 
     // Returns true if at least one data type is enabled and no data types are
-    // checked. (If all data type checkboxes are disabled, it's because "keep
-    // everything synced" is checked.)
+    // checked. (If all data type checkboxes are disabled, it's because 'keep
+    // everything synced' is checked.)
     noDataTypesChecked_: function() {
-      var checkboxes = document.getElementsByName("dataTypeCheckbox");
-      var atLeastOneChecked = false;
-      var atLeastOneEnabled = false;
-      for (var i = 0; i < checkboxes.length; i++) {
-        if (!checkboxes[i].disabled &&
-            checkboxes[i].parentElement.className == "sync-item-show") {
-          atLeastOneEnabled = true;
-          if (checkboxes[i].checked) {
-            atLeastOneChecked = true;
-          }
-        }
-      }
-
-      return atLeastOneEnabled && !atLeastOneChecked;
+      var query = '.sync-type-checkbox:not([hidden]) input:not(:checked)'
+      var checkboxes = $('choose-data-types-body').querySelectorAll(query);
+      return checkboxes.length != 0;
     },
 
     checkPassphraseMatch_: function() {
@@ -172,7 +154,7 @@ cr.define('options', function() {
       mismatchError.hidden = true;
 
       var f = $('choose-data-types-form');
-      if (this.getPassphraseRadioCheckedValue_() != "explicit" ||
+      if (this.getPassphraseRadioCheckedValue_() != 'explicit' ||
           $('google-option').disabled)
         return true;
 
@@ -212,7 +194,7 @@ cr.define('options', function() {
         // If we were prompted for an existing passphrase, use it.
         customPassphrase = f.passphrase.value;
         usePassphrase = true;
-        // If we were displaying the "enter your old google password" prompt,
+        // If we were displaying the 'enter your old google password' prompt,
         // then that means this is the user's google password.
         googlePassphrase = !$('google-passphrase-needed-body').hidden;
         // We allow an empty passphrase, in case the user has disabled
@@ -240,20 +222,20 @@ cr.define('options', function() {
       // These values need to be kept in sync with where they are read in
       // SyncSetupFlow::GetDataTypeChoiceData().
       var result = JSON.stringify({
-          "syncAllDataTypes": syncAll,
-          "syncBookmarks": syncAll || $('bookmarks-checkbox').checked,
-          "syncPreferences": syncAll || $('preferences-checkbox').checked,
-          "syncThemes": syncAll || $('themes-checkbox').checked,
-          "syncPasswords": syncAll || $('passwords-checkbox').checked,
-          "syncAutofill": syncAll || $('autofill-checkbox').checked,
-          "syncExtensions": syncAll || $('extensions-checkbox').checked,
-          "syncTypedUrls": syncAll || $('typed-urls-checkbox').checked,
-          "syncApps": syncAll || $('apps-checkbox').checked,
-          "syncSessions": syncAll || $('sessions-checkbox').checked,
-          "encryptAllData": encryptAllData,
-          "usePassphrase": usePassphrase,
-          "isGooglePassphrase": googlePassphrase,
-          "passphrase": customPassphrase
+        'syncAllDataTypes': syncAll,
+        'syncBookmarks': syncAll || $('bookmarks-checkbox').checked,
+        'syncPreferences': syncAll || $('preferences-checkbox').checked,
+        'syncThemes': syncAll || $('themes-checkbox').checked,
+        'syncPasswords': syncAll || $('passwords-checkbox').checked,
+        'syncAutofill': syncAll || $('autofill-checkbox').checked,
+        'syncExtensions': syncAll || $('extensions-checkbox').checked,
+        'syncTypedUrls': syncAll || $('typed-urls-checkbox').checked,
+        'syncApps': syncAll || $('apps-checkbox').checked,
+        'syncSessions': syncAll || $('sessions-checkbox').checked,
+        'encryptAllData': encryptAllData,
+        'usePassphrase': usePassphrase,
+        'isGooglePassphrase': googlePassphrase,
+        'passphrase': customPassphrase
       });
       chrome.send('SyncSetupConfigure', [result]);
     },
@@ -315,39 +297,39 @@ cr.define('options', function() {
 
       if (args.passwordsRegistered) {
         $('passwords-checkbox').checked = args.syncPasswords;
-        $('passwords-item').className = "sync-item-show";
+        $('passwords-item').hidden = false;
       } else {
-        $('passwords-item').className = "sync-item-hide";
+        $('passwords-item').hidden = true;
       }
       if (args.autofillRegistered) {
         $('autofill-checkbox').checked = args.syncAutofill;
-        $('autofill-item').className = "sync-item-show";
+        $('autofill-item').hidden = false;
       } else {
-        $('autofill-item').className = "sync-item-hide";
+        $('autofill-item').hidden = true;
       }
       if (args.extensionsRegistered) {
         $('extensions-checkbox').checked = args.syncExtensions;
-        $('extensions-item').className = "sync-item-show";
+        $('extensions-item').hidden = false;
       } else {
-        $('extensions-item').className = "sync-item-hide";
+        $('extensions-item').hidden = true;
       }
       if (args.typedUrlsRegistered) {
         $('typed-urls-checkbox').checked = args.syncTypedUrls;
-        $('omnibox-item').className = "sync-item-show";
+        $('omnibox-item').hidden = false;
       } else {
-        $('omnibox-item').className = "sync-item-hide";
+        $('omnibox-item').hidden = true;
       }
       if (args.appsRegistered) {
         $('apps-checkbox').checked = args.syncApps;
-        $('apps-item').className = "sync-item-show";
+        $('apps-item').hidden = false;
       } else {
-        $('apps-item').className = "sync-item-hide";
+        $('apps-item').hidden = true;
       }
       if (args.sessionsRegistered) {
         $('sessions-checkbox').checked = args.syncSessions;
-        $('sessions-item').className = "sync-item-show";
+        $('sessions-item').hidden = false;
       } else {
-        $('sessions-item').className = "sync-item-hide";
+        $('sessions-item').hidden = true;
       }
 
       this.setCheckboxesToKeepEverythingSynced_(args.syncAllDataTypes);
@@ -464,15 +446,15 @@ cr.define('options', function() {
       $('google-passphrase-needed-body').hidden = true;
       // Display the correct prompt to the user depending on what type of
       // passphrase is needed.
-      if (args["need_google_passphrase"])
+      if (args['need_google_passphrase'])
         $('google-passphrase-needed-body').hidden = false;
-      else if (args["passphrase_creation_rejected"])
+      else if (args['passphrase_creation_rejected'])
         $('passphrase-rejected-body').hidden = false;
       else
         $('normal-body').hidden = false;
 
       $('passphrase-learn-more').hidden = false;
-      $('incorrect-passphrase').hidden = !args["passphrase_setting_rejected"];
+      $('incorrect-passphrase').hidden = !args['passphrase_setting_rejected'];
       $('sync-passphrase-warning').hidden = false;
       $('passphrase').focus();
     },
@@ -498,7 +480,7 @@ cr.define('options', function() {
       if (args && args['show_passphrase']) {
         this.showPassphraseContainer_(args);
       } else {
-        // We only show the "Use Default" link if we're not prompting for an
+        // We only show the 'Use Default' link if we're not prompting for an
         // existing passphrase.
         var self = this;
         this.animateDisableLink_($('use-default-link'), false, function() {
@@ -543,15 +525,15 @@ cr.define('options', function() {
      *     visible.
      */
     setThrobbersVisible_: function(visible) {
-      var throbbers = document.getElementsByClassName("throbber");
+      var throbbers = document.getElementsByClassName('throbber');
       for (var i = 0; i < throbbers.length; i++)
-        throbbers[i].style.visibility = visible ? "visible" : "hidden";
+        throbbers[i].style.visibility = visible ? 'visible' : 'hidden';
     },
 
     loginSetFocus_: function() {
       var email = $('gaia-email');
       var passwd = $('gaia-passwd');
-      if (email && (email.value == null || email.value == "")) {
+      if (email && !email.value) {
         email.focus();
       } else if (passwd) {
         passwd.focus();
@@ -650,7 +632,7 @@ cr.define('options', function() {
       if (f) {
         if (args.user != undefined) {
           if (email.value != args.user)
-            passwd.value = ""; // Reset the password field
+            passwd.value = ''; // Reset the password field
           email.value = args.user;
         }
 
@@ -667,7 +649,7 @@ cr.define('options', function() {
 
       if (1 == args.error) {
         var access_code = document.getElementById('access-code');
-        if (access_code.value && access_code.value != "") {
+        if (access_code.value) {
           $('errormsg-0-access-code').hidden = false;
           this.showAccessCodeRequired_();
         } else {
@@ -699,11 +681,11 @@ cr.define('options', function() {
     },
 
     resetErrorVisibility_: function() {
-      $("errormsg-0-email").hidden = true;
-      $("errormsg-0-password").hidden = true;
-      $("errormsg-1-password").hidden = true;
-      $("errormsg-0-connection").hidden = true;
-      $("errormsg-0-access-code").hidden = true;
+      $('errormsg-0-email').hidden = true;
+      $('errormsg-0-password').hidden = true;
+      $('errormsg-1-password').hidden = true;
+      $('errormsg-0-connection').hidden = true;
+      $('errormsg-0-access-code').hidden = true;
     },
 
     setBlurbError_: function(error_message) {
@@ -737,21 +719,19 @@ cr.define('options', function() {
       var f = $('gaia-login-form');
       var email = $('gaia-email');
       var passwd = $('gaia-passwd');
-      if (null == email.value || "" == email.value) {
+      if (!email.value) {
         $('errormsg-0-email').hidden = false;
         this.setBlurbError_();
         return false;
       }
       // Don't enforce password being non-blank when checking access code (it
       // will have been cleared when the page was displayed).
-      if (f.accessCode.disabled && (null == passwd.value ||
-          "" == passwd.value)) {
+      if (f.accessCode.disabled && !passwd.value) {
         $('errormsg-0-password').hidden = false;
         this.setBlurbError_();
         return false;
       }
-      if (!f.accessCode.disabled && (null == f.accessCode.value ||
-          "" == f.accessCode.value)) {
+      if (!f.accessCode.disabled && !f.accessCode.value) {
         $('errormsg-0-password').hidden = false;
         return false;
       }
@@ -759,7 +739,7 @@ cr.define('options', function() {
       if (f.accessCode.disabled && this.matchesASPRegex_(passwd.value) &&
           $('asp-warning-div').hidden) {
         $('asp-warning-div').hidden = false;
-        $('gaia-passwd').value = "";
+        $('gaia-passwd').value = '';
         return false;
       }
 
@@ -781,10 +761,10 @@ cr.define('options', function() {
       var f = $('gaia-login-form');
       var email = $('gaia-email');
       var passwd = $('gaia-passwd');
-      var result = JSON.stringify({"user" : email.value,
-                                   "pass" : passwd.value,
-                                   "captcha" : f.captchaValue.value,
-                                   "access_code" : f.accessCode.value});
+      var result = JSON.stringify({'user' : email.value,
+                                   'pass' : passwd.value,
+                                   'captcha' : f.captchaValue.value,
+                                   'access_code' : f.accessCode.value});
       $('sign-in').disabled = true;
       chrome.send('SyncSetupSubmitAuth', [result]);
     },

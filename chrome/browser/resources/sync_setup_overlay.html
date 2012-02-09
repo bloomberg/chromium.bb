@@ -204,66 +204,67 @@
               <option i18n-content="chooseDataTypes"></option>
             </select>
             <div id="choose-data-types-body">
-              <div>
-                <div id="apps-item" class="sync-item-show">
-                  <input id="apps-checkbox" type="checkbox"
-                      name="dataTypeCheckbox">
-                  <label for="apps-checkbox" i18n-content="apps"
-                      i18n-values="title:apps" name="dataTypeLabel"></label>
-                </div>
-                <div id="autofill-item" class="sync-item-show">
-                  <input id="autofill-checkbox" type="checkbox"
-                      name="dataTypeCheckbox">
-                  <label for="autofill-checkbox" i18n-content="autofill"
-                      i18n-values="title:autofill" name="dataTypeLabel"></label>
-                </div>
-                <div class="sync-item-show">
-                  <input id="bookmarks-checkbox" type="checkbox"
-                      name="dataTypeCheckbox">
-                  <label for="bookmarks-checkbox" i18n-content="bookmarks"
-                      i18n-values="title:bookmarks" name="dataTypeLabel">
-                  </label>
-                </div>
-                <div id="extensions-item" class="sync-item-show">
-                  <input id="extensions-checkbox" type="checkbox"
-                      name="dataTypeCheckbox">
-                  <label for="extensions-checkbox" i18n-content="extensions"
-                      i18n-values="title:extensions" name="dataTypeLabel">
-                  </label>
-                </div>
-                <div id="omnibox-item" class="sync-item-show">
-                  <input id="typed-urls-checkbox" type="checkbox"
-                      name="dataTypeCheckbox">
-                  <label for="typed-urls-checkbox" i18n-content="typedURLs"
-                      i18n-values="title:typedURLs" name="dataTypeLabel">
-                  </label>
-                </div>
-                <div id="passwords-item" class="sync-item-show">
-                  <input id="passwords-checkbox" type="checkbox"
-                      name="dataTypeCheckbox">
-                  <label for="passwords-checkbox" i18n-content="passwords"
-                      i18n-values="title:passwords" name="dataTypeLabel">
-                  </label>
-                </div>
-                <div class="sync-item-show">
-                  <input id="preferences-checkbox" type="checkbox"
-                      name="dataTypeCheckbox">
-                  <label for="preferences-checkbox" i18n-content="preferences"
-                      i18n-values="title:preferences" name="dataTypeLabel">
-                  </label>
-                </div>
-                <div class="sync-item-show">
-                  <input id="themes-checkbox" type="checkbox"
-                      name="dataTypeCheckbox">
-                  <label for="themes-checkbox" i18n-content="themes"
-                      i18n-values="title:themes" name="dataTypeLabel"></label>
-                </div>
-                <div id="sessions-item" class="sync-item-show">
-                  <input id="sessions-checkbox" type="checkbox"
-                      name="dataTypeCheckbox">
-                  <label for="sessions-checkbox" i18n-content="openTabs"
-                      il8n-values="title:tabs" name="dataTypeLabel"></label>
-                </div>
+              <div id="apps-item" class="sync-type-checkbox">
+                <label>
+                  <input id="apps-checkbox" type="checkbox">
+                  <span i18n-content="apps" i18n-values="title:apps"></span>
+                </label>
+              </div>
+              <div id="autofill-item" class="sync-type-checkbox">
+                <label>
+                  <input id="autofill-checkbox" type="checkbox">
+                  <span i18n-content="autofill" i18n-values="title:autofill">
+                  </span>
+                </label>
+              </div>
+              <div class="sync-type-checkbox">
+                <label>
+                  <input id="bookmarks-checkbox" type="checkbox">
+                  <span i18n-content="bookmarks"
+                      i18n-values="title:bookmarks"></span>
+                </label>
+              </div>
+              <div id="extensions-item" class="sync-type-checkbox">
+                <label>
+                  <input id="extensions-checkbox" type="checkbox">
+                  <span i18n-content="extensions"
+                      i18n-values="title:extensions"></span>
+                </label>
+              </div>
+              <div id="omnibox-item" class="sync-type-checkbox">
+                <label>
+                  <input id="typed-urls-checkbox" type="checkbox">
+                  <span i18n-content="typedURLs"
+                      i18n-values="title:typedURLs"></span>
+                </label>
+              </div>
+              <div id="passwords-item" class="sync-type-checkbox">
+                <label>
+                  <input id="passwords-checkbox" type="checkbox">
+                  <span i18n-content="passwords"
+                      i18n-values="title:passwords"></span>
+                </label>
+              </div>
+              <div class="sync-type-checkbox">
+                <label>
+                  <input id="preferences-checkbox" type="checkbox">
+                  <span i18n-content="preferences"
+                      i18n-values="title:preferences"></span>
+                </label>
+              </div>
+              <div class="sync-type-checkbox">
+                <label>
+                  <input id="themes-checkbox" type="checkbox">
+                  <span i18n-content="themes" i18n-values="title:themes">
+                  </span>
+                </label>
+              </div>
+              <div id="sessions-item" class="sync-type-checkbox">
+                <label>
+                  <input id="sessions-checkbox" type="checkbox">
+                  <span i18n-content="openTabs" il8n-values="title:tabs">
+                  </span>
+                </label>
               </div>
             </div>
           </div>
@@ -278,15 +279,17 @@
               <div id="passphrase-encryption-message"
                   i18n-content="passphraseEncryptionMessage"></div>
               <div>
-                <input id="encrypt-sensitive-option" name="encrypt" type="radio"
-                    value="sensitive">
-                <label for="encrypt-sensitive-option"
-                    i18n-content="encryptSensitiveOption"></label>
+                <label>
+                  <input id="encrypt-sensitive-option" name="encrypt"
+                      type="radio" value="sensitive">
+                  <span i18n-content="encryptSensitiveOption"></span>
+                </label>
               </div>
               <div>
-                <input id="encrypt-all-option" name="encrypt" type="radio"
-                    value="all">
-                <label for="encrypt-all-option" i18n-content="encryptAllOption">
+                <label>
+                  <input id="encrypt-all-option" name="encrypt" type="radio"
+                      value="all">
+                  <span i18n-content="encryptAllOption"></span>
                 </label>
               </div>
             </div>
@@ -296,14 +299,17 @@
           <div id="sync-custom-passphrase-container"
               class="sync-customize-section-container">
             <div>
-              <input id="google-option" name="option" type="radio"
-                  value="google">
-              <label for="google-option" i18n-content="googleOption"></label>
+              <label>
+                <input id="google-option" name="option" type="radio"
+                    value="google">
+                <span i18n-content="googleOption"></span>
+              </label>
             </div>
             <div>
-              <input id="explicit-option" name="option" type="radio"
-                  value="explicit">
-              <label for="explicit-option" i18n-content="explicitOption">
+              <label>
+                <input id="explicit-option" name="option" type="radio"
+                    value="explicit">
+                <span i18n-content="explicitOption"></span>
               </label>
               <a i18n-values="href:encryptionHelpURL" target="_blank"
                   i18n-content="learnMore"></a>

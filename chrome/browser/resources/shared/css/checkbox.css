@@ -156,9 +156,9 @@ input[type=checkbox] ~ label {
   color: #444;
 }
 
-label:hover > input[type=checkbox]:disabled ~ span,
-label:hover > input[type=radio]:disabled ~ span,
-input[type=checkbox]:disabled ~ label:hover {
+label > input[type=checkbox]:disabled ~ span,
+label > input[type=radio]:disabled ~ span,
+input[type=checkbox]:disabled ~ label {
   color: #888;
 }
 
