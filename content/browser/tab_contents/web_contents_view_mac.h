@@ -159,7 +159,7 @@ class WebContentsViewMacDelegate;
 
 namespace web_contents_view_mac {
 // Creates a WebContentsViewMac. Takes ownership of |delegate|.
-content::WebContentsView* CreateWebContentsView(
+CONTENT_EXPORT content::WebContentsView* CreateWebContentsView(
     content::WebContents* web_contents,
     content::WebContentsViewMacDelegate* delegate);
 }
