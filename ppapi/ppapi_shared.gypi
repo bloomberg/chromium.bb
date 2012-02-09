@@ -72,8 +72,6 @@
         'shared_impl/ppb_audio_input_shared.h',
         'shared_impl/ppb_audio_shared.cc',
         'shared_impl/ppb_audio_shared.h',
-        'shared_impl/ppb_char_set_shared.cc',
-        'shared_impl/ppb_char_set_shared.h',
         'shared_impl/ppb_crypto_shared.cc',
         'shared_impl/ppb_device_ref_shared.cc',
         'shared_impl/ppb_device_ref_shared.h',
@@ -128,6 +126,8 @@
         'shared_impl/private/net_address_private_impl.cc',
         'shared_impl/private/net_address_private_impl.h',
 
+        'shared_impl/private/ppb_char_set_shared.cc',
+        'shared_impl/private/ppb_char_set_shared.h',
         'shared_impl/private/ppb_font_shared.cc',
         'shared_impl/private/ppb_font_shared.h',
 

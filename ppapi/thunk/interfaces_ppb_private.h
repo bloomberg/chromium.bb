@@ -13,6 +13,8 @@ PROXIED_API(PPB_UDPSocket_Private)
 
 PROXIED_IFACE(PPB_Broker, PPB_BROKER_TRUSTED_INTERFACE_0_2,
               PPB_BrokerTrusted_0_2)
+PROXIED_IFACE(PPB_Instance, PPB_CHARSET_TRUSTED_INTERFACE_1_0,
+              PPB_CharSet_Trusted_1_0)
 PROXIED_IFACE(PPB_FileRef, PPB_FILEREFPRIVATE_INTERFACE_0_1,
               PPB_FileRefPrivate_0_1)
 // This uses the FileIO API which is declared in the public stable file.

@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "ppapi/c/dev/ppb_char_set_dev.h"
+#include "ppapi/c/trusted/ppb_char_set_trusted.h"
 #include "ppapi/tests/test_case.h"
 
 class TestCharSet : public TestCase {
@@ -21,7 +22,9 @@ class TestCharSet : public TestCase {
   virtual void RunTests(const std::string& filter);
 
  private:
+  std::string TestUTF16ToCharSetDeprecated();
   std::string TestUTF16ToCharSet();
+  std::string TestCharSetToUTF16Deprecated();
   std::string TestCharSetToUTF16();
   std::string TestGetDefaultCharSet();
 
@@ -30,6 +33,7 @@ class TestCharSet : public TestCase {
   std::vector<uint16_t> UTF8ToUTF16(const std::string& utf8);
 
   const PPB_CharSet_Dev* char_set_interface_;
+  const PPB_CharSet_Trusted* char_set_trusted_interface_;
 };
 
 #endif  // PPAPI_TESTS_TEST_CHAR_SET_H_
