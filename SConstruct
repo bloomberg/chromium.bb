@@ -630,6 +630,12 @@ nacl_glibc_skiplist = set([
     'run_srpc_ro_file_test',
     'run_ppapi_geturl_valid_test',
     'run_ppapi_geturl_invalid_test',
+    # http://code.google.com/p/chromium/issues/detail?id=108131
+    # we would need to list all of the glibc components as
+    # web accessible resources in the extensions's manifest.json,
+    # not just the nexe and nmf file.
+    'run_ppapi_extension_mime_handler_browser_test',
+
     # This test need more investigation.
     'run_syscall_test',
     # GetPid is no longer supplied by IRT so does not work in GLibC.
@@ -741,9 +747,6 @@ def GetPlatformString(env):
 
 
 tests_to_disable = set([
-    # http://code.google.com/p/chromium/issues/detail?id=108131
-    'run_ppapi_extension_mime_handler_browser_test',
-
     # these sel_universal tests are broken and it's won't fix
     # http://code.google.com/p/nativeclient/issues/detail?id=2390
     'run_ppapi_simple_audio_test',
