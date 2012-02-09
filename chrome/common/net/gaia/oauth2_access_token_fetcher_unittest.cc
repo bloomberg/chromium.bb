@@ -113,7 +113,7 @@ class OAuth2AccessTokenFetcherTest : public testing::Test {
   OAuth2AccessTokenFetcher fetcher_;
 };
 
-TEST_F(OAuth2AccessTokenFetcherTest, GetAccessTokenRequestFailure) {
+TEST_F(OAuth2AccessTokenFetcherTest, FLAKY_GetAccessTokenRequestFailure) {
   TestURLFetcher* url_fetcher = SetupGetAccessToken(false, 0, "");
   EXPECT_CALL(consumer_, OnGetTokenFailure(_)).Times(1);
   fetcher_.Start("client_id", "client_secret", "refresh_token", ScopeList());
