@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -209,7 +209,7 @@ cr.define('options.passwordManager', function() {
     decorate: function() {
       DeletableItemList.prototype.decorate.call(this);
       Preferences.getInstance().addEventListener(
-          "profile.password_manager_allow_show_passwords",
+          'profile.password_manager_allow_show_passwords',
           this.onPreferenceChanged_.bind(this));
     },
 

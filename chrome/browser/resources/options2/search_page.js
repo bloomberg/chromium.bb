@@ -95,8 +95,8 @@ cr.define('options', function() {
         this.style.top = top + 'px';
         this.lastTop = top;
       }
-    }
-  }
+    },
+  };
 
   /**
    * Encapsulated handling of the search page.
@@ -394,7 +394,7 @@ cr.define('options', function() {
      * @param {RegEx} regex A regular expression for finding search matches.
      * @param {String} replace A string to apply the replace operation.
      * @param {Element} element An HTML container element.
-     * @returns {Boolean} true if the element was changed.
+     * @return {boolean} true if the element was changed.
      * @private
      */
     performReplace_: function(regex, replace, element) {
@@ -425,7 +425,7 @@ cr.define('options', function() {
           child = div.firstChild;
           while (child = div.firstChild) {
             node.parentNode.insertBefore(child, node);
-          };
+          }
 
           // Delete the old text node and advance the walker to the next
           // node.
@@ -496,7 +496,7 @@ cr.define('options', function() {
     /**
      * Builds a list of top-level pages to search.  Omits the search page and
      * all sub-pages.
-     * @returns {Array} An array of pages to search.
+     * @return {Array} An array of pages to search.
      * @private
      */
     getSearchablePages_: function() {
@@ -514,7 +514,7 @@ cr.define('options', function() {
     /**
      * Builds a list of sub-pages (and overlay pages) to search.  Ignore pages
      * that have no associated controls.
-     * @returns {Array} An array of pages to search.
+     * @return {Array} An array of pages to search.
      * @private
      */
     getSearchableSubPages_: function() {
@@ -541,7 +541,7 @@ cr.define('options', function() {
       const ESCAPE_KEY_CODE = 27;
       const FORWARD_SLASH_KEY_CODE = 191;
 
-      switch(event.keyCode) {
+      switch (event.keyCode) {
         case ESCAPE_KEY_CODE:
           if (event.target == this.searchField) {
             this.setSearchText_('');

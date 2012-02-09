@@ -185,32 +185,30 @@ cr.define('options', function() {
   };
 
   /**
-   * Call to remove a saved password.
-   * @param rowIndex indicating the row to remove.
+   * Removes a saved password.
+   * @param {number} rowIndex indicating the row to remove.
    */
   PasswordManager.removeSavedPassword = function(rowIndex) {
       chrome.send('removeSavedPassword', [String(rowIndex)]);
   };
 
   /**
-   * Call to remove a password exception.
-   * @param rowIndex indicating the row to remove.
+   * Removes a password exception.
+   * @param {number} rowIndex indicating the row to remove.
    */
   PasswordManager.removePasswordException = function(rowIndex) {
       chrome.send('removePasswordException', [String(rowIndex)]);
   };
 
   /**
-   * Call to remove all saved passwords.
-   * @param tab contentType of the tab currently on.
+   * Removes all saved passwords.
    */
   PasswordManager.removeAllPasswords = function() {
     chrome.send('removeAllSavedPasswords');
   };
 
   /**
-   * Call to remove all saved passwords.
-   * @param tab contentType of the tab currently on.
+   * Removes all password exceptions.
    */
   PasswordManager.removeAllPasswordExceptions = function() {
     chrome.send('removeAllPasswordExceptions');

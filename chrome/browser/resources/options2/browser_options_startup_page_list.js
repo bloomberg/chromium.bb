@@ -69,7 +69,7 @@ cr.define('options.browser_options', function() {
       urlEl.classList.add('weakrtl');
       this.contentElement.appendChild(urlEl);
 
-      var urlField = urlEl.querySelector('input')
+      var urlField = urlEl.querySelector('input');
       urlField.required = true;
       urlField.className = 'weakrtl';
       urlField.placeholder = localStrings.getString('startupPagesPlaceholder');
@@ -154,12 +154,12 @@ cr.define('options.browser_options', function() {
       chrome.send('removeStartupPages', [String(index)]);
     },
 
-    /*
+    /**
      * Computes the target item of drop event.
      * @param {Event} e The drop or dragover event.
      * @private
      */
-    getTargetFromDropEvent_ : function(e) {
+    getTargetFromDropEvent_: function(e) {
       var target = e.target;
       // e.target may be an inner element of the list item
       while (target != null && !(target instanceof StartupPageListItem)) {
@@ -168,7 +168,7 @@ cr.define('options.browser_options', function() {
       return target;
     },
 
-    /*
+    /**
      * Handles the dragstart event.
      * @param {Event} e The dragstart event.
      * @private
@@ -248,12 +248,12 @@ cr.define('options.browser_options', function() {
         stringized_selected.push(String(selected[j]));
 
       chrome.send('dragDropStartupPage',
-          [String(newIndex), stringized_selected] );
+          [String(newIndex), stringized_selected]);
     },
 
-    /*
+    /**
      * Handles the dragleave event.
-     * @param {Event} e The dragleave event
+     * @param {Event} e The dragleave event.
      * @private
      */
     handleDragLeave_: function(e) {
@@ -262,7 +262,7 @@ cr.define('options.browser_options', function() {
 
     /**
      * Handles the dragend event.
-     * @param {Event} e The dragend event
+     * @param {Event} e The dragend event.
      * @private
      */
     handleDragEnd_: function(e) {
@@ -270,32 +270,32 @@ cr.define('options.browser_options', function() {
       this.draggedItem.updateEditState();
     },
 
-    /*
+    /**
      * Shows and positions the marker to indicate the drop target.
-     * @param {HTMLElement} target The current target list item of drop
-     * @param {string} pos 'below' or 'above'
+     * @param {HTMLElement} target The current target list item of drop.
+     * @param {string} pos 'below' or 'above'.
      * @private
      */
-    showDropMarker_ : function(target, pos) {
+    showDropMarker_: function(target, pos) {
       window.clearTimeout(this.hideDropMarkerTimer_);
       var marker = $('startupPagesListDropmarker');
       var rect = target.getBoundingClientRect();
       var markerHeight = 6;
       if (pos == 'above') {
-        marker.style.top = (rect.top - markerHeight/2) + 'px';
+        marker.style.top = (rect.top - markerHeight / 2) + 'px';
       } else {
-        marker.style.top = (rect.bottom - markerHeight/2) + 'px';
+        marker.style.top = (rect.bottom - markerHeight / 2) + 'px';
       }
       marker.style.width = rect.width + 'px';
       marker.style.left = rect.left + 'px';
       marker.style.display = 'block';
     },
 
-    /*
+    /**
      * Hides the drop marker.
      * @private
      */
-    hideDropMarker_ : function() {
+    hideDropMarker_: function() {
       // Hide the marker in a timeout to reduce flickering as we move between
       // valid drop targets.
       window.clearTimeout(this.hideDropMarkerTimer_);

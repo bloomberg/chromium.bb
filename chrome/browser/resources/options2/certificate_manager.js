@@ -142,8 +142,7 @@ cr.define('options', function() {
 
       this.updateButtonState(data);
     },
-
-  }
+  };
 
   // TODO(xiyuan): Use notification from backend instead of polling.
   // TPM token check polling timer.

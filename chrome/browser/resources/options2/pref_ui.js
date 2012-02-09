@@ -31,7 +31,7 @@ cr.define('options', function() {
       // 'other'.
       delete el.disabledReasons['other'];
       if (Object.keys(el.disabledReasons).length > 0)
-        console.error("Element is not disabled but should be");
+        console.error('Element is not disabled but should be');
     }
     if (disabled) {
       el.disabledReasons[reason] = true;
@@ -103,7 +103,7 @@ cr.define('options', function() {
             if (self.customChangeHandler(e))
               return;
             var value = self.inverted_pref ? !self.checked : self.checked;
-            switch(self.valueType) {
+            switch (self.valueType) {
               case 'number':
                 Preferences.setIntegerPref(self.pref,
                     Number(value), self.metric);
@@ -543,7 +543,7 @@ cr.define('options', function() {
               return;
             }
 
-            switch(self.dataType) {
+            switch (self.dataType) {
               case 'number':
                 Preferences.setIntegerPref(self.pref,
                     self.options[self.selectedIndex].value, self.metric);
@@ -629,7 +629,7 @@ cr.define('options', function() {
       // Listen to user events.
       this.addEventListener('change',
           function(e) {
-            switch(self.dataType) {
+            switch (self.dataType) {
               case 'number':
                 Preferences.setIntegerPref(self.pref, self.value, self.metric);
                 break;

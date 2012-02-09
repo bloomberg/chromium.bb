@@ -233,7 +233,7 @@ function load() {
   }
 
   var subpagesNavTabs = document.querySelectorAll('.subpages-nav-tabs');
-  for(var i = 0; i < subpagesNavTabs.length; i++) {
+  for (var i = 0; i < subpagesNavTabs.length; i++) {
     subpagesNavTabs[i].onclick = function(event) {
       OptionsPage.showTab(event.srcElement);
     }
@@ -248,10 +248,17 @@ function load() {
 
 document.addEventListener('DOMContentLoaded', load);
 
+/**
+ * Listener for the |beforeunload| event.
+ */
 window.onbeforeunload = function() {
   options.OptionsPage.willClose();
 };
 
+/**
+ * Listener for the |popstate| event.
+ * @param {Event} e The |popstate| event.
+ */
 window.onpopstate = function(e) {
   options.OptionsPage.setState(e.state);
 };

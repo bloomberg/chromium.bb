@@ -10,7 +10,7 @@ cr.define('options', function() {
    * Base class for options page.
    * @constructor
    * @param {string} name Options page name.
-   * @param {string} title Options page title, used for navigation bar
+   * @param {string} title Options page title, used for navigation bar.
    * @extends {EventTarget}
    */
   function OptionsPage(name, title, pageDivName) {
@@ -200,7 +200,7 @@ cr.define('options', function() {
    * according to which subpage is topmost and visible.
    * @private
    */
-  OptionsPage.updateSubpageBackdrop_ = function () {
+  OptionsPage.updateSubpageBackdrop_ = function() {
     var topmostPage = OptionsPage.getTopmostVisibleNonOverlayPage_();
     var nestingLevel = topmostPage ? topmostPage.nestingLevel : 0;
 
@@ -220,7 +220,7 @@ cr.define('options', function() {
    * or the old scroll position a previously hidden subpage becomes visible).
    * @private
    */
-  OptionsPage.updateScrollPosition_ = function () {
+  OptionsPage.updateScrollPosition_ = function() {
     var topmostPage = OptionsPage.getTopmostVisibleNonOverlayPage_();
     var nestingLevel = topmostPage ? topmostPage.nestingLevel : 0;
 
@@ -575,8 +575,8 @@ cr.define('options', function() {
    * @private
    */
   OptionsPage.setPageFrozenAtLevel_ = function(freeze, level) {
-    var container = level == 0 ? $('page-container')
-                               : $('subpage-sheet-container-' + level);
+    var container = level == 0 ? $('page-container') :
+                                 $('subpage-sheet-container-' + level);
 
     if (container.classList.contains('frozen') == freeze)
       return;
@@ -759,7 +759,7 @@ cr.define('options', function() {
 
   /**
    * Updates the given frozen element to match the horizontal scroll position.
-   * @param {HTMLElement} e The frozen element to update
+   * @param {HTMLElement} e The frozen element to update.
    * @private
    */
   OptionsPage.updateFrozenElementHorizontalPosition_ = function(e) {
@@ -1084,8 +1084,8 @@ cr.define('options', function() {
     /**
      * Checks whether this page is an ancestor of the given page in terms of
      * subpage nesting.
-     * @param {OptionsPage} page
-     * @return {boolean} True if this page is nested under |page|
+     * @param {OptionsPage} page The potential descendent of this page.
+     * @return {boolean} True if |page| is nested under this page.
      */
     isAncestorOfPage: function(page) {
       var parent = page.parentPage;
@@ -1099,7 +1099,7 @@ cr.define('options', function() {
 
     /**
      * Whether it should be possible to show the page.
-     * @return {boolean} True if the page should be shown
+     * @return {boolean} True if the page should be shown.
      */
     canShowPage: function() {
       return true;

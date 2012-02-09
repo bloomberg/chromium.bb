@@ -165,7 +165,7 @@ cr.define('options', function() {
 
     /**
      * oninput callback for <input> field.
-     * @param event The event object
+     * @param {Event} event The event object.
      * @private
      */
     onNameChanged_: function(event) {

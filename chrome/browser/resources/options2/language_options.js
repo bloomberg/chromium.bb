@@ -126,7 +126,7 @@ cr.define('options', function() {
     // The preference is a string that describes the spell check
     // dictionary language, like "en-US".
     spellCheckDictionaryPref: 'spellcheck.dictionary',
-    spellCheckDictionary_: "",
+    spellCheckDictionary_: '',
     // The map of language code to input method IDs, like:
     // {'ja': ['mozc', 'mozc-jp'], 'zh-CN': ['pinyin'], ...}
     languageCodeToInputMethodIdsMap_: {},
@@ -513,7 +513,7 @@ cr.define('options', function() {
      * @param {Event} e Click event.
      * @private
      */
-    handleCheckboxClick_ : function(e) {
+    handleCheckboxClick_: function(e) {
       var checkbox = e.target;
       if (this.preloadEngines_.length == 1 && !checkbox.checked) {
         // Don't allow disabling the last input method.
@@ -537,7 +537,7 @@ cr.define('options', function() {
      * Handles add language list's click event.
      * @param {Event} e Click event.
      */
-    handleAddLanguageListClick_ : function(e) {
+    handleAddLanguageListClick_: function(e) {
       var languageOptionsList = $('language-options-list');
       var languageCode = e.target.languageCode;
       // languageCode can be undefined, if click was made on some random
@@ -564,7 +564,7 @@ cr.define('options', function() {
     /**
      * Handles add language dialog ok button.
      */
-    handleAddLanguageOkButtonClick_ : function() {
+    handleAddLanguageOkButtonClick_: function() {
       var languagesSelect = $('add-language-overlay-language-list');
       var selectedIndex = languagesSelect.selectedIndex;
       if (selectedIndex >= 0) {
@@ -603,7 +603,7 @@ cr.define('options', function() {
      * @private
      */
     handleSpellCheckDictionaryPrefChange_: function(e) {
-      var languageCode = e.value.value
+      var languageCode = e.value.value;
       this.spellCheckDictionary_ = languageCode;
       var languageOptionsList = $('language-options-list');
       var selectedLanguageCode = languageOptionsList.getSelectedLanguageCode();
@@ -754,7 +754,7 @@ cr.define('options', function() {
      * @private
      */
     notificationTimeout_: null,
-    showNotification_ : function(text, actionText, opt_delay) {
+    showNotification_: function(text, actionText, opt_delay) {
       var notificationElement = $('notification');
       var actionLink = notificationElement.querySelector('.link-color');
       var delay = opt_delay || 10000;

@@ -23,14 +23,14 @@ cr.define('options', function() {
     // might override it if the reopen last pages setting is selected.)
     var self = this;
     Preferences.getInstance().addEventListener(
-        "profile.clear_site_data_on_exit",
+        'profile.clear_site_data_on_exit',
         function(event) {
           if (event.value && event.value['value'] != undefined) {
             self.clearCookiesOnExit = (event.value['value'] == true);
           }
         });
     Preferences.getInstance().addEventListener(
-        "session.restore_on_startup",
+        'session.restore_on_startup',
         this.onSessionRestoreSelectedChanged.bind(this));
   }
 
@@ -56,7 +56,7 @@ cr.define('options', function() {
           // history so back/forward and tab restore works.
           var hash = event.target.getAttribute('contentType');
           window.history.replaceState({pageName: page.name}, page.title,
-                                      '/' + page.name + "#" + hash);
+                                      '/' + page.name + '#' + hash);
         };
       }
 
@@ -89,7 +89,7 @@ cr.define('options', function() {
       }
     },
 
-    onSessionRestoreSelectedChanged : function(event) {
+    onSessionRestoreSelectedChanged: function(event) {
       if (!event.value || event.value['value'] == undefined)
         return;
 

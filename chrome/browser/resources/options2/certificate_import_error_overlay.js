@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -50,7 +50,7 @@ cr.define('options', function() {
     ul = $('certificateImportErrorOverlayCertErrors');
     ul.innerHTML = '';
     for (var i = 0; i < certErrors.length; ++i) {
-      li = document.createElement("li");
+      li = document.createElement('li');
       li.textContent = localStrings.getStringF('certificateImportErrorFormat',
                                                certErrors[i].name,
                                                certErrors[i].error);

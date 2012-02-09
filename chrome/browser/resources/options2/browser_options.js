@@ -128,10 +128,10 @@ cr.define('options', function() {
       Preferences.getInstance().addEventListener('instant.enabled',
           this.onInstantEnabledChanged_.bind(this));
       Preferences.getInstance().addEventListener(
-          "session.restore_on_startup",
+          'session.restore_on_startup',
           this.onSessionRestoreSelectedChanged_.bind(this));
       Preferences.getInstance().addEventListener(
-          "restore_session_state.dialog_shown",
+          'restore_session_state.dialog_shown',
           this.onSessionRestoreDialogShownChanged_.bind(this));
 
       // Text fields may change widths when the window changes size, so make
@@ -345,21 +345,21 @@ cr.define('options', function() {
     setInstantFieldTrialStatus_: function(enabled) {
       $('instant-enabled-control').hidden = enabled;
       $('instant-field-trial-control').hidden = !enabled;
-      $('instant-label').htmlFor = enabled ? 'instant-field-trial-control'
-                                           : 'instant-enabled-control';
+      $('instant-label').htmlFor = enabled ? 'instant-field-trial-control' :
+                                             'instant-enabled-control';
     },
 
-    onSessionRestoreSelectedChanged_ : function(event) {
+    onSessionRestoreSelectedChanged_: function(event) {
       this.sessionRestoreSelected_ = event.value['value'] == 1;
       this.maybeShowSessionRestoreDialog_();
     },
 
-    onSessionRestoreDialogShownChanged_ : function(event) {
+    onSessionRestoreDialogShownChanged_: function(event) {
       this.sessionRestoreDialogShown_ = event.value['value'];
       this.maybeShowSessionRestoreDialog_();
     },
 
-    maybeShowSessionRestoreDialog_ : function() {
+    maybeShowSessionRestoreDialog_: function() {
       // If either of the needed two preferences hasn't been read yet, the
       // corresponding member variable will be undefined and we won't display
       // the dialog yet.
@@ -421,10 +421,8 @@ cr.define('options', function() {
     },
 
     /**
-     * Returns true if the custom startup page control block should
-     * be enabled.
-     * @returns {boolean} Whether the startup page controls should be
-     *     enabled.
+     * Returns true if the custom startup page control block should be enabled.
+     * @return {boolean} Whether the startup page controls should be enabled.
      */
     shouldEnableCustomStartupPageControls: function(pages) {
       return $('startup-show-pages').checked &&
@@ -542,7 +540,7 @@ cr.define('options', function() {
 
     /**
      * Adds all |profiles| to the list.
-     * @param {Array.<Object>} An array of profile info objects.
+     * @param {Array.<Object>} profiles An array of profile info objects.
      *     each object is of the form:
      *       profileInfo = {
      *         name: "Profile Name",

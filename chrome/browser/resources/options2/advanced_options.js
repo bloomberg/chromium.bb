@@ -279,7 +279,7 @@ cr.define('options', function() {
     if (!$('Custom')) {
       var option = new Option(localStrings.getString('fontSizeLabelCustom'),
                               -1, false, true);
-      option.setAttribute("id", "Custom");
+      option.setAttribute('id', 'Custom');
       selectCtl.add(option);
     }
     $('Custom').selected = true;

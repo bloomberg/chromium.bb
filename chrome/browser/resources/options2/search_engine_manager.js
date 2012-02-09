@@ -79,9 +79,9 @@ cr.define('options', function() {
 
       otherEngines = otherEngines.map(function(x) {
         return [x, x['name'].toLocaleLowerCase()];
-      }).sort(function(a,b){
+      }).sort(function(a, b) {
         return a[1].localeCompare(b[1]);
-      }).map(function(x){
+      }).map(function(x) {
         return x[0];
       });
 

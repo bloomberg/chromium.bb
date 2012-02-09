@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -102,7 +102,7 @@ cr.define('options', function() {
      * @private
      */
     setUpCheckboxState_: function(checkbox, enabled) {
-       checkbox.setDisabled("noProfileData", !enabled);
+       checkbox.setDisabled('noProfileData', !enabled);
     },
 
     /**
@@ -142,7 +142,7 @@ cr.define('options', function() {
       } else {
         this.setControlsSensitive_(true);
         for (var i = 0; i < browserCount; i++) {
-          var browser = browsers[i]
+          var browser = browsers[i];
           var option = new Option(browser['name'], browser['index']);
           browserSelect.appendChild(option);
         }
@@ -188,11 +188,11 @@ cr.define('options', function() {
     var checkboxes =
         document.querySelectorAll('#import-checkboxes input[type=checkbox]');
     for (var i = 0; i < checkboxes.length; i++)
-        checkboxes[i].setDisabled("Importing", state);
+        checkboxes[i].setDisabled('Importing', state);
     if (!state)
       ImportDataOverlay.getInstance().updateCheckboxes_();
     $('import-browsers').disabled = state;
-    $('import-throbber').style.visibility = state ? "visible" : "hidden";
+    $('import-throbber').style.visibility = state ? 'visible' : 'hidden';
     ImportDataOverlay.getInstance().validateCommitButton_();
   };
 

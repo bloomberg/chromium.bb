@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -237,8 +237,8 @@ cr.define('options', function() {
      * Set the currently selected intents node ("intents bubble") index to
      * @{code itemIndex}, unselecting any previously selected node first.
      * @param {number} itemIndex The index to set as the selected index.
-     * TODO: KILL THIS
      */
+    // TODO: KILL THIS
     set selectedIndex(itemIndex) {
       // Get the list index up front before we change anything.
       var index = this.list.getIndexOfListItem(this);
@@ -377,13 +377,7 @@ cr.define('options', function() {
 
         var divTypes = item.ownerDocument.createElement('div');
         divTypes.className = 'intents-item-types';
-        var text = "";
-        for (var i = 0; i < this.data.types.length; ++i) {
-          if (text != "")
-            text += ", ";
-          text += this.data.types[i];
-        }
-        divTypes.textContent = text;
+        divTypes.textContent = this.data.types.join(', ');
         div.appendChild(divTypes);
 
         var divUrl = item.ownerDocument.createElement('div');

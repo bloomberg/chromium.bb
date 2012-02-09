@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -138,7 +138,7 @@ cr.define('options', function() {
         selectElement.appendChild(optionElement);
       }
 
-      selectElement.addEventListener('change', function (e) {
+      selectElement.addEventListener('change', function(e) {
         var index = e.target.value;
         if (index == -1) {
           this.classList.add('none');
@@ -158,7 +158,7 @@ cr.define('options', function() {
       var removeElement = document.createElement('div');
       removeElement.textContent =
           localStrings.getString('handlers_remove_link');
-      removeElement.addEventListener('click', function (e) {
+      removeElement.addEventListener('click', function(e) {
         var value = selectElement ? selectElement.value : 0;
         delegate.removeHandler(value, data.handlers[value]);
       });
