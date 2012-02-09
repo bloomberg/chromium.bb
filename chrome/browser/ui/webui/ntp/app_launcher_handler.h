@@ -35,10 +35,6 @@ class AppLauncherHandler : public content::WebUIMessageHandler,
   explicit AppLauncherHandler(ExtensionService* extension_service);
   virtual ~AppLauncherHandler();
 
-  // Whether the app should be excluded from the "apps" list because
-  // it is special (such as the Web Store app).
-  static bool IsAppExcludedFromList(const Extension* extension);
-
   // Populate a dictionary with the information from an extension.
   static void CreateAppInfo(
       const Extension* extension,

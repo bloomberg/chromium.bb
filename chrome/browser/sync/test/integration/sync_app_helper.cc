@@ -17,6 +17,7 @@ namespace {
 struct AppState {
   AppState();
   ~AppState();
+  bool IsValid() const;
   bool Equals(const AppState& other) const;
 
   StringOrdinal app_launch_ordinal;
@@ -28,6 +29,10 @@ typedef std::map<std::string, AppState> AppStateMap;
 AppState::AppState() {}
 
 AppState::~AppState() {}
+
+bool AppState::IsValid() const {
+  return page_ordinal.IsValid() && app_launch_ordinal.IsValid();
+}
 
 bool AppState::Equals(const AppState& other) const {
   return app_launch_ordinal.Equal(other.app_launch_ordinal) &&
@@ -111,6 +116,14 @@ bool SyncAppHelper::AppStatesMatch(Profile* profile1, Profile* profile2) {
     if (it1->first != it2->first) {
       DVLOG(2) << "Apps for profile " << profile1->GetDebugName()
                << " do not match profile " << profile2->GetDebugName();
+      return false;
+    } else if (!it1->second.IsValid()) {
+      DVLOG(2) << "Apps for profile " << profile1->GetDebugName()
+               << " are not valid.";
+      return false;
+    } else if (!it2->second.IsValid()) {
+      DVLOG(2) << "Apps for profile " << profile2->GetDebugName()
+               << " are not valid.";
       return false;
     } else if (!it1->second.Equals(it2->second)) {
       DVLOG(2) << "App states for profile " << profile1->GetDebugName()

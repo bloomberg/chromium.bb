@@ -520,13 +520,37 @@ class ExtensionSortingFixNTPCollisionsTwoCollisions
 TEST_F(ExtensionSortingFixNTPCollisionsTwoCollisions,
        ExtensionSortingFixNTPCollisionsTwoCollisions) {}
 
+class ExtensionSortingEnsureValidOrdinals :
+    public ExtensionPrefsPrepopulatedTest {
+ public :
+  ExtensionSortingEnsureValidOrdinals() {}
+  ~ExtensionSortingEnsureValidOrdinals() {}
+
+  virtual void Initialize() {}
+  virtual void Verify() {
+    ExtensionSorting* extension_sorting = prefs()->extension_sorting();
+
+    // Give ext1 invalid ordinals and then check that EnsureValidOridnals fixes
+    // them.
+    extension_sorting->SetAppLaunchOrdinal(ext1_->id(), StringOrdinal());
+    extension_sorting->SetPageOrdinal(ext1_->id(), StringOrdinal());
+
+    extension_sorting->EnsureValidOrdinals(ext1_->id());
+
+    EXPECT_TRUE(extension_sorting->GetAppLaunchOrdinal(ext1_->id()).IsValid());
+    EXPECT_TRUE(extension_sorting->GetPageOrdinal(ext1_->id()).IsValid());
+  }
+};
+TEST_F(ExtensionSortingEnsureValidOrdinals,
+       ExtensionSortingEnsureValidOrdinals) {}
+
 class ExtensionSortingPageOrdinalMapping :
     public ExtensionPrefsPrepopulatedTest {
  public:
   ExtensionSortingPageOrdinalMapping() {}
   virtual ~ExtensionSortingPageOrdinalMapping() {}
-  virtual void Initialize() {}
 
+  virtual void Initialize() {}
   virtual void Verify() {
     std::string ext_1 = "ext_1";
     std::string ext_2 = "ext_2";

@@ -190,6 +190,27 @@ void ExtensionSorting::FixNTPOrdinalCollisions() {
       content::NotificationService::NoDetails());
 }
 
+void ExtensionSorting::EnsureValidOrdinals(const std::string& extension_id) {
+  StringOrdinal page_ordinal = GetPageOrdinal(extension_id);
+  if (!page_ordinal.IsValid()) {
+    // The webstore app should always start be on the first page.
+    page_ordinal = extension_id == extension_misc::kWebStoreAppId ?
+        CreateFirstAppPageOrdinal() :
+        GetNaturalAppPageOrdinal();
+    SetPageOrdinal(extension_id, page_ordinal);
+  }
+
+  StringOrdinal app_launch_ordinal = GetAppLaunchOrdinal(extension_id);
+  if (!app_launch_ordinal.IsValid()) {
+    // The webstore app should always start in the position.
+    app_launch_ordinal = extension_id == extension_misc::kWebStoreAppId ?
+        CreateFirstAppLaunchOrdinal(page_ordinal) :
+        CreateNextAppLaunchOrdinal(page_ordinal);
+    SetAppLaunchOrdinal(extension_id,
+                        app_launch_ordinal);
+  }
+}
+
 void ExtensionSorting::OnExtensionMoved(
     const std::string& moved_extension_id,
     const std::string& predecessor_extension_id,
@@ -243,10 +264,14 @@ void ExtensionSorting::SetAppLaunchOrdinal(
       extension_id, page_ordinal, GetAppLaunchOrdinal(extension_id));
   AddOrdinalMapping(extension_id, page_ordinal, new_app_launch_ordinal);
 
+  Value* new_value = new_app_launch_ordinal.IsValid() ?
+      Value::CreateStringValue(new_app_launch_ordinal.ToString()) :
+      NULL;
+
   extension_scoped_prefs_->UpdateExtensionPref(
       extension_id,
       kPrefAppLaunchOrdinal,
-      Value::CreateStringValue(new_app_launch_ordinal.ToString()));
+      new_value);
 }
 
 StringOrdinal ExtensionSorting::CreateFirstAppLaunchOrdinal(
@@ -320,10 +345,14 @@ void ExtensionSorting::SetPageOrdinal(const std::string& extension_id,
       extension_id, GetPageOrdinal(extension_id), app_launch_ordinal);
   AddOrdinalMapping(extension_id, new_page_ordinal, app_launch_ordinal);
 
+  Value* new_value = new_page_ordinal.IsValid() ?
+      Value::CreateStringValue(new_page_ordinal.ToString()) :
+      NULL;
+
   extension_scoped_prefs_->UpdateExtensionPref(
       extension_id,
       kPrefPageOrdinal,
-      Value::CreateStringValue(new_page_ordinal.ToString()));
+      new_value);
 }
 
 void ExtensionSorting::ClearOrdinals(const std::string& extension_id) {

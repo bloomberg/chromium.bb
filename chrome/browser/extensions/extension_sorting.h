@@ -30,6 +30,10 @@ class ExtensionSorting {
   // this is called it is guaranteed that there are no collisions of NTP icons.
   void FixNTPOrdinalCollisions();
 
+  // This ensures that the extension has valid ordinals, and if it doesn't then
+  // properly initialize them.
+  void EnsureValidOrdinals(const std::string& extension_id);
+
   // Updates the app launcher value for the moved extension so that it is now
   // located after the given predecessor and before the successor.
   // Empty strings are used to indicate no successor or predecessor.

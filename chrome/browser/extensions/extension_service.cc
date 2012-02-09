@@ -1570,8 +1570,13 @@ void ExtensionService::SetIsIncognitoEnabled(
     const std::string& extension_id, bool enabled) {
   const Extension* extension = GetInstalledExtension(extension_id);
   if (extension && extension->location() == Extension::COMPONENT) {
-    // This shouldn't be called for component extensions.
-    NOTREACHED();
+    // This shouldn't be called for component extensions unless they are
+    // syncable.
+    DCHECK(extension->IsSyncable());
+
+    // If we are here, make sure the we aren't trying to change the value.
+    DCHECK_EQ(enabled, IsIncognitoEnabled(extension_id));
+
     return;
   }
 
@@ -2046,6 +2051,11 @@ void ExtensionService::AddExtension(const Extension* extension) {
     SyncExtensionChangeIfNeeded(*extension);
     return;
   }
+
+  // All apps that are displayed in the launcher are ordered by their ordinals
+  // so we must ensure they have valid ordinals.
+  if (extension->ShouldDisplayInLauncher())
+    extension_prefs_->extension_sorting()->EnsureValidOrdinals(extension->id());
 
   extensions_.Insert(scoped_extension);
   SyncExtensionChangeIfNeeded(*extension);

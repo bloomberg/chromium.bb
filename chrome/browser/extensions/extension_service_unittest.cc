@@ -69,6 +69,7 @@
 #include "content/public/browser/plugin_service.h"
 #include "content/test/test_browser_thread.h"
 #include "googleurl/src/gurl.h"
+#include "grit/browser_resources.h"
 #include "net/base/cookie_monster.h"
 #include "net/base/cookie_options.h"
 #include "net/url_request/url_request_context.h"
@@ -2035,6 +2036,21 @@ TEST_F(ExtensionServiceTest, UpdateAppsRetainOrdinals) {
   // Verify that the ordinals match.
   ASSERT_TRUE(new_page_ordinal.Equal(sorting->GetPageOrdinal(id)));
   ASSERT_TRUE(new_launch_ordinal.Equal(sorting->GetAppLaunchOrdinal(id)));
+}
+
+// Ensures that the CWS has properly initialized ordinals.
+TEST_F(ExtensionServiceTest, EnsureCWSOrdinalsInitialized) {
+  InitializeEmptyExtensionService();
+  service_->component_loader()->Add(IDR_WEBSTORE_MANIFEST,
+                                    FilePath(FILE_PATH_LITERAL("web_store")));
+  service_->Init();
+
+
+  ExtensionSorting* sorting = service_->extension_prefs()->extension_sorting();
+  EXPECT_TRUE(
+      sorting->GetPageOrdinal(extension_misc::kWebStoreAppId).IsValid());
+  EXPECT_TRUE(
+      sorting->GetAppLaunchOrdinal(extension_misc::kWebStoreAppId).IsValid());
 }
 
 TEST_F(ExtensionServiceTest, InstallAppsWithUnlimitedStorage) {

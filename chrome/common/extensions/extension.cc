@@ -2990,8 +2990,7 @@ bool Extension::OverlapsWithOrigin(const GURL& origin) const {
 }
 
 Extension::SyncType Extension::GetSyncType() const {
-  // TODO(akalin): Figure out if we need to allow some other types.
-  if (location() != Extension::INTERNAL) {
+  if (!IsSyncable()) {
     // We have a non-standard location.
     return SYNC_TYPE_NONE;
   }
@@ -3029,6 +3028,25 @@ Extension::SyncType Extension::GetSyncType() const {
     default:
       return SYNC_TYPE_NONE;
   }
+}
+
+bool Extension::IsSyncable() const {
+  // TODO(akalin): Figure out if we need to allow some other types.
+
+  // We want to sync any extensions that are shown in the luancher because
+  // their positions should sync.
+  return location_ == Extension::INTERNAL ||
+      ShouldDisplayInLauncher();
+
+}
+
+bool Extension::ShouldDisplayInLauncher() const {
+  // The CWS needs to be treated as syncable app because it appears on the NTP
+  // and we need to make sure its position values are synced.
+  // If another case arises where we need to have a special case like the CWS,
+  // something more systematic should be done.
+  return location_ == Extension::INTERNAL ||
+      id() == extension_misc::kWebStoreAppId;
 }
 
 ExtensionInfo::ExtensionInfo(const DictionaryValue* manifest,

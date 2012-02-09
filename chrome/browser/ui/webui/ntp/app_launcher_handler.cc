@@ -97,16 +97,6 @@ static DictionaryValue* SerializeNotification(
   return dictionary;
 }
 
-// static
-bool AppLauncherHandler::IsAppExcludedFromList(const Extension* extension) {
-  // The Cloud Print app should never be displayed in the NTP.
-  if (!extension->is_app() ||
-      (extension->id() == extension_misc::kCloudPrintAppId)) {
-    return true;
-  }
-  return false;
-}
-
 void AppLauncherHandler::CreateAppInfo(const Extension* extension,
                                        const AppNotification* notification,
                                        ExtensionService* service,
@@ -351,7 +341,7 @@ void AppLauncherHandler::FillAppDictionary(DictionaryValue* dictionary) {
   ExtensionSet::const_iterator it;
   for (it = extensions->begin(); it != extensions->end(); ++it) {
     const Extension* extension = *it;
-    if (!IsAppExcludedFromList(extension)) {
+    if (extension->ShouldDisplayInLauncher()) {
       DictionaryValue* app_info = GetAppInfo(extension);
       list->Append(app_info);
     } else {
@@ -368,7 +358,7 @@ void AppLauncherHandler::FillAppDictionary(DictionaryValue* dictionary) {
 
   extensions = extension_service_->disabled_extensions();
   for (it = extensions->begin(); it != extensions->end(); ++it) {
-    if (!IsAppExcludedFromList(*it)) {
+    if ((*it)->ShouldDisplayInLauncher()) {
       DictionaryValue* app_info = new DictionaryValue();
       CreateAppInfo(*it,
                     NULL,
@@ -380,7 +370,7 @@ void AppLauncherHandler::FillAppDictionary(DictionaryValue* dictionary) {
 
   extensions = extension_service_->terminated_extensions();
   for (it = extensions->begin(); it != extensions->end(); ++it) {
-    if (!IsAppExcludedFromList(*it)) {
+    if ((*it)->ShouldDisplayInLauncher()) {
       DictionaryValue* app_info = new DictionaryValue();
       CreateAppInfo(*it,
                     NULL,

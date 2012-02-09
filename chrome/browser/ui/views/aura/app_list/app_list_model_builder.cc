@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/views/aura/app_list/browser_command_item.h"
 #include "chrome/browser/ui/views/aura/app_list/extension_app_item.h"
 #include "chrome/browser/ui/webui/ntp/app_launcher_handler.h"
+#include "chrome/common/extensions/extension.h"
 #include "chrome/common/pref_names.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -76,10 +77,8 @@ void AppListModelBuilder::GetExtensionApps() {
   const ExtensionSet* extensions = service->extensions();
   for (ExtensionSet::const_iterator app = extensions->begin();
        app != extensions->end(); ++app) {
-    if (AppLauncherHandler::IsAppExcludedFromList(*app))
-      continue;
-
-    items.push_back(new ExtensionAppItem(profile_, *app));
+    if ((*app)->ShouldDisplayInLauncher())
+      items.push_back(new ExtensionAppItem(profile_, *app));
   }
 
   // Sort by launch ordinal.

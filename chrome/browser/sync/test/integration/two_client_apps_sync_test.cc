@@ -3,6 +3,9 @@
 // found in the LICENSE file.
 
 #include "base/basictypes.h"
+#include "chrome/common/extensions/extension_constants.h"
+#include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service_harness.h"
 #include "chrome/browser/sync/test/integration/apps_helper.h"
 #include "chrome/browser/sync/test/integration/sync_app_helper.h"
@@ -364,6 +367,36 @@ IN_PROC_BROWSER_TEST_F(TwoClientAppsSyncTest, UpdateAppLaunchOrdinal) {
   StringOrdinal second_position = initial_position.CreateAfter();
   SetAppLaunchOrdinalForApp(GetProfile(0), 0, second_position);
   SetAppLaunchOrdinalForApp(verifier(), 0, second_position);
+  ASSERT_TRUE(AwaitQuiescence());
+  ASSERT_TRUE(AllProfilesHaveSameAppsAsVerifier());
+}
+
+// Adjust the CWS location within a page on the first client and sync. Adjust
+// which page the CWS appears on and sync. Both clients should have the same
+// page and app launch ordinal values for the CWS.
+IN_PROC_BROWSER_TEST_F(TwoClientAppsSyncTest, UpdateCWSOrdinals) {
+  ASSERT_TRUE(SetupSync());
+  ASSERT_TRUE(AllProfilesHaveSameAppsAsVerifier());
+
+  // Change the app launch ordinal.
+  StringOrdinal cws_app_launch_ordinal =
+      GetProfile(0)->GetExtensionService()->GetAppLaunchOrdinal(
+          extension_misc::kWebStoreAppId);
+  GetProfile(0)->GetExtensionService()->SetAppLaunchOrdinal(
+      extension_misc::kWebStoreAppId, cws_app_launch_ordinal.CreateAfter());
+  verifier()->GetExtensionService()->SetAppLaunchOrdinal(
+      extension_misc::kWebStoreAppId, cws_app_launch_ordinal.CreateAfter());
+  ASSERT_TRUE(AwaitQuiescence());
+  ASSERT_TRUE(AllProfilesHaveSameAppsAsVerifier());
+
+  // Change the page ordinal.
+  StringOrdinal cws_page_ordinal =
+      GetProfile(1)->GetExtensionService()->GetPageOrdinal(
+          extension_misc::kWebStoreAppId);
+  GetProfile(1)->GetExtensionService()->SetPageOrdinal(
+      extension_misc::kWebStoreAppId, cws_page_ordinal.CreateAfter());
+  verifier()->GetExtensionService()->SetPageOrdinal(
+      extension_misc::kWebStoreAppId, cws_page_ordinal.CreateAfter());
   ASSERT_TRUE(AwaitQuiescence());
   ASSERT_TRUE(AllProfilesHaveSameAppsAsVerifier());
 }

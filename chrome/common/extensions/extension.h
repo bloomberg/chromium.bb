@@ -500,6 +500,12 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   // Returns the sync bucket to use for this extension.
   SyncType GetSyncType() const;
 
+  // Returns true if the extension should be synced.
+  bool IsSyncable() const;
+
+  // Returns true if the extension should be displayed in the launcher.
+  bool ShouldDisplayInLauncher() const;
+
   // Accessors:
 
   const FilePath& path() const { return path_; }
