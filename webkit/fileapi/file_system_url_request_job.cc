@@ -122,8 +122,11 @@ FileSystemURLRequestJob::FileSystemURLRequestJob(
 FileSystemURLRequestJob::~FileSystemURLRequestJob() {
   // Since we use the two-arg constructor of FileStream, we need to call Close()
   // manually: ~FileStream won't call it for us.
-  if (stream_ != NULL)
+  if (stream_ != NULL) {
+    // Close() performs file IO: crbug.com/113300.
+    base::ThreadRestrictions::ScopedAllowIO allow_io;
     stream_->Close();
+  }
 }
 
 void FileSystemURLRequestJob::Start() {
@@ -135,6 +138,8 @@ void FileSystemURLRequestJob::Start() {
 
 void FileSystemURLRequestJob::Kill() {
   if (stream_ != NULL) {
+    // Close() performs file IO: crbug.com/113300.
+    base::ThreadRestrictions::ScopedAllowIO allow_io;
     stream_->Close();
     stream_.reset(NULL);
   }
@@ -273,8 +278,8 @@ void FileSystemURLRequestJob::DidOpen(base::PlatformFileError error_code,
                      byte_range_.first_byte_position() + 1;
   DCHECK_GE(remaining_bytes_, 0);
 
-  // TODO(adamk): Please remove this ScopedAllowIO once we support async seek on
-  // FileStream.
+  // TODO(adamk): Please remove this ScopedAllowIO once we support async seek
+  // on FileStream. crbug.com/113300
   base::ThreadRestrictions::ScopedAllowIO allow_io;
   // Do the seek at the beginning of the request.
   if (remaining_bytes_ > 0 &&
