@@ -36,11 +36,12 @@
                     <span class="optional" jsdisplay="optional">optional</span>
                     <span class="enum" jsdisplay="$this.enum">enumerated</span>
                     <span id="typeTemplate">
-                      <span jsdisplay="getTypeRef($this)">
+                      <code jsdisplay="hasPrimitiveValue($this)" jscontent="getPrimitiveValue($this)">value</code>
+                      <span jsdisplay="!hasPrimitiveValue($this) && getTypeRef($this)">
                         <a jsvalues=".href: getTypeRefPage($this) + '#type-' + getTypeRef($this)"
                            jscontent="getTypeRef($this)"> Type</a>
                       </span>
-                      <span jsdisplay="!getTypeRef($this)">
+                      <span jsdisplay="!hasPrimitiveValue($this) && !getTypeRef($this)">
                         <span jsdisplay="isArray($this)">
                           array of <span jsselect="items"><span transclude="typeTemplate"></span></span>
                         </span>

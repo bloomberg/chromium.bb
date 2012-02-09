@@ -591,8 +591,8 @@ function getAnchorName(type, name, scope) {
 }
 
 function shouldExpandObject(object) {
-  return (object.type == 'object' && object.properties) ||
-         (object.type == 'array' && object.items && object.items.properties);
+  return object.properties ||
+         (object.items && object.items.properties);
 }
 
 function getPropertyListFromObject(object) {
@@ -633,6 +633,17 @@ function getTypeName(schema) {
     return schema.isInstanceOf;
 
   return schema.type;
+}
+
+function hasPrimitiveValue(schema) {
+  return typeof(schema.value) === 'string';
+}
+
+function getPrimitiveValue(schema) {
+  if (schema.type === 'string')
+    return '"' + schema.value + '"';
+  else
+    return schema.value;
 }
 
 function getSignatureString(parameters) {
