@@ -460,8 +460,7 @@ def daemonize(log_filename):
     # Parent process
     os._exit(0)
 
-  logging.info("Daemon process running, PID = %d, logging to '%s'" %
-               (os.getpid(), log_filename))
+  logging.info("Daemon process running, logging to '%s'" % log_filename)
 
   os.chdir(HOME_DIR)
 
@@ -615,13 +614,9 @@ def main():
   running, pid = g_pidfile.check()
 
   if running:
-    if pid == 0:
-      pid = 'unknown'
-
-    logging.error("An instance of this script is already running, PID is %s." %
-                  pid)
-    logging.error("If this isn't the case, delete '%s' and try again." %
-                  pid_filename)
+    print "An instance of this script is already running."
+    print "Use the -k flag to terminate the running instance."
+    print "If this isn't the case, delete '%s' and try again." % pid_filename
     return 1
 
   g_pidfile.create()
