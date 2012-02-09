@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -27,7 +27,7 @@ class GLSurfaceCGL : public GLSurface {
 // associated drawable (pbuffer or fullscreen context) in order to be
 // made current. Everywhere this surface type is used, we allocate an
 // FBO at the user level as the drawable of the associated context.
-class NoOpGLSurfaceCGL : public GLSurfaceCGL {
+class UI_EXPORT NoOpGLSurfaceCGL : public GLSurfaceCGL {
  public:
   explicit NoOpGLSurfaceCGL(const gfx::Size& size);
   virtual ~NoOpGLSurfaceCGL();
