@@ -919,25 +919,10 @@ void SyncScheduler::ScheduleNextSync(const SyncSessionJob& old_job) {
     InitOrCoalescePendingJob(old_job);
     // Resume waiting.
     RestartWaiting();
-  } else if (old_job.session->source().updates_source ==
-             GetUpdatesCallerInfo::SYNC_CYCLE_CONTINUATION) {
-    SDVLOG(2) << "Job failed with source continuation";
-    // We don't seem to have made forward progress. Start or extend backoff.
-    HandleConsecutiveContinuationError(old_job);
   } else {
-    SDVLOG(2) << "Failed. Schedule a job with continuation as source";
-    // We weren't continuing and we aren't in backoff.  Schedule a normal
-    // continuation.
-    if (old_job.purpose == SyncSessionJob::CONFIGURATION) {
-      ScheduleConfigImpl(old_job.session->routing_info(),
-          old_job.session->workers(),
-          GetUpdatesFromNudgeSource(NUDGE_SOURCE_CONTINUATION));
-    } else  {
-      // For all other purposes(nudge and poll) we schedule a retry nudge.
-      ScheduleNudgeImpl(TimeDelta::FromSeconds(0),
-                        GetUpdatesFromNudgeSource(NUDGE_SOURCE_CONTINUATION),
-                        old_job.session->source().types, false, FROM_HERE);
-    }
+    SDVLOG(2) << "Non-'backoff nudge' SyncShare job failed";
+    // We don't seem to have made forward progress. Start or extend backoff.
+    HandleContinuationError(old_job);
   }
 }
 
@@ -968,7 +953,7 @@ void SyncScheduler::RestartWaiting() {
                               this, &SyncScheduler::DoCanaryJob);
 }
 
-void SyncScheduler::HandleConsecutiveContinuationError(
+void SyncScheduler::HandleContinuationError(
     const SyncSessionJob& old_job) {
   DCHECK_EQ(MessageLoop::current(), sync_loop_);
   if (DCHECK_IS_ON()) {

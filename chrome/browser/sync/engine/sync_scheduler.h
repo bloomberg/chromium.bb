@@ -278,7 +278,7 @@ class SyncScheduler : public sessions::SyncSession::Delegate {
   void RestartWaiting();
 
   // Helper to ScheduleNextSync in case of consecutive sync errors.
-  void HandleConsecutiveContinuationError(const SyncSessionJob& old_job);
+  void HandleContinuationError(const SyncSessionJob& old_job);
 
   // Determines if it is legal to run |job| by checking current
   // operational mode, backoff or throttling, freshness
