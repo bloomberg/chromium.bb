@@ -167,7 +167,7 @@ AC_ARG_ENABLE(tests,
 	      AS_HELP_STRING([--disable-tests],
 			     [do not build unit tests [default=enabled]]),,
 	      enable_tests=yes)
-AM_CONDITIONAL(BUILD_TESTS, test x$enable_tests == xyes)
+AM_CONDITIONAL(BUILD_TESTS, test x$enable_tests = xyes)
 
 if test "x$GCC" = "xyes"; then
 	GCC_CFLAGS="-Wall -g -Wstrict-prototypes -Wmissing-prototypes -fvisibility=hidden"
