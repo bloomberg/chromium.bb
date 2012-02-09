@@ -35,7 +35,7 @@
 
 /* Enable animating the height of items. */
 list.intents-list .deletable-item {
-  -webkit-transition: height .15s ease-in-out;
+  -webkit-transition: height 150ms ease-in-out;
 }
 
 /* Disable webkit-box display. */
@@ -83,7 +83,7 @@ list.intents-list > .deletable-item[selected] .intents-data {
   /* Notice that the margin and padding match up with those above. */
   -webkit-margin-start: 11em;
   -webkit-padding-start: 7px;
-  -webkit-transition: .15s ease-in-out;
+  -webkit-transition: 150ms ease-in-out;
   display: table;
   height: 0;
   opacity: 0;

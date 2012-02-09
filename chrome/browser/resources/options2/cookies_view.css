@@ -46,7 +46,7 @@ html[dir=rtl] #remove-all-cookies-search-column {
 
 /* enable animating the height of items */
 list.cookie-list .deletable-item {
-  -webkit-transition: height .15s ease-in-out;
+  -webkit-transition: height 150ms ease-in-out;
 }
 
 /* disable webkit-box display */
@@ -102,7 +102,7 @@ list.cookie-list > .deletable-item[selected] .cookie-data {
   /* notice that the margin and padding match up with those above */
   -webkit-margin-start: 11em;
   -webkit-padding-start: 7px;
-  -webkit-transition: .15s ease-in-out;
+  -webkit-transition: 150ms ease-in-out;
   height: 0;
   opacity: 0;
   /* make the cookie items wrap correctly */
