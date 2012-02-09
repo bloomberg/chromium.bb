@@ -644,12 +644,15 @@ void BookmarkBarGtk::UpdateDetachedState(BookmarkBar::State old_state) {
   UpdateEventBoxPaintability();
   // |window_| can be NULL during testing.
   // Listen for parent size allocations. Only connect once.
-  if (window_ && detached && widget()->parent &&
-      g_signal_handler_find(widget()->parent, G_SIGNAL_MATCH_FUNC,
-          0, 0, NULL, reinterpret_cast<gpointer>(OnParentSizeAllocateThunk),
-          NULL) == 0) {
-    g_signal_connect(widget()->parent, "size-allocate",
-                     G_CALLBACK(OnParentSizeAllocateThunk), this);
+  if (window_ && detached) {
+    GtkWidget* parent = gtk_widget_get_parent(widget());
+    if (parent &&
+        g_signal_handler_find(parent, G_SIGNAL_MATCH_FUNC,
+            0, 0, NULL, reinterpret_cast<gpointer>(OnParentSizeAllocateThunk),
+            NULL) == 0) {
+      g_signal_connect(parent, "size-allocate",
+                       G_CALLBACK(OnParentSizeAllocateThunk), this);
+    }
   }
 }
 
@@ -818,8 +821,9 @@ int BookmarkBarGtk::GetToolbarIndexForDragOverFolder(GtkWidget* button,
   if (x > margin && x < (allocation.width - margin))
     return -1;
 
+  GtkWidget* parent = gtk_widget_get_parent(button);
   gint index = gtk_toolbar_get_item_index(GTK_TOOLBAR(bookmark_toolbar_.get()),
-                                          GTK_TOOL_ITEM(button->parent));
+                                          GTK_TOOL_ITEM(parent));
   if (x > margin)
     index++;
   return index;
@@ -1146,9 +1150,11 @@ void BookmarkBarGtk::OnClicked(GtkWidget* sender) {
 
 void BookmarkBarGtk::OnButtonDragBegin(GtkWidget* button,
                                        GdkDragContext* drag_context) {
+  GtkWidget* button_parent = gtk_widget_get_parent(button);
+
   // The parent tool item might be removed during the drag. Ref it so |button|
   // won't get destroyed.
-  g_object_ref(button->parent);
+  g_object_ref(button_parent);
 
   const BookmarkNode* node = GetNodeForToolButton(button);
   DCHECK(!dragged_node_);
@@ -1172,7 +1178,7 @@ void BookmarkBarGtk::OnButtonDragBegin(GtkWidget* button,
 
   // Hide our node, but reserve space for it on the toolbar.
   int index = gtk_toolbar_get_item_index(GTK_TOOLBAR(bookmark_toolbar_.get()),
-                                         GTK_TOOL_ITEM(button->parent));
+                                         GTK_TOOL_ITEM(button_parent));
   gtk_widget_hide(button);
   toolbar_drop_item_ = CreateBookmarkToolItem(dragged_node_);
   g_object_ref_sink(GTK_OBJECT(toolbar_drop_item_));
@@ -1196,7 +1202,7 @@ void BookmarkBarGtk::OnButtonDragEnd(GtkWidget* button,
   gtk_widget_destroy(drag_icon_);
   drag_icon_ = NULL;
 
-  g_object_unref(button->parent);
+  g_object_unref(gtk_widget_get_parent(button));
 }
 
 void BookmarkBarGtk::OnButtonDragGet(GtkWidget* widget,
@@ -1280,8 +1286,9 @@ void BookmarkBarGtk::OnDragReceived(GtkWidget* widget,
 
   switch (target_type) {
     case ui::CHROME_BOOKMARK_ITEM: {
-      Pickle pickle(reinterpret_cast<char*>(selection_data->data),
-                    selection_data->length);
+      gint length = gtk_selection_data_get_length(selection_data);
+      Pickle pickle(reinterpret_cast<const char*>(
+          gtk_selection_data_get_data(selection_data)), length);
       BookmarkNodeData drag_data;
       if (drag_data.ReadFromPickle(&pickle)) {
         dnd_success = bookmark_utils::PerformBookmarkDrop(
@@ -1383,7 +1390,7 @@ gboolean BookmarkBarGtk::OnEventBoxExpose(GtkWidget* widget,
     return FALSE;
 
   if (bookmark_bar_state_ != BookmarkBar::DETACHED) {
-    cairo_t* cr = gdk_cairo_create(GDK_DRAWABLE(widget->window));
+    cairo_t* cr = gdk_cairo_create(gtk_widget_get_window(widget));
     gdk_cairo_rectangle(cr, &event->area);
     cairo_clip(cr);
 

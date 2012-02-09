@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -122,8 +122,9 @@ void StatusBubbleGtk::Show() {
   hide_timer_.Stop();
 
   gtk_widget_show(container_.get());
-  if (container_->window)
-    gdk_window_raise(container_->window);
+  GdkWindow* gdk_window = gtk_widget_get_window(container_.get());
+  if (gdk_window)
+    gdk_window_raise(gdk_window);
 }
 
 void StatusBubbleGtk::Hide() {
@@ -198,7 +199,8 @@ void StatusBubbleGtk::MouseMoved(
     // Get our base position (that is, not including the current offset)
     // relative to the origin of the root window.
     gint toplevel_x = 0, toplevel_y = 0;
-    gdk_window_get_position(toplevel->window, &toplevel_x, &toplevel_y);
+    GdkWindow* gdk_window = gtk_widget_get_window(toplevel);
+    gdk_window_get_position(gdk_window, &toplevel_x, &toplevel_y);
     gfx::Rect parent_rect =
         gtk_util::GetWidgetRectRelativeToToplevel(parent);
     gfx::Rect bubble_rect(

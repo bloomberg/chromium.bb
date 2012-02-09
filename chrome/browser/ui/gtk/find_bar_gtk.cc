@@ -326,8 +326,9 @@ void FindBarGtk::Show(bool animate) {
     slide_widget_->Open();
     selection_rect_ = gfx::Rect();
     Reposition();
-    if (container_->window)
-      gdk_window_raise(container_->window);
+    GdkWindow* gdk_window = gtk_widget_get_window(container_);
+    if (gdk_window)
+      gdk_window_raise(gdk_window);
   } else {
     slide_widget_->OpenWithoutAnimation();
   }
@@ -640,8 +641,9 @@ void FindBarGtk::Reposition() {
     return;
 
   // This will trigger an allocate, which allows us to reposition.
-  if (widget()->parent)
-    gtk_widget_queue_resize(widget()->parent);
+  GtkWidget* parent = gtk_widget_get_parent(widget());
+  if (parent)
+    gtk_widget_queue_resize(parent);
 }
 
 void FindBarGtk::StoreOutsideFocus() {
@@ -718,13 +720,15 @@ void FindBarGtk::AdjustTextAlignment() {
 gfx::Point FindBarGtk::GetPosition() {
   gfx::Point point;
 
+  GtkWidget* parent = gtk_widget_get_parent(widget());
+
   GValue value = { 0, };
   g_value_init(&value, G_TYPE_INT);
-  gtk_container_child_get_property(GTK_CONTAINER(widget()->parent),
+  gtk_container_child_get_property(GTK_CONTAINER(parent),
                                    widget(), "x", &value);
   point.set_x(g_value_get_int(&value));
 
-  gtk_container_child_get_property(GTK_CONTAINER(widget()->parent),
+  gtk_container_child_get_property(GTK_CONTAINER(parent),
                                    widget(), "y", &value);
   point.set_y(g_value_get_int(&value));
 
@@ -736,7 +740,7 @@ gfx::Point FindBarGtk::GetPosition() {
 // static
 void FindBarGtk::OnParentSet(GtkWidget* widget, GtkObject* old_parent,
                              FindBarGtk* find_bar) {
-  if (!widget->parent)
+  if (!gtk_widget_get_parent(widget))
     return;
 
   g_signal_connect(gtk_widget_get_parent(widget), "set-floating-position",
@@ -888,7 +892,7 @@ gboolean FindBarGtk::OnExpose(GtkWidget* widget, GdkEventExpose* e,
       bar->container_height_ = allocation.height;
     }
 
-    cairo_t* cr = gdk_cairo_create(GDK_DRAWABLE(widget->window));
+    cairo_t* cr = gdk_cairo_create(gtk_widget_get_window(widget));
     gdk_cairo_rectangle(cr, &e->area);
     cairo_clip(cr);
 
@@ -902,7 +906,8 @@ gboolean FindBarGtk::OnExpose(GtkWidget* widget, GdkEventExpose* e,
     // now instead of when we render |border_bin_|. We don't use stacked event
     // boxes to simulate the effect because we need to blend them with this
     // background.
-    GtkAllocation border_allocation = bar->border_bin_->allocation;
+    GtkAllocation border_allocation;
+    gtk_widget_get_allocation(bar->border_bin_, &border_allocation);
 
     // Blit the left part of the background image once on the left.
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();

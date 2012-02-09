@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -119,7 +119,7 @@ void SlideAnimatorGtk::AnimationProgressed(const ui::Animation* animation) {
   int showing_height = static_cast<int>(req.height *
                                         animation_->GetCurrentValue());
   if (direction_ == DOWN) {
-    if (widget_.get()->parent) {
+    if (gtk_widget_get_parent(widget_.get())) {
       gtk_expanded_container_move(GTK_EXPANDED_CONTAINER(widget_.get()),
                                   child_, 0, showing_height - req.height);
     }

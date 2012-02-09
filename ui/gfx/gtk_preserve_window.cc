@@ -133,7 +133,8 @@ static void gtk_preserve_window_unrealize(GtkWidget* widget) {
 
     GdkWindow* gdk_window = gtk_widget_get_window(widget);
 
-    gtk_style_detach(widget->style);
+    // TODO(erg): Almost all style handling will need to be overhauled in GTK3.
+    gtk_style_detach(gtk_widget_get_style(widget));
     gdk_window_reparent(gdk_window, gdk_get_default_root_window(), 0, 0);
     gtk_selection_remove_all(widget);
     gdk_window_set_user_data(gdk_window, NULL);
@@ -207,7 +208,7 @@ void gtk_preserve_window_size_allocate(GtkWidget* widget,
   }
 
   // Propagate resize to children
-  guint16 border_width = GTK_CONTAINER(widget)->border_width;
+  guint16 border_width = gtk_container_get_border_width(GTK_CONTAINER(widget));
   GList *children = GTK_FIXED(widget)->children;
   while (children) {
     GtkFixedChild *child = reinterpret_cast<GtkFixedChild*>(children->data);
