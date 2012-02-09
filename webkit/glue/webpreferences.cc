@@ -72,6 +72,7 @@ WebPreferences::WebPreferences()
       experimental_webgl_enabled(false),
       gl_multisampling_enabled(true),
       privileged_webgl_extensions_enabled(false),
+      webgl_errors_to_console_enabled(true),
       show_composited_layer_borders(false),
       show_composited_layer_tree(false),
       show_fps_counter(false),
@@ -250,6 +251,9 @@ void WebPreferences::Apply(WebView* web_view) const {
   // on command line.
   settings->setPrivilegedWebGLExtensionsEnabled(
       privileged_webgl_extensions_enabled);
+
+  // Enable WebGL errors to the JS console if requested.
+  settings->setWebGLErrorsToConsoleEnabled(webgl_errors_to_console_enabled);
 
   // Display colored borders around composited render layers if requested
   // on command line.

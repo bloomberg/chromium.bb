@@ -86,6 +86,7 @@ struct WEBKIT_GLUE_EXPORT WebPreferences {
   bool experimental_webgl_enabled;
   bool gl_multisampling_enabled;
   bool privileged_webgl_extensions_enabled;
+  bool webgl_errors_to_console_enabled;
   bool show_composited_layer_borders;
   bool show_composited_layer_tree;
   bool show_fps_counter;
