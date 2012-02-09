@@ -1,7 +1,7 @@
 /*
- * Copyright 2009 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 #ifndef SERVICE_RUNTIME_ARCH_X86_SEL_LDR_H__
@@ -33,5 +33,7 @@
 #define NACL_HALT_OPCODE    0xf4
 #define NACL_HALT_LEN       1           /* length of halt instruction */
 #define NACL_HALT_WORD      0xf4f4f4f4U
+
+#define NACL_X86_DIRECTION_FLAG (1 << 10)
 
 #endif /* SERVICE_RUNTIME_ARCH_X86_SEL_LDR_H__ */

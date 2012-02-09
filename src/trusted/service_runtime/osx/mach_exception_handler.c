@@ -16,6 +16,7 @@
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/include/portability.h"
 #include "native_client/src/shared/platform/nacl_log.h"
+#include "native_client/src/trusted/service_runtime/arch/sel_ldr_arch.h"
 #include "native_client/src/trusted/service_runtime/nacl_app.h"
 #include "native_client/src/trusted/service_runtime/nacl_app_thread.h"
 #include "native_client/src/trusted/service_runtime/nacl_config.h"
@@ -179,6 +180,7 @@ static int HandleException(mach_port_t thread_port,
   regs.uts.ts32.__ds = trusted_ds;
   regs.uts.ts32.__es = trusted_ds;  /* just for good measure */
   regs.uts.ts32.__ss = trusted_ds;  /* just for good measure */
+  regs.uts.ts32.__eflags &= ~NACL_X86_DIRECTION_FLAG;
   result = thread_set_state(thread_port, x86_THREAD_STATE,
                             (void *) &regs, size);
   if (result != KERN_SUCCESS) {

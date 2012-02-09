@@ -13,6 +13,7 @@
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/platform/nacl_exit.h"
 #include "native_client/src/shared/platform/nacl_log.h"
+#include "native_client/src/trusted/service_runtime/arch/sel_ldr_arch.h"
 #include "native_client/src/trusted/service_runtime/nacl_app_thread.h"
 #include "native_client/src/trusted/service_runtime/nacl_config.h"
 #include "native_client/src/trusted/service_runtime/nacl_globals.h"
@@ -238,6 +239,7 @@ static int DispatchToUntrustedHandler(struct NaClAppThread *natp,
 
 #if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86
   frame->return_addr = kReturnAddr;
+  regs->flags &= ~NACL_X86_DIRECTION_FLAG;
 #endif
 
 #if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && NACL_BUILD_SUBARCH == 32

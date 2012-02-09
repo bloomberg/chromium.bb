@@ -7,6 +7,7 @@
 #include "native_client/src/trusted/service_runtime/win/debug_exception_handler.h"
 #include "native_client/src/trusted/service_runtime/win/thread_handle_map.h"
 #include "native_client/src/trusted/service_runtime/nacl_config.h"
+#include "native_client/src/trusted/service_runtime/arch/sel_ldr_arch.h"
 #include "native_client/src/trusted/service_runtime/arch/x86_32/sel_rt_32.h"
 #include <windows.h>
 #include <stdio.h>
@@ -273,6 +274,7 @@ static BOOL TransferControlToHandler(HANDLE process_handle,
 
   context->Eip = exception_handler;
   context->Esp = exception_stack;
+  context->EFlags &= ~NACL_X86_DIRECTION_FLAG;
   return SetThreadContext(thread_handle, context);
 }
 

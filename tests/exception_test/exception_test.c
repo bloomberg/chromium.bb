@@ -238,6 +238,59 @@ void test_invalid_handlers() {
   assert(rc == -EFAULT);
 }
 
+
+#if defined(__i386__) || defined(__x86_64__)
+
+int get_x86_direction_flag(void);
+
+void test_get_x86_direction_flag() {
+  /*
+   * Sanity check:  Ensure that get_x86_direction_flag() works.  We
+   * avoid calling assert() with the flag set, because that might not
+   * work.
+   */
+  assert(get_x86_direction_flag() == 0);
+  asm("std");
+  int flag = get_x86_direction_flag();
+  asm("cld");
+  assert(flag == 1);
+}
+
+void direction_flag_exception_handler(int prog_ctr, int stack_ptr) {
+  assert(get_x86_direction_flag() == 0);
+  /* Return from exception handler. */
+  int rc = NACL_SYSCALL(exception_clear_flag)();
+  assert(rc == 0);
+  longjmp(g_jmp_buf, 1);
+}
+
+/*
+ * The x86 ABIs require that the x86 direction flag is unset on entry
+ * to a function.  However, a crash could occur while the direction
+ * flag is set.  In order for an exception handler to be a normal
+ * function without x86-specific knowledge, NaCl needs to unset the
+ * direction flag when calling the exception handler.  This test
+ * checks that this happens.
+ */
+void test_unsetting_x86_direction_flag() {
+  printf("test_unsetting_x86_direction_flag...\n");
+  int rc = NACL_SYSCALL(exception_handler)(direction_flag_exception_handler,
+                                           NULL);
+  assert(rc == 0);
+  if (!setjmp(g_jmp_buf)) {
+    /* Cause a crash with the direction flag set. */
+    asm("std");
+    *((volatile int *) 0) = 0;
+    /* Should not reach here. */
+    exit(1);
+  }
+  /* Clear the jmp_buf to prevent it from being reused accidentally. */
+  memset(g_jmp_buf, 0, sizeof(g_jmp_buf));
+}
+
+#endif
+
+
 int main() {
   /* Test exceptions without having an exception stack set up. */
   test_exception_stack_with_size(NULL, 0);
@@ -255,6 +308,11 @@ int main() {
 
   test_getting_previous_handler();
   test_invalid_handlers();
+
+#if defined(__i386__) || defined(__x86_64__)
+  test_get_x86_direction_flag();
+  test_unsetting_x86_direction_flag();
+#endif
 
   fprintf(stderr, "** intended_exit_status=0\n");
   return 0;
