@@ -1076,8 +1076,6 @@ widget_get_allocation(struct widget *widget, struct rectangle *allocation)
 void
 widget_set_size(struct widget *widget, int32_t width, int32_t height)
 {
-	struct window *window = widget->window;
-
 	widget->allocation.width = width;
 	widget->allocation.height = height;
 }
@@ -1088,8 +1086,7 @@ widget_set_allocation(struct widget *widget,
 {
 	widget->allocation.x = x;
 	widget->allocation.y = y;
-	widget->allocation.width = width;
-	widget->allocation.height = height;
+	widget_set_size(widget, width, height);
 }
 
 void *
