@@ -922,6 +922,20 @@ drm_intel_gem_bo_free(drm_intel_bo *bo)
 	free(bo);
 }
 
+static void
+drm_intel_gem_bo_mark_mmaps_incoherent(drm_intel_bo *bo)
+{
+#if HAVE_VALGRIND
+	drm_intel_bo_gem *bo_gem = (drm_intel_bo_gem *) bo;
+
+	if (bo_gem->mem_virtual)
+		VALGRIND_MAKE_MEM_NOACCESS(bo_gem->mem_virtual, bo->size);
+
+	if (bo_gem->gtt_virtual)
+		VALGRIND_MAKE_MEM_NOACCESS(bo_gem->gtt_virtual, bo->size);
+#endif
+}
+
 /** Frees all cached buffers significantly older than @time. */
 static void
 drm_intel_gem_cleanup_bo_cache(drm_intel_bufmgr_gem *bufmgr_gem, time_t time)
@@ -1050,6 +1064,7 @@ drm_intel_gem_bo_unreference_final(drm_intel_bo *bo, time_t time)
 		DBG("bo freed with non-zero map-count %d\n", bo_gem->map_count);
 		bo_gem->map_count = 0;
 		drm_intel_gem_bo_close_vma(bufmgr_gem, bo_gem);
+		drm_intel_gem_bo_mark_mmaps_incoherent(bo);
 	}
 
 	DRMLISTDEL(&bo_gem->name_list);
@@ -1160,6 +1175,8 @@ static int drm_intel_gem_bo_map(drm_intel_bo *bo, int write_enable)
 	if (write_enable)
 		bo_gem->mapped_cpu_write = true;
 
+	drm_intel_gem_bo_mark_mmaps_incoherent(bo);
+	VG(VALGRIND_MAKE_MEM_DEFINED(bo_gem->mem_virtual, bo->size));
 	pthread_mutex_unlock(&bufmgr_gem->lock);
 
 	return 0;
@@ -1240,6 +1257,8 @@ int drm_intel_gem_bo_map_gtt(drm_intel_bo *bo)
 		    strerror(errno));
 	}
 
+	drm_intel_gem_bo_mark_mmaps_incoherent(bo);
+	VG(VALGRIND_MAKE_MEM_DEFINED(bo_gem->gtt_virtual, bo->size));
 	pthread_mutex_unlock(&bufmgr_gem->lock);
 
 	return 0;
@@ -1289,6 +1308,7 @@ static int drm_intel_gem_bo_unmap(drm_intel_bo *bo)
 	 */
 	if (--bo_gem->map_count == 0) {
 		drm_intel_gem_bo_close_vma(bufmgr_gem, bo_gem);
+		drm_intel_gem_bo_mark_mmaps_incoherent(bo);
 		bo->virtual = NULL;
 	}
 	pthread_mutex_unlock(&bufmgr_gem->lock);
@@ -1615,6 +1635,8 @@ drm_intel_gem_bo_process_reloc(drm_intel_bo *bo)
 		if (target_bo == bo)
 			continue;
 
+		drm_intel_gem_bo_mark_mmaps_incoherent(bo);
+
 		/* Continue walking the tree depth-first. */
 		drm_intel_gem_bo_process_reloc(target_bo);
 
@@ -1638,6 +1660,8 @@ drm_intel_gem_bo_process_reloc2(drm_intel_bo *bo)
 
 		if (target_bo == bo)
 			continue;
+
+		drm_intel_gem_bo_mark_mmaps_incoherent(bo);
 
 		/* Continue walking the tree depth-first. */
 		drm_intel_gem_bo_process_reloc2(target_bo);
