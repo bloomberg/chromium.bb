@@ -204,7 +204,7 @@ def AddPrefix(prefix, varname):
 ######################################################################
 
 DriverArgPatterns = [
-  ( '--pnacl-driver-verbose',             "Log.LOG_OUT.append(sys.stderr)"),
+  ( '--pnacl-driver-verbose',             "env.set('LOG_VERBOSE', '1')"),
   ( '--pnacl-driver-debug',               "env.set('DEBUG', '1')"),
   ( '--pnacl-driver-recurse',             "env.set('RECURSE', '1')"),
   ( '--pnacl-driver-set-([^=]+)=(.*)',    "env.set($0, $1)"),
@@ -932,6 +932,8 @@ def GCCTypeToFileType(gcctype):
 def InitLog():
   Log.reset()
   Log.SetScriptName(os.path.basename(sys.argv[0]))
+  if env.getbool('LOG_VERBOSE'):
+    Log.LOG_OUT.append(sys.stderr)
   if env.getbool('LOG_TO_FILE'):
     log_filename = env.getone('LOG_FILENAME')
     log_size_limit = int(env.getone('LOG_FILE_SIZE_LIMIT'))
