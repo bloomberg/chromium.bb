@@ -332,7 +332,7 @@ gears_create(struct display *display)
 		die("failed to create context\n");
 
 	if (!eglMakeCurrent(gears->display, NULL, NULL, gears->context))
-		die("faile to make context current\n");
+		die("failed to make context current\n");
 
 	for (i = 0; i < 3; i++) {
 		gears->gear_list[i] = glGenLists(1);
