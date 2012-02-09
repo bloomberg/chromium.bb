@@ -7,6 +7,7 @@
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "dbus/test_proto.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 // Test that a byte can be properly written and read. We only have this
@@ -225,6 +226,22 @@ TEST(MessageTest, ArrayOfObjectPaths) {
   EXPECT_EQ("/object/path/2", output_object_paths[1]);
   EXPECT_EQ("/object/path/3", output_object_paths[2]);
 }
+
+TEST(MessageTest, ProtoBuf) {
+  scoped_ptr<dbus::Response> message(dbus::Response::CreateEmpty());
+  dbus::MessageWriter writer(message.get());
+  TestProto send_message;
+  send_message.set_text("testing");
+  send_message.set_number(123);
+  writer.AppendProtoAsArrayOfBytes(send_message);
+
+  dbus::MessageReader reader(message.get());
+  TestProto receive_message;
+  ASSERT_TRUE(reader.PopArrayOfBytesAsProto(&receive_message));
+  EXPECT_EQ(receive_message.text(), send_message.text());
+  EXPECT_EQ(receive_message.number(), send_message.number());
+}
+
 
 // Test that an array can be properly written and read. We only have this
 // test for array, as repeating this for other container types is too

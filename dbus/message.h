@@ -12,6 +12,15 @@
 
 #include "base/basictypes.h"
 
+namespace google {
+namespace protobuf {
+
+class MessageLite;
+
+}  // namespace protobuf
+}  // namespace google
+
+
 namespace dbus {
 
 class MessageWriter;
@@ -295,6 +304,14 @@ class MessageWriter {
   // specialized function.
   void AppendArrayOfObjectPaths(const std::vector<std::string>& object_paths);
 
+  // Appends the protocol buffer as an array of bytes. The buffer is serialized
+  // into an array of bytes before communication, since protocol buffers are not
+  // a native dbus type. On the receiving size the array of bytes needs to be
+  // read and deserialized into a protocol buffer of the correct type. There are
+  // methods in MessageReader to assist in this.  Return true on succes and fail
+  // when serialization is not successful.
+  bool AppendProtoAsArrayOfBytes(const google::protobuf::MessageLite& protobuf);
+
   // Appends the byte wrapped in a variant data container. Variants are
   // widely used in D-Bus services so it's worth having a specialized
   // function. For instance, The third parameter of
@@ -393,6 +410,14 @@ class MessageReader {
   // services like NetworkManager, hence it's worth having a specialized
   // function.
   bool PopArrayOfObjectPaths(std::vector<std::string>* object_paths);
+
+  // Gets the array of bytes at the current iterator position. It then parses
+  // this binary blob into the protocol buffer supplied.
+  // Returns true and advances the iterator on success. On failure returns false
+  // and emits an error message on the source of the failure. The two most
+  // common errors come from the iterator not currently being at a byte array or
+  // the wrong type of protocol buffer is passed in and the parse fails.
+  bool PopArrayOfBytesAsProto(google::protobuf::MessageLite* protobuf);
 
   // Gets the byte from the variant data container at the current iterator
   // position.

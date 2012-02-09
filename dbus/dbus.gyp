@@ -1,4 +1,4 @@
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -13,6 +13,7 @@
       'dependencies': [
         '../base/base.gyp:base',
         '../build/linux/system.gyp:dbus',
+        '../third_party/protobuf/protobuf.gyp:protobuf_lite',
       ],
       'export_dependent_settings': [
         '../base/base.gyp:base',
@@ -28,6 +29,16 @@
         'object_proxy.h',
         'scoped_dbus_error.h',
       ],
+    },
+    {
+      # Protobuf compiler / generator test protocol buffer
+      'target_name': 'dbus_test_proto',
+      'type': 'static_library',
+      'sources': [ 'test_proto.proto' ],
+      'variables': {
+        'proto_out_dir': 'dbus',
+      },
+      'includes': [ '../build/protoc.gypi' ],
     },
     {
       # This target contains mocks that can be used to write unit tests
@@ -60,6 +71,7 @@
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
         'dbus',
+        'dbus_test_proto',
         'dbus_test_support',
       ],
       'sources': [

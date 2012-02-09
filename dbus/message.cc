@@ -4,10 +4,13 @@
 
 #include "dbus/message.h"
 
+#include <string>
+
 #include "base/basictypes.h"
 #include "base/format_macros.h"
 #include "base/logging.h"
 #include "base/stringprintf.h"
+#include "third_party/protobuf/src/google/protobuf/message_lite.h"
 
 namespace {
 
@@ -593,6 +596,18 @@ void MessageWriter::AppendArrayOfObjectPaths(
   CloseContainer(&array_writer);
 }
 
+bool MessageWriter::AppendProtoAsArrayOfBytes(
+    const google::protobuf::MessageLite& protobuf) {
+  std::string serialized_proto;
+  if (!protobuf.SerializeToString(&serialized_proto)) {
+    LOG(ERROR) << "Unable to serialize supplied protocol buffer";
+    return false;
+  }
+  AppendArrayOfBytes(reinterpret_cast<const uint8*>(serialized_proto.data()),
+                     serialized_proto.size());
+  return true;
+}
+
 void MessageWriter::AppendVariantOfByte(uint8 value) {
   AppendVariantOfBasic(DBUS_TYPE_BYTE, &value);
 }
@@ -797,6 +812,22 @@ bool MessageReader::PopArrayOfObjectPaths(
     if (!array_reader.PopObjectPath(&object_path))
       return false;
     object_paths->push_back(object_path);
+  }
+  return true;
+}
+
+bool MessageReader::PopArrayOfBytesAsProto(
+    google::protobuf::MessageLite* protobuf) {
+  DCHECK(protobuf != NULL);
+  char* serialized_buf = NULL;
+  size_t buf_size = 0;
+  if (!PopArrayOfBytes(reinterpret_cast<uint8**>(&serialized_buf), &buf_size)) {
+    LOG(ERROR) << "Error reading array of bytes";
+    return false;
+  }
+  if (!protobuf->ParseFromArray(serialized_buf, buf_size)) {
+    LOG(ERROR) << "Failed to parse protocol buffer from array";
+    return false;
   }
   return true;
 }
