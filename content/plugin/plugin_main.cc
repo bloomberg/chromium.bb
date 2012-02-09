@@ -7,6 +7,9 @@
 #if defined(OS_WIN)
 #include <objbase.h>
 #include <windows.h>
+// Some directx includes can trigger deprecation warnings.
+#pragma warning(disable:4995)
+#include <dshow.h>
 #endif
 
 #include "base/command_line.h"
@@ -21,6 +24,7 @@
 #include "content/public/common/main_function_params.h"
 
 #if defined(OS_WIN)
+#include "base/win/scoped_comptr.h"
 #include "content/common/injection_test_dll.h"
 #include "sandbox/src/sandbox.h"
 #elif defined(OS_POSIX) && !defined(OS_MACOSX)
@@ -134,6 +138,11 @@ int PluginMain(const content::MainFunctionParams& parameters) {
         DVLOG(1) << "Sandboxing flash";
         if (!PreloadIMEForFlash())
           DVLOG(1) << "IME preload failed";
+
+        // Warm up the device enumerator for webcam and microphone.
+        base::win::ScopedComPtr<ICreateDevEnum> device_enumerator;
+        device_enumerator.CreateInstance(CLSID_SystemDeviceEnum);
+
         DelayedLowerToken(target_services);
       } else {
         target_services->LowerToken();

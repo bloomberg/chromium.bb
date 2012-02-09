@@ -388,7 +388,7 @@ bool ChromeContentClient::SandboxPlugin(CommandLine* command_line,
   if (LoadFlashBroker(plugin_path, command_line)) {
     policy->SetJobLevel(sandbox::JOB_UNPROTECTED, 0);
     policy->SetTokenLevel(sandbox::USER_RESTRICTED_SAME_ACCESS,
-                          sandbox::USER_INTERACTIVE);
+                          sandbox::USER_LIMITED);
     // Allow the Flash plugin to forward some messages back to Chrome.
     if (base::win::GetVersion() == base::win::VERSION_VISTA) {
       // Per-window message filters required on Win7 or later must be added to:
