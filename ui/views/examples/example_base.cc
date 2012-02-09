@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,7 +8,6 @@
 
 #include "base/compiler_specific.h"
 #include "base/stringprintf.h"
-#include "ui/views/examples/examples_window.h"
 #include "ui/views/view.h"
 
 namespace views {
@@ -25,7 +24,7 @@ namespace {
 // views until a NativeWidgetGtk is added to the view hierarchy.
 class ContainerView : public View {
  public:
-  explicit ContainerView(examples::ExampleBase* base)
+  explicit ContainerView(ExampleBase* base)
       : example_view_created_(false),
         example_base_(base) {
   }
@@ -47,7 +46,7 @@ class ContainerView : public View {
   // True if the example view has already been created, or false otherwise.
   bool example_view_created_;
 
-  examples::ExampleBase* example_base_;
+  ExampleBase* example_base_;
 
   DISALLOW_COPY_AND_ASSIGN(ContainerView);
 };
