@@ -10,6 +10,8 @@
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/plugin_download_helper.h"
 #include "chrome/browser/plugin_installer_observer.h"
+#include "content/public/browser/browser_context.h"
+#include "content/public/browser/web_contents.h"
 
 PluginInstaller::~PluginInstaller() {
 }
@@ -48,8 +50,7 @@ void PluginInstaller::RemoveWeakObserver(
   weak_observers_.RemoveObserver(observer);
 }
 
-void PluginInstaller::StartInstalling(
-    net::URLRequestContextGetter* request_context) {
+void PluginInstaller::StartInstalling(content::WebContents* web_contents) {
   DCHECK(state_ == kStateIdle);
   DCHECK(!url_for_display_);
   state_ = kStateDownloading;
@@ -58,14 +59,19 @@ void PluginInstaller::StartInstalling(
   PluginDownloadUrlHelper* downloader = new PluginDownloadUrlHelper();
   downloader->InitiateDownload(
       plugin_url_,
-      request_context,
+      web_contents->GetBrowserContext()->GetRequestContext(),
       base::Bind(&PluginInstaller::DidFinishDownload, base::Unretained(this)),
       base::Bind(&PluginInstaller::DownloadError, base::Unretained(this)));
 }
 
-void PluginInstaller::DidOpenDownloadURL() {
+void PluginInstaller::OpenDownloadURL(content::WebContents* web_contents) {
   DCHECK(state_ == kStateIdle);
   DCHECK(url_for_display_);
+  web_contents->OpenURL(content::OpenURLParams(
+      plugin_url_,
+      content::Referrer(web_contents->GetURL(),
+                        WebKit::WebReferrerPolicyDefault),
+      NEW_FOREGROUND_TAB, content::PAGE_TRANSITION_TYPED, false));
   FOR_EACH_OBSERVER(PluginInstallerObserver, observers_, DidFinishDownload());
 }
 

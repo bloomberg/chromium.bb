@@ -534,8 +534,8 @@ IPC_MESSAGE_CONTROL1(ChromeViewHostMsg_DnsPrefetch,
 
 // Notifies when a plugin couldn't be loaded because it's outdated.
 IPC_MESSAGE_ROUTED2(ChromeViewHostMsg_BlockedOutdatedPlugin,
-                    string16, /* name */
-                    GURL      /* update_url */)
+                    int /* placeholder ID */,
+                    std::string /* plug-in group identifier */)
 
 // Notifies when a plugin couldn't be loaded because it requires
 // user authorization.
