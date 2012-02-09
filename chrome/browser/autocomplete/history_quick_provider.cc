@@ -87,11 +87,13 @@ void HistoryQuickProvider::DoAutocomplete() {
   if (matches.empty())
     return;
 
-  // Artificially reduce the score of high-scoring matches which should not be
-  // inline autocompletd. Each such result gets the next available
-  // |max_match_score|. Upon use of |max_match_score| it is decremented.
-  // All subsequent matches must be clamped to retain match results ordering.
-  int max_match_score = autocomplete_input_.prevent_inline_autocomplete() ?
+  // If we're not allowing inline autocompletions, artificially reduce the
+  // score of high-scoring matches that might be autocompleted to something
+  // low enough that we know they won't be used as autocomplete suggestions.
+  // Each such result gets the next available |max_match_score|.  Upon use of
+  // |max_match_score| it is decremented.  All subsequent matches must be
+  // clamped to retain match results ordering.
+  int max_match_score = PreventInlineAutocomplete(autocomplete_input_) ?
       (AutocompleteResult::kLowestDefaultScore - 1) : -1;
   for (ScoredHistoryMatches::const_iterator match_iter = matches.begin();
        match_iter != matches.end(); ++match_iter) {
