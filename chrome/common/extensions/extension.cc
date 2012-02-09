@@ -2162,7 +2162,7 @@ bool Extension::InitFromValue(extensions::Manifest* manifest, int flags,
         if (type_str == "ime") {
           type = INPUT_COMPONENT_TYPE_IME;
         } else if (type_str == "virtual_keyboard") {
-          if (api_permissions.count(ExtensionAPIPermission::kExperimental)) {
+          if (!api_permissions.count(ExtensionAPIPermission::kExperimental)) {
             // Virtual Keyboards require the experimental flag.
             *error = ExtensionErrorUtils::FormatErrorMessageUTF16(
                 errors::kInvalidInputComponentType, base::IntToString(i));
