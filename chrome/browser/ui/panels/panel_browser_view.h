@@ -11,8 +11,6 @@
 #include "base/time.h"
 #include "chrome/browser/ui/panels/native_panel.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 #include "ui/base/animation/animation_delegate.h"
 
 class Browser;
@@ -23,7 +21,6 @@ class PanelBrowserFrameView;
 
 // A browser view that implements Panel specific behavior.
 class PanelBrowserView : public BrowserView,
-                         public content::NotificationObserver,
                          public NativePanel,
                          public ui::AnimationDelegate {
  public:
@@ -68,11 +65,6 @@ class PanelBrowserView : public BrowserView,
       gfx::Rect* bounds,
       ui::WindowShowState* show_state) const OVERRIDE;
   virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) OVERRIDE;
-
-  // Overridden from NotificationObserver:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
 
   // Overridden from views::WidgetDelegate:
   virtual void OnDisplayChanged() OVERRIDE;
@@ -170,8 +162,6 @@ class PanelBrowserView : public BrowserView,
   // The last view that had focus in the panel. This is saved so that focus can
   // be restored properly when a drag ends.
   views::View* old_focused_view_;
-
-  content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(PanelBrowserView);
 };

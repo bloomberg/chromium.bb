@@ -62,6 +62,15 @@ PanelBrowserWindowGtk::PanelBrowserWindowGtk(Browser* browser,
 }
 
 PanelBrowserWindowGtk::~PanelBrowserWindowGtk() {
+  if (drag_widget_) {
+    // Terminate the grab if we have it. We could do this using any widget,
+    // |drag_widget_| is just convenient.
+    gtk_grab_add(drag_widget_);
+    gtk_grab_remove(drag_widget_);
+    DestroyDragWidget();
+  }
+  panel_->OnNativePanelClosed();
+  ui::WorkAreaWatcherX::RemoveObserver(this);
 }
 
 void PanelBrowserWindowGtk::Init() {
@@ -90,10 +99,6 @@ void PanelBrowserWindowGtk::Init() {
       this,
       chrome::NOTIFICATION_PANEL_CHANGED_EXPANSION_STATE,
       content::Source<Panel>(panel_.get()));
-  registrar_.Add(
-      this,
-      chrome::NOTIFICATION_WINDOW_CLOSED,
-      content::Source<GtkWindow>(window()));
 }
 
 bool PanelBrowserWindowGtk::GetWindowEdge(int x, int y, GdkWindowEdge* edge) {
@@ -234,29 +239,10 @@ void PanelBrowserWindowGtk::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  switch (type) {
-    case chrome::NOTIFICATION_PANEL_CHANGED_EXPANSION_STATE:
-    {
-      bool accept_focus = (panel_->expansion_state() == Panel::EXPANDED);
-      gdk_window_set_accept_focus(
-          gtk_widget_get_window(GTK_WIDGET(window())), accept_focus);
-      break;
-    }
-    case chrome::NOTIFICATION_WINDOW_CLOSED:
-      // Cleanup.
-      if (bounds_animator_.get())
-        bounds_animator_.reset();
-
-      if (drag_widget_) {
-        // Terminate the grab if we have it. We could do this using any widget,
-        // |drag_widget_| is just convenient.
-        gtk_grab_add(drag_widget_);
-        gtk_grab_remove(drag_widget_);
-        DestroyDragWidget();
-      }
-      panel_->OnNativePanelClosed();
-      ui::WorkAreaWatcherX::RemoveObserver(this);
-      break;
+  if (type == chrome::NOTIFICATION_PANEL_CHANGED_EXPANSION_STATE) {
+    bool accept_focus = (panel_->expansion_state() == Panel::EXPANDED);
+    gdk_window_set_accept_focus(
+        gtk_widget_get_window(GTK_WIDGET(window())), accept_focus);
   }
 
   BrowserWindowGtk::Observe(type, source, details);
@@ -302,6 +288,10 @@ void PanelBrowserWindowGtk::SetBoundsInternal(const gfx::Rect& bounds,
 }
 
 void PanelBrowserWindowGtk::ClosePanel() {
+  // Cancel any currently running animation since we're closing down.
+  if (bounds_animator_.get())
+    bounds_animator_.reset();
+
   Close();
 }
 

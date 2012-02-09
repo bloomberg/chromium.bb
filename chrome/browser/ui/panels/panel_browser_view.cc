@@ -6,7 +6,6 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "chrome/browser/native_window_notification_source.h"
 #include "chrome/browser/ui/panels/panel.h"
 #include "chrome/browser/ui/panels/panel_bounds_animation.h"
 #include "chrome/browser/ui/panels/panel_browser_frame_view.h"
@@ -53,6 +52,7 @@ PanelBrowserView::PanelBrowserView(Browser* browser, Panel* panel,
 }
 
 PanelBrowserView::~PanelBrowserView() {
+  panel_->OnNativePanelClosed();
 }
 
 void PanelBrowserView::Init() {
@@ -65,11 +65,6 @@ void PanelBrowserView::Init() {
 
   GetWidget()->non_client_view()->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_PRODUCT_NAME));
-
-  registrar_.Add(
-      this,
-      chrome::NOTIFICATION_WINDOW_CLOSED,
-      content::Source<gfx::NativeWindow>(frame()->GetNativeWindow()));
 }
 
 void PanelBrowserView::Show() {
@@ -227,19 +222,6 @@ bool PanelBrowserView::AcceleratorPressed(
     return true;
 
   return BrowserView::AcceleratorPressed(accelerator);
-}
-
-void PanelBrowserView::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  switch (type) {
-    case chrome::NOTIFICATION_WINDOW_CLOSED:
-      panel_->OnNativePanelClosed();
-      break;
-    default:
-      NOTREACHED();
-  }
 }
 
 void PanelBrowserView::AnimationEnded(const ui::Animation* animation) {
