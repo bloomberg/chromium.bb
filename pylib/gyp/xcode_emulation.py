@@ -476,7 +476,7 @@ class XcodeSettings(object):
       return default
     return result
 
-  def _GetStripPostbuilds(self, configname, output_binary):
+  def _GetStripPostbuilds(self, configname, output_binary, quiet):
     """Returns a list of shell commands that contain the shell commands
     neccessary to strip this target's binary. These should be run as postbuilds
     before the actual postbuilds run."""
@@ -503,13 +503,14 @@ class XcodeSettings(object):
       if explicit_strip_flags:
         strip_flags += ' ' + _NormalizeEnvVarReferences(explicit_strip_flags)
 
-      result.append('echo STRIP\\(%s\\)' % self.spec['target_name'])
+      if not quiet:
+        result.append('echo STRIP\\(%s\\)' % self.spec['target_name'])
       result.append('strip %s %s' % (strip_flags, output_binary))
 
     self.configname = None
     return result
 
-  def _GetDebugInfoPostbuilds(self, configname, output, output_binary):
+  def _GetDebugInfoPostbuilds(self, configname, output, output_binary, quiet):
     """Returns a list of shell commands that contain the shell commands
     neccessary to massage this target's debug information. These should be run
     as postbuilds before the actual postbuilds run."""
@@ -521,18 +522,20 @@ class XcodeSettings(object):
         self._Test(
             'DEBUG_INFORMATION_FORMAT', 'dwarf-with-dsym', default='dwarf') and
         self.spec['type'] != 'static_library'):
-      result.append('echo DSYMUTIL\\(%s\\)' % self.spec['target_name'])
+      if not quiet:
+        result.append('echo DSYMUTIL\\(%s\\)' % self.spec['target_name'])
       result.append('dsymutil %s -o %s' % (output_binary, output + '.dSYM'))
 
     self.configname = None
     return result
 
-  def GetTargetPostbuilds(self, configname, output, output_binary):
+  def GetTargetPostbuilds(self, configname, output, output_binary, quiet=False):
     """Returns a list of shell commands that contain the shell commands
     to run as postbuilds for this target, before the actual postbuilds."""
     # dSYMs need to build before stripping happens.
-    return (self._GetDebugInfoPostbuilds(configname, output, output_binary) +
-            self._GetStripPostbuilds(configname, output_binary))
+    return (
+        self._GetDebugInfoPostbuilds(configname, output, output_binary, quiet) +
+        self._GetStripPostbuilds(configname, output_binary, quiet))
 
   def _AdjustLibrary(self, library):
     if library.endswith('.framework'):
@@ -927,13 +930,14 @@ def TopologicallySortedEnvVarKeys(env):
 
   return sorted_nodes
 
-def GetSpecPostbuildCommands(spec, gyp_path_to_build_path):
+def GetSpecPostbuildCommands(spec, gyp_path_to_build_path, quiet=False):
   """Returns the list of postbuilds explicitly defined on |spec|, in a form
   executable by a shell."""
   postbuilds = []
   for postbuild in spec.get('postbuilds', []):
-    postbuilds.append('echo POSTBUILD\\(%s\\) %s' % (
-          spec['target_name'], postbuild['postbuild_name']))
+    if not quiet:
+      postbuilds.append('echo POSTBUILD\\(%s\\) %s' % (
+            spec['target_name'], postbuild['postbuild_name']))
     shell_list = postbuild['action'][:]
     # The first element is the command. If it's a relative path, it's
     # a script in the source tree relative to the gyp file and needs to be

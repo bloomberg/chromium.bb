@@ -783,9 +783,9 @@ class NinjaWriter:
       return ''
     output = QuoteShellArgument(output)
     target_postbuilds = self.xcode_settings.GetTargetPostbuilds(
-        self.config_name, output, QuoteShellArgument(output_binary))
+        self.config_name, output, QuoteShellArgument(output_binary), quiet=True)
     postbuilds = gyp.xcode_emulation.GetSpecPostbuildCommands(
-        spec, self.GypPathToNinja)
+        spec, self.GypPathToNinja, quiet=True)
     postbuilds = target_postbuilds + postbuilds
     if not postbuilds:
       return ''
@@ -1071,23 +1071,23 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
       depfile='$out.d')
     master_ninja.rule(
       'alink',
-      description='LIBTOOL-STATIC $out',
+      description='LIBTOOL-STATIC $out, POSTBUILDS',
       command='rm -f $out && libtool -static -o $out $in$postbuilds')
     # TODO(thakis): The solink_module rule is likely wrong. Xcode seems to pass
     # -bundle -single_module here (for osmesa.so).
     master_ninja.rule(
       'solink',
-      description='SOLINK $out',
+      description='SOLINK $out, POSTBUILDS',
       command=('$ld -shared $ldflags -o $out '
                '$in $libs$postbuilds'))
     master_ninja.rule(
       'solink_module',
-      description='SOLINK(module) $out',
+      description='SOLINK(module) $out, POSTBUILDS',
       command=('$ld -shared $ldflags -o $out '
                '$in $libs$postbuilds'))
     master_ninja.rule(
       'link',
-      description='LINK $out',
+      description='LINK $out, POSTBUILDS',
       command=('$ld $ldflags -o $out '
                '$in $libs$postbuilds'))
     master_ninja.rule(
@@ -1101,7 +1101,7 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
       command='$env $mac_tool $mactool_cmd $in $out')
     master_ninja.rule(
       'package_framework',
-      description='PACKAGE FRAMEWORK $out',
+      description='PACKAGE FRAMEWORK $out, POSTBUILDS',
       command='$mac_tool package-framework $out $version$postbuilds '
               '&& touch $out')
   master_ninja.rule(
