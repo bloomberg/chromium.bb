@@ -128,6 +128,19 @@ class GDataService : public base::SupportsWeakPtr<GDataService>,
  public:
   virtual void Initialize(Profile* profile);
 
+  // Starts fetching OAuth2 auth token from the refresh token.
+  void StartAuthentication(AuthStatusCallback callback);
+
+  // True if OAuth2 auth token is retrieved and believed to be fresh.
+  bool IsFullyAuthenticated() const { return !auth_token_.empty(); }
+
+  // True if OAuth2 refresh token is present. It's absence means that user
+  // is not properly authenticated.
+  bool IsPartiallyAuthenticated() const { return !refresh_token_.empty(); }
+
+  // Gets OAuth2 auth token.
+  const std::string& oauth2_auth_token() const { return auth_token_; }
+
  protected:
   GDataService();
   virtual ~GDataService();
@@ -135,15 +148,6 @@ class GDataService : public base::SupportsWeakPtr<GDataService>,
   // Triggered when a new OAuth2 refresh token is received from TokenService.
   virtual void OnOAuth2RefreshTokenChanged() {}
 
-  // Starts fetching OAuth2 auth token from the refresh token.
-  void StartAuthentication(AuthStatusCallback callback);
-  // True if OAuth2 auth token is retrieved and believed to be fresh.
-  bool HasOAuth2AuthToken() { return !auth_token_.empty(); }
-  // Gets OAuth2 auth token.
-  const std::string& GetOAuth2AuthToken() { return auth_token_; }
-  // True if OAuth2 refresh token is present. It's absence means that user
-  // is not properly authenticated.
-  bool HasOAuth2RefreshToken() { return !refresh_token_.empty(); }
   // Gets OAuth2 refresh token.
   const std::string& GetOAuth2RefreshToken() { return refresh_token_; }
 

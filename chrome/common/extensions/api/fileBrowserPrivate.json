@@ -176,7 +176,8 @@
             "type": "string",
             "enum": ["success", "error_unknown", "error_internal",
                      "error_unknown_filesystem", "error_unsuported_filesystem",
-                     "error_invalid_archive", "error_libcros_missing"],
+                     "error_invalid_archive", "error_libcros_missing",
+                     "error_authentication"],
             "description": "Event type that tells listeners if mount was successfull or an error occurred. It also specifies the error."
           },
           "sourceUrl": {
@@ -188,9 +189,14 @@
             "optional": true,
             "description": "Path that sourcePath was mounted to."
           },
+          "authToken": {
+            "type": "string",
+            "optional": true,
+            "description": "Authentication token for gdata calls."
+          },
           "mountType": {
             "type": "string",
-            "enum": ["device", "file", "network"],
+            "enum": ["device", "file", "network", "gdata"],
             "description": "Type of the mount."
           }
         }
@@ -456,7 +462,7 @@
           {
             "name": "mountType",
             "type": "string",
-            "enum": ["device", "file", "network"],
+            "enum": ["device", "file", "network", "gdata"],
             "description": "Mount point type. 'file' for compressed files"
           },
           {

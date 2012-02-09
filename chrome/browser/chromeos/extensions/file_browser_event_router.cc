@@ -273,17 +273,15 @@ void ExtensionFileBrowserEventRouter::DispatchMountCompletedEvent(
   ListValue args;
   DictionaryValue* mount_info_value = new DictionaryValue();
   args.Append(mount_info_value);
-  if (event == DiskMountManager::MOUNTING) {
-    mount_info_value->SetString("eventType", "mount");
-  } else {
-    mount_info_value->SetString("eventType", "unmount");
-  }
+  mount_info_value->SetString("eventType",
+      event == DiskMountManager::MOUNTING ? "mount" : "unmount");
   mount_info_value->SetString("status", MountErrorToString(error_code));
   mount_info_value->SetString(
       "mountType",
       DiskMountManager::MountTypeToString(mount_info.mount_type));
 
-  if (mount_info.mount_type == chromeos::MOUNT_TYPE_ARCHIVE) {
+  if (mount_info.mount_type == chromeos::MOUNT_TYPE_ARCHIVE ||
+      mount_info.mount_type == chromeos::MOUNT_TYPE_GDATA) {
     GURL source_url;
     if (file_manager_util::ConvertFileToFileSystemUrl(profile_,
             FilePath(mount_info.source_path),
@@ -291,6 +289,10 @@ void ExtensionFileBrowserEventRouter::DispatchMountCompletedEvent(
             &source_url)) {
       mount_info_value->SetString("sourceUrl", source_url.spec());
     }
+
+    if (mount_info.mount_type == chromeos::MOUNT_TYPE_GDATA)
+      mount_info_value->SetString("authToken", mount_info.auth_token);
+
   } else {
     mount_info_value->SetString("sourceUrl", mount_info.source_path);
   }

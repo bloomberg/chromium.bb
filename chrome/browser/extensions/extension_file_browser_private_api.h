@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/platform_file.h"
+#include "chrome/browser/chromeos/gdata/gdata.h"
 #include "chrome/browser/extensions/extension_function.h"
 #include "googleurl/src/url_util.h"
 #include "webkit/fileapi/file_system_callback_dispatcher.h"
@@ -235,6 +236,12 @@ class AddMountFunction
   virtual bool RunImpl() OVERRIDE;
 
  private:
+  // Sends gdata mount event to renderers.
+  void RaiseGDataMountEvent(gdata::GDataErrorCode error,
+                            const std::string auth_token);
+  // A callback method to handle the result of GData authentication request.
+  void OnGDataAuthentication(gdata::GDataErrorCode error,
+                             const std::string& token);
   // A callback method to handle the result of
   // GetLocalPathsOnFileThreadAndRunCallbackOnUIThread.
   void GetLocalPathsResponseOnUIThread(const std::string& mount_type_str,

@@ -72,6 +72,9 @@ const char kVolumeTypeFlash[] = "flash";
 const char kVolumeTypeOptical[] = "optical";
 const char kVolumeTypeHardDrive[] = "hdd";
 const char kVolumeTypeUnknown[] = "undefined";
+
+const char kGDataMountPoint[] = "/special/gdata";
+
 #endif
 
 // Internal task ids.
@@ -1223,18 +1226,69 @@ bool AddMountFunction::RunImpl() {
     return false;
   }
 
-  UrlList file_paths;
-  file_paths.push_back(GURL(file_url));
-
 #if defined(OS_CHROMEOS)
-  GetLocalPathsOnFileThreadAndRunCallbackOnUIThread(
-      file_paths,
-      base::Bind(&AddMountFunction::GetLocalPathsResponseOnUIThread,
-                 this,
-                 mount_type_str));
+  chromeos::MountType mount_type =
+      DiskMountManager::MountTypeFromString(mount_type_str);
+  switch (mount_type) {
+    case chromeos::MOUNT_TYPE_INVALID: {
+      error_ = "Invalid mount type";
+      SendResponse(false);
+      break;
+    }
+    case chromeos::MOUNT_TYPE_GDATA: {
+      gdata::DocumentsService* service = gdata::DocumentsService::GetInstance();
+      if (service->IsFullyAuthenticated()) {
+        RaiseGDataMountEvent(gdata::HTTP_SUCCESS, service->oauth2_auth_token());
+        SendResponse(true);
+      } else if (service->IsPartiallyAuthenticated()) {
+        // We have refresh token, let's gets authenticated.
+        service->StartAuthentication(
+            base::Bind(&AddMountFunction::OnGDataAuthentication,
+                       this));
+      } else {
+        RaiseGDataMountEvent(gdata::HTTP_UNAUTHORIZED, std::string());
+        SendResponse(true);
+      }
+      break;
+    }
+    default: {
+      UrlList file_paths;
+      file_paths.push_back(GURL(file_url));
+
+      GetLocalPathsOnFileThreadAndRunCallbackOnUIThread(
+          file_paths,
+          base::Bind(&AddMountFunction::GetLocalPathsResponseOnUIThread,
+                     this,
+                     mount_type_str));
+      break;
+    }
+  }
 #endif  // OS_CHROMEOS
 
   return true;
+}
+
+void AddMountFunction::RaiseGDataMountEvent(gdata::GDataErrorCode error,
+                                            const std::string auth_token) {
+  chromeos::MountError error_code = error == gdata::HTTP_SUCCESS ?
+      chromeos::MOUNT_ERROR_NONE : chromeos::MOUNT_ERROR_NOT_AUTHENTICATED;
+  DiskMountManager::MountPointInfo mount_info(
+      kGDataMountPoint,
+      kGDataMountPoint,
+      auth_token,
+      chromeos::MOUNT_TYPE_GDATA,
+      chromeos::disks::MOUNT_CONDITION_NONE);
+  // Raise mount event
+  profile_->GetExtensionService()->file_browser_event_router()->MountCompleted(
+      DiskMountManager::MOUNTING,
+      error_code,
+      mount_info);
+}
+
+void AddMountFunction::OnGDataAuthentication(gdata::GDataErrorCode error,
+                                             const std::string& token) {
+  RaiseGDataMountEvent(error, token);
+  SendResponse(true);
 }
 
 void AddMountFunction::GetLocalPathsResponseOnUIThread(
@@ -1249,18 +1303,9 @@ void AddMountFunction::GetLocalPathsResponseOnUIThread(
 
 #ifdef OS_CHROMEOS
   FilePath::StringType source_file = files[0].value();
-
   DiskMountManager* disk_mount_manager = DiskMountManager::GetInstance();
-
-  chromeos::MountType mount_type =
-      disk_mount_manager->MountTypeFromString(mount_type_str);
-  if (mount_type == chromeos::MOUNT_TYPE_INVALID) {
-    error_ = "Invalid mount type";
-    SendResponse(false);
-    return;
-  }
-
-  disk_mount_manager->MountPath(source_file.data(), mount_type);
+  disk_mount_manager->MountPath(source_file.data(),
+      DiskMountManager::MountTypeFromString(mount_type_str));
 #endif
 
   SendResponse(true);

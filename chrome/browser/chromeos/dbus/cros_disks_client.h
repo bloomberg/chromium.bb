@@ -24,6 +24,7 @@ enum MountType {
   MOUNT_TYPE_INVALID,
   MOUNT_TYPE_DEVICE,
   MOUNT_TYPE_ARCHIVE,
+  MOUNT_TYPE_GDATA,
   MOUNT_TYPE_NETWORK_STORAGE,
 };
 
@@ -45,6 +46,8 @@ enum MountError {
   MOUNT_ERROR_UNSUPORTED_FILESYSTEM = 102,
   MOUNT_ERROR_INVALID_ARCHIVE = 201,
   MOUNT_ERROR_LIBRARY_NOT_LOADED = 501,
+  MOUNT_ERROR_NOT_AUTHENTICATED = 601,
+  MOUNT_ERROR_NETWORK_ERROR = 602,
   MOUNT_ERROR_PATH_UNMOUNTED = 901,
   // TODO(tbarzic): Add more error codes as they get added to cros-disks and
   // consider doing explicit translation from cros-disks error_types.

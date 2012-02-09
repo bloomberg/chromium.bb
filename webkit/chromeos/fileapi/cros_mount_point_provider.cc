@@ -36,6 +36,7 @@ FixedExposedPaths fixed_exposed_paths[] = {
     {"/home/chronos/user/", "Downloads"},
     {"/media",              "archive"},
     {"/media",              "removable"},
+    {"/special",            "gdata"},
 };
 
 CrosMountPointProvider::CrosMountPointProvider(

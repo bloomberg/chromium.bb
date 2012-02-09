@@ -70,7 +70,13 @@ const char kGetDocumentListURL[] =
     "https://docs.google.com/feeds/default/private/full?"
     "v=3&alt=json&showfolders=true&max-results=%d";
 
+#ifndef NDEBUG
+// Use super small 'page' size while debugging to ensure we hit feed reload
+// almost always.
+const int kMaxDocumentsPerFeed = 10;
+#else
 const int kMaxDocumentsPerFeed = 1000;
+#endif
 
 const char kFeedField[] = "feed";
 
@@ -723,6 +729,9 @@ void GDataService::Initialize(Profile* profile) {
   registrar_.Add(this,
                  chrome::NOTIFICATION_TOKEN_REQUEST_FAILED,
                  content::Source<TokenService>(service));
+
+  if (!refresh_token_.empty())
+    OnOAuth2RefreshTokenChanged();
 }
 
 GDataService::GDataService() : profile_(NULL) {
@@ -786,7 +795,7 @@ DocumentsService::~DocumentsService() {
 
 void DocumentsService::GetDocuments(GetDataCallback callback) {
   DCHECK(BrowserThread::CurrentlyOn(kGDataAPICallThread));
-  if (!HasOAuth2AuthToken()) {
+  if (!IsFullyAuthenticated()) {
     // Fetch OAuth2 authetication token from the refresh token first.
     StartAuthentication(base::Bind(&DocumentsService::GetDocumentsOnAuthRefresh,
                                    base::Unretained(this),
@@ -795,7 +804,7 @@ void DocumentsService::GetDocuments(GetDataCallback callback) {
   }
 
   get_documents_started_ = true;
-  (new GetDocumentsOperation(profile_, GetOAuth2AuthToken()))->Start(
+  (new GetDocumentsOperation(profile_, oauth2_auth_token()))->Start(
       base::Bind(&DocumentsService::OnGetDocumentsCompleted,
                  base::Unretained(this),
                  callback));
@@ -809,7 +818,7 @@ void DocumentsService::GetDocumentsOnAuthRefresh(GetDataCallback callback,
       callback.Run(error, NULL);
     return;
   }
-  DCHECK(HasOAuth2RefreshToken());
+  DCHECK(IsPartiallyAuthenticated());
   GetDocuments(callback);
 }
 
@@ -845,7 +854,7 @@ void DocumentsService::DownloadDocument(const GURL& document_url,
 void DocumentsService::DownloadFile(const GURL& document_url,
                                     DownloadActionCallback callback) {
   DCHECK(BrowserThread::CurrentlyOn(kGDataAPICallThread));
-  if (!HasOAuth2AuthToken()) {
+  if (!IsFullyAuthenticated()) {
     // Fetch OAuth2 authetication token from the refresh token first.
     StartAuthentication(
         base::Bind(&DocumentsService::DownloadDocumentOnAuthRefresh,
@@ -856,7 +865,7 @@ void DocumentsService::DownloadFile(const GURL& document_url,
   }
   (new DownloadFileOperation(
       profile_,
-      GetOAuth2AuthToken(),
+      oauth2_auth_token(),
       document_url))->Start(
           base::Bind(&DocumentsService::OnDownloadDocumentCompleted,
           base::Unretained(this),
@@ -873,7 +882,7 @@ void DocumentsService::DownloadDocumentOnAuthRefresh(
       callback.Run(error, document_url, FilePath());
     return;
   }
-  DCHECK(HasOAuth2RefreshToken());
+  DCHECK(IsPartiallyAuthenticated());
   DownloadFile(document_url, callback);
 }
 
@@ -899,7 +908,7 @@ void DocumentsService::OnDownloadDocumentCompleted(
 void DocumentsService::DeleteDocument(const GURL& document_url,
                                       EntryActionCallback callback) {
   DCHECK(BrowserThread::CurrentlyOn(kGDataAPICallThread));
-  if (!HasOAuth2AuthToken()) {
+  if (!IsFullyAuthenticated()) {
     // Fetch OAuth2 authetication token from the refresh token first.
     StartAuthentication(
         base::Bind(&DocumentsService::DeleteDocumentOnAuthRefresh,
@@ -910,7 +919,7 @@ void DocumentsService::DeleteDocument(const GURL& document_url,
   }
   (new DeleteDocumentOperation(
       profile_,
-      GetOAuth2AuthToken(),
+      oauth2_auth_token(),
       document_url))->Start(
           base::Bind(&DocumentsService::OnDeleteDocumentCompleted,
           base::Unretained(this),
@@ -927,7 +936,7 @@ void DocumentsService::DeleteDocumentOnAuthRefresh(
       callback.Run(error, document_url);
     return;
   }
-  DCHECK(HasOAuth2RefreshToken());
+  DCHECK(IsPartiallyAuthenticated());
   DeleteDocument(document_url, callback);
 }
 
@@ -1010,7 +1019,7 @@ void DocumentsService::InitiateUpload(const UploadFileInfo& upload_file_info,
     return;
   }
 
-  if (!HasOAuth2AuthToken()) {
+  if (!IsFullyAuthenticated()) {
     // Fetch OAuth2 authetication token from the refresh token first.
     StartAuthentication(
         base::Bind(&DocumentsService::InitiateUploadOnAuthRefresh,
@@ -1021,7 +1030,7 @@ void DocumentsService::InitiateUpload(const UploadFileInfo& upload_file_info,
   }
   (new InitiateUploadOperation(
       profile_,
-      GetOAuth2AuthToken(),
+      oauth2_auth_token(),
       upload_file_info,
       resumable_create_media_link->href()))->Start(
           base::Bind(&DocumentsService::OnInitiateUploadCompleted,
@@ -1039,7 +1048,7 @@ void DocumentsService::InitiateUploadOnAuthRefresh(
       callback.Run(error, upload_file_info, GURL());
     return;
   }
-  DCHECK(HasOAuth2RefreshToken());
+  DCHECK(IsPartiallyAuthenticated());
   InitiateUpload(upload_file_info, callback);
 }
 
@@ -1066,7 +1075,7 @@ void DocumentsService::ResumeUpload(const UploadFileInfo& upload_file_info,
                                     ResumeUploadCallback callback) {
   DCHECK(BrowserThread::CurrentlyOn(kGDataAPICallThread));
 
-  if (!HasOAuth2AuthToken()) {
+  if (!IsFullyAuthenticated()) {
     // Fetch OAuth2 authetication token from the refresh token first.
     StartAuthentication(
         base::Bind(&DocumentsService::ResumeUploadOnAuthRefresh,
@@ -1078,7 +1087,7 @@ void DocumentsService::ResumeUpload(const UploadFileInfo& upload_file_info,
 
   (new ResumeUploadOperation(
       profile_,
-      GetOAuth2AuthToken(),
+      oauth2_auth_token(),
       upload_file_info))->Start(
           base::Bind(&DocumentsService::OnResumeUploadCompleted,
                      base::Unretained(this),
@@ -1095,7 +1104,7 @@ void DocumentsService::ResumeUploadOnAuthRefresh(
       callback.Run(error, upload_file_info, 0, 0);
     return;
   }
-  DCHECK(HasOAuth2RefreshToken());
+  DCHECK(IsPartiallyAuthenticated());
   ResumeUpload(upload_file_info, callback);
 }
 
@@ -1123,7 +1132,10 @@ void DocumentsService::OnResumeUploadCompleted(
 void DocumentsService::OnOAuth2RefreshTokenChanged() {
   DCHECK(BrowserThread::CurrentlyOn(kGDataAPICallThread));
 
-  if (!HasOAuth2RefreshToken())
+  // TODO(zelidrag): Remove this block once we properly wire these API calls
+  // through extension API.
+#if defined(TEST_API)
+  if (!IsPartiallyAuthenticated())
     return;
 
   // TODO(zelidrag): Remove this becasue we probably don't want to fetch this
@@ -1134,10 +1146,9 @@ void DocumentsService::OnOAuth2RefreshTokenChanged() {
 
     // To test file uploading to Google Docs, enable this block and modify the
     // UploadFileInfo structure in the function.
-#if defined(TEST_UPLOAD)
     TestUpload();
-#endif  // defined(TEST_UPLOAD)
   }
+#endif
 }
 
 void DocumentsService::UpdateFilelist(GDataErrorCode status,
