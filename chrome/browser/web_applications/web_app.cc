@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -35,10 +35,6 @@
 using content::BrowserThread;
 
 namespace {
-
-// Allow tests to disable shortcut creation, to prevent developers desktops
-// becoming overrun with shortcuts.
-bool disable_shortcut_creation_for_tests = false;
 
 #if defined(OS_WIN)
 const FilePath::CharType kIconChecksumFileExt[] = FILE_PATH_LITERAL(".ico.md5");
@@ -157,9 +153,6 @@ void CreateShortcutTask(const FilePath& web_app_path,
                         const FilePath& profile_path,
                         const ShellIntegration::ShortcutInfo& shortcut_info) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-
-  if (disable_shortcut_creation_for_tests)
-    return;
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
   scoped_ptr<base::Environment> env(base::Environment::Create());
@@ -428,10 +421,6 @@ void CreateShortcut(
                     shortcut_info),
                  data_dir,
                  shortcut_info));
-}
-
-void SetDisableShortcutCreationForTests(bool disable) {
-  disable_shortcut_creation_for_tests = disable;
 }
 
 bool IsValidUrl(const GURL& url) {

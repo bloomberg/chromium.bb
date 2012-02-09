@@ -10,7 +10,6 @@
 #include "chrome/browser/extensions/extension_test_api.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/notification_registrar.h"
@@ -162,7 +161,6 @@ bool ExtensionApiTest::RunPageTest(const std::string& page_url) {
 }
 
 bool ExtensionApiTest::RunPlatformAppTest(const char* extension_name) {
-  web_app::SetDisableShortcutCreationForTests(true);
   return RunExtensionTestImpl(extension_name, "", kFlagLaunchAppShell);
 }
 

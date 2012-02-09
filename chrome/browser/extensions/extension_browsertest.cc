@@ -12,6 +12,7 @@
 #include "base/path_service.h"
 #include "base/scoped_temp_dir.h"
 #include "base/string_number_conversions.h"
+#include "chrome/browser/extensions/app_shortcut_manager.h"
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_creator.h"
@@ -38,6 +39,11 @@ ExtensionBrowserTest::ExtensionBrowserTest()
       target_page_action_count_(-1),
       target_visible_page_action_count_(-1) {
   EXPECT_TRUE(temp_dir_.CreateUniqueTempDir());
+  AppShortcutManager::SetShortcutCreationDisabledForTesting(true);
+}
+
+ExtensionBrowserTest::~ExtensionBrowserTest() {
+  AppShortcutManager::SetShortcutCreationDisabledForTesting(false);
 }
 
 void ExtensionBrowserTest::SetUpCommandLine(CommandLine* command_line) {

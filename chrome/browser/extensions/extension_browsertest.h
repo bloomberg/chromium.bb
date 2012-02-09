@@ -25,6 +25,7 @@ class ExtensionBrowserTest
     : public InProcessBrowserTest, public content::NotificationObserver {
  protected:
   ExtensionBrowserTest();
+  virtual ~ExtensionBrowserTest();
 
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE;
 

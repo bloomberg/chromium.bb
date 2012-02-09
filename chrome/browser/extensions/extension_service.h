@@ -22,6 +22,7 @@
 #include "base/property_bag.h"
 #include "base/time.h"
 #include "base/tuple.h"
+#include "chrome/browser/extensions/app_shortcut_manager.h"
 #include "chrome/browser/extensions/apps_promo.h"
 #include "chrome/browser/extensions/extension_icon_manager.h"
 #include "chrome/browser/extensions/extension_menu_manager.h"
@@ -36,7 +37,6 @@
 #include "chrome/browser/extensions/process_map.h"
 #include "chrome/browser/extensions/sandboxed_extension_unpacker.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
-#include "chrome/browser/shell_integration.h"
 #include "chrome/browser/sync/api/sync_change.h"
 #include "chrome/browser/sync/api/syncable_service.h"
 #include "chrome/common/extensions/extension.h"
@@ -131,8 +131,7 @@ class ExtensionService
     : public ExtensionServiceInterface,
       public ExternalExtensionProviderInterface::VisitorInterface,
       public base::SupportsWeakPtr<ExtensionService>,
-      public content::NotificationObserver,
-      public ImageLoadingTracker::Observer {
+      public content::NotificationObserver {
  public:
   using base::SupportsWeakPtr<ExtensionService>::AsWeakPtr;
 
@@ -577,13 +576,8 @@ class ExtensionService
   // Call only from IO thread.
   extensions::SocketController* socket_controller();
 
-  // Implement ImageLoadingTracker::Observer. |tracker_| is used to
-  // load the application's icon, which is done when we start creating an
-  // application's shortcuts. This method receives the icon, and completes
-  // the process of installing the shortcuts.
-  virtual void OnImageLoaded(SkBitmap* image,
-                             const ExtensionResource& resource,
-                             int index) OVERRIDE;
+  AppShortcutManager* app_shortcut_manager() { return &app_shortcut_manager_; }
+
  private:
   // Bundle of type (app or extension)-specific sync stuff.
   struct SyncBundle {
@@ -697,10 +691,6 @@ class ExtensionService
   // Call UpdatePluginListWithNaClModules() after registering or unregistering
   // a NaCl module to see those changes reflected in the PluginList.
   void UpdatePluginListWithNaClModules();
-
-  // Start the process of installing an application shortcut.
-  // The process is finished when OnImageLoaded is called.
-  void StartInstallApplicationShortcut(const Extension* extension);
 
   NaClModuleInfoList::iterator FindNaClModule(const GURL& url);
 
@@ -841,9 +831,7 @@ class ExtensionService
 
   extensions::ProcessMap process_map_;
 
-  // Fields used when installing application shortcuts.
-  ShellIntegration::ShortcutInfo shortcut_info_;
-  ImageLoadingTracker tracker_;
+  AppShortcutManager app_shortcut_manager_;
 
   scoped_ptr<ExtensionGlobalError> extension_global_error_;
 

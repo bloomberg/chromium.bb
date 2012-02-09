@@ -1010,6 +1010,8 @@
         'browser/extensions/app_notify_channel_setup.h',
         'browser/extensions/app_notify_channel_ui.cc',
         'browser/extensions/app_notify_channel_ui.h',
+	'browser/extensions/app_shortcut_manager.cc',
+	'browser/extensions/app_shortcut_manager.h',
         'browser/extensions/apps_promo.cc',
         'browser/extensions/apps_promo.h',
         'browser/extensions/browser_action_test_util.h',

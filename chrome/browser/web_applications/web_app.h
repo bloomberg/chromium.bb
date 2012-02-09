@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -39,9 +39,6 @@ std::string GetExtensionIdFromApplicationName(const std::string& app_name);
 void CreateShortcut(
     const FilePath& profile_path,
     const ShellIntegration::ShortcutInfo& shortcut_info);
-
-// Allow tests to disable shortcut creation.
-void SetDisableShortcutCreationForTests(bool disable);
 
 // Returns true if given url is a valid web app url.
 bool IsValidUrl(const GURL& url);
