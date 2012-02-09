@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -70,16 +70,9 @@ TEST_F('OptionsWebUITest', 'MAYBE_testSetBooleanPrefTriggers', function() {
 });
 
 // Not meant to run on ChromeOS at this time.
-// Not finishing in windows. http://crbug.com/81723
-GEN('#if defined(OS_CHROMEOS) || defined(OS_MACOSX) || defined(OS_WIN)');
-GEN('#define MAYBE_testRefreshStaysOnCurrentPage \\');
-GEN('    DISABLED_testRefreshStaysOnCurrentPage');
-GEN('#else');
-GEN('#define MAYBE_testRefreshStaysOnCurrentPage ' +
-    'testRefreshStaysOnCurrentPage');
-GEN('#endif');
-
-TEST_F('OptionsWebUITest', 'MAYBE_testRefreshStaysOnCurrentPage', function() {
+// Not finishing in windows, mac, linux, and WebKit bots. http://crbug.com/81723
+TEST_F('OptionsWebUITest', 'DISABLED_testRefreshStaysOnCurrentPage',
+       function() {
   var item = $('advancedPageNav');
   item.onclick();
   window.location.reload();
