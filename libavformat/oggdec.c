@@ -629,8 +629,15 @@ static int ogg_read_close(AVFormatContext *s)
     int i;
 
     for (i = 0; i < ogg->nstreams; i++){
-        av_free (ogg->streams[i].buf);
-        av_free (ogg->streams[i].private);
+        struct ogg_stream os = ogg->streams[i];
+        struct oggvorbis_private *priv = os.private;
+        if (priv && priv->packet && os.buf) {
+            int pkt_type = os.buf[os.pstart];
+            if (pkt_type & 1 && pkt_type <= 5)
+               av_freep (&priv->packet[pkt_type >> 1]);
+        }
+        av_free (os.buf);
+        av_free (os.private);
     }
     av_free (ogg->streams);
     return 0;

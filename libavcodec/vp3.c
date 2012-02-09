@@ -399,7 +399,7 @@ static void init_loop_filter(Vp3DecodeContext *s)
 
     /* set up the bounding values */
     memset(s->bounding_values_array, 0, 256 * sizeof(int));
-    for (x = 0; x < filter_limit; x++) {
+    for (x = 0; x < filter_limit && x < 128; x++) {
         bounding_values[-x] = -x;
         bounding_values[x] = x;
     }
@@ -1630,7 +1630,7 @@ static av_cold int allocate_tables(AVCodecContext *avctx)
     s->superblock_coding = av_malloc(s->superblock_count);
     s->all_fragments = av_malloc(s->fragment_count * sizeof(Vp3Fragment));
     s->coded_fragment_list[0] = av_malloc(s->fragment_count * sizeof(int));
-    s->dct_tokens_base = av_malloc(64*s->fragment_count * sizeof(*s->dct_tokens_base));
+    s->dct_tokens_base = av_mallocz(64*s->fragment_count * sizeof(*s->dct_tokens_base));
     s->motion_val[0] = av_malloc(y_fragment_count * sizeof(*s->motion_val[0]));
     s->motion_val[1] = av_malloc(c_fragment_count * sizeof(*s->motion_val[1]));
 

@@ -595,8 +595,10 @@ int avformat_open_input(AVFormatContext **ps, const char *filename, AVInputForma
         ff_id3v2_read(s, ID3v2_DEFAULT_MAGIC);
 
     if (!(s->flags&AVFMT_FLAG_PRIV_OPT) && s->iformat->read_header)
-        if ((ret = s->iformat->read_header(s)) < 0)
+        if ((ret = s->iformat->read_header(s)) < 0) {
+            s->iformat->read_close(s);
             goto fail;
+        }
 
     if (!(s->flags&AVFMT_FLAG_PRIV_OPT) && s->pb && !s->data_offset)
         s->data_offset = avio_tell(s->pb);

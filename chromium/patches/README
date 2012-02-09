@@ -1,4 +1,23 @@
-Current Status as of November 28, 2011
+Current Status as of Feb 13, 2012
+
+
+Patches added with the new GIT workflow:
+
+3f94559a9b2ad2e2bad5ad5de11c0872b48a4cd9 - libavutil/attributes.h
+  dalecurtis: Disables deprecated attribute for Chromium. Tracking bug here:
+  http://crbug.com/112673
+
+98c46c76a34921edbe6e4f5658c30fe479502b6e - <multiple files>
+  dalecurtis: Removes "#define UNCHECKED_BITSTREAM_READER 1" from all codecs
+  defining it. In Chromium, all codecs should use the safe bitstream reader.
+
+https://chromiumcodereview.appspot.com/9373002/ - <multiple files>
+  dalecurtis: Lots of fixes for crashes and memory leaks found during regression
+  testing after roll to ea4037162fb0afa871e5312a7b23c828d2b85066.  See code
+  review at https://chromiumcodereview.appspot.com/9373002/ for more details.
+
+
+Patches still existing from the pre-GIT workflow:
 
 to_upstream/
 05_respect_flac_dirac_configure.patch
@@ -20,6 +39,8 @@ to_upstream/
 35_oggdec_duration.patch
   scherkus: Reverts FFmpeg commit 5901cd6236d97b34fe59a47ba0fd6da8f647d1f1
   which regressed duration calculation.
+  dalecurtis: still broken after ffmpeg roll to
+  ea4037162fb0afa871e5312a7b23c828d2b85066.
 
 53_matroska_codec_config.patch
   cevans: avoid compiling in codec-specific code in Matroska if the codecs are
@@ -30,6 +51,8 @@ to_upstream/
 
 55_h264_nal.patch
   cevans: avoid OOB reads.
+  dalecurtis: partially upstreamed already. updated patch file with non-upstream
+  bits.
 
 ugly/
 

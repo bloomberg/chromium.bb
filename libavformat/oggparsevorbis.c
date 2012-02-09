@@ -159,12 +159,6 @@ ff_vorbis_comment(AVFormatContext * as, AVDictionary **m, const uint8_t *buf, in
  * [framing_flag] = read one bit | Not Used
  *    */
 
-struct oggvorbis_private {
-    unsigned int len[3];
-    unsigned char *packet[3];
-};
-
-
 static unsigned int
 fixup_vorbis_headers(AVFormatContext * as, struct oggvorbis_private *priv,
                      uint8_t **buf)

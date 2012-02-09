@@ -874,6 +874,8 @@ int attribute_align_arg avcodec_open2(AVCodecContext *avctx, AVCodec *codec, AVD
     if(avctx->codec->init && !(avctx->active_thread_type&FF_THREAD_FRAME)){
         ret = avctx->codec->init(avctx);
         if (ret < 0) {
+            if(avctx->codec->close)
+                avctx->codec->close(avctx);
             goto free_and_end;
         }
     }

@@ -130,6 +130,7 @@ theora_gptopts(AVFormatContext *ctx, int idx, uint64_t gp, int64_t *dts)
     struct ogg *ogg = ctx->priv_data;
     struct ogg_stream *os = ogg->streams + idx;
     struct theora_params *thp = os->private;
+    if (!thp) return NULL;
     uint64_t iframe = gp >> thp->gpshift;
     uint64_t pframe = gp & thp->gpmask;
 

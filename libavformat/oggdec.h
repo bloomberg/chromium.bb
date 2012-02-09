@@ -95,6 +95,11 @@ struct ogg {
     struct ogg_state *state;
 };
 
+struct oggvorbis_private {
+    unsigned int len[3];
+    unsigned char *packet[3];
+};
+
 #define OGG_FLAG_CONT 1
 #define OGG_FLAG_BOS  2
 #define OGG_FLAG_EOS  4
