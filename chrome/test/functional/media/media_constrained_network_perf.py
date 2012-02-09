@@ -121,10 +121,19 @@ class TestWorker(threading.Thread):
       tab = self._FindTabLocked(unique_url)
       self._metrics[var_name] = int(self._pyauto.GetDOMValue(var_name,
                                                              tab_index=tab))
-      self._metrics['errorMsg'] = self._pyauto.GetDOMValue('errorMsg',
-                                                           tab_index=tab)
+      end_test = self._pyauto.GetDOMValue('endTest', tab_index=tab)
 
-    return self._metrics[var_name] >= 0 or self._metrics['errorMsg'] != ''
+    return self._metrics[var_name] >= 0 or end_test
+
+  def _GetEventsLog(self, unique_url):
+    """Returns the log of video events fired while running the test.
+
+    Args:
+      unique_url: The url of the page identifying the test.
+    """
+    with self._automation_lock:
+      tab = self._FindTabLocked(unique_url)
+      return self._pyauto.GetDOMValue('eventsMsg', tab_index=tab)
 
   def _GetVideoProgress(self, unique_url):
     """Gets the video's current play progress percentage.
@@ -193,12 +202,11 @@ class TestWorker(threading.Thread):
                                      'ms')
         logging.debug('Test %s ended with %d%% of the video played.',
                       series_name, self._GetVideoProgress(unique_url))
-      elif self._metrics['errorMsg'] == '':
-        logging.error('Test %s timed-out.', series_name)
 
-      if self._metrics['errorMsg'] != '':
-        logging.debug('Test %s ended with error: %s', series_name,
-                      self._metrics['errorMsg'])
+      if self._metrics['ttp'] < 0 or self._metrics['epp'] < 0:
+        logging.error('Test %s failed to end gracefully due to time-out or '
+                      'an error.\nVideo events fired:\n%s', series_name,
+                      self._GetEventsLog(unique_url))
 
       # Close the tab.
       with self._automation_lock:

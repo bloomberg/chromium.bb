@@ -92,7 +92,8 @@ class PortAllocator(object):
 
       # Cleanup ports on new port requests. Do it after the cache check though
       # so we don't erase and then setup the same port.
-      self._CleanupLocked(all_ports=False)
+      if self._expiry_time_secs > 0:
+        self._CleanupLocked(all_ports=False)
 
       # Performance isn't really an issue here, so just iterate over the port
       # range to find an unused port. If no port is found, None is returned.
@@ -122,7 +123,7 @@ class PortAllocator(object):
       traffic_control.CreateConstrainedPort(kwargs)
       return True
     except traffic_control.TrafficControlError as e:
-      cherrypy.log('Error: %s\nOutput: %s', e.msg, e.error)
+      cherrypy.log('Error: %s\nOutput: %s' % (e.msg, e.error))
       return False
 
   def _CleanupLocked(self, all_ports):
@@ -151,7 +152,7 @@ class PortAllocator(object):
     try:
       traffic_control.DeleteConstrainedPort(self._ports[port]['config'])
     except traffic_control.TrafficControlError as e:
-      cherrypy.log('Error: %s\nOutput: %s', e.msg, e.error)
+      cherrypy.log('Error: %s\nOutput: %s' % (e.msg, e.error))
 
   def Cleanup(self, interface, all_ports=False):
     """Cleans up expired ports, or if all_ports=True, all allocated ports.
@@ -275,7 +276,7 @@ def ParseArgs():
   parser.add_option('--expiry-time', type='int',
                     default=_DEFAULT_PORT_EXPIRY_TIME_SECS,
                     help=('Number of seconds before constrained ports expire '
-                          'and are cleaned up. Default: %default'))
+                          'and are cleaned up. 0=Disabled. Default: %default'))
   parser.add_option('--port', type='int', default=_DEFAULT_SERVING_PORT,
                     help='Port to serve the API on. Default: %default')
   parser.add_option('--port-range', default=_DEFAULT_CNS_PORT_RANGE,
@@ -291,8 +292,8 @@ def ParseArgs():
   parser.add_option('--www-root', default=os.getcwd(),
                     help=('Directory root to serve files from. Defaults to the '
                           'current directory: %default'))
-  parser.add_option('-v', '--verbose', action='store_true', dest='verbose',
-                    default=False, help='Turn on verbose output.')
+  parser.add_option('-v', '--verbose', action='store_true', default=False,
+                    help='Turn on verbose output.')
 
   options = parser.parse_args()[0]
 
@@ -302,6 +303,9 @@ def ParseArgs():
       options.port_range = [int(port) for port in options.port_range.split(',')]
   except ValueError:
     parser.error('Invalid port range specified.')
+
+  if options.expiry_time < 0:
+    parser.error('Invalid expiry time specified.')
 
   # Convert the path to an absolute to remove any . or ..
   options.www_root = os.path.abspath(options.www_root)

@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -96,6 +96,22 @@ class PortAllocatorTest(unittest.TestCase):
 
     # Call with a different key and make sure we get the first port.
     self.assertEquals(self._pa.Get('test3'), cns._DEFAULT_CNS_PORT_RANGE[0])
+    self.assertEquals(set(self._pa._ports.keys()), set([
+        cns._DEFAULT_CNS_PORT_RANGE[0], cns._DEFAULT_CNS_PORT_RANGE[0] + 1]))
+
+  def testPortAllocatorNoExpiration(self):
+    # Setup PortAllocator w/o port expiration.
+    self._pa = cns.PortAllocator(cns._DEFAULT_CNS_PORT_RANGE, 0)
+
+    # Ensure Get() succeeds and returns the correct port.
+    self.assertEquals(self._pa.Get('test'), cns._DEFAULT_CNS_PORT_RANGE[0])
+
+    # Update fake time to see if ports expire.
+    self._current_time += self._EXPIRY_TIME
+
+    # Send second Get() which would normally cause ports to expire. Ensure that
+    # the ports did not expire.
+    self.assertEquals(self._pa.Get('test2'), cns._DEFAULT_CNS_PORT_RANGE[0] + 1)
     self.assertEquals(set(self._pa._ports.keys()), set([
         cns._DEFAULT_CNS_PORT_RANGE[0], cns._DEFAULT_CNS_PORT_RANGE[0] + 1]))
 

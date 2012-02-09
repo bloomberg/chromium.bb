@@ -26,8 +26,11 @@
     // Video play progress to calculate percentage of video played.
     var vpp = -1;
 
-    // String to indicate if error or abort events happen.
-    var errorMsg = '';
+    // String to keep track of video events fired.
+    var eventsMsg = '';
+
+    // A flag to end the test is error or abort events get fired.
+    var endTest = false;
 
     video.addEventListener('playing', function(event) {
       startTime = new Date().getTime();
@@ -35,18 +38,35 @@
     }, false);
 
     video.addEventListener('ended', setEPP, false);
-    video.addEventListener('error', logEvent, false);
-    video.addEventListener('abort', logEvent, false);
+    video.addEventListener('error', end, false);
+    video.addEventListener('abort', end, false);
 
-    function logEvent(evt) {
-      errorMsg += evt.target + ' ' + evt.type + ' event fired.\n';
+    var events = ['loadstart', 'progress', 'suspend', 'waiting', 'emptied',
+                  'stalled', 'play', 'pause', 'loadedmetadata', 'loadeddata',
+                  'waiting', 'canplay', 'canplaythrough', 'seeking', 'seeked',
+                  'ratechange', 'durationchange', 'volumechange'];
+
+    var len = events.length;
+    for (var i = 0; i < len; i++) {
+      video.addEventListener(events[i], logEvent, false);
     }
 
-    function setEPP() {
+    function end(evt){
+      endTest = true;
+      logEvent(evt);
+    }
+
+    function logEvent(evt) {
+      eventsMsg += new Date().toLocaleTimeString() + ' ' + evt.target + ' ' +
+                   evt.type + ' event fired.\n';
+    }
+
+    function setEPP(evt) {
       playTime = new Date().getTime() - startTime;
       durMs = video.duration * 1000;
 
       epp = Math.max(0, (playTime - durMs) * 100 / durMs);
+      logEvent(evt);
     }
 
     function calculateProgress() {
@@ -60,7 +80,7 @@
     // Called by the PyAuto controller to initiate testing.
     function startTest(src) {
       loadTime = new Date().getTime();
-      video.src = src
+      video.src = src;
       video.play();
 
       if (window.domAutomationController)
