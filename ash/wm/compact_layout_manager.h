@@ -42,13 +42,13 @@ class ASH_EXPORT CompactLayoutManager : public BaseLayoutManager,
   virtual void SetChildBounds(aura::Window* child,
                               const gfx::Rect& requested_bounds) OVERRIDE;
 
-  // WindowObserver overrides:
+  // aura::WindowObserver overrides:
   virtual void OnWindowPropertyChanged(aura::Window* window,
                                        const char* name,
                                        void* old) OVERRIDE;
   virtual void OnWindowStackingChanged(aura::Window* window) OVERRIDE;
 
-  // ui::OnImplicitAnimationsCompleted:
+  // ui::LayerAnimationObserver overrides:
   virtual void OnImplicitAnimationsCompleted() OVERRIDE;
 
  private:

@@ -13,6 +13,7 @@
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/gfx/compositor/scoped_layer_animation_settings.h"
+#include "ui/gfx/compositor/layer.h"
 #include "ui/gfx/compositor/layer_animation_sequence.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/widget/widget.h"
@@ -76,9 +77,8 @@ void CompactLayoutManager::OnWindowAddedToLayout(aura::Window* child) {
 void CompactLayoutManager::OnWillRemoveWindowFromLayout(aura::Window* child) {
   BaseLayoutManager::OnWillRemoveWindowFromLayout(child);
   UpdateStatusAreaVisibility();
-  if (windows().size() > 1 && ShouldAnimateOnEntrance(child)) {
+  if (windows().size() > 1 && ShouldAnimateOnEntrance(child))
     AdjustContainerLayerWidth(-child->bounds().width());
-  }
 
   if (child == current_window_) {
     LayoutWindows(current_window_);
@@ -119,7 +119,7 @@ void CompactLayoutManager::SetChildBounds(aura::Window* child,
 }
 
 /////////////////////////////////////////////////////////////////////////////
-// CompactLayoutManager, WindowObserver overrides:
+// CompactLayoutManager, aura::WindowObserver overrides:
 
 void CompactLayoutManager::OnWindowPropertyChanged(aura::Window* window,
                                                    const char* name,

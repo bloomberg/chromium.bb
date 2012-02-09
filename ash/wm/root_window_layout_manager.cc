@@ -31,6 +31,10 @@ void RootWindowLayoutManager::SetBackgroundWidget(views::Widget* widget) {
   background_widget_ = widget;
 }
 
+void RootWindowLayoutManager::SetBackgroundLayer(ui::Layer* layer) {
+  background_layer_.reset(layer);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // RootWindowLayoutManager, aura::LayoutManager implementation:
 
@@ -48,6 +52,8 @@ void RootWindowLayoutManager::OnWindowResized() {
 
   if (background_widget_)
     background_widget_->SetBounds(fullscreen_bounds);
+  if (background_layer_.get())
+    background_layer_->SetBounds(fullscreen_bounds);
 }
 
 void RootWindowLayoutManager::OnWindowAddedToLayout(aura::Window* child) {

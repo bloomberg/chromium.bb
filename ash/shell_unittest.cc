@@ -355,8 +355,9 @@ TEST_F(ShellTest, MAYBE_ChangeWindowMode) {
   EXPECT_EQ(0, launcher_widget->GetWindowScreenBounds().x());
   EXPECT_EQ(RootWindow::GetInstance()->GetHostSize().height(),
             launcher_widget->GetWindowScreenBounds().bottom());
-  // We have a desktop background.
+  // We have a desktop background but not a bare layer.
   EXPECT_TRUE(shell->root_window_layout_->background_widget());
+  EXPECT_FALSE(shell->root_window_layout_->background_layer());
 
   // Create a normal window.  It is not maximized.
   views::Widget::InitParams widget_params(
@@ -381,8 +382,9 @@ TEST_F(ShellTest, MAYBE_ChangeWindowMode) {
             widget->GetWindowScreenBounds());
   // Launcher is hidden.
   EXPECT_FALSE(launcher_widget->IsVisible());
-  // Desktop background is gone.
+  // Desktop background widget is gone but we have a layer.
   EXPECT_FALSE(shell->root_window_layout_->background_widget());
+  EXPECT_TRUE(shell->root_window_layout_->background_layer());
 
   // Switch back to overlapping mode.
   shell->ChangeWindowMode(Shell::MODE_OVERLAPPING);
@@ -397,6 +399,7 @@ TEST_F(ShellTest, MAYBE_ChangeWindowMode) {
             launcher_widget->GetWindowScreenBounds().bottom());
   // Desktop background is back.
   EXPECT_TRUE(shell->root_window_layout_->background_widget());
+  EXPECT_FALSE(shell->root_window_layout_->background_layer());
 
   // Clean up.
   widget->Close();

@@ -522,7 +522,15 @@ void Shell::SetupCompactWindowMode() {
   // Maximize all the windows, using the new layout manager.
   MaximizeWindows(default_container);
 
-  // Eliminate the background widget.
+  // Set a solid black background.
+  // TODO(derat): Remove this in favor of having the compositor only clear the
+  // viewport when there are regions not covered by a layer:
+  // http://crbug.com/113445
+  ui::Layer* background_layer = new ui::Layer(ui::Layer::LAYER_SOLID_COLOR);
+  background_layer->SetColor(SK_ColorBLACK);
+  GetContainer(internal::kShellWindowId_DesktopBackgroundContainer)->
+      layer()->Add(background_layer);
+  root_window_layout_->SetBackgroundLayer(background_layer);
   root_window_layout_->SetBackgroundWidget(NULL);
 }
 
@@ -570,6 +578,7 @@ void Shell::SetupNonCompactWindowMode() {
 
   // Create the desktop background image.
   root_window_layout_->SetBackgroundWidget(internal::CreateDesktopBackground());
+  root_window_layout_->SetBackgroundLayer(NULL);
 }
 
 void Shell::ResetLayoutManager(int container_id) {

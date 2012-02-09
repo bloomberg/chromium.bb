@@ -202,6 +202,9 @@ class ASH_EXPORT PowerButtonController : public aura::RootWindowObserver {
 
   // Layer that's stacked under all of the root window's children to provide a
   // black background when we're scaling all of the other windows down.
+  // TODO(derat): Remove this in favor of having the compositor only clear the
+  // viewport when there are regions not covered by a layer:
+  // http://crbug.com/113445
   scoped_ptr<ui::Layer> background_layer_;
 
   // Started when the user first presses the power button while in a

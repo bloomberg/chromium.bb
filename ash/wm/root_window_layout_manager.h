@@ -8,6 +8,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/memory/scoped_ptr.h"
 #include "ui/aura/layout_manager.h"
 
 namespace aura {
@@ -15,6 +16,9 @@ class Window;
 }
 namespace gfx {
 class Rect;
+}
+namespace ui {
+class Layer;
 }
 namespace views {
 class Widget;
@@ -31,10 +35,16 @@ class RootWindowLayoutManager : public aura::LayoutManager {
   virtual ~RootWindowLayoutManager();
 
   views::Widget* background_widget() { return background_widget_; }
+  ui::Layer* background_layer() { return background_layer_.get(); }
 
   // Sets the background to |widget|. Closes and destroys the old widget if it
   // exists and differs from the new widget.
   void SetBackgroundWidget(views::Widget* widget);
+
+  // Sets a background layer, taking ownership of |layer|.  This is provided as
+  // a lightweight alternative to SetBackgroundWidget(); layers can be simple
+  // colored quads instead of being textured.
+  void SetBackgroundLayer(ui::Layer* layer);
 
   // Overridden from aura::LayoutManager:
   virtual void OnWindowResized() OVERRIDE;
@@ -50,6 +60,7 @@ class RootWindowLayoutManager : public aura::LayoutManager {
 
   // May be NULL if we're not painting a background.
   views::Widget* background_widget_;
+  scoped_ptr<ui::Layer> background_layer_;
 
   DISALLOW_COPY_AND_ASSIGN(RootWindowLayoutManager);
 };
