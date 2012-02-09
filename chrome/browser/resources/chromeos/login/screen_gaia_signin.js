@@ -7,6 +7,8 @@
  */
 
 cr.define('login', function() {
+  // Maximum Gaia loading time in seconds.
+  const MAX_GAIA_LOADING_TIME_SEC = 60;
 
   /**
    * Creates a new sign in screen div.
@@ -59,6 +61,9 @@ cr.define('login', function() {
     // @type {string}
     email: "",
 
+    // Timer id of pending load.
+    loadingTimer_: undefined,
+
     /** @inheritDoc */
     decorate: function() {
       this.frame_ = $('signin-frame');
@@ -89,6 +94,38 @@ cr.define('login', function() {
       // Sign-in right panel is hidden if all its items are hidden.
       $('signin-right').hidden = show ||
           ($('createAccount').hidden && $('guestSignin').hidden);
+    },
+
+    /**
+     * Handler for Gaia loading timeout.
+     * @private
+     */
+    onLoadingTimeOut_: function() {
+      this.loadingTimer_ = undefined;
+      this.clearRetry_();
+      $('error-message').showLoadingTimeoutError();
+    },
+
+    /**
+     * Clears loading timer.
+     * @private
+     */
+    clearLoadingTimer_: function() {
+      if (this.loadingTimer_) {
+        window.clearTimeout(this.loadingTimer_);
+        this.loadingTimer_ = undefined;
+      }
+    },
+
+    /**
+     * Sets up loading timer.
+     * @private
+     */
+    startLoadingTimer_: function() {
+      this.clearLoadingTimer_();
+      this.loadingTimer_ = window.setTimeout(
+          this.onLoadingTimeOut_.bind(this),
+          MAX_GAIA_LOADING_TIME_SEC * 1000);
     },
 
     /**
@@ -202,6 +239,7 @@ cr.define('login', function() {
 
         this.loading = true;
         this.clearRetry_();
+        this.startLoadingTimer_();
       } else if (this.loading) {
         if (this.error_) {
           // An error has occurred, so trying to reload.
@@ -267,8 +305,9 @@ cr.define('login', function() {
           document.addEventListener(
               'focusout', this.selfBind_(this.onFocusOut_.bind(this)));
         }
-        $('error-message').update();
         this.loading = false;
+        $('error-message').update();
+        this.clearLoadingTimer_();
         // Show deferred error bubble.
         if (this.errorBubble_) {
           this.showErrorBubble(this.errorBubble_[0], this.errorBubble_[1]);
@@ -328,6 +367,7 @@ cr.define('login', function() {
       this.frame_.src = this.extensionUrl_;
       this.retryTimer_ = undefined;
       this.loading = true;
+      this.startLoadingTimer_();
     },
 
     /**

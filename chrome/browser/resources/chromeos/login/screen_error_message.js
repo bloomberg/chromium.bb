@@ -20,7 +20,9 @@ cr.define('login', function() {
   // Error reasons which are passed to updateState_() method.
   const ERROR_REASONS = {
     PROXY_AUTH_CANCELLED: 'frame error:111',
-    PROXY_CONNECTION_FAILED: 'frame error:130'
+    PROXY_CONNECTION_FAILED: 'frame error:130',
+    PROXY_CONFIG_CHANGED: 'proxy changed',
+    LOADING_TIMEOUT: 'loading timeout'
   };
 
   // Frame loading errors.
@@ -145,12 +147,18 @@ cr.define('login', function() {
       var shouldOverlay = MANAGED_SCREENS.indexOf(currentScreen.id) != -1 &&
           !currentScreen.isLocal;
 
-      if (reason == 'proxy changed' && shouldOverlay &&
+      if (reason == ERROR_REASONS.PROXY_CONFIG_CHANGED && shouldOverlay &&
           !offlineMessage.classList.contains('hidden') &&
           offlineMessage.classList.contains('show-captive-portal')) {
         // Schedules a immediate retry.
         currentScreen.doReload();
         console.log('Retry page load since proxy settings has been changed');
+      }
+
+      // Fake portal state for loading timeout.
+      if (reason == ERROR_REASONS.LOADING_TIMEOUT) {
+        isOnline = false;
+        isUnderCaptivePortal = true;
       }
 
       if (!isOnline && shouldOverlay) {
@@ -203,9 +211,23 @@ cr.define('login', function() {
 
           currentScreen.classList.remove('hidden');
           currentScreen.classList.remove('faded');
+
+          // Ensures 'loading' state really means loading for Gaia screen.
+          if (currentScreen.id == 'gaia-signin' && currentScreen.loading)
+            currentScreen.doReload();
         }
       }
     },
+
+    // Request network state update with loading timeout as reason.
+    showLoadingTimeoutError: function() {
+      // Shows error message if it is not shown already.
+      if (this.classList.contains('hidden')) {
+        chrome.send('loginRequestNetworkState',
+                    ['login.ErrorMessageScreen.updateState',
+                     ERROR_REASONS.LOADING_TIMEOUT]);
+      }
+    }
   };
 
   /**
