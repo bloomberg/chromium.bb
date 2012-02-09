@@ -437,10 +437,10 @@ weston_surface_damage_rectangle(struct weston_surface *surface,
 				      &box);
 		pixman_region32_fini(&box);
 	} else {
-		int32_t x, y;
-		weston_surface_to_global(surface, sx, sy, &x, &y);
 		pixman_region32_union_rect(&surface->damage, &surface->damage,
-					   x, y, width, height);
+					   surface->geometry.x + sx,
+					   surface->geometry.y + sy,
+					   width, height);
 	}
 
 	weston_compositor_schedule_repaint(surface->compositor);
