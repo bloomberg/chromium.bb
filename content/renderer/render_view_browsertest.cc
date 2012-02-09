@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -55,6 +55,38 @@ TEST_F(RenderViewImplTest, OnNavStateChanged) {
   ProcessPendingMessages();
   EXPECT_TRUE(render_thread_->sink().GetUniqueMessageMatching(
       ViewHostMsg_UpdateState::ID));
+}
+
+// Ensure the RenderViewImpl sends an ACK to a SwapOut request, even if it is
+// already swapped out.  http://crbug.com/93427.
+TEST_F(RenderViewImplTest, SendSwapOutACK) {
+  // Respond to a swap out request.
+  ViewMsg_SwapOut_Params params;
+  params.closing_process_id = 10;
+  params.closing_route_id = 11;
+  params.new_render_process_host_id = 12;
+  params.new_request_id = 13;
+  view()->OnSwapOut(params);
+
+  // Check for a valid OnSwapOutACK with echoed params.
+  const IPC::Message* msg = render_thread_->sink().GetUniqueMessageMatching(
+      ViewHostMsg_SwapOut_ACK::ID);
+  ASSERT_TRUE(msg);
+  ViewHostMsg_SwapOut_ACK::Param reply_params;
+  ViewHostMsg_SwapOut_ACK::Read(msg, &reply_params);
+  EXPECT_EQ(params.closing_process_id, reply_params.a.closing_process_id);
+  EXPECT_EQ(params.closing_route_id, reply_params.a.closing_route_id);
+  EXPECT_EQ(params.new_render_process_host_id,
+            reply_params.a.new_render_process_host_id);
+  EXPECT_EQ(params.new_request_id, reply_params.a.new_request_id);
+
+  // It is possible to get another swap out request.  Ensure that we send
+  // an ACK, even if we don't have to do anything else.
+  render_thread_->sink().ClearMessages();
+  view()->OnSwapOut(params);
+  const IPC::Message* msg2 = render_thread_->sink().GetUniqueMessageMatching(
+      ViewHostMsg_SwapOut_ACK::ID);
+  ASSERT_TRUE(msg2);
 }
 
 // Test that we get the correct UpdateState message when we go back twice

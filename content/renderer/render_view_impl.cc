@@ -2186,7 +2186,12 @@ WebNavigationPolicy RenderViewImpl::decidePolicyForNavigation(
     const WebNode&, WebNavigationPolicy default_policy, bool is_redirect) {
   // TODO(creis): Remove this when we fix OnSwapOut to not need a navigation.
   if (is_swapped_out_) {
-    DCHECK(request.url() == GURL("about:swappedout"));
+    // It is possible for in-progress navigations to arrive here just after we
+    // are swapped out, including iframes.  We should cancel them.
+    if (request.url() != GURL("about:swappedout"))
+      return WebKit::WebNavigationPolicyIgnore;
+
+    // Allow about:swappedout to complete.
     return default_policy;
   }
 
@@ -4228,31 +4233,31 @@ void RenderViewImpl::OnShouldClose() {
 }
 
 void RenderViewImpl::OnSwapOut(const ViewMsg_SwapOut_Params& params) {
-  if (is_swapped_out_)
-    return;
+  // Only run unload if we're not swapped out yet, but send the ack either way.
+  if (!is_swapped_out_) {
+    // Swap this RenderView out so the tab can navigate to a page rendered by a
+    // different process.  This involves running the unload handler and clearing
+    // the page.  Once WasSwappedOut is called, we also allow this process to
+    // exit if there are no other active RenderViews in it.
 
-  // Swap this RenderView out so the tab can navigate to a page rendered by a
-  // different process.  This involves running the unload handler and clearing
-  // the page.  Once WasSwappedOut is called, we also allow this process to exit
-  // if there are no other active RenderViews in it.
+    // Send an UpdateState message before we get swapped out.
+    SyncNavigationState();
 
-  // Send an UpdateState message before we get swapped out.
-  SyncNavigationState();
+    // Synchronously run the unload handler before sending the ACK.
+    webview()->dispatchUnloadEvent();
 
-  // Synchronously run the unload handler before sending the ACK.
-  webview()->dispatchUnloadEvent();
+    // Swap out and stop sending any IPC messages that are not ACKs.
+    SetSwappedOut(true);
 
-  // Swap out and stop sending any IPC messages that are not ACKs.
-  SetSwappedOut(true);
-
-  // Replace the page with a blank dummy URL.  The unload handler will not be
-  // run a second time, thanks to a check in FrameLoader::stopLoading.
-  // TODO(creis): Need to add a better way to do this that avoids running the
-  // beforeunload handler.  For now, we just run it a second time silently.
-  webview()->mainFrame()->loadHTMLString(std::string(),
-                                         GURL("about:swappedout"),
-                                         GURL("about:swappedout"),
-                                         false);
+    // Replace the page with a blank dummy URL.  The unload handler will not be
+    // run a second time, thanks to a check in FrameLoader::stopLoading.
+    // TODO(creis): Need to add a better way to do this that avoids running the
+    // beforeunload handler.  For now, we just run it a second time silently.
+    webview()->mainFrame()->loadHTMLString(std::string(),
+                                          GURL("about:swappedout"),
+                                          GURL("about:swappedout"),
+                                          false);
+  }
 
   // Just echo back the params in the ACK.
   Send(new ViewHostMsg_SwapOut_ACK(routing_id_, params));

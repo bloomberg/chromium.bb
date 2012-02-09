@@ -689,6 +689,7 @@ class RenderViewImpl : public RenderWidget,
   FRIEND_TEST_ALL_PREFIXES(RenderViewImplTest, OnNavStateChanged);
   FRIEND_TEST_ALL_PREFIXES(RenderViewImplTest, OnSetTextDirection);
   FRIEND_TEST_ALL_PREFIXES(RenderViewImplTest, OnUpdateWebPreferences);
+  FRIEND_TEST_ALL_PREFIXES(RenderViewImplTest, SendSwapOutACK);
   FRIEND_TEST_ALL_PREFIXES(RenderViewImplTest, StaleNavigationsIgnored);
   FRIEND_TEST_ALL_PREFIXES(RenderViewImplTest, UpdateTargetURLWithInvalidURL);
 #if defined(OS_MACOSX)
@@ -867,7 +868,7 @@ class RenderViewImpl : public RenderWidget,
   void OnShouldClose();
   void OnStop();
   void OnStopFinding(content::StopFindAction action);
-  void OnSwapOut(const ViewMsg_SwapOut_Params& params);
+  CONTENT_EXPORT void OnSwapOut(const ViewMsg_SwapOut_Params& params);
   void OnThemeChanged();
   void OnUndo();
   void OnUpdateTargetURLAck();

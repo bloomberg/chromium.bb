@@ -223,6 +223,12 @@ class TestRenderViewHost : public RenderViewHost {
     return is_waiting_for_beforeunload_ack_;
   }
 
+  // Returns whether the RenderViewHost is currently waiting to hear the result
+  // of an unload handler from the renderer.
+  bool is_waiting_for_unload_ack() const {
+    return is_waiting_for_unload_ack_;
+  }
+
   // Sets whether the RenderViewHost is currently swapped out, and thus
   // filtering messages from the renderer.
   void set_is_swapped_out(bool is_swapped_out) {

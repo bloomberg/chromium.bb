@@ -608,6 +608,10 @@ class CONTENT_EXPORT RenderViewHost : public RenderWidgetHost {
  private:
   friend class TestRenderViewHost;
 
+  // Sets whether this RenderViewHost is swapped out in favor of another,
+  // and clears any waiting state that is no longer relevant.
+  void SetSwappedOut(bool is_swapped_out);
+
   void ClearPowerSaveBlockers();
 
   // The SiteInstance associated with this RenderViewHost.  All pages drawn

@@ -1747,7 +1747,7 @@ bool TabContents::UpdateTitleForEntry(NavigationEntryImpl* entry,
 
   // If a page is created via window.open and never navigated,
   // there will be no navigation entry. In this situation,
-  // |page_title_when_no_navigaiton_entry_| will be used for page title.
+  // |page_title_when_no_navigation_entry_| will be used for page title.
   if (entry) {
     if (final_title == entry->GetTitle())
       return false;  // Nothing changed, don't bother.
@@ -2003,9 +2003,15 @@ void TabContents::UpdateTitle(RenderViewHost* rvh,
   // getting useful data.
   SetNotWaitingForResponse();
 
-  DCHECK(rvh == GetRenderViewHost());
+  // Try to find the navigation entry, which might not be the current one.
+  // For example, it might be from a pending RVH for the pending entry.
   NavigationEntryImpl* entry = controller_.GetEntryWithPageID(
       rvh->site_instance(), page_id);
+
+  // We can handle title updates when we don't have an entry in
+  // UpdateTitleForEntry, but only if the update is from the current RVH.
+  if (!entry && rvh != GetRenderViewHost())
+    return;
 
   // TODO(evan): make use of title_direction.
   // http://code.google.com/p/chromium/issues/detail?id=27094

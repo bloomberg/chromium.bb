@@ -737,3 +737,42 @@ TEST_F(RenderViewHostManagerTest, PageDoesBackAndReload) {
   ASSERT_TRUE(entry != NULL);
   EXPECT_EQ(kUrl2, entry->GetURL());
 }
+
+// Ensure that we can go back and forward even if a SwapOut ACK isn't received.
+// See http://crbug.com/93427.
+TEST_F(RenderViewHostManagerTest, NavigateAfterMissingSwapOutACK) {
+  const GURL kUrl1("http://www.google.com/");
+  const GURL kUrl2("http://www.chromium.org/");
+
+  // Navigate to two pages.
+  contents()->NavigateAndCommit(kUrl1);
+  TestRenderViewHost* rvh1 = rvh();
+  contents()->NavigateAndCommit(kUrl2);
+  TestRenderViewHost* rvh2 = rvh();
+
+  // Now go back, but suppose the SwapOut_ACK isn't received.  This shouldn't
+  // happen, but we have seen it when going back quickly across many entries
+  // (http://crbug.com/93427).
+  contents()->GetController().GoBack();
+  EXPECT_TRUE(rvh2->is_waiting_for_beforeunload_ack());
+  contents()->ProceedWithCrossSiteNavigation();
+  EXPECT_FALSE(rvh2->is_waiting_for_beforeunload_ack());
+  rvh2->SwapOut(1, 1);
+  EXPECT_TRUE(rvh2->is_waiting_for_unload_ack());
+
+  // The back navigation commits.  We should proactively clear the
+  // is_waiting_for_unload_ack state to be safe.
+  const NavigationEntry* entry1 = contents()->GetController().GetPendingEntry();
+  rvh1->SendNavigate(entry1->GetPageID(), entry1->GetURL());
+  EXPECT_TRUE(rvh2->is_swapped_out());
+  EXPECT_FALSE(rvh2->is_waiting_for_unload_ack());
+
+  // We should be able to navigate forward.
+  contents()->GetController().GoForward();
+  contents()->ProceedWithCrossSiteNavigation();
+  const NavigationEntry* entry2 = contents()->GetController().GetPendingEntry();
+  rvh2->SendNavigate(entry2->GetPageID(), entry2->GetURL());
+  EXPECT_EQ(rvh2, rvh());
+  EXPECT_FALSE(rvh2->is_swapped_out());
+  EXPECT_TRUE(rvh1->is_swapped_out());
+}
