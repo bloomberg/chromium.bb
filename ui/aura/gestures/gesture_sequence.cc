@@ -417,10 +417,10 @@ bool GestureSequence::TouchDown(const TouchEvent& event,
 }
 
 bool GestureSequence::ScrollEnd(const TouchEvent& event,
-    const GesturePoint& point, Gestures* gestures) {
+    GesturePoint& point, Gestures* gestures) {
   if (point.IsInFlickWindow(event)) {
     AppendScrollGestureEnd(point, point.last_touch_position(), gestures,
-        point.x_velocity(), point.y_velocity());
+        point.XVelocity(), point.YVelocity());
   } else {
     AppendScrollGestureEnd(point, point.last_touch_position(), gestures,
         0.f, 0.f);
