@@ -36,6 +36,9 @@ class GpuSurfaceTracker {
   // Note: This is an O(N) lookup.
   int LookupSurfaceForRenderer(int renderer_id, int render_widget_id);
 
+  // Adds a surface for a native widget. Returns the surface ID.
+  int AddSurfaceForNativeWidget(gfx::AcceleratedWidget widget);
+
   // Removes a given existing surface.
   void RemoveSurface(int surface_id);
 
@@ -62,6 +65,7 @@ class GpuSurfaceTracker {
   struct SurfaceInfo {
     int renderer_id;
     int render_widget_id;
+    gfx::AcceleratedWidget native_widget;
     gfx::GLSurfaceHandle handle;
   };
   typedef std::map<int, SurfaceInfo> SurfaceMap;

@@ -20,7 +20,11 @@ GpuSurfaceTracker* GpuSurfaceTracker::GetInstance() {
 int GpuSurfaceTracker::AddSurfaceForRenderer(int renderer_id,
                                              int render_widget_id) {
   base::AutoLock lock(lock_);
-  SurfaceInfo info = { renderer_id, render_widget_id };
+  SurfaceInfo info = {
+    renderer_id,
+    render_widget_id,
+    gfx::kNullAcceleratedWidget
+  };
   int surface_id = next_surface_id_++;
   surface_map_[surface_id] = info;
   return surface_id;
@@ -38,6 +42,15 @@ int GpuSurfaceTracker::LookupSurfaceForRenderer(int renderer_id,
     }
   }
   return 0;
+}
+
+int GpuSurfaceTracker::AddSurfaceForNativeWidget(
+    gfx::AcceleratedWidget widget) {
+  base::AutoLock lock(lock_);
+  SurfaceInfo info = { 0, 0, widget };
+  int surface_id = next_surface_id_++;
+  surface_map_[surface_id] = info;
+  return surface_id;
 }
 
 void GpuSurfaceTracker::RemoveSurface(int surface_id) {
