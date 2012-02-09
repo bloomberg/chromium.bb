@@ -100,18 +100,40 @@ def QualifyFilename(filename, symbol):
   return candidate
 
 # Regex matching nm output for the symbols we're interested in.
-# Example line:
-#   0000000001919920 0000000000000008 t _ZN12_GLOBAL__I_safe_browsing_service.cc
-nm_re = re.compile(r'(\S+) (\S+) t _GLOBAL__I_(.*)')
+# See test_ParseNmLine for examples.
+nm_re = re.compile(r'(\S+) (\S+) t (?:_ZN12)?_GLOBAL__(?:sub_)?I_(.*)')
+def ParseNmLine(line):
+  """Given a line of nm output, parse static initializers as a
+  (file, start, size) tuple."""
+  match = nm_re.match(line)
+  if match:
+    addr, size, filename = match.groups()
+    return (filename, int(addr, 16), int(size, 16))
+
+
+def test_ParseNmLine():
+  """Verify the nm_re regex matches some sample lines."""
+  parse = ParseNmLine(
+    '0000000001919920 0000000000000008 t '
+    '_ZN12_GLOBAL__I_safe_browsing_service.cc')
+  assert parse == ('safe_browsing_service.cc', 26319136, 8), parse
+
+  parse = ParseNmLine(
+    '00000000026b9eb0 0000000000000024 t '
+    '_GLOBAL__sub_I_extension_specifics.pb.cc')
+  assert parse == ('extension_specifics.pb.cc', 40607408, 36), parse
+
+# Just always run the test; it is fast enough.
+test_ParseNmLine()
+
+
 def ParseNm(binary):
   """Given a binary, yield static initializers as (file, start, size) tuples."""
-
   nm = subprocess.Popen(['nm', '-S', binary], stdout=subprocess.PIPE)
   for line in nm.stdout:
-    match = nm_re.match(line)
-    if match:
-      addr, size, filename = match.groups()
-      yield filename, int(addr, 16), int(size, 16)
+    parse = ParseNmLine(line)
+    if parse:
+      yield parse
 
 # Regex matching objdump output for the symbols we're interested in.
 # Example line:
