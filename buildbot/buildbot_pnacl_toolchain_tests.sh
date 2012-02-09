@@ -31,6 +31,28 @@ handle-error() {
   echo "@@@STEP_FAILURE@@@"
 }
 
+#### Support for running arm sbtc tests on this bot, since we have
+# less coverage on the main waterfall now:
+# http://code.google.com/p/nativeclient/issues/detail?id=2581
+readonly SCONS_COMMON="./scons --verbose bitcode=1"
+build-sbtc-prerequisites() {
+  local platform=$1
+  ${SCONS_COMMON} platform=${platform} sel_ldr sel_universal irt_core \
+    -j ${PNACL_CONCURRENCY}
+}
+
+scons-tests-translator() {
+  local platform=$1
+
+  echo "@@@BUILD_STEP scons-tests-translator ${platform}@@@"
+  build-sbtc-prerequisites ${platform}
+  local extra="--mode=opt-host,nacl -j${PNACL_CONCURRENCY} -k"
+  ${SCONS_COMMON} ${extra} platform=${platform} "small_tests" || handle-error
+  ${SCONS_COMMON} ${extra} platform=${platform} "medium_tests" || handle-error
+  ${SCONS_COMMON} ${extra} platform=${platform} "large_tests" || handle-error
+}
+####
+
 tc-test-bot() {
   clobber
 
@@ -59,6 +81,8 @@ tc-test-bot() {
       ${LLVM_TESTSUITE} testsuite-report ${arch} -v -c
     } || handle-error
   done
+
+  scons-tests-translator "arm"
 }
 
 tc-test-bot

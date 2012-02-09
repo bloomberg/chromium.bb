@@ -1,5 +1,5 @@
 #!/bin/bash
-# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Copyright (c) 2012 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -181,6 +181,20 @@ scons-tests() {
   if [ "${platform}" == arm ]; then
     single-scons-test ${platform} "${extra} nacl_pic=1" "${test}"
   fi
+
+  # Full test suite of translator for ARM is too flaky on QEMU
+  # http://code.google.com/p/nativeclient/issues/detail?id=2581
+  # run only a subset below
+  if [ "${platform}" != arm ]; then
+    scons-tests-translator ${platform} "${extra}" "${test}"
+  fi
+}
+
+scons-tests-translator() {
+  local platform=$1
+  local extra=$2
+  local test=$3
+
   build-sbtc-prerequisites ${platform}
   single-scons-test ${platform} "${extra} use_sandboxed_translator=1" "${test}"
 }
@@ -208,6 +222,10 @@ mode-trybot-arm() {
   clobber
   install-lkgr-toolchains
   scons-tests "arm" "--mode=opt-host,nacl -j8 -k" "smoke_tests"
+  # Full test suite of translator for ARM is too flaky on QEMU
+  # http://code.google.com/p/nativeclient/issues/detail?id=2581
+  # Running a subset here (and skipping in scons-test() itself).
+  scons-tests-translator "arm" "--mode=opt-host,nacl -j4 -k" "toolchain_tests"
   browser-tests "arm" "--mode=opt-host,nacl -k"
   ad-hoc-shared-lib-tests "arm"
 }
@@ -282,6 +300,10 @@ mode-buildbot-arm() {
   scons-tests "arm" "${mode} -k" "small_tests"
   scons-tests "arm" "${mode} -k" "medium_tests"
   scons-tests "arm" "${mode} -k" "large_tests"
+  # Full test suite of translator for ARM is too flaky on QEMU
+  # http://code.google.com/p/nativeclient/issues/detail?id=2581
+  # Running a subset here (and skipping in scons-test() itself).
+  scons-tests-translator "arm" "--mode=opt-host,nacl -j4 -k" "toolchain_tests"
   browser-tests "arm" "${mode}"
   ad-hoc-shared-lib-tests "arm"
 }
