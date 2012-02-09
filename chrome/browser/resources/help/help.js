@@ -90,7 +90,6 @@ cr.define('help_page', function() {
   return {
     HelpPage: HelpPage
   };
-
 });
 
 var HelpPage = help_page.HelpPage;

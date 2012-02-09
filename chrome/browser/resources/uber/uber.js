@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 cr.define('uber', function() {
+  var localStrings = new LocalStrings();
 
   /**
    * Options for how web history should be handled.
@@ -41,7 +42,7 @@ cr.define('uber', function() {
    * Find page information from the given path. If the path doesn't point to one
    * of our pages, return default parameters.
    * @param {string} path A path taken from the page URL.
-   * @return {Object} An object containining the following parameters:
+   * @return {Object} An object containing the following parameters:
    *     id - The 'id' of the page.
    *     path - A path into the page. Optional.
    */
@@ -85,9 +86,7 @@ cr.define('uber', function() {
    * @return {Object} The default iframe container.
    */
   function getDefaultIframe() {
-    // TODO(csilv): This will select the first iframe as the default, but
-    // perhaps we want to use some other logic?
-    return document.querySelector('.iframe-container');
+    return $(localStrings.getString('helpHost'));
   }
 
   /**
@@ -263,7 +262,6 @@ cr.define('uber', function() {
     onLoad: onLoad,
     onPopHistoryState: onPopHistoryState
   };
-
 });
 
 window.addEventListener('popstate', uber.onPopHistoryState);
