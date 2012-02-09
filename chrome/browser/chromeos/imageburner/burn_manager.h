@@ -253,15 +253,9 @@ class BurnManager
     target_file_path_ = path;
   }
 
-  const FilePath& final_zip_file_path() {return final_zip_file_path_; }
-  void set_final_zip_file_path(const FilePath& path) {
-    final_zip_file_path_ = path;
-  }
-
   void ResetTargetPaths() {
     target_device_path_.clear();
     target_file_path_.clear();
-    final_zip_file_path_.clear();
   }
 
   StateMachine* state_machine() const { return state_machine_.get(); }
@@ -286,7 +280,6 @@ class BurnManager
   FilePath target_device_path_;
   FilePath target_file_path_;
   FilePath config_file_path_;
-  FilePath final_zip_file_path_;
 
   content::DownloadManager* download_manager_;
   bool download_item_observer_added_;

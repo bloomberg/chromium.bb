@@ -147,7 +147,6 @@ class BurnControllerImpl
       DownloadCompleted(false);
       DCHECK(!active_download_item_);
     } else if (download->IsComplete()) {
-      burn_manager_->set_final_zip_file_path(download->GetFullPath());
       DownloadCompleted(true);
       DCHECK(!active_download_item_);
     } else if (download->IsPartialDownload() &&
