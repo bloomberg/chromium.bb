@@ -199,7 +199,7 @@ weston_surface_create(struct weston_compositor *compositor)
 	surface->output = NULL;
 
 	pixman_region32_init(&surface->damage);
-	pixman_region32_init(&surface->opaque);
+	pixman_region32_init(&surface->transform.opaque);
 	wl_list_init(&surface->frame_callback_list);
 
 	surface->buffer_destroy_listener.func = surface_handle_buffer_destroy;
@@ -376,6 +376,17 @@ weston_surface_update_transform(struct weston_surface *surface)
 	pixman_region32_union(&surface->damage, &surface->damage,
 			      &surface->transform.boundingbox);
 
+	pixman_region32_fini(&surface->transform.opaque);
+	if (surface->visual == WESTON_RGB_VISUAL &&
+	    surface->transform.enabled == 0)
+		pixman_region32_init_rect(&surface->transform.opaque,
+					  surface->geometry.x,
+					  surface->geometry.y,
+					  surface->geometry.width,
+					  surface->geometry.height);
+	else
+		pixman_region32_init(&surface->transform.opaque);
+
 	weston_compositor_schedule_repaint(surface->compositor);
 }
 
@@ -502,17 +513,6 @@ weston_surface_configure(struct weston_surface *surface,
 
 	weston_surface_assign_output(surface);
 	weston_surface_damage(surface);
-
-	pixman_region32_fini(&surface->opaque);
-	if (surface->visual == WESTON_RGB_VISUAL &&
-	    surface->transform.enabled == 0)
-		pixman_region32_init_rect(&surface->opaque,
-					  surface->geometry.x,
-					  surface->geometry.y,
-					  surface->geometry.width,
-					  surface->geometry.height);
-	else
-		pixman_region32_init(&surface->opaque);
 }
 
 WL_EXPORT uint32_t
@@ -593,7 +593,7 @@ destroy_surface(struct wl_resource *resource)
 
 	pixman_region32_fini(&surface->transform.boundingbox);
 	pixman_region32_fini(&surface->damage);
-	pixman_region32_fini(&surface->opaque);
+	pixman_region32_fini(&surface->transform.opaque);
 
 	free(surface);
 }
@@ -965,7 +965,7 @@ weston_output_repaint(struct weston_output *output, int msecs)
 	wl_list_for_each(es, &ec->surface_list, link) {
 		pixman_region32_subtract(&es->damage, &es->damage, &opaque);
 		pixman_region32_union(&new_damage, &new_damage, &es->damage);
-		pixman_region32_union(&opaque, &opaque, &es->opaque);
+		pixman_region32_union(&opaque, &opaque, &es->transform.opaque);
 	}
 
 	pixman_region32_init(&total_damage);
@@ -981,7 +981,7 @@ weston_output_repaint(struct weston_output *output, int msecs)
 	wl_list_for_each(es, &ec->surface_list, link) {
 		pixman_region32_copy(&es->damage, &total_damage);
 		pixman_region32_subtract(&total_damage,
-					 &total_damage, &es->opaque);
+					 &total_damage, &es->transform.opaque);
 	}
 
 	output->repaint(output);

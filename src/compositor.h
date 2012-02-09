@@ -243,7 +243,6 @@ struct weston_surface {
 	struct weston_compositor *compositor;
 	GLuint texture;
 	pixman_region32_t damage;
-	pixman_region32_t opaque;
 	int32_t pitch;
 	struct wl_list link;
 	struct wl_list buffer_link;
@@ -272,6 +271,7 @@ struct weston_surface {
 	 */
 	struct {
 		pixman_region32_t boundingbox;
+		pixman_region32_t opaque;
 
 		/* matrix and inverse are used only if enabled = 1.
 		 * If enabled = 0, use x, y, width, height directly.
