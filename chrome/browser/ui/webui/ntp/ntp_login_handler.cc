@@ -207,9 +207,7 @@ void NTPLoginHandler::UpdateLogin() {
       if (header.empty())
         header = CreateSpanWithClass(UTF8ToUTF16(username), "profile-name");
     }
-  } else if (SyncPromoUI::ShouldShowSyncPromo(profile) &&
-             (SyncPromoUI::UserHasSeenSyncPromoAtStartup(profile) ||
-              PromoResourceService::CanShowNTPSignInPromo(profile))) {
+  } else if (SyncPromoUI::ShouldShowSyncPromo(profile)) {
     string16 signed_in_link = l10n_util::GetStringUTF16(
         IDS_SYNC_PROMO_NOT_SIGNED_IN_STATUS_LINK);
     signed_in_link = CreateSpanWithClass(signed_in_link, "link-span");

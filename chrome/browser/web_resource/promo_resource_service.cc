@@ -37,10 +37,6 @@ static const int kTestCacheUpdateDelay = 3 * 60 * 1000;
 // to versions with different types of promos).
 static const int kPromoServiceVersion = 7;
 
-// The number of groups sign-in promo users will be divided into (which gives us
-// a 1/N granularity when targeting more groups).
-static const int kNTPSignInPromoNumberOfGroups = 100;
-
 // Properties used by the server.
 static const char kAnswerIdProperty[] = "answer_id";
 static const char kWebStoreHeaderProperty[] = "question";
@@ -89,12 +85,6 @@ void PromoResourceService::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterDoublePref(prefs::kNtpCustomLogoEnd,
                             0,
                             PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterIntegerPref(prefs::kNtpSignInPromoGroup,
-                             0,
-                             PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterIntegerPref(prefs::kNtpSignInPromoGroupMax,
-                             0,
-                             PrefService::UNSYNCABLE_PREF);
   NotificationPromo::RegisterUserPrefs(prefs);
 }
 
@@ -156,7 +146,6 @@ void PromoResourceService::Unpack(const DictionaryValue& parsed_json) {
   UnpackLogoSignal(parsed_json);
   UnpackNotificationSignal(parsed_json);
   UnpackWebStoreSignal(parsed_json);
-  UnpackNTPSignInPromoSignal(parsed_json);
 }
 
 void PromoResourceService::OnNotificationParsed(double start, double end,
@@ -405,84 +394,4 @@ void PromoResourceService::UnpackLogoSignal(
                     content::Source<WebResourceService>(this),
                     content::NotificationService::NoDetails());
   }
-}
-
-void PromoResourceService::UnpackNTPSignInPromoSignal(
-    const DictionaryValue& parsed_json) {
-#if defined(OS_CHROMEOS)
-  // Don't bother with this signal on ChromeOS. Users are already synced.
-  return;
-#endif
-
-  DictionaryValue* topic_dict;
-  if (!parsed_json.GetDictionary("topic", &topic_dict))
-    return;
-
-  ListValue* answer_list;
-  if (!topic_dict->GetList("answers", &answer_list))
-    return;
-
-  std::string question;
-  for (ListValue::const_iterator answer_iter = answer_list->begin();
-       answer_iter != answer_list->end(); ++answer_iter) {
-    if (!(*answer_iter)->IsType(Value::TYPE_DICTIONARY))
-      continue;
-    DictionaryValue* a_dic = static_cast<DictionaryValue*>(*answer_iter);
-    std::string name;
-    if (a_dic->GetString("name", &name) && name == "sign_in_promo") {
-      a_dic->GetString("question", &question);
-      break;
-    }
-  }
-
-  int new_build;
-  int new_group_max;
-  size_t build_index = question.find(":");
-  if (std::string::npos == build_index ||
-      !base::StringToInt(question.substr(0, build_index), &new_build) ||
-      !IsBuildTargeted(new_build) ||
-      !base::StringToInt(question.substr(build_index + 1), &new_group_max)) {
-    // If anything about the response was invalid or this build is no longer
-    // targeted and there are existing prefs, clear them and notify.
-    if (prefs_->HasPrefPath(prefs::kNtpSignInPromoGroup) ||
-        prefs_->HasPrefPath(prefs::kNtpSignInPromoGroupMax)) {
-      // Make sure we clear first, as the following notification may possibly
-      // depend on calling CanShowNTPSignInPromo synchronously.
-      prefs_->ClearPref(prefs::kNtpSignInPromoGroup);
-      prefs_->ClearPref(prefs::kNtpSignInPromoGroupMax);
-      // Notify the NTP resource cache if the promo has been disabled.
-      content::NotificationService::current()->Notify(
-          chrome::NOTIFICATION_PROMO_RESOURCE_STATE_CHANGED,
-          content::Source<WebResourceService>(this),
-          content::NotificationService::NoDetails());
-    }
-    return;
-  }
-
-  // TODO(dbeam): Add automagic hour group bumper to parsing?
-
-  // If we successfully parsed a response and it differs from our user prefs,
-  // set pref for next time to compare.
-  if (new_group_max != prefs_->GetInteger(prefs::kNtpSignInPromoGroupMax))
-    prefs_->SetInteger(prefs::kNtpSignInPromoGroupMax, new_group_max);
-}
-
-// static
-bool PromoResourceService::CanShowNTPSignInPromo(Profile* profile) {
-  DCHECK(profile);
-  PrefService* prefs = profile->GetPrefs();
-
-  if (!prefs->HasPrefPath(prefs::kNtpSignInPromoGroupMax))
-    return false;
-
-  // If there's a max group set and the user hasn't been bucketed yet, do it.
-  if (!prefs->HasPrefPath(prefs::kNtpSignInPromoGroup)) {
-    prefs->SetInteger(prefs::kNtpSignInPromoGroup,
-                      base::RandInt(1, kNTPSignInPromoNumberOfGroups));
-  }
-
-  // A response is not kept if the build wasn't targeted, so the only thing
-  // required to check is the group this client has been tagged in.
-  return prefs->GetInteger(prefs::kNtpSignInPromoGroupMax) >=
-         prefs->GetInteger(prefs::kNtpSignInPromoGroup);
 }

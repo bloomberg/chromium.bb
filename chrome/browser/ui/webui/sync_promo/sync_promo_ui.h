@@ -70,9 +70,6 @@ class SyncPromoUI : public content::WebUIController {
   // Gets the source from the query portion of the sync promo URL.
   static std::string GetSourceForSyncPromoURL(const GURL& url);
 
-  // Returns true if the sync promo page was ever shown at startup.
-  static bool UserHasSeenSyncPromoAtStartup(Profile* profile);
-
   // Returns the version of the sync promo UI that we should display.
   // Each version changes the UI slightly (for example, replacing text with
   // an infographic).

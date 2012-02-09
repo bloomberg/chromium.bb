@@ -497,8 +497,6 @@ extern const char kNtpPromoViews[];
 extern const char kNtpPromoViewsMax[];
 extern const char kNtpPromoPlatform[];
 extern const char kNtpPromoBuild[];
-extern const char kNtpSignInPromoGroup[];
-extern const char kNtpSignInPromoGroupMax[];
 extern const char kNtpWebStoreEnabled[];
 extern const char kNtpWebStorePromoLastId[];
 extern const char kNtpWebStorePromoId[];

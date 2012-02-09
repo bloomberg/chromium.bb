@@ -297,11 +297,6 @@ std::string SyncPromoUI::GetSourceForSyncPromoURL(const GURL& url) {
 }
 
 // static
-bool SyncPromoUI::UserHasSeenSyncPromoAtStartup(Profile* profile) {
-  return profile->GetPrefs()->GetInteger(prefs::kSyncPromoStartupCount) > 0;
-}
-
-// static
 SyncPromoUI::Version SyncPromoUI::GetSyncPromoVersion() {
   Version version;
   if (sync_promo_trial::GetSyncPromoVersionForCurrentTrial(&version)) {

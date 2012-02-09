@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -45,9 +45,6 @@ class PromoResourceService
   // Checks for conditions to show promo: start/end times, channel, etc.
   static bool CanShowNotificationPromo(Profile* profile);
 
-  // Checks if this user is in a group for sign-in promo roll-out.
-  static bool CanShowNTPSignInPromo(Profile* profile);
-
   static void RegisterPrefs(PrefService* local_state);
 
   static void RegisterUserPrefs(PrefService* prefs);
@@ -61,7 +58,6 @@ class PromoResourceService
   static const char* kDefaultPromoResourceServer;
 
  private:
-  friend class NTPSignInPromoTest;
   FRIEND_TEST_ALL_PREFIXES(PromoResourceServiceTest, IsBuildTargetedTest);
   FRIEND_TEST_ALL_PREFIXES(PromoResourceServiceTest, UnpackLogoSignal);
   FRIEND_TEST_ALL_PREFIXES(PromoResourceServiceTest, UnpackWebStoreSignal);
@@ -219,22 +215,6 @@ class PromoResourceService
   //         webstore logo will be used. The logo can be an HTTPS or DATA URL.
   //   answer_id: the promo's id
   void UnpackWebStoreSignal(const base::DictionaryValue& parsed_json);
-
-  // Unpack the NTP sign in promo. Expects JSON in the following format:
-  // {
-  //   "topic": {
-  //     "answers": [
-  //       ...
-  //       {
-  //         "answer_id": "XXXXXXX",
-  //         "name": "sign_in_promo",
-  //         "question": "1:5"
-  //       }
-  //     ]
-  //   }
-  // }
-  // The question is in the form of "<build>:<group_max>".
-  void UnpackNTPSignInPromoSignal(const base::DictionaryValue& parsed_json);
 
   // NotificationPromo::Delegate override.
   virtual void OnNotificationParsed(double start, double end,
