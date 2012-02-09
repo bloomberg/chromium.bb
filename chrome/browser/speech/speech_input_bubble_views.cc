@@ -61,19 +61,25 @@ class SpeechInputBubbleView
   virtual void Init() OVERRIDE;
 
   // views::ButtonListener methods.
-  virtual void ButtonPressed(views::Button* source, const views::Event& event);
+  virtual void ButtonPressed(views::Button* source,
+                             const views::Event& event) OVERRIDE;
 
   // views::LinkListener methods.
   virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE;
 
   // views::View overrides.
-  virtual gfx::Size GetPreferredSize();
-  virtual void Layout();
+  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual void Layout() OVERRIDE;
+
+  void set_notify_delegate_on_activation_change(bool notify) {
+    notify_delegate_on_activation_change_ = notify;
+  }
 
  private:
   SpeechInputBubbleDelegate* delegate_;
   gfx::Rect element_rect_;
   WebContents* web_contents_;
+  bool notify_delegate_on_activation_change_;
   views::ImageView* icon_;
   views::Label* heading_;
   views::Label* message_;
@@ -95,6 +101,7 @@ SpeechInputBubbleView::SpeechInputBubbleView(
       delegate_(delegate),
       element_rect_(element_rect),
       web_contents_(web_contents),
+      notify_delegate_on_activation_change_(true),
       icon_(NULL),
       heading_(NULL),
       message_(NULL),
@@ -112,7 +119,7 @@ SpeechInputBubbleView::SpeechInputBubbleView(
 
 void SpeechInputBubbleView::OnWidgetActivationChanged(views::Widget* widget,
                                                       bool active) {
-  if (widget == GetWidget() && !active)
+  if (widget == GetWidget() && !active && notify_delegate_on_activation_change_)
     delegate_->InfoBubbleFocusChanged();
   BubbleDelegateView::OnWidgetActivationChanged(widget, active);
 }
@@ -335,35 +342,31 @@ SpeechInputBubbleImpl::SpeechInputBubbleImpl(WebContents* web_contents,
 }
 
 SpeechInputBubbleImpl::~SpeechInputBubbleImpl() {
-  Hide();
+  if (bubble_) {
+    bubble_->set_notify_delegate_on_activation_change(false);
+    bubble_->GetWidget()->Close();
+  }
 }
 
 void SpeechInputBubbleImpl::Show() {
-  if (bubble_)
-    return;
-
-  // Anchor to the location icon view, in case |element_rect| is offscreen.
-  Profile* profile =
-      Profile::FromBrowserContext(web_contents()->GetBrowserContext());
-  Browser* browser = Browser::GetOrCreateTabbedBrowser(profile);
-  BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
-  views::View* icon = browser_view->GetLocationBarView() ?
-      browser_view->GetLocationBarView()->location_icon_view() : NULL;
-  bubble_ = new SpeechInputBubbleView(delegate_, icon, element_rect_,
-                                      web_contents());
-  browser::CreateViewsBubble(bubble_);
-  UpdateLayout();
+  if (!bubble_) {
+    // Anchor to the location icon view, in case |element_rect| is offscreen.
+    Browser* browser = Browser::GetOrCreateTabbedBrowser(
+        Profile::FromBrowserContext(web_contents()->GetBrowserContext()));
+    BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
+    views::View* icon = browser_view->GetLocationBarView() ?
+        browser_view->GetLocationBarView()->location_icon_view() : NULL;
+    bubble_ = new SpeechInputBubbleView(delegate_, icon, element_rect_,
+                                        web_contents());
+    browser::CreateViewsBubble(bubble_);
+    UpdateLayout();
+  }
   bubble_->Show();
 }
 
 void SpeechInputBubbleImpl::Hide() {
-  if (bubble_) {
-    // Remove the observer to ignore deactivation when the bubble is explicitly
-    // closed, otherwise SpeechInputController::InfoBubbleFocusChanged fails.
-    bubble_->GetWidget()->RemoveObserver(bubble_);
-    bubble_->GetWidget()->Close();
-  }
-  bubble_ = NULL;
+  if (bubble_)
+    bubble_->GetWidget()->Hide();
 }
 
 void SpeechInputBubbleImpl::UpdateLayout() {
