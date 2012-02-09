@@ -351,6 +351,13 @@ name=http://code.google.com/p/drmemory/issues/detail?id=412 g
 ...
 *!SymmetricKeyTest_ImportGeneratedKey_Test::TestBody
 
+# We get these sometimes from AesEncrypt and AesExpandKey.  AesEncrypt doesn't
+# have frame pointers, and we have trouble unwinding from it.  Therefore, we use
+# this broad suppression, effectively disabling uninit checks in rsaenh.dll.
+UNINITIALIZED READ
+name=http://code.google.com/p/drmemory/issues/detail?id=712 h
+RSAENH.dll!*
+
 UNINITIALIZED READ
 name=http://code.google.com/p/drmemory/issues/detail?id=425 a
 CLBCatQ.DLL!DestroyStgDatabase
@@ -438,6 +445,13 @@ iphlpapi.dll!GetPerAdapterInfo
 ...
 iphlpapi.dll!GetAdaptersAddresses
 
+POSSIBLE LEAK
+name=http://code.google.com/p/drmemory/issues/detail?id=473 c
+RPCRT4.dll!*
+RPCRT4.dll!*
+...
+IPHLPAPI.DLL!GetAdaptersAddresses
+
 LEAK
 name=http://code.google.com/p/drmemory/issues/detail?id=475
 ...
@@ -447,28 +461,51 @@ CRYPT32.dll!CryptMsgOpenToDecode
 ...
 CRYPT32.dll!CryptQueryObject
 
+# Lots of leaks from our interactions with the system certificate store.  May be
+# worth reviewing our use of their API.
 LEAK
 name=http://code.google.com/p/drmemory/issues/detail?id=476 a
+KERNEL*.dll!LocalAlloc
 ...
-RPCRT4.dll!RpcBindingFromStringBindingW
-...
-NETAPI32.dll!DsRoleGetPrimaryDomainInformation
-...
-USERENV.dll!CreateEnvironmentBlock
-...
-CRYPT32.dll!CertOpenStore
-...
-CRYPT32.dll!CertCreateCertificateChainEngine
+CRYPT32.dll!CertGetCRLContextProperty
 
 LEAK
 name=http://code.google.com/p/drmemory/issues/detail?id=476 b
-KERNEL32.dll!LocalAlloc
+KERNEL*.dll!LocalAlloc
 ...
-CRYPT32.dll!CryptDecodeObjectEx
+CRYPT32.dll!CertAddCRLContextToStore
+
+LEAK
+name=http://code.google.com/p/drmemory/issues/detail?id=476 c
+KERNEL*.dll!LocalAlloc
 ...
-CRYPT32.dll!CertGetCRLContextProperty
+CRYPT32.dll!CertOpenStore
+
+LEAK
+name=http://code.google.com/p/drmemory/issues/detail?id=476 d
+RSAENH.dll!*
 ...
 CRYPT32.dll!CertGetCertificateChain
+
+LEAK
+name=http://code.google.com/p/drmemory/issues/detail?id=476 e
+RPCRT4.dll!*
+...
+CRYPT32.dll!CertGetCertificateChain
+
+LEAK
+name=http://code.google.com/p/drmemory/issues/detail?id=476 f
+KERNELBASE.dll!LocalAlloc
+SETUPAPI.dll!*
+...
+CRYPT32.dll!CertGetCertificateChain
+
+LEAK
+name=http://code.google.com/p/drmemory/issues/detail?id=476 g
+RPCRT4.dll!*
+RPCRT4.dll!*
+...
+CRYPT32.dll!CertCompareIntegerBlob
 
 UNINITIALIZED READ
 name=http://code.google.com/p/drmemory/issues/detail?id=511 a
@@ -614,11 +651,17 @@ name=http://crbug.com/TODO m
 ...
 CRYPT32.dll!I_CertSyncStore
 
-# This test intentionally leaks an object and checks that it's never deleted
-LEAK
-name=http://crbug.com/TODO n
-...
-*!BrowserThreadTest_NotReleasedIfTargetThreadNonExistent_Test::TestBody
+# This matches the same stack as DrMem i#751, but it's an uninit read instead of
+# a leak.  Must be some early thread initialization.  Doesn't look like
+# bit-level though.
+UNINITIALIZED READ
+name=http://crbug.com/TODO o
+RPCRT4.dll!*
+RPCRT4.dll!*
+RPCRT4.dll!*
+ntdll.dll!*
+ntdll.dll!*
+KERNEL*.dll!BaseThreadInitThunk
 
 LEAK
 name=http://crbug.com/109278 video device COM leaks
@@ -629,11 +672,6 @@ LEAK
 name=http://crbug.com/109278 audio device COM leaks
 ...
 *!GetInputDeviceNamesWin
-
-LEAK
-name=http://crbug.com/109281 TLS root isn't found by DrMemory
-...
-*!base::ThreadLocalStorage::Initialize
 
 # Looks like an unhandled syscall.
 UNINITIALIZED READ
@@ -743,8 +781,36 @@ UNINITIALIZED READ
 name=http://code.google.com/p/drmemory/issues/detail?id=493
 USP10.dll!ScriptPositionSingleGlyph
 
+# Various TLS leaks that we don't understand yet.  We should be finding a root
+# for these.
+LEAK
+name=http://code.google.com/p/drmemory/issues/detail?id=778 a
+KERNELBASE.dll!TlsSetValue
+RSAENH.dll!*
+RSAENH.dll!*
+
+# Originally filed as: http://crbug.com/109281
+LEAK
+name=http://code.google.com/p/drmemory/issues/detail?id=778 b
+...
+*!base::ThreadLocalStorage::Initialize
+
+# This is an NSS PRThread object installed in TLS.  Why isn't this detected as a
+# root?  See also http://crbug.com/32624
+LEAK
+name=http://code.google.com/p/drmemory/issues/detail?id=778 c
+*!PR_Calloc
+*!_PR_AttachThread
+*!_PRI_AttachThread
+
 ###############################################################
 # Benign issues in Chromium
+
+# This test intentionally leaks an object and checks that it's never deleted.
+LEAK
+name=BrowserThreadTest.NotReleasedIfTargetThreadNonExistant leak
+...
+*!BrowserThreadTest_NotReleasedIfTargetThreadNonExistent_Test::TestBody
 
 LEAK
 name=deliberate histogram leak
@@ -838,14 +904,21 @@ name=http://crbug.com/70062
 *!net::SSL*SocketNSS::DoHandshakeLoop
 
 LEAK
-name=http://crbug.com/74417
+name=http://crbug.com/74417 a
 *!operator new
 *!disk_cache::BackendImpl::CreateEntryImpl
 
 LEAK
-name=http://crbug.com/74425
+name=http://crbug.com/74417 b
 *!operator new
 *!disk_cache::BackendImpl::NewEntry
+
+# One more disk_cache::BackendImpl leak.  See also http://crbug.com/87500.
+LEAK
+name=http://crbug.com/74417 c
+*!operator new
+...
+*!disk_cache::EntryImpl::UserBuffer::UserBuffer
 
 LEAK
 name=http://crbug.com/75247

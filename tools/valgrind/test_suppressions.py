@@ -98,10 +98,10 @@ def main(argv):
     elif all([re.search("%20Heapcheck", url)
               for url in all_reports[r]]):
       cur_supp += heapcheck_suppressions
-    elif all(["DrMemory%20full" in url for url in all_reports[r]]):
-      cur_supp += drmem_suppressions + drmem_full_suppressions
-    elif all(["DrMemory" in url for url in all_reports[r]]):
+    if all(["DrMemory" in url for url in all_reports[r]]):
       cur_supp += drmem_suppressions
+    if all(["DrMemory%20full" in url for url in all_reports[r]]):
+      cur_supp += drmem_full_suppressions
 
     match = False
     for s in cur_supp:
