@@ -799,6 +799,10 @@ _release.add_config('stumpy-release',
   boards=['stumpy'],
 )
 
+_release.add_config('stumpy64-release',
+  boards=['stumpy64'],
+)
+
 _release.add_config('lumpy-release',
   boards=['lumpy'],
 )
