@@ -14,6 +14,7 @@
 #include "base/rand_util.h"  // For PreRead experiment.
 #include "base/sha1.h"  // For PreRead experiment.
 #include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "base/version.h"
 #include "base/win/registry.h"
@@ -94,7 +95,27 @@ const int kPreReadExpiryYear = 2012;
 const int kPreReadExpiryMonth = 7;
 const int kPreReadExpiryDay = 1;
 
-bool PreReadShouldRun() {
+// These are control values.
+const DWORD kPreReadExperimentFull = 100;
+const DWORD kPreReadExperimentNone = 0;
+
+// Modulate these for different experiments. These values should be a multiple
+// of 5 between 0 and 100, exclusive.
+const DWORD kPreReadExperimentA = 25;
+const DWORD kPreReadExperimentB = 40;
+
+void StaticAssertions() {
+  COMPILE_ASSERT(
+      kPreReadExperimentA <= 100, kPreReadExperimentA_exceeds_100);
+  COMPILE_ASSERT(
+      kPreReadExperimentA % 5 == 0, kPreReadExperimentA_is_not_a_multiple_of_5);
+  COMPILE_ASSERT(
+      kPreReadExperimentB <= 100, kPreReadExperimentB_exceeds_100);
+  COMPILE_ASSERT(
+      kPreReadExperimentB % 5 == 0, kPreReadExperimentB_is_not_a_multiple_of_5);
+}
+
+bool PreReadExperimentShouldRun() {
   base::Time::Exploded exploded = { 0 };
   exploded.year = kPreReadExpiryYear;
   exploded.month = kPreReadExpiryMonth;
@@ -111,27 +132,45 @@ bool PreReadShouldRun() {
   DCHECK(result);
 
   // If the experiment is expired, don't run it.
-  if (build_time > expiration_time)
-    return false;
-
-  // The experiment should only run on canary and dev.
-  const string16 kChannel(GoogleUpdateSettings::GetChromeChannel(
-      GoogleUpdateSettings::IsSystemInstall()));
-  return kChannel == installer::kChromeChannelCanary ||
-      kChannel == installer::kChromeChannelDev;
+  return (build_time <= expiration_time);
 }
 
-// Checks to see if the experiment is running. If so, either tosses a coin
-// and persists it, or gets the already persistent coin-toss value. Returns
-// the coin-toss via |pre_read|. Returns true if the experiment is running and
-// pre_read has been written, false otherwise. |pre_read| is only written to
-// when this function returns true. |key| must be open with read-write access,
-// and be valid.
-bool GetPreReadExperimentGroup(DWORD* pre_read) {
-  DCHECK(pre_read != NULL);
+// For channels with small populations we just divide the population evenly
+// across the 4 buckets.
+DWORD GetSmallPopulationPreReadBucket(double rand_unit) {
+  DCHECK_GE(rand_unit, 0.0);
+  DCHECK_LT(rand_unit, 1.0);
+  if (rand_unit < 0.25 || rand_unit > 1.0)
+    return kPreReadExperimentFull;  // The default pre-read amount.
+  if (rand_unit < 0.50)
+    return kPreReadExperimentA;
+  if (rand_unit < 0.75)
+    return kPreReadExperimentB;
+  return kPreReadExperimentNone;
+}
 
-  // Experiment expired, or running on wrong channel?
-  if (!PreReadShouldRun())
+// For channels with large populations, we allocate a small percentage of the
+// population to each of the experimental buckets, and the rest to the current
+// default pre-read behaviour
+DWORD GetLargePopulationPreReadBucket(double rand_unit) {
+  DCHECK_GE(rand_unit, 0.0);
+  DCHECK_LT(rand_unit, 1.0);
+  if (rand_unit < 0.97 || rand_unit > 1.0)
+    return kPreReadExperimentFull;  // The default pre-read amount.
+  if (rand_unit < 0.98)
+    return kPreReadExperimentA;
+  if (rand_unit < 0.99)
+    return kPreReadExperimentB;
+  return kPreReadExperimentNone;
+}
+
+// Returns true and the |pre_read_percentage| IFF the experiment should run.
+// Otherwise, returns false and |pre_read_percentage| is not modified.
+bool GetPreReadExperimentGroup(DWORD* pre_read_percentage) {
+  DCHECK(pre_read_percentage != NULL);
+
+  // Check if the experiment has expired.
+  if (!PreReadExperimentShouldRun())
     return false;
 
   // Get the MetricsId of the installation. This is only set if the user has
@@ -150,9 +189,16 @@ bool GetPreReadExperimentGroup(DWORD* pre_read) {
   COMPILE_ASSERT(sizeof(uint64) < sizeof(sha1_hash), need_more_data);
   uint64* bits = reinterpret_cast<uint64*>(&sha1_hash[0]);
   double rand_unit = base::BitsToOpenEndedUnitInterval(*bits);
-  DWORD coin_toss = rand_unit > 0.5 ? 1 : 0;
 
-  *pre_read = coin_toss;
+  // We carve up the bucket sizes based on the population of the channel.
+  const string16 channel(
+      GoogleUpdateSettings::GetChromeChannel(
+          GoogleUpdateSettings::IsSystemInstall()));
+
+  // For our purposes, Stable has a large population, everything else is small.
+  *pre_read_percentage = (channel == installer::kChromeChannelStable ?
+                              GetLargePopulationPreReadBucket(rand_unit) :
+                              GetSmallPopulationPreReadBucket(rand_unit));
 
   return true;
 }
@@ -190,32 +236,35 @@ HMODULE LoadChromeWithDirectory(std::wstring* dir) {
     // blocks such that temporally related blocks (i.e., code and data used in
     // startup, browser, renderer, etc) are grouped together, and that blocks
     // used early in the process lifecycle occur earlier in their sections.
-    // Our most recent results in the lab show that around 20% of code and 30%
-    // of data is touched during startup. The value below is an experiment
-    // to see what happens to startup time when we read just a percentage
-    // of each section of the binary versus reading the entire thing.
-    // TODO(rogerm): Investigate/validate this and (if benefical) automate
-    //     the process of determining how much to read from each section
-    //     and embed that info somewhere.
-    const DWORD kPreReadPercentage = 25;
-
-    DWORD pre_read_size = 0;
-    DWORD pre_read_percentage = kPreReadPercentage;
+    DWORD pre_read_percentage = 100;
     DWORD pre_read_step_size = kStepSize;
-    DWORD pre_read = 1;
-    bool use_registry = false;
+    bool is_eligible_for_experiment = true;
 
     // TODO(chrisha): This path should not be ChromeFrame specific, and it
     //     should not be hard-coded with 'Google' in the path. Rather, it should
     //     use the product name.
-    base::win::RegKey key(HKEY_CURRENT_USER, L"Software\\Google\\ChromeFrame",
+    base::win::RegKey key(HKEY_CURRENT_USER,
+                          L"Software\\Google\\ChromeFrame",
                           KEY_QUERY_VALUE);
+
+    // Check if there are any pre-read settings in the registry. If so, then
+    // the pre-read settings have been forcibly set and this instance is not
+    // eligible for the pre-read experiment.
     if (key.Valid()) {
-      use_registry = (key.ReadValueDW(L"PreRead", &pre_read) == ERROR_SUCCESS);
-      if (use_registry) {
-        key.ReadValueDW(L"PreReadPercentage", &pre_read_percentage);
-        key.ReadValueDW(L"PreReadSize", &pre_read_size);
-        key.ReadValueDW(L"PreReadStepSize", &pre_read_step_size);
+      DWORD value = 0;
+      if (key.ReadValueDW(L"PreRead", &value) == ERROR_SUCCESS) {
+        is_eligible_for_experiment = false;
+        pre_read_percentage = (value != 0) ? 100 : 0;
+      }
+
+      if (key.ReadValueDW(L"PreReadPercentage", &value) == ERROR_SUCCESS) {
+        is_eligible_for_experiment = false;
+        pre_read_percentage = value;
+      }
+
+      if (key.ReadValueDW(L"PreReadStepSize", &value) == ERROR_SUCCESS) {
+        is_eligible_for_experiment = false;
+        pre_read_step_size = value;
       }
       key.Close();
     }
@@ -225,40 +274,39 @@ HMODULE LoadChromeWithDirectory(std::wstring* dir) {
     // The PreRead experiment is unable to use the standard FieldTrial
     // mechanism as pre-reading happens in chrome.exe prior to loading
     // chrome.dll. As such, we use a custom approach. If the experiment is
-    // running (not expired, and we're running a version of chrome from an
-    // appropriate channel) then we look to the registry for the BreakPad/UMA
-    // metricsid. We use this to seed a coin-toss, which is then communicated
-    // to chrome.dll via an environment variable, which indicates to chrome.dll
-    // that the experiment is running, causing it to report sub-histogram
-    // results.
+    // running (not expired) then we look to the registry for the BreakPad/UMA
+    // metricsid. We use this to seed a random unit, and select a bucket
+    // (percentage to pre-read) for the experiment. The selected bucket is
+    // communicated to chrome.dll via an environment variable, which alerts
+    // chrome.dll that the experiment is running, causing it to report
+    // sub-histogram results.
     //
     // If we've read pre-read settings from the registry, then someone has
-    // specifically set their pre-read options and is not participating in
+    // specifically forced their pre-read options and is not participating in
     // the experiment.
     //
     // If the experiment is running, indicate it to chrome.dll via an
-    // environment variable. A pre_read value of 1 indicates that a full
-    // (100%, the current default behaviour) pre-read is to be performed,
-    // while a pre_read value of 0 indicates a partial pre-read is to be
-    // performed, up to the configured percentage.
-    if (!use_registry && GetPreReadExperimentGroup(&pre_read)) {
-      DCHECK(pre_read == 0 || pre_read == 1);
+    // environment variable that contains the percentage of chrome that
+    // was pre-read. Allowable values are all multiples of 5 between
+    // 0 and 100, inclusive.
+    if (is_eligible_for_experiment &&
+        GetPreReadExperimentGroup(&pre_read_percentage)) {
+      DCHECK_LE(pre_read_percentage, 100U);
+      DCHECK_EQ(pre_read_percentage % 5, 0U);
       scoped_ptr<base::Environment> env(base::Environment::Create());
       env->SetVar(chrome::kPreReadEnvironmentVariable,
-                  pre_read ? "1" : "0");
-      pre_read_percentage = kPreReadPercentage;
+                  base::StringPrintf("%d", pre_read_percentage));
     }
 #endif  // if defined(GOOGLE_CHROME_BUILD)
 #endif  // if defined(OS_WIN)
 
     // Clamp the DWORD percentage to fit into a uint8 that's <= 100.
-    uint8 percentage_to_read = static_cast<uint8>(
-        std::min<DWORD>(pre_read ? 100 : pre_read_percentage, 100));
+    pre_read_percentage = std::min(pre_read_percentage, 100UL);
 
     // Perform the full or partial pre-read.
     TRACE_EVENT_BEGIN_ETW("PreReadImage", 0, "");
     ImagePreReader::PartialPreReadImage(dir->c_str(),
-                                        percentage_to_read,
+                                        static_cast<uint8>(pre_read_percentage),
                                         pre_read_step_size);
     TRACE_EVENT_END_ETW("PreReadImage", 0, "");
   }
