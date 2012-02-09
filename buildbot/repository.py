@@ -250,21 +250,12 @@ class RepoRepository(object):
                               cwd=repo_path, print_cmd=False)
           print
 
-  def Sync(self, local_manifest=None, jobs=_DEFAULT_SYNC_JOBS, cleanup=True,
-           current_branch_only=True):
+  def Sync(self, local_manifest=None, jobs=_DEFAULT_SYNC_JOBS, cleanup=True):
     """Sync/update the source.  Changes manifest if specified.
 
-    Args:
-      local_manifest:  If set, checks out source to manifest.
-        DEFAULT_MANIFEST may be used to set it back to the default manifest.
-      jobs: An integer representing how many repo jobs to run.
-      cleanup: Boolean to control whether we fix broken repo references, broken
-        git configuration, etc, before syncing.  Generally this shouldn't be
-        used but is necessary to allow url.insteadof configuration to be
-        enforced for the sync step.
-      current_branch_only: If true, sync just the branch the manifest
-        references.  Limiting the sync to just that can save significant
-        bandwidth thus should rarely be disabled.
+    local_manifest:  If set, checks out source to manifest.  DEFAULT_MANIFEST
+    may be used to set it back to the default manifest.
+    jobs: An integer representing how many repo jobs to run.
     """
     try:
       force_repo_update = self._initialized
@@ -285,10 +276,9 @@ class RepoRepository(object):
       if cleanup:
         configure_repo.FixBrokenExistingRepos(self.directory)
 
-      cmd = ['repo', '--time', 'sync', '--jobs', str(jobs)]
-      if current_branch_only:
-        cmd.append('--current-branch')
-      cros_lib.RunCommandWithRetries(2, cmd, cwd=self.directory)
+      cros_lib.RunCommandWithRetries(2, ['repo', '--time', 'sync',
+                                         '--jobs', str(jobs)],
+                                     cwd=self.directory)
 
       # Fixup any new mirroring configurations.
       configure_repo.FixExternalRepoPushUrls(self.directory)

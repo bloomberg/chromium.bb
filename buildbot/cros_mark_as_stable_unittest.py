@@ -47,7 +47,7 @@ class NonClassTests(mox.MoxTestBase):
     cros_mark_as_stable.GitBranch.Exists().AndReturn(True)
     cros_mark_as_stable._SimpleRunCommand('git log --format=format:%s%n%n%b ' +
                           self._tracking_branch + '..').AndReturn(git_log)
-    cros_mark_as_stable._SimpleRunCommand('repo sync --current-branch .')
+    cros_mark_as_stable._SimpleRunCommand('repo sync .')
     cros_mark_as_stable._SimpleRunCommand('git merge --squash %s' %
                                           self._branch)
     cros_build_lib.RunCommand(['git', 'commit', '-m', fake_description])

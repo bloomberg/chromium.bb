@@ -81,8 +81,7 @@ def PrepForChanges(git_repo, dry_run):
     if repository.InARepoRepository(git_repo):
       cros_lib.RunCommand(['repo', 'abandon', PUSH_BRANCH, '.'],
                           cwd=git_repo, error_ok=True)
-      cros_lib.RunCommand(['repo', 'sync', '--current-branch', '.'],
-                          cwd=git_repo)
+      cros_lib.RunCommand(['repo', 'sync', '.'], cwd=git_repo)
       cros_lib.RunCommand(['repo', 'start', PUSH_BRANCH, '.'], cwd=git_repo)
     else:
       # Attempt the equivalent of repo abandon for retries.  Master always
