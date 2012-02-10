@@ -6,6 +6,12 @@
 #define UI_GFX_NATIVE_WIDGET_TYPES_H_
 #pragma once
 
+#include "build/build_config.h"
+
+#if defined(OS_ANDROID)
+#include <jni.h>
+#endif
+
 #include "base/basictypes.h"
 #include "ui/base/ui_export.h"
 
@@ -130,7 +136,7 @@ typedef void* NativeCursor;
 typedef ChromeView* NativeView;
 typedef ChromeView* NativeWindow;
 typedef void* NativeRegion;
-typedef void* NativeEvent;
+typedef jobject NativeEvent;
 #endif
 
 #if defined(OS_WIN)
