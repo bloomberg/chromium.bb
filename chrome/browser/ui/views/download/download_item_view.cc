@@ -1138,23 +1138,26 @@ void DownloadItemView::SizeLabelToMinWidth() {
   if (dangerous_download_label_sized_)
     return;
 
-  string16 text = dangerous_download_label_->GetText();
-  TrimWhitespace(text, TRIM_ALL, &text);
-  DCHECK_EQ(string16::npos, text.find('\n'));
+  string16 label_text = dangerous_download_label_->GetText();
+  TrimWhitespace(label_text, TRIM_ALL, &label_text);
+  DCHECK_EQ(string16::npos, label_text.find('\n'));
 
   // Make the label big so that GetPreferredSize() is not constrained by the
   // current width.
   dangerous_download_label_->SetBounds(0, 0, 1000, 1000);
 
+  // Use a const string from here. BreakIterator requies that text.data() not
+  // change during its lifetime.
+  const string16 original_text(label_text);
   // Using BREAK_WORD can work in most cases, but it can also break
   // lines where it should not. Using BREAK_LINE is safer although
   // slower for Chinese/Japanese. This is not perf-critical at all, though.
-  base::i18n::BreakIterator iter(text, base::i18n::BreakIterator::BREAK_LINE);
+  base::i18n::BreakIterator iter(original_text,
+                                 base::i18n::BreakIterator::BREAK_LINE);
   bool status = iter.Init();
   DCHECK(status);
 
-  string16 current_text = text;
-  string16 prev_text = text;
+  string16 prev_text = original_text;
   gfx::Size size = dangerous_download_label_->GetPreferredSize();
   int min_width = size.width();
 
@@ -1165,12 +1168,13 @@ void DownloadItemView::SizeLabelToMinWidth() {
   // unnecessarily.
   while (iter.Advance() && min_width > kDangerousTextWidth) {
     size_t pos = iter.pos();
-    if (pos >= text.length())
+    if (pos >= original_text.length())
       break;
+    string16 current_text = original_text;
     // This can be a low surrogate codepoint, but u_isUWhiteSpace will
     // return false and inserting a new line after a surrogate pair
     // is perfectly ok.
-    char16 line_end_char = text[pos - 1];
+    char16 line_end_char = current_text[pos - 1];
     if (u_isUWhiteSpace(line_end_char))
       current_text.replace(pos - 1, 1, 1, char16('\n'));
     else
@@ -1185,10 +1189,7 @@ void DownloadItemView::SizeLabelToMinWidth() {
     } else {
       min_width = size.width();
     }
-
-    // Restore the string.
     prev_text = current_text;
-    current_text = text;
   }
 
   dangerous_download_label_->SetBounds(0, 0, size.width(), size.height());
