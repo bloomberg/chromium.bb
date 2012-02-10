@@ -68,6 +68,18 @@ class GLES2Decoder : public CommonDecoder {
     log_commands_ = log_commands;
   }
 
+  bool log_synthesized_gl_errors() const {
+    return log_synthesized_gl_errors_;
+  }
+
+  // Defaults to true. Set to false for the gpu_unittests as they
+  // are explicitly checking errors are generated and so don't need the numerous
+  // messages. Otherwise, chromium code that generates these errors likely has a
+  // bug.
+  void set_log_synthesized_gl_errors(bool enabled) {
+    log_synthesized_gl_errors_ = enabled;
+  }
+
   // Initializes the graphics context. Can create an offscreen
   // decoder with a frame buffer that can be referenced from the parent.
   // Takes ownership of GLContext.
@@ -156,6 +168,7 @@ class GLES2Decoder : public CommonDecoder {
  private:
   bool debug_;
   bool log_commands_;
+  bool log_synthesized_gl_errors_;
   static bool testing_force_is_angle_;
 
   DISALLOW_COPY_AND_ASSIGN(GLES2Decoder);

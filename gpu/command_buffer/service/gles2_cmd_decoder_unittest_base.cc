@@ -196,6 +196,7 @@ void GLES2DecoderTestBase::InitDecoder(
   std::vector<int32> attribs(attributes, attributes + arraysize(attributes));
 
   decoder_.reset(GLES2Decoder::Create(group_.get()));
+  decoder_->set_log_synthesized_gl_errors(false);
   decoder_->Initialize(
       surface_, context_, surface_->GetSize(), DisallowedFeatures(),
       NULL, attribs);

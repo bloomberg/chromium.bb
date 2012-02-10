@@ -494,7 +494,8 @@ bool GLES2Decoder::GetServiceTextureId(uint32 client_texture_id,
 
 GLES2Decoder::GLES2Decoder()
     : debug_(false),
-      log_commands_(false) {
+      log_commands_(false),
+      log_synthesized_gl_errors_(true) {
 }
 
 GLES2Decoder::~GLES2Decoder() {
@@ -4729,7 +4730,11 @@ GLenum GLES2DecoderImpl::PeekGLError() {
 void GLES2DecoderImpl::SetGLError(GLenum error, const char* msg) {
   if (msg) {
     last_error_ = msg;
-    LOG(ERROR) << last_error_;
+    // LOG this unless logging is turned off as any chromium code that generates
+    // these errors probably has a bug.
+    if (log_synthesized_gl_errors()) {
+      LOG(ERROR) << last_error_;
+    }
     if (!msg_callback_.is_null()) {
       msg_callback_.Run(0, GLES2Util::GetStringEnum(error) + " : " + msg);
     }
