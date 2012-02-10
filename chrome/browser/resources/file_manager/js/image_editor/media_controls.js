@@ -9,16 +9,13 @@
 
 /**
  * @param {HTMLElement} containerElement The container for the controls.
- * @param {function} fullScreenToggle Function to toggle the fullscreen mode.
  * @param {function} onMediaError Function to display an error message.
  * @constructor
  */
-function MediaControls(containerElement, fullScreenToggle, onMediaError) {
+function MediaControls(containerElement, onMediaError) {
   this.container_ = containerElement;
   this.document_ = this.container_.ownerDocument;
   this.media_ = null;
-
-  this.setupPlaybackControls_(fullScreenToggle);
 
   this.onMediaPlayBound_ = this.onMediaPlay_.bind(this, true);
   this.onMediaPauseBound_ = this.onMediaPlay_.bind(this, false);
@@ -27,13 +24,7 @@ function MediaControls(containerElement, fullScreenToggle, onMediaError) {
   this.onMediaError_ = onMediaError || function(){};
 }
 
-MediaControls.prototype.play = function() {
-  this.media_.play();
-};
-
-MediaControls.prototype.pause = function() {
-  this.media_.pause();
-};
+MediaControls.prototype.getMedia = function() { return this.media_ };
 
 /**
  * Format the time in hh:mm:ss format (omitting redundant leading zeros).
@@ -58,12 +49,14 @@ MediaControls.formatTime_ = function(timeInSec) {
  * Create a custom control.
  *
  * @param {string} className
+ * @param {HTMLElement=} opt_parent Parent element or container if undefined.
  * @return {HTMLElement}
  */
-MediaControls.prototype.createControl_ = function(className) {
+MediaControls.prototype.createControl = function(className, opt_parent) {
+  opt_parent = opt_parent || this.container_;
   var control = this.document_.createElement('div');
   control.classList.add(className);
-  this.container_.appendChild(control);
+  opt_parent.appendChild(control);
   return control;
 };
 
@@ -72,205 +65,122 @@ MediaControls.prototype.createControl_ = function(className) {
  *
  * @param {string} className
  * @param {function(Event)} handler
+ * @param {HTMLElement=} opt_parent Parent element or container if undefined.
  * @return {HTMLElement}
  */
-MediaControls.prototype.createButton_ = function(className, handler) {
-  var button = this.createControl_(className);
+MediaControls.prototype.createButton = function(
+    className, handler, opt_parent) {
+  var button = this.createControl(className, opt_parent);
   button.classList.add('media-button');
   button.addEventListener('click', handler);
   return button;
 };
+
+/*
+ * Playback control.
+ */
+
+MediaControls.prototype.play = function() {
+  this.media_.play();
+};
+
+MediaControls.prototype.pause = function() {
+  this.media_.pause();
+};
+
+MediaControls.prototype.isPlaying = function() {
+  return !this.media_.paused && !this.media_.ended;
+};
+
+MediaControls.prototype.togglePlayState = function() {
+  if (this.isPlaying()) {
+    this.media_.pause();
+  } else {
+    this.media_.play();
+  }
+};
+
+MediaControls.prototype.createPlayButton = function(opt_parent) {
+  this.playButton_ =
+    this.createButton('play', this.togglePlayState.bind(this), opt_parent);
+};
+
+/*
+ * Time controls
+ */
 
 // The default range of 100 is too coarse for the media progress slider.
 // 1000 should be enough as the entire media controls area is never longer
 // than 800px.
 MediaControls.PROGRESS_RANGE = 1000;
 
-/**
- * Create playback controls in DOM.
- *
- * @param {function} fullScreenToggle Function to toggle the fullscreen mode.
- */
-MediaControls.prototype.setupPlaybackControls_ = function(fullScreenToggle) {
-  this.playButton_ = this.createButton_(
-      'play', this.togglePlayState.bind(this));
+MediaControls.prototype.createTimeControls = function(opt_parent) {
+  var timeControls = this.createControl('time-controls', opt_parent);
 
-  this.progress_ = new MediaControls.Slider(
-      this.createControl_('progress'),
+  this.progressSlider_ = new MediaControls.PreciseSlider(
+      this.createControl('progress', timeControls),
       0, /* value */
-      MediaControls.PROGRESS_RANGE);
+      MediaControls.PROGRESS_RANGE,
+      this.onProgressChange_.bind(this),
+      this.onProgressDrag_.bind(this));
 
-  this.progress_.getContainer().addEventListener(
-      'mousemove', this.onProgressMouseMove_.bind(this));
-  this.progress_.getContainer().addEventListener(
-      'mouseout', this.onProgressMouseOut_.bind(this));
+  var timeBox = this.createControl('time', timeControls);
 
-  this.progress_.getInput_().addEventListener(
-      'change', this.onProgressChange_.bind(this));
-  this.progress_.getInput_().addEventListener(
-      'mousedown', this.onProgressMouseDown_.bind(this));
-  this.progress_.getInput_().addEventListener(
-      'mouseup', this.onProgressMouseUp_.bind(this));
-
-  this.seekMark_ =  this.document_.createElement('div');
-  this.seekMark_.className = 'seek-mark';
-  this.progress_.getBar().appendChild(this.seekMark_);
-
-  this.seekLabel_ =  this.document_.createElement('div');
-  this.seekLabel_.className = 'seek-label';
-  this.seekMark_.appendChild(this.seekLabel_);
-
-  var timeBox = this.createControl_('time');
-
-  this.duration_ = this.document_.createElement('div');
-  this.duration_.className = 'duration';
+  this.duration_ = this.createControl('duration', timeBox);
   // Set the initial width to the minimum to reduce the flicker.
   this.duration_.textContent = MediaControls.formatTime_(0);
-  timeBox.appendChild(this.duration_);
 
-  this.currentTime_ = this.document_.createElement('div');
-  this.currentTime_.className = 'current';
-  timeBox.appendChild(this.currentTime_);
-
-  this.soundButton_ = this.createButton_(
-      'sound', this.onSoundButtonClick_.bind(this));
-
-  this.volume_ = new MediaControls.Slider(
-      this.createControl_('volume'),
-      1, /* value */
-      100 /* range */);
-
-  this.volume_.getInput_().addEventListener(
-      'change', this.onVolumeChange_.bind(this));
-  this.volume_.getInput_().addEventListener(
-      'mousedown', this.onVolumeMouseDown_.bind(this));
-
-  if (fullScreenToggle) {
-    this.fullscreenButton_ = this.createButton_('fullscreen', fullScreenToggle);
-  }
+  this.currentTime_ = this.createControl('current', timeBox);
 };
 
 MediaControls.prototype.displayProgress_ = function(current, duration) {
   var ratio = current / duration;
-  this.progress_.setFilled(ratio);
-  this.progress_.setValue(ratio);
+  this.progressSlider_.setFilled(ratio);
+  this.progressSlider_.setValue(ratio);
   this.currentTime_.textContent = MediaControls.formatTime_(current);
 };
 
-MediaControls.prototype.togglePlayState = function() {
-  if (this.media_.paused || this.media_.ended) {
-    this.media_.play();
-  } else {
-    this.media_.pause();
-  }
-};
-
-MediaControls.prototype.onProgressChange_ = function () {
+MediaControls.prototype.onProgressChange_ = function (value) {
   if (!this.media_.seekable || !this.media_.duration) {
     console.error("Inconsistent media state");
     return;
   }
 
-  var current = this.media_.duration * this.progress_.getValue();
+  var current = this.media_.duration * value;
   this.media_.currentTime = current;
   this.currentTime_.textContent = MediaControls.formatTime_(current);
-
-  if (this.progressDragStatus_) {
-    this.showSeekMark_(this.progress_.getValue());
-  }
 };
 
-MediaControls.prototype.onProgressMouseDown_ = function () {
-  this.progressDragStatus_ = {
-    paused: this.media_.paused
-  };
-  this.media_.pause();
-  this.showSeekMark_(this.progress_.getValue());
-};
-
-MediaControls.prototype.onProgressMouseUp_ = function (e) {
-  // Just finished dragging.
-  // Show the label for the last time with a shorter timeout.
-  this.showSeekMark_(this.progress_.getProportion(e.clientX), 750);
-  this.latestMouseUpTime_ = Date.now();
-
-  var dragStatus = this.progressDragStatus_;
-  this.progressDragStatus_ = null;
-  if (!dragStatus.paused) {
-    if (this.media_.currentTime == this.media_.duration)
-      this.onMediaComplete_();
-    else
-      this.media_.play();
-  }
-};
-
-MediaControls.prototype.onProgressMouseMove_ = function (e) {
-  this.latestSeekRatio_ = this.progress_.getProportion(e.clientX);
-
-  var self = this;
-  function showMark() {
-    if (!self.progressDragStatus_) {
-      self.showSeekMark_(self.latestSeekRatio_, 2500);
-    }
-  }
-
-  if (this.seekMark_.classList.contains('visible')) {
-    showMark();
-  } else if (!this.seekMarkTimer_) {
-    this.seekMarkTimer_ = setTimeout(showMark, 200);
-  }
-};
-
-MediaControls.prototype.onProgressMouseOut_ = function (e) {
-  for (var element = e.relatedTarget; element; element = element.parentNode) {
-    if (element == this.progress_.getContainer()) {
-      return;
-    }
-  }
-  if (this.seekMarkTimer_) {
-    clearTimeout(this.seekMarkTimer_);
-    this.seekMarkTimer_ = null;
-  }
-  this.hideSeekMark_();
-};
-
-/**
- * Show the time above the slider.
- *
- * @param {number} ratio [0..1] The proportion of the duration.
- * @param {number=} opt_timeout Timeout in ms after which the label
- *   should be hidden. Do not hide if 0 or undefined.
- */
-MediaControls.prototype.showSeekMark_ = function (ratio, opt_timeout) {
-  // Do not update the seek mark for the first 500ms after the drag is finished.
-  if (this.latestMouseUpTime_ && (this.latestMouseUpTime_ + 500 > Date.now()))
-    return;
-
-  this.seekMark_.style.left = ratio * 100 + '%';
-
-  if (ratio < this.media_.currentTime / this.media_.duration) {
-    this.seekMark_.classList.remove('inverted');
+MediaControls.prototype.onProgressDrag_ = function (on) {
+  if (on) {
+    this.resumeAfterDrag_ = this.isPlaying();
+    this.media_.pause();
   } else {
-    this.seekMark_.classList.add('inverted');
-  }
-  this.seekLabel_.textContent =
-      MediaControls.formatTime_(this.media_.duration * ratio);
-
-  this.seekMark_.classList.add('visible');
-
-  if (this.seekMarkTimer_) {
-    clearTimeout(this.seekMarkTimer_);
-    this.seekMarkTimer_ = null;
-  }
-  if (opt_timeout) {
-    this.seekMarkTimer_ =
-        setTimeout(this.hideSeekMark_.bind(this), opt_timeout);
+    if (this.resumeAfterDrag_){
+      if (this.media_.ended)
+        this.onMediaPlay_(false);
+      else
+        this.media_.play();
+    }
   }
 };
 
-MediaControls.prototype.hideSeekMark_ = function () {
-  this.seekMarkTimer_ = null;
-  this.seekMark_.classList.remove('visible');
+/*
+ * Volume controls
+ */
+
+MediaControls.prototype.createVolumeControls = function(opt_parent) {
+  var volumeControls = this.createControl('volume-controls', opt_parent);
+
+  this.soundButton_ = this.createButton(
+      'sound', this.onSoundButtonClick_.bind(this), volumeControls);
+
+  this.volume_ = new MediaControls.Slider(
+      this.createControl('volume', volumeControls),
+      1, /* value */
+      100 /* range */,
+      this.onVolumeChange_.bind(this),
+      this.onVolumeDrag_.bind(this));
 };
 
 MediaControls.prototype.onSoundButtonClick_ = function() {
@@ -280,7 +190,7 @@ MediaControls.prototype.onSoundButtonClick_ = function() {
     this.savedVolume_ = this.media_.volume;
     this.volume_.setValue(0);
   }
-  this.onVolumeChange_();
+  this.onVolumeChange_(this.volume_.getValue());
 };
 
 MediaControls.getVolumeLevel_ = function (value) {
@@ -290,20 +200,21 @@ MediaControls.getVolumeLevel_ = function (value) {
   return 3;
 };
 
-MediaControls.prototype.onVolumeChange_ = function () {
-  var value = this.volume_.getValue();
+MediaControls.prototype.onVolumeChange_ = function (value) {
   this.media_.volume = value;
   this.volume_.setFilled(value);
   this.soundButton_.setAttribute('level', MediaControls.getVolumeLevel_(value));
 };
 
-MediaControls.prototype.onVolumeMouseDown_ = function () {
-  if (this.media_.volume != 0) {
+MediaControls.prototype.onVolumeDrag_ = function (on) {
+  if (on && (this.media_.volume != 0)) {
     this.savedVolume_ = this.media_.volume;
   }
 };
 
-MediaControls.prototype.getMedia = function() { return this.media_ };
+/*
+ * Media event handlers.
+ */
 
 /**
  * Attach a media element.
@@ -322,8 +233,8 @@ MediaControls.prototype.attachMedia = function(mediaElement) {
   // Reset the UI.
   this.playButton_.classList.remove('playing');
   this.displayProgress_(0, 1);
-  this.volume_.setValue(this.media_.volume);
-  this.onVolumeChange_();
+  /* Copy the volume from the UI to the media element. */
+  this.onVolumeChange_(this.volume_.getValue());
 
   this.container_.classList.add('disabled');
 };
@@ -345,7 +256,7 @@ MediaControls.prototype.detachMedia = function() {
 };
 
 MediaControls.prototype.onMediaPlay_ = function(playing) {
-  if (this.progressDragStatus_)
+  if (this.progressSlider_.isDragging())
     return;
 
   if (playing)
@@ -360,15 +271,19 @@ MediaControls.prototype.onMediaDuration_ = function() {
 
   this.container_.classList.remove('disabled');
 
-  if (!this.media_.seekable) {
-    this.progress_.getContainer().classList.add('readonly');
+  if (this.media_.seekable) {
+    this.progressSlider_.getContainer().classList.remove('readonly');
+  } else {
+    this.progressSlider_.getContainer().classList.add('readonly');
   }
 
-  this.duration_.textContent = MediaControls.formatTime_(this.media_.duration);
+  var valueToString = function(value) {
+    return MediaControls.formatTime_(this.media_.duration * value);
+  }.bind(this);
 
-  var labelWidth = this.duration_.textContent.length / 2;
-  this.seekLabel_.style.width = labelWidth + 'em';
-  this.seekLabel_.style.marginLeft = -labelWidth/2 + 'em';
+  this.duration_.textContent = valueToString(1);
+
+  this.progressSlider_.setValueToStringFunction(valueToString);
 };
 
 MediaControls.prototype.onMediaProgress_ = function(e) {
@@ -378,21 +293,19 @@ MediaControls.prototype.onMediaProgress_ = function(e) {
   var current = this.media_.currentTime;
   var duration = this.media_.duration;
 
-  if (this.progressDragStatus_) {
-    this.progress_.setFilled(current / duration);
+  if (this.progressSlider_.isDragging()) {
+    this.progressSlider_.setFilled(current / duration);
     return;
   }
 
   this.displayProgress_(current, duration);
 
   if (current == duration) {
-    this.onMediaComplete_();
+    this.onMediaComplete();
   }
 };
 
-MediaControls.prototype.onMediaComplete_ = function(e) {
-  this.onMediaPlay_(false);
-};
+MediaControls.prototype.onMediaComplete = function() {};
 
 /**
  * Create a customized slider control.
@@ -400,20 +313,33 @@ MediaControls.prototype.onMediaComplete_ = function(e) {
  * @param {HTMLElement} container The containing div element.
  * @param {number} value Initial value [0..1].
  * @param {number} range Number of distinct slider positions to be supported.
+ * @param {function(number)} onChange
+ * @param {function(boolean)} onDrag
  * @constructor
  */
 
-MediaControls.Slider = function(container, value, range) {
+MediaControls.Slider = function(container, value, range, onChange, onDrag) {
   this.container_ =  container;
+  this.onChange_ = onChange;
+  this.onDrag_ = onDrag;
+
   var document = this.container_.ownerDocument;
+
+  this.container_.classList.add('custom-slider');
 
   this.input_ = document.createElement('input');
   this.input_.type = 'range';
-  this.input_.className = 'thumb';
   this.input_.min = 0;
   this.input_.max = range;
   this.input_.value = value * range;
   this.container_.appendChild(this.input_);
+
+  this.input_.addEventListener(
+      'change', this.onInputChange_.bind(this));
+  this.input_.addEventListener(
+      'mousedown', this.onInputDrag_.bind(this, true));
+  this.input_.addEventListener(
+      'mouseup', this.onInputDrag_.bind(this, false));
 
   this.bar_ =  document.createElement('div');
   this.bar_.className = 'bar';
@@ -485,4 +411,198 @@ MediaControls.Slider.prototype.setFilled = function(proportion) {
 MediaControls.Slider.prototype.getProportion = function (position) {
   var rect = this.bar_.getBoundingClientRect();
   return Math.max(0, Math.min(1, (position - rect.left) / rect.width));
+};
+
+MediaControls.Slider.prototype.onInputChange_ = function () {
+  this.onChange_(this.getValue());
+};
+
+MediaControls.Slider.prototype.isDragging = function () {
+  return this.isDragging_;
+};
+
+MediaControls.Slider.prototype.onInputDrag_ = function (on, event) {
+  this.isDragging_ = on;
+  this.onDrag_(on);
+};
+
+/**
+ * Create a customized slider with a precise time feedback.
+ *
+ * The time value is shown above the slider bar at the mouse position.
+ *
+ * @param {HTMLElement} container The containing div element.
+ * @param {number} value Initial value [0..1].
+ * @param {number} range Number of distinct slider positions to be supported.
+ * @param {function(number)} onChange
+ * @param {function(boolean)} onDrag
+ */
+MediaControls.PreciseSlider = function(
+    container, value, range, onChange, onDrag, formatFunction) {
+  MediaControls.Slider.apply(this, arguments);
+
+  var doc = this.container_.ownerDocument;
+
+  /**
+   * @type {function(number):string}
+   */
+  this.valueToString_ = null;
+
+  this.seekMark_ =  doc.createElement('div');
+  this.seekMark_.className = 'seek-mark';
+  this.getBar().appendChild(this.seekMark_);
+
+  this.seekLabel_ =  doc.createElement('div');
+  this.seekLabel_.className = 'seek-label';
+  this.seekMark_.appendChild(this.seekLabel_);
+
+  this.getContainer().addEventListener(
+      'mousemove', this.onMouseMove_.bind(this));
+  this.getContainer().addEventListener(
+      'mouseout', this.onMouseOut_.bind(this));
+};
+
+MediaControls.PreciseSlider.prototype = {
+  __proto__: MediaControls.Slider.prototype
+};
+
+MediaControls.PreciseSlider.SHOW_DELAY = 200;
+MediaControls.PreciseSlider.HIDE_AFTER_MOVE_DELAY = 2500;
+MediaControls.PreciseSlider.HIDE_AFTER_DRAG_DELAY = 750;
+MediaControls.PreciseSlider.NO_AUTO_HIDE = 0;
+
+MediaControls.PreciseSlider.prototype.setValueToStringFunction =
+    function(func) {
+  this.valueToString_ = func;
+
+  /* It is not completely accurate to assume that the max value corresponds
+   to the longest string, but generous CSS padding will compensate for that. */
+  var labelWidth = this.valueToString_(1).length / 2;
+  this.seekLabel_.style.width = labelWidth + 'em';
+  this.seekLabel_.style.marginLeft = -labelWidth/2 + 'em';
+};
+
+/**
+ * Show the time above the slider.
+ *
+ * @param {number} ratio [0..1] The proportion of the duration.
+ * @param {number} timeout Timeout in ms after which the label should be hidden.
+ *   MediaControls.PreciseSlider.NO_AUTO_HIDE means show until the next call.
+ */
+MediaControls.PreciseSlider.prototype.showSeekMark_ =
+    function (ratio, timeout) {
+  // Do not update the seek mark for the first 500ms after the drag is finished.
+  if (this.latestMouseUpTime_ && (this.latestMouseUpTime_ + 500 > Date.now()))
+    return;
+
+  this.seekMark_.style.left = ratio * 100 + '%';
+
+  if (ratio < this.getValue()) {
+    this.seekMark_.classList.remove('inverted');
+  } else {
+    this.seekMark_.classList.add('inverted');
+  }
+  this.seekLabel_.textContent = this.valueToString_(ratio);
+
+  this.seekMark_.classList.add('visible');
+
+  if (this.seekMarkTimer_) {
+    clearTimeout(this.seekMarkTimer_);
+    this.seekMarkTimer_ = null;
+  }
+  if (timeout != MediaControls.PreciseSlider.NO_AUTO_HIDE) {
+    this.seekMarkTimer_ = setTimeout(this.hideSeekMark_.bind(this), timeout);
+  }
+};
+
+MediaControls.PreciseSlider.prototype.hideSeekMark_ = function () {
+  this.seekMarkTimer_ = null;
+  this.seekMark_.classList.remove('visible');
+};
+
+MediaControls.PreciseSlider.prototype.onMouseMove_ = function (event) {
+  this.latestSeekRatio_ = this.getProportion(event.clientX);
+
+  var self = this;
+  function showMark() {
+    if (!self.isDragging()) {
+      self.showSeekMark_(self.latestSeekRatio_,
+          MediaControls.PreciseSlider.HIDE_AFTER_MOVE_DELAY);
+    }
+  }
+
+  if (this.seekMark_.classList.contains('visible')) {
+    showMark();
+  } else if (!this.seekMarkTimer_) {
+    this.seekMarkTimer_ =
+        setTimeout(showMark, MediaControls.PreciseSlider.SHOW_DELAY);
+  }
+};
+
+MediaControls.PreciseSlider.prototype.onMouseOut_ = function (e) {
+  for (var element = e.relatedTarget; element; element = element.parentNode) {
+    if (element == this.getContainer()) {
+      return;
+    }
+  }
+  if (this.seekMarkTimer_) {
+    clearTimeout(this.seekMarkTimer_);
+    this.seekMarkTimer_ = null;
+  }
+  this.hideSeekMark_();
+};
+
+MediaControls.PreciseSlider.prototype.onInputChange_ = function () {
+  MediaControls.Slider.prototype.onInputChange_.apply(this, arguments);
+  if (this.isDragging()) {
+    this.showSeekMark_(
+        this.getValue(), MediaControls.PreciseSlider.NO_AUTO_HIDE);
+  }
+};
+
+MediaControls.PreciseSlider.prototype.onInputDrag_ = function (on, event) {
+  MediaControls.Slider.prototype.onInputDrag_.apply(this, arguments);
+
+  if (on) {
+    // Dragging started, align the seek mark with the thumb position.
+    this.showSeekMark_(
+        this.getValue(), MediaControls.PreciseSlider.NO_AUTO_HIDE);
+  } else {
+    // Just finished dragging.
+    // Show the label for the last time with a shorter timeout.
+    this.showSeekMark_(
+        this.getValue(), MediaControls.PreciseSlider.HIDE_AFTER_DRAG_DELAY);
+    this.latestMouseUpTime_ = Date.now();
+  }
+};
+
+/**
+ * Create video controls.
+ *
+ * @param {HTMLElement} containerElement The container for the controls.
+ * @param {function} onMediaError Function to display an error message.
+ * @param {function} opt_fullScreenToggle Function to toggle fullscreen mode.
+ * @constructor
+ */
+function VideoControls(containerElement, onMediaError, opt_fullScreenToggle) {
+  MediaControls.call(this, containerElement, onMediaError);
+
+  this.container_.classList.add('video-controls');
+
+  this.createPlayButton();
+
+  this.createTimeControls();
+
+  this.createVolumeControls();
+
+  if (opt_fullScreenToggle) {
+    this.fullscreenButton_ =
+        this.createButton('fullscreen', opt_fullScreenToggle);
+  }
+}
+
+VideoControls.prototype = { __proto__: MediaControls.prototype };
+
+VideoControls.prototype.onMediaComplete = function() {
+  this.onMediaPlay_(false);  // Just update the UI.
 };

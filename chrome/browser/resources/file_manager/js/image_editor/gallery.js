@@ -126,15 +126,17 @@ Gallery.prototype.initDom_ = function(shareActions) {
   this.toolbar_.appendChild(this.ribbonSpacer_);
 
   this.mediaSpacer_ = doc.createElement('div');
-  this.mediaSpacer_.className = 'media-spacer';
+  this.mediaSpacer_.className = 'video-controls-spacer';
   this.container_.appendChild(this.mediaSpacer_);
 
   this.mediaToolbar_ = doc.createElement('div');
-  this.mediaToolbar_.className = 'media-controls tool';
+  this.mediaToolbar_.className = 'tool';
   this.mediaSpacer_.appendChild(this.mediaToolbar_);
 
-  this.mediaControls_ = new MediaControls(
-      this.mediaToolbar_, this.toggleFullscreen_.bind(this));
+  this.mediaControls_ = new VideoControls(
+      this.mediaToolbar_,
+      null /* onError */,
+      this.toggleFullscreen_.bind(this));
 
   this.arrowBox_ = this.document_.createElement('div');
   this.arrowBox_.className = 'arrow-box';

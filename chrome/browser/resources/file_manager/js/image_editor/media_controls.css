@@ -4,27 +4,7 @@
  * found in the LICENSE file.
  */
 
-.media-controls {
-  height: 30px;
-  border-radius: 5px;
-
-  padding-left: 15px;
-  padding-right: 15px;
-
-  opacity: 0.8;
-
-  background: #202020;
-
-  display: -webkit-box;
-  -webkit-box-orient: horizontal;
-  -webkit-box-align: center;
-  -webkit-box-pack: center;
-
-  font-size: 12pt;
-  pointer-events: auto;
-}
-
-.media-controls .media-button {
+.media-button {
   cursor: pointer;
   width: 28px;
   height: 28px;
@@ -32,25 +12,21 @@
   background-position: center center;
 }
 
-.media-controls.disabled {
-  pointer-events: none;
-}
-
 /* Custom sliders for progress and volume. */
 
-/* Reusing the standard input[type='range'] element, hiding the slider bar. */
-.media-controls .thumb {
+/* Customize the standard input[type='range']. */
+.custom-slider > input[type='range'] {
   position: absolute;
-  -webkit-appearance: none !important;
+  -webkit-appearance: none !important;  /* Hide the default thumb icon. */
   left: -2px;  /* Required to align the input element with the parent. */
   top: -2px;
   width: 100%;
   height: 100%;
-  background: transparent;
+  background: transparent;  /* Hide the standard slider bar */
 }
 
 /* Custom thumb icon. */
-.media-controls .thumb::-webkit-slider-thumb {
+.custom-slider > input[type='range']::-webkit-slider-thumb {
   position: relative;
   -webkit-appearance: none;
   z-index: 2;
@@ -60,7 +36,7 @@
 }
 
 /* Custom slider bar (we hide the standard one). */
-.media-controls .bar {
+.custom-slider > .bar {
   position: absolute;
   /* In order to match the horizontal position of the standard slider bar
      left and right must be equal to 1/2 of the thumb icon width. */
@@ -68,15 +44,15 @@
   bottom: 11px;
   border-top: 1px solid white;
   border-bottom: 1px solid white;
-  pointer-events: none;
+  pointer-events: none;  /* Mouse events pass through to the standard input. */
 }
 
-.media-controls.disabled .bar {
+.disabled .custom-slider > .bar {
   border-color: gray;
 }
 
 /* The filled portion of the slider bar to the left of the thumb. */
-.media-controls .filled {
+.custom-slider > .bar > .filled {
   position: absolute;
   width: 0; /* The element style.width is manipulated from the code. */
   left: 0;
@@ -85,12 +61,12 @@
   background-color: white;
 }
 
-.media-controls.disabled .filled {
+.disabled .custom-slider > .bar > .filled {
   background-color: transparent;
 }
 
 /* Rounded caps to the left and right of the slider bar. */
-.media-controls .cap {
+.custom-slider > .bar > .cap {
   position: absolute;
   width: 4px;
   top: -1px;
@@ -98,21 +74,21 @@
 }
 
 /* Left cap is always filled, should be the same color as .filled. */
-.media-controls .cap.left {
+.custom-slider > .bar > .cap.left {
   right: 100%;
   border-top-left-radius: 4px;
   border-bottom-left-radius: 4px;
   background: white;
 }
 
-.media-controls.disabled .cap.left {
+.disabled .custom-slider > .bar > .cap.left {
   border: 1px solid gray;
   border-right-style: none;
   background: transparent;
 }
 
 /* Right cap is always not filled. */
-.media-controls .cap.right {
+.custom-slider > .bar > .cap.right {
   left: 100%;
   border: 1px solid white;
   border-left-style: none;
@@ -121,14 +97,18 @@
   background: transparent;
 }
 
-.media-controls.disabled .cap.right {
+.disabled .custom-slider > .bar > .cap.right {
   border-color: gray;
+}
+
+.custom-slider.readonly {
+  pointer-events: none;
 }
 
 /* Progress seek marker (precise time shown on mouse hover. */
 
 /* Thin vertical line across the slider bar */
-.media-controls .seek-mark {
+.custom-slider > .bar > .seek-mark {
   position: absolute;
   left: 0;
   width: 0;
@@ -137,16 +117,16 @@
   background-color: #202020;
 }
 
-.media-controls .seek-mark.visible {
+.custom-slider > .bar > .seek-mark.visible {
   width: 1px;
 }
 
-.media-controls .seek-mark.inverted {
+.custom-slider > .bar > .seek-mark.inverted {
   background-color: white;
 }
 
 /* Text label giving the precise time corresponding to the hover position. */
-.media-controls .seek-label {
+.custom-slider > .bar > .seek-mark > .seek-label {
   position: absolute;
   left: 0;
   bottom: 20px;
@@ -170,7 +150,7 @@
   overflow: hidden;
 }
 
-.media-controls .seek-mark.visible .seek-label{
+.custom-slider > .bar > .seek-mark.visible > .seek-label {
   height: 18px;
 }
 
@@ -178,91 +158,96 @@
 
 /* Play/pause button. */
 
-.media-controls .play {
-  margin-left: -6px;
-  margin-right: -6px;
+.media-button.play {
+  margin-left: -7px;
+  margin-right: -7px;
   background-image: url(../../images/media/media_play.png);
 }
 
-.media-controls .play:hover {
+.media-button.play:hover {
   background-image: url(../../images/media/media_play_hover.png);
 }
 
-.media-controls .play:active {
+.media-button.play:active {
   background-image: url(../../images/media/media_play_down.png);
 }
 
-.media-controls.disabled .play {
+.disabled .play {
   background-image: url(../../images/media/media_play_disabled.png);
 }
 
-.media-controls .play.playing {
+.media-button.play.playing {
   background-image: url(../../images/media/media_pause.png);
 }
 
-.media-controls .play.playing:hover {
+.media-button.play.playing:hover {
   background-image: url(../../images/media/media_pause_hover.png);
 }
 
-.media-controls .play.playing:active {
+.media-button.play.playing:active {
   background-image: url(../../images/media/media_pause_down.png);
 }
 
-.media-controls.disabled .play.playing {
+.disabled .media-button.play.playing {
   background-image: url(../../images/media/media_pause_disabled.png);
 }
 
-/* Progress slider. */
+/* Time controls: a slider and a text time display. */
 
-.media-controls .progress {
+.time-controls {
+  height: 100%;
+  display: -webkit-box;
+  -webkit-box-orient: horizontal;
+  -webkit-box-align: center;
+  -webkit-box-pack: center;
+  -webkit-box-flex: 1;
+}
+
+.custom-slider.progress {
   position: relative;
   height: 100%;
   display: -webkit-box;
   -webkit-box-flex: 1;
-  /* These margins correspond to 15px effective margins. */
-  margin-left: 6px;
-  margin-right: 6px;
+  margin-left: -9px;  /* Set the margins at the edges of the slider bar. */
+  margin-right: -9px;
 }
 
-.media-controls .progress.readonly {
-  pointer-events: none;
-}
-
-.media-controls .progress .thumb::-webkit-slider-thumb {
+.custom-slider.progress > input[type='range']::-webkit-slider-thumb {
   width: 28px;
   background-image: url(../../images/media/media_slider_thumb.png);
 }
 
-.media-controls .progress .thumb::-webkit-slider-thumb:hover {
+.custom-slider.progress > input[type='range']::-webkit-slider-thumb:hover {
   background-image: url(../../images/media/media_slider_thumb_hover.png);
 }
 
-.media-controls .progress .thumb::-webkit-slider-thumb:active {
+.custom-slider.progress > input[type='range']::-webkit-slider-thumb:active {
   background-image: url(../../images/media/media_slider_thumb_down.png);
 }
 
-.media-controls.disabled .progress .thumb::-webkit-slider-thumb {
+.disabled .custom-slider.progress > input[type='range']::-webkit-slider-thumb {
   background-image: url(../../images/media/media_slider_thumb_disabled.png);
 }
 
-.media-controls .progress .bar {
+.custom-slider.progress > .bar {
   left: 14px;  /* Exactly 1/2 of the thumb width */
   right: 14px;
 }
 
 /* Time display. */
 
-.media-controls .time {
+.time-controls > .time {
   position: relative;
   height: 100%;
+  margin-left: 15px;
 }
 
 /* Invisible div used to compute the width required for the elapsed time. */
-.media-controls .time > .duration {
+.time-controls > .time > .duration {
   color: transparent;
 }
 
-.media-controls .time > .current {
+.time-controls > .time > .current {
   position: absolute;
   right: 0;
   top: 0;
@@ -274,89 +259,99 @@
   color: white;
 }
 
-.media-controls.disabled .time > .current {
+.disabled .time-controls > .time > .current {
   color: transparent;
+}
+
+/* Volume controls: sound button and volume slider */
+
+.volume-controls {
+  height: 100%;
+  display: -webkit-box;
+  -webkit-box-orient: horizontal;
+  -webkit-box-align: center;
+  -webkit-box-pack: center;
 }
 
 /* Sound button */
 
-.media-controls .sound {
-  margin-left: 11px;
+.media-button.sound {
+  margin-left: -4px;
   margin-right: -2px;
   background-position: -2px center;
 }
 
 
-.media-controls .sound[level='0'] {
+.media-button.sound[level='0'] {
   background-image: url(../../images/media/media_sound_disabled.png);
 }
 
-.media-controls .sound[level='0']:hover {
+.media-button.sound[level='0']:hover {
   background-image: url(../../images/media/media_sound_disabled_hover.png);
 }
 
-.media-controls .sound[level='0']:active {
+.media-button.sound[level='0']:active {
   background-image: url(../../images/media/media_sound_disabled_down.png);
 }
 
-.media-controls.disabled .sound[level='0'] {
+.disabled .media-button.sound[level='0'] {
   background-image: url(../../images/media/media_sound_disabled_disabled.png);
 }
 
 
-.media-controls .sound[level='1'] {
+.media-button.sound[level='1'] {
   background-image: url(../../images/media/media_sound_level1.png);
 }
 
-.media-controls .sound[level='1']:hover {
+.media-button.sound[level='1']:hover {
   background-image: url(../../images/media/media_sound_level1_hover.png);
 }
 
-.media-controls .sound[level='1']:active {
+.media-button.sound[level='1']:active {
   background-image: url(../../images/media/media_sound_level1_down.png);
 }
 
-.media-controls.disabled .sound[level='1'] {
+.disabled .media-button.sound[level='1'] {
   background-image: url(../../images/media/media_sound_level1_disabled.png);
 }
 
 
-.media-controls .sound[level='2'] {
+.media-button.sound[level='2'] {
   background-image: url(../../images/media/media_sound_level2.png);
 }
 
-.media-controls .sound[level='2']:hover {
+.media-button.sound[level='2']:hover {
   background-image: url(../../images/media/media_sound_level2_hover.png);
 }
 
-.media-controls .sound[level='2']:active {
+.media-button.sound[level='2']:active {
   background-image: url(../../images/media/media_sound_level2_down.png);
 }
 
-.media-controls.disabled .sound[level='2'] {
+.disabled .media-button.sound[level='2'] {
   background-image: url(../../images/media/media_sound_level2_disabled.png);
 }
 
 
-.media-controls .sound[level='3'] {
+.media-button.sound[level='3'] {
   background-image: url(../../images/media/media_sound_full.png);
 }
 
-.media-controls .sound[level='3']:hover {
+.media-button.sound[level='3']:hover {
   background-image: url(../../images/media/media_sound_full_hover.png);
 }
 
-.media-controls .sound[level='3']:active {
+.media-button.sound[level='3']:active {
   background-image: url(../../images/media/media_sound_full_down.png);
 }
 
-.media-controls.disabled .sound[level='3'] {
+.disabled .media-button.sound[level='3'] {
   background-image: url(../../images/media/media_sound_full_disabled.png);
 }
 
 /* Volume slider. */
 
-.media-controls .volume {
+.custom-slider.volume {
   position: relative;
   height: 100%;
   width: 60px;
@@ -364,45 +359,76 @@
   margin-right: -4px;
 }
 
-.media-controls .volume .thumb::-webkit-slider-thumb {
+.custom-slider.volume > input[type='range']::-webkit-slider-thumb {
   width: 20px;
   background-image: url(../../images/media/media_volume_slider_thumb.png);
 }
 
-.media-controls .volume .thumb::-webkit-slider-thumb:hover {
+.custom-slider.volume > input[type='range']::-webkit-slider-thumb:hover {
   background-image: url(../../images/media/media_volume_slider_thumb_hover.png);
 }
 
-.media-controls .volume .thumb::-webkit-slider-thumb:active {
+.custom-slider.volume > input[type='range']::-webkit-slider-thumb:active {
   background-image: url(../../images/media/media_volume_slider_thumb_down.png);
 }
 
-.media-controls.disabled .volume .thumb::-webkit-slider-thumb {
+.disabled .custom-slider.volume > input[type='range']::-webkit-slider-thumb {
   background-image: url(../../images/media/media_volume_slider_thumb_disabled.png);
 }
 
-.media-controls .volume .bar {
+.custom-slider.volume > .bar {
   left: 10px;  /* Exactly 1/2 of the thumb width */
   right: 10px;
+}
+
+/* Horizontal video control bar, all controls in a row. */
+
+.video-controls {
+  pointer-events: auto;
+
+  font-size: 12pt;
+  height: 30px;
+  border-radius: 5px;
+
+  padding-left: 15px;
+  padding-right: 15px;
+
+  opacity: 0.8;
+
+  background: #202020;
+
+  display: -webkit-box;
+  -webkit-box-orient: horizontal;
+  -webkit-box-align: center;
+  -webkit-box-pack: center;
+}
+
+.video-controls.disabled {
+  pointer-events: none;
+}
+
+.video-controls .time-controls,
+.video-controls .volume-controls {
+  margin-left: 15px;
 }
 
 /* Fullscreen button. */
 /* There is no final decision whether we need a separate icon when toggled. */
 
-.media-controls .fullscreen {
-  margin-left: 9px;
+.media-button.fullscreen {
+  margin-left: 9px;  /* 15px visible margin - 6px whitespace in the icon. */
   margin-right: -6px;
   background-image: url(../../images/media/media_fullscreen.png);
 }
 
-.media-controls .fullscreen:hover {
+.media-button.fullscreen:hover {
   background-image: url(../../images/media/media_fullscreen_hover.png);
 }
 
-.media-controls .fullscreen:active {
+.media-button.fullscreen:active {
   background-image: url(../../images/media/media_fullscreen_down.png);
 }
 
-.media-controls.disabled .fullscreen {
+.disabled .media-button.fullscreen {
   background-image: url(../../images/media/media_fullscreen_disabled.png);
 }

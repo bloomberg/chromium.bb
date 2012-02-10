@@ -749,7 +749,7 @@ body {
   display: block;
 }
 
-/* Video playback support */
+/* Video playback support. */
 
 .gallery video {
   position: absolute;
@@ -757,7 +757,7 @@ body {
   height: 100%;
 }
 
-.gallery .media-spacer {
+.gallery .video-controls-spacer {
   position: absolute;
   left: 0;
   right: 0;
@@ -768,22 +768,27 @@ body {
   -webkit-box-align: center;
   -webkit-box-pack: center;
   pointer-events: none;
+  opacity: 0;
 }
 
-.gallery .media-controls {
+.gallery[video] .video-controls-spacer {
+  /* Animate opacity on 'tools' attribute toggle. */
+  /* Change opacity immediately on 'video' attribute change. */
+  -webkit-transition: opacity 0.28s ease;
+}
+
+.gallery[video][tools] .video-controls-spacer {
+  opacity: 1;
+}
+
+.gallery .video-controls {
   max-width: 800px;
   display: none;
 }
 
-.gallery[video] .media-controls {
-  opacity: 0;
-  -webkit-transition: opacity 0.28s ease;
+.gallery[video] .video-controls {
   display: -webkit-box;
   -webkit-box-flex: 1;
-}
-
-.gallery[video][tools] .media-controls {
-  opacity: 1;
 }
 
 .gallery[video] > .toolbar .button.edit,
