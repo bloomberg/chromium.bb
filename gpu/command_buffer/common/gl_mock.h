@@ -490,20 +490,11 @@ class MockGLInterface : public GLInterface {
   MOCK_METHOD4(DrawArraysInstancedANGLE, void(
       GLenum mode, GLint first, GLsizei count, GLsizei primcount));
 
-  MOCK_METHOD4(DrawArraysInstancedARB, void(
-      GLenum mode, GLint first, GLsizei count, GLsizei primcount));
-
   MOCK_METHOD5(DrawElementsInstancedANGLE, void(
       GLenum mode, GLsizei count, GLenum type, const void* indices,
       GLsizei primcount));
 
-  MOCK_METHOD5(DrawElementsInstancedARB, void(
-      GLenum mode, GLsizei count, GLenum type, const void* indices,
-      GLsizei primcount));
-
   MOCK_METHOD2(VertexAttribDivisorANGLE, void(GLuint index, GLuint divisor));
-
-  MOCK_METHOD2(VertexAttribDivisorARB, void(GLuint index, GLuint divisor));
 };
 
 }  // namespace gfx

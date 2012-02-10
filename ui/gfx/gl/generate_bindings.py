@@ -637,27 +637,15 @@ GL_FUNCTIONS = [
     'GLsync sync, GLenum pname, GLsizei bufSize, GLsizei* length,'
     'GLint* values', },
 { 'return_type': 'void',
-  'names': ['glDrawArraysInstancedANGLE'],
+  'names': ['glDrawArraysInstancedANGLE', 'glDrawArraysInstancedARB'],
   'arguments': 'GLenum mode, GLint first, GLsizei count, GLsizei primcount', },
 { 'return_type': 'void',
-  'names': ['glDrawArraysInstancedARB'],
-  'arguments': 'GLenum mode, GLint first, GLsizei count, GLsizei primcount', },
-{ 'return_type': 'void',
-  'names': ['glDrawElementsInstancedANGLE'],
+  'names': ['glDrawElementsInstancedANGLE', 'glDrawElementsInstancedARB'],
   'arguments':
       'GLenum mode, GLsizei count, GLenum type, const void* indices, '
       'GLsizei primcount', },
 { 'return_type': 'void',
-  'names': ['glDrawElementsInstancedARB'],
-  'arguments':
-      'GLenum mode, GLsizei count, GLenum type, const void* indices, '
-      'GLsizei primcount', },
-{ 'return_type': 'void',
-  'names': ['glVertexAttribDivisorANGLE'],
-  'arguments':
-      'GLuint index, GLuint divisor', },
-{ 'return_type': 'void',
-  'names': ['glVertexAttribDivisorARB'],
+  'names': ['glVertexAttribDivisorANGLE', 'glVertexAttribDivisorARB'],
   'arguments':
       'GLuint index, GLuint divisor', },
 ]

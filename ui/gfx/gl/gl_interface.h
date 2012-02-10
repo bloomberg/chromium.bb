@@ -608,26 +608,13 @@ class GL_EXPORT GLInterface {
                                         GLsizei count,
                                         GLsizei primcount) = 0;
 
-  virtual void DrawArraysInstancedARB(GLenum mode,
-                                      GLint first,
-                                      GLsizei count,
-                                      GLsizei primcount) = 0;
-
   virtual void DrawElementsInstancedANGLE(GLenum mode,
                                           GLsizei count,
                                           GLenum type,
                                           const void* indices,
                                           GLsizei primcount) = 0;
 
-  virtual void DrawElementsInstancedARB(GLenum mode,
-                                        GLsizei count,
-                                        GLenum type,
-                                        const void* indices,
-                                        GLsizei primcount) = 0;
-
   virtual void VertexAttribDivisorANGLE(GLuint index, GLuint divisor) = 0;
-
-  virtual void VertexAttribDivisorARB(GLuint index, GLuint divisor) = 0;
 
  private:
   static GLInterface* interface_;
