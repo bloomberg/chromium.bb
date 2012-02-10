@@ -204,7 +204,12 @@ typedef enum {
   VKEY_NONAME = 0xFC,
   VKEY_PA1 = 0xFD,
   VKEY_OEM_CLEAR = 0xFE,
-  VKEY_UNKNOWN = 0
+  VKEY_UNKNOWN = 0,
+
+  // POSIX specific VKEYs. Note that as of Windows SDK 7.1, 0xD8-DA are
+  // unassigned.
+  VKEY_BRIGHTNESS_DOWN = 0xD8,
+  VKEY_BRIGHTNESS_UP = 0xD9
 } KeyboardCode;
 
 }  // namespace ui

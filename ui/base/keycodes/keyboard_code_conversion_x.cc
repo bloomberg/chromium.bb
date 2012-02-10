@@ -355,6 +355,10 @@ KeyboardCode KeyboardCodeFromXKeysym(unsigned int keysym) {
       return VKEY_VOLUME_DOWN;
     case XF86XK_AudioRaiseVolume:
       return VKEY_VOLUME_UP;
+    case XF86XK_MonBrightnessDown:
+      return VKEY_BRIGHTNESS_DOWN;
+    case XF86XK_MonBrightnessUp:
+      return VKEY_BRIGHTNESS_UP;
 
     // TODO(sad): some keycodes are still missing.
   }
@@ -673,6 +677,10 @@ int XKeysymForWindowsKeyCode(KeyboardCode keycode, bool shift) {
       return XF86XK_AudioLowerVolume;
     case VKEY_VOLUME_UP:
       return XF86XK_AudioRaiseVolume;
+    case VKEY_BRIGHTNESS_DOWN:
+      return XF86XK_MonBrightnessDown;
+    case VKEY_BRIGHTNESS_UP:
+      return XF86XK_MonBrightnessUp;
 
     default:
       LOG(WARNING) << "Unknown keycode:" << keycode;

@@ -62,6 +62,8 @@ struct AcceleratorData {
   { ui::VKEY_TAB, true, false, true, CYCLE_BACKWARD },
   { ui::VKEY_F5, false, false, false, CYCLE_FORWARD },
 #if defined(OS_CHROMEOS)
+  { ui::VKEY_BRIGHTNESS_DOWN, false, false, false, BRIGHTNESS_DOWN },
+  { ui::VKEY_BRIGHTNESS_UP, false, false, false, BRIGHTNESS_UP },
   { ui::VKEY_L, true, true, false, LOCK_SCREEN },
 #endif
   { ui::VKEY_Q, true, true, false, EXIT },
@@ -71,8 +73,6 @@ struct AcceleratorData {
   { ui::VKEY_PRINT, false, false, false, TAKE_SCREENSHOT },
   // On Chrome OS, Search key is mapped to LWIN.
   { ui::VKEY_LWIN, true, false, false, TOGGLE_CAPS_LOCK },
-  // TODO(yusukes): Support multimedia keys for controlling brightness on an
-  // external USB keyboard.
   { ui::VKEY_F6, false, false, false, BRIGHTNESS_DOWN },
   { ui::VKEY_F7, false, false, false, BRIGHTNESS_UP },
   { ui::VKEY_F8, false, false, false, VOLUME_MUTE },

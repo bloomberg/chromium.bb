@@ -504,6 +504,41 @@ TEST_F(AcceleratorControllerTest, GlobalAccelerators) {
     EXPECT_EQ(1, delegate->handle_brightness_up_count());
     EXPECT_EQ(f7, delegate->last_accelerator());
   }
+#if defined(OS_CHROMEOS)
+  // ui::VKEY_BRIGHTNESS_DOWN/UP are not defined on Windows.
+  const ui::Accelerator brightness_down(
+      ui::VKEY_BRIGHTNESS_DOWN, false, false, false);
+  const ui::Accelerator brightness_up(
+      ui::VKEY_BRIGHTNESS_UP, false, false, false);
+  {
+    DummyBrightnessControlDelegate* delegate =
+        new DummyBrightnessControlDelegate(false);
+    GetController()->SetBrightnessControlDelegate(
+        scoped_ptr<BrightnessControlDelegate>(delegate).Pass());
+    EXPECT_EQ(0, delegate->handle_brightness_down_count());
+    EXPECT_FALSE(GetController()->Process(brightness_down));
+    EXPECT_EQ(1, delegate->handle_brightness_down_count());
+    EXPECT_EQ(brightness_down, delegate->last_accelerator());
+    EXPECT_EQ(0, delegate->handle_brightness_up_count());
+    EXPECT_FALSE(GetController()->Process(brightness_up));
+    EXPECT_EQ(1, delegate->handle_brightness_up_count());
+    EXPECT_EQ(brightness_up, delegate->last_accelerator());
+  }
+  {
+    DummyBrightnessControlDelegate* delegate =
+        new DummyBrightnessControlDelegate(true);
+    GetController()->SetBrightnessControlDelegate(
+        scoped_ptr<BrightnessControlDelegate>(delegate).Pass());
+    EXPECT_EQ(0, delegate->handle_brightness_down_count());
+    EXPECT_TRUE(GetController()->Process(brightness_down));
+    EXPECT_EQ(1, delegate->handle_brightness_down_count());
+    EXPECT_EQ(brightness_down, delegate->last_accelerator());
+    EXPECT_EQ(0, delegate->handle_brightness_up_count());
+    EXPECT_TRUE(GetController()->Process(brightness_up));
+    EXPECT_EQ(1, delegate->handle_brightness_up_count());
+    EXPECT_EQ(brightness_up, delegate->last_accelerator());
+  }
+#endif
 #if !defined(NDEBUG)
   // RotateScreen
   EXPECT_TRUE(GetController()->Process(
