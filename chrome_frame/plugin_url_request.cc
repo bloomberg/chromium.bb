@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -43,7 +43,7 @@ bool PluginUrlRequest::Initialize(PluginUrlRequestDelegate* delegate,
     if (FAILED(hr)) {
       NOTREACHED();
     } else {
-      post_data_len_ = upload_data->GetContentLength();
+      post_data_len_ = upload_data->GetContentLengthSync();
       upload_stream->AddRef();
       upload_stream->Initialize(upload_data);
       upload_data_.Attach(upload_stream);

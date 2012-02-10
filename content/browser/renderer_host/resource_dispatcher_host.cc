@@ -21,6 +21,7 @@
 #include "base/shared_memory.h"
 #include "base/stl_util.h"
 #include "base/third_party/dynamic_annotations/dynamic_annotations.h"
+#include "base/threading/thread_restrictions.h"
 #include "content/browser/appcache/chrome_appcache_service.h"
 #include "content/browser/cert_store.h"
 #include "content/browser/child_process_security_policy_impl.h"
@@ -646,7 +647,8 @@ void ResourceDispatcherHost::BeginRequest(
   if (request_data.upload_data) {
     request->set_upload(request_data.upload_data);
     // This results in performing file IO. crbug.com/112607.
-    upload_size = request_data.upload_data->GetContentLength();
+    base::ThreadRestrictions::ScopedAllowIO allow_io;
+    upload_size = request_data.upload_data->GetContentLengthSync();
   }
 
   // Install a CrossSiteResourceHandler if this request is coming from a

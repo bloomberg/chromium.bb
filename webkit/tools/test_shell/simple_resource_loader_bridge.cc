@@ -534,7 +534,9 @@ class RequestProxy : public net::URLRequest::Delegate,
       return;
     }
 
-    uint64 size = request_->get_upload()->GetContentLength();
+    // GetContentLengthSync() may perform file IO, but it's ok here, as file
+    // IO is not prohibited in IOThread defined in the file.
+    uint64 size = request_->get_upload()->GetContentLengthSync();
     uint64 position = request_->GetUploadProgress();
     if (position == last_upload_position_)
       return;  // no progress made since last time
