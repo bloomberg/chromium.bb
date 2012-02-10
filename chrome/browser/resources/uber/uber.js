@@ -171,12 +171,17 @@ cr.define('uber', function() {
     // Cache the title for the client iframe, i.e., the iframe setting the
     // title. querySelector returns the actual iframe element, so use parentNode
     // to get back to the container.
-    var container = document.querySelector(query).parentNode;
-    container.title = title;
+    var iframe = document.querySelector(query);
 
-    // Only update the currently displayed title if this is the visible frame.
-    if (container == getSelectedIframe())
-      document.title = title;
+    // |iframe| may be null if the page has not lazy-loaded yet.
+    if (iframe) {
+      var container = iframe.parentNode;
+      container.title = title;
+
+      // Only update the currently displayed title if this is the visible frame.
+      if (container == getSelectedIframe())
+        document.title = title;
+    }
   }
 
   /**
