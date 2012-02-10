@@ -26,6 +26,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#include "content/public/browser/browser_thread.h"
 #include "googleurl/src/gurl.h"
 #include "googleurl/src/url_parse.h"
 #include "googleurl/src/url_util.h"
@@ -347,6 +348,17 @@ HistoryURLProvider::HistoryURLProvider(ACProviderListener* listener,
       LOG(ERROR) << "Making automatic.";
     }
     // Automatic means eligible for the field trial.
+    // For the field trial stuff to work correctly, we must be running
+    // on the same thread as the thread that created the field trial,
+    // which happens via a call to AutocompleteFieldTrial::Active in
+    // chrome_browser_main.cc on the main thread.  Let's check this to
+    // be sure.  We check "if we've heard of the UI thread then we'd better
+    // be on it."  The first part is necessary so unit tests pass.  (Many
+    // unit tests don't set up the threading naming system; hence
+    // CurrentlyOn(UI thread) will fail.)
+    DCHECK(!content::BrowserThread::IsWellKnownThread(
+               content::BrowserThread::UI) ||
+           content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
     if (AutocompleteFieldTrial::InAggressiveHUPFieldTrial()) {
       if (AutocompleteFieldTrial::InAggressiveHUPFieldTrialExperimentGroup()) {
         enable_aggressive_scoring_ = true;
