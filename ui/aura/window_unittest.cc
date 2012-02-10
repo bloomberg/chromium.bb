@@ -1220,7 +1220,7 @@ TEST_F(WindowTest, AcquireLayer) {
   EXPECT_EQ(1U, parent->children().size());
 }
 
-TEST_F(WindowTest, DontRestackWindowsWhoseLayersHaveNoDelegate) {
+TEST_F(WindowTest, StackWindowsWhoseLayersHaveNoDelegate) {
   scoped_ptr<Window> window1(CreateTestWindowWithId(1, NULL));
   scoped_ptr<Window> window2(CreateTestWindowWithId(2, NULL));
 
@@ -1233,15 +1233,44 @@ TEST_F(WindowTest, DontRestackWindowsWhoseLayersHaveNoDelegate) {
   EXPECT_EQ(RootWindow::GetInstance()->layer()->children().back(),
             window1->layer());
 
-  // This brings window2 (but NOT its layer) to the front.
+  // Since window1 does not have a delegate, window2 should not move in
+  // front of it, nor should its layer.
   window1->layer()->set_delegate(NULL);
   RootWindow::GetInstance()->StackChildAbove(window2.get(), window1.get());
-  EXPECT_EQ(RootWindow::GetInstance()->children().front(), window1.get());
-  EXPECT_EQ(RootWindow::GetInstance()->children().back(), window2.get());
+  EXPECT_EQ(RootWindow::GetInstance()->children().front(), window2.get());
+  EXPECT_EQ(RootWindow::GetInstance()->children().back(), window1.get());
   EXPECT_EQ(RootWindow::GetInstance()->layer()->children().front(),
             window2->layer());
   EXPECT_EQ(RootWindow::GetInstance()->layer()->children().back(),
             window1->layer());
+}
+
+TEST_F(WindowTest, StackTransientsWhoseLayersHaveNoDelegate) {
+  // Create a window with several transients, then a couple windows on top.
+  scoped_ptr<Window> window1(CreateTestWindowWithId(1, NULL));
+  scoped_ptr<Window> window11(CreateTransientChild(11, window1.get()));
+  scoped_ptr<Window> window12(CreateTransientChild(12, window1.get()));
+  scoped_ptr<Window> window13(CreateTransientChild(13, window1.get()));
+  scoped_ptr<Window> window2(CreateTestWindowWithId(2, NULL));
+  scoped_ptr<Window> window3(CreateTestWindowWithId(3, NULL));
+
+  // Remove the delegates of a couple of transients, as if they are closing
+  // and animating out.
+  window11->layer()->set_delegate(NULL);
+  window13->layer()->set_delegate(NULL);
+
+  // Move window1 to the front.  All transients should move with it, and their
+  // order should be preserved.
+  RootWindow* root = RootWindow::GetInstance();
+  root->StackChildAtTop(window1.get());
+
+  ASSERT_EQ(6u, root->children().size());
+  EXPECT_EQ(window2.get(), root->children()[0]);
+  EXPECT_EQ(window3.get(), root->children()[1]);
+  EXPECT_EQ(window1.get(), root->children()[2]);
+  EXPECT_EQ(window11.get(), root->children()[3]);
+  EXPECT_EQ(window12.get(), root->children()[4]);
+  EXPECT_EQ(window13.get(), root->children()[5]);
 }
 
 class TestVisibilityClient : public client::VisibilityClient {
@@ -1439,7 +1468,7 @@ class StackingMadrigalVisibilityClient : public client::VisibilityClient {
 // This test attempts to reconstruct a circumstance that can happen when the
 // aura client attempts to manipulate the visibility and delegate of a layer
 // independent of window visibility.
-// A use case is where the client attempts to keep a window's visible onscreen
+// A use case is where the client attempts to keep a window visible onscreen
 // even after code has called Hide() on the window. The use case for this would
 // be that window hides are animated (e.g. the window fades out). To prevent
 // spurious updating the client code may also clear window's layer's delegate,
@@ -1469,14 +1498,16 @@ TEST_F(WindowTest, StackingMadrigal) {
   EXPECT_TRUE(WindowIsAbove(window11.get(), window1.get()));
   EXPECT_TRUE(LayerIsAbove(window11.get(), window1.get()));
 
+  // A new transient should still be above window1.  It will appear behind
+  // window11 because we don't stack windows on top of targets with NULL
+  // delegates.
   scoped_ptr<Window> window12(CreateTransientChild(12, window1.get()));
   window12->Show();
 
-  EXPECT_TRUE(WindowIsAbove(window12.get(), window11.get()));
-  EXPECT_TRUE(LayerIsAbove(window12.get(), window11.get()));
+  EXPECT_TRUE(WindowIsAbove(window12.get(), window1.get()));
+  EXPECT_TRUE(LayerIsAbove(window12.get(), window1.get()));
 
-  // Prior to the NULL check in the transient restacking loop in
-  // Window::StackChildAbove() introduced with this change, attempting to stack
+  // In earlier versions of the StackChildAbove() method, attempting to stack
   // window1 above window12 at this point would actually restack the layers
   // resulting in window12's layer being below window1's layer (though the
   // windows themselves would still be correctly stacked, so events would pass
@@ -1486,6 +1517,114 @@ TEST_F(WindowTest, StackingMadrigal) {
   // Both window12 and its layer should be stacked above window1.
   EXPECT_TRUE(WindowIsAbove(window12.get(), window1.get()));
   EXPECT_TRUE(LayerIsAbove(window12.get(), window1.get()));
+}
+
+// Test for an issue where attempting to stack a primary window on top of a
+// transient with a NULL layer delegate causes that primary window to be moved,
+// but the layer order not changed to match.  http://crbug.com/112562
+TEST_F(WindowTest, StackOverClosingTransient) {
+  scoped_ptr<Window> window1(CreateTestWindowWithId(1, NULL));
+  scoped_ptr<Window> transient1(CreateTransientChild(11, window1.get()));
+  scoped_ptr<Window> window2(CreateTestWindowWithId(2, NULL));
+  scoped_ptr<Window> transient2(CreateTransientChild(21, window2.get()));
+
+  // Both windows and layers are stacked in creation order.
+  RootWindow* root = RootWindow::GetInstance();
+  ASSERT_EQ(4u, root->children().size());
+  EXPECT_EQ(root->children()[0], window1.get());
+  EXPECT_EQ(root->children()[1], transient1.get());
+  EXPECT_EQ(root->children()[2], window2.get());
+  EXPECT_EQ(root->children()[3], transient2.get());
+  ASSERT_EQ(4u, root->layer()->children().size());
+  EXPECT_EQ(root->layer()->children()[0], window1->layer());
+  EXPECT_EQ(root->layer()->children()[1], transient1->layer());
+  EXPECT_EQ(root->layer()->children()[2], window2->layer());
+  EXPECT_EQ(root->layer()->children()[3], transient2->layer());
+
+  // This brings window1 and its transient to the front.
+  //root_window->StackChildAbove(window1.get(), window2.get());
+  root->StackChildAtTop(window1.get());
+
+  EXPECT_EQ(root->children()[0], window2.get());
+  EXPECT_EQ(root->children()[1], transient2.get());
+  EXPECT_EQ(root->children()[2], window1.get());
+  EXPECT_EQ(root->children()[3], transient1.get());
+  EXPECT_EQ(root->layer()->children()[0], window2->layer());
+  EXPECT_EQ(root->layer()->children()[1], transient2->layer());
+  EXPECT_EQ(root->layer()->children()[2], window1->layer());
+  EXPECT_EQ(root->layer()->children()[3], transient1->layer());
+
+  // Pretend we're closing the top-most transient, then bring window2 to the
+  // front.  This mimics activating a browser window while the status bubble
+  // is fading out.  The transient should stay topmost.
+  transient1->layer()->set_delegate(NULL);
+  root->StackChildAtTop(window2.get());
+
+  EXPECT_EQ(root->children()[0], window1.get());
+  EXPECT_EQ(root->children()[1], window2.get());
+  EXPECT_EQ(root->children()[2], transient2.get());
+  EXPECT_EQ(root->children()[3], transient1.get());
+  EXPECT_EQ(root->layer()->children()[0], window1->layer());
+  EXPECT_EQ(root->layer()->children()[1], window2->layer());
+  EXPECT_EQ(root->layer()->children()[2], transient2->layer());
+  EXPECT_EQ(root->layer()->children()[3], transient1->layer());
+
+  // Close the transient.  Remaining windows are stable.
+  transient1.reset();
+
+  ASSERT_EQ(3u, root->children().size());
+  EXPECT_EQ(root->children()[0], window1.get());
+  EXPECT_EQ(root->children()[1], window2.get());
+  EXPECT_EQ(root->children()[2], transient2.get());
+  ASSERT_EQ(3u, root->layer()->children().size());
+  EXPECT_EQ(root->layer()->children()[0], window1->layer());
+  EXPECT_EQ(root->layer()->children()[1], window2->layer());
+  EXPECT_EQ(root->layer()->children()[2], transient2->layer());
+
+  // Open another window on top.
+  scoped_ptr<Window> window3(CreateTestWindowWithId(3, NULL));
+
+  ASSERT_EQ(4u, root->children().size());
+  EXPECT_EQ(root->children()[0], window1.get());
+  EXPECT_EQ(root->children()[1], window2.get());
+  EXPECT_EQ(root->children()[2], transient2.get());
+  EXPECT_EQ(root->children()[3], window3.get());
+  ASSERT_EQ(4u, root->layer()->children().size());
+  EXPECT_EQ(root->layer()->children()[0], window1->layer());
+  EXPECT_EQ(root->layer()->children()[1], window2->layer());
+  EXPECT_EQ(root->layer()->children()[2], transient2->layer());
+  EXPECT_EQ(root->layer()->children()[3], window3->layer());
+
+  // Pretend we're closing the topmost non-transient window, then bring
+  // window2 to the top.  It should not move.
+  window3->layer()->set_delegate(NULL);
+  root->StackChildAtTop(window2.get());
+
+  ASSERT_EQ(4u, root->children().size());
+  EXPECT_EQ(root->children()[0], window1.get());
+  EXPECT_EQ(root->children()[1], window2.get());
+  EXPECT_EQ(root->children()[2], transient2.get());
+  EXPECT_EQ(root->children()[3], window3.get());
+  ASSERT_EQ(4u, root->layer()->children().size());
+  EXPECT_EQ(root->layer()->children()[0], window1->layer());
+  EXPECT_EQ(root->layer()->children()[1], window2->layer());
+  EXPECT_EQ(root->layer()->children()[2], transient2->layer());
+  EXPECT_EQ(root->layer()->children()[3], window3->layer());
+
+  // Bring window1 to the top.  It should move ahead of window2, but not
+  // ahead of window3 (with NULL delegate).
+  root->StackChildAtTop(window1.get());
+
+  ASSERT_EQ(4u, root->children().size());
+  EXPECT_EQ(root->children()[0], window2.get());
+  EXPECT_EQ(root->children()[1], transient2.get());
+  EXPECT_EQ(root->children()[2], window1.get());
+  EXPECT_EQ(root->children()[3], window3.get());
+  ASSERT_EQ(4u, root->layer()->children().size());
+  EXPECT_EQ(root->layer()->children()[0], window2->layer());
+  EXPECT_EQ(root->layer()->children()[1], transient2->layer());
+  EXPECT_EQ(root->layer()->children()[2], window1->layer());
+  EXPECT_EQ(root->layer()->children()[3], window3->layer());
 }
 
 class RootWindowAttachmentObserver : public WindowObserver {

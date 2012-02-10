@@ -123,9 +123,6 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
   // Returns the window's bounds in screen coordinates.
   gfx::Rect GetScreenBounds() const;
 
-  // Returns true if this window is active.
-  bool IsActive() const;
-
   virtual void SetTransform(const ui::Transform& transform);
 
   // Assigns a LayoutManager to size and place child windows.
@@ -154,9 +151,10 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
   // Stacks the specified child of this Window at the front of the z-order.
   void StackChildAtTop(Window* child);
 
-  // Stacks |child| above |other|.  Does nothing if |child| is already above
-  // |other|.
-  void StackChildAbove(Window* child, Window* other);
+  // Stacks |child| above |target|.  Does nothing if |child| is already above
+  // |target|.  Does not stack on top of windows with NULL layer delegates,
+  // see WindowTest.StackingMadrigal for details.
+  void StackChildAbove(Window* child, Window* target);
 
   // Tree operations.
   // TODO(beng): Child windows are currently not owned by the hierarchy. We
@@ -175,7 +173,7 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
   //   destroyed. This means a transient child is destroyed if either its parent
   //   or transient parent is destroyed.
   // . If a transient child and its transient parent share the same parent, then
-  //   transient children are always ordered above the trasient parent.
+  //   transient children are always ordered above the transient parent.
   // Transient windows are typically used for popups and menus.
   void AddTransientChild(Window* child);
   void RemoveTransientChild(Window* child);
@@ -318,6 +316,9 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
 
   // Called when this window's parent has changed.
   void OnParentChanged();
+
+  // Stacks |child| above |target| without checking for NULL layer delegates.
+  void StackChildAboveImpl(Window* child, Window* target);
 
   // Called when this window's stacking order among its siblings is changed.
   void OnStackingChanged();

@@ -120,6 +120,7 @@ Launcher::Launcher(aura::Window* window_container)
   delegate_view_->AddChildView(launcher_view);
   params.delegate = delegate_view_;
   widget_->Init(params);
+  widget_->GetNativeWindow()->SetName("LauncherWindow");
   gfx::Size pref = static_cast<views::View*>(launcher_view)->GetPreferredSize();
   widget_->SetBounds(gfx::Rect(0, 0, pref.width(), pref.height()));
   // The launcher should not take focus when it is initially shown.

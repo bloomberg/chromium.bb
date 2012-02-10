@@ -14,6 +14,7 @@
 #include "ash/shell_window_ids.h"
 #include "ash/volume_control_delegate.h"
 #include "ash/wm/window_cycle_controller.h"
+#include "ash/wm/window_util.h"
 #include "ui/aura/event.h"
 #include "ui/aura/root_window.h"
 #include "ui/base/accelerators/accelerator.h"
@@ -42,6 +43,7 @@ enum AcceleratorAction {
 #endif
 #if !defined(NDEBUG)
   PRINT_LAYER_HIERARCHY,
+  PRINT_WINDOW_HIERARCHY,
   ROTATE_SCREEN,
   TOGGLE_COMPACT_WINDOW_MODE,
   TOGGLE_ROOT_WINDOW_FULL_SCREEN,
@@ -84,6 +86,7 @@ struct AcceleratorData {
   { ui::VKEY_A, false, true, true, TOGGLE_COMPACT_WINDOW_MODE },
   { ui::VKEY_F11, false, true, false, TOGGLE_ROOT_WINDOW_FULL_SCREEN },
   { ui::VKEY_L, false, false, true, PRINT_LAYER_HIERARCHY },
+  { ui::VKEY_L, true, false, true, PRINT_WINDOW_HIERARCHY },
   // For testing on systems where Alt-Tab is already mapped.
   { ui::VKEY_W, false, false, true, CYCLE_FORWARD },
   { ui::VKEY_W, true, false, true, CYCLE_BACKWARD },
@@ -167,6 +170,23 @@ bool HandlePrintLayerHierarchy() {
                           root_window->last_mouse_location());
   return true;
 }
+
+void PrintWindowHierarchy(aura::Window* window, int indent) {
+  std::string indent_str(indent, ' ');
+  VLOG(1) << indent_str << window->name() << " type " << window->type()
+      << (ash::IsActiveWindow(window) ? "active" : "");
+  for (size_t i = 0; i < window->children().size(); ++i)
+    PrintWindowHierarchy(window->children()[i], indent + 3);
+}
+
+bool HandlePrintWindowHierarchy() {
+  VLOG(1) << "Window hierarchy:";
+  aura::Window* container = ash::Shell::GetInstance()->GetContainer(
+      ash::internal::kShellWindowId_DefaultContainer);
+  PrintWindowHierarchy(container, 0);
+  return true;
+}
+
 #endif
 
 }  // namespace
@@ -304,6 +324,8 @@ bool AcceleratorController::AcceleratorPressed(
       return HandleToggleRootWindowFullScreen();
     case PRINT_LAYER_HIERARCHY:
       return HandlePrintLayerHierarchy();
+    case PRINT_WINDOW_HIERARCHY:
+      return HandlePrintWindowHierarchy();
 #endif
     default:
       NOTREACHED() << "Unhandled action " << it->second;;

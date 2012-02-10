@@ -240,43 +240,36 @@ void Window::StackChildAtTop(Window* child) {
   StackChildAbove(child, children_.back());
 }
 
-void Window::StackChildAbove(Window* child, Window* other) {
-  DCHECK_NE(child, other);
+void Window::StackChildAbove(Window* child, Window* target) {
+  DCHECK_NE(child, target);
   DCHECK(child);
-  DCHECK(other);
+  DCHECK(target);
   DCHECK_EQ(this, child->parent());
-  DCHECK_EQ(this, other->parent());
+  DCHECK_EQ(this, target->parent());
 
-  const size_t child_i =
-      std::find(children_.begin(), children_.end(), child) - children_.begin();
-  const size_t other_i =
-      std::find(children_.begin(), children_.end(), other) - children_.begin();
-  if (child_i == other_i + 1)
+  const size_t target_i =
+      std::find(children_.begin(), children_.end(), target) - children_.begin();
+
+  // By convention we don't stack on top of windows with layers with NULL
+  // delegates.  Walk backward to find a valid target window.
+  // See tests WindowTest.StackingMadrigal and StackOverClosingTransient
+  // for an explanation of this.
+  size_t final_target_i = target_i;
+  while (final_target_i > 0 &&
+         children_[final_target_i]->layer()->delegate() == NULL)
+    --final_target_i;
+  Window* final_target = children_[final_target_i];
+
+  // If we couldn't find a valid target position, don't move anything.
+  if (final_target->layer()->delegate() == NULL)
     return;
 
-  const size_t dest_i = child_i < other_i ? other_i : other_i + 1;
-  children_.erase(children_.begin() + child_i);
-  children_.insert(children_.begin() + dest_i, child);
+  // Don't try to stack a child above itself.
+  if (child == final_target)
+    return;
 
-  // See test WindowTest.StackingMadrigal for an explanation of this and the
-  // check below in the transient loop.
-  if (other->layer()->delegate())
-    layer()->StackAbove(child->layer(), other->layer());
-
-  // Stack any transient children that share the same parent to be in front of
-  // 'child'.
-  Window* last_transient = child;
-  for (Windows::iterator i = child->transient_children_.begin();
-       i != child->transient_children_.end(); ++i) {
-    Window* transient_child = *i;
-    if (transient_child->parent_ == this) {
-      StackChildAbove(transient_child, last_transient);
-      if (transient_child->layer()->delegate())
-        last_transient = transient_child;
-    }
-  }
-
-  child->OnStackingChanged();
+  // Move the child and all its transients.
+  StackChildAboveImpl(child, final_target);
 }
 
 void Window::AddChild(Window* child) {
@@ -524,6 +517,9 @@ bool Window::StopsEventPropagation() const {
   return it != children_.end();
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// Window, private:
+
 void Window::SetBoundsInternal(const gfx::Rect& new_bounds) {
   gfx::Rect actual_new_bounds(new_bounds);
 
@@ -636,6 +632,43 @@ Window* Window::GetWindowForPoint(const gfx::Point& local_point,
 void Window::OnParentChanged() {
   FOR_EACH_OBSERVER(
       WindowObserver, observers_, OnWindowParentChanged(this, parent_));
+}
+
+void Window::StackChildAboveImpl(Window* child, Window* target) {
+  DCHECK_NE(child, target);
+  DCHECK(child);
+  DCHECK(target);
+  DCHECK_EQ(this, child->parent());
+  DCHECK_EQ(this, target->parent());
+
+  const size_t child_i =
+      std::find(children_.begin(), children_.end(), child) - children_.begin();
+  const size_t target_i =
+      std::find(children_.begin(), children_.end(), target) - children_.begin();
+
+  // Don't move the child if it is already in the right place.
+  if (child_i == target_i + 1)
+    return;
+
+  const size_t dest_i = child_i < target_i ? target_i : target_i + 1;
+  children_.erase(children_.begin() + child_i);
+  children_.insert(children_.begin() + dest_i, child);
+
+  layer()->StackAbove(child->layer(), target->layer());
+
+  // Stack any transient children that share the same parent to be in front of
+  // 'child'.
+  Window* last_transient = child;
+  for (Windows::iterator it = child->transient_children_.begin();
+       it != child->transient_children_.end(); ++it) {
+    Window* transient_child = *it;
+    if (transient_child->parent_ == this) {
+      StackChildAboveImpl(transient_child, last_transient);
+      last_transient = transient_child;
+    }
+  }
+
+  child->OnStackingChanged();
 }
 
 void Window::OnStackingChanged() {
