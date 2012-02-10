@@ -152,10 +152,8 @@ static void NCJumpSummarizeDetailed(struct NCValidatorState* vstate) {
 
 struct NCValidatorState *NCValidateInitDetailed(const NaClPcAddress vbase,
                                                 const NaClMemorySize codesize,
-                                                const uint8_t alignment,
-                                                CPUFeatures* features) {
-  struct NCValidatorState *vstate = NCValidateInit(vbase, codesize, alignment,
-                                                   features);
+                                                const uint8_t alignment) {
+  struct NCValidatorState *vstate = NCValidateInit(vbase, codesize, alignment);
   if (NULL != vstate) {
     vstate->summarize_fn = NCJumpSummarizeDetailed;
     vstate->pattern_nonfirst_insts_table =

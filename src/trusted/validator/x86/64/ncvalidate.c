@@ -26,10 +26,16 @@ NaClValidationStatus NaClValidatorSetup_x86_64(
     int bundle_size,
     Bool local_cpu,
     struct NaClValidatorState** vstate_ptr) {
-  CPUFeatures cpu_features;
-  NaClValidatorGetCPUFeatures(local_cpu, &cpu_features);
+  CPUFeatures features;
+  CPUFeatures* apply_features;
+  if (local_cpu) {
+    apply_features = NULL;
+  } else {
+    apply_features = &features;
+    NaClSetAllCPUFeatures(apply_features);
+  }
   *vstate_ptr = NaClValidatorStateCreate(guest_addr, size, bundle_size, RegR15,
-                                         &cpu_features);
+                                         apply_features);
   return (*vstate_ptr == NULL)
       ? NaClValidationFailedOutOfMemory
       : NaClValidationSucceeded;     /* or at least to this point! */

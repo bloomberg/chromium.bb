@@ -58,14 +58,12 @@
  *    vbase: base virtual address for code segment
  *    codesize: size in bytes of code segment
  *    alignment: 16 or 32, specifying alignment
- *    features: the features supported by the CPU that will run the code
  * Returns:
  *    an initialized struct NCValidatorState * if everything is okay,
  *    else NULL
  */
 struct NCValidatorState *NCValidateInitDetailed(const NaClPcAddress vbase,
                                                 const NaClMemorySize codesize,
-                                                const uint8_t alignment,
-                                                CPUFeatures* features);
+                                                const uint8_t alignment);
 
 #endif  /* NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NCVAL_SEG_SFI_NCVALIDATE_DETAILED_H__ */

@@ -409,18 +409,3 @@ void NaClCPUDataGet(NaClCPUData* data) {
   CacheCPUXCRVector(data);
   CacheGetCPUIDString(data);
 }
-
-
-static void NaClGetLocalCPUFeatures(CPUFeatures *cpu_features) {
-  NaClCPUData cpu_data;
-  NaClCPUDataGet(&cpu_data);
-  GetCPUFeatures(&cpu_data, cpu_features);
-}
-
-void NaClValidatorGetCPUFeatures(Bool local_cpu, CPUFeatures *cpu_features) {
-  if (local_cpu) {
-    NaClGetLocalCPUFeatures(cpu_features);
-  } else {
-    NaClSetAllCPUFeatures(cpu_features);
-  }
-}

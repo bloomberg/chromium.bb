@@ -1153,8 +1153,7 @@ static void TestValidator(struct NCValTestCase *vtest, int didstubout) {
    */
   assert(byte0[data_size - 1] == 0xf4 /* HLT */);
 
-  vstate = NCValidateInit(vtest->vaddr, data_size - 1, 16,
-                          &g_ncval_cpu_features);
+  vstate = NCValidateInit(vtest->vaddr, data_size - 1, 16);
   assert (vstate != NULL);
   NCValidateSetErrorReporter(vstate, &kNCVerboseErrorReporter);
   NCValidateSegment(byte0, (uint32_t)vtest->vaddr, data_size - 1, vstate);
@@ -1183,16 +1182,16 @@ static void TestValidator(struct NCValTestCase *vtest, int didstubout) {
 void test_fail_on_bad_alignment() {
   struct NCValidatorState *vstate;
 
-  vstate = NCValidateInit(0x80000000, 0x1000, 16, &g_ncval_cpu_features);
+  vstate = NCValidateInit(0x80000000, 0x1000, 16);
   assert (vstate != NULL);
   NCValidateFreeState(&vstate);
 
   /* Unaligned start addresses are not allowed. */
-  vstate = NCValidateInit(0x80000001, 0x1000, 16, &g_ncval_cpu_features);
+  vstate = NCValidateInit(0x80000001, 0x1000, 16);
   assert (vstate == NULL);
 
   /* Only alignments of 32 and 64 bytes are supported. */
-  vstate = NCValidateInit(0x80000000, 0x1000, 64, &g_ncval_cpu_features);
+  vstate = NCValidateInit(0x80000000, 0x1000, 64);
   assert (vstate == NULL);
 }
 
@@ -1218,6 +1217,7 @@ void ncvalidate_unittests() {
 
   /* Default to stubbing out nothing. */
   NaClSetAllCPUFeatures(&g_ncval_cpu_features);
+  NCValidateSetCPUFeatures(&g_ncval_cpu_features);
 
   for (i = 0; i < NACL_ARRAY_SIZE(NCValTests); i++) {
     TestValidator(&NCValTests[i], FALSE);
