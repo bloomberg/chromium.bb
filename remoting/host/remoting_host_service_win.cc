@@ -12,11 +12,12 @@
 
 #include "base/at_exit.h"
 #include "base/base_paths.h"
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/logging.h"
+#include "base/message_loop.h"
 #include "base/path_service.h"
-#include "base/string16.h"
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 
@@ -79,10 +80,35 @@ void usage(const char* program_name) {
 namespace remoting {
 
 HostService::HostService() :
-  run_routine_(&HostService::RunAsService) {
+  run_routine_(&HostService::RunAsService),
+  service_name_(ASCIIToUTF16(kServiceName)),
+  service_status_handle_(0),
+  stopped_event_(true, false),
+  message_loop_(NULL) {
 }
 
 HostService::~HostService() {
+}
+
+BOOL WINAPI HostService::ConsoleControlHandler(DWORD event) {
+  HostService* self = HostService::GetInstance();
+  switch (event) {
+    case CTRL_C_EVENT:
+    case CTRL_BREAK_EVENT:
+    case CTRL_CLOSE_EVENT:
+    case CTRL_LOGOFF_EVENT:
+    case CTRL_SHUTDOWN_EVENT:
+      self->message_loop_->PostTask(FROM_HERE, MessageLoop::QuitClosure());
+      self->stopped_event_.Wait();
+      return TRUE;
+
+    default:
+      return FALSE;
+  }
+}
+
+HostService* HostService::GetInstance() {
+  return Singleton<HostService>::get();
 }
 
 bool HostService::InitWithCommandLine(const CommandLine* command_line) {
@@ -135,7 +161,7 @@ int HostService::Install() {
                                IDS_DISPLAY_SERVICE_NAME);
   ScopedScHandle service(
       CreateServiceW(scmanager,
-                     ASCIIToUTF16(kServiceName).c_str(),
+                     service_name_.c_str(),
                      name.c_str(),
                      SERVICE_QUERY_STATUS | SERVICE_CHANGE_CONFIG,
                      SERVICE_WIN32_OWN_PROCESS,
@@ -192,7 +218,7 @@ int HostService::Remove() {
   }
 
   ScopedScHandle service(
-      OpenServiceW(scmanager, ASCIIToUTF16(kServiceName).c_str(),
+      OpenServiceW(scmanager, service_name_.c_str(),
                    DELETE | SERVICE_STOP | SERVICE_QUERY_STATUS));
   if (!service.IsValid()) {
     if (GetLastError() == ERROR_SERVICE_DOES_NOT_EXIST) {
@@ -222,8 +248,8 @@ int HostService::Remove() {
   }
 
   // Ask SCM to stop the service and wait.
-  SERVICE_STATUS status;
-  if (ControlService(service, SERVICE_CONTROL_STOP, &status)) {
+  SERVICE_STATUS service_status;
+  if (ControlService(service, SERVICE_CONTROL_STOP, &service_status)) {
     printf("Stopping...\n");
   }
 
@@ -247,14 +273,121 @@ int HostService::Run() {
   return (this->*run_routine_)();
 }
 
+void HostService::RunMessageLoop() {
+  // Run the service.
+  message_loop_->Run();
+
+  // Release the control handler.
+  stopped_event_.Signal();
+}
+
 int HostService::RunAsService() {
-  NOTIMPLEMENTED();
-  return 0;
+  SERVICE_TABLE_ENTRYW dispatch_table[] = {
+    { const_cast<LPWSTR>(service_name_.c_str()), &HostService::ServiceMain },
+    { NULL, NULL }
+  };
+
+  if (!StartServiceCtrlDispatcherW(dispatch_table)) {
+    LOG_GETLASTERROR(ERROR)
+        << "Failed to connect to the service control manager";
+    return kErrorExitCode;
+  }
+
+  return kSuccessExitCode;
 }
 
 int HostService::RunInConsole() {
-  NOTIMPLEMENTED();
-  return 0;
+  MessageLoop message_loop;
+
+  // Allow other threads to post to our message loop.
+  message_loop_ = &message_loop;
+
+  // Subscribe to Ctrl-C and other console events.
+  if (!SetConsoleCtrlHandler(&HostService::ConsoleControlHandler, TRUE)) {
+    LOG_GETLASTERROR(ERROR)
+        << "Failed to set console control handler";
+    return kErrorExitCode;
+  }
+
+  // Run the service.
+  RunMessageLoop();
+
+  // Unsubscribe from console events. Ignore the exit code. There is nothing
+  // we can do about it now and the program is about to exit anyway. Even if
+  // it crashes nothing is going to be broken because of it.
+  SetConsoleCtrlHandler(&HostService::ConsoleControlHandler, FALSE);
+
+  message_loop_ = NULL;
+  return kSuccessExitCode;
+}
+
+DWORD WINAPI HostService::ServiceControlHandler(DWORD control,
+                                                DWORD event_type,
+                                                LPVOID event_data,
+                                                LPVOID context) {
+  HostService* self = reinterpret_cast<HostService*>(context);
+  switch (control) {
+    case SERVICE_CONTROL_INTERROGATE:
+      return NO_ERROR;
+
+    case SERVICE_CONTROL_SHUTDOWN:
+    case SERVICE_CONTROL_STOP:
+      self->message_loop_->PostTask(FROM_HERE, MessageLoop::QuitClosure());
+      self->stopped_event_.Wait();
+      return NO_ERROR;
+
+    default:
+      return ERROR_CALL_NOT_IMPLEMENTED;
+  }
+}
+
+VOID WINAPI HostService::ServiceMain(DWORD argc, WCHAR* argv[]) {
+  MessageLoop message_loop;
+
+  // Allow other threads to post to our message loop.
+  HostService* self = HostService::GetInstance();
+  self->message_loop_ = &message_loop;
+
+  // Register the service control handler.
+  self->service_status_handle_ =
+      RegisterServiceCtrlHandlerExW(self->service_name_.c_str(),
+                                    &HostService::ServiceControlHandler,
+                                    self);
+  if (self->service_status_handle_ == 0) {
+    LOG_GETLASTERROR(ERROR)
+        << "Failed to register the service control handler";
+    return;
+  }
+
+  // Report running status of the service.
+  SERVICE_STATUS service_status;
+  ZeroMemory(&service_status, sizeof(service_status));
+  service_status.dwServiceType = SERVICE_WIN32_OWN_PROCESS;
+  service_status.dwCurrentState = SERVICE_RUNNING;
+  service_status.dwControlsAccepted = SERVICE_ACCEPT_SHUTDOWN |
+                                      SERVICE_ACCEPT_STOP;
+  service_status.dwWin32ExitCode = kSuccessExitCode;
+
+  if (!SetServiceStatus(self->service_status_handle_, &service_status)) {
+    LOG_GETLASTERROR(ERROR)
+        << "Failed to report service status to the service control manager";
+    return;
+  }
+
+  // Run the service.
+  self->RunMessageLoop();
+
+  // Tell SCM that the service is stopped.
+  service_status.dwCurrentState = SERVICE_STOPPED;
+  service_status.dwControlsAccepted = 0;
+
+  if (!SetServiceStatus(self->service_status_handle_, &service_status)) {
+    LOG_GETLASTERROR(ERROR)
+        << "Failed to report service status to the service control manager";
+    return;
+  }
+
+  self->message_loop_ = NULL;
 }
 
 } // namespace remoting
@@ -274,11 +407,11 @@ int main(int argc, char** argv) {
     return kSuccessExitCode;
   }
 
-  remoting::HostService service;
-  if (!service.InitWithCommandLine(command_line)) {
+  remoting::HostService* service = remoting::HostService::GetInstance();
+  if (!service->InitWithCommandLine(command_line)) {
     usage(argv[0]);
     return kUsageExitCode;
   }
 
-  return service.Run();
+  return service->Run();
 }
