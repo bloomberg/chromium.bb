@@ -199,6 +199,38 @@ class GestureEventSynthDelegate : public TestWindowDelegate {
   DISALLOW_COPY_AND_ASSIGN(GestureEventSynthDelegate);
 };
 
+void SendScrollEvents(int x_start,
+                      int y_start,
+                      base::TimeDelta time_start,
+                      int dx,
+                      int dy,
+                      int time_step,
+                      int num_steps,
+                      GestureEventConsumeDelegate* delegate) {
+  int x = x_start;
+  int y = y_start;
+  base::TimeDelta time = time_start;
+
+  for (int i = 0; i < num_steps; i++) {
+    delegate->Reset();
+    TouchEvent move(ui::ET_TOUCH_MOVED, gfx::Point(x, y), 0);
+    Event::TestApi test_move(&move);
+    test_move.set_time_stamp(time);
+    RootWindow::GetInstance()->DispatchTouchEvent(&move);
+    x += dx;
+    y += dy;
+    time = time + base::TimeDelta::FromMilliseconds(time_step);
+  }
+}
+
+void SendScrollEvent(int x, int y, GestureEventConsumeDelegate* delegate) {
+  delegate->Reset();
+  TouchEvent move(ui::ET_TOUCH_MOVED, gfx::Point(x, y), 0);
+  RootWindow::GetInstance()->DispatchTouchEvent(&move);
+}
+
+const int kBufferedPoints = 10;
+
 }  // namespace
 
 typedef AuraTestBase GestureRecognizerTest;
@@ -261,9 +293,9 @@ TEST_F(GestureRecognizerTest, GestureEventScroll) {
 
   // Move the touch-point enough so that it is considered as a scroll. This
   // should generate both SCROLL_BEGIN and SCROLL_UPDATE gestures.
-  delegate->Reset();
-  TouchEvent move(ui::ET_TOUCH_MOVED, gfx::Point(130, 201), 0);
-  RootWindow::GetInstance()->DispatchTouchEvent(&move);
+  // The first movement is diagonal, to ensure that we have a free scroll,
+  // and not a rail scroll.
+  SendScrollEvent(130, 230, delegate.get());
   EXPECT_FALSE(delegate->tap());
   EXPECT_FALSE(delegate->tap_down());
   EXPECT_FALSE(delegate->double_tap());
@@ -271,12 +303,10 @@ TEST_F(GestureRecognizerTest, GestureEventScroll) {
   EXPECT_TRUE(delegate->scroll_update());
   EXPECT_FALSE(delegate->scroll_end());
   EXPECT_EQ(29, delegate->scroll_x());
-  EXPECT_EQ(0, delegate->scroll_y());
+  EXPECT_EQ(29, delegate->scroll_y());
 
   // Move some more to generate a few more scroll updates.
-  delegate->Reset();
-  TouchEvent move1(ui::ET_TOUCH_MOVED, gfx::Point(110, 211), 0);
-  RootWindow::GetInstance()->DispatchTouchEvent(&move1);
+  SendScrollEvent(110, 211, delegate.get());
   EXPECT_FALSE(delegate->tap());
   EXPECT_FALSE(delegate->tap_down());
   EXPECT_FALSE(delegate->double_tap());
@@ -284,11 +314,9 @@ TEST_F(GestureRecognizerTest, GestureEventScroll) {
   EXPECT_TRUE(delegate->scroll_update());
   EXPECT_FALSE(delegate->scroll_end());
   EXPECT_EQ(-20, delegate->scroll_x());
-  EXPECT_EQ(10, delegate->scroll_y());
+  EXPECT_EQ(-19, delegate->scroll_y());
 
-  delegate->Reset();
-  TouchEvent move2(ui::ET_TOUCH_MOVED, gfx::Point(140, 215), 0);
-  RootWindow::GetInstance()->DispatchTouchEvent(&move2);
+  SendScrollEvent(140, 215, delegate.get());
   EXPECT_FALSE(delegate->tap());
   EXPECT_FALSE(delegate->tap_down());
   EXPECT_FALSE(delegate->double_tap());
@@ -311,6 +339,82 @@ TEST_F(GestureRecognizerTest, GestureEventScroll) {
   EXPECT_FALSE(delegate->scroll_begin());
   EXPECT_FALSE(delegate->scroll_update());
   EXPECT_TRUE(delegate->scroll_end());
+}
+
+// Check that horizontal scroll gestures cause scrolls on horizontal rails.
+// Also tests that horizontal rails can be broken.
+TEST_F(GestureRecognizerTest, GestureEventHorizontalRailScroll) {
+  scoped_ptr<GestureEventConsumeDelegate> delegate(
+      new GestureEventConsumeDelegate());
+  gfx::Rect bounds(0, 0, 1000, 1000);
+  scoped_ptr<aura::Window> window(CreateTestWindowWithDelegate(
+      delegate.get(), -1234, bounds, NULL));
+
+  TouchEvent press(ui::ET_TOUCH_PRESSED, gfx::Point(0, 0), 0);
+  RootWindow::GetInstance()->DispatchTouchEvent(&press);
+
+  // Move the touch-point horizontally enough that it is considered a
+  // horizontal scroll.
+  SendScrollEvent(20, 1, delegate.get());
+  EXPECT_EQ(0, delegate->scroll_y());
+  EXPECT_EQ(20, delegate->scroll_x());
+
+  SendScrollEvent(25, 6, delegate.get());
+  EXPECT_TRUE(delegate->scroll_update());
+  EXPECT_EQ(5, delegate->scroll_x());
+  // y shouldn't change, as we're on a horizontal rail.
+  EXPECT_EQ(0, delegate->scroll_y());
+
+  // Send enough information that a velocity can be calculated for the gesture,
+  // and we can break the rail
+  SendScrollEvents(1, 1, press.time_stamp(),
+                   1, 100, 1, kBufferedPoints, delegate.get());
+
+  SendScrollEvent(0, 0, delegate.get());
+  SendScrollEvent(5, 5, delegate.get());
+
+  // The rail should be broken
+  EXPECT_TRUE(delegate->scroll_update());
+  EXPECT_EQ(5, delegate->scroll_x());
+  EXPECT_EQ(5, delegate->scroll_y());
+}
+
+// Check that vertical scroll gestures cause scrolls on vertical rails.
+// Also tests that vertical rails can be broken.
+TEST_F(GestureRecognizerTest, GestureEventVerticalRailScroll) {
+  scoped_ptr<GestureEventConsumeDelegate> delegate(
+      new GestureEventConsumeDelegate());
+  gfx::Rect bounds(0, 0, 1000, 1000);
+  scoped_ptr<aura::Window> window(CreateTestWindowWithDelegate(
+      delegate.get(), -1234, bounds, NULL));
+
+  TouchEvent press(ui::ET_TOUCH_PRESSED, gfx::Point(0, 0), 0);
+  RootWindow::GetInstance()->DispatchTouchEvent(&press);
+
+  // Move the touch-point vertically enough that it is considered a
+  // vertical scroll.
+  SendScrollEvent(1, 20, delegate.get());
+  EXPECT_EQ(0, delegate->scroll_x());
+  EXPECT_EQ(20, delegate->scroll_y());
+
+  SendScrollEvent(6, 25, delegate.get());
+  EXPECT_TRUE(delegate->scroll_update());
+  EXPECT_EQ(5, delegate->scroll_y());
+  // x shouldn't change, as we're on a vertical rail.
+  EXPECT_EQ(0, delegate->scroll_x());
+
+  // Send enough information that a velocity can be calculated for the gesture,
+  // and we can break the rail
+  SendScrollEvents(1, 1, press.time_stamp(),
+                   100, 1, 1, kBufferedPoints, delegate.get());
+
+  SendScrollEvent(0, 0, delegate.get());
+  SendScrollEvent(5, 5, delegate.get());
+
+  // The rail should be broken
+  EXPECT_TRUE(delegate->scroll_update());
+  EXPECT_EQ(5, delegate->scroll_x());
+  EXPECT_EQ(5, delegate->scroll_y());
 }
 
 TEST_F(GestureRecognizerTest, GestureTapFollowedByScroll) {
@@ -365,8 +469,10 @@ TEST_F(GestureRecognizerTest, GestureTapFollowedByScroll) {
 
   // Move the touch-point enough so that it is considered as a scroll. This
   // should generate both SCROLL_BEGIN and SCROLL_UPDATE gestures.
+  // The first movement is diagonal, to ensure that we have a free scroll,
+  // and not a rail scroll.
   delegate->Reset();
-  TouchEvent move(ui::ET_TOUCH_MOVED, gfx::Point(130, 201), 0);
+  TouchEvent move(ui::ET_TOUCH_MOVED, gfx::Point(130, 230), 0);
   RootWindow::GetInstance()->DispatchTouchEvent(&move);
   EXPECT_FALSE(delegate->tap());
   EXPECT_FALSE(delegate->tap_down());
@@ -375,7 +481,7 @@ TEST_F(GestureRecognizerTest, GestureTapFollowedByScroll) {
   EXPECT_TRUE(delegate->scroll_update());
   EXPECT_FALSE(delegate->scroll_end());
   EXPECT_EQ(29, delegate->scroll_x());
-  EXPECT_EQ(0, delegate->scroll_y());
+  EXPECT_EQ(29, delegate->scroll_y());
 
   // Move some more to generate a few more scroll updates.
   delegate->Reset();
@@ -388,7 +494,7 @@ TEST_F(GestureRecognizerTest, GestureTapFollowedByScroll) {
   EXPECT_TRUE(delegate->scroll_update());
   EXPECT_FALSE(delegate->scroll_end());
   EXPECT_EQ(-20, delegate->scroll_x());
-  EXPECT_EQ(10, delegate->scroll_y());
+  EXPECT_EQ(-19, delegate->scroll_y());
 
   delegate->Reset();
   TouchEvent move2(ui::ET_TOUCH_MOVED, gfx::Point(140, 215), 0);

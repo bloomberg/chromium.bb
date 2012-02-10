@@ -62,10 +62,10 @@ TouchState TouchEventTypeToTouchState(ui::EventType type) {
 //
 // Note: New addition of types should be placed as per their Signature value.
 #define G(gesture_state, id, touch_state, handled) 1 + ( \
-   (((touch_state) & 0x7) << 1) |                        \
-   ((handled) ? (1 << 4) : 0) |                          \
-   (((id) & 0xfff) << 5) |                               \
-   ((gesture_state) << 17))
+  (((touch_state) & 0x7) << 1) |                         \
+  ((handled) ? (1 << 4) : 0) |                           \
+  (((id) & 0xfff) << 5) |                                \
+  ((gesture_state) << 17))
 
 enum EdgeStateSignatureType {
   GST_NO_GESTURE_FIRST_PRESSED =
@@ -83,6 +83,9 @@ enum EdgeStateSignatureType {
   GST_PENDING_SYNTHETIC_CLICK_FIRST_CANCELLED =
       G(GS_PENDING_SYNTHETIC_CLICK, 0, TS_CANCELLED, false),
 
+  GST_PENDING_SYNTHETIC_CLICK_SECOND_PRESSED =
+      G(GS_PENDING_SYNTHETIC_CLICK, 1, TS_PRESSED, false),
+
   GST_SCROLL_FIRST_RELEASED =
       G(GS_SCROLL, 0, TS_RELEASED, false),
 
@@ -92,6 +95,9 @@ enum EdgeStateSignatureType {
   GST_SCROLL_FIRST_CANCELLED =
       G(GS_SCROLL, 0, TS_CANCELLED, false),
 
+  GST_SCROLL_FIRST_PRESSED =
+      G(GS_SCROLL, 0, TS_PRESSED, false),
+
   GST_SCROLL_SECOND_RELEASED =
       G(GS_SCROLL, 1, TS_RELEASED, false),
 
@@ -100,12 +106,6 @@ enum EdgeStateSignatureType {
 
   GST_SCROLL_SECOND_CANCELLED =
       G(GS_SCROLL, 1, TS_CANCELLED, false),
-
-  GST_PENDING_SYNTHETIC_CLICK_SECOND_PRESSED =
-      G(GS_PENDING_SYNTHETIC_CLICK, 1, TS_PRESSED, false),
-
-  GST_SCROLL_FIRST_PRESSED =
-      G(GS_SCROLL, 0, TS_PRESSED, false),
 
   GST_SCROLL_SECOND_PRESSED =
       G(GS_SCROLL, 1, TS_PRESSED, false),
@@ -179,6 +179,8 @@ GestureSequence::Gestures* GestureSequence::ProcessTouchEventForGesture(
     ++point_count_;
   }
 
+  GestureState last_state = state_;
+
   scoped_ptr<Gestures> gestures(new Gestures());
   GesturePoint& point = GesturePointForEvent(event);
   point.UpdateValues(event);
@@ -195,9 +197,10 @@ GestureSequence::Gestures* GestureSequence::ProcessTouchEventForGesture(
       break;
     case GST_PENDING_SYNTHETIC_CLICK_FIRST_MOVED:
     case GST_PENDING_SYNTHETIC_CLICK_FIRST_STATIONARY:
-      if (InClickOrScroll(event, point, gestures.get())) {
-        point.UpdateForScroll();
+      if (ScrollStart(event, point, gestures.get())) {
         set_state(GS_SCROLL);
+        if (ScrollUpdate(event, point, gestures.get()))
+          point.UpdateForScroll();
       }
       break;
     case GST_PENDING_SYNTHETIC_CLICK_FIRST_CANCELLED:
@@ -205,7 +208,10 @@ GestureSequence::Gestures* GestureSequence::ProcessTouchEventForGesture(
       break;
     case GST_SCROLL_FIRST_MOVED:
     case GST_SCROLL_SECOND_MOVED:
-      if (InScroll(event, point, gestures.get()))
+      if (scroll_type_ == ST_VERTICAL ||
+          scroll_type_ == ST_HORIZONTAL)
+        BreakRailScroll(event, point, gestures.get());
+      if (ScrollUpdate(event, point, gestures.get()))
         point.UpdateForScroll();
       break;
     case GST_SCROLL_FIRST_RELEASED:
@@ -215,10 +221,9 @@ GestureSequence::Gestures* GestureSequence::ProcessTouchEventForGesture(
       ScrollEnd(event, point, gestures.get());
       set_state(GS_NO_GESTURE);
       break;
-
-    case GST_PENDING_SYNTHETIC_CLICK_SECOND_PRESSED:
     case GST_SCROLL_FIRST_PRESSED:
     case GST_SCROLL_SECOND_PRESSED:
+    case GST_PENDING_SYNTHETIC_CLICK_SECOND_PRESSED:
       PinchStart(event, point, gestures.get());
       set_state(GS_PINCH);
       break;
@@ -237,9 +242,15 @@ GestureSequence::Gestures* GestureSequence::ProcessTouchEventForGesture(
 
       // Once pinch ends, it should still be possible to scroll with the
       // remaining finger on the screen.
+      scroll_type_ = ST_FREE;
       set_state(GS_SCROLL);
       break;
   }
+
+  if (state_ != last_state)
+    VLOG(4) << "Gesture Sequence"
+            << " State: " << state_
+            << " touch id: " << event.touch_id();
 
   if (event.type() == ui::ET_TOUCH_RELEASED)
     --point_count_;
@@ -323,13 +334,21 @@ void GestureSequence::AppendScrollGestureEnd(const GesturePoint& point,
 void GestureSequence::AppendScrollGestureUpdate(const GesturePoint& point,
                                                 const gfx::Point& location,
                                                 Gestures* gestures) {
+  int dx = point.x_delta();
+  int dy = point.y_delta();
+
+  if (scroll_type_ == ST_HORIZONTAL)
+    dy = 0;
+  else if (scroll_type_ == ST_VERTICAL)
+    dx = 0;
+
   gestures->push_back(linked_ptr<GestureEvent>(new GestureEvent(
       ui::ET_GESTURE_SCROLL_UPDATE,
       location.x(),
       location.y(),
       flags_,
       base::Time::FromDoubleT(point.last_touch_time()),
-      point.x_delta(), point.y_delta())));
+      dx, dy)));
 }
 
 void GestureSequence::AppendPinchGestureBegin(const GesturePoint& p1,
@@ -377,6 +396,7 @@ void GestureSequence::AppendPinchGestureUpdate(const GesturePoint& p1,
 
 bool GestureSequence::Click(const TouchEvent& event,
     const GesturePoint& point, Gestures* gestures) {
+  DCHECK(state_ == GS_PENDING_SYNTHETIC_CLICK);
   if (point.IsInClickWindow(event)) {
     AppendClickGestureEvent(point, gestures);
     if (point.IsInDoubleClickWindow(event))
@@ -386,18 +406,37 @@ bool GestureSequence::Click(const TouchEvent& event,
   return false;
 }
 
-bool GestureSequence::InClickOrScroll(const TouchEvent& event,
-    const GesturePoint& point, Gestures* gestures) {
-  if (point.IsInScrollWindow(event)) {
-    AppendScrollGestureBegin(point, point.last_touch_position(), gestures);
-    AppendScrollGestureUpdate(point, point.last_touch_position(), gestures);
-    return true;
-  }
-  return false;
+bool GestureSequence::ScrollStart(const TouchEvent& event,
+    GesturePoint& point, Gestures* gestures) {
+  DCHECK(state_ == GS_PENDING_SYNTHETIC_CLICK);
+  if (point.IsInClickWindow(event) ||
+      !point.IsInScrollWindow(event) ||
+      !point.HasEnoughDataToEstablishRail())
+    return false;
+  AppendScrollGestureBegin(point, point.last_touch_position(), gestures);
+  if (point.IsInHorizontalRailWindow())
+    scroll_type_ = ST_HORIZONTAL;
+  else if (point.IsInVerticalRailWindow())
+    scroll_type_ = ST_VERTICAL;
+  else
+    scroll_type_ = ST_FREE;
+  return true;
 }
 
-bool GestureSequence::InScroll(const TouchEvent& event,
+void GestureSequence::BreakRailScroll(const TouchEvent& event,
+    GesturePoint& point, Gestures* gestures) {
+  DCHECK(state_ == GS_SCROLL);
+  if (scroll_type_ == ST_HORIZONTAL &&
+      point.BreaksHorizontalRail())
+    scroll_type_ = ST_FREE;
+  else if (scroll_type_ == ST_VERTICAL &&
+           point.BreaksVerticalRail())
+    scroll_type_ = ST_FREE;
+}
+
+bool GestureSequence::ScrollUpdate(const TouchEvent& event,
     const GesturePoint& point, Gestures* gestures) {
+  DCHECK(state_ == GS_SCROLL);
   if (!point.DidScroll(event, 0))
     return false;
   AppendScrollGestureUpdate(point, point.last_touch_position(), gestures);
@@ -412,12 +451,14 @@ bool GestureSequence::NoGesture(const TouchEvent&,
 
 bool GestureSequence::TouchDown(const TouchEvent& event,
     const GesturePoint& point, Gestures* gestures) {
+  DCHECK(state_ == GS_NO_GESTURE);
   AppendTapDownGestureEvent(point, gestures);
   return true;
 }
 
 bool GestureSequence::ScrollEnd(const TouchEvent& event,
     GesturePoint& point, Gestures* gestures) {
+  DCHECK(state_ == GS_SCROLL);
   if (point.IsInFlickWindow(event)) {
     AppendScrollGestureEnd(point, point.last_touch_position(), gestures,
         point.XVelocity(), point.YVelocity());
@@ -430,6 +471,8 @@ bool GestureSequence::ScrollEnd(const TouchEvent& event,
 
 bool GestureSequence::PinchStart(const TouchEvent& event,
     const GesturePoint& point, Gestures* gestures) {
+  DCHECK(state_ == GS_SCROLL ||
+         state_ == GS_PENDING_SYNTHETIC_CLICK);
   AppendTapDownGestureEvent(point, gestures);
 
   pinch_distance_current_ = points_[0].Distance(points_[1]);
@@ -447,6 +490,7 @@ bool GestureSequence::PinchStart(const TouchEvent& event,
 
 bool GestureSequence::PinchUpdate(const TouchEvent& event,
     const GesturePoint& point, Gestures* gestures) {
+  DCHECK(state_ == GS_PINCH);
   float distance = points_[0].Distance(points_[1]);
   if (abs(distance - pinch_distance_current_) < kMinimumPinchUpdateDistance) {
     // The fingers didn't move towards each other, or away from each other,
@@ -469,6 +513,7 @@ bool GestureSequence::PinchUpdate(const TouchEvent& event,
 
 bool GestureSequence::PinchEnd(const TouchEvent& event,
     const GesturePoint& point, Gestures* gestures) {
+  DCHECK(state_ == GS_PINCH);
   float distance = points_[0].Distance(points_[1]);
   AppendPinchGestureEnd(points_[0], points_[1],
       distance / pinch_distance_start_, gestures);

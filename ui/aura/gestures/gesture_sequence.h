@@ -19,7 +19,13 @@ enum GestureState {
   GS_NO_GESTURE,
   GS_PENDING_SYNTHETIC_CLICK,
   GS_SCROLL,
-  GS_PINCH,
+  GS_PINCH
+};
+
+enum ScrollType {
+  ST_FREE,
+  ST_HORIZONTAL,
+  ST_VERTICAL,
 };
 
 // A GestureSequence recognizes gestures from touch sequences.
@@ -83,12 +89,15 @@ class GestureSequence {
   bool Click(const TouchEvent& event,
              const GesturePoint& point,
              Gestures* gestures);
-  bool InClickOrScroll(const TouchEvent& event,
-                       const GesturePoint& point,
-                       Gestures* gestures);
-  bool InScroll(const TouchEvent& event,
-                const GesturePoint& point,
-                Gestures* gestures);
+  bool ScrollStart(const TouchEvent& event,
+                             GesturePoint& point,
+                             Gestures* gestures);
+  void BreakRailScroll(const TouchEvent& event,
+                               GesturePoint& point,
+                               Gestures* gestures);
+  bool ScrollUpdate(const TouchEvent& event,
+                    const GesturePoint& point,
+                    Gestures* gestures);
   bool NoGesture(const TouchEvent& event,
                  const GesturePoint& point,
                  Gestures* gestures);
@@ -119,6 +128,8 @@ class GestureSequence {
 
   // This distance is updated after each PINCH_UPDATE.
   float pinch_distance_current_;
+
+  ScrollType scroll_type_;
 
   // Maximum points in a single gesture.
   static const int kMaxGesturePoints = 12;

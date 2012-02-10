@@ -39,6 +39,11 @@ class GesturePoint {
   bool IsInDoubleClickWindow(const TouchEvent& event) const;
   bool IsInScrollWindow(const TouchEvent& event) const;
   bool IsInFlickWindow(const TouchEvent& event);
+  bool IsInHorizontalRailWindow() const;
+  bool IsInVerticalRailWindow() const;
+  bool HasEnoughDataToEstablishRail() const;
+  bool BreaksHorizontalRail();
+  bool BreaksVerticalRail();
   bool DidScroll(const TouchEvent& event, int distance) const;
 
   const gfx::Point& first_touch_position() const {

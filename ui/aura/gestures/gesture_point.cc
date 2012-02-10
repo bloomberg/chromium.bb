@@ -12,13 +12,19 @@
 
 namespace {
 
-// TODO(girard): Make these configurable in sync with this CL
-//               http://crbug.com/100773
+// TODO(girard): Make these configurable in sync with
+// http://crbug.com/113227
+// It will be necessary to update gesture_recognizer_unittest when
+// these constants are made configurable.
 const double kMaximumTouchDownDurationInSecondsForClick = 0.8;
 const double kMinimumTouchDownDurationInSecondsForClick = 0.01;
 const double kMaximumSecondsBetweenDoubleClick = 0.7;
 const int kMaximumTouchMoveInPixelsForClick = 20;
 const float kMinFlickSpeedSquared = 550.f * 550.f;
+const int kMinRailBreakVelocity = 200;
+const int kMinScrollDeltaSquared = 5 * 5;
+const int kRailBreakProportion = 15;
+const int kRailStartProportion = 2;
 const int kBufferedPoints = 10;
 
 }  // namespace
@@ -103,6 +109,38 @@ float GesturePoint::Distance(const GesturePoint& point) const {
   float x_diff = point.last_touch_position_.x() - last_touch_position_.x();
   float y_diff = point.last_touch_position_.y() - last_touch_position_.y();
   return sqrt(x_diff * x_diff + y_diff * y_diff);
+}
+
+bool GesturePoint::HasEnoughDataToEstablishRail() const {
+  int dx = x_delta();
+  int dy = y_delta();
+
+  int delta_squared = dx * dx + dy * dy;
+  return delta_squared > kMinScrollDeltaSquared;
+}
+
+bool GesturePoint::IsInHorizontalRailWindow() const {
+  int dx = x_delta();
+  int dy = y_delta();
+  return abs(dx) > kRailStartProportion * abs(dy);
+}
+
+bool GesturePoint::IsInVerticalRailWindow() const {
+  int dx = x_delta();
+  int dy = y_delta();
+  return abs(dy) > kRailStartProportion * abs(dx);
+}
+
+bool GesturePoint::BreaksHorizontalRail() {
+  float vx = XVelocity();
+  float vy = YVelocity();
+  return fabs(vy) > kRailBreakProportion * fabs(vx) + kMinRailBreakVelocity;
+}
+
+bool GesturePoint::BreaksVerticalRail() {
+  float vx = XVelocity();
+  float vy = YVelocity();
+  return fabs(vx) > kRailBreakProportion * fabs(vy) + kMinRailBreakVelocity;
 }
 
 bool GesturePoint::IsInClickTimeWindow() const {
