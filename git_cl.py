@@ -146,7 +146,6 @@ class Settings(object):
     self.tree_status_url = None
     self.viewvc_url = None
     self.updated = False
-    self.did_migrate_check = False
     self.is_gerrit = None
 
   def LazyUpdateIfNeeded(self):
@@ -276,32 +275,6 @@ class Settings(object):
     return RunGit(['config', param], **kwargs).strip()
 
 
-def CheckForMigration():
-  """Migrate from the old issue format, if found.
-
-  We used to store the branch<->issue mapping in a file in .git, but it's
-  better to store it in the .git/config, since deleting a branch deletes that
-  branch's entry there.
-  """
-
-  # Don't run more than once.
-  if settings.did_migrate_check:
-    return
-
-  gitdir = RunGit(['rev-parse', '--git-dir']).strip()
-  storepath = os.path.join(gitdir, 'cl-mapping')
-  if os.path.exists(storepath):
-    print "old-style git-cl mapping file (%s) found; migrating." % storepath
-    store = open(storepath, 'r')
-    for line in store:
-      branch, issue = line.strip().split()
-      RunGit(['config', 'branch.%s.rietveldissue' % ShortBranchName(branch),
-              issue])
-    store.close()
-    os.remove(storepath)
-  settings.did_migrate_check = True
-
-
 def ShortBranchName(branch):
   """Convert a name like 'refs/heads/foo' to just 'foo'."""
   return branch.replace('refs/heads/', '')
@@ -421,7 +394,6 @@ or verify this branch is set up to track another (via the --track argument to
 
   def GetIssue(self):
     if not self.has_issue:
-      CheckForMigration()
       issue = RunGit(['config', self._IssueSetting()], error_ok=True).strip()
       if issue:
         self.issue = issue

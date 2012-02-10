@@ -99,7 +99,6 @@ class TestGitCl(TestCase):
       ((['git', 'rev-parse', 'HEAD'],), '12345'),
       ((['git', 'diff', '--name-status', '-r', 'master...', '.'],),
         'M\t.gitignore\n'),
-      ((['git', 'rev-parse', '--git-dir'],), '.git'),
       ((['git', 'config', 'branch.master.rietveldissue'],), ''),
       ((['git', 'config', 'branch.master.rietveldpatchset'],), ''),
       ((['git', 'log', '--pretty=format:%s%n%n%b', 'master...'],), 'foo'),
@@ -155,7 +154,6 @@ class TestGitCl(TestCase):
       ((['git', 'diff', '--name-status', '-r', 'refs/remotes/origin/master...',
          '.'],),
         'M\tPRESUBMIT.py'),
-      ((['git', 'rev-parse', '--git-dir'],), '.git'),
       ((['git', 'config', 'branch.working.rietveldissue'],), '12345'),
       ((['git', 'config', 'branch.working.rietveldserver'],),
          'codereview.example.com'),
@@ -167,7 +165,6 @@ class TestGitCl(TestCase):
   @classmethod
   def _dcommit_calls_bypassed(cls):
     return [
-      ((['git', 'rev-parse', '--git-dir'],), '.git'),
       ((['git', 'config', 'branch.working.rietveldissue'],), '12345'),
       ((['git', 'config', 'branch.working.rietveldserver'],),
          'codereview.example.com'),
@@ -336,7 +333,6 @@ class TestGitCl(TestCase):
         ((['git', 'rev-parse', 'HEAD'],), '12345'),
         ((['git', 'diff', '--name-status', '-r', 'master...', '.'],),
          'M\t.gitignore\n'),
-        ((['git', 'rev-parse', '--git-dir'],), '.git'),
         ((['git', 'config', 'branch.master.rietveldissue'],), ''),
         ((['git', 'config', 'branch.master.rietveldpatchset'],), ''),
         ((['git', 'log', '--pretty=format:%s%n%n%b', 'master...'],), 'foo'),
