@@ -64,6 +64,9 @@ CompactLayoutManager::~CompactLayoutManager() {
 // CompactLayoutManager, LayoutManager overrides:
 
 void CompactLayoutManager::OnWindowAddedToLayout(aura::Window* child) {
+  // Windows added to this container does not need extra animation.
+  if (child->type() == aura::client::WINDOW_TYPE_NORMAL)
+    child->SetIntProperty(aura::client::kAnimationsDisabledKey, 1);
   BaseLayoutManager::OnWindowAddedToLayout(child);
   UpdateStatusAreaVisibility();
   if (windows().size() > 1 &&
@@ -84,6 +87,9 @@ void CompactLayoutManager::OnWillRemoveWindowFromLayout(aura::Window* child) {
     LayoutWindows(current_window_);
     SwitchToReplacementWindow();
   }
+  // Allow window to be animated by others.
+  if (child->type() == aura::client::WINDOW_TYPE_NORMAL)
+    child->SetIntProperty(aura::client::kAnimationsDisabledKey, 0);
 }
 
 void CompactLayoutManager::OnChildWindowVisibilityChanged(aura::Window* child,
@@ -134,8 +140,12 @@ void CompactLayoutManager::OnWindowStackingChanged(aura::Window* window) {
     if (current_window_ != window) {
       LayoutWindows(current_window_);
       current_window_ = window;
+    } else {
+      // Same window as |current_window_|, and already animating.
+      if (GetDefaultContainerLayer()->GetAnimator()->is_animating())
+        return;
     }
-    // Always animate to |window| when there is a stacking change.
+    // Animate to |window| when there is a stacking change.
     AnimateSlideTo(window->bounds().x());
   }
 }
@@ -164,6 +174,7 @@ void CompactLayoutManager::UpdateStatusAreaVisibility() {
 }
 
 void CompactLayoutManager::AnimateSlideTo(int offset_x) {
+  GetDefaultContainerLayer()->GetAnimator()->RemoveObserver(this);
   ui::ScopedLayerAnimationSettings settings(
       GetDefaultContainerLayer()->GetAnimator());
   settings.AddObserver(this);
@@ -192,19 +203,19 @@ void CompactLayoutManager::LayoutWindows(aura::Window* skip) {
 }
 
 void CompactLayoutManager::HideWindows() {
-  ShellDelegate* shell_delegate = ash::Shell::GetInstance()->delegate();
-  const WindowList& windows_list = shell_delegate->GetCycleWindowList(
-      ShellDelegate::SOURCE_KEYBOARD,
-      ShellDelegate::ORDER_LINEAR);
   // If we do not know which one is the current window, or if the current
   // window is not visible, do not attempt to hide the windows.
   if (current_window_ == NULL)
     return;
   // Current window should be visible, if not it is an error and we shouldn't
   // proceed.
-  if (!current_window_->IsVisible())
+  if (!current_window_->layer()->visible())
     NOTREACHED() << "Current window is invisible";
 
+  ShellDelegate* shell_delegate = ash::Shell::GetInstance()->delegate();
+  const WindowList& windows_list = shell_delegate->GetCycleWindowList(
+      ShellDelegate::SOURCE_KEYBOARD,
+      ShellDelegate::ORDER_LINEAR);
   for (WindowListConstIter const_it = windows_list.begin();
        const_it != windows_list.end();
        ++const_it) {
