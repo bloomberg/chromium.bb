@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -175,7 +175,8 @@ class YoutubeTest(pyauto.PyUITest, YoutubeTestHelper):
     # During tests, we are not goinig to play this video full.
     self.PlayVideoAndAssert()
     self.PauseVideo()
-    self.assertEqual(self.GetPlayerState(), self.is_paused,
+    self.assertTrue(self.WaitUntil(self.GetPlayerState,
+                                   expect_retval=self.is_paused),
                      msg='Player did not enter the paused state')
     # Seek to the end of video
     self.ExecuteJavascript("""
