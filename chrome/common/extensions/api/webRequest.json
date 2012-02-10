@@ -87,7 +87,7 @@
             "description": "Matches for a full URL",
             "optional": true
           },
-          "filterType": { "type": "string", "enum": ["net.RequestMatcher"] }
+          "instanceType": { "type": "string", "enum": ["webRequest.RequestMatcher"] }
         }
       },
       {
@@ -96,7 +96,7 @@
         "description": "Declarative event action that cancels a network request. Experimental junk, do not use!",
         "type": "object",
         "properties": {
-          "actionType": { "type": "string", "enum": ["net.CancelRequest"] }
+          "instanceType": { "type": "string", "enum": ["webRequest.CancelRequest"] }
         }
       },
       {
@@ -105,7 +105,7 @@
         "description": "Declarative event action that modifies a network request. Experimental junk, do not use!",
         "type": "object",
         "properties": {
-          "actionType": { "type": "string", "enum": ["net.ModifyRequest"] }
+          "instanceType": { "type": "string", "enum": ["webRequest.ModifyRequest"] }
         }
       }
     ],

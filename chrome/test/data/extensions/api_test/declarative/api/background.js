@@ -1,0 +1,217 @@
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+var declarative = chrome.experimental.declarative;
+
+function createTestCondition(opt_testParameter) {
+  var result = {
+    "instanceType": "webRequest.RequestMatcher"
+  };
+  if (opt_testParameter) {
+    result["url"] = opt_testParameter;
+  }
+  return result;
+}
+
+function createTestAction() {
+  var result = {
+    "instanceType": "webRequest.CancelRequest"
+  };
+  return result;
+}
+
+function createTestAction2() {
+  var result = {
+    "instanceType": "webRequest.ModifyRequest"
+  };
+  return result;
+}
+
+var inputRule0 = {
+  // No 'id', this should be filled by the API.
+  "conditions": [createTestCondition("test1"), createTestCondition("test2")],
+  "actions": [createTestAction(), createTestAction2()]
+  // No 'priority', this should be filled by the API.
+}
+
+var outputRule0 = {
+  "id": "_0_",
+  "conditions": [createTestCondition("test1"), createTestCondition("test2")],
+  "actions": [createTestAction(), createTestAction2()],
+  "priority": 100
+}
+
+var inputRule1 = {
+  "id": "my_rule_id",
+  "conditions": [],
+  "actions": [],
+  "priority": 10
+}
+
+var outputRule1 = inputRule1;
+
+var inputRule2 = {
+  // No 'id', this should be filled by the API.
+  "conditions": [createTestCondition("test3")],
+  "actions": [createTestAction()]
+  // No 'priority', this should be filled by the API.
+}
+
+var outputRule2 = {
+  "id": "_1_",
+  "conditions": [createTestCondition("test3")],
+  "actions": [createTestAction()],
+  "priority": 100
+}
+
+var invalidRule0 = {
+  "conditions": [createTestCondition("test1")]
+  // "actions" is missing but not optional.
+};
+
+var invalidRule1 = {
+  "conditions": [createTestCondition("test1")],
+  // "actions" contains an invalid action (separate test because this validation
+  // happens on a different code path).
+  "actions": [{"key": "value"}]
+};
+
+var testEvent = chrome.webRequest.onRequest;
+
+chrome.test.runTests([
+  // Add adding two simple rules and check that their optional fields are set
+  // correctly in the call back function.
+  function testAddRules() {
+    var callback = function(rules) {
+      chrome.test.assertNoLastError();
+      chrome.test.assertEq(2, rules.length);
+      // API should have generated id and priority fields.
+      chrome.test.assertTrue("id" in rules[0]);
+      chrome.test.assertEq([outputRule0, outputRule1], rules);
+      chrome.test.succeed();
+    };
+    testEvent.addRules([inputRule0, inputRule1], callback);
+  },
+  // Check that getRules() returns all rules if no filter is passed.
+  function testGetRules() {
+    var callback = function(rules) {
+      chrome.test.assertNoLastError();
+      // We are not given any gurantee on the order in which rules are returned.
+      chrome.test.assertTrue(
+        chrome.test.checkDeepEq([outputRule0, outputRule1], rules) ||
+        chrome.test.checkDeepEq([outputRule1, outputRule0], rules));
+      chrome.test.succeed();
+    }
+    testEvent.getRules(null, callback);
+  },
+  // Check that getRules() returns all rules if no filter is passed.
+  function testGetRules2() {
+    var callback = function(rules) {
+      chrome.test.assertNoLastError();
+      // We are not given any gurantee on the order in which rules are returned.
+      chrome.test.assertTrue(
+        chrome.test.checkDeepEq([outputRule0, outputRule1], rules) ||
+        chrome.test.checkDeepEq([outputRule1, outputRule0], rules));
+      chrome.test.succeed();
+    }
+    testEvent.getRules(undefined, callback);
+  },
+  // Check that getRules() returns no rules if empty filter is passed.
+  function testGetRules3() {
+    var callback = function(rules) {
+      chrome.test.assertNoLastError();
+      // We are not given any gurantee on the order in which rules are returned.
+      chrome.test.assertEq([], rules);
+      chrome.test.succeed();
+    }
+    testEvent.getRules([], callback);
+  },
+  // Check that getRules() returns all rules if rules are filtered by ID.
+  function testSelectiveGetRules() {
+    var callback = function(rules) {
+      chrome.test.assertNoLastError();
+      chrome.test.assertEq([outputRule1], rules);
+      chrome.test.succeed();
+    }
+    testEvent.getRules(["my_rule_id"], callback);
+  },
+  // Check that we can remove individual rules.
+  function testSelectiveRemoveRules() {
+    var callback = function(rules) {
+      chrome.test.assertNoLastError();
+      chrome.test.succeed();
+    }
+    testEvent.removeRules(["my_rule_id"], callback);
+  },
+  // Check that after removal, the rules are really gone.
+  function testGetRemainingRules() {
+    var callback = function(rules) {
+      chrome.test.assertNoLastError();
+      chrome.test.assertEq([outputRule0], rules);
+      chrome.test.succeed();
+    }
+    testEvent.getRules(null, callback);
+  },
+  // Check that rules are assigned unique IDs.
+  function testIdGeneration() {
+    var callback = function(rules) {
+      chrome.test.assertNoLastError();
+      chrome.test.assertEq(1, rules.length);
+      // API should have generated id and priority fields.
+      chrome.test.assertTrue("id" in rules[0]);
+      // The IDs should be distinct.
+      chrome.test.assertFalse(outputRule0["id"] === rules[0]["id"]);
+      chrome.test.succeed();
+    };
+    testEvent.addRules([inputRule2], callback);
+  },
+  // Check that we can remove all rules at once.
+  function testRemovingAllRules() {
+    var callback = function() {
+      chrome.test.assertNoLastError();
+      chrome.test.succeed();
+    }
+    testEvent.removeRules(null, callback);
+  },
+  // Check that the rules are actually gone.
+  function testAllRulesRemoved() {
+    var callback = function(rules) {
+      chrome.test.assertNoLastError();
+      chrome.test.assertEq(0, rules.length);
+      chrome.test.succeed();
+    }
+    testEvent.getRules(null, callback);
+  },
+  // Check that validation is performed.
+  function testValidation() {
+    var fail = function() {
+      chrome.test.fail("An exception was expected");
+    };
+    try {
+      testEvent.addRules([invalidRule0], fail);
+      fail();
+    } catch (e) {}
+    try {
+      testEvent.addRules([invalidRule1], fail);
+      fail();
+    } catch (e) {}
+    // None of these rules should have been registered.
+    var callback = function(rules) {
+      chrome.test.assertNoLastError();
+      chrome.test.assertEq(0, rules.length);
+      chrome.test.succeed();
+    };
+    testEvent.getRules(null, callback);
+  },
+  // Finally we add one additional rule, to check that is is removed
+  // on page unload.
+  function testAddRules() {
+    var callback = function(rules) {
+      chrome.test.assertNoLastError();
+      chrome.test.assertEq(1, rules.length);
+      chrome.test.succeed();
+    };
+    testEvent.addRules([inputRule0], callback);
+  },
+  ]);

@@ -74,6 +74,7 @@ class ExtensionInputMethodEventRouter;
 
 namespace extensions {
 class ComponentLoader;
+class RulesRegistryService;
 class SettingsFrontend;
 class SocketController;
 }
@@ -576,6 +577,8 @@ class ExtensionService
   // Call only from IO thread.
   extensions::SocketController* socket_controller();
 
+  extensions::RulesRegistryService* GetRulesRegistryService();
+
   AppShortcutManager* app_shortcut_manager() { return &app_shortcut_manager_; }
 
  private:
@@ -806,6 +809,8 @@ class ExtensionService
   scoped_ptr<chromeos::ExtensionInputMethodEventRouter>
       input_method_event_router_;
 #endif
+
+  scoped_ptr<extensions::RulesRegistryService> rules_registry_service_;
 
   // A collection of external extension providers.  Each provider reads
   // a source of external extension information.  Examples include the

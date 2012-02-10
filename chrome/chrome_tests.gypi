@@ -2552,6 +2552,7 @@
         'browser/errorpage_browsertest.cc',
         'browser/extensions/alert_apitest.cc',
         'browser/extensions/all_urls_apitest.cc',
+        'browser/extensions/api/declarative/declarative_apitest.cc',
         'browser/extensions/api/dns/dns_apitest.cc',
         'browser/extensions/api/permissions/permissions_apitest.cc',
         'browser/extensions/api/serial/serial_apitest.cc',

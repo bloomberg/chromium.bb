@@ -36,6 +36,7 @@
 #include "chrome/browser/extensions/apps_promo.h"
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/crx_installer.h"
+#include "chrome/browser/extensions/api/declarative/rules_registry_service.h"
 #include "chrome/browser/extensions/default_apps_trial.h"
 #include "chrome/browser/extensions/extension_browser_event_router.h"
 #include "chrome/browser/extensions/extension_cookies_api.h"
@@ -2645,4 +2646,12 @@ extensions::SocketController* ExtensionService::socket_controller() {
     socket_controller_ = new extensions::SocketController();
   }
   return socket_controller_;
+}
+
+extensions::RulesRegistryService* ExtensionService::GetRulesRegistryService() {
+  if (!rules_registry_service_.get()) {
+    rules_registry_service_.reset(
+        new extensions::RulesRegistryService(profile_));
+  }
+  return rules_registry_service_.get();
 }
