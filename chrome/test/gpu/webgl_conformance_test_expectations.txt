@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -31,6 +31,8 @@ WONTFIX LINUX DEBUG : conformance_more_conformance_quickCheckAPI_G_I = TIMEOUT
 103759 MAC WIN LINUX : conformance_more_functions_readPixelsBadArgs = FAIL
 103759 MAC WIN LINUX : conformance_more_functions_texImage2DHTML = FAIL
 103759 MAC WIN LINUX : conformance_more_functions_texSubImage2DHTML = FAIL
+
+113695 MAC WIN LINUX : conformance_misc_instanceof_test = FAIL
 
 // -----------------------------------------------------------------------------
 // FLAKY TESTS
