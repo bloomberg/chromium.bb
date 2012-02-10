@@ -126,6 +126,7 @@ class ExamplesWindowContents : public WidgetDelegateView,
     example_shown_->RemoveAllChildViews(false);
     example_shown_->AddChildView(combobox_model_->GetItemViewAt(new_index));
     example_shown_->RequestFocus();
+    SetStatus(std::string());
     Layout();
   }
 
