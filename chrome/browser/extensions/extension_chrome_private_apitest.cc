@@ -14,6 +14,8 @@ class ExtensionChromePrivateApiTest : public ExtensionApiTest {
   }
 };
 
-IN_PROC_BROWSER_TEST_F(ExtensionChromePrivateApiTest, DecodeJPEG) {
+// Needs a new baseline.
+// http://code.google.com/p/chromium/issues/detail?id=113657
+IN_PROC_BROWSER_TEST_F(ExtensionChromePrivateApiTest, DISABLED_DecodeJPEG) {
   ASSERT_TRUE(RunExtensionTest("decode_jpeg")) << message_;
 }
