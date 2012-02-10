@@ -503,10 +503,6 @@ class VIEWS_EXPORT NativeWidgetWin : public ui::WindowImpl,
   // frame windows.
   void ResetWindowRegion(bool force);
 
-  // When removing the standard frame, tells the DWM how much glass we want on
-  // the edges. Currently hardcoded to 10px on all sides.
-  void UpdateDWMFrame();
-
   // Calls DefWindowProc, safely wrapping the call in a ScopedRedrawLock to
   // prevent frame flicker. DefWindowProc handling can otherwise render the
   // classic-look window title bar directly.
@@ -656,8 +652,6 @@ class VIEWS_EXPORT NativeWidgetWin : public ui::WindowImpl,
   // rather than asking the Widget for the non_client_view so that we know at
   // Init time, before the Widget has created the NonClientView.
   bool has_non_client_view_;
-
-  bool remove_standard_frame_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeWidgetWin);
 };

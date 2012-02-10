@@ -27,7 +27,6 @@
 #include "ui/base/win/ime_input.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/point.h"
-#include "ui/gfx/scoped_sk_region.h"
 #include "ui/gfx/surface/accelerated_surface_win.h"
 #include "webkit/glue/webcursor.h"
 
@@ -104,7 +103,6 @@ class RenderWidgetHostViewWin
     MSG_WM_DESTROY(OnDestroy)
     MSG_WM_PAINT(OnPaint)
     MSG_WM_NCPAINT(OnNCPaint)
-    MSG_WM_NCHITTEST(OnNCHitTest)
     MSG_WM_ERASEBKGND(OnEraseBkgnd)
     MSG_WM_SETCURSOR(OnSetCursor)
     MSG_WM_SETFOCUS(OnSetFocus)
@@ -213,7 +211,6 @@ class RenderWidgetHostViewWin
       ) OVERRIDE;
   virtual bool LockMouse() OVERRIDE;
   virtual void UnlockMouse() OVERRIDE;
-  virtual void SetTransparentRegion(SkRegion* region) OVERRIDE;
 
   // Implementation of content::NotificationObserver:
   virtual void Observe(int type,
@@ -244,7 +241,6 @@ class RenderWidgetHostViewWin
   void OnDestroy();
   void OnPaint(HDC unused_dc);
   void OnNCPaint(HRGN update_region);
-  LRESULT OnNCHitTest(const CPoint& pt);
   LRESULT OnEraseBkgnd(HDC dc);
   LRESULT OnSetCursor(HWND window, UINT hittest_code, UINT mouse_message_id);
   void OnSetFocus(HWND window);
@@ -549,9 +545,6 @@ class RenderWidgetHostViewWin
 
   // Set to true if we received a focus change after a WM_POINTERDOWN message.
   bool received_focus_change_after_pointer_down_;
-
-  // Region in which the view will be transparent to clicks.
-  gfx::ScopedSkRegion transparent_region_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewWin);
 };
