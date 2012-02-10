@@ -293,9 +293,9 @@ NaClValidationStatus NACL_SUBARCH_NAME(ApplyValidatorCopy,
   NaClValidationStatus status = NaClValidationFailedNotImplemented;
   assert(NACL_SB_DEFAULT == sb_kind);
   if (bundle_size == 16 || bundle_size == 32) {
-    CPUFeatures cpu_features;
-    NaClGetCurrentCPUFeatures(&cpu_features);
-    if (!NaClArchSupported(&cpu_features)) {
+    NaClCPUData cpu_data;
+    NaClCPUDataGet(&cpu_data);
+    if (!NaClArchSupported(&cpu_data)) {
       status = NaClValidationFailedCpuNotSupported;
     } else {
       status = ((0 == NCCopyCode(data_old, data_new, guest_addr,
@@ -386,9 +386,9 @@ NaClValidationStatus NACL_SUBARCH_NAME(ApplyValidatorCopy,
   NaClValidationStatus status = NaClValidationFailedNotImplemented;
   assert(NACL_SB_DEFAULT == sb_kind);
   if (bundle_size == 16 || bundle_size == 32) {
-    CPUFeatures cpu_features;
-    NaClGetCurrentCPUFeatures(&cpu_features);
-    if (!NaClArchSupported(&cpu_features)) {
+    NaClCPUData cpu_data;
+    NaClCPUDataGet(&cpu_data);
+    if (!NaClArchSupported(&cpu_data)) {
       status = NaClValidationFailedCpuNotSupported;
     } else {
       status = ((0 == NaClCopyCodeIter(data_old, data_new, guest_addr, size))

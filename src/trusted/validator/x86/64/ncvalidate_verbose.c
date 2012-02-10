@@ -28,10 +28,10 @@ static NaClValidationStatus NaClApplyValidatorVerbosely_x86_64(
     uint8_t *data,
     size_t size,
     int bundle_size,
-    CPUFeatures *cpu_features) {
+    Bool local_cpu) {
   struct NaClValidatorState *vstate;
   NaClValidationStatus status =
-      NaClValidatorSetup_x86_64(guest_addr, size, bundle_size, cpu_features,
+      NaClValidatorSetup_x86_64(guest_addr, size, bundle_size, local_cpu,
                                 &vstate);
   if (status != NaClValidationSucceeded) return status;
   NaClValidatorStateSetLogVerbosity(vstate, LOG_ERROR);
@@ -52,18 +52,20 @@ NaClValidationStatus NACL_SUBARCH_NAME(ApplyValidatorVerbosely, x86, 64)
   NaClValidationStatus status = NaClValidationFailedNotImplemented;
   assert(NACL_SB_DEFAULT == sb_kind);
   if (bundle_size == 16 || bundle_size == 32) {
-    CPUFeatures cpu_features;
-    NaClValidatorGetCPUFeatures(local_cpu, &cpu_features);
-    if (!NaClArchSupported(&cpu_features))
-      return NaClValidationFailedCpuNotSupported;
+    if (local_cpu) {
+      NaClCPUData cpu_data;
+      NaClCPUDataGet(&cpu_data);
+      if (!NaClArchSupported(&cpu_data))
+        return NaClValidationFailedCpuNotSupported;
+    }
     switch (kind) {
       case NaClApplyCodeValidation:
         status = NaClApplyValidatorVerbosely_x86_64(
-            guest_addr, data, size, bundle_size, &cpu_features);
+            guest_addr, data, size, bundle_size, local_cpu);
         break;
       case NaClApplyValidationDoStubout:
         status = NaClApplyValidatorStubout_x86_64(
-            guest_addr, data, size, bundle_size, &cpu_features);
+            guest_addr, data, size, bundle_size, local_cpu);
         break;
       default:
         /* If reached, it isn't implemented (yet). */

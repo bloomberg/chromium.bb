@@ -329,18 +329,19 @@ static void CheckNaClArchFeatures(NaClCPUData* data,
   const size_t kCPUID0Length = 12;
   char *cpuversionid;
   memset(features, 0, sizeof(*features));
-  if (data->_has_CPUID) features->f_cpuid_supported = TRUE;
+  if (data->_has_CPUID) features->f_cpuid_supported = 1;
   cpuversionid = CPUVersionID(data);
   if (strncmp(cpuversionid, Intel_CPUID0, kCPUID0Length) == 0) {
-    features->f_cpu_supported = TRUE;
+    features->f_cpu_supported = 1;
   } else if (strncmp(cpuversionid, AMD_CPUID0, kCPUID0Length) == 0) {
-    features->f_cpu_supported = TRUE;
+    features->f_cpu_supported = 1;
   }
 }
 
-Bool NaClArchSupported(CPUFeatures *features) {
-  return (Bool) (features->arch_features.f_cpuid_supported &&
-                 features->arch_features.f_cpu_supported);
+Bool NaClArchSupported(NaClCPUData* data) {
+  nacl_arch_features features;
+  CheckNaClArchFeatures(data, &features);
+  return (Bool) (features.f_cpuid_supported && features.f_cpu_supported);
 }
 
 void NaClClearCPUFeatures(CPUFeatures *features) {
@@ -381,7 +382,7 @@ const char* NaClGetCPUFeatureName(NaClCPUFeatureID id) {
  * the hardware. Hence, if a race occurs, the validator may reject
  * some features that should not be rejected.
  */
-static void GetCPUFeatures(NaClCPUData* data, CPUFeatures *cpuf) {
+void GetCPUFeatures(NaClCPUData* data, CPUFeatures *cpuf) {
   int id;
   NaClClearCPUFeatures(cpuf);
   CheckNaClArchFeatures(data, &cpuf->arch_features);
@@ -409,7 +410,8 @@ void NaClCPUDataGet(NaClCPUData* data) {
   CacheGetCPUIDString(data);
 }
 
-void NaClGetCurrentCPUFeatures(CPUFeatures *cpu_features) {
+
+static void NaClGetLocalCPUFeatures(CPUFeatures *cpu_features) {
   NaClCPUData cpu_data;
   NaClCPUDataGet(&cpu_data);
   GetCPUFeatures(&cpu_data, cpu_features);
@@ -417,7 +419,7 @@ void NaClGetCurrentCPUFeatures(CPUFeatures *cpu_features) {
 
 void NaClValidatorGetCPUFeatures(Bool local_cpu, CPUFeatures *cpu_features) {
   if (local_cpu) {
-    NaClGetCurrentCPUFeatures(cpu_features);
+    NaClGetLocalCPUFeatures(cpu_features);
   } else {
     NaClSetAllCPUFeatures(cpu_features);
   }

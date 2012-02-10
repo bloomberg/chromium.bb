@@ -28,7 +28,7 @@ NaClValidationStatus NaClApplyValidatorStubout_x86_64(
     uint8_t *data,
     size_t size,
     int bundle_size,
-    CPUFeatures *cpu_features);
+    Bool local_cpu);
 
 /* Creates a validator state and initializes it. Returns
  * NaClValidationSucceeded if successful. Otherwise, it returns
@@ -47,7 +47,7 @@ NaClValidationStatus NaClValidatorSetup_x86_64(
     uintptr_t guest_addr,
     size_t size,
     int bundle_size,
-    CPUFeatures *cpu_features,
+    Bool local_cpu,
     struct NaClValidatorState** vstate_ptr);
 
 /* Runs the validator on the memory segment, returning

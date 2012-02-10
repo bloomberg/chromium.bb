@@ -24,10 +24,12 @@ NaClValidationStatus NaClValidatorSetup_x86_64(
     uintptr_t guest_addr,
     size_t size,
     int bundle_size,
-    CPUFeatures *cpu_features,
+    Bool local_cpu,
     struct NaClValidatorState** vstate_ptr) {
+  CPUFeatures cpu_features;
+  NaClValidatorGetCPUFeatures(local_cpu, &cpu_features);
   *vstate_ptr = NaClValidatorStateCreate(guest_addr, size, bundle_size, RegR15,
-                                         cpu_features);
+                                         &cpu_features);
   return (*vstate_ptr == NULL)
       ? NaClValidationFailedOutOfMemory
       : NaClValidationSucceeded;     /* or at least to this point! */
@@ -50,10 +52,10 @@ static NaClValidationStatus NaClApplyValidatorSilently_x86_64(
     uint8_t *data,
     size_t size,
     int bundle_size,
-    CPUFeatures *cpu_features) {
+    Bool local_cpu) {
   struct NaClValidatorState *vstate;
   NaClValidationStatus status =
-      NaClValidatorSetup_x86_64(guest_addr, size, bundle_size, cpu_features,
+      NaClValidatorSetup_x86_64(guest_addr, size, bundle_size, local_cpu,
                                 &vstate);
   if (status != NaClValidationSucceeded) return status;
   NaClValidatorStateSetLogVerbosity(vstate, LOG_ERROR);
@@ -66,10 +68,10 @@ NaClValidationStatus NaClApplyValidatorStubout_x86_64(
     uint8_t *data,
     size_t size,
     int bundle_size,
-    CPUFeatures *cpu_features) {
+    Bool local_cpu) {
   struct NaClValidatorState *vstate;
   NaClValidationStatus status =
-      NaClValidatorSetup_x86_64(guest_addr, size, bundle_size, cpu_features,
+      NaClValidatorSetup_x86_64(guest_addr, size, bundle_size, local_cpu,
                                 &vstate);
   if (status != NaClValidationSucceeded) return status;
   NaClValidatorStateSetDoStubOut(vstate, TRUE);
@@ -88,18 +90,20 @@ NaClValidationStatus NACL_SUBARCH_NAME(ApplyValidator, x86, 64) (
   NaClValidationStatus status = NaClValidationFailedNotImplemented;
   assert(NACL_SB_DEFAULT == sb_kind);
   if (bundle_size == 16 || bundle_size == 32) {
-    CPUFeatures cpu_features;
-    NaClValidatorGetCPUFeatures(local_cpu, &cpu_features);
-    if (!NaClArchSupported(&cpu_features))
-      return NaClValidationFailedCpuNotSupported;
+    if (local_cpu) {
+      NaClCPUData cpu_data;
+      NaClCPUDataGet(&cpu_data);
+      if (!NaClArchSupported(&cpu_data))
+        return NaClValidationFailedCpuNotSupported;
+    }
     switch (kind) {
       case NaClApplyCodeValidation:
         status = NaClApplyValidatorSilently_x86_64(
-            guest_addr, data, size, bundle_size, &cpu_features);
+            guest_addr, data, size, bundle_size, local_cpu);
         break;
       case NaClApplyValidationDoStubout:
         status = NaClApplyValidatorStubout_x86_64(
-            guest_addr, data, size, bundle_size, &cpu_features);
+            guest_addr, data, size, bundle_size, local_cpu);
         break;
       default:
         break;
@@ -113,12 +117,11 @@ static NaClValidationStatus NaClApplyValidatorPair(
     uint8_t *data_old,
     uint8_t *data_new,
     size_t size,
-    int bundle_size,
-    CPUFeatures *cpu_features) {
+    int bundle_size) {
   int is_ok;
   struct NaClValidatorState *vstate;
   NaClValidationStatus status =
-      NaClValidatorSetup_x86_64(guest_addr, size, bundle_size, cpu_features,
+      NaClValidatorSetup_x86_64(guest_addr, size, bundle_size, FALSE,
                                 &vstate);
   if (status != NaClValidationSucceeded) return status;
   NaClValidatorStateSetLogVerbosity(vstate, LOG_ERROR);
@@ -138,13 +141,13 @@ NaClValidationStatus NACL_SUBARCH_NAME(ApplyValidatorCodeReplacement, x86, 64)
   NaClValidationStatus status = NaClValidationFailedNotImplemented;
   assert(NACL_SB_DEFAULT == sb_kind);
   if (bundle_size == 16 || bundle_size == 32) {
-    CPUFeatures cpu_features;
-    NaClGetCurrentCPUFeatures(&cpu_features);
-    if (!NaClArchSupported(&cpu_features)) {
+    NaClCPUData cpu_data;
+    NaClCPUDataGet(&cpu_data);
+    if (!NaClArchSupported(&cpu_data)) {
       status = NaClValidationFailedCpuNotSupported;
     } else {
       status = NaClApplyValidatorPair(guest_addr, data_old, data_new,
-                                      size, bundle_size, &cpu_features);
+                                      size, bundle_size);
     }
   }
   return status;

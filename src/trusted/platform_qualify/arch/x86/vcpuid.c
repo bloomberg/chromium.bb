@@ -546,7 +546,9 @@ static void PrintFail(const char *why) {
 int CPUIDImplIsValid() {
   int rcode;
   CPUFeatures cpuf;
-  NaClGetCurrentCPUFeatures(&cpuf);
+  NaClCPUData data;
+  NaClCPUDataGet(&data);
+  GetCPUFeatures(&data, &cpuf);
 
   if (!cpuf.arch_features.f_cpuid_supported) {
     PrintFail("CPUID not implemented");

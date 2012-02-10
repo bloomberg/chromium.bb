@@ -895,7 +895,9 @@ static int GrokFlags(int argc, const char *argv[]) {
     } else if (0 == strcmp("--cpuid-none", arg)) {
       NaClClearCPUFeatures(&ncval_cpu_features);
     } else if (GrokBoolFlag("--local_cpuid", arg, &flag)) {
-      NaClGetCurrentCPUFeatures(&ncval_cpu_features);
+      NaClCPUData data;
+      NaClCPUDataGet(&data);
+      GetCPUFeatures(&data, &ncval_cpu_features);
     } else {
       argv[new_argc++] = argv[i];
     }
