@@ -33,12 +33,24 @@ class ExtensionDialog : public views::WidgetDelegate,
   // |browser| is the browser to which the pop-up will be attached.
   // |web_contents| is the tab that spawned the dialog.
   // |width| and |height| are the size of the dialog in pixels.
-  static ExtensionDialog* Show(const GURL& url, Browser* browser,
+  static ExtensionDialog* Show(const GURL& url,
+                               Browser* browser,
                                content::WebContents* web_contents,
                                int width,
                                int height,
                                const string16& title,
                                ExtensionDialogObserver* observer);
+
+#if defined(USE_AURA)
+  // Create and show a fullscreen dialog with |url|.
+  // |browser| is the browser to which the pop-up will be attached.
+  // |web_contents| is the tab that spawned the dialog.
+  static ExtensionDialog* ShowFullscreen(const GURL& url,
+                                         Browser* browser,
+                                         content::WebContents* web_contents,
+                                         const string16& title,
+                                         ExtensionDialogObserver* observer);
+#endif
 
   // Notifies the dialog that the observer has been destroyed and should not
   // be sent notifications.
@@ -72,10 +84,20 @@ class ExtensionDialog : public views::WidgetDelegate,
   // Use Show() to create instances.
   ExtensionDialog(ExtensionHost* host, ExtensionDialogObserver* observer);
 
+  static ExtensionDialog* ShowInternal(const GURL& url,
+                                       Browser* browser,
+                                       content::WebContents* web_contents,
+                                       int width,
+                                       int height,
+                                       bool fullscreen,
+                                       const string16& title,
+                                       ExtensionDialogObserver* observer);
+
   static ExtensionHost* CreateExtensionHost(const GURL& url,
                                             Browser* browser);
 
   void InitWindow(Browser* browser, int width, int height);
+  void InitWindowFullscreen(Browser* browser);
 
   // Window that holds the extension host view.
   views::Widget* window_;

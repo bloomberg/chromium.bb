@@ -22,6 +22,11 @@
 #include "ui/views/background.h"
 #include "ui/views/widget/widget.h"
 
+#if defined(USE_AURA)
+#include "ui/aura/root_window.h"
+#include "ui/aura/window.h"
+#endif
+
 using content::WebContents;
 
 ExtensionDialog::ExtensionDialog(ExtensionHost* host,
@@ -50,6 +55,32 @@ ExtensionDialog* ExtensionDialog::Show(
     int height,
     const string16& title,
     ExtensionDialogObserver* observer) {
+  return ExtensionDialog::ShowInternal(url, browser, web_contents, width,
+                                       height, false, title, observer);
+}
+
+#if defined(USE_AURA)
+// static
+ExtensionDialog* ExtensionDialog::ShowFullscreen(
+    const GURL& url,
+    Browser* browser,
+    WebContents* web_contents,
+    const string16& title,
+    ExtensionDialogObserver* observer) {
+  return ExtensionDialog::ShowInternal(url, browser, web_contents, 0, 0,
+                                       true, title, observer);
+}
+#endif
+
+// static
+ExtensionDialog* ExtensionDialog::ShowInternal(const GURL& url,
+    Browser* browser,
+    content::WebContents* web_contents,
+    int width,
+    int height,
+    bool fullscreen,
+    const string16& title,
+    ExtensionDialogObserver* observer) {
   CHECK(browser);
   ExtensionHost* host = CreateExtensionHost(url, browser);
   if (!host)
@@ -58,7 +89,10 @@ ExtensionDialog* ExtensionDialog::Show(
 
   ExtensionDialog* dialog = new ExtensionDialog(host, observer);
   dialog->set_title(title);
-  dialog->InitWindow(browser, width, height);
+  if (fullscreen)
+    dialog->InitWindowFullscreen(browser);
+  else
+    dialog->InitWindow(browser, width, height);
 
   // Show a white background while the extension loads.  This is prettier than
   // flashing a black unfilled window frame.
@@ -81,6 +115,32 @@ ExtensionHost* ExtensionDialog::CreateExtensionHost(const GURL& url,
     return NULL;
   return manager->CreateDialogHost(url, browser);
 }
+
+#if defined(USE_AURA)
+void ExtensionDialog::InitWindowFullscreen(Browser* browser) {
+  gfx::NativeWindow parent = browser->window()->GetNativeHandle();
+
+  // Create the window as a child of the root window.
+  window_ = browser::CreateFramelessViewsWindow(
+      parent->GetRootWindow(), this);
+  // Make sure we're always on top by putting ourselves at the top
+  // of the z-order of the child windows of the root window.
+  parent->GetRootWindow()->StackChildAtTop(window_->GetNativeWindow());
+
+  int width = parent->GetRootWindow()->GetHostSize().width();
+  int height = parent->GetRootWindow()->GetHostSize().height();
+  window_->SetBounds(gfx::Rect(0, 0, width, height));
+
+  window_->Show();
+  // TODO(jamescook): Remove redundant call to Activate()?
+  window_->Activate();
+}
+#else
+void ExtensionDialog::InitWindowFullscreen(Browser* browser) {
+  NOTIMPLEMENTED();
+}
+#endif
+
 
 void ExtensionDialog::InitWindow(Browser* browser, int width, int height) {
   gfx::NativeWindow parent = browser->window()->GetNativeHandle();
