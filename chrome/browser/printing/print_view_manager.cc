@@ -118,8 +118,11 @@ bool PrintViewManager::PrintPreviewNow() {
     NOTREACHED();
     return false;
   }
+  if (!PrintNowInternal(new PrintMsg_InitiatePrintPreview(routing_id())))
+    return false;
+
   print_preview_state_ = USER_INITIATED_PREVIEW;
-  return PrintNowInternal(new PrintMsg_InitiatePrintPreview(routing_id()));
+  return true;
 }
 
 void PrintViewManager::PrintPreviewForWebNode() {
@@ -162,6 +165,8 @@ void PrintViewManager::StopNavigation() {
 }
 
 void PrintViewManager::RenderViewGone(base::TerminationStatus status) {
+  print_preview_state_ = NOT_PREVIEWING;
+
   if (!print_job_.get())
     return;
 
