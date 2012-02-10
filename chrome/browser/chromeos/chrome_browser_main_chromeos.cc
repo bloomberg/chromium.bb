@@ -227,10 +227,15 @@ ChromeBrowserMainPartsChromeos::~ChromeBrowserMainPartsChromeos() {
 
   chromeos::disks::DiskMountManager::Shutdown();
 
-  chromeos::DBusThreadManager::Shutdown();
-
+  // CrosLibrary is shut down before DBusThreadManager even though the former
+  // is initialized before the latter becuase some of its libraries depend
+  // on DBus clients.
+  // TODO(hashimoto): Resolve this situation by removing CrosLibrary.
+  // (crosbug.com/26160)
   if (!parameters().ui_task && chromeos::CrosLibrary::Get())
     chromeos::CrosLibrary::Shutdown();
+
+  chromeos::DBusThreadManager::Shutdown();
 
   // To be precise, logout (browser shutdown) is not yet done, but the
   // remaining work is negligible, hence we say LogoutDone here.
