@@ -34,6 +34,17 @@ WONTFIX LINUX DEBUG : conformance_more_conformance_quickCheckAPI_G_I = TIMEOUT
 
 113695 MAC WIN LINUX : conformance_misc_instanceof_test = FAIL
 
+113731 WIN7 INTEL : conformance_more_conformance_webGLArrays = FAIL
+113731 WIN7 INTEL : conformance_more_functions_copyTexImage2D = FAIL
+113731 WIN7 INTEL : conformance_more_functions_copyTexSubImage2D = FAIL
+113731 WIN7 INTEL : conformance_more_functions_uniformf = FAIL
+113731 WIN7 INTEL : conformance_more_functions_uniformfBadArgs = FAIL
+113731 WIN7 INTEL : conformance_more_functions_uniformfArrayLen1 = FAIL
+113731 WIN7 INTEL : conformance_more_functions_uniformi = FAIL
+113731 WIN7 INTEL : conformance_more_functions_uniformiBadArgs = FAIL
+113731 WIN7 INTEL : conformance_more_functions_uniformMatrix = FAIL
+113731 WIN7 INTEL : conformance_more_functions_uniformMatrixBadArgs = FAIL
+
 // -----------------------------------------------------------------------------
 // FLAKY TESTS
 // -----------------------------------------------------------------------------
