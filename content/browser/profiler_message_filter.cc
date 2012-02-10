@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,8 +21,9 @@ ProfilerMessageFilter::~ProfilerMessageFilter() {
 void ProfilerMessageFilter::OnChannelConnected(int32 peer_pid) {
   BrowserMessageFilter::OnChannelConnected(peer_pid);
 
-  bool enable = tracked_objects::ThreadData::tracking_status();
-  Send(new ChildProcessMsg_SetProfilerStatus(enable));
+  tracked_objects::ThreadData::Status status =
+      tracked_objects::ThreadData::status();
+  Send(new ChildProcessMsg_SetProfilerStatus(status));
 }
 
 bool ProfilerMessageFilter::OnMessageReceived(const IPC::Message& message,

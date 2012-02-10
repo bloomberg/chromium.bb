@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,6 +9,7 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/shared_memory.h"
+#include "base/tracked_objects.h"
 #include "content/common/content_export.h"
 #include "content/common/message_router.h"
 #include "webkit/glue/resource_loader_bridge.h"
@@ -92,7 +93,7 @@ class CONTENT_EXPORT ChildThread : public IPC::Channel::Listener,
   virtual void OnSetIPCLoggingEnabled(bool enable);
 #endif
 
-  virtual void OnSetProfilerStatus(bool enable);
+  virtual void OnSetProfilerStatus(tracked_objects::ThreadData::Status status);
   virtual void OnGetChildProfilerData(int sequence_number,
                                       const std::string& process_type);
 

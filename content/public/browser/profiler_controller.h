@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,7 +8,9 @@
 #include <set>
 #include <string>
 
+#include "base/tracked_objects.h"
 #include "content/common/content_export.h"
+
 
 namespace base {
 class DictionaryValue;
@@ -43,7 +45,8 @@ class CONTENT_EXPORT ProfilerController {
   virtual void GetProfilerData(int sequence_number) = 0;
 
   // Contact all processes and set profiler status to |enable|.
-  virtual void SetProfilerStatus(bool enable) = 0;
+  virtual void SetProfilerStatus(
+      tracked_objects::ThreadData::Status status) = 0;
 
 };
 

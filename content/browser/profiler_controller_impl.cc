@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -121,14 +121,16 @@ void ProfilerControllerImpl::GetProfilerData(int sequence_number) {
                  sequence_number));
 }
 
-void ProfilerControllerImpl::SetProfilerStatusInChildProcesses(bool enable) {
+void ProfilerControllerImpl::SetProfilerStatusInChildProcesses(
+    tracked_objects::ThreadData::Status status) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   for (BrowserChildProcessHostIterator iter; !iter.Done(); ++iter)
-    iter.Send(new ChildProcessMsg_SetProfilerStatus(enable));
+    iter.Send(new ChildProcessMsg_SetProfilerStatus(status));
 }
 
-void ProfilerControllerImpl::SetProfilerStatus(bool enable) {
+void ProfilerControllerImpl::SetProfilerStatus(
+    tracked_objects::ThreadData::Status status) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   BrowserThread::PostTask(
@@ -136,12 +138,12 @@ void ProfilerControllerImpl::SetProfilerStatus(bool enable) {
       FROM_HERE,
       base::Bind(&ProfilerControllerImpl::SetProfilerStatusInChildProcesses,
                  base::Unretained(this),
-                 enable));
+                 status));
 
   for (content::RenderProcessHost::iterator it(
           content::RenderProcessHost::AllHostsIterator());
        !it.IsAtEnd(); it.Advance()) {
-    it.GetCurrentValue()->Send(new ChildProcessMsg_SetProfilerStatus(enable));
+    it.GetCurrentValue()->Send(new ChildProcessMsg_SetProfilerStatus(status));
   }
 }
 }  // namespace content

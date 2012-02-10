@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,10 +6,13 @@
 // Multiply-included message file, hence no include guard.
 
 #include "base/shared_memory.h"
+#include "base/tracked_objects.h"
 #include "base/values.h"
 #include "content/common/content_export.h"
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_message_macros.h"
+
+IPC_ENUM_TRAITS(tracked_objects::ThreadData::Status)
 
 #undef IPC_MESSAGE_EXPORT
 #define IPC_MESSAGE_EXPORT CONTENT_EXPORT
@@ -41,7 +44,7 @@ IPC_MESSAGE_CONTROL0(ChildProcessMsg_GetTraceBufferPercentFull)
 
 // Tell the child process to enable or disable the profiler status.
 IPC_MESSAGE_CONTROL1(ChildProcessMsg_SetProfilerStatus,
-                     bool /* profiler status */)
+                     tracked_objects::ThreadData::Status /* profiler status */)
 
 // Send to all the child processes to send back profiler data (ThreadData in
 // tracked_objects).
