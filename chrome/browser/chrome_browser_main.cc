@@ -1170,6 +1170,12 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
     tracked_objects::ThreadData::InitializeAndSetTrackingStatus(status);
   }
 
+  if (parsed_command_line().HasSwitch(switches::kProfilingOutputFile)) {
+    tracking_objects_.set_output_file_path(
+        parsed_command_line().GetSwitchValuePath(
+            switches::kProfilingOutputFile));
+  }
+
   // This forces the TabCloseableStateWatcher to be created and, on chromeos,
   // register for the notifications it needs to track the closeable state of
   // tabs.
