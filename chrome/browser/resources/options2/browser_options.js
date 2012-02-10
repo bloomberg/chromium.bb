@@ -46,7 +46,8 @@ cr.define('options', function() {
       OptionsPage.prototype.initializePage.call(this);
 
       // Sync (Sign in) section.
-      this.updateSyncState_(templateData.syncData);
+      if (templateData.syncData)
+        this.updateSyncState_(templateData.syncData);
 
       $('sync-action-link').onclick = function(event) {
         SyncSetupOverlay.showErrorUI();
@@ -253,6 +254,9 @@ cr.define('options', function() {
      * @private
      */
     updateSyncState_: function(syncData) {
+      this.syncSetupCompleted = syncData.setupCompleted;
+      $('customize-sync').hidden = !syncData.setupCompleted;
+
       var startStopButton = $('start-stop-sync');
       startStopButton.disabled = syncData.managed ||
           syncData.setupInProgress;
@@ -584,20 +588,10 @@ cr.define('options', function() {
   [
     'getStartStopSyncButton',
     'hideSyncSection',
-    'setAutoLoginVisible',
-    'setCustomizeSyncButtonEnabled',
     'setGtkThemeButtonEnabled',
     'setInstantFieldTrialStatus',
     'setProfilesInfo',
     'setProfilesSectionVisible',
-    'setStartStopButtonEnabled',
-    'setStartStopButtonLabel',
-    'setStartStopButtonVisible',
-    'setSyncActionLinkEnabled',
-    'setSyncActionLinkLabel',
-    'setSyncSetupCompleted',
-    'setSyncStatus',
-    'setSyncStatusErrorVisible',
     'setThemesResetButtonEnabled',
     'updateAccountPicture',
     'updateAutocompleteSuggestions',

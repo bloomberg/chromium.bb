@@ -232,7 +232,9 @@ void BrowserOptionsHandler::GetLocalizedValues(
 #endif
 
   // Pass along sync status early so it will be available during page init.
-  localized_strings->Set("syncData", GetSyncStateDictionary());
+  DictionaryValue* syncData = GetSyncStateDictionary();
+  if (syncData)
+    localized_strings->Set("syncData", syncData);
 }
 
 void BrowserOptionsHandler::RegisterMessages() {

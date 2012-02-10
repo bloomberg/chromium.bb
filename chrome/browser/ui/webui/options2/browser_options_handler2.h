@@ -140,7 +140,7 @@ class BrowserOptionsHandler
 #endif
 
   // Returns a newly created dictionary with a number of properties that
-  // correspond to that status of sync.
+  // correspond to the status of sync.
   DictionaryValue* GetSyncStateDictionary();
 
   scoped_refptr<ShellIntegration::DefaultBrowserWorker> default_browser_worker_;
