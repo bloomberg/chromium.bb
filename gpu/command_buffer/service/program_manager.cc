@@ -9,7 +9,6 @@
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/rand_util.h"
 #include "base/string_number_conversions.h"
 #include "gpu/command_buffer/common/gles2_cmd_format.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
@@ -529,8 +528,13 @@ void ProgramManager::ProgramInfo::GetProgramInfo(
 
 ProgramManager::ProgramInfo::~ProgramInfo() {}
 
+// TODO(gman): make this some kind of random number. Base::RandInt is not
+// callable because of the sandbox. What matters is that it's possibly different
+// by at least 1 bit each time chrome is run.
+static int uniform_random_offset_ = 3;
+
 ProgramManager::ProgramManager()
-    : uniform_swizzle_(base::RandInt(0, 15)) {
+    : uniform_swizzle_(uniform_random_offset_++ % 15) {
 }
 
 ProgramManager::~ProgramManager() {
