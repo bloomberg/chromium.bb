@@ -69,13 +69,10 @@ void UpdateWebTouchEventAfterDispatch(WebKit::WebTouchEvent* event,
   }
 }
 
-bool CanRendererHandleEvent(const aura::MouseEvent* event) {
-  if (event->type() == ui::ET_MOUSE_CAPTURE_CHANGED)
-    return false;
-
+bool CanRendererHandleEvent(const base::NativeEvent& native_event) {
 #if defined(OS_WIN)
   // Renderer cannot handle WM_XBUTTON events.
-  switch (event->native_event().message) {
+  switch (native_event.message) {
     case WM_XBUTTONDOWN:
     case WM_XBUTTONUP:
     case WM_XBUTTONDBLCLK:
@@ -842,7 +839,7 @@ bool RenderWidgetHostViewAura::OnMouseEvent(aura::MouseEvent* event) {
       }
 
       // Forward event to renderer.
-      if (CanRendererHandleEvent(event))
+      if (CanRendererHandleEvent(event->native_event()))
         host_->ForwardMouseEvent(mouse_event);
     }
 
@@ -859,7 +856,7 @@ bool RenderWidgetHostViewAura::OnMouseEvent(aura::MouseEvent* event) {
         content::MakeWebMouseWheelEvent(static_cast<aura::ScrollEvent*>(event));
     if (mouse_wheel_event.deltaX != 0 || mouse_wheel_event.deltaY != 0)
       host_->ForwardWheelEvent(mouse_wheel_event);
-  } else if (CanRendererHandleEvent(event)) {
+  } else if (CanRendererHandleEvent(event->native_event())) {
     WebKit::WebMouseEvent mouse_event = content::MakeWebMouseEvent(event);
     ModifyEventMovementAndCoords(&mouse_event);
     host_->ForwardMouseEvent(mouse_event);

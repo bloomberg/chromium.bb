@@ -115,7 +115,6 @@ gfx::Size RootWindowHost::GetNativeScreenSize() {
 RootWindowHostWin::RootWindowHostWin(const gfx::Rect& bounds)
     : root_window_(NULL),
       fullscreen_(false),
-      has_capture_(false),
       saved_window_style_(0),
       saved_window_ex_style_(0) {
   Init(NULL, bounds);
@@ -224,20 +223,6 @@ void RootWindowHostWin::SetCursor(gfx::NativeCursor native_cursor) {
   ::SetCursor(LoadCursor(NULL, cursor_id));
 }
 
-void RootWindowHostWin::SetCapture() {
-  if (!has_capture_) {
-    has_capture_ = true;
-    ::SetCapture(hwnd());
-  }
-}
-
-void RootWindowHostWin::ReleaseCapture() {
-  if (has_capture_) {
-    has_capture_ = false;
-    ::ReleaseCapture();
-  }
-}
-
 void RootWindowHostWin::ShowCursor(bool show) {
   // NOTIMPLEMENTED();
 }
@@ -296,16 +281,6 @@ LRESULT RootWindowHostWin::OnMouseRange(UINT message,
   if (!(event.flags() & ui::EF_IS_NON_CLIENT))
     handled = root_window_->DispatchMouseEvent(&event);
   SetMsgHandled(handled);
-  return 0;
-}
-
-LRESULT RootWindowHostWin::OnCaptureChanged(UINT message,
-                                            WPARAM w_param,
-                                            LPARAM l_param) {
-  if (has_capture_) {
-    has_capture_ = false;
-    root_window_->SetCapture(NULL);
-  }
   return 0;
 }
 

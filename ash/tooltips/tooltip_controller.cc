@@ -265,7 +265,6 @@ bool TooltipController::PreHandleMouseEvent(aura::Window* target,
     case ui::ET_MOUSE_RELEASED:
     case ui::ET_MOUSE_DRAGGED:
     case ui::ET_MOUSEWHEEL:
-    case ui::ET_MOUSE_CAPTURE_CHANGED:
       // Hide the tooltip for click, release, drag, wheel events.
       if (tooltip_->IsVisible())
         tooltip_->Hide();

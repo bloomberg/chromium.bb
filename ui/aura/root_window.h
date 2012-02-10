@@ -199,10 +199,6 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   // sending exited and entered events as its value changes.
   void HandleMouseMoved(const MouseEvent& event, Window* target);
 
-  // Called whenever the |capture_window_| changes.
-  // Sends capture changed events to event filters for old capture window.
-  void HandleMouseCaptureChanged(Window* old_capture_window);
-
   bool ProcessMouseEvent(Window* target, MouseEvent* event);
   bool ProcessKeyEvent(Window* target, KeyEvent* event);
   ui::TouchStatus ProcessTouchEvent(Window* target, TouchEvent* event);

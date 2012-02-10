@@ -112,27 +112,20 @@ class DestroyOrphanDelegate : public TestWindowDelegate {
 // Used in verifying mouse capture.
 class CaptureWindowDelegateImpl : public TestWindowDelegate {
  public:
-  CaptureWindowDelegateImpl() {
-    ResetCounts();
+  explicit CaptureWindowDelegateImpl()
+      : capture_lost_count_(0),
+        mouse_event_count_(0),
+        touch_event_count_(0) {
   }
 
-  void ResetCounts() {
-    capture_changed_event_count_ = 0;
-    capture_lost_count_ = 0;
-    mouse_event_count_ = 0;
-    touch_event_count_ = 0;
-  }
-
-  int capture_changed_event_count() const {
-    return capture_changed_event_count_;
-  }
   int capture_lost_count() const { return capture_lost_count_; }
+  void set_capture_lost_count(int value) { capture_lost_count_ = value; }
   int mouse_event_count() const { return mouse_event_count_; }
+  void set_mouse_event_count(int value) { mouse_event_count_ = value; }
   int touch_event_count() const { return touch_event_count_; }
+  void set_touch_event_count(int value) { touch_event_count_ = value; }
 
   virtual bool OnMouseEvent(MouseEvent* event) OVERRIDE {
-    if (event->type() == ui::ET_MOUSE_CAPTURE_CHANGED)
-      capture_changed_event_count_++;
     mouse_event_count_++;
     return false;
   }
@@ -148,7 +141,6 @@ class CaptureWindowDelegateImpl : public TestWindowDelegate {
   }
 
  private:
-  int capture_changed_event_count_;
   int capture_lost_count_;
   int mouse_event_count_;
   int touch_event_count_;
@@ -487,34 +479,29 @@ TEST_F(WindowTest, CaptureTests) {
       &delegate, 0, gfx::Rect(0, 0, 20, 20), NULL));
   EXPECT_FALSE(window->HasCapture());
 
-  delegate.ResetCounts();
-
   // Do a capture.
   window->SetCapture();
   EXPECT_TRUE(window->HasCapture());
   EXPECT_EQ(0, delegate.capture_lost_count());
-  EXPECT_EQ(0, delegate.capture_changed_event_count());
   EventGenerator generator(gfx::Point(50, 50));
   generator.PressLeftButton();
   EXPECT_EQ(1, delegate.mouse_event_count());
   generator.ReleaseLeftButton();
 
   EXPECT_EQ(2, delegate.mouse_event_count());
-  delegate.ResetCounts();
+  delegate.set_mouse_event_count(0);
 
   TouchEvent touchev(ui::ET_TOUCH_PRESSED, gfx::Point(50, 50), 0);
   root_window->DispatchTouchEvent(&touchev);
   EXPECT_EQ(1, delegate.touch_event_count());
-  delegate.ResetCounts();
+  delegate.set_touch_event_count(0);
 
   window->ReleaseCapture();
   EXPECT_FALSE(window->HasCapture());
   EXPECT_EQ(1, delegate.capture_lost_count());
-  EXPECT_EQ(1, delegate.capture_changed_event_count());
-  EXPECT_EQ(1, delegate.mouse_event_count());
 
   generator.PressLeftButton();
-  EXPECT_EQ(1, delegate.mouse_event_count());
+  EXPECT_EQ(0, delegate.mouse_event_count());
 
   root_window->DispatchTouchEvent(&touchev);
   EXPECT_EQ(0, delegate.touch_event_count());
@@ -539,27 +526,21 @@ TEST_F(WindowTest, ChangeCaptureWhileMouseDown) {
   EXPECT_FALSE(window->HasCapture());
 
   // Do a capture.
-  delegate.ResetCounts();
   window->SetCapture();
+  delegate.set_mouse_event_count(0);
   EXPECT_TRUE(window->HasCapture());
   EXPECT_EQ(0, delegate.capture_lost_count());
-  EXPECT_EQ(0, delegate.capture_changed_event_count());
   EventGenerator generator(gfx::Point(50, 50));
   generator.PressLeftButton();
-  EXPECT_EQ(1, delegate.capture_lost_count());
-  EXPECT_EQ(1, delegate.capture_changed_event_count());
   EXPECT_EQ(1, delegate.mouse_event_count());
+  delegate.set_mouse_event_count(0);
 
   // Reset the capture.
   window->ReleaseCapture();
-  delegate.ResetCounts();
-  delegate2.ResetCounts();
-
   w2->SetCapture();
+  delegate2.set_mouse_event_count(0);
   generator.MoveMouseTo(gfx::Point(40, 40), 2);
-  EXPECT_EQ(1, delegate.capture_lost_count());
-  EXPECT_EQ(1, delegate.capture_changed_event_count());
-  EXPECT_EQ(1, delegate.mouse_event_count());
+  EXPECT_EQ(0, delegate.mouse_event_count());
   EXPECT_EQ(2, delegate2.mouse_event_count());
 }
 
