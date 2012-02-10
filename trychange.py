@@ -539,6 +539,10 @@ def TryChange(argv,
                     help="Only use specifics build slaves, ex: "
                          "'--bot win,layout_mac'; see the try "
                          "server waterfall for the slave's name")
+  group.add_option("-B", "--print_bots", action="store_true",
+                    help="Print bots we would use (e.g. from PRESUBMIT.py)"
+                         " and exit.  Do not send patch.  Like --dry_run"
+                         " but less verbose.")
   group.add_option("-r", "--revision",
                     help="Revision to use for the try job; default: the "
                          "revision will be determined by the try server; see "
@@ -787,6 +791,12 @@ def TryChange(argv,
         pass
       # If no bot is specified, either the default pool will be selected or the
       # try server will refuse the job. Either case we don't need to interfere.
+
+    if options.print_bots:
+      print 'Bots which would be used:'
+      for bot in options.bot:
+        print '  %s' % bot
+      return 0
 
     # Send the patch.
     if options.send_patch:
