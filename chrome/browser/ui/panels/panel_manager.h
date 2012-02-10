@@ -94,9 +94,6 @@ class PanelManager : public AutoHidingDesktopBar::Observer {
     return overflow_strip_.get();
   }
 
-  // Width of the overflow strip in compact state i.e mouse not hovering over.
-  int overflow_strip_width() const;
-
   // Reduces time interval in tests to shorten test run time.
   // Wrapper should be used around all time intervals in panels code.
   static inline double AdjustTimeInterval(double interval) {

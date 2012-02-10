@@ -237,6 +237,7 @@ BrowserTitlebar::BrowserTitlebar(BrowserWindowGtk* browser_window,
       app_mode_title_(NULL),
       using_custom_frame_(false),
       window_has_focus_(false),
+      window_has_mouse_(false),
       display_avatar_on_left_(false),
       theme_service_(NULL) {
   Init();
@@ -302,6 +303,13 @@ void BrowserTitlebar::Init() {
 
   g_signal_connect(window_, "window-state-event",
                    G_CALLBACK(OnWindowStateChangedThunk), this);
+
+  if (IsTypePanel()) {
+    g_signal_connect(window_, "enter-notify-event",
+                     G_CALLBACK(OnEnterNotifyThunk), this);
+    g_signal_connect(window_, "leave-notify-event",
+                     G_CALLBACK(OnLeaveNotifyThunk), this);
+  }
 
   // Allocate the two button boxes on the left and right parts of the bar. These
   // are always allocated, but only displayed in incognito mode or when using
@@ -715,13 +723,9 @@ void BrowserTitlebar::UpdateTitlebarAlignment() {
       gtk_widget_show(top_padding_right_);
   }
   if (close_button_.get()) {
-    if (browser_window_->ShowCloseButton()) {
-      gtk_widget_set_size_request(close_button_->widget(),
-                                  close_button_req.width,
-                                  close_button_req.height);
-    } else {
-      gtk_widget_hide(close_button_->widget());
-    }
+    gtk_widget_set_size_request(close_button_->widget(),
+                                close_button_req.width,
+                                close_button_req.height);
   }
   if (minimize_button_.get()) {
     gtk_widget_set_size_request(minimize_button_->widget(),
@@ -899,6 +903,32 @@ gboolean BrowserTitlebar::OnScroll(GtkWidget* widget, GdkEventScroll* event) {
   return TRUE;
 }
 
+gboolean BrowserTitlebar::OnEnterNotify(GtkWidget* widget,
+                                        GdkEventCrossing* event) {
+  // Ignore if entered from a child widget.
+  if (event->detail == GDK_NOTIFY_INFERIOR)
+    return FALSE;
+
+  if (window_ && panel_wrench_button_.get())
+    gtk_widget_show(panel_wrench_button_->widget());
+
+  window_has_mouse_ = TRUE;
+  return FALSE;
+}
+
+gboolean BrowserTitlebar::OnLeaveNotify(GtkWidget* widget,
+                                        GdkEventCrossing* event) {
+  // Ignore if left towards a child widget.
+  if (event->detail == GDK_NOTIFY_INFERIOR)
+    return FALSE;
+
+  if (window_ && panel_wrench_button_.get() && !window_has_focus_)
+    gtk_widget_hide(panel_wrench_button_->widget());
+
+  window_has_mouse_ = FALSE;
+  return FALSE;
+}
+
 // static
 void BrowserTitlebar::OnButtonClicked(GtkWidget* button) {
   if (close_button_.get() && close_button_->widget() == button) {
@@ -975,22 +1005,6 @@ void BrowserTitlebar::SendEnterNotifyToCloseButtonIfUnderMouse() {
   g_signal_emit_by_name(GTK_OBJECT(close_button_->widget()),
                         "enter-notify-event", event,
                         &return_value);
-}
-
-int BrowserTitlebar::IconOnlyWidth() {
-  GtkAllocation allocation;
-  gtk_widget_get_allocation(app_mode_favicon_, &allocation);
-  return 2 * kFrameBorderThickness + allocation.width;
-}
-
-void BrowserTitlebar::ShowPanelWrenchButton() {
-  if (panel_wrench_button_.get())
-    gtk_widget_show(panel_wrench_button_->widget());
-}
-
-void BrowserTitlebar::HidePanelWrenchButton() {
-  if (panel_wrench_button_.get())
-    gtk_widget_hide(panel_wrench_button_->widget());
 }
 
 bool BrowserTitlebar::IsCommandIdEnabled(int command_id) const {
@@ -1080,6 +1094,12 @@ void BrowserTitlebar::ActiveWindowChanged(GdkWindow* active_window) {
 
   window_has_focus_ =
       gtk_widget_get_window(GTK_WIDGET(window_)) == active_window;
+  if (IsTypePanel()) {
+    if (window_has_focus_ || window_has_mouse_)
+      gtk_widget_show(panel_wrench_button_->widget());
+    else
+      gtk_widget_hide(panel_wrench_button_->widget());
+  }
   UpdateTextColor();
 }
 

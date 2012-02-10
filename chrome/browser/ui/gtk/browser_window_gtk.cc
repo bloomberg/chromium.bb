@@ -1263,11 +1263,6 @@ void BrowserWindowGtk::Observe(int type,
       }
       break;
     }
-
-    // There may be other notifications that fall through from a derived class
-    // implementation. Not having an assert here for unexpected notifications
-    // allows for the case where the base class and derived class both want to
-    // process certain notifications.
   }
 }
 
@@ -2505,9 +2500,6 @@ BrowserWindowGtk::TitleDecoration BrowserWindowGtk::GetWindowTitle(
   return PLAIN_TEXT;
 }
 
-bool BrowserWindowGtk::ShowCloseButton() const {
-  return true;
-}
 
 // static
 bool BrowserWindowGtk::GetCustomFramePrefDefault() {
