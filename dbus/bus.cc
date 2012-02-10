@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -208,17 +208,24 @@ Bus::~Bus() {
 
 ObjectProxy* Bus::GetObjectProxy(const std::string& service_name,
                                  const std::string& object_path) {
+  return GetObjectProxyWithOptions(service_name, object_path,
+                                   ObjectProxy::DEFAULT_OPTIONS);
+}
+
+ObjectProxy* Bus::GetObjectProxyWithOptions(const std::string& service_name,
+                                            const std::string& object_path,
+                                            int options) {
   AssertOnOriginThread();
 
   // Check if we already have the requested object proxy.
-  const std::string key = service_name + object_path;
+  const ObjectProxyTable::key_type key(service_name + object_path, options);
   ObjectProxyTable::iterator iter = object_proxy_table_.find(key);
   if (iter != object_proxy_table_.end()) {
     return iter->second;
   }
 
   scoped_refptr<ObjectProxy> object_proxy =
-      new ObjectProxy(this, service_name, object_path);
+      new ObjectProxy(this, service_name, object_path, options);
   object_proxy_table_[key] = object_proxy;
 
   return object_proxy.get();

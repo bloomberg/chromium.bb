@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -195,6 +195,13 @@ class Bus : public base::RefCountedThreadSafe<Bus> {
   // Must be called in the origin thread.
   virtual ObjectProxy* GetObjectProxy(const std::string& service_name,
                                       const std::string& object_path);
+
+  // Same as above, but also takes a bitfield of ObjectProxy::Options.
+  // See object_proxy.h for available options.
+  virtual ObjectProxy* GetObjectProxyWithOptions(
+      const std::string& service_name,
+      const std::string& object_path,
+      int options);
 
   // Gets the exported object for the given service name and the object
   // path. The caller must not delete the returned object.
@@ -459,9 +466,11 @@ class Bus : public base::RefCountedThreadSafe<Bus> {
       filter_functions_added_;
 
   // ObjectProxyTable is used to hold the object proxies created by the
-  // bus object. Key is a concatenated string of service name + object path,
-  // like "org.chromium.TestService/org/chromium/TestObject".
-  typedef std::map<std::string,
+  // bus object. Key is a pair; the first part is a concatenated string of
+  // service name + object path, like
+  // "org.chromium.TestService/org/chromium/TestObject".
+  // The second part is the ObjectProxy::Options for the proxy.
+  typedef std::map<std::pair<std::string, int>,
                    scoped_refptr<dbus::ObjectProxy> > ObjectProxyTable;
   ObjectProxyTable object_proxy_table_;
 

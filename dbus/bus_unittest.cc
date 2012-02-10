@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -44,6 +44,38 @@ TEST(BusTest, GetObjectProxy) {
   dbus::ObjectProxy* object_proxy3 =
       bus->GetObjectProxy("org.chromium.TestService",
                           "/org/chromium/DifferentTestObject");
+  ASSERT_TRUE(object_proxy3);
+  EXPECT_NE(object_proxy1, object_proxy3);
+
+  bus->ShutdownAndBlock();
+}
+
+TEST(BusTest, GetObjectProxyIgnoreUnknownService) {
+  dbus::Bus::Options options;
+  scoped_refptr<dbus::Bus> bus = new dbus::Bus(options);
+
+  dbus::ObjectProxy* object_proxy1 =
+      bus->GetObjectProxyWithOptions(
+          "org.chromium.TestService",
+          "/org/chromium/TestObject",
+          dbus::ObjectProxy::IGNORE_SERVICE_UNKNOWN_ERRORS);
+  ASSERT_TRUE(object_proxy1);
+
+  // This should return the same object.
+  dbus::ObjectProxy* object_proxy2 =
+      bus->GetObjectProxyWithOptions(
+          "org.chromium.TestService",
+          "/org/chromium/TestObject",
+          dbus::ObjectProxy::IGNORE_SERVICE_UNKNOWN_ERRORS);
+  ASSERT_TRUE(object_proxy2);
+  EXPECT_EQ(object_proxy1, object_proxy2);
+
+  // This should not.
+  dbus::ObjectProxy* object_proxy3 =
+      bus->GetObjectProxyWithOptions(
+          "org.chromium.TestService",
+          "/org/chromium/DifferentTestObject",
+          dbus::ObjectProxy::IGNORE_SERVICE_UNKNOWN_ERRORS);
   ASSERT_TRUE(object_proxy3);
   EXPECT_NE(object_proxy1, object_proxy3);
 

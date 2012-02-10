@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -23,6 +23,7 @@ class ScopedDBusError {
 
   DBusError* get() { return &error_; }
   bool is_set() { return dbus_error_is_set(&error_); }
+  const char* name() { return error_.name; }
   const char* message() { return error_.message; }
 
  private:

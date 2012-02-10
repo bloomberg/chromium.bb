@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,7 @@
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/metrics/histogram.h"
+#include "base/string_piece.h"
 #include "base/stringprintf.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
@@ -16,6 +17,8 @@
 #include "dbus/scoped_dbus_error.h"
 
 namespace {
+
+const char kErrorServiceUnknown[] = "org.freedesktop.DBus.Error.ServiceUnknown";
 
 // Used for success ratio histograms. 1 for success, 0 for failure.
 const int kSuccessRatioHistogramMaxValue = 2;
@@ -39,11 +42,14 @@ namespace dbus {
 
 ObjectProxy::ObjectProxy(Bus* bus,
                          const std::string& service_name,
-                         const std::string& object_path)
+                         const std::string& object_path,
+                         int options)
     : bus_(bus),
       service_name_(service_name),
       object_path_(object_path),
-      filter_added_(false) {
+      filter_added_(false),
+      ignore_service_unknown_errors_(
+          options & IGNORE_SERVICE_UNKNOWN_ERRORS) {
 }
 
 ObjectProxy::~ObjectProxy() {
@@ -75,8 +81,8 @@ Response* ObjectProxy::CallMethodAndBlock(MethodCall* method_call,
                             kSuccessRatioHistogramMaxValue);
 
   if (!response_message) {
-    LOG(ERROR) << "Failed to call method: "
-               << (error.is_set() ? error.message() : "");
+    LogMethodCallFailure(error.is_set() ? error.name() : "unknown error type",
+                         error.is_set() ? error.message() : "");
     return NULL;
   }
   // Record time spent for the method call. Don't include failures.
@@ -236,8 +242,7 @@ void ObjectProxy::RunResponseCallback(ResponseCallback response_callback,
     dbus::MessageReader reader(error_response.get());
     std::string error_message;
     reader.PopString(&error_message);
-    LOG(ERROR) << "Failed to call method: " << error_response->GetErrorName()
-               << ": " << error_message;
+    LogMethodCallFailure(error_response->GetErrorName(), error_message);
     // We don't give the error message to the callback.
     response_callback.Run(NULL);
   } else {
@@ -414,6 +419,15 @@ DBusHandlerResult ObjectProxy::HandleMessageThunk(
     void* user_data) {
   ObjectProxy* self = reinterpret_cast<ObjectProxy*>(user_data);
   return self->HandleMessage(connection, raw_message);
+}
+
+void ObjectProxy::LogMethodCallFailure(
+    const base::StringPiece& error_name,
+    const base::StringPiece& error_message) const {
+  if (ignore_service_unknown_errors_ && error_name == kErrorServiceUnknown)
+    return;
+  LOG(ERROR) << "Failed to call method: " << error_name
+             << ": " << error_message;
 }
 
 }  // namespace dbus

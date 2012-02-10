@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,6 +21,10 @@ class MockBus : public Bus {
 
   MOCK_METHOD2(GetObjectProxy, ObjectProxy*(const std::string& service_name,
                                             const std::string& object_path));
+  MOCK_METHOD3(GetObjectProxyWithOptions,
+               ObjectProxy*(const std::string& service_name,
+                            const std::string& object_path,
+                            int options));
   MOCK_METHOD2(GetExportedObject, ExportedObject*(
       const std::string& service_name,
       const std::string& object_path));
