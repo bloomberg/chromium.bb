@@ -454,8 +454,7 @@ void HistoryURLProvider::DoAutocomplete(history::HistoryBackend* backend,
                                                            params->trim_http));
 
   // Get the matching URLs from the DB
-  typedef std::vector<history::URLRow> URLRowVector;
-  URLRowVector url_matches;
+  history::URLRows url_matches;
   history::HistoryMatches history_matches;
 
   for (history::Prefixes::const_iterator i(prefixes_.begin());
@@ -470,7 +469,7 @@ void HistoryURLProvider::DoAutocomplete(history::HistoryBackend* backend,
     // reduce the list to the best kMaxMatches results.
     db->AutocompleteForPrefix(UTF16ToUTF8(i->prefix + params->input.text()),
                               kMaxMatches * 2, (backend == NULL), &url_matches);
-    for (URLRowVector::const_iterator j(url_matches.begin());
+    for (history::URLRows::const_iterator j(url_matches.begin());
          j != url_matches.end(); ++j) {
       const history::Prefix* best_prefix = BestPrefix(j->url(), string16());
       DCHECK(best_prefix != NULL);

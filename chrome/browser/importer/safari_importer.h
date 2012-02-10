@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -92,7 +92,7 @@ class SafariImporter : public Importer {
   double HistoryTimeToEpochTime(NSString* history_time);
 
   // Parses Safari's history and loads it into the input array.
-  void ParseHistoryItems(std::vector<history::URLRow>* history_items);
+  void ParseHistoryItems(history::URLRows* history_items);
 
   // Opens the favicon database file.
   bool OpenDatabase(sql::Connection* db);

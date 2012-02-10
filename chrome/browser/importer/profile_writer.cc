@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -96,7 +96,7 @@ void ProfileWriter::AddIE7PasswordInfo(const IE7PasswordInfo& info) {
 }
 #endif
 
-void ProfileWriter::AddHistoryPage(const std::vector<history::URLRow>& page,
+void ProfileWriter::AddHistoryPage(const history::URLRows& page,
                                    history::VisitSource visit_source) {
   profile_->GetHistoryService(Profile::EXPLICIT_ACCESS)->
       AddPagesWithDetails(page, visit_source);

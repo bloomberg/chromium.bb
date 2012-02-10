@@ -129,7 +129,7 @@ bool TypedUrlModelAssociator::AssociateModels(SyncError* error) {
   DCHECK(expected_loop_ == MessageLoop::current());
   if (IsAbortPending())
     return false;
-  std::vector<history::URLRow> typed_urls;
+  history::URLRows typed_urls;
   if (!history_backend_->GetAllTypedURLs(&typed_urls)) {
     error->Reset(FROM_HERE,
                 "Could not get the typed_url entries.",
@@ -139,7 +139,7 @@ bool TypedUrlModelAssociator::AssociateModels(SyncError* error) {
 
   // Get all the visits.
   std::map<history::URLID, history::VisitVector> visit_vectors;
-  for (std::vector<history::URLRow>::iterator ix = typed_urls.begin();
+  for (history::URLRows::iterator ix = typed_urls.begin();
        ix != typed_urls.end();) {
     if (IsAbortPending())
       return false;
@@ -156,7 +156,7 @@ bool TypedUrlModelAssociator::AssociateModels(SyncError* error) {
       ++ix;
   }
 
-  TypedUrlVector new_urls;
+  history::URLRows new_urls;
   TypedUrlVisitVector new_visits;
   TypedUrlUpdateVector updated_urls;
 
@@ -172,7 +172,7 @@ bool TypedUrlModelAssociator::AssociateModels(SyncError* error) {
     }
 
     std::set<std::string> current_urls;
-    for (std::vector<history::URLRow>::iterator ix = typed_urls.begin();
+    for (history::URLRows::iterator ix = typed_urls.begin();
          ix != typed_urls.end(); ++ix) {
       if (IsAbortPending())
         return false;
@@ -359,7 +359,7 @@ bool TypedUrlModelAssociator::UpdateFromSyncDB(
     TypedUrlVisitVector* visits_to_add,
     history::VisitVector* visits_to_remove,
     TypedUrlUpdateVector* updated_urls,
-    TypedUrlVector* new_urls) {
+    history::URLRows* new_urls) {
   history::URLRow new_url(GURL(typed_url.url()));
   visits_to_add->push_back(std::pair<GURL, std::vector<history::VisitInfo> >(
       new_url.url(), std::vector<history::VisitInfo>()));
@@ -512,14 +512,14 @@ bool TypedUrlModelAssociator::GetSyncIdForTaggedNode(const std::string& tag,
 }
 
 bool TypedUrlModelAssociator::WriteToHistoryBackend(
-    const TypedUrlVector* new_urls,
+    const history::URLRows* new_urls,
     const TypedUrlUpdateVector* updated_urls,
     const TypedUrlVisitVector* new_visits,
     const history::VisitVector* deleted_visits) {
   if (new_urls) {
 #ifndef NDEBUG
     // All of these URLs should already have been associated.
-    for (TypedUrlVector::const_iterator url = new_urls->begin();
+    for (history::URLRows::const_iterator url = new_urls->begin();
          url != new_urls->end(); ++url) {
       DCHECK(IsAssociated(url->url().spec()));
     }

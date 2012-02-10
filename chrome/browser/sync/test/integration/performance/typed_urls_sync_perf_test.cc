@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -65,18 +65,18 @@ void TypedUrlsSyncPerfTest::AddURLs(int profile, int num_urls) {
 }
 
 void TypedUrlsSyncPerfTest::UpdateURLs(int profile) {
-  std::vector<history::URLRow> urls = GetTypedUrlsFromClient(profile);
-  for (std::vector<history::URLRow>::const_iterator it = urls.begin();
-       it != urls.end(); ++it) {
+  history::URLRows urls = GetTypedUrlsFromClient(profile);
+  for (history::URLRows::const_iterator it = urls.begin(); it != urls.end();
+       ++it) {
     AddUrlToHistory(profile, it->url());
   }
 }
 
 void TypedUrlsSyncPerfTest::RemoveURLs(int profile) {
-  const std::vector<history::URLRow>& urls = GetTypedUrlsFromClient(profile);
+  const history::URLRows& urls = GetTypedUrlsFromClient(profile);
   std::vector<GURL> gurls;
-  for (std::vector<history::URLRow>::const_iterator it = urls.begin();
-       it != urls.end(); ++it) {
+  for (history::URLRows::const_iterator it = urls.begin(); it != urls.end();
+       ++it) {
     gurls.push_back(it->url());
   }
   DeleteUrlsFromHistory(profile, gurls);

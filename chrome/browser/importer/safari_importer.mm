@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -322,7 +322,7 @@ void SafariImporter::ImportPasswords() {
 }
 
 void SafariImporter::ImportHistory() {
-  std::vector<history::URLRow> rows;
+  history::URLRows rows;
   ParseHistoryItems(&rows);
 
   if (!rows.empty() && !cancelled()) {
@@ -339,8 +339,7 @@ double SafariImporter::HistoryTimeToEpochTime(NSString* history_time) {
       kCFAbsoluteTimeIntervalSince1970;
 }
 
-void SafariImporter::ParseHistoryItems(
-    std::vector<history::URLRow>* history_items) {
+void SafariImporter::ParseHistoryItems(history::URLRows* history_items) {
   DCHECK(history_items);
 
   // Construct ~/Library/Safari/History.plist path

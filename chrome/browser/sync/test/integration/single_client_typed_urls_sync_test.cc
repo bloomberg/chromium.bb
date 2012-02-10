@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -26,7 +26,7 @@ class SingleClientTypedUrlsSyncTest : public SyncTest {
 
 IN_PROC_BROWSER_TEST_F(SingleClientTypedUrlsSyncTest, Sanity) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  std::vector<history::URLRow> urls = GetTypedUrlsFromClient(0);
+  history::URLRows urls = GetTypedUrlsFromClient(0);
   ASSERT_EQ(0U, urls.size());
 
   GURL new_url(kSanityHistoryUrl);
@@ -46,7 +46,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientTypedUrlsSyncTest, Sanity) {
 
 IN_PROC_BROWSER_TEST_F(SingleClientTypedUrlsSyncTest, TwoVisits) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  std::vector<history::URLRow> urls = GetTypedUrlsFromClient(0);
+  history::URLRows urls = GetTypedUrlsFromClient(0);
   ASSERT_EQ(0U, urls.size());
 
   GURL new_url(kSanityHistoryUrl);

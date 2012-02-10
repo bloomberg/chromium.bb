@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -37,8 +37,7 @@ class FlushHistoryDBQueueTask : public HistoryDBTask {
 
 class GetTypedUrlsTask : public HistoryDBTask {
  public:
-  GetTypedUrlsTask(std::vector<history::URLRow>* rows,
-                   base::WaitableEvent* event)
+  GetTypedUrlsTask(history::URLRows* rows, base::WaitableEvent* event)
       : rows_(rows), wait_event_(event) {}
 
   virtual bool RunOnDBThread(history::HistoryBackend* backend,
@@ -51,7 +50,7 @@ class GetTypedUrlsTask : public HistoryDBTask {
 
   virtual void DoneRunOnMainThread() OVERRIDE {}
  private:
-  std::vector<history::URLRow>* rows_;
+  history::URLRows* rows_;
   base::WaitableEvent* wait_event_;
 };
 
@@ -152,10 +151,9 @@ void AddToHistory(HistoryService* service,
   service->SetPageTitle(url, ASCIIToUTF16(url.spec() + " - title"));
 }
 
-std::vector<history::URLRow> GetTypedUrlsFromHistoryService(
-    HistoryService* service) {
+history::URLRows GetTypedUrlsFromHistoryService(HistoryService* service) {
   CancelableRequestConsumer cancelable_consumer;
-  std::vector<history::URLRow> rows;
+  history::URLRows rows;
   base::WaitableEvent wait_event(true, false);
   service->ScheduleDBTask(new GetTypedUrlsTask(&rows, &wait_event),
                           &cancelable_consumer);
@@ -200,7 +198,7 @@ static base::Time* timestamp = NULL;
 
 namespace typed_urls_helper {
 
-std::vector<history::URLRow> GetTypedUrlsFromClient(int index) {
+history::URLRows GetTypedUrlsFromClient(int index) {
   HistoryService* service =
       test()->GetProfile(index)->GetHistoryServiceWithoutCreating();
   return GetTypedUrlsFromHistoryService(service);
@@ -288,9 +286,8 @@ void DeleteUrlsFromHistory(int index, const std::vector<GURL>& urls) {
   WaitForHistoryDBThread(index);
 }
 
-void AssertURLRowVectorsAreEqual(
-    const std::vector<history::URLRow>& left,
-    const std::vector<history::URLRow>& right) {
+void AssertURLRowVectorsAreEqual(const history::URLRows& left,
+                                 const history::URLRows& right) {
   ASSERT_EQ(left.size(), right.size());
   for (size_t i = 0; i < left.size(); ++i) {
     // URLs could be out-of-order, so look for a matching URL in the second
@@ -343,10 +340,10 @@ void AssertURLRowsAreEqual(
 void AssertAllProfilesHaveSameURLsAsVerifier() {
   HistoryService* verifier_service =
       test()->verifier()->GetHistoryService(Profile::IMPLICIT_ACCESS);
-  std::vector<history::URLRow> verifier_urls =
+  history::URLRows verifier_urls =
       GetTypedUrlsFromHistoryService(verifier_service);
   for (int i = 0; i < test()->num_clients(); ++i) {
-    std::vector<history::URLRow> urls = GetTypedUrlsFromClient(i);
+    history::URLRows urls = GetTypedUrlsFromClient(i);
     AssertURLRowVectorsAreEqual(verifier_urls, urls);
   }
 }

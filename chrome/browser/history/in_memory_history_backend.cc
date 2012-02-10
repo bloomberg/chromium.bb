@@ -110,7 +110,7 @@ void InMemoryHistoryBackend::OnTypedURLsModified(
   // TODO(brettw) currently the rows in the in-memory database don't match the
   // IDs in the main database. This sucks. Instead of Add and Remove, we should
   // have Sync(), which would take the ID if it's given and add it.
-  std::vector<history::URLRow>::const_iterator i;
+  URLRows::const_iterator i;
   for (i = details.changed_urls.begin();
        i != details.changed_urls.end(); i++) {
     URLID id = db_->GetRowForURL(i->url(), NULL);

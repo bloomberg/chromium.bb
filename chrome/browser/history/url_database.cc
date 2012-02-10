@@ -99,7 +99,7 @@ bool URLDatabase::GetURLRow(URLID url_id, URLRow* info) {
   return false;
 }
 
-bool URLDatabase::GetAllTypedUrls(std::vector<history::URLRow>* urls) {
+bool URLDatabase::GetAllTypedUrls(URLRows* urls) {
   sql::Statement statement(GetDB().GetCachedStatement(SQL_FROM_HERE,
       "SELECT" HISTORY_URL_ROW_FIELDS "FROM urls WHERE typed_count > 0"));
 
@@ -266,7 +266,7 @@ bool URLDatabase::InitIconMappingEnumeratorForEverything(
 bool URLDatabase::AutocompleteForPrefix(const std::string& prefix,
                                         size_t max_results,
                                         bool typed_only,
-                                        std::vector<history::URLRow>* results) {
+                                        URLRows* results) {
   // NOTE: this query originally sorted by starred as the second parameter. But
   // as bookmarks is no longer part of the db we no longer include the order
   // by clause.
@@ -315,7 +315,7 @@ bool URLDatabase::IsTypedHost(const std::string& host) {
     chrome::kHttpsScheme,
     chrome::kFtpScheme
   };
-  std::vector<history::URLRow> dummy;
+  URLRows dummy;
   for (size_t i = 0; i < arraysize(schemes); ++i) {
     std::string scheme_and_host(schemes[i]);
     scheme_and_host += chrome::kStandardSchemeSeparator + host;

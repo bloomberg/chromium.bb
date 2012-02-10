@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -46,7 +46,7 @@ class SafariImporterTest : public PlatformTest {
 TEST_F(SafariImporterTest, HistoryImport) {
   scoped_refptr<SafariImporter> importer(GetSafariImporter());
 
-  std::vector<history::URLRow> history_items;
+  history::URLRows history_items;
   importer->ParseHistoryItems(&history_items);
 
   // Should be 2 history items.

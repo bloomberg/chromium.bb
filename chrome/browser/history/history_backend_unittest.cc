@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -248,7 +248,7 @@ TEST_F(HistoryBackendTest, DeleteAll) {
   row2.set_last_visit(Time::Now());
   backend_->thumbnail_db_->AddIconMapping(row2.url(), favicon2);
 
-  std::vector<URLRow> rows;
+  URLRows rows;
   rows.push_back(row2);  // Reversed order for the same reason as favicons.
   rows.push_back(row1);
   backend_->AddPagesWithDetails(rows, history::SOURCE_BROWSED);
@@ -437,7 +437,7 @@ TEST_F(HistoryBackendTest, URLsNoLongerBookmarked) {
   row2.set_last_visit(Time::Now());
   EXPECT_TRUE(backend_->thumbnail_db_->AddIconMapping(row2.url(), favicon2));
 
-  std::vector<URLRow> rows;
+  URLRows rows;
   rows.push_back(row2);  // Reversed order for the same reason as favicons.
   rows.push_back(row1);
   backend_->AddPagesWithDetails(rows, history::SOURCE_BROWSED);
@@ -599,7 +599,7 @@ TEST_F(HistoryBackendTest, ImportedFaviconsTest) {
   URLRow row2(GURL("http://news.google.com/"));
   row2.set_visit_count(1);
   row2.set_last_visit(Time::Now());
-  std::vector<URLRow> rows;
+  URLRows rows;
   rows.push_back(row1);
   rows.push_back(row2);
   backend_->AddPagesWithDetails(rows, history::SOURCE_BROWSED);

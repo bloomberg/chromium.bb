@@ -407,24 +407,22 @@ void HistoryService::AddPageWithDetails(const GURL& url,
   row.set_last_visit(last_visit);
   row.set_hidden(hidden);
 
-  std::vector<history::URLRow> rows;
+  history::URLRows rows;
   rows.push_back(row);
 
   ScheduleAndForget(PRIORITY_NORMAL,
                     &HistoryBackend::AddPagesWithDetails, rows, visit_source);
 }
 
-void HistoryService::AddPagesWithDetails(
-    const std::vector<history::URLRow>& info,
-    history::VisitSource visit_source) {
+void HistoryService::AddPagesWithDetails(const history::URLRows& info,
+                                         history::VisitSource visit_source) {
 
   // Add to the visited links system.
   VisitedLinkMaster* visited_links;
   if (profile_ && (visited_links = profile_->GetVisitedLinkMaster())) {
     std::vector<GURL> urls;
     urls.reserve(info.size());
-    for (std::vector<history::URLRow>::const_iterator i = info.begin();
-         i != info.end();
+    for (history::URLRows::const_iterator i = info.begin(); i != info.end();
          ++i)
       urls.push_back(i->url());
 

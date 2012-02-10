@@ -46,7 +46,7 @@ struct URLsModifiedDetails : public HistoryDetails {
   virtual ~URLsModifiedDetails();
 
   // Lists the information for each of the URLs affected.
-  std::vector<URLRow> changed_urls;
+  URLRows changed_urls;
 };
 
 // Details for NOTIFICATION_HISTORY_URLS_DELETED.
@@ -58,7 +58,7 @@ struct URLsDeletedDetails : public HistoryDetails {
   bool all_history;
 
   // The URLRows which have been deleted.
-  std::vector<URLRow> rows;
+  URLRows rows;
 
   // The list of unique URLs affected. This is valid only when a subset of
   // history is deleted. When all of it is deleted, this will be empty, since

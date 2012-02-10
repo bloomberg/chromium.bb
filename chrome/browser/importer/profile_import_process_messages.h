@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -410,7 +410,7 @@ IPC_MESSAGE_CONTROL1(ProfileImportProcessHostMsg_NotifyHistoryImportStart,
                      int  /* total number of history::URLRow items */)
 
 IPC_MESSAGE_CONTROL2(ProfileImportProcessHostMsg_NotifyHistoryImportGroup,
-                     std::vector<history::URLRow>,
+                     history::URLRows,
                      int  /* the source of URLs as in history::VisitSource.*/
                           /* To simplify IPC call, pass as an integer */)
 

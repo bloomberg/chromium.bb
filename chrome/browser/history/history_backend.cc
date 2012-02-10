@@ -761,14 +761,13 @@ std::pair<URLID, VisitID> HistoryBackend::AddPageVisit(
   return std::make_pair(url_id, visit_id);
 }
 
-void HistoryBackend::AddPagesWithDetails(const std::vector<URLRow>& urls,
+void HistoryBackend::AddPagesWithDetails(const URLRows& urls,
                                          VisitSource visit_source) {
   if (!db_.get())
     return;
 
   scoped_ptr<URLsModifiedDetails> modified(new URLsModifiedDetails);
-  for (std::vector<URLRow>::const_iterator i = urls.begin();
-       i != urls.end(); ++i) {
+  for (URLRows::const_iterator i = urls.begin(); i != urls.end(); ++i) {
     DCHECK(!i->last_visit().is_null());
 
     // We will add to either the archived database or the main one depending on
@@ -878,7 +877,7 @@ void HistoryBackend::SetPageTitle(const GURL& url,
   }
 
   bool typed_url_changed = false;
-  std::vector<URLRow> changed_urls;
+  URLRows changed_urls;
   for (size_t i = 0; i < redirects->size(); i++) {
     URLRow row;
     URLID row_id = db_->GetRowForURL(redirects->at(i), &row);
@@ -948,7 +947,7 @@ void HistoryBackend::IterateURLs(HistoryService::URLEnumerator* iterator) {
   iterator->OnComplete(false);  // Failure.
 }
 
-bool HistoryBackend::GetAllTypedURLs(std::vector<history::URLRow>* urls) {
+bool HistoryBackend::GetAllTypedURLs(URLRows* urls) {
   if (db_.get())
     return db_->GetAllTypedUrls(urls);
   return false;
@@ -2112,7 +2111,7 @@ void HistoryBackend::DeleteAllHistory() {
   if (bookmark_service)
     bookmark_service_->GetBookmarks(&starred_urls);
 
-  std::vector<URLRow> kept_urls;
+  URLRows kept_urls;
   for (size_t i = 0; i < starred_urls.size(); i++) {
     URLRow row;
     if (!db_->GetRowForURL(starred_urls[i], &row))
@@ -2174,8 +2173,7 @@ void HistoryBackend::DeleteAllHistory() {
   BroadcastNotifications(chrome::NOTIFICATION_HISTORY_URLS_DELETED, details);
 }
 
-bool HistoryBackend::ClearAllThumbnailHistory(
-    std::vector<URLRow>* kept_urls) {
+bool HistoryBackend::ClearAllThumbnailHistory(URLRows* kept_urls) {
   if (!thumbnail_db_.get()) {
     // When we have no reference to the thumbnail database, maybe there was an
     // error opening it. In this case, we just try to blow it away to try to
@@ -2199,8 +2197,7 @@ bool HistoryBackend::ClearAllThumbnailHistory(
 
   // Copy all unique favicons to the temporary table, and update all the
   // URLs to have the new IDs.
-  for (std::vector<URLRow>::iterator i = kept_urls->begin();
-       i != kept_urls->end(); ++i) {
+  for (URLRows::iterator i = kept_urls->begin(); i != kept_urls->end(); ++i) {
     std::vector<IconMapping> icon_mappings;
     if (!thumbnail_db_->GetIconMappingsForPageURL(i->url(), &icon_mappings))
       continue;
@@ -2240,8 +2237,7 @@ bool HistoryBackend::ClearAllThumbnailHistory(
   return true;
 }
 
-bool HistoryBackend::ClearAllMainHistory(
-    const std::vector<URLRow>& kept_urls) {
+bool HistoryBackend::ClearAllMainHistory(const URLRows& kept_urls) {
   // Create the duplicate URL table. We will copy the kept URLs into this.
   if (!db_->CreateTemporaryURLTable())
     return false;
@@ -2250,8 +2246,7 @@ bool HistoryBackend::ClearAllMainHistory(
   // IDs since the ID will be different in the new table.
   typedef std::map<URLID, URLID> URLIDMap;
   URLIDMap old_to_new;  // Maps original ID to new one.
-  for (std::vector<URLRow>::const_iterator i = kept_urls.begin();
-       i != kept_urls.end();
+  for (URLRows::const_iterator i = kept_urls.begin(); i != kept_urls.end();
        ++i) {
     URLID new_id = db_->AddTemporaryURL(*i);
     old_to_new[i->id()] = new_id;

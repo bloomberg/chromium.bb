@@ -69,9 +69,8 @@ class ExternalProcessImporterClient : public content::UtilityProcessHostClient {
   void OnImportItemStart(int item);
   void OnImportItemFinished(int item);
   void OnHistoryImportStart(size_t total_history_rows_count);
-  void OnHistoryImportGroup(
-      const std::vector<history::URLRow>& history_rows_group,
-      int visit_source);
+  void OnHistoryImportGroup(const history::URLRows& history_rows_group,
+                            int visit_source);
   void OnHomePageImportReady(const GURL& home_page);
   void OnBookmarksImportStart(const string16& first_folder_name,
                                       size_t total_bookmarks_count);
@@ -89,7 +88,7 @@ class ExternalProcessImporterClient : public content::UtilityProcessHostClient {
  private:
   // These variables store data being collected from the importer until the
   // entire group has been collected and is ready to be written to the profile.
-  std::vector<history::URLRow> history_rows_;
+  history::URLRows history_rows_;
   std::vector<ProfileWriter::BookmarkEntry> bookmarks_;
   std::vector<history::ImportedFaviconUsage> favicons_;
 

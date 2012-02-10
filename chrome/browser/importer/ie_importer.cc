@@ -353,7 +353,7 @@ void IEImporter::ImportHistory() {
     return;
   base::win::ScopedComPtr<IEnumSTATURL> enum_url;
   if (SUCCEEDED(result = url_history_stg2->EnumUrls(enum_url.Receive()))) {
-    std::vector<history::URLRow> rows;
+    history::URLRows rows;
     STATURL stat_url;
     ULONG fetched;
     while (!cancelled() &&

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,7 +18,7 @@ class Time;
 namespace typed_urls_helper {
 
 // Gets the typed URLs from a specific sync profile.
-std::vector<history::URLRow> GetTypedUrlsFromClient(int index);
+history::URLRows GetTypedUrlsFromClient(int index);
 
 // Gets a specific url from a specific sync profile. Returns false if the URL
 // was not found in the history DB.
@@ -62,9 +62,8 @@ void AssertAllProfilesHaveSameURLsAsVerifier();
 
 // Checks that the two vectors contain the same set of URLRows (possibly in
 // a different order).
-void AssertURLRowVectorsAreEqual(
-    const std::vector<history::URLRow>& left,
-    const std::vector<history::URLRow>& right);
+void AssertURLRowVectorsAreEqual(const history::URLRows& left,
+                                 const history::URLRows& right);
 
 // Checks that the passed URLRows are equivalent.
 void AssertURLRowsAreEqual(const history::URLRow& left,

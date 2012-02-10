@@ -87,9 +87,8 @@ void TypedUrlChangeProcessor::HandleURLsModified(
     history::URLsModifiedDetails* details) {
 
   sync_api::WriteTransaction trans(FROM_HERE, share_handle());
-  for (std::vector<history::URLRow>::iterator url =
-       details->changed_urls.begin(); url != details->changed_urls.end();
-       ++url) {
+  for (history::URLRows::iterator url = details->changed_urls.begin();
+       url != details->changed_urls.end(); ++url) {
     // Exit if we were unable to update the sync node.
     if (!CreateOrUpdateSyncNode(*url, &trans))
       return;

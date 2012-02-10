@@ -285,7 +285,7 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
 
   void ProcessDBTask(scoped_refptr<HistoryDBTaskRequest> request);
 
-  virtual bool GetAllTypedURLs(std::vector<history::URLRow>* urls);
+  virtual bool GetAllTypedURLs(URLRows* urls);
 
   virtual bool GetVisitsForURL(URLID id, VisitVector* visits);
 
@@ -341,8 +341,7 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   // added for each given URL at the last visit time in the URLRow if the
   // passed visit type != SOURCE_SYNCED (the sync code manages visits itself).
   // Each visit will have the visit_source type set.
-  void AddPagesWithDetails(const std::vector<URLRow>& info,
-                           VisitSource visit_source);
+  void AddPagesWithDetails(const URLRows& info, VisitSource visit_source);
 
 #if defined(UNIT_TEST)
   HistoryDatabase* db() const { return db_.get(); }
@@ -536,14 +535,14 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   // referenced by any URL, and also all favicons that aren't used by those
   // URLs. The favicon IDs will change, so this will update the url rows in the
   // vector to reference the new IDs.
-  bool ClearAllThumbnailHistory(std::vector<URLRow>* kept_urls);
+  bool ClearAllThumbnailHistory(URLRows* kept_urls);
 
   // Deletes all information in the history database, except for the supplied
   // set of URLs in the URL table (these should correspond to the bookmarked
   // URLs).
   //
   // The IDs of the URLs may change.
-  bool ClearAllMainHistory(const std::vector<URLRow>& kept_urls);
+  bool ClearAllMainHistory(const URLRows& kept_urls);
 
   // Returns the BookmarkService, blocking until it is loaded. This may return
   // NULL during testing.

@@ -232,7 +232,7 @@ class TestObserver : public ProfileWriter,
     ++password_count_;
   }
 
-  virtual void AddHistoryPage(const std::vector<history::URLRow>& page,
+  virtual void AddHistoryPage(const history::URLRows& page,
                               history::VisitSource visit_source) {
     // Importer should read the specified URL.
     for (size_t i = 0; i < page.size(); ++i) {
@@ -292,7 +292,7 @@ class MalformedFavoritesRegistryTestObserver
   virtual bool TemplateURLServiceIsLoaded() const { return true; }
 
   virtual void AddPasswordForm(const webkit::forms::PasswordForm& form) {}
-  virtual void AddHistoryPage(const std::vector<history::URLRow>& page,
+  virtual void AddHistoryPage(const history::URLRows& page,
                               history::VisitSource visit_source) {}
   virtual void AddKeyword(std::vector<TemplateURL*> template_url,
                           int default_keyword_index) {}

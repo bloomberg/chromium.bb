@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -33,7 +33,7 @@ IN_PROC_BROWSER_TEST_F(MultipleClientTypedUrlsSyncTest, AddToOne) {
   // Populate one client with a URL, should sync to all others.
   GURL new_url(kHistoryUrl);
   AddUrlToHistory(0, new_url);
-  std::vector<history::URLRow> urls = GetTypedUrlsFromClient(0);
+  history::URLRows urls = GetTypedUrlsFromClient(0);
   ASSERT_EQ(1U, urls.size());
   ASSERT_EQ(new_url, urls[0].url());
 
@@ -51,7 +51,7 @@ IN_PROC_BROWSER_TEST_F(MultipleClientTypedUrlsSyncTest, AddToAll) {
 
   // Populate clients with the same URL.
   for (int i = 0; i < num_clients(); ++i) {
-    std::vector<history::URLRow> urls = GetTypedUrlsFromClient(i);
+    history::URLRows urls = GetTypedUrlsFromClient(i);
     ASSERT_EQ(0U, urls.size());
 
     string16 unique_url = kHistoryUrl + base::FormatNumber(i);

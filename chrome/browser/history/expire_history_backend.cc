@@ -159,7 +159,7 @@ struct ExpireHistoryBackend::DeleteDependencies {
   // ----- Filled by DeleteOneURL -----
 
   // The URLs deleted during this operation.
-  std::vector<URLRow> deleted_urls;
+  URLRows deleted_urls;
 
   // The list of all favicon IDs that the affected URLs had. Favicons will be
   // shared between all URLs with the same favicon, so this is the set of IDs

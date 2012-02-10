@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -305,7 +305,7 @@ TEST_F(HistoryQueryTest, FTSCount) {
 TEST_F(HistoryQueryTest, FTSArchived) {
   ASSERT_TRUE(history_.get());
 
-  std::vector<URLRow> urls_to_add;
+  URLRows urls_to_add;
 
   URLRow row1(GURL("http://foo.bar/"));
   row1.set_title(UTF8ToUTF16("archived title"));

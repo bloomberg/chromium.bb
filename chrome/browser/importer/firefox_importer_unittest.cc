@@ -162,7 +162,7 @@ class FirefoxObserver : public ProfileWriter,
     ++password_count_;
   }
 
-  virtual void AddHistoryPage(const std::vector<history::URLRow>& page,
+  virtual void AddHistoryPage(const history::URLRows& page,
                               history::VisitSource visit_source) {
     ASSERT_EQ(1U, page.size());
     EXPECT_EQ("http://en-us.www.mozilla.com/", page[0].url().spec());
@@ -311,7 +311,7 @@ class Firefox3Observer : public ProfileWriter,
     ++password_count_;
   }
 
-  virtual void AddHistoryPage(const std::vector<history::URLRow>& page,
+  virtual void AddHistoryPage(const history::URLRows& page,
                               history::VisitSource visit_source) {
     ASSERT_EQ(3U, page.size());
     EXPECT_EQ("http://www.google.com/", page[0].url().spec());

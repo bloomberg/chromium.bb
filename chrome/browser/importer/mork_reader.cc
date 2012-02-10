@@ -497,7 +497,7 @@ struct TableReadClosure {
 
 void AddToHistory(MorkReader::ColumnDataList* column_values,
                   const TableReadClosure& data,
-                  std::vector<history::URLRow>* rows) {
+                  history::URLRows* rows) {
   std::string values[kColumnCount];
 
   for (size_t i = 0; i < kColumnCount; ++i) {
@@ -578,7 +578,7 @@ void ImportHistoryFromFirefox2(const FilePath& file, ImporterBridge* bridge) {
     }
   }
 
-  std::vector<history::URLRow> rows;
+  history::URLRows rows;
   for (MorkReader::iterator i = reader.begin(); i != reader.end(); ++i)
     AddToHistory(i->second, data, &rows);
   if (!rows.empty())

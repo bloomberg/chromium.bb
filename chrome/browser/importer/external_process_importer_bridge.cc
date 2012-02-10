@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -84,15 +84,15 @@ void ExternalProcessImporterBridge::SetFavicons(
 }
 
 void ExternalProcessImporterBridge::SetHistoryItems(
-    const std::vector<history::URLRow>& rows,
+    const history::URLRows& rows,
     history::VisitSource visit_source) {
   Send(new ProfileImportProcessHostMsg_NotifyHistoryImportStart(rows.size()));
 
-  std::vector<history::URLRow>::const_iterator it;
+  history::URLRows::const_iterator it;
   for (it = rows.begin(); it < rows.end();
        it = it + kNumHistoryRowsToSend) {
-    std::vector<history::URLRow> row_group;
-    std::vector<history::URLRow>::const_iterator end_group =
+    history::URLRows row_group;
+    history::URLRows::const_iterator end_group =
         it + kNumHistoryRowsToSend < rows.end() ?
         it + kNumHistoryRowsToSend : rows.end();
     row_group.assign(it, end_group);

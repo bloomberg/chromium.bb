@@ -557,7 +557,7 @@ class HistoryService : public CancelableRequestProvider,
                           history::VisitSource visit_source);
 
   // The same as AddPageWithDetails() but takes a vector.
-  void AddPagesWithDetails(const std::vector<history::URLRow>& info,
+  void AddPagesWithDetails(const history::URLRows& info,
                            history::VisitSource visit_source);
 
   // Starts the TopSites migration in the HistoryThread. Called by the

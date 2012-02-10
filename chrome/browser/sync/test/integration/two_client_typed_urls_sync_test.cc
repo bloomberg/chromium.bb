@@ -31,8 +31,8 @@ class TwoClientTypedUrlsSyncTest : public SyncTest {
   virtual ~TwoClientTypedUrlsSyncTest() {}
 
   bool CheckClientsEqual() {
-    std::vector<history::URLRow> urls = GetTypedUrlsFromClient(0);
-    std::vector<history::URLRow> urls2 = GetTypedUrlsFromClient(1);
+    history::URLRows urls = GetTypedUrlsFromClient(0);
+    history::URLRows urls2 = GetTypedUrlsFromClient(1);
     AssertURLRowVectorsAreEqual(urls, urls2);
     // Now check the visits.
     for (size_t i = 0; i < urls.size() && i < urls2.size(); i++) {
@@ -46,7 +46,7 @@ class TwoClientTypedUrlsSyncTest : public SyncTest {
 
   bool CheckNoDuplicateVisits() {
     for (int i = 0; i < num_clients(); ++i) {
-      std::vector<history::URLRow> urls = GetTypedUrlsFromClient(i);
+      history::URLRows urls = GetTypedUrlsFromClient(i);
       for (size_t j = 0; j < urls.size(); ++j) {
         history::VisitVector visits = GetVisitsFromClient(i, urls[j].id());
         if (!AreVisitsUnique(visits))
@@ -57,7 +57,7 @@ class TwoClientTypedUrlsSyncTest : public SyncTest {
   }
 
   int GetVisitCountForFirstURL(int index) {
-    std::vector<history::URLRow> urls = GetTypedUrlsFromClient(index);
+    history::URLRows urls = GetTypedUrlsFromClient(index);
     if (urls.size() == 0)
       return 0;
     else
@@ -77,7 +77,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest, Add) {
   // Populate one client with a URL, should sync to the other.
   GURL new_url(kHistoryUrl);
   AddUrlToHistory(0, new_url);
-  std::vector<history::URLRow> urls = GetTypedUrlsFromClient(0);
+  history::URLRows urls = GetTypedUrlsFromClient(0);
   ASSERT_EQ(1U, urls.size());
   ASSERT_EQ(new_url, urls[0].url());
 
@@ -102,7 +102,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest, AddExpired) {
                                content::PAGE_TRANSITION_TYPED,
                                history::SOURCE_BROWSED,
                                timestamp);
-  std::vector<history::URLRow> urls = GetTypedUrlsFromClient(0);
+  history::URLRows urls = GetTypedUrlsFromClient(0);
   ASSERT_EQ(1U, urls.size());
   ASSERT_EQ(new_url, urls[0].url());
 
@@ -124,7 +124,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest, FLAKY_AddThenDelete) {
   // Populate one client with a URL, should sync to the other.
   GURL new_url(kHistoryUrl);
   AddUrlToHistory(0, new_url);
-  std::vector<history::URLRow> urls = GetTypedUrlsFromClient(0);
+  history::URLRows urls = GetTypedUrlsFromClient(0);
   ASSERT_EQ(1U, urls.size());
   ASSERT_EQ(new_url, urls[0].url());
 
@@ -162,7 +162,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest, DisableEnableSync) {
   ASSERT_TRUE(AwaitQuiescence());
 
   // Make sure that no data was exchanged.
-  std::vector<history::URLRow> post_sync_urls = GetTypedUrlsFromClient(0);
+  history::URLRows post_sync_urls = GetTypedUrlsFromClient(0);
   ASSERT_EQ(1U, post_sync_urls.size());
   ASSERT_EQ(url1, post_sync_urls[0].url());
   post_sync_urls = GetTypedUrlsFromClient(1);
@@ -185,7 +185,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest, FLAKY_AddOneDeleteOther) {
   // Populate one client with a URL, should sync to the other.
   GURL new_url(kHistoryUrl);
   AddUrlToHistory(0, new_url);
-  std::vector<history::URLRow> urls = GetTypedUrlsFromClient(0);
+  history::URLRows urls = GetTypedUrlsFromClient(0);
   ASSERT_EQ(1U, urls.size());
   ASSERT_EQ(new_url, urls[0].url());
 
@@ -217,7 +217,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest,
   // Populate one client with a URL, should sync to the other.
   GURL new_url(kHistoryUrl);
   AddUrlToHistory(0, new_url);
-  std::vector<history::URLRow> urls = GetTypedUrlsFromClient(0);
+  history::URLRows urls = GetTypedUrlsFromClient(0);
   ASSERT_EQ(1U, urls.size());
   ASSERT_EQ(new_url, urls[0].url());
 
@@ -278,7 +278,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest,
   // At this point, we should have no duplicates (total visit count should be
   // 2). We only need to check client 0 since we already verified that both
   // clients are identical above.
-  std::vector<history::URLRow> urls = GetTypedUrlsFromClient(0);
+  history::URLRows urls = GetTypedUrlsFromClient(0);
   ASSERT_EQ(1U, urls.size());
   ASSERT_EQ(new_url, urls[0].url());
   ASSERT_TRUE(CheckNoDuplicateVisits());
@@ -305,7 +305,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest,
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
   ASSERT_TRUE(CheckClientsEqual());
-  std::vector<history::URLRow> urls = GetTypedUrlsFromClient(0);
+  history::URLRows urls = GetTypedUrlsFromClient(0);
   ASSERT_EQ(0U, urls.size());
 
   // Now, add a typed visit to the first client.
@@ -333,7 +333,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest, UpdateToNonTypedURL) {
   GURL new_url(kHistoryUrl);
   AddUrlToHistoryWithTransition(0, new_url, content::PAGE_TRANSITION_LINK,
                                 history::SOURCE_BROWSED);
-  std::vector<history::URLRow> urls = GetTypedUrlsFromClient(0);
+  history::URLRows urls = GetTypedUrlsFromClient(0);
   ASSERT_EQ(0U, urls.size());
 
   // Let sync finish.
@@ -380,7 +380,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest,
 
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  std::vector<history::URLRow> urls = GetTypedUrlsFromClient(1);
+  history::URLRows urls = GetTypedUrlsFromClient(1);
   ASSERT_EQ(1U, urls.size());
   ASSERT_EQ(browsed_url, urls[0].url());
 
@@ -416,7 +416,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest, BookmarksWithTypedVisit) {
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
 
   AssertAllProfilesHaveSameURLsAsVerifier();
-  std::vector<history::URLRow> urls = GetTypedUrlsFromClient(0);
+  history::URLRows urls = GetTypedUrlsFromClient(0);
   ASSERT_EQ(1U, urls.size());
   ASSERT_EQ(bookmark_url, urls[0].url());
   ASSERT_EQ(1, GetVisitCountForFirstURL(0));

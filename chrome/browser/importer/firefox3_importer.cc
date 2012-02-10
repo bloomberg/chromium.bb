@@ -132,7 +132,7 @@ void Firefox3Importer::ImportHistory() {
   if (!s)
     return;
 
-  std::vector<history::URLRow> rows;
+  history::URLRows rows;
   while (s.Step() && !cancelled()) {
     GURL url(s.ColumnString(0));
 
