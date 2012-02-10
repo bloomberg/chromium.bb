@@ -135,6 +135,11 @@ void NaClCopyCPUFeatures(CPUFeatures* target, const CPUFeatures* source);
 /* Fills in cpuf with feature vector for this CPU. */
 extern void GetCPUFeatures(NaClCPUData* data, CPUFeatures *cpuf);
 
+/* Either get the features for the CPU this code is running on, or a
+ * hypothetical CPU that supports all features.
+ */
+void NaClValidatorGetCPUFeatures(Bool local_cpu, CPUFeatures *cpu_features);
+
 /* GetCPUIDString creates an ASCII string that identfies this CPU's
  * vendor ID, family, model, and stepping, as per the CPUID instruction
  */

@@ -350,8 +350,8 @@ struct NCValidatorState* NCValInit(const NaClPcAddress vbase,
                                    const NaClMemorySize codesize,
                                    const uint8_t alignment) {
   return NACL_FLAGS_detailed_errors
-      ? NCValidateInitDetailed(vbase, codesize, alignment)
-      : NCValidateInit(vbase, codesize, alignment);
+      ? NCValidateInitDetailed(vbase, codesize, alignment, &ncval_cpu_features)
+      : NCValidateInit(vbase, codesize, alignment, &ncval_cpu_features);
 }
 
 
@@ -399,10 +399,10 @@ struct NaClValidatorState* NaClValStateCreate(
     const NaClOpKind base_register) {
   return
       NACL_FLAGS_detailed_errors
-      ? NaClValidatorStateCreateDetailed(vbase, sz, alignment,
-                                         base_register, NULL)
-      : NaClValidatorStateCreate(vbase, sz, alignment,
-                                 base_register, NULL);
+      ? NaClValidatorStateCreateDetailed(vbase, sz, alignment, base_register,
+                                         &ncval_cpu_features)
+      : NaClValidatorStateCreate(vbase, sz, alignment, base_register,
+                                 &ncval_cpu_features);
 }
 
 /* Returns the decoder tables to use. */
@@ -959,11 +959,6 @@ int main(int argc, const char *argv[]) {
 
   /* By default, assume no local cpu features are available. */
   NaClClearCPUFeatures(&ncval_cpu_features);
-  if (64 == NACL_TARGET_SUBARCH) {
-    NaClValidateSetCPUFeatures(&ncval_cpu_features);
-  } else {
-    NCValidateSetCPUFeatures(&ncval_cpu_features);
-  }
 
   /* Validate the specified input. */
   argc = GrokFlags(argc, argv);

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -26,16 +26,10 @@ NaClValidationStatus NaClValidatorSetup_x86_64(
     int bundle_size,
     Bool local_cpu,
     struct NaClValidatorState** vstate_ptr) {
-  CPUFeatures features;
-  CPUFeatures* apply_features;
-  if (local_cpu) {
-    apply_features = NULL;
-  } else {
-    apply_features = &features;
-    NaClSetAllCPUFeatures(apply_features);
-  }
+  CPUFeatures cpu_features;
+  NaClValidatorGetCPUFeatures(local_cpu, &cpu_features);
   *vstate_ptr = NaClValidatorStateCreate(guest_addr, size, bundle_size, RegR15,
-                                         apply_features);
+                                         &cpu_features);
   return (*vstate_ptr == NULL)
       ? NaClValidationFailedOutOfMemory
       : NaClValidationSucceeded;     /* or at least to this point! */
