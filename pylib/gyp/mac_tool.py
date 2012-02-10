@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (c) 2011 Google Inc. All rights reserved.
+# Copyright (c) 2012 Google Inc. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -8,9 +8,10 @@
 These functions are executed via gyp-mac-tool when using the Makefile generator.
 """
 
-import os
 import fcntl
+import os
 import plistlib
+import re
 import shutil
 import string
 import subprocess
@@ -150,6 +151,15 @@ class MacTool(object):
     fd = os.open(lockfile, os.O_RDONLY|os.O_NOCTTY|os.O_CREAT, 0o666)
     fcntl.flock(fd, fcntl.LOCK_EX)
     return subprocess.call(cmd_list)
+
+  def ExecFilterLibtool(self, *cmd_list):
+    """Calls libtool and filters out 'libtool: file: foo.o has no symbols'."""
+    libtool_re = re.compile(r'^libtool: file: .* has no symbols$')
+    libtoolout = subprocess.Popen(cmd_list, stderr=subprocess.PIPE)
+    for line in libtoolout.stderr:
+      if not libtool_re.match(line):
+        print >> sys.stderr, line
+    return libtoolout.returncode
 
   def ExecPackageFramework(self, framework, version):
     """Takes a path to Something.framework and the Current version of that and

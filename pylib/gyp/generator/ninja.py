@@ -1072,7 +1072,9 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
     master_ninja.rule(
       'alink',
       description='LIBTOOL-STATIC $out, POSTBUILDS',
-      command='rm -f $out && libtool -static -o $out $in$postbuilds')
+      command='rm -f $out && '
+              './gyp-mac-tool filter-libtool libtool -static -o $out $in'
+              '$postbuilds')
     # TODO(thakis): The solink_module rule is likely wrong. Xcode seems to pass
     # -bundle -single_module here (for osmesa.so).
     master_ninja.rule(
