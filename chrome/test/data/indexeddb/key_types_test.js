@@ -26,7 +26,7 @@ function prepareDatabase() {
       verreq.onsuccess = function() {
         var trans = verreq.result;
         db.createObjectStore('store');
-        trans.oncomplete = testValidKeys();
+        trans.oncomplete = testValidKeys;
       };
     };
   };
