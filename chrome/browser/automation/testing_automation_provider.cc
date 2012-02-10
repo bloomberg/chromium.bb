@@ -48,6 +48,7 @@
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/download/download_service.h"
 #include "chrome/browser/download/download_service_factory.h"
+#include "chrome/browser/download/download_shelf.h"
 #include "chrome/browser/download/save_package_file_picker.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/browser_action_test_util.h"
@@ -151,9 +152,6 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/dbus/dbus_thread_manager.h"
-#include "chrome/browser/ui/webui/active_downloads_ui.h"
-#else
-#include "chrome/browser/download/download_shelf.h"
 #endif
 
 #if defined(OS_MACOSX)
@@ -1384,11 +1382,7 @@ void TestingAutomationProvider::GetShelfVisibility(int handle, bool* visible) {
   if (browser_tracker_->ContainsHandle(handle)) {
     Browser* browser = browser_tracker_->GetResource(handle);
     if (browser) {
-#if defined(OS_CHROMEOS) && !defined(USE_AURA)
-      *visible = ActiveDownloadsUI::GetPopup();
-#else
       *visible = browser->window()->IsDownloadShelfVisible();
-#endif
     }
   }
 }
@@ -2256,18 +2250,10 @@ void TestingAutomationProvider::SetShelfVisibility(int handle, bool visible) {
   if (browser_tracker_->ContainsHandle(handle)) {
     Browser* browser = browser_tracker_->GetResource(handle);
     if (browser) {
-#if defined(OS_CHROMEOS)
-      Browser* popup_browser = ActiveDownloadsUI::GetPopup();
-      if (!popup_browser && visible)
-        ActiveDownloadsUI::OpenPopup(browser->profile());
-      if (popup_browser && !visible)
-        popup_browser->CloseWindow();
-#else
       if (visible)
         browser->window()->GetDownloadShelf()->Show();
       else
         browser->window()->GetDownloadShelf()->Close();
-#endif
     }
   }
 }
