@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -47,6 +47,11 @@ TEST_F(QueryParserTest, SimpleQueries) {
             QueryToString(WideToUTF8(L"\xAC00\xC7A5 \xBE5B\xACE0")));
 }
 
+TEST_F(QueryParserTest, Numbers) {
+  EXPECT_EQ("66", QueryToString("66"));
+  EXPECT_EQ("wayne99gretzky*", QueryToString("wayne99gretzky"));
+}
+
 // Quoted substring parsing.
 TEST_F(QueryParserTest, Quoted) {
   // ASCII quotes
@@ -57,6 +62,8 @@ TEST_F(QueryParserTest, Quoted) {
   EXPECT_EQ("miss* beg*", QueryToString("miss beg\""));
   // Weird formatting
   EXPECT_EQ("\"Many\" \"quotes\"", QueryToString("\"Many   \"\"quotes"));
+  EXPECT_EQ("\"ab\" cd \"ef\"", QueryToString("\"ab\" cd \"ef\""));
+  EXPECT_EQ("tra* \"la\" la", QueryToString("tra \"la\" la"));
 }
 
 // Apostrophes within words should be preserved, but otherwise stripped.
@@ -69,6 +76,24 @@ TEST_F(QueryParserTest, Apostrophes) {
 // Special characters.
 TEST_F(QueryParserTest, SpecialChars) {
   EXPECT_EQ("foo* the* bar*", QueryToString("!#:/*foo#$*;'* the!#:/*bar"));
+
+  // Domain-name-like strings should be left intact.
+  EXPECT_EQ("chromium.org*", QueryToString("chromium.org"));
+  EXPECT_EQ("a.b.c*", QueryToString("a.b.c"));
+
+  // More complex queries will get broken up, but that's ok.
+  EXPECT_EQ("hhof.com* cup* a b c d 20e*",
+            QueryToString("hhof.com/cup?a=b&c=d%20e"));
+
+  // Special chars inside quotes should be preserved.
+  EXPECT_EQ("\"$FOO\" bar*", QueryToString("\"$FOO\" .bar*"));
+  EXPECT_EQ("\"hhof.com/cup?a=b&c=d%20e\"",
+            QueryToString("\"hhof.com/cup?a=b&c=d%20e\""));
+
+  // Leading punctuation should always be stripped.
+  EXPECT_EQ("test*", QueryToString(".test"));
+  EXPECT_EQ("test.*", QueryToString("~test."));
+  EXPECT_EQ("test*", QueryToString("--test"));
 }
 
 TEST_F(QueryParserTest, NumWords) {

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -32,12 +32,12 @@ const char* kTitle3 = "Google C";
 const char* kBody3 = "FOO drei";
 
 const char* kURL4 = "http://www.google.com/hjkl";
-const char* kTitle4 = "Google D";
+const char* kTitle4 = "Google de";
 const char* kBody4 = "FOO lalala four.";
 
-const char* kURL5 = "http://www.google.com/uiop";
+const char* kURL5 = "http://www.google.de/s?q=mar%10&num=66";
 const char* kTitle5 = "Google cinq";
-const char* kBody5 = "FOO page one.";
+const char* kBody5 = "FOO page one. Including: punctuation.";
 
 // This provides a simple implementation of a URL+VisitDatabase using an
 // in-memory sqlite connection. The text database manager expects to be able to
@@ -83,8 +83,8 @@ void AddAllPages(TextDatabaseManager& manager, VisitDatabase* visit_db,
 
   times->push_back(visit_row.visit_time);
   manager.AddPageData(GURL(kURL1), visit_row.url_id, visit_row.visit_id,
-                      visit_row.visit_time, UTF8ToUTF16(kTitle1),
-                      UTF8ToUTF16(kBody1));
+                      visit_row.visit_time, ASCIIToUTF16(kTitle1),
+                      ASCIIToUTF16(kBody1));
 
   exploded.day_of_month++;
   visit_row.url_id = 2;
@@ -92,8 +92,8 @@ void AddAllPages(TextDatabaseManager& manager, VisitDatabase* visit_db,
   visit_db->AddVisit(&visit_row, SOURCE_BROWSED);
   times->push_back(visit_row.visit_time);
   manager.AddPageData(GURL(kURL2), visit_row.url_id, visit_row.visit_id,
-                      visit_row.visit_time, UTF8ToUTF16(kTitle2),
-                      UTF8ToUTF16(kBody2));
+                      visit_row.visit_time, ASCIIToUTF16(kTitle2),
+                      ASCIIToUTF16(kBody2));
 
   exploded.day_of_month++;
   visit_row.url_id = 2;
@@ -101,8 +101,8 @@ void AddAllPages(TextDatabaseManager& manager, VisitDatabase* visit_db,
   visit_db->AddVisit(&visit_row, SOURCE_BROWSED);
   times->push_back(visit_row.visit_time);
   manager.AddPageData(GURL(kURL3), visit_row.url_id, visit_row.visit_id,
-                      visit_row.visit_time, UTF8ToUTF16(kTitle3),
-                      UTF8ToUTF16(kBody3));
+                      visit_row.visit_time, ASCIIToUTF16(kTitle3),
+                      ASCIIToUTF16(kBody3));
 
   // Put the next ones in the next month.
   exploded.month++;
@@ -111,8 +111,8 @@ void AddAllPages(TextDatabaseManager& manager, VisitDatabase* visit_db,
   visit_db->AddVisit(&visit_row, SOURCE_BROWSED);
   times->push_back(visit_row.visit_time);
   manager.AddPageData(GURL(kURL4), visit_row.url_id, visit_row.visit_id,
-                      visit_row.visit_time, UTF8ToUTF16(kTitle4),
-                      UTF8ToUTF16(kBody4));
+                      visit_row.visit_time, ASCIIToUTF16(kTitle4),
+                      ASCIIToUTF16(kBody4));
 
   exploded.day_of_month++;
   visit_row.url_id = 2;
@@ -120,8 +120,8 @@ void AddAllPages(TextDatabaseManager& manager, VisitDatabase* visit_db,
   visit_db->AddVisit(&visit_row, SOURCE_BROWSED);
   times->push_back(visit_row.visit_time);
   manager.AddPageData(GURL(kURL5), visit_row.url_id, visit_row.visit_id,
-                      visit_row.visit_time, UTF8ToUTF16(kTitle5),
-                      UTF8ToUTF16(kBody5));
+                      visit_row.visit_time, ASCIIToUTF16(kTitle5),
+                      ASCIIToUTF16(kBody5));
 
   // Put the first one in again in the second month.
   exploded.day_of_month++;
@@ -130,8 +130,8 @@ void AddAllPages(TextDatabaseManager& manager, VisitDatabase* visit_db,
   visit_db->AddVisit(&visit_row, SOURCE_BROWSED);
   times->push_back(visit_row.visit_time);
   manager.AddPageData(GURL(kURL1), visit_row.url_id, visit_row.visit_id,
-                      visit_row.visit_time, UTF8ToUTF16(kTitle1),
-                      UTF8ToUTF16(kBody1));
+                      visit_row.visit_time, ASCIIToUTF16(kTitle1),
+                      ASCIIToUTF16(kBody1));
 }
 
 bool ResultsHaveURL(const std::vector<TextDatabase::Match>& results,
@@ -183,7 +183,7 @@ TEST_F(TextDatabaseManagerTest, InsertQuery) {
   options.end_time = times[times.size() - 1] + TimeDelta::FromDays(100);
   std::vector<TextDatabase::Match> results;
   Time first_time_searched;
-  manager.GetTextMatches(UTF8ToUTF16("FOO"), options,
+  manager.GetTextMatches(ASCIIToUTF16("FOO"), options,
                          &results, &first_time_searched);
 
   // We should have matched every page.
@@ -211,15 +211,15 @@ TEST_F(TextDatabaseManagerTest, InsertCompleteNoVisit) {
   // First add one without a visit.
   const GURL url(kURL1);
   manager.AddPageURL(url, 0, 0, Time::Now());
-  manager.AddPageTitle(url, UTF8ToUTF16(kTitle1));
-  manager.AddPageContents(url, UTF8ToUTF16(kBody1));
+  manager.AddPageTitle(url, ASCIIToUTF16(kTitle1));
+  manager.AddPageContents(url, ASCIIToUTF16(kBody1));
 
   // Check that the page got added.
   QueryOptions options;
   std::vector<TextDatabase::Match> results;
   Time first_time_searched;
 
-  manager.GetTextMatches(UTF8ToUTF16("FOO"), options,
+  manager.GetTextMatches(ASCIIToUTF16("FOO"), options,
                          &results, &first_time_searched);
   ASSERT_EQ(1U, results.size());
   EXPECT_EQ(kTitle1, UTF16ToUTF8(results[0].title));
@@ -247,15 +247,15 @@ TEST_F(TextDatabaseManagerTest, InsertCompleteVisit) {
   // Add a full text indexed entry for that visit.
   const GURL url(kURL2);
   manager.AddPageURL(url, visit.url_id, visit.visit_id, visit.visit_time);
-  manager.AddPageContents(url, UTF8ToUTF16(kBody2));
-  manager.AddPageTitle(url, UTF8ToUTF16(kTitle2));
+  manager.AddPageContents(url, ASCIIToUTF16(kBody2));
+  manager.AddPageTitle(url, ASCIIToUTF16(kTitle2));
 
   // Check that the page got added.
   QueryOptions options;
   std::vector<TextDatabase::Match> results;
   Time first_time_searched;
 
-  manager.GetTextMatches(UTF8ToUTF16("FOO"), options,
+  manager.GetTextMatches(ASCIIToUTF16("FOO"), options,
                          &results, &first_time_searched);
   ASSERT_EQ(1U, results.size());
   EXPECT_EQ(kTitle2, UTF16ToUTF8(results[0].title));
@@ -280,12 +280,12 @@ TEST_F(TextDatabaseManagerTest, InsertPartial) {
   // Now add a second one with a URL and title.
   GURL url2(kURL2);
   manager.AddPageURL(url2, 0, 0, Time::Now());
-  manager.AddPageTitle(url2, UTF8ToUTF16(kTitle2));
+  manager.AddPageTitle(url2, ASCIIToUTF16(kTitle2));
 
   // The third one has a URL and body.
   GURL url3(kURL3);
   manager.AddPageURL(url3, 0, 0, Time::Now());
-  manager.AddPageContents(url3, UTF8ToUTF16(kBody3));
+  manager.AddPageContents(url3, ASCIIToUTF16(kBody3));
 
   // Expire stuff very fast. This assumes that the time between the first
   // AddPageURL and this line is less than the expiration time (20 seconds).
@@ -297,7 +297,7 @@ TEST_F(TextDatabaseManagerTest, InsertPartial) {
   QueryOptions options;
   std::vector<TextDatabase::Match> results;
   Time first_time_searched;
-  manager.GetTextMatches(UTF8ToUTF16("google"), options,
+  manager.GetTextMatches(ASCIIToUTF16("google"), options,
                          &results, &first_time_searched);
   ASSERT_EQ(0U, results.size());
 
@@ -307,7 +307,7 @@ TEST_F(TextDatabaseManagerTest, InsertPartial) {
   manager.FlushOldChangesForTime(expire_time);
 
   // Now we should have all 3 URLs added.
-  manager.GetTextMatches(UTF8ToUTF16("google"), options,
+  manager.GetTextMatches(ASCIIToUTF16("google"), options,
                          &results, &first_time_searched);
   ASSERT_EQ(3U, results.size());
   EXPECT_TRUE(ResultsHaveURL(results, kURL1));
@@ -329,7 +329,7 @@ TEST_F(TextDatabaseManagerTest, PartialComplete) {
   // We have to have the URL in the URL and visit databases for this test to
   // work.
   URLRow url_row(url);
-  url_row.set_title(UTF8ToUTF16("chocolate"));
+  url_row.set_title(ASCIIToUTF16("chocolate"));
   URLID url_id = visit_db.AddURL(url_row);
   ASSERT_TRUE(url_id);
   VisitRow visit_row;
@@ -344,27 +344,29 @@ TEST_F(TextDatabaseManagerTest, PartialComplete) {
 
   // Add the title. We should be able to query based on that. The title in the
   // URL row we set above should not come into the picture.
-  manager.AddPageTitle(url, UTF8ToUTF16("Some unique title"));
+  manager.AddPageTitle(url, ASCIIToUTF16("Some unique title"));
   Time first_time_searched;
   QueryOptions options;
   std::vector<TextDatabase::Match> results;
-  manager.GetTextMatches(UTF8ToUTF16("unique"), options,
+  manager.GetTextMatches(ASCIIToUTF16("unique"), options,
                          &results, &first_time_searched);
   EXPECT_EQ(1U, results.size());
-  manager.GetTextMatches(UTF8ToUTF16("chocolate"), options,
+  manager.GetTextMatches(ASCIIToUTF16("chocolate"), options,
                          &results, &first_time_searched);
   EXPECT_EQ(0U, results.size());
 
   // Now add the body, which should be queryable.
-  manager.AddPageContents(url, UTF8ToUTF16("Very awesome body"));
-  manager.GetTextMatches(UTF8ToUTF16("awesome"), options, &results, &first_time_searched);
+  manager.AddPageContents(url, ASCIIToUTF16("Very awesome body"));
+  manager.GetTextMatches(
+      ASCIIToUTF16("awesome"), options, &results, &first_time_searched);
   EXPECT_EQ(1U, results.size());
 
   // Adding the body will actually copy the title from the URL table rather
   // than the previously indexed row (we made them not match above). This isn't
   // necessarily what we want, but it's how it's implemented, and we don't want
   // to regress it.
-  manager.GetTextMatches(UTF8ToUTF16("chocolate"), options, &results, &first_time_searched);
+  manager.GetTextMatches(
+      ASCIIToUTF16("chocolate"), options, &results, &first_time_searched);
   EXPECT_EQ(1U, results.size());
 }
 
@@ -387,7 +389,8 @@ TEST_F(TextDatabaseManagerTest, Writing) {
     AddAllPages(manager, &visit_db, &times);
 
     // We should have matched every page.
-    manager.GetTextMatches(UTF8ToUTF16("FOO"), options, &results, &first_time_searched);
+    manager.GetTextMatches(
+        ASCIIToUTF16("FOO"), options, &results, &first_time_searched);
     EXPECT_EQ(6U, results.size());
   }
   results.clear();
@@ -398,7 +401,7 @@ TEST_F(TextDatabaseManagerTest, Writing) {
     ASSERT_TRUE(manager.Init(NULL));
 
     // We should have matched every page again.
-    manager.GetTextMatches(UTF8ToUTF16("FOO"), options,
+    manager.GetTextMatches(ASCIIToUTF16("FOO"), options,
                            &results, &first_time_searched);
     EXPECT_EQ(6U, results.size());
   }
@@ -426,7 +429,7 @@ TEST_F(TextDatabaseManagerTest, WritingTransaction) {
     // "Forget" to commit, it should be autocommittedd for us.
 
     // We should have matched every page.
-    manager.GetTextMatches(UTF8ToUTF16("FOO"), options,
+    manager.GetTextMatches(ASCIIToUTF16("FOO"), options,
                            &results, &first_time_searched);
     EXPECT_EQ(6U, results.size());
   }
@@ -438,7 +441,7 @@ TEST_F(TextDatabaseManagerTest, WritingTransaction) {
     ASSERT_TRUE(manager.Init(NULL));
 
     // We should have matched every page again.
-    manager.GetTextMatches(UTF8ToUTF16("FOO"), options,
+    manager.GetTextMatches(ASCIIToUTF16("FOO"), options,
                            &results, &first_time_searched);
     EXPECT_EQ(6U, results.size());
   }
@@ -454,7 +457,7 @@ TEST_F(TextDatabaseManagerTest, QueryMax) {
   std::vector<Time> times;
   AddAllPages(manager, &visit_db, &times);
 
-  string16 foo = UTF8ToUTF16("FOO");
+  string16 foo = ASCIIToUTF16("FOO");
 
   QueryOptions options;
   options.begin_time = times[0] - TimeDelta::FromDays(100);
@@ -493,7 +496,7 @@ TEST_F(TextDatabaseManagerTest, QueryBackwards) {
   std::vector<Time> times;
   AddAllPages(manager, &visit_db, &times);
 
-  string16 foo = UTF8ToUTF16("FOO");
+  string16 foo = ASCIIToUTF16("FOO");
 
   // First do a query for all time, but with a max of 2. This will give us the
   // last two results and will tell us where to start searching when we want
@@ -531,6 +534,70 @@ TEST_F(TextDatabaseManagerTest, QueryBackwards) {
   // Try to query some more, there should be no results.
   options.end_time = first_time_searched;
   manager.GetTextMatches(foo, options, &results, &first_time_searched);
+  EXPECT_EQ(0U, results.size());
+}
+
+TEST_F(TextDatabaseManagerTest, Query) {
+  ASSERT_TRUE(Init());
+
+  QueryOptions options;
+  std::vector<TextDatabase::Match> results;
+  Time first_time_searched;
+
+  InMemDB visit_db;
+
+  TextDatabaseManager manager(dir_, &visit_db, &visit_db);
+  ASSERT_TRUE(manager.Init(NULL));
+
+  std::vector<Time> times;
+  AddAllPages(manager, &visit_db, &times);
+
+  // Try a multi-word query.
+  manager.GetTextMatches(ASCIIToUTF16("FOO drei"), options,
+                         &results, &first_time_searched);
+  EXPECT_EQ(1U, results.size());
+  results.clear();
+
+  // Try a quoted query that should match only a single URL.
+  manager.GetTextMatches(ASCIIToUTF16("\"google.de\""),
+                         options, &results, &first_time_searched);
+  EXPECT_EQ(1U, results.size());
+  results.clear();
+
+  // Same, but with some special characters.
+  manager.GetTextMatches(ASCIIToUTF16("\"google.de/s?q=mar%10&num=66\""),
+                         options, &results, &first_time_searched);
+  EXPECT_EQ(1U, results.size());
+  results.clear();
+
+  // Using separate tokens should match in URL or in body.
+  manager.GetTextMatches(ASCIIToUTF16("google de"), options,
+                         &results, &first_time_searched);
+  EXPECT_EQ(2U, results.size());
+  EXPECT_TRUE(ResultsHaveURL(results, kURL4));
+  EXPECT_TRUE(ResultsHaveURL(results, kURL5));
+  results.clear();
+
+  // Try a quoted query that should match the body.
+  manager.GetTextMatches(ASCIIToUTF16("\"Including: punctuation.\""), options,
+                         &results, &first_time_searched);
+  EXPECT_EQ(1U, results.size());
+  results.clear();
+
+  // Ensure that punctuation is not ignored in quoted strings.
+  manager.GetTextMatches(ASCIIToUTF16("\"Including punctuation\""), options,
+                         &results, &first_time_searched);
+  EXPECT_EQ(0U, results.size());
+
+  // Ensure that regex characters don't have special meaning inside quotes.
+  manager.GetTextMatches(ASCIIToUTF16("\"Including* punctuation\""), options,
+                         &results, &first_time_searched);
+  EXPECT_EQ(0U, results.size());
+  manager.GetTextMatches(ASCIIToUTF16("\"Including. punctuation\""), options,
+                         &results, &first_time_searched);
+  EXPECT_EQ(0U, results.size());
+  manager.GetTextMatches(ASCIIToUTF16("\"Including_ punctuation\""), options,
+                         &results, &first_time_searched);
   EXPECT_EQ(0U, results.size());
 }
 

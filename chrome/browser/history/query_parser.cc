@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,6 +11,7 @@
 #include "base/i18n/case_conversion.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
+#include "base/string_util.h"
 
 namespace {
 
@@ -46,7 +47,7 @@ void CoalesceMatchesFrom(size_t index, Snippet::MatchPositions* matches) {
 
 // Sorts the match positions in |matches| by their first index, then coalesces
 // any match positions that intersect each other.
-void CoalseAndSortMatchPositions(Snippet::MatchPositions* matches) {
+void CoalesceAndSortMatchPositions(Snippet::MatchPositions* matches) {
   std::sort(matches->begin(), matches->end(), &CompareMatchPosition);
   // WARNING: we don't use iterator here as CoalesceMatchesFrom may remove
   // from matches.
@@ -64,6 +65,13 @@ bool IsQueryQuote(wchar_t ch) {
          ch == 0x201e;    // double low-9 quotation mark
 }
 
+// Returns true if the character is considered non-breaking when it appears in
+// the middle of a word. This can be used to prevent an URL-like query from
+// being broken into multiple words.
+bool IsNonBreakingSymbol(wchar_t ch) {
+  return ch == '.' || ch == '-';
+}
+
 }  // namespace
 
 // Inheritance structure:
@@ -71,7 +79,8 @@ bool IsQueryQuote(wchar_t ch) {
 // QueryNodes are either a collection of subnodes (a QueryNodeList)
 // or a single word (a QueryNodeWord).
 
-// A QueryNodeWord is a single word in the query.
+// A QueryNodeWord is a sequence of consecutive characters in a query.
+// It can be an actual word or an URL-like sequence of characters.
 class QueryNodeWord : public QueryNode {
  public:
   explicit QueryNodeWord(const string16& word);
@@ -80,6 +89,7 @@ class QueryNodeWord : public QueryNode {
   const string16& word() const { return word_; }
 
   void set_literal(bool literal) { literal_ = literal; }
+  void Append(const string16& word);
 
   // QueryNode:
   virtual int AppendToSQLiteQuery(string16* query) const OVERRIDE;
@@ -139,6 +149,10 @@ bool QueryNodeWord::HasMatchIn(const std::vector<QueryWord>& words,
 
 void QueryNodeWord::AppendWords(std::vector<string16>* words) const {
   words->push_back(word_);
+}
+
+void QueryNodeWord::Append(const string16& str) {
+  word_ += str;
 }
 
 // A QueryNodeList has a collection of QueryNodes which are deleted in the end.
@@ -347,7 +361,7 @@ bool QueryParser::DoesQueryMatch(const string16& text,
     // completely punt here.
     match_positions->clear();
   } else {
-    CoalseAndSortMatchPositions(&matches);
+    CoalesceAndSortMatchPositions(&matches);
     match_positions->swap(matches);
   }
   return true;
@@ -365,27 +379,45 @@ bool QueryParser::ParseQueryImpl(const string16& query, QueryNodeList* root) {
   query_stack.push_back(root);
 
   bool in_quotes = false;  // whether we're currently in a quoted phrase
+  QueryNodeWord* current_word = NULL;
   while (iter.Advance()) {
     // Just found a span between 'prev' (inclusive) and 'pos' (exclusive). It
-    // is not necessarily a word, but could also be a sequence of punctuation
-    // or whitespace.
-    if (iter.IsWord()) {
-      QueryNodeWord* word_node = new QueryNodeWord(iter.GetString());
-      if (in_quotes)
-        word_node->set_literal(true);
-      query_stack.back()->AddChild(word_node);
-    } else {  // Punctuation.
-      if (IsQueryQuote(query[iter.prev()])) {
-        if (!in_quotes) {
-          QueryNodeList* quotes_node = new QueryNodePhrase;
-          query_stack.back()->AddChild(quotes_node);
-          query_stack.push_back(quotes_node);
-          in_quotes = true;
-        } else {
-          query_stack.pop_back();  // Stop adding to the quoted phrase.
-          in_quotes = false;
-        }
+    // is not necessarily a word, it could also be a punctuation or whitespace
+    // character. Punctuation is preserved inside quotes, and otherwise removed
+    // except if it is a non-breaking character in the middle of a word.
+
+    wchar_t last_char = query[iter.prev()];
+    if (IsQueryQuote(last_char)) {
+      if (!in_quotes) {
+        QueryNodeList* quotes_node = new QueryNodePhrase;
+        query_stack.back()->AddChild(quotes_node);
+        query_stack.push_back(quotes_node);
+        in_quotes = true;
+      } else {
+        query_stack.pop_back();  // Stop adding to the quoted phrase.
+        in_quotes = false;
       }
+      current_word = NULL;
+    } else if (iter.IsWord() || (in_quotes && !IsWhitespace(last_char))) {
+      // Append to the current word if the new token is a word or a non-
+      // whitespace character inside quotes.
+      if (current_word) {
+        current_word->Append(iter.GetString());
+      } else {
+        current_word = new QueryNodeWord(iter.GetString());
+        current_word->set_literal(in_quotes);
+        query_stack.back()->AddChild(current_word);
+      }
+    } else if (current_word != NULL) {
+      // Allow non-breaking symbols inside a word.
+      // Any other punctuation or whitespace character ends the current word.
+
+      // TODO(dubroy): Consider sharing code with the omnibox to allow a more
+      // accurate "best guess" of whether a sequence of characters is a URL.
+      if (IsNonBreakingSymbol(last_char))
+        current_word->Append(iter.GetString());
+      else
+        current_word = NULL;
     }
   }
 
