@@ -548,7 +548,7 @@ static void ValidateJmpz(const NCDecoderInst *dinst) {
      */
     NCInstBytesPtr opcode_2;
     NCInstBytesPtrInitInc(&opcode_2, &opcode, 2);
-    offset = NCInstBytesInt32(&opcode_2);
+    offset = NCInstBytesInt32(&opcode_2, dinst->inst.immbytes);
   } else {
     /* Single byte opcode. Must be one of:
      *    E8: call $Jz
@@ -556,7 +556,7 @@ static void ValidateJmpz(const NCDecoderInst *dinst) {
      */
     NCInstBytesPtr opcode_1;
     NCInstBytesPtrInitInc(&opcode_1, &opcode, 1);
-    offset = NCInstBytesInt32(&opcode_1);
+    offset = NCInstBytesInt32(&opcode_1, dinst->inst.immbytes);
     /* as a courtesy, check call alignment correctness */
     if (opcode0 == 0xe8) ValidateCallAlignment(dinst);
   }

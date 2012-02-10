@@ -184,80 +184,28 @@ static const char* DisFmt(const NCDecoderInst *dinst) {
   return "internal error";
 }
 
-/* Returns the byte value stored in the first byte of the given
- * byte pointer.
- */
-static int ByteImmediate(const NCInstBytesPtr* byte_array) {
-  return (char) NCInstBytesByte(byte_array, 0);
-}
-
-/* Returns the byte value of the byte at the given offset for the
- * instruction parsed in the given decoder state.
- */
-static int ByteImmedAtOffset(const NCDecoderInst* dinst, int offset) {
+/* Returns the (sign extended) 32-bit integer immediate value. */
+static int32_t ImmedValue32(const NCDecoderInst* dinst) {
   NCInstBytesPtr addr;
-  NCInstBytesPtrInitInc(&addr, &dinst->inst_bytes, offset);
-  return ByteImmediate(&addr);
+  NCInstBytesPtrInitInc(&addr, &dinst->inst_bytes,
+                        NCImmedOffset(dinst));
+  return NCInstBytesInt32(&addr, dinst->inst.immbytes);
 }
 
-/* Returns the word value stored in the first two bytes of the
- * given byte pointer.
- */
-static int WordImmediate(const NCInstBytesPtr* byte_array) {
-  return (short) (NCInstBytesByte(byte_array, 0) +
-                  (NCInstBytesByte(byte_array, 1) << 8));
-}
-
-/* Returns the double word value stored in the first 4 bytes of the
- * given byte pointer.
- */
-static int DwordImmediate(const NCInstBytesPtr* byte_array) {
-  return NCInstBytesInt32(byte_array);
-}
-
-/* Returns the double word value stored at the given offset for
- * the instruction parsed in the given decoder state.
- */
-static int DwordImmedAtOffset(const NCDecoderInst* dinst, int offset) {
+/* Returns the (sign extended) 64-bit integer immediate value. */
+static int64_t ImmedValue64(const NCDecoderInst* dinst) {
   NCInstBytesPtr addr;
-  NCInstBytesPtrInitInc(&addr, &dinst->inst_bytes, offset);
-  return DwordImmediate(&addr);
+  NCInstBytesPtrInitInc(&addr, &dinst->inst_bytes,
+                        NCImmedOffset(dinst));
+  return NCInstBytesInt64(&addr, dinst->inst.immbytes);
 }
 
-/* Returns the quad word value stored in the first 8 bytes of the
- * given byte pointer.
- */
-static int64_t QwordImmediate(const NCInstBytesPtr* byte_array) {
-  NCInstBytesPtr byte_array_4;
-  NCInstBytesPtrInitInc(&byte_array_4, byte_array, 4);
-  return ((int64_t) (DwordImmediate(&byte_array_4)) << 32) |
-      ((int64_t) DwordImmediate(byte_array));
-}
-
-/* Return the immediate value stored in the given byte array, given that the
- * value takes size bytes.
- */
-static int64_t ValueImmediate(const NCInstBytesPtr* byte_array, uint8_t size) {
-  switch (size) {
-    case 1:
-      return (int64_t) ByteImmediate(byte_array);
-    case 2:
-      return (int64_t) WordImmediate(byte_array);
-    case 4:
-      return (int64_t) DwordImmediate(byte_array);
-    case 8:
-      return QwordImmediate(byte_array);
-    default:
-      /* Don't know how to translate, return 0. */
-      return 0;
-  }
-}
-
-/* Return the immediate value defined by the instruction in the decoder state. */
-static int64_t NCValueImmediate(const NCDecoderInst* dinst) {
+/* Returns the (sign extended) 32-bit integer displacement value. */
+static int32_t DispValue32(const NCDecoderInst* dinst) {
   NCInstBytesPtr addr;
-  NCInstBytesPtrInitInc(&addr, &dinst->inst_bytes, NCImmedOffset(dinst));
-  return ValueImmediate(&addr, dinst->inst.immbytes);
+  NCInstBytesPtrInitInc(&addr, &dinst->inst_bytes,
+                        NCDispOffset(dinst));
+  return NCInstBytesInt32(&addr, dinst->inst.dispbytes);
 }
 
 /* Defines the set of available general purpose registers. */
@@ -299,7 +247,18 @@ static void SibPrint(const NCDecoderInst* dinst, struct Gio* fp) {
     gprintf(fp, "?");
   } else if (sib_ss(sib) == 0) {
     if (sib_base(sib) == 5) {
-      gprintf(fp, "[0x%x]", DwordImmedAtOffset(dinst, NCDispOffset(dinst)));
+      /* This code is JUST WRONG!. However, I am not fixing since
+       * the decoder printer is broken in so many other ways!. See tables
+       * 2-1 and 2-2 of "Intel 64 and IA-32 Architectures Software Developer's
+       * Manual" for details of what should be done (there are
+       * 3 cases, depending on the value of the mod field of the modrm
+       * byte).
+       * Note: While the changes here are not correct, they at least make
+       * sure that we process bytes that are actually in the instruction.
+       * That is, the code doesn't accidentally walk off the end of the
+       * parsed instruction.
+       */
+      gprintf(fp, "[0x%x]", DispValue32(dinst));
     } else {
       /* Has a base register */
       if (sib_index(sib) == 4) {
@@ -369,7 +328,7 @@ static void RegMemPrint(const NCDecoderInst *dinst,
         if (4 == modrm_rmInline(dinst->inst.mrm)) {
           SibPrint(dinst, fp);
         } else if (5 == modrm_rmInline(dinst->inst.mrm)) {
-          gprintf(fp, "[0x%x]", DwordImmedAtOffset(dinst, NCDispOffset(dinst)));
+          gprintf(fp, "[0x%x]", DispValue32(dinst));
         } else {
           gprintf(fp, "[%s]", gp_regs[modrm_rmInline(dinst->inst.mrm)]);
         }
@@ -380,7 +339,7 @@ static void RegMemPrint(const NCDecoderInst *dinst,
       if (NaClHasBit(dinst->inst.prefixmask, kPrefixADDR16)) {
         NaClIllegalOp(fp);
       } else {
-        gprintf(fp, "0x%x", ByteImmedAtOffset(dinst, NCDispOffset(dinst)));
+        gprintf(fp, "0x%x", DispValue32(dinst));
         if (4 == modrm_rmInline(dinst->inst.mrm)) {
           SibPrint(dinst, fp);
         } else {
@@ -393,7 +352,7 @@ static void RegMemPrint(const NCDecoderInst *dinst,
       if (NaClHasBit(dinst->inst.prefixmask, kPrefixADDR16)) {
         NaClIllegalOp(fp);
       } else {
-        gprintf(fp, "0x%x", DwordImmedAtOffset(dinst, NCDispOffset(dinst)));
+        gprintf(fp, "0x%x", DispValue32(dinst));
         if (4 == modrm_rmInline(dinst->inst.mrm)) {
           SibPrint(dinst, fp);
         } else {
@@ -528,23 +487,16 @@ static void InstFormat(const char* format,
             gprintf(fp, "%s", gp_regs[modrm_regInline(dinst->inst.mrm)]);
             break;
           case 'I':
-            gprintf(fp, "0x%"NACL_PRIx64, NCValueImmediate(dinst));
+            gprintf(fp, "0x%"NACL_PRIx64, ImmedValue64(dinst));
             break;
           case 'J':
-            if ('b' == token[2]) {
-              gprintf(fp, "0x%"NACL_PRIxNaClPcAddress,
-                      NCPrintableInstructionAddress(dinst)
-                      + dinst->inst.bytes.length
-                      + ByteImmedAtOffset(dinst, NCImmedOffset(dinst)));
-            } else {
-              gprintf(fp, "0x%"NACL_PRIxNaClPcAddress,
-                      NCPrintableInstructionAddress(dinst)
-                      + dinst->inst.bytes.length
-                      + DwordImmedAtOffset(dinst, NCImmedOffset(dinst)));
-            }
+            gprintf(fp, "0x%"NACL_PRIxNaClPcAddress,
+                    NCPrintableInstructionAddress(dinst)
+                    + dinst->inst.bytes.length
+                    + ImmedValue32(dinst));
             break;
           case 'O':
-            gprintf(fp, "[0x%"NACL_PRIx64"]", NCValueImmediate(dinst));
+            gprintf(fp, "[0x%"NACL_PRIx64"]", ImmedValue64(dinst));
             break;
           case 'P':
             if ('R' == token[2]) {

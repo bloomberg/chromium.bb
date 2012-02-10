@@ -1,4 +1,4 @@
- 80000000:	c6 44 05 d6 00      	mov 0xffffffd6[0xd6], 0x0
+ 80000000:	c6 44 05 d6 00      	mov 0xffffffd6[0xffffffd6], 0x0
  80000005:	90                  	nop
  80000006:	90                  	nop
  80000007:	90                  	nop
