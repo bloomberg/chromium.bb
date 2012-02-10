@@ -31,6 +31,7 @@ class StringValue;
 namespace printing {
 struct PageSizeMargins;
 class PrintBackend;
+class StickySettings;
 }
 
 // The handler for Javascript messages related to the print preview dialog.
@@ -181,24 +182,13 @@ class PrintPreviewHandler : public content::WebUIMessageHandler,
   // Populates |settings| according to the current locale.
   void GetNumberFormatAndMeasurementSystem(base::DictionaryValue* settings);
 
-  // Populates |last_used_custom_margins| according to the last used margin
-  // settings.
-  void GetLastUsedMarginSettings(
-      base::DictionaryValue* last_used_custom_margins);
+  static printing::StickySettings* GetStickySettings();
 
   // Pointer to current print system.
   scoped_refptr<printing::PrintBackend> print_backend_;
 
   // The underlying dialog object.
   scoped_refptr<SelectFileDialog> select_file_dialog_;
-
-  static FilePath* last_saved_path_;
-  static std::string* last_used_printer_cloud_print_data_;
-  static std::string* last_used_printer_name_;
-  static printing::ColorModels last_used_color_model_;
-  static printing::MarginType last_used_margins_type_;
-  static printing::PageSizeMargins* last_used_page_size_margins_;
-  static bool last_used_headers_footers_;
 
   // A count of how many requests received to regenerate preview data.
   // Initialized to 0 then incremented and emitted to a histogram.

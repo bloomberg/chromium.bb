@@ -15,6 +15,7 @@
 #include "base/i18n/file_util_icu.h"
 #include "base/i18n/number_formatting.h"
 #include "base/json/json_reader.h"
+#include "base/lazy_instance.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/metrics/histogram.h"
 #include "base/path_service.h"
@@ -36,6 +37,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/webui/print_preview/print_preview_ui.h"
+#include "chrome/browser/ui/webui/print_preview/sticky_settings.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/print_messages.h"
@@ -193,19 +195,15 @@ void PrintToPdfCallback(Metafile* metafile, const FilePath& path) {
       base::Bind(&base::DeletePointer<Metafile>, metafile));
 }
 
+static base::LazyInstance<printing::StickySettings> sticky_settings =
+    LAZY_INSTANCE_INITIALIZER;
+
 }  // namespace
 
 // static
-FilePath* PrintPreviewHandler::last_saved_path_ = NULL;
-std::string* PrintPreviewHandler::last_used_printer_cloud_print_data_ = NULL;
-std::string* PrintPreviewHandler::last_used_printer_name_ = NULL;
-printing::ColorModels PrintPreviewHandler::last_used_color_model_ =
-    printing::UNKNOWN_COLOR_MODEL;
-printing::MarginType PrintPreviewHandler::last_used_margins_type_ =
-    printing::DEFAULT_MARGINS;
-printing::PageSizeMargins*
-    PrintPreviewHandler::last_used_page_size_margins_ = NULL;
-bool PrintPreviewHandler::last_used_headers_footers_ = true;
+printing::StickySettings* PrintPreviewHandler::GetStickySettings() {
+  return sticky_settings.Pointer();
+}
 
 PrintPreviewHandler::PrintPreviewHandler()
     : print_backend_(printing::PrintBackend::CreateInstance(NULL)),
@@ -374,27 +372,15 @@ void PrintPreviewHandler::HandlePrint(const ListValue* args) {
     return;
 
   // Storing last used color model.
-  int color_model;
-  if (!settings->GetInteger(printing::kSettingColor, &color_model))
-    color_model = printing::GRAY;
-  last_used_color_model_ = static_cast<printing::ColorModels>(color_model);
+  GetStickySettings()->StoreColorModel(*settings);
 
   bool is_modifiable;
   settings->GetBoolean(printing::kSettingPreviewModifiable, &is_modifiable);
   if (is_modifiable) {
     // Storing last used margin settings.
-    int margin_type;
-    if (!settings->GetInteger(printing::kSettingMarginsType, &margin_type))
-      margin_type = printing::DEFAULT_MARGINS;
-    last_used_margins_type_ = static_cast<printing::MarginType>(margin_type);
-    if (last_used_margins_type_ == printing::CUSTOM_MARGINS) {
-      if (!last_used_page_size_margins_)
-        last_used_page_size_margins_ = new printing::PageSizeMargins();
-      GetCustomMarginsFromJobSettings(*settings, last_used_page_size_margins_);
-    }
+    GetStickySettings()->StoreMarginSettings(*settings);
     // Storing last used header and footer setting.
-    settings->GetBoolean(
-        printing::kSettingHeaderFooterEnabled, &last_used_headers_footers_);
+    GetStickySettings()->StoreHeadersFooters(*settings);
   }
 
   // Never try to add headers/footers here. It's already in the generated PDF.
@@ -513,16 +499,11 @@ void PrintPreviewHandler::HandleCancelPendingPrintRequest(
 
 void PrintPreviewHandler::HandleSaveLastPrinter(const ListValue* args) {
   std::string data_to_save;
-  if (args->GetString(0, &data_to_save) && !data_to_save.empty()) {
-    if (last_used_printer_name_ == NULL)
-      last_used_printer_name_ = new std::string();
-    *last_used_printer_name_ = data_to_save;
-  }
-  if (args->GetString(1, &data_to_save) && !data_to_save.empty()) {
-    if (last_used_printer_cloud_print_data_ == NULL)
-      last_used_printer_cloud_print_data_ = new std::string();
-    *last_used_printer_cloud_print_data_ = data_to_save;
-  }
+  if (args->GetString(0, &data_to_save) && !data_to_save.empty())
+    GetStickySettings()->StorePrinterName(data_to_save);
+
+  if (args->GetString(1, &data_to_save) && !data_to_save.empty())
+    GetStickySettings()->StoreCloudPrintData(data_to_save);
 }
 
 void PrintPreviewHandler::HandleGetPrinterCapabilities(const ListValue* args) {
@@ -649,22 +630,6 @@ void PrintPreviewHandler::GetNumberFormatAndMeasurementSystem(
   settings->SetInteger(kMeasurementSystem, system);
 }
 
-void PrintPreviewHandler::GetLastUsedMarginSettings(
-    base::DictionaryValue* custom_margins) {
-  custom_margins->SetInteger(printing::kSettingMarginsType,
-                             PrintPreviewHandler::last_used_margins_type_);
-  if (last_used_page_size_margins_) {
-    custom_margins->SetDouble(printing::kSettingMarginTop,
-                              last_used_page_size_margins_->margin_top);
-    custom_margins->SetDouble(printing::kSettingMarginBottom,
-                              last_used_page_size_margins_->margin_bottom);
-    custom_margins->SetDouble(printing::kSettingMarginLeft,
-                              last_used_page_size_margins_->margin_left);
-    custom_margins->SetDouble(printing::kSettingMarginRight,
-                              last_used_page_size_margins_->margin_right);
-  }
-}
-
 void PrintPreviewHandler::HandleGetInitialSettings(const ListValue* /*args*/) {
   scoped_refptr<PrintSystemTaskProxy> task =
       new PrintSystemTaskProxy(AsWeakPtr(),
@@ -690,7 +655,7 @@ void PrintPreviewHandler::SendInitialSettings(
                              default_printer);
   initial_settings.SetString(kCloudPrintData, cloud_print_data);
   initial_settings.SetBoolean(printing::kSettingHeaderFooterEnabled,
-                              last_used_headers_footers_);
+                              GetStickySettings()->headers_footers());
 
 
 #if defined(OS_MACOSX)
@@ -703,7 +668,7 @@ void PrintPreviewHandler::SendInitialSettings(
   initial_settings.SetBoolean(kPrintAutomaticallyInKioskMode, kiosk_mode);
 
   if (print_preview_ui->source_is_modifiable()) {
-    GetLastUsedMarginSettings(&initial_settings);
+    GetStickySettings()->GetLastUsedMarginSettings(&initial_settings);
     GetNumberFormatAndMeasurementSystem(&initial_settings);
   }
   web_ui()->CallJavascriptFunction("setInitialSettings", initial_settings);
@@ -817,14 +782,15 @@ void PrintPreviewHandler::SelectFile(const FilePath& default_filename) {
   file_type_info.extensions.resize(1);
   file_type_info.extensions[0].push_back(FILE_PATH_LITERAL("pdf"));
 
-  // Initializing last_saved_path_ if it is not already initialized.
-  if (!last_saved_path_) {
-    last_saved_path_ = new FilePath();
+  // Initializing save_path_ if it is not already initialized.
+  if (!GetStickySettings()->save_path()) {
     // Allowing IO operation temporarily. It is ok to do so here because
     // the select file dialog performs IO anyway in order to display the
     // folders and also it is modal.
     base::ThreadRestrictions::ScopedAllowIO allow_io;
-    PathService::Get(chrome::DIR_USER_DOCUMENTS, last_saved_path_);
+    FilePath file_path;
+    PathService::Get(chrome::DIR_USER_DOCUMENTS, &file_path);
+    GetStickySettings()->StoreSavePath(file_path);
   }
 
   if (!select_file_dialog_.get())
@@ -833,7 +799,7 @@ void PrintPreviewHandler::SelectFile(const FilePath& default_filename) {
   select_file_dialog_->SelectFile(
       SelectFileDialog::SELECT_SAVEAS_FILE,
       string16(),
-      last_saved_path_->Append(default_filename),
+      GetStickySettings()->save_path()->Append(default_filename),
       &file_type_info,
       0,
       FILE_PATH_LITERAL(""),
@@ -863,8 +829,8 @@ void PrintPreviewHandler::ShowSystemDialog() {
 
 void PrintPreviewHandler::FileSelected(const FilePath& path,
                                        int index, void* params) {
-  // Updating |last_saved_path_| to the newly selected folder.
-  *last_saved_path_ = path.DirName();
+  // Updating |save_path_| to the newly selected folder.
+  GetStickySettings()->StoreSavePath(path.DirName());
 
   PrintPreviewUI* print_preview_ui = static_cast<PrintPreviewUI*>(
       web_ui()->GetController());

@@ -4129,6 +4129,8 @@
         'browser/ui/webui/print_preview/print_preview_handler.h',
         'browser/ui/webui/print_preview/print_preview_ui.cc',
         'browser/ui/webui/print_preview/print_preview_ui.h',
+        'browser/ui/webui/print_preview/sticky_settings.cc',
+        'browser/ui/webui/print_preview/sticky_settings.h',
         'browser/ui/webui/profiler_ui.cc',
         'browser/ui/webui/profiler_ui.h',
         'browser/ui/webui/quota_internals_handler.cc',
