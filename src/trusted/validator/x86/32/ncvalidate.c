@@ -67,14 +67,9 @@ NaClValidationStatus NACL_SUBARCH_NAME(ApplyValidator, NACL_TARGET_ARCH, 32) (
   assert(NACL_SB_DEFAULT == sb_kind);
   if (bundle_size == 16 || bundle_size == 32) {
     CPUFeatures cpu_features;
-    /* TODO(ncbray) can this check be eliminated or simplified? */
-    if (local_cpu) {
-      NaClCPUData cpu_data;
-      NaClCPUDataGet(&cpu_data);
-      if (!NaClArchSupported(&cpu_data))
-        return NaClValidationFailedCpuNotSupported;
-    }
     NaClValidatorGetCPUFeatures(local_cpu, &cpu_features);
+    if (!NaClArchSupported(&cpu_features))
+      return NaClValidationFailedCpuNotSupported;
     switch (kind) {
       case NaClApplyCodeValidation:
         status = NCApplyValidatorSilently_x86_32(
@@ -102,14 +97,11 @@ NaClValidationStatus NACL_SUBARCH_NAME(ApplyValidatorCodeReplacement, x86, 32)
   NaClValidationStatus status = NaClValidationFailedNotImplemented;
   assert(NACL_SB_DEFAULT == sb_kind);
   if (bundle_size == 16 || bundle_size == 32) {
-    /* TODO(ncbray) can this check be eliminated or simplified? */
-    NaClCPUData cpu_data;
-    NaClCPUDataGet(&cpu_data);
-    if (!NaClArchSupported(&cpu_data)) {
+    CPUFeatures cpu_features;
+    NaClGetCurrentCPUFeatures(&cpu_features);
+    if (!NaClArchSupported(&cpu_features)) {
       status = NaClValidationFailedCpuNotSupported;
     } else {
-      CPUFeatures cpu_features;
-      NaClValidatorGetCPUFeatures(TRUE, &cpu_features);
       status = NCValidateSegmentPair(data_old, data_new, guest_addr,
                                      size, bundle_size, &cpu_features)
         ? NaClValidationSucceeded : NaClValidationFailed;

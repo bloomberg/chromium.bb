@@ -96,7 +96,7 @@ Bool NaClInstructionIsLegal(uint8_t* mbase,
   Bool is_legal = FALSE;
   CPUFeatures cpu_features;
 
-  NaClValidatorGetCPUFeatures(TRUE, &cpu_features);
+  NaClGetCurrentCPUFeatures(&cpu_features);
   state = NaClValidatorStateCreate(vbase, (NaClMemorySize) size,
                                    32, RegR15, &cpu_features);
   do {

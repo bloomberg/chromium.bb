@@ -57,14 +57,9 @@ NaClValidationStatus NACL_SUBARCH_NAME(ApplyValidatorVerbosely, x86, 32)
   assert(NACL_SB_DEFAULT == sb_kind);
   if (bundle_size == 16 || bundle_size == 32) {
     CPUFeatures cpu_features;
-    /* TODO(ncbray) can this check be eliminated or simplified? */
-    if (local_cpu) {
-      NaClCPUData cpu_data;
-      NaClCPUDataGet(&cpu_data);
-      if (!NaClArchSupported(&cpu_data))
-        return NaClValidationFailedCpuNotSupported;
-    }
     NaClValidatorGetCPUFeatures(local_cpu, &cpu_features);
+    if (!NaClArchSupported(&cpu_features))
+      return NaClValidationFailedCpuNotSupported;
     switch (kind) {
       case NaClApplyCodeValidation:
         status = NCApplyValidatorVerbosely_x86_32(

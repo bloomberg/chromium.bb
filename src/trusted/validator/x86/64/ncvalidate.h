@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -28,7 +28,7 @@ NaClValidationStatus NaClApplyValidatorStubout_x86_64(
     uint8_t *data,
     size_t size,
     int bundle_size,
-    Bool local_cpu);
+    CPUFeatures *cpu_features);
 
 /* Creates a validator state and initializes it. Returns
  * NaClValidationSucceeded if successful. Otherwise, it returns
@@ -47,7 +47,7 @@ NaClValidationStatus NaClValidatorSetup_x86_64(
     uintptr_t guest_addr,
     size_t size,
     int bundle_size,
-    Bool local_cpu,
+    CPUFeatures *cpu_features,
     struct NaClValidatorState** vstate_ptr);
 
 /* Runs the validator on the memory segment, returning

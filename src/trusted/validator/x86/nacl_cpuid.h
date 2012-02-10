@@ -111,6 +111,11 @@ typedef struct NaClCPUData {
  */
 void NaClCPUDataGet(NaClCPUData* data);
 
+/* GetCPUIDString creates an ASCII string that identifies this CPU's
+ * vendor ID, family, model, and stepping, as per the CPUID instruction
+ */
+char *GetCPUIDString(NaClCPUData* data);
+
 /* Set cpu check state fields to all true. */
 void NaClSetAllCPUFeatures(CPUFeatures *features);
 
@@ -132,20 +137,15 @@ const char* NaClGetCPUFeatureName(NaClCPUFeatureID id);
 /* Copy a set of cpu features. */
 void NaClCopyCPUFeatures(CPUFeatures* target, const CPUFeatures* source);
 
-/* Fills in cpuf with feature vector for this CPU. */
-extern void GetCPUFeatures(NaClCPUData* data, CPUFeatures *cpuf);
+/* Get the features for the CPU this code is running on. */
+void NaClGetCurrentCPUFeatures(CPUFeatures *cpu_features);
 
 /* Either get the features for the CPU this code is running on, or a
  * hypothetical CPU that supports all features.
  */
 void NaClValidatorGetCPUFeatures(Bool local_cpu, CPUFeatures *cpu_features);
 
-/* GetCPUIDString creates an ASCII string that identfies this CPU's
- * vendor ID, family, model, and stepping, as per the CPUID instruction
- */
-extern char *GetCPUIDString(NaClCPUData* data);
-
 /* Returns true if CPUID is defined, and the CPU is supported. */
-extern Bool NaClArchSupported(NaClCPUData* data);
+Bool NaClArchSupported(CPUFeatures *features);
 
 #endif /* NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NACL_CPUID_H_ */

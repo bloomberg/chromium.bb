@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -28,10 +28,10 @@ static NaClValidationStatus NaClApplyValidatorVerbosely_x86_64(
     uint8_t *data,
     size_t size,
     int bundle_size,
-    Bool local_cpu) {
+    CPUFeatures *cpu_features) {
   struct NaClValidatorState *vstate;
   NaClValidationStatus status =
-      NaClValidatorSetup_x86_64(guest_addr, size, bundle_size, local_cpu,
+      NaClValidatorSetup_x86_64(guest_addr, size, bundle_size, cpu_features,
                                 &vstate);
   if (status != NaClValidationSucceeded) return status;
   NaClValidatorStateSetLogVerbosity(vstate, LOG_ERROR);
@@ -52,20 +52,18 @@ NaClValidationStatus NACL_SUBARCH_NAME(ApplyValidatorVerbosely, x86, 64)
   NaClValidationStatus status = NaClValidationFailedNotImplemented;
   assert(NACL_SB_DEFAULT == sb_kind);
   if (bundle_size == 16 || bundle_size == 32) {
-    if (local_cpu) {
-      NaClCPUData cpu_data;
-      NaClCPUDataGet(&cpu_data);
-      if (!NaClArchSupported(&cpu_data))
-        return NaClValidationFailedCpuNotSupported;
-    }
+    CPUFeatures cpu_features;
+    NaClValidatorGetCPUFeatures(local_cpu, &cpu_features);
+    if (!NaClArchSupported(&cpu_features))
+      return NaClValidationFailedCpuNotSupported;
     switch (kind) {
       case NaClApplyCodeValidation:
         status = NaClApplyValidatorVerbosely_x86_64(
-            guest_addr, data, size, bundle_size, local_cpu);
+            guest_addr, data, size, bundle_size, &cpu_features);
         break;
       case NaClApplyValidationDoStubout:
         status = NaClApplyValidatorStubout_x86_64(
-            guest_addr, data, size, bundle_size, local_cpu);
+            guest_addr, data, size, bundle_size, &cpu_features);
         break;
       default:
         /* If reached, it isn't implemented (yet). */
