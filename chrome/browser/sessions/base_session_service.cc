@@ -5,17 +5,14 @@
 #include "chrome/browser/sessions/base_session_service.h"
 
 #include "base/bind.h"
-#include "base/command_line.h"
 #include "base/metrics/histogram.h"
 #include "base/pickle.h"
 #include "base/stl_util.h"
 #include "base/threading/thread.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sessions/compress_data_helper.h"
 #include "chrome/browser/sessions/session_backend.h"
 #include "chrome/browser/sessions/session_types.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_entry.h"
@@ -78,14 +75,10 @@ BaseSessionService::BaseSessionService(SessionType type,
       path_(path),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
       pending_reset_(false),
-      commands_since_reset_(0),
-      save_post_data_(false) {
+      commands_since_reset_(0) {
   if (profile) {
     // We should never be created when incognito.
     DCHECK(!profile->IsOffTheRecord());
-    const CommandLine* command_line = CommandLine::ForCurrentProcess();
-    save_post_data_ =
-        command_line->HasSwitch(switches::kEnableRestoreSessionState);
   }
   backend_ = new SessionBackend(type,
       profile_ ? profile_->GetPath() : path_);
@@ -170,10 +163,13 @@ SessionCommand* BaseSessionService::CreateUpdateTabNavigationCommand(
   WriteString16ToPickle(pickle, &bytes_written, max_state_size,
                         entry.GetTitle());
 
-  std::string content_state_without_post;
   if (entry.GetHasPostData()) {
-    content_state_without_post =
+    // Remove the form data, it may contain sensitive information.
+    std::string content_state_without_post =
         webkit_glue::RemoveFormDataFromHistoryState(entry.GetContentState());
+    WriteStringToPickle(pickle, &bytes_written, max_state_size,
+                        content_state_without_post);
+
     int original_size = entry.GetContentState().size() / 1024;
     int new_size = content_state_without_post.size() / 1024;
     UMA_HISTOGRAM_CUSTOM_COUNTS(
@@ -187,21 +183,9 @@ SessionCommand* BaseSessionService::CreateUpdateTabNavigationCommand(
         "SessionService.ContentStateSizeWithoutPost",
         entry.GetContentState().size() / 1024,
         62, 100000, 50);
+    WriteStringToPickle(pickle, &bytes_written, max_state_size,
+                        entry.GetContentState());
   }
-
-  std::string content_state;
-
-  if (!save_post_data_) {
-    // TODO(marja): This branch will be removed when saving the post data
-    // becomes the default.
-    if (entry.GetHasPostData())
-      content_state = content_state_without_post;
-    else
-      content_state = entry.GetContentState();
-  }
-  // Else: use an empty content state for keeping the data format compatible.
-
-  WriteStringToPickle(pickle, &bytes_written, max_state_size, content_state);
 
   pickle.WriteInt(entry.GetTransitionType());
   int type_mask = entry.GetHasPostData() ? TabNavigation::HAS_POST_DATA : 0;
@@ -211,11 +195,6 @@ SessionCommand* BaseSessionService::CreateUpdateTabNavigationCommand(
       entry.GetReferrer().url.is_valid() ?
           entry.GetReferrer().url.spec() : std::string());
   pickle.WriteInt(entry.GetReferrer().policy);
-
-  if (save_post_data_) {
-    CompressDataHelper::CompressAndWriteStringToPickle(
-        entry.GetContentState(), max_state_size, &pickle, &bytes_written);
-  }
 
   // Adding more data? Be sure and update TabRestoreService too.
   return new SessionCommand(command_id, pickle);
@@ -277,14 +256,6 @@ bool BaseSessionService::RestoreUpdateTabNavigationCommand(
     navigation->referrer_ = content::Referrer(
         referrer_spec.empty() ? GURL() : GURL(referrer_spec),
         policy);
-
-    // And even later, compressed content state was added.
-    std::string content_state;
-    if (CompressDataHelper::ReadAndDecompressStringFromPickle(
-            *pickle.get(), &iterator, &content_state) &&
-        !content_state.empty()) {
-      navigation->state_ = content_state;
-    }
   }
 
   navigation->virtual_url_ = GURL(url_spec);

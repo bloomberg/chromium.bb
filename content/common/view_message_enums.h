@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -103,9 +103,6 @@ struct ViewMsg_Navigate_Type {
     // session did not crash. If this is not set and the page was restored then
     // the page's cache policy is ignored and we load from the cache.
     RESTORE,
-
-    // Like RESTORE, except that the navigation contains POST data.
-    RESTORE_WITH_POST,
 
     // Navigation type not categorized by the other types.
     NORMAL

@@ -1,4 +1,0 @@
-include_rules = [
-  # For compressing data stored in SessionStorage.
-  "+third_party/bzip2",
-]
