@@ -3,7 +3,6 @@
  * found in the LICENSE file. */
 
 html {
-  font-family: segoe ui, arial, helvetica, sans-serif;
   font-size: 14px;
   /* It's necessary to put this here instead of in body in order to get the
      background-size of 100% to work properly */
@@ -308,6 +307,7 @@ html[dir='rtl'] #footer.showing-trash-mode #trash.drag-target .lid {
 
 #fontMeasuringDiv {
   /* The font attributes match the nav inputs. */
+  font: -webkit-small-control;
   font-size: 8pt;
   font-weight: bold;
   pointer-events: none;
