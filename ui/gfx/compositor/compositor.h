@@ -42,7 +42,6 @@ class COMPOSITOR_EXPORT SharedResources {
   // Note: Caller is responsible for managing lifetime of returned pointer.
   gfx::ScopedMakeCurrent* GetScopedMakeCurrent();
 
-  void* GetDisplay();
   gfx::GLShareGroup* GetShareGroup();
 
  private:
@@ -66,7 +65,7 @@ class COMPOSITOR_EXPORT SharedResources {
 // to a layer.
 class COMPOSITOR_EXPORT Texture : public base::RefCounted<Texture> {
  public:
-  Texture();
+  Texture(bool flipped, const gfx::Size& size);
   virtual ~Texture();
 
   unsigned int texture_id() const { return texture_id_; }

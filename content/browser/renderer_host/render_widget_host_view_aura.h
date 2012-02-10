@@ -35,7 +35,7 @@ class WebTouchEvent;
 }
 
 #if defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
-class AcceleratedSurfaceContainerLinux;
+class ImageTransportClient;
 #endif
 
 class CONTENT_EXPORT RenderWidgetHostViewAura
@@ -247,8 +247,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
 #if defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
   std::vector< base::Callback<void(void)> > on_compositing_ended_callbacks_;
 
-  std::map<uint64, scoped_refptr<AcceleratedSurfaceContainerLinux> >
-      accelerated_surface_containers_;
+  std::map<uint64, scoped_refptr<ImageTransportClient> >
+      image_transport_clients_;
 
   gfx::PluginWindowHandle current_surface_;
 #endif

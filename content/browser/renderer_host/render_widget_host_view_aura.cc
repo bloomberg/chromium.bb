@@ -31,8 +31,7 @@
 
 #if defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
 #include "base/bind.h"
-#include "content/browser/renderer_host/accelerated_surface_container_linux.h"
-#include "ui/gfx/gl/gl_bindings.h"
+#include "content/browser/renderer_host/image_transport_client.h"
 #endif
 
 using WebKit::WebTouchEvent;
@@ -364,12 +363,11 @@ void RenderWidgetHostViewAura::UpdateExternalTexture() {
 #if defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
   if (current_surface_ != gfx::kNullPluginWindow &&
       host_->is_accelerated_compositing_active()) {
-    AcceleratedSurfaceContainerLinux* container =
-        accelerated_surface_containers_[current_surface_];
+    ImageTransportClient* container =
+        image_transport_clients_[current_surface_];
     if (container)
       container->Update();
     window_->SetExternalTexture(container);
-    glFlush();
   } else {
     window_->SetExternalTexture(NULL);
   }
@@ -390,7 +388,7 @@ void RenderWidgetHostViewAura::AcceleratedSurfaceBuffersSwapped(
     RenderWidgetHost::AcknowledgeSwapBuffers(params.route_id, gpu_host_id);
   } else {
     gfx::Size surface_size =
-        accelerated_surface_containers_[params.surface_handle]->size();
+        image_transport_clients_[params.surface_handle]->size();
     window_->SchedulePaintInRect(gfx::Rect(surface_size));
 
     // Add sending an ACK to the list of things to do OnCompositingEnded
@@ -419,7 +417,7 @@ void RenderWidgetHostViewAura::AcceleratedSurfacePostSubBuffer(
     RenderWidgetHost::AcknowledgePostSubBuffer(params.route_id, gpu_host_id);
   } else {
     gfx::Size surface_size =
-        accelerated_surface_containers_[params.surface_handle]->size();
+        image_transport_clients_[params.surface_handle]->size();
 
     // Co-ordinates come in OpenGL co-ordinate space.
     // We need to convert to layer space.
@@ -450,15 +448,17 @@ void RenderWidgetHostViewAura::AcceleratedSurfaceNew(
       int32 height,
       uint64* surface_handle,
       TransportDIB::Handle* shm_handle) {
-  scoped_refptr<AcceleratedSurfaceContainerLinux> surface(
-      new AcceleratedSurfaceContainerLinux(gfx::Size(width, height)));
-  if (!surface->Initialize(surface_handle)) {
-    LOG(ERROR) << "Failed to create AcceleratedSurfaceContainer";
+  ui::SharedResources* instance = ui::SharedResources::GetInstance();
+  DCHECK(instance);
+  scoped_refptr<ImageTransportClient> surface(
+      ImageTransportClient::Create(instance, gfx::Size(width, height)));
+  if (!surface || !surface->Initialize(surface_handle)) {
+    LOG(ERROR) << "Failed to create ImageTransportClient";
     return;
   }
   *shm_handle = surface->Handle();
 
-  accelerated_surface_containers_[*surface_handle] = surface;
+  image_transport_clients_[*surface_handle] = surface;
 }
 
 void RenderWidgetHostViewAura::AcceleratedSurfaceRelease(
@@ -470,7 +470,7 @@ void RenderWidgetHostViewAura::AcceleratedSurfaceRelease(
     // flip back and forth. Instead wait until we got the accelerated
     // compositing deactivation.
   }
-  accelerated_surface_containers_.erase(surface_handle);
+  image_transport_clients_.erase(surface_handle);
 }
 #endif
 

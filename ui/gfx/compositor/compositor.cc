@@ -104,18 +104,15 @@ gfx::ScopedMakeCurrent* SharedResources::GetScopedMakeCurrent() {
     return NULL;
 }
 
-void* SharedResources::GetDisplay() {
-  return surface_->GetDisplay();
-}
-
 gfx::GLShareGroup* SharedResources::GetShareGroup() {
   DCHECK(initialized_);
   return context_->share_group();
 }
 
-Texture::Texture()
+Texture::Texture(bool flipped, const gfx::Size& size)
     : texture_id_(0),
-      flipped_(false) {
+      flipped_(flipped),
+      size_(size) {
 }
 
 Texture::~Texture() {

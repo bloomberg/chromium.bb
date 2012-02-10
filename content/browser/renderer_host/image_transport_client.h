@@ -17,23 +17,16 @@ class Size;
 // This is a client for ImageTransportSurface, that handles the
 // platform-specific task of binding the transport surface to a GL texture.
 // The GL texture is allocated in the SharedResources context, and the data is
-// only valid between Acquire and Release.
-class ImageTransportClient {
+// only valid after the first Update().
+class ImageTransportClient : public ui::Texture {
  public:
   virtual ~ImageTransportClient() {}
 
-  // Initializes the client with the surface id. This returns the GL texture id,
-  // or 0 if error.
-  virtual unsigned int Initialize(uint64* surface_handle) = 0;
+  // Initializes the client with the surface id.
+  virtual bool Initialize(uint64* surface_handle) = 0;
 
-  // Gets the surface data into the texture.
-  virtual void Acquire() = 0;
-
-  // Releases the surface data.
-  virtual void Release() = 0;
-
-  // Returns whether the data is flipped in the Y direction.
-  virtual bool Flipped() = 0;
+  // Updates the surface data into the texture.
+  virtual void Update() = 0;
 
   // Returns the shared memory handle used to transfer software data if needed.
   // Can be a NULL handle.
@@ -42,6 +35,12 @@ class ImageTransportClient {
   // Creates a platform-specific client.
   static ImageTransportClient* Create(ui::SharedResources* resources,
                                       const gfx::Size& size);
+
+ protected:
+  ImageTransportClient(bool flipped, const gfx::Size& size);
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ImageTransportClient);
 };
 
 #endif  // CONTENT_BROWSER_RENDERER_HOST_IMAGE_TRANSPORT_CLIENT_H_
