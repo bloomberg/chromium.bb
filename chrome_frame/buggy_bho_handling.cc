@@ -1,10 +1,11 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome_frame/buggy_bho_handling.h"
 
 #include "base/logging.h"
+#include "base/process_util.h"
 #include "base/win/scoped_comptr.h"
 
 #include "chrome_frame/exception_barrier.h"
@@ -155,7 +156,7 @@ HRESULT BuggyBhoTls::PatchBuggyBHOs(IWebBrowser2* browser) {
 bool BuggyBhoTls::PatchIfBuggy(IUnknown* unk, const IID& diid) {
   DCHECK(unk);
   PROC* methods = *reinterpret_cast<PROC**>(unk);
-  HMODULE mod = GetModuleFromAddress(methods[0]);
+  HMODULE mod = base::GetModuleFromAddress(methods[0]);
   if (!IsBuggyBho(mod))
     return false;
 

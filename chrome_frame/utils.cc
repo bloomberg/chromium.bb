@@ -542,12 +542,6 @@ bool GetModuleVersion(HMODULE module, uint32* high, uint32* low) {
   return ok;
 }
 
-HMODULE GetModuleFromAddress(void* address) {
-  MEMORY_BASIC_INFORMATION info = {0};
-  ::VirtualQuery(address, &info, sizeof(info));
-  return reinterpret_cast<HMODULE>(info.AllocationBase);
-}
-
 namespace {
 
 const int kMaxSubmenuDepth = 10;

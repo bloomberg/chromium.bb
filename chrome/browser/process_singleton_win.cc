@@ -91,6 +91,8 @@ bool ProcessSingleton::EscapeVirtualization(const FilePath& user_data_dir) {
 }
 
 // Look for a Chrome instance that uses the same profile directory.
+// If there isn't one, create a message window with its title set to
+// the profile directory path.
 ProcessSingleton::ProcessSingleton(const FilePath& user_data_dir)
     : window_(NULL), locked_(false), foreground_window_(NULL),
     is_virtualized_(false) {
@@ -120,18 +122,34 @@ ProcessSingleton::ProcessSingleton(const FilePath& user_data_dir)
     remote_window_ = FindWindowEx(HWND_MESSAGE, NULL,
                                   chrome::kMessageWindowClass,
                                   user_data_dir.value().c_str());
-    if (!remote_window_)
-      Create();
+    if (!remote_window_) {
+      HINSTANCE hinst = base::GetModuleFromAddress(&ThunkWndProc);
+
+      WNDCLASSEX wc = {0};
+      wc.cbSize = sizeof(wc);
+      wc.lpfnWndProc = base::win::WrappedWindowProc<ThunkWndProc>;
+      wc.hInstance = hinst;
+      wc.lpszClassName = chrome::kMessageWindowClass;
+      ATOM clazz = ::RegisterClassEx(&wc);
+      DCHECK(clazz);
+
+      FilePath user_data_dir;
+      PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
+
+      // Set the window's title to the path of our user data directory so other
+      // Chrome instances can decide if they should forward to us or not.
+      window_ = ::CreateWindow(MAKEINTATOM(clazz),
+                               user_data_dir.value().c_str(),
+                               0, 0, 0, 0, 0, HWND_MESSAGE, 0, hinst, this);
+      CHECK(window_);
+    }
     BOOL success = ReleaseMutex(only_me);
     DCHECK(success) << "GetLastError = " << GetLastError();
   }
 }
 
 ProcessSingleton::~ProcessSingleton() {
-  if (window_) {
-    ::DestroyWindow(window_);
-    ::UnregisterClass(chrome::kMessageWindowClass, GetModuleHandle(NULL));
-  }
+  Cleanup();
 }
 
 ProcessSingleton::NotifyResult ProcessSingleton::NotifyOtherProcess() {
@@ -215,45 +233,31 @@ ProcessSingleton::NotifyResult ProcessSingleton::NotifyOtherProcessOrCreate() {
   NotifyResult result = NotifyOtherProcess();
   if (result != PROCESS_NONE)
     return result;
-  return Create() ? PROCESS_NONE : PROFILE_IN_USE;
+  return window_ ? PROCESS_NONE : PROFILE_IN_USE;
 }
 
-// For windows, there is no need to call Create() since the call is made in
-// the constructor but to avoid having more platform specific code in
-// browser_main.cc we tolerate a second call which will do nothing.
+// On Windows, there is no need to call Create() since the message
+// window is created in the constructor but to avoid having more
+// platform specific code in browser_main.cc we tolerate calls to
+// Create(), which will do nothing.
 bool ProcessSingleton::Create() {
   DCHECK(!remote_window_);
-  if (window_)
-    return true;
-
-  HINSTANCE hinst = 0;
-  if (!::GetModuleHandleExA(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS,
-                            reinterpret_cast<char*>(&ThunkWndProc),
-                            &hinst)) {
-    NOTREACHED();
-  }
-
-  WNDCLASSEX wc = {0};
-  wc.cbSize = sizeof(wc);
-  wc.lpfnWndProc = base::win::WrappedWindowProc<ThunkWndProc>;
-  wc.hInstance = hinst;
-  wc.lpszClassName = chrome::kMessageWindowClass;
-  ATOM clazz = ::RegisterClassEx(&wc);
-  DCHECK(clazz);
-
-  FilePath user_data_dir;
-  PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
-
-  // Set the window's title to the path of our user data directory so other
-  // Chrome instances can decide if they should forward to us or not.
-  window_ = ::CreateWindow(MAKEINTATOM(clazz),
-                           user_data_dir.value().c_str(),
-                           0, 0, 0, 0, 0, HWND_MESSAGE, 0, hinst, this);
-  CHECK(window_);
-  return true;
+  return window_ != NULL;
 }
 
 void ProcessSingleton::Cleanup() {
+  // Window classes registered by DLLs are not cleaned up automatically on
+  // process exit, so we must unregister at the earliest chance possible.
+  // During the fast shutdown sequence, ProcessSingleton::Cleanup() is
+  // called if our process was the first to start.  Therefore we try cleaning
+  // up here, and again in the destructor if needed to catch as many cases
+  // as possible.
+  if (window_) {
+    ::DestroyWindow(window_);
+    ::UnregisterClass(chrome::kMessageWindowClass,
+                      base::GetModuleFromAddress(&ThunkWndProc));
+    window_ = NULL;
+  }
 }
 
 LRESULT ProcessSingleton::OnCopyData(HWND hwnd, const COPYDATASTRUCT* cds) {
