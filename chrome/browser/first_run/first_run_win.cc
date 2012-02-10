@@ -43,7 +43,7 @@
 #include "chrome/installer/util/util_constants.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/user_metrics.h"
-#include "google_update_idl.h"
+#include "google_update/google_update_idl.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"

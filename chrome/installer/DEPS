@@ -1,5 +1,6 @@
 include_rules = [
   "+chrome_frame",
+  "+google_update",
   "+rlz",
   "+third_party/bspatch",
   "+third_party/lzma_sdk",

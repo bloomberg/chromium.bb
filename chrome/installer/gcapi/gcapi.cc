@@ -33,8 +33,7 @@
 #include "chrome/installer/gcapi/gcapi_reactivation.h"
 #include "chrome/installer/util/google_update_constants.h"
 #include "chrome/installer/util/util_constants.h"
-
-#include "google_update_idl.h"  // NOLINT
+#include "google_update/google_update_idl.h"
 
 using base::Time;
 using base::TimeDelta;
