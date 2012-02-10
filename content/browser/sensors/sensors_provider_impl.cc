@@ -1,37 +1,41 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "content/browser/sensors/sensors_provider_impl.h"
 
 #include "base/memory/singleton.h"
+#include "content/public/browser/sensors_listener.h"
 
-using content::SensorsListener;
+namespace content {
 
-namespace sensors {
-
-ProviderImpl* ProviderImpl::GetInstance() {
-  return Singleton<ProviderImpl>::get();
+// static
+SensorsProvider* SensorsProvider::GetInstance() {
+  return SensorsProviderImpl::GetInstance();
 }
 
-ProviderImpl::ProviderImpl()
-    : listeners_(new ListenerList()) {
+// static
+SensorsProviderImpl* SensorsProviderImpl::GetInstance() {
+  return Singleton<SensorsProviderImpl>::get();
 }
 
-ProviderImpl::~ProviderImpl() {
-}
-
-void ProviderImpl::AddListener(SensorsListener* listener) {
+void SensorsProviderImpl::AddListener(SensorsListener* listener) {
   listeners_->AddObserver(listener);
 }
 
-void ProviderImpl::RemoveListener(SensorsListener* listener) {
+void SensorsProviderImpl::RemoveListener(SensorsListener* listener) {
   listeners_->RemoveObserver(listener);
 }
 
-void ProviderImpl::ScreenOrientationChanged(
-    content::ScreenOrientation change) {
+void SensorsProviderImpl::ScreenOrientationChanged(ScreenOrientation change) {
   listeners_->Notify(&SensorsListener::OnScreenOrientationChanged, change);
 }
 
-}  // namespace sensors
+SensorsProviderImpl::SensorsProviderImpl()
+    : listeners_(new ListenerList()) {
+}
+
+SensorsProviderImpl::~SensorsProviderImpl() {
+}
+
+}  // namespace content

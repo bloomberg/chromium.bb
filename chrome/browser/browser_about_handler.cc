@@ -14,7 +14,7 @@
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/sensors/sensors_provider.h"
+#include "content/public/browser/sensors_provider.h"
 
 #if defined(USE_TCMALLOC)
 #include "third_party/tcmalloc/chromium/src/google/malloc_extension.h"
@@ -182,7 +182,7 @@ bool HandleNonNavigationAboutURL(const GURL& url) {
     } else {
       NOTREACHED() << "Unknown orientation";
     }
-    sensors::Provider::GetInstance()->ScreenOrientationChanged(change);
+    content::SensorsProvider::GetInstance()->ScreenOrientationChanged(change);
     return true;
   }
 #endif

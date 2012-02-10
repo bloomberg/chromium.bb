@@ -1,11 +1,11 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/ui/views/aura/screen_orientation_listener.h"
 
 #include "base/memory/scoped_ptr.h"
-#include "content/browser/sensors/sensors_provider.h"
+#include "content/public/browser/sensors_provider.h"
 #include "ui/aura/root_window.h"
 #include "ui/gfx/compositor/layer.h"
 #include "ui/gfx/compositor/layer_animation_sequence.h"
@@ -32,11 +32,11 @@ static int SymmetricRound(float x) {
 }  // namespace
 
 ScreenOrientationListener::ScreenOrientationListener() {
-  sensors::Provider::GetInstance()->AddListener(this);
+  content::SensorsProvider::GetInstance()->AddListener(this);
 }
 
 ScreenOrientationListener::~ScreenOrientationListener() {
-  sensors::Provider::GetInstance()->RemoveListener(this);
+  content::SensorsProvider::GetInstance()->RemoveListener(this);
 }
 
 void ScreenOrientationListener::OnScreenOrientationChanged(
