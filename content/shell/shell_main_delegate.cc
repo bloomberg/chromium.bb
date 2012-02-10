@@ -43,7 +43,6 @@ void ShellMainDelegate::SandboxInitialized(const std::string& process_type) {
 int ShellMainDelegate::RunProcess(
     const std::string& process_type,
     const content::MainFunctionParams& main_function_params) {
-  NOTREACHED();
   return -1;
 }
 

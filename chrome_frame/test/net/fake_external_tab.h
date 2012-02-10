@@ -102,6 +102,7 @@ class CFUrlRequestUnittestRunner
   virtual void PreEarlyInitialization() OVERRIDE;
   virtual void PostEarlyInitialization() OVERRIDE {}
   virtual void PreMainMessageLoopStart() OVERRIDE {}
+  virtual MessageLoop* GetMainMessageLoop() OVERRIDE;
   virtual void PostMainMessageLoopStart() OVERRIDE {}
   virtual void ToolkitInitialized() OVERRIDE {}
   virtual int PreCreateThreads() OVERRIDE;
