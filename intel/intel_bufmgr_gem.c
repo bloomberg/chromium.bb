@@ -1189,14 +1189,12 @@ static int drm_intel_gem_bo_map(drm_intel_bo *bo, int write_enable)
 	return 0;
 }
 
-int drm_intel_gem_bo_map_gtt(drm_intel_bo *bo)
+static int
+map_gtt(drm_intel_bo *bo)
 {
 	drm_intel_bufmgr_gem *bufmgr_gem = (drm_intel_bufmgr_gem *) bo->bufmgr;
 	drm_intel_bo_gem *bo_gem = (drm_intel_bo_gem *) bo;
-	struct drm_i915_gem_set_domain set_domain;
 	int ret;
-
-	pthread_mutex_lock(&bufmgr_gem->lock);
 
 	if (bo_gem->map_count++ == 0)
 		drm_intel_gem_bo_open_vma(bufmgr_gem, bo_gem);
@@ -1223,7 +1221,6 @@ int drm_intel_gem_bo_map_gtt(drm_intel_bo *bo)
 			    strerror(errno));
 			if (--bo_gem->map_count == 0)
 				drm_intel_gem_bo_close_vma(bufmgr_gem, bo_gem);
-			pthread_mutex_unlock(&bufmgr_gem->lock);
 			return ret;
 		}
 
@@ -1240,7 +1237,6 @@ int drm_intel_gem_bo_map_gtt(drm_intel_bo *bo)
 			    strerror(errno));
 			if (--bo_gem->map_count == 0)
 				drm_intel_gem_bo_close_vma(bufmgr_gem, bo_gem);
-			pthread_mutex_unlock(&bufmgr_gem->lock);
 			return ret;
 		}
 	}
@@ -1250,7 +1246,33 @@ int drm_intel_gem_bo_map_gtt(drm_intel_bo *bo)
 	DBG("bo_map_gtt: %d (%s) -> %p\n", bo_gem->gem_handle, bo_gem->name,
 	    bo_gem->gtt_virtual);
 
-	/* Now move it to the GTT domain so that the CPU caches are flushed */
+	return 0;
+}
+
+int drm_intel_gem_bo_map_gtt(drm_intel_bo *bo)
+{
+	drm_intel_bufmgr_gem *bufmgr_gem = (drm_intel_bufmgr_gem *) bo->bufmgr;
+	drm_intel_bo_gem *bo_gem = (drm_intel_bo_gem *) bo;
+	struct drm_i915_gem_set_domain set_domain;
+	int ret;
+
+	pthread_mutex_lock(&bufmgr_gem->lock);
+
+	ret = map_gtt(bo);
+	if (ret) {
+		pthread_mutex_unlock(&bufmgr_gem->lock);
+		return ret;
+	}
+
+	/* Now move it to the GTT domain so that the GPU and CPU
+	 * caches are flushed and the GPU isn't actively using the
+	 * buffer.
+	 *
+	 * The pagefault handler does this domain change for us when
+	 * it has unbound the BO from the GTT, but it's up to us to
+	 * tell it when we're about to use things if we had done
+	 * rendering and it still happens to be bound to the GTT.
+	 */
 	VG_CLEAR(set_domain);
 	set_domain.handle = bo_gem->gem_handle;
 	set_domain.read_domains = I915_GEM_DOMAIN_GTT;
@@ -1269,6 +1291,42 @@ int drm_intel_gem_bo_map_gtt(drm_intel_bo *bo)
 	pthread_mutex_unlock(&bufmgr_gem->lock);
 
 	return 0;
+}
+
+/**
+ * Performs a mapping of the buffer object like the normal GTT
+ * mapping, but avoids waiting for the GPU to be done reading from or
+ * rendering to the buffer.
+ *
+ * This is used in the implementation of GL_ARB_map_buffer_range: The
+ * user asks to create a buffer, then does a mapping, fills some
+ * space, runs a drawing command, then asks to map it again without
+ * synchronizing because it guarantees that it won't write over the
+ * data that the GPU is busy using (or, more specifically, that if it
+ * does write over the data, it acknowledges that rendering is
+ * undefined).
+ */
+
+int drm_intel_gem_bo_map_unsynchronized(drm_intel_bo *bo)
+{
+	drm_intel_bufmgr_gem *bufmgr_gem = (drm_intel_bufmgr_gem *) bo->bufmgr;
+	int ret;
+
+	/* If the CPU cache isn't coherent with the GTT, then use a
+	 * regular synchronized mapping.  The problem is that we don't
+	 * track where the buffer was last used on the CPU side in
+	 * terms of drm_intel_bo_map vs drm_intel_gem_bo_map_gtt, so
+	 * we would potentially corrupt the buffer even when the user
+	 * does reasonable things.
+	 */
+	if (!bufmgr_gem->has_llc)
+		return drm_intel_gem_bo_map_gtt(bo);
+
+	pthread_mutex_lock(&bufmgr_gem->lock);
+	ret = map_gtt(bo);
+	pthread_mutex_unlock(&bufmgr_gem->lock);
+
+	return ret;
 }
 
 static int drm_intel_gem_bo_unmap(drm_intel_bo *bo)
