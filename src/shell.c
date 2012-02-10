@@ -1315,6 +1315,9 @@ map(struct weston_shell *base,
 	case SHELL_SURFACE_LOCK:
 		center_on_output(surface, get_default_output(compositor));
 		break;
+	case SHELL_SURFACE_POPUP:
+		shell_map_popup(shsurf, shsurf->popup.time);
+		break;
 	default:
 		;
 	}
@@ -1361,22 +1364,6 @@ map(struct weston_shell *base,
 		}
 	}
 
-	switch (surface_type) {
-	case SHELL_SURFACE_TOPLEVEL:
-		surface->geometry.x = 10 + random() % 400;
-		surface->geometry.y = 10 + random() % 400;
-		surface->geometry.dirty = 1;
-		break;
-	case SHELL_SURFACE_POPUP:
-		shell_map_popup(shsurf, shsurf->popup.time);
-		break;
-	default:
-		break;
-	}
-
-	surface->geometry.width = width;
-	surface->geometry.height = height;
-	surface->geometry.dirty = 1;
 	if (do_configure) {
 		weston_surface_assign_output(surface);
 		weston_compositor_repick(compositor);
