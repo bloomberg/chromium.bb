@@ -9,6 +9,7 @@
 #include "ash/ash_export.h"
 #include "base/message_loop.h"
 #include "ui/aura/client/dispatcher_client.h"
+#include "ui/aura/window.h"
 
 namespace ash {
 
@@ -23,6 +24,7 @@ class ASH_EXPORT NestedDispatcherController
   virtual ~NestedDispatcherController();
 
   virtual void RunWithDispatcher(MessageLoop::Dispatcher* dispatcher,
+                                 aura::Window* associated_window,
                                  bool nestable_tasks_allowed) OVERRIDE;
 
  private:

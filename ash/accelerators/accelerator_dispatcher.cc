@@ -7,9 +7,11 @@
 namespace ash {
 
 AcceleratorDispatcher::AcceleratorDispatcher(
-    MessageLoop::Dispatcher* nested_dispatcher)
-    : nested_dispatcher_(nested_dispatcher) {
+    MessageLoop::Dispatcher* nested_dispatcher, aura::Window* associated_window)
+    : nested_dispatcher_(nested_dispatcher),
+      associated_window_(associated_window) {
   DCHECK(nested_dispatcher_);
+  DCHECK(associated_window_);
 }
 
 }  // namespace ash

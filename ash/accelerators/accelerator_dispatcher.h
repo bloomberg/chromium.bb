@@ -8,6 +8,7 @@
 
 #include "ash/ash_export.h"
 #include "base/message_loop.h"
+#include "ui/aura/window.h"
 
 namespace ash {
 
@@ -17,7 +18,8 @@ namespace ash {
 // TODO(pkotwicz): Port AcceleratorDispatcher to mac.
 class ASH_EXPORT AcceleratorDispatcher : public MessageLoop::Dispatcher {
  public:
-  explicit AcceleratorDispatcher(MessageLoop::Dispatcher* nested_dispatcher);
+  explicit AcceleratorDispatcher(MessageLoop::Dispatcher* nested_dispatcher,
+                                 aura::Window* associated_window);
 
 #if defined(USE_X11)
   virtual base::MessagePumpDispatcher::DispatchStatus Dispatch(
@@ -28,6 +30,10 @@ class ASH_EXPORT AcceleratorDispatcher : public MessageLoop::Dispatcher {
 
  private:
   MessageLoop::Dispatcher* nested_dispatcher_;
+
+  // Window associated with |nested_dispatcher_| which is used to determine
+  // whether the |nested_dispatcher_| is allowed to receive events.
+  aura::Window* associated_window_;
 
   DISALLOW_COPY_AND_ASSIGN(AcceleratorDispatcher);
 };

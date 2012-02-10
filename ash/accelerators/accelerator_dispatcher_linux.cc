@@ -28,13 +28,12 @@ const int kModifierMask = (ui::EF_SHIFT_DOWN |
 
 base::MessagePumpDispatcher::DispatchStatus AcceleratorDispatcher::Dispatch(
     XEvent* xev) {
-  ash::Shell* shell = ash::Shell::GetInstance();
-  if (shell->IsScreenLocked())
+  if (!associated_window_->CanReceiveEvents())
     return aura::RootWindow::GetInstance()->GetDispatcher()->Dispatch(xev);
 
   if (xev->type == KeyPress) {
     ash::AcceleratorController* accelerator_controller =
-        shell->accelerator_controller();
+        ash::Shell::GetInstance()->accelerator_controller();
     ui::Accelerator accelerator(ui::KeyboardCodeFromNative(xev),
                                 ui::EventFlagsFromNative(xev) & kModifierMask);
     if (accelerator_controller && accelerator_controller->Process(accelerator))

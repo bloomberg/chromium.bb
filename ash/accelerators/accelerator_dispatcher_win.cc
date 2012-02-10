@@ -20,13 +20,12 @@ const int kModifierMask = (ui::EF_SHIFT_DOWN |
 }  // namespace
 
 bool AcceleratorDispatcher::Dispatch(const MSG& msg) {
-  ash::Shell* shell = ash::Shell::GetInstance();
-  if (shell->IsScreenLocked())
+  if (!associated_window_->CanReceiveEvents())
     return aura::RootWindow::GetInstance()->GetDispatcher()->Dispatch(msg);
 
   if(msg.message == WM_KEYDOWN || msg.message == WM_SYSKEYDOWN) {
     ash::AcceleratorController* accelerator_controller =
-        shell->accelerator_controller();
+        ash::Shell::GetInstance()->accelerator_controller();
     ui::Accelerator accelerator(ui::KeyboardCodeFromNative(msg),
         ui::EventFlagsFromNative(msg) & kModifierMask);
     if (accelerator_controller && accelerator_controller->Process(accelerator))

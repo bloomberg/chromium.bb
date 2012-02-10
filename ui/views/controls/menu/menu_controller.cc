@@ -320,7 +320,8 @@ MenuItemView* MenuController::Run(Widget* parent,
   // from a task none of the tasks we schedule are processed and the menu
   // appears totally broken.
 #if defined(USE_AURA)
-  aura::client::GetDispatcherClient()->RunWithDispatcher(this, true);
+  aura::client::GetDispatcherClient()->RunWithDispatcher(this,
+      parent->GetNativeWindow(), true);
 #else
   MessageLoopForUI* loop = MessageLoopForUI::current();
   bool did_allow_task_nesting = loop->NestableTasksAllowed();

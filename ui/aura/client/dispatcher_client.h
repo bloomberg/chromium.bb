@@ -7,6 +7,7 @@
 #pragma once
 
 #include "ui/aura/aura_export.h"
+#include "ui/aura/window.h"
 #include "base/message_loop.h"
 
 namespace aura {
@@ -17,6 +18,7 @@ namespace client {
 class AURA_EXPORT DispatcherClient {
  public:
   virtual void RunWithDispatcher(MessageLoop::Dispatcher* dispatcher,
+                                 aura::Window* associated_window,
                                  bool nestable_tasks_allowed) = 0;
 };
 

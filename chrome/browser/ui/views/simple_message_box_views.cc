@@ -60,7 +60,8 @@ bool SimpleMessageBoxViews::ShowYesNoBox(gfx::NativeWindow parent_window,
   g_browser_process->AddRefModule();
 
 #if defined(USE_AURA)
-  aura::client::GetDispatcherClient()->RunWithDispatcher(dialog, true);
+  aura::client::GetDispatcherClient()->RunWithDispatcher(dialog,
+      parent_window, true);
 #else
   bool old_state = MessageLoopForUI::current()->NestableTasksAllowed();
   MessageLoopForUI::current()->SetNestableTasksAllowed(true);
