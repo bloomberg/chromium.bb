@@ -445,7 +445,9 @@ TEST_F(SyncSessionTest, RebaseRoutingInfoWithLatestRemoveOneType) {
   // Make sure the model safe routing info is reduced to one type.
   ModelSafeRoutingInfo::const_iterator it =
       two.routing_info().find(syncable::AUTOFILL);
-  EXPECT_NE(it, two.routing_info().end());
+  // Note that attempting to use EXPECT_NE would fail for an Android build due
+  // to seeming incompatibility with gtest and stlport.
+  EXPECT_TRUE(it != two.routing_info().end());
   EXPECT_EQ(it->second, GROUP_DB);
   EXPECT_EQ(two.routing_info().size(), 1U);
 }
@@ -520,10 +522,14 @@ TEST_F(SyncSessionTest, RebaseRoutingInfoWithLatestWithSameType) {
   ModelSafeRoutingInfo::const_iterator it2 =
       second.routing_info().find(syncable::BOOKMARKS);
 
-  EXPECT_NE(it1, second.routing_info().end());
+  // Note that attempting to use EXPECT_NE would fail for an Android build due
+  // to seeming incompatibility with gtest and stlport.
+  EXPECT_TRUE(it1 != second.routing_info().end());
   EXPECT_EQ(it1->second, GROUP_DB);
 
-  EXPECT_NE(it2, second.routing_info().end());
+  // Note that attempting to use EXPECT_NE would fail for an Android build due
+  // to seeming incompatibility with gtest and stlport.
+  EXPECT_TRUE(it2 != second.routing_info().end());
   EXPECT_EQ(it2->second, GROUP_UI);
   EXPECT_EQ(second.routing_info().size(), 2U);
 }
