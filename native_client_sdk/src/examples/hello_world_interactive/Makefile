@@ -1,4 +1,4 @@
-# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Copyright (c) 2012 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -25,7 +25,7 @@ NACL_SDK_ROOT?=$(abspath $(dir $(THIS_MAKEFILE))../..)
 # information (-g) for correctness and ease of debugging.
 WARNINGS:=-Wno-long-long -Wall -Wswitch-enum -Werror -pedantic 
 CXXFLAGS:=-pthread -O0 $(WARNINGS)
-
+LDFLAGS:=-lppapi_cpp -lppapi
 
 #
 # Compute path to compiler
@@ -57,11 +57,11 @@ hello_world_64.o helper_functions_64.o : %_64.o : %.cc
  
 # Define link rule for 32 bit (-m32) nexe
 hello_world_x86_32.nexe : hello_world_32.o helper_functions_32.o
-	$(CXX) -o $@ $^ -m32 -O0 -g -lppapi_cpp -lppapi
+	$(CXX) -o $@ $^ -m32 -O0 -g $(LDFLAGS)
 
 # Define link rule for 64 bit (-m64) nexe
 hello_world_x86_64.nexe : hello_world_64.o helper_functions_64.o
-	$(CXX) -o $@ $^ -m64 -O0 -g -lppapi_cpp -lppapi
+	$(CXX) -o $@ $^ -m64 -O0 -g $(LDFLAGS)
 
 # Define a phony rule so it always runs, to build nexe and start up server.
 .PHONY: RUN 
