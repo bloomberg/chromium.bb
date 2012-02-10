@@ -22,8 +22,8 @@ int main(int argc, char *argv[]) {
   int feature_id;
   NaClCPUDataGet(&cpu_data);
 
-  GetCPUFeatures(&cpu_data, &fv);
-  if (NaClArchSupported(&cpu_data)) {
+  NaClGetCurrentCPUFeatures(&fv);
+  if (NaClArchSupported(&fv)) {
     printf("This is a native client %d-bit %s compatible computer\n",
            NACL_TARGET_SUBARCH, GetCPUIDString(&cpu_data));
   } else {
