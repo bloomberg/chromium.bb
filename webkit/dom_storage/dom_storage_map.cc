@@ -6,25 +6,32 @@
 
 namespace dom_storage {
 
-DomStorageMap::DomStorageMap() {}
+DomStorageMap::DomStorageMap() {
+  ResetKeyIterator();
+}
+
 DomStorageMap::~DomStorageMap() {}
 
-unsigned DomStorageMap::Length() {
+unsigned DomStorageMap::Length() const {
   return values_.size();
 }
 
 NullableString16 DomStorageMap::Key(unsigned index) {
   if (index >= values_.size())
     return NullableString16(true);
-  ValuesMap::const_iterator it = values_.begin();
-  for (unsigned i = 0; i < index; ++i, ++it) {
-    // TODO(benm): Alter this so we don't have to walk
-    // up to the key from the beginning on each call.
+  while (last_key_index_ != index) {
+    if (last_key_index_ > index) {
+      --key_iterator_;
+      --last_key_index_;
+    } else {
+      ++key_iterator_;
+      ++last_key_index_;
+    }
   }
-  return NullableString16(it->first, false);
+  return NullableString16(key_iterator_->first, false);
 }
 
-NullableString16 DomStorageMap::GetItem(const string16& key) {
+NullableString16 DomStorageMap::GetItem(const string16& key) const {
   ValuesMap::const_iterator found = values_.find(key);
   if (found == values_.end())
     return NullableString16(true);
@@ -41,6 +48,7 @@ bool DomStorageMap::SetItem(
   else
     *old_value = found->second;
   values_[key] = NullableString16(value, false);
+  ResetKeyIterator();
   return true;
 }
 
@@ -52,17 +60,25 @@ bool DomStorageMap::RemoveItem(
     return false;
   *old_value = found->second.string();
   values_.erase(found);
+  ResetKeyIterator();
   return true;
 }
 
 void DomStorageMap::SwapValues(ValuesMap* values) {
   values_.swap(*values);
+  ResetKeyIterator();
 }
 
-DomStorageMap* DomStorageMap::DeepCopy() {
+DomStorageMap* DomStorageMap::DeepCopy() const {
   DomStorageMap* copy = new DomStorageMap;
   copy->values_ = values_;
+  copy->ResetKeyIterator();
   return copy;
+}
+
+void DomStorageMap::ResetKeyIterator() {
+  key_iterator_ = values_.begin();
+  last_key_index_ = 0;
 }
 
 }  // namespace dom_storage

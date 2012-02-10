@@ -49,11 +49,17 @@ TEST(DomStorageMapTest, DomStorageMapBasics) {
   EXPECT_TRUE(map->SetItem(kKey2, kValue2, &old_nullable_value));
   EXPECT_EQ(kValue, old_nullable_value.string());
   EXPECT_EQ(2u, map->Length());
+  EXPECT_EQ(kKey, map->Key(0).string());
+  EXPECT_EQ(kKey2, map->Key(1).string());
+  EXPECT_EQ(kKey, map->Key(0).string());
 
   copy = map->DeepCopy();
   EXPECT_EQ(2u, copy->Length());
   EXPECT_EQ(kValue, copy->GetItem(kKey).string());
   EXPECT_EQ(kValue2, copy->GetItem(kKey2).string());
+  EXPECT_EQ(kKey, copy->Key(0).string());
+  EXPECT_EQ(kKey2, copy->Key(1).string());
+  EXPECT_TRUE(copy->Key(2).is_null());
 
   map->SwapValues(&swap);
   EXPECT_EQ(2ul, swap.size());

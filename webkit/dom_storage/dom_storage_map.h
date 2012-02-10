@@ -26,21 +26,25 @@ class DomStorageMap
  public:
   DomStorageMap();
 
-  unsigned Length();
+  unsigned Length() const;
   NullableString16 Key(unsigned index);
-  NullableString16 GetItem(const string16& key);
+  NullableString16 GetItem(const string16& key) const;
   bool SetItem(const string16& key, const string16& value,
                NullableString16* old_value);
   bool RemoveItem(const string16& key, string16* old_value);
 
   void SwapValues(ValuesMap* map);
-  DomStorageMap* DeepCopy();
+  DomStorageMap* DeepCopy() const;
 
  private:
   friend class base::RefCountedThreadSafe<DomStorageMap>;
   ~DomStorageMap();
 
+  void ResetKeyIterator();
+
   ValuesMap values_;
+  ValuesMap::const_iterator key_iterator_;
+  unsigned last_key_index_;
   // TODO(benm): track usage and enforce a quota limit.
 };
 
