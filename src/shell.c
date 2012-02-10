@@ -712,12 +712,8 @@ show_screensaver(struct wl_shell *shell, struct shell_surface *surface)
 
 	wl_list_remove(&surface->surface->link);
 	wl_list_insert(list, &surface->surface->link);
-	weston_surface_configure(surface->surface,
-			       surface->surface->geometry.x,
-			       surface->surface->geometry.y,
-			       surface->surface->geometry.width,
-			       surface->surface->geometry.height);
 	surface->surface->output = surface->output;
+	weston_surface_damage(surface->surface);
 }
 
 static void
@@ -854,13 +850,8 @@ resume_desktop(struct wl_shell *shell)
 
 	terminate_screensaver(shell);
 
-	wl_list_for_each(surface, &shell->hidden_surface_list, link) {
-		weston_surface_configure(surface, surface->geometry.x,
-					 surface->geometry.y,
-					 surface->geometry.width,
-					 surface->geometry.height);
+	wl_list_for_each(surface, &shell->hidden_surface_list, link)
 		weston_surface_assign_output(surface);
-	}
 
 	if (wl_list_empty(&shell->backgrounds)) {
 		list = &shell->compositor->surface_list;
@@ -879,6 +870,7 @@ resume_desktop(struct wl_shell *shell)
 	weston_compositor_repick(shell->compositor);
 	shell->compositor->idle_time = shell->compositor->option_idle_time;
 	weston_compositor_wake(shell->compositor);
+	weston_compositor_damage_all(shell->compositor);
 }
 
 static void
@@ -1391,9 +1383,6 @@ map(struct weston_shell *base,
 	surface->geometry.height = height;
 	surface->geometry.dirty = 1;
 	if (do_configure) {
-		weston_surface_configure(surface, surface->geometry.x,
-					 surface->geometry.y,
-					 width, height);
 		weston_surface_assign_output(surface);
 		weston_compositor_repick(compositor);
 	}
