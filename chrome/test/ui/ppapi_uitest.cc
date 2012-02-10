@@ -540,7 +540,10 @@ TEST_PPAPI_OUT_OF_PROCESS(DISABLED_PostMessage_SendingArrayBuffer)
 TEST_PPAPI_OUT_OF_PROCESS(PostMessage_MessageEvent)
 TEST_PPAPI_OUT_OF_PROCESS(PostMessage_NoHandler)
 TEST_PPAPI_OUT_OF_PROCESS(PostMessage_ExtraParam)
+#if !defined(OS_WIN)
+// Times out on Windows XP and Windows 7: http://crbug.com/95557
 TEST_PPAPI_OUT_OF_PROCESS(PostMessage_NonMainThread)
+#endif
 TEST_PPAPI_NACL_VIA_HTTP(PostMessage_SendInInit)
 TEST_PPAPI_NACL_VIA_HTTP(PostMessage_SendingData)
 TEST_PPAPI_NACL_VIA_HTTP(PostMessage_SendingArrayBuffer)
