@@ -39,6 +39,11 @@
         '../third_party/angle/src/build_angle.gyp:libEGL',
         '../third_party/angle/src/build_angle.gyp:libGLESv2',
       ],
+      'link_settings': {
+        'libraries': [
+          '-lsetupapi.lib',
+        ],
+      },
     }],
     ['OS=="win" and directxsdk_exists=="True"', {
       'actions': [

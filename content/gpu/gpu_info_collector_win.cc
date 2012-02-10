@@ -34,31 +34,6 @@ std::string VersionNumberToString(uint32 version_number) {
 
 }  // namespace anonymous
 
-// Setup API functions
-typedef HDEVINFO (WINAPI*SetupDiGetClassDevsWFunc)(
-    CONST GUID *ClassGuid,
-    PCWSTR Enumerator,
-    HWND hwndParent,
-    DWORD Flags
-);
-typedef BOOL (WINAPI*SetupDiEnumDeviceInfoFunc)(
-    HDEVINFO DeviceInfoSet,
-    DWORD MemberIndex,
-    PSP_DEVINFO_DATA DeviceInfoData
-);
-typedef BOOL (WINAPI*SetupDiGetDeviceRegistryPropertyWFunc)(
-    HDEVINFO DeviceInfoSet,
-    PSP_DEVINFO_DATA DeviceInfoData,
-    DWORD Property,
-    PDWORD PropertyRegDataType,
-    PBYTE PropertyBuffer,
-    DWORD PropertyBufferSize,
-    PDWORD RequiredSize
-);
-typedef BOOL (WINAPI*SetupDiDestroyDeviceInfoListFunc)(
-    HDEVINFO DeviceInfoSet
-);
-
 namespace gpu_info_collector {
 
 bool CollectGraphicsInfo(content::GPUInfo* gpu_info) {
@@ -186,36 +161,11 @@ bool CollectVideoCardInfo(content::GPUInfo* gpu_info) {
 
 bool CollectDriverInfoD3D(const std::wstring& device_id,
                           content::GPUInfo* gpu_info) {
-  HMODULE lib_setupapi = LoadLibraryW(L"setupapi.dll");
-  if (!lib_setupapi) {
-    LOG(ERROR) << "Open setupapi.dll failed";
-    return false;
-  }
-  SetupDiGetClassDevsWFunc fp_get_class_devs =
-      reinterpret_cast<SetupDiGetClassDevsWFunc>(
-          GetProcAddress(lib_setupapi, "SetupDiGetClassDevsW"));
-  SetupDiEnumDeviceInfoFunc fp_enum_device_info =
-      reinterpret_cast<SetupDiEnumDeviceInfoFunc>(
-          GetProcAddress(lib_setupapi, "SetupDiEnumDeviceInfo"));
-  SetupDiGetDeviceRegistryPropertyWFunc fp_get_device_registry_property =
-      reinterpret_cast<SetupDiGetDeviceRegistryPropertyWFunc>(
-          GetProcAddress(lib_setupapi, "SetupDiGetDeviceRegistryPropertyW"));
-  SetupDiDestroyDeviceInfoListFunc fp_destroy_device_info_list =
-      reinterpret_cast<SetupDiDestroyDeviceInfoListFunc>(
-          GetProcAddress(lib_setupapi, "SetupDiDestroyDeviceInfoList"));
-  if (!fp_get_class_devs || !fp_enum_device_info ||
-      !fp_get_device_registry_property || !fp_destroy_device_info_list) {
-    FreeLibrary(lib_setupapi);
-    LOG(ERROR) << "Retrieve setupapi.dll functions failed";
-    return false;
-  }
-
   // create device info for the display device
-  HDEVINFO device_info = fp_get_class_devs(
+  HDEVINFO device_info = SetupDiGetClassDevsW(
     NULL, device_id.c_str(), NULL,
     DIGCF_PRESENT | DIGCF_PROFILE | DIGCF_ALLCLASSES);
   if (device_info == INVALID_HANDLE_VALUE) {
-    FreeLibrary(lib_setupapi);
     LOG(ERROR) << "Creating device info failed";
     return false;
   }
@@ -224,9 +174,9 @@ bool CollectDriverInfoD3D(const std::wstring& device_id,
   bool found = false;
   SP_DEVINFO_DATA device_info_data;
   device_info_data.cbSize = sizeof(device_info_data);
-  while (fp_enum_device_info(device_info, index++, &device_info_data)) {
+  while (SetupDiEnumDeviceInfo(device_info, index++, &device_info_data)) {
     WCHAR value[255];
-    if (fp_get_device_registry_property(device_info,
+    if (SetupDiGetDeviceRegistryPropertyW(device_info,
                                         &device_info_data,
                                         SPDRP_DRIVER,
                                         NULL,
@@ -263,8 +213,7 @@ bool CollectDriverInfoD3D(const std::wstring& device_id,
       }
     }
   }
-  fp_destroy_device_info_list(device_info);
-  FreeLibrary(lib_setupapi);
+  SetupDiDestroyDeviceInfoList(device_info);
   return found;
 }
 
