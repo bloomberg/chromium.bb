@@ -460,6 +460,10 @@ IPC_MESSAGE_ROUTED1(ChromeViewMsg_ErrorDownloadingPlugin,
                     std::string /* message */)
 #endif  // defined(ENABLE_PLUGIN_INSTALLATION)
 
+// Notifies a missing plug-in placeholder that the user cancelled downloading
+// the plug-in.
+IPC_MESSAGE_ROUTED0(ChromeViewMsg_CancelledDownloadingPlugin)
+
 // Tells the browser to open chrome://plugins in a new tab. We use a separate
 // message because renderer processes aren't allowed to directly navigate to
 // chrome:// URLs.

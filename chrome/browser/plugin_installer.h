@@ -9,16 +9,20 @@
 #include "base/observer_list.h"
 #include "base/string16.h"
 #include "googleurl/src/gurl.h"
+#include "content/public/browser/download_id.h"
+#include "content/public/browser/download_item.h"
+#include "net/base/net_errors.h"
 
 class FilePath;
 class PluginInstallerObserver;
+class TabContentsWrapper;
 class WeakPluginInstallerObserver;
 
 namespace content {
 class WebContents;
 }
 
-class PluginInstaller {
+class PluginInstaller : public content::DownloadItem::Observer {
  public:
   enum State {
     kStateIdle,
@@ -30,7 +34,11 @@ class PluginInstaller {
                   const GURL& help_url,
                   const string16& name,
                   bool url_for_display);
-  ~PluginInstaller();
+  virtual ~PluginInstaller();
+
+  virtual void OnDownloadUpdated(content::DownloadItem* download) OVERRIDE;
+
+  virtual void OnDownloadOpened(content::DownloadItem* download) OVERRIDE;
 
   void AddObserver(PluginInstallerObserver* observer);
   void RemoveObserver(PluginInstallerObserver* observer);
@@ -64,11 +72,14 @@ class PluginInstaller {
   // Starts downloading the download URL and opens the downloaded file
   // when finished. This method should only be called if |url_for_display|
   // returns false.
-  void StartInstalling(content::WebContents* web_contents);
+  void StartInstalling(TabContentsWrapper* wrapper);
 
  private:
-  void DidFinishDownload(const FilePath& downloaded_file);
+  void DownloadStarted(scoped_refptr<content::DownloadManager> dlm,
+                       content::DownloadId download_id,
+                       net::Error error);
   void DownloadError(const std::string& msg);
+  void DownloadCancelled();
 
   State state_;
   ObserverList<PluginInstallerObserver> observers_;

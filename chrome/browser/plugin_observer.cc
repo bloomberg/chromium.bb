@@ -48,7 +48,7 @@ namespace {
 class ConfirmInstallDialogDelegate : public TabModalConfirmDialogDelegate,
                                      public WeakPluginInstallerObserver {
  public:
-  ConfirmInstallDialogDelegate(WebContents* web_contents,
+  ConfirmInstallDialogDelegate(TabContentsWrapper* wrapper,
                                PluginInstaller* installer);
 
   // TabModalConfirmDialogDelegate methods:
@@ -58,20 +58,20 @@ class ConfirmInstallDialogDelegate : public TabModalConfirmDialogDelegate,
   virtual void OnAccepted() OVERRIDE;
   virtual void OnCanceled() OVERRIDE;
 
-  // PluginInstallerObserver methods:
-  virtual void DidStartDownload() OVERRIDE;
+  // WeakPluginInstallerObserver methods:
+  virtual void DownloadStarted() OVERRIDE;
   virtual void OnlyWeakObserversLeft() OVERRIDE;
 
  private:
-  content::WebContents* web_contents_;
+  TabContentsWrapper* wrapper_;
 };
 
 ConfirmInstallDialogDelegate::ConfirmInstallDialogDelegate(
-    WebContents* web_contents,
+    TabContentsWrapper* wrapper,
     PluginInstaller* installer)
-    : TabModalConfirmDialogDelegate(web_contents),
+    : TabModalConfirmDialogDelegate(wrapper->web_contents()),
       WeakPluginInstallerObserver(installer),
-      web_contents_(web_contents) {
+      wrapper_(wrapper) {
 }
 
 string16 ConfirmInstallDialogDelegate::GetTitle() {
@@ -90,13 +90,13 @@ string16 ConfirmInstallDialogDelegate::GetAcceptButtonTitle() {
 }
 
 void ConfirmInstallDialogDelegate::OnAccepted() {
-  installer()->StartInstalling(web_contents_);
+  installer()->StartInstalling(wrapper_);
 }
 
 void ConfirmInstallDialogDelegate::OnCanceled() {
 }
 
-void ConfirmInstallDialogDelegate::DidStartDownload() {
+void ConfirmInstallDialogDelegate::DownloadStarted() {
   Cancel();
 }
 
@@ -125,23 +125,27 @@ class PluginObserver::PluginPlaceholderHost : public PluginInstallerObserver {
         break;
       }
       case PluginInstaller::kStateDownloading: {
-        DidStartDownload();
+        DownloadStarted();
         break;
       }
     }
   }
 
   // PluginInstallerObserver methods:
-  virtual void DidStartDownload() OVERRIDE {
+  virtual void DownloadStarted() OVERRIDE {
     observer_->Send(new ChromeViewMsg_StartedDownloadingPlugin(routing_id_));
-  }
-
-  virtual void DidFinishDownload() OVERRIDE {
-    observer_->Send(new ChromeViewMsg_FinishedDownloadingPlugin(routing_id_));
   }
 
   virtual void DownloadError(const std::string& msg) OVERRIDE {
     observer_->Send(new ChromeViewMsg_ErrorDownloadingPlugin(routing_id_, msg));
+  }
+
+  virtual void DownloadCancelled() OVERRIDE {
+    observer_->Send(new ChromeViewMsg_CancelledDownloadingPlugin(routing_id_));
+  }
+
+  virtual void DownloadFinished() OVERRIDE {
+    observer_->Send(new ChromeViewMsg_FinishedDownloadingPlugin(routing_id_));
   }
 
  private:
@@ -252,7 +256,7 @@ void PluginObserver::InstallMissingPlugin(PluginInstaller* installer) {
     installer->OpenDownloadURL(web_contents());
   } else {
     browser::ShowTabModalConfirmDialog(
-        new ConfirmInstallDialogDelegate(web_contents(), installer),
+        new ConfirmInstallDialogDelegate(tab_contents_, installer),
         tab_contents_);
   }
 }

@@ -33,6 +33,6 @@ enum DownloadInterruptSource {
 InterruptReason CONTENT_EXPORT ConvertNetErrorToInterruptReason(
     net::Error file_error, DownloadInterruptSource source);
 
-std::string InterruptReasonDebugString(InterruptReason error);
+std::string CONTENT_EXPORT InterruptReasonDebugString(InterruptReason error);
 
 #endif  // CHROME_BROWSER_DOWNLOAD_INTERRUPT_REASONS_H_

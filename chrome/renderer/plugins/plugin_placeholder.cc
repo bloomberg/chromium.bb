@@ -206,6 +206,8 @@ bool PluginPlaceholder::OnMessageReceived(const IPC::Message& message) {
                         OnFinishedDownloadingPlugin)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_ErrorDownloadingPlugin,
                         OnErrorDownloadingPlugin)
+    IPC_MESSAGE_HANDLER(ChromeViewMsg_CancelledDownloadingPlugin,
+                        OnCancelledDownloadingPlugin)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -318,7 +320,11 @@ void PluginPlaceholder::OnFinishedDownloadingPlugin() {
 
 void PluginPlaceholder::OnErrorDownloadingPlugin(const std::string& error) {
   SetMessage(l10n_util::GetStringFUTF16(IDS_PLUGIN_DOWNLOAD_ERROR,
-                                        UTF8ToUTF16(error)));
+                                       UTF8ToUTF16(error)));
+}
+
+void PluginPlaceholder::OnCancelledDownloadingPlugin() {
+  SetMessage(l10n_util::GetStringUTF16(IDS_PLUGIN_DOWNLOAD_CANCELLED));
 }
 #endif  // defined(ENABLE_PLUGIN_INSTALLATION)
 

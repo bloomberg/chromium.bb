@@ -90,9 +90,10 @@ class OutdatedPluginInfoBarDelegate : public PluginInfoBarDelegate,
   virtual std::string GetLearnMoreURL() const OVERRIDE;
 
   // PluginInstallerObserver:
-  virtual void DidStartDownload() OVERRIDE;
-  virtual void DidFinishDownload() OVERRIDE;
+  virtual void DownloadStarted() OVERRIDE;
   virtual void DownloadError(const std::string& message) OVERRIDE;
+  virtual void DownloadCancelled() OVERRIDE;
+  virtual void DownloadFinished() OVERRIDE;
 
   // WeakPluginInstallerObserver:
   virtual void OnlyWeakObserversLeft() OVERRIDE;
@@ -143,9 +144,10 @@ class PluginInstallerInfoBarDelegate : public ConfirmInfoBarDelegate,
   virtual bool LinkClicked(WindowOpenDisposition disposition) OVERRIDE;
 
   // PluginInstallerObserver:
-  virtual void DidStartDownload() OVERRIDE;
-  virtual void DidFinishDownload() OVERRIDE;
+  virtual void DownloadStarted() OVERRIDE;
   virtual void DownloadError(const std::string& message) OVERRIDE;
+  virtual void DownloadCancelled() OVERRIDE;
+  virtual void DownloadFinished() OVERRIDE;
 
   // WeakPluginInstallerObserver:
   virtual void OnlyWeakObserversLeft() OVERRIDE;

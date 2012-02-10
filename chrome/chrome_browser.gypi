@@ -1812,8 +1812,6 @@
         'browser/platform_util_win.cc',
         'browser/plugin_data_remover_helper.cc',
         'browser/plugin_data_remover_helper.h',
-        'browser/plugin_download_helper.cc',
-        'browser/plugin_download_helper.h',
         'browser/plugin_finder.cc',
         'browser/plugin_finder.h',
         'browser/plugin_installer.cc',

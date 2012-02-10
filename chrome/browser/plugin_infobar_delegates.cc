@@ -219,7 +219,7 @@ bool OutdatedPluginInfoBarDelegate::Accept() {
   if (installer()->url_for_display()) {
     installer()->OpenDownloadURL(web_contents);
   } else {
-    installer()->StartInstalling(web_contents);
+    installer()->StartInstalling(observer_->tab_contents_wrapper());
   }
   return false;
 }
@@ -243,17 +243,21 @@ bool OutdatedPluginInfoBarDelegate::LinkClicked(
   return PluginInfoBarDelegate::LinkClicked(disposition);
 }
 
-void OutdatedPluginInfoBarDelegate::DidStartDownload() {
+void OutdatedPluginInfoBarDelegate::DownloadStarted() {
   ReplaceWithInfoBar(l10n_util::GetStringUTF16(IDS_PLUGIN_DOWNLOADING));
-}
-
-void OutdatedPluginInfoBarDelegate::DidFinishDownload() {
-  ReplaceWithInfoBar(l10n_util::GetStringUTF16(IDS_PLUGIN_UPDATING));
 }
 
 void OutdatedPluginInfoBarDelegate::DownloadError(const std::string& message) {
   ReplaceWithInfoBar(
       l10n_util::GetStringUTF16(IDS_PLUGIN_DOWNLOAD_ERROR_SHORT));
+}
+
+void OutdatedPluginInfoBarDelegate::DownloadCancelled() {
+  ReplaceWithInfoBar(l10n_util::GetStringUTF16(IDS_PLUGIN_DOWNLOAD_CANCELLED));
+}
+
+void OutdatedPluginInfoBarDelegate::DownloadFinished() {
+  ReplaceWithInfoBar(l10n_util::GetStringUTF16(IDS_PLUGIN_UPDATING));
 }
 
 void OutdatedPluginInfoBarDelegate::OnlyWeakObserversLeft() {
@@ -357,18 +361,22 @@ bool PluginInstallerInfoBarDelegate::LinkClicked(
   return false;
 }
 
-void PluginInstallerInfoBarDelegate::DidStartDownload() {
+void PluginInstallerInfoBarDelegate::DownloadStarted() {
   ReplaceWithInfoBar(l10n_util::GetStringUTF16(IDS_PLUGIN_DOWNLOADING));
 }
 
-void PluginInstallerInfoBarDelegate::DidFinishDownload() {
-  ReplaceWithInfoBar(l10n_util::GetStringUTF16(
-      new_install_ ? IDS_PLUGIN_INSTALLING : IDS_PLUGIN_UPDATING));
+void PluginInstallerInfoBarDelegate::DownloadCancelled() {
+  ReplaceWithInfoBar(l10n_util::GetStringUTF16(IDS_PLUGIN_DOWNLOAD_CANCELLED));
 }
 
 void PluginInstallerInfoBarDelegate::DownloadError(const std::string& message) {
   ReplaceWithInfoBar(
       l10n_util::GetStringUTF16(IDS_PLUGIN_DOWNLOAD_ERROR_SHORT));
+}
+
+void PluginInstallerInfoBarDelegate::DownloadFinished() {
+  ReplaceWithInfoBar(l10n_util::GetStringUTF16(
+      new_install_ ? IDS_PLUGIN_INSTALLING : IDS_PLUGIN_UPDATING));
 }
 
 void PluginInstallerInfoBarDelegate::OnlyWeakObserversLeft() {

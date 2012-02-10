@@ -116,6 +116,7 @@ class PluginPlaceholder : public content::RenderViewObserver,
   void OnStartedDownloadingPlugin();
   void OnFinishedDownloadingPlugin();
   void OnErrorDownloadingPlugin(const std::string& error);
+  void OnCancelledDownloadingPlugin();
 #endif
 
   void SetMessage(const string16& message);

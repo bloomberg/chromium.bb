@@ -30,7 +30,6 @@
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "base/test/test_timeouts.h"
-#include "chrome/browser/plugin_download_helper.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/automation/automation_proxy.h"

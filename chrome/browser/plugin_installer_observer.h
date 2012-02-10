@@ -21,9 +21,10 @@ class PluginInstallerObserver {
  private:
   friend class PluginInstaller;
 
-  virtual void DidStartDownload();
-  virtual void DidFinishDownload();
+  virtual void DownloadStarted();
+  virtual void DownloadFinished();
   virtual void DownloadError(const std::string& message);
+  virtual void DownloadCancelled();
 
   // Weak pointer; Owned by PluginFinder, which is a singleton.
   PluginInstaller* installer_;
