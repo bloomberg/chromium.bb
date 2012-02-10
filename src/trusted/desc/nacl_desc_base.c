@@ -103,8 +103,10 @@ void NaClDescSafeUnref(struct NaClDesc *ndp) {
   }
 }
 
-int (*NaClDescInternalize[NACL_DESC_TYPE_MAX])(struct NaClDesc **,
-                                               struct NaClDescXferState *) = {
+int (*NaClDescInternalize[NACL_DESC_TYPE_MAX])(
+    struct NaClDesc **,
+    struct NaClDescXferState *,
+    struct NaClDescQuotaInterface *) = {
   NaClDescInvalidInternalize,
   NaClDescDirInternalize,
   NaClDescIoInternalize,
@@ -454,10 +456,13 @@ int NaClDescGetValueNotImplemented(struct NaClDesc  *vself) {
   return -NACL_ABI_EINVAL;
 }
 
-int NaClDescInternalizeNotImplemented(struct NaClDesc           **out_desc,
-                                      struct NaClDescXferState  *xfer) {
+int NaClDescInternalizeNotImplemented(
+    struct NaClDesc                **out_desc,
+    struct NaClDescXferState       *xfer,
+    struct NaClDescQuotaInterface  *quota_interface) {
   UNREFERENCED_PARAMETER(out_desc);
   UNREFERENCED_PARAMETER(xfer);
+  UNREFERENCED_PARAMETER(quota_interface);
 
   NaClLog(LOG_ERROR,
           "Attempted transfer of non-transferable descriptor\n");

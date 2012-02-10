@@ -425,11 +425,14 @@ static struct NaClDescVtbl const kNaClDescXferableDataDescVtbl = {
 };
 
 
-int NaClDescXferableDataDescInternalize(struct NaClDesc          **baseptr,
-                                        struct NaClDescXferState *xfer) {
+int NaClDescXferableDataDescInternalize(
+    struct NaClDesc               **baseptr,
+    struct NaClDescXferState      *xfer,
+    struct NaClDescQuotaInterface *quota_interface) {
   int                             rv;
   struct NaClDescXferableDataDesc *ndxdp;
 
+  UNREFERENCED_PARAMETER(quota_interface);
   NaClLog(4, "Entered NaClDescXferableDataDescInternalize\n");
   rv = -NACL_ABI_EIO;
   ndxdp = NULL;

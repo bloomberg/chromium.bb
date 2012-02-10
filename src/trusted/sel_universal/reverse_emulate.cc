@@ -47,6 +47,11 @@ class ReverseEmulate : public nacl::ReverseInterface {
   // Send a string as a PostMessage to the browser.
   virtual void DoPostMessage(nacl::string message);
 
+  // Request quota for a write to a file.
+  virtual int64_t RequestQuotaForWrite(nacl::string file_id,
+                                       int64_t offset,
+                                       int64_t length);
+
   // covariant impl of Ref()
   ReverseEmulate* Ref() {  // down_cast
     return reinterpret_cast<ReverseEmulate*>(RefCountBase::Ref());
@@ -205,4 +210,13 @@ void ReverseEmulate::ReportExitStatus(int exit_status) {
 
 void ReverseEmulate::DoPostMessage(nacl::string message) {
   NaClLog(1, "ReverseEmulate::DoPostMessage (message=%s)\n", message.c_str());
+}
+
+int64_t ReverseEmulate::RequestQuotaForWrite(nacl::string file_id,
+                                             int64_t offset,
+                                             int64_t length) {
+  NaClLog(1, "ReverseEmulate::RequestQuotaForWrite (file_id=%s, offset=%"
+          NACL_PRId64", length=%"NACL_PRId64")\n", file_id.c_str(), offset,
+          length);
+  return length;
 }

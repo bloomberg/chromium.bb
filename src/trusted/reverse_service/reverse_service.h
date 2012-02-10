@@ -68,6 +68,17 @@ class ReverseInterface : public RefCountBase {
   // appropriately.
   virtual void DoPostMessage(nacl::string message) = 0;
 
+  // Quota checking for files that were sent to the untrusted module.
+  // TODO(sehr): remove the stub interface once the plugin provides one.
+  virtual int64_t RequestQuotaForWrite(nacl::string file_id,
+                                       int64_t offset,
+                                       int64_t bytes_to_write) {
+    UNREFERENCED_PARAMETER(file_id);
+    UNREFERENCED_PARAMETER(offset);
+    UNREFERENCED_PARAMETER(bytes_to_write);
+    return true;
+  }
+
   // covariant impl of Ref()
   ReverseInterface* Ref() {  // down_cast
     return reinterpret_cast<ReverseInterface*>(RefCountBase::Ref());

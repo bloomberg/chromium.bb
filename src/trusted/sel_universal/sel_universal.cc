@@ -275,6 +275,7 @@ int raii_main(int argc, char* argv[]) {
   loop.AddHandler("shmem", HandlerShmem);
   loop.AddHandler("readonly_file", HandlerReadonlyFile);
   loop.AddHandler("readwrite_file", HandlerReadwriteFile);
+  loop.AddHandler("readwrite_quota_file", HandlerReadwriteFileQuota);
   loop.AddHandler("sleep", HandlerSleep);
   loop.AddHandler("map_shmem", HandlerMap);
   loop.AddHandler("save_to_file", HandlerSaveToFile);

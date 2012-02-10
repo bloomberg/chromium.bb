@@ -79,8 +79,10 @@ void NaClNrdXferWriteTypeTag(struct NaClDescXferState *xferp,
  *
  * Returns negative errno (syscall-style) on error.
  */
-int NaClDescInternalizeFromXferBuffer(struct NaClDesc          **out_desc,
-                                      struct NaClDescXferState *xferp) {
+int NaClDescInternalizeFromXferBuffer(
+    struct NaClDesc               **out_desc,
+    struct NaClDescXferState      *xferp,
+    struct NaClDescQuotaInterface *quota_interface) {
   int xfer_status;
   size_t type_tag;
 
@@ -94,7 +96,8 @@ int NaClDescInternalizeFromXferBuffer(struct NaClDesc          **out_desc,
             type_tag, type_tag);
     return -NACL_ABI_EIO;
   }
-  if ((int (*)(struct NaClDesc **, struct NaClDescXferState *)) NULL ==
+  if ((int (*)(struct NaClDesc **, struct NaClDescXferState *,
+               struct NaClDescQuotaInterface *)) NULL ==
       NaClDescInternalize[type_tag]) {
     NaClLog(LOG_FATAL,
             "No internalization function for type %"NACL_PRIdS"\n",
@@ -102,7 +105,8 @@ int NaClDescInternalizeFromXferBuffer(struct NaClDesc          **out_desc,
     /* fatal, but in case we change it later */
     return -NACL_ABI_EIO;
   }
-  xfer_status = (*NaClDescInternalize[type_tag])(out_desc, xferp);
+  xfer_status = (*NaClDescInternalize[type_tag])(out_desc, xferp,
+                                                 quota_interface);
   /* constructs new_desc, transferring ownership of any handles consumed */
 
   if (xfer_status != 0) {
@@ -412,9 +416,11 @@ cleanup:
 }
 
 
-ssize_t NaClImcRecvTypedMessage(struct NaClDesc           *channel,
-                                struct NaClImcTypedMsgHdr *nitmhp,
-                                int                       flags) {
+ssize_t NaClImcRecvTypedMessage(
+    struct NaClDesc               *channel,
+    struct NaClImcTypedMsgHdr     *nitmhp,
+    int                           flags,
+    struct NaClDescQuotaInterface *quota_interface) {
   int                       supported_flags;
   ssize_t                   retval;
   char                      *recv_buf;
@@ -651,7 +657,8 @@ ssize_t NaClImcRecvTypedMessage(struct NaClDesc           *channel,
   while (xfer.next_byte < xfer.byte_buffer_end) {
     struct NaClDesc *out;
 
-    xfer_status = NaClDescInternalizeFromXferBuffer(&out, &xfer);
+    xfer_status = NaClDescInternalizeFromXferBuffer(&out, &xfer,
+                                                    quota_interface);
     NaClLog(4, "NaClDescInternalizeFromXferBuffer: returned %d\n", xfer_status);
     if (0 == xfer_status) {
       /* end of descriptors reached */

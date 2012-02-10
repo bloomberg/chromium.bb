@@ -183,6 +183,28 @@ bool HandlerReadwriteFile(NaClCommandLoop* ncl, const vector<string>& args) {
   return true;
 }
 
+// create a descriptor representing a read-write file with quota management.
+bool HandlerReadwriteFileQuota(NaClCommandLoop* ncl,
+                               const vector<string>& args) {
+  if (args.size() < 3) {
+    NaClLog(LOG_ERROR, "not enough args\n");
+    return false;
+  }
+
+  static const uint8_t kFileId[] = "SelUniversal000";
+  nacl::DescWrapperFactory factory;
+  nacl::DescWrapper* desc =
+      factory.OpenHostFileQuota(args[2].c_str(),
+                                NACL_ABI_O_RDWR | NACL_ABI_O_CREAT, 0666,
+                                kFileId);
+  if (NULL == desc) {
+    NaClLog(LOG_ERROR, "cound not create file desc for %s\n", args[2].c_str());
+    return false;
+  }
+  ncl->AddDesc(desc->desc(), args[1]);
+  return true;
+}
+
 // sleep for a given number of seconds
 bool HandlerSleep(NaClCommandLoop* ncl, const vector<string>& args) {
   UNREFERENCED_PARAMETER(ncl);

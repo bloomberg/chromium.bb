@@ -436,13 +436,15 @@ struct NaClDescVtbl const kNaClDescSysvShmVtbl = {
   NaClDescGetValueNotImplemented,
 };
 
-int NaClDescSysvShmInternalize(struct NaClDesc           **out_desc,
-                               struct NaClDescXferState  *xfer) {
+int NaClDescSysvShmInternalize(struct NaClDesc               **out_desc,
+                               struct NaClDescXferState      *xfer,
+                               struct NaClDescQuotaInterface *quota_interface) {
   int                   rv;
   struct NaClDescSysvShm *ndisp;
   int                   id;
   nacl_off64_t          size;
 
+  UNREFERENCED_PARAMETER(quota_interface);
   rv = -NACL_ABI_EIO;
   ndisp = NULL;
 

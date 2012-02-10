@@ -163,12 +163,14 @@ static struct NaClDescVtbl const kNaClDescRngVtbl = {
   NaClDescGetValueNotImplemented,
 };
 
-int NaClDescRngInternalize(struct NaClDesc          **out_desc,
-                           struct NaClDescXferState *xfer) {
+int NaClDescRngInternalize(struct NaClDesc               **out_desc,
+                           struct NaClDescXferState      *xfer,
+                           struct NaClDescQuotaInterface *quota_interface) {
   int                 rv;
   struct NaClDescRng  *rng = malloc(sizeof *rng);
 
   UNREFERENCED_PARAMETER(xfer);
+  UNREFERENCED_PARAMETER(quota_interface);
   if (NULL == rng) {
     rv = -NACL_ABI_ENOMEM;
     goto cleanup;

@@ -35,7 +35,6 @@
 
 /* in lieu of sys/types for int32_t */
 #include "native_client/src/include/portability.h"
-#include "native_client/src/trusted/service_runtime/include/machine/_types.h"
 
 #include "native_client/src/include/nacl_base.h"
 #include "native_client/src/trusted/service_runtime/include/machine/_types.h"
@@ -45,6 +44,7 @@
 EXTERN_C_BEGIN
 
 struct NaClDescEffector;
+struct NaClDescQuotaInterface;
 
 struct NaClImcTypedMsgHdr {
   struct NaClImcMsgIoVec  *iov;
@@ -70,9 +70,10 @@ ssize_t NaClImcSendTypedMessage(struct NaClDesc                 *channel,
  * success, and a negative value, a negated errno value, on error
  * (the kernel return ABI).
  */
-ssize_t NaClImcRecvTypedMessage(struct NaClDesc           *channel,
-                                struct NaClImcTypedMsgHdr *nitmhp,
-                                int32_t                   flags);
+ssize_t NaClImcRecvTypedMessage(struct NaClDesc               *channel,
+                                struct NaClImcTypedMsgHdr     *nitmhp,
+                                int32_t                       flags,
+                                struct NaClDescQuotaInterface *quota_interface);
 
 /**
  * Create a bound socket and corresponding socket address as a pair.

@@ -6,6 +6,7 @@
 
 #include <string.h>
 
+#include <limits>
 #include <string>
 
 #include "native_client/src/trusted/reverse_service/reverse_service.h"
@@ -292,6 +293,32 @@ void ManifestUnrefRpc(NaClSrpcRpc* rpc,
   rpc->result = NACL_SRPC_RESULT_OK;
 }
 
+void RequestQuotaForWriteRpc(NaClSrpcRpc* rpc,
+                             NaClSrpcArg** in_args,
+                             NaClSrpcArg** out_args,
+                             NaClSrpcClosure* done) {
+  nacl::ReverseService* service = reinterpret_cast<nacl::ReverseService*>(
+      rpc->channel->server_instance_data);
+  nacl::string file_id = nacl::string(in_args[0]->arrays.carr,
+                                      in_args[0]->u.count);
+  int64_t offset = in_args[1]->u.lval;
+  int64_t length = in_args[2]->u.lval;
+  int64_t quota_granted = 0;
+  NaClSrpcClosureRunner on_return(done);
+  NaClLog(4, "Entered RequestQuotaForWriteRpc\n");
+  if (NULL == service->reverse_interface()) {
+    NaClLog(1, "RequestQuotaForWrite RPC, no reverse_interface.\n");
+  } else {
+    quota_granted =
+        service->reverse_interface()->RequestQuotaForWrite(file_id,
+                                                           offset,
+                                                           length);
+  }
+  out_args[0]->u.lval = quota_granted;
+  NaClLog(4, "Leaving RequestQuotaForWriteRpc\n");
+  rpc->result = NACL_SRPC_RESULT_OK;
+}
+
 }  // namespace
 
 namespace nacl {
@@ -422,6 +449,7 @@ NaClSrpcHandlerDesc const ReverseService::handlers[] = {
   { NACL_MANIFEST_LIST, ManifestListRpc, },
   { NACL_MANIFEST_LOOKUP, ManifestLookupRpc, },
   { NACL_MANIFEST_UNREF, ManifestUnrefRpc, },
+  { NACL_REVERSE_REQUEST_QUOTA_FOR_WRITE, RequestQuotaForWriteRpc, },
   { NULL, NULL, },
 };
 

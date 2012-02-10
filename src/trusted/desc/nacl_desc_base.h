@@ -33,6 +33,7 @@ struct NaClDesc;
 struct nacl_abi_stat;
 struct nacl_abi_timespec;
 struct NaClDescEffector;
+struct NaClDescQuotaInterface;
 struct NaClMessageHeader;
 
 /*
@@ -144,7 +145,8 @@ struct NaClInternalHeader {
  */
 extern int
 (*NaClDescInternalize[NACL_DESC_TYPE_MAX])(struct NaClDesc **,
-                                           struct NaClDescXferState *);
+                                           struct NaClDescXferState *,
+                                           struct NaClDescQuotaInterface *);
 
 extern char const *NaClDescTypeString(enum NaClDescTypeTag type_tag);
 
@@ -471,8 +473,10 @@ int NaClDescSemWaitNotImplemented(struct NaClDesc *vself);
 
 int NaClDescGetValueNotImplemented(struct NaClDesc  *vself);
 
-int NaClDescInternalizeNotImplemented(struct NaClDesc           **out_desc,
-                                      struct NaClDescXferState  *xfer);
+int NaClDescInternalizeNotImplemented(
+    struct NaClDesc                **out_desc,
+    struct NaClDescXferState       *xfer,
+    struct NaClDescQuotaInterface  *quota_interface);
 
 int NaClDescMapDescriptor(struct NaClDesc         *desc,
                           struct NaClDescEffector *effector,

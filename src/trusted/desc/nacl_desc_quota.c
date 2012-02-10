@@ -14,18 +14,19 @@
 #include "native_client/src/shared/platform/nacl_sync_checked.h"
 
 #include "native_client/src/trusted/desc/nacl_desc_quota.h"
+#include "native_client/src/trusted/desc/nacl_desc_quota_interface.h"
 
 #include "native_client/src/trusted/desc/nacl_desc_base.h"
 #include "native_client/src/trusted/desc/nrd_xfer_intern.h"
-#include "native_client/src/trusted/desc/pepper/nacl_pepper.h"
 #include "native_client/src/trusted/nacl_base/nacl_refcount.h"
 #include "native_client/src/trusted/service_runtime/include/sys/errno.h"
 
 static struct NaClDescVtbl const kNaClDescQuotaVtbl;
 
-int NaClDescQuotaCtor(struct NaClDescQuota  *self,
-                      struct NaClDesc       *desc,
-                      uint8_t const         *file_id) {
+int NaClDescQuotaCtor(struct NaClDescQuota           *self,
+                      struct NaClDesc                *desc,
+                      uint8_t const                  *file_id,
+                      struct NaClDescQuotaInterface  *quota_interface) {
   if (!NaClDescCtor(&self->base)) {
     NACL_VTBL(NaClDescQuota, self) = NULL;
     return 0;
@@ -37,6 +38,11 @@ int NaClDescQuotaCtor(struct NaClDescQuota  *self,
   }
   self->desc = desc;  /* take ownership */
   memcpy(self->file_id, file_id, NACL_DESC_QUOTA_FILE_ID_LEN);
+  if (NULL == quota_interface) {
+    self->quota_interface = (struct NaClDescQuotaInterface *) NULL;
+  } else {
+    self->quota_interface = NaClDescQuotaInterfaceRef(quota_interface);
+  }
   NACL_VTBL(NaClDesc, self) = &kNaClDescQuotaVtbl;
   return 1;
 }
@@ -44,6 +50,7 @@ int NaClDescQuotaCtor(struct NaClDescQuota  *self,
 void NaClDescQuotaDtor(struct NaClRefCount *vself) {
   struct NaClDescQuota *self = (struct NaClDescQuota *) vself;
 
+  NaClRefCountUnref((struct NaClRefCount *) self->quota_interface);
   NaClRefCountUnref((struct NaClRefCount *) self->desc);
   self->desc = NULL;
   NaClMutexDtor(&self->mu);
@@ -128,9 +135,14 @@ ssize_t NaClDescQuotaWrite(struct NaClDesc  *vself,
       len = (size_t) NACL_MAX_VAL(int64_t);
     }
 
-    allowed = NaClSrpcPepperWriteRequest(self->file_id,
-                                         file_offset,
-                                         (int64_t) len);
+    if (NULL == self->quota_interface) {
+      /* If there is no quota_interface, do not allow writes. */
+      allowed = 0;
+    } else {
+      allowed = (*NACL_VTBL(NaClDescQuotaInterface, self->quota_interface)->
+                 WriteRequest)(self->quota_interface,
+                               self->file_id, file_offset, len);
+    }
     if (allowed <= 0) {
       rv = -NACL_ABI_EDQUOT;
       goto abort;
@@ -141,13 +153,18 @@ ssize_t NaClDescQuotaWrite(struct NaClDesc  *vself,
      */
     if ((uint64_t) allowed > len) {
       NaClLog(LOG_WARNING,
-              ("NaClSrpcPepperWriteRequest returned a allowed quota that"
+              ("NaClSrpcPepperWriteRequest returned an allowed quota that"
                " is larger than that requested; reducing to original"
                " request amount.\n"));
       allowed = len;
     }
   }
 
+  /*
+   * It is possible for Write to write fewer than bytes than the quota
+   * that was granted, in which case quota will leak.
+   * TODO(sehr,bsy): eliminate quota leakage.
+   */
   rv = (*NACL_VTBL(NaClDesc, self->desc)->Write)(self->desc,
                                                  buf, (size_t) allowed);
 abort:
@@ -199,8 +216,12 @@ int NaClDescQuotaExternalizeSize(struct NaClDesc *vself,
   size_t                num_bytes;
   size_t                num_handles;
 
-  if (0 != (rv = (*NACL_VTBL(NaClDesc, vself)->
-                  ExternalizeSize)(vself, &num_bytes, &num_handles))) {
+  if (NULL != self->quota_interface) {
+    /* Already quota-managed descriptors may not be transferred. */
+    return -NACL_ABI_EINVAL;
+  }
+  if (0 != (rv = (*NACL_VTBL(NaClDesc, self->desc)->
+                  ExternalizeSize)(self->desc, &num_bytes, &num_handles))) {
     return rv;
   }
   *nbytes = num_bytes + sizeof self->file_id;
@@ -219,18 +240,19 @@ int NaClDescQuotaExternalize(struct NaClDesc          *vself,
   memcpy(xfer->next_byte, self->file_id, sizeof self->file_id);
   xfer->next_byte += sizeof self->file_id;
 
-  if (0 != NaClDescExternalizeToXferBuffer(xfer, vself)) {
+  if (0 != NaClDescExternalizeToXferBuffer(xfer, self->desc)) {
     NaClLog(LOG_ERROR,
             ("NaClDescQuotaExternalize: externalizing wrapped descriptor"
              " type %d failed\n"),
-            NACL_VTBL(NaClDesc, vself)->typeTag);
+            NACL_VTBL(NaClDesc, self->desc)->typeTag);
     return -NACL_ABI_EINVAL;  /* invalid/non-transferable desc type */
   }
   return 0;
 }
 
-int NaClDescQuotaInternalize(struct NaClDesc          **out_desc,
-                             struct NaClDescXferState *xfer) {
+int NaClDescQuotaInternalize(struct NaClDesc               **out_desc,
+                             struct NaClDescXferState      *xfer,
+                             struct NaClDescQuotaInterface *quota_interface) {
   int                   rv = -NACL_ABI_EIO;
   uint8_t               file_id[NACL_DESC_QUOTA_FILE_ID_LEN];
   struct NaClDescQuota  *out = NULL;
@@ -243,11 +265,12 @@ int NaClDescQuotaInternalize(struct NaClDesc          **out_desc,
   memcpy(file_id, xfer->next_byte, sizeof file_id);
   xfer->next_byte += sizeof file_id;
 
-  if (1 != NaClDescInternalizeFromXferBuffer(&wrapped_desc, xfer)) {
+  if (1 != NaClDescInternalizeFromXferBuffer(&wrapped_desc, xfer,
+                                             quota_interface)) {
     rv = -NACL_ABI_EIO;
     goto cleanup;
   }
-  if (!NaClDescQuotaCtor(out, wrapped_desc, file_id)) {
+  if (!NaClDescQuotaCtor(out, wrapped_desc, file_id, quota_interface)) {
     rv = -NACL_ABI_ENOMEM;
     goto cleanup_wrapped;
 
@@ -269,68 +292,97 @@ cleanup:
 }
 
 int NaClDescQuotaLock(struct NaClDesc *vself) {
-  return (*NACL_VTBL(NaClDesc, vself)->Lock)(vself);
+  struct NaClDescQuota  *self = (struct NaClDescQuota *) vself;
+
+  return (*NACL_VTBL(NaClDesc, self->desc)->Lock)(self->desc);
 }
 
 int NaClDescQuotaTryLock(struct NaClDesc *vself) {
-  return (*NACL_VTBL(NaClDesc, vself)->TryLock)(vself);
+  struct NaClDescQuota  *self = (struct NaClDescQuota *) vself;
+
+  return (*NACL_VTBL(NaClDesc, self->desc)->TryLock)(self->desc);
 }
 
 int NaClDescQuotaUnlock(struct NaClDesc *vself) {
-  return (*NACL_VTBL(NaClDesc, vself)->Unlock)(vself);
+  struct NaClDescQuota  *self = (struct NaClDescQuota *) vself;
+
+  return (*NACL_VTBL(NaClDesc, self->desc)->Unlock)(self->desc);
 }
 
 int NaClDescQuotaWait(struct NaClDesc *vself,
                       struct NaClDesc *mutex) {
-  return (*NACL_VTBL(NaClDesc, vself)->Wait)(vself, mutex);
+  struct NaClDescQuota  *self = (struct NaClDescQuota *) vself;
+
+  return (*NACL_VTBL(NaClDesc, self->desc)->Wait)(self->desc, mutex);
 }
 
 int NaClDescQuotaTimedWaitAbs(struct NaClDesc                *vself,
                               struct NaClDesc                *mutex,
                               struct nacl_abi_timespec const *ts) {
-  return (*NACL_VTBL(NaClDesc, vself)->TimedWaitAbs)(vself, mutex, ts);
+  struct NaClDescQuota  *self = (struct NaClDescQuota *) vself;
+
+  return (*NACL_VTBL(NaClDesc, self->desc)->TimedWaitAbs)(self->desc, mutex,
+                                                          ts);
 }
 
 int NaClDescQuotaSignal(struct NaClDesc *vself) {
-  return (*NACL_VTBL(NaClDesc, vself)->Signal)(vself);
+  struct NaClDescQuota  *self = (struct NaClDescQuota *) vself;
+
+  return (*NACL_VTBL(NaClDesc, self->desc)->Signal)(self->desc);
 }
 
 int NaClDescQuotaBroadcast(struct NaClDesc *vself) {
-  return (*NACL_VTBL(NaClDesc, vself)->Broadcast)(vself);
+  struct NaClDescQuota  *self = (struct NaClDescQuota *) vself;
+
+  return (*NACL_VTBL(NaClDesc, self->desc)->Broadcast)(self->desc);
 }
 
 ssize_t NaClDescQuotaSendMsg(struct NaClDesc                *vself,
                              struct NaClMessageHeader const *dgram,
                              int                            flags) {
-  return (*NACL_VTBL(NaClDesc, vself)->SendMsg)(vself, dgram, flags);
+  struct NaClDescQuota  *self = (struct NaClDescQuota *) vself;
+
+  return (*NACL_VTBL(NaClDesc, self->desc)->SendMsg)(self->desc, dgram, flags);
 }
 
-ssize_t NaClDescQuotaRecvMsg(struct NaClDesc          *vself,
-                             struct NaClMessageHeader *dgram,
-                             int                      flags) {
-  return (*NACL_VTBL(NaClDesc, vself)->RecvMsg)(vself, dgram, flags);
+ssize_t NaClDescQuotaRecvMsg(struct NaClDesc           *vself,
+                             struct NaClMessageHeader  *dgram,
+                             int                       flags) {
+  struct NaClDescQuota  *self = (struct NaClDescQuota *) vself;
+
+  return (*NACL_VTBL(NaClDesc, self->desc)->RecvMsg)(self->desc, dgram, flags);
 }
 
 int NaClDescQuotaConnectAddr(struct NaClDesc *vself,
                              struct NaClDesc **result) {
-  return (*NACL_VTBL(NaClDesc, vself)->ConnectAddr)(vself, result);
+  struct NaClDescQuota  *self = (struct NaClDescQuota *) vself;
+
+  return (*NACL_VTBL(NaClDesc, self->desc)->ConnectAddr)(self->desc, result);
 }
 
 int NaClDescQuotaAcceptConn(struct NaClDesc *vself,
                             struct NaClDesc **result) {
-  return (*NACL_VTBL(NaClDesc, vself)->AcceptConn)(vself, result);
+  struct NaClDescQuota  *self = (struct NaClDescQuota *) vself;
+
+  return (*NACL_VTBL(NaClDesc, self->desc)->AcceptConn)(self->desc, result);
 }
 
 int NaClDescQuotaPost(struct NaClDesc *vself) {
-  return (*NACL_VTBL(NaClDesc, vself)->Post)(vself);
+  struct NaClDescQuota  *self = (struct NaClDescQuota *) vself;
+
+  return (*NACL_VTBL(NaClDesc, self->desc)->Post)(self->desc);
 }
 
 int NaClDescQuotaSemWait(struct NaClDesc *vself) {
-  return (*NACL_VTBL(NaClDesc, vself)->SemWait)(vself);
+  struct NaClDescQuota  *self = (struct NaClDescQuota *) vself;
+
+  return (*NACL_VTBL(NaClDesc, self->desc)->SemWait)(self->desc);
 }
 
 int NaClDescQuotaGetValue(struct NaClDesc *vself) {
-  return (*NACL_VTBL(NaClDesc, vself)->GetValue)(vself);
+  struct NaClDescQuota  *self = (struct NaClDescQuota *) vself;
+
+  return (*NACL_VTBL(NaClDesc, self->desc)->GetValue)(self->desc);
 }
 
 

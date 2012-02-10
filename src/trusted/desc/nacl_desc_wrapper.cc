@@ -21,6 +21,7 @@
 #include "native_client/src/trusted/desc/nacl_desc_imc_shm.h"
 #include "native_client/src/trusted/desc/nacl_desc_invalid.h"
 #include "native_client/src/trusted/desc/nacl_desc_io.h"
+#include "native_client/src/trusted/desc/nacl_desc_quota.h"
 #include "native_client/src/trusted/desc/nacl_desc_rng.h"
 #include "native_client/src/trusted/desc/nacl_desc_sync_socket.h"
 #include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
@@ -36,6 +37,51 @@
 
 namespace {
 static const size_t kSizeTMax = std::numeric_limits<size_t>::max();
+
+struct NaClDesc* OpenHostFileCommon(const char* fname, int flags, int mode) {
+  struct NaClHostDesc* nhdp =
+    reinterpret_cast<struct NaClHostDesc*>(calloc(1, sizeof(*nhdp)));
+  if (NULL == nhdp) {
+    return NULL;
+  }
+  if (0 != NaClHostDescOpen(nhdp, fname, flags, mode)) {
+    free(nhdp);
+    return NULL;
+  }
+  struct NaClDescIoDesc* ndiodp = NaClDescIoDescMake(nhdp);
+  if (NULL == ndiodp) {
+    NaClHostDescClose(nhdp);
+    free(nhdp);
+    return NULL;
+  }
+  return reinterpret_cast<struct NaClDesc*>(ndiodp);
+}
+
+struct NaClDesc* ImportHostDescCommon(int host_os_desc, int mode) {
+  NaClHostDesc* nhdp = NaClHostDescPosixMake(host_os_desc, mode);
+  if (NULL == nhdp) {
+    return NULL;
+  }
+  NaClDescIoDesc* ndiodp = NaClDescIoDescMake(nhdp);
+  if (NULL == ndiodp) {
+    NaClHostDescClose(nhdp);
+    free(nhdp);
+    return NULL;
+  }
+  return reinterpret_cast<struct NaClDesc*>(ndiodp);
+}
+
+struct NaClDesc* MakeQuotaCommon(const uint8_t* file_id,
+                                 struct NaClDesc* desc) {
+  NaClDescQuota* ndqp =
+      reinterpret_cast<NaClDescQuota*>(calloc(1, sizeof *ndqp));
+  if ((NULL == ndqp) || !NaClDescQuotaCtor(ndqp, desc, file_id, NULL)) {
+    free(ndqp);
+    return NULL;
+  }
+  return reinterpret_cast<struct NaClDesc*>(ndqp);
+}
+
 }  // namespace
 
 namespace nacl {
@@ -353,37 +399,52 @@ int DescWrapperFactory::MakeSocketPair(DescWrapper* pair[2]) {
 }
 
 DescWrapper* DescWrapperFactory::MakeFileDesc(int host_os_desc, int mode) {
-  NaClHostDesc* host_desc = NaClHostDescPosixMake(host_os_desc, mode);
-  CHECK(host_desc != NULL);  // Otherwise Make() would have aborted.
-  NaClDescIoDesc* io_desc = NaClDescIoDescMake(host_desc);
-  CHECK(io_desc != NULL);  // Otherwise Make() would have aborted.
-  NaClDesc* desc = reinterpret_cast<struct NaClDesc*>(io_desc);
-
-  // The wrapper takes ownership of NaClDesc and hence NaClDescIoDesc,
-  // which already took ownership of NaClHostDesc.
+  struct NaClDesc* desc = ImportHostDescCommon(host_os_desc, mode);
+  if (NULL == desc) {
+    return NULL;
+  }
   return MakeGenericCleanup(desc);
+}
+
+DescWrapper* DescWrapperFactory::MakeFileDescQuota(int host_os_desc,
+                                                   int mode,
+                                                   const uint8_t* file_id) {
+  struct NaClDesc* desc = ImportHostDescCommon(host_os_desc, mode);
+  if (NULL == desc) {
+    return NULL;
+  }
+  struct NaClDesc* desc_quota = MakeQuotaCommon(file_id, desc);
+  if (desc_quota == NULL) {
+    NaClDescSafeUnref(desc);
+    return NULL;
+  }
+  return MakeGenericCleanup(desc_quota);
 }
 
 DescWrapper* DescWrapperFactory::OpenHostFile(const char* fname,
                                               int flags,
                                               int mode) {
-  struct NaClHostDesc* nhdp =
-    reinterpret_cast<struct NaClHostDesc*>(calloc(1, sizeof(*nhdp)));
-  if (NULL == nhdp) {
+  struct NaClDesc* desc = OpenHostFileCommon(fname, flags, mode);
+  if (NULL == desc) {
     return NULL;
   }
-  if (0 != NaClHostDescOpen(nhdp, fname, flags, mode)) {
-    free(nhdp);
-    return NULL;
-  }
-  struct NaClDescIoDesc* ndiodp = NaClDescIoDescMake(nhdp);
-  if (NULL == ndiodp) {
-    NaClHostDescClose(nhdp);
-    free(nhdp);
-    return NULL;
-  }
+  return MakeGenericCleanup(desc);
+}
 
-  return MakeGenericCleanup(reinterpret_cast<struct NaClDesc*>(ndiodp));
+DescWrapper* DescWrapperFactory::OpenHostFileQuota(const char* fname,
+                                                   int flags,
+                                                   int mode,
+                                                   const uint8_t* file_id) {
+  struct NaClDesc* desc = OpenHostFileCommon(fname, flags, mode);
+  if (NULL == desc) {
+    return NULL;
+  }
+  struct NaClDesc* desc_quota = MakeQuotaCommon(file_id, desc);
+  if (NULL == desc_quota) {
+    NaClDescSafeUnref(desc);
+    return NULL;
+  }
+  return MakeGenericCleanup(desc_quota);
 }
 
 DescWrapper* DescWrapperFactory::OpenRng() {
@@ -392,7 +453,7 @@ DescWrapper* DescWrapperFactory::OpenRng() {
   if (NULL == nhrp) {
     return NULL;
   }
-  if (0 != NaClDescRngCtor(nhrp)) {
+  if (!NaClDescRngCtor(nhrp)) {
     free(nhrp);
     return NULL;
   }
@@ -563,7 +624,8 @@ ssize_t DescWrapper::SendMsg(const MsgHeader* dgram, int flags) {
   return ret;
 }
 
-ssize_t DescWrapper::RecvMsg(MsgHeader* dgram, int flags) {
+ssize_t DescWrapper::RecvMsg(MsgHeader* dgram, int flags,
+                             struct NaClDescQuotaInterface *quota_interface) {
   struct NaClImcTypedMsgHdr header;
   ssize_t ret = -NACL_ABI_ENOMEM;
   nacl_abi_size_t diov_length = dgram->iov_length;
@@ -604,7 +666,7 @@ ssize_t DescWrapper::RecvMsg(MsgHeader* dgram, int flags) {
   }
   header.ndesc_length = ddescv_length;
   // Receive the message.
-  ret = NaClImcRecvTypedMessage(desc_, &header, flags);
+  ret = NaClImcRecvTypedMessage(desc_, &header, flags, quota_interface);
   if (ret < 0) {
     goto cleanup;
   }

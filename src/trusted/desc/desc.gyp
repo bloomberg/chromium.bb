@@ -64,6 +64,8 @@
           'nacl_desc_rng.h',
           'nacl_desc_quota.c',
           'nacl_desc_quota.h',
+          'nacl_desc_quota_interface.c',
+          'nacl_desc_quota_interface.h',
           'nacl_desc_semaphore.c',
           'nacl_desc_semaphore.h',
           'nacl_desc_sync_socket.c',
@@ -76,8 +78,6 @@
           'nrd_xfer_intern.h',
           'nrd_xfer_effector.c',
           'nrd_xfer_effector.h',
-          'pepper/nacl_pepper.c',
-          'pepper/nacl_pepper.h',
         ],
         # TODO(bsy,bradnelson): when gyp can do per-file flags, make
         # -fno-strict-aliasing and -Wno-missing-field-initializers

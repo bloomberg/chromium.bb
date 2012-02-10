@@ -26,8 +26,10 @@ enum NaClDescTypeTag NaClNrdXferReadTypeTag(struct NaClDescXferState *xferp);
 void NaClNrdXferWriteTypeTag(struct NaClDescXferState *xferp,
                              struct NaClDesc          *descp);
 
-int NaClDescInternalizeFromXferBuffer(struct NaClDesc          **out_desc,
-                                      struct NaClDescXferState *xferp)
+int NaClDescInternalizeFromXferBuffer(
+    struct NaClDesc               **out_desc,
+    struct NaClDescXferState      *xferp,
+    struct NaClDescQuotaInterface *quota_interface)
     NACL_WUR;
 
 int NaClDescExternalizeToXferBuffer(struct NaClDescXferState  *xferp,

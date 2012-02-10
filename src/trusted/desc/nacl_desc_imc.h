@@ -55,8 +55,10 @@ struct NaClDescXferableDataDesc {
   struct NaClDescImcConnectedDesc base NACL_IS_REFCOUNT_SUBCLASS;
 };
 
-int NaClDescXferableDataDescInternalize(struct NaClDesc **baseptr,
-                                        struct NaClDescXferState *xfer)
+int NaClDescXferableDataDescInternalize(
+    struct NaClDesc               **baseptr,
+    struct NaClDescXferState      *xfer,
+    struct NaClDescQuotaInterface *quota_interface)
     NACL_WUR;
 
 int NaClDescImcConnectedDescCtor(struct NaClDescImcConnectedDesc  *self,

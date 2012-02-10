@@ -37,12 +37,14 @@ struct NaClDescConnCapFd {
   NaClHandle      connect_fd;
 };
 
-int NaClDescConnCapInternalize(struct NaClDesc          **baseptr,
-                               struct NaClDescXferState *xfer)
+int NaClDescConnCapInternalize(struct NaClDesc               **baseptr,
+                               struct NaClDescXferState      *xfer,
+                               struct NaClDescQuotaInterface *quota_interface)
     NACL_WUR;
 
-int NaClDescConnCapFdInternalize(struct NaClDesc          **baseptr,
-                                 struct NaClDescXferState *xfer)
+int NaClDescConnCapFdInternalize(struct NaClDesc               **baseptr,
+                                 struct NaClDescXferState      *xfer,
+                                 struct NaClDescQuotaInterface *quota_interface)
     NACL_WUR;
 
 int NaClDescConnCapCtor(struct NaClDescConnCap          *self,

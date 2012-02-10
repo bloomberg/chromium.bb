@@ -128,9 +128,11 @@ struct NaClDescInvalid const *NaClDescInvalidMake() {
   return (struct NaClDescInvalid *) NaClDescRef(&(singleton->base));
 }
 
-int NaClDescInvalidInternalize(struct NaClDesc           **baseptr,
-                               struct NaClDescXferState  *xfer) {
+int NaClDescInvalidInternalize(struct NaClDesc               **baseptr,
+                               struct NaClDescXferState      *xfer,
+                               struct NaClDescQuotaInterface *quota_interface) {
   UNREFERENCED_PARAMETER(xfer);
+  UNREFERENCED_PARAMETER(quota_interface);
 
   *baseptr = (struct NaClDesc *) NaClDescInvalidMake();
 

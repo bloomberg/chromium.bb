@@ -45,6 +45,7 @@
 #include "native_client/src/trusted/service_runtime/nacl_desc_effector_ldr.h"
 #include "native_client/src/trusted/service_runtime/nacl_globals.h"
 #include "native_client/src/trusted/service_runtime/nacl_resource.h"
+#include "native_client/src/trusted/service_runtime/nacl_reverse_quota_interface.h"
 #include "native_client/src/trusted/service_runtime/nacl_syscall_common.h"
 #include "native_client/src/trusted/service_runtime/nacl_syscall_handlers.h"
 #include "native_client/src/trusted/service_runtime/nacl_valgrind_hooks.h"
@@ -1280,6 +1281,12 @@ static void NaClSecureReverseClientCallback(
   }
   if (!NaClSrpcClientCtor(&nap->reverse_channel, new_conn)) {
     NaClLog(LOG_FATAL, "Reverse channel SRPC Client Ctor failed\n");
+  }
+  nap->reverse_quota_interface = (struct NaClReverseQuotaInterface *)
+      malloc(sizeof *nap->reverse_quota_interface);
+  if (NULL == nap->reverse_quota_interface ||
+      !NaClReverseQuotaInterfaceCtor(nap->reverse_quota_interface, nap)) {
+    NaClLog(LOG_FATAL, "Reverse quota interface Ctor failed\n");
   }
   nap->reverse_channel_initialization_state = NACL_REVERSE_CHANNEL_INITIALIZED;
 

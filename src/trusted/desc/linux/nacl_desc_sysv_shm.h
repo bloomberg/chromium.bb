@@ -56,8 +56,10 @@ struct NaClDescSysvShm {
   int                       rmid_in_dtor;
 };
 
-int NaClDescSysvShmInternalize(struct NaClDesc          **baseptr,
-                               struct NaClDescXferState *xfer) NACL_WUR;
+int NaClDescSysvShmInternalize(struct NaClDesc               **baseptr,
+                               struct NaClDescXferState      *xfer,
+                               struct NaClDescQuotaInterface *quota_interface)
+    NACL_WUR;
 
 
 int NaClDescSysvShmImportCtor(struct NaClDescSysvShm  *self,

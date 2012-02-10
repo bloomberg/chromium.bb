@@ -81,6 +81,8 @@ class NaClCommandLoop {
 bool HandlerSleep(NaClCommandLoop* ncl, const vector<string>& args);
 bool HandlerReadonlyFile(NaClCommandLoop* ncl, const vector<string>& args);
 bool HandlerReadwriteFile(NaClCommandLoop* ncl, const vector<string>& args);
+bool HandlerReadwriteFileQuota(NaClCommandLoop* ncl,
+                               const vector<string>& args);
 bool HandlerShmem(NaClCommandLoop* ncl, const vector<string>& args);
 bool HandlerMap(NaClCommandLoop* ncl, const vector<string>& args);
 bool HandlerSaveToFile(NaClCommandLoop* ncl, const vector<string>& args);

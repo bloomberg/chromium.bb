@@ -31,8 +31,14 @@ class DescWrapperFactory {
   DescWrapper* MakeShm(size_t size);
   // Create a file descriptor object.
   DescWrapper* MakeFileDesc(int host_os_desc, int mode);
+  // As with MakeFileDesc, but with quota management.
+  DescWrapper* MakeFileDescQuota(int host_os_desc, int mode,
+                                 const uint8_t* file_id);
   // Create a DescWrapper from opening a host file.
   DescWrapper* OpenHostFile(const char* fname, int flags, int mode);
+  // As with OpenHostFile, but with quota management.
+  DescWrapper* OpenHostFileQuota(const char* fname, int flags, int mode,
+                                 const uint8_t* file_id);
   // Create a DescWrapper for a random number generator.
   DescWrapper* OpenRng();
   // Create a DescWrapper for the designated invalid descriptor
@@ -174,7 +180,8 @@ class DescWrapper {
 
   // Receive a message.
   // Returns bytes received on success, negative NaCl ABI errno on failure.
-  ssize_t RecvMsg(MsgHeader* dgram, int flags);
+  ssize_t RecvMsg(MsgHeader* dgram, int flags,
+                  struct NaClDescQuotaInterface *quota_interface);
 
   // Connect to a socket address.
   // Returns a valid DescWrapper on success, NULL on failure.

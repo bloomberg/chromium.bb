@@ -186,10 +186,12 @@ static struct NaClDescVtbl const kNaClDescDirDescVtbl = {
   NaClDescGetValueNotImplemented,
 };
 
-int NaClDescDirInternalize(struct NaClDesc           **out_desc,
-                           struct NaClDescXferState  *xfer) {
+int NaClDescDirInternalize(struct NaClDesc               **out_desc,
+                           struct NaClDescXferState      *xfer,
+                           struct NaClDescQuotaInterface *quota_interface) {
   UNREFERENCED_PARAMETER(out_desc);
   UNREFERENCED_PARAMETER(xfer);
+  UNREFERENCED_PARAMETER(quota_interface);
 
   NaClLog(LOG_ERROR, "NaClDescDirDescInternalize: not implemented for dir\n");
   return -NACL_ABI_EINVAL;

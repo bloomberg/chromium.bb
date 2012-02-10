@@ -27,8 +27,7 @@
 #include "native_client/src/trusted/desc/nacl_desc_base.h"
 #include "native_client/src/trusted/desc/nacl_desc_io.h"
 #include "native_client/src/trusted/desc/nacl_desc_quota.h"
-
-#include "native_client/src/trusted/desc/pepper/nacl_pepper.h"
+#include "native_client/src/trusted/desc/nacl_desc_quota_interface.h"
 
 #include "native_client/src/trusted/service_runtime/include/sys/fcntl.h"
 
@@ -48,13 +47,19 @@ struct NaClDescFake {
 };
 
 /*
- * The version of these two functions overrides the versions in the
- * desc library, so that no Pepper calls are actually made.
+ * A fake descriptor quota interface.
  */
 
-int64_t NaClSrpcPepperWriteRequest(uint8_t const  *file_id,
-                                   int64_t        offset,
-                                   int64_t        length) {
+static void FakeDtor(struct NaClRefCount *nrcp) {
+  nrcp->vtbl = (struct NaClRefCountVtbl *)(&kNaClDescQuotaInterfaceVtbl);
+  (*nrcp->vtbl->Dtor)(nrcp);
+}
+
+static int64_t FakeWriteRequest(struct NaClDescQuotaInterface *quota_interface,
+                                uint8_t const                 *file_id,
+                                int64_t                       offset,
+                                int64_t                       length) {
+  UNREFERENCED_PARAMETER(quota_interface);
   UNREFERENCED_PARAMETER(file_id);
   UNREFERENCED_PARAMETER(offset);
 
@@ -78,12 +83,36 @@ int64_t NaClSrpcPepperWriteRequest(uint8_t const  *file_id,
   return length;
 }
 
-int64_t NaClSrpcPepperFtruncateRequest(uint8_t const  *file_id,
-                                       int64_t        length) {
+static int64_t FakeFtruncateRequest(
+    struct NaClDescQuotaInterface *quota_interface,
+    uint8_t const                 *file_id,
+    int64_t                       length) {
+  UNREFERENCED_PARAMETER(quota_interface);
   UNREFERENCED_PARAMETER(file_id);
 
   NaClLog(LOG_FATAL, "FtruncateRequest invoked!?!\n");
   return length;
+}
+
+struct NaClDescQuotaInterfaceVtbl const kFakeQuotaInterfaceVtbl = {
+  {
+    FakeDtor
+  },
+  FakeWriteRequest,
+  FakeFtruncateRequest
+};
+
+struct FakeQuotaInterface {
+  struct NaClDescQuotaInterface base NACL_IS_REFCOUNT_SUBCLASS;
+};
+
+int FakeQuotaInterfaceCtor(struct FakeQuotaInterface *self) {
+  struct NaClRefCount *nrcp = (struct NaClRefCount *) self;
+  if (!NaClDescQuotaInterfaceCtor(&(self->base))) {
+    return 0;
+  }
+  nrcp->vtbl = (struct NaClRefCountVtbl *)(&kFakeQuotaInterfaceVtbl);
+  return 1;
 }
 
 int ExerciseQuotaObject(struct NaClDescQuota  *test_obj,
@@ -175,18 +204,19 @@ void Usage(void) {
 }
 
 int main(int ac, char **av) {
-  int                   exit_status = 1;
-  int                   num_errors = 0;
-  int                   opt;
-  char                  *file_path = NULL;
-  char                  *buffer;
-  size_t                max_write_size = 5UL << 10;  /* > 1 page */
-  size_t                ix;
-  uint64_t              num_bytes = 16UL << 20;
-  struct NaClDescIoDesc *ndip = NULL;
-  struct NaClDescQuota  *object_under_test = NULL;
-  struct NaClSecureRng  rng;
-  static uint8_t        file_id0[NACL_DESC_QUOTA_FILE_ID_LEN];
+  int                        exit_status = 1;
+  int                        num_errors = 0;
+  int                        opt;
+  char                       *file_path = NULL;
+  char                       *buffer;
+  size_t                     max_write_size = 5UL << 10;  /* > 1 page */
+  size_t                     ix;
+  uint64_t                   num_bytes = 16UL << 20;
+  struct NaClDescIoDesc      *ndip = NULL;
+  struct NaClDescQuota       *object_under_test = NULL;
+  struct FakeQuotaInterface  *fake_interface = NULL;
+  struct NaClSecureRng       rng;
+  static uint8_t             file_id0[NACL_DESC_QUOTA_FILE_ID_LEN];
   static const char file_id0_cstr[NACL_DESC_QUOTA_FILE_ID_LEN] = "File ID 0";
 
   NaClLogModuleInit();
@@ -246,6 +276,24 @@ int main(int ac, char **av) {
     exit_status = 3;
     goto cleanup_file;
   }
+  if (NULL == (fake_interface = malloc(sizeof *fake_interface))) {
+    perror(gProgram);
+    fprintf(stderr, "No memory for fake interface.\n");
+    exit_status = 4;
+    goto cleanup_file;
+  }
+  if (!FakeQuotaInterfaceCtor(fake_interface)) {
+    perror(gProgram);
+    fprintf(stderr, "Ctor for fake quota interface failed.\n");
+    /*
+     * fake_interface is not constructed, so we must free it and
+     * NULL it out to prevent the cleanup code Dtors from firing.
+     */
+    free(fake_interface);
+    fake_interface = NULL;
+    exit_status = 5;
+    goto cleanup_file;
+  }
   if (NULL == (object_under_test = malloc(sizeof *object_under_test))) {
     perror(gProgram);
     fprintf(stderr, "No memory for object under test.\n");
@@ -254,7 +302,8 @@ int main(int ac, char **av) {
   }
   if (!NaClDescQuotaCtor(object_under_test,
                          (struct NaClDesc *) ndip,
-                         file_id0)) {
+                         file_id0,
+                         (struct NaClDescQuotaInterface *) fake_interface)) {
     perror(gProgram);
     fprintf(stderr, "Ctor for quota object failed.\n");
     /*
@@ -300,6 +349,8 @@ int main(int ac, char **av) {
   }
 
 cleanup_file:
+  NaClDescQuotaInterfaceSafeUnref(
+      (struct NaClDescQuotaInterface *) fake_interface);
   NaClDescSafeUnref((struct NaClDesc *) ndip);
   NaClDescSafeUnref((struct NaClDesc *) object_under_test);
 

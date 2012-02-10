@@ -37,8 +37,10 @@ struct NaClDescIoDesc {
   struct NaClHostDesc       *hd;
 };
 
-int NaClDescIoInternalize(struct NaClDesc          **baseptr,
-                          struct NaClDescXferState *xfer) NACL_WUR;
+int NaClDescIoInternalize(struct NaClDesc               **baseptr,
+                          struct NaClDescXferState      *xfer,
+                          struct NaClDescQuotaInterface *quota_interface)
+    NACL_WUR;
 
 int NaClDescIoDescCtor(struct NaClDescIoDesc  *self,
                        struct NaClHostDesc    *hd) NACL_WUR;

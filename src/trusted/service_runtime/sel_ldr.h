@@ -63,6 +63,7 @@ struct NaClAppThread;
 struct NaClDesc;  /* see native_client/src/trusted/desc/nacl_desc_base.h */
 struct NaClDynamicRegion;
 struct NaClManifestProxy;
+struct NaClReverseQuotaInterface;
 struct NaClSecureService;
 struct NaClSecureReverseService;
 struct NaClThreadInterface;  /* see sel_ldr_thread_interface.h */
@@ -210,20 +211,21 @@ struct NaClApp {
   struct NaClNameService    *name_service;  /* default name server */
   struct NaClDesc           *name_service_conn_cap;
 
-  struct NaClSecureService        *secure_service;
-  struct NaClManifestProxy        *manifest_proxy;
-  struct NaClKernService          *kern_service;
+  struct NaClSecureService          *secure_service;
+  struct NaClManifestProxy          *manifest_proxy;
+  struct NaClKernService            *kern_service;
 
-  struct NaClResourceNaClApp      resources;
-  enum NaClResourcePhase          resource_phase;
+  struct NaClResourceNaClApp        resources;
+  enum NaClResourcePhase            resource_phase;
 
-  struct NaClSecureReverseClient  *reverse_client;
+  struct NaClSecureReverseClient    *reverse_client;
   enum NaClReverseChannelInitializationState {
     NACL_REVERSE_CHANNEL_UNINITIALIZED,
     NACL_REVERSE_CHANNEL_INITIALIZATION_STARTED,
     NACL_REVERSE_CHANNEL_INITIALIZED
-  }                               reverse_channel_initialization_state;
-  struct NaClSrpcChannel          reverse_channel;
+  }                                 reverse_channel_initialization_state;
+  struct NaClSrpcChannel            reverse_channel;
+  struct NaClReverseQuotaInterface  *reverse_quota_interface;
 
 
   NaClErrorCode             module_load_status;

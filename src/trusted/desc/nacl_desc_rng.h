@@ -34,7 +34,9 @@ struct NaClDescRng {
 int NaClDescRngCtor(struct NaClDescRng  *self);
 
 int NaClDescRngInternalize(struct NaClDesc          **out_desc,
-                           struct NaClDescXferState *xfer);
+                           struct NaClDescXferState *xfer,
+                           struct NaClDescQuotaInterface *quota_interface)
+    NACL_WUR;
 
 EXTERN_C_END
 

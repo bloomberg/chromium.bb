@@ -333,14 +333,16 @@ static struct NaClDescVtbl const kNaClDescIoDescVtbl = {
 };
 
 /* set *out_desc to struct NaClDescIo * output */
-int NaClDescIoInternalize(struct NaClDesc           **out_desc,
-                          struct NaClDescXferState  *xfer) {
+int NaClDescIoInternalize(struct NaClDesc               **out_desc,
+                          struct NaClDescXferState      *xfer,
+                          struct NaClDescQuotaInterface *quota_interface) {
   int                   rv;
   NaClHandle            h;
   int                   d;
   struct NaClHostDesc   *nhdp;
   struct NaClDescIoDesc *ndidp;
 
+  UNREFERENCED_PARAMETER(quota_interface);
   rv = -NACL_ABI_EIO;  /* catch-all */
   h = NACL_INVALID_HANDLE;
   nhdp = NULL;

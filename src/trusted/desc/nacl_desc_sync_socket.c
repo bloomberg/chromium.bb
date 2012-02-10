@@ -142,11 +142,14 @@ static struct NaClDescVtbl const kNaClDescSyncSocketVtbl = {
 };
 
 
-int NaClDescSyncSocketInternalize(struct NaClDesc          **out_desc,
-                                  struct NaClDescXferState *xfer) {
+int NaClDescSyncSocketInternalize(
+    struct NaClDesc               **out_desc,
+    struct NaClDescXferState      *xfer,
+    struct NaClDescQuotaInterface *quota_interface) {
   int                       rv;
   struct NaClDescSyncSocket *ndssp;
 
+  UNREFERENCED_PARAMETER(quota_interface);
   NaClLog(4, "Entered NaClDescSyncSocketInternalize\n");
   rv = -NACL_ABI_EIO;
   ndssp = NULL;

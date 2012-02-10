@@ -40,22 +40,25 @@ EXTERN_C_BEGIN
  */
 
 struct NaClDescQuota {
-  struct NaClDesc   base NACL_IS_REFCOUNT_SUBCLASS;
-  struct NaClMutex  mu;
-  struct NaClDesc   *desc;
-  uint8_t           file_id[NACL_DESC_QUOTA_FILE_ID_LEN];
+  struct NaClDesc                base NACL_IS_REFCOUNT_SUBCLASS;
+  struct NaClMutex               mu;
+  struct NaClDesc                *desc;
+  uint8_t                        file_id[NACL_DESC_QUOTA_FILE_ID_LEN];
+  struct NaClDescQuotaInterface  *quota_interface;
 };
 
 /*
  * Takes ownership of desc.
  */
-int NaClDescQuotaCtor(struct NaClDescQuota  *self,
-                      struct NaClDesc       *desc,
-                      uint8_t const         *file_id)
+int NaClDescQuotaCtor(struct NaClDescQuota           *self,
+                      struct NaClDesc                *desc,
+                      uint8_t const                  *file_id,
+                      struct NaClDescQuotaInterface  *quota_interface)
     NACL_WUR;
 
-int NaClDescQuotaInternalize(struct NaClDesc          **baseptr,
-                             struct NaClDescXferState *xfer)
+int NaClDescQuotaInternalize(struct NaClDesc               **baseptr,
+                             struct NaClDescXferState      *xfer,
+                             struct NaClDescQuotaInterface *quota_interface)
     NACL_WUR;
 
 EXTERN_C_END

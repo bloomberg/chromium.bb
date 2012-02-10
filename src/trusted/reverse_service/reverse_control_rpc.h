@@ -12,11 +12,12 @@
  * client channel.
  */
 
-#define NACL_REVERSE_CONTROL_TEST           "test:s:"
-#define NACL_REVERSE_CONTROL_LOG            "log:s:"
-#define NACL_REVERSE_CONTROL_ADD_CHANNEL    "add_channel::b"
-#define NACL_REVERSE_CONTROL_INIT_DONE      "init_done::"
-#define NACL_REVERSE_CONTROL_REPORT_STATUS  "exit_status:i:"
-#define NACL_REVERSE_CONTROL_POST_MESSAGE   "post_message:C:i"
+#define NACL_REVERSE_CONTROL_TEST             "test:s:"
+#define NACL_REVERSE_CONTROL_LOG              "log:s:"
+#define NACL_REVERSE_CONTROL_ADD_CHANNEL      "add_channel::b"
+#define NACL_REVERSE_CONTROL_INIT_DONE        "init_done::"
+#define NACL_REVERSE_CONTROL_REPORT_STATUS    "exit_status:i:"
+#define NACL_REVERSE_CONTROL_POST_MESSAGE     "post_message:C:i"
+#define NACL_REVERSE_REQUEST_QUOTA_FOR_WRITE  "request_quota_for_write:Cll:l"
 
 #endif

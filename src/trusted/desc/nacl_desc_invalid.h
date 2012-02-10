@@ -27,8 +27,10 @@ struct NaClDescInvalid {
   struct NaClDesc base NACL_IS_REFCOUNT_SUBCLASS;
 };
 
-int NaClDescInvalidInternalize(struct NaClDesc          **baseptr,
-                               struct NaClDescXferState *xfer) NACL_WUR;
+int NaClDescInvalidInternalize(struct NaClDesc               **baseptr,
+                               struct NaClDescXferState      *xfer,
+                               struct NaClDescQuotaInterface *quota_interface)
+    NACL_WUR;
 
 /* Initialize and tear down the state for maintaining the singleton. */
 void NaClDescInvalidInit();

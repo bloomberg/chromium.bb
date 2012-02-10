@@ -264,7 +264,8 @@ static PyObject *PyDescImcRecvmsg(PyObject *self, PyObject *args) {
   message.ndesc_length = NACL_ABI_IMC_DESC_MAX;
   message.flags = 0;
   Py_BEGIN_ALLOW_THREADS;
-  received = NaClImcRecvTypedMessage(self_desc, &message, 0);
+  /* No quota management from these bindings. */
+  received = NaClImcRecvTypedMessage(self_desc, &message, 0, NULL);
   Py_END_ALLOW_THREADS;
 
   if (received < 0) {

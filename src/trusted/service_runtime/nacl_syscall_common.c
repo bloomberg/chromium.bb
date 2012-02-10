@@ -51,6 +51,8 @@
 #include "native_client/src/trusted/service_runtime/include/sys/stat.h"
 
 
+struct NaClDescQuotaInterface;
+
 /*
  * OSX defines SIZE_T_MAX in i386/limits.h; Linux has SIZE_MAX;
  * Windows has none.
@@ -2040,7 +2042,8 @@ int32_t NaClCommonSysImc_Recvmsg(struct NaClAppThread         *natp,
 
   recv_hdr.flags = 0;  /* just to make it obvious; IMC will clear it for us */
 
-  ssize_retval = NaClImcRecvTypedMessage(ndp, &recv_hdr, flags);
+  ssize_retval = NaClImcRecvTypedMessage(ndp, &recv_hdr, flags,
+      (struct NaClDescQuotaInterface *) natp->nap->reverse_quota_interface);
   /*
    * retval is number of user payload bytes received and excludes the
    * header bytes.
@@ -2913,4 +2916,3 @@ int32_t NaClCommonSysClockGetTime(struct NaClAppThread  *natp,
   return NaClCommonSysClockGetCommon(natp, clk_id, (uintptr_t) tsp,
                                      NaClClockGetTime);
 }
-

@@ -264,10 +264,13 @@ static struct NaClDescVtbl const kNaClDescConnCapFdVtbl = {
   NaClDescGetValueNotImplemented,
 };
 
-int NaClDescConnCapFdInternalize(struct NaClDesc          **out_desc,
-                                 struct NaClDescXferState *xfer) {
+int NaClDescConnCapFdInternalize(
+    struct NaClDesc               **out_desc,
+    struct NaClDescXferState      *xfer,
+    struct NaClDescQuotaInterface *quota_interface) {
   struct NaClDescConnCapFd *conn_cap;
 
+  UNREFERENCED_PARAMETER(quota_interface);
   if (xfer->next_handle == xfer->handle_buffer_end) {
     return -NACL_ABI_EIO;
   }
