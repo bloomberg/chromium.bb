@@ -71,16 +71,19 @@
   },
   'conditions': [
     ['OS != "win" and use_system_ffmpeg == 0 and build_ffmpegsumo != 0', {
+      'variables': {
+        'platform_config_root': 'chromium/config/<(ffmpeg_branding)/<(os_config)/<(ffmpeg_config)',
+      },
       'targets': [
         {
           'target_name': 'ffmpegsumo',
           'type': 'loadable_module',
           'sources': [
-            'chromium/config/<(ffmpeg_branding)/<(os_config)/<(ffmpeg_config)/config.h',
+            '<(platform_config_root)/config.h',
             'chromium/config/libavutil/avconfig.h',
           ],
           'include_dirs': [
-            'chromium/config/<(ffmpeg_branding)/<(os_config)/<(ffmpeg_config)',
+            '<(platform_config_root)',
             '.',
             'chromium/config',
           ],
@@ -231,7 +234,7 @@
                     'yasm_flags': [
                       '-DARCH_X86_32',
                       # The next two lines are needed to enable AVX assembly.
-                      '-Ichromium/config/<(ffmpeg_branding)/<(os_config)/<(ffmpeg_config)',
+                      '-I<(platform_config_root)',
                       '-Pconfig.asm',
                       '-m', 'x86',
                     ],
@@ -241,7 +244,7 @@
                       '-m', 'amd64',
                       '-DPIC',
                       # The next two lines are needed to enable AVX assembly.
-                      '-Ichromium/config/<(ffmpeg_branding)/<(os_config)/<(ffmpeg_config)',
+                      '-I<(platform_config_root)',
                       '-Pconfig.asm',
                     ],
                   }],
@@ -305,7 +308,7 @@
                     'yasm_flags': [
                       '-DARCH_X86_32',
                       # The next two lines are needed to enable AVX assembly.
-                      '-Ichromium/config/<(ffmpeg_branding)/<(os_config)/<(ffmpeg_config)',
+                      '-I<(platform_config_root)',
                       '-Pconfig.asm',
                       '-m', 'x86',
                     ],
@@ -315,7 +318,7 @@
                       '-m', 'amd64',
                       '-DPIC',
                       # The next two lines are needed to enable AVX assembly.
-                      '-Ichromium/config/<(ffmpeg_branding)/<(os_config)/<(ffmpeg_config)',
+                      '-I<(platform_config_root)',
                       '-Pconfig.asm',
                     ],
                   }],
@@ -352,6 +355,7 @@
   'targets': [
     {
       'variables': {
+        'platform_binary_root': 'chromium/binaries/<(ffmpeg_branding)/<(os_config)/<(ffmpeg_config)',
         'generate_stubs_script': '../../tools/generate_stubs/generate_stubs.py',
         'extra_header': 'chromium/ffmpeg_stub_headers.fragment',
         'sig_files': [
@@ -390,15 +394,6 @@
             'outfile_type': 'windows_lib',
             'output_dir': '<(PRODUCT_DIR)/lib',
             'intermediate_dir': '<(INTERMEDIATE_DIR)',
-            # TODO(scherkus): Change Windows DEPS directory so we don't need
-            # this conditional.
-            'conditions': [
-              [ 'ffmpeg_branding == "Chrome"', {
-                'ffmpeg_bin_dir': 'chrome/<(OS)/<(ffmpeg_variant)',
-              }, {  # else ffmpeg_branding != "Chrome", assume chromium.
-                'ffmpeg_bin_dir': 'chromium/<(OS)/<(ffmpeg_variant)',
-              }],
-            ],
           },
           'type': 'none',
           'sources!': [
@@ -452,9 +447,9 @@
           'copies': [{
             'destination': '<(PRODUCT_DIR)/',
             'files': [
-              'chromium/binaries/<(ffmpeg_bin_dir)/avcodec-54.dll',
-              'chromium/binaries/<(ffmpeg_bin_dir)/avformat-54.dll',
-              'chromium/binaries/<(ffmpeg_bin_dir)/avutil-51.dll',
+              '<(platform_binary_root)/avcodec-54.dll',
+              '<(platform_binary_root)/avformat-54.dll',
+              '<(platform_binary_root)/avutil-51.dll',
             ],
           }],
         }, {  # else OS != "win", use POSIX stub generator

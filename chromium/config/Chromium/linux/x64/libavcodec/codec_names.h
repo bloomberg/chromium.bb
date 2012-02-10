@@ -331,8 +331,12 @@ case CODEC_ID_AVRP:
     return "avrp";
 case CODEC_ID_G2M:
     return "g2m";
+case CODEC_ID_AYUV:
+    return "ayuv";
 case CODEC_ID_V308:
     return "v308";
+case CODEC_ID_V408:
+    return "v408";
 case CODEC_ID_YUV4:
     return "yuv4";
 case CODEC_ID_PCM_S16LE:

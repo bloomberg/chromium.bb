@@ -211,4 +211,11 @@ URLProtocol *ffurl_protocol_next(URLProtocol *prev);
 int ff_udp_set_remote_url(URLContext *h, const char *uri);
 int ff_udp_get_local_port(URLContext *h);
 
+/**
+ * Register the URLProtocol protocol.
+ *
+ * @param size the size of the URLProtocol struct referenced
+ */
+int av_register_protocol2(URLProtocol *protocol, int size);
+
 #endif /* AVFORMAT_URL_H */
