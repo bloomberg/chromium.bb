@@ -30,17 +30,13 @@ static NaClValidationStatus NCApplyValidatorVerbosely_x86_32(
     uint8_t *data,
     size_t size,
     int bundle_size,
-    Bool local_cpu) {
+    CPUFeatures *cpu_features) {
   int validator_result = 0;
-  struct NCValidatorState *vstate =
-      NCValidateInitDetailed(guest_addr, size, bundle_size);
+  struct NCValidatorState *vstate;
+
+  vstate = NCValidateInitDetailed(guest_addr, size, bundle_size, cpu_features);
   if (vstate == NULL) return NaClValidationFailedOutOfMemory;
   NCValidateSetNumDiagnostics(vstate, -1);  /* Reports all errors. */
-  if (!local_cpu) {
-    CPUFeatures features;
-    NaClSetAllCPUFeatures(&features);
-    NCValidatorStateSetCPUFeatures(vstate, &features);
-  }
   NCValidateSetErrorReporter(vstate, &kNCVerboseErrorReporter);
   NCValidateSegment(data, guest_addr, size, vstate);
   validator_result = NCValidateFinish(vstate);
@@ -60,20 +56,23 @@ NaClValidationStatus NACL_SUBARCH_NAME(ApplyValidatorVerbosely, x86, 32)
   NaClValidationStatus status = NaClValidationFailedNotImplemented;
   assert(NACL_SB_DEFAULT == sb_kind);
   if (bundle_size == 16 || bundle_size == 32) {
+    CPUFeatures cpu_features;
+    /* TODO(ncbray) can this check be eliminated or simplified? */
     if (local_cpu) {
       NaClCPUData cpu_data;
       NaClCPUDataGet(&cpu_data);
       if (!NaClArchSupported(&cpu_data))
         return NaClValidationFailedCpuNotSupported;
     }
+    NaClValGetCPUFeatures(local_cpu, &cpu_features);
     switch (kind) {
       case NaClApplyCodeValidation:
         status = NCApplyValidatorVerbosely_x86_32(
-            guest_addr, data, size, bundle_size, local_cpu);
+            guest_addr, data, size, bundle_size, &cpu_features);
         break;
       case NaClApplyValidationDoStubout:
         status = NCApplyValidatorStubout_x86_32(
-            guest_addr, data, size, bundle_size, local_cpu);
+            guest_addr, data, size, bundle_size, &cpu_features);
         break;
       default:
         /* If reached, it isn't implemented (yet). */

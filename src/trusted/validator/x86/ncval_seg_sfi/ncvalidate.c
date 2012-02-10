@@ -332,7 +332,8 @@ static void NCJumpSummarize(struct NCValidatorState* vstate);
  */
 struct NCValidatorState *NCValidateInit(const NaClPcAddress vbase,
                                         const NaClPcAddress codesize,
-                                        const uint8_t alignment) {
+                                        const uint8_t alignment,
+                                        CPUFeatures* features) {
   struct NCValidatorState *vstate = NULL;
 
   dprint(("NCValidateInit(%"NACL_PRIxNaClPcAddressAll
@@ -341,6 +342,7 @@ struct NCValidatorState *NCValidateInit(const NaClPcAddress vbase,
   do {
     if (alignment != 16 && alignment != 32) break;
     if ((vbase & (alignment - 1)) != 0) break;
+    if (features == NULL) break;
     dprint(("ncv_init(%"NACL_PRIxNaClPcAddress", %"NACL_PRIxNaClMemorySize
             ")\n", vbase, codesize));
     vstate = (struct NCValidatorState *)calloc(1, sizeof(*vstate));
@@ -363,13 +365,7 @@ struct NCValidatorState *NCValidateInit(const NaClPcAddress vbase,
     if (vstate->vttable == NULL || vstate->kttable == NULL) break;
     dprint(("  allocated tables\n"));
     NCStatsInit(vstate);
-    if (NULL == nc_validator_features) {
-      NaClCPUData cpu_data;
-      NaClCPUDataGet(&cpu_data);
-      GetCPUFeatures(&cpu_data, &(vstate->cpufeatures));
-    } else {
-      vstate->cpufeatures = *nc_validator_features;
-    }
+    NaClCopyCPUFeatures(&vstate->cpufeatures, features);
     return vstate;
   } while (0);
   /* Failure. Clean up memory before returning. */
@@ -391,11 +387,6 @@ void NCValidateSetStubOutMode(struct NCValidatorState *vstate,
   if (do_stub_out) {
     NCValidateSetNumDiagnostics(vstate, 0);
   }
-}
-
-void NCValidatorStateSetCPUFeatures(struct NCValidatorState* vstate,
-                                    const CPUFeatures* features) {
-  NaClCopyCPUFeatures(&vstate->cpufeatures, features);
 }
 
 void NCValidateSetNumDiagnostics(struct NCValidatorState* vstate,
@@ -987,7 +978,8 @@ void NCValidateSegment(uint8_t *mbase, NaClPcAddress vbase, NaClMemorySize sz,
 
 int NCValidateSegmentPair(uint8_t *mbase_old, uint8_t *mbase_new,
                           NaClPcAddress vbase, size_t sz,
-                          uint8_t alignment) {
+                          uint8_t alignment,
+                          CPUFeatures* features) {
   /* TODO(karl): Refactor to use inheritance from NCDecoderStatePair? */
   NCDecoderStatePair pair;
   NCValidatorState* new_vstate;
@@ -1002,10 +994,10 @@ int NCValidateSegmentPair(uint8_t *mbase_old, uint8_t *mbase_new,
     return 0;
   }
 
-  old_vstate = NCValidateInit(vbase, sz, alignment);
+  old_vstate = NCValidateInit(vbase, sz, alignment, features);
   if (old_vstate != NULL) {
     NCValidateDStateInit(old_vstate, mbase_old, vbase, sz);
-    new_vstate = NCValidateInit(vbase, sz, alignment);
+    new_vstate = NCValidateInit(vbase, sz, alignment, features);
     if (new_vstate != NULL) {
       NCValidateDStateInit(new_vstate, mbase_new, vbase, sz);
 

@@ -21,7 +21,7 @@
  *
  * Basic usage:
  *   if (!NaClArchSuppported()) fail
- *   vstate = NCValidateInit(base, size, 16)
+ *   vstate = NCValidateInit(base, size, 16, features);
  *   if vstate == 0 fail
  *   for each section:
  *     NCValidateSegment(maddr, base, size, vstate);
@@ -37,20 +37,6 @@ struct NCDecoderInst;
 struct NCValidatorState;
 struct NaClErrorReporter;
 
-/* NCValidateSetCPUFeatures: Define the set of CPU features to use.
- * Parameters:
- *    features: A pointer to a CPUFeatures to use, or NULL
- *       if the features set should be calculated using GetCPUFeatures.
- * Note: Assumes that given struct persists till the next call to
- *    this function. The main purpose of this function is to allow the injection
- *    of a command-line override of CPU features, from that of the local CPU id,
- *    for the tool ncval. As such, it uses a global variable to hold the command
- *    line specification in ncval. Also, we assume that this function is not
- *    called during a validation (i.e. between NCValidateInit and
- *    NCValidateFinish).
- */
-void NCValidateSetCPUFeatures(CPUFeatures *features);
-
 /*
  * Set the maximum number of diagnostic errors to be reported to the
  * given value (-1 implies all error messages).
@@ -64,13 +50,15 @@ void NCValidateSetNumDiagnostics(struct NCValidatorState* vstate,
  *    vbase: base virtual address for code segment
  *    codesize: size in bytes of code segment
  *    alignment: 16 or 32, specifying alignment
+ *    features: the features supported by the CPU that will run the code
  * Returns:
  *    an initialized struct NCValidatorState * if everything is okay,
  *    else NULL
  */
 struct NCValidatorState *NCValidateInit(const NaClPcAddress vbase,
                                         const NaClMemorySize codesize,
-                                        const uint8_t alignment);
+                                        const uint8_t alignment,
+                                        CPUFeatures* features);
 
 /*
  * Allows "stub out mode" to be enabled, in which some unsafe
@@ -86,12 +74,6 @@ void NCValidateSetStubOutMode(struct NCValidatorState *vstate,
  */
 void NCValidateSetNumDiagnostics(struct NCValidatorState* vstate,
                                  int num_diagnostics);
-
-/* Set the set of CPU features to use for this validation to
- * the given set of features.
- */
-void NCValidatorStateSetCPUFeatures(struct NCValidatorState* vstate,
-                                    const CPUFeatures* features);
 
 /* Changes the error reporter to the given error reporter
  * for the given validator state.
@@ -116,7 +98,8 @@ void NCValidateSegment(uint8_t *mbase, NaClPcAddress vbase,
  */
 int NCValidateSegmentPair(uint8_t *mbase_old, uint8_t *mbase_new,
                           NaClPcAddress vbase, size_t sz,
-                          uint8_t alignment);
+                          uint8_t alignment,
+                          CPUFeatures* features);
 
 /* Check targets and alignment. Returns non-zero if there are */
 /* safety issues, else returns 1                              */
