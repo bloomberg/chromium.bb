@@ -156,6 +156,11 @@ class ASH_EXPORT Shell {
     return shadow_controller_.get();
   }
 
+  // Force shell to start in overlapping window mode despite host window size.
+  static void set_window_mode_overlapping_for_test(bool overlapping) {
+    window_mode_overlapping_for_test_ = overlapping;
+  }
+
  private:
   FRIEND_TEST_ALL_PREFIXES(ShellTest, ComputeWindowMode);
   FRIEND_TEST_ALL_PREFIXES(ShellTest, ChangeWindowMode);
@@ -228,6 +233,9 @@ class ASH_EXPORT Shell {
 
   // Status area with clock, Wi-Fi signal, etc.
   views::Widget* status_widget_;
+
+  // Locks shell to overlapping window mode despite host window size.
+  static bool window_mode_overlapping_for_test_;
 
   DISALLOW_COPY_AND_ASSIGN(Shell);
 };

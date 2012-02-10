@@ -23,7 +23,8 @@ AuraTestBase::AuraTestBase()
 #endif
 
   RootWindow::GetInstance()->Show();
-  RootWindow::GetInstance()->SetHostSize(gfx::Size(600, 600));
+  // Ensure width != height so tests won't confuse them.
+  RootWindow::GetInstance()->SetHostSize(gfx::Size(800, 600));
 
   // Disable animations during tests.
   ui::LayerAnimator::set_disable_animations_for_test(true);

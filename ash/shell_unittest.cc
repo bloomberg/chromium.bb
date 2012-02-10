@@ -106,20 +106,6 @@ class ModalWindow : public views::WidgetDelegateView {
   DISALLOW_COPY_AND_ASSIGN(ModalWindow);
 };
 
-// After base::AutoReset<> but via setter and getter.
-class AutoResetUseFullscreenHostWindow {
- public:
-  AutoResetUseFullscreenHostWindow(bool new_value) {
-    old_value_ = aura::RootWindow::use_fullscreen_host_window();
-    aura::RootWindow::set_use_fullscreen_host_window(new_value);
-  }
-  ~AutoResetUseFullscreenHostWindow() {
-    aura::RootWindow::set_use_fullscreen_host_window(old_value_);
-  }
- private:
-  bool old_value_;
-};
-
 }  // namespace
 
 class ShellTest : public test::AuraShellTestBase {
@@ -298,8 +284,8 @@ TEST_F(ShellTest, IsScreenLocked) {
 }
 
 TEST_F(ShellTest, ComputeWindowMode) {
-  // We only change default window mode with full-screen host windows.
-  AutoResetUseFullscreenHostWindow use_fullscreen_host_window(true);
+  // Since we're testing window mode computations, don't force overlapping.
+  ash::Shell::set_window_mode_overlapping_for_test(false);
 
   // Wide screens use normal window mode.
   Shell* shell = Shell::GetInstance();
@@ -409,8 +395,8 @@ TEST_F(ShellTest, MAYBE_ChangeWindowMode) {
 // only relevant on Chrome OS devices.
 #if defined(OS_CHROMEOS)
 TEST_F(ShellTest, ResizeRootWindow) {
-  // We dynamically change window mode only with full-screen host windows.
-  AutoResetUseFullscreenHostWindow use_fullscreen_host_window(true);
+  // Since we're testing window mode computations, don't force overlapping.
+  ash::Shell::set_window_mode_overlapping_for_test(false);
 
   // Switching to a small screen enables compact window mode.
   RootWindow::GetInstance()->SetHostSize(gfx::Size(1024, 768));

@@ -66,21 +66,15 @@ namespace {
 using aura::Window;
 using views::Widget;
 
-// Screen width at or below which we automatically start in compact window mode,
-// in pixels. Should be at least 1366 pixels, the resolution of ChromeOS ZGB
-// device displays, as we traditionally used a single window on those devices.
-const int kCompactWindowModeWidthThreshold = 1366;
+// Screen width above which we automatically start in overlapping window mode,
+// in pixels. Should be at least 1366 pixels as we traditionally used a single
+// window on Chrome OS ZGB devices with that width.
+const int kOverlappingWindowModeWidthThreshold = 1366;
 
-// Returns suggested window mode for a given monitor size.
-Shell::WindowMode SuggestedWindowMode(const gfx::Size& monitor_size) {
-  // If the screen is narrow we prefer a single compact window display.
-  // We explicitly don't care about height, since users don't generally stack
-  // browser windows vertically.
-  if (monitor_size.width() <= kCompactWindowModeWidthThreshold)
-    return Shell::MODE_COMPACT;
-
-  return Shell::MODE_OVERLAPPING;
-}
+// Screen height above which we automatically start in overlapping window mode,
+// in pixels. Should be at least 800 pixels as we traditionally used a single
+// window on Chrome OS alex devices with that height.
+const int kOverlappingWindowModeHeightThreshold = 800;
 
 // Creates each of the special window containers that holds windows of various
 // types in the shell UI. They are added to |containers| from back to front in
@@ -198,6 +192,8 @@ void RestoreMaximizedWindows(aura::Window* container) {
 
 // static
 Shell* Shell::instance_ = NULL;
+// static
+bool Shell::window_mode_overlapping_for_test_ = false;
 
 ////////////////////////////////////////////////////////////////////////////////
 // Shell, public:
@@ -367,6 +363,10 @@ void Shell::Init() {
 
 Shell::WindowMode Shell::ComputeWindowMode(const gfx::Size& monitor_size,
                                            CommandLine* command_line) const {
+  if (window_mode_overlapping_for_test_)
+    return MODE_OVERLAPPING;
+
+  // Some devices don't perform well with overlapping windows.
   if (command_line->HasSwitch(switches::kAuraForceCompactWindowMode))
     return MODE_COMPACT;
 
@@ -382,13 +382,18 @@ Shell::WindowMode Shell::ComputeWindowMode(const gfx::Size& monitor_size,
       return MODE_OVERLAPPING;
   }
 
-  // Developers often run the Aura shell in small windows on their desktop.
-  // Prefer overlapping mode for them.
-  if (!aura::RootWindow::use_fullscreen_host_window())
+  // If the screen is wide we prefer overlapping windows so you can arrange
+  // them side by side.
+  if (monitor_size.width() > kOverlappingWindowModeWidthThreshold)
     return Shell::MODE_OVERLAPPING;
 
-  // Without an explicit command line flag, guess based on the monitor size.
-  return SuggestedWindowMode(monitor_size);
+  // If the screen is tall we prefer overlapping windows so you have access
+  // to the launcher for easier switching.
+  if (monitor_size.height() > kOverlappingWindowModeHeightThreshold)
+    return Shell::MODE_OVERLAPPING;
+
+  // If the screen is small we prefer compact.
+  return Shell::MODE_COMPACT;
 }
 
 aura::Window* Shell::GetContainer(int container_id) {
@@ -439,20 +444,11 @@ void Shell::ChangeWindowMode(WindowMode mode) {
 }
 
 void Shell::SetWindowModeForMonitorSize(const gfx::Size& monitor_size) {
-  // Don't allow changes if we're locked in compact mode.
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kAuraForceCompactWindowMode))
-    return;
-
-  // Developers often run the Aura shell in small windows on their desktop.
-  // Don't change modes if they resize the host window.
-  if (!aura::RootWindow::use_fullscreen_host_window())
-    return;
-
   // If we're running on a device, a resolution change means the user plugged in
   // or unplugged an external monitor. Change window mode to be appropriate for
   // the new screen resolution.
-  WindowMode new_mode = SuggestedWindowMode(monitor_size);
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  WindowMode new_mode = ComputeWindowMode(monitor_size, command_line);
   ChangeWindowMode(new_mode);
 }
 

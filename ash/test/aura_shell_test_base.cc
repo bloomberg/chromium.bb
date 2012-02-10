@@ -20,6 +20,9 @@ AuraShellTestBase::~AuraShellTestBase() {
 void AuraShellTestBase::SetUp() {
   aura::test::AuraTestBase::SetUp();
 
+  // Tests require Shell to come up in overlapping mode, despite small window.
+  ash::Shell::set_window_mode_overlapping_for_test(true);
+
   // Creates Shell and hook with Desktop.
   ash::Shell::CreateInstance(new TestShellDelegate);
 

@@ -821,7 +821,7 @@ TEST_F(WindowTest, Transform) {
   // Rotate it clock-wise 90 degrees.
   ui::Transform transform;
   transform.SetRotate(90.0f);
-  transform.ConcatTranslate(size.width(), 0);
+  transform.ConcatTranslate(size.height(), 0);
   root_window->SetTransform(transform);
 
   // The size should be the transformed size.
@@ -852,7 +852,7 @@ TEST_F(WindowTest, MAYBE_TransformGesture) {
   // Rotate the root-window clock-wise 90 degrees.
   ui::Transform transform;
   transform.SetRotate(90.0f);
-  transform.ConcatTranslate(size.width(), 0);
+  transform.ConcatTranslate(size.height(), 0);
   root_window->SetTransform(transform);
 
   TouchEvent press(ui::ET_TOUCH_PRESSED,
