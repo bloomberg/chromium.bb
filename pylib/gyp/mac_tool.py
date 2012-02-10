@@ -158,7 +158,7 @@ class MacTool(object):
     libtoolout = subprocess.Popen(cmd_list, stderr=subprocess.PIPE)
     for line in libtoolout.stderr:
       if not libtool_re.match(line):
-        print >> sys.stderr, line
+        sys.stderr.write(line)
     return libtoolout.returncode
 
   def ExecPackageFramework(self, framework, version):
