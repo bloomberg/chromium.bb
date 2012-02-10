@@ -1375,6 +1375,7 @@ void RenderWidget::OnMsgRepaint(const gfx::Size& size_to_paint) {
 
   set_next_paint_is_repaint_ack();
   if (is_accelerated_compositing_active_) {
+    webwidget_->setNeedsRedraw();
     scheduleComposite();
   } else {
     gfx::Rect repaint_rect(size_to_paint.width(), size_to_paint.height());
