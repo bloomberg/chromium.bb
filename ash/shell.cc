@@ -223,35 +223,21 @@ Shell::~Shell() {
   // widget gets deleted in the final message loop run.
   root_window_layout_->SetBackgroundWidget(NULL);
 
-  // TooltipController needs a valid shell instance. We delete it before
-  // deleting the shell |instance_|.
+  // TooltipController is deleted with the Shell so removing its references.
   RemoveRootWindowEventFilter(tooltip_controller_.get());
   aura::client::SetTooltipClient(NULL);
 
-  // The LayoutManagers for the default and status containers talk to
-  // ShelfLayoutManager (LayoutManager installed on the launcher container).
-  // ShelfLayoutManager has a reference to the launcher widget. To avoid any of
-  // these trying to reference launcher after it's deleted we delete them all,
-  // then the launcher.
-  if (window_mode_ != MODE_MANAGED)
-    ResetLayoutManager(internal::kShellWindowId_DefaultContainer);
-  ResetLayoutManager(internal::kShellWindowId_StatusContainer);
-  ResetLayoutManager(internal::kShellWindowId_LauncherContainer);
   // Make sure we delete WorkspaceController before launcher is
   // deleted as it has a reference to launcher model.
   workspace_controller_.reset();
-  launcher_.reset();
 
   // Delete containers now so that child windows does not access
-  // observers when they are destructed. This has to be after launcher
-  // is destructed because launcher closes the widget in its destructor.
+  // observers when they are destructed.
   aura::RootWindow* root_window = aura::RootWindow::GetInstance();
   while (!root_window->children().empty()) {
     aura::Window* child = root_window->children()[0];
     delete child;
   }
-
-  tooltip_controller_.reset();
 
   // These need a valid Shell instance to clean up properly, so explicitly
   // delete them before invalidating the instance.

@@ -32,7 +32,7 @@ class ASH_EXPORT Launcher {
   int GetStatusWidth();
 
   LauncherModel* model() { return model_.get(); }
-  views::Widget* widget() { return widget_; }
+  views::Widget* widget() { return widget_.get(); }
 
   aura::Window* window_container() { return window_container_; }
 
@@ -47,7 +47,7 @@ class ASH_EXPORT Launcher {
 
   // Widget hosting the view.  May be hidden if we're not using a launcher,
   // e.g. Aura compact window mode.
-  views::Widget* widget_;
+  scoped_ptr<views::Widget> widget_;
 
   aura::Window* window_container_;
 

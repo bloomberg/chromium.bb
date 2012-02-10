@@ -106,11 +106,12 @@ Launcher::Launcher(aura::Window* window_container)
       delegate_view_(NULL) {
   model_.reset(new LauncherModel);
 
-  widget_ = new views::Widget;
+  widget_.reset(new views::Widget);
   views::Widget::InitParams params(
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
   params.create_texture_for_layer = true;
   params.transparent = true;
+  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.parent = Shell::GetInstance()->GetContainer(
       ash::internal::kShellWindowId_LauncherContainer);
   internal::LauncherView* launcher_view =
@@ -131,7 +132,6 @@ Launcher::Launcher(aura::Window* window_container)
 }
 
 Launcher::~Launcher() {
-  widget_->CloseNow();
 }
 
 void Launcher::SetStatusWidth(int width) {
