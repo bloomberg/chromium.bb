@@ -311,7 +311,8 @@ bool Panel::IsMaximized() const {
 }
 
 bool Panel::IsMinimized() const {
-  return expansion_state_ != EXPANDED;
+  return panel_strip_->type() == PanelStrip::IN_OVERFLOW ||
+      expansion_state_ != EXPANDED;
 }
 
 void Panel::Maximize() {

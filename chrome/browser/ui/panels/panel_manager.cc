@@ -261,6 +261,10 @@ std::vector<Panel*> PanelManager::panels() const {
   return panels;
 }
 
+int PanelManager::overflow_strip_width() const {
+  return kOverflowStripThickness;
+}
+
 void PanelManager::SetMouseWatcher(PanelMouseWatcher* watcher) {
   panel_mouse_watcher_.reset(watcher);
 }
