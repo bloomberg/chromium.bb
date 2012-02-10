@@ -132,7 +132,7 @@ void BrowserGpuChannelHostFactory::EstablishGpuChannelOnIO(
     CauseForGpuLaunch cause_for_gpu_launch) {
   GpuProcessHost* host = GpuProcessHost::FromID(gpu_host_id_);
   if (!host) {
-    host = GpuProcessHost::GetForRenderer(gpu_client_id_, cause_for_gpu_launch);
+    host = GpuProcessHost::GetForClient(gpu_client_id_, cause_for_gpu_launch);
     if (!host) {
       request->event.Signal();
       return;

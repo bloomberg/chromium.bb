@@ -31,17 +31,16 @@ class GpuProcessHost : public content::BrowserChildProcessHostDelegate,
  public:
   static bool gpu_enabled() { return gpu_enabled_; }
 
-  // Creates a new GpuProcessHost or gets one for a particular
-  // renderer process, resulting in the launching of a GPU process if required.
-  // Returns null on failure. It is not safe to store the pointer once control
-  // has returned to the message loop as it can be destroyed. Instead store the
-  // associated GPU host ID. A renderer ID of zero means the browser process.
+  // Creates a new GpuProcessHost or gets one for a particular client, resulting
+  // in the launching of a GPU process if required.  Returns null on failure. It
+  // is not safe to store the pointer once control has returned to the message
+  // loop as it can be destroyed. Instead store the associated GPU host ID.
   // This could return NULL if GPU access is not allowed (blacklisted).
-  static GpuProcessHost* GetForRenderer(int client_id,
-                                        content::CauseForGpuLaunch cause);
+  static GpuProcessHost* GetForClient(int client_id,
+                                      content::CauseForGpuLaunch cause);
 
   // Helper function to send the given message to the GPU process on the IO
-  // thread.  Calls GetForRenderer and if a host is returned, sends it.
+  // thread.  Calls GetForClient and if a host is returned, sends it.
   // Can be called from any thread.
   CONTENT_EXPORT static void SendOnIO(int client_id,
                                       content::CauseForGpuLaunch cause,
@@ -61,7 +60,7 @@ class GpuProcessHost : public content::BrowserChildProcessHostDelegate,
       EstablishChannelCallback;
 
   // Tells the GPU process to create a new channel for communication with a
-  // renderer. Once the GPU process responds asynchronously with the IPC handle
+  // client. Once the GPU process responds asynchronously with the IPC handle
   // and GPUInfo, we call the callback.
   void EstablishGpuChannel(
       int client_id, const EstablishChannelCallback& callback);
@@ -69,7 +68,7 @@ class GpuProcessHost : public content::BrowserChildProcessHostDelegate,
   typedef base::Callback<void(int32)> CreateCommandBufferCallback;
 
   // Tells the GPU process to create a new command buffer that draws into the
-  // window associated with the given renderer.
+  // given surface.
   void CreateViewCommandBuffer(
       gfx::GLSurfaceHandle compositing_surface,
       int surface_id,
@@ -113,7 +112,7 @@ class GpuProcessHost : public content::BrowserChildProcessHostDelegate,
   void EstablishChannelError(
       const EstablishChannelCallback& callback,
       const IPC::ChannelHandle& channel_handle,
-      base::ProcessHandle renderer_process_for_gpu,
+      base::ProcessHandle client_process_for_gpu,
       const content::GPUInfo& gpu_info);
   void CreateCommandBufferError(const CreateCommandBufferCallback& callback,
                                 int32 route_id);

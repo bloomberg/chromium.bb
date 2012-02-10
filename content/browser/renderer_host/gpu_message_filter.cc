@@ -57,7 +57,7 @@ void GpuMessageFilter::OnEstablishGpuChannel(
   // to something like OnCreateGpuProcess.
   GpuProcessHost* host = GpuProcessHost::FromID(gpu_host_id_);
   if (!host) {
-    host = GpuProcessHost::GetForRenderer(
+    host = GpuProcessHost::GetForClient(
         render_process_id_, cause_for_gpu_launch);
     if (!host) {
       reply->set_reply_error();

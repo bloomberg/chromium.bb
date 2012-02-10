@@ -80,8 +80,7 @@ void ReleasePermanentXIDDispatcher(gfx::PluginWindowHandle surface) {
 void SendGpuProcessMessage(int client_id,
                            content::CauseForGpuLaunch cause,
                            IPC::Message* message) {
-  GpuProcessHost* host = GpuProcessHost::GetForRenderer(
-      client_id, cause);
+  GpuProcessHost* host = GpuProcessHost::GetForClient(client_id, cause);
   if (host) {
     host->Send(message);
   } else {
@@ -186,7 +185,7 @@ bool GpuProcessHost::HostIsValid(GpuProcessHost* host) {
 }
 
 // static
-GpuProcessHost* GpuProcessHost::GetForRenderer(
+GpuProcessHost* GpuProcessHost::GetForClient(
     int client_id, content::CauseForGpuLaunch cause) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
