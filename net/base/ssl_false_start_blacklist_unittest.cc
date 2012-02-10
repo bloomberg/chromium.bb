@@ -30,6 +30,10 @@ TEST(SSLFalseStartBlacklistTest, IsMember) {
   EXPECT_TRUE(SSLFalseStartBlacklist::IsMember("www.toto-dream.com"));
   EXPECT_TRUE(SSLFalseStartBlacklist::IsMember("billing.ntt-east.co.jp"));
   EXPECT_TRUE(SSLFalseStartBlacklist::IsMember("thepayplace.com"));
+
+  EXPECT_TRUE(SSLFalseStartBlacklist::IsMember("nordea.se"));
+  EXPECT_TRUE(SSLFalseStartBlacklist::IsMember("nordea.com"));
+  EXPECT_TRUE(SSLFalseStartBlacklist::IsMember("nordeanetbank.dk"));
 }
 
 }  // namespace net
