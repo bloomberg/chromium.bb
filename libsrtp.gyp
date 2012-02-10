@@ -39,6 +39,7 @@
         'defines': [
           'HAVE_STDINT_H',
           'HAVE_INTTYPES_H',
+          'HAVE_NETINET_IN_H',
          ],
       }],
       ['OS=="win"', {
@@ -80,6 +81,7 @@
           'defines': [
             'HAVE_STDINT_H',
             'HAVE_INTTYPES_H',
+            'HAVE_NETINET_IN_H',
           ],
         }],
         ['OS=="win"', {
