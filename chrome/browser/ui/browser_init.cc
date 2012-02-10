@@ -1603,6 +1603,18 @@ bool BrowserInit::ProcessCmdLineImpl(
     int* return_code,
     BrowserInit* browser_init) {
   DCHECK(last_used_profile);
+
+  // Check that the same profile doesn't occur twice in last_opened_profiles.
+  {
+    std::set<Profile*> last_opened_profiles_set;
+    for (Profiles::const_iterator it = last_opened_profiles.begin();
+         it != last_opened_profiles.end(); ++it) {
+      CHECK(last_opened_profiles_set.find(*it) ==
+            last_opened_profiles_set.end());
+      last_opened_profiles_set.insert(*it);
+    }
+  }
+
   if (process_startup) {
     if (command_line.HasSwitch(switches::kDisablePromptOnRepost))
       content::NavigationController::DisablePromptOnRepost();

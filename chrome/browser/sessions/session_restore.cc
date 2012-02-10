@@ -4,6 +4,12 @@
 
 #include "chrome/browser/sessions/session_restore.h"
 
+#if defined(OS_WIN)
+#include <malloc.h>
+#else
+#include <alloca.h>
+#endif
+
 #include <algorithm>
 #include <list>
 #include <set>
@@ -13,6 +19,7 @@
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/command_line.h"
+#include "base/debug/stack_trace.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
 #include "base/stl_util.h"
@@ -435,7 +442,17 @@ class SessionRestoreImpl : public content::NotificationObserver {
       if ((*it)->profile_ == profile)
         break;
     }
-    DCHECK(it == active_session_restorers->end());
+    if (it != active_session_restorers->end()) {
+      // We'd like to know how the SessionRestoreImpl having the same profile
+      // than this was created. Copy the addresses of the stack trace to the
+      // stack so that it will be included in the dump.
+      size_t frames_found = 0;
+      const void* const* addresses =
+          (*it)->creation_stack_trace_.Addresses(&frames_found);
+      void* ptr = alloca(frames_found * sizeof(void*));
+      memcpy(ptr, addresses, frames_found * sizeof(void*));
+      CHECK(false);
+    }
 
     active_session_restorers->insert(this);
 
@@ -872,6 +889,9 @@ class SessionRestoreImpl : public content::NotificationObserver {
 
   // Set to true after the first browser is shown.
   bool browser_shown_;
+
+  // For debugging. TODO(marja): Remove asap.
+  base::debug::StackTrace creation_stack_trace_;
 
   DISALLOW_COPY_AND_ASSIGN(SessionRestoreImpl);
 };
