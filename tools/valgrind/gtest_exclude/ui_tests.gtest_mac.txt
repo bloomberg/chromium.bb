@@ -274,3 +274,7 @@ LoadtimesExtensionBindingsUITest.LoadTimesSameAfterUserInDocNavigation
 
 # crbug.com/110612
 IndexedDBUILayoutTest.LayoutTests
+
+# crbug.com/113649
+IndexedDBUILayoutTest.WorkerLayoutTests
+
