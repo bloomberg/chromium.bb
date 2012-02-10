@@ -163,9 +163,9 @@ void DownloadsDOMHandler::OnDownloadUpdated(content::DownloadItem* download) {
   // and the id is the index into that list. We should be careful of sync
   // errors between the UI and the download_items_ list (we may wish to use
   // something other than 'id').
-  OrderedDownloads::iterator it = find(download_items_.begin(),
-                                       download_items_.end(),
-                                       download);
+  OrderedDownloads::iterator it = std::find(download_items_.begin(),
+                                            download_items_.end(),
+                                            download);
   if (it == download_items_.end())
     return;
 
