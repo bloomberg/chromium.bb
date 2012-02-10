@@ -311,9 +311,6 @@ weston_surface_from_global(struct weston_surface *surface,
 			   int32_t x, int32_t y, int32_t *sx, int32_t *sy);
 
 void
-weston_device_repick(struct wl_input_device *device, uint32_t time);
-
-void
 weston_spring_init(struct weston_spring *spring,
 		   double k, double current, double target);
 void
@@ -356,9 +353,6 @@ void
 weston_output_finish_frame(struct weston_output *output, int msecs);
 void
 weston_output_damage(struct weston_output *output);
-struct weston_surface *
-weston_compositor_pick_surface(struct weston_compositor *compositor,
-			       int32_t x, int32_t y, int32_t *sx, int32_t *sy);
 void
 weston_compositor_repick(struct weston_compositor *compositor);
 void
@@ -409,14 +403,6 @@ weston_surface_assign_output(struct weston_surface *surface);
 
 void
 weston_surface_damage(struct weston_surface *surface);
-
-void
-weston_surface_damage_below(struct weston_surface *surface);
-
-void
-weston_surface_damage_rectangle(struct weston_surface *surface,
-				int32_t x, int32_t y,
-				int32_t width, int32_t height);
 
 void
 weston_buffer_post_release(struct wl_buffer *buffer);

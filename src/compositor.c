@@ -450,7 +450,7 @@ weston_surface_from_global(struct weston_surface *surface,
 	*sy = floorf(syf);
 }
 
-WL_EXPORT void
+static void
 weston_surface_damage_rectangle(struct weston_surface *surface,
 				int32_t sx, int32_t sy,
 				int32_t width, int32_t height)
@@ -484,7 +484,7 @@ weston_surface_damage(struct weston_surface *surface)
 	weston_compositor_schedule_repaint(surface->compositor);
 }
 
-WL_EXPORT void
+static void
 weston_surface_damage_below(struct weston_surface *surface)
 {
 	weston_surface_update_transform(surface);
@@ -528,7 +528,25 @@ weston_compositor_get_time(void)
 	return tv.tv_sec * 1000 + tv.tv_usec / 1000;
 }
 
-WL_EXPORT void
+static struct weston_surface *
+weston_compositor_pick_surface(struct weston_compositor *compositor,
+			       int32_t x, int32_t y, int32_t *sx, int32_t *sy)
+{
+	struct weston_surface *surface;
+
+	wl_list_for_each(surface, &compositor->surface_list, link) {
+		if (surface->surface.resource.client == NULL)
+			continue;
+		weston_surface_from_global(surface, x, y, sx, sy);
+		if (0 <= *sx && *sx < surface->geometry.width &&
+		    0 <= *sy && *sy < surface->geometry.height)
+			return surface;
+	}
+
+	return NULL;
+}
+
+static void
 weston_device_repick(struct wl_input_device *device, uint32_t time)
 {
 	struct weston_input_device *wd = (struct weston_input_device *) device;
@@ -1245,24 +1263,6 @@ compositor_create_surface(struct wl_client *client,
 const static struct wl_compositor_interface compositor_interface = {
 	compositor_create_surface,
 };
-
-WL_EXPORT struct weston_surface *
-weston_compositor_pick_surface(struct weston_compositor *compositor,
-			       int32_t x, int32_t y, int32_t *sx, int32_t *sy)
-{
-	struct weston_surface *surface;
-
-	wl_list_for_each(surface, &compositor->surface_list, link) {
-		if (surface->surface.resource.client == NULL)
-			continue;
-		weston_surface_from_global(surface, x, y, sx, sy);
-		if (0 <= *sx && *sx < surface->geometry.width &&
-		    0 <= *sy && *sy < surface->geometry.height)
-			return surface;
-	}
-
-	return NULL;
-}
 
 WL_EXPORT void
 weston_compositor_wake(struct weston_compositor *compositor)
