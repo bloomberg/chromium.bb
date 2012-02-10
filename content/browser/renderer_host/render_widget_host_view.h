@@ -19,6 +19,7 @@
 #include "content/common/content_export.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "third_party/skia/include/core/SkRegion.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPopupType.h"
 #include "ui/base/ime/text_input_type.h"
@@ -326,6 +327,9 @@ class RenderWidgetHostView {
   // Return value indicates whether the mouse is locked successfully or not.
   virtual bool LockMouse() = 0;
   virtual void UnlockMouse() = 0;
+
+  // The region specified will be transparent to mouse clicks.
+  virtual void SetTransparentRegion(SkRegion* region) {}
 
   void set_popup_type(WebKit::WebPopupType popup_type) {
     popup_type_ = popup_type;

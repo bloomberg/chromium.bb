@@ -282,6 +282,12 @@ void NativeTabContentsViewWin::OnNCPaint(HRGN rgn) {
   // here since the view will draw everything correctly.
 }
 
+LRESULT NativeTabContentsViewWin::OnNCHitTest(const CPoint& point) {
+  // Allow hit tests to fall through to the parent window.
+  SetMsgHandled(true);
+  return HTTRANSPARENT;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // NativeTabContentsViewWin, private:
 
