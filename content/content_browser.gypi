@@ -313,6 +313,8 @@
     'browser/geolocation/win7_location_api_win.h',
     'browser/geolocation/win7_location_provider_win.cc',
     'browser/geolocation/win7_location_provider_win.h',
+    'browser/gpu/browser_gpu_channel_host_factory.cc',
+    'browser/gpu/browser_gpu_channel_host_factory.h',
     'browser/gpu/gpu_blacklist.cc',
     'browser/gpu/gpu_blacklist.h',
     'browser/gpu/gpu_data_manager.cc',

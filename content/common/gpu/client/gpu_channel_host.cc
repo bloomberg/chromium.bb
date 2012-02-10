@@ -113,9 +113,10 @@ void GpuChannelHost::Connect(
   DCHECK(factory_->IsMainThread());
   // Open a channel to the GPU process. We pass NULL as the main listener here
   // since we need to filter everything to route it to the right thread.
+  scoped_refptr<base::MessageLoopProxy> io_loop = factory_->GetIOLoopProxy();
   channel_.reset(new IPC::SyncChannel(
       channel_handle, IPC::Channel::MODE_CLIENT, NULL,
-      factory_->GetIOLoopProxy(), true,
+      io_loop, true,
       factory_->GetShutDownEvent()));
 
   sync_filter_ = new IPC::SyncMessageFilter(
@@ -286,7 +287,7 @@ void GpuChannelHost::AddRoute(
     int route_id, base::WeakPtr<IPC::Channel::Listener> listener) {
   DCHECK(MessageLoopProxy::current());
 
-  MessageLoopProxy* io_loop = factory_->GetIOLoopProxy();
+  scoped_refptr<base::MessageLoopProxy> io_loop = factory_->GetIOLoopProxy();
   io_loop->PostTask(FROM_HERE,
                     base::Bind(&GpuChannelHost::MessageFilter::AddRoute,
                                channel_filter_.get(), route_id, listener,
@@ -294,7 +295,7 @@ void GpuChannelHost::AddRoute(
 }
 
 void GpuChannelHost::RemoveRoute(int route_id) {
-  MessageLoopProxy* io_loop = factory_->GetIOLoopProxy();
+  scoped_refptr<base::MessageLoopProxy> io_loop = factory_->GetIOLoopProxy();
   io_loop->PostTask(FROM_HERE,
                     base::Bind(&GpuChannelHost::MessageFilter::RemoveRoute,
                                channel_filter_.get(), route_id));

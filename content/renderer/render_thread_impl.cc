@@ -694,7 +694,8 @@ bool RenderThreadImpl::IsIOThread() {
 MessageLoop* RenderThreadImpl::GetMainLoop() {
   return message_loop();
 }
-base::MessageLoopProxy* RenderThreadImpl::GetIOLoopProxy() {
+
+scoped_refptr<base::MessageLoopProxy> RenderThreadImpl::GetIOLoopProxy() {
   return ChildProcess::current()->io_message_loop_proxy();
 }
 

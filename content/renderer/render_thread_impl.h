@@ -125,7 +125,7 @@ class CONTENT_EXPORT RenderThreadImpl : public content::RenderThread,
   virtual bool IsMainThread() OVERRIDE;
   virtual bool IsIOThread() OVERRIDE;
   virtual MessageLoop* GetMainLoop() OVERRIDE;
-  virtual base::MessageLoopProxy* GetIOLoopProxy() OVERRIDE;
+  virtual scoped_refptr<base::MessageLoopProxy> GetIOLoopProxy() OVERRIDE;
   virtual base::WaitableEvent* GetShutDownEvent() OVERRIDE;
   virtual scoped_ptr<base::SharedMemory> AllocateSharedMemory(
       uint32 size) OVERRIDE;
