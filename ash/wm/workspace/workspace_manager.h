@@ -7,9 +7,10 @@
 
 #include <vector>
 
+#include "ash/ash_export.h"
+#include "ash/wm/workspace/workspace.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "ash/ash_export.h"
 #include "ui/aura/window_observer.h"
 #include "ui/gfx/insets.h"
 #include "ui/gfx/size.h"
@@ -25,7 +26,7 @@ class Rect;
 
 namespace ash {
 namespace internal {
-class Workspace;
+
 class WorkspaceManagerTest;
 
 // WorkspaceManager manages multiple workspaces in the desktop.
@@ -137,9 +138,12 @@ class ASH_EXPORT WorkspaceManager : public aura::WindowObserver{
   // Invoked when the type of workspace needed for |window| changes.
   void OnTypeOfWorkspacedNeededChanged(aura::Window* window);
 
-  // Returns the Workspace whose type is TYPE_NORMAL, or NULL if there isn't
+  // Returns the Workspace whose type is TYPE_MANAGED, or NULL if there isn't
   // one.
-  Workspace* GetNormalWorkspace();
+  Workspace* GetManagedWorkspace();
+
+  // Creates a new workspace of the specified type.
+  Workspace* CreateWorkspace(Workspace::Type type);
 
   aura::Window* contents_view_;
 

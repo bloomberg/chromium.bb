@@ -18,10 +18,9 @@
 namespace ash {
 namespace internal {
 
-Workspace::Workspace(WorkspaceManager* manager)
-    : type_(TYPE_NORMAL),
+Workspace::Workspace(WorkspaceManager* manager, Type type)
+    : type_(type),
       workspace_manager_(manager) {
-  workspace_manager_->AddWorkspace(this);
 }
 
 Workspace::~Workspace() {
@@ -30,32 +29,11 @@ Workspace::~Workspace() {
 
 // static
 Workspace::Type Workspace::TypeForWindow(aura::Window* window) {
-  if (window_util::GetOpenWindowSplit(window))
-    return TYPE_SPLIT;
   if (window_util::IsWindowMaximized(window) ||
       window_util::IsWindowFullscreen(window)) {
     return TYPE_MAXIMIZED;
   }
-  return TYPE_NORMAL;
-}
-
-void Workspace::SetType(Type type) {
-  // Can only change the type when there are no windows, or the type of window
-  // matches the type changing to. We need only check the first window as CanAdd
-  // only allows new windows if the type matches.
-  DCHECK(windows_.empty() || TypeForWindow(windows_[0]) == type);
-  type_ = type;
-}
-
-void Workspace::WorkspaceSizeChanged() {
-  if (!windows_.empty()) {
-    // TODO: need to handle size changing.
-    NOTIMPLEMENTED();
-  }
-}
-
-gfx::Rect Workspace::GetWorkAreaBounds() const {
-  return workspace_manager_->GetWorkAreaBounds();
+  return TYPE_MANAGED;
 }
 
 bool Workspace::AddWindowAfter(aura::Window* window, aura::Window* after) {
@@ -69,21 +47,14 @@ bool Workspace::AddWindowAfter(aura::Window* window, aura::Window* after) {
     windows_.push_back(window);
   else
     windows_.insert(++i, window);
-
-  if (type_ == TYPE_MAXIMIZED) {
-    workspace_manager_->SetWindowBounds(window, GetWorkAreaBounds());
-  } else if (type_ == TYPE_SPLIT) {
-    // TODO: this needs to adjust bounds appropriately.
-    workspace_manager_->SetWindowBounds(window, GetWorkAreaBounds());
-  }
-
+  OnWindowAddedAfter(window, after);
   return true;
 }
 
 void Workspace::RemoveWindow(aura::Window* window) {
   DCHECK(Contains(window));
   windows_.erase(std::find(windows_.begin(), windows_.end(), window));
-  // TODO: this needs to adjust things.
+  OnWindowRemoved(window);
 }
 
 bool Workspace::Contains(aura::Window* window) const {
@@ -94,27 +65,24 @@ void Workspace::Activate() {
   workspace_manager_->SetActiveWorkspace(this);
 }
 
-bool Workspace::ContainsFullscreenWindow() const {
-  for (aura::Window::Windows::const_iterator i = windows_.begin();
-       i != windows_.end();
-       ++i) {
-    aura::Window* w = *i;
-    if (w->IsVisible() &&
-        w->GetIntProperty(aura::client::kShowStateKey) ==
-            ui::SHOW_STATE_FULLSCREEN)
-      return true;
-  }
-  return false;
+void Workspace::SetBounds(const gfx::Rect& bounds) {
+  if (bounds_ == bounds)
+    return;
+
+  gfx::Rect old_bounds = bounds_;
+  bounds_ = bounds;
+  // Don't send size change for transition from empty -> not empty. That only
+  // happens when we're first created.
+  if (!old_bounds.IsEmpty())
+    OnWorkspaceSizeChanged(old_bounds);
 }
 
-int Workspace::GetIndexOf(aura::Window* window) const {
-  aura::Window::Windows::const_iterator i =
-      std::find(windows_.begin(), windows_.end(), window);
-  return i == windows_.end() ? -1 : i - windows_.begin();
+void Workspace::SetWindowBounds(aura::Window* window, const gfx::Rect& bounds) {
+  workspace_manager_->SetWindowBounds(window, bounds);
 }
 
-bool Workspace::CanAdd(aura::Window* window) const {
-  return TypeForWindow(window) == type_;
+void Workspace::SetIgnoredWindow(aura::Window* window) {
+  workspace_manager_->set_ignored_window(window);
 }
 
 }  // namespace internal

@@ -84,7 +84,7 @@ class ASH_EXPORT WorkspaceController :
   // Owned by the window its attached to.
   WorkspaceLayoutManager* layout_manager_;
 
-  // Owned the window set on.
+  // Owned by |viewport_|.
   WorkspaceEventFilter* event_filter_;
 
 #if !defined(OS_MACOSX)

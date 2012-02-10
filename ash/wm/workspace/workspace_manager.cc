@@ -8,7 +8,8 @@
 
 #include "ash/wm/property_util.h"
 #include "ash/wm/window_util.h"
-#include "ash/wm/workspace/workspace.h"
+#include "ash/wm/workspace/managed_workspace.h"
+#include "ash/wm/workspace/maximized_workspace.h"
 #include "base/auto_reset.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
@@ -114,6 +115,11 @@ void WorkspaceManager::AddWindow(aura::Window* window) {
   if (FindBy(window))
     return;  // Already know about this window.
 
+  if (!window_util::IsWindowMaximized(window) &&
+      !window_util::IsWindowFullscreen(window)) {
+    SetRestoreBounds(window, window->bounds());
+  }
+
   if (!window->GetProperty(aura::client::kShowStateKey)) {
     if (ShouldMaximize(window)) {
       window->SetIntProperty(aura::client::kShowStateKey,
@@ -138,41 +144,18 @@ void WorkspaceManager::AddWindow(aura::Window* window) {
   Workspace* workspace = NULL;
   Workspace::Type type_for_window = Workspace::TypeForWindow(window);
   switch (type_for_window) {
-    case Workspace::TYPE_SPLIT:
-      // Splits either go in current workspace (if maximized or split). If the
-      // current workspace isn't split/maximized, then create a maximized
-      // workspace.
-      workspace = GetActiveWorkspace();
-      if (workspace &&
-          (workspace->type() == Workspace::TYPE_SPLIT ||
-           workspace->type() == Workspace::TYPE_MAXIMIZED)) {
-        // TODO: this needs to reset bounds of any existing windows in
-        // workspace.
-        workspace->SetType(Workspace::TYPE_SPLIT);
-      } else {
-        type_for_window = Workspace::TYPE_MAXIMIZED;
-        workspace = NULL;
-      }
-      break;
-
-    case Workspace::TYPE_NORMAL:
+    case Workspace::TYPE_MANAGED:
       // All normal windows go in the same workspace.
-      workspace = GetNormalWorkspace();
+      workspace = GetManagedWorkspace();
       break;
 
     case Workspace::TYPE_MAXIMIZED:
       // All maximized windows go in their own workspace.
       break;
-
-    default:
-      NOTREACHED();
-      break;
   }
 
-  if (!workspace) {
-    workspace = new Workspace(this);
-    workspace->SetType(type_for_window);
-  }
+  if (!workspace)
+    workspace = CreateWorkspace(type_for_window);
   workspace->AddWindowAfter(window, NULL);
   workspace->Activate();
 }
@@ -209,7 +192,7 @@ void WorkspaceManager::SetWorkspaceSize(const gfx::Size& workspace_size) {
   workspace_size_ = workspace_size;
   for (Workspaces::const_iterator i = workspaces_.begin();
        i != workspaces_.end(); ++i) {
-    (*i)->WorkspaceSizeChanged();
+    (*i)->SetBounds(GetWorkAreaBounds());
   }
 }
 
@@ -247,6 +230,7 @@ void WorkspaceManager::OnWindowPropertyChanged(aura::Window* window,
 void WorkspaceManager::AddWorkspace(Workspace* workspace) {
   DCHECK(std::find(workspaces_.begin(), workspaces_.end(),
                    workspace) == workspaces_.end());
+  workspace->SetBounds(GetWorkAreaBounds());
   if (active_workspace_) {
     // New workspaces go right after current workspace.
     Workspaces::iterator i = std::find(workspaces_.begin(), workspaces_.end(),
@@ -323,15 +307,12 @@ void WorkspaceManager::SetWindowBounds(aura::Window* window,
 }
 
 void WorkspaceManager::SetWindowBoundsFromRestoreBounds(aura::Window* window) {
-  Workspace* workspace = FindBy(window);
-  DCHECK(workspace);
   const gfx::Rect* restore = GetRestoreBounds(window);
   gfx::Rect bounds;
-  if (restore) {
-    bounds = restore->AdjustToFit(workspace->GetWorkAreaBounds());
-  } else {
-    bounds = window->bounds().AdjustToFit(workspace->GetWorkAreaBounds());
-  }
+  if (restore)
+    bounds = restore->AdjustToFit(GetWorkAreaBounds());
+  else
+    bounds = window->bounds().AdjustToFit(GetWorkAreaBounds());
   SetWindowBounds(window, AlignRectToGrid(bounds, grid_size_));
   ash::ClearRestoreBounds(window);
 }
@@ -346,48 +327,51 @@ void WorkspaceManager::SetFullScreenOrMaximizedBounds(aura::Window* window) {
 }
 
 void WorkspaceManager::OnTypeOfWorkspacedNeededChanged(aura::Window* window) {
-  // TODO: needs to handle transitioning to split.
   DCHECK(IsManagedWindow(window));
   Workspace* current_workspace = FindBy(window);
   DCHECK(current_workspace);
+  Workspace* new_workspace = NULL;
   if (Workspace::TypeForWindow(window) == Workspace::TYPE_MAXIMIZED) {
-    // Unmaximized -> maximized; create a new workspace (unless current only has
-    // one window).
-    if (current_workspace->num_windows() != 1) {
-      current_workspace->RemoveWindow(window);
-      Workspace* workspace = new Workspace(this);
-      workspace->SetType(Workspace::TYPE_MAXIMIZED);
-      workspace->AddWindowAfter(window, NULL);
-      current_workspace = workspace;
-    } else {
-      current_workspace->SetType(Workspace::TYPE_MAXIMIZED);
-    }
+    // Unmaximized -> maximized; create a new workspace.
+    SetRestoreBounds(window, window->bounds());
+    current_workspace->RemoveWindow(window);
+    new_workspace = CreateWorkspace(Workspace::TYPE_MAXIMIZED);
+    new_workspace->AddWindowAfter(window, NULL);
     SetFullScreenOrMaximizedBounds(window);
   } else {
-    // Maximized -> unmaximized; move window to unmaximized workspace (or reuse
-    // current if there isn't one).
+    // Maximized -> unmaximized; move window to unmaximized workspace.
     window_util::SetOpenWindowSplit(window, false);
-    Workspace* workspace = GetNormalWorkspace();
-    if (workspace) {
-      current_workspace->RemoveWindow(window);
-      DCHECK(current_workspace->is_empty());
-      workspace->AddWindowAfter(window, NULL);
-      delete current_workspace;
-      current_workspace = workspace;
-    } else {
-      current_workspace->SetType(Workspace::TYPE_NORMAL);
-    }
+    new_workspace = GetManagedWorkspace();
+    current_workspace->RemoveWindow(window);
+    if (!new_workspace)
+      new_workspace = CreateWorkspace(Workspace::TYPE_MANAGED);
     SetWindowBoundsFromRestoreBounds(window);
+    new_workspace->AddWindowAfter(window, NULL);
   }
-  SetActiveWorkspace(current_workspace);
+  SetActiveWorkspace(new_workspace);
+  if (current_workspace->is_empty()) {
+    // Delete at the end so that we don't attempt to switch to another
+    // workspace in RemoveWorkspace().
+    delete current_workspace;
+  }
 }
 
-Workspace* WorkspaceManager::GetNormalWorkspace() {
+Workspace* WorkspaceManager::GetManagedWorkspace() {
   for (size_t i = 0; i < workspaces_.size(); ++i) {
-    if (workspaces_[i]->type() == Workspace::TYPE_NORMAL)
+    if (workspaces_[i]->type() == Workspace::TYPE_MANAGED)
       return workspaces_[i];
   }
   return NULL;
+}
+
+Workspace* WorkspaceManager::CreateWorkspace(Workspace::Type type) {
+  Workspace* workspace = NULL;
+  if (type == Workspace::TYPE_MAXIMIZED)
+    workspace = new MaximizedWorkspace(this);
+  else
+    workspace = new ManagedWorkspace(this);
+  AddWorkspace(workspace);
+  return workspace;
 }
 
 }  // namespace internal

@@ -116,7 +116,7 @@ TEST_F(WorkspaceManagerTest, AddNormalWindowWhenEmpty) {
 
   // Should be 1 workspace, TYPE_NORNMAL with w1.
   ASSERT_EQ(1u, workspaces().size());
-  EXPECT_EQ(Workspace::TYPE_NORMAL, workspaces()[0]->type());
+  EXPECT_EQ(Workspace::TYPE_MANAGED, workspaces()[0]->type());
   ASSERT_EQ(1u, workspaces()[0]->windows().size());
   EXPECT_EQ(w1.get(), workspaces()[0]->windows()[0]);
 }
@@ -152,7 +152,7 @@ TEST_F(WorkspaceManagerTest, SingleMaximizeWindow) {
 
   // Should be 1 workspace, TYPE_NORMAL with w1.
   ASSERT_EQ(1u, workspaces().size());
-  EXPECT_EQ(Workspace::TYPE_NORMAL, workspaces()[0]->type());
+  EXPECT_EQ(Workspace::TYPE_MANAGED, workspaces()[0]->type());
   ASSERT_EQ(1u, workspaces()[0]->windows().size());
   EXPECT_EQ(w1.get(), workspaces()[0]->windows()[0]);
   EXPECT_EQ(250, w1->bounds().width());
@@ -170,7 +170,7 @@ TEST_F(WorkspaceManagerTest, CloseLastWindowInWorkspace) {
 
   // Should be 2 workspaces, TYPE_NORMAL with w1, and TYPE_MAXIMIZED with w2.
   ASSERT_EQ(2u, workspaces().size());
-  EXPECT_EQ(Workspace::TYPE_NORMAL, workspaces()[0]->type());
+  EXPECT_EQ(Workspace::TYPE_MANAGED, workspaces()[0]->type());
   ASSERT_EQ(1u, workspaces()[0]->windows().size());
   EXPECT_EQ(w1.get(), workspaces()[0]->windows()[0]);
   EXPECT_EQ(Workspace::TYPE_MAXIMIZED, workspaces()[1]->type());
@@ -186,7 +186,7 @@ TEST_F(WorkspaceManagerTest, CloseLastWindowInWorkspace) {
 
   // Should have one workspace, TYPE_NORMAL with w1.
   ASSERT_EQ(1u, workspaces().size());
-  EXPECT_EQ(Workspace::TYPE_NORMAL, workspaces()[0]->type());
+  EXPECT_EQ(Workspace::TYPE_MANAGED, workspaces()[0]->type());
   ASSERT_EQ(1u, workspaces()[0]->windows().size());
   EXPECT_EQ(w1.get(), workspaces()[0]->windows()[0]);
   EXPECT_TRUE(w1->layer()->visible());
@@ -230,7 +230,7 @@ TEST_F(WorkspaceManagerTest, MaximizeWithNormalWindow) {
 
   // Should now be two workspaces.
   ASSERT_EQ(2u, workspaces().size());
-  EXPECT_EQ(Workspace::TYPE_NORMAL, workspaces()[0]->type());
+  EXPECT_EQ(Workspace::TYPE_MANAGED, workspaces()[0]->type());
   ASSERT_EQ(1u, workspaces()[0]->windows().size());
   EXPECT_EQ(w1.get(), workspaces()[0]->windows()[0]);
   EXPECT_EQ(Workspace::TYPE_MAXIMIZED, workspaces()[1]->type());
@@ -249,7 +249,7 @@ TEST_F(WorkspaceManagerTest, MaximizeWithNormalWindow) {
   // Restore w2, which should then go back to one workspace.
   w2->SetIntProperty(aura::client::kShowStateKey, ui::SHOW_STATE_NORMAL);
   ASSERT_EQ(1u, workspaces().size());
-  EXPECT_EQ(Workspace::TYPE_NORMAL, workspaces()[0]->type());
+  EXPECT_EQ(Workspace::TYPE_MANAGED, workspaces()[0]->type());
   ASSERT_EQ(2u, workspaces()[0]->windows().size());
   EXPECT_EQ(w1.get(), workspaces()[0]->windows()[0]);
   EXPECT_EQ(w2.get(), workspaces()[0]->windows()[1]);
@@ -383,7 +383,7 @@ TEST_F(WorkspaceManagerTest, SingleFullscreenWindow) {
 
   // Should be 1 workspace, TYPE_NORMAL with w1.
   ASSERT_EQ(1u, workspaces().size());
-  EXPECT_EQ(Workspace::TYPE_NORMAL, workspaces()[0]->type());
+  EXPECT_EQ(Workspace::TYPE_MANAGED, workspaces()[0]->type());
   ASSERT_EQ(1u, workspaces()[0]->windows().size());
   EXPECT_EQ(w1.get(), workspaces()[0]->windows()[0]);
   EXPECT_EQ(250, w1->bounds().width());
