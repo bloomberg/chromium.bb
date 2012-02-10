@@ -27,7 +27,7 @@ elif trusted_env.Bit('target_arm'):
 DEBUG_LIBS = ['debug_stub_init', 'gdb_rsp', 'debug_stub']
 
 runner = trusted_env.ComponentProgram(
-    'crash_filter_test', ['crash_filter_test.c'],
+    'mach_crash_forwarding_test', ['mach_crash_forwarding_test.c'],
     EXTRA_LIBS=['sel',
                 'manifest_proxy',
                 'simple_service',
@@ -45,26 +45,41 @@ runner = trusted_env.ComponentProgram(
                 'gio',
                 ] + VALIDATOR_LIBS + DEBUG_LIBS)
 
+untrusted_caught_nexe = env.File('${STAGING_DIR}/exception_test${PROGSUFFIX}')
 untrusted_crash_nexe = env.File('${STAGING_DIR}/crash_test${PROGSUFFIX}')
 trusted_crash_nexe = env.File('${STAGING_DIR}/crash_in_syscall${PROGSUFFIX}')
 is_broken = not env.Bit('nacl_static_link')
 
-node = env.CommandTest('mach_filter_untrusted_crash_test.out',
+node = env.CommandTest('mach_forward_untrusted_crash_test.out',
                        [runner, 'untrusted', untrusted_crash_nexe],
                        declares_exit_status=True)
-env.AddNodeToTestSuite(node, ['small_tests', 'exception_tests'],
-                       'run_mach_filter_untrusted_crash_test',
+env.AddNodeToTestSuite(node, ['small_tests', 'exception_tests',],
+                       'run_mach_forward_untrusted_crash_test',
                        is_broken=is_broken)
 
-node = env.CommandTest('mach_filter_trusted_crash_test.out',
+node = env.CommandTest('mach_forward_untrusted_caught_test.out',
+                       [runner, 'untrusted_caught', untrusted_caught_nexe],
+                       declares_exit_status=True)
+env.AddNodeToTestSuite(node, ['small_tests', 'exception_tests',],
+                       'run_mach_forward_untrusted_caught_test',
+                       is_broken=is_broken)
+
+node = env.CommandTest('mach_forward_trusted_crash_test.out',
                        [runner, 'trusted', trusted_crash_nexe],
                        declares_exit_status=True)
 env.AddNodeToTestSuite(node, ['small_tests', 'exception_tests'],
-                       'run_mach_filter_trusted_crash_test',
+                       'run_mach_forward_trusted_crash_test',
                        is_broken=is_broken)
 
-node = env.CommandTest('mach_filter_early_trusted_crash_test.out',
+node = env.CommandTest('mach_unforwarded_trusted_crash_test.out',
+                       [runner, 'unforwarded_trusted', trusted_crash_nexe],
+                       declares_exit_status=True)
+env.AddNodeToTestSuite(node, ['small_tests', 'exception_tests'],
+                       'run_mach_unforwarded_trusted_crash_test',
+                       is_broken=is_broken)
+
+node = env.CommandTest('mach_forward_early_trusted_crash_test.out',
                        [runner, 'early_trusted'], declares_exit_status=True)
 env.AddNodeToTestSuite(node, ['small_tests', 'exception_tests'],
-                       'run_mach_filter_early_trusted_crash_test',
+                       'run_mach_forward_early_trusted_crash_test',
                        is_broken=is_broken)

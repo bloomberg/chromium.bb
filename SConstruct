@@ -3236,6 +3236,7 @@ nonvariant_tests = [
     'tests/inbrowser_crash_test/nacl.scons',
     'tests/inbrowser_test_runner/nacl.scons',
     'tests/mach_crash_filter/nacl.scons',
+    'tests/mach_crash_forwarding/nacl.scons',
     'tests/minnacl/nacl.scons',
     'tests/multiple_sandboxes/nacl.scons',
     'tests/nacl.scons',

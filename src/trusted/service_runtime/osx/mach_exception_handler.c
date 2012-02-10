@@ -15,6 +15,7 @@
 #include "gen/native_client/src/trusted/service_runtime/nacl_exc.h"
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/include/portability.h"
+#include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/trusted/service_runtime/arch/sel_ldr_arch.h"
 #include "native_client/src/trusted/service_runtime/nacl_app.h"
@@ -63,13 +64,21 @@ struct MachExceptionParameters {
 };
 
 struct MachExceptionHandlerData {
-  struct MachExceptionParameters old_params;
+  struct MachExceptionParameters old_ports;
   mach_port_t exception_port;
 };
 
+/*
+ * This is global because MIG does not provide a mechanism to associate
+ * user data with a handler. We could 'sed' the output, but that might be
+ * brittle. This is moot as the handler is task wide. Revisit if we switch to
+ * a per-thread handler.
+ */
+static struct MachExceptionHandlerData *g_MachExceptionHandlerData = 0;
+
 
 static int HandleException(mach_port_t thread_port,
-                           exception_type_t exception) {
+                           exception_type_t exception, int *is_untrusted) {
   mach_msg_type_number_t size;
   x86_thread_state_t regs;
   kern_return_t result;
@@ -82,10 +91,8 @@ static int HandleException(mach_port_t thread_port,
   uintptr_t frame_addr_user;
   uintptr_t frame_addr_sys;
 
-  /* Ignore all but bad accesses for now. */
-  if (exception != EXC_BAD_ACCESS) {
-    return 0;
-  }
+  /* Assume untrusted crash until we know otherwise. */
+  *is_untrusted = TRUE;
 
   /* Capture the register state of the 'excepting' thread. */
   size = sizeof(regs) / sizeof(natural_t);
@@ -101,6 +108,7 @@ static int HandleException(mach_port_t thread_port,
    * code running.
    */
   if (trusted_cs == 0) {
+    *is_untrusted = FALSE;
     return 0;
   }
 
@@ -112,6 +120,12 @@ static int HandleException(mach_port_t thread_port,
    *     tests to vet this.
    */
   if (regs.uts.ts32.__cs == trusted_cs) {
+    *is_untrusted = FALSE;
+    return 0;
+  }
+
+  /* Ignore all but bad accesses for now. */
+  if (exception != EXC_BAD_ACCESS) {
     return 0;
   }
 
@@ -130,6 +144,11 @@ static int HandleException(mach_port_t thread_port,
   }
   /* Set the flag. */
   natp->user.exception_flag = 1;
+
+  /* Don't handle if no exception handler is set. */
+  if (nap->exception_handler == 0) {
+    return 0;
+  }
 
   /* Get location of exception stack frame. */
   if (natp->user.exception_stack) {
@@ -192,6 +211,49 @@ static int HandleException(mach_port_t thread_port,
 }
 
 
+static kern_return_t ForwardException(
+    struct MachExceptionHandlerData *data,
+    mach_port_t thread,
+    mach_port_t task,
+    exception_type_t exception,
+    exception_data_t code,
+    mach_msg_type_number_t code_count) {
+  unsigned int i;
+  mach_port_t target_port;
+  exception_behavior_t target_behavior;
+
+  /* Find a port with a mask matching this exception to pass it on to. */
+  for (i = 0; i < data->old_ports.count; ++i) {
+    if (data->old_ports.masks[i] & (1 << exception)) {
+      break;
+    }
+  }
+  if (i == data->old_ports.count) {
+    return KERN_FAILURE;
+  }
+  target_port = data->old_ports.ports[i];
+  target_behavior = data->old_ports.behaviors[i];
+
+  /*
+   * By default a null exception port is registered.
+   * As it is unclear how to forward to this, we should just fail.
+   */
+  if (target_port == 0) {
+    return KERN_FAILURE;
+  }
+
+  /*
+   * Only support EXCEPTION_DEFAULT, as we only plan to inter-operate with
+   * Breakpad for now.
+   */
+  CHECK(target_behavior == EXCEPTION_DEFAULT);
+
+  /* Forward the exception. */
+  return exception_raise(target_port, thread, task, exception,
+                         code, code_count);
+}
+
+
 kern_return_t nacl_catch_exception_raise(
     mach_port_t exception_port,
     mach_port_t thread,
@@ -199,21 +261,26 @@ kern_return_t nacl_catch_exception_raise(
     exception_type_t exception,
     exception_data_t code,
     mach_msg_type_number_t code_count) {
-  UNREFERENCED_PARAMETER(exception_port);
-  UNREFERENCED_PARAMETER(task);
-  UNREFERENCED_PARAMETER(code);
-  UNREFERENCED_PARAMETER(code_count);
+  int is_untrusted;
 
-  if (HandleException(thread, exception)) {
+  UNREFERENCED_PARAMETER(exception_port);
+
+  /* Check if we want to handle this exception. */
+  if (HandleException(thread, exception, &is_untrusted)) {
     return KERN_SUCCESS;
   }
 
   /*
-   * For now just exit with failure, which cause the failure to go to the
-   * system. This will bypass breakpad.
-   * TODO(bradnelson): Add exception forwarding once there's also a test.
+   * Don't forward if the crash is untrusted, but unhandled.
+   * (As we don't want things like Breakpad handling the crash.)
    */
-  return KERN_FAILURE;
+  if (is_untrusted) {
+    return KERN_FAILURE;
+  }
+
+  /* Forward on the exception to the old set of ports. */
+  return ForwardException(
+      g_MachExceptionHandlerData, thread, task, exception, code, code_count);
 }
 
 kern_return_t nacl_catch_exception_raise_state(
@@ -314,17 +381,37 @@ failure:
 static int InstallHandler(struct MachExceptionHandlerData *data) {
   kern_return_t result;
   mach_port_t current_task = mach_task_self();
+  unsigned int i;
 
   /* Capture old handler info. */
-  data->old_params.count = EXC_TYPES_COUNT;
+  data->old_ports.count = EXC_TYPES_COUNT;
   result = task_get_exception_ports(current_task, NACL_MACH_EXCEPTION_MASK,
-                                    data->old_params.masks,
-                                    &data->old_params.count,
-                                    data->old_params.ports,
-                                    data->old_params.behaviors,
-                                    data->old_params.flavors);
+                                    data->old_ports.masks,
+                                    &data->old_ports.count,
+                                    data->old_ports.ports,
+                                    data->old_ports.behaviors,
+                                    data->old_ports.flavors);
   if (result != KERN_SUCCESS) {
     return result;
+  }
+
+  /*
+   * We only handle forwarding of the EXCEPTION_DEFAULT behavior (all that
+   * Breakpad needs). Check that all old handlers are either of this behavior
+   * type or null.
+   *
+   * NOTE: Ideally we might also require a particular behavior for null
+   * exception ports. Unfortunately, testing indicates that while on
+   * OSX 10.6 / 10.7 the behavior for such a null port is set to 0,
+   * on OSX 10.5 it is set to 0x803fe956 (on a given run).
+   * As tasks inherit exception ports from their parents, this may be
+   * an uninitialized value carried along from a parent.
+   * http://opensource.apple.com/source/xnu/xnu-1228.0.2/osfmk/kern/ipc_tt.c
+   * For now, we will ignore the behavior when the port is null.
+   */
+  for (i = 0; i < data->old_ports.count; ++i) {
+    CHECK(data->old_ports.behaviors[i] == EXCEPTION_DEFAULT ||
+          data->old_ports.ports[i] == 0);
   }
 
   /* TODO(bradnelson): decide if we should set the exception port per thread. */
@@ -354,6 +441,7 @@ int NaClInterceptMachExceptions(void) {
   if (data == NULL) {
     goto failure;
   }
+  g_MachExceptionHandlerData = data;
   data->exception_port = MACH_PORT_NULL;
 
   /* Allocate port to receive exceptions. */
