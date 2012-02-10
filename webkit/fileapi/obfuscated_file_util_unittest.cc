@@ -1200,9 +1200,7 @@ TEST_F(ObfuscatedFileUtilTest, TestMigration) {
     SCOPED_TRACE(testing::Message() << "Validating kMigrationTestPath " << i);
     const test::TestCaseRecord& test_case = test::kRegularTestCases[i];
     FilePath local_data_path = new_root.Append(test_case.path);
-#if defined(OS_WIN)
-    local_data_path = local_data_path.NormalizeWindowsPathSeparators();
-#endif
+    local_data_path = local_data_path.NormalizePathSeparators();
     scoped_ptr<FileSystemOperationContext> context(NewContext(NULL));
     base::PlatformFileInfo ofu_file_info;
     FilePath data_path;

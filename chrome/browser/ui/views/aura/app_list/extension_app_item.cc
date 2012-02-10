@@ -100,9 +100,7 @@ void ExtensionAppItem::LoadImage(const Extension* extension) {
     for (size_t i = 0; i < kComponentExtensionResourcesSize; ++i) {
       FilePath bm_resource_path =
           FilePath().AppendASCII(kComponentExtensionResources[i].name);
-#if defined(OS_WIN)
-      bm_resource_path = bm_resource_path.NormalizeWindowsPathSeparators();
-#endif
+      bm_resource_path = bm_resource_path.NormalizePathSeparators();
       if (relative_path == bm_resource_path) {
         ResourceBundle& rb = ResourceBundle::GetSharedInstance();
         int resource = kComponentExtensionResources[i].value;

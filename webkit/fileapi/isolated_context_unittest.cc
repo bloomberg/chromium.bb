@@ -31,21 +31,13 @@ const FilePath kTestPaths[] = {
 #endif
 };
 
-static FilePath NormalizePath(const FilePath& path) {
-#if defined(FILE_PATH_USES_WIN_SEPARATORS)
-  return path.NormalizeWindowsPathSeparators();
-#else
-  return path;
-#endif
-}
-
 }  // namespace
 
 class IsolatedContextTest : public testing::Test {
  public:
   IsolatedContextTest() {
     for (size_t i = 0; i < arraysize(kTestPaths); ++i)
-      fileset_.insert(NormalizePath(kTestPaths[i]));
+      fileset_.insert(kTestPaths[i].NormalizePathSeparators());
   }
 
   void SetUp() {
@@ -88,7 +80,8 @@ TEST_F(IsolatedContextTest, RegisterAndRevokeTest) {
     FilePath cracked_path;
     ASSERT_TRUE(isolated_context()->CrackIsolatedPath(
         virtual_path, &cracked_id, &cracked_path));
-    ASSERT_EQ(NormalizePath(kTestPaths[i]).value(), cracked_path.value());
+    ASSERT_EQ(kTestPaths[i].NormalizePathSeparators().value(),
+              cracked_path.value());
     ASSERT_EQ(id_, cracked_id);
   }
 
@@ -138,7 +131,8 @@ TEST_F(IsolatedContextTest, CrackWithRelativePaths) {
       }
       ASSERT_TRUE(isolated_context()->CrackIsolatedPath(
           virtual_path, &cracked_id, &cracked_path));
-      ASSERT_EQ(NormalizePath(kTestPaths[i].Append(relatives[j].path)).value(),
+      ASSERT_EQ(kTestPaths[i].Append(relatives[j].path)
+                    .NormalizePathSeparators().value(),
                 cracked_path.value());
       ASSERT_EQ(id_, cracked_id);
     }

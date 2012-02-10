@@ -781,11 +781,7 @@ FilePath ExpandFilenameTestPath(const FilePath::CharType* template_path,
                                downloads_dir.value());
   ReplaceSubstringsAfterOffset(&path, 0, FILE_PATH_LITERAL("$alt"),
                                alternate_dir.value());
-  FilePath file_path(path);
-#if defined(FILE_PATH_USES_WIN_SEPARATORS)
-  file_path = file_path.NormalizeWindowsPathSeparators();
-#endif
-  return file_path;
+  return FilePath(path).NormalizePathSeparators();
 }
 
 } // namespace

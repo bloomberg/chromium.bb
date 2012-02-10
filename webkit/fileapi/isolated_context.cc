@@ -36,11 +36,7 @@ std::string IsolatedContext::RegisterIsolatedFileSystem(
 
     // Register the basename -> fullpath map. (We only expose the basename
     // part to the user scripts)
-#if defined(FILE_PATH_USES_WIN_SEPARATORS)
-    FilePath fullpath = iter->NormalizeWindowsPathSeparators();
-#else
-    FilePath fullpath = *iter;
-#endif
+    FilePath fullpath = iter->NormalizePathSeparators();
     FilePath basename = iter->BaseName();
     // TODO(kinuko): Append a suffix or something if we have multiple pathnames
     // with the same basename. For now we only register the first one.

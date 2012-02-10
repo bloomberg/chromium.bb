@@ -990,14 +990,6 @@ class ExtensionServiceTest
   content::NotificationRegistrar registrar_;
 };
 
-FilePath NormalizeSeparators(const FilePath& path) {
-#if defined(FILE_PATH_USES_WIN_SEPARATORS)
-  return path.NormalizeWindowsPathSeparators();
-#else
-  return path;
-#endif  // FILE_PATH_USES_WIN_SEPARATORS
-}
-
 // Receives notifications from a PackExtensionJob, indicating either that
 // packing succeeded or that there was some error.
 class PackExtensionTestClient : public PackExtensionJob::Client {
@@ -1762,28 +1754,20 @@ TEST_F(ExtensionServiceTest, PackPunctuatedExtension) {
   // Extension names containing punctuation, and the expected names for the
   // packed extensions.
   const FilePath punctuated_names[] = {
-    FilePath(FilePath::StringType(
-        FILE_PATH_LITERAL("this.extensions.name.has.periods"))),
-    FilePath(FilePath::StringType(
-        FILE_PATH_LITERAL(".thisextensionsnamestartswithaperiod"))),
-    NormalizeSeparators(FilePath(FilePath::StringType(
-        FILE_PATH_LITERAL("thisextensionhasaslashinitsname/")))),
+    FilePath(FILE_PATH_LITERAL("this.extensions.name.has.periods")),
+    FilePath(FILE_PATH_LITERAL(".thisextensionsnamestartswithaperiod")),
+    FilePath(FILE_PATH_LITERAL("thisextensionhasaslashinitsname/")).
+        NormalizePathSeparators(),
   };
   const FilePath expected_crx_names[] = {
-    FilePath(FilePath::StringType(
-        FILE_PATH_LITERAL("this.extensions.name.has.periods.crx"))),
-    FilePath(FilePath::StringType(
-        FILE_PATH_LITERAL(".thisextensionsnamestartswithaperiod.crx"))),
-    FilePath(FilePath::StringType(
-        FILE_PATH_LITERAL("thisextensionhasaslashinitsname.crx"))),
+    FilePath(FILE_PATH_LITERAL("this.extensions.name.has.periods.crx")),
+    FilePath(FILE_PATH_LITERAL(".thisextensionsnamestartswithaperiod.crx")),
+    FilePath(FILE_PATH_LITERAL("thisextensionhasaslashinitsname.crx")),
   };
   const FilePath expected_private_key_names[] = {
-    FilePath(FilePath::StringType(
-        FILE_PATH_LITERAL("this.extensions.name.has.periods.pem"))),
-    FilePath(FilePath::StringType(
-        FILE_PATH_LITERAL(".thisextensionsnamestartswithaperiod.pem"))),
-    FilePath(FilePath::StringType(
-        FILE_PATH_LITERAL("thisextensionhasaslashinitsname.pem"))),
+    FilePath(FILE_PATH_LITERAL("this.extensions.name.has.periods.pem")),
+    FilePath(FILE_PATH_LITERAL(".thisextensionsnamestartswithaperiod.pem")),
+    FilePath(FILE_PATH_LITERAL("thisextensionhasaslashinitsname.pem")),
   };
 
   for (size_t i = 0; i < arraysize(punctuated_names); ++i) {

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -210,9 +210,7 @@ bool ExtensionIconSource::TryLoadingComponentExtensionImage(
   for (size_t i = 0; i < kComponentExtensionResourcesSize; ++i) {
     FilePath bm_resource_path =
         FilePath().AppendASCII(kComponentExtensionResources[i].name);
-#if defined(OS_WIN)
-    bm_resource_path = bm_resource_path.NormalizeWindowsPathSeparators();
-#endif
+    bm_resource_path = bm_resource_path.NormalizePathSeparators();
     if (relative_path == bm_resource_path) {
       scoped_ptr<SkBitmap> decoded(LoadImageByResourceId(
           kComponentExtensionResources[i].value));

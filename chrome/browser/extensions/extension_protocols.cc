@@ -286,9 +286,7 @@ ExtensionProtocolHandler::MaybeCreateJob(net::URLRequest* request) const {
       directory_path.DirName() == resources_path) {
     FilePath relative_path = directory_path.BaseName().Append(
         extension_file_util::ExtensionURLToRelativeFilePath(request->url()));
-#if defined(OS_WIN)
-    relative_path = relative_path.NormalizeWindowsPathSeparators();
-#endif
+    relative_path = relative_path.NormalizePathSeparators();
 
     // TODO(tc): Make a map of FilePath -> resource ids so we don't have to
     // covert to FilePaths all the time.  This will be more useful as we add
@@ -296,9 +294,7 @@ ExtensionProtocolHandler::MaybeCreateJob(net::URLRequest* request) const {
     for (size_t i = 0; i < kComponentExtensionResourcesSize; ++i) {
       FilePath bm_resource_path =
           FilePath().AppendASCII(kComponentExtensionResources[i].name);
-#if defined(OS_WIN)
-      bm_resource_path = bm_resource_path.NormalizeWindowsPathSeparators();
-#endif
+      bm_resource_path = bm_resource_path.NormalizePathSeparators();
       if (relative_path == bm_resource_path) {
         return new URLRequestResourceBundleJob(request, relative_path,
             kComponentExtensionResources[i].value, content_security_policy,
