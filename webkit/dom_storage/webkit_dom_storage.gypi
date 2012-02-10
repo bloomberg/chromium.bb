@@ -19,6 +19,8 @@
         'dom_storage_area.h',
         'dom_storage_context.cc',
         'dom_storage_context.h',
+        'dom_storage_database.cc',
+        'dom_storage_database.h',
         'dom_storage_host.cc',
         'dom_storage_host.h',
         'dom_storage_map.cc',

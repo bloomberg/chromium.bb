@@ -1,4 +1,4 @@
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -405,6 +405,7 @@
         '../../database/database_util_unittest.cc',
         '../../database/quota_table_unittest.cc',
         '../../dom_storage/dom_storage_area_unittest.cc',
+        '../../dom_storage/dom_storage_database_unittest.cc',
         '../../dom_storage/dom_storage_map_unittest.cc',
         '../../fileapi/file_system_directory_database_unittest.cc',
         '../../fileapi/file_system_file_util_unittest.cc',
