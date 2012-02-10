@@ -2447,6 +2447,7 @@
       'dependencies': [
         'browser',
         'browser/sync/protocol/sync_proto.gyp:sync_proto',
+        'chrome',
         'chrome_resources.gyp:chrome_resources',
         'chrome_resources.gyp:chrome_strings',
         'renderer',
@@ -3141,6 +3142,7 @@
       'dependencies': [
         'browser',
         'browser/sync/protocol/sync_proto.gyp:sync_proto',
+        'chrome',
         'chrome_resources.gyp:chrome_resources',
         'chrome_resources.gyp:chrome_strings',
         'renderer',
