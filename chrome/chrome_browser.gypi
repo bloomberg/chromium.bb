@@ -5347,27 +5347,6 @@
                   },
                 }],
               ],
-              'actions': [
-                {
-                  'action_name': 'my_proto',
-                  'inputs': [
-                    '<(PRODUCT_DIR)/<(EXECUTABLE_PREFIX)protoc<(EXECUTABLE_SUFFIX)',
-                    'browser/metrics/system_metrics.proto',
-                  ],
-                  'outputs': [
-                    '<(INTERMEDIATE_DIR)/chrome/browser/metrics/system_metrics.pb.cc',
-                    '<(INTERMEDIATE_DIR)/chrome/browser/metrics/system_metrics.pb.h',
-                  ],
-                  'dependencies': [
-                    '../third_party/protobuf/protobuf.gyp:protoc',
-                  ],
-                  'action': [
-                    '<(PRODUCT_DIR)/<(EXECUTABLE_PREFIX)protoc<(EXECUTABLE_SUFFIX)',
-                    'browser/metrics/system_metrics.proto',
-                    '--cpp_out=<(INTERMEDIATE_DIR)/chrome',
-                  ],
-                },
-              ],
             }],
             ['os_posix == 1 and OS != "mac" and OS != "android" and gcc_version == 45', {
               # Avoid gcc 4.5 miscompilation of template_url.cc
