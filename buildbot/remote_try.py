@@ -37,7 +37,7 @@ class RemoteTryJob(object):
     values['email'] = cros_lib.GetProjectUserEmail(cwd)
     # Name of the job that appears on the waterfall.
     values['name'] = ','.join(options.gerrit_patches)
-    values['issue'] = ' '.join(options.gerrit_patches)
+    values['gerrit_patches'] = ' '.join(options.gerrit_patches)
     values['bot'] = ','.join(bots)
     self.description = '\n'.join(
         '%s=%s' % (k, v) for (k, v) in sorted(values.iteritems()))
