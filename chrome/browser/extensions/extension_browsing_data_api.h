@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Defines the Chrome Extensions Clear API functions, which entail
+// Defines the Chrome Extensions BrowsingData API functions, which entail
 // clearing browsing data, and clearing the browser's cache (which, let's be
 // honest, are the same thing), as specified in the extension API JSON.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_CLEAR_API_H_
-#define CHROME_BROWSER_EXTENSIONS_EXTENSION_CLEAR_API_H_
+#ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_BROWSING_DATA_API_H_
+#define CHROME_BROWSER_EXTENSIONS_EXTENSION_BROWSING_DATA_API_H_
 #pragma once
 
 #include <string>
@@ -17,7 +17,7 @@
 
 class PluginPrefs;
 
-namespace extension_clear_api_constants {
+namespace extension_browsing_data_api_constants {
 
 // Keys.
 extern const char kAppCacheKey[];
@@ -36,7 +36,7 @@ extern const char kWebSQLKey[];
 // Errors!
 extern const char kOneAtATimeError[];
 
-}  // namespace extension_clear_api_constants
+}  // namespace extension_browsing_data_api_constants
 
 // This serves as a base class from which the browsing data API functions will
 // inherit. Each needs to be an observer of BrowsingDataRemover events, and each
@@ -72,171 +72,173 @@ class BrowsingDataExtensionFunction : public AsyncExtensionFunction,
   int removal_mask_;
 };
 
-class ClearAppCacheFunction : public BrowsingDataExtensionFunction {
+class RemoveAppCacheFunction : public BrowsingDataExtensionFunction {
  public:
-  ClearAppCacheFunction() {}
-  virtual ~ClearAppCacheFunction() {}
+  RemoveAppCacheFunction() {}
+  virtual ~RemoveAppCacheFunction() {}
 
  protected:
   // BrowsingDataTypeExtensionFunction interface method.
   virtual int GetRemovalMask() const OVERRIDE;
 
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.clear.appcache")
+  DECLARE_EXTENSION_FUNCTION_NAME("experimental.browsingData.removeAppcache")
 };
 
-class ClearBrowsingDataFunction : public BrowsingDataExtensionFunction {
+class RemoveBrowsingDataFunction : public BrowsingDataExtensionFunction {
  public:
-  ClearBrowsingDataFunction() {}
-  virtual ~ClearBrowsingDataFunction() {}
+  RemoveBrowsingDataFunction() {}
+  virtual ~RemoveBrowsingDataFunction() {}
 
  protected:
   // BrowsingDataExtensionFunction interface method.
   virtual int GetRemovalMask() const OVERRIDE;
 
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.clear.browsingData")
+  DECLARE_EXTENSION_FUNCTION_NAME("experimental.browsingData.remove")
 };
 
-class ClearCacheFunction : public BrowsingDataExtensionFunction {
+class RemoveCacheFunction : public BrowsingDataExtensionFunction {
  public:
-  ClearCacheFunction() {}
-  virtual ~ClearCacheFunction() {}
+  RemoveCacheFunction() {}
+  virtual ~RemoveCacheFunction() {}
 
  protected:
   // BrowsingDataTypeExtensionFunction interface method.
   virtual int GetRemovalMask() const OVERRIDE;
 
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.clear.cache")
+  DECLARE_EXTENSION_FUNCTION_NAME("experimental.browsingData.removeCache")
 };
 
-class ClearCookiesFunction : public BrowsingDataExtensionFunction {
+class RemoveCookiesFunction : public BrowsingDataExtensionFunction {
  public:
-  ClearCookiesFunction() {}
-  virtual ~ClearCookiesFunction() {}
+  RemoveCookiesFunction() {}
+  virtual ~RemoveCookiesFunction() {}
 
  protected:
   // BrowsingDataTypeExtensionFunction interface method.
   virtual int GetRemovalMask() const OVERRIDE;
 
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.clear.cookies")
+  DECLARE_EXTENSION_FUNCTION_NAME("experimental.browsingData.removeCookies")
 };
 
-class ClearDownloadsFunction : public BrowsingDataExtensionFunction {
+class RemoveDownloadsFunction : public BrowsingDataExtensionFunction {
  public:
-  ClearDownloadsFunction() {}
-  virtual ~ClearDownloadsFunction() {}
+  RemoveDownloadsFunction() {}
+  virtual ~RemoveDownloadsFunction() {}
 
  protected:
   // BrowsingDataTypeExtensionFunction interface method.
   virtual int GetRemovalMask() const OVERRIDE;
 
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.clear.downloads")
+  DECLARE_EXTENSION_FUNCTION_NAME("experimental.browsingData.removeDownloads")
 };
 
-class ClearFileSystemsFunction : public BrowsingDataExtensionFunction {
+class RemoveFileSystemsFunction : public BrowsingDataExtensionFunction {
  public:
-  ClearFileSystemsFunction() {}
-  virtual ~ClearFileSystemsFunction() {}
+  RemoveFileSystemsFunction() {}
+  virtual ~RemoveFileSystemsFunction() {}
 
  protected:
   // BrowsingDataTypeExtensionFunction interface method.
   virtual int GetRemovalMask() const OVERRIDE;
 
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.clear.fileSystems")
+  DECLARE_EXTENSION_FUNCTION_NAME("experimental.browsingData.removeFileSystems")
 };
 
-class ClearFormDataFunction : public BrowsingDataExtensionFunction {
+class RemoveFormDataFunction : public BrowsingDataExtensionFunction {
  public:
-  ClearFormDataFunction() {}
-  virtual ~ClearFormDataFunction() {}
+  RemoveFormDataFunction() {}
+  virtual ~RemoveFormDataFunction() {}
 
  protected:
   // BrowsingDataTypeExtensionFunction interface method.
   virtual int GetRemovalMask() const OVERRIDE;
 
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.clear.formData")
+  DECLARE_EXTENSION_FUNCTION_NAME("experimental.browsingData.removeFormData")
 };
 
-class ClearHistoryFunction : public BrowsingDataExtensionFunction {
+class RemoveHistoryFunction : public BrowsingDataExtensionFunction {
  public:
-  ClearHistoryFunction() {}
-  virtual ~ClearHistoryFunction() {}
+  RemoveHistoryFunction() {}
+  virtual ~RemoveHistoryFunction() {}
 
  protected:
   // BrowsingDataTypeExtensionFunction interface method.
   virtual int GetRemovalMask() const OVERRIDE;
 
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.clear.history")
+  DECLARE_EXTENSION_FUNCTION_NAME("experimental.browsingData.removeHistory")
 };
 
-class ClearIndexedDBFunction : public BrowsingDataExtensionFunction {
+class RemoveIndexedDBFunction : public BrowsingDataExtensionFunction {
  public:
-  ClearIndexedDBFunction() {}
-  virtual ~ClearIndexedDBFunction() {}
+  RemoveIndexedDBFunction() {}
+  virtual ~RemoveIndexedDBFunction() {}
 
  protected:
   // BrowsingDataTypeExtensionFunction interface method.
   virtual int GetRemovalMask() const OVERRIDE;
 
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.clear.indexedDB")
+  DECLARE_EXTENSION_FUNCTION_NAME("experimental.browsingData.removeIndexedDB")
 };
 
-class ClearLocalStorageFunction : public BrowsingDataExtensionFunction {
+class RemoveLocalStorageFunction : public BrowsingDataExtensionFunction {
  public:
-  ClearLocalStorageFunction() {}
-  virtual ~ClearLocalStorageFunction() {}
+  RemoveLocalStorageFunction() {}
+  virtual ~RemoveLocalStorageFunction() {}
 
  protected:
   // BrowsingDataTypeExtensionFunction interface method.
   virtual int GetRemovalMask() const OVERRIDE;
 
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.clear.localStorage")
+  DECLARE_EXTENSION_FUNCTION_NAME(
+      "experimental.browsingData.removeLocalStorage")
 };
 
-class ClearOriginBoundCertsFunction : public BrowsingDataExtensionFunction {
+class RemoveOriginBoundCertsFunction : public BrowsingDataExtensionFunction {
  public:
-  ClearOriginBoundCertsFunction() {}
-  virtual ~ClearOriginBoundCertsFunction() {}
+  RemoveOriginBoundCertsFunction() {}
+  virtual ~RemoveOriginBoundCertsFunction() {}
 
  protected:
   // BrowsingDataTypeExtensionFunction interface method.
   virtual int GetRemovalMask() const OVERRIDE;
 
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.clear.originBoundCerts")
+  DECLARE_EXTENSION_FUNCTION_NAME(
+      "experimental.browsingData.removeOriginBoundCertificates")
 };
 
-class ClearPluginDataFunction : public BrowsingDataExtensionFunction {
+class RemovePluginDataFunction : public BrowsingDataExtensionFunction {
  public:
-  ClearPluginDataFunction() {}
-  virtual ~ClearPluginDataFunction() {}
+  RemovePluginDataFunction() {}
+  virtual ~RemovePluginDataFunction() {}
 
  protected:
   // BrowsingDataTypeExtensionFunction interface method.
   virtual int GetRemovalMask() const OVERRIDE;
 
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.clear.pluginData")
+  DECLARE_EXTENSION_FUNCTION_NAME("experimental.browsingData.removePluginData")
 };
 
-class ClearPasswordsFunction : public BrowsingDataExtensionFunction {
+class RemovePasswordsFunction : public BrowsingDataExtensionFunction {
  public:
-  ClearPasswordsFunction() {}
-  virtual ~ClearPasswordsFunction() {}
+  RemovePasswordsFunction() {}
+  virtual ~RemovePasswordsFunction() {}
 
  protected:
   // BrowsingDataTypeExtensionFunction interface method.
   virtual int GetRemovalMask() const OVERRIDE;
 
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.clear.passwords")
+  DECLARE_EXTENSION_FUNCTION_NAME("experimental.browsingData.removePasswords")
 };
 
-class ClearWebSQLFunction : public BrowsingDataExtensionFunction {
+class RemoveWebSQLFunction : public BrowsingDataExtensionFunction {
  public:
-  ClearWebSQLFunction() {}
-  virtual ~ClearWebSQLFunction() {}
+  RemoveWebSQLFunction() {}
+  virtual ~RemoveWebSQLFunction() {}
 
  protected:
   // BrowsingDataTypeExtensionFunction interface method.
   virtual int GetRemovalMask() const OVERRIDE;
 
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.clear.webSQL")
+  DECLARE_EXTENSION_FUNCTION_NAME("experimental.browsingData.removeWebSQL")
 };
-#endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_CLEAR_API_H_
+#endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_BROWSING_DATA_API_H_

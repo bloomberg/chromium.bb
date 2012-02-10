@@ -1,10 +1,10 @@
-<div id="pageData-name" class="pageData">Clear API</div>
+<div id="pageData-name" class="pageData">BrowsingData API</div>
 
 <!-- BEGIN AUTHORED CONTENT -->
 <p id="classSummary">
-  Use the <code>chrome.experimental.clear</code> module to remove browsing data
-  from a user's local profile. This module is still experimental. For more
-  information regarding the usage of experimental APIs, see the
+  Use the <code>chrome.experimental.browsingData</code> module to remove
+  browsing data from a user's local profile. This module is still experimental.
+  For more information regarding the usage of experimental APIs, see the
   <a href="experimental.html">chrome.experimental.* APIs</a> page.
 </p>
 
@@ -20,7 +20,7 @@
   "name": "My extension",
   ...
   <b>"permissions": [
-    "clear",
+    "browsingData",
     "experimental"
   ]</b>,
   ...
@@ -48,7 +48,7 @@
 
 var millisecondsPerWeek = 1000 * 60 * 60 * 24 * 7;
 var oneWeekAgo = (new Date()).getTime() - millisecondsPerWeek;
-chrome.experimental.clear.browsingData(oneWeekAgo, {
+chrome.experimental.browsingData.remove(oneWeekAgo, {
   "appcache": true,
   "cache": true,
   "cookies": true,
@@ -64,7 +64,7 @@ chrome.experimental.clear.browsingData(oneWeekAgo, {
 }, callback);</pre>
 
 <p>
-  The <code>chrome.experimental.clear.browsingData</code> method allows you to
+  The <code>chrome.experimental.browsingData.remove</code> method allows you to
   remove various types of browsing data with a single call, and will be much
   faster than calling multiple more specific methods. If, however, you only
   want to clear one specific type of browsing data (cookies, for example), the
@@ -77,7 +77,7 @@ chrome.experimental.clear.browsingData(oneWeekAgo, {
 
 var millisecondsPerWeek = 1000 * 60 * 60 * 24 * 7;
 var oneWeekAgo = (new Date()).getTime() - millisecondsPerWeek;
-chrome.experimental.clear.cookies(oneWeekAgo, callback);</pre>
+chrome.experimental.browsingData.removeCookies(oneWeekAgo, callback);</pre>
 
 <p class="caution">
   <strong>Important</strong>: Removing browsing data involves a good deal of
@@ -88,8 +88,8 @@ chrome.experimental.clear.cookies(oneWeekAgo, callback);</pre>
 
 <h2 id="samples">Examples</h2>
 <p>
-  Samples for the <code>clear</code> API are available
-  <a href="http://code.google.com/chrome/extensions/trunk/samples.html#chrome.experimental.clear">on the samples page</a>.
+  Samples for the <code>browsingData</code> API are available
+  <a href="http://code.google.com/chrome/extensions/trunk/samples.html#chrome.experimental.browsingData">on the samples page</a>.
 </p>
 
 <!-- END AUTHORED CONTENT -->

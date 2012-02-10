@@ -227,7 +227,7 @@ class MainPage(webapp.RequestHandler):
     self.check("/dev/api/bookmarks.json", "http://src.chromium.org/viewvc/chrome/branches/%s/src/chrome/common/extensions/api/bookmarks.json", Channel.DEV)
     self.check("/beta/api/bookmarks.json", "http://src.chromium.org/viewvc/chrome/branches/%s/src/chrome/common/extensions/api/bookmarks.json", Channel.BETA)
     self.check("/stable/api/bookmarks.json", "http://src.chromium.org/viewvc/chrome/branches/%s/src/chrome/common/extensions/api/bookmarks.json", Channel.STABLE)
-    self.check("/stable/api/experimental.clear.json", "http://src.chromium.org/viewvc/chrome/branches/%s/src/chrome/common/extensions/api/experimental.clear.json", Channel.STABLE)
+    self.check("/stable/api/experimental.browsingData.json", "http://src.chromium.org/viewvc/chrome/branches/%s/src/chrome/common/extensions/api/experimental.browsingData.json", Channel.STABLE)
 
     self.response.out.write("<br/>Testing favicon.ico<br/>")
     self.check("/trunk/favicon.ico", "http://src.chromium.org/favicon.ico", Channel.TRUNK)

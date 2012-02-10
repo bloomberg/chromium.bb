@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Defines the Chrome Extensions Clear API functions, which entail
+// Defines the Chrome Extensions BrowsingData API functions, which entail
 // clearing browsing data, and clearing the browser's cache (which, let's be
 // honest, are the same thing), as specified in the extension API JSON.
 
-#include "chrome/browser/extensions/extension_clear_api.h"
+#include "chrome/browser/extensions/extension_browsing_data_api.h"
 
 #include <string>
 
@@ -22,7 +22,7 @@
 
 using content::BrowserThread;
 
-namespace extension_clear_api_constants {
+namespace extension_browsing_data_api_constants {
 
 // Keys.
 const char kAppCacheKey[] = "appcache";
@@ -40,9 +40,10 @@ const char kPluginDataKey[] = "pluginData";
 const char kWebSQLKey[] = "webSQL";
 
 // Errors!
-const char kOneAtATimeError[] = "Only one 'clear' API call can run at a time.";
+const char kOneAtATimeError[] = "Only one 'browsingData' API call can run at"
+                                "a time.";
 
-}  // namespace extension_clear_api_constants
+}  // namespace extension_browsing_data_api_constants
 
 namespace {
 // Converts the JavaScript API's numeric input (miliseconds since epoch) into an
@@ -53,7 +54,7 @@ bool ParseTimeFromValue(const double& ms_since_epoch, base::Time* time) {
 
 // Given a DictionaryValue |dict|, returns either the value stored as |key|, or
 // false, if the given key doesn't exist in the dictionary.
-bool DataRemovalRequested(base::DictionaryValue* dict, const std::string& key) {
+bool RemoveType(base::DictionaryValue* dict, const std::string& key) {
   bool value = false;
   if (!dict->GetBoolean(key, &value))
     return false;
@@ -65,35 +66,33 @@ bool DataRemovalRequested(base::DictionaryValue* dict, const std::string& key) {
 // appropriate removal mask for the BrowsingDataRemover object.
 int ParseRemovalMask(base::DictionaryValue* value) {
   int GetRemovalMask = 0;
-  if (DataRemovalRequested(value, extension_clear_api_constants::kAppCacheKey))
+  if (RemoveType(value, extension_browsing_data_api_constants::kAppCacheKey))
     GetRemovalMask |= BrowsingDataRemover::REMOVE_APPCACHE;
-  if (DataRemovalRequested(value, extension_clear_api_constants::kCacheKey))
+  if (RemoveType(value, extension_browsing_data_api_constants::kCacheKey))
     GetRemovalMask |= BrowsingDataRemover::REMOVE_CACHE;
-  if (DataRemovalRequested(value, extension_clear_api_constants::kCookiesKey))
+  if (RemoveType(value, extension_browsing_data_api_constants::kCookiesKey))
     GetRemovalMask |= BrowsingDataRemover::REMOVE_COOKIES;
-  if (DataRemovalRequested(value, extension_clear_api_constants::kDownloadsKey))
+  if (RemoveType(value, extension_browsing_data_api_constants::kDownloadsKey))
     GetRemovalMask |= BrowsingDataRemover::REMOVE_DOWNLOADS;
-  if (DataRemovalRequested(value,
-                           extension_clear_api_constants::kFileSystemsKey))
+  if (RemoveType(value, extension_browsing_data_api_constants::kFileSystemsKey))
     GetRemovalMask |= BrowsingDataRemover::REMOVE_FILE_SYSTEMS;
-  if (DataRemovalRequested(value, extension_clear_api_constants::kFormDataKey))
+  if (RemoveType(value, extension_browsing_data_api_constants::kFormDataKey))
     GetRemovalMask |= BrowsingDataRemover::REMOVE_FORM_DATA;
-  if (DataRemovalRequested(value, extension_clear_api_constants::kHistoryKey))
+  if (RemoveType(value, extension_browsing_data_api_constants::kHistoryKey))
     GetRemovalMask |= BrowsingDataRemover::REMOVE_HISTORY;
-  if (DataRemovalRequested(value, extension_clear_api_constants::kIndexedDBKey))
+  if (RemoveType(value, extension_browsing_data_api_constants::kIndexedDBKey))
     GetRemovalMask |= BrowsingDataRemover::REMOVE_INDEXEDDB;
-  if (DataRemovalRequested(value,
-                           extension_clear_api_constants::kLocalStorageKey))
+  if (RemoveType(value,
+                 extension_browsing_data_api_constants::kLocalStorageKey))
     GetRemovalMask |= BrowsingDataRemover::REMOVE_LOCAL_STORAGE;
-  if (DataRemovalRequested(value,
-                           extension_clear_api_constants::kOriginBoundCertsKey))
+  if (RemoveType(value,
+                 extension_browsing_data_api_constants::kOriginBoundCertsKey))
     GetRemovalMask |= BrowsingDataRemover::REMOVE_ORIGIN_BOUND_CERTS;
-  if (DataRemovalRequested(value, extension_clear_api_constants::kPasswordsKey))
+  if (RemoveType(value, extension_browsing_data_api_constants::kPasswordsKey))
     GetRemovalMask |= BrowsingDataRemover::REMOVE_PASSWORDS;
-  if (DataRemovalRequested(value,
-                           extension_clear_api_constants::kPluginDataKey))
+  if (RemoveType(value, extension_browsing_data_api_constants::kPluginDataKey))
     GetRemovalMask |= BrowsingDataRemover::REMOVE_PLUGIN_DATA;
-  if (DataRemovalRequested(value, extension_clear_api_constants::kWebSQLKey))
+  if (RemoveType(value, extension_browsing_data_api_constants::kWebSQLKey))
     GetRemovalMask |= BrowsingDataRemover::REMOVE_WEBSQL;
 
   return GetRemovalMask;
@@ -110,7 +109,7 @@ void BrowsingDataExtensionFunction::OnBrowsingDataRemoverDone() {
 
 bool BrowsingDataExtensionFunction::RunImpl() {
   if (BrowsingDataRemover::is_removing()) {
-    error_ = extension_clear_api_constants::kOneAtATimeError;
+    error_ = extension_browsing_data_api_constants::kOneAtATimeError;
     return false;
   }
 
@@ -168,7 +167,7 @@ void BrowsingDataExtensionFunction::StartRemoving() {
   remover->Remove(removal_mask_);
 }
 
-int ClearBrowsingDataFunction::GetRemovalMask() const {
+int RemoveBrowsingDataFunction::GetRemovalMask() const {
   // Parse the |dataToRemove| argument to generate the removal mask.
   base::DictionaryValue* data_to_remove;
   if (args_->GetDictionary(1, &data_to_remove))
@@ -177,54 +176,54 @@ int ClearBrowsingDataFunction::GetRemovalMask() const {
     return 0;
 }
 
-int ClearAppCacheFunction::GetRemovalMask() const {
+int RemoveAppCacheFunction::GetRemovalMask() const {
   return BrowsingDataRemover::REMOVE_APPCACHE;
 }
 
-int ClearCacheFunction::GetRemovalMask() const {
+int RemoveCacheFunction::GetRemovalMask() const {
   return BrowsingDataRemover::REMOVE_CACHE;
 }
 
-int ClearCookiesFunction::GetRemovalMask() const {
+int RemoveCookiesFunction::GetRemovalMask() const {
   return BrowsingDataRemover::REMOVE_COOKIES;
 }
 
-int ClearDownloadsFunction::GetRemovalMask() const {
+int RemoveDownloadsFunction::GetRemovalMask() const {
   return BrowsingDataRemover::REMOVE_DOWNLOADS;
 }
 
-int ClearFileSystemsFunction::GetRemovalMask() const {
+int RemoveFileSystemsFunction::GetRemovalMask() const {
   return BrowsingDataRemover::REMOVE_FILE_SYSTEMS;
 }
 
-int ClearFormDataFunction::GetRemovalMask() const {
+int RemoveFormDataFunction::GetRemovalMask() const {
   return BrowsingDataRemover::REMOVE_FORM_DATA;
 }
 
-int ClearHistoryFunction::GetRemovalMask() const {
+int RemoveHistoryFunction::GetRemovalMask() const {
   return BrowsingDataRemover::REMOVE_HISTORY;
 }
 
-int ClearIndexedDBFunction::GetRemovalMask() const {
+int RemoveIndexedDBFunction::GetRemovalMask() const {
   return BrowsingDataRemover::REMOVE_INDEXEDDB;
 }
 
-int ClearLocalStorageFunction::GetRemovalMask() const {
+int RemoveLocalStorageFunction::GetRemovalMask() const {
   return BrowsingDataRemover::REMOVE_LOCAL_STORAGE;
 }
 
-int ClearOriginBoundCertsFunction::GetRemovalMask() const {
+int RemoveOriginBoundCertsFunction::GetRemovalMask() const {
   return BrowsingDataRemover::REMOVE_ORIGIN_BOUND_CERTS;
 }
 
-int ClearPluginDataFunction::GetRemovalMask() const {
+int RemovePluginDataFunction::GetRemovalMask() const {
   return BrowsingDataRemover::REMOVE_PLUGIN_DATA;
 }
 
-int ClearPasswordsFunction::GetRemovalMask() const {
+int RemovePasswordsFunction::GetRemovalMask() const {
   return BrowsingDataRemover::REMOVE_PASSWORDS;
 }
 
-int ClearWebSQLFunction::GetRemovalMask() const {
+int RemoveWebSQLFunction::GetRemovalMask() const {
   return BrowsingDataRemover::REMOVE_WEBSQL;
 }

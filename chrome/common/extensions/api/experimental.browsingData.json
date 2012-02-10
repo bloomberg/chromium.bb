@@ -1,6 +1,6 @@
 [
   {
-    "namespace": "experimental.clear",
+    "namespace": "experimental.browsingData",
     "types": [
       {
         "id": "RemovalRange",
@@ -10,7 +10,7 @@
     ],
     "functions": [
       {
-        "name": "browsingData",
+        "name": "remove",
         "description": "Clears various types of browsing data stored in a user's profile.",
         "type": "function",
         "parameters": [
@@ -68,6 +68,11 @@
                 "optional": true,
                 "description": "Should websites' local storage data be cleared?"
               },
+              "originBoundCertificates": {
+                "type": "boolean",
+                "optional": true,
+                "description": "Should origin-bound certificates be removed?"
+              },
               "pluginData": {
                 "type": "boolean",
                 "optional": true,
@@ -95,7 +100,7 @@
         ]
       },
       {
-        "name": "appcache",
+        "name": "removeAppcache",
         "description": "Clears websites' appcache data.",
         "type": "function",
         "parameters": [
@@ -113,7 +118,7 @@
         ]
       },
       {
-        "name": "cache",
+        "name": "removeCache",
         "description": "Clears the browser's cache.",
         "type": "function",
         "parameters": [
@@ -131,7 +136,7 @@
         ]
       },
       {
-        "name": "cookies",
+        "name": "removeCookies",
         "description": "Clears the browser's cookies modified within a particular timeframe.",
         "type": "function",
         "parameters": [
@@ -149,7 +154,7 @@
         ]
       },
       {
-        "name": "downloads",
+        "name": "removeDownloads",
         "description": "Clears the browser's list of downloaded files (<em>not</em> the downloaded files themselves).",
         "type": "function",
         "parameters": [
@@ -167,7 +172,7 @@
         ]
       },
       {
-        "name": "fileSystems",
+        "name": "removeFileSystems",
         "description": "Clears websites' file system data.",
         "type": "function",
         "parameters": [
@@ -185,7 +190,7 @@
         ]
       },
       {
-        "name": "formData",
+        "name": "removeFormData",
         "description": "Clears the browser's stored form data (autofill).",
         "type": "function",
         "parameters": [
@@ -203,7 +208,7 @@
         ]
       },
       {
-        "name": "history",
+        "name": "removeHistory",
         "description": "Clears the browser's history.",
         "type": "function",
         "parameters": [
@@ -221,7 +226,7 @@
         ]
       },
       {
-        "name": "indexedDB",
+        "name": "removeIndexedDB",
         "description": "Clears websites' IndexedDB data.",
         "type": "function",
         "parameters": [
@@ -239,7 +244,7 @@
         ]
       },
       {
-        "name": "localStorage",
+        "name": "removeLocalStorage",
         "description": "Clears websites' local storage data.",
         "type": "function",
         "parameters": [
@@ -257,7 +262,7 @@
         ]
       },
       {
-        "name": "pluginData",
+        "name": "removePluginData",
         "description": "Clears plugins' data.",
         "type": "function",
         "parameters": [
@@ -275,7 +280,7 @@
         ]
       },
       {
-        "name": "passwords",
+        "name": "removePasswords",
         "description": "Clears the browser's stored passwords.",
         "type": "function",
         "parameters": [
@@ -293,7 +298,7 @@
         ]
       },
       {
-        "name": "webSQL",
+        "name": "removeWebSQL",
         "description": "Clears websites' WebSQL data.",
         "type": "function",
         "parameters": [

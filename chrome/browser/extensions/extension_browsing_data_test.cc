@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/extension_clear_api.h"
+#include "chrome/browser/extensions/extension_browsing_data_api.h"
 
 #include <string>
 
@@ -23,7 +23,7 @@ using namespace extension_function_test_utils;
 
 namespace {
 
-const char kClearEverythingArguments[] = "[1000, {"
+const char kRemoveEverythingArguments[] = "[1000, {"
     "\"appcache\": true, \"cache\": true, \"cookies\": true, "
     "\"downloads\": true, \"fileSystems\": true, \"formData\": true, "
     "\"history\": true, \"indexedDB\": true, \"localStorage\": true, "
@@ -31,8 +31,8 @@ const char kClearEverythingArguments[] = "[1000, {"
     "\"webSQL\": true"
     "}]";
 
-class ExtensionClearTest : public InProcessBrowserTest,
-                           public content::NotificationObserver {
+class ExtensionBrowsingDataTest : public InProcessBrowserTest,
+                                  public content::NotificationObserver {
  public:
   base::Time GetBeginTime() {
     return called_with_details_->removal_begin;
@@ -66,10 +66,10 @@ class ExtensionClearTest : public InProcessBrowserTest,
             details).ptr()));
   }
 
-  void RunClearBrowsingDataFunctionAndCompareMask(const std::string& key,
+  void RunRemoveBrowsingDataFunctionAndCompareMask(const std::string& key,
                                                   int expected_mask) {
     SCOPED_TRACE(key);
-    EXPECT_EQ(NULL, RunFunctionAndReturnResult(new ClearBrowsingDataFunction(),
+    EXPECT_EQ(NULL, RunFunctionAndReturnResult(new RemoveBrowsingDataFunction(),
         std::string("[1, {\"") + key + "\": true}]", browser()));
     EXPECT_EQ(expected_mask, GetRemovalMask());
   }
@@ -81,23 +81,23 @@ class ExtensionClearTest : public InProcessBrowserTest,
 
 }  // namespace
 
-IN_PROC_BROWSER_TEST_F(ExtensionClearTest, OneAtATime) {
+IN_PROC_BROWSER_TEST_F(ExtensionBrowsingDataTest, OneAtATime) {
   BrowsingDataRemover::set_removing(true);
   EXPECT_TRUE(MatchPattern(
       RunFunctionAndReturnError(
-          new ClearBrowsingDataFunction(),
-          kClearEverythingArguments,
+          new RemoveBrowsingDataFunction(),
+          kRemoveEverythingArguments,
           browser()),
-      extension_clear_api_constants::kOneAtATimeError));
+      extension_browsing_data_api_constants::kOneAtATimeError));
   BrowsingDataRemover::set_removing(false);
 
   EXPECT_EQ(base::Time(), GetBeginTime());
   EXPECT_EQ(-1, GetRemovalMask());
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionClearTest, ClearBrowsingDataEverything) {
-  EXPECT_EQ(NULL, RunFunctionAndReturnResult(new ClearBrowsingDataFunction(),
-      kClearEverythingArguments, browser()));
+IN_PROC_BROWSER_TEST_F(ExtensionBrowsingDataTest, RemoveBrowsingDataAll) {
+  EXPECT_EQ(NULL, RunFunctionAndReturnResult(new RemoveBrowsingDataFunction(),
+      kRemoveEverythingArguments, browser()));
 
   EXPECT_EQ(base::Time::FromDoubleT(1.0), GetBeginTime());
   EXPECT_EQ((BrowsingDataRemover::REMOVE_SITE_DATA |
@@ -110,30 +110,30 @@ IN_PROC_BROWSER_TEST_F(ExtensionClearTest, ClearBrowsingDataEverything) {
       ~BrowsingDataRemover::REMOVE_PLUGIN_DATA, GetRemovalMask());
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionClearTest, ClearBrowsingDataMask) {
-  RunClearBrowsingDataFunctionAndCompareMask(
+IN_PROC_BROWSER_TEST_F(ExtensionBrowsingDataTest, RemoveBrowsingDataMask) {
+  RunRemoveBrowsingDataFunctionAndCompareMask(
       "appcache", BrowsingDataRemover::REMOVE_APPCACHE);
-  RunClearBrowsingDataFunctionAndCompareMask(
+  RunRemoveBrowsingDataFunctionAndCompareMask(
       "cache", BrowsingDataRemover::REMOVE_CACHE);
-  RunClearBrowsingDataFunctionAndCompareMask(
+  RunRemoveBrowsingDataFunctionAndCompareMask(
       "cookies", BrowsingDataRemover::REMOVE_COOKIES);
-  RunClearBrowsingDataFunctionAndCompareMask(
+  RunRemoveBrowsingDataFunctionAndCompareMask(
       "downloads", BrowsingDataRemover::REMOVE_DOWNLOADS);
-  RunClearBrowsingDataFunctionAndCompareMask(
+  RunRemoveBrowsingDataFunctionAndCompareMask(
       "fileSystems", BrowsingDataRemover::REMOVE_FILE_SYSTEMS);
-  RunClearBrowsingDataFunctionAndCompareMask(
+  RunRemoveBrowsingDataFunctionAndCompareMask(
       "formData", BrowsingDataRemover::REMOVE_FORM_DATA);
-  RunClearBrowsingDataFunctionAndCompareMask(
+  RunRemoveBrowsingDataFunctionAndCompareMask(
       "history", BrowsingDataRemover::REMOVE_HISTORY);
-  RunClearBrowsingDataFunctionAndCompareMask(
+  RunRemoveBrowsingDataFunctionAndCompareMask(
       "indexedDB", BrowsingDataRemover::REMOVE_INDEXEDDB);
-  RunClearBrowsingDataFunctionAndCompareMask(
+  RunRemoveBrowsingDataFunctionAndCompareMask(
       "localStorage", BrowsingDataRemover::REMOVE_LOCAL_STORAGE);
-  RunClearBrowsingDataFunctionAndCompareMask(
+  RunRemoveBrowsingDataFunctionAndCompareMask(
       "originBoundCerts", BrowsingDataRemover::REMOVE_ORIGIN_BOUND_CERTS);
-  RunClearBrowsingDataFunctionAndCompareMask(
+  RunRemoveBrowsingDataFunctionAndCompareMask(
       "passwords", BrowsingDataRemover::REMOVE_PASSWORDS);
   // We can't remove plugin data inside a test profile.
-  RunClearBrowsingDataFunctionAndCompareMask(
+  RunRemoveBrowsingDataFunctionAndCompareMask(
       "webSQL", BrowsingDataRemover::REMOVE_WEBSQL);
 }

@@ -10,7 +10,7 @@
  * accepting of variance, but this is just a sample app. :)
  *
  * Most of this is boilerplate binding the controller to the UI. The bits that
- * specifically will be useful when using the Clear API are contained in
+ * specifically will be useful when using the BrowsingData API are contained in
  * `parseMilliseconds_`, `handleCallback_`, and `handleClick_`.
  *
  * @constructor
@@ -76,8 +76,8 @@ PopupController.prototype = {
   },
 
   /**
-   * Handle a success/failure callback from the `clear` API methods, updating
-   * the UI appropriately.
+   * Handle a success/failure callback from the `browsingData` API methods,
+   * updating the UI appropriately.
    *
    * @private
    */
@@ -109,7 +109,7 @@ PopupController.prototype = {
     if (removal_start !== undefined) {
       this.button_.setAttribute('disabled', 'disabled');
       this.button_.innerText = 'Clearing...';
-      chrome.experimental.clear.browsingData(removal_start, {
+      chrome.experimental.browsingData.remove(removal_start, {
         "appcache": true,
         "cache": true,
         "cookies": true,

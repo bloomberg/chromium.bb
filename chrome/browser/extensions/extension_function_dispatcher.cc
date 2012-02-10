@@ -26,8 +26,8 @@
 #include "chrome/browser/extensions/execute_code_in_tab_function.h"
 #include "chrome/browser/extensions/extension_activity_log.h"
 #include "chrome/browser/extensions/extension_browser_actions_api.h"
+#include "chrome/browser/extensions/extension_browsing_data_api.h"
 #include "chrome/browser/extensions/extension_chrome_auth_private_api.h"
-#include "chrome/browser/extensions/extension_clear_api.h"
 #include "chrome/browser/extensions/extension_content_settings_api.h"
 #include "chrome/browser/extensions/extension_context_menu_api.h"
 #include "chrome/browser/extensions/extension_cookies_api.h"
@@ -189,19 +189,20 @@ void FactoryRegistry::ResetFunctions() {
   RegisterFunction<BrowserActionSetPopupFunction>();
 
   // Browsing Data.
-  RegisterFunction<ClearBrowsingDataFunction>();
-  RegisterFunction<ClearAppCacheFunction>();
-  RegisterFunction<ClearCacheFunction>();
-  RegisterFunction<ClearCookiesFunction>();
-  RegisterFunction<ClearDownloadsFunction>();
-  RegisterFunction<ClearFileSystemsFunction>();
-  RegisterFunction<ClearFormDataFunction>();
-  RegisterFunction<ClearHistoryFunction>();
-  RegisterFunction<ClearIndexedDBFunction>();
-  RegisterFunction<ClearLocalStorageFunction>();
-  RegisterFunction<ClearPluginDataFunction>();
-  RegisterFunction<ClearPasswordsFunction>();
-  RegisterFunction<ClearWebSQLFunction>();
+  RegisterFunction<RemoveBrowsingDataFunction>();
+  RegisterFunction<RemoveAppCacheFunction>();
+  RegisterFunction<RemoveCacheFunction>();
+  RegisterFunction<RemoveCookiesFunction>();
+  RegisterFunction<RemoveDownloadsFunction>();
+  RegisterFunction<RemoveFileSystemsFunction>();
+  RegisterFunction<RemoveFormDataFunction>();
+  RegisterFunction<RemoveHistoryFunction>();
+  RegisterFunction<RemoveIndexedDBFunction>();
+  RegisterFunction<RemoveLocalStorageFunction>();
+  RegisterFunction<RemoveOriginBoundCertsFunction>();
+  RegisterFunction<RemovePluginDataFunction>();
+  RegisterFunction<RemovePasswordsFunction>();
+  RegisterFunction<RemoveWebSQLFunction>();
 
   // Bookmarks.
   RegisterFunction<GetBookmarksFunction>();

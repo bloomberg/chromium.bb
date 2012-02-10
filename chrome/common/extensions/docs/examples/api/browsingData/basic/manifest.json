@@ -1,9 +1,9 @@
 {
-  "name" : "Clear API: Basics",
-  "version" : "1.0",
+  "name" : "BrowsingData API: Basics",
+  "version" : "1.1",
   "description" : "A trivial usage example.",
   "permissions": [
-    "clear",
+    "browsingData",
     "experimental"
   ],
   "browser_action": {
