@@ -33,6 +33,7 @@ class NativeWidgetAuraTest : public testing::Test {
   // testing::Test overrides:
   virtual void SetUp() OVERRIDE {
     aura::RootWindow::GetInstance()->SetBounds(gfx::Rect(0, 0, 640, 480));
+    aura::RootWindow::GetInstance()->SetHostSize(gfx::Size(640, 480));
   }
   virtual void TearDown() OVERRIDE {
     aura::RootWindow::DeleteInstance();

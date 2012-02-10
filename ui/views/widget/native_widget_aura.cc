@@ -330,16 +330,36 @@ InputMethod* NativeWidgetAura::CreateInputMethod() {
 }
 
 void NativeWidgetAura::CenterWindow(const gfx::Size& size) {
-  gfx::Rect parent_bounds(window_->parent()->bounds());
+  gfx::Rect parent_bounds(window_->parent()->GetScreenBounds());
   // When centering window, we take the intersection of the host and
   // the parent. We assume the root window represents the visible
   // rect of a single screen.
-  parent_bounds = parent_bounds.Intersect(
-      aura::RootWindow::GetInstance()->bounds());
-  window_->SetBounds(gfx::Rect((parent_bounds.width() - size.width())/2,
-                               (parent_bounds.height() - size.height())/2,
-                               size.width(),
-                               size.height()));
+  gfx::Rect work_area = gfx::Screen::GetMonitorWorkAreaNearestWindow(window_);
+  parent_bounds = parent_bounds.Intersect(work_area);
+
+  // If |window_|'s transient parent's bounds are big enough to fit it, then we
+  // center it with respect to the transient parent.
+  if (window_->transient_parent()) {
+    gfx::Rect transient_parent_rect = window_->transient_parent()->
+        GetScreenBounds().Intersect(work_area);
+    if (transient_parent_rect.height() >= size.height() &&
+        transient_parent_rect.width() >= size.width())
+      parent_bounds = transient_parent_rect;
+  }
+
+  gfx::Rect window_bounds(
+      parent_bounds.x() + (parent_bounds.width() - size.width()) / 2,
+      parent_bounds.y() + (parent_bounds.height() - size.height()) / 2,
+      size.width(),
+      size.height());
+  window_bounds = window_bounds.AdjustToFit(work_area);
+
+  // Convert the bounds back relative to the parent.
+  gfx::Point origin = window_bounds.origin();
+  aura::Window::ConvertPointToWindow(window_->GetRootWindow(),
+      window_->parent(), &origin);
+  window_bounds.set_origin(origin);
+  window_->SetBounds(window_bounds);
 }
 
 void NativeWidgetAura::GetWindowPlacement(
