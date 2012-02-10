@@ -5,10 +5,10 @@
 {
   'variables': {
     'conditions': [
-      [ 'os_posix == 1 and OS != "mac" and OS != "android"', {
+      [ 'toolkit_uses_gtk==1', {
         # Link to system .so since we already use it due to GTK.
         'use_system_bzip2%': 1,
-      }, {  # os_posix != 1 or OS == "mac" or OS == "android"
+      }, {  # toolkit_uses_gtk!=1
         'use_system_bzip2%': 0,
       }],
     ],
