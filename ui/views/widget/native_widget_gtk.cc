@@ -565,7 +565,8 @@ void NativeWidgetGtk::ActiveWindowChanged(GdkWindow* active_window) {
 bool NativeWidgetGtk::HandleKeyboardEvent(const KeyEvent& key) {
   if (!GetWidget()->GetFocusManager())
     return false;
-  return GetWidget()->GetFocusManager()->OnKeyEvent(key);
+  // FocusManager::OnKeyEvent() returns false when the key has been consumed.
+  return !GetWidget()->GetFocusManager()->OnKeyEvent(key);
 }
 
 bool NativeWidgetGtk::SuppressFreezeUpdates() {
