@@ -211,8 +211,8 @@ void DeviceSettingsProvider::SetInPolicy() {
   if (!RequestTrustedEntity()) {
     // Otherwise we should first reload and apply on top of that.
     SignedSettingsHelper::Get()->StartRetrievePolicyOp(
-            base::Bind(&DeviceSettingsProvider::FinishSetInPolicy,
-                       base::Unretained(this)));
+        base::Bind(&DeviceSettingsProvider::FinishSetInPolicy,
+                   base::Unretained(this)));
     return;
   }
 
@@ -364,8 +364,9 @@ void DeviceSettingsProvider::UpdateValuesCache() {
     // Otherwise we default to allowing new users.
     new_values_cache.SetBoolean(kAccountsPrefAllowNewUser, true);
   } else {
-    new_values_cache.SetBoolean(kAccountsPrefAllowNewUser,
-                             pol.user_whitelist().user_whitelist_size() == 0);
+    new_values_cache.SetBoolean(
+        kAccountsPrefAllowNewUser,
+        pol.user_whitelist().user_whitelist_size() == 0);
   }
 
   new_values_cache.SetBoolean(
