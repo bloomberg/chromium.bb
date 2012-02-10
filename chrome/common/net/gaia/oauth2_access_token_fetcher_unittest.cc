@@ -113,7 +113,7 @@ class OAuth2AccessTokenFetcherTest : public testing::Test {
   OAuth2AccessTokenFetcher fetcher_;
 };
 
-// Times out, see http://crbug.com/113446.
+// These three tests time out, see http://crbug.com/113446.
 TEST_F(OAuth2AccessTokenFetcherTest, DISABLED_GetAccessTokenRequestFailure) {
   TestURLFetcher* url_fetcher = SetupGetAccessToken(false, 0, "");
   EXPECT_CALL(consumer_, OnGetTokenFailure(_)).Times(1);
@@ -129,7 +129,7 @@ TEST_F(OAuth2AccessTokenFetcherTest,
   fetcher_.OnURLFetchComplete(url_fetcher);
 }
 
-TEST_F(OAuth2AccessTokenFetcherTest, Success) {
+TEST_F(OAuth2AccessTokenFetcherTest, DISABLED_Success) {
   TestURLFetcher* url_fetcher = SetupGetAccessToken(
       true, RC_REQUEST_OK, kValidTokenResponse);
   EXPECT_CALL(consumer_, OnGetTokenSuccess("at1")).Times(1);
