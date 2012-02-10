@@ -1142,6 +1142,7 @@ void Widget::DestroyRootView() {
   root_view_.reset();
   // Input method has to be destroyed before focus manager.
   input_method_.reset();
+#if defined(TOOLKIT_USES_GTK)
   // Defer focus manager's destruction. This is for the case when the
   // focus manager is referenced by a child NativeWidgetGtk (e.g. TabbedPane in
   // a dialog). When gtk_widget_destroy is called on the parent, the destroy
@@ -1152,6 +1153,7 @@ void Widget::DestroyRootView() {
   FocusManager* focus_manager = focus_manager_.release();
   if (focus_manager)
     MessageLoop::current()->DeleteSoon(FROM_HERE, focus_manager);
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////////////////
