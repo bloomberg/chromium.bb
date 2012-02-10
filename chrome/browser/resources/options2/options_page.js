@@ -114,8 +114,9 @@ cr.define('options', function() {
       if (!page.parentPage && isRootPageLocked)
         continue;
       if (page.willHidePage && name != pageName &&
-          !page.isAncestorOfPage(targetPage))
+          !page.isAncestorOfPage(targetPage)) {
         page.willHidePage();
+      }
     }
 
     // Update visibilities to show only the hierarchy of the target page.
@@ -140,9 +141,10 @@ cr.define('options', function() {
       var page = this.registeredPages[name];
       if (!page.parentPage && isRootPageLocked)
         continue;
-      if (!targetPageWasVisible && page.didShowPage && (name == pageName ||
-          page.isAncestorOfPage(targetPage)))
+      if (!targetPageWasVisible && page.didShowPage &&
+          (name == pageName || page.isAncestorOfPage(targetPage))) {
         page.didShowPage();
+      }
     }
   };
 
@@ -660,27 +662,17 @@ cr.define('options', function() {
     this.handleScroll_();
 
     // Shake the dialog if the user clicks outside the dialog bounds.
-    $('overlay').onclick = this.shakeDialog_;
-  };
+    var overlay = $('overlay');
 
-  /**
-   * Sets and resets the shake class to perform the shake animation.
-   * @private
-   */
-  OptionsPage.shakeDialog_ = function(e) {
-    // Only shake if the non-page part of the overlay is clicked.
-    if (e.target != this)
-      return;
+    overlay.onclick = function(e) {
+      // Only shake if the overlay was the target of the click.
+      if (e.target == overlay)
+        overlay.querySelector('.page:not([hidden])').classList.add('shake');
+    };
 
-    // Query the visible overlay page.
-    var page = this.querySelector('.page:not([hidden])');
-
-    // Shake it.
-    page.classList.add('shake');
-
-    // Bake it.
-    page.addEventListener('webkitAnimationEnd', function() {
-      page.classList.remove('shake');
+    overlay.addEventListener('webkitAnimationEnd', function(e) {
+      if (e.target.classList.contains('page'))
+        e.target.classList.remove('shake');
     });
   };
 
@@ -1011,17 +1003,21 @@ cr.define('options', function() {
 
       if (visible) {
         container.hidden = false;
-        if (isSubpage) {
-          var computedStyle = window.getComputedStyle(container);
-          container.style.WebkitPaddingStart =
-              parseInt(computedStyle.WebkitPaddingStart, 10) + 100 + 'px';
-        }
-        // Separate animating changes from the removal of display:none.
-        window.setTimeout(function() {
+        if (document.documentElement.classList.contains('loading')) {
           container.classList.remove('transparent');
-          if (isSubpage)
-            container.style.WebkitPaddingStart = '';
-        });
+        } else {
+          if (isSubpage) {
+            var computedStyle = window.getComputedStyle(container);
+            container.style.WebkitPaddingStart =
+                parseInt(computedStyle.WebkitPaddingStart, 10) + 100 + 'px';
+          }
+          // Separate animating changes from the removal of display:none.
+          window.setTimeout(function() {
+            container.classList.remove('transparent');
+            if (isSubpage)
+              container.style.WebkitPaddingStart = '';
+          });
+        }
       } else {
         var self = this;
         container.addEventListener('webkitTransitionEnd', function f(e) {

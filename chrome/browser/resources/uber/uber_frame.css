@@ -19,7 +19,7 @@ ul {
 }
 
 li {
-  -webkit-border-start: 6px solid white;
+  -webkit-border-start: 6px solid transparent;
   -webkit-padding-start: 18px;
   color: #999;
   cursor: pointer;

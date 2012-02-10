@@ -36,6 +36,12 @@ cr.define('uber', function() {
     window.setTimeout(function() {
       document.documentElement.classList.remove('loading');
     }, 0);
+
+    // HACK(dbeam): This makes the assumption that any second part to a path
+    // will result in needing background navigation. We shortcut it to avoid
+    // flicker on load.
+    if (params.path && window.location.pathname.indexOf('settings') == 0)
+      backgroundNavigation();
   }
 
   /**
