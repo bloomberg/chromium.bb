@@ -29,7 +29,7 @@ cr.define('uber', function() {
     navFrame = $('navigation');
 
     // Select a page based on the page-URL.
-    var params = resolvePageInfoFromPath(window.location.pathname);
+    var params = resolvePageInfo();
     showPage(params.id, HISTORY_STATE_OPTION.REPLACE, params.path);
 
     window.addEventListener('message', handleWindowMessage);
@@ -39,15 +39,15 @@ cr.define('uber', function() {
   }
 
   /**
-   * Find page information from the given path. If the path doesn't point to one
-   * of our pages, return default parameters.
-   * @param {string} path A path taken from the page URL.
+   * Find page information from window.location. If the location doesn't
+   * point to one of our pages, return default parameters.
    * @return {Object} An object containing the following parameters:
    *     id - The 'id' of the page.
-   *     path - A path into the page. Optional.
+   *     path - A path into the page, including search and hash. Optional.
    */
-  function resolvePageInfoFromPath(path) {
+  function resolvePageInfo() {
     var params = {};
+    var path = window.location.pathname;
     if (path.length > 1) {
       // Split the path into id and the remaining path.
       path = path.slice(1);
@@ -58,10 +58,14 @@ cr.define('uber', function() {
       } else {
         params.id = path;
       }
-      // If the target sub-page does not exist, discard the params we
-      // generated.
+
       var container = $(params.id);
-      if (!container) {
+      if (container) {
+        // The id is valid. Add the hash and search parts of the URL to path.
+        params.path = (params.path || '') + window.location.search +
+            window.location.hash;
+      } else {
+        // The target sub-page does not exist, discard the params we generated.
         params.id = undefined;
         params.path = undefined;
       }
