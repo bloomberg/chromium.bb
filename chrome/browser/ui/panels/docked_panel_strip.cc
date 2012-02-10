@@ -61,6 +61,7 @@ DockedPanelStrip::DockedPanelStrip(PanelManager* panel_manager)
       panel_manager_(panel_manager),
       minimized_panel_count_(0),
       are_titlebars_up_(false),
+      disable_layout_refresh_(false),
       dragging_panel_index_(kInvalidPanelIndex),
       dragging_panel_original_x_(0),
       delayed_titlebar_action_(NO_ACTION),
@@ -88,7 +89,7 @@ void DockedPanelStrip::SetDisplayArea(const gfx::Rect& display_area) {
 }
 
 void DockedPanelStrip::AddPanel(Panel* panel) {
-  DCHECK_NE(Panel::IN_OVERFLOW, panel->expansion_state());
+  DCHECK_EQ(this, panel->panel_strip());
 
   // Always update limits, even for exiting panels, in case the maximums changed
   // while panel was out of the strip.
@@ -103,13 +104,39 @@ void DockedPanelStrip::AddPanel(Panel* panel) {
 
   if (panel->initialized()) {
     // Bump panels in the strip to make room for this panel.
+    // Prevent layout refresh when panel is removed from this strip.
+    disable_layout_refresh_ = true;
+    PanelStrip* overflow_strip = panel_manager_->overflow_strip();
     int x;
     while ((x = GetRightMostAvailablePosition() - width) < display_area_.x()) {
       DCHECK(!panels_.empty());
-      panels_.back()->SetExpansionState(Panel::IN_OVERFLOW);
+      panels_.back()->MoveToStrip(overflow_strip);
     }
-    int y = display_area_.bottom() - height;
+    disable_layout_refresh_ = false;
+
+    Panel::ExpansionState expansion_state_to_restore;
+    if (panel->expansion_state() == Panel::EXPANDED) {
+      expansion_state_to_restore = Panel::EXPANDED;
+    } else {
+      if (are_titlebars_up_) {
+        expansion_state_to_restore = Panel::TITLE_ONLY;
+        height = panel->TitleOnlyHeight();
+      } else {
+        expansion_state_to_restore = Panel::MINIMIZED;
+        height = Panel::kMinimizedPanelHeight;
+      }
+      IncrementMinimizedPanels();
+    }
+
+    int y =
+        GetBottomPositionForExpansionState(expansion_state_to_restore) - height;
     panel->SetPanelBounds(gfx::Rect(x, y, width, height));
+
+    // Update the minimized state to reflect current titlebar mode.
+    // Do this AFTER setting panel bounds to avoid an extra bounds change.
+    if (panel->expansion_state() != Panel::EXPANDED)
+      panel->SetExpansionState(expansion_state_to_restore);
+
   } else {
     // Initialize the newly created panel. Does not bump any panels from strip.
     if (height == 0 && width == 0) {
@@ -145,7 +172,6 @@ void DockedPanelStrip::AddPanel(Panel* panel) {
     if (x < display_area_.x()) {
       x = display_area_.x();
       panel->set_has_temporary_layout(true);
-      panel->set_draggable(false);
       MessageLoop::current()->PostDelayedTask(
           FROM_HERE,
           base::Bind(&DockedPanelStrip::DelayedMovePanelToOverflow,
@@ -158,6 +184,9 @@ void DockedPanelStrip::AddPanel(Panel* panel) {
     panel->Initialize(gfx::Rect(x, y, width, height));
   }
 
+  // Set panel properties for this strip.
+  panel->SetAppIconVisibility(true);
+  panel->set_draggable(!panel->has_temporary_layout());
   panel->ApplyVisualStyleForStrip(DOCKED_STRIP);
 
   if (panel->has_temporary_layout())
@@ -200,9 +229,7 @@ bool DockedPanelStrip::RemovePanel(Panel* panel) {
 
   DoRemove(panel);
 
-  // Don't rearrange the strip if a panel is being moved from the panel strip
-  // to the overflow strip.
-  if (panel->expansion_state() != Panel::IN_OVERFLOW)
+  if (!disable_layout_refresh_)
     RefreshLayout();
 
   return true;
@@ -220,8 +247,7 @@ bool DockedPanelStrip::DoRemove(Panel* panel) {
   if (iter == panels_.end())
     return false;
 
-  if (panel->expansion_state() == Panel::TITLE_ONLY ||
-      panel->expansion_state() == Panel::MINIMIZED)
+  if (panel->expansion_state() != Panel::EXPANDED)
     DecrementMinimizedPanels();
 
   panels_.erase(iter);
@@ -364,12 +390,6 @@ void DockedPanelStrip::OnPanelExpansionStateChanged(Panel* panel) {
   gfx::Size size = panel->restored_size();
   Panel::ExpansionState expansion_state = panel->expansion_state();
   Panel::ExpansionState old_state = panel->old_expansion_state();
-  if (old_state == Panel::IN_OVERFLOW) {
-    panel_manager_->overflow_strip()->RemovePanel(panel);
-    AddPanel(panel);
-    panel->SetAppIconVisibility(true);
-    panel->set_draggable(true);
-  }
   switch (expansion_state) {
     case Panel::EXPANDED:
       if (old_state == Panel::TITLE_ONLY || old_state == Panel::MINIMIZED)
@@ -377,17 +397,13 @@ void DockedPanelStrip::OnPanelExpansionStateChanged(Panel* panel) {
       break;
     case Panel::TITLE_ONLY:
       size.set_height(panel->TitleOnlyHeight());
-      if (old_state == Panel::EXPANDED || old_state == Panel::IN_OVERFLOW)
+      if (old_state == Panel::EXPANDED)
         IncrementMinimizedPanels();
       break;
     case Panel::MINIMIZED:
       size.set_height(Panel::kMinimizedPanelHeight);
-      if (old_state == Panel::EXPANDED || old_state == Panel::IN_OVERFLOW)
+      if (old_state == Panel::EXPANDED)
         IncrementMinimizedPanels();
-      break;
-    case Panel::IN_OVERFLOW:
-      if (old_state == Panel::TITLE_ONLY || old_state == Panel::MINIMIZED)
-        DecrementMinimizedPanels();
       break;
     default:
       NOTREACHED();
@@ -404,6 +420,7 @@ void DockedPanelStrip::OnPanelExpansionStateChanged(Panel* panel) {
 }
 
 void DockedPanelStrip::OnPanelAttentionStateChanged(Panel* panel) {
+  DCHECK_EQ(this, panel->panel_strip());
   if (panel->IsDrawingAttention()) {
     // Bring up the titlebar to get user's attention.
     if (panel->expansion_state() == Panel::MINIMIZED)
@@ -413,6 +430,29 @@ void DockedPanelStrip::OnPanelAttentionStateChanged(Panel* panel) {
     if (panel->expansion_state() == Panel::TITLE_ONLY && !are_titlebars_up_)
       panel->SetExpansionState(Panel::MINIMIZED);
   }
+}
+
+void DockedPanelStrip::ActivatePanel(Panel* panel) {
+  DCHECK_EQ(this, panel->panel_strip());
+
+  // Make sure the panel is expanded when activated so the user input
+  // does not go into a collapsed window.
+  panel->SetExpansionState(Panel::EXPANDED);
+}
+
+void DockedPanelStrip::MinimizePanel(Panel* panel) {
+  DCHECK_EQ(this, panel->panel_strip());
+
+  if (panel->expansion_state() != Panel::EXPANDED)
+    return;
+
+  panel->SetExpansionState(panel->IsDrawingAttention() ?
+      Panel::TITLE_ONLY : Panel::MINIMIZED);
+}
+
+void DockedPanelStrip::RestorePanel(Panel* panel) {
+  DCHECK_EQ(this, panel->panel_strip());
+  panel->SetExpansionState(Panel::EXPANDED);
 }
 
 void DockedPanelStrip::IncrementMinimizedPanels() {
@@ -452,26 +492,30 @@ void DockedPanelStrip::ResizePanelWindow(
   if (new_size != panel->restored_size())
     panel->set_restored_size(new_size);
 
-  // Only need to adjust bounds height when panel is expanded.
   gfx::Rect bounds = panel->GetBounds();
-  Panel::ExpansionState expansion_state = panel->expansion_state();
-  if (new_height != bounds.height() &&
-      expansion_state == Panel::EXPANDED) {
-    bounds.set_y(bounds.bottom() - new_height);
-    bounds.set_height(new_height);
-  }
-
-  // Only need to adjust width if panel is in the panel strip.
   int delta_x = bounds.width() - new_width;
-  if (delta_x != 0 && expansion_state != Panel::IN_OVERFLOW) {
-    bounds.set_width(new_width);
-    bounds.set_x(bounds.x() + delta_x);
+
+  // Only need to adjust current bounds if panel is in the dock.
+  if (panel->panel_strip() == this) {
+    // Only need to adjust bounds height when panel is expanded.
+    Panel::ExpansionState expansion_state = panel->expansion_state();
+    if (new_height != bounds.height() &&
+        expansion_state == Panel::EXPANDED) {
+      bounds.set_y(bounds.bottom() - new_height);
+      bounds.set_height(new_height);
+    }
+
+    if (delta_x != 0) {
+      bounds.set_width(new_width);
+      bounds.set_x(bounds.x() + delta_x);
+    }
+
+    if (bounds != panel->GetBounds())
+      panel->SetPanelBounds(bounds);
   }
 
-  if (bounds != panel->GetBounds())
-    panel->SetPanelBounds(bounds);
-
-  // Only need to rearrange if panel's width changed.
+  // Only need to rearrange if panel's width changed. Rearrange even if panel
+  // is in overflow because there may now be room to fit that panel.
   if (delta_x != 0)
     RefreshLayout();
 }
@@ -675,27 +719,22 @@ void DockedPanelStrip::RefreshLayout() {
 #if defined(OS_WIN) || defined(OS_MACOSX)
   // Add/remove panels from/to overflow. A change in work area or the
   // resize/removal of a panel may affect how many panels fit in the strip.
+  OverflowPanelStrip* overflow_strip = panel_manager_->overflow_strip();
   if (panel_index < panels_.size()) {
     // Move panels to overflow in reverse to maintain their order.
+    // Prevent layout refresh when panel is removed from this strip.
+    disable_layout_refresh_ = true;
     for (size_t overflow_index = panels_.size() - 1;
          overflow_index >= panel_index; --overflow_index)
-      panels_[overflow_index]->SetExpansionState(Panel::IN_OVERFLOW);
+      panels_[overflow_index]->MoveToStrip(overflow_strip);
+    disable_layout_refresh_ = false;
   } else {
     // Attempt to add more panels from overflow to the strip.
-    OverflowPanelStrip* overflow_strip = panel_manager_->overflow_strip();
     Panel* overflow_panel;
     while ((overflow_panel = overflow_strip->first_panel()) &&
            GetRightMostAvailablePosition() >=
                display_area_.x() + overflow_panel->restored_size().width()) {
-      // We need to get back to the previous expansion state.
-      Panel::ExpansionState expansion_state_to_restore =
-          overflow_panel->old_expansion_state();
-      if (expansion_state_to_restore == Panel::MINIMIZED ||
-          expansion_state_to_restore == Panel::TITLE_ONLY) {
-        expansion_state_to_restore = are_titlebars_up_ ? Panel::TITLE_ONLY
-                                                       : Panel::MINIMIZED;
-      }
-      overflow_panel->SetExpansionState(expansion_state_to_restore);
+      overflow_panel->MoveToStrip(this);
     }
   }
 #endif
@@ -704,7 +743,7 @@ void DockedPanelStrip::RefreshLayout() {
 void DockedPanelStrip::DelayedMovePanelToOverflow(Panel* panel) {
   if (panels_in_temporary_layout_.erase(panel)) {
       DCHECK(panel->has_temporary_layout());
-      panel->SetExpansionState(Panel::IN_OVERFLOW);
+      panel->MoveToStrip(panel_manager_->overflow_strip());
   }
 }
 

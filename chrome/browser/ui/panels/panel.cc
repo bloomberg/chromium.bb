@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/panels/native_panel.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
+#include "chrome/browser/ui/panels/panel_strip.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/window_sizer.h"
 #include "chrome/browser/web_applications/web_app.h"
@@ -43,6 +44,7 @@ const Extension* Panel::GetExtensionFromBrowser(Browser* browser) {
 
 Panel::Panel(Browser* browser, const gfx::Size& requested_size)
     : browser_(browser),
+      panel_strip_(NULL),
       initialized_(false),
       has_temporary_layout_(false),
       restored_size_(requested_size),
@@ -67,7 +69,7 @@ void Panel::Initialize(const gfx::Rect& bounds) {
 void Panel::OnNativePanelClosed() {
   if (auto_resizable_)
     native_panel_->GetPanelBrowser()->tabstrip_model()->RemoveObserver(this);
-  manager()->Remove(this);
+  panel_strip_->RemovePanel(this);
 }
 
 PanelManager* Panel::manager() const {
@@ -78,8 +80,13 @@ const Extension* Panel::GetExtension() const {
   return GetExtensionFromBrowser(browser());
 }
 
+// TODO(jennb): do not update restored_size here as there's no knowledge
+// at this point whether the bounds change is due to the content window
+// being resized vs a change in current display bounds, e.g. from overflow
+// size change. Change this when refactoring panel resize logic.
 void Panel::SetPanelBounds(const gfx::Rect& bounds) {
-  if (expansion_state_ == Panel::EXPANDED)
+  if (panel_strip_->type() == PanelStrip::DOCKED &&
+      expansion_state_ == Panel::EXPANDED)
     restored_size_ = bounds.size();
 
   native_panel_->SetPanelBounds(bounds);
@@ -91,7 +98,8 @@ void Panel::SetPanelBounds(const gfx::Rect& bounds) {
 }
 
 void Panel::SetPanelBoundsInstantly(const gfx::Rect& bounds) {
-  if (expansion_state_ == Panel::EXPANDED)
+  if (panel_strip_->type() == PanelStrip::DOCKED &&
+      expansion_state_ == Panel::EXPANDED)
     restored_size_ = bounds.size();
 
   native_panel_->SetPanelBoundsInstantly(bounds);
@@ -137,6 +145,20 @@ void Panel::SetAppIconVisibility(bool visible) {
   native_panel_->SetPanelAppIconVisibility(visible);
 }
 
+void Panel::MoveToStrip(PanelStrip* new_strip) {
+  DCHECK_NE(panel_strip_, new_strip);
+  if (panel_strip_)
+    panel_strip_->RemovePanel(this);
+
+  panel_strip_ = new_strip;
+  panel_strip_->AddPanel(this);
+
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_PANEL_CHANGED_LAYOUT_MODE,
+      content::Source<Panel>(this),
+      content::NotificationService::NoDetails());
+}
+
 void Panel::SetExpansionState(ExpansionState new_state) {
   if (expansion_state_ == new_state)
     return;
@@ -164,8 +186,8 @@ void Panel::FullScreenModeChanged(bool is_full_screen) {
 }
 
 void Panel::Show() {
-  // Don't show panel as active if it is in overflow state.
-  if (expansion_state_ == IN_OVERFLOW)
+  // Don't show panel as active if it is in overflow.
+  if (PanelStrip::IN_OVERFLOW == panel_strip_->type())
     ShowInactive();
   else
     native_panel_->ShowPanel();
@@ -187,9 +209,7 @@ void Panel::Close() {
 }
 
 void Panel::Activate() {
-  // Make sure the panel is expanded when activated programmatically,
-  // so the user input does not go into collapsed window.
-  SetExpansionState(Panel::EXPANDED);
+  panel_strip_->ActivatePanel(this);
   native_panel_->ActivatePanel();
 }
 
@@ -210,7 +230,7 @@ void Panel::FlashFrame(bool flash) {
     return;
 
   native_panel_->DrawAttention(flash);
-  manager()->OnPanelAttentionStateChanged(this);
+  panel_strip_->OnPanelAttentionStateChanged(this);
 }
 
 gfx::NativeWindow Panel::GetNativeHandle() {
@@ -299,17 +319,11 @@ void Panel::Maximize() {
 }
 
 void Panel::Minimize() {
-  if (expansion_state_ != EXPANDED)
-    return;
-
-  if (IsDrawingAttention())
-    SetExpansionState(TITLE_ONLY);
-  else
-    SetExpansionState(MINIMIZED);
+  panel_strip_->MinimizePanel(this);
 }
 
 void Panel::Restore() {
-  SetExpansionState(EXPANDED);
+  panel_strip_->RestorePanel(this);
 }
 
 void Panel::EnterFullscreen(

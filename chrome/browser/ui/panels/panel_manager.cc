@@ -113,7 +113,7 @@ Panel* PanelManager::CreatePanel(Browser* browser) {
   int width = browser->override_bounds().width();
   int height = browser->override_bounds().height();
   Panel* panel = new Panel(browser, gfx::Size(width, height));
-  docked_strip_->AddPanel(panel);
+  panel->MoveToStrip(docked_strip_.get());
 
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_PANEL_ADDED,
@@ -147,19 +147,12 @@ void PanelManager::CheckFullScreenMode() {
   overflow_strip_->OnFullScreenModeChanged(is_full_screen_);
 }
 
-void PanelManager::Remove(Panel* panel) {
+void PanelManager::OnPanelRemoved(Panel* panel) {
 #if defined(OS_WIN) || defined(OS_MACOSX)
-  if (num_panels() == 1)
+  if (num_panels() == 0)
     full_screen_mode_timer_.Stop();
 #endif
 
-  if (docked_strip_->RemovePanel(panel))
-    return;
-  bool removed = overflow_strip_->RemovePanel(panel);
-  DCHECK(removed);
-}
-
-void PanelManager::OnPanelRemoved(Panel* panel) {
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_PANEL_REMOVED,
       content::Source<Panel>(panel),
@@ -180,30 +173,23 @@ void PanelManager::EndDragging(bool cancelled) {
 
 void PanelManager::OnPanelExpansionStateChanged(Panel* panel) {
   docked_strip_->OnPanelExpansionStateChanged(panel);
-  overflow_strip_->OnPanelExpansionStateChanged(panel);
-}
-
-void PanelManager::OnPanelAttentionStateChanged(Panel* panel) {
-  if (panel->expansion_state() == Panel::IN_OVERFLOW)
-    overflow_strip_->OnPanelAttentionStateChanged(panel);
-  else
-    docked_strip_->OnPanelAttentionStateChanged(panel);
 }
 
 void PanelManager::OnPreferredWindowSizeChanged(
     Panel* panel, const gfx::Size& preferred_window_size) {
-  if (!auto_sizing_enabled_)
+  if (!auto_sizing_enabled_) {
+    LOG(INFO) << "Resizing auto-resizable Panels is not supported yet.";
     return;
+  }
   docked_strip_->ResizePanelWindow(panel, preferred_window_size);
 }
 
 void PanelManager::ResizePanel(Panel* panel, const gfx::Size& new_size) {
   // Explicit resizing is not allowed for auto-resizable panels for now.
   // http://crbug.com/109343
-  if (panel->auto_resizable()) {
-    LOG(INFO) << "Resizing auto-resizable Panels is not supported yet.";
+  if (panel->auto_resizable())
     return;
-  }
+
   docked_strip_->ResizePanelWindow(panel, new_size);
 }
 

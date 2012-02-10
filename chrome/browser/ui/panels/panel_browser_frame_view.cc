@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/panels/panel_browser_view.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
 #include "chrome/browser/ui/panels/panel_settings_menu_model.h"
+#include "chrome/browser/ui/panels/panel_strip.h"
 #include "chrome/common/extensions/extension.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/generated_resources.h"
@@ -499,7 +500,8 @@ void PanelBrowserFrameView::Layout() {
   bool show_close_button = true;
   bool show_settings_button = true;
   bool show_title_label = true;
-  if (panel_browser_view_->panel()->expansion_state() == Panel::IN_OVERFLOW) {
+  if (panel_browser_view_->panel()->panel_strip()->type() ==
+          PanelStrip::IN_OVERFLOW) {
     if (width() <= IconOnlyWidth()) {
       show_close_button = false;
       show_settings_button = false;
@@ -881,7 +883,8 @@ void PanelBrowserFrameView::UpdateSettingsButtonVisibility(
   DCHECK(has_settings_button_);
 
   // The settings button is not shown in the overflow state.
-  if (panel_browser_view_->panel()->expansion_state() == Panel::IN_OVERFLOW)
+  if (panel_browser_view_->panel()->panel_strip()->type() ==
+      PanelStrip::IN_OVERFLOW)
     return;
 
   bool is_settings_button_visible = focused || cursor_in_view;

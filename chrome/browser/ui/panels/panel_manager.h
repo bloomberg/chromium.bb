@@ -52,9 +52,6 @@ class PanelManager : public AutoHidingDesktopBar::Observer {
   // Invoked when a panel's expansion state changes.
   void OnPanelExpansionStateChanged(Panel* panel);
 
-  // Invoked when a panel is starting/stopping drawing an attention.
-  void OnPanelAttentionStateChanged(Panel* panel);
-
   // Invoked when the preferred window size of the given panel might need to
   // get changed.
   void OnPreferredWindowSizeChanged(

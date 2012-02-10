@@ -82,7 +82,7 @@ void OverflowPanelStrip::UpdateCurrentWidth() {
 void OverflowPanelStrip::AddPanel(Panel* panel) {
   // TODO(jianli): consider using other container to improve the perf for
   // inserting to the front. http://crbug.com/106222
-  DCHECK_EQ(Panel::IN_OVERFLOW, panel->expansion_state());
+  DCHECK_EQ(this, panel->panel_strip());
   // Newly created panels that were temporarily in the panel strip
   // are added to the back of the overflow, whereas panels that are
   // bumped from the panel strip by other panels go to the front
@@ -96,6 +96,9 @@ void OverflowPanelStrip::AddPanel(Panel* panel) {
     RefreshLayout();
   }
 
+  // Set panel properties for this strip.
+  panel->SetAppIconVisibility(false);
+  panel->set_draggable(false);
   panel->ApplyVisualStyleForStrip(OVERFLOW_STRIP);
 
   if (num_panels() == 1) {
@@ -154,20 +157,29 @@ void OverflowPanelStrip::ResizePanelWindow(
   // Overflow uses its own panel window sizes.
 }
 
-void OverflowPanelStrip::OnPanelExpansionStateChanged(Panel* panel) {
-  // Only care about new state being overflow.
-  if (panel->expansion_state() != Panel::IN_OVERFLOW)
-    return;
-
-  panel_manager_->docked_strip()->RemovePanel(panel);
-  AddPanel(panel);
-  panel->SetAppIconVisibility(false);
-  panel->set_draggable(false);
+void OverflowPanelStrip::OnPanelAttentionStateChanged(Panel* panel) {
+  DCHECK_EQ(this, panel->panel_strip());
+  UpdateOverflowIndicatorAttention();
 }
 
-void OverflowPanelStrip::OnPanelAttentionStateChanged(Panel* panel) {
-  DCHECK(panel->expansion_state() == Panel::IN_OVERFLOW);
-  UpdateOverflowIndicatorAttention();
+void OverflowPanelStrip::ActivatePanel(Panel* panel) {
+  DCHECK_EQ(this, panel->panel_strip());
+  // Activating an overflow panel moves it to the docked panel strip.
+  PanelStrip* docked_strip = panel_manager_->docked_strip();
+  panel->MoveToStrip(docked_strip);
+  docked_strip->ActivatePanel(panel);
+}
+
+void OverflowPanelStrip::MinimizePanel(Panel* panel) {
+  DCHECK_EQ(this, panel->panel_strip());
+  // Overflow is already a minimized mode for a panel. Nothing more to do.
+}
+
+void OverflowPanelStrip::RestorePanel(Panel* panel) {
+  DCHECK_EQ(this, panel->panel_strip());
+  PanelStrip* docked_strip = panel_manager_->docked_strip();
+  panel->MoveToStrip(docked_strip);
+  docked_strip->RestorePanel(panel);
 }
 
 void OverflowPanelStrip::RefreshLayout() {

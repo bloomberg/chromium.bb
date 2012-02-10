@@ -39,9 +39,9 @@ class OverflowPanelStrip : public PanelStrip,
       Panel* panel,
       const gfx::Size& preferred_window_size) OVERRIDE;
   virtual void OnPanelAttentionStateChanged(Panel* panel) OVERRIDE;
-
-  // Called when a panel's expansion state changes.
-  void OnPanelExpansionStateChanged(Panel* panel);
+  virtual void ActivatePanel(Panel* panel) OVERRIDE;
+  virtual void MinimizePanel(Panel* panel) OVERRIDE;
+  virtual void RestorePanel(Panel* panel) OVERRIDE;
 
   void OnFullScreenModeChanged(bool is_full_screen);
 

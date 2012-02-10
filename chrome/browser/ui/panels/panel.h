@@ -17,6 +17,7 @@
 
 class NativePanel;
 class PanelManager;
+class PanelStrip;
 
 // Type of the panel strip which currently manages the panel location,
 // visual state and size.
@@ -46,10 +47,7 @@ class Panel : public BrowserWindow,
    // The panel is shown with the title-bar only.
    TITLE_ONLY,
    // The panel is shown with 3-pixel line.
-   MINIMIZED,
-   // The panel is put into the overflow area due to no space available in the
-   // normal display area.
-   IN_OVERFLOW
+   MINIMIZED
   };
 
   // The panel can be minimized to 4-pixel lines.
@@ -231,6 +229,14 @@ class Panel : public BrowserWindow,
 
   NativePanel* native_panel() { return native_panel_; }
   Browser* browser() const { return browser_; }
+
+  // May be NULL if panel is newly created and has not been positioned yet.
+  PanelStrip* panel_strip() const { return panel_strip_; }
+
+  // Moves the panel to the |new_strip|, removing the panel from its
+  // current strip.
+  void MoveToStrip(PanelStrip* new_strip);
+
   ExpansionState expansion_state() const { return expansion_state_; }
   ExpansionState old_expansion_state() const { return old_expansion_state_; }
   const gfx::Size& min_size() const { return min_size_; }
@@ -295,6 +301,10 @@ class Panel : public BrowserWindow,
   void ConfigureAutoResize(content::WebContents* web_contents);
 
   Browser* browser_;  // Weak, owned by native panel.
+
+  // Current collection of panels to which this panel belongs. This determines
+  // the panel's screen layout.
+  PanelStrip* panel_strip_;  // Owned by PanelManager.
 
   bool initialized_;
 

@@ -10,6 +10,7 @@
 #include "chrome/browser/ui/panels/panel.h"
 #include "chrome/browser/ui/panels/panel_bounds_animation.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
+#include "chrome/browser/ui/panels/panel_strip.h"
 #include "chrome/browser/ui/panels/panel_settings_menu_model.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_service.h"
@@ -641,7 +642,8 @@ gboolean PanelBrowserWindowGtk::OnTitlebarButtonReleaseEvent(
 
   CleanupDragDrop();
 
-  if (panel_->expansion_state() == Panel::EXPANDED) {
+  if (panel_->panel_strip()->type() == PanelStrip::DOCKED &&
+      panel_->expansion_state() == Panel::EXPANDED) {
     if (base::Time::Now() < disableMinimizeUntilTime_)
       return TRUE;
 

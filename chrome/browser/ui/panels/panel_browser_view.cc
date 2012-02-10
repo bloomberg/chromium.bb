@@ -11,6 +11,7 @@
 #include "chrome/browser/ui/panels/panel_bounds_animation.h"
 #include "chrome/browser/ui/panels/panel_browser_frame_view.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
+#include "chrome/browser/ui/panels/panel_strip.h"
 #include "chrome/browser/ui/views/frame/browser_frame.h"
 #include "chrome/browser/ui/webui/chrome_web_ui.h"
 #include "chrome/browser/ui/webui/task_manager_dialog.h"
@@ -494,7 +495,8 @@ bool PanelBrowserView::OnTitlebarMouseReleased() {
   // Do not minimize the panel when we just clear the attention state. This is
   // a hack to prevent the panel from being minimized when the user clicks on
   // the title-bar to clear the attention.
-  if (panel_->expansion_state() == Panel::EXPANDED &&
+  if (panel_->panel_strip()->type() == PanelStrip::DOCKED &&
+      panel_->expansion_state() == Panel::EXPANDED &&
       base::TimeTicks::Now() - attention_cleared_time_ <
       base::TimeDelta::FromMilliseconds(kSuspendMinimizeOnClickIntervalMs)) {
     return true;
@@ -505,10 +507,12 @@ bool PanelBrowserView::OnTitlebarMouseReleased() {
       base::TimeDelta::FromMilliseconds(kShortClickThresholdMs))
     return true;
 
-  Panel::ExpansionState new_expansion_state =
-    (panel_->expansion_state() != Panel::EXPANDED) ? Panel::EXPANDED
-                                                   : Panel::MINIMIZED;
-  panel_->SetExpansionState(new_expansion_state);
+  if (panel_->panel_strip()->type() == PanelStrip::DOCKED &&
+      panel_->expansion_state() == Panel::EXPANDED)
+    panel_->SetExpansionState(Panel::MINIMIZED);
+  else
+    panel_->Activate();
+
   return true;
 }
 

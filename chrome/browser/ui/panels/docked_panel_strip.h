@@ -43,18 +43,15 @@ class DockedPanelStrip : public PanelStrip,
   // Adds a panel to the strip. The panel may be a newly created panel or one
   // that is transitioning from another grouping of panels.
   virtual void AddPanel(Panel* panel) OVERRIDE;
-
-  // Returns |false| if the panel is not in the strip.
   virtual bool RemovePanel(Panel* panel) OVERRIDE;
   virtual void CloseAll() OVERRIDE;
-
-  // Invoked when the window size of the given panel needs to be changed.
   virtual void ResizePanelWindow(
       Panel* panel,
       const gfx::Size& preferred_window_size) OVERRIDE;
-
-  // Invoked when a panel's attention state changes.
   virtual void OnPanelAttentionStateChanged(Panel* panel) OVERRIDE;
+  virtual void ActivatePanel(Panel* panel) OVERRIDE;
+  virtual void MinimizePanel(Panel* panel) OVERRIDE;
+  virtual void RestorePanel(Panel* panel) OVERRIDE;
 
   // Drags the given panel.
   void StartDragging(Panel* panel);
@@ -159,6 +156,10 @@ class DockedPanelStrip : public PanelStrip,
 
   int minimized_panel_count_;
   bool are_titlebars_up_;
+
+  // |True| to temporarily prevent refreshing panel layout, e.g. while
+  // moving panels to overflow area to make room for a panel in this strip.
+  bool disable_layout_refresh_;
 
   // Panel to drag.
   size_t dragging_panel_index_;

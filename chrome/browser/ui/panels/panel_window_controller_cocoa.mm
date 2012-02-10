@@ -30,6 +30,7 @@
 #include "chrome/browser/ui/panels/panel_browser_window_cocoa.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
 #include "chrome/browser/ui/panels/panel_settings_menu_model.h"
+#include "chrome/browser/ui/panels/panel_strip.h"
 #import "chrome/browser/ui/panels/panel_titlebar_view_cocoa.h"
 #include "chrome/browser/ui/toolbar/encoding_menu_controller.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -468,7 +469,8 @@ enum {
   // and there is relatively big portion of the panel to hide from view.
   // Initialize animation differently in this case, using fast-pause-slow
   // method, see below for more details.
-  if (windowShim_->panel()->expansion_state() == Panel::MINIMIZED) {
+  if (distanceY > 0 &&
+      windowShim_->panel()->expansion_state() == Panel::MINIMIZED) {
     animationStopToShowTitlebarOnly_ =
         1.0 - (windowShim_->TitleOnlyHeight() - NSHeight(frame)) / distanceY;
     if (animationStopToShowTitlebarOnly_ > 0.7) {  // Relatively big movement.
@@ -490,7 +492,8 @@ enum {
 
 - (void)animationDidEnd:(NSAnimation*)animation {
   playingMinimizeAnimation_ = NO;
-  if (windowShim_->panel()->expansion_state() == Panel::EXPANDED)
+  if (windowShim_->panel()->panel_strip()->type() == PanelStrip::DOCKED &&
+      windowShim_->panel()->expansion_state() == Panel::EXPANDED)
     [self enableTabContentsViewAutosizing];
 
   content::NotificationService::current()->Notify(
@@ -514,9 +517,8 @@ enum {
 
 - (void)onTitlebarMouseClicked {
   Panel* panel = windowShim_->panel();
-  Panel::ExpansionState oldExpansionState = panel->expansion_state();
-
-  if (oldExpansionState == Panel::EXPANDED) {
+  if (panel->panel_strip()->type() == PanelStrip::DOCKED &&
+      panel->expansion_state() == Panel::EXPANDED) {
     if ([[self titlebarView] isDrawingAttention]) {
       // Do not minimize if the Panel is drawing attention since user
       // most likely simply wants to reset the 'draw attention' status.
@@ -524,9 +526,8 @@ enum {
       return;
     }
     panel->SetExpansionState(Panel::MINIMIZED);
-    // The Panel class ensures deactivaiton when it is minimized.
+    // The Panel class ensures deactivation when it is minimized.
   } else {
-    panel->SetExpansionState(Panel::EXPANDED);
     panel->Activate();
   }
 }

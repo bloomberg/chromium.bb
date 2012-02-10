@@ -42,7 +42,8 @@ class PanelStrip {
   // Closes all panels in the collection. Panels will be removed after closing.
   virtual void CloseAll() = 0;
 
-  // Resizes the |panel| to the |preferred_window_size|.
+  // Resizes the |panel| to the |preferred_window_size| and updates the layout
+  // of other panels in the collection accordingly.
   // |preferred_window_size| is the outer dimensions of the window, not
   // the content area, and is in screen coordinates.
   // The preferred size may be adjusted to fit layout constraints.
@@ -53,6 +54,13 @@ class PanelStrip {
   // Subclass should update the display of the panel to match the new
   // draw attention state.
   virtual void OnPanelAttentionStateChanged(Panel* panel) = 0;
+
+  // Updates the display to show |panel| as active.
+  virtual void ActivatePanel(Panel* panel) = 0;
+
+  // Updates the display to show |panel| as  minimized/restored.
+  virtual void MinimizePanel(Panel* panel) = 0;
+  virtual void RestorePanel(Panel* panel) = 0;
 
  protected:
   explicit PanelStrip(Type type);
