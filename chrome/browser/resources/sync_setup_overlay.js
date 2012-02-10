@@ -138,13 +138,11 @@ cr.define('options', function() {
         this.checkAllDataTypeCheckboxes_();
     },
 
-    // Returns true if at least one data type is enabled and no data types are
-    // checked. (If all data type checkboxes are disabled, it's because 'keep
-    // everything synced' is checked.)
+    // Returns true if none of the visible checkboxes are checked.
     noDataTypesChecked_: function() {
-      var query = '.sync-type-checkbox:not([hidden]) input:not(:checked)'
+      var query = '.sync-type-checkbox:not([hidden]) input:checked';
       var checkboxes = $('choose-data-types-body').querySelectorAll(query);
-      return checkboxes.length != 0;
+      return checkboxes.length == 0;
     },
 
     checkPassphraseMatch_: function() {
@@ -177,14 +175,12 @@ cr.define('options', function() {
       // Trying to submit, so hide previous errors.
       $('error-text').hidden = true;
 
-      if (this.noDataTypesChecked_()) {
+      var syncAll = $('sync-select-datatypes').selectedIndex == 0;
+      if (!syncAll && this.noDataTypesChecked_()) {
         $('error-text').hidden = false;
         return;
       }
 
-      var f = $('choose-data-types-form');
-
-      var syncAll = $('sync-select-datatypes').selectedIndex == 0;
       var encryptAllData = this.getEncryptionRadioCheckedValue_() == 'all';
 
       var usePassphrase;
@@ -192,7 +188,7 @@ cr.define('options', function() {
       var googlePassphrase = false;
       if (!$('sync-existing-passphrase-container').hidden) {
         // If we were prompted for an existing passphrase, use it.
-        customPassphrase = f.passphrase.value;
+        customPassphrase = $('choose-data-types-form').passphrase.value;
         usePassphrase = true;
         // If we were displaying the 'enter your old google password' prompt,
         // then that means this is the user's google password.
