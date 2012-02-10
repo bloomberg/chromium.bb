@@ -1306,7 +1306,6 @@ map(struct weston_shell *base,
 	case SHELL_SURFACE_TOPLEVEL:
 		surface->geometry.x = 10 + random() % 400;
 		surface->geometry.y = 10 + random() % 400;
-		surface->geometry.dirty = 1;
 		break;
 	case SHELL_SURFACE_SCREENSAVER:
 	case SHELL_SURFACE_FULLSCREEN:
@@ -1337,7 +1336,6 @@ map(struct weston_shell *base,
 		/* lock surface always visible, on top */
 		wl_list_insert(&compositor->surface_list, &surface->link);
 
-		weston_compositor_repick(compositor);
 		weston_compositor_wake(compositor);
 		do_configure = 1;
 		break;
