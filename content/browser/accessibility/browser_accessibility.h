@@ -221,6 +221,22 @@ class CONTENT_EXPORT BrowserAccessibility {
   // returns true if found.
   bool GetHtmlAttribute(const char* attr, string16* value) const;
 
+  // Utility method to handle special cases for ARIA booleans, tristates and
+  // booleans which have a "mixed" state.
+  //
+  // Warning: the term "Tristate" is used loosely by the spec and here,
+  // as some attributes support a 4th state.
+  //
+  // The following attributes are appropriate to use with this method:
+  // aria-selected  (selectable)
+  // aria-grabbed   (grabbable)
+  // aria-expanded  (expandable)
+  // aria-pressed   (toggleable/pressable) -- supports 4th "mixed" state
+  // aria-checked   (checkable) -- supports 4th "mixed state"
+  bool GetAriaTristate(const char* attr_name,
+                       bool* is_defined,
+                       bool* is_mixed) const;
+
   // Returns true if the bit corresponding to the given state enum is 1.
   bool HasState(WebAccessibility::State state_enum) const;
 

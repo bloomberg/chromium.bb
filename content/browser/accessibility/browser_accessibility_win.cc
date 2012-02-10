@@ -2990,6 +2990,14 @@ void BrowserAccessibilityWin::InitRoleAndState() {
       break;
     case WebAccessibility::ROLE_BUTTON:
       ia_role_ = ROLE_SYSTEM_PUSHBUTTON;
+      bool is_aria_pressed_defined;
+      bool is_mixed;
+      if (GetAriaTristate("aria-pressed", &is_aria_pressed_defined, &is_mixed))
+        ia_state_ |= STATE_SYSTEM_PRESSED;
+      if (is_aria_pressed_defined)
+        ia2_role_ = IA2_ROLE_TOGGLE_BUTTON;
+      if (is_mixed)
+        ia_state_ |= STATE_SYSTEM_MIXED;
       break;
     case WebAccessibility::ROLE_CELL:
       ia_role_ = ROLE_SYSTEM_CELL;

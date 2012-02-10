@@ -260,6 +260,31 @@ bool BrowserAccessibility::GetHtmlAttribute(
   return false;
 }
 
+bool BrowserAccessibility::GetAriaTristate(
+    const char* html_attr,
+    bool* is_defined,
+    bool* is_mixed) const {
+  *is_defined = false;
+  *is_mixed = false;
+
+  string16 value;
+  if (!GetHtmlAttribute(html_attr, &value) ||
+      value.empty() ||
+      EqualsASCII(value, "undefined")) {
+    return false;  // Not set (and *is_defined is also false)
+  }
+
+  *is_defined = true;
+
+  if (EqualsASCII(value, "true"))
+    return true;
+
+  if (EqualsASCII(value, "mixed"))
+    *is_mixed = true;
+
+  return false;  // Not set
+}
+
 bool BrowserAccessibility::HasState(WebAccessibility::State state_enum) const {
   return (state_ >> state_enum) & 1;
 }
