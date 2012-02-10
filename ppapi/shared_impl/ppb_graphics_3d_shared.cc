@@ -31,12 +31,12 @@ thunk::PPB_Graphics3D_API* PPB_Graphics3D_Shared::AsPPB_Graphics3D_API() {
   return this;
 }
 
-int32_t PPB_Graphics3D_Shared::GetAttribs(int32_t* attrib_list) {
+int32_t PPB_Graphics3D_Shared::GetAttribs(int32_t attrib_list[]) {
   // TODO(alokp): Implement me.
   return PP_ERROR_FAILED;
 }
 
-int32_t PPB_Graphics3D_Shared::SetAttribs(int32_t* attrib_list) {
+int32_t PPB_Graphics3D_Shared::SetAttribs(const int32_t attrib_list[]) {
   // TODO(alokp): Implement me.
   return PP_ERROR_FAILED;
 }

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -24,7 +24,7 @@ Graphics3D::Graphics3D() {
 }
 
 Graphics3D::Graphics3D(const Instance* instance,
-                       const int32_t* attrib_list) {
+                       const int32_t attrib_list[]) {
   if (has_interface<PPB_Graphics3D>()) {
     PassRefFromConstructor(get_interface<PPB_Graphics3D>()->Create(
         instance->pp_instance(), 0, attrib_list));
@@ -33,7 +33,7 @@ Graphics3D::Graphics3D(const Instance* instance,
 
 Graphics3D::Graphics3D(const Instance* instance,
                        const Graphics3D& share_context,
-                       const int32_t* attrib_list) {
+                       const int32_t attrib_list[]) {
   if (has_interface<PPB_Graphics3D>()) {
     PassRefFromConstructor(get_interface<PPB_Graphics3D>()->Create(
         instance->pp_instance(),
@@ -45,7 +45,7 @@ Graphics3D::Graphics3D(const Instance* instance,
 Graphics3D::~Graphics3D() {
 }
 
-int32_t Graphics3D::GetAttribs(int32_t* attrib_list) const {
+int32_t Graphics3D::GetAttribs(int32_t attrib_list[]) const {
   if (!has_interface<PPB_Graphics3D>())
     return PP_ERROR_NOINTERFACE;
 
@@ -54,7 +54,7 @@ int32_t Graphics3D::GetAttribs(int32_t* attrib_list) const {
       attrib_list);
 }
 
-int32_t Graphics3D::SetAttribs(int32_t* attrib_list) {
+int32_t Graphics3D::SetAttribs(const int32_t attrib_list[]) {
   if (!has_interface<PPB_Graphics3D>())
     return PP_ERROR_NOINTERFACE;
 

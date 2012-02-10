@@ -25,7 +25,7 @@ int32_t GetAttribMaxValue(PP_Resource instance,
 
 PP_Resource Create(PP_Instance instance,
                    PP_Resource share_context,
-                   const int32_t* attrib_list) {
+                   const int32_t attrib_list[]) {
   EnterResourceCreation enter(instance);
   if (enter.failed())
     return 0;
@@ -38,14 +38,14 @@ PP_Bool IsGraphics3D(PP_Resource resource) {
   return PP_FromBool(enter.succeeded());
 }
 
-int32_t GetAttribs(PP_Resource graphics_3d, int32_t* attrib_list) {
+int32_t GetAttribs(PP_Resource graphics_3d, int32_t attrib_list[]) {
   EnterGraphics3D enter(graphics_3d, true);
   if (enter.failed())
     return enter.retval();
   return enter.object()->GetAttribs(attrib_list);
 }
 
-int32_t SetAttribs(PP_Resource graphics_3d, int32_t* attrib_list) {
+int32_t SetAttribs(PP_Resource graphics_3d, const int32_t attrib_list[]) {
   EnterGraphics3D enter(graphics_3d, true);
   if (enter.failed())
     return enter.retval();

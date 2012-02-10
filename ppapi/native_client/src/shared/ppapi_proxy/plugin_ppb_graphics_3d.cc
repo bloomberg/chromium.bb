@@ -31,7 +31,7 @@ const size_t kStartTransferBufferSize = 4 * 1024 * 1024;
 const size_t kMinTransferBufferSize = 256 * 1024;
 const size_t kMaxTransferBufferSize = 16 * 1024 * 1024;
 
-int32_t GetNumAttribs(const int32_t* attrib_list) {
+int32_t GetNumAttribs(const int32_t attrib_list[]) {
   int32_t num = 0;
   if (attrib_list) {
     // skip over attrib pairs
@@ -64,7 +64,7 @@ int32_t GetAttribMaxValue(PP_Instance instance,
 
 PP_Resource Create(PP_Instance instance,
                    PP_Resource share_context,
-                   const int32_t* attrib_list) {
+                   const int32_t attrib_list[]) {
   DebugPrintf("PPB_Graphics3D::Create: instance=%"NACL_PRId32"\n", instance);
   PP_Resource graphics3d_id = kInvalidResourceId;
   nacl_abi_size_t num_attribs = GetNumAttribs(attrib_list);
@@ -93,7 +93,7 @@ PP_Bool IsGraphics3D(PP_Resource resource) {
 }
 
 int32_t GetAttribs(PP_Resource graphics3d_id,
-                   int32_t* attrib_list) {
+                   int32_t attrib_list[]) {
   int32_t pp_error;
   nacl_abi_size_t num_attribs = GetNumAttribs(attrib_list);
   NaClSrpcError retval =
@@ -110,14 +110,14 @@ int32_t GetAttribs(PP_Resource graphics3d_id,
 }
 
 int32_t SetAttribs(PP_Resource graphics3d_id,
-                   int32_t* attrib_list) {
+                   const int32_t attrib_list[]) {
   int32_t pp_error;
   nacl_abi_size_t num_attribs = GetNumAttribs(attrib_list);
   NaClSrpcError retval =
       PpbGraphics3DRpcClient::PPB_Graphics3D_SetAttribs(
           GetMainSrpcChannel(),
           graphics3d_id,
-          num_attribs, attrib_list,
+          num_attribs, const_cast<int32_t *>(attrib_list),
           &pp_error);
   if (retval != NACL_SRPC_RESULT_OK) {
     return PP_ERROR_BADARGUMENT;

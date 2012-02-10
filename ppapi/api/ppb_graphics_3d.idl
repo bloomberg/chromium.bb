@@ -3,39 +3,24 @@
  * found in the LICENSE file.
  */
 
-/* From ppb_graphics_3d.idl modified Tue Feb 07 11:38:46 2012. */
-
-#ifndef PPAPI_C_PPB_GRAPHICS_3D_H_
-#define PPAPI_C_PPB_GRAPHICS_3D_H_
-
-#include "ppapi/c/pp_bool.h"
-#include "ppapi/c/pp_completion_callback.h"
-#include "ppapi/c/pp_instance.h"
-#include "ppapi/c/pp_macros.h"
-#include "ppapi/c/pp_resource.h"
-#include "ppapi/c/pp_stdint.h"
-
-#define PPB_GRAPHICS_3D_INTERFACE_1_0 "PPB_Graphics3D;1.0"
-#define PPB_GRAPHICS_3D_INTERFACE PPB_GRAPHICS_3D_INTERFACE_1_0
-
 /**
- * @file
  * Defines the <code>PPB_Graphics3D</code> struct representing a 3D graphics
  * context within the browser.
  */
 
+label Chrome {
+  M15 = 1.0
+};
 
+#inline c
 /* Add 3D graphics enums */
 #include "ppapi/c/pp_graphics_3d.h"
+#endinl
 
-/**
- * @addtogroup Interfaces
- * @{
- */
 /**
  * <code>PPB_Graphics3D</code> defines the interface for a 3D graphics context.
  * <strong>Example usage from plugin code:</strong>
- *
+ * 
  * <strong>Setup:</strong>
  * <code>
  * PP_Resource context;
@@ -57,7 +42,8 @@
  * core->ReleaseResource(context);
  * </code>
  */
-struct PPB_Graphics3D_1_0 {
+[macro="PPB_GRAPHICS_3D_INTERFACE"]
+interface PPB_Graphics3D {
   /**
    * GetAttribMaxValue() retrieves the maximum supported value for the
    * given attribute. This function may be used to check if a particular
@@ -83,9 +69,11 @@ struct PPB_Graphics3D_1_0 {
    * - <code>PP_ERROR_BADARGUMENT</code> if <code>attribute</code> is invalid
    *   or <code>value</code> is 0
    */
-  int32_t (*GetAttribMaxValue)(PP_Resource instance,
-                               int32_t attribute,
-                               int32_t* value);
+  int32_t GetAttribMaxValue(
+      [in] PP_Resource instance,
+      [in] int32_t attribute,
+      [out] int32_t value);
+
   /**
    * Create() creates and initializes a 3D rendering context.
    * The returned context is off-screen to start with. It must be attached to
@@ -144,9 +132,11 @@ struct PPB_Graphics3D_1_0 {
    * @return A <code>PP_Resource</code> containing the 3D graphics context if
    * successful or 0 if unsuccessful.
    */
-  PP_Resource (*Create)(PP_Instance instance,
-                        PP_Resource share_context,
-                        const int32_t attrib_list[]);
+  PP_Resource Create(
+      [in] PP_Instance instance,
+      [in] PP_Resource share_context,
+      [in] int32_t[] attrib_list);
+
   /**
    * IsGraphics3D() determines if the given resource is a valid
    * <code>Graphics3D</code> context.
@@ -157,7 +147,9 @@ struct PPB_Graphics3D_1_0 {
    * <code>PP_FALSE</code> if it is an invalid resource or is a resource of
    * another type.
    */
-  PP_Bool (*IsGraphics3D)(PP_Resource resource);
+  PP_Bool IsGraphics3D(
+      [in] PP_Resource resource);
+
   /**
    * GetAttribs() retrieves the value for each attribute in
    * <code>attrib_list</code>.
@@ -187,7 +179,10 @@ struct PPB_Graphics3D_1_0 {
    * int blue_bits = attrib_list[5];
    * </code>
    */
-  int32_t (*GetAttribs)(PP_Resource context, int32_t attrib_list[]);
+  int32_t GetAttribs(
+      [in] PP_Resource context,
+      [inout] int32_t[] attrib_list);
+
   /**
    * SetAttribs() sets the values for each attribute in
    * <code>attrib_list</code>.
@@ -204,7 +199,10 @@ struct PPB_Graphics3D_1_0 {
    * - <code>PP_ERROR_BADARGUMENT</code> if <code>attrib_list</code> is 0 or
    *   any attribute in the <code>attrib_list</code> is not a valid attribute.
    */
-  int32_t (*SetAttribs)(PP_Resource context, const int32_t attrib_list[]);
+  int32_t SetAttribs(
+      [in] PP_Resource context,
+      [in] int32_t[] attrib_list);
+
   /**
    * GetError() returns the current state of the given 3D context.
    *
@@ -227,7 +225,9 @@ struct PPB_Graphics3D_1_0 {
    * - <code>PP_ERROR_NOMEMORY</code>
    * - <code>PP_ERROR_CONTEXT_LOST</code>
    */
-  int32_t (*GetError)(PP_Resource context);
+  int32_t GetError(
+      [in] PP_Resource context);
+
   /**
    * ResizeBuffers() resizes the backing surface for context.
    *
@@ -243,7 +243,11 @@ struct PPB_Graphics3D_1_0 {
    * - <code>PP_ERROR_BADARGUMENT</code> if the value specified for
    *   <code>width</code> or <code>height</code> is less than zero.
    */
-  int32_t (*ResizeBuffers)(PP_Resource context, int32_t width, int32_t height);
+  int32_t ResizeBuffers(
+      [in] PP_Resource context,
+      [in] int32_t width,
+      [in] int32_t height);
+
   /**
    * SwapBuffers() makes the contents of the color buffer available for
    * compositing. This function has no effect on off-screen surfaces - ones not
@@ -282,14 +286,8 @@ struct PPB_Graphics3D_1_0 {
    * - <code>PP_ERROR_BADARGUMENT</code> if callback is invalid.
    *
    */
-  int32_t (*SwapBuffers)(PP_Resource context,
-                         struct PP_CompletionCallback callback);
+  int32_t SwapBuffers(
+      [in] PP_Resource context,
+      [in] PP_CompletionCallback callback);
 };
-
-typedef struct PPB_Graphics3D_1_0 PPB_Graphics3D;
-/**
- * @}
- */
-
-#endif  /* PPAPI_C_PPB_GRAPHICS_3D_H_ */
 

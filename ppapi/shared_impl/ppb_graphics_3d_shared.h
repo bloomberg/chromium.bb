@@ -32,8 +32,8 @@ class PPAPI_SHARED_EXPORT PPB_Graphics3D_Shared
   virtual thunk::PPB_Graphics3D_API* AsPPB_Graphics3D_API() OVERRIDE;
 
   // PPB_Graphics3D_API implementation.
-  virtual int32_t GetAttribs(int32_t* attrib_list) OVERRIDE;
-  virtual int32_t SetAttribs(int32_t* attrib_list) OVERRIDE;
+  virtual int32_t GetAttribs(int32_t attrib_list[]) OVERRIDE;
+  virtual int32_t SetAttribs(const int32_t attrib_list[]) OVERRIDE;
   virtual int32_t GetError() OVERRIDE;
   virtual int32_t ResizeBuffers(int32_t width, int32_t height) OVERRIDE;
   virtual int32_t SwapBuffers(PP_CompletionCallback callback) OVERRIDE;

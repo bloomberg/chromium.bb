@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,8 +18,8 @@ class PPAPI_THUNK_EXPORT PPB_Graphics3D_API {
   virtual ~PPB_Graphics3D_API() {}
 
   // Graphics3D API.
-  virtual int32_t GetAttribs(int32_t* attrib_list) = 0;
-  virtual int32_t SetAttribs(int32_t* attrib_list) = 0;
+  virtual int32_t GetAttribs(int32_t attrib_list[]) = 0;
+  virtual int32_t SetAttribs(const int32_t attrib_list[]) = 0;
   virtual int32_t GetError() = 0;
   virtual int32_t ResizeBuffers(int32_t width, int32_t height) = 0;
   virtual int32_t SwapBuffers(PP_CompletionCallback callback) = 0;
