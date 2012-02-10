@@ -66,6 +66,10 @@ class COMPOSITOR_EXPORT LayerAnimator : public AnimationContainerElement {
   virtual void SetOpacity(float opacity);
   float GetTargetOpacity() const;
 
+  // Sets the visibility of the delegate. May cause an implicit animation.
+  virtual void SetVisibility(bool visibility);
+  bool GetTargetVisibility() const;
+
   // Sets the layer animation delegate the animator is associated with. The
   // animator does not own the delegate.
   void SetDelegate(LayerAnimationDelegate* delegate);

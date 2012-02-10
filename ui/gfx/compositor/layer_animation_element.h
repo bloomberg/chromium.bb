@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -26,7 +26,8 @@ class COMPOSITOR_EXPORT LayerAnimationElement {
   enum AnimatableProperty {
     TRANSFORM = 0,
     BOUNDS,
-    OPACITY
+    OPACITY,
+    VISIBILITY
   };
 
   struct COMPOSITOR_EXPORT TargetValue {
@@ -37,6 +38,7 @@ class COMPOSITOR_EXPORT LayerAnimationElement {
     gfx::Rect bounds;
     Transform transform;
     float opacity;
+    bool visibility;
   };
 
   typedef std::set<AnimatableProperty> AnimatableProperties;
@@ -61,6 +63,12 @@ class COMPOSITOR_EXPORT LayerAnimationElement {
   // the return value.
   static LayerAnimationElement* CreateOpacityElement(
       float opacity,
+      base::TimeDelta duration);
+
+  // Creates an element that sets visibily following a delay. The caller owns
+  // the return value.
+  static LayerAnimationElement* CreateVisibilityElement(
+      bool visibility,
       base::TimeDelta duration);
 
   // Creates an element that pauses the given properties. The caller owns the

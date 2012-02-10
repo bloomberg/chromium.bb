@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,14 +6,17 @@
 
 namespace ui {
 
-TestLayerAnimationDelegate::TestLayerAnimationDelegate() : opacity_(1.0f) {
+TestLayerAnimationDelegate::TestLayerAnimationDelegate()
+    : opacity_(1.0f),
+      visibility_(true) {
 }
 
 TestLayerAnimationDelegate::TestLayerAnimationDelegate(
     const LayerAnimationDelegate& other)
     : bounds_(other.GetBoundsForAnimation()),
       transform_(other.GetTransformForAnimation()),
-      opacity_(other.GetOpacityForAnimation()) {
+      opacity_(other.GetOpacityForAnimation()),
+      visibility_(other.GetVisibilityForAnimation()) {
 }
 
 TestLayerAnimationDelegate::~TestLayerAnimationDelegate() {
@@ -33,6 +36,10 @@ void TestLayerAnimationDelegate::SetOpacityFromAnimation(float opacity) {
   opacity_ = opacity;
 }
 
+void TestLayerAnimationDelegate::SetVisibilityFromAnimation(bool visibility) {
+  visibility_ = visibility;
+}
+
 void TestLayerAnimationDelegate::ScheduleDrawForAnimation() {
 }
 
@@ -46,6 +53,10 @@ const Transform& TestLayerAnimationDelegate::GetTransformForAnimation() const {
 
 float TestLayerAnimationDelegate::GetOpacityForAnimation() const {
   return opacity_;
+}
+
+bool TestLayerAnimationDelegate::GetVisibilityForAnimation() const {
+  return visibility_;
 }
 
 }  // namespace ui

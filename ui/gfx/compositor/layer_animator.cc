@@ -102,6 +102,21 @@ float LayerAnimator::GetTargetOpacity() const {
   return target.opacity;
 }
 
+void LayerAnimator::SetVisibility(bool visibility) {
+  base::TimeDelta duration = transition_duration_;
+  if (disable_animations_for_test_)
+    duration = base::TimeDelta();
+  StartAnimation(new LayerAnimationSequence(
+      LayerAnimationElement::CreateVisibilityElement(
+          visibility, duration)));
+}
+
+bool LayerAnimator::GetTargetVisibility() const {
+  LayerAnimationElement::TargetValue target(delegate());
+  GetTargetValue(&target);
+  return target.visibility;
+}
+
 void LayerAnimator::SetDelegate(LayerAnimationDelegate* delegate) {
   DCHECK(delegate);
   delegate_ = delegate;

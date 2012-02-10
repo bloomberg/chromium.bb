@@ -150,7 +150,8 @@ void Layer::SetTransform(const ui::Transform& transform) {
 }
 
 Transform Layer::GetTargetTransform() const {
-  if (animator_.get() && animator_->is_animating())
+  if (animator_.get() && animator_->IsAnimatingProperty(
+      LayerAnimationElement::TRANSFORM))
     return animator_->GetTargetTransform();
   return transform_;
 }
@@ -160,7 +161,8 @@ void Layer::SetBounds(const gfx::Rect& bounds) {
 }
 
 gfx::Rect Layer::GetTargetBounds() const {
-  if (animator_.get() && animator_->is_animating())
+  if (animator_.get() && animator_->IsAnimatingProperty(
+      LayerAnimationElement::BOUNDS))
     return animator_->GetTargetBounds();
   return bounds_;
 }
@@ -170,18 +172,21 @@ void Layer::SetOpacity(float opacity) {
 }
 
 float Layer::GetTargetOpacity() const {
-  if (animator_.get() && animator_->is_animating())
+  if (animator_.get() && animator_->IsAnimatingProperty(
+      LayerAnimationElement::OPACITY))
     return animator_->GetTargetOpacity();
   return opacity_;
 }
 
 void Layer::SetVisible(bool visible) {
-  if (visible_ == visible)
-    return;
+  GetAnimator()->SetVisibility(visible);
+}
 
-  visible_ = visible;
-  // TODO(piman): Expose a visibility flag on WebLayer.
-  web_layer_.setOpacity(visible_ ? opacity_ : 0.f);
+bool Layer::GetTargetVisibility() const {
+  if (animator_.get() && animator_->IsAnimatingProperty(
+      LayerAnimationElement::VISIBILITY))
+    return animator_->GetTargetVisibility();
+  return visible_;
 }
 
 bool Layer::IsDrawn() const {
@@ -417,6 +422,15 @@ void Layer::SetOpacityImmediately(float opacity) {
     ScheduleDraw();
 }
 
+void Layer::SetVisibilityImmediately(bool visible) {
+  if (visible_ == visible)
+    return;
+
+  visible_ = visible;
+  // TODO(piman): Expose a visibility flag on WebLayer.
+  web_layer_.setOpacity(visible_ ? opacity_ : 0.f);
+}
+
 void Layer::SetBoundsFromAnimation(const gfx::Rect& bounds) {
   SetBoundsImmediately(bounds);
 }
@@ -427,6 +441,10 @@ void Layer::SetTransformFromAnimation(const Transform& transform) {
 
 void Layer::SetOpacityFromAnimation(float opacity) {
   SetOpacityImmediately(opacity);
+}
+
+void Layer::SetVisibilityFromAnimation(bool visibility) {
+  SetVisibilityImmediately(visibility);
 }
 
 void Layer::ScheduleDrawForAnimation() {
@@ -443,6 +461,10 @@ const Transform& Layer::GetTransformForAnimation() const {
 
 float Layer::GetOpacityForAnimation() const {
   return opacity();
+}
+
+bool Layer::GetVisibilityForAnimation() const {
+  return visible();
 }
 
 void Layer::CreateWebLayer() {

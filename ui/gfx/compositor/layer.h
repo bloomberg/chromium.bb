@@ -141,6 +141,10 @@ class COMPOSITOR_EXPORT Layer :
   void SetVisible(bool visible);
   bool visible() const { return visible_; }
 
+  // Returns the target visibility if the animator is running. Otherwise, it
+  // returns the current visibility.
+  bool GetTargetVisibility() const;
+
   // Returns true if this Layer is drawn. A Layer is drawn only if all ancestors
   // are visible.
   bool IsDrawn() const;
@@ -229,15 +233,18 @@ class COMPOSITOR_EXPORT Layer :
   void SetBoundsImmediately(const gfx::Rect& bounds);
   void SetTransformImmediately(const ui::Transform& transform);
   void SetOpacityImmediately(float opacity);
+  void SetVisibilityImmediately(bool visibility);
 
   // Implementation of LayerAnimatorDelegate
   virtual void SetBoundsFromAnimation(const gfx::Rect& bounds) OVERRIDE;
   virtual void SetTransformFromAnimation(const Transform& transform) OVERRIDE;
   virtual void SetOpacityFromAnimation(float opacity) OVERRIDE;
+  virtual void SetVisibilityFromAnimation(bool visibility) OVERRIDE;
   virtual void ScheduleDrawForAnimation() OVERRIDE;
   virtual const gfx::Rect& GetBoundsForAnimation() const OVERRIDE;
   virtual const Transform& GetTransformForAnimation() const OVERRIDE;
   virtual float GetOpacityForAnimation() const OVERRIDE;
+  virtual bool GetVisibilityForAnimation() const OVERRIDE;
 
   void CreateWebLayer();
   void RecomputeTransform();

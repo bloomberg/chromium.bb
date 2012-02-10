@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -105,6 +105,33 @@ TEST(LayerAnimationElementTest, OpacityElement) {
   LayerAnimationElement::TargetValue target_value(&delegate);
   element->GetTargetValue(&target_value);
   EXPECT_FLOAT_EQ(target, target_value.opacity);
+
+  EXPECT_EQ(delta, element->duration());
+}
+
+// Check that the visibility element progresses the delegate as expected and
+// that the element can be reused after it completes.
+TEST(LayerAnimationElementTest, VisibilityElement) {
+  TestLayerAnimationDelegate delegate;
+  bool start = true;
+  bool target = false;
+  base::TimeDelta delta = base::TimeDelta::FromSeconds(1);
+  scoped_ptr<LayerAnimationElement> element(
+      LayerAnimationElement::CreateVisibilityElement(target, delta));
+
+  for (int i = 0; i < 2; ++i) {
+    delegate.SetVisibilityFromAnimation(start);
+    element->Progress(0.0, &delegate);
+    EXPECT_TRUE(delegate.GetVisibilityForAnimation());
+    element->Progress(0.5, &delegate);
+    EXPECT_TRUE(delegate.GetVisibilityForAnimation());
+    element->Progress(1.0, &delegate);
+    EXPECT_FALSE(delegate.GetVisibilityForAnimation());
+  }
+
+  LayerAnimationElement::TargetValue target_value(&delegate);
+  element->GetTargetValue(&target_value);
+  EXPECT_FALSE(target_value.visibility);
 
   EXPECT_EQ(delta, element->duration());
 }

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -57,10 +57,9 @@ class TransformTransition : public LayerAnimationElement {
   virtual void OnAbort() OVERRIDE {}
 
  private:
-  static const AnimatableProperties& GetProperties() {
-    static AnimatableProperties properties;
-    if (properties.size() == 0)
-      properties.insert(LayerAnimationElement::TRANSFORM);
+  static AnimatableProperties GetProperties() {
+    AnimatableProperties properties;
+    properties.insert(LayerAnimationElement::TRANSFORM);
     return properties;
   }
 
@@ -96,10 +95,9 @@ class BoundsTransition : public LayerAnimationElement {
   virtual void OnAbort() OVERRIDE {}
 
  private:
-  static const AnimatableProperties& GetProperties() {
-    static AnimatableProperties properties;
-    if (properties.size() == 0)
-      properties.insert(LayerAnimationElement::BOUNDS);
+  static AnimatableProperties GetProperties() {
+    AnimatableProperties properties;
+    properties.insert(LayerAnimationElement::BOUNDS);
     return properties;
   }
 
@@ -108,6 +106,8 @@ class BoundsTransition : public LayerAnimationElement {
 
   DISALLOW_COPY_AND_ASSIGN(BoundsTransition);
 };
+
+// OpacityTransition -----------------------------------------------------------
 
 class OpacityTransition : public LayerAnimationElement {
  public:
@@ -134,10 +134,9 @@ class OpacityTransition : public LayerAnimationElement {
   virtual void OnAbort() OVERRIDE {}
 
  private:
-  static const AnimatableProperties& GetProperties() {
-    static AnimatableProperties properties;
-    if (properties.size() == 0)
-      properties.insert(LayerAnimationElement::OPACITY);
+  static AnimatableProperties GetProperties() {
+    AnimatableProperties properties;
+    properties.insert(LayerAnimationElement::OPACITY);
     return properties;
   }
 
@@ -147,19 +146,60 @@ class OpacityTransition : public LayerAnimationElement {
   DISALLOW_COPY_AND_ASSIGN(OpacityTransition);
 };
 
+// VisibilityTransition --------------------------------------------------------
+
+class VisibilityTransition : public LayerAnimationElement {
+ public:
+  VisibilityTransition(bool target, base::TimeDelta duration)
+      : LayerAnimationElement(GetProperties(), duration),
+        start_(false),
+        target_(target) {
+  }
+  virtual ~VisibilityTransition() {}
+
+ protected:
+  virtual void OnStart(LayerAnimationDelegate* delegate) OVERRIDE {
+    start_ = delegate->GetVisibilityForAnimation();
+  }
+
+  virtual void OnProgress(double t, LayerAnimationDelegate* delegate) OVERRIDE {
+    delegate->SetVisibilityFromAnimation(t == 1.0 ? target_ : start_);
+  }
+
+  virtual void OnGetTarget(TargetValue* target) const OVERRIDE {
+    target->visibility = target_;
+  }
+
+  virtual void OnAbort() OVERRIDE {}
+
+ private:
+  static AnimatableProperties GetProperties() {
+    AnimatableProperties properties;
+    properties.insert(LayerAnimationElement::VISIBILITY);
+    return properties;
+  }
+
+  bool start_;
+  const bool target_;
+
+  DISALLOW_COPY_AND_ASSIGN(VisibilityTransition);
+};
+
 }  // namespace
 
 // LayerAnimationElement::TargetValue ------------------------------------------
 
 LayerAnimationElement::TargetValue::TargetValue()
-    : opacity(0.0f) {
+    : opacity(0.0f),
+      visibility(false) {
 }
 
 LayerAnimationElement::TargetValue::TargetValue(
     const LayerAnimationDelegate* delegate)
     : bounds(delegate ? delegate->GetBoundsForAnimation() : gfx::Rect()),
       transform(delegate ? delegate->GetTransformForAnimation() : Transform()),
-      opacity(delegate ? delegate->GetOpacityForAnimation() : 0.0f) {
+      opacity(delegate ? delegate->GetOpacityForAnimation() : 0.0f),
+      visibility(delegate ? delegate->GetVisibilityForAnimation() : false) {
 }
 
 // LayerAnimationElement -------------------------------------------------------
@@ -209,6 +249,12 @@ LayerAnimationElement* LayerAnimationElement::CreateBoundsElement(
 LayerAnimationElement* LayerAnimationElement::CreateOpacityElement(
     float opacity, base::TimeDelta duration) {
   return new OpacityTransition(opacity, duration);
+}
+
+// static
+LayerAnimationElement* LayerAnimationElement::CreateVisibilityElement(
+    bool visibility, base::TimeDelta duration) {
+  return new VisibilityTransition(visibility, duration);
 }
 
 // static
