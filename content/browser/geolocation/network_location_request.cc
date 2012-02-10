@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -150,7 +150,12 @@ GURL FormRequestURL(const std::string& url,
   }
 
   std::vector<std::string> params;
+#if defined(GOOGLE_CHROME_BUILD)
+  params.push_back("browser=googlechrome");
+#else
   params.push_back("browser=chromium");
+#endif
+
   params.push_back("sensor=true");
   if (!access_token.empty())
     params.push_back("token=" + UTF16ToUTF8(access_token));
