@@ -113,7 +113,7 @@ class OAuth2AccessTokenFetcherTest : public testing::Test {
   OAuth2AccessTokenFetcher fetcher_;
 };
 
-// These three tests time out, see http://crbug.com/113446.
+// These four tests time out, see http://crbug.com/113446.
 TEST_F(OAuth2AccessTokenFetcherTest, DISABLED_GetAccessTokenRequestFailure) {
   TestURLFetcher* url_fetcher = SetupGetAccessToken(false, 0, "");
   EXPECT_CALL(consumer_, OnGetTokenFailure(_)).Times(1);
@@ -137,7 +137,7 @@ TEST_F(OAuth2AccessTokenFetcherTest, DISABLED_Success) {
   fetcher_.OnURLFetchComplete(url_fetcher);
 }
 
-TEST_F(OAuth2AccessTokenFetcherTest, MakeGetAccessTokenBody) {
+TEST_F(OAuth2AccessTokenFetcherTest, DISABLED_MakeGetAccessTokenBody) {
   {  // No scope.
     std::string body =
         "client_id=cid1&"
