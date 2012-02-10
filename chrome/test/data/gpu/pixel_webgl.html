@@ -26,24 +26,26 @@ void main(void)
 
 <script>
 var g_swapsBeforeAck = 5;
+var gl;
 
 function main()
 {
   var canvas = document.getElementById("c");
-  var gl = initGL(canvas);
+  gl = initGL(canvas);
+
   if (gl && setup(gl))
-    draw(gl);
-  waitForFinish();
+    drawSomeFrames();
 }
 
-function waitForFinish()
+function drawSomeFrames()
 {
   if (g_swapsBeforeAck == 0) {
     domAutomationController.setAutomationId(1);
     domAutomationController.send("ok");
   } else {
     g_swapsBeforeAck--;
-    window.webkitRequestAnimationFrame(waitForFinish);
+    draw(gl);
+    window.webkitRequestAnimationFrame(drawSomeFrames);
   }
 }
 
