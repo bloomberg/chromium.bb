@@ -125,6 +125,11 @@ class COMPOSITOR_EXPORT Compositor
   // compositing.
   void Draw(bool force_clear);
 
+  // Where possible, draws are scissored to a damage region calculated from
+  // changes to layer properties.  This bypasses that and indicates that
+  // the whole frame needs to be drawn.
+  void ScheduleFullDraw();
+
   // Reads the region |bounds| of the contents of the last rendered frame
   // into the given bitmap.
   // Returns false if the pixels could not be read.

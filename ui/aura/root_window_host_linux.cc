@@ -400,7 +400,7 @@ base::MessagePumpDispatcher::DispatchStatus RootWindowHostLinux::Dispatch(
 
   switch (xev->type) {
     case Expose:
-      root_window_->ScheduleDraw();
+      root_window_->ScheduleFullDraw();
       handled = true;
       break;
     case KeyPress: {

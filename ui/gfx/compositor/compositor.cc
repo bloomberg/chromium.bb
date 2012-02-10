@@ -194,6 +194,10 @@ void Compositor::Draw(bool force_clear) {
     NotifyEnd();
 }
 
+void Compositor::ScheduleFullDraw() {
+  host_.setNeedsRedraw();
+}
+
 bool Compositor::ReadPixels(SkBitmap* bitmap, const gfx::Rect& bounds) {
   if (bounds.right() > size().width() || bounds.bottom() > size().height())
     return false;

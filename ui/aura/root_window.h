@@ -92,6 +92,9 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   // Draws the necessary set of windows.
   void Draw();
 
+  // Draw the whole screen.
+  void ScheduleFullDraw();
+
   // Handles a mouse event. Returns true if handled.
   bool DispatchMouseEvent(MouseEvent* event);
 

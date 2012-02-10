@@ -133,6 +133,10 @@ void RootWindow::Draw() {
   compositor_->Draw(false);
 }
 
+void RootWindow::ScheduleFullDraw() {
+  compositor_->ScheduleFullDraw();
+}
+
 bool RootWindow::DispatchMouseEvent(MouseEvent* event) {
   static const int kMouseButtonFlagMask =
       ui::EF_LEFT_MOUSE_BUTTON |
