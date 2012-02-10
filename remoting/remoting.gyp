@@ -237,7 +237,12 @@
             '../base/base.gyp:base',
           ],
           'sources': [
+            'base/scoped_sc_handle_win.cc',
+            'base/scoped_sc_handle_win.h',
+            'host/remoting_host_service.rc',
+            'host/remoting_host_service_resource.h',
             'host/remoting_host_service_win.cc',
+            'host/remoting_host_service_win.h',
           ],
         },  # end of target 'remoting_service'
       ],
