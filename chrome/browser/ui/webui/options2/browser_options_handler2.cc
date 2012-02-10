@@ -232,9 +232,7 @@ void BrowserOptionsHandler::GetLocalizedValues(
 #endif
 
   // Pass along sync status early so it will be available during page init.
-  DictionaryValue* syncData = GetSyncStateDictionary();
-  if (syncData)
-    localized_strings->Set("syncData", syncData);
+  localized_strings->Set("syncData", GetSyncStateDictionary());
 }
 
 void BrowserOptionsHandler::RegisterMessages() {
@@ -300,12 +298,9 @@ void BrowserOptionsHandler::Initialize() {
 
   ProfileSyncService* sync_service(ProfileSyncServiceFactory::
       GetInstance()->GetForProfile(Profile::FromWebUI(web_ui())));
-  if (sync_service) {
+  if (sync_service)
     sync_service->AddObserver(this);
-    OnStateChanged();
-  } else {
-    web_ui()->CallJavascriptFunction("options.BrowserOptions.hideSyncSection");
-  }
+  OnStateChanged();
 
   // Create our favicon data source.
   profile->GetChromeURLDataManager()->AddDataSource(
@@ -744,12 +739,13 @@ void BrowserOptionsHandler::IncreaseScreenBrightnessCallback(
 #endif
 
 DictionaryValue* BrowserOptionsHandler::GetSyncStateDictionary() {
+  DictionaryValue* sync_status = new DictionaryValue;
   ProfileSyncService* service(ProfileSyncServiceFactory::
       GetInstance()->GetForProfile(Profile::FromWebUI(web_ui())));
+  sync_status->SetBoolean("syncSystemEnabled", !!service);
   if (!service)
-    return NULL;
+    return sync_status;
 
-  DictionaryValue* sync_status = new DictionaryValue;
   sync_status->SetBoolean("setupCompleted",
                           service->HasSyncSetupCompleted());
   sync_status->SetBoolean("setupInProgress", service->SetupInProgress());
