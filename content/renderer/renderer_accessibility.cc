@@ -220,10 +220,21 @@ void RendererAccessibility::SendPendingAccessibilityNotifications() {
   if (pending_notifications_.empty())
     return;
 
-  // Send all pending accessibility notifications.
-  std::vector<ViewHostMsg_AccessibilityNotification_Params> notifications;
-  for (size_t i = 0; i < pending_notifications_.size(); ++i) {
-    Notification& notification = pending_notifications_[i];
+  ack_pending_ = true;
+
+  // Make a copy of the notifications, because it's possible that
+  // actions inside this loop will cause more notifications to be
+  // queued up.
+  std::vector<Notification> src_notifications = pending_notifications_;
+  pending_notifications_.clear();
+
+  // Generate a notification message from each WebKit notification.
+  std::vector<ViewHostMsg_AccessibilityNotification_Params> notification_msgs;
+
+  // Loop over each WebKit notification and generate a notification message
+  // from it.
+  for (size_t i = 0; i < src_notifications.size(); ++i) {
+    Notification& notification = src_notifications[i];
 
     // TODO(dtseng): Come up with a cleaner way of deciding to include children.
     int root_id = document.accessibilityObject().axID();
@@ -288,33 +299,33 @@ void RendererAccessibility::SendPendingAccessibilityNotifications() {
       }
     }
 
-    ViewHostMsg_AccessibilityNotification_Params param;
+    ViewHostMsg_AccessibilityNotification_Params notification_msg;
     WebAccessibilityNotificationToViewHostMsg(
-        notification.type, &param.notification_type);
-    param.id = notification.id;
-    param.includes_children = includes_children;
-    param.acc_tree = WebAccessibility(obj, includes_children);
+        notification.type, &notification_msg.notification_type);
+    notification_msg.id = notification.id;
+    notification_msg.includes_children = includes_children;
+    notification_msg.acc_tree = WebAccessibility(obj, includes_children);
     if (obj.axID() == root_id) {
-      DCHECK_EQ(param.acc_tree.role, WebAccessibility::ROLE_WEB_AREA);
-      param.acc_tree.role = WebAccessibility::ROLE_ROOT_WEB_AREA;
+      DCHECK_EQ(notification_msg.acc_tree.role,
+                WebAccessibility::ROLE_WEB_AREA);
+      notification_msg.acc_tree.role = WebAccessibility::ROLE_ROOT_WEB_AREA;
     }
-    notifications.push_back(param);
+    notification_msgs.push_back(notification_msg);
 
     if (includes_children)
-      UpdateBrowserTree(param.acc_tree);
+      UpdateBrowserTree(notification_msg.acc_tree);
 
 #ifndef NDEBUG
     if (logging_) {
       LOG(INFO) << "Accessibility update: "
-                << param.acc_tree.DebugString(true,
-                                              routing_id(),
-                                              notification.type);
+                << notification_msg.acc_tree.DebugString(true,
+                                                         routing_id(),
+                                                         notification.type);
     }
 #endif
   }
-  pending_notifications_.clear();
-  Send(new ViewHostMsg_AccessibilityNotifications(routing_id(), notifications));
-  ack_pending_ = true;
+  Send(new ViewHostMsg_AccessibilityNotifications(routing_id(),
+                                                  notification_msgs));
 }
 
 void RendererAccessibility::UpdateBrowserTree(
