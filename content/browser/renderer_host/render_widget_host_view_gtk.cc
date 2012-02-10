@@ -932,8 +932,12 @@ void RenderWidgetHostViewGtk::SelectionBoundsChanged(
   im_context_->UpdateCaretBounds(start_rect.Union(end_rect));
 }
 
+GdkEventButton* RenderWidgetHostViewGtk::GetLastMouseDown() {
+  return last_mouse_down_;
+}
+
 #if !defined(TOOLKIT_VIEWS)
-GtkWidget* RenderWidgetHostViewGtk::BuildInputMethodsGtkMenu() {
+gfx::NativeView RenderWidgetHostViewGtk::BuildInputMethodsGtkMenu() {
   return im_context_->BuildInputMethodsGtkMenu();
 }
 #endif

@@ -9,7 +9,7 @@
 #include "chrome/browser/tab_contents/web_drag_bookmark_handler_gtk.h"
 #include "chrome/browser/ui/gtk/constrained_window_gtk.h"
 #include "content/browser/renderer_host/render_view_host.h"
-#include "content/browser/renderer_host/render_widget_host_view_gtk.h"
+#include "content/browser/renderer_host/render_widget_host_view.h"
 #include "content/browser/tab_contents/tab_contents_view_gtk.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
@@ -116,14 +116,9 @@ void ChromeTabContentsViewWrapperGtk::ShowContextMenu(
   } else {
     view = view_->web_contents()->GetRenderWidgetHostView();
   }
-  RenderWidgetHostViewGtk* view_gtk =
-      static_cast<RenderWidgetHostViewGtk*>(view);
-  if (!view_gtk)
-    return;
 
-  context_menu_.reset(new RenderViewContextMenuGtk(
-      view_->web_contents(), params, view_gtk->last_mouse_down() ?
-      view_gtk->last_mouse_down()->time : GDK_CURRENT_TIME));
+  context_menu_.reset(
+      new RenderViewContextMenuGtk(view_->web_contents(), params, view));
   context_menu_->Init();
 
   gfx::Rect bounds;

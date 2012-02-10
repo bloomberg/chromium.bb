@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/gtk/menu_gtk.h"
 #include "ui/gfx/point.h"
 
+class RenderWidgetHostView;
 struct ContextMenuParams;
 
 class RenderViewContextMenuGtk : public RenderViewContextMenu,
@@ -19,7 +20,7 @@ class RenderViewContextMenuGtk : public RenderViewContextMenu,
  public:
   RenderViewContextMenuGtk(content::WebContents* web_contents,
                            const ContextMenuParams& params,
-                           uint32_t triggering_event_time);
+                           RenderWidgetHostView* view);
 
   virtual ~RenderViewContextMenuGtk();
 

@@ -10,6 +10,10 @@
 #include <OpenGL/OpenGL.h>
 #endif
 
+#if defined(TOOLKIT_USES_GTK)
+#include <gdk/gdk.h>
+#endif
+
 #include <string>
 #include <vector>
 
@@ -296,7 +300,13 @@ class RenderWidgetHostView {
 #if defined(TOOLKIT_USES_GTK)
   virtual void CreatePluginContainer(gfx::PluginWindowHandle id) = 0;
   virtual void DestroyPluginContainer(gfx::PluginWindowHandle id) = 0;
-#endif
+  // Gets the event for the last mouse down.
+  virtual GdkEventButton* GetLastMouseDown() = 0;
+#if !defined(TOOLKIT_VIEWS)
+  // Builds a submenu containing all the gtk input method commands.
+  virtual gfx::NativeView BuildInputMethodsGtkMenu() = 0;
+#endif  // !defined(TOOLKIT_VIEWS)
+#endif  // defined(TOOLKIT_USES_GTK)
 
 #if defined(OS_WIN) && !defined(USE_AURA)
   virtual void WillWmDestroy() = 0;

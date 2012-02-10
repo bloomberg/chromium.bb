@@ -101,6 +101,11 @@ class CONTENT_EXPORT RenderWidgetHostViewGtk : public RenderWidgetHostView {
   virtual void SetBackground(const SkBitmap& background) OVERRIDE;
   virtual void CreatePluginContainer(gfx::PluginWindowHandle id) OVERRIDE;
   virtual void DestroyPluginContainer(gfx::PluginWindowHandle id) OVERRIDE;
+  virtual GdkEventButton* GetLastMouseDown() OVERRIDE;
+#if !defined(TOOLKIT_VIEWS)
+  // Builds a submenu containing all the gtk input method commands.
+  virtual gfx::NativeView BuildInputMethodsGtkMenu() OVERRIDE;
+#endif
   virtual void UnhandledWheelEvent(
       const WebKit::WebMouseWheelEvent& event) OVERRIDE;
   virtual void ProcessTouchAck(bool processed) OVERRIDE;
@@ -136,15 +141,6 @@ class CONTENT_EXPORT RenderWidgetHostViewGtk : public RenderWidgetHostView {
   void ForwardKeyboardEvent(const NativeWebKeyboardEvent& event);
 
   bool RetrieveSurrounding(std::string* text, size_t* cursor_index);
-
-  GdkEventButton* last_mouse_down() const {
-    return last_mouse_down_;
-  }
-
-#if !defined(TOOLKIT_VIEWS)
-  // Builds a submenu containing all the gtk input method commands.
-  GtkWidget* BuildInputMethodsGtkMenu();
-#endif
 
  protected:
   friend class RenderWidgetHostView;

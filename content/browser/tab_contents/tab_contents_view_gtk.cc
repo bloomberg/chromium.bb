@@ -411,10 +411,10 @@ void TabContentsViewGtk::StartDragging(const WebDropData& drop_data,
 
   RenderWidgetHostViewGtk* view_gtk = static_cast<RenderWidgetHostViewGtk*>(
       tab_contents_->GetRenderWidgetHostView());
-  if (!view_gtk || !view_gtk->last_mouse_down())
+  if (!view_gtk || !view_gtk->GetLastMouseDown())
     return;
 
-  drag_source_->StartDragging(drop_data, ops, view_gtk->last_mouse_down(),
+  drag_source_->StartDragging(drop_data, ops, view_gtk->GetLastMouseDown(),
                               image, image_offset);
 }
 

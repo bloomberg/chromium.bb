@@ -152,7 +152,11 @@ class TestRenderWidgetHostView : public RenderWidgetHostView {
 #if defined(TOOLKIT_USES_GTK)
   virtual void CreatePluginContainer(gfx::PluginWindowHandle id) OVERRIDE { }
   virtual void DestroyPluginContainer(gfx::PluginWindowHandle id) OVERRIDE { }
-#endif
+  virtual GdkEventButton* GetLastMouseDown() OVERRIDE;
+#if !defined(TOOLKIT_VIEWS)
+  virtual gfx::NativeView BuildInputMethodsGtkMenu() OVERRIDE;
+#endif  // !defined(TOOLKIT_VIEWS)
+#endif  // defined(TOOLKIT_USES_GTK)
 
   virtual gfx::GLSurfaceHandle GetCompositingSurface() OVERRIDE;
 

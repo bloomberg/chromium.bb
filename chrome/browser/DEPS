@@ -87,7 +87,6 @@ include_rules = [
   "+content/browser/renderer_host/render_view_host_factory.h",
   "+content/browser/renderer_host/render_widget_host.h",
   "+content/browser/renderer_host/render_widget_host_view.h",
-  "+content/browser/renderer_host/render_widget_host_view_gtk.h",
   "+content/browser/renderer_host/render_widget_host_view_mac_delegate.h",
   "+content/browser/renderer_host/resource_dispatcher_host.h",
   "+content/browser/renderer_host/resource_dispatcher_host_request_info.h",

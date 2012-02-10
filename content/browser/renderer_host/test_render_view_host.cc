@@ -1,4 +1,3 @@
-
 // Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
@@ -283,6 +282,18 @@ gfx::Rect TestRenderWidgetHostView::GetRootWindowBounds() {
   return gfx::Rect();
 }
 #endif
+
+#if defined(TOOLKIT_USES_GTK)
+GdkEventButton* TestRenderWidgetHostView::GetLastMouseDown() {
+  return NULL;
+}
+
+#if !defined(TOOLKIT_VIEWS)
+gfx::NativeView TestRenderWidgetHostView::BuildInputMethodsGtkMenu() {
+  return NULL;
+}
+#endif  // !defined(TOOLKIT_VIEWS)
+#endif  // defined(TOOLKIT_USES_GTK)
 
 gfx::GLSurfaceHandle TestRenderWidgetHostView::GetCompositingSurface() {
   return gfx::GLSurfaceHandle();
