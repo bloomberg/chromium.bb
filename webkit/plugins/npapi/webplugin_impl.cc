@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -247,13 +247,17 @@ struct WebPluginImpl::ClientInfo {
 };
 
 bool WebPluginImpl::initialize(WebPluginContainer* container) {
-  if (!page_delegate_)
+  if (!page_delegate_) {
+    LOG(ERROR) << "No page delegate";
     return false;
+  }
 
   WebPluginDelegate* plugin_delegate = page_delegate_->CreatePluginDelegate(
       file_path_, mime_type_);
-  if (!plugin_delegate)
+  if (!plugin_delegate) {
+    LOG(ERROR) << "Couldn't create plug-in delegate";
     return false;
+  }
 
   // Set the container before Initialize because the plugin may
   // synchronously call NPN_GetValue to get its container during its
@@ -262,6 +266,7 @@ bool WebPluginImpl::initialize(WebPluginContainer* container) {
   bool ok = plugin_delegate->Initialize(
       plugin_url_, arg_names_, arg_values_, this, load_manually_);
   if (!ok) {
+    LOG(ERROR) << "Couldn't initialize plug-in";
     plugin_delegate->PluginDestroyed();
     return false;
   }

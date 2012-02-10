@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -88,13 +88,17 @@ bool WebPluginDelegateImpl::Initialize(
 
   creation_succeeded_ = instance_->Start(
       url, argn.get(), argv.get(), argc, load_manually);
-  if (!creation_succeeded_)
+  if (!creation_succeeded_) {
+    VLOG(1) << "Couldn't start plug-in instance";
     return false;
+  }
 
   windowless_ = instance_->windowless();
   if (!windowless_) {
-    if (!WindowedCreatePlugin())
+    if (!WindowedCreatePlugin()) {
+      VLOG(1) << "Couldn't create windowed plug-in";
       return false;
+    }
   } else {
     // For windowless plugins we should set the containing window handle
     // as the instance window handle. This is what Safari does. Not having

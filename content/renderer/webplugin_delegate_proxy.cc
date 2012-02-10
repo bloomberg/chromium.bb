@@ -283,25 +283,31 @@ bool WebPluginDelegateProxy::Initialize(
     // plugin crashed on initialization.
     if (!info_.path.empty()) {
       render_view_->PluginCrashed(info_.path);
+      LOG(ERROR) << "Plug-in crashed on start";
 
       // Return true so that the plugin widget is created and we can paint the
       // crashed plugin there.
       return true;
     }
+    LOG(ERROR) << "Plug-in couldn't be found";
     return false;
   }
 
   scoped_refptr<PluginChannelHost> channel_host(
       PluginChannelHost::GetPluginChannelHost(
           channel_handle, ChildProcess::current()->io_message_loop_proxy()));
-  if (!channel_host.get())
+  if (!channel_host.get()) {
+    LOG(ERROR) << "Couldn't get PluginChannelHost";
     return false;
+  }
 
   int instance_id;
   bool result = channel_host->Send(new PluginMsg_CreateInstance(
       mime_type_, &instance_id));
-  if (!result)
+  if (!result) {
+    LOG(ERROR) << "Couldn't send PluginMsg_CreateInstance";
     return false;
+  }
 
   channel_host_ = channel_host;
   instance_id_ = instance_id;
@@ -336,6 +342,9 @@ bool WebPluginDelegateProxy::Initialize(
   result = false;
   IPC::Message* msg = new PluginMsg_Init(instance_id_, params, &result);
   Send(msg);
+
+  if (!result)
+    LOG(ERROR) << "PluginMsg_Init returned false";
 
   render_view_->RegisterPluginDelegate(this);
 

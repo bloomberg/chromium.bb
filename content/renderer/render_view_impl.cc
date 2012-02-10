@@ -3499,8 +3499,10 @@ void RenderViewImpl::LoadURLExternally(
 webkit::npapi::WebPluginDelegate* RenderViewImpl::CreatePluginDelegate(
     const FilePath& file_path,
     const std::string& mime_type) {
-  if (!PluginChannelHost::IsListening())
+  if (!PluginChannelHost::IsListening()) {
+    LOG(ERROR) << "PluginChannelHost isn't listening";
     return NULL;
+  }
 
   bool in_process_plugin = RenderProcess::current()->UseInProcessPlugins();
   if (in_process_plugin) {
