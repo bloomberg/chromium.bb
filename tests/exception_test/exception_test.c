@@ -290,6 +290,48 @@ void test_unsetting_x86_direction_flag() {
 
 #endif
 
+#if defined(__i386__)
+
+/*
+ * TODO(mseaborn): %ebp is preserved when entering the exception
+ * handler because its value is needed for doing stack backtraces, but
+ * it would be better to save its value in the exception frame.
+ */
+
+uint32_t saved_ebp;
+
+void ebp_exception_handler_wrapper(int prog_ctr, int stack_ptr);
+asm(".pushsection .text, \"ax\", @progbits\n"
+    "ebp_exception_handler_wrapper:\n"
+    "mov %ebp, saved_ebp\n"
+    "jmp ebp_exception_handler\n"
+    ".popsection\n");
+
+void ebp_exception_handler() {
+  assert(saved_ebp == 0x12345678);
+  /* Return from exception handler. */
+  int rc = NACL_SYSCALL(exception_clear_flag)();
+  assert(rc == 0);
+  longjmp(g_jmp_buf, 1);
+}
+
+void test_preserving_ebp() {
+  printf("test_preserving_ebp...\n");
+  int rc = NACL_SYSCALL(exception_handler)(ebp_exception_handler_wrapper, NULL);
+  assert(rc == 0);
+  if (!setjmp(g_jmp_buf)) {
+    /* Cause a crash with %ebp set to a known value. */
+    asm("mov $0x12345678, %ebp\n"
+        "movl $0, 0\n");
+    /* Should not reach here. */
+    exit(1);
+  }
+  /* Clear the jmp_buf to prevent it from being reused accidentally. */
+  memset(g_jmp_buf, 0, sizeof(g_jmp_buf));
+}
+
+#endif
+
 
 int main() {
   /* Test exceptions without having an exception stack set up. */
@@ -312,6 +354,10 @@ int main() {
 #if defined(__i386__) || defined(__x86_64__)
   test_get_x86_direction_flag();
   test_unsetting_x86_direction_flag();
+#endif
+
+#if defined(__i386__)
+  test_preserving_ebp();
 #endif
 
   fprintf(stderr, "** intended_exit_status=0\n");

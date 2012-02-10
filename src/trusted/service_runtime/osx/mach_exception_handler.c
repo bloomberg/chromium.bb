@@ -193,6 +193,13 @@ static int HandleException(mach_port_t thread_port,
   /* Set up thread context to resume at handler. */
   natp->user.new_prog_ctr = nap->exception_handler;
   natp->user.stack_ptr.ptr_32.ptr = frame_addr_user;
+  /*
+   * Preserve %ebp for consistency with x86-32 Linux and Windows, and
+   * because it is needed for doing stack backtraces.
+   * TODO(mseaborn): Save %ebp in the exception frame rather than
+   * preserving it.
+   */
+  natp->user.frame_ptr.ptr_32.ptr = regs.uts.ts32.__ebp;
 
   /*
    * Put registers in right place to land at NaClSwitchNoSSEViaECX
