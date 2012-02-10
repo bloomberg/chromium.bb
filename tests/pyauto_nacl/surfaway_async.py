@@ -52,15 +52,6 @@ class NaClTest(pyauto.PyUITest):
     # Repeatedly (10 times) surfaway after a random delay (0 - 2 seconds)
     self.surfAwayAsyncMulti(page, title_word, 10, 0.0, 2.0)
 
-  def testSurfAwayAsyncSRPCHelloWorld(self):
-    self.surfAwayAsync('srpc_hw.html', 'SRPC')
-
-  def testSurfAwayAsyncSRPCParameterPassing(self):
-    self.surfAwayAsync('srpc_basic.html', 'SRPC')
-
-  def testSurfAwayAsyncSRPCResourceDescriptor(self):
-    self.surfAwayAsync('srpc_nrd_xfer.html', 'SRPC')
-
   def testSurfAwayAsyncEvents(self):
     self.surfAwayAsync('ppapi_example_events.html', 'PPAPI')
 

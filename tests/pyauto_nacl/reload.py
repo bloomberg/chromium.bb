@@ -63,15 +63,6 @@ class NaClTest(pyauto.PyUITest):
     self.reloadMulti(page, title_word, 25, 0.0, 2.0)
     print '---> pyauto reload: finished testing', page
 
-  def testReloadSRPCHelloWorld(self):
-    self.reloader('srpc_hw.html', 'SRPC')
-
-  def testReloadSRPCParameterPassing(self):
-    self.reloader('srpc_basic.html', 'SRPC')
-
-  def testReloadSRPCResourceDescriptor(self):
-    self.reloader('srpc_nrd_xfer.html', 'SRPC')
-
   def testReloadExampleAudio(self):
     self.reloader('ppapi_example_audio.html#mute', 'PPAPI')
 

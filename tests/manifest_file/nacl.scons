@@ -39,22 +39,6 @@ env.AddNodeToTestSuite(node,
                        ['small_tests'],
                        'run_srpc_manifest_file_test')
 
-# chrome_browser_tests
-
-node = env.PPAPIBrowserTester(
-    'srpc_mf_browser_test.out',
-    url='srpc_manifest_file_test.html',
-    nmfs=['srpc_manifest_file.nmf'],
-    files=env.ExtractPublishedFiles(srpc_mf_nexe_name),
-    args=['--debug', '--enable_experimental_js'],
-#    osenv=['NACLVERBOSITY=4']
-    )
-
-env.AddNodeToTestSuite(node,
-                       ['chrome_browser_tests'],
-                       'run_srpc_manifest_file_chrome_browser_test',
-                       is_broken=env.PPAPIBrowserTesterIsBroken())
-
 # post message version
 
 pm_mf_obj = env.ComponentObject('pm_manifest_file_test.o',

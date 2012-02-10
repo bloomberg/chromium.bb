@@ -8,10 +8,6 @@ Import('env')
 platform = env.get('TARGET_FULLARCH')
 ppapi_example_events_nexe_name = 'ppapi_example_events_%s${PROGSUFFIX}' % platform
 ppapi_user_main_nexe_name = 'ppapi_user_main_%s${PROGSUFFIX}' % platform
-srpc_test_nexe_name = 'srpc_test_%s${PROGSUFFIX}' % platform
-srpc_hw_nexe_name = 'srpc_hw_%s${PROGSUFFIX}' % platform
-srpc_nrd_client_nexe_name = 'srpc_nrd_client_%s${PROGSUFFIX}' % platform
-srpc_nrd_server_nexe_name = 'srpc_nrd_server_%s${PROGSUFFIX}' % platform
 
 def CreateDefaultDeps(base_name):
   return [env.File('${STAGING_DIR}/' + base_name + '_%s${PROGSUFFIX}' % platform),
@@ -77,17 +73,6 @@ ppapi_ppb_image_data_files = CreateDefaultDeps('ppapi_ppb_image_data')
 ppapi_progress_events_files = CreateDefaultDeps('ppapi_progress_events') + [
     env.File('${STAGING_DIR}/ppapi_progress_events.js')]
 ppapi_test_example_files = CreateDefaultDeps('ppapi_test_example')
-srpc_basic_files = [
-    env.File('${STAGING_DIR}/' + srpc_test_nexe_name),
-    env.File('${STAGING_DIR}/srpc_basic.html'),
-    env.File('${STAGING_DIR}/srpc_test.nmf')]
-srpc_nrd_xfer_files = [
-    env.File('${STAGING_DIR}/' + srpc_nrd_client_nexe_name),
-    env.File('${STAGING_DIR}/srpc_nrd_client.nmf'),
-    env.File('${STAGING_DIR}/' + srpc_nrd_server_nexe_name),
-    env.File('${STAGING_DIR}/srpc_nrd_server.nmf'),
-    env.File('${STAGING_DIR}/srpc_nrd_xfer.html')]
-srpc_hw_files = CreateDefaultDeps('srpc_hw');
 
 # sanity.py
 node = env.PyAutoTester('pyauto_sanity.out', env.File('sanity.py'))
@@ -121,10 +106,7 @@ core_test_files = [env.File('${STAGING_DIR}/nacltest.js'),
                    ppapi_ppb_file_system_files +
                    ppapi_ppb_graphics2d_files +
                    ppapi_ppb_image_data_files +
-                   ppapi_progress_events_files +
-                   srpc_basic_files +
-                   srpc_hw_files +
-                   srpc_nrd_xfer_files]
+                   ppapi_progress_events_files]
 
 # surfaway.py
 node = env.PyAutoTester(
@@ -185,9 +167,6 @@ uma_test_files = [
     env.File('${STAGING_DIR}/ppapi_bad_native.html'),
     env.File('${STAGING_DIR}/partly_invalid${PROGSUFFIX}'),
     env.File('${STAGING_DIR}/partly_invalid.nmf'),
-    # Data URI
-    env.File('${STAGING_DIR}/srpc_hw_data.html'),
-    env.File('${STAGING_DIR}/srpc_hw_%s${PROGSUFFIX}' % platform),
     # Crash
     env.File('${STAGING_DIR}/ppapi_crash.html'),
     env.File('${STAGING_DIR}/ppapi_crash_ppapi_off_main_thread.nmf'),

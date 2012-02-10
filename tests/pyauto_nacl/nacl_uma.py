@@ -251,12 +251,6 @@ Histogram: NaCl.OSArch recorded 2 samples, average = 1.0 (flags = 0x1)
     self.assertHistogramCount(hists, 'NaCl.ModuleUptime.Normal', 0)
     self.assertHistogramCount(hists, 'NaCl.ModuleUptime.Crash', num_tests * 2)
 
-  def testDataURI(self):
-    hists = self.getHistsForTest('srpc_hw_data.html')
-
-    self.assertHistogramCount(hists, 'NaCl.Manifest.IsDataURI', 1)
-    self.assertEqual(hists['NaCl.Manifest.IsDataURI'][1], 1)
-
 
 if __name__ == '__main__':
   pyauto_nacl.Main()

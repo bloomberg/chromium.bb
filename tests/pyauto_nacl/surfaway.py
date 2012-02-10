@@ -31,15 +31,6 @@ class NaClTest(pyauto.PyUITest):
     """Navigate multiple times to a sample nexe and then surf away."""
     self.surfAwayMulti(page, title_word, 5)
 
-  def testSurfAwaySRPCHelloWorld(self):
-    self.surfAway('srpc_hw.html', 'SRPC')
-
-  def testSurfAwaySRPCParameterPassing(self):
-    self.surfAway('srpc_basic.html', 'SRPC')
-
-  def testSurfAwaySRPCResourceDescriptor(self):
-    self.surfAway('srpc_nrd_xfer.html', 'SRPC')
-
   def testSurfAwayExampleAudio(self):
     self.surfAway('ppapi_example_audio.html#mute', 'PPAPI')
 

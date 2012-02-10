@@ -52,20 +52,6 @@ env.AddNodeToTestSuite(node,
                        ['small_tests'],
                        'run_srpc_nameservice_test')
 
-# chrome_browser_tests
-
-node = env.PPAPIBrowserTester(
-    'srpc_nameservice_browser_test.out',
-    url='srpc_nameservice_test.html',
-    nmfs=['srpc_nameservice.nmf'],
-    files=env.ExtractPublishedFiles(srpc_ns_nexe_name),
-    args=['--debug', '--enable_experimental_js'])
-
-env.AddNodeToTestSuite(node,
-                       ['chrome_browser_tests'],
-                       'run_srpc_nameservice_chrome_browser_test',
-                       is_broken=env.PPAPIBrowserTesterIsBroken())
-
 # postmessage version of srpc_nameservice_test
 
 pm_ns_obj = env.ComponentObject('pm_nameservice_test.o',

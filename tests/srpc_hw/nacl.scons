@@ -34,32 +34,3 @@ node = env.SelUniversalTest(
 env.AddNodeToTestSuite(node,
                        ['small_tests'],
                        'run_srpc_hw_test')
-
-# chrome_browser_tests
-
-node = env.PPAPIBrowserTester(
-    'srpc_hw_browser_test.out',
-    url='srpc_hw.html',
-    nmfs=['srpc_hw.nmf'],
-    files=env.ExtractPublishedFiles(srpc_hw_nexe_name),
-    args=['--debug', '--enable_experimental_js'])
-
-env.AddNodeToTestSuite(node,
-                       ['chrome_browser_tests'],
-                       'run_srpc_hw_chrome_browser_test',
-                       is_broken=env.PPAPIBrowserTesterIsBroken())
-
-# A test that manifests can be coded by data URIs.
-node = env.PPAPIBrowserTester(
-    'srpc_hw_data_browser_test.out',
-    url='srpc_hw_data.html',
-    nmfs=['srpc_hw.nmf'],
-    files=env.ExtractPublishedFiles(srpc_hw_nexe_name),
-    # have to hardcode the port so the data URI can encode an absolute path
-    args=['--debug', '--enable_experimental_js'])
-
-env.AddNodeToTestSuite(node,
-                       ['chrome_browser_tests'],
-                       'run_srpc_hw_data_chrome_browser_test',
-                       is_broken=env.PPAPIBrowserTesterIsBroken() or
-                                 env.Bit('nacl_glibc'))

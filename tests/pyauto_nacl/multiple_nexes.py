@@ -43,9 +43,7 @@ class NaClTest(pyauto.PyUITest):
            # TODO(nfullagar): reenable
            # http://code.google.com/p/chromium/issues/detail?id=93806
            # ('ppapi_ppb_image_data.html', 1),
-           ('srpc_basic.html', 1),
-           ('srpc_hw.html', 1),
-           ('srpc_nrd_xfer.html', 2)]
+           ]
 
   def testLoadNexesInMultipleTabs(self):
     """Load nexes in multiple tabs and surf away from all of them."""
