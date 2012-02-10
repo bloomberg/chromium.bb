@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -123,6 +123,17 @@ const Extension* ComponentLoader::AddOrReplace(const FilePath& path) {
   Remove(GenerateId(manifest.get()));
 
   return Add(manifest.release(), absolute_path);
+}
+
+void ComponentLoader::Reload(const std::string& extension_id) {
+  for (RegisteredComponentExtensions::iterator it =
+         component_extensions_.begin(); it != component_extensions_.end();
+         ++it) {
+    if (GenerateId(it->manifest) == extension_id) {
+      Load(*it);
+      break;
+    }
+  }
 }
 
 const Extension* ComponentLoader::Load(const ComponentExtensionInfo& info) {

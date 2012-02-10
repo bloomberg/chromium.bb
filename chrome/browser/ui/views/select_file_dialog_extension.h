@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/views/extensions/extension_dialog_observer.h"
 #include "ui/gfx/native_widget_types.h"  // gfx::NativeWindow
 
+class Browser;
 class ExtensionDialog;
 class RenderViewHost;
 
@@ -32,6 +33,7 @@ class SelectFileDialogExtension
 
   // ExtensionDialog::Observer implementation.
   virtual void ExtensionDialogClosing(ExtensionDialog* dialog) OVERRIDE;
+  virtual void ExtensionTerminated(ExtensionDialog* dialog) OVERRIDE;
 
   // Routes callback to appropriate SelectFileDialog::Listener based on
   // the owning |tab_id|.
@@ -82,6 +84,10 @@ class SelectFileDialogExtension
 
   // ID of the tab that spawned this dialog, used to route callbacks.
   int32 tab_id_;
+
+  // Cache a pointer to our owner browser. Since we're a child window of our
+  // owner browser, if this browser gets deleted, it will also close us.
+  Browser* owner_browser_;
 
   gfx::NativeWindow owner_window_;
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,6 +18,9 @@ class ExtensionDialogObserver {
   // is ref-counted, and thus will be released shortly after
   // making this delegate call.
   virtual void ExtensionDialogClosing(ExtensionDialog* popup) = 0;
+  // Called in case the extension hosted by the extension dialog is
+  // terminated, e.g. if the extension crashes.
+  virtual void ExtensionTerminated(ExtensionDialog* popup) = 0;
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_EXTENSIONS_EXTENSION_DIALOG_OBSERVER_H_

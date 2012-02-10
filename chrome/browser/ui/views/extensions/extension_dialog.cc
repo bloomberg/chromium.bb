@@ -41,6 +41,9 @@ ExtensionDialog::ExtensionDialog(ExtensionHost* host,
   // Listen for the containing view calling window.close();
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_HOST_VIEW_SHOULD_CLOSE,
                  content::Source<Profile>(host->profile()));
+  // Listen for a crash or other termination of the extension process.
+  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_PROCESS_TERMINATED,
+                 content::Source<Profile>(host->profile()));
 }
 
 ExtensionDialog::~ExtensionDialog() {
@@ -232,6 +235,12 @@ void ExtensionDialog::Observe(int type,
       if (content::Details<ExtensionHost>(host()) != details)
         return;
       Close();
+      break;
+    case chrome::NOTIFICATION_EXTENSION_PROCESS_TERMINATED:
+      if (content::Details<ExtensionHost>(host()) != details)
+        return;
+      if (observer_)
+        observer_->ExtensionTerminated(this);
       break;
     default:
       NOTREACHED() << L"Received unexpected notification";

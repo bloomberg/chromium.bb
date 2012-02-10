@@ -4,11 +4,15 @@
 
 #include "chrome/browser/ui/views/select_file_dialog_extension.h"
 
+#include "base/bind.h"
+#include "base/callback.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/singleton.h"
+#include "base/message_loop.h"
 #include "chrome/browser/extensions/extension_file_browser_private_api.h"
 #include "chrome/browser/extensions/extension_host.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/file_manager_util.h"
 #include "chrome/browser/sessions/restore_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
@@ -91,7 +95,8 @@ SelectFileDialogExtension::SelectFileDialogExtension(Listener* listener)
     : SelectFileDialog(listener),
       has_multiple_file_type_choices_(false),
       tab_id_(0),
-      owner_window_(0),
+      owner_browser_(NULL),
+      owner_window_(NULL),
       selection_type_(CANCEL),
       selection_index_(0),
       params_(NULL) {
@@ -115,12 +120,37 @@ void SelectFileDialogExtension::ListenerDestroyed() {
 
 void SelectFileDialogExtension::ExtensionDialogClosing(
     ExtensionDialog* dialog) {
+  owner_browser_ = NULL;
   owner_window_ = NULL;
   // Release our reference to the dialog to allow it to close.
   extension_dialog_ = NULL;
   PendingDialog::GetInstance()->Remove(tab_id_);
   // Actually invoke the appropriate callback on our listener.
   NotifyListener();
+}
+
+void SelectFileDialogExtension::ExtensionTerminated(
+    ExtensionDialog* dialog) {
+  // The extension would have been unloaded because of the termination,
+  // reload it.
+  std::string extension_id = dialog->host()->extension()->id();
+  // Reload the extension after a bit; the extension may not have been unloaded
+  // yet. We don't want to try to reload the extension only to have the Unload
+  // code execute after us and re-unload the extension.
+  //
+  // TODO(rkc): This is ugly. The ideal solution is that we shouldn't need to
+  // reload the extension at all - when we try to open the extension the next
+  // time, the extension subsystem would automatically reload it for us. At
+  // this time though this is broken because of some faulty wiring in
+  // ExtensionProcessManager::CreateViewHost. Once that is fixed, remove this.
+  if (owner_browser_) {
+    MessageLoop::current()->PostTask(FROM_HERE,
+        base::Bind(&ExtensionService::ReloadExtension,
+            base::Unretained(owner_browser_->profile()->GetExtensionService()),
+        extension_id));
+  }
+
+  dialog->Close();
 }
 
 // static
@@ -211,15 +241,15 @@ void SelectFileDialogExtension::SelectFileImpl(
     return;
   }
   // Extension background pages may not supply an owner_window.
-  Browser* owner_browser = (owner_window ?
+  owner_browser_ = (owner_window ?
       BrowserList::FindBrowserWithWindow(owner_window) :
       BrowserList::GetLastActive());
-  if (!owner_browser) {
+  if (!owner_browser_) {
     NOTREACHED() << "Can't find owning browser";
     return;
   }
 
-  TabContentsWrapper* tab = owner_browser->GetSelectedTabContentsWrapper();
+  TabContentsWrapper* tab = owner_browser_->GetSelectedTabContentsWrapper();
 
   // Check if we have another dialog opened in the tab. It's unlikely, but
   // possible.
@@ -231,7 +261,7 @@ void SelectFileDialogExtension::SelectFileImpl(
 
   FilePath virtual_path;
   if (!file_manager_util::ConvertFileToRelativeFileSystemPath(
-          owner_browser->profile(), default_path, &virtual_path)) {
+          owner_browser_->profile(), default_path, &virtual_path)) {
     virtual_path = default_path.BaseName();
   }
 
@@ -243,7 +273,7 @@ void SelectFileDialogExtension::SelectFileImpl(
       default_extension);
 
   ExtensionDialog* dialog = ExtensionDialog::Show(file_browser_url,
-      owner_browser, tab->web_contents(),
+      owner_browser_, tab->web_contents(),
       kFileManagerWidth, kFileManagerHeight,
 #if defined(USE_AURA)
       file_manager_util::GetTitleFromType(type),

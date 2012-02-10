@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -49,6 +49,9 @@ class ComponentLoader : public content::NotificationObserver {
   // extension with the same ID.
   const Extension* AddOrReplace(const FilePath& path);
 
+  // Returns true if an extension with the specified id has been added.
+  bool Exists(const std::string& id) const;
+
   // Unloads a component extension and removes it from the list of component
   // extensions to be loaded.
   void Remove(const FilePath& root_directory);
@@ -78,6 +81,9 @@ class ComponentLoader : public content::NotificationObserver {
   // Clear the list of registered extensions.
   void ClearAllRegistered();
 
+  // Reloads a registered component extension.
+  void Reload(const std::string& extension_id);
+
  private:
   // Information about a registered component extension.
   struct ComponentExtensionInfo {
@@ -104,9 +110,6 @@ class ComponentLoader : public content::NotificationObserver {
 
   // Add the enterprise webstore extension, or reload it if already loaded.
   void AddOrReloadEnterpriseWebStore();
-
-  // Returns true if an extension with the specified id has been added.
-  bool Exists(const std::string& id) const;
 
   // Determine the extension id.
   static std::string GenerateId(const base::DictionaryValue* manifest);

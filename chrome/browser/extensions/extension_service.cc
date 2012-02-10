@@ -714,6 +714,13 @@ void ExtensionService::ReloadExtension(const std::string& extension_id) {
     path = unloaded_extension_paths_[extension_id];
   }
 
+  // If we're reloading a component extension, use the component extension
+  // loader's reloader.
+  if (component_loader_->Exists(extension_id)) {
+    component_loader_->Reload(extension_id);
+    return;
+  }
+
   // Check the installed extensions to see if what we're reloading was already
   // installed.
   scoped_ptr<ExtensionInfo> installed_extension(
