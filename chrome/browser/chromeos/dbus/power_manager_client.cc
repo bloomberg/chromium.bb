@@ -122,6 +122,22 @@ class PowerManagerClientImpl : public PowerManagerClient {
                    weak_ptr_factory_.GetWeakPtr()),
         base::Bind(&PowerManagerClientImpl::SignalConnected,
                    weak_ptr_factory_.GetWeakPtr()));
+
+    power_manager_proxy_->ConnectToSignal(
+        power_manager::kPowerManagerInterface,
+        power_manager::kIdleNotifySignal,
+        base::Bind(&PowerManagerClientImpl::IdleNotifySignalReceived,
+                   weak_ptr_factory_.GetWeakPtr()),
+        base::Bind(&PowerManagerClientImpl::SignalConnected,
+                   weak_ptr_factory_.GetWeakPtr()));
+
+    power_manager_proxy_->ConnectToSignal(
+        power_manager::kPowerManagerInterface,
+        power_manager::kActiveNotifySignal,
+        base::Bind(&PowerManagerClientImpl::ActiveNotifySignalReceived,
+                   weak_ptr_factory_.GetWeakPtr()),
+        base::Bind(&PowerManagerClientImpl::SignalConnected,
+                   weak_ptr_factory_.GetWeakPtr()));
   }
 
   virtual ~PowerManagerClientImpl() {
@@ -206,6 +222,23 @@ class PowerManagerClientImpl : public PowerManagerClient {
         base::Bind(&PowerManagerClientImpl::OnGetIdleTime,
                    weak_ptr_factory_.GetWeakPtr(), callback));
   }
+
+  virtual void RequestIdleNotification(int64 threshold) OVERRIDE {
+    dbus::MethodCall method_call(power_manager::kPowerManagerInterface,
+                                 power_manager::kRequestIdleNotification);
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendInt64(threshold);
+
+    power_manager_proxy_->CallMethod(
+        &method_call,
+        dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        dbus::ObjectProxy::EmptyResponseCallback());
+  }
+
+  virtual void RequestActiveNotification() OVERRIDE {
+    RequestIdleNotification(0);
+  }
+
 
   virtual void NotifyScreenLockRequested() OVERRIDE {
     SimpleMethodCallToPowerManager(power_manager::kRequestLockScreenMethod);
@@ -378,6 +411,36 @@ class PowerManagerClientImpl : public PowerManagerClient {
     FOR_EACH_OBSERVER(Observer, observers_, UnlockScreenFailed());
   }
 
+
+  void IdleNotifySignalReceived(dbus::Signal* signal) {
+    dbus::MessageReader reader(signal);
+    int64 threshold = 0;
+    if (!reader.PopInt64(&threshold)) {
+      LOG(ERROR) << "Idle Notify signal had incorrect parameters: "
+                 << signal->ToString();
+      return;
+    }
+    DCHECK_GT(threshold, 0);
+
+    VLOG(1) << "Idle Notify: " << threshold;
+    FOR_EACH_OBSERVER(Observer, observers_, IdleNotify(threshold));
+  }
+
+  void ActiveNotifySignalReceived(dbus::Signal* signal) {
+    dbus::MessageReader reader(signal);
+    int64 threshold = 0;
+    if (!reader.PopInt64(&threshold)) {
+      LOG(ERROR) << "Active Notify signal had incorrect parameters: "
+                 << signal->ToString();
+      return;
+    }
+    DCHECK_EQ(threshold, 0);
+
+    VLOG(1) << "Active Notify.";
+    FOR_EACH_OBSERVER(Observer, observers_, ActiveNotify());
+  }
+
+
   dbus::ObjectProxy* power_manager_proxy_;
   ObserverList<Observer> observers_;
   base::WeakPtrFactory<PowerManagerClientImpl> weak_ptr_factory_;
@@ -439,12 +502,13 @@ class PowerManagerClientStubImpl : public PowerManagerClient {
     callback.Run(0);
   }
 
+  virtual void RequestIdleNotification(int64 threshold) OVERRIDE {}
+  virtual void RequestActiveNotification() OVERRIDE {}
+
   virtual void NotifyScreenLockRequested() OVERRIDE {
     ScreenLocker::Show();
   }
-
   virtual void NotifyScreenLockCompleted() OVERRIDE {}
-
   virtual void NotifyScreenUnlockRequested() OVERRIDE {
     ScreenLocker::Hide();
   }

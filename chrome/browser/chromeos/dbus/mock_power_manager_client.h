@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -26,6 +26,8 @@ class MockPowerManagerClient : public PowerManagerClient {
   MOCK_METHOD0(RequestRestart, void(void));
   MOCK_METHOD0(RequestShutdown, void(void));
   MOCK_METHOD1(CalculateIdleTime, void(const CalculateIdleTimeCallback&));
+  MOCK_METHOD1(RequestIdleNotification, void(int64));
+  MOCK_METHOD0(RequestActiveNotification, void(void));
   MOCK_METHOD0(NotifyScreenLockRequested, void(void));
   MOCK_METHOD0(NotifyScreenLockCompleted, void(void));
   MOCK_METHOD0(NotifyScreenUnlockRequested, void(void));

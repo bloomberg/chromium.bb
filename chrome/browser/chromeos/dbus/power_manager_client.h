@@ -39,6 +39,7 @@ struct PowerSupplyStatus {
 // Callback used for processing the idle time.  The int64 param is the number of
 // seconds the user has been idle.
 typedef base::Callback<void(int64)> CalculateIdleTimeCallback;
+typedef base::Callback<void(void)> IdleNotificationCallback;
 
 // PowerManagerClient is used to communicate with the power manager.
 class PowerManagerClient {
@@ -76,6 +77,12 @@ class PowerManagerClient {
 
     // Called when the screen fails to unlock.
     virtual void UnlockScreenFailed() {}
+
+    // Called when we go idle for threshold time.
+    virtual void IdleNotify(int64 threshold_secs) {}
+
+    // Called when we go from idle to active.
+    virtual void ActiveNotify() {}
   };
 
   // Adds and removes the observer.
@@ -99,11 +106,6 @@ class PowerManagerClient {
   // Requests shutdown of the system.
   virtual void RequestShutdown() = 0;
 
-  // Calculates idle time asynchronously, after the idle time request has
-  // replied.  It passes the idle time in seconds to |callback|.  If it
-  // encounters some error, it passes -1 to |callback|.
-  virtual void CalculateIdleTime(const CalculateIdleTimeCallback& callback) = 0;
-
   // Notifies PowerManager that a user requested to lock the screen.
   virtual void NotifyScreenLockRequested() = 0;
 
@@ -115,6 +117,24 @@ class PowerManagerClient {
 
   // Notifies PowerManager that screen is unlocked.
   virtual void NotifyScreenUnlockCompleted() = 0;
+
+  // Idle management functions:
+
+  // Calculates idle time asynchronously, after the idle time request has
+  // replied.  It passes the idle time in seconds to |callback|.  If it
+  // encounters some error, it passes -1 to |callback|.
+  virtual void CalculateIdleTime(const CalculateIdleTimeCallback& callback) = 0;
+
+  // Requests notification for Idle at a certain threshold.
+  // NOTE: This notification is one shot, once the machine has been idle for
+  // threshold time, a notification will be sent and then that request will be
+  // removed from the notification queue. If you wish notifications the next
+  // time the machine goes idle for that much time, request again.
+  virtual void RequestIdleNotification(int64 threshold_secs) = 0;
+
+  // Requests that the observers be notified in case of an Idle->Active event.
+  // NOTE: Like the previous request, this will also get triggered exactly once.
+  virtual void RequestActiveNotification() = 0;
 
   // Creates the instance.
   static PowerManagerClient* Create(dbus::Bus* bus);
