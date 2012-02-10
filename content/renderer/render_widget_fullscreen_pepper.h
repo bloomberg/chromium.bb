@@ -54,6 +54,7 @@ class RenderWidgetFullscreenPepper : public RenderWidgetFullscreen,
 
   // RenderWidget API.
   virtual void WillInitiatePaint() OVERRIDE;
+  virtual void DidInitiatePaint() OVERRIDE;
   virtual void DidFlushPaint() OVERRIDE;
   virtual void Close() OVERRIDE;
   virtual webkit::ppapi::PluginInstance* GetBitmapForOptimizedPluginPaint(

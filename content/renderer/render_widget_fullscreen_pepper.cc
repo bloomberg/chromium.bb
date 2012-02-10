@@ -289,6 +289,11 @@ void RenderWidgetFullscreenPepper::WillInitiatePaint() {
     plugin_->ViewWillInitiatePaint();
 }
 
+void RenderWidgetFullscreenPepper::DidInitiatePaint() {
+  if (plugin_)
+    plugin_->ViewInitiatedPaint();
+}
+
 void RenderWidgetFullscreenPepper::DidFlushPaint() {
   if (plugin_)
     plugin_->ViewFlushedPaint();
