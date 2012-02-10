@@ -31,10 +31,10 @@ CFLAGS:=-pthread -O0 -g $(WARNINGS)
 # Compute path to compiler
 #
 OSNAME:=$(shell python $(NACL_SDK_ROOT)/tools/getos.py)
-TC_PATH:=$(abspath $(NACL_SDK_ROOT)/toolchain/$(OSNAME)_x86_glibc)
+TC_PATH:=$(abspath $(NACL_SDK_ROOT)/toolchain/$(OSNAME)_x86_newlib)
 
 
-# Alias for C++ compiler
+# Alias for C compiler
 CC:=$(TC_PATH)/bin/i686-nacl-gcc
 
 
@@ -44,9 +44,8 @@ CC:=$(TC_PATH)/bin/i686-nacl-gcc
 CYGWIN ?= nodosfilewarning
 export CYGWIN
 
-
 # Default target is everything
-all : hello_world_x86_32.nexe hello_world_x86_64.nexe hello_world.nmf
+all : hello_world_x86_32.nexe hello_world_x86_64.nexe
 
 # Define compile and link rule for 32 bit (-m32) nexe
 hello_world_x86_32.nexe : hello_world.c $(THIS_MAKE)
@@ -55,21 +54,6 @@ hello_world_x86_32.nexe : hello_world.c $(THIS_MAKE)
 # Define compile and link rule for 64 bit (-m64) nexe
 hello_world_x86_64.nexe : hello_world.c $(THIS_MAKE)
 	$(CC) -o $@ $< -m64 -O0 -g $(CFLAGS) -lppapi
-
-#
-# NMF Manifiest generation
-#
-# Use the python script create_nmf to scan the binaries for dependencies using
-# objdump.  Pass in the (-L) paths to the default library toolchains so that we
-# can find those libraries and have it automatically copy the files (-s) to
-# the target directory for us.
-NMF:=python $(NACL_SDK_ROOT)/tools/create_nmf.py
-NMF_ARGS:=-D $(TC_PATH)/x86_64-nacl/bin/objdump
-NMF_PATHS:=-L $(TC_PATH)/x86_64-nacl/lib32 -L $(TC_PATH)/x86_64-nacl/lib
-
-hello_world.nmf : hello_world_x86_64.nexe hello_world_x86_32.nexe
-	echo $(NMF) $(NMF_ARGS) -s . -o $@ $(NMF_PATHS) $^
-	$(NMF) $(NMF_ARGS) -s . -o $@ $(NMF_PATHS) $^
 
 # Define a phony rule so it always runs, to build nexe and start up server.
 .PHONY: RUN 
