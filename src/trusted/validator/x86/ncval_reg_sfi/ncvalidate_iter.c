@@ -485,15 +485,17 @@ NaClValidatorState *NaClValidatorStateCreate(const NaClPcAddress vbase,
                                              const NaClMemorySize codesize,
                                              const uint8_t alignment,
                                              const NaClOpKind base_register,
-                                             const CPUFeatures* features) {
+                                             const CPUFeatures *features) {
   NaClValidatorState *vstate;
   NaClValidatorState *return_value = NULL;
   DEBUG(NaClLog(LOG_INFO,
                 "Validator Create: vbase = %"NACL_PRIxNaClPcAddress", "
                 "sz = %"NACL_PRIxNaClMemorySize", alignment = %u\n",
                 vbase, codesize, alignment));
-  if (alignment != 16 && alignment != 32) return NULL;
-  if (features == NULL) return NULL;
+  if (alignment != 16 && alignment != 32)
+    return NULL;
+  if (features == NULL)
+    return NULL;
   vstate = (NaClValidatorState*) malloc(sizeof(NaClValidatorState));
   if (vstate != NULL) {
     return_value = vstate;

@@ -102,7 +102,7 @@ NaClValidatorState* NaClValidatorStateCreate(const NaClPcAddress vbase,
                                              const NaClMemorySize codesize,
                                              const uint8_t alignment,
                                              const NaClOpKind base_register,
-                                             const CPUFeatures* features);
+                                             const CPUFeatures *features);
 
 /* Returns true if the instruction iterator of the validator has any more
  * instructions. Also does any necessary internal caching if there are

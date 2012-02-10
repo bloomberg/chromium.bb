@@ -333,20 +333,24 @@ static void NCJumpSummarize(struct NCValidatorState* vstate);
 struct NCValidatorState *NCValidateInit(const NaClPcAddress vbase,
                                         const NaClPcAddress codesize,
                                         const uint8_t alignment,
-                                        CPUFeatures* features) {
+                                        CPUFeatures *features) {
   struct NCValidatorState *vstate = NULL;
 
   dprint(("NCValidateInit(%"NACL_PRIxNaClPcAddressAll
           ", %"NACL_PRIxNaClMemorySizeAll", %08x)\n", vbase, codesize,
           alignment));
   do {
-    if (alignment != 16 && alignment != 32) break;
-    if ((vbase & (alignment - 1)) != 0) break;
-    if (features == NULL) break;
+    if (alignment != 16 && alignment != 32)
+      break;
+    if ((vbase & (alignment - 1)) != 0)
+      break;
+    if (features == NULL)
+      break;
     dprint(("ncv_init(%"NACL_PRIxNaClPcAddress", %"NACL_PRIxNaClMemorySize
             ")\n", vbase, codesize));
     vstate = (struct NCValidatorState *)calloc(1, sizeof(*vstate));
-    if (vstate == NULL) break;
+    if (vstate == NULL)
+      break;
     /* Record default error reporter here, since we don't construct
      * the decoder state until the call to NCValidateSegment. This allows
      * us to update the error reporter in the decoder state properly.
@@ -362,7 +366,8 @@ struct NCValidatorState *NCValidateInit(const NaClPcAddress vbase,
     vstate->pattern_nonfirst_insts_table = NULL;
     vstate->summarize_fn = NCJumpSummarize;
     vstate->do_stub_out = 0;
-    if (vstate->vttable == NULL || vstate->kttable == NULL) break;
+    if (vstate->vttable == NULL || vstate->kttable == NULL)
+      break;
     dprint(("  allocated tables\n"));
     NCStatsInit(vstate);
     NaClCopyCPUFeatures(&vstate->cpufeatures, features);
@@ -370,8 +375,10 @@ struct NCValidatorState *NCValidateInit(const NaClPcAddress vbase,
   } while (0);
   /* Failure. Clean up memory before returning. */
   if (NULL != vstate) {
-    if (NULL != vstate->kttable) free(vstate->kttable);
-    if (NULL != vstate->vttable) free(vstate->vttable);
+    if (NULL != vstate->kttable)
+      free(vstate->kttable);
+    if (NULL != vstate->vttable)
+      free(vstate->vttable);
     free(vstate);
   }
   return NULL;
@@ -977,9 +984,8 @@ void NCValidateSegment(uint8_t *mbase, NaClPcAddress vbase, NaClMemorySize sz,
 }
 
 int NCValidateSegmentPair(uint8_t *mbase_old, uint8_t *mbase_new,
-                          NaClPcAddress vbase, size_t sz,
-                          uint8_t alignment,
-                          CPUFeatures* features) {
+                          NaClPcAddress vbase, size_t sz, uint8_t alignment,
+                          CPUFeatures *features) {
   /* TODO(karl): Refactor to use inheritance from NCDecoderStatePair? */
   NCDecoderStatePair pair;
   NCValidatorState* new_vstate;

@@ -41,7 +41,7 @@ struct NaClErrorReporter;
  * Set the maximum number of diagnostic errors to be reported to the
  * given value (-1 implies all error messages).
  */
-void NCValidateSetNumDiagnostics(struct NCValidatorState* vstate,
+void NCValidateSetNumDiagnostics(struct NCValidatorState *vstate,
                                  int num_diagnostics);
 
 /*
@@ -58,7 +58,7 @@ void NCValidateSetNumDiagnostics(struct NCValidatorState* vstate,
 struct NCValidatorState *NCValidateInit(const NaClPcAddress vbase,
                                         const NaClMemorySize codesize,
                                         const uint8_t alignment,
-                                        CPUFeatures* features);
+                                        CPUFeatures *features);
 
 /*
  * Allows "stub out mode" to be enabled, in which some unsafe
@@ -97,9 +97,8 @@ void NCValidateSegment(uint8_t *mbase, NaClPcAddress vbase,
  * safely. Returns non-zero if successful.
  */
 int NCValidateSegmentPair(uint8_t *mbase_old, uint8_t *mbase_new,
-                          NaClPcAddress vbase, size_t sz,
-                          uint8_t alignment,
-                          CPUFeatures* features);
+                          NaClPcAddress vbase, size_t sz, uint8_t alignment,
+                          CPUFeatures *features);
 
 /* Check targets and alignment. Returns non-zero if there are */
 /* safety issues, else returns 1                              */

@@ -64,7 +64,7 @@ NaClValidationStatus NACL_SUBARCH_NAME(ApplyValidatorVerbosely, x86, 32)
       if (!NaClArchSupported(&cpu_data))
         return NaClValidationFailedCpuNotSupported;
     }
-    NaClValGetCPUFeatures(local_cpu, &cpu_features);
+    NaClValidatorGetCPUFeatures(local_cpu, &cpu_features);
     switch (kind) {
       case NaClApplyCodeValidation:
         status = NCApplyValidatorVerbosely_x86_32(

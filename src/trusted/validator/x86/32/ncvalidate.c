@@ -74,7 +74,7 @@ NaClValidationStatus NACL_SUBARCH_NAME(ApplyValidator, NACL_TARGET_ARCH, 32) (
       if (!NaClArchSupported(&cpu_data))
         return NaClValidationFailedCpuNotSupported;
     }
-    NaClValGetCPUFeatures(local_cpu, &cpu_features);
+    NaClValidatorGetCPUFeatures(local_cpu, &cpu_features);
     switch (kind) {
       case NaClApplyCodeValidation:
         status = NCApplyValidatorSilently_x86_32(
@@ -109,7 +109,7 @@ NaClValidationStatus NACL_SUBARCH_NAME(ApplyValidatorCodeReplacement, x86, 32)
       status = NaClValidationFailedCpuNotSupported;
     } else {
       CPUFeatures cpu_features;
-      NaClValGetCPUFeatures(TRUE, &cpu_features);
+      NaClValidatorGetCPUFeatures(TRUE, &cpu_features);
       status = NCValidateSegmentPair(data_old, data_new, guest_addr,
                                      size, bundle_size, &cpu_features)
         ? NaClValidationSucceeded : NaClValidationFailed;

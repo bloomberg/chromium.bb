@@ -27,7 +27,7 @@ NaClValidationStatus NaClValidatorSetup_x86_64(
     Bool local_cpu,
     struct NaClValidatorState** vstate_ptr) {
   CPUFeatures cpu_features;
-  NaClValGetCPUFeatures(local_cpu, &cpu_features);
+  NaClValidatorGetCPUFeatures(local_cpu, &cpu_features);
   *vstate_ptr = NaClValidatorStateCreate(guest_addr, size, bundle_size, RegR15,
                                          &cpu_features);
   return (*vstate_ptr == NULL)
