@@ -387,6 +387,10 @@ weston_surface_update_transform(struct weston_surface *surface)
 	else
 		pixman_region32_init(&surface->transform.opaque);
 
+
+	if (surface->output)
+		weston_surface_assign_output(surface);
+
 	weston_compositor_schedule_repaint(surface->compositor);
 }
 
@@ -503,16 +507,11 @@ WL_EXPORT void
 weston_surface_configure(struct weston_surface *surface,
 			 GLfloat x, GLfloat y, int width, int height)
 {
-	weston_surface_damage_below(surface);
-
 	surface->geometry.x = x;
 	surface->geometry.y = y;
 	surface->geometry.width = width;
 	surface->geometry.height = height;
 	surface->geometry.dirty = 1;
-
-	weston_surface_assign_output(surface);
-	weston_surface_damage(surface);
 }
 
 WL_EXPORT uint32_t
@@ -1060,6 +1059,7 @@ weston_compositor_fade(struct weston_compositor *compositor, float tint)
 		weston_surface_configure(surface, 0, 0, 8192, 8192);
 		weston_surface_set_color(surface, 0.0, 0.0, 0.0, 0.0);
 		wl_list_insert(&compositor->surface_list, &surface->link);
+		weston_surface_assign_output(surface);
 		compositor->fade.surface = surface;
 	}
 
@@ -1700,9 +1700,11 @@ input_device_attach(struct wl_client *client,
 		return;
 	}
 
-	if (!device->sprite->output)
+	if (!device->sprite->output) {
 		wl_list_insert(&compositor->surface_list,
 			       &device->sprite->link);
+		weston_surface_assign_output(device->sprite);
+	}
 
 	buffer = buffer_resource->data;
 	device->hotspot_x = x;

@@ -136,6 +136,7 @@ tablet_shell_map(struct weston_shell *base, struct weston_surface *surface,
 	wl_list_insert(&shell->compositor->surface_list, &surface->link);
 	weston_surface_configure(surface, surface->geometry.x,
 				 surface->geometry.y, width, height);
+	weston_surface_assign_output(surface);
 }
 
 static void

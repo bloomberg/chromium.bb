@@ -854,11 +854,13 @@ resume_desktop(struct wl_shell *shell)
 
 	terminate_screensaver(shell);
 
-	wl_list_for_each(surface, &shell->hidden_surface_list, link)
+	wl_list_for_each(surface, &shell->hidden_surface_list, link) {
 		weston_surface_configure(surface, surface->geometry.x,
 					 surface->geometry.y,
 					 surface->geometry.width,
 					 surface->geometry.height);
+		weston_surface_assign_output(surface);
+	}
 
 	if (wl_list_empty(&shell->backgrounds)) {
 		list = &shell->compositor->surface_list;
@@ -1392,6 +1394,7 @@ map(struct weston_shell *base,
 		weston_surface_configure(surface, surface->geometry.x,
 					 surface->geometry.y,
 					 width, height);
+		weston_surface_assign_output(surface);
 		weston_compositor_repick(compositor);
 	}
 
@@ -1441,14 +1444,10 @@ configure(struct weston_shell *base, struct weston_surface *surface,
 		break;
 	}
 
-	/*
-	 * weston_surface_configure() will assign an output, which means
-	 * the surface is supposed to be in compositor->surface_list.
-	 * Be careful with that, and make sure we stay on the right output.
-	 * XXX: would a fullscreen surface need the same handling?
-	 */
+	/*  XXX: would a fullscreen surface need the same handling? */
 	if (do_configure) {
 		weston_surface_configure(surface, x, y, width, height);
+		weston_surface_assign_output(surface);
 
 		if (surface_type == SHELL_SURFACE_SCREENSAVER)
 			surface->output = shsurf->output;
