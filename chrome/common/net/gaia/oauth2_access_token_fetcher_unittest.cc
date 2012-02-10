@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -113,7 +113,8 @@ class OAuth2AccessTokenFetcherTest : public testing::Test {
   OAuth2AccessTokenFetcher fetcher_;
 };
 
-TEST_F(OAuth2AccessTokenFetcherTest, FLAKY_GetAccessTokenRequestFailure) {
+// Times out, see http://crbug.com/113446.
+TEST_F(OAuth2AccessTokenFetcherTest, DISABLED_GetAccessTokenRequestFailure) {
   TestURLFetcher* url_fetcher = SetupGetAccessToken(false, 0, "");
   EXPECT_CALL(consumer_, OnGetTokenFailure(_)).Times(1);
   fetcher_.Start("client_id", "client_secret", "refresh_token", ScopeList());
