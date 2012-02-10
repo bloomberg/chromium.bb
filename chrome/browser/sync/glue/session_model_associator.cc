@@ -168,7 +168,7 @@ bool SessionModelAssociator::AssociateWindows(bool reload_tabs) {
   std::set<SyncedWindowDelegate*> windows =
       SyncedWindowDelegate::GetSyncedWindowDelegates();
   for (std::set<SyncedWindowDelegate*>::const_iterator i =
-       windows.begin(); i != windows.end(); ++i) {
+           windows.begin(); i != windows.end(); ++i) {
     // Make sure the window has tabs and a viewable window. The viewable window
     // check is necessary because, for example, when a browser is closed the
     // destructor is not necessarily run immediately. This means its possible
@@ -199,25 +199,25 @@ bool SessionModelAssociator::AssociateWindows(bool reload_tabs) {
         const SessionTab* tab;
         SessionID::id_type tab_id = (*i)->GetTabIdAt(j);
 
-        // Any modified tab will have been associated before this was called,
-        // and if necessary added to the synced_session_tracker_. Therefore,
-        // we know that anything not already in the synced_session_tracker_ was
-        // for an invalid tab and can ensure it won't affect the window.
+        if (reload_tabs) {
+          SyncedTabDelegate* tab = (*i)->GetTabAt(j);
+          // It's possible for GetTabAt to return a null tab if it's not in
+          // memory. We can assume this means the tab already existed but hasn't
+          // changed, so no need to reassociate.
+          if (tab && !AssociateTab(*tab)) {
+            failed_association = true;
+            break;
+          }
+        }
+
+        // If the tab is valid, it would have been added to the tracker either
+        // by the above AssociateTab call (at association time), or by the
+        // change processor calling AssociateTab for all modified tabs.
+        // Therefore, we can key whether this window has valid tabs based on
+        // the tab's presence in the tracker.
         if (synced_session_tracker_.LookupSessionTab(local_tag, tab_id, &tab)) {
           found_tabs = true;
           window_s.add_tab(tab_id);
-          if (reload_tabs) {
-            SyncedTabDelegate* tab = (*i)->GetTabAt(j);
-            // It's possible for GetTabAt to return a null tab. We can assume
-            // this means the tab already existed but hasn't changed, so no
-            // need to associate.
-            if (tab) {
-              if (!AssociateTab(*tab)) {
-                failed_association = true;
-                break;
-              }
-            }
-          }
         }
       }
       // Only add a window if it contains valid tabs.

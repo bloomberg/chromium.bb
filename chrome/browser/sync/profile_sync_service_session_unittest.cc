@@ -949,4 +949,47 @@ TEST_F(ProfileSyncServiceSessionTest, SessionsRefresh) {
   ASSERT_FALSE(model_associator_->GetAllForeignSessions(&foreign_sessions));
 }
 
+// Ensure model association associates the pre-existing tabs.
+TEST_F(ProfileSyncServiceSessionTest, ExistingTabs) {
+  AddTab(browser(), GURL("http://foo1"));
+  NavigateAndCommitActiveTab(GURL("http://foo2"));
+  AddTab(browser(), GURL("http://bar1"));
+  NavigateAndCommitActiveTab(GURL("http://bar2"));
+
+  CreateRootHelper create_root(this);
+  ASSERT_TRUE(StartSyncService(create_root.callback(), false));
+  ASSERT_TRUE(create_root.success());
+  bool has_nodes;
+  ASSERT_TRUE(model_associator_->SyncModelHasUserCreatedNodes(&has_nodes));
+  ASSERT_TRUE(has_nodes);
+
+  std::string machine_tag = model_associator_->GetCurrentMachineTag();
+  int64 sync_id = model_associator_->GetSyncIdFromSessionTag(machine_tag);
+  ASSERT_NE(sync_api::kInvalidId, sync_id);
+
+  // Check that this machine's data is not included in the foreign windows.
+  std::vector<const SyncedSession*> foreign_sessions;
+  ASSERT_FALSE(model_associator_->GetAllForeignSessions(&foreign_sessions));
+  ASSERT_EQ(foreign_sessions.size(), 0U);
+
+  // Get the tabs for this machine from the node and check that they were
+  // filled.
+  SessionModelAssociator::TabLinksMap tab_map = model_associator_->tab_map_;
+  ASSERT_EQ(2U, tab_map.size());
+  // Tabs are ordered by sessionid in tab_map, so should be able to traverse
+  // the tree based on order of tabs created
+  SessionModelAssociator::TabLinksMap::iterator iter = tab_map.begin();
+  ASSERT_EQ(2, iter->second.tab()->GetEntryCount());
+  ASSERT_EQ(GURL("http://foo1"), iter->second.tab()->
+          GetEntryAtIndex(0)->GetVirtualURL());
+  ASSERT_EQ(GURL("http://foo2"), iter->second.tab()->
+          GetEntryAtIndex(1)->GetVirtualURL());
+  iter++;
+  ASSERT_EQ(2, iter->second.tab()->GetEntryCount());
+  ASSERT_EQ(GURL("http://bar1"), iter->second.tab()->
+      GetEntryAtIndex(0)->GetVirtualURL());
+  ASSERT_EQ(GURL("http://bar2"), iter->second.tab()->
+      GetEntryAtIndex(1)->GetVirtualURL());
+}
+
 }  // namespace browser_sync
