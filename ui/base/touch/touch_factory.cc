@@ -130,10 +130,13 @@ TouchFactory::~TouchFactory() {
     return;
 #endif
 
-  SetCursorVisible(true, false);
-  Display* display = ui::GetXDisplay();
-  XFreeCursor(display, invisible_cursor_);
-  XFreeCursor(display, arrow_cursor_);
+  // The XDisplay may be lost by the time we get destroyed.
+  if (ui::XDisplayExists()) {
+    SetCursorVisible(true, false);
+    Display* display = ui::GetXDisplay();
+    XFreeCursor(display, invisible_cursor_);
+    XFreeCursor(display, arrow_cursor_);
+  }
 }
 
 void TouchFactory::UpdateDeviceList(Display* display) {
@@ -377,6 +380,10 @@ bool TouchFactory::UngrabTouchDevices(Display* display) {
 }
 
 void TouchFactory::SetCursorVisible(bool show, bool start_timer) {
+  // This function may get called after the display is terminated.
+  if (!ui::XDisplayExists())
+    return;
+
 #if defined(USE_AURA)
   if (!base::MessagePumpForUI::HasXInput2())
     return;
