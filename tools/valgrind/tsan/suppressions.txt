@@ -803,3 +803,15 @@
    ThreadSanitizer:Race
    fun:WebCore::WebKitMutationObserver::deliverAllMutations
 }
+{
+  bug_113717
+  ThreadSanitizer:Race
+  fun:std::swap
+  fun:RenderThreadImpl::Send
+  fun:RenderWidget::Send
+  fun:RenderViewImpl::Send
+  fun:RenderWidget::DoDeferredUpdate
+  fun:RenderWidget::DoDeferredUpdateAndSendInputAck
+  fun:RenderWidget::InvalidationCallback
+  fun:base::internal::RunnableAdapter::Run
+}
