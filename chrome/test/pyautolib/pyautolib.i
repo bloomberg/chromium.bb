@@ -414,6 +414,9 @@ class TestServer {
   };
 
   TestServer(Type type, const FilePath& document_root);
+  // Initialize a HTTPS TestServer with a specific set of HTTPSOptions.
+  TestServer(const HTTPSOptions& https_options,
+             const FilePath& document_root);
 
   %feature("docstring", "Start TestServer over an ephemeral port") Start;
   bool Start();
@@ -448,4 +451,21 @@ class TestServer {
 };
 
 }
+// HTTPSOptions
+%feature("docstring",
+         "HTTPSOptions. Sets one of three types of a cert")
+    HTTPSOptions;
+struct HTTPSOptions {
+  enum ServerCertificate {
+    CERT_OK,
+    CERT_MISMATCHED_NAME,
+    CERT_EXPIRED,
+  };
 
+  // Initialize a new HTTPSOptions that will use the specified certificate.
+  explicit HTTPSOptions(ServerCertificate cert);
+};
+
+%{
+typedef net::TestServer::HTTPSOptions HTTPSOptions;
+%}
