@@ -7,6 +7,7 @@
 #include "native_client/src/trusted/service_runtime/osx/mach_exception_handler.h"
 
 #include <mach/mach.h>
+#include <mach/mach_vm.h>
 #include <mach/thread_status.h>
 #include <pthread.h>
 #include <stdio.h>
@@ -87,7 +88,7 @@ static int HandleException(mach_port_t thread_port,
   uint32_t nacl_thread_index;
   struct NaClApp *nap;
   struct NaClAppThread *natp;
-  volatile struct ExceptionFrame *frame;
+  struct ExceptionFrame frame;
   uintptr_t frame_addr_user;
   uintptr_t frame_addr_sys;
 
@@ -169,12 +170,25 @@ static int HandleException(mach_port_t thread_port,
   if (frame_addr_sys == kNaClBadAddress) {
     return 0;
   }
-  frame = (struct ExceptionFrame *) frame_addr_sys;
 
-  /* Write out call stack frame for handler invocation. */
-  frame->return_addr = 0;
-  frame->prog_ctr = regs.uts.ts32.__eip;
-  frame->stack_ptr = regs.uts.ts32.__esp;
+  /* Set up the stack frame for the handler invocation. */
+  frame.return_addr = 0;
+  frame.prog_ctr = regs.uts.ts32.__eip;
+  frame.stack_ptr = regs.uts.ts32.__esp;
+
+  /*
+   * Write the stack frame into untrusted address space.  We do not
+   * write to the memory directly because that will fault if the
+   * destination location is not writable.  Faulting is OK for NaCl
+   * syscalls, but here we do not want to trigger an exception while
+   * in the exception handler.  The overhead of using a Mach system
+   * call to write to memory is acceptable here.
+   */
+  result = mach_vm_write(mach_task_self(), frame_addr_sys,
+                         (uintptr_t) &frame, sizeof(frame));
+  if (result != KERN_SUCCESS) {
+    return 0;
+  }
 
   /* Set up thread context to resume at handler. */
   natp->user.new_prog_ctr = nap->exception_handler;

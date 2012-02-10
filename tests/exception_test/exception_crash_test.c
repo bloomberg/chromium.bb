@@ -15,6 +15,14 @@
 
 typedef void (*handler_func_t)(int prog_ctr, int stack_ptr);
 
+/*
+ * Note that we have to provide an initialiser here otherwise gcc
+ * defines this using ".comm" and the variable does not get put into a
+ * read-only segment.
+ */
+const char stack_in_rodata[0x1000] = "blah";
+
+
 void test_bad_handler() {
   /*
    * Use an address that we know contains no valid code, yet is within
@@ -29,6 +37,11 @@ void test_bad_handler() {
   *(volatile int *) 0 = 0;
 }
 
+/*
+ * TODO(mseaborn): Replace this with an assembly-code handler that
+ * switches stack in order to call _exit(1).  This C version will
+ * crash if it is run on the bad stacks that we are testing.
+ */
 void dummy_handler(int prog_ctr, int stack_ptr) {
   /* Should not reach this handler. */
   _exit(1);
@@ -43,7 +56,7 @@ void dummy_handler(int prog_ctr, int stack_ptr) {
  * cannot be set to point outside of the sandbox's address space on
  * x86-64 and ARM.
  */
-void test_bad_stack() {
+void test_stack_outside_sandbox() {
 #if defined(__i386__)
   int rc = NACL_SYSCALL(exception_handler)(dummy_handler, NULL);
   assert(rc == 0);
@@ -62,18 +75,30 @@ void test_bad_stack() {
 #endif
 }
 
+void test_stack_in_rodata() {
+  int rc = NACL_SYSCALL(exception_handler)(dummy_handler, NULL);
+  assert(rc == 0);
+  rc = NACL_SYSCALL(exception_stack)((void *) stack_in_rodata,
+                                     sizeof(stack_in_rodata));
+  assert(rc == 0);
+  fprintf(stderr, "** intended_exit_status=unwritable_exception_stack\n");
+  /* Cause crash. */
+  *(volatile int *) 0 = 0;
+}
+
 int main(int argc, char **argv) {
   if (argc != 2) {
     fprintf(stderr, "Usage: program <test-name>\n");
     return 1;
   }
 
-  if (strcmp(argv[1], "test_bad_handler") == 0) {
-    test_bad_handler();
-  } else if (strcmp(argv[1], "test_bad_stack") == 0) {
-    test_bad_stack();
-  } else {
-    fprintf(stderr, "Error: Unknown test: \"%s\"\n", argv[1]);
-  }
+#define TRY_TEST(test_name) \
+    if (strcmp(argv[1], #test_name) == 0) { test_name(); return 1; }
+
+  TRY_TEST(test_bad_handler);
+  TRY_TEST(test_stack_outside_sandbox);
+  TRY_TEST(test_stack_in_rodata);
+
+  fprintf(stderr, "Error: Unknown test: \"%s\"\n", argv[1]);
   return 1;
 }

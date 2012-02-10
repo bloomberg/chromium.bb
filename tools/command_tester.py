@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Copyright (c) 2012 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -255,6 +255,21 @@ status_map = {
         'win32':  [-11], # SIGSEGV
         'win64':  [-11], # SIGSEGV
         'win_fakesig': 11, # SIGSEGV
+        },
+    # This is like 'untrusted_segfault', but without the 'untrusted_'
+    # prefix which marks the status type as expecting a
+    # gracefully-printed exit message from nacl_signal_common.c.  This
+    # is a special case because we use different methods for writing
+    # the exception stack frame on different platforms.  On Mac and
+    # Windows, NaCl uses a system call which will detect unwritable
+    # pages, so the exit status appears as an unhandled fault from
+    # untrusted code.  On Linux, NaCl's signal handler writes the
+    # frame directly, so the exit status comes from getting a SIGSEGV
+    # inside the SIGSEGV handler.
+    'unwritable_exception_stack': {
+        'linux2': [-11], # SIGSEGV
+        'darwin': [-10], # SIGBUS
+        'win32':  win32_untrusted_crash_exit,
         },
     }
 

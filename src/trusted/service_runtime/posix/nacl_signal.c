@@ -268,6 +268,14 @@ static int DispatchToUntrustedHandler(struct NaClAppThread *natp,
    */
   regs->rbp = nap->mem_start;
 #elif NACL_ARCH(NACL_BUILD_ARCH) == NACL_arm
+  /*
+   * We write to memory here to get consistent behaviour for
+   * unwritable stacks across architectures, to simplify testing.
+   * TODO(mseaborn): This will eventually be replaced with writing a
+   * register dump to the stack frame.
+   */
+  frame->dummy = 0;
+
   regs->lr = kReturnAddr;
 
   regs->r0 = regs->prog_ctr; /* Argument 1 */
