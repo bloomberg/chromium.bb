@@ -40,6 +40,10 @@ class StatusAreaHostAura : public StatusAreaButton::Delegate,
   // The caller is expected to take ownership of |status_area_widget_|.
   views::Widget* CreateStatusArea();
 
+  // Adds the buttons to the status area. This is called separately, after
+  // the profile has been initialized.
+  void AddButtons();
+
   // StatusAreaButton::Delegate implementation.
   virtual bool ShouldExecuteStatusAreaCommand(
       const views::View* button_view, int command_id) const OVERRIDE;

@@ -65,24 +65,6 @@ views::Widget* StatusAreaHostAura::CreateStatusArea() {
   // Create status area view.
   status_area_view_ = new StatusAreaView();
 
-  // Add child buttons.
-#if defined(OS_CHROMEOS)
-  ClockMenuButton* clock = NULL;
-  chromeos::StatusAreaViewChromeos::AddChromeosButtons(status_area_view_,
-                                                       this,
-                                                       &clock);
-  if (clock)
-    clock_updater_.reset(new ClockUpdater(clock));
-#else
-  const bool border = true;
-  const bool no_border = false;
-#if defined(OS_LINUX)
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kMemoryWidget))
-    status_area_view_->AddButton(new MemoryMenuButton(this), no_border);
-#endif
-  status_area_view_->AddButton(new ClockMenuButton(this), border);
-#endif
-
   // Add multiple window indicator button for compact mode. Note this should be
   // the last button added to status area so that it could be right most there.
   if (ash::Shell::GetInstance()->IsWindowModeCompact()) {
@@ -108,6 +90,25 @@ views::Widget* StatusAreaHostAura::CreateStatusArea() {
   status_area_widget_->GetNativeView()->SetName("StatusAreaView");
 
   return status_area_widget_;
+}
+
+void StatusAreaHostAura::AddButtons() {
+#if defined(OS_CHROMEOS)
+  ClockMenuButton* clock = NULL;
+  chromeos::StatusAreaViewChromeos::AddChromeosButtons(status_area_view_,
+                                                       this,
+                                                       &clock);
+  if (clock)
+    clock_updater_.reset(new ClockUpdater(clock));
+#else
+  const bool border = true;
+  const bool no_border = false;
+#if defined(OS_LINUX)
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kMemoryWidget))
+    status_area_view_->AddButton(new MemoryMenuButton(this), no_border);
+#endif
+  status_area_view_->AddButton(new ClockMenuButton(this), border);
+#endif
 }
 
 // StatusAreaButton::Delegate implementation.

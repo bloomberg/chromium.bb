@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/views/aura/chrome_shell_delegate.h"
 #include "chrome/browser/ui/views/aura/screen_orientation_listener.h"
 #include "chrome/browser/ui/views/aura/screenshot_taker.h"
+#include "chrome/browser/ui/views/aura/status_area_host_aura.h"
 #include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
 #include "ui/gfx/compositor/compositor_setup.h"
@@ -55,6 +56,11 @@ void ChromeBrowserMainExtraPartsAura::PreProfileInit() {
 
   // Make sure the singleton ScreenOrientationListener object is created.
   ScreenOrientationListener::GetInstance();
+}
+
+void ChromeBrowserMainExtraPartsAura::PostProfileInit() {
+  // Add the status area buttons after Profile has been initialized.
+  ChromeShellDelegate::instance()->status_area_host()->AddButtons();
 }
 
 void ChromeBrowserMainExtraPartsAura::PostMainMessageLoopRun() {

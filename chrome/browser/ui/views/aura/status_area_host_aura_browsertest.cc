@@ -27,7 +27,7 @@ typedef InProcessBrowserTest StatusAreaHostAuraTest;
 IN_PROC_BROWSER_TEST_F(StatusAreaHostAuraTest, TextStyle) {
   ChromeShellDelegate* delegate = static_cast<ChromeShellDelegate*>(
       ash::Shell::GetInstance()->delegate());
-  StatusAreaHostAura* host = delegate->status_area_host_for_test();
+  StatusAreaHostAura* host = delegate->status_area_host();
 
 #if defined(OS_CHROMEOS)
   ASSERT_FALSE(chromeos::UserManager::Get()->user_is_logged_in());

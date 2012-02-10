@@ -26,7 +26,7 @@ class ChromeShellDelegate : public ash::ShellDelegate {
 
   static ChromeShellDelegate* instance() { return instance_; }
 
-  StatusAreaHostAura* status_area_host_for_test() {
+  StatusAreaHostAura* status_area_host() {
     return status_area_host_.get();
   }
 
