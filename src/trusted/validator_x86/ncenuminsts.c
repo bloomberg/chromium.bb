@@ -94,8 +94,14 @@ Bool NaClInstructionIsLegal(uint8_t* mbase,
   NaClInstIter* iter;
   NaClValidatorState* state;
   Bool is_legal = FALSE;
+  NaClCPUData cpu_data;
+  CPUFeatures cpu_features;
+
+  NaClCPUDataGet(&cpu_data);
+  GetCPUFeatures(&cpu_data, &cpu_features);
+
   state = NaClValidatorStateCreate(vbase, (NaClMemorySize) size,
-                                   32, RegR15, NULL);
+                                   32, RegR15, &cpu_features);
   do {
     NaClSegmentInitialize(mbase, vbase, (NaClMemorySize) size, &segment);
     iter = NaClInstIterCreate(kNaClDecoderTables, &segment);

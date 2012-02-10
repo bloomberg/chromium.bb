@@ -70,19 +70,6 @@ void NaClConditionAppend(char* condition,
 }
 #endif
 
-/* The set of cpu features to use, if non-NULL.
- * NOTE: This global is used to allow the injection of
- * a command-line override of CPU features, from that of the local
- * CPU id, for the tool ncval. As such, when this global is non-null,
- * it uses the injected value this pointer points to as the corresponding
- * CPU id results to use.
- */
-static CPUFeatures *nacl_validator_features = NULL;
-
-void NaClValidateSetCPUFeatures(CPUFeatures *new_features) {
-  nacl_validator_features = new_features;
-}
-
 /* Define the stop instruction. */
 const uint8_t kNaClFullStop = 0xf4;   /* x86 HALT opcode */
 
@@ -506,6 +493,7 @@ NaClValidatorState *NaClValidatorStateCreate(const NaClPcAddress vbase,
                 "sz = %"NACL_PRIxNaClMemorySize", alignment = %u\n",
                 vbase, codesize, alignment));
   if (alignment != 16 && alignment != 32) return NULL;
+  if (features == NULL) return NULL;
   vstate = (NaClValidatorState*) malloc(sizeof(NaClValidatorState));
   if (vstate != NULL) {
     return_value = vstate;
@@ -514,17 +502,7 @@ NaClValidatorState *NaClValidatorStateCreate(const NaClPcAddress vbase,
     vstate->alignment = alignment;
     vstate->codesize = codesize;
     vstate->alignment_mask = alignment - 1;
-    if (NULL == features) {
-      if (NULL == nacl_validator_features) {
-        NaClCPUData cpu_data;
-        NaClCPUDataGet(&cpu_data);
-        GetCPUFeatures(&cpu_data, &(vstate->cpu_features));
-      } else {
-        vstate->cpu_features = *nacl_validator_features;
-      }
-    } else {
-      NaClCopyCPUFeatures(&vstate->cpu_features, features);
-    }
+    NaClCopyCPUFeatures(&vstate->cpu_features, features);
     vstate->base_register = base_register;
     vstate->validates_ok = TRUE;
     vstate->did_stub_out = FALSE;

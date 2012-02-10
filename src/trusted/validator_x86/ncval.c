@@ -400,9 +400,9 @@ struct NaClValidatorState* NaClValStateCreate(
   return
       NACL_FLAGS_detailed_errors
       ? NaClValidatorStateCreateDetailed(vbase, sz, alignment,
-                                         base_register, NULL)
+                                         base_register, &ncval_cpu_features)
       : NaClValidatorStateCreate(vbase, sz, alignment,
-                                 base_register, NULL);
+                                 base_register, &ncval_cpu_features);
 }
 
 /* Returns the decoder tables to use. */
@@ -959,9 +959,7 @@ int main(int argc, const char *argv[]) {
 
   /* By default, assume no local cpu features are available. */
   NaClClearCPUFeatures(&ncval_cpu_features);
-  if (64 == NACL_TARGET_SUBARCH) {
-    NaClValidateSetCPUFeatures(&ncval_cpu_features);
-  } else {
+  if (32 == NACL_TARGET_SUBARCH) {
     NCValidateSetCPUFeatures(&ncval_cpu_features);
   }
 
