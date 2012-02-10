@@ -54,7 +54,7 @@
 #include "chrome/browser/ui/views/bookmarks/bookmark_bar_view.h"
 #elif defined(OS_MACOSX)
 #include "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_constants.h"
-#elif defined(OS_POSIX)
+#elif defined(TOOLKIT_GTK)
 #include "chrome/browser/ui/gtk/bookmarks/bookmark_bar_gtk.h"
 #endif
 
@@ -133,7 +133,7 @@ std::string GetNewTabBackgroundCSS(const ui::ThemeProvider* theme_provider,
   int offset = browser_defaults::kNewtabBookmarkBarHeight;
 #elif defined(OS_MACOSX)
   int offset = bookmarks::kNTPBookmarkBarHeight;
-#elif defined(OS_POSIX)
+#elif defined(TOOLKIT_GTK)
   int offset = BookmarkBarGtk::kBookmarkBarNTPHeight;
 #else
   int offset = 0;
