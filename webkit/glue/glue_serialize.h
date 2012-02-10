@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -11,6 +11,8 @@
 #define WEBKIT_GLUE_GLUE_SERIALIZE_H_
 
 #include <string>
+
+#include "base/file_path.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebHistoryItem.h"
 #include "webkit/glue/webkit_glue_export.h"
 
@@ -21,6 +23,10 @@ WEBKIT_GLUE_EXPORT std::string HistoryItemToString(
     const WebKit::WebHistoryItem& item);
 WEBKIT_GLUE_EXPORT WebKit::WebHistoryItem HistoryItemFromString(
     const std::string& serialized_item);
+
+// Reads file paths from the HTTP body of a serialized WebHistoryItem.
+WEBKIT_GLUE_EXPORT std::vector<FilePath> FilePathsFromHistoryState(
+    const std::string& content_state);
 
 // For testing purposes only.
 WEBKIT_GLUE_EXPORT void HistoryItemToVersionedString(

@@ -22,6 +22,7 @@
 #include "base/debug/stack_trace.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
+#include "base/platform_file.h"
 #include "base/stl_util.h"
 #include "base/stringprintf.h"
 #include "chrome/browser/browser_process.h"
@@ -38,12 +39,15 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "content/browser/renderer_host/render_widget_host.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
+#include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
 #include "net/base/network_change_notifier.h"
+#include "webkit/glue/glue_serialize.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/boot_times_loader.h"
@@ -776,6 +780,24 @@ class SessionRestoreImpl : public content::NotificationObserver {
                                 tab.pinned,
                                 true,
                                 NULL);
+
+    // Set up the file access rights for the selected navigation entry.
+    const int id = web_contents->GetRenderProcessHost()->GetID();
+    const int read_file_permissions =
+        base::PLATFORM_FILE_OPEN |
+        base::PLATFORM_FILE_READ |
+        base::PLATFORM_FILE_EXCLUSIVE_READ |
+        base::PLATFORM_FILE_ASYNC;
+    const std::string& state =
+        tab.navigations.at(selected_index).state();
+    const std::vector<FilePath>& file_paths =
+        webkit_glue::FilePathsFromHistoryState(state);
+    for (std::vector<FilePath>::const_iterator file = file_paths.begin();
+         file != file_paths.end(); ++file) {
+      content::ChildProcessSecurityPolicy::GetInstance()->
+          GrantPermissionsForFile(id, *file, read_file_permissions);
+    }
+
     if (schedule_load)
       tab_loader_->ScheduleLoad(&web_contents->GetController());
   }

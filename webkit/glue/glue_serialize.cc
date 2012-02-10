@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -496,6 +496,29 @@ std::string HistoryItemToString(const WebHistoryItem& item) {
 
 WebHistoryItem HistoryItemFromString(const std::string& serialized_item) {
   return HistoryItemFromString(serialized_item, true, true);
+}
+
+std::vector<FilePath> FilePathsFromHistoryState(
+    const std::string& content_state) {
+  std::vector<FilePath> to_return;
+  // TODO(darin): We should avoid using the WebKit API here, so that we do not
+  // need to have WebKit initialized before calling this method.
+  const WebHistoryItem& item =
+      HistoryItemFromString(content_state, true, true);
+  if (item.isNull()) {
+    // Couldn't parse the string.
+    return to_return;
+  }
+  const WebHTTPBody& http_body = item.httpBody();
+  if (!http_body.isNull()) {
+    WebHTTPBody::Element element;
+    for (size_t i = 0; i < http_body.elementCount(); ++i) {
+      http_body.elementAt(i, element);
+      if (element.type == WebHTTPBody::Element::TypeFile)
+        to_return.push_back(WebStringToFilePath(element.filePath));
+    }
+  }
+  return to_return;
 }
 
 // For testing purposes only.
