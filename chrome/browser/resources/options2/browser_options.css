@@ -168,26 +168,45 @@ html[dir=rtl] #pointer-sensitivity-more {
   box-shadow: 2px 2px 4px 4px #ccc;
   display: block;
   max-height: 500px;
-  overflow-x: hidden;
   overflow-y: auto;
   position: absolute;
-  text-overflow: ellipsis;
   width: 300px;
   z-index: 1;
 }
 
-.network-menu > * {
+.network-menu-item {
+  -webkit-box-sizing: content-box;
+  -webkit-padding-start: 32px;
+  background: left center no-repeat;
   color: #555;
   display: block;
-  padding: 8px;
+  margin-left: 4px;
+  margin-right: 4px;
+  overflow-x: hidden;
+  padding-bottom: 8px;
+  padding-top: 8px;
+  text-overflow: ellipsis;
+  vertical-align: middle;
   white-space: nowrap;
+  width: 260px;
 }
 
-.network-menu > div:hover {
+.network-menu-header {
+  -webkit-padding-start: 36px;
+  color: #999;
+  padding-bottom: 8px;
+  padding-top: 8px;
+}
+
+.network-menu-item[dir=rtl] {
+  background: right center no-repeat;
+}
+
+.network-menu-item:hover {
   background-color: #eee;
 }
 
 .network-menu > hr {
-  padding: 0;
   opacity: 0.4;
 }
+

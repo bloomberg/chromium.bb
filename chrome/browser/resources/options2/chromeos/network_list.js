@@ -142,6 +142,11 @@ cr.define('options.network', function() {
               addendum.push({label: localStrings.getString('disconnectWifi'),
                              command: 'disconnect',
                              data: data});
+              var onlineMessage = this.ownerDocument.createElement('div');
+              onlineMessage.textContent =
+                  localStrings.getString('networkOnline');
+              onlineMessage.className = 'network-menu-header';
+              menu.insertBefore(onlineMessage, menu.firstChild);
             }
           }
         }
@@ -171,12 +176,13 @@ cr.define('options.network', function() {
      * @param {string} label Display name for the menu item.
      * @param {string} command Name of the command for the
      *    callback.
+     * @return {!Element} The created menu item.
      * @private
      */
     createCallback_: function(menu, data, label, command) {
       var button = this.ownerDocument.createElement('div');
+      button.className = 'network-menu-item';
       button.textContent = label;
-      // TODO(kevers): Add icons as requireds.
       var type = String(data.networkType);
       var path = data.servicePath;
       button.addEventListener('click', function() {
@@ -186,16 +192,21 @@ cr.define('options.network', function() {
       });
       MenuItem.decorate(button);
       menu.appendChild(button);
+      return button;
     },
 
     /**
      * Adds a menu item for connecting to a network.
      * @param {!Element} menu Parent menu.
      * @param {Object} data Description of the network.
-     * @privte
+     * @private
      */
     createConnectCallback_: function(menu, data) {
-      this.createCallback_(menu, data, data.networkName, 'connect');
+      var menuItem = this.createCallback_(menu,
+                                          data,
+                                          data.networkName,
+                                          'connect');
+      menuItem.style.backgroundImage = url(data.iconURL);
     },
 
     /**
