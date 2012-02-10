@@ -72,8 +72,6 @@ Widget* CreateBorderWidget(BubbleDelegateView* bubble, Widget* parent) {
   border_params.delegate = new BubbleBorderDelegateView(bubble);
   border_params.transparent = true;
   border_params.parent_widget = parent;
-  if (!border_params.parent_widget)
-    border_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   border_widget->Init(border_params);
   return border_widget;
 }
@@ -134,6 +132,7 @@ Widget* BubbleDelegateView::CreateBubble(BubbleDelegateView* bubble_delegate) {
   // First set the contents view to initialize view bounds for widget sizing.
   bubble_widget->SetContentsView(bubble_delegate->GetContentsView());
   bubble_delegate->border_widget_ = CreateBorderWidget(bubble_delegate, parent);
+  bubble_delegate->border_widget_->AddObserver(bubble_delegate);
 #endif
 
   bubble_delegate->SizeToContents();
@@ -158,9 +157,14 @@ NonClientFrameView* BubbleDelegateView::CreateNonClientFrameView() {
 }
 
 void BubbleDelegateView::OnWidgetClosing(Widget* widget) {
+  // The border widget should not close before the bubble widget closes.
+  // TODO(msw): Remove this debugging code for http://crbug.com/109171.
+  CHECK_NE(widget, border_widget_);
+
   if (widget == GetWidget()) {
     widget->RemoveObserver(this);
     if (border_widget_) {
+      border_widget_->RemoveObserver(this);
       border_widget_->Close();
       border_widget_ = NULL;
     }
