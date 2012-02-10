@@ -121,7 +121,8 @@ TEST_F(OAuth2AccessTokenFetcherTest, DISABLED_GetAccessTokenRequestFailure) {
   fetcher_.OnURLFetchComplete(url_fetcher);
 }
 
-TEST_F(OAuth2AccessTokenFetcherTest, GetAccessTokenResponseCodeFailure) {
+TEST_F(OAuth2AccessTokenFetcherTest,
+       DISABLED_GetAccessTokenResponseCodeFailure) {
   TestURLFetcher* url_fetcher = SetupGetAccessToken(true, RC_FORBIDDEN, "");
   EXPECT_CALL(consumer_, OnGetTokenFailure(_)).Times(1);
   fetcher_.Start("client_id", "client_secret", "refresh_token", ScopeList());
