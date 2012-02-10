@@ -75,11 +75,12 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/shared_memory.h"
-#include "base/threading/simple_thread.h"
 #include "content/common/content_export.h"
 #include "content/renderer/media/audio_input_message_filter.h"
 #include "content/renderer/media/scoped_loop_observer.h"
 #include "media/audio/audio_parameters.h"
+
+class AudioDeviceThread;
 
 // TODO(henrika): This class is based on the AudioDevice class and it has
 // many components in common. Investigate potential for re-factoring.
@@ -88,7 +89,6 @@
 // to any clients using this class.
 class CONTENT_EXPORT AudioInputDevice
     : public AudioInputMessageFilter::Delegate,
-      public base::DelegateSimpleThread::Delegate,
       NON_EXPORTED_BASE(public ScopedLoopObserver),
       public base::RefCountedThreadSafe<AudioInputDevice> {
  public:
@@ -164,19 +164,12 @@ class CONTENT_EXPORT AudioInputDevice
   void InitializeOnIOThread();
   void SetSessionIdOnIOThread(int session_id);
   void StartOnIOThread();
-  void ShutDownOnIOThread(base::WaitableEvent* completion);
+  void ShutDownOnIOThread();
   void SetVolumeOnIOThread(double volume);
   // Closes socket and joins with the audio thread.
   void ShutDownAudioThread();
 
   void Send(IPC::Message* message);
-
-  // Method called on the audio thread ----------------------------------------
-  // Calls the client's callback for capturing audio.
-  void FireCaptureCallback(int16* input_audio);
-
-  // DelegateSimpleThread::Delegate implementation.
-  virtual void Run() OVERRIDE;
 
   // MessageLoop::DestructionObserver implementation for the IO loop.
   // If the IO loop dies before we do, we shut down the audio thread from here.
@@ -188,19 +181,8 @@ class CONTENT_EXPORT AudioInputDevice
   CaptureCallback* callback_;
   CaptureEventHandler* event_handler_;
 
-  // The client callback receives captured audio here.
-  std::vector<float*> audio_data_;
-
-  // The client stores the last reported audio delay in this member.
-  // The delay shall reflect the amount of audio which still resides in
-  // the input buffer, i.e., the expected audio input delay.
-  int audio_delay_milliseconds_;
-
   // The current volume scaling [0.0, 1.0] of the audio stream.
   double volume_;
-
-  // Callbacks for capturing audio occur on this thread.
-  scoped_ptr<base::DelegateSimpleThread> audio_thread_;
 
   // Cached audio input message filter (lives on the main render thread).
   scoped_refptr<AudioInputMessageFilter> filter_;
@@ -216,9 +198,11 @@ class CONTENT_EXPORT AudioInputDevice
   // callback. Only modified on the IO thread.
   bool pending_device_ready_;
 
-  base::SharedMemoryHandle shared_memory_handle_;
-  scoped_ptr<base::CancelableSyncSocket> audio_socket_;
-  int memory_length_;
+  // Our audio thread callback class.  See source file for details.
+  class AudioThreadCallback;
+
+  scoped_ptr<AudioDeviceThread> audio_thread_;
+  scoped_ptr<AudioInputDevice::AudioThreadCallback> audio_callback_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(AudioInputDevice);
 };

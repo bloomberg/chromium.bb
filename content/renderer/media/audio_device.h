@@ -46,15 +46,16 @@
 // 3. IO thread (internal implementation detail - not exposed to public API)
 //    The thread within which this class receives all the IPC messages and
 //    IPC communications can only happen in this thread.
-// 4. Audio transport thread.
-//    Responsible for calling the RenderCallback and feeding audio samples to
+// 4. Audio transport thread (See AudioDeviceThread).
+//    Responsible for calling the AudioThreadCallback implementation that in
+//    turn calls AudioRendererSink::RenderCallback which feeds audio samples to
 //    the audio layer in the browser process using sync sockets and shared
 //    memory.
 //
 // Implementation notes:
 //
 // - Start() is asynchronous/non-blocking.
-// - Stop() is synchronous/blocking.
+// - Stop() is asynchronous/non-blocking.
 // - Play() is asynchronous/non-blocking.
 // - Pause() is asynchronous/non-blocking.
 // - The user must call Stop() before deleting the class instance.
@@ -63,25 +64,22 @@
 #define CONTENT_RENDERER_MEDIA_AUDIO_DEVICE_H_
 #pragma once
 
-#include <vector>
-
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/shared_memory.h"
-#include "base/synchronization/lock.h"
-#include "base/threading/simple_thread.h"
 #include "content/common/content_export.h"
 #include "content/renderer/media/audio_message_filter.h"
 #include "content/renderer/media/scoped_loop_observer.h"
 #include "media/audio/audio_parameters.h"
 #include "media/base/audio_renderer_sink.h"
 
+class AudioDeviceThread;
+
 class CONTENT_EXPORT AudioDevice
     : NON_EXPORTED_BASE(public media::AudioRendererSink),
       public AudioMessageFilter::Delegate,
-      public base::DelegateSimpleThread::Delegate,
       NON_EXPORTED_BASE(public ScopedLoopObserver) {
  public:
   // Methods called on main render thread -------------------------------------
@@ -108,9 +106,6 @@ class CONTENT_EXPORT AudioDevice
   virtual void Stop() OVERRIDE;
 
   // Resumes playback if currently paused.
-  // TODO(crogers): it should be possible to remove the extra complexity
-  // of Play() and Pause() with additional re-factoring work in
-  // AudioRendererImpl.
   virtual void Play() OVERRIDE;
 
   // Pauses playback.
@@ -126,9 +121,6 @@ class CONTENT_EXPORT AudioDevice
 
   // Gets the playback volume, with range [0.0, 1.0] inclusive.
   virtual void GetVolume(double* volume) OVERRIDE;
-
-  double sample_rate() const { return sample_rate_; }
-  size_t buffer_size() const { return buffer_size_; }
 
   // Methods called on IO thread ----------------------------------------------
   // AudioMessageFilter::Delegate methods, called by AudioMessageFilter.
@@ -150,21 +142,10 @@ class CONTENT_EXPORT AudioDevice
   void InitializeOnIOThread(const AudioParameters& params);
   void PlayOnIOThread();
   void PauseOnIOThread(bool flush);
-  void ShutDownOnIOThread(base::WaitableEvent* signal);
+  void ShutDownOnIOThread();
   void SetVolumeOnIOThread(double volume);
 
   void Send(IPC::Message* message);
-
-  // Method called on the audio thread ----------------------------------------
-  // Calls the client's callback for rendering audio.
-  // Returns actual number of filled frames that callback returned. This length
-  // is passed to host at the end of the shared memory (i.e. buffer). In case of
-  // continuous stream host just ignores it and assumes buffer is always filled
-  // to its capacity.
-  size_t FireRenderCallback(int16* data);
-
-  // DelegateSimpleThread::Delegate implementation.
-  virtual void Run() OVERRIDE;
 
   // Closes socket and joins with the audio thread.
   void ShutDownAudioThread();
@@ -173,32 +154,12 @@ class CONTENT_EXPORT AudioDevice
   // If the IO loop dies before we do, we shut down the audio thread from here.
   virtual void WillDestroyCurrentMessageLoop() OVERRIDE;
 
-  // Format
-  size_t buffer_size_;  // in sample-frames
-  int channels_;
-  int bits_per_sample_;
-  double sample_rate_;
-  AudioParameters::Format latency_format_;
+  AudioParameters audio_parameters_;
 
   RenderCallback* callback_;
 
-  // The client callback renders audio into here.
-  std::vector<float*> audio_data_;
-
-  // Set to |true| once Initialize() has been called.
-  bool is_initialized_;
-
-  // The client stores the last reported audio delay in this member.
-  // The delay shall reflect the amount of audio which still resides in
-  // the output buffer, i.e., the expected audio output delay.
-  int audio_delay_milliseconds_;
-
   // The current volume scaling [0.0, 1.0] of the audio stream.
   double volume_;
-
-  // Callbacks for rendering audio occur on this thread.
-  // Must only be modified on the IO thread and when the thread is not running.
-  scoped_ptr<base::DelegateSimpleThread> audio_thread_;
 
   // Cached audio message filter (lives on the main render thread).
   scoped_refptr<AudioMessageFilter> filter_;
@@ -216,13 +177,12 @@ class CONTENT_EXPORT AudioDevice
   // Must only be touched from the IO thread.
   bool is_started_;
 
-  // Data transfer between browser and render process uses a combination
-  // of sync sockets and shared memory to provide lowest possible latency.
-  // These variables must only be set on the IO thread while the audio_thread_
-  // is not running.
-  base::SharedMemoryHandle shared_memory_handle_;
-  scoped_ptr<base::CancelableSyncSocket> audio_socket_;
-  int memory_length_;
+  // Our audio thread callback class.  See source file for details.
+  class AudioThreadCallback;
+
+  scoped_ptr<AudioDeviceThread> audio_thread_;
+  scoped_ptr<AudioDevice::AudioThreadCallback> audio_callback_;
+
 
   DISALLOW_COPY_AND_ASSIGN(AudioDevice);
 };
