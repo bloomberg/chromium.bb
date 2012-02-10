@@ -111,7 +111,7 @@ typedef struct NaClCPUData {
  */
 void NaClCPUDataGet(NaClCPUData* data);
 
-/* GetCPUIDString creates an ASCII string that identfies this CPU's
+/* GetCPUIDString creates an ASCII string that identifies this CPU's
  * vendor ID, family, model, and stepping, as per the CPUID instruction
  */
 char *GetCPUIDString(NaClCPUData* data);
