@@ -3413,6 +3413,8 @@
         'browser/ui/views/aura/app_list/chrome_app_list_item.h',
         'browser/ui/views/aura/app_list/extension_app_item.cc',
         'browser/ui/views/aura/app_list/extension_app_item.h',
+        'browser/ui/views/aura/brightness_controller_chromeos.cc',
+        'browser/ui/views/aura/brightness_controller_chromeos.h',
         'browser/ui/views/aura/caps_lock_handler.cc',
         'browser/ui/views/aura/caps_lock_handler.h',
         'browser/ui/views/aura/chrome_shell_delegate.cc',

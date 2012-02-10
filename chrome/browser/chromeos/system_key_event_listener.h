@@ -79,9 +79,9 @@ class SystemKeyEventListener : public MessageLoopForUI::Observer {
   // CapsLock and Numlock are always ignored.
   void GrabKey(int32 key, uint32 mask);
 
+#if !defined(USE_AURA)
   void OnBrightnessDown();
   void OnBrightnessUp();
-#if !defined(USE_AURA)
   void OnVolumeMute();
   void OnVolumeDown();
   void OnVolumeUp();

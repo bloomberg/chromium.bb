@@ -17,6 +17,7 @@
 #include "ui/gfx/compositor/compositor_setup.h"
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/ui/views/aura/brightness_controller_chromeos.h"
 #include "chrome/browser/ui/views/aura/volume_controller_chromeos.h"
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"
 #include "chrome/browser/chromeos/system/runtime_environment.h"
@@ -41,6 +42,9 @@ void ChromeBrowserMainExtraPartsAura::PreProfileInit() {
   shell->accelerator_controller()->SetScreenshotDelegate(
       scoped_ptr<ash::ScreenshotDelegate>(new ScreenshotTaker).Pass());
 #if defined(OS_CHROMEOS)
+  shell->accelerator_controller()->SetBrightnessControlDelegate(
+      scoped_ptr<ash::BrightnessControlDelegate>(
+          new BrightnessController).Pass());
   chromeos::input_method::XKeyboard* xkeyboard =
       chromeos::input_method::InputMethodManager::GetInstance()->GetXKeyboard();
   shell->accelerator_controller()->SetCapsLockDelegate(

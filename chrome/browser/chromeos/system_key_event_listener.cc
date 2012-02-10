@@ -45,13 +45,13 @@ const double kStepPercentage = 4.0;
 // while we're muted and have the volume set to 0.  See
 // http://crosbug.com/13618.
 const double kVolumePercentOnVolumeUpWhileMuted = 25.0;
-#endif
 
 // In ProcessedXEvent(), we should check only Alt, Shift, Control, and Caps Lock
 // modifiers, and should ignore Num Lock, Super, Hyper etc. See
 // http://crosbug.com/21842.
 const unsigned int kSupportedModifiers =
     Mod1Mask | ShiftMask | ControlMask | LockMask;
+#endif
 
 static SystemKeyEventListener* g_system_key_event_listener = NULL;
 
@@ -202,6 +202,7 @@ void SystemKeyEventListener::GrabKey(int32 key, uint32 mask) {
            True, GrabModeAsync, GrabModeAsync);
 }
 
+#if !defined(USE_AURA)
 void SystemKeyEventListener::OnBrightnessDown() {
   DBusThreadManager::Get()->GetPowerManagerClient()->
       DecreaseScreenBrightness(true);
@@ -212,7 +213,6 @@ void SystemKeyEventListener::OnBrightnessUp() {
       IncreaseScreenBrightness();
 }
 
-#if !defined(USE_AURA)
 void SystemKeyEventListener::OnVolumeMute() {
   AudioHandler* audio_handler = AudioHandler::GetInstanceIfInitialized();
   if (!audio_handler)
@@ -336,12 +336,12 @@ bool SystemKeyEventListener::ProcessedXEvent(XEvent* xevent) {
 
       return true;
     }
+#if !defined(USE_AURA)
   } else if (xevent->type == KeyPress) {
     const int32 keycode = xevent->xkey.keycode;
     if (keycode) {
       const unsigned int state = (xevent->xkey.state & kSupportedModifiers);
 
-#if !defined(USE_AURA)
       // Toggle Caps Lock if Shift and Search keys are pressed.
       // When Aura is in use, the shortcut is handled in Ash.
       if (XKeycodeToKeysym(ui::GetXDisplay(), keycode, 0) == XK_Super_L) {
@@ -351,7 +351,6 @@ bool SystemKeyEventListener::ProcessedXEvent(XEvent* xevent) {
           input_method_manager->GetXKeyboard()->SetCapsLockEnabled(
               !caps_lock_is_on_);
       }
-#endif
 
       // Only doing non-Alt/Shift/Ctrl modified keys
       if (!(state & (Mod1Mask | ShiftMask | ControlMask))) {
@@ -367,7 +366,6 @@ bool SystemKeyEventListener::ProcessedXEvent(XEvent* xevent) {
                 UserMetricsAction("Accel_BrightnessUp_F7"));
           OnBrightnessUp();
           return true;
-#if !defined(USE_AURA)
         } else if (keycode == key_f8_ || keycode == key_volume_mute_) {
           if (keycode == key_f8_)
             content::RecordAction(UserMetricsAction("Accel_VolumeMute_F8"));
@@ -383,10 +381,10 @@ bool SystemKeyEventListener::ProcessedXEvent(XEvent* xevent) {
             content::RecordAction(UserMetricsAction("Accel_VolumeUp_F10"));
           OnVolumeUp();
           return true;
-#endif
         }
       }
     }
+#endif
   }
   return false;
 }
