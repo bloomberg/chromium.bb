@@ -35,7 +35,6 @@ class QuotaClient {
     kDatabase = 1 << 2,
     kAppcache = 1 << 3,
     kIndexedDatabase = 1 << 4,
-    kMockStart = 1 << 5,  // This needs to be the end of the enum.
   };
 
   static const int kAllClientsMask = -1;

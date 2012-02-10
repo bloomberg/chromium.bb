@@ -31,9 +31,6 @@ class MockStorageClient : public QuotaClient {
  public:
   MockStorageClient(QuotaManagerProxy* quota_manager_proxy,
                     const MockOriginData* mock_data,
-                    size_t mock_data_size);
-  MockStorageClient(QuotaManagerProxy* quota_manager_proxy,
-                    const MockOriginData* mock_data,
                     QuotaClient::ID id,
                     size_t mock_data_size);
   virtual ~MockStorageClient();

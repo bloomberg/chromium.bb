@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -71,7 +71,8 @@ class BrowsingDataQuotaHelperTest : public testing::Test {
   void RegisterClient(const quota::MockOriginData* data, std::size_t data_len) {
     quota::MockStorageClient* client =
         new quota::MockStorageClient(
-            quota_manager_->proxy(), data, data_len);
+            quota_manager_->proxy(), data, quota::QuotaClient::kFileSystem,
+            data_len);
     quota_manager_->proxy()->RegisterClient(client);
     client->TouchAllOriginsAndNotify();
   }

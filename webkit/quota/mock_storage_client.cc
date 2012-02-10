@@ -18,40 +18,7 @@ using base::AtomicSequenceNumber;
 
 namespace quota {
 
-namespace {
-
 using std::make_pair;
-
-class MockStorageClientIDSequencer {
- public:
-  static MockStorageClientIDSequencer* GetInstance() {
-    return Singleton<MockStorageClientIDSequencer>::get();
-  }
-
-  QuotaClient::ID NextMockID() {
-    return static_cast<QuotaClient::ID>(
-        QuotaClient::kMockStart + seq_.GetNext());
-  }
-
- private:
-  MockStorageClientIDSequencer() { }
-  friend struct DefaultSingletonTraits<MockStorageClientIDSequencer>;
-  AtomicSequenceNumber seq_;
-
-  DISALLOW_COPY_AND_ASSIGN(MockStorageClientIDSequencer);
-};
-
-}  // anonymous namespace
-
-MockStorageClient::MockStorageClient(
-    QuotaManagerProxy* quota_manager_proxy,
-    const MockOriginData* mock_data, size_t mock_data_size)
-    : quota_manager_proxy_(quota_manager_proxy),
-      id_(MockStorageClientIDSequencer::GetInstance()->NextMockID()),
-      mock_time_counter_(0),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
-  Populate(mock_data, mock_data_size);
-}
 
 MockStorageClient::MockStorageClient(
     QuotaManagerProxy* quota_manager_proxy,
