@@ -318,9 +318,18 @@ void RenderWidget::OnResize(const gfx::Size& new_size,
 
 void RenderWidget::OnChangeResizeRect(const gfx::Rect& resizer_rect) {
   if (resizer_rect_ != resizer_rect) {
-    paint_aggregator_.InvalidateRect(resizer_rect_);
-    paint_aggregator_.InvalidateRect(resizer_rect);
+    gfx::Rect view_rect(size_);
+
+    gfx::Rect old_damage_rect = view_rect.Intersect(resizer_rect_);
+    if (!old_damage_rect.IsEmpty())
+      paint_aggregator_.InvalidateRect(old_damage_rect);
+
+    gfx::Rect new_damage_rect = view_rect.Intersect(resizer_rect);
+    if (!new_damage_rect.IsEmpty())
+      paint_aggregator_.InvalidateRect(new_damage_rect);
+
     resizer_rect_ = resizer_rect;
+
     if (webwidget_)
       webwidget_->didChangeWindowResizerRect();
   }
