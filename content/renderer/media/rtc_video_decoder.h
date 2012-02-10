@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -70,6 +70,9 @@ class CONTENT_EXPORT RTCVideoDecoder
   std::string url_;
   DecoderState state_;
   ReadCB read_cb_;
+  bool got_first_frame_;
+  base::TimeDelta last_frame_timestamp_;
+  base::TimeDelta start_time_;
 
   // Used for accessing |read_cb_| from another thread.
   base::Lock lock_;

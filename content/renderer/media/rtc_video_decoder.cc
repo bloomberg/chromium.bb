@@ -1,8 +1,10 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "content/renderer/media/rtc_video_decoder.h"
+
+#include <algorithm>
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -31,7 +33,8 @@ RTCVideoDecoder::RTCVideoDecoder(MessageLoop* message_loop,
     : message_loop_(message_loop),
       visible_size_(176, 144),
       url_(url),
-      state_(kUnInitialized) {
+      state_(kUnInitialized),
+      got_first_frame_(false) {
 }
 
 RTCVideoDecoder::~RTCVideoDecoder() {}
@@ -173,16 +176,28 @@ bool RTCVideoDecoder::RenderFrame(const cricket::VideoFrame* frame) {
   // Called from libjingle thread.
   DCHECK(frame);
 
-  if (state_ != kNormal)
-    return true;
+  base::TimeDelta timestamp = base::TimeDelta::FromMilliseconds(
+      frame->GetTimeStamp() / talk_base::kNumNanosecsPerMillisec);
 
   ReadCB read_cb;
   {
     base::AutoLock auto_lock(lock_);
-    if (read_cb_.is_null()) {
+    if (read_cb_.is_null() || state_ != kNormal) {
+      // TODO(ronghuawu): revisit TS adjustment when crbug.com/111672 is
+      // resolved.
+      if (got_first_frame_) {
+        start_time_ += timestamp - last_frame_timestamp_;
+      }
+      last_frame_timestamp_ = timestamp;
       return true;
     }
     std::swap(read_cb, read_cb_);
+  }
+
+  // Rebase timestamp with zero as starting point.
+  if (!got_first_frame_) {
+    start_time_ = timestamp;
+    got_first_frame_ = true;
   }
 
   // Always allocate a new frame.
@@ -192,8 +207,9 @@ bool RTCVideoDecoder::RenderFrame(const cricket::VideoFrame* frame) {
       VideoFrame::CreateFrame(VideoFrame::YV12,
                               visible_size_.width(),
                               visible_size_.height(),
-                              host()->GetTime(),
-                              base::TimeDelta::FromMilliseconds(30));
+                              timestamp - start_time_,
+                              base::TimeDelta::FromMilliseconds(0));
+  last_frame_timestamp_ = timestamp;
 
   // Aspect ratio unsupported; DCHECK when there are non-square pixels.
   DCHECK_EQ(frame->GetPixelWidth(), 1u);
