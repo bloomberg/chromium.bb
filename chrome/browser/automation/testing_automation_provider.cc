@@ -6823,6 +6823,7 @@ void TestingAutomationProvider::CreateNewAutomationProvider(
   }
 
   AutomationProvider* provider = new TestingAutomationProvider(profile_);
+  provider->DisableInitialLoadObservers();
   // TODO(kkania): Remove this when crbug.com/91311 is fixed.
   // Named server channels should ideally be created and closed on the file
   // thread, within the IPC channel code.
@@ -6832,7 +6833,6 @@ void TestingAutomationProvider::CreateNewAutomationProvider(
     reply.SendError("Failed to initialize channel: " + channel_id);
     return;
   }
-  provider->SetExpectedTabCount(0);
   DCHECK(g_browser_process);
   g_browser_process->GetAutomationProviderList()->AddProvider(provider);
   reply.SendSuccess(NULL);

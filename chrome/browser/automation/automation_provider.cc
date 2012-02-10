@@ -170,6 +170,7 @@ AutomationProvider::AutomationProvider(Profile* profile)
       reinitialize_on_channel_error_(
           CommandLine::ForCurrentProcess()->HasSwitch(
               switches::kAutomationReinitializeOnChannelError)),
+      use_initial_load_observers_(true),
       is_connected_(false),
       initial_tab_loads_complete_(false),
       network_library_initialized_(true),
@@ -226,20 +227,22 @@ bool AutomationProvider::InitializeChannel(const std::string& channel_id) {
   channel_->AddFilter(automation_resource_message_filter_);
 
 #if defined(OS_CHROMEOS)
-  // Wait for webui login to be ready.
-  // Observer will delete itself.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kLoginManager) &&
-      !chromeos::UserManager::Get()->user_is_logged_in()) {
-    login_webui_ready_ = false;
-    new LoginWebuiReadyObserver(this);
-  }
+  if (use_initial_load_observers_) {
+    // Wait for webui login to be ready.
+    // Observer will delete itself.
+    if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kLoginManager) &&
+        !chromeos::UserManager::Get()->user_is_logged_in()) {
+      login_webui_ready_ = false;
+      new LoginWebuiReadyObserver(this);
+    }
 
-  // Wait for the network manager to initialize.
-  // The observer will delete itself when done.
-  network_library_initialized_ = false;
-  NetworkManagerInitObserver* observer = new NetworkManagerInitObserver(this);
-  if (!observer->Init())
-    delete observer;
+    // Wait for the network manager to initialize.
+    // The observer will delete itself when done.
+    network_library_initialized_ = false;
+    NetworkManagerInitObserver* observer = new NetworkManagerInitObserver(this);
+    if (!observer->Init())
+      delete observer;
+  }
 #endif
 
   TRACE_EVENT_END_ETW("AutomationProvider::InitializeChannel", 0, "");
@@ -288,9 +291,16 @@ void AutomationProvider::OnLoginWebuiReady() {
 void AutomationProvider::SendInitialLoadMessage() {
   if (is_connected_ && initial_tab_loads_complete_ &&
       network_library_initialized_ && login_webui_ready_) {
-    LOG(INFO) << "Initial loads complete; sending initial loads message.";
+    VLOG(2) << "Initial loads complete; sending initial loads message.";
     Send(new AutomationMsg_InitialLoadsComplete());
   }
+}
+
+void AutomationProvider::DisableInitialLoadObservers() {
+  use_initial_load_observers_ = false;
+  OnInitialTabLoadsComplete();
+  OnNetworkLibraryInit();
+  OnLoginWebuiReady();
 }
 
 void AutomationProvider::AddLoginHandler(NavigationController* tab,
@@ -381,7 +391,7 @@ void AutomationProvider::OnChannelConnected(int pid) {
   is_connected_ = true;
 
   // Send a hello message with our current automation protocol version.
-  LOG(INFO) << "Testing channel connected, sending hello message";
+  VLOG(2) << "Testing channel connected, sending hello message";
   channel_->Send(new AutomationMsg_Hello(GetProtocolVersion()));
 
   SendInitialLoadMessage();

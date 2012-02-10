@@ -121,6 +121,11 @@ class AutomationProvider
   // InitialLoadsComplete message over the automation channel.
   void SendInitialLoadMessage();
 
+  // Call this before calling InitializeChannel. If called, send the
+  // InitialLoadsComplete message immediately when the automation channel is
+  // connected, without waiting for the initial load conditions to be met.
+  void DisableInitialLoadObservers();
+
   // Get the index of a particular NavigationController object
   // in the given parent window.  This method uses
   // TabStrip::GetIndexForNavigationController to get the index.
@@ -404,6 +409,9 @@ class AutomationProvider
   scoped_ptr<ExtensionTestResultNotificationObserver>
       extension_test_result_observer_;
   scoped_ptr<AutomationExtensionTracker> extension_tracker_;
+
+  // True iff we should enable observers that check for initial load conditions.
+  bool use_initial_load_observers_;
 
   // True iff connected to an AutomationProxy.
   bool is_connected_;
