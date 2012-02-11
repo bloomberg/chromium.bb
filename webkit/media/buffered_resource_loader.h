@@ -77,10 +77,10 @@ class BufferedResourceLoader : public WebKit::WebURLLoaderClient {
   //   An invalid response is received from the server.
   // - (Anything else)
   //   An error code that indicates the request has failed.
-  // |event_callback| is called when the response is completed, data is
-  // received, the request is suspended or resumed.
-  virtual void Start(const net::CompletionCallback& callback,
-                     const base::Closure& event_callback,
+  // |event_cb| is called when the response is completed, data is received, the
+  // request is suspended or resumed.
+  virtual void Start(const net::CompletionCallback& start_cb,
+                     const base::Closure& event_cb,
                      WebKit::WebFrame* frame);
 
   // Stops everything associated with this loader, including active URL loads
@@ -179,12 +179,12 @@ class BufferedResourceLoader : public WebKit::WebURLLoaderClient {
   // Updates the |buffer_|'s forward and backward capacities.
   void UpdateBufferWindow();
 
-  // Returns true if we should defer resource loading, based
-  // on current buffering scheme.
+  // Returns true if we should defer resource loading based on the current
+  // buffering scheme.
   bool ShouldEnableDefer() const;
 
-  // Returns true if we should enable resource loading, based
-  // on current buffering scheme.
+  // Returns true if we should enable resource loading based on the current
+  // buffering scheme.
   bool ShouldDisableDefer() const;
 
   // Updates deferring behavior based on current buffering scheme.
@@ -201,8 +201,8 @@ class BufferedResourceLoader : public WebKit::WebURLLoaderClient {
   // Returns true if the current read request will be fulfilled in the future.
   bool WillFulfillRead() const;
 
-  // Method that does the actual read and calls the |read_callback_|, assuming
-  // the request range is in |buffer_|.
+  // Method that does the actual read and calls the |read_cb_|, assuming the
+  // request range is in |buffer_|.
   void ReadInternal();
 
   // If we have made a range request, verify the response from the server.
@@ -224,10 +224,10 @@ class BufferedResourceLoader : public WebKit::WebURLLoaderClient {
   // Done with start. Invokes the start callback and reset it.
   void DoneStart(int error);
 
-  // Calls |event_callback_| in terms of a network event.
+  // Calls |event_cb_| in terms of a network event.
   void NotifyNetworkEvent();
 
-  bool HasPendingRead() { return !read_callback_.is_null(); }
+  bool HasPendingRead() { return !read_cb_.is_null(); }
 
   // Helper function that returns true if a range request was specified.
   bool IsRangeRequest() const;
@@ -258,18 +258,18 @@ class BufferedResourceLoader : public WebKit::WebURLLoaderClient {
   int64 last_byte_position_;
   bool single_origin_;
 
-  // Callback method that listens to network events.
-  base::Closure event_callback_;
+  // Closure that listens to network events.
+  base::Closure event_cb_;
 
   // Members used during request start.
-  net::CompletionCallback start_callback_;
+  net::CompletionCallback start_cb_;
   int64 offset_;
   int64 content_length_;
   int64 instance_size_;
 
   // Members used during a read operation. They should be reset after each
   // read has completed or failed.
-  net::CompletionCallback read_callback_;
+  net::CompletionCallback read_cb_;
   int64 read_position_;
   size_t read_size_;
   uint8* read_buffer_;

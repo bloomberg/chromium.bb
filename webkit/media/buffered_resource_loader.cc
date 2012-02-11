@@ -131,18 +131,18 @@ BufferedResourceLoader::BufferedResourceLoader(
 BufferedResourceLoader::~BufferedResourceLoader() {}
 
 void BufferedResourceLoader::Start(
-    const net::CompletionCallback& start_callback,
-    const base::Closure& event_callback,
+    const net::CompletionCallback& start_cb,
+    const base::Closure& event_cb,
     WebFrame* frame) {
   // Make sure we have not started.
-  DCHECK(start_callback_.is_null());
-  DCHECK(event_callback_.is_null());
-  DCHECK(!start_callback.is_null());
-  DCHECK(!event_callback.is_null());
+  DCHECK(start_cb_.is_null());
+  DCHECK(event_cb_.is_null());
+  DCHECK(!start_cb.is_null());
+  DCHECK(!event_cb.is_null());
   CHECK(frame);
 
-  start_callback_ = start_callback;
-  event_callback_ = event_callback;
+  start_cb_ = start_cb;
+  event_cb_ = event_cb;
 
   if (first_byte_position_ != kPositionNotSpecified) {
     // TODO(hclam): server may not support range request so |offset_| may not
@@ -187,9 +187,9 @@ void BufferedResourceLoader::Start(
 
 void BufferedResourceLoader::Stop() {
   // Reset callbacks.
-  start_callback_.Reset();
-  event_callback_.Reset();
-  read_callback_.Reset();
+  start_cb_.Reset();
+  event_cb_.Reset();
+  read_cb_.Reset();
 
   // Use the internal buffer to signal that we have been stopped.
   // TODO(hclam): Not so pretty to do this.
@@ -207,16 +207,16 @@ void BufferedResourceLoader::Read(
     int64 position,
     int read_size,
     uint8* buffer,
-    const net::CompletionCallback& read_callback) {
-  DCHECK(start_callback_.is_null());
-  DCHECK(read_callback_.is_null());
-  DCHECK(!read_callback.is_null());
+    const net::CompletionCallback& read_cb) {
+  DCHECK(start_cb_.is_null());
+  DCHECK(read_cb_.is_null());
+  DCHECK(!read_cb.is_null());
   DCHECK(buffer_.get());
   DCHECK(buffer);
   DCHECK_GT(read_size, 0);
 
   // Save the parameter of reading.
-  read_callback_ = read_callback;
+  read_cb_ = read_cb;
   read_position_ = position;
   read_size_ = read_size;
   read_buffer_ = buffer;
@@ -334,9 +334,9 @@ void BufferedResourceLoader::willSendRequest(
     WebURLRequest& newRequest,
     const WebURLResponse& redirectResponse) {
 
-  // The load may have been stopped and |start_callback| is destroyed.
+  // The load may have been stopped and |start_cb| is destroyed.
   // In this case we shouldn't do anything.
-  if (start_callback_.is_null()) {
+  if (start_cb_.is_null()) {
     // Set the url in the request to an invalid value (empty url).
     newRequest.setURL(WebKit::WebURL());
     return;
@@ -362,9 +362,9 @@ void BufferedResourceLoader::didReceiveResponse(
   DVLOG(1) << "didReceiveResponse: " << response.httpStatusCode();
   DCHECK(active_loader_.get());
 
-  // The loader may have been stopped and |start_callback| is destroyed.
+  // The loader may have been stopped and |start_cb| is destroyed.
   // In this case we shouldn't do anything.
-  if (start_callback_.is_null())
+  if (start_cb_.is_null())
     return;
 
   bool partial_response = false;
@@ -485,8 +485,8 @@ void BufferedResourceLoader::didFinishLoading(
   }
 
   // If there is a start callback, run it.
-  if (!start_callback_.is_null()) {
-    DCHECK(read_callback_.is_null())
+  if (!start_cb_.is_null()) {
+    DCHECK(read_cb_.is_null())
         << "Shouldn't have a read callback during start";
     DoneStart(net::OK);
     return;
@@ -523,8 +523,8 @@ void BufferedResourceLoader::didFail(
   NotifyNetworkEvent();
 
   // Don't leave start callbacks hanging around.
-  if (!start_callback_.is_null()) {
-    DCHECK(read_callback_.is_null())
+  if (!start_cb_.is_null()) {
+    DCHECK(read_cb_.is_null())
         << "Shouldn't have a read callback during start";
     DoneStart(net::ERR_FAILED);
     return;
@@ -608,7 +608,7 @@ bool BufferedResourceLoader::ShouldEnableDefer() const {
 
     // Defer if nothing is being requested.
     case kReadThenDefer:
-      return read_callback_.is_null();
+      return read_cb_.is_null();
 
     // Defer if we've reached the max capacity of the threshold.
     case kThresholdDefer:
@@ -631,7 +631,7 @@ bool BufferedResourceLoader::ShouldDisableDefer() const {
     // We have an outstanding read request, and we have not buffered enough
     // yet to fulfill the request; disable defer to get more data.
     case kReadThenDefer:
-      return !read_callback_.is_null() &&
+      return !read_cb_.is_null() &&
           last_offset_ > static_cast<int>(buffer_->forward_bytes());
 
     // We have less than half the capacity of our threshold, so
@@ -760,20 +760,20 @@ void BufferedResourceLoader::DoneRead(int error) {
   last_offset_ = 0;
   Log();
 
-  net::CompletionCallback read_callback;
-  std::swap(read_callback, read_callback_);
-  read_callback.Run(error);
+  net::CompletionCallback read_cb;
+  std::swap(read_cb, read_cb_);
+  read_cb.Run(error);
 }
 
 void BufferedResourceLoader::DoneStart(int error) {
-  net::CompletionCallback start_callback;
-  std::swap(start_callback, start_callback_);
-  start_callback.Run(error);
+  net::CompletionCallback start_cb;
+  std::swap(start_cb, start_cb_);
+  start_cb.Run(error);
 }
 
 void BufferedResourceLoader::NotifyNetworkEvent() {
-  if (!event_callback_.is_null())
-    event_callback_.Run();
+  if (!event_cb_.is_null())
+    event_cb_.Run();
 }
 
 bool BufferedResourceLoader::IsRangeRequest() const {

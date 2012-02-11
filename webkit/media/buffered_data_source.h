@@ -33,22 +33,22 @@ class BufferedDataSource : public WebDataSource {
   // media::DataSource implementation.
   // Called from demuxer thread.
   virtual void set_host(media::DataSourceHost* host) OVERRIDE;
-  virtual void Stop(const base::Closure& callback) OVERRIDE;
+  virtual void Stop(const base::Closure& closure) OVERRIDE;
   virtual void SetPlaybackRate(float playback_rate) OVERRIDE;
 
   virtual void Read(
       int64 position,
       size_t size,
       uint8* data,
-      const media::DataSource::ReadCallback& read_callback) OVERRIDE;
+      const media::DataSource::ReadCallback& read_cb) OVERRIDE;
   virtual bool GetSize(int64* size_out) OVERRIDE;
   virtual bool IsStreaming() OVERRIDE;
   virtual void SetPreload(media::Preload preload) OVERRIDE;
   virtual void SetBitrate(int bitrate) OVERRIDE;
 
   // webkit_glue::WebDataSource implementation.
-  virtual void Initialize(const GURL& url,
-                          const media::PipelineStatusCB& callback) OVERRIDE;
+  virtual void Initialize(
+      const GURL& url, const media::PipelineStatusCB& initialize_cb) OVERRIDE;
   virtual bool HasSingleOrigin() OVERRIDE;
   virtual void Abort() OVERRIDE;
 
@@ -92,7 +92,7 @@ class BufferedDataSource : public WebDataSource {
   // the render thread.
   void ReadInternal();
 
-  // Calls |read_callback_| and reset all read parameters.
+  // Calls |read_cb_| and reset all read parameters.
   void DoneRead_Locked(int error);
 
   // Calls |initialize_cb_| and reset it.
@@ -151,7 +151,7 @@ class BufferedDataSource : public WebDataSource {
   media::PipelineStatusCB initialize_cb_;
 
   // Read parameters received from the Read() method call.
-  media::DataSource::ReadCallback read_callback_;
+  media::DataSource::ReadCallback read_cb_;
   int64 read_position_;
   int read_size_;
   uint8* read_buffer_;

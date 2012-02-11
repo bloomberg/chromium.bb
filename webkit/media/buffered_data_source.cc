@@ -76,20 +76,21 @@ void BufferedDataSource::set_host(media::DataSourceHost* host) {
   }
 }
 
-void BufferedDataSource::Initialize(const GURL& url,
-                                    const media::PipelineStatusCB& callback) {
+void BufferedDataSource::Initialize(
+    const GURL& url,
+    const media::PipelineStatusCB& initialize_cb) {
   DCHECK(MessageLoop::current() == render_loop_);
-  DCHECK(!callback.is_null());
+  DCHECK(!initialize_cb.is_null());
   DCHECK(!loader_.get());
   url_ = url;
 
   // This data source doesn't support data:// protocol so reject it.
   if (url_.SchemeIs(kDataScheme)) {
-    callback.Run(media::DATASOURCE_ERROR_URL_NOT_SUPPORTED);
+    initialize_cb.Run(media::DATASOURCE_ERROR_URL_NOT_SUPPORTED);
     return;
   }
 
-  initialize_cb_ = callback;
+  initialize_cb_ = initialize_cb;
 
   if (url_.SchemeIs(kHttpScheme) || url_.SchemeIs(kHttpsScheme)) {
     // Do an unbounded range request starting at the beginning.  If the server
@@ -115,13 +116,13 @@ void BufferedDataSource::Initialize(const GURL& url,
 
 /////////////////////////////////////////////////////////////////////////////
 // media::Filter implementation.
-void BufferedDataSource::Stop(const base::Closure& callback) {
+void BufferedDataSource::Stop(const base::Closure& closure) {
   {
     base::AutoLock auto_lock(lock_);
     stop_signal_received_ = true;
   }
-  if (!callback.is_null())
-    callback.Run();
+  if (!closure.is_null())
+    closure.Run();
 
   render_loop_->PostTask(FROM_HERE,
       base::Bind(&BufferedDataSource::CleanupTask, this));
@@ -146,20 +147,20 @@ void BufferedDataSource::SetBitrate(int bitrate) {
 // media::DataSource implementation.
 void BufferedDataSource::Read(
     int64 position, size_t size, uint8* data,
-    const media::DataSource::ReadCallback& read_callback) {
-  VLOG(1) << "Read: " << position << " offset, " << size << " bytes";
-  DCHECK(!read_callback.is_null());
+    const media::DataSource::ReadCallback& read_cb) {
+  DVLOG(1) << "Read: " << position << " offset, " << size << " bytes";
+  DCHECK(!read_cb.is_null());
 
   {
     base::AutoLock auto_lock(lock_);
-    DCHECK(read_callback_.is_null());
+    DCHECK(read_cb_.is_null());
 
     if (stop_signal_received_ || stopped_on_render_loop_) {
-      read_callback.Run(kReadError);
+      read_cb.Run(kReadError);
       return;
     }
 
-    read_callback_ = read_callback;
+    read_cb_ = read_cb;
   }
 
   render_loop_->PostTask(FROM_HERE, base::Bind(
@@ -204,7 +205,7 @@ void BufferedDataSource::ReadTask(
     if (stopped_on_render_loop_)
       return;
 
-    DCHECK(!read_callback_.is_null());
+    DCHECK(!read_cb_.is_null());
   }
 
   // Saves the read parameters.
@@ -228,10 +229,10 @@ void BufferedDataSource::CleanupTask() {
 
     // Signal that stop task has finished execution.
     // NOTE: it's vital that this be set under lock, as that's how Read() tests
-    // before registering a new |read_callback_| (which is cleared below).
+    // before registering a new |read_cb_| (which is cleared below).
     stopped_on_render_loop_ = true;
 
-    if (!read_callback_.is_null())
+    if (!read_cb_.is_null())
       DoneRead_Locked(net::ERR_FAILED);
   }
 
@@ -253,7 +254,7 @@ void BufferedDataSource::RestartLoadingTask() {
   {
     // If there's no outstanding read then return early.
     base::AutoLock auto_lock(lock_);
-    if (read_callback_.is_null())
+    if (read_cb_.is_null())
       return;
   }
 
@@ -333,19 +334,19 @@ void BufferedDataSource::ReadInternal() {
 // Method to report the results of the current read request. Also reset all
 // the read parameters.
 void BufferedDataSource::DoneRead_Locked(int error) {
-  VLOG(1) << "DoneRead: " << error << " bytes";
+  DVLOG(1) << "DoneRead: " << error << " bytes";
 
   DCHECK(MessageLoop::current() == render_loop_);
-  DCHECK(!read_callback_.is_null());
+  DCHECK(!read_cb_.is_null());
   lock_.AssertAcquired();
 
   if (error >= 0) {
-    read_callback_.Run(static_cast<size_t>(error));
+    read_cb_.Run(static_cast<size_t>(error));
   } else {
-    read_callback_.Run(kReadError);
+    read_cb_.Run(kReadError);
   }
 
-  read_callback_.Reset();
+  read_cb_.Reset();
   read_position_ = 0;
   read_size_ = 0;
   read_buffer_ = 0;
