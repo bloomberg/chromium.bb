@@ -51,10 +51,14 @@ if pyauto.PyUITest.IsChromeOS():
       break
   sys.path.append('/usr/local')  # to import autotest libs.
 
-  import device_management_local_pb2 as dml
-  import device_management_backend_pb2 as dmb
-  from autotest.cros import constants
-  from autotest.cros import cros_ui
+  # Temporarily ignore policy protobuf imports until crosbug.com/26220 is fixed
+  try:
+    import device_management_local_pb2 as dml
+    import device_management_backend_pb2 as dmb
+    from autotest.cros import constants
+    from autotest.cros import cros_ui
+  except:
+    pass
 
 
 class PolicyTestBase(pyauto.PyUITest):
