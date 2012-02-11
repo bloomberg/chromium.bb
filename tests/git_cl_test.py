@@ -155,9 +155,9 @@ class TestGitCl(TestCase):
          '.'],),
         'M\tPRESUBMIT.py'),
       ((['git', 'config', 'branch.working.rietveldissue'],), '12345'),
+      ((['git', 'config', 'branch.working.rietveldpatchset'],), '31137'),
       ((['git', 'config', 'branch.working.rietveldserver'],),
          'codereview.example.com'),
-      ((['git', 'config', 'branch.working.rietveldpatchset'],), '31137'),
       ((['git', 'config', 'user.email'],), 'author@example.com'),
       ((['git', 'config', 'rietveld.tree-status-url'],), ''),
   ]

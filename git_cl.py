@@ -397,17 +397,20 @@ or verify this branch is set up to track another (via the --track argument to
       issue = RunGit(['config', self._IssueSetting()], error_ok=True).strip()
       if issue:
         self.issue = issue
-        self.rietveld_server = gclient_utils.UpgradeToHttps(RunGit(
-            ['config', self._RietveldServer()], error_ok=True).strip())
       else:
         self.issue = None
-      if not self.rietveld_server:
-        self.rietveld_server = settings.GetDefaultServerUrl()
       self.has_issue = True
     return self.issue
 
   def GetRietveldServer(self):
-    self.GetIssue()
+    if not self.rietveld_server:
+      # If we're on a branch then get the server potentially associated
+      # with that branch.
+      if self.GetIssue():
+        self.rietveld_server = gclient_utils.UpgradeToHttps(RunGit(
+            ['config', self._RietveldServer()], error_ok=True).strip())
+      if not self.rietveld_server:
+        self.rietveld_server = settings.GetDefaultServerUrl()
     return self.rietveld_server
 
   def GetIssueURL(self):
@@ -564,8 +567,8 @@ or verify this branch is set up to track another (via the --track argument to
     """Returns an upload.RpcServer() to access this review's rietveld instance.
     """
     if not self._rpc_server:
-      self.GetIssue()
-      self._rpc_server = rietveld.Rietveld(self.rietveld_server, None, None)
+      self._rpc_server = rietveld.Rietveld(self.GetRietveldServer(),
+                                           None, None)
     return self._rpc_server
 
   def _IssueSetting(self):
