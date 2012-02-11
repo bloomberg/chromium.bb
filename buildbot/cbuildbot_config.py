@@ -495,12 +495,6 @@ chrome_pfq.add_config('x86-generic-chrome-pre-flight-queue',
   chrome_rev=constants.CHROME_REV_LATEST,
 )
 
-chrome_pfq.add_config('aura-chrome-pre-flight-queue',
-  boards=['x86-generic'],
-  profile='aura',
-  chrome_rev=constants.CHROME_REV_LATEST,
-)
-
 chrome_pfq.add_config('arm-tegra2-chrome-pre-flight-queue',
   arm,
   boards=['tegra2'],
@@ -547,12 +541,6 @@ chrome_pfq_info.add_config('patch-tot-chrome-pfq-informational',
   boards=['arm-generic'],
   useflags=['touchui_patches'],
 )
-
-chrome_pfq_info.add_config('aura-tot-chrome-pfq-informational',
-  boards=['x86-generic'],
-  profile='aura',
-)
-
 
 arm_generic_full = \
 full.add_config('arm-generic-full', arm,
@@ -639,13 +627,6 @@ internal_arm_pfq.add_config('arm-tegra2_kaen-private-bin',
   description='tegra2_kaen PFQ'
 )
 
-internal_arm_pfq.add_config('arm-tegra2_kaen-aura-private-bin',
-  boards=['tegra2_kaen'],
-  profile='aura',
-  description='tegra2_kaen Aura PFQ',
-  important=False,
-)
-
 internal_arm_pfq.add_config('arm-ironhide-private-bin',
   boards=['ironhide'],
   description='ironhide PFQ',
@@ -692,12 +673,6 @@ internal_paladin.add_config('mario-paladin',
 
 internal_arm_paladin.add_config('kaen-paladin',
   boards=['tegra2_kaen'],
-)
-
-internal_arm_paladin.add_config('kaen-aura-paladin',
-  boards=['tegra2_kaen'],
-  profile='aura',
-  important=False,
 )
 
 internal_paladin.add_config('zgb-paladin',
@@ -779,10 +754,6 @@ _release.add_config('x86-alex-release',
   boards=['x86-alex'],
 )
 
-_alex_release.add_config('aura-release',
-  profile='aura',
-)
-
 _release.add_config('x86-alex_he-release',
   boards=['x86-alex_he'],
 )
@@ -833,11 +804,6 @@ _arm_release.add_config('arm-tegra2_seaboard-release',
 
 _arm_release.add_config('arm-tegra2_kaen-release',
   boards=['tegra2_kaen'],
-)
-
-_arm_release.add_config('arm-tegra2_kaen-aura-release',
-  boards=['tegra2_kaen'],
-  profile='aura',
 )
 
 _arm_release.add_config('arm-ironhide-release',
