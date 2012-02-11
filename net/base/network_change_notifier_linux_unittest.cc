@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -44,7 +44,7 @@ class NetworkChangeNotifierLinuxTest : public testing::Test {
     mock_object_proxy_ = new dbus::MockObjectProxy(mock_bus_.get(),
                                                    "service_name",
                                                    "service_path");
-    EXPECT_CALL(*mock_bus_, GetObjectProxy(_, _))
+    EXPECT_CALL(*mock_bus_, GetObjectProxyWithOptions(_, _, _))
         .WillOnce(Return(mock_object_proxy_.get()));
 
     EXPECT_CALL(*mock_object_proxy_, CallMethod(_, _, _))
