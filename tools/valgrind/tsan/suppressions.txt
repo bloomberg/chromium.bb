@@ -832,3 +832,11 @@
   fun:tracked_objects::ThreadData::NowForEndOfRun
   fun:MessageLoop::RunTask
 }
+{
+  bug_131771_b
+  ThreadSanitizer:Race
+  fun:tracked_objects::ThreadData::TrackingStatus
+  fun:tracked_objects::ThreadData::Now
+  fun:tracked_objects::ThreadData::NowForStartOfRun
+  fun:MessageLoop::RunTask
+}
