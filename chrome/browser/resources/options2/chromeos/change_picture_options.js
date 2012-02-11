@@ -68,6 +68,8 @@ cr.define('options', function() {
       // Old user image data (if present).
       this.oldImage_ = null;
 
+      $('change-picture-overlay-confirm').onclick = this.closePage_;
+
       chrome.send('onChangePicturePageInitialized');
     },
 
@@ -96,7 +98,7 @@ cr.define('options', function() {
      * @private
      */
     closePage_: function() {
-      OptionsPage.navigateToPage('personal');
+      OptionsPage.closeOverlay();
     },
 
     /**

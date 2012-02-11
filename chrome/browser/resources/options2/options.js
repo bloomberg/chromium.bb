@@ -75,9 +75,6 @@ function load() {
     OptionsPage.registerSubPage(AccountsOptions.getInstance(),
                                 BrowserOptions.getInstance(),
                                 [$('manage-accounts-button')]);
-    OptionsPage.registerSubPage(ChangePictureOptions.getInstance(),
-                                BrowserOptions.getInstance(),
-                                [$('change-picture-button')]);
     OptionsPage.registerSubPage(InternetOptions.getInstance(),
                                 BrowserOptions.getInstance(),
                                 [$('internet-options-button')]);
@@ -190,6 +187,9 @@ function load() {
                                 [$('bluetooth-add-device')]);
     OptionsPage.registerOverlay(BluetoothPairing.getInstance(),
                                 AdvancedOptions.getInstance());
+    OptionsPage.registerOverlay(ChangePictureOptions.getInstance(),
+                                BrowserOptions.getInstance(),
+                                [$('change-picture-button')]);
     OptionsPage.registerOverlay(DetailsInternetPage.getInstance(),
                                 InternetOptions.getInstance());
     OptionsPage.registerOverlay(KeyboardOverlay.getInstance(),
