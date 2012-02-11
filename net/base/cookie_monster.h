@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -87,23 +87,13 @@ class NET_EXPORT CookieMonster : public CookieStore {
   // CookieMap is the central data structure of the CookieMonster.  It
   // is a map whose values are pointers to CanonicalCookie data
   // structures (the data structures are owned by the CookieMonster
-  // and must be destroyed when removed from the map).  There are two
-  // possible keys for the map, controlled on a per-CookieMonster basis
-  // by expiry_and_key_scheme_/SetExpiryAndKeyScheme()
-  // (defaulted by expiry_and_key_default_):
-
-  // If expiry_and_key_scheme_ is EKS_KEEP_RECENT_AND_PURGE_ETLDP1
-  // (default), then the key is based on the effective domain of the
-  // cookies.  If the domain of the cookie has an eTLD+1, that is the
-  // key for the map.  If the domain of the cookie does not have an eTLD+1,
-  // the key of the map is the host the cookie applies to (it is not
-  // legal to have domain cookies without an eTLD+1).  This rule
+  // and must be destroyed when removed from the map).  The key is based on the
+  // effective domain of the cookies.  If the domain of the cookie has an
+  // eTLD+1, that is the key for the map.  If the domain of the cookie does not
+  // have an eTLD+1, the key of the map is the host the cookie applies to (it is
+  // not legal to have domain cookies without an eTLD+1).  This rule
   // excludes cookies for, e.g, ".com", ".co.uk", or ".internalnetwork".
   // This behavior is the same as the behavior in Firefox v 3.6.10.
-
-  // If use_effective_domain_key_scheme_ is EKS_DISCARD_RECENT_AND_PURGE_DOMAIN,
-  // then the key is just the domain of the cookie.  Eventually, this
-  // option will be removed.
 
   // NOTE(deanm):
   // I benchmarked hash_multimap vs multimap.  We're going to be query-heavy
@@ -116,18 +106,6 @@ class NET_EXPORT CookieMonster : public CookieStore {
   // subtantially more entries in the map.
   typedef std::multimap<std::string, CanonicalCookie*> CookieMap;
   typedef std::pair<CookieMap::iterator, CookieMap::iterator> CookieMapItPair;
-
-  // The key and expiry scheme to be used by the monster.
-  // EKS_KEEP_RECENT_AND_PURGE_ETLDP1 means to use
-  // the new key scheme based on effective domain and save recent cookies
-  // in global garbage collection.  EKS_DISCARD_RECENT_AND_PURGE_DOMAIN
-  // means to use the old key scheme based on full domain and be ruthless
-  // about purging.
-  enum ExpiryAndKeyScheme {
-    EKS_KEEP_RECENT_AND_PURGE_ETLDP1,
-    EKS_DISCARD_RECENT_AND_PURGE_DOMAIN,
-    EKS_LAST_ENTRY
-  };
 
   // The store passed in should not have had Init() called on it yet. This
   // class will take care of initializing it. The backing store is NOT owned by
@@ -208,11 +186,6 @@ class NET_EXPORT CookieMonster : public CookieStore {
   // If this this method is called, it must be called before first use of
   // the instance (i.e. as part of the instance initialization process).
   void SetCookieableSchemes(const char* schemes[], size_t num_schemes);
-
-  // Overrides the default key and expiry scheme.  See comments
-  // before CookieMap and Garbage collection constants for details.  This
-  // function must be called before initialization.
-  void SetExpiryAndKeyScheme(ExpiryAndKeyScheme key_scheme);
 
   // Instructs the cookie monster to not delete expired cookies. This is used
   // in cases where the cookie monster is used as a data structure to keep
@@ -374,11 +347,9 @@ class NET_EXPORT CookieMonster : public CookieStore {
   // CookieMap typedef.  So, e.g., the maximum number of cookies allowed for
   // google.com and all of its subdomains will be 150-180.
   //
-  // If the expiry and key scheme follows firefox standards (default,
-  // set by SetExpiryAndKeyScheme()), any cookies accessed more recently
-  // than kSafeFromGlobalPurgeDays will not be evicted by global garbage
-  // collection, even if we have more than kMaxCookies.  This does not affect
-  // domain garbage collection.
+  // Any cookies accessed more recently than kSafeFromGlobalPurgeDays will not
+  // be evicted by global garbage collection, even if we have more than
+  // kMaxCookies.  This does not affect domain garbage collection.
   //
   // Present in .h file to make accessible to tests through FRIEND_TEST.
   // Actual definitions are in cookie_monster.cc.
@@ -390,10 +361,6 @@ class NET_EXPORT CookieMonster : public CookieStore {
   // The number of days since last access that cookies will not be subject
   // to global garbage collection.
   static const int kSafeFromGlobalPurgeDays;
-
-  // Default value for key and expiry scheme scheme.
-  static const ExpiryAndKeyScheme expiry_and_key_default_ =
-      EKS_KEEP_RECENT_AND_PURGE_ETLDP1;
 
   // Record statistics every kRecordStatisticsIntervalSeconds of uptime.
   static const int kRecordStatisticsIntervalSeconds = 10 * 60;
@@ -641,10 +608,6 @@ class NET_EXPORT CookieMonster : public CookieStore {
   // Queues tasks that are blocked until all cookies are loaded from the backend
   // store.
   std::queue<scoped_refptr<CookieMonsterTask> > queue_;
-
-  // Indicates whether this cookie monster uses the new effective domain
-  // key scheme or not.
-  ExpiryAndKeyScheme expiry_and_key_scheme_;
 
   scoped_refptr<PersistentCookieStore> store_;
 

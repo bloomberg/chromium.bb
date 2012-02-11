@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -364,7 +364,6 @@ bool CookieMonster::enable_file_scheme_ = false;
 CookieMonster::CookieMonster(PersistentCookieStore* store, Delegate* delegate)
     : initialized_(false),
       loaded_(false),
-      expiry_and_key_scheme_(expiry_and_key_default_),
       store_(store),
       last_access_threshold_(
           TimeDelta::FromSeconds(kDefaultAccessUpdateThresholdSeconds)),
@@ -381,7 +380,6 @@ CookieMonster::CookieMonster(PersistentCookieStore* store,
                              int last_access_threshold_milliseconds)
     : initialized_(false),
       loaded_(false),
-      expiry_and_key_scheme_(expiry_and_key_default_),
       store_(store),
       last_access_threshold_(base::TimeDelta::FromMilliseconds(
           last_access_threshold_milliseconds)),
@@ -1278,11 +1276,6 @@ void CookieMonster::SetCookieableSchemes(
                              schemes, schemes + num_schemes);
 }
 
-void CookieMonster::SetExpiryAndKeyScheme(ExpiryAndKeyScheme key_scheme) {
-  DCHECK(!initialized_);
-  expiry_and_key_scheme_ = key_scheme;
-}
-
 void CookieMonster::SetKeepExpiredCookies() {
   keep_expired_cookies_ = true;
 }
@@ -1665,41 +1658,10 @@ void CookieMonster::FindCookiesForHostAndDomain(
   // want to collect statistics whenever the browser's being used.
   RecordPeriodicStats(current_time);
 
-  if (expiry_and_key_scheme_ == EKS_DISCARD_RECENT_AND_PURGE_DOMAIN) {
-    // Can just dispatch to FindCookiesForKey
-    const std::string key(GetKey(url.host()));
-    FindCookiesForKey(key, url, options, current_time,
-                      update_access_time, cookies);
-  } else {
-    // Need to probe for all domains that might have relevant
-    // cookies for us.
-
-    // Query for the full host, For example: 'a.c.blah.com'.
-    std::string key(GetKey(url.host()));
-    FindCookiesForKey(key, url, options, current_time, update_access_time,
-                      cookies);
-
-    // See if we can search for domain cookies, i.e. if the host has a TLD + 1.
-    const std::string domain(cookie_util::GetEffectiveDomain(url.scheme(),
-                                                              key));
-    if (domain.empty())
-      return;
-    DCHECK_LE(domain.length(), key.length());
-    DCHECK_EQ(0, key.compare(key.length() - domain.length(), domain.length(),
-                             domain));
-
-    // Walk through the string and query at the dot points (GURL should have
-    // canonicalized the dots, so this should be safe).  Stop once we reach the
-    // domain + registry; we can't write cookies past this point, and with some
-    // registrars other domains can, in which case we don't want to read their
-    // cookies.
-    for (key = "." + key; key.length() > domain.length(); ) {
-      FindCookiesForKey(key, url, options, current_time, update_access_time,
-                        cookies);
-      const size_t next_dot = key.find('.', 1);  // Skip over leading dot.
-      key.erase(0, next_dot);
-    }
-  }
+  // Can just dispatch to FindCookiesForKey
+  const std::string key(GetKey(url.host()));
+  FindCookiesForKey(key, url, options, current_time,
+                    update_access_time, cookies);
 }
 
 void CookieMonster::FindCookiesForKey(
@@ -1736,8 +1698,7 @@ void CookieMonster::FindCookiesForKey(
       continue;
 
     // Filter out cookies that don't apply to this domain.
-    if (expiry_and_key_scheme_ == EKS_KEEP_RECENT_AND_PURGE_ETLDP1
-        && !cc->IsDomainMatch(scheme, host))
+    if (!cc->IsDomainMatch(scheme, host))
       continue;
 
     if (!cc->IsOnPath(url.path()))
@@ -1943,9 +1904,7 @@ void CookieMonster::InternalDeleteCookie(CookieMap::iterator it,
 
 // Domain expiry behavior is unchanged by key/expiry scheme (the
 // meaning of the key is different, but that's not visible to this
-// routine).  Global garbage collection is dependent on key/expiry
-// scheme in that recently touched cookies are not saved if
-// expiry_and_key_scheme_ == EKS_DISCARD_RECENT_AND_PURGE_DOMAIN.
+// routine).
 int CookieMonster::GarbageCollect(const Time& current,
                                   const std::string& key) {
   lock_.AssertAcquired();
@@ -1987,8 +1946,7 @@ int CookieMonster::GarbageCollect(const Time& current,
   // preserve cookies touched in kSafeFromGlobalPurgeDays, otherwise
   // not.
   if (cookies_.size() > kMaxCookies &&
-      (expiry_and_key_scheme_ == EKS_DISCARD_RECENT_AND_PURGE_DOMAIN ||
-       earliest_access_time_ <
+      (earliest_access_time_ <
        Time::Now() - TimeDelta::FromDays(kSafeFromGlobalPurgeDays))) {
     VLOG(kVlogGarbageCollection) << "GarbageCollect() everything";
     std::vector<CookieMap::iterator> cookie_its;
@@ -1999,9 +1957,7 @@ int CookieMonster::GarbageCollect(const Time& current,
     if (FindLeastRecentlyAccessed(kMaxCookies, kPurgeCookies,
                                   &oldest_left, &cookie_its)) {
       Time oldest_safe_cookie(
-          expiry_and_key_scheme_ == EKS_KEEP_RECENT_AND_PURGE_ETLDP1 ?
-              (Time::Now() - TimeDelta::FromDays(kSafeFromGlobalPurgeDays)) :
-              Time());                  // Null time == ignore access time.
+          (Time::Now() - TimeDelta::FromDays(kSafeFromGlobalPurgeDays)));
       int num_evicted = GarbageCollectDeleteList(
           current,
           oldest_safe_cookie,
@@ -2093,9 +2049,6 @@ int CookieMonster::GarbageCollectDeleteList(
 // be worth it, but is still too much trouble to solve what is currently a
 // non-problem).
 std::string CookieMonster::GetKey(const std::string& domain) const {
-  if (expiry_and_key_scheme_ == EKS_DISCARD_RECENT_AND_PURGE_DOMAIN)
-    return domain;
-
   std::string effective_domain(
       RegistryControlledDomainService::GetDomainAndRegistry(domain));
   if (effective_domain.empty())
