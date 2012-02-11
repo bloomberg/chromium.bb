@@ -20,5 +20,7 @@ SessionHistoryTest.BasicBackForward
 AutomatedUITestBase.FindInPage
 # Fails consistently. http://crbug.com/97107
 RunInBackgroundTest.RunInBackgroundBasicTest
-# Fails conssitently on chromeos. http://crbug.com/113308
+# Fails consistently on chromeos. http://crbug.com/113308
 DOMStorageTest.RootLayoutTests
+# Fails consistently on ChromeOS. http://crbug.com/113828
+KioskModeTest.EnableKioskModeTest
