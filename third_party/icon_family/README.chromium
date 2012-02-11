@@ -1,0 +1,14 @@
+Name: icon_family
+Short Name: IconFamily
+URL: http://iconfamily.sourceforge.net/
+Version: 0
+Date: 07/21/2010
+Revision: 46
+License: MIT
+Security Critical: Yes
+
+Description:
+This is an Objective-C wrapper around Mac OS X Icon Services' "IconFamily" data type. This is used to create .icns files for Web Apps installed from the browser.
+
+Local Modifications:
+None
