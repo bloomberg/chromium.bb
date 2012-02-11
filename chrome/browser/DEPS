@@ -105,6 +105,7 @@ include_rules = [
   "+content/browser/ssl/ssl_manager.h",
   "+content/browser/tab_contents/popup_menu_helper_mac.h",
   "+content/browser/tab_contents/provisional_load_details.h",
+  "+content/browser/tab_contents/tab_contents_view_android.h",
   "+content/browser/tab_contents/tab_contents_view_gtk.h",
   "+content/browser/tab_contents/tab_contents_view_helper.h",
   "+content/browser/tab_contents/tab_contents_view_wrapper_gtk.h",

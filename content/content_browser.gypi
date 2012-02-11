@@ -642,6 +642,8 @@
     'browser/tab_contents/render_view_host_manager.h',
     'browser/tab_contents/tab_contents.cc',
     'browser/tab_contents/tab_contents.h',
+    'browser/tab_contents/tab_contents_view_android.cc',
+    'browser/tab_contents/tab_contents_view_android.h',
     'browser/tab_contents/tab_contents_view_gtk.cc',
     'browser/tab_contents/tab_contents_view_gtk.h',
     'browser/tab_contents/tab_contents_view_helper.cc',

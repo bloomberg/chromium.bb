@@ -122,6 +122,8 @@
 #elif defined(OS_MACOSX)
 #include "chrome/browser/tab_contents/chrome_web_contents_view_mac_delegate.h"
 #include "content/browser/tab_contents/web_contents_view_mac.h"
+#elif defined(OS_ANDROID)
+#include "content/browser/tab_contents/tab_contents_view_android.h"
 #endif
 
 #if defined(USE_NSS)
@@ -280,6 +282,11 @@ content::BrowserMainParts* ChromeContentBrowserClient::CreateBrowserMainParts(
   main_parts = new ChromeBrowserMainPartsChromeos(parameters);
 #elif defined(OS_LINUX) || defined(OS_OPENBSD)
   main_parts = new ChromeBrowserMainPartsLinux(parameters);
+#elif defined(OS_ANDROID)
+  // Do nothing for Android.
+  // TODO(klobag): Android initialization should use the
+  // *BrowserMainParts class-hierarchy for setting up custom initialization.
+  main_parts = NULL;
 #elif defined(OS_POSIX)
   main_parts = new ChromeBrowserMainPartsPosix(parameters);
 #else
@@ -316,6 +323,8 @@ content::WebContentsView* ChromeContentBrowserClient::CreateWebContentsView(
       web_contents,
       chrome_web_contents_view_mac_delegate::CreateWebContentsViewMacDelegate(
           web_contents));
+#elif defined(OS_ANDROID)
+  return new TabContentsViewAndroid(web_contents);
 #else
 #error Need to create your platform WebContentsView here.
 #endif
@@ -1288,6 +1297,11 @@ std::string ChromeContentBrowserClient::GetDefaultDownloadName() {
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
 int ChromeContentBrowserClient::GetCrashSignalFD(
     const CommandLine& command_line) {
+#if defined(OS_ANDROID)
+  // TODO(carlosvaldivia): Upstream breakpad code for Android and remove this
+  // fork. http://crbug.com/113560
+  NOTIMPLEMENTED();
+#else
   if (command_line.HasSwitch(switches::kExtensionProcess)) {
     ExtensionCrashHandlerHostLinux* crash_handler =
         ExtensionCrashHandlerHostLinux::GetInstance();
@@ -1308,6 +1322,7 @@ int ChromeContentBrowserClient::GetCrashSignalFD(
 
   if (process_type == switches::kGpuProcess)
     return GpuCrashHandlerHostLinux::GetInstance()->GetDeathSignalSocket();
+#endif  // defined(OS_ANDROID)
 
   return -1;
 }
