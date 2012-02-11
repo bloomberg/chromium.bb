@@ -397,7 +397,7 @@ function updateStatistics_() {
       remoting.clientSession.state != remoting.ClientSession.State.CONNECTED) {
     return;
   }
-  var stats = remoting.clientSession.stats();
+  var stats = remoting.clientSession.getPerfStats();
   remoting.debug.updateStatistics(stats);
   remoting.clientSession.logStatistics(stats);
   // Update the stats once per second.

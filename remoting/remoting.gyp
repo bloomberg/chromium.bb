@@ -108,6 +108,7 @@
       'resources/icon_warning.png',
       'webapp/choice.css',
       'webapp/choice.html',
+      'webapp/client_plugin.js',
       'webapp/client_screen.js',
       'webapp/client_session.js',
       'webapp/cs_oauth2_trampoline.js',
