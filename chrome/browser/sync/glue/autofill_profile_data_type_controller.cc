@@ -97,13 +97,6 @@ void AutofillProfileDataTypeController::DoStartAssociationAsync() {
   }
 }
 
-base::WeakPtr<SyncableService>
-    AutofillProfileDataTypeController::GetWeakPtrToSyncableService() const {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
-  return profile_sync_factory()->GetAutofillProfileSyncableService(
-      web_data_service_.get());
-}
-
 void AutofillProfileDataTypeController::StopModels() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(state() == STOPPING || state() == NOT_RUNNING);

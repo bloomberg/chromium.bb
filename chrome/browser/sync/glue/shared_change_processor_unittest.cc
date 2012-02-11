@@ -11,7 +11,7 @@
 #include "base/compiler_specific.h"
 #include "base/message_loop.h"
 #include "chrome/browser/sync/api/syncable_service_mock.h"
-#include "chrome/browser/sync/profile_sync_components_factory_impl.h"
+#include "chrome/browser/sync/profile_sync_components_factory_mock.h"
 #include "chrome/browser/sync/profile_sync_service_mock.h"
 #include "content/test/test_browser_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -24,12 +24,17 @@ namespace {
 using content::BrowserThread;
 using ::testing::NiceMock;
 
+ACTION_P(GetWeakPtrToSyncableService, syncable_service) {
+  // Have to do this within an Action to ensure it's not evaluated on the wrong
+  // thread.
+  return syncable_service->AsWeakPtr();
+}
+
 class SyncSharedChangeProcessorTest : public testing::Test {
  public:
   SyncSharedChangeProcessorTest()
       : ui_thread_(BrowserThread::UI, &ui_loop_),
         db_thread_(BrowserThread::DB),
-        sync_factory_(NULL, NULL),
         db_syncable_service_(NULL) {}
 
   virtual ~SyncSharedChangeProcessorTest() {
@@ -95,11 +100,12 @@ class SyncSharedChangeProcessorTest : public testing::Test {
   void ConnectOnDBThread(
       const scoped_refptr<SharedChangeProcessor>& shared_change_processor) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
-    EXPECT_TRUE(
-        shared_change_processor->Connect(&sync_factory_,
-                                         &sync_service_,
-                                         &sync_service_,
-                                         db_syncable_service_->AsWeakPtr()));
+    EXPECT_CALL(sync_factory_, GetSyncableServiceForType(syncable::AUTOFILL)).
+        WillOnce(GetWeakPtrToSyncableService(db_syncable_service_));
+    EXPECT_TRUE(shared_change_processor->Connect(&sync_factory_,
+                                                 &sync_service_,
+                                                 &sync_service_,
+                                                 syncable::AUTOFILL));
   }
 
   MessageLoopForUI ui_loop_;
@@ -107,7 +113,7 @@ class SyncSharedChangeProcessorTest : public testing::Test {
   content::TestBrowserThread db_thread_;
 
   scoped_refptr<SharedChangeProcessor> shared_change_processor_;
-  ProfileSyncComponentsFactoryImpl sync_factory_;
+  NiceMock<ProfileSyncComponentsFactoryMock> sync_factory_;
   NiceMock<ProfileSyncServiceMock> sync_service_;
 
   // Used only on DB thread.

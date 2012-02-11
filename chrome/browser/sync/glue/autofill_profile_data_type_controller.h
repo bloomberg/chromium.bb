@@ -47,8 +47,6 @@ class AutofillProfileDataTypeController
       const tracked_objects::Location& from_here,
       const base::Closure& task) OVERRIDE;
   virtual bool StartModels() OVERRIDE;
-  virtual base::WeakPtr<SyncableService> GetWeakPtrToSyncableService()
-      const OVERRIDE;
   virtual void StopModels() OVERRIDE;
   virtual void RecordUnrecoverableError(
       const tracked_objects::Location& from_here,

@@ -77,6 +77,11 @@ class ProfileSyncComponentsFactory {
   virtual browser_sync::SharedChangeProcessor*
       CreateSharedChangeProcessor() = 0;
 
+  // Returns a weak pointer to the syncable service specified by |type|.
+  // Weak pointer may be unset if service is already destroyed.
+  virtual base::WeakPtr<SyncableService> GetSyncableServiceForType(
+      syncable::ModelType type) = 0;
+
   // Instantiates both a model associator and change processor for the
   // app data type.  The pointers in the return struct are
   // owned by the caller.

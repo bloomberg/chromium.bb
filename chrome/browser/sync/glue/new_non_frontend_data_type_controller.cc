@@ -87,44 +87,30 @@ void NewNonFrontendDataTypeController::
     StartAssociationWithSharedChangeProcessor(
         const scoped_refptr<SharedChangeProcessor>& shared_change_processor) {
   DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK_EQ(state(), ASSOCIATING);
+  DCHECK(shared_change_processor.get());
 
-  // We're dependent on the SyncableService being destroyed on the same thread
-  // we access it. Therefore, as long as GetWeakPtrToSyncableService returns
-  // a valid WeakPtr, we can rely on it remaining initialized for the
-  // life of this method.
-  local_service_ = GetWeakPtrToSyncableService();
+  // Connect |shared_change_processor| to the syncer and get the
+  // SyncableService associated with type().
+  // Note that it's possible the shared_change_processor has already been
+  // disconnected at this point, so all our accesses to the syncer from this
+  // point on are through it.
+  local_service_ = shared_change_processor->Connect(profile_sync_factory(),
+                                                    profile_sync_service(),
+                                                    this,
+                                                    type());
   if (!local_service_.get()) {
-    // The SyncableService was destroyed before this task had a chance to
-    // execute.
-    SyncError error(FROM_HERE, "Local service destroyed before association.",
-                    type());
+    SyncError error(FROM_HERE, "Failed to connect to syncer.", type());
     StartFailed(UNRECOVERABLE_ERROR, error);
     return;
   }
 
-  DCHECK(shared_change_processor.get());
-
-  // Connect |shared_change_processor| to the syncer and |local_service_|.
-  // Note that it's possible the shared_change_processor has already been
-  // disconnected at this point, so all our accesses to the syncer from this
-  // point on are through it.
-  if (!shared_change_processor->Connect(profile_sync_factory(),
-                                        profile_sync_service(),
-                                        this,
-                                        local_service_)) {
-    SyncError error(FROM_HERE, "Failed to connect to syncer.", type());
-    StartFailed(UNRECOVERABLE_ERROR, error);
-  }
-
-  if (!shared_change_processor->CryptoReadyIfNecessary(type())) {
+  if (!shared_change_processor->CryptoReadyIfNecessary()) {
     StartFailed(NEEDS_CRYPTO, SyncError());
     return;
   }
 
   bool sync_has_nodes = false;
-  if (!shared_change_processor->SyncModelHasUserCreatedNodes(
-          type(), &sync_has_nodes)) {
+  if (!shared_change_processor->SyncModelHasUserCreatedNodes(&sync_has_nodes)) {
     SyncError error(FROM_HERE, "Failed to load sync nodes", type());
     StartFailed(UNRECOVERABLE_ERROR, error);
     return;
@@ -133,8 +119,7 @@ void NewNonFrontendDataTypeController::
   base::TimeTicks start_time = base::TimeTicks::Now();
   SyncError error;
   SyncDataList initial_sync_data;
-  error = shared_change_processor->GetSyncDataForType(type(),
-                                                      &initial_sync_data);
+  error = shared_change_processor->GetSyncData(&initial_sync_data);
   if (error.IsSet()) {
     StartFailed(ASSOCIATION_FAILED, error);
     return;
@@ -156,8 +141,7 @@ void NewNonFrontendDataTypeController::
   // Note: This must be done on the datatype's thread to ensure local_service_
   // doesn't start trying to push changes from it's thread before we activate
   // the datatype.
-  shared_change_processor->ActivateDataType(profile_sync_service(),
-                                            type(), model_safe_group());
+  shared_change_processor->ActivateDataType(model_safe_group());
   StartDone(!sync_has_nodes ? OK_FIRST_RUN : OK, RUNNING, SyncError());
 }
 

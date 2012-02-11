@@ -50,14 +50,16 @@ class SharedChangeProcessor
   // Create an uninitialized SharedChangeProcessor (to be later connected).
   SharedChangeProcessor();
 
-  // Connect to the Syncer. Will create and hold a new GenericChangeProcessor.
-  // Returns: true if successful, false if disconnected or |local_service| was
-  // NULL.
-  virtual bool Connect(
+  // Connect to the Syncer and prepare to handle changes for |type|. Will
+  // create and store a new GenericChangeProcessor and return a weak pointer to
+  // the SyncableService associated with |type|.
+  // Note: If this SharedChangeProcessor has been disconnected, or the
+  // SyncableService was not alive, will return a null weak pointer.
+  virtual base::WeakPtr<SyncableService> Connect(
     ProfileSyncComponentsFactory* sync_factory,
     ProfileSyncService* sync_service,
     UnrecoverableErrorHandler* error_handler,
-    const base::WeakPtr<SyncableService>& local_service);
+    syncable::ModelType type);
 
   // Disconnects from the generic change processor. May be called from any
   // thread. After this, all attempts to interact with the change processor by
@@ -71,22 +73,17 @@ class SharedChangeProcessor
 
   // GenericChangeProcessor stubs (with disconnect support).
   // Should only be called on the same thread the datatype resides.
+  virtual SyncError GetSyncData(SyncDataList* current_sync_data);
   virtual SyncError ProcessSyncChanges(
       const tracked_objects::Location& from_here,
       const SyncChangeList& change_list);
-  virtual SyncError GetSyncDataForType(syncable::ModelType type,
-                                       SyncDataList* current_sync_data);
-  virtual bool SyncModelHasUserCreatedNodes(syncable::ModelType type,
-                                            bool* has_nodes);
-  virtual bool CryptoReadyIfNecessary(syncable::ModelType type);
+  virtual bool SyncModelHasUserCreatedNodes(bool* has_nodes);
+  virtual bool CryptoReadyIfNecessary();
 
-  // Register |generic_change_processor_| as the change processor for
-  // |model_type| with the |sync_service|.
+  // Register |generic_change_processor_| as the change processor for the
+  // current type on |model_safe_group|.
   // Does nothing if |disconnected_| is true.
-  virtual void ActivateDataType(
-      ProfileSyncService* sync_service,
-      syncable::ModelType model_type,
-      browser_sync::ModelSafeGroup model_safe_group);
+  virtual void ActivateDataType(browser_sync::ModelSafeGroup model_safe_group);
 
  protected:
   friend class base::RefCountedThreadSafe<SharedChangeProcessor>;
@@ -100,6 +97,12 @@ class SharedChangeProcessor
   // having to wait for possibly non-UI thread datatypes to complete work.
   mutable base::Lock monitor_lock_;
   bool disconnected_;
+
+  // The sync datatype we were last connected to.
+  syncable::ModelType type_;
+
+  // The ProfileSyncService we're currently connected to.
+  ProfileSyncService* sync_service_;
 
   // The loop that all methods except the constructor, destructor, and
   // Disconnect() should be called on.  Set in Connect().

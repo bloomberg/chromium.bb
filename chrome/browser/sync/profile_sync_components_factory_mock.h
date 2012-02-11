@@ -36,6 +36,8 @@ class ProfileSyncComponentsFactoryMock : public ProfileSyncComponentsFactory {
           const base::WeakPtr<SyncableService>& local_service));
   MOCK_METHOD0(CreateSharedChangeProcessor,
       browser_sync::SharedChangeProcessor*());
+  MOCK_METHOD1(GetSyncableServiceForType,
+               base::WeakPtr<SyncableService>(syncable::ModelType));
   MOCK_METHOD2(CreateAppSyncComponents,
       SyncComponents(ProfileSyncService* profile_sync_service,
                      browser_sync::UnrecoverableErrorHandler* error_handler));

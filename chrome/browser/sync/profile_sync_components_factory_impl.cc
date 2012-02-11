@@ -207,6 +207,32 @@ browser_sync::SharedChangeProcessor* ProfileSyncComponentsFactoryImpl::
   return new SharedChangeProcessor();
 }
 
+base::WeakPtr<SyncableService> ProfileSyncComponentsFactoryImpl::
+    GetSyncableServiceForType(syncable::ModelType type) {
+  if (!profile_) {  // For tests.
+     return base::WeakPtr<SyncableService>();
+  }
+  switch (type) {
+    case syncable::AUTOFILL: {
+      WebDataService* wds =
+          profile_->GetWebDataService(Profile::IMPLICIT_ACCESS);
+      if (!wds)
+        return base::WeakPtr<SyncableService>();
+      return GetAutocompleteSyncableService(wds);
+    }
+    case syncable::AUTOFILL_PROFILE: {
+      WebDataService* wds =
+          profile_->GetWebDataService(Profile::IMPLICIT_ACCESS);
+      if (!wds)
+        return base::WeakPtr<SyncableService>();
+      return GetAutofillProfileSyncableService(wds);
+    }
+    default:
+      NOTREACHED();
+      return base::WeakPtr<SyncableService>();
+  }
+}
+
 ProfileSyncComponentsFactory::SyncComponents
     ProfileSyncComponentsFactoryImpl::CreateAppSyncComponents(
         ProfileSyncService* profile_sync_service,

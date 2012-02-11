@@ -67,13 +67,6 @@ void AutofillDataTypeController::Observe(
   }
 }
 
-base::WeakPtr<SyncableService>
-    AutofillDataTypeController::GetWeakPtrToSyncableService() const {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
-  return profile_sync_factory()->GetAutocompleteSyncableService(
-      web_data_service_.get());
-}
-
 void AutofillDataTypeController::StopModels() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(state() == STOPPING || state() == NOT_RUNNING || state() == DISABLED);

@@ -298,7 +298,7 @@ class AutofillEntryFactory : public AbstractAutofillFactory {
         WillOnce(MakeGenericChangeProcessor());
     EXPECT_CALL(*factory, CreateSharedChangeProcessor()).
         WillOnce(MakeSharedChangeProcessor());
-    EXPECT_CALL(*factory, GetAutocompleteSyncableService(_)).
+    EXPECT_CALL(*factory, GetSyncableServiceForType(syncable::AUTOFILL)).
         WillOnce(MakeAutocompleteSyncComponents(wds));
   }
 };
@@ -320,7 +320,8 @@ class AutofillProfileFactory : public AbstractAutofillFactory {
         WillOnce(MakeGenericChangeProcessor());
     EXPECT_CALL(*factory, CreateSharedChangeProcessor()).
         WillOnce(MakeSharedChangeProcessor());
-    EXPECT_CALL(*factory, GetAutofillProfileSyncableService(_)).
+    EXPECT_CALL(*factory,
+        GetSyncableServiceForType(syncable::AUTOFILL_PROFILE)).
         WillOnce(MakeAutofillProfileSyncComponents(wds));
   }
 };

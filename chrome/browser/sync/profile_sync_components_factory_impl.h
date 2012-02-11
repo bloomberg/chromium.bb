@@ -35,6 +35,9 @@ class ProfileSyncComponentsFactoryImpl : public ProfileSyncComponentsFactory {
   virtual browser_sync::SharedChangeProcessor*
       CreateSharedChangeProcessor() OVERRIDE;
 
+  virtual base::WeakPtr<SyncableService> GetSyncableServiceForType(
+      syncable::ModelType type) OVERRIDE;
+
   virtual SyncComponents CreateAppSyncComponents(
       ProfileSyncService* profile_sync_service,
       browser_sync::UnrecoverableErrorHandler* error_handler) OVERRIDE;

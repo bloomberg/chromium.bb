@@ -38,11 +38,6 @@ class NewNonFrontendDataTypeController : public NonFrontendDataTypeController {
                              const SyncError& error) OVERRIDE;
   virtual bool StartAssociationAsync() OVERRIDE;
 
-  // Extract/create the syncable service from the profile and return a
-  // WeakHandle to it.
-  virtual base::WeakPtr<SyncableService> GetWeakPtrToSyncableService()
-      const = 0;
-
  private:
   // Posted on the backend thread by StartAssociationAsync().
   void StartAssociationWithSharedChangeProcessor(

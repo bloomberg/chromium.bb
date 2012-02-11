@@ -96,11 +96,6 @@ class NewNonFrontendDataTypeControllerFake
   }
 
  protected:
-  virtual base::WeakPtr<SyncableService>
-      GetWeakPtrToSyncableService() const OVERRIDE {
-    return profile_sync_factory()->GetAutofillProfileSyncableService(NULL);
-  }
-
   virtual bool PostTaskOnBackendThread(
       const tracked_objects::Location& from_here,
       const base::Closure& task) OVERRIDE {
@@ -160,7 +155,8 @@ class SyncNewNonFrontendDataTypeControllerTest : public testing::Test {
     EXPECT_CALL(service_, GetUserShare()).WillRepeatedly(
         Return((sync_api::UserShare*)NULL));
     db_thread_.Start();
-    profile_sync_factory_.reset(new ProfileSyncComponentsFactoryMock());
+    profile_sync_factory_.reset(
+        new StrictMock<ProfileSyncComponentsFactoryMock>());
     change_processor_ = new SharedChangeProcessorMock();
 
     // All of these are refcounted, so don't need to be released.
@@ -193,21 +189,19 @@ class SyncNewNonFrontendDataTypeControllerTest : public testing::Test {
   void SetStartExpectations() {
     EXPECT_CALL(*dtc_mock_, StartModels()).WillOnce(Return(true));
     EXPECT_CALL(*profile_sync_factory_,
-                GetAutofillProfileSyncableService(_)).
-        WillOnce(GetWeakPtrToSyncableService(&syncable_service_));
-    EXPECT_CALL(*profile_sync_factory_,
                 CreateSharedChangeProcessor()).
         WillOnce(Return(change_processor_.get()));
   }
 
   void SetAssociateExpectations() {
-    EXPECT_CALL(*change_processor_, Connect(_,_,_,_)).WillOnce(Return(true));
-    EXPECT_CALL(*change_processor_, CryptoReadyIfNecessary(_)).
+    EXPECT_CALL(*change_processor_, Connect(_,_,_,_)).
+        WillOnce(GetWeakPtrToSyncableService(&syncable_service_));
+    EXPECT_CALL(*change_processor_, CryptoReadyIfNecessary()).
         WillOnce(Return(true));
-    EXPECT_CALL(*change_processor_, ActivateDataType(_, _, _));
-    EXPECT_CALL(*change_processor_, SyncModelHasUserCreatedNodes(_,_)).
-        WillOnce(DoAll(SetArgumentPointee<1>(true), Return(true)));
-    EXPECT_CALL(*change_processor_, GetSyncDataForType(_,_)).
+    EXPECT_CALL(*change_processor_, ActivateDataType(_));
+    EXPECT_CALL(*change_processor_, SyncModelHasUserCreatedNodes(_)).
+        WillOnce(DoAll(SetArgumentPointee<0>(true), Return(true)));
+    EXPECT_CALL(*change_processor_, GetSyncData(_)).
         WillOnce(Return(SyncError()));
     EXPECT_CALL(syncable_service_, MergeDataAndStartSyncing(_,_,_)).
         WillOnce(DoAll(SaveChangeProcessor(&saved_change_processor_),
@@ -242,7 +236,7 @@ class SyncNewNonFrontendDataTypeControllerTest : public testing::Test {
   content::TestBrowserThread db_thread_;
   ProfileMock profile_;
   scoped_ptr<ProfileSyncComponentsFactoryMock> profile_sync_factory_;
-  ProfileSyncServiceMock service_;
+  StrictMock<ProfileSyncServiceMock> service_;
   StartCallbackMock start_callback_;
   // Must be destroyed after new_non_frontend_dtc_.
   SyncableServiceMock syncable_service_;
@@ -265,12 +259,13 @@ TEST_F(SyncNewNonFrontendDataTypeControllerTest, StartOk) {
 
 TEST_F(SyncNewNonFrontendDataTypeControllerTest, StartFirstRun) {
   SetStartExpectations();
-  EXPECT_CALL(*change_processor_, Connect(_,_,_,_)).WillOnce(Return(true));
-  EXPECT_CALL(*change_processor_, CryptoReadyIfNecessary(_)).
+  EXPECT_CALL(*change_processor_, Connect(_,_,_,_)).
+      WillOnce(GetWeakPtrToSyncableService(&syncable_service_));
+  EXPECT_CALL(*change_processor_, CryptoReadyIfNecessary()).
       WillOnce(Return(true));
-  EXPECT_CALL(*change_processor_, SyncModelHasUserCreatedNodes(_,_)).
-      WillOnce(DoAll(SetArgumentPointee<1>(false), Return(true)));
-  EXPECT_CALL(*change_processor_, GetSyncDataForType(_,_)).
+  EXPECT_CALL(*change_processor_, SyncModelHasUserCreatedNodes(_)).
+      WillOnce(DoAll(SetArgumentPointee<0>(false), Return(true)));
+  EXPECT_CALL(*change_processor_, GetSyncData(_)).
       WillOnce(Return(SyncError()));
   EXPECT_CALL(syncable_service_, MergeDataAndStartSyncing(_,_,_)).
     WillOnce(DoAll(SaveChangeProcessor(&saved_change_processor_),
@@ -305,12 +300,13 @@ TEST_F(SyncNewNonFrontendDataTypeControllerTest, AbortDuringStartModels) {
 
 TEST_F(SyncNewNonFrontendDataTypeControllerTest, StartAssociationFailed) {
   SetStartExpectations();
-  EXPECT_CALL(*change_processor_, Connect(_,_,_,_)).WillOnce(Return(true));
-  EXPECT_CALL(*change_processor_, CryptoReadyIfNecessary(_)).
+  EXPECT_CALL(*change_processor_, Connect(_,_,_,_)).
+      WillOnce(GetWeakPtrToSyncableService(&syncable_service_));
+  EXPECT_CALL(*change_processor_, CryptoReadyIfNecessary()).
       WillOnce(Return(true));
-  EXPECT_CALL(*change_processor_, SyncModelHasUserCreatedNodes(_,_)).
-      WillOnce(DoAll(SetArgumentPointee<1>(true), Return(true)));
-  EXPECT_CALL(*change_processor_, GetSyncDataForType(_,_)).
+  EXPECT_CALL(*change_processor_, SyncModelHasUserCreatedNodes(_)).
+      WillOnce(DoAll(SetArgumentPointee<0>(true), Return(true)));
+  EXPECT_CALL(*change_processor_, GetSyncData(_)).
       WillOnce(Return(SyncError()));
   EXPECT_CALL(syncable_service_, MergeDataAndStartSyncing(_,_,_)).
     WillOnce(DoAll(SaveChangeProcessor(&saved_change_processor_),
@@ -330,11 +326,12 @@ TEST_F(SyncNewNonFrontendDataTypeControllerTest,
   SetStartExpectations();
   SetStartFailExpectations(DataTypeController::UNRECOVERABLE_ERROR);
   // Set up association to fail with an unrecoverable error.
-  EXPECT_CALL(*change_processor_, Connect(_,_,_,_)).WillOnce(Return(true));
-  EXPECT_CALL(*change_processor_, CryptoReadyIfNecessary(_)).
+  EXPECT_CALL(*change_processor_, Connect(_,_,_,_)).
+      WillOnce(GetWeakPtrToSyncableService(&syncable_service_));
+  EXPECT_CALL(*change_processor_, CryptoReadyIfNecessary()).
       WillRepeatedly(Return(true));
-  EXPECT_CALL(*change_processor_, SyncModelHasUserCreatedNodes(_,_)).
-      WillRepeatedly(DoAll(SetArgumentPointee<1>(false), Return(false)));
+  EXPECT_CALL(*change_processor_, SyncModelHasUserCreatedNodes(_)).
+      WillRepeatedly(DoAll(SetArgumentPointee<0>(false), Return(false)));
   EXPECT_EQ(DataTypeController::NOT_RUNNING, new_non_frontend_dtc_->state());
   new_non_frontend_dtc_->Start(
       base::Bind(&StartCallbackMock::Run, base::Unretained(&start_callback_)));
@@ -347,8 +344,9 @@ TEST_F(SyncNewNonFrontendDataTypeControllerTest,
   SetStartExpectations();
   SetStartFailExpectations(DataTypeController::NEEDS_CRYPTO);
   // Set up association to fail with a NEEDS_CRYPTO error.
-  EXPECT_CALL(*change_processor_, Connect(_,_,_,_)).WillOnce(Return(true));
-  EXPECT_CALL(*change_processor_, CryptoReadyIfNecessary(_)).
+  EXPECT_CALL(*change_processor_, Connect(_,_,_,_)).
+      WillOnce(GetWeakPtrToSyncableService(&syncable_service_));
+  EXPECT_CALL(*change_processor_, CryptoReadyIfNecessary()).
       WillRepeatedly(Return(false));
   EXPECT_EQ(DataTypeController::NOT_RUNNING, new_non_frontend_dtc_->state());
   new_non_frontend_dtc_->Start(
@@ -365,16 +363,17 @@ TEST_F(SyncNewNonFrontendDataTypeControllerTest, AbortDuringAssociation) {
 
   SetStartExpectations();
   SetStartFailExpectations(DataTypeController::ABORTED);
-  EXPECT_CALL(*change_processor_, Connect(_,_,_,_)).WillOnce(Return(true));
-  EXPECT_CALL(*change_processor_, CryptoReadyIfNecessary(_)).
+  EXPECT_CALL(*change_processor_, Connect(_,_,_,_)).
+      WillOnce(GetWeakPtrToSyncableService(&syncable_service_));
+  EXPECT_CALL(*change_processor_, CryptoReadyIfNecessary()).
       WillOnce(Return(true));
-  EXPECT_CALL(*change_processor_, SyncModelHasUserCreatedNodes(_,_)).
+  EXPECT_CALL(*change_processor_, SyncModelHasUserCreatedNodes(_)).
       WillOnce(DoAll(
           SignalEvent(&wait_for_db_thread_pause),
           WaitOnEvent(&pause_db_thread),
-          SetArgumentPointee<1>(true),
+          SetArgumentPointee<0>(true),
           Return(true)));
-  EXPECT_CALL(*change_processor_, GetSyncDataForType(_,_)).
+  EXPECT_CALL(*change_processor_, GetSyncData(_)).
       WillOnce(Return(SyncError(FROM_HERE, "Disconnected.", AUTOFILL_PROFILE)));
   EXPECT_CALL(*change_processor_, Disconnect()).
       WillOnce(DoAll(SignalEvent(&pause_db_thread), Return(true)));
@@ -386,6 +385,36 @@ TEST_F(SyncNewNonFrontendDataTypeControllerTest, AbortDuringAssociation) {
   new_non_frontend_dtc_->Stop();
   WaitForDTC();
   EXPECT_EQ(DataTypeController::NOT_RUNNING, new_non_frontend_dtc_->state());
+}
+
+// Start the DTC while the backend tasks are blocked. Then stop the DTC before
+// the backend tasks get a chance to run. The DTC should have no interaction
+// with the profile sync factory or profile sync service once stopped.
+TEST_F(SyncNewNonFrontendDataTypeControllerTest, StartAfterSyncShutdown) {
+  new_non_frontend_dtc_->BlockBackendTasks();
+
+  SetStartExpectations();
+  // We don't expect StopSyncing to be called because local_service_ will never
+  // have been set.
+  EXPECT_CALL(*change_processor_, Disconnect()).WillOnce(Return(true));
+  EXPECT_CALL(*dtc_mock_, StopModels());
+  EXPECT_CALL(service_, DeactivateDataType(_));
+  EXPECT_CALL(*dtc_mock_, RecordStartFailure(DataTypeController::ABORTED));
+  EXPECT_CALL(start_callback_, Run(DataTypeController::ABORTED, _));
+  EXPECT_EQ(DataTypeController::NOT_RUNNING, new_non_frontend_dtc_->state());
+  new_non_frontend_dtc_->Start(
+      base::Bind(&StartCallbackMock::Run, base::Unretained(&start_callback_)));
+  new_non_frontend_dtc_->Stop();
+  EXPECT_EQ(DataTypeController::NOT_RUNNING, new_non_frontend_dtc_->state());
+  Mock::VerifyAndClearExpectations(&profile_sync_factory_);
+  Mock::VerifyAndClearExpectations(&service_);
+  Mock::VerifyAndClearExpectations(change_processor_);
+  Mock::VerifyAndClearExpectations(dtc_mock_);
+
+  EXPECT_CALL(*change_processor_, Connect(_,_,_,_)).
+      WillOnce(Return(base::WeakPtr<SyncableService>()));
+  new_non_frontend_dtc_->UnblockBackendTasks();
+  WaitForDTC();
 }
 
 TEST_F(SyncNewNonFrontendDataTypeControllerTest, Stop) {

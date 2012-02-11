@@ -17,25 +17,22 @@ class SharedChangeProcessorMock : public SharedChangeProcessor {
  public:
   SharedChangeProcessorMock();
 
-  MOCK_METHOD4(Connect, bool(
+  MOCK_METHOD4(Connect, base::WeakPtr<SyncableService>(
       ProfileSyncComponentsFactory*,
       ProfileSyncService*,
       UnrecoverableErrorHandler*,
-      const base::WeakPtr<SyncableService>&));
+      syncable::ModelType));
   MOCK_METHOD0(Disconnect, bool());
   MOCK_METHOD2(ProcessSyncChanges,
                SyncError(const tracked_objects::Location&,
                          const SyncChangeList&));
-  MOCK_METHOD2(GetSyncDataForType,
-               SyncError(syncable::ModelType,
-                         SyncDataList*));
-  MOCK_METHOD2(SyncModelHasUserCreatedNodes,
-               bool(syncable::ModelType,
-                    bool*));
-  MOCK_METHOD1(CryptoReadyIfNecessary, bool(syncable::ModelType));
-  MOCK_METHOD3(ActivateDataType,
-               void(ProfileSyncService*, syncable::ModelType,
-                    browser_sync::ModelSafeGroup));
+  MOCK_METHOD1(GetSyncData,
+               SyncError(SyncDataList*));
+  MOCK_METHOD1(SyncModelHasUserCreatedNodes,
+               bool(bool*));
+  MOCK_METHOD0(CryptoReadyIfNecessary, bool());
+  MOCK_METHOD1(ActivateDataType,
+               void(browser_sync::ModelSafeGroup));
 
  protected:
   virtual ~SharedChangeProcessorMock();
