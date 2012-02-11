@@ -236,6 +236,7 @@
           'variables': { 'enable_wexit_time_destructors': 1, },
           'dependencies': [
             '../base/base.gyp:base',
+            '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
           ],
           'sources': [
             'base/scoped_sc_handle_win.cc',
