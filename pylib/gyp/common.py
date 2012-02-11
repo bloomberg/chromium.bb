@@ -349,6 +349,8 @@ def WriteOnDiff(filename):
 def GetFlavor(params):
   """Returns |params.flavor| if it's set, the system's default flavor else."""
   flavors = {
+    'cygwin': 'win',
+    'win32': 'win',
     'darwin': 'mac',
     'sunos5': 'solaris',
     'freebsd7': 'freebsd',
