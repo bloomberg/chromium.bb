@@ -169,6 +169,15 @@ cr.define('extensions', function() {
    * the current state of installed extensions.
    */
   ExtensionSettings.returnExtensionsData = function(extensionsData) {
+    // We can get called many times in short order, thus we need to
+    // be careful to remove the 'finished loading' timeout.
+    if (this.loadingTimeout_)
+      window.clearTimeout(this.loadingTimeout_);
+    document.documentElement.classList.add('loading');
+    this.loadingTimeout_ = window.setTimeout(function() {
+      document.documentElement.classList.remove('loading');
+    }, 0);
+
     webui_responded_ = true;
 
     $('no-extensions').hidden = true;
@@ -197,7 +206,7 @@ cr.define('extensions', function() {
     if (extensionsData.developerMode) {
       $('toggle-dev-on').checked = true;
       $('extension-settings').classList.add('dev-mode');
-        $('dev-controls').hidden = false;
+      $('dev-controls').hidden = false;
     } else {
       $('toggle-dev-on').checked = false;
       $('extension-settings').classList.remove('dev-mode');
@@ -206,10 +215,6 @@ cr.define('extensions', function() {
     ExtensionsList.prototype.data_ = extensionsData;
     var extensionList = $('extension-settings-list');
     ExtensionsList.decorate(extensionList);
-
-    window.setTimeout(function() {
-      document.documentElement.classList.remove('loading');
-    }, 0);
   }
 
   // Indicate that warning |message| has occured for pack of |crx_path| and

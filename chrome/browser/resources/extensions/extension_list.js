@@ -157,7 +157,6 @@ cr.define('options', function() {
         enable.addEventListener('click', function(e) {
           chrome.send('extensionSettingsEnable',
                       [extension.id, e.target.checked ? 'true' : 'false']);
-          chrome.send('extensionSettingsRequestExtensionsData');
         });
         enable.querySelector('input').checked = extension.enabled;
 
