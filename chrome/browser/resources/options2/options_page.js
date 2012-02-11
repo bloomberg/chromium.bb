@@ -952,6 +952,7 @@ cr.define('options', function() {
 
       this.setContainerVisibility_(visible);
       this.pageDiv.hidden = !visible;
+      this.pageDiv.classList.remove('shake');
 
       OptionsPage.updatePageFreezeStates();
 
