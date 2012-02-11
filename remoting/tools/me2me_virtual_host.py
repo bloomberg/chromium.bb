@@ -287,7 +287,9 @@ class Desktop:
 
     # Create clean environment for new session, so it is cleanly separated from
     # the user's console X session.
-    self.child_env = {"DISPLAY": ":%d" % display}
+    self.child_env = {
+        "DISPLAY": ":%d" % display,
+        "REMOTING_ME2ME_SESSION": "1" }
     for key in [
         "HOME",
         "LOGNAME",
