@@ -748,7 +748,3 @@ html[dir='rtl'] .controlled-setting-bubble-text {
 .controlled-setting-bubble-action {
   padding: 0 !important;
 }
-
-.content-area > pre {
-  white-space: pre-wrap;
-}

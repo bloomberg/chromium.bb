@@ -7,6 +7,10 @@
   width: 500px;
 }
 
+#instant-confirm-text {
+  white-space: pre-wrap;
+}
+
 #instantConfirmLearnMore {
   bottom: 18px;
   position: absolute;
