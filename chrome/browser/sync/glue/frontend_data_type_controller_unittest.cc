@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -79,9 +79,9 @@ class FrontendDataTypeControllerFake : public FrontendDataTypeController {
   FrontendDataTypeControllerMock* mock_;
 };
 
-class FrontendDataTypeControllerTest : public testing::Test {
+class SyncFrontendDataTypeControllerTest : public testing::Test {
  public:
-  FrontendDataTypeControllerTest()
+  SyncFrontendDataTypeControllerTest()
       : ui_thread_(BrowserThread::UI, &message_loop_) {}
 
   virtual void SetUp() {
@@ -147,7 +147,7 @@ class FrontendDataTypeControllerTest : public testing::Test {
   StartCallbackMock start_callback_;
 };
 
-TEST_F(FrontendDataTypeControllerTest, StartOk) {
+TEST_F(SyncFrontendDataTypeControllerTest, StartOk) {
   SetStartExpectations();
   SetAssociateExpectations();
   SetActivateExpectations(DataTypeController::OK);
@@ -157,7 +157,7 @@ TEST_F(FrontendDataTypeControllerTest, StartOk) {
   EXPECT_EQ(DataTypeController::RUNNING, frontend_dtc_->state());
 }
 
-TEST_F(FrontendDataTypeControllerTest, StartFirstRun) {
+TEST_F(SyncFrontendDataTypeControllerTest, StartFirstRun) {
   SetStartExpectations();
   EXPECT_CALL(*model_associator_, CryptoReadyIfNecessary()).
       WillOnce(Return(true));
@@ -173,7 +173,7 @@ TEST_F(FrontendDataTypeControllerTest, StartFirstRun) {
   EXPECT_EQ(DataTypeController::RUNNING, frontend_dtc_->state());
 }
 
-TEST_F(FrontendDataTypeControllerTest, AbortDuringStartModels) {
+TEST_F(SyncFrontendDataTypeControllerTest, AbortDuringStartModels) {
   EXPECT_CALL(*dtc_mock_, StartModels()).WillOnce(Return(false));
   SetStartFailExpectations(DataTypeController::ABORTED);
   EXPECT_EQ(DataTypeController::NOT_RUNNING, frontend_dtc_->state());
@@ -184,7 +184,7 @@ TEST_F(FrontendDataTypeControllerTest, AbortDuringStartModels) {
   EXPECT_EQ(DataTypeController::NOT_RUNNING, frontend_dtc_->state());
 }
 
-TEST_F(FrontendDataTypeControllerTest, StartAssociationFailed) {
+TEST_F(SyncFrontendDataTypeControllerTest, StartAssociationFailed) {
   SetStartExpectations();
   EXPECT_CALL(*model_associator_, CryptoReadyIfNecessary()).
       WillOnce(Return(true));
@@ -202,7 +202,7 @@ TEST_F(FrontendDataTypeControllerTest, StartAssociationFailed) {
   EXPECT_EQ(DataTypeController::DISABLED, frontend_dtc_->state());
 }
 
-TEST_F(FrontendDataTypeControllerTest,
+TEST_F(SyncFrontendDataTypeControllerTest,
        StartAssociationTriggersUnrecoverableError) {
   SetStartExpectations();
   SetStartFailExpectations(DataTypeController::UNRECOVERABLE_ERROR);
@@ -217,7 +217,7 @@ TEST_F(FrontendDataTypeControllerTest,
   EXPECT_EQ(DataTypeController::NOT_RUNNING, frontend_dtc_->state());
 }
 
-TEST_F(FrontendDataTypeControllerTest, StartAssociationCryptoNotReady) {
+TEST_F(SyncFrontendDataTypeControllerTest, StartAssociationCryptoNotReady) {
   SetStartExpectations();
   SetStartFailExpectations(DataTypeController::NEEDS_CRYPTO);
   // Set up association to fail with a NEEDS_CRYPTO error.
@@ -229,7 +229,7 @@ TEST_F(FrontendDataTypeControllerTest, StartAssociationCryptoNotReady) {
   EXPECT_EQ(DataTypeController::NOT_RUNNING, frontend_dtc_->state());
 }
 
-TEST_F(FrontendDataTypeControllerTest, Stop) {
+TEST_F(SyncFrontendDataTypeControllerTest, Stop) {
   SetStartExpectations();
   SetAssociateExpectations();
   SetActivateExpectations(DataTypeController::OK);
@@ -242,7 +242,7 @@ TEST_F(FrontendDataTypeControllerTest, Stop) {
   EXPECT_EQ(DataTypeController::NOT_RUNNING, frontend_dtc_->state());
 }
 
-TEST_F(FrontendDataTypeControllerTest, OnUnrecoverableError) {
+TEST_F(SyncFrontendDataTypeControllerTest, OnUnrecoverableError) {
   SetStartExpectations();
   SetAssociateExpectations();
   SetActivateExpectations(DataTypeController::OK);

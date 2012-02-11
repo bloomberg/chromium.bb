@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,9 +20,9 @@ namespace {
 const FilePath::CharType kDocRoot[] = FILE_PATH_LITERAL("chrome/test/data");
 }
 
-class HttpBridgeTest : public testing::Test {
+class SyncHttpBridgeTest : public testing::Test {
  public:
-  HttpBridgeTest()
+  SyncHttpBridgeTest()
       : test_server_(net::TestServer::TYPE_HTTP, FilePath(kDocRoot)),
         fake_default_request_context_getter_(NULL),
         io_thread_(BrowserThread::IO) {
@@ -57,7 +57,7 @@ class HttpBridgeTest : public testing::Test {
   }
 
   static void TestSameHttpNetworkSession(MessageLoop* main_message_loop,
-                                         HttpBridgeTest* test) {
+                                         SyncHttpBridgeTest* test) {
     scoped_refptr<HttpBridge> http_bridge(test->BuildBridge());
     EXPECT_TRUE(test->GetTestRequestContextGetter());
     net::HttpNetworkSession* test_session =
@@ -98,7 +98,7 @@ class ShuntedHttpBridge : public HttpBridge {
   // If |never_finishes| is true, the simulated request never actually
   // returns.
   ShuntedHttpBridge(net::URLRequestContextGetter* baseline_context_getter,
-                    HttpBridgeTest* test, bool never_finishes)
+                    SyncHttpBridgeTest* test, bool never_finishes)
       : HttpBridge(new HttpBridge::RequestContextGetter(
                        baseline_context_getter)),
                    test_(test), never_finishes_(never_finishes) { }
@@ -129,22 +129,22 @@ class ShuntedHttpBridge : public HttpBridge {
     fetcher.SetResponseString(response_content);
     OnURLFetchComplete(&fetcher);
   }
-  HttpBridgeTest* test_;
+  SyncHttpBridgeTest* test_;
   bool never_finishes_;
 };
 
-TEST_F(HttpBridgeTest, TestUsesSameHttpNetworkSession) {
+TEST_F(SyncHttpBridgeTest, TestUsesSameHttpNetworkSession) {
   // Run this test on the IO thread because we can only call
   // URLRequestContextGetter::GetURLRequestContext on the IO thread.
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&HttpBridgeTest::TestSameHttpNetworkSession,
+      base::Bind(&SyncHttpBridgeTest::TestSameHttpNetworkSession,
                  MessageLoop::current(), this));
   MessageLoop::current()->Run();
 }
 
 // Test the HttpBridge without actually making any network requests.
-TEST_F(HttpBridgeTest, TestMakeSynchronousPostShunted) {
+TEST_F(SyncHttpBridgeTest, TestMakeSynchronousPostShunted) {
   scoped_refptr<net::URLRequestContextGetter> ctx_getter(
       new TestURLRequestContextGetter());
   scoped_refptr<HttpBridge> http_bridge(new ShuntedHttpBridge(
@@ -167,7 +167,7 @@ TEST_F(HttpBridgeTest, TestMakeSynchronousPostShunted) {
 
 // Full round-trip test of the HttpBridge, using default UA string and
 // no request cookies.
-TEST_F(HttpBridgeTest, TestMakeSynchronousPostLiveWithPayload) {
+TEST_F(SyncHttpBridgeTest, TestMakeSynchronousPostLiveWithPayload) {
   ASSERT_TRUE(test_server_.Start());
 
   scoped_refptr<HttpBridge> http_bridge(BuildBridge());
@@ -190,7 +190,7 @@ TEST_F(HttpBridgeTest, TestMakeSynchronousPostLiveWithPayload) {
 }
 
 // Full round-trip test of the HttpBridge, using custom UA string
-TEST_F(HttpBridgeTest, TestMakeSynchronousPostLiveComprehensive) {
+TEST_F(SyncHttpBridgeTest, TestMakeSynchronousPostLiveComprehensive) {
   ASSERT_TRUE(test_server_.Start());
 
   scoped_refptr<HttpBridge> http_bridge(BuildBridge());
@@ -217,7 +217,7 @@ TEST_F(HttpBridgeTest, TestMakeSynchronousPostLiveComprehensive) {
   EXPECT_NE(std::string::npos, response.find(test_payload.c_str()));
 }
 
-TEST_F(HttpBridgeTest, TestExtraRequestHeaders) {
+TEST_F(SyncHttpBridgeTest, TestExtraRequestHeaders) {
   ASSERT_TRUE(test_server_.Start());
 
   scoped_refptr<HttpBridge> http_bridge(BuildBridge());
@@ -245,7 +245,7 @@ TEST_F(HttpBridgeTest, TestExtraRequestHeaders) {
   EXPECT_NE(std::string::npos, response.find(test_payload.c_str()));
 }
 
-TEST_F(HttpBridgeTest, TestResponseHeader) {
+TEST_F(SyncHttpBridgeTest, TestResponseHeader) {
   ASSERT_TRUE(test_server_.Start());
 
   scoped_refptr<HttpBridge> http_bridge(BuildBridge());
@@ -268,7 +268,7 @@ TEST_F(HttpBridgeTest, TestResponseHeader) {
   EXPECT_TRUE(http_bridge->GetResponseHeaderValue("invalid-header").empty());
 }
 
-TEST_F(HttpBridgeTest, Abort) {
+TEST_F(SyncHttpBridgeTest, Abort) {
   scoped_refptr<net::URLRequestContextGetter> ctx_getter(
       new TestURLRequestContextGetter());
   scoped_refptr<ShuntedHttpBridge> http_bridge(new ShuntedHttpBridge(
@@ -281,13 +281,13 @@ TEST_F(HttpBridgeTest, Abort) {
   int response_code = 0;
 
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                          base::Bind(&HttpBridgeTest::Abort, http_bridge));
+                          base::Bind(&SyncHttpBridgeTest::Abort, http_bridge));
   bool success = http_bridge->MakeSynchronousPost(&os_error, &response_code);
   EXPECT_FALSE(success);
   EXPECT_EQ(net::ERR_ABORTED, os_error);
 }
 
-TEST_F(HttpBridgeTest, AbortLate) {
+TEST_F(SyncHttpBridgeTest, AbortLate) {
   scoped_refptr<net::URLRequestContextGetter> ctx_getter(
       new TestURLRequestContextGetter());
   scoped_refptr<ShuntedHttpBridge> http_bridge(new ShuntedHttpBridge(

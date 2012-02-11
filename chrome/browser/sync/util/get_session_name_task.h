@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -33,8 +33,8 @@ class GetSessionNameTask
  private:
   friend class base::RefCountedThreadSafe<GetSessionNameTask>;
 
-  FRIEND_TEST_ALL_PREFIXES(GetSessionNameTaskTest, GetHardwareModelName);
-  FRIEND_TEST_ALL_PREFIXES(GetSessionNameTaskTest, GetComputerName);
+  FRIEND_TEST_ALL_PREFIXES(SyncGetSessionNameTaskTest, GetHardwareModelName);
+  FRIEND_TEST_ALL_PREFIXES(SyncGetSessionNameTaskTest, GetComputerName);
 
   void InvokeCallback(const std::string& session_name);
 

@@ -80,10 +80,10 @@ void FakeSyncapiShutdownCallback(base::Thread* syncer_thread,
   worker->OnSyncerShutdownComplete();
 }
 
-class UIModelWorkerTest : public testing::Test {
+class SyncUIModelWorkerTest : public testing::Test {
  public:
-  UIModelWorkerTest() : faux_syncer_thread_("FauxSyncerThread"),
-                        faux_core_thread_("FauxCoreThread") { }
+  SyncUIModelWorkerTest() : faux_syncer_thread_("FauxSyncerThread"),
+                            faux_core_thread_("FauxCoreThread") { }
 
   virtual void SetUp() {
     faux_syncer_thread_.Start();
@@ -106,7 +106,7 @@ class UIModelWorkerTest : public testing::Test {
   scoped_ptr<Syncer> syncer_;
 };
 
-TEST_F(UIModelWorkerTest, ScheduledWorkRunsOnUILoop) {
+TEST_F(SyncUIModelWorkerTest, ScheduledWorkRunsOnUILoop) {
   base::WaitableEvent v_was_run(false, false);
   scoped_ptr<UIModelWorkerVisitor> v(
       new UIModelWorkerVisitor(&v_was_run, true));
@@ -123,7 +123,7 @@ TEST_F(UIModelWorkerTest, ScheduledWorkRunsOnUILoop) {
   syncer_thread()->Stop();
 }
 
-TEST_F(UIModelWorkerTest, StopWithPendingWork) {
+TEST_F(SyncUIModelWorkerTest, StopWithPendingWork) {
   // What we want to set up is the following:
   // ("ui_thread" is the thread we are currently executing on)
   // 1 - simulate the user shutting down the browser, and the ui thread needing
@@ -165,7 +165,7 @@ TEST_F(UIModelWorkerTest, StopWithPendingWork) {
   core_thread()->Stop();
 }
 
-TEST_F(UIModelWorkerTest, HypotheticalManualPumpFlooding) {
+TEST_F(SyncUIModelWorkerTest, HypotheticalManualPumpFlooding) {
   // This situation should not happen in real life because the Syncer should
   // never send more than one CallDoWork notification after early_exit_requested
   // has been set, but our UIModelWorker is built to handle this case

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,7 +20,7 @@
 using browser_sync::TypedUrlModelAssociator;
 using content::BrowserThread;
 
-class TypedUrlModelAssociatorTest : public testing::Test {
+class SyncTypedUrlModelAssociatorTest : public testing::Test {
  public:
   static history::URLRow MakeTypedUrlRow(const char* url,
                                          const char* title,
@@ -64,7 +64,7 @@ class TypedUrlModelAssociatorTest : public testing::Test {
   }
 };
 
-TEST_F(TypedUrlModelAssociatorTest, MergeUrls) {
+TEST_F(SyncTypedUrlModelAssociatorTest, MergeUrls) {
   history::VisitVector visits1;
   history::URLRow row1(MakeTypedUrlRow("http://pie.com/", "pie",
                                        2, 3, false, &visits1));
@@ -153,7 +153,7 @@ TEST_F(TypedUrlModelAssociatorTest, MergeUrls) {
   EXPECT_EQ(0U, new_visits5.size());
 }
 
-TEST_F(TypedUrlModelAssociatorTest, MergeUrlsAfterExpiration) {
+TEST_F(SyncTypedUrlModelAssociatorTest, MergeUrlsAfterExpiration) {
   // Tests to ensure that we don't resurrect expired URLs (URLs that have been
   // deleted from the history DB but still exist in the sync DB).
 
@@ -193,7 +193,7 @@ TEST_F(TypedUrlModelAssociatorTest, MergeUrlsAfterExpiration) {
   EXPECT_EQ(4U, history_visits[2].visit_time.ToInternalValue());
 }
 
-TEST_F(TypedUrlModelAssociatorTest, DiffVisitsSame) {
+TEST_F(SyncTypedUrlModelAssociatorTest, DiffVisitsSame) {
   history::VisitVector old_visits;
   sync_pb::TypedUrlSpecifics new_url;
 
@@ -216,7 +216,7 @@ TEST_F(TypedUrlModelAssociatorTest, DiffVisitsSame) {
   EXPECT_TRUE(removed_visits.empty());
 }
 
-TEST_F(TypedUrlModelAssociatorTest, DiffVisitsRemove) {
+TEST_F(SyncTypedUrlModelAssociatorTest, DiffVisitsRemove) {
   history::VisitVector old_visits;
   sync_pb::TypedUrlSpecifics new_url;
 
@@ -253,7 +253,7 @@ TEST_F(TypedUrlModelAssociatorTest, DiffVisitsRemove) {
   }
 }
 
-TEST_F(TypedUrlModelAssociatorTest, DiffVisitsAdd) {
+TEST_F(SyncTypedUrlModelAssociatorTest, DiffVisitsAdd) {
   history::VisitVector old_visits;
   sync_pb::TypedUrlSpecifics new_url;
 
@@ -294,7 +294,7 @@ static history::VisitRow CreateVisit(content::PageTransition type,
                            type, 0);
 }
 
-TEST_F(TypedUrlModelAssociatorTest, WriteTypedUrlSpecifics) {
+TEST_F(SyncTypedUrlModelAssociatorTest, WriteTypedUrlSpecifics) {
   history::VisitVector visits;
   visits.push_back(CreateVisit(content::PAGE_TRANSITION_TYPED, 1));
   visits.push_back(CreateVisit(content::PAGE_TRANSITION_RELOAD, 2));
@@ -315,7 +315,7 @@ TEST_F(TypedUrlModelAssociatorTest, WriteTypedUrlSpecifics) {
       static_cast<content::PageTransition>(typed_url.visit_transitions(1)));
 }
 
-TEST_F(TypedUrlModelAssociatorTest, TooManyVisits) {
+TEST_F(SyncTypedUrlModelAssociatorTest, TooManyVisits) {
   history::VisitVector visits;
   int64 timestamp = 1000;
   visits.push_back(CreateVisit(content::PAGE_TRANSITION_TYPED, timestamp++));
@@ -339,7 +339,7 @@ TEST_F(TypedUrlModelAssociatorTest, TooManyVisits) {
       static_cast<content::PageTransition>(typed_url.visit_transitions(1)));
 }
 
-TEST_F(TypedUrlModelAssociatorTest, TooManyTypedVisits) {
+TEST_F(SyncTypedUrlModelAssociatorTest, TooManyTypedVisits) {
   history::VisitVector visits;
   int64 timestamp = 1000;
   for (int i = 0 ; i < 102; ++i) {
@@ -364,7 +364,7 @@ TEST_F(TypedUrlModelAssociatorTest, TooManyTypedVisits) {
   }
 }
 
-TEST_F(TypedUrlModelAssociatorTest, NoTypedVisits) {
+TEST_F(SyncTypedUrlModelAssociatorTest, NoTypedVisits) {
   history::VisitVector visits;
   history::URLRow url(MakeTypedUrlRow("http://pie.com/", "pie",
                                       1, 1000, false, &visits));
@@ -418,7 +418,7 @@ static void CreateModelAssociator(base::WaitableEvent* startup,
 // We start up the model associator on the DB thread, block until we abort the
 // association on the UI thread, then ensure that AssociateModels() returns
 // false.
-TEST_F(TypedUrlModelAssociatorTest, TestAbort) {
+TEST_F(SyncTypedUrlModelAssociatorTest, TestAbort) {
   content::TestBrowserThread db_thread(BrowserThread::DB);
   base::WaitableEvent startup(false, false);
   base::WaitableEvent aborted(false, false);

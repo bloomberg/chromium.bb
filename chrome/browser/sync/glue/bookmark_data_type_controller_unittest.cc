@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -42,9 +42,9 @@ class BookmarkModelMock : public BookmarkModel {
   MOCK_CONST_METHOD0(IsLoaded, bool(void));
 };
 
-class BookmarkDataTypeControllerTest : public testing::Test {
+class SyncBookmarkDataTypeControllerTest : public testing::Test {
  public:
-  BookmarkDataTypeControllerTest()
+  SyncBookmarkDataTypeControllerTest()
       : ui_thread_(BrowserThread::UI, &message_loop_) {}
 
   virtual void SetUp() {
@@ -98,7 +98,7 @@ class BookmarkDataTypeControllerTest : public testing::Test {
   }
 };
 
-TEST_F(BookmarkDataTypeControllerTest, StartBookmarkModelReady) {
+TEST_F(SyncBookmarkDataTypeControllerTest, StartBookmarkModelReady) {
   SetStartExpectations();
   SetAssociateExpectations();
 
@@ -110,7 +110,7 @@ TEST_F(BookmarkDataTypeControllerTest, StartBookmarkModelReady) {
   EXPECT_EQ(DataTypeController::RUNNING, bookmark_dtc_->state());
 }
 
-TEST_F(BookmarkDataTypeControllerTest, StartBookmarkModelNotReady) {
+TEST_F(SyncBookmarkDataTypeControllerTest, StartBookmarkModelNotReady) {
   SetStartExpectations();
   EXPECT_CALL(bookmark_model_, IsLoaded()).WillRepeatedly(Return(false));
   SetAssociateExpectations();
@@ -128,7 +128,7 @@ TEST_F(BookmarkDataTypeControllerTest, StartBookmarkModelNotReady) {
   EXPECT_EQ(DataTypeController::RUNNING, bookmark_dtc_->state());
 }
 
-TEST_F(BookmarkDataTypeControllerTest, StartFirstRun) {
+TEST_F(SyncBookmarkDataTypeControllerTest, StartFirstRun) {
   SetStartExpectations();
   SetAssociateExpectations();
   EXPECT_CALL(*model_associator_, SyncModelHasUserCreatedNodes(_)).
@@ -138,7 +138,7 @@ TEST_F(BookmarkDataTypeControllerTest, StartFirstRun) {
       base::Bind(&StartCallbackMock::Run, base::Unretained(&start_callback_)));
 }
 
-TEST_F(BookmarkDataTypeControllerTest, StartBusy) {
+TEST_F(SyncBookmarkDataTypeControllerTest, StartBusy) {
   SetStartExpectations();
   EXPECT_CALL(bookmark_model_, IsLoaded()).WillRepeatedly(Return(false));
 
@@ -149,7 +149,7 @@ TEST_F(BookmarkDataTypeControllerTest, StartBusy) {
       base::Bind(&StartCallbackMock::Run, base::Unretained(&start_callback_)));
 }
 
-TEST_F(BookmarkDataTypeControllerTest, StartOk) {
+TEST_F(SyncBookmarkDataTypeControllerTest, StartOk) {
   SetStartExpectations();
   SetAssociateExpectations();
   EXPECT_CALL(*model_associator_, SyncModelHasUserCreatedNodes(_)).
@@ -160,7 +160,7 @@ TEST_F(BookmarkDataTypeControllerTest, StartOk) {
       base::Bind(&StartCallbackMock::Run, base::Unretained(&start_callback_)));
 }
 
-TEST_F(BookmarkDataTypeControllerTest, StartAssociationFailed) {
+TEST_F(SyncBookmarkDataTypeControllerTest, StartAssociationFailed) {
   SetStartExpectations();
   // Set up association to fail.
   EXPECT_CALL(*profile_sync_factory_, CreateBookmarkSyncComponents(_, _));
@@ -179,7 +179,7 @@ TEST_F(BookmarkDataTypeControllerTest, StartAssociationFailed) {
   EXPECT_EQ(DataTypeController::DISABLED, bookmark_dtc_->state());
 }
 
-TEST_F(BookmarkDataTypeControllerTest,
+TEST_F(SyncBookmarkDataTypeControllerTest,
        StartAssociationTriggersUnrecoverableError) {
   SetStartExpectations();
   // Set up association to fail with an unrecoverable error.
@@ -195,7 +195,7 @@ TEST_F(BookmarkDataTypeControllerTest,
   EXPECT_EQ(DataTypeController::NOT_RUNNING, bookmark_dtc_->state());
 }
 
-TEST_F(BookmarkDataTypeControllerTest, StartAborted) {
+TEST_F(SyncBookmarkDataTypeControllerTest, StartAborted) {
   SetStartExpectations();
   EXPECT_CALL(bookmark_model_, IsLoaded()).WillRepeatedly(Return(false));
 
@@ -206,7 +206,7 @@ TEST_F(BookmarkDataTypeControllerTest, StartAborted) {
   EXPECT_EQ(DataTypeController::NOT_RUNNING, bookmark_dtc_->state());
 }
 
-TEST_F(BookmarkDataTypeControllerTest, Stop) {
+TEST_F(SyncBookmarkDataTypeControllerTest, Stop) {
   SetStartExpectations();
   SetAssociateExpectations();
   SetStopExpectations();
@@ -221,7 +221,7 @@ TEST_F(BookmarkDataTypeControllerTest, Stop) {
   EXPECT_EQ(DataTypeController::NOT_RUNNING, bookmark_dtc_->state());
 }
 
-TEST_F(BookmarkDataTypeControllerTest, OnUnrecoverableError) {
+TEST_F(SyncBookmarkDataTypeControllerTest, OnUnrecoverableError) {
   SetStartExpectations();
   SetAssociateExpectations();
   EXPECT_CALL(*model_associator_, SyncModelHasUserCreatedNodes(_)).

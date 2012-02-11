@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -30,10 +30,10 @@ using sessions::ErrorCounters;
 using sessions::SyncerStatus;
 using sessions::SyncSessionSnapshot;
 
-class BackendMigratorTest : public testing::Test {
+class SyncBackendMigratorTest : public testing::Test {
  public:
-  BackendMigratorTest() { }
-  virtual ~BackendMigratorTest() { }
+  SyncBackendMigratorTest() { }
+  virtual ~SyncBackendMigratorTest() { }
 
   virtual void SetUp() {
     test_user_share_.SetUp();
@@ -125,7 +125,7 @@ class MockMigrationObserver : public MigrationObserver {
 
 // Test that in the normal case a migration does transition through each state
 // and wind up back in IDLE.
-TEST_F(BackendMigratorTest, Sanity) {
+TEST_F(SyncBackendMigratorTest, Sanity) {
   MockMigrationObserver migration_observer;
   migrator()->AddMigrationObserver(&migration_observer);
   EXPECT_CALL(migration_observer, OnMigrationStateChange()).Times(4);
@@ -156,7 +156,7 @@ TEST_F(BackendMigratorTest, Sanity) {
 
 // Test that in the normal case with Nigori a migration transitions through
 // each state and wind up back in IDLE.
-TEST_F(BackendMigratorTest, MigrateNigori) {
+TEST_F(SyncBackendMigratorTest, MigrateNigori) {
   syncable::ModelTypeSet to_migrate, difference;
   to_migrate.Put(syncable::NIGORI);
   difference.Put(syncable::AUTOFILL);
@@ -183,7 +183,7 @@ TEST_F(BackendMigratorTest, MigrateNigori) {
 
 // Test that the migrator waits for the data type manager to be idle before
 // starting a migration.
-TEST_F(BackendMigratorTest, WaitToStart) {
+TEST_F(SyncBackendMigratorTest, WaitToStart) {
   syncable::ModelTypeSet to_migrate;
   to_migrate.Put(syncable::PREFERENCES);
 
@@ -205,7 +205,7 @@ TEST_F(BackendMigratorTest, WaitToStart) {
 
 // Test that the migrator can cope with a migration request while a migration
 // is in progress.
-TEST_F(BackendMigratorTest, RestartMigration) {
+TEST_F(SyncBackendMigratorTest, RestartMigration) {
   syncable::ModelTypeSet to_migrate1, to_migrate2, to_migrate_union, bookmarks;
   to_migrate1.Put(syncable::PREFERENCES);
   to_migrate2.Put(syncable::AUTOFILL);
@@ -239,7 +239,7 @@ TEST_F(BackendMigratorTest, RestartMigration) {
 
 // Test that an external invocation of Configure(...) during a migration results
 // in a migration reattempt.
-TEST_F(BackendMigratorTest, InterruptedWhileDisablingTypes) {
+TEST_F(SyncBackendMigratorTest, InterruptedWhileDisablingTypes) {
   syncable::ModelTypeSet to_migrate;
   syncable::ModelTypeSet difference;
   to_migrate.Put(syncable::PREFERENCES);
@@ -265,7 +265,7 @@ TEST_F(BackendMigratorTest, InterruptedWhileDisablingTypes) {
 // Test that spurious OnConfigureDone events don't confuse the
 // migrator while it's waiting for disabled types to have been purged
 // from the sync db.
-TEST_F(BackendMigratorTest, WaitingForPurge) {
+TEST_F(SyncBackendMigratorTest, WaitingForPurge) {
   syncable::ModelTypeSet to_migrate, difference;
   to_migrate.Put(syncable::PREFERENCES);
   to_migrate.Put(syncable::AUTOFILL);
@@ -293,7 +293,7 @@ TEST_F(BackendMigratorTest, WaitingForPurge) {
   EXPECT_EQ(BackendMigrator::REENABLING_TYPES, migrator()->state());
 }
 
-TEST_F(BackendMigratorTest, MigratedTypeDisabledByUserDuringMigration) {
+TEST_F(SyncBackendMigratorTest, MigratedTypeDisabledByUserDuringMigration) {
   syncable::ModelTypeSet to_migrate;
   to_migrate.Put(syncable::PREFERENCES);
 
@@ -312,7 +312,7 @@ TEST_F(BackendMigratorTest, MigratedTypeDisabledByUserDuringMigration) {
   EXPECT_EQ(BackendMigrator::IDLE, migrator()->state());
 }
 
-TEST_F(BackendMigratorTest, ConfigureFailure) {
+TEST_F(SyncBackendMigratorTest, ConfigureFailure) {
   syncable::ModelTypeSet to_migrate;
   to_migrate.Put(syncable::PREFERENCES);
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -30,9 +30,9 @@ using testing::InvokeWithoutArgs;
 using testing::Return;
 using testing::SetArgumentPointee;
 
-class ExtensionDataTypeControllerTest : public testing::Test {
+class SyncExtensionDataTypeControllerTest : public testing::Test {
  public:
-  ExtensionDataTypeControllerTest()
+  SyncExtensionDataTypeControllerTest()
       : ui_thread_(BrowserThread::UI, &message_loop_) {}
 
   virtual void SetUp() {
@@ -85,7 +85,7 @@ class ExtensionDataTypeControllerTest : public testing::Test {
   StartCallbackMock start_callback_;
 };
 
-TEST_F(ExtensionDataTypeControllerTest, Start) {
+TEST_F(SyncExtensionDataTypeControllerTest, Start) {
   SetStartExpectations();
   SetAssociateExpectations();
   SetActivateExpectations();
@@ -96,7 +96,7 @@ TEST_F(ExtensionDataTypeControllerTest, Start) {
   EXPECT_EQ(DataTypeController::RUNNING, extension_dtc_->state());
 }
 
-TEST_F(ExtensionDataTypeControllerTest, StartFirstRun) {
+TEST_F(SyncExtensionDataTypeControllerTest, StartFirstRun) {
   SetStartExpectations();
   SetAssociateExpectations();
   SetActivateExpectations();
@@ -107,7 +107,7 @@ TEST_F(ExtensionDataTypeControllerTest, StartFirstRun) {
       base::Bind(&StartCallbackMock::Run, base::Unretained(&start_callback_)));
 }
 
-TEST_F(ExtensionDataTypeControllerTest, StartOk) {
+TEST_F(SyncExtensionDataTypeControllerTest, StartOk) {
   SetStartExpectations();
   SetAssociateExpectations();
   SetActivateExpectations();
@@ -119,7 +119,7 @@ TEST_F(ExtensionDataTypeControllerTest, StartOk) {
       base::Bind(&StartCallbackMock::Run, base::Unretained(&start_callback_)));
 }
 
-TEST_F(ExtensionDataTypeControllerTest, StartAssociationFailed) {
+TEST_F(SyncExtensionDataTypeControllerTest, StartAssociationFailed) {
   SetStartExpectations();
   SetAssociateExpectations();
   EXPECT_CALL(*model_associator_, AssociateModels(_)).
@@ -133,7 +133,7 @@ TEST_F(ExtensionDataTypeControllerTest, StartAssociationFailed) {
   EXPECT_EQ(DataTypeController::DISABLED, extension_dtc_->state());
 }
 
-TEST_F(ExtensionDataTypeControllerTest,
+TEST_F(SyncExtensionDataTypeControllerTest,
        StartAssociationTriggersUnrecoverableError) {
   SetStartExpectations();
   // Set up association to fail with an unrecoverable error.
@@ -148,7 +148,7 @@ TEST_F(ExtensionDataTypeControllerTest,
   EXPECT_EQ(DataTypeController::NOT_RUNNING, extension_dtc_->state());
 }
 
-TEST_F(ExtensionDataTypeControllerTest, Stop) {
+TEST_F(SyncExtensionDataTypeControllerTest, Stop) {
   SetStartExpectations();
   SetAssociateExpectations();
   SetActivateExpectations();
@@ -165,7 +165,7 @@ TEST_F(ExtensionDataTypeControllerTest, Stop) {
 }
 
 // TODO(akalin): Add this test to all the other DTCs.
-TEST_F(ExtensionDataTypeControllerTest, OnUnrecoverableError) {
+TEST_F(SyncExtensionDataTypeControllerTest, OnUnrecoverableError) {
   SetStartExpectations();
   SetAssociateExpectations();
   SetActivateExpectations();

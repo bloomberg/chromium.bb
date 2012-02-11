@@ -219,12 +219,14 @@ class SessionModelAssociator
   FRIEND_TEST_ALL_PREFIXES(ProfileSyncServiceSessionTest, TabNodePoolNonEmpty);
   FRIEND_TEST_ALL_PREFIXES(ProfileSyncServiceSessionTest, ValidTabs);
   FRIEND_TEST_ALL_PREFIXES(ProfileSyncServiceSessionTest, ExistingTabs);
-  FRIEND_TEST_ALL_PREFIXES(SessionModelAssociatorTest, PopulateSessionHeader);
-  FRIEND_TEST_ALL_PREFIXES(SessionModelAssociatorTest, PopulateSessionWindow);
-  FRIEND_TEST_ALL_PREFIXES(SessionModelAssociatorTest, PopulateSessionTab);
-  FRIEND_TEST_ALL_PREFIXES(SessionModelAssociatorTest,
+  FRIEND_TEST_ALL_PREFIXES(SyncSessionModelAssociatorTest,
+                           PopulateSessionHeader);
+  FRIEND_TEST_ALL_PREFIXES(SyncSessionModelAssociatorTest,
+                           PopulateSessionWindow);
+  FRIEND_TEST_ALL_PREFIXES(SyncSessionModelAssociatorTest, PopulateSessionTab);
+  FRIEND_TEST_ALL_PREFIXES(SyncSessionModelAssociatorTest,
                            InitializeCurrentSessionName);
-  FRIEND_TEST_ALL_PREFIXES(SessionModelAssociatorTest,
+  FRIEND_TEST_ALL_PREFIXES(SyncSessionModelAssociatorTest,
                            TabNodePool);
 
   // Keep all the links to local tab data in one place.

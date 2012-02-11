@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -31,9 +31,9 @@ using testing::InvokeWithoutArgs;
 using testing::Return;
 using testing::SetArgumentPointee;
 
-class PreferenceDataTypeControllerTest : public testing::Test {
+class SyncPreferenceDataTypeControllerTest : public testing::Test {
  public:
-  PreferenceDataTypeControllerTest()
+  SyncPreferenceDataTypeControllerTest()
       : ui_thread_(BrowserThread::UI, &message_loop_) {}
 
   virtual void SetUp() {
@@ -87,7 +87,7 @@ class PreferenceDataTypeControllerTest : public testing::Test {
   StartCallbackMock start_callback_;
 };
 
-TEST_F(PreferenceDataTypeControllerTest, Start) {
+TEST_F(SyncPreferenceDataTypeControllerTest, Start) {
   SetStartExpectations();
   SetAssociateExpectations();
   SetActivateExpectations();
@@ -98,7 +98,7 @@ TEST_F(PreferenceDataTypeControllerTest, Start) {
   EXPECT_EQ(DataTypeController::RUNNING, preference_dtc_->state());
 }
 
-TEST_F(PreferenceDataTypeControllerTest, StartFirstRun) {
+TEST_F(SyncPreferenceDataTypeControllerTest, StartFirstRun) {
   SetStartExpectations();
   SetAssociateExpectations();
   SetActivateExpectations();
@@ -109,7 +109,7 @@ TEST_F(PreferenceDataTypeControllerTest, StartFirstRun) {
       base::Bind(&StartCallbackMock::Run, base::Unretained(&start_callback_)));
 }
 
-TEST_F(PreferenceDataTypeControllerTest, StartOk) {
+TEST_F(SyncPreferenceDataTypeControllerTest, StartOk) {
   SetStartExpectations();
   SetAssociateExpectations();
   SetActivateExpectations();
@@ -121,7 +121,7 @@ TEST_F(PreferenceDataTypeControllerTest, StartOk) {
       base::Bind(&StartCallbackMock::Run, base::Unretained(&start_callback_)));
 }
 
-TEST_F(PreferenceDataTypeControllerTest, StartAssociationFailed) {
+TEST_F(SyncPreferenceDataTypeControllerTest, StartAssociationFailed) {
   SetStartExpectations();
   SetAssociateExpectations();
   EXPECT_CALL(*model_associator_, AssociateModels(_)).
@@ -135,7 +135,7 @@ TEST_F(PreferenceDataTypeControllerTest, StartAssociationFailed) {
   EXPECT_EQ(DataTypeController::DISABLED, preference_dtc_->state());
 }
 
-TEST_F(PreferenceDataTypeControllerTest,
+TEST_F(SyncPreferenceDataTypeControllerTest,
        StartAssociationTriggersUnrecoverableError) {
   SetStartExpectations();
   // Set up association to fail with an unrecoverable error.
@@ -150,7 +150,7 @@ TEST_F(PreferenceDataTypeControllerTest,
   EXPECT_EQ(DataTypeController::NOT_RUNNING, preference_dtc_->state());
 }
 
-TEST_F(PreferenceDataTypeControllerTest, Stop) {
+TEST_F(SyncPreferenceDataTypeControllerTest, Stop) {
   SetStartExpectations();
   SetAssociateExpectations();
   SetActivateExpectations();
@@ -166,7 +166,7 @@ TEST_F(PreferenceDataTypeControllerTest, Stop) {
   EXPECT_EQ(DataTypeController::NOT_RUNNING, preference_dtc_->state());
 }
 
-TEST_F(PreferenceDataTypeControllerTest, OnUnrecoverableError) {
+TEST_F(SyncPreferenceDataTypeControllerTest, OnUnrecoverableError) {
   SetStartExpectations();
   SetAssociateExpectations();
   SetActivateExpectations();

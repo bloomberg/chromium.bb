@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -54,10 +54,10 @@ class TestAppNotificationDataTypeController
   scoped_refptr<AppNotificationManager> manager_;
 };
 
-class AppNotificationDataTypeControllerTest
+class SyncAppNotificationDataTypeControllerTest
     : public testing::Test {
  public:
-  AppNotificationDataTypeControllerTest()
+  SyncAppNotificationDataTypeControllerTest()
       : ui_thread_(BrowserThread::UI, &ui_loop_),
         file_thread_(BrowserThread::FILE) {
   }
@@ -140,7 +140,7 @@ class AppNotificationDataTypeControllerTest
 
 // When notification manager is ready, sync association should happen
 // successfully.
-TEST_F(AppNotificationDataTypeControllerTest, StartManagerReady) {
+TEST_F(SyncAppNotificationDataTypeControllerTest, StartManagerReady) {
   InitAndLoadManager();
 
   EXPECT_EQ(DataTypeController::NOT_RUNNING, app_notif_dtc_->state());
@@ -153,7 +153,7 @@ TEST_F(AppNotificationDataTypeControllerTest, StartManagerReady) {
 
 // When notification manager is not ready, sync assocation should wait
 // until loaded event is seen.
-TEST_F(AppNotificationDataTypeControllerTest, StartManagerNotReady) {
+TEST_F(SyncAppNotificationDataTypeControllerTest, StartManagerNotReady) {
   EXPECT_EQ(DataTypeController::NOT_RUNNING, app_notif_dtc_->state());
   SetAssociateExpectations();
   EXPECT_CALL(start_callback_, Run(DataTypeController::OK, _));
@@ -171,7 +171,7 @@ TEST_F(AppNotificationDataTypeControllerTest, StartManagerNotReady) {
   EXPECT_EQ(DataTypeController::RUNNING, app_notif_dtc_->state());
 }
 
-TEST_F(AppNotificationDataTypeControllerTest, StartFirstRun) {
+TEST_F(SyncAppNotificationDataTypeControllerTest, StartFirstRun) {
   InitAndLoadManager();
   SetAssociateExpectations();
   EXPECT_CALL(*model_associator_, SyncModelHasUserCreatedNodes(_)).
@@ -181,7 +181,7 @@ TEST_F(AppNotificationDataTypeControllerTest, StartFirstRun) {
       base::Bind(&StartCallbackMock::Run, base::Unretained(&start_callback_)));
 }
 
-TEST_F(AppNotificationDataTypeControllerTest, StartOk) {
+TEST_F(SyncAppNotificationDataTypeControllerTest, StartOk) {
   InitAndLoadManager();
   SetAssociateExpectations();
   EXPECT_CALL(*model_associator_, SyncModelHasUserCreatedNodes(_)).
@@ -191,7 +191,7 @@ TEST_F(AppNotificationDataTypeControllerTest, StartOk) {
       base::Bind(&StartCallbackMock::Run, base::Unretained(&start_callback_)));
 }
 
-TEST_F(AppNotificationDataTypeControllerTest, StartAssociationFailed) {
+TEST_F(SyncAppNotificationDataTypeControllerTest, StartAssociationFailed) {
   InitAndLoadManager();
   EXPECT_CALL(*profile_sync_factory_,
       CreateAppNotificationSyncComponents(_, _));
@@ -211,7 +211,7 @@ TEST_F(AppNotificationDataTypeControllerTest, StartAssociationFailed) {
   EXPECT_EQ(DataTypeController::DISABLED, app_notif_dtc_->state());
 }
 
-TEST_F(AppNotificationDataTypeControllerTest,
+TEST_F(SyncAppNotificationDataTypeControllerTest,
        StartAssociationTriggersUnrecoverableError) {
   InitAndLoadManager();
   // Set up association to fail with an unrecoverable error.
@@ -228,7 +228,7 @@ TEST_F(AppNotificationDataTypeControllerTest,
   EXPECT_EQ(DataTypeController::NOT_RUNNING, app_notif_dtc_->state());
 }
 
-TEST_F(AppNotificationDataTypeControllerTest, Stop) {
+TEST_F(SyncAppNotificationDataTypeControllerTest, Stop) {
   InitAndLoadManager();
   SetAssociateExpectations();
   SetStopExpectations();
@@ -243,7 +243,7 @@ TEST_F(AppNotificationDataTypeControllerTest, Stop) {
   EXPECT_EQ(DataTypeController::NOT_RUNNING, app_notif_dtc_->state());
 }
 
-TEST_F(AppNotificationDataTypeControllerTest, OnUnrecoverableError) {
+TEST_F(SyncAppNotificationDataTypeControllerTest, OnUnrecoverableError) {
   InitAndLoadManager();
   SetAssociateExpectations();
   EXPECT_CALL(*model_associator_, SyncModelHasUserCreatedNodes(_)).

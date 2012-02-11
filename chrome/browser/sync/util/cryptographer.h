@@ -202,7 +202,7 @@ class Cryptographer {
       syncable::ModelTypeSet encrypted_types);
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(CryptographerTest, PackUnpack);
+  FRIEND_TEST_ALL_PREFIXES(SyncCryptographerTest, PackUnpack);
   typedef std::map<std::string, linked_ptr<const Nigori> > NigoriMap;
 
   // Merges the given set of encrypted types with the existing set and emits a

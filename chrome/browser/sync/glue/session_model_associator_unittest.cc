@@ -30,9 +30,9 @@ using testing::Return;
 
 namespace browser_sync {
 
-class SessionModelAssociatorTest : public testing::Test {
+class SyncSessionModelAssociatorTest : public testing::Test {
  public:
-  SessionModelAssociatorTest()
+  SyncSessionModelAssociatorTest()
       : ui_thread_(BrowserThread::UI, &message_loop_),
         sync_service_(&profile_) {}
   virtual void SetUp() OVERRIDE {
@@ -50,7 +50,7 @@ class SessionModelAssociatorTest : public testing::Test {
   scoped_ptr<SessionModelAssociator> model_associator_;
 };
 
-TEST_F(SessionModelAssociatorTest, SessionWindowHasNoTabsToSync) {
+TEST_F(SyncSessionModelAssociatorTest, SessionWindowHasNoTabsToSync) {
   SessionWindow win;
   ASSERT_TRUE(SessionWindowHasNoTabsToSync(win));
   scoped_ptr<SessionTab> tab(new SessionTab());
@@ -65,7 +65,7 @@ TEST_F(SessionModelAssociatorTest, SessionWindowHasNoTabsToSync) {
   ASSERT_FALSE(SessionWindowHasNoTabsToSync(win));
 }
 
-TEST_F(SessionModelAssociatorTest, ShouldSyncSessionTab) {
+TEST_F(SyncSessionModelAssociatorTest, ShouldSyncSessionTab) {
   SessionTab tab;
   ASSERT_FALSE(ShouldSyncSessionTab(tab));
   TabNavigation nav(0, GURL(chrome::kChromeUINewTabURL),
@@ -86,7 +86,8 @@ TEST_F(SessionModelAssociatorTest, ShouldSyncSessionTab) {
   ASSERT_TRUE(ShouldSyncSessionTab(tab));
 }
 
-TEST_F(SessionModelAssociatorTest, ShouldSyncSessionTabIgnoresFragmentForNtp) {
+TEST_F(SyncSessionModelAssociatorTest,
+       ShouldSyncSessionTabIgnoresFragmentForNtp) {
   SessionTab tab;
   ASSERT_FALSE(ShouldSyncSessionTab(tab));
   TabNavigation nav(0, GURL(std::string(chrome::kChromeUINewTabURL) +
@@ -100,7 +101,7 @@ TEST_F(SessionModelAssociatorTest, ShouldSyncSessionTabIgnoresFragmentForNtp) {
   ASSERT_FALSE(ShouldSyncSessionTab(tab));
 }
 
-TEST_F(SessionModelAssociatorTest, PopulateSessionHeader) {
+TEST_F(SyncSessionModelAssociatorTest, PopulateSessionHeader) {
   sync_pb::SessionHeader header_s;
   header_s.set_client_name("Client 1");
   header_s.set_device_type(sync_pb::SessionHeader_DeviceType_TYPE_WIN);
@@ -114,7 +115,7 @@ TEST_F(SessionModelAssociatorTest, PopulateSessionHeader) {
   ASSERT_EQ(time, session.modified_time);
 }
 
-TEST_F(SessionModelAssociatorTest, PopulateSessionWindow) {
+TEST_F(SyncSessionModelAssociatorTest, PopulateSessionWindow) {
   sync_pb::SessionWindow window_s;
   window_s.add_tab(0);
   window_s.set_browser_type(sync_pb::SessionWindow_BrowserType_TYPE_TABBED);
@@ -133,7 +134,7 @@ TEST_F(SessionModelAssociatorTest, PopulateSessionWindow) {
   ASSERT_EQ(1U, tracker.num_synced_tabs(std::string("tag")));
 }
 
-TEST_F(SessionModelAssociatorTest, PopulateSessionTab) {
+TEST_F(SyncSessionModelAssociatorTest, PopulateSessionTab) {
   sync_pb::SessionTab tab_s;
   tab_s.set_tab_id(5);
   tab_s.set_tab_visual_index(13);
@@ -163,7 +164,7 @@ TEST_F(SessionModelAssociatorTest, PopulateSessionTab) {
   ASSERT_EQ(GURL("http://foo/1"), tab.navigations[0].virtual_url());
 }
 
-TEST_F(SessionModelAssociatorTest, TabNodePool) {
+TEST_F(SyncSessionModelAssociatorTest, TabNodePool) {
   SessionModelAssociator::TabNodePool pool(NULL);
   pool.set_machine_tag("tag");
   ASSERT_TRUE(pool.empty());
@@ -258,7 +259,7 @@ class SyncRefreshListener : public content::NotificationObserver {
 
 // Test that AttemptSessionsDataRefresh() triggers the NOTIFICATION_SYNC_REFRESH
 // notification.
-TEST_F(SessionModelAssociatorTest, TriggerSessionRefresh) {
+TEST_F(SyncSessionModelAssociatorTest, TriggerSessionRefresh) {
   SyncRefreshListener refresh_listener;
 
   EXPECT_FALSE(refresh_listener.notified_of_refresh());
@@ -268,7 +269,7 @@ TEST_F(SessionModelAssociatorTest, TriggerSessionRefresh) {
 
 // Test that we exclude tabs with only chrome:// and file:// schemed navigations
 // from ShouldSyncTab(..).
-TEST_F(SessionModelAssociatorTest, ValidTabs) {
+TEST_F(SyncSessionModelAssociatorTest, ValidTabs) {
   NiceMock<SyncedTabDelegateMock> tab_mock;
 
   // A null entry shouldn't crash.

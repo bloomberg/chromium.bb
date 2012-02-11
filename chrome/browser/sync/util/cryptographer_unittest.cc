@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -32,7 +32,7 @@ class MockObserver : public Cryptographer::Observer {
 
 }  // namespace
 
-TEST(CryptographerTest, EmptyCantDecrypt) {
+TEST(SyncCryptographerTest, EmptyCantDecrypt) {
   Cryptographer cryptographer;
   EXPECT_FALSE(cryptographer.is_ready());
 
@@ -43,7 +43,7 @@ TEST(CryptographerTest, EmptyCantDecrypt) {
   EXPECT_FALSE(cryptographer.CanDecrypt(encrypted));
 }
 
-TEST(CryptographerTest, EmptyCantEncrypt) {
+TEST(SyncCryptographerTest, EmptyCantEncrypt) {
   Cryptographer cryptographer;
   EXPECT_FALSE(cryptographer.is_ready());
 
@@ -52,7 +52,7 @@ TEST(CryptographerTest, EmptyCantEncrypt) {
   EXPECT_FALSE(cryptographer.Encrypt(original, &encrypted));
 }
 
-TEST(CryptographerTest, MissingCantDecrypt) {
+TEST(SyncCryptographerTest, MissingCantDecrypt) {
   Cryptographer cryptographer;
 
   KeyParams params = {"localhost", "dummy", "dummy"};
@@ -66,7 +66,7 @@ TEST(CryptographerTest, MissingCantDecrypt) {
   EXPECT_FALSE(cryptographer.CanDecrypt(encrypted));
 }
 
-TEST(CryptographerTest, CanEncryptAndDecrypt) {
+TEST(SyncCryptographerTest, CanEncryptAndDecrypt) {
   Cryptographer cryptographer;
 
   KeyParams params = {"localhost", "dummy", "dummy"};
@@ -87,7 +87,7 @@ TEST(CryptographerTest, CanEncryptAndDecrypt) {
   EXPECT_EQ(original.SerializeAsString(), decrypted.SerializeAsString());
 }
 
-TEST(CryptographerTest, EncryptOnlyIfDifferent) {
+TEST(SyncCryptographerTest, EncryptOnlyIfDifferent) {
   Cryptographer cryptographer;
 
   KeyParams params = {"localhost", "dummy", "dummy"};
@@ -120,7 +120,7 @@ TEST(CryptographerTest, EncryptOnlyIfDifferent) {
   EXPECT_EQ(original.SerializeAsString(), decrypted.SerializeAsString());
 }
 
-TEST(CryptographerTest, AddKeySetsDefault) {
+TEST(SyncCryptographerTest, AddKeySetsDefault) {
   Cryptographer cryptographer;
 
   KeyParams params1 = {"localhost", "dummy", "dummy1"};
@@ -157,7 +157,7 @@ TEST(CryptographerTest, AddKeySetsDefault) {
 #else
 #define MAYBE_EncryptExportDecrypt EncryptExportDecrypt
 #endif
-TEST(CryptographerTest, MAYBE_EncryptExportDecrypt) {
+TEST(SyncCryptographerTest, MAYBE_EncryptExportDecrypt) {
   sync_pb::EncryptedData nigori;
   sync_pb::EncryptedData encrypted;
 
@@ -202,7 +202,7 @@ TEST(CryptographerTest, MAYBE_EncryptExportDecrypt) {
 #else
 #define MAYBE_PackUnpack PackUnpack
 #endif
-TEST(CryptographerTest, MAYBE_PackUnpack) {
+TEST(SyncCryptographerTest, MAYBE_PackUnpack) {
 #if defined(OS_MACOSX)
   Encryptor::UseMockKeychain(true);
 #endif
@@ -229,7 +229,7 @@ TEST(CryptographerTest, MAYBE_PackUnpack) {
   EXPECT_EQ(expected_mac, mac_key);
 }
 
-TEST(CryptographerTest, NigoriEncryptionTypes) {
+TEST(SyncCryptographerTest, NigoriEncryptionTypes) {
   Cryptographer cryptographer;
   Cryptographer cryptographer2;
   sync_pb::NigoriSpecifics nigori;
@@ -276,7 +276,7 @@ TEST(CryptographerTest, NigoriEncryptionTypes) {
    EXPECT_TRUE(encrypted_types.Equals(cryptographer.GetEncryptedTypes()));
 }
 
-TEST(CryptographerTest, EncryptEverythingExplicit) {
+TEST(SyncCryptographerTest, EncryptEverythingExplicit) {
   ModelTypeSet real_types = syncable::ModelTypeSet::All();
   sync_pb::NigoriSpecifics specifics;
   specifics.set_encrypt_everything(true);
@@ -314,7 +314,7 @@ TEST(CryptographerTest, EncryptEverythingExplicit) {
   cryptographer.RemoveObserver(&observer);
 }
 
-TEST(CryptographerTest, EncryptEverythingImplicit) {
+TEST(SyncCryptographerTest, EncryptEverythingImplicit) {
   ModelTypeSet real_types = syncable::ModelTypeSet::All();
   sync_pb::NigoriSpecifics specifics;
   specifics.set_encrypt_bookmarks(true);  // Non-passwords = encrypt everything
@@ -352,7 +352,7 @@ TEST(CryptographerTest, EncryptEverythingImplicit) {
   cryptographer.RemoveObserver(&observer);
 }
 
-TEST(CryptographerTest, UnknownSensitiveTypes) {
+TEST(SyncCryptographerTest, UnknownSensitiveTypes) {
   ModelTypeSet real_types = syncable::ModelTypeSet::All();
   sync_pb::NigoriSpecifics specifics;
   // Explicitly setting encrypt everything should override logic for implicit

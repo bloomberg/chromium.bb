@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,11 +9,11 @@
 
 namespace browser_sync {
 
-typedef testing::Test GetSessionNameTaskTest;
+typedef testing::Test SyncGetSessionNameTaskTest;
 
 #if defined(OS_WIN)
 // The test is somewhat silly, and just verifies that we return a computer name.
-TEST_F(GetSessionNameTaskTest, GetComputerName) {
+TEST_F(SyncGetSessionNameTaskTest, GetComputerName) {
   std::string computer_name = GetSessionNameTask::GetComputerName();
   EXPECT_TRUE(!computer_name.empty());
 }
@@ -22,7 +22,7 @@ TEST_F(GetSessionNameTaskTest, GetComputerName) {
 #if defined(OS_MACOSX)
 // The test is somewhat silly, and just verifies that we return a hardware
 // model name.
-TEST_F(GetSessionNameTaskTest, GetHardwareModelName) {
+TEST_F(SyncGetSessionNameTaskTest, GetHardwareModelName) {
   std::string hardware_model = GetSessionNameTask::GetHardwareModelName();
   EXPECT_TRUE(!hardware_model.empty());
 }

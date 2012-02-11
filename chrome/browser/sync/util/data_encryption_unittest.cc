@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,7 +14,7 @@ using std::vector;
 
 namespace {
 
-TEST(DataEncryption, TestEncryptDecryptOfSampleString) {
+TEST(SyncDataEncryption, TestEncryptDecryptOfSampleString) {
   vector<uint8> example(EncryptData("example"));
   ASSERT_FALSE(example.empty());
   string result;
@@ -22,7 +22,7 @@ TEST(DataEncryption, TestEncryptDecryptOfSampleString) {
   ASSERT_TRUE(result == "example");
 }
 
-TEST(DataEncryption, TestDecryptFailure) {
+TEST(SyncDataEncryption, TestDecryptFailure) {
   vector<uint8> example(0, 0);
   string result;
   ASSERT_FALSE(DecryptData(example, &result));

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,7 +13,7 @@
 namespace browser_sync {
 namespace {
 
-TEST(NigoriTest, Permute) {
+TEST(SyncNigoriTest, Permute) {
   Nigori nigori;
   EXPECT_TRUE(nigori.InitByDerivation("example.com", "username", "password"));
 
@@ -27,7 +27,7 @@ TEST(NigoriTest, Permute) {
   EXPECT_EQ(expected, permuted);
 }
 
-TEST(NigoriTest, PermuteIsConstant) {
+TEST(SyncNigoriTest, PermuteIsConstant) {
   Nigori nigori1;
   EXPECT_TRUE(nigori1.InitByDerivation("example.com", "username", "password"));
 
@@ -48,7 +48,7 @@ TEST(NigoriTest, PermuteIsConstant) {
   EXPECT_EQ(permuted1, permuted2);
 }
 
-TEST(NigoriTest, EncryptDifferentIv) {
+TEST(SyncNigoriTest, EncryptDifferentIv) {
   Nigori nigori;
   EXPECT_TRUE(nigori.InitByDerivation("example.com", "username", "password"));
 
@@ -63,7 +63,7 @@ TEST(NigoriTest, EncryptDifferentIv) {
   EXPECT_NE(encrypted1, encrypted2);
 }
 
-TEST(NigoriTest, Decrypt) {
+TEST(SyncNigoriTest, Decrypt) {
   Nigori nigori;
   EXPECT_TRUE(nigori.InitByDerivation("example.com", "username", "password"));
 
@@ -78,7 +78,7 @@ TEST(NigoriTest, Decrypt) {
   EXPECT_EQ(expected, plaintext);
 }
 
-TEST(NigoriTest, EncryptDecrypt) {
+TEST(SyncNigoriTest, EncryptDecrypt) {
   Nigori nigori;
   EXPECT_TRUE(nigori.InitByDerivation("example.com", "username", "password"));
 
@@ -93,7 +93,7 @@ TEST(NigoriTest, EncryptDecrypt) {
   EXPECT_EQ(plaintext, decrypted);
 }
 
-TEST(NigoriTest, CorruptedIv) {
+TEST(SyncNigoriTest, CorruptedIv) {
   Nigori nigori;
   EXPECT_TRUE(nigori.InitByDerivation("example.com", "username", "password"));
 
@@ -111,7 +111,7 @@ TEST(NigoriTest, CorruptedIv) {
   EXPECT_NE(plaintext, decrypted);
 }
 
-TEST(NigoriTest, CorruptedCiphertext) {
+TEST(SyncNigoriTest, CorruptedCiphertext) {
   Nigori nigori;
   EXPECT_TRUE(nigori.InitByDerivation("example.com", "username", "password"));
 
@@ -136,7 +136,7 @@ TEST(NigoriTest, CorruptedCiphertext) {
 #else
 #define MAYBE_ExportImport ExportImport
 #endif
-TEST(NigoriTest, MAYBE_ExportImport) {
+TEST(SyncNigoriTest, MAYBE_ExportImport) {
   Nigori nigori1;
   EXPECT_TRUE(nigori1.InitByDerivation("example.com", "username", "password"));
 

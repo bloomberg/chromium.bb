@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -31,9 +31,9 @@ using testing::InvokeWithoutArgs;
 using testing::Return;
 using testing::SetArgumentPointee;
 
-class SearchEngineDataTypeControllerTest : public testing::Test {
+class SyncSearchEngineDataTypeControllerTest : public testing::Test {
  public:
-  SearchEngineDataTypeControllerTest() {}
+  SyncSearchEngineDataTypeControllerTest() {}
 
   virtual void SetUp() {
     test_util_.SetUp();
@@ -88,7 +88,7 @@ class SearchEngineDataTypeControllerTest : public testing::Test {
   StartCallbackMock start_callback_;
 };
 
-TEST_F(SearchEngineDataTypeControllerTest, StartURLServiceReady) {
+TEST_F(SyncSearchEngineDataTypeControllerTest, StartURLServiceReady) {
   // We want to start ready.
   PreloadTemplateURLService();
   SetAssociateExpectations();
@@ -101,7 +101,7 @@ TEST_F(SearchEngineDataTypeControllerTest, StartURLServiceReady) {
   EXPECT_EQ(DataTypeController::RUNNING, search_engine_dtc_->state());
 }
 
-TEST_F(SearchEngineDataTypeControllerTest, StartURLServiceNotReady) {
+TEST_F(SyncSearchEngineDataTypeControllerTest, StartURLServiceNotReady) {
   SetAssociateExpectations();
 
   EXPECT_CALL(start_callback_, Run(DataTypeController::OK, _));
@@ -117,7 +117,7 @@ TEST_F(SearchEngineDataTypeControllerTest, StartURLServiceNotReady) {
   EXPECT_EQ(DataTypeController::RUNNING, search_engine_dtc_->state());
 }
 
-TEST_F(SearchEngineDataTypeControllerTest, StartFirstRun) {
+TEST_F(SyncSearchEngineDataTypeControllerTest, StartFirstRun) {
   PreloadTemplateURLService();
   SetAssociateExpectations();
   EXPECT_CALL(*model_associator_, SyncModelHasUserCreatedNodes(_)).
@@ -127,7 +127,7 @@ TEST_F(SearchEngineDataTypeControllerTest, StartFirstRun) {
       base::Bind(&StartCallbackMock::Run, base::Unretained(&start_callback_)));
 }
 
-TEST_F(SearchEngineDataTypeControllerTest, StartOk) {
+TEST_F(SyncSearchEngineDataTypeControllerTest, StartOk) {
   PreloadTemplateURLService();
   SetAssociateExpectations();
   EXPECT_CALL(*model_associator_, SyncModelHasUserCreatedNodes(_)).
@@ -138,7 +138,7 @@ TEST_F(SearchEngineDataTypeControllerTest, StartOk) {
       base::Bind(&StartCallbackMock::Run, base::Unretained(&start_callback_)));
 }
 
-TEST_F(SearchEngineDataTypeControllerTest, StartAssociationFailed) {
+TEST_F(SyncSearchEngineDataTypeControllerTest, StartAssociationFailed) {
   PreloadTemplateURLService();
   EXPECT_CALL(*profile_sync_factory_, CreateSearchEngineSyncComponents(_, _));
   EXPECT_CALL(*model_associator_, CryptoReadyIfNecessary()).
@@ -156,7 +156,7 @@ TEST_F(SearchEngineDataTypeControllerTest, StartAssociationFailed) {
   EXPECT_EQ(DataTypeController::DISABLED, search_engine_dtc_->state());
 }
 
-TEST_F(SearchEngineDataTypeControllerTest,
+TEST_F(SyncSearchEngineDataTypeControllerTest,
        StartAssociationTriggersUnrecoverableError) {
   PreloadTemplateURLService();
   // Set up association to fail with an unrecoverable error.
@@ -172,7 +172,7 @@ TEST_F(SearchEngineDataTypeControllerTest,
   EXPECT_EQ(DataTypeController::NOT_RUNNING, search_engine_dtc_->state());
 }
 
-TEST_F(SearchEngineDataTypeControllerTest, Stop) {
+TEST_F(SyncSearchEngineDataTypeControllerTest, Stop) {
   PreloadTemplateURLService();
   SetAssociateExpectations();
   SetStopExpectations();
@@ -187,7 +187,7 @@ TEST_F(SearchEngineDataTypeControllerTest, Stop) {
   EXPECT_EQ(DataTypeController::NOT_RUNNING, search_engine_dtc_->state());
 }
 
-TEST_F(SearchEngineDataTypeControllerTest, OnUnrecoverableError) {
+TEST_F(SyncSearchEngineDataTypeControllerTest, OnUnrecoverableError) {
   PreloadTemplateURLService();
   SetAssociateExpectations();
   EXPECT_CALL(*model_associator_, SyncModelHasUserCreatedNodes(_)).

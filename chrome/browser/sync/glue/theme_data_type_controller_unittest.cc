@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -30,9 +30,9 @@ using testing::InvokeWithoutArgs;
 using testing::Return;
 using testing::SetArgumentPointee;
 
-class ThemeDataTypeControllerTest : public testing::Test {
+class SyncThemeDataTypeControllerTest : public testing::Test {
  public:
-  ThemeDataTypeControllerTest()
+  SyncThemeDataTypeControllerTest()
       : ui_thread_(BrowserThread::UI, &message_loop_) {}
 
   virtual void SetUp() {
@@ -84,7 +84,7 @@ class ThemeDataTypeControllerTest : public testing::Test {
   StartCallbackMock start_callback_;
 };
 
-TEST_F(ThemeDataTypeControllerTest, Start) {
+TEST_F(SyncThemeDataTypeControllerTest, Start) {
   SetStartExpectations();
   SetAssociateExpectations();
   SetActivateExpectations();
@@ -95,7 +95,7 @@ TEST_F(ThemeDataTypeControllerTest, Start) {
   EXPECT_EQ(DataTypeController::RUNNING, theme_dtc_->state());
 }
 
-TEST_F(ThemeDataTypeControllerTest, StartFirstRun) {
+TEST_F(SyncThemeDataTypeControllerTest, StartFirstRun) {
   SetStartExpectations();
   SetAssociateExpectations();
   SetActivateExpectations();
@@ -106,7 +106,7 @@ TEST_F(ThemeDataTypeControllerTest, StartFirstRun) {
       base::Bind(&StartCallbackMock::Run, base::Unretained(&start_callback_)));
 }
 
-TEST_F(ThemeDataTypeControllerTest, StartOk) {
+TEST_F(SyncThemeDataTypeControllerTest, StartOk) {
   SetStartExpectations();
   SetAssociateExpectations();
   SetActivateExpectations();
@@ -118,7 +118,7 @@ TEST_F(ThemeDataTypeControllerTest, StartOk) {
       base::Bind(&StartCallbackMock::Run, base::Unretained(&start_callback_)));
 }
 
-TEST_F(ThemeDataTypeControllerTest, StartAssociationFailed) {
+TEST_F(SyncThemeDataTypeControllerTest, StartAssociationFailed) {
   SetStartExpectations();
   SetAssociateExpectations();
   EXPECT_CALL(*model_associator_, AssociateModels(_)).
@@ -132,7 +132,7 @@ TEST_F(ThemeDataTypeControllerTest, StartAssociationFailed) {
   EXPECT_EQ(DataTypeController::DISABLED, theme_dtc_->state());
 }
 
-TEST_F(ThemeDataTypeControllerTest,
+TEST_F(SyncThemeDataTypeControllerTest,
        StartAssociationTriggersUnrecoverableError) {
   SetStartExpectations();
   // Set up association to fail with an unrecoverable error.
@@ -147,7 +147,7 @@ TEST_F(ThemeDataTypeControllerTest,
   EXPECT_EQ(DataTypeController::NOT_RUNNING, theme_dtc_->state());
 }
 
-TEST_F(ThemeDataTypeControllerTest, Stop) {
+TEST_F(SyncThemeDataTypeControllerTest, Stop) {
   SetStartExpectations();
   SetAssociateExpectations();
   SetActivateExpectations();
@@ -164,7 +164,7 @@ TEST_F(ThemeDataTypeControllerTest, Stop) {
 }
 
 // TODO(akalin): Add this test to all the other DTCs.
-TEST_F(ThemeDataTypeControllerTest, OnUnrecoverableError) {
+TEST_F(SyncThemeDataTypeControllerTest, OnUnrecoverableError) {
   SetStartExpectations();
   SetAssociateExpectations();
   SetActivateExpectations();
