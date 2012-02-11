@@ -27,6 +27,9 @@
             console.log('Unexpected error: ' + error);
             window.domAutomationController.send(false);
           });
+      // Force a garbage collection, so that if the callbacks aren't being
+      // retained properly they'll get collected and the test will fail.
+      window.gc();
     } catch (e) {
       console.log('Unexpected exception: ' + e);
       window.domAutomationController.send(false);

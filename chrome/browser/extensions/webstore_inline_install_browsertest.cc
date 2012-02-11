@@ -28,13 +28,6 @@ const char kWebstoreDomain[] = "cws.com";
 const char kAppDomain[] = "app.com";
 const char kNonAppDomain[] = "nonapp.com";
 
-// http://crbug.com/113024
-#if !defined(NDEBUG) && (defined(OS_WIN) || defined(OS_MACOSX))
-  #define MAYBE(TestName) DISABLED_ ## TestName
-#else
-  #define MAYBE(TestName) TestName
-#endif
-
 class WebstoreInlineInstallTest : public InProcessBrowserTest {
  public:
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
@@ -56,6 +49,10 @@ class WebstoreInlineInstallTest : public InProcessBrowserTest {
     GURL crx_url = GenerateTestServerUrl(kWebstoreDomain, "extension.crx");
     CommandLine::ForCurrentProcess()->AppendSwitchASCII(
         switches::kAppsGalleryUpdateURL, crx_url.spec());
+
+    // Allow tests to call window.gc(), so that we can check that callback
+    // functions don't get collected prematurely.
+    command_line->AppendSwitchASCII(switches::kJavaScriptFlags, "--expose-gc");
   }
 
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
@@ -88,7 +85,7 @@ class WebstoreInlineInstallTest : public InProcessBrowserTest {
   std::string test_gallery_url_;
 };
 
-IN_PROC_BROWSER_TEST_F(WebstoreInlineInstallTest, MAYBE(Install)) {
+IN_PROC_BROWSER_TEST_F(WebstoreInlineInstallTest, Install) {
   CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kAppsGalleryInstallAutoConfirmForTests, "accept");
 
@@ -103,7 +100,7 @@ IN_PROC_BROWSER_TEST_F(WebstoreInlineInstallTest, MAYBE(Install)) {
 }
 
 IN_PROC_BROWSER_TEST_F(WebstoreInlineInstallTest,
-    MAYBE(InstallNotAllowedFromNonVerifiedDomains)) {
+    InstallNotAllowedFromNonVerifiedDomains) {
   CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kAppsGalleryInstallAutoConfirmForTests, "cancel");
   ui_test_utils::NavigateToURL(
@@ -130,8 +127,7 @@ IN_PROC_BROWSER_TEST_F(WebstoreInlineInstallTest, ArgumentValidation) {
   RunInlineInstallTest("runTest");
 }
 
-IN_PROC_BROWSER_TEST_F(WebstoreInlineInstallTest,
-    MAYBE(InstallNotSupported)) {
+IN_PROC_BROWSER_TEST_F(WebstoreInlineInstallTest, InstallNotSupported) {
   CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kAppsGalleryInstallAutoConfirmForTests, "cancel");
   ui_test_utils::NavigateToURL(
@@ -170,7 +166,7 @@ class WebstoreInlineInstallUnpackFailureTest
 };
 
 IN_PROC_BROWSER_TEST_F(WebstoreInlineInstallUnpackFailureTest,
-    MAYBE(WebstoreInlineInstallUnpackFailureTest)) {
+    WebstoreInlineInstallUnpackFailureTest) {
   CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kAppsGalleryInstallAutoConfirmForTests, "accept");
 

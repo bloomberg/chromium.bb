@@ -37,13 +37,16 @@ class WebstoreInlineInstaller
  public:
   class Delegate {
    public:
-    virtual void OnInlineInstallSuccess(int install_id) = 0;
+    virtual void OnInlineInstallSuccess(int install_id,
+                                        int return_route_id) = 0;
     virtual void OnInlineInstallFailure(int install_id,
+                                        int return_route_id,
                                         const std::string& error) = 0;
   };
 
   WebstoreInlineInstaller(content::WebContents* web_contents,
                           int install_id,
+                          int return_route_id,
                           std::string webstore_item_id,
                           GURL requestor_url,
                           Delegate* d);
@@ -107,6 +110,7 @@ class WebstoreInlineInstaller
                                            const std::string& verified_site);
 
   int install_id_;
+  int return_route_id_;
   std::string id_;
   GURL requestor_url_;
   Delegate* delegate_;

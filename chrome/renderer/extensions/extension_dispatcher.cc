@@ -15,13 +15,13 @@
 #include "chrome/renderer/extensions/app_bindings.h"
 #include "chrome/renderer/extensions/chrome_v8_context.h"
 #include "chrome/renderer/extensions/chrome_v8_extension.h"
-#include "chrome/renderer/extensions/chrome_webstore_bindings.h"
 #include "chrome/renderer/extensions/custom_bindings_util.h"
 #include "chrome/renderer/extensions/event_bindings.h"
 #include "chrome/renderer/extensions/extension_groups.h"
 #include "chrome/renderer/extensions/miscellaneous_bindings.h"
 #include "chrome/renderer/extensions/schema_generated_bindings.h"
 #include "chrome/renderer/extensions/user_script_slave.h"
+#include "chrome/renderer/extensions/webstore_bindings.h"
 #include "content/public/renderer/render_thread.h"
 #include "grit/renderer_resources.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDataSource.h"
@@ -103,7 +103,7 @@ void ExtensionDispatcher::WebKitInitialized() {
   }
 
   RegisterExtension(new AppBindings(this), false);
-  RegisterExtension(ChromeWebstoreExtension::Get(), false);
+  RegisterExtension(new WebstoreBindings(this), false);
 
   // Add v8 extensions related to chrome extensions.
   RegisterExtension(new ChromeV8Extension(

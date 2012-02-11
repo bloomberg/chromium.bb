@@ -70,8 +70,6 @@
         'renderer/extensions/chrome_v8_extension.h',
         'renderer/extensions/chrome_v8_extension_handler.cc',
         'renderer/extensions/chrome_v8_extension_handler.h',
-        'renderer/extensions/chrome_webstore_bindings.cc',
-        'renderer/extensions/chrome_webstore_bindings.h',
         'renderer/extensions/context_menus_custom_bindings.cc',
         'renderer/extensions/context_menus_custom_bindings.h',
         'renderer/extensions/custom_bindings_util.cc',
@@ -111,6 +109,8 @@
         'renderer/extensions/user_script_slave.h',
         'renderer/extensions/web_request_custom_bindings.cc',
         'renderer/extensions/web_request_custom_bindings.h',
+        'renderer/extensions/webstore_bindings.cc',
+        'renderer/extensions/webstore_bindings.h',
         'renderer/frame_sniffer.cc',
         'renderer/frame_sniffer.h',
         'renderer/loadtimes_extension_bindings.h',
@@ -226,12 +226,10 @@
         'renderer/translate_helper.h',
         'renderer/visitedlink_slave.cc',
         'renderer/visitedlink_slave.h',
-        'renderer/weak_v8_function_map.cc',
-        'renderer/weak_v8_function_map.h',
         'renderer/webview_color_overlay.cc',
         'renderer/webview_color_overlay.h',
       ],
-      'conditions': [      
+      'conditions': [
         ['disable_nacl!=1', {
           'dependencies': [
             'nacl',

@@ -106,6 +106,7 @@ class ExtensionTabHelper
   void OnDidGetApplicationInfo(int32 page_id, const WebApplicationInfo& info);
   void OnInstallApplication(const WebApplicationInfo& info);
   void OnInlineWebstoreInstall(int install_id,
+                               int return_route_id,
                                const std::string& webstore_item_id,
                                const GURL& requestor_url);
   void OnGetAppNotifyChannel(const GURL& requestor_url,
@@ -125,8 +126,10 @@ class ExtensionTabHelper
                              int index) OVERRIDE;
 
   // WebstoreInlineInstaller::Delegate.
-  virtual void OnInlineInstallSuccess(int install_id) OVERRIDE;
+  virtual void OnInlineInstallSuccess(int install_id,
+                                      int return_route_id) OVERRIDE;
   virtual void OnInlineInstallFailure(int install_id,
+                                      int return_route_id,
                                       const std::string& error) OVERRIDE;
 
   // AppNotifyChannelSetup::Delegate.

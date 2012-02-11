@@ -13,7 +13,6 @@
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension_action.h"
-#include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_icon_set.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/extensions/extension_resource.h"
@@ -154,10 +153,16 @@ void ExtensionTabHelper::OnInstallApplication(const WebApplicationInfo& info) {
 
 void ExtensionTabHelper::OnInlineWebstoreInstall(
     int install_id,
+    int return_route_id,
     const std::string& webstore_item_id,
     const GURL& requestor_url) {
   scoped_refptr<WebstoreInlineInstaller> installer(new WebstoreInlineInstaller(
-      web_contents(), install_id, webstore_item_id, requestor_url, this));
+      web_contents(),
+      install_id,
+      return_route_id,
+      webstore_item_id,
+      requestor_url,
+      this));
   installer->BeginInstall();
 }
 
@@ -271,15 +276,17 @@ Browser* ExtensionTabHelper::GetBrowser() {
   return NULL;
 }
 
-void ExtensionTabHelper::OnInlineInstallSuccess(int install_id) {
+void ExtensionTabHelper::OnInlineInstallSuccess(int install_id,
+                                                int return_route_id) {
   Send(new ExtensionMsg_InlineWebstoreInstallResponse(
-      routing_id(), install_id, true, ""));
+      return_route_id, install_id, true, ""));
 }
 
 void ExtensionTabHelper::OnInlineInstallFailure(int install_id,
+                                                int return_route_id,
                                                 const std::string& error) {
   Send(new ExtensionMsg_InlineWebstoreInstallResponse(
-      routing_id(), install_id, false, error));
+      return_route_id, install_id, false, error));
 }
 
 WebContents* ExtensionTabHelper::GetAssociatedWebContents() const {

@@ -25,6 +25,7 @@ without changes to the corresponding grd file. fb9 -->
       <include name="IDR_SAD_PLUGIN" file="resources\sadplugin.png" type="BINDATA" />
       <include name="IDR_ERROR_APP_HTML" file="resources\error_app.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_PLATFORM_APP_CSS" file="resources\extensions\platform_app.css" type="BINDATA" />
+      <include name="IDR_WEBSTORE_BINDINGS_JS" file="resources\extensions\webstore.js" type="BINDATA" />
 
       <!-- Custom bindings for extension APIs. -->
       <include name="IDR_BROWSER_ACTION_CUSTOM_BINDINGS_JS" file="resources\extensions\browser_action_custom_bindings.js" type="BINDATA" />

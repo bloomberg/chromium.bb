@@ -146,11 +146,13 @@ class SafeWebstoreResponseParser : public UtilityProcessHostClient {
 
 WebstoreInlineInstaller::WebstoreInlineInstaller(WebContents* web_contents,
                                                  int install_id,
+                                                 int return_route_id,
                                                  std::string webstore_item_id,
                                                  GURL requestor_url,
                                                  Delegate* delegate)
     : content::WebContentsObserver(web_contents),
       install_id_(install_id),
+      return_route_id_(return_route_id),
       id_(webstore_item_id),
       requestor_url_(requestor_url),
       delegate_(delegate),
@@ -446,9 +448,9 @@ void WebstoreInlineInstaller::CompleteInstall(const std::string& error) {
   // response to.
   if (web_contents()) {
     if (error.empty()) {
-      delegate_->OnInlineInstallSuccess(install_id_);
+      delegate_->OnInlineInstallSuccess(install_id_, return_route_id_);
     } else {
-      delegate_->OnInlineInstallFailure(install_id_, error);
+      delegate_->OnInlineInstallFailure(install_id_, return_route_id_, error);
     }
   }
 
