@@ -261,10 +261,7 @@ const int64 kUpdateFrequencyMs = 200;
   NSDockTile* dockTile = [[NSApplication sharedApplication] dockTile];
   DockTileView* dockTileView = (DockTileView*)([dockTile contentView]);
 
-  if (progress != [dockTileView progress]) {
-    [dockTileView setProgress:progress];
-    forceUpdate_ = NO;
-  }
+  [dockTileView setProgress:progress];
 }
 
 @end
