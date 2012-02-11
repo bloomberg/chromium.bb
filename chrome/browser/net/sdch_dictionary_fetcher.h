@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,12 +20,16 @@
 #include "content/public/common/url_fetcher_delegate.h"
 #include "net/base/sdch_manager.h"
 
+namespace net {
+class URLRequestContextGetter;
+}  // namespace net
+
 class SdchDictionaryFetcher
     : public content::URLFetcherDelegate,
       public net::SdchFetcher,
       public base::NonThreadSafe {
  public:
-  SdchDictionaryFetcher();
+  explicit SdchDictionaryFetcher(net::URLRequestContextGetter* context);
   virtual ~SdchDictionaryFetcher();
 
   // Stop fetching dictionaries, and abandon any current URLFetcheer operations
@@ -81,6 +85,10 @@ class SdchDictionaryFetcher
   // so that we won't try to load from an URL more than once.
   // TODO(jar): Try to augment the SDCH proposal to include this restiction.
   std::set<GURL> attempted_load_;
+
+  // Store the system_url_request_context_getter to use it when we start
+  // fetching.
+  scoped_refptr<net::URLRequestContextGetter> context_;
 
   DISALLOW_COPY_AND_ASSIGN(SdchDictionaryFetcher);
 };

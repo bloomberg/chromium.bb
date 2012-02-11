@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -449,7 +449,6 @@ void IOThread::Init() {
       ConstructProxyScriptFetcherContext(globals_, net_log_);
 
   sdch_manager_ = new net::SdchManager();
-  sdch_manager_->set_sdch_fetcher(new SdchDictionaryFetcher);
 
   // InitSystemRequestContext turns right around and posts a task back
   // to the IO thread, so we can't let it run until we know the IO
@@ -620,4 +619,7 @@ void IOThread::InitSystemRequestContextOnIOThread() {
       new net::FtpNetworkLayer(globals_->host_resolver.get()));
   globals_->system_request_context =
       ConstructSystemRequestContext(globals_, net_log_);
+
+  sdch_manager_->set_sdch_fetcher(
+      new SdchDictionaryFetcher(system_url_request_context_getter_.get()));
 }
