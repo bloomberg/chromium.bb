@@ -291,6 +291,8 @@ class RootWindowHostLinux : public RootWindowHost,
   virtual gfx::Size GetSize() const OVERRIDE;
   virtual void SetSize(const gfx::Size& size) OVERRIDE;
   virtual gfx::Point GetLocationOnNativeScreen() const OVERRIDE;
+  virtual void SetCapture() OVERRIDE;
+  virtual void ReleaseCapture() OVERRIDE;
   virtual void SetCursor(gfx::NativeCursor cursor_type) OVERRIDE;
   virtual void ShowCursor(bool show) OVERRIDE;
   virtual gfx::Point QueryMouseLocation() OVERRIDE;
@@ -353,7 +355,7 @@ RootWindowHostLinux::RootWindowHostLinux(const gfx::Rect& bounds)
       CWBackPixmap,
       &swa);
 
-  long event_mask = ButtonPressMask | ButtonReleaseMask |
+  long event_mask = ButtonPressMask | ButtonReleaseMask | FocusChangeMask |
                     KeyPressMask | KeyReleaseMask |
                     EnterWindowMask | LeaveWindowMask |
                     ExposureMask | VisibilityChangeMask |
@@ -419,6 +421,10 @@ base::MessagePumpDispatcher::DispatchStatus RootWindowHostLinux::Dispatch(
       handled = root_window_->DispatchMouseEvent(&mouseev);
       break;
     }
+    case FocusOut:
+      if (xev->xfocus.mode != NotifyGrab)
+        root_window_->SetCapture(NULL);
+      break;
     case ConfigureNotify: {
       if (xev->xconfigure.window == x_root_window_) {
         root_window_->OnNativeScreenResized(
@@ -588,6 +594,12 @@ void RootWindowHostLinux::SetSize(const gfx::Size& size) {
 
 gfx::Point RootWindowHostLinux::GetLocationOnNativeScreen() const {
   return bounds_.origin();
+}
+
+void RootWindowHostLinux::SetCapture() {
+}
+
+void RootWindowHostLinux::ReleaseCapture() {
 }
 
 void RootWindowHostLinux::SetCursor(gfx::NativeCursor cursor) {

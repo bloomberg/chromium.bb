@@ -296,8 +296,10 @@ void RootWindow::OnWindowDestroying(Window* window) {
     mouse_pressed_handler_ = NULL;
   if (mouse_moved_handler_ == window)
     mouse_moved_handler_ = NULL;
-  if (capture_window_ == window)
+  if (capture_window_ == window) {
     capture_window_ = NULL;
+    host_->ReleaseCapture();
+  }
   if (touch_event_handler_ == window)
     touch_event_handler_ = NULL;
   if (gesture_handler_ == window)
@@ -366,9 +368,10 @@ void RootWindow::SetCapture(Window* window) {
   if (capture_window_ == window)
     return;
 
-  if (capture_window_ && capture_window_->delegate())
-    capture_window_->delegate()->OnCaptureLost();
+  aura::Window* old_capture_window = capture_window_;
   capture_window_ = window;
+
+  HandleMouseCaptureChanged(old_capture_window);
 
   if (capture_window_) {
     // Make all subsequent mouse events and touch go to the capture window. We
@@ -485,6 +488,22 @@ RootWindow::~RootWindow() {
   ui::Compositor::Terminate();
   if (instance_ == this)
     instance_ = NULL;
+}
+
+void RootWindow::HandleMouseCaptureChanged(Window* old_capture_window) {
+  if (capture_window_)
+    host_->SetCapture();
+  else
+    host_->ReleaseCapture();
+
+  if (old_capture_window && old_capture_window->delegate()) {
+    // Send a capture changed event with bogus location data.
+    MouseEvent event(
+        ui::ET_MOUSE_CAPTURE_CHANGED, gfx::Point(), gfx::Point(), 0);
+    ProcessMouseEvent(old_capture_window, &event);
+
+    old_capture_window->delegate()->OnCaptureLost();
+  }
 }
 
 void RootWindow::HandleMouseMoved(const MouseEvent& event, Window* target) {
