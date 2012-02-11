@@ -253,9 +253,12 @@ void TypedUrlChangeProcessor::ApplyChangesFromSyncModel(
       return;
     }
 
-    if (it->action == sync_api::ChangeRecord::ACTION_ADD) {
+    // It's possible that this item was ignored previously due to being expired
+    // or invalid, so it isn't yet associated even though technically it's an
+    // UPDATE not an ADD because it's already in the sync DB. So associate it
+    // if it's not yet associated (http://crbug.com/112144).
+    if (!model_associator_->IsAssociated(typed_url.url()))
       model_associator_->Associate(&typed_url.url(), it->id);
-    }
   }
 }
 

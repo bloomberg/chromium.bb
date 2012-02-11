@@ -86,6 +86,10 @@ class TypedUrlModelAssociator
   // Associates the given typed_url name with the given sync id.
   virtual void Associate(const std::string* node, int64 sync_id) OVERRIDE;
 
+  // Makes sure that the node with the specified tag is already in our
+  // association map.
+  bool IsAssociated(const std::string& node_tag);
+
   // Remove the association that corresponds to the given sync id.
   virtual void Disassociate(int64 sync_id) OVERRIDE;
 
@@ -181,10 +185,6 @@ class TypedUrlModelAssociator
  private:
   typedef std::map<std::string, int64> TypedUrlToSyncIdMap;
   typedef std::map<int64, std::string> SyncIdToTypedUrlMap;
-
-  // Makes sure that the node with the specified tag is already in our
-  // association map.
-  bool IsAssociated(const std::string& node_tag);
 
   // Helper function that determines if we should ignore a URL for the purposes
   // of sync, because it's import-only.

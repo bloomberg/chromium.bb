@@ -114,6 +114,42 @@ IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest, AddExpired) {
   ASSERT_EQ(0U, urls.size());
 }
 
+IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest, AddExpiredThenUpdate) {
+  const string16 kHistoryUrl(
+      ASCIIToUTF16("http://www.add-one-history.google.com/"));
+  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+
+  // Populate one client with a URL, should sync to the other.
+  GURL new_url(kHistoryUrl);
+  // Create a URL with a timestamp 1 year before today.
+  base::Time timestamp = base::Time::Now() - base::TimeDelta::FromDays(365);
+  AddUrlToHistoryWithTimestamp(0,
+                               new_url,
+                               content::PAGE_TRANSITION_TYPED,
+                               history::SOURCE_BROWSED,
+                               timestamp);
+  std::vector<history::URLRow> urls = GetTypedUrlsFromClient(0);
+  ASSERT_EQ(1U, urls.size());
+  ASSERT_EQ(new_url, urls[0].url());
+
+  // Let sync finish.
+  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
+
+  // Second client should still have no URLs since this one is expired.
+  urls = GetTypedUrlsFromClient(1);
+  ASSERT_EQ(0U, urls.size());
+
+  // Now drive an update on the first client.
+  AddUrlToHistory(0, new_url);
+
+  // Let sync finish again.
+  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
+
+  // Second client should have the URL now.
+  urls = GetTypedUrlsFromClient(1);
+  ASSERT_EQ(1U, urls.size());
+}
+
 // TCM: 3705291
 // flaky, see crbug.com/108511
 IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest, FLAKY_AddThenDelete) {
