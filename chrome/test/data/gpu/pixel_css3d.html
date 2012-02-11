@@ -38,6 +38,7 @@ function waitForFinish()
     domAutomationController.send("ok");
   } else {
     g_swapsBeforeAck--;
+    document.getElementById('blue_box').style.zIndex = g_swapsBeforeAck + 1;
     window.webkitRequestAnimationFrame(waitForFinish);
   }
 }
