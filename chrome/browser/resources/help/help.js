@@ -23,6 +23,10 @@ cr.define('help_page', function() {
     initialize: function() {
       uber.onContentFrameLoaded();
 
+      // Set the title.
+      var title = localStrings.getString('helpTitle');
+      uber.invokeMethodOnParent('setTitle', {title: title});
+
       $('product-license').innerHTML = localStrings.getString('productLicense');
 
       var productTOS = $('product-tos');
