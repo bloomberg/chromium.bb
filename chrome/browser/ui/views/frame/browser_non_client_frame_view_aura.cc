@@ -245,7 +245,7 @@ BrowserNonClientFrameViewAura::BrowserNonClientFrameViewAura(
   frame->AsWidget()->AddObserver(this);
   // Associate our WindowFrame interface with our owning window/widget so
   // we get callbacks from aura_shell.
-  frame->AsWidget()->SetNativeWindowProperty(
+  frame->AsWidget()->GetNativeWindow()->SetProperty(
       ash::kWindowFrameKey,
       static_cast<ash::WindowFrame*>(this));
 }

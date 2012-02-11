@@ -82,14 +82,14 @@ void SystemModalContainerLayoutManager::OnWindowAddedToLayout(
          child->type() == aura::client::WINDOW_TYPE_NORMAL ||
          child->type() == aura::client::WINDOW_TYPE_POPUP);
   child->AddObserver(this);
-  if (child->GetIntProperty(aura::client::kModalKey))
+  if (child->GetProperty(aura::client::kModalKey) != ui::MODAL_TYPE_NONE)
     AddModalWindow(child);
 }
 
 void SystemModalContainerLayoutManager::OnWillRemoveWindowFromLayout(
     aura::Window* child) {
   child->RemoveObserver(this);
-  if (child->GetIntProperty(aura::client::kModalKey))
+  if (child->GetProperty(aura::client::kModalKey) != ui::MODAL_TYPE_NONE)
     RemoveModalWindow(child);
 }
 
@@ -109,14 +109,14 @@ void SystemModalContainerLayoutManager::SetChildBounds(
 
 void SystemModalContainerLayoutManager::OnWindowPropertyChanged(
     aura::Window* window,
-    const char* key,
-    void* old) {
+    const void* key,
+    intptr_t old) {
   if (key != aura::client::kModalKey)
     return;
 
-  if (window->GetIntProperty(aura::client::kModalKey)) {
+  if (window->GetProperty(aura::client::kModalKey) != ui::MODAL_TYPE_NONE) {
     AddModalWindow(window);
-  } else if (static_cast<int>(reinterpret_cast<intptr_t>(old))) {
+  } else if (static_cast<ui::ModalType>(old) != ui::MODAL_TYPE_NONE) {
     RemoveModalWindow(window);
   }
 }

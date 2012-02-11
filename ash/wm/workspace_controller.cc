@@ -76,9 +76,9 @@ void WorkspaceController::OnRootWindowResized(const gfx::Size& new_size) {
 }
 
 void WorkspaceController::OnWindowPropertyChanged(aura::Window* window,
-                                                  const char* key,
-                                                  void* old) {
-  if (key == aura::client::kRootWindowActiveWindow)
+                                                  const void* key,
+                                                  intptr_t old) {
+  if (key == aura::client::kRootWindowActiveWindowKey)
     workspace_manager_->SetActiveWorkspaceByWindow(GetActiveWindow());
 }
 

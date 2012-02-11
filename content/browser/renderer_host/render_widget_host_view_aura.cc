@@ -185,8 +185,7 @@ void RenderWidgetHostViewAura::InitAsFullscreen(
   window_->SetType(aura::client::WINDOW_TYPE_NORMAL);
   window_->Init(ui::Layer::LAYER_TEXTURED);
   window_->SetName("RenderWidgetHostViewAura");
-  window_->SetIntProperty(aura::client::kShowStateKey,
-                          ui::SHOW_STATE_FULLSCREEN);
+  window_->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_FULLSCREEN);
   window_->SetParent(NULL);
   Show();
   Focus();
@@ -996,8 +995,7 @@ void RenderWidgetHostViewAura::UpdateCursorIfOverSelf() {
 
 ui::InputMethod* RenderWidgetHostViewAura::GetInputMethod() const {
   aura::RootWindow* root_window = window_->GetRootWindow();
-  return reinterpret_cast<ui::InputMethod*>(
-      root_window->GetProperty(aura::client::kRootWindowInputMethod));
+  return root_window->GetProperty(aura::client::kRootWindowInputMethodKey);
 }
 
 bool RenderWidgetHostViewAura::NeedsInputGrab() {

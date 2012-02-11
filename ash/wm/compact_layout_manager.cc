@@ -66,7 +66,7 @@ CompactLayoutManager::~CompactLayoutManager() {
 void CompactLayoutManager::OnWindowAddedToLayout(aura::Window* child) {
   // Windows added to this container does not need extra animation.
   if (child->type() == aura::client::WINDOW_TYPE_NORMAL)
-    child->SetIntProperty(aura::client::kAnimationsDisabledKey, 1);
+    child->SetProperty(aura::client::kAnimationsDisabledKey, true);
   BaseLayoutManager::OnWindowAddedToLayout(child);
   UpdateStatusAreaVisibility();
   if (windows().size() > 1 &&
@@ -89,7 +89,7 @@ void CompactLayoutManager::OnWillRemoveWindowFromLayout(aura::Window* child) {
   }
   // Allow window to be animated by others.
   if (child->type() == aura::client::WINDOW_TYPE_NORMAL)
-    child->SetIntProperty(aura::client::kAnimationsDisabledKey, 0);
+    child->SetProperty(aura::client::kAnimationsDisabledKey, false);
 }
 
 void CompactLayoutManager::OnChildWindowVisibilityChanged(aura::Window* child,
@@ -128,10 +128,10 @@ void CompactLayoutManager::SetChildBounds(aura::Window* child,
 // CompactLayoutManager, aura::WindowObserver overrides:
 
 void CompactLayoutManager::OnWindowPropertyChanged(aura::Window* window,
-                                                   const char* name,
-                                                   void* old) {
-  BaseLayoutManager::OnWindowPropertyChanged(window, name, old);
-  if (name == aura::client::kShowStateKey)
+                                                   const void* key,
+                                                   intptr_t old) {
+  BaseLayoutManager::OnWindowPropertyChanged(window, key, old);
+  if (key == aura::client::kShowStateKey)
     UpdateStatusAreaVisibility();
 }
 

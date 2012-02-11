@@ -22,7 +22,7 @@ aura::Window* GetContainer(int id) {
 
 bool IsSystemModal(aura::Window* window) {
   return window->transient_parent() &&
-      window->GetIntProperty(aura::client::kModalKey) == ui::MODAL_TYPE_SYSTEM;
+      window->GetProperty(aura::client::kModalKey) == ui::MODAL_TYPE_SYSTEM;
 }
 
 }  // namespace

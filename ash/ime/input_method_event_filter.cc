@@ -25,7 +25,7 @@ InputMethodEventFilter::InputMethodEventFilter()
   // result to Init().
   input_method_->Init(true);
   aura::RootWindow::GetInstance()->SetProperty(
-      aura::client::kRootWindowInputMethod,
+      aura::client::kRootWindowInputMethodKey,
       input_method_.get());
 }
 

@@ -9,14 +9,19 @@
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
+#include "ui/aura/window_property.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/gfx/screen.h"
+
+DECLARE_WINDOW_PROPERTY_TYPE(bool)
 
 namespace ash {
 
 namespace {
 
-const char kOpenWindowSplitKey[] = "OpenWindowSplit";
+const aura::WindowProperty<bool> kOpenWindowSplitProp = {false};
+const aura::WindowProperty<bool>* const
+    kOpenWindowSplitKey = &kOpenWindowSplitProp;
 
 }  // namespace
 
@@ -43,26 +48,26 @@ aura::Window* GetActivatableWindow(aura::Window* window) {
 namespace window_util {
 
 bool IsWindowMaximized(aura::Window* window) {
-  return window->GetIntProperty(aura::client::kShowStateKey) ==
+  return window->GetProperty(aura::client::kShowStateKey) ==
       ui::SHOW_STATE_MAXIMIZED;
 }
 
 bool IsWindowFullscreen(aura::Window* window) {
-  return window->GetIntProperty(aura::client::kShowStateKey) ==
+  return window->GetProperty(aura::client::kShowStateKey) ==
       ui::SHOW_STATE_FULLSCREEN;
 }
 
 void MaximizeWindow(aura::Window* window) {
-  window->SetIntProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MAXIMIZED);
+  window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MAXIMIZED);
 }
 
 void RestoreWindow(aura::Window* window) {
-  window->SetIntProperty(aura::client::kShowStateKey, ui::SHOW_STATE_NORMAL);
+  window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_NORMAL);
 }
 
 bool HasFullscreenWindow(const WindowSet& windows) {
   for (WindowSet::const_iterator i = windows.begin(); i != windows.end(); ++i) {
-    if ((*i)->GetIntProperty(aura::client::kShowStateKey)
+    if ((*i)->GetProperty(aura::client::kShowStateKey)
         == ui::SHOW_STATE_FULLSCREEN) {
       return true;
     }
@@ -71,11 +76,11 @@ bool HasFullscreenWindow(const WindowSet& windows) {
 }
 
 void SetOpenWindowSplit(aura::Window* window, bool value) {
-  window->SetIntProperty(kOpenWindowSplitKey, value ? 1 : 0);
+  window->SetProperty(kOpenWindowSplitKey, value);
 }
 
 bool GetOpenWindowSplit(aura::Window* window) {
-  return window->GetIntProperty(kOpenWindowSplitKey) == 1;
+  return window->GetProperty(kOpenWindowSplitKey);
 }
 
 }  // namespace window_util

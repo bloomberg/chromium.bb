@@ -122,11 +122,10 @@ void WorkspaceManager::AddWindow(aura::Window* window) {
 
   if (!window->GetProperty(aura::client::kShowStateKey)) {
     if (ShouldMaximize(window)) {
-      window->SetIntProperty(aura::client::kShowStateKey,
-                             ui::SHOW_STATE_MAXIMIZED);
+      window->SetProperty(aura::client::kShowStateKey,
+                          ui::SHOW_STATE_MAXIMIZED);
     } else {
-      window->SetIntProperty(aura::client::kShowStateKey,
-                             ui::SHOW_STATE_NORMAL);
+      window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_NORMAL);
     }
   }
 
@@ -203,12 +202,12 @@ gfx::Rect WorkspaceManager::AlignBoundsToGrid(const gfx::Rect& bounds) {
 }
 
 void WorkspaceManager::OnWindowPropertyChanged(aura::Window* window,
-                                               const char* name,
-                                               void* old) {
+                                               const void* key,
+                                               intptr_t old) {
   if (!IsManagedWindow(window))
     return;
 
-  if (name != aura::client::kShowStateKey)
+  if (key != aura::client::kShowStateKey)
     return;
 
   DCHECK(FindBy(window));

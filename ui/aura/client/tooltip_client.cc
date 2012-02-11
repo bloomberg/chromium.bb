@@ -5,20 +5,32 @@
 #include "ui/aura/client/tooltip_client.h"
 
 #include "ui/aura/root_window.h"
+#include "ui/aura/window_property.h"
+
+DECLARE_WINDOW_PROPERTY_TYPE(aura::client::TooltipClient*)
+DECLARE_WINDOW_PROPERTY_TYPE(string16*)
 
 namespace aura {
 namespace client {
+namespace {
 
-const char kRootWindowTooltipClientKey[] = "RootWindowTooltipClient";
-const char kTooltipTextKey[] = "TooltipText";
+// A property key to store tooltip text for a window.
+const WindowProperty<TooltipClient*> kRootWindowTooltipClientProp = {NULL};
+const WindowProperty<TooltipClient*>* const
+    kRootWindowTooltipClientKey = &kRootWindowTooltipClientProp;
+
+// A property key to store the tooltip client for the root window.
+const WindowProperty<string16*> kTooltipTextProp = {NULL};
+const WindowProperty<string16*>* const kTooltipTextKey = &kTooltipTextProp;
+
+}  // namespace
 
 void SetTooltipClient(TooltipClient* client) {
   RootWindow::GetInstance()->SetProperty(kRootWindowTooltipClientKey, client);
 }
 
 TooltipClient* GetTooltipClient() {
-  return reinterpret_cast<TooltipClient*>(
-      RootWindow::GetInstance()->GetProperty(kRootWindowTooltipClientKey));
+  return RootWindow::GetInstance()->GetProperty(kRootWindowTooltipClientKey);
 }
 
 void SetTooltipText(Window* window, string16* tooltip_text) {
@@ -26,8 +38,7 @@ void SetTooltipText(Window* window, string16* tooltip_text) {
 }
 
 const string16 GetTooltipText(Window* window) {
-  string16* string_ptr = reinterpret_cast<string16*>(
-      window->GetProperty(kTooltipTextKey));
+  string16* string_ptr = window->GetProperty(kTooltipTextKey);
   return string_ptr ? *string_ptr : string16();
 }
 

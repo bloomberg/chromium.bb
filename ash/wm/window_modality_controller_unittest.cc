@@ -51,7 +51,7 @@ TEST_F(WindowModalityControllerTest, BasicActivation) {
   ActivateWindow(w11.get());
   EXPECT_TRUE(IsActiveWindow(w11.get()));
 
-  w12->SetIntProperty(aura::client::kModalKey, ui::MODAL_TYPE_WINDOW);
+  w12->SetProperty(aura::client::kModalKey, ui::MODAL_TYPE_WINDOW);
   w1->AddTransientChild(w12.get());
   ActivateWindow(w12.get());
   EXPECT_TRUE(IsActiveWindow(w12.get()));
@@ -101,8 +101,8 @@ TEST_F(WindowModalityControllerTest, NestedModals) {
   EXPECT_TRUE(IsActiveWindow(w2.get()));
 
   // Set up modality.
-  w11->SetIntProperty(aura::client::kModalKey, ui::MODAL_TYPE_WINDOW);
-  w111->SetIntProperty(aura::client::kModalKey, ui::MODAL_TYPE_WINDOW);
+  w11->SetProperty(aura::client::kModalKey, ui::MODAL_TYPE_WINDOW);
+  w111->SetProperty(aura::client::kModalKey, ui::MODAL_TYPE_WINDOW);
 
   ActivateWindow(w1.get());
   EXPECT_TRUE(IsActiveWindow(w111.get()));
@@ -155,8 +155,8 @@ TEST_F(WindowModalityControllerTest, NestedModalsOuterClosed) {
   EXPECT_TRUE(IsActiveWindow(w2.get()));
 
   // Set up modality.
-  w11->SetIntProperty(aura::client::kModalKey, ui::MODAL_TYPE_WINDOW);
-  w111->SetIntProperty(aura::client::kModalKey, ui::MODAL_TYPE_WINDOW);
+  w11->SetProperty(aura::client::kModalKey, ui::MODAL_TYPE_WINDOW);
+  w111->SetProperty(aura::client::kModalKey, ui::MODAL_TYPE_WINDOW);
 
   ActivateWindow(w1.get());
   EXPECT_TRUE(IsActiveWindow(w111));
@@ -182,7 +182,7 @@ TEST_F(WindowModalityControllerTest, Events) {
     EXPECT_TRUE(IsActiveWindow(w1.get()));
   }
 
-  w11->SetIntProperty(aura::client::kModalKey, ui::MODAL_TYPE_WINDOW);
+  w11->SetProperty(aura::client::kModalKey, ui::MODAL_TYPE_WINDOW);
 
   {
     // Clicking a point within w1 should activate w11.

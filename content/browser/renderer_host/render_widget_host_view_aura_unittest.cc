@@ -52,7 +52,7 @@ TEST_F(RenderWidgetHostViewAuraTest, Fullscreen) {
   aura::Window* window = rwhv_aura_->GetNativeView();
   ASSERT_TRUE(window != NULL);
   EXPECT_EQ(ui::SHOW_STATE_FULLSCREEN,
-            window->GetIntProperty(aura::client::kShowStateKey));
+            window->GetProperty(aura::client::kShowStateKey));
 
   // Check that we requested and received the focus.
   EXPECT_TRUE(window->HasFocus());

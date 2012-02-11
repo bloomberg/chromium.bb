@@ -482,32 +482,6 @@ bool Window::HasCapture() {
   return root_window && root_window->capture_window() == this;
 }
 
-void Window::SetProperty(const char* name, void* value) {
-  void* old = GetProperty(name);
-  if (value)
-    prop_map_[name] = value;
-  else
-    prop_map_.erase(name);
-  FOR_EACH_OBSERVER(
-      WindowObserver, observers_, OnWindowPropertyChanged(this, name, old));
-}
-
-void Window::SetIntProperty(const char* name, int value) {
-  SetProperty(name, reinterpret_cast<void*>(value));
-}
-
-void* Window::GetProperty(const char* name) const {
-  std::map<const char*, void*>::const_iterator iter = prop_map_.find(name);
-  if (iter == prop_map_.end())
-    return NULL;
-  return iter->second;
-}
-
-int Window::GetIntProperty(const char* name) const {
-  return static_cast<int>(reinterpret_cast<intptr_t>(
-      GetProperty(name)));
-}
-
 bool Window::StopsEventPropagation() const {
   if (!stops_event_propagation_ || children_.empty())
     return false;
@@ -515,6 +489,36 @@ bool Window::StopsEventPropagation() const {
       std::find_if(children_.begin(), children_.end(),
                    std::mem_fun(&aura::Window::IsVisible));
   return it != children_.end();
+}
+
+// {Set,Get,Clear}Property are implemented in window_property.h.
+
+void Window::SetNativeWindowProperty(const char* key, void* value) {
+  SetPropertyInternal(key, reinterpret_cast<intptr_t>(value), 0);
+}
+
+void* Window::GetNativeWindowProperty(const char* key) const {
+  return reinterpret_cast<void*>(GetPropertyInternal(key, 0));
+}
+
+void Window::SetPropertyInternal(const void* key,
+                                 intptr_t value,
+                                 intptr_t default_value) {
+  intptr_t old = GetPropertyInternal(key, default_value);
+  if (value == default_value)
+    prop_map_.erase(key);
+  else
+    prop_map_[key] = value;
+  FOR_EACH_OBSERVER(WindowObserver, observers_,
+                    OnWindowPropertyChanged(this, key, old));
+}
+
+intptr_t Window::GetPropertyInternal(const void* key,
+                                     intptr_t default_value) const {
+  std::map<const void*, intptr_t>::const_iterator iter = prop_map_.find(key);
+  if (iter == prop_map_.end())
+    return default_value;
+  return iter->second;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -21,12 +21,16 @@
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/aura/window_observer.h"
+#include "ui/aura/window_property.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/compositor/layer.h"
 #include "ui/gfx/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/screen.h"
+
+DECLARE_WINDOW_PROPERTY_TYPE(const char*)
+DECLARE_WINDOW_PROPERTY_TYPE(int)
 
 namespace aura {
 namespace test {
@@ -908,28 +912,42 @@ TEST_F(WindowTest, FocusedWindowTest) {
 
 TEST_F(WindowTest, Property) {
   scoped_ptr<Window> w(CreateTestWindowWithId(0, NULL));
-  const char* key = "test";
-  EXPECT_EQ(NULL, w->GetProperty(key));
-  EXPECT_EQ(0, w->GetIntProperty(key));
 
-  w->SetIntProperty(key, 1);
-  EXPECT_EQ(1, w->GetIntProperty(key));
-  EXPECT_EQ(reinterpret_cast<void*>(static_cast<intptr_t>(1)),
-            w->GetProperty(key));
+  const WindowProperty<int> int_prop = {-2};
+  const WindowProperty<const char*> str_prop = {"squeamish"};
+  static const char native_prop_key[] = "fnord";
 
-  // Overwrite the property with different value type.
-  w->SetProperty(key, static_cast<void*>(const_cast<char*>("string")));
-  std::string expected("string");
-  EXPECT_EQ(expected, static_cast<const char*>(w->GetProperty(key)));
+  // Non-existent properties should return the default values.
+  EXPECT_EQ(-2, w->GetProperty(&int_prop));
+  EXPECT_EQ(std::string("squeamish"), w->GetProperty(&str_prop));
+  EXPECT_EQ(NULL, w->GetNativeWindowProperty(native_prop_key));
 
-  // Non-existent property.
-  EXPECT_EQ(NULL, w->GetProperty("foo"));
-  EXPECT_EQ(0, w->GetIntProperty("foo"));
+  // A set property value should be returned again (even if it's the default
+  // value).
+  w->SetProperty(&int_prop, INT_MAX);
+  EXPECT_EQ(INT_MAX, w->GetProperty(&int_prop));
+  w->SetProperty(&int_prop, -2);
+  EXPECT_EQ(-2, w->GetProperty(&int_prop));
+  w->SetProperty(&int_prop, INT_MIN);
+  EXPECT_EQ(INT_MIN, w->GetProperty(&int_prop));
 
-  // Set NULL and make sure the property is gone.
-  w->SetProperty(key, NULL);
-  EXPECT_EQ(NULL, w->GetProperty(key));
-  EXPECT_EQ(0, w->GetIntProperty(key));
+  w->SetProperty(&str_prop, static_cast<const char*>(NULL));
+  EXPECT_EQ(NULL, w->GetProperty(&str_prop));
+  w->SetProperty(&str_prop, "squeamish");
+  EXPECT_EQ(std::string("squeamish"), w->GetProperty(&str_prop));
+  w->SetProperty(&str_prop, "ossifrage");
+  EXPECT_EQ(std::string("ossifrage"), w->GetProperty(&str_prop));
+
+  w->SetNativeWindowProperty(native_prop_key, &*w);
+  EXPECT_EQ(&*w, w->GetNativeWindowProperty(native_prop_key));
+  w->SetNativeWindowProperty(native_prop_key, NULL);
+  EXPECT_EQ(NULL, w->GetNativeWindowProperty(native_prop_key));
+
+  // ClearProperty should restore the default value.
+  w->ClearProperty(&int_prop);
+  EXPECT_EQ(-2, w->GetProperty(&int_prop));
+  w->ClearProperty(&str_prop);
+  EXPECT_EQ(std::string("squeamish"), w->GetProperty(&str_prop));
 }
 
 TEST_F(WindowTest, SetBoundsInternalShouldCheckTargetBounds) {
@@ -977,6 +995,8 @@ TEST_F(WindowTest, SetBoundsInternalShouldCheckTargetBounds) {
 }
 
 
+typedef std::pair<const void*, intptr_t> PropertyChangeInfo;
+
 class WindowObserverTest : public WindowTest,
                            public WindowObserver {
  public:
@@ -989,8 +1009,7 @@ class WindowObserverTest : public WindowTest,
       : added_count_(0),
         removed_count_(0),
         destroyed_count_(0),
-        old_property_value_(0),
-        new_property_value_(0) {
+        old_property_value_(-3) {
   }
 
   virtual ~WindowObserverTest() {}
@@ -1018,17 +1037,11 @@ class WindowObserverTest : public WindowTest,
     return result;
   }
 
-  // Return a string representation of the arguments passed in
-  // OnWindowPropertyChanged callback.
-  std::string PropertyChangeInfoAndClear() {
-    std::string result(
-        base::StringPrintf("name=%s old=%ld new=%ld",
-                           property_name_.c_str(),
-                           static_cast<long>(old_property_value_),
-                           static_cast<long>(new_property_value_)));
-    property_name_.clear();
-    old_property_value_ = 0;
-    new_property_value_ = 0;
+  // Return a tuple of the arguments passed in OnPropertyChanged callback.
+  PropertyChangeInfo PropertyChangeInfoAndClear() {
+    PropertyChangeInfo result(property_key_, old_property_value_);
+    property_key_ = NULL;
+    old_property_value_ = -3;
     return result;
   }
 
@@ -1054,20 +1067,18 @@ class WindowObserverTest : public WindowTest,
   }
 
   virtual void OnWindowPropertyChanged(Window* window,
-                                       const char* name,
-                                       void* old) OVERRIDE {
-    property_name_ = std::string(name);
-    old_property_value_ = reinterpret_cast<intptr_t>(old);
-    new_property_value_ = reinterpret_cast<intptr_t>(window->GetProperty(name));
+                                       const void* key,
+                                       intptr_t old) OVERRIDE {
+    property_key_ = key;
+    old_property_value_ = old;
   }
 
   int added_count_;
   int removed_count_;
   int destroyed_count_;
   scoped_ptr<VisibilityInfo> visibility_info_;
-  std::string property_name_;
+  const void* property_key_;
   intptr_t old_property_value_;
-  intptr_t new_property_value_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowObserverTest);
 };
@@ -1157,20 +1168,30 @@ TEST_F(WindowObserverTest, WindowDestroyed) {
 TEST_F(WindowObserverTest, PropertyChanged) {
   // Setting property should fire a property change notification.
   scoped_ptr<Window> w1(CreateTestWindowWithId(1, NULL));
-  const char* key = "test";
-
   w1->AddObserver(this);
-  w1->SetIntProperty(key, 1);
-  EXPECT_EQ("name=test old=0 new=1", PropertyChangeInfoAndClear());
-  w1->SetIntProperty(key, 2);
-  EXPECT_EQ(2, w1->GetIntProperty(key));
-  EXPECT_EQ(reinterpret_cast<void*>(2), w1->GetProperty(key));
-  EXPECT_EQ("name=test old=1 new=2", PropertyChangeInfoAndClear());
-  w1->SetProperty(key, NULL);
-  EXPECT_EQ("name=test old=2 new=0", PropertyChangeInfoAndClear());
+
+  static const WindowProperty<int> prop = {-2};
+  static const char native_prop_key[] = "fnord";
+
+  w1->SetProperty(&prop, 1);
+  EXPECT_EQ(PropertyChangeInfo(&prop, -2), PropertyChangeInfoAndClear());
+  w1->SetProperty(&prop, -2);
+  EXPECT_EQ(PropertyChangeInfo(&prop, 1), PropertyChangeInfoAndClear());
+  w1->SetProperty(&prop, 3);
+  EXPECT_EQ(PropertyChangeInfo(&prop, -2), PropertyChangeInfoAndClear());
+  w1->ClearProperty(&prop);
+  EXPECT_EQ(PropertyChangeInfo(&prop, 3), PropertyChangeInfoAndClear());
+
+  w1->SetNativeWindowProperty(native_prop_key, &*w1);
+  EXPECT_EQ(PropertyChangeInfo(native_prop_key, 0),
+            PropertyChangeInfoAndClear());
+  w1->SetNativeWindowProperty(native_prop_key, NULL);
+  EXPECT_EQ(PropertyChangeInfo(native_prop_key,
+                               reinterpret_cast<intptr_t>(&*w1)),
+            PropertyChangeInfoAndClear());
 
   // Sanity check to see if |PropertyChangeInfoAndClear| really clears.
-  EXPECT_EQ("name= old=0 new=0", PropertyChangeInfoAndClear());
+  EXPECT_EQ(PropertyChangeInfo(NULL, -3), PropertyChangeInfoAndClear());
 }
 
 TEST_F(WindowTest, AcquireLayer) {

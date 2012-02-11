@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -22,13 +22,12 @@ void SetRestoreBoundsIfNotSet(aura::Window* window) {
 }
 
 const gfx::Rect* GetRestoreBounds(aura::Window* window) {
-  return reinterpret_cast<gfx::Rect*>(
-      window->GetProperty(aura::client::kRestoreBoundsKey));
+  return window->GetProperty(aura::client::kRestoreBoundsKey);
 }
 
 void ClearRestoreBounds(aura::Window* window) {
   delete GetRestoreBounds(window);
-  window->SetProperty(aura::client::kRestoreBoundsKey, NULL);
+  window->ClearProperty(aura::client::kRestoreBoundsKey);
 }
 
 }

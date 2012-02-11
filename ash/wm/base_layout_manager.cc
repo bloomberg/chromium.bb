@@ -37,9 +37,8 @@ void BaseLayoutManager::OnWindowResized() {
 void BaseLayoutManager::OnWindowAddedToLayout(aura::Window* child) {
   windows_.insert(child);
   child->AddObserver(this);
-  if (child->GetProperty(aura::client::kShowStateKey)) {
+  if (child->GetProperty(aura::client::kShowStateKey))
     UpdateBoundsFromShowState(child);
-  }
 }
 
 void BaseLayoutManager::OnWillRemoveWindowFromLayout(aura::Window* child) {
@@ -88,23 +87,22 @@ void BaseLayoutManager::OnRootWindowResized(const gfx::Size& new_size) {
 // BaseLayoutManager, WindowObserver overrides:
 
 void BaseLayoutManager::OnWindowPropertyChanged(aura::Window* window,
-                                                const char* name,
-                                                void* old) {
-  if (name == aura::client::kShowStateKey) {
+                                                const void* key,
+                                                intptr_t old) {
+  if (key == aura::client::kShowStateKey)
     UpdateBoundsFromShowState(window);
-  }
 }
 
 //////////////////////////////////////////////////////////////////////////////
 // BaseLayoutManager, private:
 
 void BaseLayoutManager::UpdateBoundsFromShowState(aura::Window* window) {
-  switch (window->GetIntProperty(aura::client::kShowStateKey)) {
+  switch (window->GetProperty(aura::client::kShowStateKey)) {
     case ui::SHOW_STATE_NORMAL: {
       // Bounds rect object is owned by the window property dictionary,
       // so ensure we release it when we're done restoring.
       scoped_ptr<const gfx::Rect> restore(GetRestoreBounds(window));
-      window->SetProperty(aura::client::kRestoreBoundsKey, NULL);
+      window->ClearProperty(aura::client::kRestoreBoundsKey);
       if (restore.get())
         window->SetBounds(*restore);
       break;

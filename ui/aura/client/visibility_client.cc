@@ -5,24 +5,29 @@
 #include "ui/aura/client/visibility_client.h"
 
 #include "ui/aura/root_window.h"
+#include "ui/aura/window_property.h"
+
+DECLARE_WINDOW_PROPERTY_TYPE(aura::client::VisibilityClient*)
 
 namespace aura {
 namespace client {
 namespace {
 
-// A property key to store a client that handles window visibility changes. The
-// type of the value is |aura::client::VisibilityClient*|.
-const char kRootWindowVisibilityClient[] = "RootWindowVisibilityClient";
+// A property key to store a client that handles window visibility changes.
+const WindowProperty<VisibilityClient*>
+    kRootWindowVisibilityClientProp = {NULL};
+const WindowProperty<VisibilityClient*>* const
+    kRootWindowVisibilityClientKey = &kRootWindowVisibilityClientProp;
 
 }  // namespace
 
 void SetVisibilityClient(VisibilityClient* client) {
-  RootWindow::GetInstance()->SetProperty(kRootWindowVisibilityClient, client);
+  RootWindow::GetInstance()->SetProperty(kRootWindowVisibilityClientKey,
+                                         client);
 }
 
 VisibilityClient* GetVisibilityClient() {
-  return reinterpret_cast<VisibilityClient*>(
-      RootWindow::GetInstance()->GetProperty(kRootWindowVisibilityClient));
+  return RootWindow::GetInstance()->GetProperty(kRootWindowVisibilityClientKey);
 }
 
 }  // namespace client

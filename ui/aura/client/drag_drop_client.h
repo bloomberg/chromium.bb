@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,10 +16,6 @@ class OSExchangeData;
 namespace aura {
 class Window;
 namespace client {
-
-// A property key to store the drag and drop client for the root window. The
-// type of the value is |aura::DragDropClient*|.
-AURA_EXPORT extern const char kRootWindowDragDropClientKey[];
 
 // An interface implemented by an object that controls a drag and drop session.
 class AURA_EXPORT DragDropClient {

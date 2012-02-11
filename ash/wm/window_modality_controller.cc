@@ -16,8 +16,7 @@ namespace internal {
 namespace {
 
 bool TransientChildIsWindowModal(aura::Window* window) {
-  return window->GetIntProperty(aura::client::kModalKey) ==
-      ui::MODAL_TYPE_WINDOW;
+  return window->GetProperty(aura::client::kModalKey) == ui::MODAL_TYPE_WINDOW;
 }
 
 }

@@ -333,9 +333,9 @@ class IBusUiControllerImpl : public IBusUiController {
   // Returns a ui::InputMethodIBus object which is associated with the root
   // window.
   static ui::InputMethodIBus* GetChromeInputMethod() {
-    return reinterpret_cast<ui::InputMethodIBus*>(
+    return static_cast<ui::InputMethodIBus*>(
         aura::RootWindow::GetInstance()->GetProperty(
-            aura::client::kRootWindowInputMethod));
+            aura::client::kRootWindowInputMethodKey));
   }
 #endif  // USE_AURA
 

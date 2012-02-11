@@ -40,8 +40,8 @@ class ASH_EXPORT ToplevelLayoutManager : public BaseLayoutManager {
 
   // WindowObserver overrides:
   virtual void OnWindowPropertyChanged(aura::Window* window,
-                                       const char* name,
-                                       void* old) OVERRIDE;
+                                       const void* key,
+                                       intptr_t old) OVERRIDE;
 
  private:
   // Updates the visibility of the shelf based on if there are any full screen

@@ -53,7 +53,7 @@ bool CanActivateWindow(aura::Window* window) {
 // to the front. This function must be called before the modal transient is
 // stacked at the top to ensure correct stacking order.
 void StackTransientParentsBelowModalWindow(aura::Window* window) {
-  if (window->GetIntProperty(aura::client::kModalKey) != ui::MODAL_TYPE_WINDOW)
+  if (window->GetProperty(aura::client::kModalKey) != ui::MODAL_TYPE_WINDOW)
     return;
 
   aura::Window* transient_parent = window->transient_parent();
@@ -135,7 +135,7 @@ void ActivationController::ActivateWindow(aura::Window* window) {
   if (!window->Contains(window->GetFocusManager()->GetFocusedWindow()))
     window->GetFocusManager()->SetFocusedWindow(window);
   aura::RootWindow::GetInstance()->SetProperty(
-      aura::client::kRootWindowActiveWindow,
+      aura::client::kRootWindowActiveWindowKey,
       window);
   // Invoke OnLostActive after we've changed the active window. That way if the
   // delegate queries for active state it doesn't think the window is still
@@ -157,9 +157,8 @@ void ActivationController::DeactivateWindow(aura::Window* window) {
 }
 
 aura::Window* ActivationController::GetActiveWindow() {
-  return reinterpret_cast<aura::Window*>(
-      aura::RootWindow::GetInstance()->GetProperty(
-          aura::client::kRootWindowActiveWindow));
+  return aura::RootWindow::GetInstance()->GetProperty(
+      aura::client::kRootWindowActiveWindowKey);
 }
 
 bool ActivationController::CanFocusWindow(aura::Window* window) const {
@@ -180,9 +179,8 @@ void ActivationController::OnWindowDestroying(aura::Window* window) {
     // Clear the property before activating something else, since
     // ActivateWindow() will attempt to notify the window stored in this value
     // otherwise.
-    aura::RootWindow::GetInstance()->SetProperty(
-        aura::client::kRootWindowActiveWindow,
-        NULL);
+    aura::RootWindow::GetInstance()->ClearProperty(
+        aura::client::kRootWindowActiveWindowKey);
     ActivateWindow(GetTopmostWindowToActivate(window));
   }
   window->RemoveObserver(this);

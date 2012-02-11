@@ -14,45 +14,61 @@
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
+#include "ui/aura/window_property.h"
 #include "ui/gfx/compositor/layer_animation_observer.h"
 #include "ui/gfx/compositor/scoped_layer_animation_settings.h"
 
+DECLARE_WINDOW_PROPERTY_TYPE(int)
+DECLARE_WINDOW_PROPERTY_TYPE(ash::WindowVisibilityAnimationType)
+DECLARE_WINDOW_PROPERTY_TYPE(ash::WindowVisibilityAnimationTransition)
+
 namespace ash {
 namespace internal {
-const char kWindowVisibilityAnimationTypeKey[] =
-    "WindowVisibilityAnimationType";
+namespace {
 
-const char kWindowVisibilityAnimationDurationKey[] =
-    "WindowVisibilityAnimationDuration";
+const aura::WindowProperty<WindowVisibilityAnimationType>
+    kWindowVisibilityAnimationTypeProp =
+        {WINDOW_VISIBILITY_ANIMATION_TYPE_DEFAULT};
+const aura::WindowProperty<int> kWindowVisibilityAnimationDurationProp = {0};
+const aura::WindowProperty<WindowVisibilityAnimationTransition>
+    kWindowVisibilityAnimationTransitionProp = {ANIMATE_BOTH};
 
-const char kWindowVisibilityAnimationTransitionKey[] =
-    "WindowVisibilityAnimationTransition";
+}  // namespace
+
+const aura::WindowProperty<WindowVisibilityAnimationType>* const
+    kWindowVisibilityAnimationTypeKey = &kWindowVisibilityAnimationTypeProp;
+const aura::WindowProperty<int>* const kWindowVisibilityAnimationDurationKey =
+    &kWindowVisibilityAnimationDurationProp;
+const aura::WindowProperty<WindowVisibilityAnimationTransition>* const
+    kWindowVisibilityAnimationTransitionKey =
+        &kWindowVisibilityAnimationTransitionProp;
+
 }  // namespace internal
 
 void SetWindowVisibilityAnimationType(aura::Window* window,
                                       WindowVisibilityAnimationType type) {
-  window->SetIntProperty(internal::kWindowVisibilityAnimationTypeKey, type);
+  window->SetProperty(internal::kWindowVisibilityAnimationTypeKey, type);
 }
 
 void SetWindowVisibilityAnimationTransition(
     aura::Window* window,
     WindowVisibilityAnimationTransition transition) {
-  window->SetIntProperty(internal::kWindowVisibilityAnimationTransitionKey,
-                         transition);
+  window->SetProperty(internal::kWindowVisibilityAnimationTransitionKey,
+                      transition);
 }
 
 void SetWindowVisibilityAnimationDuration(aura::Window* window,
                                           const base::TimeDelta& duration) {
-  window->SetIntProperty(internal::kWindowVisibilityAnimationDurationKey,
-                         static_cast<int>(duration.ToInternalValue()));
+  window->SetProperty(internal::kWindowVisibilityAnimationDurationKey,
+                      static_cast<int>(duration.ToInternalValue()));
 }
 
 bool HasWindowVisibilityAnimationTransition(
     aura::Window* window,
     WindowVisibilityAnimationTransition transition) {
-  int prop = window->GetIntProperty(
+  WindowVisibilityAnimationTransition prop = window->GetProperty(
       internal::kWindowVisibilityAnimationTransitionKey);
-  return !prop || (prop & transition) != 0;
+  return (prop & transition) != 0;
 }
 
 namespace internal {
@@ -69,8 +85,7 @@ const float kWindowAnimation_Vertical_TranslateY = 15.f;
 WindowVisibilityAnimationType GetWindowVisibilityAnimationType(
     aura::Window* window) {
   WindowVisibilityAnimationType type =
-      static_cast<WindowVisibilityAnimationType>(
-          window->GetIntProperty(kWindowVisibilityAnimationTypeKey));
+      window->GetProperty(kWindowVisibilityAnimationTypeKey);
   if (type == WINDOW_VISIBILITY_ANIMATION_TYPE_DEFAULT) {
     return window->type() == aura::client::WINDOW_TYPE_MENU ?
         WINDOW_VISIBILITY_ANIMATION_TYPE_FADE :
@@ -154,7 +169,7 @@ void AnimateShowWindowCommon(aura::Window* window,
     // Property sets within this scope will be implicitly animated.
     ui::ScopedLayerAnimationSettings settings(window->layer()->GetAnimator());
     int duration =
-        window->GetIntProperty(internal::kWindowVisibilityAnimationDurationKey);
+        window->GetProperty(internal::kWindowVisibilityAnimationDurationKey);
     if (duration > 0) {
       settings.SetTransitionDuration(
           base::TimeDelta::FromInternalValue(duration));
@@ -176,7 +191,7 @@ void AnimateHideWindowCommon(aura::Window* window,
   settings.AddObserver(new HidingWindowAnimationObserver(window));
 
   int duration =
-      window->GetIntProperty(internal::kWindowVisibilityAnimationDurationKey);
+      window->GetProperty(internal::kWindowVisibilityAnimationDurationKey);
   if (duration > 0) {
     settings.SetTransitionDuration(
         base::TimeDelta::FromInternalValue(duration));
@@ -275,7 +290,7 @@ bool AnimateHideWindow(aura::Window* window) {
 // WindowAnimation, public:
 
 bool AnimateOnChildWindowVisibilityChanged(aura::Window* window, bool visible) {
-  if (window->GetIntProperty(aura::client::kAnimationsDisabledKey) == 1 ||
+  if (window->GetProperty(aura::client::kAnimationsDisabledKey) ||
       CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kAuraWindowAnimationsDisabled)) {
     return false;

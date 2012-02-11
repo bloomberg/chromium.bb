@@ -27,11 +27,15 @@ class AURA_EXPORT WindowObserver {
   // Invoked when this window's parent window changes.  |parent| may be NULL.
   virtual void OnWindowParentChanged(Window* window, Window* parent) {}
 
-  // Invoked when SetProperty() or SetIntProperty() is called on |window|.
-  // |old| is the old property value.
+  // Invoked when SetProperty(), ClearProperty(), or
+  // NativeWidgetAura::SetNativeWindowProperty() is called on the window.
+  // |key| is either a WindowProperty<T>* (SetProperty, ClearProperty)
+  // or a const char* (SetNativeWindowProperty). Either way, it can simply be
+  // compared for equality with the property constant. |old| is the old property
+  // value, which must be cast to the appropriate type before use.
   virtual void OnWindowPropertyChanged(Window* window,
-                                       const char* key,
-                                       void* old) {}
+                                       const void* key,
+                                       intptr_t old) {}
 
   // Invoked when SetVisible() is invoked on a window. |visible| is the
   // value supplied to SetVisible(). If |visible| is true, window->IsVisible()

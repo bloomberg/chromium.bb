@@ -68,7 +68,7 @@ ViewsTestBase::ViewsTestBase()
   test_activation_client_.reset(new aura::test::TestActivationClient);
   test_input_method_.reset(new DummyInputMethod);
   aura::RootWindow::GetInstance()->SetProperty(
-      aura::client::kRootWindowInputMethod,
+      aura::client::kRootWindowInputMethodKey,
       test_input_method_.get());
 #endif
 }

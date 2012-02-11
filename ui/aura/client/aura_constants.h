@@ -7,33 +7,39 @@
 #pragma once
 
 #include "ui/aura/aura_export.h"
+#include "ui/aura/window.h"
+#include "ui/base/ui_base_types.h"
+
+namespace ui {
+class InputMethod;
+}
 
 namespace aura {
 namespace client {
 
 // Alphabetical sort.
 
-// A property key to store always-on-top flag. The type of the value is boolean.
-AURA_EXPORT extern const char kAlwaysOnTopKey[];
+// A property key to store always-on-top flag.
+AURA_EXPORT extern const WindowProperty<bool>* const kAlwaysOnTopKey;
 
 // A property key to store whether animations are disabled for the window. Type
 // of value is an int.
-AURA_EXPORT extern const char kAnimationsDisabledKey[];
+AURA_EXPORT extern const WindowProperty<bool>* const kAnimationsDisabledKey;
 
-// A property key to store the boolean property of window modality.
-AURA_EXPORT extern const char kModalKey[];
+// A property key to store the window modality.
+AURA_EXPORT extern const WindowProperty<ui::ModalType>* const kModalKey;
 
-// A property key to store the restore bounds for a window. The type
-// of the value is |gfx::Rect*|.
-AURA_EXPORT extern const char kRestoreBoundsKey[];
+// A property key to store the restore bounds for a window.
+AURA_EXPORT extern const WindowProperty<gfx::Rect*>* const kRestoreBoundsKey;
 
-// A property key to store an input method object that handles a key event. The
-// type of the value is |ui::InputMethod*|.
-AURA_EXPORT extern const char kRootWindowInputMethod[];
+// A property key to store an input method object that handles a key event.
+AURA_EXPORT extern const WindowProperty<ui::InputMethod*>* const
+    kRootWindowInputMethodKey;
 
 // A property key to store ui::WindowShowState for a window.
 // See ui/base/ui_base_types.h for its definition.
-AURA_EXPORT extern const char kShowStateKey[];
+AURA_EXPORT extern const WindowProperty<ui::WindowShowState>* const
+    kShowStateKey;
 
 // Alphabetical sort.
 

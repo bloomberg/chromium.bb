@@ -52,8 +52,8 @@ class ASH_EXPORT SystemModalContainerLayoutManager
 
   // Overridden from aura::WindowObserver:
   virtual void OnWindowPropertyChanged(aura::Window* window,
-                                       const char* key,
-                                       void* old) OVERRIDE;
+                                       const void* key,
+                                       intptr_t old) OVERRIDE;
 
   // Overridden from ui::ImplicitAnimationObserver:
   virtual void OnImplicitAnimationsCompleted() OVERRIDE;

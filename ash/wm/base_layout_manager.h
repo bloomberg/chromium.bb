@@ -52,8 +52,8 @@ class ASH_EXPORT BaseLayoutManager : public aura::LayoutManager,
 
   // WindowObserver overrides:
   virtual void OnWindowPropertyChanged(aura::Window* window,
-                                       const char* name,
-                                       void* old) OVERRIDE;
+                                       const void* key,
+                                       intptr_t old) OVERRIDE;
 
  private:
   // Update window bounds based on a change in show state.

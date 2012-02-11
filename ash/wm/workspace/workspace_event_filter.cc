@@ -18,9 +18,7 @@ namespace {
 void WindowHoverChanged(aura::Window* window, bool hovered) {
   if (!window)
     return;
-  ash::WindowFrame* window_frame =
-      static_cast<ash::WindowFrame*>(
-          window->GetProperty(ash::kWindowFrameKey));
+  ash::WindowFrame* window_frame = window->GetProperty(ash::kWindowFrameKey);
   if (!window_frame)
     return;
   window_frame->OnWindowHoverChanged(hovered);

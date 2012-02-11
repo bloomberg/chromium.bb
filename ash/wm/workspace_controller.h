@@ -60,8 +60,8 @@ class ASH_EXPORT WorkspaceController :
 
   // aura::WindowObserver overrides:
   virtual void OnWindowPropertyChanged(aura::Window* window,
-                                       const char* key,
-                                       void* old) OVERRIDE;
+                                       const void* key,
+                                       intptr_t old) OVERRIDE;
 
   // ui::SimpleMenuModel::Delegate overrides:
   virtual bool IsCommandIdChecked(int command_id) const OVERRIDE;

@@ -6,20 +6,26 @@
 
 #include "ash/wm/window_animations.h"
 #include "ui/aura/window.h"
+#include "ui/aura/window_property.h"
+
+DECLARE_WINDOW_PROPERTY_TYPE(bool)
 
 namespace ash {
 namespace internal {
 namespace {
 
 // Property set on all windows whose child windows' visibility changes are
-// animated. The type of the value is bool.
-const char kChildWindowVisibilityChangesAnimated[] =
-    "ash/wm/ChildWindowVisibilityChangesAnimated";
+// animated.
+const aura::WindowProperty<bool>
+    kChildWindowVisibilityChangesAnimatedProp = {false};
+const aura::WindowProperty<bool>* const
+    kChildWindowVisibilityChangesAnimatedKey =
+        &kChildWindowVisibilityChangesAnimatedProp;
 
 bool GetChildWindowVisibilityChangesAnimated(aura::Window* window) {
   if (!window)
     return false;
-  return window->GetIntProperty(kChildWindowVisibilityChangesAnimated) != 0;
+  return window->GetProperty(kChildWindowVisibilityChangesAnimatedKey);
 }
 
 }  // namespace
@@ -56,7 +62,7 @@ void VisibilityController::UpdateLayerVisibility(aura::Window* window,
 }  // namespace internal
 
 void SetChildWindowVisibilityChangesAnimated(aura::Window* window) {
-  window->SetIntProperty(internal::kChildWindowVisibilityChangesAnimated, 1);
+  window->SetProperty(internal::kChildWindowVisibilityChangesAnimatedKey, true);
 }
 
 }  // namespace ash

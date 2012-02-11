@@ -114,14 +114,13 @@ TEST_F(CompactLayoutManagerTest, StatusAreaVisibility) {
   views::Widget* widget = CreateTestWidget();
   layout_manager()->set_status_area_widget(widget);
   EXPECT_TRUE(widget->IsVisible());
-  window->SetIntProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MAXIMIZED);
+  window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MAXIMIZED);
   EXPECT_TRUE(widget->IsVisible());
-  window->SetIntProperty(aura::client::kShowStateKey, ui::SHOW_STATE_NORMAL);
+  window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_NORMAL);
   EXPECT_TRUE(widget->IsVisible());
-  window->SetIntProperty(aura::client::kShowStateKey,
-                         ui::SHOW_STATE_FULLSCREEN);
+  window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_FULLSCREEN);
   EXPECT_FALSE(widget->IsVisible());
-  window->SetIntProperty(aura::client::kShowStateKey, ui::SHOW_STATE_NORMAL);
+  window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_NORMAL);
   EXPECT_TRUE(widget->IsVisible());
 }
 

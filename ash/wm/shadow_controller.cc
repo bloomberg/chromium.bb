@@ -64,9 +64,9 @@ void ShadowController::OnWindowInitialized(aura::Window* window) {
 }
 
 void ShadowController::OnWindowPropertyChanged(aura::Window* window,
-                                               const char* name,
-                                               void* old) {
-  if (name == kShadowTypeKey)
+                                               const void* key,
+                                               intptr_t old) {
+  if (key == kShadowTypeKey)
     HandlePossibleShadowVisibilityChange(window);
 }
 

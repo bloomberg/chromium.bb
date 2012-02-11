@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -57,9 +57,9 @@ void AlwaysOnTopController::OnWillRemoveWindow(aura::Window* child) {
 }
 
 void AlwaysOnTopController::OnWindowPropertyChanged(aura::Window* window,
-                                                    const char* name,
-                                                    void* old) {
-  if (name == aura::client::kAlwaysOnTopKey) {
+                                                    const void* key,
+                                                    intptr_t old) {
+  if (key == aura::client::kAlwaysOnTopKey) {
     DCHECK(window->type() == aura::client::WINDOW_TYPE_NORMAL ||
            window->type() == aura::client::WINDOW_TYPE_POPUP);
     aura::Window* container = GetContainer(window);

@@ -177,7 +177,7 @@ class VIEWS_EXPORT NativeWidgetAura : public internal::NativeWidgetPrivate,
   gfx::NativeCursor cursor_;
 
   // The saved window state for exiting full screen state.
-  int saved_window_state_;
+  ui::WindowShowState saved_window_state_;
 
   scoped_ptr<TooltipManagerAura> tooltip_manager_;
 

@@ -81,10 +81,10 @@ void ToplevelLayoutManager::SetChildBounds(aura::Window* child,
 // ToplevelLayoutManager, WindowObserver overrides:
 
 void ToplevelLayoutManager::OnWindowPropertyChanged(aura::Window* window,
-                                                    const char* name,
-                                                    void* old) {
-  BaseLayoutManager::OnWindowPropertyChanged(window, name, old);
-  if (name == aura::client::kShowStateKey)
+                                                    const void* key,
+                                                    intptr_t old) {
+  BaseLayoutManager::OnWindowPropertyChanged(window, key, old);
+  if (key == aura::client::kShowStateKey)
     UpdateShelfVisibility();
 }
 

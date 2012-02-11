@@ -224,8 +224,8 @@ class BrowserFrameAura::WindowPropertyWatcher : public aura::WindowObserver {
         browser_frame_(browser_frame) {}
 
   virtual void OnWindowPropertyChanged(aura::Window* window,
-                                       const char* key,
-                                       void* old) OVERRIDE {
+                                       const void* key,
+                                       intptr_t old) {
     if (key != aura::client::kShowStateKey)
       return;
 

@@ -36,10 +36,12 @@ TEST_F(InputMethodEventFilterTestWithoutShell, TestInputMethodProperty) {
   aura::RootWindow* root_window = aura::RootWindow::GetInstance();
   scoped_ptr<internal::RootWindowEventFilter> root_filter(
       new internal::RootWindowEventFilter);
-  EXPECT_FALSE(root_window->GetProperty(aura::client::kRootWindowInputMethod));
+  EXPECT_FALSE(
+      root_window->GetProperty(aura::client::kRootWindowInputMethodKey));
   internal::InputMethodEventFilter ime_filter;
   root_filter->AddFilter(&ime_filter);
-  EXPECT_TRUE(root_window->GetProperty(aura::client::kRootWindowInputMethod));
+  EXPECT_TRUE(
+      root_window->GetProperty(aura::client::kRootWindowInputMethodKey));
   root_filter->RemoveFilter(&ime_filter);
 }
 

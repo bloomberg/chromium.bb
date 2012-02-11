@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,10 +12,6 @@ namespace aura {
 class DropTargetEvent;
 class Window;
 namespace client {
-
-// A property key to store the drag and drop delegate for a window. The type of
-// the value is |aura::WindowDragDropDelegate*|.
-AURA_EXPORT extern const char kDragDropDelegateKey[];
 
 // Delegate interface for drag and drop actions on aura::Window.
 class AURA_EXPORT DragDropDelegate {

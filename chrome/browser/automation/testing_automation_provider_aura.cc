@@ -23,8 +23,8 @@ void TestingAutomationProvider::IsWindowMaximized(int handle,
                                                   bool* success) {
   aura::Window* window = window_tracker_->GetResource(handle);
   if (window) {
-    int show_state = window->GetIntProperty(aura::client::kShowStateKey);
-    *is_maximized = (show_state == ui::SHOW_STATE_MAXIMIZED);
+    *is_maximized = window->GetProperty(aura::client::kShowStateKey) ==
+        ui::SHOW_STATE_MAXIMIZED;
     *success = true;
   } else {
     *success = false;

@@ -43,6 +43,10 @@ namespace internal {
 class FocusManager;
 }
 
+// Defined in window_property.h (which we do not include)
+template<typename T>
+struct WindowProperty;
+
 // Aura window implementation. Interesting events are sent to the
 // WindowDelegate.
 // TODO(beng): resolve ownership.
@@ -272,27 +276,40 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
   // Returns true if this window has a mouse capture.
   bool HasCapture();
 
-  // Sets the window property |value| for given |name|. Setting NULL or 0
-  // removes the property. It uses |ui::ViewProp| to store the property.
-  // Please see the description of |prop_map_| for more details. The caller is
-  // responsible for the lifetime of any object set as a property on the Window.
-  void SetProperty(const char* name, void* value);
-  void SetIntProperty(const char* name, int value);
-
-  // Returns the window property for given |name|.  Returns NULL or 0 if
-  // the property does not exist.
-  // TODO(oshima): Returning 0 for non existing property is problematic.
-  // Fix ViewProp to be able to tell if the property exists and
-  // change it to -1.
-  void* GetProperty(const char* name) const;
-  int GetIntProperty(const char* name) const;
-
   // Returns true if this window is currently stopping event
   // propagation for any windows behind it in the z-order.
   bool StopsEventPropagation() const;
 
+  // Sets the |value| of the given window |property|. Setting to the default
+  // value (e.g., NULL) removes the property. The caller is responsible for the
+  // lifetime of any object set as a property on the Window.
+  template<typename T>
+  void SetProperty(const WindowProperty<T>* property, T value);
+
+  // Returns the value of the given window |property|.  Returns the
+  // property-specific default value if the property was not previously set.
+  template<typename T>
+  T GetProperty(const WindowProperty<T>* property) const;
+
+  // Sets the |property| to its default value. Useful for avoiding a cast when
+  // setting to NULL.
+  template<typename T>
+  void ClearProperty(const WindowProperty<T>* property);
+
+  // NativeWidget::[GS]etNativeWindowProperty use strings as keys, and this is
+  // difficult to change while retaining compatibility with other platforms.
+  // TODO(benrg): Find a better solution.
+  void SetNativeWindowProperty(const char* key, void* value);
+  void* GetNativeWindowProperty(const char* key) const;
+
  private:
   friend class LayoutManager;
+
+  // Called by the public {Set,Get,Clear}Property functions.
+  void SetPropertyInternal(const void* key,
+                           intptr_t value,
+                           intptr_t default_value);
+  intptr_t GetPropertyInternal(const void* key, intptr_t default_value) const;
 
   // Changes the bounds of the window without condition.
   void SetBoundsInternal(const gfx::Rect& new_bounds);
@@ -388,12 +405,7 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
 
   ObserverList<WindowObserver> observers_;
 
-  // We're using ViewProp to store the property (for now) instead of
-  // just using std::map because chrome is still using |ViewProp| class
-  // to create and access property.
-  // TODO(oshima): Consolidcate ViewProp and aura::window property
-  // implementation.
-  std::map<const char*, void*> prop_map_;
+  std::map<const void*, intptr_t> prop_map_;
 
   DISALLOW_COPY_AND_ASSIGN(Window);
 };

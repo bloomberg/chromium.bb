@@ -44,8 +44,8 @@ class ASH_EXPORT CompactLayoutManager : public BaseLayoutManager,
 
   // aura::WindowObserver overrides:
   virtual void OnWindowPropertyChanged(aura::Window* window,
-                                       const char* name,
-                                       void* old) OVERRIDE;
+                                       const void* key,
+                                       intptr_t old) OVERRIDE;
   virtual void OnWindowStackingChanged(aura::Window* window) OVERRIDE;
 
   // ui::LayerAnimationObserver overrides:

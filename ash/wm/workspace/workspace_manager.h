@@ -94,8 +94,8 @@ class ASH_EXPORT WorkspaceManager : public aura::WindowObserver{
 
   // Overriden from aura::WindowObserver:
   virtual void OnWindowPropertyChanged(aura::Window* window,
-                                       const char* name,
-                                       void* old) OVERRIDE;
+                                       const void* key,
+                                       intptr_t old) OVERRIDE;
 
  private:
   friend class Workspace;

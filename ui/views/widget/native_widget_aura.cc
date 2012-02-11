@@ -91,8 +91,7 @@ void CloseAllSecondaryWidgetsCallback(Widget* widget) {
 }
 
 const gfx::Rect* GetRestoreBounds(aura::Window* window) {
-  return reinterpret_cast<gfx::Rect*>(
-      window->GetProperty(aura::client::kRestoreBoundsKey));
+  return window->GetProperty(aura::client::kRestoreBoundsKey);
 }
 
 void SetRestoreBounds(aura::Window* window, const gfx::Rect& bounds) {
@@ -115,9 +114,9 @@ class NativeWidgetAura::ActiveWindowObserver : public aura::WindowObserver {
 
   // Overridden from aura::WindowObserver:
   virtual void OnWindowPropertyChanged(aura::Window* window,
-                                       const char* key,
-                                       void* old) OVERRIDE {
-    if (key != aura::client::kRootWindowActiveWindow)
+                                       const void* key,
+                                       intptr_t old) OVERRIDE {
+    if (key != aura::client::kRootWindowActiveWindowKey)
       return;
     aura::Window* active =
         aura::client::GetActivationClient()->GetActiveWindow();
@@ -173,7 +172,7 @@ void NativeWidgetAura::InitNativeWidget(const Widget::InitParams& params) {
   ownership_ = params.ownership;
   window_->set_user_data(this);
   window_->SetType(GetAuraWindowTypeForWidgetType(params.type));
-  window_->SetIntProperty(aura::client::kShowStateKey, params.show_state);
+  window_->SetProperty(aura::client::kShowStateKey, params.show_state);
   window_->SetTransparent(params.transparent);
   window_->Init(params.create_texture_for_layer ?
                     ui::Layer::LAYER_TEXTURED :
@@ -284,11 +283,11 @@ void NativeWidgetAura::ViewRemoved(View* view) {
 
 void NativeWidgetAura::SetNativeWindowProperty(const char* name, void* value) {
   if (window_)
-    window_->SetProperty(name, value);
+    window_->SetNativeWindowProperty(name, value);
 }
 
 void* NativeWidgetAura::GetNativeWindowProperty(const char* name) const {
-  return window_ ? window_->GetProperty(name) : NULL;
+  return window_ ? window_->GetNativeWindowProperty(name) : NULL;
 }
 
 TooltipManager* NativeWidgetAura::GetTooltipManager() const {
@@ -322,8 +321,8 @@ bool NativeWidgetAura::HasMouseCapture() const {
 
 InputMethod* NativeWidgetAura::CreateInputMethod() {
   aura::RootWindow* root_window = aura::RootWindow::GetInstance();
-  ui::InputMethod* host = reinterpret_cast<ui::InputMethod*>(
-      root_window->GetProperty(aura::client::kRootWindowInputMethod));
+  ui::InputMethod* host =
+      root_window->GetProperty(aura::client::kRootWindowInputMethodKey);
   InputMethod* input_method = new InputMethodBridge(this, host);
   input_method->Init(GetWidget());
   return input_method;
@@ -367,8 +366,7 @@ void NativeWidgetAura::GetWindowPlacement(
     ui::WindowShowState* show_state) const {
   // The interface specifies returning restored bounds, not current bounds.
   *bounds = GetRestoredBounds();
-  *show_state = static_cast<ui::WindowShowState>(
-      window_->GetIntProperty(aura::client::kShowStateKey));
+  *show_state = window_->GetProperty(aura::client::kShowStateKey);
 }
 
 void NativeWidgetAura::SetWindowTitle(const string16& title) {
@@ -397,7 +395,7 @@ void NativeWidgetAura::SetAccessibleState(ui::AccessibilityTypes::State state) {
 
 void NativeWidgetAura::InitModalType(ui::ModalType modal_type) {
   if (modal_type != ui::MODAL_TYPE_NONE)
-    window_->SetIntProperty(aura::client::kModalKey, modal_type);
+    window_->SetProperty(aura::client::kModalKey, modal_type);
 }
 
 gfx::Rect NativeWidgetAura::GetWindowScreenBounds() const {
@@ -411,8 +409,8 @@ gfx::Rect NativeWidgetAura::GetClientAreaScreenBounds() const {
 }
 
 gfx::Rect NativeWidgetAura::GetRestoredBounds() const {
-  gfx::Rect* restore_bounds = reinterpret_cast<gfx::Rect*>(
-      window_->GetProperty(aura::client::kRestoreBoundsKey));
+  gfx::Rect* restore_bounds =
+      window_->GetProperty(aura::client::kRestoreBoundsKey);
   return restore_bounds ? *restore_bounds : window_->bounds();
 }
 
@@ -446,7 +444,7 @@ void NativeWidgetAura::Close() {
          ownership_ == Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET);
   if (window_) {
     Hide();
-    window_->SetIntProperty(aura::client::kModalKey, 0);
+    window_->SetProperty(aura::client::kModalKey, ui::MODAL_TYPE_NONE);
   }
 
   if (!close_widget_factory_.HasWeakPtrs()) {
@@ -476,10 +474,8 @@ void NativeWidgetAura::ShowMaximizedWithBounds(
 }
 
 void NativeWidgetAura::ShowWithWindowState(ui::WindowShowState state) {
-  if (state == ui::SHOW_STATE_MAXIMIZED ||
-      state == ui::SHOW_STATE_FULLSCREEN) {
-    window_->SetIntProperty(aura::client::kShowStateKey, state);
-  }
+  if (state == ui::SHOW_STATE_MAXIMIZED || state == ui::SHOW_STATE_FULLSCREEN)
+    window_->SetProperty(aura::client::kShowStateKey, state);
   window_->Show();
   if (can_activate_) {
     if (state != ui::SHOW_STATE_INACTIVE)
@@ -512,12 +508,11 @@ bool NativeWidgetAura::IsActive() const {
 }
 
 void NativeWidgetAura::SetAlwaysOnTop(bool on_top) {
-  window_->SetIntProperty(aura::client::kAlwaysOnTopKey, on_top);
+  window_->SetProperty(aura::client::kAlwaysOnTopKey, on_top);
 }
 
 void NativeWidgetAura::Maximize() {
-  window_->SetIntProperty(aura::client::kShowStateKey,
-                          ui::SHOW_STATE_MAXIMIZED);
+  window_->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MAXIMIZED);
 }
 
 void NativeWidgetAura::Minimize() {
@@ -526,17 +521,17 @@ void NativeWidgetAura::Minimize() {
 }
 
 bool NativeWidgetAura::IsMaximized() const {
-  return window_->GetIntProperty(aura::client::kShowStateKey) ==
+  return window_->GetProperty(aura::client::kShowStateKey) ==
       ui::SHOW_STATE_MAXIMIZED;
 }
 
 bool NativeWidgetAura::IsMinimized() const {
-  return window_->GetIntProperty(aura::client::kShowStateKey) ==
+  return window_->GetProperty(aura::client::kShowStateKey) ==
       ui::SHOW_STATE_MINIMIZED;
 }
 
 void NativeWidgetAura::Restore() {
-  window_->SetIntProperty(aura::client::kShowStateKey, ui::SHOW_STATE_NORMAL);
+  window_->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_NORMAL);
 }
 
 void NativeWidgetAura::SetFullscreen(bool fullscreen) {
@@ -546,15 +541,15 @@ void NativeWidgetAura::SetFullscreen(bool fullscreen) {
   // Save window state before entering full screen so that it could restored
   // when exiting full screen.
   if (fullscreen)
-    saved_window_state_ = window_->GetIntProperty(aura::client::kShowStateKey);
+    saved_window_state_ = window_->GetProperty(aura::client::kShowStateKey);
 
-  window_->SetIntProperty(
+  window_->SetProperty(
       aura::client::kShowStateKey,
       fullscreen ? ui::SHOW_STATE_FULLSCREEN : saved_window_state_);
 }
 
 bool NativeWidgetAura::IsFullscreen() const {
-  return window_->GetIntProperty(aura::client::kShowStateKey) ==
+  return window_->GetProperty(aura::client::kShowStateKey) ==
       ui::SHOW_STATE_FULLSCREEN;
 }
 
@@ -629,7 +624,7 @@ void NativeWidgetAura::EndMoveLoop() {
 }
 
 void NativeWidgetAura::SetVisibilityChangedAnimationsEnabled(bool value) {
-  window_->SetIntProperty(aura::client::kAnimationsDisabledKey, value ? 0 : 1);
+  window_->SetProperty(aura::client::kAnimationsDisabledKey, !value);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

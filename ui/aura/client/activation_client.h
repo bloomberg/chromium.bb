@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,18 +7,10 @@
 #pragma once
 
 #include "ui/aura/aura_export.h"
+#include "ui/aura/window.h"
 
 namespace aura {
-class Window;
 namespace client {
-
-// A property key to store a client that handles window activation. The type of
-// the value is |aura::client::ActivationClient*|.
-AURA_EXPORT extern const char kRootWindowActivationClient[];
-
-// A property key to store what the client defines as the active window on the
-// RootWindow. The type of the value is |aura::Window*|.
-AURA_EXPORT extern const char kRootWindowActiveWindow[];
 
 // An interface implemented by an object that manages window activation.
 class AURA_EXPORT ActivationClient {
@@ -44,6 +36,11 @@ class AURA_EXPORT ActivationClient {
 // Sets/Gets the activation client on the RootWindow.
 AURA_EXPORT void SetActivationClient(ActivationClient* client);
 AURA_EXPORT ActivationClient* GetActivationClient();
+
+// A property key to store what the client defines as the active window on the
+// RootWindow.
+AURA_EXPORT extern const WindowProperty<Window*>* const
+    kRootWindowActiveWindowKey;
 
 }  // namespace clients
 }  // namespace aura
