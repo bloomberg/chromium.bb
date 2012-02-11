@@ -347,6 +347,14 @@ class _config(dict):
 _default = _config(**_settings)
 
 
+# It is only safe to inherit prebuilts from generic boards, or from the
+# same board without the variant. This rule helps keep inheritance trees
+# sane.
+generic_boards = set([
+  'x86-generic', 'amd64-generic', 'tegra2'
+])
+
+
 # Arch-specific mixins.
 
 arm = _config(
