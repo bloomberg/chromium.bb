@@ -1531,7 +1531,6 @@
         'browser/net/chrome_net_log_unittest.cc',
         'browser/net/connection_tester_unittest.cc',
         'browser/net/gaia/gaia_oauth_fetcher_unittest.cc',
-        'browser/net/http_pipelining_compatibility_client_unittest.cc',
         'browser/net/http_server_properties_manager_unittest.cc',
         'browser/net/load_timing_observer_unittest.cc',
         'browser/net/network_stats_unittest.cc',

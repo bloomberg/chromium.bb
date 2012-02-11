@@ -1674,8 +1674,6 @@
         'browser/net/gaia/gaia_oauth_fetcher.h',
         'browser/net/load_timing_observer.cc',
         'browser/net/load_timing_observer.h',
-        'browser/net/http_pipelining_compatibility_client.cc',
-        'browser/net/http_pipelining_compatibility_client.h',
         'browser/net/net_log_logger.cc',
         'browser/net/net_log_logger.h',
         'browser/net/net_pref_observer.cc',
