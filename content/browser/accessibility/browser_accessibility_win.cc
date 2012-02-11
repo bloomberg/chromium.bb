@@ -768,6 +768,9 @@ STDMETHODIMP BrowserAccessibilityWin::scrollTo(enum IA2ScrollType scroll_type) {
       break;
   }
 
+  static_cast<BrowserAccessibilityManagerWin*>(manager_)
+      ->TrackScrollingObject(this);
+
   return S_OK;
 }
 
@@ -794,6 +797,9 @@ STDMETHODIMP BrowserAccessibilityWin::scrollToPoint(
 
   gfx::Rect r = location_;
   manager_->ScrollToPoint(*this, gfx::Point(x, y));
+
+  static_cast<BrowserAccessibilityManagerWin*>(manager_)
+      ->TrackScrollingObject(this);
 
   return S_OK;
 }

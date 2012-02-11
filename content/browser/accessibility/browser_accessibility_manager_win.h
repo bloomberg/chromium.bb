@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -28,6 +28,11 @@ class BrowserAccessibilityManagerWin : public BrowserAccessibilityManager {
   // BrowserAccessibilityManager methods
   virtual void NotifyAccessibilityEvent(int type, BrowserAccessibility* node);
 
+  // Track this object and post a VISIBLE_DATA_CHANGED notification when
+  // its container scrolls.
+  // TODO(dmazzoni): remove once http://crbug.com/113483 is fixed.
+  void TrackScrollingObject(BrowserAccessibilityWin* node);
+
  private:
   BrowserAccessibilityManagerWin(
       HWND parent_window,
@@ -40,6 +45,11 @@ class BrowserAccessibilityManagerWin : public BrowserAccessibilityManager {
 
   // Give BrowserAccessibilityManager::Create access to our constructor.
   friend class BrowserAccessibilityManager;
+
+  // Track the most recent object that has been asked to scroll and
+  // post a notification directly on it when it reaches its destination.
+  // TODO(dmazzoni): remove once http://crbug.com/113483 is fixed.
+  BrowserAccessibilityWin* tracked_scroll_object_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserAccessibilityManagerWin);
 };
