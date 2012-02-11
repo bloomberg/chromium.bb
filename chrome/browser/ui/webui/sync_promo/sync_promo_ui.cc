@@ -111,8 +111,6 @@ bool GetValueForKeyInQuery(const GURL& url, const std::string& search_key,
 }  // namespace
 
 SyncPromoUI::SyncPromoUI(content::WebUI* web_ui) : WebUIController(web_ui) {
-  web_ui->HideURL();
-
   SyncPromoHandler* handler = new SyncPromoHandler(
       GetSourceForSyncPromoURL(web_ui->GetWebContents()->GetURL()),
       g_browser_process->profile_manager());
