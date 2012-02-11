@@ -1787,10 +1787,16 @@ IN_PROC_BROWSER_TEST_F(PanelDownloadTest, Download) {
   browser()->CloseWindow();
 }
 
+// See crbug 113779.
+#if defined(OS_MACOSX)
+#define MAYBE_DownloadNoTabbedBrowser DISABLED_DownloadNoTabbedBrowser
+#else
+#define MAYBE_DownloadNoTabbedBrowser DownloadNoTabbedBrowser
+#endif
 // Verify that a new tabbed browser is created to display a download
 // shelf when a download is started in a Panel and there is no existing
 // tabbed browser.
-IN_PROC_BROWSER_TEST_F(PanelDownloadTest, DownloadNoTabbedBrowser) {
+IN_PROC_BROWSER_TEST_F(PanelDownloadTest, MAYBE_DownloadNoTabbedBrowser) {
   Profile* profile = browser()->profile();
   ASSERT_TRUE(CreateDownloadDirectory(profile));
   Browser* panel_browser = Browser::CreateForApp(Browser::TYPE_PANEL,
