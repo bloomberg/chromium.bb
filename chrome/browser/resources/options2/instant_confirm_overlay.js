@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,7 +14,6 @@ cr.define('options', function() {
   cr.addSingletonGetter(InstantConfirmOverlay);
 
   InstantConfirmOverlay.prototype = {
-    // Inherit from OptionsPage.
     __proto__: OptionsPage.prototype,
 
     initializePage: function() {
@@ -22,7 +21,7 @@ cr.define('options', function() {
 
       $('instantConfirmCancel').onclick = function() {
         OptionsPage.closeOverlay();
-        $('instantEnabledCheckbox').checked = false;
+        $('instant-enabled-control').checked = false;
       };
 
       $('instantConfirmOk').onclick = function() {
