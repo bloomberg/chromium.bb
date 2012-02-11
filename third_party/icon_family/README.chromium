@@ -11,4 +11,4 @@ Description:
 This is an Objective-C wrapper around Mac OS X Icon Services' "IconFamily" data type. This is used to create .icns files for Web Apps installed from the browser.
 
 Local Modifications:
-None
+chromium_icon_family.patch: Fix minor erors and warnings. Put code that the custom icon code behind a DISABLE_CUSTOM_ICON flag.

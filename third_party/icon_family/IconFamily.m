@@ -91,7 +91,9 @@ enum {
 
 + (Handle) get1BitMaskFromBitmapImageRep:(NSBitmapImageRep*)bitmapImageRep requiredPixelSize:(int)requiredPixelSize;
 
+#if !defined(DISABLE_CUSTOM_ICON)
 - (BOOL) addResourceType:(OSType)type asResID:(int)resID;
+#endif
 
 @end
 
@@ -135,7 +137,7 @@ enum {
 // This is IconFamily's designated initializer.  It creates a new IconFamily that initially has no elements.
 //
 // The proper way to do this is to simply allocate a zero-sized handle (not to be confused with an empty handle) and assign it to hIconFamily.  This technique works on Mac OS X 10.2 as well as on 10.0.x and 10.1.x.  Our previous technique of allocating an IconFamily struct with a resourceSize of 0 no longer works as of Mac OS X 10.2.
-- init
+- (id) init
 {
     self = [super init];
     if (self) {
@@ -148,7 +150,7 @@ enum {
     return self;
 }
 
-- initWithData:(NSData *)data
+- (id) initWithData:(NSData *)data
 {
     self = [self init];
     if (self) {
@@ -166,7 +168,7 @@ enum {
     return self;
 }
 
-- initWithContentsOfFile:(NSString*)path
+- (id) initWithContentsOfFile:(NSString*)path
 {
     FSRef ref;
     OSStatus result;
@@ -190,7 +192,7 @@ enum {
     return self;
 }
 
-- initWithIconFamilyHandle:(IconFamilyHandle)hNewIconFamily
+- (id) initWithIconFamilyHandle:(IconFamilyHandle)hNewIconFamily
 {
     self = [self init];
     if (self) {
@@ -203,7 +205,7 @@ enum {
     return self;
 }
 
-- initWithIconOfFile:(NSString*)path
+- (id) initWithIconOfFile:(NSString*)path
 {
     IconRef	iconRef;
     OSStatus	result;
@@ -257,7 +259,7 @@ enum {
     return self;
 }
 
-- initWithSystemIcon:(int)fourByteCode
+- (id) initWithSystemIcon:(int)fourByteCode
 {
     IconRef	iconRef;
     OSErr	result;
@@ -295,13 +297,13 @@ enum {
     return self;
 }
 
-- initWithThumbnailsOfImage:(NSImage*)image
+- (id) initWithThumbnailsOfImage:(NSImage*)image
 {
     // The default is to use a high degree of antialiasing, producing a smooth image.
     return [self initWithThumbnailsOfImage:image usingImageInterpolation:NSImageInterpolationHigh];
 }
 
-- initWithThumbnailsOfImage:(NSImage*)image usingImageInterpolation:(NSImageInterpolation)imageInterpolation
+- (id) initWithThumbnailsOfImage:(NSImage*)image usingImageInterpolation:(NSImageInterpolation)imageInterpolation
 {
     NSImage* iconImage512x512;
     NSImage* iconImage256x256;
@@ -724,6 +726,8 @@ enum {
     return YES;
 }
 
+#if !defined(DISABLE_CUSTOM_ICON)
+
 - (BOOL) setAsCustomIconForFile:(NSString*)path
 {
     return( [self setAsCustomIconForFile:path withCompatibility:NO] );
@@ -1138,6 +1142,8 @@ enum {
 	
     return YES;
 }
+
+#endif  // !defined(DISABLE_CUSTOM_ICON)
 
 - (NSData *) data
 {
@@ -1589,6 +1595,8 @@ enum {
     return hRawData;
 }
 
+#if !defined(DISABLE_CUSTOM_ICON)
+
 - (BOOL) addResourceType:(OSType)type asResID:(int)resID 
 {
     Handle hIconRes = NewHandle(0);
@@ -1603,6 +1611,8 @@ enum {
 
     return YES;
 }
+
+#endif  // !defined(DISABLE_CUSTOM_ICON)
 
 @end
 
@@ -1621,7 +1631,7 @@ enum {
     return [[[IconFamily alloc] initWithScrap] autorelease];
 }
 
-- initWithScrap
+- (id) initWithScrap
 {
     NSPasteboard *pboard = [NSPasteboard generalPasteboard];
 
@@ -1702,7 +1712,7 @@ enum {
 - (NSImageRep *) iconfamily_bestRepresentation
 {
 #if MAC_OS_X_VERSION_MIN_REQUIRED < 1060
-	if ([!self respondsToSelector:@selector(bestRepresentationForRect:context:hints:)])
+	if (![self respondsToSelector:@selector(bestRepresentationForRect:context:hints:)])
 	{
 		return [self bestRepresentationForDevice:nil];
 	}

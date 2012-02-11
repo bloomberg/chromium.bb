@@ -1,0 +1,222 @@
+diff --git a/third_party/icon_family/IconFamily.h b/third_party/icon_family/IconFamily.h
+index 6a6049f..63f6bb7 100644
+--- a/third_party/icon_family/IconFamily.h
++++ b/third_party/icon_family/IconFamily.h
+@@ -57,24 +57,24 @@
+ // Initializes as a new, empty IconFamily.  This is IconFamily's designated
+ // initializer method.
+ 
+-- init;
++- (id) init;
+ 
+ // Initializes an IconFamily by loading the contents of an .icns file.
+ 
+-- initWithContentsOfFile:(NSString*)path;
++- (id) initWithContentsOfFile:(NSString*)path;
+ 
+ // Initializes an IconFamily from an existing Carbon IconFamilyHandle.
+ 
+-- initWithIconFamilyHandle:(IconFamilyHandle)hNewIconFamily;
++- (id) initWithIconFamilyHandle:(IconFamilyHandle)hNewIconFamily;
+ 
+ // Initializes an IconFamily by loading the Finder icon that's assigned to a
+ // file.
+ 
+-- initWithIconOfFile:(NSString*)path;
++- (id) initWithIconOfFile:(NSString*)path;
+ 
+ // Initializes an IconFamily by referencing a standard system icon.
+ 
+-- initWithSystemIcon:(int)fourByteCode;
++- (id) initWithSystemIcon:(int)fourByteCode;
+ 
+ // Initializes an IconFamily by creating its elements from a resampled
+ // NSImage.  The second form of this method allows you to specify the degree
+@@ -84,8 +84,8 @@
+ // second form with imageInterpolation set to NSImageInterpolationHigh, which
+ // produces highly smoothed thumbnails.
+ 
+-- initWithThumbnailsOfImage:(NSImage*)image;
+-- initWithThumbnailsOfImage:(NSImage*)image usingImageInterpolation:(NSImageInterpolation)imageInterpolation;
++- (id) initWithThumbnailsOfImage:(NSImage*)image;
++- (id) initWithThumbnailsOfImage:(NSImage*)image usingImageInterpolation:(NSImageInterpolation)imageInterpolation;
+ 
+ // Writes the icon family to an .icns file.
+ 
+@@ -147,6 +147,8 @@
+ 
+ - (NSImage*) imageWithAllReps;
+ 
++#if !defined(DISABLE_CUSTOM_ICON)
++
+ // NOTE: Planned method -- not yet implemented.
+ //
+ // Gets the image data for one of the icon family's elements as a new
+@@ -178,6 +180,8 @@
+ 
+ + (BOOL) removeCustomIconFromDirectory:(NSString*)path;
+ 
++#endif  // !defined(DISABLE_CUSTOM_ICON)
++
+ @end
+ 
+ // Methods for interfacing with the Carbon Scrap Manager (analogous to and
+@@ -185,6 +189,6 @@
+ @interface IconFamily (ScrapAdditions)
+ + (BOOL) canInitWithScrap;
+ + (IconFamily*) iconFamilyWithScrap;
+-- initWithScrap;
++- (id) initWithScrap;
+ - (BOOL) putOnScrap;
+ @end
+diff --git a/third_party/icon_family/IconFamily.m b/third_party/icon_family/IconFamily.m
+index b9571d0..439c2de 100644
+--- a/third_party/icon_family/IconFamily.m
++++ b/third_party/icon_family/IconFamily.m
+@@ -91,7 +91,9 @@ enum {
+ 
+ + (Handle) get1BitMaskFromBitmapImageRep:(NSBitmapImageRep*)bitmapImageRep requiredPixelSize:(int)requiredPixelSize;
+ 
++#if !defined(DISABLE_CUSTOM_ICON)
+ - (BOOL) addResourceType:(OSType)type asResID:(int)resID;
++#endif
+ 
+ @end
+ 
+@@ -135,7 +137,7 @@ enum {
+ // This is IconFamily's designated initializer.  It creates a new IconFamily that initially has no elements.
+ //
+ // The proper way to do this is to simply allocate a zero-sized handle (not to be confused with an empty handle) and assign it to hIconFamily.  This technique works on Mac OS X 10.2 as well as on 10.0.x and 10.1.x.  Our previous technique of allocating an IconFamily struct with a resourceSize of 0 no longer works as of Mac OS X 10.2.
+-- init
++- (id) init
+ {
+     self = [super init];
+     if (self) {
+@@ -148,7 +150,7 @@ enum {
+     return self;
+ }
+ 
+-- initWithData:(NSData *)data
++- (id) initWithData:(NSData *)data
+ {
+     self = [self init];
+     if (self) {
+@@ -166,7 +168,7 @@ enum {
+     return self;
+ }
+ 
+-- initWithContentsOfFile:(NSString*)path
++- (id) initWithContentsOfFile:(NSString*)path
+ {
+     FSRef ref;
+     OSStatus result;
+@@ -190,7 +192,7 @@ enum {
+     return self;
+ }
+ 
+-- initWithIconFamilyHandle:(IconFamilyHandle)hNewIconFamily
++- (id) initWithIconFamilyHandle:(IconFamilyHandle)hNewIconFamily
+ {
+     self = [self init];
+     if (self) {
+@@ -203,7 +205,7 @@ enum {
+     return self;
+ }
+ 
+-- initWithIconOfFile:(NSString*)path
++- (id) initWithIconOfFile:(NSString*)path
+ {
+     IconRef	iconRef;
+     OSStatus	result;
+@@ -257,7 +259,7 @@ enum {
+     return self;
+ }
+ 
+-- initWithSystemIcon:(int)fourByteCode
++- (id) initWithSystemIcon:(int)fourByteCode
+ {
+     IconRef	iconRef;
+     OSErr	result;
+@@ -295,13 +297,13 @@ enum {
+     return self;
+ }
+ 
+-- initWithThumbnailsOfImage:(NSImage*)image
++- (id) initWithThumbnailsOfImage:(NSImage*)image
+ {
+     // The default is to use a high degree of antialiasing, producing a smooth image.
+     return [self initWithThumbnailsOfImage:image usingImageInterpolation:NSImageInterpolationHigh];
+ }
+ 
+-- initWithThumbnailsOfImage:(NSImage*)image usingImageInterpolation:(NSImageInterpolation)imageInterpolation
++- (id) initWithThumbnailsOfImage:(NSImage*)image usingImageInterpolation:(NSImageInterpolation)imageInterpolation
+ {
+     NSImage* iconImage512x512;
+     NSImage* iconImage256x256;
+@@ -724,6 +726,8 @@ enum {
+     return YES;
+ }
+ 
++#if !defined(DISABLE_CUSTOM_ICON)
++
+ - (BOOL) setAsCustomIconForFile:(NSString*)path
+ {
+     return( [self setAsCustomIconForFile:path withCompatibility:NO] );
+@@ -1139,6 +1143,8 @@ enum {
+     return YES;
+ }
+ 
++#endif  // !defined(DISABLE_CUSTOM_ICON)
++
+ - (NSData *) data
+ {
+     return [NSData dataWithBytes:*hIconFamily length:GetHandleSize((Handle)hIconFamily)];
+@@ -1589,6 +1595,8 @@ enum {
+     return hRawData;
+ }
+ 
++#if !defined(DISABLE_CUSTOM_ICON)
++
+ - (BOOL) addResourceType:(OSType)type asResID:(int)resID 
+ {
+     Handle hIconRes = NewHandle(0);
+@@ -1604,6 +1612,8 @@ enum {
+     return YES;
+ }
+ 
++#endif  // !defined(DISABLE_CUSTOM_ICON)
++
+ @end
+ 
+ // Methods for interfacing with the Cocoa Pasteboard.
+@@ -1621,7 +1631,7 @@ enum {
+     return [[[IconFamily alloc] initWithScrap] autorelease];
+ }
+ 
+-- initWithScrap
++- (id) initWithScrap
+ {
+     NSPasteboard *pboard = [NSPasteboard generalPasteboard];
+ 
+@@ -1702,7 +1712,7 @@ enum {
+ - (NSImageRep *) iconfamily_bestRepresentation
+ {
+ #if MAC_OS_X_VERSION_MIN_REQUIRED < 1060
+-	if ([!self respondsToSelector:@selector(bestRepresentationForRect:context:hints:)])
++	if (![self respondsToSelector:@selector(bestRepresentationForRect:context:hints:)])
+ 	{
+ 		return [self bestRepresentationForDevice:nil];
+ 	}
+diff --git a/third_party/icon_family/NSString+CarbonFSRefCreation.m b/third_party/icon_family/NSString+CarbonFSRefCreation.m
+index 723de8b..fb86c52 100644
+--- a/third_party/icon_family/NSString+CarbonFSRefCreation.m
++++ b/third_party/icon_family/NSString+CarbonFSRefCreation.m
+@@ -23,7 +23,7 @@
+     // Check whether the file exists already.  If not, create an empty file if requested.
+     if (![fileManager fileExistsAtPath:self]) {
+         if (createFile) {
+-            if (![[NSData data] writeToFile:self atomically:YES]) {
++            if (![(NSData*)[NSData data] writeToFile:self atomically:YES]) {
+                 return NO;
+             }
+         } else {

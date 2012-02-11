@@ -57,24 +57,24 @@
 // Initializes as a new, empty IconFamily.  This is IconFamily's designated
 // initializer method.
 
-- init;
+- (id) init;
 
 // Initializes an IconFamily by loading the contents of an .icns file.
 
-- initWithContentsOfFile:(NSString*)path;
+- (id) initWithContentsOfFile:(NSString*)path;
 
 // Initializes an IconFamily from an existing Carbon IconFamilyHandle.
 
-- initWithIconFamilyHandle:(IconFamilyHandle)hNewIconFamily;
+- (id) initWithIconFamilyHandle:(IconFamilyHandle)hNewIconFamily;
 
 // Initializes an IconFamily by loading the Finder icon that's assigned to a
 // file.
 
-- initWithIconOfFile:(NSString*)path;
+- (id) initWithIconOfFile:(NSString*)path;
 
 // Initializes an IconFamily by referencing a standard system icon.
 
-- initWithSystemIcon:(int)fourByteCode;
+- (id) initWithSystemIcon:(int)fourByteCode;
 
 // Initializes an IconFamily by creating its elements from a resampled
 // NSImage.  The second form of this method allows you to specify the degree
@@ -84,8 +84,8 @@
 // second form with imageInterpolation set to NSImageInterpolationHigh, which
 // produces highly smoothed thumbnails.
 
-- initWithThumbnailsOfImage:(NSImage*)image;
-- initWithThumbnailsOfImage:(NSImage*)image usingImageInterpolation:(NSImageInterpolation)imageInterpolation;
+- (id) initWithThumbnailsOfImage:(NSImage*)image;
+- (id) initWithThumbnailsOfImage:(NSImage*)image usingImageInterpolation:(NSImageInterpolation)imageInterpolation;
 
 // Writes the icon family to an .icns file.
 
@@ -147,6 +147,8 @@
 
 - (NSImage*) imageWithAllReps;
 
+#if !defined(DISABLE_CUSTOM_ICON)
+
 // NOTE: Planned method -- not yet implemented.
 //
 // Gets the image data for one of the icon family's elements as a new
@@ -178,6 +180,8 @@
 
 + (BOOL) removeCustomIconFromDirectory:(NSString*)path;
 
+#endif  // !defined(DISABLE_CUSTOM_ICON)
+
 @end
 
 // Methods for interfacing with the Carbon Scrap Manager (analogous to and
@@ -185,6 +189,6 @@
 @interface IconFamily (ScrapAdditions)
 + (BOOL) canInitWithScrap;
 + (IconFamily*) iconFamilyWithScrap;
-- initWithScrap;
+- (id) initWithScrap;
 - (BOOL) putOnScrap;
 @end

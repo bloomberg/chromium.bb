@@ -17,6 +17,9 @@
             'NSString+CarbonFSRefCreation.h',
             'NSString+CarbonFSRefCreation.m',
           ],
+          'defines': [
+            'DISABLE_CUSTOM_ICON'
+          ],
         },
       ],
     }],
