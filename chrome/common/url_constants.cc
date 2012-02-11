@@ -304,6 +304,13 @@ const char kAutofillHelpURL[] =
     "https://support.google.com/chrome/?p=settings_autofill";
 #endif
 
+const char kOmniboxLearnMoreURL[] =
+#if defined(OS_CHROMEOS)
+    "https://support.google.com/chromeos/?p=settings_omnibox";
+#else
+    "https://support.google.com/chrome/?p=settings_omnibox";
+#endif
+
 const char kInstantLearnMoreURL[] =
 #if defined(OS_CHROMEOS)
     "https://support.google.com/chromeos/?p=settings_instant_policy";

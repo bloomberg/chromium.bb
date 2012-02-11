@@ -266,6 +266,9 @@ extern const char kAboutGoogleTranslateURL[];
 // Help URL for the Autofill dialog.
 extern const char kAutofillHelpURL[];
 
+// Help URL for the Omnibox setting.
+extern const char kOmniboxLearnMoreURL[];
+
 // "Learn more" URL for the Instant feature.
 extern const char kInstantLearnMoreURL[];
 

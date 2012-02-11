@@ -201,15 +201,17 @@ void BrowserOptionsHandler::GetLocalizedValues(
       l10n_util::GetStringFUTF16(IDS_PROFILES_SINGLE_USER_MESSAGE,
                                  l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
 
-  string16 learn_more_url = ASCIIToUTF16(chrome::kInstantLearnMoreURL);
+  string16 omnibox_url = ASCIIToUTF16(chrome::kOmniboxLearnMoreURL);
   localized_strings->SetString(
       "defaultSearchGroupLabel",
-      l10n_util::GetStringFUTF16(IDS_SEARCH_PREF_EXPLANATION, learn_more_url));
+      l10n_util::GetStringFUTF16(IDS_SEARCH_PREF_EXPLANATION, omnibox_url));
+
+  string16 instant_learn_more_url = ASCIIToUTF16(chrome::kInstantLearnMoreURL);
   localized_strings->SetString(
       "instantPrefAndWarning",
       l10n_util::GetStringFUTF16(IDS_INSTANT_PREF_WITH_WARNING,
-                                 learn_more_url));
-  localized_strings->SetString("instantLearnMoreLink", learn_more_url);
+                                 instant_learn_more_url));
+  localized_strings->SetString("instantLearnMoreLink", instant_learn_more_url);
 
   localized_strings->SetString(
       "defaultBrowserUnknown",
