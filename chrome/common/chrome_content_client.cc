@@ -365,7 +365,7 @@ bool ChromeContentClient::SandboxPlugin(CommandLine* command_line,
     return false;
 
   FilePath plugin_path(plugin_dll);
-  if (plugin_path != builtin_flash)
+  if (plugin_path.BaseName() != builtin_flash.BaseName())
     return false;
 
   if (base::win::GetVersion() <= base::win::VERSION_XP ||
