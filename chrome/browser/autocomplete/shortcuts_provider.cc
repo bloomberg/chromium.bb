@@ -118,13 +118,6 @@ void ShortcutsProvider::OnShortcutsLoaded() {
   initialized_ = true;
 }
 
-int ShortcutsProvider::GetMaxScore() {
-  // For ease of unit testing, make the clamp value divisible by 4 (since some
-  // tests check for half or quarter of the max score).
-  const int kMaxScore = (AutocompleteResult::kLowestDefaultScore - 1) & ~3;
-  return kMaxScore;
-}
-
 void ShortcutsProvider::DeleteMatchesWithURLs(const std::set<GURL>& urls) {
   std::remove_if(matches_.begin(), matches_.end(), RemoveMatchPredicate(urls));
   listener_->OnProviderUpdate(true);
@@ -277,8 +270,13 @@ int ShortcutsProvider::CalculateScore(const string16& terms,
   DCHECK_LE(terms.length(), shortcut.text.length());
 
   // The initial score is based on how much of the shortcut the user has typed.
-  double base_score = GetMaxScore() * static_cast<double>(terms.length()) /
-      shortcut.text.length();
+  // Using the square root of the typed fraction boosts the base score rapidly
+  // as characters are typed, compared with simply using the typed fraction
+  // directly. This makes sense since the first characters typed are much more
+  // important for determining how likely it is a user wants a particular
+  // shortcut than are the remaining continued characters.
+  double base_score = (AutocompleteResult::kLowestDefaultScore - 1) *
+      sqrt(static_cast<double>(terms.length()) / shortcut.text.length());
 
   // Then we decay this by half each week.
   const double kLn2 = 0.6931471805599453;
@@ -309,4 +307,3 @@ void ShortcutsProvider::set_shortcuts_backend(
   if (shortcuts_backend_->initialized())
     initialized_ = true;
 }
-

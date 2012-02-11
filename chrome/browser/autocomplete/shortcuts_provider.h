@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -47,11 +47,6 @@ class ShortcutsProvider
   // ShortcutsBackendObserver:
   virtual void OnShortcutsLoaded() OVERRIDE;
 
-  // Clamp relevance scores to ensure none of our matches will become the
-  // default. This prevents us from having to worry about inline autocompletion.
-  // Made a function instead of a constant to avoid static initialization.
-  static int GetMaxScore();
-
   void DeleteMatchesWithURLs(const std::set<GURL>& urls);
   void DeleteShortcutsWithURLs(const std::set<GURL>& urls);
 
@@ -86,6 +81,7 @@ class ShortcutsProvider
 
   static int CalculateScore(const string16& terms,
                             const shortcuts_provider::Shortcut& shortcut);
+
   // For unit-test only.
   void set_shortcuts_backend(history::ShortcutsBackend* shortcuts_backend);
 

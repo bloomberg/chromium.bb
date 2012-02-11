@@ -1,8 +1,10 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/autocomplete/shortcuts_provider.h"
+
+#include <math.h>
 
 #include <algorithm>
 #include <functional>
@@ -525,39 +527,52 @@ TEST_F(ShortcutsProviderTest, CalculateScore) {
                                         ASCIIToUTF16("A test"),
                                         spans_description);
 
-  // Yes, these tests could fail if CalculateScore() takes a lot of time,
-  // but even for the last test the time to change score by 1 is around
-  // two minutes, so if it fails because of timing we've got some problems.
-
   // Maximal score.
   shortcut.last_access_time = Time::Now();
-  const int kMaxScore = ShortcutsProvider::GetMaxScore();
-  EXPECT_EQ(ShortcutsProvider::CalculateScore(ASCIIToUTF16("test"), shortcut),
-            kMaxScore);
+  const int kMaxScore = ShortcutsProvider::CalculateScore(
+      ASCIIToUTF16("test"), shortcut);
 
   // Score decreases as percent of the match is decreased.
-  EXPECT_EQ(ShortcutsProvider::CalculateScore(ASCIIToUTF16("tes"), shortcut),
-            (kMaxScore / 4) * 3);
-  EXPECT_EQ(ShortcutsProvider::CalculateScore(ASCIIToUTF16("te"), shortcut),
-            kMaxScore / 2);
-  EXPECT_EQ(ShortcutsProvider::CalculateScore(ASCIIToUTF16("t"), shortcut),
-            kMaxScore / 4);
+  int score_three_quarters =
+      ShortcutsProvider::CalculateScore(ASCIIToUTF16("tes"), shortcut);
+  EXPECT_LT(score_three_quarters, kMaxScore);
+  int score_one_half =
+      ShortcutsProvider::CalculateScore(ASCIIToUTF16("te"), shortcut);
+  EXPECT_LT(score_one_half, score_three_quarters);
+  int score_one_quarter =
+      ShortcutsProvider::CalculateScore(ASCIIToUTF16("t"), shortcut);
+  EXPECT_LT(score_one_quarter, score_one_half);
 
-  // Should decay twice in a week.
+  // Should decay with time - one week.
   shortcut.last_access_time = Time::Now() - TimeDelta::FromDays(7);
-  EXPECT_EQ(ShortcutsProvider::CalculateScore(ASCIIToUTF16("test"), shortcut),
-            kMaxScore / 2);
+  int score_week_old =
+      ShortcutsProvider::CalculateScore(ASCIIToUTF16("test"), shortcut);
+  EXPECT_LT(score_week_old, kMaxScore);
 
-  // Should decay four times in two weeks.
+  // Should decay more in two weeks.
   shortcut.last_access_time = Time::Now() - TimeDelta::FromDays(14);
-  EXPECT_EQ(ShortcutsProvider::CalculateScore(ASCIIToUTF16("test"), shortcut),
-            kMaxScore / 4);
+  int score_two_weeks_old =
+      ShortcutsProvider::CalculateScore(ASCIIToUTF16("test"), shortcut);
+  EXPECT_LT(score_two_weeks_old, score_week_old);
 
-  // But not if it was activly clicked on. 6 hits slow decaying power twice.
-  shortcut.number_of_hits = 6;
+  // But not if it was activly clicked on. 2 hits slow decaying power.
+  shortcut.number_of_hits = 2;
   shortcut.last_access_time = Time::Now() - TimeDelta::FromDays(14);
-  EXPECT_EQ(ShortcutsProvider::CalculateScore(ASCIIToUTF16("test"), shortcut),
-            kMaxScore / 2);
+  int score_popular_two_weeks_old =
+      ShortcutsProvider::CalculateScore(ASCIIToUTF16("test"), shortcut);
+  EXPECT_LT(score_two_weeks_old, score_popular_two_weeks_old);
+  // But still decayed.
+  EXPECT_LT(score_popular_two_weeks_old, kMaxScore);
+
+  // 3 hits slow decaying power even more.
+  shortcut.number_of_hits = 3;
+  shortcut.last_access_time = Time::Now() - TimeDelta::FromDays(14);
+  int score_more_popular_two_weeks_old =
+      ShortcutsProvider::CalculateScore(ASCIIToUTF16("test"), shortcut);
+  EXPECT_LT(score_two_weeks_old, score_more_popular_two_weeks_old);
+  EXPECT_LT(score_popular_two_weeks_old, score_more_popular_two_weeks_old);
+  // But still decayed.
+  EXPECT_LT(score_more_popular_two_weeks_old, kMaxScore);
 }
 
 TEST_F(ShortcutsProviderTest, DeleteMatch) {
