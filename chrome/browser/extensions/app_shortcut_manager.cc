@@ -4,11 +4,13 @@
 
 #include "chrome/browser/extensions/app_shortcut_manager.h"
 
+#include "base/command_line.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_resource.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
@@ -55,7 +57,14 @@ void AppShortcutManager::SetShortcutCreationDisabledForTesting(bool disabled) {
 
 void AppShortcutManager::InstallApplicationShortcuts(
     const Extension* extension) {
-#if !defined(OS_MACOSX)
+#if defined(OS_MACOSX)
+  // TODO(sail): For now only install shortcuts if enable platform apps is true.
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnablePlatformApps)) {
+    return;
+  }
+#endif
+
   const int kAppIconSize = 32;
 
   shortcut_info_.extension_id = extension->id();
@@ -91,5 +100,4 @@ void AppShortcutManager::InstallApplicationShortcuts(
                      icon_resource,
                      max_size,
                      ImageLoadingTracker::DONT_CACHE);
-#endif
 }

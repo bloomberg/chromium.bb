@@ -64,13 +64,22 @@ std::string GetWMClassFromAppName(std::string app_name);
 namespace internals {
 
 #if defined(OS_WIN)
-FilePath GetSanitizedFileName(const string16& name);
-
 bool CheckAndSaveIcon(const FilePath& icon_file, const SkBitmap& image);
 #endif
 
 FilePath GetWebAppDataDirectory(const FilePath& root_dir,
                                 const ShellIntegration::ShortcutInfo& info);
+
+// Does the actual job of creating a shortcut (see CreateShortcut() above).
+// This must be called on the file thread.
+void CreateShortcutTask(const FilePath& web_app_path,
+                        const FilePath& profile_path,
+                        const ShellIntegration::ShortcutInfo& shortcut_info);
+
+// Sanitizes |name| and returns a version of it that is safe to use as an
+// on-disk file name .
+FilePath GetSanitizedFileName(const string16& name);
+
 }  // namespace internals
 
 }  // namespace web_app

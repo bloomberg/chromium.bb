@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -43,10 +43,10 @@ namespace {
 // Helper function for ShellIntegration::GetAppId to generates profile id
 // from profile path. "profile_id" is composed of sanitized basenames of
 // user data dir and profile dir joined by a ".".
-std::wstring GetProfileIdFromPath(const FilePath& profile_path) {
+string16 GetProfileIdFromPath(const FilePath& profile_path) {
   // Return empty string if profile_path is empty
   if (profile_path.empty())
-    return std::wstring();
+    return string16();
 
   FilePath default_user_data_dir;
   // Return empty string if profile_path is in default user data
@@ -55,14 +55,14 @@ std::wstring GetProfileIdFromPath(const FilePath& profile_path) {
       profile_path.DirName() == default_user_data_dir &&
       profile_path.BaseName().value() ==
           ASCIIToUTF16(chrome::kInitialProfile)) {
-    return std::wstring();
+    return string16();
   }
 
   // Get joined basenames of user data dir and profile.
-  std::wstring basenames = profile_path.DirName().BaseName().value() +
+  string16 basenames = profile_path.DirName().BaseName().value() +
       L"." + profile_path.BaseName().value();
 
-  std::wstring profile_id;
+  string16 profile_id;
   profile_id.reserve(basenames.size());
 
   // Generate profile_id from sanitized basenames.
@@ -76,7 +76,7 @@ std::wstring GetProfileIdFromPath(const FilePath& profile_path) {
   return profile_id;
 }
 
-bool GetShortcutAppId(IShellLink* shell_link, std::wstring* app_id) {
+bool GetShortcutAppId(IShellLink* shell_link, string16* app_id) {
   DCHECK(shell_link);
   DCHECK(app_id);
 
@@ -102,20 +102,20 @@ bool GetShortcutAppId(IShellLink* shell_link, std::wstring* app_id) {
 // points to chrome and expected app id is successfully derived.
 bool GetExpectedAppId(const FilePath& chrome_exe,
                       IShellLink* shell_link,
-                      std::wstring* expected_app_id) {
+                      string16* expected_app_id) {
   DCHECK(shell_link);
   DCHECK(expected_app_id);
 
   expected_app_id->clear();
 
   // Check if the shortcut points to chrome_exe.
-  std::wstring source;
+  string16 source;
   if (FAILED(shell_link->GetPath(WriteInto(&source, MAX_PATH), MAX_PATH, NULL,
                                  SLGP_RAWPATH)) ||
       lstrcmpi(chrome_exe.value().c_str(), source.c_str()))
     return false;
 
-  std::wstring arguments;
+  string16 arguments;
   if (FAILED(shell_link->GetArguments(WriteInto(&arguments, MAX_PATH),
                                       MAX_PATH)))
     return false;
@@ -131,12 +131,12 @@ bool GetExpectedAppId(const FilePath& chrome_exe,
             chrome::kInitialProfile);
   }
 
-  std::wstring app_name;
+  string16 app_name;
   if (command_line.HasSwitch(switches::kApp)) {
-    app_name = UTF8ToWide(web_app::GenerateApplicationNameFromURL(
+    app_name = UTF8ToUTF16(web_app::GenerateApplicationNameFromURL(
         GURL(command_line.GetSwitchValueASCII(switches::kApp))));
   } else if (command_line.HasSwitch(switches::kAppId)) {
-    app_name = UTF8ToWide(web_app::GenerateApplicationNameFromExtensionId(
+    app_name = UTF8ToUTF16(web_app::GenerateApplicationNameFromExtensionId(
         command_line.GetSwitchValueASCII(switches::kAppId)));
   } else {
     app_name = BrowserDistribution::GetDistribution()->GetBrowserAppId();
@@ -171,13 +171,13 @@ void MigrateWin7ShortcutsInPath(
     }
 
     // Get expected app id from shortcut.
-    std::wstring expected_app_id;
+    string16 expected_app_id;
     if (!GetExpectedAppId(chrome_exe, shell_link, &expected_app_id) ||
         expected_app_id.empty())
       continue;
 
     // Get existing app id from shortcut if any.
-    std::wstring existing_app_id;
+    string16 existing_app_id;
     GetShortcutAppId(shell_link, &existing_app_id);
 
     if (expected_app_id != existing_app_id) {
@@ -265,7 +265,7 @@ bool ShellIntegration::SetAsDefaultProtocolClient(const std::string& protocol) {
     return false;
   }
 
-  std::wstring wprotocol = UTF8ToWide(protocol);
+  string16 wprotocol = UTF8ToUTF16(protocol);
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
   if (!ShellUtil::MakeChromeDefaultProtocolClient(dist, chrome_exe.value(),
         wprotocol)) {
@@ -295,7 +295,7 @@ ShellIntegration::DefaultWebClientState ShellIntegration::IsDefaultBrowser() {
   // re-run the installer or run with the --set-default-browser command line
   // flag. There is doubtless some other key we can hook into to cause "Repair"
   // to show up in Add/Remove programs for us.
-  const std::wstring kChromeProtocols[] = {L"http", L"https"};
+  const string16 kChromeProtocols[] = {L"http", L"https"};
 
   if (base::win::GetVersion() >= base::win::VERSION_VISTA) {
     base::win::ScopedComPtr<IApplicationAssociationRegistration> pAAR;
@@ -305,11 +305,11 @@ ShellIntegration::DefaultWebClientState ShellIntegration::IsDefaultBrowser() {
       return NOT_DEFAULT_WEB_CLIENT;
 
     BrowserDistribution* dist = BrowserDistribution::GetDistribution();
-    std::wstring app_name = dist->GetApplicationName();
+    string16 app_name = dist->GetApplicationName();
     // If a user specific default browser entry exists, we check for that
     // app name being default. If not, then default browser is just called
     // Google Chrome or Chromium so we do not append suffix to app name.
-    std::wstring suffix;
+    string16 suffix;
     if (ShellUtil::GetUserSpecificDefaultBrowserSuffix(dist, &suffix))
       app_name += suffix;
 
@@ -322,7 +322,7 @@ ShellIntegration::DefaultWebClientState ShellIntegration::IsDefaultBrowser() {
       }
     }
   } else {
-    std::wstring short_app_path;
+    string16 short_app_path;
     DWORD get_path_result = GetShortPathName(app_path.value().c_str(),
         WriteInto(&short_app_path, MAX_PATH), MAX_PATH);
     if (!get_path_result || get_path_result > MAX_PATH) {
@@ -336,14 +336,14 @@ ShellIntegration::DefaultWebClientState ShellIntegration::IsDefaultBrowser() {
       // HKLM and HKCU
       HKEY root_key = HKEY_CLASSES_ROOT;
       // Check <protocol>\shell\open\command
-      std::wstring key_path(kChromeProtocols[i] + ShellUtil::kRegShellOpen);
+      string16 key_path(kChromeProtocols[i] + ShellUtil::kRegShellOpen);
       base::win::RegKey key(root_key, key_path.c_str(), KEY_READ);
-      std::wstring value;
+      string16 value;
       if (!key.Valid() || (key.ReadValue(L"", &value) != ERROR_SUCCESS))
         return NOT_DEFAULT_WEB_CLIENT;
       // Need to normalize path in case it's been munged.
       CommandLine command_line = CommandLine::FromString(value);
-      std::wstring short_path;
+      string16 short_path;
       get_path_result = GetShortPathName(
           command_line.GetProgram().value().c_str(),
           WriteInto(&short_path, MAX_PATH), MAX_PATH);
@@ -371,7 +371,7 @@ ShellIntegration::DefaultWebClientState
     return UNKNOWN_DEFAULT_WEB_CLIENT;
   }
 
-  std::wstring wprotocol = UTF8ToWide(protocol);
+  string16 wprotocol = UTF8ToUTF16(protocol);
 
   if (base::win::GetVersion() >= base::win::VERSION_VISTA) {
     base::win::ScopedComPtr<IApplicationAssociationRegistration> pAAR;
@@ -381,11 +381,11 @@ ShellIntegration::DefaultWebClientState
       return NOT_DEFAULT_WEB_CLIENT;
 
     BrowserDistribution* dist = BrowserDistribution::GetDistribution();
-    std::wstring app_name = dist->GetApplicationName();
+    string16 app_name = dist->GetApplicationName();
     // If a user specific default browser entry exists, we check for that
     // app name being default. If not, then default browser is just called
     // Google Chrome or Chromium so we do not append suffix to app name.
-    std::wstring suffix;
+    string16 suffix;
     if (ShellUtil::GetUserSpecificDefaultBrowserSuffix(dist, &suffix))
       app_name += suffix;
 
@@ -396,7 +396,7 @@ ShellIntegration::DefaultWebClientState
       return NOT_DEFAULT_WEB_CLIENT;
     }
   } else {
-    std::wstring short_app_path;
+    string16 short_app_path;
     DWORD get_path_result = GetShortPathName(app_path.value().c_str(),
         WriteInto(&short_app_path, MAX_PATH), MAX_PATH);
     if (!get_path_result || get_path_result > MAX_PATH) {
@@ -409,14 +409,14 @@ ShellIntegration::DefaultWebClientState
     // HKLM and HKCU
     HKEY root_key = HKEY_CLASSES_ROOT;
     // Check <protocol>\shell\open\command
-    std::wstring key_path(wprotocol + ShellUtil::kRegShellOpen);
+    string16 key_path(wprotocol + ShellUtil::kRegShellOpen);
     base::win::RegKey key(root_key, key_path.c_str(), KEY_READ);
-    std::wstring value;
+    string16 value;
     if (!key.Valid() || (key.ReadValue(L"", &value) != ERROR_SUCCESS))
       return NOT_DEFAULT_WEB_CLIENT;
     // Need to normalize path in case it's been munged.
     CommandLine command_line = CommandLine::FromString(value);
-    std::wstring short_path;
+    string16 short_path;
     get_path_result = GetShortPathName(
         command_line.GetProgram().value().c_str(),
         WriteInto(&short_path, MAX_PATH), MAX_PATH);
@@ -444,29 +444,29 @@ ShellIntegration::DefaultWebClientState
 bool ShellIntegration::IsFirefoxDefaultBrowser() {
   bool ff_default = false;
   if (base::win::GetVersion() >= base::win::VERSION_VISTA) {
-    std::wstring app_cmd;
+    string16 app_cmd;
     base::win::RegKey key(HKEY_CURRENT_USER,
                           ShellUtil::kRegVistaUrlPrefs, KEY_READ);
     if (key.Valid() && (key.ReadValue(L"Progid", &app_cmd) == ERROR_SUCCESS) &&
         app_cmd == L"FirefoxURL")
       ff_default = true;
   } else {
-    std::wstring key_path(L"http");
+    string16 key_path(L"http");
     key_path.append(ShellUtil::kRegShellOpen);
     base::win::RegKey key(HKEY_CLASSES_ROOT, key_path.c_str(), KEY_READ);
-    std::wstring app_cmd;
+    string16 app_cmd;
     if (key.Valid() && (key.ReadValue(L"", &app_cmd) == ERROR_SUCCESS) &&
-        std::wstring::npos != StringToLowerASCII(app_cmd).find(L"firefox"))
+        string16::npos != StringToLowerASCII(app_cmd).find(L"firefox"))
       ff_default = true;
   }
   return ff_default;
 }
 
-std::wstring ShellIntegration::GetAppId(const std::wstring& app_name,
-                                        const FilePath& profile_path) {
-  std::wstring app_id(app_name);
+string16 ShellIntegration::GetAppId(const string16& app_name,
+                                    const FilePath& profile_path) {
+  string16 app_id(app_name);
 
-  std::wstring profile_id(GetProfileIdFromPath(profile_path));
+  string16 profile_id(GetProfileIdFromPath(profile_path));
   if (!profile_id.empty()) {
     app_id += L".";
     app_id += profile_id;
@@ -477,7 +477,7 @@ std::wstring ShellIntegration::GetAppId(const std::wstring& app_name,
   return app_id;
 }
 
-std::wstring ShellIntegration::GetChromiumAppId(const FilePath& profile_path) {
+string16 ShellIntegration::GetChromiumAppId(const FilePath& profile_path) {
   return GetAppId(BrowserDistribution::GetDistribution()->GetBrowserAppId(),
                   profile_path);
 }

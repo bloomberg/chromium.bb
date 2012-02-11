@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -66,15 +66,14 @@ int main(int argc, char** argv) {
 
   // Get the bundle ID of the browser that created this app bundle.
   NSString* cr_bundle_id = [app_bundle
-      objectForInfoDictionaryKey:(NSString*)app_mode::kBrowserBundleIDKey];
+      objectForInfoDictionaryKey:app_mode::kBrowserBundleIDKey];
   CHECK_MSG(cr_bundle_id, "couldn't get browser bundle ID");
 
   // Get the browser bundle path.
   // TODO(viettrungluu): more fun
-  NSString* cr_bundle_path =
-      [(NSString*)CFPreferencesCopyAppValue(
-          app_mode::kLastRunAppBundlePathPrefsKey,
-          (CFStringRef)cr_bundle_id) autorelease];
+  NSString* cr_bundle_path = [(NSString*)CFPreferencesCopyAppValue(
+      (CFStringRef)app_mode::kLastRunAppBundlePathPrefsKey,
+      (CFStringRef)cr_bundle_id) autorelease];
   CHECK_MSG(cr_bundle_path, "couldn't get browser bundle path");
 
   // Get the browser bundle.
@@ -109,17 +108,17 @@ int main(int argc, char** argv) {
   CHECK_MSG(info_plist, "couldn't get loader Info.plist");
 
   info.app_mode_id = NSStringToUTF8CString(
-      [info_plist objectForKey:@"CrAppModeShortcutID"]);
+      [info_plist objectForKey:app_mode::kCrAppModeShortcutIDKey]);
   CHECK_MSG(info.app_mode_id, "couldn't get app shortcut ID");
 
   info.app_mode_short_name = NSStringToUTF8CString(
-      [info_plist objectForKey:@"CrAppModeShortcutShortName"]);
+      [info_plist objectForKey:app_mode::kCrAppModeShortcutShortNameKey]);
 
   info.app_mode_name = NSStringToUTF8CString(
-      [info_plist objectForKey:@"CrAppModeShortcutName"]);
+      [info_plist objectForKey:app_mode::kCrAppModeShortcutNameKey]);
 
   info.app_mode_url = NSStringToUTF8CString(
-      [info_plist objectForKey:@"CrAppModeShortcutURL"]);
+      [info_plist objectForKey:app_mode::kCrAppModeShortcutURLKey]);
   CHECK_MSG(info.app_mode_url, "couldn't get app shortcut URL");
 
   // Get the framework path.

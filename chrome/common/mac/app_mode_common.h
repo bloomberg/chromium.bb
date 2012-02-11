@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,7 +6,7 @@
 #define CHROME_COMMON_MAC_APP_MODE_COMMON_H_
 #pragma once
 
-#include <CoreFoundation/CoreFoundation.h>
+#import <Foundation/Foundation.h>
 
 // This file contains constants, interfaces, etc. which are common to the
 // browser application and the app mode loader (a.k.a. shim).
@@ -15,11 +15,23 @@ namespace app_mode {
 
 // The key under which the browser's bundle ID will be stored in the
 // app mode launcher bundle's Info.plist.
-extern const CFStringRef kBrowserBundleIDKey;
+extern NSString* const kBrowserBundleIDKey;
 
 // The key under which to record the path to the (user-visible) application
 // bundle; this key is recorded under the ID given by |kAppPrefsID|.
-extern const CFStringRef kLastRunAppBundlePathPrefsKey;
+extern NSString* const kLastRunAppBundlePathPrefsKey;
+
+// Key for the shortcut ID.
+extern NSString* const kCrAppModeShortcutIDKey;
+
+// Key for the app's shortcut name.
+extern NSString* const kCrAppModeShortcutShortNameKey;
+
+// Key for the app's unrestricted name.
+extern NSString* const kCrAppModeShortcutNameKey;
+
+// Key for the app's URL.
+extern NSString* const kCrAppModeShortcutURLKey;
 
 // Current major/minor version numbers of |ChromeAppModeInfo| (defined below).
 const unsigned kCurrentChromeAppModeInfoMajorVersion = 1;
