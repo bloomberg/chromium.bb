@@ -23,8 +23,6 @@ class ExampleBase {
   virtual void CreateExampleView(View* parent) = 0;
 
   const std::string& example_title() const { return example_title_; }
-
-  // This view is added as a tab to the example application.
   View* example_view() { return container_; }
 
  protected:
@@ -39,10 +37,10 @@ class ExampleBase {
   }
 
  private:
-  // Name of the example - used for the title of the tab.
+  // Name of the example - used as title in the combobox list.
   std::string example_title_;
 
-  // The view containing example views.
+  // The view that contains the views example.
   View* container_;
 
   DISALLOW_COPY_AND_ASSIGN(ExampleBase);
