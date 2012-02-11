@@ -81,7 +81,8 @@ class dlOpenInstance : public pp::Instance {
     if(_dlhandle == NULL) {
       logmsg("libeightball.so did not load");
     } else {
-      _eightball = (TYPE_eightball) dlsym(this->_dlhandle, "Magic8Ball");
+      intptr_t offset = (intptr_t) dlsym(this->_dlhandle, "Magic8Ball");
+      _eightball = (TYPE_eightball) offset;
       if (NULL == _eightball) {
           std::string ballmessage = "dlsym() returned NULL: ";
           ballmessage += dlerror();

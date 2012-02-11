@@ -28,6 +28,7 @@ import lastchange
 # Create the various paths of interest
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 SDK_SRC_DIR = os.path.dirname(SCRIPT_DIR)
+SDK_EXAMPLE_DIR = os.path.join(SDK_SRC_DIR, 'examples')
 SDK_DIR = os.path.dirname(SDK_SRC_DIR)
 SRC_DIR = os.path.dirname(SDK_DIR)
 NACL_DIR = os.path.join(SRC_DIR, 'native_client')
@@ -108,7 +109,7 @@ def AddMakeBat(makepath):
   fp.close()
 
 
-def CopyDir(src, dst, excludes=['.svn']):
+def CopyDir(src, dst, excludes=['.svn','*/.svn']):
   """Recursively copy a directory using."""
   args = ['-r', src, dst]
   for exc in excludes:
@@ -283,43 +284,141 @@ def InstallHeaders(tc_dst_inc, pepper_ver, tc_name):
           os.path.join(tc_dst_inc, 'KHR'))
 
 
+def UntarToolchains(pepperdir, platform, arch):
+  BuildStep('Untar Toolchains')
+  tcname = platform + '_' + arch
+  tmpdir = os.path.join(SRC_DIR, 'out', 'tc_temp')
+  RemoveDir(tmpdir)
+  MakeDir(tmpdir)
+
+  # Untar the newlib toolchains
+  tarfile = GetNewlibToolchain(platform, arch)
+  Run([sys.executable, CYGTAR, '-C', tmpdir, '-xf', tarfile], cwd=NACL_DIR)
+
+  # Then rename/move it to the pepper toolchain directory
+  srcdir = os.path.join(tmpdir, 'sdk', 'nacl-sdk')
+  newlibdir = os.path.join(pepperdir, 'toolchain', tcname + '_newlib')
+  print "Buildbot mv %s to %s" % (srcdir, newlibdir)
+  MoveDir(srcdir, newlibdir)
+  print "Done with buildbot move"
+  # Untar the glibc toolchains
+  tarfile = GetGlibcToolchain(platform, arch)
+  Run([sys.executable, CYGTAR, '-C', tmpdir, '-xf', tarfile], cwd=NACL_DIR)
+
+  # Then rename/move it to the pepper toolchain directory
+  srcdir = os.path.join(tmpdir, 'toolchain', tcname)
+  glibcdir = os.path.join(pepperdir, 'toolchain', tcname + '_glibc')
+  MoveDir(srcdir, glibcdir)
+
+
+def BuildToolchains(pepperdir, platform, arch, pepper_ver):
+  BuildStep('SDK Items')
+
+  tcname = platform + '_' + arch
+  newlibdir = os.path.join(pepperdir, 'toolchain', tcname + '_newlib')
+  glibcdir = os.path.join(pepperdir, 'toolchain', tcname + '_glibc')
+
+  # Run scons TC build steps
+  if arch == 'x86':
+    Run(GetBuildArgs('newlib', newlibdir, 'x86', '32'), cwd=NACL_DIR)
+    Run(GetBuildArgs('newlib', newlibdir, 'x86', '64'), cwd=NACL_DIR)
+
+    Run(GetBuildArgs('glibc', glibcdir, 'x86', '32'), cwd=NACL_DIR)
+    Run(GetBuildArgs('glibc', glibcdir, 'x86', '64'), cwd=NACL_DIR)
+  else:
+    ErrorExit('Missing arch %s' % arch)
+
+  # Copy headers
+  if arch == 'x86':
+    InstallHeaders(GetToolchainNaClInclude(newlibdir, 'x86'),
+                   pepper_ver, 
+                   'newlib')
+    InstallHeaders(GetToolchainNaClInclude(glibcdir, 'x86'),
+                   pepper_ver,
+                   'glibc')
+  else:
+    ErrorExit('Missing arch %s' % arch)
+
+
+def CopyExamples(pepperdir, extras = []):
+  BuildStep('Copy examples')
+  examples = [
+      'dlopen', 'fullscreen_tumbler', 'gamepad', 'geturl',
+      'hello_world_glibc', 'hello_world_interactive', 'hello_world_newlib',
+      'input_events', 'load_progress', 'mouselock',
+      'multithreaded_input_events', 'pi_generator', 'pong', 'sine_synth',
+      'tumbler'] + extras
+  files = ['favicon.ico', 'httpd.cmd', 'httpd.py', 'index.html', 'Makefile']
+  if not os.path.exists(os.path.join(pepperdir, 'tools')):
+    ErrorExit('Examples depend on missing tools.')
+  if not os.path.exists(os.path.join(pepperdir, 'toolchain')):
+    ErrorExit('Examples depend on missing toolchains.')
+  exampledir = os.path.join(pepperdir, 'examples')
+  RemoveDir(exampledir)
+  MakeDir(exampledir)
+  AddMakeBat(exampledir)
+  for filename in files:
+    oshelpers.Copy(['-v', os.path.join(SDK_EXAMPLE_DIR, filename), exampledir])
+  for example in examples:
+    CopyDir(os.path.join(SDK_EXAMPLE_DIR, example), exampledir)
+
+
+def BuildUpdater():
+  BuildStep('Create Installer/Updater')
+  tooldir = os.path.join(SRC_DIR, 'out', 'sdk_tools')
+  sdkupdate = os.path.join(SDK_SRC_DIR, 'build_tools', 'sdk_tools', 'sdk_update.py')
+  license = os.path.join(SDK_SRC_DIR, 'LICENSE')
+  RemoveDir(tooldir)
+  MakeDir(tooldir)
+  args = ['-v', sdkupdate, license, CYGTAR, tooldir]
+  oshelpers.Copy(args)
+  tarname = 'sdk_tools.tgz'
+  tarfile = os.path.join(OUT_DIR, tarname)
+  Run([sys.executable, CYGTAR, '-C', tooldir, '-czf', tarfile,
+       'sdk_update.py', 'LICENSE', 'cygtar.py'], cwd=NACL_DIR)
+  sys.stdout.write('\n')
+
+
 def main(args):
   parser = optparse.OptionParser()
-  # Modes
-  parser.add_option('--examples-only', help='Rebuild the examples.',
-      action='store_true', dest='examples_only', default=False)
+
+  parser.add_option('--examples', help='Rebuild the examples.',
+      action='store_true', dest='examples', default=False)
+  parser.add_option('--update', help='Rebuild the updater.',
+      action='store_true', dest='update', default=False)
   parser.add_option('--skip-tar', help='Skip generating a tarball.',
       action='store_true', dest='skip_tar', default=False)
   parser.add_option('--archive', help='Force the archive step.',
-      action='store_true', dest='archive')
-  
+      action='store_true', dest='archive', default=False)
+  parser.add_option('--release', help='PPAPI release version.',
+      dest='release', default=None)
+
   options, args = parser.parse_args(args[1:])
 
   platform = getos.GetPlatform()
   arch = 'x86'
 
-  skip_examples = False
-  skip_untar = False
-  skip_build = False
-  skip_headers = False
-  skip_tar = False
-  force_archive = options.archive
+  skip = options.examples or options.update
 
-  if options.examples_only:
-    skip_untar = True
-    skip_build = True
-    skip_headers = True
-    skip_tar = True
+  skip_examples = skip
+  skip_update = skip
+  skip_untar = skip
+  skip_build = skip
+  skip_tar = skip or options.skip_tar
 
-  if options.skip_tar:
-    skip_tar = True
+  if options.examples: skip_examples = False
+  if options.update: skip_update = False
 
-  if options.archive and (options.examples_only or options.skip_tar):
+  if options.archive and (options.examples or options.skip_tar):
     parser.error('Incompatible arguments with archive.')
 
-  pepper_ver = build_utils.ChromeMajorVersion()
+  # TODO(noelallen): Remove force build to 18...
+  pepper_ver = str(int(build_utils.ChromeMajorVersion()) - 1)
   clnumber = lastchange.FetchVersionInfo(None).revision
+  if options.release:
+    pepper_ver = options.release
   print 'Building PEPPER %s at %s' % (pepper_ver, clnumber)
+
 
   BuildStep('Clean Pepper Dir')
   pepperdir = os.path.join(SRC_DIR, 'out', 'pepper_' + pepper_ver)
@@ -328,83 +427,39 @@ def main(args):
     MakeDir(os.path.join(pepperdir, 'toolchain'))
     MakeDir(os.path.join(pepperdir, 'tools'))
 
-  BuildStep('Untar Toolchains')
-  tcname = platform + '_' + arch
-  tmpdir = os.path.join(SRC_DIR, 'out', 'tc_temp')
+  BuildStep('Add Text Files')
+  files = ['AUTHORS', 'COPYING', 'LICENSE', 'NOTICE', 'README']
+  files = [os.path.join(SDK_SRC_DIR, filename) for filename in files]
+  oshelpers.Copy(['-v'] + files + [pepperdir])
+
 
   # Clean out the temporary toolchain untar directory
   if not skip_untar:
-    RemoveDir(tmpdir)
-    MakeDir(tmpdir)
-    tcname = platform + '_' + arch
+    UntarToolchains(pepperdir, platform, arch)
 
-    # Untar the newlib toolchains
-    tarfile = GetNewlibToolchain(platform, arch)
-    Run([sys.executable, CYGTAR, '-C', tmpdir, '-xf', tarfile], cwd=NACL_DIR)
-
-    # Then rename/move it to the pepper toolchain directory
-    srcdir = os.path.join(tmpdir, 'sdk', 'nacl-sdk')
-    newlibdir = os.path.join(pepperdir, 'toolchain', tcname + '_newlib')
-    print "Buildbot mv %s to %s" % (srcdir, newlibdir)
-    MoveDir(srcdir, newlibdir)
-    print "Done with buildbot move"
-    # Untar the glibc toolchains
-    tarfile = GetGlibcToolchain(platform, arch)
-    Run([sys.executable, CYGTAR, '-C', tmpdir, '-xf', tarfile], cwd=NACL_DIR)
-
-    # Then rename/move it to the pepper toolchain directory
-    srcdir = os.path.join(tmpdir, 'toolchain', tcname)
-    glibcdir = os.path.join(pepperdir, 'toolchain', tcname + '_glibc')
-    MoveDir(srcdir, glibcdir)
-  else:
-    newlibdir = os.path.join(pepperdir, 'toolchain', tcname + '_newlib')
-    glibcdir = os.path.join(pepperdir, 'toolchain', tcname + '_glibc')
-
-  BuildStep('SDK Items')
   if not skip_build:
-    if arch == 'x86':
-      Run(GetBuildArgs('newlib', newlibdir, 'x86', '32'), cwd=NACL_DIR)
-      Run(GetBuildArgs('newlib', newlibdir, 'x86', '64'), cwd=NACL_DIR)
+    BuildToolchains(pepperdir, platform, arch, pepper_ver)
 
-      Run(GetBuildArgs('glibc', glibcdir, 'x86', '32'), cwd=NACL_DIR)
-      Run(GetBuildArgs('glibc', glibcdir, 'x86', '64'), cwd=NACL_DIR)
-    else:
-      ErrorExit('Missing arch %s' % arch)
-
-  if not skip_headers:
-    BuildStep('Copy Toolchain headers')
-    if arch == 'x86':
-      InstallHeaders(GetToolchainNaClInclude(newlibdir, 'x86'),
-                     pepper_ver, 
-                     'newlib')
-      InstallHeaders(GetToolchainNaClInclude(glibcdir, 'x86'),
-                     pepper_ver,
-                     'glibc')
-    else:
-      ErrorExit('Missing arch %s' % arch)
-
-  BuildStep('Copy make helpers')
+  BuildStep('Copy make OS helpers')
   CopyDir(os.path.join(SDK_SRC_DIR, 'tools', '*.py'),
-        os.path.join(pepperdir, 'tools'))
+      os.path.join(pepperdir, 'tools'))
   if platform == 'win':
     BuildStep('Add MAKE')
     http_download.HttpDownload(GSTORE + MAKE,
-                               os.path.join(pepperdir, 'tools' ,'make.exe'))
+                             os.path.join(pepperdir, 'tools' ,'make.exe'))
 
   if not skip_examples:
-    BuildStep('Copy examples')
-    RemoveDir(os.path.join(pepperdir, 'examples'))
-    CopyDir(os.path.join(SDK_SRC_DIR, 'examples'), pepperdir)
+    CopyExamples(pepperdir)
 
-  tarname = 'naclsdk_' + platform + '.bz2'
-  BuildStep('Tar Pepper Bundle')
   if not skip_tar:
-    tarfile = os.path.join(OUT_DIR, 'naclsdk_' + platform + '.bz2')
+    BuildStep('Tar Pepper Bundle')
+    tarname = 'naclsdk_' + platform + '.bz2'
+    tarfile = os.path.join(OUT_DIR, tarname)
     Run([sys.executable, CYGTAR, '-C', OUT_DIR, '-cjf', tarfile,
          'pepper_' + pepper_ver], cwd=NACL_DIR)
 
   # Archive on non-trybots.
-  if force_archive or '-sdk' in os.environ.get('BUILDBOT_BUILDERNAME', ''):
+  if options.archive or '-sdk' in os.environ.get('BUILDBOT_BUILDERNAME', ''):
     BuildStep('Archive build')
     Archive(tarname)
 
@@ -415,10 +470,12 @@ def main(args):
       dirnode = os.path.join(pepperdir, 'examples', filenode)
       makefile = os.path.join(dirnode, 'Makefile')
       if os.path.isfile(makefile):
-        if platform == 'win':
-          AddMakeBat(dirnode)
         print "\n\nMake: " + dirnode
         Run(['make', 'all', '-j8'], cwd=os.path.abspath(dirnode), shell=True)
+
+# Build SDK Tools
+  if not skip_update:
+    BuildUpdater()
 
   return 0
 

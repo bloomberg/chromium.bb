@@ -132,8 +132,6 @@ def Copy(args):
       src_list.extend(files)
 
   for src in src_list:
-    if options.verbose:
-      print 'cp %s %s' % (src, dst)
     # If the destination is a directory, then append the basename of the src
     # to the destination.
     if os.path.isdir(dst):

@@ -15,7 +15,6 @@ PROJECTS+=tumbler
 # Define the default target
 all:
 
-
 #
 # Target Macro
 #
@@ -26,7 +25,7 @@ define TARGET
 TARGET_LIST+=$(1)_TARGET
 .PHONY: $(1)_TARGET
 $(1)_TARGET:
-	+cd $(1) && $(MAKE)
+	+$(MAKE) -C $(1)
 endef
 
 
@@ -35,7 +34,7 @@ $(foreach proj,$(PROJECTS),$(eval $(call TARGET,$(proj))))
 
 
 all: $(TARGET_LIST)
-	echo "Done building targets, running webserver."
+	echo "Done building targets."
 
 RUN: all
 	echo "Staring up python webserver."

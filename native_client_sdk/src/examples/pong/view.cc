@@ -75,6 +75,7 @@ void View::Draw() {
   // Clear the buffer
   const int32_t height = pixel_buffer_->size().height();
   const int32_t width = pixel_buffer_->size().width();
+  const float radius2 = (ball_rect_.width() / 2) * (ball_rect_.width() / 2);
   for (int32_t py = 0; py < height; ++py) {
     for (int32_t px = 0; px < width; ++px) {
       const int32_t pos = px + py * width;
@@ -85,13 +86,11 @@ void View::Draw() {
         color |= kWhiteMask;
       } else {
         pp::Point center_point = ball_rect_.CenterPoint();
-        float radius = ball_rect_.width() / 2;
         float distance_x = px - center_point.x();
         float distance_y = py - center_point.y();
-        float distance =
-            sqrt(distance_x * distance_x + distance_y * distance_y);
+        float distance2 = distance_x * distance_x + distance_y * distance_y;
         // Draw the ball
-        if (distance <= radius)
+        if (distance2 <= radius2)
           color |= kWhiteMask;
       }
       pixels[pos] = color;
