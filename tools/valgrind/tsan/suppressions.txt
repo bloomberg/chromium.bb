@@ -815,3 +815,20 @@
   fun:RenderWidget::InvalidationCallback
   fun:base::internal::RunnableAdapter::Run
 }
+{
+  bug_131771
+  ThreadSanitizer:Race
+  fun:tracked_objects::ThreadData::TrackingStatus
+  fun:tracked_objects::ThreadData::TallyABirthIfActive
+  fun:base::TrackingInfo::TrackingInfo
+  fun:base::PendingTask::PendingTask
+  ...
+}
+{
+  bug_131771_a
+  ThreadSanitizer:Race
+  fun:tracked_objects::ThreadData::TrackingStatus
+  fun:tracked_objects::ThreadData::Now
+  fun:tracked_objects::ThreadData::NowForEndOfRun
+  fun:MessageLoop::RunTask
+}
