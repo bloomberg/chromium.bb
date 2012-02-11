@@ -149,8 +149,11 @@ html[touch-optimized] body {
   font-size: 16px;
 }
 
-#overlay {
+#overlay-container-1 {
   z-index: 11;
+}
+#overlay-container-2 {
+  z-index: 12;
 }
 
 .raw-button,

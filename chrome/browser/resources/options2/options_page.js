@@ -662,18 +662,19 @@ cr.define('options', function() {
     this.handleScroll_();
 
     // Shake the dialog if the user clicks outside the dialog bounds.
-    var overlay = $('overlay');
+    var containers = [$('overlay-container-1'), $('overlay-container-2')];
+    for (var i = 0; i < containers.length; i++) {
+      var overlay = containers[i];
+      overlay.onclick = function(e) {
+        // Only shake if the overlay was the target of the click.
+        if (this == e.target)
+          this.querySelector('.page:not([hidden])').classList.add('shake');
+      };
 
-    overlay.onclick = function(e) {
-      // Only shake if the overlay was the target of the click.
-      if (e.target == overlay)
-        overlay.querySelector('.page:not([hidden])').classList.add('shake');
-    };
-
-    overlay.addEventListener('webkitAnimationEnd', function(e) {
-      if (e.target.classList.contains('page'))
+      overlay.addEventListener('webkitAnimationEnd', function(e) {
         e.target.classList.remove('shake');
-    });
+      });
+    }
   };
 
   /**
@@ -978,7 +979,7 @@ cr.define('options', function() {
     setContainerVisibility_: function(visible) {
       var container = null;
       if (this.isOverlay) {
-        container = $('overlay');
+        container = this.pageDiv.parentNode;
       } else {
         var nestingLevel = this.nestingLevel;
         if (nestingLevel > 0)
