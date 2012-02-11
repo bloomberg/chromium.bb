@@ -181,17 +181,12 @@ cr.define('uber', function() {
     // Cache the title for the client iframe, i.e., the iframe setting the
     // title. querySelector returns the actual iframe element, so use parentNode
     // to get back to the container.
-    var iframe = document.querySelector(query);
+    var container = document.querySelector(query).parentNode;
+    container.dataset.title = title;
 
-    // |iframe| may be null if the page has not lazy-loaded yet.
-    if (iframe) {
-      var container = iframe.parentNode;
-      container.title = title;
-
-      // Only update the currently displayed title if this is the visible frame.
-      if (container == getSelectedIframe())
-        document.title = title;
-    }
+    // Only update the currently displayed title if this is the visible frame.
+    if (container == getSelectedIframe())
+      document.title = title;
   }
 
   /**
@@ -209,17 +204,20 @@ cr.define('uber', function() {
 
     // Lazy load of iframe contents.
     var frame = container.querySelector('iframe');
-    var sourceURL = frame.dataset.url;
-    if (!frame.getAttribute('src'))
-      frame.src = sourceURL;
+    var sourceUrl = container.dataset.url;
+    if (!frame) {
+      frame = container.ownerDocument.createElement('iframe');
+      container.appendChild(frame);
+      frame.src = sourceUrl;
+    }
     // If there is a non-empty path, alter the location of the frame.
     if (path && path.length)
-      frame.contentWindow.location.replace(sourceURL + path);
+      frame.contentWindow.location.replace(sourceUrl + path);
 
     if (lastSelected)
       lastSelected.classList.remove('selected');
     container.classList.add('selected');
-    document.title = container.title;
+    document.title = container.dataset.title;
     $('favicon').href = container.dataset.favicon;
 
     enableScrollEasing();
