@@ -8,9 +8,7 @@
 #include <set>
 
 #include "base/basictypes.h"
-#include "base/file_util_proxy.h"
 #include "base/id_map.h"
-#include "base/platform_file.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "webkit/fileapi/file_system_types.h"
 
@@ -89,30 +87,6 @@ class FileSystemDispatcherHost : public content::BrowserMessageFilter {
   void OnDidUpdate(const GURL& path, int64 delta);
   void OnSyncGetPlatformPath(const GURL& path,
                              FilePath* platform_path);
-
-  // Callback functions to be used when each file operation is finished.
-  void DidFinish(int request_id, base::PlatformFileError result);
-  void DidCancel(int request_id, base::PlatformFileError result);
-  void DidGetMetadata(int request_id,
-                      base::PlatformFileError result,
-                      const base::PlatformFileInfo& info,
-                      const FilePath& platform_path);
-  void DidReadDirectory(int request_id,
-                        base::PlatformFileError result,
-                        const std::vector<base::FileUtilProxy::Entry>& entries,
-                        bool has_more);
-  void DidOpenFile(int request_id,
-                   base::PlatformFileError result,
-                   base::PlatformFile file,
-                   base::ProcessHandle peer_handle);
-  void DidWrite(int request_id,
-                base::PlatformFileError result,
-                int64 bytes,
-                bool complete);
-  void DidOpenFileSystem(int request_id,
-                         base::PlatformFileError result,
-                         const std::string& name,
-                         const GURL& root);
 
   // Creates a new FileSystemOperationInterface based on |target_path|.
   fileapi::FileSystemOperationInterface* GetNewOperation(

@@ -14,6 +14,7 @@
 #include "chrome/browser/chromeos/gdata/gdata.h"
 #include "chrome/browser/extensions/extension_function.h"
 #include "googleurl/src/url_util.h"
+#include "webkit/fileapi/file_system_callback_dispatcher.h"
 
 class GURL;
 

@@ -16,6 +16,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebFileSystem.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
 #include "webkit/chromeos/fileapi/file_access_permissions.h"
+#include "webkit/fileapi/file_system_callback_dispatcher.h"
 #include "webkit/fileapi/file_system_operation.h"
 #include "webkit/fileapi/file_system_util.h"
 #include "webkit/fileapi/native_file_util.h"
@@ -184,11 +185,13 @@ CrosMountPointProvider::CreateFileSystemOperation(
     const GURL& origin_url,
     fileapi::FileSystemType file_system_type,
     const FilePath& virtual_path,
+    scoped_ptr<fileapi::FileSystemCallbackDispatcher> dispatcher,
     base::MessageLoopProxy* file_proxy,
     fileapi::FileSystemContext* context) const {
   // TODO(satorux,zel): instantiate appropriate FileSystemOperation that
   // implements async/remote operations.
-  return new fileapi::FileSystemOperation(file_proxy, context);
+  return new fileapi::FileSystemOperation(
+      dispatcher.Pass(), file_proxy, context);
 }
 
 bool CrosMountPointProvider::GetVirtualPath(const FilePath& filesystem_path,

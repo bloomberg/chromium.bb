@@ -20,6 +20,7 @@
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
 #include "net/url_request/url_request.h"
+#include "webkit/fileapi/file_system_callback_dispatcher.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_operation.h"
 #include "webkit/fileapi/file_system_util.h"
@@ -37,6 +38,60 @@ static FilePath GetRelativePath(const GURL& url) {
   CrackFileSystemURL(url, &unused_url, &unused_type, &relative_path);
   return relative_path;
 }
+
+class FileSystemDirURLRequestJob::CallbackDispatcher
+    : public FileSystemCallbackDispatcher {
+ public:
+  // An instance of this class must be created by Create()
+  // (so that we do not leak ownership).
+  static scoped_ptr<FileSystemCallbackDispatcher> Create(
+      FileSystemDirURLRequestJob* job) {
+    return scoped_ptr<FileSystemCallbackDispatcher>(
+        new CallbackDispatcher(job));
+  }
+
+  // fileapi::FileSystemCallbackDispatcher overrides.
+  virtual void DidSucceed() OVERRIDE {
+    NOTREACHED();
+  }
+
+  virtual void DidReadMetadata(const base::PlatformFileInfo& file_info,
+                               const FilePath& platform_path) OVERRIDE {
+    NOTREACHED();
+  }
+
+  virtual void DidReadDirectory(
+      const std::vector<base::FileUtilProxy::Entry>& entries,
+      bool has_more) OVERRIDE {
+    job_->DidReadDirectory(entries, has_more);
+  }
+
+  virtual void DidWrite(int64 bytes, bool complete) OVERRIDE {
+    NOTREACHED();
+  }
+
+  virtual void DidOpenFileSystem(const std::string& name,
+                                 const GURL& root_path) OVERRIDE {
+    NOTREACHED();
+  }
+
+  virtual void DidFail(base::PlatformFileError error_code) OVERRIDE {
+    int rv = net::ERR_FILE_NOT_FOUND;
+    if (error_code == base::PLATFORM_FILE_ERROR_INVALID_URL)
+      rv = net::ERR_INVALID_URL;
+    job_->NotifyDone(URLRequestStatus(URLRequestStatus::FAILED, rv));
+  }
+
+ private:
+  explicit CallbackDispatcher(FileSystemDirURLRequestJob* job) : job_(job) {
+    DCHECK(job_);
+  }
+
+  // TODO(adamk): Get rid of the need for refcounting here by
+  // allowing FileSystemOperations to be cancelled.
+  scoped_refptr<FileSystemDirURLRequestJob> job_;
+  DISALLOW_COPY_AND_ASSIGN(CallbackDispatcher);
+};
 
 FileSystemDirURLRequestJob::FileSystemDirURLRequestJob(
     URLRequest* request, FileSystemContext* file_system_context,
@@ -93,23 +148,12 @@ void FileSystemDirURLRequestJob::StartAsync() {
                                 net::ERR_INVALID_URL));
     return;
   }
-  operation->ReadDirectory(
-      request_->url(),
-      base::Bind(&FileSystemDirURLRequestJob::DidReadDirectory, this));
+  operation->ReadDirectory(request_->url());
 }
 
 void FileSystemDirURLRequestJob::DidReadDirectory(
-    base::PlatformFileError result,
     const std::vector<base::FileUtilProxy::Entry>& entries,
     bool has_more) {
-  if (result != base::PLATFORM_FILE_OK) {
-    int rv = net::ERR_FILE_NOT_FOUND;
-    if (result == base::PLATFORM_FILE_ERROR_INVALID_URL)
-      rv = net::ERR_INVALID_URL;
-    NotifyDone(URLRequestStatus(URLRequestStatus::FAILED, rv));
-    return;
-  }
-
   if (!request_)
     return;
 
@@ -138,9 +182,7 @@ void FileSystemDirURLRequestJob::DidReadDirectory(
   }
 
   if (has_more) {
-    GetNewOperation(request_->url())->ReadDirectory(
-        request_->url(),
-        base::Bind(&FileSystemDirURLRequestJob::DidReadDirectory, this));
+    GetNewOperation(request_->url())->ReadDirectory(request_->url());
   } else {
     set_expected_content_size(data_.size());
     NotifyHeadersComplete();
@@ -151,6 +193,7 @@ FileSystemOperationInterface*
 FileSystemDirURLRequestJob::GetNewOperation(const GURL& url) {
   return file_system_context_->CreateFileSystemOperation(
       url,
+      CallbackDispatcher::Create(this),
       file_thread_proxy_);
 }
 

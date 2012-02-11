@@ -314,26 +314,41 @@ base::DictionaryValue* MountPointToValue(Profile* profile,
 
 }  // namespace
 
-class RequestLocalFileSystemFunction::LocalFileSystemCallbackDispatcher {
+class RequestLocalFileSystemFunction::LocalFileSystemCallbackDispatcher
+    : public fileapi::FileSystemCallbackDispatcher {
  public:
-  static fileapi::FileSystemContext::OpenFileSystemCallback CreateCallback(
+  static scoped_ptr<FileSystemCallbackDispatcher> Create(
       RequestLocalFileSystemFunction* function,
       Profile* profile,
       int child_id,
       scoped_refptr<const Extension> extension) {
-    return base::Bind(
-        &LocalFileSystemCallbackDispatcher::DidOpenFileSystem,
-        base::Owned(new LocalFileSystemCallbackDispatcher(
-            function, profile, child_id, extension)));
+    return scoped_ptr<fileapi::FileSystemCallbackDispatcher>(
+        new LocalFileSystemCallbackDispatcher(
+            function, profile, child_id, extension));
   }
 
-  void DidOpenFileSystem(base::PlatformFileError result,
-                         const std::string& name,
-                         const GURL& root_path) OVERRIDE {
-    if (result != base::PLATFORM_FILE_OK) {
-      DidFail(result);
-      return;
-    }
+  // fileapi::FileSystemCallbackDispatcher overrides.
+  virtual void DidSucceed() OVERRIDE {
+    NOTREACHED();
+  }
+
+  virtual void DidReadMetadata(const base::PlatformFileInfo& info,
+                               const FilePath& unused) OVERRIDE {
+    NOTREACHED();
+  }
+
+  virtual void DidReadDirectory(
+      const std::vector<base::FileUtilProxy::Entry>& entries,
+      bool has_more) OVERRIDE {
+    NOTREACHED();
+  }
+
+  virtual void DidWrite(int64 bytes, bool complete) OVERRIDE {
+    NOTREACHED();
+  }
+
+  virtual void DidOpenFileSystem(const std::string& name,
+                                 const GURL& root_path) OVERRIDE {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
     // Set up file permission access.
     if (!SetupFileSystemAccessPermissions()) {
@@ -350,7 +365,7 @@ class RequestLocalFileSystemFunction::LocalFileSystemCallbackDispatcher {
             root_path));
   }
 
-  void DidFail(base::PlatformFileError error_code) OVERRIDE {
+  virtual void DidFail(base::PlatformFileError error_code) OVERRIDE {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
         base::Bind(
@@ -419,7 +434,7 @@ void RequestLocalFileSystemFunction::RequestOnFileThread(
   GURL origin_url = source_url.GetOrigin();
   profile()->GetFileSystemContext()->OpenFileSystem(
       origin_url, fileapi::kFileSystemTypeExternal, false, // create
-      LocalFileSystemCallbackDispatcher::CreateCallback(
+      LocalFileSystemCallbackDispatcher::Create(
           this,
           profile(),
           child_id,
@@ -613,10 +628,10 @@ bool GetFileTasksFileBrowserFunction::RunImpl() {
   return true;
 }
 
-class
-  ExecuteTasksFileBrowserFunction::ExecuteTasksFileSystemCallbackDispatcher {
+class ExecuteTasksFileBrowserFunction::ExecuteTasksFileSystemCallbackDispatcher
+    : public fileapi::FileSystemCallbackDispatcher {
  public:
-  static fileapi::FileSystemContext::OpenFileSystemCallback CreateCallback(
+  static scoped_ptr<fileapi::FileSystemCallbackDispatcher> Create(
       ExecuteTasksFileBrowserFunction* function,
       Profile* profile,
       int child_id,
@@ -624,20 +639,34 @@ class
       scoped_refptr<const Extension> extension,
       const std::string task_id,
       const std::vector<GURL>& file_urls) {
-    return base::Bind(
-        &ExecuteTasksFileSystemCallbackDispatcher::DidOpenFileSystem,
-        base::Owned(new ExecuteTasksFileSystemCallbackDispatcher(
+    return scoped_ptr<fileapi::FileSystemCallbackDispatcher>(
+        new ExecuteTasksFileSystemCallbackDispatcher(
             function, profile, child_id, source_url, extension,
-            task_id, file_urls)));
+            task_id, file_urls));
   }
 
-  void DidOpenFileSystem(base::PlatformFileError result,
-                         const std::string& file_system_name,
-                         const GURL& file_system_root) OVERRIDE {
-    if (result != base::PLATFORM_FILE_OK) {
-      DidFail(result);
-      return;
-    }
+  // fileapi::FileSystemCallbackDispatcher overrides.
+  virtual void DidSucceed() OVERRIDE {
+    NOTREACHED();
+  }
+
+  virtual void DidReadMetadata(const base::PlatformFileInfo& info,
+                               const FilePath& unused) OVERRIDE {
+    NOTREACHED();
+  }
+
+  virtual void DidReadDirectory(
+      const std::vector<base::FileUtilProxy::Entry>& entries,
+      bool has_more) OVERRIDE {
+    NOTREACHED();
+  }
+
+  virtual void DidWrite(int64 bytes, bool complete) OVERRIDE {
+    NOTREACHED();
+  }
+
+  virtual void DidOpenFileSystem(const std::string& file_system_name,
+                                 const GURL& file_system_root) OVERRIDE {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
     ExecuteTasksFileBrowserFunction::FileDefinitionList file_list;
     for (std::vector<GURL>::iterator iter = origin_file_urls_.begin();
@@ -671,7 +700,7 @@ class
             file_list));
   }
 
-  void DidFail(base::PlatformFileError error_code) {
+  virtual void DidFail(base::PlatformFileError error_code) OVERRIDE {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
         base::Bind(
@@ -870,7 +899,7 @@ void ExecuteTasksFileBrowserFunction::RequestFileEntryOnFileThread(
   GURL origin_url = source_url.GetOrigin();
   profile()->GetFileSystemContext()->OpenFileSystem(
       origin_url, fileapi::kFileSystemTypeExternal, false, // create
-      ExecuteTasksFileSystemCallbackDispatcher::CreateCallback(
+      ExecuteTasksFileSystemCallbackDispatcher::Create(
           this,
           profile(),
           render_view_host()->process()->GetID(),

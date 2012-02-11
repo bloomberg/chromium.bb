@@ -22,6 +22,7 @@
 #include "net/http/http_response_info.h"
 #include "net/http/http_util.h"
 #include "net/url_request/url_request.h"
+#include "webkit/fileapi/file_system_callback_dispatcher.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_operation.h"
 #include "webkit/fileapi/file_system_util.h"
@@ -51,6 +52,60 @@ static net::HttpResponseHeaders* CreateHttpResponseHeaders() {
 
   return headers;
 }
+
+class FileSystemURLRequestJob::CallbackDispatcher
+    : public FileSystemCallbackDispatcher {
+ public:
+  // An instance of this class must be created by Create()
+  // (so that we do not leak ownerships).
+  static scoped_ptr<FileSystemCallbackDispatcher> Create(
+      FileSystemURLRequestJob* job) {
+    return scoped_ptr<FileSystemCallbackDispatcher>(
+        new CallbackDispatcher(job));
+  }
+
+  // fileapi::FileSystemCallbackDispatcher overrides.
+  virtual void DidSucceed() OVERRIDE {
+    NOTREACHED();
+  }
+
+  virtual void DidReadMetadata(const base::PlatformFileInfo& file_info,
+                               const FilePath& platform_path) OVERRIDE {
+    job_->DidGetMetadata(file_info, platform_path);
+  }
+
+  virtual void DidReadDirectory(
+      const std::vector<base::FileUtilProxy::Entry>& entries,
+      bool has_more) OVERRIDE {
+    NOTREACHED();
+  }
+
+  virtual void DidWrite(int64 bytes, bool complete) OVERRIDE {
+    NOTREACHED();
+  }
+
+  virtual void DidOpenFileSystem(const std::string& name,
+                                 const GURL& root_path) OVERRIDE {
+    NOTREACHED();
+  }
+
+  virtual void DidFail(base::PlatformFileError error_code) OVERRIDE {
+    int rv = net::ERR_FILE_NOT_FOUND;
+    if (error_code == base::PLATFORM_FILE_ERROR_INVALID_URL)
+      rv = net::ERR_INVALID_URL;
+    job_->NotifyDone(URLRequestStatus(URLRequestStatus::FAILED, rv));
+  }
+
+ private:
+  explicit CallbackDispatcher(FileSystemURLRequestJob* job) : job_(job) {
+    DCHECK(job_);
+  }
+
+  // TODO(adamk): Get rid of the need for refcounting here by
+  // allowing FileSystemOperations to be cancelled.
+  scoped_refptr<FileSystemURLRequestJob> job_;
+  DISALLOW_COPY_AND_ASSIGN(CallbackDispatcher);
+};
 
 FileSystemURLRequestJob::FileSystemURLRequestJob(
     URLRequest* request, FileSystemContext* file_system_context,
@@ -175,27 +230,19 @@ void FileSystemURLRequestJob::StartAsync() {
   FileSystemOperationInterface* operation =
       file_system_context_->CreateFileSystemOperation(
           request_->url(),
+          CallbackDispatcher::Create(this),
           file_thread_proxy_);
   if (!operation) {
     NotifyDone(URLRequestStatus(URLRequestStatus::FAILED,
                                 net::ERR_INVALID_URL));
     return;
   }
-  operation->GetMetadata(
-      request_->url(),
-      base::Bind(&FileSystemURLRequestJob::DidGetMetadata, this));
+  operation->GetMetadata(request_->url());
 }
 
 void FileSystemURLRequestJob::DidGetMetadata(
-    base::PlatformFileError error_code,
     const base::PlatformFileInfo& file_info,
     const FilePath& platform_path) {
-  if (error_code != base::PLATFORM_FILE_OK) {
-    NotifyFailed(error_code == base::PLATFORM_FILE_ERROR_INVALID_URL ?
-                 net::ERR_INVALID_URL : net::ERR_FILE_NOT_FOUND);
-    return;
-  }
-
   // We may have been orphaned...
   if (!request_)
     return;

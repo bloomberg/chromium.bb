@@ -8,6 +8,7 @@
 #include "base/file_util.h"
 #include "base/message_loop_proxy.h"
 #include "googleurl/src/gurl.h"
+#include "webkit/fileapi/file_system_callback_dispatcher.h"
 #include "webkit/fileapi/file_system_file_util.h"
 #include "webkit/fileapi/file_system_operation_interface.h"
 #include "webkit/fileapi/file_system_options.h"
@@ -34,11 +35,15 @@ QuotaClient* CreateQuotaClient(
   return new FileSystemQuotaClient(file_message_loop, context, is_incognito);
 }
 
-void DidOpenFileSystem(FileSystemContext::OpenFileSystemCallback callback,
+void DidOpenFileSystem(scoped_ptr<FileSystemCallbackDispatcher> dispatcher,
                        const GURL& filesystem_root,
                        const std::string& filesystem_name,
                        base::PlatformFileError error) {
-  callback.Run(error, filesystem_name, filesystem_root);
+  if (error == base::PLATFORM_FILE_OK) {
+    dispatcher->DidOpenFileSystem(filesystem_name, filesystem_root);
+  } else {
+    dispatcher->DidFail(error);
+  }
 }
 
 }  // anonymous namespace
@@ -152,13 +157,13 @@ void FileSystemContext::OpenFileSystem(
     const GURL& origin_url,
     FileSystemType type,
     bool create,
-    OpenFileSystemCallback callback) {
-  DCHECK(!callback.is_null());
+    scoped_ptr<FileSystemCallbackDispatcher> dispatcher) {
+  DCHECK(dispatcher.get());
 
   FileSystemMountPointProvider* mount_point_provider =
       GetMountPointProvider(type);
   if (!mount_point_provider) {
-    callback.Run(base::PLATFORM_FILE_ERROR_SECURITY, std::string(), GURL());
+    dispatcher->DidFail(base::PLATFORM_FILE_ERROR_SECURITY);
     return;
   }
 
@@ -167,11 +172,13 @@ void FileSystemContext::OpenFileSystem(
 
   mount_point_provider->ValidateFileSystemRoot(
       origin_url, type, create,
-      base::Bind(&DidOpenFileSystem, callback, root_url, name));
+      base::Bind(&DidOpenFileSystem,
+                 base::Passed(&dispatcher), root_url, name));
 }
 
 FileSystemOperationInterface* FileSystemContext::CreateFileSystemOperation(
     const GURL& url,
+    scoped_ptr<FileSystemCallbackDispatcher> dispatcher,
     base::MessageLoopProxy* file_proxy) {
   GURL origin_url;
   FileSystemType file_system_type = kFileSystemTypeUnknown;
@@ -183,7 +190,8 @@ FileSystemOperationInterface* FileSystemContext::CreateFileSystemOperation(
   if (!mount_point_provider)
     return NULL;
   return mount_point_provider->CreateFileSystemOperation(
-      origin_url, file_system_type, file_path, file_proxy, this);
+      origin_url, file_system_type, file_path,
+      dispatcher.Pass(), file_proxy, this);
 }
 
 }  // namespace fileapi

@@ -23,6 +23,7 @@ class MessageLoopProxy;
 
 namespace fileapi {
 
+class FileSystemCallbackDispatcher;
 class FileSystemContext;
 class FileSystemFileUtil;
 class FileSystemOperationInterface;
@@ -83,6 +84,7 @@ class FileSystemMountPointProvider {
       const GURL& origin_url,
       FileSystemType file_system_type,
       const FilePath& virtual_path,
+      scoped_ptr<FileSystemCallbackDispatcher> dispatcher,
       base::MessageLoopProxy* file_proxy,
       FileSystemContext* context) const = 0;
 };

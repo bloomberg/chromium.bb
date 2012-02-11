@@ -5,7 +5,6 @@
 #ifndef WEBKIT_FILEAPI_FILE_SYSTEM_CONTEXT_H_
 #define WEBKIT_FILEAPI_FILE_SYSTEM_CONTEXT_H_
 
-#include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/platform_file.h"
@@ -26,6 +25,8 @@ class QuotaManagerProxy;
 namespace fileapi {
 
 class ExternalFileSystemMountPointProvider;
+class FileSystemCallbackDispatcher;
+class FileSystemContext;
 class FileSystemFileUtil;
 class FileSystemMountPointProvider;
 class FileSystemOperationInterface;
@@ -86,21 +87,17 @@ class FileSystemContext
   // calling GetMountPointProvider(kFileSystemTypeExternal).
   ExternalFileSystemMountPointProvider* external_provider() const;
 
-  // Used for OpenFileSystem.
-  typedef base::Callback<void(base::PlatformFileError result,
-                              const std::string& name,
-                              const GURL& root)> OpenFileSystemCallback;
-
   // Opens the filesystem for the given |origin_url| and |type|, and dispatches
   // the DidOpenFileSystem callback of the given |dispatcher|.
   // If |create| is true this may actually set up a filesystem instance
   // (e.g. by creating the root directory or initializing the database
   // entry etc).
+  // TODO(kinuko): replace the dispatcher with a regular callback.
   void OpenFileSystem(
       const GURL& origin_url,
       FileSystemType type,
       bool create,
-      OpenFileSystemCallback callback);
+      scoped_ptr<FileSystemCallbackDispatcher> dispatcher);
 
   // Creates a new FileSystemOperation instance by cracking
   // the given filesystem URL |url| to get an appropriate MountPointProvider
@@ -109,6 +106,7 @@ class FileSystemContext
   // depending on the filesystem type pointed by the |url|.
   FileSystemOperationInterface* CreateFileSystemOperation(
       const GURL& url,
+      scoped_ptr<FileSystemCallbackDispatcher> dispatcher,
       base::MessageLoopProxy* file_proxy);
 
  private:

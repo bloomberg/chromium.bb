@@ -8,6 +8,7 @@
 #include "base/message_loop.h"
 #include "base/message_loop_proxy.h"
 #include "googleurl/src/gurl.h"
+#include "webkit/fileapi/file_system_callback_dispatcher.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_operation.h"
 #include "webkit/fileapi/file_system_operation_context.h"
@@ -140,11 +141,14 @@ int64 FileSystemTestOriginHelper::ComputeCurrentOriginUsage() const {
   return size;
 }
 
-FileSystemOperation* FileSystemTestOriginHelper::NewOperation() {
+FileSystemOperation* FileSystemTestOriginHelper::NewOperation(
+    FileSystemCallbackDispatcher* callback_dispatcher) {
   DCHECK(file_system_context_.get());
   DCHECK(file_util_);
   FileSystemOperation* operation =
-    new FileSystemOperation(base::MessageLoopProxy::current(),
+    new FileSystemOperation(scoped_ptr<FileSystemCallbackDispatcher>(
+                                callback_dispatcher),
+                            base::MessageLoopProxy::current(),
                             file_system_context_.get());
   operation->set_override_file_util(file_util_);
   InitializeOperationContext(operation->file_system_operation_context());
