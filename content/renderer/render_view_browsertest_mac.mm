@@ -26,11 +26,7 @@ NSEvent* CmdDeadKeyEvent(NSEventType type, unsigned short code) {
     default:
       CHECK(false);
   }
-  // TODO(thakis): Remove this once clang is smarter, http://crbug.com/111861
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wformat"
   NSString* s = [NSString stringWithFormat:@"%C", uniChar];
-#pragma clang diagnostic pop
 
   return [NSEvent keyEventWithType:type
                           location:NSMakePoint(0, 0)
