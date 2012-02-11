@@ -45,7 +45,7 @@ if pyauto.PyUITest.IsChromeOS():
   # Find the path to the pyproto and add it to sys.path.
   # Prepend it so that google.protobuf is loaded from here.
   for path in pyauto_paths.GetBuildDirs():
-    p = os.path.join(path, 'pyproto')
+    p = os.path.join(path, 'pyproto', 'chrome', 'browser', 'policy', 'proto')
     if os.path.isdir(p):
       sys.path = [p, os.path.join(p, 'device_management_pb')] + sys.path
       break
