@@ -41,7 +41,9 @@ exception_crash_test = env.ComponentProgram(
 
 for subtest in ('test_bad_handler',
                 'test_stack_outside_sandbox',
-                'test_stack_in_rodata'):
+                'test_stack_in_rwdata',
+                'test_stack_in_rodata',
+                'test_stack_in_code'):
   node = env.CommandSelLdrTestNacl(
       'exception_%s.out' % subtest,
       exception_crash_test, [subtest], **test_args)

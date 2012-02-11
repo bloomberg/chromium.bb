@@ -15,6 +15,8 @@
 
 typedef void (*handler_func_t)(int prog_ctr, int stack_ptr);
 
+char stack_in_rwdata[0x1000];
+
 /*
  * Note that we have to provide an initialiser here otherwise gcc
  * defines this using ".comm" and the variable does not get put into a
@@ -37,15 +39,49 @@ void test_bad_handler() {
   *(volatile int *) 0 = 0;
 }
 
+
+#if defined(__i386__) || defined(__x86_64__)
+
 /*
- * TODO(mseaborn): Replace this with an assembly-code handler that
- * switches stack in order to call _exit(1).  This C version will
- * crash if it is run on the bad stacks that we are testing.
+ * If there are TCB bugs, it is possible that the untrusted exception
+ * handler gets run on a bad stack, either because the TCB ignored the
+ * error it got when writing the exception frame, or because page
+ * protections were ignored when writing the exception frame.  (The
+ * latter is a problem with WriteProcessMemory() on Windows: see
+ * http://code.google.com/p/nativeclient/issues/detail?id=2536.)
+ *
+ * If that happens, the test needs to report the problem.  In order to
+ * do that, our exception handler needs to restore a working stack.
  */
-void dummy_handler(int prog_ctr, int stack_ptr) {
-  /* Should not reach this handler. */
+
+char recovery_stack[0x1000] __attribute__((aligned(16)));
+
+void bad_stack_exception_handler();
+asm(".pushsection .text, \"ax\", @progbits\n"
+    "bad_stack_exception_handler:\n"
+    /* Restore a working stack, allowing for alignment. */
+# if defined(__i386__)
+    "mov $recovery_stack - 4, %esp\n"
+    "jmp error_exit\n"
+# elif defined(__x86_64__)
+    "naclrestsp $recovery_stack - 8, %r15\n"
+    "jmp error_exit\n"
+# endif
+    ".popsection\n");
+
+void error_exit() {
   _exit(1);
 }
+
+#else
+
+/* TODO(mseaborn): Implement a stack switcher, like the one above, for ARM. */
+void bad_stack_exception_handler(int prog_ctr, int stack_ptr) {
+  _exit(1);
+}
+
+#endif
+
 
 /*
  * This checks that the process terminates safely if the system
@@ -58,7 +94,7 @@ void dummy_handler(int prog_ctr, int stack_ptr) {
  */
 void test_stack_outside_sandbox() {
 #if defined(__i386__)
-  int rc = NACL_SYSCALL(exception_handler)(dummy_handler, NULL);
+  int rc = NACL_SYSCALL(exception_handler)(bad_stack_exception_handler, NULL);
   assert(rc == 0);
   fprintf(stderr, "** intended_exit_status=untrusted_segfault\n");
   asm(/*
@@ -75,8 +111,32 @@ void test_stack_outside_sandbox() {
 #endif
 }
 
+
+/*
+ * This test case does not crash.  It successfully runs
+ * bad_stack_exception_handler() in order to check that it works, so
+ * that we can be sure that other tests do not crash (and hence pass)
+ * accidentally.
+ */
+void test_stack_in_rwdata() {
+  int rc = NACL_SYSCALL(exception_handler)(bad_stack_exception_handler, NULL);
+  assert(rc == 0);
+  rc = NACL_SYSCALL(exception_stack)((void *) stack_in_rwdata,
+                                     sizeof(stack_in_rwdata));
+  assert(rc == 0);
+  fprintf(stderr, "** intended_exit_status=1\n");
+  /* Cause crash. */
+  *(volatile int *) 0 = 0;
+}
+
+
+/*
+ * This reproduced a problem with NaCl's exception handler on Mac OS
+ * X, in which sel_ldr would hang when attempting to write to an
+ * unwritable stack.
+ */
 void test_stack_in_rodata() {
-  int rc = NACL_SYSCALL(exception_handler)(dummy_handler, NULL);
+  int rc = NACL_SYSCALL(exception_handler)(bad_stack_exception_handler, NULL);
   assert(rc == 0);
   rc = NACL_SYSCALL(exception_stack)((void *) stack_in_rodata,
                                      sizeof(stack_in_rodata));
@@ -85,6 +145,46 @@ void test_stack_in_rodata() {
   /* Cause crash. */
   *(volatile int *) 0 = 0;
 }
+
+
+/*
+ * The test below reproduced a problem with NaCl's exception handler
+ * on Windows where WriteProcessMemory() would bypass page permissions
+ * and write the exception frame into the code area.
+ */
+#if defined(__i386__) || defined(__x86_64__)
+/*
+ * If we have an assembler, we can reserve some of the code area so
+ * that we do not risk overwriting bad_stack_exception_handler() if
+ * the test fails.
+ *
+ * This might be in the static or dynamic code area depending on
+ * whether this executable is statically or dynamically linked, and
+ * the two areas potentially behave differently.  Therefore, for full
+ * coverage, this test should be run as both statically and
+ * dynamically linked.
+ */
+asm(".pushsection .text, \"ax\", @progbits\n"
+    "stack_in_code:\n"
+    ".fill 0x1000, 1, 0x90\n" /* Fill with NOPs (90) */
+    ".popsection\n");
+extern char stack_in_code[];
+#else
+/* Otherwise just use the start of the static code area. */
+char *stack_in_code = (char *) 0x20000;
+#endif
+const int stack_in_code_size = 0x1000;
+
+void test_stack_in_code() {
+  int rc = NACL_SYSCALL(exception_handler)(bad_stack_exception_handler, NULL);
+  assert(rc == 0);
+  rc = NACL_SYSCALL(exception_stack)(stack_in_code, stack_in_code_size);
+  assert(rc == 0);
+  fprintf(stderr, "** intended_exit_status=unwritable_exception_stack\n");
+  /* Cause crash. */
+  *(volatile int *) 0 = 0;
+}
+
 
 int main(int argc, char **argv) {
   if (argc != 2) {
@@ -97,7 +197,9 @@ int main(int argc, char **argv) {
 
   TRY_TEST(test_bad_handler);
   TRY_TEST(test_stack_outside_sandbox);
+  TRY_TEST(test_stack_in_rwdata);
   TRY_TEST(test_stack_in_rodata);
+  TRY_TEST(test_stack_in_code);
 
   fprintf(stderr, "Error: Unknown test: \"%s\"\n", argv[1]);
   return 1;

@@ -9,6 +9,7 @@
 #include "native_client/src/trusted/service_runtime/nacl_config.h"
 #include "native_client/src/trusted/service_runtime/arch/sel_ldr_arch.h"
 #include "native_client/src/trusted/service_runtime/arch/x86_32/sel_rt_32.h"
+#include "native_client/src/trusted/service_runtime/sel_util.h"
 #include <windows.h>
 #include <stdio.h>
 
@@ -22,6 +23,18 @@ struct ExceptionFrame {
 };
 
 
+static BOOL GetAddrProtection(HANDLE process_handle, uintptr_t addr,
+                              int *protect) {
+  MEMORY_BASIC_INFORMATION memory_info;
+  if (VirtualQueryEx(process_handle, (void *) addr,
+                     &memory_info, sizeof(memory_info))
+      != sizeof(memory_info)) {
+    return FALSE;
+  }
+  *protect = memory_info.Protect;
+  return TRUE;
+}
+
 static BOOL ReadProcessMemoryChecked(HANDLE process_handle,
                                      const void *remote_addr,
                                      void *local_addr, size_t size) {
@@ -34,6 +47,25 @@ static BOOL ReadProcessMemoryChecked(HANDLE process_handle,
 static BOOL WriteProcessMemoryChecked(HANDLE process_handle, void *remote_addr,
                                       const void *local_addr, size_t size) {
   size_t bytes_copied;
+  /*
+   * WriteProcessMemory() does not always respect page permissions, so
+   * we first manually check permissions to ensure that we are not
+   * overwriting untrusted code.  For background, see
+   * http://code.google.com/p/nativeclient/issues/detail?id=2572.  The
+   * debuggee process should be suspended and unable to change page
+   * mappings at the moment, so there should be no TOCTTOU race
+   * condition with this check.
+   */
+  uintptr_t page_start = NaClTruncPage((uintptr_t) remote_addr);
+  uintptr_t page_end = NaClRoundPage((uintptr_t) remote_addr + size);
+  uintptr_t addr;
+  for (addr = page_start; addr < page_end; addr += NACL_PAGESIZE) {
+    int protect;
+    if (!GetAddrProtection(process_handle, addr, &protect) ||
+        protect != PAGE_READWRITE) {
+      return FALSE;
+    }
+  }
   return (WriteProcessMemory(process_handle, remote_addr, local_addr,
                              size, &bytes_copied)
           && bytes_copied == size);
