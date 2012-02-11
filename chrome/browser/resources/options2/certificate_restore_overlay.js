@@ -11,8 +11,7 @@ cr.define('options', function() {
    * @class
    */
   function CertificateRestoreOverlay() {
-    OptionsPage.call(this, 'certificateRestore',
-                     '',
+    OptionsPage.call(this, 'certificateRestore', '',
                      'certificateRestoreOverlay');
   }
 
@@ -36,6 +35,11 @@ cr.define('options', function() {
       };
 
       self.clearInputFields_();
+    },
+
+    /** @inheritDoc */
+    didShowPage: function() {
+      $('certificateRestorePassword').focus();
     },
 
     /**
