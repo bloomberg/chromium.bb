@@ -29,6 +29,12 @@ class StatusAreaHostAura : public StatusAreaButton::Delegate,
                            public BrowserList::Observer,
                            public content::NotificationObserver {
  public:
+  // Returns the padding between the corner of the status area and the corner of
+  // the screen when we're displaying either the login/lock screen or a browser
+  // window in compact mode.  Exposed here for tests.
+  static gfx::Size GetCompactModeLoginAndLockOffset();
+  static gfx::Size GetCompactModeBrowserOffset();
+
   StatusAreaHostAura();
   virtual ~StatusAreaHostAura();
 
@@ -53,8 +59,8 @@ class StatusAreaHostAura : public StatusAreaButton::Delegate,
   virtual void ButtonVisibilityChanged(views::View* button_view) OVERRIDE;
 
   // BrowserList::Observer implementation.
-  virtual void OnBrowserAdded(const Browser* browser) OVERRIDE;
-  virtual void OnBrowserRemoved(const Browser* browser) OVERRIDE;
+  virtual void OnBrowserAdded(const Browser* browser) OVERRIDE {}
+  virtual void OnBrowserRemoved(const Browser* browser) OVERRIDE {}
   virtual void OnBrowserSetLastActive(const Browser* browser) OVERRIDE;
 
   // content::NotificationObserver implementation.
@@ -63,6 +69,12 @@ class StatusAreaHostAura : public StatusAreaButton::Delegate,
                        const content::NotificationDetails& details) OVERRIDE;
 
  private:
+  // Is either the login or lock screen currently displayed?
+  bool IsLoginOrLockScreenDisplayed() const;
+
+  // Triggers an update of the status area text style and position.
+  void UpdateAppearance();
+
   // Owned by caller of CreateStatusArea().
   views::Widget* status_area_widget_;
   // Owned by status_area_widget_.

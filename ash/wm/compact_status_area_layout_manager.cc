@@ -4,21 +4,12 @@
 
 #include "ash/wm/compact_status_area_layout_manager.h"
 
+#include "ash/shell.h"
 #include "base/auto_reset.h"
 #include "base/i18n/rtl.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/widget/widget.h"
-
-namespace {
-
-// Padding between the side of status area and the side of screen.
-const int kSideEdgePad = 3;
-
-// Padding between the top of the status area and the top of the screen.
-const int kTopEdgePad = 2;
-
-}  // namespace
 
 namespace ash {
 namespace internal {
@@ -69,15 +60,16 @@ void CompactStatusAreaLayoutManager::LayoutStatusArea() {
   AutoReset<bool> auto_reset_in_layout(&in_layout_, true);
   gfx::Rect monitor_bounds = gfx::Screen::GetPrimaryMonitorBounds();
   gfx::Rect widget_bounds = status_widget_->GetRestoredBounds();
+  gfx::Size offset = ash::Shell::GetInstance()->compact_status_area_offset();
   if (base::i18n::IsRTL()) {
     // Place the widget in the top-left corner of the screen.
-    widget_bounds.set_x(monitor_bounds.x() + kSideEdgePad);
+    widget_bounds.set_x(monitor_bounds.x() + offset.width());
   } else {
     // Place the widget in the top-right corner of the screen.
     widget_bounds.set_x(
-        monitor_bounds.right() - widget_bounds.width() - kSideEdgePad);
+        monitor_bounds.right() - widget_bounds.width() - offset.width());
   }
-  widget_bounds.set_y(kTopEdgePad);
+  widget_bounds.set_y(offset.height());
   status_widget_->SetBounds(widget_bounds);
 }
 

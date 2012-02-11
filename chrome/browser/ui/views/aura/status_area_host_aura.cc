@@ -35,6 +35,32 @@
 #include "ui/gfx/native_widget_types.h"
 #endif
 
+namespace {
+
+// Horizontal padding between the side of the status area and the side of the
+// screen in compact mode.
+const int kCompactModeHorizontalOffset = 3;
+
+// Vertical padding between the top of the status area and the top of the screen
+// when we're displaying either the login/lock screen or a browser window in
+// compact mode.
+const int kCompactModeLoginAndLockVerticalOffset = 4;
+const int kCompactModeBrowserVerticalOffset = 2;
+
+}  // namespace
+
+// static
+gfx::Size StatusAreaHostAura::GetCompactModeLoginAndLockOffset() {
+  return gfx::Size(kCompactModeHorizontalOffset,
+                   kCompactModeLoginAndLockVerticalOffset);
+}
+
+// static
+gfx::Size StatusAreaHostAura::GetCompactModeBrowserOffset() {
+  return gfx::Size(kCompactModeHorizontalOffset,
+                   kCompactModeBrowserVerticalOffset);
+}
+
 StatusAreaHostAura::StatusAreaHostAura()
     : status_area_widget_(NULL),
       status_area_view_(NULL) {
@@ -88,6 +114,8 @@ views::Widget* StatusAreaHostAura::CreateStatusArea() {
   status_area_widget_->SetContentsView(status_area_view_);
   status_area_widget_->Show();
   status_area_widget_->GetNativeView()->SetName("StatusAreaView");
+
+  UpdateAppearance();
 
   return status_area_widget_;
 }
@@ -188,12 +216,7 @@ void StatusAreaHostAura::ExecuteStatusAreaCommand(
 
 StatusAreaButton::TextStyle StatusAreaHostAura::GetStatusAreaTextStyle() const {
 #if defined(OS_CHROMEOS)
-  if (!chromeos::UserManager::Get()->user_is_logged_in())
-    return StatusAreaButton::GRAY_PLAIN_LIGHT;
-
-  const chromeos::ScreenLocker* locker =
-      chromeos::ScreenLocker::default_screen_locker();
-  if (locker && locker->locked())
+  if (IsLoginOrLockScreenDisplayed())
     return StatusAreaButton::GRAY_PLAIN_LIGHT;
 #endif
 
@@ -220,16 +243,8 @@ void StatusAreaHostAura::ButtonVisibilityChanged(views::View* button_view) {
     status_area_view_->UpdateButtonVisibility();
 }
 
-void StatusAreaHostAura::OnBrowserAdded(const Browser* browser) {
-  status_area_view_->UpdateButtonTextStyle();
-}
-
-void StatusAreaHostAura::OnBrowserRemoved(const Browser* browser) {
-  status_area_view_->UpdateButtonTextStyle();
-}
-
 void StatusAreaHostAura::OnBrowserSetLastActive(const Browser* browser) {
-  status_area_view_->UpdateButtonTextStyle();
+  UpdateAppearance();
 }
 
 void StatusAreaHostAura::Observe(int type,
@@ -237,14 +252,37 @@ void StatusAreaHostAura::Observe(int type,
                                  const content::NotificationDetails& details) {
   switch (type) {
     case chrome::NOTIFICATION_BROWSER_THEME_CHANGED:
-      status_area_view_->UpdateButtonTextStyle();
+      UpdateAppearance();
       break;
 #if defined(OS_CHROMEOS)
     case chrome::NOTIFICATION_SCREEN_LOCK_STATE_CHANGED:
-      status_area_view_->UpdateButtonTextStyle();
+      UpdateAppearance();
       break;
 #endif
     default:
       NOTREACHED() << "Unexpected notification " << type;
   }
+}
+
+bool StatusAreaHostAura::IsLoginOrLockScreenDisplayed() const {
+#if defined(OS_CHROMEOS)
+  if (!chromeos::UserManager::Get()->user_is_logged_in())
+    return true;
+
+  const chromeos::ScreenLocker* locker =
+      chromeos::ScreenLocker::default_screen_locker();
+  if (locker && locker->locked())
+    return true;
+#endif
+
+  return false;
+}
+
+void StatusAreaHostAura::UpdateAppearance() {
+  status_area_view_->UpdateButtonTextStyle();
+
+  gfx::Size offset = IsLoginOrLockScreenDisplayed() ?
+      GetCompactModeLoginAndLockOffset() :
+      GetCompactModeBrowserOffset();
+  ash::Shell::GetInstance()->SetCompactStatusAreaOffset(offset);
 }

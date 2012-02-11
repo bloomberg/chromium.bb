@@ -15,6 +15,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
+#include "ui/gfx/size.h"
 
 class CommandLine;
 
@@ -26,7 +27,6 @@ class Window;
 namespace gfx {
 class Point;
 class Rect;
-class Size;
 }
 namespace views {
 class NonClientFrameView;
@@ -89,6 +89,10 @@ class ASH_EXPORT Shell {
 
   static void DeleteInstance();
 
+  const gfx::Size& compact_status_area_offset() const {
+    return compact_status_area_offset_;
+  }
+
   aura::Window* GetContainer(int container_id);
   const aura::Window* GetContainer(int container_id) const;
 
@@ -119,6 +123,10 @@ class ASH_EXPORT Shell {
 
   // See enum WindowMode for details.
   bool IsWindowModeCompact() const { return window_mode_ == MODE_COMPACT; }
+
+  // Sets the offset between the corner of the status area and the corner of the
+  // screen when we're using the compact window mode.
+  void SetCompactStatusAreaOffset(gfx::Size& offset);
 
   // Creates a default views::NonClientFrameView for use by windows in the
   // Ash environment.
@@ -236,6 +244,10 @@ class ASH_EXPORT Shell {
 
   // Locks shell to overlapping window mode despite host window size.
   static bool window_mode_overlapping_for_test_;
+
+  // Offset between the corner of the status area and the corner of the screen
+  // when in the compact window mode.
+  gfx::Size compact_status_area_offset_;
 
   DISALLOW_COPY_AND_ASSIGN(Shell);
 };

@@ -451,6 +451,18 @@ bool Shell::IsModalWindowOpen() const {
   return !modal_container->children().empty();
 }
 
+void Shell::SetCompactStatusAreaOffset(gfx::Size& offset) {
+  compact_status_area_offset_ = offset;
+
+  // Trigger a relayout.
+  if (IsWindowModeCompact()) {
+    aura::LayoutManager* layout_manager = GetContainer(
+        internal::kShellWindowId_StatusContainer)->layout_manager();
+    if (layout_manager)
+      layout_manager->OnWindowResized();
+  }
+}
+
 views::NonClientFrameView* Shell::CreateDefaultNonClientFrameView(
     views::Widget* widget) {
   if (CommandLine::ForCurrentProcess()->HasSwitch(
