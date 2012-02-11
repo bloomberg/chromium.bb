@@ -648,6 +648,12 @@ const char kSMSListFunction[] = "List";
 const char kSMSReceivedSignal[] = "SmsReceived";
 }  // namespace modemmanager
 
+namespace bluetooth_common {
+const char kGetProperties[] = "GetProperties";
+const char kSetProperty[] = "SetProperty";
+const char kPropertyChangedSignal[] = "PropertyChanged";
+}
+
 namespace bluetooth_manager {
 // Bluetooth Manager service identifiers.
 const char kBluetoothManagerServiceName[] = "org.bluez";
