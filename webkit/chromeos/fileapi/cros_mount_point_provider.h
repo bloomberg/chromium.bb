@@ -57,7 +57,6 @@ class CrosMountPointProvider
       const GURL& origin_url,
       fileapi::FileSystemType file_system_type,
       const FilePath& virtual_path,
-      scoped_ptr<fileapi::FileSystemCallbackDispatcher> dispatcher,
       base::MessageLoopProxy* file_proxy,
       fileapi::FileSystemContext* context) const OVERRIDE;
 

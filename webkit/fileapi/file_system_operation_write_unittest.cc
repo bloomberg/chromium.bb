@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
 #include "base/message_loop.h"
 #include "base/message_loop_proxy.h"
@@ -23,7 +24,6 @@
 #include "webkit/blob/blob_data.h"
 #include "webkit/blob/blob_storage_controller.h"
 #include "webkit/blob/blob_url_request_job.h"
-#include "webkit/fileapi/file_system_callback_dispatcher.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_file_util.h"
 #include "webkit/fileapi/file_system_operation.h"
@@ -65,7 +65,9 @@ class MockQuotaManager : public QuotaManager {
 
 }  // namespace (anonymous)
 
-class FileSystemOperationWriteTest : public testing::Test {
+class FileSystemOperationWriteTest
+    : public testing::Test,
+      public base::SupportsWeakPtr<FileSystemOperationWriteTest> {
  public:
   FileSystemOperationWriteTest()
       : local_file_util_(new LocalFileUtil(QuotaFileUtil::CreateDefault())),
@@ -76,13 +78,6 @@ class FileSystemOperationWriteTest : public testing::Test {
 
   FileSystemOperation* operation();
 
-  void set_failure_status(base::PlatformFileError status) {
-    EXPECT_FALSE(complete_);
-    EXPECT_EQ(status_, base::PLATFORM_FILE_OK);
-    EXPECT_NE(status, base::PLATFORM_FILE_OK);
-    complete_ = true;
-    status_ = status;
-  }
   base::PlatformFileError status() const { return status_; }
   void add_bytes_written(int64 bytes, bool complete) {
     bytes_written_ += bytes;
@@ -98,6 +93,25 @@ class FileSystemOperationWriteTest : public testing::Test {
  protected:
   GURL URLForPath(const FilePath& path) const {
     return test_helper_.GetURLForPath(path);
+  }
+
+  // Callback function for recording test results.
+  FileSystemOperationInterface::WriteCallback RecordWriteCallback() {
+    return base::Bind(&FileSystemOperationWriteTest::DidWrite, AsWeakPtr());
+  }
+
+  void DidWrite(base::PlatformFileError status, int64 bytes, bool complete) {
+    if (status == base::PLATFORM_FILE_OK) {
+      add_bytes_written(bytes, complete);
+      if (complete)
+        MessageLoop::current()->Quit();
+    } else {
+      EXPECT_FALSE(complete_);
+      EXPECT_EQ(status_, base::PLATFORM_FILE_OK);
+      complete_ = true;
+      status_ = status;
+      MessageLoop::current()->Quit();
+    }
   }
 
   scoped_ptr<LocalFileUtil> local_file_util_;
@@ -147,45 +161,6 @@ static net::URLRequestJob* BlobURLRequestJobFactory(net::URLRequest* request,
       base::MessageLoopProxy::current());
 }
 
-class MockDispatcher : public FileSystemCallbackDispatcher {
- public:
-  MockDispatcher(FileSystemOperationWriteTest* test) : test_(test) { }
-
-  virtual void DidFail(base::PlatformFileError status) {
-    test_->set_failure_status(status);
-    MessageLoop::current()->Quit();
-  }
-
-  virtual void DidSucceed() {
-    ADD_FAILURE();
-  }
-
-  virtual void DidReadMetadata(
-      const base::PlatformFileInfo& info,
-      const FilePath& platform_path) {
-    ADD_FAILURE();
-  }
-
-  virtual void DidReadDirectory(
-      const std::vector<base::FileUtilProxy::Entry>& entries,
-      bool /* has_more */) {
-    ADD_FAILURE();
-  }
-
-  virtual void DidOpenFileSystem(const std::string&, const GURL&) {
-    ADD_FAILURE();
-  }
-
-  virtual void DidWrite(int64 bytes, bool complete) {
-    test_->add_bytes_written(bytes, complete);
-    if (complete)
-      MessageLoop::current()->Quit();
-  }
-
- private:
-  FileSystemOperationWriteTest* test_;
-};
-
 }  // namespace (anonymous)
 
 void FileSystemOperationWriteTest::SetUp() {
@@ -213,7 +188,7 @@ void FileSystemOperationWriteTest::TearDown() {
 }
 
 FileSystemOperation* FileSystemOperationWriteTest::operation() {
-  return test_helper_.NewOperation(new MockDispatcher(this));
+  return test_helper_.NewOperation();
 }
 
 TEST_F(FileSystemOperationWriteTest, TestWriteSuccess) {
@@ -227,7 +202,7 @@ TEST_F(FileSystemOperationWriteTest, TestWriteSuccess) {
       blob_url, blob_data);
 
   operation()->Write(url_request_context, URLForPath(virtual_path_), blob_url,
-                     0);
+                     0, RecordWriteCallback());
   MessageLoop::current()->Run();
 
   url_request_context->blob_storage_controller()->RemoveBlob(blob_url);
@@ -248,7 +223,7 @@ TEST_F(FileSystemOperationWriteTest, TestWriteZero) {
       blob_url, blob_data);
 
   operation()->Write(url_request_context, URLForPath(virtual_path_),
-                     blob_url, 0);
+                     blob_url, 0, RecordWriteCallback());
   MessageLoop::current()->Run();
 
   url_request_context->blob_storage_controller()->RemoveBlob(blob_url);
@@ -263,7 +238,7 @@ TEST_F(FileSystemOperationWriteTest, TestWriteInvalidBlobUrl) {
       new TestURLRequestContext());
 
   operation()->Write(url_request_context, URLForPath(virtual_path_),
-      GURL("blob:invalid"), 0);
+      GURL("blob:invalid"), 0, RecordWriteCallback());
   MessageLoop::current()->Run();
 
   EXPECT_EQ(0, bytes_written());
@@ -283,7 +258,7 @@ TEST_F(FileSystemOperationWriteTest, TestWriteInvalidFile) {
 
   operation()->Write(url_request_context,
                      URLForPath(FilePath(FILE_PATH_LITERAL("nonexist"))),
-                     blob_url, 0);
+                     blob_url, 0, RecordWriteCallback());
   MessageLoop::current()->Run();
 
   url_request_context->blob_storage_controller()->RemoveBlob(blob_url);
@@ -310,7 +285,7 @@ TEST_F(FileSystemOperationWriteTest, TestWriteDir) {
       blob_url, blob_data);
 
   operation()->Write(url_request_context, URLForPath(virtual_subdir_path),
-                     blob_url, 0);
+                     blob_url, 0, RecordWriteCallback());
   MessageLoop::current()->Run();
 
   url_request_context->blob_storage_controller()->RemoveBlob(blob_url);
@@ -332,7 +307,7 @@ TEST_F(FileSystemOperationWriteTest, TestWriteFailureByQuota) {
 
   quota_manager_->set_quota(10);
   operation()->Write(url_request_context, URLForPath(virtual_path_), blob_url,
-                     0);
+                     0, RecordWriteCallback());
   MessageLoop::current()->Run();
 
   url_request_context->blob_storage_controller()->RemoveBlob(blob_url);

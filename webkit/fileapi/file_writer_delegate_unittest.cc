@@ -22,7 +22,6 @@
 #include "net/url_request/url_request_job.h"
 #include "net/url_request/url_request_status.h"
 #include "testing/platform_test.h"
-#include "webkit/fileapi/file_system_callback_dispatcher.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_operation.h"
 #include "webkit/fileapi/file_system_operation_context.h"
@@ -43,13 +42,6 @@ class Result {
         bytes_written_(0),
         complete_(false) {}
 
-  void set_failure_status(base::PlatformFileError status) {
-    EXPECT_FALSE(complete_);
-    EXPECT_EQ(status_, base::PLATFORM_FILE_OK);
-    EXPECT_NE(status, base::PLATFORM_FILE_OK);
-    complete_ = true;
-    status_ = status;
-  }
   base::PlatformFileError status() const { return status_; }
   void add_bytes_written(int64 bytes, bool complete) {
     bytes_written_ += bytes;
@@ -58,6 +50,20 @@ class Result {
   }
   int64 bytes_written() const { return bytes_written_; }
   bool complete() const { return complete_; }
+
+  void DidWrite(base::PlatformFileError status, int64 bytes, bool complete) {
+    if (status == base::PLATFORM_FILE_OK) {
+      add_bytes_written(bytes, complete);
+      if (complete)
+        MessageLoop::current()->Quit();
+    } else {
+      EXPECT_FALSE(complete_);
+      EXPECT_EQ(status_, base::PLATFORM_FILE_OK);
+      complete_ = true;
+      status_ = status;
+      MessageLoop::current()->Quit();
+    }
+  }
 
  private:
   // For post-operation status.
@@ -175,45 +181,6 @@ class FileWriterDelegateTestJob : public net::URLRequestJob {
   int cursor_;
 };
 
-class MockDispatcher : public FileSystemCallbackDispatcher {
- public:
-  explicit MockDispatcher(Result* result) : result_(result) {}
-
-  virtual void DidFail(base::PlatformFileError status) {
-    result_->set_failure_status(status);
-    MessageLoop::current()->Quit();
-  }
-
-  virtual void DidSucceed() {
-    ADD_FAILURE();
-  }
-
-  virtual void DidReadMetadata(
-      const base::PlatformFileInfo& info,
-      const FilePath& platform_path) {
-    ADD_FAILURE();
-  }
-
-  virtual void DidReadDirectory(
-      const std::vector<base::FileUtilProxy::Entry>& entries,
-      bool /* has_more */) {
-    ADD_FAILURE();
-  }
-
-  virtual void DidOpenFileSystem(const std::string&, const GURL&) {
-    ADD_FAILURE();
-  }
-
-  virtual void DidWrite(int64 bytes, bool complete) {
-    result_->add_bytes_written(bytes, complete);
-    if (complete)
-      MessageLoop::current()->Quit();
-  }
-
- private:
-  Result* result_;
-};
-
 }  // namespace (anonymous)
 
 // static
@@ -241,8 +208,9 @@ void FileWriterDelegateTest::TearDown() {
 
 FileSystemOperation* FileWriterDelegateTest::CreateNewOperation(
     Result* result, int64 quota) {
-  FileSystemOperation* operation = test_helper_.NewOperation(
-      new MockDispatcher(result));
+  FileSystemOperation* operation = test_helper_.NewOperation();
+  operation->set_write_callback(base::Bind(&Result::DidWrite,
+                                           base::Unretained(result)));
   FileSystemOperationContext* context =
       operation->file_system_operation_context();
   context->set_allowed_bytes_growth(quota);

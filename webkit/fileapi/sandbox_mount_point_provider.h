@@ -89,7 +89,6 @@ class SandboxMountPointProvider
       const GURL& origin_url,
       FileSystemType file_system_type,
       const FilePath& virtual_path,
-      scoped_ptr<FileSystemCallbackDispatcher> dispatcher,
       base::MessageLoopProxy* file_proxy,
       FileSystemContext* context) const OVERRIDE;
 

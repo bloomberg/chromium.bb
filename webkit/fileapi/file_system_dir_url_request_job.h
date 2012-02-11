@@ -47,7 +47,8 @@ class FileSystemDirURLRequestJob : public net::URLRequestJob {
   virtual ~FileSystemDirURLRequestJob();
 
   void StartAsync();
-  void DidReadDirectory(const std::vector<base::FileUtilProxy::Entry>& entries,
+  void DidReadDirectory(base::PlatformFileError result,
+                        const std::vector<base::FileUtilProxy::Entry>& entries,
                         bool has_more);
   FileSystemOperationInterface* GetNewOperation(const GURL& url);
 

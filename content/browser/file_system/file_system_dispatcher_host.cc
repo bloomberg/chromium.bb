@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/platform_file.h"
@@ -18,7 +19,6 @@
 #include "ipc/ipc_platform_file.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
-#include "webkit/fileapi/file_system_callback_dispatcher.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_operation.h"
 #include "webkit/fileapi/file_system_quota_util.h"
@@ -28,82 +28,9 @@
 using content::BrowserMessageFilter;
 using content::BrowserThread;
 using content::UserMetricsAction;
-using fileapi::FileSystemCallbackDispatcher;
 using fileapi::FileSystemFileUtil;
 using fileapi::FileSystemOperation;
 using fileapi::FileSystemOperationInterface;
-
-class BrowserFileSystemCallbackDispatcher
-    : public FileSystemCallbackDispatcher {
- public:
-  // An instance of this class must be created by Create()
-  // (so that we do not leak ownerships).
-  static scoped_ptr<FileSystemCallbackDispatcher> Create(
-      FileSystemDispatcherHost* dispatcher_host, int request_id) {
-    return scoped_ptr<FileSystemCallbackDispatcher>(
-        new BrowserFileSystemCallbackDispatcher(dispatcher_host, request_id));
-  }
-
-  virtual ~BrowserFileSystemCallbackDispatcher() {
-    dispatcher_host_->UnregisterOperation(request_id_);
-  }
-
-  virtual void DidSucceed() {
-    dispatcher_host_->Send(new FileSystemMsg_DidSucceed(request_id_));
-  }
-
-  virtual void DidReadMetadata(
-      const base::PlatformFileInfo& info,
-      const FilePath& platform_path) {
-    dispatcher_host_->Send(new FileSystemMsg_DidReadMetadata(
-        request_id_, info, platform_path));
-  }
-
-  virtual void DidReadDirectory(
-      const std::vector<base::FileUtilProxy::Entry>& entries, bool has_more) {
-    dispatcher_host_->Send(new FileSystemMsg_DidReadDirectory(
-        request_id_, entries, has_more));
-  }
-
-  virtual void DidOpenFileSystem(const std::string& name,
-                                 const GURL& root) {
-    DCHECK(root.is_valid());
-    dispatcher_host_->Send(
-        new FileSystemMsg_DidOpenFileSystem(request_id_, name, root));
-  }
-
-  virtual void DidFail(base::PlatformFileError error_code) {
-    dispatcher_host_->Send(new FileSystemMsg_DidFail(request_id_, error_code));
-  }
-
-  virtual void DidWrite(int64 bytes, bool complete) {
-    dispatcher_host_->Send(new FileSystemMsg_DidWrite(
-        request_id_, bytes, complete));
-  }
-
-  virtual void DidOpenFile(
-      base::PlatformFile file,
-      base::ProcessHandle peer_handle) {
-    IPC::PlatformFileForTransit file_for_transit =
-        file != base::kInvalidPlatformFileValue ?
-            IPC::GetFileHandleForProcess(file, peer_handle, true) :
-            IPC::InvalidPlatformFileForTransit();
-
-    dispatcher_host_->Send(new FileSystemMsg_DidOpenFile(
-        request_id_, file_for_transit));
-  }
-
- private:
-  BrowserFileSystemCallbackDispatcher(
-      FileSystemDispatcherHost* dispatcher_host, int request_id)
-      : dispatcher_host_(dispatcher_host),
-        request_id_(request_id) {
-    DCHECK(dispatcher_host_);
-  }
-
-  scoped_refptr<FileSystemDispatcherHost> dispatcher_host_;
-  int request_id_;
-};
 
 FileSystemDispatcherHost::FileSystemDispatcherHost(
     net::URLRequestContextGetter* request_context_getter,
@@ -180,52 +107,70 @@ void FileSystemDispatcherHost::OnOpen(
   } else if (type == fileapi::kFileSystemTypePersistent) {
     content::RecordAction(UserMetricsAction("OpenFileSystemPersistent"));
   }
-  context_->OpenFileSystem(origin_url, type, create,
-                           BrowserFileSystemCallbackDispatcher::Create(
-                               this, request_id));
+  context_->OpenFileSystem(origin_url, type, create, base::Bind(
+      &FileSystemDispatcherHost::DidOpenFileSystem, this, request_id));
 }
 
 void FileSystemDispatcherHost::OnMove(
     int request_id, const GURL& src_path, const GURL& dest_path) {
-  GetNewOperation(src_path, request_id)->Move(src_path, dest_path);
+  GetNewOperation(src_path, request_id)->Move(
+      src_path, dest_path,
+      base::Bind(&FileSystemDispatcherHost::DidFinish, this, request_id));
 }
 
 void FileSystemDispatcherHost::OnCopy(
     int request_id, const GURL& src_path, const GURL& dest_path) {
-  GetNewOperation(src_path, request_id)->Copy(src_path, dest_path);
+  GetNewOperation(src_path, request_id)->Copy(
+      src_path, dest_path,
+      base::Bind(&FileSystemDispatcherHost::DidFinish, this, request_id));
 }
 
 void FileSystemDispatcherHost::OnRemove(
     int request_id, const GURL& path, bool recursive) {
-  GetNewOperation(path, request_id)->Remove(path, recursive);
+  GetNewOperation(path, request_id)->Remove(
+      path, recursive,
+      base::Bind(&FileSystemDispatcherHost::DidFinish, this, request_id));
 }
 
 void FileSystemDispatcherHost::OnReadMetadata(
     int request_id, const GURL& path) {
-  GetNewOperation(path, request_id)->GetMetadata(path);
+  GetNewOperation(path, request_id)->GetMetadata(
+      path,
+      base::Bind(&FileSystemDispatcherHost::DidGetMetadata, this, request_id));
 }
 
 void FileSystemDispatcherHost::OnCreate(
     int request_id, const GURL& path, bool exclusive,
     bool is_directory, bool recursive) {
-  if (is_directory)
+  if (is_directory) {
     GetNewOperation(path, request_id)->CreateDirectory(
-        path, exclusive, recursive);
-  else
-    GetNewOperation(path, request_id)->CreateFile(path, exclusive);
+        path, exclusive, recursive,
+        base::Bind(&FileSystemDispatcherHost::DidFinish, this, request_id));
+  } else {
+    GetNewOperation(path, request_id)->CreateFile(
+        path, exclusive,
+        base::Bind(&FileSystemDispatcherHost::DidFinish, this, request_id));
+  }
 }
 
 void FileSystemDispatcherHost::OnExists(
     int request_id, const GURL& path, bool is_directory) {
-  if (is_directory)
-    GetNewOperation(path, request_id)->DirectoryExists(path);
-  else
-    GetNewOperation(path, request_id)->FileExists(path);
+  if (is_directory) {
+    GetNewOperation(path, request_id)->DirectoryExists(
+        path,
+        base::Bind(&FileSystemDispatcherHost::DidFinish, this, request_id));
+  } else {
+    GetNewOperation(path, request_id)->FileExists(
+        path,
+        base::Bind(&FileSystemDispatcherHost::DidFinish, this, request_id));
+  }
 }
 
 void FileSystemDispatcherHost::OnReadDirectory(
     int request_id, const GURL& path) {
-  GetNewOperation(path, request_id)->ReadDirectory(path);
+  GetNewOperation(path, request_id)->ReadDirectory(
+      path, base::Bind(&FileSystemDispatcherHost::DidReadDirectory,
+                       this, request_id));
 }
 
 void FileSystemDispatcherHost::OnWrite(
@@ -239,14 +184,17 @@ void FileSystemDispatcherHost::OnWrite(
     return;
   }
   GetNewOperation(path, request_id)->Write(
-      request_context_, path, blob_url, offset);
+      request_context_, path, blob_url, offset,
+      base::Bind(&FileSystemDispatcherHost::DidWrite, this, request_id));
 }
 
 void FileSystemDispatcherHost::OnTruncate(
     int request_id,
     const GURL& path,
     int64 length) {
-  GetNewOperation(path, request_id)->Truncate(path, length);
+  GetNewOperation(path, request_id)->Truncate(
+      path, length,
+      base::Bind(&FileSystemDispatcherHost::DidFinish, this, request_id));
 }
 
 void FileSystemDispatcherHost::OnTouchFile(
@@ -255,7 +203,8 @@ void FileSystemDispatcherHost::OnTouchFile(
     const base::Time& last_access_time,
     const base::Time& last_modified_time) {
   GetNewOperation(path, request_id)->TouchFile(
-      path, last_access_time, last_modified_time);
+      path, last_access_time, last_modified_time,
+      base::Bind(&FileSystemDispatcherHost::DidFinish, this, request_id));
 }
 
 void FileSystemDispatcherHost::OnCancel(
@@ -267,7 +216,7 @@ void FileSystemDispatcherHost::OnCancel(
     // The cancel will eventually send both the write failure and the cancel
     // success.
     write->Cancel(
-        BrowserFileSystemCallbackDispatcher::Create(this, request_id));
+        base::Bind(&FileSystemDispatcherHost::DidCancel, this, request_id));
   } else {
     // The write already finished; report that we failed to stop it.
     Send(new FileSystemMsg_DidFail(
@@ -277,7 +226,9 @@ void FileSystemDispatcherHost::OnCancel(
 
 void FileSystemDispatcherHost::OnOpenFile(
     int request_id, const GURL& path, int file_flags) {
-  GetNewOperation(path, request_id)->OpenFile(path, file_flags, peer_handle());
+  GetNewOperation(path, request_id)->OpenFile(
+      path, file_flags, peer_handle(),
+      base::Bind(&FileSystemDispatcherHost::DidOpenFile, this, request_id));
 }
 
 void FileSystemDispatcherHost::OnWillUpdate(const GURL& path) {
@@ -325,11 +276,96 @@ void FileSystemDispatcherHost::OnSyncGetPlatformPath(
   // handling based on element types is supported.
   FileSystemOperation* operation =
       context_->CreateFileSystemOperation(
-          path, scoped_ptr<FileSystemCallbackDispatcher>(NULL),
+          path,
           BrowserThread::GetMessageLoopProxyForThread(
               BrowserThread::FILE))->AsFileSystemOperation();
   DCHECK(operation);
   operation->SyncGetPlatformPath(path, platform_path);
+}
+
+void FileSystemDispatcherHost::DidFinish(int request_id,
+                                         base::PlatformFileError result) {
+  if (result == base::PLATFORM_FILE_OK)
+    Send(new FileSystemMsg_DidSucceed(request_id));
+  else
+    Send(new FileSystemMsg_DidFail(request_id, result));
+  UnregisterOperation(request_id);
+}
+
+void FileSystemDispatcherHost::DidCancel(int request_id,
+                                         base::PlatformFileError result) {
+  if (result == base::PLATFORM_FILE_OK)
+    Send(new FileSystemMsg_DidSucceed(request_id));
+  else
+    Send(new FileSystemMsg_DidFail(request_id, result));
+  // For Cancel we do not create a new operation, so no unregister here.
+}
+
+void FileSystemDispatcherHost::DidGetMetadata(
+    int request_id,
+    base::PlatformFileError result,
+    const base::PlatformFileInfo& info,
+    const FilePath& platform_path) {
+  if (result == base::PLATFORM_FILE_OK)
+    Send(new FileSystemMsg_DidReadMetadata(request_id, info, platform_path));
+  else
+    Send(new FileSystemMsg_DidFail(request_id, result));
+  UnregisterOperation(request_id);
+}
+
+void FileSystemDispatcherHost::DidReadDirectory(
+    int request_id,
+    base::PlatformFileError result,
+    const std::vector<base::FileUtilProxy::Entry>& entries,
+    bool has_more) {
+  if (result == base::PLATFORM_FILE_OK)
+    Send(new FileSystemMsg_DidReadDirectory(request_id, entries, has_more));
+  else
+    Send(new FileSystemMsg_DidFail(request_id, result));
+  UnregisterOperation(request_id);
+}
+
+void FileSystemDispatcherHost::DidOpenFile(int request_id,
+                                           base::PlatformFileError result,
+                                           base::PlatformFile file,
+                                           base::ProcessHandle peer_handle) {
+  if (result == base::PLATFORM_FILE_OK) {
+    IPC::PlatformFileForTransit file_for_transit =
+        file != base::kInvalidPlatformFileValue ?
+            IPC::GetFileHandleForProcess(file, peer_handle, true) :
+            IPC::InvalidPlatformFileForTransit();
+    Send(new FileSystemMsg_DidOpenFile(request_id, file_for_transit));
+  } else {
+    Send(new FileSystemMsg_DidFail(request_id, result));
+  }
+  UnregisterOperation(request_id);
+}
+
+void FileSystemDispatcherHost::DidWrite(int request_id,
+                                        base::PlatformFileError result,
+                                        int64 bytes,
+                                        bool complete) {
+  if (result == base::PLATFORM_FILE_OK) {
+    Send(new FileSystemMsg_DidWrite(request_id, bytes, complete));
+    if (complete)
+      UnregisterOperation(request_id);
+  } else {
+    Send(new FileSystemMsg_DidFail(request_id, result));
+    UnregisterOperation(request_id);
+  }
+}
+
+void FileSystemDispatcherHost::DidOpenFileSystem(int request_id,
+                                                 base::PlatformFileError result,
+                                                 const std::string& name,
+                                                 const GURL& root) {
+  if (result == base::PLATFORM_FILE_OK) {
+    DCHECK(root.is_valid());
+    Send(new FileSystemMsg_DidOpenFileSystem(request_id, name, root));
+  } else {
+    Send(new FileSystemMsg_DidFail(request_id, result));
+  }
+  // For OpenFileSystem we do not create a new operation, so no unregister here.
 }
 
 FileSystemOperationInterface* FileSystemDispatcherHost::GetNewOperation(
@@ -338,7 +374,6 @@ FileSystemOperationInterface* FileSystemDispatcherHost::GetNewOperation(
   FileSystemOperationInterface* operation =
       context_->CreateFileSystemOperation(
           target_path,
-          BrowserFileSystemCallbackDispatcher::Create(this, request_id),
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE));
   DCHECK(operation);
   operations_.AddWithID(operation, request_id);
@@ -346,7 +381,6 @@ FileSystemOperationInterface* FileSystemDispatcherHost::GetNewOperation(
 }
 
 void FileSystemDispatcherHost::UnregisterOperation(int request_id) {
-  // For Cancel and OpenFileSystem we do not create an operation.
-  if (operations_.Lookup(request_id))
-    operations_.Remove(request_id);
+  DCHECK(operations_.Lookup(request_id));
+  operations_.Remove(request_id);
 }

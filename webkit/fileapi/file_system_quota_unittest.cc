@@ -11,11 +11,11 @@
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
 #include "base/platform_file.h"
 #include "base/scoped_temp_dir.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webkit/fileapi/file_system_callback_dispatcher.h"
 #include "webkit/fileapi/file_system_operation.h"
 #include "webkit/fileapi/file_system_test_helper.h"
 #include "webkit/fileapi/file_system_usage_cache.h"
@@ -28,7 +28,9 @@ namespace fileapi {
 
 const int kFileOperationStatusNotSet = 1;
 
-class FileSystemQuotaTest : public testing::Test {
+class FileSystemQuotaTest
+    : public testing::Test,
+      public base::SupportsWeakPtr<FileSystemQuotaTest> {
  public:
   FileSystemQuotaTest()
       : local_file_util_(new LocalFileUtil(QuotaFileUtil::CreateDefault())),
@@ -40,7 +42,6 @@ class FileSystemQuotaTest : public testing::Test {
 
   FileSystemOperation* operation();
 
-  void set_status(int status) { status_ = status; }
   int status() const { return status_; }
   quota::QuotaStatusCode quota_status() const { return quota_status_; }
   int64 usage() { return usage_; }
@@ -116,6 +117,15 @@ class FileSystemQuotaTest : public testing::Test {
   FilePath grandchild_file2_path_;
 
  protected:
+  // Callback for recording test results.
+  FileSystemOperationInterface::StatusCallback RecordStatusCallback() {
+    return base::Bind(&FileSystemQuotaTest::DidFinish, AsWeakPtr());
+  }
+
+  void DidFinish(base::PlatformFileError status) {
+    status_ = status;
+  }
+
   FileSystemTestOriginHelper test_helper_;
 
   ScopedTempDir work_dir_;
@@ -146,50 +156,6 @@ class FileSystemObfuscatedQuotaTest : public FileSystemQuotaTest {
   scoped_refptr<FileSystemContext> file_system_context_;
 };
 
-namespace {
-
-class MockDispatcher : public FileSystemCallbackDispatcher {
- public:
-  explicit MockDispatcher(FileSystemQuotaTest* test) : test_(test) { }
-
-  virtual void DidFail(base::PlatformFileError status) {
-    test_->set_status(status);
-  }
-
-  virtual void DidSucceed() {
-    test_->set_status(base::PLATFORM_FILE_OK);
-  }
-
-  virtual void DidGetLocalPath(const FilePath& local_path) {
-    ADD_FAILURE();
-  }
-
-  virtual void DidReadMetadata(
-      const base::PlatformFileInfo& info,
-      const FilePath& platform_path) {
-    ADD_FAILURE();
-  }
-
-  virtual void DidReadDirectory(
-      const std::vector<base::FileUtilProxy::Entry>& entries,
-      bool /* has_more */) {
-    ADD_FAILURE();
-  }
-
-  virtual void DidOpenFileSystem(const std::string&, const GURL&) {
-    ADD_FAILURE();
-  }
-
-  virtual void DidWrite(int64 bytes, bool complete) {
-    ADD_FAILURE();
-  }
-
- private:
-  FileSystemQuotaTest* test_;
-};
-
-}  // namespace (anonymous)
-
 void FileSystemQuotaTest::SetUp() {
   ASSERT_TRUE(work_dir_.CreateUniqueTempDir());
   FilePath filesystem_dir_path = work_dir_.path().AppendASCII("filesystem");
@@ -214,7 +180,7 @@ void FileSystemQuotaTest::TearDown() {
 }
 
 FileSystemOperation* FileSystemQuotaTest::operation() {
-  return test_helper_.NewOperation(new MockDispatcher(this));
+  return test_helper_.NewOperation();
 }
 
 void FileSystemQuotaTest::OnGetUsageAndQuota(
@@ -239,10 +205,14 @@ TEST_F(FileSystemQuotaTest, TestMoveSuccessSrcDirRecursive) {
 
   EXPECT_EQ(0, ActualSize());
 
-  operation()->Truncate(URLForPath(child_file1_path_), 5000);
-  operation()->Truncate(URLForPath(child_file2_path_), 400);
-  operation()->Truncate(URLForPath(grandchild_file1_path_), 30);
-  operation()->Truncate(URLForPath(grandchild_file2_path_), 2);
+  operation()->Truncate(URLForPath(child_file1_path_), 5000,
+                        RecordStatusCallback());
+  operation()->Truncate(URLForPath(child_file2_path_), 400,
+                        RecordStatusCallback());
+  operation()->Truncate(URLForPath(grandchild_file1_path_), 30,
+                        RecordStatusCallback());
+  operation()->Truncate(URLForPath(grandchild_file2_path_), 2,
+                        RecordStatusCallback());
   MessageLoop::current()->RunAllPending();
 
   const int64 all_file_size = 5000 + 400 + 30 + 2;
@@ -254,7 +224,8 @@ TEST_F(FileSystemQuotaTest, TestMoveSuccessSrcDirRecursive) {
   EXPECT_EQ(all_file_size, usage());
   ASSERT_LT(all_file_size, quota());
 
-  operation()->Move(URLForPath(src_dir_path), URLForPath(dest_dir_path));
+  operation()->Move(URLForPath(src_dir_path), URLForPath(dest_dir_path),
+                    RecordStatusCallback());
   MessageLoop::current()->RunAllPending();
 
   EXPECT_EQ(base::PLATFORM_FILE_OK, status());
@@ -280,10 +251,14 @@ TEST_F(FileSystemQuotaTest, TestCopySuccessSrcDirRecursive) {
 
   EXPECT_EQ(0, ActualSize());
 
-  operation()->Truncate(URLForPath(child_file1_path_), 8000);
-  operation()->Truncate(URLForPath(child_file2_path_), 700);
-  operation()->Truncate(URLForPath(grandchild_file1_path_), 60);
-  operation()->Truncate(URLForPath(grandchild_file2_path_), 5);
+  operation()->Truncate(URLForPath(child_file1_path_), 8000,
+                        RecordStatusCallback());
+  operation()->Truncate(URLForPath(child_file2_path_), 700,
+                        RecordStatusCallback());
+  operation()->Truncate(URLForPath(grandchild_file1_path_), 60,
+                        RecordStatusCallback());
+  operation()->Truncate(URLForPath(grandchild_file2_path_), 5,
+                        RecordStatusCallback());
   MessageLoop::current()->RunAllPending();
 
   const int64 child_file_size = 8000 + 700;
@@ -297,7 +272,8 @@ TEST_F(FileSystemQuotaTest, TestCopySuccessSrcDirRecursive) {
   EXPECT_EQ(all_file_size, usage());
   ASSERT_LT(all_file_size, quota());
 
-  operation()->Copy(URLForPath(src_dir_path), URLForPath(dest_dir1_path));
+  operation()->Copy(URLForPath(src_dir_path), URLForPath(dest_dir1_path),
+                    RecordStatusCallback());
   MessageLoop::current()->RunAllPending();
 
   EXPECT_EQ(base::PLATFORM_FILE_OK, status());
@@ -320,7 +296,8 @@ TEST_F(FileSystemQuotaTest, TestCopySuccessSrcDirRecursive) {
   EXPECT_EQ(2 * all_file_size, usage());
   ASSERT_LT(2 * all_file_size, quota());
 
-  operation()->Copy(URLForPath(child_dir_path_), URLForPath(dest_dir2_path));
+  operation()->Copy(URLForPath(child_dir_path_), URLForPath(dest_dir2_path),
+                    RecordStatusCallback());
   MessageLoop::current()->RunAllPending();
 
   EXPECT_EQ(base::PLATFORM_FILE_OK, status());
