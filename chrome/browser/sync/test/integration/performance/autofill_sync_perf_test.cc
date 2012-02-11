@@ -8,6 +8,7 @@
 #include "chrome/browser/autofill/autofill_profile.h"
 #include "chrome/browser/sync/profile_sync_service_harness.h"
 #include "chrome/browser/sync/test/integration/autofill_helper.h"
+#include "chrome/browser/sync/test/integration/bookmarks_helper.h"
 #include "chrome/browser/sync/test/integration/performance/sync_timing_helper.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/browser/webdata/autofill_entry.h"
@@ -17,7 +18,7 @@ using autofill_helper::GetAllKeys;
 using autofill_helper::GetAllProfiles;
 using autofill_helper::GetKeyCount;
 using autofill_helper::GetProfileCount;
-using autofill_helper::RemoveKey;
+using autofill_helper::RemoveKeys;
 using autofill_helper::SetProfiles;
 
 // See comments in typed_urls_sync_perf_test.cc for reasons for these
@@ -47,9 +48,6 @@ class AutofillSyncPerfTest : public SyncTest {
 
   // Adds |num_keys| new autofill keys to the sync profile |profile|.
   void AddKeys(int profile, int num_keys);
-
-  // Removes all autofill keys from |profile|.
-  void RemoveKeys(int profile);
 
  private:
   // Returns a new unique autofill profile.
@@ -120,14 +118,6 @@ void AutofillSyncPerfTest::AddKeys(int profile, int num_keys) {
   autofill_helper::AddKeys(profile, keys);
 }
 
-void AutofillSyncPerfTest::RemoveKeys(int profile) {
-  std::set<AutofillEntry> keys = GetAllKeys(profile);
-  for (std::set<AutofillEntry>::const_iterator it = keys.begin();
-       it != keys.end(); ++it) {
-    RemoveKey(profile, it->key());
-  }
-}
-
 const AutofillProfile AutofillSyncPerfTest::NextAutofillProfile() {
   AutofillProfile profile;
   autofill_test::SetProfileInfoWithGuid(&profile, NextGUID().c_str(),
@@ -164,6 +154,15 @@ const std::string AutofillSyncPerfTest::IntToValue(int n) {
   return StringPrintf("Value%d", n);
 }
 
+void ForceSync(int profile) {
+  static int id = 0;
+  ++id;
+  EXPECT_TRUE(
+      bookmarks_helper::AddURL(profile, 0,
+                               bookmarks_helper::IndexedURLTitle(id),
+                               GURL(bookmarks_helper::IndexedURL(id))) != NULL);
+}
+
 IN_PROC_BROWSER_TEST_F(AutofillSyncPerfTest, AutofillProfiles_P0) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
@@ -187,19 +186,20 @@ IN_PROC_BROWSER_TEST_F(AutofillSyncPerfTest, AutofillProfiles_P0) {
   SyncTimingHelper::PrintResult("autofill", "delete_autofill_profiles", dt);
 }
 
-
-// Flaky, see http://crbug.com/102948
-
-IN_PROC_BROWSER_TEST_F(AutofillSyncPerfTest, FLAKY_Autofill_P0) {
+IN_PROC_BROWSER_TEST_F(AutofillSyncPerfTest, Autofill_P0) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   AddKeys(0, kNumKeys);
+  // TODO(lipalani): fix this. The following line is added to force sync.
+  ForceSync(0);
   base::TimeDelta dt =
       SyncTimingHelper::TimeMutualSyncCycle(GetClient(0), GetClient(1));
   ASSERT_EQ(kNumKeys, GetKeyCount(1));
   SyncTimingHelper::PrintResult("autofill", "add_autofill_keys", dt);
 
   RemoveKeys(0);
+  // TODO(lipalani): fix this. The following line is added to force sync.
+  ForceSync(0);
   dt = SyncTimingHelper::TimeMutualSyncCycle(GetClient(0), GetClient(1));
   ASSERT_EQ(0, GetKeyCount(1));
   SyncTimingHelper::PrintResult("autofill", "delete_autofill_keys", dt);

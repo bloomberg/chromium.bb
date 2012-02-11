@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -43,6 +43,9 @@ void AddKeys(int profile, const std::set<AutofillKey>& keys);
 // Removes the form field in |key| from the WebDataService of sync profile
 // |profile|.
 void RemoveKey(int profile, const AutofillKey& key);
+
+// Removes all of the keys from the WebDataService of sync profile |profile|.
+void RemoveKeys(int profile);
 
 // Gets all the form fields in the WebDataService of sync profile |profile|.
 std::set<AutofillEntry> GetAllKeys(int profile) WARN_UNUSED_RESULT;

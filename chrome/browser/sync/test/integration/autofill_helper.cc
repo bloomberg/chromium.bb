@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -29,41 +29,6 @@ using testing::_;
 
 namespace {
 
-class GetAllAutofillEntries
-    : public base::RefCountedThreadSafe<GetAllAutofillEntries> {
- public:
-  explicit GetAllAutofillEntries(WebDataService* web_data_service)
-      : web_data_service_(web_data_service),
-        done_event_(false, false) {}
-
-  void Init() {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-    BrowserThread::PostTask(
-        BrowserThread::DB,
-        FROM_HERE,
-        base::Bind(&GetAllAutofillEntries::Run, this));
-    done_event_.Wait();
-  }
-
-  const std::vector<AutofillEntry>& entries() const {
-    return entries_;
-  }
-
- private:
-  friend class base::RefCountedThreadSafe<GetAllAutofillEntries>;
-
-  void Run() {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
-    web_data_service_->GetDatabase()->GetAutofillTable()->GetAllAutofillEntries(
-        &entries_);
-    done_event_.Signal();
-  }
-
-  WebDataService* web_data_service_;
-  base::WaitableEvent done_event_;
-  std::vector<AutofillEntry> entries_;
-};
-
 ACTION_P(SignalEvent, event) {
   event->Signal();
 }
@@ -84,6 +49,61 @@ class MockPersonalDataManagerObserver : public PersonalDataManagerObserver {
  public:
   MOCK_METHOD0(OnPersonalDataChanged, void());
 };
+
+void RemoveKeyDontBlockForSync(int profile, const AutofillKey& key) {
+  WaitableEvent done_event(false, false);
+  scoped_refptr<AutofillDBThreadObserverHelper> observer_helper(
+      new AutofillDBThreadObserverHelper());
+  observer_helper->Init();
+
+  EXPECT_CALL(*observer_helper->observer(), Observe(_, _, _)).
+      WillOnce(SignalEvent(&done_event));
+  WebDataService* wds = autofill_helper::GetWebDataService(profile);
+  wds->RemoveFormValueForElementName(key.name(), key.value());
+  done_event.Wait();
+}
+
+void RunOnDBThreadAndSignal(base::Closure task,
+                            base::WaitableEvent* done_event) {
+  if (!task.is_null()) {
+    task.Run();
+  }
+  done_event->Signal();
+}
+
+void RunOnDBThreadAndBlock(base::Closure task) {
+  WaitableEvent done_event(false, false);
+  BrowserThread::PostTask(BrowserThread::DB,
+                          FROM_HERE,
+                          Bind(&RunOnDBThreadAndSignal, task, &done_event));
+  done_event.Wait();
+}
+
+void GetAllAutofillEntriesOnDBThread(WebDataService* wds,
+                                     std::vector<AutofillEntry>* entries) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
+  wds->GetDatabase()->GetAutofillTable()->GetAllAutofillEntries(entries);
+}
+
+std::vector<AutofillEntry> GetAllAutofillEntries(WebDataService* wds) {
+  std::vector<AutofillEntry> entries;
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  RunOnDBThreadAndBlock(Bind(&GetAllAutofillEntriesOnDBThread,
+                             Unretained(wds),
+                             &entries));
+  return entries;
+}
+
+// UI thread returns from the update operations on the DB thread and schedules
+// the sync. This function blocks until after this scheduled sync is complete by
+// scheduling additional empty task on DB Thread. Call after AddKeys/RemoveKey.
+void BlockForPendingDBThreadTasks() {
+  // The order of the notifications is undefined, so sync change sometimes is
+  // posted after the notification for observer_helper. Post new task to db
+  // thread that guaranteed to be after sync and would be blocking until
+  // completion.
+  RunOnDBThreadAndBlock(base::Closure());
+}
 
 }  // namespace
 
@@ -153,27 +173,26 @@ void AddKeys(int profile, const std::set<AutofillKey>& keys) {
   WebDataService* wds = GetWebDataService(profile);
   wds->AddFormFields(form_fields);
   done_event.Wait();
+  BlockForPendingDBThreadTasks();
 }
 
 void RemoveKey(int profile, const AutofillKey& key) {
-  WaitableEvent done_event(false, false);
-  scoped_refptr<AutofillDBThreadObserverHelper> observer_helper(
-      new AutofillDBThreadObserverHelper());
-  observer_helper->Init();
+  RemoveKeyDontBlockForSync(profile, key);
+  BlockForPendingDBThreadTasks();
+}
 
-  EXPECT_CALL(*observer_helper->observer(), Observe(_, _, _)).
-      WillOnce(SignalEvent(&done_event));
-  WebDataService* wds = GetWebDataService(profile);
-  wds->RemoveFormValueForElementName(key.name(), key.value());
-  done_event.Wait();
+void RemoveKeys(int profile) {
+  std::set<AutofillEntry> keys = GetAllKeys(profile);
+  for (std::set<AutofillEntry>::const_iterator it = keys.begin();
+       it != keys.end(); ++it) {
+    RemoveKeyDontBlockForSync(profile, it->key());
+  }
+  BlockForPendingDBThreadTasks();
 }
 
 std::set<AutofillEntry> GetAllKeys(int profile) {
   WebDataService* wds = GetWebDataService(profile);
-  scoped_refptr<GetAllAutofillEntries> get_all_entries =
-      new GetAllAutofillEntries(wds);
-  get_all_entries->Init();
-  const std::vector<AutofillEntry>& all_entries = get_all_entries->entries();
+  std::vector<AutofillEntry> all_entries = GetAllAutofillEntries(wds);
   std::set<AutofillEntry> all_keys;
   for (std::vector<AutofillEntry>::const_iterator it = all_entries.begin();
        it != all_entries.end(); ++it) {
