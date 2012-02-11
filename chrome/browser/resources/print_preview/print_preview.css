@@ -1,4 +1,4 @@
-/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -27,13 +27,12 @@ header {
 }
 
 #print-preview #navbar-content-title {
+  cursor: default;
   text-align: start;
 }
 
 #print-header {
   -webkit-padding-end: 16px;
-  font-size: 13px;
-  line-height: 22px;
   padding-bottom: 10px;
   padding-top: 10px;
 }
@@ -61,8 +60,6 @@ input[type=text][disabled] {
 
 .two-column {
   display: table-row;
-  font-size: 13px;
-  line-height: 22px;
 }
 
 .right-column {
@@ -71,9 +68,14 @@ input[type=text][disabled] {
   width: auto;
 }
 
+.right-column > *:not(:first-child):not(.hint) {
+  margin-top: 8px;
+}
+
 .two-column h1 {
   -webkit-padding-start: 16px;
   display: table-cell;
+  font-size: 1.1em;
   width: 86px;
 }
 
@@ -98,7 +100,6 @@ p {
 
 h1 {
   color: #808080;
-  font-size: 100%;
   font-weight: 300;
 }
 
@@ -136,11 +137,10 @@ span.hint {
   -webkit-transition: color 200ms;
   background: white;
   display: block;
-  font-size: 11px;
+  font-size: 0.9em;
   font-weight: bold;
   height: 0;
   line-height: 10px;
-  margin-bottom: 0;
   margin: 0;
   overflow: hidden;
 }
@@ -151,7 +151,7 @@ span.hint.visible {
   -webkit-user-select: text;
   color: #8c1414;
   height: auto;
-  margin-bottom: -10px;
+  margin-bottom: -5px;
   margin-top: 5px;
   padding-bottom: 5px;
 }
@@ -160,8 +160,7 @@ span.hint.closing {
   -webkit-transition: margin 150ms, height 150ms, opacity 150ms;
   background: transparent;
   height: 0 !important;
-  margin-bottom: 0;
-  margin-top: 0;
+  margin: 0;
   opacity: 0;
 }
 
@@ -224,6 +223,11 @@ label {
   padding-top: 0;
   position: static;
   visibility: visible;
+}
+
+/* TODO(estade): this shouldn't be necessary. */
+#print-preview input[type=radio] {
+  margin-top: 0;
 }
 
 /* Individual settings sections  */
@@ -360,7 +364,6 @@ html[dir='rtl'] #decrement {
 
 #messages {
   color: #404040;
-  font-size: 13px;
   position: relative;
   text-align: center;
   text-shadow: 0 1px 0 rgba(255, 255, 255, .5);
@@ -399,7 +402,6 @@ html[dir='rtl'] #decrement {
 
 #two-sided-option {
   display: inline-block;
-  margin-top: 10px;
 }
 
 #error-action-area {

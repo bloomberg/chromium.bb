@@ -14,7 +14,8 @@ input[type='submit']:not(.custom-appearance) {
   color: #444;
   /* Input elements have -webkit-small-control which can override the body font.
    * Resolve this by using 'inherit'. */
-  font: inherit;
+  font-family: inherit;
+  font-size: inherit;
   margin-bottom: 0;
   min-width: 4em;
   padding: 3px 12px;
