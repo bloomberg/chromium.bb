@@ -364,7 +364,7 @@ def CopyExamples(pepperdir, extras = []):
 
 
 def BuildUpdater():
-  BuildStep('Create Installer/Updater')
+  BuildStep('Create Updater')
   tooldir = os.path.join(SRC_DIR, 'out', 'sdk_tools')
   sdkupdate = os.path.join(SDK_SRC_DIR, 'build_tools', 'sdk_tools', 'sdk_update.py')
   license = os.path.join(SDK_SRC_DIR, 'LICENSE')
@@ -474,8 +474,8 @@ def main(args):
         Run(['make', 'all', '-j8'], cwd=os.path.abspath(dirnode), shell=True)
 
 # Build SDK Tools
-  if not skip_update:
-    BuildUpdater()
+#  if not skip_update:
+#    BuildUpdater()
 
   return 0
 
