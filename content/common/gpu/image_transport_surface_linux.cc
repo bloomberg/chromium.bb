@@ -91,7 +91,7 @@ class EGLImageTransportSurface
   virtual gfx::Size GetSize() OVERRIDE;
   virtual bool OnMakeCurrent(gfx::GLContext* context) OVERRIDE;
   virtual unsigned int GetBackingFrameBufferObject() OVERRIDE;
-  virtual void SetVisible(bool visible) OVERRIDE;
+  virtual void SetVisibility(VisibilityState visibility_state) OVERRIDE;
 
  protected:
   // ImageTransportSurface implementation
@@ -109,6 +109,9 @@ class EGLImageTransportSurface
   void SendPostSubBuffer(int x, int y, int width, int height);
   void GetRegionsToCopy(const gfx::Rect& new_damage_rect,
                         std::vector<gfx::Rect>* regions);
+
+  // Tracks the current surface visibility state.
+  VisibilityState visibility_state_;
 
   uint32 fbo_id_;
 
@@ -142,7 +145,7 @@ class GLXImageTransportSurface
   virtual std::string GetExtensions();
   virtual gfx::Size GetSize() OVERRIDE;
   virtual bool OnMakeCurrent(gfx::GLContext* context) OVERRIDE;
-  virtual void SetVisible(bool visible) OVERRIDE;
+  virtual void SetVisibility(VisibilityState visibility_state) OVERRIDE;
 
  protected:
   // ImageTransportSurface implementation:
@@ -161,6 +164,9 @@ class GLXImageTransportSurface
 
   void SendBuffersSwapped();
   void SendPostSubBuffer(int x, int y, int width, int height);
+
+  // Tracks the current surface visibility state.
+  VisibilityState visibility_state_;
 
   XID dummy_parent_;
   gfx::Size size_;
@@ -262,6 +268,7 @@ EGLImageTransportSurface::EGLImageTransportSurface(
     GpuChannelManager* manager,
     GpuCommandBufferStub* stub)
     : gfx::PbufferGLSurfaceEGL(false, gfx::Size(1, 1)),
+      visibility_state_(VISIBILITY_STATE_FOREGROUND),
       fbo_id_(0),
       made_current_(false) {
   helper_.reset(new ImageTransportHelper(this,
@@ -324,12 +331,29 @@ unsigned int EGLImageTransportSurface::GetBackingFrameBufferObject() {
   return fbo_id_;
 }
 
-void EGLImageTransportSurface::SetVisible(bool visible) {
-  if (!visible && back_surface_.get() && front_surface_.get()) {
-    ReleaseSurface(&back_surface_);
-  } else if (visible && !back_surface_.get() && front_surface_.get()) {
-    // Leverage the OnResize hook because it does exactly what we want
-    OnResize(front_surface_->size());
+void EGLImageTransportSurface::SetVisibility(VisibilityState visibility_state) {
+  if (visibility_state_ == visibility_state)
+    return;
+  visibility_state_ = visibility_state;
+
+  switch (visibility_state) {
+    case VISIBILITY_STATE_FOREGROUND:
+      if (!back_surface_.get() && front_surface_.get())
+        OnResize(front_surface_->size());
+      break;
+
+    case VISIBILITY_STATE_BACKGROUND:
+      if (back_surface_.get() && front_surface_.get())
+        ReleaseSurface(&back_surface_);
+      break;
+
+    case VISIBILITY_STATE_HIBERNATED:
+      if (back_surface_.get() && front_surface_.get())
+        ReleaseSurface(&back_surface_);
+      break;
+
+    default:
+      NOTREACHED();
   }
 }
 
@@ -531,6 +555,7 @@ GLXImageTransportSurface::GLXImageTransportSurface(
     GpuChannelManager* manager,
     GpuCommandBufferStub* stub)
     : gfx::NativeViewGLSurfaceGLX(),
+      visibility_state_(VISIBILITY_STATE_FOREGROUND),
       dummy_parent_(0),
       size_(1, 1),
       bound_(false),
@@ -614,15 +639,34 @@ void GLXImageTransportSurface::ReleaseSurface() {
   bound_ = false;
 }
 
-void GLXImageTransportSurface::SetVisible(bool visible) {
-  Display* dpy = static_cast<Display*>(GetDisplay());
-  if (!visible) {
-    XResizeWindow(dpy, window_, 1, 1);
-  } else {
-    XResizeWindow(dpy, window_, size_.width(), size_.height());
-    needs_resize_ = true;
+void GLXImageTransportSurface::SetVisibility(VisibilityState visibility_state) {
+  if (visibility_state_ == visibility_state)
+    return;
+  visibility_state_ = visibility_state;
+
+  switch (visibility_state) {
+    case VISIBILITY_STATE_FOREGROUND: {
+      Display* dpy = static_cast<Display*>(GetDisplay());
+      XResizeWindow(dpy, window_, size_.width(), size_.height());
+      needs_resize_ = true;
+      glXWaitX();
+      break;
+    }
+    case VISIBILITY_STATE_BACKGROUND: {
+      Display* dpy = static_cast<Display*>(GetDisplay());
+      XResizeWindow(dpy, window_, 1, 1);
+      glXWaitX();
+      break;
+    }
+    case VISIBILITY_STATE_HIBERNATED: {
+      Display* dpy = static_cast<Display*>(GetDisplay());
+      XResizeWindow(dpy, window_, 1, 1);
+      glXWaitX();
+      break;
+    }
+    default:
+      NOTREACHED();
   }
-  glXWaitX();
 }
 
 void GLXImageTransportSurface::OnResize(gfx::Size size) {

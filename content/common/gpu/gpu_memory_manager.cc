@@ -114,16 +114,18 @@ void GpuMemoryManager::Manage() {
   for (size_t i = 0; i < stubs_with_surface.size(); ++i) {
     GpuCommandBufferStubBase* stub = stubs_with_surface[i];
     DCHECK(stub->has_surface_state());
+    const GpuMemoryAllocation* allocation = NULL;
     if (stub->surface_state().visible) {
       all_buffers.insert(stub->surface_state().surface_id);
-      stub->SendMemoryAllocationToProxy(all_buffers_allocation);
+      allocation = &all_buffers_allocation;
     } else if (i < max_surfaces_with_frontbuffer_soft_limit_) {
       front_buffers.insert(stub->surface_state().surface_id);
-      stub->SendMemoryAllocationToProxy(front_buffers_allocation);
+      allocation = &front_buffers_allocation;
     } else {
       no_buffers.insert(stub->surface_state().surface_id);
-      stub->SendMemoryAllocationToProxy(no_buffers_allocation);
+      allocation = &no_buffers_allocation;
     }
+    stub->SetMemoryAllocation(*allocation);
   }
 }
 

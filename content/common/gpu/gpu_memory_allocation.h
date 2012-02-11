@@ -15,29 +15,29 @@
 class GpuMemoryAllocation {
  public:
   uint64 gpuResourceSizeInBytes;
-  bool hasFrontbuffer;
-  bool hasBackbuffer;
+  bool has_frontbuffer;
+  bool has_backbuffer;
 
   GpuMemoryAllocation()
       : gpuResourceSizeInBytes(0),
-        hasFrontbuffer(false),
-        hasBackbuffer(false) {
+        has_frontbuffer(false),
+        has_backbuffer(false) {
   }
 
   GpuMemoryAllocation(uint64 gpuResourceSizeInBytes,
-                      bool hasFrontbuffer,
-                      bool hasBackbuffer)
+                      bool has_frontbuffer,
+                      bool has_backbuffer)
       : gpuResourceSizeInBytes(gpuResourceSizeInBytes),
-        hasFrontbuffer(hasFrontbuffer),
-        hasBackbuffer(hasBackbuffer) {
+        has_frontbuffer(has_frontbuffer),
+        has_backbuffer(has_backbuffer) {
   }
 };
 
 inline bool operator==(const GpuMemoryAllocation& lhs,
                        const GpuMemoryAllocation& rhs) {
   return lhs.gpuResourceSizeInBytes == rhs.gpuResourceSizeInBytes &&
-      lhs.hasFrontbuffer == rhs.hasFrontbuffer &&
-      lhs.hasBackbuffer == rhs.hasBackbuffer;
+      lhs.has_frontbuffer == rhs.has_frontbuffer &&
+      lhs.has_backbuffer == rhs.has_backbuffer;
 }
 
 inline bool operator!=(const GpuMemoryAllocation& lhs,

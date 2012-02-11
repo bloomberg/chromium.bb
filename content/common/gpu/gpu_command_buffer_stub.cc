@@ -14,7 +14,6 @@
 #include "content/common/gpu/gpu_channel.h"
 #include "content/common/gpu/gpu_channel_manager.h"
 #include "content/common/gpu/gpu_command_buffer_stub.h"
-#include "content/common/gpu/gpu_memory_allocation.h"
 #include "content/common/gpu/gpu_memory_manager.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "content/common/gpu/gpu_watchdog.h"
@@ -512,7 +511,8 @@ void GpuCommandBufferStub::OnDestroyVideoDecoder(int decoder_route_id) {
 }
 
 void GpuCommandBufferStub::OnSetSurfaceVisible(bool visible) {
-  surface_->SetVisible(visible);
+  if (visible)
+    surface_->SetVisibility(gfx::GLSurface::VISIBILITY_STATE_FOREGROUND);
   DCHECK(surface_state_.get());
   surface_state_->visible = visible;
   surface_state_->last_used_time = base::TimeTicks::Now();
@@ -544,6 +544,24 @@ const GpuCommandBufferStubBase::SurfaceState&
 void GpuCommandBufferStub::SendMemoryAllocationToProxy(
     const GpuMemoryAllocation& allocation) {
   // TODO(mmocny): Send callback once gl extensions are added.
+}
+
+void GpuCommandBufferStub::SetMemoryAllocation(
+    const GpuMemoryAllocation& allocation) {
+  if (allocation == allocation_)
+    return;
+  allocation_ = allocation;
+
+  SendMemoryAllocationToProxy(allocation);
+
+  if (!surface_)
+    return;
+  if (allocation.has_frontbuffer && allocation.has_backbuffer)
+    surface_->SetVisibility(gfx::GLSurface::VISIBILITY_STATE_FOREGROUND);
+  else if (allocation.has_frontbuffer)
+    surface_->SetVisibility(gfx::GLSurface::VISIBILITY_STATE_BACKGROUND);
+  else
+    surface_->SetVisibility(gfx::GLSurface::VISIBILITY_STATE_HIBERNATED);
 }
 
 #endif  // defined(ENABLE_GPU)

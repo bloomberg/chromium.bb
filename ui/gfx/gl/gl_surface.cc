@@ -107,7 +107,7 @@ bool GLSurface::OnMakeCurrent(GLContext* context) {
   return true;
 }
 
-void GLSurface::SetVisible(bool visible) {
+void GLSurface::SetVisibility(VisibilityState visibility_state) {
 }
 
 void* GLSurface::GetShareHandle() {
@@ -188,8 +188,8 @@ bool GLSurfaceAdapter::OnMakeCurrent(GLContext* context) {
   return surface_->OnMakeCurrent(context);
 }
 
-void GLSurfaceAdapter::SetVisible(bool visible) {
-  surface_->SetVisible(visible);
+void GLSurfaceAdapter::SetVisibility(VisibilityState visibility_state) {
+  surface_->SetVisibility(visibility_state);
 }
 
 void* GLSurfaceAdapter::GetShareHandle() {

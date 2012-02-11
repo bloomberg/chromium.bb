@@ -40,7 +40,7 @@ class PbufferImageTransportSurface
   virtual bool SwapBuffers() OVERRIDE;
   virtual bool PostSubBuffer(int x, int y, int width, int height) OVERRIDE;
   virtual std::string GetExtensions() OVERRIDE;
-  virtual void SetVisible(bool visible) OVERRIDE;
+  virtual void SetVisibility(VisibilityState visibility_state) OVERRIDE;
 
  protected:
   // ImageTransportSurface implementation
@@ -55,8 +55,8 @@ class PbufferImageTransportSurface
   virtual ~PbufferImageTransportSurface();
   void SendBuffersSwapped();
 
-  // Whether the surface is currently visible.
-  bool is_visible_;
+  // Tracks the current surface visibility state.
+  VisibilityState visibility_state_;
 
   // Size to resize to when the surface becomes visible.
   gfx::Size visible_size_;
@@ -70,7 +70,7 @@ PbufferImageTransportSurface::PbufferImageTransportSurface(
     GpuChannelManager* manager,
     GpuCommandBufferStub* stub)
     : GLSurfaceAdapter(new gfx::PbufferGLSurfaceEGL(false, gfx::Size(1, 1))),
-      is_visible_(true) {
+      visibility_state_(VISIBILITY_STATE_FOREGROUND) {
   helper_.reset(new ImageTransportHelper(this,
                                          manager,
                                          stub,
@@ -121,16 +121,29 @@ bool PbufferImageTransportSurface::PostSubBuffer(
   return false;
 }
 
-void PbufferImageTransportSurface::SetVisible(bool visible) {
-  if (visible == is_visible_)
+void PbufferImageTransportSurface::SetVisibility(
+    VisibilityState visibility_state) {
+  if (visibility_state_ == visibility_state)
     return;
+  visibility_state_ = visibility_state;
 
-  is_visible_ = visible;
+  switch (visibility_state) {
+    case VISIBILITY_STATE_FOREGROUND:
+      Resize(visible_size_);
+      break;
 
-  if (visible)
-    Resize(visible_size_);
-  else
-    Resize(gfx::Size(1, 1));
+    case VISIBILITY_STATE_BACKGROUND:
+      Resize(gfx::Size(1, 1));
+      break;
+
+    case VISIBILITY_STATE_HIBERNATED:
+      Resize(gfx::Size(1, 1));
+      helper_->Suspend();
+      break;
+
+    default:
+      NOTREACHED();
+  }
 }
 
 std::string PbufferImageTransportSurface::GetExtensions() {
@@ -168,7 +181,7 @@ void PbufferImageTransportSurface::OnResizeViewACK() {
 }
 
 void PbufferImageTransportSurface::OnResize(gfx::Size size) {
-  if (is_visible_)
+  if (visibility_state_ == VISIBILITY_STATE_FOREGROUND)
     Resize(size);
 
   visible_size_ = size;

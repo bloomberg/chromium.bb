@@ -73,7 +73,12 @@ class GL_EXPORT GLSurface : public base::RefCounted<GLSurface> {
 
   // This gives a hint as to whether this surface is visible. If it is not
   // visible, the backing store need not be preserved.
-  virtual void SetVisible(bool visible);
+  enum VisibilityState {
+    VISIBILITY_STATE_FOREGROUND,
+    VISIBILITY_STATE_BACKGROUND,
+    VISIBILITY_STATE_HIBERNATED
+  };
+  virtual void SetVisibility(VisibilityState visibility_state);
 
   // Get a handle used to share the surface with another process. Returns null
   // if this is not possible.
@@ -130,7 +135,7 @@ class GL_EXPORT GLSurfaceAdapter : public GLSurface {
   virtual void* GetHandle() OVERRIDE;
   virtual unsigned int GetBackingFrameBufferObject() OVERRIDE;
   virtual bool OnMakeCurrent(GLContext* context) OVERRIDE;
-  virtual void SetVisible(bool visible) OVERRIDE;
+  virtual void SetVisibility(VisibilityState visibility_state) OVERRIDE;
   virtual void* GetShareHandle() OVERRIDE;
   virtual void* GetDisplay() OVERRIDE;
   virtual void* GetConfig() OVERRIDE;

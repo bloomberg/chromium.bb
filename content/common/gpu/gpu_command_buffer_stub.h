@@ -15,6 +15,7 @@
 #include "base/memory/weak_ptr.h"
 #include "content/common/content_export.h"
 #include "content/common/gpu/media/gpu_video_decode_accelerator.h"
+#include "content/common/gpu/gpu_memory_allocation.h"
 #include "gpu/command_buffer/common/constants.h"
 #include "gpu/command_buffer/service/command_buffer_service.h"
 #include "gpu/command_buffer/service/context_group.h"
@@ -59,6 +60,9 @@ class CONTENT_EXPORT GpuCommandBufferStubBase {
 
   virtual void SendMemoryAllocationToProxy(
       const GpuMemoryAllocation& allocation) = 0;
+
+  virtual void SetMemoryAllocation(
+      const GpuMemoryAllocation& allocation) = 0;
 };
 
 class GpuCommandBufferStub
@@ -96,6 +100,10 @@ class GpuCommandBufferStub
 
   // Sends memory allocation limits to render process.
   virtual void SendMemoryAllocationToProxy(
+      const GpuMemoryAllocation& allocation) OVERRIDE;
+
+  // Sets buffer usage depending on Memory Allocation
+  virtual void SetMemoryAllocation(
       const GpuMemoryAllocation& allocation) OVERRIDE;
 
   // Whether this command buffer can currently handle IPC messages.
@@ -181,6 +189,7 @@ class GpuCommandBufferStub
   bool software_;
   uint32 last_flush_count_;
   scoped_ptr<GpuCommandBufferStubBase::SurfaceState> surface_state_;
+  GpuMemoryAllocation allocation_;
 
   scoped_ptr<gpu::CommandBufferService> command_buffer_;
   scoped_ptr<gpu::gles2::GLES2Decoder> decoder_;
