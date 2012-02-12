@@ -45,12 +45,21 @@ cr.define('options', function() {
       // here.
     },
 
-    /**
-     * @inheritDoc
-     */
+    /** @inheritDoc */
     didShowPage: function() {
       // Set initial state.
       this.updateHomePageInput_();
+    },
+
+    /** @inheritDoc */
+    handleConfirm: function() {
+      // Don't save an empty URL for the home page.
+      if ($('homepage-use-url').checked && $('homepageURL').value == '') {
+        $('homepage-use-url').checked = false;
+        $('homepage-use-ntp').checked = true;
+      }
+
+      SettingsDialog.prototype.handleConfirm.call(this);
     },
 
     /**

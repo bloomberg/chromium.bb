@@ -33,15 +33,14 @@ cr.define('options', function() {
      * @inheritDoc
      */
     initializePage: function() {
-      this.okButton.onclick = this.handleConfirm_.bind(this);
-      this.cancelButton.onclick = this.handleCancel_.bind(this);
+      this.okButton.onclick = this.handleConfirm.bind(this);
+      this.cancelButton.onclick = this.handleCancel.bind(this);
     },
 
     /**
      * Handles the confirm button by saving the dialog preferences.
-     * @private
      */
-    handleConfirm_: function() {
+    handleConfirm: function() {
       OptionsPage.closeOverlay();
 
       var els = this.pageDiv.querySelectorAll('[dialog-pref]');
@@ -55,7 +54,7 @@ cr.define('options', function() {
      * Handles the cancel button by closing the overlay.
      * @private
      */
-    handleCancel_: function() {
+    handleCancel: function() {
       OptionsPage.closeOverlay();
 
       var els = this.pageDiv.querySelectorAll('[dialog-pref]');

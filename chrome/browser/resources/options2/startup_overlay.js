@@ -33,25 +33,6 @@ cr.define('options', function() {
      */
     autocompleteList_: null,
 
-    // TODO(tbreisacher): Work with jhawkins to refactor this so that we're not
-    // overriding private handle* methods in SettingsDialog.
-
-    /**
-     * @override
-     */
-    handleConfirm_: function() {
-      OptionsPage.closeOverlay();
-      chrome.send('commitStartupPrefChanges');
-    },
-
-    /**
-     * @override
-     */
-    handleCancel_: function() {
-      OptionsPage.closeOverlay();
-      chrome.send('cancelStartupPrefChanges');
-    },
-
     /**
      * Initialize the page.
      */
@@ -75,6 +56,21 @@ cr.define('options', function() {
       $('startup-overlay').appendChild(suggestionList);
       this.autocompleteList_ = suggestionList;
       startupPagesList.autocompleteList = suggestionList;
+    },
+
+    // TODO(tbreisacher): Work with jhawkins to refactor this so that we're not
+    // overriding private handle* methods in SettingsDialog.
+
+    /** @inheritDoc */
+    handleConfirm: function() {
+      SettingsDialog.prototype.handleConfirm.call(this);
+      chrome.send('commitStartupPrefChanges');
+    },
+
+    /** @inheritDoc */
+    handleCancel: function() {
+      SettingsDialog.prototype.handleCancel.call(this);
+      chrome.send('cancelStartupPrefChanges');
     },
 
     /**
