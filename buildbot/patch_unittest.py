@@ -322,7 +322,7 @@ class GerritPatchTest(mox.MoxTestBase):
     cros_lib.RunCommandWithRetries(
         3, ['git', 'ls-remote',
             'ssh://gerrit.chromium.org:29418/tacos/chromite',
-            my_patch.tracking_branch],
+            my_branch],
         redirect_stdout=True, print_cmd=True).AndReturn(result)
     self.mox.ReplayAll()
     self.assertEqual(my_patch.GetLatestSHA1ForProject(), my_hash)

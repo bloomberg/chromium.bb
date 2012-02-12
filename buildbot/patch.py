@@ -248,7 +248,8 @@ class GerritPatch(Patch):
     ssh_url_project = '/'.join([ssh_url, self.project])
     try:
       result = cros_lib.RunCommandWithRetries(3,
-          ['git', 'ls-remote', ssh_url_project, self.tracking_branch],
+          ['git', 'ls-remote', ssh_url_project,
+           '/'.join(['refs/heads', self.tracking_branch])],
           redirect_stdout=True, print_cmd=True)
       if result:
         latest_commit_hash = result.output.split()[0]
