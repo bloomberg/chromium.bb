@@ -234,6 +234,9 @@ class XcodeSettings(object):
     if 'SDKROOT' in self._Settings():
       cflags.append('-isysroot %s' % sdk_root)
 
+    if self._Test('GCC_CHAR_IS_UNSIGNED_CHAR', 'YES', default='NO'):
+      cflags.append('-funsigned-char')
+
     if self._Test('GCC_CW_ASM_SYNTAX', 'YES', default='YES'):
       cflags.append('-fasm-blocks')
 
