@@ -15,7 +15,7 @@ cr.define('sync_promo', function() {
    */
   function SyncPromo() {
     options.SyncSetupOverlay.call(this, 'syncSetup',
-                                  templateData.syncSetupOverlayTitle,
+                                  templateData.syncSetupOverlayTabTitle,
                                   'sync-setup-overlay');
   }
 

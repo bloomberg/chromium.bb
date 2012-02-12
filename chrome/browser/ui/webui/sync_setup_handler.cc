@@ -260,7 +260,6 @@ void SyncSetupHandler::GetStaticLocalizedValues(
   localized_strings->SetString("signUpURL", create_account_url);
 
   static OptionsStringResource resources[] = {
-    { "syncSetupOverlayTitle", IDS_SYNC_SETUP_TITLE },
     { "syncSetupConfigureTitle", IDS_SYNC_SETUP_CONFIGURE_TITLE },
     { "cannotBeBlank", IDS_SYNC_CANNOT_BE_BLANK },
     { "emailLabel", IDS_SYNC_LOGIN_EMAIL_NEW_LINE },
@@ -347,6 +346,7 @@ void SyncSetupHandler::GetStaticLocalizedValues(
   };
 
   RegisterStrings(localized_strings, resources, arraysize(resources));
+  RegisterTitle(localized_strings, "syncSetupOverlay", IDS_SYNC_SETUP_TITLE);
 }
 
 void SyncSetupHandler::Initialize() {

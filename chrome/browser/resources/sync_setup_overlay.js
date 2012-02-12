@@ -25,8 +25,7 @@ cr.define('options', function() {
    * @class
    */
   function SyncSetupOverlay() {
-    OptionsPage.call(this, 'syncSetup',
-                     templateData.syncSetupOverlayTitle,
+    OptionsPage.call(this, 'syncSetup', templateData.syncSetupOverlayTabTitle,
                      'sync-setup-overlay');
   }
 
@@ -455,6 +454,7 @@ cr.define('options', function() {
       $('passphrase').focus();
     },
 
+    /** @private */
     showCustomizePage_: function(args, syncEverything) {
       $('confirm-sync-preferences').hidden = true;
       $('customize-sync-preferences').hidden = false;
