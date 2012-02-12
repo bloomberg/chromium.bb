@@ -14,9 +14,9 @@
 // ui::Compositor delegate, setting up the NSOpenGLContext as required.
 @interface RootWindowView : NSView {
  @private
-  scoped_refptr<ui::Compositor> compositor_;
+  ui::Compositor* compositor_;
 }
--(void)setCompositor:(scoped_refptr<ui::Compositor>)compositor;
+-(void)setCompositor:(ui::Compositor*)compositor;
 @end
 
 #endif  // UI_AURA_ROOT_WINDOW_VIEW_MAC_H_

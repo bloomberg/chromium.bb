@@ -362,7 +362,7 @@ class LayerWithDelegateTest : public testing::Test, public CompositorDelegate {
   // Overridden from testing::Test:
   virtual void SetUp() OVERRIDE {
     ui::SetupTestCompositor();
-    compositor_ = new ui::Compositor(this, NULL, gfx::Size(1000, 1000));
+    compositor_.reset(new ui::Compositor(this, NULL, gfx::Size(1000, 1000)));
   }
 
   virtual void TearDown() OVERRIDE {
@@ -416,7 +416,7 @@ class LayerWithDelegateTest : public testing::Test, public CompositorDelegate {
   bool schedule_draw_invoked_;
 
  private:
-  scoped_refptr<ui::Compositor> compositor_;
+  scoped_ptr<ui::Compositor> compositor_;
 
   DISALLOW_COPY_AND_ASSIGN(LayerWithDelegateTest);
 };

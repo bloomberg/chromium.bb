@@ -470,15 +470,15 @@ RootWindow::RootWindow()
   last_mouse_location_ = host_->QueryMouseLocation();
 
   ui::Compositor::Initialize(false);
-  compositor_ = new ui::Compositor(this, host_->GetAcceleratedWidget(),
-      host_->GetSize());
+  compositor_.reset(new ui::Compositor(this, host_->GetAcceleratedWidget(),
+      host_->GetSize()));
   DCHECK(compositor_.get());
 }
 
 RootWindow::~RootWindow() {
   // Make sure to destroy the compositor before terminating so that state is
   // cleared and we don't hit asserts.
-  compositor_ = NULL;
+  compositor_.reset();
 
   // Tear down in reverse.  Frees any references held by the host.
   host_.reset(NULL);

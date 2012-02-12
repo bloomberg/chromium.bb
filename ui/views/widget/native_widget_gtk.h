@@ -14,7 +14,6 @@
 #include "base/message_loop.h"
 #include "ui/base/gtk/gtk_signal.h"
 #include "ui/base/x/active_window_watcher_x_observer.h"
-#include "ui/gfx/compositor/compositor.h"
 #include "ui/gfx/size.h"
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/widget/native_widget_private.h"
@@ -44,7 +43,6 @@ class NativeWidgetDelegate;
 
 // Widget implementation for GTK.
 class VIEWS_EXPORT NativeWidgetGtk : public internal::NativeWidgetPrivate,
-                                     public ui::CompositorDelegate,
                                      public ui::ActiveWindowWatcherXObserver {
  public:
   explicit NativeWidgetGtk(internal::NativeWidgetDelegate* delegate);
@@ -313,9 +311,6 @@ class VIEWS_EXPORT NativeWidgetGtk : public internal::NativeWidgetPrivate,
   class DropObserver;
   friend class DropObserver;
 
-  // Overridden from ui::CompositorDelegate
-  virtual void ScheduleDraw() OVERRIDE;
-
   // Overridden from internal::InputMethodDelegate
   virtual void DispatchKeyEventPostIME(const KeyEvent& key) OVERRIDE;
 
@@ -447,9 +442,6 @@ class VIEWS_EXPORT NativeWidgetGtk : public internal::NativeWidgetPrivate,
   // If the widget has ever been painted. This is used to guarantee
   // that window manager shows the window only after the window is painted.
   bool painted_;
-
-  // The compositor for accelerated drawing.
-  scoped_refptr<ui::Compositor> compositor_;
 
   // Have we done a pointer grab?
   bool has_pointer_grab_;

@@ -27,7 +27,6 @@
 #include "ui/base/win/mouse_wheel_util.h"
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/canvas_skia_paint.h"
-#include "ui/gfx/compositor/compositor.h"
 #include "ui/gfx/icon_util.h"
 #include "ui/gfx/native_theme_win.h"
 #include "ui/gfx/path.h"
@@ -504,12 +503,6 @@ void NativeWidgetWin::PopForceHidden() {
 ////////////////////////////////////////////////////////////////////////////////
 // NativeWidgetWin, CompositorDelegate implementation:
 
-void NativeWidgetWin::ScheduleDraw() {
-  RECT rect;
-  ::GetClientRect(GetNativeView(), &rect);
-  InvalidateRect(GetNativeView(), &rect, FALSE);
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // NativeWidgetWin, NativeWidget implementation:
 
@@ -588,11 +581,11 @@ Widget* NativeWidgetWin::GetTopLevelWidget() {
 }
 
 const ui::Compositor* NativeWidgetWin::GetCompositor() const {
-  return compositor_.get();
+  return NULL;
 }
 
 ui::Compositor* NativeWidgetWin::GetCompositor() {
-  return compositor_.get();
+  return NULL;
 }
 
 void NativeWidgetWin::CalculateOffsetToAncestorWithLayer(
@@ -2369,8 +2362,6 @@ void NativeWidgetWin::ClientAreaSizeChanged() {
     GetWindowRect(&r);
   gfx::Size s(std::max(0, static_cast<int>(r.right - r.left)),
               std::max(0, static_cast<int>(r.bottom - r.top)));
-  if (compositor_.get())
-    compositor_->WidgetSizeChanged(s);
   delegate_->OnNativeWidgetSizeChanged(s);
   if (use_layered_buffer_)
     layered_window_contents_.reset(new gfx::CanvasSkia(s, false));

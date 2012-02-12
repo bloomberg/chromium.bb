@@ -97,8 +97,7 @@ class COMPOSITOR_EXPORT CompositorDelegate {
 // appropriately transformed texture for each transformed view in the widget's
 // view hierarchy.
 class COMPOSITOR_EXPORT Compositor
-    : public base::RefCounted<Compositor>,
-      NON_EXPORTED_BASE(public WebKit::WebLayerTreeViewClient) {
+    : NON_EXPORTED_BASE(public WebKit::WebLayerTreeViewClient) {
  public:
   Compositor(CompositorDelegate* delegate,
              gfx::AcceleratedWidget widget,

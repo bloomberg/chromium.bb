@@ -5,6 +5,7 @@
 #include "ui/gfx/compositor/test/test_compositor_host.h"
 
 #include "base/compiler_specific.h"
+#include "base/memory/scoped_ptr.h"
 #include "ui/base/win/window_impl.h"
 #include "ui/gfx/compositor/compositor.h"
 
@@ -16,7 +17,7 @@ class TestCompositorHostWin : public TestCompositorHost,
  public:
   TestCompositorHostWin(const gfx::Rect& bounds) {
     Init(NULL, bounds);
-    compositor_ = new ui::Compositor(this, hwnd(), GetSize());
+    compositor_.reset(new ui::Compositor(this, hwnd(), GetSize()));
   }
 
   virtual ~TestCompositorHostWin() {
@@ -35,7 +36,7 @@ class TestCompositorHostWin : public TestCompositorHost,
     ShowWindow(hwnd(), SW_SHOWNORMAL);
   }
   virtual ui::Compositor* GetCompositor() OVERRIDE {
-    return compositor_;
+    return compositor_.get();
   }
 
   // Overridden from CompositorDelegate:
@@ -61,7 +62,7 @@ class TestCompositorHostWin : public TestCompositorHost,
     return gfx::Rect(r).size();
   }
 
-  scoped_refptr<ui::Compositor> compositor_;
+  scoped_ptr<ui::Compositor> compositor_;
 
   DISALLOW_COPY_AND_ASSIGN(TestCompositorHostWin);
 };

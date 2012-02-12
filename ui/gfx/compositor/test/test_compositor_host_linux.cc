@@ -7,6 +7,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/gfx/compositor/compositor.h"
@@ -44,7 +45,7 @@ class TestCompositorHostLinux : public TestCompositorHost,
 
   gfx::Rect bounds_;
 
-  scoped_refptr<ui::Compositor> compositor_;
+  scoped_ptr<ui::Compositor> compositor_;
 
   XID window_;
 
@@ -80,15 +81,15 @@ void TestCompositorHostLinux::Show() {
     if (event.type == MapNotify && event.xmap.window == window_)
       break;
   }
-  compositor_ = new ui::Compositor(this, window_, bounds_.size());
+  compositor_.reset(new ui::Compositor(this, window_, bounds_.size()));
 }
 
 ui::Compositor* TestCompositorHostLinux::GetCompositor() {
-  return compositor_;
+  return compositor_.get();
 }
 
 void TestCompositorHostLinux::ScheduleDraw() {
-  if (compositor_)
+  if (compositor_.get())
     compositor_->Draw(false);
 }
 

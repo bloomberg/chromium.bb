@@ -5,7 +5,7 @@
 #import "ui/aura/root_window_view_mac.h"
 
 @implementation RootWindowView
--(void)setCompositor:(scoped_refptr<ui::Compositor>)compositor {
+-(void)setCompositor:(ui::Compositor*)compositor {
   compositor_ = compositor;
 }
 

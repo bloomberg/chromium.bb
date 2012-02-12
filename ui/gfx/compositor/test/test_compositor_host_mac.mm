@@ -12,17 +12,18 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_nsobject.h"
+#include "base/memory/scoped_ptr.h"
 #include "ui/gfx/compositor/compositor.h"
 #include "ui/gfx/rect.h"
 
 // AcceleratedTestView provides an NSView class that delegates drawing to a
 // ui::Compositor delegate, setting up the NSOpenGLContext as required.
 @interface AcceleratedTestView : NSView {
-  scoped_refptr<ui::Compositor> compositor_;
+  ui::Compositor* compositor_;
 }
 // Designated initializer.
 -(id)init;
--(void)setCompositor:(scoped_refptr<ui::Compositor>)compositor;
+-(void)setCompositor:(ui::Compositor*)compositor;
 @end
 
 @implementation AcceleratedTestView
@@ -32,7 +33,7 @@
   return self;
 }
 
--(void)setCompositor:(scoped_refptr<ui::Compositor>)compositor {
+-(void)setCompositor:(ui::Compositor*)compositor {
   compositor_ = compositor;
 }
 
@@ -93,7 +94,7 @@ class TestCompositorHostMac : public TestCompositorHost,
   virtual void ScheduleDraw() OVERRIDE;
 
   gfx::Rect bounds_;
-  scoped_refptr<ui::Compositor> compositor_;
+  scoped_ptr<ui::Compositor> compositor_;
 
   // Owned.  Released when window is closed.
   NSWindow* window_;
@@ -126,18 +127,18 @@ void TestCompositorHostMac::Show() {
                             backing:NSBackingStoreBuffered
                               defer:NO];
   scoped_nsobject<AcceleratedTestView> view([[AcceleratedTestView alloc] init]);
-  compositor_ = new ui::Compositor(this, view, bounds_.size());
-  [view setCompositor:compositor_];
+  compositor_.reset(new ui::Compositor(this, view, bounds_.size()));
+  [view setCompositor:compositor_.get()];
   [window_ setContentView:view];
   [window_ orderFront:nil];
 }
 
 ui::Compositor* TestCompositorHostMac::GetCompositor() {
-  return compositor_;
+  return compositor_.get();
 }
 
 void TestCompositorHostMac::ScheduleDraw() {
-  if (!compositor_)
+  if (!compositor_.get())
     return;
 
   // Force display now.

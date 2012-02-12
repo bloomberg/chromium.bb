@@ -29,7 +29,6 @@
 #include "ui/base/x/active_window_watcher_x.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/gfx/canvas_skia_paint.h"
-#include "ui/gfx/compositor/compositor.h"
 #include "ui/gfx/gtk_util.h"
 #include "ui/gfx/path.h"
 #include "ui/gfx/screen.h"
@@ -810,11 +809,11 @@ Widget* NativeWidgetGtk::GetTopLevelWidget() {
 }
 
 const ui::Compositor* NativeWidgetGtk::GetCompositor() const {
-  return compositor_.get();
+  return NULL;
 }
 
 ui::Compositor* NativeWidgetGtk::GetCompositor() {
-  return compositor_.get();
+  return NULL;
 }
 
 void NativeWidgetGtk::CalculateOffsetToAncestorWithLayer(
@@ -1288,8 +1287,6 @@ void NativeWidgetGtk::OnSizeAllocate(GtkWidget* widget,
   if (new_size == size_)
     return;
   size_ = new_size;
-  if (compositor_.get())
-    compositor_->WidgetSizeChanged(size_);
   delegate_->OnNativeWidgetSizeChanged(size_);
 
   if (GetWidget()->non_client_view()) {
@@ -1737,10 +1734,6 @@ void NativeWidgetGtk::HandleGtkGrabBroke() {
 
 ////////////////////////////////////////////////////////////////////////////////
 // NativeWidgetGtk, private:
-
-void NativeWidgetGtk::ScheduleDraw() {
-  SchedulePaintInRect(gfx::Rect(gfx::Point(), size_));
-}
 
 void NativeWidgetGtk::DispatchKeyEventPostIME(const KeyEvent& key) {
   if (GetWidget()->GetFocusManager())
